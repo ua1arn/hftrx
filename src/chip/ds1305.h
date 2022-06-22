@@ -11,6 +11,7 @@
 
 #define DS1305_SPIMODE SPIC_MODE3
 #define DS1305_SPISPEED	SPIC_SPEED400k
+#define DS1305_SPICSDELAYUS 4	// uS, CE to CLK Setup and CE Inactive Time
 
 enum
 {
@@ -27,20 +28,21 @@ static void ds1305_readbuff(
 	)
 {
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
+	const uint8_t cmd = addr & 0x7F;	// D7=0: read mode
 
-	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
-	local_delay_us(10);		// 4 uS required
+	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, DS1305_SPICSDELAYUS, & cmd, 1, NULL, 0, data, len);
+}
 
-	spi_progval8_p1(target, addr & 0x7F);	// D7=0: read mode
-	spi_complete(target);
+static void ds1305_readbuff_low(
+	uint8_t * data,
+	uint_fast8_t len,
+	uint_fast8_t addr		// Addr
+	)
+{
+	const spitarget_t target = targetrtc1;		/* addressing to chip */
+	const uint8_t cmd = addr & 0x7F;	// D7=0: read mode
 
-	spi_to_read(target);
-
-	prog_spi_read_frame(target, data, len);
-
-	spi_to_write(target);
-	spi_unselect(target);	/* done sending data to target chip */
-	local_delay_us(10);		// 4 uS required
+	prog_spi_io_low(target, DS1305_SPISPEED, DS1305_SPIMODE, DS1305_SPICSDELAYUS, & cmd, 1, NULL, 0, data, len);
 }
 
 static void ds1305_writebuff(
@@ -50,16 +52,9 @@ static void ds1305_writebuff(
 	)
 {
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
+	const uint8_t cmd = addr | 0x80;	// D7=1: write mode;
 
-	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
-	local_delay_us(10);		// 4 uS required
-
-	spi_progval8_p1(target, addr | 0x80);	// D7=1: write mode
-	spi_complete(target);
-	prog_spi_send_frame(target, data, len);
-
-	spi_unselect(target);	/* done sending data to target chip */
-	local_delay_us(10);		// 4 uS required
+	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, DS1305_SPICSDELAYUS, & cmd, 1, data, len, NULL, 0);
 }
 
 #if 0
@@ -262,13 +257,32 @@ void board_rtc_getdatetime(
 	* year = 2000 + ds1305_bcd2bin(b [6], 0, 99);		// r=6
 }
 
+void board_rtc_getdatetime_low(
+	volatile uint_fast16_t * year,
+	volatile uint_fast8_t * month,	// 01-12
+	volatile uint_fast8_t * dayofmonth,
+	volatile uint_fast8_t * hour,
+	volatile uint_fast8_t * minute,
+	volatile uint_fast8_t * secounds
+	)
+{
+	const uint_fast8_t r = DS1305REG_TIME;
+	uint8_t b [7];
+
+	ds1305_readbuff_low(b, sizeof b / sizeof b[0], r);
+
+	* secounds = ds1305_bcd2bin(b [0] & 0x7f, 0, 59);	// r=0
+	* minute = ds1305_bcd2bin(b [1] & 0x7f, 0, 59);	// r=1
+	* hour = ds1305_bcd2bin(b [2] & 0x3f, 0, 23);		// r=2
+	* dayofmonth = ds1305_bcd2bin(b [4] & 0x3f, 1, 31);		// r=4
+	* month = ds1305_bcd2bin(b [5] & 0x1f, 1, 12);		// r=5
+	* year = 2000 + ds1305_bcd2bin(b [6], 0, 99);		// r=6
+}
+
 /* возврат не-0 если требуется начальная загрузка значений */
 uint_fast8_t board_rtc_chip_initialize(void)
 {
 	uint_fast8_t eosc;
-
-	//hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);	// Slow clock speed (for chips like LM7001 or DS1305EN)
-	//hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);	// Slow clock speed (for chips like LM7001 or DS1305EN)
 
 	uint8_t b [1];
 	static const uint8_t b0 [1] = { 0 };
@@ -301,7 +315,7 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	// write protect
 	//ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
 
-	PRINTF(PSTR("board_rtc_chip_initialize: eosc=%d\n"), (int) eosc);
+	PRINTF(PSTR("board_rtc_chip_initialize: eosc=%d (one - just inited)\n"), (int) eosc);
 	return eosc;
 }
 

@@ -109,7 +109,11 @@ void host_USBI1_IRQHandler(void)
 
 void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 {
-#if CPUSTYLE_R7S721
+#if CPUSTYLE_XC7Z
+	#warning HAL_HCD_MspInit should be implemented
+	{
+	}
+#elif CPUSTYLE_R7S721
 	if (hpcd->Instance == & USB200)
 	{
 		arm_hardware_set_handler_system(USBI0_IRQn, host_USBI0_IRQHandler);
@@ -244,7 +248,11 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 
 void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 {
-#if CPUSTYLE_R7S721
+#if CPUSTYLE_XC7Z
+	#warning HAL_HCD_MspDeInit should be implemented
+	{
+	}
+#elif CPUSTYLE_R7S721
 	if (hpcd->Instance == & USB200)
 	{
 		const IRQn_ID_t int_id = USBI0_IRQn;

@@ -43,7 +43,7 @@
 //#define TLV320AIC23_LHV_DEFAULT         0x0079
 #define TLV320AIC23_LHV_MAX             0x0079
 #define TLV320AIC23_LHV_MAX_overload    0x007f
-#define TLV320AIC23_LHV_MIN             0x0010
+#define TLV320AIC23_LHV_MIN             0x002F
 
 /* Analog audio path control register */
 #define TLV320AIC23_STA_REG(x)          ((x)<<6)
@@ -112,8 +112,6 @@
 
 
 #if defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_TLV320AIC23B)
-	//#define WITHAFCODEC1HAVEPROC	1	/* кодек имеет управление обработкой микрофонного сигнала */
-	#define WITHAFCODEC1HAVELINEINLEVEL	1	/* кодек имеет управление усилением с линейного входа */
 	#define	HARDWARE_CODEC1_NPROCPARAMS	5
 #endif /* defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_TLV320AIC23B) */
 

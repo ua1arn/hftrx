@@ -68,12 +68,27 @@ static void cs4272_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = tg ? targetcodec2 : targetcodec2;	/* addressing to chip */
 
-	spi_select2(target, CS4272_SPIMODE, CS4272_SPIC_SPEED);	/* Enable SPI */
-	spi_progval8_p1(target, CS4272_ADDRESS_W(0));		// Chip Aaddress, D0=0: write
-	spi_progval8_p2(target, mapv);
-	spi_progval8_p2(target, datav);
-	spi_complete(target);
-	spi_unselect(target);
+	#if WITHSPILOWSUPPORTT
+		// Работа совместно с фоновым обменом SPI по прерываниям
+		const uint8_t txbuf [3] =
+		{
+			CS4272_ADDRESS_W(0),
+			mapv,
+			datav,
+		};
+
+		prog_spi_io(target, CS4272_SPIC_SPEED, CS4272_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+
+	#else /* WITHSPILOWSUPPORTT */
+
+		spi_select2(target, CS4272_SPIMODE, CS4272_SPIC_SPEED);	/* Enable SPI */
+		spi_progval8_p1(target, CS4272_ADDRESS_W(0));		// Chip Aaddress, D0=0: write
+		spi_progval8_p2(target, mapv);
+		spi_progval8_p2(target, datav);
+		spi_complete(target);
+		spi_unselect(target);
+
+	#endif /* WITHSPILOWSUPPORTT */
 
 #else
 	// кодек управляется по I2C
@@ -213,6 +228,12 @@ static void cs4272_initialize_fullduplex(void)
 	cs4272_initialize_fullduplex_addr(0);
 }
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t cs4272_clocksneed(void)
+{
+	return 1;
+}
+
 const codec2if_t * board_getfpgacodecif(void)
 {
 	static const char codecname [] = "CS4272";
@@ -220,6 +241,7 @@ const codec2if_t * board_getfpgacodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec2if_t ifc =
 	{
+		cs4272_clocksneed
 		cs4272_initialize_fullduplex,
 		codecname
 	};

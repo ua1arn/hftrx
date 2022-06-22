@@ -38,6 +38,10 @@ void prog_dds3_ftw(const ftw_t * value);
 void prog_rts1_ftw(const ftw_t * value);	// Установка центральной частоты панорамного индикатора
 void prog_xvtr_freq(uint_fast32_t f,uint_fast8_t enable);	// Установка частоты конвертора
 
+void xcz_dds_ftw(const ftw_t * value);	// Установка центральной частоты тракта основного приёмника
+void xcz_dds_ftw_sub(const ftw_t * value);// Установка центральной частоты тракта дополнительного приёмника
+void xcz_dds_rts(const ftw_t * value);// Установка центральной частоты панорамного индикатора
+
 typedef uint_fast32_t pllhint_t;
 
 void si570_initialize(void);
@@ -75,6 +79,7 @@ void board_set_opowerlevel(uint_fast8_t n);	/* установить выходн
 
 void board_set_att(uint_fast8_t v);
 void board_set_antenna(uint_fast8_t v);
+void board_set_rxantenna(uint_fast8_t v);
 void board_set_boardagc(uint_fast8_t n);
 void board_set_dspagc(uint_fast8_t n);
 void board_set_sleep(uint_fast8_t v);	/* перевести в режим минимального потребления */
@@ -214,6 +219,35 @@ void board_rtc_getdatetime(
 	uint_fast8_t * minute,
 	uint_fast8_t * secounds
 	);
+void board_rtc_getdatetime_low(
+	volatile uint_fast16_t * year,
+	volatile uint_fast8_t * month,	// 01-12
+	volatile uint_fast8_t * dayofmonth,
+	volatile uint_fast8_t * hour,
+	volatile uint_fast8_t * minute,
+	volatile uint_fast8_t * secounds
+	);
+
+// функции без задержек на чтение из аппаратного RTC
+void board_rtc_cached_getdate(
+	uint_fast16_t * year,
+	uint_fast8_t * month,
+	uint_fast8_t * dayofmonth
+	);
+void board_rtc_cached_gettime(
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	);
+void board_rtc_cached_getdatetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * dayofmonth,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	);
+
 void board_rtc_setdate(
 	uint_fast16_t year,
 	uint_fast8_t month,
@@ -283,6 +317,14 @@ mcp3208_read(
 	uint_fast8_t * valid
 	);
 
+uint_fast16_t
+mcp3208_read_low(
+	spitarget_t target,
+	uint_fast8_t diff,
+	uint_fast8_t adci,
+	uint_fast8_t * valid
+	);
+
 void board_adc_initialize(void);
 void board_usb_initialize(void);
 void board_usb_activate(void);
@@ -328,7 +370,6 @@ uint_fast8_t board_getpot_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_f
 uint_fast16_t board_getadc_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast16_t board_getpot_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper, adcvalholder_t * data);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast32_t board_getadc_filtered_u32(uint_fast8_t adci, uint_fast32_t lower, uint_fast32_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
-uint_fast8_t board_getadc_smoothed_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* при изменении отфильтрованного значения этого АЦП возвращаемое значение на каждом вызове приближается к нему на 1 */
 uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast16_t board_getadc_unfiltered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast32_t board_getadc_unfiltered_u32(uint_fast8_t i, uint_fast32_t lower, uint_fast32_t upper);	/* получить значение от АЦП в диапазоне 0..255 */
@@ -356,6 +397,11 @@ int stpmic1_regulator_voltage_set(const char *name, uint16_t millivolts);
 int stpmic1_regulator_enable(const char *name);
 int stpmic1_regulator_disable(const char *name);
 void stpmic1_dump_regulators(void);
+
+void ulpi_chip_initialize(void);
+void ulpi_chip_vbuson(uint_fast8_t state);
+void ulpi_chip_sethost(uint_fast8_t state);
+void ulpi_chip_debug(void);
 
 #ifdef __cplusplus
 }

@@ -49,8 +49,10 @@
 	#define DDR_2XCLK_DIVISOR 3	// DDR_CLK_CTRL.DDR_2XCLK_DIVISOR value 355 MHz
 	#define DDR_3XCLK_DIVISOR 2	// DDR_CLK_CTRL.DDR_3XCLK_DIVISOR value (only even) 533 MHz
 
-	#define SCLR_UART_CLK_CTRL_DIVISOR 16
-	#define SCLR_SDIO_CLK_CTRL_DIVISOR 16
+	#define SCLR_UART_CLK_CTRL_DIVISOR_VALUE 16
+	#define SCLR_SDIO_CLK_CTRL_DIVISOR_VALUE 16
+	#define SCLR_LQSPI_CLK_CTRL_DIVISOR_VALUE 8
+	#define SCLR_SPI_CLK_CTRL_DIVISOR_VALUE 16
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -218,7 +220,7 @@
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHISBOOTLOADERFATFS 1
-	#define WITHISBOOTLOADERIMAGE "tc1_xc7z010_app.xyl32"
+	#define WITHISBOOTLOADERIMAGE "tc1_xc7z020_app_xyl32.bin"
 
 #else /* WITHISBOOTLOADER */
 
@@ -232,7 +234,6 @@
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
-	#define CODEC_TYPE_TLV320AIC23B_USE_32BIT	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
@@ -259,9 +260,6 @@
 	#define CODEC1_FRAMEBITS 32		// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
-	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
-	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
-
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
@@ -280,7 +278,7 @@
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 	//#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
-	#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_ant_20.h"
+	#define BOARD_BITIMAGE_NAME "build/xc7Z020/bitstream_ant_20.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8

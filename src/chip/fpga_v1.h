@@ -20,6 +20,17 @@ extern const phase_t phase_0;
 #define FPGA_DECODE_NBLVL	(1u << 6)
 
 
+// Send a frame of bytes via SPI
+static void
+board_fpga1_spi_send_frame(
+	spitarget_t target,
+	const uint8_t * buff,
+	unsigned int size
+	)
+{
+	prog_spi_io(target, SPIC_SPEEDUFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
+}
+
 /* programming FPGA SPI registers */
 
 static void prog_fpga_valX(
@@ -36,9 +47,7 @@ static void prog_fpga_valX(
 	RBVAL8(010, v32 >> 8);
 	RBVAL8(000, v32 >> 0);
 
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_fpga1_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 static void prog_fpga_freqX(
@@ -136,9 +145,7 @@ prog_fpga_ctrlreg(
 #endif /* ! WITHWAVPLAYER */
 	RBBIT(0, glob_reset_n);					/* b0: ! reset_n net - FIR filter требует перехода из "1" в "0" на reset_n для нормальной работы */
 
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_fpga1_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 

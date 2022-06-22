@@ -5043,6 +5043,32 @@ void looptests(void)
 {
 #if 0
 	{
+		// Display SOF frequency on USB device
+		// Also set:
+		//	hpcd_USB_OTG.Init.Sof_enable = DISABLE;
+		unsigned v = hamradio_get__getsoffreq();
+		PRINTF("SofFreq=%u\n", v);
+	}
+#endif
+#if 0 && defined (KI_LIST) // && WITHKEYBOARD && KEYBOARD_USE_ADC
+	{
+		// Тестирование АЦП клавиатуры
+		static const uint8_t adcinputs [] =
+		{
+			KI_LIST
+		};
+		unsigned i;
+
+		for (i = 0; i < ARRAY_SIZE(adcinputs); ++ i)
+		{
+			const uint_fast8_t adci = adcinputs [i];
+
+			PRINTF("%2u adci%2d %08lX\n", i, (unsigned) adci, (unsigned long) board_getadc_unfiltered_truevalue(adci));
+		}
+	}
+#endif
+#if 0
+	{
 		// вычисления с плавающей точкой
 		//
 		//				   1.4142135623730950488016887242096981L
@@ -5325,6 +5351,10 @@ GridTest(void)
 				 TFTRGB(n * 16, k * 16, 255 - (n * 8 + k * 8) )
 				 );
 */
+
+	display_fillrect(xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORMAIN_WHITE);
+	display_line(xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORMAIN_RED);
+
 	/* Interlase clocke test.	*/
 	display_line(10,  0,  xm, 10 + 1,  col3);
 	display_line(10,  0,  xm, 10 + 3,  col3);
@@ -6285,6 +6315,49 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && (WIHSPIDFSW || WIHSPIDFHW || WIHSPIDFOVERSPI)
+	{
+		// QSPI test
+		unsigned char b [64];
+
+		spidf_initialize();
+
+		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+
+		memset(b, 0xE5, sizeof b);
+		readDATAFLASH(0x000000, b, ARRAY_SIZE(b));
+		printhex(0, b, ARRAY_SIZE(b));
+
+		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+
+		memset(b, 0xE5, sizeof b);
+		readDATAFLASH(0x00080000, b, ARRAY_SIZE(b));
+		printhex(0x00080000, b, ARRAY_SIZE(b));
+
+		spidf_uninitialize();
+	}
+#endif
+#if 0 && WITHTWISW && WITHDEBUG
+	{
+		PRINTF("I2C wires test\n");
+		TWISOFT_INITIALIZE();
+		for (;;)
+		{
+			SET_TWCK();
+			SET_TWD();
+			local_delay_ms(1000);
+			CLR_TWCK();
+			SET_TWD();
+			local_delay_ms(1000);
+			SET_TWCK();
+			CLR_TWD();
+			local_delay_ms(1000);
+			CLR_TWCK();
+			CLR_TWD();
+			local_delay_ms(1000);
+		}
+	}
+#endif
 #if 0
 	{
 		// Test for ADIS16IMU1/PCB
@@ -6443,12 +6516,12 @@ void hightests(void)
 
 	}
 #endif
-#if 1 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if 0 && CPUSTYLE_XC7Z
 	{
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
 	}
 #endif
-#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+#if 0 && WITHETHHW && CPUSTYLE_XC7Z
 	{
 		PRINTF("GEM0 test:\n");
 
@@ -6462,9 +6535,13 @@ void hightests(void)
 				0;
 		SCLR->GEM0_RCLK_CTRL = 0x0000001uL;
 
-
 		ASSERT(GEM0->MODULE_ID == 0x00020118uL);
 		PRINTF("GEM0 test done\n");
+
+		//	Net:   ZYNQ GEM: e000b000, phyaddr 7, interface rgmii-id
+		//	eth0: ethernet@e000b000
+		//	U-BOOT for myd_y7z020_10_07
+
 	}
 #endif
 #if 0
@@ -7906,6 +7983,7 @@ void hightests(void)
 		// 800x480, STM32MP157, @650 MHz, L8, hardware MDMA: (no cache - 0.9s..1s)
 		// 800x480, STM32MP157, @650 MHz, RGB565, hardware MDMA: (no cache - 1.4s)
 		// 800x480, STM32MP157, @650 MHz, ARGB8888, hardware MDMA: (no cache - 2.5s)
+		// 800x480, Allwinner T113-S3, @1200 MHz, RGB565, software 0.6s
 	}
 #endif
 #if 0
@@ -8415,6 +8493,8 @@ void hightests(void)
 	}
 #endif
 #if 0
+	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+	board_update();
 	// тест дисплея - проход по всем возможным уровням основных цветов
 	for (;;)
 	{
@@ -8428,6 +8508,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
+			display_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -8442,6 +8523,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
+			display_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -8456,6 +8538,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
+			display_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -8470,6 +8553,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
+			display_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -9104,7 +9188,19 @@ void hightests(void)
 		}
 	}
 #endif
-	display_nextfb();	// Скрыть резулбтаты теста, разнести рисуемый и ообрадаемый буферы
+#if 0
+	TP();
+	for (;;)
+	{
+		SPI_CS_ASSERT(targetnvram);
+		local_delay_ms(700);
+		SPI_CS_DEASSERT(targetnvram);
+		local_delay_ms(700);
+		TP();
+	}
+#endif
+
+	display_nextfb();	// Скрыть результаты теста, разнести рисуемый и ообрадаемый буферы
 }
 
 // Вызывается перед инициализацией NVRAM, но после инициализации SPI
@@ -9497,17 +9593,27 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
-#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+//	PRINTF("TARGET_UART1_TX_MIO test\n");
+//	for (;;)
+//	{
+//		const portholder_t pinmode = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 0);
+//		gpio_output2(TARGET_UART1_TX_MIO, 1, pinmode);
+//		local_delay_ms(200);
+//		gpio_output2(TARGET_UART1_TX_MIO, 0, pinmode);
+//		local_delay_ms(200);
+//	}
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && defined (ZYNQBOARD_LED_RED)
 	{
 		// калибровка программной задержки
 		for (;;)
 		{
-			gpio_output(37, 0);		// LED_R
-			gpio_output(38, 1);		// LED_G
+			const portholder_t pinmode = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 0);
+			gpio_output2(ZYNQBOARD_LED_RED, 0, pinmode);		// LED_R
+			//gpio_output2(ZYNQBOARD_LED_GREEN, 1, pinmode);		// LED_G
 			local_delay_ms(50);
 
-			gpio_output(37, 1);		// LED_R
-			gpio_output(38, 0);		// LED_G
+			gpio_output2(ZYNQBOARD_LED_RED, 1, pinmode);		// LED_R
+			//gpio_output2(ZYNQBOARD_LED_GREEN, 0, pinmode);		// LED_G
 			local_delay_ms(50);
 
 		}

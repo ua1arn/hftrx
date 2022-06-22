@@ -24,8 +24,6 @@
 /* USB Host Core handle declaration. */
 RAMNOINIT_D1 USBH_HandleTypeDef hUsbHostHS;
 
-static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
-
 static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 
 #if WITHUSEUSBFLASH
@@ -34,6 +32,38 @@ static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 #include "../../Class/HID/Inc/usbh_hid.h"
 #include "../../Class/HUB/Inc/usbh_hub.h"
 
+#if CPUSTYLE_XC7Z
+
+XUSBPS_Registers * EHCIxToUSBx(void * p)
+{
+    XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+    return USBx;
+}
+
+#elif CPUSTYPE_ALLWNT113
+
+USB1_TypeDef * EHCIxToUSBx(void * p)
+{
+	USB1_TypeDef * const USBx = (WITHUSBHW_EHCI == USB1_EHCI) ? USB1 : USB0;
+    return USBx;
+}
+
+#endif /* CPUSTYLE_XC7Z */
+
+/* Вызываем после выполнения reset контроллера */
+void USBH_POSTRESET_INIT(void)
+{
+#if CPUSTYLE_XC7Z
+	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+
+
+	USBx->MODE = (USBx->MODE & ~ (0x0003)) |
+		//0x02 |		// IDLE
+		0x03 |		// HOST
+		0;
+
+#endif /* CPUSTYLE_XC7Z */
+}
 
 
 // See https://github.com/hulei123/git123/blob/b82c4abbe7c1bf336b956a613ceb31436938e063/src/usb_stack/usb_core/hal/fsl_usb_ehci_hal.h
@@ -228,8 +258,12 @@ static void qtd_item2(volatile struct ehci_transfer_descriptor * p, unsigned pid
 //	p->len = cpu_to_le16((length & EHCI_LEN_MASK) | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
 //														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 //														// cleared for SETUP packets
+// 	Zynq7000:
+//	Note: The HCD must not program Cerr to a value of 0 when the QH.EPS field is programmed with
+//	a value indicating a FS or LS device. This combination could result in undefined behavior
+
 	p->flags = pid | 1 * EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
-	p->status = 0*EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
+	p->status = 0 * EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
 	//le8_modify(& p->status, EHCI_STATUS_MASK | EHCI_STATUS_PING, EHCI_STATUS_PING * (ping != 0));
 }
 
@@ -496,7 +530,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
 
 	{
 
-		hehci->qtds [i].status = EHCI_STATUS_HALTED;
+		hehci->qtds [i].status = 0;//EHCI_STATUS_HALTED;
 		hehci->qtds [i].len = 0;	// toggle bit = 0
 		hehci->qtds [i].next = cpu_to_le32(EHCI_LINK_TERMINATE);
 		hehci->qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
@@ -556,6 +590,8 @@ void HAL_EHCI_SOF_Callback(EHCI_HandleTypeDef *hhcd)
   USBH_LL_IncTimer(hhcd->pData);
 }
 
+
+static EHCI_HCTypeDef * ghc = NULL;
 /**
   * @brief  Handle USB_EHCI interrupt request.
   * @param  hehci USB_EHCI handle
@@ -570,9 +606,9 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		return;
 
  	const uint_fast32_t usbsts = le32_to_cpu(EHCIx->USBSTS);
- 	const uint_fast32_t usbstsMasked = usbsts & le32_to_cpu(EHCIx->USBSTS & EHCIx->USBINTR);
+ 	//const uint_fast32_t usbstsMasked = usbsts & le32_to_cpu(EHCIx->USBSTS & EHCIx->USBINTR);
 	unsigned long portsc = le32_to_cpu(hehci->portsc [WITHEHCIHW_EHCIPORT]);
- 	//PRINTF("HAL_EHCI_IRQHandler: USBSTS=%08lX\n", usbsts);
+ 	//PRINTF("HAL_EHCI_IRQHandler: USBSTS=%08lX, portsc=%08lX\n", usbsts, portsc);
 
  	if ((usbsts & (0x01uL << 13)) != 0)
  	{
@@ -585,19 +621,26 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX\n", usbsts);
 		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 
- 		unsigned ch_num;
- 		for (ch_num = 0; ch_num < ARRAY_SIZE(hehci->hc); ++ ch_num)
+ 		//unsigned ch_num;
+ 		//for (ch_num = 0; ch_num < ARRAY_SIZE(hehci->hc); ++ ch_num)
+ 		if (ghc != NULL)
  		{
-			EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+			//EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+			EHCI_HCTypeDef * const hc = ghc;
 
+			//if (hc->ehci_urb_state != URB_IDLE)
+			//	continue;
+			ASSERT(hc->ehci_urb_state == URB_IDLE);
+//			if (/*hc->ch_num >= ARRAY_SIZE(hehci->hc) || */ hc->ch_num != ch_num)
+//				continue;
 			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
 			const uint_fast8_t status = qtd->status;
 			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
 			unsigned pktcnt = hc->xfer_len - len;
-	 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d(#%d,hub=%d,prt=%d,spd=%d), usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, hc->dev_addr, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed, usbsts, status, pktcnt);
+	 		//PRINTF("HAL_EHCI_IRQHandler: (USBINT), hc=%d(#%d,hub=%d,prt=%d,spd=%d), usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, hc->dev_addr, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
 			{
-		 		//PRINTF("HAL_EHCI_IRQHandler: HALTED: USB Interrupt (USBINT), hc=%d(#%d,hub=%d,prt=%d,spd=%d), usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, hc->dev_addr, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed, usbsts, status, pktcnt);
+		 		//PRINTF("HAL_EHCI_IRQHandler: HALTED: hc=%d(#%d,hub=%d,prt=%d,spd=%d), usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, hc->dev_addr, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed, usbsts, status, pktcnt);
 				/* serious "can't proceed" faults reported by the hardware */
 				// Тут разбирать по особенностям ошибки
 		 		if (0)
@@ -606,40 +649,48 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 		 		}
 		 		else if ((status & EHCI_STATUS_BABBLE) != 0)
 				{
+//		 			PRINTF("ch_num=%u: EHCI_STATUS_BABBLE\n", hc->ch_num);
 					hc->ehci_urb_state = URB_NOTREADY;
-					hc->ehci_urb_state = USBH_URB_STALL;
+					hc->ehci_urb_state = URB_STALL;
 				}
 				else if ((status & EHCI_STATUS_BUFFER) != 0)
 				{
-					hc->ehci_urb_state = USBH_URB_STALL;
+//		 			PRINTF("ch_num=%u: EHCI_STATUS_BUFFER\n", hc->ch_num);
+					hc->ehci_urb_state = URB_STALL;
 				}
 				else if ((status & EHCI_STATUS_XACT_ERR) != 0)
 				{
+//		 			PRINTF("ch_num=%u: EHCI_STATUS_XACT_ERR, pktcnt=%u\n", hc->ch_num, (unsigned) pktcnt);
+//		 			printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, 32);
 					hc->ehci_urb_state = URB_NOTREADY;
-					hc->ehci_urb_state = USBH_URB_STALL;
+					hc->ehci_urb_state = URB_STALL;
 				}
 				else
 				{
-					hc->ehci_urb_state = USBH_URB_STALL;
+//		 			PRINTF("ch_num=%u: stall\n", hc->ch_num);
+					hc->ehci_urb_state = URB_STALL;
 				}
-
+	 			ghc = NULL;
 			}
 			else if ((status & EHCI_STATUS_ACTIVE) != 0)
 			{
-				continue;	/* обмен еще не закончился */
+				//continue;	/* обмен еще не закончился */
 			}
 			else
 			{
 
-//	 			if (hc->ep_is_in && hc->ep_type == EP_TYPE_INTR)
+//	 			PRINTF("ch_num=%u: ok\n", hc->ch_num);
+//	 			if (hc->ep_is_in && /* hc->ep_type == EP_TYPE_INTR */)
 //	 			{
 //	 				PRINTF("status=%02X ", status);
 //	 				printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, pktcnt);
 //	 			}
+
 				hc->xfer_buff += pktcnt;
 				hc->xfer_count += pktcnt;
 				// Transaction done
 	 			hc->ehci_urb_state = URB_DONE;
+	 			ghc = NULL;
 			}
  		}
 
@@ -661,7 +712,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = cpu_to_le32(0x01uL << 2);	// Clear Port Change Detect interrupt
  		unsigned long portsc = le32_to_cpu(hehci->portsc [WITHEHCIHW_EHCIPORT]);
-		//PRINTF("HAL_EHCI_IRQHandler: Port Change Detect, usbsts=%08lX, portsc=%08lX, ls=%lu, pe=%lu, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
+ 		const int pe = (portsc >> 2) & 0x01;
+//		PRINTF("HAL_EHCI_IRQHandler: Port Change Detect, usbsts=%08lX, portsc=%08lX, ls=%lu, pe=%lu, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
  		// PORTSC[0]=00001002 - on disconnect
  		// PORTSC[0]=00001803 - on connect
 // 		unsigned i;
@@ -681,13 +733,13 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
  		if ((portsc & EHCI_PORTSC_CCS) != 0)
  		{
- 			//PRINTF("Device Connect handler\n");
+// 			PRINTF("Device Connect handler, portsc=%08lX\n", portsc);
 			HAL_EHCI_PortEnabled_Callback(hehci);
  			HAL_EHCI_Connect_Callback(hehci);
  		}
  		else
  		{
- 			//PRINTF("Device Disconnect handler\n");
+// 			PRINTF("Device Disconnect handler, portsc=%08lX\n", portsc);
 			HAL_EHCI_Disconnect_Callback(hehci);
  		}
 	}
@@ -762,6 +814,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	hehci->portsc = (__IO uint32_t*) (opregspacebase + 0x0044);
 	hehci->configFlag = (__IO uint32_t*) (opregspacebase + 0x0040);
 
+	//PRINTF("HAL_EHCI_Init: NPORTS=%u\n", hehci->nports);
 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
 	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
 	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
@@ -792,12 +845,20 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	// reset to actually become complete.
 	// Опять задержка
 	(void) EHCIx->USBCMD;
+
+	USBH_POSTRESET_INIT();
+
+#if WITHUSBHOST_HIGHSPEEDULPI
+	//ulpi_chip_debug();
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+
+
 	// wait for the halted bit to become set
 	// Ждем пока бит Halted не будет выставлен
 	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
 		;
 	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
-	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
+	// Замечу, что все мои дескрипторы и элементы очереди выровнены на границу 128 байт
 
 	// Disable interrupts
 	// Отключаем прерывания
@@ -805,7 +866,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	EHCIx->USBINTR = 0;
 
 	/* подготовка кольцевого списка QH */
-	for (i = 0; i < ARRAY_SIZE(hehci->asynclisthead); ++i)
+	for (i = 0; i < ARRAY_SIZE(hehci->asynclisthead); ++ i)
 	{
 		asynclist_item(& hehci->asynclisthead[i],
 				ehci_link_qhv(
@@ -813,16 +874,15 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 								% ARRAY_SIZE(hehci->asynclisthead)]), i == 0);
 	}
 	/* подготовка списка dts */
-	for (i = 0; i < ARRAY_SIZE(hehci->qtds); ++i)
+	for (i = 0; i < ARRAY_SIZE(hehci->qtds); ++ i)
 	{
-		//memset(& qtds [i], 0xFF, sizeof qtds [i]);
+		//memset(& hehci->qtds [i], 0xFF, sizeof hehci->qtds [i]);
 		hehci->qtds[i].status = EHCI_STATUS_HALTED;
 	}
 	/* подготовка списка QH для periodic frame list */
-	for (i = 0; i < ARRAY_SIZE(hehci->itdsarray); ++i)
+	for (i = 0; i < ARRAY_SIZE(hehci->itdsarray); ++ i)
 	{
-		asynclist_item(& hehci->itdsarray[i],
-				EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
+		asynclist_item(& hehci->itdsarray[i], EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
 	}
 
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
@@ -860,9 +920,16 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	EHCIx->CTRLDSSEGMENT = cpu_to_le32(0);
 	EHCIx->USBSTS = ~ 0uL;	// Clear status
 
+	// Expected results (STM32MP1):
+	//	1 HAL_EHCI_Init: PORTSC=00002000
+	//	2 HAL_EHCI_Init: PORTSC=00000000
+	//	3 HAL_EHCI_Init: PORTSC=00001000
+
+	//PRINTF("1 HAL_EHCI_Init: PORTSC=%08lX @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	/* Route all ports to EHCI controller */
 	*hehci->configFlag = EHCI_CONFIGFLAG_CF;
 	(void) *hehci->configFlag;
+	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08lX\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
 
 	/* Enable power to all ports */
 	unsigned porti = WITHEHCIHW_EHCIPORT;
@@ -880,8 +947,8 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	/* Wait 20ms after potentially enabling power to a port */
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
+	//PRINTF("3 HAL_EHCI_Init: PORTSC=%08lX\n", hehci->portsc [WITHEHCIHW_EHCIPORT]);
 
-#if defined (USB1HSFSP2_BASE)
 	// OHCI init
 
 	if (hehci->ohci != NULL)
@@ -895,14 +962,15 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 		unsigned long PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
 
-		PRINTF("OHCI: HcCommandStatus=%08lX\n", le32_to_cpu(hehci->ohci->HcCommandStatus));
-		PRINTF("OHCI: HcRevision=%08lX\n", le32_to_cpu(hehci->ohci->HcRevision));
-		PRINTF("OHCI: HcControl=%08lX\n", le32_to_cpu(hehci->ohci->HcControl));
-		PRINTF("OHCI: HcFmInterval=%08lX\n", le32_to_cpu(hehci->ohci->HcFmInterval));
-		PRINTF("OHCI: HcRhDescriptorA=%08lX\n", le32_to_cpu(hehci->ohci->HcRhDescriptorA));
-		PRINTF("OHCI: HcRhDescriptorB=%08lX\n", le32_to_cpu(hehci->ohci->HcRhDescriptorB));
-		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
-		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
+//		PRINTF("OHCI: HcCommandStatus=%08lX\n", le32_to_cpu(hehci->ohci->HcCommandStatus));
+//		PRINTF("OHCI: HcRevision=%08lX\n", le32_to_cpu(hehci->ohci->HcRevision));
+//		PRINTF("OHCI: HcControl=%08lX\n", le32_to_cpu(hehci->ohci->HcControl));
+//		PRINTF("OHCI: HcFmInterval=%08lX\n", le32_to_cpu(hehci->ohci->HcFmInterval));
+//		PRINTF("OHCI: HcRhDescriptorA=%08lX\n", le32_to_cpu(hehci->ohci->HcRhDescriptorA));
+//		PRINTF("OHCI: HcRhDescriptorB=%08lX\n", le32_to_cpu(hehci->ohci->HcRhDescriptorB));
+
+//		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
+//		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
 
 
 		hehci->ohci->HcRhPortStatus[0] = cpu_to_le32(0x01ul << 8); // PortPowerStatus
@@ -912,12 +980,9 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		hehci->ohci->HcRhPortStatus[0] = cpu_to_le32(0x01ul << 0); // PortEnableStatus
 //		hehci->ohci->HcRhPortStatus[1] = cpu_to_le32(0x01ul << 0); // PortEnableStatus
 
-		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
-		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
+//		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
+//		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
 	}
-
-
-#endif /* defined (USB1HSFSP2_BASE) */
 
 	return HAL_OK;
 }
@@ -941,9 +1006,265 @@ void USBH_EHCI_IRQHandler(void)
 	HAL_EHCI_IRQHandler(& hehci_USB);
 }
 
+
+#if WITHUSBHOST_HIGHSPEEDULPI
+#if CPUSTYLE_XC7Z && defined (WITHUSBHW_EHCI)
+// https://xilinx.github.io/embeddedsw.github.io/usbps/doc/html/api/xusbps__hw_8h.html
+
+//	USB ULPI Viewport Register (ULPIVIEW) bit positions.
+#define XUSBPS_ULPIVIEW_DATWR_MASK   	0x000000FF	// 	ULPI Data Write. More...
+#define	XUSBPS_ULPIVIEW_DATWR_SHIFT		0
+#define XUSBPS_ULPIVIEW_DATRD_MASK   	0x0000FF00	// 	ULPI Data Read. More...
+#define XUSBPS_ULPIVIEW_DATRD_SHIFT	   	8			// 	ULPI Data Address. More...
+#define XUSBPS_ULPIVIEW_ADDR_MASK   	0x00FF0000	// 	ULPI Data Address. More...
+#define XUSBPS_ULPIVIEW_ADDR_SHIFT	   	16			// 	ULPI Data Address. More...
+#define XUSBPS_ULPIVIEW_PORT_MASK   	0x07000000	// 	ULPI Port Number. More...
+#define XUSBPS_ULPIVIEW_SS_MASK   		0x08000000	// 	ULPI Synchronous State. More...
+#define XUSBPS_ULPIVIEW_RW_MASK   		0x20000000	// 	ULPI Read/Write Control. More...
+#define XUSBPS_ULPIVIEW_RUN_MASK   		0x40000000	// 	ULPI Run. More...
+#define XUSBPS_ULPIVIEW_WU_MASK   		0x80000000	// 	ULPI Wakeup. More...
+
+static void ulpi_reg_write(uint_fast8_t addr, uint_fast8_t data)
+{
+	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+
+	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK | XUSBPS_ULPIVIEW_RUN_MASK | XUSBPS_ULPIVIEW_RW_MASK)) |
+			XUSBPS_ULPIVIEW_RW_MASK | 	// Select write direction
+			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
+			(((uint_fast32_t) data << XUSBPS_ULPIVIEW_DATWR_SHIFT) & XUSBPS_ULPIVIEW_DATWR_MASK) |
+			0;
+
+	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
+
+	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
+		;
+}
+
+static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
+{
+	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+
+	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK | XUSBPS_ULPIVIEW_RUN_MASK | XUSBPS_ULPIVIEW_RW_MASK)) |
+			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
+			0;
+
+	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
+
+	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
+		;
+
+	return (USBx->ULPIVIEW & XUSBPS_ULPIVIEW_DATRD_MASK) >> XUSBPS_ULPIVIEW_DATRD_SHIFT;
+}
+#endif /* CPUSTYLE_XC7Z */
+
+void ulpi_chip_initialize(void)
+{
+	//return;
+	// USB3340
+	ulpi_reg_read(0x16);	/* Scratch Register - dummy read */
+
+	// Address = 00h (read only) Vendor ID Low = 0x24
+	// Address = 01h (read only) Vendor ID High = 0x04
+	// Address = 02h (read only) Product ID Low = 0x09
+	// Address = 03h (read only)  Product ID High = 0x00
+	const uint_fast8_t v0 = ulpi_reg_read(0x00);
+	const uint_fast8_t v1 = ulpi_reg_read(0x01);
+	const uint_fast8_t v2 = ulpi_reg_read(0x02);
+	const uint_fast8_t v3 = ulpi_reg_read(0x03);
+	const uint_fast16_t vid = v1 * 256 + v0;
+	const uint_fast16_t pid = v3 * 256 + v2;
+	PRINTF("ulpi_chip_initialize: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
+
+	ulpi_reg_write(0x16, 0xE5);	/* Scratch Register - dummy read */
+
+//	if (vid != 0x0424 || pid != 0x0009)
+//		return;
+
+	//	7.1.1.5 Function Control
+	//	Address = 04-06h (read), 04h (write), 05h (set), 06h (clear)
+	//ulpi_reg_write(0x06, 0x03);	/* Function Control - XcvrSelect[1:0] = 00 00b: Enables HS transceiver */
+
+}
+
+void ulpi_chip_sethost(uint_fast8_t state)
+{
+	// USB3340
+	return;
+
+	// Address = 00h (read only) Vendor ID Low = 0x24
+	// Address = 01h (read only) Vendor ID High = 0x04
+	// Address = 02h (read only) Product ID Low = 0x09
+	// Address = 03h (read only)  Product ID High = 0x00
+	const uint_fast8_t v0 = ulpi_reg_read(0x00);
+	const uint_fast8_t v1 = ulpi_reg_read(0x01);
+	const uint_fast8_t v2 = ulpi_reg_read(0x02);
+	const uint_fast8_t v3 = ulpi_reg_read(0x03);
+	const uint_fast16_t vid = v1 * 256 + v0;
+	const uint_fast16_t pid = v3 * 256 + v2;
+	//PRINTF("ulpi_chip_sethost: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
+
+	if (vid != 0x0424 || pid != 0x0009)
+		return;
+
+	//	7.1.1.7 OTG Control
+	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear
+	// 7.1.2.1 Carkit Control
+	// Address = 19-1Bh (read), 19h (write), 1Ah (set), 1Bh (clear)
+
+	if (state)
+	{
+		// Tie ID down
+		ulpi_reg_write(0x0C, (0x01 << 0));	// Clear IdPullup bit
+		ulpi_reg_write(0x1A, (0x01 << 1));	// Set IdGndDrv bit
+	}
+	else
+	{
+		// Tie ID up
+		ulpi_reg_write(0x1B, (0x01 << 1));	// Clear IdGndDrv bit
+		ulpi_reg_write(0x0B, (0x01 << 0));	// Set IdPullup bit
+	}
+	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
+}
+
+void ulpi_chip_debug(void)
+{
+	PRINTF("sts=%08lX, portsc=%08lX\n", EHCIxToUSBx(WITHUSBHW_EHCI)->ISR, EHCIxToUSBx(WITHUSBHW_EHCI)->PORTSCR1);
+	return;
+	PRINTF("Function Control (0x04): %02X\n", 	ulpi_reg_read(0x04));
+	PRINTF("Interface Control (0x07): %02X\n", 	ulpi_reg_read(0x07));
+	PRINTF("OTG Control (0x0A): %02X\n", 		ulpi_reg_read(0x0A));
+	PRINTF("USB Interrupt Enable Rising  (0x0D): %02X\n", ulpi_reg_read(0x0D));
+	PRINTF("USB Interrupt Enable Falling  (0x10): %02X\n", ulpi_reg_read(0x10));
+	PRINTF("USB Interrupt Status  (0x13): %02X\n", ulpi_reg_read(0x13));
+	PRINTF("USB Interrupt Latch  (0x14): %02X\n", ulpi_reg_read(0x14));
+	PRINTF("Debug  (0x15): %02X\n", ulpi_reg_read(0x15));
+	PRINTF("Scratch Register  (0x16): %02X\n", ulpi_reg_read(0x16));
+	PRINTF("Carkit Control  (0x19): %02X\n", ulpi_reg_read(0x19));
+	PRINTF("Carkit Interrupt Enable  (0x1D): %02X\n", ulpi_reg_read(0x1D));
+	PRINTF("Carkit Interrupt Status  (0x20): %02X\n", ulpi_reg_read(0x20));
+	PRINTF("Carkit Interrupt Latch  (0x21): %02X\n", ulpi_reg_read(0x21));
+	PRINTF("HS Compensation Register  (0x31): %02X\n", ulpi_reg_read(0x31));
+	PRINTF("USB-IF Charger Detection  (0x32): %02X\n", ulpi_reg_read(0x32));
+	PRINTF("Headset Audio Mode  (0x32): %02X\n", ulpi_reg_read(0x33));
+}
+
+void ulpi_chip_vbuson(uint_fast8_t state)
+{
+	return;
+	// USB3340
+
+	// Address = 00h (read only) Vendor ID Low = 0x24
+	// Address = 01h (read only) Vendor ID High = 0x04
+	// Address = 02h (read only) Product ID Low = 0x09
+	// Address = 03h (read only)  Product ID High = 0x00
+	const uint_fast8_t v0 = ulpi_reg_read(0x00);
+	const uint_fast8_t v1 = ulpi_reg_read(0x01);
+	const uint_fast8_t v2 = ulpi_reg_read(0x02);
+	const uint_fast8_t v3 = ulpi_reg_read(0x03);
+	const uint_fast16_t vid = v1 * 256 + v0;
+	const uint_fast16_t pid = v3 * 256 + v2;
+	//PRINTF("ulpi_chip_vbuson: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
+
+//	if (vid != 0x0424 || pid != 0x0009)
+//		return;
+
+	//	7.1.1.7 OTG Control
+	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear)
+	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
+	if (state)
+		ulpi_reg_write(0x0B, (0x01 << 6));	// Set DrvVbusExternal bit
+	else
+		ulpi_reg_write(0x0C, (0x01 << 6));	// Clear DrvVbusExternal bit
+	PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
+
+}
+
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
-#if CPUSTYLE_STM32MP1
+#if CPUSTYPE_ALLWNT113
+
+//	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
+
+	/* Off bootloader USB */
+	if (0)
+	{
+		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~  (0x01uL << 24);	// USBOTG0_RST
+
+		CCU->USB0_CLK_REG &= ~  (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
+	}
+
+	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
+	{
+		// Turn off USBOTG0
+		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 8);	// USBOTG0_GATING
+
+		// Enable
+		CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
+
+		CCU->USB_BGR_REG |= (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG |= (0x01uL << 20);	// USBEHCI0_RST
+
+		CCU->USB_BGR_REG |= (0x01uL << 0);	// USBOHCI0_GATING
+		CCU->USB_BGR_REG |= (0x01uL << 4);	// USBEHCI0_GATING
+
+
+		// OHCI0 12M Source Select
+		CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
+			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+			0;
+
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+	}
+	else
+	{
+		CCU->USB1_CLK_REG |= (0x01uL << 31);	// USB1_CLKEN
+		CCU->USB1_CLK_REG |= (0x01uL << 30);	// USBPHY1_RSTN
+
+		CCU->USB_BGR_REG |= (0x01uL << 17);	// USBOHCI1_RST
+		CCU->USB_BGR_REG |= (0x01uL << 21);	// USBEHCI1_RST
+
+		CCU->USB_BGR_REG |= (0x01uL << 1);	// USBOHCI1_GATING
+		CCU->USB_BGR_REG |= (0x01uL << 5);	// USBEHCI1_GATING
+
+		// OHCI0 12M Source Select
+		CCU->USB1_CLK_REG = (CCU->USB1_CLK_REG & ~ (0x03 << 24)) |
+			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+			0;
+
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+	}
+
+
+	#if WITHUSBHOST_HIGHSPEEDPHYC
+
+		USB1_TypeDef * USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+
+		USBx->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
+		USBx->USB_CTRL |=
+			(1uL << 11) |	// 1: Use INCR16 when appropriate
+			(1uL << 10) |	// 1: Use INCR8 when appropriate
+			(1uL << 9) |	// 1: Use INCR4 when appropriate
+			(1uL << 8) |	// 1: Start INCRx burst only on burst x-align address Note: This bit must enable if any bit of bit[11:9] is enabled
+			0;
+
+		USBx->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
+
+	#endif /* WITHUSBHOST_HIGHSPEEDPHYC */
+
+#elif CPUSTYLE_STM32MP1
 
 	USBD_EHCI_INITIALIZE();
 	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_USBHEN;
@@ -976,37 +1297,66 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 #elif CPUSTYLE_XC7Z
 
-		if (WITHUSBHW_HOST == EHCI0)
+		XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+		enum {  SRCSEL_SHIFT = 4 };
+		const unsigned long SRCSEL_MASK = (0x07uL << SRCSEL_SHIFT);
+		if (WITHUSBHW_EHCI == EHCI0)
 		{
-			enum { usbIX = 0; };
+			enum { usbIX = 0 };
+			//PRINTF("HAL_EHCI_MspInit: EHCI0\n");
 
-			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ (0x07uL << 4)) |
-				(0x04uL << 4) |	// SRCSEL
+			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
+
+			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
+				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
 				0;
 			(void) SCLR->USB0_CLK_CTRL;
+
+	#if WITHUSBHOST_HIGHSPEEDULPI
+			ulpi_chip_initialize();
+			ulpi_chip_sethost(1);
+			TARGET_USBFS_VBUSON_SET(1);
+			//ulpi_chip_debug();
+	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 
 			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
+
+			//USBH_POSTRESET_INIT();
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
 		}
-		else if (WITHUSBHW_HOST == EHCI1)
+		else if (WITHUSBHW_EHCI == EHCI1)
 		{
-			enum { usbIX = 1; };
+			enum { usbIX = 1 };
+			//PRINTF("HAL_EHCI_MspInit: EHCI1\n");
 
-			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ (0x07uL << 4)) |
-				(0x04uL << 4) |	// SRCSEL
+			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB1_CPU_1XCLKACT
+
+			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ SRCSEL_MASK) |
+				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
 				0;
 			(void) SCLR->USB1_CLK_CTRL;
+
+	#if WITHUSBHOST_HIGHSPEEDULPI
+			ulpi_chip_initialize();
+			ulpi_chip_sethost(1);
+			TARGET_USBFS_VBUSON_SET(1);
+			//ulpi_chip_debug();
+	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 
 			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
+
+			//USBH_POSTRESET_INIT();
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
@@ -1026,7 +1376,44 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
-#if CPUSTYLE_STM32MP1
+#if CPUSTYPE_ALLWNT113
+
+	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
+	{
+		ASSERT(0);					/* тут нет EHCI */
+
+		CCU->USB_BGR_REG &= ~ (0x01uL << 0);	// USBOHCI0_GATING
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_disable_handler(USB0_OHCI_IRQn);
+		arm_hardware_disable_handler(USB0_EHCI_IRQn);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+		CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
+		//CCU->USB_BGR_REG &= ~ (0x01uL << 8);	// USBOTG0_GATING
+		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
+
+		CCU->USB0_CLK_REG &= ~ (0x01uL << 30);	// USBPHY0_RSTN
+		CCU->USB0_CLK_REG &= ~ (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+	}
+	else
+	{
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_disable_handler(USB1_OHCI_IRQn);
+		arm_hardware_disable_handler(USB1_EHCI_IRQn);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+		CCU->USB_BGR_REG &= ~ (0x01uL << 1);	// USBOHCI1_GATING
+		CCU->USB_BGR_REG &= ~ (0x01uL << 5);	// USBEHCI1_GATING
+		CCU->USB_BGR_REG &= ~ (0x01uL << 17);	// USBOHCI1_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 21);	// USBEHCI1_RST
+
+		CCU->USB1_CLK_REG &= ~ (0x01uL << 30);	// USBPHY1_RSTN
+		CCU->USB1_CLK_REG &= ~ (0x01uL << 31);	// USB1_CLKEN
+	}
+
+#elif CPUSTYLE_STM32MP1
 
 #if WITHEHCIHWSOFTSPOLL == 0
 	arm_hardware_disable_handler(USBH_OHCI_IRQn);
@@ -1047,9 +1434,9 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 
 #elif CPUSTYLE_XC7Z
 
-		if (WITHUSBHW_HOST == EHCI0)
+		if (WITHUSBHW_EHCI == EHCI0)
 		{
-			enum { usbIX = 0; };
+			enum { usbIX = 0 };
 
 			arm_hardware_disable_handler(USB0_IRQn);
 
@@ -1057,9 +1444,9 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 			(void) SCLR->USB_RST_CTRL;
 
 		}
-		else if (WITHUSBHW_HOST == EHCI1)
+		else if (WITHUSBHW_EHCI == EHCI1)
 		{
-			enum { usbIX = 1; };
+			enum { usbIX = 1 };
 
 			arm_hardware_disable_handler(USB1_IRQn);
 
@@ -1107,7 +1494,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
   	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
  		;
 
-#if 1
+#if ! WITHEHCIHWSOFTSPOLL
  	EHCIx->USBINTR |=
  			INTR_IOAA |	// Interrupt on ASync Advance Enable
 			INTR_HSE |	// Host System Error Interrupt Enable
@@ -1116,7 +1503,9 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 			INTR_ERROR |	// USB Error Interrupt Enable
 			INTR_USBINT |	// USB Interrupt Enable
 			0;
-#endif
+#else/* ! WITHEHCIHWSOFTSPOLL */
+ 	EHCIx->USBINTR = 0;
+#endif /* ! WITHEHCIHWSOFTSPOLL */
 
 	__HAL_LOCK(hehci);
 	__HAL_EHCI_ENABLE(hehci);
@@ -1281,6 +1670,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		ASSERT(0);
 		break;
 	}
+
+	ghc = hc;
 
 	hc->xfer_buff = pbuff;
 	hc->xfer_len = length;
@@ -1576,10 +1967,10 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  * @retval URB state
  *          This parameter can be one of the these values:
  *            @arg URB_IDLE
- *            @arg URB_DONE
- *            @arg URB_NOTREADY
+ *            @arg URB_DONE - nex state
+ *            @arg URB_NOTREADY = USBH_URB_NOTREADY = end waiting
  *            @arg URB_NYET
- *            @arg URB_ERROR
+ *            @arg URB_ERROR - USBH_URB_ERROR = end waiting
  *            @arg URB_STALL
  */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
@@ -1742,23 +2133,45 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 	const unsigned long ccs = (portsc & EHCI_PORTSC_CCS);
 	const unsigned long line = EHCI_PORTSC_LINE_STATUS(portsc);
 	const unsigned long ped = (portsc & EHCI_PORTSC_PED) != 0;
+#if CPUSTYLE_XC7Z
+	// Use XUSBPS_PORTSCR1
+	switch ((portsc >> 26) & 0x03)	// PORTSCR_PSPD
+	{
+	case 0x00:
+		speed = USBH_SPEED_FULL;
+		PRINTF("speed=USBH_SPEED_FULL, portsc=%08lX\n", portsc);
+		break;
+	case 0x01:
+		speed = USBH_SPEED_LOW;
+		PRINTF("speed=USBH_SPEED_LOW, portsc=%08lX\n", portsc);
+		break;
+	case 0x02:
+		speed = USBH_SPEED_HIGH;
+		PRINTF("speed=USBH_SPEED_HIGH, portsc=%08lX\n", portsc);
+		break;
+	case 0x03:
+		speed = USBH_SPEED_HIGH;
+		PRINTF("speed=not connected, portsc=%08lX\n", portsc);
+		break;
+	}
+#else /* CPUSTYLE_XC7Z */
 	if ( ! ccs)
 	{
 		/* Port not connected */
 		//speed = USB_SPEED_NONE;
-		PRINTF("speed = USB_SPEED_NONE\n");
+		//PRINTF("speed=USB_SPEED_NONE, portsc=%08lX\n");
 	}
 	else if (line == EHCI_PORTSC_LINE_STATUS_LOW)
 	{
 		/* Detected as low-speed */
 		speed = USBH_SPEED_LOW;
-		PRINTF("speed = USB_SPEED_LOW\n");
+		//PRINTF("speed=USB_SPEED_LOW, portsc=%08lX\n", portsc);
 	}
 	else if (ped)
 	{
 		/* Port already enabled: must be high-speed */
 		speed = USBH_SPEED_HIGH;
-		PRINTF("speed = USB_SPEED_HIGH\n");
+		//PRINTF("speed=USB_SPEED_HIGH, portsc=%08lX\n", portsc);
 	}
 	else
 	{
@@ -1766,7 +2179,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		 * full-speed or high-speed; we can't yet tell.
 		 */
 		speed = USBH_SPEED_FULL;
-		PRINTF("speed = USB_SPEED_FULL\n");
+		//PRINTF("speed=USB_SPEED_FULL, portsc=%08lX\n", portsc);
 	}
 
 	if (0 && speed != USBH_SPEED_HIGH)
@@ -1783,6 +2196,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
 		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
 	}
+#endif /* CPUSTYLE_XC7Z */
 	//PRINTF("USBH_LL_GetSpeed: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
 	return speed;
 }
@@ -1803,7 +2217,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	//
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
-	//PRINTF("USBH_LL_ResetPort2: 1 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+//	PRINTF("USBH_LL_ResetPort2: 1 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, hehci->portsc [WITHEHCIHW_EHCIPORT]);
 
 	if (resetIsActive)
 	{
@@ -1825,9 +2239,11 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 
  		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
  		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
+#if CPUSTYLE_XC7Z
+		local_delay_ms(1000);
+		//HAL_Delay(5);
+#endif /* CPUSTYLE_XC7Z */
 	}
-	//local_delay_ms(1000);
-	//HAL_Delay(5);
 	//PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	//PRINTF("USBH_LL_ResetPort2: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
 
@@ -2016,36 +2432,6 @@ USBH_StatusTypeDef USBH_LL_Stop(USBH_HandleTypeDef *phost)
 	usb_status = USBH_Get_USB_Status(hal_status);
 
 	return usb_status;
-}
-
-/*
- * user callback definition
-*/
-void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
-{
-
-	/* USER CODE BEGIN CALL_BACK_1 */
-	switch(id)
-	{
-	case HOST_USER_SELECT_CONFIGURATION:
-		break;
-
-	case HOST_USER_DISCONNECTION:
-		Appli_state = APPLICATION_DISCONNECT;
-		break;
-
-	case HOST_USER_CLASS_ACTIVE:
-		Appli_state = APPLICATION_READY;
-		break;
-
-	case HOST_USER_CONNECTION:
-		Appli_state = APPLICATION_START;
-		break;
-
-	default:
-		break;
-	}
-	/* USER CODE END CALL_BACK_1 */
 }
 
 void MX_USB_HOST_Init(void)

@@ -67,11 +67,18 @@ enum {
 	WINDOW_POSITION_FULLSCREEN
 };
 
+// выравнивание заголовка окна, по умолчанию - слева
+typedef enum {
+	TITLE_ALIGNMENT_LEFT,
+	TITLE_ALIGNMENT_RIGHT,
+	TITLE_ALIGNMENT_CENTER
+} title_align_t;
+
 enum {
-	NAME_ARRAY_SIZE = 30,
+	NAME_ARRAY_SIZE = 40,
 	TEXT_ARRAY_SIZE = 50,
 	MENU_ARRAY_SIZE = 50,
-	GUI_ELEMENTS_ARRAY_SIZE = 54
+	GUI_ELEMENTS_ARRAY_SIZE = 60
 };
 
 typedef struct {
@@ -95,7 +102,7 @@ typedef struct {
 	uint8_t state;
 	uint8_t parent;
 	uint8_t visible;
-//	UB_Font * font;
+	UB_Font * font;
 	char name [NAME_ARRAY_SIZE];
 	uint8_t index;
 	record_t * record;
@@ -156,6 +163,14 @@ typedef struct {
 	uint16_t y;
 } label_t;
 
+typedef enum {
+	P_LBL_PARENT,
+	P_LBL_STATE,
+	P_LBL_IS_TRACKABLE,
+	P_LBL_VISIBLE,
+	P_LBL_TEXT,
+} label_parameters;
+
 typedef enum  {
 	ORIENTATION_VERTICAL,
 	ORIENTATION_HORIZONTAL
@@ -186,7 +201,7 @@ typedef enum {
 	ALIGN_CENTER_X 	= WITHGUIMAXX / 2,					// вертикальное выравнивание по центру экрана
 	ALIGN_RIGHT_X 	= ALIGN_LEFT_X + ALIGN_CENTER_X,	// вертикальное выравнивание по центру правой половины экрана
 	ALIGN_MANUAL 	= 0,								// ручное указание координат
-	ALIGN_Y 		= WITHGUIMAXY / 2					// горизонтальное выравнивание всегда по центру экрана
+	ALIGN_Y 	= WITHGUIMAXY / 2 - FOOTER_HEIGHT / 2	// горизонтальное выравнивание всегда по центру экрана
 } window_align_t;
 
 enum {
@@ -220,9 +235,10 @@ typedef struct {
 	const uint8_t window_id;		// в окне будут отображаться элементы с соответствующим полем for_window
 	uint8_t parent_id;				// UINT8_MAX - нет parent window
 	window_align_t align_mode;		// вертикаль выравнивания окна
-	char name[NAME_ARRAY_SIZE];		// текст, выводимый в заголовке окна
+	char title [NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
 	uint8_t is_close;				// разрешение или запрет вывода кнопки закрытия окна
 	void (*onVisibleProcess) (void);
+	char name [NAME_ARRAY_SIZE];	// имя окна
 //	*** служебные и автоматически заполняемые элементы структуры ***
 	button_t * bh_ptr;				// указатели на массивы оконных элементов
 	uint8_t bh_count;
@@ -245,6 +261,8 @@ typedef struct {
 	uint16_t draw_y1;				// доступной для вывода графики
 	uint16_t draw_x2;
 	uint16_t draw_y2;
+	title_align_t title_align;
+	uint8_t size_mode;
 } window_t;
 
 typedef struct {

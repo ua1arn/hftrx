@@ -65,6 +65,11 @@ void display2_fnvalue9(
 	dctx_t * pctx
 	);
 
+void display2_swrsts22(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
 
 // Вызывается из display2.c
 //Отображение многострочного меню для больших экранов (группы)

@@ -18,18 +18,15 @@
 #endif
 
 #define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 typedef enum
 {
-#if (SPISPEED400k) || defined (SPISPEED100k)
-	SPIC_SPEED100k,
 	SPIC_SPEED400k,
 	SPIC_SPEED1M,	/* 1 MHz для XPT2046 */
 	SPIC_SPEED4M,	/* 4 MHz для CS4272 */
 	SPIC_SPEED10M,	/* 10 MHz для ILI9341 */
 	SPIC_SPEED25M,	/* 25 MHz  */
-#endif /* (SPISPEED400k) || defined (SPISPEED100k) */
+
 	SPIC_SPEEDFAST,
 	SPIC_SPEEDUFAST,	// Скорость для загрузки FPGA
 #if WITHUSESDCARD
@@ -124,18 +121,26 @@ typedef struct spinlock_tag {
 #if WITHDEBUG
 	const char * file;
 	int line;
+	uint_fast8_t cpuid;
 #endif /* WITHDEBUG */
 } spinlock_t;
 
 #define SPINLOCK_t spinlock_t
-#define SPINLOCK_INIT { 0 }
-#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
+#if WITHDEBUG
+	#define SPINLOCK_INIT { 0, "z", 0, 255 }
+	#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; (p)->file = "n"; (p)->line = 0, (p)->cpuid = 255; } while (0)
+#else /* WITHDEBUG */
+	#define SPINLOCK_INIT { 0, }
+	#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
+#endif /* WITHDEBUG */
 
 #if WITHSMPSYSTEM
 	/* Пока привязка процессора обрабатывающего прерывание по приоритету. */
 	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
 	#define TARGETCPU_RT 	(1u << 1)		// CPU #1
 	#define TARGETCPU_OVRT 	(1u << 0)		// CPU #0
+	#define TARGETCPU_CPU0 (1u << 0)		// CPU #0
+	#define TARGETCPU_CPU1 (1u << 1)		// CPU #1
 
 	#define SPIN_LOCK(p) do { spin_lock(p, __FILE__, __LINE__); } while (0)
 	#define SPIN_UNLOCK(p) do { spin_unlock(p); } while (0)
@@ -157,6 +162,8 @@ typedef struct spinlock_tag {
 	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
 	#define TARGETCPU_RT (1u << 0)			// CPU #0
 	#define TARGETCPU_OVRT (1u << 0)		// CPU #0
+	#define TARGETCPU_CPU0 (1u << 0)		// CPU #0
+	#define TARGETCPU_CPU1 (1u << 0)		// CPU #0
 
 	#define SPIN_LOCK(p) do { (void) p; } while (0)
 	#define SPIN_UNLOCK(p) do { (void) p; } while (0)
@@ -201,6 +208,21 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
+#elif CPUSTYPE_ALLWNT113
+	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
+	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	//////__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -258,21 +280,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIGDTCM_MDMA		__attribute__((section(".ram_d1"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
-#elif (CPUSTYPE_ALLWNV3S)
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
-	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
-	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif (CPUSTYLE_STM32F7XX) && WITHSDRAMHW
 //	#pragma name .data .sdramdata
 //	#pragma name .bss .sdrambss
@@ -394,5 +401,104 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#error Undefined CPUSTYLE_xxxx
 
 #endif
+
+#if CPUSTYLE_STM32MP1
+	// Bootloader parameters
+	#if WITHSDRAMHW
+		#define BOOTLOADER_RAMAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
+		#define BOOTLOADER_RAMSIZE (256 * 1024uL * 1024uL)	// 256M
+		#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+		#define USBD_DFU_RAM_XFER_SIZE 4096
+		#define USBD_DFU_RAM_LOADER BOOTLOADER_RAMAREA//(BOOTLOADER_RAMAREA + 0x4000uL)	/* адрес ОЗУ, куда DFU загрузчиком помещаем первую страницу образа */
+	#endif /* WITHSDRAMHW */
+
+	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
+	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
+
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128
+	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "W25Q128JV"
+
+	#define APPFIRSTOFFSET	(4400uL + BOOTLOADER_SELFSIZE)		// начальное смещение расположения образа applicaton
+	#define USERFIRSTOFFSET	(APPFIRSTOFFSET + BOOTLOADER_FLASHSIZE)	// начальное смещение области для создания хранилища данных
+	//#define APPFIRSTSECTOR (APPFIRSTOFFSET / 512)
+
+	#define APPFIRSTSECTOR (0x84400  / 512)
+	#define FSBL1FIRSTSECTOR (0x04400 / 512)
+	#define FSBL2FIRSTSECTOR (0x44400  / 512)
+
+#endif /* CPUSTYLE_STM32MP1*/
+
+#if CPUSTYLE_R7S721
+	// Bootloader parameters
+	#define BOOTLOADER_RAMAREA Renesas_RZ_A1_ONCHIP_SRAM_BASE	/* адрес ОЗУ, куда перемещать application */
+	#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 2)	// 2M
+	#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+	#define USBD_DFU_RAM_XFER_SIZE 4096
+	#define USBD_DFU_RAM_LOADER BOOTLOADER_RAMAREA//(BOOTLOADER_RAMAREA + 0x4000uL)	/* адрес ОЗУ, куда DFU загрузчиком помещаем первую страницу образа */
+
+	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 2)	// 2M FLASH CHIP
+	#define BOOTLOADER_SELFBASE Renesas_RZ_A1_SPI_IO0	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128k
+
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128
+
+	//#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
+	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "M25P16"
+
+#endif /* CPUSTYLE_R7S721 */
+
+#if CPUSTYLE_XC7Z
+	// Bootloader parameters
+
+	#if WITHSDRAMHW
+		#define BOOTLOADER_RAMAREA SDRAM_BASE	/* адрес ОЗУ, куда перемещать application */
+		#define BOOTLOADER_RAMSIZE SDRAM_APERTURE_SIZE	// 255M
+		#define BOOTLOADER_RAMPAGESIZE	(16 * 1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+		#define USBD_DFU_RAM_XFER_SIZE 4096
+		#define USBD_DFU_RAM_LOADER BOOTLOADER_RAMAREA//(BOOTLOADER_RAMAREA + 0x4000uL)	/* адрес ОЗУ, куда DFU загрузчиком помещаем первую страницу образа */
+	#endif /* WITHSDRAMHW */
+
+	#define BOOTLOADER_FLASHSIZE (16 * 1024uL * 1024uL)	// 16M FLASH CHIP
+	#define BOOTLOADER_SELFBASE QSPI_LINEAR_BASE	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
+
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128
+
+	//#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
+
+	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "W25Q128JV"
+
+#endif /* CPUSTYLE_XC7Z */
+
+#if CPUSTYPE_ALLWNT113
+	// Bootloader parameters
+	#if WITHSDRAMHW
+		#define BOOTLOADER_RAMAREA DRAM_SPACE_BASE	/* адрес ОЗУ, куда перемещать application */
+		#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 128)	// 256M
+		#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+		#define USBD_DFU_RAM_XFER_SIZE 4096
+		#define USBD_DFU_RAM_LOADER BOOTLOADER_RAMAREA//(BOOTLOADER_RAMAREA + 0x4000uL)	/* адрес ОЗУ, куда DFU загрузчиком помещаем первую страницу образа */
+	#endif /* WITHSDRAMHW */
+
+	/* DFU device разделяет по приходящему адресу куда писать */
+	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
+	#define BOOTLOADER_SELFBASE 0xC0000000uL	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
+
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128
+
+	//#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
+
+	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "W25Q128JV"
+#endif /* CPUSTYPE_ALLWNT113 */
 
 #endif /* TAILDEFS_H_INCLUDED */

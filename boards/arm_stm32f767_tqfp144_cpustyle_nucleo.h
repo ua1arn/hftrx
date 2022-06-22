@@ -27,9 +27,6 @@
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 //#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 
-//#define WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1, SAI1_A - TX, SAI1_B - RX */
-//#define WITHCODEC1_SAI2_A_TX_B_RX_MASTER	1		/* Обмен с аудиокодеком через SAI2: SAI2_A - TX, SAI2_B - RX */
-
 #define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 #define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
@@ -37,6 +34,10 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
+#define WITHSAI1HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+#define WITHCODEC1_SAI1_A_TX_B_RX_MASTER	1		/* Обмен с аудиокодеком через SAI1: SAI1_A - TX, SAI1_B - RX */
+//#define WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1, SAI1_A - TX, SAI1_B - RX */
+//#define WITHCODEC1_SAI2_A_TX_B_RX_MASTER	1		/* Обмен с аудиокодеком через SAI2: SAI2_A - TX, SAI2_B - RX */
 
 #if 1
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */

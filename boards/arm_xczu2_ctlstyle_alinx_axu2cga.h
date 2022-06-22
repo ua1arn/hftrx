@@ -49,8 +49,8 @@
 	#define DDR_2XCLK_DIVISOR 3	// DDR_CLK_CTRL.DDR_2XCLK_DIVISOR value 355 MHz
 	#define DDR_3XCLK_DIVISOR 2	// DDR_CLK_CTRL.DDR_3XCLK_DIVISOR value (only even) 533 MHz
 
-	#define SCLR_UART_CLK_CTRL_DIVISOR 16
-	#define SCLR_SDIO_CLK_CTRL_DIVISOR 16
+	#define SCLR_UART_CLK_CTRL_DIVISOR_VALUE 16
+	#define SCLR_SDIO_CLK_CTRL_DIVISOR_VALUE 16
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -218,7 +218,7 @@
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHISBOOTLOADERFATFS 1
-	#define WITHISBOOTLOADERIMAGE "tc1_xczu2_app.xyl32"
+	#define WITHISBOOTLOADERIMAGE "tc1_xc7z020_app_xyl32.bin"
 
 #else /* WITHISBOOTLOADER */
 
@@ -232,7 +232,6 @@
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
-	#define CODEC_TYPE_TLV320AIC23B_USE_32BIT	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
@@ -258,9 +257,6 @@
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 32		// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
-
-	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
-	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */

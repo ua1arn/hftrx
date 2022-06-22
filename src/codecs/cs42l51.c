@@ -31,7 +31,14 @@ void cs42l51_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPIEXT16
+	#if WITHSPILOWSUPPORTT
+		// Работа совместно с фоновым обменом SPI по прерываниям
+		uint8_t txbuf [2];
+
+		USBD_poke_u16_BE(txbuf, fulldata);
+		prog_spi_io(target, SPIC_SPEEDFAST, CS42L51_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0);
+
+	#elif WITHSPIEXT16
 
 		hardware_spi_connect_b16(SPIC_SPEEDFAST, CS42L51_SPIMODE);
 		prog_select(target);	/* start sending data to target chip */
@@ -73,7 +80,7 @@ static void cs42l51_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
-static void cs42l51_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+static void cs42l51_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
 }
 
@@ -93,6 +100,12 @@ static void cs42l51_stop(void)
 #endif /* CODEC_TYPE_CS42L51_MASTER */
 }
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t cs42l51_clocksneed(void)
+{
+	return 0;
+}
+
 const codec1if_t *
 board_getaudiocodecif(void)
 {
@@ -102,6 +115,7 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
+		cs42l51_clocksneed.
 		cs42l51_stop,
 		cs42l51_initialize_fullduplex,
 		cs42l51_setvolume,		/* Установка громкости на наушники */

@@ -20,7 +20,7 @@
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
@@ -42,7 +42,7 @@
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
-//#define WITHETHHW 1	/* Hardware Ethernet controller */
+#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 
 #if WITHISBOOTLOADER
@@ -75,7 +75,7 @@
 	//#define USB_OTG_FS                   USB2_OTG_FS
 
 	//#define WITHUSBHW_HOST		USB_OTG_HS
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+	#define WITHUSBHOST_HIGHSPEEDULPI	1
 	//#define WITHUSBHOST_DMAENABLE 1
 
 
@@ -124,9 +124,9 @@
 #if 0
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
-	#define WITHUSBHW_HOST		EHCI0
+	#define WITHUSBHW_EHCI		EHCI0
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port.
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+	#define WITHUSBHOST_HIGHSPEEDULPI	1
 	//#define WITHUSBHOST_DMAENABLE 1	// not need for EHCI
 #endif
 
@@ -221,6 +221,16 @@
 
 #endif
 
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102)
+
+	#define BOARD_ILI2102_INT_PIN 	64
+	#define BOARD_ILI2102_RESET_PIN 65
+
+	#define BOARD_ILI2102_RESET_SET(v) do { if (v) xc7z_writepin(BOARD_ILI2102_RESET_PIN, 1); else xc7z_writepin(BOARD_ILI2102_RESET_PIN, 0);  } while (0)
+	#define BOARD_ILI2102_INT_SET(v) do { if (v) xc7z_writepin(BOARD_ILI2102_INT_PIN, 1); else xc7z_writepin(BOARD_ILI2102_INT_PIN, 0); } while (0)
+
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102) */
+
 #if WITHCPUTEMPERATURE
 	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
 #endif /* WITHCPUTEMPERATURE */
@@ -306,18 +316,6 @@
 		arm_hardware_piob_updown(0, 1uL << 14); \
 	} while (0)
 #endif /* WITHI2S2HW */
-
-	// для предотвращения треска от оставшегося инициализированным кодека
-	#define I2S2HW_POOLDOWN() do { \
-		arm_hardware_piob_inputs(1uL << 12); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(0, 1uL << 12); \
-		arm_hardware_piob_inputs(1uL << 13); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_updown(0, 1uL << 13); \
-		arm_hardware_piob_inputs(1uL << 15); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(0, 1uL << 15); \
-		arm_hardware_piob_inputs(1uL << 14); /* PB14 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_piob_updown(0, 1uL << 14); \
-	} while (0)
 
 #if WITHSAI1HW
 	/*
@@ -552,8 +550,6 @@
 	#define HARDWARE_GET_TXDISABLE() (0) //((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
 	#define TXDISABLE_INITIALIZE() \
 		do { \
-			arm_hardware_piod_inputs(TXDISABLE_BIT_TXDISABLE); \
-			arm_hardware_piod_updown(0, TXDISABLE_BIT_TXDISABLE); \
 		} while (0)
 	// ---
 
@@ -568,10 +564,6 @@
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
 		do { \
-			arm_hardware_piod_inputs(PTT_BIT_PTT); \
-			arm_hardware_piod_updown(PTT_BIT_PTT, 0); \
-			arm_hardware_piod_inputs(PTT2_BIT_PTT); \
-			arm_hardware_piod_updown(PTT2_BIT_PTT, 0); \
 		} while (0)
 	// ---
 
@@ -622,7 +614,15 @@
 
 	#define targetnvram		TARGET_NVRAM_MIO	// nvram FM25L256
 
-	#define SPI_CS_SET(v)	xc7z_writepin(v, 0);
+	/* Select specified chip. */
+	#define SPI_CS_ASSERT(target)	do { \
+		xc7z_writepin((target), 0); \
+	} while (0)
+
+	/* Unelect specified chip. */
+	#define SPI_CS_DEASSERT(target)	do { \
+		xc7z_writepin((target), 1); \
+	} while (0)
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
@@ -729,7 +729,11 @@
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { i2chw_initialize(); } while (0)
+	#define	TWIHARD_INITIALIZE() do { \
+		/*gpio_peripherial(TARGET_TWI_TWD_MIO, pinmode);*/	/*  PS_MIO43_501 SDA */ \
+		/*gpio_peripherial(TARGET_TWI_TWCK_MIO, pinmode);*/	/*  PS_MIO42_501 SCL */ \
+		/* i2chw_initialize(); */ \
+	} while (0)
 
 
 #endif // WITHTWISW
@@ -958,25 +962,6 @@
 	} while (0)
 #endif /* WITHLTDCHW */
 
-	#if WITHSDRAMHW
-		// Bootloader parameters
-		#define BOOTLOADER_RAMAREA SDRAM_BASE	/* адрес ОЗУ, куда перемещать application */
-		#define BOOTLOADER_RAMSIZE SDRAM_APERTURE_SIZE	// 255M
-		#define BOOTLOADER_RAMPAGESIZE	(16 * 1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
-		#define USBD_DFU_RAM_XFER_SIZE 4096
-	#endif /* WITHSDRAMHW */
-
-	#define BOOTLOADER_FLASHSIZE (16 * 1024uL * 1024uL)	// 16M FLASH CHIP
-	#define BOOTLOADER_SELFBASE QSPI_LINEAR_BASE	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
-
-	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128
-
-	//#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
-
-	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
-	#define USBD_DFU_FLASHNAME "W25Q128JV"
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
 	#define SPDIF_MISO_BIT (1u << 9)	// PF9	QUADSPI_BK1_IO1
@@ -1063,12 +1048,11 @@
 	#define BOARD_USERBOOT_BIT	0//(1uL << 1)	/* PB1: ~USER_BOOT */
 	#define BOARD_IS_USERBOOT() 0//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
-		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
+		/*arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); */ /* set as input with pull-up */ \
 		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			I2S2HW_POOLDOWN(); \
 			/*BOARD_BLINK_INITIALIZE(); */\
 			HARDWARE_KBD_INITIALIZE(); \
 			HARDWARE_DAC_INITIALIZE(); \

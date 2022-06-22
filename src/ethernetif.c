@@ -16,10 +16,12 @@
   *
   ******************************************************************************
   */
-#if WITHETHHW
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+
+#if 0 //WITHETHHW
+
 #include "lwip/opt.h"
 #include "lwip/mem.h"
 #include "lwip/memp.h"
@@ -27,6 +29,7 @@
 #include "netif/ethernet.h"
 #include "netif/etharp.h"
 #include "lwip/ethip6.h"
+#include "lwip/ip.h"
 #include "ethernetif.h"
 //#include "lan8742.h"
 #include <string.h>
@@ -34,7 +37,186 @@
 /* Within 'USER CODE' section, code will be kept by default at each generation */
 /* USER CODE BEGIN 0 */
 
-#if defined (ETH) && WITHLWIP
+#if CPUSTYLE_XC7Z && WITHLWIP
+#warning Should be implemented for Zynq 7000
+
+#define GEM_MTU 1540
+
+
+
+typedef struct gembuf_tag
+{
+	LIST_ENTRY item;
+	struct pbuf *frame;
+} gembuf_t;
+
+
+static void gem_buffers_initialize(void)
+{
+
+}
+
+static struct netif gem_netif_data;
+
+
+/**
+ * This function should do the actual transmission of the packet. The packet is
+ * contained in the pbuf that is passed to the function. This pbuf
+ * might be chained.
+ *
+ * @param netif the lwip network interface structure for this ethernetif
+ * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
+ * @return ERR_OK if the packet could be sent
+ *         an err_t value if the packet couldn't be sent
+ *
+ * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
+ *       strange results. You might consider waiting for space in the DMA queue
+ *       to become availale since the stack doesn't retry to send a packet
+ *       dropped because of memory failure (except for the TCP timers).
+ */
+
+// Transceiving Ethernet packets
+static err_t gem_linkoutput_fn(struct netif *netif, struct pbuf *p)
+{
+#if 0
+	//PRINTF("gem_linkoutput_fn\n");
+    int i;
+    struct pbuf *q;
+    static char data [RNDIS_HEADER_SIZE + RNDIS_MTU + 14 + 4];
+    int size = 0;
+
+    for (i = 0; i < 200; i++)
+    {
+        if (gem_can_send()) break;
+        local_delay_ms(1);
+    }
+
+    if (!gem_can_send())
+    {
+		return ERR_MEM;
+    }
+
+	pbuf_header(p, - ETH_PAD_SIZE);
+    size = pbuf_copy_partial(p, data, sizeof data, 0);
+
+    gem_send(data, size);
+#endif
+    return ERR_OK;
+}
+
+
+static err_t gem_output_fn(struct netif *netif, struct pbuf *q, const ip4_addr_t *ipaddr)
+{
+	err_t e = etharp_output(netif, q, ipaddr);
+	if (e == ERR_OK)
+	{
+#if 0
+		gem_data_packet_t * hdr;
+		unsigned size = q->len;
+		// добавляем свои заголовки требуеющиеся для физического уповня
+		  /* make room for RNDIS header - should not fail */
+		  if (pbuf_header(q, RNDIS_HEADER_SIZE) != 0) {
+		    /* bail out */
+		    LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS,
+		      ("gem_output_fn: could not allocate room for header.\n"));
+		    return ERR_BUF;
+		  }
+
+		  hdr = (gem_data_packet_t *) q->payload;
+		  memset(hdr, 0, RNDIS_HEADER_SIZE);
+		  hdr->MessageType = REMOTE_NDIS_PACKET_MSG;
+		  hdr->MessageLength = RNDIS_HEADER_SIZE + size;
+		  hdr->DataOffset = RNDIS_HEADER_SIZE - offsetof(gem_data_packet_t, DataOffset);
+		  hdr->DataLength = size;
+#endif
+	}
+	return e;
+}
+
+static err_t netif_init_cb(struct netif *netif)
+{
+	PRINTF("rndis netif_init_cb\n");
+	LWIP_ASSERT("netif != NULL", (netif != NULL));
+#if LWIP_NETIF_HOSTNAME
+	/* Initialize interface hostname */
+	netif->hostname = "storch";
+#endif /* LWIP_NETIF_HOSTNAME */
+	netif->mtu = GEM_MTU;
+	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+	netif->state = NULL;
+	netif->name[0] = 'E';
+	netif->name[1] = 'X';
+	netif->output = gem_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
+												// и слкдующий callback linkoutput не требовался бы вообще
+	netif->linkoutput = gem_linkoutput_fn;	// используется внутри etharp_output
+	return ERR_OK;
+}
+
+void init_netif(void)
+{
+#if 0
+	gem_buffers_initialize();
+	gem_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
+
+	static const  uint8_t hwaddrv [6]  = { HWADDR };
+
+	static ip_addr_t netmask;// [4] = NETMASK;
+	static ip_addr_t gateway;// [4] = GATEWAY;
+
+	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
+	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
+
+	static ip_addr_t vaddr;// [4]  = IPADDR;
+	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
+
+	struct netif  *netif = &gem_netif_data;
+	netif->hwaddr_len = 6;
+	memcpy(netif->hwaddr, hwaddrv, 6);
+
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
+	netif_set_default(netif);
+
+	while (!netif_is_up(netif))
+		;
+
+#if LWIP_AUTOIP
+	  autoip_start(netif);
+#endif /* LWIP_AUTOIP */
+
+#endif
+}
+
+
+
+// Receiving Ethernet packets
+// user-mode function
+void usb_polling(void)
+{
+#if 0
+	gembuf_t * p;
+	if (gem_buffers_ready_user(& p) != 0)
+	{
+		struct pbuf *frame = p->frame;
+		gem_buffers_release_user(p);
+
+		err_t e = ethernet_input(frame, & gem_netif_data);
+		if (e != ERR_OK)
+		{
+			  /* This means the pbuf is freed or consumed,
+			     so the caller doesn't have to free it again */
+		}
+
+	}
+#endif
+}
+
+struct netif  * getNetifData(void)
+{
+	return & gem_netif_data;
+}
+
+
+#elif defined (ETH) && WITHLWIP
 
 /* USER CODE END 0 */
 

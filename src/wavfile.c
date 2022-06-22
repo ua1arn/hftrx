@@ -56,6 +56,10 @@ http://ccrma.stanford.edu/courses/422/projects/WaveFormat/
 
  */
 
+unsigned audiorec_getwidth(void)
+{
+	return bytes_per_sample * 8;
+}
 
 static FRESULT write_little_endian(unsigned int word, int num_bytes)
 {
@@ -357,7 +361,7 @@ static uint_fast8_t wave_startrecording(void)
 	uint_fast8_t hour, minute, secounds;
 	static unsigned long ver;
 
-	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 
 	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
 		PSTR("rec_%lu_%04d-%02d-%02d_%02d%02d%02d_%lu.wav"),

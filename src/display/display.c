@@ -1788,6 +1788,43 @@ const videomode_t vdmode0 =
 	.fps = 60	/* frames per secound */
 };
 
+#elif LCDMODE_TV101WXM
+	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
+	// See also:
+	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
+	// https://github.com/tanish2k09/venom_kernel_aio_otfp/blob/master/drivers/input/touchscreen/mediatek/S3202/synaptics_dsx_i2c.c
+	// https://stash.phytec.com/projects/TIRTOS/repos/vps-phytec/raw/src/boards/src/bsp_boardPriv.h?at=e8b92520f41e6523301d120dae15db975ad6d0da
+	//https://code.ihub.org.cn/projects/825/repositories/874/file_edit_page?file_name=am57xx-idk-common.dtsi&path=arch%2Farm%2Fboot%2Fdts%2Fam57xx-idk-common.dtsi&rev=master
+const videomode_t vdmode0 =
+{
+	.width = 800,			/* LCD PIXEL WIDTH            */
+	.height = 1280,			/* LCD PIXEL HEIGHT           */
+	/**
+	  * @brief  AT070TN90 Timing
+	  * MODE=0 (DE)
+	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+	  * MODE=1 (SYNC)
+	  * When selected sync mode, de must be grounded.
+	  */
+	.hsync = 5,				/* Horizontal synchronization 1..40 */
+	.hbp = 11,				/* Horizontal back porch      */
+	.hfp = 16,				/* Horizontal front porch  16..354   */
+
+	.vsync = 5,				/* Vertical synchronization 1..20  */
+	.vbp = 11,					/* Vertical back porch        */
+	.vfp = 16,				/* Vertical front porch  7..147     */
+
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
+	//.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
+	.fps = 60	/* frames per secound */
+};
+
 #else
 	#error Unsupported LCDMODE_xxx
 
@@ -1981,3 +2018,113 @@ RGB_t hsv2rgb(HSV_t hsv)
     if (H < five_sixths_hue) return rgb(rising, low, high);
     return rgb(high, low, falling);
 }
+
+#if WITHRLEDECOMPRESS
+
+PACKEDCOLORMAIN_T convert_565_to_a888(uint16_t color)
+{
+	uint8_t b5 = (color & 0x1F) << 3;
+	uint8_t g6 = ((color & 0x7E0) >> 5) << 2;
+	uint8_t r5 = ((color & 0xF800) >> 11) << 3;
+
+	return TFTRGB(r5, g6, b5);
+}
+
+void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORMAIN_T bg_color)
+{
+	uint_fast32_t i = 0;
+	uint_fast16_t x1 = x, y1 = y;
+	uint_fast16_t transparent_color = 0, count = 0;
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	while (y1 < y + picture->height)
+	{
+		if ((int16_t)picture->data [i] < 0) // no repeats
+		{
+			count = (-(int16_t)picture->data [i]);
+			i ++;
+			for (uint_fast16_t p = 0; p < count; p ++)
+			{
+				PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+				colpip_point(fr, DIM_X, DIM_Y, x1, y1, picture->data [i] == 0 ? bg_color : point);
+
+				x1 ++;
+				if (x1 >= x + picture->width)
+				{
+					x1 = x;
+					y1 ++;
+				}
+				i ++;
+			}
+		}
+		else // repeats
+		{
+			count = ((int16_t)picture->data [i]);
+			i++;
+
+			PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+			for (uint_fast16_t p = 0; p < count; p ++)
+			{
+				colpip_point(fr, DIM_X, DIM_Y, x1, y1, picture->data [i] == 0 ? bg_color : point);
+
+				x1 ++;
+				if (x1 >= x + picture->width)
+				{
+					x1 = x;
+					y1 ++;
+				}
+			}
+			i ++;
+		}
+	}
+}
+
+void graw_picture_RLE_buf(PACKEDCOLORMAIN_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORMAIN_T bg_color)
+{
+	uint_fast32_t i = 0;
+	uint_fast16_t x1 = x, y1 = y;
+	uint_fast16_t transparent_color = 0, count = 0;
+
+	while (y1 < y + picture->height)
+	{
+		if ((int16_t)picture->data [i] < 0) // no repeats
+		{
+			count = (-(int16_t)picture->data [i]);
+			i ++;
+			for (uint_fast16_t p = 0; p < count; p++)
+			{
+				PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+				colpip_point(buf, dx, dy, x1, y1, picture->data [i] == transparent_color ? bg_color : point);
+
+				x1 ++;
+				if (x1 >= x + picture->width)
+				{
+					x1 = x;
+					y1 ++;
+				}
+				i ++;
+			}
+		}
+		else // repeats
+		{
+			count = ((int16_t)picture->data [i]);
+			i ++;
+
+			PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+			for (uint_fast16_t p = 0; p < count; p++)
+			{
+				colpip_point(buf, dx, dy, x1, y1, picture->data[i] == transparent_color ? bg_color : point);
+
+				x1 ++;
+				if (x1 >= x + picture->width)
+				{
+					x1 = x;
+					y1 ++;
+				}
+			}
+			i ++;
+		}
+	}
+}
+
+#endif /* WITHRLEDECOMPRESS */

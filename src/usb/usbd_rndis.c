@@ -272,7 +272,7 @@ static err_t netif_init_cb(struct netif *netif)
 void init_netif(void)
 {
 	rndis_buffers_initialize();
-	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправлять в LWIP
+	rndis_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 

@@ -25,8 +25,11 @@ const char * remove_start_line_spaces(const char * str);
 void reset_tracking(void);
 uint_fast8_t check_for_parent_window(void);
 void get_gui_tracking(int_fast16_t * x, int_fast16_t * y);
-void textfield_add_string(text_field_t * tf, char * str, COLORMAIN_T color);
+void textfield_add_string(text_field_t * tf, const char * str, COLORMAIN_T color);
 void textfield_update_size(text_field_t * tf);
+void textfield_clean(text_field_t * tf);
+void window_set_title_align(window_t * win, title_align_t align);
+void label_set_param(window_t * win, const char * lbl_name, label_parameters p, ...);
 
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...);
 wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action);

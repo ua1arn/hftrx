@@ -248,6 +248,12 @@ static USBH_StatusTypeDef DeInitStateMachine(USBH_HandleTypeDef *phost)
   phost->device.RstCnt = 0U;
   phost->device.EnumCnt = 0U;
 
+  /* Reset the device struct */
+  USBH_memset(& phost->device.CfgDesc_Raw, 0, sizeof (phost->device.CfgDesc_Raw));
+  USBH_memset(& phost->device.Data, 0, sizeof (phost->device.Data));
+  USBH_memset(& phost->device.DevDesc, 0, sizeof (phost->device.DevDesc));
+  USBH_memset(& phost->device.CfgDesc, 0, sizeof (phost->device.CfgDesc));
+
   phost->allocaddress = 0;
   phost->currentTarget = & phost->rootTarget;
   phost->rootTarget.dev_address = USBH_ADDRESS_DEFAULT;
@@ -544,7 +550,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 
       if (phost->device.PortEnabled == 1U)
       {
-        USBH_UsrLog("USB Device Reset Completed");
+        //USBH_UsrLog("USB Device Reset Completed");
         phost->device.RstCnt = 0U;
         phost->gState = HOST_DEV_ATTACHED_WAITSPEED;
         phost->hubInstances = 0;
@@ -603,7 +609,8 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
  	// С этого состояния начинается повторная енуменация для устройств на HUB
    case HOST_DEV_ATTACHED :
 
-      if (phost->pUser != NULL)
+       //USBH_UsrLog("USB device attached.");
+     if (phost->pUser != NULL)
       {
         phost->pUser(phost, HOST_USER_CONNECTION);
       }

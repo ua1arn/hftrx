@@ -55,30 +55,11 @@
 
 #elif CPUSTYLE_XC7Z
 
-	/* Macro to get variable aligned on 4-bytes, for __ICCARM__ the directive "#pragma data_alignment=4" must be used instead */
-	#if defined   (__GNUC__)        /* GNU Compiler */
-	  #ifndef __ALIGN_END
-		#define __ALIGN_END    __attribute__ ((aligned (64U)))
-		#define __ALIGN4k_END    __attribute__ ((aligned (64U)))
-	  #endif /* __ALIGN_END */
-	  #ifndef __ALIGN_BEGIN
-		#define __ALIGN_BEGIN
-		#define __ALIGN4k_BEGIN
-	  #endif /* __ALIGN_BEGIN */
-	#else
-	  #ifndef __ALIGN_END
-		#define __ALIGN_END
-		#define __ALIGN4k_END
-	  #endif /* __ALIGN_END */
-	  #ifndef __ALIGN_BEGIN
-		#if defined   (__CC_ARM)      /* ARM Compiler */
-			#define __ALIGN_BEGIN    __align(64U)
-			#define __ALIGN4k_BEGIN    __align(64U)
-		#elif defined (__ICCARM__)    /* IAR Compiler */
-		  #define __ALIGN_BEGIN
-		#endif /* __CC_ARM */
-	  #endif /* __ALIGN_BEGIN */
-	#endif /* __GNUC__ */
+	#include "zynq7000_hal.h"
+
+#elif CPUSTYPE_ALLWNT113
+
+	#include "allwnr_t113s3_hal.h"
 
 #endif
 
@@ -173,15 +154,9 @@
 
  void MX_USB_HOST_Process(void);
 
- /** Status of the application. */
- typedef enum {
-   APPLICATION_IDLE = 0,
-   APPLICATION_START,
-   APPLICATION_READY,
-   APPLICATION_DISCONNECT
- }ApplicationTypeDef;
+extern USBH_HandleTypeDef hUsbHostHS;
 
- extern USBH_HandleTypeDef hUsbHostHS;
+void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
 
 #ifdef __cplusplus
 }

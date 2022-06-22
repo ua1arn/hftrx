@@ -22,6 +22,7 @@
 
 // Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
 #define TLV320AIC23_SPIMODE		SPIC_MODE3	// Linux initialize in mode 0
+#define TLV320AIC23_SPISPEED 	SPIC_SPEEDFAST
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
@@ -40,9 +41,16 @@ static void tlv320aic23_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPIEXT16
+	#if WITHSPILOWSUPPORTT
+		// Работа совместно с фоновым обменом SPI по прерываниям
+		uint8_t txbuf [2];
 
-		hardware_spi_connect_b16(SPIC_SPEEDFAST, TLV320AIC23_SPIMODE);
+		USBD_poke_u16_BE(txbuf, fulldata);
+		prog_spi_io(target, TLV320AIC23_SPISPEED, TLV320AIC23_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+
+	#elif WITHSPIEXT16
+
+		hardware_spi_connect_b16(TLV320AIC23_SPISPEED, TLV320AIC23_SPIMODE);
 		prog_select(target);	/* start sending data to target chip */
 		hardware_spi_b16_p1(fulldata);
 		hardware_spi_complete_b16();
@@ -86,26 +94,47 @@ static void tlv320aic23_stop(void)
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
 }
 
-static void tlv320aic23_initialize_slave_fullduplex(void)
+static void tlv320aic23_initialize_fullduplex(void)
 {
+	PRINTF("tlv320aic23_initialize_fullduplex\n");
+#if CODEC_TYPE_TLV320AIC23B_MASTER
+	const uint_fast8_t master = 1;	// кодек формирует I2S синхронизацию
+#else /* CODEC_TYPE_TLV320AIC23B_MASTER */
+	const uint_fast8_t master = 0;
+#endif /* CODEC_TYPE_TLV320AIC23B_MASTER */
+	const unsigned long framebits = CODEC1_FRAMEBITS;
+
+#if CPUSTYPE_ALLWNT113
+	I2S1HW_UNINITIALIZE(1);
+#endif /* CPUSTYPE_ALLWNT113 */
+
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
 
-	tlv320aic23_setreg(TLV320AIC23_PWR,			
+	tlv320aic23_setreg(TLV320AIC23_PWR,
 		TLV320AIC23_CLK_OFF |	// Выключаем выход тактовой частоты (вывод 02) - можно использовать для тестирования - на незапрограммированной микросхеме сигнал присутствует
 		TLV320AIC23_OSC_OFF |	// Выключаем кварцевый генератор
 		//TLV320AIC23_OUT_OFF |	// Выключаем усилитель наушников
 		//TLV320AIC23_ADC_OFF |	// Выключаем АЦП
 		//TLV320AIC23_LINE_OFF |	// Выключаем Line input
 		0
-		);	
+		);
+
+	//	It is recommended that between changing any content of Digital Audio Interface or Sampling Control
+	//	Register that the active bit is reset then set.
+
+	unsigned iwl;
+	switch (WITHADAPTERCODEC1WIDTH)
+	{
+	default:
+	case 16: iwl = TLV320AIC23_IWL_16; break;
+	case 20: iwl = TLV320AIC23_IWL_20; break;
+	case 24: iwl = TLV320AIC23_IWL_24; break;
+	case 32: iwl = TLV320AIC23_IWL_32; break;
+	}
 
 	tlv320aic23_setreg(TLV320AIC23_DIGT_FMT, 
-		0 * TLV320AIC23_MS_MASTER | /* operate in slave mode */
-#if CODEC_TYPE_TLV320AIC23B_USE_32BIT
-		TLV320AIC23_IWL_32 |
-#else /* CODEC_TYPE_TLV320AIC23B_USE_32BIT */
-		TLV320AIC23_IWL_16 |
-#endif /* CODEC_TYPE_TLV320AIC23B_USE_32BIT */
+			master * TLV320AIC23_MS_MASTER | /* 0 - operate in slave mode */
+			iwl |
 #if CODEC1_FORMATI2S_PHILIPS
 		TLV320AIC23_FOR_I2S |
 #else /* CODEC1_FORMATI2S_PHILIPS */
@@ -151,17 +180,22 @@ static void tlv320aic23_initialize_slave_fullduplex(void)
 		TLV320AIC23_INSEL_MIC |			// Оцифровка с микрофона а не с line in
 		0
 		);
-
-	tlv320aic23_setreg(TLV320AIC23_DIGT, 
-		0 * TLV320AIC23_ADCHP_ONFF |			/* ФВЧ перед АЦП - наличие бита означает ВЫКЛЮЧИТЬ */
-		0
-		);
 #endif /* WITHDEBUG */
 
-	tlv320aic23_setreg(TLV320AIC23_ACTIVE, 
+	tlv320aic23_setreg(TLV320AIC23_DIGT,
+		0 * TLV320AIC23_ADCHP_ONFF |			/* ФВЧ перед АЦП - наличие бита означает ВЫКЛЮЧИТЬ */
+		0 * TLV320AIC23_DACM_MUTE | 			/* 0 - выключаем DAC MUTE */
+		0
+		);
+
+	tlv320aic23_setreg(TLV320AIC23_ACTIVE,
 		TLV320AIC23_ACT_ON |		// Digital Interface Activation
 		0
 		);
+
+#if CPUSTYPE_ALLWNT113
+	I2S1HW_INITIALIZE(1);
+#endif /* CPUSTYPE_ALLWNT113 */
 }
 
 /* Установка громкости на наушники */
@@ -178,7 +212,7 @@ static void tlv320aic23_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fa
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
-static void tlv320aic23_lineinput(uint_fast8_t v, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+static void tlv320aic23_lineinput(uint_fast8_t v, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
 	//debug_printf_P(PSTR("tlv320aic23_lineinput: glob_mik1level=%d\n"), mikegain);
 	(void) mikegain;	// управления усилением микрофона в этом кодеке нет
@@ -207,15 +241,11 @@ static void tlv320aic23_lineinput(uint_fast8_t v, uint_fast8_t mikebust20db, uin
 		tlv320aic23_setreg(TLV320AIC23_ANLG, 
 			TLV320AIC23_DAC_SELECTED |
 			//TLV320AIC23_MICM_MUTED |
-			(mikebust20db != 0) * TLV320AIC23_MICB_20DB |			// 1 - включение предусилителя микрофона
+			(mikeboost20db != 0) * TLV320AIC23_MICB_20DB |			// 1 - включение предусилителя микрофона
 			TLV320AIC23_INSEL_MIC |			// Оцифровка с микрофона а не с line in
 			0
 			);
 	}
-	tlv320aic23_setreg(TLV320AIC23_DIGT, 
-		0 * TLV320AIC23_ADCHP_ONFF |			/* ФВЧ перед АЦП - наличие бита означает ВЫКЛЮЧИТЬ */
-		0
-		);
 }
 
 
@@ -228,6 +258,11 @@ static void tlv320aic23_setprocparams(
 
 }
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t tlv320aic23_clocksneed(void)
+{
+	return 0;
+}
 
 const codec1if_t *
 board_getaudiocodecif(void)
@@ -238,8 +273,9 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
+		tlv320aic23_clocksneed,
 		tlv320aic23_stop,
-		tlv320aic23_initialize_slave_fullduplex,
+		tlv320aic23_initialize_fullduplex,	/* master или slave в зависимости от определения CODEC_TYPE_TLV320AIC23B_MASTER */
 		tlv320aic23_setvolume,	/* Установка громкости на наушники */
 		tlv320aic23_lineinput,	/* Выбор LINE IN как источника для АЦП вместо микрофона */
 		tlv320aic23_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */

@@ -8,14 +8,13 @@
 #include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
 
-#if WITHGUISTYLE_COMMON				// версия GUI для разрешения 800х480
-
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
 	WINDOW_MODES,					// переключение режимов работы, видов модуляции
 	WINDOW_AF,						// регулировка полосы пропускания фильтров выбранного режима
 	WINDOW_FREQ,					// прямой ввод частоты
 	WINDOW_MENU,					// системное меню
+	WINDOW_MENU_PARAMS,
 	WINDOW_UIF,						// быстрое меню по нажатию заранее определенных кнопок
 	WINDOW_SWR_SCANNER,				// сканер КСВ по диапазону
 	WINDOW_AUDIOSETTINGS,			// настройки аудиопараметров
@@ -36,29 +35,21 @@ enum {
 	WINDOW_GUI_SETTINGS,			// настройки интерфейса GUI
 #if WITHFT8
 	WINDOW_FT8,
+	WINDOW_FT8_BANDS,
+	WINDOW_FT8_SETTINGS,
 #endif /* #if WITHFT8 */
 	WINDOW_INFOBAR_MENU,
 	WINDOW_AF_EQ,
+	WINDOW_SHIFT,
+	WINDOW_TIME,
+	WINDOW_KBD,
+	WINDOW_KBD_TEST,
+#if WITHLWIP
+	WINDOW_PING,
+#endif /* WITHLWIP */
 
 	WINDOWS_COUNT
 };
-
-#elif WITHGUISTYLE_MINI 				// версия GUI для разрешения 480x272
-
-enum {
-	WINDOW_MAIN,
-	WINDOW_MAIN_MENU,
-	WINDOW_MENU,
-	WINDOW_BANDS,
-	WINDOW_FREQ,
-	WINDOW_RECEIVE,
-	WINDOW_MODES,
-	WINDOW_AF,
-
-	WINDOWS_COUNT
-};
-
-#endif /* WITHGUISTYLE_COMMON */
 
 void gui_user_actions_after_close_window(void);
 
@@ -115,6 +106,7 @@ typedef struct {
 
 typedef bp_var_t notch_var_t;
 typedef bp_var_t display_var_t;
+typedef bp_var_t power_var_t;
 
 typedef struct {
 	uint_fast16_t step;
@@ -131,8 +123,6 @@ enum {
 	freq_swipe_step_default = 3,
 	freq_swipe_enable_default = 0,
 	micprofile_default = UINT8_MAX,
-	tune_powerdown_enable_default = 1,
-	tune_powerdown_value_default = WITHPOWERTRIMATU
 };
 
 #if GUI_SHOW_INFOBAR
@@ -144,7 +134,10 @@ enum {
 	infobar_label_width = 100
 };
 
-#define INFOBAR_EMPTY 255
+#define INFOBAR_EMPTY 		0x80
+#define INFOBAR_NOACTION	0x40
+#define INFOBAR_NOACTION_POS	6
+#define INFOBAR_VALID_MASK	0x3F
 
 enum {
 	INFOBAR_AF,
@@ -156,6 +149,8 @@ enum {
 	INFOBAR_2ND_ENC_MENU,
 	INFOBAR_TX_POWER,
 	INFOBAR_AF_VOLUME,
+	INFOBAR_DNR,
+	INFOBAR_SPLIT,
 };
 
 #endif /* GUI_SHOW_INFOBAR */

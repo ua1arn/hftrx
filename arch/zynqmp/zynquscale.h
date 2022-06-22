@@ -104,11 +104,107 @@ typedef enum IRQn
 //#define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
 //#define GLOBAL_TIMER_BASE 0
 
-#define __CORTEX_A                    53U      /*!< Cortex-A# Core                              */
-#define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
-#define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
-#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
-#define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
+/* Verify the entries match the TRM offset to validate the struct */
+//STATIC_ASSERT(offsetof(XEMACPS_Registers, TIMER_STROBE_S) == 0x01C8);
+//STATIC_ASSERT(offsetof(XEMACPS_Registers, DESIGN_CFG5) == 0x0290);
+
+/* configuration for the PL310 L2 cache controller */
+#define PL310_BASE L2CACHE_BASE
+#define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
+#define PL310_DATA_RAM_LATENCY ((1uL << 8) | (2uL << 4) | (1uL << 0))
+
+/* Verify the entries match the TRM offset to validate the struct */
+//STATIC_ASSERT(offsetof(struct slcr_regs, SCL) == 0x0);
+//STATIC_ASSERT(offsetof(struct slcr_regs, DDRIOB_DCI_STATUS) == 0xb74);
+
+#define DDRC_CTRL                       0xF8006000L
+#define DDRC_MODE_STATUS                0xF8006054L
+
+/* GPIO registers are not indexed in a particularly convenient manner, but can be calculated
+ * via the GPIO bank */
+
+#define GPIO_MASK_DATA_BASE         (GPIO_BASE + 0x0)
+#define GPIO_MASK_DATA_LSW(bank)    (GPIO_MASK_DATA_BASE + (8 * (bank)))
+#define GPIO_MASK_DATA_MSW(bank)    (GPIO_MASK_DATA_BASE + 4 + (8 * (bank)))
+
+#define GPIO_DATA_BASE              (GPIO_BASE + 0x40)
+#define GPIO_DATA(bank)             (GPIO_DATA_BASE + (4 * (bank)))
+
+#define GPIO_DATA_RO_BASE           (GPIO_BASE + 0x60)
+#define GPIO_DATA_RO(bank)          (GPIO_DATA_RO_BASE + (4 * (bank)))
+
+#define GPIO_REGS(bank)             (GPIO_BASE + 0x204 + (0x40 * (bank)))
+#define GPIO_DIRM(bank)             (GPIO_REGS(bank) + 0x0)
+#define GPIO_OEN(bank)              (GPIO_REGS(bank) + 0x4)
+#define GPIO_INT_MASK(bank)         (GPIO_REGS(bank) + 0x8)
+#define GPIO_INT_EN(bank)           (GPIO_REGS(bank) + 0xC)
+#define GPIO_INT_DIS(bank)          (GPIO_REGS(bank) + 0x10)
+#define GPIO_INT_STAT(bank)         (GPIO_REGS(bank) + 0x14)
+#define GPIO_INT_TYPE(bank)         (GPIO_REGS(bank) + 0x18)
+#define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
+#define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
+
+/* memory addresses */
+/* assumes sram is mapped at 0 the first MB of sdram is covered by it */
+#define SDRAM_BASE          (0x00100000)
+#define SDRAM_APERTURE_SIZE (0x3fF00000)
+#define SRAM_BASE           (0x0)
+#define SRAM_BASE_HIGH      (0xfffc0000)
+#define SRAM_APERTURE_SIZE  (0x00040000)
+#define SRAM_SIZE           (0x00040000)
+
+/* hardware base addresses */
+#define UART0_BASE 	(0xFF000000uL)
+#define UART1_BASE 	(0xFF010000uL)
+#define USB0_BASE  	(0xFF9D0000uL)
+#define USB1_BASE  	(0xFF9E0000uL)
+#define I2C0_BASE  	(0xFF020000uL)
+#define I2C1_BASE  	(0xFF030000uL)
+#define SPI0_BASE  	(0xFF040000uL)
+#define SPI1_BASE  	(0xFF050000uL)
+#define CAN0_BASE  	(0xFF060000uL)
+#define CAN1_BASE  	(0xFF070000uL)
+#define GPIO_BASE  	(0xFF0A0000uL)
+#define GEM0_BASE  	(0xFF0B0000uL) // gigabit eth controller
+#define GEM1_BASE  	(0xFF0C0000uL) // ""
+#define GEM2_BASE  	(0xFF0D0000uL) // ""
+#define GEM3_BASE  	(0xFF0E0000uL) // ""
+#define QSPI_BASE  	(0xFF0F0000uL)
+#define SD0_BASE   	(0xFF160000uL)
+#define SD1_BASE   	(0xFF170000uL)
+#define RTC_BASE  	(0xFFA60000uL)
+#define XPPU_BASE  	(0xFF980000uL)
+#define XPPUsink_BASE  	(0xFF980000uL)
+#define CSU_BASE  	(0xFFCA0000uL)
+#define CSU_ROM_BASE  	(0xFFC40000uL)
+#define CSU_RAM_BASE  	(0xFFC00000uL)
+#define PMU_ROM_BASE  	(0xFFD00000uL)
+#define PMU_RAM_BASE  	(0xFFDC0000uL)
+//
+//#define SLCR_BASE  		(0xF8000000uL)
+//#define TTC0_BASE  		(0xF8001000uL)
+//#define TTC1_BASE  		(0xF8002000uL)
+//#define DMAC0_NS_BASE 	(0xF8004000uL)
+//#define DMAC0_S_BASE 	(0xF8003000uL)
+//#define SWDT_BASE  		(0xF8005000uL)
+//#define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
+
+#define QSPI_LINEAR_BASE  (0xfC000000uL)
+
+
+#define GTC 			((GTC_Registers *) GLOBAL_TIMER_BASE)
+#define SCLR 			((SLCR_Registers *) SLCR_BASE)
+#define SWDT            ((SWDT_Registers *) SWDT_BASE)
+#define UART0           ((XUARTPS_Registers *) UART0_BASE)
+#define UART1           ((XUARTPS_Registers *) UART1_BASE)
+#define SPI0            ((SPI_Registers *) SPI0_BASE)
+#define SPI1            ((SPI_Registers *) SPI1_BASE)
+#define SD0				((SD_Registers *) SD0_BASE)
+#define SD1				((SD_Registers *) SD1_BASE)
+#define XDCFG			((XDCFG_Registers *) XDCFG_BASE)
+#define XQSPIPS			((XQSPIPS_Registers *) QSPI_BASE)
+#define GEM0			((XEMACPS_Registers *) GEM0_BASE)
+#define GEM1			((XEMACPS_Registers *) GEM1_BASE)
 
 #define GIC_DISTRIBUTOR_BASE         0xF9000000                        /*!< (GIC DIST  ) Base Address */
 #define GIC_INTERFACE_BASE           0xF9002000                        /*!< (GIC CPU IF) Base Address */
@@ -117,6 +213,12 @@ typedef enum IRQn
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
 #define __CA_REV         		    0x0000    /*!< Core revision r0p0       */
+
+#define __CORTEX_A                    53U      /*!< Cortex-A# Core                              */
+#define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
+#define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
+#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
+#define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
 #include "core_ca.h"
 #include "system_zynqultrascale.h"
@@ -562,107 +664,6 @@ typedef struct xemacps_regs {
 	__IO uint32_t DESIGN_CFG5;		/**< 0x0290	Design Configuration 5 */
 } XEMACPS_Registers;
 
-/* Verify the entries match the TRM offset to validate the struct */
-//STATIC_ASSERT(offsetof(XEMACPS_Registers, TIMER_STROBE_S) == 0x01C8);
-//STATIC_ASSERT(offsetof(XEMACPS_Registers, DESIGN_CFG5) == 0x0290);
-
-/* configuration for the PL310 L2 cache controller */
-#define PL310_BASE L2CACHE_BASE
-#define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
-#define PL310_DATA_RAM_LATENCY ((1uL << 8) | (2uL << 4) | (1uL << 0))
-
-/* Verify the entries match the TRM offset to validate the struct */
-//STATIC_ASSERT(offsetof(struct slcr_regs, SCL) == 0x0);
-//STATIC_ASSERT(offsetof(struct slcr_regs, DDRIOB_DCI_STATUS) == 0xb74);
-
-#define DDRC_CTRL                       0xF8006000L
-#define DDRC_MODE_STATUS                0xF8006054L
-
-/* GPIO registers are not indexed in a particularly convenient manner, but can be calculated
- * via the GPIO bank */
-
-#define GPIO_MASK_DATA_BASE         (GPIO_BASE + 0x0)
-#define GPIO_MASK_DATA_LSW(bank)    (GPIO_MASK_DATA_BASE + (8 * (bank)))
-#define GPIO_MASK_DATA_MSW(bank)    (GPIO_MASK_DATA_BASE + 4 + (8 * (bank)))
-
-#define GPIO_DATA_BASE              (GPIO_BASE + 0x40)
-#define GPIO_DATA(bank)             (GPIO_DATA_BASE + (4 * (bank)))
-
-#define GPIO_DATA_RO_BASE           (GPIO_BASE + 0x60)
-#define GPIO_DATA_RO(bank)          (GPIO_DATA_RO_BASE + (4 * (bank)))
-
-#define GPIO_REGS(bank)             (GPIO_BASE + 0x204 + (0x40 * (bank)))
-#define GPIO_DIRM(bank)             (GPIO_REGS(bank) + 0x0)
-#define GPIO_OEN(bank)              (GPIO_REGS(bank) + 0x4)
-#define GPIO_INT_MASK(bank)         (GPIO_REGS(bank) + 0x8)
-#define GPIO_INT_EN(bank)           (GPIO_REGS(bank) + 0xC)
-#define GPIO_INT_DIS(bank)          (GPIO_REGS(bank) + 0x10)
-#define GPIO_INT_STAT(bank)         (GPIO_REGS(bank) + 0x14)
-#define GPIO_INT_TYPE(bank)         (GPIO_REGS(bank) + 0x18)
-#define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
-#define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
-
-/* memory addresses */
-/* assumes sram is mapped at 0 the first MB of sdram is covered by it */
-#define SDRAM_BASE          (0x00100000)
-#define SDRAM_APERTURE_SIZE (0x3fF00000)
-#define SRAM_BASE           (0x0)
-#define SRAM_BASE_HIGH      (0xfffc0000)
-#define SRAM_APERTURE_SIZE  (0x00040000)
-#define SRAM_SIZE           (0x00040000)
-
-/* hardware base addresses */
-#define UART0_BASE 	(0xFF000000uL)
-#define UART1_BASE 	(0xFF010000uL)
-#define USB0_BASE  	(0xFF9D0000uL)
-#define USB1_BASE  	(0xFF9E0000uL)
-#define I2C0_BASE  	(0xFF020000uL)
-#define I2C1_BASE  	(0xFF030000uL)
-#define SPI0_BASE  	(0xFF040000uL)
-#define SPI1_BASE  	(0xFF050000uL)
-#define CAN0_BASE  	(0xFF060000uL)
-#define CAN1_BASE  	(0xFF070000uL)
-#define GPIO_BASE  	(0xFF0A0000uL)
-#define GEM0_BASE  	(0xFF0B0000uL) // gigabit eth controller
-#define GEM1_BASE  	(0xFF0C0000uL) // ""
-#define GEM2_BASE  	(0xFF0D0000uL) // ""
-#define GEM3_BASE  	(0xFF0E0000uL) // ""
-#define QSPI_BASE  	(0xFF0F0000uL)
-#define SD0_BASE   	(0xFF160000uL)
-#define SD1_BASE   	(0xFF170000uL)
-#define RTC_BASE  	(0xFFA60000uL)
-#define XPPU_BASE  	(0xFF980000uL)
-#define XPPUsink_BASE  	(0xFF980000uL)
-#define CSU_BASE  	(0xFFCA0000uL)
-#define CSU_ROM_BASE  	(0xFFC40000uL)
-#define CSU_RAM_BASE  	(0xFFC00000uL)
-#define PMU_ROM_BASE  	(0xFFD00000uL)
-#define PMU_RAM_BASE  	(0xFFDC0000uL)
-//
-//#define SLCR_BASE  		(0xF8000000uL)
-//#define TTC0_BASE  		(0xF8001000uL)
-//#define TTC1_BASE  		(0xF8002000uL)
-//#define DMAC0_NS_BASE 	(0xF8004000uL)
-//#define DMAC0_S_BASE 	(0xF8003000uL)
-//#define SWDT_BASE  		(0xF8005000uL)
-//#define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
-
-#define QSPI_LINEAR_BASE  (0xfC000000uL)
-
-
-#define GTC 			((GTC_Registers *) GLOBAL_TIMER_BASE)
-#define SCLR 			((SLCR_Registers *) SLCR_BASE)
-#define SWDT            ((SWDT_Registers *) SWDT_BASE)
-#define UART0           ((XUARTPS_Registers *) UART0_BASE)
-#define UART1           ((XUARTPS_Registers *) UART1_BASE)
-#define SPI0            ((SPI_Registers *) SPI0_BASE)
-#define SPI1            ((SPI_Registers *) SPI1_BASE)
-#define SD0				((SD_Registers *) SD0_BASE)
-#define SD1				((SD_Registers *) SD1_BASE)
-#define XDCFG			((XDCFG_Registers *) XDCFG_BASE)
-#define XQSPIPS			((XQSPIPS_Registers *) QSPI_BASE)
-#define GEM0			((XEMACPS_Registers *) GEM0_BASE)
-#define GEM1			((XEMACPS_Registers *) GEM1_BASE)
 
 
 /** @addtogroup Exported_types

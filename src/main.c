@@ -19,6 +19,10 @@
 #include "audio.h"
 #include "codecs.h"
 
+#if WITHFT8
+	#include "ft8.h"
+#endif /* WITHFT8 */
+
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
@@ -29,98 +33,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
-
-#if WITHFT8
-
-#include "ft8.h"
-
-static const uint32_t ft8bufsize = ft8_sample_rate * ft8_length;
-static uint8_t fill_ft8_buf1 = 0, fill_ft8_buf2 = 0, ft8_enable = 0;
-static uint32_t bufind1 = 0, bufind2 = 0;
-
-void ft8_fill1(float sample)
-{
-	system_disableIRQ();
-	if (fill_ft8_buf1 && ft8_enable)
-	{
-		ASSERT(bufind1 < ft8bufsize);
-		ft8.rx_buf1 [bufind1] = sample;
-		bufind1 ++;
-		if (bufind1 >= ft8bufsize)
-		{
-			fill_ft8_buf1 = 0;
-			bufind1 = 0;
-			IRQ_SetPending(ft8_interrupt_decode1);
-		}
-	}
-	system_enableIRQ();
-}
-
-void ft8_fill2(float sample)
-{
-	system_disableIRQ();
-	if (fill_ft8_buf2 && ft8_enable)
-	{
-		ASSERT(bufind2 < ft8bufsize);
-		ft8.rx_buf2 [bufind2] = sample;
-		bufind2 ++;
-		if (bufind2 >= ft8bufsize)
-		{
-			fill_ft8_buf2 = 0;
-			bufind2 = 0;
-			IRQ_SetPending(ft8_interrupt_decode2);
-		}
-	}
-	system_enableIRQ();
-}
-
-void hamradio_ft8_start_fill(void)
-{
-	if (fill_ft8_buf1)
-	{
-		system_disableIRQ();
-		fill_ft8_buf2 = 1;
-		system_enableIRQ();
-//		PRINTF("ft8: start fill 2\n");
-	}
-	else
-	{
-		system_disableIRQ();
-		fill_ft8_buf1 = 1;
-		system_enableIRQ();
-//		PRINTF("ft8: start fill 1\n");
-	}
-}
-
-void hamradio_ft8_toggle_state(void)
-{
-	ft8_enable = ! ft8_enable;
-}
-
-uint8_t get_ft8_state(void)
-{
-	return ft8_enable;
-}
-
-void ft8_irqhandler_decode_buf1(void)
-{
-	ft8_decode(ft8.rx_buf1);
-	hamradio_gui_parse_ft8buf();
-}
-
-void ft8_irqhandler_decode_buf2(void)
-{
-	ft8_decode(ft8.rx_buf2);
-	hamradio_gui_parse_ft8buf();
-}
-
-void ft8_initialize(void)
-{
-	arm_hardware_set_handler_realtime(ft8_interrupt_decode1, ft8_irqhandler_decode_buf1);
-	arm_hardware_set_handler_realtime(ft8_interrupt_decode2, ft8_irqhandler_decode_buf2);
-}
-
-#endif /* WITHFT8 */
 
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
@@ -374,12 +286,12 @@ static uint_fast8_t getactualmainsubrx(void);
 
 #if WITHIF4DSP
 struct rxaproc_tag;
-static float32_t * afpnoproc(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static float32_t * afpcw(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static float32_t * afpcwtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static float32_t * afpssb(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static float32_t * afpssbtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static float32_t * afprtty(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static FLOAT_t * afpnoproc(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
+static FLOAT_t * afpcw(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
+static FLOAT_t * afpcwtx(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
+static FLOAT_t * afpssb(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
+static FLOAT_t * afpssbtx(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
+static FLOAT_t * afprtty(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
 #endif /* WITHIF4DSP */
 
 #if WITHCAT
@@ -404,9 +316,9 @@ enum
 	CAT_SM_INDEX,		// smanswer()
 	CAT_RA_INDEX,		// raanswer()
 	CAT_PA_INDEX,		// paanswer()
-#if WITHANTSELECT
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 	CAT_AN_INDEX,		// ananswer()
-#endif /* WITHANTSELECT */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	CAT_RM1_INDEX,		// rm1answer()
 	CAT_RM2_INDEX,		// rm2answer()
@@ -854,16 +766,36 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	#error WITHAGCMODExxxx undefined
 #endif
 
-#if WITHANTSELECT
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 	enum { NANTENNAS = 2 };		// выбираем одну из двух антенн
-#else /* WITHANTSELECT */
+#else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 	enum { NANTENNAS = 1 };		// eдинственная антенна
-#endif /* WITHANTSELECT */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 
-#if WITHANTSELECT
+#if WITHANTSELECTRX
 
 static const FLASHMEM struct {
-	uint_fast8_t code [2];	// RX/TX antenna
+	uint8_t code;
+	char label2 [3];
+}  antmodes [] =
+{
+	{	0,	"A1" },
+	{	1,	"A2" },
+};
+
+static const FLASHMEM struct {
+	uint8_t code;
+	char label2 [3];
+}  rxantmodes [] =
+{
+	{	0,	"  " },
+	{	1,	"RA" },
+};
+
+#elif WITHANTSELECT
+
+static const FLASHMEM struct {
+	uint8_t code [2];	// RX/TX antenna
 	char label5 [6];
 }  antmodes [] =
 {
@@ -878,12 +810,22 @@ static const FLASHMEM struct {
 #endif /* WITHTX */
 };
 
-#endif /* WITHANTSELECT */
+#elif WITHANTSELECT2
+
+static const FLASHMEM struct {
+	uint8_t code;
+	char label2 [3];
+}  antmodes [] =
+{
+	{	0,	"A1" },
+	{	1,	"A2" },
+};
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 
 #if WITHPOWERLPHP
 
 static const FLASHMEM struct {
-	uint_fast8_t code;
+	uint8_t code;
 	char label [5];
 }  pwrmodes [] =
 {
@@ -896,7 +838,7 @@ static const FLASHMEM struct {
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 
 static const FLASHMEM struct {
-	uint_fast8_t code;
+	uint8_t code;
 	char label [6];
 }  notchmodes [] =
 {
@@ -911,7 +853,7 @@ static const FLASHMEM struct {
 #if WITHUSEDUALWATCH
 
 static const FLASHMEM struct {
-	uint_fast8_t code;
+	uint8_t code;
 	char label [5];
 }  mainsubrxmodes [] =
 {
@@ -932,12 +874,12 @@ static const FLASHMEM struct {
 }  txaudiosrcs [] =
 {
 	{ BOARD_TXAUDIO_MIKE, 	"MIKE ", },
-#if WITHAFCODEC1HAVELINEINLEVEL
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	{ BOARD_TXAUDIO_LINE, 	"LINE ", },
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
-#if WITHUSBUAC
+#if WITHUSBUACOUT
 	{ BOARD_TXAUDIO_USB, 	"USB  ", },
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACOUT */
 	{ BOARD_TXAUDIO_2TONE, 	"2TONE", },
 	{ BOARD_TXAUDIO_NOISE, 	"NOISE", },
 	{ BOARD_TXAUDIO_1TONE, 	"1TONE", },
@@ -950,6 +892,7 @@ static const FLASHMEM struct {
 #define NOTCHMODE_COUNT (sizeof notchmodes / sizeof notchmodes [0])
 #define PAMPMODE_COUNT (sizeof pampmodes / sizeof pampmodes [0])
 #define ATTMODE_COUNT (sizeof attmodes / sizeof attmodes [0])
+#define RXANTMODE_COUNT (sizeof rxantmodes / sizeof rxantmodes [0])
 #define ANTMODE_COUNT (sizeof antmodes / sizeof antmodes [0])
 #define AGCMODE_COUNT (sizeof agcmodes / sizeof agcmodes [0])
 #define MAINSUBRXMODE_COUNT (sizeof mainsubrxmodes / sizeof mainsubrxmodes [0])
@@ -1078,7 +1021,7 @@ struct micprof_cell
 	uint_fast8_t clip;
 	uint_fast8_t agc;
 	uint_fast8_t agcgain;
-	uint_fast8_t mikebust20db;
+	uint_fast8_t mikeboost20db;
 	uint_fast8_t eq_enable;
 	uint8_t eq_params [HARDWARE_CODEC1_NPROCPARAMS];
 	uint_fast8_t cell_saved;
@@ -1086,7 +1029,7 @@ struct micprof_cell
 
 typedef struct micprof_cell	micprof_t;
 
-static micprof_t micprof_cells[NMICPROFCELLS];
+static micprof_t micprof_cells [NMICPROFCELLS];
 #endif /* WITHAFCODEC1HAVEPROC */
 
 static mikproc_t micprofiles [] =
@@ -1677,7 +1620,7 @@ struct modetempl
 	uint_fast8_t txaudio;			// источник звукового сигнала для данного режима
 	uint_fast8_t txaprofgp;		// группа профилей обработки звука
 	uint_fast8_t agcseti;			// параметры слухового приема
-	float32_t * (* afproc [2])(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
+	FLOAT_t * (* afproc [2])(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
 #else /* WITHIF4DSP */
 	uint_fast8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
@@ -1982,11 +1925,11 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_DIGI, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-	#if WITHUSBUAC
+	#if WITHUSBUACOUT
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
-	#else /* WITHUSBUAC */
+	#else /* WITHUSBUACOUT */
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
-	#endif /* WITHUSBUAC */
+	#endif /* WITHUSBUACOUT */
 		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
 		{ afpnoproc, afpnoproc, }, // afproc - сигнал не обрабатывается
@@ -2019,11 +1962,11 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-	#if WITHUSBUAC
+	#if WITHUSBUACOUT
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
-	#else /* WITHUSBUAC */
+	#else /* WITHUSBUACOUT */
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
-	#endif /* WITHUSBUAC */
+	#endif /* WITHUSBUACOUT */
 		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
 		{ afprtty, afpnoproc, }, // afproc
@@ -2091,11 +2034,11 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ DSPCTL_MODE_RX_ISB, DSPCTL_MODE_TX_ISB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_SSB, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-	#if WITHUSBUAC
+	#if WITHUSBUACOUT
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
-	#else /* WITHUSBUAC */
+	#else /* WITHUSBUACOUT */
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
-	#endif /* WITHUSBUAC */
+	#endif /* WITHUSBUACOUT */
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
 		{ afpcw, afpnoproc, }, // afproc
@@ -2234,11 +2177,18 @@ enum
 
 enum
 {
-	BANDGROUP_14MHZ,
-	BANDGROUP_28MHZ,
-	BANDGROUP_70MHZ,
-	BANDGROUP_144MHZ,
-	BANDGROUP_430MHZ,
+	BANDGROUP_1p8MHz,
+	BANDGROUP_3p5MHz,
+	BANDGROUP_7MHz,
+	BANDGROUP_10p1MHz,
+	BANDGROUP_14MHz,
+	BANDGROUP_18MHz,
+	BANDGROUP_21MHz,
+	BANDGROUP_24p8MHz,
+	BANDGROUP_28MHz,
+	BANDGROUP_70MHz,
+	BANDGROUP_144MHz,
+	BANDGROUP_430MHz,
 	//
 	BANDGROUP_COUNT			// Значение, используемое как признак отсутствия группировки диапазонов
 };
@@ -2246,7 +2196,14 @@ enum
 
 static const char * const bandlabels [BANDGROUP_COUNT] =
 {
+	"1.8",
+	"3.5",
+	"7  ",
+	"10 ",
 	"14 ",
+	"18 ",
+	"21 ",
+	"24 ",
 	"28 ",
 	"70 ",
 	"144",
@@ -2265,7 +2222,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 		uint32_t init;
 		uint8_t defsubmode_bandset;
 		uint8_t	bandgroup;
-		char label [8];
+		char label [9];
 	};
 
 	#define BMF(a) (a)		/* получение инициализационного элемента */
@@ -2278,7 +2235,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 		uint16_t init;
 		uint8_t 	defsubmode_bandset;
 		uint8_t	bandgroup;
-		char label[8];
+		char label[9];
 	};
 
 	#define BMF_SCALE	1000UL
@@ -2328,15 +2285,15 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	{ BMF(153000L - BANDPAD), 	BMF(279000L + BANDPAD), 	BMF(225000L), 		BANDMAPSUBMODE_AM | BANDSETF_ALL, BANDGROUP_COUNT, "LW", },				/*  */
 	{ BMF(530000L - BANDPAD), 	BMF(1611000L + BANDPAD), 	BMF(1440000L), 		BANDMAPSUBMODE_AM | BANDSETF_ALL, BANDGROUP_COUNT, "MW", },				/*  */
 	#endif
-	{ BMF(1810000L - BANDPAD), 	BMF(2000000L + BANDPAD), 	BMF(1810000L), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, BANDGROUP_COUNT, "1.8M"},			/* Ukrainian band from freq 1715 kHz */
-	{ BMF(3500000L - BANDPAD), 	BMF(3800000L + BANDPAD), 	BMF(3500000L),		BANDMAPSUBMODE_LSB | BANDSETF_HAM, BANDGROUP_COUNT, "3.5M", },			/*  */
+	{ BMF(1810000L - BANDPAD), 	BMF(2000000L + BANDPAD), 	BMF(1810000L), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, BANDGROUP_1p8MHz, "1.8M"},			/* Ukrainian band from freq 1715 kHz */
+	{ BMF(3500000L - BANDPAD), 	BMF(3800000L + BANDPAD), 	BMF(3500000L),		BANDMAPSUBMODE_LSB | BANDSETF_HAM, BANDGROUP_3p5MHz, "3.5M", },			/*  */
 #if 0
 	{ BMF(2535000L - BANDPAD), 	BMF(2900000L + BANDPAD), 	BMF(2535000L), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_COUNT, "", },				/* Old NEDRA stations band */
 #endif
 	{ BMF(3900000L), 			BMF(4000000L), 				BMF(3900000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_COUNT, "75m", },			/*  */
 	{ BMF(4750000L), 			BMF(5060000L), 				BMF(4750000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_COUNT, "", },				/*  */
 	/*
-		Частотный план диапазона 5 MHZ ( 60m )
+		Частотный план диапазона 5 MHz ( 60m )
 		Диапазон: 5351.5-5.366.5 khz
 		1. 5.351.5- CW -полоса 200 hz .
 		2. 5.354.0, 5.357.0, 5.360.0, 5.363.0 - ALL MODE полоса 2700 hz.
@@ -2345,39 +2302,40 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	*/
 	{ BMF(5298000L), 			BMF(5408000L), 				BMF(5351500L), 		BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	BANDGROUP_COUNT, "", },			/* 60-meters band */
 	{ BMF(5730000L), 			BMF(6295000L), 				BMF(5730000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, 	BANDGROUP_COUNT, "49m", },		/*  */
-	{ BMF(6890000L), 			BMF(6990000L), 				BMF(6890000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "", },			/*  */
-	{ BMF(7000000L - BANDPAD), 	BMF(7200000L + BANDPAD), 	BMF(7000000L), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, 		BANDGROUP_COUNT, "7M", },		/* top freq - 7300 in region-2 */
+	{ BMF(6890000L), 			BMF(6990000L), 				BMF(6890000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_3p5MHz, "3.5M", },			/*  */
+	{ BMF(7000000L - BANDPAD), 	BMF(7200000L + BANDPAD), 	BMF(7000000L), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, 		BANDGROUP_7MHz, "7M", },		/* top freq - 7300 in region-2 */
 	{ BMF(7200000L), 			BMF(7600000L), 				BMF(7200000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,		BANDGROUP_COUNT, "41m", },		/*  */
 	{ BMF(9250000L), 			BMF(9900000L), 				BMF(9250000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, 	BANDGROUP_COUNT, "31m", },		/*  */
-	{ BMF(10100000L - BANDPAD), BMF(10150000L + BANDPAD), 	BMF(10100000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	BANDGROUP_COUNT, "", },			/*  */
+	{ BMF(10100000L - BANDPAD), BMF(10150000L + BANDPAD), 	BMF(10100000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	BANDGROUP_10p1MHz, "10.1M", },			/*  */
 #if (TUNE_TOP) >= (19020000)
 	{ BMF(11500000L), 			BMF(12160000), 				BMF(11500000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "25m", },		/*  */
 	{ BMF(13570000L), 			BMF(13870000), 				BMF(13570000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "22m", },		/*  */
 
-	{ BMF(14000000L - BANDPAD), BMF(14105000L), 			BMF(14000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_14MHZ, "14M CW", },	/*  */
-	{ BMF(14105000L),			BMF(14350000L + BANDPAD),	BMF(14130000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_14MHZ, "14M SSB", },	/*  */
+	{ BMF(14000000L - BANDPAD), BMF(14105000L), 			BMF(14000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_14MHz, "14M CW", },	/*  */
+	{ BMF(14105000L),			BMF(14350000L + BANDPAD),	BMF(14130000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_14MHz, "14M SSB", },	/*  */
 
 	{ BMF(15030000L), 			BMF(15800000), 				BMF(15030000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "19m", },		/*  */
 	{ BMF(17480000L), 			BMF(17900000), 				BMF(17480000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "16m", },		/*  */
-	{ BMF(18068000L - BANDPAD), BMF(18168000L + BANDPAD), 	BMF(18068000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	BANDGROUP_COUNT, "", },			/*  */
+	{ BMF(18068000L - BANDPAD), BMF(18168000L + BANDPAD), 	BMF(18068000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	BANDGROUP_18MHz, "18M", },			/*  */
 	{ BMF(18900000L), 			BMF(19020000), 				BMF(18900000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "15m", },		/*  */
 #endif
 #if (TUNE_TOP) >= (21450000L + BANDPAD)
-	{ BMF(21000000L - BANDPAD), BMF(21450000L + BANDPAD), 	BMF(21000000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_COUNT, "21M", },		/*  */
+	{ BMF(21000000L - BANDPAD), BMF(21155000L), 			BMF(21000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_21MHz, "21M CW", },		/*  */
+	{ BMF(21155000L), 			BMF(21450000L + BANDPAD), 	BMF(21160000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_21MHz, "21M SSB", },		/*  */
 #endif
 #if (TUNE_TOP) >= (21850000L)
 	{ BMF(21450000L), 			BMF(21850000), 				BMF(21450000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "13m", },		/*  */
 #endif /* (TUNE_TOP) >= (21850000) */
 
 #if (TUNE_TOP) >= (29700000L + BANDPAD)
-	{ BMF(24890000L - BANDPAD), BMF(24990000L + BANDPAD), 	BMF(24890000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	BANDGROUP_COUNT, "", },			/*  */
+	{ BMF(24890000L - BANDPAD), BMF(24990000L + BANDPAD), 	BMF(24890000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	BANDGROUP_24p8MHz, "24M", },			/*  */
 	{ BMF(25670000L), 			BMF(26100000), 				BMF(25670000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "11m", },		/*  */
 	{ BMF(26965000L - BANDPAD), BMF(27405000L + BANDPAD), 	BMF(27120000L), 	BANDMAPSUBMODE_USB | BANDSETF_CB, 		BANDGROUP_COUNT, "CB", },		/* Citizens Band 26.9650 MHz to 27.4050 MHz (40 channels) */
 
 	/* next three sections - one band - "ten". */
-	{ BMF(28000000L - BANDPAD), BMF(28320000L), 			BMF(28000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_28MHZ, "28M CW", },	/* CW */
-	{ BMF(28320000L), 			BMF(29200000L), 			BMF(28500000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "28M SSB", },	/* SSB */
-	{ BMF(29200000L), 			BMF(29700000L + BANDPAD),	BMF(29600000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "28M FM", },	/* FM */
+	{ BMF(28000000L - BANDPAD), BMF(28320000L), 			BMF(28000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M CW", },	/* CW */
+	{ BMF(28320000L), 			BMF(29200000L), 			BMF(28500000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M SSB", },	/* SSB */
+	{ BMF(29200000L), 			BMF(29700000L + BANDPAD),	BMF(29600000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M FM", },	/* FM */
 #endif
 
 #if TUNE_6MBAND
@@ -2385,22 +2343,22 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 #endif /* TUNE_6MBAND */
 
 #if TUNE_4MBAND
-	{ BMF(70000000L - BANDPAD),	BMF(70050000L), 			BMF(70000000L), 	BANDMAPSUBMODE_CW | BANDSETF_4M, 		BANDGROUP_70MHZ, "70M CW", },			/* CW */
-	{ BMF(70050000L), 			BMF(70300000L), 			BMF(70050000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHZ, "70M SSB", },			/* SSB */
-	{ BMF(70300000L), 			BMF(70500000L + BANDPAD),	BMF(70300000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHZ, "70M FM", },			/* FM */
+	{ BMF(70000000L - BANDPAD),	BMF(70050000L), 			BMF(70000000L), 	BANDMAPSUBMODE_CW | BANDSETF_4M, 		BANDGROUP_70MHz, "70M CW", },			/* CW */
+	{ BMF(70050000L), 			BMF(70300000L), 			BMF(70050000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHz, "70M SSB", },			/* SSB */
+	{ BMF(70300000L), 			BMF(70500000L + BANDPAD),	BMF(70300000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHz, "70M FM", },			/* FM */
 #endif /* TUNE_4MBAND */
 
 #if TUNE_2MBAND
 	/* next three sections - one band - "2 meter". */
-	{ BMF(144000000L - BANDPAD),BMF(144200000), 			BMF(144050000L), 	BANDMAPSUBMODE_CW | BANDSETF_2M, 		BANDGROUP_144MHZ, "144M CW", },		/* CW */
-	{ BMF(144200000L), 			BMF(145000000L), 			BMF(144300000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHZ, "144M SSB", },		/* SSB */
-	{ BMF(144500000L), 			BMF(146000000L + BANDPAD),	BMF(145500000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHZ, "144M FM", },		/* FM */
+	{ BMF(144000000L - BANDPAD),BMF(144200000), 			BMF(144050000L), 	BANDMAPSUBMODE_CW | BANDSETF_2M, 		BANDGROUP_144MHz, "144M CW", },		/* CW */
+	{ BMF(144200000L), 			BMF(145000000L), 			BMF(144300000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHz, "144M SSB", },		/* SSB */
+	{ BMF(144500000L), 			BMF(146000000L + BANDPAD),	BMF(145500000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHz, "144M FM", },		/* FM */
 #endif /* TUNE_2MBAND */
 
 #if TUNE_07MBAND
 	/* next three sections - one band - "0.7 meter". */
-	{ BMF(430000000L - BANDPAD),BMF(432100000L), 			BMF(430050000L), 	BANDMAPSUBMODE_CW | BANDSETF_07M, 		BANDGROUP_430MHZ, "", },		/* CW */
-	{ BMF(432100000L),			BMF(440000000L + BANDPAD), 	BMF(432500000L), 	BANDMAPSUBMODE_USB | BANDSETF_07M, 		BANDGROUP_430MHZ, "", },		/* CW */
+	{ BMF(430000000L - BANDPAD),BMF(432100000L), 			BMF(430050000L), 	BANDMAPSUBMODE_CW | BANDSETF_07M, 		BANDGROUP_430MHz, "", },		/* CW */
+	{ BMF(432100000L),			BMF(440000000L + BANDPAD), 	BMF(432500000L), 	BANDMAPSUBMODE_USB | BANDSETF_07M, 		BANDGROUP_430MHz, "", },		/* CW */
 #endif /* TUNE_2MBAND */
 	/* далее никаких диапазонов добавлять нельзя - это служебные элементы и их порядок зависит от других частей пронграммы (band_up и band_down). */
 	{ BMF(TUNE_BOTTOM), 		BMF(BANDMIDDLE), 			BMF(4997000L), 		BANDMAPSUBMODE_USB | BANDSETF_ALL, 		BANDGROUP_COUNT, "", },			/* обзорный диапазон - HBANDS_COUNT should equal to this index */
@@ -2448,12 +2406,13 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	typedef uint_fast8_t vindex_t;
 
 #endif	/* WITHSWLMODE */
-	
+
+static vindex_t getfreqband(uint_fast32_t freq);
+
 /* получение индекса хранения VFO в памяти в зависимости от текущего режима расстройки
    - в режиме приема
 */
 static vindex_t 
-//NOINLINEAT
 getvfoindex(uint_fast8_t bi)
 {
 	ASSERT(bi < 2);
@@ -2746,7 +2705,7 @@ struct modeprops
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
 	 переменных в конфигурационном ОЗУ.
- Информация, сохраняемая для каждого диапазона */
+	Информация, сохраняемая для каждого диапазона */
 struct bandinfo
 {	
 	uint32_t freq;		/* рабочая частота */
@@ -2756,9 +2715,14 @@ struct bandinfo
 	uint8_t pamp;		/* режим УВЧ */
 #endif /* ! WITHONEATTONEAMP */
 	uint8_t att;		/* режим аттенюатора */
-#if WITHANTSELECT
+#if WITHANTSELECTRX
+	uint8_t rxant;		/* код выбора антенны (0/1) */
+	uint8_t ant;		/* признак включения приемной антенны */
+#elif WITHANTSELECT2
+	uint8_t ant;		/* антенна при ручном выборе */
+#elif WITHANTSELECT
 	uint8_t ant;		/* код выбора антенны (1T+1R, 2T+1R и так далее, не код антенны (0/1) */
-#endif /* WITHANTSELECT */
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 #if WITHAUTOTUNER
 	// todo: добавить учет включенной антенны
 	uint8_t tunercap;
@@ -2768,12 +2732,20 @@ struct bandinfo
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
 	uint8_t gzoomxpow2;	/* уменьшение отображаемого участка спектра */
-	uint8_t gtopdb;		/* нижний предел FFT */
-	uint8_t gbottomdb;	/* верхний предел FFT */
-	uint8_t gtopdbwf;		/* нижний предел FFT waterflow */
-	uint8_t gbottomdbwf;	/* верхний предел FFT waterflow */
+	uint8_t gtopdbspe;		/* нижний предел FFT */
+	uint8_t gbottomdbspe;	/* верхний предел FFT */
+	uint8_t gtopdbwfl;		/* нижний предел FFT waterflow */
+	uint8_t gbottomdbwfl;	/* верхний предел FFT waterflow */
 #endif /* WITHSPECTRUMWF */
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+
+/* структура - расположение байтов в конфигурационном ОЗУ.
+   bitfields нельзя использовать, так как всё это - только обозначения смещений
+	 переменных в конфигурационном ОЗУ.
+ 	 Информация, сохраняемая для группы диапазонов */
+struct bandgroup_tag {
+	uint8_t	band;		/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
@@ -2892,7 +2864,7 @@ struct nvmap
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
 	uint8_t gspecbeta100;	/* beta - парамеры видеофильтра спектра */
-	uint8_t gwtfbeta100;	/* beta - парамеры видеофильтра водопада */
+	uint8_t gwflbeta100;	/* beta - парамеры видеофильтра водопада */
 	uint8_t glvlgridstep;	/* Шаг сетки уровней в децибелах */
 
 #endif /* WITHSPECTRUMWF */
@@ -2912,6 +2884,9 @@ struct nvmap
 	uint8_t bandset2m;	/* используется ли диапазон 2 метра */
 #endif /* TUNE_2MBAND */
 
+#if WITHANTSELECT2
+	uint8_t gantmanual;		/* 0 - выбор антенны автоматический */
+#endif /* WITHANTSELECT2 */
 #if WITHSPLIT
 	uint8_t splitmode;		/* не-0, если работа с фиксированными ячейками (vfo/vfoa/vfob/mem) */
 	uint8_t vfoab;		/* 1, если работа с VFO B, 0 - с VFO A */
@@ -2967,7 +2942,7 @@ struct nvmap
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
 	#endif /* ! WITHPOTIFGAIN */
 	uint16_t glineamp;	// усиление с LINE IN
-	uint8_t gmikebust20db;	// предусилитель микрофона
+	uint8_t gmikeboost20db;	// предусилитель микрофона
 	uint8_t gmikeagc;	/* Включение программной АРУ перед модулятором */
 	uint8_t gmikeagcgain;	/* Максимальное усидение АРУ микрофона */
 	uint8_t gmikehclip;		/* Ограничитель */
@@ -3206,7 +3181,13 @@ filter_t fi_2p0_455 =
 	uint8_t gsubtonei;	// номер subtone
 	uint8_t gctssenable;	// разрешить формирование subtone
 #endif /* WITHSUBTONES */
-
+#if WITHTHERMOLEVEL
+	uint8_t gtempvmax;
+	uint8_t gheatprot;	/* защита от перегрева */
+#endif /* WITHTHERMOLEVEL */
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	uint8_t gswrprot;	/* защита от превышения КСВ */
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHTX */
 
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
@@ -3299,8 +3280,12 @@ filter_t fi_2p0_455 =
 
 	struct bandinfo bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
 #if	WITHDIRECTBANDS
-	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+	struct bandgroup_tag bandgroups [BANDGROUP_COUNT];
 #endif	/* WITHDIRECTBANDS */
+
+#if WITHANTSELECT2
+	uint8_t hffreqswitch; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
+#endif /* WITHANTSELECT2 */
 
 #if WITHTOUCHGUI
 	struct gui_nvram_t gui_nvram;
@@ -3325,28 +3310,30 @@ filter_t fi_2p0_455 =
 #define RMT_SPLITMODE_BASE offsetof(struct nvmap, splitmode)		/* (vfo/vfoa/vfob/mem) */
 #define RMT_VFOAB_BASE offsetof(struct nvmap, vfoab)		/* (vfoa/vfob) */
 #define RMT_MBAND_BASE offsetof(struct nvmap, gmband)		/* ячейка памяти фиксированных частот */
+#define RMT_ANTMANUAL_BASE offsetof(struct nvmap, gantmanual)		/* 0 - выбор антенны автоматический */
 
 #define RMT_MAINSUBRXMODE_BASE	offsetof(struct nvmap, mainsubrxmode)
 #define RMT_DATAMODE_BASE	offsetof(struct nvmap, gdatamode)
 
 
-#define RMT_NR_BASE(i)	offsetof(struct nvmap, modes[(i)].noisereduct)
-#define RMT_AGC_BASE(i)	offsetof(struct nvmap, modes[(i)].agc)
-#define RMT_FILTER_BASE(i)	offsetof(struct nvmap, modes[(i)].filter)
-#define RMT_STEP_BASE(i)	offsetof(struct nvmap, modes[(i)].step)
+#define RMT_NR_BASE(i)	offsetof(struct nvmap, modes [(i)].noisereduct)
+#define RMT_AGC_BASE(i)	offsetof(struct nvmap, modes [(i)].agc)
+#define RMT_FILTER_BASE(i)	offsetof(struct nvmap, modes [(i)].filter)
+#define RMT_STEP_BASE(i)	offsetof(struct nvmap, modes [(i)].step)
 
-#define RMT_TXPOWER_BASE(i)	offsetof(struct nvmap, modes[(i)].txpower)
-#define RMT_TXCOMPR_BASE(i)	offsetof(struct nvmap, modes[(i)].txcompr)
-#define RMT_TXAUDIO_BASE(i) offsetof(struct nvmap, modes[(i)].txaudio)
+#define RMT_TXPOWER_BASE(i)	offsetof(struct nvmap, modes [(i)].txpower)
+#define RMT_TXCOMPR_BASE(i)	offsetof(struct nvmap, modes [(i)].txcompr)
+#define RMT_TXAUDIO_BASE(i) offsetof(struct nvmap, modes [(i)].txaudio)
 #define RMT_TXAPROFIGLE_BASE(i) offsetof(struct nvmap, txaprofile[(i)])
 
-#define RMT_BANDGROUP(i) offsetof(struct nvmap, bandgroup[(i)])	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
-#define RMT_BFREQ_BASE(i) offsetof(struct nvmap, bands[(i)].freq)			/* последняя частота, на которую настроились (4 байта) */
-#define RMT_PAMP_BASE(i) offsetof(struct nvmap, bands[(i)].pamp)			/* признак включения аттенюатора (1 байт) */
-#define RMT_ATT_BASE(i) offsetof(struct nvmap, bands[(i)].att)			/* признак включения аттенюатора (1 байт) */
-#define RMT_ANTENNA_BASE(i) offsetof(struct nvmap, bands[(i)].ant)			/* код включённой антенны (1 байт) */
-#define RMT_MODEROW_BASE(i)	offsetof(struct nvmap, bands[(i)].moderow)			/* номер строки в массиве режимов. */
-#define RMT_MODECOLS_BASE(i, j)	offsetof(struct nvmap, bands[(i)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
+#define RMT_BANDGROUP(i) offsetof(struct nvmap, bandgroups [(i)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+#define RMT_BFREQ_BASE(i) offsetof(struct nvmap, bands [(i)].freq)			/* последняя частота, на которую настроились (4 байта) */
+#define RMT_PAMP_BASE(i) offsetof(struct nvmap, bands [(i)].pamp)			/* признак включения аттенюатора (1 байт) */
+#define RMT_ATT_BASE(i) offsetof(struct nvmap, bands [(i)].att)			/* признак включения аттенюатора (1 байт) */
+#define RMT_RXANTENNA_BASE(i) offsetof(struct nvmap, bands [(i)].rxant)			/* код включённой антенны (1 байт) */
+#define RMT_ANTENNA_BASE(i) offsetof(struct nvmap, bands [(i)].ant)			/* код включённой антенны (1 байт) */
+#define RMT_MODEROW_BASE(i)	offsetof(struct nvmap, bands [(i)].moderow)			/* номер строки в массиве режимов. */
+#define RMT_MODECOLS_BASE(i, j)	offsetof(struct nvmap, bands [(i)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
 #define RMT_PWR_BASE offsetof(struct nvmap, gpwri)								/* большая мощность sw2012sf */
 #define RMT_NOTCH_BASE offsetof(struct nvmap, gnotch)							/* NOTCH on/off */
 #define RMT_NOTCHTYPE_BASE offsetof(struct nvmap, gnotchtype)					/* NOTCH filter type */
@@ -3365,14 +3352,14 @@ filter_t fi_2p0_455 =
 //#define RMT_BWPROPSFLTSOFTER_BASE(i) offsetof(struct nvmap, bwpropsfltsofter [(i)])
 #define RMT_BWPROPSAFRESPONCE_BASE(i) offsetof(struct nvmap, bwpropsafresponce [(i)])
 
-#define RMT_MICLEVEL_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].level)
-#define RMT_MICCLIP_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].clip)
-#define RMT_MICAGC_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].agc)
-#define RMT_MICAGCGAIN_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].agcgain)
-#define RMT_MICBOOST_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].mikebust20db)
-#define RMT_MICEQ_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].eq_enable)
-#define RMT_MICEQPARAMS_BASE(i, j) offsetof(struct nvmap, micprof_cells[(i)].eq_params[(j)])
-#define RMT_MICPSAVE_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].cell_saved)
+#define RMT_MICLEVEL_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].level)
+#define RMT_MICCLIP_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].clip)
+#define RMT_MICAGC_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].agc)
+#define RMT_MICAGCGAIN_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].agcgain)
+#define RMT_MICBOOST_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].mikeboost20db)
+#define RMT_MICEQ_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].eq_enable)
+#define RMT_MICEQPARAMS_BASE(i, j) offsetof(struct nvmap, micprof_cells [(i)].eq_params[(j)])
+#define RMT_MICPSAVE_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].cell_saved)
 
 
 
@@ -3381,15 +3368,22 @@ filter_t fi_2p0_455 =
    */
 
 /* параметры диапазона, переключаемые при смене VFO */
-static uint_fast32_t gfreqs [2];		/* отображаемая на дисплее частота работы */
+static uint_fast32_t gfreqs [VFOS_COUNT];		/* отображаемая на дисплее частота работы */
 #if ! WITHONEATTONEAMP
-static uint_fast8_t gpamps [2];
+static uint_fast8_t gpamps [VFOS_COUNT];
 #endif /* ! WITHONEATTONEAMP */
-static uint_fast8_t gatts [2];
-#if WITHANTSELECT
-static uint_fast8_t gantennas [2];
-#endif /* WITHANTSELECT */
-static uint_fast8_t gvfosplit [2];	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
+static uint_fast8_t gatts [VFOS_COUNT];
+#if WITHANTSELECTRX
+static uint_fast8_t grxantennas [VFOS_COUNT];
+static uint_fast8_t gantennas [VFOS_COUNT];
+#elif WITHANTSELECT2
+static uint_fast8_t gantennas [VFOS_COUNT];
+static uint_fast8_t hffreqswitch = 14; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
+static uint_fast8_t gantmanual;		/* 0 - выбор антенны автоматический */
+#elif WITHANTSELECT
+static uint_fast8_t gantennas [VFOS_COUNT];
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
+static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
 // Параметры, выставляемые в update board
 // кэш установленных параметров.
 // На эти параметры ориентируемся при работе кнопками управления, переклбчения фильттров и так далее.
@@ -3594,12 +3588,12 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #else
 	static uint_fast8_t gview3dss_mark = 0;
 #endif
-	static uint_fast8_t gtopdb = WITHTOPDBDEFAULT;	/* верхний предел FFT */
-	static uint_fast8_t gbottomdb = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
-	static uint_fast8_t gtopdbwf = WITHTOPDBDEFAULT;	/* верхний предел FFT waterflow*/
-	static uint_fast8_t gbottomdbwf = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT waterflow */
+	static uint_fast8_t gtopdbspe [VFOS_COUNT] = { WITHTOPDBDEFAULT, WITHTOPDBDEFAULT, };	/* верхний предел FFT */
+	static uint_fast8_t gbottomdbspe [VFOS_COUNT] = { WITHBOTTOMDBDEFAULT, WITHBOTTOMDBDEFAULT, };	/* нижний предел FFT */
+	static uint_fast8_t gtopdbwfl [VFOS_COUNT] = { WITHTOPDBDEFAULT, WITHTOPDBDEFAULT, };	/* верхний предел FFT waterflow*/
+	static uint_fast8_t gbottomdbwfl [VFOS_COUNT] = { WITHBOTTOMDBDEFAULT, WITHBOTTOMDBDEFAULT, };	/* нижний предел FFT waterflow */
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
-	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
+	static uint_fast8_t gzoomxpow2 [VFOS_COUNT];		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
@@ -3609,11 +3603,11 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #else
 	static uint_fast8_t gspecbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* WITHSPECBETA_DEFAULT */
-#if defined (WITHWTFBETA_DEFAULT)
-	static uint_fast8_t gwtfbeta100 = WITHWTFBETA_DEFAULT;
+#if defined (WITHWFLBETA_DEFAULT)
+	static uint_fast8_t gwflbeta100 = WITHWFLBETA_DEFAULT;
 #else
-	static uint_fast8_t gwtfbeta100 = 50;	/* beta = 0.1 .. 1.0 */
-#endif /* WITHWTFBETA_DEFAULT */
+	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
+#endif /* WITHWFLBETA_DEFAULT */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -3654,7 +3648,46 @@ enum
 };
 
 
-#if SHORTSET8
+#if FULLSET_7L8C
+	/* 7 indictors, 8 capacitors */
+	#define CMAX	254    //максимальное значение емкости конденсатора контура
+	#define CMIN  0      //минимальное значение емкости конденсатора контура
+	#define LMAX	127    //максимальное значение индуктивности катушки контура
+	#define LMIN  0      //минимальное значение индуктивности катушки контура
+#elif SHORTSET_7L8C
+	/* 7 indictors, 8 capacitors */
+	#define POSZ_C 8
+	const FLASHMEM uint_fast8_t logtable_cap [] =
+	{
+		0, 1, 2, 3, 4, 5, 6, 7,	/* 0..POSZ_C - 1 */
+		POSZ_C * 1, POSZ_C * 2, POSZ_C * 3,  POSZ_C * 4, POSZ_C * 5, POSZ_C * 6, POSZ_C * 7,
+		POSZ_C * 8, POSZ_C * 9, POSZ_C * 10, POSZ_C * 11,  POSZ_C * 12, POSZ_C * 13, POSZ_C * 14, POSZ_C * 15,
+		POSZ_C * 16, POSZ_C * 17, POSZ_C * 18, POSZ_C * 19,  POSZ_C * 20, POSZ_C * 21, POSZ_C * 22, POSZ_C * 23,
+		POSZ_C * 24, POSZ_C * 25, POSZ_C * 26, POSZ_C * 27,  POSZ_C * 28, POSZ_C * 29, POSZ_C * 30, POSZ_C * 31,
+	};
+
+	#define POSZ_L 2
+	const FLASHMEM uint_fast8_t logtable_ind [] =
+	{
+		0, 1, /* 1..POSZ_L - 1 */
+		POSZ_L * 1, POSZ_L * 2, POSZ_L * 3,  POSZ_L * 4, POSZ_L * 5, POSZ_L * 6, POSZ_L * 7,
+		POSZ_L * 8, POSZ_L * 9, POSZ_L * 10, POSZ_L * 11,  POSZ_L * 12, POSZ_L * 13, POSZ_L * 14, POSZ_L * 15,
+		POSZ_L * 16, POSZ_L * 17, POSZ_L * 18, POSZ_L * 19,  POSZ_L * 20, POSZ_L * 21, POSZ_L * 22, POSZ_L * 23,
+		POSZ_L * 24, POSZ_L * 25, POSZ_L * 26, POSZ_L * 27,  POSZ_L * 28, POSZ_L * 29, POSZ_L * 30, POSZ_L * 31,
+
+		POSZ_L * 32, POSZ_L * 33, POSZ_L * 34, POSZ_L * 35,  POSZ_L * 36, POSZ_L * 37, POSZ_L * 38, POSZ_L * 39,
+		POSZ_L * 40, POSZ_L * 41, POSZ_L * 42, POSZ_L * 43,  POSZ_L * 44, POSZ_L * 45, POSZ_L * 46, POSZ_L * 47,
+		POSZ_L * 48, POSZ_L * 49, POSZ_L * 50, POSZ_L * 51,  POSZ_L * 52, POSZ_L * 53, POSZ_L * 54, POSZ_L * 55,
+		POSZ_L * 56, POSZ_L * 57, POSZ_L * 58, POSZ_L * 59,  POSZ_L * 60, POSZ_L * 61, POSZ_L * 62, POSZ_L * 62,
+	};
+
+	#define CMAX (sizeof logtable_cap / sizeof logtable_cap [0] - 1)      //максимальное значение емкости конденсатора контура
+	#define CMIN 0        //минимальное значение емкости конденсатора контура
+	#define LMAX (sizeof logtable_ind / sizeof logtable_ind [0] - 1)        //максимальное значение индуктивности катушки контура
+	#define LMIN 0        //минимальное значение индуктивности катушки контура
+
+#elif SHORTSET8
+	/* 8 indictors, 8 capacitors */
 	#define POSZ 8
 	const FLASHMEM uint_fast8_t logtable_cap [] =
 	{
@@ -3679,7 +3712,7 @@ enum
 	#define LMIN 0        //минимальное значение индуктивности катушки контура
 
 #elif SHORTSET7
-
+	/* 7 indictors, 7 capacitors */
 	#define POSZ 2
 	const FLASHMEM uint_fast8_t logtable_cap [] =
 	{
@@ -3714,11 +3747,13 @@ enum
 	#define LMIN 0        //минимальное значение индуктивности катушки контура
 
 #elif FULLSET7
+	/* 7 indictors, 7 capacitors */
 	#define CMAX	127    //максимальное значение емкости конденсатора контура
 	#define CMIN  0      //минимальное значение емкости конденсатора контура
 	#define LMAX	127    //максимальное значение индуктивности катушки контура
 	#define LMIN  0      //минимальное значение индуктивности катушки контура
 #elif FULLSET8
+	/* 8 indictors, 8 capacitors */
 	#define CMAX	254    //максимальное значение емкости конденсатора контура
 	#define CMIN  0      //минимальное значение емкости конденсатора контура
 	#define LMAX	254    //максимальное значение индуктивности катушки контура
@@ -3765,7 +3800,7 @@ enum
 #endif /* defined WITHAFGAINDEFAULT */
 	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
-	static uint_fast8_t gmikebust20db;	// предусилитель микрофона
+	static uint_fast8_t gmikeboost20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 	static uint_fast8_t gmikehclip = 20;		/* Ограничитель */
@@ -3773,7 +3808,7 @@ enum
 	#if WITHREVERB
 		static uint_fast8_t greverb;		/* ревербератор */
 		static uint_fast8_t greverbdelay = 100;		/* ревербератор - задержка (ms) */
-		static uint_fast8_t greverbloss = 9;		/* ревербератор - ослабление на возврате */
+		static uint_fast8_t greverbloss = 30;		/* ревербератор - ослабление на возврате */
 	#endif /* WITHREVERB */
 
 	#if WITHUSBUAC
@@ -3866,11 +3901,7 @@ enum
 	static uint_fast16_t tunerind;// = (LMAX - LMIN) / 2 + LMIN;
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
-#if WITHAUTOTUNER_UA1CEI
-	static uint_fast8_t tunerdelay = 130;
-#else /* WITHAUTOTUNER_UA1CEI */
-	static uint_fast8_t tunerdelay = 35;
-#endif /* WITHAUTOTUNER_UA1CEI */
+	static uint_fast8_t tunerdelay = 100;
 
 #endif /* WITHAUTOTUNER */
 
@@ -4219,6 +4250,19 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 */
 
 #if WITHTX
+#if WITHTHERMOLEVEL
+	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
+#endif /* WITHTHERMOLEVEL */
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+#if defined (WITHSWRPROT)
+	static uint_fast8_t gswrprot = WITHSWRPROT;
+#else
+	static uint_fast8_t gswrprot = 1;	/* защита от превышения КСВ */
+#endif
+#if WITHTHERMOLEVEL
+	static uint_fast8_t gheatprot = 1;	/* защита от перегрева */
+#endif /* WITHTHERMOLEVEL */
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	static uint_fast8_t tunemode;	/* режим настройки передающего тракта */
 	static uint_fast8_t moxmode;	/* передача, включённая кнопкой с клавиатуры */
 #if WITHAUTOTUNER
@@ -4227,9 +4271,15 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	enum { reqautotune = 0 };
 #endif /* WITHAUTOTUNER */
 
+#if WITHTOUCHGUI
+	static uint_fast8_t reqautotune2 = 0;
+#else
+	enum { reqautotune2 = 0 };
+#endif /* WITHTOUCHGUI */
+
 #else /* WITHTX */
 
-	enum { tunemode = 0, moxmode = 0, reqautotune = 0 };
+	enum { tunemode = 0, moxmode = 0, reqautotune = 0, reqautotune2 = 0 };
 
 #endif /* WITHTX */
 
@@ -4244,6 +4294,15 @@ static uint_fast8_t amenuset(void)
 	return menuset;
 }
 
+
+uint_fast8_t habradio_get_classa(void)
+{
+#if WITHPACLASSA
+	return gclassamode;
+#else /* WITHPACLASSA */
+	return 0;
+#endif /* WITHPACLASSA */
+}
 // текущее состояние LOCK
 uint_fast8_t
 hamradio_get_lockvalue(void)
@@ -4458,25 +4517,27 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 typedef struct tunerstate
 {
 	uint8_t tunercap, tunerind, tunertype;
-	uint8_t swr;	// values 0..190: SWR = 1..20
+	uint16_t swr;	// values 0..190: SWR = 1..20
 	adcvalholder_t f, r;
 } tus_t;
-#define TUS_SWRMAX (SWRMIN * 3)			// 4.0
-#define TUS_SWR1p1 (SWRMIN * 11 / 10)	// SWR=1.1
+
+#define TUS_SWRMIN (100)			// 1.0
+#define TUS_SWRMAX (TUS_SWRMIN * 9)			// 4.0
+#define TUS_SWR1p1 (TUS_SWRMIN * 11 / 10)	// SWR=1.1
 
 static void board_set_tuner_group(void)
 {
 	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	// todo: добавить учет включенной антенны
-#if SHORTSET7 || SHORTSET8
+#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
 	board_set_tuner_C(logtable_cap [tunercap]);
 	board_set_tuner_L(logtable_ind [tunerind]);
 	//board_set_tuner_C(1U << tunercap);
 	//board_set_tuner_L(1U << tunerind);
-#else /* SHORTSET7 || SHORTSET8 */
+#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	board_set_tuner_C(tunercap);
 	board_set_tuner_L(tunerind);
-#endif /* SHORTSET7 || SHORTSET8 */
+#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	board_set_tuner_type(tunertype);
 	board_set_tuner_bypass(! tunerwork);
 }
@@ -4497,56 +4558,95 @@ static void tuner_waitadc(void)
 		local_delay_ms(5);
 }
 
-static uint_fast8_t tuner_get_swr0(uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
+static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
-	adcvalholder_t r;
-	const adcvalholder_t f = board_getswrmeter_unfiltered(& r, swrcalibr);
-	const uint_fast8_t fs = fullscale - SWRMIN;
+	adcvalholder_t r0;
+	const adcvalholder_t f0 = board_getswrmeter_unfiltered(& r0, swrcalibr);
+	adcvalholder_t r1;
+	const adcvalholder_t f1 = board_getswrmeter_unfiltered(& r1, swrcalibr);
+	adcvalholder_t r2;
+	const adcvalholder_t f2 = board_getswrmeter_unfiltered(& r2, swrcalibr);
+	adcvalholder_t r3;
+	const adcvalholder_t f3 = board_getswrmeter_unfiltered(& r3, swrcalibr);
+	adcvalholder_t r4;
+	const adcvalholder_t f4 = board_getswrmeter_unfiltered(& r4, swrcalibr);
+	adcvalholder_t r5;
+	const adcvalholder_t f5 = board_getswrmeter_unfiltered(& r5, swrcalibr);
+	adcvalholder_t r6;
+	const adcvalholder_t f6 = board_getswrmeter_unfiltered(& r6, swrcalibr);
+	adcvalholder_t r7;
+	const adcvalholder_t f7 = board_getswrmeter_unfiltered(& r7, swrcalibr);
+	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
 
+	const adcvalholder_t r = r0 + r1 + r2 + r3 + r4 + r5 + r6 + r7;
+	const adcvalholder_t f = f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7;
 	* pr = r;
 	* pf = f;
 
+	//PRINTF("f:%d,%d,%d,%d,%d,%d,%d,%d r:%d,%d,%d,%d,%d,%d,%d,%d\n", f0, f1, f2, f3, f4, f5, f6, f7, r0, r1, r2, r3, r4, r5, r6, r7);
 	if (f < minforward)
 		return 0;	// SWR=1
 	else if (f <= r)
 		return fs;		// SWR is infinite
 
-	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * SWRMIN / (f - r) - SWRMIN;
+	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * TUS_SWRMIN / (f - r) - TUS_SWRMIN;
 	return swr10 > fs ? fs : swr10;
 }
 
-static void printtunerstate(const char * title, uint_fast8_t swr, adcvalholder_t r, adcvalholder_t f)
+void display2_swrsts22(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	adcvalholder_t r;
+	adcvalholder_t f;
+	const uint_fast16_t swr = tuner_get_swr0(TUS_SWRMAX, & r, & f);
+	char b [23];
+
+	local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u.%02u f=%-5u r=%-5u"),
+		(unsigned) (swr + TUS_SWRMIN) / 100,
+		(unsigned) (swr + TUS_SWRMIN) % 100,
+		f,
+		r);
+	display_at(x, y, b);
+
+}
+
+static void printtunerstate(const char * title, uint_fast16_t swr, adcvalholder_t r, adcvalholder_t f)
 {
 
-#if SHORTSET8 || SHORTSET7
-	PRINTF("%s: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u,swr=%u\n",
+#if SHORTSET8 || SHORTSET7 || SHORTSET_7L8C
+	PRINTF("%s: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u,swr=%u.%02u\n",
 		title,
 		(unsigned) logtable_ind [tunerind], (unsigned) tunerind,
 		(unsigned) logtable_cap [tunercap], (unsigned) tunercap,
 		(unsigned) tunertype,
 		(unsigned) f,
 		(unsigned) r,
-		(unsigned) (swr + SWRMIN));
+		(unsigned) (swr + TUS_SWRMIN) / 100,
+		(unsigned) (swr + TUS_SWRMIN) % 100);
 #else /* SHORTSET8 || SHORTSET7 */
-	PRINTF("%s: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u\n",
+	PRINTF("%s: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u.%02u\n",
 		title,
 		(unsigned) tunerind, (unsigned) tunercap, (unsigned) tunertype,
 		(unsigned) f,
 		(unsigned) r,
-		(unsigned) (swr + SWRMIN));
+		(unsigned) (swr + TUS_SWRMIN) / 100,
+		(unsigned) (swr + TUS_SWRMIN) % 100);
 #endif /* SHORTSET8 || SHORTSET7 */
 
 }
 
-static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
+uint_fast16_t tuner_get_swr(const char * title, uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
 	adcvalholder_t r;
 	adcvalholder_t f;
-	const uint_fast8_t swr = tuner_get_swr0(fullscale, & r, & f);
+	const uint_fast16_t swr = tuner_get_swr0(fullscale, & r, & f);
 
 	* pr = r;
 	* pf = f;
-	printtunerstate("tuner_get_swr", swr, r, f);
+	printtunerstate(title, swr, r, f);
 	return swr;
 }
 
@@ -4579,8 +4679,6 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 	uint_fast8_t bestswrvalid = 0;
 	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
-	tus->tunertype = tunertype;
-	tus->tunercap = tunercap;
 	for (tunerind = LMIN; tunerind <= LMAX; ++ tunerind)
 	{
 		if (tuneabort())
@@ -4589,7 +4687,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 		tuner_waitadc();
 		adcvalholder_t r;
 		adcvalholder_t f;
-		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
+		const uint_fast16_t swr = tuner_get_swr("scanminLk", TUS_SWRMAX, & r, & f);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -4600,6 +4698,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
+			PRINTF("scanminLk: best ty=%u, L=%u, C=%u\n", tunertype, tunerind, tunercap);
 		}
 		else
 		{
@@ -4609,6 +4708,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 			}
 		}
 	}
+	tunerind = tus->tunerind;	// лучшее запомненное
 	return 0;
 }
 
@@ -4619,8 +4719,6 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 	uint_fast8_t bestswrvalid = 0;
 	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
-	tus->tunerind = tunerind;
-	tus->tunertype = tunertype;
 	for (tunercap = CMIN; tunercap <= CMAX; ++ tunercap)
 	{
 		if (tuneabort())
@@ -4629,7 +4727,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 		tuner_waitadc();
 		adcvalholder_t r;
 		adcvalholder_t f;
-		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
+		const uint_fast16_t swr = tuner_get_swr("scanminCk", TUS_SWRMAX, & r, & f);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -4640,6 +4738,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
+			PRINTF("scanminCk: best ty=%u, L=%u, C=%u\n", tunertype, tunerind, tunercap);
 		}
 		else
 		{
@@ -4649,6 +4748,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 			}
 		}
 	}
+	tunercap = tus->tunercap;	// лучшее запомненное
 	return 0;
 }
 
@@ -4666,40 +4766,78 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 	return best;
 }
 
+static void savetunerallstate(uint_fast8_t bi, vindex_t b)
+{
+
+	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
+	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
+	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
+	save_i8(offsetof(struct nvmap, bands[b].tunerwork), tunerwork);
+
+	vindex_t bn = getfreqband(gfreqs [bi]);		/* определяем по частоте, в каком диапазоне находимся */
+	save_i8(offsetof(struct nvmap, bands[bn].tunercap), tunercap);
+	save_i8(offsetof(struct nvmap, bands[bn].tunerind), tunerind);
+	save_i8(offsetof(struct nvmap, bands[bn].tunertype), tunertype);
+	save_i8(offsetof(struct nvmap, bands[bn].tunerwork), tunerwork);
+
+}
+
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {	
+	unsigned ndummies;
 	const uint_fast8_t tx = 1;
 	tus_t statuses [KSCH_COUNT];
 	unsigned cshindex;
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const vindex_t b = getvfoindex(bi);
 
-#if SHORTSET7 || SHORTSET8
+#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
 	const uint_fast8_t addstepsLk = 3;
 	const uint_fast8_t addstepsCk = 3;
-#else /* SHORTSET7 || SHORTSET8 */
+#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	const uint_fast8_t addstepsLk = 15;
 	const uint_fast8_t addstepsCk = 15;
-#endif /* SHORTSET7 || SHORTSET8 */
+#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 
-	//PRINTF(PSTR("auto_tune start\n"));
+	PRINTF(PSTR("auto_tune start\n"));
+	for (ndummies = 5; ndummies --; )
+	{
+		if (tuneabort())
+			goto aborted;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast16_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
 	// Попытка согласовать двумя схемами
 	for (tunertype = 0; tunertype < KSCH_COUNT; ++ tunertype)
 	{
-		tunercap = CMIN;
-		if (scanminLk(& statuses [tunertype], addstepsLk) != 0)
-			goto aborted;
-		tunerind = statuses [tunertype].tunerind;
-		updateboard_tuner();
+		statuses [tunertype].tunertype = tunertype;
+		tunerind = LMIN;
+		if (tunertype == 0)
+		{
+			PRINTF("tuner: ty=%u, scan capacitors\n", (unsigned) tunertype);
+			if (scanminCk(& statuses [tunertype], addstepsCk) != 0)
+				goto aborted;
+			PRINTF("scanminCk finish: C=%u\n", tunercap);
+			updateboard_tuner();
+		}
+		else
+		{
+			statuses [1] = statuses [0];
+			statuses [1].tunertype = tunertype;
+		}
 
 		// проверка - а может уже нашли подходяшее согласование?
 		////if (statuses [tunertype].swr <= TUS_SWR1p1)
 		////	goto NoMoreTune;
 
-		if (scanminCk(& statuses [tunertype], addstepsCk) != 0)
+		PRINTF("tuner: ty=%u, scan inductors\n", (unsigned) tunertype);
+		if (scanminLk(& statuses [tunertype], addstepsLk) != 0)
 			goto aborted;
-		tunercap = statuses [tunertype].tunercap;
+		PRINTF("scanminLk finish: L=%u\n", tunerind);
 		updateboard_tuner();
 
 		// проверка - а может уже нашли подходяшее согласование?
@@ -4708,20 +4846,22 @@ static void auto_tune(void)
 	}
 	// Выбираем наилучший результат согласования
 	cshindex = findbestswr(statuses, sizeof statuses / sizeof statuses [0]);
-	//PRINTF(PSTR("auto_tune loop done\n"));
+	PRINTF(PSTR("auto_tune loop done\n"));
+	printtunerstate("Selected 1", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
+	tunertype = statuses [cshindex].tunertype;
+	tunerind = statuses [cshindex].tunerind;
+	tunercap = statuses [cshindex].tunercap;
+	if (scanminCk(& statuses [cshindex], addstepsCk) != 0)
+		goto aborted;
+	printtunerstate("Selected 2", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
 	// Устанавливаем аппаратуру в состояние при лучшем результате
 	tunertype = statuses [cshindex].tunertype;
 	tunerind = statuses [cshindex].tunerind;
 	tunercap = statuses [cshindex].tunercap;
-	printtunerstate("Selected", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
 	updateboard_tuner();
-	//PRINTF(PSTR("auto_tune stop\n"));
+	PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
-
-	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
-	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
-	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
-	save_i8(offsetof(struct nvmap, bands[b].tunerwork), 1);
+	savetunerallstate(bi, b);
 	return;
 
 aborted:
@@ -5566,7 +5706,6 @@ nyquistadj3(uint_fast32_t f)
 /* получить номер диапазона, в который попадает отображающаяся частота
   Если не принадлежит ни одному диапазону, возврат ((uint8_t)-1) */
 static vindex_t 
-//NOINLINEAT
 getfreqband(const uint_fast32_t freq)
 {
 	vindex_t i;
@@ -5584,7 +5723,6 @@ getfreqband(const uint_fast32_t freq)
 /* получить номер диапазона с большей частотой, на который переходить.
   Если нет подходящих, возврат low */
 static vindex_t 
-//NOINLINEAT
 getnexthband(const uint_fast32_t freq)
 {
 	enum { LOW = 0, HIGH = HBANDS_COUNT - 1 };
@@ -5604,7 +5742,6 @@ getnexthband(const uint_fast32_t freq)
  вернуть номер текущего.
  */
 static vindex_t 
-//NOINLINEAT
 getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
 {
 	enum { LOW = 0, HIGH = HBANDS_COUNT - 1 };
@@ -5624,7 +5761,6 @@ getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
 /* получить номер диапазона с меньшей частотой, на который переходить.
   Если нет подходящих, возврат high */
 static vindex_t 
-//NOINLINEAT
 getprevhband(const uint_fast32_t freq)
 {
 	vindex_t i;
@@ -5648,7 +5784,6 @@ getprevhband(const uint_fast32_t freq)
 
 
 static vindex_t
-//NOINLINEAT
 getnext_ham_band(
 	vindex_t b,		// текущий диапазон
 	const uint_fast32_t freq
@@ -5774,7 +5909,6 @@ getnext_ham_band(
 
 
 static vindex_t
-//NOINLINEAT
 getprev_ham_band(
 	vindex_t b,		// текущий диапазон
 	const uint_fast32_t freq
@@ -6068,7 +6202,7 @@ uint_fast32_t hamradio_get_freq_rx(void)
 // Частота VFO A для отображения на дисплее
 uint_fast32_t hamradio_get_freq_a(void)
 {
-	return gfreqs [getbankindex_ab_fordisplay(0)];
+	return gfreqs [getbankindex_ab_fordisplay(0)];		/* VFO A modifications */
 }
 // Частота VFO A для отображения на дисплее
 uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi)
@@ -6078,19 +6212,19 @@ uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi)
 // SSB/CW/AM/FM/..
 const FLASHMEM char * hamradio_get_mode_a_value_P(void)
 {
-	return submodes [getsubmode(getbankindex_ab_fordisplay(0))].qlabel;
+	return submodes [getsubmode(getbankindex_ab_fordisplay(0))].qlabel;	/* VFO A modifications */
 }
 
 // SSB/CW/AM/FM/..	
 const FLASHMEM char * hamradio_get_mode_b_value_P(void)
 {
-	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;
+	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */
 }
 
 // Частота VFO B для отображения на дисплее
 uint_fast32_t hamradio_get_freq_b(void)
 {
-	return gfreqs [getbankindex_ab_fordisplay(1)];
+	return gfreqs [getbankindex_ab_fordisplay(1)];	/* VFO B modifications */
 }
 
 	enum { withonlybands = 0 };
@@ -6129,17 +6263,29 @@ copybankstate(
 	const int_fast32_t deltaf	// рассторйка передатчика для включения способом "auto split"
 	)
 {
+	ASSERT(tbi != sbi);
 	gfreqs [tbi] = vfy32up(gfreqs [sbi] + deltaf, tune_bottom(sbi), tune_top(sbi) - 1, gfreqs [sbi]);
 	gmoderows [tbi] = gmoderows [sbi];
 #if ! WITHONEATTONEAMP
 	gpamps [tbi] = gpamps [sbi];
 #endif /* ! WITHONEATTONEAMP */
 	gatts [tbi] = gatts [sbi];
-#if WITHANTSELECT
+#if  WITHANTSELECTRX
+	grxantennas [tbi] = grxantennas [sbi];
 	gantennas [tbi] = gantennas [sbi];
-#endif /* WITHANTSELECT */
+#elif WITHANTSELECT || WITHANTSELECT2
+	gantennas [tbi] = gantennas [sbi];
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 
 	memcpy(gmodecolmaps [tbi], gmodecolmaps [sbi], sizeof gmodecolmaps [tbi]);
+
+#if WITHSPECTRUMWF
+	gzoomxpow2 [tbi] = gzoomxpow2 [sbi];		/* уменьшение отображаемого участка спектра */
+	gtopdbspe [tbi] = gtopdbspe [sbi];			/* нижний предел FFT */
+	gbottomdbspe [tbi] = gbottomdbspe [sbi];	/* верхний предел FFT */
+	gtopdbwfl [tbi] = gtopdbwfl [sbi];			/* нижний предел FFT waterflow */
+	gbottomdbwfl [tbi] = gbottomdbwfl [sbi];	/* верхний предел FFT waterflow */
+#endif /* WITHSPECTRUMWF */
 }
 
 /* сохранить все частоту настройки в соответствующий диапазон, ячейку памяти или VFO. */
@@ -6171,9 +6317,12 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 	save_i8(RMT_PAMP_BASE(b), gpamps [bi]);
 #endif /* ! WITHONEATTONEAMP */
 	save_i8(RMT_ATT_BASE(b), gatts [bi]);
-#if WITHANTSELECT
+#if WITHANTSELECTRX
+	save_i8(RMT_RXANTENNA_BASE(b), grxantennas [bi]);
 	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
-#endif /* WITHANTSELECT */
+#elif WITHANTSELECT || WITHANTSELECT2
+	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 #if WITHAUTOTUNER
 	save_i8(offsetof(struct nvmap, bands[b].tunerwork), tunerwork);
 	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
@@ -6181,11 +6330,11 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
-	save_i8(offsetof(struct nvmap, bands[b].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
-	save_i8(offsetof(struct nvmap, bands[b].gtopdb), gtopdb);	/* нижний предел FFT */
-	save_i8(offsetof(struct nvmap, bands[b].gbottomdb), gbottomdb);	/* верхний предел FFT */
-	save_i8(offsetof(struct nvmap, bands[b].gtopdbwf), gtopdbwf);	/* нижний предел FFT waterflow */
-	save_i8(offsetof(struct nvmap, bands[b].gbottomdbwf), gbottomdbwf);	/* верхний предел FFT waterflow */
+	save_i8(offsetof(struct nvmap, bands[b].gzoomxpow2), gzoomxpow2 [bi]);	/* уменьшение отображаемого участка спектра */
+	save_i8(offsetof(struct nvmap, bands[b].gtopdbspe), gtopdbspe [bi]);	/* нижний предел FFT */
+	save_i8(offsetof(struct nvmap, bands[b].gbottomdbspe), gbottomdbspe [bi]);	/* верхний предел FFT */
+	save_i8(offsetof(struct nvmap, bands[b].gtopdbwfl), gtopdbwfl [bi]);	/* нижний предел FFT waterflow */
+	save_i8(offsetof(struct nvmap, bands[b].gbottomdbwfl), gbottomdbwfl [bi]);	/* верхний предел FFT waterflow */
 #endif /* WITHSPECTRUMWF */
 }
 
@@ -6250,7 +6399,7 @@ getdefaultbandsubmode(
 	uint_fast32_t freq	/* частота (изображение на дисплее) */
 	)
 {
-	const uint_fast8_t b = getfreqband(freq);
+	const vindex_t b = getfreqband(freq);
 	if (b < HBANDS_COUNT)
 		return get_band_defsubmode(b);
 	return getdefaultsubmode(freq);
@@ -6355,7 +6504,7 @@ static void micproc_load(void)
 		mp->agcgain = loadvfy8up(RMT_MICAGCGAIN_BASE(i), WITHMIKEAGCMIN, WITHMIKEAGCMAX, 30);
 		mp->clip = loadvfy8up(RMT_MICCLIP_BASE(i), WITHMIKECLIPMIN, WITHMIKECLIPMAX, 0);
 		mp->level = loadvfy8up(RMT_MICLEVEL_BASE(i), WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, WITHMIKEINGAINMAX);
-		mp->mikebust20db = loadvfy8up(RMT_MICBOOST_BASE(i), 0, 1, 0);
+		mp->mikeboost20db = loadvfy8up(RMT_MICBOOST_BASE(i), 0, 1, 0);
 		mp->eq_enable = loadvfy8up(RMT_MICEQ_BASE(i), 0, 1, 0);
 		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
 			mp->eq_params[j] = loadvfy8up(RMT_MICEQPARAMS_BASE(i, j), 0, EQUALIZERBASE * 2, EQUALIZERBASE);
@@ -6419,9 +6568,9 @@ struct enc2menu
 
 	nvramaddress_t nvrambase;				/* Если MENUNONVRAM - только меняем в памяти */
 	nvramaddress_t (* nvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
-
-	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит */
-	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
+	unsigned (* valoffset)(void);
+	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит. Массив, индексируется по значению от valoffset. */
+	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит. Массив, индексируется по значению от valoffset. */
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 	void (* adjust)(const FLASHMEM struct enc2menu * mp, int_least16_t nrotate);
 };
@@ -6437,20 +6586,32 @@ static const FLASHMEM char catsiglabels [BOARD_CATSIG_count] [9] =
 #endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
 };
 
+static unsigned valoffset0(void)
+{
+	return 0;
+}
+
+static unsigned valoffset_bi_a(void)
+{
+	return getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+}
+
+
 static nvramaddress_t nvramoffs0(nvramaddress_t base)
 {
 	return base;
 }
 
-static nvramaddress_t nvramoffs_band(nvramaddress_t base)
+static nvramaddress_t nvramoffs_band_a(nvramaddress_t base)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const vindex_t b = getvfoindex(bi);
 
 	ASSERT(base != MENUNONVRAM);
 
 	if (base == MENUNONVRAM)
 		return MENUNONVRAM;
+
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
 	return base + RMT_BFREQ_BASE(b) - RMT_BFREQ_BASE(0);
@@ -6465,17 +6626,18 @@ enc2savemenuvalue(
 	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase);
 	const uint_fast16_t * const pv16 = mp->pval16;
 	const uint_fast8_t * const pv8 = mp->pval8;
+	const unsigned valoffset = mp->valoffset(); //ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 
 	if (nvram == MENUNONVRAM)
 		return;
 
 	if (pv16 != NULL)
 	{
-		save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
+		save_i16(nvram, pv16 [valoffset]);		/* сохраняем отредактированное значение */
 	}
 	else if (pv8 != NULL)
 	{
-		save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
+		save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
 	}
 	else
 	{
@@ -6494,6 +6656,7 @@ enc2menu_adjust(
 	const uint_fast16_t step = mp->istep;
 	uint_fast16_t * const pv16 = mp->pval16;
 	uint_fast8_t * const pv8 = mp->pval8;
+	const unsigned valoffset = mp->valoffset();
 
 	/* измиенение параметра */
 	if (nrotate < 0)
@@ -6502,13 +6665,13 @@ enc2menu_adjust(
 		const uint_fast32_t bottom = mp->bottom;
 		if (pv16 != NULL)
 		{
-			* pv16 =
-				prevfreq(* pv16, * pv16 - (- nrotate * step), step, bottom);
+			pv16 [valoffset] =
+				prevfreq(pv16 [valoffset], pv16 [valoffset] - (- nrotate * step), step, bottom);
 		}
 		else if (pv8 != NULL)
 		{
-			* pv8 =
-				prevfreq(* pv8, * pv8 - (- nrotate * step), step, bottom);
+			pv8 [valoffset] =
+				prevfreq(pv8 [valoffset], pv8 [valoffset] - (- nrotate * step), step, bottom);
 		}
 		enc2savemenuvalue(mp);
 	}
@@ -6518,13 +6681,13 @@ enc2menu_adjust(
 		const uint_fast32_t upper = mp->upper;
 		if (pv16 != NULL)
 		{
-			* pv16 =
-				nextfreq(* pv16, * pv16 + (nrotate * step), step, upper + (uint_fast32_t) step);
+			pv16 [valoffset] =
+				nextfreq(pv16 [valoffset], pv16 [valoffset] + (nrotate * step), step, upper + (uint_fast32_t) step);
 		}
 		else
 		{
-			* pv8 =
-				nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
+			pv8 [valoffset] =
+				nextfreq(pv8 [valoffset], pv8 [valoffset] + (nrotate * step), step, upper + (uint_fast32_t) step);
 		}
 		enc2savemenuvalue(mp);
 	}
@@ -6543,6 +6706,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 		offsetof(struct nvmap, afgain1),
 		nvramoffs0,
+		valoffset0,
 		& afgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6557,6 +6721,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 		offsetof(struct nvmap, rfgain1),
 		nvramoffs0,
+		valoffset0,
 		& rfgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6572,6 +6737,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		offsetof(struct nvmap, elkeywpm),
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& elkeywpm.value,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6587,6 +6753,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, 150,		/* используется при калибровке параметров интерполятора */
 		offsetof(struct nvmap, gdesignscale),
 		nvramoffs0,
+		valoffset0,
 		& gdesignscale,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6601,6 +6768,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gnormalpower.value,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6615,6 +6783,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, sizeof gsubtones / sizeof gsubtones [0] - 1, 
 		offsetof(struct nvmap, gsubtonei),
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gsubtonei,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6629,6 +6798,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, 
 		offsetof(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
 		nvramoffs0,
+		valoffset0,
 		& gmik1level,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6643,6 +6813,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		WITHMIKECLIPMIN, WITHMIKECLIPMAX, 		/* Ограничение */
 		offsetof(struct nvmap, gmikehclip),
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gmikehclip,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6658,6 +6829,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
 		nvramoffs0,
+		valoffset0,
 		& gnotchfreq.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6672,6 +6844,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, NRLEVELMAX, 
 		offsetof(struct nvmap, gnoisereductvl),	/* уровень сигнала болше которого открывается шумодав */
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gnoisereductvl,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6685,6 +6858,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, SQUELCHMAX, 
 		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6696,11 +6870,12 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"BOTTOM DB",
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
-		80, 160,	/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands [0].gbottomdb),
-		nvramoffs_band,
+		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,	/* диапазон отображаемых значений */
+		offsetof(struct nvmap, bands [0].gbottomdbspe),
+		nvramoffs_band_a,
+		valoffset_bi_a,
 		NULL,
-		& gbottomdb,
+		& gbottomdbspe [0],
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -6711,9 +6886,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,		/* spectrum range */
 		0, BOARD_FFTZOOM_POW2MAX,	/* масштаб панорамы */
 		offsetof(struct nvmap, bands [0].gzoomxpow2),
-		nvramoffs_band,
+		nvramoffs_band_a,
+		valoffset_bi_a,
 		NULL,
-		& gzoomxpow2,
+		& gzoomxpow2 [0],
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -6725,6 +6901,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, VIEW_COUNT - 1,
 		offsetof(struct nvmap, gviewstyle),
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gviewstyle,
 		getzerobase,
@@ -6741,6 +6918,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		offsetof(struct nvmap, ifshifoffset),
 		nvramoffs0,
+		valoffset0,
 		& ifshifoffset.value,
 		NULL,
 		getifshiftbase, /* складывается со смещением и отображается */
@@ -7087,6 +7265,9 @@ loadsavedstate(void)
 //#if WITHAUTOTUNER
 //	tunerwork = loadvfy8up(offsetof(struct nvmap, tunerwork), 0, 1, tunerwork);
 //#endif /* WITHAUTOTUNER */
+#if WITHANTSELECT2
+	gantmanual = loadvfy8up(RMT_ANTMANUAL_BASE, 0, 1, gantmanual);
+#endif /* WITHANTSELECT2 */
 
 #if WITHIF4DSP
 	#if WITHUSBUAC && WITHTX
@@ -7121,6 +7302,16 @@ loadsavedstate(void)
 	}
 }
 
+#if WITHANTSELECT2
+/* получить номер антенны в зависимости от частоты */
+static uint_fast8_t getdefantenna(uint_fast32_t f)
+{
+	const uint_fast32_t fsw = hffreqswitch * 1000000uL;
+	ASSERT((fsw > TUNE_BOTTOM) && (fsw < TUNE_TOP));
+	return f > fsw;
+}
+#endif /* WITHANTSELECT2 */
+
 /* по диапазону вытащить все параметры (и частоту) нового диапазона */
 static void 
 //NOINLINEAT
@@ -7130,9 +7321,9 @@ loadnewband(
 	)
 {
 	ASSERT(bi < 2);
-
-	gfreqs [bi] = loadvfy32freq(b);
 	//PRINTF(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
+
+	gfreqs [bi] = loadvfy32freq(b);		/* восстанавливаем частоту */
 #if WITHONLYBANDS
 	const vindex_t hb = getfreqband(gfreqs [bi]);
 	tune_bottom_active [bi] = get_band_bottom(hb);
@@ -7142,9 +7333,14 @@ loadnewband(
 	gpamps [bi] = loadvfy8up(RMT_PAMP_BASE(b), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
 #endif /* ! WITHONEATTONEAMP */
 	gatts [bi] = loadvfy8up(RMT_ATT_BASE(b), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
-#if WITHANTSELECT
+#if WITHANTSELECTRX
+	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
-#endif /* WITHANTSELECT */
+#elif WITHANTSELECT2
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
+#elif WITHANTSELECT
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 	const uint_fast8_t defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
 	uint_fast8_t defrow;
 	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
@@ -7167,11 +7363,11 @@ loadnewband(
 	tunerwork = loadvfy8up(offsetof(struct nvmap, bands[b].tunerwork), 0, 1, tunerwork);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
-	gzoomxpow2 = loadvfy8up(offsetof(struct nvmap, bands[b].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
-	gtopdb = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdb), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
-	gbottomdb = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdb), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
-	gtopdbwf = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdbwf), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
-	gbottomdbwf = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdbwf), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
+	gzoomxpow2 [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
+	gtopdbspe [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdbspe), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
+	gbottomdbspe [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdbspe), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
+	gtopdbwfl [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdbwfl), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
+	gbottomdbwfl [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdbwfl), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
 #endif /* WITHSPECTRUMWF */
 }
 
@@ -7294,17 +7490,60 @@ catchangefreq(
 	)
 {
 	const uint_fast8_t bi = getbankindex_ab(ab);
-	//const uint_fast8_t b = getfreqband(f);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(f);	/* определяем по частоте, в каком диапазоне находимся */
 
 	gfreqs [bi] = f;
 #if WITHONLYBANDS
-	const vindex_t hb = getfreqband(gfreqs [bi]);
-	tune_bottom_active [bi] = get_band_bottom(hb);
-	tune_top_active [bi] = get_band_top(hb);
+	tune_bottom_active [bi] = get_band_bottom(b);
+	tune_top_active [bi] = get_band_top(b);
 #endif
-	//gpamps [bi] = loadvfy8up(RMT_PAMP_BASE(b), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
-	//gatts [bi] = loadvfy8up(RMT_ATT_BASE(b), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
-	//gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем код включённой антенны */
+#if ! WITHONEATTONEAMP
+	gpamps [bi] = loadvfy8up(RMT_PAMP_BASE(b), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
+	if (aistate != 0)
+	{
+		cat_answer_request(CAT_PA_INDEX);
+	}
+#endif /* ! WITHONEATTONEAMP */
+	gatts [bi] = loadvfy8up(RMT_ATT_BASE(b), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
+	if (aistate != 0)
+	{
+		cat_answer_request(CAT_RA_INDEX);
+	}
+#if WITHANTSELECTRX
+	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	if (aistate != 0)
+	{
+		cat_answer_request(CAT_AN_INDEX);
+	}
+#elif WITHANTSELECT2
+	gantmanual = 1;
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, getdefantenna(f));	/* вытаскиваем номер включённой антенны */
+	if (aistate != 0)
+	{
+		cat_answer_request(CAT_AN_INDEX);
+	}
+#elif WITHANTSELECT
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	if (aistate != 0)
+	{
+		cat_answer_request(CAT_AN_INDEX);
+	}
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
+#if WITHAUTOTUNER
+	// todo: добавить учет включенной антенны
+	tunercap = loadvfy8up(offsetof(struct nvmap, bands[b].tunercap), CMIN, CMAX, tunercap);
+	tunerind = loadvfy8up(offsetof(struct nvmap, bands[b].tunerind), LMIN, LMAX, tunerind);
+	tunertype = loadvfy8up(offsetof(struct nvmap, bands[b].tunertype), 0, KSCH_COUNT - 1, tunertype);
+	tunerwork = loadvfy8up(offsetof(struct nvmap, bands[b].tunerwork), 0, 1, tunerwork);
+#endif /* WITHAUTOTUNER */
+#if WITHSPECTRUMWF
+	gzoomxpow2 [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
+	gtopdbspe [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdbspe), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
+	gbottomdbspe [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdbspe), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
+	gtopdbwfl [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdbwfl), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
+	gbottomdbwfl [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdbwfl), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
+#endif /* WITHSPECTRUMWF */
 }
 
 static void catchangesplit(
@@ -7740,11 +7979,11 @@ update_lo0(
 	const uint_fast8_t enable = lo0side != LOCODE_INVALID;
 	board_set_xvrtr(enable);
 	synth_lo0_setfreq(getlo0(lo0hint), enable);
-#if CTLSTYLE_OLEG4Z_V1
+#if XVTR_R820T2
 	board_set_swaprts(enable);	/* При преобразовании на этом гетеродине происходит инверсия спектра */
-#else /* CTLSTYLE_OLEG4Z_V1 */
+#else /* XVTR_R820T2 */
 	board_set_swaprts(lo0side == LOCODE_LOWER);	/* При преобразовании на этом гетеродине происходит инверсия спектра */
-#endif /* CTLSTYLE_OLEG4Z_V1 */
+#endif /* XVTR_R820T2 */
 }
 
 /* перенастройка формирования гетеродина для указанного режима. */
@@ -8098,7 +8337,7 @@ getlo4ref(
 static uint_fast8_t
 getactualtune(void)
 {
-	return tunemode || (catenable && cattunemode) || reqautotune || hardware_get_tune();
+	return tunemode || (catenable && cattunemode) || reqautotune || reqautotune2 || hardware_get_tune();
 }
 
 // вызывается из user mode
@@ -8106,7 +8345,7 @@ getactualtune(void)
 static uint_fast8_t
 getactualdownpower(void)
 {
-	return reqautotune || hardware_get_tune();
+	return reqautotune || reqautotune2 || hardware_get_tune();
 }
 
 #if WITHTX
@@ -9256,7 +9495,7 @@ typedef struct
 static void hamradio_autonotch_init(LMSData_t * const lmsd)
 {
 	lmsd->phonefence = 1;
-	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
+	const FLOAT_t mu = LOG10F(((5 + 1.0f) / 1500.0f) + 1.0f);
 	//const float32_t mu = 0.0001f;		// UA3REO value
 	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
 	arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
@@ -9269,7 +9508,7 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 
 // pInput - входной буфер FIRBUFSIZE сэмплов
 // pOutput - обработаный буфер FIRBUFSIZE сэмплов
-static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInput, float32_t * pOutput)
+static void hamradio_autonotch_process(LMSData_t * const lmsd, FLOAT_t * pInput, FLOAT_t * pOutput)
 {
     static float32_t errsig2 [FIRBUFSIZE];	/* unused output */
 //	float32_t diag;
@@ -9324,10 +9563,10 @@ static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInpu
 typedef struct rxaproc_tag
 {
 	// FIR audio filter
-	float32_t firEQcoeff [Ntap_rx_AUDIO];
-	arm_fir_instance_f32 fir_instance;
-	float32_t fir_state [FIRBUFSIZE + Ntap_rx_AUDIO - 1];
-	float32_t wire1 [FIRBUFSIZE];
+	FLOAT_t firEQcoeff [Ntap_rx_AUDIO];
+	ARM_MORPH(arm_fir_instance) fir_instance;
+	FLOAT_t fir_state [FIRBUFSIZE + Ntap_rx_AUDIO - 1];
+	FLOAT_t wire1 [FIRBUFSIZE];
 
 #if WITHNOSPEEX
 	// NLMS NR
@@ -9434,11 +9673,11 @@ void speex_free (void *ptr)
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNV3S
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNT113
 	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNV3S */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNT113 */
 	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNV3S */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNT113 */
 }
 
 static void speex_update_rx(void)
@@ -9455,7 +9694,7 @@ static void speex_update_rx(void)
 		rxaproc_t * const nrp = & rxaprocs [pathi];
 
 		// Получение параметров эквалайзера
-		float32_t * const dCoefs = nrp->firEQcoeff;
+		FLOAT_t * const dCoefs = nrp->firEQcoeff;
 		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
 		fir_expand_symmetric(dCoefs, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
 
@@ -9479,7 +9718,7 @@ static void InitNoiseReduction(void)
 	{
 		rxaproc_t * const nrp = & rxaprocs [pathi];
 
-		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->firEQcoeff, nrp->fir_state, FIRBUFSIZE);
+		ARM_MORPH(arm_fir_init)(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->firEQcoeff, nrp->fir_state, FIRBUFSIZE);
 
 #if WITHNOSPEEX
 
@@ -9526,7 +9765,7 @@ static void processNoiseReduction(rxaproc_t * nrp, const float* bufferIn, float*
 
 // user-mode processing
 // На выходе входной сигнал без изменений
-static float32_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+static FLOAT_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
 	// FIXME: speex внутри использует целочисленные вычисления
 //	static const float32_t ki = 32768;
@@ -9545,11 +9784,11 @@ static float32_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_
 #endif /* WITHNOSPEEX */
 }
 
-static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
 	// FIXME: speex внутри использует целочисленные вычисления
-	static const float32_t ki = 32768;
-	static const float32_t ko = 1. / 32768;
+	static const FLOAT_t ki = 32768;
+	static const FLOAT_t ko = 1. / 32768;
 	const uint_fast8_t amode = getamode(pathi);
 	const uint_fast8_t denoise = ispathprocessing(pathi) && gnoisereducts [amode];
 	const uint_fast8_t anotch = ispathprocessing(pathi) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
@@ -9561,21 +9800,21 @@ static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * 
 	if (denoise)
 	{
 		// Filtering and denoise.
-		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		processNoiseReduction(nrp, nrp->wire1, p);	// result copy back
 		return p;
 	}
 	else
 	{
 		// Filtering only.
-		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		return nrp->wire1;
 	}
 #else /* WITHNOSPEEX */
 
 	// Filtering and denoise.
 	BEGIN_STAMP();
-	arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+	ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 	END_STAMP();
 	if (anotch)
 	{
@@ -9592,9 +9831,9 @@ static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * 
 #else /* WITHLEAKYLMSANR */
 	if (ispathprocessing(pathi))
 	{
-		arm_scale_f32(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
+		ARM_MORPH(arm_scale)(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
 		speex_preprocess_run(nrp->st_handle, nrp->wire1);
-		arm_scale_f32(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
+		ARM_MORPH(arm_scale)(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
 	}
 #endif /* WITHLEAKYLMSANR */
 	return nrp->wire1;
@@ -9607,7 +9846,7 @@ static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * 
 // user-mode processing
 // На выходе формируется тишина
 // прием телетайпа в приемнике A
-static float32_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+static FLOAT_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
 #if WITHRTTY
 	if (pathi == 0)
@@ -9630,7 +9869,7 @@ audioproc_spool_user(void)
 	{
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;
-		float32_t * outsp [NTRX];
+		FLOAT_t * outsp [NTRX];
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 			rxaproc_t * const nrp = & rxaprocs [pathi];
@@ -9843,7 +10082,9 @@ updateboardZZZ(
 	static uint_fast8_t bandf2hint = UINT8_MAX;
 	static uint_fast8_t bandf3hint = UINT8_MAX;	// управление через разъем ACC
 #endif /* CTLSTYLE_IGOR */
-
+#if WITHANTSELECT2
+	static uint_fast8_t ant2hint = UINT8_MAX;
+#endif /* WITHANTSELECT2 */
 	uint_fast8_t full2 = full; 
 
 	uint_fast8_t pathi;
@@ -9875,6 +10116,9 @@ updateboardZZZ(
 	#endif /* CTLSTYLE_IGOR */
 		full2 |= flagne_u8(& lo0side, getsidelo0(freq));	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 		full2 |= flagne_u32(& lo0hint, gethintlo0(freq, lo0side));
+	#if WITHANTSELECT2
+		full2 |= flagne_u8(& ant2hint, getdefantenna(freq));
+	#endif /* WITHANTSELECT2 */
 	}
 	/* --- проверка необходимости полной перенастройки из-за сменившихся условий выбора частот. */
 
@@ -10275,13 +10519,16 @@ updateboardZZZ(
 	#if defined (RTC1_TYPE)
 		board_setrtcstrobe(grtcstrobe);
 	#endif /* defined (RTC1_TYPE) */
-	#if WITHANTSELECT
+	#if WITHANTSELECTRX
+		board_set_rxantenna(rxantmodes [grxantennas [rxbi]].code);
+		board_set_antenna(antmodes [gantennas [rxbi]].code);
+	#elif WITHANTSELECT2
+		board_set_antenna(gantmanual ? antmodes [gantennas [rxbi]].code : ant2hint);
+	#elif WITHANTSELECT
 		board_set_antenna(antmodes [gantennas [rxbi]].code [gtx]);
-	#endif /* WITHANTSELECT */
+	#endif /* WITHANTSELECT || WITHANTSELECTRX */
 	#if WITHELKEY
-		#if ! WITHOPERA4BEACON
-			board_set_wpm(elkeywpm.value);	/* скорость электронного ключа */
-		#endif /* ! WITHOPERA4BEACON */
+		board_set_wpm(elkeywpm.value);	/* скорость электронного ключа */
 		#if WITHVIBROPLEX
 			elkey_set_slope(elkeyslopeenable ? elkeyslope : 0);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
@@ -10311,7 +10558,11 @@ updateboardZZZ(
 		#else /* defined (WITHBBOXMIKESRC) */
 			const uint_fast8_t txaudio = gtxaudio [txmode];
 		#endif /* defined (WITHBBOXMIKESRC) */
+#if WITHAFCODEC1HAVELINEINLEVEL
 		board_set_lineinput(txaudio == BOARD_TXAUDIO_LINE);
+#else /* WITHAFCODEC1HAVELINEINLEVEL */
+		board_set_lineinput(0);
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 		board_set_detector(BOARD_DETECTOR_SSB);		/* Всегда смесительный детектор */
 		board_set_digigainmax(gdigigainmax);
 		board_set_gvad605(gvad605);			/* напряжение на AD605 (управление усилением тракта ПЧ */
@@ -10320,7 +10571,6 @@ updateboardZZZ(
 			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBUAC
-			board_set_uacmike(gdatamode || getcattxdata() || txaudio == BOARD_TXAUDIO_USB);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 			board_set_uacplayer((gtx && gdatamode) || guacplayer);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 				board_set_swapiq(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
@@ -10329,9 +10579,9 @@ updateboardZZZ(
 				board_set_datavox(gdatavox);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 			#endif /* WITHTX */
 		#endif /* WITHUSBUAC */
-		board_set_mikebust20db(gmikebust20db);	// Включение предусилителя за микрофоном
+		board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
 		board_set_lineamp(glineamp);	/* усиление с линейного входа */
-		board_set_txaudio(txaudio);	// Альтернативные источники сигнала при передаче
+		board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudio);	// Альтернативные источники сигнала при передаче
 		board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
 		board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
 		board_set_mikehclip(gmikehclip);	/* Ограничитель */
@@ -10342,11 +10592,12 @@ updateboardZZZ(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		board_set_moniflag(gmoniflag);	/* glob_moniflag */
 		#if WITHSPECTRUMWF
-			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdb);		/* верхний предел FFT */
-			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdb);		/* нижний предел FFT */
-			board_set_topdbwf(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbwf);		/* верхний предел FFT для водопада */
-			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbwf);		/* нижний предел FFT для водопада */
-			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
+			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe [bi_main]);		/* верхний предел FFT */
+			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbspe [bi_main]);		/* нижний предел FFT */
+			board_set_topdbwf(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbwfl [bi_main]);		/* верхний предел FFT для водопада */
+			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbwfl [bi_main]);		/* нижний предел FFT для водопада */
+			board_set_zoomxpow2(gzoomxpow2 [bi_main]);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			board_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
 			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
@@ -10355,7 +10606,7 @@ updateboardZZZ(
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
 			display2_set_filter_spe(gspecbeta100);	/* beta - парамеры видеофильтра спектра */
-			display2_set_filter_wtf(gwtfbeta100);	/* beta - парамеры видеофильтра водопада */
+			display2_set_filter_wfl(gwflbeta100);	/* beta - парамеры видеофильтра водопада */
 		#endif /* WITHSPECTRUMWF */
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
@@ -10631,7 +10882,22 @@ uint_fast8_t hamradio_get_voxvalue(void)
 #endif /* WITHVOX && WITHTX */
 
 
-#if WITHANTSELECT
+#if WITHANTSELECTRX
+
+// antenna
+const FLASHMEM char * hamradio_get_ant5_value_P(void)
+{
+	static char b [6];
+	local_snprintf_P(b, ARRAY_SIZE(b),
+			PSTR("%s %s"),
+			antmodes [gantennas [getbankindex_tx(gtx)]].label2,
+			rxantmodes[grxantennas [getbankindex_tx(gtx)]].label2
+	);
+	return b;
+}
+
+
+#elif WITHANTSELECT
 
 // antenna
 const FLASHMEM char * hamradio_get_ant5_value_P(void)
@@ -10639,7 +10905,20 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 	return antmodes [gantennas [getbankindex_tx(gtx)]].label5;
 }
 
-#endif /* WITHANTSELECT */
+#elif WITHANTSELECT2
+// antenna
+const FLASHMEM char * hamradio_get_ant5_value_P(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	static char b [6];
+	local_snprintf_P(b, ARRAY_SIZE(b),
+			PSTR("%s %s"),
+			antmodes [gantmanual ? gantennas [bi] : getdefantenna(gfreqs [bi])].label2,
+			gantmanual ? "MN" : "AU"
+	);
+	return b;
+}
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 
 // включение режима split (возможо, с расстройко от текущей частоты)
 static void 
@@ -10690,14 +10969,17 @@ uif_key_click_b_from_a(void)
 {
 #if (WITHSPLIT || WITHSPLITEX)
 
-	const uint_fast8_t sbi = getbankindex_ab(0);	// bank index исходных данных
-	const uint_fast8_t tbi = getbankindex_ab(1);	// bank index куда копируются данные
-	const vindex_t tgvi = getvfoindex(tbi);		// vfo index куда копируются данные
+	if (gsplitmode == VFOMODES_VFOSPLIT)
+	{
+		const uint_fast8_t sbi = getbankindex_ab(0);	// bank index исходных данных
+		const uint_fast8_t tbi = getbankindex_ab(1);	// bank index куда копируются данные
+		const vindex_t tgvi = getvfoindex(tbi);		// vfo index куда копируются данные
 
-	copybankstate(sbi, tbi, 0);
-	savebandstate(tgvi, tbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
-	savebandfreq(tgvi, tbi); // записать частоту в область данных VFO */
-	updateboard(1, 1);
+		copybankstate(sbi, tbi, 0);
+		savebandstate(tgvi, tbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
+		savebandfreq(tgvi, tbi); // записать частоту в область данных VFO */
+		updateboard(1, 1);
+	}
 
 #endif /* (WITHSPLIT || WITHSPLITEX) */
 }
@@ -10890,7 +11172,7 @@ uif_key_click_bandup(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
 	verifyband(b);
 	savebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	savebandfreq(b, bi);
@@ -10933,6 +11215,7 @@ uif_key_click_banddjump(uint_fast32_t f)
 	const vindex_t vi = getvfoindex(bi);
 	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
 	vindex_t bn = getfreqband(f);
+
 	const uint_fast8_t bandgroup = bandsmap [bn].bandgroup;
 	verifyband(b);
 	verifyband(bn);
@@ -10970,12 +11253,12 @@ uif_key_click_agcmode(void)
 	updateboard(1, 0);
 }
 
-#if WITHANTSELECT
+#if WITHANTSELECTRX
 
 /* Antenna switch
 	  */
-static void 
-uif_key_click_antenna(void)
+static void
+uif_key_next_antenna(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
@@ -10987,7 +11270,65 @@ uif_key_click_antenna(void)
 	updateboard(1, 0);
 }
 
-#endif /* WITHANTSELECT */
+/* Antenna switch
+	  */
+static void
+uif_key_next_rxantenna(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t vi = getvfoindex(bi);
+
+	verifyband(vi);
+
+	grxantennas [bi] = calc_next(grxantennas [bi], 0, RXANTMODE_COUNT - 1);
+	savebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
+	updateboard(1, 0);
+}
+
+#elif WITHANTSELECT2
+
+/* Antenna switch
+	  */
+static void
+uif_key_next_antenna(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t vi = getvfoindex(bi);
+
+	verifyband(vi);
+
+	gantennas [bi] = calc_next(gantennas [bi], 0, ANTMODE_COUNT - 1);
+	savebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
+	updateboard(1, 0);
+}
+
+/* ручной/автоматический выбор антенны */
+static void
+uif_key_next_autoantmode(void)
+{
+	gantmanual = calc_next(gantmanual, 0, 1);
+	save_i8(RMT_ANTMANUAL_BASE, gantmanual);
+	updateboard(1, 0);
+}
+
+#elif WITHANTSELECT
+
+/* Antenna switch
+	  */
+static void 
+uif_key_next_antenna(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t vi = getvfoindex(bi);
+
+	verifyband(vi);
+
+	gantennas [bi] = calc_next(gantennas [bi], 0, ANTMODE_COUNT - 1);
+	savebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
+	updateboard(1, 0);
+}
+
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 
 #if ! WITHONEATTONEAMP
 /* переключение режима предусилителя  */
@@ -11281,7 +11622,9 @@ uif_key_bypasstoggle(void)
 	const vindex_t b = getvfoindex(bi);
 
 	tunerwork = calc_next(tunerwork, 0, 1);	// переключаем в противоположное состояние
-	save_i8(offsetof(struct nvmap, bands[b].tunerwork), 1);
+
+	savetunerallstate(bi, b);
+
 	if (tunerwork == 0)
 		reqautotune = 0;	// сброс идущей настройки
 	updateboard(1, 0);
@@ -11442,7 +11785,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 
 #else /* WITHREFSENSOR */
 
-	const unsigned Vref_mV = 2900;//ADCVREF_CPU * 100;
+	const unsigned Vref_mV = ADCVREF_CPU * 100;
 	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
 	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 
@@ -12168,6 +12511,15 @@ display2_redrawbarstimed(
 	if (immed || display_refreshenabled_voltage())
 	{
 		looptests();		// Периодически вызывается в главном цикле - тесты
+#if WITHAUTOTUNER
+		//if (gtx && ! reqautotune)
+		{
+			adcvalholder_t r;
+			adcvalholder_t f;
+			const uint_fast16_t swr = tuner_get_swr("main_loop", TUS_SWRMAX, & r, & f);
+
+		}
+#endif /* WITHAUTOTUNER */
 		/* медленно меняющиеся значения с редким опорсом */
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHTHERMOLEVEL
@@ -13161,7 +13513,7 @@ static void paanswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 
-#if WITHANTSELECT
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 
 static void ananswer(uint_fast8_t arg)
 {
@@ -13182,7 +13534,7 @@ static void ananswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 
-#endif /* WITHANTSELECT */
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 
@@ -13468,9 +13820,9 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 	smanswer,
 	raanswer,
 	paanswer,
-#if WITHANTSELECT
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 	ananswer,
-#endif /* WITHANTSELECT */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	rm1answer,
 	rm2answer,
@@ -13981,7 +14333,7 @@ processcatmsg(
 			cat_answer_request(CAT_PA_INDEX);
 		}
 	}
-#if WITHANTSELECT
+#if WITHANTSELECT || WITHANTSELECTRX
 	else if (match2('A', 'N'))
 	{
 		// in differencies from documentation, ant1=1, ant2=2
@@ -14003,7 +14355,7 @@ processcatmsg(
 			cat_answer_request(CAT_AN_INDEX);
 		}
 	}
-#endif /* WITHANTSELECT */
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 	else if (match2('P', 'S'))
 	{
 		if (cathasparam)
@@ -14468,7 +14820,7 @@ static void dpc_1stimer(void * arg)
 #endif /* WITHSLEEPTIMER */
 
 #if WITHLWIP
-	sys_check_timeouts();
+//	sys_check_timeouts();
 #endif /* WITHLWIP */
 
 #if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
@@ -14590,7 +14942,8 @@ processmessages(
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHLWIP
 		/* LWIP */
-		usb_polling();     // usb device polling
+		//usb_polling();     // usb device polling
+		//network_spool();
 		//stmr();            // call software timers
 #endif /* WITHLWIP */
 		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
@@ -14770,6 +15123,48 @@ static void spool_secound(void * ctx)
 	//VERIFY(board_dpc(& dpc_1slock, dpc_1stimer, NULL));
 }
 
+#if WITHTX
+
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
+{
+	uint_fast16_t swr10; 		// swr10 = 0..30 for swr 1..4
+	adcvalholder_t forward, reflected;
+
+	forward = board_getswrmeter_unfiltered(& reflected, swrcalibr);
+
+								// рассчитанное  значение
+	if (forward < minforward)
+		swr10 = 0;				// SWR=1
+	else if (forward <= reflected)
+		swr10 = swr_fullscale;		// SWR is infinite
+	else
+		swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
+	return swr10;
+}
+#else
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
+{
+	return 0;
+}
+#endif /* WITHTX */
+
+uint_fast8_t hamradio_get_txdisable(void)
+{
+#if defined (HARDWARE_GET_TXDISABLE)
+	if (HARDWARE_GET_TXDISABLE())
+		return 1;
+#endif /* defined (HARDWARE_GET_TXDISABLE) */
+#if WITHTHERMOLEVEL
+	if (gheatprot != 0 && hamradio_get_temperature_value() >= gtempvmax * 10)// Градусы в десятых долях
+		return 1;
+#endif /* WITHTHERMOLEVEL */
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr(40) >= 20)	// SWR >= 3.0
+		return 1;
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+	return 0;
+}
+
 /* Установка сиквенсору запроса на передачу.	*/
 static void
 //NOINLINEAT
@@ -14817,7 +15212,21 @@ processtxrequest(void)
 	{
 		tunreq = 1;
 	}
-	seq_txrequest(tunreq, tunreq || txreq);
+
+	const uint_fast8_t error = hamradio_get_txdisable();
+	if (error)
+	{
+#if WITHCAT
+		cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
+#endif	/* WITHCAT */
+		moxmode = 0;
+		tunemode = 0;		/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+#if WITHAUTOTUNER
+		reqautotune = 0;
+#endif /* WITHAUTOTUNER */
+	}
+
+	seq_txrequest(! error && tunreq, ! error && (tunreq || txreq));
 #endif /* WITHTX */
 }
 
@@ -14912,13 +15321,15 @@ display_menu_string_P(
 
 // WSIGNFLAG
 
-#define ITEM_VALUE	0x01	/* пункт меню для редактирования параметра */
-#define ITEM_GROUP	0x02	/* пункт меню без изменяемого значения - связан с подменю */
+#define ITEM_VALUE	(0x01u << 0)	/* пункт меню для редактирования параметра */
+#define ITEM_GROUP	(0x01u << 1)	/* пункт меню без изменяемого значения - связан с подменю */
 
-#define ITEM_FILTERU	0x04	/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
-#define ITEM_FILTERL	0x08	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
+#define ITEM_FILTERU	(0x01u << 2)	/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
+#define ITEM_FILTERL	(0x01u << 3)	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
 
-#define ITEM_NOINITNVRAM	0x10	/* значение этого пункта не используется при начальной инициализации NVRAM */
+#define ITEM_NOINITNVRAM	(0x01u << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
+
+#define ITEM_ARRAY_BI	(0x01u << 5)	/* указатель на переменную ссылается на массив. Индекс по bank index от getbankindex_ab_fordisplay(0) */
 
 #if CPUSTYLE_ATMEGA
 	#define QLABEL(s) (s)
@@ -15167,22 +15578,22 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		MENUNONVRAM,
-		nvramoffs0,
+		offsetof(struct nvmap, bands [0].gtopdbspe),
+		nvramoffs_band_a,
 		NULL,
-		& gtopdb,
+		& gtopdbspe [0],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		MENUNONVRAM,
-		nvramoffs0,
+		offsetof(struct nvmap, bands [0].gbottomdbspe),
+		nvramoffs_band_a,
 		NULL,
-		& gbottomdb,
+		& gbottomdbspe [0],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -15197,22 +15608,22 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		MENUNONVRAM,
-		nvramoffs0,
+		offsetof(struct nvmap, bands [0].gtopdbwfl),
+		nvramoffs_band_a,
 		NULL,
-		& gtopdbwf,
+		& gtopdbwfl [0],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		MENUNONVRAM,
-		nvramoffs0,
+		offsetof(struct nvmap, bands [0].gbottomdbwfl),
+		nvramoffs_band_a,
 		NULL,
-		& gbottomdbwf,
+		& gbottomdbwfl [0],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -15228,12 +15639,12 @@ static const FLASHMEM struct menudef menutable [] =
 #if BOARD_FFTZOOM_POW2MAX > 0
 	{
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_ARRAY_BI,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
-		MENUNONVRAM,
-		nvramoffs0,
+		offsetof(struct nvmap, bands [0].gzoomxpow2),
+		nvramoffs_band_a,
 		NULL,
-		& gzoomxpow2,
+		& gzoomxpow2 [0],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
@@ -15258,13 +15669,13 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("BETA WTF"), 7, 2, 0,	ISTEP1,
+		QLABEL("BETA WFL"), 7, 2, 0,	ISTEP1,
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра водопада */
-		offsetof(struct nvmap, gwtfbeta100),
+		offsetof(struct nvmap, gwflbeta100),
 		nvramoffs0,
 		NULL,
-		& gwtfbeta100,
+		& gwflbeta100,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
@@ -16628,7 +17039,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gkeybeep10,
 		getzerobase, 
 	},
-#endif
+#endif /* (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP */
 #if WITHMUTEALL && WITHTX
 	{
 		QLABEL("MUTE ALL"), 7, 3, RJ_YES,	ISTEP1,
@@ -16663,7 +17074,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* WITHPOTNFMSQL */
+#endif /* ! WITHPOTNFMSQL */
 	{
 		QLABEL("SDTN LVL"), 7, 0, 0,	ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
 		ITEM_VALUE,
@@ -16835,13 +17246,13 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHREVERB */
 	{
-		QLABEL("MIK BUST"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL2("MIKBOOST", "Mike boost"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
-		offsetof(struct nvmap, gmikebust20db),
+		offsetof(struct nvmap, gmikeboost20db),
 		nvramoffs0,
 		NULL,
-		& gmikebust20db,
+		& gmikeboost20db,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
@@ -18075,19 +18486,29 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
 		ITEM_VALUE,
-		1, 255, 
+		1, 255,
 		offsetof(struct nvmap, maxpwrcali),
 		nvramoffs0,
 		NULL,
 		& maxpwrcali,
-		getzerobase, 
+		getzerobase,
+	},
+	{
+		QLABEL("SWR PROT"), 7, 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,						/* защита от превышения КСВ */
+		offsetof(struct nvmap, gswrprot),
+		nvramoffs0,
+		NULL,
+		& gswrprot,
+		getzerobase,
 	},
 	
 #elif WITHPWRMTR
 	{
 		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
 		ITEM_VALUE,
-		10, 255, 
+		10, 255,
 		offsetof(struct nvmap, maxpwrcali),
 		nvramoffs0,
 		NULL,
@@ -18095,6 +18516,28 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 #endif
+#if WITHTHERMOLEVEL
+	{
+		QLABEL("HEAT LIM"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		20, 85,						/* порог срабатывания защиты по температуре */
+		offsetof(struct nvmap, gtempvmax),
+		nvramoffs0,
+		NULL,
+		& gtempvmax,
+		getzerobase,
+	},
+	{
+		QLABEL("HEATPROT"), 7, 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,						/* защита от перегрева */
+		offsetof(struct nvmap, gheatprot),
+		nvramoffs0,
+		NULL,
+		& gheatprot,
+		getzerobase,
+	},
+#endif /* WITHTHERMOLEVEL */
 #if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
 	{
 		QLABEL("RXTX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
@@ -18266,6 +18709,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& bandset11m,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if WITHANTSELECT2
+	{
+		QLABEL2("HF ANT F", "HF Ant freq"), 3, 0, 0, ISTEP1,
+		ITEM_VALUE,
+		TUNE_BOTTOM / 1000000, (TUNE_TOP - 1) / 1000000,
+		offsetof(struct nvmap, hffreqswitch),
+		nvramoffs0,
+		NULL,
+		& hffreqswitch,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHANTSELECT2 */
 #if WITHBCBANDS
 	{
 		QLABEL("BAND BC "), 7, 3, RJ_YES,	ISTEP1,
@@ -18490,6 +18945,7 @@ ismenufilterlsb(
 /* Загрузка значений из NVRAM в переменные программы.
    Значением по умолчанию является то, на которое
    переменная инициализированна при запуске программы.
+   Не восстанавливаем "массивы"
    see also loadsavedstate().
    */
 static void 
@@ -18501,23 +18957,24 @@ loadsettings(void)
 	for (i = 0; i < MENUROW_COUNT; ++ i)
 	{
 		const FLASHMEM struct menudef * const mp = & menutable [i];
-		if (ismenukind(mp, ITEM_VALUE) && ! ismenukind(mp, ITEM_NOINITNVRAM))
+		if (ismenukind(mp, ITEM_VALUE) && ! ismenukind(mp, ITEM_NOINITNVRAM) && ! ismenukind(mp, ITEM_ARRAY_BI))
 		{
-			const nvramaddress_t nvram = mp->qnvram;
+			const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram);
 			const uint_fast16_t bottom = mp->qbottom;
 			const uint_fast16_t upper = mp->qupper;
 			uint_fast16_t * const pv16 =  mp->qpval16;
 			uint_fast8_t * const pv8 = mp->qpval8;
+			const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 
 			if (nvram == MENUNONVRAM)
 				continue;
 			if (pv16 != NULL)
 			{
-				* pv16 = loadvfy16up(nvram, bottom, upper, * pv16);
+				pv16 [valoffset] = loadvfy16up(nvram, bottom, upper, pv16 [valoffset]);
 			}
 			else if (pv8 != NULL)
 			{
-				* pv8 = loadvfy8up(nvram, bottom, upper, * pv8);
+				pv8 [valoffset] = loadvfy8up(nvram, bottom, upper, pv8 [valoffset]);
 			}
 		}
 	}
@@ -18532,19 +18989,20 @@ savemenuvalue(
 {
 	if (ismenukind(mp, ITEM_VALUE))
 	{
-		const nvramaddress_t nvram = mp->qnvram;
+		const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram);
 		const uint_fast16_t * const pv16 = mp->qpval16;
 		const uint_fast8_t * const pv8 = mp->qpval8;
+		const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 
 		if (nvram == MENUNONVRAM)
 			return;
 		if (pv16 != NULL)
 		{
-			save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
+			save_i16(nvram, pv16 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
-			save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
+			save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 	}
 }
@@ -18568,6 +19026,18 @@ defaultsettings(void)
 			savemenuvalue(mp);
 		}
 	}
+
+#if WITHSPECTRUMWF
+	const uint_fast8_t bi = 0;
+	for (i = 0; i < HBANDS_COUNT; ++ i)
+	{
+			save_i8(offsetof(struct nvmap, bands[i].gzoomxpow2), gzoomxpow2 [bi]);	/* уменьшение отображаемого участка спектра */
+			save_i8(offsetof(struct nvmap, bands[i].gtopdbspe), gtopdbspe [bi]);	/* нижний предел FFT */
+			save_i8(offsetof(struct nvmap, bands[i].gbottomdbspe), gbottomdbspe [bi]);	/* верхний предел FFT */
+			save_i8(offsetof(struct nvmap, bands[i].gtopdbwfl), gtopdbwfl [bi]);	/* нижний предел FFT waterflow */
+			save_i8(offsetof(struct nvmap, bands[i].gbottomdbwfl), gbottomdbwfl [bi]);	/* верхний предел FFT waterflow */
+	}
+#endif /* WITHSPECTRUMWF */
 }
 
 //+++ menu support
@@ -18924,6 +19394,8 @@ void display2_menu_valxx(
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
 	const FLASHMEM struct menudef * const mp = pctx->pv;
+	if (ismenukind(mp, ITEM_VALUE) == 0)
+		return;
 	multimenuwnd_t window;
 
 	display2_getmultimenu(& window);
@@ -18937,29 +19409,28 @@ void display2_menu_valxx(
 	uint_fast8_t comma = mp->qcomma;
 	const uint_fast16_t * const pv16 = mp->qpval16;
 	const uint_fast8_t * const pv8 = mp->qpval8;
+	const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 
-	if (ismenukind(mp, ITEM_VALUE) == 0)
-		return;
 	// получение значения для отображения
 	if (ismenufilterlsb(mp))
 	{
 		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, low_or_center);
-		value = getlo4baseflt(filter) + * pv16;
+		value = getlo4baseflt(filter) + pv16 [valoffset];
 	}
 	else if (ismenufilterusb(mp))
 	{
 		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, high);
-		value = getlo4baseflt(filter) + * pv16;
+		value = getlo4baseflt(filter) + pv16 [valoffset];
 	}
 	else if (pv16 != NULL)
 	{
 		const int_fast32_t offs = mp->funcoffs();
-		value = offs + * pv16;
+		value = offs + pv16 [valoffset];
 	}
 	else if (pv8 != NULL)
 	{
 		const int_fast32_t offs = mp->funcoffs();
-		value = offs + * pv8;
+		value = offs + pv8 [valoffset];
 	}
 	else
 	{
@@ -18975,10 +19446,12 @@ void display2_menu_valxx(
 			static const FLASHMEM char msg [] [6] = 
 			{
  				"MIKE ",	// BOARD_TXAUDIO_MIKE
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
  				"LINE ",	// BOARD_TXAUDIO_LINE
-#if WITHUSBUAC
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
+#if WITHUSBUACOUT
 				"USB  ",	// BOARD_TXAUDIO_USB
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACOUT */
 				"2TONE",	// BOARD_TXAUDIO_2TONE
 				"NOISE",	// BOARD_TXAUDIO_NOISE
 				"1TONE",	// BOARD_TXAUDIO_1TONE
@@ -19177,7 +19650,7 @@ void display2_menu_valxx(
 			default: 	msg = PSTR("STM32MP15xxx"); break;
 			}
 #elif CPUSTYLE_XC7Z
-			msg = PSTR("ZYNQ 7000");
+			msg = PSTR("ZYNQ 7020");
 #elif CPUSTYLE_XCZU
 			msg = PSTR("ZYNQ USCALE");
 #elif CPUSTYLE_R7S721
@@ -19901,13 +20374,35 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* ! WITHAGCMODENONE */
 
-#if WITHANTSELECT
+#if WITHANTSELECTRX
+	case KBD_CODE_ANTENNA_HOLDED:
+		/* Antenna switch */
+		uif_key_next_antenna();
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_ANTENNA:
+		/* RX Antenna switch */
+		uif_key_next_rxantenna();
+		return 1;	/* клавиша уже обработана */
+
+#elif WITHANTSELECT2
+	case KBD_CODE_ANTENNA_HOLDED:
+		/* ручной/автоматический выбор антенны */
+		uif_key_next_autoantmode();
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_ANTENNA:
+		/* Antenna switch */
+		uif_key_next_antenna();
+		return 1;	/* клавиша уже обработана */
+
+#elif WITHANTSELECT
 	case KBD_CODE_ANTENNA:
 		/* Antenna switch
 			 - не вызывает сохранение состояния диапазона */
-		uif_key_click_antenna();
+		uif_key_next_antenna();
 		return 1;	/* клавиша уже обработана */
-#endif /* WITHANTSELECT */
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 
 #if WITHUSEAUDIOREC
 	case KBD_CODE_RECORDTOGGLE:	// SD CARD audio recording
@@ -20370,6 +20865,7 @@ processkeyboard(uint_fast8_t kbch)
 #endif //WITHMENU && ! WITHTOUCHGUI
 
 	case KBD_CODE_DISPMODE:
+#if ! WITHTOUCHGUI
 		if (display_getpagesmax() != 0)
 		{
 			/* Альтернативные функции кнопок - "Fn"
@@ -20379,6 +20875,7 @@ processkeyboard(uint_fast8_t kbch)
 			display2_bgreset();
 			return 1;	// требуется обновление индикатора
 		}
+#endif /* ! WITHTOUCHGUI */
 		return 0;	// не требуется обновление индикатора
 
 #if WITHMENU
@@ -20903,7 +21400,7 @@ hamradio_initialize(void)
 {
 	/* NVRAM уже можно пользоваться */
 #if WITHMENU && ! HARDWARE_IGNORENONVRAM
-	loadsettings();		/* загрузка всех установок из nvram */
+	loadsettings();		/* загрузка всех установок из nvram. Не восстанавливаем "массивы" */
 #endif /* WITHMENU && ! HARDWARE_IGNORENONVRAM */
 	//extmenu = extmenu || alignmode;
 	loadsavedstate();	// split, lock, s-meter display, see also loadsettings().
@@ -20981,16 +21478,33 @@ hamradio_initialize(void)
 
 #endif /* WITHUSBHW */
 
-	hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
+	// TODO: у аудио кодека и IF кодека могут быть раные требования
+#if defined(CODEC1_TYPE)
+	/* требуется ли подача тактирования для инициадизации кодека */
+	const int reqclk = board_getaudiocodecif()->clocksneed();
+#else /* defined(CODEC1_TYPE) */
+	const int reqclk = 1;
+#endif /* defined(CODEC1_TYPE) */
 
-	board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
-	board_update();
+	if (reqclk != 0)
+	{
+		hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
+		board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
+		board_update();
+	}
+
+	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
+
+	if (reqclk == 0)
+	{
+		hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
+		board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
+		board_update();
+	}
 
 #if WITHSPISLAVE
 	hardware_spi_slave_enable(SPIC_MODE3);
 #endif /* WITHSPISLAVE */
-
-	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
 
 #if WITHTOUCHGUI
 	gui_initialize();
@@ -21030,163 +21544,6 @@ dspcontrol_mainloop(void)
 	}
 }
 #endif /* WITHSPISLAVE */
-
-#if WITHOPERA4BEACON
-
-#if 1
-
-
-
-#define NFREQS 1
-#define FREQTEMPO	512	// 128 ms интервал
-// . Частота - Dial USB + 1500 Гц
-// 3. Передаем со скоростью Opera05: 0.128 s  на ВСЕХ частотах.
-//3570     CH1TST
-static const char msg1 [] = "11011001101010100110101010100110010101010110101010011001100110010101101001101010101010100110011010011001011010100101100101011010101010011010100110010110100101101010011010011001011001011010011010011001011010010110100101100101101001101001010";
-
-static unsigned long freqs [NFREQS] = 
-{
-	3548500,
-};
-
-static const char * const msgs [NFREQS] =
-{
-	msg1,
-};
-
-#elif 1
-
-#define NFREQS 4
-#define FREQTEMPO	128	// 128 ms интервал
-// . Частота - Dial USB + 1500 Гц
-// 3. Передаем со скоростью Opera05: 0.128 s  на ВСЕХ частотах.
-//3570     CH1TST
-static const char msg1 [] = "11011010100110010101011001010101101001101010011010100110100110010110011010101010100101100110100110101001011010100110100110010110011010010110101010101001100110010110010101011010101010101001010101010101010110011010100110011010100110101010011";
-//5358    CH2TST
-static const char msg2 [] = "11011010101001011010100101100101010101101010010101010101010101101010011010101001101001010110100101010110011010100101100110011001100110101010101010011001011001011010100101011010101010100110011001100101101001011010101001101001101001011001011";
-//7037    CH3TST
-static const char msg3 [] = "11011010101001100101010110010101011001101010011010011001101010011001101010101001011010011001100110011010011010100101011001011010101001101010101010011001011010011001011001101010101010010101011010101001010110011010101010011010010110011010101";
-//10134   CH4TST
-static const char msg4 [] = "11011010101010101010010101100110100101101010011001101001011010101001011010101001100110101010011001100110011010100101010101010101011010101010101010010101010110101001011010011010101010011001011010010110100101011010101001100101010110010110011";
-//14063   CH5TST
-//static const char msg5 [] = "11011010101001010101100110100110101001101010010101100110101010011010011010101001101001101001101010101001011010100110011001100101101010100110101010010110011010100110011010011010101010011010101001011001101010011010101010010101101001101010101";
-
-static unsigned long freqs [NFREQS] = 
-{
-	(3570 * 1000uL) + 1500,
-	(5359 * 1000uL) + 1500,
-	(7036 * 1000uL) + 1500,
-	(10133 * 1000uL) + 1500,
-	//(14063 * 1000uL) + 1500,
-};
-
-static const char * const msgs [NFREQS] =
-{
-	msg1,
-	msg2,
-	msg3,
-	msg4,
-	//msg5,
-};
-#endif
-
-static int getkeydn(int msg, int pos)
-{
-	return msgs [msg][pos] == '1';
-}
-
-static void setmsgkeys(int pos)
-{
-	int msg;
-	for (msg = 0; msg < NFREQS; ++ msg)
-	{
-		const uint_fast32_t freq = getkeydn(msg, pos) * freqs [msg];
-		static uint_fast32_t lastfreq = UINT32_MAX;
-		if (lastfreq != freq)
-		{
-			lastfreq = freq;
-			synth_lo1_setfrequ(msg, freq, getlo1div(gtx));
-		}
-	}
-}
-
-static volatile int flag128;
-
-void spool_0p128(void)
-{
-	flag128 = 1;
-}
-
-static int getevent128ms(void)
-{
-	//local_delay_ms(FREQTEMPO);
-	//return 1;
-
-	system_disableIRQ();
-	int f = flag128;
-	flag128 = 0;
-	system_enableIRQ();
-	return f;
-}
-
-static void dumbtx(int tx)
-{
-	if (gtx == tx)
-		return;
-	seq_txrequest(0, tx);	// press PTT
-	while (seq_get_txstate() != tx)
-		;
-	gtx = tx;
-#if WITHDSPEXTDDC
-	gdactest = tx;
-#endif /* WITHDSPEXTDDC */
-	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-
-	seq_ask_txstate(tx);
-
-}
-
-static void
-hamradio_mainloop_OPERA4(void)
-{
-	int periodS = 2uL * 60;
-	int msgpos;
-	const int msglen = strlen(msgs [0]);
-	long ticks0 = ((int64_t) periodS * 1000) / FREQTEMPO - msglen - 2;
-	if (ticks0 < 0)
-		ticks0 = 5120;
-
-	ticks0 = 5120;
-	gtx = 0;
-
-	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-	hardware_elkey_set_speed128(1000, FREQTEMPO);	// период 0.128 секунды
-	
-	for (msgpos = 0;;)
-	{
-		while (getevent128ms() == 0)
-			;
-		dumbtx(1);
-		setmsgkeys(msgpos);
-		msgpos = ((msgpos + 1) >= msglen) ? 0 : (msgpos + 1);
-		if (msgpos == 0)
-		{
-			while (getevent128ms() == 0)
-				;
-			setmsgkeys(msglen);	// выключить формирование - превести на частоту 0 все каналы
-			dumbtx(0);
-			long ticks = ticks0;
-			while (ticks --)
-			{
-				while (getevent128ms() == 0)
-					;
-			}
-
-		}
-	}
-}
-
-#endif /* WITHOPERA4BEACON */
 
 #if CTLSTYLE_V1H
 
@@ -21496,7 +21853,7 @@ hamradio_main_step(void)
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 			}
-	#if 0//WITHDEBUG
+	#if WITHDEBUG
 			{
 				/* здесь можно добавить обработку каких-либо команд с debug порта */
 				char c;
@@ -21504,8 +21861,17 @@ hamradio_main_step(void)
 				{
 					switch (c)
 					{
-					default:
+					case 0x00:
 						break;
+					default:
+						PRINTF("key=%02X\n", (unsigned char) c);
+						break;
+		#if WITHUSBHOST_HIGHSPEEDULPI
+					case 'u':
+						PRINTF("hkey:\n");
+						ulpi_chip_debug();
+						break;
+		#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 		#if WITHWAVPLAYER || WITHSENDWAV
 					case 'p':
 						PRINTF(PSTR("Play test file\n"));
@@ -21942,15 +22308,15 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 	updateboard(1, 0);
 }
 
-uint_fast8_t hamradio_get_gmikebust20db(void)
+uint_fast8_t hamradio_get_gmikeboost20db(void)
 {
-	return gmikebust20db;
+	return gmikeboost20db;
 }
 
-void hamradio_set_gmikebust20db(uint_fast8_t v)
+void hamradio_set_gmikeboost20db(uint_fast8_t v)
 {
-	gmikebust20db = v != 0;
-	save_i8(offsetof(struct nvmap, gmikebust20db), gmikebust20db);
+	gmikeboost20db = v != 0;
+	save_i8(offsetof(struct nvmap, gmikeboost20db), gmikeboost20db);
 	updateboard(1, 0);
 }
 
@@ -22033,9 +22399,8 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	if (freqvalid(freq, gtx))
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
-		//vindex_t vi = getvfoindex(bi);
 		gfreqs [bi] = freq;
-		//savebandfreq(vi, bi);
+		sthrl = STHRL_RXTX_FQCHANGED;
 		updateboard(0, 0);
 		return 1;
 	}
@@ -22488,7 +22853,7 @@ void hamradio_clean_mic_profile(uint_fast8_t cell)
 
 	micprof_t * mp = & micprof_cells [cell];
 
-	mp->mikebust20db = 0;
+	mp->mikeboost20db = 0;
 	mp->level = 0;
 	mp->agc = 0;
 	mp->agcgain = 0;
@@ -22506,7 +22871,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 	micprof_t * mp = & micprof_cells [cell];
 
 	mp->cell_saved = 1;
-	mp->mikebust20db = gmikebust20db;
+	mp->mikeboost20db = gmikeboost20db;
 	mp->level = gmik1level;
 	mp->agc = gmikeagc;
 	mp->agcgain = gmikeagcgain;
@@ -22520,7 +22885,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 	}
 
 	save_i8(RMT_MICEQ_BASE(cell), mp->eq_enable);
-	save_i8(RMT_MICBOOST_BASE(cell), mp->mikebust20db);
+	save_i8(RMT_MICBOOST_BASE(cell), mp->mikeboost20db);
 	save_i8(RMT_MICLEVEL_BASE(cell), mp->level);
 	save_i8(RMT_MICAGC_BASE(cell), mp->agc);
 	save_i8(RMT_MICAGCGAIN_BASE(cell), mp->agcgain);
@@ -22536,7 +22901,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 
 	if (mp->cell_saved && set)
 	{
-		gmikebust20db = mp->mikebust20db;
+		gmikeboost20db = mp->mikeboost20db;
 		gmik1level = mp->level;
 		gmikeagc = mp->agc;
 		gmikeagcgain = mp->agcgain;
@@ -22625,7 +22990,7 @@ void hamradio_goto_band_by_freq(uint_fast32_t f)
 uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
 {
 	band_no_check = 1;
-	uint_fast8_t v = getfreqband(hamradio_get_freq_rx()) == band;
+	vindex_t v = getfreqband(hamradio_get_freq_rx()) == band;
 	band_no_check = 0;
 	return v;
 }
@@ -22679,15 +23044,17 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 
 uint_fast8_t hamradio_get_gzoomxpow2(void)
 {
-	return gzoomxpow2;
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);		/* VFO A modifications */
+	return gzoomxpow2 [bi];
 }
 
 void hamradio_set_gzoomxpow2(uint_fast8_t v)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
-	gzoomxpow2 = v;
+	gzoomxpow2 [bi] = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gzoomxpow2)), gzoomxpow2);
+	save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gzoomxpow2)), gzoomxpow2 [bi]);
 	updateboard(1, 0);
 }
 
@@ -22705,79 +23072,83 @@ void hamradio_set_gwflevelsep(uint_fast8_t v)
 
 uint_fast8_t hamradio_gtopdbsp(int_fast8_t v)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	if (v > 0)
-		gtopdb = calc_next(gtopdb, WITHTOPDBMIN, WITHTOPDBMAX);
+		gtopdbspe [bi] = calc_next(gtopdbspe [bi], WITHTOPDBMIN, WITHTOPDBMAX);
 	else if (v < 0)
-		gtopdb = calc_prev(gtopdb, WITHTOPDBMIN, WITHTOPDBMAX);
+		gtopdbspe [bi] = calc_prev(gtopdbspe [bi], WITHTOPDBMIN, WITHTOPDBMAX);
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb)), gtopdb);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gtopdbspe)), gtopdbspe [bi]);
 		updateboard(1, 0);
 	}
 
-	return gtopdb;
+	return gtopdbspe [bi];
 }
 
 uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	if (v > 0)
-		gbottomdb = calc_next(gbottomdb, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+		gbottomdbspe [bi] = calc_next(gbottomdbspe [bi], WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
 	else if (v < 0)
-		gbottomdb = calc_prev(gbottomdb, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+		gbottomdbspe [bi] = calc_prev(gbottomdbspe [bi], WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb)), gbottomdb);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gbottomdbspe)), gbottomdbspe [bi]);
 		updateboard(1, 0);
 	}
 
-	return gbottomdb;
+	return gbottomdbspe [bi];
 }
 
 uint_fast8_t hamradio_gtopdbwf(int_fast8_t v)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	if (v > 0)
-		gtopdbwf = calc_next(gtopdbwf, WITHTOPDBMIN, WITHTOPDBMAX);
+		gtopdbwfl [bi] = calc_next(gtopdbwfl [bi], WITHTOPDBMIN, WITHTOPDBMAX);
 	else if (v < 0)
-		gtopdbwf = calc_prev(gtopdbwf, WITHTOPDBMIN, WITHTOPDBMAX);
+		gtopdbwfl [bi] = calc_prev(gtopdbwfl [bi], WITHTOPDBMIN, WITHTOPDBMAX);
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf)), gtopdbwf);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gtopdbwfl)), gtopdbwfl [bi]);
 		updateboard(1, 0);
 	}
 
-	return gtopdbwf;
+	return gtopdbwfl [bi];
 }
 
 uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	if (v > 0)
-		gbottomdbwf = calc_next(gbottomdbwf, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+		gbottomdbwfl [bi] = calc_next(gbottomdbwfl [bi], WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
 	else if (v < 0)
-		gbottomdbwf = calc_prev(gbottomdbwf, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+		gbottomdbwfl [bi] = calc_prev(gbottomdbwfl [bi], WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf)), gbottomdbwf);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gbottomdbwfl)), gbottomdbwfl [bi]);
 		updateboard(1, 0);
 	}
 
-	return gbottomdbwf;
+	return gbottomdbwfl [bi];
 }
 
 #endif /* WITHSPECTRUMWF && WITHMENU */
 
 uint_fast8_t hamradio_get_att_db(void)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	return attmodes [gatts [bi]].atten10 / 10;
 }
 
 uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* vfo A bank index */
 	for (uint_fast8_t i = 0; i < ATTMODE_COUNT; i ++)
 	{
 		if ( i > limit)
@@ -22791,7 +23162,7 @@ uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit)
 
 void hamradio_set_att_db(uint_fast8_t db)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const vindex_t vi = getvfoindex(bi);
 
 	verifyband(vi);
@@ -22803,17 +23174,16 @@ void hamradio_set_att_db(uint_fast8_t db)
 
 const char * hamradio_get_att_value(void)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	return attmodes [gatts [bi]].label;
 }
 
 const char * hamradio_get_preamp_value(void)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 #if ! WITHONEATTONEAMP
-	const uint_fast8_t bi = getbankindex_tx(gtx);
 	return pampmodes [gpamps [bi]].label;
 #else
-	const uint_fast8_t bi = getbankindex_tx(gtx);
 	return attmodes [gatts [bi]].label;
 #endif
 }
@@ -22876,6 +23246,11 @@ void hamradio_set_bw(uint_fast8_t v)
 	updateboard(1, 1);
 }
 
+void hamradio_change_nr(void)
+{
+	uif_key_changenr();
+}
+
 void hamradio_load_gui_settings(void * ptrv)
 {
 	uint8_t * ptr = ptrv;
@@ -22917,7 +23292,40 @@ void hamradio_gui_enc2_update(void)
 {
 }
 #endif /* WITHENCODER2 */
+
+#if WITHTX
+
+void hamradio_gui_set_reqautotune2(uint_fast8_t val)
+{
+	reqautotune2 = val != 0;
+}
+
+#endif /* WITHTX */
+
+void display2_set_page_temp(uint_fast8_t page)
+{
+	menuset = page;
+	display2_bgreset();
+}
+
 #endif /* WITHTOUCHGUI */
+
+#if WITHUSEDUALWATCH
+uint_fast8_t hamradio_split_toggle(void)
+{
+	if (gsplitmode == VFOMODES_VFOINIT)
+		uif_key_spliton(0);
+	else
+		uif_key_splitoff();
+
+	return gsplitmode != 0;
+}
+
+void hamradio_split_mode_toggle(void)
+{
+	uif_key_mainsubrx();
+}
+#endif /* WITHUSEDUALWATCH */
 
 // основной цикл программы при работе в режиме любительского премника
 static void
@@ -23112,7 +23520,7 @@ struct stm32_header {
 
 #define HEADER_MAGIC	0x324d5453  //	__be32_to_cpu(0x53544D32)
 
-uint_fast8_t bootloader_get_start(
+static uint_fast8_t bootloader_get_start(
 		uintptr_t apparea,	/* целевой адрес для загрузки образа - здесь лежит заголовок файла */
 		uintptr_t * ip)
 {
@@ -23128,28 +23536,24 @@ uint_fast8_t bootloader_get_start(
 	return checksum != 0;	// возврат 0 если контрольная сумма совпала
 }
 
-void bootloader_copyapp(
-		uintptr_t apparea	/* целевой адрес для загрузки образа */
+static uint_fast8_t bootloader_copyapp(
+		uint_fast32_t appoffset,	/* смещение заголовка приожения в накопителе */
+		uintptr_t * ip
 		)
 {
 	enum { HEADERSIZE = 256 };
-	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
+	static uint8_t tmpbuff [HEADERSIZE];
+	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) tmpbuff;
 
-#if CPUSTYLE_R7S721
-
-	memcpy((void *) apparea, (const void *) BOOTLOADER_APPBASE, HEADERSIZE);
+	bootloader_readimage(appoffset, tmpbuff, HEADERSIZE);
+	//printhex(appoffset, tmpbuff, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
-		return;
-	memcpy((void *) hdr->load_address, (const void *) (BOOTLOADER_APPBASE + HEADERSIZE), hdr->image_length);
-
-#elif (BOOTLOADER_SELFSIZE != 0)
-
-	bootloader_readimage(BOOTLOADER_SELFSIZE, (void *) apparea, HEADERSIZE);
-	if (hdr->magic_number != HEADER_MAGIC)
-		return;
-	bootloader_readimage(BOOTLOADER_SELFSIZE + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
-
-#endif /* CPUSTYLE_R7S721 */
+		return 1;
+	* ip = hdr->image_entry_point;
+	PRINTF("bootloader_copyapp: ip=%08lX (addr=%08lX, len=%08lX)\n", (unsigned long) * ip, hdr->load_address, hdr->image_length);
+	bootloader_readimage(appoffset + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
+	PRINTF("bootloader_copyapp done.\n");
+	return 0;
 }
 
 // Сюда попадаем из USB DFU клвсса при приходе команды
@@ -23200,9 +23604,9 @@ bootloader_launch_app(uintptr_t ip)
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
 void bootloader_deffereddetach(void * arg)
 {
-#if BOOTLOADER_RAMSIZE
+#if defined (USBD_DFU_RAM_LOADER)
 	uintptr_t ip;
-	if (bootloader_get_start(BOOTLOADER_RAMAREA, & ip) == 0)
+	if (bootloader_get_start(USBD_DFU_RAM_LOADER, & ip) == 0)
 	{
 		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
 		/* Perform an Attach-Detach operation on USB bus */
@@ -23214,9 +23618,9 @@ void bootloader_deffereddetach(void * arg)
 	}
 	else
 	{
-		PRINTF("bootloader_deffereddetach: Header is not loaded to %08lX.\n", (unsigned long) BOOTLOADER_RAMAREA);
+		PRINTF("bootloader_deffereddetach: Header is not loaded to %08lX.\n", (unsigned long) USBD_DFU_RAM_LOADER);
 	}
-#endif /* BOOTLOADER_RAMSIZE */
+#endif /* defined (USBD_DFU_RAM_LOADER) */
 }
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
@@ -23322,6 +23726,9 @@ static void bootloader_fatfs_mainloop(void)
 	if (st != RES_OK)
 	{
 		PRINTF("disk_initialize code=%02X\n", st);
+		PRINTF(" STA_NOINIT = %d\n", STA_NOINIT);
+		PRINTF(" STA_NODISK = %d\n", STA_NODISK);
+		PRINTF(" STA_PROTECT = %d\n", STA_PROTECT);
 		for (;;)
 			;
 	}
@@ -23355,7 +23762,7 @@ static void bootloader_fatfs_mainloop(void)
 	rc = f_read(& Fil, (BYTE *) hdr->load_address, hdr->image_length, & br);	/* Read a chunk of file */
 	if (rc != FR_OK || br != hdr->image_length)
 	{
-		PRINTF("Can not read body of file '%s'\n", IMAGENAME);
+		PRINTF("Can not read body of file '%s', rc=%d, hdr->image_length=%08lX, br=%08lX\n", IMAGENAME, (int) rc, (unsigned long) hdr->image_length, (unsigned long) br);
 		PRINTF("Failed with rc=%u.\n", rc);
 		for (;;)
 			;
@@ -23407,106 +23814,41 @@ static void bootloader_fatfs_mainloop(void)
 
 static void bootloader_mainloop(void)
 {
+	PRINTF("bootloader_mainloop:\n");
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
-	static ticker_t tscticker;
-	system_disableIRQ();
-	ticker_initialize(& tscticker, 1, tsc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-	ticker_add(& tscticker);
-	system_enableIRQ();
-	gpio_output(37, 0);		/* LED_R */
-#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
-	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
-	//local_delay_ms(1000);
-	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
-	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_RAMAREA);
-ddd:
-	;
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
+#if BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT)
 
-	if (getrefresh())
+	if (BOARD_IS_USERBOOT() == 0)
 	{
-		static int state;
+		/* Нет запроса на вход в режим загрузчика - грузим с QSPI FLASH */
+		do
+		{
+			uintptr_t ip;
+			if (bootloader_copyapp(BOOTLOADER_SELFSIZE, & ip) != 0)	/* копирование исполняемого образа (если есть) в требуемое место */
+			{
+				PRINTF("bootloader_mainloop: No application image\n");
+				break;
+			}
+	#if WITHUSBHW
+			if (usbactivated)
+				board_usb_deactivate();
+	#endif /* WITHUSBHW */
+			PRINTF("bootloader_mainloop: ip=%08lX\n", (unsigned long) ip);
+			bootloader_launch_app(ip);
 
-		state = ! state;
-		// установка состояния выходов
-		gpio_pin_output_state(37, state);	/* LED_R */
-
+		} while (0);
 	}
-	//PRINTF(".");
-	char c;
-	if (dbg_getchar(& c))
-	{
-		dbg_putchar(c);
-	}
-#endif
+#endif /* BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) */
 
-#if WITHUSBHW
+	PRINTF("bootloader_mainloop: loop\n");
+	/* Обеспечение работы USB DFU */
 	for (;;)
 	{
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
-
-
-#if defined (BOARD_IS_USERBOOT)
-		/* тест что всё еще работает и не повисло... */
-		char c;
-		if (dbg_getchar(& c))
-		{
-			dbg_putchar(c);
-		}
-		/* если не установлен джампер - запускаем программу. */
-//		if (! BOARD_IS_USERBOOT())
-//			break;
-		//	при наличии перемычки (нажатой кнопки) входим в режим загрузчика по USB.
-		//	Выйти или через команду DFU или по сбросу.
-		if (usbactivated == 0)
-			break;
-#elif WITHDEBUG
-		/* ввод 'r' - запускаем программу. */
-		char c;
-		if (dbg_getchar(& c))
-		{
-			dbg_putchar(c);
-			if (c == 'r')
-				break;
-			if (c == 'd')
-			{
-#if BOOTLOADER_RAMSIZE
-				printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
-#endif /* BOOTLOADER_RAMSIZE */
-				continue;
-			}
-		}
-
-//#else /* WITHDEBUG */
-//		/* вытаскиваем USB кабель - запускаем программу. */
-//		if (hardware_usbd_get_vbusbefore() == 0)
-//			break;
-//		if (hardware_usbd_get_vbusnow() == 0)
-//			break;
-
-#endif /* WITHDEBUG */
 	}
-#endif /* WITHUSBHW */
-
-#if BOOTLOADER_RAMSIZE
-	uintptr_t ip;
-	//PRINTF(PSTR("Compare signature of to application\n"));
-	if (bootloader_get_start(BOOTLOADER_RAMAREA, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
-		goto ddd;
-#else /* BOOTLOADER_RAMSIZE */
-	goto ddd;
-#endif /* BOOTLOADER_RAMSIZE */
-#if WITHUSBHW
-	board_usb_deactivate();
-	board_usb_deinitialize();
-#endif /* WITHUSBHW */
-#if BOOTLOADER_RAMSIZE
-	bootloader_launch_app(ip);
-#endif /* BOOTLOADER_RAMSIZE */
 }
 #endif /* WITHISBOOTLOADERFATFS */
 
@@ -23517,19 +23859,22 @@ int
 //__attribute__ ((used))
 main(void)
 {
+#if CPUSTYLE_ARM
+	sysinit_gpio_initialize();
+#endif /* CPUSTYLE_ARM */
 #if WITHDEBUG && (! CPUSTYLE_ARM /* || WITHISBOOTLOADER */)
 
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
 #endif /* WITHDEBUG && ! CPUSTYLE_ARM */
-
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
 	global_disableIRQ();
 	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	global_enableIRQ();
+	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHTX
@@ -23537,7 +23882,9 @@ main(void)
 	bandf2adjust_initialize();
 #endif /* WITHTX */
 	initialize2();	/* вызывается при разрешённых прерываниях. */
-	network_initialize();
+#if WITHLWIP
+	//network_initialize();
+#endif /* WITHLWIP */
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 
@@ -23545,8 +23892,6 @@ main(void)
 	bootloader_fatfs_mainloop();
 #elif WITHISBOOTLOADER
 	bootloader_mainloop();
-#elif WITHOPERA4BEACON
-	hamradio_mainloop_OPERA4();
 #elif 0
 	siggen_mainloop();
 #elif 0

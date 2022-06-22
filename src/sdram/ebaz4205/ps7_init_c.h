@@ -1,0 +1,278 @@
+/* IO accessors. No memory barriers desired. */
+static inline void iowrite(unsigned long val, uintptr_t addr)
+{
+	__raw_writel(val, addr);
+}
+
+static inline unsigned long ioread(uintptr_t addr)
+{
+	return __raw_readl(addr);
+}
+
+/* start timer */
+static void perf_start_clock(void)
+{
+	iowrite((1 << 0) | /* Timer Enable */
+		(1 << 3) | /* Auto-increment */
+		(0 << 8), /* Pre-scale */
+		SCU_GLOBAL_TIMER_CONTROL);
+}
+
+/* Compute mask for given delay in miliseconds*/
+static unsigned long get_number_of_cycles_for_delay(unsigned long delay)
+{
+	return (APU_FREQ / (2 * 1000)) * delay;
+}
+
+/* stop timer */
+static void perf_disable_clock(void)
+{
+	iowrite(0, SCU_GLOBAL_TIMER_CONTROL);
+}
+
+/* stop timer and reset timer count regs */
+static void perf_reset_clock(void)
+{
+	perf_disable_clock();
+	iowrite(0, SCU_GLOBAL_TIMER_COUNT_L32);
+	iowrite(0, SCU_GLOBAL_TIMER_COUNT_U32);
+}
+
+static void perf_reset_and_start_timer(void)
+{
+	perf_reset_clock();
+	perf_start_clock();
+}
+
+int ps7_config(const unsigned long * ps7_config_init)
+{
+	const unsigned long *ptr = ps7_config_init;
+
+    unsigned long  opcode;            // current instruction ..
+    unsigned long  args[16];           // no opcode has so many args ...
+    int  numargs;           // number of arguments of this instruction
+    int  j;                 // general purpose index
+
+    volatile uint32_t *addr;         // some variable to make code readable
+    unsigned long  val,mask;              // some variable to make code readable
+
+    int finish = -1 ;           // loop while this is negative !
+    int i = 0;                  // Timeout variable
+
+    while( finish < 0 ) {
+        numargs = ptr[0] & 0xF;
+        opcode = ptr[0] >> 4;
+
+        for( j = 0 ; j < numargs ; j ++ )
+            args[j] = ptr[j+1];
+        ptr += numargs + 1;
+
+
+        switch ( opcode ) {
+
+        case OPCODE_EXIT:
+            finish = PS7_INIT_SUCCESS;
+            break;
+
+        case OPCODE_CLEAR:
+            addr = (volatile uint32_t*) args[0];
+            *addr = 0;
+            break;
+
+        case OPCODE_WRITE:
+            addr = (volatile uint32_t*) args[0];
+            val = args[1];
+            *addr = val;
+            break;
+
+        case OPCODE_MASKWRITE:
+            addr = (volatile uint32_t*) args[0];
+            mask = args[1];
+            val = args[2];
+            *addr = ( val & mask ) | ( *addr & ~mask);
+            break;
+
+        case OPCODE_MASKPOLL:
+            addr = (volatile uint32_t*) args[0];
+            mask = args[1];
+            i = 0;
+            while (!(*addr & mask)) {
+                if (i == PS7_MASK_POLL_TIME) {
+                    finish = PS7_INIT_TIMEOUT;
+                    break;
+                }
+                i++;
+            }
+            break;
+        case OPCODE_MASKDELAY:
+            addr = (volatile uint32_t*) args[0];
+            mask = args[1];
+            int delay = get_number_of_cycles_for_delay(mask);
+            perf_reset_and_start_timer();
+            while ((*addr < delay)) {
+            }
+            break;
+        default:
+            finish = PS7_INIT_CORRUPT;
+            break;
+        }
+    }
+    return finish;
+}
+
+// EBAZ
+static const unsigned long ps7_clock_init_data_3_0[] = {
+		EMIT_MASKWRITE(0XF8000128, 0x03F03F01U ,0x00700F01U),	// DCI_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000168, 0x00003F31U ,0x00000801U),	// PCAP_CLK_CTRL
+		//EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
+		//EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+		//EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C040DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
+	    EMIT_MASKWRITE(0XF800012C, 0x01000000U ,0x01000000U),		// APER_CLK_CTRL AMBA Peripheral Clock Control
+		EMIT_EXIT(),
+	};
+
+static const unsigned long ps7_ddr_init_data_3_0[] = {
+		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000084U),	// ddrc_ctrl, reg_ddrc_soft_rstb = 0
+		EMIT_MASKWRITE(0XF8006004, 0x0007FFFFU ,0x00001082U),	// Two_rank_cfg
+		EMIT_MASKWRITE(0XF8006008, 0x03FFFFFFU ,0x03C0780FU),
+		EMIT_MASKWRITE(0XF800600C, 0x03FFFFFFU ,0x02001001U),
+		EMIT_MASKWRITE(0XF8006010, 0x03FFFFFFU ,0x00014001U),
+		EMIT_MASKWRITE(0XF8006014, 0x001FFFFFU ,0x0004159BU),
+		EMIT_MASKWRITE(0XF8006018, 0xF7FFFFFFU ,0x44E458D3U),
+		EMIT_MASKWRITE(0XF800601C, 0xFFFFFFFFU ,0x7282BCE5U),
+		EMIT_MASKWRITE(0XF8006020, 0x7FDFFFFCU ,0x270872D0U),
+		EMIT_MASKWRITE(0XF8006024, 0x0FFFFFC3U ,0x00000000U),
+		EMIT_MASKWRITE(0XF8006028, 0x00003FFFU ,0x00002007U),
+		EMIT_MASKWRITE(0XF800602C, 0xFFFFFFFFU ,0x00000008U),
+		EMIT_MASKWRITE(0XF8006030, 0xFFFFFFFFU ,0x00040B30U),
+		EMIT_MASKWRITE(0XF8006034, 0x13FF3FFFU ,0x000116D4U),
+		EMIT_MASKWRITE(0XF8006038, 0x00000003U ,0x00000000U),
+		EMIT_MASKWRITE(0XF800603C, 0x000FFFFFU ,0x00000666U),
+		EMIT_MASKWRITE(0XF8006040, 0xFFFFFFFFU ,0xFFFF0000U),
+		EMIT_MASKWRITE(0XF8006044, 0x0FFFFFFFU ,0x0FF55555U),
+		EMIT_MASKWRITE(0XF8006048, 0x0003F03FU ,0x0003C008U),
+		EMIT_MASKWRITE(0XF8006050, 0xFF0F8FFFU ,0x77010800U),
+		EMIT_MASKWRITE(0XF8006058, 0x00010000U ,0x00000000U),
+		EMIT_MASKWRITE(0XF800605C, 0x0000FFFFU ,0x00005003U),
+		EMIT_MASKWRITE(0XF8006060, 0x000017FFU ,0x0000003EU),
+		EMIT_MASKWRITE(0XF8006064, 0x00021FE0U ,0x00020000U),
+		EMIT_MASKWRITE(0XF8006068, 0x03FFFFFFU ,0x00284141U),
+		EMIT_MASKWRITE(0XF800606C, 0x0000FFFFU ,0x00001610U),
+		EMIT_MASKWRITE(0XF8006078, 0x03FFFFFFU ,0x00466111U),
+		EMIT_MASKWRITE(0XF800607C, 0x000FFFFFU ,0x00032222U),
+		EMIT_MASKWRITE(0XF80060A4, 0xFFFFFFFFU ,0x10200802U),
+		EMIT_MASKWRITE(0XF80060A8, 0x0FFFFFFFU ,0x0690CB73U),
+		EMIT_MASKWRITE(0XF80060AC, 0x000001FFU ,0x000001FEU),
+		EMIT_MASKWRITE(0XF80060B0, 0x1FFFFFFFU ,0x1CFFFFFFU),
+		EMIT_MASKWRITE(0XF80060B4, 0x00000200U ,0x00000200U),
+		EMIT_MASKWRITE(0XF80060B8, 0x01FFFFFFU ,0x00200066U),
+		EMIT_MASKWRITE(0XF80060C4, 0x00000003U ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060C8, 0x000000FFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060DC, 0x00000001U ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060F0, 0x0000FFFFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060F4, 0x0000000FU ,0x00000008U),
+		EMIT_MASKWRITE(0XF8006114, 0x000000FFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF8006118, 0x7FFFFFCFU ,0x40000001U),
+		EMIT_MASKWRITE(0XF800611C, 0x7FFFFFCFU ,0x40000001U),
+		EMIT_MASKWRITE(0XF8006120, 0x7FFFFFCFU ,0x40000000U),
+		EMIT_MASKWRITE(0XF8006124, 0x7FFFFFCFU ,0x40000000U),
+		EMIT_MASKWRITE(0XF800612C, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006130, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006134, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006138, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006140, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF8006144, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF8006148, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF800614C, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF8006154, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF8006158, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF800615C, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF8006160, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF8006168, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF800616C, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF8006170, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF8006174, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF800617C, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006180, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006184, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006188, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006190, 0x6FFFFEFEU ,0x00040080U),
+		EMIT_MASKWRITE(0XF8006194, 0x000FFFFFU ,0x0001FC82U),
+		EMIT_MASKWRITE(0XF8006204, 0xFFFFFFFFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF8006208, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF800620C, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006210, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006214, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006218, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF800621C, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006220, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006224, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF80062A8, 0x00000FF5U ,0x00000000U),
+		EMIT_MASKWRITE(0XF80062AC, 0xFFFFFFFFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF80062B0, 0x003FFFFFU ,0x00005125U),
+		EMIT_MASKWRITE(0XF80062B4, 0x0003FFFFU ,0x000012A8U),
+		EMIT_MASKPOLL(0XF8000B74, 0x00002000U),					// DDRIOB_DCI_STATUS
+		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000085U),	// ddrc_ctrl, reg_ddrc_soft_rstb = 1
+		EMIT_MASKPOLL(0XF8006054, 0x00000007U),					// mode_sts_reg
+		EMIT_EXIT(),
+	};
+
+static const unsigned long ps7_mio_init_data_3_0[] = {
+		EMIT_MASKWRITE(0XF8000B40, 0x00000FFFU ,0x00000600U),	// DDRIOB_ADDR0
+		EMIT_MASKWRITE(0XF8000B44, 0x00000FFFU ,0x00000600U),	// DDRIOB_ADDR1
+		EMIT_MASKWRITE(0XF8000B48, 0x00000FFFU ,0x00000672U),
+		EMIT_MASKWRITE(0XF8000B4C, 0x00000FFFU ,0x00000800U),
+		EMIT_MASKWRITE(0XF8000B50, 0x00000FFFU ,0x00000674U),
+		EMIT_MASKWRITE(0XF8000B54, 0x00000FFFU ,0x00000800U),
+		EMIT_MASKWRITE(0XF8000B58, 0x00000FFFU ,0x00000600U),	// DDRIOB_CLOCK
+		EMIT_MASKWRITE(0XF8000B5C, 0xFFFFFFFFU ,0x0018C61CU),	// DDRIOB_DRIVE_SLEW_ADDR
+		EMIT_MASKWRITE(0XF8000B60, 0xFFFFFFFFU ,0x00F9861CU),
+		EMIT_MASKWRITE(0XF8000B64, 0xFFFFFFFFU ,0x00F9861CU),
+		EMIT_MASKWRITE(0XF8000B68, 0xFFFFFFFFU ,0x00F9861CU),	// DDRIOB_DRIVE_SLEW_CLOCK
+		EMIT_MASKWRITE(0XF8000B6C, 0x00007FFFU ,0x00000220U),	// DDRIOB_DDR_CTRL
+		EMIT_MASKWRITE(0XF8000B70, 0x00000001U ,0x00000001U),	// DDRIOB_DCI_CTRL
+		EMIT_MASKWRITE(0XF8000B70, 0x00000021U ,0x00000020U),	// DDRIOB_DCI_CTRL
+		EMIT_MASKWRITE(0XF8000B70, 0x07FEFFFFU ,0x00000823U),	// DDRIOB_DCI_CTRL
+		EMIT_EXIT(),
+};
+
+static const unsigned long ps7_peripherals_init_data_3_0[] = {
+		EMIT_MASKWRITE(0XF8000B48, 0x00000180U ,0x00000180U),	// DDRIOB_DATA0
+		EMIT_MASKWRITE(0XF8000B4C, 0x00000180U ,0x00000000U),	// DDRIOB_DATA1
+		EMIT_MASKWRITE(0XF8000B50, 0x00000180U ,0x00000180U),	// DDRIOB_DIFF0
+		EMIT_MASKWRITE(0XF8000B54, 0x00000180U ,0x00000000U),	// DDRIOB_DIFF1
+		EMIT_EXIT(),
+	};
+
+
+static int ps7_init(void)
+{
+	int ret;
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+
+	ret = ps7_config(ps7_mio_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_clock_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_ddr_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+//	char c;
+//	while (dbg_getchar(&c) == 0)
+//		;
+//	TP();
+	ret = ps7_config(ps7_peripherals_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+	//TP();
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	return PS7_INIT_SUCCESS;
+}
+

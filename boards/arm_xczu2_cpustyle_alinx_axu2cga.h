@@ -75,7 +75,7 @@
 	//#define USB_OTG_FS                   USB2_OTG_FS
 
 	//#define WITHUSBHW_HOST		USB_OTG_HS
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+	#define WITHUSBHOST_HIGHSPEEDULPI	1
 	//#define WITHUSBHOST_DMAENABLE 1
 
 
@@ -123,15 +123,14 @@
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
-
-	/* For H7 exist: Legacy defines */
-	//#define USB_OTG_HS                   USB1_OTG_HS
-	//#define USB_OTG_FS                   USB2_OTG_FS
-
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_HOST		USB_OTG_HS
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	//#define WITHUSBHOST_DMAENABLE 1
+#if 0
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_EHCI		EHCI0
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port.
+	#define WITHUSBHOST_HIGHSPEEDULPI	1
+	//#define WITHUSBHOST_DMAENABLE 1	// not need for EHCI
+#endif
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -581,7 +580,7 @@
 
 	#define targetnvram		TARGET_NVRAM_MIO	// nvram FM25L256
 
-	#define SPI_CS_SET(v)	xc7z_writepin(v, 0);
+	#define SPI_CS_ASSERT(target)	do { xc7z_writepin((target), 0); } while (0)
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
@@ -668,7 +667,11 @@
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { i2chw_initialize(); } while (0)
+	#define	TWIHARD_INITIALIZE() do { \
+		/*gpio_peripherial(TARGET_TWI_TWD_MIO, pinmode);*/	/*  PS_MIO43_501 SDA */ \
+		/*gpio_peripherial(TARGET_TWI_TWCK_MIO, pinmode);*/	/*  PS_MIO42_501 SCL */ \
+		/* i2chw_initialize(); */ \
+	} while (0)
 
 
 #endif // WITHTWISW

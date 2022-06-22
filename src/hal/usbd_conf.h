@@ -55,6 +55,14 @@
 	#include "stm32f4xx.h"
 	#include "stm32f4xx_hal.h"
 
+#elif CPUSTYLE_XC7Z
+
+	#include "zynq7000_hal.h"
+
+#elif CPUSTYPE_ALLWNT113
+
+	#include "allwnr_t113s3_hal.h"
+
 #endif
 
 /* USER CODE BEGIN INCLUDE */

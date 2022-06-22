@@ -58,8 +58,8 @@ static uintptr_t
 dma_invalidate16rx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((buffers_dmabuffer16cachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_invalidate(addr, buffers_dmabuffer16cachesize());
+	ASSERT((buffers_dmabuffer16rxcachesize() % DCACHEROWSIZE) == 0);
+	arm_hardware_invalidate(addr, buffers_dmabuffer16rxcachesize());
 	return addr;
 }
 
@@ -69,8 +69,8 @@ static uintptr_t
 dma_flush16tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((buffers_dmabuffer16cachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_flush_invalidate(addr, buffers_dmabuffer16cachesize());
+	ASSERT((buffers_dmabuffer16txcachesize() % DCACHEROWSIZE) == 0);
+	arm_hardware_flush_invalidate(addr, buffers_dmabuffer16txcachesize());
 	return addr;
 }
 
@@ -116,22 +116,22 @@ enum
 
 	NBSLOT_SAIFPGA = WITHFPGAIF_FRAMEBITS / 32,
 	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
-	// значениям DMABUFSTEP32RX и DMABUFSTEP32TX соответственно.
+	// значениям DMABUFFSTEP32RX и DMABUFFSTEP32TX соответственно.
 	#if WITHFPGAIF_FRAMEBITS == 256
 		// FPGA версия
-		//#define DMABUFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //8
+		//#define DMABUFFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //8
 		SLOTEN_RX_SAIFPGA = 0x00FF,
 
 		// На передачу во всех версиях FPGA используется один и тот же блок
 		// В каждой половине фрейма используется первый слот (первые 32 бита после переключения WS)
-		#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+		#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 		SLOTEN_TX_SAIFPGA = 0x0011,
 
 	#elif WITHFPGAIF_FRAMEBITS == 64
 		//#if WITHRTS96 || WITHUSEDUALWATCH
 		//	#error WITHRTS96 or WITHUSEDUALWATCH unsupported with 64-bit frame length
 		//#endif /* WITHRTS96 || WITHUSEDUALWATCH */
-		//#define DMABUFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //2	// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+		//#define DMABUFFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //2	// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 		// Аппаратный кодек
 		SLOTEN_RX_SAIFPGA = 0x0003,
 		SLOTEN_TX_SAIFPGA = 0x0003,
@@ -147,7 +147,7 @@ enum
 
 	NBSLOT_SAIRTS = WITHFPGARTS_FRAMEBITS / 32,
 	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
-	// значениям DMABUFSTEP32RX и DMABUFSTEP32TX соответственно.
+	// значениям DMABUFFSTEP32RX и DMABUFFSTEP32TX соответственно.
 	#if WITHFPGARTS_FRAMEBITS == 256
 		// FPGA версия
 		#if WITHUSEDUALWATCH
@@ -176,16 +176,16 @@ enum
 		CODEC1_SAI_CR1_DS = 0x07, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 	#elif CODEC1_FRAMEBITS == 32
 		CODEC1_SAI_CR1_DS = 0x04, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
-	#else
+	#else /* CODEC1_FRAMEBITS */
 		#error Unexpected CODEC1_FRAMEBITS value
-	#endif
+	#endif /* CODEC1_FRAMEBITS */
 	NBSLOT_SAIAUDIO = 2,	/* всегда стерео */
 	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
-	// значению DMABUFSTEP16 соответственно.
+	// значению DMABUFFSTEP16TX/DMABUFFSTEP16RX соответственно.
 	SLOTEN_RX_SAIAUDIO = 0x0003,
 	SLOTEN_TX_SAIAUDIO = 0x0003,
 
-#endif /* defined (WITHFPGARTS_FRAMEBITS) */
+#endif /* defined (CODEC1_FRAMEBITS) */
 
 		enum_finish
 };
@@ -313,14 +313,14 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler_codec1_rx(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA1_Stream3->M0AR;
-			DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
+			DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 			DRD(DMA1_Stream3->M0AR);
 			processing_dmabuffer16rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA1_Stream3->M1AR;
-			DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
+			DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 			DRD(DMA1_Stream3->M1AR);
 			processing_dmabuffer16rx(addr);
 		}
@@ -342,14 +342,14 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler_codec1_rx(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA1_Stream0->M0AR;
-			DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
+			DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 			DRD(DMA1_Stream0->M0AR);
 			processing_dmabuffer16rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA1_Stream0->M1AR;
-			DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
+			DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 			DRD(DMA1_Stream0->M1AR);
 			processing_dmabuffer16rx(addr);
 		}
@@ -371,14 +371,14 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler_codec1_tx(void)
 		const uint_fast8_t b = (DMA1_Stream4->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
-			release_dmabuffer16(DMA1_Stream4->M0AR);
-			DMA1_Stream4->M0AR = dma_flush16tx(getfilled_dmabuffer16phones());
+			release_dmabuffer16tx(DMA1_Stream4->M0AR);
+			DMA1_Stream4->M0AR = dma_flush16tx(getfilled_dmabuffer16txphones());
 			DRD(DMA1_Stream4->M0AR);
 		}
 		else
 		{
-			release_dmabuffer16(DMA1_Stream4->M1AR);
-			DMA1_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16phones());
+			release_dmabuffer16tx(DMA1_Stream4->M1AR);
+			DMA1_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16txphones());
 			DRD(DMA1_Stream4->M1AR);
 		}
 	}
@@ -423,10 +423,10 @@ DMA_I2S2_TX_initialize_codec1(void)
 #endif /* CPUSTYLE_STM32MP1 */
 
 	ASSERT((DMA1_Stream4->CR & DMA_SxCR_EN) == 0);
-	DMA1_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16());
-    DMA1_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16());
+	DMA1_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16tx());
+    DMA1_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16tx());
 	DMA1_Stream4->NDTR = (DMA1_Stream4->NDTR & ~ DMA_SxNDT) |
-		(DMABUFFSIZE16 * DMA_SxNDT_0);
+		(DMABUFFSIZE16TX * DMA_SxNDT_0);
 	DMA1_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DRD(DMA1_Stream4->FCR);
 	DMA1_Stream4->CR =
@@ -468,10 +468,10 @@ DMA_I2S2ext_rx_init_audio(void)
 	(void) RCC->AHB1ENR;
 	DMA1_Stream3->PAR = (uintptr_t) & I2S2ext->DR;
 
-    DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
-    DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
+    DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
+    DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 	DMA1_Stream3->NDTR = (DMA1_Stream3->NDTR & ~ DMA_SxNDT) |
-		(DMABUFFSIZE16 * DMA_SxNDT_0);
+		(DMABUFFSIZE16RX * DMA_SxNDT_0);
 
 	DMA1_Stream3->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DRD(DMA1_Stream3->FCR);
@@ -523,10 +523,10 @@ DMA_I2S3_RX_initialize_codec1(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-    DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
-    DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
+    DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
+    DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 	DMA1_Stream0->NDTR = (DMA1_Stream0->NDTR & ~ DMA_SxNDT) |
-		(DMABUFFSIZE16 * DMA_SxNDT_0);
+		(DMABUFFSIZE16RX * DMA_SxNDT_0);
 
 	DMA1_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DRD(DMA1_Stream0->FCR);
@@ -588,10 +588,10 @@ DMA_I2S2_RX_initialize_codec1(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-    DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
-    DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
+    DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
+    DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 	DMA1_Stream0->NDTR = (DMA1_Stream0->NDTR & ~ DMA_SxNDT) |
-		(DMABUFFSIZE16 * DMA_SxNDT_0);
+		(DMABUFFSIZE16RX * DMA_SxNDT_0);
 
 	DMA1_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DRD(DMA1_Stream0->FCR);
@@ -726,7 +726,6 @@ hardware_i2s2_i2s2ext_master_duplex_initialize_codec1(void)		/* инициали
 
 #endif /* defined (I2S2ext) */
 
-//#if WITHI2SHWTXSLAVE
 
 // Интерфейс к НЧ кодеку
 static void 
@@ -768,12 +767,6 @@ hardware_i2s2_slave_tx_initialize_codec1(void)		/* инициализация I2
 	//PRINTF(PSTR("hardware_i2s2_slave_tx_initialize_codec1 done\n"));
 }
 
-//#else /* WITHI2SHWTXSLAVE */
-
-
-//#endif /* WITHI2SHWTXSLAVE */
-
-//#if WITHI2SHWRXSLAVE
 
 // Интерфейс к НЧ кодеку
 static void 
@@ -853,8 +846,6 @@ hardware_i2s2_slave_duplex_initialize_codec1(void)
 
 	//PRINTF(PSTR("hardware_i2s2_slave_duplex_initialize_codec1 done\n"));
 }
-
-//#endif /* WITHI2SHWRXSLAVE */
 
 
 // Интерфейс к НЧ кодеку
@@ -1118,7 +1109,6 @@ static const codechw_t audiocodechw_i2s2_duplex_master =
 
 #endif /* WITHI2SI2S2EXTFULLDUPLEXHW */
 
-// WITHI2SHWRXSLAVE and WITHI2SHWTXSLAVE are true
 static const codechw_t audiocodechw_i2s2_tx_slave =
 {
 	hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
@@ -1344,8 +1334,8 @@ static void hardware_sai1_sai2_clock_selection(void)
 		//	others: reserved, the kernel clock is disabled
 		//	Note: I2S_CKIN is an external clock taken from a pin.
 		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL | RCC_D2CCIP1R_SAI23SEL)) |
-			(0x01uL << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
-			(0x01uL << RCC_D2CCIP1R_SAI23SEL_Pos) |
+			(1uL << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
+			(1uL << RCC_D2CCIP1R_SAI23SEL_Pos) |
 			0;
 
 	#elif CPUSTYLE_STM32MP1
@@ -1514,7 +1504,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
 		}
-		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
+		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 	}
 
 	//DMAERR(DMA2, DMA2_Stream5, HISR, HIFCR, DMA_HISR_TEIF5, DMA_HIFCR_CTEIF5);
@@ -2118,13 +2108,13 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_codec1_rx(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
-			DMA2_Stream7->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
+			DMA2_Stream7->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 			processing_dmabuffer16rx(addr);		// посмещается в очередь
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
-			DMA2_Stream7->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
+			DMA2_Stream7->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 			processing_dmabuffer16rx(addr);
 		}
 	}
@@ -2157,7 +2147,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
 		}
-		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
+		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 	}
 
 	//DMAERR(DMA2, DMA2_Stream7, HISR, HIFCR, DMA_HISR_TEIF7, DMA_HIFCR_CTEIF7);
@@ -2238,14 +2228,14 @@ void DMA2_Stream4_IRQHandler_codec1_tx(void)
 
 		if (b != 0)
 		{
-			release_dmabuffer16(DMA2_Stream4->M0AR);
-			DMA2_Stream4->M0AR = dma_flush16tx(getfilled_dmabuffer16phones());
+			release_dmabuffer16tx(DMA2_Stream4->M0AR);
+			DMA2_Stream4->M0AR = dma_flush16tx(getfilled_dmabuffer16txphones());
 			DRD(DMA2_Stream4->M0AR);
 		}
 		else
 		{
-			release_dmabuffer16(DMA2_Stream4->M1AR);
-			DMA2_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16phones());
+			release_dmabuffer16tx(DMA2_Stream4->M1AR);
+			DMA2_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16txphones());
 			DRD(DMA2_Stream4->M1AR);
 		}
 	}
@@ -2404,10 +2394,10 @@ static void DMA_SAI2_A_TX_initialize_codec1(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16());
-	DMA2_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16());
+	DMA2_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16tx());
+	DMA2_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16tx());
 	DMA2_Stream4->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
-		(DMABUFFSIZE16 * DMA_SxNDT_0);
+		(DMABUFFSIZE16TX * DMA_SxNDT_0);
 
 	DMA2_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DRD(DMA2_Stream4->FCR);
@@ -2597,10 +2587,10 @@ static void DMA_SAI2_B_RX_initialize_codec1(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream7->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
-	DMA2_Stream7->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
+	DMA2_Stream7->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
+	DMA2_Stream7->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 	DMA2_Stream7->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
-		(DMABUFFSIZE16 * DMA_SxNDT_0);
+		(DMABUFFSIZE16RX * DMA_SxNDT_0);
 
 	DMA2_Stream7->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DRD(DMA2_Stream7->FCR);
@@ -2854,23 +2844,12 @@ static void hardware_sai2_b_enable_WFM(uint_fast8_t state)		/* разрешен�
 
 #endif /* WITHFPGARTS_FRAMEBITS */
 
-static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* инициализация SAI2 на STM32F4xx */
+static void hardware_sai_a_tx_b_rx_master_initialize_codec1(SAI_Block_TypeDef * sai_A, SAI_Block_TypeDef * sai_B)		/* инициализация SAI2 на STM32F4xx */
 {
-	hardware_sai1_sai2_clock_selection();
-
-#if CPUSTYLE_STM32MP1
-	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI2EN; //подать тактирование
-	(void) RCC->MP_APB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
-	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
-	(void) RCC->APB2ENR;
-#endif /* CPUSTYLE_STM32MP1 */
 	
 
-	SAI2_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
-	SAI2_Block_B->CR1 &= ~ SAI_xCR1_SAIEN;
+	sai_A->CR1 &= ~ SAI_xCR1_SAIEN;
+	sai_B->CR1 &= ~ SAI_xCR1_SAIEN;
 
 	// extclock = 24.576 MHz
 	// if SAI_xCR1_NODIV == 1, ws=384 kHz
@@ -2907,19 +2886,19 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 		0;
 
 #if WITHSAICLOCKFROMPIN
-	PRINTF(PSTR("hardware_sai2_a_tx_b_rx_master_initialize_codec1: 1 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
+	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_master_initialize_codec1: 1 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
 #elif WITHSAICLOCKFROMI2S
-	PRINTF(PSTR("hardware_sai2_a_tx_b_rx_master_initialize_codec1: 2 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
+	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_master_initialize_codec1: 2 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #else
-	PRINTF(PSTR("hardware_sai2_a_tx_b_rx_master_initialize_codec1: 3 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
+	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_master_initialize_codec1: 3 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
 #endif
 
-	SAI2_Block_A->CR1 = 
+	sai_A->CR1 =
 		commoncr1 |
 		(0 * SAI_xCR1_SYNCEN_0) |	// SYNChronization ENable: 0: audio sub-block in asynchronous mode.
 		(0 * SAI_xCR1_MODE_0) |	// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
 		0;
-	SAI2_Block_B->CR1 = 
+	sai_B->CR1 =
 		commoncr1 |
 		(1 * SAI_xCR1_SYNCEN_0) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
 		(3 * SAI_xCR1_MODE_0) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
@@ -2929,10 +2908,10 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 	const portholder_t commoncr2 =
 		//(2 * SAI_xCR2_FTH_0) |
 		0;
-	SAI2_Block_A->CR2 = 
+	sai_A->CR2 =
 		commoncr2 |
 		0;
-	SAI2_Block_B->CR2 = 
+	sai_B->CR2 =
 		commoncr2 |
 		0;
 	// SLOTR value
@@ -2943,11 +2922,11 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
-	SAI2_Block_A->SLOTR = 
+	sai_A->SLOTR =
 		((SLOTEN_TX_SAIAUDIO << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
-	SAI2_Block_B->SLOTR = 
+	sai_B->SLOTR =
 		((SLOTEN_RX_SAIAUDIO << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
@@ -2963,13 +2942,46 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 #endif /* CODEC1_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
-	SAI2_Block_A->FRCR =
+	sai_A->FRCR =
 		comm_frcr |
 		0;
-	SAI2_Block_B->FRCR =
+	sai_B->FRCR =
 		comm_frcr |
 		0;
 
+
+}
+
+static void hardware_sai1_a_tx_b_rx_master_initialize_codec1(void)		/* инициализация SAI2 на STM32F4xx */
+{
+#if CPUSTYLE_STM32MP1
+	// Теперь настроим модуль SAI.
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI1EN; //подать тактирование
+	(void) RCC->MP_APB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	// Теперь настроим модуль SAI.
+	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование
+	(void) RCC->APB2ENR;
+#endif /* CPUSTYLE_STM32MP1 */
+
+	hardware_sai1_sai2_clock_selection();
+	hardware_sai_a_tx_b_rx_master_initialize_codec1(SAI1_Block_A, SAI1_Block_B);
+	SAI1HW_INITIALIZE();
+}
+
+static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* инициализация SAI2 на STM32F4xx */
+{
+#if CPUSTYLE_STM32MP1
+	// Теперь настроим модуль SAI.
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI2EN; //подать тактирование
+	(void) RCC->MP_APB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	// Теперь настроим модуль SAI.
+	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
+	(void) RCC->APB2ENR;
+#endif /* CPUSTYLE_STM32MP1 */
+	hardware_sai1_sai2_clock_selection();
+	hardware_sai_a_tx_b_rx_master_initialize_codec1(SAI2_Block_A, SAI2_Block_B);
 	SAI2HW_INITIALIZE();
 }
 
@@ -3144,7 +3156,7 @@ static void hardware_sai2_slave_duplex_initialize_fpga(void)		/* инициал�
 		0;
 	SAI2_Block_B->CR1 =
 		commoncr1 |
-		(0x01uL << SAI_xCR1_SYNCEN_Pos) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
+		(1uL << SAI_xCR1_SYNCEN_Pos) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
 		(0x03uL << SAI_xCR1_MODE_Pos) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
 		0;
 
@@ -3277,8 +3289,8 @@ static void hardware_sai2_master_duplex_initialize_fpga(void)		/* инициал
 		0;
 	SAI2_Block_B->CR1 =
 		commoncr1 |
-		(0x01uL << SAI_xCR1_SYNCEN_Pos) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
-		(0x01uL << SAI_xCR1_MODE_Pos) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
+		(1uL << SAI_xCR1_SYNCEN_Pos) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
+		(1uL << SAI_xCR1_MODE_Pos) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
 		0;
 
 	// CR2 value
@@ -3367,11 +3379,22 @@ static const codechw_t audiocodechw_sai2_a_tx_b_rx_master =
 {
 	hardware_sai2_a_tx_b_rx_master_initialize_codec1,	/* Интерфейс к НЧ кодеку - микрофон */
 	hardware_dummy_initialize,
-	DMA_SAI2_B_RX_initialize_codec1,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
-	DMA_SAI2_A_TX_initialize_codec1,					// DMA по передаче канал TX	SAI2_A	DMA2	Stream 4	Channel 3
+	DMA_SAI2_B_RX_initialize_codec1,					// DMA по приёму
+	DMA_SAI2_A_TX_initialize_codec1,					// DMA по передаче
 	hardware_sai2_b_enable_codec1,
 	hardware_sai2_a_enable_codec1,
 	"audiocodechw-sai2-a-tx-b-rx-master"
+};
+
+static const codechw_t audiocodechw_sai2_a_tx_b_rx_master =
+{
+	hardware_sai1_a_tx_b_rx_master_initialize_codec1,	/* Интерфейс к НЧ кодеку - микрофон */
+	hardware_dummy_initialize,
+	DMA_SAI1_B_RX_initialize_codec1,					// DMA по приёму
+	DMA_SAI1_A_TX_initialize_codec1,					// DMA по передаче
+	hardware_sai1_b_enable_codec1,
+	hardware_sai1_a_enable_codec1,
+	"audiocodechw-sai1-a-tx-b-rx-master"
 };
 
 static const codechw_t fpgacodechw_sai2_a_tx_b_rx_slave =
@@ -3438,6 +3461,996 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #endif /* WITHSAI1HW */
 
+#elif CPUSTYPE_ALLWNT113
+
+enum
+{
+	DMAC_I2S1_TX_Ch = 0,
+	DMAC_I2S1_RX_Ch = 1,
+	DMAC_AudioCodec_TX_Ch = DMAC_I2S1_TX_Ch,
+	DMAC_AudioCodec_RX_Ch = DMAC_I2S1_RX_Ch,
+	DMAC_I2S2_TX_Ch = 2,
+	DMAC_I2S2_RX_Ch = 3,
+	//
+	DMAC_Ch_Total
+};
+
+#define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0uL : (1uL << ((ch) * 4)))
+#define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0uL : (1uL << (((ch) - 8) * 4)))
+
+
+static unsigned ratio2div(unsigned ratio)
+{
+	enum divs
+	{
+		CLKD_Div1 = 0x01,
+		CLKD_Div2,		// 0x02
+		CLKD_Div4,		// 0x03
+		CLKD_Div6,		// 0x04
+		CLKD_Div8,		// 0x05
+		CLKD_Div12,		// 0x06
+		CLKD_Div16,		// 0x07
+		CLKD_Div24,		// 0x08
+		CLKD_Div32,		// 0x09
+		CLKD_Div48,		// 0x0A
+		CLKD_Div64,		// 0x0B
+		CLKD_Div96,		// 0x0C
+		CLKD_Div128,	// 0x0D
+		CLKD_Div176,	// 0x0E
+		CLKD_Div192,	// 0x0F
+	};
+	switch (ratio)
+	{
+	case 1:		return CLKD_Div1;
+	case 2:		return CLKD_Div2;
+	case 4:		return CLKD_Div4;
+	case 6:		return CLKD_Div6;
+	case 8:		return CLKD_Div8;
+	case 12:	return CLKD_Div12;
+	case 16:	return CLKD_Div16;
+	case 24:	return CLKD_Div24;
+	case 32:	return CLKD_Div32;
+	case 48:	return CLKD_Div48;
+	case 64:	return CLKD_Div64;
+	case 96:	return CLKD_Div96;
+	case 128:	return CLKD_Div128;
+	case 176:	return CLKD_Div176;
+	case 192:	return CLKD_Div192;
+	default:	return CLKD_Div192;
+	}
+}
+
+// I2S_PCM_FMT0 Sample Resolution
+static unsigned width2fmt(unsigned width)
+{
+	switch (width)
+	{
+	default:
+	case 8:			return 0x01;
+	case 12:		return 0x02;
+	case 16:		return 0x03;
+	case 20:		return 0x04;
+	case 24:		return 0x05;
+	case 28:		return 0x06;
+	case 32:		return 0x07;
+	}
+}
+
+enum
+{
+	ALLWNT113_I2Sx_CLK_WIDTH = 5, ALLWNT113_I2Sx_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+	ALLWNT113_AudioCodec_CLK_WIDTH = 5, ALLWNT113_AudioCodec_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+	//
+	ALLWNT113_pad
+};
+
+/* I2S/PCM RX Channel Mapping Registers initialization */
+/* Простое отображение каналов с последовательно увеличивающимся номером */
+static void I2S_fill_RXCHMAP(
+	I2S_PCM_TypeDef * i2s,
+	unsigned rxsdi
+	)
+{
+	__IO uint32_t * const reg = & I2S1->I2S_PCM_RXCHMAP0;
+	unsigned chnl;
+	for (chnl = 0; chnl < 16; ++ chnl)
+	{
+		/* в каждом регистре управления для восьми каналов */
+		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP3
+		const portholder_t mask2 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP2
+		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP1
+		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP0
+
+		const portholder_t ALLMASK = 0x3F;
+		const portholder_t field =
+			((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
+			((portholder_t) chnl << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
+			0;
+
+		reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+		reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+		reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+		reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+	}
+}
+
+/* I2S/PCM TX0 Channel Mapping Registers initialization */
+/* Простое отображение каналов с последовательно увеличивающимся номером */
+static void I2S_fill_TXxCHMAP(
+	I2S_PCM_TypeDef * i2s,
+	unsigned txoffs,	// 0..3 - I2S_PCM_TX0..I2S_PCM_TX3
+	unsigned txsdo_UNUSED		// 0..3 - DOUT0..DOUT3
+	)
+{
+	__IO uint32_t * const reg = & I2S1->I2S_PCM_TX0CHMAP0 + txoffs * 2;
+
+	unsigned chnl;
+	for (chnl = 0; chnl < 16; ++ chnl)
+	{
+		const portholder_t mask1 = power4((1uL << chnl) >> 0);	// биты в I2S_PCM_TX0CHMAP1 - каналы 7..0
+		const portholder_t mask0 = power4((1uL << chnl) >> 8);	// биты в I2S_PCM_TX0CHMAP0 - каналы 15..8
+
+		const portholder_t ALLMASK = 0x0F;
+		const portholder_t field = (portholder_t) chnl << 0;
+
+		reg [0] = (reg [0] & ~ ALLMASK) | mask0 * field;
+		reg [1] = (reg [1] & ~ ALLMASK) | mask1 * field;
+	}
+}
+
+static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned NCH, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
+{
+	const unsigned ix = i2s == I2S1 ? 1 : 2;
+
+	// ARMI2SRATE // I2S sample rate audio codec (human side)
+	// ARMI2SMCLK = ARMI2SRATE * 256
+	// ARMSAIRATE // SAI sample rate (FPGA/IF CODEC side)
+	// ARMSAIMCLK = ARMSAIRATE * 256
+	// CODEC1_FRAMEBITS 64
+
+	const unsigned long bclkf = lrckf * framebits;
+	const unsigned long mclkf = lrckf * 256;
+
+//	PRINTF("allwnrt113_get_audio0pll1x_freq = %lu\n", allwnrt113_get_audio0pll1x_freq());
+//	PRINTF("allwnrt113_get_audio0pll4x_freq = %lu\n", allwnrt113_get_audio0pll4x_freq());
+//	PRINTF("allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
+//	PRINTF("allwnrt113_get_audio1pll1x_freq = %lu\n", allwnrt113_get_audio1pll1x_freq());
+//	PRINTF("allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
+//	PRINTF("allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
+
+	//	i2s1: prei=2, value=30, mclkf=12288000, (clk=1536000000)
+	//	allwnrt113_get_audio0pll1x_freq = 24.571.428
+	//	allwnrt113_get_audio0pll4x_freq = 98.28.5714
+	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
+	//	allwnrt113_get_audio1pll1x_freq = 3072.000.000
+	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
+	//	allwnrt113_get_audio1pll_div5_freq = 614.400.000
+
+	// 0x00, 0x01, 0x03: 48000
+	// 0x02: ~ 48350
+	const unsigned long src = 0x01;
+	// CLK_SRC_SEL:
+	// 00: PLL_AUDIO0(1X)
+	// 01: PLL_AUDIO0(4X)
+	// 10: PLL_AUDIO1(DIV2)
+	// 11: PLL_AUDIO1(DIV5)
+	unsigned long clk;
+	switch (src)
+	{
+	default:
+	case 0x00:
+		clk = allwnrt113_get_audio0pll1x_freq();
+		break;
+	case 0x01:
+		clk = allwnrt113_get_audio0pll4x_freq();
+		break;
+	case 0x02:
+		clk = allwnrt113_get_audio1pll_div2_freq();
+		break;
+	case 0x03:
+		clk = allwnrt113_get_audio1pll_div5_freq();
+		break;
+	}
+	//TP();
+	unsigned value;	/* делитель */
+	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
+	//PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", ix, prei, value, mclkf, clk);
+
+	// CLK_SRC_SEL:
+	// 00: PLL_AUDIO0(1X)
+	// 01: PLL_AUDIO0(4X)
+	// 10: PLL_AUDIO1(DIV2)
+	// 11: PLL_AUDIO1(DIV5)
+	volatile uint32_t * const i2s_clk_reg = & CCU->I2S1_CLK_REG + ix - 1;
+
+	* i2s_clk_reg =
+		(1uL << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
+		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
+		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
+		((uint_fast32_t) value << 0) |	// Factor M (0..31)
+		0;
+
+	CCU->I2S_BGR_REG |= (1uL << (0 + ix));	// Gating Clock for I2S/PCMx
+	CCU->I2S_BGR_REG |= (1uL << (16 + ix));	// I2S/PCMx Reset
+
+	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
+
+	// Данные на выходе меняются по спадающему фронту (I2S complaint)
+	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 0, DIN sample data at positive edge;
+	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 1, DIN sample data at negative edge;
+	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 0, DIN sample data at negative edge;
+	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 1, DIN sample data at positive edge.
+	i2s->I2S_PCM_FMT0 =
+		0 * (1uL << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
+		0 * (1uL << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
+		((framebits / 2) - 1) * (1uL << 8) |		// LRCK_PERIOD - for I2S - each channel width
+		width2fmt(framebits / 2) * (1uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebits / 2) * (1uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		0;
+	i2s->I2S_PCM_FMT1 =
+		0;
+
+	if (framebits < 64)
+	{
+		// Данные берутся/появляются в младшей части регистра FIFO
+		// I2S/PCM FIFO Control Register
+		i2s->I2S_PCM_FCTL = (i2s->I2S_PCM_FCTL & ~ (0x07uL)) |
+			1 * (1uL << 2) |	// TXIM Mode 1: TXFIFO[31:0] = {APB_WDATA[19:0], 12’h0}
+			3 * (1uL << 0) |	// RXOM Mode 3: APB_RDATA[31:0] = {16{RXFIFO[31], RXFIFO[31:16]}
+			0;
+	}
+
+	// I2S/PCM Channel Configuration Register
+	i2s->I2S_PCM_CHCFG =
+		(NCH - 1) * (1uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot
+		(NCH - 1) * (1uL << 0) |	// TX_SLOT_NUM 0111: 0001: 2 channel or slot
+		0;
+
+	// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
+	// (pin P2-5) bclk = 3.4 MHz, BCLKDIV=CLKD_Div64
+	// (pin P2-6) lrck = 53 khz
+	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
+	// BCLK = MCLK / BCLKDIV
+	const unsigned ratio = 256 / framebits;
+	const unsigned div4 = 1;
+	i2s->I2S_PCM_CLKD =
+		1 * (1uL << 8) |		// MCLKO_EN
+		ratio2div(div4) * (1uL << 0) |		/* MCLKDIV */
+		ratio2div(ratio) * (1uL << 4) |		/* BCLKDIV */
+		0;
+
+	//PRINTF("I2S%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
+
+#if CODEC1_FORMATI2S_PHILIPS
+	const unsigned txrx_offset = 1;
+#else /* CODEC1_FORMATI2S_PHILIPS */
+	const unsigned txrx_offset = 0;
+#endif /* CODEC1_FORMATI2S_PHILIPS */
+
+	ASSERT(din < 4);
+	ASSERT(dout < 4);
+	// I2S/PCM Control Register
+	i2s->I2S_PCM_CTL = 0;
+	i2s->I2S_PCM_CTL =
+		(1u << dout) * (1uL << 8) |	// DOUT3_EN..DOUT0_EN
+		((uint_fast32_t) master << 18) | // BCLK_OUT
+		((uint_fast32_t) master << 17) | // LRCK_OUT
+		(1uL << 4) |	// left mode, need offset=1 for I2S
+		0;
+
+	i2s->I2S_PCM_RXCHSEL =
+		txrx_offset * (1uL << 20) |	// RX_OFFSET (need for I2S mode
+		0x01 * (1uL << 16) |	// RX Channel (Slot) Number Select for Input
+		0;
+
+
+	const portholder_t txchsel =
+		txrx_offset * (1uL << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
+		(NCH - 1) * (1uL << 16) |	// TX3 Channel (Slot) Number Select for Each Output
+		0xFFFF * (1uL << 0) |		// TX3 Channel (Slot) Enable
+		0;
+
+	i2s->I2S_PCM_TX0CHSEL = txchsel;
+	i2s->I2S_PCM_TX1CHSEL = txchsel;
+	i2s->I2S_PCM_TX2CHSEL = txchsel;
+	i2s->I2S_PCM_TX3CHSEL = txchsel;
+
+	/* Простое отображение каналов с последовательно увеличивающимся номером */
+	I2S_fill_RXCHMAP(i2s, din);
+	I2S_fill_TXxCHMAP(i2s, 0, dout);	// I2S_PCM_TX0CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 1, dout);	// I2S_PCM_TX1CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 2, dout);	// I2S_PCM_TX2CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 3, dout);	// I2S_PCM_TX3CHMAPx
+
+	i2s->I2S_PCM_INT |= (1uL << 7); // TX_DRQ
+	i2s->I2S_PCM_INT |= (1uL << 3); // RX_DRQ
+
+}
+
+static void hardware_i2s1_master_duplex_initialize_codec1(void)
+{
+	hardware_i2s_initialize(I2S1, 1, 2, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	I2S1HW_INITIALIZE(1);
+}
+
+static void hardware_i2s1_slave_duplex_initialize_codec1(void)
+{
+	hardware_i2s_initialize(I2S1, 0, 2, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	I2S1HW_INITIALIZE(0);
+}
+
+static void hardware_i2s2_master_duplex_initialize_fpga(void)
+{
+	hardware_i2s_initialize(I2S2, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	I2S2HW_INITIALIZE(1);
+}
+
+static void hardware_i2s2_slave_duplex_initialize_fpga(void)
+{
+	hardware_i2s_initialize(I2S2, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	I2S2HW_INITIALIZE(0);
+}
+
+/* встороенный в процессор кодек */
+static void hardware_hwblock_master_duplex_initialize_codec1(void)
+{
+	const unsigned framebits = CODEC1_FRAMEBITS;
+	const unsigned long lrckf = ARMI2SRATE;
+
+	const unsigned long mclkf = lrckf * 512;
+
+	// 0x00 = 48000 (x 512)
+	// 0x01 = ~ 46902 (x 512)
+	// 0x02 = 48000 (x 512)
+	const unsigned long src = 0x00;
+	//	Clock Source Select
+	//	00: PLL_AUDIO0(1X)
+	//	01: PLL_AUDIO1(DIV2)
+	//	10: PLL_AUDIO1(DIV5)
+	unsigned long clk;
+	switch (src)
+	{
+	default:
+	case 0x00:
+		clk = allwnrt113_get_audio0pll1x_freq();
+		break;
+	case 0x01:
+		clk = allwnrt113_get_audio1pll_div2_freq();
+		break;
+	case 0x02:
+		clk = allwnrt113_get_audio1pll_div5_freq();
+		break;
+	}
+	//TP();
+	unsigned value;	/* делитель */
+	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioCodec_CLK_WIDTH, ALLWNT113_AudioCodec_CLK_TAPS, & value, 1);
+
+	//PRINTF("AudioCodec: prei=%u, value=%u, lrckf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
+
+	// audiocode1x_dac_clk
+	// audiocode1x_adc_clk
+	//	Clock Source Select
+	//	00: PLL_AUDIO0(1X)
+	//	01: PLL_AUDIO1(DIV2)
+	//	10: PLL_AUDIO1(DIV5)
+
+	const portholder_t clk_reg =
+		(1uL << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
+		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
+		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
+		((uint_fast32_t) value << 0) |	// Factor M (0..31)
+		0;
+
+	CCU->AUDIO_CODEC_ADC_CLK_REG = clk_reg;
+	CCU->AUDIO_CODEC_DAC_CLK_REG = clk_reg;
+
+	CCU->AUDIO_CODEC_BGR_REG |= (1uL << 0);	// Gating Clock For AUDIO_CODEC
+	CCU->AUDIO_CODEC_BGR_REG |= (1uL << 16);	// AUDIO_CODEC Reset
+
+	//PRINTF("AC_ADC_FIFOC=%08lX, AC_DAC_FIFOC=%08lX\n", AUDIO_CODEC->AC_ADC_FIFOC, AUDIO_CODEC->AC_DAC_FIFOC);
+
+	// количество каналов должно соотыетствовать DMABUFFSTEP16RX
+	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |
+			(0x04 | 0x01) << (1uL << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+			0;
+
+	// ADCx Analog Control Register
+	AUDIO_CODEC->ADC1_REG |= (1uL << 31);	// FMINL ADC1 Channel Enable
+	AUDIO_CODEC->ADC2_REG |= (1uL << 31);	// FMINR
+	AUDIO_CODEC->ADC3_REG |= (1uL << 31);	// MIC3
+
+	// DAC Analog Control Register
+	AUDIO_CODEC->DAC_REG |= (1uL << 15) | (1uL << 14);	// DACL_EN, DACR_EN
+
+	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
+	AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1uL << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
+	AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 3);	// ADC_DRQ_EN
+
+	AUDIO_CODEC->AC_DAC_FIFOC |= (1uL << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3uL << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
+	AUDIO_CODEC->AC_DAC_FIFOC |= (1uL << 4);	// DAC_DRQ_EN
+}
+
+/* встороенный в процессор кодек */
+static void hardware_hwblock_enable_codec1(uint_fast8_t state)
+{
+	if (state)
+	{
+		AUDIO_CODEC->AC_DAC_DPC |= (1uL << 31);		// DAC Digital Part Enable
+		AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 28);	// ADC Digital Part Enable
+	}
+	else
+	{
+		AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1uL << 28);	// ADC Digital Part Enable
+		AUDIO_CODEC->AC_DAC_DPC &= ~ (1uL << 31);	// DAC Digital Part Enable
+	}
+}
+
+static void hardware_i2s1_enable_codec1(uint_fast8_t state)
+{
+	I2S_PCM_TypeDef * const i2s = I2S1;
+	if (state)
+	{
+		i2s->I2S_PCM_CTL |=
+			(1uL << 2) |	// TXEN
+			(1uL << 1) |	// RXEN
+			0;
+		i2s->I2S_PCM_CTL |= (1uL << 0); // GEN Globe Enable
+	}
+	else
+	{
+		i2s->I2S_PCM_CTL &= ~ (1uL << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL &= ~ (1uL << 2); // TXEN
+		i2s->I2S_PCM_CTL &= ~ (1uL << 1); // RXEN
+	}
+}
+
+static void hardware_i2s2_enable_fpga(uint_fast8_t state)
+{
+	I2S_PCM_TypeDef * const i2s = I2S2;
+	if (state)
+	{
+		i2s->I2S_PCM_CTL |=
+			(1uL << 2) |	// TXEN
+			(1uL << 1) |	// RXEN
+			0;
+		i2s->I2S_PCM_CTL |= (1uL << 0); // GEN Globe Enable
+	}
+	else
+	{
+		i2s->I2S_PCM_CTL &= ~ (1uL << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL &= ~ (1uL << 2); // TXEN
+		i2s->I2S_PCM_CTL &= ~ (1uL << 1); // RXEN
+	}
+}
+
+#define DMAC_DESC_SRC	1	/* адрес источника */
+#define DMAC_DESC_DST	2	/* адрес получателя */
+
+#define DMAC_DESC_SIZE	8	/* требуется 6, но для удобства работы с кешем */
+
+// DMA Source/Destination Data Width
+// 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+static uint_fast32_t dmac_desc_datawidth(unsigned width)
+{
+	switch (width)
+	{
+	default:
+	case 8: 	return 0x00;
+	case 16: 	return 0x01;
+	case 32: 	return 0x02;
+	case 64: 	return 0x03;
+	}
+}
+
+/* Прием от кодека */
+/* от встроенного в процессор или подключенного по I2S */
+static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
+{
+	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t addr = descraddr [DMAC_DESC_DST];
+	descraddr [DMAC_DESC_DST] = dma_invalidate16rx(allocate_dmabuffer16rx());
+	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
+
+//	printhex(addr, (void *) addr, DMABUFFSIZE16 * sizeof (aubufv_t));
+//	for (;;)
+//		;
+	/* Работа с только что принятыми данными */
+	processing_dmabuffer16rx(addr);
+}
+
+
+/* Передача в кодек */
+/* на встроенный в процессор или подключенный по I2S */
+static void DMA_I2S1_AudioCodec_TX_Handler_codec1(unsigned dmach)
+{
+	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
+	descraddr [DMAC_DESC_SRC] = dma_flush16tx(getfilled_dmabuffer16txphones());
+	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
+
+	/* Работа с только что передаными данными */
+	release_dmabuffer16tx(addr);
+}
+
+/* Прием от FPGA */
+static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
+{
+	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t addr = descraddr [DMAC_DESC_DST];
+	descraddr [DMAC_DESC_DST] = dma_invalidate32rx(allocate_dmabuffer32rx());
+	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
+
+	/* Работа с только что принятыми данными */
+	processing_dmabuffer32rx(addr);
+	release_dmabuffer32rx(addr);
+
+	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
+}
+
+/* Передача в FPGA */
+static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
+{
+	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
+	descraddr [DMAC_DESC_SRC] = dma_flush32tx(getfilled_dmabuffer32tx_main());
+	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
+
+	/* Работа с только что передаными данными */
+	release_dmabuffer32tx(addr);
+}
+
+/* Обработчики прерываний от DMAC в зависимости от номерв канала */
+static void (* dmac_handlers [16])(unsigned dmach);
+
+/* Обработчик прерывания от DMAC */
+static void DMAC_NS_IRQHandler(void)
+{
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
+	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	const unsigned flag = 0x07;
+
+	unsigned dmach;
+
+	for (dmach = 0; dmach < 8; ++ dmach)
+	{
+		const portholder_t maskreg0 = DMAC_REG0_MASK(dmach) * flag;
+		if ((reg0 & maskreg0) != 0)
+		{
+			dmac_handlers [dmach](dmach);
+		}
+	}
+	for (dmach = 8; dmach < 16; ++ dmach)
+	{
+		const portholder_t maskreg1 = DMAC_REG1_MASK(dmach) * flag;
+		if ((reg1 & maskreg1) != 0)
+		{
+			dmac_handlers [dmach](dmach);
+		}
+	}
+
+	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
+	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
+}
+
+
+// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_I2S_IRQ_bit (0x01)
+
+static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler2)(unsigned dmach))
+{
+	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
+	dmac_handlers [dmach] = handler2;
+	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
+
+	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
+}
+
+static void DMAC_clock_initialize(void)
+{
+	CCU->MBUS_CLK_REG |= (1uL << 30);		// MBUS Reset 1: De-assert reset
+	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 0);	// Gating MBUS Clock For DMA
+	CCU->DMA_BGR_REG |= (1uL << 0);			// DMA_GATING 1: Pass clock
+	CCU->DMA_BGR_REG |= (1uL << 16);		// DMA_RST 1: De-assert reset
+	DMAC->DMAC_AUTO_GATE_REG |= (1uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+}
+
+static void DMAC_I2S1_RX_initialize_codec1(void)
+{
+	const size_t dw = sizeof (aubufv_t);
+	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMAC_I2S1_RX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
+	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_RXFIFO;
+
+	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t configDMAC =
+		0 * (1uL << 30) |	// BMODE_SEL
+		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 22) |	// DMA Destination Block Size
+		DMAC_DstReqDRAM * (1uL << 16) |	// DMA Destination DRQ Type
+		sdwt * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 6) |	// DMA Source Block Size
+		DMAC_SrcReqI2S1_RX * (1uL << 0) |	// DMA Source DRQ Type
+		0;
+
+	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+	descr0 [0] [0] = configDMAC;			// Cofigurarion
+	descr0 [0] [1] = portaddr;				// Source Address
+	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
+	descr0 [0] [3] = NBYTES;				// Byte Counter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+
+	descr0 [1] [0] = configDMAC;			// Cofigurarion
+	descr0 [1] [1] = portaddr;				// Source Address
+	descr0 [1] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
+	descr0 [1] [3] = NBYTES;				// Byte Counter
+	descr0 [1] [4] = parameterDMAC;				// Parameter
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+
+	uintptr_t descraddr = (uintptr_t) descr0;
+	arm_hardware_flush(descraddr, sizeof descr0);
+
+	DMAC_clock_initialize();
+
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S1_AudioCodec_RX_Handler_codec1);
+
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+}
+
+static void DMAC_I2S1_TX_initialize_codec1(void)
+{
+	const size_t dw = sizeof (aubufv_t);
+	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMAC_I2S1_TX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
+	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;
+
+	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t configDMAC =
+		0 * (1uL << 30) |	// BMODE_SEL
+		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 22) |	// DMA Destination Block Size
+		DMAC_DstReqI2S1_TX * (1uL << 16) |	// DMA Destination DRQ Type
+		sdwt * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (1uL << 0) |	// DMA Source DRQ Type
+		0;
+
+	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+	descr0 [0] [0] = configDMAC;			// Cofigurarion
+	descr0 [0] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
+	descr0 [0] [2] = portaddr;				// Destination Address
+	descr0 [0] [3] = NBYTES;				// Byte Counter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+
+	descr0 [1] [0] = configDMAC;			// Cofigurarion
+	descr0 [1] [1] = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;			// Source Address
+	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
+	descr0 [1] [2] = portaddr;				// Destination Address
+	descr0 [1] [4] = parameterDMAC;			// Parameter
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+
+	uintptr_t descraddr = (uintptr_t) descr0;
+	arm_hardware_flush(descraddr, sizeof descr0);
+
+	DMAC_clock_initialize();
+
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S1_AudioCodec_TX_Handler_codec1);
+
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+}
+
+static void DMAC_I2S2_RX_initialize_fpga(void)
+{
+	const size_t dw = sizeof (IFADCvalue_t);
+	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMAC_I2S2_RX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
+	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_RXFIFO;
+
+	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t configDMAC =
+		0 * (1uL << 30) |	// BMODE_SEL
+		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 22) |	// DMA Destination Block Size
+		DMAC_DstReqDRAM * (1uL << 16) |	// DMA Destination DRQ Type
+		sdwt * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 6) |	// DMA Source Block Size
+		DMAC_SrcReqI2S2_RX * (1uL << 0) |	// DMA Source DRQ Type
+		0;
+
+	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+	descr0 [0] [0] = configDMAC;			// Cofigurarion
+	descr0 [0] [1] = portaddr;				// Source Address
+	descr0 [0] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	descr0 [0] [3] = NBYTES;				// Byte Counter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+
+	descr0 [1] [0] = configDMAC;			// Cofigurarion
+	descr0 [1] [1] = portaddr;				// Source Address
+	descr0 [1] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	descr0 [1] [3] = NBYTES;				// Byte Counter
+	descr0 [1] [4] = parameterDMAC;			// Parameter
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+
+	uintptr_t descraddr = (uintptr_t) descr0;
+	arm_hardware_flush(descraddr, sizeof descr0);
+
+	DMAC_clock_initialize();
+
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S2_RX_Handler_fpga);
+
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+}
+
+static void DMAC_I2S2_TX_initialize_fpga(void)
+{
+	const size_t dw = sizeof (IFDACvalue_t);
+	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMAC_I2S2_TX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
+	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_TXFIFO;
+
+	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t configDMAC =
+		0 * (1uL << 30) |	// BMODE_SEL
+		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 22) |	// DMA Destination Block Size
+		DMAC_DstReqI2S2_TX * (1uL << 16) |	// DMA Destination DRQ Type
+		sdwt * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (1uL << 0) |	// DMA Source DRQ Type
+		0;
+
+	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+	descr0 [0] [0] = configDMAC;			// Cofigurarion
+	descr0 [0] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
+	descr0 [0] [2] = portaddr;				// Destination Address
+	descr0 [0] [3] = NBYTES;				// Byte Counter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+
+	descr0 [1] [0] = configDMAC;			// Cofigurarion
+	descr0 [1] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
+	descr0 [1] [2] = portaddr;				// Destination Address
+	descr0 [1] [3] = NBYTES;				// Byte Counter
+	descr0 [1] [4] = parameterDMAC;			// Parameter
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+
+	uintptr_t descraddr = (uintptr_t) descr0;
+	arm_hardware_flush(descraddr, sizeof descr0);
+
+	DMAC_clock_initialize();
+
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S2_TX_Handler_fpga);
+
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+}
+
+static void DMAC_AudioCodec_RX_initialize_codec1(void)
+{
+	const size_t dw = sizeof (aubufv_t);
+	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMAC_AudioCodec_RX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
+	const uintptr_t portaddr = (uintptr_t) & AUDIO_CODEC->AC_ADC_RXDATA;
+
+	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t configDMAC =
+		0 * (1uL << 30) |	// BMODE_SEL
+		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 22) |	// DMA Destination Block Size
+		DMAC_DstReqDRAM * (1uL << 16) |	// DMA Destination DRQ Type
+		sdwt * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 6) |	// DMA Source Block Size
+		DMAC_SrcReqAudioCodec * (1uL << 0) |	// DMA Source DRQ Type
+		0;
+
+	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+	descr0 [0] [0] = configDMAC;			// Cofigurarion
+	descr0 [0] [1] = portaddr;				// Source Address
+	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
+	descr0 [0] [3] = NBYTES;				// Byte Counter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+
+	descr0 [1] [0] = configDMAC;			// Cofigurarion
+	descr0 [1] [1] = portaddr;				// Source Address
+	descr0 [1] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
+	descr0 [1] [3] = NBYTES;				// Byte Counter
+	descr0 [1] [4] = parameterDMAC;				// Parameter
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+
+	uintptr_t descraddr = (uintptr_t) descr0;
+	arm_hardware_flush(descraddr, sizeof descr0);
+
+	DMAC_clock_initialize();
+
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S1_AudioCodec_RX_Handler_codec1);
+
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+}
+
+static void DMAC_AudioCodec_TX_initialize_codec1(void)
+{
+	const size_t dw = sizeof (aubufv_t);
+	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMAC_AudioCodec_TX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
+	const uintptr_t portaddr = (uintptr_t) & AUDIO_CODEC->AC_DAC_TXDATA;
+
+	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t configDMAC =
+		0 * (1uL << 30) |	// BMODE_SEL
+		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 22) |	// DMA Destination Block Size
+		DMAC_DstReqAudioCodec * (1uL << 16) |	// DMA Destination DRQ Type
+		sdwt * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (1uL << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (1uL << 0) |	// DMA Source DRQ Type
+		0;
+
+	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+	descr0 [0] [0] = configDMAC;			// Cofigurarion
+	descr0 [0] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
+	descr0 [0] [2] = portaddr;				// Destination Address
+	descr0 [0] [3] = NBYTES;				// Byte Counter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+
+	descr0 [1] [0] = configDMAC;			// Cofigurarion
+	descr0 [1] [1] = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;			// Source Address
+	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
+	descr0 [1] [2] = portaddr;				// Destination Address
+	descr0 [1] [4] = parameterDMAC;			// Parameter
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+
+	uintptr_t descraddr = (uintptr_t) descr0;
+	arm_hardware_flush(descraddr, sizeof descr0);
+
+	DMAC_clock_initialize();
+
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S1_AudioCodec_TX_Handler_codec1);
+
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+}
+
+static const codechw_t audiocodechw_i2s1_duplex_master =
+{
+	hardware_i2s1_master_duplex_initialize_codec1,
+	hardware_dummy_initialize,
+	DMAC_I2S1_RX_initialize_codec1,
+	DMAC_I2S1_TX_initialize_codec1,
+	hardware_i2s1_enable_codec1,
+	hardware_dummy_enable,
+	"audiocodechw-i2s1-duplex-master"
+};
+
+static const codechw_t audiocodechw_hwblock_duplex_master =
+{
+	hardware_hwblock_master_duplex_initialize_codec1,
+	hardware_dummy_initialize,
+	DMAC_AudioCodec_RX_initialize_codec1,
+	DMAC_AudioCodec_TX_initialize_codec1,
+	hardware_hwblock_enable_codec1,
+	hardware_dummy_enable,
+	"audiocodechw-hwblock-duplex-master"
+};
+
+static const codechw_t audiocodechw_i2s1_duplex_slave =
+{
+	hardware_i2s1_slave_duplex_initialize_codec1,
+	hardware_dummy_initialize,
+	DMAC_I2S1_RX_initialize_codec1,
+	DMAC_I2S1_TX_initialize_codec1,
+	hardware_i2s1_enable_codec1,
+	hardware_dummy_enable,
+	"audiocodechw-i2s1-duplex-slave"
+};
+
+static const codechw_t fpgacodechw_i2s2_duplex_master =
+{
+	hardware_i2s2_master_duplex_initialize_fpga,
+	hardware_dummy_initialize,
+	DMAC_I2S2_RX_initialize_fpga,
+	DMAC_I2S2_TX_initialize_fpga,
+	hardware_i2s2_enable_fpga,
+	hardware_dummy_enable,
+	"fpgacodechw-i2s2-duplex-master"
+};
+
+static const codechw_t fpgacodechw_i2s2_duplex_slave =
+{
+	hardware_i2s2_slave_duplex_initialize_fpga,
+	hardware_dummy_initialize,
+	DMAC_I2S2_RX_initialize_fpga,
+	DMAC_I2S2_TX_initialize_fpga,
+	hardware_i2s2_enable_fpga,
+	hardware_dummy_enable,
+	"fpgacodechw-i2s2-duplex-slave"
+};
+
 #elif CPUSTYLE_R7S721
 	
 enum
@@ -3489,14 +4502,14 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma_audiorx(void)
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC0.N0DA_n;
-		DMAC0.N0DA_n = dma_invalidate16rx(allocate_dmabuffer16());
+		DMAC0.N0DA_n = dma_invalidate16rx(allocate_dmabuffer16rx());
 		DMAC0.CHCFG_n |= DMAC0_CHCFG_n_REN;	// REN bit
 		processing_dmabuffer16rx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC0.N1DA_n;
-		DMAC0.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16());
+		DMAC0.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16rx());
 		DMAC0.CHCFG_n |= DMAC0_CHCFG_n_REN;	// REN bit
 		processing_dmabuffer16rx(addr);
 	}
@@ -3517,16 +4530,16 @@ static void r7s721_ssif0_txdma_audio(void)
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC1.N0SA_n;
-		DMAC1.N0SA_n = dma_flush16tx(getfilled_dmabuffer16phones());
+		DMAC1.N0SA_n = dma_flush16tx(getfilled_dmabuffer16txphones());
 		DMAC1.CHCFG_n |= DMAC1_CHCFG_n_REN;	// REN bit
-		release_dmabuffer16(addr);
+		release_dmabuffer16tx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC1.N1SA_n;
-		DMAC1.N1SA_n = dma_flush16tx(getfilled_dmabuffer16phones());
+		DMAC1.N1SA_n = dma_flush16tx(getfilled_dmabuffer16txphones());
 		DMAC1.CHCFG_n |= DMAC1_CHCFG_n_REN;	// REN bit
-		release_dmabuffer16(addr);
+		release_dmabuffer16tx(addr);
 	}
 }
 
@@ -3543,12 +4556,12 @@ static void r7s721_ssif0_dmarx_initialize_codec1_rx(void)
     DMAC0.N1SA_n = (uintptr_t) & SSIF0.SSIFRDR;	// Fixed source address
 
     /* Set Destination Start Address */
-	DMAC0.N0DA_n = dma_invalidate16rx(allocate_dmabuffer16());
-	DMAC0.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16());
+	DMAC0.N0DA_n = dma_invalidate16rx(allocate_dmabuffer16rx());
+	DMAC0.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16rx());
 
     /* Set Transfer Size */
-    DMAC0.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
-    DMAC0.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    DMAC0.N0TB_n = DMABUFFSIZE16RX * sizeof (aubufv_t);	// размер в байтах
+    DMAC0.N1TB_n = DMABUFFSIZE16RX * sizeof (aubufv_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSIRXI0 (receive data full)
@@ -3605,16 +4618,16 @@ static void r7s721_ssif0_dmatx_initialize_codec1_tx(void)
 	enum { id = 1 };	// 1: DMAC1
 	// DMAC1
 	/* Set Source Start Address */
-	DMAC1.N0SA_n = dma_flush16tx(allocate_dmabuffer16());
-	DMAC1.N1SA_n = dma_flush16tx(allocate_dmabuffer16());
+	DMAC1.N0SA_n = dma_flush16tx(allocate_dmabuffer16tx());
+	DMAC1.N1SA_n = dma_flush16tx(allocate_dmabuffer16tx());
 
     /* Set Destination Start Address */
     DMAC1.N0DA_n = (uintptr_t) & SSIF0.SSIFTDR;	// Fixed destination address
     DMAC1.N1DA_n = (uintptr_t) & SSIF0.SSIFTDR;	// Fixed destination address
 
     /* Set Transfer Size */
-    DMAC1.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
-    DMAC1.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    DMAC1.N0TB_n = DMABUFFSIZE16TX * sizeof (aubufv_t);	// размер в байтах
+    DMAC1.N1TB_n = DMABUFFSIZE16TX * sizeof (aubufv_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSITXI0 (transmit data empty)
@@ -3806,7 +4819,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
 	}
-	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
+	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 }
 
 // FPGA/IF codec
@@ -4191,24 +5204,24 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 
 	static const codechw_t audiocodechw_xc7z =
 	{
-		hardware_dummy_initialize,	// added...
+		xcz_ah_preinit,				// added...
 		hardware_dummy_initialize,
-		hardware_dummy_initialize,
-		xc7z_dma_init_af_tx,
-		hardware_dummy_enable,
-		hardware_dummy_enable,
-		"ZYNQ 7000 audio codec"
+		xcz_audio_rx_init,
+		xcz_audio_tx_init,
+		xcz_audio_rx_enable,
+		xcz_audio_tx_enable,
+		"ZYNQ audio codec"
 	};
 
 	static const codechw_t ifcodechw_xc7z =
 	{
 		hardware_dummy_initialize,	// added...
 		hardware_dummy_initialize,
-		hardware_dummy_initialize,
-		xc7z_if_fifo_init,
-		hardware_dummy_enable,
-		hardware_dummy_enable,
-		"ZYNQ 7000 IF codec"
+		xcz_if_rx_init,
+		xcz_if_tx_init,
+		xcz_if_rx_enable,
+		xcz_if_tx_enable,
+		"ZYNQ IF codec"
 	};
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -4223,6 +5236,10 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 		hardware_dummy_enable,
 		"sai2-fpga spectrum for WFM"
 	};
+
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Codecs not defined for CPUSTYPE_ALLWNT113
 
 #else
 
@@ -4365,8 +5382,9 @@ static const codechw_t fpgaspectrumhw_dummy =
 #if WITHFPGARTS_SAI2_B_RX_SLAVE
 		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
 #endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
-	};
-
+#if WITHCODEC1_SAI1_A_TX_B_RX_MASTER 1  /* Обмен с аудиокодеком через SAI1: SAI1_A - TX, SAI1_B - RX */  	};
+		& audiocodechw_sai1_a_tx_b_rx_master,	// Интерфейс к НЧ кодеку
+#endif /* WITHCODEC1_SAI1_A_TX_B_RX_MASTER */
 #elif CPUSTYLE_STM32F4XX
 	static const codechw_t * const channels [] =
 	{
@@ -4423,6 +5441,21 @@ static const codechw_t fpgaspectrumhw_dummy =
 #if WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE
 		& fpgacodechw_sai1_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
 #endif /* WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE */
+#if WITHCODEC1_I2S1_DUPLEX_SLAVE
+		& audiocodechw_i2s1_duplex_slave,					// Интерфейс к НЧ кодеку
+#endif /* WITHCODEC1_I2S1_DUPLEX_SLAVE */
+#if WITHFPGAIF_I2S2_DUPLEX_SLAVE
+		& fpgacodechw_i2s2_duplex_slave,					// Интерфейс к IF кодеку/FPGA
+#endif /* WITHFPGAIF_I2S2_DUPLEX_SLAVE */
+#if WITHCODEC1_I2S1_DUPLEX_MASTER
+		& audiocodechw_i2s1_duplex_master,					// Интерфейс к НЧ кодеку
+#endif /* WITHCODEC1_I2S1_DUPLEX_MASTER */
+#if WITHFPGAIF_I2S2_DUPLEX_MASTER
+		& fpgacodechw_i2s2_duplex_master,					// Интерфейс к IF кодеку/FPGA
+#endif /* WITHFPGAIF_I2S2_DUPLEX_MASTER */
+#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
+		& audiocodechw_hwblock_duplex_master,					// Интерфейс к НЧ кодеку (встроенный в процессор)
+#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
 		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 

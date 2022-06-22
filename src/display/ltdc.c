@@ -820,6 +820,7 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
@@ -840,7 +841,7 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 	(void) vdc->GR2_UPDATE;
 }
 
-/* set bottom buffer start */
+/* set visible buffer start. Wait VSYNC. */
 /* Set MAIN frame buffer address. Wait for VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
@@ -1586,7 +1587,7 @@ arm_hardware_ltdc_deinitialize(void)
 #endif
 }
 
-/* set bottom buffer start */
+/* set visible buffer start. Wait VSYNC. */
 /* Set PIP frame buffer address. */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
@@ -1642,6 +1643,7 @@ void arm_hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
@@ -1702,6 +1704,8 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	{
 		PRINTF("Couldn't start display: %d\r\n", Status);
 	}
+
+	ltdc_tfcon_cfg(vdmode);
 }
 
 /* Palette reload (dummy fuction) */
@@ -1710,6 +1714,7 @@ void arm_hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
@@ -1721,6 +1726,382 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
+#elif CPUSTYPE_ALLWNT113
+
+#include "reg-ccu.h"
+#include "reg-de.h"
+#include "reg-tconlcd.h"
+
+#define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
+
+static uint32_t read32(uintptr_t a)
+{
+	return * (volatile uint32_t *) a;
+}
+
+static void write32(uintptr_t a, uint32_t v)
+{
+	* (volatile uint32_t *) a = v;
+}
+
+struct fb_t113_rgb_pdata_t
+{
+	uintptr_t virt_de;	// 0: struct de_vi_t, 1..3: struct de_ui_t
+	uintptr_t virt_tconlcd;
+
+	//char * clk_de;
+	//char * clk_tconlcd;
+	int rst_de;
+	int rst_tconlcd;
+	int width;
+	int height;
+	//int pwidth;
+	//int pheight;
+	//int bits_per_pixel;
+	//int bytes_per_pixel;
+	//int pixlen;
+	int index;
+	uintptr_t vram [2];
+	//struct region_list_t * nrl, * orl;
+
+	struct {
+		int pixel_clock_hz;
+		int h_front_porch;
+		int h_back_porch;
+		int h_sync_len;
+		int v_front_porch;
+		int v_back_porch;
+		int v_sync_len;
+		int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+		int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+		int den_active;		// 1 - negatibe pulses, 0 - positice pulses
+		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
+	} timing;
+
+//	struct led_t * backlight;
+//	int brightness;
+};
+
+static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);
+
+	while ((read32((uintptr_t) & glb->dbuff) & 0x01uL) != 0)
+		;
+	write32((uintptr_t) & glb->dbuff, 0x01uL);	// 1: register value be ready for update (self-cleaning bit)
+	while ((read32((uintptr_t) & glb->dbuff) & 0x01uL) != 0)
+		;
+}
+
+static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
+{
+	struct de_ui_t * const ui = (struct de_ui_t *) (pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
+}
+
+static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct de_clk_t * const clk = (struct de_clk_t *) (pdat->virt_de);
+	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);		// Global control register
+	struct de_bld_t * const bld = (struct de_bld_t *) (pdat->virt_de + T113_DE_MUX_BLD);
+	struct de_ui_t * const ui = (struct de_ui_t *) (pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
+
+	// Allwinner_DE2.0_Spec_V1.0.pdf
+	// 5.10.8.2 OVL_UI memory block size register
+	// 28..16: LAY_HEIGHT
+	// 12..0: LAY_WIDTH
+	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
+	// 5.10.8.1 OVL_UI attribute control register
+	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
+	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565, 0x08: RGB_888
+#if LCDMODE_MAIN_ARGB888
+	const uint32_t ovl_ui_format = 0x00;	//  0x08: ARGB_8888
+	//const uint32_t ovl_ui_format = 0x04;	// 0x04: XRGB_8888
+#elif LCDMODE_MAIN_RGB565
+	const uint32_t ovl_ui_format = 0x0A;	// 0x0A: RGB_565
+#else
+	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
+	const uint32_t ovl_ui_format = 0x0A;
+#endif
+
+	uint32_t val;
+
+	int i;
+
+	val = read32((uintptr_t) & clk->rst_cfg);
+	val |= 1 << 0;
+	write32((uintptr_t) & clk->rst_cfg, val);
+
+	val = read32((uintptr_t) & clk->gate_cfg);
+	val |= 1 << 0;
+	write32((uintptr_t) & clk->gate_cfg, val);
+
+	val = read32((uintptr_t) & clk->bus_cfg);
+	val |= 1 << 0;
+	write32((uintptr_t) & clk->bus_cfg, val);
+
+	val = read32((uintptr_t) & clk->sel_cfg);
+	val &= ~(1 << 0);
+	write32((uintptr_t) & clk->sel_cfg, val);
+
+	write32((uintptr_t) & glb->ctl, (0x01uL << 0));
+	write32((uintptr_t) & glb->status, 0x00uL);
+	write32((uintptr_t) & glb->dbuff, 0x01uL);		// 1: register value be ready for update (self-cleaning bit)
+	write32((uintptr_t) & glb->size, ovl_ui_mbsize);
+
+	for(i = 0; i < 4; i++)
+	{
+		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
+
+		// peripherial registers
+		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
+	}
+
+	// peripherial registers
+	memset(bld, 0, sizeof (struct de_bld_t));
+
+	write32((uintptr_t) & bld->fcolor_ctl, 0x00000101);
+	write32((uintptr_t) & bld->route, 1);
+	write32((uintptr_t) & bld->premultiply, 0);
+	write32((uintptr_t) & bld->bkcolor, 0xff000000);
+	write32((uintptr_t) & bld->bld_mode [0], 0x03010301);
+	write32((uintptr_t) & bld->bld_mode [1], 0x03010301);
+	write32((uintptr_t) & bld->output_size, ovl_ui_mbsize);
+	write32((uintptr_t) & bld->out_ctl, 0);
+	write32((uintptr_t) & bld->ck_ctl, 0);
+	for(i = 0; i < 4; i++)
+	{
+		write32((uintptr_t) & bld->attr [i].fcolor, 0xff000000);
+		write32((uintptr_t) & bld->attr [i].insize, ovl_ui_mbsize);
+	}
+
+	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
+	write32(pdat->virt_de + T113_DE_MUX_GSU1, 0);
+	write32(pdat->virt_de + T113_DE_MUX_GSU2, 0);
+	write32(pdat->virt_de + T113_DE_MUX_GSU3, 0);
+	write32(pdat->virt_de + T113_DE_MUX_FCE, 0);
+	write32(pdat->virt_de + T113_DE_MUX_BWS, 0);
+	write32(pdat->virt_de + T113_DE_MUX_LTI, 0);
+	write32(pdat->virt_de + T113_DE_MUX_PEAK, 0);
+	write32(pdat->virt_de + T113_DE_MUX_ASE, 0);
+	write32(pdat->virt_de + T113_DE_MUX_FCC, 0);
+	write32(pdat->virt_de + T113_DE_MUX_DCSC, 0);
+
+
+	// Allwinner_DE2.0_Spec_V1.0.pdf
+
+	// Note: the layer priority is layer3>layer2>layer1>layer0
+
+	// 5.10.8.1 OVL_UI attribute control register
+	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
+	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].attr, (1 << 0) | (ovl_ui_format << 8) | (1 << 1) | (0xff << 24));
+	// 5.10.8.2 OVL_UI memory block size register
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].size, ovl_ui_mbsize);
+	// 5.10.8.3 OVL_UI memory block coordinate register
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].coord, 0);
+	// 5.10.8.4 OVL_UI memory pitch register
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch, LCDMODE_PIXELSIZE * GXADJ(DIM_X));	// размер строки в байтах
+	// 5.10.8.5 OVL_UI top field memory block low address register
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
+	// 5.10.8.6 OVL_UI bottom field memory block low address register
+	// ...
+	// 5.10.8.2 OVL_UI memory block size register
+	// 28..16: LAY_HEIGHT
+	// 12..0: LAY_WIDTH
+	write32((uintptr_t) & ui->ovl_size, ovl_ui_mbsize);
+}
+
+static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
+	uint32_t val;
+
+	val = read32((uintptr_t) & tcon->gctrl);
+	val |= (1 << 31);
+	write32((uintptr_t) & tcon->gctrl, val);
+}
+
+static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
+	uint32_t val;
+
+	val = read32((uintptr_t) & tcon->dclk);
+	val &= ~(0xf << 28);
+	write32((uintptr_t) & tcon->dclk, val);
+
+	write32((uintptr_t) & tcon->gctrl, 0);
+	write32((uintptr_t) & tcon->gint0, 0);
+}
+
+static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
+{
+	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
+	int vbp, vtotal;
+	int hbp, htotal;
+	uint32_t val;
+
+	// ctrl
+	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
+	write32((uintptr_t) & tcon->ctrl, (0x01uL << 31) | (0x00uL << 24) | (0x00uL << 23) | ((val & 0x1f) << 4) | (0x00uL << 0));
+
+	// dclk
+	// 31..28: TCON0_Dclk_En
+	// 6..0: TCON0_Dclk_Div
+	val = allwnrt113_get_video0_x2_freq() / pdat->timing.pixel_clock_hz;
+	write32((uintptr_t) & tcon->dclk, (0x0FuL << 28) | (val << 0));
+
+	// timing0 (window)
+	write32((uintptr_t) & tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
+
+	// timing1 (horizontal)
+	hbp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
+	htotal = pdat->width + pdat->timing.h_front_porch + hbp;
+	write32((uintptr_t) & tcon->timing1, ((htotal - 1) << 16) | ((hbp - 1) << 0));
+
+	// timing2 (vertical)
+	vbp = pdat->timing.v_sync_len + pdat->timing.v_back_porch;
+	vtotal = pdat->height + pdat->timing.v_front_porch + vbp;
+	write32((uintptr_t) & tcon->timing2, ((vtotal * 2) << 16) | ((vbp - 1) << 0));
+
+	// timing3
+	write32((uintptr_t) & tcon->timing3, ((pdat->timing.h_sync_len - 1) << 16) | ((pdat->timing.v_sync_len - 1) << 0));
+
+	// Sochip_VE_S3_Datasheet_V1.0.pdf
+	// 7.2.5.19. TCON0_IO_POL_REG
+	// io_polarity
+	val = (0x00uL << 31) | 	// IO_Output_Sel: 0: nirmal, 1: sync to dclk
+			(0x01uL << 28);	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
+
+	if(!pdat->timing.h_sync_active)
+		val |= (0x01uL << 25);	// IO1_Inv
+	if(!pdat->timing.v_sync_active)
+		val |= (0x01uL << 24);	// IO0_Inv
+	if(!pdat->timing.den_active)
+		val |= (0x01uL << 27);	// IO3_Inv
+	if(!pdat->timing.clk_active)
+		val |= (0x01uL << 26);	// IO2_Inv
+	write32((uintptr_t) & tcon->io_polarity, val);
+
+	// io_tristate
+	write32((uintptr_t) & tcon->io_tristate, 0);
+}
+
+#if 0
+
+static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+
+	if((pdat->bits_per_pixel == 16) || (pdat->bits_per_pixel == 18))
+	{
+		write32((uintptr_t) & tcon->frm_seed[0], 0x11111111);
+		write32((uintptr_t) & tcon->frm_seed[1], 0x11111111);
+		write32((uintptr_t) & tcon->frm_seed[2], 0x11111111);
+		write32((uintptr_t) & tcon->frm_seed[3], 0x11111111);
+		write32((uintptr_t) & tcon->frm_seed[4], 0x11111111);
+		write32((uintptr_t) & tcon->frm_seed[5], 0x11111111);
+		write32((uintptr_t) & tcon->frm_table[0], 0x01010000);
+		write32((uintptr_t) & tcon->frm_table[1], 0x15151111);
+		write32((uintptr_t) & tcon->frm_table[2], 0x57575555);
+		write32((uintptr_t) & tcon->frm_table[3], 0x7f7f7777);
+
+		// Sochip_VE_S3_Datasheet_V1.0.pdf
+		// TCON0_TRM_CTL_REG offset 0x0010
+		// User manual:
+		// LCD FRM Control Register (Default Value: 0x0000_0000)
+		// 31: TCON_FRM_EN: 0: disable, 1: enable
+		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
+		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
+		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
+		write32((uintptr_t) & tcon->frm_ctrl, (1 << 31) | TCON_FRM_MODE_VAL);
+		/* режим и формат выхода */
+		TCON_LCD0->LCD_FRM_CTL_REG = (1 << 31) | TCON_FRM_MODE_VAL;
+	}
+}
+
+#endif
+
+
+static struct fb_t113_rgb_pdata_t pdat0;
+
+void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+{
+	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+	uint32_t val;
+
+	pdat->virt_tconlcd = T113_TCONLCD_BASE;
+    pdat->virt_de = T113_DE_BASE;
+	//pdat->clk_tconlcd = (void *) allwnrt113_get_video0_x2_freq();
+    //pdat->clk_de = (void *) 396000000;
+	pdat->width = vdmode->width;
+	pdat->height =  vdmode->height;
+	//pdat->pwidth =  216;
+	//pdat->pheight = 135;
+	//pdat->bits_per_pixel = 18; // panel connection type
+	//pdat->bytes_per_pixel = LCDMODE_PIXELSIZE;
+	//pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
+	pdat->vram [0] = frames [0];
+	pdat->vram [1] = frames [1];
+
+	pdat->timing.pixel_clock_hz = display_getdotclock(vdmode);
+	pdat->timing.h_front_porch = vdmode->hfp;
+	pdat->timing.h_back_porch = vdmode->hbp;
+	pdat->timing.h_sync_len =  vdmode->hsync;
+	pdat->timing.v_front_porch = vdmode->vfp;
+	pdat->timing.v_back_porch = vdmode->vbp;
+	pdat->timing.v_sync_len = vdmode->vsync;
+	pdat->timing.h_sync_active = vdmode->vsyncneg;
+	pdat->timing.v_sync_active = vdmode->hsyncneg;
+	pdat->timing.den_active = ! vdmode->deneg;
+	pdat->timing.clk_active = 0;
+	//pdat->backlight = NULL;
+
+    CCU->DE_CLK_REG |= (0x01uL << 31) | (0x03uL << 0);	// 300 MHz
+
+    CCU->DE_BGR_REG |= (0x01uL << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (0x01uL << 16);		// Deassert reset
+
+    CCU->TCONLCD_CLK_REG |= (0x01uL << 31);
+    CCU->TCONLCD_BGR_REG |= (0x01uL << 0);	// Open the clock gate
+    CCU->TCONLCD_BGR_REG |= (0x01uL << 16); // Deassert reset
+
+
+	t113_tconlcd_disable(pdat);
+	t113_tconlcd_set_timing(pdat, vdmode);
+	//t113_tconlcd_set_dither(pdat);
+	t113_tconlcd_enable(pdat);
+
+	t113_de_set_mode(pdat);
+	t113_de_enable(pdat);
+
+	t113_de_set_address(pdat, pdat->vram [pdat->index]);
+	t113_de_enable(pdat);
+
+	// Set DE MODE if need
+	ltdc_tfcon_cfg(vdmode);
+}
+
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+{
+	t113_de_set_address(& pdat0, p);
+}
+
+/* set visible buffer start. Wait VSYNC. */
+void arm_hardware_ltdc_main_set(uintptr_t p)
+{
+	t113_de_set_address(& pdat0, p);
+	t113_de_enable(& pdat0);
+}
+
+/* Palette reload */
+void arm_hardware_ltdc_L8_palette(void)
+{
+}
+
 #else
 	//#error Wrong CPUSTYLE_xxxx
 
@@ -1729,15 +2110,17 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 }
 
-/* set bottom buffer start */
+/* set visible buffer start. Wait VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 }
 
+/* Palette reload */
 void arm_hardware_ltdc_L8_palette(void)
 {
 }

@@ -28,17 +28,17 @@ extern "C" {
  */
 #if WITHDSPEXTDDC
 
-	#if CPUSTYLE_R7S721
+	#if CPUSTYLE_R7S721 || CPUSTYPE_ALLWNT113
 
 		// buff data layout: I main/I sub/Q main/Q sub
-		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX1I	1		// RX1, I
 		#define DMABUF32RX0Q	4		// RX0, Q
 		#define DMABUF32RX1Q	5		// RX1, Q
 
-		#define DMABUFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	4		// TX, Q
 
@@ -63,22 +63,27 @@ extern "C" {
 		#define DMABUF32RXWFM3I	3		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
+
+		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
+		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
 	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 		#if WITHFPGAIF_FRAMEBITS == 64
 
-			#define DMABUFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			#define DMABUFFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX0Q	1		// RX0, Q
-			#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32TXI		0		// TX, I
 			#define DMABUF32TXQ		1		// TX, Q
 
 		#elif WITHFPGAIF_FRAMEBITS == 256
 				// buff data layout: I main/I sub/Q main/Q sub
-				#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+				#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX0Q	1		// RX0, Q
@@ -105,28 +110,33 @@ extern "C" {
 			#define DMABUF32RXWFM3I	3		// WFM NEWEST
 			#define DMABUF32RXWFM3Q	7		// WFM
 
-			#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32TXI	0		// TX, I
 			#define DMABUF32TXQ	1		// TX, Q
 
 		#endif /* WITHFPGAIF_FRAMEBITS */
 
-		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
+
+		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
+		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
 	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 		#if WITHFPGAIF_FRAMEBITS == 64
 
-			#define DMABUFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			#define DMABUFFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX0Q	1		// RX0, Q
-			#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32TXI		0		// TX, I
 			#define DMABUF32TXQ		1		// TX, Q
 
 		#elif WITHFPGAIF_FRAMEBITS == 256
 				// buff data layout: I main/I sub/Q main/Q sub
-				#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+				#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 				#define DMABUF32RX0I	0		// RX0, I
 				#define DMABUF32RX1I	1		// RX1, I
@@ -153,23 +163,30 @@ extern "C" {
 				#define DMABUF32RXWFM3I	3		// WFM NEWEST
 				#define DMABUF32RXWFM3Q	7		// WFM
 
-				#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+				#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 				#define DMABUF32TXI	0		// TX, I
 				#define DMABUF32TXQ	1		// TX, Q
 		#endif
-		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+
+		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
+
+		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
+		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
+
 	#else
 		#warning Define I2S layout for this CPUSTYLE_XXX
 
 		// buff data layout: I main/I sub/Q main/Q sub
-		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX1I	1		// RX1, I
 		#define DMABUF32RX0Q	4		// RX0, Q
 		#define DMABUF32RX1Q	5		// RX1, Q
 
-		#define DMABUFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	4		// TX, Q
 
@@ -194,21 +211,32 @@ extern "C" {
 		#define DMABUF32RXWFM3I	3		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
+
+		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
+		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
+
 	#endif
 
 #else /* WITHDSPEXTDDC */
 	// buff data layout: ADC data/unused channel
 	#define DMABUF32RX		0		// ADC data index
-	#define DMABUFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+	#define DMABUFFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
 	#define DMABUF32RXI	0		// RX0, I
 	#define DMABUF32RXQ	1		// RX0, Q
 
-	#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+	#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 	#define DMABUF32TXI	0		// TX, I
 	#define DMABUF32TXQ	1		// TX, Q
 
-	#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+	#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+	#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла канала микрофона */
+
+	#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+	#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
+	#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
 #endif /* WITHDSPEXTDDC */
 
@@ -285,19 +313,20 @@ extern "C" {
 #define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
 
 
-#define DMABUFSTEPUACIN16	(UACIN_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
+#define DMABUFFSTEPUACIN16	(UACIN_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
 
-#define DMABUFFSIZEUACIN16_AJ (MSINSAMPLES * DMABUFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+#define DMABUFFSIZEUACIN16_AJ (MSINSAMPLES * DMABUFFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
-#define DMABUFFSIZEUACIN16 DMAHWEPADJUST(DMABUFFSIZEUACIN16_AJ, DMABUFSTEPUACIN16 * HARDWARE_RTSDMABYTES)
+#define DMABUFFSIZEUACIN16 DMAHWEPADJUST(DMABUFFSIZEUACIN16_AJ, DMABUFFSTEPUACIN16 * HARDWARE_RTSDMABYTES)
 
 
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 #define DMABUFSCALE		4	// внутрений параметр, указыват на сколько реже ьулут происходить прерывания по обмену буфрами от остальны каналов по отношению к приему от FPGA
-#define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * DMABUFSCALE)		/* AF CODEC */
-#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
-#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * DMABUFSCALE)	/* FPGA TX or IF CODEC TX	*/
+#define DMABUFFSIZE16RX	(DMABUFCLUSTER * DMABUFFSTEP16RX * DMABUFSCALE)		/* AF CODEC ADC */
+#define DMABUFFSIZE16TX	(DMABUFCLUSTER * DMABUFFSTEP16TX * DMABUFSCALE)		/* AF CODEC DAC */
+#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFFSTEP32RX)		/* FPGA RX or IF CODEC RX */
+#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFFSTEP32TX * DMABUFSCALE)	/* FPGA TX or IF CODEC TX	*/
 
 
 // stereo, 16 bit samples
@@ -306,15 +335,15 @@ extern "C" {
 #define UACIN_AUDIO48_DATASIZE (DMABUFFSIZEUACIN16 * sizeof (int16_t))
 
 // Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
-#define DMABUFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит
-#define DMABUFFSIZE192RTS_AJ (128/*288*/ * DMABUFSTEP192RTS)
+#define DMABUFFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит
+#define DMABUFFSIZE192RTS_AJ (128/*288*/ * DMABUFFSTEP192RTS)
 
-#define DMABUFFSIZE192RTS DMAHWEPADJUST(DMABUFFSIZE192RTS_AJ, DMABUFSTEP192RTS * HARDWARE_RTSDMABYTES)
+#define DMABUFFSIZE192RTS DMAHWEPADJUST(DMABUFFSIZE192RTS_AJ, DMABUFFSTEP192RTS * HARDWARE_RTSDMABYTES)
 
-#define DMABUFSTEP96RTS 6	// 6: стерео по 24 бит
-#define DMABUFFSIZE96RTS_AJ ((MSOUTSAMPLES * 2 + 1) * DMABUFSTEP96RTS) //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
+#define DMABUFFSTEP96RTS 6	// 6: стерео по 24 бит
+#define DMABUFFSIZE96RTS_AJ ((MSOUTSAMPLES * 2 + 1) * DMABUFFSTEP96RTS) //((96 + 4) * DMABUFFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
 
-#define DMABUFFSIZE96RTS DMAHWEPADJUST(DMABUFFSIZE96RTS_AJ, DMABUFSTEP96RTS * HARDWARE_RTSDMABYTES)
+#define DMABUFFSIZE96RTS DMAHWEPADJUST(DMABUFFSIZE96RTS_AJ, DMABUFFSTEP96RTS * HARDWARE_RTSDMABYTES)
 
 #if WITHRTS96
 
@@ -375,6 +404,7 @@ extern "C" {
 
 		typedef double FLOAT_t;
 
+		#define ARM_MORPH(name) name ## _f64
 		#define FLOORF	floor
 		#define LOG10F	local_log10 //log10
 		#define LOGF	log
@@ -405,6 +435,7 @@ extern "C" {
 
 		typedef float FLOAT_t;
 
+		#define ARM_MORPH(name) name ## _f32
 		#define FLOORF	floorf
 		#define LOG10F	local_log10 //log10f
 		#define LOGF	logf
@@ -521,10 +552,8 @@ typedef struct
 #if CODEC1_FRAMEBITS == 64
 
 	/* параметры входного/выходного адаптеров */
-	#define WITHADAPTERAFADCWIDTH	24		// 1 бит знак и 23 бит значащих
-	#define WITHADAPTERAFADCSHIFT	8		// количество незанятых битов справа.
-	#define WITHADAPTERAFDACWIDTH	24		// 1 бит знак и 23 бит значащих
-	#define WITHADAPTERAFDACSHIFT	8		// количество незанятых битов справа.
+	#define WITHADAPTERCODEC1WIDTH	24		// 1 бит знак и 23 бит значащих
+	#define WITHADAPTERCODEC1SHIFT	8		// количество незанятых битов справа.
 	typedef int32_t aubufv_t;
 	typedef int_fast32_t aufastbufv_t;
 	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
@@ -533,26 +562,13 @@ typedef struct
 #else /* CODEC1_FRAMEBITS == 64 */
 
 	/* параметры входного/выходного адаптеров */
-	#define WITHADAPTERAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHADAPTERAFADCSHIFT	0		// количество незанятых битов справа.
-	#define WITHADAPTERAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHADAPTERAFDACSHIFT	0		// количество незанятых битов справа.
+	#define WITHADAPTERCODEC1WIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERCODEC1SHIFT	0		// количество незанятых битов справа.
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
 	typedef int_fast32_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
 
 #endif /* CODEC1_FRAMEBITS == 64 */
-
-// xxx_ctlstyle_raven_v1, xxx_ctlstyle_nucleo
-	/* параметры входного/выходного адаптеров */
-//#define WITHIFDACWIDTH	32//24		// 1 бит знак и 23 бит значащих
-//#define WITHIFADCWIDTH	32//24		// 1 бит знак и 23 бит значащих
-
-// arm_stm32f4xx_tqfp144_ctlstyle_32F429DISCO
-// DDC Module 1
-/* параметры входного/выходного адаптеров */
-//#define WITHIFDACWIDTH	16 //32		// 1 бит знак и 31 бит значащих
-//#define WITHIFADCWIDTH	32//24 //32		// 1 бит знак и 31 бит значащих
 
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
@@ -634,9 +650,25 @@ extern adapter_t sdcardio;
 extern transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
 extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
 
+unsigned audiorec_getwidth(void);
+
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-	#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+	#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_122M88_X1
+		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
+		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+		#define FPGADECIMATION 2560uL	// должно быть кратно 256
+
+		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+
+	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
@@ -696,14 +728,14 @@ extern transform_t if2rts192out;	// преобразование из выход
 
 #endif /* WITHDTMFPROCESSING */
 
-#if WITHDSPLOCALFIR
+#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
 	/* Фильтрация квадратур осуществляется процессором */
 	#if CPUSTYLE_R7S721
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 
-	#elif CPUSTYLE_STM32MP1
+	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation
@@ -732,6 +764,7 @@ modem_frames_decode(
 	);
 
 uint_fast8_t getsampmlemike(FLOAT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
+uint_fast8_t getsampmleusb(FLOAT32P_t * v);				/* получить очередной оцифрованый сэмпл с USB UAC OUT после ресэмплигнга */
 uint_fast8_t getsampmlemoni(FLOAT32P_t * v);			/* получить очередной сэмпл для самоконтроля */
 
 FLOAT_t local_log(FLOAT_t x);
@@ -749,8 +782,10 @@ uintptr_t allocate_dmabuffer32tx(void);
 uintptr_t allocate_dmabuffer32rx(void);
 void release_dmabuffer32tx(uintptr_t addr);
 
-uintptr_t allocate_dmabuffer16(void);
-void release_dmabuffer16(uintptr_t addr);
+uintptr_t allocate_dmabuffer16tx(void);
+uintptr_t allocate_dmabuffer16rx(void);
+void release_dmabuffer16tx(uintptr_t addr);
+void release_dmabuffer16rx(uintptr_t addr);
 
 uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferx(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
@@ -762,7 +797,7 @@ void refreshDMA_uacin(void); // Канал DMA ещё занят - оставл�
 
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
-uintptr_t getfilled_dmabuffer16phones(void);
+uintptr_t getfilled_dmabuffer16txphones(void);
 
 void dsp_extbuffer32rx(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
@@ -778,7 +813,8 @@ void buffers_resampleuacin(unsigned nsamples);
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void);
 int_fast32_t buffers_dmabuffer32txcachesize(void);
-int_fast32_t buffers_dmabuffer16cachesize(void);
+int_fast32_t buffers_dmabuffer16rxcachesize(void);
+int_fast32_t buffers_dmabuffer16txcachesize(void);
 int_fast32_t buffers_dmabuffer192rtscachesize(void);
 int_fast32_t buffers_dmabuffer96rtscachesize(void);
 
@@ -818,13 +854,7 @@ void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 	#include "src/speex/arch.h"
 	#include "src/speex/speex_preprocess.h"
 
-	#if WITHNOSPEEX
-		typedef float32_t speexel_t;
-
-	#else /* WITHNOSPEEX */
-		typedef float32_t speexel_t;
-
-	#endif /* WITHNOSPEEX */
+	typedef FLOAT_t speexel_t;
 	uint_fast8_t takespeexready_user(speexel_t * * dest);
 	void releasespeexbuffer_user(speexel_t * t);
 #endif /* WITHINTEGRATEDDSP */
@@ -880,7 +910,7 @@ void board_set_dspmode(uint_fast8_t v);	// Параметр для устано�
 void board_set_lineinput(uint_fast8_t n);	// Включение line input вместо микрофона
 void board_set_lineamp(uint_fast16_t v);	// Параметр для регулировки уровня на входе аудио-ЦАП при работе с LINE IN
 void board_set_txaudio(uint_fast8_t v);	// Альтернативные источники сигнала при передаче
-void board_set_mikebust20db(uint_fast8_t n);	// Включение предусилителя за микрофоном
+void board_set_mikeboost20db(uint_fast8_t n);	// Включение предусилителя за микрофоном
 void board_set_afmute(uint_fast8_t n);	// Отключение звука
 void board_set_mikeequal(uint_fast8_t n);	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 void board_set_mikeequalparams(const uint_fast8_t * p);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
@@ -893,7 +923,6 @@ void board_set_reverb(uint_fast8_t greverb, uint_fast8_t greverbdelay, uint_fast
 
 
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-void board_set_uacmike(uint_fast8_t v);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 void board_set_datavox(uint_fast8_t v);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 
 void dsp_initialize(void);
@@ -920,6 +949,7 @@ int_fast32_t dsp_get_samplerateuacin_rts(void);			// RTS samplerate
 int_fast32_t dsp_get_samplerateuacout(void);			// UAC OUT samplerate
 
 uint_fast8_t dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean);	/* получить значение от АЦП s-метра */
+uint_fast16_t dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upper, uint_fast8_t clean);	/* получить значение от АЦП s-метра */
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale);	/* получить значение от детектора VOX */
 uint_fast8_t dsp_getavox(uint_fast8_t fullscale);	/* получить значение от детектора Anti-VOX */
 uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Получить значение отклонения частоты с точностью 0.1 герца */
@@ -935,7 +965,7 @@ void endstamp3(void);
 
 void buffers_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum);	// calculate 1/2 of coefficients
+void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum);	// calculate 1/2 of coefficients
 void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap);			// Duplicate symmetrical part of coeffs.
 
 void modem_initialze(void);
@@ -944,10 +974,11 @@ uint_fast8_t modem_get_ptt(void);
 /* Интерфейс к AF кодеку */
 typedef struct codec1if_tag
 {
+	uint_fast8_t (* clocksneed)(void);	/* требуется ли подача тактирования для инициадизации кодека */
 	void (* stop) (void);
 	void (* initialize) (void);
 	void (* setvolume) (uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk);	/* Установка громкости на наушники */
-	void (* setlineinput) (uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Выбор LINE IN как источника для АЦП вместо микрофона */
+	void (* setlineinput) (uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Выбор LINE IN как источника для АЦП вместо микрофона */
 	void (* setprocparams) (uint_fast8_t procenable, const uint_fast8_t * gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 	const char * label;									/* Название кодека (всегда последний элемент в структуре) */
 } codec1if_t;
@@ -957,6 +988,7 @@ const codec1if_t * board_getaudiocodecif(void);		// получить интер�
 /* Интерфейс к IF кодеку */
 typedef struct codec2if_tag
 {
+	uint_fast8_t (* clocksneed)(void);	/* требуется ли подача тактирования для инициадизации кодека */
 	void (* initialize)(void);
 	const char * label;
 } codec2if_t;

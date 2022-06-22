@@ -34,29 +34,29 @@
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-#if WITHTWISW
+	#if WITHTWISW && ! defined (TWISOFT_INITIALIZE)
 
-#define TWISOFT_INITIALIZE() do { } while(0)
+	#define TWISOFT_INITIALIZE() do { } while(0)
 
-#define SET_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while(0)
+	#define SET_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while(0)
 
-#define CLR_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
+	#define CLR_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
 
-#define SET_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while(0)
+	#define SET_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while(0)
 
-#define CLR_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
+	#define CLR_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
 
-uint8_t GET_TWCK(void)
-{
-	xc7z_gpio_input(TARGET_TWI_TWCK_MIO);
-	return xc7z_readpin(TARGET_TWI_TWCK_MIO);
-}
+	uint8_t GET_TWCK(void)
+	{
+		xc7z_gpio_input(TARGET_TWI_TWCK_MIO);
+		return xc7z_readpin(TARGET_TWI_TWCK_MIO);
+	}
 
-uint8_t GET_TWD(void)
-{
-	xc7z_gpio_input(TARGET_TWI_TWD_MIO);
-	return xc7z_readpin(TARGET_TWI_TWD_MIO);
-}
+	uint8_t GET_TWD(void)
+	{
+		xc7z_gpio_input(TARGET_TWI_TWD_MIO);
+		return xc7z_readpin(TARGET_TWI_TWD_MIO);
+	}
 
 #endif /* WITHTWISW */
 
@@ -113,7 +113,9 @@ void i2c_initialize(void)
 
 	TWISOFT_INITIALIZE();
 	hardware_twi_master_configure();
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 
 
@@ -420,7 +422,9 @@ void i2c_initialize(void)
 
     // Configure clock
 	hardware_twi_master_configure();
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
@@ -696,7 +700,9 @@ void i2c_stop(void)
 void i2c_initialize(void)
 {
 	hardware_twi_master_configure();
-	TWIHARD_INITIALIZE();		// соединение периферии с выводами
+#if WITHTWIHW
+	TWIHARD_INITIALIZE();
+#endif
 }
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F0XX
@@ -858,7 +864,9 @@ void i2c_initialize(void)
 	TWISOFT_INITIALIZE();
 	
 	hardware_twi_master_configure();
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 
 
@@ -1200,8 +1208,9 @@ void i2c_initialize(void)
 {
 	
 	hardware_twi_master_configure();
-
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -1321,12 +1330,12 @@ void i2c_initialize(void)
 	}
 #endif
 
-	TWISOFT_INITIALIZE();
-
     // Configure clock
 	hardware_twi_master_configure();
 	// 
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 
 #elif CPUSTYLE_ATXMEGA
@@ -1355,7 +1364,9 @@ void i2c_initialize(void)
 	TWISOFT_INITIALIZE();
 
 	hardware_twi_master_configure();
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 // start write
 /* char */ void i2c_start(
@@ -1423,18 +1434,13 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 	}
 }
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && WITHTWIHW
 
-#include "lib/zynq/src/xiicps.h"
-
+#include "xc7z_inc.h"
 static XIicPs xc7z_iicps;
 
-void i2chw_initialize(void)
+void hardware_iicps_configure(void)
 {
-	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
-
 	XIicPs_Config *Config = XIicPs_LookupConfig(XPAR_XIICPS_0_DEVICE_ID);
 	XIicPs_CfgInitialize(& xc7z_iicps, Config, Config->BaseAddress);
 
@@ -1470,6 +1476,56 @@ uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
 
 	return Status;
 }
+
+void i2c_initialize(void)
+{
+#if 0
+	// программирование выводов, управляющих I2C
+	TWISOFT_INITIALIZE();
+
+#if 0
+	uint_fast8_t i;
+	// release I2C bus
+	CLR_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR_TWCK();
+		SET_TWCK();
+	}
+	SET_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR_TWCK();
+		SET_TWCK();
+	}
+
+#endif
+
+	SET_TWD();
+	i2c_dly();
+	SET_TWCK();
+	i2c_dly();
+
+#ifdef TWISOFT2_INITIALIZE
+
+	TWISOFT2_INITIALIZE();
+
+	SET2_TWD();
+	i2c_dly();
+	SET2_TWCK();
+	i2c_dly();
+#endif
+
+#endif
+
+#if defined (TWIHARD_INITIALIZE)
+	TWIHARD_INITIALIZE();
+#endif /* defined (TWIHARD_INITIALIZE) */
+
+	hardware_twi_master_configure();	// clocks - pass XPAR_XIICPS_0_DEVICE_ID
+	hardware_iicps_configure();			// Peripheral
+}
+
 #else
 	#error I2C hardware implementation for CPUSTYPE_xxx is not avaliable
 
@@ -1510,10 +1566,6 @@ void i2c_initialize(void)
 	// программирование выводов, управляющих I2C
 	TWISOFT_INITIALIZE();
 
-#if WITHTWIHW
-	TWIHARD_INITIALIZE();
-#endif
-
 #if 0
 	uint_fast8_t i;
 	// release I2C bus
@@ -1546,6 +1598,11 @@ void i2c_initialize(void)
 	SET2_TWCK();
 	i2c_dly();
 #endif
+
+#if WITHTWIHW
+	TWIHARD_INITIALIZE();
+	i2chw_initialize();
+#endif /* WITHTWIHW */
 }
 
 

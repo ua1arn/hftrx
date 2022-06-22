@@ -176,6 +176,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_STM32F7XX
 	// STM32F745ZGT6 processors, up to 216 MHz 
@@ -200,6 +201,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_STM32F4XX
 
@@ -223,6 +225,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_STM32F30X
 
@@ -332,23 +335,6 @@ extern "C" {
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
-#elif CPUSTYLE_MK20DX	// Teensy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
-
-	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
-
-	#include "arch/mk20/MK20D5.h"
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
-	#define ALIGNX_END /* nothing */
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-
 #elif CPUSTYLE_AT91SAM7S
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
@@ -432,6 +418,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_STM32MP1
 
@@ -460,7 +447,37 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
+
+#elif CPUSTYPE_ALLWNT113
+
+	// ST dual core A7 + M4
+
+	// STM32MP157Axx
+	// STM32MP157Dxx
+	// STM32MP157AAB3
+	// STM32MP157DAB1
+
+	#define CORE_CA7	1
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "arch/allwnr_t113s3/allwnr_t113s3.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_XC7Z
 
@@ -474,6 +491,7 @@ extern "C" {
 
 	#include "arch/zynq/zynq7000.h"
 	#include "irq_ctrl.h"
+	#include "xparameters.h"
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -487,6 +505,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_XCZU
 	// Zynq UltraScale+ Device
@@ -510,36 +529,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-
-
-#elif CPUSTYPE_ALLWNV3S
-	// Allwinner V3s is SoC with build-in ARM Cortex A7 CPU and integrated 64MB DDR2 RAM
-	//
-	//	ARM Cortex TM -A7 MP1 Processor
-	//	Thumb-2 Technology
-	//	Support NEON Advanced SIMD(Single Instruction Multiple Data)instruction for acceleration of media and signal processing functions
-	//	Support Large Physical Address Extensions(LPAE)
-	//	VFPv4 Floating Point Unit
-	//	32KB L1 Instruction cache and 32KB L1 Data cache
-	//	128KB L2 cache
-
-	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-
-	#include "arch/alwnrv3s/alwnrv3s.h"
-	#include "irq_ctrl.h"
-
-	#define DCACHEROWSIZE 64
-	#define ICACHEROWSIZE 32
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
-	#define ALIGNX_END /* nothing */
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif \
 	defined (__TMS320C28X__) || \
@@ -581,6 +571,7 @@ void spool_systimerbundle1(void);
 void spool_systimerbundle2(void);
 void spool_elkeybundle(void);
 void sysinit_pll_initialize(void);	// PLL initialize
+void sysinit_gpio_initialize(void);	// временная подготовка к работе с gpio.
 void hardware_adc_startonescan(void);
 void stm32mp1_pll1_slow(uint_fast8_t slow);
 
@@ -805,7 +796,6 @@ void i2c2_waitsend(void);	// Вызвать после последнего i2c_
 void i2c2_stop(void);
 
 void hardware_twi_master_configure(void);
-void i2chw_initialize(void);
 
 uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size);
 uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size);
@@ -901,6 +891,8 @@ void GPU_IRQHandler(void);	// STM32MP1 specific
 
 void r7s721_intc_initialize(void);
 
+void ALLW_GPIO_IRQ_Handler(void);	// Allwinner specific
+
 /* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
 typedef struct adcinmap_tag
 {
@@ -920,6 +912,7 @@ uint_fast8_t isadchw(uint_fast8_t adci); // Проверка что индекс
 
 
 void cpump_initialize(void);
+void cpump_runuser(void);	/* остальным ядрам разрешаем выполнять прерывания */
 
 void cpu_stm32f1xx_setmapr(unsigned long bits);
 
@@ -1013,19 +1006,34 @@ void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
 void adcdone_add(adcdone_t * p);
 void adcdone_del(adcdone_t * p);
 
-void bootloader_copyapp(uintptr_t apparea);
-uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_deffereddetach(void * arg);
 
+/* система отказа от передачи при аварийных ситуациях */
+typedef struct edgepin_tag
+{
+	LIST_ENTRY item;
+	uint_fast8_t state;
+	void * ctx;	/* контестный указатель, с которым вызывается функция проверуи состояния источника */
+	uint_fast8_t (* getpin)(void * ctx);
+} edgepin_t;
 
-#define BOARD_ADCX0BASE 24	// on-board ADC base index
-#define BOARD_ADCX1BASE 32	// PA board ADC base index
-#define BOARD_ADCMRRBASE 40	// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
+void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
+uint_fast8_t edgepin_get(edgepin_t * egp);
 
-#define HARDWARE_ADCINPUTS	56	/* до 16-ти входов АЦП на каждый тип источников */
+// targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
+// targetadck - on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
+// targetxad2 - external SPI device (PA BOARD ADC)
 
-#define BOARD_ADCXIN(ch) (BOARD_ADCX0BASE + (ch))
+#define BOARD_ADCX0BASE 24	// on-board ADC base index - targetadc2
+#define BOARD_ADCXKBASE 32	// on-board ADC base index (kbd, for example) - targetadck
+#define BOARD_ADCX1BASE 40	// PA board ADC base index = targetxad2
+#define BOARD_ADCMRRBASE 48	// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
+
+#define HARDWARE_ADCINPUTS	72	/* до 16-ти входов АЦП на каждый тип источников */
+
+#define BOARD_ADCXIN(ch)  (BOARD_ADCX0BASE + (ch))
 #define BOARD_ADCX1IN(ch) (BOARD_ADCX0BASE + (ch))
+#define BOARD_ADCXKIN(ch) (BOARD_ADCXKBASE + (ch))
 #define BOARD_ADCX2IN(ch) (BOARD_ADCX1BASE + (ch))
 #define BOARD_ADCMRRIN(ch) (BOARD_ADCMRRBASE + (ch))
 
@@ -1068,6 +1076,7 @@ void init_netif(void);
 
 void usb_polling(void);	/* LWIP support */
 void sys_check_timeouts(void);	/* LWIP support */
+void network_spool(void);
 
 #define USBALIGN_BEGIN
 #define USBALIGN_END __attribute__ ((aligned (64))) /* nothing */
@@ -1088,16 +1097,30 @@ extern uint8_t myGATEWAY [4];
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-#include "zynq_test.h"
-
 void xc7z_hardware_initialize(void);
 float xc7z_get_cpu_temperature(void);
-uint8_t xc7z_readpin(uint8_t pin);
+uint_fast8_t xc7z_readpin(uint8_t pin);
 void xc7z_writepin(uint8_t pin, uint8_t val);
 void xc7z_gpio_input(uint8_t pin);
 void xc7z_gpio_output(uint8_t pin);
-void xc7z_dds_ftw(const uint_least64_t * val);
-void xc7z_dds_rts(const uint_least64_t * val);
+
+void xcz_rxtx_state(uint8_t tx);
+void xcz_ah_preinit(void);
+
+void xcz_audio_rx_init(void);
+void xcz_audio_tx_init(void);
+void xcz_audio_rx_enable(uint_fast8_t state);
+void xcz_audio_tx_enable(uint_fast8_t state);
+
+void xcz_if_rx_init(void);
+void xcz_if_tx_init(void);
+void xcz_if_rx_enable(uint_fast8_t state);
+void xcz_if_tx_enable(uint_fast8_t state);
+void xcz_rx_iq_shift(uint32_t val);
+void xcz_rx_cic_shift(uint32_t val);
+void xcz_tx_shift(uint32_t val);
+void xcz_adcrand_set(uint8_t val);
+
 #endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 /* получить 32-бит значение */

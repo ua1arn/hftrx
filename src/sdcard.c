@@ -3095,9 +3095,11 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 	//PRINTF(PSTR("SD CARD power on start\n"));
 	sdhost_sdcard_RCA = 0;
 
-
 	if (sdhost_sdcard_checkversion() != 0)
+	{
+		PRINTF("sdhost_sdcard_checkversion failed\n");
 		return 1;
+	}
 
 	//PRINTF(PSTR("Set voltage conditions\n"));
 
@@ -3119,17 +3121,17 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 			return 1;
 		}
 #endif /* WITHSDHCHW */
- 		//PRINTF(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
+ 		PRINTF(PSTR("voltage send waiting: R3 resp: respOCR=%08lX\n"), respOCR);
 		if ((respOCR & (1UL << 31)) == 0)	// check for voltage range is okay
 			continue;
-		//PRINTF(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
+		PRINTF(PSTR("voltage send okay: R3 resp: respOCR=%08lX\n"), respOCR);
 		if ((respOCR & SD_HIGH_CAPACITY) != 0)
 		{
 			// set by Card Capacity Status (CCS)
             sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD; // (CCS=1)
 			PRINTF(PSTR("SD CARD is high capacity (CCS=1)\n"));
 		}
-		//PRINTF(PSTR("SD CARD power on done, no errors\n"));
+		PRINTF(PSTR("SD CARD power on done, no errors\n"));
 		return 0;
 	}
 	PRINTF(PSTR("SD CARD power on done, error\n"));
@@ -3189,7 +3191,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_long_resp(encode_cmd(SD_CMD_ALL_SEND_CID, DEFAULT_TRANSFER_MODE), 0);	// CMD2
 	if (sdhost_get_R2(sdhost_sdcard_CID) != 0)
 	{
-		PRINTF(PSTR("SD_CMD_ALL_SEND_CID error\n"));
+		PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_ALL_SEND_CID error\n"));
 		return 1;
 	}
 
@@ -3198,7 +3200,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_short_resp(encode_cmd(SD_CMD_SET_REL_ADDR, DEFAULT_TRANSFER_MODE), 0, 0);	// CMD3
 	if (sdhost_get_R1(SD_CMD_SET_REL_ADDR, & resp) != 0)
 	{
-		PRINTF(PSTR("SD_CMD_SET_REL_ADDR error\n"));
+		PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_SET_REL_ADDR error\n"));
 		return 1;
 	}
 	else
@@ -3212,7 +3214,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_long_resp(encode_cmd(SD_CMD_SEND_CSD, DEFAULT_TRANSFER_MODE), sdhost_sdcard_RCA << 16);	// CMD9 The contents of the CSD register are sent as a response to CMD9.
 	if (sdhost_get_R2(sdhost_sdcard_CSD) != 0)
 	{
-		PRINTF(PSTR("SD_CMD_SEND_CSD error\n"));
+		PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_SEND_CSD error\n"));
 		return 1;
 	}
 	//PRINTF(PSTR("SD_CMD_SEND_CSD okay\n"));
@@ -3223,7 +3225,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_short_resp(encode_cmd(SD_CMD_SEL_DESEL_CARD, DEFAULT_TRANSFER_MODE), sdhost_sdcard_RCA << 16, 0);
 	if (sdhost_get_R1(SD_CMD_SEL_DESEL_CARD, & resp) != 0)
 	{
-		PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD error\n"));
+		PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_SEL_DESEL_CARD error\n"));
 		return 1;
 	}
 	//PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD okay\n"));
@@ -3247,7 +3249,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_use_cmd23 = 0;	// set block count command uasage
 	sdhost_use_cmd20 = 0;
 //#if 1 && WITHSDHCHW
-	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
+	static ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_SEND_SCR, sdhost_sdcard_SCR, 8, 3, sizeof sdhost_sdcard_SCR) == 0)		// ACMD51
 	{
@@ -3291,7 +3293,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
 			return 1;
 		}
-		PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH 4 okay\n"));
+		PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_APP_SD_SET_BUSWIDTH 4 okay\n"));
 		hardware_sdhost_setbuswidth(1);		// 4-bit width
 	}
 	else if (bussupport1b != 0)
@@ -3299,15 +3301,15 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		// Set 1 bit bus width
 		if (sdhost_short_acmd_resp_R1(SD_CMD_APP_SD_SET_BUSWIDTH, 0x0000, & resp, DEFAULT_TRANSFER_MODE) != 0) // ACMD6
 		{
-			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
+			PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
 			return 1;
 		}
-		PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH 1 okay\n"));
+		PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_APP_SD_SET_BUSWIDTH 1 okay\n"));
 		hardware_sdhost_setbuswidth(0);		// 1-bit width
 	}
 	else
 	{
-		TP();
+		PRINTF("sdhost_sdcard_identification: No 4 or 1 bit supported... Error.\n");
 		return 1;
 	}
 
@@ -3318,15 +3320,15 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		// Set 1 bit bus width
 		if (sdhost_short_acmd_resp_R1(SD_CMD_APP_SD_SET_BUSWIDTH, 0x0000, & resp, DEFAULT_TRANSFER_MODE) != 0) // ACMD6
 		{
-			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
+			PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
 			return 1;
 		}
-		PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH 1 okay\n"));
+		PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_APP_SD_SET_BUSWIDTH 1 okay\n"));
 		hardware_sdhost_setbuswidth(0);		// 1-bit width
 	}
 	else
 	{
-		TP();
+		PRINTF("sdhost_sdcard_identification: 1 bit not supported... Error.\n");
 		return 1;
 	}
 
@@ -3336,7 +3338,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	// Get SD status
 #if 1 && WITHSDHCHW
 	// STM32MP1 work
-	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
+	static ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
 	{
 
@@ -3360,7 +3362,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		PRINTF(PSTR("sdhost_sdcard_identification: sdhost_sdcard_waitstatus error\n"));
 		return 1;
 	}
-	PRINTF(PSTR("SD CARD identification done\n"));
+	PRINTF(PSTR("sdhost_sdcard_identification: done\n"));
 	return 0;
 }
 
@@ -3404,7 +3406,9 @@ char sd_initialize2(void)
 			
 			return MMC_SUCCESS;
 		}
+		PRINTF("sdhost_sdcard_identification failed\n");
 	}
+	TP();
 	return MMC_RESPONSE_ERROR;
 }
 
@@ -3443,7 +3447,7 @@ DRESULT SD_Get_Block_Size (
 		32 * MB,
 		64 * MB,
 	};
-	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
+	static ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
 	{
@@ -3500,6 +3504,7 @@ DSTATUS SD_Initialize (
 		//if (HARDWARE_SDIOSENSE_WP() != 0)
 		//	return STA_PROTECT;
 		char ec = sd_initialize2();
+		PRINTF("sd_initialize2 return code ec=%02X\n", ec);
 		return (ec == MMC_SUCCESS) ? 0 : STA_NODISK;	// STA_NOINIT or STA_NODISK or STA_PROTECT
 #endif /* WITHSDHCHW */
 	}
@@ -4092,7 +4097,7 @@ uint_fast64_t MMC_ReadCardSize(void)
 		// the data
 		if (mmcGetXXResponse(MMC_START_DATA_BLOCK_TOKEN) == MMC_START_DATA_BLOCK_TOKEN)
 		{
-			static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t bv [16] ALIGNX_END;
+			static ALIGNX_BEGIN uint8_t bv [16] ALIGNX_END;
 			// Могут быть ограничения работы DMA с некоторыми видами памяти
 			// Например в STM32F4x нет доступа к CCM памяти по DMA
 

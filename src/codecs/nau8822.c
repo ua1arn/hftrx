@@ -22,6 +22,7 @@
 
 // Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
 #define NAU8822_SPIMODE		SPIC_MODE3
+#define NAU8822_SPISPEED SPIC_SPEEDFAST
 #define NAU8822_ADDRESS_W	0x34	// I2C address: 0x34
 
 // Условие использования оптимизированных функций обращения к SPI
@@ -54,9 +55,16 @@ void nau8822_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPIEXT16
+	#if WITHSPILOWSUPPORTT
+		// Работа совместно с фоновым обменом SPI по прерываниям
+		uint8_t txbuf [2];
 
-		hardware_spi_connect_b16(SPIC_SPEEDFAST, NAU8822_SPIMODE);
+		USBD_poke_u16_BE(txbuf, fulldata);
+		prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+
+	#elif WITHSPIEXT16
+
+		hardware_spi_connect_b16(NAU8822_SPISPEED, NAU8822_SPIMODE);
 		prog_select(target);	/* start sending data to target chip */
 		hardware_spi_b16_p1(fulldata);
 		hardware_spi_complete_b16();
@@ -116,9 +124,10 @@ static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
-static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
-	// Микрофон подключен к LMICN, LMICP=common
+	//PRINTF("nau8822_lineinput: linein=%d, mikeboost20db=%d, mikegain=%d, linegain=%d\n", (int) linein, (int) mikeboost20db, (int) mikegain, (int) linegain);
+	// Микрофон подключен к LMICP, LMICN=common
 	// Входы RMICN, RMICP никуда не подключены
 	// Line input подключены к LAUXIN, RAUXIN
 //{0x0f, 0x1ff},
@@ -142,16 +151,18 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 	else
 	{
 		// переключение на микрофон
-		// Микрофон подключен к LMICN, LMICP=common
+		// Микрофон подключен к LMICP, LMICN=common
 		//
 		const uint_fast8_t inppgagain = (mikegain - WITHMIKEINGAINMIN) * (0x3F) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
 		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, inppgagain | 0);
 		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, inppgagain | 0x100);	// Write both valuse simultaneously
 		// 
-		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikebust20db != 0));	// 0x100 - 20 dB boost ON
+		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikeboost20db != 0));	// 0x100 - 20 dB boost ON
 		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, 0x000);	// RLINEIN disconnected, RAUXIN disconnected
 		// Микрофон подключен к LMICN, LMICP=common
 		// LLIN отключен от PGA
+		// 0x02 = LMICN connected to PGA negative input
+		// 0x01 = LMICP connected to PGA positive input
 		nau8822_setreg(NAU8822_INPUT_CONTROL, 0x003);
 	}
 }
@@ -277,10 +288,9 @@ nau8822_ilog2(
 static void nau8822_initialize_fullduplex(void)
 {
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex start\n"));
-	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
 	unsigned long NAU8822_AUDIO_INTERFACE_WLEN_val;
 	unsigned long NAU8822_MISC_8B_val;	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
-	switch (WITHADAPTERAFADCWIDTH)
+	switch (WITHADAPTERCODEC1WIDTH)
 	{
 	default:
 	case 32: NAU8822_AUDIO_INTERFACE_WLEN_val = 0x060; NAU8822_MISC_8B_val = 0x00; break;
@@ -409,6 +419,12 @@ static void nau8822_stop(void)
 #endif /* CODEC_TYPE_NAU8822_MASTER */
 }
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t nau8822_clocksneed(void)
+{
+	return 1;
+}
+
 const codec1if_t *
 board_getaudiocodecif(void)
 {
@@ -418,8 +434,9 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
+		nau8822_clocksneed,
 		nau8822_stop,
-		nau8822_initialize_fullduplex,
+		nau8822_initialize_fullduplex,	/* master или slave в зависимости от определения CODEC_TYPE_NAU8822_MASTER */
 		nau8822_setvolume,		/* Установка громкости на наушники */
 		nau8822_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */
 		nau8822_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */

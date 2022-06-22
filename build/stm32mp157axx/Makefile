@@ -19,7 +19,7 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-UADEFS += -D"WITHSMPSYSTEM"
+#UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
 OBJDIR = obj
@@ -33,8 +33,8 @@ LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 ARCHDIR = $(PRJROOT)/arch/stm32mp1xx
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"EGL_STATIC_LIBRARY"=1 -D"STM32MP157Axx"=1
-UDEFS += -D"CORE_CA7"=1 -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"STM32MP157Axx"=1 -D"STM32MP1"=1 -D"CORE_CA7"=1 -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
@@ -55,8 +55,8 @@ CORE += -mfpu=vfpv4
 # Define optimisation level here
 # olny -Og for app
 # Application
-#OPT = -Og
-OPT = -Ofast -flto
+OPT = -Og
+#OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
@@ -138,7 +138,7 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(DSP3DDIR)/src
-#SRCDIRS += $(LWIPDIR)/src
+#SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(OPENVGDIR)/src
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
@@ -148,7 +148,9 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
-ASRC += $(PRJROOT)/src/crt_CortexA.S
+ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
+ASRC_BOOT += $(PRJROOT)/src/crt_CortexA.S
+ASRC_APP += $(ASRC_BOOT)
 
 VPATH = $(PRJROOT)
 
@@ -162,11 +164,12 @@ LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
 
-OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
+OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_APP))
+OBJSA_BOOT 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_BOOT))
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
 
-OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
+OBJS = $(OBJSC) $(OBJSCPP)
 
 LIBS    = $(DLIBS) $(ULIBS)
 
@@ -245,16 +248,16 @@ $(OBJSCPP):
 	@mkdir -p $(@D)
 	$(GPP) -o $@ -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
 
-$(OBJSA):
+$(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS)
-	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
+%_boot.elf: $(OBJS) $(OBJSA_BOOT)
+	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS)
-	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
+%_app.elf: $(OBJS) $(OBJSA_APP)
+	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
 %hex: %elf

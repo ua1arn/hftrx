@@ -19,6 +19,24 @@ extern "C" {
 
 void spi_initialize(void);	// отдельно инициализация SPI
 
+
+/* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
+   на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается.
+
+   Так как переключение в нужный режим SPI производится после активизации CS, для такого применения не годятся
+   режимы SPI с "0" уровнем SCLK в неактивном состоянии.
+   */
+
+typedef enum
+{
+	SPIC_MODE0,
+	SPIC_MODE1,
+	SPIC_MODE2,
+	SPIC_MODE3,
+	//
+	SPIC_MODES_COUNT
+} spi_modes_t;
+
 #if WITHSPISW
 	#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		#define SCLK_NPULSE() do { 							\
@@ -247,7 +265,7 @@ void spi_initialize(void);	// отдельно инициализация SPI
 
 // Эти три функции должны использоваться везде, где надо работать с SPI.
 #define prog_select(target) do { prog_select_impl(target); } while (0)
-#define prog_unselect(target) do { (void) (target); prog_unselect_impl(); } while (0)
+#define prog_unselect(target) do { prog_unselect_impl(target); } while (0)
 #define prog_read_byte(target, v)  ((void) (target), prog_spi_read_byte_impl(v))
 
 
@@ -256,7 +274,9 @@ void prog_pulse_ioupdate(void);
 void prog_select_impl(
 	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
 	);
-void prog_unselect_impl(void);
+void prog_unselect_impl(
+	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
+	);
 
 uint_fast8_t prog_spi_read_byte_impl(uint_fast8_t bytetosend);
 
@@ -269,10 +289,97 @@ void prog_spi_send_frame(
 
 // Read a frame of bytes via SPI
 // Приём блока
-// На сигнале MOSI при этом должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// На сигнале MOSI при этом должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 void prog_spi_read_frame(
 	spitarget_t target,
 	uint8_t * buff, 
+	unsigned int size
+	);
+
+typedef enum lowspiiotype_tag
+{
+	SPIIO_TX = 1,
+	SPIIO_RX = 2,
+	SPIIO_EXCHANGE = 3,
+	//
+	SPIIO_count
+} lowspiiotype_t;
+
+typedef enum lowspiiosize_tag
+{
+	SPIIOSIZE_U8 = 1,
+	SPIIOSIZE_U16 = 2,
+	SPIIOSIZE_U32 = 3,
+	//
+	SPIIOSIZE_count
+} lowspiiosize_t;
+
+typedef struct lowspiexchange_tag
+{
+	lowspiiotype_t spiiotype;
+	unsigned bytecount;
+	const void * txbuff;
+	void * rxbuff;
+} lowspiexchange_t;
+
+typedef struct lowspiio_tag
+{
+	spitarget_t target;
+	spi_speeds_t spispeedindex;
+	spi_modes_t spimode;
+	lowspiiosize_t spiiosize;
+	unsigned csdelayUS;
+
+	unsigned count;
+	lowspiexchange_t chunks [3];
+} lowspiio_t;
+
+
+void spi_perform(lowspiio_t * iospi);	/* выполняем обмен из user mode (ожидаем выполнения опаерации на system level) */
+void spi_perform_low(lowspiio_t * iospi);
+
+void spi_operate_low(lowspiio_t * iospi);
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
+void prog_spi_io(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff1, unsigned int txsize1,
+	const uint8_t * txbuff2, unsigned int txsize2,
+	uint8_t * rxbuff, unsigned int rxsize
+	);
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
+void prog_spi_io_low(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff1, unsigned int txsize1,
+	const uint8_t * txbuff2, unsigned int txsize2,
+	uint8_t * rxbuff, unsigned int rxsize
+	);
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// Выдача и прием ответных байтов
+void prog_spi_exchange(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff,
+	uint8_t * rxbuff,
+	unsigned int size
+	);
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// Выдача и прием ответных байтов
+void prog_spi_exchange_low(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff,
+	uint8_t * rxbuff,
 	unsigned int size
 	);
 
@@ -388,42 +495,37 @@ void prog_spi_read_frame(
 typedef uint8_t rbtype_t;
 extern const uint_fast8_t rbvalues [8];	// битовые маски, соответствующие биту в байте по его номеру.
 
-#define RBBIT(bitpos, v) \
-	do { \
+#define RBBIT(bitpos, v) do { \
 		if ((v) != 0) \
 			rbbuff [(sizeof rbbuff / sizeof rbbuff [0]) - 1 - (bitpos) / 8] |= rbvalues [(bitpos) % 8]; \
 	} while (0)
 
 // Для ширины поля до 8 бит
-#define RBVAL(rightbitpos, v, width) \
-	do { \
-		uint_fast8_t v2 = v; \
-		uint_fast8_t p = rightbitpos; \
-		uint_fast8_t i; \
-		for (i = 0; i < (width); ++ i, v2 >>= 1, ++ p) \
-		{	RBBIT(p, v2 & 0x01); \
+#define RBVAL(rightbitpos, v, width)  do { \
+		uint_fast8_t v2_507 = (v); \
+		uint_fast8_t p_508 = (rightbitpos); \
+		uint_fast8_t i_509; \
+		for (i_509 = 0; i_509 < (width); ++ i_509, v2_507 >>= 1, ++ p_508) \
+		{	RBBIT(p_508, v2_507 & 0x01); \
 		}	\
 	} while (0)
 
 // Для ширины поля до 16 бит
-#define RBVAL_W16(rightbitpos, v, width) \
-	do { \
-		uint_fast16_t v2 = v; \
-		uint_fast8_t p = rightbitpos; \
+#define RBVAL_W16(rightbitpos, v, width) do { \
+		uint_fast16_t v2_515 = (v); \
+		uint_fast8_t p_516 = (rightbitpos); \
 		uint_fast8_t i; \
-		for (i = 0; i < (width); ++ i, v2 >>= 1, ++ p) \
-		{	RBBIT(p, v2 & 0x01); \
+		for (i = 0; i < (width); ++ i, v2_515 >>= 1, ++ p_516) \
+		{	RBBIT(p, v2_515 & 0x01); \
 		}	\
 	} while (0)
 
 // For set values in 8-bit alligned places
-#define RBVAL8(rightbitpos, v) \
-	do { \
+#define RBVAL8(rightbitpos, v) do { \
 		rbbuff [(sizeof rbbuff / sizeof rbbuff [0]) - 1 - (rightbitpos) / 8] = (v); \
 	} while (0)
 
-#define RBNULL(rightbitpos, width) \
-	do { \
+#define RBNULL(rightbitpos, width) do { \
 		(void) (rightbitpos); \
 		(void) (width); \
 	} while (0)
@@ -457,29 +559,12 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len);
 
 
 
-/* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
-   на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается.
-
-   Так как переключение в нужный режим SPI производится после активизации CS, для такого применения не годятся
-   режимы SPI с "0" уровнем SCLK в неактивном состоянии.
-   */
-
-typedef enum
-{
-	SPIC_MODE0,
-	SPIC_MODE1,
-	SPIC_MODE2,
-	SPIC_MODE3,
-	//
-	SPIC_MODES_COUNT
-} spi_modes_t;
-
 
 void hardware_spi_master_initialize(void);		/* инициализация и перевод в состояние "отключено" */
-void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispeed);
-void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено */
-void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
-void hardware_spi_connect_b32(uint_fast8_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
+void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispeed);
+void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено */
+void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
+void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
 void hardware_spi_disconnect(void);	/* управление состоянием - отключено */
 
 portholder_t hardware_spi_b32(portholder_t v);	/* передача 16-ти бит, возврат считанного */
@@ -500,7 +585,7 @@ portholder_t hardware_spi_complete_b16(void);	/* дождаться готовн
 portholder_t hardware_spi_complete_b32(void);	/* дождаться готовности передача 16-ти бит*/
 
 // Read a frame of bytes via SPI
-// На сигнале MOSI при это должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// На сигнале MOSI при это должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 void hardware_spi_master_read_frame(uint8_t * pBuffer, uint_fast32_t size);
 void hardware_spi_master_read_frame_16b(uint16_t * pBuffer, uint_fast32_t size);
 // Send a frame of bytes via SPI
@@ -514,6 +599,7 @@ void spidf_hangoff(void);
 
 uint_fast8_t dataflash_read_status(void);
 int timed_dataflash_read_status(void);
+int largetimed_dataflash_read_status(void);	// infinity waiting
 int testchipDATAFLASH(void);
 int prepareDATAFLASH(void);
 int sectoreraseDATAFLASH(unsigned long flashoffset);
@@ -522,11 +608,13 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len);
 void writeEnableDATAFLASH(void);
 void writeDisableDATAFLASH(void);
+int fullEraseDATAFLASH(void);
 unsigned long sectorsizeDATAFLASH(void);
 unsigned long chipsizeDATAFLASH(void);
 extern char nameDATAFLASH [];
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len);
+void bootloader_chiperase(void);
 
 void nand_initialize(void);
 void nand_tests(void);

@@ -34,14 +34,14 @@ typedef enum IRQn
   SGI14_IRQn          = 14,                                       //!< SGI14_IRQn
   SGI15_IRQn          = 15,                                       //!< SGI15_IRQn
 
-  /* Private Peripheral Interrupts                                                                                     */
-  //VirtualMaintenanceInterrupt_IRQn = 25,     /*!< Virtual Maintenance Interrupt                                        */
- // HypervisorTimer_IRQn             = 26,     /*!< Hypervisor Timer Interrupt                                           */
-  GlobalTimer_IRQn                 = 27,     /*!< Global Timer Interrupt                                              */
-  Legacy_nFIQ_IRQn                 = 28,     /*!< Legacy nFIQ Interrupt                                                */
-  PrivTimer_IRQn        	   	   = 29,     /*!< Private Timer Interrupt                                      */
-  AwdtTimer_IRQn      			   = 30,     /*!< Private watchdog timer for each CPU Interrupt                                  */
-  Legacy_nIRQ_IRQn                 = 31,     /*!< Legacy nIRQ Interrupt                                                */
+  /* Private Peripheral Interrupts */
+  //VirtualMaintenanceInterrupt_IRQn = 25,     /*!< Virtual Maintenance Interrupt */
+ // HypervisorTimer_IRQn             = 26,     /*!< Hypervisor Timer Interrupt */
+  GlobalTimer_IRQn                 = 27,     /*!< Global Timer Interrupt */
+  Legacy_nFIQ_IRQn                 = 28,     /*!< Legacy nFIQ Interrupt */
+  PrivTimer_IRQn        	   	   = 29,     /*!< Private Timer Interrupt */
+  AwdtTimer_IRQn      			   = 30,     /*!< Private watchdog timer for each CPU Interrupt */
+  Legacy_nIRQ_IRQn                 = 31,     /*!< Legacy nIRQ Interrupt */
 
   /******  ZYNQ  specific Interrupt Numbers ****************************************************************************/
 
@@ -88,17 +88,20 @@ typedef enum IRQn
 
 } IRQn_Type;
 
-//Info: Found Cortex-A9 r3p0
-//Info: 6 code breakpoints, 4 data breakpoints
-//Info: Debug architecture ARMv7.0
-//Info: Data endian: little
-//Info: Main ID register: 0x413FC090
-//Info: I-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
-//Info: D-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
+/******************************************************************************/
+/*                Device Specific Peripheral Section */
+/******************************************************************************/
 
-/******************************************************************************/
-/*                Device Specific Peripheral Section                          */
-/******************************************************************************/
+/* memory addresses */
+/* assumes sram is mapped at 0 the first MB of sdram is covered by it */
+#define SDRAM_BASE          (0x00100000)
+#define SDRAM_APERTURE_SIZE (0x3fF00000)
+#define SRAM_BASE           (0x0)
+#define SRAM_BASE_HIGH      (0xfffc0000)
+#define SRAM_APERTURE_SIZE  (0x00040000)
+#define SRAM_SIZE           (0x00040000)
+
+#define QSPI_LINEAR_BASE  (0xfC000000uL)
 
 #define CPUPRIV_BASE      (0xF8F00000uL)
 #define SCU_CONTROL_BASE  (CPUPRIV_BASE + 0x0000uL)
@@ -108,19 +111,60 @@ typedef enum IRQn
 #define GIC_DISTRIB_BASE  (CPUPRIV_BASE + 0x1000uL)
 #define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
 
-#define __CORTEX_A                    9U      /*!< Cortex-A# Core                              */
-#define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
-#define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
-#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
-#define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present                  */
+/* hardware base addresses */
+#define UART0_BASE (0xE0000000uL)
+#define UART1_BASE (0xE0001000uL)
+#define USB0_BASE  (0xE0002000uL)
+#define USB1_BASE  (0xE0003000uL)
+#define I2C0_BASE  (0xE0004000uL)
+#define I2C1_BASE  (0xE0005000uL)
+#define SPI0_BASE  (0xE0006000uL)
+#define SPI1_BASE  (0xE0007000uL)
+#define CAN0_BASE  (0xE0008000uL)
+#define CAN1_BASE  (0xE0009000uL)
+#define GPIO_BASE  (0xE000A000uL)
+#define GEM0_BASE  (0xE000B000uL) // gigabit eth controller
+#define GEM1_BASE  (0xE000C000uL) // ""
+#define QSPI_BASE  (0xE000D000uL)
+#define SMCC_BASE  (0xE000E000uL) // PL353 shared memory controller
+
+#define SD0_BASE   (0xE0100000uL)
+#define SD1_BASE   (0xE0101000uL)
+
+#define SLCR_BASE  		(0xF8000000uL)
+#define TTC0_BASE  		(0xF8001000uL)
+#define TTC1_BASE  		(0xF8002000uL)
+#define DMAC0_NS_BASE 	(0xF8004000uL)
+#define DMAC0_S_BASE 	(0xF8003000uL)
+#define SWDT_BASE  		(0xF8005000uL)
+#define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
+
+/* configuration for the PL310 L2 cache controller */
+#define PL310_BASE L2CACHE_BASE
+#define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
+#define PL310_DATA_RAM_LATENCY ((1uL << 8) | (2uL << 4) | (1uL << 0))
 
 #define GIC_DISTRIBUTOR_BASE         GIC_DISTRIB_BASE                        /*!< (GIC DIST  ) Base Address */
 #define GIC_INTERFACE_BASE           GIC_PROC_BASE                        /*!< (GIC CPU IF) Base Address */
 #define L2C_310_BASE                 L2CACHE_BASE                        /*!< (PL310     ) Base Address */
 #define TIMER_BASE				PRIV_TIMER_BASE
 
+//Info: Found Cortex-A9 r3p0
+//Info: 6 code breakpoints, 4 data breakpoints
+//Info: Debug architecture ARMv7.0
+//Info: Data endian: little
+//Info: Main ID register: 0x413FC090
+//Info: I-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
+//Info: D-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
+
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
-#define __CA_REV         		    0x0000    /*!< Core revision r0p0       */
+#define __CA_REV         		    0x0000    /*!< Core revision r0p0 */
+
+#define __CORTEX_A                    9U      /*!< Cortex-A# Core */
+#define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present */
+#define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present */
+#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present */
+#define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present */
 
 #include "core_ca.h"
 #include "system_zynq7000.h"
@@ -450,11 +494,30 @@ typedef struct devcfg_regs {
 
 // Quad-SPI Flash Controller (qspi)
 typedef struct qspi_regs {
-	__IO uint32_t CR;				/* 0x0000 QSPI configuration register */
-	__IO uint32_t SR;				/* 0x0004 QSPI interrupt status register */
-	__IO uint32_t IER;				/* 0x0008 Interrupt Enable register */
-	__IO uint32_t IDR;				/* 0x000C Interrupt disable register */
-	__IO uint32_t IMR;				/* 0x0010 Interrupt mask register */
+	__IO uint32_t CR;			/**< 0x00000000 32 mixed 0x80020000 QSPI configuration register */
+	__IO uint32_t SR;			/**< 0x00000004 32 mixed 0x00000004 QSPI interrupt status register */
+	__IO uint32_t IER;			/**< 0x00000008 32 mixed 0x00000000 Interrupt Enable register. */
+	__IO uint32_t IDR;			/**< 0x0000000C 32 mixed 0x00000000 Interrupt disable register. */
+	__I  uint32_t IMR;			/**< 0x00000010 32 ro 0x00000000 Interrupt mask register */
+	__IO uint32_t ER;			/**< 0x00000014 32 mixed 0x00000000 SPI_Enable Register */
+	__IO uint32_t DR;			/**< 0x00000018 32 rw 0x00000000 Delay Register */
+	__IO uint32_t TXD_00;		/**< 0x0000001C 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. See also TXD1-3. */
+	__I  uint32_t RXD;			/**< 0x00000020 32 ro 0x00000000 Receive Data Register */
+	__IO uint32_t SICR;			/**< 0x00000024 32 mixed 0x000000FF Slave Idle Count Register */
+	__IO uint32_t TXWR;			/**< 0x00000028 32 rw 0x00000001 TX_FIFO Threshold Register */
+	__IO uint32_t RX_thres_REG;	/**< 0x0000002C 32 rw 0x00000001 RX FIFO Threshold Register */
+	__IO uint32_t GPIO;			/**< 0x00000030 32 rw 0x00000001 General Purpose Inputs and Outputs Register for the Quad-SPI Controller core */
+	 uint32_t ___RESERVED1;
+	__IO uint32_t LPBK_DLY_ADJ;	/**< 0x00000038 32 rw 0x0000002D Loopback Master Clock Delay Adjustment Register */
+	 uint8_t ___RESERVED2 [0x00000080 - 0x00000038 - 0x004];
+	__IO uint32_t TXD_01;		/**< 0x00000080 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
+	__IO uint32_t TXD_10;		/**< 0x00000084 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
+	__IO uint32_t TXD_11;		/**< 0x00000088 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
+	uint8_t ___RESERVED3 [0x000000A0 - 0x00000088 - 0x004];
+	__IO uint32_t LQSPI_CR;		/**< 0x000000A0 32 rw x Configuration Register specifically for the Linear Quad-SPI Controller */
+	__IO uint32_t LQSPI_SR;		/**< 0x000000A4 9 rw 0x00000000 Status Register specifically for the Linear Quad-SPI Controller */
+	uint8_t ___RESERVED4 [0x000000FC - 0x000000A4 - 0x004];
+	__I  uint32_t MOD_ID;		/**< 0x000000FC 32 rw 0x01090101 Module Identification register */
 } XQSPIPS_Registers;
 
 // See https://github.com/grub4android/lk/blob/579832fe57eeb616cefd82b93d991141f0db91ce/platform/zynq/include/platform/gem.h
@@ -572,29 +635,94 @@ typedef struct xemacps_regs {
 
 /**
   * @brief USB_EHCI Capability Registers
-  */
+ */
 typedef struct
 {
-  __IO uint32_t HCCAPBASE;        /*!< Capability Register register,              Address offset: 0x00 */
-  __IO uint32_t HCSPARAMS;        /*!< Structural Parameter register              Address offset: 0x04 */
-  __IO uint32_t HCCPARAMS;        /*!< Capability Parameter register,             Address offset: 0x08 */
-       uint32_t RESERVED;         /*!< USB Command register,                      Address offset: 0x0C */
-  __IO uint32_t USBCMD;           /*!< USB Command register,                      Address offset: 0x10 */
-  __IO uint32_t USBSTS;           /*!< USB Status register,                       Address offset: 0x14 */
-  __IO uint32_t USBINTR;          /*!< USB Interrupt Enable register,             Address offset: 0x18 */
-  __IO uint32_t FRINDEX;          /*!< USB Frame Index register ,                 Address offset: 0x1C */
-  __IO uint32_t CTRLDSSEGMENT;    /*!< 4G Segment Selector register,              Address offset: 0x20 */
-  __IO uint32_t PERIODICLISTBASE; /*!< Periodic Frame List Base Address register, Address offset: 0x24 */
-  __IO uint32_t ASYNCLISTADDR;    /*!< Asynchronous List Address register,        Address offset: 0x28 */
+	__IO uint32_t HCCAPBASE;        /*!< 0x00000100 Capability Register register,              Address offset: 0x00 */
+	__IO uint32_t HCSPARAMS;        /*!< 0x00000104 Structural Parameter register              Address offset: 0x04 */
+	__IO uint32_t HCCPARAMS;        /*!< 0x00000108 Capability Parameter register,             Address offset: 0x08 */
+	uint8_t ___RESERVED1 [0x00000140 - 0x00000108 - 0x004];
+	__IO uint32_t USBCMD;           /*!< 0x00000140 USB Command register,                      Address offset: 0x10 */
+	__IO uint32_t USBSTS;           /*!< 0x00000144 ISR USB Status register,                       Address offset: 0x14 */
+	__IO uint32_t USBINTR;          /*!< 0x00000148 IER USB Interrupt Enable register,             Address offset: 0x18 */
+	__IO uint32_t FRINDEX;          /*!< 0x0000014C USB Frame Index register ,                 Address offset: 0x1C */
+	__IO uint32_t CTRLDSSEGMENT;    /*!< 4G Segment Selector register,              Address offset: 0x20 */
+	__IO uint32_t PERIODICLISTBASE; /*!< 0x00000154 Periodic Frame List Base Address register, Address offset: 0x24 */
+	__IO uint32_t ASYNCLISTADDR;    /*!< 0x00000158 Asynchronous List Address register,        Address offset: 0x28 */
 } USB_EHCI_CapabilityTypeDef;
 /**
   * @}
-  */
+ */
 
-/* configuration for the PL310 L2 cache controller */
-#define PL310_BASE L2CACHE_BASE
-#define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
-#define PL310_DATA_RAM_LATENCY ((1uL << 8) | (2uL << 4) | (1uL << 0))
+
+/**
+  * @brief USB controller registers
+ */
+typedef struct
+{
+	__I  uint32_t ID;					/*!< 0x00000000 32 ro 0xE441FA05 IP version and revision, read-only */
+	__I  uint32_t HWGENERAL;			/*!< 0x00000004 12 ro 0x00000083 Misc IP config constants, read-only */
+	__I  uint32_t HWHOST;				/*!< 0x00000008 32 ro 0x10020001 Host Mode IP config constants, read-only */
+	__I  uint32_t HWDEVICE;				/*!< 0x0000000C 6  ro 0x00000019 Device Mode IP config constants, read-only */
+	__I  uint32_t HWTXBUF;				/*!< 0x00000010 32 ro 0x80060A10 TxBuffer IP config constants, read-only */
+	__I  uint32_t HWRXBUF;				/*!< 0x00000014 32 ro 0x00000A10 IP constants, RX buffer constants, read-only */
+	uint8_t ___RESERVED1 [0x00000080 - 0x00000014 - 0x004];
+	__IO uint32_t GPTIMER0LD;			/*!< 0x00000080 24 rw 		0x00000000 GP Timer 0 Load Value. */
+	__IO uint32_t GPTIMER0CTRL;			/*!< 0x00000084 32 mixed 	0x00000000 GP Timer 1 Control. */
+	__IO uint32_t GPTIMER1LD;			/*!< 0x00000088 24 rw 		0x00000000 GP Timer 1 Load Value */
+	__IO uint32_t GPTIMER1CTRL;			/*!< 0x0000008C 32 mixed 	0x00000000 GP Timer 1 Control */
+	__IO uint32_t SBUSCFG;				/*!< 0x00000090 3  rw 		0x00000003 DMA Master AHB Burst Mode */
+	uint8_t ___RESERVED2 [0x00000100 - 0x00000090 - 0x004];
+	__I  uint32_t CAPLENGTH_HCIVERSION;	/*!< 0x00000100 32 ro 0x01000040 EHCI Addr Space and HCI constants, read-only */
+	__I  uint32_t HCSPARAMS;			/*!< 0x00000104 28 ro 0x00010011 TT counts and EHCI HCS constants, read-only */
+	__I  uint32_t HCCPARAMS;			/*!< 0x00000108 16 ro 0x00000006 EHCI Host Configuration Constants. */
+	uint8_t ___RESERVED3 [0x00000120 - 0x00000108 - 0x004];
+	__IO uint32_t DCIVERSION;			/*!< 0x00000120 16 ro 		0x00000001 Device Controller Interface Version. */
+	__IO uint32_t DCCPARAMS;			/*!< 0x00000124 9  ro 		0x0000018C EHCI, Device, and Endpoint Capabilities. */
+	uint8_t ___RESERVED4 [0x00000140 - 0x00000124 - 0x004];
+	__IO uint32_t XUSBPS_CMD;			/*!< 0x00000140 24 mixed 	0x00080000 USB Commands (EHCI extended) */
+	__IO uint32_t ISR;					/*!< 0x00000144 26 mixed	0x00000000 Interrupt/Raw Status (EHCI extended) (Host/Device) */
+	__IO uint32_t IER;					/*!< 0x00000148 26 mixed	0x00000000 Interrrupts and Enables */
+	__IO uint32_t FRAME;				/*!< 0x0000014C 14 rw		0x00000000 Frame List Index */
+	uint8_t ___RESERVED5 [0x00000154 - 0x0000014C - 0x004];
+	__IO uint32_t LISTBASE;				/*!< 0x00000154 32 mixed	0x00000000 Host/Device Address dual-use */
+	__IO uint32_t ASYNCLISTADDR;		/*!< 0x00000158 32 mixed	0x00000000 Host/Device dual-use */
+	__IO uint32_t TTCTRL;				/*!< 0x0000015C 32 mixed	0x00000000 TT Control */
+	__IO uint32_t BURSTSIZE;			/*!< 0x00000160 17 rw		0x00001010 Burst Size */
+	__IO uint32_t TXFILL;				/*!< 0x00000164 22 mixed	0x00000000 TxFIFO Fill Tuning */
+	__IO uint32_t TXTTFILLTUNING;		/*!< 0x00000168 13 mixed	0x00000000 TT TX latency FIFO */
+	__IO uint32_t IC_USB;				/*!< 0x0000016C 32 mixed	0x00000000 Low and Fast Speed Control constants */
+	__IO uint32_t ULPIVIEW;				/*!< 0x00000170 32 mixed	0x08000000 ULPI Viewport */
+	uint8_t ___RESERVED6 [0x00000178 - 0x00000170 - 0x004];
+	__IO uint32_t EPNAKISR;				/*!< 0x00000178 32 wtc		0x00000000 Endpoint NAK (Device mode) */
+	__IO uint32_t EPNAKIER;				/*!< 0x0000017C 32 rw		0x00000000 Endpoint NAK (Device mode) */
+	__I  uint32_t CONFIGFLAG;			/*!< 0x00000180 32 ro		0x00000001 reserved */
+	__IO uint32_t PORTSCR1;				/*!< 0x00000184 32 mixed	0x8C000004 Port Status & Control */
+	uint8_t ___RESERVED7 [0x000001A4 - 0x00000184 - 0x004];
+	__IO uint32_t OTGCSR;				/*!< 0x000001A4 32 mixed	0x00001020 OTG Status and Control */
+	__IO uint32_t MODE;					/*!< 0x000001A8 32 mixed	0x00000000 USB Mode Selection */
+	__IO uint32_t EPSTAT;				/*!< 0x000001AC 16 wtc		0x00000000 Endpoint Status Setup (Device mode) */
+	__IO uint32_t EPPRIME;				/*!< 0x000001B0 32 wtc		0x00000000 Endpoint Primer (Device mode) */
+	__IO uint32_t EPFLUSH;				/*!< 0x000001B4 32 wtc		0x00000000 Endpoint Flush (Device mode) */
+	__I  uint32_t EPRDY;				/*!< 0x000001B8 32 ro		0x00000000 Endpoint Buffer Ready Status (Device mode), RO */
+	__IO uint32_t EPCOMPL;				/*!< 0x000001BC 32 rw		0x00000000 Endpoint Tx Complete (Device mode) */
+	__IO uint32_t EPCR0;				/*!< 0x000001C0 24 mixed	0x00800080 Endpoint 0 (Device mode) */
+	__IO uint32_t ENDPTCTRL1;			/*!< 0x000001C4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL2;			/*!< 0x000001C8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL3;			/*!< 0x000001CC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL4;			/*!< 0x000001D0 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL5;			/*!< 0x000001D4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL6;			/*!< 0x000001D8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL7;			/*!< 0x000001DC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL8;			/*!< 0x000001E0 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL9;			/*!< 0x000001E4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL10;			/*!< 0x000001E8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL11;			/*!< 0x000001EC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+} XUSBPS_Registers;
+/**
+  * @}
+ */
+
 
 /* Verify the entries match the TRM offset to validate the struct */
 //STATIC_ASSERT(offsetof(struct slcr_regs, SCL) == 0x0);
@@ -627,45 +755,7 @@ typedef struct
 #define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
 #define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
 
-/* memory addresses */
-/* assumes sram is mapped at 0 the first MB of sdram is covered by it */
-#define SDRAM_BASE          (0x00100000)
-#define SDRAM_APERTURE_SIZE (0x3fF00000)
-#define SRAM_BASE           (0x0)
-#define SRAM_BASE_HIGH      (0xfffc0000)
-#define SRAM_APERTURE_SIZE  (0x00040000)
-#define SRAM_SIZE           (0x00040000)
-
-/* hardware base addresses */
-#define UART0_BASE (0xE0000000uL)
-#define UART1_BASE (0xE0001000uL)
-#define USB0_BASE  (0xE0002000uL)
-#define USB1_BASE  (0xE0003000uL)
-#define I2C0_BASE  (0xE0004000uL)
-#define I2C1_BASE  (0xE0005000uL)
-#define SPI0_BASE  (0xE0006000uL)
-#define SPI1_BASE  (0xE0007000uL)
-#define CAN0_BASE  (0xE0008000uL)
-#define CAN1_BASE  (0xE0009000uL)
-#define GPIO_BASE  (0xE000A000uL)
-#define GEM0_BASE  (0xE000B000uL) // gigabit eth controller
-#define GEM1_BASE  (0xE000C000uL) // ""
-#define QSPI_BASE  (0xE000D000uL)
-#define SMCC_BASE  (0xE000E000uL) // PL353 shared memory controller
-
-#define SD0_BASE   (0xE0100000uL)
-#define SD1_BASE   (0xE0101000uL)
-
-#define SLCR_BASE  		(0xF8000000uL)
-#define TTC0_BASE  		(0xF8001000uL)
-#define TTC1_BASE  		(0xF8002000uL)
-#define DMAC0_NS_BASE 	(0xF8004000uL)
-#define DMAC0_S_BASE 	(0xF8003000uL)
-#define SWDT_BASE  		(0xF8005000uL)
-#define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
-
-#define QSPI_LINEAR_BASE  (0xfC000000uL)
-
+/* Access pointers */
 
 #define GTC 			((GTC_Registers *) GLOBAL_TIMER_BASE)
 #define SCLR 			((SLCR_Registers *) SLCR_BASE)
@@ -681,16 +771,15 @@ typedef struct
 #define GEM0			((XEMACPS_Registers *) GEM0_BASE)
 #define GEM1			((XEMACPS_Registers *) GEM1_BASE)
 
-#define USB0	((void *) USB0_BASE)
-#define USB1	((void *) USB1_BASE)
+#define USB0	((XUSBPS_Registers *) USB0_BASE)
+#define USB1	((XUSBPS_Registers *) USB1_BASE)
 
 #define EHCI0	((USB_EHCI_CapabilityTypeDef *) (USB0_BASE + 0x0100))
 #define EHCI1	((USB_EHCI_CapabilityTypeDef *) (USB1_BASE + 0x0100))
 
-
 /** @addtogroup Exported_types
   * @{
-  */
+ */
 typedef enum
 {
   RESET = 0,
@@ -712,12 +801,12 @@ typedef enum
 
 /**
   * @}
-  */
+ */
 
 
 /** @addtogroup Exported_macros
   * @{
-  */
+ */
 #define SET_BIT(REG, BIT)     ((REG) |= (BIT))
 
 #define CLEAR_BIT(REG, BIT)   ((REG) &= ~(BIT))
@@ -737,7 +826,7 @@ typedef enum
 
 /**
   * @}
-  */
+ */
 
 #if defined (USE_HAL_DRIVER)
  #include "zynq7000_hal.h"

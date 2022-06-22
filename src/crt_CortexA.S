@@ -38,9 +38,6 @@
 *                   Therefore partial copyright by egnite Software GmbH.
 ****************************************************************************/
 
-
-//#define WITHSMPSYSTEM 1
-
 /*
  * Some defines for the program status registers
  */
@@ -68,7 +65,6 @@
 	 STACKSIZEIRQ = 512
 
 	 STACKSIZESVCBOOT = 2048
-	 STACKSIZESVCCPU1 = 8192
   
 	.global __Vectors
 	.section .vectors, "ax"
@@ -108,8 +104,7 @@ FIQAddr:       .word FIQ_Handler
    /*.extern __libc_init_array*/
    .extern SystemInit
    .global Reset_Handler7
-   .global Reset_CPU1_Handler
-/****************************************************************************/
+ /****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/
 Reset_Handler7:
@@ -437,74 +432,6 @@ IRQ_HandlerNested:
 	.endfunc
    .ltorg
 
-#if WITHSMPSYSTEM
-
-	.section .init, "ax"
-	.code 32
-	.align 4, 0
-
-    .func   Reset_CPU1_Handler
-    /* invoked at ARM_MODE_SVC */
-Reset_CPU1_Handler:
-   /*
-    * Reset SCTLR Settings
-    */
-	MRC     p15, 0, R0, c1, c0, 0    // Read CP15 System Control register
-	BIC     R0, R0, #(0x1 << 12)     // Clear I bit 12 to disable I Cache
-	BIC     R0, R0, #(0x1 <<  2)     // Clear C bit  2 to disable D Cache
-	BIC     R0, R0, #0x1             // Clear M bit  0 to disable MMU
-	BIC     R0, R0, #(0x1 << 11)     // Clear Z bit 11 to disable branch prediction
-	BIC     R0, R0, #(0x1 << 13)     // Clear V bit 13 to disable hivecs
-	MCR     p15, 0, R0, c1, c0, 0    // Write value back to CP15 System Control register
-	ISB
-   /*
-    * Setup a stack for each mode
-    */
-   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
-   ldr   sp, =__stack_cpu1_und_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
-   ldr   sp, =__stack_cpu1_abt_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
-   ldr   sp, =__stack_cpu1_fiq_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
-   ldr   sp, =__stack_cpu1_irq_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
-   ldr   sp, =__stack_cpu1_mon_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-   ldr   sp, =__stack_cpu1_hyp_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu1_sys_end
-   mov   lr, #0
-
-	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
-	ldr   sp, =__stack_cpu1_svc_end
-	mov   lr, #0
-
-	ldr		r2, =Reset_CPUn_Handler
-	mov		lr, pc
-	bx		r2     /* And jump... */
-
-Reset_CPU1_HandlerSleep:
-	wfi
-	b     Reset_CPU1_HandlerSleep
-
-		.endfunc
-   .ltorg
-
-#endif /* WITHSMPSYSTEM */
-
 	.section .noinit
 	.align 8
 
@@ -525,27 +452,6 @@ __stack_cpu0_sys_end = .
 
 	.space	STACKSIZEIRQ
 __stack_cpu0_irq_end = .
-
-#if WITHSMPSYSTEM
-
-	.space	STACKSIZEIRQ
-__stack_cpu1_irq_end = .
-	.space	STACKSIZEUND
-__stack_cpu1_und_end = .
-	.space	STACKSIZEABT
-__stack_cpu1_abt_end = .
-	.space	STACKSIZEFIQ
-__stack_cpu1_fiq_end = .
-	.space	STACKSIZEMON
-__stack_cpu1_mon_end = .
-	.space	STACKSIZEHYP
-__stack_cpu1_hyp_end = .
-	.space	STACKSIZESYS
-__stack_cpu1_sys_end = .
-	.space	STACKSIZESVCCPU1
-__stack_cpu1_svc_end = .
-
-#endif /* WITHSMPSYSTEM */
 
 	.word 0		/* fix non-zero size of this section */
 

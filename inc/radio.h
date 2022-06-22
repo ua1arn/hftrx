@@ -54,7 +54,7 @@ typedef uint_least64_t phase_t;
 
 #define WITHBOTTOMDBTX 90
 
-#define WITHBOTTOMDBMIN 80
+#define WITHBOTTOMDBMIN 40
 #define WITHBOTTOMDBMAX 160
 
 #define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
@@ -384,7 +384,9 @@ const phase_t * getplo2r(
 enum
 {
 	BOARD_TXAUDIO_MIKE,	// "MIKE ",
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	BOARD_TXAUDIO_LINE,	// "LINE ",
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 #if WITHUSBUACOUT
 	BOARD_TXAUDIO_USB,	// "USB AUDIO",
 #endif /* WITHUSBUACOUT */
@@ -545,7 +547,6 @@ uint_fast8_t hardware_getshutdown(void);	/* возвращаем запрос н
 
 void hardware_elkey_timer_initialize(void);
 void hardware_elkey_set_speed(uint_fast32_t ticksfreq);
-void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale);
 void hardware_elkey_ports_initialize(void); // Инициализация входов электронного ключа, входа CAT_DTR
 void hardware_ptt_port_initialize(void);	// Инициализация входа PTT, входа CAT_RTS и TXDISABLE
 
@@ -685,15 +686,15 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
-		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки без трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M_45M	/* версия до 45 МГц */
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 45000000L		/* верхняя частота настройки */
-		#define NOXVRTUNE_TOP 45000000L		/* верхняя частота настройки бещ трансвертора */
+		#define NOXVRTUNE_TOP 45000000L		/* верхняя частота настройки без трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M_36M	/* версия до 36 МГц */
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 36000000L		/* верхняя частота настройки */
-		#define NOXVRTUNE_TOP 36000000L		/* верхняя частота настройки бещ трансвертора */
+		#define NOXVRTUNE_TOP 36000000L		/* верхняя частота настройки без трансвертора */
 	#else
 		#error Wrong BANDSELSTYLERE_xxx used
 	#endif /* BANDSELSTYLERE_UPCONV56M */
@@ -759,7 +760,7 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
-		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки без трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M_45M	/* версия до 45 МГц */
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 45000000L		/* верхняя частота настройки */
@@ -838,7 +839,7 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
-		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки без трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M_45M	/* версия до 45 МГц */
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 45000000L		/* верхняя частота настройки */
@@ -965,7 +966,7 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
-		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки без трансвертора */
 	#elif BANDSELSTYLERE_UPCONV56M_45M	/* версия до 45 МГц */
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 45000000L		/* верхняя частота настройки */
@@ -1029,6 +1030,10 @@ void spool_0p128(void);	// OPERA support
 		#define TUNE_TOP (DUCDDC_FREQ * 1 + 56000000L)		/* верхняя частота настройки */
 		//#define TUNE_TOP 56000000L		/* верхняя частота настройки */
 		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки без трансвертора */
+	#elif BANDSELSTYLERE_UPCONV56M && XVTR_R820T2
+		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки без трансвертора */
+		#define TUNE_TOP 1700000000L		/* верхняя частота настройки */
 	#elif BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
@@ -1121,7 +1126,7 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
-		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки бещ трансвертора */
+		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки без трансвертора */
 	#else
 		#error Wrong BANDSELSTYLERE_xxx used
 	#endif /* BANDSELSTYLERE_UPCONV56M */
@@ -1182,7 +1187,7 @@ void spool_0p128(void);	// OPERA support
 	#if BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 100000L		/* нижняя частота настройки */
 		#define TUNE_TOP 30000000L		/* верхняя частота настройки */
-		#define NOXVRTUNE_TOP 30000000L		/* верхняя частота настройки бещ трансвертора */
+		#define NOXVRTUNE_TOP 30000000L		/* верхняя частота настройки без трансвертора */
 	#else
 		#error Wrong BANDSELSTYLERE_xxx used
 	#endif /* BANDSELSTYLERE_UPCONV56M */
@@ -3326,6 +3331,7 @@ uint_fast8_t hamradio_gtopdbwf(int_fast8_t v);
 uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v);
 const char * hamradio_change_view_style(uint_fast8_t v);
 int_fast8_t hamradio_afresponce(int_fast8_t v);
+uint_fast8_t habradio_get_classa(void);
 
 #if WITHREVERB
 void hamradio_set_greverb(uint_fast8_t v);
@@ -3346,8 +3352,8 @@ uint_fast8_t hamradio_get_gnotchtype(void);
 void hamradio_set_gnotchtype(uint_fast8_t v);
 void hamradio_set_gmoniflag(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmoniflag(void);
-uint_fast8_t hamradio_get_gmikebust20db(void);
-void hamradio_set_gmikebust20db(uint_fast8_t v);
+uint_fast8_t hamradio_get_gmikeboost20db(void);
+void hamradio_set_gmikeboost20db(uint_fast8_t v);
 uint_fast8_t hamradio_get_gmikeagc(void);
 void hamradio_set_gmikeagc(uint_fast8_t v);
 void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max);
@@ -3438,7 +3444,7 @@ void display2_set_smetertype(uint_fast8_t v);
 
 
 void display2_set_filter_spe(uint_fast8_t v);	/* парамеры видеофильтра спектра */
-void display2_set_filter_wtf(uint_fast8_t v);	/* парамеры видеофильтра водопада */
+void display2_set_filter_wfl(uint_fast8_t v);	/* парамеры видеофильтра водопада */
 
 
 const char * get_band_label3(unsigned b); /* получение человекопонятного названия диапазона */

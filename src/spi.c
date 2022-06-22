@@ -10,6 +10,7 @@
 #include "spi.h"
 #include "gpio.h"
 #include "formats.h"
+#include <string.h>
 #include <stdlib.h>
 
 // битовые маски, соответствующие биту в байте по его номеру.
@@ -70,9 +71,9 @@ spi_hwinit255(void)
 
 // SPI chip select inactive
 static void
-spi_cs_disable(void)
+spi_allcs_disable(void)
 {
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if defined (SPI_ALLCS_DISABLE)
 
 	SPI_ALLCS_DISABLE();
 
@@ -139,15 +140,32 @@ spi_cs_disable(void)
 
 #endif
 }
+
+static void
+spi_cs_disable(
+	spitarget_t target	/* addressing to chip */
+	)
+{
+#if defined (SPI_CS_DEASSERT)
+
+	SPI_CS_DEASSERT(target);
+
+#else /* defined (SPI_CS_DEASSERT) */
+
+	spi_allcs_disable();
+
+#endif /* defined (SPI_CS_DEASSERT) */
+}
+
 // SPI chip select active
 static void
 spi_cs_enable(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if defined (SPI_CS_ASSERT)
 
-	SPI_CS_SET(target);
+	SPI_CS_ASSERT(target);
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
@@ -243,7 +261,10 @@ spi_setaddress(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#if WITHSPICSEMIO
+	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
+
+#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
 	#if defined (SPI_NAEN_BIT)
 		if ((target & SPI_ALLCS_BITS) == 0)
@@ -432,6 +453,311 @@ void NOINLINEAT (prog_val8_impl)(
 
 #endif /* WITHSPISW */
 
+static SPINLOCK_t spilock = SPINLOCK_INIT;
+
+void spi_operate_low(lowspiio_t * iospi)
+{
+	const spitarget_t target = iospi->target;
+	unsigned i;
+
+	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
+	SPIN_LOCK(& spilock);
+	spi_select2(target, iospi->spimode, iospi->spispeedindex);
+	local_delay_us(iospi->csdelayUS);
+
+	ASSERT(iospi->count <= ARRAY_SIZE(iospi->chunks));
+
+	for (i = 0; i < iospi->count; ++ i)
+	{
+		lowspiexchange_t * const ex = & iospi->chunks [i];
+		unsigned size = ex->bytecount;
+		if (size == 0)
+			continue;
+
+		switch (iospi->chunks [i].spiiotype)
+		{
+		case SPIIO_TX:
+			{
+				const uint8_t * txbuff = ex->txbuff;
+				spi_progval8_p1(target, * txbuff);
+				while (-- size)
+					spi_progval8_p2(target, * ++ txbuff);
+				spi_complete(target);
+			}
+			break;
+		case SPIIO_RX:
+			{
+				uint8_t * rxbuff = ex->rxbuff;
+				spi_to_read(target);
+				while (size --)
+					* rxbuff ++ = spi_read_byte(target, 0xff);
+				spi_to_write(target);
+			}
+			break;
+#if SPI_BIDIRECTIONAL
+#else /* SPI_BIDIRECTIONAL */
+		case SPIIO_EXCHANGE:
+			{
+				uint8_t * rxbuff = ex->rxbuff;
+				const uint8_t * txbuff = ex->txbuff;
+				while (size --)
+					* rxbuff ++ = spi_read_byte(target, * txbuff ++);
+			}
+			break;
+#endif /* SPI_BIDIRECTIONAL */
+		default:
+			break;
+		}
+	}
+
+	spi_unselect(target);
+	local_delay_us(iospi->csdelayUS);
+	SPIN_UNLOCK(& spilock);
+}
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+void prog_spi_io(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff1, unsigned int txsize1,
+	const uint8_t * txbuff2, unsigned int txsize2,
+	uint8_t * rxbuff, unsigned int rxsize
+	)
+{
+	// Работа совместно с фоновым обменом SPI по прерываниям
+
+	unsigned i = 0;
+	lowspiio_t io;
+	io.target = target;
+	io.spispeedindex = spispeedindex;
+	io.spimode = spimode;
+	io.csdelayUS = csdelayUS;
+	io.spiiosize = SPIIOSIZE_U8;
+
+	if (txsize1 != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_TX;
+		io.chunks [i].bytecount = txsize1;
+		io.chunks [i].txbuff = txbuff1;
+		io.chunks [i].rxbuff = NULL;
+
+		++ i;
+	}
+	if (txsize2 != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_TX;
+		io.chunks [i].bytecount = txsize2;
+		io.chunks [i].txbuff = txbuff2;
+		io.chunks [i].rxbuff = NULL;
+
+		++ i;
+	}
+	if (rxsize != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_RX;
+		io.chunks [i].bytecount = rxsize;
+		io.chunks [i].txbuff = NULL;
+		io.chunks [i].rxbuff = rxbuff;
+
+		++ i;
+	}
+
+	io.count = i;
+
+#if WITHSPILOWSUPPORTT
+
+	system_disableIRQ();
+	spi_operate_low(& io);
+	system_enableIRQ();
+
+#else /* WITHSPILOWSUPPORTT */
+	spi_operate_low(& io);
+#endif /* WITHSPILOWSUPPORTT */
+
+}
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+void prog_spi_io_low(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff1, unsigned int txsize1,
+	const uint8_t * txbuff2, unsigned int txsize2,
+	uint8_t * rxbuff, unsigned int rxsize
+	)
+{
+	// Работа совместно с фоновым обменом SPI по прерываниям
+
+	unsigned i = 0;
+	lowspiio_t io;
+	io.target = target;
+	io.spispeedindex = spispeedindex;
+	io.spimode = spimode;
+	io.csdelayUS = csdelayUS;
+	io.spiiosize = SPIIOSIZE_U8;
+
+	if (txsize1 != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_TX;
+		io.chunks [i].bytecount = txsize1;
+		io.chunks [i].txbuff = txbuff1;
+		io.chunks [i].rxbuff = NULL;
+
+		++ i;
+	}
+	if (txsize2 != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_TX;
+		io.chunks [i].bytecount = txsize2;
+		io.chunks [i].txbuff = txbuff2;
+		io.chunks [i].rxbuff = NULL;
+
+		++ i;
+	}
+	if (rxsize != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_RX;
+		io.chunks [i].bytecount = rxsize;
+		io.chunks [i].txbuff = NULL;
+		io.chunks [i].rxbuff = rxbuff;
+
+		++ i;
+	}
+
+	io.count = i;
+
+	spi_operate_low(& io);
+
+}
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// Выдача и прием ответных байтов
+void prog_spi_exchange(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff,
+	uint8_t * rxbuff,
+	unsigned int size
+	)
+{
+	// Работа совместно с фоновым обменом SPI по прерываниям
+
+	lowspiio_t io;
+
+	io.target = target;
+	io.spispeedindex = spispeedindex;
+	io.spimode = spimode;
+	io.csdelayUS = csdelayUS;
+	io.spiiosize = SPIIOSIZE_U8;
+
+	unsigned i = 0;
+	{
+		io.chunks [i].spiiotype = SPIIO_EXCHANGE;
+		io.chunks [i].bytecount = size;
+		io.chunks [i].txbuff = txbuff;
+		io.chunks [i].rxbuff = rxbuff;
+		++ i;
+	}
+
+	io.count = i;
+
+#if WITHSPILOWSUPPORTT
+
+	system_disableIRQ();
+	spi_operate_low(& io);
+	system_enableIRQ();
+
+#else /* WITHSPILOWSUPPORTT */
+
+	spi_operate_low(& io);
+
+#endif /* WITHSPILOWSUPPORTT */
+}
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// Выдача и прием ответных байтов
+void prog_spi_exchange_low(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff,
+	uint8_t * rxbuff,
+	unsigned int size
+	)
+{
+	// Работа совместно с фоновым обменом SPI по прерываниям
+
+	lowspiio_t io;
+
+	io.target = target;
+	io.spispeedindex = spispeedindex;
+	io.spimode = spimode;
+	io.csdelayUS = csdelayUS;
+	io.spiiosize = SPIIOSIZE_U8;
+
+	unsigned i = 0;
+	{
+		io.chunks [i].spiiotype = SPIIO_EXCHANGE;
+		io.chunks [i].bytecount = size;
+		io.chunks [i].txbuff = txbuff;
+		io.chunks [i].rxbuff = rxbuff;
+		++ i;
+	}
+
+	io.count = i;
+
+	spi_operate_low(& io);
+}
+
+
+#if WITHSPILOWSUPPORTT
+//
+//void spi_perform(lowspiio_t * iospi)
+//{
+//	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
+//}
+//
+//void spi_perform_low(lowspiio_t * iospi)
+//{
+//	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
+//}
+
+
+
+typedef enum
+{
+	SPISTATE_IDLE,
+	//
+	SPISTATE_count
+} spistate_t;
+
+static spistate_t spistate = SPISTATE_IDLE;
+// вызывается с частотой TICKS_FREQUENCY герц
+static void
+spi_spool(void * ctx)
+{
+}
+
+static const uint8_t spiadcinputs [] =
+{
+		KI_LIST
+};
+
+void spi_perform_initialize(void)
+{
+	static ticker_t spiticker;
+
+	spistate = SPISTATE_IDLE;
+
+	ticker_initialize(& spiticker, 1, spi_spool, NULL);
+	ticker_add(& spiticker);
+
+	SPINLOCK_INITIALIZE(& spilock);
+}
+
+#else /* WITHSPILOWSUPPORTT */
 
 // Send a frame of bytes via SPI
 void 
@@ -448,7 +774,7 @@ prog_spi_send_frame(
 }
 
 // Read a frame of bytes via SPI
-// На сигнале MOSI при этом должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// На сигнале MOSI при этом должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 void 
 prog_spi_read_frame(
 	spitarget_t target,
@@ -459,6 +785,8 @@ prog_spi_read_frame(
 	while (size --)
 		* buff ++ = spi_read_byte(target, 0xff);
 }
+
+#endif /* WITHSPILOWSUPPORTT */
 
 /* 
  * интерфейс с платой - управление чипселектом
@@ -480,12 +808,14 @@ void prog_select_impl(
 	spi_cs_enable(target);	// chip select active
 }
 
-void prog_unselect_impl(void)
+void prog_unselect_impl(
+	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
+	)
 {
 #if UC1608_CSP
 	spi_unselect255();
 #endif /* UC1608_CSP */
-	spi_cs_disable();	// chip select inactive - and latch in 74HC595
+	spi_cs_disable(target);	// chip select inactive - and latch in 74HC595
 }
 
 /* switch off all chip selects and data enable */
@@ -518,7 +848,7 @@ prog_select_init(void)
 #endif /* defined (SPI_IORESET_INITIALIZE) */
 
 	//spi_to_write(target);
-	spi_cs_disable();	// chip select inactive
+	spi_allcs_disable();	// chip select inactive
 	//SCLK_SET();	// initial state of SCLK - logical "1" - обеспечивается в hardwate_spi_select_init()
 }
 
@@ -608,16 +938,18 @@ void spi_initialize(void)
 
 	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 
-#if defined (SPISPEED400k) || defined (SPISPEED100k)
-	hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);		// 100 kHz for MICROCHIP MCP3204/MCP3208
 	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);
 	hardware_spi_master_setfreq(SPIC_SPEED1M, 1000000uL);	/* 1 MHz для XPT2046 */
 	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000uL);	/* 4 MHz для CS4272 */
 	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);	/* 10 MHz для ILI9341 */
 	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);	/* 25 MHz  */
-#endif /* (SPISPEED400k) || defined (SPISPEED100k) */
 
 #endif /* WITHSPIHW */
+
+#if WITHSPILOWSUPPORTT
+	// Работа совместно с фоновым обменом SPI по прерываниям
+	spi_perform_initialize();
+#endif /* WITHSPILOWSUPPORTT */
 }
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -632,142 +964,68 @@ void spi_initialize(void)
 // Get Ready/Busy# pin state
 static uint_fast8_t nand_rbc_get(void)
 {
-#if CPUSTYLE_XC7Z
-	return xc7z_readpin(HARDWARE_NAND_RBC_MIO) != 0;
-#else
-	#warning nand_rbc_get should be implemented
-#endif
+	return HARDWARE_NAND_RBC_GET();
 }
 
 // Chip enable
-static void nand_cs_set(uint_fast8_t state)
+static void nand_csb_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_CSB_MIO, state != 0);
-#else
-	#warning nand_cs_set should be implemented
-#endif
+	HARDWARE_NAND_CSB_SET(state);
 }
 
 // Address latch enable
 static void nand_ale_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_ALE_MIO, state != 0);
-#else
-	#warning nand_ale_set should be implemented
-#endif
+	HARDWARE_NAND_ALE_SET(state);
 }
 
 // Command latch enable
 static void nand_cle_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_CLE_MIO, state != 0);
-#else
-	#warning nand_cle_set should be implemented
-#endif
+	HARDWARE_NAND_CLE_SET(state);
 }
 
 // Read enable: Gates transfers from the NAND Flash device to the host system.
-static void nand_re_set(uint_fast8_t state)
+static void nand_reb_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_REB_MIO, state != 0);
-#else
-	#warning nand_re_set should be implemented
-#endif
+	HARDWARE_NAND_REB_SET(state);
 }
 
 // Write enable: Gates transfers from the host system to the NAND Flash device
-static void nand_we_set(uint_fast8_t state)
+static void nand_web_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_WEB_MIO, state != 0);
-#else
-	#warning nand_we_set should be implemented
-#endif
+	HARDWARE_NAND_WEB_SET(state);
 }
 
 static void nand_wp_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_WPB_MIO, state != 0);
-#else
-	#warning nand_wp_set should be implemented
+#if defined (HARDWARE_NAND_WPB)
+	HARDWARE_NAND_WPB_SET(state);
 #endif
 }
 
 // bus programming: write data to chip
 static void nand_data_bus_write(void)
 {
-#if CPUSTYLE_XC7Z
-	xc7z_gpio_output(HARDWARE_NAND_D7_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D6_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D5_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D4_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D3_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D2_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D1_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D0_MIO);
-#else
-	#warning nand_data_bus_write should be implemented
-#endif
+	HARDWARE_NAND_BUS_WRITE();
 }
 
 // bus programming: write data to chip
 static void nand_data_bus_read(void)
 {
-#if CPUSTYLE_XC7Z
-	xc7z_gpio_input(HARDWARE_NAND_D7_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D6_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D5_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D4_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D3_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D2_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D1_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D0_MIO);
-#else
-	#warning nand_data_bus_read should be implemented
-#endif
+	HARDWARE_NAND_BUS_READ();
 }
+
 
 static void nand_data_out(uint_fast8_t v)
 {
-#if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_D7_MIO, (v & (0x01 << 7)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D6_MIO, (v & (0x01 << 6)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D5_MIO, (v & (0x01 << 5)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D4_MIO, (v & (0x01 << 4)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D3_MIO, (v & (0x01 << 3)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D2_MIO, (v & (0x01 << 2)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D1_MIO, (v & (0x01 << 1)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D0_MIO, (v & (0x01 << 0)) != 0);
-#else
-	#warning nand_data_out should be implemented
-#endif
+	HARDWARE_NAND_DATA_SET(v);
 }
 
 //
 static uint_fast8_t nand_data_in(void)
 {
-
-#if CPUSTYLE_XC7Z
-	uint_fast8_t v = 0;
-
-	v |= (xc7z_readpin(HARDWARE_NAND_D7_MIO) != 0) << 7;
-	v |= (xc7z_readpin(HARDWARE_NAND_D6_MIO) != 0) << 6;
-	v |= (xc7z_readpin(HARDWARE_NAND_D5_MIO) != 0) << 5;
-	v |= (xc7z_readpin(HARDWARE_NAND_D4_MIO) != 0) << 4;
-	v |= (xc7z_readpin(HARDWARE_NAND_D3_MIO) != 0) << 3;
-	v |= (xc7z_readpin(HARDWARE_NAND_D2_MIO) != 0) << 2;
-	v |= (xc7z_readpin(HARDWARE_NAND_D1_MIO) != 0) << 1;
-	v |= (xc7z_readpin(HARDWARE_NAND_D0_MIO) != 0) << 0;
-
-	return v;
-#else
-	#warning nand_data_in should be implemented
-#endif
+	return HARDWARE_NAND_DATA_GET();
 }
 
 #elif WITHNANDHW
@@ -780,24 +1038,26 @@ static uint_fast8_t nand_data_in(void)
 ///
 static void nand_cs_activate(void)
 {
-	nand_cs_set(0);
+	nand_csb_set(0);
 }
 
 static void nand_cs_deactivate(void)
 {
-	nand_cs_set(1);
+	nand_csb_set(1);
 }
 
 static void nand_write(uint_fast8_t v)
 {
+	//PRINTF("nand_write: %02X\n", v);
 	nand_data_bus_write(); // OUT direction
-	nand_we_set(0);
+	nand_web_set(0);
 	nand_data_out(v);
-	nand_we_set(1);
+	nand_web_set(1);
 }
 
 static void nand_write_command(uint_fast8_t v)
 {
+	//PRINTF("nand_write_command: %02X\n", v);
 	nand_cle_set(1);
 	nand_write(v);
 	nand_cle_set(0);
@@ -805,6 +1065,7 @@ static void nand_write_command(uint_fast8_t v)
 
 static void nand_write_address(uint_fast8_t v)
 {
+	//PRINTF("nand_write_address: %02X\n", v);
 	nand_ale_set(1);
 	nand_write(v);
 	nand_ale_set(0);
@@ -816,9 +1077,9 @@ static void nand_read(uint8_t * buff, unsigned count)
 	nand_data_bus_read();	// IN direction
 	while (count --)
 	{
-		nand_re_set(0);
+		nand_reb_set(0);
 		* buff ++ = nand_data_in();
-		nand_re_set(1);
+		nand_reb_set(1);
 	}
 }
 
@@ -848,6 +1109,7 @@ void nand_reset(void)
 
 void nand_read_id(void)
 {
+	//PRINTF("nand_read_id:\n");
 #if WITHDEBUG
 	uint8_t v [4];
 
@@ -858,15 +1120,17 @@ void nand_read_id(void)
 	nand_read(v, ARRAY_SIZE(v));
 	nand_cs_deactivate();
 
-	// NAMD IDs = 2C DA 90 95
+	// NAND IDs = 2C DA 90 95
 	// DA == MT29F2G08AAC
-	PRINTF("NAMD IDs = %02X %02X %02X %02X\n", v [0], v [1], v [2], v [3]);
+	PRINTF("NAND IDs = %02X %02X %02X %02X\n", v [0], v [1], v [2], v [3]);
 #endif /* WITHDEBUG */
+	//PRINTF("nand_read_id: done\n");
 }
 
 
 void nand_readfull(void)
 {
+	//PRINTF("nand_readfull:\n");
 	unsigned long columnaddr = 0;
 	unsigned long blockaddr = 0;	// 0..2047
 	unsigned long pageaddr = 0;		// 0..31
@@ -898,28 +1162,33 @@ void nand_readfull(void)
 	}
 
 	nand_cs_deactivate();
-
+	//PRINTF("nand_readfull: done\n");
 }
 
 void nand_initialize(void)
 {
+	//PRINTF("nand_initialize:\n");
 	HARDWARE_NAND_INITIALIZE();
 
-	nand_wp_set(0);
+	nand_wp_set(0);		// CHip write protected
 
-	nand_cs_set(1);
+	nand_csb_set(1);
 	nand_cle_set(0);
 	nand_ale_set(0);
-	nand_re_set(1);
-	nand_we_set(1);
+	nand_reb_set(1);
+	nand_web_set(1);
 
 	nand_reset();
+
+	//PRINTF("nand_initialize: done\n");
 }
 
 void nand_tests(void)
 {
+	//PRINTF("nand_tests:\n");
 	nand_read_id();
-	nand_readfull();
+	//nand_readfull();
+	//PRINTF("nand_tests: done\n");
 }
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
@@ -952,6 +1221,11 @@ void spidf_initialize(void)
 	// Connect I/O pins
 	SPIDF_SOFTINITIALIZE();
 #endif /* defined (SPIDF_SOFTINITIALIZE) */
+#if WIHSPIDFOVERSPI
+	#if (WITHSPIHW || WITHSPISW)
+		spi_initialize();
+	#endif /* (WITHSPIHW || WITHSPISW) */
+#endif /* WIHSPIDFOVERSPI */
 }
 
 #if ! WIHSPIDFOVERSPI
@@ -960,6 +1234,15 @@ static uint_fast8_t spidf_rbit(uint_fast8_t v)
 {
 	uint_fast8_t r;
 	SPIDF_MOSI(v);
+	SPIDF_SCLK(0);
+	r = SPIDF_MISO();
+	SPIDF_SCLK(1);
+	return r;
+}
+
+static uint_fast8_t spidf_rbitfast(void)
+{
+	uint_fast8_t r;
 	SPIDF_SCLK(0);
 	r = SPIDF_MISO();
 	SPIDF_SCLK(1);
@@ -986,6 +1269,22 @@ uint_fast8_t spidf_read_byte(uint_fast8_t v)
 	r = r * 2 + spidf_rbit(v & 0x04);
 	r = r * 2 + spidf_rbit(v & 0x02);
 	r = r * 2 + spidf_rbit(v & 0x01);
+
+	return r;
+}
+
+uint_fast8_t spidf_read_bytefast(void)
+{
+	uint_fast8_t r = 0;
+
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
 
 	return r;
 }
@@ -1093,6 +1392,16 @@ static uint_fast8_t spidf_progval8(uint_fast8_t sendval)
 #endif /* WIHSPIDFOVERSPI */
 }
 
+static uint_fast8_t spidf_readval8(void)
+{
+#if WIHSPIDFOVERSPI
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	return spi_progval8(target, 0xFF);
+#else /* WIHSPIDFOVERSPI */
+	return spidf_read_bytefast();
+#endif /* WIHSPIDFOVERSPI */
+}
+
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
@@ -1120,27 +1429,957 @@ static void spidf_iostart(
 }
 
 
-static void spidf_read(uint8_t * buff, uint_fast32_t size)
+static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
+	ASSERT(readnb == SPDFIO_1WIRE);
 	spidf_to_read();
 	while (size --)
-		* buff ++ = spidf_progval8(0xff);
+		* buff ++ = spidf_readval8();
 	spidf_to_write();
 }
 
 
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
+	ASSERT(readnb == SPDFIO_1WIRE);
 	uint_fast8_t err = 0;
 	spidf_to_read();
 	while (size --)
-		err |= * buff ++ != spidf_progval8(0xff);
+		err |= * buff ++ != spidf_readval8();
 	spidf_to_write();
 	return err;
 }
 
 
-static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
+{
+	ASSERT(readnb == SPDFIO_1WIRE);
+	while (size --)
+		spidf_progval8(* buff ++);
+}
+
+#elif WIHSPIDFHW && CPUSTYPE_ALLWNT113
+
+static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
+{
+
+    if (buf != NULL)
+    {
+        int i;
+        for(i = 0; i < len; i ++)
+            * (volatile uint8_t *) & SPI0->SPI_TXD = * buf ++;
+    }
+    else
+    {
+        int i;
+        for(i = 0; i < len; i ++)
+        {
+			* (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
+        }
+    }
+
+}
+
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fast8_t readnb)
+{
+	int count = len;
+	const uint8_t * tx = txbuf;
+	uint8_t * rx = rxbuf;
+	const int MAXCHUNK = 64;
+
+
+	while (count > 0)
+	{
+		const int chunk = (count <= MAXCHUNK) ? count : MAXCHUNK;
+		int i;
+
+		SPI0->SPI_MBC = chunk;	// total burst counter
+		switch (readnb)
+		{
+		default:
+		case SPDFIO_1WIRE:
+			spidf_spi_write_txbuf(tx, chunk);
+		    SPI0->SPI_MTC = chunk & 0xFFFFFFuL;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+			SPI0->SPI_BCC = chunk & 0xFFFFFFuL;
+			break;
+
+		case SPDFIO_4WIRE:
+			SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
+			if (tx != 0)
+			{
+				// 4-wire write
+				spidf_spi_write_txbuf(tx, chunk);
+			    SPI0->SPI_MTC = chunk & 0xFFFFFFuL;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			}
+			else
+			{
+				// 4-wire read
+			    SPI0->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			}
+			break;
+		}
+
+		SPI0->SPI_TCR |= (1 << 31);	// XCH
+		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
+		while ((SPI0->SPI_TCR & (1 << 31)) != 0)	// XCH
+			;
+		SPI0->SPI_BCC &= ~ (0x01uL << 29);	/* Quad_EN */
+
+		for (i = 0; i < chunk; i ++)
+		{
+			const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+			//PRINTF("RX: %02X\chunk", v);
+			if (rx != NULL)
+				* rx++ = v;
+		}
+
+		if (tx != NULL)
+			tx += chunk;
+		count -= chunk;
+	}
+
+
+	return len;
+}
+
+// 0 - ok, 1 - error
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
+{
+	return 0;
+}
+
+void spidf_initialize(void)
+{
+	unsigned ix = 0;	// SPI0
+
+	/* Open the clock gate for SPI0 */
+	CCU->SPI_BGR_REG |= (0x01uL << (ix + 0));
+
+	/* Deassert SPI0 reset */
+	CCU->SPI_BGR_REG |= (0x01uL << (ix + 16));
+
+	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
+
+	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
+	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
+		;
+	SPI0->SPI_GCR =
+		(0x00uL < 1) |	// MODE: 1: Master mode
+		0;
+
+
+
+	/* Deassert spi0 reset */
+	CCU->SPI_BGR_REG |= (1 << (ix + 16));
+	/* Open the spi0 gate */
+	CCU->SPI0_CLK_REG |= (1 << 31);
+	/* Open the spi0 bus gate */
+	CCU->SPI_BGR_REG |= (1 << (ix + 0));
+
+
+	/* Enable spi0 */
+	SPI0->SPI_GCR |= (1 << 7) | (1 << 1) | (1 << 0);
+	/* Do a soft reset */
+	SPI0->SPI_GCR |= (1 << 31);
+	while((SPI0->SPI_GCR & (1 << 31)) != 0)
+		;
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
+
+
+	enum
+	{
+		ALLWNT113_SPI_BR_WIDTH = 4, ALLWNT113_SPI_BR_TAPS = ( 8 | 4 | 2 | 1)
+
+	};
+
+	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
+		(clk_src << 24) |	/* CLK_SRC_SEL */
+		0;
+
+	const uint_fast32_t spispeed = 25000000uL;
+	// SCLK = Clock Source/M/N.
+	//TP();
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
+	//PRINTF("spidf_initialize: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());
+	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
+	CCU->SPI0_CLK_REG =
+		(clk_src << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+		(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+		(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
+		(0x01uL << 31) |	// 1: Clock is ON
+		0;
+
+	const portholder_t tcr =
+			(0x00uL << 12) |	// FBS: 0: MSB first
+			(0x01uL << 6) |		// SS_OWNER: 1: Software
+			0;
+
+	// SPI Transfer Control Register (Default Value: 0x0000_0087)
+	// CPOL at bit 1, CPHA at bit 0
+	SPI0->SPI_TCR = tcr | (0x03uL << 0);
+	//SPI0->SPI_TCR = tcr | (0x00uL << 0);
+
+}
+
+void spidf_uninitialize(void)
+{
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
+}
+
+void spidf_hangoff(void)
+{
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
+}
+
+static void spidf_unselect(void)
+{
+	uint32_t val;
+	int state = 0;
+
+	val = SPI0->SPI_TCR;
+	val &= ~((0x3 << 4) | (0x1 << 7));
+	val |= ((0 & 0x3) << 4) | (state << 7);
+	SPI0->SPI_TCR = val;
+
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
+}
+
+static void spidf_iostart(
+	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
+	uint_fast8_t cmd,
+	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
+	uint_fast8_t ndummy,	// number of dummy bytes
+	uint_fast32_t size,
+	uint_fast8_t hasaddress,
+	uint_fast32_t address
+	)
+{
+//	/* код ширины шины */
+//	static const uint8_t nbits [3] =
+//	{
+//			0x01,	// single line
+//			0x02,	// two lines
+//			0x03,	// four lines
+//	};
+//	/* за сколько тактов пройдет один dummy byte */
+//	static const uint8_t nmuls [3] =
+//	{
+//			8,	// single line
+//			4,	// two lines
+//			2,	// four lines
+//	};
+	//const uint_fast32_t bw = nbits [readnb];
+	//const uint_fast32_t ml = nmuls [readnb];
+
+	uint8_t b [16];
+	unsigned i = 0;
+
+	b [i ++] = cmd;		/* The Read SFDP instruction code is 0x5A */
+
+	if (hasaddress)
+	{
+		b [i ++] = address >> 16;
+		b [i ++] = address >> 8;
+		b [i ++] = address >> 0;
+	}
+	while (ndummy --)
+		b [i ++] = 0x00;	// dummy byte
+
+	// Connect I/O pins
+	SPIDF_HARDINITIALIZE();
+
+	{
+		// Assert CS
+		uint32_t val;
+		int state = 0;
+
+
+		val = SPI0->SPI_TCR;
+		val &= ~((0x3 << 4) | (0x1 << 7));
+		val |= ((0 & 0x3) << 4) | (state << 7);
+		SPI0->SPI_TCR = val;
+	}
+
+	spidf_spi_transfer(b, NULL, 1, SPDFIO_1WIRE);
+	spidf_spi_transfer(b + 1, NULL, i - 1, readnb);
+}
+
+// вычитываем все заказанное количество
+static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
+{
+	spidf_spi_transfer(NULL, buff, size, readnb);
+}
+
+// передаем все заказанное количество
+static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
+{
+	spidf_spi_transfer(buff, NULL, size, readnb);
+}
+
+// вычитываем все заказанное количество
+// 0 - ok, 1 - error
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
+{
+	return spidf_spi_verify(buff, size, readnb);
+}
+
+
+#elif WIHSPIDFHW && CPUSTYLE_XC7Z
+
+// https://github.com/grub4android/lk/blob/579832fe57eeb616cefd82b93d991141f0db91ce/platform/zynq/qspi.c
+
+
+#define QSPI_CONFIG             0xE000D000
+#define  CFG_IFMODE             (1 << 31) // Inteligent Flash Mode
+#define  CFG_LITTLE_ENDIAN      (0 << 26)
+#define  CFG_BIG_ENDIAN         (1 << 26)
+#define  CFG_HOLDB_DR           (1 << 19) // set to 1 for dual/quad spi mode
+#define  CFG_NO_MODIFY_MASK     (1 << 17) // do not modify this bit
+#define  CFG_MANUAL_START       (1 << 16) // start transaction
+#define  CFG_MANUAL_START_EN    (1 << 15) // enable manual start mode
+#define  CFG_MANUAL_CS_EN       (1 << 14) // enable manual CS control
+#define  CFG_MANUAL_CS          (1 << 10) // directly drives n_ss_out if MANUAL_CS_EN==1
+#define  CFG_FIFO_WIDTH_32      (3 << 6)  // only valid setting
+#define  CFG_BAUD_MASK          (7 << 3)
+#define  CFG_BAUD_DIV_2         (0 << 3)
+#define  CFG_BAUD_DIV_4         (1 << 3)
+#define  CFG_BAUD_DIV_8         (2 << 3)
+#define  CFG_BAUD_DIV_16        (3 << 3)
+#define  CFG_CPHA               (1 << 2) // clock phase
+#define  CFG_CPOL               (1 << 1) // clock polarity
+#define  CFG_MASTER_MODE        (1 << 0) // only valid setting
+
+#define QSPI_IRQ_STATUS         0xE000D004 // ro status (write UNDERFLOW/OVERFLOW to clear)
+#define QSPI_IRQ_ENABLE         0xE000D008 // write 1s to set mask bits
+#define QSPI_IRQ_DISABLE        0xE000D00C // write 1s to clear mask bits
+#define QSPI_IRQ_MASK           0xE000D010 // ro mask value (1 = irq enabled)
+#define  TX_UNDERFLOW           (1 << 6)
+#define  RX_FIFO_FULL           (1 << 5)
+#define  RX_FIFO_NOT_EMPTY      (1 << 4)
+#define  TX_FIFO_FULL           (1 << 3)
+#define  TX_FIFO_NOT_FULL       (1 << 2)
+#define  RX_OVERFLOW            (1 << 0)
+
+#define QSPI_ENABLE             0xE000D014 // write 1 to enable
+
+#define QSPI_DELAY              0xE000D018
+#define QSPI_TXD0               0xE000D01C
+#define QSPI_RXDATA             0xE000D020
+#define QSPI_SLAVE_IDLE_COUNT   0xE000D024
+#define QSPI_TX_THRESHOLD       0xE000D028
+#define QSPI_RX_THRESHOLD       0xE000D02C
+#define QSPI_GPIO               0xE000D030
+#define QSPI_LPBK_DLY_ADJ       0xE000D038
+#define QSPI_TXD1               0xE000D080
+#define QSPI_TXD2               0xE000D084
+#define QSPI_TXD3               0xE000D088
+
+#define QSPI_LINEAR_CONFIG      0xE000D0A0
+#define  LCFG_ENABLE            (1 << 31) // enable linear quad spi mode
+#define  LCFG_TWO_MEM           (1 << 30)
+#define  LCFG_SEP_BUS           (1 << 29) // 0=shared 1=separate
+#define  LCFG_U_PAGE            (1 << 28)
+#define  LCFG_MODE_EN           (1 << 25) // send mode bits (required for dual/quad io)
+#define  LCFG_MODE_ON           (1 << 24) // only send instruction code for first read
+#define  LCFG_MODE_BITS(n)      (((n) & 0xFF) << 16)
+#define  LCFG_DUMMY_BYTES(n)    (((n) & 7) << 8)
+#define  LCFG_INST_CODE(n)      ((n) & 0xFF)
+
+#define QSPI_LINEAR_STATUS      0xE000D0A4
+#define QSPI_MODULE_ID          0xE000D0FC
+
+static uint32_t readl(uintptr_t addr)
+{
+	return ZYNQ_IORW32(addr);
+}
+
+static void writel(uint32_t data, uintptr_t addr)
+{
+	ZYNQ_IORW32(addr) = data;
+}
+
+struct qspi_ctxt
+{
+	uint32_t cfg;
+	int linear_mode;
+};
+
+static struct qspi_ctxt qspi0;
+
+////
+
+
+static int qspi_enable_linear(struct qspi_ctxt *qspi)
+{
+	PRINTF("%s:\n", __func__);
+	if (qspi->linear_mode)
+		return 0;
+
+	/* disable the controller */
+	writel(0, QSPI_ENABLE);
+	writel(0, QSPI_LINEAR_CONFIG);
+
+	/* put the controller in auto chip select mode and assert chip select */
+	qspi->cfg &= ~(CFG_MANUAL_START_EN | CFG_MANUAL_CS_EN | CFG_MANUAL_CS);
+	XQSPIPS->CR = qspi->cfg;
+
+#if 1
+	// uses Quad I/O mode
+	// should be 0x82FF02EB according to xilinx manual for spansion flashes
+	writel(LCFG_ENABLE |
+			LCFG_MODE_EN |
+			LCFG_MODE_BITS(0xff) |
+			LCFG_DUMMY_BYTES(2) |
+			LCFG_INST_CODE(0xeb),
+			QSPI_LINEAR_CONFIG);
+#else
+	// uses Quad Output Read mode
+	// should be 0x8000016B according to xilinx manual for spansion flashes
+	writel(LCFG_ENABLE |
+			LCFG_MODE_BITS(0) |
+			LCFG_DUMMY_BYTES(1) |
+			LCFG_INST_CODE(0x6b),
+			QSPI_LINEAR_CONFIG);
+#endif
+
+	/* enable the controller */
+	writel(1, QSPI_ENABLE);
+
+	qspi->linear_mode = 1 /* true*/;
+
+	__DSB();
+
+	return 0;
+}
+
+static int qspi_disable_linear(struct qspi_ctxt *qspi)
+{
+	PRINTF("%s:\n", __func__);
+	if (! qspi->linear_mode)
+		return 0;
+
+	/* disable the controller */
+	writel(0, QSPI_ENABLE);
+	writel(0, QSPI_LINEAR_CONFIG);
+
+	/* put the controller back into manual chip select mode */
+	qspi->cfg |= (CFG_MANUAL_START_EN | CFG_MANUAL_CS_EN | CFG_MANUAL_CS);
+	XQSPIPS->CR = qspi->cfg;
+
+	/* enable the controller */
+	writel(1, QSPI_ENABLE);
+
+	qspi->linear_mode = 0 /* fasle */;
+
+	__DSB();
+
+	return 0;
+}
+
+static void qspi_cs(struct qspi_ctxt *qspi, unsigned int cs)
+{
+	PRINTF("%s:\n", __func__);
+	PRINTF("qspi_cs(%d)\n", cs);
+	ASSERT(cs <= 1);
+
+	if (cs == 0)
+		qspi->cfg &= ~ (CFG_MANUAL_CS);
+	else
+		qspi->cfg |= CFG_MANUAL_CS;
+
+	XQSPIPS->CR = qspi->cfg;
+}
+
+static void qspi_xmit(struct qspi_ctxt *qspi)
+{
+	PRINTF("%s:\n", __func__);
+	// start txn
+	writel(qspi->cfg | CFG_MANUAL_START, QSPI_CONFIG);
+
+	TP();
+	// wait for command to transmit and TX fifo to be empty
+	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+		;
+	TP();
+}
+
+static void qspi_flush_rx(void)
+{
+	PRINTF("%s:\n", __func__);
+	TP();
+	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
+	{
+		TP();
+		readl(QSPI_RXDATA);
+	}
+	TP();
+}
+
+static const uint32_t TXFIFO[] = { QSPI_TXD1, QSPI_TXD2, QSPI_TXD3, QSPI_TXD0, QSPI_TXD0, QSPI_TXD0 };
+
+static void qspi_rd(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32_t *data, uint32_t count)
+{
+	PRINTF("%s:\n", __func__);
+	uint32_t sent = 0;
+	uint32_t rcvd = 0;
+
+	ASSERT(qspi);
+	ASSERT(asize < 6);
+
+	qspi_cs(qspi, 0);
+
+	writel(cmd, TXFIFO[asize]);
+	TP();
+	qspi_xmit(qspi);
+
+	if (asize == 4) { // dummy byte
+		writel(0, QSPI_TXD1);
+		TP();
+		qspi_xmit(qspi);
+		qspi_flush_rx();
+	}
+
+	qspi_flush_rx();
+
+	while (rcvd < count) {
+		while (XQSPIPS->SR & RX_FIFO_NOT_EMPTY) {
+			*data++ = readl(QSPI_RXDATA);
+			rcvd++;
+		}
+		TP();
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) && (sent < count)) {
+			writel(0, QSPI_TXD0);
+			sent++;
+		}
+		TP();
+		qspi_xmit(qspi);
+	}
+	qspi_cs(qspi, 1);
+}
+
+static void qspi_wr(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32_t *data, uint32_t count)
+{
+	PRINTF("%s:\n", __func__);
+	uint32_t sent = 0;
+	uint32_t rcvd = 0;
+
+	ASSERT(qspi);
+	ASSERT(asize < 6);
+
+	qspi_cs(qspi, 0);
+
+	writel(cmd, TXFIFO[asize]);
+	TP();
+	qspi_xmit(qspi);
+
+	if (asize == 4) { // dummy byte
+		writel(0, QSPI_TXD1);
+		TP();
+		qspi_xmit(qspi);
+		qspi_flush_rx();
+	}
+
+	qspi_flush_rx();
+
+	while (rcvd < count) {
+		TP();
+		while (XQSPIPS->SR & RX_FIFO_NOT_EMPTY) {
+			readl(QSPI_RXDATA); // discard
+			rcvd++;
+		}
+		TP();
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) && (sent < count)) {
+			writel(*data++, QSPI_TXD0);
+			sent++;
+		}
+		TP();
+		qspi_xmit(qspi);
+	}
+
+	qspi_cs(qspi, 1);
+}
+
+static void qspi_wr1(struct qspi_ctxt *qspi, uint32_t cmd)
+{
+	PRINTF("%s:\n", __func__);
+	ASSERT(qspi);
+
+	qspi_cs(qspi, 0);
+	writel(cmd, QSPI_TXD1);
+	TP();
+	qspi_xmit(qspi);
+
+	TP();
+	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
+		;
+	TP();
+
+	readl(QSPI_RXDATA);
+	qspi_cs(qspi, 1);
+}
+
+static void qspi_wr2(struct qspi_ctxt *qspi, uint32_t cmd)
+{
+	PRINTF("%s:\n", __func__);
+	ASSERT(qspi);
+
+	qspi_cs(qspi, 0);
+	writel(cmd, QSPI_TXD2);
+	TP();
+	qspi_xmit(qspi);
+
+	TP();
+	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
+		;
+	TP();
+
+	readl(QSPI_RXDATA);
+	qspi_cs(qspi, 1);
+}
+
+static void qspi_wr3(struct qspi_ctxt *qspi, uint32_t cmd)
+{
+	PRINTF("%s:\n", __func__);
+	ASSERT(qspi);
+
+	qspi_cs(qspi, 0);
+	writel(cmd, QSPI_TXD3);
+	TP();
+	qspi_xmit(qspi);
+
+	TP();
+	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
+		;
+	TP();
+
+	readl(QSPI_RXDATA);
+	qspi_cs(qspi, 1);
+}
+
+static uint32_t qspi_rd1(struct qspi_ctxt *qspi, uint32_t cmd)
+{
+	PRINTF("%s:\n", __func__);
+	qspi_cs(qspi, 0);
+	writel(cmd, QSPI_TXD2);
+	TP();
+	qspi_xmit(qspi);
+
+	TP();
+	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
+		;
+	TP();
+
+	qspi_cs(qspi, 1);
+	return readl(QSPI_RXDATA);
+}
+
+/////
+
+// https://github.com/grub4android/lk/blob/579832fe57eeb616cefd82b93d991141f0db91ce/platform/zynq/spiflash.c
+
+static uint32_t qspi_rd_cr1(struct qspi_ctxt *qspi)
+{
+	PRINTF("%s:\n", __func__);
+	return qspi_rd1(qspi, 0x35) >> 24;
+}
+
+static uint32_t qspi_rd_status(struct qspi_ctxt *qspi)
+{
+	PRINTF("%s:\n", __func__);
+	return qspi_rd1(qspi, 0x05) >> 24;
+}
+
+////
+static uint32_t InitQspi(void);
+static uint32_t QspiAccess( uint32_t SourceAddress,
+		void * DestinationAddress, uint32_t LengthBytes, unsigned skipAnswer);
+static uint32_t InitQspi(void);
+static void flashPrepareLqspiCR(uint_fast8_t enableMmap);
+
+static uint32_t SendBankSelect(uint8_t BankSel);
+
+
+void spidf_initialize(void)
+{
+
+	PRINTF("%s:\n", __func__);
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
+	(void) SCLR->APER_CLK_CTRL;
+
+	SCLR->LQSPI_CLK_CTRL = (SCLR->LQSPI_CLK_CTRL & ~ 0x3F00) |
+			(SCLR_LQSPI_CLK_CTRL_DIVISOR_VALUE << 8) |
+			0;
+
+	PRINTF("spidf_initialize: xc7z_get_qspi_freq()=%lu\n", xc7z_get_qspi_freq());
+
+	SPIDF_HARDINITIALIZE();
+	InitQspi();
+	return;
+
+	PRINTF("1 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
+	// после reset не работает
+//	SCLR->LQSPI_RST_CTRL |= 0x01;
+//	(void) SCLR->LQSPI_RST_CTRL;
+//	SCLR->LQSPI_RST_CTRL &= ~ 0x01;
+//	(void) SCLR->LQSPI_RST_CTRL;
+
+	PRINTF("2 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
+
+	XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
+
+	ASSERT(XQSPIPS->MOD_ID == 0x01090101);
+	//PRINTF("spidf_initialize: MOD_ID=%08lX (expected 0x01090101)\n", XQSPIPS->MOD_ID);
+
+	XQSPIPS->ER = 0;
+	XQSPIPS->LQSPI_CR = 0;
+
+	// flush rx fifo
+	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) != 0)
+		(void) XQSPIPS->RXD;
+
+	XQSPIPS->CR = (XQSPIPS->CR & CFG_NO_MODIFY_MASK) |
+	            //CFG_IFMODE |	// 1: Flash memory interface mode
+				CFG_LITTLE_ENDIAN | // zero value
+	            CFG_HOLDB_DR |	// D2 & D3 in 1 mit mode behaviour
+	            CFG_FIFO_WIDTH_32 |	// Must be set to 2'b11 (32bits).
+	            CFG_CPHA | 	// 1: the QSPI clock is inactive outside the word
+				CFG_CPOL |	// 1: The QSPI clock is quiescent high
+	            CFG_MASTER_MODE |	// 1: The QSPI is in master mode
+				CFG_BAUD_DIV_4 |
+	            //CFG_MANUAL_START_EN | // 1: enables manual start
+				CFG_MANUAL_CS_EN |	// 1: manual CS mode
+				CFG_MANUAL_CS |	// Peripheral chip select line, directly drive n_ss_out if Manual_C is set
+				0;
+
+	(void) XQSPIPS->CR;
+	//qspi->khz = 100000;
+	//qspi->linear_mode = 0 /* fasle */;
+	PRINTF("3 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
+
+	//writel(1, QSPI_ENABLE);
+	//XQSPIPS->ER = 1;
+
+	// clear sticky irqs
+	//writel(TX_UNDERFLOW | RX_OVERFLOW, QSPI_IRQ_STATUS);
+	XQSPIPS->SR = TX_UNDERFLOW | RX_OVERFLOW;
+
+	SPIDF_HARDINITIALIZE();
+}
+
+void spidf_hangoff(void)
+{
+#if CPUSTYLE_XC7Z
+	return;
+#endif /* CPUSTYLE_XC7Z */
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+}
+
+void spidf_uninitialize(void)
+{
+//	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+//		;
+	// Disconnect I/O pins
+#if CPUSTYLE_XC7Z
+	return;
+#endif /* CPUSTYLE_XC7Z */
+	XQSPIPS->ER = 0;
+	SPIDF_HANGOFF();
+}
+
+static void spidf_unselect(void)
+{
+////	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+////		;
+//	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_SSLF) != 0)
+//		;
+	// Disconnect I/O pins
+	//qspi_cs(& qspi0, 1);
+	XQSPIPS->CR |= CFG_MANUAL_CS;	 // De-assert
+	(void) XQSPIPS->CR;
+
+	XQSPIPS->ER = 0;
+	SPIDF_HANGOFF();
+}
+
+static void spidf_progval8_p1(uint_fast8_t v)
+{
+	XQSPIPS->TXD_01 = v; 	// Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
+}
+
+static unsigned spidf_progval8_p2(uint_fast8_t v)
+{
+	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+		;
+	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
+		;
+	unsigned v2 = XQSPIPS->RXD;
+	PRINTF("v2=%08lX\n", v2);
+
+	XQSPIPS->TXD_01 = v; 	// Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
+
+	return v2;
+}
+
+static uint_fast8_t spidf_complete(void)
+{
+	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+		;
+	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
+		;
+	unsigned vc = XQSPIPS->RXD;
+	PRINTF("vc=%08lX\n", vc);
+	return vc;
+}
+
+static uint_fast8_t spidf_progval8(uint_fast8_t v)
+{
+	XQSPIPS->TXD_01 = v; 	// Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
+
+	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+		;
+	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
+		;
+	unsigned v8 = XQSPIPS->RXD;
+	PRINTF("v8=%08lX\n", v8);
+	return v8;
+}
+
+static void spidf_iostart(
+	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
+	uint_fast8_t cmd,
+	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
+	uint_fast8_t ndummy,	// number of dummy bytes
+	uint_fast32_t size,
+	uint_fast8_t hasaddress,
+	uint_fast32_t address
+	)
+{
+	//PRINTF("spidf_iostart: dir=%d, cmd=%02X, readnb=%d, ndummy=%d, size=%lu, ha=%d, addr=%08lX\n", direction, cmd, readnb, ndummy, size, hasaddress, address);
+	const unsigned cmdlen = 1 + (hasaddress ? 3 : 0) + ndummy;
+	//PRINTF("spidf_iostart: cmdlen=%u\n", cmdlen);
+
+	// Read data: cmd A23_A16 A15_A8 A7_A0
+	const uint_fast32_t v =
+			((uint_fast32_t) ((address >> 0) & 0xFF) << 24) |
+			((uint_fast32_t) ((address >> 8) & 0xFF) << 16) |
+			((uint_fast32_t) ((address >> 16) & 0xFF) << 8) |
+			((uint_fast32_t) (cmd & 0xFF) << 0) |
+			0;
+
+	XQSPIPS->ER = 1;
+
+	// Assert CS
+	XQSPIPS->CR &= ~ CFG_MANUAL_CS;
+	(void) XQSPIPS->CR;
+
+
+	spidf_progval8_p1(cmd);		/* The Read SFDP instruction code is 0x5A */
+
+	if (hasaddress)
+	{
+		spidf_progval8_p2(address >> 16);
+		spidf_progval8_p2(address >> 8);
+		spidf_progval8_p2(address >> 0);
+	}
+	while (ndummy --)
+		spidf_progval8_p2(0x00);	// dummy byte
+
+	spidf_complete();	/* done sending data to target chip */
+	return;
+
+
+	switch (cmdlen)
+	{
+	case 1:
+		TP();
+		XQSPIPS->TXD_01 = cmd; // Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
+		//XQSPIPS->CR |= CFG_MANUAL_START_EN;
+		//(void) XQSPIPS->CR;
+		//XQSPIPS->CR |= CFG_MANUAL_START;
+		//(void) XQSPIPS->CR;
+		TP();
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+			;
+		TP();
+		break;
+	case 2:
+		break;
+	case 3:
+		break;
+	case 4:
+		XQSPIPS->TXD_00 = v;	// Data to TX FIFO, for 4-byte instruction for normal read/write data transfer.
+		//XQSPIPS->CR |= CFG_MANUAL_START_EN;
+		//(void) XQSPIPS->CR;
+		//XQSPIPS->CR |= CFG_MANUAL_START;
+		//(void) XQSPIPS->CR;
+		TP();
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+			;
+		break;
+	case 5:
+		TP();
+		XQSPIPS->TXD_00 = v;	// Data to TX FIFO, for 4-byte instruction for normal read/write data transfer.
+		//XQSPIPS->CR |= CFG_MANUAL_START_EN;
+		//(void) XQSPIPS->CR;
+		//XQSPIPS->CR |= CFG_MANUAL_START;
+		//(void) XQSPIPS->CR;
+		TP();
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+			;
+		TP();
+		XQSPIPS->TXD_01 = 0x00;	// dummy data
+		//XQSPIPS->CR |= CFG_MANUAL_START_EN;
+		//(void) XQSPIPS->CR;
+		//XQSPIPS->CR |= CFG_MANUAL_START;
+		//(void) XQSPIPS->CR;
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+			;
+		TP();
+		break;
+	}
+
+
+//	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+//		;
+}
+
+static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
+{
+	while (size --)
+		* buff ++ = spidf_progval8(0xff);
+}
+
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
+{
+	uint_fast8_t err = 0;
+	while (size --)
+		err |= * buff ++ != spidf_progval8(0xff);
+	return err;
+}
+
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while (size --)
 		spidf_progval8(* buff ++);
@@ -1150,7 +2389,8 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 
 
 // вычитываем все заказанное количество
-static void spidf_read(uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while (size --)
 	{
@@ -1161,7 +2401,8 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size)
 }
 
 // передаем все заказанное количество
-static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while (size --)
 	{
@@ -1172,7 +2413,8 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 }
 
 // вычитываем все заказанное количество
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	uint_fast8_t err = 0;
 	while (size --)
@@ -1192,6 +2434,7 @@ static void spidf_unselect(void)
 	SPIDF_HANGOFF();
 }
 
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
 	uint_fast8_t cmd,
@@ -1329,7 +2572,8 @@ void spidf_hangoff(void)
 #elif WIHSPIDFHW && CPUSTYLE_R7S721
 
 // передаем все заказанное количество
-static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 		;
@@ -1361,7 +2605,8 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 }
 
 // вычитываем все заказанное количество
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	uint_fast8_t err = 0;
 	while (size --)
@@ -1389,7 +2634,8 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 }
 
 // вычитываем все заказанное количество
-static void spidf_read(uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while (size --)
 	{
@@ -1558,15 +2804,6 @@ static void spidf_iostart(
 	// при передаче формируется только команла и адрес при необходимости
 }
 
-#elif WIHSPIDFHW && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
-
-void spidf_initialize(void)
-{
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (0x01uL << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
-	XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
-}
-
 #endif /* WIHSPIDFHW */
 
 /* снять защиту записи для следующей команды */
@@ -1582,21 +2819,45 @@ void writeDisableDATAFLASH(void)
 	spidf_unselect();	/* done sending data to target chip */
 }
 
+int fullEraseDATAFLASH(void)
+{
+	if (timed_dataflash_read_status())
+	{
+		PRINTF(PSTR("fullEraseDATAFLASH: timeout\n"));
+		return 1;
+	}
+
+	writeEnableDATAFLASH();		/* write enable */
+
+	spidf_iostart(SPDIFIO_WRITE, 0x60, SPDFIO_1WIRE, 0, 0, 0, 0);	/*.2.18 Chip Erase (C7h / 60h) */
+	spidf_unselect();	/* done sending data to target chip */
+
+	if (largetimed_dataflash_read_status())
+		return 1;
+	return 0;
+}
+
 /* read status register #1 (bit0==busy flag) */
 uint_fast8_t dataflash_read_status(void)
 {
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+	return 0;
+#endif /* CPUSTYLE_XC7Z */
 	uint8_t v;
 	enum { SPDIF_IOSIZE = sizeof v };
 
 	spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
-	spidf_read(& v, SPDIF_IOSIZE);
+	spidf_read(& v, SPDIF_IOSIZE, SPDFIO_1WIRE);
 	spidf_unselect();	/* done sending data to target chip */
-
+	//PRINTF("dataflash_read_status: v=%02X\n", v);
 	return v;
 }
 
 int timed_dataflash_read_status(void)
 {
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+	return 0;
+#endif /* CPUSTYLE_XC7Z */
 	unsigned long w = 400000;
 	while (w --)
 	{
@@ -1607,10 +2868,11 @@ int timed_dataflash_read_status(void)
 	return 1;
 }
 
-static int largetimed_dataflash_read_status(void)
+// infinity waiting
+int largetimed_dataflash_read_status(void)
 {
 	unsigned long w = 4000000;
-	while (w --)
+	while (w)
 	{
 		if ((dataflash_read_status() & 0x01) == 0)
 			return 0;
@@ -1619,15 +2881,273 @@ static int largetimed_dataflash_read_status(void)
 	return 1;
 }
 
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+
+#include "lib\zynq\src_7020\qspips_v3_9\xqspips_hw.h" // конфликт с одним из дефайнов в clock
+#include "lib\zynq\src_7020\qspips_v3_9\xqspips.h"
+
+/************************** Constant Definitions *****************************/
+
+/*
+ * The following constants map to the XPAR parameters created in the
+ * xparameters.h file. They are defined here such that a user can easily
+ * change all the needed parameters in one place.
+ */
+#define QSPI_DEVICE_ID		XPAR_XQSPIPS_0_DEVICE_ID
+
+/*
+ * The following constants define the commands which may be sent to the FLASH
+ * device.
+ */
+#define QUAD_READ_CMD		0x6B
+#define READ_ID_CMD			0x9F
+
+#define WRITE_ENABLE_CMD	0x06
+#define BANK_REG_RD			0x16
+#define BANK_REG_WR			0x17
+/* Bank register is called Extended Address Reg in Micron */
+#define EXTADD_REG_RD		0xC8
+#define EXTADD_REG_WR		0xC5
+
+#define COMMAND_OFFSET		0 /* FLASH instruction */
+#define ADDRESS_1_OFFSET	1 /* MSB byte of address to read or write */
+#define ADDRESS_2_OFFSET	2 /* Middle byte of address to read or write */
+#define ADDRESS_3_OFFSET	3 /* LSB byte of address to read or write */
+#define DATA_OFFSET			4 /* Start of Data for Read/Write */
+#define DUMMY_OFFSET		4 /* Dummy byte offset for fast, dual and quad
+				     reads */
+#define DUMMY_SIZE			1 /* Number of dummy bytes for fast, dual and
+				     quad reads */
+#define RD_ID_SIZE			4 /* Read ID command + 3 bytes ID response */
+#define BANK_SEL_SIZE		2 /* BRWR or EARWR command + 1 byte bank value */
+#define WRITE_ENABLE_CMD_SIZE	1 /* WE command */
+/*
+ * The following constants specify the extra bytes which are sent to the
+ * FLASH on the QSPI interface, that are not data, but control information
+ * which includes the command and address
+ */
+#define OVERHEAD_SIZE		4
+
+/*
+ * The following constants specify the max amount of data and the size of the
+ * the buffer required to hold the data and overhead to transfer the data to
+ * and from the FLASH.
+ */
+#define DATA_SIZE		4096
+
+/*
+ * The following defines are for dual flash interface.
+ */
+#define LQSPI_CR_FAST_READ			0x0000000B
+#define LQSPI_CR_FAST_DUAL_READ		0x0000003B
+#define LQSPI_CR_FAST_QUAD_READ		0x0000006B /* Fast Quad Read output */
+#define LQSPI_CR_1_DUMMY_BYTE		0x00000100 /* 1 Dummy Byte between address and return data */
+
+#define SINGLE_QSPI_CONFIG_FAST_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_READ)
+
+#define SINGLE_QSPI_CONFIG_FAST_DUAL_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_DUAL_READ)
+
+#define SINGLE_QSPI_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_QUAD_READ)
+
+#define DUAL_QSPI_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
+					 XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
+					 XQSPIPS_LQSPI_CR_SEP_BUS_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_QUAD_READ)
+
+#define DUAL_STACK_CONFIG_FAST_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_READ)
+
+#define DUAL_STACK_CONFIG_FAST_DUAL_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_DUAL_READ)
+
+#define DUAL_STACK_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_QUAD_READ)
+
+#define SINGLE_QSPI_IO_CONFIG_FAST_READ	(LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_READ)
+
+#define SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ	(LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_DUAL_READ)
+
+#define SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ	(LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_QUAD_READ)
+
+#define DUAL_QSPI_IO_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
+					 XQSPIPS_LQSPI_CR_SEP_BUS_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_QUAD_READ)
+
+#define QSPI_BUSWIDTH_ONE	0U
+#define QSPI_BUSWIDTH_TWO	1U
+#define QSPI_BUSWIDTH_FOUR	2U
+
+#define SINGLE_FLASH_CONNECTION			0
+#define DUAL_STACK_CONNECTION			1
+#define DUAL_PARALLEL_CONNECTION		2
+#define FLASH_SIZE_16MB					0x1000000
+
+/*
+ * Bank mask
+ */
+#define BANKMASK 0xF000000
+
+/*
+ * Identification of Flash
+ * Micron:
+ * Byte 0 is Manufacturer ID;
+ * Byte 1 is first byte of Device ID - 0xBB or 0xBA
+ * Byte 2 is second byte of Device ID describes flash size:
+ * 128Mbit : 0x18; 256Mbit : 0x19; 512Mbit : 0x20
+ * Spansion:
+ * Byte 0 is Manufacturer ID;
+ * Byte 1 is Device ID - Memory Interface type - 0x20 or 0x02
+ * Byte 2 is second byte of Device ID describes flash size:
+ * 128Mbit : 0x18; 256Mbit : 0x19; 512Mbit : 0x20
+ */
+
+#define MICRON_ID		0x20
+#define SPANSION_ID		0x01
+#define WINBOND_ID		0xEF
+#define MACRONIX_ID		0xC2
+#define ISSI_ID			0x9D
+
+#define FLASH_SIZE_ID_8M		0x14
+#define FLASH_SIZE_ID_16M		0x15
+#define FLASH_SIZE_ID_32M		0x16
+#define FLASH_SIZE_ID_64M		0x17
+#define FLASH_SIZE_ID_128M		0x18
+#define FLASH_SIZE_ID_256M		0x19
+#define FLASH_SIZE_ID_512M		0x20
+#define FLASH_SIZE_ID_1G		0x21
+/* Macronix size constants are different for 512M and 1G */
+#define MACRONIX_FLASH_SIZE_ID_512M		0x1A
+#define MACRONIX_FLASH_SIZE_ID_1G		0x1B
+
+/*
+ * Size in bytes
+ */
+#define FLASH_SIZE_8M			0x0100000
+#define FLASH_SIZE_16M			0x0200000
+#define FLASH_SIZE_32M			0x0400000
+#define FLASH_SIZE_64M			0x0800000
+#define FLASH_SIZE_128M			0x1000000
+#define FLASH_SIZE_256M			0x2000000
+#define FLASH_SIZE_512M			0x4000000
+#define FLASH_SIZE_1G			0x8000000
+
+/************************** Function Prototypes ******************************/
+/************************** Variable Definitions *****************************/
+
+/**************************** Type Definitions *******************************/
+
+/***************** Macros (Inline Functions) Definitions *********************/
+
+/************************** Function Prototypes ******************************/
+
+/************************** Variable Definitions *****************************/
+
+static XQspiPs QspiInstance;
+static XQspiPs * const QspiInstancePtr = & QspiInstance;
+static uint32_t QspiFlashSize = FLASH_SIZE_16M;
+static uint32_t QspiFlashMake = WINBOND_ID;
+static uint32_t FlashReadBaseAddress;
+static uint8_t LinearBootDeviceFlag;
+static uint8_t ReadBuffer [DATA_OFFSET + DUMMY_SIZE + DATA_SIZE];
+static uint8_t WriteBuffer [DATA_OFFSET + DUMMY_SIZE];
+
+#endif /* CPUSTYLE_XC7Z && WIHSPIDFHW */
+
+static void readFlashID(uint8_t * buff, unsigned size)
+{
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+
+	/*
+	 * Read ID in Auto mode.
+	 */
+	WriteBuffer[COMMAND_OFFSET]   = READ_ID_CMD;
+	WriteBuffer[ADDRESS_1_OFFSET] = 0x00;		/* 3 dummy bytes */
+	WriteBuffer[ADDRESS_2_OFFSET] = 0x00;
+	WriteBuffer[ADDRESS_3_OFFSET] = 0x00;
+
+	memset(ReadBuffer, 0xD5, sizeof ReadBuffer);
+/*
+	 * Assert the FLASH chip select.
+	 */
+	XQSPIPS->CR &= ~ XQSPIPS_CR_SSCTRL_MASK;
+
+	XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer, 1 + size);
+
+	XQSPIPS->ER = 0;
+	/*
+	 * Unelect the slave
+	 */
+	XQSPIPS->CR |= XQSPIPS_CR_SSCTRL_MASK;
+
+	//printhex(0, ReadBuffer, 32);
+
+	QspiFlashMake = ReadBuffer [1];
+	memcpy(buff, & ReadBuffer [1], size);
+
+#else
+	spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
+	spidf_read(buff, size, SPDFIO_1WIRE);
+	spidf_unselect();	/* done sending data to target chip */
+#endif /* CPUSTYLE_XC7Z */
+}
+
 /* чтение параметра с требуемым индексом
  *
  */
 static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigned size)
 {
+	ASSERT(flashoffset < 256 && (flashoffset + size) <= 256);
+	//PRINTF("readSFDPDATAFLASH: flashoffset=%08lX\n", flashoffset);
 	// Read SFDP
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+
+	/*
+	 * Read SFDP in Auto mode.
+	 */
+	WriteBuffer[COMMAND_OFFSET]   = 0x5A;		// Read SFDP data */
+	WriteBuffer[ADDRESS_1_OFFSET] = (uint8_t) (flashoffset >> 16);	/* Unused */
+	WriteBuffer[ADDRESS_2_OFFSET] = (uint8_t) (flashoffset >> 8);	/* Unused */
+	WriteBuffer[ADDRESS_3_OFFSET] = (uint8_t) (flashoffset >> 0);
+	WriteBuffer[DUMMY_OFFSET] = 0x00;				/* 1 dummy byte */
+
+	memset(ReadBuffer, 0xE5, sizeof ReadBuffer);
+
+	/*
+	 * Assert the FLASH chip select.
+	 */
+	XQSPIPS->CR &= ~ XQSPIPS_CR_SSCTRL_MASK;
+
+	XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer, 8 + size);	// 5 is not enougs...
+
+	XQSPIPS->ER = 0;
+	/*
+	 * Unelect the slave
+	 */
+	XQSPIPS->CR |= XQSPIPS_CR_SSCTRL_MASK;
+
+	//printhex(0, ReadBuffer, 32);
+
+	memcpy(buff, & ReadBuffer [5], size);
+
+#else
 	spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
-	spidf_read(buff, size);
+	spidf_read(buff, size, SPDFIO_1WIRE);
 	spidf_unselect();	/* done sending data to target chip */
+#endif /* CPUSTYLE_XC7Z */
 }
 
 static int seekparamSFDPDATAFLASH(unsigned long * paramoffset, uint_fast8_t * paramlength, uint_fast8_t id, uint_fast8_t lastnum)
@@ -1677,10 +3197,10 @@ char nameDATAFLASH [64];
 
 int testchipDATAFLASH(void)
 {
-	unsigned char mf_id;	// Manufacturer ID
-	unsigned char mf_devid1;	// device ID (part 1)
-	unsigned char mf_devid2;	// device ID (part 2)
-	unsigned char mf_dlen;	// Extended Device Information String Length
+	unsigned mf_id;	// Manufacturer ID
+	unsigned mf_devid1;	// device ID (part 1)
+	unsigned mf_devid2;	// device ID (part 2)
+	unsigned mf_dlen;	// Extended Device Information String Length
 
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
@@ -1691,30 +3211,30 @@ int testchipDATAFLASH(void)
 		return 1;
 	}
 
-#if 1//WITHDEBUG
 	{
-
 		uint8_t mfa [4];
 
-		enum { SPDIF_IOSIZE = sizeof mfa };
-		spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read id register */
-		spidf_read(mfa, SPDIF_IOSIZE);
-		spidf_unselect();	/* done sending data to target chip */
+		readFlashID(mfa, sizeof mfa);
 
 		mf_id = mfa [0];
 		mf_devid1 = mfa [1];
-		mf_devid2 = mfa [02];
+		mf_devid2 = mfa [2];
 		mf_dlen = mfa [3];
 
 		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		readFlashID(mfa, sizeof mfa);
+		uint8_t buff8 [8];
+		readSFDPDATAFLASH(0x000000, buff8, 8);
+		readFlashID(mfa, sizeof mfa);
+		//uint8_t buff8 [8];
+		readSFDPDATAFLASH(0x000000, buff8, 8);
 	}
-#endif /* WITHDEBUG */
 
 
 	local_snprintf_P(nameDATAFLASH, ARRAY_SIZE(nameDATAFLASH),
 			PSTR("%s, SPIDF:%02X:%02X%02X:%02X"),
 			USBD_DFU_FLASHNAME,
-			(unsigned) (chipSize / 1024 / (1024 / 8)),
+			//(unsigned) (chipSize / 1024 / (1024 / 8)),
 			mf_id, mf_devid1, mf_devid2, mf_dlen
 			);
 
@@ -1723,10 +3243,10 @@ int testchipDATAFLASH(void)
 	uint8_t buff8 [8];
 	readSFDPDATAFLASH(0x000000, buff8, 8);
 
-	const uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
+	static const uint8_t signature [] = { 0x53, 0x46, 0x44, 0x50, };	// SFDP
 
 	//PRINTF(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
-	if (signature == 0x50444653)
+	if (memcmp(& buff8 [0], signature, 4) == 0)
 	{
 		// Serial Flash Discoverable Parameters (SFDP), for Serial NOR Flash
 		const uint_fast8_t lastparam = buff8 [6];
@@ -1778,8 +3298,8 @@ int testchipDATAFLASH(void)
 		sct [1] = (dword8 >> 16) & 0xFFFF;
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
-		//PRINTF("SFDP: opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
-		//PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		//PRINTF("SFDP: Sector Erase opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
+		//PRINTF("SFDP: Sector Erase size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
 		unsigned i;
 		unsigned sctRESULT = 0;
 		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
@@ -1794,13 +3314,17 @@ int testchipDATAFLASH(void)
 		{
 			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
 			sectorSize = 1uL << (sctRESULT & 0xFF);
-			//PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (sctRESULT >> 8) & 0xFF, 1uL << (sctRESULT & 0xFF));
+			//PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
 		}
 		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
+	}
+	else
+	{
+		PRINTF("SFDP signature not found\n");
 	}
 
 	local_snprintf_P(nameDATAFLASH, ARRAY_SIZE(nameDATAFLASH),
@@ -1835,7 +3359,7 @@ int prepareDATAFLASH(void)
 		uint8_t v = 0x00;	/* status register data */
 		// Write Status Register
 		spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
-		spidf_write(& v, 1);
+		spidf_write(& v, 1, SPDFIO_1WIRE);
 		spidf_unselect();	/* done sending data to target chip */
 	}
 
@@ -1888,7 +3412,7 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 	// start byte programm
 
 	spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset);		/* Page Program */
-	spidf_write(data, len);
+	spidf_write(data, len, SPDFIO_1WIRE);
 	spidf_unselect();	/* done sending data to target chip */
 
 	//PRINTF(PSTR( Prog to address %08lX %02X done\n"), flashoffset, len);
@@ -1916,21 +3440,32 @@ int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lon
 	return 0;
 }
 
-static void
+// Возвращает код ширниы шины для следующей операции обмена
+// SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static uint_fast8_t
 spdif_iostartread(unsigned long len, unsigned long flashoffset)
 {
 	if (0)
 		;
 #if WIHSPIDFHW4BIT
 	else if (readxb [SPDFIO_4WIRE] != 0x00)
+	{
 		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
+		return SPDFIO_4WIRE;
+	}
 #endif /* WIHSPIDFHW4BIT */
 #if WIHSPIDFHW2BIT
 	else if (readxb [SPDFIO_2WIRE] != 0x00)
+	{
 		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
+		return SPDFIO_2WIRE;
+	}
 #endif /* WIHSPIDFHW2BIT */
 	else
+	{
 		spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+		return SPDFIO_1WIRE;
+	}
 }
 
 int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
@@ -1945,8 +3480,8 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 		return 1;
 	}
 
-	spdif_iostartread(len, flashoffset);
-	err = spidf_verify(data, len);
+	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
+	err = spidf_verify(data, len, readnb);
 	spidf_unselect();	/* done sending data to target chip */
 
 	if (err)
@@ -1964,9 +3499,21 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 		return 1;
 	}
 
-	spdif_iostartread(len, flashoffset);
-	spidf_read(data, len);
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+
+	flashPrepareLqspiCR(0);
+	QspiAccess(flashoffset, data, len, 0);
+
+#else /* CPUSTYLE_XC7Z */
+
+//	TP();
+//	PRINTF("read operation\n");
+	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
+	spidf_read(data, len, readnb);
 	spidf_unselect();	/* done sending data to target chip */
+
+#endif /* CPUSTYLE_XC7Z */
+
 	//PRINTF("readDATAFLASH done\n");
 	return 0;
 }
@@ -1975,9 +3522,18 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
 {
 	spidf_initialize();
-	testchipDATAFLASH();	// устанока кодов опрерации для скоростныз режимов
+	testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 	readDATAFLASH(flashoffset, dest, Len);
 	spidf_uninitialize();
+}
+
+void bootloader_chiperase(void)
+{
+	spidf_initialize();
+	testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+	fullEraseDATAFLASH();
+	spidf_uninitialize();
+
 }
 
 #else /* WIHSPIDFHW || WIHSPIDFSW */
@@ -2014,3 +3570,568 @@ void spidf_hangoff(void)
 }
 
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
+
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+
+/******************************************************************************
+*
+* This function reads from the  serial FLASH connected to the
+* QSPI interface.
+*
+* @param	Address contains the address to read data from in the FLASH.
+* @param	ByteCount contains the number of bytes to read.
+*
+* @return	None.
+*
+* @note		None.
+*
+******************************************************************************/
+static void FlashRead(uint32_t Address, uint32_t ByteCount)
+{
+	/*
+	 * Setup the write command with the specified address and data for the
+	 * FLASH
+	 */
+	uint32_t LqspiCrReg;
+	uint8_t  ReadCommand;
+
+	LqspiCrReg = XQspiPs_GetLqspiConfigReg(QspiInstancePtr);
+	ReadCommand = (uint8_t) (LqspiCrReg & XQSPIPS_LQSPI_CR_INST_MASK);
+
+	WriteBuffer[COMMAND_OFFSET]   = ReadCommand;
+	WriteBuffer[ADDRESS_1_OFFSET] = (uint8_t)((Address & 0xFF0000) >> 16);
+	WriteBuffer[ADDRESS_2_OFFSET] = (uint8_t)((Address & 0xFF00) >> 8);
+	WriteBuffer[ADDRESS_3_OFFSET] = (uint8_t)(Address & 0xFF);
+
+	ByteCount += DUMMY_SIZE;
+
+	/*
+	 * Send the read command to the FLASH to read the specified number
+	 * of bytes from the FLASH, send the read command and address and
+	 * receive the specified number of bytes of data in the data buffer
+	 */
+	XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer,
+				ByteCount + OVERHEAD_SIZE);
+}
+
+/******************************************************************************/
+/**
+*
+* This function provides the QSPI FLASH interface for the Simplified header
+* functionality.
+*
+* @param	SourceAddress is address in FLASH data space
+* @param	DestinationAddress is address in DDR data space
+* @param	LengthBytes is the length of the data in Bytes
+*
+* @return
+*		- XST_SUCCESS if the write completes correctly
+*		- XST_FAILURE if the write fails to completes correctly
+*
+* @note	none.
+*
+****************************************************************************/
+static uint32_t QspiAccess( uint32_t SourceAddress, void * DestinationAddress, uint32_t LengthBytes, unsigned skipAnswer)
+{
+	uint8_t	*BufferPtr;
+	uint32_t Length = 0;
+	uint32_t BankSel = 0;
+	uint32_t Status;
+	uint8_t BankSwitchFlag = 1;
+
+	/*
+	 * Linear access check
+	 */
+	if (LinearBootDeviceFlag == 1) {
+		/*
+		 * Check for non-word tail, add bytes to cover the end
+		 */
+//		if ((LengthBytes%4) != 0){
+//			LengthBytes += (4 - (LengthBytes & 0x00000003));
+//		}
+
+		memcpy(DestinationAddress, (const void *) (SourceAddress + FlashReadBaseAddress), LengthBytes);
+	}
+	else
+	{
+		/*
+		 * Non Linear access
+		 */
+		BufferPtr = DestinationAddress;
+
+		/*
+		 * Dual parallel connection actual flash is half
+		 */
+		if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_PARALLEL_CONNECTION) {
+			SourceAddress = SourceAddress/2;
+		}
+
+		while (LengthBytes > 0)
+		{
+			/*
+			 * Local of DATA_SIZE size used for read/write buffer
+			 */
+			if(LengthBytes > DATA_SIZE) {
+				Length = DATA_SIZE;
+			} else {
+				Length = LengthBytes;
+			}
+
+			/*
+			 * Dual stack connection
+			 */
+			if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_STACK_CONNECTION) {
+				uint32_t LqspiCrReg;
+				/*
+				 * Get the current LQSPI configuration value
+				 */
+				LqspiCrReg = XQspiPs_GetLqspiConfigReg(QspiInstancePtr);
+
+				/*
+				 * Select lower or upper Flash based on sector address
+				 */
+				if (SourceAddress >= (QspiFlashSize / 2)) {
+					/*
+					 * Set selection to U_PAGE
+					 */
+//					XQspiPs_SetLqspiConfigReg(QspiInstancePtr,
+//							LqspiCrReg | XQSPIPS_LQSPI_CR_U_PAGE_MASK);
+					XQSPIPS->LQSPI_CR = LqspiCrReg | XQSPIPS_LQSPI_CR_U_PAGE_MASK;
+
+					/*
+					 * Subtract first flash size when accessing second flash
+					 */
+					SourceAddress = SourceAddress - (QspiFlashSize / 2);
+
+					//PRINTF( "stacked - upper CS \n\r");
+
+					/*
+					 * Assert the FLASH chip select.
+					 */
+					XQspiPs_SetSlaveSelect(QspiInstancePtr);
+				}
+			}
+
+			/*
+			 * Select bank
+			 */
+			if ((SourceAddress >= FLASH_SIZE_16MB) && (BankSwitchFlag == 1)) {
+				BankSel = SourceAddress/FLASH_SIZE_16MB;
+
+				PRINTF( "Bank Selection %lu\n\r", BankSel);
+
+				Status = SendBankSelect(BankSel);
+				if (Status != XST_SUCCESS) {
+					PRINTF( "Bank Selection Failed\n\r");
+					return XST_FAILURE;
+				}
+
+				BankSwitchFlag = 0;
+			}
+
+			/*
+			 * If data to be read spans beyond the current bank, then
+			 * calculate length in current bank else no change in length
+			 */
+			if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_PARALLEL_CONNECTION) {
+				/*
+				 * In dual parallel mode, check should be for half
+				 * the length.
+				 */
+				if((SourceAddress & BANKMASK) != ((SourceAddress + (Length/2)) & BANKMASK))
+				{
+					Length = (SourceAddress & BANKMASK) + FLASH_SIZE_16MB - SourceAddress;
+					/*
+					 * Above length calculated is for single flash
+					 * Length should be doubled since dual parallel
+					 */
+					Length = Length * 2;
+					BankSwitchFlag = 1;
+				}
+			} else {
+				if((SourceAddress & BANKMASK) != ((SourceAddress + Length) & BANKMASK))
+				{
+					Length = (SourceAddress & BANKMASK) + FLASH_SIZE_16MB - SourceAddress;
+					BankSwitchFlag = 1;
+				}
+			}
+
+			/*
+			 * Copying the image to local buffer
+			 */
+			FlashRead(SourceAddress, Length);	// XQspiPs_PolledTransfer inside
+
+			/*
+			 * Moving the data from local buffer to DDR destination address
+			 */
+			memcpy(BufferPtr, &ReadBuffer[DATA_OFFSET + DUMMY_SIZE], Length);
+
+			/*
+			 * Updated the variables
+			 */
+			LengthBytes -= Length;
+
+			/*
+			 * For Dual parallel connection address increment should be half
+			 */
+			if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_PARALLEL_CONNECTION) {
+				SourceAddress += Length/2;
+			} else {
+				SourceAddress += Length;
+			}
+
+			BufferPtr = (uint8_t*)((uint32_t)BufferPtr + Length);
+		}
+
+		/*
+		 * Reset Bank selection to zero
+		 */
+		Status = SendBankSelect(0);
+		if (Status != XST_SUCCESS) {
+			PRINTF( "Bank Selection Reset Failed\n\r");
+			return XST_FAILURE;
+		}
+
+		if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_STACK_CONNECTION) {
+			uint32_t LqspiCrReg;
+			/*
+			 * Get the current LQSPI configuration value
+			 */
+			LqspiCrReg = XQspiPs_GetLqspiConfigReg(QspiInstancePtr);
+
+			/*
+			 * Reset selection to L_PAGE
+			 */
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr,
+//					LqspiCrReg & (~XQSPIPS_LQSPI_CR_U_PAGE_MASK));
+			XQSPIPS->LQSPI_CR = LqspiCrReg & (~XQSPIPS_LQSPI_CR_U_PAGE_MASK);
+
+			//PRINTF( "stacked - lower CS \n\r");
+
+			/*
+			 * Assert the FLASH chip select.
+			 */
+			XQspiPs_SetSlaveSelect(QspiInstancePtr);
+		}
+	}
+
+	return XST_SUCCESS;
+}
+
+
+
+/******************************************************************************
+*
+* This functions selects the current bank
+*
+* @param	BankSel is the bank to be selected in the flash device(s).
+*
+* @return	XST_SUCCESS if bank selected
+*			XST_FAILURE if selection failed
+* @note		None.
+*
+******************************************************************************/
+static uint32_t SendBankSelect(uint8_t BankSel)
+{
+	uint32_t Status;
+
+	/*
+	 * bank select commands for Micron and Spansion are different
+	 * Macronix bank select is same as Micron
+	 */
+	if (QspiFlashMake == MICRON_ID || QspiFlashMake == MACRONIX_ID)	{
+		/*
+		 * For micron command WREN should be sent first
+		 * except for some specific feature set
+		 */
+		WriteBuffer[COMMAND_OFFSET] = WRITE_ENABLE_CMD;
+		Status = XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, NULL,
+				WRITE_ENABLE_CMD_SIZE);
+		if (Status != XST_SUCCESS) {
+			return XST_FAILURE;
+		}
+
+		/*
+		 * Send the Extended address register write command
+		 * written, no receive buffer required
+		 */
+		WriteBuffer[COMMAND_OFFSET]   = EXTADD_REG_WR;
+		WriteBuffer[ADDRESS_1_OFFSET] = BankSel;
+		Status = XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, NULL,
+				BANK_SEL_SIZE);
+		if (Status != XST_SUCCESS) {
+			return XST_FAILURE;
+		}
+	}
+
+	if (QspiFlashMake == SPANSION_ID) {
+		WriteBuffer[COMMAND_OFFSET]   = BANK_REG_WR;
+		WriteBuffer[ADDRESS_1_OFFSET] = BankSel;
+
+		/*
+		 * Send the Extended address register write command
+		 * written, no receive buffer required
+		 */
+		Status = XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, NULL,
+				BANK_SEL_SIZE);
+		if (Status != XST_SUCCESS) {
+			return XST_FAILURE;
+		}
+	}
+
+	/*
+	 * For testing - Read bank to verify
+	 */
+	if (QspiFlashMake == SPANSION_ID) {
+		WriteBuffer[COMMAND_OFFSET]   = BANK_REG_RD;
+		WriteBuffer[ADDRESS_1_OFFSET] = 0x00;
+
+		/*
+		 * Send the Extended address register write command
+		 * written, no receive buffer required
+		 */
+		Status = XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer,
+				BANK_SEL_SIZE);
+		if (Status != XST_SUCCESS) {
+			return XST_FAILURE;
+		}
+	}
+
+	if (QspiFlashMake == MICRON_ID || QspiFlashMake == MACRONIX_ID) {
+		WriteBuffer[COMMAND_OFFSET]   = EXTADD_REG_RD;
+		WriteBuffer[ADDRESS_1_OFFSET] = 0x00;
+
+		/*
+		 * Send the Extended address register write command
+		 * written, no receive buffer required
+		 */
+		Status = XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer,
+				BANK_SEL_SIZE);
+		if (Status != XST_SUCCESS) {
+			return XST_FAILURE;
+		}
+	}
+
+	if (ReadBuffer[1] != BankSel) {
+		PRINTF( "BankSel %d != Register Read %d\n\r", BankSel,
+				ReadBuffer[1]);
+		return XST_FAILURE;
+	}
+
+	return XST_SUCCESS;
+}
+
+static void flashPrepareLqspiCR(uint_fast8_t enableMmap)
+{
+	LinearBootDeviceFlag = 0;
+	if (XPAR_XQSPIPS_0_QSPI_MODE == SINGLE_FLASH_CONNECTION) {
+
+		//PRINTF("QSPI is in single flash connection\n");
+		/*
+		 * For Flash size <128Mbit controller configured in linear mode
+		 */
+		if (enableMmap && QspiFlashSize <= FLASH_SIZE_16MB) {
+			//uint32_t ConfigCmd;
+			LinearBootDeviceFlag = 1;
+
+			/*
+			 * Enable linear mode
+			 */
+			XQspiPs_SetOptions(QspiInstancePtr,  XQSPIPS_LQSPI_MODE_OPTION |
+					XQSPIPS_HOLD_B_DRIVE_OPTION);
+
+			/*
+			 * Single linear read
+			 */
+#if WIHSPIDFHW4BIT
+			//PRINTF("Linear QSPI is in 4-bit mode\n");
+			//ConfigCmd = SINGLE_QSPI_CONFIG_FAST_QUAD_READ;
+			//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_CONFIG_FAST_QUAD_READ;
+#elif WIHSPIDFHW2BIT
+			//PRINTF("Linear QSPI is in 2-bit mode\n");
+			//ConfigCmd = SINGLE_QSPI_CONFIG_FAST_DUAL_READ;
+			//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_CONFIG_FAST_DUAL_READ;
+#else
+			//PRINTF("Linear QSPI is in 1-bit mode\n");
+			//ConfigCmd = SINGLE_QSPI_CONFIG_FAST_READ;
+			//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_CONFIG_FAST_READ;
+#endif
+
+
+
+			/*
+			 * Enable the controller
+			 */
+			//XQspiPs_Enable(QspiInstancePtr);
+			XQSPIPS->ER = 0x00000001;
+		} else {
+			// No MMAP
+			/*
+			 * Single flash IO read
+			 */
+			//uint32_t ConfigCmd;
+
+#if WIHSPIDFHW4BIT
+			//PRINTF("QSPI is in 4-bit mode\n");
+			//ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ;
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ;
+#elif WIHSPIDFHW2BIT
+			//PRINTF("QSPI is in 2-bit mode\n");
+			//ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ;
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ;
+#else
+			//PRINTF("QSPI is in 1-bit mode\n");
+			//ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_READ;
+	//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_IO_CONFIG_FAST_READ;
+#endif
+
+			/*
+			 * Enable the controller
+			 */
+			//XQspiPs_Enable(QspiInstancePtr);
+			XQSPIPS->ER = 0x00000001;
+		}
+	} else if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_PARALLEL_CONNECTION) {
+		//uint32_t ConfigCmd;
+
+		//PRINTF("QSPI is in Dual Parallel connection\n");
+		/*
+		 * For Single Flash size <128Mbit controller configured in linear mode
+		 */
+		if (enableMmap && QspiFlashSize <= FLASH_SIZE_16MB) {
+			/*
+			 * Setting linear access flag
+			 */
+			LinearBootDeviceFlag = 1;
+
+			/*
+			 * Enable linear mode
+			 */
+			XQspiPs_SetOptions(QspiInstancePtr,  XQSPIPS_LQSPI_MODE_OPTION |
+					XQSPIPS_HOLD_B_DRIVE_OPTION);
+
+			/*
+			 * Dual linear read
+			 */
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, DUAL_QSPI_CONFIG_FAST_QUAD_READ);
+			XQSPIPS->LQSPI_CR = DUAL_QSPI_CONFIG_FAST_QUAD_READ;
+
+			/*
+			 * Enable the controller
+			 */
+			//XQspiPs_Enable(QspiInstancePtr);
+			XQSPIPS->ER = 0x00000001;
+		} else {
+			/*
+			 * Dual flash IO read
+			 */
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, DUAL_QSPI_IO_CONFIG_FAST_QUAD_READ);
+			XQSPIPS->LQSPI_CR = DUAL_QSPI_IO_CONFIG_FAST_QUAD_READ;
+
+			/*
+			 * Enable the controller
+			 */
+			//XQspiPs_Enable(QspiInstancePtr);
+			XQSPIPS->ER = 0x00000001;
+
+		}
+
+		/*
+		 * Total flash size is two time of single flash size
+		 */
+		QspiFlashSize = 2 * QspiFlashSize;
+
+	} else 	if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_STACK_CONNECTION) {
+		/*
+		 * It is expected to same flash size for both chip selection
+		 */
+		//uint32_t ConfigCmd;
+
+		//PRINTF("QSPI is in Dual Stack connection\n");
+
+		QspiFlashSize = 2 * QspiFlashSize;
+
+		/*
+		 * Enable two flash memories on separate buses
+		 */
+#if WIHSPIDFHW4BIT
+		//PRINTF("QSPI is in 4-bit mode\n");
+		//ConfigCmd =  DUAL_STACK_CONFIG_FAST_QUAD_READ;
+		//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+		XQSPIPS->LQSPI_CR = DUAL_STACK_CONFIG_FAST_QUAD_READ;
+#elif WIHSPIDFHW2BIT
+		//PRINTF("QSPI is in 2-bit mode\n");
+		//ConfigCmd =  DUAL_STACK_CONFIG_FAST_DUAL_READ;
+		//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+		XQSPIPS->LQSPI_CR = DUAL_STACK_CONFIG_FAST_DUAL_READ;
+#else
+		//PRINTF("QSPI is in 1-bit mode\n");
+		//ConfigCmd =  DUAL_STACK_CONFIG_FAST_READ;
+		//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+		XQSPIPS->LQSPI_CR = DUAL_STACK_CONFIG_FAST_READ;
+#endif
+	}
+}
+
+/******************************************************************************/
+/**
+*
+* This function initializes the controller for the QSPI interface.
+*
+* @param	None
+*
+* @return	None
+*
+* @note		None
+*
+****************************************************************************/
+static uint32_t InitQspi(void)
+{
+	XQspiPs_Config *QspiConfig;
+	int Status;
+
+
+	/*
+	 * Set up the base address for access
+	 */
+	FlashReadBaseAddress = XPS_QSPI_LINEAR_BASEADDR;
+
+	/*
+	 * Initialize the QSPI driver so that it's ready to use
+	 */
+	QspiConfig = XQspiPs_LookupConfig(QSPI_DEVICE_ID);
+	if (NULL == QspiConfig) {
+		return XST_FAILURE;
+	}
+
+	Status = XQspiPs_CfgInitialize(QspiInstancePtr, QspiConfig,
+					QspiConfig->BaseAddress);
+	if (Status != XST_SUCCESS) {
+		return XST_FAILURE;
+	}
+
+	/*
+	 * Set Manual Chip select options and drive HOLD_B pin high.
+	 */
+	XQspiPs_SetOptions(QspiInstancePtr, XQSPIPS_FORCE_SSELECT_OPTION |
+			XQSPIPS_HOLD_B_DRIVE_OPTION);
+
+	/*
+	 * Set the prescaler for QSPI clock
+	 */
+	XQspiPs_SetClkPrescaler(QspiInstancePtr, XQSPIPS_CLK_PRESCALE_8);
+
+
+	XQSPIPS->ER = 0;
+	ASSERT(XQSPIPS->CR & XQSPIPS_CR_SSCTRL_MASK);
+	return XST_SUCCESS;
+}
+
+#endif /* CPUSTYLE_XC7Z && WIHSPIDFHW */
+

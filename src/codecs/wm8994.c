@@ -22,6 +22,8 @@
 
 // Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
 #define WM8994_SPIMODE		SPIC_MODE3
+#define WM8994_SPISPEED		SPIC_SPEEDFAST
+
 #define WM8994_ADDRESS_W	0x34	// I2C address (на платеSTM32F746G-DISCO): 0x34
 
 // Условие использования оптимизированных функций обращения к SPI
@@ -52,9 +54,21 @@ static void wm8994_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPIEXT16
+	#if WITHSPILOWSUPPORTT
+		// Работа совместно с фоновым обменом SPI по прерываниям
+		const uint8_t txbuf [4] =
+		{
+			(regv >> 8) & 0x7F,
+			regv >> 0,
+			datav >> 8,
+			datav >> 0,
+		};
 
-		hardware_spi_connect_b16(SPIC_SPEEDFAST, WM8994_SPIMODE);
+		prog_spi_io(target, WM8994_SPISPEED, WM8994_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+
+	#elif WITHSPIEXT16
+
+		hardware_spi_connect_b16(WM8994_SPISPEED, WM8994_SPIMODE);
 		prog_select(target);	/* start sending data to target chip */
 		hardware_spi_b16_p1(regv & 0x7FFF);	// b15==0: write to register
 		hardware_spi_b16_p2(datav);
@@ -116,7 +130,7 @@ static void wm8994_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
-static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
 	// PGA codes:
 	// 0x3F: +6 dB
@@ -175,7 +189,7 @@ static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uin
 		wm8994_setreg(WM8994_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA volume control setting = 0.0dB
 		wm8994_setreg(WM8994_RIGHT_INP_PGA_GAIN, 0x40 | mikepgaval | 0x100);	// 0x40 = PGA in muted condition not connected to RADC Mix/Boost stage
 		// 
-		wm8994_setreg(WM8994_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikebust20db != 0));	// 0x100 - 20 dB boost ON
+		wm8994_setreg(WM8994_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikeboost20db != 0));	// 0x100 - 20 dB boost ON
 		wm8994_setreg(WM8994_RIGHT_ADC_BOOST_CONTROL, 0x000);	// RLINEIN disconnected, RAUXIN disconnected
 		//
 	}
@@ -618,6 +632,11 @@ static void wm8994_initialize_slave_fullduplex(void)
 }
 
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t wm8994_clocksneed(void)
+{
+	return 0;
+}
 
 const codec1if_t *
 board_getaudiocodecif(void)
@@ -628,6 +647,7 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
+		wm8994_clocksneed,
 		wm8994_stop,
 		wm8994_initialize_slave_fullduplex,
 		wm8994_setvolume,		/* Установка громкости на наушники */

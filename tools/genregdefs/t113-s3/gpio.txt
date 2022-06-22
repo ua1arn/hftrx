@@ -1,0 +1,15 @@
+CFG
+0x000 4
+Configure Register
+DATA
+0x0010
+Data Register
+DRV
+0x014 4
+Multi_Driving Register
+PULL
+0x024 2
+Pull Register
+padding
+0x02C
+Need for address arithmetics

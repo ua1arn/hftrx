@@ -11,12 +11,23 @@
 #define DS1307_ADDRESS_W	0xD0
 #define DS1307_ADDRESS_R	0xD1
 
+#if WITHTWIHW
+static void ds1307_set_reg(uint8_t reg)
+{
+	i2chw_write(DS1307_ADDRESS_W, & reg, 1);
+}
+#endif /* WITHTWIHW */
+
 static void ds1307_readbuff(
-	uint_fast8_t * b,
+	uint8_t * b,
 	uint_fast8_t n,
 	uint_fast8_t r
 	)
 {
+#if WITHTWIHW
+	ds1307_set_reg(r);
+	i2chw_read(DS1307_ADDRESS_W, b, n);
+#elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write_withrestart(r);	// register address
 	//i2c_write(r);
@@ -33,20 +44,26 @@ static void ds1307_readbuff(
 			i2c_read(b ++, I2C_READ_ACK);
 		i2c_read(b ++, I2C_READ_NACK);
 	}
+#endif /* WITHTWIHW */
 }
 
 static void ds1307_writebuff(
-	const uint_fast8_t * b,
+	uint8_t * b,
 	uint_fast8_t n,
 	uint_fast8_t r		// Addr
 	)
 {
+#if WITHTWIHW
+	ds1307_set_reg(r);
+	i2chw_write(DS1307_ADDRESS_W, b, n);
+#elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(r);	// register address
 	while (n --)
 		i2c_write(* b ++);
 	i2c_waitsend();
 	i2c_stop();
+#endif /* WITHTWIHW */
 }
 
 // input value 0x00..0x99, return value 0..99
@@ -69,6 +86,14 @@ void board_rtc_settime(
 	uint_fast8_t secounds
 	)
 {
+#if WITHTWIHW
+	uint8_t buf[4];
+	buf [0] = 0;
+	buf [1] = ds1307_bin2bcd(secounds);
+	buf [2] = ds1307_bin2bcd(minutes);
+	buf [3] = ds1307_bin2bcd(hours);
+	i2chw_write(DS1307_ADDRESS_W, buf, 4);
+#elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x00);	// register address
 	i2c_write(ds1307_bin2bcd(secounds));
@@ -76,6 +101,7 @@ void board_rtc_settime(
 	i2c_write(ds1307_bin2bcd(hours));
 	i2c_waitsend();
 	i2c_stop();
+#endif /* WITHTWIHW */
 }
 
 void board_rtc_setdatetime(
@@ -87,6 +113,18 @@ void board_rtc_setdatetime(
 	uint_fast8_t secounds
 	)
 {
+#if WITHTWIHW
+	uint8_t buf[8];
+	buf [0] = 0;
+	buf [1] = ds1307_bin2bcd(secounds);
+	buf [2] = ds1307_bin2bcd(minutes);
+	buf [3] = ds1307_bin2bcd(hours);
+	buf [4] = 0x02;
+	buf [5] = ds1307_bin2bcd(dayofmonth);
+	buf [6] = ds1307_bin2bcd(month);
+	buf [7] = ds1307_bin2bcd(year % 100);
+	i2chw_write(DS1307_ADDRESS_W, buf, 8);
+#elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x00);	// register address
 	i2c_write(ds1307_bin2bcd(secounds));	// 0
@@ -98,6 +136,7 @@ void board_rtc_setdatetime(
 	i2c_write(ds1307_bin2bcd(year % 100));	// 6 year
 	i2c_waitsend();
 	i2c_stop();
+#endif /* WITHTWIHW */
 }
 
 
@@ -107,6 +146,14 @@ void board_rtc_setdate(
 	uint_fast8_t dayofmonth
 	)
 {
+#if WITHTWIHW
+	uint8_t buf[4];
+	buf [0] = 0x04;
+	buf [1] = ds1307_bin2bcd(dayofmonth);
+	buf [2] = ds1307_bin2bcd(month);
+	buf [3] = ds1307_bin2bcd(year % 100);
+	i2chw_write(DS1307_ADDRESS_W, buf, 4);
+#elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x04);	// register address
 	i2c_write(ds1307_bin2bcd(dayofmonth));
@@ -114,6 +161,7 @@ void board_rtc_setdate(
 	i2c_write(ds1307_bin2bcd(year % 100));
 	i2c_waitsend();
 	i2c_stop();
+#endif /* WITHTWIHW */
 }
 
 void board_rtc_getdate(
@@ -123,7 +171,7 @@ void board_rtc_getdate(
 	)
 {
 	const uint_fast8_t r = 0x04;	// Addr
-	uint_fast8_t b [3];
+	uint8_t b [3];
 
 	ds1307_readbuff(b, sizeof b / sizeof b [0], r);
 
@@ -139,7 +187,7 @@ void board_rtc_gettime(
 	)
 {
 	const uint_fast8_t r = 0x00;	// Addr
-	uint_fast8_t b [3];
+	uint8_t b [3];
 
 	ds1307_readbuff(b, sizeof b / sizeof b [0], r);
 
@@ -158,7 +206,7 @@ void board_rtc_getdatetime(
 	)
 {
 	const uint_fast8_t r = 0x00;
-	uint_fast8_t b [7];
+	uint8_t b [7];
 
 	ds1307_readbuff(b, sizeof b / sizeof b [0], r);
 
@@ -173,6 +221,16 @@ void board_rtc_getdatetime(
 /* возврат не-0 если требуется начальная загрузка значений */
 uint_fast8_t board_rtc_chip_initialize(void)
 {
+#if WITHTWIHW
+	uint8_t buf[2] = { 0x0E, 0x00 };
+	int status = i2chw_write(DS1307_ADDRESS_W, buf, 2);
+	if (status)
+	{
+		PRINTF("rtc DS1307 initialize fail: %d\n", status);
+		return 1;
+	}
+	return 0;
+#elif WITHTWISW
 	//uint_fast8_t isec;
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x0E); // r=14 DS3231
@@ -180,6 +238,7 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	i2c_stop();
 		
 	return 0;
+#endif /* WITHTWIHW */
 }
 
 #endif /* M41T81_H_INCLUDED */

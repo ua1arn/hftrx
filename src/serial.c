@@ -290,6 +290,63 @@ void nmea_disconnect(void)
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_XCZU
 
 
+#elif CPUSTYPE_ALLWNT113
+
+	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
+	{
+	#if WITHUART1HW
+		const uint_fast32_t ier = UART0->DLH_IER;
+		const uint_fast32_t usr = UART0->UART_USR;
+		if ((UART0->UART_USR & (0x1uL << 3)) == 0)	// RX FIFO Not Empty
+
+		if (ier & (0x01uL << 0))	// ERBFI Enable Received Data Available Interrupt
+		{
+			if (usr & (0x1uL << 3))	// RX FIFO Not Empty
+				HARDWARE_UART1_ONRXCHAR(UART0->DATA);
+		}
+		if (ier & (0x01uL << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		{
+			if (usr & (0x1uL << 1))	// TX FIFO Not Full
+				HARDWARE_UART1_ONTXCHAR(UART0);
+		}
+	#endif /* WITHUART1HW */
+	}
+
+	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
+	{
+	#if WITHUART2HW
+		TP();
+	#endif /* WITHUART2HW */
+	}
+
+	static RAMFUNC_NONILINE void UART2_IRQHandler(void)
+	{
+	#if WITHUART3HW
+		TP();
+	#endif /* WITHUART3HW */
+	}
+
+	static RAMFUNC_NONILINE void UART3_IRQHandler(void)
+	{
+	#if WITHUART4HW
+		TP();
+	#endif /* WITHUART4HW */
+	}
+
+	static RAMFUNC_NONILINE void UART4_IRQHandler(void)
+	{
+	#if WITHUART5HW
+		TP();
+	#endif /* WITHUART5HW */
+	}
+
+	static RAMFUNC_NONILINE void UART5_IRQHandler(void)
+	{
+	#if WITHUART6HW
+		TP();
+	#endif /* WITHUART6HW */
+	}
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -434,6 +491,13 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 //		 UART0->CR &= ~ SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
 //
 
+#elif CPUSTYPE_ALLWNT113
+
+	if (state)
+		 UART0->DLH_IER |= (0x01uL << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	else
+		 UART0->DLH_IER &= ~ (0x01uL << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -557,6 +621,14 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 //	else
 //		 UART0->CR &= ~ SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
 //
+
+#elif CPUSTYPE_ALLWNT113
+
+	if (state)
+		 UART0->DLH_IER |= (0x01uL << 0);	// ERBFI Enable Received Data Available Interrupt
+	else
+		 UART0->DLH_IER &= ~ (0x01uL << 0);	// ERBFI Enable Received Data Available Interrupt
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -624,6 +696,10 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	UART0->FIFO = c;
+
+#elif CPUSTYPE_ALLWNT113
+
+	UART0->DATA = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -731,6 +807,12 @@ hardware_uart1_getchar(char * cp)
 		return 0;
 	* cp = UART0->FIFO;
 
+#elif CPUSTYPE_ALLWNT113
+
+	if ((UART0->UART_USR & (0x1uL << 3)) == 0)	// RX FIFO Not Empty
+		return 0;
+	* cp = UART0->DATA;
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -831,6 +913,12 @@ hardware_uart1_putchar(uint_fast8_t c)
 	if ((UART0->SR & XUARTPS_SR_TNFUL) != 0)
 		return 0;
 	UART0->FIFO = c;
+
+#elif CPUSTYPE_ALLWNT113
+
+	if ((UART0->UART_USR & (0x1uL << 1)) == 0)	// TX FIFO Not Full
+		return 0;
+	UART0->DATA = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1212,7 +1300,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	SCLR->APER_CLK_CTRL |= (0x01uL << 20);	// APER_CLK_CTRL.UART0_CPU_1XCLKACT
 	//EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
 	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
-			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR << 8) | // DIVISOR
+			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR_VALUE << 8) | // DIVISOR
 			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
 			(0x01) |	// CLKACT0 - UART 0 reference clock active
 			0;
@@ -1237,7 +1325,38 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	UART0->CR = r;
 
+	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
+
+#elif CPUSTYPE_ALLWNT113
+	const unsigned ix = 0;
+
+	/* Open the clock gate for uart0 */
+	CCU->UART_BGR_REG |= (0x01uL << (ix + 0));
+
+	/* Deassert uart0 reset */
+	CCU->UART_BGR_REG |= (0x01uL << (ix + 16));
+
+	/* Config uart0 to 115200-8-1-0 */
+	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
+
+	UART0->DLH_IER = 0;
+	UART0->IIR_FCR = 0xf7;
+	UART0->UART_MCR = 0x00;
+
+	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
+	UART0->DATA = divisor & 0xff;
+	UART0->DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
+	//
+	UART0->UART_LCR &= ~ 0x1f;
+	UART0->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
+
 	HARDWARE_UART1_INITIALIZE();
+
+	if (debug == 0)
+	{
+	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
+	}
 
 #else
 
@@ -2357,7 +2476,7 @@ xxxx!;
 	SCLR->APER_CLK_CTRL |= (0x01uL << 21);	// APER_CLK_CTRL.UART1_CPU_1XCLKACT
 	//EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
 	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
-			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR << 8) | // DIVISOR
+			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR_VALUE << 8) | // DIVISOR
 			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
 			(0x02) |	// CLKACT1 - UART 1 reference clock active
 			0;

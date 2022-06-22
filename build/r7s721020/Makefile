@@ -19,7 +19,7 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-UADEFS += -D"WITHSMPSYSTEM"
+#UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
 OBJDIR = obj
@@ -146,7 +146,9 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
-ASRC += $(PRJROOT)/src/crt_CortexA.S
+#ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
+ASRC_APP += $(PRJROOT)/src/crt_CortexA.S
+ASRC_BOOT += $(ASRC_APP)
 
 VPATH = $(PRJROOT)
 
@@ -160,11 +162,12 @@ LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
 
-OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
+OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_APP))
+OBJSA_BOOT 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_BOOT))
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
 
-OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
+OBJS = $(OBJSC) $(OBJSCPP)
 
 LIBS    = $(DLIBS) $(ULIBS)
 
@@ -237,16 +240,16 @@ $(OBJSCPP):
 	@mkdir -p $(@D)
 	$(GPP) -o $@ -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
 
-$(OBJSA):
+$(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS)
-	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
+%_boot.elf: $(OBJS) $(OBJSA_BOOT)
+	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS)
-	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
+%_app.elf: $(OBJS) $(OBJSA_APP)
+	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
 %hex: %elf

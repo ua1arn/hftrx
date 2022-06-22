@@ -38,17 +38,9 @@ void close_all_windows(void);
 uint_fast8_t check_for_parent_window(void);
 
 static btn_bg_t btn_bg [] = {
-#if WITHGUISTYLE_COMMON
+	{ 130, 35, },
 	{ 100, 44, },
 	{ 86, 44, },
-	{ 50, 50, },
-	{ 40, 40, },
-#elif WITHGUISTYLE_MINI
-	{ 94, 30, },
-	{ 86, 44, },
-	{ 50, 50, },
-	{ 30, 30, },
-#endif
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
@@ -674,13 +666,9 @@ void open_window(window_t * win)
 /* при mode = WINDOW_POSITION_MANUAL_SIZE в качестве необязательных параметров передать xmax и ymax */
 void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 {
-	uint_fast8_t title_length = strlen(win->name) * SMALLCHARW;
+	uint_fast16_t title_length = strlen(win->title) * SMALLCHARW;
 	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
-
-#if WITHGUISTYLE_MINI
-	// Для разрешения 480х272 окна всегда полноэкранные
-	mode = WINDOW_POSITION_FULLSCREEN;
-#endif
+	win->size_mode = mode;
 
 	switch (mode)
 	{
@@ -702,6 +690,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			y_start = va_arg(arg, uint_fast16_t);
 			va_end(arg);
 		}
+		// no break
 
 	case WINDOW_POSITION_FULLSCREEN:
 	case WINDOW_POSITION_AUTO:
@@ -770,17 +759,8 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	}
 
 	// Выравнивание массива оконных элементов по центру окна
-
-	if (mode == WINDOW_POSITION_FULLSCREEN)
-	{
-		shift_x = (win->w - xmax) / 2;
-		shift_y = (win->h - ymax) / 2 + (strcmp(win->name, "") ? window_title_height : 0);
-	}
-	else
-	{
-		shift_x = edge_step;
-		shift_y = (strcmp(win->name, "") ? window_title_height : 0) + edge_step;
-	}
+	shift_x = edge_step;
+	shift_y = (title_length ? window_title_height : 0) + edge_step;
 
 	if (win->bh_ptr != NULL)
 	{
@@ -838,7 +818,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		win->x1 = 0;
 		win->y1 = 0;
 		win->w = WITHGUIMAXX;
-		win->h = WITHGUIMAXY - h - (strcmp(win->name, "") ? window_title_height : 0);
+		win->h = WITHGUIMAXY - FOOTER_HEIGHT;
 	}
 	else if (mode == WINDOW_POSITION_MANUAL_POSITION)
 	{
@@ -886,12 +866,20 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	}
 
 	win->draw_x1 = win->x1 + edge_step;
-	win->draw_y1 = win->y1 + edge_step + (strcmp(win->name, "") ? window_title_height : 0);
+	win->draw_y1 = win->y1 + edge_step + (title_length ? window_title_height : 0);
 	win->draw_x2 = win->x1 + win->w - edge_step;
 	win->draw_y2 = win->y1 + win->h - edge_step;
 
+	win->title_align = TITLE_ALIGNMENT_LEFT;
+
 	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
 	elements_state(win);
+}
+
+void window_set_title_align(window_t * win, title_align_t align)
+{
+	ASSERT(win != NULL);
+	win->title_align = align;
 }
 
 /* Передать менеджеру GUI код нажатой кнопки на клавиатуре */
@@ -1301,20 +1289,75 @@ static void slider_process(slider_t * sl)
 /* Рассчитать размеры текстового поля */
 void textfield_update_size(text_field_t * tf)
 {
-	tf->w = SMALLCHARW2 * tf->w_sim;
-	tf->h = SMALLCHARH2 * tf->h_str;
+	ASSERT(tf != NULL);
+	tf->w = tf->font->width * tf->w_sim;
+	tf->h = tf->font->height * tf->h_str;
 	ASSERT(tf->w < WITHGUIMAXX);
 	ASSERT(tf->h < WITHGUIMAXY - window_title_height);
 }
 
 /* Добавить строку в текстовое поле */
-void textfield_add_string(text_field_t * tf, char * str, COLORMAIN_T color)
+void textfield_add_string(text_field_t * tf, const char * str, COLORMAIN_T color)
 {
-	ASSERT(strlen(str) < TEXT_ARRAY_SIZE);
-	strcpy(tf->record [tf->index].text, str);
+	ASSERT(tf != NULL);
+
+	size_t len = strlen(str);
+	len = len > TEXT_ARRAY_SIZE ? TEXT_ARRAY_SIZE : len;
+
+	if (len > tf->w_sim)
+	{
+		PRINTF("text field '%s': string length exceeded, %s\n", tf->name, str);
+		len = tf->w_sim;
+	}
+
+	memset(tf->record [tf->index].text, 0, tf->w_sim * sizeof(char));
+	strncpy(tf->record [tf->index].text, str, len);
 	tf->record [tf->index].color_line = color;
 	tf->index ++;
 	tf->index = tf->index >= tf->h_str ? 0 : tf->index;
+}
+
+/* Очистить текстовое поле */
+void textfield_clean(text_field_t * tf)
+{
+	ASSERT(tf != NULL);
+	tf->index = 0;
+	memset(tf->record, 0, tf->h_str * sizeof(record_t));
+}
+
+/* Установить параметр метки */
+void label_set_param(window_t * win, const char * lbl_name, label_parameters p, ...)
+{
+	va_list arg;
+
+	label_t * lbl = find_gui_element(TYPE_LABEL, win, lbl_name);
+
+	switch (p)
+	{
+	case P_LBL_VISIBLE:
+	{
+		va_start(arg, p);
+		uint_fast8_t val = va_arg(arg, uint_fast8_t);
+		lbl->visible = val != 0;
+		va_end(arg);
+		break;
+	}
+
+	case P_LBL_TEXT:
+	{
+		va_start(arg, p);
+		char * str = va_arg(arg, char *);
+		size_t len = strlen(str);
+		len = len > TEXT_ARRAY_SIZE ? TEXT_ARRAY_SIZE : len; // в будущем будет добавлен параметр максимальной длины метки
+		memset(lbl->text, 0, TEXT_ARRAY_SIZE);
+		strncpy(lbl->text, str, len);
+		va_end(arg);
+		break;
+	}
+
+	default:
+		break;
+	}
 }
 
 /* Селектор запуска функций обработки событий */
@@ -1388,6 +1431,9 @@ static void set_state_record(gui_element_t * val)
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING))
 					dump_queue(val->win);
 			}
+			break;
+
+		case TYPE_TEXT_FIELD:
 			break;
 
 		default:
@@ -1587,9 +1633,9 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 				{
 					ASSERT(win->w > 0 || win->h > 0);
 #if GUI_TRANSPARENT_WINDOWS
-					display_transparency(win->x1, strcmp(win->name, "") ? (win->y1 + window_title_height) : win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
+					display_transparency(win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) : win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
 #else
-					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, strcmp(win->name, "") ? (win->y1 + window_title_height) : win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
+					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) : win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
 #endif /* GUI_TRANSPARENT_WINDOWS */
 				}
 			}
@@ -1600,10 +1646,41 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 			if (! f)
 			{
 				// вывод заголовка окна
-				if (strcmp(win->name, ""))
+				if (strcmp(win->title, ""))
 				{
+					uint16_t title_lenght = strlen(win->title) * SMALLCHARW;
+					uint16_t xt = 0;
+
+					switch(win->title_align)
+					{
+					case TITLE_ALIGNMENT_LEFT:
+
+						xt = win->x1 + window_title_indent;
+
+						break;
+
+					case TITLE_ALIGNMENT_RIGHT:
+
+						xt = win->x1 + win->w - title_lenght - window_title_indent - (win->is_close ? window_close_button_size : 0);
+
+						break;
+
+					case TITLE_ALIGNMENT_CENTER:
+
+						xt = win->x1 + win->w / 2 - title_lenght / 2;
+
+						break;
+
+					default:
+
+						PRINTF("alignment value %d incorrect for window %s\n", win->title_align, win->title);
+						ASSERT(0);
+
+						break;
+					}
+
 					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR);
-					colpip_string_tbg(fr, DIM_X, DIM_Y, win->x1 + window_title_indent, win->y1 + 5, win->name, COLORMAIN_BLACK);
+					colpip_string_tbg(fr, DIM_X, DIM_Y, xt, win->y1 + 5, win->title, COLORMAIN_BLACK);
 				}
 
 				// отрисовка принадлежащих окну элементов
@@ -1655,10 +1732,10 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 							for (uint8_t i = 0; i < tf->h_str; i ++)
 							{
 								j = j < 0 ? (tf->h_str - 1) : j;
-								colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * i,
-										tf->record[j].text, tf->record[j].color_line);
-//								UB_Font_DrawString(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * i,
-//										tf->record[j].text, tf->font, tf->record[j].color_line);
+//								colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * i,
+//										tf->record[j].text, tf->record[j].color_line);
+								UB_Font_DrawString(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * i,
+										tf->record[j].text, tf->font, tf->record[j].color_line);
 								j --;
 							}
 						}
@@ -1699,6 +1776,7 @@ uint_fast16_t gui_get_window_draw_height(window_t * win)
 	return win->draw_y2 - win->draw_y1;
 }
 
+// Нарисовать линию в границах окна
 void gui_drawline(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
@@ -1713,8 +1791,38 @@ void gui_drawline(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast1
 	ASSERT(yn < win->draw_y2);
 	ASSERT(yk < win->draw_y2);
 
-	colmain_line(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, 0);
+	colmain_line(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, 1);
 }
 
+void gui_drawrect(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color, uint_fast8_t fill)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	const uint_fast16_t xn = x1 + win->draw_x1;
+	const uint_fast16_t yn = y1 + win->draw_y1;
+	const uint_fast16_t xk = x2 + win->draw_x1;
+	const uint_fast16_t yk = y2 + win->draw_y1;
+
+	ASSERT(xn < win->draw_x2);
+	ASSERT(xk < win->draw_x2);
+	ASSERT(yn < win->draw_y2);
+	ASSERT(yk < win->draw_y2);
+
+	colpip_rect(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, fill);
+}
+
+void gui_drawpoint(window_t * win, uint_fast16_t x1, uint_fast16_t y1, COLORMAIN_T color)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	const uint_fast16_t xp = x1 + win->draw_x1;
+	const uint_fast16_t yp = y1 + win->draw_y1;
+
+
+	ASSERT(xp < win->draw_x2);
+	ASSERT(xp < win->draw_x2);
+
+	colpip_point(fr, DIM_X, DIM_Y, xp, yp, color);
+}
 
 #endif /* WITHTOUCHGUI */
