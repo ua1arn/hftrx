@@ -3875,9 +3875,10 @@ static unsigned long local_random(unsigned long num)
 // return audio sample in range [- 1.. + 1]
 static RAMFUNC FLOAT_t preparevi(
 	FLOAT_t vi0f,
-	FLOAT_t viusb0f,
+	FLOAT32P_t viusb0f,
 	uint_fast8_t dspmode,
-	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
+	FLOAT_t ctcss,	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
+	FLOAT32P_t * moni
 	)
 {
 	//FLOAT_t vi0f = vi0;
@@ -3889,18 +3890,19 @@ static RAMFUNC FLOAT_t preparevi(
 #endif /* WITHFT8 */
 
 #if WITHTXCPATHCALIBRATE
-	savemonistereo(0, 0);
 	return (FLOAT_t) glob_designscale / 100;
 #endif /* WITHTXCPATHCALIBRATE */
 
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
-		savemonistereo(0, 0);
+		moni->IV = 0;
+		moni->QV = 0;
 		return 0;	//txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
-		savemonistereo(0, 0);
+		moni->IV = 0;
+		moni->QV = 0;
 		return txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_DIGI:
@@ -3918,7 +3920,8 @@ static RAMFUNC FLOAT_t preparevi(
 			// источник - микрофон
 			// дополнительно работает ограничитель.
 			// see glob_mik1level (0..100)
-			savemonistereo(vi0f, vi0f);
+			moni->IV = vi0f;
+			moni->QV = vi0f;
 			return injectsubtone(
 					txmikereverb(
 							txmikeagc(vi0f * txlevelXXX)
@@ -3928,36 +3931,41 @@ static RAMFUNC FLOAT_t preparevi(
 		case BOARD_TXAUDIO_USB:
 			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
-			savemonistereo(viusb0f, viusb0f);
-			return injectsubtone(viusb0f * txlevelXXX, ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			* moni = viusb0f;
+			return injectsubtone(viusb0f.IV * txlevelXXX, ctcss); //* TXINSCALE; // источник сигнала - микрофон
 #endif /* WITHUSBUACOUT */
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
 			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			savemonistereo(0, 0);
+			moni->IV = 0;
+			moni->QV = 0;
 			return injectsubtone((int) (local_random(2 * txlevelfenceXXX_INTEGER - 1) - txlevelfenceXXX_INTEGER), ctcss);	// шум
 
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			savemonistereo(0, 0);
+			moni->IV = 0;
+			moni->QV = 0;
 			return injectsubtone(get_dualtonefloat() * txlevelXXX, ctcss);		// источник сигнала - двухтональный генератор для настройки
 
 		case BOARD_TXAUDIO_1TONE:
 			// источник - синусоидальный сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			savemonistereo(0, 0);
+			moni->IV = 0;
+			moni->QV = 0;
 			return injectsubtone(get_singletonefloat() * txlevelXXX, ctcss);
 
 		case BOARD_TXAUDIO_MUTE:
-			savemonistereo(0, 0);
+			moni->IV = 0;
+			moni->QV = 0;
 			return injectsubtone(0, ctcss);
 		}
 	}
 	// В режиме приёма или bypass ничего не делаем.
-	savemonistereo(0, 0);
+	moni->IV = 0;
+	moni->QV = 0;
 	return 0;
 }
 
@@ -4030,11 +4038,12 @@ static RAMFUNC void processafadcsampleiq(
 	FLOAT32P_t viusb0,	// выборка с USB (в vi)
 	uint_fast8_t dspmode,
 	FLOAT_t shape,	// 0..1 - огибающая
-	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
+	FLOAT_t ctcss,	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
+	FLOAT32P_t * moni
 	)
 {
 	// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-	FLOAT_t vi = preparevi(vi0.IV, viusb0.IV, dspmode, ctcss);	// vi нормирован к разрядности выходного ЦАП
+	FLOAT_t vi = preparevi(vi0.IV, viusb0, dspmode, ctcss, moni);	// vi нормирован к разрядности выходного ЦАП
 	if (isdspmodetx(dspmode))
 	{
 #if WITHMODEM
@@ -4049,7 +4058,8 @@ static RAMFUNC void processafadcsampleiq(
 	#endif /* WITHMODEMIQLOOPBACK */
 			const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
 			savesampleout32stereo(adpt_output(& ifcodecout, vv), adpt_output(& ifcodecout, vv));	// Запись в поток к передатчику I/Q значений.
-			savemonistereo(0, 0);
+			moni->VI = 0;
+			moni->QI = 0;
 			return;
 		}
 #endif /* WITHMODEM */
@@ -5482,6 +5492,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		const FLOAT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		const FLOAT32P_t viusb = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
 		const FLOAT_t shape = shapeCWEnvelopStep() * scaleDAC;	// 0..1
+		FLOAT32P_t moni;
 	#endif /* ! WITHTRANSPARENTIQ */
 
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
@@ -5494,11 +5505,12 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 #if WITHUSBAUDIOSAI1
 		//processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
-		savesampleout32stereo(adpt_output(& ifcodecout, vi.IV), adpt_output(& ifcodecout, vi.QV));	// Запись в поток к передатчику I/Q значений.
+		savemonistereo(moni.IV, moni.QV);
+		savesampleout32stereo(adpt_output(& ifcodecout, viusb.IV), adpt_output(& ifcodecout, viusb.QV));	// Запись в поток к передатчику I/Q значений.
 		//const INT32P_t dual = vi;
 		//const INT32P_t dual = { { get_lout(), get_rout() } }; // vi;
-		savesampleout32stereo(adpt_output(& ifcodecout, dual.IV), adpt_output(& ifcodecout, dual.QV));	// Запись в поток к передатчику I/Q значений.
-//		recordsampleUAC(dual.IV, dual.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+		savesampleout32stereo(adpt_output(& ifcodecout, viusb.IV), adpt_output(& ifcodecout, viusb.QV));	// Запись в поток к передатчику I/Q значений.
+//		recordsampleUAC(viusb.IV, viusb.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		recordsampleUAC(
 			adpt_input(& ifcodecout, buff [i + DMABUF32RXI] * rxgate),
 			adpt_input(& ifcodecout, buff [i + DMABUF32RXQ] * rxgate)
@@ -5555,6 +5567,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		dual.IV = get_lout();
 		dual.QV = 0;
 		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		savemonistereo(moni.IV, moni.QV);
 		// Тестирование распознавания DTMF
 		if (dtmfbi < DTMF_STEPS)
 		{
@@ -5579,18 +5592,21 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 	#if 0
 		// Тестирование (самопрослушивание) того, что идет с микрофона
 		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		savemonistereo(moni.IV, moni.QV);
 		save16demod(vi.IV, vi.QV);
 
 	#elif WITHLOOPBACKTEST
 
 		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
 		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		savemonistereo(moni.IV, moni.QV);
 		//
 		// Тестирование источников и потребителей звука
 		save16demod(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
 		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		savemonistereo(moni.IV, moni.QV);
 		/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 
 		save16demod(vi.IV, vi.QV);		// данные игнорируются
@@ -5600,7 +5616,8 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#elif WITHUSEDUALWATCH
 
-		processafadcsampleiq(vi, viusb, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		savemonistereo(moni.IV, moni.QV);
 		//
 		// Двухканальный приёмник
 
