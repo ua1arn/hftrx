@@ -1026,7 +1026,7 @@ static RAMFUNC void buffers_tomodulators16rx(voice16rx_t * p)
 	SPIN_UNLOCK(& locklist16rx);
 }
 
-// Сохранить звук от АЦП пикрофона
+// Сохранить звук от АЦП пикрофона - поместить в voicesmike16rx
 static RAMFUNC void buffers_savefrommikeadc(voice16rx_t * p)
 {
 	ASSERT(p->tag2 == p);
@@ -1037,7 +1037,7 @@ static RAMFUNC void buffers_savefrommikeadc(voice16rx_t * p)
 #endif /* WITHBUFFERSDEBUG */
 
 	if (uacoutmike == 0)
-		buffers_tomodulators16rx(p);
+		buffers_tomodulators16rx(p);	// поместить в voicesmike16rx
 	else
 		buffers_tonull16rx(p);
 
@@ -1399,7 +1399,9 @@ buffers_savetouacin(uacin16_t * p)
 
 #if WITHUSBUAC
 
+// получает массив сэмплов
 // возвращает количество полученых сэмплов
+// Выборка из очереди resample16rx
 static RAMFUNC unsigned getsamplemsuacout(
 	aubufv_t * buff,	// текущая позиция в целевом буфере
 	unsigned size		// количество оставшихся одиночных сэмплов
@@ -1519,11 +1521,11 @@ static RAMFUNC void buffers_resample(void)
 	unsigned pos;
 	for (pos = 0; pos < DMABUFFSIZE16RX; )
 	{
-		pos += getsamplemsuacout(& p->buff [pos], DMABUFFSIZE16RX - pos);
+		pos += getsamplemsuacout(& p->buff [pos], DMABUFFSIZE16RX - pos);	// Выборка из очеререди resample16rx
 	}
 
 	// направление получившегося буфера получателю.
-	buffers_savefromresampling(p);
+	buffers_savefromresampling(p);	// Сохранение в voicesmike16rx
 }
 
 // вызывается из какой-либо функции обслуживания I2S каналов (все синхронны).
@@ -2042,7 +2044,7 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 	++ n3;
 #endif /* WITHBUFFERSDEBUG */
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	buffers_savefrommikeadc(p);
+	buffers_savefrommikeadc(p);	// поместить в voicesmike16rx
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
