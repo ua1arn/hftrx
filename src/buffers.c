@@ -1169,7 +1169,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 		}
 		else
 		{
-			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
+			// resampler не успел начать работать - возвращаем 0.
 			SPIN_UNLOCK(& locklist16rx);
 			return 0;
 		}
@@ -1178,8 +1178,8 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	ASSERT(p->tag3 == p);
 	const FLOAT_t sample = adpt_input(& uac48io, p->buff [pos * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
 	// Использование данных.
-	v->ivqv [L] = sample;
-	v->ivqv [R] = sample;
+	v->ivqv [L] = adpt_input(& uac48io, p->buff [pos * DMABUFFSTEP16RX + 0]);	// левый канал
+	v->ivqv [R] = adpt_input(& uac48io, p->buff [pos * DMABUFFSTEP16RX + 1]);	// правый канал
 
 	if (++ pos >= CNT16RX)
 	{
