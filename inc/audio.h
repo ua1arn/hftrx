@@ -764,6 +764,7 @@ modem_frames_decode(
 	);
 
 uint_fast8_t getsampmlemike(FLOAT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
+uint_fast8_t getsampmleusb(FLOAT32P_t * v);				/* получить очередной оцифрованый сэмпл с USB UAC OUT после ресэмплигнга */
 uint_fast8_t getsampmlemoni(FLOAT32P_t * v);			/* получить очередной сэмпл для самоконтроля */
 
 FLOAT_t local_log(FLOAT_t x);
@@ -922,7 +923,6 @@ void board_set_reverb(uint_fast8_t greverb, uint_fast8_t greverbdelay, uint_fast
 
 
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-void board_set_uacmike(uint_fast8_t v);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 void board_set_datavox(uint_fast8_t v);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 
 void dsp_initialize(void);

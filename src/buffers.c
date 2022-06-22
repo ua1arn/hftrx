@@ -296,6 +296,7 @@ enum { PHONESLEVEL = 6 };
 static RAMBIGDTCM LIST_HEAD2 voicesfree16rx;
 static RAMBIGDTCM LIST_HEAD3 voicesmike16rx;	// буферы с оцифрованными звуками с микрофона/Line in
 static RAMBIGDTCM LIST_HEAD3 resample16rx;		// буферы от USB для синхронизации
+static RAMBIGDTCM LIST_HEAD3 voicesusb16rx;	// буферы с оцифрованными звуками с USB AUDIO (после ресэмплинга)
 static RAMBIGDTCM SPINLOCK_t locklist16rx = SPINLOCK_INIT;
 
 static RAMBIGDTCM LIST_HEAD2 voicesfree16tx;
@@ -318,9 +319,6 @@ static RAMBIGDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
 static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 static volatile uint_fast8_t uacoutalt;
-static volatile uint_fast8_t uacoutmike;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
-#else /* WITHUSBHW && WITHUSBUAC */
-enum { uacoutmike = 0 };
 #endif /* WITHUSBHW && WITHUSBUAC */
 
 
@@ -513,6 +511,7 @@ void buffers_diagnostics(void)
 	LIST2PRINT(voicesfree16rx);
 	LIST2PRINT(voicesfree16tx);
 	LIST3PRINT(voicesmike16rx);
+	LIST3PRINT(voicesusb16rx);
 	LIST2PRINT(voicesphones16tx);
 	LIST2PRINT(voicesmoni16tx);
 	PRINTF(PSTR("\n"));
@@ -723,6 +722,7 @@ void buffers_initialize(void)
 	InitializeListHead3(& resample16rx, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
 
 	InitializeListHead3(& voicesmike16rx, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП кодека
+	InitializeListHead3(& voicesusb16rx, VOICESMIKE16NORMAL);	// список оцифрованных после USB ресэмплинга
 	InitializeListHead2(& voicesfree16rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray16rx / sizeof voicesarray16rx [0]); ++ i)
 	{
@@ -1016,33 +1016,6 @@ static RAMFUNC void buffers_tonull16tx(voice16tx_t * p)
 	SPIN_UNLOCK(& locklist16tx);
 }
 
-// Сохранить звук на вход передатчика
-static RAMFUNC void buffers_tomodulators16rx(voice16rx_t * p)
-{
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	SPIN_LOCK(& locklist16rx);
-	InsertHeadList3(& voicesmike16rx, & p->item, 0);
-	SPIN_UNLOCK(& locklist16rx);
-}
-
-// Сохранить звук от АЦП пикрофона - поместить в voicesmike16rx
-static RAMFUNC void buffers_savefrommikeadc(voice16rx_t * p)
-{
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-#if WITHBUFFERSDEBUG
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_mikeadc += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
-#endif /* WITHBUFFERSDEBUG */
-
-	if (uacoutmike == 0)
-		buffers_tomodulators16rx(p);	// поместить в voicesmike16rx
-	else
-		buffers_tonull16rx(p);
-
-}
-
 // +++ Коммутация потоков аудиоданных
 // первый канал выхода приёмника - для прослушивания
 static RAMFUNC void
@@ -1064,20 +1037,6 @@ buffers_savefrommoni16tx(voice16tx_t * p)
 
 
 #if WITHUSBUAC
-// приняли данные от синхронизатора
-static RAMFUNC void
-buffers_savefromresampling(voice16rx_t * p)
-{
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
-	// в динамики будет направлен после модулятора
-
-	if (uacoutmike != 0)
-		buffers_tomodulators16rx(p);
-	else
-		buffers_tonull16rx(p);
-}
 
 // Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
 RAMFUNC static void buffers_savetoresampling16rx(voice16rx_t * p)
@@ -1184,6 +1143,50 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 		p = NULL;
 	}
 	return 1;	
+}
+
+// 16 bit, signed
+// в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
+// При отсутствии данных в очереди - возвращаем 0
+// TODO: переделать на denoise16_t
+RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
+{
+	enum { L, R };
+	static voice16rx_t * p = NULL;
+	static unsigned pos = 0;	// позиция по выходному количеству
+
+	if (p == NULL)
+	{
+		SPIN_LOCK(& locklist16rx);
+		if (GetReadyList3(& voicesusb16rx))
+		{
+			PLIST_ENTRY t = RemoveTailList3(& voicesusb16rx);
+			SPIN_UNLOCK(& locklist16rx);
+			p = CONTAINING_RECORD(t, voice16rx_t, item);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
+			pos = 0;
+		}
+		else
+		{
+			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
+			SPIN_UNLOCK(& locklist16rx);
+			return 0;
+		}
+	}
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	const FLOAT_t sample = adpt_input(& uac48io, p->buff [pos * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
+	// Использование данных.
+	v->ivqv [L] = sample;
+	v->ivqv [R] = sample;
+
+	if (++ pos >= CNT16RX)
+	{
+		buffers_tonull16rx(p);
+		p = NULL;
+	}
+	return 1;
 }
 
 // 16 bit, signed
@@ -1525,7 +1528,16 @@ static RAMFUNC void buffers_resample(void)
 	}
 
 	// направление получившегося буфера получателю.
-	buffers_savefromresampling(p);	// Сохранение в voicesmike16rx
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
+	// в динамики будет направлен после модулятора
+
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	SPIN_LOCK(& locklist16rx);
+	InsertHeadList3(& voicesusb16rx, & p->item, 0);
+	SPIN_UNLOCK(& locklist16rx);
 }
 
 // вызывается из какой-либо функции обслуживания I2S каналов (все синхронны).
@@ -2044,7 +2056,18 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 	++ n3;
 #endif /* WITHBUFFERSDEBUG */
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	buffers_savefrommikeadc(p);	// поместить в voicesmike16rx
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+#if WITHBUFFERSDEBUG
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_mikeadc += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
+#endif /* WITHBUFFERSDEBUG */
+
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	SPIN_LOCK(& locklist16rx);
+	InsertHeadList3(& voicesmike16rx, & p->item, 0);
+	SPIN_UNLOCK(& locklist16rx);
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
@@ -2741,14 +2764,6 @@ void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1)
 }
 
 #endif /* WITHUSBUAC */
-
-/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
-void board_set_uacmike(uint_fast8_t v)
-{
-#if WITHUSBHW && WITHUSBUAC
-	uacoutmike = v;
-#endif /* WITHUSBHW && WITHUSBUAC */
-}
 
 #if WITHUSBUAC && WITHUSBHW
 

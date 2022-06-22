@@ -3875,6 +3875,7 @@ static unsigned long local_random(unsigned long num)
 // return audio sample in range [- 1.. + 1]
 static RAMFUNC FLOAT_t preparevi(
 	FLOAT_t vi0f,
+	FLOAT_t viusb0f,
 	uint_fast8_t dspmode,
 	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
 	)
@@ -3909,6 +3910,7 @@ static RAMFUNC FLOAT_t preparevi(
 	case DSPCTL_MODE_TX_FREEDV:
 		switch (glob_txaudio)
 		{
+		default:
 		case BOARD_TXAUDIO_MIKE:
 #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 		case BOARD_TXAUDIO_LINE:
@@ -3924,12 +3926,11 @@ static RAMFUNC FLOAT_t preparevi(
 
 #if WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
-#endif /* WITHUSBUACOUT */
-		default:
 			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
-			savemonistereo(vi0f, vi0f);
-			return injectsubtone(vi0f * txlevelXXX, ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			savemonistereo(viusb0f, viusb0f);
+			return injectsubtone(viusb0f * txlevelXXX, ctcss); //* TXINSCALE; // источник сигнала - микрофон
+#endif /* WITHUSBUACOUT */
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
@@ -4026,13 +4027,14 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 // используется в случае внешнего DUC
 static RAMFUNC void processafadcsampleiq(
 	FLOAT32P_t vi0,	// выборка с микрофона (в vi)
+	FLOAT32P_t viusb0,	// выборка с USB (в vi)
 	uint_fast8_t dspmode,
 	FLOAT_t shape,	// 0..1 - огибающая
 	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
 	)
 {
 	// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-	FLOAT_t vi = preparevi(vi0.IV, dspmode, ctcss);	// vi нормирован к разрядности выходного ЦАП
+	FLOAT_t vi = preparevi(vi0.IV, viusb0.IV, dspmode, ctcss);	// vi нормирован к разрядности выходного ЦАП
 	if (isdspmodetx(dspmode))
 	{
 #if WITHMODEM
@@ -4714,7 +4716,7 @@ static FLOAT32P_t loopbacktestaudio(FLOAT32P_t vi0, uint_fast8_t dspmode, FLOAT_
 
 #endif /* WITHLOOPBACKTEST */
 
-/* получить очередной оцифрованый сэмпл с микрофона или USB AUDIO канала. 16-bit samples */
+/* получить очередной оцифрованый сэмпл с микрофона. */
 static RAMFUNC FLOAT32P_t getsampmlemike2(void)
 {
 	FLOAT32P_t v;
@@ -4736,9 +4738,21 @@ static RAMFUNC FLOAT32P_t getsampmlemike2(void)
 	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
 	charge2(& mikeinlevel, vi0f, (mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
 
+	return v;
+}
+
+/* получить очередной оцифрованый сэмпл с USB AUDIO канала. */
+static RAMFUNC FLOAT32P_t getsampmleusb2(void)
+{
+	FLOAT32P_t v;
+	if (getsampmleusb(& v) == 0)
+	{
+		v.IV = 0;
+		v.QV = 0;
+	}
 	// VOX detector и разрядная цепь
 	// Поддержка работы DATA VOX
-	//const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
+	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
 	charge2(& dvoxlevel, vi0f, (dvoxlevel < vi0f) ? DVOXCHARGE : DVOXDISCHARGE);
 
 	return v;
@@ -5466,6 +5480,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 	#if ! WITHTRANSPARENTIQ
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
 		const FLOAT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
+		const FLOAT32P_t viusb = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
 		const FLOAT_t shape = shapeCWEnvelopStep() * scaleDAC;	// 0..1
 	#endif /* ! WITHTRANSPARENTIQ */
 
@@ -5585,7 +5600,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#elif WITHUSEDUALWATCH
 
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		//
 		// Двухканальный приёмник
 
