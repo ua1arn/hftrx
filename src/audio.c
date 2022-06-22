@@ -136,7 +136,7 @@ static uint_fast8_t		glob_equalizer_tx_gains [AF_EQUALIZER_BANDS];
 #if WITHREVERB
 	static uint_fast8_t glob_reverb;		/* ревербератор */
 	static uint_fast8_t glob_reverbdelay = 20;		/* ревербератор - задержка (ms) */
-	static uint_fast8_t glob_reverbloss = 18;		/* ревербератор - ослабление на возврате */
+	static uint_fast8_t glob_reverbloss = 30;		/* ревербератор - ослабление dB на возврате */
 #endif /* WITHREVERB */
 
 static uint_fast16_t 	glob_lineamp = WITHLINEINGAINMAX;
