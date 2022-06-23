@@ -10581,7 +10581,11 @@ updateboardZZZ(
 		#endif /* WITHUSBUAC */
 		board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
 		board_set_lineamp(glineamp);	/* усиление с линейного входа */
+#if WITHUSBUAC
 		board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudio);	// Альтернативные источники сигнала при передаче
+#else /* WITHUSBUAC */
+		board_set_txaudio(txaudio);	// Альтернативные источники сигнала при передаче
+#endif /* WITHUSBUAC */
 		board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
 		board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
 		board_set_mikehclip(gmikehclip);	/* Ограничитель */

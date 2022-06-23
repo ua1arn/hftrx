@@ -180,10 +180,9 @@ static uint_fast8_t		glob_dsploudspeaker_off;
 
 #if WITHUSBUAC
 static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	#if WITHTX
-	static volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
-	#endif /* WITHTX */
 #endif /* WITHUSBUAC */
+
+static volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 
 #if WITHINTEGRATEDDSP
 
