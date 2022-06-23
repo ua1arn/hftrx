@@ -178,10 +178,7 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 static uint_fast8_t 	glob_dspagc;
 static uint_fast8_t		glob_dsploudspeaker_off;
 
-#if WITHUSBUAC
 static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-#endif /* WITHUSBUAC */
-
 static volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 
 #if WITHINTEGRATEDDSP
