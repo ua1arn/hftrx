@@ -658,7 +658,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         }
         else
         {
-            USBH_UsrLog("This device has %u configuration. Need selection.", (unsigned) phost->device.DevDesc.bNumConfigurations);
+            USBH_UsrLog("This device has %u configurations. Need selection.", (unsigned) phost->device.DevDesc.bNumConfigurations);
           phost->gState = HOST_INPUT;
         }
 #if (USBH_USE_OS == 1U)
