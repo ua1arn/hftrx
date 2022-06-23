@@ -435,7 +435,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
 	CCU->USB0_CLK_REG &= ~ (0x01uL << 30);	// USBPHY0_RSTN
 
-	PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled\n");
+	PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled. Enable for process.\n");
 	return;
 
 	// Enable
