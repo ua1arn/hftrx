@@ -1223,7 +1223,7 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 	v->ivqv [L] = adpt_input(& afcodecio, p->buff [pos * DMABUFFSTEP16TX + DMABUFF16TX_LEFT]);	// микрофон или левый канал
 	v->ivqv [R] = adpt_input(& afcodecio, p->buff [pos * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT]);	// правый канал
 
-	if (++ pos >= CNT16RX)
+	if (++ pos >= CNT16TX)
 	{
 		buffers_tonull16tx(p);
 		p = NULL;
@@ -1556,7 +1556,7 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 	while (ntx >= CNT16TX)
 	{
 #if ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
-		release_dmabuffer16(getfilled_dmabuffer16txphones());
+		release_dmabuffer16tx(getfilled_dmabuffer16txphones());
 #endif /* ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) */
 		ntx -= CNT16TX;
 	}
