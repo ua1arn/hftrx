@@ -5382,9 +5382,11 @@ static const codechw_t fpgaspectrumhw_dummy =
 #if WITHFPGARTS_SAI2_B_RX_SLAVE
 		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
 #endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
-#if WITHCODEC1_SAI1_A_TX_B_RX_MASTER 1  /* Обмен с аудиокодеком через SAI1: SAI1_A - TX, SAI1_B - RX */  	};
+#if WITHCODEC1_SAI1_A_TX_B_RX_MASTER 	/* Обмен с аудиокодеком через SAI1: SAI1_A - TX, SAI1_B - RX */
 		& audiocodechw_sai1_a_tx_b_rx_master,	// Интерфейс к НЧ кодеку
 #endif /* WITHCODEC1_SAI1_A_TX_B_RX_MASTER */
+	};
+
 #elif CPUSTYLE_STM32F4XX
 	static const codechw_t * const channels [] =
 	{
