@@ -290,7 +290,7 @@ enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количес�
 enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
 enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
-//enum { PHONESLEVELx = CNT16 / CNT32RX };
+enum { MIKELEVEL = 6 };
 enum { PHONESLEVEL = 6 };
 
 static RAMBIGDTCM LIST_HEAD2 voicesfree16rx;
@@ -707,16 +707,10 @@ void buffers_initialize(void)
 #endif /* WITHSKIPUSERMODE */
 
 	// Могут быть преобразованы до двух буферов шумоподавителя при нормальной работе
-	enum { NVCOICESFREE16RX = 8 * PHONESLEVEL + 2 * (FIRBUFSIZE + CNT16RX - 1) / CNT16TX + 1 * RESAMPLE16NORMAL};
-	enum { NVCOICESFREE16TX = 8 * PHONESLEVEL + 2 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX + 1 * RESAMPLE16NORMAL};
+	enum { NVCOICESFREE16RX = 2 * MIKELEVEL + 1 * RESAMPLE16NORMAL};
+	enum { NVCOICESFREE16TX = 2 * PHONESLEVEL + 2 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX};
 
-	#if WITHUSBUAC
-		/* буферы требуются для ресэмплера */
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16rx_t voicesarray16rx [NVCOICESFREE16RX] ALIGNX_END;
-	#else /* WITHUSBUAC */
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16rx_t voicesarray16rx [NVCOICESFREE16RX] ALIGNX_END;
-	#endif /* WITHUSBUAC */
-
+	static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16rx_t voicesarray16rx [NVCOICESFREE16RX] ALIGNX_END;
 	static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16tx_t voicesarray16tx [NVCOICESFREE16TX] ALIGNX_END;
 
 	InitializeListHead3(& resample16rx, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
