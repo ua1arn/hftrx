@@ -49,10 +49,6 @@ static void hardware_dummy_enable(uint_fast8_t state)
 
 #if WITHINTEGRATEDDSP
 
-#if WITHRTS192 && ! WITHSAI2HW
-	#error WITHRTS192 require WITHSAI2HW
-#endif /* WITHRTS192 && ! WITHSAI2HW */
-
 // Сейчас в эту память будем читать по DMA
 static uintptr_t 
 dma_invalidate16rx(uintptr_t addr)
