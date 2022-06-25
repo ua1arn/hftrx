@@ -253,7 +253,7 @@ void arm_hardware_mdma_initialize(void)
 /* Использование G2D для формирования изображений */
 // https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_driver.c
 // https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_regs.h
-
+// https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_bsp_sun8iw11.c
 /* Input DMA setting */
 #define G2D_FILL_ENABLE		(1<<16)
 #define G2D_FILL_DISABLE	(0<<16)
@@ -267,8 +267,168 @@ void arm_hardware_mdma_initialize(void)
 #define G2D_SCALER_ENABLE	(1<<0)
 #define G2D_SCALER_4TAP4	(0<<4)
 
+#define G2D_FINISH_IRQ		(1<<8)
+#define G2D_ERROR_IRQ			(1<<9)
+
+/* mixer data format */
+typedef enum {
+	/* share data format */
+	G2D_FMT_ARGB_AYUV8888	= (0x0),
+	G2D_FMT_BGRA_VUYA8888	= (0x1),
+	G2D_FMT_ABGR_AVUY8888	= (0x2),
+	G2D_FMT_RGBA_YUVA8888	= (0x3),
+
+	G2D_FMT_XRGB8888		= (0x4),
+	G2D_FMT_BGRX8888		= (0x5),
+	G2D_FMT_XBGR8888		= (0x6),
+	G2D_FMT_RGBX8888		= (0x7),
+
+	G2D_FMT_ARGB4444		= (0x8),
+	G2D_FMT_ABGR4444		= (0x9),
+	G2D_FMT_RGBA4444		= (0xA),
+	G2D_FMT_BGRA4444		= (0xB),
+
+	G2D_FMT_ARGB1555		= (0xC),
+	G2D_FMT_ABGR1555		= (0xD),
+	G2D_FMT_RGBA5551		= (0xE),
+	G2D_FMT_BGRA5551		= (0xF),
+
+	G2D_FMT_RGB565			= (0x10),
+	G2D_FMT_BGR565			= (0x11),
+
+	G2D_FMT_IYUV422			= (0x12),
+
+	G2D_FMT_8BPP_MONO		= (0x13),
+	G2D_FMT_4BPP_MONO		= (0x14),
+	G2D_FMT_2BPP_MONO		= (0x15),
+	G2D_FMT_1BPP_MONO		= (0x16),
+
+	G2D_FMT_PYUV422UVC		= (0x17),
+	G2D_FMT_PYUV420UVC		= (0x18),
+	G2D_FMT_PYUV411UVC		= (0x19),
+
+	/* just for output format */
+	G2D_FMT_PYUV422			= (0x1A),
+	G2D_FMT_PYUV420			= (0x1B),
+	G2D_FMT_PYUV411			= (0x1C),
+
+	/* just for input format */
+	G2D_FMT_8BPP_PALETTE	= (0x1D),
+	G2D_FMT_4BPP_PALETTE	= (0x1E),
+	G2D_FMT_2BPP_PALETTE	= (0x1F),
+	G2D_FMT_1BPP_PALETTE	= (0x20),
+
+	G2D_FMT_PYUV422UVC_MB16	= (0x21),
+	G2D_FMT_PYUV420UVC_MB16	= (0x22),
+	G2D_FMT_PYUV411UVC_MB16	= (0x23),
+	G2D_FMT_PYUV422UVC_MB32	= (0x24),
+	G2D_FMT_PYUV420UVC_MB32	= (0x25),
+	G2D_FMT_PYUV411UVC_MB32	= (0x26),
+	G2D_FMT_PYUV422UVC_MB64	= (0x27),
+	G2D_FMT_PYUV420UVC_MB64	= (0x28),
+	G2D_FMT_PYUV411UVC_MB64	= (0x29),
+	G2D_FMT_PYUV422UVC_MB128= (0x2A),
+	G2D_FMT_PYUV420UVC_MB128= (0x2B),
+	G2D_FMT_PYUV411UVC_MB128= (0x2C),
+
+}g2d_data_fmt;
+
+typedef enum {
+	G2D_SEQ_NORMAL = 0x0,
+
+	/* for interleaved yuv422 */
+	G2D_SEQ_VYUY   = 0x1,				/* pixel 0�ڵ�16λ */
+	G2D_SEQ_YVYU   = 0x2,				/* pixel 1�ڵ�16λ */
+
+	/* for uv_combined yuv420 */
+	G2D_SEQ_VUVU   = 0x3,
+
+	/* for 16bpp rgb */
+	G2D_SEQ_P10	= 0x4,				/* pixel 0�ڵ�16λ */
+	G2D_SEQ_P01	= 0x5,				/* pixel 1�ڵ�16λ */
+
+	/* planar format or 8bpp rgb */
+	G2D_SEQ_P3210  = 0x6,				/* pixel 0�ڵ�8λ */
+	G2D_SEQ_P0123  = 0x7,				/* pixel 3�ڵ�8λ */
+
+	/* for 4bpp rgb */
+	G2D_SEQ_P76543210  = 0x8,			/* 7,6,5,4,3,2,1,0 */
+	G2D_SEQ_P67452301  = 0x9,			/* 6,7,4,5,2,3,0,1 */
+	G2D_SEQ_P10325476  = 0xA,			/* 1,0,3,2,5,4,7,6 */
+	G2D_SEQ_P01234567  = 0xB,			/* 0,1,2,3,4,5,6,7 */
+
+	/* for 2bpp rgb */
+	G2D_SEQ_2BPP_BIG_BIG	   = 0xC,	/* 15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0 */
+	G2D_SEQ_2BPP_BIG_LITTER	= 0xD,	/* 12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3 */
+	G2D_SEQ_2BPP_LITTER_BIG	= 0xE,	/* 3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12 */
+	G2D_SEQ_2BPP_LITTER_LITTER = 0xF,	/* 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 */
+
+	/* for 1bpp rgb */
+	G2D_SEQ_1BPP_BIG_BIG	   = 0x10,	/* 31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0 */
+	G2D_SEQ_1BPP_BIG_LITTER	= 0x11,	/* 24,25,26,27,28,29,30,31,16,17,18,19,20,21,22,23,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7 */
+	G2D_SEQ_1BPP_LITTER_BIG	= 0x12,	/* 7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8,23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24 */
+	G2D_SEQ_1BPP_LITTER_LITTER = 0x13,	/* 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 */
+}g2d_pixel_seq;
+
+
+typedef enum {
+	G2D_FIL_NONE			= 0x00000000,
+	G2D_FIL_PIXEL_ALPHA		= 0x00000001,
+	G2D_FIL_PLANE_ALPHA		= 0x00000002,
+	G2D_FIL_MULTI_ALPHA		= 0x00000004,
+}g2d_fillrect_flags;
+
+typedef enum {
+	G2D_BLT_NONE			= 0x00000000,
+	G2D_BLT_PIXEL_ALPHA		= 0x00000001,
+	G2D_BLT_PLANE_ALPHA		= 0x00000002,
+	G2D_BLT_MULTI_ALPHA		= 0x00000004,
+	G2D_BLT_SRC_COLORKEY	= 0x00000008,
+	G2D_BLT_DST_COLORKEY	= 0x00000010,
+	G2D_BLT_FLIP_HORIZONTAL	= 0x00000020,
+	G2D_BLT_FLIP_VERTICAL	= 0x00000040,
+	G2D_BLT_ROTATE90		= 0x00000080,
+	G2D_BLT_ROTATE180		= 0x00000100,
+	G2D_BLT_ROTATE270		= 0x00000200,
+	G2D_BLT_MIRROR45		= 0x00000400,
+	G2D_BLT_MIRROR135		= 0x00000800,
+	G2D_BLT_SRC_PREMULTIPLY	= 0x00001000,
+	G2D_BLT_DST_PREMULTIPLY	= 0x00002000,
+}g2d_blt_flags;
+
+/*
+ * 0:Top to down, Left to right
+ * 1:Top to down, Right to left
+ * 2:Down to top, Left to right
+ * 3:Down to top, Right to left
+ */
+enum g2d_scan_order{
+	G2D_SM_TDLR = 0x00000000,
+	G2D_SM_TDRL = 0x00000001,
+	G2D_SM_DTLR = 0x00000002,
+	G2D_SM_DTRL = 0x00000003,
+};
+
+
+/* clear most of the registers value to default */
+static uint32_t mixer_reg_init(void){
+	//uint32_t i;
+
+//	for(i=0;i<=0x148;i+=4)
+//		write_wvalue(i, 0);
+	G2D->G2D_SCAN_ORDER_REG = 0x15FF0000;//DMA MBUS Length
+
+//	/* initial the color space converter parameter */
+//	csc_coeff_set();
+//
+//	/* initial the scaler coefficient parameter */
+//	scaler_coeff_set();
+
+	return 0;
+}
 void arm_hardware_mdma_initialize(void)
 {
+	PRINTF("arm_hardware_mdma_initialize (G2D)\n");
 	CCU->MBUS_CLK_REG |= (1uL << 30);				// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 10);	// Gating MBUS Clock For G2D
 
@@ -276,7 +436,7 @@ void arm_hardware_mdma_initialize(void)
 	CCU->G2D_BGR_REG |= (1uL << 0);		/* Enable gating clock for G2D */
 	CCU->G2D_BGR_REG &= ~ (1uL << 16);	/* G2D reset */
 	CCU->G2D_BGR_REG |= (1uL << 16);	/* G2D reset */
-
+	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
 #endif /* WITHMDMAHW */
 
@@ -374,6 +534,38 @@ hwacc_fillrect_u8(
 }
 
 #endif /* LCDMODE_PIXELSIZE == 1 */
+//
+//uint32_t mixer_get_irq(void){
+//	uint32_t reg_val = 0;
+//
+//	reg_val = read_wvalue(G2D_STATUS_REG);
+//
+//	return reg_val;
+//}
+//
+//uint32_t mixer_get_irq0(void){
+//	uint32_t reg_val = 0;
+//
+//	reg_val = read_wvalue(G2D_CMDQ_STS_REG);
+//
+//	return reg_val;
+//}
+//
+//uint32_t mixer_clear_init(void){
+//
+//	G2D->G2D_STATUS_REG, 0x300);
+//	G2D->G2D_CONTROL_REG, 0x0);
+//
+//	return 0;
+//}
+//
+//uint32_t mixer_clear_init0(void){
+//
+//	G2D->G2D_CMDQ_STS_REG, 0x100);
+//	G2D->G2D_CMDQ_CTL_REG, 0x0);
+//
+//	return 0;
+//}
 
 #if LCDMODE_PIXELSIZE == 2
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
@@ -495,6 +687,91 @@ hwacc_fillrect_u16(
 #elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
 	/* Использование G2D для формирования изображений */
 	#warning Imppement for CPUSTYPE_ALLWNT113
+	const unsigned stride = GXADJ(dx);
+	(void) G2D;
+	uint32_t reg_val = 0;
+	uint64_t addr_val;
+	int32_t result = 0;
+
+	mixer_reg_init();/* initial mixer register */
+
+	/* channel0 is the fill surface */
+	G2D->G2D_DMA0_SIZE_REG = (w - 1) | ((h - 1) << 16); //(para->dst_rect.w -1) | ((para->dst_rect.h -1)<<16);
+
+	/* globe alpha mode */
+	if (0) ////(para->flag & G2D_FIL_PLANE_ALPHA)
+	{
+		////reg_val |= (para->alpha<<24)|0x4;
+	}
+	else if (0) ////(para->flag & G2D_FIL_MULTI_ALPHA)
+	{
+		////reg_val |= (para->alpha<<24)|0x8;
+	}
+	reg_val |= 0x1;
+	G2D->G2D_DMA0_CONTROL_REG = reg_val;
+	////mixer_set_fillcolor(para->color,0);
+	G2D->G2D_DMA0_FILLCOLOR_REG = color;
+	G2D->G2D_DMA0_CONTROL_REG |= G2D_FILL_ENABLE;
+
+	if (0) ////((para->flag & G2D_FIL_PLANE_ALPHA) || (para->flag & G2D->G2D_FIL_PIXEL_ALPHA) || (para->flag & G2D_FIL_MULTI_ALPHA))
+	{
+		/* channel3 is the dst surface */
+//		addr_val = mixer_get_addr(para->dst_image.addr[0],para->dst_image.format,para->dst_image.w,para->dst_rect.x,para->dst_rect.y);
+//		reg_val = (addr_val>>32)&0xF;/* high addr in bits */
+//		G2D->G2D_DMA_HADDR_REG = reg_val<<24;
+//		reg_val = addr_val&0xFFFFFFFF;/* low addr in bits */
+//		G2D->G2D_DMA3_LADDR_REG = reg_val;
+//		G2D->G2D_DMA3_STRIDE_REG = para->dst_image.w*mixer_bpp_count(para->dst_image.format);
+//		G2D->G2D_DMA3_SIZE_REG = (para->dst_rect.w -1) | ((para->dst_rect.h -1)<<16);
+//		reg_val = G2D->G2D_DMA3_CONTROL_REG;
+
+		/* palette format */
+//		if (para->dst_image.format > 0x19)
+//		{
+//			reg_val |= 0x2;
+//		}
+//		reg_val |= G2D_IDMA_ENABLE | mixer_in_fmtseq_set(para->dst_image.format,para->dst_image.pixel_seq);
+//		G2D->G2D_DMA3_CONTROL_REG = reg_val;
+//		G2D->G2D_CK_CONTROL_REG = 0x1;
+	}
+	G2D->G2D_ROP_INDEX0_REG = 0x840;
+
+	/* output surface is the dst surface */
+	G2D->G2D_OUTPUT_SIZE_REG = (w - 1) | ((h - 1) << 16); //(para->dst_rect.w -1) | ((para->dst_rect.h -1)<<16);
+
+	addr_val = (uintptr_t) & buffer [row * GXADJ(dx) + col]; // mixer_get_addr(para->dst_image.addr[0],para->dst_image.format,para->dst_image.w,para->dst_rect.x,para->dst_rect.y);
+	reg_val = (addr_val>>32) & 0xF;/* high addr in bits */
+	G2D->G2D_OUTPUT_HADDR_REG = reg_val;
+	reg_val = addr_val & 0xFFFFFFFF;/* low addr in bits */
+	G2D->G2D_OUTPUT0_LADDR_REG = reg_val;
+
+	G2D->G2D_OUTPUT0_STRIDE_REG = stride; //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
+	G2D->G2D_OUTPUT_CONTROL_REG = 0x03; // RGB565? mixer_out_fmtseq_set(para->dst_image.format,para->dst_image.pixel_seq);
+
+	/* start */
+	G2D->G2D_CONTROL_REG = 0;
+	G2D->G2D_CONTROL_REG = 0x303;
+	//result = g2d_wait_cmd_finish();
+	/* ожидаем выполнения операции */
+	for (;;)
+	{
+		const uint_fast32_t mod_irq_flag = G2D->G2D_STATUS_REG; // mixer_get_irq();
+		const uint_fast32_t cmd_irq_flag = G2D->G2D_CMDQ_STS_REG; // mixer_get_irq0();
+		if ((mod_irq_flag & G2D_FINISH_IRQ) != 0)
+		{
+			G2D->G2D_STATUS_REG = 0x300;
+			G2D->G2D_CONTROL_REG = 0x0;
+			break;
+		}
+		if ((cmd_irq_flag & G2D_FINISH_IRQ) != 0)
+		{
+			G2D->G2D_CMDQ_STS_REG = 0x100;
+			G2D->G2D_CMDQ_CTL_REG = 0x0;
+			break;
+		}
+		hardware_nonguiyield();
+	}
+	__DMB();
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
@@ -635,6 +912,8 @@ hwacc_fillrect_u24(
 #elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
 	/* Использование G2D для формирования изображений */
 	#warinig Implement for CPUSTYPE_ALLWNT113
+	const unsigned stride = GXADJ(dx);
+	(void) G2D;
 
 #else
 	// программная реализация
@@ -775,7 +1054,8 @@ hwacc_fillrect_u32(
 #elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
 	/* Использование G2D для формирования изображений */
 	#warinig Implement for CPUSTYPE_ALLWNT113
-
+	const unsigned stride = GXADJ(dx);
+	(void) G2D;
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
