@@ -254,6 +254,19 @@ void arm_hardware_mdma_initialize(void)
 // https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_driver.c
 // https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_regs.h
 
+/* Input DMA setting */
+#define G2D_FILL_ENABLE		(1<<16)
+#define G2D_FILL_DISABLE	(0<<16)
+
+/* Work Mode Select */
+#define G2D_IDMA_ENABLE		(1<<0)
+#define G2D_IDMA_DISABLE	(0<<0)
+
+/* Scaler Control Select */
+#define G2D_SCALER_DISABLE	(0<<0)
+#define G2D_SCALER_ENABLE	(1<<0)
+#define G2D_SCALER_4TAP4	(0<<4)
+
 void arm_hardware_mdma_initialize(void)
 {
 	CCU->MBUS_CLK_REG |= (1uL << 30);				// MBUS Reset 1: De-assert reset
