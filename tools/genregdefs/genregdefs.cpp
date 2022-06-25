@@ -72,15 +72,15 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 
             if (sz == 4)
             {
-			    printf("\t" "uint32_t reserved%u;\n", ++ reservers);
+			    printf("\t" "uint32_t reserved%u; /* at 0x%03X */\n", ++ reservers, offs);
             }
             else if ((sz % 4) == 0)
             {
-			    printf("\t" "uint32_t reserved%u [0x%04X];\n", ++ reservers, sz / 4);
+			    printf("\t" "uint32_t reserved%u [0x%04X]; /* at 0x%03X */\n", ++ reservers, sz / 4, offs);
             }
             else
             {
-		    	printf("\t" "uint8_t reserved%u [0x%04X];\n", ++ reservers, sz);
+		    	printf("\t" "uint8_t reserved%u [0x%04X]; /* at 0x%03X */\n", ++ reservers, sz, offs);
             }
 			offs = p->fldoffs;
 		}
@@ -113,7 +113,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 			break;
 		}
 	}
-	printf("} %s_TypeDef;\n", bname);
+	printf("} %s_TypeDef; /* size of structure = 0x%03X */\n", bname, offs);
 }
 
 static int processfile(const char * file, const char * bname)

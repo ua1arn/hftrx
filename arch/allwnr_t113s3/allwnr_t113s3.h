@@ -1665,7 +1665,7 @@ typedef struct G2D_Type
 	__IO uint32_t G2D_SCALER_VFILTER_REG [0x020];        /*!< Offset 0x280 Scaling vertical filtering coefficient ram block register0x280-0x2fc) */
 	uint32_t reserved13 [0x0040]; /* at 0x300 */
 	__IO uint32_t G2D_PALETTE_TAB_REG [0x100];           /*!< Offset 0x400 Scaling horizontal filtering coefficient ram block register0x400-0x7fc) */
-} G2D_TypeDef;
+} G2D_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief DSI
  */
