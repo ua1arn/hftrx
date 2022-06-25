@@ -433,9 +433,10 @@ void arm_hardware_mdma_initialize(void)
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 10);	// Gating MBUS Clock For G2D
 
 	CCU->G2D_CLK_REG |= (1uL << 31);	// G2D_CLK_GATING
-	CCU->G2D_BGR_REG |= (1uL << 0);		/* Enable gating clock for G2D */
-	CCU->G2D_BGR_REG &= ~ (1uL << 16);	/* G2D reset */
-	CCU->G2D_BGR_REG |= (1uL << 16);	/* G2D reset */
+	CCU->G2D_BGR_REG |= (1uL << 0);		/* Enable gating clock for G2D 1: Pass */
+	CCU->G2D_BGR_REG &= ~ (1uL << 16);	/* G2D reset 0: Assert */
+	CCU->G2D_BGR_REG |= (1uL << 16);	/* G2D reset 1: De-assert */
+	printhex(G2D_BASE, G2D, 512);
 	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
 #endif /* WITHMDMAHW */
@@ -688,12 +689,21 @@ hwacc_fillrect_u16(
 	/* Использование G2D для формирования изображений */
 	#warning Imppement for CPUSTYPE_ALLWNT113
 	const unsigned stride = GXADJ(dx);
-	(void) G2D;
+
+//	G2D->G2D_DMA0_CONTROL_REG |= (1uL << 0);
+//	G2D->G2D_DMA0_FILLCOLOR_REG = color;
+//	ASSERT(G2D->G2D_DMA0_FILLCOLOR_REG == color);
+
+	G2D->G2D_OUTPUT0_STRIDE_REG = stride; //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
+	ASSERT(G2D->G2D_OUTPUT0_STRIDE_REG == stride); //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
+
 	uint32_t reg_val = 0;
 	uint64_t addr_val;
 	int32_t result = 0;
 
-	mixer_reg_init();/* initial mixer register */
+
+	//mixer_reg_init();/* initial mixer register */
+	G2D->G2D_SCAN_ORDER_REG = 0x15FF0000; // DMA MBUS Length
 
 	/* channel0 is the fill surface */
 	G2D->G2D_DMA0_SIZE_REG = (w - 1) | ((h - 1) << 16); //(para->dst_rect.w -1) | ((para->dst_rect.h -1)<<16);
@@ -711,6 +721,7 @@ hwacc_fillrect_u16(
 	G2D->G2D_DMA0_CONTROL_REG = reg_val;
 	////mixer_set_fillcolor(para->color,0);
 	G2D->G2D_DMA0_FILLCOLOR_REG = color;
+	ASSERT(G2D->G2D_DMA0_FILLCOLOR_REG == color);
 	G2D->G2D_DMA0_CONTROL_REG |= G2D_FILL_ENABLE;
 
 	if (0) ////((para->flag & G2D_FIL_PLANE_ALPHA) || (para->flag & G2D->G2D_FIL_PIXEL_ALPHA) || (para->flag & G2D_FIL_MULTI_ALPHA))
@@ -744,13 +755,22 @@ hwacc_fillrect_u16(
 	G2D->G2D_OUTPUT_HADDR_REG = reg_val;
 	reg_val = addr_val & 0xFFFFFFFF;/* low addr in bits */
 	G2D->G2D_OUTPUT0_LADDR_REG = reg_val;
+	ASSERT(G2D->G2D_OUTPUT0_LADDR_REG == reg_val);
 
 	G2D->G2D_OUTPUT0_STRIDE_REG = stride; //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
 	G2D->G2D_OUTPUT_CONTROL_REG = 0x03; // RGB565? mixer_out_fmtseq_set(para->dst_image.format,para->dst_image.pixel_seq);
+	ASSERT(G2D->G2D_OUTPUT_CONTROL_REG == 0x03);
 
 	/* start */
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
 	G2D->G2D_CONTROL_REG = 0;
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
 	G2D->G2D_CONTROL_REG = 0x303;
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
 	//result = g2d_wait_cmd_finish();
 	/* ожидаем выполнения операции */
 	for (;;)
@@ -763,12 +783,12 @@ hwacc_fillrect_u16(
 			G2D->G2D_CONTROL_REG = 0x0;
 			break;
 		}
-		if ((cmd_irq_flag & G2D_FINISH_IRQ) != 0)
-		{
-			G2D->G2D_CMDQ_STS_REG = 0x100;
-			G2D->G2D_CMDQ_CTL_REG = 0x0;
-			break;
-		}
+//		if ((cmd_irq_flag & G2D_FINISH_IRQ) != 0)
+//		{
+//			G2D->G2D_CMDQ_STS_REG = 0x100;
+//			G2D->G2D_CMDQ_CTL_REG = 0x0;
+//			break;
+//		}
 		hardware_nonguiyield();
 	}
 	__DMB();
