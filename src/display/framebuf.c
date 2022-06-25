@@ -410,13 +410,207 @@ enum g2d_scan_order{
 };
 
 
+/* module base addr */
+
+/* register offset */
+/* TOP register */
+#define G2D_SCLK_GATE  (0x00 + G2D_TOP)
+#define G2D_HCLK_GATE  (0x04 + G2D_TOP)
+#define G2D_AHB_RESET  (0x08 + G2D_TOP)
+#define G2D_SCLK_DIV   (0x0C + G2D_TOP)
+
+/* MIXER GLB register */
+#define G2D_MIXER_CTL  (0x00 + G2D_MIXER)
+#define G2D_MIXER_INT  (0x04 + G2D_MIXER)
+#define G2D_MIXER_CLK  (0x08 + G2D_MIXER)
+
+/* LAY VIDEO register */
+#define V0_ATTCTL      (0x00 + G2D_V0)
+#define V0_MBSIZE      (0x04 + G2D_V0)
+#define V0_COOR        (0x08 + G2D_V0)
+#define V0_PITCH0      (0x0C + G2D_V0)
+#define V0_PITCH1      (0x10 + G2D_V0)
+#define V0_PITCH2      (0x14 + G2D_V0)
+#define V0_LADD0       (0x18 + G2D_V0)
+#define V0_LADD1       (0x1C + G2D_V0)
+#define V0_LADD2       (0x20 + G2D_V0)
+#define V0_FILLC       (0x24 + G2D_V0)
+#define V0_HADD        (0x28 + G2D_V0)
+#define V0_SIZE        (0x2C + G2D_V0)
+#define V0_HDS_CTL0    (0x30 + G2D_V0)
+#define V0_HDS_CTL1    (0x34 + G2D_V0)
+#define V0_VDS_CTL0    (0x38 + G2D_V0)
+#define V0_VDS_CTL1    (0x3C + G2D_V0)
+
+/* LAY0 UI register */
+#define UI0_ATTR       (0x00 + G2D_UI0)
+#define UI0_MBSIZE     (0x04 + G2D_UI0)
+#define UI0_COOR       (0x08 + G2D_UI0)
+#define UI0_PITCH      (0x0C + G2D_UI0)
+#define UI0_LADD       (0x10 + G2D_UI0)
+#define UI0_FILLC      (0x14 + G2D_UI0)
+#define UI0_HADD       (0x18 + G2D_UI0)
+#define UI0_SIZE       (0x1C + G2D_UI0)
+
+/* LAY1 UI register */
+#define UI1_ATTR       (0x00 + G2D_UI1)
+#define UI1_MBSIZE     (0x04 + G2D_UI1)
+#define UI1_COOR       (0x08 + G2D_UI1)
+#define UI1_PITCH      (0x0C + G2D_UI1)
+#define UI1_LADD       (0x10 + G2D_UI1)
+#define UI1_FILLC      (0x14 + G2D_UI1)
+#define UI1_HADD       (0x18 + G2D_UI1)
+#define UI1_SIZE       (0x1C + G2D_UI1)
+
+/* LAY2 UI register */
+#define UI2_ATTR       (0x00 + G2D_UI2)
+#define UI2_MBSIZE     (0x04 + G2D_UI2)
+#define UI2_COOR       (0x08 + G2D_UI2)
+#define UI2_PITCH      (0x0C + G2D_UI2)
+#define UI2_LADD       (0x10 + G2D_UI2)
+#define UI2_FILLC      (0x14 + G2D_UI2)
+#define UI2_HADD       (0x18 + G2D_UI2)
+#define UI2_SIZE       (0x1C + G2D_UI2)
+
+/* VSU register */
+#define VS_CTRL           (0x000 + G2D_VSU)
+#define VS_OUT_SIZE       (0x040 + G2D_VSU)
+#define VS_GLB_ALPHA      (0x044 + G2D_VSU)
+#define VS_Y_SIZE         (0x080 + G2D_VSU)
+#define VS_Y_HSTEP        (0x088 + G2D_VSU)
+#define VS_Y_VSTEP        (0x08C + G2D_VSU)
+#define VS_Y_HPHASE       (0x090 + G2D_VSU)
+#define VS_Y_VPHASE0      (0x098 + G2D_VSU)
+#define VS_C_SIZE         (0x0C0 + G2D_VSU)
+#define VS_C_HSTEP        (0x0C8 + G2D_VSU)
+#define VS_C_VSTEP        (0x0CC + G2D_VSU)
+#define VS_C_HPHASE       (0x0D0 + G2D_VSU)
+#define VS_C_VPHASE0      (0x0D8 + G2D_VSU)
+#define VS_Y_HCOEF0       (0x200 + G2D_VSU)
+#define VS_Y_VCOEF0       (0x300 + G2D_VSU)
+#define VS_C_HCOEF0       (0x400 + G2D_VSU)
+
+/* BLD register */
+#define BLD_EN_CTL         (0x000 + G2D_BLD)
+#define BLD_FILLC0         (0x010 + G2D_BLD)
+#define BLD_FILLC1         (0x014 + G2D_BLD)
+#define BLD_CH_ISIZE0      (0x020 + G2D_BLD)
+#define BLD_CH_ISIZE1      (0x024 + G2D_BLD)
+#define BLD_CH_OFFSET0     (0x030 + G2D_BLD)
+#define BLD_CH_OFFSET1     (0x034 + G2D_BLD)
+#define BLD_PREMUL_CTL     (0x040 + G2D_BLD)
+#define BLD_BK_COLOR       (0x044 + G2D_BLD)
+#define BLD_SIZE           (0x048 + G2D_BLD)
+#define BLD_CTL            (0x04C + G2D_BLD)
+#define BLD_KEY_CTL        (0x050 + G2D_BLD)
+#define BLD_KEY_CON        (0x054 + G2D_BLD)
+#define BLD_KEY_MAX        (0x058 + G2D_BLD)
+#define BLD_KEY_MIN        (0x05C + G2D_BLD)
+#define BLD_OUT_COLOR      (0x060 + G2D_BLD)
+#define ROP_CTL            (0x080 + G2D_BLD)
+#define ROP_INDEX0         (0x084 + G2D_BLD)
+#define ROP_INDEX1         (0x088 + G2D_BLD)
+#define BLD_CSC_CTL        (0x100 + G2D_BLD)
+#define BLD_CSC0_COEF00    (0x110 + G2D_BLD)
+#define BLD_CSC0_COEF01    (0x114 + G2D_BLD)
+#define BLD_CSC0_COEF02    (0x118 + G2D_BLD)
+#define BLD_CSC0_CONST0    (0x11C + G2D_BLD)
+#define BLD_CSC0_COEF10    (0x120 + G2D_BLD)
+#define BLD_CSC0_COEF11    (0x124 + G2D_BLD)
+#define BLD_CSC0_COEF12    (0x128 + G2D_BLD)
+#define BLD_CSC0_CONST1    (0x12C + G2D_BLD)
+#define BLD_CSC0_COEF20    (0x130 + G2D_BLD)
+#define BLD_CSC0_COEF21    (0x134 + G2D_BLD)
+#define BLD_CSC0_COEF22    (0x138 + G2D_BLD)
+#define BLD_CSC0_CONST2    (0x13C + G2D_BLD)
+#define BLD_CSC1_COEF00    (0x140 + G2D_BLD)
+#define BLD_CSC1_COEF01    (0x144 + G2D_BLD)
+#define BLD_CSC1_COEF02    (0x148 + G2D_BLD)
+#define BLD_CSC1_CONST0    (0x14C + G2D_BLD)
+#define BLD_CSC1_COEF10    (0x150 + G2D_BLD)
+#define BLD_CSC1_COEF11    (0x154 + G2D_BLD)
+#define BLD_CSC1_COEF12    (0x158 + G2D_BLD)
+#define BLD_CSC1_CONST1    (0x15C + G2D_BLD)
+#define BLD_CSC1_COEF20    (0x160 + G2D_BLD)
+#define BLD_CSC1_COEF21    (0x164 + G2D_BLD)
+#define BLD_CSC1_COEF22    (0x168 + G2D_BLD)
+#define BLD_CSC1_CONST2    (0x16C + G2D_BLD)
+#define BLD_CSC2_COEF00    (0x170 + G2D_BLD)
+#define BLD_CSC2_COEF01    (0x174 + G2D_BLD)
+#define BLD_CSC2_COEF02    (0x178 + G2D_BLD)
+#define BLD_CSC2_CONST0    (0x17C + G2D_BLD)
+#define BLD_CSC2_COEF10    (0x180 + G2D_BLD)
+#define BLD_CSC2_COEF11    (0x184 + G2D_BLD)
+#define BLD_CSC2_COEF12    (0x188 + G2D_BLD)
+#define BLD_CSC2_CONST1    (0x18C + G2D_BLD)
+#define BLD_CSC2_COEF20    (0x190 + G2D_BLD)
+#define BLD_CSC2_COEF21    (0x194 + G2D_BLD)
+#define BLD_CSC2_COEF22    (0x198 + G2D_BLD)
+#define BLD_CSC2_CONST2    (0x19C + G2D_BLD)
+
+/* WB register */
+#define WB_ATT             (0x00 + G2D_WB)
+#define WB_SIZE            (0x04 + G2D_WB)
+#define WB_PITCH0          (0x08 + G2D_WB)
+#define WB_PITCH1          (0x0C + G2D_WB)
+#define WB_PITCH2          (0x10 + G2D_WB)
+#define WB_LADD0           (0x14 + G2D_WB)
+#define WB_HADD0           (0x18 + G2D_WB)
+#define WB_LADD1           (0x1C + G2D_WB)
+#define WB_HADD1           (0x20 + G2D_WB)
+#define WB_LADD2           (0x24 + G2D_WB)
+#define WB_HADD2           (0x28 + G2D_WB)
+
+/* Rotate register */
+#define ROT_CTL            (0x00 + G2D_ROT)
+#define ROT_INT            (0x04 + G2D_ROT)
+#define ROT_TIMEOUT        (0x08 + G2D_ROT)
+#define ROT_IFMT           (0x20 + G2D_ROT)
+#define ROT_ISIZE          (0x24 + G2D_ROT)
+#define ROT_IPITCH0        (0x30 + G2D_ROT)
+#define ROT_IPITCH1        (0x34 + G2D_ROT)
+#define ROT_IPITCH2        (0x38 + G2D_ROT)
+#define ROT_ILADD0         (0x40 + G2D_ROT)
+#define ROT_IHADD0         (0x44 + G2D_ROT)
+#define ROT_ILADD1         (0x48 + G2D_ROT)
+#define ROT_IHADD1         (0x4C + G2D_ROT)
+#define ROT_ILADD2         (0x50 + G2D_ROT)
+#define ROT_IHADD2         (0x54 + G2D_ROT)
+#define ROT_OSIZE          (0x84 + G2D_ROT)
+#define ROT_OPITCH0        (0x90 + G2D_ROT)
+#define ROT_OPITCH1        (0x94 + G2D_ROT)
+#define ROT_OPITCH2        (0x98 + G2D_ROT)
+#define ROT_OLADD0         (0xA0 + G2D_ROT)
+#define ROT_OHADD0         (0xA4 + G2D_ROT)
+#define ROT_OLADD1         (0xA8 + G2D_ROT)
+#define ROT_OHADD1         (0xAC + G2D_ROT)
+#define ROT_OLADD2         (0xB0 + G2D_ROT)
+#define ROT_OHADD2         (0xB4 + G2D_ROT)
+
+/* #define write_wvalue(addr, data) m_usbwordwrite32(  addr, data ) */
+/* #define write_wvalue(addr, v) put_wvalue(addr, v) */
+/* #define read_wvalue(addr) get_wvalue(addr) */
+
+/* byte input */
+#define get_bvalue(n)	(*((volatile __u8 *)(n)))
+/* byte output */
+#define put_bvalue(n, c)	(*((volatile __u8 *)(n)) = (c))
+/* half word input */
+#define get_hvalue(n)	(*((volatile __u16 *)(n)))
+/* half word output */
+#define put_hvalue(n, c)	(*((volatile __u16 *)(n)) = (c))
+/* word input */
+#define get_wvalue(n)	(*((volatile __u32 *)(n)))
+/* word output */
+#define put_wvalue(n, c)	(*((volatile __u32 *)(n)) = (c))
+
 /* clear most of the registers value to default */
 static uint32_t mixer_reg_init(void){
 	//uint32_t i;
 
 //	for(i=0;i<=0x148;i+=4)
 //		write_wvalue(i, 0);
-	G2D->G2D_SCAN_ORDER_REG = 0x15FF0000;//DMA MBUS Length
+	G2D_V0->G2D_SCAN_ORDER_REG = 0x15FF0000;//DMA MBUS Length
 
 //	/* initial the color space converter parameter */
 //	csc_coeff_set();
@@ -426,17 +620,24 @@ static uint32_t mixer_reg_init(void){
 
 	return 0;
 }
+
 void arm_hardware_mdma_initialize(void)
 {
 	PRINTF("arm_hardware_mdma_initialize (G2D)\n");
 	CCU->MBUS_CLK_REG |= (1uL << 30);				// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 10);	// Gating MBUS Clock For G2D
 
+//	CCU->G2D_CLK_REG =
+//		0x02 * (1uL << 4) |
+//		0;
 	CCU->G2D_CLK_REG |= (1uL << 31);	// G2D_CLK_GATING
+
+	//CCU->G2D_BGR_REG = 0;
 	CCU->G2D_BGR_REG |= (1uL << 0);		/* Enable gating clock for G2D 1: Pass */
-	CCU->G2D_BGR_REG &= ~ (1uL << 16);	/* G2D reset 0: Assert */
+	//CCU->G2D_BGR_REG &= ~ (1uL << 16);	/* G2D reset 0: Assert */
 	CCU->G2D_BGR_REG |= (1uL << 16);	/* G2D reset 1: De-assert */
-	printhex(G2D_BASE, G2D, 512);
+	//memset(G2D, 0xFF, sizeof * G2D);
+	//printhex(G2D_BASE, G2D, sizeof * G2D);
 	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
 #endif /* WITHMDMAHW */
@@ -554,16 +755,16 @@ hwacc_fillrect_u8(
 //
 //uint32_t mixer_clear_init(void){
 //
-//	G2D->G2D_STATUS_REG, 0x300);
-//	G2D->G2D_CONTROL_REG, 0x0);
+//	G2D_V0->G2D_STATUS_REG, 0x300);
+//	G2D_V0->G2D_CONTROL_REG, 0x0);
 //
 //	return 0;
 //}
 //
 //uint32_t mixer_clear_init0(void){
 //
-//	G2D->G2D_CMDQ_STS_REG, 0x100);
-//	G2D->G2D_CMDQ_CTL_REG, 0x0);
+//	G2D_V0->G2D_CMDQ_STS_REG, 0x100);
+//	G2D_V0->G2D_CMDQ_CTL_REG, 0x0);
 //
 //	return 0;
 //}
@@ -690,12 +891,12 @@ hwacc_fillrect_u16(
 	#warning Imppement for CPUSTYPE_ALLWNT113
 	const unsigned stride = GXADJ(dx);
 
-//	G2D->G2D_DMA0_CONTROL_REG |= (1uL << 0);
-//	G2D->G2D_DMA0_FILLCOLOR_REG = color;
-//	ASSERT(G2D->G2D_DMA0_FILLCOLOR_REG == color);
+//	G2D_V0->G2D_DMA0_CONTROL_REG |= (1uL << 0);
+//	G2D_V0->G2D_DMA0_FILLCOLOR_REG = color;
+//	ASSERT(G2D_V0->G2D_DMA0_FILLCOLOR_REG == color);
 
-	G2D->G2D_OUTPUT0_STRIDE_REG = stride; //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
-	ASSERT(G2D->G2D_OUTPUT0_STRIDE_REG == stride); //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
+	G2D_V0->G2D_OUTPUT0_STRIDE_REG = stride; //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
+	ASSERT(G2D_V0->G2D_OUTPUT0_STRIDE_REG == stride); //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
 
 	uint32_t reg_val = 0;
 	uint64_t addr_val;
@@ -703,10 +904,10 @@ hwacc_fillrect_u16(
 
 
 	//mixer_reg_init();/* initial mixer register */
-	G2D->G2D_SCAN_ORDER_REG = 0x15FF0000; // DMA MBUS Length
+	G2D_V0->G2D_SCAN_ORDER_REG = 0x15FF0000; // DMA MBUS Length
 
 	/* channel0 is the fill surface */
-	G2D->G2D_DMA0_SIZE_REG = (w - 1) | ((h - 1) << 16); //(para->dst_rect.w -1) | ((para->dst_rect.h -1)<<16);
+	G2D_V0->G2D_DMA0_SIZE_REG = (w - 1) | ((h - 1) << 16); //(para->dst_rect.w -1) | ((para->dst_rect.h -1)<<16);
 
 	/* globe alpha mode */
 	if (0) ////(para->flag & G2D_FIL_PLANE_ALPHA)
@@ -718,23 +919,23 @@ hwacc_fillrect_u16(
 		////reg_val |= (para->alpha<<24)|0x8;
 	}
 	reg_val |= 0x1;
-	G2D->G2D_DMA0_CONTROL_REG = reg_val;
+	G2D_V0->G2D_DMA0_CONTROL_REG = reg_val;
 	////mixer_set_fillcolor(para->color,0);
-	G2D->G2D_DMA0_FILLCOLOR_REG = color;
-	ASSERT(G2D->G2D_DMA0_FILLCOLOR_REG == color);
-	G2D->G2D_DMA0_CONTROL_REG |= G2D_FILL_ENABLE;
+	G2D_V0->G2D_DMA0_FILLCOLOR_REG = color;
+	ASSERT(G2D_V0->G2D_DMA0_FILLCOLOR_REG == color);
+	G2D_V0->G2D_DMA0_CONTROL_REG |= G2D_FILL_ENABLE;
 
-	if (0) ////((para->flag & G2D_FIL_PLANE_ALPHA) || (para->flag & G2D->G2D_FIL_PIXEL_ALPHA) || (para->flag & G2D_FIL_MULTI_ALPHA))
+	if (0) ////((para->flag & G2D_FIL_PLANE_ALPHA) || (para->flag & G2D_V0->G2D_FIL_PIXEL_ALPHA) || (para->flag & G2D_FIL_MULTI_ALPHA))
 	{
 		/* channel3 is the dst surface */
 //		addr_val = mixer_get_addr(para->dst_image.addr[0],para->dst_image.format,para->dst_image.w,para->dst_rect.x,para->dst_rect.y);
 //		reg_val = (addr_val>>32)&0xF;/* high addr in bits */
-//		G2D->G2D_DMA_HADDR_REG = reg_val<<24;
+//		G2D_V0->G2D_DMA_HADDR_REG = reg_val<<24;
 //		reg_val = addr_val&0xFFFFFFFF;/* low addr in bits */
-//		G2D->G2D_DMA3_LADDR_REG = reg_val;
-//		G2D->G2D_DMA3_STRIDE_REG = para->dst_image.w*mixer_bpp_count(para->dst_image.format);
-//		G2D->G2D_DMA3_SIZE_REG = (para->dst_rect.w -1) | ((para->dst_rect.h -1)<<16);
-//		reg_val = G2D->G2D_DMA3_CONTROL_REG;
+//		G2D_V0->G2D_DMA3_LADDR_REG = reg_val;
+//		G2D_V0->G2D_DMA3_STRIDE_REG = para->dst_image.w*mixer_bpp_count(para->dst_image.format);
+//		G2D_V0->G2D_DMA3_SIZE_REG = (para->dst_rect.w -1) | ((para->dst_rect.h -1)<<16);
+//		reg_val = G2D_V0->G2D_DMA3_CONTROL_REG;
 
 		/* palette format */
 //		if (para->dst_image.format > 0x19)
@@ -742,51 +943,51 @@ hwacc_fillrect_u16(
 //			reg_val |= 0x2;
 //		}
 //		reg_val |= G2D_IDMA_ENABLE | mixer_in_fmtseq_set(para->dst_image.format,para->dst_image.pixel_seq);
-//		G2D->G2D_DMA3_CONTROL_REG = reg_val;
-//		G2D->G2D_CK_CONTROL_REG = 0x1;
+//		G2D_V0->G2D_DMA3_CONTROL_REG = reg_val;
+//		G2D_V0->G2D_CK_CONTROL_REG = 0x1;
 	}
-	G2D->G2D_ROP_INDEX0_REG = 0x840;
+	G2D_V0->G2D_ROP_INDEX0_REG = 0x840;
 
 	/* output surface is the dst surface */
-	G2D->G2D_OUTPUT_SIZE_REG = (w - 1) | ((h - 1) << 16); //(para->dst_rect.w -1) | ((para->dst_rect.h -1)<<16);
+	G2D_V0->G2D_OUTPUT_SIZE_REG = (w - 1) | ((h - 1) << 16); //(para->dst_rect.w -1) | ((para->dst_rect.h -1)<<16);
 
 	addr_val = (uintptr_t) & buffer [row * GXADJ(dx) + col]; // mixer_get_addr(para->dst_image.addr[0],para->dst_image.format,para->dst_image.w,para->dst_rect.x,para->dst_rect.y);
 	reg_val = (addr_val>>32) & 0xF;/* high addr in bits */
-	G2D->G2D_OUTPUT_HADDR_REG = reg_val;
+	G2D_V0->G2D_OUTPUT_HADDR_REG = reg_val;
 	reg_val = addr_val & 0xFFFFFFFF;/* low addr in bits */
-	G2D->G2D_OUTPUT0_LADDR_REG = reg_val;
-	ASSERT(G2D->G2D_OUTPUT0_LADDR_REG == reg_val);
+	G2D_V0->G2D_OUTPUT0_LADDR_REG = reg_val;
+	ASSERT(G2D_V0->G2D_OUTPUT0_LADDR_REG == reg_val);
 
-	G2D->G2D_OUTPUT0_STRIDE_REG = stride; //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
-	G2D->G2D_OUTPUT_CONTROL_REG = 0x03; // RGB565? mixer_out_fmtseq_set(para->dst_image.format,para->dst_image.pixel_seq);
-	ASSERT(G2D->G2D_OUTPUT_CONTROL_REG == 0x03);
+	G2D_V0->G2D_OUTPUT0_STRIDE_REG = stride; //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
+	G2D_V0->G2D_OUTPUT_CONTROL_REG = 0x03; // RGB565? mixer_out_fmtseq_set(para->dst_image.format,para->dst_image.pixel_seq);
+	ASSERT(G2D_V0->G2D_OUTPUT_CONTROL_REG == 0x03);
 
 	/* start */
-	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
-	G2D->G2D_CONTROL_REG = 0;
-	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
-	G2D->G2D_CONTROL_REG = 0x303;
-	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
-	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
-	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
-	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
-	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D->G2D_CONTROL_REG, G2D->G2D_STATUS_REG);
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D_V0->G2D_CONTROL_REG, G2D_V0->G2D_STATUS_REG);
+	G2D_V0->G2D_CONTROL_REG = 0;
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D_V0->G2D_CONTROL_REG, G2D_V0->G2D_STATUS_REG);
+	G2D_V0->G2D_CONTROL_REG = 0x303;
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D_V0->G2D_CONTROL_REG, G2D_V0->G2D_STATUS_REG);
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D_V0->G2D_CONTROL_REG, G2D_V0->G2D_STATUS_REG);
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D_V0->G2D_CONTROL_REG, G2D_V0->G2D_STATUS_REG);
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D_V0->G2D_CONTROL_REG, G2D_V0->G2D_STATUS_REG);
+	PRINTF("G2D_CONTROL_REG=%08lX, G2D_STATUS_REG=%08lX\n", G2D_V0->G2D_CONTROL_REG, G2D_V0->G2D_STATUS_REG);
 	//result = g2d_wait_cmd_finish();
 	/* ожидаем выполнения операции */
 	for (;;)
 	{
-		const uint_fast32_t mod_irq_flag = G2D->G2D_STATUS_REG; // mixer_get_irq();
-		const uint_fast32_t cmd_irq_flag = G2D->G2D_CMDQ_STS_REG; // mixer_get_irq0();
+		const uint_fast32_t mod_irq_flag = G2D_V0->G2D_STATUS_REG; // mixer_get_irq();
+		const uint_fast32_t cmd_irq_flag = G2D_V0->G2D_CMDQ_STS_REG; // mixer_get_irq0();
 		if ((mod_irq_flag & G2D_FINISH_IRQ) != 0)
 		{
-			G2D->G2D_STATUS_REG = 0x300;
-			G2D->G2D_CONTROL_REG = 0x0;
+			G2D_V0->G2D_STATUS_REG = 0x300;
+			G2D_V0->G2D_CONTROL_REG = 0x0;
 			break;
 		}
 //		if ((cmd_irq_flag & G2D_FINISH_IRQ) != 0)
 //		{
-//			G2D->G2D_CMDQ_STS_REG = 0x100;
-//			G2D->G2D_CMDQ_CTL_REG = 0x0;
+//			G2D_V0->G2D_CMDQ_STS_REG = 0x100;
+//			G2D_V0->G2D_CMDQ_CTL_REG = 0x0;
 //			break;
 //		}
 		hardware_nonguiyield();

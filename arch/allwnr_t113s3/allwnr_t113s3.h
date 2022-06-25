@@ -338,6 +338,18 @@ typedef enum IRQn
 #define GPIOF_BASE		(GPIO_BASE + 0x030 * 5)		/*!< (GPIOF       ) Base Address */
 #define GPIOG_BASE		(GPIO_BASE + 0x030 * 6)		/*!< (GPIOG       ) Base Address */
 
+#define G2D_TOP_BASE        (0x00000 + G2D_BASE)
+#define G2D_MIXER_BASE      (0x00100 + G2D_BASE)
+#define G2D_BLD_BASE        (0x00400 + G2D_BASE)
+#define G2D_V0_BASE         (0x00800 + G2D_BASE)
+#define G2D_UI0_BASE        (0x01000 + G2D_BASE)
+#define G2D_UI1_BASE        (0x01800 + G2D_BASE)
+#define G2D_UI2_BASE        (0x02000 + G2D_BASE)
+#define G2D_WB_BASE         (0x03000 + G2D_BASE)
+#define G2D_VSU_BASE        (0x08000 + G2D_BASE)
+#define G2D_ROT_BASE        (0x28000 + G2D_BASE)
+#define G2D_GSU_BASE        (0x30000 + G2D_BASE)
+
 #define GIC_DISTRIBUTOR_BASE (GIC_BASE + 0x1000)
 #define GIC_INTERFACE_BASE   (GIC_BASE + 0x2000)
 
@@ -1884,7 +1896,7 @@ typedef struct DMAC_Type
 
 #define DE 			((DE_TypeDef *) DE_BASE)					/*!< \brief DE Interface register set access pointer */
 #define DI 			((DI_TypeDef *) DI_BASE)					/*!< \brief DI Interface register set access pointer */
-#define G2D 		((G2D_TypeDef *) G2D_BASE)					/*!< \brief G2D Interface register set access pointer */
+#define G2D_V0 		((G2D_TypeDef *) G2D_V0_BASE)					/*!< \brief G2D Interface register set access pointer */
 #define DSI 		((DSI_TypeDef *) DSI_BASE)					/*!< \brief DSI Interface register set access pointer */
 #define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)	/*!< \brief DISPLAY_TOP Interface register set access pointer */
 #define TCON_LCD0 	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)		/*!< \brief TCON_LCD0 Interface register set access pointer */
