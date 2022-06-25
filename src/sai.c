@@ -110,7 +110,8 @@ enum
 
 	FPGAIF_SAI_CR1_DS = 0x07, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 
-	NBSLOT_SAIFPGA = WITHFPGAIF_FRAMEBITS / 32,
+	NBSLOT_TX_SAIFPGA = WITHFPGAIF_FRAMEBITS / 32,
+	NBSLOT_RX_SAIFPGA = WITHFPGAIF_FRAMEBITS / 32,
 	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
 	// значениям DMABUFFSTEP32RX и DMABUFFSTEP32TX соответственно.
 	#if WITHFPGAIF_FRAMEBITS == 256
@@ -169,13 +170,14 @@ enum
 #if defined (CODEC1_FRAMEBITS)
 
 	#if CODEC1_FRAMEBITS == 64
-		CODEC1_SAI_CR1_DS = 0x07, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
+		SAIAUDIO_SAI_CR1_DS = 0x07, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 	#elif CODEC1_FRAMEBITS == 32
-		CODEC1_SAI_CR1_DS = 0x04, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
+		SAIAUDIO_SAI_CR1_DS = 0x04, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 	#else /* CODEC1_FRAMEBITS */
 		#error Unexpected CODEC1_FRAMEBITS value
 	#endif /* CODEC1_FRAMEBITS */
-	NBSLOT_SAIAUDIO = 2,	/* всегда стерео */
+	NBSLOT_RX_SAIAUDIO = 2,	/* DMABUFFSTEP16RX всегда стерео */
+	NBSLOT_TX_SAIAUDIO = 2,	/* DMABUFFSTEP16TX всегда стерео */
 	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
 	// значению DMABUFFSTEP16TX/DMABUFFSTEP16RX соответственно.
 	SLOTEN_RX_SAIAUDIO = 0x0003,
@@ -1503,7 +1505,7 @@ static void hardware_sai_a_tx_b_rx_initialize_codec1(SAI_Block_TypeDef * sai_A, 
 		//(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable
 		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
-		(CODEC1_SAI_CR1_DS * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
+		(SAIAUDIO_SAI_CR1_DS * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 		(0 * SAI_xCR1_PRTCFG_0) |	// 0: free protocol
 		(nodiv * SAI_xCR1_NODIV) |	// 1: no MCKDIV value
 		((mckdiv * SAI_xCR1_MCKDIV_0) & SAI_xCR1_MCKDIV) |	// MCKDIV vale = 4 bits
@@ -1541,17 +1543,18 @@ static void hardware_sai_a_tx_b_rx_initialize_codec1(SAI_Block_TypeDef * sai_A, 
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAIAUDIO - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	sai_A->SLOTR =
 		((SLOTEN_TX_SAIAUDIO << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((NBSLOT_TX_SAIAUDIO - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		commonslotr |
 		0;
 	sai_B->SLOTR =
 		((SLOTEN_RX_SAIAUDIO << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((NBSLOT_RX_SAIAUDIO - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		commonslotr |
 		0;
 
@@ -1572,24 +1575,10 @@ static void hardware_sai_a_tx_b_rx_initialize_codec1(SAI_Block_TypeDef * sai_A, 
 	sai_B->FRCR =
 		comm_frcr |
 		0;
-
-
 }
 
 static void hardware_sai_a_tx_b_rx_initialize_fpga(SAI_Block_TypeDef * sai_A, SAI_Block_TypeDef * sai_B, int master)
 {
-#if CPUSTYLE_STM32MP1
-	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI2EN; //подать тактирование
-	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SAI2LPEN; //подать тактирование
-	(void) RCC->MP_APB2LPENSETR;
-#else /* CPUSTYLE_STM32MP1 */
-	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
-	(void) RCC->APB2ENR;
-#endif /* CPUSTYLE_STM32MP1 */
-
 	sai_A->CR1 &= ~ SAI_xCR1_SAIEN;
 	sai_B->CR1 &= ~ SAI_xCR1_SAIEN;
 
@@ -1662,17 +1651,18 @@ static void hardware_sai_a_tx_b_rx_initialize_fpga(SAI_Block_TypeDef * sai_A, SA
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	sai_A->SLOTR =
 		((SLOTEN_TX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((NBSLOT_TX_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		commonslotr |
 		0;
 	sai_B->SLOTR =
 		((SLOTEN_RX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((NBSLOT_RX_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		commonslotr |
 		0;
 
@@ -1740,6 +1730,7 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
 	(void) RCC->APB2ENR;
 #endif /* CPUSTYLE_STM32MP1 */
+
 	hardware_sai1_sai2_clock_selection();
 	hardware_sai_a_tx_b_rx_initialize_codec1(SAI2_Block_A, SAI2_Block_B, 1);
 	SAI2HW_INITIALIZE();
@@ -2105,17 +2096,18 @@ static void hardware_sai1_master_duplex_initialize_v3d_fpga(void)		/* иници
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI1_Block_A->SLOTR =
 		((SLOTEN_TX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((NBSLOT_TX_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		commonslotr |
 		0;
 	SAI1_Block_B->SLOTR =
 		((SLOTEN_RX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((NBSLOT_RX_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		commonslotr |
 		0;
 
@@ -2229,17 +2221,18 @@ static void hardware_sai1_master_duplex_initialize_fpga(void)		/* инициал
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI1_Block_A->SLOTR = 
 		((SLOTEN_TX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((NBSLOT_TX_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		commonslotr |
 		0;
 	SAI1_Block_B->SLOTR = 
 		((SLOTEN_RX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((NBSLOT_RX_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		commonslotr |
 		0;
 
@@ -2350,17 +2343,18 @@ static void hardware_sai1_slave_duplex_initialize_fpga(void)		/* инициал�
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI1_Block_A->SLOTR = 
 		((SLOTEN_TX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((NBSLOT_TX_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		commonslotr |
 		0;
 	SAI1_Block_B->SLOTR = 
 		((SLOTEN_RX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((NBSLOT_RX_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		commonslotr |
 		0;
 
