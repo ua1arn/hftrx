@@ -6713,22 +6713,19 @@ const codec2if_t * board_getfpgacodecif(void)
 
 #endif /* defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_FPGAV1) */
 
-#if FPGA_CONF_DONE_BIT != 0
-/* получение сигнала завершения конфигурации FPGA. Возврат: 0 - конфигурация не завершена */
-static uint_fast8_t board_fpga_get_CONF_DONE(void)
+
+#if WITHFPGALOAD_DCFG
+static ALIGNX_BEGIN const FLASHMEMINIT uint32_t bitimage0 [] ALIGNX_END =
 {
-	return (FPGA_CONF_DONE_INPUT & FPGA_CONF_DONE_BIT) != 0;
-
-}
-#endif
-
-#if FPGA_NSTATUS_BIT != 0
-static uint_fast8_t board_fpga_get_NSTATUS(void)
+#include BOARD_BITIMAGE_NAME
+};
+/* получить расположение в памяти и количество элементов в массиве для загрузки PS ZYNQ */
+const uint32_t * getbitimage(size_t * count)
 {
-	return (FPGA_NSTATUS_INPUT & FPGA_NSTATUS_BIT) != 0;
-
+	* count = sizeof bitimage0 / sizeof bitimage0 [0];
+	return & bitimage0 [0];
 }
-#endif
+#endif /* WITHFPGALOAD_DCFG */
 
 #if WITHFPGALOAD_DCFG
 
@@ -6842,32 +6839,38 @@ static void board_fpga_loader_XDCFG(void)
 
 #endif /* WITHFPGALOAD_DCFG */
 
-#if WITHFPGALOAD_DCFG
-static ALIGNX_BEGIN const FLASHMEMINIT uint32_t bitimage0 [] ALIGNX_END =
-{
-#include BOARD_BITIMAGE_NAME
-};
-/* получить расположение в памяти и количество элементов в массиве для загрузки PS ZYNQ */
-const uint32_t * getbitimage(size_t * count)
-{
-	* count = sizeof bitimage0 / sizeof bitimage0 [0];
-	return & bitimage0 [0];
-}
-#endif /* WITHFPGALOAD_DCFG */
-
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 
-#if 0 && FPGA_INIT_DONE_BIT != 0
+/* получение сигнала завершения конфигурации FPGA. Возврат: 0 - конфигурация не завершена */
+static uint_fast8_t board_fpga_get_CONF_DONE(void)
+{
+#if FPGA_CONF_DONE_BIT != 0
+	return (FPGA_CONF_DONE_INPUT & FPGA_CONF_DONE_BIT) != 0;
+#else /* FPGA_CONF_DONE_BIT != 0 */
+	return 0;
+#endif /* FPGA_CONF_DONE_BIT != 0 */
+}
+
+static uint_fast8_t board_fpga_get_NSTATUS(void)
+{
+#if FPGA_NSTATUS_BIT != 0
+	return (FPGA_NSTATUS_INPUT & FPGA_NSTATUS_BIT) != 0;
+#else /* FPGA_NSTATUS_BIT != 0 */
+	return 1;
+#endif /* FPGA_NSTATUS_BIT != 0 */
+
+}
 
 /* не на всех платах соединено с процессором */
 static uint_fast8_t board_fpga_get_INIT_DONE(void)
 {
+#if 0 && FPGA_INIT_DONE_BIT != 0
 	return (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0;
-
-}
-
+#else
+	return 1;
 #endif
+}
 
 static void board_fpga_loader_initialize(void)
 {
@@ -7029,10 +7032,11 @@ static void board_fpga_loader_wait_AS(void)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-#if FPGA_NCONFIG_BIT != 0
-
+/* работоспособность функции под вопросом, были случаи незагрузки аппарата (с новыми версиями EP4CE22) */
 void board_fpga_reset(void)
 {
+#if FPGA_NCONFIG_BIT != 0
+
 	unsigned w = 500;
 	/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
@@ -7060,8 +7064,9 @@ void board_fpga_reset(void)
 	}
 restart:
 	;
-}
+
 #endif
+}
 
 #if WITHDSPEXTFIR
 
