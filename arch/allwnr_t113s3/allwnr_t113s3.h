@@ -1586,7 +1586,85 @@ typedef struct DI_Type
 /*!< G2D Controller Interface */
 typedef struct G2D_Type
 {
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
+	__IO uint32_t G2D_CONTROL_REG;                       /*!< Offset 0x000 Control register */
+	__IO uint32_t G2D_STATUS_REG;                        /*!< Offset 0x004 Status register */
+	__IO uint32_t G2D_SCAN_ORDER_REG;                    /*!< Offset 0x008 DMA scan order control register */
+	__IO uint32_t G2D_DMA_HADDR_REG;                     /*!< Offset 0x00C Input DMA high 4 bits start addr register */
+	__IO uint32_t G2D_DMA0_LADDR_REG;                    /*!< Offset 0x010 Input DMA0 low 32 bits start addr register */
+	__IO uint32_t G2D_DMA1_LADDR_REG;                    /*!< Offset 0x014 Input DMA1 low 32 bits start addr register */
+	__IO uint32_t G2D_DMA2_LADDR_REG;                    /*!< Offset 0x018 Input DMA2 low 32 bits start addr register */
+	__IO uint32_t G2D_DMA3_LADDR_REG;                    /*!< Offset 0x01C Input DMA3 low 32 bits start addr register */
+	__IO uint32_t G2D_DMA0_STRIDE_REG;                   /*!< Offset 0x020 Input DMA0 line stride register */
+	__IO uint32_t G2D_DMA1_STRIDE_REG;                   /*!< Offset 0x024 Input DMA1 line stride register */
+	__IO uint32_t G2D_DMA2_STRIDE_REG;                   /*!< Offset 0x028 Input DMA2 line stride register */
+	__IO uint32_t G2D_DMA3_STRIDE_REG;                   /*!< Offset 0x02C Input DMA3 line stride register */
+	__IO uint32_t G2D_DMA0_SIZE_REG;                     /*!< Offset 0x030 Input DMA0 memory block size register */
+	__IO uint32_t G2D_DMA1_SIZE_REG;                     /*!< Offset 0x034 Input DMA1 memory block size register */
+	__IO uint32_t G2D_DMA2_SIZE_REG;                     /*!< Offset 0x038 Input DMA2 memory block size register */
+	__IO uint32_t G2D_DMA3_SIZE_REG;                     /*!< Offset 0x03C Input DMA3 memory block size register */
+	__IO uint32_t G2D_DMA0_COOR_REG;                     /*!< Offset 0x040 Input DMA0 memory block coordinate register */
+	__IO uint32_t G2D_DMA1_COOR_REG;                     /*!< Offset 0x044 Input DMA1 memory block coordinate register */
+	__IO uint32_t G2D_DMA2_COOR_REG;                     /*!< Offset 0x048 Input DMA2 memory block coordinate register */
+	__IO uint32_t G2D_DMA3_COOR_REG;                     /*!< Offset 0x04C Input DMA3 memory block coordinate register */
+	__IO uint32_t G2D_DMA0_CONTROL_REG;                  /*!< Offset 0x050 Input DMA0 control register */
+	__IO uint32_t G2D_DMA1_CONTROL_REG;                  /*!< Offset 0x054 Input DMA1 control register */
+	__IO uint32_t G2D_DMA2_CONTROL_REG;                  /*!< Offset 0x058 Input DMA2 control register */
+	__IO uint32_t G2D_DMA3_CONTROL_REG;                  /*!< Offset 0x05C Input DMA3 control register */
+	__IO uint32_t G2D_DMA0_FILLCOLOR_REG;                /*!< Offset 0x060 Input DMA0 fillcolor register */
+	__IO uint32_t G2D_DMA1_FILLCOLOR_REG;                /*!< Offset 0x064 Input DMA1 fillcolor register */
+	__IO uint32_t G2D_DMA2_FILLCOLOR_REG;                /*!< Offset 0x068 Input DMA2 fillcolor register */
+	__IO uint32_t G2D_DMA3_FILLCOLOR_REG;                /*!< Offset 0x06C Input DMA3 fillcolor register */
+	uint32_t reserved1; /* at 0x070 */
+	__IO uint32_t G2D_CSC0_CONTROL_REG;                  /*!< Offset 0x074 Color space converter0 control register */
+	__IO uint32_t G2D_CSC1_CONTROL_REG;                  /*!< Offset 0x078 Color space converter1 control register */
+	uint32_t reserved2; /* at 0x07C */
+	__IO uint32_t G2D_SCALER_CONTROL_REG;                /*!< Offset 0x080 Scaler control register */
+	__IO uint32_t G2D_SCALER_SIZE_REG;                   /*!< Offset 0x084 Scaler output size control register */
+	__IO uint32_t G2D_SCALER_HFACTOR_REG;                /*!< Offset 0x088 Scaler horizontal scaling factor register */
+	__IO uint32_t G2D_SCALER_VFACTOR_REG;                /*!< Offset 0x08C Scaler vertical scaling factor register */
+	__IO uint32_t G2D_SCALER_HPHASE_REG;                 /*!< Offset 0x090 Scaler horizontal start phase register */
+	__IO uint32_t G2D_SCALER_VPHASE_REG;                 /*!< Offset 0x094 Scaler vertical start phase register */
+	uint32_t reserved3 [0x0006]; /* at 0x098 */
+	__IO uint32_t G2D_ROP_CONTROL_REG;                   /*!< Offset 0x0B0 Rop control register */
+	uint32_t reserved4; /* at 0x0B4 */
+	__IO uint32_t G2D_ROP_INDEX0_REG;                    /*!< Offset 0x0B8 Rop index0 control table setting register */
+	__IO uint32_t G2D_ROP_INDEX1_REG;                    /*!< Offset 0x0BC Rop index1 control table setting register */
+	__IO uint32_t G2D_CK_CONTROL_REG;                    /*!< Offset 0x0C0 Colorkey/alpha control register */
+	__IO uint32_t G2D_CK_MINCOLOR_REG;                   /*!< Offset 0x0C4 Colorkey min color control register */
+	__IO uint32_t G2D_CK_MAXCOLOR_REG;                   /*!< Offset 0x0C8 Colorkey max color control register */
+	__IO uint32_t G2D_ROP_FILLCOLOR_REG;                 /*!< Offset 0x0CC Rop output fillcolor setting register */
+	__IO uint32_t G2D_CSC2_CONTROL_REG;                  /*!< Offset 0x0D0 Color space converter2 control register */
+	uint32_t reserved5 [0x0003]; /* at 0x0D4 */
+	__IO uint32_t G2D_OUTPUT_CONTROL_REG;                /*!< Offset 0x0E0 Output control register */
+	uint32_t reserved6; /* at 0x0E4 */
+	__IO uint32_t G2D_OUTPUT_SIZE_REG;                   /*!< Offset 0x0E8 Output size register */
+	__IO uint32_t G2D_OUTPUT_HADDR_REG;                  /*!< Offset 0x0EC Output high 4 bits address control register */
+	__IO uint32_t G2D_OUTPUT0_LADDR_REG;                 /*!< Offset 0x0F0 Output low 32 bits address control register */
+	__IO uint32_t G2D_OUTPUT1_LADDR_REG;                 /*!< Offset 0x0F4 Output low 32 bits address control register */
+	__IO uint32_t G2D_OUTPUT2_LADDR_REG;                 /*!< Offset 0x0F8 Output low 32 bits address control register */
+	uint32_t reserved7; /* at 0x0FC */
+	__IO uint32_t G2D_OUTPUT0_STRIDE_REG;                /*!< Offset 0x100 Output channel0 line stride control register */
+	__IO uint32_t G2D_OUTPUT1_STRIDE_REG;                /*!< Offset 0x104 Output channel1 line stride control register */
+	__IO uint32_t G2D_OUTPUT2_STRIDE_REG;                /*!< Offset 0x108 Output channel2 line stride control register */
+	uint32_t reserved8 [0x0005]; /* at 0x10C */
+	__IO uint32_t G2D_OALPHA_CONTROL_REG;                /*!< Offset 0x120 Output alpha control register */
+	uint32_t reserved9 [0x0003]; /* at 0x124 */
+	__IO uint32_t G2D_DMA0_MBCTL_REG;                    /*!< Offset 0x130 Input DMA0 micro block control register */
+	__IO uint32_t G2D_DMA1_MBCTL_REG;                    /*!< Offset 0x134 Input DMA1 micro block control register */
+	__IO uint32_t G2D_DMA2_MBCTL_REG;                    /*!< Offset 0x138 Input DMA2 micro block control register */
+	__IO uint32_t G2D_DMA3_MBCTL_REG;                    /*!< Offset 0x13C Input DMA3 micro block control register */
+	__IO uint32_t G2D_CMDQ_CTL_REG;                      /*!< Offset 0x140 command queue control register */
+	__IO uint32_t G2D_CMDQ_STS_REG;                      /*!< Offset 0x144 command queue status register */
+	__IO uint32_t G2D_CMDQ_ADDR_REG;                     /*!< Offset 0x148 command queue storage start address register */
+	uint32_t reserved10 [0x000D]; /* at 0x14C */
+	__IO uint32_t G2D_CSC01_ADDR_REG [0x00C];            /*!< Offset 0x180 CSC0/1 coefficient/constant start addr register0x180-0x1ac) */
+	uint32_t reserved11 [0x0004]; /* at 0x1B0 */
+	__IO uint32_t G2D_CSC2_ADDR_REG [0x00C];             /*!< Offset 0x1C0 CSC2 coefficient/constant start addr register0x1c0-0x1ec) */
+	uint32_t reserved12 [0x0004]; /* at 0x1F0 */
+	__IO uint32_t G2D_SCALER_HFILTER_REG [0x020];        /*!< Offset 0x200 Scaling horizontal filtering coefficient ram block register0x200-0x27c) */
+	__IO uint32_t G2D_SCALER_VFILTER_REG [0x020];        /*!< Offset 0x280 Scaling vertical filtering coefficient ram block register0x280-0x2fc) */
+	uint32_t reserved13 [0x0040]; /* at 0x300 */
+	__IO uint32_t G2D_PALETTE_TAB_REG [0x100];           /*!< Offset 0x400 Scaling horizontal filtering coefficient ram block register0x400-0x7fc) */
 } G2D_TypeDef;
 /*
  * @brief DSI

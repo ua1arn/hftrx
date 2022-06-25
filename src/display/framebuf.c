@@ -251,6 +251,9 @@ void arm_hardware_mdma_initialize(void)
 #elif WITHMDMAHW & CPUSTYPE_ALLWNT113
 
 /* Использование G2D для формирования изображений */
+// https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_driver.c
+// https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_regs.h
+
 void arm_hardware_mdma_initialize(void)
 {
 	CCU->MBUS_CLK_REG |= (1uL << 30);				// MBUS Reset 1: De-assert reset
