@@ -105,7 +105,7 @@ static void tlv320aic23_initialize_fullduplex(void)
 	const unsigned long framebits = CODEC1_FRAMEBITS;
 
 #if CPUSTYPE_ALLWNT113
-	I2S1HW_UNINITIALIZE(1);
+	I2S1HW_UNINITIALIZE(! master);
 #endif /* CPUSTYPE_ALLWNT113 */
 
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
@@ -194,7 +194,7 @@ static void tlv320aic23_initialize_fullduplex(void)
 		);
 
 #if CPUSTYPE_ALLWNT113
-	I2S1HW_INITIALIZE(1);
+	I2S1HW_INITIALIZE(! master);
 #endif /* CPUSTYPE_ALLWNT113 */
 }
 
