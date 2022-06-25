@@ -9909,7 +9909,9 @@ int _gettimeofday(struct timeval *p, void *tz)
 {
 	if (p != NULL)
 	{
-		memset(p, 0, sizeof * p);
+		//memset(p, 0, sizeof * p);
+		p->tv_usec = 0;
+		p->tv_sec = sys_now() / 1000;
 	}
 	return 0;
 }
