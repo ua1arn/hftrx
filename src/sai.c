@@ -1471,7 +1471,7 @@ static void hardware_sai1_sai2_clock_selection(void)
 }
 
 
-static void hardware_sai_a_tx_b_rx_master_initialize_codec1(SAI_Block_TypeDef * sai_A, SAI_Block_TypeDef * sai_B, int master)
+static void hardware_sai_a_tx_b_rx_initialize_codec1(SAI_Block_TypeDef * sai_A, SAI_Block_TypeDef * sai_B, int master)
 {
 	sai_A->CR1 &= ~ SAI_xCR1_SAIEN;
 	sai_B->CR1 &= ~ SAI_xCR1_SAIEN;
@@ -1511,22 +1511,22 @@ static void hardware_sai_a_tx_b_rx_master_initialize_codec1(SAI_Block_TypeDef * 
 		0;
 
 #if WITHSAICLOCKFROMPIN
-	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_master_initialize_codec1: 1 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
+	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_initialize_codec1: 1 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
 #elif WITHSAICLOCKFROMI2S
-	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_master_initialize_codec1: 2 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
+	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_initialize_codec1: 2 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #else
-	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_master_initialize_codec1: 3 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
+	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_initialize_codec1: 3 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
 #endif
 
 	sai_A->CR1 =
 		commoncr1 |
 		(0 * SAI_xCR1_SYNCEN_0) |	// SYNChronization ENable: 0: audio sub-block in asynchronous mode.
-		(0 * SAI_xCR1_MODE_0) |	// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
+		((master ? 0 : 2) * SAI_xCR1_MODE_0) |	// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
 		0;
 	sai_B->CR1 =
 		commoncr1 |
 		(1 * SAI_xCR1_SYNCEN_0) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
-		(3 * SAI_xCR1_MODE_0) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
+		((master ? 3 : 3) * SAI_xCR1_MODE_0) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
 		0;
 
 	// CR2 value
@@ -1590,7 +1590,7 @@ static void hardware_sai1_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 #endif /* CPUSTYLE_STM32MP1 */
 
 	hardware_sai1_sai2_clock_selection();
-	hardware_sai_a_tx_b_rx_master_initialize_codec1(SAI1_Block_A, SAI1_Block_B, 1);
+	hardware_sai_a_tx_b_rx_initialize_codec1(SAI1_Block_A, SAI1_Block_B, 1);
 	SAI1HW_INITIALIZE();
 }
 
@@ -1606,7 +1606,7 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 	(void) RCC->APB2ENR;
 #endif /* CPUSTYLE_STM32MP1 */
 	hardware_sai1_sai2_clock_selection();
-	hardware_sai_a_tx_b_rx_master_initialize_codec1(SAI2_Block_A, SAI2_Block_B, 1);
+	hardware_sai_a_tx_b_rx_initialize_codec1(SAI2_Block_A, SAI2_Block_B, 1);
 	SAI2HW_INITIALIZE();
 }
 
