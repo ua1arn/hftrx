@@ -85,7 +85,7 @@
 //#define MDMA_CTCR_xSIZE_U8			0x00	// 1 byte
 //#define MDMA_CTCR_xSIZE_RGB565		0x01	// 2 byte
 
-#if WITHMDMAHW
+#if WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 
 static uint_fast8_t
 mdma_getbus(uintptr_t addr)
@@ -248,6 +248,20 @@ void arm_hardware_mdma_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 }
 
+#elif WITHMDMAHW & CPUSTYPE_ALLWNT113
+
+/* Использование G2D для формирования изображений */
+void arm_hardware_mdma_initialize(void)
+{
+	CCU->MBUS_CLK_REG |= (1uL << 30);				// MBUS Reset 1: De-assert reset
+	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 10);	// Gating MBUS Clock For G2D
+
+	CCU->G2D_CLK_REG |= (1uL << 31);	// G2D_CLK_GATING
+	CCU->G2D_BGR_REG |= (1uL << 0);		/* Enable gating clock for G2D */
+	CCU->G2D_BGR_REG &= ~ (1uL << 16);	/* G2D reset */
+	CCU->G2D_BGR_REG |= (1uL << 16);	/* G2D reset */
+
+}
 #endif /* WITHMDMAHW */
 
 #if ! (LCDMODE_DUMMY || LCDMODE_HD44780)
@@ -271,7 +285,7 @@ hwacc_fillrect_u8(
 	enum { PIXEL_SIZE = sizeof * buffer };
 	enum { PIXEL_SIZE_CODE = 0 };
 
-#if WITHMDMAHW
+#if WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 	// MDMA implementation
 
 	//static ALIGNX_BEGIN volatile uint8_t tgcolor [(DCACHEROWSIZE + sizeof (uint8_t) - 1) / sizeof (uint8_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
@@ -325,6 +339,10 @@ hwacc_fillrect_u8(
 
 	mdma_startandwait();
 
+#elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
+	/* Использование G2D для формирования изображений */
+	#warning Imppement for CPUSTYPE_ALLWNT113
+
 #else /* WITHMDMAHW */
 	// программная реализация
 
@@ -361,7 +379,7 @@ hwacc_fillrect_u16(
 	enum { PIXEL_SIZE_CODE = 1 };
 
 
-#if WITHMDMAHW
+#if WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 	// MDMA implementation
 
 	//static ALIGNX_BEGIN volatile uint16_t tgcolor [DCACHEROWSIZE / sizeof (uint16_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
@@ -458,6 +476,9 @@ hwacc_fillrect_u16(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
+#elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
+	/* Использование G2D для формирования изображений */
+	#warning Imppement for CPUSTYPE_ALLWNT113
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
@@ -498,7 +519,7 @@ hwacc_fillrect_u24(
 
 	ASSERT(sizeof (* buffer) == 3);
 
-#if 0//WITHMDMAHW
+#if 0 && WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 	// MDMA implementation
 
 	//static ALIGNX_BEGIN volatile PACKEDCOLORMAIN_T tgcolor [(DCACHEROWSIZE + sizeof (PACKEDCOLORMAIN_T) - 1) / sizeof (PACKEDCOLORMAIN_T)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
@@ -595,6 +616,10 @@ hwacc_fillrect_u24(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
+#elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
+	/* Использование G2D для формирования изображений */
+	#warinig Implement for CPUSTYPE_ALLWNT113
+
 #else
 	// программная реализация
 
@@ -635,7 +660,7 @@ hwacc_fillrect_u32(
 	enum { PIXEL_SIZE = sizeof * buffer };
 	enum { PIXEL_SIZE_CODE = 2 };	// word (32-bit)
 
-#if WITHMDMAHW
+#if WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 	// MDMA implementation
 
 	//static ALIGNX_BEGIN volatile uint32_t tgcolor [(DCACHEROWSIZE + sizeof (uint32_t) - 1) / sizeof (uint32_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
@@ -730,6 +755,10 @@ hwacc_fillrect_u32(
 
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
+
+#elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
+	/* Использование G2D для формирования изображений */
+	#warinig Implement for CPUSTYPE_ALLWNT113
 
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
@@ -1241,7 +1270,7 @@ void hwaccel_copy(
 	if (sdx == 0 || sdy == 0)
 		return;
 
-#if WITHMDMAHW
+#if WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 	// MDMA реализация
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
