@@ -286,6 +286,8 @@
 		arm_hardware_pioi_altfn2(1uL << 6,	AF_SAI2);			/* PI6 - SAI2_SD_A	(i2s data to fpga)	*/ \
 		arm_hardware_pioe_altfn2(1uL << 11,	AF_SAI2);			/* PE11 - SAI2_SD_B	(i2s data from fpga)	*/ \
 	} while (0)
+	#define SAI1HW_INITIALIZE()	do { \
+	} while (0)
 #endif /* WITHSAI2HW */
 
 /* Распределение битов в ARM контроллерах */
