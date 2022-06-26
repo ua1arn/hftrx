@@ -641,6 +641,11 @@ void arm_hardware_mdma_initialize(void)
 	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 
 
+	* (volatile uint32_t *) (G2D_TOP_BASE + 0) = ~ 0;
+	* (volatile uint32_t *) (G2D_TOP_BASE + 4) = ~ 0;
+	* (volatile uint32_t *) (G2D_TOP_BASE + 8) = ~ 0;
+	* (volatile uint32_t *) (G2D_TOP_BASE + 12) = ~ 0;
+
 	G2D_V0->G2D_PALETTE_TAB_REG [0] = 0xDEADBEEF;
 	G2D_V0->G2D_PALETTE_TAB_REG [1] = 0xABBA1980;
 	PRINTF("arm_hardware_mdma_initialize (G2D) vals: %08lX, %08lX\n", G2D_V0->G2D_PALETTE_TAB_REG [0], G2D_V0->G2D_PALETTE_TAB_REG [1]);
