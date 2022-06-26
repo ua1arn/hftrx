@@ -410,6 +410,8 @@ enum g2d_scan_order{
 };
 
 
+// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
+
 /* module base addr */
 //#define G2D_TOP_BASE        (0x00000 + G2D_BASE)
 //#define G2D_MIXER_BASE      (0x00100 + G2D_BASE)
@@ -914,6 +916,10 @@ hwacc_fillrect_u16(
 	/* Использование G2D для формирования изображений */
 	#warning Imppement for CPUSTYPE_ALLWNT113
 	const unsigned stride = GXADJ(dx);
+	const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+
 
 //	g2d_rect rect0;
 //
@@ -934,15 +940,20 @@ hwacc_fillrect_u16(
 	G2D_V0->V0_PITCH0 = PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
 	G2D_V0->V0_PITCH2 = 0;	// V
-	ASSERT(G2D_V0->V0_PITCH0 == PIXEL_SIZE);
-	ASSERT(G2D_V0->V0_PITCH1 == 0);
-	ASSERT(G2D_V0->V0_PITCH2 == 0);
 
+	G2D_V0->V0_HDS_CTL0 = 0;
+	G2D_V0->V0_HDS_CTL1 = 0;
+	G2D_V0->V0_VDS_CTL0 = 0;
+	G2D_V0->V0_VDS_CTL1 = 0;
 
 //	/* set the fill color value */
 //	g2d_fc_set(0, color_value);
+	G2D_V0->V0_ATTCTL = (0 * 1uL << 16) | (1uL << 4);
 	G2D_V0->V0_FILLC = color;
-	ASSERT(G2D_V0->V0_FILLC == color);
+
+	G2D_V0->V0_COOR = (col << 16) | (row << 0);
+	G2D_V0->V0_MBSIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_V0->V0_SIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
 
 //	if (dst->format >= G2D_FORMAT_IYUV422_V0Y1U0Y0) {
 //		g2d_vsu_para_set(dst->format, dst->clip_rect.w,
@@ -976,26 +987,61 @@ hwacc_fillrect_u16(
 
 //	/* ROP sel ch0 pass */
 //	write_wvalue(ROP_CTL, 0xf0);
-	G2D_BLD->ROP_CTL = 0xf0uL;
+	G2D_BLD->ROP_CTL = 0xF0uL;
 
 //	g2d_wb_set(dst);
 	G2D_WB->WB_ATT = G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = ((h - 1) << 16) | ((w - 1) << 0);
-	G2D_BLD->BLD_SIZE = ((h - 1) << 16) | ((w - 1) << 0);
+	G2D_WB->WB_SIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_BLD->BLD_SIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_BLD->BLD_OUT_COLOR = 0;	/* color space parameers */
 
-	G2D_V0->V0_LADD0 = (uintptr_t) & buffer [row * GXADJ(dx) + col];
-	G2D_V0->V0_LADD1 = (uintptr_t) & buffer [row * GXADJ(dx) + col];
-	G2D_V0->V0_LADD2 = (uintptr_t) & buffer [row * GXADJ(dx) + col];
-	G2D_V0->V0_HADD = 0;
+	G2D_V0->V0_LADD0 = addr;
+	G2D_V0->V0_LADD1 = addr;
+	G2D_V0->V0_LADD2 = addr;
+	G2D_V0->V0_HADD = 0; //addr >> 32;
 
+//	__IO uint32_t UI0_ATTR;                              /*!< Offset 0x000 UI0_ATTR */
+//	__IO uint32_t UI0_MBSIZE;                            /*!< Offset 0x004 UI0_MBSIZE */
+//	__IO uint32_t UI0_COOR;                              /*!< Offset 0x008 UI0_COOR */
+//	__IO uint32_t UI0_PITCH;                             /*!< Offset 0x00C UI0_PITCH */
+//	__IO uint32_t UI0_LADD;                              /*!< Offset 0x010 UI0_LADD */
+//	__IO uint32_t UI0_FILLC;                             /*!< Offset 0x014 UI0_FILLC */
+//	__IO uint32_t UI0_HADD;                              /*!< Offset 0x018 UI0_HADD */
+//	__IO uint32_t UI0_SIZE;                              /*!< Offset 0x01C UI0_SIZE */
 
+	G2D_UI0->UI0_FILLC = color;
+	G2D_UI0->UI0_ATTR = (0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
+	G2D_UI0->UI0_MBSIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_UI0->UI0_COOR = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_UI0->UI0_PITCH = PIXEL_SIZE;
+	G2D_UI0->UI0_LADD = addr;
+	G2D_UI0->UI0_HADD = 0; //addr >> 32;
+	G2D_UI0->UI0_SIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+
+	G2D_UI1->UI0_FILLC = color;
+	G2D_UI1->UI0_ATTR = (0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
+	G2D_UI1->UI0_MBSIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_UI1->UI0_COOR = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_UI1->UI0_PITCH = PIXEL_SIZE;
+	G2D_UI1->UI0_LADD = addr;
+	G2D_UI1->UI0_HADD = 0; //addr >> 32;
+	G2D_UI1->UI0_SIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+
+	G2D_UI2->UI0_FILLC = color;
+	G2D_UI2->UI0_ATTR = (0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
+	G2D_UI2->UI0_MBSIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_UI2->UI0_COOR = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_UI2->UI0_PITCH = PIXEL_SIZE;
+	G2D_UI2->UI0_LADD = addr;
+	G2D_UI2->UI0_HADD = 0; //addr >> 32;
+	G2D_UI2->UI0_SIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
 
 
 	//PRINTF("1 G2D_MIXER->G2D_MIXER_CTL=%08lX\n", G2D_MIXER->G2D_MIXER_CTL);
 	G2D_MIXER->G2D_MIXER_CTL |= (1uL << 31);	/* start the module */
 	//PRINTF("2 G2D_MIXER->G2D_MIXER_CTL=%08lX\n", G2D_MIXER->G2D_MIXER_CTL);
-
-	for (;;)
+	unsigned loop = 0;
+	for (;; ++ loop)
 	{
 //		if ((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0)
 //			break;
@@ -1003,9 +1049,14 @@ hwacc_fillrect_u16(
 		G2D_MIXER->G2D_MIXER_INT = sts;
 		if (((sts & (1uL << 0)) != 0))
 			break;
-		PRINTF("L G2D_MIXER->G2D_MIXER_CTL=%08lX, G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CTL, G2D_MIXER->G2D_MIXER_CLK);
+		if (loop > 55)
+		{
+			//PRINTF("L%u col/row/w/h=%u/%u/%u/%u G2D_MIXER->G2D_MIXER_CTL=%08lX, G2D_MIXER->G2D_MIXER_CLK=%08lX\n", loop, col, row, w,h, G2D_MIXER->G2D_MIXER_CTL, G2D_MIXER->G2D_MIXER_CLK);
+			//local_delay_us(100);
+		}
 	}
 	//PRINTF("3 G2D_MIXER->G2D_MIXER_CTL=%08lX\n", G2D_MIXER->G2D_MIXER_CTL);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
 //	G2D_V0->G2D_DMA0_CONTROL_REG |= (1uL << 0);
 //	G2D_V0->G2D_DMA0_FILLCOLOR_REG = color;
