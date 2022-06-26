@@ -938,9 +938,11 @@ hwacc_fillrect_u16(
 //	pitch2 = cal_align(vcnt * cw, image->align[2]);
 //	write_wvalue(V0_PITCH2, pitch2);
 
-	G2D_V0->V0_PITCH0 = PIXEL_SIZE;	// Y
-	G2D_V0->V0_PITCH1 = 0;	// U
-	G2D_V0->V0_PITCH2 = 0;	// V
+	//printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
+
+	G2D_V0->V0_PITCH0 = 16;//PIXEL_SIZE;	// Y
+	G2D_V0->V0_PITCH1 = 16;//0;	// U
+	G2D_V0->V0_PITCH2 = 16;//0;	// V
 
 	G2D_V0->V0_HDS_CTL0 = 0;
 	G2D_V0->V0_HDS_CTL1 = 0;
@@ -949,7 +951,7 @@ hwacc_fillrect_u16(
 
 //	/* set the fill color value */
 //	g2d_fc_set(0, color_value);
-	G2D_V0->V0_ATTCTL = (0 * 1uL << 16) | (1uL << 4);
+	G2D_V0->V0_ATTCTL = 0;// (1 * 1uL << 16) | (1uL << 4);
 	G2D_V0->V0_FILLC = 0;//COLOR24(0, 255, 0);
 
 	G2D_V0->V0_COOR = (col << 16) | (row << 0);
@@ -988,7 +990,7 @@ hwacc_fillrect_u16(
 
 //	/* ROP sel ch0 pass */
 //	write_wvalue(ROP_CTL, 0xf0);
-	G2D_BLD->ROP_CTL = 0xF0uL;
+//	G2D_BLD->ROP_CTL = 0xF0uL;
 
 //	G2D_BLD->BLD_BK_COLOR = 0;
 //	G2D_BLD->BLD_FILLC0 = 0;
@@ -996,7 +998,9 @@ hwacc_fillrect_u16(
 
 //	g2d_wb_set(dst);
 
-	G2D_WB->WB_ATT = G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	//printhex(G2D_WB, G2D_WB, sizeof * G2D_WB);
+	G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	//G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_SIZE = (h << 16) | (w << 0);	/* расположение компонент размера проверено */
 	G2D_WB->WB_PITCH0 = strideBytes;
 	//G2D_WB->WB_PITCH1 = strideBytes;
@@ -1007,6 +1011,7 @@ hwacc_fillrect_u16(
 	//G2D_WB->WB_HADD1 = 0;
 	//G2D_WB->WB_HADD2 = 0;
 
+	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
 	G2D_BLD->BLD_SIZE = (h << 16) | (w << 0);
 	//G2D_BLD->BLD_CH_ISIZE0 = (h << 16) | (w << 0);
 	//G2D_BLD->BLD_CH_ISIZE1 = (h << 16) | (w << 0);
@@ -1016,24 +1021,15 @@ hwacc_fillrect_u16(
 	//G2D_BLD->BLD_FILLC0 = 0;// COLOR24(0, 255, 0); //color;
 	//G2D_BLD->BLD_FILLC1 = 0;//COLOR24(0, 255, 0);
 
-	G2D_V0->V0_LADD0 = addr;
-	G2D_V0->V0_LADD1 = addr;
-	G2D_V0->V0_LADD2 = addr;
-	G2D_V0->V0_HADD = 0; //addr >> 32;
-
-//	__IO uint32_t UI0_ATTR;                              /*!< Offset 0x000 UI0_ATTR */
-//	__IO uint32_t UI0_MBSIZE;                            /*!< Offset 0x004 UI0_MBSIZE */
-//	__IO uint32_t UI0_COOR;                              /*!< Offset 0x008 UI0_COOR */
-//	__IO uint32_t UI0_PITCH;                             /*!< Offset 0x00C UI0_PITCH */
-//	__IO uint32_t UI0_LADD;                              /*!< Offset 0x010 UI0_LADD */
-//	__IO uint32_t UI0_FILLC;                             /*!< Offset 0x014 UI0_FILLC */
-//	__IO uint32_t UI0_HADD;                              /*!< Offset 0x018 UI0_HADD */
-//	__IO uint32_t UI0_SIZE;                              /*!< Offset 0x01C UI0_SIZE */
+//	G2D_V0->V0_LADD0 = addr;
+//	G2D_V0->V0_LADD1 = addr;
+//	G2D_V0->V0_LADD2 = addr;
+//	G2D_V0->V0_HADD = 0; //addr >> 32;
 
 //	G2D_UI0->UI0_FILLC = 0;//COLOR24(0, 255, 0);
 //	G2D_UI0->UI0_ATTR = (0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
 //	G2D_UI0->UI0_MBSIZE = (w << 16) | (h << 0);
-//	G2D_UI0->UI0_COOR = (w << 16) | (h << 0);
+//	G2D_UI0->UI0_COOR = ((row) << 16) | ((col) << 0);
 //	G2D_UI0->UI0_PITCH = PIXEL_SIZE;
 //	G2D_UI0->UI0_LADD = addr;
 //	G2D_UI0->UI0_HADD = 0; //addr >> 32;
@@ -1042,7 +1038,7 @@ hwacc_fillrect_u16(
 //	G2D_UI1->UI0_FILLC = 0;//COLOR24(0, 255, 0);
 //	G2D_UI1->UI0_ATTR = (0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
 //	G2D_UI1->UI0_MBSIZE = (w << 16) | (h << 0);
-//	G2D_UI1->UI0_COOR = (w << 16) | (h << 0);
+//	G2D_UI1->UI0_COOR = ((row) << 16) | ((col) << 0);
 //	G2D_UI1->UI0_PITCH = PIXEL_SIZE;
 //	G2D_UI1->UI0_LADD = addr;
 //	G2D_UI1->UI0_HADD = 0; //addr >> 32;
@@ -1051,7 +1047,7 @@ hwacc_fillrect_u16(
 //	G2D_UI2->UI0_FILLC = 0;//COLOR24(0, 255, 0);
 //	G2D_UI2->UI0_ATTR = (0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
 //	G2D_UI2->UI0_MBSIZE = (w << 16) | (h << 0);
-//	G2D_UI2->UI0_COOR = (w << 16) | (h << 0);
+//	G2D_UI2->UI0_COOR = ((row) << 16) | ((col) << 0);
 //	G2D_UI2->UI0_PITCH = PIXEL_SIZE;
 //	G2D_UI2->UI0_LADD = addr;
 //	G2D_UI2->UI0_HADD = 0; //addr >> 32;
@@ -2244,6 +2240,7 @@ colmain_fillrect(
 	COLORMAIN_T fgcolor
 	)
 {
+//	PRINTF("colmain_fillrect: x/y, w/h: %u/%u, %u/%u, color=%08lX\n", x, y, w, h, fgcolor);
 
 #if LCDMODE_HORFILL
 
