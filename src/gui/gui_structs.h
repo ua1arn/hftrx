@@ -139,7 +139,7 @@ typedef struct {
 	char name [NAME_ARRAY_SIZE];
 	char text [TEXT_ARRAY_SIZE]; 	// текст внутри кнопки, разделитель строк |, не более 2х строк
 	uint8_t index;
-	uint16_t x1;					// координаты от начала экрана
+	uint16_t x1;					// координаты от начала окна
 	uint16_t y1;
 } button_t;
 
@@ -162,14 +162,6 @@ typedef struct {
 	uint16_t x;
 	uint16_t y;
 } label_t;
-
-typedef enum {
-	P_LBL_PARENT,
-	P_LBL_STATE,
-	P_LBL_IS_TRACKABLE,
-	P_LBL_VISIBLE,
-	P_LBL_TEXT,
-} label_parameters;
 
 typedef enum  {
 	ORIENTATION_VERTICAL,

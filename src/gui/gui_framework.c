@@ -1325,41 +1325,6 @@ void textfield_clean(text_field_t * tf)
 	memset(tf->record, 0, tf->h_str * sizeof(record_t));
 }
 
-/* Установить параметр метки */
-void label_set_param(window_t * win, const char * lbl_name, label_parameters p, ...)
-{
-	va_list arg;
-
-	label_t * lbl = find_gui_element(TYPE_LABEL, win, lbl_name);
-
-	switch (p)
-	{
-	case P_LBL_VISIBLE:
-	{
-		va_start(arg, p);
-		uint_fast8_t val = va_arg(arg, uint_fast8_t);
-		lbl->visible = val != 0;
-		va_end(arg);
-		break;
-	}
-
-	case P_LBL_TEXT:
-	{
-		va_start(arg, p);
-		char * str = va_arg(arg, char *);
-		size_t len = strlen(str);
-		len = len > TEXT_ARRAY_SIZE ? TEXT_ARRAY_SIZE : len; // в будущем будет добавлен параметр максимальной длины метки
-		memset(lbl->text, 0, TEXT_ARRAY_SIZE);
-		strncpy(lbl->text, str, len);
-		va_end(arg);
-		break;
-	}
-
-	default:
-		break;
-	}
-}
-
 /* Селектор запуска функций обработки событий */
 static void set_state_record(gui_element_t * val)
 {
