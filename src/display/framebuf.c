@@ -642,9 +642,9 @@ void arm_hardware_mdma_initialize(void)
 	CCU->MBUS_CLK_REG |= (1uL << 30);				// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 10);	// Gating MBUS Clock For G2D
 
-//	CCU->G2D_CLK_REG =
-//		0x02 * (1uL << 4) |
-//		0;
+	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (0x07uL << 24)) |
+		0x01 * (1uL << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
+		0;
 	CCU->G2D_CLK_REG |= (1uL << 31);	// G2D_CLK_GATING
 
 	//CCU->G2D_BGR_REG = 0;
@@ -656,8 +656,8 @@ void arm_hardware_mdma_initialize(void)
 	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFFuL) |
-		3 * (1uL << 4) |	// ROT divider
-		3 * (1uL << 0) |	// MIXER divider
+		2 * (1uL << 4) |	// ROT divider
+		2 * (1uL << 0) |	// MIXER divider
 		0;
 	G2D_TOP->G2D_SCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_HCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
