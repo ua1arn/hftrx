@@ -637,14 +637,23 @@ void arm_hardware_mdma_initialize(void)
 	//CCU->G2D_BGR_REG &= ~ (1uL << 16);	/* G2D reset 0: Assert */
 	CCU->G2D_BGR_REG |= (1uL << 16);	/* G2D reset 1: De-assert */
 	//memset(G2D, 0xFF, sizeof * G2D);
-	printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
+	//printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
 	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 
 
-	* (volatile uint32_t *) (G2D_TOP_BASE + 0) = ~ 0;
-	* (volatile uint32_t *) (G2D_TOP_BASE + 4) = ~ 0;
-	* (volatile uint32_t *) (G2D_TOP_BASE + 8) = ~ 0;
-	* (volatile uint32_t *) (G2D_TOP_BASE + 12) = ~ 0;
+//	#define G2D_SCLK_GATE  (0x00 + G2D_TOP)
+//	#define G2D_HCLK_GATE  (0x04 + G2D_TOP)
+//	#define G2D_AHB_RESET  (0x08 + G2D_TOP)
+//	#define G2D_SCLK_DIV   (0x0C + G2D_TOP)
+	//printhex(G2D_TOP, G2D_TOP, sizeof * G2D_TOP);
+	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
+		3 * (1uL << 4) |	// ROT divider
+		3 * (1uL << 0) |	// MIXER divider
+		0;
+	G2D_TOP->G2D_SCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_HCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RESET |= (1uL << 1) | (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	//printhex(G2D_TOP, G2D_TOP, sizeof * G2D_TOP);
 
 	G2D_V0->G2D_PALETTE_TAB_REG [0] = 0xDEADBEEF;
 	G2D_V0->G2D_PALETTE_TAB_REG [1] = 0xABBA1980;
