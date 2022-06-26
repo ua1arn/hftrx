@@ -1366,8 +1366,8 @@ hwacc_fillrect_u32(
 	const unsigned stride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 
-	G2D_TOP->G2D_AHB_RESET &= ~ (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-	G2D_TOP->G2D_AHB_RESET |= (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET &= ~ (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
