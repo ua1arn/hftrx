@@ -436,9 +436,9 @@
 	// PTT input - PD10
 	// PTT2 input - PD9
 	#define PTT_TARGET_PIN				(GPIOD->DATA)
-	#define PTT_BIT_PTT					(1uL << 10)		// PD10 - PTT
+	#define PTT_BIT_PTT					(0 * 1uL << 10)		// PD10 - PTT
 	#define PTT2_TARGET_PIN				(GPIOD->DATA)
-	#define PTT2_BIT_PTT				(1uL << 9)		// PD9 - PTT2
+	#define PTT2_BIT_PTT				(0 * 1uL << 9)		// PD9 - PTT2
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() (0) //((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
@@ -451,7 +451,7 @@
 	// ---
 	// TUNE input - PD11
 	#define TUNE_TARGET_PIN				(GPIOD->DATA)
-	#define TUNE_BIT_TUNE					0//(1U << 11)		// PD11
+	#define TUNE_BIT_TUNE				(0 * 1U << 11)		// PD11
 	#define HARDWARE_GET_TUNE() 0//((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() \
 		do { \
