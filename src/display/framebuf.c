@@ -637,8 +637,13 @@ void arm_hardware_mdma_initialize(void)
 	//CCU->G2D_BGR_REG &= ~ (1uL << 16);	/* G2D reset 0: Assert */
 	CCU->G2D_BGR_REG |= (1uL << 16);	/* G2D reset 1: De-assert */
 	//memset(G2D, 0xFF, sizeof * G2D);
-	//printhex(G2D_BASE, G2D, sizeof * G2D);
+	printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
 	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
+
+
+	G2D_V0->G2D_PALETTE_TAB_REG [0] = 0xDEADBEEF;
+	G2D_V0->G2D_PALETTE_TAB_REG [1] = 0xABBA1980;
+	PRINTF("arm_hardware_mdma_initialize (G2D) vals: %08lX, %08lX\n", G2D_V0->G2D_PALETTE_TAB_REG [0], G2D_V0->G2D_PALETTE_TAB_REG [1]);
 }
 #endif /* WITHMDMAHW */
 
@@ -896,7 +901,7 @@ hwacc_fillrect_u16(
 //	ASSERT(G2D_V0->G2D_DMA0_FILLCOLOR_REG == color);
 
 	G2D_V0->G2D_OUTPUT0_STRIDE_REG = stride; //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
-	ASSERT(G2D_V0->G2D_OUTPUT0_STRIDE_REG == stride); //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
+	//ASSERT(G2D_V0->G2D_OUTPUT0_STRIDE_REG == stride); //para->dst_image.w*mixer_bpp_count(para->dst_image.format);
 
 	uint32_t reg_val = 0;
 	uint64_t addr_val;
@@ -922,7 +927,7 @@ hwacc_fillrect_u16(
 	G2D_V0->G2D_DMA0_CONTROL_REG = reg_val;
 	////mixer_set_fillcolor(para->color,0);
 	G2D_V0->G2D_DMA0_FILLCOLOR_REG = color;
-	ASSERT(G2D_V0->G2D_DMA0_FILLCOLOR_REG == color);
+	//ASSERT(G2D_V0->G2D_DMA0_FILLCOLOR_REG == color);
 	G2D_V0->G2D_DMA0_CONTROL_REG |= G2D_FILL_ENABLE;
 
 	if (0) ////((para->flag & G2D_FIL_PLANE_ALPHA) || (para->flag & G2D_V0->G2D_FIL_PIXEL_ALPHA) || (para->flag & G2D_FIL_MULTI_ALPHA))
