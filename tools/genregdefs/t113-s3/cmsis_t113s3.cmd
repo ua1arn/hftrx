@@ -36,16 +36,25 @@ SET OUTFILE=cmsis_t113s3.h
 
 %CONVERTER% de.txt 			DE 		 >> %OUTFILE%	
 %CONVERTER% di.txt 			DI 		 >> %OUTFILE%	
+
 %CONVERTER% g2d_top.txt 	G2D_TOP		 >> %OUTFILE%
+%CONVERTER% g2d_mixer.txt 	G2D_MIXER	 >> %OUTFILE%
+%CONVERTER% g2d_lay.txt 	G2D_LAY		 >> %OUTFILE%
+%CONVERTER% g2d_ui.txt 		G2D_UI		 >> %OUTFILE%
+%CONVERTER% g2d_vsu.txt 	G2D_VSU		 >> %OUTFILE%
+%CONVERTER% g2d_bld.txt 	G2D_BLD		 >> %OUTFILE%
+%CONVERTER% g2d_wb.txt 		G2D_WB		 >> %OUTFILE%
+%CONVERTER% g2d_rot.txt 	G2D_ROT		 >> %OUTFILE%
 %CONVERTER% g2d.txt 		G2D 		 >> %OUTFILE%
+
 %CONVERTER% dsi.txt 		DSI 		 >> %OUTFILE%
-%CONVERTER% display_top.txt DISPLAY_TOP >> %OUTFILE%
+%CONVERTER% display_top.txt DISPLAY_TOP	 >> %OUTFILE%
 %CONVERTER% tcon_lcd.txt 	TCON_LCD 	 >> %OUTFILE%
 %CONVERTER% tve_top.txt 	TVE_TOP 	 >> %OUTFILE%
-%CONVERTER% tve.txt 	TVE 	 >> %OUTFILE%
+%CONVERTER% tve.txt 		TVE 		>> %OUTFILE%
 
 rem %CONVERTER% tv_full.txt TV_FILL 	 >> %OUTFILE%
-rem %CONVERTER% tcon_tv.txt		TCON_TV 	 >> %OUTFILE%
+rem %CONVERTER% tcon_tv.txt	TCON_TV 	 >> %OUTFILE%
 
 %CONVERTER% c0_cpux_cfg.txt 	 C0_CPUX_CFG 	 >> %OUTFILE%
 rem %CONVERTER% c0_cpux_mbist.txt C0_CPUX_MBIST 	 >> %OUTFILE%

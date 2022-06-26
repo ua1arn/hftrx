@@ -1604,6 +1604,212 @@ typedef struct G2D_TOP_Type
 	__IO uint32_t G2D_SCLK_DIV;                          /*!< Offset 0x00C G2D SCLK div    */
 } G2D_TOP_TypeDef; /* size of structure = 0x010 */
 /*
+ * @brief G2D_MIXER
+ */
+/*!< G2D_MIXER Controller Interface */
+typedef struct G2D_MIXER_Type
+{
+	__IO uint32_t G2D_MIXER_CTL;                         /*!< Offset 0x000 G2D mixer control */
+	__IO uint32_t G2D_MIXER_INT;                         /*!< Offset 0x004 G2D mixer interrupt */
+	__IO uint32_t G2D_MIXER_CLK;                         /*!< Offset 0x008 G2D mixer clock */
+} G2D_MIXER_TypeDef; /* size of structure = 0x00C */
+/*
+ * @brief G2D_LAY
+ */
+/*!< G2D_LAY Controller Interface */
+typedef struct G2D_LAY_Type
+{
+	__IO uint32_t V0_ATTCTL;                             /*!< Offset 0x000 V0_ATTCTL */
+	__IO uint32_t V0_MBSIZE;                             /*!< Offset 0x004 V0_MBSIZE */
+	__IO uint32_t V0_COOR;                               /*!< Offset 0x008 V0_COOR */
+	__IO uint32_t V0_PITCH0;                             /*!< Offset 0x00C V0_PITCH0 */
+	__IO uint32_t V0_PITCH1;                             /*!< Offset 0x010 V0_PITCH1 */
+	__IO uint32_t V0_PITCH2;                             /*!< Offset 0x014 V0_PITCH2 */
+	__IO uint32_t V0_LADD0;                              /*!< Offset 0x018 V0_LADD0 */
+	__IO uint32_t V0_LADD1;                              /*!< Offset 0x01C V0_LADD1 */
+	__IO uint32_t V0_LADD2;                              /*!< Offset 0x020 V0_LADD2 */
+	__IO uint32_t V0_FILLC;                              /*!< Offset 0x024 V0_FILLC */
+	__IO uint32_t V0_HADD;                               /*!< Offset 0x028 V0_HADD */
+	__IO uint32_t V0_SIZE;                               /*!< Offset 0x02C V0_SIZE */
+	__IO uint32_t V0_HDS_CTL0;                           /*!< Offset 0x030 V0_HDS_CTL0 */
+	__IO uint32_t V0_HDS_CTL1;                           /*!< Offset 0x034 V0_HDS_CTL1 */
+	__IO uint32_t V0_VDS_CTL0;                           /*!< Offset 0x038 V0_VDS_CTL0 */
+	__IO uint32_t V0_VDS_CTL1;                           /*!< Offset 0x03C V0_VDS_CTL1 */
+} G2D_LAY_TypeDef; /* size of structure = 0x040 */
+/*
+ * @brief G2D_UI
+ */
+/*!< G2D_UI Controller Interface */
+typedef struct G2D_UI_Type
+{
+	__IO uint32_t UI0_ATTR;                              /*!< Offset 0x000 UI0_ATTR */
+	__IO uint32_t UI0_MBSIZE;                            /*!< Offset 0x004 UI0_MBSIZE */
+	__IO uint32_t UI0_COOR;                              /*!< Offset 0x008 UI0_COOR */
+	__IO uint32_t UI0_PITCH;                             /*!< Offset 0x00C UI0_PITCH */
+	__IO uint32_t UI0_LADD;                              /*!< Offset 0x010 UI0_LADD */
+	__IO uint32_t UI0_FILLC;                             /*!< Offset 0x014 UI0_FILLC */
+	__IO uint32_t UI0_HADD;                              /*!< Offset 0x018 UI0_HADD */
+	__IO uint32_t UI0_SIZE;                              /*!< Offset 0x01C UI0_SIZE */
+} G2D_UI_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief G2D_VSU
+ */
+/*!< G2D_VSU Controller Interface */
+typedef struct G2D_VSU_Type
+{
+	__IO uint32_t VS_CTRL;                               /*!< Offset 0x000 VS_CTRL */
+	uint32_t reserved1 [0x000F]; /* at 0x004 */
+	__IO uint32_t VS_OUT_SIZE;                           /*!< Offset 0x040 VS_OUT_SIZE */
+	__IO uint32_t VS_GLB_ALPHA;                          /*!< Offset 0x044 VS_GLB_ALPHA */
+	uint32_t reserved2 [0x000E]; /* at 0x048 */
+	__IO uint32_t VS_Y_SIZE;                             /*!< Offset 0x080 VS_Y_SIZE */
+	uint32_t reserved3; /* at 0x084 */
+	__IO uint32_t VS_Y_HSTEP;                            /*!< Offset 0x088 VS_Y_HSTEP */
+	__IO uint32_t VS_Y_VSTEP;                            /*!< Offset 0x08C VS_Y_VSTEP */
+	__IO uint32_t VS_Y_HPHASE;                           /*!< Offset 0x090 VS_Y_HPHASE */
+	uint32_t reserved4; /* at 0x094 */
+	__IO uint32_t VS_Y_VPHASE0;                          /*!< Offset 0x098 VS_Y_VPHASE0 */
+	uint32_t reserved5 [0x0009]; /* at 0x09C */
+	__IO uint32_t VS_C_SIZE;                             /*!< Offset 0x0C0 VS_C_SIZE */
+	uint32_t reserved6; /* at 0x0C4 */
+	__IO uint32_t VS_C_HSTEP;                            /*!< Offset 0x0C8 VS_C_HSTEP */
+	__IO uint32_t VS_C_VSTEP;                            /*!< Offset 0x0CC VS_C_VSTEP */
+	__IO uint32_t VS_C_HPHASE;                           /*!< Offset 0x0D0 VS_C_HPHASE */
+	uint32_t reserved7; /* at 0x0D4 */
+	__IO uint32_t VS_C_VPHASE0;                          /*!< Offset 0x0D8 VS_C_VPHASE0 */
+	uint32_t reserved8 [0x0049]; /* at 0x0DC */
+	__IO uint32_t VS_Y_HCOEF0;                           /*!< Offset 0x200 VS_Y_HCOEF0 */
+	uint32_t reserved9 [0x003F]; /* at 0x204 */
+	__IO uint32_t VS_Y_VCOEF0;                           /*!< Offset 0x300 VS_Y_VCOEF0 */
+	uint32_t reserved10 [0x003F]; /* at 0x304 */
+	__IO uint32_t VS_C_HCOEF0;                           /*!< Offset 0x400 VS_C_HCOEF0 */
+} G2D_VSU_TypeDef; /* size of structure = 0x404 */
+/*
+ * @brief G2D_BLD
+ */
+/*!< G2D_BLD Controller Interface */
+typedef struct G2D_BLD_Type
+{
+	__IO uint32_t BLD_EN_CTL;                            /*!< Offset 0x000 BLD_EN_CTL          */
+	uint32_t reserved1 [0x0003]; /* at 0x004 */
+	__IO uint32_t BLD_FILLC0;                            /*!< Offset 0x010 BLD_FILLC0          */
+	__IO uint32_t BLD_FILLC1;                            /*!< Offset 0x014 BLD_FILLC1          */
+	uint32_t reserved2 [0x0002]; /* at 0x018 */
+	__IO uint32_t BLD_CH_ISIZE0;                         /*!< Offset 0x020 BLD_CH_ISIZE0       */
+	__IO uint32_t BLD_CH_ISIZE1;                         /*!< Offset 0x024 BLD_CH_ISIZE1       */
+	uint32_t reserved3 [0x0002]; /* at 0x028 */
+	__IO uint32_t BLD_CH_OFFSET0;                        /*!< Offset 0x030 BLD_CH_OFFSET0      */
+	__IO uint32_t BLD_CH_OFFSET1;                        /*!< Offset 0x034 BLD_CH_OFFSET1      */
+	uint32_t reserved4 [0x0002]; /* at 0x038 */
+	__IO uint32_t BLD_PREMUL_CTL;                        /*!< Offset 0x040 BLD_PREMUL_CTL      */
+	__IO uint32_t BLD_BK_COLOR;                          /*!< Offset 0x044 BLD_BK_COLOR        */
+	__IO uint32_t BLD_SIZE;                              /*!< Offset 0x048 BLD_SIZE            */
+	__IO uint32_t BLD_CTL;                               /*!< Offset 0x04C BLD_CTL             */
+	__IO uint32_t BLD_KEY_CTL;                           /*!< Offset 0x050 BLD_KEY_CTL         */
+	__IO uint32_t BLD_KEY_CON;                           /*!< Offset 0x054 BLD_KEY_CON         */
+	__IO uint32_t BLD_KEY_MAX;                           /*!< Offset 0x058 BLD_KEY_MAX         */
+	__IO uint32_t BLD_KEY_MIN;                           /*!< Offset 0x05C BLD_KEY_MIN         */
+	__IO uint32_t BLD_OUT_COLOR;                         /*!< Offset 0x060 BLD_OUT_COLOR       */
+	uint32_t reserved5 [0x0007]; /* at 0x064 */
+	__IO uint32_t ROP_CTL;                               /*!< Offset 0x080 ROP_CTL             */
+	__IO uint32_t ROP_INDEX0;                            /*!< Offset 0x084 ROP_INDEX0          */
+	__IO uint32_t ROP_INDEX1;                            /*!< Offset 0x088 ROP_INDEX1          */
+	uint32_t reserved6 [0x001D]; /* at 0x08C */
+	__IO uint32_t BLD_CSC_CTL;                           /*!< Offset 0x100 BLD_CSC_CTL         */
+	uint32_t reserved7 [0x0003]; /* at 0x104 */
+	__IO uint32_t BLD_CSC0_COEF00;                       /*!< Offset 0x110 BLD_CSC0_COEF00     */
+	__IO uint32_t BLD_CSC0_COEF01;                       /*!< Offset 0x114 BLD_CSC0_COEF01     */
+	__IO uint32_t BLD_CSC0_COEF02;                       /*!< Offset 0x118 BLD_CSC0_COEF02     */
+	__IO uint32_t BLD_CSC0_CONST0;                       /*!< Offset 0x11C BLD_CSC0_CONST0     */
+	__IO uint32_t BLD_CSC0_COEF10;                       /*!< Offset 0x120 BLD_CSC0_COEF10     */
+	__IO uint32_t BLD_CSC0_COEF11;                       /*!< Offset 0x124 BLD_CSC0_COEF11     */
+	__IO uint32_t BLD_CSC0_COEF12;                       /*!< Offset 0x128 BLD_CSC0_COEF12     */
+	__IO uint32_t BLD_CSC0_CONST1;                       /*!< Offset 0x12C BLD_CSC0_CONST1     */
+	__IO uint32_t BLD_CSC0_COEF20;                       /*!< Offset 0x130 BLD_CSC0_COEF20     */
+	__IO uint32_t BLD_CSC0_COEF21;                       /*!< Offset 0x134 BLD_CSC0_COEF21     */
+	__IO uint32_t BLD_CSC0_COEF22;                       /*!< Offset 0x138 BLD_CSC0_COEF22     */
+	__IO uint32_t BLD_CSC0_CONST2;                       /*!< Offset 0x13C BLD_CSC0_CONST2     */
+	__IO uint32_t BLD_CSC1_COEF00;                       /*!< Offset 0x140 BLD_CSC1_COEF00     */
+	__IO uint32_t BLD_CSC1_COEF01;                       /*!< Offset 0x144 BLD_CSC1_COEF01     */
+	__IO uint32_t BLD_CSC1_COEF02;                       /*!< Offset 0x148 BLD_CSC1_COEF02     */
+	__IO uint32_t BLD_CSC1_CONST0;                       /*!< Offset 0x14C BLD_CSC1_CONST0     */
+	__IO uint32_t BLD_CSC1_COEF10;                       /*!< Offset 0x150 BLD_CSC1_COEF10     */
+	__IO uint32_t BLD_CSC1_COEF11;                       /*!< Offset 0x154 BLD_CSC1_COEF11     */
+	__IO uint32_t BLD_CSC1_COEF12;                       /*!< Offset 0x158 BLD_CSC1_COEF12     */
+	__IO uint32_t BLD_CSC1_CONST1;                       /*!< Offset 0x15C BLD_CSC1_CONST1     */
+	__IO uint32_t BLD_CSC1_COEF20;                       /*!< Offset 0x160 BLD_CSC1_COEF20     */
+	__IO uint32_t BLD_CSC1_COEF21;                       /*!< Offset 0x164 BLD_CSC1_COEF21     */
+	__IO uint32_t BLD_CSC1_COEF22;                       /*!< Offset 0x168 BLD_CSC1_COEF22     */
+	__IO uint32_t BLD_CSC1_CONST2;                       /*!< Offset 0x16C BLD_CSC1_CONST2     */
+	__IO uint32_t BLD_CSC2_COEF00;                       /*!< Offset 0x170 BLD_CSC2_COEF00     */
+	__IO uint32_t BLD_CSC2_COEF01;                       /*!< Offset 0x174 BLD_CSC2_COEF01     */
+	__IO uint32_t BLD_CSC2_COEF02;                       /*!< Offset 0x178 BLD_CSC2_COEF02     */
+	__IO uint32_t BLD_CSC2_CONST0;                       /*!< Offset 0x17C BLD_CSC2_CONST0     */
+	__IO uint32_t BLD_CSC2_COEF10;                       /*!< Offset 0x180 BLD_CSC2_COEF10     */
+	__IO uint32_t BLD_CSC2_COEF11;                       /*!< Offset 0x184 BLD_CSC2_COEF11     */
+	__IO uint32_t BLD_CSC2_COEF12;                       /*!< Offset 0x188 BLD_CSC2_COEF12     */
+	__IO uint32_t BLD_CSC2_CONST1;                       /*!< Offset 0x18C BLD_CSC2_CONST1     */
+	__IO uint32_t BLD_CSC2_COEF20;                       /*!< Offset 0x190 BLD_CSC2_COEF20     */
+	__IO uint32_t BLD_CSC2_COEF21;                       /*!< Offset 0x194 BLD_CSC2_COEF21     */
+	__IO uint32_t BLD_CSC2_COEF22;                       /*!< Offset 0x198 BLD_CSC2_COEF22     */
+	__IO uint32_t BLD_CSC2_CONST2;                       /*!< Offset 0x19C BLD_CSC2_CONST2     */
+} G2D_BLD_TypeDef; /* size of structure = 0x1A0 */
+/*
+ * @brief G2D_WB
+ */
+/*!< G2D_WB Controller Interface */
+typedef struct G2D_WB_Type
+{
+	__IO uint32_t WB_ATT;                                /*!< Offset 0x000 WB_ATT */
+	__IO uint32_t WB_SIZE;                               /*!< Offset 0x004 WB_SIZE */
+	__IO uint32_t WB_PITCH0;                             /*!< Offset 0x008 WB_PITCH0 */
+	__IO uint32_t WB_PITCH1;                             /*!< Offset 0x00C WB_PITCH1 */
+	__IO uint32_t WB_PITCH2;                             /*!< Offset 0x010 WB_PITCH2 */
+	__IO uint32_t WB_LADD0;                              /*!< Offset 0x014 WB_LADD0 */
+	__IO uint32_t WB_HADD0;                              /*!< Offset 0x018 WB_HADD0 */
+	__IO uint32_t WB_LADD1;                              /*!< Offset 0x01C WB_LADD1 */
+	__IO uint32_t WB_HADD1;                              /*!< Offset 0x020 WB_HADD1 */
+	__IO uint32_t WB_LADD2;                              /*!< Offset 0x024 WB_LADD2 */
+	__IO uint32_t WB_HADD2;                              /*!< Offset 0x028 WB_HADD2 */
+} G2D_WB_TypeDef; /* size of structure = 0x02C */
+/*
+ * @brief G2D_ROT
+ */
+/*!< G2D_ROT Controller Interface */
+typedef struct G2D_ROT_Type
+{
+	__IO uint32_t ROT_CTL;                               /*!< Offset 0x000 ROT_CTL */
+	__IO uint32_t ROT_INT;                               /*!< Offset 0x004 ROT_INT */
+	__IO uint32_t ROT_TIMEOUT;                           /*!< Offset 0x008 ROT_TIMEOUT */
+	uint32_t reserved1 [0x0005]; /* at 0x00C */
+	__IO uint32_t ROT_IFMT;                              /*!< Offset 0x020 ROT_IFMT */
+	__IO uint32_t ROT_ISIZE;                             /*!< Offset 0x024 ROT_ISIZE */
+	uint32_t reserved2 [0x0002]; /* at 0x028 */
+	__IO uint32_t ROT_IPITCH0;                           /*!< Offset 0x030 ROT_IPITCH0 */
+	__IO uint32_t ROT_IPITCH1;                           /*!< Offset 0x034 ROT_IPITCH1 */
+	__IO uint32_t ROT_IPITCH2;                           /*!< Offset 0x038 ROT_IPITCH2 */
+	uint32_t reserved3; /* at 0x03C */
+	__IO uint32_t ROT_ILADD0;                            /*!< Offset 0x040 ROT_ILADD0 */
+	__IO uint32_t ROT_IHADD0;                            /*!< Offset 0x044 ROT_IHADD0 */
+	__IO uint32_t ROT_ILADD1;                            /*!< Offset 0x048 ROT_ILADD1 */
+	__IO uint32_t ROT_IHADD1;                            /*!< Offset 0x04C ROT_IHADD1 */
+	__IO uint32_t ROT_ILADD2;                            /*!< Offset 0x050 ROT_ILADD2 */
+	__IO uint32_t ROT_IHADD2;                            /*!< Offset 0x054 ROT_IHADD2 */
+	uint32_t reserved4 [0x000B]; /* at 0x058 */
+	__IO uint32_t ROT_OSIZE;                             /*!< Offset 0x084 ROT_OSIZE */
+	uint32_t reserved5 [0x0002]; /* at 0x088 */
+	__IO uint32_t ROT_OPITCH0;                           /*!< Offset 0x090 ROT_OPITCH0 */
+	__IO uint32_t ROT_OPITCH1;                           /*!< Offset 0x094 ROT_OPITCH1 */
+	__IO uint32_t ROT_OPITCH2;                           /*!< Offset 0x098 ROT_OPITCH2 */
+	uint32_t reserved6; /* at 0x09C */
+	__IO uint32_t ROT_OLADD0;                            /*!< Offset 0x0A0 ROT_OLADD0 */
+	__IO uint32_t ROT_OHADD0;                            /*!< Offset 0x0A4 ROT_OHADD0 */
+	__IO uint32_t ROT_OLADD1;                            /*!< Offset 0x0A8 ROT_OLADD1 */
+	__IO uint32_t ROT_OHADD1;                            /*!< Offset 0x0AC ROT_OHADD1 */
+	__IO uint32_t ROT_OLADD2;                            /*!< Offset 0x0B0 ROT_OLADD2 */
+	__IO uint32_t ROT_OHADD2;                            /*!< Offset 0x0B4 ROT_OHADD2 */
+} G2D_ROT_TypeDef; /* size of structure = 0x0B8 */
+/*
  * @brief G2D
  */
 /*!< G2D Controller Interface */
@@ -1965,8 +2171,19 @@ typedef struct DMAC_Type
 
 #define DE 			((DE_TypeDef *) DE_BASE)					/*!< \brief DE Interface register set access pointer */
 #define DI 			((DI_TypeDef *) DI_BASE)					/*!< \brief DI Interface register set access pointer */
-#define G2D_TOP		((G2D_TOP_TypeDef *) G2D_TOP_BASE)			/*!< \brief G2D Interface register set access pointer */
-#define G2D_V0 		((G2D_TypeDef *) G2D_V0_BASE)				/*!< \brief G2D Interface register set access pointer */
+
+#define G2D_TOP     ((G2D_TOP_TypeDef *) G2D_TOP_BASE)			/*!< \brief G2D_TOP Interface register set access pointer */
+#define G2D_MIXER   ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)		/*!< \brief G2D_MIXER Interface register set access pointer */
+#define G2D_BLD     ((G2D_BLD_TypeDef *) G2D_BLD_BASE)			/*!< \brief G2D_BLD Interface register set access pointer */
+#define G2D_V0      ((G2D_LAY_TypeDef *) G2D_V0_BASE)			/*!< \brief G2D_V0 Interface register set access pointer */
+#define G2D_UI0     ((G2D_UI_TypeDef *) G2D_UI0_BASE)			/*!< \brief G2D_UI0 Interface register set access pointer */
+#define G2D_UI1     ((G2D_UI_TypeDef *) G2D_UI1_BASE)			/*!< \brief G2D_UI1 Interface register set access pointer */
+#define G2D_UI2     ((G2D_UI_TypeDef *) G2D_UI2_BASE)			/*!< \brief G2D_UI2 Interface register set access pointer */
+#define G2D_WB      ((G2D_WB_TypeDef *) G2D_WB_BASE)			/*!< \brief G2D_WB Interface register set access pointer */
+#define G2D_VSU     ((G2D_VSU_TypeDef *) G2D_VSU_BASE)			/*!< \brief G2D_VSU Interface register set access pointer */
+#define G2D_ROT     ((G2D_ROT_TypeDef *) G2D_ROT_BASE)			/*!< \brief G2D_ROT Interface register set access pointer */
+#define G2D_GSU     ((G2D_GSU_TypeDef *) G2D_GSU_BASE)			/*!< \brief G2D_GSU Interface register set access pointer */
+
 #define DSI 		((DSI_TypeDef *) DSI_BASE)					/*!< \brief DSI Interface register set access pointer */
 #define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)	/*!< \brief DISPLAY_TOP Interface register set access pointer */
 #define TCON_LCD0 	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)		/*!< \brief TCON_LCD0 Interface register set access pointer */
