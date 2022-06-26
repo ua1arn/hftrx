@@ -1593,6 +1593,17 @@ typedef struct DI_Type
 	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
 } DI_TypeDef;
 /*
+ * @brief G2D_TOP
+ */
+/*!< G2D_TOP Controller Interface */
+typedef struct G2D_TOP_Type
+{
+	__IO uint32_t G2D_SCLK_GATE;                         /*!< Offset 0x000 G2D SCLK gate   */
+	__IO uint32_t G2D_HCLK_GATE;                         /*!< Offset 0x004 g2d HCLK gate   */
+	__IO uint32_t G2D_AHB_RESET;                         /*!< Offset 0x008 G2D AHB reset   */
+	__IO uint32_t G2D_SCLK_DIV;                          /*!< Offset 0x00C G2D SCLK div    */
+} G2D_TOP_TypeDef; /* size of structure = 0x010 */
+/*
  * @brief G2D
  */
 /*!< G2D Controller Interface */
@@ -1954,7 +1965,8 @@ typedef struct DMAC_Type
 
 #define DE 			((DE_TypeDef *) DE_BASE)					/*!< \brief DE Interface register set access pointer */
 #define DI 			((DI_TypeDef *) DI_BASE)					/*!< \brief DI Interface register set access pointer */
-#define G2D_V0 		((G2D_TypeDef *) G2D_V0_BASE)					/*!< \brief G2D Interface register set access pointer */
+#define G2D_TOP		((G2D_TOP_TypeDef *) G2D_TOP_BASE)			/*!< \brief G2D Interface register set access pointer */
+#define G2D_V0 		((G2D_TypeDef *) G2D_V0_BASE)				/*!< \brief G2D Interface register set access pointer */
 #define DSI 		((DSI_TypeDef *) DSI_BASE)					/*!< \brief DSI Interface register set access pointer */
 #define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)	/*!< \brief DISPLAY_TOP Interface register set access pointer */
 #define TCON_LCD0 	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)		/*!< \brief TCON_LCD0 Interface register set access pointer */

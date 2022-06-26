@@ -36,6 +36,7 @@ SET OUTFILE=cmsis_t113s3.h
 
 %CONVERTER% de.txt 			DE 		 >> %OUTFILE%	
 %CONVERTER% di.txt 			DI 		 >> %OUTFILE%	
+%CONVERTER% g2d_top.txt 	G2D_TOP		 >> %OUTFILE%
 %CONVERTER% g2d.txt 		G2D 		 >> %OUTFILE%
 %CONVERTER% dsi.txt 		DSI 		 >> %OUTFILE%
 %CONVERTER% display_top.txt DISPLAY_TOP >> %OUTFILE%
