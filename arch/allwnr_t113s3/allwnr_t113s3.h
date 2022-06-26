@@ -1759,13 +1759,71 @@ typedef struct TCON_LCD_Type
 	__IO uint32_t LCD_GAMMA_TABLE_REG [0x100];           /*!< Offset 0x400 LCD Gamma Table Register */
 } TCON_LCD_TypeDef;
 /*
+ * @brief TVE_TOP
+ */
+/*!< TVE_TOP Controller Interface */
+typedef struct TVE_TOP_Type
+{
+	uint32_t reserved1 [0x0008]; /* at 0x000 */
+	__IO uint32_t TVE_DAC_MAP;                           /*!< Offset 0x020 TV Encoder DAC MAP Register */
+	__IO uint32_t TVE_DAC_STATUS;                        /*!< Offset 0x024 TV Encoder DAC STAUTS Register */
+	__IO uint32_t TVE_DAC_CFG0;                          /*!< Offset 0x028 TV Encoder DAC CFG0 Register */
+	__IO uint32_t TVE_DAC_CFG1;                          /*!< Offset 0x02C TV Encoder DAC CFG1 Register */
+	__IO uint32_t TVE_DAC_CFG2;                          /*!< Offset 0x030 TV Encoder DAC CFG2 Register */
+	__IO uint32_t TVE_DAC_CFG3;                          /*!< Offset 0x034 TV Encoder DAC CFG2 Register */
+	uint32_t reserved2 [0x002E]; /* at 0x038 */
+	__IO uint32_t TVE_DAC_TEST;                          /*!< Offset 0x0F0 TV Encoder DAC TEST Register */
+} TVE_TOP_TypeDef; /* size of structure = 0x0F4 */
+/*
  * @brief TVE
  */
 /*!< TVE Controller Interface */
 typedef struct TVE_Type
 {
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} TVE_TypeDef;
+	__IO uint32_t TVE_000_REG;                           /*!< Offset 0x000 TV Encoder Clock Gating Register */
+	__IO uint32_t TVE_004_REG;                           /*!< Offset 0x004 TV Encoder Configuration Register */
+	__IO uint32_t TVE_008_REG;                           /*!< Offset 0x008 TV Encoder DAC Register1 */
+	__IO uint32_t TVE_00C_REG;                           /*!< Offset 0x00C TV Encoder Notch and DAC Delay Register */
+	__IO uint32_t TVE_010_REG;                           /*!< Offset 0x010 TV Encoder Chroma Frequency Register */
+	__IO uint32_t TVE_014_REG;                           /*!< Offset 0x014 TV Encoder Front/Back Porch Register */
+	__IO uint32_t TVE_018_REG;                           /*!< Offset 0x018 TV Encoder HD Mode VSYNC Register */
+	__IO uint32_t TVE_01C_REG;                           /*!< Offset 0x01C TV Encoder Line Number Register */
+	__IO uint32_t TVE_020_REG;                           /*!< Offset 0x020 TV Encoder Level Register */
+	__IO uint32_t TVE_024_REG;                           /*!< Offset 0x024 TV Encoder DAC Register2 */
+	uint32_t reserved1 [0x0002]; /* at 0x028 */
+	__IO uint32_t TVE_030_REG;                           /*!< Offset 0x030 TV Encoder Auto Detection Enable Register */
+	__IO uint32_t TVE_034_REG;                           /*!< Offset 0x034 TV Encoder Auto Detection Interrupt Status Register */
+	__IO uint32_t TVE_038_REG;                           /*!< Offset 0x038 TV Encoder Auto Detection Status Register */
+	__IO uint32_t TVE_03C_REG;                           /*!< Offset 0x03C TV Encoder Auto Detection De-bounce Setting Register */
+	uint32_t reserved2 [0x002E]; /* at 0x040 */
+	__IO uint32_t TVE_0F8_REG;                           /*!< Offset 0x0F8 TV Encoder Auto Detect Configuration Register0 */
+	__IO uint32_t TVE_0FC_REG;                           /*!< Offset 0x0FC TV Encoder Auto Detect Configuration Register1 */
+	__IO uint32_t TVE_100_REG;                           /*!< Offset 0x100 TV Encoder Color Burst Phase Reset Configuration Register */
+	__IO uint32_t TVE_104_REG;                           /*!< Offset 0x104 TV Encoder VSYNC Number Register */
+	__IO uint32_t TVE_108_REG;                           /*!< Offset 0x108 TV Encoder Notch Filter Frequency Register */
+	__IO uint32_t TVE_10C_REG;                           /*!< Offset 0x10C TV Encoder Cb/Cr Level/Gain Register */
+	__IO uint32_t TVE_110_REG;                           /*!< Offset 0x110 TV Encoder Tint and Color Burst Phase Register */
+	__IO uint32_t TVE_114_REG;                           /*!< Offset 0x114 TV Encoder Burst Width Register */
+	__IO uint32_t TVE_118_REG;                           /*!< Offset 0x118 TV Encoder Cb/Cr Gain Register */
+	__IO uint32_t TVE_11C_REG;                           /*!< Offset 0x11C TV Encoder Sync and VBI Level Register */
+	__IO uint32_t TVE_120_REG;                           /*!< Offset 0x120 TV Encoder White Level Register */
+	__IO uint32_t TVE_124_REG;                           /*!< Offset 0x124 TV Encoder Video Active Line Register */
+	__IO uint32_t TVE_128_REG;                           /*!< Offset 0x128 TV Encoder Video Chroma BW and CompGain Register */
+	__IO uint32_t TVE_12C_REG;                           /*!< Offset 0x12C TV Encoder Register */
+	__IO uint32_t TVE_130_REG;                           /*!< Offset 0x130 TV Encoder Re-sync Parameters Register */
+	__IO uint32_t TVE_134_REG;                           /*!< Offset 0x134 TV Encoder Slave Parameter Register */
+	__IO uint32_t TVE_138_REG;                           /*!< Offset 0x138 TV Encoder Configuration Register0 */
+	__IO uint32_t TVE_13C_REG;                           /*!< Offset 0x13C TV Encoder Configuration Register1 */
+	uint32_t reserved3 [0x0090]; /* at 0x140 */
+	__IO uint32_t TVE_380_REG;                           /*!< Offset 0x380 TV Encoder Low Pass Control Register */
+	__IO uint32_t TVE_384_REG;                           /*!< Offset 0x384 TV Encoder Low Pass Filter Control Register */
+	__IO uint32_t TVE_388_REG;                           /*!< Offset 0x388 TV Encoder Low Pass Gain Register */
+	__IO uint32_t TVE_38C_REG;                           /*!< Offset 0x38C TV Encoder Low Pass Gain Control Register */
+	__IO uint32_t TVE_390_REG;                           /*!< Offset 0x390 TV Encoder Low Pass Shoot Control Register */
+	__IO uint32_t TVE_394_REG;                           /*!< Offset 0x394 TV Encoder Low Pass Coring Register */
+	uint32_t reserved4 [0x0002]; /* at 0x398 */
+	__IO uint32_t TVE_3A0_REG;                           /*!< Offset 0x3A0 TV Encoder Noise Reduction Register */
+} TVE_TypeDef; /* size of structure = 0x3A4 */
 /*
  * @brief C0_CPUX_CFG
  */
@@ -1901,7 +1959,7 @@ typedef struct DMAC_Type
 #define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)	/*!< \brief DISPLAY_TOP Interface register set access pointer */
 #define TCON_LCD0 	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)		/*!< \brief TCON_LCD0 Interface register set access pointer */
 #define TCON_TV0 	((TCON_TV_TypeDef *) TCON_TV0_BASE)			/*!< \brief TCON_TV0 Interface register set access pointer */
-#define TVE_TOP 	((TVE_TypeDef *) TVE_TOP_BASE)				/*!< \brief TVE_TOP Interface register set access pointer */
+#define TVE_TOP 	((TVE_TOP_TypeDef *) TVE_TOP_BASE)				/*!< \brief TVE_TOP Interface register set access pointer */
 #define TV_Encoder 	((TVE_TypeDef *) TV_Encoder_BASE)			/*!< \brief TV_Encoder Interface register set access pointer */
 
 #define CSI			((CSI_TypeDef *) CSI_BASE)					/*!< \brief CSI Interface register set access pointer */

@@ -40,6 +40,7 @@ SET OUTFILE=cmsis_t113s3.h
 %CONVERTER% dsi.txt 		DSI 		 >> %OUTFILE%
 %CONVERTER% display_top.txt DISPLAY_TOP >> %OUTFILE%
 %CONVERTER% tcon_lcd.txt 	TCON_LCD 	 >> %OUTFILE%
+%CONVERTER% tve_top.txt 	TVE_TOP 	 >> %OUTFILE%
 %CONVERTER% tve.txt 	TVE 	 >> %OUTFILE%
 
 rem %CONVERTER% tv_full.txt TV_FILL 	 >> %OUTFILE%
