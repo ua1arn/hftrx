@@ -990,10 +990,27 @@ hwacc_fillrect_u16(
 	G2D_BLD->ROP_CTL = 0xF0uL;
 
 //	g2d_wb_set(dst);
+#if 1
 	G2D_WB->WB_ATT = G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_SIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_WB->WB_PITCH0 = 1;//PIXEL_SIZE;
+	//G2D_WB->WB_PITCH1 = PIXEL_SIZE;
+	G2D_WB->WB_LADD0 = addr;
+	//G2D_WB->WB_LADD1 = addr;
+	//G2D_WB->WB_LADD2 = addr;
+	G2D_WB->WB_HADD0 = 0;
+	//G2D_WB->WB_HADD1 = 0;
+	//G2D_WB->WB_HADD2 = 0;
+#endif
+
 	G2D_BLD->BLD_SIZE = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_BLD->BLD_CH_ISIZE0 = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_BLD->BLD_CH_ISIZE1 = ((h - 1 + 1) << 16) | ((w - 1 + 1) << 0);
+	G2D_BLD->BLD_CH_OFFSET0 = ((col) << 16) | ((row) << 0);
+	G2D_BLD->BLD_CH_OFFSET1 = ((col) << 16) | ((row) << 0);
 	G2D_BLD->BLD_OUT_COLOR = 0;	/* color space parameers */
+	G2D_BLD->BLD_FILLC0 = color;
+	G2D_BLD->BLD_FILLC1 = color;
 
 	G2D_V0->V0_LADD0 = addr;
 	G2D_V0->V0_LADD1 = addr;
@@ -1054,6 +1071,7 @@ hwacc_fillrect_u16(
 			//PRINTF("L%u col/row/w/h=%u/%u/%u/%u G2D_MIXER->G2D_MIXER_CTL=%08lX, G2D_MIXER->G2D_MIXER_CLK=%08lX\n", loop, col, row, w,h, G2D_MIXER->G2D_MIXER_CTL, G2D_MIXER->G2D_MIXER_CLK);
 			//local_delay_us(100);
 		}
+		hardware_nonguiyield();
 	}
 	//PRINTF("3 G2D_MIXER->G2D_MIXER_CTL=%08lX\n", G2D_MIXER->G2D_MIXER_CTL);
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
