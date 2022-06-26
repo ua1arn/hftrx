@@ -9909,9 +9909,10 @@ int _gettimeofday(struct timeval *p, void *tz)
 {
 	if (p != NULL)
 	{
+		const ldiv_t v = ldiv(sys_now(), 1000);
 		//memset(p, 0, sizeof * p);
-		p->tv_usec = 0;
-		p->tv_sec = sys_now() / 1000;
+		p->tv_usec = v.rem * 1000;
+		p->tv_sec = v.quot;
 	}
 	return 0;
 }

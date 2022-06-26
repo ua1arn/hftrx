@@ -662,8 +662,8 @@ void arm_hardware_mdma_initialize(void)
 	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFFuL) |
-		2 * (1uL << 4) |	// ROT divider
-		2 * (1uL << 0) |	// MIXER divider
+		3 * (1uL << 4) |	// ROT divider (looks like power of 2)
+		3 * (1uL << 0) |	// MIXER divider (looks like power of 2)
 		0;
 	G2D_TOP->G2D_SCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_HCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
@@ -751,7 +751,7 @@ hwacc_fillrect_u8(
 
 #elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
 	/* Использование G2D для формирования изображений */
-	#warning Imppement for CPUSTYPE_ALLWNT113
+	#warning Implement for CPUSTYPE_ALLWNT113
 
 #else /* WITHMDMAHW */
 	// программная реализация
@@ -920,7 +920,7 @@ hwacc_fillrect_u16(
 
 #elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
 	/* Использование G2D для формирования изображений */
-	#warning Imppement for CPUSTYPE_ALLWNT113
+	#warning Implement for CPUSTYPE_ALLWNT113
 	const unsigned stride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 
@@ -1362,7 +1362,7 @@ hwacc_fillrect_u32(
 
 #elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
 	/* Использование G2D для формирования изображений */
-	#warning Imppement for CPUSTYPE_ALLWNT113
+	#warning Implement for CPUSTYPE_ALLWNT113
 	const unsigned stride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 
