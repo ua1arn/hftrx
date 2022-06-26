@@ -653,12 +653,6 @@ void arm_hardware_mdma_initialize(void)
 	//printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
 	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 
-
-//	#define G2D_SCLK_GATE  (0x00 + G2D_TOP)
-//	#define G2D_HCLK_GATE  (0x04 + G2D_TOP)
-//	#define G2D_AHB_RESET  (0x08 + G2D_TOP)
-//	#define G2D_SCLK_DIV   (0x0C + G2D_TOP)
-	//printhex(G2D_TOP, G2D_TOP, sizeof * G2D_TOP);
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFFuL) |
 		3 * (1uL << 4) |	// ROT divider
 		3 * (1uL << 0) |	// MIXER divider
@@ -666,28 +660,9 @@ void arm_hardware_mdma_initialize(void)
 	G2D_TOP->G2D_SCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_HCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_AHB_RESET |= (1uL << 1) | (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-	//printhex(G2D_TOP, G2D_TOP, sizeof * G2D_TOP);
 
-	//G2D_V0->G2D_PALETTE_TAB_REG [0] = 0xDEADBEEF;
-	//G2D_V0->G2D_PALETTE_TAB_REG [1] = 0xABBA1980;
-	//PRINTF("arm_hardware_mdma_initialize (G2D) vals: %08lX, %08lX\n", G2D_V0->G2D_PALETTE_TAB_REG [0], G2D_V0->G2D_PALETTE_TAB_REG [1]);
-	//printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 
-	G2D_MIXER->G2D_MIXER_CTL |= (1uL << 31);	/* start the module */
-	PRINTF("G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
-	PRINTF("G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
-	PRINTF("G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
-	PRINTF("G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
-	PRINTF("G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
-	G2D_MIXER->G2D_MIXER_CTL &= ~ (1uL << 31);	/* start the module */
-	PRINTF("G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
-	PRINTF("G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
-	PRINTF("G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
-	PRINTF("G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
-	PRINTF("G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
-	for (;;)
-		;
 }
 #endif /* WITHMDMAHW */
 
@@ -940,10 +915,98 @@ hwacc_fillrect_u16(
 	#warning Imppement for CPUSTYPE_ALLWNT113
 	const unsigned stride = GXADJ(dx);
 
+//	g2d_rect rect0;
+//
+//	g2d_bsp_reset();
+
+//	/* set the input layer */
+//	g2d_vlayer_set(0, dst);
+
+
+//	g2d_byte_cal(image->format, &ycnt, &ucnt, &vcnt);
+//	pitch0 = cal_align(ycnt * image->width, image->align[0]);
+//	write_wvalue(V0_PITCH0, pitch0);
+//	pitch1 = cal_align(ucnt * cw, image->align[1]);
+//	write_wvalue(V0_PITCH1, pitch1);
+//	pitch2 = cal_align(vcnt * cw, image->align[2]);
+//	write_wvalue(V0_PITCH2, pitch2);
+
+	G2D_V0->V0_PITCH0 = PIXEL_SIZE;	// Y
+	G2D_V0->V0_PITCH1 = 0;	// U
+	G2D_V0->V0_PITCH2 = 0;	// V
+	ASSERT(G2D_V0->V0_PITCH0 == PIXEL_SIZE);
+	ASSERT(G2D_V0->V0_PITCH1 == 0);
+	ASSERT(G2D_V0->V0_PITCH2 == 0);
+
+
+//	/* set the fill color value */
+//	g2d_fc_set(0, color_value);
 	G2D_V0->V0_FILLC = color;
 	ASSERT(G2D_V0->V0_FILLC == color);
-	G2D_V0->V0_FILLC = color;
-	ASSERT(G2D_V0->V0_FILLC == color);
+
+//	if (dst->format >= G2D_FORMAT_IYUV422_V0Y1U0Y0) {
+//		g2d_vsu_para_set(dst->format, dst->clip_rect.w,
+//				  dst->clip_rect.h, dst->clip_rect.w,
+//				  dst->clip_rect.h, 0xff);
+//		g2d_csc_reg_set(1, G2D_RGB2YUV_709);
+//	}
+//
+//	/* for interleaved test */
+//	if ((dst->format >= G2D_FORMAT_IYUV422_V0Y1U0Y0)
+//			&& (dst->format <= G2D_FORMAT_IYUV422_Y1U0Y0V0)) {
+//		g2d_csc_reg_set(0, G2D_RGB2YUV_709);
+//		g2d_csc_reg_set(2, G2D_RGB2YUV_709);
+//		write_wvalue(BLD_CSC_CTL, 0x2);
+//		g2d_bk_set(0xff123456);
+//		porter_duff(G2D_BLD_SRCOVER);
+//		write_wvalue(BLD_FILLC0, 0x00108080);
+//		write_wvalue(BLD_FILLC1, 0x00108080);
+//		write_wvalue(UI0_FILLC, 0xffffffff);
+//		write_wvalue(UI1_FILLC, 0xffffffff);
+//	}
+
+
+//	rect0.x = 0;
+//	rect0.y = 0;
+//	rect0.w = dst->clip_rect.w;
+//	rect0.h = dst->clip_rect.h;
+//	g2d_bldin_set(0, rect0, dst->bpremul);
+//	g2d_bld_cs_set(dst->format);
+
+
+//	/* ROP sel ch0 pass */
+//	write_wvalue(ROP_CTL, 0xf0);
+	G2D_BLD->ROP_CTL = 0xf0uL;
+
+//	g2d_wb_set(dst);
+	G2D_WB->WB_ATT = G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_SIZE = ((h - 1) << 16) | ((w - 1) << 0);
+	G2D_BLD->BLD_SIZE = ((h - 1) << 16) | ((w - 1) << 0);
+
+	G2D_V0->V0_LADD0 = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	G2D_V0->V0_LADD1 = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	G2D_V0->V0_LADD2 = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	G2D_V0->V0_HADD = 0;
+
+
+
+
+	PRINTF("1 G2D_MIXER->G2D_MIXER_CTL=%08lX\n", G2D_MIXER->G2D_MIXER_CTL);
+	G2D_MIXER->G2D_MIXER_CTL |= (1uL << 31);	/* start the module */
+	PRINTF("2 G2D_MIXER->G2D_MIXER_CTL=%08lX\n", G2D_MIXER->G2D_MIXER_CTL);
+
+	for (;;)
+	{
+		if ((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0)
+			break;
+//		const uint_fast32_t sts = G2D_MIXER->G2D_MIXER_INT;
+//		G2D_MIXER->G2D_MIXER_INT = sts;
+//		if (((sts & (1uL << 0)) != 0))
+//			break;
+		PRINTF("L G2D_MIXER->G2D_MIXER_CLK=%08lX\n", G2D_MIXER->G2D_MIXER_CLK);
+	}
+	PRINTF("3 G2D_MIXER->G2D_MIXER_CTL=%08lX\n", G2D_MIXER->G2D_MIXER_CTL);
+
 //	G2D_V0->G2D_DMA0_CONTROL_REG |= (1uL << 0);
 //	G2D_V0->G2D_DMA0_FILLCOLOR_REG = color;
 //	ASSERT(G2D_V0->G2D_DMA0_FILLCOLOR_REG == color);
