@@ -20,7 +20,7 @@ SET OUTFILE=cmsis_t113s3.h
 %CONVERTER% tpadc.txt TPADC >> %OUTFILE%
 %CONVERTER% gpadc.txt GPADC >> %OUTFILE%
 %CONVERTER% spi_dbi.txt SPI_DBI >> %OUTFILE%
-%CONVERTER% ce_s.txt CE_S >> %OUTFILE%
+%CONVERTER% ce.txt CE >> %OUTFILE%
 %CONVERTER% rtc.txt RTC >> %OUTFILE%
 %CONVERTER% iommu.txt IOMMU >> %OUTFILE%
 %CONVERTER% ths.txt THS >> %OUTFILE%

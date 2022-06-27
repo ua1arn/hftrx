@@ -276,15 +276,15 @@ typedef enum IRQn
 #define DMAC_BASE      		0x03002000
 #define CPUX_MSGBOX_BASE	0x03003000
 #define SPINLOCK_BASE     	0x03005000
-#define	SID_BASE  		   	0x03006000
+#define	SID_BASE  		   	0x03006000	/* 4 KB Security ID (SID) */
 #define SMC_BASE     		0x03007000
 #define HSTIMER_BASE     	0x03008000
-#define DCU_BASE      		0x03010000
+#define DCU_BASE      		0x03010000	/* 64 KB */
 #define GIC_BASE      		0x03020000
 #define CE_NS_BASE      	0x03040000
 #define CE_S_BASE   	   	0x03040800
-#define CE_KEY_SRAM_BASE    0x03041000
-#define MSI_MEMC_BASE	    0x03102000
+#define CE_KEY_SRAM_BASE    0x03041000	/* 4 KB (only CE access) */
+#define MSI_MEMC_BASE	    0x03102000	/* 2 MB MSI and MEMC base address */
 #define DDRPHYC_BASE	 	0x03103000	/* probably */
 
 // SH2 (SYS domain)
@@ -1159,10 +1159,10 @@ typedef struct SPI_DBI_Type
 	__IO uint32_t SPI_RXD;                               /*!< Offset 0x300 SPI RX Data register */
 } SPI_DBI_TypeDef;
 /*
- * @brief CE_S
+ * @brief CE
  */
-/*!< CE_S Controller Interface */
-typedef struct CE_S_Type
+/*!< CE Controller Interface */
+typedef struct CE_Type
 {
 	__IO uint32_t CE_TDA;                                /*!< Offset 0x000 Task Descriptor Address */
 	uint32_t reserved1;
@@ -1175,7 +1175,7 @@ typedef struct CE_S_Type
 	__IO uint32_t CE_CSA;                                /*!< Offset 0x024 DMA Current Source Address */
 	__IO uint32_t CE_CDA;                                /*!< Offset 0x028 DMA Current Destination Address */
 	__IO uint32_t CE_TPR;                                /*!< Offset 0x02C Throughput Register */
-} CE_S_TypeDef;
+} CE_TypeDef;
 /*
  * @brief RTC
  */
@@ -2163,7 +2163,8 @@ typedef struct DMAC_Type
 #define TPADC		((TPADC_TypeDef *) TPADC_BASE)		/*!< \brief TPADC Interface register set access pointer */
 #define CIR_RX		((CIR_RX_TypeDef *) CIR_RX_BASE)	/*!< \brief CIR_RX Interface register set access pointer */
 #define CIR_TX		((CIR_TX_TypeDef *) CIR_TX_BASE)	/*!< \brief CIR_TX Interface register set access pointer */
-#define CE_S		((CE_S_TypeDef *) CE_S_BASE)		/*!< \brief CE_S Interface register set access pointer */
+#define CE_NS		((CE_TypeDef *) CE_NS_BASE)			/*!< \brief CE_NS Interface register set access pointer */
+#define CE_S		((CE_TypeDef *) CE_S_BASE)			/*!< \brief CE_S Interface register set access pointer */
 #define HSTIMER		((HSTIMER_TypeDef *) HSTIMER_BASE)	/*!< \brief HSTIMER Interface register set access pointer */
 #define TIMER		((TIMER_TypeDef *) TIMER_BASE)		/*!< \brief TIMER Interface register set access pointer */
 #define THS			((THS_TypeDef *) THS_BASE)			/*!< \brief THS Interface register set access pointer */
