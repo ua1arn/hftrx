@@ -80,17 +80,18 @@ static int _usdelay(int loops)
  return 1;
 }
 
-//#define MY_memset memset
-static void *MY_memset(void *dst,int p,int n)
-{
- char * __restrict__ d=(char*)dst;
- while(n--)*d++=(char)p;
- return dst;
-}
+#define MY_memset memset
+//static void *MY_memset(void *dst,int p,int n)
+//{
+// char * __restrict__ d=(char*)dst;
+// while(n--)*d++=(char)p;
+// return dst;
+//}
 
 //#define MY_memcpy memcpy
 static void *MY_memcpy(void *dst,const void *src,int n)
 {
+	return memcpy(dst, src, n);
  char * __restrict__ d=(char*)dst;
  char * __restrict__ s=(char*)src;
  while(n--)*d++=*s++;
