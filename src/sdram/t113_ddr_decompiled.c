@@ -40,6 +40,11 @@
 
 #define MEMORY(x) (*(volatile unsigned int*)(x))
 
+#define CPU_CONFIG_REG 		0x070005D4uL
+#define CPU_CONFIG2_REG 	0x07010250uL
+#define CPU_CONFIG3_REG 	0x07010254uL
+
+
 //------------------------------------------------------------------------------------------------
 
 static int dram_vol_set(int a1);
@@ -146,21 +151,21 @@ static int init_DRAM(int a1,int a2)
 
   if ( (*(_DWORD *)(a2 + 92) & 0x10000) != 0 )
   {
-    MEMORY(0x03000160) |= 0x100u;
-    MEMORY(0x03000168) = 0;
+    SYS_CFG->RESCAL_CTRL_REG |= 0x100u;
+    SYS_CFG->RES240_CTRL_REG = 0;
     _usdelay(10);
   }
   else
   {
-    MEMORY(0x7010254) = 0;
-    MEMORY(0x03000160) &= 0xFFFFFFFC;
+    MEMORY(CPU_CONFIG3_REG) = 0;
+    SYS_CFG->RESCAL_CTRL_REG &= 0xFFFFFFFC;
     _usdelay(10);
 
-    MEMORY(0x03000160) &= 0xFFFFFEFB;
-    MEMORY(0x03000160) |= 2u;
+    SYS_CFG->RESCAL_CTRL_REG &= 0xFFFFFEFB;
+    SYS_CFG->RESCAL_CTRL_REG |= 2u;
     _usdelay(10);
 
-    MEMORY(0x03000160) |= 1u;
+    SYS_CFG->RESCAL_CTRL_REG |= 1u;
     _usdelay(20);
 
 //    PRINTF("ZQ value = 0x%x\n", MEMORY(0x0300016C), v3, 50332012);
@@ -287,7 +292,7 @@ LABEL_5:
 
     if ( v30 == 7 )
     {
-      v33 = 51392636;
+      v33 = DDRPHYC_BASE + 0x07C;
       v32 = MEMORY(DDRPHYC_BASE + 0x07C) & 0xFFF0FFFF | 0x10000;
       MEMORY(DDRPHYC_BASE + 0x07C) = v32;
     }
@@ -306,9 +311,9 @@ LABEL_5:
 
     if ( (v40 & 0x10000000) != 0 )
     {
-      v40 = MEMORY(0x070005D4) << 15;
+      v40 = MEMORY(CPU_CONFIG_REG) << 15;
 
-      if ( (MEMORY(0x070005D4) & 0x10000) == 0 )
+      if ( (MEMORY(CPU_CONFIG_REG) & 0x10000) == 0 )
       {
         v38 = dramc_simple_wr_test(v26, 4096); //OK
 
@@ -362,9 +367,9 @@ static int sid_read_ldoB_cal(int result) //ok
   int v1; // r3
   int v2; // r2
 
-  v1 = MEMORY(0x0300621C);
+  v1 = MEMORY(SID_BASE + 0x21C);
 
-  if ( MEMORY(0x0300621C) )
+  if ( MEMORY(SID_BASE + 0x21C) )
   {
     v2 = *(_DWORD *)(result + 4);
 
@@ -374,8 +379,8 @@ static int sid_read_ldoB_cal(int result) //ok
       if ( v2 == 3 )
       {
 
-        if ( MEMORY(0x0300621C) > 0x20u )
-          v1 = MEMORY(0x0300621C) - 22;
+        if ( MEMORY(SID_BASE + 0x21C) > 0x20u )
+          v1 = MEMORY(SID_BASE + 0x21C) - 22;
 
       }
       else
@@ -482,34 +487,34 @@ static int mctl_core_init(int *a1) //OK
 
 static int mctl_sys_init(int *a1) //OK
 {
-  MEMORY(0x02001540) &= 0xBFFFFFFF;
-  MEMORY(0x0200180C) &= 0xFFFFFFFE;
-  MEMORY(0x0200180C) &= 0xFFFEFFFF;
-  CCU->DRAM_CLK_REG &= 0xBFFFFFFF;
-  CCU->DRAM_CLK_REG &= 0x7FFFFFFFu;
-  CCU->DRAM_CLK_REG |= 0x8000000u;
-  _usdelay(10);
+	CCU->MBUS_CLK_REG &= 0xBFFFFFFF;
+	CCU->DRAM_BGR_REG &= 0xFFFFFFFE;
+	CCU->DRAM_BGR_REG &= 0xFFFEFFFF;
+	CCU->DRAM_CLK_REG &= 0xBFFFFFFF;
+	CCU->DRAM_CLK_REG &= 0x7FFFFFFFu;
+	CCU->DRAM_CLK_REG |= 0x8000000u;
+	_usdelay(10);
 
-  *a1 = (unsigned int)ccm_set_pll_ddr_clk(0, a1) >> 1; //OK
+	*a1 = (unsigned int) ccm_set_pll_ddr_clk(0, a1) >> 1; //OK
 
-  _usdelay(100);
+	_usdelay(100);
 
-  dram_disable_all_master(); //OK
+	dram_disable_all_master(); //OK
 
-  MEMORY(0x0200180C) |= 0x10000u;
-  MEMORY(0x02001540) |= 0x40000000u;
-  CCU->DRAM_CLK_REG |= 0x40000000u;
-  _usdelay(5);
+	CCU->DRAM_BGR_REG |= 0x10000u;
+	CCU->MBUS_CLK_REG |= 0x40000000u;
+	CCU->DRAM_CLK_REG |= 0x40000000u;
+	_usdelay(5);
 
-  MEMORY(0x0200180C) |= 1u;
-  CCU->DRAM_CLK_REG |= 0x80000000;
-  CCU->DRAM_CLK_REG |= 0x8000000u;
-  _usdelay(5);
+	CCU->DRAM_BGR_REG |= 1u;
+	CCU->DRAM_CLK_REG |= 0x80000000;
+	CCU->DRAM_CLK_REG |= 0x8000000u;
+	_usdelay(5);
 
-  MEMORY(DDRPHYC_BASE + 0x00C) = 0x8000;
-  _usdelay(10);
+	MEMORY(DDRPHYC_BASE + 0x00C) = 0x8000;
+	_usdelay(10);
 
-  return 0;
+	return 0;
 }
 
 static int ccm_set_pll_ddr_clk(int a1, int *a2) //OK
@@ -721,10 +726,10 @@ static int mctl_phy_ac_remapping(int a1)
   static char v17[40]; // [sp+D8h] [bp-28h] BYREF
 
   MY_memset(v8, 0, 22);
-  v2 = (MEMORY(0x03006228) >> 8) & 0xF;
+  v2 = (MEMORY(SID_BASE + 0x228) >> 8) & 0xF;
 
   MY_memcpy(v9, &unk_6B40, 22);
-  v3 = MEMORY(0x03006200);
+  v3 = MEMORY(SID_BASE + 0x200);
 
   MY_memcpy(v10, &unk_6B56, 22);
   MY_memcpy(v11, &unk_6B6C, 22);
@@ -1576,9 +1581,9 @@ LABEL_16:
 
   MEMORY(DDRPHYC_BASE + 0x0C0) = v20;
 
-  if ( (MEMORY(0x070005D4) & 0x10000) != 0 )
+  if ( (MEMORY(CPU_CONFIG_REG) & 0x10000) != 0 )
   {
-    MEMORY(0x7010250) &= 0xFFFFFFFD;
+    MEMORY(CPU_CONFIG2_REG) &= 0xFFFFFFFD;
     _usdelay(10);
   }
 
@@ -1600,7 +1605,7 @@ LABEL_16:
       v21 = 1312;
 
   }
-  else if ( (MEMORY(0x070005D4) & 0x10000) != 0 )
+  else if ( (MEMORY(CPU_CONFIG_REG) & 0x10000) != 0 )
   {
     v21 = 98;
   }
@@ -1619,10 +1624,10 @@ LABEL_16:
   while ( (MEMORY(DDRPHYC_BASE + 0x010) & 1) == 0 )
     ;
 
-  v23 = MEMORY(0x070005D4);
-  v24 = MEMORY(0x070005D4) << 15;
+  v23 = MEMORY(CPU_CONFIG_REG);
+  v24 = MEMORY(CPU_CONFIG_REG) << 15;
 
-  if ( (MEMORY(0x070005D4) & 0x10000) != 0 )
+  if ( (MEMORY(CPU_CONFIG_REG) & 0x10000) != 0 )
   {
     MEMORY(DDRPHYC_BASE + 0x10C) = MEMORY(DDRPHYC_BASE + 0x10C) & 0xF9FFFFFF | 0x4000000;
     _usdelay(10);
@@ -1631,7 +1636,7 @@ LABEL_16:
     while ( (MEMORY(DDRPHYC_BASE + 0x018) & 7) != 3 )
       ;
 
-    MEMORY(0x7010250) &= 0xFFFFFFFE;
+    MEMORY(CPU_CONFIG2_REG) &= 0xFFFFFFFE;
     _usdelay(10);
 
     MEMORY(DDRPHYC_BASE + 0x004) &= 0xFFFFFFFE;
