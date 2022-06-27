@@ -662,8 +662,8 @@ void arm_hardware_mdma_initialize(void)
 	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFFuL) |
-		3 * (1uL << 4) |	// ROT divider (looks like power of 2)
-		3 * (1uL << 0) |	// MIXER divider (looks like power of 2)
+		4 * (1uL << 4) |	// ROT divider (looks like power of 2)
+		4 * (1uL << 0) |	// MIXER divider (looks like power of 2)
 		0;
 	G2D_TOP->G2D_SCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_HCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
