@@ -250,46 +250,46 @@ LABEL_5:
       if ( !v28 )
         v28 = 268435968;
 
-      MEMORY(DDRC_BASE + 0x0A0) = v28;
-      MEMORY(DDRC_BASE + 0x09C) = 1034;
-      MEMORY(DDRC_BASE + 0x004) |= 1u;
+      MEMORY(DDRPHYC_BASE + 0x0A0) = v28;
+      MEMORY(DDRPHYC_BASE + 0x09C) = 1034;
+      MEMORY(DDRPHYC_BASE + 0x004) |= 1u;
 
-//      PRINTF("Enable Auto SR\n", 1034, 0x3103004u, MEMORY(DDRC_BASE + 0x004));
+//      PRINTF("Enable Auto SR\n", 1034, 0x3103004u, MEMORY(DDRPHYC_BASE + 0x004));
 
     }
     else
     {
-      MEMORY(DDRC_BASE + 0x0A0) = HIWORD(MEMORY(DDRC_BASE + 0x0A0)) << 16;
-      MEMORY(DDRC_BASE + 0x004) &= 0xFFFFFFFE;
+      MEMORY(DDRPHYC_BASE + 0x0A0) = HIWORD(MEMORY(DDRPHYC_BASE + 0x0A0)) << 16;
+      MEMORY(DDRPHYC_BASE + 0x004) &= 0xFFFFFFFE;
     }
 
     v29 = *(_DWORD *)(a2 + 92);
     v30 = *(_DWORD *)(a2 + 4);
-    v31 = MEMORY(DDRC_BASE + 0x100) & 0xFFFF0FFF;
+    v31 = MEMORY(DDRPHYC_BASE + 0x100) & 0xFFFF0FFF;
 
     if ( (v29 & 0x200) != 0 || v30 == 6 )
       v31 |= 0x5000u;
 
-    MEMORY(DDRC_BASE + 0x100) = v31;
-    MEMORY(DDRC_BASE + 0x140) |= 0x80000000;
+    MEMORY(DDRPHYC_BASE + 0x100) = v31;
+    MEMORY(DDRPHYC_BASE + 0x140) |= 0x80000000;
 
     if ( (v29 & 0x100) != 0 )
-      MEMORY(DDRC_BASE + 0x0B8) |= 0x0300u;
+      MEMORY(DDRPHYC_BASE + 0x0B8) |= 0x0300u;
 
     v32 = 51392776;
 
     if ( (v29 & 0x4000000) != 0 )
-      v33 = MEMORY(DDRC_BASE + 0x108) & 0xFFFFDFFF;
+      v33 = MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFDFFF;
     else
-      v33 = MEMORY(DDRC_BASE + 0x108) | 0x2000;
+      v33 = MEMORY(DDRPHYC_BASE + 0x108) | 0x2000;
 
-    MEMORY(DDRC_BASE + 0x108) = v33;
+    MEMORY(DDRPHYC_BASE + 0x108) = v33;
 
     if ( v30 == 7 )
     {
       v33 = 51392636;
-      v32 = MEMORY(DDRC_BASE + 0x07C) & 0xFFF0FFFF | 0x10000;
-      MEMORY(DDRC_BASE + 0x07C) = v32;
+      v32 = MEMORY(DDRPHYC_BASE + 0x07C) & 0xFFF0FFFF | 0x10000;
+      MEMORY(DDRPHYC_BASE + 0x07C) = v32;
     }
 
 /*
@@ -453,7 +453,7 @@ static int auto_scan_dram_rank_width(int *a1)
 
   mctl_core_init(a1); //OK
 
-  if ( (MEMORY(DDRC_BASE + 0x010) & 0x100000) != 0 || !dqs_gate_detect((int)a1, v4, v5) ) //OK
+  if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0x100000) != 0 || !dqs_gate_detect((int)a1, v4, v5) ) //OK
     return 0;
 
   a1[23] = v3;
@@ -506,7 +506,7 @@ static int mctl_sys_init(int *a1) //OK
   CCU->DRAM_CLK_REG |= 0x8000000u;
   _usdelay(5);
 
-  MEMORY(DDRC_BASE + 0x00C) = 0x8000;
+  MEMORY(DDRPHYC_BASE + 0x00C) = 0x8000;
   _usdelay(10);
 
   return 0;
@@ -559,10 +559,10 @@ static _DWORD *mctl_vrefzq_init(_DWORD *result) //OK
 
   if ( (v1 & 0x20000) == 0 )
   {
-    MEMORY(DDRC_BASE + 0x110) = MEMORY(DDRC_BASE + 0x110) & 0x80808080 | result[15];
+    MEMORY(DDRPHYC_BASE + 0x110) = MEMORY(DDRPHYC_BASE + 0x110) & 0x80808080 | result[15];
 
     if ( (v1 & 0x10000) == 0 )
-      MEMORY(DDRC_BASE + 0x114) = result[16] & 0x7F | MEMORY(DDRC_BASE + 0x114) & 0xFFFFFF80;
+      MEMORY(DDRPHYC_BASE + 0x114) = result[16] & 0x7F | MEMORY(DDRPHYC_BASE + 0x114) & 0xFFFFFF80;
 
   }
 
@@ -672,10 +672,10 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
   if ( (MEMORY(MSI_MEMC_BASE + 0x000) & 1) != 0 )
     v18 = 771;
 
-  MEMORY(DDRC_BASE + 0x120) = v18;
+  MEMORY(DDRPHYC_BASE + 0x120) = v18;
 
   if ( v3 )
-    MEMORY(DDRC_BASE + 0x3C4) = 0;
+    MEMORY(DDRPHYC_BASE + 0x3C4) = 0;
 
   v19 = result[14];
 
@@ -1387,36 +1387,36 @@ LABEL_105:
   if ( !HIWORD(v94) )
     *(_DWORD *)(a1 + 36) = v51;
 
-  MEMORY(DDRC_BASE + 0x030) = v49;
-  MEMORY(DDRC_BASE + 0x034) = *(uint16_t *)(a1 + 28);
-  MEMORY(DDRC_BASE + 0x038) = *(uint16_t *)(a1 + 32);
+  MEMORY(DDRPHYC_BASE + 0x030) = v49;
+  MEMORY(DDRPHYC_BASE + 0x034) = *(uint16_t *)(a1 + 28);
+  MEMORY(DDRPHYC_BASE + 0x038) = *(uint16_t *)(a1 + 32);
 
   v52 = *(uint16_t *)(a1 + 36);
   v53 = *(_DWORD *)(a1 + 12);
 
-  MEMORY(DDRC_BASE + 0x03C) = v52;
-  MEMORY(DDRC_BASE + 0x02C) = (v53 >> 4) & 3;
-  MEMORY(DDRC_BASE + 0x058) = v75 | (v74 << 16) | (v89 << 24) | (v90 << 8);
-  MEMORY(DDRC_BASE + 0x05C) = v73 | (v71 << 16) | (v93 << 8);
-  MEMORY(DDRC_BASE + 0x060) = (v79 << 16) | (v41 << 24) | v91 | (v45 << 8);
-  MEMORY(DDRC_BASE + 0x064) = v50 | v80;
-  MEMORY(DDRC_BASE + 0x068) = (v95 << 16) | (v70 << 24) | v12 | (v72 << 8);
-  MEMORY(DDRC_BASE + 0x06C) = v5 | (v46 << 16) | (v46 << 24) | (v44 << 8);
+  MEMORY(DDRPHYC_BASE + 0x03C) = v52;
+  MEMORY(DDRPHYC_BASE + 0x02C) = (v53 >> 4) & 3;
+  MEMORY(DDRPHYC_BASE + 0x058) = v75 | (v74 << 16) | (v89 << 24) | (v90 << 8);
+  MEMORY(DDRPHYC_BASE + 0x05C) = v73 | (v71 << 16) | (v93 << 8);
+  MEMORY(DDRPHYC_BASE + 0x060) = (v79 << 16) | (v41 << 24) | v91 | (v45 << 8);
+  MEMORY(DDRPHYC_BASE + 0x064) = v50 | v80;
+  MEMORY(DDRPHYC_BASE + 0x068) = (v95 << 16) | (v70 << 24) | v12 | (v72 << 8);
+  MEMORY(DDRPHYC_BASE + 0x06C) = v5 | (v46 << 16) | (v46 << 24) | (v44 << 8);
 
   if ( v14 > 0x320 )
-    v54 = MEMORY(DDRC_BASE + 0x078) & 0xFFF0000 | 0xF0007600;
+    v54 = MEMORY(DDRPHYC_BASE + 0x078) & 0xFFF0000 | 0xF0007600;
   else
-    v54 = MEMORY(DDRC_BASE + 0x078) & 0xFFF0000 | 0xF0006600;
+    v54 = MEMORY(DDRPHYC_BASE + 0x078) & 0xFFF0000 | 0xF0006600;
 
-  MEMORY(DDRC_BASE + 0x078) = v54 | 0x10;
+  MEMORY(DDRPHYC_BASE + 0x078) = v54 | 0x10;
 
   result = (v13 << 15) & 0xFFF0000;
 
-  MEMORY(DDRC_BASE + 0x080) = v82 | 0x2000100 | (v6 << 16);
-  MEMORY(DDRC_BASE + 0x050) = v83 | (v84 << 20);
-  MEMORY(DDRC_BASE + 0x054) = v85 | (v86 << 20);
-  MEMORY(DDRC_BASE + 0x090) = v81 | (v13 << 16);
-  MEMORY(DDRC_BASE + 0x094) = result;
+  MEMORY(DDRPHYC_BASE + 0x080) = v82 | 0x2000100 | (v6 << 16);
+  MEMORY(DDRPHYC_BASE + 0x050) = v83 | (v84 << 20);
+  MEMORY(DDRPHYC_BASE + 0x054) = v85 | (v86 << 20);
+  MEMORY(DDRPHYC_BASE + 0x090) = v81 | (v13 << 16);
+  MEMORY(DDRPHYC_BASE + 0x094) = result;
 
   return result;
 }
@@ -1472,8 +1472,8 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
 
   v7 = (32 * ~(_BYTE)v6) & 0x20;
 
-  MEMORY(DDRC_BASE + 0x108) = MEMORY(DDRC_BASE + 0x108) & 0xFFFFF0FF | 0x0300;
-  v8 = MEMORY(DDRC_BASE + 0x344) & 0xFFFFFFCF | v7;
+  MEMORY(DDRPHYC_BASE + 0x108) = MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFF0FF | 0x0300;
+  v8 = MEMORY(DDRPHYC_BASE + 0x344) & 0xFFFFFFCF | v7;
 
   if ( v4 <= 0x2A0 )
     v9 = v8 & 0xFFFF0FFF;
@@ -1485,8 +1485,8 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   if ( v4 > 0x2A0 )
     v10 |= 0x400u;
 
-  MEMORY(DDRC_BASE + 0x344) = v10;
-  v11 = MEMORY(DDRC_BASE + 0x3C4) & 0xFFFFFFCF | v7;
+  MEMORY(DDRPHYC_BASE + 0x344) = v10;
+  v11 = MEMORY(DDRPHYC_BASE + 0x3C4) & 0xFFFFFFCF | v7;
 
   if ( v4 <= 0x2A0 )
     v12 = v11 & 0xFFFF0FFF;
@@ -1498,37 +1498,37 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   if ( v4 > 0x2A0 )
     v13 |= 0x400u;
 
-  MEMORY(DDRC_BASE + 0x3C4) = v13;
-  MEMORY(DDRC_BASE + 0x208) |= 2u;
+  MEMORY(DDRPHYC_BASE + 0x3C4) = v13;
+  MEMORY(DDRPHYC_BASE + 0x208) |= 2u;
 
   eye_delay_compensation((int)a2); //OK
 
   if ( v5 == 1 )
   {
     v15 = 51392700;
-    MEMORY(DDRC_BASE + 0x108) &= 0xFFFFFF3F;
-    v16 = MEMORY(DDRC_BASE + 0x0BC) & 0xFFFFFEF8;
+    MEMORY(DDRPHYC_BASE + 0x108) &= 0xFFFFFF3F;
+    v16 = MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8;
   }
   else
   {
     if ( v5 != 2 )
     {
-      MEMORY(DDRC_BASE + 0x108) &= 0xFFFFFFBF;
+      MEMORY(DDRPHYC_BASE + 0x108) &= 0xFFFFFFBF;
       _usdelay(10);
 
-      MEMORY(DDRC_BASE + 0x108) |= 0xC0u;
+      MEMORY(DDRPHYC_BASE + 0x108) |= 0xC0u;
 
       goto LABEL_16;
     }
 
     v14 = 0x031030BC;
 
-    MEMORY(DDRC_BASE + 0x108) = MEMORY(DDRC_BASE + 0x108) & 0xFFFFFF3F | 0x80;
+    MEMORY(DDRPHYC_BASE + 0x108) = MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFFF3F | 0x80;
 
     v15 = 0x0310311C;
 
-    MEMORY(DDRC_BASE + 0x0BC) = ((HIWORD(MEMORY(DDRC_BASE + 0x060)) & 0x1F) - 2) | MEMORY(DDRC_BASE + 0x0BC) & 0xFFFFFEF8 | 0x100;
-    v16 = MEMORY(DDRC_BASE + 0x11C) & 0x7FFFFFFF | 0x8000000;
+    MEMORY(DDRPHYC_BASE + 0x0BC) = ((HIWORD(MEMORY(DDRPHYC_BASE + 0x060)) & 0x1F) - 2) | MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8 | 0x100;
+    v16 = MEMORY(DDRPHYC_BASE + 0x11C) & 0x7FFFFFFF | 0x8000000;
   }
 
   *(_DWORD *)v15 = v16;
@@ -1539,9 +1539,9 @@ LABEL_16:
   {
 
     if ( v5 == 1 )
-      v17 = MEMORY(DDRC_BASE + 0x11C) & 0xF7FFFFFF;
+      v17 = MEMORY(DDRPHYC_BASE + 0x11C) & 0xF7FFFFFF;
     else
-      v17 = MEMORY(DDRC_BASE + 0x11C) & 0x88FFFFFF;
+      v17 = MEMORY(DDRPHYC_BASE + 0x11C) & 0x88FFFFFF;
 
     if ( v5 == 1 )
       v18 = v17 & 0xFFFFFF3F;
@@ -1551,16 +1551,16 @@ LABEL_16:
     if ( v5 == 1 )
       v18 |= 0x80000000;
 
-    MEMORY(DDRC_BASE + 0x11C) = v18;
+    MEMORY(DDRPHYC_BASE + 0x11C) = v18;
   }
 
   if ( (a2[5] & 0x1000) != 0 )
   {
-    v19 = MEMORY(DDRC_BASE + 0x0C0);
+    v19 = MEMORY(DDRPHYC_BASE + 0x0C0);
   }
   else
   {
-    v14 = MEMORY(DDRC_BASE + 0x0C0);
+    v14 = MEMORY(DDRPHYC_BASE + 0x0C0);
     v19 = 16789639;
   }
 
@@ -1574,7 +1574,7 @@ LABEL_16:
   else
     v20 = v19 | v14;
 
-  MEMORY(DDRC_BASE + 0x0C0) = v20;
+  MEMORY(DDRPHYC_BASE + 0x0C0) = v20;
 
   if ( (MEMORY(0x070005D4) & 0x10000) != 0 )
   {
@@ -1582,14 +1582,14 @@ LABEL_16:
     _usdelay(10);
   }
 
-  MEMORY(DDRC_BASE + 0x140) = a2[2] & 0xFFFFFF | MEMORY(DDRC_BASE + 0x140) & 0xFC000000 | 0x2000000;
+  MEMORY(DDRPHYC_BASE + 0x140) = a2[2] & 0xFFFFFF | MEMORY(DDRPHYC_BASE + 0x140) & 0xFC000000 | 0x2000000;
 
   if ( v5 == 1 )
   {
 
-    MEMORY(DDRC_BASE + 0x000) = 83;
+    MEMORY(DDRPHYC_BASE + 0x000) = 83;
 
-    while ( (MEMORY(DDRC_BASE + 0x010) & 1) == 0 )
+    while ( (MEMORY(DDRPHYC_BASE + 0x010) & 1) == 0 )
       ;
 
     _usdelay(10);
@@ -1613,10 +1613,10 @@ LABEL_16:
     v21 = 370;
   }
 
-  MEMORY(DDRC_BASE + 0x000) = v21 | 1;
+  MEMORY(DDRPHYC_BASE + 0x000) = v21 | 1;
   _usdelay(10);
 
-  while ( (MEMORY(DDRC_BASE + 0x010) & 1) == 0 )
+  while ( (MEMORY(DDRPHYC_BASE + 0x010) & 1) == 0 )
     ;
 
   v23 = MEMORY(0x070005D4);
@@ -1624,46 +1624,46 @@ LABEL_16:
 
   if ( (MEMORY(0x070005D4) & 0x10000) != 0 )
   {
-    MEMORY(DDRC_BASE + 0x10C) = MEMORY(DDRC_BASE + 0x10C) & 0xF9FFFFFF | 0x4000000;
+    MEMORY(DDRPHYC_BASE + 0x10C) = MEMORY(DDRPHYC_BASE + 0x10C) & 0xF9FFFFFF | 0x4000000;
     _usdelay(10);
 
-    MEMORY(DDRC_BASE + 0x004) |= 1u;
-    while ( (MEMORY(DDRC_BASE + 0x018) & 7) != 3 )
+    MEMORY(DDRPHYC_BASE + 0x004) |= 1u;
+    while ( (MEMORY(DDRPHYC_BASE + 0x018) & 7) != 3 )
       ;
 
     MEMORY(0x7010250) &= 0xFFFFFFFE;
     _usdelay(10);
 
-    MEMORY(DDRC_BASE + 0x004) &= 0xFFFFFFFE;
+    MEMORY(DDRPHYC_BASE + 0x004) &= 0xFFFFFFFE;
 
-    while ( (MEMORY(DDRC_BASE + 0x018) & 7) != 1 )
+    while ( (MEMORY(DDRPHYC_BASE + 0x018) & 7) != 1 )
       ;
 
     _usdelay(15);
 
     if ( v5 == 1 )
     {
-      MEMORY(DDRC_BASE + 0x108) &= 0xFFFFFF3F;
-      MEMORY(DDRC_BASE + 0x10C) = MEMORY(DDRC_BASE + 0x10C) & 0xF9FFFFFF | 0x2000000;
+      MEMORY(DDRPHYC_BASE + 0x108) &= 0xFFFFFF3F;
+      MEMORY(DDRPHYC_BASE + 0x10C) = MEMORY(DDRPHYC_BASE + 0x10C) & 0xF9FFFFFF | 0x2000000;
       _usdelay(1);
 
-      MEMORY(DDRC_BASE + 0x000) = 0x0401;
+      MEMORY(DDRPHYC_BASE + 0x000) = 0x0401;
 
       do
       {
-        v23 = MEMORY(DDRC_BASE + 0x010);
-        v22 = MEMORY(DDRC_BASE + 0x010) << 31;
+        v23 = MEMORY(DDRPHYC_BASE + 0x010);
+        v22 = MEMORY(DDRPHYC_BASE + 0x010) << 31;
       }
-      while ( (MEMORY(DDRC_BASE + 0x010) & 1) == 0 );
+      while ( (MEMORY(DDRPHYC_BASE + 0x010) & 1) == 0 );
 
     }
 
   }
 
-  if ( (MEMORY(DDRC_BASE + 0x010) & 0xFF00000) != 0 )
+  if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0xFF00000) != 0 )
   {
-    v25 = MEMORY(DDRC_BASE + 0x010) & 0x100000;
-    if ( (MEMORY(DDRC_BASE + 0x010) & 0x100000) != 0 )
+    v25 = MEMORY(DDRPHYC_BASE + 0x010) & 0x100000;
+    if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0x100000) != 0 )
     {
       v25 = 0;
 
@@ -1677,22 +1677,22 @@ LABEL_16:
     v25 = 1;
   }
 
-  while ( (MEMORY(DDRC_BASE + 0x018) & 1) == 0 )
+  while ( (MEMORY(DDRPHYC_BASE + 0x018) & 1) == 0 )
     ;
 
-  MEMORY(DDRC_BASE + 0x08C) |= 0x80000000;
+  MEMORY(DDRPHYC_BASE + 0x08C) |= 0x80000000;
   _usdelay(10);
 
-  MEMORY(DDRC_BASE + 0x08C) &= 0x7FFFFFFFu;
+  MEMORY(DDRPHYC_BASE + 0x08C) &= 0x7FFFFFFFu;
   _usdelay(10);
 
   MEMORY(MSI_MEMC_BASE + 0x014) |= 0x80000000;
   _usdelay(10);
 
-  MEMORY(DDRC_BASE + 0x10C) &= 0xF9FFFFFF;
+  MEMORY(DDRPHYC_BASE + 0x10C) &= 0xF9FFFFFF;
 
   if ( v5 == 1 )
-    MEMORY(DDRC_BASE + 0x11C) = MEMORY(DDRC_BASE + 0x11C) & 0xFFFFFF3F | 0x40;
+    MEMORY(DDRPHYC_BASE + 0x11C) = MEMORY(DDRPHYC_BASE + 0x11C) & 0xFFFFFF3F | 0x40;
 
   return v25;
 }
@@ -1718,20 +1718,20 @@ static int eye_delay_compensation(int a1) //OK
   for ( j = 0x03103390; j != 0x031033B4; j += 4 )
     *(_DWORD *)j |= (32 * v2) & 0x1E00 | (HIDWORD(v2) >> 3) & 0x1E;
 
-  MEMORY(DDRC_BASE + 0x100) &= 0xFBFFFFFF;
+  MEMORY(DDRPHYC_BASE + 0x100) &= 0xFBFFFFFF;
 
   v5 = (HIDWORD(v2) >> 15) & 0x1E | (WORD1(v2) << 9) & 0x1E00;
 
-  MEMORY(DDRC_BASE + 0x334) |= v5;
-  MEMORY(DDRC_BASE + 0x338) |= v5;
+  MEMORY(DDRPHYC_BASE + 0x334) |= v5;
+  MEMORY(DDRPHYC_BASE + 0x338) |= v5;
 
   v6 = (HIDWORD(v2) >> 19) & 0x1E | ((unsigned int)v2 >> 20 << 9) & 0x1E00;
 
-  MEMORY(DDRC_BASE + 0x3B4) |= v6;
-  MEMORY(DDRC_BASE + 0x3B8) |= v6;
-  MEMORY(DDRC_BASE + 0x33C) |= (WORD1(v2) << 25) & 0x1E000000;
-  MEMORY(DDRC_BASE + 0x3BC) |= ((unsigned int)v2 >> 20 << 25) & 0x1E000000;
-  MEMORY(DDRC_BASE + 0x100) |= 0x4000000u;
+  MEMORY(DDRPHYC_BASE + 0x3B4) |= v6;
+  MEMORY(DDRPHYC_BASE + 0x3B8) |= v6;
+  MEMORY(DDRPHYC_BASE + 0x33C) |= (WORD1(v2) << 25) & 0x1E000000;
+  MEMORY(DDRPHYC_BASE + 0x3BC) |= ((unsigned int)v2 >> 20 << 25) & 0x1E000000;
+  MEMORY(DDRPHYC_BASE + 0x100) |= 0x4000000u;
   _usdelay(1);
 
   v7 = *(_DWORD *)(a1 + 80);
@@ -1748,12 +1748,12 @@ static int eye_delay_compensation(int a1) //OK
   for ( k = 0x03103228; k != 0x03103240; k += 4 )
     *(_DWORD *)k |= v9;
 
-  MEMORY(DDRC_BASE + 0x218) |= (v7 << 8) & 0xF00;
+  MEMORY(DDRPHYC_BASE + 0x218) |= (v7 << 8) & 0xF00;
 
-  result = MEMORY(DDRC_BASE + 0x21C);
+  result = MEMORY(DDRPHYC_BASE + 0x21C);
 
-  MEMORY(DDRC_BASE + 0x21C) |= v7 & 0xF00;
-  MEMORY(DDRC_BASE + 0x280) |= (v7 >> 4) & 0xF00;
+  MEMORY(DDRPHYC_BASE + 0x21C) |= v7 & 0xF00;
+  MEMORY(DDRPHYC_BASE + 0x280) |= (v7 >> 4) & 0xF00;
 
   return result;
 }
@@ -1872,7 +1872,7 @@ static int dqs_gate_detect(int a1, int a2, unsigned int a3) //OK
   unsigned int v7; // r2
   int v8; // r3
 
-  if ( (MEMORY(DDRC_BASE + 0x010) & 0x400000) == 0 )
+  if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0x400000) == 0 )
   {
     v4 = *(_DWORD *)(a1 + 20) & 0xFFFFFFF0 | 0x1000;
     *(_DWORD *)(a1 + 20) = v4;
@@ -1886,8 +1886,8 @@ LABEL_6:
     return 1;
   }
 
-  a2 = HIBYTE(MEMORY(DDRC_BASE + 0x348)) & 3;
-  v3 = HIBYTE(MEMORY(DDRC_BASE + 0x3C8)) & 3;
+  a2 = HIBYTE(MEMORY(DDRPHYC_BASE + 0x348)) & 3;
+  v3 = HIBYTE(MEMORY(DDRPHYC_BASE + 0x3C8)) & 3;
 
   if ( a2 == 2 )
   {
