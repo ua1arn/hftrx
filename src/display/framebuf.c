@@ -1031,33 +1031,33 @@ hwacc_fillrect_u16(
 //	G2D_V0->V0_LADD2 = addr;
 //	G2D_V0->V0_HADD = 0; //addr >> 32;
 
-	G2D_UI0->UI0_FILLC = color;
-	G2D_UI0->UI0_ATTR = G2D_FMT_RGB565;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
-	G2D_UI0->UI0_MBSIZE = (h << 16) | (w << 0);
-	G2D_UI0->UI0_COOR = 0;//((row) << 16) | ((col) << 0);
-	G2D_UI0->UI0_PITCH = stride;//PIXEL_SIZE;
-	G2D_UI0->UI0_LADD = addr;
-	G2D_UI0->UI0_HADD = 0; //addr >> 32;
-	G2D_UI0->UI0_SIZE = (w << 16) | (h << 0);
+	G2D_UI0->UI_FILLC = color;
+	G2D_UI0->UI_ATTR = G2D_FMT_RGB565;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
+	G2D_UI0->UI_MBSIZE = (h << 16) | (w << 0);
+	G2D_UI0->UI_COOR = 0;//((row) << 16) | ((col) << 0);
+	G2D_UI0->UI_PITCH = stride;//PIXEL_SIZE;
+	G2D_UI0->UI_LADD = addr;
+	G2D_UI0->UI_HADD = 0; //addr >> 32;
+	G2D_UI0->UI_SIZE = (w << 16) | (h << 0);
 
-	G2D_UI1->UI0_FILLC = color;
-	G2D_UI1->UI0_ATTR = G2D_FMT_RGB565;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
-	G2D_UI1->UI0_MBSIZE = (h << 16) | (w << 0);
-	G2D_UI1->UI0_COOR = 0;//((row) << 16) | ((col) << 0);
-	G2D_UI1->UI0_PITCH = stride;//PIXEL_SIZE;
-	G2D_UI1->UI0_LADD = addr;
-	G2D_UI1->UI0_HADD = 0; //addr >> 32;
-	G2D_UI1->UI0_SIZE = (h << 16) | (w << 0);
+	G2D_UI1->UI_FILLC = color;
+	G2D_UI1->UI_ATTR = G2D_FMT_RGB565;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
+	G2D_UI1->UI_MBSIZE = (h << 16) | (w << 0);
+	G2D_UI1->UI_COOR = 0;//((row) << 16) | ((col) << 0);
+	G2D_UI1->UI_PITCH = stride;//PIXEL_SIZE;
+	G2D_UI1->UI_LADD = addr;
+	G2D_UI1->UI_HADD = 0; //addr >> 32;
+	G2D_UI1->UI_SIZE = (h << 16) | (w << 0);
 
 	// APB process
-	G2D_UI2->UI0_FILLC = color;
-	G2D_UI2->UI0_ATTR = G2D_FMT_RGB565;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
-	G2D_UI2->UI0_MBSIZE = (h << 16) | (w << 0);
-	G2D_UI2->UI0_COOR = 0;//((row) << 16) | ((col) << 0);
-	G2D_UI2->UI0_PITCH = stride;//PIXEL_SIZE;
-	G2D_UI2->UI0_LADD = addr;
-	G2D_UI2->UI0_HADD = 0; //addr >> 32;
-	G2D_UI2->UI0_SIZE = (h << 16) | (w << 0);
+	G2D_UI2->UI_FILLC = color;
+	G2D_UI2->UI_ATTR = G2D_FMT_RGB565;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
+	G2D_UI2->UI_MBSIZE = (h << 16) | (w << 0);
+	G2D_UI2->UI_COOR = 0;//((row) << 16) | ((col) << 0);
+	G2D_UI2->UI_PITCH = stride;//PIXEL_SIZE;
+	G2D_UI2->UI_LADD = addr;
+	G2D_UI2->UI_HADD = 0; //addr >> 32;
+	G2D_UI2->UI_SIZE = (h << 16) | (w << 0);
 
 
 	//PRINTF("1 G2D_MIXER->G2D_MIXER_CTL=%08lX\n", G2D_MIXER->G2D_MIXER_CTL);
@@ -1480,33 +1480,33 @@ hwacc_fillrect_u32(
 //	G2D_V0->V0_LADD2 = addr;
 //	G2D_V0->V0_HADD = 0; //addr >> 32;
 
-//	G2D_UI0->UI0_FILLC = color;
-//	G2D_UI0->UI0_ATTR = G2D_FMT_XRGB8888;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
-//	G2D_UI0->UI0_MBSIZE = (h << 16) | (w << 0);
-//	G2D_UI0->UI0_COOR = 0;//((row) << 16) | ((col) << 0);
-//	G2D_UI0->UI0_PITCH = stride;//PIXEL_SIZE;
-//	G2D_UI0->UI0_LADD = addr;
-//	G2D_UI0->UI0_HADD = 0; //addr >> 32;
-//	G2D_UI0->UI0_SIZE = (w << 16) | (h << 0);
+//	G2D_UI0->UI_FILLC = color;
+//	G2D_UI0->UI_ATTR = G2D_FMT_XRGB8888;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
+//	G2D_UI0->UI_MBSIZE = (h << 16) | (w << 0);
+//	G2D_UI0->UI_COOR = 0;//((row) << 16) | ((col) << 0);
+//	G2D_UI0->UI_PITCH = stride;//PIXEL_SIZE;
+//	G2D_UI0->UI_LADD = addr;
+//	G2D_UI0->UI_HADD = 0; //addr >> 32;
+//	G2D_UI0->UI_SIZE = (w << 16) | (h << 0);
 //
-//	G2D_UI1->UI0_FILLC = color;
-//	G2D_UI1->UI0_ATTR = G2D_FMT_XRGB8888;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
-//	G2D_UI1->UI0_MBSIZE = (h << 16) | (w << 0);
-//	G2D_UI1->UI0_COOR = 0;//((row) << 16) | ((col) << 0);
-//	G2D_UI1->UI0_PITCH = stride;//PIXEL_SIZE;
-//	G2D_UI1->UI0_LADD = addr;
-//	G2D_UI1->UI0_HADD = 0; //addr >> 32;
-//	G2D_UI1->UI0_SIZE = (h << 16) | (w << 0);
+//	G2D_UI1->UI_FILLC = color;
+//	G2D_UI1->UI_ATTR = G2D_FMT_XRGB8888;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
+//	G2D_UI1->UI_MBSIZE = (h << 16) | (w << 0);
+//	G2D_UI1->UI_COOR = 0;//((row) << 16) | ((col) << 0);
+//	G2D_UI1->UI_PITCH = stride;//PIXEL_SIZE;
+//	G2D_UI1->UI_LADD = addr;
+//	G2D_UI1->UI_HADD = 0; //addr >> 32;
+//	G2D_UI1->UI_SIZE = (h << 16) | (w << 0);
 //
 //	// APB process
-//	G2D_UI2->UI0_FILLC = color;
-//	G2D_UI2->UI0_ATTR = G2D_FMT_XRGB8888;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
-//	G2D_UI2->UI0_MBSIZE = (h << 16) | (w << 0);
-//	G2D_UI2->UI0_COOR = 0;//((row) << 16) | ((col) << 0);
-//	G2D_UI2->UI0_PITCH = stride;//PIXEL_SIZE;
-//	G2D_UI2->UI0_LADD = addr;
-//	G2D_UI2->UI0_HADD = 0; //addr >> 32;
-//	G2D_UI2->UI0_SIZE = (h << 16) | (w << 0);
+//	G2D_UI2->UI_FILLC = color;
+//	G2D_UI2->UI_ATTR = G2D_FMT_XRGB8888;//(0 * 1uL << 16) | (1uL << 4);	// bit 16 - not premul
+//	G2D_UI2->UI_MBSIZE = (h << 16) | (w << 0);
+//	G2D_UI2->UI_COOR = 0;//((row) << 16) | ((col) << 0);
+//	G2D_UI2->UI_PITCH = stride;//PIXEL_SIZE;
+//	G2D_UI2->UI_LADD = addr;
+//	G2D_UI2->UI_HADD = 0; //addr >> 32;
+//	G2D_UI2->UI_SIZE = (h << 16) | (w << 0);
 
 
 	//PRINTF("1 G2D_MIXER->G2D_MIXER_CTL=%08lX\n", G2D_MIXER->G2D_MIXER_CTL);
