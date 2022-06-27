@@ -519,6 +519,7 @@ static int mctl_sys_init(int *a1) //OK
 
 static int ccm_set_pll_ddr_clk(int a1, int *a2) //OK
 {
+	const unsigned ref_MHz = 24;
   int v2; // r2
   unsigned int v3; // r5
   int result; // r0
@@ -528,7 +529,7 @@ static int ccm_set_pll_ddr_clk(int a1, int *a2) //OK
   else
     v2 = a2[19];
 
-  v3 = 2 * v2 / 0x18u;
+  v3 = 2 * v2 / ref_MHz;
 
   CCU->PLL_DDR_CTRL_REG = CCU->PLL_DDR_CTRL_REG & 0xFFF800FC | 0xC0000000 | ((v3 - 1) << 8);
   CCU->PLL_DDR_CTRL_REG &= 0xDFFFFFFFuL;
@@ -539,7 +540,7 @@ static int ccm_set_pll_ddr_clk(int a1, int *a2) //OK
 
   _usdelay(20);
 
-  result = 24 * v3;
+  result = ref_MHz * v3;
 
   CCU->PLL_DDR_CTRL_REG |= 0x8000000u;
   CCU->DRAM_CLK_REG = CCU->DRAM_CLK_REG & 0xFCFFFCFC | 0x80000000;
