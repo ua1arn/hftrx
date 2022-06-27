@@ -14,7 +14,11 @@
 
 //------------------------------------------------------------------------------------------------
 
-#define printf(...)
+#include "hardware.h"
+
+#if CPUSTYPE_ALLWNT113
+
+#include "formats.h"
 
 #define _BYTE  unsigned char
 #define _WORD  unsigned short
@@ -158,13 +162,13 @@ static int init_DRAM(int a1,int a2)
     MEMORY(0x3000160) |= 1u;
     _usdelay(20);
 
-//    printf("ZQ value = 0x%x\n", MEMORY(0x300016C), v3, 50332012);
+//    PRINTF("ZQ value = 0x%x\n", MEMORY(0x300016C), v3, 50332012);
   }
 
 /*
   v4 = get_pmu_exist();
 
-  printf("get_pmu_exist() = %d\n", v4, v5, v6);
+  PRINTF("get_pmu_exist() = %d\n", v4, v5, v6);
 
   if ( v4 >= 0 )
   {
@@ -195,9 +199,9 @@ LABEL_5:
     return 0;
 
 /*
-  printf("DRAM BOOT DRIVE INFO: %s\n", (int)"V0.33", v8, v9);
-  printf("DRAM CLK = %d MHz\n", *(_DWORD *)a2, v10, v11);
-  printf("DRAM Type = %d (2:DDR2,3:DDR3)\n", *(_DWORD *)(a2 + 4), v12, v13);
+  PRINTF("DRAM BOOT DRIVE INFO: %s\n", (int)"V0.33", v8, v9);
+  PRINTF("DRAM CLK = %d MHz\n", *(_DWORD *)a2, v10, v11);
+  PRINTF("DRAM Type = %d (2:DDR2,3:DDR3)\n", *(_DWORD *)(a2 + 4), v12, v13);
 */
 
   v15 = *(_DWORD *)(a2 + 12);
@@ -205,18 +209,18 @@ LABEL_5:
 
 /*
   if ( (v15 & 1) != 0 )
-    printf("DRAMC ZQ value: 0x%x\n", *(_DWORD *)(a2 + 8), v16, v15);
+    PRINTF("DRAMC ZQ value: 0x%x\n", *(_DWORD *)(a2 + 8), v16, v15);
   else
-    printf("DRAMC read ODT  off.\n", v14, v16, v15);
+    PRINTF("DRAMC read ODT  off.\n", v14, v16, v15);
 */
 
   v22 = *(_DWORD *)(a2 + 28);
 
 /*
   if ( (v22 & 0x44) != 0 )
-    printf("DRAM ODT value: 0x%x.\n", v22, v17, v18);
+    PRINTF("DRAM ODT value: 0x%x.\n", v22, v17, v18);
   else
-    printf("DRAM ODT off.\n", v22, v17, v18);
+    PRINTF("DRAM ODT off.\n", v22, v17, v18);
 */
 
   v26 = mctl_core_init((int *)a2); //OK
@@ -229,7 +233,7 @@ LABEL_5:
     {
       v26 = DRAMC_get_dram_size(); //OK
 
-//      printf("DRAM SIZE =%d M\n", v26, v42, v43);
+//      PRINTF("DRAM SIZE =%d M\n", v26, v42, v43);
 
       *(_DWORD *)(a2 + 20) = *(unsigned __int16 *)(a2 + 20) | (v26 << 16);
     }
@@ -249,7 +253,7 @@ LABEL_5:
       MEMORY(0x310309C) = 1034;
       MEMORY(0x3103004) |= 1u;
 
-//      printf("Enable Auto SR\n", 1034, 0x3103004u, MEMORY(0x3103004));
+//      PRINTF("Enable Auto SR\n", 1034, 0x3103004u, MEMORY(0x3103004));
 
     }
     else
@@ -288,10 +292,10 @@ LABEL_5:
     }
 
 /*
-    printf("dram_tpr4:0x%x\n", *(_DWORD *)(a2 + 56), v33, v32);
-    printf("PLL_DDR_CTRL_REG:0x%x\n", MEMORY(0x2001010), v34, 33558544);
-    printf("DRAM_CLK_REG:0x%x\n", MEMORY(0x2001800), v35, 33560576);
-    printf("[TIMING DEBUG] MR2= 0x%x\n", *(unsigned __int16 *)(a2 + 32), v36, v37);
+    PRINTF("dram_tpr4:0x%x\n", *(_DWORD *)(a2 + 56), v33, v32);
+    PRINTF("PLL_DDR_CTRL_REG:0x%x\n", MEMORY(0x2001010), v34, 33558544);
+    PRINTF("DRAM_CLK_REG:0x%x\n", MEMORY(0x2001800), v35, 33560576);
+    PRINTF("[TIMING DEBUG] MR2= 0x%x\n", *(unsigned __int16 *)(a2 + 32), v36, v37);
 */
 
     v38 = dram_enable_all_master(); //OK
@@ -318,7 +322,7 @@ LABEL_5:
   else
   {
 
-//    printf("DRAM initial error : 1 !\n", v23, v24, v25);
+//    PRINTF("DRAM initial error : 1 !\n", v23, v24, v25);
 
   }
 
@@ -406,7 +410,7 @@ static int auto_scan_dram_config(int *a1)
 
 LABEL_4:
 
-//      printf(v6, v2, v3, v4);
+//      PRINTF(v6, v2, v3, v4);
 
       return v5;
     }
@@ -730,7 +734,7 @@ static int mctl_phy_ac_remapping(int a1)
   MY_memcpy(v16, &unk_6BDA, 22);
   MY_memcpy(v17, &unk_6BF0, 22);
 
-//  result = printf("ddr_efuse_type: 0x%x\n", v2);
+//  result = PRINTF("ddr_efuse_type: 0x%x\n", v2);
 
   v5 = *(_DWORD *)(a1 + 92);
 
@@ -1138,7 +1142,7 @@ static int auto_set_timing_para(int a1) //OK
 //      v21 = "trefi:7.8ms\n";
     }
 
-//    printf(v21, v4, v71, v20);
+//    PRINTF(v21, v4, v71, v20);
 
     v93 = v10;
     *(_DWORD *)(a1 + 48) = v13 | (v81 << 12);
@@ -1662,7 +1666,7 @@ LABEL_16:
     {
       v25 = 0;
 
-//      printf("ZQ calibration error,check external 240 ohm resistor.\n", v24, v22, v23);
+//      PRINTF("ZQ calibration error,check external 240 ohm resistor.\n", v24, v22, v23);
 
       return v25;
     }
@@ -1819,7 +1823,7 @@ static int dramc_simple_wr_test(unsigned int a1, int a2) //OK
   {
     if ( i == j )
     {
-//      printf("DRAM simple test OK.\n", 19088743, 0xFEDCBA98, v2);
+//      PRINTF("DRAM simple test OK.\n", 19088743, 0xFEDCBA98, v2);
 
       return 0;
     }
@@ -1830,7 +1834,7 @@ static int dramc_simple_wr_test(unsigned int a1, int a2) //OK
 
     if ( j - 19088744 != v8 )
     {
-//      printf("DRAM simple test FAIL.\n", 19088743, 0xFEDCBA98, v2);
+//      PRINTF("DRAM simple test FAIL.\n", 19088743, 0xFEDCBA98, v2);
 
       v11 = v10;
 
@@ -1847,13 +1851,13 @@ static int dramc_simple_wr_test(unsigned int a1, int a2) //OK
     v5 += 4;
   }
 
-//  printf("DRAM simple test FAIL.\n", 19088743, 0xFEDCBA98, v2);
+//  PRINTF("DRAM simple test FAIL.\n", 19088743, 0xFEDCBA98, v2);
 
   v11 = v5;
 
 LABEL_9:
 
-//  printf("%x != %x at address %x\n", v8, v9, v11);
+//  PRINTF("%x != %x at address %x\n", v8, v9, v11);
 
   return 1;
 }
@@ -1876,7 +1880,7 @@ static int dqs_gate_detect(int a1, int a2, unsigned int a3) //OK
 
 LABEL_6:
 
-//    printf(v5, a2, a3, v4);
+//    PRINTF(v5, a2, a3, v4);
 
     return 1;
   }
@@ -1920,9 +1924,9 @@ LABEL_6:
 
   if ( result )
   {
-//    printf("DX0 state:%d\n", a2, a3, 51393352);
+//    PRINTF("DX0 state:%d\n", a2, a3, 51393352);
 
-//    printf("DX1 state:%d\n", v3, v7, v8);
+//    PRINTF("DX1 state:%d\n", v3, v7, v8);
 
     result = 0;
   }
@@ -2035,7 +2039,7 @@ LABEL_23:
 
       v21 = 16 * v8;
 
-//      printf("[AUTO DEBUG] rank %d row = %d \n", v8, j, v19);
+//      PRINTF("[AUTO DEBUG] rank %d row = %d \n", v8, j, v19);
 
       a1[4] = a1[4] & ~(255 << (16 * v8 + 4)) | (j << (16 * v8 + 4));
 
@@ -2080,7 +2084,7 @@ LABEL_23:
 
 LABEL_33:
 
-//      printf("[AUTO DEBUG] rank %d bank = %d \n", v8, 4 * (v26 + 1), v24);
+//      PRINTF("[AUTO DEBUG] rank %d bank = %d \n", v8, 4 * (v26 + 1), v24);
 
       a1[4] = a1[4] & ~(15 << (v21 + 12)) | (v26 << (v21 + 12));
 
@@ -2137,7 +2141,7 @@ LABEL_47:
 
       v33 = v8++;
 
-//      v34 = (char *)printf("[AUTO DEBUG] rank %d page size = %d KB \n", v33, v32, v28);
+//      v34 = (char *)PRINTF("[AUTO DEBUG] rank %d page size = %d KB \n", v33, v32, v28);
 
       v35 = (v32 << v21) | a1[4] & ~(15 << v21);
       a1[4] = v35;
@@ -2181,7 +2185,7 @@ LABEL_47:
 //        v34 = "rank1 config different from rank0\n";
       }
 
-//      printf(v34, v2, (unsigned __int16)v35, v36);
+//      PRINTF(v34, v2, (unsigned __int16)v35, v36);
 
     }
 
@@ -2190,7 +2194,7 @@ LABEL_47:
   else
 
   {
-//    printf("[ERROR DEBUG] DRAM initial error : 0!\n", v2, v3, v4);
+//    PRINTF("[ERROR DEBUG] DRAM initial error : 0!\n", v2, v3, v4);
 
   }
 
@@ -2251,7 +2255,7 @@ struct dram_para_t
 	unsigned int		dram_tpr13;
 };
 
-static const struct dram_para_t ddr3=
+static const struct dram_para_t ddr3 =
 {
 	.dram_clk = 792,
 	.dram_type = 3,
@@ -2284,30 +2288,4 @@ void sys_dram_init(void)
  init_DRAM(0,(int)&ddr3);
 }
 
-//------------------------------------------------------------------------------------------------
-
-#undef printf
-
-#undef _BYTE
-#undef _WORD
-#undef _DWORD
-#undef _QWORD
-
-#undef __int8
-#undef __int16
-#undef __int32
-#undef __int64
-
-#undef bool
-
-#undef HIBYTE
-#undef LOBYTE
-
-#undef HIWORD
-#undef HIDWORD
-
-#undef WORD1
-
-#undef MEMORY
-
-//------------------------------------------------------------------------------------------------
+#endif /* CPUSTYPE_ALLWNT113 */
