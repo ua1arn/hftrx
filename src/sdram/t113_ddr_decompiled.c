@@ -544,9 +544,9 @@ static int ccm_set_pll_ddr_clk(int a1, int *a2) //OK
 
 static int dram_disable_all_master(void) //OK
 {
-  MEMORY(0x03102020) = 1;
-  MEMORY(0x03102024) = 0;
-  MEMORY(0x03102028) = 0;
+  MEMORY(MSI_MEMC_BASE + 0x020) = 1;
+  MEMORY(MSI_MEMC_BASE + 0x024) = 0;
+  MEMORY(MSI_MEMC_BASE + 0x028) = 0;
 
   return _usdelay(10);
 }
@@ -594,12 +594,12 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
   v1 = result[1];
   v2 = result[5];
 
-  MEMORY(0x03102008) = MEMORY(0x03102008) & 0xFFFFC0FF | 0x2000;
+  MEMORY(MSI_MEMC_BASE + 0x008) = MEMORY(MSI_MEMC_BASE + 0x008) & 0xFFFFC0FF | 0x2000;
 
   v3 = v2 & 1;
   v4 = (v1 << 16) & 0x070000;
   v5 = v1 - 6;
-  v6 = v4 | MEMORY(0x03102000) & 0xFF000FFF | 0x400000;
+  v6 = v4 | MEMORY(MSI_MEMC_BASE + 0x000) & 0xFF000FFF | 0x400000;
 
   if ( (v2 & 1) != 0 )
     v7 = 0;
@@ -616,7 +616,7 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
   if ( v5 > 1 )
     v8 |= (v6 << 14) & 0x80000;
 
-  MEMORY(0x03102000) = v8;
+  MEMORY(MSI_MEMC_BASE + 0x000) = v8;
 
   v9 = v2 >> 12;
 
@@ -669,7 +669,7 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
 
   v18 = 513;
 
-  if ( (MEMORY(0x03102000) & 1) != 0 )
+  if ( (MEMORY(MSI_MEMC_BASE + 0x000) & 1) != 0 )
     v18 = 771;
 
   MEMORY(0x03103120) = v18;
@@ -681,11 +681,11 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
 
   if ( v19 )
   {
-    MEMORY(0x03102000) |= (v19 << 25) & 0x6000000;
+    MEMORY(MSI_MEMC_BASE + 0x000) |= (v19 << 25) & 0x6000000;
 
-    result = (_DWORD *)MEMORY(0x03102004);
+    result = (_DWORD *)MEMORY(MSI_MEMC_BASE + 0x004);
 
-    MEMORY(0x03102004) |= (v19 << 10) & 0x1FF000;
+    MEMORY(MSI_MEMC_BASE + 0x004) |= (v19 << 10) & 0x1FF000;
   }
 
   return result;
@@ -789,10 +789,10 @@ LABEL_6:
       return result;
 
 LABEL_25:
-    MEMORY(0x03102504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
-    MEMORY(0x03102508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
-    MEMORY(0x0310250C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
-    MEMORY(0x03102500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
+    MEMORY(MSI_MEMC_BASE + 0x504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
+    MEMORY(MSI_MEMC_BASE + 0x508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
+    MEMORY(MSI_MEMC_BASE + 0x50C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
+    MEMORY(MSI_MEMC_BASE + 0x500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
 
     return result;
   }
@@ -801,10 +801,10 @@ LABEL_25:
   {
     result = (int)memcpy_self((int)v8, v17, 22);
 
-    MEMORY(0x03102504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
-    MEMORY(0x03102508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
-    MEMORY(0x0310250C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
-    MEMORY(0x03102500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
+    MEMORY(MSI_MEMC_BASE + 0x504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
+    MEMORY(MSI_MEMC_BASE + 0x508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
+    MEMORY(MSI_MEMC_BASE + 0x50C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
+    MEMORY(MSI_MEMC_BASE + 0x500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
   }
 
   if ( (unsigned int)(v2 - 13) <= 1 )
@@ -1468,7 +1468,7 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   v5 = (v3 >> 2) & 3;
   v6 = a2[3];
 
-  MEMORY(0x0310200C) = ((v4 >> 1) - 1) | MEMORY(0x0310200C) & 0xFFFFF000;
+  MEMORY(MSI_MEMC_BASE + 0x00C) = ((v4 >> 1) - 1) | MEMORY(MSI_MEMC_BASE + 0x00C) & 0xFFFFF000;
 
   v7 = (32 * ~(_BYTE)v6) & 0x20;
 
@@ -1686,7 +1686,7 @@ LABEL_16:
   MEMORY(0x0310308C) &= 0x7FFFFFFFu;
   _usdelay(10);
 
-  MEMORY(0x03102014) |= 0x80000000;
+  MEMORY(MSI_MEMC_BASE + 0x014) |= 0x80000000;
   _usdelay(10);
 
   MEMORY(0x0310310C) &= 0xF9FFFFFF;
@@ -1763,34 +1763,34 @@ static int DRAMC_get_dram_size(void) //ok
   int v0;   // r3
   int v1=0; // r2
 
-  v0 = MEMORY(0x03102000) & 3;
+  v0 = MEMORY(MSI_MEMC_BASE + 0x000) & 3;
 
-  if ( (MEMORY(0x03102000) & 3) != 0 )
+  if ( (MEMORY(MSI_MEMC_BASE + 0x000) & 3) != 0 )
   {
-    LOBYTE(v1) = MEMORY(0x03102004);
+    LOBYTE(v1) = MEMORY(MSI_MEMC_BASE + 0x004);
 
-    if ( MEMORY(0x03102004) << 30 )
+    if ( MEMORY(MSI_MEMC_BASE + 0x004) << 30 )
     {
-      v1 = (MEMORY(0x03102004) >> 2) & 3;
-      v0 = ((MEMORY(0x03102004) >> 8) & 0xF) + (MEMORY(0x03102004) >> 4) - 14;
+      v1 = (MEMORY(MSI_MEMC_BASE + 0x004) >> 2) & 3;
+      v0 = ((MEMORY(MSI_MEMC_BASE + 0x004) >> 8) & 0xF) + (MEMORY(MSI_MEMC_BASE + 0x004) >> 4) - 14;
     }
     else
     {
-      v0 = 1 << ((MEMORY(0x03102000) & 0xF) + (MEMORY(0x03102000) >> 4) - 14 + ((MEMORY(0x03102000) >> 2) & 3));
+      v0 = 1 << ((MEMORY(MSI_MEMC_BASE + 0x000) & 0xF) + (MEMORY(MSI_MEMC_BASE + 0x000) >> 4) - 14 + ((MEMORY(MSI_MEMC_BASE + 0x000) >> 2) & 3));
     }
 
-    if ( MEMORY(0x03102004) << 30 )
+    if ( MEMORY(MSI_MEMC_BASE + 0x004) << 30 )
       v0 = 1 << (v0 + v1);
   }
 
-  return (1 << ((MEMORY(0x03102000) & 0xF) + (MEMORY(0x03102000) >> 4) - 14 + ((MEMORY(0x03102000) >> 2) & 3))) + v0;
+  return (1 << ((MEMORY(MSI_MEMC_BASE + 0x000) & 0xF) + (MEMORY(MSI_MEMC_BASE + 0x000) >> 4) - 14 + ((MEMORY(MSI_MEMC_BASE + 0x000) >> 2) & 3))) + v0;
 }
 
 static int dram_enable_all_master(void) //OK
 {
-  MEMORY(0x03102020) = -1;
-  MEMORY(0x03102024) = 255;
-  MEMORY(0x03102028) = 0xFFFF;
+  MEMORY(MSI_MEMC_BASE + 0x020) = -1;
+  MEMORY(MSI_MEMC_BASE + 0x024) = 255;
+  MEMORY(MSI_MEMC_BASE + 0x028) = 0xFFFF;
 
   return _usdelay(10);
 }
@@ -2047,7 +2047,7 @@ LABEL_23:
       if ( v8 == 1 )
       {
         v9 = 0x40800000;
-        MEMORY(0x03102000) = MEMORY(0x03102000) & 0xFFFFF003 | 0x6A4;
+        MEMORY(MSI_MEMC_BASE + 0x000) = MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003 | 0x6A4;
       }
 
       v22 = *v14 & 0xFFFFF003 | 0x6A4;
@@ -2092,7 +2092,7 @@ LABEL_33:
       if ( v8 == 1 )
       {
         v9 = 1140850688;
-        MEMORY(0x03102000) = MEMORY(0x03102000) & 0xFFFFF003 | 0xAA0;
+        MEMORY(MSI_MEMC_BASE + 0x000) = MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003 | 0xAA0;
       }
 
       v27 = *v14 & 0xFFFFF003 | 0xAA0;
@@ -2154,8 +2154,8 @@ LABEL_47:
           v7 = 0x48000000;
           v9 = 0x48000000;
 
-          MEMORY(0x03102000) = MEMORY(0x03102000) & 0xFFFFF003 | 0x6F0;
-          MEMORY(0x03102004) = MEMORY(0x03102004) & 0xFFFFF003 | 0x6F1;
+          MEMORY(MSI_MEMC_BASE + 0x000) = MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003 | 0x6F0;
+          MEMORY(MSI_MEMC_BASE + 0x004) = MEMORY(MSI_MEMC_BASE + 0x004) & 0xFFFFF003 | 0x6F1;
         }
 
         continue;
