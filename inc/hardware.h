@@ -1213,5 +1213,6 @@ unsigned long ulmax(unsigned long a, unsigned long b);
 #include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 #include "clocks.h"
 uint32_t sys_now(void);
+void sys_dram_init(void);
 
 #endif // HARDWARE_H_INCLUDED
