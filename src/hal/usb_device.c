@@ -372,10 +372,13 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 			PRINTF("Undefined device disconnected.\n");
 			break;
 
+#if WITHUSEUSBFLASH
 		case USB_MSC_CLASS:
 			TP();
 			PRINTF("MSC device disconnected.\n");
 			break;
+#endif /* WITHUSEUSBFLASH */
+
 //		case AC_CLASS:
 //			TP();
 //		      PRINTF("AUDIO device disconnected.\n");
@@ -397,6 +400,7 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 		Appli_state = APPLICATION_READY;
 	    switch(USBH_GetActiveClass(phost))
 	    {
+#if WITHUSEUSBFLASH
 	    case USB_MSC_CLASS:
 	      //Appli_state = APPLICATION_MSC;
 	      TP();
@@ -404,6 +408,7 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 	      /* Link the USB disk I/O driver */
 	      //FATFS_LinkDriver(&USBH_Driver, USBDISKPath);
 	      break;
+#endif /* WITHUSEUSBFLASH */
 
 //	    case AC_CLASS:
 //	      Appli_state = APPLICATION_AUDIO;
