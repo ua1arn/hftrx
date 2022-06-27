@@ -355,7 +355,7 @@ static int dram_vol_set(int a1)
     v3 = 0;
   }
 
-  MEMORY(0x03000150) = (MEMORY(0x03000150) & 0xFFFF00FF | (v3 << 8)) & 0xFFDFFFFF;
+  SYS_CFG->SYS_LDO_CTRL_REG = (SYS_CFG->SYS_LDO_CTRL_REG & 0xFFFF00FF | (v3 << 8)) & 0xFFDFFFFF;
 
   _usdelay(1);
 
@@ -390,7 +390,7 @@ static int sid_read_ldoB_cal(int result) //ok
 
     }
 
-    MEMORY(0x03000150) = MEMORY(0x03000150) & 0xFFFF00FF | (v1 << 8);
+    SYS_CFG->SYS_LDO_CTRL_REG = SYS_CFG->SYS_LDO_CTRL_REG & 0xFFFF00FF | (v1 << 8);
 
   }
 
@@ -403,7 +403,7 @@ static int auto_scan_dram_config(int *a1)
   unsigned int v3; // r2
   int v4; // r3
   int v5; // r4
-  char *v6; // r0
+  //char *v6; // r0
   int v8; // r3
 
   if ( (a1[23] & 0x4000) == 0 )
@@ -414,7 +414,7 @@ static int auto_scan_dram_config(int *a1)
     {
 //      v6 = "[ERROR DEBUG] auto scan dram rank&width fail !\n";
 
-LABEL_4:
+//LABEL_4:
 
 //      PRINTF(v6, v2, v3, v4);
 
@@ -429,7 +429,9 @@ LABEL_4:
     {
 //      v6 = "[ERROR DEBUG] auto scan dram size fail !\n";
 
-      goto LABEL_4;
+      //goto LABEL_4;
+//      PRINTF(v6, v2, v3, v4);
+     return v5;
     }
   }
 
@@ -531,7 +533,10 @@ static int ccm_set_pll_ddr_clk(int a1, int *a2) //OK
 
   v3 = 2 * v2 / ref_MHz;
 
-  CCU->PLL_DDR_CTRL_REG = CCU->PLL_DDR_CTRL_REG & 0xFFF800FC | 0xC0000000 | ((v3 - 1) << 8);
+  CCU->PLL_DDR_CTRL_REG = CCU->PLL_DDR_CTRL_REG & 0xFFF800FC |
+	  0xC0000000 |
+	  ((v3 - 1) << 8) |
+	  0;
   CCU->PLL_DDR_CTRL_REG &= 0xDFFFFFFFuL;
   CCU->PLL_DDR_CTRL_REG |= 0x20000000uL;
 
