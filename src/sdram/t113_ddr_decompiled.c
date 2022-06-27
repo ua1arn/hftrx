@@ -294,8 +294,8 @@ LABEL_5:
 
 /*
     PRINTF("dram_tpr4:0x%x\n", *(_DWORD *)(a2 + 56), v33, v32);
-    PRINTF("PLL_DDR_CTRL_REG:0x%x\n", MEMORY(0x2001010), v34, 33558544);
-    PRINTF("DRAM_CLK_REG:0x%x\n", MEMORY(0x2001800), v35, 33560576);
+    PRINTF("PLL_DDR_CTRL_REG:0x%x\n", MEMORY(0x02001010), v34, 33558544);
+    PRINTF("DRAM_CLK_REG:0x%x\n", MEMORY(0x02001800), v35, 33560576);
     PRINTF("[TIMING DEBUG] MR2= 0x%x\n", *(uint16_t *)(a2 + 32), v36, v37);
 */
 
@@ -482,12 +482,12 @@ static int mctl_core_init(int *a1) //OK
 
 static int mctl_sys_init(int *a1) //OK
 {
-  MEMORY(0x2001540) &= 0xBFFFFFFF;
-  MEMORY(0x200180C) &= 0xFFFFFFFE;
-  MEMORY(0x200180C) &= 0xFFFEFFFF;
-  MEMORY(0x2001800) &= 0xBFFFFFFF;
-  MEMORY(0x2001800) &= 0x7FFFFFFFu;
-  MEMORY(0x2001800) |= 0x8000000u;
+  MEMORY(0x02001540) &= 0xBFFFFFFF;
+  MEMORY(0x0200180C) &= 0xFFFFFFFE;
+  MEMORY(0x0200180C) &= 0xFFFEFFFF;
+  MEMORY(0x02001800) &= 0xBFFFFFFF;
+  MEMORY(0x02001800) &= 0x7FFFFFFFu;
+  MEMORY(0x02001800) |= 0x8000000u;
   _usdelay(10);
 
   *a1 = (unsigned int)ccm_set_pll_ddr_clk(0, a1) >> 1; //OK
@@ -496,14 +496,14 @@ static int mctl_sys_init(int *a1) //OK
 
   dram_disable_all_master(); //OK
 
-  MEMORY(0x200180C) |= 0x10000u;
-  MEMORY(0x2001540) |= 0x40000000u;
-  MEMORY(0x2001800) |= 0x40000000u;
+  MEMORY(0x0200180C) |= 0x10000u;
+  MEMORY(0x02001540) |= 0x40000000u;
+  MEMORY(0x02001800) |= 0x40000000u;
   _usdelay(5);
 
-  MEMORY(0x200180C) |= 1u;
-  MEMORY(0x2001800) |= 0x80000000;
-  MEMORY(0x2001800) |= 0x8000000u;
+  MEMORY(0x0200180C) |= 1u;
+  MEMORY(0x02001800) |= 0x80000000;
+  MEMORY(0x02001800) |= 0x8000000u;
   _usdelay(5);
 
   MEMORY(0x0310300C) = 0x8000;
@@ -525,19 +525,19 @@ static int ccm_set_pll_ddr_clk(int a1, int *a2) //OK
 
   v3 = 2 * v2 / 0x18u;
 
-  MEMORY(0x2001010) = MEMORY(0x2001010) & 0xFFF800FC | 0xC0000000 | ((v3 - 1) << 8);
-  MEMORY(0x2001010) &= 0xDFFFFFFF;
-  MEMORY(0x2001010) |= 0x20000000u;
+  MEMORY(0x02001010) = MEMORY(0x02001010) & 0xFFF800FC | 0xC0000000 | ((v3 - 1) << 8);
+  MEMORY(0x02001010) &= 0xDFFFFFFF;
+  MEMORY(0x02001010) |= 0x20000000u;
 
-  while ( (MEMORY(0x2001010) & 0x10000000) == 0 )
+  while ( (MEMORY(0x02001010) & 0x10000000) == 0 )
     ;
 
   _usdelay(20);
 
   result = 24 * v3;
 
-  MEMORY(0x2001010) |= 0x8000000u;
-  MEMORY(0x2001800) = MEMORY(0x2001800) & 0xFCFFFCFC | 0x80000000;
+  MEMORY(0x02001010) |= 0x8000000u;
+  MEMORY(0x02001800) = MEMORY(0x02001800) & 0xFCFFFCFC | 0x80000000;
 
   return result;
 }
