@@ -45,6 +45,43 @@
 #define CPU_CONFIG3_REG 	0x07010254uL
 
 
+struct dram_para_t
+{
+	//normal configuration
+	unsigned int        	dram_clk;		// #0 0x000
+	unsigned int        	dram_type;		// #1 dram_type DDR2: 2 DDR3: 3 LPDDR2: 6 LPDDR3: 7 DDR3L: 31
+	//unsigned int        	lpddr2_type;	// LPDDR2 type S4:0 S2:1 NVM:2
+	unsigned int        	dram_zq;	// #2	do not need
+	unsigned int		dram_odt_en;	// #3
+
+	//control configuration
+	unsigned int		dram_para1;		// #4
+	unsigned int		dram_para2;		// #5
+
+	//timing configuration
+	unsigned int		dram_mr0;	// #6
+	unsigned int		dram_mr1;	// + 28
+	unsigned int		dram_mr2;	// + 32
+	unsigned int		dram_mr3;	// + 36
+	unsigned int		dram_tpr0;	// + 42	DRAMTMG0
+	unsigned int		dram_tpr1;	//DRAMTMG1
+	unsigned int		dram_tpr2;	//DRAMTMG2	// +48
+	unsigned int		dram_tpr3;	//DRAMTMG3
+	unsigned int		dram_tpr4;	//DRAMTMG4
+	unsigned int		dram_tpr5;	//DRAMTMG5
+   	unsigned int		dram_tpr6;	//DRAMTMG8	// +64
+
+	//reserved for future use
+	unsigned int		dram_tpr7;
+	unsigned int		dram_tpr8;
+	unsigned int		dram_tpr9;
+	unsigned int		dram_tpr10;	// +80
+	unsigned int		dram_tpr11;	// +84
+	unsigned int		dram_tpr12;	// +88
+	unsigned int		dram_tpr13;	// +92
+};
+
+
 //------------------------------------------------------------------------------------------------
 
 static int dram_vol_set(int a1);
@@ -1415,9 +1452,9 @@ LABEL_105:
   MEMORY(DDRPHYC_BASE + 0x06C) = v5 | (v46 << 16) | (v46 << 24) | (v44 << 8);
 
   if ( v14 > 0x320 )
-    v54 = MEMORY(DDRPHYC_BASE + 0x078) & 0xFFF0000 | 0xF0007600;
+    v54 = (MEMORY(DDRPHYC_BASE + 0x078) & 0xFFF0000) | 0xF0007600;
   else
-    v54 = MEMORY(DDRPHYC_BASE + 0x078) & 0xFFF0000 | 0xF0006600;
+    v54 = (MEMORY(DDRPHYC_BASE + 0x078) & 0xFFF0000) | 0xF0006600;
 
   MEMORY(DDRPHYC_BASE + 0x078) = v54 | 0x10;
 
@@ -1479,12 +1516,12 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   v5 = (v3 >> 2) & 3;
   v6 = a2[3];
 
-  MEMORY(MSI_MEMC_BASE + 0x00C) = ((v4 >> 1) - 1) | MEMORY(MSI_MEMC_BASE + 0x00C) & 0xFFFFF000;
+  MEMORY(MSI_MEMC_BASE + 0x00C) = ((v4 >> 1) - 1) | (MEMORY(MSI_MEMC_BASE + 0x00C) & 0xFFFFF000);
 
   v7 = (32 * ~(_BYTE)v6) & 0x20;
 
-  MEMORY(DDRPHYC_BASE + 0x108) = MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFF0FF | 0x0300;
-  v8 = MEMORY(DDRPHYC_BASE + 0x344) & 0xFFFFFFCF | v7;
+  MEMORY(DDRPHYC_BASE + 0x108) = (MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFF0FF) | 0x0300;
+  v8 = (MEMORY(DDRPHYC_BASE + 0x344) & 0xFFFFFFCF) | v7;
 
   if ( v4 <= 0x2A0 )
     v9 = v8 & 0xFFFF0FFF;
@@ -1655,7 +1692,7 @@ LABEL_16:
     if ( v5 == 1 )
     {
       MEMORY(DDRPHYC_BASE + 0x108) &= 0xFFFFFF3F;
-      MEMORY(DDRPHYC_BASE + 0x10C) = MEMORY(DDRPHYC_BASE + 0x10C) & 0xF9FFFFFF | 0x2000000;
+      MEMORY(DDRPHYC_BASE + 0x10C) = (MEMORY(DDRPHYC_BASE + 0x10C) & 0xF9FFFFFF) | 0x2000000;
       _usdelay(1);
 
       MEMORY(DDRPHYC_BASE + 0x000) = 0x0401;
@@ -1885,7 +1922,7 @@ static int dqs_gate_detect(int a1, int a2, unsigned int a3) //OK
 
   if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0x400000) == 0 )
   {
-    v4 = *(_DWORD *)(a1 + 20) & 0xFFFFFFF0 | 0x1000;
+    v4 = (*(_DWORD *)(a1 + 20) & 0xFFFFFFF0) | 0x1000;
     *(_DWORD *)(a1 + 20) = v4;
 
 //    v5 = "[AUTO DEBUG] two rank and full DQ!\n";
@@ -2058,7 +2095,7 @@ LABEL_23:
       if ( v8 == 1 )
       {
         v9 = 0x40800000;
-        MEMORY(MSI_MEMC_BASE + 0x000) = MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003 | 0x6A4;
+        MEMORY(MSI_MEMC_BASE + 0x000) = (MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003) | 0x6A4;
       }
 
       v22 = *v14 & 0xFFFFF003 | 0x6A4;
@@ -2165,8 +2202,8 @@ LABEL_47:
           v7 = 0x48000000;
           v9 = 0x48000000;
 
-          MEMORY(MSI_MEMC_BASE + 0x000) = MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003 | 0x6F0;
-          MEMORY(MSI_MEMC_BASE + 0x004) = MEMORY(MSI_MEMC_BASE + 0x004) & 0xFFFFF003 | 0x6F1;
+          MEMORY(MSI_MEMC_BASE + 0x000) = (MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003) | 0x6F0;
+          MEMORY(MSI_MEMC_BASE + 0x004) = (MEMORY(MSI_MEMC_BASE + 0x004) & 0xFFFFF003) | 0x6F1;
         }
 
         continue;
@@ -2230,42 +2267,6 @@ static int memcpy_self(int result, char *a2, int a3)
 }
 
 //------------------------------------------------------------------------------------------------
-
-struct dram_para_t
-{
-	//normal configuration
-	unsigned int        	dram_clk;		// 0x000
-	unsigned int        	dram_type;	//dram_type DDR2: 2 DDR3: 3 LPDDR2: 6 LPDDR3: 7 DDR3L: 31
-	//unsigned int        	lpddr2_type;	//LPDDR2 type S4:0 S2:1 NVM:2
-	unsigned int        	dram_zq;	//do not need
-	unsigned int		dram_odt_en;	// 0x00C
-
-	//control configuration
-	unsigned int		dram_para1;		// 0x010
-	unsigned int		dram_para2;
-
-	//timing configuration
-	unsigned int		dram_mr0;
-	unsigned int		dram_mr1;
-	unsigned int		dram_mr2;	// 0x020
-	unsigned int		dram_mr3;
-	unsigned int		dram_tpr0;	//DRAMTMG0
-	unsigned int		dram_tpr1;	//DRAMTMG1
-	unsigned int		dram_tpr2;	//DRAMTMG2	// 0x030
-	unsigned int		dram_tpr3;	//DRAMTMG3
-	unsigned int		dram_tpr4;	//DRAMTMG4
-	unsigned int		dram_tpr5;	//DRAMTMG5
-   	unsigned int		dram_tpr6;	//DRAMTMG8	// 0x040
-
-	//reserved for future use
-	unsigned int		dram_tpr7;
-	unsigned int		dram_tpr8;
-	unsigned int		dram_tpr9;
-	unsigned int		dram_tpr10;	// 0x050
-	unsigned int		dram_tpr11;
-	unsigned int		dram_tpr12;
-	unsigned int		dram_tpr13;
-};
 
 static const struct dram_para_t ddr3 =
 {
