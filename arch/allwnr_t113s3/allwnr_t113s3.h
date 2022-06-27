@@ -285,6 +285,7 @@ typedef enum IRQn
 #define CE_S_BASE   	   	0x03040800
 #define CE_KEY_SRAM_BASE    0x03041000
 #define MSI_MEMC_BASE	    0x03102000
+#define DDRPHYC_BASE	 	0x03103000	/* probably */
 
 // SH2 (SYS domain)
 #define SMHC0_BASE      	0x04020000
