@@ -248,46 +248,46 @@ LABEL_5:
       if ( !v28 )
         v28 = 268435968;
 
-      MEMORY(0x31030A0) = v28;
-      MEMORY(0x310309C) = 1034;
-      MEMORY(0x3103004) |= 1u;
+      MEMORY(0x031030A0) = v28;
+      MEMORY(0x0310309C) = 1034;
+      MEMORY(0x03103004) |= 1u;
 
-//      PRINTF("Enable Auto SR\n", 1034, 0x3103004u, MEMORY(0x3103004));
+//      PRINTF("Enable Auto SR\n", 1034, 0x3103004u, MEMORY(0x03103004));
 
     }
     else
     {
-      MEMORY(0x31030A0) = HIWORD(MEMORY(0x31030A0)) << 16;
-      MEMORY(0x3103004) &= 0xFFFFFFFE;
+      MEMORY(0x031030A0) = HIWORD(MEMORY(0x031030A0)) << 16;
+      MEMORY(0x03103004) &= 0xFFFFFFFE;
     }
 
     v29 = *(_DWORD *)(a2 + 92);
     v30 = *(_DWORD *)(a2 + 4);
-    v31 = MEMORY(0x3103100) & 0xFFFF0FFF;
+    v31 = MEMORY(0x03103100) & 0xFFFF0FFF;
 
     if ( (v29 & 0x200) != 0 || v30 == 6 )
       v31 |= 0x5000u;
 
-    MEMORY(0x3103100) = v31;
-    MEMORY(0x3103140) |= 0x80000000;
+    MEMORY(0x03103100) = v31;
+    MEMORY(0x03103140) |= 0x80000000;
 
     if ( (v29 & 0x100) != 0 )
-      MEMORY(0x31030B8) |= 0x0300u;
+      MEMORY(0x031030B8) |= 0x0300u;
 
     v32 = 51392776;
 
     if ( (v29 & 0x4000000) != 0 )
-      v33 = MEMORY(0x3103108) & 0xFFFFDFFF;
+      v33 = MEMORY(0x03103108) & 0xFFFFDFFF;
     else
-      v33 = MEMORY(0x3103108) | 0x2000;
+      v33 = MEMORY(0x03103108) | 0x2000;
 
-    MEMORY(0x3103108) = v33;
+    MEMORY(0x03103108) = v33;
 
     if ( v30 == 7 )
     {
       v33 = 51392636;
-      v32 = MEMORY(0x310307C) & 0xFFF0FFFF | 0x10000;
-      MEMORY(0x310307C) = v32;
+      v32 = MEMORY(0x0310307C) & 0xFFF0FFFF | 0x10000;
+      MEMORY(0x0310307C) = v32;
     }
 
 /*
@@ -451,7 +451,7 @@ static int auto_scan_dram_rank_width(int *a1)
 
   mctl_core_init(a1); //OK
 
-  if ( (MEMORY(0x3103010) & 0x100000) != 0 || !dqs_gate_detect((int)a1, v4, v5) ) //OK
+  if ( (MEMORY(0x03103010) & 0x100000) != 0 || !dqs_gate_detect((int)a1, v4, v5) ) //OK
     return 0;
 
   a1[23] = v3;
@@ -504,7 +504,7 @@ static int mctl_sys_init(int *a1) //OK
   MEMORY(0x2001800) |= 0x8000000u;
   _usdelay(5);
 
-  MEMORY(0x310300C) = 0x8000;
+  MEMORY(0x0310300C) = 0x8000;
   _usdelay(10);
 
   return 0;
@@ -542,9 +542,9 @@ static int ccm_set_pll_ddr_clk(int a1, int *a2) //OK
 
 static int dram_disable_all_master(void) //OK
 {
-  MEMORY(0x3102020) = 1;
-  MEMORY(0x3102024) = 0;
-  MEMORY(0x3102028) = 0;
+  MEMORY(0x03102020) = 1;
+  MEMORY(0x03102024) = 0;
+  MEMORY(0x03102028) = 0;
 
   return _usdelay(10);
 }
@@ -557,10 +557,10 @@ static _DWORD *mctl_vrefzq_init(_DWORD *result) //OK
 
   if ( (v1 & 0x20000) == 0 )
   {
-    MEMORY(0x3103110) = MEMORY(0x3103110) & 0x80808080 | result[15];
+    MEMORY(0x03103110) = MEMORY(0x03103110) & 0x80808080 | result[15];
 
     if ( (v1 & 0x10000) == 0 )
-      MEMORY(0x3103114) = result[16] & 0x7F | MEMORY(0x3103114) & 0xFFFFFF80;
+      MEMORY(0x03103114) = result[16] & 0x7F | MEMORY(0x03103114) & 0xFFFFFF80;
 
   }
 
@@ -592,12 +592,12 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
   v1 = result[1];
   v2 = result[5];
 
-  MEMORY(0x3102008) = MEMORY(0x3102008) & 0xFFFFC0FF | 0x2000;
+  MEMORY(0x03102008) = MEMORY(0x03102008) & 0xFFFFC0FF | 0x2000;
 
   v3 = v2 & 1;
   v4 = (v1 << 16) & 0x070000;
   v5 = v1 - 6;
-  v6 = v4 | MEMORY(0x3102000) & 0xFF000FFF | 0x400000;
+  v6 = v4 | MEMORY(0x03102000) & 0xFF000FFF | 0x400000;
 
   if ( (v2 & 1) != 0 )
     v7 = 0;
@@ -614,7 +614,7 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
   if ( v5 > 1 )
     v8 |= (v6 << 14) & 0x80000;
 
-  MEMORY(0x3102000) = v8;
+  MEMORY(0x03102000) = v8;
 
   v9 = v2 >> 12;
 
@@ -667,23 +667,23 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
 
   v18 = 513;
 
-  if ( (MEMORY(0x3102000) & 1) != 0 )
+  if ( (MEMORY(0x03102000) & 1) != 0 )
     v18 = 771;
 
-  MEMORY(0x3103120) = v18;
+  MEMORY(0x03103120) = v18;
 
   if ( v3 )
-    MEMORY(0x31033C4) = 0;
+    MEMORY(0x031033C4) = 0;
 
   v19 = result[14];
 
   if ( v19 )
   {
-    MEMORY(0x3102000) |= (v19 << 25) & 0x6000000;
+    MEMORY(0x03102000) |= (v19 << 25) & 0x6000000;
 
-    result = (_DWORD *)MEMORY(0x3102004);
+    result = (_DWORD *)MEMORY(0x03102004);
 
-    MEMORY(0x3102004) |= (v19 << 10) & 0x1FF000;
+    MEMORY(0x03102004) |= (v19 << 10) & 0x1FF000;
   }
 
   return result;
@@ -787,10 +787,10 @@ LABEL_6:
       return result;
 
 LABEL_25:
-    MEMORY(0x3102504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
-    MEMORY(0x3102508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
-    MEMORY(0x310250C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
-    MEMORY(0x3102500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
+    MEMORY(0x03102504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
+    MEMORY(0x03102508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
+    MEMORY(0x0310250C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
+    MEMORY(0x03102500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
 
     return result;
   }
@@ -799,10 +799,10 @@ LABEL_25:
   {
     result = (int)memcpy_self((int)v8, v17, 22);
 
-    MEMORY(0x3102504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
-    MEMORY(0x3102508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
-    MEMORY(0x310250C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
-    MEMORY(0x3102500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
+    MEMORY(0x03102504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
+    MEMORY(0x03102508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
+    MEMORY(0x0310250C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
+    MEMORY(0x03102500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
   }
 
   if ( (unsigned int)(v2 - 13) <= 1 )
@@ -1260,7 +1260,7 @@ static int auto_set_timing_para(int a1) //OK
       v88 = v5;
       v5 = 2;
       v41 = 2;
-      v63 = 2290649225LL * v2;
+      v63 = 0x88888889LL * v2;
       v45 = 10;
       v90 = HIDWORD(v63) >> 5;
       v83 = 200 * v14 + 1;
@@ -1294,7 +1294,7 @@ static int auto_set_timing_para(int a1) //OK
       else
         v6 = 6;
 
-      v66 = 2290649225LL * v2;
+      v66 = 0x88888889LL * v2;
       v45 = 13;
       v90 = HIDWORD(v66) >> 5;
 
@@ -1385,36 +1385,36 @@ LABEL_105:
   if ( !HIWORD(v94) )
     *(_DWORD *)(a1 + 36) = v51;
 
-  MEMORY(0x3103030) = v49;
-  MEMORY(0x3103034) = *(uint16_t *)(a1 + 28);
-  MEMORY(0x3103038) = *(uint16_t *)(a1 + 32);
+  MEMORY(0x03103030) = v49;
+  MEMORY(0x03103034) = *(uint16_t *)(a1 + 28);
+  MEMORY(0x03103038) = *(uint16_t *)(a1 + 32);
 
   v52 = *(uint16_t *)(a1 + 36);
   v53 = *(_DWORD *)(a1 + 12);
 
-  MEMORY(0x310303C) = v52;
-  MEMORY(0x310302C) = (v53 >> 4) & 3;
-  MEMORY(0x3103058) = v75 | (v74 << 16) | (v89 << 24) | (v90 << 8);
-  MEMORY(0x310305C) = v73 | (v71 << 16) | (v93 << 8);
-  MEMORY(0x3103060) = (v79 << 16) | (v41 << 24) | v91 | (v45 << 8);
-  MEMORY(0x3103064) = v50 | v80;
-  MEMORY(0x3103068) = (v95 << 16) | (v70 << 24) | v12 | (v72 << 8);
-  MEMORY(0x310306C) = v5 | (v46 << 16) | (v46 << 24) | (v44 << 8);
+  MEMORY(0x0310303C) = v52;
+  MEMORY(0x0310302C) = (v53 >> 4) & 3;
+  MEMORY(0x03103058) = v75 | (v74 << 16) | (v89 << 24) | (v90 << 8);
+  MEMORY(0x0310305C) = v73 | (v71 << 16) | (v93 << 8);
+  MEMORY(0x03103060) = (v79 << 16) | (v41 << 24) | v91 | (v45 << 8);
+  MEMORY(0x03103064) = v50 | v80;
+  MEMORY(0x03103068) = (v95 << 16) | (v70 << 24) | v12 | (v72 << 8);
+  MEMORY(0x0310306C) = v5 | (v46 << 16) | (v46 << 24) | (v44 << 8);
 
   if ( v14 > 0x320 )
-    v54 = MEMORY(0x3103078) & 0xFFF0000 | 0xF0007600;
+    v54 = MEMORY(0x03103078) & 0xFFF0000 | 0xF0007600;
   else
-    v54 = MEMORY(0x3103078) & 0xFFF0000 | 0xF0006600;
+    v54 = MEMORY(0x03103078) & 0xFFF0000 | 0xF0006600;
 
-  MEMORY(0x3103078) = v54 | 0x10;
+  MEMORY(0x03103078) = v54 | 0x10;
 
   result = (v13 << 15) & 0xFFF0000;
 
-  MEMORY(0x3103080) = v82 | 0x2000100 | (v6 << 16);
-  MEMORY(0x3103050) = v83 | (v84 << 20);
-  MEMORY(0x3103054) = v85 | (v86 << 20);
-  MEMORY(0x3103090) = v81 | (v13 << 16);
-  MEMORY(0x3103094) = result;
+  MEMORY(0x03103080) = v82 | 0x2000100 | (v6 << 16);
+  MEMORY(0x03103050) = v83 | (v84 << 20);
+  MEMORY(0x03103054) = v85 | (v86 << 20);
+  MEMORY(0x03103090) = v81 | (v13 << 16);
+  MEMORY(0x03103094) = result;
 
   return result;
 }
@@ -1466,12 +1466,12 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   v5 = (v3 >> 2) & 3;
   v6 = a2[3];
 
-  MEMORY(0x310200C) = ((v4 >> 1) - 1) | MEMORY(0x310200C) & 0xFFFFF000;
+  MEMORY(0x0310200C) = ((v4 >> 1) - 1) | MEMORY(0x0310200C) & 0xFFFFF000;
 
   v7 = (32 * ~(_BYTE)v6) & 0x20;
 
-  MEMORY(0x3103108) = MEMORY(0x3103108) & 0xFFFFF0FF | 0x0300;
-  v8 = MEMORY(0x3103344) & 0xFFFFFFCF | v7;
+  MEMORY(0x03103108) = MEMORY(0x03103108) & 0xFFFFF0FF | 0x0300;
+  v8 = MEMORY(0x03103344) & 0xFFFFFFCF | v7;
 
   if ( v4 <= 0x2A0 )
     v9 = v8 & 0xFFFF0FFF;
@@ -1483,8 +1483,8 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   if ( v4 > 0x2A0 )
     v10 |= 0x400u;
 
-  MEMORY(0x3103344) = v10;
-  v11 = MEMORY(0x31033C4) & 0xFFFFFFCF | v7;
+  MEMORY(0x03103344) = v10;
+  v11 = MEMORY(0x031033C4) & 0xFFFFFFCF | v7;
 
   if ( v4 <= 0x2A0 )
     v12 = v11 & 0xFFFF0FFF;
@@ -1496,37 +1496,37 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   if ( v4 > 0x2A0 )
     v13 |= 0x400u;
 
-  MEMORY(0x31033C4) = v13;
-  MEMORY(0x3103208) |= 2u;
+  MEMORY(0x031033C4) = v13;
+  MEMORY(0x03103208) |= 2u;
 
   eye_delay_compensation((int)a2); //OK
 
   if ( v5 == 1 )
   {
     v15 = 51392700;
-    MEMORY(0x3103108) &= 0xFFFFFF3F;
-    v16 = MEMORY(0x31030BC) & 0xFFFFFEF8;
+    MEMORY(0x03103108) &= 0xFFFFFF3F;
+    v16 = MEMORY(0x031030BC) & 0xFFFFFEF8;
   }
   else
   {
     if ( v5 != 2 )
     {
-      MEMORY(0x3103108) &= 0xFFFFFFBF;
+      MEMORY(0x03103108) &= 0xFFFFFFBF;
       _usdelay(10);
 
-      MEMORY(0x3103108) |= 0xC0u;
+      MEMORY(0x03103108) |= 0xC0u;
 
       goto LABEL_16;
     }
 
-    v14 = 51392700;
+    v14 = 0x031030BC;
 
-    MEMORY(0x3103108) = MEMORY(0x3103108) & 0xFFFFFF3F | 0x80;
+    MEMORY(0x03103108) = MEMORY(0x03103108) & 0xFFFFFF3F | 0x80;
 
-    v15 = 51392796;
+    v15 = 0x0310311C;
 
-    MEMORY(0x31030BC) = ((HIWORD(MEMORY(0x3103060)) & 0x1F) - 2) | MEMORY(0x31030BC) & 0xFFFFFEF8 | 0x100;
-    v16 = MEMORY(0x310311C) & 0x7FFFFFFF | 0x8000000;
+    MEMORY(0x031030BC) = ((HIWORD(MEMORY(0x03103060)) & 0x1F) - 2) | MEMORY(0x031030BC) & 0xFFFFFEF8 | 0x100;
+    v16 = MEMORY(0x0310311C) & 0x7FFFFFFF | 0x8000000;
   }
 
   *(_DWORD *)v15 = v16;
@@ -1537,9 +1537,9 @@ LABEL_16:
   {
 
     if ( v5 == 1 )
-      v17 = MEMORY(0x310311C) & 0xF7FFFFFF;
+      v17 = MEMORY(0x0310311C) & 0xF7FFFFFF;
     else
-      v17 = MEMORY(0x310311C) & 0x88FFFFFF;
+      v17 = MEMORY(0x0310311C) & 0x88FFFFFF;
 
     if ( v5 == 1 )
       v18 = v17 & 0xFFFFFF3F;
@@ -1549,16 +1549,16 @@ LABEL_16:
     if ( v5 == 1 )
       v18 |= 0x80000000;
 
-    MEMORY(0x310311C) = v18;
+    MEMORY(0x0310311C) = v18;
   }
 
   if ( (a2[5] & 0x1000) != 0 )
   {
-    v19 = MEMORY(0x31030C0);
+    v19 = MEMORY(0x031030C0);
   }
   else
   {
-    v14 = MEMORY(0x31030C0);
+    v14 = MEMORY(0x031030C0);
     v19 = 16789639;
   }
 
@@ -1572,7 +1572,7 @@ LABEL_16:
   else
     v20 = v19 | v14;
 
-  MEMORY(0x31030C0) = v20;
+  MEMORY(0x031030C0) = v20;
 
   if ( (MEMORY(0x070005D4) & 0x10000) != 0 )
   {
@@ -1580,14 +1580,14 @@ LABEL_16:
     _usdelay(10);
   }
 
-  MEMORY(0x3103140) = a2[2] & 0xFFFFFF | MEMORY(0x3103140) & 0xFC000000 | 0x2000000;
+  MEMORY(0x03103140) = a2[2] & 0xFFFFFF | MEMORY(0x03103140) & 0xFC000000 | 0x2000000;
 
   if ( v5 == 1 )
   {
 
-    MEMORY(0x3103000) = 83;
+    MEMORY(0x03103000) = 83;
 
-    while ( (MEMORY(0x3103010) & 1) == 0 )
+    while ( (MEMORY(0x03103010) & 1) == 0 )
       ;
 
     _usdelay(10);
@@ -1611,10 +1611,10 @@ LABEL_16:
     v21 = 370;
   }
 
-  MEMORY(0x3103000) = v21 | 1;
+  MEMORY(0x03103000) = v21 | 1;
   _usdelay(10);
 
-  while ( (MEMORY(0x3103010) & 1) == 0 )
+  while ( (MEMORY(0x03103010) & 1) == 0 )
     ;
 
   v23 = MEMORY(0x070005D4);
@@ -1622,46 +1622,46 @@ LABEL_16:
 
   if ( (MEMORY(0x070005D4) & 0x10000) != 0 )
   {
-    MEMORY(0x310310C) = MEMORY(0x310310C) & 0xF9FFFFFF | 0x4000000;
+    MEMORY(0x0310310C) = MEMORY(0x0310310C) & 0xF9FFFFFF | 0x4000000;
     _usdelay(10);
 
-    MEMORY(0x3103004) |= 1u;
-    while ( (MEMORY(0x3103018) & 7) != 3 )
+    MEMORY(0x03103004) |= 1u;
+    while ( (MEMORY(0x03103018) & 7) != 3 )
       ;
 
     MEMORY(0x7010250) &= 0xFFFFFFFE;
     _usdelay(10);
 
-    MEMORY(0x3103004) &= 0xFFFFFFFE;
+    MEMORY(0x03103004) &= 0xFFFFFFFE;
 
-    while ( (MEMORY(0x3103018) & 7) != 1 )
+    while ( (MEMORY(0x03103018) & 7) != 1 )
       ;
 
     _usdelay(15);
 
     if ( v5 == 1 )
     {
-      MEMORY(0x3103108) &= 0xFFFFFF3F;
-      MEMORY(0x310310C) = MEMORY(0x310310C) & 0xF9FFFFFF | 0x2000000;
+      MEMORY(0x03103108) &= 0xFFFFFF3F;
+      MEMORY(0x0310310C) = MEMORY(0x0310310C) & 0xF9FFFFFF | 0x2000000;
       _usdelay(1);
 
-      MEMORY(0x3103000) = 1025;
+      MEMORY(0x03103000) = 0x0401;
 
       do
       {
-        v23 = MEMORY(0x3103010);
-        v22 = MEMORY(0x3103010) << 31;
+        v23 = MEMORY(0x03103010);
+        v22 = MEMORY(0x03103010) << 31;
       }
-      while ( (MEMORY(0x3103010) & 1) == 0 );
+      while ( (MEMORY(0x03103010) & 1) == 0 );
 
     }
 
   }
 
-  if ( (MEMORY(0x3103010) & 0xFF00000) != 0 )
+  if ( (MEMORY(0x03103010) & 0xFF00000) != 0 )
   {
-    v25 = MEMORY(0x3103010) & 0x100000;
-    if ( (MEMORY(0x3103010) & 0x100000) != 0 )
+    v25 = MEMORY(0x03103010) & 0x100000;
+    if ( (MEMORY(0x03103010) & 0x100000) != 0 )
     {
       v25 = 0;
 
@@ -1675,22 +1675,22 @@ LABEL_16:
     v25 = 1;
   }
 
-  while ( (MEMORY(0x3103018) & 1) == 0 )
+  while ( (MEMORY(0x03103018) & 1) == 0 )
     ;
 
-  MEMORY(0x310308C) |= 0x80000000;
+  MEMORY(0x0310308C) |= 0x80000000;
   _usdelay(10);
 
-  MEMORY(0x310308C) &= 0x7FFFFFFFu;
+  MEMORY(0x0310308C) &= 0x7FFFFFFFu;
   _usdelay(10);
 
-  MEMORY(0x3102014) |= 0x80000000;
+  MEMORY(0x03102014) |= 0x80000000;
   _usdelay(10);
 
-  MEMORY(0x310310C) &= 0xF9FFFFFF;
+  MEMORY(0x0310310C) &= 0xF9FFFFFF;
 
   if ( v5 == 1 )
-    MEMORY(0x310311C) = MEMORY(0x310311C) & 0xFFFFFF3F | 0x40;
+    MEMORY(0x0310311C) = MEMORY(0x0310311C) & 0xFFFFFF3F | 0x40;
 
   return v25;
 }
@@ -1710,30 +1710,30 @@ static int eye_delay_compensation(int a1) //OK
 
   v2 = *(_QWORD *)(a1 + 84);
 
-  for ( i = 51393296; i != 51393332; i += 4 )
+  for ( i = 0x03103310; i != 0x03103334; i += 4 )
     *(_DWORD *)i |= ((_DWORD)v2 << 9) & 0x1E00 | (2 * HIDWORD(v2)) & 0x1E;
 
-  for ( j = 51393424; j != 51393460; j += 4 )
+  for ( j = 0x03103390; j != 0x031033B4; j += 4 )
     *(_DWORD *)j |= (32 * v2) & 0x1E00 | (HIDWORD(v2) >> 3) & 0x1E;
 
-  MEMORY(0x3103100) &= 0xFBFFFFFF;
+  MEMORY(0x03103100) &= 0xFBFFFFFF;
 
   v5 = (HIDWORD(v2) >> 15) & 0x1E | (WORD1(v2) << 9) & 0x1E00;
 
-  MEMORY(0x3103334) |= v5;
-  MEMORY(0x3103338) |= v5;
+  MEMORY(0x03103334) |= v5;
+  MEMORY(0x03103338) |= v5;
 
   v6 = (HIDWORD(v2) >> 19) & 0x1E | ((unsigned int)v2 >> 20 << 9) & 0x1E00;
 
-  MEMORY(0x31033B4) |= v6;
-  MEMORY(0x31033B8) |= v6;
-  MEMORY(0x310333C) |= (WORD1(v2) << 25) & 0x1E000000;
-  MEMORY(0x31033BC) |= ((unsigned int)v2 >> 20 << 25) & 0x1E000000;
-  MEMORY(0x3103100) |= 0x4000000u;
+  MEMORY(0x031033B4) |= v6;
+  MEMORY(0x031033B8) |= v6;
+  MEMORY(0x0310333C) |= (WORD1(v2) << 25) & 0x1E000000;
+  MEMORY(0x031033BC) |= ((unsigned int)v2 >> 20 << 25) & 0x1E000000;
+  MEMORY(0x03103100) |= 0x4000000u;
   _usdelay(1);
 
   v7 = *(_DWORD *)(a1 + 80);
-  v8 = 51393088;
+  v8 = 0x03103240;
   v9 = (16 * v7) & 0xF00;
 
   do
@@ -1741,17 +1741,17 @@ static int eye_delay_compensation(int a1) //OK
     *(_DWORD *)v8 |= v9;
     v8 += 4;
   }
-  while ( v8 != 51393148 );
+  while ( v8 != 0x0310327C );
 
-  for ( k = 51393064; k != 51393088; k += 4 )
+  for ( k = 0x03103228; k != 0x03103240; k += 4 )
     *(_DWORD *)k |= v9;
 
-  MEMORY(0x3103218) |= (v7 << 8) & 0xF00;
+  MEMORY(0x03103218) |= (v7 << 8) & 0xF00;
 
-  result = MEMORY(0x310321C);
+  result = MEMORY(0x0310321C);
 
-  MEMORY(0x310321C) |= v7 & 0xF00;
-  MEMORY(0x3103280) |= (v7 >> 4) & 0xF00;
+  MEMORY(0x0310321C) |= v7 & 0xF00;
+  MEMORY(0x03103280) |= (v7 >> 4) & 0xF00;
 
   return result;
 }
@@ -1761,34 +1761,34 @@ static int DRAMC_get_dram_size(void) //ok
   int v0;   // r3
   int v1=0; // r2
 
-  v0 = MEMORY(0x3102000) & 3;
+  v0 = MEMORY(0x03102000) & 3;
 
-  if ( (MEMORY(0x3102000) & 3) != 0 )
+  if ( (MEMORY(0x03102000) & 3) != 0 )
   {
-    LOBYTE(v1) = MEMORY(0x3102004);
+    LOBYTE(v1) = MEMORY(0x03102004);
 
-    if ( MEMORY(0x3102004) << 30 )
+    if ( MEMORY(0x03102004) << 30 )
     {
-      v1 = (MEMORY(0x3102004) >> 2) & 3;
-      v0 = ((MEMORY(0x3102004) >> 8) & 0xF) + (MEMORY(0x3102004) >> 4) - 14;
+      v1 = (MEMORY(0x03102004) >> 2) & 3;
+      v0 = ((MEMORY(0x03102004) >> 8) & 0xF) + (MEMORY(0x03102004) >> 4) - 14;
     }
     else
     {
-      v0 = 1 << ((MEMORY(0x3102000) & 0xF) + (MEMORY(0x3102000) >> 4) - 14 + ((MEMORY(0x3102000) >> 2) & 3));
+      v0 = 1 << ((MEMORY(0x03102000) & 0xF) + (MEMORY(0x03102000) >> 4) - 14 + ((MEMORY(0x03102000) >> 2) & 3));
     }
 
-    if ( MEMORY(0x3102004) << 30 )
+    if ( MEMORY(0x03102004) << 30 )
       v0 = 1 << (v0 + v1);
   }
 
-  return (1 << ((MEMORY(0x3102000) & 0xF) + (MEMORY(0x3102000) >> 4) - 14 + ((MEMORY(0x3102000) >> 2) & 3))) + v0;
+  return (1 << ((MEMORY(0x03102000) & 0xF) + (MEMORY(0x03102000) >> 4) - 14 + ((MEMORY(0x03102000) >> 2) & 3))) + v0;
 }
 
 static int dram_enable_all_master(void) //OK
 {
-  MEMORY(0x3102020) = -1;
-  MEMORY(0x3102024) = 255;
-  MEMORY(0x3102028) = 0xFFFF;
+  MEMORY(0x03102020) = -1;
+  MEMORY(0x03102024) = 255;
+  MEMORY(0x03102028) = 0xFFFF;
 
   return _usdelay(10);
 }
@@ -1810,8 +1810,8 @@ static int dramc_simple_wr_test(unsigned int a1, int a2) //OK
 
   for ( i = 0; i != a2; ++i )
   {
-    *(_DWORD *)v2 = i + 19088743;
-    *(_DWORD *)(v3 + v2) = i - 19088744;
+    *(_DWORD *)v2 = i + 0x01234567;
+    *(_DWORD *)(v3 + v2) = i - 0x01234568;
 
     v2 += 4;
   }
@@ -1822,35 +1822,35 @@ static int dramc_simple_wr_test(unsigned int a1, int a2) //OK
   {
     if ( i == j )
     {
-//      PRINTF("DRAM simple test OK.\n", 19088743, 0xFEDCBA98, v2);
+//      PRINTF("DRAM simple test OK.\n", 0x01234567, 0xFEDCBA98, v2);
 
       return 0;
     }
 
     v8 = *(_DWORD *)(v3 + v5);
-    v9 = j - 19088744;
+    v9 = j - 0x01234568;
     v10 = v3 + v5;
 
-    if ( j - 19088744 != v8 )
+    if ( j - 0x01234568 != v8 )
     {
-//      PRINTF("DRAM simple test FAIL.\n", 19088743, 0xFEDCBA98, v2);
+//      PRINTF("DRAM simple test FAIL.\n", 0x01234567, 0xFEDCBA98, v2);
 
       v11 = v10;
 
       goto LABEL_9;
     }
 
-    v9 = j + 19088743;
+    v9 = j + 0x01234567;
     v2 = v5 + 4;
     v8 = *(_DWORD *)v5;
 
-    if ( j + 19088743 != *(_DWORD *)v5 )
+    if ( j + 0x01234567 != *(_DWORD *)v5 )
       break;
 
     v5 += 4;
   }
 
-//  PRINTF("DRAM simple test FAIL.\n", 19088743, 0xFEDCBA98, v2);
+//  PRINTF("DRAM simple test FAIL.\n", 0x01234567, 0xFEDCBA98, v2);
 
   v11 = v5;
 
@@ -1870,7 +1870,7 @@ static int dqs_gate_detect(int a1, int a2, unsigned int a3) //OK
   unsigned int v7; // r2
   int v8; // r3
 
-  if ( (MEMORY(0x3103010) & 0x400000) == 0 )
+  if ( (MEMORY(0x03103010) & 0x400000) == 0 )
   {
     v4 = *(_DWORD *)(a1 + 20) & 0xFFFFFFF0 | 0x1000;
     *(_DWORD *)(a1 + 20) = v4;
@@ -1884,8 +1884,8 @@ LABEL_6:
     return 1;
   }
 
-  a2 = HIBYTE(MEMORY(0x3103348)) & 3;
-  v3 = HIBYTE(MEMORY(0x31033C8)) & 3;
+  a2 = HIBYTE(MEMORY(0x03103348)) & 3;
+  v3 = HIBYTE(MEMORY(0x031033C8)) & 3;
 
   if ( a2 == 2 )
   {
@@ -2003,7 +2003,7 @@ static int auto_scan_dram_size(int *a1) //OK
         *v11++ = v2;
       }
 
-      v14 = (unsigned int *)(4 * (v8 + 12847104));
+      v14 = (unsigned int *)(4 * (v8 + 0x00C40800));
       v15 = *v14 & 0xFFFFF0F3 | 0x6F0;
       *v14 = v15;
 
@@ -2044,8 +2044,8 @@ LABEL_23:
 
       if ( v8 == 1 )
       {
-        v9 = 1082130432;
-        MEMORY(0x3102000) = MEMORY(0x3102000) & 0xFFFFF003 | 0x6A4;
+        v9 = 0x40800000;
+        MEMORY(0x03102000) = MEMORY(0x03102000) & 0xFFFFF003 | 0x6A4;
       }
 
       v22 = *v14 & 0xFFFFF003 | 0x6A4;
@@ -2090,7 +2090,7 @@ LABEL_33:
       if ( v8 == 1 )
       {
         v9 = 1140850688;
-        MEMORY(0x3102000) = MEMORY(0x3102000) & 0xFFFFF003 | 0xAA0;
+        MEMORY(0x03102000) = MEMORY(0x03102000) & 0xFFFFF003 | 0xAA0;
       }
 
       v27 = *v14 & 0xFFFFF003 | 0xAA0;
@@ -2149,11 +2149,11 @@ LABEL_47:
       {
         if ( v8 == 1 )
         {
-          v7 = 1207959552;
-          v9 = 1207959552;
+          v7 = 0x48000000;
+          v9 = 0x48000000;
 
-          MEMORY(0x3102000) = MEMORY(0x3102000) & 0xFFFFF003 | 0x6F0;
-          MEMORY(0x3102004) = MEMORY(0x3102004) & 0xFFFFF003 | 0x6F1;
+          MEMORY(0x03102000) = MEMORY(0x03102000) & 0xFFFFF003 | 0x6F0;
+          MEMORY(0x03102004) = MEMORY(0x03102004) & 0xFFFFF003 | 0x6F1;
         }
 
         continue;
