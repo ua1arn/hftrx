@@ -257,11 +257,11 @@ typedef enum IRQn
 
 // SP1 (SYS domain)
 #define UART0_BASE      	0x02500000
-#define UART1_BASE      	0x02000400
-#define UART2_BASE      	0x02000800
-#define UART3_BASE     		0x02000C00
-#define UART4_BASE      	0x02001000
-#define UART5_BASE      	0x02001400
+#define UART1_BASE      	0x02500400
+#define UART2_BASE     		0x02500800
+#define UART3_BASE			0x02500C00
+#define UART4_BASE      	0x02501000
+#define UART5_BASE      	0x02501400
 
 #define TWI0_BASE 	     	0x02502000
 #define TWI1_BASE 	     	0x02502400
