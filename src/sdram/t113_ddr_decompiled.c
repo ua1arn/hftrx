@@ -108,28 +108,28 @@ static void *MY_memcpy(void *dst,const void *src,int n)
 
 static int init_DRAM(int a1,int a2)
 {
-  unsigned int v3; // r2
-  int v4; // r5
-  unsigned int v5; // r2
-  int v6; // r3
-  int v7; // r1
-  unsigned int v8; // r2
+  //unsigned int v3; // r2
+  //int v4; // r5
+  //unsigned int v5; // r2
+  //int v6; // r3
+  //int v7; // r1
+  //unsigned int v8; // r2
   int v9; // r3
-  unsigned int v10; // r2
-  int v11; // r3
-  unsigned int v12; // r2
-  int v13; // r3
-  int v14; // r1
+  //unsigned int v10; // r2
+  //int v11; // r3
+  //unsigned int v12; // r2
+  //int v13; // r3
+  //int v14; // r1
   int v15; // r3
   unsigned int v16; // r2
-  unsigned int v17; // r2
-  int v18; // r3
-  int v19; // r3
-  int v20; // r0
+  //unsigned int v17; // r2
+  //int v18; // r3
+  //int v19; // r3
+  //int v20; // r0
   int v22; // r1
-  int v23; // r1
-  unsigned int v24; // r2
-  int v25; // r3
+  //int v23; // r1
+  //unsigned int v24; // r2
+  //int v25; // r3
   int v26; // r5
   int v27; // r5
   int v28; // r3
@@ -138,16 +138,16 @@ static int init_DRAM(int a1,int a2)
   unsigned int v31; // r3
   int v32; // r3
   unsigned int v33; // r2
-  unsigned int v34; // r2
-  unsigned int v35; // r2
-  unsigned int v36; // r2
-  int v37; // r3
+  //unsigned int v34; // r2
+  //unsigned int v35; // r2
+  //unsigned int v36; // r2
+  //int v37; // r3
   int v38; // r0
-  int v39; // r1
+  //int v39; // r1
   int v40; // r3
   int v41; // r2
-  unsigned int v42; // r2
-  int v43; // r3
+  //unsigned int v42; // r2
+  //int v43; // r3
 
   if ( (*(_DWORD *)(a2 + 92) & 0x10000) != 0 )
   {
@@ -399,9 +399,9 @@ static int sid_read_ldoB_cal(int result) //ok
 
 static int auto_scan_dram_config(int *a1)
 {
-  int v2; // r1
-  unsigned int v3; // r2
-  int v4; // r3
+  //int v2; // r1
+  //unsigned int v3; // r2
+  //int v4; // r3
   int v5; // r4
   //char *v6; // r0
   int v8; // r3
@@ -849,7 +849,7 @@ static int auto_set_timing_para(int a1) //OK
   int v18; // r1
   unsigned int v19; // r0
   int v20; // r3
-  char *v21; // r0
+  //char *v21; // r0
   unsigned int v22; // r0
   unsigned int v23; // r0
   int v24; // r3
@@ -1878,10 +1878,10 @@ static int dqs_gate_detect(int a1, int a2, unsigned int a3) //OK
 {
   int v3; // r4
   int v4; // r3
-  char *v5; // r0
+  //char *v5; // r0
   int result; // r0
-  unsigned int v7; // r2
-  int v8; // r3
+ // unsigned int v7; // r2
+  //int v8; // r3
 
   if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0x400000) == 0 )
   {
@@ -1949,8 +1949,8 @@ LABEL_6:
 static int auto_scan_dram_size(int *a1) //OK
 {
   int v2; // r1
-  unsigned int v3; // r2
-  int v4; // r3
+  //unsigned int v3; // r2
+  //int v4; // r3
   int v5; // r4
   int v7; // r6
   int v8; // r5
@@ -1979,7 +1979,7 @@ static int auto_scan_dram_size(int *a1) //OK
   int v31; // r4
   unsigned int v32; // r4
   int v33; // r1
-  char *v34; // r0
+  //char *v34; // r0
   unsigned int v35; // r4
   int v36; // r3
   int v37; // [sp+4h] [bp-2Ch]
