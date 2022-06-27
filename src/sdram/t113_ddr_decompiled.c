@@ -25,20 +25,16 @@
 #define _DWORD unsigned int
 #define _QWORD unsigned long long
 
-#define __int8  char
-#define __int16 short
-#define __int32 int
-#define __int64 long long
 
 #define bool unsigned char
 
 #define HIBYTE(x) ((x)>>24)
-#define LOBYTE(x) (*((unsigned char*)(x)))
+#define LOBYTE(x) (*((uint8_t *)(x)))	/* в присвоениях - слева */
 
 #define HIWORD(x)  ((x)>>16)
 #define HIDWORD(x) ((x)>>32)
 
-#define WORD1(x) (((x)>>16)&0xFFFF)
+#define WORD1(x) (((x)>>16) &0xFFFF)
 
 #define MEMORY(x) (*(volatile unsigned int*)(x))
 
@@ -235,7 +231,7 @@ LABEL_5:
 
 //      PRINTF("DRAM SIZE =%d M\n", v26, v42, v43);
 
-      *(_DWORD *)(a2 + 20) = *(unsigned __int16 *)(a2 + 20) | (v26 << 16);
+      *(_DWORD *)(a2 + 20) = *(uint16_t *)(a2 + 20) | (v26 << 16);
     }
     else
     {
@@ -295,7 +291,7 @@ LABEL_5:
     PRINTF("dram_tpr4:0x%x\n", *(_DWORD *)(a2 + 56), v33, v32);
     PRINTF("PLL_DDR_CTRL_REG:0x%x\n", MEMORY(0x2001010), v34, 33558544);
     PRINTF("DRAM_CLK_REG:0x%x\n", MEMORY(0x2001800), v35, 33560576);
-    PRINTF("[TIMING DEBUG] MR2= 0x%x\n", *(unsigned __int16 *)(a2 + 32), v36, v37);
+    PRINTF("[TIMING DEBUG] MR2= 0x%x\n", *(uint16_t *)(a2 + 32), v36, v37);
 */
 
     v38 = dram_enable_all_master(); //OK
@@ -622,7 +618,7 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
   if ( (v2 & 0x100) != 0 )
   {
 
-    if ( (unsigned __int16)v2 >> 12 == 1 )
+    if ( (uint16_t) v2 >> 12 == 1 )
       v10 = 2;
     else
       v10 = 1;
@@ -641,7 +637,7 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
 
   do
   {
-    v16 = (unsigned __int8)(16 * ((v11 >> v15) - 1)) | (4 * (v11 >> (v15 + 8))) & 4 | *(_DWORD *)v12 & 0xFFFFF000 | v13;
+    v16 = (uint8_t) (16 * ((v11 >> v15) - 1)) | (4 * (v11 >> (v15 + 8))) & 4 | *(_DWORD *)v12 & 0xFFFFF000 | v13;
     switch ( (v11 >> (v15 - 4)) & 0xF )
     {
       case 1u:
@@ -788,10 +784,10 @@ LABEL_6:
       return result;
 
 LABEL_25:
-    MEMORY(0x3102504) = ((unsigned __int8)v8[7] << 10) | (32 * (unsigned __int8)v8[6]) | (unsigned __int8)v8[5] | ((unsigned __int8)v8[8] << 15) | ((unsigned __int8)v8[9] << 20) | ((unsigned __int8)v8[10] << 25);
-    MEMORY(0x3102508) = ((unsigned __int8)v8[13] << 10) | (32 * (unsigned __int8)v8[12]) | (unsigned __int8)v8[11] | ((unsigned __int8)v8[14] << 15) | ((unsigned __int8)v8[15] << 20);
-    MEMORY(0x310250C) = ((unsigned __int8)v8[18] << 10) | (32 * (unsigned __int8)v8[17]) | (unsigned __int8)v8[16] | ((unsigned __int8)v8[19] << 15) | ((unsigned __int8)v8[20] << 20) | ((unsigned __int8)v8[21] << 25);
-    MEMORY(0x3102500) = ((unsigned __int8)v8[1] << 10) | (32 * (unsigned __int8)v8[0]) | 1 | ((unsigned __int8)v8[2] << 15) | ((unsigned __int8)v8[3] << 20) | ((unsigned __int8)v8[4] << 25);
+    MEMORY(0x3102504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
+    MEMORY(0x3102508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
+    MEMORY(0x310250C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
+    MEMORY(0x3102500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
 
     return result;
   }
@@ -800,10 +796,10 @@ LABEL_25:
   {
     result = (int)memcpy_self((int)v8, v17, 22);
 
-    MEMORY(0x3102504) = ((unsigned __int8)v8[7] << 10) | (32 * (unsigned __int8)v8[6]) | (unsigned __int8)v8[5] | ((unsigned __int8)v8[8] << 15) | ((unsigned __int8)v8[9] << 20) | ((unsigned __int8)v8[10] << 25);
-    MEMORY(0x3102508) = ((unsigned __int8)v8[13] << 10) | (32 * (unsigned __int8)v8[12]) | (unsigned __int8)v8[11] | ((unsigned __int8)v8[14] << 15) | ((unsigned __int8)v8[15] << 20);
-    MEMORY(0x310250C) = ((unsigned __int8)v8[18] << 10) | (32 * (unsigned __int8)v8[17]) | (unsigned __int8)v8[16] | ((unsigned __int8)v8[19] << 15) | ((unsigned __int8)v8[20] << 20) | ((unsigned __int8)v8[21] << 25);
-    MEMORY(0x3102500) = ((unsigned __int8)v8[1] << 10) | (32 * (unsigned __int8)v8[0]) | 1 | ((unsigned __int8)v8[2] << 15) | ((unsigned __int8)v8[3] << 20) | ((unsigned __int8)v8[4] << 25);
+    MEMORY(0x3102504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
+    MEMORY(0x3102508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
+    MEMORY(0x310250C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
+    MEMORY(0x3102500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
   }
 
   if ( (unsigned int)(v2 - 13) <= 1 )
@@ -879,10 +875,10 @@ static int auto_set_timing_para(int a1) //OK
   int v60; // r3
   int v61; // r3
   bool v62; // zf
-  __int64 v63; // r0
+  int64_t v63; // r0
   int v64; // r7
   unsigned int v65; // r5
-  __int64 v66; // r0
+  int64_t v66; // r0
   int v67; // r3
   int v68; // r3
   int v69; // r3
@@ -1125,7 +1121,7 @@ static int auto_set_timing_para(int a1) //OK
     *(_DWORD *)(a1 + 40) = v73 | 0x400000 | (v70 << 6) | (v72 << 11) | (v74 << 15);
     *(_DWORD *)(a1 + 44) = (v11 << 11) | (v12 << 6) | v75 | (v10 << 15) | (v10 << 20) | (v71 << 23);
 
-    v20 = (unsigned __int16)*(_DWORD *)(a1 + 56) >> 12;
+    v20 = (uint16_t) *(_DWORD *)(a1 + 56) >> 12;
 
     if ( v20 == 1 )
     {
@@ -1368,7 +1364,7 @@ LABEL_105:
   if ( !*(_WORD *)(a1 + 26) )
     *(_DWORD *)(a1 + 24) = v87;
 
-  v48 = *(unsigned __int16 *)(a1 + 34);
+  v48 = *(uint16_t *)(a1 + 34);
 
   if ( !HIWORD(v92) )
     *(_DWORD *)(a1 + 28) = v77;
@@ -1376,7 +1372,7 @@ LABEL_105:
   if ( !v48 )
     *(_DWORD *)(a1 + 32) = v88;
 
-  v49 = *(unsigned __int16 *)(a1 + 24);
+  v49 = *(uint16_t *)(a1 + 24);
   v50 = (v40 << 12) | (v47 << 16);
   v51 = HIWORD(v94);
 
@@ -1387,10 +1383,10 @@ LABEL_105:
     *(_DWORD *)(a1 + 36) = v51;
 
   MEMORY(0x3103030) = v49;
-  MEMORY(0x3103034) = *(unsigned __int16 *)(a1 + 28);
-  MEMORY(0x3103038) = *(unsigned __int16 *)(a1 + 32);
+  MEMORY(0x3103034) = *(uint16_t *)(a1 + 28);
+  MEMORY(0x3103038) = *(uint16_t *)(a1 + 32);
 
-  v52 = *(unsigned __int16 *)(a1 + 36);
+  v52 = *(uint16_t *)(a1 + 36);
   v53 = *(_DWORD *)(a1 + 12);
 
   MEMORY(0x310303C) = v52;
@@ -1698,7 +1694,7 @@ LABEL_16:
 
 static int eye_delay_compensation(int a1) //OK
 {
-  __int64 v2; // kr00_8
+  int64_t v2; // kr00_8
   int i; // r0
   int j; // r6
   int v5; // r5
@@ -1980,7 +1976,7 @@ static int auto_scan_dram_size(int *a1) //OK
     v8 = 0;
     v9 = 0x40000000;
 
-    if ( (unsigned __int16)a1[5] >> 12 == 1 )
+    if ( (uint16_t) a1[5] >> 12 == 1 )
       v10 = 2;
     else
       v10 = 1;
@@ -2167,7 +2163,7 @@ LABEL_47:
     {
       v36 = a1[5] & 0xFFFFF0FF;
 
-      if ( (unsigned __int16)v35 == HIWORD(v35) )
+      if ( (uint16_t) v35 == HIWORD(v35) )
       {
         a1[5] = v36;
 
@@ -2178,14 +2174,14 @@ LABEL_47:
         v36 |= 0x100u;
       }
 
-      if ( (unsigned __int16)v35 != HIWORD(v35) )
+      if ( (uint16_t) v35 != HIWORD(v35) )
       {
         a1[5] = v36;
 
 //        v34 = "rank1 config different from rank0\n";
       }
 
-//      PRINTF(v34, v2, (unsigned __int16)v35, v36);
+//      PRINTF(v34, v2, (uint16_t) v35, v36);
 
     }
 
@@ -2285,7 +2281,7 @@ static const struct dram_para_t ddr3 =
 
 void sys_dram_init(void)
 {
- init_DRAM(0,(int)&ddr3);
+ init_DRAM(0, (int) &ddr3);
 }
 
 #endif /* CPUSTYPE_ALLWNT113 */
