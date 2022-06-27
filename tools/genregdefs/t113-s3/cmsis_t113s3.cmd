@@ -45,7 +45,7 @@ SET OUTFILE=cmsis_t113s3.h
 %CONVERTER% g2d_bld.txt 	G2D_BLD		 >> %OUTFILE%
 %CONVERTER% g2d_wb.txt 		G2D_WB		 >> %OUTFILE%
 %CONVERTER% g2d_rot.txt 	G2D_ROT		 >> %OUTFILE%
-%CONVERTER% g2d.txt 		G2D 		 >> %OUTFILE%
+rem %CONVERTER% g2d.txt 		G2D 		 >> %OUTFILE%
 
 %CONVERTER% dsi.txt 		DSI 		 >> %OUTFILE%
 %CONVERTER% display_top.txt DISPLAY_TOP	 >> %OUTFILE%

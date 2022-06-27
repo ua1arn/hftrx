@@ -1679,12 +1679,12 @@ typedef struct G2D_VSU_Type
 	uint32_t reserved7; /* at 0x0D4 */
 	__IO uint32_t VS_C_VPHASE0;                          /*!< Offset 0x0D8 VS_C_VPHASE0 */
 	uint32_t reserved8 [0x0049]; /* at 0x0DC */
-	__IO uint32_t VS_Y_HCOEF0;                           /*!< Offset 0x200 VS_Y_HCOEF0 */
-	uint32_t reserved9 [0x003F]; /* at 0x204 */
-	__IO uint32_t VS_Y_VCOEF0;                           /*!< Offset 0x300 VS_Y_VCOEF0 */
-	uint32_t reserved10 [0x003F]; /* at 0x304 */
-	__IO uint32_t VS_C_HCOEF0;                           /*!< Offset 0x400 VS_C_HCOEF0 */
-} G2D_VSU_TypeDef; /* size of structure = 0x404 */
+	__IO uint32_t VS_Y_HCOEF [0x020];                    /*!< Offset 0x200 VS_Y_HCOEF[N]. N=0..31 */
+	uint32_t reserved9 [0x0020]; /* at 0x280 */
+	__IO uint32_t VS_Y_VCOEF [0x020];                    /*!< Offset 0x300 VS_Y_VCOEF[N]. N=0..31 */
+	uint32_t reserved10 [0x0020]; /* at 0x380 */
+	__IO uint32_t VS_C_HCOEF [0x020];                    /*!< Offset 0x400 VS_C_HCOEF[N]. N=0..31 */
+} G2D_VSU_TypeDef; /* size of structure = 0x480 */
 /*
  * @brief G2D_BLD
  */
