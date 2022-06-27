@@ -308,6 +308,16 @@ typedef enum IRQn
 #define TVE_TOP_BASE 		0x05600000
 #define TV_Encoder_BASE 	0x05604000
 
+// Undocumented registers
+//	The Hotplug Flag Register is 0x070005C0
+//	The Soft Entry Address Register of CPU0 is 0x070005C4
+//	The Soft Entry Address Register of CPU1 is 0x070005C8
+//	The status of the FEL pin is the bit[8] of the system configuration module (register: 0x03000024).
+//	Fast Boot register (0x07090120) in RTC module
+
+#define CPU_0700_0000_BASE	0x07000000
+#define CPU_0701_0000_BASE	0x07010000
+
 // VIDEO_IN_SYS related
 #define CSI_BASE 			0x05800000
 #define TVD_TOP_BASE 		0x05C00000

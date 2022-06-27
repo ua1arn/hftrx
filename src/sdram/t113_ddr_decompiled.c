@@ -60,25 +60,25 @@ struct dram_para_t
 
 	//timing configuration
 	unsigned int		dram_mr0;	// #6
-	unsigned int		dram_mr1;	// + 28
-	unsigned int		dram_mr2;	// + 32
-	unsigned int		dram_mr3;	// + 36
-	unsigned int		dram_tpr0;	// + 42	DRAMTMG0
-	unsigned int		dram_tpr1;	//DRAMTMG1
-	unsigned int		dram_tpr2;	//DRAMTMG2	// +48
-	unsigned int		dram_tpr3;	//DRAMTMG3
-	unsigned int		dram_tpr4;	//DRAMTMG4
-	unsigned int		dram_tpr5;	//DRAMTMG5
-   	unsigned int		dram_tpr6;	//DRAMTMG8	// +64
+	unsigned int		dram_mr1;	// #7
+	unsigned int		dram_mr2;	// #8
+	unsigned int		dram_mr3;	// #9
+	unsigned int		dram_tpr0;	// #10	DRAMTMG0
+	unsigned int		dram_tpr1;	// #11	DRAMTMG1
+	unsigned int		dram_tpr2;	// #12	DRAMTMG2	// +48
+	unsigned int		dram_tpr3;	// #13	DRAMTMG3
+	unsigned int		dram_tpr4;	// #14	DRAMTMG4
+	unsigned int		dram_tpr5;	// #15	DRAMTMG5
+   	unsigned int		dram_tpr6;	// #16	DRAMTMG8	// +64
 
 	//reserved for future use
-	unsigned int		dram_tpr7;
-	unsigned int		dram_tpr8;
-	unsigned int		dram_tpr9;
-	unsigned int		dram_tpr10;	// +80
-	unsigned int		dram_tpr11;	// +84
-	unsigned int		dram_tpr12;	// +88
-	unsigned int		dram_tpr13;	// +92
+	unsigned int		dram_tpr7;	// #17
+	unsigned int		dram_tpr8;	// #18
+	unsigned int		dram_tpr9;	// #19
+	unsigned int		dram_tpr10;	// #20
+	unsigned int		dram_tpr11;	// #21
+	unsigned int		dram_tpr12;	// #22
+	unsigned int		dram_tpr13;	// #23
 };
 
 
