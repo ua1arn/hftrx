@@ -922,7 +922,10 @@ hwacc_fillrect_u16(
 	/* Использование G2D для формирования изображений */
 	#warning Implement for CPUSTYPE_ALLWNT113
 	const unsigned stride = GXADJ(dx) * PIXEL_SIZE;
-	const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	//const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	const uintptr_t addr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
+
+	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
@@ -1364,10 +1367,14 @@ hwacc_fillrect_u32(
 	/* Использование G2D для формирования изображений */
 	#warning Implement for CPUSTYPE_ALLWNT113
 	const unsigned stride = GXADJ(dx) * PIXEL_SIZE;
-	const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	//const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	const uintptr_t addr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
+
+	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 //	G2D_TOP->G2D_AHB_RESET &= ~ (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RESET |= (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
