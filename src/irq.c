@@ -1494,9 +1494,10 @@ uint_fast8_t arm_hardware_cpuid(void)
 }
 
 static RAMDTCM SPINLOCK_t gicpriority_lock = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t populate_lock = SPINLOCK_INIT;
 
 #if WITHSMPSYSTEM
+
+static RAMDTCM SPINLOCK_t populate_lock = SPINLOCK_INIT;
 
 //static USBALIGN_BEGIN uint8_t gicshadow_target [1024] USBALIGN_END;
 //static USBALIGN_BEGIN uint8_t gicshadow_config [1024] USBALIGN_END;

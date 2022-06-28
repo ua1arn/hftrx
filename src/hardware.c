@@ -2874,19 +2874,19 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t t
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
 // с точностью до 1 мегабайта
-static void
-FLASHMEMINITFUNC
-ttb_map(
-	uintptr_t va,	/* virtual address */
-	uintptr_t la,	/* linear (physical) address */
-	uint32_t (* accessbits)(uintptr_t a)
-	)
-{
-	volatile extern uint32_t __TTB_BASE;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __TTB_BASE;
-	unsigned i = va >> 20;
-	tlbbase [i] =  accessbits(la);
-}
+//static void
+//FLASHMEMINITFUNC
+//ttb_map(
+//	uintptr_t va,	/* virtual address */
+//	uintptr_t la,	/* linear (physical) address */
+//	uint32_t (* accessbits)(uintptr_t a)
+//	)
+//{
+//	volatile extern uint32_t __TTB_BASE;		// получено из скрипта линкера
+//	volatile uint32_t * const tlbbase = & __TTB_BASE;
+//	unsigned i = va >> 20;
+//	tlbbase [i] =  accessbits(la);
+//}
 
 #endif /* CPUSTYLE_R7S721 */
 
@@ -3181,17 +3181,6 @@ sysinit_cache_L2_cpu0_initialize(void)
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
 
-static void FLASHMEMINITFUNC
-sysinit_cache_cpu1_initialize(void)
-{
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
-	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
-	#else
-		//arm_hardware_flush_all();
-	#endif
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
-}
-
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
@@ -3346,6 +3335,18 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
 	C0_CPUX_CFG->C0_RST_CTRL |= (0x01uL << 1);
 	(void) C0_CPUX_CFG->C0_RST_CTRL;
+}
+
+
+static void FLASHMEMINITFUNC
+sysinit_cache_cpu1_initialize(void)
+{
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
+	#else
+		//arm_hardware_flush_all();
+	#endif
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
 
 #endif /* WITHSMPSYSTEM */
