@@ -1373,51 +1373,97 @@ hwacc_fillrect_u32(
 
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-//	G2D_TOP->G2D_AHB_RESET &= ~ (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-
-	const uint_fast32_t sizefull_m1 = ((dy - 1) << 16) | ((dx - 1) << 0);
-	const uint_fast32_t size_m1 = ((h - 1) << 16) | ((w - 1) << 0);
-
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
-
-	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
-	G2D_V0->V0_PITCH1 = 0;	// U
-	G2D_V0->V0_PITCH2 = 0;	// V
-
-	G2D_V0->V0_HDS_CTL0 = 0;
-	G2D_V0->V0_HDS_CTL1 = 0;
-	G2D_V0->V0_VDS_CTL0 = 0;
-	G2D_V0->V0_VDS_CTL1 = 0;
-
-	G2D_V0->V0_COOR = (row << 16) | (col << 0);
-	G2D_V0->V0_MBSIZE = sizefull_m1;
-	G2D_V0->V0_SIZE = sizefull_m1;
-
-	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = sizefull_m1;
-	G2D_WB->WB_PITCH0 = stride;
-	G2D_WB->WB_LADD0 = addr0;
-	G2D_WB->WB_HADD0 = 0;
-
-
-	G2D_BLD->BLD_BK_COLOR = color;	/* всегда RGB888. этим цветом заполняется */
-	G2D_BLD->BLD_SIZE = sizefull_m1;
-	G2D_BLD->BLD_CH_ISIZE0 = sizefull_m1;
-	G2D_BLD->BLD_CH_OFFSET0 = (row << 16) | (col << 0);
-
-	G2D_MIXER->G2D_MIXER_CTL |= (1uL << 31);	/* start the module */
-	for (;;)
+	//unsigned factor;
+	//for (factor = 0; factor < 8; ++ factor)
 	{
-		const uint_fast32_t sts = G2D_MIXER->G2D_MIXER_INT;
-		G2D_MIXER->G2D_MIXER_INT = sts;
-		if (((sts & (1uL << 0)) != 0))
-			break;
-		hardware_nonguiyield();
-	}
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+////		TP();
+//		memset(buffer, 0, PIXEL_SIZE * GXSIZE(dx, dy));
+////		TP();
+//		arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+////		TP();
 
+		unsigned f0 = 1;//((factor >> 0) & 0x01);
+		unsigned f1 = 1;//((factor >> 1) & 0x01);
+		unsigned f2 = 1;//((factor >> 2) & 0x01);
+
+		G2D_TOP->G2D_AHB_RESET &= ~ (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+		G2D_TOP->G2D_AHB_RESET |= (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+
+		const uint_fast32_t sizefull_m1 = ((dy - 1) << 16) | ((dx - 1) << 0);
+		const uint_fast32_t size_m1 = ((h - 1) << 16) | ((w - 1) << 0);
+
+		ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+
+		G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
+		G2D_V0->V0_PITCH1 = 0;	// U
+		G2D_V0->V0_PITCH2 = 0;	// V
+	//	G2D_V0->V0_LADD0 = addr0;
+	//	G2D_V0->V0_HADD = 0;
+	//	G2D_V0->V0_COOR = (row << 16) | (col << 0);
+
+		G2D_V0->V0_HDS_CTL0 = 0;
+		G2D_V0->V0_HDS_CTL1 = 0;
+		G2D_V0->V0_VDS_CTL0 = 0;
+		G2D_V0->V0_VDS_CTL1 = 0;
+
+		G2D_V0->V0_COOR = 0;
+		G2D_V0->V0_MBSIZE = f0 ? size_m1 : sizefull_m1;
+		G2D_V0->V0_SIZE = f1 ? size_m1 : sizefull_m1;
+
+
+		G2D_BLD->BLD_BK_COLOR = color;	/* всегда RGB888. этим цветом заполняется */
+		G2D_BLD->BLD_SIZE = sizefull_m1;	/* тут нельзя 0 */
+		G2D_BLD->BLD_CH_ISIZE0 = f2 ? size_m1 : sizefull_m1;
+		G2D_BLD->BLD_CH_OFFSET0 = 0;
+
+		//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+		G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+		G2D_WB->WB_SIZE = sizefull_m1;	/* тут нельзя 0 */
+		G2D_WB->WB_PITCH0 = stride;
+		G2D_WB->WB_LADD0 = addr0;
+		G2D_WB->WB_HADD0 = 0;
+
+		G2D_MIXER->G2D_MIXER_CTL |= (1uL << 31);	/* start the module */
+		unsigned loop;
+		for (loop = 0; loop < 10; ++ loop)
+		{
+			const uint_fast32_t sts = G2D_MIXER->G2D_MIXER_INT;
+			G2D_MIXER->G2D_MIXER_INT = sts;
+			if (((sts & (1uL << 0)) != 0))
+				break;
+			local_delay_ms(60);
+			hardware_nonguiyield();
+		}
+		if (loop >= 10)
+			PRINTF("tmeout\n");
+		else
+		{
+//			PRINTF("factor ok = %02X\n", factor);
+//			if (* colmain_mem_at(buffer, DIM_X, DIM_Y, 0, 0) != * colmain_mem_at(buffer, DIM_X, DIM_Y, 1, 0))
+//			{
+//				PRINTF("factor=%02X\n", factor);
+//				ASSERT(0);
+//			}
+//			if (0)
+//			{
+//				unsigned y;
+//				for (y = 0; y < 16; ++ y)
+//				{
+//					unsigned x;
+//					for (x = 0; x < 64; ++ x)
+//					{
+//						COLORPIP_T color = * colmain_mem_at(buffer, DIM_X, DIM_Y, x, y);
+//						if (color == COLOR_BLACK)
+//							color = 0;
+//						PRINTF("%c", color == 0 ? '-' : '+');
+//					}
+//					PRINTF("\n");
+//				}
+//			}
+		}
+		//ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+
+	}
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
 	const unsigned t = GXADJ(dx) - w;
