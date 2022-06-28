@@ -1785,9 +1785,6 @@ struct fb_t113_rgb_pdata_t
 static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
 	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);
-
-	while ((read32((uintptr_t) & glb->dbuff) & 0x01uL) != 0)
-		;
 	write32((uintptr_t) & glb->dbuff, 0x01uL);	// 1: register value be ready for update (self-cleaning bit)
 	while ((read32((uintptr_t) & glb->dbuff) & 0x01uL) != 0)
 		;
@@ -2087,14 +2084,25 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 /* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
-	t113_de_set_address(& pdat0, p);
+	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+
+	t113_de_set_address(pdat, p);
+	t113_de_enable(pdat);
 }
 
 /* set visible buffer start. Wait VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
-	t113_de_set_address(& pdat0, p);
-	t113_de_enable(& pdat0);
+	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+
+	TCON_LCD0->LCD_GINT0_REG |= (1uL << 31); 		//Enable the Vertical Blank interrupt
+	TCON_LCD0->LCD_GINT0_REG &= ~ (1uL << 15);         //clear LCD_VB_INT_FLAG
+	while((TCON_LCD0->LCD_GINT0_REG & (1uL << 15)) == 0) //wait  LCD_VB_INT_FLAG
+		;
+
+
+	t113_de_set_address(pdat, p);
+	t113_de_enable(pdat);
 }
 
 /* Palette reload */
