@@ -12,9 +12,9 @@
 #ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED
 #define ARM_X7C7XX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED 1
 
-	#if ! defined(XC7Z020)
-		#error Wrong CPU selected. XC7Z010 expected
-	#endif /* ! defined(XC7Z020) */
+//	#if ! defined(XC7Z020)
+//		#error Wrong CPU selected. XC7Z020 expected
+//	#endif /* ! defined(XC7Z020) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -525,7 +525,11 @@
 
 #endif /* WITHISBOOTLOADER */
 
-	#define BOARD_BITIMAGE_NAME "build/xc7Z020/bitstream_myir7020.h"
+	#if XC7Z020
+		#define BOARD_BITIMAGE_NAME "build/xc7Z020/bitstream_myir7020.h"
+	#elif XC7Z010
+		#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_myir7010.h"
+	#endif
 
 	#define WITHMODESETFULLNFM 1
 	/* все возможные в данной конфигурации фильтры */
