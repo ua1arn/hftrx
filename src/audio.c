@@ -5450,6 +5450,7 @@ inject_testsignals(IFADCvalue_t * const dbuff)
 #ifdef DMABUF32RX0I
 	static FLOAT_t simlevelRX = (FLOAT_t) 0.0000001;	// -140 dBFS
 	static FLOAT_t simlevelspec = (FLOAT_t) 1;	// 0 dBFS
+	const FLOAT_t modulation = get_modulation();
 	// приёмник
 	const FLOAT32P_t simval = scalepair(get_float_monofreq(), simlevelRX);	// frequency
 	dbuff [DMABUF32RX0I] = adpt_output(& ifcodecin, simval.IV);
