@@ -921,8 +921,9 @@ hwacc_fillrect_u16(
 #elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
 	/* Использование G2D для формирования изображений */
 
-	if (w == 1 || h == 1)
+	if (w == 1)
 	{
+		/* Горизонтальные линии в 1 пиксель рисовать умеет аппаратура. */
 		// программная реализация
 		const unsigned t = GXADJ(dx) - w;
 		//buffer += (GXADJ(dx) * row) + col;
@@ -1263,8 +1264,9 @@ hwacc_fillrect_u32(
 #elif WITHMDMAHW && (CPUSTYPE_ALLWNT113)
 	/* Использование G2D для формирования изображений */
 
-	if (w == 1 || h == 1)
+	if (w == 1)
 	{
+		/* Горизонтальные линии в 1 пиксель рисовать умеет аппаратура. */
 		// программная реализация
 		const unsigned t = GXADJ(dx) - w;
 		//buffer += (GXADJ(dx) * row) + col;
@@ -1276,6 +1278,7 @@ hwacc_fillrect_u32(
 				* tbuffer ++ = color;
 			tbuffer += t;
 		}
+		arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 		return;
 	}
 	const unsigned stride = GXADJ(dx) * PIXEL_SIZE;
