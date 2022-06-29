@@ -3214,6 +3214,17 @@ static void cortexa_cpuinfo(void)
 
 #if WITHSMPSYSTEM
 
+static void FLASHMEMINITFUNC
+sysinit_cache_cpu1_initialize(void)
+{
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
+	#else
+		//arm_hardware_flush_all();
+	#endif
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+}
+
 #if CPUSTYLE_STM32MP1
 
 
@@ -3338,18 +3349,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 }
 
 
-static void FLASHMEMINITFUNC
-sysinit_cache_cpu1_initialize(void)
-{
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
-	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
-	#else
-		//arm_hardware_flush_all();
-	#endif
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
-}
-
-#endif /* WITHSMPSYSTEM */
+#endif /* CPU types */
 
 static RAMDTCM SPINLOCK_t cpu1init = SPINLOCK_INIT;
 static RAMDTCM SPINLOCK_t cpu1userstart = SPINLOCK_INIT;
