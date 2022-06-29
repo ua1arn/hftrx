@@ -480,6 +480,10 @@ static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
 
 //////////////////////////////////////////
 
+
+static RAMDTCM ncoftw_t anglestep_modulation = FTWAF001(10);	/* 0.1 s period */
+static RAMDTCM ncoftw_t angle_modulation;
+
 static RAMDTCM ncoftw_t anglestep_lout = FTWAF(700), anglestep_rout = FTWAF(500);
 static RAMDTCM ncoftw_t angle_lout, angle_rout;
 
@@ -523,6 +527,14 @@ FLOAT_t get_lout(void)
 	// Формирование значения для LOUT
 	const FLOAT_t v = getcosf(angle_lout);
 	angle_lout = FTWROUND(angle_lout + anglestep_lout);
+	return v;
+}
+
+FLOAT_t get_modulation(void)
+{
+	// Формирование значения для LOUT
+	const FLOAT_t v = getcosf(angle_modulation);
+	angle_modulation = FTWROUND(angle_modulation + anglestep_modulation);
 	return v;
 }
 
@@ -5446,12 +5458,12 @@ inject_testsignals(IFADCvalue_t * const dbuff)
 #if WITHRTS96
 	// панорама
 	// previous - oldest
-	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), simlevelspec);	// frequency2
+	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
 	dbuff [DMABUF32RTS0I] = adpt_output(& ifcodecin, simval0.IV);
 	dbuff [DMABUF32RTS0Q] = adpt_output(& ifcodecin, simval0.QV);
 
 	// current	- nevest
-	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), simlevelspec);	// frequency2
+	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
 	dbuff [DMABUF32RTS1I] = adpt_output(& ifcodecin, simval1.IV);
 	dbuff [DMABUF32RTS1Q] = adpt_output(& ifcodecin, simval1.QV);
 #endif /* WITHRTS96 */
