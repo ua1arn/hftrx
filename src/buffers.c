@@ -316,9 +316,17 @@ static RAMBIGDTCM LIST_HEAD2 speexready16;	// Буферы для обработ
 static RAMBIGDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 
 #if WITHUSBHW && WITHUSBUAC
+
 static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
 static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 static volatile uint_fast8_t uacoutalt;
+
+#else /* WITHUSBHW && WITHUSBUAC */
+
+static const uint_fast8_t uacinalt = 0;		/* выбор альтернативной конфигурации для UAC IN interface */
+static const uint_fast8_t uacinrtsalt = 0;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
+static const uint_fast8_t uacoutalt = 0;
+
 #endif /* WITHUSBHW && WITHUSBUAC */
 
 
