@@ -3365,7 +3365,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #endif /* WITHSAI1HW */
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 enum
 {
@@ -5141,9 +5141,9 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 		"sai2-fpga spectrum for WFM"
 	};
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
-	#warning Codecs not defined for CPUSTYPE_ALLWNT113
+	#warning Codecs not defined for CPUSTYPE_T113
 
 #else
 

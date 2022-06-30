@@ -28,7 +28,7 @@ extern "C" {
  */
 #if WITHDSPEXTDDC
 
-	#if CPUSTYLE_R7S721 || CPUSTYPE_ALLWNT113
+	#if CPUSTYLE_R7S721 || CPUSTYPE_T113
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере

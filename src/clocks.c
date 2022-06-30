@@ -1802,7 +1802,7 @@ unsigned long hardware_get_spi_freq(void)
 #define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 
 void set_pll_cpux_axi(unsigned n)
@@ -2903,7 +2903,7 @@ void hardware_spi_io_delay(void)
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	#if WITHELKEY
 
@@ -3324,7 +3324,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 	// Prepare funcionality: use CNTP
 	const uint_fast32_t gtimfreq = allwnrt113_get_pl1_timer_freq();
 
@@ -6839,7 +6839,7 @@ sysinit_pll_initialize(void)
 
 	#endif /* WITHISBOOTLOADER */
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	allwnrt113_pll_initialize();
 
@@ -7056,7 +7056,7 @@ sysinit_pll_initialize(void)
 		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_XC7Z
 		static portholder_t spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-	#elif CPUSTYPE_ALLWNT113
+	#elif CPUSTYPE_T113
 		static portholder_t ccu_spi_clk_reg_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_tcr_reg_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];
 	#endif /* CPUSTYLE_STM32F1XX */
@@ -7226,7 +7226,7 @@ static void DMA2_SPI1_TX_initialize(void)
 
 #endif /* WITHSPIHWDMA */
 
-#if CPUSTYPE_ALLWNT113
+#if CPUSTYPE_T113
 static void sys_spinor_exit(void)
 {
 	//uintptr_t addr = 0x04025000;
@@ -7237,7 +7237,7 @@ static void sys_spinor_exit(void)
 	val &= ~ ((1 << 1) | (1 << 0));
 	SPI0->SPI_GCR = val;
 }
-#endif /* CPUSTYPE_ALLWNT113 */
+#endif /* CPUSTYPE_T113 */
 
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
    на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается
@@ -7563,7 +7563,7 @@ void hardware_spi_master_initialize(void)
 
 	SPIIO_INITIALIZE();
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 	unsigned ix = 0;	// SPI0
 
 	/* Open the clock gate for SPI0 */
@@ -7920,7 +7920,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
 	spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	enum
 	{
@@ -8109,7 +8109,7 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
@@ -8191,7 +8191,7 @@ void hardware_spi_disconnect(void)
 	SPI0->ER = 0x0000;	// 0: disable the SPI
 	HARDWARE_SPI_DISCONNECT();
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	HARDWARE_SPI_DISCONNECT();
 
@@ -8270,7 +8270,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 		;
 	return SPI0->RXD & 0xFF;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
@@ -9221,7 +9221,7 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
@@ -9274,7 +9274,7 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 		;
 	return HW_SPIUSED->SPDR.UINT16 [R_IO_L]; // L=0
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
@@ -9320,7 +9320,7 @@ void RAMFUNC hardware_spi_b16_p1(
 
 	HW_SPIUSED->SPDR.UINT16 [R_IO_L] = v; // L=0
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	SPI0->SPI_MBC = 1;	// Master Burst Counter
 	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
@@ -9398,7 +9398,7 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	SPI1->CR1 |= SPI_CR1_SPE;
 	SPI1->CR1 |= SPI_CR1_CSTART;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
@@ -9428,7 +9428,7 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 		;
 	return HW_SPIUSED->SPDR.UINT32;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
@@ -9458,7 +9458,7 @@ void hardware_spi_b32_p1(
 
 	HW_SPIUSED->SPDR.UINT32 = v;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	SPI0->SPI_MBC = 1;	// Master Burst Counter
 	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
@@ -9545,7 +9545,7 @@ void hardware_spi_b8_p1(
 	while ((SPI0->SR & (1uL << 2)) == 0)	// TX FIFO not full
 		;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	SPI0->SPI_MBC = 1;	// Master Burst Counter
 	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
@@ -10347,9 +10347,9 @@ void hardware_adc_initialize(void)
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
-	//#warning GPADC need to implement at CPUSTYPE_ALLWNT113
+	//#warning GPADC need to implement at CPUSTYPE_T113
 
 
 	(void) GPADC;
@@ -10965,7 +10965,7 @@ hardware_elkey_timer_initialize(void)
 
 	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	TIMER->TMR0_CTRL_REG = 0;
 
@@ -11068,7 +11068,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		1 * (1U << 0) |	// Enables the interrupts when counting starts.
 		0;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	enum { ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1) };
 	unsigned value;
@@ -11731,7 +11731,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART0->CR = r;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 

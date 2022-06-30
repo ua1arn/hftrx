@@ -713,7 +713,7 @@ extern "C" {
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений

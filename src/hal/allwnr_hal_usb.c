@@ -9,7 +9,7 @@
 
 #include "hardware.h"
 
-#if CPUSTYPE_ALLWNT113
+#if CPUSTYPE_T113
 
 #include "board.h"
 #include "audio.h"
@@ -656,4 +656,4 @@ uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 	return hpcd->OUT_ep [ep_addr & EP_ADDR_MSK].xfer_count;
 }
 
-#endif /* CPUSTYPE_ALLWNT113 */
+#endif /* CPUSTYPE_T113 */

@@ -1454,7 +1454,7 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t r
 		spidf_progval8(* buff ++);
 }
 
-#elif WIHSPIDFHW && CPUSTYPE_ALLWNT113
+#elif WIHSPIDFHW && CPUSTYPE_T113
 
 static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
 {

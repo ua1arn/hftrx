@@ -450,7 +450,7 @@ extern "C" {
 	#define ARM_FAST_ALLOW_TABLES	1
 
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	// ST dual core A7 + M4
 

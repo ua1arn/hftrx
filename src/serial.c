@@ -290,7 +290,7 @@ void nmea_disconnect(void)
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_XCZU
 
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 	{
@@ -491,7 +491,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 //		 UART0->CR &= ~ SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
 //
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	if (state)
 		 UART0->DLH_IER |= (0x01uL << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -622,7 +622,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 //		 UART0->CR &= ~ SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
 //
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	if (state)
 		 UART0->DLH_IER |= (0x01uL << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -697,7 +697,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 	UART0->FIFO = c;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	UART0->DATA = c;
 
@@ -807,7 +807,7 @@ hardware_uart1_getchar(char * cp)
 		return 0;
 	* cp = UART0->FIFO;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	if ((UART0->UART_USR & (0x1uL << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -914,7 +914,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 		return 0;
 	UART0->FIFO = c;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	if ((UART0->UART_USR & (0x1uL << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -1327,7 +1327,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 	const unsigned ix = 0;
 
 	/* Open the clock gate for uart0 */

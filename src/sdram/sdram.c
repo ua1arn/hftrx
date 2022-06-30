@@ -4227,7 +4227,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #endif	//  CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 
-#if CPUSTYPE_ALLWNT113
+#if CPUSTYPE_T113
 
 #include "spi.h"
 
@@ -4301,5 +4301,5 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */
 }
-#endif /* CPUSTYPE_ALLWNT113 */
+#endif /* CPUSTYPE_T113 */
 #endif /* WITHSDRAMHW */

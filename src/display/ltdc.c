@@ -1726,7 +1726,7 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 #include "reg-ccu.h"
 #include "reg-de.h"

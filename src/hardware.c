@@ -839,7 +839,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		#endif
 	#endif /* CPUSTYLE_ATMEGA_XXX4 && defined (PCIVECT) */
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 // Allwinner specific
 void ALLW_GPIO_IRQ_Handler(void)
@@ -1443,9 +1443,9 @@ r7s721_adi_irq_handler(void)
 	}
 }
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 	// ADC IRQ handler
-	//#warning Unhandled CPUSTYPE_ALLWNT113
+	//#warning Unhandled CPUSTYPE_T113
 
 #else
 	#error No CPUSTYLE_XXXXX defined
@@ -1551,9 +1551,9 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_STM32F0XX
 	#warning: #warning Must be implemented for this CPU
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
-	//#warning Unhandled CPUSTYPE_ALLWNT113
+	//#warning Unhandled CPUSTYPE_T113
 
 #else
 
@@ -1673,7 +1673,7 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #else
@@ -2769,7 +2769,7 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	if (a < 0x00400000uL)
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
@@ -3193,9 +3193,9 @@ SystemInit(void)
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
-#if CPUSTYPE_ALLWNT113
+#if CPUSTYPE_T113
 	set_pll_cpux_axi(PLL_CPU_N);
-#endif /* CPUSTYPE_ALLWNT113 */
+#endif /* CPUSTYPE_T113 */
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
@@ -3318,7 +3318,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 }
 
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 //	3.4.2.4 CPU0 Hotplug Process
 //
@@ -4107,7 +4107,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 }
 
 #if WITHUSEMALLOC
-#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNT113) && ! WITHISBOOTLOADER
+#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_T113) && ! WITHISBOOTLOADER
 
 	static RAMHEAP uint8_t heapplace [48 * 1024uL * 1024uL];
 

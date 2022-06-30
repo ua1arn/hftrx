@@ -17,7 +17,7 @@
 #include "hardware.h"
 
 #if WITHSDRAMHW
-#if CPUSTYPE_ALLWNT113
+#if CPUSTYPE_T113
 
 #include "formats.h"
 #include <string.h>
@@ -2300,5 +2300,5 @@ void sys_dram_init(void)
 {
  init_DRAM(0, (int) &ddr3);
 }
-#endif /* CPUSTYPE_ALLWNT113 */
+#endif /* CPUSTYPE_T113 */
 #endif /* WITHSDRAMHW */

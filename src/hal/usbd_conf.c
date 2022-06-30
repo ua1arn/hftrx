@@ -417,7 +417,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
 	}
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 	//	Allwinner USB DRD support (musb_otg)
 	//
 	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
@@ -592,7 +592,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 		  }
 	#endif /* defined (USB_OTG_FS) */
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	#warning HAL_PCD_MspDeInit should be implemented
 	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
@@ -1505,8 +1505,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 
 #if CPUSTYLE_R7S721
 	usbd_pipes_initialize(& hpcd_USB_OTG);
-#elif CPUSTYPE_ALLWNT113
-	#warning Implement for CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
+	#warning Implement for CPUSTYPE_T113
 
 #else /* CPUSTYLE_R7S721 */
 	if (USB_Is_OTG_HS(hpcd_USB_OTG.Instance))
