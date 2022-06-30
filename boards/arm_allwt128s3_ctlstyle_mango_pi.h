@@ -5,11 +5,11 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
-// rmainunit_sv9e.pcb Allwinner t133-S3, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// Трансивер с DSP обработкой "Аист" на процессоре STM32MP1xx
+// rmainunit_v5km7.pcb STM32MP1xx, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_ALLWT128S3_CTLSTYLE_STORCH_V9A_H_INCLUDED
-#define ARM_ALLWT128S3_CTLSTYLE_STORCH_V9A_H_INCLUDED 1
+#ifndef ARM_ALLWT128S3_CTLSTYLE_MANGO_PI_H_INCLUDED
+#define ARM_ALLWT128S3_CTLSTYLE_MANGO_PI_H_INCLUDED 1
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -80,7 +80,7 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	//#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	//#define CTLREGMODE_MANGO_PI	1	/* STM32MP157, дополнения для подключения трансвертора */
 	#define CTLREGMODE_NOCTLREG 1
 
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
@@ -690,4 +690,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_ALLWT128S3_CTLSTYLE_STORCH_V9A_H_INCLUDED */
+#endif /* ARM_ALLWT128S3_CTLSTYLE_MANGO_PI_H_INCLUDED */
