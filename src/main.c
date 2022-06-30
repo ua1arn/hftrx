@@ -3569,25 +3569,25 @@ static uint_fast8_t alignmode;		/* режимы для настройки апп
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #if defined (WITHDISPLAY_FPS)
 	static uint_fast8_t gdisplayfreqsfps = WITHDISPLAY_FPS;
-#else
+#else /* defined (WITHDISPLAY_FPS) */
 	static uint_fast8_t gdisplayfreqsfps = DISPLAY_FPS;
-#endif /* WITHDISPLAY_FPS */
+#endif /* defined (WITHDISPLAY_FPS) */
 #if defined (WITHDISPLAYSWR_FPS)
 	static uint_fast8_t gdisplaybarsfps = WITHDISPLAYSWR_FPS;
-#else
+#else /* defined (WITHDISPLAYSWR_FPS) */
 	static uint_fast8_t gdisplaybarsfps = DISPLAYSWR_FPS;
-#endif /* WITHDISPLAYSWR_FPS */
+#endif /* defined (WITHDISPLAYSWR_FPS) */
 #if WITHSPECTRUMWF
 #if defined (WITHDEFAULTVIEW)		/* стиль отображения спектра и панорамы */
 	static uint_fast8_t gviewstyle = WITHDEFAULTVIEW;
-#else
+#else /* defined (WITHDEFAULTVIEW) */
 	static uint_fast8_t gviewstyle = VIEW_COLOR;
-#endif
+#endif /* defined (WITHDEFAULTVIEW) */
 #if defined (WITHVIEW_3DSS_MARK)	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	static uint_fast8_t gview3dss_mark = WITHVIEW_3DSS_MARK;
-#else
+#else /* defined (WITHVIEW_3DSS_MARK) */
 	static uint_fast8_t gview3dss_mark = 0;
-#endif
+#endif /* defined (WITHVIEW_3DSS_MARK) */
 	static uint_fast8_t gtopdbspe [VFOS_COUNT] = { WITHTOPDBDEFAULT, WITHTOPDBDEFAULT, };	/* верхний предел FFT */
 	static uint_fast8_t gbottomdbspe [VFOS_COUNT] = { WITHBOTTOMDBDEFAULT, WITHBOTTOMDBDEFAULT, };	/* нижний предел FFT */
 	static uint_fast8_t gtopdbwfl [VFOS_COUNT] = { WITHTOPDBDEFAULT, WITHTOPDBDEFAULT, };	/* верхний предел FFT waterflow*/
@@ -3600,14 +3600,14 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
 #if defined (WITHSPECBETA_DEFAULT)
 	static uint_fast8_t gspecbeta100 = WITHSPECBETA_DEFAULT;
-#else
+#else /* defined (WITHSPECBETA_DEFAULT) */
 	static uint_fast8_t gspecbeta100 = 50;	/* beta = 0.1 .. 1.0 */
-#endif /* WITHSPECBETA_DEFAULT */
+#endif /* defined (WITHSPECBETA_DEFAULT) */
 #if defined (WITHWFLBETA_DEFAULT)
 	static uint_fast8_t gwflbeta100 = WITHWFLBETA_DEFAULT;
-#else
+#else /* defined (WITHWFLBETA_DEFAULT) */
 	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
-#endif /* WITHWFLBETA_DEFAULT */
+#endif /* defined (WITHWFLBETA_DEFAULT) */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 

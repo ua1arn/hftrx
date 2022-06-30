@@ -104,10 +104,6 @@ static void tlv320aic23_initialize_fullduplex(void)
 #endif /* CODEC_TYPE_TLV320AIC23B_MASTER */
 	const unsigned long framebits = CODEC1_FRAMEBITS;
 
-#if CPUSTYPE_ALLWNT113
-	I2S1HW_UNINITIALIZE(! master);
-#endif /* CPUSTYPE_ALLWNT113 */
-
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
 
 	tlv320aic23_setreg(TLV320AIC23_PWR,
@@ -192,10 +188,6 @@ static void tlv320aic23_initialize_fullduplex(void)
 		TLV320AIC23_ACT_ON |		// Digital Interface Activation
 		0
 		);
-
-#if CPUSTYPE_ALLWNT113
-	I2S1HW_INITIALIZE(! master);
-#endif /* CPUSTYPE_ALLWNT113 */
 }
 
 /* Установка громкости на наушники */
