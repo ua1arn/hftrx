@@ -21,10 +21,6 @@ const uint_fast8_t rbvalues [8] =
 
 #if WITHSPIHW || WITHSPISW
 
-	#if ! defined (SPI_ALLCS_BITS) && ! CPUSTYLE_XC7Z && ! CPUSTYLE_XCZU
-		#error SPI_ALLCS_BITS should be defined in any cases
-	#endif
-
 #if UC1608_CSP
 
 // Выдача единички как чипселект

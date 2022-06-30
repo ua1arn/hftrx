@@ -98,10 +98,10 @@
 
 #else /* WITHISBOOTLOADER */
 
-	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+	#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
+	#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
@@ -254,16 +254,10 @@
 	// Инициализируются I2S1 в дуплексном режиме.
 	// аудиокодек
 	#define I2S1HW_INITIALIZE(master) do { \
-		arm_hardware_piog_altfn20(!! (master) * 1uL << 11, GPIO_CFG_AF2); /* TEST PG11 I2S1-MCLK	pin P2-7  - wire to pin 8 hseda 24bit vga+audio board */ \
-		arm_hardware_piog_altfn20(1uL << 12, GPIO_CFG_AF2); /* PG12 I2S1-LRCK	WL_REG_ON, pin P2-6 - wire to pin 9 */ \
-		arm_hardware_piog_altfn20(1uL << 13, GPIO_CFG_AF2); /* PG13 I2S1-BCLK	AP_WAKE_BT, pin P2-5 - wire to pin 11 */ \
-		arm_hardware_piog_altfn20(1uL << 14, GPIO_CFG_AF2); /* PG14 I2S1-DIN0 from codec, BT_WAKE_AP, pin P2-4 - wire to pin 4 */ \
-		arm_hardware_piog_altfn20(1uL << 15, GPIO_CFG_AF2); /* PG15 I2S1-DOUT0 co codec, BT_EN, pin P2-3 - wire to pin 10 */ \
-	} while (0)
-	#define I2S1HW_UNINITIALIZE(master) do { \
-		arm_hardware_piog_inputs(!! (master) * 1uL << 11); /* TEST PG11 I2S1-MCLK	pin P2-7  - wire to pin 8 hseda 24bit vga+audio board */ \
-		arm_hardware_piog_inputs(1uL << 12); /* PG12 I2S1-LRCK	WL_REG_ON, pin P2-6 - wire to pin 9 */ \
-		arm_hardware_piog_inputs(1uL << 13); /* PG13 I2S1-BCLK	AP_WAKE_BT, pin P2-5 - wire to pin 11 */ \
+		arm_hardware_piog_altfn20(1uL << 12, GPIO_CFG_AF2); /* PG12 I2S1-LRCK */ \
+		arm_hardware_piog_altfn20(1uL << 13, GPIO_CFG_AF2); /* PG13 I2S1-BCLK */ \
+		arm_hardware_piog_altfn20(1uL << 14, GPIO_CFG_AF2); /* PG14 I2S1-DIN0 from codec */ \
+		arm_hardware_piog_altfn20(1uL << 15, GPIO_CFG_AF2); /* PG15 I2S1-DOUT0 co codec */ \
 	} while (0)
 	#define HARDWARE_I2S1HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S1HW_DOUT 0	/* DOUT0 used */
@@ -501,56 +495,46 @@
 
 	#define targetdataflash 0xFF
 
-	#define targetext1		(0 * 1uL << 8)		// PDx ext1 on front panel
-	#define targetnvram		(0 * 1uL << 0)		// PDx nvmem FM25L16B
-	#define targetctl1		(0 * 1uL << 1)		// PDx board control registers chain
-	#define targetcodec1	(0 * 1uL << 2)		// PDx on-board codec1 NAU8822L
-	#define targetfpga1		(0 * 1uL << 10)		// PDx FPGA control registers CS1
-	#define targetrtc1		(0 * 1uL << 0)		// PDx RTC DS1305
+	#define targetext1		(1uL << 8)		// PGx ext1 on front panel
+	#define targetnvram		(1uL << 0)		// PGx nvmem FM25L16B
+	#define targetctl1		(1uL << 1)		// PGx board control registers chain
+	#define targetcodec1	(1uL << 2)		// PGx on-board codec1 NAU8822L
+	#define targetfpga1		(1uL << 10)		// PGx FPGA control registers CS1
+	#define targetrtc1		(1uL << 0)		// PGx RTC DS1305
 
-	#define targetadc2		(0 * 1uL << 0)	// PDx on-board ADC MCP3208-BI/SL chip select (potentiometers)
-	#define targetadck		(0 * 1uL << 0)	// PDx on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
-	#define targetxad2		(0 * 1uL << 0)	// PDx external SPI device (PA BOARD ADC)
-
-	// Здесь должны быть перечислены все биты формирования CS в устройстве.
-	#define SPI_ALLCS_BITS ( \
-		targetext1		 | 	/* PDx ext1 on front panel */ \
-		targetnvram		 | 	/* PDx nvmem FM25L16B */ \
-		targetctl1		 | 	/* PDx board control registers chain */ \
-		targetcodec1	 | 	/* PDx on-board codec1 NAU8822L */ \
-		targetfpga1		 | 	/* PDx FPGA control registers CS1 */ \
-		targetrtc1		 | 	/* PDx RTC DS1305 */ \
-		targetadc2		 |	/* PDx on-board ADC MCP3208-BI/SL chip select (potentiometers) */ \
-		targetadck		 |	/* PDx on-board ADC MCP3208-BI/SL chip select (KEYBOARD) */ \
-		targetxad2		 |	/* PDx external SPI device (PA BOARD ADC) */ \
-		0)
+	#define targetadc2		(1uL << 0)	// PGx on-board ADC MCP3208-BI/SL chip select (potentiometers)
+	#define targetadck		(1uL << 0)	// PGx on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
+	#define targetxad2		(1uL << 0)	// PGx external SPI device (PA BOARD ADC)
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 	#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
 
-	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
-
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
 		gpioX_setstate(GPIOC, ((target) == targetdataflash) * SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
-		gpioX_setstate(GPIOD, ((target) != targetdataflash) * target, 0 * target); \
+		gpioX_setstate(GPIOG, ((target) != targetdataflash) * (target), (target) == targetrtc1 * (target)); \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
 		gpioX_setstate(GPIOC, ((target) == targetdataflash) * SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
-		gpioX_setstate(GPIOD, ((target) != targetdataflash) * target, 1 * target); \
+		gpioX_setstate(GPIOG, ((target) != targetdataflash) * (target), (target) != targetrtc1 * (target)); \
 	} while (0)
 
-	#define SPI_ALLCS_DISABLE() do { \
-		gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
-		gpioX_setstate(GPIOD, SPI_ALLCS_BITS, 1 * SPI_ALLCS_BITS); \
-	} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
 		arm_hardware_pioc_outputs50m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs50m(targetext1, 1 * targetext1); /* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs50m(targetnvram, 1 * targetnvram); /* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs50m(targetctl1, 1 * targetctl1); /* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs50m(targetcodec1, 1 * targetcodec1); /* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs50m(targetfpga1, 1 * targetfpga1); /* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs50m(targetrtc1, 0 * targetrtc1); /* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs50m(targetadc2, 1 * targetadc2); /* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs50m(targetadck, 1 * targetadck); /* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs50m(targetxad2, 1 * targetxad2); /* PC3 SPI0_CS */ \
 	} while (0)
 
 	// MOSI & SCK port
@@ -887,8 +871,8 @@
 	// TCON0_TRM_CTL_REG offset 0x0010
 	// User manual:
 	// LCD FRM Control Register (Default Value: 0x0000_0000)
-	//#define TCON_FRM_MODE_VAL ((0x01uL << 6) | (0x00uL << 5) | (0x01uL << 4))	// 16 bit panel connected
-	#define TCON_FRM_MODE_VAL ((0x00uL << 6) | (0x00uL << 5)| (0x00uL << 4))	// 18 bit panel connected
+	#define TCON_FRM_MODE_VAL ((0x01uL << 6) | (0x00uL << 5) | (0x01uL << 4))	// 16 bit panel connected
+	//#define TCON_FRM_MODE_VAL ((0x00uL << 6) | (0x00uL << 5)| (0x00uL << 4))	// 18 bit panel connected
 
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
@@ -906,7 +890,7 @@
 		/* pixel clock */ \
 		arm_hardware_piod_altfn50(1uL << 18, GPIO_CFG_AF2); /* PD18 LCD_CLK */ \
 		/* RED */ \
-		arm_hardware_piod_altfn50(1uL << 12, GPIO_CFG_AF2); /* R2 PD12 LCD_D18 */ \
+		/*arm_hardware_piod_altfn50(1uL << 12, GPIO_CFG_AF2); */ /* R2 PD12 LCD_D18 */ \
 		arm_hardware_piod_altfn50(1uL << 13, GPIO_CFG_AF2); /* R3 PD13 LCD_D19 */ \
 		arm_hardware_piod_altfn50(1uL << 14, GPIO_CFG_AF2); /* R4 PD14 LCD_D20 */ \
 		arm_hardware_piod_altfn50(1uL << 15, GPIO_CFG_AF2); /* R5 PD15 LCD_D21 */ \
@@ -920,7 +904,7 @@
 		arm_hardware_piod_altfn50(1uL << 10, GPIO_CFG_AF2); /* G6 PD10 LCD_D14 */ \
 		arm_hardware_piod_altfn50(1uL << 11, GPIO_CFG_AF2); /* G7 PD11 LCD_D15 */ \
 		/* BLUE  */ \
-		arm_hardware_piod_altfn50(1uL << 0, GPIO_CFG_AF2); 	/* B2 PD0 LCD_D2 */ \
+		/*arm_hardware_piod_altfn50(1uL << 0, GPIO_CFG_AF2); */	/* B2 PD0 LCD_D2 */ \
 		arm_hardware_piod_altfn50(1uL << 1, GPIO_CFG_AF2); 	/* B3 PD1 LCD_D3 */ \
 		arm_hardware_piod_altfn50(1uL << 2, GPIO_CFG_AF2); 	/* B4 PD2 LCD_D4 */ \
 		arm_hardware_piod_altfn50(1uL << 3, GPIO_CFG_AF2); 	/* B5 PD3 LCD_D5 */ \
