@@ -267,7 +267,7 @@
 	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
 	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
-	//#define CODEC_TYPE_NAU8822_USE_SPI	1
+	#define CODEC_TYPE_NAU8822_USE_SPI	1
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
@@ -533,7 +533,7 @@
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	// ST LM235Z
@@ -561,9 +561,9 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
-		WPM_POTIX = BOARD_ADCX1IN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		IFGAIN_IXI = BOARD_ADCX1IN(0),			// MCP3208 CH0 IF GAIN
-		AFGAIN_IXI = BOARD_ADCX1IN(1),			// MCP3208 CH1 AF GAIN
+		WPM_POTIX = BOARD_ADCXKIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		IFGAIN_IXI = BOARD_ADCXKIN(0),			// MCP3208 CH0 IF GAIN
+		AFGAIN_IXI = BOARD_ADCXKIN(1),			// MCP3208 CH1 AF GAIN
 
 	#if WITHPOTIFGAIN
 		POTIFGAIN = IFGAIN_IXI,
@@ -686,7 +686,11 @@
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
 
-		KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 7, KI4 = 10	// клавиатура - PA0, PA1, PA2, PA7, PC0
+		KI0 = BOARD_ADCXKIN(3), 	// клавиатура на АЦП MCP3208
+		KI1 = BOARD_ADCXKIN(4),
+		KI2 = BOARD_ADCXKIN(5),
+		KI3 = BOARD_ADCXKIN(6),
+		KI4 = BOARD_ADCXKIN(7)
 	};
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
