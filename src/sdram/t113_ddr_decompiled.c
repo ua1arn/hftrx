@@ -1408,7 +1408,7 @@ LABEL_105:
   MEMORY(DDRPHYC_BASE + 0x02C) = (v53 >> 4) & 3;
   MEMORY(DDRPHYC_BASE + 0x058) = v75 | (v74 << 16) | (v89 << 24) | (v90 << 8);
   MEMORY(DDRPHYC_BASE + 0x05C) = v73 | (v71 << 16) | (v93 << 8);
-  MEMORY(DDRPHYC_BASE + 0x060) = (v79 << 16) | (v41 << 24) | v91 | (v45 << 8);
+  DDRPHYC->PHYC_REG_060 = (v79 << 16) | (v41 << 24) | v91 | (v45 << 8);
   MEMORY(DDRPHYC_BASE + 0x064) = v50 | v80;
   MEMORY(DDRPHYC_BASE + 0x068) = (v95 << 16) | (v70 << 24) | v12 | (v72 << 8);
   MEMORY(DDRPHYC_BASE + 0x06C) = v5 | (v46 << 16) | (v46 << 24) | (v44 << 8);
@@ -1517,7 +1517,7 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   {
     v15 = DDRPHYC_BASE + 0x0BC;
     DDRPHYC->PHYC_REG_108 &= 0xFFFFFF3F;
-    v16 = MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8;
+    v16 = DDRPHYC->PHYC_REG_0BC & 0xFFFFFEF8;
   }
   else
   {
@@ -1537,7 +1537,7 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
 
     v15 = (DDRPHYC_BASE + 0x11C);
 
-    MEMORY(DDRPHYC_BASE + 0x0BC) = ((HIWORD(MEMORY(DDRPHYC_BASE + 0x060)) & 0x1F) - 2) | (MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8) | 0x100;
+    DDRPHYC->PHYC_REG_0BC = ((HIWORD(DDRPHYC->PHYC_REG_060) & 0x1F) - 2) | (DDRPHYC->PHYC_REG_0BC & 0xFFFFFEF8) | 0x100;
     v16 = (DDRPHYC->PHYC_REG_11C & 0x7FFFFFFF) | 0x8000000;
   }
 
@@ -1566,11 +1566,11 @@ LABEL_16:
 
   if ( (a2[5] & 0x1000) != 0 )
   {
-    v19 = MEMORY(DDRPHYC_BASE + 0x0C0);
+    v19 = DDRPHYC->PHYC_REG_0C0;
   }
   else
   {
-    v14 = MEMORY(DDRPHYC_BASE + 0x0C0);
+    v14 = DDRPHYC->PHYC_REG_0C0;
     v19 = 0x01003087;
   }
 
@@ -1584,7 +1584,7 @@ LABEL_16:
   else
     v20 = v19 | v14;
 
-  MEMORY(DDRPHYC_BASE + 0x0C0) = v20;
+  DDRPHYC->PHYC_REG_0C0 = v20;
 
   if ( (MEMORY(CPU_CONFIG_REG) & 0x10000) != 0 )
   {
