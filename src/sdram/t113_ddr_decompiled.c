@@ -1515,7 +1515,7 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
 
   if ( v5 == 1 )
   {
-    v15 = DDRPHYC_BASE + 0x0BC;
+    v15 = (int) & DDRPHYC->PHYC_REG_0BC;
     DDRPHYC->PHYC_REG_108 &= 0xFFFFFF3F;
     v16 = DDRPHYC->PHYC_REG_0BC & 0xFFFFFEF8;
   }
@@ -1531,11 +1531,11 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
       goto LABEL_16;
     }
 
-    v14 = (DDRPHYC_BASE + 0x0BC);
+    v14 = (int) & DDRPHYC->PHYC_REG_0BC;
 
     DDRPHYC->PHYC_REG_108 = (DDRPHYC->PHYC_REG_108 & 0xFFFFFF3F) | 0x80;
 
-    v15 = (DDRPHYC_BASE + 0x11C);
+    v15 = (int) & DDRPHYC->PHYC_REG_11C;
 
     DDRPHYC->PHYC_REG_0BC = ((HIWORD(DDRPHYC->PHYC_REG_060) & 0x1F) - 2) | (DDRPHYC->PHYC_REG_0BC & 0xFFFFFEF8) | 0x100;
     v16 = (DDRPHYC->PHYC_REG_11C & 0x7FFFFFFF) | 0x8000000;
