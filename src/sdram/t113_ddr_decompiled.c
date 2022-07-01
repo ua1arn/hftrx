@@ -125,7 +125,7 @@ static int memcpy_self(int result, char *a2, int a3);
 static int init_DRAM(int a1, int a2, struct dram_para_t * a2param);
 static int sid_read_ldoB_cal(int result);
 static int DRAMC_get_dram_size(void);
-static int mctl_phy_ac_remapping(int a1);
+static void mctl_phy_ac_remapping(int a1);
 
 //------------------------------------------------------------------------------------------------
 
@@ -656,7 +656,7 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
   }
 
   v11 = result[4];
-  v12 = 0x03102000;
+  v12 = MSI_MEMC_BASE;
   v13 = v9 & 3;
   v14 = 16 * v10 + 4;
   v15 = 4;
@@ -722,11 +722,10 @@ static const char unk_6BC4[22]={  3,  2,  4,  7,  9,   1,0x11,0xC,0x12, 0xE,0xD,
 static const char unk_6BDA[22]={  2,0x13, 8,  6,0xE,   5,0x14,0xA,   3,0x12,0xD, 0xB,  7,0xF,  9,   1,0x16,0x15,0x11, 0xC,   4,0x10};
 static const char unk_6BF0[22]={  1,  2,0xD,  8,0xF, 0xC,0x13,0xA,   3,0x15,  6,0x11,  9,0xE,  5,0x10,0x14,0x16, 0xB,   7,   4,0x12};
 
-static int mctl_phy_ac_remapping(int a1)
+static void mctl_phy_ac_remapping(int a1)
 {
   int v2; // r4
   int v3; // r5
-  int result; // r0
   int v5; // r3
   char *v6; // r1
   int v7; // r3
@@ -753,7 +752,7 @@ static int mctl_phy_ac_remapping(int a1)
   {
 
     if ( (v5 & 0x40000) != 0 || v3 == 80 )
-      result = (int)memcpy_self((int)v8, v15, 22);
+      memcpy_self((int)v8, v15, 22);
 
     if ( (*(uint32_t *)(a1 + 92) & 0x80000) != 0 || v3 == 124 )
     {
@@ -761,7 +760,7 @@ static int mctl_phy_ac_remapping(int a1)
 
 LABEL_6:
 
-      result = (int)memcpy_self((int)v8, v6, 22);
+      memcpy_self((int)v8, v6, 22);
     }
 
   }
@@ -796,7 +795,7 @@ LABEL_6:
   {
 
     if ( v7 != 3 )
-      return result;
+      return;
 
 LABEL_25:
     MEMORY(MSI_MEMC_BASE + 0x504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
@@ -804,12 +803,12 @@ LABEL_25:
     MEMORY(MSI_MEMC_BASE + 0x50C) = ((uint8_t) v8[18] << 10) | (32 * (uint8_t) v8[17]) | (uint8_t) v8[16] | ((uint8_t) v8[19] << 15) | ((uint8_t) v8[20] << 20) | ((uint8_t) v8[21] << 25);
     MEMORY(MSI_MEMC_BASE + 0x500) = ((uint8_t) v8[1] << 10) | (32 * (uint8_t) v8[0]) | 1 | ((uint8_t) v8[2] << 15) | ((uint8_t) v8[3] << 20) | ((uint8_t) v8[4] << 25);
 
-    return result;
+    return;
   }
 
   if ( (*(uint32_t *)(a1 + 92) & 0x80000) != 0 || v3 == 124 )
   {
-    result = (int)memcpy_self((int)v8, v17, 22);
+    memcpy_self((int)v8, v17, 22);
 
     MEMORY(MSI_MEMC_BASE + 0x504) = ((uint8_t) v8[7] << 10) | (32 * (uint8_t) v8[6]) | (uint8_t) v8[5] | ((uint8_t) v8[8] << 15) | ((uint8_t) v8[9] << 20) | ((uint8_t) v8[10] << 25);
     MEMORY(MSI_MEMC_BASE + 0x508) = ((uint8_t) v8[13] << 10) | (32 * (uint8_t) v8[12]) | (uint8_t) v8[11] | ((uint8_t) v8[14] << 15) | ((uint8_t) v8[15] << 20);
@@ -819,12 +818,10 @@ LABEL_25:
 
   if ( (unsigned int)(v2 - 13) <= 1 )
   {
-    result = (int)memcpy_self((int)v8, v14, 22);
+    memcpy_self((int)v8, v14, 22);
 
     goto LABEL_25;
   }
-
-  return result;
 }
 
 static int auto_set_timing_para(int a1) //OK
@@ -1958,7 +1955,7 @@ static int auto_scan_dram_size(int *a1, struct dram_para_t * a2param) //OK
   volatile int *v11; // r2
   int i; // r3
   uint8_t /* bool */ v13; // nf
-  volatile unsigned int *v14; // r4
+  volatile int32_t *v14; // r4
   unsigned int v15; // r3
   unsigned int j; // r9
   int v17; // r1
@@ -1967,7 +1964,7 @@ static int auto_scan_dram_size(int *a1, struct dram_para_t * a2param) //OK
   int v20; // r0
   char v21; // r11
   unsigned int v22; // r3
-  uint32_t *v23; // r2
+  volatile uint32_t *v23; // r2
   int v24; // r3
   int v25; // r1
   int v26; // r9
@@ -2015,8 +2012,8 @@ static int auto_scan_dram_size(int *a1, struct dram_para_t * a2param) //OK
         *v11++ = v2;
       }
 
-      v14 = (unsigned int *)(4 * (v8 + 0x00C40800));
-      v15 = *v14 & 0xFFFFF0F3 | 0x6F0;
+      v14 = (volatile int32_t *) MSI_MEMC_BASE + v8;
+      v15 = (*v14 & 0xFFFFF0F3) | 0x6F0;
       *v14 = v15;
 
       while ( v15 != *v14 )
