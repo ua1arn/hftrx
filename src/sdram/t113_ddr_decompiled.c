@@ -603,7 +603,7 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
   unsigned int v9; // r4
   int v10; // r1
   unsigned int v11; // r6
-  int v12; // r5
+  uintptr_t v12; // r5
   int v13; // r4
   int v14; // r1
   int v15; // r2
@@ -663,7 +663,10 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
 
   do
   {
-    v16 = (uint8_t) (16 * ((v11 >> v15) - 1)) | (4 * (v11 >> (v15 + 8))) & 4 | *(uint32_t *)v12 & 0xFFFFF000 | v13;
+    v16 = (uint8_t) (16 * ((v11 >> v15) - 1)) |
+    		(4 * (v11 >> (v15 + 8))) & 4 |
+			*(volatile uint32_t *)v12 & 0xFFFFF000 |
+			v13;
     switch ( (v11 >> (v15 - 4)) & 0xF )
     {
       case 1u:
@@ -1720,7 +1723,7 @@ static int eye_delay_compensation(int a1) //OK
   v2 = *(uint64_t *)(a1 + 84);
 
   for ( i = (DDRPHYC_BASE + 0x310); i != (DDRPHYC_BASE + 0x334); i += 4 )
-    *(volatile uint32_t *)i |= ((uint32_t)v2 << 9) & 0x1E00 | (2 * HIDWORD(v2)) & 0x1E;
+    *(volatile uint32_t *)i |= (((uint32_t)v2 << 9) & 0x1E00) | (2 * HIDWORD(v2)) & 0x1E;
 
   for ( j = (DDRPHYC_BASE + 0x390); j != (DDRPHYC_BASE + 0x3B4); j += 4 )
     *(volatile uint32_t *)j |= (32 * v2) & 0x1E00 | (HIDWORD(v2) >> 3) & 0x1E;
