@@ -565,9 +565,9 @@ static int ccm_set_pll_ddr_clk(int a1, int *a2) //OK
 
 static int dram_disable_all_master(void) //OK
 {
-  MEMORY(MSI_MEMC_BASE + 0x020) = 1;
-  MEMORY(MSI_MEMC_BASE + 0x024) = 0;
-  MEMORY(MSI_MEMC_BASE + 0x028) = 0;
+  MSI_MEMC->MEMC_REG_020 = 1;
+  MSI_MEMC->MEMC_REG_024 = 0;
+  MSI_MEMC->MEMC_REG_028 = 0;
 
   return _usdelay(10);
 }
@@ -620,7 +620,7 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
   v3 = v2 & 1;
   v4 = (v1 << 16) & 0x070000;
   v5 = v1 - 6;
-  v6 = v4 | MEMORY(MSI_MEMC_BASE + 0x000) & 0xFF000FFF | 0x400000;
+  v6 = v4 | MSI_MEMC->MEMC_REG_000 & 0xFF000FFF | 0x400000;
 
   if ( (v2 & 1) != 0 )
     v7 = 0;
@@ -637,7 +637,7 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
   if ( v5 > 1 )
     v8 |= (v6 << 14) & 0x80000;
 
-  MEMORY(MSI_MEMC_BASE + 0x000) = v8;
+  MSI_MEMC->MEMC_REG_000 = v8;
 
   v9 = v2 >> 12;
 
@@ -693,7 +693,7 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
 
   v18 = 513;
 
-  if ( (MEMORY(MSI_MEMC_BASE + 0x000) & 1) != 0 )
+  if ( (MSI_MEMC->MEMC_REG_000 & 1) != 0 )
     v18 = 771;
 
   DDRPHYC->PHYC_REG_120 = v18;
@@ -705,11 +705,11 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
 
   if ( v19 )
   {
-    MEMORY(MSI_MEMC_BASE + 0x000) |= (v19 << 25) & 0x6000000;
+    MSI_MEMC->MEMC_REG_000 |= (v19 << 25) & 0x6000000;
 
-    result = (uint32_t *)MEMORY(MSI_MEMC_BASE + 0x004);
+    result = (uint32_t *)MSI_MEMC->MEMC_REG_004;
 
-    MEMORY(MSI_MEMC_BASE + 0x004) |= (v19 << 10) & 0x1FF000;
+    MSI_MEMC->MEMC_REG_004 |= (v19 << 10) & 0x1FF000;
   }
 
   return result;
@@ -1496,7 +1496,7 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
     v10 |= 0x400u;
 
   MEMORY(DDRPHYC_BASE + 0x344) = v10;
-  v11 = DDRPHYC->PHYC_REG_3C4 & 0xFFFFFFCF | v7;
+  v11 = (DDRPHYC->PHYC_REG_3C4 & 0xFFFFFFCF) | v7;
 
   if ( v4 <= 0x2A0 )
     v12 = v11 & 0xFFFF0FFF;
@@ -1533,12 +1533,12 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
 
     v14 = (DDRPHYC_BASE + 0x0BC);
 
-    DDRPHYC->PHYC_REG_108 = DDRPHYC->PHYC_REG_108 & 0xFFFFFF3F | 0x80;
+    DDRPHYC->PHYC_REG_108 = (DDRPHYC->PHYC_REG_108 & 0xFFFFFF3F) | 0x80;
 
     v15 = (DDRPHYC_BASE + 0x11C);
 
     MEMORY(DDRPHYC_BASE + 0x0BC) = ((HIWORD(MEMORY(DDRPHYC_BASE + 0x060)) & 0x1F) - 2) | (MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8) | 0x100;
-    v16 = DDRPHYC->PHYC_REG_11C & 0x7FFFFFFF | 0x8000000;
+    v16 = (DDRPHYC->PHYC_REG_11C & 0x7FFFFFFF) | 0x8000000;
   }
 
    *(volatile uint32_t *) v15 = v16;
@@ -1777,34 +1777,34 @@ static int DRAMC_get_dram_size(void) //ok
   int v0;   // r3
   int v1=0; // r2
 
-  v0 = MEMORY(MSI_MEMC_BASE + 0x000) & 3;
+  v0 = MSI_MEMC->MEMC_REG_000 & 3;
 
-  if ( (MEMORY(MSI_MEMC_BASE + 0x000) & 3) != 0 )
+  if ( (MSI_MEMC->MEMC_REG_000 & 3) != 0 )
   {
-    LOBYTE(v1) = MEMORY(MSI_MEMC_BASE + 0x004);
+    LOBYTE(v1) = MSI_MEMC->MEMC_REG_004;
 
-    if ( MEMORY(MSI_MEMC_BASE + 0x004) << 30 )
+    if ( MSI_MEMC->MEMC_REG_004 << 30 )
     {
-      v1 = (MEMORY(MSI_MEMC_BASE + 0x004) >> 2) & 3;
-      v0 = ((MEMORY(MSI_MEMC_BASE + 0x004) >> 8) & 0xF) + (MEMORY(MSI_MEMC_BASE + 0x004) >> 4) - 14;
+      v1 = (MSI_MEMC->MEMC_REG_004 >> 2) & 3;
+      v0 = ((MSI_MEMC->MEMC_REG_004 >> 8) & 0xF) + (MSI_MEMC->MEMC_REG_004 >> 4) - 14;
     }
     else
     {
-      v0 = 1 << ((MEMORY(MSI_MEMC_BASE + 0x000) & 0xF) + (MEMORY(MSI_MEMC_BASE + 0x000) >> 4) - 14 + ((MEMORY(MSI_MEMC_BASE + 0x000) >> 2) & 3));
+      v0 = 1 << ((MSI_MEMC->MEMC_REG_000 & 0xF) + (MSI_MEMC->MEMC_REG_000 >> 4) - 14 + ((MSI_MEMC->MEMC_REG_000 >> 2) & 3));
     }
 
-    if ( MEMORY(MSI_MEMC_BASE + 0x004) << 30 )
+    if ( MSI_MEMC->MEMC_REG_004 << 30 )
       v0 = 1 << (v0 + v1);
   }
 
-  return (1 << ((MEMORY(MSI_MEMC_BASE + 0x000) & 0xF) + (MEMORY(MSI_MEMC_BASE + 0x000) >> 4) - 14 + ((MEMORY(MSI_MEMC_BASE + 0x000) >> 2) & 3))) + v0;
+  return (1 << ((MSI_MEMC->MEMC_REG_000 & 0xF) + (MSI_MEMC->MEMC_REG_000 >> 4) - 14 + ((MSI_MEMC->MEMC_REG_000 >> 2) & 3))) + v0;
 }
 
 static int dram_enable_all_master(void) //OK
 {
-  MEMORY(MSI_MEMC_BASE + 0x020) = 0xFFFFFFFFuL;
-  MEMORY(MSI_MEMC_BASE + 0x024) = 0x000000FFuL;
-  MEMORY(MSI_MEMC_BASE + 0x028) = 0x0000FFFFuL;
+  MSI_MEMC->MEMC_REG_020 = 0xFFFFFFFFuL;
+  MSI_MEMC->MEMC_REG_024 = 0x000000FFuL;
+  MSI_MEMC->MEMC_REG_028 = 0x0000FFFFuL;
 
   return _usdelay(10);
 }
@@ -2061,7 +2061,7 @@ LABEL_23:
       if ( v8 == 1 )
       {
         v9 = 0x40800000;
-        MEMORY(MSI_MEMC_BASE + 0x000) = (MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003) | 0x6A4;
+        MSI_MEMC->MEMC_REG_000 = (MSI_MEMC->MEMC_REG_000 & 0xFFFFF003) | 0x6A4;
       }
 
       v22 = (*v14 & 0xFFFFF003) | 0x6A4;
@@ -2106,7 +2106,7 @@ LABEL_33:
       if ( v8 == 1 )
       {
         v9 = 0x44000000;
-        MEMORY(MSI_MEMC_BASE + 0x000) = (MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003) | 0xAA0;
+        MSI_MEMC->MEMC_REG_000 = (MSI_MEMC->MEMC_REG_000 & 0xFFFFF003) | 0xAA0;
       }
 
       v27 = (*v14 & 0xFFFFF003) | 0xAA0;
@@ -2168,8 +2168,8 @@ LABEL_47:
           v7 = 0x48000000;
           v9 = 0x48000000;
 
-          MEMORY(MSI_MEMC_BASE + 0x000) = (MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003) | 0x6F0;
-          MEMORY(MSI_MEMC_BASE + 0x004) = (MEMORY(MSI_MEMC_BASE + 0x004) & 0xFFFFF003) | 0x6F1;
+          MSI_MEMC->MEMC_REG_000 = (MSI_MEMC->MEMC_REG_000 & 0xFFFFF003) | 0x6F0;
+          MSI_MEMC->MEMC_REG_004 = (MSI_MEMC->MEMC_REG_004 & 0xFFFFF003) | 0x6F1;
         }
 
         continue;

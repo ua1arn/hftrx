@@ -2063,6 +2063,21 @@ typedef struct DDRPHYC_Type
 	__IO uint32_t PHYC_REG_3C8;                          /*!< Offset 0x3C8 Reg_3C8 */
 } DDRPHYC_TypeDef; /* size of structure = 0x3CC */
 /*
+ * @brief MSI_MEMC
+ */
+/*!< MSI_MEMC Controller Interface */
+typedef struct MSI_MEMC_Type
+{
+	__IO uint32_t MEMC_REG_000;                          /*!< Offset 0x000 Reg_000 */
+	__IO uint32_t MEMC_REG_004;                          /*!< Offset 0x004 Reg_004 */
+	uint32_t reserved1; /* at 0x008 */
+	__IO uint32_t MEMC_REG_00C;                          /*!< Offset 0x00C Reg_00C */
+	uint32_t reserved2 [0x0004]; /* at 0x010 */
+	__IO uint32_t MEMC_REG_020;                          /*!< Offset 0x020 Reg_020 */
+	__IO uint32_t MEMC_REG_024;                          /*!< Offset 0x024 Reg_024 */
+	__IO uint32_t MEMC_REG_028;                          /*!< Offset 0x028 Reg_028 */
+} MSI_MEMC_TypeDef; /* size of structure = 0x02C */
+/*
  * @brief USB_EHCI_Capability
  */
 /*!< USB_EHCI_Capability Controller Interface */
@@ -2196,7 +2211,8 @@ typedef struct DMAC_Type
 //#define IDC				(IDC_TypeDef *) IDC_BASE)
 #define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)			/*!< \brief C0_CPUX_CFG Interface register set access pointer */
 //#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)			/*!< \brief C0_CPUX_MBIST Interface register set access pointer */
-#define DDRPHYC		((DDRPHYC_TypeDef *) DDRPHYC_BASE)					/*!< \brief DDRPHYC Interface register set access pointer */
+#define DDRPHYC			((DDRPHYC_TypeDef *) DDRPHYC_BASE)				/*!< \brief DDRPHYC Interface register set access pointer */
+#define MSI_MEMC		((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)			/*!< \brief MSI_MEMC Interface register set access pointer */
 
 #define CAN0			((CAN_TypeDef *) CAN0_BASE)						/*!< \brief CAN0 Interface register set access pointer */
 #define CAN1			((CAN_TypeDef *) CAN1_BASE)						/*!< \brief CAN1 Interface register set access pointer */
