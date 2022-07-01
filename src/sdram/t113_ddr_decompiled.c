@@ -40,45 +40,73 @@
 struct dram_para_t
 {
 	//normal configuration
-	unsigned int        	dram_clk;		// #0 0x000
-	unsigned int        	dram_type;		// #1 dram_type DDR2: 2 DDR3: 3 LPDDR2: 6 LPDDR3: 7 DDR3L: 31
-	//unsigned int        	lpddr2_type;	// LPDDR2 type S4:0 S2:1 NVM:2
-	unsigned int        	dram_zq;	// #2	do not need
-	unsigned int		dram_odt_en;	// #3
+	unsigned int       	dram_clk;		// 	0	0 0x000
+	unsigned int        dram_type;		// 	1	4 dram_type DDR2: 2 DDR3: 3 LPDDR2: 6 LPDDR3: 7 DDR3L: 31
+	//unsigned int      lpddr2_type;	//		LPDDR2 type S4:0 S2:1 NVM:2
+	unsigned int        dram_zq;		// 	2	8	do not need
+	unsigned int		dram_odt_en;	// 	3	12
 
 	//control configuration
-	unsigned int		dram_para1;		// #4
-	unsigned int		dram_para2;		// #5
+	unsigned int		dram_para1;		// 	4	16
+	unsigned int		dram_para2;		// 	5	20
 
 	//timing configuration
-	unsigned int		dram_mr0;	// #6
-	unsigned int		dram_mr1;	// #7
-	unsigned int		dram_mr2;	// #8
-	unsigned int		dram_mr3;	// #9
-	unsigned int		dram_tpr0;	// #10	DRAMTMG0
-	unsigned int		dram_tpr1;	// #11	DRAMTMG1
-	unsigned int		dram_tpr2;	// #12	DRAMTMG2	// +48
-	unsigned int		dram_tpr3;	// #13	DRAMTMG3
-	unsigned int		dram_tpr4;	// #14	DRAMTMG4
-	unsigned int		dram_tpr5;	// #15	DRAMTMG5
-   	unsigned int		dram_tpr6;	// #16	DRAMTMG8	// +64
+	unsigned int		dram_mr0;	// 	6	24
+	unsigned int		dram_mr1;	// 	7	28
+	unsigned int		dram_mr2;	// 	8	32
+	unsigned int		dram_mr3;	// 	9	36
+	unsigned int		dram_tpr0;	// 	10	40	DRAMTMG0
+	unsigned int		dram_tpr1;	// 	11	44	DRAMTMG1
+	unsigned int		dram_tpr2;	// 	12	48	DRAMTMG2	// +48
+	unsigned int		dram_tpr3;	// 	13	52	DRAMTMG3
+	unsigned int		dram_tpr4;	// 	14	56	DRAMTMG4
+	unsigned int		dram_tpr5;	// 	15	60	DRAMTMG5
+   	unsigned int		dram_tpr6;	// 	16	64	DRAMTMG8	// +64
 
 	//reserved for future use
-	unsigned int		dram_tpr7;	// #17
-	unsigned int		dram_tpr8;	// #18
-	unsigned int		dram_tpr9;	// #19
-	unsigned int		dram_tpr10;	// #20
-	unsigned int		dram_tpr11;	// #21
-	unsigned int		dram_tpr12;	// #22
-	unsigned int		dram_tpr13;	// #23
+	unsigned int		dram_tpr7;	// 	17	68
+	unsigned int		dram_tpr8;	// 	18	72
+	unsigned int		dram_tpr9;	// 	19	76
+	unsigned int		dram_tpr10;	// 	20	80
+	unsigned int		dram_tpr11;	// 	21	84 lo
+	unsigned int		dram_tpr12;	// 	22	88 hi
+	unsigned int		dram_tpr13;	// 	23	92
 };
 
 
+static struct dram_para_t ddr3 =
+{
+	.dram_clk = 792,			// 0x000	0
+	.dram_type = 3,				// 0x004	4
+	.dram_zq = 0x7b7bfb,		// 0x008	8
+	.dram_odt_en = 0x00,		// 0x00C	12
+	.dram_para1 = 0x000010d2,	// 0x010	16
+	.dram_para2 = 0x0000,		// 0x014	20
+	.dram_mr0 = 0x1c70,			// 0x018	24
+	.dram_mr1 = 0x042,			// 0x01C	28
+	.dram_mr2 = 0x18,			// 0x020	32
+	.dram_mr3 = 0x0,			// 0x024	36
+	.dram_tpr0 = 0x004A2195,	// 0x028	40
+	.dram_tpr1 = 0x02423190,	// 0x02C	44
+	.dram_tpr2 = 0x0008B061,	// 0x030	48
+	.dram_tpr3 = 0xB4787896,	// 0x034	52
+	.dram_tpr4 = 0x0,			// 0x038	56
+	.dram_tpr5 = 0x48484848,	// 0x03C	60
+	.dram_tpr6 = 0x00000048,	// 0x040	64
+	.dram_tpr7 = 0x1620121e,	// 0x044	68
+	.dram_tpr8 = 0x0,			// 0x048	72
+	.dram_tpr9 = 0x0,			// 0x04C	76
+	.dram_tpr10 = 0x0,			// 0x050	80
+	.dram_tpr11 = 0x00340000,	// 0x054	84
+	.dram_tpr12 = 0x00000046,	// 0x058	88
+	.dram_tpr13 = 0x34000100,	// 0x05C	92
+};
+
 //------------------------------------------------------------------------------------------------
 
-static int dram_vol_set(int a1);
-static int auto_scan_dram_config(int *a1);
-static int auto_scan_dram_rank_width(int *a1);
+static int dram_vol_set(int a1, struct dram_para_t * a2param);
+static int auto_scan_dram_config(int *a1, struct dram_para_t * a2param);
+static int auto_scan_dram_rank_width(int *a1, struct dram_para_t * a2param);
 static int mctl_core_init(int *a1);
 static int mctl_sys_init(int *a1);
 static int ccm_set_pll_ddr_clk(int a1, int *a2);
@@ -92,9 +120,9 @@ static int eye_delay_compensation(int a1);
 static int dram_enable_all_master(void);
 static int dramc_simple_wr_test(unsigned int a1, int a2);
 static int dqs_gate_detect(int a1, int a2, unsigned int a3);
-static int auto_scan_dram_size(int *a1);
+static int auto_scan_dram_size(int *a1, struct dram_para_t * a2param);
 static int memcpy_self(int result, char *a2, int a3);
-static int init_DRAM(int a1, int a2);
+static int init_DRAM(int a1, int a2, struct dram_para_t * a2param);
 static int sid_read_ldoB_cal(int result);
 static int DRAMC_get_dram_size(void);
 static int mctl_phy_ac_remapping(int a1);
@@ -135,30 +163,12 @@ static void *MY_memcpy(void *dst,const void *src,int n)
 
 //------------------------------------------------------------------------------------------------
 
-static int init_DRAM(int a1,int a2)
+static int init_DRAM(int a1,int a2, struct dram_para_t * a2param)
 {
-  //unsigned int v3; // r2
-  //int v4; // r5
-  //unsigned int v5; // r2
-  //int v6; // r3
-  //int v7; // r1
-  //unsigned int v8; // r2
   int v9; // r3
-  //unsigned int v10; // r2
-  //int v11; // r3
-  //unsigned int v12; // r2
-  //int v13; // r3
-  //int v14; // r1
   int v15; // r3
   unsigned int v16; // r2
-  //unsigned int v17; // r2
-  //int v18; // r3
-  //int v19; // r3
-  //int v20; // r0
   int v22; // r1
-  //int v23; // r1
-  //unsigned int v24; // r2
-  //int v25; // r3
   int v26; // r5
   int v27; // r5
   int v28; // r3
@@ -167,18 +177,11 @@ static int init_DRAM(int a1,int a2)
   unsigned int v31; // r3
   int v32; // r3
   unsigned int v33; // r2
-  //unsigned int v34; // r2
-  //unsigned int v35; // r2
-  //unsigned int v36; // r2
-  //int v37; // r3
   int v38; // r0
-  //int v39; // r1
   int v40; // r3
   int v41; // r2
-  //unsigned int v42; // r2
-  //int v43; // r3
 
-  if ( (*(uint32_t *)(a2 + 92) & 0x10000) != 0 )
+  if ( (a2param->dram_tpr13 & 0x10000) != 0 )	// 92
   {
     SYS_CFG->RESCAL_CTRL_REG |= 0x100u;
     SYS_CFG->RES240_CTRL_REG = 0;
@@ -225,12 +228,12 @@ static int init_DRAM(int a1,int a2)
   }
 */
 
-  dram_vol_set(a2); //OK
+  dram_vol_set(a2, a2param); //OK
 
 LABEL_5:
-  v9 = *(uint32_t *)(a2 + 92);
+  v9 = a2param->dram_tpr13;	// 92
 
-  if ( (v9 & 1) == 0 && !auto_scan_dram_config((int *)a2) ) //OK
+  if ( (v9 & 1) == 0 && !auto_scan_dram_config((int *)a2, a2param) ) //OK
     return 0;
 
 /*
@@ -270,25 +273,25 @@ LABEL_5:
 
 //      PRINTF("DRAM SIZE =%d M\n", v26, v42, v43);
 
-      *(uint32_t *)(a2 + 20) = *(uint16_t *)(a2 + 20) | (v26 << 16);
+      a2param->dram_tpr10 |= (v26 << 16);	// +20
     }
     else
     {
       v26 = HIWORD(v27) & 0x7FFF;
     }
 
-    if ( (*(uint32_t *)(a2 + 92) & 0x40000000) != 0 )
+    if ( (a2param->dram_tpr13 & 0x40000000) != 0 )	// 92
     {
-      v28 = *(uint32_t *)(a2 + 72);
+      v28 = a2param->dram_tpr8;	// 72
 
       if ( !v28 )
-        v28 = 268435968;
+        v28 = 0x10000200;
 
       MEMORY(DDRPHYC_BASE + 0x0A0) = v28;
       MEMORY(DDRPHYC_BASE + 0x09C) = 1034;
       MEMORY(DDRPHYC_BASE + 0x004) |= 1u;
 
-//      PRINTF("Enable Auto SR\n", 1034, 0x3103004u, MEMORY(DDRPHYC_BASE + 0x004));
+//      PRINTF("Enable Auto SR\n", 1034, DDRPHYC_BASE + 0x004, MEMORY(DDRPHYC_BASE + 0x004));
 
     }
     else
@@ -310,7 +313,7 @@ LABEL_5:
     if ( (v29 & 0x100) != 0 )
       MEMORY(DDRPHYC_BASE + 0x0B8) |= 0x0300u;
 
-    v32 = 51392776;
+    v32 = DDRPHYC_BASE + 0x108;
 
     if ( (v29 & 0x4000000) != 0 )
       v33 = MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFDFFF;
@@ -322,7 +325,7 @@ LABEL_5:
     if ( v30 == 7 )
     {
       v33 = DDRPHYC_BASE + 0x07C;
-      v32 = MEMORY(DDRPHYC_BASE + 0x07C) & 0xFFF0FFFF | 0x10000;
+      v32 = (MEMORY(DDRPHYC_BASE + 0x07C) & 0xFFF0FFFF) | 0x10000;
       MEMORY(DDRPHYC_BASE + 0x07C) = v32;
     }
 
@@ -364,12 +367,12 @@ LABEL_5:
   return v26;
 }
 
-static int dram_vol_set(int a1)
+static int dram_vol_set(int a1, struct dram_para_t * a2param)
 {
   int v2; // r3
   int v3; // r2
 
-  v2 = *(uint32_t *)(a1 + 4);
+  v2 = a2param->dram_type;	// 4
 
   if ( v2 == 2 )
   {
@@ -419,25 +422,21 @@ static int sid_read_ldoB_cal(int result) //ok
 
     }
 
-    SYS_CFG->SYS_LDO_CTRL_REG = SYS_CFG->SYS_LDO_CTRL_REG & 0xFFFF00FF | (v1 << 8);
+    SYS_CFG->SYS_LDO_CTRL_REG = (SYS_CFG->SYS_LDO_CTRL_REG & 0xFFFF00FF) | (v1 << 8);
 
   }
 
   return result;
 }
 
-static int auto_scan_dram_config(int *a1)
+static int auto_scan_dram_config(int *a1, struct dram_para_t * a2param)
 {
-  //int v2; // r1
-  //unsigned int v3; // r2
-  //int v4; // r3
   int v5; // r4
-  //char *v6; // r0
   int v8; // r3
 
   if ( (a1[23] & 0x4000) == 0 )
   {
-    v5 = auto_scan_dram_rank_width(a1); //OK
+    v5 = auto_scan_dram_rank_width(a1, a2param); //OK
 
     if ( !v5 )
     {
@@ -453,7 +452,7 @@ static int auto_scan_dram_config(int *a1)
 
   if ( (a1[23] & 1) == 0 )
   {
-    v5 = auto_scan_dram_size(a1); //OK
+    v5 = auto_scan_dram_size(a1, a2param); //OK
     if ( !v5 )
     {
 //      v6 = "[ERROR DEBUG] auto scan dram size fail !\n";
@@ -473,7 +472,7 @@ static int auto_scan_dram_config(int *a1)
   return v5;
 }
 
-static int auto_scan_dram_rank_width(int *a1)
+static int auto_scan_dram_rank_width(int *a1, struct dram_para_t * a2param)
 {
   int v1; // r6
   int v3; // r5
@@ -518,12 +517,12 @@ static int mctl_core_init(int *a1) //OK
 
 static int mctl_sys_init(int *a1) //OK
 {
-	CCU->MBUS_CLK_REG &= 0xBFFFFFFF;
-	CCU->DRAM_BGR_REG &= 0xFFFFFFFE;
-	CCU->DRAM_BGR_REG &= 0xFFFEFFFF;
-	CCU->DRAM_CLK_REG &= 0xBFFFFFFF;
+	CCU->MBUS_CLK_REG &= 0xBFFFFFFFu;
+	CCU->DRAM_BGR_REG &= 0xFFFFFFFEu;
+	CCU->DRAM_BGR_REG &= 0xFFFEFFFFu;
+	CCU->DRAM_CLK_REG &= 0xBFFFFFFFu;
 	CCU->DRAM_CLK_REG &= 0x7FFFFFFFu;
-	CCU->DRAM_CLK_REG |= 0x8000000u;
+	CCU->DRAM_CLK_REG |= 0x08000000u;
 	_usdelay(10);
 
 	*a1 = (unsigned int) ccm_set_pll_ddr_clk(0, a1) >> 1; //OK
@@ -532,7 +531,7 @@ static int mctl_sys_init(int *a1) //OK
 
 	dram_disable_all_master(); //OK
 
-	CCU->DRAM_BGR_REG |= 0x10000u;
+	CCU->DRAM_BGR_REG |= 0x00010000u;
 	CCU->MBUS_CLK_REG |= 0x40000000u;
 	CCU->DRAM_CLK_REG |= 0x40000000u;
 	_usdelay(5);
@@ -675,7 +674,7 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
   }
 
   v11 = result[4];
-  v12 = 51388416;
+  v12 = 0x03102000;
   v13 = v9 & 3;
   v14 = 16 * v10 + 4;
   v15 = 4;
@@ -702,7 +701,7 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
         break;
     }
     v15 += 16;
-    *(uint32_t *)v12 = v17;
+    *(volatile uint32_t *)v12 = v17;
     v12 += 4;
   }
   while ( v14 != v15 );
@@ -735,7 +734,7 @@ static const char unk_6B40[22]={  1,  9,  3,  7,  8,0x12,   4,0xD,   5,   6,0xA,
 static const char unk_6B56[22]={  4,  9,  3,  7,  8,0x12,   1,0xD,   2,   6,0xA,   5,0xE,0xC,  0,   0,0x15,0x11,0x14,0x13, 0xB,0x16};
 static const char unk_6B6C[22]={  1,  7,  8,0xC,0xA,0x12,   4,0xD,   5,   6,  3,   2,  9,  0,  0,   0,0x15,0x11,0x14,0x13, 0xB,0x16};
 static const char unk_6B82[22]={  4,0xC,0xA,  7,  8,0x12,   1,0xD,   2,   6,  3,   5,  9,  0,  0,   0,0x15,0x11,0x14,0x13, 0xB,0x16};
-static const char unk_6B98[22]={0xD,  2,  7,  9,0xC,0x13,   5,  1,   6,   3,  4,   8,0xA,  0,  0,   0,0x15,0x16,0x12,0x11, 0xB,0x14};
+static const char unk_6B98[22]={  0xD,  2,  7,  9,0xC,0x13,   5,  1,   6,   3,  4,   8,0xA,  0,  0,   0,0x15,0x16,0x12,0x11, 0xB,0x14};
 static const char unk_6BAE[22]={  3,0xA,  7,0xD,  9, 0xB,   1,  2,   4,   6,  8,   5,0xC,  0,  0,   0,0x14,0x12,   0,0x15,0x16,0x11};
 static const char unk_6BC4[22]={  3,  2,  4,  7,  9,   1,0x11,0xC,0x12, 0xE,0xD,   8,0xF,  6,0xA,   5,0x13,0x16,0x10,0x15,0x14, 0xB};
 static const char unk_6BDA[22]={  2,0x13, 8,  6,0xE,   5,0x14,0xA,   3,0x12,0xD, 0xB,  7,0xF,  9,   1,0x16,0x15,0x11, 0xC,   4,0x10};
@@ -1545,7 +1544,7 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
 
   if ( v5 == 1 )
   {
-    v15 = 51392700;
+    v15 = DDRPHYC_BASE + 0x0BC;
     MEMORY(DDRPHYC_BASE + 0x108) &= 0xFFFFFF3F;
     v16 = MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8;
   }
@@ -1567,11 +1566,11 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
 
     v15 = (DDRPHYC_BASE + 0x11C);
 
-    MEMORY(DDRPHYC_BASE + 0x0BC) = ((HIWORD(MEMORY(DDRPHYC_BASE + 0x060)) & 0x1F) - 2) | MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8 | 0x100;
+    MEMORY(DDRPHYC_BASE + 0x0BC) = ((HIWORD(MEMORY(DDRPHYC_BASE + 0x060)) & 0x1F) - 2) | (MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8) | 0x100;
     v16 = MEMORY(DDRPHYC_BASE + 0x11C) & 0x7FFFFFFF | 0x8000000;
   }
 
-  *(uint32_t *)v15 = v16;
+   *(volatile uint32_t *) v15 = v16;
 
 LABEL_16:
 
@@ -1601,7 +1600,7 @@ LABEL_16:
   else
   {
     v14 = MEMORY(DDRPHYC_BASE + 0x0C0);
-    v19 = 16789639;
+    v19 = 0x01003087;
   }
 
   if ( (a2[5] & 0x1000) != 0 )
@@ -1975,7 +1974,7 @@ LABEL_6:
   return result;
 }
 
-static int auto_scan_dram_size(int *a1) //OK
+static int auto_scan_dram_size(int *a1, struct dram_para_t * a2param) //OK
 {
   int v2; // r1
   //unsigned int v3; // r2
@@ -1985,10 +1984,10 @@ static int auto_scan_dram_size(int *a1) //OK
   int v8; // r5
   int v9; // r8
   int v10; // r3
-  int *v11; // r2
+  volatile int *v11; // r2
   int i; // r3
   uint8_t /* bool */ v13; // nf
-  unsigned int *v14; // r4
+  volatile unsigned int *v14; // r4
   unsigned int v15; // r3
   unsigned int j; // r9
   int v17; // r1
@@ -2030,7 +2029,7 @@ static int auto_scan_dram_size(int *a1) //OK
 
     while ( 2 )
     {
-      v11 = (int *)v9;
+      v11 = (volatile int *)v9;
 
       for ( i = 0; i != 64; ++i )
       {
@@ -2082,7 +2081,7 @@ LABEL_23:
 
 //      PRINTF("[AUTO DEBUG] rank %d row = %d \n", v8, j, v19);
 
-      a1[4] = a1[4] & ~(255 << (16 * v8 + 4)) | (j << (16 * v8 + 4));
+      a1[4] = (a1[4] & ~(255 << (16 * v8 + 4))) | (j << (16 * v8 + 4));
 
       if ( v8 == 1 )
       {
@@ -2090,13 +2089,13 @@ LABEL_23:
         MEMORY(MSI_MEMC_BASE + 0x000) = (MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003) | 0x6A4;
       }
 
-      v22 = *v14 & 0xFFFFF003 | 0x6A4;
+      v22 = (*v14 & 0xFFFFF003) | 0x6A4;
       *v14 = v22;
 
       while ( *v14 != v22 )
         ;
 
-      v23 = (uint32_t *)(v9 + 2048);
+      v23 = (volatile uint32_t *)(v9 + 2048);
       v24 = 0;
 
       while ( 1 )
@@ -2131,11 +2130,11 @@ LABEL_33:
 
       if ( v8 == 1 )
       {
-        v9 = 1140850688;
-        MEMORY(MSI_MEMC_BASE + 0x000) = MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003 | 0xAA0;
+        v9 = 0x44000000;
+        MEMORY(MSI_MEMC_BASE + 0x000) = (MEMORY(MSI_MEMC_BASE + 0x000) & 0xFFFFF003) | 0xAA0;
       }
 
-      v27 = *v14 & 0xFFFFF003 | 0xAA0;
+      v27 = (*v14 & 0xFFFFF003) | 0xAA0;
       *v14 = v27;
 
       while ( *v14 != v27 )
@@ -2184,7 +2183,7 @@ LABEL_47:
 
 //      v34 = (char *)PRINTF("[AUTO DEBUG] rank %d page size = %d KB \n", v33, v32, v28);
 
-      v35 = (v32 << v21) | a1[4] & ~(15 << v21);
+      v35 = (v32 << v21) | (a1[4] & ~(15 << v21));
       a1[4] = v35;
 
       if ( v37 != v8 )
@@ -2260,37 +2259,9 @@ static int memcpy_self(int result, char *a2, int a3)
 
 //------------------------------------------------------------------------------------------------
 
-static const struct dram_para_t ddr3 =
-{
-	.dram_clk = 792,			// 0x000
-	.dram_type = 3,				// 0x004
-	.dram_zq = 0x7b7bfb,		// 0x008
-	.dram_odt_en = 0x00,		// 0x00C
-	.dram_para1 = 0x000010d2,	// 0x010
-	.dram_para2 = 0x0000,		// 0x014
-	.dram_mr0 = 0x1c70,			// 0x018
-	.dram_mr1 = 0x042,			// 0x01C
-	.dram_mr2 = 0x18,			// 0x020
-	.dram_mr3 = 0x0,			// 0x024
-	.dram_tpr0 = 0x004A2195,	// 0x028
-	.dram_tpr1 = 0x02423190,	// 0x02C
-	.dram_tpr2 = 0x0008B061,	// 0x030
-	.dram_tpr3 = 0xB4787896,	// 0x034
-	.dram_tpr4 = 0x0,			// 0x038
-	.dram_tpr5 = 0x48484848,	// 0x03C
-	.dram_tpr6 = 0x00000048,	// 0x040
-	.dram_tpr7 = 0x1620121e,	// 0x044
-	.dram_tpr8 = 0x0,			// 0x048
-	.dram_tpr9 = 0x0,			// 0x04C
-	.dram_tpr10 = 0x0,			// 0x050
-	.dram_tpr11 = 0x00340000,	// 0x054
-	.dram_tpr12 = 0x00000046,	// 0x058
-	.dram_tpr13 = 0x34000100,	// 0x05C
-};
-
 void sys_dram_init(void)
 {
- init_DRAM(0, (int) &ddr3);
+ init_DRAM(0, (int) & ddr3, & ddr3);
 }
 #endif /* CPUSTYPE_T113 */
 #endif /* WITHSDRAMHW */
