@@ -2003,7 +2003,8 @@ typedef struct DDRPHYC_Type
 {
 	__IO uint32_t PHYC_REG_000;                          /*!< Offset 0x000 Reg_000 */
 	__IO uint32_t PHYC_REG_004;                          /*!< Offset 0x004 Reg_004 */
-	uint32_t reserved1 [0x0002]; /* at 0x008 */
+	uint32_t reserved1; /* at 0x008 */
+	__IO uint32_t PHYC_REG_00C;                          /*!< Offset 0x00C Reg_00C */
 	__IO uint32_t PHYC_REG_010;                          /*!< Offset 0x010 Reg_010 */
 	uint32_t reserved2; /* at 0x014 */
 	__IO uint32_t PHYC_REG_018;                          /*!< Offset 0x018 Reg_018 */
@@ -2018,7 +2019,8 @@ typedef struct DDRPHYC_Type
 	__IO uint32_t PHYC_REG_08C;                          /*!< Offset 0x08C Reg_08C */
 	__IO uint32_t PHYC_REG_090;                          /*!< Offset 0x090 Reg_090 */
 	__IO uint32_t PHYC_REG_094;                          /*!< Offset 0x094 Reg_094 */
-	uint32_t reserved6 [0x0002]; /* at 0x098 */
+	uint32_t reserved6; /* at 0x098 */
+	__IO uint32_t PHYC_REG_09C;                          /*!< Offset 0x09C Reg_09C */
 	__IO uint32_t PHYC_REG_0A0;                          /*!< Offset 0x0A0 Reg_0a0 */
 	uint32_t reserved7 [0x0005]; /* at 0x0A4 */
 	__IO uint32_t PHYC_REG_0B8;                          /*!< Offset 0x0B8 Reg_0B8 */
@@ -2028,14 +2030,16 @@ typedef struct DDRPHYC_Type
 	uint32_t reserved9; /* at 0x104 */
 	__IO uint32_t PHYC_REG_108;                          /*!< Offset 0x108 Reg_108 */
 	__IO uint32_t PHYC_REG_10C;                          /*!< Offset 0x10C Reg_10C */
-	uint32_t reserved10; /* at 0x110 */
+	__IO uint32_t PHYC_REG_110;                          /*!< Offset 0x110 Reg_110 */
 	__IO uint32_t PHYC_REG_114;                          /*!< Offset 0x114 Reg_114 */
-	uint32_t reserved11; /* at 0x118 */
+	uint32_t reserved10; /* at 0x118 */
 	__IO uint32_t PHYC_REG_11C;                          /*!< Offset 0x11C Reg_11C */
 	__IO uint32_t PHYC_REG_120;                          /*!< Offset 0x120 Reg_120 */
-	uint32_t reserved12 [0x0007]; /* at 0x124 */
+	uint32_t reserved11 [0x0007]; /* at 0x124 */
 	__IO uint32_t PHYC_REG_140;                          /*!< Offset 0x140 Reg_140 */
-	uint32_t reserved13 [0x0035]; /* at 0x144 */
+	uint32_t reserved12 [0x0031]; /* at 0x144 */
+	__IO uint32_t PHYC_REG_208;                          /*!< Offset 0x208 Reg_208 */
+	uint32_t reserved13 [0x0003]; /* at 0x20C */
 	__IO uint32_t PHYC_REG_218;                          /*!< Offset 0x218 Reg_218 */
 	__IO uint32_t PHYC_REG_21C;                          /*!< Offset 0x21C Reg_21C */
 	uint32_t reserved14 [0x0002]; /* at 0x220 */
@@ -2054,7 +2058,8 @@ typedef struct DDRPHYC_Type
 	__IO uint32_t PHYC_REG_3B4;                          /*!< Offset 0x3B4 Reg_3B4 */
 	__IO uint32_t PHYC_REG_3B8;                          /*!< Offset 0x3B8 Reg_3B8 */
 	__IO uint32_t PHYC_REG_3BC;                          /*!< Offset 0x3BC Reg_3BC */
-	uint32_t reserved18 [0x0002]; /* at 0x3C0 */
+	uint32_t reserved18; /* at 0x3C0 */
+	__IO uint32_t PHYC_REG_3C4;                          /*!< Offset 0x3C4 Reg_3C4 */
 	__IO uint32_t PHYC_REG_3C8;                          /*!< Offset 0x3C8 Reg_3C8 */
 } DDRPHYC_TypeDef; /* size of structure = 0x3CC */
 /*
