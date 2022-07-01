@@ -22,14 +22,6 @@
 #include "formats.h"
 #include <string.h>
 
-#define _BYTE  unsigned char
-#define _WORD  unsigned short
-#define _DWORD unsigned int
-#define _QWORD unsigned long long
-
-
-#define bool unsigned char
-
 #define HIBYTE(x) ((x)>>24)
 #define LOBYTE(x) (*((uint8_t *)(x)))	/* в присвоениях - слева */
 
@@ -91,8 +83,8 @@ static int mctl_core_init(int *a1);
 static int mctl_sys_init(int *a1);
 static int ccm_set_pll_ddr_clk(int a1, int *a2);
 static int dram_disable_all_master(void);
-static _DWORD *mctl_vrefzq_init(_DWORD *result);
-static _DWORD *mctl_com_init(_DWORD *result);
+static uint32_t *mctl_vrefzq_init(uint32_t *result);
+static uint32_t *mctl_com_init(uint32_t *result);
 static int auto_set_timing_para(int a1);
 static unsigned int auto_cal_timing(int a1, int a2);
 static int mctl_channel_init(int a1, unsigned int *a2);
@@ -186,7 +178,7 @@ static int init_DRAM(int a1,int a2)
   //unsigned int v42; // r2
   //int v43; // r3
 
-  if ( (*(_DWORD *)(a2 + 92) & 0x10000) != 0 )
+  if ( (*(uint32_t *)(a2 + 92) & 0x10000) != 0 )
   {
     SYS_CFG->RESCAL_CTRL_REG |= 0x100u;
     SYS_CFG->RES240_CTRL_REG = 0;
@@ -215,7 +207,7 @@ static int init_DRAM(int a1,int a2)
 
   if ( v4 >= 0 )
   {
-    v19 = *(_DWORD *)(a2 + 4);
+    v19 = *(uint32_t *)(a2 + 4);
     if ( v19 == 2 )
     {
       v20 = 1800;
@@ -236,28 +228,28 @@ static int init_DRAM(int a1,int a2)
   dram_vol_set(a2); //OK
 
 LABEL_5:
-  v9 = *(_DWORD *)(a2 + 92);
+  v9 = *(uint32_t *)(a2 + 92);
 
   if ( (v9 & 1) == 0 && !auto_scan_dram_config((int *)a2) ) //OK
     return 0;
 
 /*
   PRINTF("DRAM BOOT DRIVE INFO: %s\n", (int)"V0.33", v8, v9);
-  PRINTF("DRAM CLK = %d MHz\n", *(_DWORD *)a2, v10, v11);
-  PRINTF("DRAM Type = %d (2:DDR2,3:DDR3)\n", *(_DWORD *)(a2 + 4), v12, v13);
+  PRINTF("DRAM CLK = %d MHz\n", *(uint32_t *)a2, v10, v11);
+  PRINTF("DRAM Type = %d (2:DDR2,3:DDR3)\n", *(uint32_t *)(a2 + 4), v12, v13);
 */
 
-  v15 = *(_DWORD *)(a2 + 12);
+  v15 = *(uint32_t *)(a2 + 12);
   v16 = v15 << 31;
 
 /*
   if ( (v15 & 1) != 0 )
-    PRINTF("DRAMC ZQ value: 0x%x\n", *(_DWORD *)(a2 + 8), v16, v15);
+    PRINTF("DRAMC ZQ value: 0x%x\n", *(uint32_t *)(a2 + 8), v16, v15);
   else
     PRINTF("DRAMC read ODT  off.\n", v14, v16, v15);
 */
 
-  v22 = *(_DWORD *)(a2 + 28);
+  v22 = *(uint32_t *)(a2 + 28);
 
 /*
   if ( (v22 & 0x44) != 0 )
@@ -270,7 +262,7 @@ LABEL_5:
 
   if ( v26 )
   {
-    v27 = *(_DWORD *)(a2 + 20);
+    v27 = *(uint32_t *)(a2 + 20);
 
     if ( v27 >= 0 )
     {
@@ -278,16 +270,16 @@ LABEL_5:
 
 //      PRINTF("DRAM SIZE =%d M\n", v26, v42, v43);
 
-      *(_DWORD *)(a2 + 20) = *(uint16_t *)(a2 + 20) | (v26 << 16);
+      *(uint32_t *)(a2 + 20) = *(uint16_t *)(a2 + 20) | (v26 << 16);
     }
     else
     {
       v26 = HIWORD(v27) & 0x7FFF;
     }
 
-    if ( (*(_DWORD *)(a2 + 92) & 0x40000000) != 0 )
+    if ( (*(uint32_t *)(a2 + 92) & 0x40000000) != 0 )
     {
-      v28 = *(_DWORD *)(a2 + 72);
+      v28 = *(uint32_t *)(a2 + 72);
 
       if ( !v28 )
         v28 = 268435968;
@@ -305,8 +297,8 @@ LABEL_5:
       MEMORY(DDRPHYC_BASE + 0x004) &= 0xFFFFFFFE;
     }
 
-    v29 = *(_DWORD *)(a2 + 92);
-    v30 = *(_DWORD *)(a2 + 4);
+    v29 = *(uint32_t *)(a2 + 92);
+    v30 = *(uint32_t *)(a2 + 4);
     v31 = MEMORY(DDRPHYC_BASE + 0x100) & 0xFFFF0FFF;
 
     if ( (v29 & 0x200) != 0 || v30 == 6 )
@@ -335,7 +327,7 @@ LABEL_5:
     }
 
 /*
-    PRINTF("dram_tpr4:0x%x\n", *(_DWORD *)(a2 + 56), v33, v32);
+    PRINTF("dram_tpr4:0x%x\n", *(uint32_t *)(a2 + 56), v33, v32);
     PRINTF("PLL_DDR_CTRL_REG:0x%x\n", CCU->PLL_DDR_CTRL_REG, v34, 33558544);
     PRINTF("DRAM_CLK_REG:0x%x\n", CCU->DRAM_CLK_REG, v35, 33560576);
     PRINTF("[TIMING DEBUG] MR2= 0x%x\n", *(uint16_t *)(a2 + 32), v36, v37);
@@ -343,7 +335,7 @@ LABEL_5:
 
     v38 = dram_enable_all_master(); //OK
 
-    v40 = *(_DWORD *)(a2 + 92);
+    v40 = *(uint32_t *)(a2 + 92);
     v41 = 8 * v40;
 
     if ( (v40 & 0x10000000) != 0 )
@@ -377,7 +369,7 @@ static int dram_vol_set(int a1)
   int v2; // r3
   int v3; // r2
 
-  v2 = *(_DWORD *)(a1 + 4);
+  v2 = *(uint32_t *)(a1 + 4);
 
   if ( v2 == 2 )
   {
@@ -408,7 +400,7 @@ static int sid_read_ldoB_cal(int result) //ok
 
   if ( MEMORY(SID_BASE + 0x21C) )
   {
-    v2 = *(_DWORD *)(result + 4);
+    v2 = *(uint32_t *)(result + 4);
 
     if ( v2 != 2 )
     {
@@ -509,7 +501,7 @@ static int auto_scan_dram_rank_width(int *a1)
 
 static int mctl_core_init(int *a1) //OK
 {
-  _DWORD *v2; // r0
+  uint32_t *v2; // r0
 
   mctl_sys_init(a1); //OK
 
@@ -599,7 +591,7 @@ static int dram_disable_all_master(void) //OK
   return _usdelay(10);
 }
 
-static _DWORD *mctl_vrefzq_init(_DWORD *result) //OK
+static uint32_t *mctl_vrefzq_init(uint32_t *result) //OK
 {
   int v1; // r2
 
@@ -617,7 +609,7 @@ static _DWORD *mctl_vrefzq_init(_DWORD *result) //OK
   return result;
 }
 
-static _DWORD *mctl_com_init(_DWORD *result) //OK
+static uint32_t *mctl_com_init(uint32_t *result) //OK
 {
   int v1; // r5
   unsigned int v2; // r1
@@ -690,7 +682,7 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
 
   do
   {
-    v16 = (uint8_t) (16 * ((v11 >> v15) - 1)) | (4 * (v11 >> (v15 + 8))) & 4 | *(_DWORD *)v12 & 0xFFFFF000 | v13;
+    v16 = (uint8_t) (16 * ((v11 >> v15) - 1)) | (4 * (v11 >> (v15 + 8))) & 4 | *(uint32_t *)v12 & 0xFFFFF000 | v13;
     switch ( (v11 >> (v15 - 4)) & 0xF )
     {
       case 1u:
@@ -710,7 +702,7 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
         break;
     }
     v15 += 16;
-    *(_DWORD *)v12 = v17;
+    *(uint32_t *)v12 = v17;
     v12 += 4;
   }
   while ( v14 != v15 );
@@ -731,7 +723,7 @@ static _DWORD *mctl_com_init(_DWORD *result) //OK
   {
     MEMORY(MSI_MEMC_BASE + 0x000) |= (v19 << 25) & 0x6000000;
 
-    result = (_DWORD *)MEMORY(MSI_MEMC_BASE + 0x004);
+    result = (uint32_t *)MEMORY(MSI_MEMC_BASE + 0x004);
 
     MEMORY(MSI_MEMC_BASE + 0x004) |= (v19 << 10) & 0x1FF000;
   }
@@ -785,7 +777,7 @@ static int mctl_phy_ac_remapping(int a1)
 
 //  result = PRINTF("ddr_efuse_type: 0x%x\n", v2);
 
-  v5 = *(_DWORD *)(a1 + 92);
+  v5 = *(uint32_t *)(a1 + 92);
 
   if ( (v5 & 0xC0000) != 0 || v3 == 80 || v3 == 124 )
   {
@@ -793,7 +785,7 @@ static int mctl_phy_ac_remapping(int a1)
     if ( (v5 & 0x40000) != 0 || v3 == 80 )
       result = (int)memcpy_self((int)v8, v15, 22);
 
-    if ( (*(_DWORD *)(a1 + 92) & 0x80000) != 0 || v3 == 124 )
+    if ( (*(uint32_t *)(a1 + 92) & 0x80000) != 0 || v3 == 124 )
     {
       v6 = v16;
 
@@ -828,7 +820,7 @@ LABEL_6:
     }
   }
 
-  v7 = *(_DWORD *)(a1 + 4);
+  v7 = *(uint32_t *)(a1 + 4);
 
   if ( v7 != 2 )
   {
@@ -845,7 +837,7 @@ LABEL_25:
     return result;
   }
 
-  if ( (*(_DWORD *)(a1 + 92) & 0x80000) != 0 || v3 == 124 )
+  if ( (*(uint32_t *)(a1 + 92) & 0x80000) != 0 || v3 == 124 )
   {
     result = (int)memcpy_self((int)v8, v17, 22);
 
@@ -904,7 +896,7 @@ static int auto_set_timing_para(int a1) //OK
   unsigned int v36; // r0
   unsigned int v37; // r0
   int v38; // r3
-  bool v39; // cc
+  uint8_t /* bool */ v39; // cc
   int v40; // r12
   int v41; // lr
   int v42; // r3
@@ -927,7 +919,7 @@ static int auto_set_timing_para(int a1) //OK
   int v59; // r3
   int v60; // r3
   int v61; // r3
-  bool v62; // zf
+  uint8_t /* bool */ v62; // zf
   int64_t v63; // r0
   int v64; // r7
   unsigned int v65; // r5
@@ -962,23 +954,23 @@ static int auto_set_timing_para(int a1) //OK
   unsigned int v94; // [sp+5Ch] [bp-34h]
   int v95; // [sp+60h] [bp-30h]
 
-  v1 = *(_DWORD *)(a1 + 92);
-  v2 = *(_DWORD *)a1;
+  v1 = *(uint32_t *)(a1 + 92);
+  v2 = *(uint32_t *)a1;
   v4 = v1 << 30;
   v76 = v1;
-  v5 = *(_DWORD *)(a1 + 4);
-  v6 = *(_DWORD *)a1 >> 1;
+  v5 = *(uint32_t *)(a1 + 4);
+  v6 = *(uint32_t *)a1 >> 1;
 
   if ( (v1 & 2) != 0 )
   {
-    v7 = *(_DWORD *)(a1 + 40);
+    v7 = *(uint32_t *)(a1 + 40);
     v95 = (v7 >> 21) & 7;
     v74 = (v7 >> 15) & 0x3F;
     v72 = (v7 >> 11) & 0xF;
     v70 = (v7 >> 6) & 0x1F;
     v73 = v7 & 0x3F;
-    v8 = *(_DWORD *)(a1 + 44);
-    v9 = *(_DWORD *)(a1 + 48);
+    v8 = *(uint32_t *)(a1 + 44);
+    v9 = *(uint32_t *)(a1 + 48);
     v10 = (v8 >> 20) & 7;
     v71 = (v8 >> 23) & 0x1F;
     v11 = (v8 >> 11) & 0xF;
@@ -1171,10 +1163,10 @@ static int auto_set_timing_para(int a1) //OK
         v72 = 3;
         break;
     }
-    *(_DWORD *)(a1 + 40) = v73 | 0x400000 | (v70 << 6) | (v72 << 11) | (v74 << 15);
-    *(_DWORD *)(a1 + 44) = (v11 << 11) | (v12 << 6) | v75 | (v10 << 15) | (v10 << 20) | (v71 << 23);
+    *(uint32_t *)(a1 + 40) = v73 | 0x400000 | (v70 << 6) | (v72 << 11) | (v74 << 15);
+    *(uint32_t *)(a1 + 44) = (v11 << 11) | (v12 << 6) | v75 | (v10 << 15) | (v10 << 20) | (v71 << 23);
 
-    v20 = (uint16_t) *(_DWORD *)(a1 + 56) >> 12;
+    v20 = (uint16_t) *(uint32_t *)(a1 + 56) >> 12;
 
     if ( v20 == 1 )
     {
@@ -1194,13 +1186,13 @@ static int auto_set_timing_para(int a1) //OK
 //    PRINTF(v21, v4, v71, v20);
 
     v93 = v10;
-    *(_DWORD *)(a1 + 48) = v13 | (v81 << 12);
+    *(uint32_t *)(a1 + 48) = v13 | (v81 << 12);
     v95 = 2;
   }
 
-  v14 = *(_DWORD *)a1;
-  v94 = *(_DWORD *)(a1 + 36);
-  v92 = *(_DWORD *)(a1 + 28);
+  v14 = *(uint32_t *)a1;
+  v94 = *(uint32_t *)(a1 + 36);
+  v92 = *(uint32_t *)(a1 + 28);
 
   switch ( v5 )
   {
@@ -1241,7 +1233,7 @@ static int auto_set_timing_para(int a1) //OK
       v89 = v11 + 5;
       v91 = v10 + 5;
       v82 = 1;
-      v77 = *(_DWORD *)(a1 + 28);
+      v77 = *(uint32_t *)(a1 + 28);
       v80 = 12;
       v47 = 0;
       v78 = 0;
@@ -1294,7 +1286,7 @@ static int auto_set_timing_para(int a1) //OK
       v89 = v56 + v6;
       v91 = v57 + v6;
       v62 = ((v76 >> 2) & 3) == 1;
-      v77 = *(_DWORD *)(a1 + 28);
+      v77 = *(uint32_t *)(a1 + 28);
 
       if ( v62 || v14 <= 0x390 )
         v45 = 5;
@@ -1325,7 +1317,7 @@ static int auto_set_timing_para(int a1) //OK
       v91 = v10 + 5;
       v79 = 4;
       v82 = 1;
-      v78 = *(_DWORD *)(a1 + 36);
+      v78 = *(uint32_t *)(a1 + 36);
       v47 = 3;
       v6 = 3;
       goto LABEL_105;
@@ -1378,7 +1370,7 @@ static int auto_set_timing_para(int a1) //OK
 
       v5 = 3;
       v79 = v69;
-      v78 = *(_DWORD *)(a1 + 36);
+      v78 = *(uint32_t *)(a1 + 36);
       v80 = 12;
       v47 = 5;
 LABEL_105:
@@ -1414,16 +1406,16 @@ LABEL_105:
   if ( v93 + v12 < (unsigned int)(v79 + 2) )
     v93 = 2 - v12 + v79;
 
-  if ( !*(_WORD *)(a1 + 26) )
-    *(_DWORD *)(a1 + 24) = v87;
+  if ( !*(uint16_t *)(a1 + 26) )
+    *(uint32_t *)(a1 + 24) = v87;
 
   v48 = *(uint16_t *)(a1 + 34);
 
   if ( !HIWORD(v92) )
-    *(_DWORD *)(a1 + 28) = v77;
+    *(uint32_t *)(a1 + 28) = v77;
 
   if ( !v48 )
-    *(_DWORD *)(a1 + 32) = v88;
+    *(uint32_t *)(a1 + 32) = v88;
 
   v49 = *(uint16_t *)(a1 + 24);
   v50 = (v40 << 12) | (v47 << 16);
@@ -1433,14 +1425,14 @@ LABEL_105:
     v51 = v78;
 
   if ( !HIWORD(v94) )
-    *(_DWORD *)(a1 + 36) = v51;
+    *(uint32_t *)(a1 + 36) = v51;
 
   MEMORY(DDRPHYC_BASE + 0x030) = v49;
   MEMORY(DDRPHYC_BASE + 0x034) = *(uint16_t *)(a1 + 28);
   MEMORY(DDRPHYC_BASE + 0x038) = *(uint16_t *)(a1 + 32);
 
   v52 = *(uint16_t *)(a1 + 36);
-  v53 = *(_DWORD *)(a1 + 12);
+  v53 = *(uint32_t *)(a1 + 12);
 
   MEMORY(DDRPHYC_BASE + 0x03C) = v52;
   MEMORY(DDRPHYC_BASE + 0x02C) = (v53 >> 4) & 3;
@@ -1518,7 +1510,7 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
 
   MEMORY(MSI_MEMC_BASE + 0x00C) = ((v4 >> 1) - 1) | (MEMORY(MSI_MEMC_BASE + 0x00C) & 0xFFFFF000);
 
-  v7 = (32 * ~(_BYTE)v6) & 0x20;
+  v7 = (32 * ~(uint8_t)v6) & 0x20;
 
   MEMORY(DDRPHYC_BASE + 0x108) = (MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFF0FF) | 0x0300;
   v8 = (MEMORY(DDRPHYC_BASE + 0x344) & 0xFFFFFFCF) | v7;
@@ -1569,17 +1561,17 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
       goto LABEL_16;
     }
 
-    v14 = 0x031030BC;
+    v14 = (DDRPHYC_BASE + 0x0BC);
 
     MEMORY(DDRPHYC_BASE + 0x108) = MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFFF3F | 0x80;
 
-    v15 = 0x0310311C;
+    v15 = (DDRPHYC_BASE + 0x11C);
 
     MEMORY(DDRPHYC_BASE + 0x0BC) = ((HIWORD(MEMORY(DDRPHYC_BASE + 0x060)) & 0x1F) - 2) | MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8 | 0x100;
     v16 = MEMORY(DDRPHYC_BASE + 0x11C) & 0x7FFFFFFF | 0x8000000;
   }
 
-  *(_DWORD *)v15 = v16;
+  *(uint32_t *)v15 = v16;
 
 LABEL_16:
 
@@ -1758,13 +1750,13 @@ static int eye_delay_compensation(int a1) //OK
   int k; // r2
   int result; // r0
 
-  v2 = *(_QWORD *)(a1 + 84);
+  v2 = *(uint64_t *)(a1 + 84);
 
-  for ( i = 0x03103310; i != 0x03103334; i += 4 )
-    *(_DWORD *)i |= ((_DWORD)v2 << 9) & 0x1E00 | (2 * HIDWORD(v2)) & 0x1E;
+  for ( i = (DDRPHYC_BASE + 0x310); i != (DDRPHYC_BASE + 0x334); i += 4 )
+    *(volatile uint32_t *)i |= ((uint32_t)v2 << 9) & 0x1E00 | (2 * HIDWORD(v2)) & 0x1E;
 
-  for ( j = 0x03103390; j != 0x031033B4; j += 4 )
-    *(_DWORD *)j |= (32 * v2) & 0x1E00 | (HIDWORD(v2) >> 3) & 0x1E;
+  for ( j = (DDRPHYC_BASE + 0x390); j != (DDRPHYC_BASE + 0x3B4); j += 4 )
+    *(volatile uint32_t *)j |= (32 * v2) & 0x1E00 | (HIDWORD(v2) >> 3) & 0x1E;
 
   MEMORY(DDRPHYC_BASE + 0x100) &= 0xFBFFFFFF;
 
@@ -1782,19 +1774,19 @@ static int eye_delay_compensation(int a1) //OK
   MEMORY(DDRPHYC_BASE + 0x100) |= 0x4000000u;
   _usdelay(1);
 
-  v7 = *(_DWORD *)(a1 + 80);
-  v8 = 0x03103240;
+  v7 = *(uint32_t *)(a1 + 80);
+  v8 = DDRPHYC_BASE + 0x240;
   v9 = (16 * v7) & 0xF00;
 
   do
   {
-    *(_DWORD *)v8 |= v9;
+    *(volatile uint32_t *)v8 |= v9;
     v8 += 4;
   }
-  while ( v8 != 0x0310327C );
+  while ( v8 != (DDRPHYC_BASE + 0x27C) );
 
-  for ( k = 0x03103228; k != 0x03103240; k += 4 )
-    *(_DWORD *)k |= v9;
+  for ( k = (DDRPHYC_BASE + 0x228); k != (DDRPHYC_BASE + 0x240); k += 4 )
+    *(volatile uint32_t *)k |= v9;
 
   MEMORY(DDRPHYC_BASE + 0x218) |= (v7 << 8) & 0xF00;
 
@@ -1836,9 +1828,9 @@ static int DRAMC_get_dram_size(void) //ok
 
 static int dram_enable_all_master(void) //OK
 {
-  MEMORY(MSI_MEMC_BASE + 0x020) = -1;
-  MEMORY(MSI_MEMC_BASE + 0x024) = 255;
-  MEMORY(MSI_MEMC_BASE + 0x028) = 0xFFFF;
+  MEMORY(MSI_MEMC_BASE + 0x020) = 0xFFFFFFFFuL;
+  MEMORY(MSI_MEMC_BASE + 0x024) = 0x000000FFuL;
+  MEMORY(MSI_MEMC_BASE + 0x028) = 0x0000FFFFuL;
 
   return _usdelay(10);
 }
@@ -1855,18 +1847,18 @@ static int dramc_simple_wr_test(unsigned int a1, int a2) //OK
   int v10; // r9
   int v11; // r3
 
-  v2 = 0x40000000;
+  v2 = DRAM_SPACE_BASE;
   v3 = a1 >> 1 << 20;
 
   for ( i = 0; i != a2; ++i )
   {
-    *(_DWORD *)v2 = i + 0x01234567;
-    *(_DWORD *)(v3 + v2) = i - 0x01234568;
+    *(volatile uint32_t *)v2 = i + 0x01234567;
+    *(volatile uint32_t *)(v3 + v2) = i - 0x01234568;
 
     v2 += 4;
   }
 
-  v5 = 0x40000000;
+  v5 = DRAM_SPACE_BASE;
 
   for ( j = 0; ; ++j )
   {
@@ -1877,7 +1869,7 @@ static int dramc_simple_wr_test(unsigned int a1, int a2) //OK
       return 0;
     }
 
-    v8 = *(_DWORD *)(v3 + v5);
+    v8 = *(volatile uint32_t *)(v3 + v5);
     v9 = j - 0x01234568;
     v10 = v3 + v5;
 
@@ -1892,9 +1884,9 @@ static int dramc_simple_wr_test(unsigned int a1, int a2) //OK
 
     v9 = j + 0x01234567;
     v2 = v5 + 4;
-    v8 = *(_DWORD *)v5;
+    v8 = *(volatile uint32_t *)v5;
 
-    if ( j + 0x01234567 != *(_DWORD *)v5 )
+    if ( j + 0x01234567 != *(volatile uint32_t *)v5 )
       break;
 
     v5 += 4;
@@ -1922,8 +1914,8 @@ static int dqs_gate_detect(int a1, int a2, unsigned int a3) //OK
 
   if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0x400000) == 0 )
   {
-    v4 = (*(_DWORD *)(a1 + 20) & 0xFFFFFFF0) | 0x1000;
-    *(_DWORD *)(a1 + 20) = v4;
+    v4 = (*(uint32_t *)(a1 + 20) & 0xFFFFFFF0) | 0x1000;
+    *(uint32_t *)(a1 + 20) = v4;
 
 //    v5 = "[AUTO DEBUG] two rank and full DQ!\n";
 
@@ -1939,11 +1931,11 @@ LABEL_6:
 
   if ( a2 == 2 )
   {
-    v4 = *(_DWORD *)(a1 + 20) & 0xFFFF0FF0;
+    v4 = *(uint32_t *)(a1 + 20) & 0xFFFF0FF0;
 
     if ( v3 == 2 )
     {
-      *(_DWORD *)(a1 + 20) = v4;
+      *(uint32_t *)(a1 + 20) = v4;
 
 //      v5 = "[AUTO DEBUG] single rank and full DQ!\n";
     }
@@ -1951,7 +1943,7 @@ LABEL_6:
     {
       v4 |= 1u;
 
-      *(_DWORD *)(a1 + 20) = v4;
+      *(uint32_t *)(a1 + 20) = v4;
 
 //      v5 = "[AUTO DEBUG] single rank and half DQ!\n";
     }
@@ -1960,16 +1952,16 @@ LABEL_6:
 
   if ( !a2 )
   {
-    v4 = *(_DWORD *)(a1 + 20) & 0xFFFFFFF0 | 0x1001;
+    v4 = *(uint32_t *)(a1 + 20) & 0xFFFFFFF0 | 0x1001;
 
-    *(_DWORD *)(a1 + 20) = v4;
+    *(uint32_t *)(a1 + 20) = v4;
 
 //    v5 = "[AUTO DEBUG] dual rank and half DQ!\n";
 
     goto LABEL_6;
   }
 
-  result = *(_DWORD *)(a1 + 92) & 0x20000000;
+  result = *(uint32_t *)(a1 + 92) & 0x20000000;
 
   if ( result )
   {
@@ -1995,7 +1987,7 @@ static int auto_scan_dram_size(int *a1) //OK
   int v10; // r3
   int *v11; // r2
   int i; // r3
-  bool v13; // nf
+  uint8_t /* bool */ v13; // nf
   unsigned int *v14; // r4
   unsigned int v15; // r3
   unsigned int j; // r9
@@ -2005,7 +1997,7 @@ static int auto_scan_dram_size(int *a1) //OK
   int v20; // r0
   char v21; // r11
   unsigned int v22; // r3
-  _DWORD *v23; // r2
+  uint32_t *v23; // r2
   int v24; // r3
   int v25; // r1
   int v26; // r9
@@ -2070,7 +2062,7 @@ static int auto_scan_dram_size(int *a1) //OK
         {
           v20 = (v18 & 1) != 0 ? v17 : ~v7 - 4 * v18;
 
-          if ( *(_DWORD *)(v19 + v17) != v20 )
+          if ( *(uint32_t *)(v19 + v17) != v20 )
             break;
 
           ++v18;
@@ -2104,7 +2096,7 @@ LABEL_23:
       while ( *v14 != v22 )
         ;
 
-      v23 = (_DWORD *)(v9 + 2048);
+      v23 = (uint32_t *)(v9 + 2048);
       v24 = 0;
 
       while ( 1 )
@@ -2162,7 +2154,7 @@ LABEL_38:
         else
           v31 = ~v7 - 4 * k;
 
-        if ( *(_DWORD *)((1 << v28) + v9 - v7 + v29) != v31 )
+        if ( *(uint32_t *)((1 << v28) + v9 - v7 + v29) != v31 )
         {
           if ( ++v28 == 14 )
           {
@@ -2261,7 +2253,7 @@ static int memcpy_self(int result, char *a2, int a3)
   while ( v4 - a2 > 0 )
   {
     v5 = *a2++;
-    *(_BYTE *)++v3 = v5;
+    *(uint8_t *)++v3 = v5;
   }
   return result;
 }
