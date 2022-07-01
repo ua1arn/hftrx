@@ -1996,6 +1996,68 @@ typedef struct C0_CPUX_CFG_Type
 	__IO uint32_t AXI_MNT_WBD_REG;                       /*!< Offset 0x0EC AXI Monitor Write Bandwidth Register */
 } C0_CPUX_CFG_TypeDef; /* size of structure = 0x0F0 */
 /*
+ * @brief DDRPHYC
+ */
+/*!< DDRPHYC Controller Interface */
+typedef struct DDRPHYC_Type
+{
+	__IO uint32_t PHYC_REG_000;                          /*!< Offset 0x000 Reg_000 */
+	__IO uint32_t PHYC_REG_004;                          /*!< Offset 0x004 Reg_004 */
+	uint32_t reserved1 [0x0002]; /* at 0x008 */
+	__IO uint32_t PHYC_REG_010;                          /*!< Offset 0x010 Reg_010 */
+	uint32_t reserved2; /* at 0x014 */
+	__IO uint32_t PHYC_REG_018;                          /*!< Offset 0x018 Reg_018 */
+	uint32_t reserved3 [0x000D]; /* at 0x01C */
+	__IO uint32_t PHYC_REG_050;                          /*!< Offset 0x050 Reg_050 */
+	__IO uint32_t PHYC_REG_054;                          /*!< Offset 0x054 Reg_054 */
+	uint32_t reserved4 [0x0008]; /* at 0x058 */
+	__IO uint32_t PHYC_REG_078;                          /*!< Offset 0x078 Reg_078 */
+	__IO uint32_t PHYC_REG_07C;                          /*!< Offset 0x07C Reg_07c */
+	__IO uint32_t PHYC_REG_080;                          /*!< Offset 0x080 Reg_080 */
+	uint32_t reserved5 [0x0002]; /* at 0x084 */
+	__IO uint32_t PHYC_REG_08C;                          /*!< Offset 0x08C Reg_08C */
+	__IO uint32_t PHYC_REG_090;                          /*!< Offset 0x090 Reg_090 */
+	__IO uint32_t PHYC_REG_094;                          /*!< Offset 0x094 Reg_094 */
+	uint32_t reserved6 [0x0002]; /* at 0x098 */
+	__IO uint32_t PHYC_REG_0A0;                          /*!< Offset 0x0A0 Reg_0a0 */
+	uint32_t reserved7 [0x0005]; /* at 0x0A4 */
+	__IO uint32_t PHYC_REG_0B8;                          /*!< Offset 0x0B8 Reg_0B8 */
+	__IO uint32_t PHYC_REG_0BC;                          /*!< Offset 0x0BC Reg_0BC */
+	uint32_t reserved8 [0x0010]; /* at 0x0C0 */
+	__IO uint32_t PHYC_REG_100;                          /*!< Offset 0x100 Reg_100 */
+	uint32_t reserved9; /* at 0x104 */
+	__IO uint32_t PHYC_REG_108;                          /*!< Offset 0x108 Reg_108 */
+	__IO uint32_t PHYC_REG_10C;                          /*!< Offset 0x10C Reg_10C */
+	uint32_t reserved10; /* at 0x110 */
+	__IO uint32_t PHYC_REG_114;                          /*!< Offset 0x114 Reg_114 */
+	uint32_t reserved11; /* at 0x118 */
+	__IO uint32_t PHYC_REG_11C;                          /*!< Offset 0x11C Reg_11C */
+	__IO uint32_t PHYC_REG_120;                          /*!< Offset 0x120 Reg_120 */
+	uint32_t reserved12 [0x0007]; /* at 0x124 */
+	__IO uint32_t PHYC_REG_140;                          /*!< Offset 0x140 Reg_140 */
+	uint32_t reserved13 [0x0035]; /* at 0x144 */
+	__IO uint32_t PHYC_REG_218;                          /*!< Offset 0x218 Reg_218 */
+	__IO uint32_t PHYC_REG_21C;                          /*!< Offset 0x21C Reg_21C */
+	uint32_t reserved14 [0x0002]; /* at 0x220 */
+	__IO uint32_t PHYC_REG_228 [0x006];                  /*!< Offset 0x228 Reg_228 */
+	__IO uint32_t PHYC_REG_240 [0x010];                  /*!< Offset 0x240 Reg_240 */
+	__IO uint32_t PHYC_REG_280;                          /*!< Offset 0x280 Reg_280 */
+	uint32_t reserved15 [0x0023]; /* at 0x284 */
+	__IO uint32_t PHYC_REG_310 [0x009];                  /*!< Offset 0x310 Reg_310 */
+	__IO uint32_t PHYC_REG_334;                          /*!< Offset 0x334 Reg_334 */
+	__IO uint32_t PHYC_REG_338;                          /*!< Offset 0x338 Reg_338 */
+	__IO uint32_t PHYC_REG_33C;                          /*!< Offset 0x33C Reg_33C */
+	uint32_t reserved16 [0x0002]; /* at 0x340 */
+	__IO uint32_t PHYC_REG_348;                          /*!< Offset 0x348 Reg_348 */
+	uint32_t reserved17 [0x0011]; /* at 0x34C */
+	__IO uint32_t PHYC_REG_390 [0x009];                  /*!< Offset 0x390 Reg_390 */
+	__IO uint32_t PHYC_REG_3B4;                          /*!< Offset 0x3B4 Reg_3B4 */
+	__IO uint32_t PHYC_REG_3B8;                          /*!< Offset 0x3B8 Reg_3B8 */
+	__IO uint32_t PHYC_REG_3BC;                          /*!< Offset 0x3BC Reg_3BC */
+	uint32_t reserved18 [0x0002]; /* at 0x3C0 */
+	__IO uint32_t PHYC_REG_3C8;                          /*!< Offset 0x3C8 Reg_3C8 */
+} DDRPHYC_TypeDef; /* size of structure = 0x3CC */
+/*
  * @brief USB_EHCI_Capability
  */
 /*!< USB_EHCI_Capability Controller Interface */
@@ -2129,6 +2191,7 @@ typedef struct DMAC_Type
 //#define IDC				(IDC_TypeDef *) IDC_BASE)
 #define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)			/*!< \brief C0_CPUX_CFG Interface register set access pointer */
 //#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)			/*!< \brief C0_CPUX_MBIST Interface register set access pointer */
+#define DDRPHYC		((DDRPHYC_TypeDef *) DDRPHYC_BASE)					/*!< \brief DDRPHYC Interface register set access pointer */
 
 #define CAN0			((CAN_TypeDef *) CAN0_BASE)						/*!< \brief CAN0 Interface register set access pointer */
 #define CAN1			((CAN_TypeDef *) CAN1_BASE)						/*!< \brief CAN1 Interface register set access pointer */

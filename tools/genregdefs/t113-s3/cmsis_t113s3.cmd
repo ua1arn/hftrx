@@ -58,6 +58,7 @@ rem %CONVERTER% tcon_tv.txt	TCON_TV 	 >> %OUTFILE%
 
 %CONVERTER% c0_cpux_cfg.txt 	 C0_CPUX_CFG 	 >> %OUTFILE%
 rem %CONVERTER% c0_cpux_mbist.txt C0_CPUX_MBIST 	 >> %OUTFILE%
+%CONVERTER% ddrphyc.txt 	 DDRPHYC 	 >> %OUTFILE%
 
 %CONVERTER% usb_ehci_capability.txt 	 USB_EHCI_Capability 	 >> %OUTFILE%
 

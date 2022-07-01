@@ -271,25 +271,25 @@ LABEL_5:
 
       MEMORY(DDRPHYC_BASE + 0x0A0) = v28;
       MEMORY(DDRPHYC_BASE + 0x09C) = 1034;
-      MEMORY(DDRPHYC_BASE + 0x004) |= 1u;
+      DDRPHYC->PHYC_REG_004 |= 1u;
 
-//      PRINTF("Enable Auto SR\n", 1034, DDRPHYC_BASE + 0x004, MEMORY(DDRPHYC_BASE + 0x004));
+//      PRINTF("Enable Auto SR\n", 1034, DDRPHYC_BASE + 0x004, DDRPHYC->PHYC_REG_004);
 
     }
     else
     {
       MEMORY(DDRPHYC_BASE + 0x0A0) = HIWORD(MEMORY(DDRPHYC_BASE + 0x0A0)) << 16;
-      MEMORY(DDRPHYC_BASE + 0x004) &= 0xFFFFFFFE;
+      DDRPHYC->PHYC_REG_004 &= 0xFFFFFFFE;
     }
 
     v29 = *(uint32_t *)(a2 + 92);
     v30 = *(uint32_t *)(a2 + 4);
-    v31 = MEMORY(DDRPHYC_BASE + 0x100) & 0xFFFF0FFF;
+    v31 = DDRPHYC->PHYC_REG_100 & 0xFFFF0FFF;
 
     if ( (v29 & 0x200) != 0 || v30 == 6 )
       v31 |= 0x5000u;
 
-    MEMORY(DDRPHYC_BASE + 0x100) = v31;
+    DDRPHYC->PHYC_REG_100 = v31;
     MEMORY(DDRPHYC_BASE + 0x140) |= 0x80000000;
 
     if ( (v29 & 0x100) != 0 )
@@ -298,11 +298,11 @@ LABEL_5:
     v32 = DDRPHYC_BASE + 0x108;
 
     if ( (v29 & 0x4000000) != 0 )
-      v33 = MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFDFFF;
+      v33 = DDRPHYC->PHYC_REG_108 & 0xFFFFDFFF;
     else
-      v33 = MEMORY(DDRPHYC_BASE + 0x108) | 0x2000;
+      v33 = DDRPHYC->PHYC_REG_108 | 0x2000;
 
-    MEMORY(DDRPHYC_BASE + 0x108) = v33;
+    DDRPHYC->PHYC_REG_108 = v33;
 
     if ( v30 == 7 )
     {
@@ -470,7 +470,7 @@ static int auto_scan_dram_rank_width(int *a1, struct dram_para_t * a2param)
 
   mctl_core_init(a1); //OK
 
-  if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0x100000) != 0 || !dqs_gate_detect((int)a1, v4, v5) ) //OK
+  if ( (DDRPHYC->PHYC_REG_010 & 0x100000) != 0 || !dqs_gate_detect((int)a1, v4, v5) ) //OK
     return 0;
 
   a1[23] = v3;
@@ -1482,7 +1482,7 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
 
   v7 = (32 * ~(uint8_t)v6) & 0x20;
 
-  MEMORY(DDRPHYC_BASE + 0x108) = (MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFF0FF) | 0x0300;
+  DDRPHYC->PHYC_REG_108 = (DDRPHYC->PHYC_REG_108 & 0xFFFFF0FF) | 0x0300;
   v8 = (MEMORY(DDRPHYC_BASE + 0x344) & 0xFFFFFFCF) | v7;
 
   if ( v4 <= 0x2A0 )
@@ -1516,29 +1516,29 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   if ( v5 == 1 )
   {
     v15 = DDRPHYC_BASE + 0x0BC;
-    MEMORY(DDRPHYC_BASE + 0x108) &= 0xFFFFFF3F;
+    DDRPHYC->PHYC_REG_108 &= 0xFFFFFF3F;
     v16 = MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8;
   }
   else
   {
     if ( v5 != 2 )
     {
-      MEMORY(DDRPHYC_BASE + 0x108) &= 0xFFFFFFBF;
+      DDRPHYC->PHYC_REG_108 &= 0xFFFFFFBF;
       _usdelay(10);
 
-      MEMORY(DDRPHYC_BASE + 0x108) |= 0xC0u;
+      DDRPHYC->PHYC_REG_108 |= 0xC0u;
 
       goto LABEL_16;
     }
 
     v14 = (DDRPHYC_BASE + 0x0BC);
 
-    MEMORY(DDRPHYC_BASE + 0x108) = MEMORY(DDRPHYC_BASE + 0x108) & 0xFFFFFF3F | 0x80;
+    DDRPHYC->PHYC_REG_108 = DDRPHYC->PHYC_REG_108 & 0xFFFFFF3F | 0x80;
 
     v15 = (DDRPHYC_BASE + 0x11C);
 
     MEMORY(DDRPHYC_BASE + 0x0BC) = ((HIWORD(MEMORY(DDRPHYC_BASE + 0x060)) & 0x1F) - 2) | (MEMORY(DDRPHYC_BASE + 0x0BC) & 0xFFFFFEF8) | 0x100;
-    v16 = MEMORY(DDRPHYC_BASE + 0x11C) & 0x7FFFFFFF | 0x8000000;
+    v16 = DDRPHYC->PHYC_REG_11C & 0x7FFFFFFF | 0x8000000;
   }
 
    *(volatile uint32_t *) v15 = v16;
@@ -1549,9 +1549,9 @@ LABEL_16:
   {
 
     if ( v5 == 1 )
-      v17 = MEMORY(DDRPHYC_BASE + 0x11C) & 0xF7FFFFFF;
+      v17 = DDRPHYC->PHYC_REG_11C & 0xF7FFFFFF;
     else
-      v17 = MEMORY(DDRPHYC_BASE + 0x11C) & 0x88FFFFFF;
+      v17 = DDRPHYC->PHYC_REG_11C & 0x88FFFFFF;
 
     if ( v5 == 1 )
       v18 = v17 & 0xFFFFFF3F;
@@ -1561,7 +1561,7 @@ LABEL_16:
     if ( v5 == 1 )
       v18 |= 0x80000000;
 
-    MEMORY(DDRPHYC_BASE + 0x11C) = v18;
+    DDRPHYC->PHYC_REG_11C = v18;
   }
 
   if ( (a2[5] & 0x1000) != 0 )
@@ -1597,9 +1597,9 @@ LABEL_16:
   if ( v5 == 1 )
   {
 
-    MEMORY(DDRPHYC_BASE + 0x000) = 83;
+    DDRPHYC->PHYC_REG_000 = 83;
 
-    while ( (MEMORY(DDRPHYC_BASE + 0x010) & 1) == 0 )
+    while ( (DDRPHYC->PHYC_REG_010 & 1) == 0 )
       ;
 
     _usdelay(10);
@@ -1623,10 +1623,10 @@ LABEL_16:
     v21 = 370;
   }
 
-  MEMORY(DDRPHYC_BASE + 0x000) = v21 | 1;
+  DDRPHYC->PHYC_REG_000 = v21 | 1;
   _usdelay(10);
 
-  while ( (MEMORY(DDRPHYC_BASE + 0x010) & 1) == 0 )
+  while ( (DDRPHYC->PHYC_REG_010 & 1) == 0 )
     ;
 
   v23 = MEMORY(CPU_CONFIG_REG);
@@ -1634,46 +1634,46 @@ LABEL_16:
 
   if ( (MEMORY(CPU_CONFIG_REG) & 0x10000) != 0 )
   {
-    MEMORY(DDRPHYC_BASE + 0x10C) = MEMORY(DDRPHYC_BASE + 0x10C) & 0xF9FFFFFF | 0x4000000;
+    DDRPHYC->PHYC_REG_10C = (DDRPHYC->PHYC_REG_10C & 0xF9FFFFFF) | 0x4000000;
     _usdelay(10);
 
-    MEMORY(DDRPHYC_BASE + 0x004) |= 1u;
-    while ( (MEMORY(DDRPHYC_BASE + 0x018) & 7) != 3 )
+    DDRPHYC->PHYC_REG_004 |= 1u;
+    while ( (DDRPHYC->PHYC_REG_018 & 7) != 3 )
       ;
 
     MEMORY(CPU_CONFIG2_REG) &= 0xFFFFFFFE;
     _usdelay(10);
 
-    MEMORY(DDRPHYC_BASE + 0x004) &= 0xFFFFFFFE;
+    DDRPHYC->PHYC_REG_004 &= 0xFFFFFFFE;
 
-    while ( (MEMORY(DDRPHYC_BASE + 0x018) & 7) != 1 )
+    while ( (DDRPHYC->PHYC_REG_018 & 7) != 1 )
       ;
 
     _usdelay(15);
 
     if ( v5 == 1 )
     {
-      MEMORY(DDRPHYC_BASE + 0x108) &= 0xFFFFFF3F;
-      MEMORY(DDRPHYC_BASE + 0x10C) = (MEMORY(DDRPHYC_BASE + 0x10C) & 0xF9FFFFFF) | 0x2000000;
+      DDRPHYC->PHYC_REG_108 &= 0xFFFFFF3F;
+      DDRPHYC->PHYC_REG_10C = (DDRPHYC->PHYC_REG_10C & 0xF9FFFFFF) | 0x2000000;
       _usdelay(1);
 
-      MEMORY(DDRPHYC_BASE + 0x000) = 0x0401;
+      DDRPHYC->PHYC_REG_000 = 0x0401;
 
       do
       {
-        v23 = MEMORY(DDRPHYC_BASE + 0x010);
-        v22 = MEMORY(DDRPHYC_BASE + 0x010) << 31;
+        v23 = DDRPHYC->PHYC_REG_010;
+        v22 = DDRPHYC->PHYC_REG_010 << 31;
       }
-      while ( (MEMORY(DDRPHYC_BASE + 0x010) & 1) == 0 );
+      while ( (DDRPHYC->PHYC_REG_010 & 1) == 0 );
 
     }
 
   }
 
-  if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0xFF00000) != 0 )
+  if ( (DDRPHYC->PHYC_REG_010 & 0xFF00000) != 0 )
   {
-    v25 = MEMORY(DDRPHYC_BASE + 0x010) & 0x100000;
-    if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0x100000) != 0 )
+    v25 = DDRPHYC->PHYC_REG_010 & 0x100000;
+    if ( (DDRPHYC->PHYC_REG_010 & 0x100000) != 0 )
     {
       v25 = 0;
 
@@ -1687,22 +1687,22 @@ LABEL_16:
     v25 = 1;
   }
 
-  while ( (MEMORY(DDRPHYC_BASE + 0x018) & 1) == 0 )
+  while ( (DDRPHYC->PHYC_REG_018 & 1) == 0 )
     ;
 
-  MEMORY(DDRPHYC_BASE + 0x08C) |= 0x80000000uL;
+  DDRPHYC->PHYC_REG_08C |= 0x80000000uL;
   _usdelay(10);
 
-  MEMORY(DDRPHYC_BASE + 0x08C) &= ~ 0x80000000uL;
+  DDRPHYC->PHYC_REG_08C &= ~ 0x80000000uL;
   _usdelay(10);
 
   MEMORY(MSI_MEMC_BASE + 0x014) |= 0x80000000uL;
   _usdelay(10);
 
-  MEMORY(DDRPHYC_BASE + 0x10C) &= ~ 0x06000000uL;
+  DDRPHYC->PHYC_REG_10C &= ~ 0x06000000uL;
 
   if ( v5 == 1 )
-    MEMORY(DDRPHYC_BASE + 0x11C) = (MEMORY(DDRPHYC_BASE + 0x11C) & ~ 0x000000C0uL) | 0x40;
+    DDRPHYC->PHYC_REG_11C = (DDRPHYC->PHYC_REG_11C & ~ 0x000000C0uL) | 0x40;
 
   return v25;
 }
@@ -1722,32 +1722,35 @@ static int eye_delay_compensation(int a1) //OK
 
   v2 = *(uint64_t *)(a1 + 84);
 
-  for ( i = (DDRPHYC_BASE + 0x310); i != (DDRPHYC_BASE + 0x334); i += 4 )
+  // 9 elements
+  for ( i = (int) & DDRPHYC->PHYC_REG_310; i != (DDRPHYC_BASE + 0x334); i += 4 )
     *(volatile uint32_t *)i |= (((uint32_t)v2 << 9) & 0x1E00) | (2 * HIDWORD(v2)) & 0x1E;
 
-  for ( j = (DDRPHYC_BASE + 0x390); j != (DDRPHYC_BASE + 0x3B4); j += 4 )
+  // 9 elements
+  for ( j = (int) & DDRPHYC->PHYC_REG_390; j != (DDRPHYC_BASE + 0x3B4); j += 4 )
     *(volatile uint32_t *)j |= (32 * v2) & 0x1E00 | (HIDWORD(v2) >> 3) & 0x1E;
 
-  MEMORY(DDRPHYC_BASE + 0x100) &= 0xFBFFFFFF;
+  DDRPHYC->PHYC_REG_100 &= 0xFBFFFFFF;
 
   v5 = (HIDWORD(v2) >> 15) & 0x1E | (WORD1(v2) << 9) & 0x1E00;
 
-  MEMORY(DDRPHYC_BASE + 0x334) |= v5;
-  MEMORY(DDRPHYC_BASE + 0x338) |= v5;
+  DDRPHYC->PHYC_REG_334 |= v5;
+  DDRPHYC->PHYC_REG_338 |= v5;
 
   v6 = (HIDWORD(v2) >> 19) & 0x1E | ((unsigned int)v2 >> 20 << 9) & 0x1E00;
 
-  MEMORY(DDRPHYC_BASE + 0x3B4) |= v6;
-  MEMORY(DDRPHYC_BASE + 0x3B8) |= v6;
-  MEMORY(DDRPHYC_BASE + 0x33C) |= (WORD1(v2) << 25) & 0x1E000000;
-  MEMORY(DDRPHYC_BASE + 0x3BC) |= ((unsigned int)v2 >> 20 << 25) & 0x1E000000;
-  MEMORY(DDRPHYC_BASE + 0x100) |= 0x4000000u;
+  DDRPHYC->PHYC_REG_3B4 |= v6;
+  DDRPHYC->PHYC_REG_3B8 |= v6;
+  DDRPHYC->PHYC_REG_33C |= (WORD1(v2) << 25) & 0x1E000000;
+  DDRPHYC->PHYC_REG_3BC |= ((unsigned int)v2 >> 20 << 25) & 0x1E000000;
+  DDRPHYC->PHYC_REG_100 |= 0x4000000u;
   _usdelay(1);
 
   v7 = *(uint32_t *)(a1 + 80);
-  v8 = DDRPHYC_BASE + 0x240;
+  v8 = (int) & DDRPHYC->PHYC_REG_240;
   v9 = (16 * v7) & 0xF00;
 
+  // 16 elements
   do
   {
     *(volatile uint32_t *)v8 |= v9;
@@ -1755,15 +1758,16 @@ static int eye_delay_compensation(int a1) //OK
   }
   while ( v8 != (DDRPHYC_BASE + 0x27C) );
 
-  for ( k = (DDRPHYC_BASE + 0x228); k != (DDRPHYC_BASE + 0x240); k += 4 )
+  // 6 elements
+  for ( k = (int) & DDRPHYC->PHYC_REG_228; k != (DDRPHYC_BASE + 0x240); k += 4 )
     *(volatile uint32_t *)k |= v9;
 
-  MEMORY(DDRPHYC_BASE + 0x218) |= (v7 << 8) & 0xF00;
+  DDRPHYC->PHYC_REG_218 |= (v7 << 8) & 0xF00;
 
-  result = MEMORY(DDRPHYC_BASE + 0x21C);
+  result = DDRPHYC->PHYC_REG_21C;
 
-  MEMORY(DDRPHYC_BASE + 0x21C) |= v7 & 0xF00;
-  MEMORY(DDRPHYC_BASE + 0x280) |= (v7 >> 4) & 0xF00;
+  DDRPHYC->PHYC_REG_21C |= v7 & 0xF00;
+  DDRPHYC->PHYC_REG_280 |= (v7 >> 4) & 0xF00;
 
   return result;
 }
@@ -1882,7 +1886,7 @@ static int dqs_gate_detect(int a1, int a2, unsigned int a3) //OK
  // unsigned int v7; // r2
   //int v8; // r3
 
-  if ( (MEMORY(DDRPHYC_BASE + 0x010) & 0x400000) == 0 )
+  if ( (DDRPHYC->PHYC_REG_010 & 0x400000) == 0 )
   {
     v4 = (*(uint32_t *)(a1 + 20) & 0xFFFFFFF0) | 0x1000;
     *(uint32_t *)(a1 + 20) = v4;
