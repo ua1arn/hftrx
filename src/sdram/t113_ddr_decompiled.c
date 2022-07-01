@@ -143,24 +143,6 @@ static int _usdelay(int loops)
  return 1;
 }
 
-#define MY_memset memset
-//static void *MY_memset(void *dst,int p,int n)
-//{
-// char * __restrict__ d=(char*)dst;
-// while(n--)*d++=(char)p;
-// return dst;
-//}
-
-//#define MY_memcpy memcpy
-static void *MY_memcpy(void *dst,const void *src,int n)
-{
-	return memcpy(dst, src, n);
- char * __restrict__ d=(char*)dst;
- char * __restrict__ s=(char*)src;
- while(n--)*d++=*s++;
- return dst;
-}
-
 //------------------------------------------------------------------------------------------------
 
 static int init_DRAM(int a1,int a2, struct dram_para_t * a2param)
@@ -748,33 +730,22 @@ static int mctl_phy_ac_remapping(int a1)
   int v5; // r3
   char *v6; // r1
   int v7; // r3
-  static char  v8[24]; // [sp+0h] [bp-100h] BYREF
-  static char  v9[24]; // [sp+18h] [bp-E8h] BYREF
-  static char v10[24]; // [sp+30h] [bp-D0h] BYREF
-  static char v11[24]; // [sp+48h] [bp-B8h] BYREF
-  static char v12[24]; // [sp+60h] [bp-A0h] BYREF
-  static char v13[24]; // [sp+78h] [bp-88h] BYREF
-  static char v14[24]; // [sp+90h] [bp-70h] BYREF
-  static char v15[24]; // [sp+A8h] [bp-58h] BYREF
-  static char v16[24]; // [sp+C0h] [bp-40h] BYREF
-  static char v17[40]; // [sp+D8h] [bp-28h] BYREF
+  static char  v8[24];
+  static char v9 [24]={  1,  9,  3,  7,  8,0x12,   4,0xD,   5,   6,0xA,   2,0xE,0xC,  0,   0,0x15,0x11,0x14,0x13, 0xB,0x16};
+  static char v10[24]={  4,  9,  3,  7,  8,0x12,   1,0xD,   2,   6,0xA,   5,0xE,0xC,  0,   0,0x15,0x11,0x14,0x13, 0xB,0x16};
+  static char v11[24]={  1,  7,  8,0xC,0xA,0x12,   4,0xD,   5,   6,  3,   2,  9,  0,  0,   0,0x15,0x11,0x14,0x13, 0xB,0x16};
+  static char v12[24]={  4,0xC,0xA,  7,  8,0x12,   1,0xD,   2,   6,  3,   5,  9,  0,  0,   0,0x15,0x11,0x14,0x13, 0xB,0x16};
+  static char v13[24]={  0xD,  2,  7,  9,0xC,0x13,   5,  1,   6,   3,  4,   8,0xA,  0,  0,   0,0x15,0x16,0x12,0x11, 0xB,0x14};
+  static char v14[24]={  3,0xA,  7,0xD,  9, 0xB,   1,  2,   4,   6,  8,   5,0xC,  0,  0,   0,0x14,0x12,   0,0x15,0x16,0x11};
+  static char v15[24]={  3,  2,  4,  7,  9,   1,0x11,0xC,0x12, 0xE,0xD,   8,0xF,  6,0xA,   5,0x13,0x16,0x10,0x15,0x14, 0xB};
+  static char v16[24]={  2,0x13, 8,  6,0xE,   5,0x14,0xA,   3,0x12,0xD, 0xB,  7,0xF,  9,   1,0x16,0x15,0x11, 0xC,   4,0x10};
+  static char v17[40]={  1,  2,0xD,  8,0xF, 0xC,0x13,0xA,   3,0x15,  6,0x11,  9,0xE,  5,0x10,0x14,0x16, 0xB,   7,   4,0x12};
 
-  MY_memset(v8, 0, 22);
   v2 = (MEMORY(SID_BASE + 0x228) >> 8) & 0xF;
 
-  MY_memcpy(v9, &unk_6B40, 22);
   v3 = MEMORY(SID_BASE + 0x200);
 
-  MY_memcpy(v10, &unk_6B56, 22);
-  MY_memcpy(v11, &unk_6B6C, 22);
-  MY_memcpy(v12, &unk_6B82, 22);
-  MY_memcpy(v13, &unk_6B98, 22);
-  MY_memcpy(v14, &unk_6BAE, 22);
-  MY_memcpy(v15, &unk_6BC4, 22);
-  MY_memcpy(v16, &unk_6BDA, 22);
-  MY_memcpy(v17, &unk_6BF0, 22);
-
-//  result = PRINTF("ddr_efuse_type: 0x%x\n", v2);
+	//PRINTF("ddr_efuse_type: 0x%02X\n", v2);
 
   v5 = *(uint32_t *)(a1 + 92);
 
@@ -2126,7 +2097,7 @@ LABEL_33:
 
 //      PRINTF("[AUTO DEBUG] rank %d bank = %d \n", v8, 4 * (v26 + 1), v24);
 
-      a1[4] = a1[4] & ~(15 << (v21 + 12)) | (v26 << (v21 + 12));
+      a1[4] = (a1[4] & ~(15 << (v21 + 12))) | (v26 << (v21 + 12));
 
       if ( v8 == 1 )
       {
@@ -2153,7 +2124,7 @@ LABEL_38:
         else
           v31 = ~v7 - 4 * k;
 
-        if ( *(uint32_t *)((1 << v28) + v9 - v7 + v29) != v31 )
+        if ( *(volatile uint32_t *)((1 << v28) + v9 - v7 + v29) != v31 )
         {
           if ( ++v28 == 14 )
           {
