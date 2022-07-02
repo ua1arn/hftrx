@@ -224,7 +224,7 @@ LABEL_5:
   PRINTF("DRAM Type = %d (2:DDR2,3:DDR3)\n", *(uint32_t *)(a2 + 4), v12, v13);
 */
 
-  v15 = *(uint32_t *)(a2 + 12);
+  v15 = *(uint32_t *)(a2 + 12);	// dram_odt_en = 0x00
   v16 = v15 << 31;
 
 /*
@@ -234,7 +234,7 @@ LABEL_5:
     PRINTF("DRAMC read ODT  off.\n", v14, v16, v15);
 */
 
-  v22 = *(uint32_t *)(a2 + 28);
+  v22 = *(uint32_t *)(a2 + 28);	// dram_mr1 = 0x042
 
 /*
   if ( (v22 & 0x44) != 0 )
@@ -247,7 +247,7 @@ LABEL_5:
 
   if ( v26 )
   {
-    v27 = *(uint32_t *)(a2 + 20);
+    v27 = *(uint32_t *)(a2 + 20);	// dram_para2 = 0x0000
 
     if ( v27 >= 0 )
     {
@@ -255,7 +255,7 @@ LABEL_5:
 
 //      PRINTF("DRAM SIZE =%d M\n", v26, v42, v43);
 
-      a2param->dram_tpr10 |= (v26 << 16);	// +20
+      a2param->dram_para2 |= (v26 << 16);	// dram_para2 = 0x0000
     }
     else
     {
@@ -282,8 +282,8 @@ LABEL_5:
       DDRPHYC->PHYC_REG_004 &= 0xFFFFFFFE;
     }
 
-    v29 = *(uint32_t *)(a2 + 92);
-    v30 = *(uint32_t *)(a2 + 4);
+    v29 = *(uint32_t *)(a2 + 92);	// dram_tpr13
+    v30 = *(uint32_t *)(a2 + 4);	// dram_type
     v31 = DDRPHYC->PHYC_REG_100 & 0xFFFF0FFF;
 
     if ( (v29 & 0x200) != 0 || v30 == 6 )
@@ -298,7 +298,7 @@ LABEL_5:
     v32 = DDRPHYC_BASE + 0x108;
 
     if ( (v29 & 0x4000000) != 0 )
-      v33 = DDRPHYC->PHYC_REG_108 & 0xFFFFDFFF;
+      v33 = DDRPHYC->PHYC_REG_108 & ~ 0x2000;
     else
       v33 = DDRPHYC->PHYC_REG_108 | 0x2000;
 
