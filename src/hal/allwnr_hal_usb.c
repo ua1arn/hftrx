@@ -89,11 +89,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 
 	const unsigned intusb = USBx->INTUSB;// & USBx->INTUSBE;
-	const unsigned inttx  = USBx->INTTX;/// & USBx->INTTXE;
+	const unsigned inttx  = USBx->INTTX;// & USBx->INTTXE;
 	const unsigned intrx  = USBx->INTRX;// & USBx->INTRXE;
 
 	//PRINTF("HAL_PCD_IRQHandler: INTUSBE=%08lX INTRXE=%08lX INTTXE=%08lX\n", USBx->INTUSBE, USBx->INTRXE, USBx->INTTXE);
-	PRINTF("HAL_PCD_IRQHandler: INTUSB=%08lX INTRX=%08lX INTTX=%08lX, frame=%04X\n", USBx->INTUSB, USBx->INTRX, USBx->INTTX, USBx->FRAME);
+	//PRINTF("HAL_PCD_IRQHandler: INTUSB=%08lX INTRX=%08lX INTTX=%08lX, frame=%04X\n", USBx->INTUSB, USBx->INTRX, USBx->INTTX, USBx->FRAME);
 
 	/* check for any bus state change interrupts */
 
@@ -102,7 +102,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	    MUSB2_MASK_ICONN | MUSB2_MASK_IDISC |
 	    MUSB2_MASK_IVBUSERR))
 	{
-		PRINTF("HAL_PCD_IRQHandler: bus interrupt\n");
+		//PRINTF("HAL_PCD_IRQHandler: bus interrupt\n");
 		if (intusb & MUSB2_MASK_IRESET)
 		{
 			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_IRESET\n");
@@ -152,7 +152,7 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
 	PRINTF("USB_DevConnect\n");
 	/* Enable all nnterrupts */
-	USBx->INTUSBE = 0xFF & ~ MUSB2_MASK_ISOF; //MUSB2_MASK_IRESET;
+	USBx->INTUSBE = 0xFF & ~ MUSB2_MASK_ISOF;
 	USBx->INTRXE = 0x3F;
 	USBx->INTTXE = 0x3F;
 
