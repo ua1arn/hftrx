@@ -88,12 +88,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 
-	const unsigned intusb = USBx->INTUSB;// & USBx->INTUSBE;
-	const unsigned inttx  = USBx->INTTX;// & USBx->INTTXE;
-	const unsigned intrx  = USBx->INTRX;// & USBx->INTRXE;
+	const unsigned intusb = USBx->MUSB2_REG_INTUSB;// & USBx->MUSB2_REG_INTUSBE;
+	const unsigned inttx  = USBx->MUSB2_REG_INTTX;// & USBx->MUSB2_REG_INTTXE;
+	const unsigned intrx  = USBx->MUSB2_REG_INTRX;// & USBx->MUSB2_REG_INTRXE;
 
-	//PRINTF("HAL_PCD_IRQHandler: INTUSBE=%08lX INTRXE=%08lX INTTXE=%08lX\n", USBx->INTUSBE, USBx->INTRXE, USBx->INTTXE);
-	//PRINTF("HAL_PCD_IRQHandler: INTUSB=%08lX INTRX=%08lX INTTX=%08lX, frame=%04X\n", USBx->INTUSB, USBx->INTRX, USBx->INTTX, USBx->FRAME);
+	//PRINTF("HAL_PCD_IRQHandler: INTUSBE=%08lX INTRXE=%08lX INTTXE=%08lX\n", USBx->MUSB2_REG_INTUSBE, USBx->MUSB2_REG_INTRXE, USBx->MUSB2_REG_INTTXE);
+	//PRINTF("HAL_PCD_IRQHandler: INTUSB=%08lX INTRX=%08lX INTTX=%08lX, frame=%04X\n", USBx->MUSB2_REG_INTUSB, USBx->MUSB2_REG_INTRX, USBx->MUSB2_REG_INTTX, USBx->MUSB2_REG_FRAME);
 
 	/* check for any bus state change interrupts */
 
@@ -138,9 +138,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		// SOF handling
 	}
 
-	USBx->INTUSB = intusb;
-	USBx->INTTX = inttx;
-	USBx->INTRX = intrx;
+	USBx->MUSB2_REG_INTUSB = intusb;
+	USBx->MUSB2_REG_INTTX = inttx;
+	USBx->MUSB2_REG_INTRX = intrx;
 }
 
 /**
@@ -152,13 +152,13 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
 	PRINTF("USB_DevConnect\n");
 	/* Enable all nnterrupts */
-	USBx->INTUSBE = 0xFF & ~ MUSB2_MASK_ISOF;
-	USBx->INTRXE = 0x3F;
-	USBx->INTTXE = 0x3F;
+	USBx->MUSB2_REG_INTUSBE = 0xFF & ~ MUSB2_MASK_ISOF;
+	USBx->MUSB2_REG_INTRXE = 0x3F;
+	USBx->MUSB2_REG_INTTXE = 0x3F;
 
-	PRINTF("USB_DevConnect: INTUSBE=%08lX\n", USBx->INTUSBE);
-	PRINTF("USB_DevConnect: INTTXE=%08lX\n", USBx->INTTXE);
-	PRINTF("USB_DevConnect: INTRXE=%08lX\n", USBx->INTRXE);
+	PRINTF("USB_DevConnect: MUSB2_REG_INTUSBE=%08lX\n", USBx->MUSB2_REG_INTUSBE);
+	PRINTF("USB_DevConnect: MUSB2_REG_INTTXE=%08lX\n", USBx->MUSB2_REG_INTTXE);
+	PRINTF("USB_DevConnect: MUSB2_REG_INTRXE=%08lX\n", USBx->MUSB2_REG_INTRXE);
 //    /* Enable pullup on D+ */
 //    USBx->INTENB0 |= (USB_VBSE | USB_SOFE | USB_DVSE | USB_CTRE | USB_BEMPE | USB_NRDYE | USB_BRDYE);
 //    USBx->SYSCFG0 |= USB_DPRPU;
@@ -171,7 +171,7 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 ////    GIC_EnableIRQ(USBIX_IRQn);
 //	//arm_hardware_set_handler_system(USBIX_IRQn, _usbisr);
 
-	USBx->POWER |= MUSB2_MASK_SOFTC;
+	USBx->MUSB2_REG_POWER |= MUSB2_MASK_SOFTC;
 
     return HAL_OK;
 }
@@ -184,9 +184,9 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
 	PRINTF("USB_DevDisconnect\n");
-	USBx->INTUSBE = 0;
-	USBx->INTTXE = 0;
-	USBx->INTRXE = 0;
+	USBx->MUSB2_REG_INTUSBE = 0;
+	USBx->MUSB2_REG_INTTXE = 0;
+	USBx->MUSB2_REG_INTRXE = 0;
     /* Disable USB */
     //arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 ////    InterruptHandlerRegister(USBIX_IRQn, NULL);
@@ -200,7 +200,7 @@ HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 //	}
 //
 	/* Disable pullup on D+ */
-	USBx->POWER &= ~ MUSB2_MASK_SOFTC;
+	USBx->MUSB2_REG_POWER &= ~ MUSB2_MASK_SOFTC;
 
     return HAL_OK;
 }

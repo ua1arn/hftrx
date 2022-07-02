@@ -1548,29 +1548,77 @@ typedef struct USB1_Type
 /*!< DRD Controller Interface */
 typedef struct DRD_Type
 {
-	__IO uint32_t EPFIFO [0x006];                        /*!< Offset 0x000 to be commented */
+	__IO uint32_t MUSB2_REG_EPFIFO_0;                    /*!< Offset 0x000 MUSB2_REG_EPFIFO_0 */
+	__IO uint32_t MUSB2_REG_EPFIFO_1;                    /*!< Offset 0x004 MUSB2_REG_EPFIFO_1 */
+	__IO uint32_t MUSB2_REG_EPFIFO_2;                    /*!< Offset 0x008 MUSB2_REG_EPFIFO_2 */
+	__IO uint32_t MUSB2_REG_EPFIFO_3;                    /*!< Offset 0x00C MUSB2_REG_EPFIFO_3 */
+	__IO uint32_t MUSB2_REG_EPFIFO_4;                    /*!< Offset 0x010 MUSB2_REG_EPFIFO_4 */
+	__IO uint32_t MUSB2_REG_EPFIFO_5;                    /*!< Offset 0x014 MUSB2_REG_EPFIFO_5 */
 	uint32_t reserved1 [0x000A]; /* at 0x018 */
-	__IO uint8_t  POWER;                                 /*!< Offset 0x040 to be commented */
-	__IO uint8_t  DEVCTL;                                /*!< Offset 0x041 to be commented */
-	__IO uint16_t EPINDEX;                               /*!< Offset 0x042 to be commented */
-	__IO uint16_t INTTX;                                 /*!< Offset 0x044 to be commented */
-	__IO uint16_t INTRX;                                 /*!< Offset 0x046 to be commented */
-	__IO uint16_t INTTXE;                                /*!< Offset 0x048 to be commented */
-	__IO uint16_t INTRXE;                                /*!< Offset 0x04A to be commented */
-	__IO uint16_t INTUSB;                                /*!< Offset 0x04C to be commented */
-	uint8_t reserved2 [0x0002]; /* at 0x04E */
-	__IO uint32_t INTUSBE;                               /*!< Offset 0x050 to be commented */
-	__IO uint32_t FRAME;                                 /*!< Offset 0x054 to be commented */
-	uint32_t reserved3 [0x0009]; /* at 0x058 */
-	__IO uint32_t TESTMODE;                              /*!< Offset 0x07C to be commented */
-	__IO uint16_t TXMAXP;                                /*!< Offset 0x080 to be commented */
-	__IO uint16_t TXCSR;                                 /*!< Offset 0x082 to be commented */
-	__IO uint16_t RXMAXP;                                /*!< Offset 0x084 to be commented */
-	__IO uint16_t RXCSR;                                 /*!< Offset 0x086 to be commented */
-	__IO uint32_t RXCOUNT;                               /*!< Offset 0x088 to be commented */
-	uint32_t reserved4 [0x000D]; /* at 0x08C */
-	__IO uint32_t CONFDATA;                              /*!< Offset 0x0C0 to be commented */
-} DRD_TypeDef; /* size of structure = 0x0C4 */
+	__IO uint8_t  MUSB2_REG_POWER;                       /*!< Offset 0x040 MUSB2_REG_POWER */
+	__IO uint8_t  MUSB2_REG_DEVCTL;                      /*!< Offset 0x041 MUSB2_REG_DEVCTL */
+	__IO uint16_t MUSB2_REG_EPINDEX;                     /*!< Offset 0x042 MUSB2_REG_EPINDEX */
+	__IO uint16_t MUSB2_REG_INTTX;                       /*!< Offset 0x044 MUSB2_REG_INTTX */
+	__IO uint16_t MUSB2_REG_INTRX;                       /*!< Offset 0x046 MUSB2_REG_INTRX */
+	__IO uint16_t MUSB2_REG_INTTXE;                      /*!< Offset 0x048 MUSB2_REG_INTTXE */
+	__IO uint16_t MUSB2_REG_INTRXE;                      /*!< Offset 0x04A MUSB2_REG_INTRXE */
+	__IO uint32_t MUSB2_REG_INTUSB;                      /*!< Offset 0x04C MUSB2_REG_INTUSB */
+	__IO uint32_t MUSB2_REG_INTUSBE;                     /*!< Offset 0x050 MUSB2_REG_INTUSBE */
+	__IO uint32_t MUSB2_REG_FRAME;                       /*!< Offset 0x054 MUSB2_REG_FRAME */
+	uint32_t reserved2 [0x0009]; /* at 0x058 */
+	__IO uint32_t MUSB2_REG_TESTMODE;                    /*!< Offset 0x07C MUSB2_REG_TESTMODE */
+	__IO uint16_t MUSB2_REG_TXMAXP;                      /*!< Offset 0x080 MUSB2_REG_TXMAXP */
+	__IO uint8_t  MUSB2_REG_TXCSRL;                      /*!< Offset 0x082 MUSB2_REG_TXCSRL */
+	__IO uint8_t  MUSB2_REG_TXCSRH;                      /*!< Offset 0x083 MUSB2_REG_TXCSRH */
+	__IO uint16_t MUSB2_REG_RXMAXP;                      /*!< Offset 0x084 MUSB2_REG_RXMAXP */
+	__IO uint8_t  MUSB2_REG_RXCSRL;                      /*!< Offset 0x086 MUSB2_REG_RXCSRL */
+	__IO uint8_t  MUSB2_REG_RXCSRH;                      /*!< Offset 0x087 MUSB2_REG_RXCSRH */
+	__IO uint32_t MUSB2_REG_RXCOUNT;                     /*!< Offset 0x088 MUSB2_REG_RXCOUNT */
+	__IO uint8_t  MUSB2_REG_TXTI;                        /*!< Offset 0x08C MUSB2_REG_TXTI */
+	__IO uint8_t  MUSB2_REG_TXNAKLIMIT;                  /*!< Offset 0x08D MUSB2_REG_TXNAKLIMIT */
+	__IO uint8_t  MUSB2_REG_RXTI;                        /*!< Offset 0x08E MUSB2_REG_RXTI */
+	__IO uint8_t  MUSB2_REG_RXNAKLIMIT;                  /*!< Offset 0x08F MUSB2_REG_RXNAKLIMIT */
+	__IO uint16_t MUSB2_REG_TXFIFOSZ;                    /*!< Offset 0x090 MUSB2_REG_TXFIFOSZ */
+	__IO uint16_t MUSB2_REG_TXFIFOADD;                   /*!< Offset 0x092 MUSB2_REG_TXFIFOADD */
+	__IO uint16_t MUSB2_REG_RXFIFOSZ;                    /*!< Offset 0x094 MUSB2_REG_RXFIFOSZ */
+	__IO uint16_t MUSB2_REG_RXFIFOADD;                   /*!< Offset 0x096 MUSB2_REG_RXFIFOADD */
+	__IO uint16_t MUSB2_REG_TXFADDR_0;                   /*!< Offset 0x098 MUSB2_REG_TXFADDR_0 */
+	__IO uint8_t  MUSB2_REG_TXHADDR_0;                   /*!< Offset 0x09A MUSB2_REG_TXHADDR_0 */
+	__IO uint8_t  MUSB2_REG_TXHUBPORT_0;                 /*!< Offset 0x09B MUSB2_REG_TXHUBPORT_0 */
+	__IO uint16_t MUSB2_REG_RXFADDR_0;                   /*!< Offset 0x09C MUSB2_REG_RXFADDR_0 */
+	__IO uint8_t  MUSB2_REG_RXHADDR_0;                   /*!< Offset 0x09E MUSB2_REG_RXHADDR_0 */
+	__IO uint8_t  MUSB2_REG_RXHUBPORT_0;                 /*!< Offset 0x09F MUSB2_REG_RXHUBPORT_0 */
+	__IO uint16_t MUSB2_REG_TXFADDR_1;                   /*!< Offset 0x0A0 MUSB2_REG_TXFADDR_1 */
+	__IO uint8_t  MUSB2_REG_TXHADDR_1;                   /*!< Offset 0x0A2 MUSB2_REG_TXHADDR_1 */
+	__IO uint8_t  MUSB2_REG_TXHUBPORT_1;                 /*!< Offset 0x0A3 MUSB2_REG_TXHUBPORT_1 */
+	__IO uint16_t MUSB2_REG_RXFADDR_1;                   /*!< Offset 0x0A4 MUSB2_REG_RXFADDR_1 */
+	__IO uint8_t  MUSB2_REG_RXHADDR_1;                   /*!< Offset 0x0A6 MUSB2_REG_RXHADDR_1 */
+	__IO uint8_t  MUSB2_REG_RXHUBPORT_1;                 /*!< Offset 0x0A7 MUSB2_REG_RXHUBPORT_1 */
+	__IO uint16_t MUSB2_REG_TXFADDR_2;                   /*!< Offset 0x0A8 MUSB2_REG_TXFADDR_2 2 */
+	__IO uint8_t  MUSB2_REG_TXHADDR_2;                   /*!< Offset 0x0AA MUSB2_REG_TXHADDR_2 */
+	__IO uint8_t  MUSB2_REG_TXHUBPORT_2;                 /*!< Offset 0x0AB MUSB2_REG_TXHUBPORT */
+	__IO uint16_t MUSB2_REG_RXFADDR_2;                   /*!< Offset 0x0AC MUSB2_REG_RXFADDR_2 */
+	__IO uint8_t  MUSB2_REG_RXHADDR_2;                   /*!< Offset 0x0AE MUSB2_REG_RXHADDR_2 */
+	__IO uint8_t  MUSB2_REG_RXHUBPORT_2;                 /*!< Offset 0x0AF MUSB2_REG_RXHUBPORT_2 */
+	__IO uint16_t MUSB2_REG_TXFADDR_3;                   /*!< Offset 0x0B0 MUSB2_REG_TXFADDR_3 */
+	__IO uint8_t  MUSB2_REG_TXHADDR_3;                   /*!< Offset 0x0B2 MUSB2_REG_TXHADDR_3 */
+	__IO uint8_t  MUSB2_REG_TXHUBPORT_3;                 /*!< Offset 0x0B3 MUSB2_REG_TXHUBPORT_3 */
+	__IO uint16_t MUSB2_REG_RXFADDR_3;                   /*!< Offset 0x0B4 MUSB2_REG_RXFADDR_3 */
+	__IO uint8_t  MUSB2_REG_RXHADDR_3;                   /*!< Offset 0x0B6 MUSB2_REG_RXHADDR_3 */
+	__IO uint8_t  MUSB2_REG_RXHUBPORT_3;                 /*!< Offset 0x0B7 MUSB2_REG_RXHUBPORT_3 */
+	__IO uint16_t MUSB2_REG_TXFADDR_4;                   /*!< Offset 0x0B8 MUSB2_REG_TXFADDR_4 */
+	__IO uint8_t  MUSB2_REG_TXHADDR_4;                   /*!< Offset 0x0BA MUSB2_REG_TXHADDR_4 */
+	__IO uint8_t  MUSB2_REG_TXHUBPORT_4;                 /*!< Offset 0x0BB MUSB2_REG_TXHUBPORT_4 */
+	__IO uint16_t MUSB2_REG_RXFADDR_4;                   /*!< Offset 0x0BC MUSB2_REG_RXFADDR_4 */
+	__IO uint8_t  MUSB2_REG_RXHADDR_4;                   /*!< Offset 0x0BE MUSB2_REG_RXHADDR_4 */
+	__IO uint8_t  MUSB2_REG_RXHUBPORT_4;                 /*!< Offset 0x0BF MUSB2_REG_RXHUBPORT_4 */
+	__IO uint16_t MUSB2_REG_TXFADDR_5;                   /*!< Offset 0x0C0 MUSB2_REG_TXFADDR_5 */
+	__IO uint8_t  MUSB2_REG_TXHADDR_5;                   /*!< Offset 0x0C2 MUSB2_REG_TXHADDR_5 */
+	__IO uint8_t  MUSB2_REG_TXHUBPORT_5;                 /*!< Offset 0x0C3 MUSB2_REG_TXHUBPORT_5 */
+	__IO uint16_t MUSB2_REG_RXFADDR_5;                   /*!< Offset 0x0C4 MUSB2_REG_RXFADDR_5 */
+	__IO uint8_t  MUSB2_REG_RXHADDR_5;                   /*!< Offset 0x0C6 MUSB2_REG_RXHADDR_5 */
+	__IO uint8_t  MUSB2_REG_RXHUBPORT_5;                 /*!< Offset 0x0C7 MUSB2_REG_RXHUBPORT_5 */
+} DRD_TypeDef; /* size of structure = 0x0C8 */
 /*
  * @brief CSI
  */

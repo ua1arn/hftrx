@@ -766,7 +766,7 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 #define	MUSB2_REG_FADDR 0x0000		/* function address register */
 #define	MUSB2_MASK_FADDR 0x7F
 
-#define	MUSB2_REG_POWER 0x0001		/* power register */
+//#define	MUSB2_REG_POWER 0x0001		/* power register */
 #define	MUSB2_MASK_SUSPM_ENA 0x01
 #define	MUSB2_MASK_SUSPMODE 0x02
 #define	MUSB2_MASK_RESUME 0x04
@@ -778,15 +778,15 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 /* Endpoint interrupt handling */
 
-#define	MUSB2_REG_INTTX 0x0002		/* transmit interrupt register */
-#define	MUSB2_REG_INTRX 0x0004		/* receive interrupt register */
-#define	MUSB2_REG_INTTXE 0x0006		/* transmit interrupt enable register */
-#define	MUSB2_REG_INTRXE 0x0008		/* receive interrupt enable register */
+//#define	MUSB2_REG_INTTX 0x0002		/* transmit interrupt register */
+//#define	MUSB2_REG_INTRX 0x0004		/* receive interrupt register */
+//#define	MUSB2_REG_INTTXE 0x0006		/* transmit interrupt enable register */
+//#define	MUSB2_REG_INTRXE 0x0008		/* receive interrupt enable register */
 #define	MUSB2_MASK_EPINT(epn) (1 << (epn))	/* epn = [0..15] */
 
 /* Common interrupt handling */
 
-#define	MUSB2_REG_INTUSB 0x000A		/* USB interrupt register */
+//#define	MUSB2_REG_INTUSB 0x000A		/* USB interrupt register */
 #define	MUSB2_MASK_ISUSP 0x01
 #define	MUSB2_MASK_IRESUME 0x02
 #define	MUSB2_MASK_IRESET 0x04
@@ -797,11 +797,11 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 #define	MUSB2_MASK_ISESSRQ 0x40
 #define	MUSB2_MASK_IVBUSERR 0x80
 
-#define	MUSB2_REG_INTUSBE 0x000B	/* USB interrupt enable register */
+//#define	MUSB2_REG_INTUSBE 0x000B	/* USB interrupt enable register */
 #define	MUSB2_REG_FRAME 0x000C		/* USB frame register */
 #define	MUSB2_MASK_FRAME 0x3FF		/* 0..1023 */
 
-#define	MUSB2_REG_EPINDEX 0x000E	/* endpoint index register */
+//#define	MUSB2_REG_EPINDEX 0x000E	/* endpoint index register */
 #define	MUSB2_MASK_EPINDEX 0x0F
 
 #define	MUSB2_REG_TESTMODE 0x000F	/* test mode register */
@@ -898,8 +898,8 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 #define	MUSB2_REG_RXCOUNT (0x0008 + MUSB2_REG_INDEXED_CSR)
 #define	MUSB2_MASK_RXCOUNT 0xFFFF
 
-#define	MUSB2_REG_TXTI (0x000A + MUSB2_REG_INDEXED_CSR)
-#define	MUSB2_REG_RXTI (0x000C + MUSB2_REG_INDEXED_CSR)
+//#define	MUSB2_REG_TXTI (0x000A + MUSB2_REG_INDEXED_CSR)
+//#define	MUSB2_REG_RXTI (0x000C + MUSB2_REG_INDEXED_CSR)
 
 /* Host Mode */
 #define	MUSB2_MASK_TI_SPEED 0xC0
@@ -912,17 +912,17 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 #define	MUSB2_MASK_TI_PROTO_INTR 0x30
 #define	MUSB2_MASK_TI_EP_NUM 0x0F
 
-#define	MUSB2_REG_TXNAKLIMIT (0x000B /* EPN=0 */ + MUSB2_REG_INDEXED_CSR)
-#define	MUSB2_REG_RXNAKLIMIT (0x000D /* EPN=0 */ + MUSB2_REG_INDEXED_CSR)
+//#define	MUSB2_REG_TXNAKLIMIT (0x000B /* EPN=0 */ + MUSB2_REG_INDEXED_CSR)
+//#define	MUSB2_REG_RXNAKLIMIT (0x000D /* EPN=0 */ + MUSB2_REG_INDEXED_CSR)
 #define	MUSB2_MASK_NAKLIMIT 0xFF
 
-#define	MUSB2_REG_FSIZE (0x000F + MUSB2_REG_INDEXED_CSR)
+//#define	MUSB2_REG_FSIZE (0x000F + MUSB2_REG_INDEXED_CSR)
 #define	MUSB2_MASK_RX_FSIZE 0xF0	/* 3..13, 2**n bytes */
 #define	MUSB2_MASK_TX_FSIZE 0x0F	/* 3..13, 2**n bytes */
 
 #define	MUSB2_REG_EPFIFO(n) (0x0020 + (4*(n)))
 
-#define	MUSB2_REG_CONFDATA (0x000F + MUSB2_REG_INDEXED_CSR)	/* EPN=0 */
+//#define	MUSB2_REG_CONFDATA (0x000F + MUSB2_REG_INDEXED_CSR)	/* EPN=0 */
 #define	MUSB2_MASK_CD_UTMI_DW 0x01
 #define	MUSB2_MASK_CD_SOFTCONE 0x02
 #define	MUSB2_MASK_CD_DYNFIFOSZ 0x04
@@ -934,7 +934,7 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 /* Various registers */
 
-#define	MUSB2_REG_DEVCTL 0x0060
+//#define	MUSB2_REG_DEVCTL 0x0060
 #define	MUSB2_MASK_SESS 0x01
 #define	MUSB2_MASK_HOSTREQ 0x02
 #define	MUSB2_MASK_HOSTMD 0x04
@@ -1014,10 +1014,10 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 /* Common registers */
 
-#define	MUSB2_REG_FADDR 0x0000		/* function address register */
+//#define	MUSB2_REG_FADDR 0x0000		/* function address register */
 #define	MUSB2_MASK_FADDR 0x7F
 
-#define	MUSB2_REG_POWER 0x0001		/* power register */
+//#define	MUSB2_REG_POWER 0x0001		/* power register */
 #define	MUSB2_MASK_SUSPM_ENA 0x01
 #define	MUSB2_MASK_SUSPMODE 0x02
 #define	MUSB2_MASK_RESUME 0x04
@@ -1029,15 +1029,15 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 /* Endpoint interrupt handling */
 
-#define	MUSB2_REG_INTTX 0x0002		/* transmit interrupt register */
-#define	MUSB2_REG_INTRX 0x0004		/* receive interrupt register */
-#define	MUSB2_REG_INTTXE 0x0006		/* transmit interrupt enable register */
-#define	MUSB2_REG_INTRXE 0x0008		/* receive interrupt enable register */
+//#define	MUSB2_REG_INTTX 0x0002		/* transmit interrupt register */
+//#define	MUSB2_REG_INTRX 0x0004		/* receive interrupt register */
+//#define	MUSB2_REG_INTTXE 0x0006		/* transmit interrupt enable register */
+//#define	MUSB2_REG_INTRXE 0x0008		/* receive interrupt enable register */
 #define	MUSB2_MASK_EPINT(epn) (1 << (epn))	/* epn = [0..15] */
 
 /* Common interrupt handling */
 
-#define	MUSB2_REG_INTUSB 0x000A		/* USB interrupt register */
+//#define	MUSB2_REG_INTUSB 0x000A		/* USB interrupt register */
 #define	MUSB2_MASK_ISUSP 0x01
 #define	MUSB2_MASK_IRESUME 0x02
 #define	MUSB2_MASK_IRESET 0x04
@@ -1048,7 +1048,7 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 #define	MUSB2_MASK_ISESSRQ 0x40
 #define	MUSB2_MASK_IVBUSERR 0x80
 
-#define	MUSB2_REG_INTUSBE 0x000B	/* USB interrupt enable register */
+//#define	MUSB2_REG_INTUSBE 0x000B	/* USB interrupt enable register */
 #define	MUSB2_REG_FRAME 0x000C		/* USB frame register */
 #define	MUSB2_MASK_FRAME 0x3FF		/* 0..1023 */
 
@@ -1173,7 +1173,7 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 #define	MUSB2_REG_EPFIFO(n) (0x0020 + (4*(n)))
 
-#define	MUSB2_REG_CONFDATA (0x000F + MUSB2_REG_INDEXED_CSR)	/* EPN=0 */
+//#define	MUSB2_REG_CONFDATA (0x000F + MUSB2_REG_INDEXED_CSR)	/* EPN=0 */
 #define	MUSB2_MASK_CD_UTMI_DW 0x01
 #define	MUSB2_MASK_CD_SOFTCONE 0x02
 #define	MUSB2_MASK_CD_DYNFIFOSZ 0x04
@@ -1185,7 +1185,7 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 /* Various registers */
 
-#define	MUSB2_REG_DEVCTL 0x0060
+//#define	MUSB2_REG_DEVCTL 0x0060
 #define	MUSB2_MASK_SESS 0x01
 #define	MUSB2_MASK_HOSTREQ 0x02
 #define	MUSB2_MASK_HOSTMD 0x04
