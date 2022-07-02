@@ -293,7 +293,7 @@ LABEL_5:
     DDRPHYC->PHYC_REG_140 |= 0x80000000;
 
     if ( (v29 & 0x100) != 0 )
-      MEMORY(DDRPHYC_BASE + 0x0B8) |= 0x0300u;
+      DDRPHYC->PHYC_REG_0B8 |= 0x0300u;
 
     v32 = DDRPHYC_BASE + 0x108;
 
@@ -308,7 +308,7 @@ LABEL_5:
     {
       v33 = DDRPHYC_BASE + 0x07C;
       v32 = (DDRPHYC->PHYC_REG_07C & 0xFFF0FFFF) | 0x10000;
-      MEMORY(DDRPHYC_BASE + 0x07C) = v32;
+      DDRPHYC->PHYC_REG_07C = v32;
     }
 
 /*
@@ -1397,9 +1397,9 @@ LABEL_105:
   if ( !HIWORD(v94) )
     *(uint32_t *)(a1 + 36) = v51;
 
-  MEMORY(DDRPHYC_BASE + 0x030) = v49;
-  MEMORY(DDRPHYC_BASE + 0x034) = *(uint16_t *)(a1 + 28);
-  MEMORY(DDRPHYC_BASE + 0x038) = *(uint16_t *)(a1 + 32);
+  DDRPHYC->PHYC_REG_030 = v49;
+  DDRPHYC->PHYC_REG_034 = *(uint16_t *)(a1 + 28);
+  DDRPHYC->PHYC_REG_038 = *(uint16_t *)(a1 + 32);
 
   v52 = *(uint16_t *)(a1 + 36);
   v53 = *(uint32_t *)(a1 + 12);
@@ -1414,19 +1414,19 @@ LABEL_105:
   DDRPHYC->PHYC_REG_06C = v5 | (v46 << 16) | (v46 << 24) | (v44 << 8);
 
   if ( v14 > 0x320 )
-    v54 = (MEMORY(DDRPHYC_BASE + 0x078) & 0xFFF0000) | 0xF0007600;
+    v54 = (DDRPHYC->PHYC_REG_078 & 0xFFF0000) | 0xF0007600;
   else
-    v54 = (MEMORY(DDRPHYC_BASE + 0x078) & 0xFFF0000) | 0xF0006600;
+    v54 = (DDRPHYC->PHYC_REG_078 & 0xFFF0000) | 0xF0006600;
 
-  MEMORY(DDRPHYC_BASE + 0x078) = v54 | 0x10;
+  DDRPHYC->PHYC_REG_078 = v54 | 0x10;
 
   result = (v13 << 15) & 0xFFF0000;
 
-  MEMORY(DDRPHYC_BASE + 0x080) = v82 | 0x2000100 | (v6 << 16);
-  MEMORY(DDRPHYC_BASE + 0x050) = v83 | (v84 << 20);
-  MEMORY(DDRPHYC_BASE + 0x054) = v85 | (v86 << 20);
-  MEMORY(DDRPHYC_BASE + 0x090) = v81 | (v13 << 16);
-  MEMORY(DDRPHYC_BASE + 0x094) = result;
+  DDRPHYC->PHYC_REG_080 = v82 | 0x2000100 | (v6 << 16);
+  DDRPHYC->PHYC_REG_050 = v83 | (v84 << 20);
+  DDRPHYC->PHYC_REG_054 = v85 | (v86 << 20);
+  DDRPHYC->PHYC_REG_090 = v81 | (v13 << 16);
+  DDRPHYC->PHYC_REG_094 = result;
 
   return result;
 }
@@ -1483,7 +1483,7 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   v7 = (32 * ~(uint8_t)v6) & 0x20;
 
   DDRPHYC->PHYC_REG_108 = (DDRPHYC->PHYC_REG_108 & 0xFFFFF0FF) | 0x0300;
-  v8 = (MEMORY(DDRPHYC_BASE + 0x344) & 0xFFFFFFCF) | v7;
+  v8 = (DDRPHYC->PHYC_REG_344 & 0xFFFFFFCF) | v7;
 
   if ( v4 <= 0x2A0 )
     v9 = v8 & 0xFFFF0FFF;
@@ -1495,7 +1495,7 @@ static int mctl_channel_init(int a1, unsigned int *a2) //OK
   if ( v4 > 0x2A0 )
     v10 |= 0x400u;
 
-  MEMORY(DDRPHYC_BASE + 0x344) = v10;
+  DDRPHYC->PHYC_REG_344 = v10;
   v11 = (DDRPHYC->PHYC_REG_3C4 & 0xFFFFFFCF) | v7;
 
   if ( v4 <= 0x2A0 )
