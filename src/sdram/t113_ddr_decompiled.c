@@ -1575,7 +1575,7 @@ LABEL_16:
   }
 
   if ( (a2[5] & 0x1000) != 0 )
-    v19 = v19 & 0xF0000000 | 0x3000000;
+    v19 = (v19 & 0xF0000000) | 0x3000000;
   else
     v14 &= 0xF0000000;
 
@@ -1715,20 +1715,29 @@ static int eye_delay_compensation(int a1) //OK
   int v5; // r5
   unsigned int v6; // r2
   unsigned int v7; // r3
-  int v8; // r2
+  //int v8; // r2
   int v9; // r1
   int k; // r2
   int result; // r0
+  int z;
 
   v2 = *(uint64_t *)(a1 + 84);
 
-  // 9 elements
-  for ( i = (int) & DDRPHYC->PHYC_REG_310; i != (DDRPHYC_BASE + 0x334); i += 4 )
-    *(volatile uint32_t *)i |= (((uint32_t)v2 << 9) & 0x1E00) | ((2 * HIDWORD(v2)) & 0x1E);
-
-  // 9 elements
-  for ( j = (int) & DDRPHYC->PHYC_REG_390; j != (DDRPHYC_BASE + 0x3B4); j += 4 )
-    *(volatile uint32_t *)j |= ((32 * v2) & 0x1E00) | ((HIDWORD(v2) >> 3) & 0x1E);
+  for (z = 0; z < 9; ++ z)
+  {
+	  DDRPHYC->PHYC_REG_310 [z] |= (((uint32_t)v2 << 9) & 0x1E00) | ((2 * HIDWORD(v2)) & 0x1E);
+  }
+  for (z = 0; z < 9; ++ z)
+  {
+	  DDRPHYC->PHYC_REG_390 [z] |= ((32 * v2) & 0x1E00) | ((HIDWORD(v2) >> 3) & 0x1E);
+  }
+//  // 9 elements
+//  for ( i = (int) & DDRPHYC->PHYC_REG_310; i != (DDRPHYC_BASE + 0x334); i += 4 )
+//    *(volatile uint32_t *)i |= (((uint32_t)v2 << 9) & 0x1E00) | ((2 * HIDWORD(v2)) & 0x1E);
+//
+//  // 9 elements
+//  for ( j = (int) & DDRPHYC->PHYC_REG_390; j != (DDRPHYC_BASE + 0x3B4); j += 4 )
+//    *(volatile uint32_t *)j |= ((32 * v2) & 0x1E00) | ((HIDWORD(v2) >> 3) & 0x1E);
 
   DDRPHYC->PHYC_REG_100 &= 0xFBFFFFFF;
 
@@ -1747,20 +1756,28 @@ static int eye_delay_compensation(int a1) //OK
   _usdelay(1);
 
   v7 = *(uint32_t *)(a1 + 80);
-  v8 = (int) & DDRPHYC->PHYC_REG_240;
+  //v8 = (int) & DDRPHYC->PHYC_REG_240;
   v9 = (16 * v7) & 0xF00;
 
-  // 16 elements
-  do
+  for (z = 0; z < 16; ++ z)
   {
-    *(volatile uint32_t *)v8 |= v9;
-    v8 += 4;
+	  DDRPHYC->PHYC_REG_240 [z] |= v9;
   }
-  while ( v8 != (DDRPHYC_BASE + 0x27C) );
-
-  // 6 elements
-  for ( k = (int) & DDRPHYC->PHYC_REG_228; k != (DDRPHYC_BASE + 0x240); k += 4 )
-    *(volatile uint32_t *)k |= v9;
+  for (z = 0; z < 6; ++ z)
+  {
+	  DDRPHYC->PHYC_REG_228 [z] |= v9;
+  }
+//  // 16 elements
+//  do
+//  {
+//    *(volatile uint32_t *)v8 |= v9;
+//    v8 += 4;
+//  }
+//  while ( v8 != (DDRPHYC_BASE + 0x27C) );
+//
+//  // 6 elements
+//  for ( k = (int) & DDRPHYC->PHYC_REG_228; k != (DDRPHYC_BASE + 0x240); k += 4 )
+//    *(volatile uint32_t *)k |= v9;
 
   DDRPHYC->PHYC_REG_218 |= (v7 << 8) & 0xF00;
 
@@ -1900,8 +1917,8 @@ LABEL_6:
     return 1;
   }
 
-  a2 = HIBYTE(DDRPHYC->PHYC_REG_348) & 3;
-  v3 = HIBYTE(DDRPHYC->PHYC_REG_3C8) & 3;
+  a2 = (DDRPHYC->PHYC_REG_348 >> 24) & 0x03;
+  v3 = (DDRPHYC->PHYC_REG_3C8 >> 24) & 0x03;
 
   if ( a2 == 2 )
   {
@@ -1926,7 +1943,7 @@ LABEL_6:
 
   if ( !a2 )
   {
-    v4 = *(uint32_t *)(a1 + 20) & 0xFFFFFFF0 | 0x1001;
+    v4 = (*(uint32_t *)(a1 + 20) & 0xFFFFFFF0) | 0x1001;
 
     *(uint32_t *)(a1 + 20) = v4;
 
