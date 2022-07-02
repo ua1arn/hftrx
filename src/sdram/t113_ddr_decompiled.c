@@ -1404,14 +1404,14 @@ LABEL_105:
   v52 = *(uint16_t *)(a1 + 36);
   v53 = *(uint32_t *)(a1 + 12);
 
-  MEMORY(DDRPHYC_BASE + 0x03C) = v52;
-  MEMORY(DDRPHYC_BASE + 0x02C) = (v53 >> 4) & 3;
-  MEMORY(DDRPHYC_BASE + 0x058) = v75 | (v74 << 16) | (v89 << 24) | (v90 << 8);
-  MEMORY(DDRPHYC_BASE + 0x05C) = v73 | (v71 << 16) | (v93 << 8);
+  DDRPHYC->PHYC_REG_03C = v52;
+  DDRPHYC->PHYC_REG_02C = (v53 >> 4) & 3;
+  DDRPHYC->PHYC_REG_058 = v75 | (v74 << 16) | (v89 << 24) | (v90 << 8);
+  DDRPHYC->PHYC_REG_05C = v73 | (v71 << 16) | (v93 << 8);
   DDRPHYC->PHYC_REG_060 = (v79 << 16) | (v41 << 24) | v91 | (v45 << 8);
-  MEMORY(DDRPHYC_BASE + 0x064) = v50 | v80;
-  MEMORY(DDRPHYC_BASE + 0x068) = (v95 << 16) | (v70 << 24) | v12 | (v72 << 8);
-  MEMORY(DDRPHYC_BASE + 0x06C) = v5 | (v46 << 16) | (v46 << 24) | (v44 << 8);
+  DDRPHYC->PHYC_REG_064 = v50 | v80;
+  DDRPHYC->PHYC_REG_068 = (v95 << 16) | (v70 << 24) | v12 | (v72 << 8);
+  DDRPHYC->PHYC_REG_06C = v5 | (v46 << 16) | (v46 << 24) | (v44 << 8);
 
   if ( v14 > 0x320 )
     v54 = (MEMORY(DDRPHYC_BASE + 0x078) & 0xFFF0000) | 0xF0007600;
@@ -1723,10 +1723,12 @@ static int eye_delay_compensation(int a1) //OK
 
   v2 = *(uint64_t *)(a1 + 84);
 
+  // Rank 0 ?
   for (z = 0; z < 9; ++ z)
   {
 	  DDRPHYC->PHYC_REG_310 [z] |= (((uint32_t)v2 << 9) & 0x1E00) | ((2 * HIDWORD(v2)) & 0x1E);
   }
+  // Rank 1 ?
   for (z = 0; z < 9; ++ z)
   {
 	  DDRPHYC->PHYC_REG_390 [z] |= ((32 * v2) & 0x1E00) | ((HIDWORD(v2) >> 3) & 0x1E);
