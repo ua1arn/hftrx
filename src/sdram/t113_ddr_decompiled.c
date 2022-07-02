@@ -157,7 +157,7 @@ static int init_DRAM(int a1,int a2, struct dram_para_t * a2param)
   int v29; // r1
   int v30; // r0
   unsigned int v31; // r3
-  int v32; // r3
+  //int v32; // r3
   unsigned int v33; // r2
   int v38; // r0
   int v40; // r3
@@ -264,7 +264,7 @@ LABEL_5:
 
     if ( (a2param->dram_tpr13 & 0x40000000) != 0 )	// 92
     {
-      v28 = a2param->dram_tpr8;	// 72
+      v28 = a2param->dram_tpr8;	// dram_tpr8 = 0x0,			// 0x048	72
 
       if ( !v28 )
         v28 = 0x10000200;
@@ -295,20 +295,17 @@ LABEL_5:
     if ( (v29 & 0x100) != 0 )
       DDRPHYC->PHYC_REG_0B8 |= 0x0300u;
 
-    v32 = DDRPHYC_BASE + 0x108;
+    //v32 = DDRPHYC_BASE + 0x108;
 
     if ( (v29 & 0x4000000) != 0 )
-      v33 = DDRPHYC->PHYC_REG_108 & ~ 0x2000;
+      DDRPHYC->PHYC_REG_108 &= ~ 0x2000;
     else
-      v33 = DDRPHYC->PHYC_REG_108 | 0x2000;
-
-    DDRPHYC->PHYC_REG_108 = v33;
+      DDRPHYC->PHYC_REG_108 |= 0x2000;
 
     if ( v30 == 7 )
     {
-      v33 = DDRPHYC_BASE + 0x07C;
-      v32 = (DDRPHYC->PHYC_REG_07C & 0xFFF0FFFF) | 0x10000;
-      DDRPHYC->PHYC_REG_07C = v32;
+      //v33 = DDRPHYC_BASE + 0x07C;
+    	DDRPHYC->PHYC_REG_07C = (DDRPHYC->PHYC_REG_07C & 0xFFF0FFFF) | 0x10000;
     }
 
 /*
@@ -664,8 +661,8 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
   do
   {
     v16 = (uint8_t) (16 * ((v11 >> v15) - 1)) |
-    		(4 * (v11 >> (v15 + 8))) & 4 |
-			*(volatile uint32_t *)v12 & 0xFFFFF000 |
+    		((4 * (v11 >> (v15 + 8))) & 4) |
+			(*(volatile uint32_t *) v12 & 0xFFFFF000) |
 			v13;
     switch ( (v11 >> (v15 - 4)) & 0xF )
     {
