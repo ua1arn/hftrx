@@ -423,9 +423,15 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
 	//	different register layout and a few missing registers.
 	// Turn off EHCI0
+	USB1_TypeDef * USBx = USB0;
+//	PRINTF("1 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
+
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
     arm_hardware_disable_handler(USB0_EHCI_IRQn);
     arm_hardware_disable_handler(USB0_OHCI_IRQn);
+#if 0
 
 	CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
 	CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
@@ -435,8 +441,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
 	CCU->USB0_CLK_REG &= ~ (0x01uL << 30);	// USBPHY0_RSTN
 
-	PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled. Enable for process.\n");
-	return;
+	//PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled. Enable for process.\n");
+	//return;
 
 	// Enable
 	CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
@@ -448,10 +454,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	// OHCI0 12M Source Select
 	CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
-		(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+		(0x00 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
 		0;
 
-	USB1_TypeDef * USBx = USB0;
 
 	USBx->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
 	USBx->USB_CTRL |=
@@ -462,6 +467,12 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		0;
 
 	USBx->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
+#endif
+//	USBx->PHY_CTRL = 0x00200209;
+//	USBx->USB_CTRL = 0x00200209;
+//	PRINTF("2 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
+//	PRINTF("2 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
+//	PRINTF("2 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
 
 	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 

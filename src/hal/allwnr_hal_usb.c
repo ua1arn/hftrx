@@ -80,23 +80,67 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 
   return HAL_OK;
 }
+// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
+// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
 
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 
-	const unsigned intusb = USBx->INTUSB;
-	const unsigned inttx  = USBx->INTTX;
-	const unsigned intrx  = USBx->INTRX;
-	TP();
-	PRINTF("HAL_PCD_IRQHandler: INTUSBE=%08lX\n", USBx->INTUSBE);
-	PRINTF("HAL_PCD_IRQHandler: INTTXE=%08lX\n", USBx->INTTXE);
-	PRINTF("HAL_PCD_IRQHandler: INTRXE=%08lX\n", USBx->INTRXE);
+	const unsigned intusb = USBx->INTUSB;// & USBx->INTUSBE;
+	const unsigned inttx  = USBx->INTTX;/// & USBx->INTTXE;
+	const unsigned intrx  = USBx->INTRX;// & USBx->INTRXE;
+
+	//PRINTF("HAL_PCD_IRQHandler: INTUSBE=%08lX INTRXE=%08lX INTTXE=%08lX\n", USBx->INTUSBE, USBx->INTRXE, USBx->INTTXE);
+	PRINTF("HAL_PCD_IRQHandler: INTUSB=%08lX INTRX=%08lX INTTX=%08lX\n", USBx->INTUSB, USBx->INTRX, USBx->INTTX);
+
+	/* check for any bus state change interrupts */
+
+	if (intusb & (MUSB2_MASK_IRESET |
+	    MUSB2_MASK_IRESUME | MUSB2_MASK_ISUSP |
+	    MUSB2_MASK_ICONN | MUSB2_MASK_IDISC |
+	    MUSB2_MASK_IVBUSERR))
+	{
+		PRINTF("HAL_PCD_IRQHandler: bus interrupt\n");
+		if (intusb & MUSB2_MASK_IRESET)
+		{
+			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_IRESET\n");
+		}
+		if (intusb & MUSB2_MASK_IRESUME)
+		{
+			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_IRESUME\n");
+		}
+		if (intusb & MUSB2_MASK_ISUSP)
+		{
+			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_ISUSP\n");
+		}
+		if (intusb & MUSB2_MASK_ICONN)
+		{
+			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_ICONN\n");
+		}
+		if (intusb & MUSB2_MASK_IDISC)
+		{
+			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_IDISC\n");
+		}
+		if (intusb & MUSB2_MASK_IVBUSERR)
+		{
+			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_IVBUSERR\n");
+		}
+	}
+	if (intrx || inttx)
+	{
+		PRINTF("HAL_PCD_IRQHandler: real endpoint interrupt "
+		    "rx=0x%04x, tx=0x%04x\n", intrx, inttx);
+	}
+	if ((intusb & MUSB2_MASK_ISOF) != 0)
+	{
+		// SOF handling
+	}
 
 	USBx->INTUSB = intusb;
-	USBx->INTUSB = intusb;
-	USBx->INTUSB = intusb;
+	USBx->INTTX = inttx;
+	USBx->INTRX = intrx;
 }
 
 /**
@@ -106,10 +150,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
+	PRINTF("USB_DevConnect\n");
 	/* Enable all nnterrupts */
-	USBx->INTUSBE = 0x03FF;
-	USBx->INTTXE = 0x03F;
-	USBx->INTRXE = 0x03E;
+//	USBx->INTUSBE = 0x03FF;
+//	USBx->INTTXE = 0x03F;
+//	USBx->INTRXE = 0x03E;
 
 	PRINTF("USB_DevConnect: INTUSBE=%08lX\n", USBx->INTUSBE);
 	PRINTF("USB_DevConnect: INTTXE=%08lX\n", USBx->INTTXE);
@@ -119,14 +164,7 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 //    USBx->SYSCFG0 |= USB_DPRPU;
 //
 //    /* Enable USB */
-//    if (USBx == & USB200)
-//	{
-//    	arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
-//	}
-//	else if (USBx == & USB201)
-//	{
-//		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
-//	}
+	//arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 ////    InterruptHandlerRegister(USBIX_IRQn, &_usbisr);
 ////    GIC_SetPriority(USBIX_IRQn, 16);
 ////    GIC_SetConfiguration(USBIX_IRQn, 1);
@@ -145,12 +183,12 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
-
-	USBx->INTUSBE = 0;
-	USBx->INTTXE = 0;
-	USBx->INTRXE = 0;
+	PRINTF("USB_DevDisconnect\n");
+//	USBx->INTUSBE = 0;
+//	USBx->INTTXE = 0;
+//	USBx->INTRXE = 0;
     /* Disable USB */
-    arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+    //arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 ////    InterruptHandlerRegister(USBIX_IRQn, NULL);
 //    if (USBx == & UDB0)
 //	{
@@ -209,7 +247,7 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
 HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 {
 	//TP();
-	USBx->INTUSBE = 0xFF; //MUSB2_MASK_IRESET;
+	USBx->INTUSBE = 0xFF & ~ MUSB2_MASK_ISOF; //MUSB2_MASK_IRESET;
 //	unsigned i;
 //
 //	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
