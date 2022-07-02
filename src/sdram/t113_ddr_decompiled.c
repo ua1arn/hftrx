@@ -1724,20 +1724,20 @@ static int eye_delay_compensation(int a1) //OK
 
   // 9 elements
   for ( i = (int) & DDRPHYC->PHYC_REG_310; i != (DDRPHYC_BASE + 0x334); i += 4 )
-    *(volatile uint32_t *)i |= (((uint32_t)v2 << 9) & 0x1E00) | (2 * HIDWORD(v2)) & 0x1E;
+    *(volatile uint32_t *)i |= (((uint32_t)v2 << 9) & 0x1E00) | ((2 * HIDWORD(v2)) & 0x1E);
 
   // 9 elements
   for ( j = (int) & DDRPHYC->PHYC_REG_390; j != (DDRPHYC_BASE + 0x3B4); j += 4 )
-    *(volatile uint32_t *)j |= (32 * v2) & 0x1E00 | (HIDWORD(v2) >> 3) & 0x1E;
+    *(volatile uint32_t *)j |= ((32 * v2) & 0x1E00) | ((HIDWORD(v2) >> 3) & 0x1E);
 
   DDRPHYC->PHYC_REG_100 &= 0xFBFFFFFF;
 
-  v5 = (HIDWORD(v2) >> 15) & 0x1E | (WORD1(v2) << 9) & 0x1E00;
+  v5 = ((HIDWORD(v2) >> 15) & 0x1E) | ((WORD1(v2) << 9) & 0x1E00);
 
   DDRPHYC->PHYC_REG_334 |= v5;
   DDRPHYC->PHYC_REG_338 |= v5;
 
-  v6 = (HIDWORD(v2) >> 19) & 0x1E | ((unsigned int)v2 >> 20 << 9) & 0x1E00;
+  v6 = ((HIDWORD(v2) >> 19) & 0x1E) | (((unsigned int)v2 >> 20 << 9) & 0x1E00);
 
   DDRPHYC->PHYC_REG_3B4 |= v6;
   DDRPHYC->PHYC_REG_3B8 |= v6;
