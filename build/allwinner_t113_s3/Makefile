@@ -27,12 +27,12 @@ PRJROOT := ../..
 OBJDIR = obj
 
 # Define project name here
-PROJECT = tc1_alwnrt113s3
+PROJECT = tc1_t113s3
 
 # Define linker script file here
 LDSCRIPT_BOOT = ./allwnr_t113s3_boot.ld
 LDSCRIPT_APP = ./allwnr_t113s3_app.ld
-ARCHDIR = $(PRJROOT)/arch/allwnr_t13s3
+ARCHDIR = $(PRJROOT)/arch/t113s3
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS += -D"NDEBUG"=1 -D"CPUSTYPE_T113"=1 -D"EGL_STATIC_LIBRARY"=1
@@ -231,11 +231,6 @@ app_runXBOOT: xboot_t113_800.bin
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
-
-flash_old:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00040000 ddr3init.bin
 	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
