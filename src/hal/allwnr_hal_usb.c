@@ -171,6 +171,7 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 ////    GIC_EnableIRQ(USBIX_IRQn);
 //	//arm_hardware_set_handler_system(USBIX_IRQn, _usbisr);
 
+    /* Enable pullup on D+ */
 	USBx->MUSB2_REG_POWER |= MUSB2_MASK_SOFTC;
 
     return HAL_OK;
