@@ -93,7 +93,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	const unsigned intrx  = USBx->INTRX;// & USBx->INTRXE;
 
 	//PRINTF("HAL_PCD_IRQHandler: INTUSBE=%08lX INTRXE=%08lX INTTXE=%08lX\n", USBx->INTUSBE, USBx->INTRXE, USBx->INTTXE);
-	PRINTF("HAL_PCD_IRQHandler: INTUSB=%08lX INTRX=%08lX INTTX=%08lX\n", USBx->INTUSB, USBx->INTRX, USBx->INTTX);
+	PRINTF("HAL_PCD_IRQHandler: INTUSB=%08lX INTRX=%08lX INTTX=%08lX, frame=%04X\n", USBx->INTUSB, USBx->INTRX, USBx->INTTX, USBx->FRAME);
 
 	/* check for any bus state change interrupts */
 
@@ -152,9 +152,9 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
 	PRINTF("USB_DevConnect\n");
 	/* Enable all nnterrupts */
-//	USBx->INTUSBE = 0x03FF;
-//	USBx->INTTXE = 0x03F;
-//	USBx->INTRXE = 0x03E;
+	USBx->INTUSBE = 0xFF & ~ MUSB2_MASK_ISOF; //MUSB2_MASK_IRESET;
+	USBx->INTRXE = 0x3F;
+	USBx->INTTXE = 0x3F;
 
 	PRINTF("USB_DevConnect: INTUSBE=%08lX\n", USBx->INTUSBE);
 	PRINTF("USB_DevConnect: INTTXE=%08lX\n", USBx->INTTXE);
@@ -184,9 +184,9 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
 	PRINTF("USB_DevDisconnect\n");
-//	USBx->INTUSBE = 0;
-//	USBx->INTTXE = 0;
-//	USBx->INTRXE = 0;
+	USBx->INTUSBE = 0;
+	USBx->INTTXE = 0;
+	USBx->INTRXE = 0;
     /* Disable USB */
     //arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 ////    InterruptHandlerRegister(USBIX_IRQn, NULL);
@@ -247,7 +247,6 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
 HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 {
 	//TP();
-	USBx->INTUSBE = 0xFF & ~ MUSB2_MASK_ISOF; //MUSB2_MASK_IRESET;
 //	unsigned i;
 //
 //	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
