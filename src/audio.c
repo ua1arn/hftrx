@@ -8,6 +8,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
+#include "audio_reverb.h"
 #include "spi.h"
 #include "formats.h"	// for debug prints
 
@@ -135,8 +136,8 @@ static uint_fast8_t		glob_equalizer_tx_gains [AF_EQUALIZER_BANDS];
 
 #if WITHREVERB
 	static uint_fast8_t glob_reverb;		/* ревербератор */
-	static uint_fast8_t glob_reverbdelay = 20;		/* ревербератор - задержка (ms) */
-	static uint_fast8_t glob_reverbloss = 30;		/* ревербератор - ослабление dB на возврате */
+	static uint_fast8_t glob_reverbdelay = 50;		/* ревербератор - задержка (%) */
+	static uint_fast8_t glob_reverbloss = 50;		/* ревербератор - ослабление % на возврате */
 #endif /* WITHREVERB */
 
 static uint_fast16_t 	glob_lineamp = WITHLINEINGAINMAX;
@@ -3464,12 +3465,6 @@ static RAMDTCM volatile agcparams_t txagcparams [NPROF];
 static RAMDTCM volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 static RAMDTCM volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
-#if WITHREVERB
-	static FLOAT_t reverbRatioDirect [NPROF] = { 1, 1 };
-	static FLOAT_t reverbRatioDelayed [NPROF] = { 0, 0 };
-	static unsigned reverbDelay [NPROF];	/* задержка ревербератора в сэмплах */
-#endif /* WITHREVERB */
-
 /* Получение эффекта реверберации. На входе сэмпл, возвращаем обработанный или неизменный сэмпл
  *
  */
@@ -3477,21 +3472,7 @@ static FLOAT_t txmikereverb(FLOAT_t isample)
 {
 #if WITHREVERB
 
-	enum { MAXDELAYSAMPLES = NSAITICKS(WITHREVERBDELAYMAX) };
-
-	/* Тут нельзя использовать память NOINIT для буфера. Если в ней встречается значение NaN, то
-	 * даже при выключенном ревербераторе результат вычисления результирующего сэмпла так же NaN и он пришется в буфер...
-	 * А я управляю включением/выключением через значения в reverbRatioDirect и reverbRatioDelayed.
-	 */
-	static RAM_D3 FLOAT_t delaybuf [MAXDELAYSAMPLES];
-	static unsigned pos;
-
-	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
-	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay [gwagcproftx]) % MAXDELAYSAMPLES];
-	const FLOAT_t rsample = isample * reverbRatioDirect [gwagcproftx] + oldsample * reverbRatioDelayed [gwagcproftx];
-	delaybuf [pos] = rsample;
-
-	return rsample;
+	return audio_reverb_calc(isample);
 
 #else /* WITHREVERB */
 
@@ -6004,14 +5985,8 @@ txparam_update(uint_fast8_t profile)
 	{
 		// ревербератор
 	#if WITHREVERB
-		/* при выключенном ревербераторе сигнал все равно
-		 * помещается в линию задержки - чтобы при
-		 * включении уже был готов к работе
-		 * */
-		reverbRatioDelayed [profile] = glob_reverb ? db2ratio(- (int) glob_reverbloss) : 0;	/* ревербератор - ослабление на возврате */
-		reverbRatioDirect [profile] = 1 - reverbRatioDelayed [profile];
-		reverbDelay [profile] = NSAITICKS(glob_reverbdelay);
-
+		audio_reverb_set_loss(glob_reverb ? glob_reverbloss : 100.0f);
+		audio_reverb_set_delay(glob_reverbdelay);
 	#endif /* WITHREVERB */
 	}
 
