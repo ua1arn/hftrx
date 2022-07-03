@@ -3515,33 +3515,33 @@ enum
 #endif /* WITHMENU */
 
 #elif DSTYLE_G_X64_Y32
-    #include "dstyle/g_x64_y32.h"
+    #include "display/dstyle/g_x64_y32.h"
 #elif DSTYLE_G_X128_Y64
-    #include "dstyle/g_x128_y64.h"
+    #include "display/dstyle/g_x128_y64.h"
 #elif DSTYLE_G_X132_Y64
-    #include "dstyle/g_x132_y64.h"
+    #include "display/dstyle/g_x132_y64.h"
 #elif DSTYLE_G_X160_Y128
-    #include "dstyle/g_x160_y128.h"
+    #include "display/dstyle/g_x160_y128.h"
 #elif DSTYLE_G_X176_Y132
-    #include "dstyle/g_x176_y132.h"
+    #include "display/dstyle/g_x176_y132.h"
 #elif DSTYLE_G_X220_Y176
-    #include "dstyle/g_x220_y176.h"
+    #include "display/dstyle/g_x220_y176.h"
 #elif DSTYLE_G_X240_Y128
-    #include "dstyle/g_x240_y128.h"
+    #include "display/dstyle/g_x240_y128.h"
 #elif DSTYLE_G_X320_Y240
-    #include "dstyle/g_x320_y240.h"
+    #include "display/dstyle/g_x320_y240.h"
 #elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF && ! WITHTOUCHGUI
-    #include "dstyle/g_x480_y272_spectrum_notouch.h"
+    #include "display/dstyle/g_x480_y272_spectrum_notouch.h"
 #elif DSTYLE_G_X480_Y272
-    #include "dstyle/g_x480_y272.h"
+    #include "display/dstyle/g_x480_y272.h"
 #elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI && WITHALTERNATIVELAYOUT
-    #include "dstyle/g_x800_y480_touch_alternative.h"
+    #include "display/dstyle/g_x800_y480_touch_alternative.h"
 #elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI //&& WITHSPECTRUMWF
-    #include "dstyle/g_x800_y480_touch.h"
+    #include "display/dstyle/g_x800_y480_touch.h"
 #elif DSTYLE_G_X800_Y480 // && (LCDMODE_MAIN_PAGES > 1)	//&& WITHSPECTRUMWF
-    #include "dstyle/g_x800_y480.h"
+    #include "display/dstyle/g_x800_y480.h"
 #elif DSTYLE_G_X800_Y480 && 1	//&& WITHSPECTRUMWF
-    #include "dstyle/g_x800_y480_mini.h"
+    #include "display/dstyle/g_x800_y480_mini.h"
 #elif DSTYLE_G_DUMMY
 
 #if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
