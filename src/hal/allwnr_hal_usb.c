@@ -150,6 +150,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
+	usb_start();
+	return HAL_OK;
 	PRINTF("USB_DevConnect\n");
 	/* Enable all nnterrupts */
 	USBx->MUSB2_REG_INTUSBE = 0xFF & ~ MUSB2_MASK_ISOF;
@@ -184,6 +186,8 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
+	usb_stop();
+	return HAL_OK;
 	PRINTF("USB_DevDisconnect\n");
 	USBx->MUSB2_REG_INTUSBE = 0;
 	USBx->MUSB2_REG_INTTXE = 0;
@@ -204,6 +208,45 @@ HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 	USBx->MUSB2_REG_POWER &= ~ MUSB2_MASK_SOFTC;
 
     return HAL_OK;
+}
+
+/**
+  * @brief  USB_StopDevice : Stop the usb device mode
+  * @param  USBx  Selected device
+  * @retval HAL status
+  */
+HAL_StatusTypeDef USB_StopDevice(USB_OTG_GlobalTypeDef *USBx)
+{
+  HAL_StatusTypeDef ret = HAL_OK;
+//  uint32_t USBx_BASE = (uint32_t)USBx;
+//  uint32_t i;
+//
+//  /* Clear Pending interrupt */
+//  for (i = 0U; i < 15U; i++)
+//  {
+//    USBx_INEP(i)->DIEPINT = 0xFB7FU;
+//    USBx_OUTEP(i)->DOEPINT = 0xFB7FU;
+//  }
+//
+//  /* Clear interrupt masks */
+//  USBx_DEVICE->DIEPMSK  = 0U;
+//  USBx_DEVICE->DOEPMSK  = 0U;
+//  USBx_DEVICE->DAINTMSK = 0U;
+//
+//  /* Flush the FIFO */
+//  ret = USB_FlushRxFifo(USBx);
+//  if (ret != HAL_OK)
+//  {
+//    return ret;
+//  }
+//
+//  ret = USB_FlushTxFifo(USBx,  0x10U);
+//  if (ret != HAL_OK)
+//  {
+//    return ret;
+//  }
+
+  return ret;
 }
 
 /**
