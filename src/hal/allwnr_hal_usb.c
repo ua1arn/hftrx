@@ -150,9 +150,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
+	PRINTF("USB_DevConnect\n");
 	usb_start();
 	return HAL_OK;
-	PRINTF("USB_DevConnect\n");
 	/* Enable all nnterrupts */
 	USBx->MUSB2_REG_INTUSBE = 0xFF & ~ MUSB2_MASK_ISOF;
 	USBx->MUSB2_REG_INTRXE = 0x3F;
@@ -379,6 +379,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, USB_OTG_CfgTypeDef 
   */
 HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 {
+	PRINTF("HAL_PCD_Init\n");
 	  USB_OTG_GlobalTypeDef *USBx;
 	  uint8_t i;
 
@@ -500,6 +501,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
 {
+	PRINTF("HAL_PCD_DeInit\n");
 //	  /* Check the PCD handle allocation */
 //	  if (hpcd == NULL)
 //	  {
