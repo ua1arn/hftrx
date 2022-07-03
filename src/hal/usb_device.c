@@ -188,6 +188,7 @@ board_usb_tspool(void * ctx)
 #endif /* defined (WITHUSBHW_HOST) */
 }
 
+/* User-mode function */
 void MX_USB_HOST_Init(void)
 {
 	static ticker_t usbticker;
@@ -206,18 +207,28 @@ void MX_USB_HOST_Init(void)
 
 }
 
+/* User-mode function */
 void MX_USB_HOST_DeInit(void)
 {
 	USBH_DeInit(& hUsbHostHS);
 
 }
 
+/* User-mode function */
 void MX_USB_HOST_Process(void)
 {
 	USBH_Process(& hUsbHostHS);
 }
 
 #endif /* defined (WITHUSBHW_HOST) */
+
+#if defined (WITHUSBHW_DEVICE)
+
+/* User-mode function */
+void MX_USB_DEVICE_Process(void)
+{
+}
+#endif /* defined (WITHUSBHW_DEVICE) */
 
 /**
   * @}
@@ -259,6 +270,8 @@ void board_usb_initialize(void)
 
 #endif /* WITHUSBDEV_HSDESC */
 
+	return;
+
 #if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_Init();
 #endif /* defined (WITHUSBHW_DEVICE) */
@@ -287,6 +300,8 @@ void board_usb_deinitialize(void)
 /* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
+	usb_start();
+	return;
 	//PRINTF("board_usb_activate\n");
 #if defined (WITHUSBHW_DEVICE)
 	if (USBD_Start(& hUsbDeviceHS) != USBD_OK)
@@ -317,11 +332,13 @@ void board_usb_deactivate(void)
 
 	//PRINTF(PSTR("board_usb_deactivate done.\n"));
 }
-
 void board_usbh_polling(void)
 {
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_Process();
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+#if defined (WITHUSBHW_DEVICE)
+	MX_USB_DEVICE_Process();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 }
 

@@ -2434,6 +2434,7 @@ USBH_StatusTypeDef USBH_LL_Stop(USBH_HandleTypeDef *phost)
 	return usb_status;
 }
 
+/* User-mode function */
 void MX_USB_HOST_Init(void)
 {
 	static ticker_t usbticker;
@@ -2452,11 +2453,13 @@ void MX_USB_HOST_Init(void)
 
 }
 
+/* User-mode function */
 void MX_USB_HOST_DeInit(void)
 {
 	USBH_DeInit(& hUsbHostHS);
 }
 
+/* User-mode function */
 void MX_USB_HOST_Process(void)
 {
 	EHCI_HandleTypeDef * const hehci = hUsbHostHS.pData;
