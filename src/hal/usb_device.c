@@ -270,8 +270,6 @@ void board_usb_initialize(void)
 
 #endif /* WITHUSBDEV_HSDESC */
 
-	return;
-
 #if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_Init();
 #endif /* defined (WITHUSBHW_DEVICE) */
