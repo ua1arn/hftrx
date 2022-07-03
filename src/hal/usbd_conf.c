@@ -431,7 +431,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
     arm_hardware_disable_handler(USB0_EHCI_IRQn);
     arm_hardware_disable_handler(USB0_OHCI_IRQn);
-#if 0
+
+#if 1
 
 	CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
 	CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
@@ -474,7 +475,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 //	PRINTF("2 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
 //	PRINTF("2 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
 
-	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
+	//arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
@@ -504,9 +505,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 //	usb_pause_mtx(&sc->sc_bus.bus_mtx, hz / 10);
 
 	// USB0_DEVICE->CONFDATA |= MUSB2_MASK_CD_UTMI_DW; // R/O register?
-	USB0_DEVICE->MUSB2_REG_POWER = MUSB2_MASK_HSENAB | MUSB2_MASK_ISOUPD;
-	USB0_DEVICE->MUSB2_REG_DEVCTL &= ~ (MUSB2_MASK_SESS);
-	local_delay_ms(10);
+//	USB0_DEVICE->MUSB2_REG_POWER = MUSB2_MASK_HSENAB | MUSB2_MASK_ISOUPD;
+//	USB0_DEVICE->MUSB2_REG_DEVCTL &= ~ (MUSB2_MASK_SESS);
+//	local_delay_ms(10);
 
 //	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
 //	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);

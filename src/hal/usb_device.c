@@ -300,8 +300,6 @@ void board_usb_deinitialize(void)
 /* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
-	usb_start();
-	return;
 	//PRINTF("board_usb_activate\n");
 #if defined (WITHUSBHW_DEVICE)
 	if (USBD_Start(& hUsbDeviceHS) != USBD_OK)
