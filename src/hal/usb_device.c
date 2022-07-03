@@ -319,15 +319,12 @@ void board_usb_activate(void)
 void board_usb_deactivate(void)
 {
 	//PRINTF(PSTR("board_usb_deactivate start.\n"));
-
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	USBH_Stop(& hUsbHostHS);
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
-
 #if defined (WITHUSBHW_DEVICE)
 	USBD_Stop(& hUsbDeviceHS);
 #endif /* defined (WITHUSBHW_DEVICE) */
-
 	//PRINTF(PSTR("board_usb_deactivate done.\n"));
 }
 void board_usbh_polling(void)
