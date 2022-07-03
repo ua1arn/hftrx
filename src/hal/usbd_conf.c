@@ -1518,8 +1518,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 #if CPUSTYLE_R7S721
 	usbd_pipes_initialize(& hpcd_USB_OTG);
 #elif CPUSTYPE_T113
-	#warning Implement for CPUSTYPE_T113
-	PRINTF("USBD_LL_Init\n");
+	//#warning Implement for CPUSTYPE_T113
+	//PRINTF("USBD_LL_Init\n");
 	usb_params_init();
 
 #else /* CPUSTYLE_R7S721 */

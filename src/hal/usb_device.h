@@ -162,6 +162,7 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
 void usb_params_init(void);
 uint32_t usb_start(void);
 uint32_t usb_chk_run(int32_t mode);
+uint32_t usb_stop(void);
 
 #ifdef __cplusplus
 }
