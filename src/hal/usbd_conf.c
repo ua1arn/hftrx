@@ -449,7 +449,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 	CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
 
-	// Turn off USBOTG0
+	// Turn on USBOTG0
 	CCU->USB_BGR_REG |= (0x01uL << 24);	// USBOTG0_RST
 	CCU->USB_BGR_REG |= (0x01uL << 8);	// USBOTG0_GATING
 
