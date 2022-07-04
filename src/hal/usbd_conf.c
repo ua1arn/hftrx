@@ -606,8 +606,15 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 
 #elif CPUSTYPE_T113
 
-	#warning HAL_PCD_MspDeInit should be implemented
 	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+
+	CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
+	CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
+	CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
+
+	CCU->USB_BGR_REG &= ~ (0x01uL << 0);	// USBOHCI0_GATING
+	CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
+	CCU->USB0_CLK_REG &= ~ (0x01uL << 30);	// USBPHY0_RSTN
 
 #else
 	#error HAL_PCD_MspDeInit should be implemented
