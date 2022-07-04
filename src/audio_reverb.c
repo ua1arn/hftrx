@@ -34,21 +34,34 @@ typedef struct {
     FLOAT_t     gain;
 } item_t;
 
-static FLOAT_t    wet0 = 0.0f;
-static FLOAT_t    wet1 = 1.0f;
-static FLOAT_t    result = 0.0f;
+static FLOAT_t    wet0 = 0;
+static FLOAT_t    wet1 = 1;
+static FLOAT_t    result = 0;
 
-static item_t     cf0 = { .buf = cfbuf0, .gain = 0.805f };
-static item_t     cf1 = { .buf = cfbuf1, .gain = 0.827f };
-static item_t     cf2 = { .buf = cfbuf2, .gain = 0.783f }; 
-static item_t     cf3 = { .buf = cfbuf3, .gain = 0.764f };
-static item_t     ap0 = { .buf = apbuf0, .gain = 0.7f };
-static item_t     ap1 = { .buf = apbuf1, .gain = 0.7f };
-static item_t     ap2 = { .buf = apbuf2, .gain = 0.7f };
+static item_t     cf0 = { .buf = cfbuf0, .gain = 0.805 };
+static item_t     cf1 = { .buf = cfbuf1, .gain = 0.827 };
+static item_t     cf2 = { .buf = cfbuf2, .gain = 0.783 }; 
+static item_t     cf3 = { .buf = cfbuf3, .gain = 0.764 };
+static item_t     ap0 = { .buf = apbuf0, .gain = 0.7 };
+static item_t     ap1 = { .buf = apbuf1, .gain = 0.7 };
+static item_t     ap2 = { .buf = apbuf2, .gain = 0.7 };
 
 static FLOAT_t calc_comb(FLOAT_t in, item_t *comb) {
-    FLOAT_t   readback = comb->buf[comb->index];
-    FLOAT_t   new = readback * comb->gain + in;
+    FLOAT_t   reedback = comb->buf[comb->index];
+
+    if (reedback > 1) {
+        reedback = 1;
+    } else if (reedback < -1) {
+        reedback = -1;
+    }
+
+    FLOAT_t   new = reedback * comb->gain + in;
+
+    if (new > 1) {
+        new = 1;
+    } else if (new < -1) {
+        new = -1;
+    }
 
     comb->buf[comb->index] = new;
     comb->index++;
@@ -56,12 +69,25 @@ static FLOAT_t calc_comb(FLOAT_t in, item_t *comb) {
     if (comb->index >= comb->delay)
         comb->index = 0;
 
-    return readback;
+    return reedback;
 }
 
 static FLOAT_t calc_all_pass(FLOAT_t in, item_t *allpass) {
     FLOAT_t   reedback = allpass->buf[allpass->index] - allpass->gain*in;
+
+    if (reedback > 1) {
+        reedback = 1;
+    } else if (reedback < -1) {
+        reedback = -1;
+    }
+
     FLOAT_t   new = reedback*allpass->gain + in;
+
+    if (new > 1) {
+        new = 1;
+    } else if (new < -1) {
+        new = -1;
+    }
 
     allpass->buf[allpass->index] = new;
     allpass->index++;
@@ -73,7 +99,7 @@ static FLOAT_t calc_all_pass(FLOAT_t in, item_t *allpass) {
 }
 
 void audio_reverb_set_delay(FLOAT_t delay) {
-    FLOAT_t x = delay / 100.0f;
+    FLOAT_t x = delay / 100;
 
     cf0.delay = (uint16_t) (x * CF0);   if (cf0.index >= cf0.delay) cf0.index = 0;
     cf1.delay = (uint16_t) (x * CF1);   if (cf1.index >= cf1.delay) cf1.index = 0;
@@ -86,18 +112,22 @@ void audio_reverb_set_delay(FLOAT_t delay) {
 }
 
 void audio_reverb_set_loss(FLOAT_t loss) {
-    FLOAT_t x = loss / 100.f;
-
-    wet0 = 1.0f - x;
-    wet1 = x;
+    wet0 = loss;
+    wet1 = 1 - loss;
 }
 
 FLOAT_t audio_reverb_calc(FLOAT_t in) {
-    result = (calc_comb(in, &cf0) + calc_comb(in, &cf1) + calc_comb(in, &cf2) + calc_comb(in, &cf3)) / 4.0f;
+    result = (calc_comb(in, &cf0) + calc_comb(in, &cf1) + calc_comb(in, &cf2) + calc_comb(in, &cf3)) / 4;
 
     result = calc_all_pass(result, &ap0);
     result = calc_all_pass(result, &ap1);
     result = calc_all_pass(result, &ap2);
+
+    if (result > 1) {
+        result = 1;
+    } else if (result < -1) {
+        result = -1;
+    }
 
     return wet0 * result + wet1 * in;
 }

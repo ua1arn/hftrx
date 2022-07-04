@@ -90,8 +90,8 @@ typedef uint_least64_t phase_t;
 #define WITHREVERBDELAYMIN 1	/* минимальная задержка ревербератора % */
 #define WITHREVERBDELAYMAX 100	/* максимальная задержка ревербератора % */
 
-#define WITHREVERBLOSSMIN 1		/* минимальное ослабление на возврате ревербератора % */
-#define WITHREVERBLOSSMAX 100	/* максимальная ослабление на возврате ревербератора % */
+#define WITHREVERBLOSSMIN 0		/* минимальное ослабление на возврате ревербератора db */
+#define WITHREVERBLOSSMAX 25	/* максимальная ослабление на возврате ревербератора (dB) */
 
 #if defined (DAC1_TYPE)
 	#define WITHDAC1VALMIN	0
