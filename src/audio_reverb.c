@@ -81,18 +81,18 @@ static FLOAT_t calc_all_pass(FLOAT_t in, reverbch_t *allpass) {
         reedback = -1;
     }
 
-    FLOAT_t   new = reedback*allpass->gain + in;
+    FLOAT_t   newv = reedback*allpass->gain + in;
 
-    if (new > 1) {
-        new = 1;
-    } else if (new < -1) {
-        new = -1;
+    if (newv > 1) {
+        newv = 1;
+    } else if (newv < -1) {
+        newv = -1;
     }
 
-    allpass->buf[allpass->index] = new;
+    allpass->buf[allpass->index] = newv;
     allpass->index++;
 
-    if (allpass->index > allpass->delay)
+    if (allpass->index >= allpass->delay)
         allpass->index = 0;
 
     return reedback;
