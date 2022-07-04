@@ -87,11 +87,11 @@ typedef uint_least64_t phase_t;
 //#define WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 //#define WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 
-#define WITHREVERBDELAYMIN 5	/* минимальная задержка ревербератора (ms) */
-#define WITHREVERBDELAYMAX 150	/* максимальная задержка ревербератора (ms) */
+#define WITHREVERBDELAYMIN 1	/* минимальная задержка ревербератора % */
+#define WITHREVERBDELAYMAX 100	/* максимальная задержка ревербератора % */
 
-#define WITHREVERBLOSSMIN 6		/* минимальное ослабление на возврате ревербератора (dB) - кратно ISTEP3 */
-#define WITHREVERBLOSSMAX 39	/* максимальная ослабление на возврате ревербератора (dB) - кратно ISTEP3 */
+#define WITHREVERBLOSSMIN 0		/* минимальное ослабление на возврате ревербератора db */
+#define WITHREVERBLOSSMAX 25	/* максимальная ослабление на возврате ревербератора (dB) */
 
 #if defined (DAC1_TYPE)
 	#define WITHDAC1VALMIN	0
