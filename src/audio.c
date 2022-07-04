@@ -5985,7 +5985,7 @@ txparam_update(uint_fast8_t profile)
 	{
 		// ревербератор
 	#if WITHREVERB
-		audio_reverb_set_loss(glob_reverb ? db2ratio(- (int)glob_reverbloss) : 0);
+		audio_reverb_set_loss(glob_reverb ? db2ratio(- (int) glob_reverbloss) : 0);
 		audio_reverb_set_delay(glob_reverbdelay);
 	#endif /* WITHREVERB */
 	}

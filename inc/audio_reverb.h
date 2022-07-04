@@ -3,8 +3,8 @@
 
 #include "audio.h"
 
-extern void audio_reverb_set_delay(FLOAT_t delay);
-extern void audio_reverb_set_loss(FLOAT_t loss);
-extern FLOAT_t audio_reverb_calc(FLOAT_t in);
+void audio_reverb_set_delay(unsigned delay);
+void audio_reverb_set_loss(FLOAT_t ratio);
+FLOAT_t audio_reverb_calc(FLOAT_t in);
 
 #endif
