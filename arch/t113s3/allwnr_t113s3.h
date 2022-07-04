@@ -2279,13 +2279,10 @@ typedef struct DMAC_Type
 #define CAN0			((CAN_TypeDef *) CAN0_BASE)						/*!< \brief CAN0 Interface register set access pointer */
 #define CAN1			((CAN_TypeDef *) CAN1_BASE)						/*!< \brief CAN1 Interface register set access pointer */
 
-#define USB0			((USB1_TypeDef *) USB0_BASE)					/*!< \brief USB0 Interface register set access pointer */
-#define USB1			((USB1_TypeDef *) USB1_BASE)					/*!< \brief USB1 Interface register set access pointer */
-
 #define USB0_DEVICE		((DRD_TypeDef *) USB0_BASE)					/*!< \brief USB0_OTG Interface register set access pointer */
+#define USB0_EHCI		((USB1_TypeDef *) (USB0_BASE + 0x1000))	/*!< \brief USB0_EHCI Interface register set access pointer */
+#define USB1_EHCI		((USB1_TypeDef *) USB1_BASE)				/*!< \brief USB1_EHCI Interface register set access pointer */
 
-#define USB0_EHCI		((USB_EHCI_CapabilityTypeDef * ) (USB0_BASE + 0x1000))	/*!< \brief USB0_EHCI Interface register set access pointer */
-#define USB1_EHCI		((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)				/*!< \brief USB1_EHCI Interface register set access pointer */
 #define DMAC			((DMAC_TypeDef *) DMAC_BASE)							/*!< \brief DMAC Interface register set access pointer */
 
 

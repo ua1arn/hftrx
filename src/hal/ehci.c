@@ -44,7 +44,7 @@ XUSBPS_Registers * EHCIxToUSBx(void * p)
 
 USB1_TypeDef * EHCIxToUSBx(void * p)
 {
-	USB1_TypeDef * const USBx = (WITHUSBHW_EHCI == USB1_EHCI) ? USB1 : USB0;
+	USB1_TypeDef * const USBx = (WITHUSBHW_EHCI == USB1_EHCI) ? USB1_EHCI : USB0_EHCI;
     return USBx;
 }
 
@@ -1198,7 +1198,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
 	}
 
-	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
+	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0_EHCI)
 	{
 		// Turn off USBOTG0
 		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
@@ -1378,7 +1378,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYPE_T113
 
-	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
+	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0_EHCI)
 	{
 		ASSERT(0);					/* тут нет EHCI */
 
