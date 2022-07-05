@@ -106,18 +106,3 @@ OHCI Root Hub Status Register
 O_HcRhPortStatus
 0x0454
 OHCI Root Hub Port Status Register
-USB_CTRL
-0x0800
-HCI Interface Register (HCI_Interface)
-HCI_CTRL3
-0x0808
-HCI Control 3 Register
-PHY_CTRL
-0x0810
-PHY Control Register (PHY_Control)
-PHY_STATUS
-0x0824
-PHY Status Register
-USB_SPDCR
-0x0828
-HCI SIE Port Disable Control Register

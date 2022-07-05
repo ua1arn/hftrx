@@ -285,7 +285,7 @@ typedef enum IRQn
 #define CE_S_BASE   	   	0x03040800
 #define CE_KEY_SRAM_BASE    0x03041000	/* 4 KB (only CE access) */
 #define MSI_MEMC_BASE	    0x03102000	/* 2 MB MSI and MEMC base address */
-#define DDRPHYC_BASE	 	0x03103000	/* probably */
+#define DDRPHYC_BASE	 	0x03103000
 
 // SH2 (SYS domain)
 #define SMHC0_BASE      	0x04020000
@@ -1532,16 +1532,7 @@ typedef struct USB1_Type
 	__IO uint32_t O_HcRhDesriptorB;                      /*!< Offset 0x44C OHCI Root Hub Descriptor Register B */
 	__IO uint32_t O_HcRhStatus;                          /*!< Offset 0x450 OHCI Root Hub Status Register */
 	__IO uint32_t O_HcRhPortStatus;                      /*!< Offset 0x454 OHCI Root Hub Port Status Register */
-	uint32_t reserved3 [0x00EA]; /* at 0x458 */
-	__IO uint32_t USB_CTRL;                              /*!< Offset 0x800 HCI Interface Register (HCI_Interface) */
-	uint32_t reserved4; /* at 0x804 */
-	__IO uint32_t HCI_CTRL3;                             /*!< Offset 0x808 HCI Control 3 Register */
-	uint32_t reserved5; /* at 0x80C */
-	__IO uint32_t PHY_CTRL;                              /*!< Offset 0x810 PHY Control Register (PHY_Control) */
-	uint32_t reserved6 [0x0004]; /* at 0x814 */
-	__IO uint32_t PHY_STATUS;                            /*!< Offset 0x824 PHY Status Register */
-	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x828 HCI SIE Port Disable Control Register */
-} USB1_TypeDef; /* size of structure = 0x82C */
+} USB1_TypeDef; /* size of structure = 0x458 */
 /*
  * @brief DRD
  */
@@ -1620,20 +1611,20 @@ typedef struct DRD_Type
 	__IO uint8_t  MUSB2_REG_RXHUBPORT_5;                 /*!< Offset 0x0C7 MUSB2_REG_RXHUBPORT_5 */
 } DRD_TypeDef; /* size of structure = 0x0C8 */
 /*
- * @brief USBPHY
+ * @brief USBPHYC
  */
-/*!< USBPHY Controller Interface */
-typedef struct USBPHY_Type
+/*!< USBPHYC Controller Interface */
+typedef struct USBPHYC_Type
 {
-	__IO uint32_t USB_CTRL;                              /*!< Offset 0x000 HCI Interface Register */
+	__IO uint32_t USB_CTRL;                              /*!< Offset 0x000 HCI Interface Register (HCI_Interface) */
 	__IO uint32_t USBPHY_PHYCTL;                         /*!< Offset 0x004 USBPHY_PHYCTL */
 	__IO uint32_t HCI_CTRL3;                             /*!< Offset 0x008 HCI Control 3 Register (bist) */
 	uint32_t reserved1; /* at 0x00C */
-	__IO uint32_t PHY_CTRL;                              /*!< Offset 0x010 PHY Control Register */
+	__IO uint32_t PHY_CTRL;                              /*!< Offset 0x010 PHY Control Register (PHY_Control) */
 	uint32_t reserved2 [0x0004]; /* at 0x014 */
 	__IO uint32_t PHY_STATUS;                            /*!< Offset 0x024 PHY Status Register */
 	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x028 HCI SIE Port Disable Control Register */
-} USBPHY_TypeDef; /* size of structure = 0x02C */
+} USBPHYC_TypeDef; /* size of structure = 0x02C */
 /*
  * @brief CSI
  */
@@ -2295,7 +2286,8 @@ typedef struct DMAC_Type
 #define CAN1			((CAN_TypeDef *) CAN1_BASE)						/*!< \brief CAN1 Interface register set access pointer */
 
 #define USB0_DEVICE		((DRD_TypeDef *) USB0_BASE)					/*!< \brief USB0_DEVICE Interface register set access pointer */
-#define USB0_PHY		((USBPHY_TypeDef *) (USB0_BASE + 0x0400))	/*!< \brief USB0_PHY Interface register set access pointer */
+#define USBPHY0			((USBPHYC_TypeDef *) (USB0_BASE + 0x0400))	/*!< \brief USBPHY0 Interface register set access pointer */
+#define USBPHY1			((USBPHYC_TypeDef *) (USB1_BASE + 0x0800))	/*!< \brief USBPHY1 Interface register set access pointer */
 #define USB0_EHCI		((USB1_TypeDef *) (USB0_BASE + 0x1000))		/*!< \brief USB0_EHCI Interface register set access pointer */
 #define USB1_EHCI		((USB1_TypeDef *) USB1_BASE)				/*!< \brief USB1_EHCI Interface register set access pointer */
 
