@@ -517,8 +517,12 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
 
-	//USB0_PHY->USBPHY_ISCR = 0x4300FC00;	// после запуска из QSPI было 0x40000000
-	USB0_PHY->USBPHY_PHYCTL2 = 0x20;		// после запуска из QSPI было 0x00000008
+	USB0_PHY->USB_CTRL = 0x4300FC00;	// после запуска из QSPI было 0x40000000
+	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
+	//PRINTF("1 USB0_PHY->PHY_CTRL=%08lX\n", USB0_PHY->PHY_CTRL);
+	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
+	USB0_PHY->PHY_CTRL &= ~ (1uL << 3);
+	//PRINTF("2 USB0_PHY->PHY_CTRL=%08lX\n", USB0_PHY->PHY_CTRL);
 
 #else
 	#error HAL_PCD_MspInit should be implemented

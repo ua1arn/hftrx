@@ -1625,12 +1625,15 @@ typedef struct DRD_Type
 /*!< USBPHY Controller Interface */
 typedef struct USBPHY_Type
 {
-	__IO uint32_t USBPHY_ISCR;                           /*!< Offset 0x000 USBPHY_ISCR */
+	__IO uint32_t USB_CTRL;                              /*!< Offset 0x000 HCI Interface Register */
 	__IO uint32_t USBPHY_PHYCTL;                         /*!< Offset 0x004 USBPHY_PHYCTL */
-	__IO uint32_t USBPHY_PHYBIST;                        /*!< Offset 0x008 USBPHY_PHYBIST */
+	__IO uint32_t HCI_CTRL3;                             /*!< Offset 0x008 HCI Control 3 Register (bist) */
 	uint32_t reserved1; /* at 0x00C */
-	__IO uint32_t USBPHY_PHYCTL2;                        /*!< Offset 0x010 USBPHY_PHYCTL2 */
-} USBPHY_TypeDef; /* size of structure = 0x014 */
+	__IO uint32_t PHY_CTRL;                              /*!< Offset 0x010 PHY Control Register */
+	uint32_t reserved2 [0x0004]; /* at 0x014 */
+	__IO uint32_t PHY_STATUS;                            /*!< Offset 0x024 PHY Status Register */
+	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x028 HCI SIE Port Disable Control Register */
+} USBPHY_TypeDef; /* size of structure = 0x02C */
 /*
  * @brief CSI
  */
