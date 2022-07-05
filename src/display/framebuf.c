@@ -627,7 +627,7 @@ static uint32_t mixer_reg_init(void){
 
 void arm_hardware_mdma_initialize(void)
 {
-	PRINTF("arm_hardware_mdma_initialize (G2D)\n");
+	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
 	CCU->MBUS_CLK_REG |= (1uL << 30);				// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 10);	// Gating MBUS Clock For G2D
 
@@ -642,7 +642,7 @@ void arm_hardware_mdma_initialize(void)
 	CCU->G2D_BGR_REG |= (1uL << 16);	/* G2D reset 1: De-assert */
 	//memset(G2D, 0xFF, sizeof * G2D);
 	//printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
-	PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
+	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFFuL) |
 		4 * (1uL << 4) |	// ROT divider (looks like power of 2)

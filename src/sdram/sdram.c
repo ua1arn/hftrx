@@ -4261,7 +4261,7 @@ struct ddr3_param_t {
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
-	PRINTF("arm_hardware_sdram_initialize start\n");
+	//PRINTF("arm_hardware_sdram_initialize start\n");
 	static const struct ddr3_param_t ddr3 = {
 		.dram_clk = 792,
 		.dram_type = 3,
@@ -4294,7 +4294,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	//arm_hardware_flush(0x00028000, 32768);
 	//((void(*)(void))((void *) 0x00028000))();
 	sys_dram_init();
-	PRINTF("arm_hardware_sdram_initialize done\n");
+	//PRINTF("arm_hardware_sdram_initialize done\n");
 	//local_delay_ms(1000);
 #if WITHDEBUG && 0
 	HARDWARE_DEBUG_INITIALIZE();
