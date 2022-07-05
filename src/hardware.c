@@ -3193,9 +3193,6 @@ SystemInit(void)
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
-#if CPUSTYPE_T113
-	set_pll_cpux_axi(PLL_CPU_N);
-#endif /* CPUSTYPE_T113 */
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
