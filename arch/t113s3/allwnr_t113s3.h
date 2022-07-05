@@ -1618,13 +1618,19 @@ typedef struct DRD_Type
 	__IO uint16_t MUSB2_REG_RXFADDR_5;                   /*!< Offset 0x0C4 MUSB2_REG_RXFADDR_5 */
 	__IO uint8_t  MUSB2_REG_RXHADDR_5;                   /*!< Offset 0x0C6 MUSB2_REG_RXHADDR_5 */
 	__IO uint8_t  MUSB2_REG_RXHUBPORT_5;                 /*!< Offset 0x0C7 MUSB2_REG_RXHUBPORT_5 */
-	uint32_t reserved3 [0x00CE]; /* at 0x0C8 */
-	__IO uint32_t MUSB2_REG_ISCR;                        /*!< Offset 0x400 MUSB2_REG_ISCR */
-	__IO uint32_t MUSB2_REG_PHYCTL;                      /*!< Offset 0x404 MUSB2_REG_PHYCTL */
-	__IO uint32_t MUSB2_REG_PHYBIST;                     /*!< Offset 0x408 MUSB2_REG_PHYBIST */
-	uint32_t reserved4; /* at 0x40C */
-	__IO uint32_t MUSB2_REG_PHYCTL2;                     /*!< Offset 0x410 MUSB2_REG_PHYCTL2 */
-} DRD_TypeDef; /* size of structure = 0x414 */
+} DRD_TypeDef; /* size of structure = 0x0C8 */
+/*
+ * @brief USBPHY
+ */
+/*!< USBPHY Controller Interface */
+typedef struct USBPHY_Type
+{
+	__IO uint32_t USBPHY_ISCR;                           /*!< Offset 0x000 USBPHY_ISCR */
+	__IO uint32_t USBPHY_PHYCTL;                         /*!< Offset 0x004 USBPHY_PHYCTL */
+	__IO uint32_t USBPHY_PHYBIST;                        /*!< Offset 0x008 USBPHY_PHYBIST */
+	uint32_t reserved1; /* at 0x00C */
+	__IO uint32_t USBPHY_PHYCTL2;                        /*!< Offset 0x010 USBPHY_PHYCTL2 */
+} USBPHY_TypeDef; /* size of structure = 0x014 */
 /*
  * @brief CSI
  */
@@ -2285,8 +2291,9 @@ typedef struct DMAC_Type
 #define CAN0			((CAN_TypeDef *) CAN0_BASE)						/*!< \brief CAN0 Interface register set access pointer */
 #define CAN1			((CAN_TypeDef *) CAN1_BASE)						/*!< \brief CAN1 Interface register set access pointer */
 
-#define USB0_DEVICE		((DRD_TypeDef *) USB0_BASE)					/*!< \brief USB0_OTG Interface register set access pointer */
-#define USB0_EHCI		((USB1_TypeDef *) (USB0_BASE + 0x1000))	/*!< \brief USB0_EHCI Interface register set access pointer */
+#define USB0_DEVICE		((DRD_TypeDef *) USB0_BASE)					/*!< \brief USB0_DEVICE Interface register set access pointer */
+#define USB0_PHY		((USBPHY_TypeDef *) (USB0_BASE + 0x0400))	/*!< \brief USB0_PHY Interface register set access pointer */
+#define USB0_EHCI		((USB1_TypeDef *) (USB0_BASE + 0x1000))		/*!< \brief USB0_EHCI Interface register set access pointer */
 #define USB1_EHCI		((USB1_TypeDef *) USB1_BASE)				/*!< \brief USB1_EHCI Interface register set access pointer */
 
 #define DMAC			((DMAC_TypeDef *) DMAC_BASE)							/*!< \brief DMAC Interface register set access pointer */

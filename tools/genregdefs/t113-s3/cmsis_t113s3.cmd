@@ -29,6 +29,7 @@ SET OUTFILE=cmsis_t113s3.h
 %CONVERTER% can.txt CAN >> %OUTFILE%
 %CONVERTER% usb1.txt USB1 >> %OUTFILE%
 %CONVERTER% drd.txt DRD >> %OUTFILE%
+%CONVERTER% usbphy.txt USBPHY >> %OUTFILE%
 
 
 %CONVERTER% csi.txt			CSI			 >> %OUTFILE%

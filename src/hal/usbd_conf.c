@@ -515,8 +515,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 //	USB0_DEVICE->MUSB2_REG_DEVCTL &= ~ (MUSB2_MASK_SESS);
 //	local_delay_ms(10);
 
-	//USB0_DEVICE->MUSB2_REG_ISCR = 0x4300FC00;
-	USB0_DEVICE->MUSB2_REG_PHYCTL2 = 0x20;
+	// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
+
+	//USB0_PHY->USBPHY_ISCR = 0x4300FC00;	// после запуска из QSPI было 0x40000000
+	USB0_PHY->USBPHY_PHYCTL2 = 0x20;		// после запуска из QSPI было 0x00000008
 
 #else
 	#error HAL_PCD_MspInit should be implemented
