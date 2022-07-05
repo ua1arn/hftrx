@@ -468,7 +468,7 @@ void debug_printf_P(const FLASHMEM char *format, ... )
 }
 
 void
-printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+printhex(unsigned long voffs, const void * buff, unsigned length)
 {
 }
 #endif /* WITHDEBUG */
