@@ -608,23 +608,6 @@ enum g2d_scan_order{
 //#define ROT_OLADD2         (0xB0 + G2D_ROT)
 //#define ROT_OHADD2         (0xB4 + G2D_ROT)
 
-/* #define write_wvalue(addr, data) m_usbwordwrite32(  addr, data ) */
-/* #define write_wvalue(addr, v) put_wvalue(addr, v) */
-/* #define read_wvalue(addr) get_wvalue(addr) */
-
-/* byte input */
-#define get_bvalue(n)	(*((volatile __u8 *)(n)))
-/* byte output */
-#define put_bvalue(n, c)	(*((volatile __u8 *)(n)) = (c))
-/* half word input */
-#define get_hvalue(n)	(*((volatile __u16 *)(n)))
-/* half word output */
-#define put_hvalue(n, c)	(*((volatile __u16 *)(n)) = (c))
-/* word input */
-#define get_wvalue(n)	(*((volatile __u32 *)(n)))
-/* word output */
-#define put_wvalue(n, c)	(*((volatile __u32 *)(n)) = (c))
-
 /* clear most of the registers value to default */
 static uint32_t mixer_reg_init(void){
 	//uint32_t i;
