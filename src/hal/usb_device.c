@@ -228,7 +228,7 @@ void MX_USB_HOST_Process(void)
 void MX_USB_DEVICE_Process(void)
 {
 #if CPUSTYPE_T113
-	usb_chk_run(0);
+	musb2_process();
 #endif /* CPUSTYPE_T113 */
 }
 #endif /* defined (WITHUSBHW_DEVICE) */

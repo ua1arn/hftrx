@@ -159,10 +159,10 @@ extern USBH_HandleTypeDef hUsbHostHS;
 
 void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
 
-void usb_params_init(void);
-uint32_t usb_start(void);
-uint32_t usb_chk_run(int32_t mode);
-uint32_t usb_stop(void);
+void musb2_prepare(void);
+uint32_t musb2_start(void);
+uint32_t musb2_process(void);
+uint32_t musb2_stop(void);
 
 #ifdef __cplusplus
 }

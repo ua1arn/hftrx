@@ -151,7 +151,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
 	PRINTF("USB_DevConnect\n");
-	usb_start();
+	musb2_start();
 	return HAL_OK;
 	/* Enable all nnterrupts */
 	USBx->MUSB2_REG_INTUSBE = 0xFF & ~ MUSB2_MASK_ISOF;
@@ -186,7 +186,7 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
-	usb_stop();
+	musb2_stop();
 	return HAL_OK;
 	PRINTF("USB_DevDisconnect\n");
 	USBx->MUSB2_REG_INTUSBE = 0;
