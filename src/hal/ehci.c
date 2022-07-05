@@ -1247,8 +1247,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 
-	#if WITHUSBHOST_HIGHSPEEDPHYC
-
 	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY1)
 	{
 		// USBPHY1
@@ -1277,9 +1275,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
 		USBPHY0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
 		USBPHY0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
+		USBPHY0->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
 	}
-
-	#endif /* WITHUSBHOST_HIGHSPEEDPHYC */
 
 #elif CPUSTYLE_STM32MP1
 
