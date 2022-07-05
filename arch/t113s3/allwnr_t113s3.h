@@ -1618,7 +1618,13 @@ typedef struct DRD_Type
 	__IO uint16_t MUSB2_REG_RXFADDR_5;                   /*!< Offset 0x0C4 MUSB2_REG_RXFADDR_5 */
 	__IO uint8_t  MUSB2_REG_RXHADDR_5;                   /*!< Offset 0x0C6 MUSB2_REG_RXHADDR_5 */
 	__IO uint8_t  MUSB2_REG_RXHUBPORT_5;                 /*!< Offset 0x0C7 MUSB2_REG_RXHUBPORT_5 */
-} DRD_TypeDef; /* size of structure = 0x0C8 */
+	uint32_t reserved3 [0x00CE]; /* at 0x0C8 */
+	__IO uint32_t MUSB2_REG_ISCR;                        /*!< Offset 0x400 MUSB2_REG_ISCR */
+	__IO uint32_t MUSB2_REG_PHYCTL;                      /*!< Offset 0x404 MUSB2_REG_PHYCTL */
+	__IO uint32_t MUSB2_REG_PHYBIST;                     /*!< Offset 0x408 MUSB2_REG_PHYBIST */
+	uint32_t reserved4; /* at 0x40C */
+	__IO uint32_t MUSB2_REG_PHYCTL2;                     /*!< Offset 0x410 MUSB2_REG_PHYCTL2 */
+} DRD_TypeDef; /* size of structure = 0x414 */
 /*
  * @brief CSI
  */

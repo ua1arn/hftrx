@@ -424,9 +424,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	//	different register layout and a few missing registers.
 	// Turn off EHCI0
 	USB1_TypeDef * USBx = USB0_EHCI;
-	PRINTF("1 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
-	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
-	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
+//	PRINTF("1 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
 
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
     arm_hardware_disable_handler(USB0_EHCI_IRQn);
@@ -471,10 +471,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	USBx->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
 
-	PRINTF("2 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
-	PRINTF("2 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
-	PRINTF("2 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
-
+//	PRINTF("2 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
+//	PRINTF("2 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
+//	PRINTF("2 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
 #endif
 //	USBx->PHY_CTRL = 0x00200209;
 //	USBx->USB_CTRL = 0x00200209;
@@ -516,19 +515,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 //	USB0_DEVICE->MUSB2_REG_DEVCTL &= ~ (MUSB2_MASK_SESS);
 //	local_delay_ms(10);
 
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-
-//	PRINTF("POWER=%08lX\n", USB0_DEVICE->POWER);
-//	PRINTF("DEVCTL=%08lX\n", USB0_DEVICE->DEVCTL);
-//	PRINTF("CONFDATA=%08lX\n", USB0_DEVICE->MUSB2_REG_CONFDATA);
-//	PRINTF("INTUSB=%08lX\n", USB0_DEVICE->INTUSB);
-//	PRINTF("INTTX=%08lX\n", USB0_DEVICE->INTTX);
-//	PRINTF("INTRX=%08lX\n", USB0_DEVICE->INTRX);
+	//USB0_DEVICE->MUSB2_REG_ISCR = 0x4300FC00;
+	USB0_DEVICE->MUSB2_REG_PHYCTL2 = 0x20;
 
 #else
 	#error HAL_PCD_MspInit should be implemented
