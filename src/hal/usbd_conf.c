@@ -516,12 +516,17 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 //	local_delay_ms(10);
 
 	// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
+	//	/* A83T specific control bits for PHY0 */
+	//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
+	//	#define PHY_CTL_SIDDQ			BIT(3)
+	//	#define PHY_CTL_H3_SIDDQ		BIT(1)
 
 	USB0_PHY->USB_CTRL = 0x4300FC00;	// после запуска из QSPI было 0x40000000
 	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
 	//PRINTF("1 USB0_PHY->PHY_CTRL=%08lX\n", USB0_PHY->PHY_CTRL);
 	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
-	USB0_PHY->PHY_CTRL &= ~ (1uL << 3);
+	USB0_PHY->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
+	USB0_PHY->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
 	//PRINTF("2 USB0_PHY->PHY_CTRL=%08lX\n", USB0_PHY->PHY_CTRL);
 
 #else
