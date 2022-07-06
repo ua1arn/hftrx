@@ -3981,8 +3981,9 @@ static void window_shift_proccess(void)
 
 		shift = shift > 56 ? 56 : shift;
 		shift = shift < 32 ? 32 : shift;
+#if CPUSTYLE_XCZU || CPUSTYLE_XC7Z
 		xcz_rx_iq_shift(shift);
-
+#endif /* CPUSTYLE_XCZU || CPUSTYLE_XC7Z */
 //		shift = shift > 30 ? 30 : shift;
 //		shift = shift < 0 ? 0 : shift;
 //		xcz_tx_shift(shift);
