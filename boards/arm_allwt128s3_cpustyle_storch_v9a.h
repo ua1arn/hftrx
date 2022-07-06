@@ -511,16 +511,21 @@
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
-		gpioX_setstate(GPIOC, ((target) == targetdataflash) * SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
-		gpioX_setstate(GPIOG, ((target) != targetdataflash) * (target), (target) == targetrtc1 * (target)); \
+		switch (target) { \
+		case targetdataflash: gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); break; /* PC3 SPI0_CS */ \
+		case targetrtc1: gpioX_setstate(GPIOG, (target), 1 * (target)); break; \
+		default: gpioX_setstate(GPIOG, (target), 0 * (target)); break; \
+		} \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
-		gpioX_setstate(GPIOC, ((target) == targetdataflash) * SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
-		gpioX_setstate(GPIOG, ((target) != targetdataflash) * (target), (target) != targetrtc1 * (target)); \
+		switch (target) { \
+		case targetdataflash: gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); break; /* PC3 SPI0_CS */ \
+		case targetrtc1: gpioX_setstate(GPIOG, (target), 0 * (target)); break; \
+		default: gpioX_setstate(GPIOG, (target), 1 * (target)); break; \
+		} \
 	} while (0)
-
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
