@@ -7974,7 +7974,7 @@ void hightests(void)
 			//GridTest();
 			BarTest();
 			const time_t tend = time(NULL);
-			PRINTF("BarTest: %u, %ds, pixelsize=%d\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE);
+			PRINTF("BarTest: %u, %ds, pixelsize=%d @%lu MHz\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE, CPU_FREQ / 1000000);
 		}
 		// Divide result by 10
 		// 800x480, Renesas RZ/A1L, @360 MHz, L8, software (w cache: 5.6s..5.7s)
