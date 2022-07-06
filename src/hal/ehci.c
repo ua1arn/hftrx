@@ -44,7 +44,7 @@ XUSBPS_Registers * EHCIxToUSBx(void * p)
 
 USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
 {
-	USBPHYC_TypeDef * const PHYCx = (WITHUSBHW_EHCI == USB1_EHCI) ? USBPHY1 : USBPHY0;
+	USBPHYC_TypeDef * const PHYCx = (WITHUSBHW_EHCI == USBEHCI1) ? USBPHY1 : USBPHY0;
     return PHYCx;
 }
 

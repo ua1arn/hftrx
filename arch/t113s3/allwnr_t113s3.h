@@ -2282,16 +2282,19 @@ typedef struct DMAC_Type
 #define DDRPHYC			((DDRPHYC_TypeDef *) DDRPHYC_BASE)				/*!< \brief DDRPHYC Interface register set access pointer */
 #define MSI_MEMC		((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)			/*!< \brief MSI_MEMC Interface register set access pointer */
 
-#define CAN0			((CAN_TypeDef *) CAN0_BASE)						/*!< \brief CAN0 Interface register set access pointer */
-#define CAN1			((CAN_TypeDef *) CAN1_BASE)						/*!< \brief CAN1 Interface register set access pointer */
+#define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
+#define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
 
-#define USB0_DEVICE		((DRD_TypeDef *) USB0_BASE)					/*!< \brief USB0_DEVICE Interface register set access pointer */
-#define USBPHY0			((USBPHYC_TypeDef *) (USB0_BASE + 0x0400))	/*!< \brief USBPHY0 Interface register set access pointer */
-#define USBPHY1			((USBPHYC_TypeDef *) (USB1_BASE + 0x0800))	/*!< \brief USBPHY1 Interface register set access pointer */
-#define USB0_EHCI		((USB1_TypeDef *) (USB0_BASE + 0x1000))		/*!< \brief USB0_EHCI Interface register set access pointer */
-#define USB1_EHCI		((USB1_TypeDef *) USB1_BASE)				/*!< \brief USB1_EHCI Interface register set access pointer */
+#define USBOTG0		((DRD_TypeDef *) USB0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
+#define USBEHCI0	((USB_EHCI_CapabilityTypeDef *) (USB0_BASE + 0x1000))	/*!< \brief USBEHCI0 Interface register set access pointer */
+#define USBOHCI0	((struct ohci_registers *) (USB0_BASE + 0x1400))		/*!< \brief USBOHCI0 Interface register set access pointer */
+#define USBPHY0		((USBPHYC_TypeDef *) (USB0_BASE + 0x0400))				/*!< \brief USBPHY0 Interface register set access pointer */
 
-#define DMAC			((DMAC_TypeDef *) DMAC_BASE)							/*!< \brief DMAC Interface register set access pointer */
+#define USBEHCI1	((USB_EHCI_CapabilityTypeDef *) USB1_BASE)				/*!< \brief USBEHCI1 Interface register set access pointer */
+#define USBOHCI1	((struct ohci_registers *) (USB1_BASE + 0x0400))		/*!< \brief USBOHCI1 Interface register set access pointer */
+#define USBPHY1		((USBPHYC_TypeDef *) (USB1_BASE + 0x0800))				/*!< \brief USBPHY1 Interface register set access pointer */
+
+#define DMAC		((DMAC_TypeDef *) DMAC_BASE)							/*!< \brief DMAC Interface register set access pointer */
 
 
 enum DMAC_SrcReqType
@@ -2321,7 +2324,7 @@ enum DMAC_SrcReqType
 	DMAC_SrcReqTWI0_RX = 43,
 	DMAC_SrcReqTWI1_RX = 44,
 	DMAC_SrcReqTWI2_RX = 45,
-	DMAC_SrcReqTWI3_RX = 46,
+	DMAC_SrcReqTWI3_RX = 46
 };
 
 enum DMAC_DstReqType
@@ -2350,7 +2353,7 @@ enum DMAC_DstReqType
 	DMAC_DstReqTWI0_TX = 43,
 	DMAC_DstReqTWI1_TX = 44,
 	DMAC_DstReqTWI2_TX = 45,
-	DMAC_DstReqTWI3_TX = 46,
+	DMAC_DstReqTWI3_TX = 46
 };
 
 /** @addtogroup Exported_types

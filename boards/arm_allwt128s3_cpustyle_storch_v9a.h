@@ -118,21 +118,21 @@
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	#define WITHUSBHW_DEVICE	USB0_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	#define WITHUSBDEV_DMAENABLE 1
 
-//	#define WITHUSBHW_HOST		USB0
+//	#define WITHUSBHW_HOST		USBOTG0
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 
-	#define WITHUSBHW_EHCI		USB1_EHCI
-    #define WITHUSBHW_OHCI        ((struct ohci_registers *) & USB1_EHCI->O_HcRevision)
+	#define WITHUSBHW_EHCI		USBEHCI1
+	#define WITHUSBHW_OHCI		USBOHCI1
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
