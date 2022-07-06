@@ -765,7 +765,7 @@
 	*/
 
 	#define	USBD_EHCI_INITIALIZE() do { \
-			arm_hardware_pioe_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PE11 */ \
+			arm_hardware_pioe_outputs(TARGET_USBFS_VBUSON_BIT, 1 * TARGET_USBFS_VBUSON_BIT); /* PE11 */ \
 		} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
