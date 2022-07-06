@@ -247,7 +247,9 @@ static window_t windows [] = {
 	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_proccess, },
 	{ WINDOW_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "Keyboard",		 		 0, window_kbd_proccess, },
 	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
+#if WITHLWIP
 	{ WINDOW_PING, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Network ping test",	 1, window_ping_proccess, },
+#endif /* WITHLWIP */
 };
 
 /* Возврат ссылки на окно */

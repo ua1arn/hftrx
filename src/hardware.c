@@ -2721,9 +2721,10 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 #elif CPUSTYLE_XC7Z
 
 	// Все сравнения должны быть не точнее 1 MB
-
+#if WITHLWIP
 	if (a == (uintptr_t) bd_space)
 		return addrbase | TTB_PARA_DEVICE;
+#endif /* WITHLWIP */
 
 	if (a >= 0x00000000uL && a < 0x00100000uL)			//  OCM (On Chip Memory), DDR3_SCU
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
