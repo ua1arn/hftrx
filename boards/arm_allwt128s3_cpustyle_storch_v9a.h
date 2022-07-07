@@ -263,10 +263,10 @@
 	// Инициализируются I2S2 в дуплексном режиме.
 	// FPGA или IF codec
 	#define I2S2HW_INITIALIZE(master) do { \
-		arm_hardware_piob_altfn20(0 * 1uL << 6,	GPIO_CFG_AF3); /* PB6 I2S2-LRCK	*/ \
-		arm_hardware_piob_altfn20(0 * 1uL << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
-		arm_hardware_piob_altfn20(0 * 1uL << 4,	GPIO_CFG_AF3); /* PB4 I2S2-DOUT0 to FPGA */ \
-		arm_hardware_piob_altfn20(0 * 1uL << 3,	GPIO_CFG_AF5); /* PB3 I2S2-DIN0 from FPGA */ \
+		arm_hardware_piob_altfn20(1uL << 6,	GPIO_CFG_AF3); /* PB6 I2S2-LRCK	*/ \
+		arm_hardware_piob_altfn20(1uL << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
+		arm_hardware_piob_altfn20(1uL << 4,	GPIO_CFG_AF3); /* PB4 I2S2-DOUT0 to FPGA */ \
+		arm_hardware_piob_altfn20(1uL << 3,	GPIO_CFG_AF5); /* PB3 I2S2-DIN0 from FPGA */ \
 	} while (0)
 	#define HARDWARE_I2S2HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S2HW_DOUT 0	/* DOUT0 used */
