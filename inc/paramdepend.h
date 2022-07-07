@@ -2477,11 +2477,15 @@ extern "C" {
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
 
-#if (DIM_X != 800 || DIM_Y != 480) && WITHTOUCHGUI		// не соблюдены требования к разрешению экрана
+#if WITHTOUCHGUI
+
+#if ! defined TSC1_TYPE
+	#undef WITHTOUCHGUI									// Компиляция GUI без тачскрина бессмысленна
+#endif /* TSC1_TYPE */
+
+#if (DIM_X != 800 || DIM_Y != 480)						// не соблюдены требования к разрешению экрана
 	#undef WITHTOUCHGUI									// для функционирования touch GUI
 #endif
-
-#if WITHTOUCHGUI
 
 #if (__CORTEX_M == 0)
 	#define FORMATFROMLIBRARY 		1

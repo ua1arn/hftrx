@@ -3944,6 +3944,7 @@ static void window_gui_settings_process(void)
 
 static void window_shift_proccess(void)
 {
+#if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR
 	window_t * const win = get_win(WINDOW_SHIFT);
 
 	static uint8_t shift = 45;
@@ -3981,9 +3982,7 @@ static void window_shift_proccess(void)
 
 		shift = shift > 56 ? 56 : shift;
 		shift = shift < 32 ? 32 : shift;
-#if CPUSTYLE_XCZU || CPUSTYLE_XC7Z
 		xcz_rx_iq_shift(shift);
-#endif /* CPUSTYLE_XCZU || CPUSTYLE_XC7Z */
 //		shift = shift > 30 ? 30 : shift;
 //		shift = shift < 0 ? 0 : shift;
 //		xcz_tx_shift(shift);
@@ -3997,6 +3996,7 @@ static void window_shift_proccess(void)
 
 		break;
 	}
+#endif /* XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR */
 }
 
 // *********************************************************************************************************************************************************************

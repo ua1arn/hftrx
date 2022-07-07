@@ -1190,10 +1190,6 @@ void gui_initialize (void)
 	uint_fast8_t i = 0;
 	window_t * win = get_win(WINDOW_MAIN);
 
-#if defined (TSC1_TYPE)
-//	board_tsc_initialize();   // tsc имеет смысл инициализировать только при наличии touch GUI в конфигурации
-#endif /* defined (TSC1_TYPE) */
-
 	open_window(win);
 	gui.win [1] = NO_PARENT_WINDOW;
 	gui.footer_buttons_count = win->bh_count;
@@ -1419,7 +1415,6 @@ static void process_gui(void)
 	static uint_fast8_t is_long_press = 0;		// 1 - долгое нажатие уже обработано
 	static uint_fast8_t is_repeating = 0, repeating_cnt = 0;
 
-#if defined (TSC1_TYPE)
 	if (board_tsc_getxy(& tx, & ty))
 	{
 		gui.last_pressed_x = tx;
@@ -1429,7 +1424,6 @@ static void process_gui(void)
 		update_gui_elements_list();
 	}
 	else
-#endif /* defined (TSC1_TYPE) */
 	{
 		gui.is_touching_screen = 0;
 		gui.is_after_touch = 0;
@@ -1598,9 +1592,11 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 				{
 					ASSERT(win->w > 0 || win->h > 0);
 #if GUI_TRANSPARENT_WINDOWS
-					display_transparency(win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) : win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
+					display_transparency(win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
+							win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
 #else
-					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) : win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
+					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
+							win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
 #endif /* GUI_TRANSPARENT_WINDOWS */
 				}
 			}
@@ -1664,9 +1660,12 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 						button_t * bh = (button_t *) p->link;
 						if (bh->visible && bh->parent == win->window_id)
 						{
-							colpip_rect(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1, win->x1 + bh->x1 + bh->w,  win->y1 + bh->y1 + bh->h, COLORMAIN_BLACK, 0);
-							colmain_line(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1, win->x1 + bh->x1 + bh->w, win->y1 + bh->y1 + bh->h, COLORMAIN_BLACK, 0);
-							colmain_line(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1 + bh->h, win->x1 + bh->x1 + bh->w, win->y1 + bh->y1, COLORMAIN_BLACK, 0);
+							colpip_rect(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1,
+									win->x1 + bh->x1 + bh->w,  win->y1 + bh->y1 + bh->h, COLORMAIN_BLACK, 0);
+							colmain_line(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1,
+									win->x1 + bh->x1 + bh->w, win->y1 + bh->y1 + bh->h, COLORMAIN_BLACK, 0);
+							colmain_line(fr, DIM_X, DIM_Y, win->x1 + bh->x1, win->y1 + bh->y1 + bh->h,
+									win->x1 + bh->x1 + bh->w, win->y1 + bh->y1, COLORMAIN_BLACK, 0);
 						}
 					}
 					else if (p->type == TYPE_LABEL)

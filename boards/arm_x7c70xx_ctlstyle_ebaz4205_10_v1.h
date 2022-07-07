@@ -423,8 +423,8 @@
 	#else
 		// толькло основная плата - 5W усилитель
 
-		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#if WITHCURRLEVEL
