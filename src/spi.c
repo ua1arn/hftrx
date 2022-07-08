@@ -1583,16 +1583,6 @@ void spidf_initialize(void)
 	while((SPI0->SPI_GCR & (1 << 31)) != 0)
 		;
 
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
-		;
-
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
-		;
-
 
 	enum
 	{
@@ -1619,17 +1609,6 @@ void spidf_initialize(void)
 		(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
 		(0x01uL << 31) |	// 1: Clock is ON
 		0;
-
-	const portholder_t tcr =
-			(0x00uL << 12) |	// FBS: 0: MSB first
-			(0x01uL << 6) |		// SS_OWNER: 1: Software
-			0;
-
-	// SPI Transfer Control Register (Default Value: 0x0000_0087)
-	// CPOL at bit 1, CPHA at bit 0
-	SPI0->SPI_TCR = tcr | (0x03uL << 0);
-	//SPI0->SPI_TCR = tcr | (0x00uL << 0);
-
 }
 
 void spidf_uninitialize(void)
@@ -1698,6 +1677,27 @@ static void spidf_iostart(
 	}
 	while (ndummy --)
 		b [i ++] = 0x00;	// dummy byte
+
+
+	const portholder_t tcr =
+			(0x00uL << 12) |	// FBS: 0: MSB first
+			(0x01uL << 6) |		// SS_OWNER: 1: Software
+			0;
+
+	// SPI Transfer Control Register (Default Value: 0x0000_0087)
+	// CPOL at bit 1, CPHA at bit 0
+	SPI0->SPI_TCR = tcr | (0x03uL << 0);
+	//SPI0->SPI_TCR = tcr | (0x00uL << 0);
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
 
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
