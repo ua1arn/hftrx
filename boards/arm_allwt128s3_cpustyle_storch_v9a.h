@@ -672,16 +672,16 @@
 	#define FPGA_CONF_DONE_INPUT	(GPIOE->DATA)
 	#define FPGA_CONF_DONE_BIT		(1uL << 13)	/* PE13 bit conneced to CONF_DONE pin ALTERA FPGA */
 
-	#define FPGA_NSTATUS_INPUT		(GPIOC->DATA)
+	#define FPGA_NSTATUS_INPUT		(GPIOB->DATA)
 	#define FPGA_NSTATUS_BIT		(1uL << 2)	/* PB2 bit conneced to NSTATUS pin ALTERA FPGA */
 
-	#define FPGA_INIT_DONE_INPUT	(GPIOC->DATA)
+	#define FPGA_INIT_DONE_INPUT	(GPIOE->DATA)
 	#define FPGA_INIT_DONE_BIT		(1uL << 10)	/* PE10 bit conneced to INIT_DONE pin ALTERA FPGA */
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
 			arm_hardware_pioe_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
-			arm_hardware_pioc_inputs(FPGA_NSTATUS_BIT); \
+			arm_hardware_piob_inputs(FPGA_NSTATUS_BIT); \
 			arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
 			arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
 		} while (0)
