@@ -1189,6 +1189,10 @@ void gui_initialize (void)
 {
 	uint_fast8_t i = 0;
 	window_t * win = get_win(WINDOW_MAIN);
+	win->x1 = 0;
+	win->y1 = 0;
+	win->w = WITHGUIMAXX - 1;
+	win->h = WITHGUIMAXY - FOOTER_HEIGHT - 1;
 
 	open_window(win);
 	gui.win [1] = NO_PARENT_WINDOW;
