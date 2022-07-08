@@ -654,13 +654,12 @@
 	#else
 		// толькло основная плата - 5W усилитель
 
-		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#if WITHCURRLEVEL
-			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
-			PASENSEIX = 12,		// PC2 PA current sense - ACS712-05 chip
+			PASENSEIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
@@ -671,8 +670,7 @@
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR
-			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
-			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
+			FWD = BOARD_ADCX1IN(5), REF = BOARD_ADCX1IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 	#endif
