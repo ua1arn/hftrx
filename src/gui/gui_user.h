@@ -47,7 +47,6 @@ enum {
 #if WITHLWIP
 	WINDOW_PING,
 #endif /* WITHLWIP */
-	WINDOW_DEBUG,
 
 	WINDOWS_COUNT
 };
