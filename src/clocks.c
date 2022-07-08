@@ -2844,13 +2844,10 @@ void hardware_spi_io_delay(void)
 	__NOP();
 #elif	CPUSTYLE_ARM_CM0
 	__NOP();
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
-	local_delay_us(5);
 #elif _WIN32
 #else
-	// Cortex A9
-	__NOP();
-	__NOP();
+	// Cortex A7, Cortex A9
+	local_delay_us(5);
 #endif
 }
 
