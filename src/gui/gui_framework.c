@@ -1297,18 +1297,9 @@ void textfield_add_string(text_field_t * tf, const char * str, COLORMAIN_T color
 {
 	ASSERT(tf != NULL);
 
-	size_t len = strlen(str);
-	len = len > TEXT_ARRAY_SIZE ? TEXT_ARRAY_SIZE : len;
-
-	if (len > tf->w_sim)
-	{
-		PRINTF("text field '%s': string length exceeded, %s\n", tf->name, str);
-		len = tf->w_sim;
-	}
-
-	memset(tf->record [tf->index].text, 0, tf->w_sim * sizeof(char));
-	strncpy(tf->record [tf->index].text, str, len);
-	tf->record [tf->index].color_line = color;
+	uint_fast8_t ind = tf->direction ? (tf->h_str - tf->index) : tf->index;
+	strncpy(tf->record [ind].text, str, TEXT_ARRAY_SIZE - 1);
+	tf->record [ind].color_line = color;
 	tf->index ++;
 	tf->index = tf->index >= tf->h_str ? 0 : tf->index;
 }

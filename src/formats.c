@@ -7,6 +7,7 @@
 
 #include "hardware.h"
 #include "formats.h"
+#include "gui/gui.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -376,6 +377,10 @@ void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 	va_end(ap);
 
 	dbg_puts_impl(b);
+
+#if WITHTOUCHGUI
+		gui_add_debug(b);
+#endif /* WITHTOUCHGUI */
 	SPIN_UNLOCK(& locklistprintf);
 }
 

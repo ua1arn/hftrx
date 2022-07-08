@@ -56,6 +56,10 @@ static uint_fast8_t kbd_clean = 0, kbd_digits_only = 0;
 enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 enum { freq_swipe_step_vals = ARRAY_SIZE(freq_swipe_step) };
 
+static text_field_t * tf_debug = NULL;
+static record_t tmpbuf[TEXT_ARRAY_SIZE];
+static uint_fast8_t tmpstr_index = 0;
+
 #if GUI_SHOW_INFOBAR
 
 static uint8_t infobar_selected = 0;
@@ -175,6 +179,20 @@ void save_settings(void)
 	hamradio_save_gui_settings(& gui_nvram);
 }
 
+void gui_add_debug(char * str)
+{
+	if (tf_debug)
+		textfield_add_string(tf_debug, str, COLORMAIN_WHITE);
+	else
+	{
+		if (tmpstr_index < TEXT_ARRAY_SIZE)
+		{
+			strncpy(tmpbuf[tmpstr_index].text, str, TEXT_ARRAY_SIZE - 1);
+			tmpstr_index ++;
+		}
+	}
+}
+
 static void gui_main_process(void);
 static void window_mode_process(void);
 static void window_af_process(void);
@@ -209,6 +227,7 @@ static void window_time_proccess(void);
 static void window_kbd_proccess(void);
 static void window_kbd_test_proccess(void);
 static void window_ping_proccess(void);
+static void window_debug_proccess(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -250,6 +269,7 @@ static window_t windows [] = {
 #if WITHLWIP
 	{ WINDOW_PING, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Network ping test",	 1, window_ping_proccess, },
 #endif /* WITHLWIP */
+	{ WINDOW_DEBUG, 		 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "Debug log",	 		 1, window_debug_proccess, },
 };
 
 /* Возврат ссылки на окно */
@@ -560,6 +580,7 @@ static void window_infobar_menu_process(void)
 #endif /* ! WITHPOTAFGAIN */
 			}
 		}
+		break;
 
 		default:
 			break;
@@ -4421,7 +4442,7 @@ static void window_ft8_process(void)
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		static const text_field_t text_field [] = {
-			{ 37, 26, CANCELLED, WINDOW_FT8, NON_VISIBLE, & gothic_11x13, "tf_ft8", },
+			{ 37, 26, CANCELLED, WINDOW_FT8, NON_VISIBLE, & gothic_11x13, "tf_ft8", 0, },
 		};
 		win->tf_count = ARRAY_SIZE(text_field);
 		uint_fast16_t tf_size = sizeof(text_field);
@@ -5655,7 +5676,7 @@ static void window_ping_proccess(void)
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		static const text_field_t text_field [] = {
-			{ 35, 20, CANCELLED, WINDOW_PING, NON_VISIBLE, & gothic_11x13, "tf_ping", },
+			{ 35, 20, CANCELLED, WINDOW_PING, NON_VISIBLE, & gothic_11x13, "tf_ping", 0, },
 		};
 		win->tf_count = ARRAY_SIZE(text_field);
 		uint_fast16_t tf_size = sizeof(text_field);
@@ -5937,6 +5958,61 @@ static void window_menu_process(void)
 
 	default:
 	break;
+	}
+}
+
+// *********************************************************************************************************
+
+static void window_debug_proccess(void)
+{
+	window_t * const win = get_win(WINDOW_DEBUG);
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		const uint_fast16_t interval = 50;
+
+		static const text_field_t text_field [] = {
+			{ 50, 26, CANCELLED, WINDOW_DEBUG, VISIBLE, & gothic_11x13, "tf_debug", 1, },
+		};
+		win->tf_count = ARRAY_SIZE(text_field);
+		uint_fast16_t tf_size = sizeof(text_field);
+		win->tf_ptr = malloc(tf_size);
+		GUI_MEM_ASSERT(win->tf_ptr);
+		memcpy(win->tf_ptr, text_field, tf_size);
+
+		tf_debug = find_gui_element(TYPE_TEXT_FIELD, win, "tf_debug");
+		textfield_update_size(tf_debug);
+		tf_debug->x1 = 0;
+		tf_debug->y1 = 0;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+
+		for (uint_fast8_t i = 0; i < tmpstr_index; i ++)
+		{
+			textfield_add_string(tf_debug, tmpbuf[i].text, COLORMAIN_WHITE);
+		}
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	default:
+	break;
+	}
+}
+
+void gui_open_debug_window(void)
+{
+	if (check_for_parent_window() != NO_PARENT_WINDOW)
+	{
+		close_window(OPEN_PARENT_WINDOW);
+		footer_buttons_state(CANCELLED);
+	}
+	else
+	{
+		window_t * const win = get_win(WINDOW_DEBUG);
+		open_window(win);
+		footer_buttons_state(DISABLED);
 	}
 }
 

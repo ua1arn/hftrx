@@ -104,6 +104,7 @@ typedef struct {
 	uint8_t visible;
 	UB_Font * font;
 	char name [NAME_ARRAY_SIZE];
+	uint8_t direction;
 	uint8_t index;
 	record_t * record;
 	uint16_t x1;

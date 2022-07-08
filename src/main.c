@@ -17318,6 +17318,12 @@ processkeyboard(uint_fast8_t kbch)
 		return 0;
 #endif //WITHMENU && ! WITHTOUCHGUI
 
+	case KBD_CODE_BKIN_HOLDED:
+#if WITHTOUCHGUI
+		gui_open_debug_window();
+#endif /* WITHTOUCHGUI */
+		break;
+
 	case KBD_CODE_DISPMODE:
 #if ! WITHTOUCHGUI
 		if (display_getpagesmax() != 0)
