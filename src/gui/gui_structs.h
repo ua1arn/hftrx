@@ -76,10 +76,15 @@ typedef enum {
 
 enum {
 	NAME_ARRAY_SIZE = 40,
-	TEXT_ARRAY_SIZE = 50,
 	MENU_ARRAY_SIZE = 50,
+	TEXT_ARRAY_SIZE = 70,
 	GUI_ELEMENTS_ARRAY_SIZE = 60
 };
+
+typedef enum {
+	UP,
+	DOWN,
+} tf_direction_t;
 
 typedef struct {
 	uint16_t w;
@@ -102,9 +107,9 @@ typedef struct {
 	uint8_t state;
 	uint8_t parent;
 	uint8_t visible;
-	UB_Font * font;
+	tf_direction_t direction;
+	UB_Font * font;		// NULL - SMALLCHAR2
 	char name [NAME_ARRAY_SIZE];
-	uint8_t direction;
 	uint8_t index;
 	record_t * record;
 	uint16_t x1;

@@ -179,6 +179,7 @@ void save_settings(void)
 	hamradio_save_gui_settings(& gui_nvram);
 }
 
+#if WITHDEBUG
 void gui_add_debug(char * str)
 {
 	if (tf_debug)
@@ -198,6 +199,7 @@ void gui_open_debug_window(void)
 	if (tf_debug)
 		tf_debug->visible = ! tf_debug->visible;
 }
+#endif /* WITHDEBUG */
 
 static void gui_main_process(void);
 static void window_mode_process(void);
@@ -634,8 +636,9 @@ static void gui_main_process(void)
 		gui_enc2_menu.updated = 1;
 		update = 1;
 
+#if WITHDEBUG
 		static const text_field_t text_field [] = {
-			{ 50, 26, CANCELLED, WINDOW_MAIN, NON_VISIBLE, & gothic_11x13, "tf_debug", 0, },
+			{ TEXT_ARRAY_SIZE, 25, CANCELLED, WINDOW_MAIN, NON_VISIBLE, DOWN, NULL, "tf_debug", },
 		};
 		win->tf_count = ARRAY_SIZE(text_field);
 		uint_fast16_t tf_size = sizeof(text_field);
@@ -647,6 +650,7 @@ static void gui_main_process(void)
 		textfield_update_size(tf_debug);
 		tf_debug->x1 = win->w / 2 - tf_debug->w / 2;
 		tf_debug->y1 = win->h / 2 - tf_debug->h / 2;
+#endif /* WITHDEBUG */
 
 		static const button_t buttons [] = {
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_txrx", 		"RX", 				},
@@ -721,10 +725,12 @@ static void gui_main_process(void)
 		load_settings();
 		elements_state(win);
 
+#if WITHDEBUG
 		for (uint_fast8_t i = 0; i < tmpstr_index; i ++)
 		{
 			textfield_add_string(tf_debug, tmpbuf[i].text, COLORMAIN_WHITE);
 		}
+#endif /* WITHDEBUG */
 	}
 
 	GET_FROM_WM_QUEUE
@@ -1311,10 +1317,12 @@ static void gui_main_process(void)
 
 #endif /* GUI_SHOW_INFOBAR */
 
+#if WITHDEBUG
 	if (tf_debug->visible)
 	{
 		display_transparency(tf_debug->x1 - 5, tf_debug->y1 - 5, tf_debug->x1 + tf_debug->w + 5, tf_debug->y1 + tf_debug->h + 5, DEFAULT_ALPHA);
 	}
+#endif /* WITHDEBUG */
 }
 
 // *********************************************************************************************************************************************************************
@@ -4469,7 +4477,7 @@ static void window_ft8_process(void)
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		static const text_field_t text_field [] = {
-			{ 37, 26, CANCELLED, WINDOW_FT8, NON_VISIBLE, & gothic_11x13, "tf_ft8", 0, },
+			{ 37, 26, CANCELLED, WINDOW_FT8, NON_VISIBLE, UP, & gothic_11x13, "tf_ft8", },
 		};
 		win->tf_count = ARRAY_SIZE(text_field);
 		uint_fast16_t tf_size = sizeof(text_field);
@@ -5703,7 +5711,7 @@ static void window_ping_proccess(void)
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		static const text_field_t text_field [] = {
-			{ 35, 20, CANCELLED, WINDOW_PING, NON_VISIBLE, & gothic_11x13, "tf_ping", 0, },
+			{ 35, 20, CANCELLED, WINDOW_PING, NON_VISIBLE, UP, & gothic_11x13, "tf_ping", },
 		};
 		win->tf_count = ARRAY_SIZE(text_field);
 		uint_fast16_t tf_size = sizeof(text_field);
