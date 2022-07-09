@@ -525,16 +525,16 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		arm_hardware_pioc_outputs50m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
-		arm_hardware_piog_outputs50m(targetext1, 1 * targetext1); /*  */ \
-		arm_hardware_piog_outputs50m(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_piog_outputs50m(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_piog_outputs50m(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_piog_outputs50m(targetfpga1, 1 * targetfpga1); /*  */ \
-		arm_hardware_piog_outputs50m(targetrtc1, 0 * targetrtc1); /*  */ \
-		arm_hardware_piog_outputs50m(targetadc2, 1 * targetadc2); /*  */ \
-		arm_hardware_piog_outputs50m(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_piog_outputs50m(targetxad2, 1 * targetxad2); /*  */ \
+		arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs(targetext1, 1 * targetext1); /*  */ \
+		arm_hardware_piog_outputs(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_piog_outputs(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_piog_outputs(targetcodec1, 1 * targetcodec1); /*  */ \
+		arm_hardware_piog_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
+		arm_hardware_piog_outputs(targetrtc1, 0 * targetrtc1); /*  */ \
+		arm_hardware_piog_outputs(targetadc2, 1 * targetadc2); /*  */ \
+		arm_hardware_piog_outputs(targetadck, 1 * targetadck); /*  */ \
+		arm_hardware_piog_outputs(targetxad2, 1 * targetxad2); /*  */ \
 	} while (0)
 
 	// MOSI & SCK port
@@ -553,11 +553,11 @@
 	#define SPIIO_INITIALIZE() do { \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
-			arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
-			arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
-			arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
-			arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
+			arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
+			arm_hardware_pioc_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
+			arm_hardware_pioc_altfn2(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
+			arm_hardware_pioc_altfn2(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
+			arm_hardware_pioc_altfn2(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 		} while (0)
