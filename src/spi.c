@@ -1549,78 +1549,20 @@ static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
 
 void spidf_initialize(void)
 {
-	unsigned ix = 0;	// SPI0
-
-	/* Open the clock gate for SPI0 */
-	CCU->SPI_BGR_REG |= (0x01uL << (ix + 0));
-
-	/* Deassert SPI0 reset */
-	CCU->SPI_BGR_REG |= (0x01uL << (ix + 16));
-
-	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
-
-	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
-	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
-		;
-	SPI0->SPI_GCR =
-		(0x00uL < 1) |	// MODE: 1: Master mode
-		0;
-
-
-
-	/* Deassert spi0 reset */
-	CCU->SPI_BGR_REG |= (1 << (ix + 16));
-	/* Open the spi0 gate */
-	CCU->SPI0_CLK_REG |= (1 << 31);
-	/* Open the spi0 bus gate */
-	CCU->SPI_BGR_REG |= (1 << (ix + 0));
-
-
-	/* Enable spi0 */
-	SPI0->SPI_GCR |= (1 << 7) | (1 << 1) | (1 << 0);
-	/* Do a soft reset */
-	SPI0->SPI_GCR |= (1 << 31);
-	while((SPI0->SPI_GCR & (1 << 31)) != 0)
-		;
-
-
-	enum
-	{
-		ALLWNT113_SPI_BR_WIDTH = 4, ALLWNT113_SPI_BR_TAPS = ( 8 | 4 | 2 | 1)
-
-	};
-
-	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
-	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
-		(clk_src << 24) |	/* CLK_SRC_SEL */
-		0;
-
-	const uint_fast32_t spispeed = 25000000uL;
-	// SCLK = Clock Source/M/N.
-	//TP();
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
-	//PRINTF("spidf_initialize: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());
-	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
-	CCU->SPI0_CLK_REG =
-		(clk_src << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
-		(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-		(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
-		(0x01uL << 31) |	// 1: Clock is ON
-		0;
+	hardware_spi_master_initialize();
+	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 }
 
 void spidf_uninitialize(void)
 {
 	// Disconnect I/O pins
-	SPIDF_HANGOFF();
+	hardware_spi_disconnect();
 }
 
 void spidf_hangoff(void)
 {
 	// Disconnect I/O pins
-	SPIDF_HANGOFF();
+	hardware_spi_disconnect();
 }
 
 static void spidf_unselect(void)
@@ -1634,7 +1576,7 @@ static void spidf_unselect(void)
 	SPI0->SPI_TCR = val;
 
 	// Disconnect I/O pins
-	SPIDF_HANGOFF();
+	hardware_spi_disconnect();
 }
 
 static void spidf_iostart(
@@ -1678,29 +1620,8 @@ static void spidf_iostart(
 	while (ndummy --)
 		b [i ++] = 0x00;	// dummy byte
 
+	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE0);
 
-	const portholder_t tcr =
-			(0x00uL << 12) |	// FBS: 0: MSB first
-			(0x01uL << 6) |		// SS_OWNER: 1: Software
-			0;
-
-	// SPI Transfer Control Register (Default Value: 0x0000_0087)
-	// CPOL at bit 1, CPHA at bit 0
-	SPI0->SPI_TCR = tcr | (0x03uL << 0);
-	//SPI0->SPI_TCR = tcr | (0x00uL << 0);
-
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
-		;
-
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
-		;
-
-	// Connect I/O pins
-	SPIDF_HARDINITIALIZE();
 
 	{
 		// Assert CS

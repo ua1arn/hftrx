@@ -7605,6 +7605,14 @@ void hardware_spi_master_initialize(void)
 	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
 		;
 
+	uint32_t val;
+	int state = 1;
+
+	val = SPI0->SPI_TCR;
+	val &= ~((0x3 << 4) | (0x1 << 7));
+	val |= ((0 & 0x3) << 4) | (state << 7);
+	SPI0->SPI_TCR = val;
+
 	SPIIO_INITIALIZE();
 
 #else
@@ -7947,6 +7955,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	const portholder_t tcr =
 			(0x00uL << 12) |	// FBS: 0: MSB first
 			(0x01uL << 6) |		// SS_OWNER: 1: Software
+			(0x01uL << 7) |		// SS_LEVEL: 1: Set SS to high
 			0;
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
