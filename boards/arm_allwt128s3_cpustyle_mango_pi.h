@@ -596,6 +596,72 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
+
+/* Выводы соединения с QSPI BOOT NOR FLASH */
+#define SPDIF_SCLK_BIT (1uL << 2)	// PC2 SPI0_CLK
+#define SPDIF_NCS_BIT (1uL << 3)	// PC3 SPI0_CS
+#define SPDIF_MOSI_BIT (1uL << 4)	// PC4 SPI0_MOSI
+#define SPDIF_MISO_BIT (1uL << 5)	// PC5 SPI0_MISO
+#define SPDIF_D2_BIT (1uL << 6)		// PC6 SPI0_WP/D2
+#define SPDIF_D3_BIT (1uL << 7)		// PC7 SPI0_HOLD/D3
+
+/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
+#define SPIDF_HANGOFF() do { \
+		arm_hardware_pioc_inputs(SPDIF_SCLK_BIT); \
+		arm_hardware_pioc_inputs(SPDIF_MOSI_BIT); \
+		arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
+		arm_hardware_pioc_inputs(SPDIF_D2_BIT); \
+		arm_hardware_pioc_inputs(SPDIF_D3_BIT); \
+		arm_hardware_pioc_inputs(SPDIF_NCS_BIT); \
+	} while (0)
+
+#if WIHSPIDFSW || WIHSPIDFHW
+
+	#if WIHSPIDFHW
+		/* connect and assert CS */
+		#define SPIDF_HARDINITIALIZE() do { \
+				/*arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); */	/* PC3 SPI0_CS */ \
+				arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);  	/* PC6 SPI0_WP/D2 */ \
+				arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2);  	/* PC7 SPI0_HOLD/D3 */ \
+				arm_hardware_pioc_altfn50(SPDIF_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
+				arm_hardware_pioc_altfn50(SPDIF_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
+				arm_hardware_pioc_altfn50(SPDIF_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
+			} while (0)
+
+	#else /* WIHSPIDFHW */
+
+		#define SPIDF_MISO() ((GPIOC->DATA & SPDIF_MISO_BIT) != 0)
+		#define SPIDF_MOSI(v) do { gpioX_setstate(GPIOC, SPDIF_MOSI_BIT, !! (v) * SPDIF_MOSI_BIT); } while (0)
+		#define SPIDF_SCLK(v) do { gpioX_setstate(GPIOC, SPDIF_SCLK_BIT, !! (v) * SPDIF_SCLK_BIT); } while (0)
+		#define SPIDF_SOFTINITIALIZE() do { \
+				arm_hardware_pioc_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); /* D2/WP tie-up */ \
+				arm_hardware_pioc_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); /* D3/HOLD tie-up */ \
+				arm_hardware_pioc_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+				arm_hardware_pioc_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+				arm_hardware_pioc_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+				arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
+			} while (0)
+		#define SPIDF_SELECT() do { \
+				gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+				arm_hardware_pioc_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+				arm_hardware_pioc_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+				arm_hardware_pioc_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+				arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
+				gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+			} while (0)
+		#define SPIDF_UNSELECT() do { \
+				gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+				arm_hardware_pioc_inputs(SPDIF_SCLK_BIT); \
+				arm_hardware_pioc_inputs(SPDIF_MOSI_BIT); \
+				arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
+				arm_hardware_pioc_inputs(SPDIF_D2_BIT); \
+				arm_hardware_pioc_inputs(SPDIF_D3_BIT); \
+			} while (0)
+
+	#endif /* WIHSPIDFHW */
+
+#endif /* WIHSPIDFSW || WIHSPIDFHW */
+
 // WITHUART1HW
 #define HARDWARE_UART1_INITIALIZE() do { \
 		const portholder_t TXMASK = (1uL << 2); /* PE2 UART0-TX */ \
@@ -935,71 +1001,6 @@
 		arm_hardware_piod_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 #endif /* WITHLTDCHW */
-
-	/* Выводы соединения с QSPI BOOT NOR FLASH */
-	#define SPDIF_SCLK_BIT (1uL << 2)	// PC2 SPI0_CLK
-	#define SPDIF_NCS_BIT (1uL << 3)	// PC3 SPI0_CS
-	#define SPDIF_MOSI_BIT (1uL << 4)	// PC4 SPI0_MOSI
-	#define SPDIF_MISO_BIT (1uL << 5)	// PC5 SPI0_MISO
-	#define SPDIF_D2_BIT (1uL << 6)		// PC6 SPI0_WP/D2
-	#define SPDIF_D3_BIT (1uL << 7)		// PC7 SPI0_HOLD/D3
-
-	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
-	#define SPIDF_HANGOFF() do { \
-			arm_hardware_pioc_inputs(SPDIF_SCLK_BIT); \
-			arm_hardware_pioc_inputs(SPDIF_MOSI_BIT); \
-			arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
-			arm_hardware_pioc_inputs(SPDIF_D2_BIT); \
-			arm_hardware_pioc_inputs(SPDIF_D3_BIT); \
-			arm_hardware_pioc_inputs(SPDIF_NCS_BIT); \
-		} while (0)
-
-	#if WIHSPIDFSW || WIHSPIDFHW
-
-		#if WIHSPIDFHW
-			/* connect and assert CS */
-			#define SPIDF_HARDINITIALIZE() do { \
-					arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); 	/* PC3 SPI0_CS */ \
-					arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);  	/* PC6 SPI0_WP/D2 */ \
-					arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2);  	/* PC7 SPI0_HOLD/D3 */ \
-					arm_hardware_pioc_altfn50(SPDIF_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
-					arm_hardware_pioc_altfn50(SPDIF_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
-					arm_hardware_pioc_altfn50(SPDIF_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
-				} while (0)
-
-		#else /* WIHSPIDFHW */
-
-			#define SPIDF_MISO() ((GPIOC->DATA & SPDIF_MISO_BIT) != 0)
-			#define SPIDF_MOSI(v) do { gpioX_setstate(GPIOC, SPDIF_MOSI_BIT, !! (v) * SPDIF_MOSI_BIT); } while (0)
-			#define SPIDF_SCLK(v) do { gpioX_setstate(GPIOC, SPDIF_SCLK_BIT, !! (v) * SPDIF_SCLK_BIT); } while (0)
-			#define SPIDF_SOFTINITIALIZE() do { \
-					arm_hardware_pioc_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); /* D2/WP tie-up */ \
-					arm_hardware_pioc_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); /* D3/HOLD tie-up */ \
-					arm_hardware_pioc_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
-					arm_hardware_pioc_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
-					arm_hardware_pioc_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
-				} while (0)
-			#define SPIDF_SELECT() do { \
-					gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
-					arm_hardware_pioc_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
-					arm_hardware_pioc_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
-					arm_hardware_pioc_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
-					gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
-				} while (0)
-			#define SPIDF_UNSELECT() do { \
-					gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
-					arm_hardware_pioc_inputs(SPDIF_SCLK_BIT); \
-					arm_hardware_pioc_inputs(SPDIF_MOSI_BIT); \
-					arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
-					arm_hardware_pioc_inputs(SPDIF_D2_BIT); \
-					arm_hardware_pioc_inputs(SPDIF_D3_BIT); \
-				} while (0)
-
-		#endif /* WIHSPIDFHW */
-
-	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
