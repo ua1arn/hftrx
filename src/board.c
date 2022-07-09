@@ -6955,8 +6955,8 @@ restart:
 #else /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 			// Software SPI
 			const uint_fast16_t v16 = * p ++;
-			spi_progval8_p1(0, v16 >> 8);
-			spi_progval8_p2(0, v16 >> 0);
+			spi_progval8_p1(targetnone, v16 >> 8);
+			spi_progval8_p2(targetnone, v16 >> 0);
 #endif /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 			while (n --)
 			{
@@ -6969,8 +6969,8 @@ restart:
 				hardware_spi_b16_p2(* p ++);
 #else /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 				const uint_fast16_t v16_2 = * p ++;
-				spi_progval8_p2(0, v16_2 >> 8);
-				spi_progval8_p2(0, v16_2 >> 0);
+				spi_progval8_p2(targetnone, v16_2 >> 8);
+				spi_progval8_p2(targetnone, v16_2 >> 0);
 #endif /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 			}
 
@@ -6983,8 +6983,8 @@ restart:
 				hardware_spi_b16_p2(0xffff);
 #else /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 				const uint_fast16_t v16_3 = 0xFFFF;
-				spi_progval8_p2(0, v16_3 >> 8);
-				spi_progval8_p2(0, v16_3 >> 0);
+				spi_progval8_p2(targetnone, v16_3 >> 8);
+				spi_progval8_p2(targetnone, v16_3 >> 0);
 #endif /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 			}
 
@@ -6992,7 +6992,7 @@ restart:
 			hardware_spi_complete_b16();
 			hardware_spi_disconnect();
 #else /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
-			spi_complete(0);
+			spi_complete(targetnone);
 #endif /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 
 			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
@@ -7225,7 +7225,7 @@ board_fpga_fir_complete(void)
 
 #else /* WITHSPI32BIT */
 	// Software SPI
-	spi_complete(0);
+	spi_complete(targetnone);
 
 #endif /* WITHSPI32BIT */
 }
@@ -7253,8 +7253,8 @@ board_fpga_fir_connect(void)
 
 #else /* WITHSPI32BIT */
 	// Software SPI
-	spi_progval8_p1(0, 0x00);	// provide clock for reset bit counter while CS=1
-	spi_complete(0);
+	spi_progval8_p1(targetnone, 0x00);	// provide clock for reset bit counter while CS=1
+	spi_complete(targetnone);
 
 #endif /* WITHSPI32BIT */
 

@@ -486,6 +486,7 @@
 	// Набор определений для работы без внешнего дешифратора
 
 	#define targetdataflash 0xFF
+	#define targetnone 0x00
 
 	#define targetext1		(1uL << 0)		// PG0 ext1 on front panel CSEXT1
 	#define targetnvram		(1uL << 7)		// PG7 nvram FM25L16B
