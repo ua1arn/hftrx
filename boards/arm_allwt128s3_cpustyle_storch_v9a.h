@@ -408,7 +408,7 @@
 	// +++
 	// TXDISABLE input - PF5
 	#define TXDISABLE_TARGET_PIN				(GPIOF->DATA)
-	#define TXDISABLE_BIT_TXDISABLE				(1U << 10)		// PD10 - TX INHIBIT
+	#define TXDISABLE_BIT_TXDISABLE				(1U << 5)		// PF5 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
 	#define HARDWARE_GET_TXDISABLE() ((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
 	#define TXDISABLE_INITIALIZE() \
