@@ -18,11 +18,11 @@
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
-#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
-//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+//#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
+#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
@@ -97,10 +97,10 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-	#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
+	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+	#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+	#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
 	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
@@ -551,20 +551,18 @@
 	#define SPDIF_D3_BIT (1uL << 7)		// PC7 SPI0_HOLD/D3
 
 	#define SPIIO_INITIALIZE() do { \
-		/*arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); */	/* PC3 SPI0_CS */ \
-		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); /* PC2 SPI0_CLK */ \
-		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); /* PC4 SPI0_MOSI */ \
-		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); /* PC5 SPI0_MISO */ \
-		/*arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);*/ /* PC6 SPI0_WP/D2 */ \
-		/*arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2); *//* PC7 SPI0_HOLD/D3 */ \
+		arm_hardware_pioc_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PC2 SPI0_CLK */ \
+		arm_hardware_pioc_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PC4 SPI0_MOSI */ \
+		arm_hardware_pioc_inputs(SPI_MISO_BIT); /* PC5 SPI0_MISO */ \
+		arm_hardware_pioc_outputs50m(SPDIF_D2_BIT, SPDIF_D2_BIT); /* PC6 SPI0_WP/D2 */ \
+		arm_hardware_pioc_outputs50m(SPDIF_D3_BIT, SPDIF_D3_BIT); /* PC7 SPI0_HOLD/D3 */ \
 	} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-		/*arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); */	/* PC3 SPI0_CS */ \
 		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); /* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); /* PC4 SPI0_MOSI */ \
 		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); /* PC5 SPI0_MISO */ \
-		/*arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2); *//* PC6 SPI0_WP/D2 */ \
-		/*arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2); *//* PC7 SPI0_HOLD/D3 */ \
+		arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2); /* PC6 SPI0_WP/D2 */ \
+		arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2); /* PC7 SPI0_HOLD/D3 */ \
 	} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 	} while (0)
