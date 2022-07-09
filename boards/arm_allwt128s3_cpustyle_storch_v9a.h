@@ -18,11 +18,11 @@
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
-//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-//#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
-#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
+//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
@@ -426,7 +426,7 @@
 	#define PTT2_TARGET_PIN				(GPIOF->DATA)
 	#define PTT2_BIT_PTT				(1uL << 4)		// PF4 - PTT2
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() (0) //((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
+	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_piof_inputs(PTT_BIT_PTT); \
@@ -506,7 +506,7 @@
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
 		switch (target) { \
-		case targetdataflash: SPI0->SPI_TCR &= ~ (1u << 7); break; /* PC3 SPI0_CS */ \
+		case targetdataflash: gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); break; /* PC3 SPI0_CS */ \
 		case targetrtc1: gpioX_setstate(GPIOG, (target), 1 * (target)); break; \
 		default: gpioX_setstate(GPIOG, (target), 0 * (target)); break; \
 		} \
@@ -516,7 +516,7 @@
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
 		switch (target) { \
-		case targetdataflash: SPI0->SPI_TCR |= (1u << 7); break; /* PC3 SPI0_CS */ \
+		case targetdataflash: gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); break; /* PC3 SPI0_CS */ \
 		case targetrtc1: gpioX_setstate(GPIOG, (target), 0 * (target)); break; \
 		default: gpioX_setstate(GPIOG, (target), 1 * (target)); break; \
 		} \
@@ -525,7 +525,7 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); 	/* PC3 SPI0_CS */ \
+		arm_hardware_pioc_outputs50m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
 		arm_hardware_piog_outputs50m(targetext1, 1 * targetext1); /* PC3 SPI0_CS */ \
 		arm_hardware_piog_outputs50m(targetnvram, 1 * targetnvram); /* PC3 SPI0_CS */ \
 		arm_hardware_piog_outputs50m(targetctl1, 1 * targetctl1); /* PC3 SPI0_CS */ \
@@ -551,20 +551,20 @@
 	#define SPDIF_D3_BIT (1uL << 7)		// PC7 SPI0_HOLD/D3
 
 	#define SPIIO_INITIALIZE() do { \
-		arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); 	/* PC3 SPI0_CS */ \
+		/*arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); */	/* PC3 SPI0_CS */ \
 		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); /* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); /* PC4 SPI0_MOSI */ \
 		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); /* PC5 SPI0_MISO */ \
-		arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2); /* PC6 SPI0_WP/D2 */ \
-		arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2); /* PC7 SPI0_HOLD/D3 */ \
+		/*arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);*/ /* PC6 SPI0_WP/D2 */ \
+		/*arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2); *//* PC7 SPI0_HOLD/D3 */ \
 	} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-		arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); 	/* PC3 SPI0_CS */ \
+		/*arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); */	/* PC3 SPI0_CS */ \
 		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); /* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); /* PC4 SPI0_MOSI */ \
 		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); /* PC5 SPI0_MISO */ \
-		arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2); /* PC6 SPI0_WP/D2 */ \
-		arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2); /* PC7 SPI0_HOLD/D3 */ \
+		/*arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2); *//* PC6 SPI0_WP/D2 */ \
+		/*arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2); *//* PC7 SPI0_HOLD/D3 */ \
 	} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 	} while (0)

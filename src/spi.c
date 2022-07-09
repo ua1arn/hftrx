@@ -819,6 +819,7 @@ void prog_unselect_impl(
 static void 
 prog_select_init(void)
 {
+//	PRINTF("prog_select_init\n");
 #if UC1608_CSP
 	spi_hwinit255();
 #endif /* SPI_CSEL255 */
@@ -888,6 +889,2601 @@ const FLASHMEM unsigned char revbittable [256] =
 };
 #endif
 
+
+#if WITHSPIHW
+
+	#if SPI_BIDIRECTIONAL
+		#error WITHSPIHW and SPI_BIDIRECTIONAL can not be used together
+	#endif
+
+	#if CPUSTYLE_AT91SAM7S || CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+		static portholder_t spi_csr_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_csr_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
+	#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+		static portholder_t spi_cfg1_val8w [SPIC_SPEEDS_COUNT];
+		static portholder_t spi_cfg1_val16w [SPIC_SPEEDS_COUNT];
+		static portholder_t spi_cfg1_val32w [SPIC_SPEEDS_COUNT];
+		static portholder_t spi_cfg2_val [SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+	#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
+		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
+	#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+	#elif CPUSTYLE_ATMEGA
+		static portholder_t spcr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spsr_val [SPIC_SPEEDS_COUNT];
+	#elif CPUSTYLE_ATXMEGA
+		static portholder_t spi_ctl_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+	#elif CPUSTYLE_R7S721
+		static portholder_t spi_spbr_val [SPIC_SPEEDS_COUNT];
+		static portholder_t spi_spcmd0_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_spcmd0_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+	#elif CPUSTYLE_XC7Z
+		static portholder_t spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+	#elif CPUSTYPE_T113
+		static portholder_t ccu_spi_clk_reg_val [SPIC_SPEEDS_COUNT];
+		static portholder_t spi_tcr_reg_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];
+	#endif /* CPUSTYLE_STM32F1XX */
+
+#if WITHSPIHWDMA
+
+#if CPUSTYLE_STM32H7XX
+#else /* CPUSTYLE_STM32H7XX */
+#endif /* CPUSTYLE_STM32H7XX */
+
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+
+/* Инициализация DMA для прёма по SPI1 */
+	// DMA2: SPI1_RX: Stream 0: Channel 3
+static void DMA2_SPI1_RX_initialize(void)
+{
+	/* SPI1_RX - Stream0, Channel3 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
+	__DSB();
+
+	#if CPUSTYLE_STM32H7XX
+		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+		DMA2_Stream0->PAR = (uintptr_t) & SPI1->RXDR;
+	#else /* CPUSTYLE_STM32H7XX */
+		const uint_fast8_t ch = 3;
+		DMA2_Stream0->PAR = (uintptr_t) & SPI1->DR;
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use Direct mode
+	//DMA2_Stream0->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
+	(void) DMA2_Stream0->FCR;
+
+	DMA2_Stream0->CR =
+		(ch * DMA_SxCR_CHSEL_0) |	// канал
+		(3 * DMA_SxCR_MBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
+		(3 * DMA_SxCR_PBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
+		(0 * DMA_SxCR_PL_0) |		// Priority level - low
+		(0 * DMA_SxCR_DIR_0) |		// 00: Peripheral-to-memory
+		(1 * DMA_SxCR_MINC) |		// инкремент адреса памяти
+		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8 bit - устанавливается перед обменом
+		(0 * DMA_SxCR_PSIZE_0) |	// длина в DR - 8 bit - устанавливается перед обменом
+		//(1 * DMA_SxCR_CIRC) |		// циклический режим не требуется при DBM
+		(0 * DMA_SxCR_CT) |			// M0AR selected
+		//(1 * DMA_SxCR_DBM) |		// double buffer mode seelcted
+		0;
+	(void) DMA2_Stream0->CR;
+
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+	// DMAMUX init
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	DMAMUX1_Channel8->CCR = 37 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_RX
+	(void) DMAMUX1_Channel8->CCR;
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
+
+}
+
+// Инициализация DMA для передачи SPI1
+// DMA2: SPI1_TX: Stream 3: Channel 3
+static void DMA2_SPI1_TX_initialize(void)
+{
+	// DMA2: SPI1_TX: Stream 3: Channel 3
+	/* DMA для передачи по SPI1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	__DSB();
+
+	#if CPUSTYLE_STM32H7XX
+		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+		DMA2_Stream3->PAR = (uintptr_t) & SPI1->TXDR;
+	#else /* CPUSTYLE_STM32H7XX */
+		const uint_fast8_t ch = 3;
+		DMA2_Stream3->PAR = (uintptr_t) & SPI1->DR;
+	#endif /* CPUSTYLE_STM32H7XX */
+
+
+	DMA2_Stream3->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
+	//DMA2_Stream3->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
+	(void) DMA2_Stream3->FCR;
+
+	DMA2_Stream3->CR =
+		(ch * DMA_SxCR_CHSEL_0) |	// канал
+		(3 * DMA_SxCR_MBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
+		(3 * DMA_SxCR_PBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
+		(0 * DMA_SxCR_PL_0) |		// Priority level - low
+		(1 * DMA_SxCR_DIR_0) |		// направление - память - периферия
+		(1 * DMA_SxCR_MINC) |		// инкремент адреса памяти
+		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit - устанавливается перед обменом
+		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit - устанавливается перед обменом
+		//(1 * DMA_SxCR_CIRC) |		// циклический режим не требуется при DBM
+		(0 * DMA_SxCR_CT) |			// M0AR selected
+		//(1 * DMA_SxCR_DBM) |		// double buffer mode seelcted
+		0;
+	(void) DMA2_Stream3->CR;
+
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+	// DMAMUX init
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	DMAMUX1_Channel11->CCR = 38 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_TX
+	(void) DMAMUX1_Channel11->CCR;
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
+
+}
+
+#if 1
+// Ожидание завершения обмена
+static void DMA2_waitTC(
+	uint_fast8_t i		// 0..7 - номер Stream
+	)
+{
+	uint_fast8_t mask = 1UL << ((i & 0x01) * 6);
+	if (i >= 4)
+	{
+		if (i >= 6)
+		{
+			// Дожидаемся завершения обмена канала DMA
+			while ((DMA2->HISR & (DMA_HISR_TCIF6 * mask)) == 0)	// ожидаем завершения обмена по соответствушему stream
+				;
+			DMA2->HIFCR = DMA_HIFCR_CTCIF6 * mask;		// сбросил флаг соответствующий stream
+		}
+		else
+		{
+			// Дожидаемся завершения обмена канала DMA
+			while ((DMA2->HISR & (DMA_HISR_TCIF4 * mask)) == 0)	// ожидаем завершения обмена по соответствушему stream
+				;
+			DMA2->HIFCR = DMA_HIFCR_CTCIF4 * mask;		// сбросил флаг соответствующий stream
+		}
+	}
+	else
+	{
+		if (i >= 2)
+		{
+			// Дожидаемся завершения обмена канала DMA
+			while ((DMA2->LISR & (DMA_LISR_TCIF2 * mask)) == 0)	// ожидаем завершения обмена по соответствушему stream
+				;
+			DMA2->LIFCR = DMA_LIFCR_CTCIF2 * mask;		// сбросил флаг соответствующий stream
+		}
+		else
+		{
+			// Дожидаемся завершения обмена канала DMA
+			while ((DMA2->LISR & (DMA_LISR_TCIF0 * mask)) == 0)	// ожидаем завершения обмена по соответствушему stream
+				;
+			DMA2->LIFCR = DMA_LIFCR_CTCIF0 * mask;		// сбросил флаг соответствующий stream
+		}
+	}
+}
+
+#endif
+
+#elif CPUSTYLE_STM32F1XX
+
+// Инициализация DMA для прёма по SPI1
+static void DMA2_SPI1_RX_initialize(void)
+{
+}
+
+// Инициализация DMA для передачи SPI1
+static void DMA2_SPI1_TX_initialize(void)
+{
+}
+
+#endif /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX */
+
+#endif /* WITHSPIHWDMA */
+
+#if CPUSTYPE_T113
+static void sys_spinor_exit(void)
+{
+	//uintptr_t addr = 0x04025000;
+	unsigned int val;
+
+	/* Disable the spi0 controller */
+	val = SPI0->SPI_GCR;
+	val &= ~ ((1 << 1) | (1 << 0));
+	SPI0->SPI_GCR = val;
+}
+#endif /* CPUSTYPE_T113 */
+
+/* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
+   на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается
+   */
+/* инициализация и перевод в состояние "отключено" */
+void hardware_spi_master_initialize(void)
+{
+	//PRINTF("hardware_spi_master_initialize\n");
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	// инициализация контроллера SPI
+
+	// Get clock
+    PMC->PMC_PCER0 = (1UL << ID_PIOA) | (1UL << ID_SPI);	/* Need PIO too */
+
+    // setup PIO pins for SPI bus, disconnect from peripherials
+	SPIIO_INITIALIZE();
+
+    // reset and enable SPI
+    SPI->SPI_CR = SPI_CR_SWRST;
+    SPI->SPI_CR = SPI_CR_SWRST;
+    SPI->SPI_CR = SPI_CR_SPIDIS;
+
+
+	// Работаем с Fixed Peripheral Selectionб и без Peripheral Chip Select Decoding
+    // USE following line for MASTER MODE operation
+    //SPI->SPI_MR = AT91C_SPI_MSTR | AT91C_SPI_MODFDIS | AT91C_SPI_PS_FIXED;
+    SPI->SPI_MR = SPI_MR_MSTR | SPI_MR_MODFDIS | (SPI_MR_PS * 0);
+
+	#if WITHSPIHWDMA
+		SPI->SPI_PTCR = SPI_PTCR_RXTDIS | SPI_PTCR_TXTDIS;
+
+		SPI->SPI_TNCR = 0;
+		SPI->SPI_RNCR = 0;
+		SPI->SPI_RCR = 0;
+		SPI->SPI_TCR = 0;
+
+		SPI->SPI_PTCR = SPI_PTCR_RXTEN | SPI_PTCR_TXTEN;
+	#endif /* WITHSPIHWDMA */
+
+
+	SPI->SPI_IDR = ~ 0; /* Disable all interrupts */
+    SPI->SPI_CR = SPI_CR_SPIEN;
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// инициализация контроллера SPI
+
+   // Get clock
+    AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_PIOA) | (1UL << AT91C_ID_SPI);/* Need PIO too */
+
+    // setup PIO pins for SPI bus, disconnect from peripherials
+	SPIIO_INITIALIZE();
+
+    // reset and enable SPI
+    AT91C_BASE_SPI->SPI_CR = AT91C_SPI_SWRST;
+    AT91C_BASE_SPI->SPI_CR = AT91C_SPI_SWRST;
+    AT91C_BASE_SPI->SPI_CR = AT91C_SPI_SPIDIS;
+
+	// Работаем с Fixed Peripheral Selectionб и без Peripheral Chip Select Decoding
+    // USE following line for MASTER MODE operation
+    AT91C_BASE_SPI->SPI_MR = AT91C_SPI_MSTR | AT91C_SPI_MODFDIS | AT91C_SPI_PS_FIXED;
+
+
+	#if WITHSPIHWDMA
+		AT91C_BASE_SPI->SPI_PTCR = AT91C_PDC_RXTDIS | AT91C_PDC_TXTDIS;
+
+		AT91C_BASE_SPI->SPI_TNCR = 0;
+		AT91C_BASE_SPI->SPI_RNCR = 0;
+		AT91C_BASE_SPI->SPI_RCR = 0;
+		AT91C_BASE_SPI->SPI_TCR = 0;
+
+		AT91C_BASE_SPI->SPI_PTCR = AT91C_PDC_RXTEN | AT91C_PDC_TXTEN;
+	#endif /* WITHSPIHWDMA */
+
+
+	AT91C_BASE_SPI->SPI_IDR = ~ 0; /* Disable all interrupts */
+    AT91C_BASE_SPI->SPI_CR = AT91C_SPI_SPIEN;
+
+#elif CPUSTYLE_ATMEGA
+
+	// SPI initialization
+	SPCR = 0x00;	/* отключить */
+
+    // setup PIO pins for SPI bus, disconnect from peripherials
+	SPIIO_INITIALIZE();
+
+
+#elif CPUSTYLE_ATXMEGA
+
+	// SPI initialization
+	TARGETHARD_SPI.CTRL = 0x00;	/* отключить */
+
+    // setup PIO pins for SPI bus, disconnect from peripherials
+	SPIIO_INITIALIZE();
+
+#elif CPUSTYLE_STM32F1XX
+
+	// Начнем с настройки порта:
+	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
+	__DSB();
+	cpu_stm32f1xx_setmapr(AFIO_MAPR_SPI1_REMAP);
+
+	// Теперь настроим модуль SPI.
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование
+	__DSB();
+	SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
+	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
+
+	#if WITHSPIHWDMA
+		DMA2_SPI1_TX_initialize();	// stream 3, канал 3
+		DMA2_SPI1_RX_initialize();	// stream 0. канал 3
+	#endif /* WITHSPIHWDMA */
+
+	/* настраиваем в режиме disconnect */
+	SPIIO_INITIALIZE();
+
+#elif CPUSTYLE_STM32F4XX
+	// Начнем с настройки порта:
+	//RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
+	//__DSB();
+	//cpu_stm32f1xx_setmapr(AFIO_MAPR_SPI1_REMAP);
+
+	// Теперь настроим модуль SPI.
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
+	(void) RCC->APB2ENR;
+	SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
+	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
+
+	#if WITHSPIHWDMA
+		DMA2_SPI1_TX_initialize();	// stream 3, канал 3
+		DMA2_SPI1_RX_initialize();	// stream 0. канал 3
+	#endif /* WITHSPIHWDMA */
+
+	/* настраиваем в режиме disconnect */
+	SPIIO_INITIALIZE();
+
+#elif CTLSTYLE_V3D		// SPI2
+
+	// Настроим модуль SPI.
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // подать тактирование
+	(void) RCC->APB1ENR;
+
+	/* настраиваем в режиме disconnect */
+	SPIIO_INITIALIZE();
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+
+	// Настроим модуль SPI.
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
+	(void) RCC->APB2ENR;
+	RCC->APB2LPENR |= RCC_APB2LPENR_SPI1LPEN; // подать тактирование
+	(void) RCC->APB2LPENR;
+	//SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
+	//SPI1->CR2 = 0x0000;
+
+	#if WITHSPIHWDMA
+		DMA2_SPI1_TX_initialize();	// stream 3, канал 3
+		DMA2_SPI1_RX_initialize();	// stream 0. канал 3
+	#endif /* WITHSPIHWDMA */
+
+	/* настраиваем в режиме disconnect */
+	SPIIO_INITIALIZE();
+
+#elif CPUSTYLE_R7S721
+	// Renesas Serial Peripheral Interface 0
+	// RSPCK0	P6_0	ALT3
+	// MOSI0	P6_2	ALT3
+	// MISO0	P6_3	ALT3
+	// SSL00	P6_1	ALT3
+
+	uint_fast8_t mid = 0x48;
+	if (HW_SPIUSED == & RSPI0)
+	{
+		/* ---- Supply clock to the RSPI(channel 0) ---- */
+		CPG.STBCR10 &= ~ CPG_STBCR10_BIT_MSTP107;	// Module Stop 107 RSPI0
+		(void) CPG.STBCR10;			/* Dummy read */
+		// Values from Table 9.4 On-Chip Peripheral Module Requests
+		// SPTI0 (transmit data empty)
+		mid = 0x48;
+	}
+	else if (HW_SPIUSED == & RSPI1)
+	{
+		/* ---- Supply clock to the RSPI(channel 1) ---- */
+		CPG.STBCR10 &= ~ CPG_STBCR10_BIT_MSTP106;	// Module Stop 106 RSPI1
+		(void) CPG.STBCR10;			/* Dummy read */
+		// Values from Table 9.4 On-Chip Peripheral Module Requests
+		// SPTI1 (transmit data empty)
+		mid = 0x49;
+	}
+	else if (HW_SPIUSED == & RSPI2)
+	{
+		/* ---- Supply clock to the RSPI(channel 2) ---- */
+		CPG.STBCR10 &= ~ CPG_STBCR10_BIT_MSTP105;	// Module Stop 105 RSPI2
+		(void) CPG.STBCR10;			/* Dummy read */
+		// Values from Table 9.4 On-Chip Peripheral Module Requests
+		// SPTI2 (transmit data empty)
+		mid = 0x4a;
+	}
+
+	HW_SPIUSED->SPCR =		/* Control Register (SPCR) */
+		0;
+
+	HW_SPIUSED->SPPCR =		/* Pin Control Register (SPPCR) */
+		0x00 |
+		0;
+	HW_SPIUSED->SPSCR =		/*  (SPSCR) */
+		0x00 |
+		0;
+	// Сбросить буферы
+	HW_SPIUSED->SPBFCR =		/* Buffer Control Register (SPBFCR) */
+		(1U << 7) |		// TXRST - TX buffer reset
+		(1U << 6) |		// RXRST - TX buffer reset
+		0;
+	// Разрешить буферы
+	HW_SPIUSED->SPBFCR =		/* Buffer Control Register (SPBFCR) */
+		(3U << 4) |		// TX buffer trigger level = 0
+		0;
+
+	HW_SPIUSED->SPCR =		/* Control Register (SPCR) */
+		(1U << 3) |		// MSTR - master
+		(1U << 6) |		// SPE - Function Enable
+		(1U << 5) |		// SPTIE  - Transmit Interrupt Enable (for DMA transfers)
+		(1U << 7) |		// SPRIE  - Receive Interrupt Enable (for DMA transfers)
+		0;
+
+#if WITHSPIHWDMA
+	{
+		enum { id = 15 };	// 15: DMAC15
+		// DMAC15
+		/* Set Destination Start Address */
+		//DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+		DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+
+		/* Set Transfer Size */
+		//DMAC15.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+		//DMAC15.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+
+		// Values from Table 9.4 On-Chip Peripheral Module Requests
+		// SPTI0 (transmit data empty)
+		//const uint_fast8_t mid = 0x48;
+		const uint_fast8_t rid = 1;
+		const uint_fast8_t tm = 0;		// single transfer mode
+		const uint_fast8_t am = 2;
+		const uint_fast8_t lvl = 1;
+		const uint_fast8_t hien = 1;
+		const uint_fast8_t reqd = 1;
+
+		DMAC15.CHCFG_n =
+			0 * (1U << DMAC15_CHCFG_n_DMS_SHIFT) |		// DMS	0: Register mode
+			0 * (1U << DMAC15_CHCFG_n_REN_SHIFT) |		// REN	0: Does not continue DMA transfers.
+			0 * (1U << DMAC15_CHCFG_n_RSW_SHIFT) |		// RSW	1: Inverts RSEL automatically after a DMA transaction.
+			0 * (1U << DMAC15_CHCFG_n_RSEL_SHIFT) |		// RSEL	0: Executes the Next0 Register Set
+			0 * (1U << DMAC15_CHCFG_n_SBE_SHIFT) |		// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
+			0 * (1U << DMAC15_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+			tm * (1U << DMAC15_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - берётся из Table 9.4
+			1 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
+			0 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
+			1 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |		// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+			1 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |		// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+			am * (1U << DMAC15_CHCFG_n_AM_SHIFT) |		// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
+			lvl * (1U << DMAC15_CHCFG_n_LVL_SHIFT) |	// LVL	1: Detects based on the level.
+			hien * (1U << DMAC15_CHCFG_n_HIEN_SHIFT) |	// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
+			reqd * (1U << DMAC15_CHCFG_n_REQD_SHIFT) |	// REQD		Request Direction
+			(id & 0x07) * (1U << DMAC15_CHCFG_n_SEL_SHIFT) |		// SEL	0: CH0/CH8
+			0;
+
+		enum { dmarsshift = (id & 0x01) * 16 };
+		DMAC1415.DMARS = (DMAC1415.DMARS & ~ (0x1FFul << dmarsshift)) |
+			mid * (1U << (2 + dmarsshift)) |		// MID
+			rid * (1U << (0 + dmarsshift)) |		// RID
+			0;
+
+		DMAC815.DCTRL_0_7 = (DMAC815.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
+			//1 * (1U << 1) |		// LVINT	1: Level output
+			1 * (1U << 0) |		// PR		1: Round robin mode
+			0;
+
+		{
+			// connect to interrupt
+			//arm_hardware_set_handler_system(DMAINT15_IRQn, r7s721_usb0_dma1_dmatx_handler);
+		}
+
+		DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SWRST;		// SWRST
+		DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
+		//DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
+	}
+#endif /* WITHSPIHWDMA */
+
+	SPIIO_INITIALIZE();
+
+#elif CPUSTYLE_STM32MP1
+
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SPI1EN; // подать тактирование
+	(void) RCC->MP_APB2ENSETR;
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SPI1LPEN; // подать тактирование
+	(void) RCC->MP_APB2LPENSETR;
+	/* настраиваем в режиме disconnect */
+	SPIIO_INITIALIZE();
+
+#elif CPUSTYLE_XC7Z
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << 14);	// APER_CLK_CTRL.SPI0_CPU_1XCLKACT
+	(void) SCLR->APER_CLK_CTRL;
+
+
+	// Set DIVISOR
+	SCLR->SPI_CLK_CTRL = (SCLR->SPI_CLK_CTRL & ~ (0x3FuL << 8)) |
+			(SCLR_SPI_CLK_CTRL_DIVISOR_VALUE << 8) |
+			0;
+
+//	PRINTF("1 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
+	// после reset не работает
+//	SCLR->LQSPI_RST_CTRL |= 0x01;
+//	(void) SCLR->LQSPI_RST_CTRL;
+//	SCLR->LQSPI_RST_CTRL &= ~ 0x01;
+//	(void) SCLR->LQSPI_RST_CTRL;
+
+//	PRINTF("2 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
+
+	//PRINTF("SPI0->Mod_id_reg0=%08lX (expected 0x00090106)\n", SPI0->Mod_id_reg0);
+	ASSERT(SPI0->Mod_id_reg0 == 0x00090106uL);
+
+	SPIIO_INITIALIZE();
+
+#elif CPUSTYPE_T113
+	unsigned ix = 0;	// SPI0
+
+	/* Open the clock gate for SPI0 */
+	CCU->SPI_BGR_REG |= (0x01uL << (ix + 0));
+
+	/* Deassert SPI0 reset */
+	CCU->SPI_BGR_REG |= (0x01uL << (ix + 16));
+
+	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
+
+//	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
+//	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
+//		;
+	SPI0->SPI_GCR |=
+		(0x00uL < 1) |	// MODE: 1: Master mode
+		0;
+
+	/* Deassert spi0 reset */
+	CCU->SPI_BGR_REG |= (1 << (ix + 16));
+	/* Open the spi0 gate */
+	CCU->SPI0_CLK_REG |= (1 << 31);
+	/* Open the spi0 bus gate */
+	CCU->SPI_BGR_REG |= (1 << (ix + 0));
+
+
+	/* Enable spi0 */
+	SPI0->SPI_GCR |= (1 << 7) | (1 << 1) | (1 << 0);
+	/* Do a soft reset */
+//	SPI0->SPI_GCR |= (1 << 31);
+//	while((SPI0->SPI_GCR & (1 << 31)) != 0)
+//		;
+
+	// De-assert hardware CS
+	SPI0->SPI_TCR |= (1u << 7);
+
+	SPIIO_INITIALIZE();
+
+#else
+	#error Wrong CPUSTYLE macro
+
+#endif
+}
+
+#endif /* WITHSPIHW */
+
+#if WITHSPIHW
+
+
+void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispeed)
+{
+	//PRINTF("hardware_spi_master_setfreq: %d %d\n", spispeedindex, spispeed);
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	const ldiv_t v = ldiv(CPU_FREQ, spispeed);
+	const unsigned long scbr = ulmin(255, (CPU_FREQ > spispeed) ? (v.quot + (v.rem != 0)) : 1);	// 72 MHz / scbr = SPI clock freq
+	const unsigned dlybs = 0;
+	const unsigned dlybct = 0;
+
+	// 8-ми битые передачи
+    const unsigned long csrbits =
+		SPI_CSR_BITS_8_BIT  |	// (SPI) 8 Bits Per transfer
+		SPI_CSR_SCBR(scbr) | // (SPI_CSR_SCBR_Msk & (scbr <<  SPI_CSR_SCBR_Pos)) |	// (SPI) Serial Clock Baud Rate
+		SPI_CSR_CSAAT |	// (SPI) Chip Select Active After Transfer
+		SPI_CSR_DLYBS(dlybs) | // (SPI_CSR_DLYBS_Msk & (dlybs << SPI_CSR_DLYBS_Pos)) |
+		SPI_CSR_DLYBCT(dlybct) | // (SPI_CSR_DLYBCT_Msk & (dlybct << SPI_CSR_DLYBCT_Pos)) |
+		0;
+	// 16-ти битые передачи
+    const unsigned long csrbits16w =
+		SPI_CSR_BITS_16_BIT |	// (SPI) 16 Bits Per transfer
+		SPI_CSR_SCBR(scbr) | // (SPI_CSR_SCBR_Msk & (scbr <<  SPI_CSR_SCBR_Pos)) |	// (SPI) Serial Clock Baud Rate
+		SPI_CSR_CSAAT |	// (SPI) Chip Select Active After Transfer
+		SPI_CSR_DLYBS(dlybs) | // (SPI_CSR_DLYBS_Msk & (dlybs << SPI_CSR_DLYBS_Pos)) |
+		SPI_CSR_DLYBCT(dlybct) | // (SPI_CSR_DLYBCT_Msk & (dlybct << SPI_CSR_DLYBCT_Pos)) |
+		0;
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 8-битная передача
+	spi_csr_val8w [spispeedindex][SPIC_MODE0] = csrbits | SPI_CSR_NCPHA;
+	spi_csr_val8w [spispeedindex][SPIC_MODE1] = csrbits;
+	spi_csr_val8w [spispeedindex][SPIC_MODE2] = csrbits | SPI_CSR_CPOL | SPI_CSR_NCPHA;
+	spi_csr_val8w [spispeedindex][SPIC_MODE3] = csrbits | SPI_CSR_CPOL;
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 16-битная передача
+	spi_csr_val16w [spispeedindex][SPIC_MODE0] = csrbits16w | SPI_CSR_NCPHA;
+	spi_csr_val16w [spispeedindex][SPIC_MODE1] = csrbits16w;
+	spi_csr_val16w [spispeedindex][SPIC_MODE2] = csrbits16w | SPI_CSR_CPOL | SPI_CSR_NCPHA;
+	spi_csr_val16w [spispeedindex][SPIC_MODE3] = csrbits16w | SPI_CSR_CPOL;
+
+#elif CPUSTYLE_AT91SAM7S
+
+	const ldiv_t v = ldiv(CPU_FREQ, spispeed);
+	const unsigned long scbr = ulmin(255, (CPU_FREQ > spispeed) ? (v.quot + (v.rem != 0)) : 1);	// 72 MHz / scbr = SPI clock freq
+	const unsigned dlybs = 0;
+	const unsigned dlybct = 0;
+
+	// 8-ми битые передачи
+    const unsigned long csrbits =
+		AT91C_SPI_BITS_8 |	// (SPI) 8 Bits Per transfer
+		(AT91C_SPI_SCBR & (scbr <<  8)) |	// (SPI) Serial Clock Baud Rate
+		AT91C_SPI_CSAAT |	// (SPI) Chip Select Active After Transfer
+		(AT91C_SPI_DLYBS & (dlybs << 16)) |
+		(AT91C_SPI_DLYBCT & (dlybct << 24)) |
+		0;
+	// 16-ти битые передачи
+    const unsigned long csrbits16w =
+		AT91C_SPI_BITS_16 |	// (SPI) 16 Bits Per transfer
+		(AT91C_SPI_SCBR & (scbr <<  8)) |	// (SPI) Serial Clock Baud Rate
+		AT91C_SPI_CSAAT |	// (SPI) Chip Select Active After Transfer
+		(AT91C_SPI_DLYBS & (dlybs << 16)) |
+		(AT91C_SPI_DLYBCT & (dlybct << 24)) |
+		0;
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 8-битная передача
+	spi_csr_val8w [spispeedindex][SPIC_MODE0] = csrbits | AT91C_SPI_NCPHA;
+	spi_csr_val8w [spispeedindex][SPIC_MODE1] = csrbits;
+	spi_csr_val8w [spispeedindex][SPIC_MODE2] = csrbits | AT91C_SPI_CPOL | AT91C_SPI_NCPHA;
+	spi_csr_val8w [spispeedindex][SPIC_MODE3] = csrbits | AT91C_SPI_CPOL;
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 16-битная передача
+	spi_csr_val16w [spispeedindex][SPIC_MODE0] = csrbits16w | AT91C_SPI_NCPHA;
+	spi_csr_val16w [spispeedindex][SPIC_MODE1] = csrbits16w;
+	spi_csr_val16w [spispeedindex][SPIC_MODE2] = csrbits16w | AT91C_SPI_CPOL | AT91C_SPI_NCPHA;
+	spi_csr_val16w [spispeedindex][SPIC_MODE3] = csrbits16w | AT91C_SPI_CPOL;
+
+#elif CPUSTYLE_ATMEGA
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, spispeed), ATMEGA_SPCR_WIDTH, ATMEGA_SPCR_TAPS, & value, 1);
+	const uint_fast8_t spcr = spcr_spsr [prei].spcr | (1U << SPE) | (1U << MSTR);
+	// С FRAM FM25L04 работает MODE3 и MODE0
+	spcr_val [spispeedindex][SPIC_MODE0] = (0U << CPOL) | (0U << CPHA) | spcr;
+	spcr_val [spispeedindex][SPIC_MODE1] = (0U << CPOL) | (1U << CPHA) | spcr;
+	spcr_val [spispeedindex][SPIC_MODE2] = (1U << CPOL) | (0U << CPHA) | spcr;
+	spcr_val [spispeedindex][SPIC_MODE3] = (1U << CPOL) | (1U << CPHA) | spcr;
+
+	spsr_val [spispeedindex] = spcr_spsr [prei].spsr;	// SPI2X bit
+
+#elif CPUSTYLE_ATXMEGA
+
+	// SPI initialization
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, spispeed), ATXMEGA_SPIBR_WIDTH, ATXMEGA_SPIBR_TAPS, & value, 1);
+	const uint_fast8_t ctl = spi_ctl [prei] | SPI_MASTER_bm | SPI_ENABLE_bm;
+	// С FRAM FM25L04 работает MODE3 и MODE0
+	spi_ctl_val [spispeedindex][SPIC_MODE0] = SPI_MODE_0_gc | ctl;	// SPI MODE0,
+	spi_ctl_val [spispeedindex][SPIC_MODE1] = SPI_MODE_1_gc | ctl;	// SPI MODE1,
+	spi_ctl_val [spispeedindex][SPIC_MODE2] = SPI_MODE_2_gc | ctl;	// SPI MODE2,
+	spi_ctl_val [spispeedindex][SPIC_MODE3] = SPI_MODE_3_gc | ctl;	// SPI MODE3,
+
+#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
+
+	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
+
+	const uint_fast32_t cr1baudrate = (prei * SPI_CR1_BR_0) & SPI_CR1_BR;
+	// When the SSM bit is set, the NSS pin input is replaced with the value from the SSI bit.
+	// This bit has an effect only when the SSM bit is set. The value of this bit is forced onto the NSS pin and the IO value of the NSS pin is ignored.
+	const uint_fast32_t cr1bits = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE | cr1baudrate;
+	const uint_fast32_t cr1bits16w = cr1bits | SPI_CR1_DFF;
+	enum
+	{
+		CR1_MODE0 = 0,				// TODO: not tested
+		CR1_MODE1 = SPI_CR1_CPHA,	// TODO: not tested
+		CR1_MODE2 = SPI_CR1_CPOL,	// CLK leave HIGH
+		CR1_MODE3 = SPI_CR1_CPOL | SPI_CR1_CPHA		// wrk = CLK leave "HIGH"
+	};
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 8-битная передача
+	spi_cr1_val8w [spispeedindex][SPIC_MODE0] = cr1bits | CR1_MODE0;
+	spi_cr1_val8w [spispeedindex][SPIC_MODE1] = cr1bits | CR1_MODE1;
+	spi_cr1_val8w [spispeedindex][SPIC_MODE2] = cr1bits | CR1_MODE2;
+	spi_cr1_val8w [spispeedindex][SPIC_MODE3] = cr1bits | CR1_MODE3;
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 16-битная передача
+	spi_cr1_val16w [spispeedindex][SPIC_MODE0] = cr1bits16w | CR1_MODE0;
+	spi_cr1_val16w [spispeedindex][SPIC_MODE1] = cr1bits16w | CR1_MODE1;
+	spi_cr1_val16w [spispeedindex][SPIC_MODE2] = cr1bits16w | CR1_MODE2;
+	spi_cr1_val16w [spispeedindex][SPIC_MODE3] = cr1bits16w | CR1_MODE3;
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+
+	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
+
+	const uint_fast32_t cr1baudrate = (prei * SPI_CR1_BR_0) & SPI_CR1_BR;
+	const uint_fast32_t cr1bits = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE | cr1baudrate;
+	enum
+	{
+		CR1_MODE0 = 0,				// TODO: not tested
+		CR1_MODE1 = SPI_CR1_CPHA,	// TODO: not tested
+		CR1_MODE2 = SPI_CR1_CPOL,	// CLK leave HIGH
+		CR1_MODE3 = SPI_CR1_CPOL | SPI_CR1_CPHA		// wrk = CLK leave "HIGH"
+	};
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 8-битная или 16-битная передача программируется в CR2
+	spi_cr1_val8w [spispeedindex][SPIC_MODE0] = cr1bits | CR1_MODE0;
+	spi_cr1_val8w [spispeedindex][SPIC_MODE1] = cr1bits | CR1_MODE1;
+	spi_cr1_val8w [spispeedindex][SPIC_MODE2] = cr1bits | CR1_MODE2;
+	spi_cr1_val8w [spispeedindex][SPIC_MODE3] = cr1bits | CR1_MODE3;
+
+	spi_cr1_val16w [spispeedindex][SPIC_MODE0] = cr1bits | CR1_MODE0;
+	spi_cr1_val16w [spispeedindex][SPIC_MODE1] = cr1bits | CR1_MODE1;
+	spi_cr1_val16w [spispeedindex][SPIC_MODE2] = cr1bits | CR1_MODE2;
+	spi_cr1_val16w [spispeedindex][SPIC_MODE3] = cr1bits | CR1_MODE3;
+
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
+	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR_Msk;
+	const uint_fast32_t cfg1 = cfg1baudrate;// | (SPI_CFG1_CRCSIZE_0 * 7);
+	//PRINTF(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
+
+	spi_cfg1_val8w [spispeedindex] = cfg1 |
+		7 * SPI_CFG1_DSIZE_0 |
+		0;
+
+	spi_cfg1_val16w [spispeedindex] = cfg1 |
+		15 * SPI_CFG1_DSIZE_0 |
+		0;
+
+	spi_cfg1_val32w [spispeedindex] = cfg1 |
+		31 * SPI_CFG1_DSIZE_0 |
+		0;
+
+	const uint_fast32_t cfg2bits =
+			SPI_CFG2_SSOM_Msk |
+			SPI_CFG2_SSOE_Msk |
+			SPI_CFG2_SSM_Msk |	// 1: SS input value is determined by the SSI bit
+			SPI_CFG2_MASTER_Msk |
+			SPI_CFG2_AFCNTR_Msk | // 1: the peripheral keeps always control of all associated GPIOs
+			0;
+	enum
+	{
+		CFG2_MODE0 = 0,				// TODO: not tested
+		CFG2_MODE1 = SPI_CFG2_CPHA_Msk,	// TODO: not tested
+		CFG2_MODE2 = SPI_CFG2_CPOL_Msk,	// CLK leave HIGH
+		CFG2_MODE3 = SPI_CFG2_CPOL_Msk | SPI_CFG2_CPHA_Msk		// wrk = CLK leave "HIGH"
+	};
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 8-битная или 16-битная передача программируется в CR2
+	spi_cfg2_val [SPIC_MODE0] = cfg2bits | CFG2_MODE0;
+	spi_cfg2_val [SPIC_MODE1] = cfg2bits | CFG2_MODE1;
+	spi_cfg2_val [SPIC_MODE2] = cfg2bits | CFG2_MODE2;
+	spi_cfg2_val [SPIC_MODE3] = cfg2bits | CFG2_MODE3;
+
+#elif CPUSTYLE_R7S721
+
+	// Command Register (SPCMD)
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	enum
+	{
+		SPCMD_CPHA = RSPIn_SPCMD0_CPHA,
+		SPCMD_CPOL = RSPIn_SPCMD0_CPOL,
+
+		SPCMD_MODE0 = 0,
+		SPCMD_MODE1 = SPCMD_CPHA,
+		SPCMD_MODE2 = SPCMD_CPOL,
+		SPCMD_MODE3 = SPCMD_CPOL | SPCMD_CPHA
+	};
+
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(spispeed), R7S721_RSPI_SPBR_WIDTH, R7S721_RSPI_SPBR_TAPS, & value, 1);
+
+	//value = 59, prei = 0;	// 500 kHz
+	//value = 59, prei = 1;	// 250 kHz
+	//value = 59, prei = 2;	// 125 kHz
+	//value = 29, prei = 3;	// 125 kHz
+	//value = 149, prei = 1;	// 100 kHz
+
+	//PRINTF(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed[%u]=%lu\n"), prei, value, spispeedindex, (unsigned long) spispeed);
+
+	const uint_fast8_t spcmd0 =	// Command Register (SPCMD)
+		(RSPIn_SPCMD0_BRDV & (prei << RSPIn_SPCMD0_BRDV_SHIFT)) |	// BRDV1..BRDV0 - Bit Rate Division Setting /1, /2, /4. /8
+		0;
+
+	spi_spbr_val [spispeedindex] = value;	// Bit Rate Register (SPBR)
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 8-битная передача
+	const uint_fast16_t spcmd8bw = spcmd0 | 0x0700;	// 0x0700 - 8 bit
+
+	spi_spcmd0_val8w [spispeedindex][SPIC_MODE0] = spcmd8bw | SPCMD_MODE0;
+	spi_spcmd0_val8w [spispeedindex][SPIC_MODE1] = spcmd8bw | SPCMD_MODE1;
+	spi_spcmd0_val8w [spispeedindex][SPIC_MODE2] = spcmd8bw | SPCMD_MODE2;
+	spi_spcmd0_val8w [spispeedindex][SPIC_MODE3] = spcmd8bw | SPCMD_MODE3;
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 16-битная передача
+	const uint16_t spcmd16w = spcmd0 | 0x0F00;	// 0x0F00 - 16 bit
+
+	spi_spcmd0_val16w [spispeedindex][SPIC_MODE0] = spcmd16w | SPCMD_MODE0;
+	spi_spcmd0_val16w [spispeedindex][SPIC_MODE1] = spcmd16w | SPCMD_MODE1;
+	spi_spcmd0_val16w [spispeedindex][SPIC_MODE2] = spcmd16w | SPCMD_MODE2;
+	spi_spcmd0_val16w [spispeedindex][SPIC_MODE3] = spcmd16w | SPCMD_MODE3;
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 16-битная передача
+	const uint16_t spcmd32w = spcmd0 | 0x0200;	// 0x0200 or 0x0300 - 32 bit
+
+	spi_spcmd0_val32w [spispeedindex][SPIC_MODE0] = spcmd32w | SPCMD_MODE0;
+	spi_spcmd0_val32w [spispeedindex][SPIC_MODE1] = spcmd32w | SPCMD_MODE1;
+	spi_spcmd0_val32w [spispeedindex][SPIC_MODE2] = spcmd32w | SPCMD_MODE2;
+	spi_spcmd0_val32w [spispeedindex][SPIC_MODE3] = spcmd32w | SPCMD_MODE3;
+
+#elif CPUSTYLE_XC7Z
+
+	enum
+	{
+		SPICR_CPHA = 1u << 2,
+		SPICR_CPOL = 1u << 1,
+
+		SPICR_MODE0 = 0,
+		SPICR_MODE1 = SPICR_CPHA,
+		SPICR_MODE2 = SPICR_CPOL,
+		SPICR_MODE3 = SPICR_CPOL | SPICR_CPHA
+	};
+
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), XC7Z_SPI_BR_WIDTH, XC7Z_SPI_BR_TAPS, & value, 1);
+
+	unsigned brdiv = ulmin(prei + 1, 7);
+	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u (clk=%lu)\n", prei, value, spispeed, brdiv, xc7z_get_spi_freq());
+
+	const portholder_t cr_val =
+			//(1uL << 17) |	// ModeFail Generation Enable
+			//(1uL << 16) |	// Manual Start Command
+			//(1uL << 15) |	// Manual Start Enable
+//			(1uL << 14) |	// Manual CS
+//			(0x0FuL << 10) |	// 1111 - No slave selected
+			(brdiv << 3) |	// BAUD_RATE_DIV: 001: divide by 4, ... 111: divide by 256
+			(1uL << 0) |	// 1: the SPI is in master mode
+			0;
+
+	spi_cr_val [spispeedindex][SPIC_MODE0] = cr_val | SPICR_MODE0;
+	spi_cr_val [spispeedindex][SPIC_MODE1] = cr_val | SPICR_MODE1;
+	spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
+	spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
+
+#elif CPUSTYPE_T113
+
+	enum
+	{
+		ALLWNT113_SPI_BR_WIDTH = 4, ALLWNT113_SPI_BR_TAPS = ( 8 | 4 | 2 | 1)
+
+	};
+
+	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
+		(clk_src << 24) |	/* CLK_SRC_SEL */
+		0;
+
+	//TP();
+	// SCLK = Clock Source/M/N.
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
+	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());
+	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
+	ccu_spi_clk_reg_val [spispeedindex] =
+		(clk_src << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+		(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+		(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
+		(0x01uL << 31) |	// 1: Clock is ON
+		0;
+
+	const portholder_t tcr =
+			(0x00uL << 12) |	// FBS: 0: MSB first
+			(0x01uL << 6) |		// SS_OWNER: 1: Software
+			(0x01uL << 7) |		// SS_LEVEL: 1: Set SS to high
+			0;
+
+	// SPI Transfer Control Register (Default Value: 0x0000_0087)
+	// CPOL at bit 1, CPHA at bit 0
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE0] = tcr | (0x00uL << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE1] = tcr | (0x01uL << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (0x02uL << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (0x03uL << 0);
+
+#else
+	#error Wrong CPUSTYLE macro
+
+#endif
+}
+
+/* управление состоянием "подключено" */
+void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	// инициализация контроллера SPI
+	enum { OUTMASK = PIO_PA13A_MOSI | PIO_PA14A_SPCK };		// битовая маска, определяет каким выводом шевелить
+	enum { INPMASK = PIO_PA12A_MISO };		// битовая маска, определяет откуда ввод
+	enum { WORKMASK = OUTMASK | INPMASK };		// битовая маска, включает и ввод и вывод
+
+	SPI->SPI_CSR [0] = spi_csr_val8w [spispeedindex][spimode];
+
+	(void) SPI->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
+
+	HARDWARE_SPI_CONNECT();
+
+#elif CPUSTYLE_AT91SAM7S
+
+	enum { OUTMASK = AT91C_PA13_MOSI | AT91C_PA14_SPCK };		// битовая маска, определяет каким выводом шевелить
+	enum { INPMASK = AT91C_PA12_MISO };		// битовая маска, определяет откуда ввод
+	enum { WORKMASK = OUTMASK | INPMASK };		// битовая маска, включает и ввод и вывод
+
+	AT91C_SPI_CSR [0] = spi_csr_val8w [spispeedindex][spimode];
+
+	(void) AT91C_BASE_SPI->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
+
+	HARDWARE_SPI_CONNECT();
+
+#elif CPUSTYLE_ATMEGA
+
+	SPSR = spsr_val [spispeedindex];		// D0 is SPI2X bit, other bits has no effect at write.
+	SPCR = spcr_val [spispeedindex][spimode];
+
+	HARDWARE_SPI_CONNECT();
+
+	(void) SPDR;	/* clear SPIF in status register */
+
+#elif CPUSTYLE_ATXMEGA
+
+	TARGETHARD_SPI.CTRL = spi_ctl_val [spispeedindex][spimode];
+ 	/* MOSI and SCK as output, MISO as input. */
+	//SPI_TARGET_DDR_S  = SPI_MOSI_BIT | SPI_SCLK_BIT;
+	//SPI_TARGET_DDR_C  = SPI_MISO_BIT;
+
+	HARDWARE_SPI_CONNECT();
+
+	(void) TARGETHARD_SPI.DATA;	/* clear SPIF in status register */
+
+#elif CPUSTYLE_STM32F1XX
+
+	HARDWARE_SPI_CONNECT();
+
+	#if WITHTWIHW
+		// Silicon errata:
+		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
+		// Workaround:
+		// When using SPI1 remapped, the I2C1 clock must be disabled.
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		__DSB();
+	#endif
+	SPI1->CR1 = spi_cr1_val8w [spispeedindex][spimode];
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
+
+	// В этих процессорах и входы и выходы переключаются на ALT FN
+	HARDWARE_SPI_CONNECT();
+
+	#if WITHTWIHW
+		// Silicon errata:
+		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
+		// Workaround:
+		// When using SPI1 remapped, the I2C1 clock must be disabled.
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		__DSB();
+	#endif
+	SPI1->CR1 = spi_cr1_val8w [spispeedindex][spimode];
+
+#elif CTLSTYLE_V3D		// SPI2
+
+	HARDWARE_SPI_CONNECT();
+	SPI2->CR1 = spi_cr1_val8w [spispeedindex][spimode];
+	SPI2->CR2 = (SPI2->CR2 & ~ (SPI_CR2_DS)) |
+		7 * SPI_CR2_DS_0 |	// 8 bit word length
+		1 * SPI_CR2_FRXTH |			// RXFIFO threshold is set to 8 bits (FRXTH=1).
+		0;
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+
+	// В этих процессорах и входы и выходы переключаются на ALT FN
+	HARDWARE_SPI_CONNECT();
+
+	#if WITHTWIHW
+		// Silicon errata:
+		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
+		// Workaround:
+		// When using SPI1 remapped, the I2C1 clock must be disabled.
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		__DSB();
+	#endif
+	SPI1->CR1 = spi_cr1_val8w [spispeedindex][spimode];
+	SPI1->CR2 = (SPI1->CR2 & ~ (SPI_CR2_DS)) |
+		7 * SPI_CR2_DS_0 |	// 8 bit word length
+		1 * SPI_CR2_FRXTH |			// RXFIFO threshold is set to 8 bits (FRXTH=1).
+		0;
+
+#elif CPUSTYLE_STM32H7XX
+
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CFG1 = spi_cfg1_val8w [spispeedindex];
+	SPI1->CFG2 = spi_cfg2_val [spimode];
+	SPI1->CR1 |= SPI_CR1_SSI;
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
+
+#elif CPUSTYLE_R7S721
+
+	HW_SPIUSED->SPDCR =		/* Data Control Register (SPDCR) */
+		(0x01 << 5) |	// 0x01: 8 bit. Specifies the width for accessing the data register (SPDR)
+		0;
+	HW_SPIUSED->SPBR = spi_spbr_val [spispeedindex];
+	HW_SPIUSED->SPCMD0 = spi_spcmd0_val8w [spispeedindex][spimode];
+
+	HARDWARE_SPI_CONNECT();
+
+#elif CPUSTYLE_STM32MP1
+
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CFG1 = spi_cfg1_val8w [spispeedindex];
+	SPI1->CFG2 = spi_cfg2_val [spimode];
+	SPI1->CR1 |= SPI_CR1_SSI;
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
+
+#elif CPUSTYLE_XC7Z
+
+	SPI0->CR = spi_cr_val [spispeedindex][spimode];
+	SPI0->ER = 0x0001;	// 1: enable the SPI
+
+	HARDWARE_SPI_CONNECT();
+
+#elif CPUSTYPE_T113
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
+
+	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+
+ 	HARDWARE_SPI_CONNECT();
+
+#else
+	#error Wrong CPUSTYLE macro
+
+#endif
+
+}
+
+/* управление состоянием "подключено" */
+void hardware_spi_disconnect(void)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	HARDWARE_SPI_DISCONNECT();
+
+#elif CPUSTYLE_AT91SAM7S
+
+	HARDWARE_SPI_DISCONNECT();
+
+#elif CPUSTYLE_ATMEGA
+
+	HARDWARE_SPI_DISCONNECT();
+
+#elif CPUSTYLE_ATXMEGA
+
+	HARDWARE_SPI_DISCONNECT();
+
+#elif CPUSTYLE_STM32H7XX
+
+	SPI1->CR1 |= SPI_CR1_CSUSP;
+	while ((SPI1->CR1 & SPI_CR1_CSTART) != 0)
+		;
+	SPI1->CR1 &= ~ SPI_CR1_SPE;
+	// connect back to GPIO
+	HARDWARE_SPI_DISCONNECT();
+
+#elif CTLSTYLE_V3D		// SPI2
+
+	SPI2->CR1 &= ~ SPI_CR1_SPE;
+	HARDWARE_SPI_DISCONNECT();
+
+#elif CPUSTYLE_STM32F
+
+	SPI1->CR1 &= ~ SPI_CR1_SPE;
+
+	#if WITHTWIHW && ! CPUSTYLE_STM32H7XX
+		// Silicon errata:
+		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
+		// Workaround:
+		// When using SPI1 remapped, the I2C1 clock must be disabled.
+		RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); // вкл тактирование контроллера I2C
+		__DSB();
+	#endif
+
+	// connect back to GPIO
+	HARDWARE_SPI_DISCONNECT();
+
+#elif CPUSTYLE_R7S721
+
+	HARDWARE_SPI_DISCONNECT();
+
+#elif CPUSTYLE_STM32MP1
+	//#warning Insert code for CPUSTYLE_STM32MP1
+
+	SPI1->CR1 |= SPI_CR1_CSUSP;
+	while ((SPI1->CR1 & SPI_CR1_CSTART) != 0)
+		;
+	SPI1->CR1 &= ~ SPI_CR1_SPE;
+	// connect back to GPIO
+	HARDWARE_SPI_DISCONNECT();
+
+#elif CPUSTYLE_XC7Z
+
+	SPI0->ER = 0x0000;	// 0: disable the SPI
+	HARDWARE_SPI_DISCONNECT();
+
+#elif CPUSTYPE_T113
+
+	HARDWARE_SPI_DISCONNECT();
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+
+}
+
+portholder_t hardware_spi_complete_b8(void)	/* дождаться готовности */
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	/* дождаться завершения приёма/передачи */
+	while ((SPI->SPI_SR & SPI_SR_RDRF) == 0)
+		;
+	return (SPI->SPI_RDR & SPI_TDR_TD_Msk) & 0xFF;
+
+#elif CPUSTYLE_AT91SAM7S
+
+	/* дождаться завершения приёма/передачи */
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF) == 0)
+		;
+	return (AT91C_BASE_SPI->SPI_RDR & AT91C_SPI_TD);
+
+#elif CPUSTYLE_ATMEGA
+
+	/* дождаться завершения приёма/передачи */
+	while ((SPSR & (1U << SPIF)) == 0)
+		;
+	return SPDR;
+
+#elif CPUSTYLE_ATXMEGA
+
+	/* дождаться завершения приёма/передачи */
+	while ((TARGETHARD_SPI.STATUS & SPI_IF_bm) == 0)
+		;
+	return TARGETHARD_SPI.DATA;
+
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+	//while ((SPI1->SR & SPI_SR_TXC) == 0)
+	//	;
+	while ((SPI1->SR & SPI_SR_RXP) == 0)
+		;
+	const portholder_t t = * (volatile uint8_t *) & SPI1->RXDR;	// prevent data packing feature
+	return t;
+
+#elif CTLSTYLE_V3D		// SPI2
+
+	while ((SPI2->SR & SPI_SR_RXNE) == 0)
+		;
+	const portholder_t t = SPI2->DR & 0xFF;	/* clear SPI_SR_RXNE in status register */
+	while ((SPI2->SR & SPI_SR_BSY) != 0)
+		;
+	return t;
+
+#elif CPUSTYLE_STM32F
+
+	while ((SPI1->SR & SPI_SR_RXNE) == 0)
+		;
+	const portholder_t t = SPI1->DR & 0xFF;	/* clear SPI_SR_RXNE in status register */
+	while ((SPI1->SR & SPI_SR_BSY) != 0)
+		;
+	return t;
+
+#elif CPUSTYLE_R7S721
+
+	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
+		;
+	return HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
+
+#elif CPUSTYLE_XC7Z
+
+	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
+		;
+	return SPI0->RXD & 0xFF;
+
+#elif CPUSTYPE_T113
+
+	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
+	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+		;
+
+	return * (volatile uint8_t *) & SPI0->SPI_RXD;
+
+#else
+	#error Wrong CPUSTYLE macro
+	return 0;
+#endif
+}
+
+
+#if WITHSPIHWDMA
+
+static void
+hardware_spi_master_setdma8bit_rx(void)
+{
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	// DMA2: SPI1_RX: Stream 0: Channel 3
+	DMA2_Stream0->CR = (DMA2_Stream0->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
+		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit
+		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
+		0;
+#elif CPUSTYLE_R7S721
+	DMAC15.N0SA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+	//DMAC15.N0SA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
+		0 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		0 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		0 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	0: Increment destination address
+		1 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	1: Fixed source address
+		0;
+#endif
+}
+
+static void
+hardware_spi_master_setdma16bit_rx(void)
+{
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	// DMA2: SPI1_RX: Stream 0: Channel 3
+	DMA2_Stream0->CR = (DMA2_Stream0->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
+		(1 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 16bit
+		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
+		0;
+#elif CPUSTYLE_R7S721
+	//DMAC15.N0SA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed source address for 8-bit transfers
+	DMAC15.N0SA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed source address for 16-bit transfers
+	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
+		1 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		1 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		0 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	0: Increment destination address
+		1 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	1: Fixed source address
+		0;
+#endif
+}
+
+static void
+hardware_spi_master_setdma8bit_tx(void)
+{
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	// DMA2: SPI1_TX: Stream 3: Channel 3
+	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
+		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit
+		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
+		0;
+#elif CPUSTYLE_R7S721
+	DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+	//DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
+		0 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		0 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		1 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
+		0 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
+		0;
+#endif
+}
+
+static void
+hardware_spi_master_setdma16bit_tx(void)
+{
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	// DMA2: SPI1_TX: Stream 3: Channel 3
+	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
+		(1 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 16bit
+		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
+		0;
+#elif CPUSTYLE_R7S721
+	//DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+	DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
+		1 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		1 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		1 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
+		0 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
+		0;
+#endif
+}
+
+// Send a frame of bytes via SPI
+static void
+hardware_spi_master_send_frame_8bpartial(
+	//spitarget_t target,	/* addressing to chip */
+	const uint8_t * buffer,
+	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
+	)
+{
+#if 0
+	// имитация
+	if (size == 1)
+	{
+		hardware_spi_b8_p1(* buffer);
+		hardware_spi_complete_b8();
+	}
+	else
+	{
+		hardware_spi_b8_p1(* buffer ++);
+		size -= 1;
+		while (size --)
+			hardware_spi_b8_p2(* buffer ++);
+		hardware_spi_complete_b8();
+	}
+
+#elif CPUSTYLE_SAM9XE
+
+	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика
+
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDTX) == 0)
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+	// сбростить возможно имеющийся флаг готовности приёмника
+	(void) AT91C_BASE_SPI1->SPI_RDR;
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	SPI->SPI_TPR = (unsigned long) buffer;
+	SPI->SPI_TCR = size;	// запуск передатчика
+
+	while ((SPI->SPI_SR & SPI_SR_ENDTX) == 0)
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((SPI->SPI_SR & SPI_SR_TXEMPTY) == 0)
+		;
+	// сбростить возможно имеющийся флаг готовности приёмника
+	(void) SPI->SPI_RDR;
+
+#elif CPUSTYLE_AT91SAM7S
+
+	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI->SPI_TCR = size;	// запуск передатчика
+
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDTX) == 0)
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+	// сбростить возможно имеющийся флаг готовности приёмника
+	(void) AT91C_BASE_SPI->SPI_RDR;
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	// buffer should be allocated in RAM, not in CCM or FLASH
+
+	/*
+	if (((uint32_t) buffer & 0xFF000000) == CCMDATARAM_BASE)
+	{
+		PRINTF(PSTR("hardware_spi_master_send_frame: use CCM\n"));
+		// Safe version
+		prog_spi_send_frame(target, buffer, size);
+		return;
+	}
+	*/
+
+	// DMA2: SPI1_TX: Stream 3: Channel 3
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream3->M0AR = (uintptr_t) buffer;
+	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
+		(size * DMA_SxNDT_0);
+	DMA2_Stream3->CR |= DMA_SxCR_EN;		// перезапуск DMA
+
+	// Дожидаемся завершения обмена передающего канала DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// ожидаем завершения обмена по соответствушему stream
+		;
+	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
+	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
+
+	DMA2_Stream3->CR &= ~ DMA_SxCR_EN;
+	while ((DMA2_Stream3->CR &  DMA_SxCR_EN) != 0)
+		;
+
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	#if CPUSTYLE_STM32H7XX
+
+		while ((SPI1->SR & SPI_SR_TXC) == 0)
+			;
+		//while ((SPI1->SR & SPI_SR_BSY) != 0)
+		//	;
+		(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
+
+	#else /* CPUSTYLE_STM32H7XX */
+
+		while ((SPI1->SR & SPI_SR_TXE) == 0)
+			;
+		while ((SPI1->SR & SPI_SR_BSY) != 0)
+			;
+		(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
+
+	#endif /* CPUSTYLE_STM32H7XX */
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
+	#warning TODO: implement SPI over DMA
+
+	//xprog_spi_send_frame(target, buffer, size);
+
+#elif CPUSTYLE_STM32F1XX
+	#warning TODO: implement SPI over DMA
+
+	//xprog_spi_send_frame(target, buffer, size);
+
+#elif CPUSTYLE_ATXMEGA
+	#warning TODO: implement SPI over DMA
+
+	//xprog_spi_send_frame(target, buffer, size);
+
+#elif CPUSTYLE_R7S721
+
+	HW_SPIUSED->SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
+
+	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
+	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
+
+	/* ждем окончания пересылки */
+	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
+		;
+
+	/* ждем окончания передачи последнего элемента */
+	while ((HW_SPIUSED->SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
+		;
+
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
+
+	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
+#else
+	#error Undefined CPUSTYLE_xxxx
+#endif
+}
+
+#if WITHSPI16BIT
+
+// Send a frame of 16-bit words via SPI
+static void
+hardware_spi_master_send_frame_16bpartial(
+	//spitarget_t target,	/* addressing to chip */
+	const uint16_t * buffer,
+	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	)
+{
+#if 0
+	// имитация
+	if (size == 1)
+	{
+		hardware_spi_b16_p1(* buffer);
+		hardware_spi_complete_b16();
+	}
+	else
+	{
+		hardware_spi_b16_p1(* buffer ++);
+		size -= 1;
+		while (size --)
+			hardware_spi_b16_p2(* buffer ++);
+		hardware_spi_complete_b16();
+	}
+
+#elif CPUSTYLE_SAM9XE
+
+	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика
+
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDTX) == 0)
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+	// сбростить возможно имеющийся флаг готовности приёмника
+	(void) AT91C_BASE_SPI1->SPI_RDR;
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	SPI->SPI_TPR = (unsigned long) buffer;
+	SPI->SPI_TCR = size;	// запуск передатчика
+
+	while ((SPI->SPI_SR & SPI_SR_ENDTX) == 0)
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((SPI->SPI_SR & SPI_SR_TXEMPTY) == 0)
+		;
+	// сбростить возможно имеющийся флаг готовности приёмника
+	(void) SPI->SPI_RDR;
+
+#elif CPUSTYLE_AT91SAM7S
+
+	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI->SPI_TCR = size;	// запуск передатчика
+
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDTX) == 0)
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+	// сбростить возможно имеющийся флаг готовности приёмника
+	(void) AT91C_BASE_SPI->SPI_RDR;
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	// buffer should be allocated in RAM, not in CCM or FLASH
+
+	/*
+	if (((uint32_t) buffer & 0xFF000000) == CCMDATARAM_BASE)
+	{
+		PRINTF(PSTR("hardware_spi_master_send_frame: use CCM\n"));
+		// Safe version
+		prog_spi_send_frame(target, buffer, size);
+		return;
+	}
+	*/
+
+	// DMA2: SPI1_TX: Stream 3: Channel 3
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream3->M0AR = (uintptr_t) buffer;
+	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
+		(size * DMA_SxNDT_0);
+	DMA2_Stream3->CR |= DMA_SxCR_EN;		// перезапуск DMA
+
+	// Дожидаемся завершения обмена передающего канала DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// ожидаем завершения обмена по соответствушему stream
+		;
+	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
+	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
+
+	DMA2_Stream3->CR &= ~ DMA_SxCR_EN;
+	while ((DMA2_Stream3->CR &  DMA_SxCR_EN) != 0)
+		;
+
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	#if CPUSTYLE_STM32H7XX
+
+		while ((SPI1->SR & SPI_SR_TXC) == 0)
+			;
+		//while ((SPI1->SR & SPI_SR_BSY) != 0)
+		//	;
+		(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
+
+	#else /* CPUSTYLE_STM32H7XX */
+
+		while ((SPI1->SR & SPI_SR_TXE) == 0)
+			;
+		while ((SPI1->SR & SPI_SR_BSY) != 0)
+			;
+		(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
+
+	#endif /* CPUSTYLE_STM32H7XX */
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_send_frame_b16(target, buffer, size);
+
+#elif CPUSTYLE_STM32F1XX
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_send_frame_b16(target, buffer, size);
+
+#elif CPUSTYLE_ATXMEGA
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_send_frame_b16(target, buffer, size);
+
+#elif CPUSTYLE_R7S721
+
+	HW_SPIUSED->SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
+
+	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
+	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
+
+	/* ждем окончания пересылки */
+	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
+		;
+
+	/* ждем окончания передачи последнего элемента */
+	while ((HW_SPIUSED->SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
+		;
+
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
+
+	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Запретить прием
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
+#else
+	#error Undefined CPUSTYLE_xxxx
+#endif
+}
+
+// Read a frame of bytes via SPI
+// На сигнале MOSI при это должно обеспечиваться состояние логической "1" для корректной работы SD CARD
+static void
+hardware_spi_master_read_frame_16bpartial(
+	//spitarget_t target,	/* addressing to chip */
+	uint16_t * buffer,
+	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	)
+{
+#if CPUSTYLE_SAM9XE
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+
+	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI1->SPI_RPR = (unsigned long) buffer;
+	AT91C_BASE_SPI1->SPI_RCR = size;	// разрешить работу приёмника
+	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDRX) == 0)	// было TX
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+
+	SPI->SPI_TPR = (unsigned long) buffer;
+	SPI->SPI_RPR = (unsigned long) buffer;
+	SPI->SPI_RCR = size;	// разрешить работу приёмника
+	SPI->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+
+	while ((SPI->SPI_SR & SPI_SR_ENDRX) == 0)	// было TX
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((SPI->SPI_SR & SPI_SR_TXEMPTY) == 0)
+		;
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_AT91SAM7S
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+
+	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI->SPI_RPR = (unsigned long) buffer;
+	AT91C_BASE_SPI->SPI_RCR = size;	// разрешить работу приёмника
+	AT91C_BASE_SPI->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDRX) == 0)	// было TX
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+
+	/*
+	if (((uint32_t) buffer & 0xFF000000) == CCMDATARAM_BASE)
+	{
+		PRINTF(PSTR("hardware_spi_master_read_frame: use CCM\n"));
+		// Safe version
+		prog_spi_read_frame(target, buffer, size);
+		return;
+	}
+	*/
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+
+	// DMA2: SPI1_RX: Stream 0: Channel 3
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приему (master)
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (master)
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream0->M0AR = (uintptr_t) buffer;
+	DMA2_Stream0->NDTR = (DMA2_Stream0->NDTR & ~ DMA_SxNDT) |
+		(size * DMA_SxNDT_0) |
+		0;
+	DMA2_Stream0->CR |= DMA_SxCR_EN;		// перезапуск DMA
+
+	// DMA2: SPI1_TX: Stream 3: Channel 3
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream3->M0AR = (uintptr_t) buffer;
+	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
+		(size * DMA_SxNDT_0) |
+		0;
+	DMA2_Stream3->CR |= DMA_SxCR_EN;		// запуск DMA передатчика (выдача синхронизации)
+
+	// Дожидаемся завершения обмена передающего канала DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// ожидаем завершения обмена по соответствушему stream
+		;
+	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
+	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
+
+	// Дожидаемся завершения обмена принимающего канала DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF0) == 0)	// ожидаем завершения обмена по соответствушему stream
+		;
+	DMA2->LIFCR = DMA_LIFCR_CTCIF0;		// сбросил флаг соответствующий stream
+	//DMA2_waitTC(0);	// ожидаем завершения обмена по соответствушему stream
+
+	#if CPUSTYLE_STM32H7XX
+
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // DMA по передаче (master)
+		SPI1->CFG1 &= ~ SPI_CFG1_RXDMAEN; // DMA по приему (master)
+
+	#else /* CPUSTYLE_STM32H7XX */
+
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // DMA по передаче (master)
+		SPI1->CR2 &= ~ SPI_CR2_RXDMAEN; // DMA по приему (master)
+
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_read_frame(target, buffer, size);
+
+#elif CPUSTYLE_STM32F1XX
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_read_frame(target, buffer, size);
+
+#elif CPUSTYLE_ATXMEGA
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_read_frame(target, buffer, size);
+
+#elif CPUSTYLE_R7S721
+	//#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_16bpartial
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
+
+#else
+	#error Undefined CPUSTYLE_xxxx
+
+#endif
+}
+
+#endif /* WITHSPI16BIT */
+
+// Read a frame of bytes via SPI
+// На сигнале MOSI при это должно обеспечиваться состояние логической "1" для корректной работы SD CARD
+static void
+hardware_spi_master_read_frame_8bpartial(
+	//spitarget_t target,	/* addressing to chip */
+	uint8_t * buffer,
+	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
+	)
+{
+#if CPUSTYLE_SAM9XE
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+
+	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI1->SPI_RPR = (unsigned long) buffer;
+	AT91C_BASE_SPI1->SPI_RCR = size;	// разрешить работу приёмника
+	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDRX) == 0)	// было TX
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+
+	SPI->SPI_TPR = (unsigned long) buffer;
+	SPI->SPI_RPR = (unsigned long) buffer;
+	SPI->SPI_RCR = size;	// разрешить работу приёмника
+	SPI->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+
+	while ((SPI->SPI_SR & SPI_SR_ENDRX) == 0)	// было TX
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((SPI->SPI_SR & SPI_SR_TXEMPTY) == 0)
+		;
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_AT91SAM7S
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+
+	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI->SPI_RPR = (unsigned long) buffer;
+	AT91C_BASE_SPI->SPI_RCR = size;	// разрешить работу приёмника
+	AT91C_BASE_SPI->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDRX) == 0)	// было TX
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+
+	/*
+	if (((uint32_t) buffer & 0xFF000000) == CCMDATARAM_BASE)
+	{
+		PRINTF(PSTR("hardware_spi_master_read_frame: use CCM\n"));
+		// Safe version
+		prog_spi_read_frame(target, buffer, size);
+		return;
+	}
+	*/
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+
+	// DMA2: SPI1_RX: Stream 0: Channel 3
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приему (master)
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (master)
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream0->M0AR = (uintptr_t) buffer;
+	DMA2_Stream0->NDTR = (DMA2_Stream0->NDTR & ~ DMA_SxNDT) |
+		(size * DMA_SxNDT_0) |
+		0;
+	DMA2_Stream0->CR |= DMA_SxCR_EN;		// перезапуск DMA
+
+	// DMA2: SPI1_TX: Stream 3: Channel 3
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream3->M0AR = (uintptr_t) buffer;
+	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
+		(size * DMA_SxNDT_0) |
+		0;
+	DMA2_Stream3->CR |= DMA_SxCR_EN;		// запуск DMA передатчика (выдача синхронизации)
+
+	// Дожидаемся завершения обмена передающего канала DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// ожидаем завершения обмена по соответствушему stream
+		;
+	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
+	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
+
+	// Дожидаемся завершения обмена принимающего канала DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF0) == 0)	// ожидаем завершения обмена по соответствушему stream
+		;
+	DMA2->LIFCR = DMA_LIFCR_CTCIF0;		// сбросил флаг соответствующий stream
+	//DMA2_waitTC(0);	// ожидаем завершения обмена по соответствушему stream
+
+	#if CPUSTYLE_STM32H7XX
+
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // DMA по передаче (master)
+		SPI1->CFG1 &= ~ SPI_CFG1_RXDMAEN; // DMA по приему (master)
+
+	#else /* CPUSTYLE_STM32H7XX */
+
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // DMA по передаче (master)
+		SPI1->CR2 &= ~ SPI_CR2_RXDMAEN; // DMA по приему (master)
+
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_read_frame(target, buffer, size);
+
+#elif CPUSTYLE_STM32F1XX
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_read_frame(target, buffer, size);
+
+#elif CPUSTYLE_ATXMEGA
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_read_frame(target, buffer, size);
+
+#elif CPUSTYLE_R7S721
+	//#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_8bpartial
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
+
+#else
+	#error Undefined CPUSTYLE_xxxx
+
+#endif
+}
+
+#if WITHSPI16BIT
+
+void hardware_spi_master_send_frame_16b(
+	//spitarget_t target,	/* addressing to chip */
+	const uint16_t * buffer,
+	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	)
+{
+	hardware_spi_master_setdma16bit_tx();
+#if CPUSTYLE_R7S721
+	// в этом процессоре счетчик байтов 32-х разрядный
+	uint_fast32_t score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast32_t chunk = ulmin(size - score, 0x7FFFFF00uL);
+		hardware_spi_master_send_frame_16bpartial(buffer + score, chunk);
+		score += chunk;
+	}
+#else
+	uint_fast32_t score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
+		hardware_spi_master_send_frame_16bpartial(buffer + score, chunk);
+		score += chunk;
+	}
+#endif
+}
+
+void hardware_spi_master_read_frame_16b(
+	//spitarget_t target,	/* addressing to chip */
+	uint16_t * buffer,
+	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	)
+{
+	hardware_spi_master_setdma16bit_rx();
+#if CPUSTYLE_R7S721
+	// в этом процессоре счетчик байтов 32-х разрядный
+	uint_fast32_t score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast32_t chunk = ulmin(size - score, 0x7FFFFF00uL);
+		hardware_spi_master_read_frame_16bpartial(buffer + score, chunk);
+		score += chunk;
+	}
+#else
+	uint_fast32_t score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
+		hardware_spi_master_read_frame_16bpartial(buffer + score, chunk);
+		score += chunk;
+	}
+#endif
+}
+
+#endif /* WITHSPI16BIT */
+
+void hardware_spi_master_send_frame(
+	//spitarget_t target,	/* addressing to chip */
+	const uint8_t * buffer,
+	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
+	)
+{
+	hardware_spi_master_setdma8bit_tx();
+#if CPUSTYLE_R7S721
+	hardware_spi_master_send_frame_8bpartial(buffer, size);
+#else
+	uint_fast32_t score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
+		hardware_spi_master_send_frame_8bpartial(buffer + score, chunk);
+		score += chunk;
+	}
+#endif
+}
+
+
+void hardware_spi_master_read_frame(
+	//spitarget_t target,	/* addressing to chip */
+	uint8_t * buffer,
+	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
+	)
+{
+	hardware_spi_master_setdma8bit_rx();
+#if CPUSTYLE_R7S721
+	hardware_spi_master_read_frame_8bpartial(buffer, size);
+#else
+	uint_fast32_t score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
+		hardware_spi_master_read_frame_8bpartial(buffer + score, chunk);
+		score += chunk;
+	}
+#endif
+}
+
+#endif /* WITHSPIHWDMA */
+
+#if WITHSPI16BIT
+
+/* управление состоянием "подключено" - работа в режиме 16-ти битных слов.*/
+void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	// инициализация контроллера SPI
+	enum { OUTMASK = PIO_PA13A_MOSI | PIO_PA14A_SPCK };		// битовая маска, определяет каким выводом шевелить
+	enum { INPMASK = PIO_PA12A_MISO };		// битовая маска, определяет откуда ввод
+	enum { WORKMASK = OUTMASK | INPMASK };		// битовая маска, включает и ввод и вывод
+
+	SPI->SPI_CSR [0] = spi_csr_val16w [spispeedindex] [spimode];
+
+	(void) SPI->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
+	HARDWARE_SPI_CONNECT();
+
+#elif CPUSTYLE_AT91SAM7S
+
+	enum { OUTMASK = AT91C_PA13_MOSI | AT91C_PA14_SPCK };		// битовая маска, определяет каким выводом шевелить
+	enum { INPMASK = AT91C_PA12_MISO };		// битовая маска, определяет откуда ввод
+	enum { WORKMASK = OUTMASK | INPMASK };		// битовая маска, включает и ввод и вывод
+
+	AT91C_BASE_SPI->SPI_CSR [0] = spi_csr_val16w [spispeedindex] [spimode];
+
+	(void) AT91C_BASE_SPI->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
+	HARDWARE_SPI_CONNECT();
+
+#elif CPUSTYLE_STM32F1XX
+
+	HARDWARE_SPI_CONNECT();
+	SPI1->CR1 = spi_cr1_val16w [spispeedindex] [spimode];
+	#if WITHTWIHW
+		// Silicon errata:
+		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
+		// Workaround:
+		// When using SPI1 remapped, the I2C1 clock must be disabled.
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		__DSB();
+	#endif
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
+
+	// В этих процессорах и входы и выходы переключаются на ALT FN
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CR1 = spi_cr1_val16w [spispeedindex][spimode];
+	#if WITHTWIHW
+		// Silicon errata:
+		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
+		// Workaround:
+		// When using SPI1 remapped, the I2C1 clock must be disabled.
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		__DSB();
+	#endif
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+
+	// В этих процессорах и входы и выходы переключаются на ALT FN
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CR1 = spi_cr1_val16w [spispeedindex] [spimode];
+	SPI1->CR2 = (SPI1->CR2 & ~ (SPI_CR2_DS)) |
+		15 * SPI_CR2_DS_0 |	// 16 bit word length
+		0 * SPI_CR2_FRXTH |			// RXFIFO threshold is set to 16 bits (FRXTH=0).
+		0;
+	#if WITHTWIHW
+		// Silicon errata:
+		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
+		// Workaround:
+		// When using SPI1 remapped, the I2C1 clock must be disabled.
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		__DSB();
+	#endif
+
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+		HARDWARE_SPI_CONNECT();
+
+		SPI1->CFG1 = spi_cfg1_val16w [spispeedindex];
+		SPI1->CFG2 = spi_cfg2_val [spimode];
+		SPI1->CR1 |= SPI_CR1_SSI;
+
+		SPI1->CR1 |= SPI_CR1_SPE;
+		SPI1->CR1 |= SPI_CR1_CSTART;
+
+#elif CPUSTYLE_R7S721
+
+	HW_SPIUSED->SPDCR =		/* Data Control Register (SPDCR) */
+		(0x02 << 5) |	// 10: SPDR is accessed in words (16 bits).
+		0;
+	HW_SPIUSED->SPBR = spi_spbr_val [spispeedindex];
+	HW_SPIUSED->SPCMD0 = spi_spcmd0_val16w [spispeedindex] [spimode];
+
+	HARDWARE_SPI_CONNECT();
+
+#elif CPUSTYPE_T113
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
+
+	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+
+ 	HARDWARE_SPI_CONNECT();
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+
+}
+
+portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться готовности */
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	/* дождаться завершения приёма/передачи */
+	while ((SPI->SPI_SR & SPI_SR_RDRF) == 0)
+		;
+	return (SPI->SPI_RDR & SPI_TDR_TD_Msk);
+
+#elif CPUSTYLE_AT91SAM7S
+
+	/* дождаться завершения приёма/передачи */
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF) == 0)
+		;
+	return (AT91C_BASE_SPI->SPI_RDR & AT91C_SPI_TD);
+
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+	//while ((SPI1->SR & SPI_SR_TXC) == 0)
+	//	;
+	while ((SPI1->SR & SPI_SR_RXP) == 0)
+		;
+	const portholder_t t = * (volatile uint16_t *) & SPI1->RXDR;	/* SPI_RXDR_RXDR clear SPI_SR_RXNE in status register */
+	return t;
+
+#elif CPUSTYLE_STM32F
+
+	while ((SPI1->SR & SPI_SR_RXNE) == 0)
+		;
+	const portholder_t t = SPI1->DR & SPI_DR_DR;	/* clear SPI_SR_RXNE in status register */
+	while ((SPI1->SR & SPI_SR_BSY) != 0)
+		;
+	return t;
+
+#elif CPUSTYLE_R7S721
+
+	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
+		;
+	return HW_SPIUSED->SPDR.UINT16 [R_IO_L]; // L=0
+
+#elif CPUSTYPE_T113
+
+	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
+	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+		;
+
+	return __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
+
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+}
+
+/* группа функций для использования в групповых передачах по SPI */
+/* передача первого байта в последовательности - Не проверяем готовность перед передачей,
+   завершение передачи будут проверять другие.
+*/
+void RAMFUNC hardware_spi_b16_p1(
+	portholder_t v		/* значение слова для передачи */
+	)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	SPI->SPI_TDR = SPI_TDR_TD(v);
+
+#elif CPUSTYLE_AT91SAM7S
+
+	AT91C_BASE_SPI->SPI_TDR = v & AT91C_SPI_TD;
+
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+	* (volatile uint16_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
+
+#elif CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F30X || CPUSTYLE_STM32F7XX
+
+	* (volatile uint16_t *) & (SPI1)->DR = v;	// prevent data packing feature
+
+#elif CPUSTYLE_STM32F
+
+	(SPI1)->DR = v;
+
+#elif CPUSTYLE_R7S721
+
+	HW_SPIUSED->SPDR.UINT16 [R_IO_L] = v; // L=0
+
+#elif CPUSTYPE_T113
+
+	SPI0->SPI_MBC = 1;	// Master Burst Counter
+	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
+	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
+		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+		0;
+
+	* (volatile uint16_t *) & SPI0->SPI_TXD = __bswap16(v);
+
+	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+}
+
+/* передача одного из средних байтов/слов в последовательности */
+/* дождаться готовности, передача байта */
+portholder_t RAMFUNC hardware_spi_b16_p2(
+	portholder_t v		/* значение байта для передачи */
+	)
+{
+	portholder_t r;
+	r = hardware_spi_complete_b16();	/* дождаться завершения передачи */
+	hardware_spi_b16_p1(v);	/* передать символ */
+	return r;
+}
+
+/* передача байта/слова, возврат считанного */
+portholder_t RAMFUNC hardware_spi_b16(
+	portholder_t v		/* значение байта для передачи */
+	)
+{
+	hardware_spi_b16_p1(v);	/* передать символ */
+	return hardware_spi_complete_b16();	/* дождаться завершения передачи */
+}
+
+#endif /* WITHSPI16BIT */
+
+#if WITHSPI32BIT
+
+/* управление состоянием "подключено" - работа в режиме 32-ти битных слов. */
+void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
+{
+#if CPUSTYLE_STM32H7XX
+
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CFG1 = spi_cfg1_val32w [spispeedindex];
+	SPI1->CFG2 = spi_cfg2_val [spimode];
+	SPI1->CR1 |= SPI_CR1_SSI;
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
+
+#elif CPUSTYLE_R7S721
+
+	HW_SPIUSED->SPDCR =		/* Data Control Register (SPDCR) */
+		(0x03 << 5) |	// 11: SPDR is accessed in longwords (32 bits).
+		0;
+	HW_SPIUSED->SPBR = spi_spbr_val [spispeedindex];
+	HW_SPIUSED->SPCMD0 = spi_spcmd0_val32w [spispeedindex] [spimode];
+
+	HARDWARE_SPI_CONNECT();
+
+#elif CPUSTYLE_STM32MP1
+
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CFG1 = spi_cfg1_val32w [spispeedindex];
+	SPI1->CFG2 = spi_cfg2_val [spimode];
+	SPI1->CR1 |= SPI_CR1_SSI;
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
+
+#elif CPUSTYPE_T113
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
+
+	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+
+ 	HARDWARE_SPI_CONNECT();
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+
+}
+
+portholder_t hardware_spi_complete_b32(void)	/* дождаться готовности */
+{
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+	//while ((SPI1->SR & SPI_SR_TXC) == 0)
+	//	;
+	while ((SPI1->SR & SPI_SR_RXP) == 0)
+		;
+	const portholder_t t = SPI1->RXDR;	/* SPI_RXDR_RXDR clear SPI_SR_RXNE in status register */
+	return t;
+
+#elif CPUSTYLE_R7S721
+
+	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
+		;
+	return HW_SPIUSED->SPDR.UINT32;
+
+#elif CPUSTYPE_T113
+
+	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
+	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+		;
+
+	return __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
+
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+}
+
+/* группа функций для использования в групповых передачах по SPI */
+/* передача первого байта в последовательности - Не проверяем готовность перед передачей,
+   завершение передачи будут проверять другие.
+*/
+void hardware_spi_b32_p1(
+	portholder_t v		/* значение слова для передачи */
+	)
+{
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+	(SPI1)->TXDR = v;
+
+#elif CPUSTYLE_R7S721
+
+	HW_SPIUSED->SPDR.UINT32 = v;
+
+#elif CPUSTYPE_T113
+
+	SPI0->SPI_MBC = 1;	// Master Burst Counter
+	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
+	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
+		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+		0;
+
+	SPI0->SPI_TXD = __bswap32(v);	/* 32bit access */
+
+	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+}
+
+/* передача одного из средних байтов/слов в последовательности */
+/* дождаться готовности, передача байта */
+portholder_t hardware_spi_b32_p2(
+	portholder_t v		/* значение байта для передачи */
+	)
+{
+	portholder_t r;
+	r = hardware_spi_complete_b32();	/* дождаться завершения передачи */
+	hardware_spi_b32_p1(v);	/* передать символ */
+	return r;
+}
+
+/* передача байта/слова, возврат считанного */
+portholder_t hardware_spi_b32(
+	portholder_t v		/* значение байта для передачи */
+	)
+{
+	hardware_spi_b32_p1(v);	/* передать символ */
+	return hardware_spi_complete_b32();	/* дождаться завершения передачи */
+}
+
+#endif /* WITHSPI32BIT */
+
+void hardware_spi_b8_p1(
+	portholder_t v		/* значение байта/слова для передачи */
+	)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	SPI->SPI_TDR = SPI_TDR_TD(v);
+
+#elif CPUSTYLE_AT91SAM7S
+
+	AT91C_BASE_SPI->SPI_TDR = v & AT91C_SPI_TD;
+
+#elif CPUSTYLE_ATMEGA
+
+	SPDR = v; // запуск передачи
+
+#elif CPUSTYLE_ATXMEGA
+
+	TARGETHARD_SPI.DATA = v; // запуск передачи
+
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+	* (volatile uint8_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
+
+#elif CTLSTYLE_V3D		// SPI2
+
+	* (volatile uint8_t *) & (SPI2)->DR = v;	// prevent data packing feature
+
+#elif CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F30X || CPUSTYLE_STM32F7XX
+
+	* (volatile uint8_t *) & (SPI1)->DR = v;	// prevent data packing feature
+
+#elif CPUSTYLE_STM32F
+
+	SPI1->DR = v;
+
+#elif CPUSTYLE_R7S721
+
+	HW_SPIUSED->SPDR.UINT8 [R_IO_LL] = v; // LL=0
+
+#elif CPUSTYLE_XC7Z
+
+	SPI0->TXD = v;
+	while ((SPI0->SR & (1uL << 2)) == 0)	// TX FIFO not full
+		;
+
+#elif CPUSTYPE_T113
+
+	SPI0->SPI_MBC = 1;	// Master Burst Counter
+	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
+	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
+		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+		0;
+
+	* (volatile uint8_t *) & SPI0->SPI_TXD = v;
+
+	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+}
+
+/* передача одного из средних байтов/слов в последовательности */
+/* дождаться готовности, передача байта */
+portholder_t hardware_spi_b8_p2(
+	portholder_t v		/* значение байта для передачи */
+	)
+{
+	portholder_t r;
+	r = hardware_spi_complete_b8();	/* дождаться завершения передачи (на atmega оптимизированно по скорости - без чиения регистра данных). */
+	hardware_spi_b8_p1(v);	/* передать символ */
+	return r;
+}
+/* передача байта/слова, возврат считанного */
+portholder_t hardware_spi_b8(
+	portholder_t v		/* значение байта для передачи */
+	)
+{
+	hardware_spi_b8_p1(v);	/* передать символ */
+	return hardware_spi_complete_b8();	/* дождаться завершения передачи */
+}
+
+#else  /* WITHSPIHW */
+
+// При отсутствующем аппаратном контроллере ничего не делает.
+
+void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispeed)
+{
+	(void) spispeedindex;
+	(void) spispeed;
+}
+
+#endif /* WITHSPIHW */
 
 void spi_initialize(void)
 {
@@ -1549,15 +4145,15 @@ static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
 
 void spidf_initialize(void)
 {
-//	hardware_spi_master_initialize();
-//	prog_select_init();		// spi CS initialize
-//	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
+	hardware_spi_master_initialize();
+	prog_select_init();		// spi CS initialize
+	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000uL);
 }
 
 static void spidf_unselect(void)
 {
 	// De-assert CS
-	SPI0->SPI_TCR |= (1u << 7);
+	prog_unselect(targetdataflash);
 
 	// Disconnect I/O pins
 	hardware_spi_disconnect();
@@ -1612,13 +4208,10 @@ static void spidf_iostart(
 	while (ndummy --)
 		b [i ++] = 0x00;	// dummy byte
 
-	// De-assert CS
-	SPI0->SPI_TCR |= (1u << 7);
-
 	hardware_spi_connect(SPIC_SPEED4M, SPIC_MODE0);
 
 	// assert CS
-	SPI0->SPI_TCR &= ~ (1u << 7);
+	prog_select(targetdataflash);
 
 	spidf_spi_transfer(b, NULL, 1, SPDFIO_1WIRE);
 	spidf_spi_transfer(b + 1, NULL, i - 1, readnb);
@@ -3123,7 +5716,7 @@ int testchipDATAFLASH(void)
 		mf_devid2 = mfa [2];
 		mf_dlen = mfa [3];
 
-		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 		readFlashID(mfa, sizeof mfa);
 		uint8_t buff8 [8];
 		readSFDPDATAFLASH(0x000000, buff8, 8);
@@ -3200,8 +5793,8 @@ int testchipDATAFLASH(void)
 		sct [1] = (dword8 >> 16) & 0xFFFF;
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
-		//PRINTF("SFDP: Sector Erase opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
-		//PRINTF("SFDP: Sector Erase size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		PRINTF("SFDP: Sector Erase opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
+		PRINTF("SFDP: Sector Erase size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
 		unsigned i;
 		unsigned sctRESULT = 0;
 		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
@@ -3216,7 +5809,7 @@ int testchipDATAFLASH(void)
 		{
 			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
 			sectorSize = 1uL << (sctRESULT & 0xFF);
-			//PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
+			PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
 		}
 		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
