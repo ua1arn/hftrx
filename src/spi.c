@@ -4128,7 +4128,7 @@ void spidf_initialize(void)
 {
 	hardware_spi_master_initialize();
 	prog_select_init();		// spi CS initialize
-	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000uL);
+	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 }
 
 static void spidf_unselect(void)
@@ -4189,7 +4189,7 @@ static void spidf_iostart(
 	while (ndummy --)
 		b [i ++] = 0x00;	// dummy byte
 
-	hardware_spi_connect(SPIC_SPEED4M, SPIC_MODE0);
+	hardware_spi_connect(SPIC_SPEEDFAST, SPIC_MODE0);
 
 	// assert CS
 	prog_select(targetdataflash);
