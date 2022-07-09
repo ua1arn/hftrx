@@ -1949,7 +1949,7 @@ arm_hardware_piof_inputs(unsigned long ipins)
 #elif CPUSTYPE_T113
 
 	//gpioX_poweron(GPIOF);
-	gpioX_prog(GPIOF, ipins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+	gpioX_prog(GPIOF, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOF)
 	#error Undefined CPUSTYLE_XXX
@@ -2002,7 +2002,7 @@ arm_hardware_piog_inputs(unsigned long ipins)
 #elif CPUSTYPE_T113
 
 	//gpioX_poweron(GPIOG);
-	gpioX_prog(GPIOG, ipins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+	gpioX_prog(GPIOG, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIG)
 	#error Undefined CPUSTYLE_XXX
