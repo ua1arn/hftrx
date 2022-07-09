@@ -7578,8 +7578,6 @@ void hardware_spi_master_initialize(void)
 		(0x00uL < 1) |	// MODE: 1: Master mode
 		0;
 
-
-
 	/* Deassert spi0 reset */
 	CCU->SPI_BGR_REG |= (1 << (ix + 16));
 	/* Open the spi0 gate */
@@ -7605,13 +7603,8 @@ void hardware_spi_master_initialize(void)
 	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
 		;
 
-	uint32_t val;
-	int state = 1;
-
-	val = SPI0->SPI_TCR;
-	val &= ~((0x3 << 4) | (0x1 << 7));
-	val |= ((0 & 0x3) << 4) | (state << 7);
-	SPI0->SPI_TCR = val;
+	// De-assert hardware CS
+	SPI0->SPI_TCR |= (1u << 7);
 
 	SPIIO_INITIALIZE();
 

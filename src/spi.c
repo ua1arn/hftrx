@@ -1549,34 +1549,26 @@ static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
 
 void spidf_initialize(void)
 {
-	hardware_spi_master_initialize();
-	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
-}
-
-void spidf_uninitialize(void)
-{
-	// Disconnect I/O pins
-	hardware_spi_disconnect();
-}
-
-void spidf_hangoff(void)
-{
-	// Disconnect I/O pins
-	hardware_spi_disconnect();
+//	hardware_spi_master_initialize();
+//	prog_select_init();		// spi CS initialize
+//	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 }
 
 static void spidf_unselect(void)
 {
-	uint32_t val;
-	int state = 0;
-
-	val = SPI0->SPI_TCR;
-	val &= ~((0x3 << 4) | (0x1 << 7));
-	val |= ((0 & 0x3) << 4) | (state << 7);
-	SPI0->SPI_TCR = val;
+	// De-assert CS
+	SPI0->SPI_TCR |= (1u << 7);
 
 	// Disconnect I/O pins
 	hardware_spi_disconnect();
+}
+
+void spidf_uninitialize(void)
+{
+}
+
+void spidf_hangoff(void)
+{
 }
 
 static void spidf_iostart(
@@ -1620,20 +1612,13 @@ static void spidf_iostart(
 	while (ndummy --)
 		b [i ++] = 0x00;	// dummy byte
 
-	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE0);
+	// De-assert CS
+	SPI0->SPI_TCR |= (1u << 7);
 
+	hardware_spi_connect(SPIC_SPEED4M, SPIC_MODE0);
 
-	{
-		// Assert CS
-		uint32_t val;
-		int state = 0;
-
-
-		val = SPI0->SPI_TCR;
-		val &= ~((0x3 << 4) | (0x1 << 7));
-		val |= ((0 & 0x3) << 4) | (state << 7);
-		SPI0->SPI_TCR = val;
-	}
+	// assert CS
+	SPI0->SPI_TCR &= ~ (1u << 7);
 
 	spidf_spi_transfer(b, NULL, 1, SPDFIO_1WIRE);
 	spidf_spi_transfer(b + 1, NULL, i - 1, readnb);
