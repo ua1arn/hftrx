@@ -426,7 +426,7 @@
 	#define PTT2_TARGET_PIN				(GPIOF->DATA)
 	#define PTT2_BIT_PTT				(1uL << 4)		// PF4 - PTT2
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
+	#define HARDWARE_GET_PTT() 0//((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_piof_inputs(PTT_BIT_PTT); \
@@ -438,7 +438,7 @@
 	// TUNE input - PF2
 	#define TUNE_TARGET_PIN				(GPIOF->DATA)
 	#define TUNE_BIT_TUNE				(1U << 2)		// PF2
-	#define HARDWARE_GET_TUNE() 		((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
+	#define HARDWARE_GET_TUNE() 		0//((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() \
 		do { \
 			arm_hardware_piof_inputs(TUNE_BIT_TUNE); \
@@ -509,8 +509,8 @@
 		case targetdataflash: gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); break; /* PC3 SPI0_CS */ \
 		case targetrtc1: gpioX_setstate(GPIOG, (target), 1 * (target)); break; \
 		default: gpioX_setstate(GPIOG, (target), 0 * (target)); break; \
+		case targetnone: break; \
 		} \
-		hardware_spi_io_delay(); \
 	} while (0)
 
 	/* Unelect specified chip. */
@@ -519,8 +519,8 @@
 		case targetdataflash: gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); break; /* PC3 SPI0_CS */ \
 		case targetrtc1: gpioX_setstate(GPIOG, (target), 0 * (target)); break; \
 		default: gpioX_setstate(GPIOG, (target), 1 * (target)); break; \
+		case targetnone: break; \
 		} \
-		hardware_spi_io_delay(); \
 	} while (0)
 
 	/* инициализация линий выбора периферийных микросхем */
@@ -543,35 +543,30 @@
 	#define	SPI_MISO_BIT			(1uL << 5)	// PC5 SPI0_MISO
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
-	#define SPDIF_SCLK_BIT (1uL << 2)	// PC2 SPI0_CLK
+	//#define SPDIF_SCLK_BIT (1uL << 2)	// PC2 SPI0_CLK
 	#define SPDIF_NCS_BIT (1uL << 3)	// PC3 SPI0_CS
-	#define SPDIF_MOSI_BIT (1uL << 4)	// PC4 SPI0_MOSI
-	#define SPDIF_MISO_BIT (1uL << 5)	// PC5 SPI0_MISO
+	//#define SPDIF_MOSI_BIT (1uL << 4)	// PC4 SPI0_MOSI
+	//#define SPDIF_MISO_BIT (1uL << 5)	// PC5 SPI0_MISO
 	#define SPDIF_D2_BIT (1uL << 6)		// PC6 SPI0_WP/D2
 	#define SPDIF_D3_BIT (1uL << 7)		// PC7 SPI0_HOLD/D3
 
 	#define SPIIO_INITIALIZE() do { \
-		arm_hardware_pioc_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PC2 SPI0_CLK */ \
-		arm_hardware_pioc_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PC4 SPI0_MOSI */ \
-		arm_hardware_pioc_inputs(SPI_MISO_BIT); /* PC5 SPI0_MISO */ \
-		arm_hardware_pioc_outputs50m(SPDIF_D2_BIT, SPDIF_D2_BIT); /* PC6 SPI0_WP/D2 */ \
-		arm_hardware_pioc_outputs50m(SPDIF_D3_BIT, SPDIF_D3_BIT); /* PC7 SPI0_HOLD/D3 */ \
-	} while (0)
+		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); /* PC2 SPI0_CLK */ \
-		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); /* PC4 SPI0_MOSI */ \
-		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); /* PC5 SPI0_MISO */ \
-		arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2); /* PC6 SPI0_WP/D2 */ \
-		arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2); /* PC7 SPI0_HOLD/D3 */ \
-	} while (0)
+			arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
+			arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
+			arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
+			arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
+			arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
+		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
-	} while (0)
+		} while (0)
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-	} while (0)
+		} while (0)
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-	} while (0)
+		} while (0)
 
-#else
+#else /* WITHSPIHW || WITHSPISW */
 
 	#define targetext1		(0)		// PE8 ext1 on front panel
 	#define targetxad2		(0)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
