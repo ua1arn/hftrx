@@ -426,7 +426,7 @@
 	#define PTT2_TARGET_PIN				(GPIOF->DATA)
 	#define PTT2_BIT_PTT				(1uL << 4)		// PF4 - PTT2
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() 0//((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
+	#define HARDWARE_GET_PTT() 			((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_piof_inputs(PTT_BIT_PTT); \
@@ -438,7 +438,7 @@
 	// TUNE input - PF2
 	#define TUNE_TARGET_PIN				(GPIOF->DATA)
 	#define TUNE_BIT_TUNE				(1U << 2)		// PF2
-	#define HARDWARE_GET_TUNE() 		0//((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
+	#define HARDWARE_GET_TUNE() 		((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() \
 		do { \
 			arm_hardware_piof_inputs(TUNE_BIT_TUNE); \
@@ -742,7 +742,7 @@
 		} while (0)
 #endif /* WITHCPUADCHW */
 
-#if WITHUSBHW
+#if WITHUSBHW || 1
 	// PE11
 	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) //do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
 	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) //do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
