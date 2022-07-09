@@ -770,16 +770,16 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 #define ALWNR_GPIO_DRV_OPENDRAIN 0x03
 #define ALWNR_GPIO_PULL_OPENDRAIN 0x00
 
-#define ALWNR_GPIO_DRV_INPUT 0x00
+#define ALWNR_GPIO_DRV_INPUT 0x02
 #define ALWNR_GPIO_PULL_INPUT 0x01	// pull-up
 
-#define ALWNR_GPIO_DRV_AF2M 0x03
+#define ALWNR_GPIO_DRV_AF2M 0x02
 #define ALWNR_GPIO_PULL_AF2M 0x01	// pull-up
 
 #define ALWNR_GPIO_DRV_OPENDRAINAF2M 0x03
 #define ALWNR_GPIO_PULL_OPENDRAINAF2M 0x00
 
-#define ALWNR_GPIO_DRV_AF20M 0x03
+#define ALWNR_GPIO_DRV_AF20M 0x02
 #define ALWNR_GPIO_PULL_AF20M 0x00
 
 #define ALWNR_GPIO_DRV_AF50M 0x03
@@ -2269,7 +2269,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_setstate(GPIOA, opins, initialstate);
-//	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
+//	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -2542,7 +2542,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOB, opins, initialstate);
-	gpioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
+	gpioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -3013,7 +3013,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_setstate(GPIOC, opins, initialstate);
-	gpioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
+	gpioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -3570,7 +3570,7 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 
 	//gpioX_poweron(GPIOF);
 	gpioX_setstate(GPIOF, opins, initialstate);
-	gpioX_prog(GPIOF, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
+	gpioX_prog(GPIOF, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
 #elif defined (GPIOF)
 	#error Undefined CPUSTYLE_XXX
@@ -3703,7 +3703,7 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_setstate(GPIOG, opins, initialstate);
-	gpioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
+	gpioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
 #elif defined (GPIOG)
 	#error Undefined CPUSTYLE_XXX
