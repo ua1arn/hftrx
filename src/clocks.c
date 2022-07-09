@@ -2629,8 +2629,6 @@ calcdivider(
 	return (rbi - 1);	// если надо обраьатывать невозможность подбора - возврат rbmax
 }
 
-static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить выход PLLQ на 48 МГц
-
 void hardware_spi_io_delay(void)
 {
 #if CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
@@ -4483,7 +4481,7 @@ lowlevel_sam3s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws
 
 #if CPUSTYLE_STM32F7XX
 // Настроить выход PLLQ на 48 МГц
-static uint_fast32_t stm32f7xx_pllq_initialize(void)
+uint_fast32_t stm32f7xx_pllq_initialize(void)
 {
 	const uint32_t stm32f4xx_pllq = calcdivround2(stm32f7xx_get_pll_freq(), 48000000uL);	// Как было сделано при инициализации PLL
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
@@ -4511,7 +4509,7 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void)
 #if CPUSTYLE_STM32F4XX
 
 // Настроить выход PLLQ на 48 МГц
-static uint_fast32_t stm32f7xx_pllq_initialize(void)
+uint_fast32_t stm32f7xx_pllq_initialize(void)
 {
 	const uint32_t stm32f4xx_pllq = calcdivround2(stm32f4xx_get_pll_freq(), 48000000uL);	// Как было сделано при инициализации PLL
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
@@ -5277,7 +5275,7 @@ stm32h7xx_pll_initialize(void)
 // Настроить выход PLLQ на 48 МГц, подключить SDMMC и USB к нему.
 // Настройка делителя делается при инициализации PLL, здесь измениь делитель не получается.
 // Версия для STM32H7 возвращает текушее значение делитедя.
-static uint_fast32_t stm32f7xx_pllq_initialize(void)
+uint_fast32_t stm32f7xx_pllq_initialize(void)
 {
 	const uint32_t stm32h7xx_pllq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1_Msk) >> RCC_PLL1DIVR_Q1_Pos) + 1;
 	return stm32h7xx_pllq;

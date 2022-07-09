@@ -79,6 +79,7 @@ unsigned long stm32h7xx_get_usart2_to_8_freq(void);
 unsigned long stm32h7xx_get_spi1_2_3_freq(void);
 unsigned long stm32h7xx_get_spi4_5_freq(void);
 unsigned long stm32h7xx_get_adc_freq(void);
+uint_fast32_t stm32f7xx_pllq_initialize(void); // Настроить выход PLLQ на 48 МГц
 
 void stm32mp1_pll_initialize(void);
 void stm32mp1_usb_clocks_initialize(void);
