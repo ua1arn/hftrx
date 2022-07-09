@@ -494,6 +494,7 @@
 	// Набор определений для работы без внешнего дешифратора
 
 	#define targetdataflash 0xFF
+	#define targetnone 0x00
 
 	#define targetext1		(0 * 1uL << 8)		// PDx ext1 on front panel
 	#define targetnvram		(0 * 1uL << 0)		// PDx nvmem FM25L16B
@@ -530,6 +531,7 @@
 		switch (target) { \
 		case targetdataflash: gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); break; /* PC3 SPI0_CS */ \
 		default: gpioX_setstate(GPIOD, (target), 0 * (target)); break; \
+		case targetnone: break; \
 		} \
 	} while (0)
 
@@ -538,6 +540,7 @@
 		switch (target) { \
 		case targetdataflash: gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); break; /* PC3 SPI0_CS */ \
 		default: gpioX_setstate(GPIOD, (target), 1 * (target)); break; \
+		case targetnone: break; \
 		} \
 	} while (0)
 
