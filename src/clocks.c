@@ -7571,10 +7571,10 @@ void hardware_spi_master_initialize(void)
 
 	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
 
-	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
-	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
-		;
-	SPI0->SPI_GCR =
+//	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
+//	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
+//		;
+	SPI0->SPI_GCR |=
 		(0x00uL < 1) |	// MODE: 1: Master mode
 		0;
 
@@ -7589,19 +7589,9 @@ void hardware_spi_master_initialize(void)
 	/* Enable spi0 */
 	SPI0->SPI_GCR |= (1 << 7) | (1 << 1) | (1 << 0);
 	/* Do a soft reset */
-	SPI0->SPI_GCR |= (1 << 31);
-	while((SPI0->SPI_GCR & (1 << 31)) != 0)
-		;
-
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
-		;
-
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
-		;
+//	SPI0->SPI_GCR |= (1 << 31);
+//	while((SPI0->SPI_GCR & (1 << 31)) != 0)
+//		;
 
 	// De-assert hardware CS
 	SPI0->SPI_TCR |= (1u << 7);
@@ -8109,6 +8099,16 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	HARDWARE_SPI_CONNECT();
 
 #elif CPUSTYPE_T113
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
@@ -9222,6 +9222,16 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYPE_T113
 
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
+
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 
@@ -9398,6 +9408,16 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	SPI1->CR1 |= SPI_CR1_CSTART;
 
 #elif CPUSTYPE_T113
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
