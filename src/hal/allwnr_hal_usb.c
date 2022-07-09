@@ -379,7 +379,6 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, USB_OTG_CfgTypeDef 
   */
 HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 {
-	PRINTF("HAL_PCD_Init\n");
 	  USB_OTG_GlobalTypeDef *USBx;
 	  uint8_t i;
 
