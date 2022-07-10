@@ -9253,6 +9253,7 @@ void midtests(void)
 #if 0
 	// test SPI speed
 	{
+		TP();
 		const spitarget_t target = targetext1;
 		//#if WITHSPIHW
 		//	hardware_spi_master_setfreq(SPISPEED);
@@ -9267,19 +9268,20 @@ void midtests(void)
 		for (;;)
 		{
 			// тестирование аппаратного SPI в 16-битном режиме
-			//prog_select(target);	
-			//hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE3);		// если есть возможность - работаем в 16-ти битном режиме
-			//hardware_spi_b16_p1(0xf0aa);
-			//hardware_spi_complete_b8();
-			//hardware_spi_disconnect();
-			//prog_unselect(target);
-			//continue;
+//			prog_select(target);
+//			hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE3);		// если есть возможность - работаем в 16-ти битном режиме
+//			hardware_spi_b16_p1(0x0F0A);
+//			hardware_spi_complete_b16();
+//			hardware_spi_disconnect();
+//			prog_unselect(target);
+//			local_delay_ms(1);
+//			continue;
 			
 			spi_select(target, SPIC_MODE3);
-			spi_progval8_p1(target, 0xf0aa);
+			spi_progval8_p1(target, 0x75);
 			spi_complete(target);
 			spi_unselect(target);
-			//local_delay_ms(1);
+			local_delay_ms(1);
 			continue;
 
 			board_lcd_rs(0);
