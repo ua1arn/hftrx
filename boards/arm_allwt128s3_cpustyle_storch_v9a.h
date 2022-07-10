@@ -7,7 +7,7 @@
 //
 
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t113-s3
-// rmainunit_sv9e.pcb STM32MP1xx, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+// rmainunit_sv9e.pcb Allwinner t113-s2, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 
 #ifndef ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED
 #define ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED 1
