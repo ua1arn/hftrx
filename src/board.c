@@ -6874,7 +6874,7 @@ static uint_fast8_t board_fpga_get_INIT_DONE(void)
 
 static void board_fpga_loader_initialize(void)
 {
-	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
+	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 	HARDWARE_FPGA_LOADER_INITIALIZE();
 }
 
@@ -6920,17 +6920,24 @@ restart:
 		PRINTF("fpga: board_fpga_loader_PS start\n");
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
+#if WITHSPIEXT16	// for skip in test configurations
+		hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE1);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+		// Software SPI
+		spi_select2(targetnone, SPIC_MODE3, SPIC_SPEEDFAST);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-		local_delay_ms(1);
+		local_delay_ms(10);
 		/* 1) Выставить "1" на nCONFIG */
 		//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
-		local_delay_ms(1);
+		local_delay_ms(10);
 		/* x) Дождаться "0" на nSTATUS */
 		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0\n");
 		while (board_fpga_get_NSTATUS() != 0)
 		{
-			local_delay_ms(1);
+			local_delay_ms(10);
 			if (-- w == 0)
 				goto restart;
 		}
@@ -6953,11 +6960,9 @@ restart:
 			//
 
 #if WITHSPIEXT16// for skip in test configurations
-			hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
 			hardware_spi_b16_p1(* p ++);
 #else /* WITHSPIEXT16 */	// for skip in test configurations
 			// Software SPI
-			spi_select2(targetnone, SPIC_MODE3, SPIC_SPEEDUFAST);
 			const uint_fast16_t v16 = * p ++;
 			spi_progval8_p1(targetnone, v16 >> 8);
 			spi_progval8_p2(targetnone, v16 >> 0);
