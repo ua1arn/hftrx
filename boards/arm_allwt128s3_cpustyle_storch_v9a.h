@@ -667,8 +667,8 @@
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
+	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0)
 	#define FPGA_NCONFIG_BIT		(1uL << 12)	/* PE12 bit conneced to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
@@ -683,11 +683,16 @@
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
-			arm_hardware_pioe_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
-			arm_hardware_piob_inputs(FPGA_NSTATUS_BIT); \
-			arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
-			arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
-		} while (0)
+		arm_hardware_pioe_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
+		arm_hardware_piob_inputs(FPGA_NSTATUS_BIT); \
+		arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
+		arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
+	} while (0)
+
+	/* необходимость функции под вопросом (некоторый FPGA не нрузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		/* board_fpga_reset(); */ \
+	} while (0)
 
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	/*
@@ -992,15 +997,16 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			/*BOARD_BLINK_INITIALIZE(); */\
-			HARDWARE_KBD_INITIALIZE(); \
-			/*HARDWARE_DAC_INITIALIZE(); */\
-			/*HARDWARE_BL_INITIALIZE(); */\
-			HARDWARE_DCDC_INITIALIZE(); \
-			TXDISABLE_INITIALIZE(); \
-			TUNE_INITIALIZE(); \
-			BOARD_USERBOOT_INITIALIZE(); \
-			USBD_EHCI_INITIALIZE(); \
-		} while (0)
+		HARDWARE_FPGA_RESET(); \
+		/*BOARD_BLINK_INITIALIZE(); */\
+		HARDWARE_KBD_INITIALIZE(); \
+		/*HARDWARE_DAC_INITIALIZE(); */\
+		/*HARDWARE_BL_INITIALIZE(); */\
+		HARDWARE_DCDC_INITIALIZE(); \
+		TXDISABLE_INITIALIZE(); \
+		TUNE_INITIALIZE(); \
+		BOARD_USERBOOT_INITIALIZE(); \
+		USBD_EHCI_INITIALIZE(); \
+	} while (0)
 
 #endif /* ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED */
