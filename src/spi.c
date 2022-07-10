@@ -2147,7 +2147,19 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	return * (volatile uint8_t *) & SPI0->SPI_RXD;
+	unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
+
+	return v;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3151,8 +3163,18 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	return __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
+	unsigned v = __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
 
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
+	return v & 0xFFFF;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3193,11 +3215,11 @@ void RAMFUNC hardware_spi_b16_p1(
 
 #elif CPUSTYPE_T113
 
-	SPI0->SPI_MBC = 1;	// Master Burst Counter
-	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
+	SPI0->SPI_MBC = 2;	// Master Burst Counter
+	SPI0->SPI_MTC = 2;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
-		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+		2 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
 	* (volatile uint16_t *) & SPI0->SPI_TXD = __bswap16(v);
@@ -3305,7 +3327,19 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	return __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
+	unsigned v = __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
+
+	return v;
 
 
 #else
@@ -3331,11 +3365,11 @@ void hardware_spi_b32_p1(
 
 #elif CPUSTYPE_T113
 
-	SPI0->SPI_MBC = 1;	// Master Burst Counter
-	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
+	SPI0->SPI_MBC = 4;	// Master Burst Counter
+	SPI0->SPI_MTC = 4;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
-		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+		4 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
 	SPI0->SPI_TXD = __bswap32(v);	/* 32bit access */
