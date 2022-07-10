@@ -261,9 +261,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB
 #elif CPUSTYPE_ALLWNT113 && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwt128s3_ctlstyle_storch_v9a.h"
+	#include "boards/arm_allwt128s3_ctlstyle_storch_v9a.h"	// rmainunit_sv9e.pcb STM32MP1xx, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt128s3_cpustyle_storch_v9a.h"
+	#include "boards/arm_allwt128s3_cpustyle_storch_v9a.h"	// rmainunit_sv9e.pcb STM32MP1xx, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 #elif CPUSTYPE_ALLWNT113 && CTLSTYLE_STORCH_V7
 	#include "boards/arm_allwt128s3_ctlstyle_mango_pi.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

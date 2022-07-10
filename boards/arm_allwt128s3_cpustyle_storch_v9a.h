@@ -6,8 +6,8 @@
 // UA1ARN
 //
 
-// Трансивер с DSP обработкой "Аист" на процессоре STM32MP1xx
-// rmainunit_v5km7.pcb STM32MP1xx, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// Трансивер с DSP обработкой "Аист" на процессоре Allwinner t113-s3
+// rmainunit_sv9e.pcb STM32MP1xx, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 
 #ifndef ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED
 #define ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED 1
