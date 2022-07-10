@@ -6915,6 +6915,7 @@ restart:
 	do {
 		size_t rbflength;
 		const uint16_t * p = getrbfimage(& rbflength);
+		unsigned score = 0;
 
 		PRINTF("fpga: board_fpga_loader_PS start\n");
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
@@ -6961,12 +6962,13 @@ restart:
 			spi_progval8_p1(targetnone, v16 >> 8);
 			spi_progval8_p2(targetnone, v16 >> 0);
 #endif /* WITHSPIEXT16 */	// for skip in test configurations
+			++ score;
 			while (n --)
 			{
 				if (board_fpga_get_CONF_DONE() != 0)
 				{
-					//PRINTF("fpga: Unexpected state of CONF_DONE==1\n");
-					break;
+					PRINTF("fpga: Unexpected state of CONF_DONE==1, score=%u\n", score);
+					goto restart;
 				}
 #if WITHSPIEXT16	// for skip in test configurations
 				hardware_spi_b16_p2(* p ++);
@@ -6975,6 +6977,7 @@ restart:
 				spi_progval8_p2(targetnone, v16_2 >> 8);
 				spi_progval8_p2(targetnone, v16_2 >> 0);
 #endif /* WITHSPIEXT16 */	// for skip in test configurations
+				++ score;
 			}
 #if WITHSPIEXT16	// for skip in test configurations
 			hardware_spi_complete_b16();
