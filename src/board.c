@@ -6896,7 +6896,7 @@ const uint16_t * getrbfimage(size_t * count)
 
 #endif /* ! (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
 
-#define WITHSPI16FAST (WITHSPIHW && WITHSPI16BIT)
+#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
 /* FPGA загружается процессором с помощью SPI */
 static void board_fpga_loader_PS(void)
@@ -6951,16 +6951,16 @@ restart:
 			size_t n = rbflength - 1;
 			//
 
-#if WITHSPI16FAST// for skip in test configurations
+#if WITHSPIEXT16// for skip in test configurations
 			hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
 			hardware_spi_b16_p1(* p ++);
-#else /* WITHSPI16FAST */	// for skip in test configurations
+#else /* WITHSPIEXT16 */	// for skip in test configurations
 			// Software SPI
 			spi_select2(targetnone, SPIC_MODE3, SPIC_SPEEDUFAST);
 			const uint_fast16_t v16 = * p ++;
 			spi_progval8_p1(targetnone, v16 >> 8);
 			spi_progval8_p2(targetnone, v16 >> 0);
-#endif /* WITHSPI16FAST */	// for skip in test configurations
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 			while (n --)
 			{
 				if (board_fpga_get_CONF_DONE() != 0)
@@ -6968,36 +6968,41 @@ restart:
 					//PRINTF("fpga: Unexpected state of CONF_DONE==1\n");
 					break;
 				}
-#if WITHSPI16FAST	// for skip in test configurations
+#if WITHSPIEXT16	// for skip in test configurations
 				hardware_spi_b16_p2(* p ++);
-#else /* WITHSPI16FAST */	// for skip in test configurations
+#else /* WITHSPIEXT16 */	// for skip in test configurations
 				const uint_fast16_t v16_2 = * p ++;
 				spi_progval8_p2(targetnone, v16_2 >> 8);
 				spi_progval8_p2(targetnone, v16_2 >> 0);
-#endif /* WITHSPI16FAST */	// for skip in test configurations
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 			}
+#if WITHSPIEXT16	// for skip in test configurations
+			hardware_spi_complete_b16();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+			spi_complete(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 
 			//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
 			/* 4) Дождаться "1" на CONF_DONE */
 			while (wcd < rbflength && board_fpga_get_CONF_DONE() == 0)
 			{
 				++ wcd;
-#if WITHSPI16FAST	// for skip in test configurations
-				hardware_spi_b16_p2(0xffff);
-#else /* WITHSPI16FAST */	// for skip in test configurations
+#if WITHSPIEXT16	// for skip in test configurations
+				hardware_spi_b16_p1(0xffff);
+				hardware_spi_complete_b16();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
 				const uint_fast16_t v16_3 = 0xFFFF;
-				spi_progval8_p2(targetnone, v16_3 >> 8);
+				spi_progval8_p1(targetnone, v16_3 >> 8);
 				spi_progval8_p2(targetnone, v16_3 >> 0);
-#endif /* WITHSPI16FAST */	// for skip in test configurations
+				spi_complete(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 			}
 
-#if WITHSPI16FAST	// for skip in test configurations
-			hardware_spi_complete_b16();
+#if WITHSPIEXT16	// for skip in test configurations
 			hardware_spi_disconnect();
-#else /* WITHSPI16FAST */	// for skip in test configurations
-			spi_complete(targetnone);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
 			spi_unselect(targetnone);
-#endif /* WITHSPI16FAST */	// for skip in test configurations
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 
 			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
 			if (wcd >= rbflength)
