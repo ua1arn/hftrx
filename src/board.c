@@ -6904,10 +6904,10 @@ static void board_fpga_loader_PS(void)
 	unsigned retries = 0;
 
 #if WITHSPIEXT16	// for skip in test configurations
-		hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE3);
+	hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE0);
 #else /* WITHSPIEXT16 */	// for skip in test configurations
-		// Software SPI
-		spi_select2(targetnone, SPIC_MODE3, SPIC_SPEEDFAST);
+	// Software SPI
+	spi_select2(targetnone, SPIC_MODE0, SPIC_SPEEDFAST);
 #endif /* WITHSPIEXT16 */	// for skip in test configurations
 
 restart:
@@ -6917,9 +6917,9 @@ restart:
 		PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
 
 #if WITHSPIEXT16	// for skip in test configurations
-			hardware_spi_disconnect();
+		hardware_spi_disconnect();
 #else /* WITHSPIEXT16 */	// for skip in test configurations
-			spi_unselect(targetnone);
+		spi_unselect(targetnone);
 #endif /* WITHSPIEXT16 */	// for skip in test configurations
 		return;
 	}
@@ -6935,18 +6935,24 @@ restart:
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-		local_delay_ms(10);
+		local_delay_ms(1);
 		/* 1) Выставить "1" на nCONFIG */
 		//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
-		local_delay_ms(10);
+		local_delay_ms(1);
 		/* x) Дождаться "0" на nSTATUS */
 		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0\n");
 		while (board_fpga_get_NSTATUS() != 0)
 		{
-			local_delay_ms(10);
+			local_delay_ms(1);
 			if (-- w == 0)
 				goto restart;
+		}
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
+		if (board_fpga_get_CONF_DONE() != 0)
+		{
+			PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u\n", score);
+			goto restart;
 		}
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		local_delay_ms(1);
@@ -6958,11 +6964,12 @@ restart:
 			if (-- w == 0)
 				goto restart;
 		}
-//		if (board_fpga_get_CONF_DONE() != 0)
-//		{
-//			PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u\n", score);
-//			goto restart;
-//		}
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 done\n");
+		if (board_fpga_get_CONF_DONE() != 0)
+		{
+			PRINTF("fpga: 2 Unexpected state of CONF_DONE==1, score=%u\n", score);
+			goto restart;
+		}
 		/* 3) Выдать байты (бладший бит .rbf файла первым) */
 		//PRINTF("fpga: start sending RBF image (%lu of 16-bit words)\n", rbflength);
 		if (rbflength != 0)
@@ -6984,7 +6991,7 @@ restart:
 			{
 				if (board_fpga_get_CONF_DONE() != 0)
 				{
-					PRINTF("fpga: 2 Unexpected state of CONF_DONE==1, score=%u\n", score);
+					PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u\n", score);
 					goto restart;
 				}
 #if WITHSPIEXT16	// for skip in test configurations
@@ -7038,9 +7045,9 @@ restart:
 	}
 
 #if WITHSPIEXT16	// for skip in test configurations
-			hardware_spi_disconnect();
+	hardware_spi_disconnect();
 #else /* WITHSPIEXT16 */	// for skip in test configurations
-			spi_unselect(targetnone);
+	spi_unselect(targetnone);
 #endif /* WITHSPIEXT16 */	// for skip in test configurations
 	PRINTF("board_fpga_loader_PS: usermode okay\n");
 }
