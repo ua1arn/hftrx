@@ -550,27 +550,22 @@
 	#define SPDIF_D2_BIT (1uL << 6)		// PC6 SPI0_WP/D2
 	#define SPDIF_D3_BIT (1uL << 7)		// PC7 SPI0_HOLD/D3
 
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
-
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
-
-	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
+//	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+//	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+//
+//	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+//	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+//
+//	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
 
 	#define SPIIO_INITIALIZE() do { \
-		arm_hardware_pioc_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); 	/* PC2 SPI0_CLK */ \
-		arm_hardware_pioc_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); 	/* PC4 SPI0_MOSI */ \
-		arm_hardware_pioc_inputs(SPI_MISO_BIT); 				/* PC5 SPI0_MISO */ \
-		arm_hardware_pioc_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT);  /* PC6 SPI0_WP/D2 */ \
-		arm_hardware_pioc_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT);  /* PC7 SPI0_HOLD/D3 */ \
-		} while (0)
-	#define HARDWARE_SPI_CONNECT() do { \
 		arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
 		arm_hardware_pioc_altfn2(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
 		arm_hardware_pioc_altfn2(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
 		arm_hardware_pioc_altfn2(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
+	} while (0)
+	#define HARDWARE_SPI_CONNECT() do { \
 	} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 	} while (0)
