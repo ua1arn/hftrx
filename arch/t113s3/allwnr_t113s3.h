@@ -293,8 +293,8 @@ typedef enum IRQn
 #define SMHC2_BASE      	0x04022000
 #define SPI0_BASE    	  	0x04025000
 #define SPI_DBI_BASE  		0x04026000
-#define USB0_BASE 	     	0x04100000
-#define USB1_BASE 	     	0x04200000
+#define USBOTG0_BASE 	    0x04100000
+#define USBEHCI1_BASE 	    0x04200000
 #define EMAC_BASE 	     	0x04500000
 
 // VIDEO_OUT_SYS related
@@ -1539,76 +1539,97 @@ typedef struct USBEHCI_Type
 /*!< USBOTG Controller Interface */
 typedef struct USBOTG_Type
 {
-	__IO uint32_t MUSB2_REG_EPFIFO_0;                    /*!< Offset 0x000 MUSB2_REG_EPFIFO_0 */
-	__IO uint32_t MUSB2_REG_EPFIFO_1;                    /*!< Offset 0x004 MUSB2_REG_EPFIFO_1 */
-	__IO uint32_t MUSB2_REG_EPFIFO_2;                    /*!< Offset 0x008 MUSB2_REG_EPFIFO_2 */
-	__IO uint32_t MUSB2_REG_EPFIFO_3;                    /*!< Offset 0x00C MUSB2_REG_EPFIFO_3 */
-	__IO uint32_t MUSB2_REG_EPFIFO_4;                    /*!< Offset 0x010 MUSB2_REG_EPFIFO_4 */
-	__IO uint32_t MUSB2_REG_EPFIFO_5;                    /*!< Offset 0x014 MUSB2_REG_EPFIFO_5 */
+	__IO uint32_t USB_EPFIFO [0x006];                    /*!< Offset 0x000 USB_EPFIFO [0..5] */
 	uint32_t reserved1 [0x000A]; /* at 0x018 */
-	__IO uint8_t  MUSB2_REG_POWER;                       /*!< Offset 0x040 MUSB2_REG_POWER */
-	__IO uint8_t  MUSB2_REG_DEVCTL;                      /*!< Offset 0x041 MUSB2_REG_DEVCTL */
-	__IO uint16_t MUSB2_REG_EPINDEX;                     /*!< Offset 0x042 MUSB2_REG_EPINDEX */
-	__IO uint16_t MUSB2_REG_INTTX;                       /*!< Offset 0x044 MUSB2_REG_INTTX */
-	__IO uint16_t MUSB2_REG_INTRX;                       /*!< Offset 0x046 MUSB2_REG_INTRX */
-	__IO uint16_t MUSB2_REG_INTTXE;                      /*!< Offset 0x048 MUSB2_REG_INTTXE */
-	__IO uint16_t MUSB2_REG_INTRXE;                      /*!< Offset 0x04A MUSB2_REG_INTRXE */
-	__IO uint32_t MUSB2_REG_INTUSB;                      /*!< Offset 0x04C MUSB2_REG_INTUSB */
-	__IO uint32_t MUSB2_REG_INTUSBE;                     /*!< Offset 0x050 MUSB2_REG_INTUSBE */
-	__IO uint32_t MUSB2_REG_FRAME;                       /*!< Offset 0x054 MUSB2_REG_FRAME */
-	uint32_t reserved2 [0x0009]; /* at 0x058 */
-	__IO uint32_t MUSB2_REG_TESTMODE;                    /*!< Offset 0x07C MUSB2_REG_TESTMODE */
-	__IO uint16_t MUSB2_REG_TXMAXP;                      /*!< Offset 0x080 MUSB2_REG_TXMAXP */
-	__IO uint8_t  MUSB2_REG_TXCSRL;                      /*!< Offset 0x082 MUSB2_REG_TXCSRL */
-	__IO uint8_t  MUSB2_REG_TXCSRH;                      /*!< Offset 0x083 MUSB2_REG_TXCSRH */
-	__IO uint16_t MUSB2_REG_RXMAXP;                      /*!< Offset 0x084 MUSB2_REG_RXMAXP */
-	__IO uint8_t  MUSB2_REG_RXCSRL;                      /*!< Offset 0x086 MUSB2_REG_RXCSRL */
-	__IO uint8_t  MUSB2_REG_RXCSRH;                      /*!< Offset 0x087 MUSB2_REG_RXCSRH */
-	__IO uint32_t MUSB2_REG_RXCOUNT;                     /*!< Offset 0x088 MUSB2_REG_RXCOUNT */
-	__IO uint8_t  MUSB2_REG_TXTI;                        /*!< Offset 0x08C MUSB2_REG_TXTI */
-	__IO uint8_t  MUSB2_REG_TXNAKLIMIT;                  /*!< Offset 0x08D MUSB2_REG_TXNAKLIMIT */
-	__IO uint8_t  MUSB2_REG_RXTI;                        /*!< Offset 0x08E MUSB2_REG_RXTI */
-	__IO uint8_t  MUSB2_REG_RXNAKLIMIT;                  /*!< Offset 0x08F MUSB2_REG_RXNAKLIMIT */
-	__IO uint16_t MUSB2_REG_TXFIFOSZ;                    /*!< Offset 0x090 MUSB2_REG_TXFIFOSZ */
-	__IO uint16_t MUSB2_REG_TXFIFOADD;                   /*!< Offset 0x092 MUSB2_REG_TXFIFOADD */
-	__IO uint16_t MUSB2_REG_RXFIFOSZ;                    /*!< Offset 0x094 MUSB2_REG_RXFIFOSZ */
-	__IO uint16_t MUSB2_REG_RXFIFOADD;                   /*!< Offset 0x096 MUSB2_REG_RXFIFOADD */
-	__IO uint16_t MUSB2_REG_TXFADDR_0;                   /*!< Offset 0x098 MUSB2_REG_TXFADDR_0 */
-	__IO uint8_t  MUSB2_REG_TXHADDR_0;                   /*!< Offset 0x09A MUSB2_REG_TXHADDR_0 */
-	__IO uint8_t  MUSB2_REG_TXHUBPORT_0;                 /*!< Offset 0x09B MUSB2_REG_TXHUBPORT_0 */
-	__IO uint16_t MUSB2_REG_RXFADDR_0;                   /*!< Offset 0x09C MUSB2_REG_RXFADDR_0 */
-	__IO uint8_t  MUSB2_REG_RXHADDR_0;                   /*!< Offset 0x09E MUSB2_REG_RXHADDR_0 */
-	__IO uint8_t  MUSB2_REG_RXHUBPORT_0;                 /*!< Offset 0x09F MUSB2_REG_RXHUBPORT_0 */
-	__IO uint16_t MUSB2_REG_TXFADDR_1;                   /*!< Offset 0x0A0 MUSB2_REG_TXFADDR_1 */
-	__IO uint8_t  MUSB2_REG_TXHADDR_1;                   /*!< Offset 0x0A2 MUSB2_REG_TXHADDR_1 */
-	__IO uint8_t  MUSB2_REG_TXHUBPORT_1;                 /*!< Offset 0x0A3 MUSB2_REG_TXHUBPORT_1 */
-	__IO uint16_t MUSB2_REG_RXFADDR_1;                   /*!< Offset 0x0A4 MUSB2_REG_RXFADDR_1 */
-	__IO uint8_t  MUSB2_REG_RXHADDR_1;                   /*!< Offset 0x0A6 MUSB2_REG_RXHADDR_1 */
-	__IO uint8_t  MUSB2_REG_RXHUBPORT_1;                 /*!< Offset 0x0A7 MUSB2_REG_RXHUBPORT_1 */
-	__IO uint16_t MUSB2_REG_TXFADDR_2;                   /*!< Offset 0x0A8 MUSB2_REG_TXFADDR_2 2 */
-	__IO uint8_t  MUSB2_REG_TXHADDR_2;                   /*!< Offset 0x0AA MUSB2_REG_TXHADDR_2 */
-	__IO uint8_t  MUSB2_REG_TXHUBPORT_2;                 /*!< Offset 0x0AB MUSB2_REG_TXHUBPORT */
-	__IO uint16_t MUSB2_REG_RXFADDR_2;                   /*!< Offset 0x0AC MUSB2_REG_RXFADDR_2 */
-	__IO uint8_t  MUSB2_REG_RXHADDR_2;                   /*!< Offset 0x0AE MUSB2_REG_RXHADDR_2 */
-	__IO uint8_t  MUSB2_REG_RXHUBPORT_2;                 /*!< Offset 0x0AF MUSB2_REG_RXHUBPORT_2 */
-	__IO uint16_t MUSB2_REG_TXFADDR_3;                   /*!< Offset 0x0B0 MUSB2_REG_TXFADDR_3 */
-	__IO uint8_t  MUSB2_REG_TXHADDR_3;                   /*!< Offset 0x0B2 MUSB2_REG_TXHADDR_3 */
-	__IO uint8_t  MUSB2_REG_TXHUBPORT_3;                 /*!< Offset 0x0B3 MUSB2_REG_TXHUBPORT_3 */
-	__IO uint16_t MUSB2_REG_RXFADDR_3;                   /*!< Offset 0x0B4 MUSB2_REG_RXFADDR_3 */
-	__IO uint8_t  MUSB2_REG_RXHADDR_3;                   /*!< Offset 0x0B6 MUSB2_REG_RXHADDR_3 */
-	__IO uint8_t  MUSB2_REG_RXHUBPORT_3;                 /*!< Offset 0x0B7 MUSB2_REG_RXHUBPORT_3 */
-	__IO uint16_t MUSB2_REG_TXFADDR_4;                   /*!< Offset 0x0B8 MUSB2_REG_TXFADDR_4 */
-	__IO uint8_t  MUSB2_REG_TXHADDR_4;                   /*!< Offset 0x0BA MUSB2_REG_TXHADDR_4 */
-	__IO uint8_t  MUSB2_REG_TXHUBPORT_4;                 /*!< Offset 0x0BB MUSB2_REG_TXHUBPORT_4 */
-	__IO uint16_t MUSB2_REG_RXFADDR_4;                   /*!< Offset 0x0BC MUSB2_REG_RXFADDR_4 */
-	__IO uint8_t  MUSB2_REG_RXHADDR_4;                   /*!< Offset 0x0BE MUSB2_REG_RXHADDR_4 */
-	__IO uint8_t  MUSB2_REG_RXHUBPORT_4;                 /*!< Offset 0x0BF MUSB2_REG_RXHUBPORT_4 */
-	__IO uint16_t MUSB2_REG_TXFADDR_5;                   /*!< Offset 0x0C0 MUSB2_REG_TXFADDR_5 */
-	__IO uint8_t  MUSB2_REG_TXHADDR_5;                   /*!< Offset 0x0C2 MUSB2_REG_TXHADDR_5 */
-	__IO uint8_t  MUSB2_REG_TXHUBPORT_5;                 /*!< Offset 0x0C3 MUSB2_REG_TXHUBPORT_5 */
-	__IO uint16_t MUSB2_REG_RXFADDR_5;                   /*!< Offset 0x0C4 MUSB2_REG_RXFADDR_5 */
-	__IO uint8_t  MUSB2_REG_RXHADDR_5;                   /*!< Offset 0x0C6 MUSB2_REG_RXHADDR_5 */
-	__IO uint8_t  MUSB2_REG_RXHUBPORT_5;                 /*!< Offset 0x0C7 MUSB2_REG_RXHUBPORT_5 */
+	__IO uint8_t  USB_POWER;                             /*!< Offset 0x040 USB_POWER */
+	__IO uint8_t  USB_DEVCTL;                            /*!< Offset 0x041 USB_DEVCTL */
+	__IO uint16_t USB_EPINDEX;                           /*!< Offset 0x042 USB_EPINDEX */
+	__IO uint16_t USB_INTTX;                             /*!< Offset 0x044 USB_INTTX */
+	__IO uint16_t USB_INTRX;                             /*!< Offset 0x046 USB_INTRX */
+	__IO uint16_t USB_INTTXE;                            /*!< Offset 0x048 USB_INTTXE */
+	__IO uint16_t USB_INTRXE;                            /*!< Offset 0x04A USB_INTRXE */
+	__IO uint8_t  USB_INTUSB;                            /*!< Offset 0x04C USB_INTUSB */
+	uint8_t reserved2 [0x0003]; /* at 0x04D */
+	__IO uint8_t  USB_INTUSBE;                           /*!< Offset 0x050 USB_INTUSBE */
+	uint8_t reserved3 [0x0003]; /* at 0x051 */
+	__IO uint16_t USB_FRAME;                             /*!< Offset 0x054 USB_FRAME */
+	uint8_t reserved4 [0x001A]; /* at 0x056 */
+	__IO uint8_t  ULPI_VBUSCTL;                          /*!< Offset 0x070 ULPI_VBUSCTL */
+	uint8_t reserved5 [0x0003]; /* at 0x071 */
+	__IO uint8_t  ULPI_REGDATA;                          /*!< Offset 0x074 ULPI_REGDATA */
+	__IO uint8_t  ULPI_REGADDR;                          /*!< Offset 0x075 ULPI_REGADDR */
+	__IO uint8_t  ULPI_REGCTL;                           /*!< Offset 0x076 ULPI_REGCTL */
+	uint8_t reserved6 [0x0005]; /* at 0x077 */
+	__IO uint16_t USB_TESTMODE;                          /*!< Offset 0x07C USB_TESTMODE */
+	__IO uint8_t  USB_FSM;                               /*!< Offset 0x07E USB_FSM */
+	uint8_t reserved7 [0x0001]; /* at 0x07F */
+	__IO uint16_t USB_TXMAXP;                            /*!< Offset 0x080 USB_TXMAXP */
+	__IO uint8_t  USB_TXCSRL;                            /*!< Offset 0x082 USB_TXCSRL */
+	__IO uint8_t  USB_TXCSRH;                            /*!< Offset 0x083 USB_TXCSRH */
+	__IO uint16_t USB_RXMAXP;                            /*!< Offset 0x084 USB_RXMAXP */
+	__IO uint8_t  USB_RXCSRL;                            /*!< Offset 0x086 USB_RXCSRL */
+	__IO uint8_t  USB_RXCSRH;                            /*!< Offset 0x087 USB_RXCSRH */
+	__IO uint16_t USB_RXCOUNT;                           /*!< Offset 0x088 USB_RXCOUNT */
+	__IO uint16_t USB_RXPKTCNT;                          /*!< Offset 0x08A USB_RXPKTCNT */
+	__IO uint8_t  USB_TXTI;                              /*!< Offset 0x08C USB_TXTI */
+	__IO uint8_t  USB_TXNAKLIMIT;                        /*!< Offset 0x08D USB_TXNAKLIMIT */
+	__IO uint8_t  USB_RXTI;                              /*!< Offset 0x08E USB_RXTI */
+	__IO uint8_t  USB_RXNAKLIMIT;                        /*!< Offset 0x08F USB_RXNAKLIMIT */
+	__IO uint16_t USB_TXFIFOSZ;                          /*!< Offset 0x090 USB_TXFIFOSZ */
+	__IO uint16_t USB_TXFIFOADD;                         /*!< Offset 0x092 USB_TXFIFOADD */
+	__IO uint16_t USB_RXFIFOSZ;                          /*!< Offset 0x094 USB_RXFIFOSZ */
+	__IO uint16_t USB_RXFIFOADD;                         /*!< Offset 0x096 USB_RXFIFOADD */
+	__IO uint16_t USB_TXFADDR_0;                         /*!< Offset 0x098 USB_TXFADDR_0 */
+	__IO uint8_t  USB_TXHADDR_0;                         /*!< Offset 0x09A USB_TXHADDR_0 */
+	__IO uint8_t  USB_TXHUBPORT_0;                       /*!< Offset 0x09B USB_TXHUBPORT_0 */
+	__IO uint8_t  USB_RXFADDR_0;                         /*!< Offset 0x09C USB_RXFADDR_0 */
+	uint8_t reserved8 [0x0001]; /* at 0x09D */
+	__IO uint8_t  USB_RXHADDR_0;                         /*!< Offset 0x09E USB_RXHADDR_0 */
+	__IO uint8_t  USB_RXHUBPORT_0;                       /*!< Offset 0x09F USB_RXHUBPORT_0 */
+	__IO uint16_t USB_TXFADDR_1;                         /*!< Offset 0x0A0 USB_TXFADDR_1 */
+	__IO uint8_t  USB_TXHADDR_1;                         /*!< Offset 0x0A2 USB_TXHADDR_1 */
+	__IO uint8_t  USB_TXHUBPORT_1;                       /*!< Offset 0x0A3 USB_TXHUBPORT_1 */
+	__IO uint8_t  USB_RXFADDR_1;                         /*!< Offset 0x0A4 USB_RXFADDR_1 */
+	uint8_t reserved9 [0x0001]; /* at 0x0A5 */
+	__IO uint8_t  USB_RXHADDR_1;                         /*!< Offset 0x0A6 USB_RXHADDR_1 */
+	__IO uint8_t  USB_RXHUBPORT_1;                       /*!< Offset 0x0A7 USB_RXHUBPORT_1 */
+	__IO uint16_t USB_TXFADDR_2;                         /*!< Offset 0x0A8 USB_TXFADDR_2 2 */
+	__IO uint8_t  USB_TXHADDR_2;                         /*!< Offset 0x0AA USB_TXHADDR_2 */
+	__IO uint8_t  USB_TXHUBPORT_2;                       /*!< Offset 0x0AB USB_TXHUBPORT */
+	__IO uint8_t  USB_RXFADDR_2;                         /*!< Offset 0x0AC USB_RXFADDR_2 */
+	uint8_t reserved10 [0x0001]; /* at 0x0AD */
+	__IO uint8_t  USB_RXHADDR_2;                         /*!< Offset 0x0AE USB_RXHADDR_2 */
+	__IO uint8_t  USB_RXHUBPORT_2;                       /*!< Offset 0x0AF USB_RXHUBPORT_2 */
+	__IO uint16_t USB_TXFADDR_3;                         /*!< Offset 0x0B0 USB_TXFADDR_3 */
+	__IO uint8_t  USB_TXHADDR_3;                         /*!< Offset 0x0B2 USB_TXHADDR_3 */
+	__IO uint8_t  USB_TXHUBPORT_3;                       /*!< Offset 0x0B3 USB_TXHUBPORT_3 */
+	__IO uint8_t  USB_RXFADDR_3;                         /*!< Offset 0x0B4 USB_RXFADDR_3 */
+	uint8_t reserved11 [0x0001]; /* at 0x0B5 */
+	__IO uint8_t  USB_RXHADDR_3;                         /*!< Offset 0x0B6 USB_RXHADDR_3 */
+	__IO uint8_t  USB_RXHUBPORT_3;                       /*!< Offset 0x0B7 USB_RXHUBPORT_3 */
+	__IO uint16_t USB_TXFADDR_4;                         /*!< Offset 0x0B8 USB_TXFADDR_4 */
+	__IO uint8_t  USB_TXHADDR_4;                         /*!< Offset 0x0BA USB_TXHADDR_4 */
+	__IO uint8_t  USB_TXHUBPORT_4;                       /*!< Offset 0x0BB USB_TXHUBPORT_4 */
+	__IO uint8_t  USB_RXFADDR_4;                         /*!< Offset 0x0BC USB_RXFADDR_4 */
+	uint8_t reserved12 [0x0001]; /* at 0x0BD */
+	__IO uint8_t  USB_RXHADDR_4;                         /*!< Offset 0x0BE USB_RXHADDR_4 */
+	__IO uint8_t  USB_RXHUBPORT_4;                       /*!< Offset 0x0BF USB_RXHUBPORT_4 */
+	__IO uint16_t USB_TXFADDR_5;                         /*!< Offset 0x0C0 USB_TXFADDR_5 */
+	__IO uint8_t  USB_TXHADDR_5;                         /*!< Offset 0x0C2 USB_TXHADDR_5 */
+	__IO uint8_t  USB_TXHUBPORT_5;                       /*!< Offset 0x0C3 USB_TXHUBPORT_5 */
+	__IO uint8_t  USB_RXFADDR_5;                         /*!< Offset 0x0C4 USB_RXFADDR_5 */
+	uint8_t reserved13 [0x0001]; /* at 0x0C5 */
+	__IO uint8_t  USB_RXHADDR_5;                         /*!< Offset 0x0C6 USB_RXHADDR_5 */
+	__IO uint8_t  USB_RXHUBPORT_5;                       /*!< Offset 0x0C7 USB_RXHUBPORT_5 */
+	uint32_t reserved14 [0x00CE]; /* at 0x0C8 */
+	__IO uint32_t USB_ICSR;                              /*!< Offset 0x400 HCI Interface Register (HCI_Interface) */
+	__IO uint32_t USBPHY_PHYCTL;                         /*!< Offset 0x404 USBPHY_PHYCTL */
+	__IO uint32_t HCI_CTRL3;                             /*!< Offset 0x408 HCI Control 3 Register (bist) */
+	uint32_t reserved15; /* at 0x40C */
+	__IO uint32_t PHY_CTRL;                              /*!< Offset 0x410 PHY Control Register (PHY_Control) */
+	uint32_t reserved16 [0x0004]; /* at 0x414 */
+	__IO uint32_t PHY_STATUS;                            /*!< Offset 0x424 PHY Status Register */
+	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x428 HCI SIE Port Disable Control Register */
 } USBOTG_TypeDef; /* size of structure = 0x0C8 */
 /*
  * @brief USBPHYC
@@ -2295,14 +2316,14 @@ typedef struct DMAC_Type
 #define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
 #define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
 
-#define USBOTG0		((USBOTG_TypeDef *) USB0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
-#define USBEHCI0	((USB_EHCI_CapabilityTypeDef *) (USB0_BASE + 0x1000))	/*!< \brief USBEHCI0 Interface register set access pointer */
-#define USBOHCI0	((struct ohci_registers *) (USB0_BASE + 0x1400))		/*!< \brief USBOHCI0 Interface register set access pointer */
-#define USBPHY0		((USBPHYC_TypeDef *) (USB0_BASE + 0x0400))				/*!< \brief USBPHY0 Interface register set access pointer */
+#define USBOTG0		((USBOTG_TypeDef *) USBOTG0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
+#define USBEHCI0	((USB_EHCI_CapabilityTypeDef *) (USBOTG0_BASE + 0x1000))	/*!< \brief USBEHCI0 Interface register set access pointer */
+#define USBOHCI0	((struct ohci_registers *) (USBOTG0_BASE + 0x1400))		/*!< \brief USBOHCI0 Interface register set access pointer */
+#define USBPHY0		((USBPHYC_TypeDef *) (USBOTG0_BASE + 0x0400))				/*!< \brief USBPHY0 Interface register set access pointer */
 
-#define USBEHCI1	((USB_EHCI_CapabilityTypeDef *) USB1_BASE)				/*!< \brief USBEHCI1 Interface register set access pointer */
-#define USBOHCI1	((struct ohci_registers *) (USB1_BASE + 0x0400))		/*!< \brief USBOHCI1 Interface register set access pointer */
-#define USBPHY1		((USBPHYC_TypeDef *) (USB1_BASE + 0x0800))				/*!< \brief USBPHY1 Interface register set access pointer */
+#define USBEHCI1	((USB_EHCI_CapabilityTypeDef *) USBEHCI1_BASE)				/*!< \brief USBEHCI1 Interface register set access pointer */
+#define USBOHCI1	((struct ohci_registers *) (USBEHCI1_BASE + 0x0400))		/*!< \brief USBOHCI1 Interface register set access pointer */
+#define USBPHY1		((USBPHYC_TypeDef *) (USBEHCI1_BASE + 0x0800))				/*!< \brief USBPHY1 Interface register set access pointer */
 
 #define DMAC		((DMAC_TypeDef *) DMAC_BASE)							/*!< \brief DMAC Interface register set access pointer */
 
