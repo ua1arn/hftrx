@@ -6902,11 +6902,25 @@ const uint16_t * getrbfimage(size_t * count)
 static void board_fpga_loader_PS(void)
 {
 	unsigned retries = 0;
+
+#if WITHSPIEXT16	// for skip in test configurations
+		hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE1);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+		// Software SPI
+		spi_select2(targetnone, SPIC_MODE3, SPIC_SPEEDFAST);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
 restart:
 
 	if (++ retries > 4)
 	{
 		PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
+
+#if WITHSPIEXT16	// for skip in test configurations
+			hardware_spi_disconnect();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+			spi_unselect(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 		return;
 	}
 	;
@@ -6919,13 +6933,6 @@ restart:
 
 		PRINTF("fpga: board_fpga_loader_PS start\n");
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
-
-#if WITHSPIEXT16	// for skip in test configurations
-		hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE1);
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-		// Software SPI
-		spi_select2(targetnone, SPIC_MODE3, SPIC_SPEEDFAST);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
 
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		local_delay_ms(10);
@@ -6951,6 +6958,11 @@ restart:
 			if (-- w == 0)
 				goto restart;
 		}
+//		if (board_fpga_get_CONF_DONE() != 0)
+//		{
+//			PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u\n", score);
+//			goto restart;
+//		}
 		/* 3) Выдать байты (бладший бит .rbf файла первым) */
 		//PRINTF("fpga: start sending RBF image (%lu of 16-bit words)\n", rbflength);
 		if (rbflength != 0)
@@ -6972,7 +6984,7 @@ restart:
 			{
 				if (board_fpga_get_CONF_DONE() != 0)
 				{
-					PRINTF("fpga: Unexpected state of CONF_DONE==1, score=%u\n", score);
+					PRINTF("fpga: 2 Unexpected state of CONF_DONE==1, score=%u\n", score);
 					goto restart;
 				}
 #if WITHSPIEXT16	// for skip in test configurations
@@ -7006,12 +7018,6 @@ restart:
 #endif /* WITHSPIEXT16 */	// for skip in test configurations
 			}
 
-#if WITHSPIEXT16	// for skip in test configurations
-			hardware_spi_disconnect();
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-			spi_unselect(targetnone);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
-
 			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
 			if (wcd >= rbflength)
 				goto restart;
@@ -7030,6 +7036,12 @@ restart:
 		if (-- w == 0)
 			goto restart;
 	}
+
+#if WITHSPIEXT16	// for skip in test configurations
+			hardware_spi_disconnect();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+			spi_unselect(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 	PRINTF("board_fpga_loader_PS: usermode okay\n");
 }
 
