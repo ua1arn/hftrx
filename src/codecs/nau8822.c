@@ -55,7 +55,7 @@ void nau8822_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPILOWSUPPORTT
+	#if 1//WITHSPILOWSUPPORTT
 		// Работа совместно с фоновым обменом SPI по прерываниям
 		uint8_t txbuf [2];
 
