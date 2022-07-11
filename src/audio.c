@@ -5441,13 +5441,13 @@ inject_testsignals(IFADCvalue_t * const dbuff)
 	// панорама
 	// previous - oldest
 	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
-	dbuff [DMABUF32RTS0I] = adpt_output(& ifcodecin, simval0.IV);
-	dbuff [DMABUF32RTS0Q] = adpt_output(& ifcodecin, simval0.QV);
+	dbuff [DMABUF32RTS0I] = adpt_output(& ifspectrumin, simval0.IV);
+	dbuff [DMABUF32RTS0Q] = adpt_output(& ifspectrumin, simval0.QV);
 
 	// current	- nevest
 	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
-	dbuff [DMABUF32RTS1I] = adpt_output(& ifcodecin, simval1.IV);
-	dbuff [DMABUF32RTS1Q] = adpt_output(& ifcodecin, simval1.QV);
+	dbuff [DMABUF32RTS1I] = adpt_output(& ifspectrumin, simval1.IV);
+	dbuff [DMABUF32RTS1Q] = adpt_output(& ifspectrumin, simval1.QV);
 #endif /* WITHRTS96 */
 
 #endif
