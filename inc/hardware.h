@@ -1097,6 +1097,18 @@ extern uint8_t myGATEWAY [4];
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
+#define AX_PWM_AXI_SLV_REG0_OFFSET 0
+#define AX_PWM_AXI_SLV_REG1_OFFSET 4
+#define AX_PWM_AXI_SLV_REG2_OFFSET 8
+#define AX_PWM_AXI_SLV_REG3_OFFSET 12
+
+#define AX_PWM_mWriteReg(BaseAddress, RegOffset, Data) \
+  	Xil_Out32((BaseAddress) + (RegOffset), (u32)(Data))
+
+#define AX_PWM_mReadReg(BaseAddress, RegOffset) \
+    Xil_In32((BaseAddress) + (RegOffset))
+
+void xcz_dcdc_sync(uint32_t freq);
 void xc7z_hardware_initialize(void);
 float xc7z_get_cpu_temperature(void);
 uint_fast8_t xc7z_readpin(uint8_t pin);

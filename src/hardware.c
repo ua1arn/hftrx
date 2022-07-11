@@ -47,6 +47,14 @@ void xc7z_hardware_initialize(void)
 		ASSERT(0);
 	}
 
+#if WITHCPUFANPWM
+	uint32_t fan_pwm_period = 25000 * pow(2, 32) / REFERENCE_FREQ;
+	AX_PWM_mWriteReg(XPAR_CPU_FAN_PWM_0_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG0_OFFSET, fan_pwm_period);
+
+	float32_t fan_pwm_duty = powf(2, 32) * (1.0 - 0.7) - 1.0;
+	AX_PWM_mWriteReg(XPAR_CPU_FAN_PWM_0_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG1_OFFSET, fan_pwm_duty);
+#endif /* WITHCPUFANPWM */
+
 #if WITHPS7BOARD_MYC_Y7Z020
 	// пока так
 	xc7z_gpio_output(TARGET_RFADC_SHDN_EMIO);
@@ -55,6 +63,8 @@ void xc7z_hardware_initialize(void)
 	xc7z_gpio_output(TARGET_RFADC_DITH_EMIO);
 	xc7z_writepin(TARGET_RFADC_DITH_EMIO, 0);
 #endif /* WITHPS7BOARD_MYC_Y7Z020 */
+
+	HARDWARE_DCDC_SETDIV(0);
 
 #if ! WITHISBOOTLOADER
 	XAdcPs_Config * xadccfg = XAdcPs_LookupConfig(XPAR_XADCPS_0_DEVICE_ID);
@@ -69,6 +79,25 @@ void xc7z_hardware_initialize(void)
 
 	XAdcPs_SetSequencerMode(& xc7z_xadc, XADCPS_SEQ_MODE_SAFE);
 #endif /* ! WITHISBOOTLOADER */
+}
+
+void xcz_dcdc_sync(uint32_t freq)
+{
+#if WITHDCDCFREQCTL
+	uint32_t fs = 1200000uL;
+	float pwm_duty = 0.5;
+
+	if (freq >= 3000000uL && freq < 5000000uL)
+		fs = 450000uL;
+	else if (freq >= 5000000 && freq < 8000000uL)
+		fs = 830000uL;
+
+	uint32_t dcdc_pwm_period = fs * pow(2, 32) / REFERENCE_FREQ;
+	AX_PWM_mWriteReg(XPAR_DCDC_PWM_1_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG0_OFFSET, dcdc_pwm_period);
+
+	float32_t dcdc_pwm_duty = powf(2, 32) * (1.0 - pwm_duty) - 1.0;
+	AX_PWM_mWriteReg(XPAR_DCDC_PWM_1_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG1_OFFSET, dcdc_pwm_duty);
+#endif /* WITHDCDCFREQCTL */
 }
 
 float xc7z_get_cpu_temperature(void)

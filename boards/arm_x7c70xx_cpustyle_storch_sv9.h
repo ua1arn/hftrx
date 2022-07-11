@@ -68,27 +68,26 @@
 #define TARGET_ENC2_BUTTON_EMIO		72	// M15	A5	M15	IO_B35_LN23
 #define TARGET_TS_INT_EMIO			73	// V15	A2	V15	IO_L10P_T1_34
 
-//#define TARGET_USER_BOOT_EMIO		74	// U15	A13	U15	IO_B34_LN11	Input, pull-up need
-#define TARGET_ACTIVITY_EMIO		75		// F16	D7	F16	IO_L6P_T0_35	LED anode
+#define TARGET_ACTIVITY_EMIO		74		// F16	D7	F16	IO_L6P_T0_35	LED anode
 
-#define TARGET_NMEA_RESET_EMIO		76	// T15	A10	T15	IO_B34_LN5
-#define TARGET_PPS_IN_EMIO			77	// U14	A12	U15	IO_B34_LP11
+#define TARGET_NMEA_RESET_EMIO		75	// T15	A10	T15	IO_B34_LN5
+#define TARGET_PPS_IN_EMIO			76	// U14	A12	U15	IO_B34_LP11
 
-#define TARGET_FPLCD_CD_EMIO		78	// W15	A3	W15	IO_L10N_T1_34
-#define TARGET_FPLCD_RESET_EMIO		79	// M14	A4	M14	IO_L23P_T3_35
-#define TARGET_LCD_BL_ADJ0_EMIO		80	// P14	A7	P14	IO_L6P_T0_34	Open Drain
-#define TARGET_LCD_BL_ADJ1_EMIO		81	// R14	A8	R14	IO_L6N_T0_VREF_34	Open Drain
-#define TARGET_LCD_BL_ENABLE_EMIO	82	// T14	A9	T14	IO_L5P_T0_34
+#define TARGET_FPLCD_CD_EMIO		77	// W15	A3	W15	IO_L10N_T1_34
+#define TARGET_FPLCD_RESET_EMIO		78	// M14	A4	M14	IO_L23P_T3_35
+#define TARGET_LCD_BL_ADJ0_EMIO		79	// P14	A7	P14	IO_L6P_T0_34	Open Drain
+#define TARGET_LCD_BL_ADJ1_EMIO		80	// R14	A8	R14	IO_L6N_T0_VREF_34	Open Drain
+#define TARGET_LCD_BL_ENABLE_EMIO	81	// T14	A9	T14	IO_L5P_T0_34
 
-#define TARGET_RFADC_DITH_EMIO		83	//	J20	B12	J20	IO_L17P_T2_AD5P_35
-#define TARGET_RFADC_PGA_EMIO		84	//	H20	B13	H20	IO_L17N_T2_AD5N_35
+#define TARGET_RFADC_DITH_EMIO		82	//	J20	B12	J20	IO_L17P_T2_AD5P_35
+#define TARGET_RFADC_PGA_EMIO		83	//	H20	B13	H20	IO_L17N_T2_AD5N_35
 
-#define TARGET_RFADC_SHDN_EMIO		85	//	L20	B10	L20	IO_L9N_T1_DQS_AD3N_35
-#define TARGET_DAC_SLEEP_EMIO		86	//	V18	A18	V18	IO_L21N_T3_DQS_34
+#define TARGET_RFADC_SHDN_EMIO		84	//	L20	B10	L20	IO_L9N_T1_DQS_AD3N_35
+#define TARGET_DAC_SLEEP_EMIO		85	//	V18	A18	V18	IO_L21N_T3_DQS_34
 
 
 //#define TARGET_ACTIVITY2_MIO		7	// LED anode
-#define TARGET_USER_BOOT2_MIO		74	// U15	A13	U15	IO_B34_LN11	Input, pull-up need
+//#define TARGET_USER_BOOT2_MIO		74	// U15	A13	U15	IO_B34_LN11	Input, pull-up need <- cpu fan pwm replaced, A13 connected to DA34-2
 
 #if WITHISBOOTLOADER
 
@@ -945,15 +944,10 @@
 	#define WITHHWDCDCFREQMIN 400000L
 	#define WITHHWDCDCFREQMAX 1200000L
 
-	// PB9 - DC-DC synchro output
-	// TIM17_CH1 AF1
-	// TIM4_CH4	AF2	AF_TIM4
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piob_altfn2((1U << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
-		hardware_dcdcfreq_tim17_ch1_initialize(); \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
-		hardware_dcdcfreq_tim17_ch1_setdiv(f); \
+		xcz_dcdc_sync(f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
@@ -1276,13 +1270,6 @@
 	} while (0)
 
 #endif
-
-	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() (0/*gpio_input_readpin(TARGET_USER_BOOT2_MIO) == 0*/)
-	#define BOARD_USERBOOT_INITIALIZE() do { \
-		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_500, 0, 0, 0, 0, 0, 1); /* with pull-up */ \
-		gpio_input(TARGET_USER_BOOT2_MIO, pinmode_input); /* set as input with pull-up */ \
-	} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
