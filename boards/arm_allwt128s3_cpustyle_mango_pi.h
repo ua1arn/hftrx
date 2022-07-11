@@ -491,16 +491,16 @@
 	#define targetdataflash 0xFF
 	#define targetnone 0x00
 
-	#define targetext1		(1uL << 0)		// PG0 ext1 on front panel CSEXT1
-	#define targetnvram		(1uL << 7)		// PG7 nvram FM25L16B
-	#define targetctl1		(1uL << 11)		// PG11 board control registers chain
-	#define targetcodec1	(1uL << 6)		// PG6 on-board codec1 NAU8822L
-	#define targetfpga1		(1uL << 2)		// PG2 FPGA control registers CS1
-	#define targetrtc1		(1uL << 10)		// PG10 RTC DS1305 RTC_CS
+	#define targetext1		(0*1uL << 0)		// PG0 ext1 on front panel CSEXT1
+	#define targetnvram		(0*1uL << 7)		// PG7 nvram FM25L16B
+	#define targetctl1		(0*1uL << 11)		// PG11 board control registers chain
+	#define targetcodec1	(0*1uL << 6)		// PG6 on-board codec1 NAU8822L
+	#define targetfpga1		(0*1uL << 2)		// PG2 FPGA control registers CS1
+	#define targetrtc1		(0*1uL << 10)		// PG10 RTC DS1305 RTC_CS
 
-	#define targetadc2		(1uL << 8)	// PG8 on-board ADC MCP3208-BI/SL chip select (potentiometers) ADCCS1
-	#define targetadck		(1uL << 9)	// PG9 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADCCS2
-	#define targetxad2		(1uL << 3)	// PG3 external SPI device (PA BOARD ADC) CSEXT2
+	#define targetadc2		(0*1uL << 8)	// PG8 on-board ADC MCP3208-BI/SL chip select (potentiometers) ADCCS1
+	#define targetadck		(0*1uL << 9)	// PG9 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADCCS2
+	#define targetxad2		(0*1uL << 3)	// PG3 external SPI device (PA BOARD ADC) CSEXT2
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
@@ -509,35 +509,35 @@
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
 		switch (target) { \
-		case targetdataflash: gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); break; /* PC3 SPI0_CS */ \
-		case targetrtc1: gpioX_setstate(GPIOG, (target), 1 * (target)); break; \
-		default: gpioX_setstate(GPIOG, (target), 0 * (target)); break; \
-		case targetnone: break; \
+		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); local_delay_us(1); } break; /* PC3 SPI0_CS */ \
+		case targetrtc1: { gpioX_setstate(GPIOG, (target), 1 * (target)); local_delay_us(1); } break; \
+		default: { gpioX_setstate(GPIOG, (target), 0 * (target)); local_delay_us(1); } break; \
+		/*case targetnone: break; */\
 		} \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
 		switch (target) { \
-		case targetdataflash: gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); break; /* PC3 SPI0_CS */ \
-		case targetrtc1: gpioX_setstate(GPIOG, (target), 0 * (target)); break; \
-		default: gpioX_setstate(GPIOG, (target), 1 * (target)); break; \
-		case targetnone: break; \
+		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); local_delay_us(1); } break; /* PC3 SPI0_CS */ \
+		case targetrtc1: { gpioX_setstate(GPIOG, (target), 0 * (target)); local_delay_us(1); } break; \
+		default: { gpioX_setstate(GPIOG, (target), 1 * (target)); local_delay_us(1); } break; \
+		/*case targetnone: break; */\
 		} \
 	} while (0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		arm_hardware_pioc_outputs50m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
-		arm_hardware_piog_outputs50m(targetext1, 1 * targetext1); /*  */ \
-		arm_hardware_piog_outputs50m(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_piog_outputs50m(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_piog_outputs50m(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_piog_outputs50m(targetfpga1, 1 * targetfpga1); /*  */ \
-		arm_hardware_piog_outputs50m(targetrtc1, 0 * targetrtc1); /*  */ \
-		arm_hardware_piog_outputs50m(targetadc2, 1 * targetadc2); /*  */ \
-		arm_hardware_piog_outputs50m(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_piog_outputs50m(targetxad2, 1 * targetxad2); /*  */ \
+		arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs(targetext1, 1 * targetext1); /*  */ \
+		arm_hardware_piog_outputs(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_piog_outputs(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_piog_outputs(targetcodec1, 1 * targetcodec1); /*  */ \
+		arm_hardware_piog_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
+		arm_hardware_piog_outputs(targetrtc1, 0 * targetrtc1); /*  */ \
+		arm_hardware_piog_outputs(targetadc2, 1 * targetadc2); /*  */ \
+		arm_hardware_piog_outputs(targetadck, 1 * targetadck); /*  */ \
+		arm_hardware_piog_outputs(targetxad2, 1 * targetxad2); /*  */ \
 	} while (0)
 
 	// MOSI & SCK port
@@ -553,21 +553,29 @@
 	#define SPDIF_D2_BIT (1uL << 6)		// PC6 SPI0_WP/D2
 	#define SPDIF_D3_BIT (1uL << 7)		// PC7 SPI0_HOLD/D3
 
+//	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+//	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+//
+//	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+//	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+//
+//	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
+
 	#define SPIIO_INITIALIZE() do { \
-		} while (0)
+		arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
+		arm_hardware_pioc_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
+		arm_hardware_pioc_altfn2(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
+		arm_hardware_pioc_altfn2(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
+		arm_hardware_pioc_altfn2(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
+	} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
-			arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
-			arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
-			arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
-			arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
-		} while (0)
+	} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
-		} while (0)
+	} while (0)
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-		} while (0)
+	} while (0)
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-		} while (0)
+	} while (0)
 
 #else /* WITHSPIHW || WITHSPISW */
 
