@@ -1543,7 +1543,8 @@ typedef struct USBOTG_Type
 	uint32_t reserved1 [0x000A]; /* at 0x018 */
 	__IO uint8_t  USB_POWER;                             /*!< Offset 0x040 USB_POWER */
 	__IO uint8_t  USB_DEVCTL;                            /*!< Offset 0x041 USB_DEVCTL */
-	__IO uint16_t USB_EPINDEX;                           /*!< Offset 0x042 USB_EPINDEX */
+	__IO uint8_t  USB_EPINDEX;                           /*!< Offset 0x042 USB_EPINDEX */
+	__IO uint8_t  USB_DMACTL;                            /*!< Offset 0x043 USB_DMACTL */
 	__IO uint16_t USB_INTTX;                             /*!< Offset 0x044 USB_INTTX */
 	__IO uint16_t USB_INTRX;                             /*!< Offset 0x046 USB_INTRX */
 	__IO uint16_t USB_INTTXE;                            /*!< Offset 0x048 USB_INTTXE */
@@ -1622,7 +1623,7 @@ typedef struct USBOTG_Type
 	__IO uint8_t  USB_RXHADDR_5;                         /*!< Offset 0x0C6 USB_RXHADDR_5 */
 	__IO uint8_t  USB_RXHUBPORT_5;                       /*!< Offset 0x0C7 USB_RXHUBPORT_5 */
 	uint32_t reserved14 [0x00CE]; /* at 0x0C8 */
-	__IO uint32_t USB_ICSR;                              /*!< Offset 0x400 HCI Interface Register (HCI_Interface) */
+	__IO uint32_t USB_ISCR;                              /*!< Offset 0x400 HCI Interface Register (HCI_Interface) */
 	__IO uint32_t USBPHY_PHYCTL;                         /*!< Offset 0x404 USBPHY_PHYCTL */
 	__IO uint32_t HCI_CTRL3;                             /*!< Offset 0x408 HCI Control 3 Register (bist) */
 	uint32_t reserved15; /* at 0x40C */
