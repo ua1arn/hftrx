@@ -6315,6 +6315,17 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && WITHDEBUG && CPUSTYPE_T113
+	{
+		// Allwinner t113-s3 boot node display
+
+		CCU->CE_CLK_REG |= (1uL << 31);	// CE_CLK_GATING
+		CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 2);	// CE_MCLK_EN
+		// bits 27:16: eFUSE boot select status,
+		// bit 0: 0: GPIO boot select, 1: eFuse boot select
+		PRINTF("SID->BOOT_MODE=%08lX\n", SID->BOOT_MODE);
+	}
+#endif
 #if 0 && (WIHSPIDFSW || WIHSPIDFHW || WIHSPIDFOVERSPI)
 	{
 		// QSPI test
