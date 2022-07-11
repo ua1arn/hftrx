@@ -6904,7 +6904,7 @@ static void board_fpga_loader_PS(void)
 	unsigned retries = 0;
 
 #if WITHSPIEXT16	// for skip in test configurations
-		hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE1);
+		hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE3);
 #else /* WITHSPIEXT16 */	// for skip in test configurations
 		// Software SPI
 		spi_select2(targetnone, SPIC_MODE3, SPIC_SPEEDFAST);
