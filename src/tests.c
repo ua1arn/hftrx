@@ -9251,6 +9251,29 @@ void midtests(void)
 	}
 #endif
 #if 0
+	{
+		TP();
+//		nvramaddress_t place = 0;
+//		// NVRAM test
+//		save_i32(place, 0x12345678);
+//		const uint_fast32_t v1 = restore_i32(place);
+//		save_i32(place, 0xDEADBEEF);
+//		const uint_fast32_t v2 = restore_i32(place);
+//
+//		PRINTF("NVRAM test: v1=%08lX, v2=%07lX\n", v1, v2);
+		const uint8_t cmd [] =
+		{
+			0x03,	// FLASH READ
+			(uint_fast8_t) (0 >> 8),
+			(uint_fast8_t) (0 >> 0),
+		};
+		uint8_t data [32];
+		prog_spi_io(targetext1, SPIC_SPEEDFAST, SPIC_MODE3, 0, cmd, ARRAY_SIZE(cmd), NULL, 0, data, ARRAY_SIZE(data));
+		printhex(0, data, ARRAY_SIZE(data));
+
+	}
+#endif
+#if 0
 	// test SPI speed
 	{
 		TP();
@@ -9267,22 +9290,30 @@ void midtests(void)
 		//}
 		for (;;)
 		{
+
 			// тестирование аппаратного SPI в 16-битном режиме
-//			prog_select(target);
-//			hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE3);		// если есть возможность - работаем в 16-ти битном режиме
-//			hardware_spi_b16_p1(0x0F0A);
-//			hardware_spi_complete_b16();
-//			hardware_spi_disconnect();
-//			prog_unselect(target);
-//			local_delay_ms(1);
-//			continue;
-			
-			spi_select(target, SPIC_MODE3);
-			spi_progval8_p1(target, 0x75);
-			spi_complete(target);
-			spi_unselect(target);
+			unsigned v = 0x1234;
+			prog_select(target);
+			hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE3);		// если есть возможность - работаем в 16-ти битном режиме
+			hardware_spi_b16_p1(v);
+			unsigned v2 = hardware_spi_complete_b16();
+			hardware_spi_disconnect();
+			prog_unselect(target);
 			local_delay_ms(1);
+			PRINTF("v=%04X, v2=%04X\n", v, v2);
 			continue;
+
+//			unsigned v = 0x12;
+//			unsigned v1 = 0x34;
+//			spi_select(target, SPIC_MODE3);
+//			spi_progval8_p1(target, v);
+//			unsigned v2 = spi_progval8_p2(target, v1);
+//			unsigned v3 = spi_complete(target);
+//			spi_unselect(target);
+//			local_delay_ms(1);
+//			//ASSERT(v == v2);
+//			PRINTF("v=%04X, v1=%04X v2=%04X, v3=%04X\n", v, v1, v2, v3);
+//			continue;
 
 			board_lcd_rs(0);
 			spi_select(target, SPIC_MODE3);
