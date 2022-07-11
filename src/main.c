@@ -20037,6 +20037,7 @@ bootloader_launch_app(uintptr_t ip)
 	//GIC_DisableInterface();
 	//GIC_DisableDistributor();
 
+	// Disable all IRQs
 	{
 		// Get ITLinesNumber
 		const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
