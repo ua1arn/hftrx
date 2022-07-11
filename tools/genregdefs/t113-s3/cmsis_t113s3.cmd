@@ -27,42 +27,43 @@ SET OUTFILE=cmsis_t113s3.h
 %CONVERTER% timer.txt TIMER >> %OUTFILE%
 %CONVERTER% hstimer.txt HSTIMER >> %OUTFILE%
 %CONVERTER% can.txt CAN >> %OUTFILE%
-%CONVERTER% usb1.txt USB1 >> %OUTFILE%
-%CONVERTER% drd.txt DRD >> %OUTFILE%
+%CONVERTER% usbehci.txt USBEHCI >> %OUTFILE%
+%CONVERTER% usbotg.txt USBOTG >> %OUTFILE%
 %CONVERTER% usbphyc.txt USBPHYC >> %OUTFILE%
 
 
-%CONVERTER% csi.txt			CSI			 >> %OUTFILE%
-%CONVERTER% tvd.txt		TVD		 >> %OUTFILE%
+%CONVERTER% csi.txt CSI >> %OUTFILE%
+%CONVERTER% tvd.txt TVD >> %OUTFILE%
 
-%CONVERTER% de.txt 			DE 		 >> %OUTFILE%	
-%CONVERTER% di.txt 			DI 		 >> %OUTFILE%	
+%CONVERTER% de.txt DE >> %OUTFILE% 
+%CONVERTER% di.txt DI >> %OUTFILE% 
 
-%CONVERTER% g2d_top.txt 	G2D_TOP		 >> %OUTFILE%
-%CONVERTER% g2d_mixer.txt 	G2D_MIXER	 >> %OUTFILE%
-%CONVERTER% g2d_lay.txt 	G2D_LAY		 >> %OUTFILE%
-%CONVERTER% g2d_ui.txt 		G2D_UI		 >> %OUTFILE%
-%CONVERTER% g2d_vsu.txt 	G2D_VSU		 >> %OUTFILE%
-%CONVERTER% g2d_bld.txt 	G2D_BLD		 >> %OUTFILE%
-%CONVERTER% g2d_wb.txt 		G2D_WB		 >> %OUTFILE%
-%CONVERTER% g2d_rot.txt 	G2D_ROT		 >> %OUTFILE%
-rem %CONVERTER% g2d.txt 		G2D 		 >> %OUTFILE%
+%CONVERTER% g2d_top.txt G2D_TOP >> %OUTFILE%
+%CONVERTER% g2d_mixer.txt G2D_MIXER >> %OUTFILE%
+%CONVERTER% g2d_lay.txt G2D_LAY >> %OUTFILE%
+%CONVERTER% g2d_ui.txt G2D_UI >> %OUTFILE%
+%CONVERTER% g2d_vsu.txt G2D_VSU >> %OUTFILE%
+%CONVERTER% g2d_bld.txt G2D_BLD >> %OUTFILE%
+%CONVERTER% g2d_wb.txt G2D_WB >> %OUTFILE%
+%CONVERTER% g2d_rot.txt G2D_ROT >> %OUTFILE%
+rem %CONVERTER% g2d.txt G2D >> %OUTFILE%
 
-%CONVERTER% dsi.txt 		DSI 		 >> %OUTFILE%
-%CONVERTER% display_top.txt DISPLAY_TOP	 >> %OUTFILE%
-%CONVERTER% tcon_lcd.txt 	TCON_LCD 	 >> %OUTFILE%
-%CONVERTER% tve_top.txt 	TVE_TOP 	 >> %OUTFILE%
-%CONVERTER% tve.txt 		TVE 		>> %OUTFILE%
+%CONVERTER% dsi.txt DSI >> %OUTFILE%
+%CONVERTER% display_top.txt DISPLAY_TOP >> %OUTFILE%
+%CONVERTER% tcon_lcd.txt TCON_LCD >> %OUTFILE%
+%CONVERTER% tve_top.txt TVE_TOP >> %OUTFILE%
+%CONVERTER% tve.txt TVE >> %OUTFILE%
 
-rem %CONVERTER% tv_full.txt TV_FILL 	 >> %OUTFILE%
-rem %CONVERTER% tcon_tv.txt	TCON_TV 	 >> %OUTFILE%
+rem %CONVERTER% tv_full.txt TV_FILL >> %OUTFILE%
+rem %CONVERTER% tcon_tv.txt TCON_TV >> %OUTFILE%
 
-%CONVERTER% c0_cpux_cfg.txt 	 C0_CPUX_CFG 	 >> %OUTFILE%
-rem %CONVERTER% c0_cpux_mbist.txt C0_CPUX_MBIST 	 >> %OUTFILE%
-%CONVERTER% ddrphyc.txt 	 DDRPHYC 	 >> %OUTFILE%
-%CONVERTER% msi_memc.txt 	 MSI_MEMC 	 >> %OUTFILE%
+%CONVERTER% c0_cpux_cfg.txt C0_CPUX_CFG >> %OUTFILE%
+rem %CONVERTER% c0_cpux_mbist.txt C0_CPUX_MBIST >> %OUTFILE%
+%CONVERTER% ddrphyc.txt DDRPHYC >> %OUTFILE%
+%CONVERTER% msi_memc.txt MSI_MEMC >> %OUTFILE%
+%CONVERTER% sid.txt SID >> %OUTFILE%
 
-%CONVERTER% usb_ehci_capability.txt 	 USB_EHCI_Capability 	 >> %OUTFILE%
+%CONVERTER% usb_ehci_capability.txt USB_EHCI_Capability >> %OUTFILE%
 
 
 @echo /* Generated section end */ >> %OUTFILE%

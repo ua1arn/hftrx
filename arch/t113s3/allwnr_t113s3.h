@@ -1489,10 +1489,10 @@ typedef struct CAN_Type
 	__IO uint32_t CAN_VERSION;                           /*!< Offset 0x300 CAN Version Register */
 } CAN_TypeDef; /* size of structure = 0x304 */
 /*
- * @brief USB1
+ * @brief USBEHCI
  */
-/*!< USB1 Controller Interface */
-typedef struct USB1_Type
+/*!< USBEHCI Controller Interface */
+typedef struct USBEHCI_Type
 {
 	__IO uint16_t E_CAPLENGTH;                           /*!< Offset 0x000 EHCI Capability Register Length Register */
 	__IO uint16_t E_HCIVERSION;                          /*!< Offset 0x002 EHCI Host Interface Version Number Register */
@@ -1532,12 +1532,12 @@ typedef struct USB1_Type
 	__IO uint32_t O_HcRhDesriptorB;                      /*!< Offset 0x44C OHCI Root Hub Descriptor Register B */
 	__IO uint32_t O_HcRhStatus;                          /*!< Offset 0x450 OHCI Root Hub Status Register */
 	__IO uint32_t O_HcRhPortStatus;                      /*!< Offset 0x454 OHCI Root Hub Port Status Register */
-} USB1_TypeDef; /* size of structure = 0x458 */
+} USBEHCI_TypeDef; /* size of structure = 0x458 */
 /*
- * @brief DRD
+ * @brief USBOTG
  */
-/*!< DRD Controller Interface */
-typedef struct DRD_Type
+/*!< USBOTG Controller Interface */
+typedef struct USBOTG_Type
 {
 	__IO uint32_t MUSB2_REG_EPFIFO_0;                    /*!< Offset 0x000 MUSB2_REG_EPFIFO_0 */
 	__IO uint32_t MUSB2_REG_EPFIFO_1;                    /*!< Offset 0x004 MUSB2_REG_EPFIFO_1 */
@@ -1609,7 +1609,7 @@ typedef struct DRD_Type
 	__IO uint16_t MUSB2_REG_RXFADDR_5;                   /*!< Offset 0x0C4 MUSB2_REG_RXFADDR_5 */
 	__IO uint8_t  MUSB2_REG_RXHADDR_5;                   /*!< Offset 0x0C6 MUSB2_REG_RXHADDR_5 */
 	__IO uint8_t  MUSB2_REG_RXHUBPORT_5;                 /*!< Offset 0x0C7 MUSB2_REG_RXHUBPORT_5 */
-} DRD_TypeDef; /* size of structure = 0x0C8 */
+} USBOTG_TypeDef; /* size of structure = 0x0C8 */
 /*
  * @brief USBPHYC
  */
@@ -2146,6 +2146,15 @@ typedef struct MSI_MEMC_Type
 	__IO uint32_t MEMC_REG_028;                          /*!< Offset 0x028 Reg_028 */
 } MSI_MEMC_TypeDef; /* size of structure = 0x02C */
 /*
+ * @brief SID
+ */
+/*!< SID Controller Interface */
+typedef struct SID_Type
+{
+	uint32_t reserved1 [0x0084]; /* at 0x000 */
+	__IO uint32_t BOOT_MODE;                             /*!< Offset 0x210 bits 27:16: eFUSE boot select status, bit 0: 0: GPIO boot select, 1: eFuse boot select */
+} SID_TypeDef; /* size of structure = 0x214 */
+/*
  * @brief USB_EHCI_Capability
  */
 /*!< USB_EHCI_Capability Controller Interface */
@@ -2281,11 +2290,12 @@ typedef struct DMAC_Type
 //#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)			/*!< \brief C0_CPUX_MBIST Interface register set access pointer */
 #define DDRPHYC			((DDRPHYC_TypeDef *) DDRPHYC_BASE)				/*!< \brief DDRPHYC Interface register set access pointer */
 #define MSI_MEMC		((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)			/*!< \brief MSI_MEMC Interface register set access pointer */
+#define SID				((SID_TypeDef *) MSI_MEMC_BASE)			/*!< \brief SID Interface register set access pointer */
 
 #define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
 #define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
 
-#define USBOTG0		((DRD_TypeDef *) USB0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
+#define USBOTG0		((USBOTG_TypeDef *) USB0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
 #define USBEHCI0	((USB_EHCI_CapabilityTypeDef *) (USB0_BASE + 0x1000))	/*!< \brief USBEHCI0 Interface register set access pointer */
 #define USBOHCI0	((struct ohci_registers *) (USB0_BASE + 0x1400))		/*!< \brief USBOHCI0 Interface register set access pointer */
 #define USBPHY0		((USBPHYC_TypeDef *) (USB0_BASE + 0x0400))				/*!< \brief USBPHY0 Interface register set access pointer */

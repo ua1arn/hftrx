@@ -86,7 +86,7 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
-	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	USBOTG_TypeDef * const USBx = hpcd->Instance;
 
 	const unsigned intusb = USBx->MUSB2_REG_INTUSB;// & USBx->MUSB2_REG_INTUSBE;
 	const unsigned inttx  = USBx->MUSB2_REG_INTTX;// & USBx->MUSB2_REG_INTTXE;
@@ -148,7 +148,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   * @param  USBx  Selected device
   * @retval HAL status
   */
-HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef  USB_DevConnect(USBOTG_TypeDef *USBx)
 {
 	PRINTF("USB_DevConnect\n");
 	musb2_start();
@@ -184,7 +184,7 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
   * @param  USBx  Selected device
   * @retval HAL status
   */
-HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef  USB_DevDisconnect(USBOTG_TypeDef *USBx)
 {
 	musb2_stop();
 	return HAL_OK;
@@ -215,7 +215,7 @@ HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
   * @param  USBx  Selected device
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_StopDevice(USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef USB_StopDevice(USBOTG_TypeDef *USBx)
 {
   HAL_StatusTypeDef ret = HAL_OK;
 //  uint32_t USBx_BASE = (uint32_t)USBx;
@@ -259,7 +259,7 @@ HAL_StatusTypeDef USB_StopDevice(USB_OTG_GlobalTypeDef *USBx)
   *            @arg USB_OTG_DRD_MODE: Dual Role Device mode
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTypeDef mode)
+HAL_StatusTypeDef USB_SetCurrentMode(USBOTG_TypeDef *USBx, USB_OTG_ModeTypeDef mode)
 {
 //	switch (mode)
 //	{
@@ -288,7 +288,7 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
   *         the configuration information for the specified USBx peripheral.
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
+HAL_StatusTypeDef USB_DevInit(USBOTG_TypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 {
 	//TP();
 //	unsigned i;
@@ -344,7 +344,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, USB_OTG_CfgTypeDef cfg)
+HAL_StatusTypeDef USB_CoreInit(USBOTG_TypeDef * USBx, USB_OTG_CfgTypeDef cfg)
 {
 //	// P1 clock (66.7 MHz max) period = 15 ns
 //	// The cycle period required to consecutively access registers of this controller must be at least 67 ns.
@@ -379,7 +379,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, USB_OTG_CfgTypeDef 
   */
 HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 {
-	  USB_OTG_GlobalTypeDef *USBx;
+	  USBOTG_TypeDef *USBx;
 	  uint8_t i;
 
 	  /* Check the PCD handle allocation */

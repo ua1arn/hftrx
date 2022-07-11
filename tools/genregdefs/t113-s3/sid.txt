@@ -1,0 +1,3 @@
+BOOT_MODE
+0x210
+bits 27:16: eFUSE boot select status, bit 0: 0: GPIO boot select, 1: eFuse boot select
