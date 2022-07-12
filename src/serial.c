@@ -17,6 +17,36 @@
 #include "spi.h"
 
 
+#if defined(STM32F401xC)
+
+
+#elif CPUSTYLE_STM32F4XX
+
+#elif CPUSTYLE_STM32F7XX
+
+	#define BOARD_USART1_FREQ (stm32f7xx_get_usart1_freq())
+	#define BOARD_USART2_FREQ 	(stm32f7xx_get_apb1_freq())
+
+#elif CPUSTYLE_STM32H7XX
+
+	// See Table 8. Register boundary addresses
+	#define BOARD_USART1_FREQ 	(stm32h7xx_get_usart1_6_freq())
+	#define BOARD_USART2_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
+	#define BOARD_USART3_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
+
+#elif CPUSTYLE_STM32MP1
+
+	//#define BOARD_USART1_FREQ 	(stm32mp1_uart1_get_freq())
+	//#define BOARD_USART2_FREQ 	(stm32mp1_uart2_4_get_freq())
+	//#define BOARD_USART3_FREQ 	(stm32mp1_uart3_5_get_freq())
+	//#define BOARD_UART4_FREQ 	(stm32mp1_uart2_4_get_freq())
+	//#define BOARD_UART5_FREQ 	(stm32mp1_uart3_5_get_freq())
+	//#define BOARD_USART6_FREQ 	(stm32mp1_usart6_get_freq())
+	//#define BOARD_UART7_FREQ 	(stm32mp1_uart7_8_get_freq())
+	//#define BOARD_UART8_FREQ 	(stm32mp1_uart7_8_get_freq())
+
+#endif
+
 // Set interrupt vector wrapper
 static void serial_set_handler(uint_fast16_t int_id, void (* handler)(void))
 {
@@ -6028,7 +6058,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 #elif CPUSTYLE_STM32MP1
 
 	// uart2
-	USART2->BRR = calcdivround2(BOARD_USART2_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	USART2->BRR = calcdivround2(stm32mp1_uart2_4_get_freq(), baudrate);		// младшие 4 бита - это дробная часть.
 
 #elif CPUSTYLE_STM32F
 

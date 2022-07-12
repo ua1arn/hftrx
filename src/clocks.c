@@ -286,10 +286,8 @@ unsigned long stm32f4xx_get_tim3_freq(void)
 #define BOARD_SYSTICK_FREQ (stm32f7xx_get_sys_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 //#define BOARD_SYSTICK_FREQ (stm32f7xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
-#define BOARD_USART1_FREQ (stm32f7xx_get_usart1_freq())
 #define BOARD_TIM3_FREQ (stm32f7xx_get_apb1_tim_freq())	// TODO: verify
 #define BOARD_ADC_FREQ (stm32f7xx_get_apb2_freq())
-#define BOARD_USART2_FREQ 	(stm32f7xx_get_apb1_freq())
 
 unsigned long stm32f7xx_get_hse_freq(void)
 {
@@ -655,9 +653,6 @@ const  uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7,
 #define BOARD_ADC_FREQ (stm32h7xx_get_adc_freq())
 
 // See Table 8. Register boundary addresses
-#define BOARD_USART1_FREQ 	(stm32h7xx_get_usart1_6_freq())
-#define BOARD_USART2_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
-#define BOARD_USART3_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
 #define BOARD_TIM3_FREQ 	(stm32h7xx_get_timx_freq())	// TIM2..TIM7, TIM12..TIM14, LPTIM1, : APB1 D2 bus
 #define BOARD_SYSTICK_FREQ 	(stm32h7xx_get_sys_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 //#define BOARD_SYSTICK_FREQ (stm32h7xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
@@ -1093,14 +1088,6 @@ unsigned long hardware_get_spi_freq(void)
 #elif CPUSTYLE_STM32MP1
 
 /* частоты, подающиеся на периферию */
-//#define BOARD_USART1_FREQ 	(stm32mp1_uart1_get_freq())
-//#define BOARD_USART2_FREQ 	(stm32mp1_uart2_4_get_freq())
-//#define BOARD_USART3_FREQ 	(stm32mp1_uart3_5_get_freq())
-//#define BOARD_UART4_FREQ 	(stm32mp1_uart2_4_get_freq())
-//#define BOARD_UART5_FREQ 	(stm32mp1_uart3_5_get_freq())
-//#define BOARD_USART6_FREQ 	(stm32mp1_usart6_get_freq())
-//#define BOARD_UART7_FREQ 	(stm32mp1_uart7_8_get_freq())
-//#define BOARD_UART8_FREQ 	(stm32mp1_uart7_8_get_freq())
 #define BOARD_TIM3_FREQ 	(stm32mp1_get_timg1_freq())
 #define BOARD_TIM5_FREQ 	(stm32mp1_get_timg1_freq())
 #define BOARD_ADC_FREQ 		(stm32mp1_get_adc_freq())
