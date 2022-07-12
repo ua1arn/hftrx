@@ -1193,8 +1193,8 @@ typedef struct CE_Type
 typedef struct RTC_Type
 {
 	__IO uint32_t LOSC_CTRL_REG;                         /*!< Offset 0x000 Low Oscillator Control Register */
-	__IO uint32_t LOSC_AUTO_SWT_STA_REG;                 /*!< Offset 0x004 LOSC Auto Switch Status Register */
-	__IO uint32_t INTOSC_CLK_PRESCAL_REG;                /*!< Offset 0x008 Internal OSC Clock Pre-scalar Register */
+	__IO uint32_t LOSC_AUTO_SWT_STA_REG;                 /*!< Offset 0x004 Low Oscillator Auto Switch Status Register */
+	__IO uint32_t INTOSC_CLK_PRESCAL_REG;                /*!< Offset 0x008 Internal OSC Clock Pre-scaler Register */
 	uint32_t reserved1; /* at 0x00C */
 	__IO uint32_t RTC_DAY_REG;                           /*!< Offset 0x010 RTC Year-Month-Day Register */
 	__IO uint32_t RTC_HH_MM_SS_REG;                      /*!< Offset 0x014 RTC Hour-Minute-Second Register */
@@ -1630,7 +1630,7 @@ typedef struct USBOTG_Type
 	uint32_t reserved16 [0x0004]; /* at 0x414 */
 	__IO uint32_t PHY_STATUS;                            /*!< Offset 0x424 PHY Status Register */
 	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x428 HCI SIE Port Disable Control Register */
-} USBOTG_TypeDef; /* size of structure = 0x0C8 */
+} USBOTG_TypeDef; /* size of structure = 0x42C */
 /*
  * @brief USBPHYC
  */
@@ -2172,8 +2172,10 @@ typedef struct MSI_MEMC_Type
 /*!< SID Controller Interface */
 typedef struct SID_Type
 {
-	uint32_t reserved1 [0x0084]; /* at 0x000 */
-	__IO uint32_t BOOT_MODE;                             /*!< Offset 0x210 bits 27:16: eFUSE boot select status, bit 0: 0: GPIO boot select, 1: eFuse boot select */
+	uint32_t reserved1 [0x0005]; /* at 0x000 */
+	__IO uint32_t THS;                                   /*!< Offset 0x014 [27:16]: The calibration value of the T-sensor. */
+	uint32_t reserved2 [0x007E]; /* at 0x018 */
+	__IO uint32_t BOOT_MODE;                             /*!< Offset 0x210 [27:16]: eFUSE boot select status, [0]: 0: GPIO boot select, 1: eFuse boot select */
 } SID_TypeDef; /* size of structure = 0x214 */
 /*
  * @brief USB_EHCI_Capability
@@ -2192,8 +2194,7 @@ typedef struct USB_EHCI_Capability_Type
 	__IO uint32_t CTRLDSSEGMENT;                         /*!< Offset 0x020 EHCI 4G Segment Selector Register */
 	__IO uint32_t PERIODICLISTBASE;                      /*!< Offset 0x024 EHCI Frame List Base Address Register */
 	__IO uint32_t ASYNCLISTADDR;                         /*!< Offset 0x028 EHCI Next Asynchronous List Address Register */
-} USB_EHCI_CapabilityTypeDef; /* size of structure = 0x02C */
-/* Generated section end */
+} USB_EHCI_Capability_TypeDef; /* size of structure = 0x02C */
 /*
  * @brief DMAC_CH
  */
@@ -2208,12 +2209,13 @@ typedef struct DMAC_CH_Type
 	__IO uint32_t DMAC_CUR_DEST_REGN;                    /*!< Offset 0x014 DMAC Channel Current Destination Register N (N = 0 to 15) 0x0114 + N*0x0040 */
 	__IO uint32_t DMAC_BCNT_LEFT_REGN;                   /*!< Offset 0x018 DMAC Channel Byte Counter Left Register N (N = 0 to 15) 0x0118 + N*0x0040 */
 	__IO uint32_t DMAC_PARA_REGN;                        /*!< Offset 0x01C DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040 */
-	uint32_t reserved1 [0x0002];
+	uint32_t reserved1 [0x0002]; /* at 0x020 */
 	__IO uint32_t DMAC_MODE_REGN;                        /*!< Offset 0x028 DMAC Mode Register N (N = 0 to 15) 0x0128 + N*0x0040 */
 	__IO uint32_t DMAC_FDESC_ADDR_REGN;                  /*!< Offset 0x02C DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040 */
 	__IO uint32_t DMAC_PKG_NUM_REGN;                     /*!< Offset 0x030 DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040 */
-	uint32_t reserved2 [0x0003];
-} DMAC_CH_TypeDef;
+	uint32_t reserved2 [0x0002]; /* at 0x034 */
+	__IO uint32_t padding;                               /*!< Offset 0x03C Placeholder for 0x40 alignment */
+} DMAC_CH_TypeDef; /* size of structure = 0x040 */
 /*
  * @brief DMAC
  */
@@ -2222,16 +2224,19 @@ typedef struct DMAC_Type
 {
 	__IO uint32_t DMAC_IRQ_EN_REG0;                      /*!< Offset 0x000 DMAC IRQ Enable Register 0 */
 	__IO uint32_t DMAC_IRQ_EN_REG1;                      /*!< Offset 0x004 DMAC IRQ Enable Register 1 */
-	uint32_t reserved1 [0x0002];
+	uint32_t reserved1 [0x0002]; /* at 0x008 */
 	__IO uint32_t DMAC_IRQ_PEND_REG0;                    /*!< Offset 0x010 DMAC IRQ Pending Register 0 */
 	__IO uint32_t DMAC_IRQ_PEND_REG1;                    /*!< Offset 0x014 DMAC IRQ Pending Register 1 */
-	uint32_t reserved2 [0x0004];
+	uint32_t reserved2 [0x0004]; /* at 0x018 */
 	__IO uint32_t DMAC_AUTO_GATE_REG;                    /*!< Offset 0x028 DMAC Auto Gating Register */
-	uint32_t reserved3;
+	uint32_t reserved3; /* at 0x02C */
 	__IO uint32_t DMAC_STA_REG;                          /*!< Offset 0x030 DMAC Status Register */
-	uint32_t reserved4 [0x0033];
-	__IO DMAC_CH_TypeDef CH [16];                        /*!< Offset 0x100 regisrers */
-} DMAC_TypeDef;
+	uint32_t reserved4 [0x0033]; /* at 0x034 */
+	DMAC_CH_TypeDef CH [0x010];                          /*!< Offset 0x100 regisrers */
+} DMAC_TypeDef; /* size of structure = 0x500 */
+/* Generated section end */
+
+typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
 
 /* Access pointers */
 

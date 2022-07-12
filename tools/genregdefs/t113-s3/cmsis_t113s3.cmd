@@ -65,5 +65,8 @@ rem %CONVERTER% c0_cpux_mbist.txt C0_CPUX_MBIST >> %OUTFILE%
 
 %CONVERTER% usb_ehci_capability.txt USB_EHCI_Capability >> %OUTFILE%
 
+%CONVERTER% dmacchannels.txt DMAC_CH >> %OUTFILE%
+%CONVERTER% dmac.txt DMAC >> %OUTFILE%
+
 
 @echo /* Generated section end */ >> %OUTFILE%
