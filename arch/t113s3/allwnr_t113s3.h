@@ -2232,7 +2232,7 @@ typedef struct DMAC_Type
 	uint32_t reserved3; /* at 0x02C */
 	__IO uint32_t DMAC_STA_REG;                          /*!< Offset 0x030 DMAC Status Register */
 	uint32_t reserved4 [0x0033]; /* at 0x034 */
-	DMAC_CH_TypeDef CH [0x010];                          /*!< Offset 0x100 regisrers */
+	DMAC_CH_TypeDef CH [0x010];                          /*!< Offset 0x100 Channel [0..15] */
 } DMAC_TypeDef; /* size of structure = 0x500 */
 /* Generated section end */
 

@@ -18,4 +18,4 @@ DMAC_STA_REG
 DMAC Status Register
 CH 0x40 DMAC_CH_TypeDef
 0x100 16
-regisrers
+Channel [0..15]
