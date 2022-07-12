@@ -28,6 +28,7 @@ SET OUTFILE=cmsis_t113s3.h
 %CONVERTER% hstimer.txt HSTIMER >> %OUTFILE%
 %CONVERTER% can.txt CAN >> %OUTFILE%
 %CONVERTER% usbehci.txt USBEHCI >> %OUTFILE%
+%CONVERTER% usbotg_fifo.txt USBOTGFIFO >> %OUTFILE%
 %CONVERTER% usbotg.txt USBOTG >> %OUTFILE%
 %CONVERTER% usbphyc.txt USBPHYC >> %OUTFILE%
 
@@ -67,6 +68,5 @@ rem %CONVERTER% c0_cpux_mbist.txt C0_CPUX_MBIST >> %OUTFILE%
 
 %CONVERTER% dmacchannels.txt DMAC_CH >> %OUTFILE%
 %CONVERTER% dmac.txt DMAC >> %OUTFILE%
-
 
 @echo /* Generated section end */ >> %OUTFILE%

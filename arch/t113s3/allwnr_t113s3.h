@@ -1534,6 +1534,20 @@ typedef struct USBEHCI_Type
 	__IO uint32_t O_HcRhPortStatus;                      /*!< Offset 0x454 OHCI Root Hub Port Status Register */
 } USBEHCI_TypeDef; /* size of structure = 0x458 */
 /*
+ * @brief USBOTGFIFO
+ */
+/*!< USBOTGFIFO Controller Interface */
+typedef struct USBOTGFIFO_Type
+{
+	__IO uint16_t USB_TXFADDR;                           /*!< Offset 0x000 USB_TXFADDR */
+	__IO uint8_t  USB_TXHADDR;                           /*!< Offset 0x002 USB_TXHADDR */
+	__IO uint8_t  USB_TXHUBPORT;                         /*!< Offset 0x003 USB_TXHUBPORT */
+	__IO uint8_t  USB_RXFADDR;                           /*!< Offset 0x004 USB_RXFADDR */
+	uint8_t reserved1 [0x0001]; /* at 0x005 */
+	__IO uint8_t  USB_RXHADDR;                           /*!< Offset 0x006 USB_RXHADDR */
+	__IO uint8_t  USB_RXHUBPORT;                         /*!< Offset 0x007 USB_RXHUBPORT */
+} USBOTGFIFO_TypeDef; /* size of structure = 0x008 */
+/*
  * @brief USBOTG
  */
 /*!< USBOTG Controller Interface */
@@ -1579,55 +1593,14 @@ typedef struct USBOTG_Type
 	__IO uint16_t USB_TXFIFOADD;                         /*!< Offset 0x092 USB_TXFIFOADD */
 	__IO uint16_t USB_RXFIFOSZ;                          /*!< Offset 0x094 USB_RXFIFOSZ */
 	__IO uint16_t USB_RXFIFOADD;                         /*!< Offset 0x096 USB_RXFIFOADD */
-	__IO uint16_t USB_TXFADDR_0;                         /*!< Offset 0x098 USB_TXFADDR_0 */
-	__IO uint8_t  USB_TXHADDR_0;                         /*!< Offset 0x09A USB_TXHADDR_0 */
-	__IO uint8_t  USB_TXHUBPORT_0;                       /*!< Offset 0x09B USB_TXHUBPORT_0 */
-	__IO uint8_t  USB_RXFADDR_0;                         /*!< Offset 0x09C USB_RXFADDR_0 */
-	uint8_t reserved8 [0x0001]; /* at 0x09D */
-	__IO uint8_t  USB_RXHADDR_0;                         /*!< Offset 0x09E USB_RXHADDR_0 */
-	__IO uint8_t  USB_RXHUBPORT_0;                       /*!< Offset 0x09F USB_RXHUBPORT_0 */
-	__IO uint16_t USB_TXFADDR_1;                         /*!< Offset 0x0A0 USB_TXFADDR_1 */
-	__IO uint8_t  USB_TXHADDR_1;                         /*!< Offset 0x0A2 USB_TXHADDR_1 */
-	__IO uint8_t  USB_TXHUBPORT_1;                       /*!< Offset 0x0A3 USB_TXHUBPORT_1 */
-	__IO uint8_t  USB_RXFADDR_1;                         /*!< Offset 0x0A4 USB_RXFADDR_1 */
-	uint8_t reserved9 [0x0001]; /* at 0x0A5 */
-	__IO uint8_t  USB_RXHADDR_1;                         /*!< Offset 0x0A6 USB_RXHADDR_1 */
-	__IO uint8_t  USB_RXHUBPORT_1;                       /*!< Offset 0x0A7 USB_RXHUBPORT_1 */
-	__IO uint16_t USB_TXFADDR_2;                         /*!< Offset 0x0A8 USB_TXFADDR_2 2 */
-	__IO uint8_t  USB_TXHADDR_2;                         /*!< Offset 0x0AA USB_TXHADDR_2 */
-	__IO uint8_t  USB_TXHUBPORT_2;                       /*!< Offset 0x0AB USB_TXHUBPORT */
-	__IO uint8_t  USB_RXFADDR_2;                         /*!< Offset 0x0AC USB_RXFADDR_2 */
-	uint8_t reserved10 [0x0001]; /* at 0x0AD */
-	__IO uint8_t  USB_RXHADDR_2;                         /*!< Offset 0x0AE USB_RXHADDR_2 */
-	__IO uint8_t  USB_RXHUBPORT_2;                       /*!< Offset 0x0AF USB_RXHUBPORT_2 */
-	__IO uint16_t USB_TXFADDR_3;                         /*!< Offset 0x0B0 USB_TXFADDR_3 */
-	__IO uint8_t  USB_TXHADDR_3;                         /*!< Offset 0x0B2 USB_TXHADDR_3 */
-	__IO uint8_t  USB_TXHUBPORT_3;                       /*!< Offset 0x0B3 USB_TXHUBPORT_3 */
-	__IO uint8_t  USB_RXFADDR_3;                         /*!< Offset 0x0B4 USB_RXFADDR_3 */
-	uint8_t reserved11 [0x0001]; /* at 0x0B5 */
-	__IO uint8_t  USB_RXHADDR_3;                         /*!< Offset 0x0B6 USB_RXHADDR_3 */
-	__IO uint8_t  USB_RXHUBPORT_3;                       /*!< Offset 0x0B7 USB_RXHUBPORT_3 */
-	__IO uint16_t USB_TXFADDR_4;                         /*!< Offset 0x0B8 USB_TXFADDR_4 */
-	__IO uint8_t  USB_TXHADDR_4;                         /*!< Offset 0x0BA USB_TXHADDR_4 */
-	__IO uint8_t  USB_TXHUBPORT_4;                       /*!< Offset 0x0BB USB_TXHUBPORT_4 */
-	__IO uint8_t  USB_RXFADDR_4;                         /*!< Offset 0x0BC USB_RXFADDR_4 */
-	uint8_t reserved12 [0x0001]; /* at 0x0BD */
-	__IO uint8_t  USB_RXHADDR_4;                         /*!< Offset 0x0BE USB_RXHADDR_4 */
-	__IO uint8_t  USB_RXHUBPORT_4;                       /*!< Offset 0x0BF USB_RXHUBPORT_4 */
-	__IO uint16_t USB_TXFADDR_5;                         /*!< Offset 0x0C0 USB_TXFADDR_5 */
-	__IO uint8_t  USB_TXHADDR_5;                         /*!< Offset 0x0C2 USB_TXHADDR_5 */
-	__IO uint8_t  USB_TXHUBPORT_5;                       /*!< Offset 0x0C3 USB_TXHUBPORT_5 */
-	__IO uint8_t  USB_RXFADDR_5;                         /*!< Offset 0x0C4 USB_RXFADDR_5 */
-	uint8_t reserved13 [0x0001]; /* at 0x0C5 */
-	__IO uint8_t  USB_RXHADDR_5;                         /*!< Offset 0x0C6 USB_RXHADDR_5 */
-	__IO uint8_t  USB_RXHUBPORT_5;                       /*!< Offset 0x0C7 USB_RXHUBPORT_5 */
-	uint32_t reserved14 [0x00CE]; /* at 0x0C8 */
+	USBOTGFIFO_TypeDef FIFO [0x006];                     /*!< Offset 0x098 FIFOs [0..5] */
+	uint32_t reserved8 [0x00CE]; /* at 0x0C8 */
 	__IO uint32_t USB_ISCR;                              /*!< Offset 0x400 HCI Interface Register (HCI_Interface) */
 	__IO uint32_t USBPHY_PHYCTL;                         /*!< Offset 0x404 USBPHY_PHYCTL */
 	__IO uint32_t HCI_CTRL3;                             /*!< Offset 0x408 HCI Control 3 Register (bist) */
-	uint32_t reserved15; /* at 0x40C */
+	uint32_t reserved9; /* at 0x40C */
 	__IO uint32_t PHY_CTRL;                              /*!< Offset 0x410 PHY Control Register (PHY_Control) */
-	uint32_t reserved16 [0x0004]; /* at 0x414 */
+	uint32_t reserved10 [0x0004]; /* at 0x414 */
 	__IO uint32_t PHY_STATUS;                            /*!< Offset 0x424 PHY Status Register */
 	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x428 HCI SIE Port Disable Control Register */
 } USBOTG_TypeDef; /* size of structure = 0x42C */
