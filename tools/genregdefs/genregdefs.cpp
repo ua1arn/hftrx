@@ -31,7 +31,6 @@ struct ddd
 
 void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 {
-	unsigned reservers = 0;
 	unsigned i;
 
 	printf("/*\n");
@@ -51,6 +50,10 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
             "uint16_t",
             "uint24_t",
             "uint32_t",
+            "uint40_t",
+            "uint48_t",
+            "uint56_t",
+            "uint64_t",
         };
 
 		int commentspos = 54;
@@ -73,15 +76,15 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 
             if (sz == 4)
             {
-			    printf("\t" "uint32_t reserved%u; /* at 0x%03X */\n", ++ reservers, offs);
+			    printf("\t" "uint32_t reserved_0x%03X;\n", offs);
             }
             else if ((sz % 4) == 0)
             {
-			    printf("\t" "uint32_t reserved%u [0x%04X]; /* at 0x%03X */\n", ++ reservers, sz / 4, offs);
+			    printf("\t" "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
             }
             else
             {
-		    	printf("\t" "uint8_t reserved%u [0x%04X]; /* at 0x%03X */\n", ++ reservers, sz, offs);
+		    	printf("\t" "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
             }
 			offs = p->fldoffs;
 		}
