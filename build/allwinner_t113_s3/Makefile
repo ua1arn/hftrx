@@ -19,7 +19,7 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-XFEL = ./xfel-windows-v1.2.7/xfel
+XFEL = ./xfel-windows-v1.2.9/xfel
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -57,9 +57,9 @@ CORE += -mfpu=vfpv4
 # Define optimisation level here
 # olny -Og for app
 # Application
-#OPT = -Og
+OPT = -Og
 #OPT = -Ofast -flto
-OPT = -Os -flto
+#OPT = -Os -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
