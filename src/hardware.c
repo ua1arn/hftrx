@@ -48,11 +48,14 @@ void xc7z_hardware_initialize(void)
 	}
 
 #if WITHCPUFANPWM
-	uint32_t fan_pwm_period = 25000 * pow(2, 32) / REFERENCE_FREQ;
-	AX_PWM_mWriteReg(XPAR_CPU_FAN_PWM_0_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG0_OFFSET, fan_pwm_period);
+	{
+		const float FS = powf(2, 32);
+		uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
+		AX_PWM_mWriteReg(XPAR_CPU_FAN_PWM_0_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG0_OFFSET, fan_pwm_period);
 
-	float32_t fan_pwm_duty = powf(2, 32) * (1.0 - 0.7) - 1.0;
-	AX_PWM_mWriteReg(XPAR_CPU_FAN_PWM_0_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG1_OFFSET, fan_pwm_duty);
+		uint32_t fan_pwm_duty = FS * (1.0f - 0.7f) - 1;
+		AX_PWM_mWriteReg(XPAR_CPU_FAN_PWM_0_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG1_OFFSET, fan_pwm_duty);
+	}
 #endif /* WITHCPUFANPWM */
 
 #if WITHPS7BOARD_MYC_Y7Z020

@@ -6704,6 +6704,15 @@ sysinit_pll_initialize(void)
 
 	found:
 		return freqs [middle].dcdcdiv;
+
+#elif WITHPS7BOARD_MYC_Y7Z020
+
+		return 1;
+
+#elif CPUSTYPE_T113
+
+		return 1;
+
 #endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
 	}
 
