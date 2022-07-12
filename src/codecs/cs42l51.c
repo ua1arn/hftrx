@@ -115,7 +115,7 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
-		cs42l51_clocksneed.
+		cs42l51_clocksneed,
 		cs42l51_stop,
 		cs42l51_initialize_fullduplex,
 		cs42l51_setvolume,		/* Установка громкости на наушники */

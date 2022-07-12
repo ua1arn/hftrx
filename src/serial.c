@@ -6215,7 +6215,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 #elif CPUSTYLE_STM32MP1
 
 	// uart4
-	UART4->BRR = calcdivround2(BOARD_UART4_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	UART4->BRR = calcdivround2(stm32mp1_uart2_4_get_freq(), baudrate);		// младшие 4 бита - это дробная часть.
 
 #elif CPUSTYLE_STM32F
 

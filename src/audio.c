@@ -805,10 +805,7 @@ int64_t transform_do64(
 	return (v << tfm->lshift64) >> tfm->rshift64;
 }
 
-#if WITHDSPEXTFIR
 static adapter_t fpgafircoefsout;
-#endif /* #if WITHDSPEXTFIR */
-
 adapter_t afcodecio;
 adapter_t ifcodecin;
 adapter_t ifspectrumin;
@@ -832,10 +829,8 @@ transform_t if2rts192out;	// преобразование из выхода па
 
 static void adapterst_initialize(void)
 {
-#if WITHDSPEXTFIR
 	/* FPGA FIR коэффициенты */
 	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0);
-#endif /* WITHDSPEXTFIR */
 	/* Аудиокодек */
 	adpt_initialize(& afcodecio, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT);
 	/* IF codec / FPGA */
@@ -2260,7 +2255,7 @@ static void fir_design_bandpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutLow
 }
 
 
-#if WITHDSPEXTFIR
+#if WITHDSPEXTFIR || 1
 
 // преобразование к целым
 static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoeff, int iCoefNum)
