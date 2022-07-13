@@ -3549,6 +3549,8 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 		pusb->ep0_xfer_residue = len;
 
 	   	pusb->ep0_xfer_state = USB_EP0_DATA;
+
+	   	//PRINTF("HAL_PCD_EP_Receive: len=%u\n", len);
   }
   else
   {
