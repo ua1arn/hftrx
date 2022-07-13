@@ -2555,6 +2555,7 @@ uint32_t usb_bus_irq_handler_dev(PCD_HandleTypeDef *hpcd, uint32_t busirq_status
 			PRINTF("Error: DMA for EP is not finished after Bus Suspend\n");
 		}
 		wBoot_dma_stop(pusb->dma);
+		HAL_PCD_SuspendCallback(hpcd);
 	  	PRINTF("uSuspend\n");
   	}
 
@@ -2563,6 +2564,7 @@ uint32_t usb_bus_irq_handler_dev(PCD_HandleTypeDef *hpcd, uint32_t busirq_status
 		//busirq_status  & = ~USB_BUSINT_RESUME;
 		//Resume Service Subroutine
 		//pusb->suspend = 0;
+		HAL_PCD_ResumeCallback(hpcd);
 		PRINTF("uResume\n");
 	}
 
@@ -2598,6 +2600,7 @@ uint32_t usb_bus_irq_handler_dev(PCD_HandleTypeDef *hpcd, uint32_t busirq_status
 			PRINTF("Error: DMA for EP is not finished after Bus Reset\n");
 		}
 		wBoot_dma_stop(pusb->dma);
+		HAL_PCD_ResetCallback(hpcd);
 	  	PRINTF("uReset\n");
 	}
 
@@ -2892,6 +2895,56 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 
   return HAL_OK;
 }
+
+
+/**
+  * @brief  Clear a STALL condition over in an endpoint
+  * @param  hpcd PCD handle
+  * @param  ep_addr endpoint address
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+{
+  PCD_EPTypeDef *ep;
+
+  if (((uint32_t)ep_addr & 0x0FU) > hpcd->Init.dev_endpoints)
+  {
+    return HAL_ERROR;
+  }
+
+  if ((0x80U & ep_addr) == 0x80U)
+  {
+    ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
+    ep->is_in = 1U;
+  }
+  else
+  {
+    ep = &hpcd->OUT_ep[ep_addr & EP_ADDR_MSK];
+    ep->is_in = 0U;
+  }
+
+  ep->is_stall = 0U;
+  ep->num = ep_addr & EP_ADDR_MSK;
+//
+//  __HAL_LOCK(hpcd);
+//#if ! WITHNEWUSBHAL
+//  (void)USB_EPClearStall(hpcd->Instance, ep);
+//#else
+//  if ((ep_addr & EP_ADDR_MSK) == 0U)
+//  {
+//	  USBPhyHw_endpoint_unstall(hpcd, 0);
+//  }
+//  else
+//  {
+//	  USBPhyHw_endpoint_unstall(hpcd, ep_addr);
+//
+//  }
+//#endif
+//  __HAL_UNLOCK(hpcd);
+
+  return HAL_OK;
+}
+
 // https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
 // https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
 
@@ -3503,22 +3556,29 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 //    ep->dma_addr = (uint32_t)pBuf;
 //  }
 //
-//  if ((ep_addr & EP_ADDR_MSK) == 0U)
-//  {
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
 //#if WITHNEWUSBHAL
 //	  USBPhyHw_ep0_read(hpcd, pBuf, len);
 //#else /* WITHNEWUSBHAL */
 //    (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
 //#endif /* WITHNEWUSBHAL */
-//  }
-//  else
-//  {
+		usb_struct * const pusb = & hpcd->awxx_usb;
+		usb_device * const pdevice = & hpcd->awxx_device;
+
+		pusb->ep0_xfer_srcaddr = (uint32_t) pBuf;
+		pusb->ep0_xfer_residue = len;
+
+	   	pusb->ep0_xfer_state = USB_EP0_DATA;
+  }
+  else
+  {
 //#if WITHNEWUSBHAL
 //	  USBPhyHw_endpoint_read(hpcd, ep_addr, pBuf, len);
 //#else /* WITHNEWUSBHAL */
 //    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
 //#endif /* WITHNEWUSBHAL */
-//  }
+  }
 
   return HAL_OK;
 }
