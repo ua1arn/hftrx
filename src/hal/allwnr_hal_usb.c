@@ -2444,6 +2444,8 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_RXPKTRDY_CLR);
 					ep0_in_handler_dev(hpcd, ep0_setup);
 
+					//HAL_PCD_SetupStageCallback(hpcd);
+
 					if (pusb->ep0_xfer_residue < pusb->ep0_maxpktsz)
 					{
 						// Last packet
@@ -2480,6 +2482,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				}
 				else                         //out
 				{
+					//HAL_PCD_SetupStageCallback(hpcd);
 					ASSERT(pusb->ep0_xfer_state == USB_EP0_SETUP);
 					usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_RXPKTRDY_CLR | MUSB2_MASK_CSR0L_DATAEND);
 					pusb->ep0_xfer_state = USB_EP0_SETUP;	// already setted
@@ -2493,6 +2496,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		}
 		else
 		{
+			//HAL_PCD_SetupStageCallback(hpcd);
 			ep0_out_handler_dev(hpcd, ep0_setup);
 		}
 	}
@@ -2725,6 +2729,7 @@ void usb_dev_eprx_handler(PCD_HandleTypeDef *hpcd, uint32_t ep_ix)
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	usb_device * const pdevice = & hpcd->awxx_device;
 	PRINTF("usb_dev_eprx_handler: ep_ix=%u\n", ep_ix);
+	//HAL_PCD_DataInStageCallback(hpcd, 0);
 }
 
 // ep_ix: 0..USB_MAX_EP_NO-1 (other then EP0)
@@ -2733,6 +2738,7 @@ void usb_dev_eptx_handler(PCD_HandleTypeDef *hpcd, uint32_t ep_ix)
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	usb_device * const pdevice = & hpcd->awxx_device;
 	PRINTF("usb_dev_eptx_handler: ep_ix=%u\n", ep_ix);
+	//HAL_PCD_DataOutStageCallback(hpcd, 0);
 }
 
 void usb_struct_init(PCD_HandleTypeDef *hpcd)
@@ -2964,6 +2970,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 //		{
 //			//pusb->sof_count ++;
 //			busintstatus &= ~ USB_BUSINT_SOF;
+//			HAL_PCD_SOFCallback(hpcd);
 //		}
 
 		busintstatus &= usb_get_bus_interrupt_enable(pusb);
