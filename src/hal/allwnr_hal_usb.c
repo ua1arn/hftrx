@@ -3545,4 +3545,21 @@ uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 	return hpcd->OUT_ep [ep_addr & EP_ADDR_MSK].xfer_count;
 }
 
+
+/**
+  * @brief  Set the USB Device address.
+  * @param  hpcd PCD handle
+  * @param  address new device address
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_SetAddress(PCD_HandleTypeDef *hpcd, uint8_t address)
+{
+  //__HAL_LOCK(hpcd);
+  hpcd->USB_Address = address;
+  //(void)USB_SetDevAddress(hpcd->Instance, address);
+  usb_set_dev_addr(& hpcd->awxx_usb, address);
+  //__HAL_UNLOCK(hpcd);
+
+  return HAL_OK;
+}
 #endif /* CPUSTYPE_T113 */
