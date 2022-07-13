@@ -14,6 +14,329 @@
 extern "C" {
 #endif
 
+
+
+#ifndef min
+#define min( x, y ) ( (x) < (y) ? (x) : (y) )
+#endif
+
+#define  wBoot_dma_QueryState(hdma)  0
+#define  wBoot_dma_stop(hdma)        do { } while (0)
+#define  wBoot_dma_request(sect)     0
+
+//#define DISK_DDR 1
+//#define  wBoot_part_start(part)      0
+//#define  wBoot_part_capacity(sect)   (AW_RAMDISK_SIZE/512)                     /* ����� �������� ������������ �����, ������ = 512 ���� */
+//#define  wBoot_part_count(sect)      (1)
+
+//#define  device_bo_memory_base       AW_USBD_BASE
+//#define  device_bo_bufbase           AW_USBD_BASE+0x20000
+
+
+#define USB_SIE_COUNT		1
+
+#define USB_MAX_EP_NO		5
+
+typedef enum {
+	USB_RETVAL_NOTCOMP = 0,
+	USB_RETVAL_COMPOK,
+	USB_RETVAL_COMPERR
+	} USB_RETVAL;
+
+typedef struct
+{
+    uint8_t bmRequest;
+    uint8_t bRequest;
+    uint16_t wValue;
+    uint16_t wIndex;
+    uint16_t wLength;
+} uSetupPKG, *pSetupPKG;
+
+typedef struct {
+	uint32_t func_addr;
+
+//	const uint8_t* dev_desc;
+//	const uint8_t* config_desc; //Support 4 Configurations Most
+//	const uint8_t* str_desc[4];
+//	const uint8_t* intf_desc;
+//	const uint8_t* endp_desc;
+//	const uint8_t* dev_qual;
+//	const uint8_t* otg_desc;
+
+	//uint32_t ConfigDesc_Len;
+//	uint32_t MaxLUN;
+
+	//EP protocol
+	#define USB_PRTCL_ILL  	0
+	#define USB_PRTCL_ISO  	1
+	#define USB_PRTCL_BULK 	2
+	#define USB_PRTCL_INT  	3
+	uint32_t eptx_prtcl[USB_MAX_EP_NO];
+	uint32_t eprx_prtcl[USB_MAX_EP_NO];
+	uint32_t eptx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
+	uint32_t eprx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
+	uint32_t epx_xfer_addr;
+	uint32_t epx_xfer_residue;
+	uint32_t epx_xfer_tranferred;
+	uint32_t epx_buf_tag;
+
+	//Bulk Only Device State Machine
+	#define USB_BO_IDLE				0
+	#define USB_BO_CBW				1
+	#define USB_BO_RXDATA			2
+	#define USB_BO_TXDATA			3
+	#define USB_BO_CSW				4
+	uint32_t bo_state;						//Bulk only device state
+	uint32_t bo_ep_in;
+	uint32_t bo_ep_out;
+	uint32_t bo_xfer_addr;				//Bulk only data address
+	uint32_t bo_xfer_residue;			//Bulk only data residue length
+	uint32_t bo_xfer_tranferred;  //Bulk only data transferred length
+
+	//uint32_t bo_memory_base;
+	//uint32_t bo_capacity;
+	//uint32_t bo_seccnt;
+	//uint32_t bo_bufbase;
+
+	uint32_t csw_fail_flag;
+} usb_device, *pusb_device;
+
+typedef struct {
+	//USB SIE Hardware Config
+//	uint32_t index;
+	//uint32_t reg_base;
+//	uint32_t irq_no;
+//	uint32_t drq_no;
+
+	//volatile uint32_t sof_count;
+
+	//USB user initial parameters
+	#define USB_ROLE_DEV		2
+	uint32_t role;
+	#define USB_SPEED_UNK		0
+	#define USB_SPEED_HS		1
+	#define USB_SPEED_FS		2
+	#define USB_SPEED_LS		3
+	uint32_t speed;
+	uint32_t srp;
+	uint32_t hnp;
+
+	//usb irq record
+	//volatile uint32_t busirq_status;
+	//volatile uint32_t busirq_flag;
+
+	//Signals for usb state
+	volatile uint32_t connect;
+	volatile uint32_t suspend;
+	volatile uint32_t reset;
+	#define USB_OTG_A_DEVICE			0
+	#define USB_OTG_B_DEVICE			1
+	volatile uint32_t otg_dev;
+
+	//Signals for usb debug
+	uint32_t rst_cnt;
+	uint32_t cur_fsm;
+	uint32_t fsm_cnt;
+	uint8_t  fsm_rcd[512];
+
+	//Signals for Data Transfer
+	//volatile uint32_t ep0_flag;
+	uint32_t ep0_maxpktsz;
+	#define USB_EP0_SETUP					0
+	#define USB_EP0_DATA					1
+	#define USB_EP0_STATUS				2
+	uint32_t ep0_xfer_state;
+	uint32_t ep0_xfer_srcaddr;
+	uint32_t ep0_xfer_residue;
+	uint32_t ep0_xfer_tranferred;
+	//uSetupPKG ep0_setup;
+
+	//volatile uint32_t eptx_flag[USB_MAX_EP_NO];
+	//volatile uint32_t eprx_flag[USB_MAX_EP_NO];
+	#define USB_EPX_SETUP					0
+	#define USB_EPX_DATA					1
+	#define USB_EPX_END						2
+	uint32_t eptx_xfer_state[USB_MAX_EP_NO];
+	uint32_t eprx_xfer_state[USB_MAX_EP_NO];
+
+	//Function Description
+	usb_device device;
+
+	//DMA Description
+	//DMADESC    dma;
+	uint32_t		 dma;
+	uint32_t		 dma_last_transfer;
+
+	//Timer
+	#define USB_IDLE_TIMER								0x0
+	#define USB_DEVICE_VBUS_DET_TIMER			0x1
+	#define USB_HOST_RESET_TIMER					0x2
+	#define USB_HOST_RESUME_TIMER					0x3
+	#define USB_HOST_SUSPEND_TIMER				0x4
+	#define USB_HOST_DELAY_TIMER					0x5
+	uint32_t timer;     //timer purpose
+	#define USB_DEVICE_VBUS_DET_TIMEOUT		10  //10ms
+	uint32_t timeout;   //timeout value (in ms)
+	uint32_t loop;      //Loop counter
+
+	#define USB_BUFFER_SIZE							256
+	#define USB_EP0_OUT_BUFFER_START		8
+	uint8_t buffer[USB_BUFFER_SIZE];
+	uint8_t setupb [8];
+
+  uint32_t power_debouce;
+} usb_struct, *pusb_struct;
+
+//typedef struct
+//{
+//    uint32_t dCBWSig;
+//    uint32_t dCBWTag;
+//    uint32_t dCBWDTL;
+//    uint8_t  bmCBWFlg;
+//    uint8_t  bCBWLUN   : 4;
+//    uint8_t  bCBWRes1  : 4;   //Reserved
+//    uint8_t  bCBWCBL   : 5;
+//    uint8_t  bCBWRes2  : 3;   //Reserved
+//    uint8_t  CBWCB[16];
+//} uCBWPKG, *pCBWPKG;
+
+//typedef struct
+//{
+//  	uint32_t dCSWSig;
+//  	uint32_t dCSWTag;
+//  	uint32_t dCSWDataRes;
+//  	uint8_t  bCSWStatus;
+//} uCSWPKG, *pCSWPKG;
+//
+//
+//
+//
+//typedef struct
+//{
+//  uint8_t  bLength;
+//  uint8_t  bDesType;
+//  uint8_t  wTotalLen0;
+//  uint8_t  wTotalLen1;
+//  uint8_t  bNumIntf;
+//  uint8_t  bConfigVal;
+//  uint8_t  iConfig;
+//  uint8_t  bmAttrib;
+//  uint8_t  MaxPower;
+//} uConfigDes, *pConfigDes;
+//
+//typedef struct
+//{
+//  uint8_t  bLength;
+//  uint8_t  bDesType;
+//  uint8_t  bIntfNum;
+//  uint8_t  bAltSet;
+//  uint8_t  bNumEP;
+//  uint8_t  bIntfClass;
+//  uint8_t  bIntfSubClass;
+//  uint8_t  bIntfProtocol;
+//  uint8_t  iInterface;
+//} uIntfDes, *pIntfDes;
+//
+//
+//typedef struct
+//{
+//  uint8_t  bLength;
+//  uint8_t  bDesType;
+//  uint8_t  bEPAddr;
+//  uint8_t  bmAttrib;
+//  uint8_t  wMaxPktSize0;
+//  uint8_t  wMaxPktSize1;
+//  uint8_t  bInterval;
+//} uEPDes, *pEPDes;
+
+
+uint32_t usb_get_bus_interrupt_status(pusb_struct pusb);
+uint8_t usb_get_fifo_access_config(pusb_struct pusb);
+void usb_set_fifo_access_config(pusb_struct pusb, uint8_t config);
+void usb_fifo_accessed_by_cpu(pusb_struct pusb);
+void usb_select_ep(pusb_struct pusb, uint32_t ep_no);
+uint32_t usb_get_active_ep(pusb_struct pusb);
+uint32_t usb_get_eprx_maxpkt(pusb_struct pusb);
+uint32_t usb_get_eprx_csr(pusb_struct pusb);
+void usb_set_eprx_csr(pusb_struct pusb, uint32_t csr);
+void usb_clear_bus_interrupt_status(pusb_struct pusb, uint32_t bm);
+uint32_t usb_get_bus_interrupt_enable(pusb_struct pusb);
+uint32_t usb_get_eptx_maxpkt(pusb_struct pusb);
+void usb_set_eptx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t pktcnt);
+void usb_set_eptx_interrupt_enable(pusb_struct pusb, uint32_t bm);
+uint32_t usb_get_eptx_interrupt_status(pusb_struct pusb);
+void usb_clear_eptx_interrupt_status(pusb_struct pusb, uint32_t bm);
+uint32_t usb_get_eprx_interrupt_status(pusb_struct pusb);
+void usb_clear_eprx_interrupt_status(pusb_struct pusb, uint32_t bm);
+void usb_drive_vbus(pusb_struct pusb, uint32_t vbus, uint32_t index);
+void usb_force_id(pusb_struct pusb, uint32_t id);
+void usb_high_speed_disable(pusb_struct pusb);
+void usb_high_speed_enable(pusb_struct pusb);
+void usb_set_eprx_interrupt_enable(pusb_struct pusb, uint32_t bm);
+void usb_set_eptx_interrupt_enable(pusb_struct pusb, uint32_t bm);
+void usb_suspendm_enable(pusb_struct pusb);
+void usb_suspendm_disable(pusb_struct pusb);
+void usb_set_eptx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t size);
+void usb_set_eprx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t size);
+uint32_t usb_get_vbus_level(pusb_struct pusb);
+void usb_vbus_src(pusb_struct pusb, uint32_t src);
+void usb_release_vbus(pusb_struct pusb);
+void usb_force_vbus(pusb_struct pusb, uint32_t vbus);
+void usb_eprx_flush_fifo(pusb_struct pusb);
+uint32_t usb_get_ep0_count(pusb_struct pusb);
+void usb_set_bus_interrupt_enable(pusb_struct pusb, uint32_t bm);
+uint32_t usb_get_ep0_csr(pusb_struct pusb);
+void usb_set_test_mode(pusb_struct pusb, uint32_t bm);
+void usb_set_eprx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t pktcnt);
+void usb_set_eptx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t pktcnt);
+void usb_set_eprx_fifo_addr(pusb_struct pusb, uint32_t addr);
+void usb_set_eptx_fifo_addr(pusb_struct pusb, uint32_t addr);
+uint32_t usb_get_eprx_count(pusb_struct pusb);
+uint32_t usb_get_eptx_csr(pusb_struct pusb);
+void usb_clear_bus_interrupt_enable(pusb_struct pusb, uint32_t bm);
+void usb_set_ep0_csr(pusb_struct pusb, uint32_t csr);
+void usb_set_dev_addr(pusb_struct pusb, uint32_t addr);
+void usb_soft_connect(pusb_struct pusb);
+
+void usb_ep0_disable_ping(pusb_struct pusb);
+void usb_ep0_enable_ping(pusb_struct pusb);
+void usb_ep0_flush_fifo(pusb_struct pusb);
+uint32_t usb_ep0_is_naktimeout(pusb_struct pusb);
+uint32_t usb_ep0_is_naktimeout(pusb_struct pusb);
+void usb_ep0_set_statuspkt(pusb_struct pusb);
+void usb_ep0_clear_statuspkt(pusb_struct pusb);
+void usb_set_eptx_csr(pusb_struct pusb, uint32_t csr);
+void usb_eptx_flush_fifo(pusb_struct pusb);
+uintptr_t usb_get_ep_fifo_addr(pusb_struct pusb, uint32_t ep_no);
+
+
+
+
+
+//VBUS Level
+#define USB_VBUS_SESSEND		0
+#define USB_VUBS_SESSVLD		1
+#define USB_VBUS_ABVALID		2
+#define USB_VBUS_VBUSVLD		3
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//#define   USB2DRAM_PARAMS    	0x0f000f0f
+//#define   DRAM2USB_PARAMS    	0x0f0f0f00
+
+
+
+#define get_bvalue(n)    		(*((volatile uint8_t *)(n)))          /* byte input */
+#define put_bvalue(n,c)  		(*((volatile uint8_t *)(n)) = (c))    /* byte output */
+#define get_hvalue(n)   		(*((volatile uint16_t *)(n)))         /* half word input */
+#define put_hvalue(n,c) 		(*((volatile uint16_t *)(n)) = (c))   /* half word output */
+#define get_wvalue(n)   		(*((volatile uint32_t *)(n)))          /* word input */
+#define put_wvalue(n,c) 		(*((volatile uint32_t *)(n)) = (c))    /* word output */
+
+
+
 #define __HAL_PCD_ENABLE(__HANDLE__)            //           (void)USB_EnableGlobalInt ((__HANDLE__)->Instance)
 #define __HAL_PCD_DISABLE(__HANDLE__)           //           (void)USB_DisableGlobalInt ((__HANDLE__)->Instance)
 
@@ -326,10 +649,8 @@ typedef struct
   uint32_t battery_charging_active;    /*!< Enable or disable Battery charging.
                                        This parameter can be set to ENABLE or DISABLE        */
   void                    *pData;      /*!< Pointer to upper stack Handler */
-  uint_fast8_t            run_later_ctrl_comp;	// Renesas hardware specific item
-  pipe_ctrl_t pipe_ctrl[PIPE_NUM];
-  uint16_t setup_buffer[32];
 
+  usb_struct awxx_usb;			/* RC0LAM (repstosw) usb stack */
 
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
   void (* SOFCallback)(struct __PCD_HandleTypeDef *hpcd);                              /*!< USB OTG PCD SOF callback                */
@@ -1270,6 +1591,187 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 #define	MUSB2_WRITE_1(sc, reg, data)	\
   bus_space_write_1((sc)->sc_io_tag, (sc)->sc_io_hdl, reg, data)
+
+
+
+
+//#define USB_EPFIFO_OFFSET(x) 		(((x)&0xF)<<2)
+
+//Common Register
+#define USB_GCS_OFFSET				0x40
+#define USB_EPINTF_OFFSET			0x44
+#define USB_EPINTE_OFFSET			0x48
+#define USB_BUSINTF_OFFSET			0x4C
+#define USB_BUSINTE_OFFSET			0x50
+#define USB_FNUM_OFFSET				0x54
+#define USB_TESTC_OFFSET			0x7C
+
+//Endpoint Indexed Register
+#define USB_CSR0_OFFSET				0x80
+#define USB_COUNT0_OFFSET			0x88
+#define USB_ATTR0_OFFSET			0x8C
+#define USB_FADDR_OFFSET			0x98
+
+#define USB_TXCSR_OFFSET			0x80
+#define USB_RXCSR_OFFSET			0x84
+#define USB_RXCOUNT_OFFSET			0x88
+#define USB_EPATTR_OFFSET			0x8C
+#define USB_TXFIFO_OFFSET			0x90
+#define USB_RXFIFO_OFFSET			0x94
+#define USB_TXFADDR_OFFSET			0x98
+#define USB_RXFADDR_OFFSET			0x9C
+
+//Configuration Register
+#define USB_CONFIGINFO_OFFSET		0xC0
+#define USB_LINKTIM_OFFSET			0xC4
+#define USB_OTGTIM_OFFSET			0xC8
+
+#define USB_DPBDIS_OFFSET			0xD0
+#define USB_CHIRP_RESMUE_OFFSET		0xD4
+#define USB_HSPKT_TIMEOUT_OFFSET	0xD8
+
+#define USB_LPMCTRL_OFFSET			0xE0
+#define USB_LPMINT_OFFSET			0xE4
+
+//PHY&Interface Control and Status Registers
+#define USB_ISCR_OFFSET				0x400
+#define USB_PHYCTL_OFFSET			0x404
+#define USB_PHYBIST_OFFSET			0x408
+#define USB_PHYCTL2_OFFSET			0x410
+
+
+
+
+#define  USB_bFADDR_OFF       		(0x98)
+#define  USB_bPOWER_OFF       		(0x40)
+#define  USB_hINTRTX_OFF      		(0x44)
+#define  USB_hINTRRX_OFF      		(0x46)
+#define  USB_hINTRTXE_OFF     		(0x48)
+#define  USB_hINTRRXE_OFF     		(0x4A)
+#define  USB_bINTRUSB_OFF     		(0x4C)
+#define  USB_bINTRUSBE_OFF    		(0x50)
+#define  USB_hFRAME_OFF       		(0x54)
+#define  USB_bINDEX_OFF       		(0x42)
+#define  USB_bTESTMODE_OFF    		(0x7C)
+
+#define  USB_hTXMAXP_OFF      		(0x80)
+#define  USB_hCSR0_OFF        		(0x82)
+#define  USB_hTXCSR_OFF       		(0x82)
+#define  USB_hRXMAXP_OFF      		(0x84)
+#define  USB_hRXCSR_OFF       		(0x86)
+#define  USB_hCOUNT0_OFF      		(0x88)
+#define  USB_hRXCOUNT_OFF     		(0x88)
+#define  USB_hRXPKTCNT_OFF  	 	(0x8A)
+
+#define  USB_bTXTYPE_OFF      		(0x8C)
+#define  USB_bTXINTERVAL_OFF  		(0x8D)
+#define  USB_bRXTYPE_OFF      		(0x8E)
+#define  USB_bRXINTERVAL_OFF  		(0x8F)
+
+#define  USB_bFIFO0_OFF       		(0x00)
+#define  USB_bFIFO1_OFF       		(0x04)
+#define  USB_bFIFO2_OFF       		(0x08)
+#define  USB_bFIFO3_OFF       		(0x0C)
+#define  USB_bFIFO4_OFF       		(0x10)
+#define  USB_bFIFO5_OFF       		(0x14)
+#define  USB_bFIFO_OFF(n)     		(((n)<<2))
+
+#define  USB_bDEVCTL_OFF      		(0x41)
+
+#define  USB_bTxFIFOsz_OFF    		(0x90)
+#define  USB_bRxFIFOsz_OFF    		(0x94)
+#define  USB_hTxFIFOad_OFF    		(0x92)
+#define  USB_hRxFIFOad_OFF    		(0x96)
+
+#define  ULPI_bVBUSCTL_OFF    		(0x70)
+#define  ULPI_bREGDATA_OFF    		(0x74)
+#define  ULPI_bREGADDR_OFF    		(0x75)
+#define  ULPI_bREGCTL_OFF     		(0x76)
+
+#define USB_bDMACTL_OFF       		(0x43)
+#define USB_bVEND1_OFF        		(0x7D)
+//#define USB_bVEND2_OFF       		(0x7E)
+#define USB_FSM_OFF        			(0x7E)
+
+#define USB_bHSEOF_OFF        		(0xC4)
+#define USB_bFSEOF_OFF        		(0xC5)
+#define USB_bLSEOF_OFF        		(0xC6)
+
+#define USB_bTYPE0_OFF        		(0x8C)
+#define USB_bTXFADDR_OFF   	 		(0x98)
+#define USB_bTXHADDR_OFF   	 		(0x9A)
+#define USB_bTXHPORT_OFF   	 		(0x9B)
+#define USB_bRXFADDR_OFF   	 		(0x9C)
+#define USB_bRXHADDR_OFF   	 		(0x9E)
+#define USB_bRXHPORT_OFF   	 		(0x9F)
+
+#define USB_hRXDBDIS_OFF      		(0xD0)
+#define USB_hTXDBDIS_OFF      		(0xD2)
+#define USB_hCTUCH_OFF        		(0xD4)
+#define USB_hCTHSRTN_OFF      		(0xD6)
+
+#define USB_hLPMATTR_OFF      		(0xE0)
+#define USB_bLPMCTRL_OFF      		(0xE2)
+#define USB_bLPMINTRE_OFF     		(0xE5)
+#define USB_bLPMINTR_OFF      		(0xE4)
+#define USB_bLPMFADDR_OFF     		(0xE3)
+
+#define  USB_bCORECONFIG_OFF		(0xC0)
+
+#define  USB_wISCR_OFF    			(0x400)
+#define  USB_wPHYCSR_OFF    		(0x404)
+#define  USB_wPHYBIST_OFF    		(0x408)
+
+#define USB_CSRX_REQPKT            	(0x1 << 21)
+#define USB_TXCSR_AUTOSET			(0x1 << 15)
+#define USB_TXCSR_ISO				(0x1 << 14)
+#define USB_TXCSR_TXFIFO			(0x1 << 13)
+#define USB_TXCSR_DMAREQEN			(0x1 << 12)
+#define USB_TXCSR_DMAREQMODE		(0x1 << 10)
+#define USB_TXCSR_RXSTALL			(0x1 << 5)
+#define USB_TXCSR_FLUSHFIFO			(0x1 << 3)
+#define USB_TXCSR_ERROR				(0x1 << 2)
+#define USB_TXCSR_FIFONOTEMP		(0x1 << 1)
+#define USB_TXCSR_TXPKTRDY			(0x1 << 0)
+
+#define USB_BUSINT_VBUSERROR		(0x1 << 7)
+#define USB_BUSINT_SESSREQ			(0x1 << 6)
+#define USB_BUSINT_SESSEND			(0x1 << 5)
+#define USB_BUSINT_CONNECT			(0x1 << 4)
+#define USB_BUSINT_DISCONN			(0x1 << 5)
+#define USB_BUSINT_SOF				(0x1 << 3)
+#define USB_BUSINT_RESET			(0x1 << 2)
+#define USB_BUSINT_BABBLE			(0x1 << 2)
+#define USB_BUSINT_RESUME			(0x1 << 1)
+#define USB_BUSINT_SUSPEND			(0x1 << 0)
+
+// 0xF7
+#define USB_BUSINT_DEV_WORK ( \
+		USB_BUSINT_VBUSERROR | \
+		USB_BUSINT_SESSREQ | \
+		USB_BUSINT_DISCONN | \
+		USB_BUSINT_CONNECT | \
+		0 * USB_BUSINT_SOF | \
+		USB_BUSINT_RESET | \
+		USB_BUSINT_RESUME | \
+		USB_BUSINT_SUSPEND | \
+		0)
+
+#define USB_RXCSR_AUTOCLR			(0x1 << 15)
+#define USB_RXCSR_AUTOREQ			(0x1 << 14)  //for Host only
+#define USB_RXCSR_ISO				(0x1 << 14)  //for device only
+#define USB_RXCSR_DMAREQEN			(0x1 << 13)
+#define USB_RXCSR_PIDERROR			(0x1 << 12)  //for Host only
+#define USB_RXCSR_DMAREQMODE		(0x1 << 11)
+#define USB_RXCSR_RXSTALL			(0x1 << 6)   //for Host only
+#define USB_RXCSR_REQPKT			(0x1 << 5)   //for Host only
+#define USB_RXCSR_FLUSHFIFO			(0x1 << 4)
+#define USB_RXCSR_ERROR				(0x1 << 2)
+#define USB_RXCSR_FIFOFULL			(0x1 << 1)
+#define USB_RXCSR_RXPKTRDY			(0x1 << 0)
+
+
+
 
 #ifdef __cplusplus
 }

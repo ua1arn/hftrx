@@ -159,11 +159,6 @@ extern USBH_HandleTypeDef hUsbHostHS;
 
 void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
 
-void musb2_prepare(void);
-uint32_t musb2_start(void);
-uint32_t musb2_process(void);
-uint32_t musb2_stop(void);
-
 #ifdef __cplusplus
 }
 #endif

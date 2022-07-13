@@ -457,7 +457,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		(1uL << 30) |	// USBPHY0_RSTN
 		0;
 
-	//arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
+	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
@@ -1478,7 +1478,6 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 #elif CPUSTYPE_T113
 	//#warning Implement for CPUSTYPE_T113
 	//PRINTF("USBD_LL_Init\n");
-	musb2_prepare();
 
 #else /* CPUSTYLE_R7S721 */
 	if (USB_Is_OTG_HS(hpcd_USB_OTG.Instance))
