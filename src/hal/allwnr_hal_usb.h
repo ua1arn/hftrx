@@ -98,7 +98,7 @@ typedef struct {
 	//uint32_t bo_seccnt;
 	//uint32_t bo_bufbase;
 
-	uint32_t csw_fail_flag;
+	//uint32_t csw_fail_flag;
 } usb_device, *pusb_device;
 
 typedef struct {
@@ -160,7 +160,6 @@ typedef struct {
 	uint32_t eprx_xfer_state[USB_MAX_EP_NO];
 
 	//Function Description
-	usb_device device;
 
 	//DMA Description
 	//DMADESC    dma;
@@ -179,10 +178,10 @@ typedef struct {
 	uint32_t timeout;   //timeout value (in ms)
 	uint32_t loop;      //Loop counter
 
-	#define USB_BUFFER_SIZE							256
-	#define USB_EP0_OUT_BUFFER_START		8
-	uint8_t buffer[USB_BUFFER_SIZE];
-	uint8_t setupb [8];
+//	#define USB_BUFFER_SIZE							256
+//	#define USB_EP0_OUT_BUFFER_START		8
+	//uint8_t buffer[USB_BUFFER_SIZE];
+	//uint8_t setupb [8];
 
   uint32_t power_debouce;
 } usb_struct, *pusb_struct;
@@ -651,6 +650,7 @@ typedef struct
   void                    *pData;      /*!< Pointer to upper stack Handler */
 
   usb_struct awxx_usb;			/* RC0LAM (repstosw) usb stack */
+  usb_device awxx_device;
 
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
   void (* SOFCallback)(struct __PCD_HandleTypeDef *hpcd);                              /*!< USB OTG PCD SOF callback                */
