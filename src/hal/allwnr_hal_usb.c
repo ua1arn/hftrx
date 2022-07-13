@@ -2286,8 +2286,9 @@ static int32_t ep0_out_handler_dev(PCD_HandleTypeDef *hpcd, const uSetupPKG * ep
 
 	          				PRINTF("usb_device: Send Test Packet Now...\n");
 	         				break;
-				        	default:
+				        default:
 				          	PRINTF("usb_device: Unkown Test Mode: 0x%x\n", ep0_setup->wIndex);
+	         				break;
 				    }
 	        		break;
 
@@ -2319,7 +2320,7 @@ static int32_t ep0_out_handler_dev(PCD_HandleTypeDef *hpcd, const uSetupPKG * ep
 	       	PRINTF("usb_device: Set Interface 0x%02X\n", LO_BYTE(ep0_setup->wIndex));
 	      	break;
     	default   :
-      		PRINTF("usb_device: Unkown EP0 OUT: 0x%02X!!\n", ep0_setup->bRequest);
+      		PRINTF("usb_device: Unkown EP0 OUT: wIndex=0x%04X bRequest=0x%02X!!\n", ep0_setup->wIndex, ep0_setup->bRequest);
 	}
 
 	return 0;
@@ -2345,8 +2346,6 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	//uint32_t i=0;
 	uint32_t ep0_csr;
-	uint32_t is_last;
-	uint32_t byte_trans;
 	//uint32_t src_addr;
 
 //	if (pusb->role != USB_ROLE_DEV) return 0;
@@ -2369,6 +2368,8 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		}
 		else if (!(ep0_csr & MUSB2_MASK_CSR0L_TXPKTRDY))
 		{
+			uint32_t is_last;
+			uint32_t byte_trans;
 			if (pusb->ep0_xfer_residue)
 		 	{
 		 		pusb->ep0_xfer_srcaddr += pusb->ep0_maxpktsz;
@@ -2436,25 +2437,30 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				//pusb->ep0_flag = 0;
 				usb_read_ep_fifo(pusb, 0, (uint32_t) hpcd->Setup, 8);
 
-				if (ep0_setup->bmRequest & 0x80)//in
+				if (ep0_setup->bmRequest & 0x80) //in
 				{
+					uint32_t is_last;
+					uint32_t byte_trans;
 					usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_RXPKTRDY_CLR);
 					ep0_in_handler_dev(hpcd, ep0_setup);
 
-					if (pusb->ep0_xfer_residue<pusb->ep0_maxpktsz)
+					if (pusb->ep0_xfer_residue < pusb->ep0_maxpktsz)
 					{
+						// Last packet
 						is_last = 1;
 						byte_trans = pusb->ep0_xfer_residue;
 						pusb->ep0_xfer_residue = 0;
 					}
-				 	else if (pusb->ep0_xfer_residue==pusb->ep0_maxpktsz)
+				 	else if (pusb->ep0_xfer_residue == pusb->ep0_maxpktsz)
 					{
+				 		// ZLP on next packet
 						is_last = 0;
 						byte_trans = pusb->ep0_xfer_residue;
 						pusb->ep0_xfer_residue = 0xffffffff;
 					}
 					else
 					{
+						// Not a last packet
 						is_last = 0;
 						byte_trans = pusb->ep0_maxpktsz;
 						pusb->ep0_xfer_residue -= pusb->ep0_maxpktsz;
@@ -3516,6 +3522,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 
   return HAL_OK;
 }
+
 /**
   * @brief  Send an amount of data
   * @param  hpcd PCD handle
@@ -3526,38 +3533,73 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
   */
 HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, const uint8_t *pBuf, uint32_t len)
 {
-//  PCD_EPTypeDef *ep;
-//
-//  ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
-//
-//  /*setup and start the Xfer */
-//  ep->xfer_buff = (uint8_t *) pBuf;
-//  ep->xfer_len = len;
-//  ep->xfer_count = 0U;
-//  ep->is_in = 1U;
-//  ep->num = ep_addr & EP_ADDR_MSK;
-//
-//  if (hpcd->Init.dma_enable == 1U)
-//  {
-//    ep->dma_addr = (uint32_t)pBuf;
-//  }
-//
-//  if ((ep_addr & EP_ADDR_MSK) == 0U)
-//  {
-//#if WITHNEWUSBHAL
-//	USBPhyHw_ep0_write(hpcd, (uint8_t *) pBuf, len);
-//#else /* WITHNEWUSBHAL */
-//    (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-//#endif /* WITHNEWUSBHAL */
-//  }
-//  else
-//  {
-//#if WITHNEWUSBHAL
-//	  USBPhyHw_endpoint_write(hpcd, ep_addr, (uint8_t *) pBuf, len);
-//#else /* WITHNEWUSBHAL */
-//    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-//#endif /* WITHNEWUSBHAL */
-//  }
+  PCD_EPTypeDef *ep;
+
+  ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
+
+  /*setup and start the Xfer */
+  ep->xfer_buff = (uint8_t *) pBuf;
+  ep->xfer_len = len;
+  ep->xfer_count = 0U;
+  ep->is_in = 1U;
+  ep->num = ep_addr & EP_ADDR_MSK;
+
+  if (hpcd->Init.dma_enable == 1U)
+  {
+    ep->dma_addr = (uint32_t)pBuf;
+  }
+
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
+		uint32_t is_last;
+		uint32_t byte_trans;
+    //(void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+		usb_struct * const pusb = & hpcd->awxx_usb;
+		usb_device * const pdevice = & hpcd->awxx_device;
+
+		pusb->ep0_xfer_srcaddr = (uint32_t) pBuf;
+		pusb->ep0_xfer_residue = len;
+
+		//
+
+		if (pusb->ep0_xfer_residue < pusb->ep0_maxpktsz)
+		{
+			// Last packet
+			is_last = 1;
+			byte_trans = pusb->ep0_xfer_residue;
+			pusb->ep0_xfer_residue = 0;
+		}
+	 	else if (pusb->ep0_xfer_residue == pusb->ep0_maxpktsz)
+		{
+	 		// ZLP on next packet
+			is_last = 0;
+			byte_trans = pusb->ep0_xfer_residue;
+			pusb->ep0_xfer_residue = 0xffffffff;
+		}
+		else
+		{
+			// Not a last packet
+			is_last = 0;
+			byte_trans = pusb->ep0_maxpktsz;
+			pusb->ep0_xfer_residue -= pusb->ep0_maxpktsz;
+		}
+
+	 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, byte_trans);
+	 	if (is_last || (!byte_trans))
+	 	{
+	 		usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_DATAEND | MUSB2_MASK_CSR0L_TXPKTRDY);
+	   	}
+	   	else
+	   	{
+	   		usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_TXPKTRDY);
+	   	}
+
+	   	pusb->ep0_xfer_state = USB_EP0_DATA;
+  }
+  else
+  {
+    //(void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+  }
 
   return HAL_OK;
 }
