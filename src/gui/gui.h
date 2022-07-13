@@ -116,7 +116,7 @@ void gui_put_keyb_code(uint_fast8_t kbch);
 void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey);
 void gui_open_sys_menu(void);
 void gui_update(void);
-void gui_add_debug(char * str);
+void gui_add_debug(char d);
 void gui_open_debug_window(void);
 
 #endif /* WITHTOUCHGUI */

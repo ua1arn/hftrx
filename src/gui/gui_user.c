@@ -180,17 +180,33 @@ void save_settings(void)
 }
 
 #if WITHGUIDEBUG
-void gui_add_debug(char * str)
+void gui_add_debug(char d)
 {
-	if (tf_debug)
-		textfield_add_string(tf_debug, str, COLORMAIN_WHITE);
+	static char str [TEXT_ARRAY_SIZE] = { 0 };
+	static uint_fast8_t i = 0;
+
+	if (d == '\r')
+		i = 0;
+
+	if (d != '\n')
+	{
+		if (i < TEXT_ARRAY_SIZE)
+			str [i ++ ] = d;
+	}
 	else
 	{
-		if (tmpstr_index < TEXT_ARRAY_SIZE)
+		i = 0;
+		if (tf_debug)
+			textfield_add_string(tf_debug, str, COLORMAIN_WHITE);
+		else
 		{
-			strncpy(tmpbuf[tmpstr_index].text, str, TEXT_ARRAY_SIZE - 1);
-			tmpstr_index ++;
+			if (tmpstr_index < TEXT_ARRAY_SIZE)
+			{
+				strncpy(tmpbuf[tmpstr_index].text, str, TEXT_ARRAY_SIZE - 1);
+				tmpstr_index ++;
+			}
 		}
+		memset(str, 0, ARRAY_SIZE(str));
 	}
 }
 

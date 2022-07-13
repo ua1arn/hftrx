@@ -378,9 +378,6 @@ void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 
 	dbg_puts_impl(b);
 
-#if WITHTOUCHGUI && WITHGUIDEBUG
-		gui_add_debug(b);
-#endif /* WITHTOUCHGUI && WITHGUIDEBUG*/
 	SPIN_UNLOCK(& locklistprintf);
 }
 
@@ -551,6 +548,9 @@ int dbg_puts_impl(const char * s)
 	while ((c = * s ++) != '\0')
 	{
 		dbg_putchar(c);
+#if WITHTOUCHGUI && WITHGUIDEBUG
+		gui_add_debug(c);
+#endif /* WITHTOUCHGUI && WITHGUIDEBUG*/
 	}
 	return 0;
 }
