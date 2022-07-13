@@ -320,23 +320,23 @@
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 1
-			#define WITHDISPLAY_FPS		30
-			#define WITHDISPLAYSWR_FPS	30
-			#define WITHTOUCHGUI		1
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
-			#define WITHALPHA			24
-			#define FORMATFROMLIBRARY 	1
-			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT	150
-			#define WITHCPUTEMPERATURE	1
+			#define WITHDISPLAY_FPS			30
+			#define WITHDISPLAYSWR_FPS		30
+			#define WITHTOUCHGUI			1
+			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
+			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
+			#define WITHALPHA				24
+			#define FORMATFROMLIBRARY 		1
+			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
+			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 			//#define WITHAFEQUALIZER		1
 			#define WITHALTERNATIVELAYOUT	1
-			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
-			#define WITHDEFAULTVIEW		VIEW_3DSS
-			#define WITHFT8				1
-			#define REALREFERENCE_FREQ 	122879000L
-			#define WITHSWRPROT		0	/* защита от превышения КСВ */
+			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
+			#define WITHDEFAULTVIEW			VIEW_3DSS
+			#define WITHFT8					1
+			#define REALREFERENCE_FREQ 		122879000L
+			#define WITHSWRPROT				0	/* защита от превышения КСВ */
 		#else
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15

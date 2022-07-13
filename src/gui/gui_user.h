@@ -8,6 +8,41 @@
 #include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
 
+static void gui_main_process(void);
+static void window_mode_process(void);
+static void window_af_process(void);
+static void window_freq_process (void);
+static void window_swrscan_process(void);
+static void window_tx_process(void);
+static void window_tx_vox_process(void);
+static void window_tx_power_process(void);
+static void window_audiosettings_process(void);
+static void window_ap_reverb_process(void);
+static void window_ap_mic_eq_process(void);
+static void window_ap_mic_process(void);
+static void window_ap_mic_prof_process(void);
+static void window_menu_process(void);
+static void window_uif_process(void);
+static void window_options_process(void);
+static void window_utilites_process(void);
+static void window_bands_process(void);
+static void window_memory_process(void);
+static void window_display_process(void);
+static void window_receive_process(void);
+static void window_notch_process(void);
+static void window_gui_settings_process(void);
+static void window_ft8_process(void);
+static void window_ft8_bands_process(void);
+static void window_ft8_settings_process(void);
+static void window_infobar_menu_process(void);
+static void window_af_eq_proccess(void);
+static void window_shift_proccess(void);
+static void window_menu_params_proccess(void);
+static void window_time_proccess(void);
+static void window_kbd_proccess(void);
+static void window_kbd_test_proccess(void);
+static void window_ping_proccess(void);
+
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
 	WINDOW_MODES,					// переключение режимов работы, видов модуляции

@@ -179,7 +179,7 @@ void save_settings(void)
 	hamradio_save_gui_settings(& gui_nvram);
 }
 
-#if WITHDEBUG
+#if WITHGUIDEBUG
 void gui_add_debug(char * str)
 {
 	if (tf_debug)
@@ -199,42 +199,7 @@ void gui_open_debug_window(void)
 	if (tf_debug)
 		tf_debug->visible = ! tf_debug->visible;
 }
-#endif /* WITHDEBUG */
-
-static void gui_main_process(void);
-static void window_mode_process(void);
-static void window_af_process(void);
-static void window_freq_process (void);
-static void window_swrscan_process(void);
-static void window_tx_process(void);
-static void window_tx_vox_process(void);
-static void window_tx_power_process(void);
-static void window_audiosettings_process(void);
-static void window_ap_reverb_process(void);
-static void window_ap_mic_eq_process(void);
-static void window_ap_mic_process(void);
-static void window_ap_mic_prof_process(void);
-static void window_menu_process(void);
-static void window_uif_process(void);
-static void window_options_process(void);
-static void window_utilites_process(void);
-static void window_bands_process(void);
-static void window_memory_process(void);
-static void window_display_process(void);
-static void window_receive_process(void);
-static void window_notch_process(void);
-static void window_gui_settings_process(void);
-static void window_ft8_process(void);
-static void window_ft8_bands_process(void);
-static void window_ft8_settings_process(void);
-static void window_infobar_menu_process(void);
-static void window_af_eq_proccess(void);
-static void window_shift_proccess(void);
-static void window_menu_params_proccess(void);
-static void window_time_proccess(void);
-static void window_kbd_proccess(void);
-static void window_kbd_test_proccess(void);
-static void window_ping_proccess(void);
+#endif /* WITHGUIDEBUG */
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -636,7 +601,7 @@ static void gui_main_process(void)
 		gui_enc2_menu.updated = 1;
 		update = 1;
 
-#if WITHDEBUG
+#if WITHGUIDEBUG
 		static const text_field_t text_field [] = {
 			{ TEXT_ARRAY_SIZE, 25, CANCELLED, WINDOW_MAIN, NON_VISIBLE, DOWN, NULL, "tf_debug", },
 		};
@@ -650,7 +615,7 @@ static void gui_main_process(void)
 		textfield_update_size(tf_debug);
 		tf_debug->x1 = win->w / 2 - tf_debug->w / 2;
 		tf_debug->y1 = win->h / 2 - tf_debug->h / 2;
-#endif /* WITHDEBUG */
+#endif /* WITHGUIDEBUG */
 
 		static const button_t buttons [] = {
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_txrx", 		"RX", 				},
@@ -725,12 +690,12 @@ static void gui_main_process(void)
 		load_settings();
 		elements_state(win);
 
-#if WITHDEBUG
+#if WITHGUIDEBUG
 		for (uint_fast8_t i = 0; i < tmpstr_index; i ++)
 		{
 			textfield_add_string(tf_debug, tmpbuf[i].text, COLORMAIN_WHITE);
 		}
-#endif /* WITHDEBUG */
+#endif /* WITHGUIDEBUG */
 	}
 
 	GET_FROM_WM_QUEUE
@@ -800,17 +765,18 @@ static void gui_main_process(void)
 			}
 			else if (bh == btn_2)
 			{
-				if (check_for_parent_window() != NO_PARENT_WINDOW)
-				{
-					close_window(OPEN_PARENT_WINDOW);
-					footer_buttons_state(CANCELLED);
-				}
-				else
-				{
-					window_t * const win = get_win(WINDOW_SHIFT);
-					open_window(win);
-					footer_buttons_state(DISABLED, btn_2);
-				}
+//				if (check_for_parent_window() != NO_PARENT_WINDOW)
+//				{
+//					close_window(OPEN_PARENT_WINDOW);
+//					footer_buttons_state(CANCELLED);
+//				}
+//				else
+//				{
+//					window_t * const win = get_win(WINDOW_SHIFT);
+//					open_window(win);
+//					footer_buttons_state(DISABLED, btn_2);
+//				}
+				gui_open_debug_window();
 			}
 #if WITHFT8
 			else if (bh == btn_ft8)
@@ -1317,12 +1283,12 @@ static void gui_main_process(void)
 
 #endif /* GUI_SHOW_INFOBAR */
 
-#if WITHDEBUG
+#if WITHGUIDEBUG
 	if (tf_debug->visible)
 	{
 		display_transparency(tf_debug->x1 - 5, tf_debug->y1 - 5, tf_debug->x1 + tf_debug->w + 5, tf_debug->y1 + tf_debug->h + 5, DEFAULT_ALPHA);
 	}
-#endif /* WITHDEBUG */
+#endif /* WITHGUIDEBUG */
 }
 
 // *********************************************************************************************************************************************************************

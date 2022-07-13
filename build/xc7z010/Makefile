@@ -131,7 +131,7 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
-#SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
+SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
 # Define project name here
 PROJECT = tc1_xc7z010

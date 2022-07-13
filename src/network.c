@@ -645,6 +645,7 @@ void network_initialize(void)
 #include "lwip/err.h"
 #include "lwip/tcp.h"
 #include "lwip/apps/sntp.h"
+#include "lwip/apps/httpd.h"
 #include "lwip/priv/tcp_priv.h"
 #include "lwip/timeouts.h"
 
@@ -672,9 +673,6 @@ volatile int TcpFastTmrFlag = 0;
 volatile int TcpSlowTmrFlag = 0;
 static int ResetRxCntr = 0;
 
-void start_ping_action(void * arg);
-void check_ping_result(void * arg);
-
 void board_update_time(uint32_t sec)
 {
 	const time_t ut = sec + 60 * 60 * timezone;
@@ -689,15 +687,15 @@ void board_update_time(uint32_t sec)
 }
 
 void
-print_ip(const char *msg, ip_addr_t *ip)
+print_ip(const char * msg, ip_addr_t * ip)
 {
 	PRINTF(msg);
-	PRINTF("%d.%d.%d.%d\n\r", ip4_addr1(ip), ip4_addr2(ip),
+	PRINTF("%d.%d.%d.%d\n", ip4_addr1(ip), ip4_addr2(ip),
 			ip4_addr3(ip), ip4_addr4(ip));
 }
 
-err_t recv_callback(void *arg, struct tcp_pcb *tpcb,
-                               struct pbuf *p, err_t err)
+err_t recv_callback(void * arg, struct tcp_pcb * tpcb,
+                               struct pbuf * p, err_t err)
 {
 	/* do not read the packet if we are not in ESTABLISHED state */
 	if (!p) {
@@ -714,7 +712,7 @@ err_t recv_callback(void *arg, struct tcp_pcb *tpcb,
 	if (tcp_sndbuf(tpcb) > p->len) {
 		err = tcp_write(tpcb, p->payload, p->len, 1);
 	} else
-		PRINTF("no space in tcp_sndbuf\n\r");
+		PRINTF("no space in tcp_sndbuf\n");
 
 	/* free the received pbuf */
 	pbuf_free(p);
@@ -722,7 +720,7 @@ err_t recv_callback(void *arg, struct tcp_pcb *tpcb,
 	return ERR_OK;
 }
 
-err_t accept_callback(void *arg, struct tcp_pcb *newpcb, err_t err)
+err_t accept_callback(void  *arg, struct tcp_pcb * newpcb, err_t err)
 {
 	static int connection = 1;
 
@@ -742,21 +740,21 @@ err_t accept_callback(void *arg, struct tcp_pcb *newpcb, err_t err)
 
 int start_echo_server(void)
 {
-	struct tcp_pcb *pcb;
+	struct tcp_pcb * pcb;
 	err_t err;
 	unsigned port = 7;
 
 	/* create new TCP PCB structure */
 	pcb = tcp_new_ip_type(IPADDR_TYPE_ANY);
 	if (!pcb) {
-		PRINTF("Error creating PCB. Out of Memory\n\r");
+		PRINTF("Error creating PCB. Out of Memory\n");
 		return -1;
 	}
 
 	/* bind to specified @port */
 	err = tcp_bind(pcb, IP_ANY_TYPE, port);
 	if (err != ERR_OK) {
-		PRINTF("Unable to bind to port %d: err = %d\n\r", port, err);
+		PRINTF("Unable to bind to port %d: err = %d\n", port, err);
 		return -2;
 	}
 
@@ -766,14 +764,14 @@ int start_echo_server(void)
 	/* listen for connections */
 	pcb = tcp_listen(pcb);
 	if (!pcb) {
-		PRINTF("Out of memory while tcp_listen\n\r");
+		PRINTF("Out of memory while tcp_listen\n");
 		return -3;
 	}
 
 	/* specify callback to use for incoming connections */
 	tcp_accept(pcb, accept_callback);
 
-	PRINTF("TCP echo server started @ port %d\n\r", port);
+	PRINTF("TCP echo server started @ port %d\n", port);
 
 	return 0;
 }
@@ -800,26 +798,30 @@ void lwip_timer_spool(void)
 	DetectEthLinkStatus++;
 	TcpFastTmrFlag = 1;
 	odd = !odd;
-	ResetRxCntr++;
-	if (odd) {
+	ResetRxCntr ++;
+	if (odd)
+	{
 #if LWIP_DHCP==1
-	dhcp_timer++;
-	dhcp_timoutcntr--;
+		dhcp_timer ++;
+		dhcp_timoutcntr --;
 #endif
-	TcpSlowTmrFlag = 1;
-#if LWIP_DHCP==1
-	dhcp_fine_tmr();
-	if (dhcp_timer >= 120) {
-		dhcp_coarse_tmr();
-		dhcp_timer = 0;
+		TcpSlowTmrFlag = 1;
+#if LWIP_DHCP == 1
+		dhcp_fine_tmr();
+		if (dhcp_timer >= 120)
+		{
+			dhcp_coarse_tmr();
+			dhcp_timer = 0;
 		}
 	}
 #endif
-	if (ResetRxCntr >= RESET_RX_CNTR_LIMIT) {
+	if (ResetRxCntr >= RESET_RX_CNTR_LIMIT)
+	{
 		xemacpsif_resetrx_on_no_rxdata(netif);
 		ResetRxCntr = 0;
 	}
-	if (DetectEthLinkStatus == ETH_LINK_DETECT_INTERVAL) {
+	if (DetectEthLinkStatus == ETH_LINK_DETECT_INTERVAL)
+	{
 		eth_link_detect(netif);
 		DetectEthLinkStatus = 0;
 	}
@@ -844,10 +846,9 @@ void network_initialize(void)
 
 	lwip_init();
 
-	if (!xemac_add(netif, &ipaddr, &netmask,
-						&gw, mac_ethernet_address,
-						XPAR_XEMACPS_0_BASEADDR)) {
-		PRINTF("Error adding N/W interface\n\r");
+	if (!xemac_add(netif, & ipaddr, & netmask, & gw, mac_ethernet_address, XPAR_XEMACPS_0_BASEADDR))
+	{
+		PRINTF("Error adding N/W interface\n");
 		ASSERT(0);
 	}
 
@@ -862,8 +863,8 @@ void network_initialize(void)
 
 	if (dhcp_timoutcntr <= 0) {
 		if ((netif->ip_addr.addr) == 0) {
-			PRINTF("DHCP Timeout\r\n");
-			PRINTF("Configuring default IP of 192.168.1.10\r\n");
+			PRINTF("DHCP Timeout\n");
+			PRINTF("Configuring default IP of 192.168.1.10\n");
 			IP4_ADDR(&(netif->ip_addr),  192, 168,   1, 10);
 			IP4_ADDR(&(netif->netmask), 255, 255, 255,  0);
 			IP4_ADDR(&(netif->gw),      192, 168,   1,  1);
@@ -887,9 +888,7 @@ void network_initialize(void)
 	sntp_init();
 
 	start_echo_server();
-
-//	sys_timeout(4000, start_ping_action, NULL);
-//	sys_timeout(100, check_ping_result, NULL);
+	httpd_init();
 
 	network_inited = 1;
 }

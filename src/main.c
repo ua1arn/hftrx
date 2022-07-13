@@ -17319,9 +17319,9 @@ processkeyboard(uint_fast8_t kbch)
 #endif //WITHMENU && ! WITHTOUCHGUI
 
 	case KBD_CODE_BKIN_HOLDED:
-#if WITHTOUCHGUI && WITHDEBUG
+#if WITHTOUCHGUI && WITHGUIDEBUG
 		gui_open_debug_window();
-#endif /* WITHTOUCHGUI && WITHDEBUG*/
+#endif /* WITHTOUCHGUI && WITHGUIDEBUG*/
 		break;
 
 	case KBD_CODE_DISPMODE:
