@@ -2707,97 +2707,6 @@ void usb_dev_eptx_handler(pusb_struct pusb, uint32_t ep_ix)
 	PRINTF("usb_dev_eptx_handler: ep_ix=%u\n", ep_ix);
 }
 
-void usb_irq_handler(pusb_struct pusb)
-{
-	//uint32_t index;
-
-	//bus interrupt
-	{
-		uint32_t busintstatus;
-		busintstatus = usb_get_bus_interrupt_status(pusb);
-		usb_clear_bus_interrupt_status(pusb, busintstatus);
-
-//		if (busintstatus & USB_BUSINT_SOF)
-//		{
-//			//pusb->sof_count ++;
-//			busintstatus &= ~ USB_BUSINT_SOF;
-//		}
-
-		busintstatus &= usb_get_bus_interrupt_enable(pusb);
-		if (busintstatus != 0)
-		{
-			//pusb->busirq_status |= temp;
-			//pusb->busirq_flag ++;
-			//bus_irq_count ++;
-			usb_bus_irq_handler_dev(pusb, busintstatus);
-		}
-	}
-
-	//tx interrupt, ep0 interrupt
-	{
-		uint32_t eptxstatus;
-		eptxstatus = usb_get_eptx_interrupt_status(pusb);
-		usb_clear_eptx_interrupt_status(pusb, eptxstatus);
-
-		if (eptxstatus & 0x01)
-		{
-			//pusb->ep0_flag ++;
-			//ep0_irq_count ++;
-			usb_dev_ep0xfer_handler(pusb);
-		}
-		if (eptxstatus & 0xfffe)
-		{
-			uint32_t i;
-			for (i=0; i<USB_MAX_EP_NO; i++)
-			{
-				if (eptxstatus & (0x2 << i))
-				{
-					//pusb->eptx_flag[i] ++;
-					usb_dev_eptx_handler(pusb, i);
-				}
-			}
-			//eptx_irq_count ++;
-		}
-	}
-
-	//rx interrupt
-	{
-		uint32_t eprxstatus;
-		eprxstatus = usb_get_eprx_interrupt_status(pusb);
-		usb_clear_eprx_interrupt_status(pusb, eprxstatus);
-
-		if (eprxstatus & 0xfffe)
-		{
-			uint32_t i;
-			for (i=0; i<USB_MAX_EP_NO; i++)
-			{
-				if (eprxstatus & (0x2 << i))
-				{
-					//pusb->eprx_flag[i] ++;
-					usb_dev_eprx_handler(pusb, i);
-				}
-			}
-			//eprx_irq_count ++;
-		}
-	}
-
-	// +++ перенесено из опроса
-//	usb_power_polling_dev(pusb);
-//	usb_bus_irq_handler_dev(pusb);
-	//usb_dev_ep0xfer(pusb);
-	////usb_dev_bulk_xfer(pusb);
-	// ---
-
-	return;
-}
-//
-//void usb0_irq_handler(void)
-//{
-//	usb_irq_handler(&awxx_usb[0]);
-//
-//
-//}
-
 void usb_struct_init(pusb_struct pusb)
 {
 	uint32_t i;
@@ -2889,18 +2798,6 @@ static void usb_init(pusb_struct pusb)
 
 	return;
 }
-
-uint32_t musb2_start(usb_struct * pusb)
-{
-
-	usb_struct_init(pusb);
-
-	usb_init(pusb);
-
-//	arm_hardware_set_handler_system(pusb->irq_no, usb0_irq_handler);
-
-	return 1;
-}
 //
 //uint32_t musb2_stop(usb_struct * pusb)
 //{
@@ -2973,64 +2870,79 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
-	usb_irq_handler(& hpcd->awxx_usb);
-	return;
-	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
-	USBOTG_TypeDef * const USBx = hpcd->Instance;
+	pusb_struct pusb = & hpcd->awxx_usb;
 
-	const unsigned intusb = USBx->USB_INTUSB;// & USBx->USB_INTUSBE;
-	const unsigned inttx  = USBx->USB_INTTX;// & USBx->USB_INTTXE;
-	const unsigned intrx  = USBx->USB_INTRX;// & USBx->USB_INTRXE;
+	//uint32_t index;
 
-	//PRINTF("HAL_PCD_IRQHandler: INTUSBE=%08lX INTRXE=%08lX INTTXE=%08lX\n", USBx->USB_INTUSBE, USBx->USB_INTRXE, USBx->USB_INTTXE);
-	//PRINTF("HAL_PCD_IRQHandler: INTUSB=%08lX INTRX=%08lX INTTX=%08lX, frame=%04X\n", USBx->USB_INTUSB, USBx->USB_INTRX, USBx->USB_INTTX, USBx->USB_FRAME);
-
-	/* check for any bus state change interrupts */
-
-	if (intusb & (MUSB2_MASK_IRESET |
-	    MUSB2_MASK_IRESUME | MUSB2_MASK_ISUSP |
-	    MUSB2_MASK_ICONN | MUSB2_MASK_IDISC |
-	    MUSB2_MASK_IVBUSERR))
+	//bus interrupt
 	{
-		//PRINTF("HAL_PCD_IRQHandler: bus interrupt\n");
-		if (intusb & MUSB2_MASK_IRESET)
+		uint32_t busintstatus;
+		busintstatus = usb_get_bus_interrupt_status(pusb);
+		usb_clear_bus_interrupt_status(pusb, busintstatus);
+
+//		if (busintstatus & USB_BUSINT_SOF)
+//		{
+//			//pusb->sof_count ++;
+//			busintstatus &= ~ USB_BUSINT_SOF;
+//		}
+
+		busintstatus &= usb_get_bus_interrupt_enable(pusb);
+		if (busintstatus != 0)
 		{
-			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_IRESET\n");
-		}
-		if (intusb & MUSB2_MASK_IRESUME)
-		{
-			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_IRESUME\n");
-		}
-		if (intusb & MUSB2_MASK_ISUSP)
-		{
-			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_ISUSP\n");
-		}
-		if (intusb & MUSB2_MASK_ICONN)
-		{
-			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_ICONN\n");
-		}
-		if (intusb & MUSB2_MASK_IDISC)
-		{
-			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_IDISC\n");
-		}
-		if (intusb & MUSB2_MASK_IVBUSERR)
-		{
-			PRINTF("HAL_PCD_IRQHandler: bus interrupt MUSB2_MASK_IVBUSERR\n");
+			//pusb->busirq_status |= temp;
+			//pusb->busirq_flag ++;
+			//bus_irq_count ++;
+			usb_bus_irq_handler_dev(pusb, busintstatus);
 		}
 	}
-	if (intrx || inttx)
+
+	//tx interrupt, ep0 interrupt
 	{
-		PRINTF("HAL_PCD_IRQHandler: real endpoint interrupt "
-		    "rx=0x%04x, tx=0x%04x\n", intrx, inttx);
-	}
-	if ((intusb & MUSB2_MASK_ISOF) != 0)
-	{
-		// SOF handling
+		uint32_t eptxstatus;
+		eptxstatus = usb_get_eptx_interrupt_status(pusb);
+		usb_clear_eptx_interrupt_status(pusb, eptxstatus);
+
+		if (eptxstatus & 0x01)
+		{
+			//pusb->ep0_flag ++;
+			//ep0_irq_count ++;
+			usb_dev_ep0xfer_handler(pusb);
+		}
+		if (eptxstatus & 0xfffe)
+		{
+			uint32_t i;
+			for (i=0; i<USB_MAX_EP_NO; i++)
+			{
+				if (eptxstatus & (0x2 << i))
+				{
+					//pusb->eptx_flag[i] ++;
+					usb_dev_eptx_handler(pusb, i);
+				}
+			}
+			//eptx_irq_count ++;
+		}
 	}
 
-	USBx->USB_INTUSB = intusb;
-	USBx->USB_INTTX = inttx;
-	USBx->USB_INTRX = intrx;
+	//rx interrupt
+	{
+		uint32_t eprxstatus;
+		eprxstatus = usb_get_eprx_interrupt_status(pusb);
+		usb_clear_eprx_interrupt_status(pusb, eprxstatus);
+
+		if (eprxstatus & 0xfffe)
+		{
+			uint32_t i;
+			for (i=0; i<USB_MAX_EP_NO; i++)
+			{
+				if (eprxstatus & (0x2 << i))
+				{
+					//pusb->eprx_flag[i] ++;
+					usb_dev_eprx_handler(pusb, i);
+				}
+			}
+			//eprx_irq_count ++;
+		}
+	}
 }
 
 /**
@@ -3435,7 +3347,11 @@ HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
 HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd)
 {
 //  __HAL_LOCK(hpcd);
-	musb2_start(& hpcd->awxx_usb);
+
+	usb_struct_init(& hpcd->awxx_usb);
+
+	usb_init(& hpcd->awxx_usb);
+
 	USB_DevConnect (hpcd->Instance);
 //  __HAL_PCD_ENABLE(hpcd);
 //  __HAL_UNLOCK(hpcd);
