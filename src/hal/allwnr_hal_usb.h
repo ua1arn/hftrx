@@ -112,7 +112,7 @@ typedef struct {
 
 	//USB user initial parameters
 	#define USB_ROLE_DEV		2
-	uint32_t role;
+	//uint32_t role;
 	#define USB_SPEED_UNK		0
 	#define USB_SPEED_HS		1
 	#define USB_SPEED_FS		2
@@ -126,18 +126,18 @@ typedef struct {
 	//volatile uint32_t busirq_flag;
 
 	//Signals for usb state
-	volatile uint32_t connect;
-	volatile uint32_t suspend;
-	volatile uint32_t reset;
+//	volatile uint32_t connect;
+//	volatile uint32_t suspend;
+//	volatile uint32_t reset;
 	#define USB_OTG_A_DEVICE			0
 	#define USB_OTG_B_DEVICE			1
-	volatile uint32_t otg_dev;
+	//volatile uint32_t otg_dev;
 
 	//Signals for usb debug
-	uint32_t rst_cnt;
-	uint32_t cur_fsm;
-	uint32_t fsm_cnt;
-	uint8_t  fsm_rcd[512];
+//	uint32_t rst_cnt;
+//	uint32_t cur_fsm;
+//	uint32_t fsm_cnt;
+//	uint8_t  fsm_rcd[512];
 
 	//Signals for Data Transfer
 	//volatile uint32_t ep0_flag;

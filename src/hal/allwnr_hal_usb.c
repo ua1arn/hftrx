@@ -2502,7 +2502,7 @@ uint32_t usb_bus_irq_handler_dev(pusb_struct pusb, uint32_t busirq_status)
 {
 	//uint32_t busirq_en;
 
-	if (pusb->role != USB_ROLE_DEV) return 0;
+	//if (pusb->role != USB_ROLE_DEV) return 0;
   	//if (!pusb->busirq_flag) return 0;
 
 	uint32_t ep_save = usb_get_active_ep(pusb);
@@ -2528,7 +2528,7 @@ uint32_t usb_bus_irq_handler_dev(pusb_struct pusb, uint32_t busirq_status)
   	{
 	  	//busirq_status  & = ~ USB_BUSINT_SUSPEND;
 	  	//Suspend Service Subroutine
-	  	pusb->suspend = 1;
+	  	//pusb->suspend = 1;
 
 		if (wBoot_dma_QueryState(pusb->dma))
 		{
@@ -2542,7 +2542,7 @@ uint32_t usb_bus_irq_handler_dev(pusb_struct pusb, uint32_t busirq_status)
 	{
 		//busirq_status  & = ~USB_BUSINT_RESUME;
 		//Resume Service Subroutine
-		pusb->suspend = 0;
+		//pusb->suspend = 0;
 		PRINTF("uResume\n");
 	}
 
@@ -2551,10 +2551,10 @@ uint32_t usb_bus_irq_handler_dev(pusb_struct pusb, uint32_t busirq_status)
 		uint32_t i;
 		//busirq_status  & = ~USB_BUSINT_RESET;
 		//Device Reset Service Subroutine
-		pusb->connect = 1;
-		pusb->reset = 1;
-		pusb->suspend = 0;
-		pusb->rst_cnt ++;
+		//pusb->connect = 1;
+		//pusb->reset = 1;
+		//pusb->suspend = 0;
+		//pusb->rst_cnt ++;
 		for (i=0; i<USB_MAX_EP_NO; i++)
 		{
 			//pusb->eptx_flag[i] = 0;
@@ -2585,9 +2585,9 @@ uint32_t usb_bus_irq_handler_dev(pusb_struct pusb, uint32_t busirq_status)
   	{
   		//busirq_status  & = ~USB_BUSINT_SESSEND;
   		//Device Reset Service Subroutine
-  		pusb->connect = 0;
-		pusb->reset = 0;
-		pusb->suspend = 1;
+  		//pusb->connect = 0;
+		//pusb->reset = 0;
+		//pusb->suspend = 1;
 		PRINTF("uSessend\n");
   	}
 
@@ -2677,7 +2677,7 @@ void musb2_prepare(pusb_struct pusb)
 	//pusb->irq_no = USB0_DEVICE_IRQn;
 	//pusb->drq_no = 0x04;
 
-	pusb->role = USB_ROLE_DEV;  //USB_ROLE_HST; //USB_ROLE_UNK
+	//pusb->role = USB_ROLE_DEV;  //USB_ROLE_HST; //USB_ROLE_UNK
 #if WITHUSBDEV_HSDESC
 	pusb->speed = USB_SPEED_HS;
 #else /* WITHUSBDEV_HSDESC */
@@ -2716,13 +2716,13 @@ void usb_struct_init(pusb_struct pusb)
 	//pusb->busirq_flag = 0;
 	//pusb->busirq_status = 0;
 
-	pusb->connect = 0;
-	pusb->reset = 0;
-	pusb->suspend = 1;
+	//pusb->connect = 0;
+	//pusb->reset = 0;
+	//pusb->suspend = 1;
 
-	pusb->rst_cnt = 0;
-	pusb->cur_fsm = 0;
-	pusb->fsm_cnt = 0;
+//	pusb->rst_cnt = 0;
+//	pusb->cur_fsm = 0;
+//	pusb->fsm_cnt = 0;
 
 	//pusb->ep0_flag = 0;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
@@ -2783,18 +2783,17 @@ static void usb_init(pusb_struct pusb)
 
 	//PRINTF("USB Device!!\n");
 
-	pusb->role = USB_ROLE_DEV;
+	//pusb->role = USB_ROLE_DEV;
 
 	usb_clear_bus_interrupt_enable(pusb, 0xff);
 	usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
 	usb_set_eptx_interrupt_enable(pusb, 0xffff);
 	usb_set_eprx_interrupt_enable(pusb, 0xfffe);
 
-	pusb->otg_dev = USB_OTG_B_DEVICE;
+	//pusb->otg_dev = USB_OTG_B_DEVICE;
 
-	// перенесено из опроса
 	usb_soft_connect(pusb);
-	pusb->connect = 1;
+	//pusb->connect = 1;
 
 	return;
 }
