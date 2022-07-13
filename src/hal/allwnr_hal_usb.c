@@ -420,6 +420,7 @@
 	return ret;
 }
 
+ /* read out FIFO status */
 void usb_set_ep0_csr(pusb_struct pusb, uint32_t csr)
 {
 	 USBOTG0->USB_CSR0 = csr;
@@ -2280,7 +2281,7 @@ static int32_t ep0_out_handler_dev(PCD_HandleTypeDef *hpcd, const uSetupPKG * ep
 							break;
 						case 0x0400:
 							usb_write_ep_fifo(pusb, 0, (uint32_t)TestPkt, 53);
-							usb_set_ep0_csr(pusb, 0x02);
+							usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_TXPKTRDY);
 							usb_set_test_mode(pusb, 0x08);
 
 	          				PRINTF("usb_device: Send Test Packet Now...\n");
@@ -2357,16 +2358,16 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
-		if (ep0_csr & 0x1)
+		if (ep0_csr & MUSB2_MASK_CSR0L_RXPKTRDY)
 		{
 			pusb->ep0_xfer_state = USB_EP0_SETUP;
 		}
-		else if (ep0_csr & (0x1 << 4))
+		else if (ep0_csr & MUSB2_MASK_CSR0L_SETUPEND)
 		{
-			usb_set_ep0_csr(pusb, 0x80);
+			usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_SETUPEND_CLR);
 			PRINTF("WRN: EP0 Setup End!!\n");
 		}
-		else if (!(ep0_csr & (0x1 << 1)))
+		else if (!(ep0_csr & MUSB2_MASK_CSR0L_TXPKTRDY))
 		{
 			if (pusb->ep0_xfer_residue)
 		 	{
@@ -2404,11 +2405,11 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 			 	if (is_last || (!byte_trans))
 			 	{
-			 		usb_set_ep0_csr(pusb, 0x0a);
+			 		usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_DATAEND | MUSB2_MASK_CSR0L_TXPKTRDY);
 			 	}
 			 	else
 			 	{
-			 		usb_set_ep0_csr(pusb, 0x02);
+			 		usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_TXPKTRDY);
 				}
 
 			 	if (usb_get_ep0_count(pusb))
@@ -2426,18 +2427,18 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
 	{
 		const uSetupPKG * const ep0_setup = (const uSetupPKG *) & hpcd->Setup;
-		if (ep0_csr & 0x1)
+		if (ep0_csr & MUSB2_MASK_CSR0L_RXPKTRDY)
 		{
 			uint32_t ep0_count = usb_get_ep0_count(pusb);
 
-			if (ep0_count==8)
+			if (ep0_count == 8)
 			{
 				//pusb->ep0_flag = 0;
 				usb_read_ep_fifo(pusb, 0, (uint32_t) hpcd->Setup, 8);
 
 				if (ep0_setup->bmRequest & 0x80)//in
 				{
-					usb_set_ep0_csr(pusb, 0x40);
+					usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_RXPKTRDY_CLR);
 					ep0_in_handler_dev(hpcd, ep0_setup);
 
 					if (pusb->ep0_xfer_residue<pusb->ep0_maxpktsz)
@@ -2462,19 +2463,20 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, byte_trans);
 				 	if (is_last || (!byte_trans))
 				 	{
-				 		usb_set_ep0_csr(pusb, 0x0a);
+				 		usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_DATAEND | MUSB2_MASK_CSR0L_TXPKTRDY);
 				   	}
 				   	else
 				   	{
-				   		usb_set_ep0_csr(pusb, 0x02);
+				   		usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_TXPKTRDY);
 				   	}
 
 				   	pusb->ep0_xfer_state = USB_EP0_DATA;
 				}
 				else                         //out
 				{
-					usb_set_ep0_csr(pusb, 0x48);
-					pusb->ep0_xfer_state = USB_EP0_SETUP;
+					ASSERT(pusb->ep0_xfer_state == USB_EP0_SETUP);
+					usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_RXPKTRDY_CLR | MUSB2_MASK_CSR0L_DATAEND);
+					pusb->ep0_xfer_state = USB_EP0_SETUP;	// already setted
 				}
 			}
 			else
