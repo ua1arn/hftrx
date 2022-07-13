@@ -3560,6 +3560,8 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 		pusb->ep0_xfer_srcaddr = (uint32_t) pBuf;
 		pusb->ep0_xfer_residue = len;
 
+		uint32_t ep_save = usb_get_active_ep(pusb);
+	  	usb_select_ep(pusb, 0);
 		//
 
 		if (pusb->ep0_xfer_residue < pusb->ep0_maxpktsz)
@@ -3593,6 +3595,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 	   	{
 	   		usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_TXPKTRDY);
 	   	}
+	  	usb_select_ep(pusb, ep_save);
 
 	   	pusb->ep0_xfer_state = USB_EP0_DATA;
   }
