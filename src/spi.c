@@ -490,25 +490,17 @@ typedef struct lowspiio_tag
 	lowspiexchange_t chunks [3];
 } lowspiio_t;
 
+void spi_operate_low(lowspiio_t * iospi);
+
 static SPINLOCK_t spilock = SPINLOCK_INIT;
 
-static void spi_master_lock(void)
-{
-	SPIN_LOCK(& spilock);
-}
-
-static void spi_master_unlock(void)
-{
-	SPIN_UNLOCK(& spilock);
-}
-
-static void spi_operate_low(lowspiio_t * iospi)
+void spi_operate_low(lowspiio_t * iospi)
 {
 	const spitarget_t target = iospi->target;
 	unsigned i;
 
 	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
-	spi_master_lock();
+	SPIN_LOCK(& spilock);
 	spi_select2(target, iospi->spimode, iospi->spispeedindex);
 	local_delay_us(iospi->csdelayUS);
 
@@ -559,7 +551,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 
 	spi_unselect(target);
 	local_delay_us(iospi->csdelayUS);
-	spi_master_unlock();
+	SPIN_UNLOCK(& spilock);
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
@@ -760,7 +752,6 @@ void prog_spi_exchange_low(
 
 
 #if USESPILOCK
-
 
 typedef enum
 {
@@ -4212,8 +4203,6 @@ static void spidf_unselect(void)
 
 	// Disconnect I/O pins
 	hardware_spi_disconnect();
-
-	spi_master_unlock();
 }
 
 void spidf_uninitialize(void)
@@ -4264,8 +4253,6 @@ static void spidf_iostart(
 	}
 	while (ndummy --)
 		b [i ++] = 0x00;	// dummy byte
-
-	spi_master_lock();
 
 	hardware_spi_connect(SPIC_SPEEDFAST, SPIC_MODE0);
 
