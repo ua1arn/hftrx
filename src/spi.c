@@ -449,15 +449,51 @@ void NOINLINEAT (prog_val8_impl)(
 
 #endif /* WITHSPISW */
 
-static SPINLOCK_t spilock = SPINLOCK_INIT;
 
-void spi_operate_low(lowspiio_t * iospi)
+typedef enum lowspiiotype_tag
+{
+	SPIIO_TX = 1,
+	SPIIO_RX = 2,
+	SPIIO_EXCHANGE = 3,
+	//
+	SPIIO_count
+} lowspiiotype_t;
+
+typedef enum lowspiiosize_tag
+{
+	SPIIOSIZE_U8 = 1,
+	SPIIOSIZE_U16 = 2,
+	SPIIOSIZE_U32 = 3,
+	//
+	SPIIOSIZE_count
+} lowspiiosize_t;
+
+typedef struct lowspiexchange_tag
+{
+	lowspiiotype_t spiiotype;
+	unsigned bytecount;
+	const void * txbuff;
+	void * rxbuff;
+} lowspiexchange_t;
+
+typedef struct lowspiio_tag
+{
+	spitarget_t target;
+	spi_speeds_t spispeedindex;
+	spi_modes_t spimode;
+	lowspiiosize_t spiiosize;
+	unsigned csdelayUS;
+
+	unsigned count;
+	lowspiexchange_t chunks [3];
+} lowspiio_t;
+
+static void spi_operate_low(lowspiio_t * iospi)
 {
 	const spitarget_t target = iospi->target;
 	unsigned i;
 
 	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
-	SPIN_LOCK(& spilock);
 	spi_select2(target, iospi->spimode, iospi->spispeedindex);
 	local_delay_us(iospi->csdelayUS);
 
@@ -508,7 +544,20 @@ void spi_operate_low(lowspiio_t * iospi)
 
 	spi_unselect(target);
 	local_delay_us(iospi->csdelayUS);
+}
+
+static SPINLOCK_t spilock = SPINLOCK_INIT;
+
+static void spi_master_lock(void)
+{
+	system_disableIRQ();
+	SPIN_LOCK(& spilock);
+}
+
+static void spi_master_unlock(void)
+{
 	SPIN_UNLOCK(& spilock);
+	system_enableIRQ();
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
@@ -561,11 +610,11 @@ void prog_spi_io(
 
 	io.count = i;
 
-#if WITHSPILOWSUPPORTT
+#if WITHSPILOWSUPPORTT || CPUSTYPE_T113 /* доступ к SPI разделяет DFU устройство и user mode программа */
 
-	system_disableIRQ();
+	spi_master_lock();
 	spi_operate_low(& io);
-	system_enableIRQ();
+	spi_master_unlock();
 
 #else /* WITHSPILOWSUPPORTT */
 	spi_operate_low(& io);
@@ -661,9 +710,9 @@ void prog_spi_exchange(
 
 #if WITHSPILOWSUPPORTT
 
-	system_disableIRQ();
+	spi_master_lock();
 	spi_operate_low(& io);
-	system_enableIRQ();
+	spi_master_unlock();
 
 #else /* WITHSPILOWSUPPORTT */
 
@@ -709,17 +758,6 @@ void prog_spi_exchange_low(
 
 
 #if WITHSPILOWSUPPORTT
-//
-//void spi_perform(lowspiio_t * iospi)
-//{
-//	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
-//}
-//
-//void spi_perform_low(lowspiio_t * iospi)
-//{
-//	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
-//}
-
 
 
 typedef enum
@@ -4172,6 +4210,8 @@ static void spidf_unselect(void)
 
 	// Disconnect I/O pins
 	hardware_spi_disconnect();
+
+	spi_master_unlock();
 }
 
 void spidf_uninitialize(void)
@@ -4222,6 +4262,8 @@ static void spidf_iostart(
 	}
 	while (ndummy --)
 		b [i ++] = 0x00;	// dummy byte
+
+	spi_master_lock();
 
 	hardware_spi_connect(SPIC_SPEEDFAST, SPIC_MODE0);
 
