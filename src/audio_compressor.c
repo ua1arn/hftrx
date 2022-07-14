@@ -22,16 +22,16 @@ static unsigned			release = 962;			// 20ms * 48kHz
 static unsigned			hold = 480;				// 10ms * 48kHz
 static unsigned			time_out = 0;
 
-static FLOAT_t			gainreduce = 0.5;		// compression ratio: 6:1 -> -6dB = 0.5
-static FLOAT_t			threshold = 0.1;		// -20dB below limit
+static FLOAT_t			gainreduce = (FLOAT_t) 0.5;		// compression ratio: 6:1 -> -6dB = 0.5
+static FLOAT_t			threshold = (FLOAT_t) 0.1;		// -20dB below limit
 
-static FLOAT_t			gain_step_attack = (1.0 - 0.5) / 1442;
-static FLOAT_t			gain_step_release = (1.0 - 0.5) / 962;
+static FLOAT_t			gain_step_attack = (1 - (FLOAT_t) 0.5) / 1442;
+static FLOAT_t			gain_step_release = (1 - (FLOAT_t) 0.5) / 962;
 static FLOAT_t			gain = 1.0;
 
-void audio_compressor_recalc() {
-	gain_step_attack = (1.0 - gainreduce) / attack;
-	gain_step_release = (1.0 - gainreduce) / release;
+void audio_compressor_recalc(void) {
+	gain_step_attack = (1 - gainreduce) / attack;
+	gain_step_release = (1 - gainreduce) / release;
 }
 
 void audio_compressor_set_attack(unsigned samples) {
@@ -66,7 +66,7 @@ FLOAT_t audio_compressor_calc(FLOAT_t in) {
 		if (state == State_GainReduction) time_out = hold;
 	}
 
-	if (fabs(in) < threshold && gain <= 1.0) {
+	if (fabs(in) < threshold && gain <= 1) {
 		if (time_out == 0 && state == State_GainReduction) {
 			state = State_Release;
 			time_out = release;
@@ -94,7 +94,7 @@ FLOAT_t audio_compressor_calc(FLOAT_t in) {
 			break;
 
 		case State_Release:
-			if (time_out > 0 && gain < 1.0) {
+			if (time_out > 0 && gain < 1) {
 				time_out--;
 				gain += gain_step_release;
 			} else {
@@ -103,7 +103,7 @@ FLOAT_t audio_compressor_calc(FLOAT_t in) {
 			break;
 
 		case State_Idle:
-			if (gain < 1.0) gain = 1.0;
+			if (gain < 1) gain = 1;
 			break;
 
 		default:

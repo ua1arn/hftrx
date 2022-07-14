@@ -5987,9 +5987,9 @@ txparam_update(uint_fast8_t profile)
 	}
 	{
 		// компрессор
-		audio_compressor_set_attack(glob_compattack * 48000 / 1000);
-		audio_compressor_set_release(glob_comprelease * 48000 / 1000);
-		audio_compressor_set_hold(glob_comphold * 48000 / 1000);
+		audio_compressor_set_attack(NSAITICKS(glob_compattack));
+		audio_compressor_set_release(NSAITICKS(glob_comprelease));
+		audio_compressor_set_hold(NSAITICKS(glob_comphold));
 		audio_compressor_set_gainreduce(db2ratio(- (int) glob_compgain));
 		audio_compressor_set_threshold(db2ratio(- (int) glob_compthreshold));
 		audio_compressor_recalc();
