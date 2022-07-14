@@ -13,8 +13,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYPE_T113)	/* доступ к SPI разделяет DFU устройство и user mode программа */
-
 // битовые маски, соответствующие биту в байте по его номеру.
 const uint_fast8_t rbvalues [8] =
 {
@@ -451,47 +449,6 @@ void NOINLINEAT (prog_val8_impl)(
 
 #endif /* WITHSPISW */
 
-
-typedef enum lowspiiotype_tag
-{
-	SPIIO_TX = 1,
-	SPIIO_RX = 2,
-	SPIIO_EXCHANGE = 3,
-	//
-	SPIIO_count
-} lowspiiotype_t;
-
-typedef enum lowspiiosize_tag
-{
-	SPIIOSIZE_U8 = 1,
-	SPIIOSIZE_U16 = 2,
-	SPIIOSIZE_U32 = 3,
-	//
-	SPIIOSIZE_count
-} lowspiiosize_t;
-
-typedef struct lowspiexchange_tag
-{
-	lowspiiotype_t spiiotype;
-	unsigned bytecount;
-	const void * txbuff;
-	void * rxbuff;
-} lowspiexchange_t;
-
-typedef struct lowspiio_tag
-{
-	spitarget_t target;
-	spi_speeds_t spispeedindex;
-	spi_modes_t spimode;
-	lowspiiosize_t spiiosize;
-	unsigned csdelayUS;
-
-	unsigned count;
-	lowspiexchange_t chunks [3];
-} lowspiio_t;
-
-void spi_operate_low(lowspiio_t * iospi);
-
 static SPINLOCK_t spilock = SPINLOCK_INIT;
 
 void spi_operate_low(lowspiio_t * iospi)
@@ -604,15 +561,15 @@ void prog_spi_io(
 
 	io.count = i;
 
-#if USESPILOCK
+#if WITHSPILOWSUPPORTT
 
 	system_disableIRQ();
 	spi_operate_low(& io);
 	system_enableIRQ();
 
-#else /* USESPILOCK */
+#else /* WITHSPILOWSUPPORTT */
 	spi_operate_low(& io);
-#endif /* USESPILOCK */
+#endif /* WITHSPILOWSUPPORTT */
 
 }
 
@@ -702,17 +659,17 @@ void prog_spi_exchange(
 
 	io.count = i;
 
-#if USESPILOCK
+#if WITHSPILOWSUPPORTT
 
 	system_disableIRQ();
 	spi_operate_low(& io);
 	system_enableIRQ();
 
-#else /* USESPILOCK */
+#else /* WITHSPILOWSUPPORTT */
 
 	spi_operate_low(& io);
 
-#endif /* USESPILOCK */
+#endif /* WITHSPILOWSUPPORTT */
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
@@ -751,7 +708,19 @@ void prog_spi_exchange_low(
 }
 
 
-#if USESPILOCK
+#if WITHSPILOWSUPPORTT
+//
+//void spi_perform(lowspiio_t * iospi)
+//{
+//	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
+//}
+//
+//void spi_perform_low(lowspiio_t * iospi)
+//{
+//	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
+//}
+
+
 
 typedef enum
 {
@@ -784,7 +753,7 @@ void spi_perform_initialize(void)
 	SPINLOCK_INITIALIZE(& spilock);
 }
 
-#else /* USESPILOCK */
+#else /* WITHSPILOWSUPPORTT */
 
 // Send a frame of bytes via SPI
 void 
@@ -813,7 +782,7 @@ prog_spi_read_frame(
 		* buff ++ = spi_read_byte(target, 0xff);
 }
 
-#endif /* USESPILOCK */
+#endif /* WITHSPILOWSUPPORTT */
 
 /* 
  * интерфейс с платой - управление чипселектом
@@ -3584,10 +3553,10 @@ void spi_initialize(void)
 
 #endif /* WITHSPIHW */
 
-#if USESPILOCK
+#if WITHSPILOWSUPPORTT
 	// Работа совместно с фоновым обменом SPI по прерываниям
 	spi_perform_initialize();
-#endif /* USESPILOCK */
+#endif /* WITHSPILOWSUPPORTT */
 }
 
 #endif /* WITHSPIHW || WITHSPISW */
