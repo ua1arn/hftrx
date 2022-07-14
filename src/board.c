@@ -8960,8 +8960,8 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 		uint_fast8_t ch = adci - BOARD_ADCXKBASE;
 		adcvalholder_t rv = mcp3208_read(targetadck, 0, ch, & valid);
 		//PRINTF("targetadck: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
-		if (valid == 0)
-			PRINTF("ADC%u validation failed\n", adci);
+//		if (valid == 0)
+//			PRINTF("ADC%u validation failed\n", adci);
 		return rv;
 #else /* defined (targetadc2) */
 		return 0;
@@ -8975,8 +8975,8 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
 		adcvalholder_t rv = mcp3208_read(targetxad2, 0, ch, & valid);
 		//PRINTF("targetxad2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
-		if (valid == 0)
-			PRINTF("ADC%u validation failed\n", adci);
+//		if (valid == 0)
+//			PRINTF("ADC%u validation failed\n", adci);
 		return rv;
 #else /* defined (targetxad2) */
 		return 0;
@@ -8991,8 +8991,8 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 		//PRINTF("targetadc2: ch = %u\n", ch);
 		adcvalholder_t rv = mcp3208_read(targetadc2, 0, ch, & valid);
 		//PRINTF("targetadc2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
-		if (valid == 0)
-			PRINTF("ADC%u validation failed\n", adci);
+//		if (valid == 0)
+//			PRINTF("ADC%u validation failed\n", adci);
 		return rv;
 #else /* defined (targetadc2) */
 		return 0;
