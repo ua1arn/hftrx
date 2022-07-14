@@ -2946,6 +2946,11 @@ struct nvmap
 	uint8_t gmikeagc;	/* Включение программной АРУ перед модулятором */
 	uint8_t gmikeagcgain;	/* Максимальное усидение АРУ микрофона */
 	uint8_t gmikehclip;		/* Ограничитель */
+	uint8_t	gcompressor_attack;		/* Компрессор - время атаки */
+	uint8_t gcompressor_release;	/* Компрессор - время освобождения */
+	uint8_t gcompressor_hold;		/* Компрессор - время удержания */
+	uint8_t gcompressor_gain;		/* Компрессор - отношение компрессии */
+	uint8_t gcompressor_threshold;	/* Компрессор - порог срабатывания */
 	#if WITHREVERB
 		uint8_t greverb;		/* ревербератор */
 		uint8_t greverbdelay;		/* ревербератор - задержка */
@@ -3804,6 +3809,12 @@ enum
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 	static uint_fast8_t gmikehclip = 20;		/* Ограничитель */
+
+	static uint_fast8_t gcompressor_attack = 30;
+	static uint_fast8_t gcompressor_release = 20;
+	static uint_fast8_t gcompressor_hold = 10;
+	static uint_fast8_t gcompressor_gain = 6;
+	static uint_fast8_t gcompressor_threshold = 20;
 
 	#if WITHREVERB
 		static uint_fast8_t greverb;		/* ревербератор */
@@ -10589,6 +10600,7 @@ updateboardZZZ(
 		board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
 		board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
 		board_set_mikehclip(gmikehclip);	/* Ограничитель */
+		board_set_compressor(gcompressor_attack, gcompressor_release, gcompressor_hold, gcompressor_gain, gcompressor_threshold);
 #if WITHREVERB
 		board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
 #endif /* WITHREVERB */

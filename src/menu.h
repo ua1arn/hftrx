@@ -1860,6 +1860,56 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gmikehclip,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	{
+		QLABEL("COMP ATK"), 7, 0, 0,	ISTEP5,
+		ITEM_VALUE,	
+		WITHCOMPATTACKMIN, WITHCOMPATTACKMAX,
+		offsetof(struct nvmap, gcompressor_attack),
+		nvramoffs0,
+		NULL,
+		& gcompressor_attack,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("COMP RLS"), 7, 0, 0,	ISTEP5,
+		ITEM_VALUE,	
+		WITHCOMPRELEASEMIN, WITHCOMPRELEASEMAX,
+		offsetof(struct nvmap, gcompressor_release),
+		nvramoffs0,
+		NULL,
+		& gcompressor_release,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("COMP HLD"), 7, 0, 0,	ISTEP5,
+		ITEM_VALUE,	
+		WITHCOMPHOLDMIN, WITHCOMPHOLDMAX,
+		offsetof(struct nvmap, gcompressor_hold),
+		nvramoffs0,
+		NULL,
+		& gcompressor_hold,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("COMP GN "), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,	
+		WITHCOMPGAINMIN, WITHCOMPGAINMAX,
+		offsetof(struct nvmap, gcompressor_gain),
+		nvramoffs0,
+		NULL,
+		& gcompressor_gain,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("COMP TH "), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,	
+		WITHCOMPTHRESHOLDMIN, WITHCOMPTHRESHOLDMAX,
+		offsetof(struct nvmap, gcompressor_threshold),
+		nvramoffs0,
+		NULL,
+		& gcompressor_threshold,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 #if WITHREVERB
 	{
 		QLABEL2("REVERB  ", "Reverberator"), 7, 0, RJ_ON,	ISTEP1,
