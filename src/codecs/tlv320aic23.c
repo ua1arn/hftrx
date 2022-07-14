@@ -41,7 +41,7 @@ static void tlv320aic23_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPILOWSUPPORTT
+	#if WITHSPILOWSUPPORTT || 1
 		// Работа совместно с фоновым обменом SPI по прерываниям
 		uint8_t txbuf [2];
 

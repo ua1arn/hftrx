@@ -73,7 +73,7 @@ xpt2046_read(
 	cmd |= XPT2046_CONTROL;
 	cmd |= XPT2046_PD0 | XPT2046_PD1;	// PD0=1 & PD1=1: Device is always powered. Reference is on and ADC is on.
 
-#if WITHSPILOWSUPPORTT
+#if WITHSPILOWSUPPORTT || 1
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	uint8_t txbuf [4];

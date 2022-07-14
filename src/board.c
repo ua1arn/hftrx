@@ -9766,7 +9766,7 @@ mcp3208_read(
 
 	enum { LSBPOS = 0 };
 
-#if WITHSPILOWSUPPORTT
+#if WITHSPILOWSUPPORTT || 1
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	uint8_t txbuf [4];
@@ -9834,7 +9834,7 @@ mcp3208_read(
 	return (rv >> LSBPOS) & 0xFFF;
 }
 
-#if WITHSPILOWSUPPORTT
+#if WITHSPILOWSUPPORTT || 1
 // Read ADC MCP3204/MCP3208
 uint_fast16_t
 mcp3208_read_low(
