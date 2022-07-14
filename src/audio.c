@@ -9,6 +9,7 @@
 #include "board.h"
 #include "audio.h"
 #include "audio_reverb.h"
+#include "audio_compressor.h"
 #include "spi.h"
 #include "formats.h"	// for debug prints
 
@@ -133,6 +134,12 @@ static uint_fast8_t 	glob_equalizer_tx;
 static uint_fast8_t		glob_equalizer_rx_gains [AF_EQUALIZER_BANDS];
 static uint_fast8_t		glob_equalizer_tx_gains [AF_EQUALIZER_BANDS];
 #endif /* WITHAFEQUALIZER */
+
+static uint_fast8_t		glob_compattack;
+static uint_fast8_t		glob_comprelease;
+static uint_fast8_t		glob_comphold;
+static uint_fast8_t		glob_compgain;
+static uint_fast8_t		glob_compthreshold;
 
 #if WITHREVERB
 	static uint_fast8_t glob_reverb;		/* ревербератор */
@@ -3906,8 +3913,9 @@ static RAMFUNC FLOAT_t preparevi(
 		case BOARD_TXAUDIO_MIKE:
 			// источник - микрофон
 			vi0f = txmikeagc(vi0f * txlevelXXX);	// АРУ
-			vi0f = txmikeclip(vi0f);	// Ограничитель
-			vi0f = txmikereverb(vi0f);	// Ревербератор
+			vi0f = txmikeclip(vi0f);				// Ограничитель
+			vi0f = txmikereverb(vi0f);				// Ревербератор
+			vi0f = audio_compressor_calc(vi0f);		// Компрессор
 			moni->IV = vi0f;
 			moni->QV = vi0f;
 			return injectsubtone(vi0f, ctcss);
@@ -5978,6 +5986,15 @@ txparam_update(uint_fast8_t profile)
 		mickeclipleveln [profile] = - FS * grade;
 	}
 	{
+		// компрессор
+		audio_compressor_set_attack(glob_compattack * 48000 / 1000);
+		audio_compressor_set_release(glob_comprelease * 48000 / 1000);
+		audio_compressor_set_hold(glob_comphold * 48000 / 1000);
+		audio_compressor_set_gainreduce(db2ratio(- (int) glob_compgain));
+		audio_compressor_set_threshold(db2ratio(- (int) glob_compthreshold));
+		audio_compressor_recalc();
+	}
+	{
 		// ревербератор
 	#if WITHREVERB
 		audio_reverb_set_loss(glob_reverb ? db2ratio(- (int) glob_reverbloss) : 0);
@@ -6603,6 +6620,21 @@ board_set_mikehclip(uint_fast8_t v)
 	if (glob_mikehclip != v)
 	{
 		glob_mikehclip = v;
+		board_dsp1regchanged();
+	}
+}
+
+/* компрессор */
+void
+board_set_compressor(uint_fast8_t attack, uint_fast8_t release, uint_fast8_t hold, uint_fast8_t gain, uint_fast8_t threshold)
+{
+	if (glob_compattack != attack || glob_comprelease != release || glob_comphold != hold || glob_compgain != gain || glob_compthreshold != threshold)
+	{
+		glob_compattack = attack;
+		glob_comprelease = release;
+		glob_comphold = hold;
+		glob_compgain = gain;
+		glob_compthreshold = threshold;
 		board_dsp1regchanged();
 	}
 }

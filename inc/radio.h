@@ -93,6 +93,18 @@ typedef uint_least64_t phase_t;
 #define WITHREVERBLOSSMIN 0		/* минимальное ослабление на возврате ревербератора db */
 #define WITHREVERBLOSSMAX 25	/* максимальная ослабление на возврате ревербератора (dB) */
 
+#define WITHCOMPATTACKMIN 1		/* минимальное время атаки компрессора (мс) */
+#define WITHCOMPATTACKMAX 100	/* максимальная время атаки компрессора (мс) */
+#define WITHCOMPRELEASEMIN 1	/* минимальное время освобождения компрессора (мс) */
+#define WITHCOMPRELEASEMAX 100	/* максимальная время освобождения компрессора (мс) */
+#define WITHCOMPHOLDMIN 1		/* минимальное время удержания компрессора (мс) */
+#define WITHCOMPHOLDMAX 100		/* максимальная время удержания компрессора (мс) */
+#define WITHCOMPGAINMIN 1		/* минимальное отношение компрессии (db) */
+#define WITHCOMPGAINMAX 20		/* максимальная отношение компрессии (db) */
+#define WITHCOMPTHRESHOLDMIN 1	/* минимальный порог компрессии (db) */
+#define WITHCOMPTHRESHOLDMAX 20	/* максимальная порог компрессии (db) */
+
+
 #if defined (DAC1_TYPE)
 	#define WITHDAC1VALMIN	0
 	#define WITHDAC1VALMAX	255
