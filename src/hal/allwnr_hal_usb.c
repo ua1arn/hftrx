@@ -2359,6 +2359,16 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
+//		if ((ep0_csr & MUSB2_MASK_CSR0L_RXPKTRDY) && (ep0_csr & MUSB2_MASK_CSR0L_SENTSTALL))
+//		{
+//			usb_read_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, pusb->ep0_xfer_residue);
+//			usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_RXPKTRDY_CLR);
+//			HAL_PCD_DataOutStageCallback(hpcd, 0);
+//
+//			//pusb->ep0_xfer_state = USB_EP0_SETUP;
+//			return;
+//		}
+
 		if (ep0_csr & MUSB2_MASK_CSR0L_RXPKTRDY)
 		{
 			pusb->ep0_xfer_state = USB_EP0_SETUP;
@@ -2468,7 +2478,6 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		else
 		{
 			HAL_PCD_SetupStageCallback(hpcd);
-			//HAL_PCD_DataOutStageCallback(hpcd, 0);
 			//ep0_out_handler_dev(hpcd, ep0_setup);
 		}
 	}
