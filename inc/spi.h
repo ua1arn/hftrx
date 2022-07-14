@@ -296,49 +296,6 @@ void prog_spi_read_frame(
 	unsigned int size
 	);
 
-typedef enum lowspiiotype_tag
-{
-	SPIIO_TX = 1,
-	SPIIO_RX = 2,
-	SPIIO_EXCHANGE = 3,
-	//
-	SPIIO_count
-} lowspiiotype_t;
-
-typedef enum lowspiiosize_tag
-{
-	SPIIOSIZE_U8 = 1,
-	SPIIOSIZE_U16 = 2,
-	SPIIOSIZE_U32 = 3,
-	//
-	SPIIOSIZE_count
-} lowspiiosize_t;
-
-typedef struct lowspiexchange_tag
-{
-	lowspiiotype_t spiiotype;
-	unsigned bytecount;
-	const void * txbuff;
-	void * rxbuff;
-} lowspiexchange_t;
-
-typedef struct lowspiio_tag
-{
-	spitarget_t target;
-	spi_speeds_t spispeedindex;
-	spi_modes_t spimode;
-	lowspiiosize_t spiiosize;
-	unsigned csdelayUS;
-
-	unsigned count;
-	lowspiexchange_t chunks [3];
-} lowspiio_t;
-
-
-void spi_perform(lowspiio_t * iospi);	/* выполняем обмен из user mode (ожидаем выполнения опаерации на system level) */
-void spi_perform_low(lowspiio_t * iospi);
-
-void spi_operate_low(lowspiio_t * iospi);
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
