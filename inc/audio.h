@@ -920,6 +920,7 @@ void board_set_afresponcerx(int_fast8_t v);	/* изменение тембра �
 void board_set_afresponcetx(int_fast8_t v);	/* изменение тембра звука в канале передатчика */
 void board_set_mikehclip(uint_fast8_t gmikehclip);	/* Ограничитель */
 void board_set_reverb(uint_fast8_t greverb, uint_fast8_t greverbdelay, uint_fast8_t greverbloss); /* ревербератор */
+void board_set_compressor(uint_fast8_t attack, uint_fast8_t release, uint_fast8_t hold, uint_fast8_t gain, uint_fast8_t threshold);
 
 
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
