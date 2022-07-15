@@ -222,9 +222,6 @@ RAMFUNC void spool_elkeybundle(void)
 #if WITHELKEY
 	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 #endif /* WITHELKEY */
-#if WITHENCODER2 && defined (ENCODER2_BITS)
-	spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
-#endif /* WITHENCODER2 && ENCODER2_BITS */
 }
 
 /* 
