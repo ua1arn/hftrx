@@ -6811,17 +6811,15 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYPE_T113
 
+	unsigned pwmticksfreq = 24000000uL / 2;
 	void hardware_dcdcfreq_pwm5_initialize(void)
 	{
-		//unsigned ticksfreq = 1200000; //760000;
-		unsigned ticksfreq = 760000;
 		enum { ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1) };
 		enum { IX = 5 };
-		unsigned cycle = 2;
 //		unsigned divM = 1;		/* 0..8:  /1../256 */
 //		unsigned prescalK = 5;	/* 0..255: /1../256 */
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(24000000uL, cycle * ticksfreq * 2), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
+		const uint_fast8_t prei = calcdivider(calcdivround2(24000000uL, pwmticksfreq * 2), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 
 		CCU->PWM_BGR_REG |= (1u << 0);	// PWM_GATING
 		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
@@ -6845,6 +6843,8 @@ sysinit_pll_initialize(void)
 		//	Step 1 PWM mode: Set PCR[PWM_MODE] to select cycle mode or pulse mode, if pulse mode, PCR[PWM_PUL_NUM] needs to be configured.
 		//	Step 2 PWM active level: Set PCR[PWM_ACT_STA] to select a low level or high level.
 		//	Step 3 PWM duty-cycle: Configure PPR[PWM_ENTIRE_CYCLE] and PPR[PWM_ACT_CYCLE] after clock gating is opened.
+		unsigned pwmoutfreq = 1200000;
+		unsigned cycle = calcdivround2(pwmticksfreq, pwmoutfreq);
 		PWM->CH [IX].PPR =
 			(cycle - 1) * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
 			(cycle / 2) * (1u << 0) |	/* PWM_ACT_CYCLE */
@@ -6856,12 +6856,14 @@ sysinit_pll_initialize(void)
 
 	void hardware_dcdcfreq_pwm5_setdiv(uint_fast32_t v)
 	{
+//		unsigned pwmoutfreq = 760000;
+//		unsigned cycle = calcdivround2(pwmticksfreq, pwmoutfreq);
 //		enum { IX = 5 };
 //		while ((PWM->CH [IX].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
 //			;
 //		PWM->CH [IX].PPR =
-//			25 * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
-//			50 * (1u << 0) |	/* PWM_ACT_CYCLE */
+//			(cycle - 1) * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
+//			(cycle / 2) * (1u << 0) |	/* PWM_ACT_CYCLE */
 //			0;
 
 		//PWM->CH [IX].PCR |= (1u << 10);	/* PWM_PUL_START */
