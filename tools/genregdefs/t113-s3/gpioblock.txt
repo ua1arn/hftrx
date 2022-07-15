@@ -1,0 +1,6 @@
+GPIO_PINS 0x30 GPIO_TypeDef
+0x0000 8
+GPIO pin control
+GPIO_INTS 0x30 GPIOINT_TypeDef
+0x0200 8
+GPIO interrupt control
