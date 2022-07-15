@@ -926,8 +926,9 @@ gpioX_onchangeinterrupt(
 		uint_fast8_t targetcpu
 		)
 {
-	const unsigned gpioix = (gpio - ((GPIO_TypeDef *) GPIO_BASE));
+	const unsigned gpioix = (gpio - GPIOBLOCK->GPIO_PINS);
 	const unsigned IRQbase = gpioix * 32 + GPIOA0_IRQn;
+	GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
 	unsigned pos;
 
 	for (pos = 0; pos < 32; ++ pos)
@@ -936,6 +937,7 @@ gpioX_onchangeinterrupt(
 		if ((ipins & mask) == 0)
 			continue;
 		arm_hardware_set_handler(IRQbase + pos, ALLW_GPIO_IRQ_Handler, priority, targetcpu);
+
 	}
 }
 

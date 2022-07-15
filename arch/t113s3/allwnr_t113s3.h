@@ -680,10 +680,14 @@ typedef struct GPIOINT_Type
 /*!< GPIOBLOCK Controller Interface */
 typedef struct GPIOBLOCK_Type
 {
-	GPIO_TypeDef GPIO_PINS [0x008];                      /*!< Offset 0x000 GPIO pin control */
-	uint32_t reserved_0x180 [0x0020];
-	GPIOINT_TypeDef GPIO_INTS [0x008];                   /*!< Offset 0x200 GPIO interrupt control */
-} GPIOBLOCK_TypeDef; /* size of structure = 0x350 */
+	GPIO_TypeDef GPIO_PINS [0x007];                      /*!< Offset 0x000 GPIO pin control */
+	uint32_t reserved_0x150 [0x002C];
+	GPIOINT_TypeDef GPIO_INTS [0x007];                   /*!< Offset 0x200 GPIO interrupt control */
+	uint32_t reserved_0x2E0 [0x0018];
+	__IO uint32_t PIO_POW_MOD_SEL;                       /*!< Offset 0x340 PIO Group Withstand Voltage Mode Select Register */
+	__IO uint32_t PIO_POW_MS_CTL;                        /*!< Offset 0x344 PIO Group Withstand Voltage Mode Select Control Register */
+	__IO uint32_t PIO_POW_VAL;                           /*!< Offset 0x348 PIO Group Power Value Register */
+} GPIOBLOCK_TypeDef; /* size of structure = 0x34C */
 /*
  * @brief SMHC
  */
