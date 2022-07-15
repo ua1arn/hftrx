@@ -915,7 +915,62 @@ static void gpioX_updownoff(
 	gpioX_unlock(gpio, cpsr);
 }
 
-//static void (* gpioirqhandler) [256];
+static void (* gpiohandlers [8][32])(void);
+
+static void ALLW_GPIO_IRQ_Handler_GPIOA(void)
+{
+	ASSERT(0);
+}
+
+static void ALLW_GPIO_IRQ_Handler_GPIOB(void)
+{
+	const unsigned status = GPIOINTB->EINT_STATUS;
+	GPIOINTB->EINT_STATUS = status;
+
+}
+
+static void ALLW_GPIO_IRQ_Handler_GPIOC(void)
+{
+	const unsigned status = GPIOINTC->EINT_STATUS;
+	GPIOINTC->EINT_STATUS = status;
+
+}
+
+static void ALLW_GPIO_IRQ_Handler_GPIOD(void)
+{
+	const unsigned status = GPIOINTD->EINT_STATUS;
+	GPIOINTD->EINT_STATUS = status;
+
+}
+
+static void ALLW_GPIO_IRQ_Handler_GPIOE(void)
+{
+	const unsigned status = GPIOINTE->EINT_STATUS;
+	GPIOINTE->EINT_STATUS = status;
+
+	if ((status & ENCODER_BITS) != 0)
+		spool_encinterrupt();
+}
+
+static void ALLW_GPIO_IRQ_Handler_GPIOF(void)
+{
+	const unsigned status = GPIOINTF->EINT_STATUS;
+	GPIOINTF->EINT_STATUS = status;
+
+}
+
+static void ALLW_GPIO_IRQ_Handler_GPIOG(void)
+{
+	const unsigned status = GPIOINTG->EINT_STATUS;
+	GPIOINTG->EINT_STATUS = status;
+
+}
+
+static void ALLW_GPIO_IRQ_Handler_GPIOH(void)
+{
+	ASSERT(0);
+}
+
 /* разрешение прерывания по изменению состояния указанных групп выводов */
 void
 gpioX_onchangeinterrupt(
@@ -936,6 +991,17 @@ gpioX_onchangeinterrupt(
 	//	0x3: Low Level
 	//	0x4: Double Edge (Positive/Negative)
 
+	static void (* const handlers [])(void) =
+	{
+		ALLW_GPIO_IRQ_Handler_GPIOA,
+		ALLW_GPIO_IRQ_Handler_GPIOB,
+		ALLW_GPIO_IRQ_Handler_GPIOC,
+		ALLW_GPIO_IRQ_Handler_GPIOD,
+		ALLW_GPIO_IRQ_Handler_GPIOE,
+		ALLW_GPIO_IRQ_Handler_GPIOF,
+		ALLW_GPIO_IRQ_Handler_GPIOG,
+		ALLW_GPIO_IRQ_Handler_GPIOH,
+	};
 	unsigned cfgbits = 0;	// default - high level
 
 	if (! raise && ! fall)
@@ -961,7 +1027,8 @@ gpioX_onchangeinterrupt(
 		const portholder_t mask = (portholder_t) 0x01L << pos;
 		if ((ipins & mask) == 0)
 			continue;
-		arm_hardware_set_handler(GPIOB_NS_IRQn + gpioix * 2 - 2, handler, priority, targetcpu);	/* GPIOx_NS */
+		gpiohandlers [gpioix] [pos] = handler;
+		arm_hardware_set_handler(GPIOB_NS_IRQn + gpioix * 2 - 2, handlers [gpioix], priority, targetcpu);	/* GPIOx_NS */
 	}
 
 	ints->EINT_CTL |= ipins;

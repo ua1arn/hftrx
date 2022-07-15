@@ -870,12 +870,6 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 
 #elif CPUSTYPE_T113
 
-// Allwinner specific
-void ALLW_GPIO_IRQ_Handler(void)
-{
-	spool_encinterrupt();
-}
-
 #else
 
 	//#warning Undefined CPUSTYLE_XXX encoder interrrupts handlers

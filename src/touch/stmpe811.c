@@ -285,9 +285,6 @@ static void stmpe811_TS_Start(uint_fast8_t DeviceAddr)
 void
 stmpe811_interrupt_handler(void)
 {
-#if defined (BOARD_GT911_INT_ACK)
-	BOARD_GT911_INT_ACK();
-#endif /* defined (BOARD_GT911_INT_ACK) */
 	tsc_int = 1;
 }
 

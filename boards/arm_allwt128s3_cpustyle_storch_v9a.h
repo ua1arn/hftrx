@@ -207,9 +207,6 @@
 			gpioX_onchangeinterrupt(GPIOE, 0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt2); \
 		} while (0)
 
-	#define ENCODER_INT_ACK() do { GPIOINTE->EINT_STATUS = GPIOINTE->EINT_STATUS & ENCODER_BITS; } while (0)
-	#define ENCODER2_INT_ACK() do { GPIOINTE->EINT_STATUS = GPIOINTE->EINT_STATUS & ENCODER2_BITS; } while (0)
-
 #endif
 
 	// Инициализируются I2S1 в дуплексном режиме.
@@ -908,8 +905,6 @@
 		gpioX_onchangeinterrupt(GPIOE, 0 * BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
 	} while (0)
 
-	#define BOARD_STMPE811_INT_ACK() do { GPIOINTE->EINT_STATUS = (GPIOINTE->EINT_STATUS & BOARD_STMPE811_INT_PIN; } while (0)
-
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
@@ -942,8 +937,6 @@
 		gpioX_onchangeinterrupt(GPIOE, 0 * BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
 	} while (0)
 	//gt911_interrupt_handler
-
-	#define BOARD_GT911_INT_ACK() do { GPIOINTE->EINT_STATUS = (GPIOINTE->EINT_STATUS & BOARD_GT911_INT_PIN; } while (0)
 
 #endif
 

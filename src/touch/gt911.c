@@ -35,9 +35,6 @@ static volatile uint_fast8_t tsc_int = 0;
 void
 gt911_interrupt_handler(void)
 {
-#if defined (BOARD_GT911_INT_ACK)
-	BOARD_GT911_INT_ACK();
-#endif /* defined (BOARD_GT911_INT_ACK) */
 	tsc_int = 1;
 }
 
