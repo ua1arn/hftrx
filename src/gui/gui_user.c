@@ -259,6 +259,7 @@ static window_t windows [] = {
 	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
 #if WITHLWIP
 	{ WINDOW_PING, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Network ping test",	 1, window_ping_proccess, },
+	{ WINDOW_3D, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Donut 3d ASCII demo",	 1, window_3d_proccess, },
 #endif /* WITHLWIP */
 };
 
@@ -1987,9 +1988,10 @@ static void window_utilites_process(void)
 		update = 1;
 
 		static const button_t buttons [] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_kbdtest", "Keyboard|test", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan",  "SWR|scanner", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_kbdtest",  "Keyboard|test", },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_pingtest", "IP ping|test", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_3d", 		 "Donut|3d", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2029,10 +2031,15 @@ static void window_utilites_process(void)
 			button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
 			button_t * btn_kbdtest = find_gui_element(TYPE_BUTTON, win, "btn_kbdtest");
 			button_t * btn_pingtest = find_gui_element(TYPE_BUTTON, win, "btn_pingtest");
+			button_t * btn_3d = find_gui_element(TYPE_BUTTON, win, "btn_3d");
 
 			if (bh == btn_kbdtest)
 			{
 				open_window(get_win(WINDOW_KBD_TEST));
+			}
+			else if (bh == btn_3d)
+			{
+				open_window(get_win(WINDOW_3D));
 			}
 #if WITHTX
 			else if (bh == btn_SWRscan)
@@ -5810,6 +5817,71 @@ static void window_ping_proccess(void)
 		btn_edit->state = is_ping ? DISABLED : CANCELLED;
 	}
 #endif
+}
+
+// *****************************************************************************************************************************
+
+/* https://www.a1k0n.net/2011/07/20/donut-math.html */
+
+static void window_3d_proccess(void)
+{
+	window_t * const win = get_win(WINDOW_3D);
+	static text_field_t * tf_3d = NULL;
+	static float A = 0, B = 0, z[1760];
+	char b[22][80];
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+
+		static const text_field_t text_field [] = {
+			{ 60, 22, CANCELLED, WINDOW_3D, VISIBLE, DOWN, & gothic_11x13, "tf_3d", },
+		};
+		win->tf_count = ARRAY_SIZE(text_field);
+		uint_fast16_t tf_size = sizeof(text_field);
+		win->tf_ptr = malloc(tf_size);
+		GUI_MEM_ASSERT(win->tf_ptr);
+		memcpy(win->tf_ptr, text_field, tf_size);
+
+		tf_3d = find_gui_element(TYPE_TEXT_FIELD, win, "tf_3d");
+		textfield_update_size(tf_3d);
+		tf_3d->x1 = 0;
+		tf_3d->y1 = 0;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	memset(b,' ', 80 * 22 * sizeof(char));
+	memset(z, 0, 1760 * sizeof(float));
+	for(float j = 0; 6.28 > j; j += 0.07)
+	{
+		for(float i = 0; 6.28 > i; i += 0.02)
+		{
+			float c = arm_sin_f32(i), d = arm_cos_f32(j), e = arm_sin_f32(A), f = arm_sin_f32(j),
+					g = arm_cos_f32(A), h = d + 2, D = 1 / (c * h * e + f * g + 5), l = arm_cos_f32(i),
+					m = arm_cos_f32(B), n = arm_sin_f32(B), t = c * h * g - f * e;
+			int x = 30 + 30 * D * (l * h * m - t * n), y = 12 + 15 * D * (l * h * n + t * m),
+					o = x + 80 * y, N = 8 * ((f * e - c * d * g) * m - c * d * e - f * g - l * d * n);
+			if(22 > y && y > 0 && x > 0 && 80 > x && D > z[o])
+			{
+				z [o] = D;
+				b [y][x] = ".,-~:;=!*#$@" [N > 0 ? N : 0];
+			}
+		}
+	}
+
+	textfield_clean(tf_3d);
+	for (int k = 0; k < 22; k ++)
+		textfield_add_string(tf_3d, b[k], COLORMAIN_WHITE);
+
+	A += 0.08;
+	B += 0.04;
+
+	GET_FROM_WM_QUEUE
+	{
+	default:
+		break;
+	}
 }
 
 // *****************************************************************************************************************************

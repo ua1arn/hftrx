@@ -1310,9 +1310,7 @@ void textfield_add_string(text_field_t * tf, const char * str, COLORMAIN_T color
 	ASSERT(tf != NULL);
 
 	tf_entry_t * rec = &  tf->string [tf->index];
-
-	memset(rec->text, 0, ARRAY_SIZE(rec->text));
-	memcpy(rec->text, str, strlen(str));
+	strncpy(rec->text, str, TEXT_ARRAY_SIZE - 1);
 	rec->color_line = color;
 	tf->index ++;
 	tf->index = tf->index >= tf->h_str ? 0 : tf->index;
