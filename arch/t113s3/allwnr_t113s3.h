@@ -2234,24 +2234,15 @@ typedef struct PWM_Type
 	__IO uint32_t CIER;                                  /*!< Offset 0x010 Capture IRQ Enable Register */
 	__IO uint32_t CISR;                                  /*!< Offset 0x014 Capture IRQ Status Register */
 	uint32_t reserved_0x018 [0x0002];
-	__IO uint32_t PCCR01;                                /*!< Offset 0x020 PWM01 Clock Configuration Register */
-	__IO uint32_t PCCR23;                                /*!< Offset 0x024 PWM23 Clock Configuration Register */
-	__IO uint32_t PCCR45;                                /*!< Offset 0x028 PWM45 Clock Configuration Register */
-	__IO uint32_t PCCR67;                                /*!< Offset 0x02C PWM67 Clock Configuration Register */
+	__IO uint32_t PCCR [0x004];                          /*!< Offset 0x020 PWM01, PWM23, PWM45, PWM67 Clock Configuration Register */
 	uint32_t reserved_0x030 [0x0004];
 	__IO uint32_t PCGR;                                  /*!< Offset 0x040 PWM Clock Gating Register */
 	uint32_t reserved_0x044 [0x0007];
-	__IO uint32_t PDZCR01;                               /*!< Offset 0x060 PWM01 Dead Zone Control Register */
-	__IO uint32_t PDZCR23;                               /*!< Offset 0x064 PWM23 Dead Zone Control Register */
-	__IO uint32_t PDZCR45;                               /*!< Offset 0x068 PWM45 Dead Zone Control Register */
-	__IO uint32_t PDZCR67;                               /*!< Offset 0x06C PWM67 Dead Zone Control Register */
+	__IO uint32_t PDZCR [0x004];                         /*!< Offset 0x060 PWM01, PWM23, PWM45, PWM67 Dead Zone Control Register */
 	uint32_t reserved_0x070 [0x0004];
 	__IO uint32_t PER;                                   /*!< Offset 0x080 PWM Enable Register */
 	uint32_t reserved_0x084 [0x0003];
-	__IO uint32_t PGR0;                                  /*!< Offset 0x090 PWM Group0 Register */
-	__IO uint32_t PGR1;                                  /*!< Offset 0x094 PWM Group1 Register */
-	__IO uint32_t PGR2;                                  /*!< Offset 0x098 PWM Group2 Register */
-	__IO uint32_t PGR3;                                  /*!< Offset 0x09C PWM Group3 Register */
+	__IO uint32_t PGR0 [0x004];                          /*!< Offset 0x090 PWM Group0, Group1, Group2, Group3 Register */
 	uint32_t reserved_0x0A0 [0x0008];
 	__IO uint32_t CER;                                   /*!< Offset 0x0C0 Capture Enable Register */
 	uint32_t reserved_0x0C4 [0x000F];

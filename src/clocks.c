@@ -6813,13 +6813,56 @@ sysinit_pll_initialize(void)
 
 	void hardware_dcdcfreq_pwm5_initialize(void)
 	{
+		unsigned ticksfreq = 760000;
+		enum { ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1) };
+		enum { IX = 5 };
+//		unsigned divM = 1;		/* 0..8:  /1../256 */
+//		unsigned prescalK = 5;	/* 0..255: /1../256 */
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(24000000uL, ticksfreq), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
+
 		CCU->PWM_BGR_REG |= (1u << 0);	// PWM_GATING
 		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
-		PWM->PCCR45;
+		// 9.10.4.1 Configuring Clock
+		//	Step 1 PWM gating: When using PWM, write 1 to PCGR[PWMx_CLK_GATING].
+		PWM->PCGR |= (1u << (0 + IX));	/* PWM5_CLK_GATING */
+		//	Step 2 PWM clock source select: Set PCCR01[PWM01_CLK_SRC] to select HOSC or APB0 clock.
+		//	Step 3 PWM clock divider: Set PCCR01[PWM01_CLK_DIV_M] to select different frequency division coefficient (1/2/4/8/16/32/64/128/256).
+		PWM->PCCR [IX / 2] = (PWM->PCCR [IX / 2] & ~ ((0x03u << 7) | (0x0Fu << 0))) |
+			0x00 * (1u << 7) |	/* 00: HOSC */
+			(1 << prei) * (1u << 0) | /* Clock Divide M */
+			0;
+		//	Step 4 PWM clock bypass: Set PCGR[PWM_CLK_SRC_BYPASS_TO_PWM] to 1, output the PWM clock after the secondary frequency division to the corresponding PWM output pin.
+		PWM->PCGR |= (1u << (16 + IX));	/* PWM5_CLK_BYPASS */
+		//	Step 5 PWM internal clock configuration: Set PCR[PWM_PRESCAL_K] to select any frequency division coefficient from 1 to 256.
+		PWM->CH [IX].PCR = (PWM->CH [IX].PCR & ~ ((0xFF << 0) | (1u << 9))) |
+			0 * (1u << 9) | /* PWM_MODE 0: Cycle mode */
+			value * (1u << 0) | /* PWM_PRESCAL_K */
+			0;
+		// 9.10.4.2 Configuring PWM
+		//	Step 1 PWM mode: Set PCR[PWM_MODE] to select cycle mode or pulse mode, if pulse mode, PCR[PWM_PUL_NUM] needs to be configured.
+		//	Step 2 PWM active level: Set PCR[PWM_ACT_STA] to select a low level or high level.
+		//	Step 3 PWM duty-cycle: Configure PPR[PWM_ENTIRE_CYCLE] and PPR[PWM_ACT_CYCLE] after clock gating is opened.
+//		while ((PWM->CH [IX].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
+//			;
+		PWM->CH [IX].PPR =
+			100 * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
+			50 * (1u << 0) |	/* PWM_ACT_CYCLE */
+			0;
+		//	Step 4 PWM starting/stoping phase: Configure PCNTR[PWM_COUNTER_START] after the clock gating is enabled and before the PWM is enabled. You can verify whether the configuration was successful by reading back PCNTR[PWM_COUNTER_STATUS].
+		//	Step 5 Enable PWM: Configure PER to select the corresponding PWM enable bit; when selecting pulse mode, PCR[PWM_PUL_START] needs to be enabled.
+		PWM->PER |= (1u << (0 + IX));
 	}
 
 	void hardware_dcdcfreq_pwm5_setdiv(uint_fast32_t v)
 	{
+//		enum { IX = 5 };
+//		while ((PWM->CH [IX].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
+//			;
+//		PWM->CH [IX].PPR =
+//			100 * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
+//			50 * (1u << 0) |	/* PWM_ACT_CYCLE */
+//			0;
 	}
 
 

@@ -10,48 +10,21 @@ Capture IRQ Enable Register
 CISR
 0x0014
 Capture IRQ Status Register
-PCCR01
-0x0020
-PWM01 Clock Configuration Register
-PCCR23
-0x0024
-PWM23 Clock Configuration Register
-PCCR45
-0x0028
-PWM45 Clock Configuration Register
-PCCR67
-0x002C
-PWM67 Clock Configuration Register
+PCCR
+0x0020 4
+PWM01, PWM23, PWM45, PWM67 Clock Configuration Register
 PCGR
 0x0040
 PWM Clock Gating Register
-PDZCR01
-0x0060
-PWM01 Dead Zone Control Register
-PDZCR23
-0x0064
-PWM23 Dead Zone Control Register
-PDZCR45
-0x0068
-PWM45 Dead Zone Control Register
-PDZCR67
-0x006C
-PWM67 Dead Zone Control Register
+PDZCR
+0x0060 4
+PWM01, PWM23, PWM45, PWM67 Dead Zone Control Register
 PER
 0x0080
 PWM Enable Register
 PGR0
-0x0090
-PWM Group0 Register
-PGR1
-0x0094
-PWM Group1 Register
-PGR2
-0x0098
-PWM Group2 Register
-PGR3
-0x009C
-PWM Group3 Register
+0x0090 4
+PWM Group0, Group1, Group2, Group3 Register
 CER
 0x00C0
 Capture Enable Register
