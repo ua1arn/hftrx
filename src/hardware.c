@@ -876,8 +876,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 // Allwinner specific
 void ALLW_GPIO_IRQ_Handler(void)
 {
-	TP();
-	ASSERT(0);
+	spool_encinterrupt();
 }
 
 #else

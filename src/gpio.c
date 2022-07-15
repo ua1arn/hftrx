@@ -915,6 +915,7 @@ static void gpioX_updownoff(
 	gpioX_unlock(gpio, cpsr);
 }
 
+//static void (* gpioirqhandler) [256];
 /* разрешение прерывания по изменению состояния указанных групп выводов */
 static void
 gpioX_onchangeinterrupt(
@@ -925,7 +926,8 @@ gpioX_onchangeinterrupt(
 		uint_fast8_t targetcpu
 		)
 {
-	const unsigned IRQbase = (gpio - ((GPIO_TypeDef *) GPIO_BASE)) * 32 + GPIOA0_IRQn;
+	const unsigned gpioix = (gpio - ((GPIO_TypeDef *) GPIO_BASE));
+	const unsigned IRQbase = gpioix * 32 + GPIOA0_IRQn;
 	unsigned pos;
 
 	for (pos = 0; pos < 32; ++ pos)
