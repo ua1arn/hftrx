@@ -803,16 +803,16 @@
 	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
 	#define WITHHWDCDCFREQMIN 400000L
 	#define WITHHWDCDCFREQMAX 1200000L
-	#define ALLW_PWMIX 5	/* PWM5 */
+	#define HARDWARE_DCDC_PWMCH 5	/* PWM5 */
 
 	// PF6 - DC-DC synchro output
 	// PWM5 AF6
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		arm_hardware_piof_altfn2((1U << 6), GPIO_CFG_AF6); /* PF6 - PWM5 */ \
-		hardware_dcdcfreq_pwm5_initialize(); \
+		hardware_dcdcfreq_pwm5_initialize(HARDWARE_DCDC_PWMCH); \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
-		hardware_dcdcfreq_pwm5_setdiv(f); \
+		hardware_dcdcfreq_pwm5_setdiv(HARDWARE_DCDC_PWMCH, f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \

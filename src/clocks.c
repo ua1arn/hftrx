@@ -6813,10 +6813,10 @@ sysinit_pll_initialize(void)
 
 	static unsigned pwm5ticksfreq = 24000000uL / 2;
 
-	void hardware_dcdcfreq_pwm5_initialize(void)
+	void hardware_dcdcfreq_pwm5_initialize(unsigned pwmch)
 	{
 		enum { ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1) };
-		enum { IX = ALLW_PWMIX };
+//		enum { IX = HARDWARE_DCDC_PWMCH };
 //		unsigned divM = 1;		/* 0..8:  /1../256 */
 //		unsigned prescalK = 5;	/* 0..255: /1../256 */
 		unsigned value;
@@ -6826,17 +6826,17 @@ sysinit_pll_initialize(void)
 		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
 		// 9.10.4.1 Configuring Clock
 		//	Step 1 PWM gating: When using PWM, write 1 to PCGR[PWMx_CLK_GATING].
-		PWM->PCGR |= (1u << (0 + IX));	/* PWM5_CLK_GATING */
+		PWM->PCGR |= (1u << (0 + pwmch));	/* PWM5_CLK_GATING */
 		//	Step 2 PWM clock source select: Set PCCR01[PWM01_CLK_SRC] to select HOSC or APB0 clock.
 		//	Step 3 PWM clock divider: Set PCCR01[PWM01_CLK_DIV_M] to select different frequency division coefficient (1/2/4/8/16/32/64/128/256).
-		PWM->PCCR [IX / 2] = (PWM->PCCR [IX / 2] & ~ ((0x03u << 7) | (0x0Fu << 0))) |
+		PWM->PCCR [pwmch / 2] = (PWM->PCCR [pwmch / 2] & ~ ((0x03u << 7) | (0x0Fu << 0))) |
 			0x00 * (1u << 7) |	/* 00: HOSC */
 			(1 << prei) * (1u << 0) | /* Clock Divide M */
 			0;
 		//	Step 4 PWM clock bypass: Set PCGR[PWM_CLK_SRC_BYPASS_TO_PWM] to 1, output the PWM clock after the secondary frequency division to the corresponding PWM output pin.
 		//PWM->PCGR |= (1u << (16 + IX));	/* PWM5_CLK_BYPASS */
 		//	Step 5 PWM internal clock configuration: Set PCR[PWM_PRESCAL_K] to select any frequency division coefficient from 1 to 256.
-		PWM->CH [IX].PCR = (PWM->CH [IX].PCR & ~ ((0xFF << 0) | (1u << 9))) |
+		PWM->CH [pwmch].PCR = (PWM->CH [pwmch].PCR & ~ ((0xFF << 0) | (1u << 9))) |
 			0 * (1u << 9) | /* PWM_MODE 0: Cycle mode */
 			value * (1u << 0) | /* PWM_PRESCAL_K */
 			0;
@@ -6855,17 +6855,17 @@ sysinit_pll_initialize(void)
 //		PWM->PER |= (1u << (0 + IX));
 	}
 
-	void hardware_dcdcfreq_pwm5_setdiv(uint_fast32_t v)
+	void hardware_dcdcfreq_pwm5_setdiv(unsigned pwmch, uint_fast32_t v)
 	{
 		unsigned pwmoutfreq = 760000;
 		unsigned cycle = calcdivround2(pwm5ticksfreq, pwmoutfreq);
-		enum { IX = ALLW_PWMIX };
-		PWM->PER |= (1u << (0 + IX));
-		PWM->CH [IX].PPR =
+		//enum { IX = HARDWARE_DCDC_PWMCH };
+		PWM->PER |= (1u << (0 + pwmch));
+		PWM->CH [pwmch].PPR =
 			(cycle - 1) * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
 			(cycle / 2) * (1u << 0) |	/* PWM_ACT_CYCLE */
 			0;
-		while ((PWM->CH [IX].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
+		while ((PWM->CH [pwmch].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
 			;
 
 		//PWM->CH [IX].PCR |= (1u << 10);	/* PWM_PUL_START */
