@@ -6816,6 +6816,7 @@ sysinit_pll_initialize(void)
 		unsigned ticksfreq = 760000;
 		enum { ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1) };
 		enum { IX = 5 };
+		unsigned cycle = 16;
 //		unsigned divM = 1;		/* 0..8:  /1../256 */
 //		unsigned prescalK = 5;	/* 0..255: /1../256 */
 		unsigned value;
@@ -6843,11 +6844,9 @@ sysinit_pll_initialize(void)
 		//	Step 1 PWM mode: Set PCR[PWM_MODE] to select cycle mode or pulse mode, if pulse mode, PCR[PWM_PUL_NUM] needs to be configured.
 		//	Step 2 PWM active level: Set PCR[PWM_ACT_STA] to select a low level or high level.
 		//	Step 3 PWM duty-cycle: Configure PPR[PWM_ENTIRE_CYCLE] and PPR[PWM_ACT_CYCLE] after clock gating is opened.
-//		while ((PWM->CH [IX].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
-//			;
 		PWM->CH [IX].PPR =
-			100 * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
-			50 * (1u << 0) |	/* PWM_ACT_CYCLE */
+			(cycle - 1) * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
+			(cycle / 2) * (1u << 0) |	/* PWM_ACT_CYCLE */
 			0;
 		//	Step 4 PWM starting/stoping phase: Configure PCNTR[PWM_COUNTER_START] after the clock gating is enabled and before the PWM is enabled. You can verify whether the configuration was successful by reading back PCNTR[PWM_COUNTER_STATUS].
 		//	Step 5 Enable PWM: Configure PER to select the corresponding PWM enable bit; when selecting pulse mode, PCR[PWM_PUL_START] needs to be enabled.
@@ -6860,9 +6859,12 @@ sysinit_pll_initialize(void)
 //		while ((PWM->CH [IX].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
 //			;
 //		PWM->CH [IX].PPR =
-//			100 * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
+//			25 * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
 //			50 * (1u << 0) |	/* PWM_ACT_CYCLE */
 //			0;
+
+		//PWM->CH [IX].PCR |= (1u << 10);	/* PWM_PUL_START */
+
 	}
 
 
