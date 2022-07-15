@@ -336,9 +336,10 @@
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 0
 			#define WITHTOUCHGUI		1
+			#define WITHGUIDEBUG		1	/* вывод отладочной информации на экран по удержанию Break-In */
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHDISPLAY_FPS		30
 			#define WITHDISPLAYSWR_FPS	30
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA			24
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
