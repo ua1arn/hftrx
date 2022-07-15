@@ -6813,14 +6813,15 @@ sysinit_pll_initialize(void)
 
 	void hardware_dcdcfreq_pwm5_initialize(void)
 	{
+		//unsigned ticksfreq = 1200000; //760000;
 		unsigned ticksfreq = 760000;
 		enum { ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1) };
 		enum { IX = 5 };
-		unsigned cycle = 16;
+		unsigned cycle = 2;
 //		unsigned divM = 1;		/* 0..8:  /1../256 */
 //		unsigned prescalK = 5;	/* 0..255: /1../256 */
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(24000000uL, ticksfreq), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
+		const uint_fast8_t prei = calcdivider(calcdivround2(24000000uL, cycle * ticksfreq * 2), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 
 		CCU->PWM_BGR_REG |= (1u << 0);	// PWM_GATING
 		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
@@ -6834,7 +6835,7 @@ sysinit_pll_initialize(void)
 			(1 << prei) * (1u << 0) | /* Clock Divide M */
 			0;
 		//	Step 4 PWM clock bypass: Set PCGR[PWM_CLK_SRC_BYPASS_TO_PWM] to 1, output the PWM clock after the secondary frequency division to the corresponding PWM output pin.
-		PWM->PCGR |= (1u << (16 + IX));	/* PWM5_CLK_BYPASS */
+		//PWM->PCGR |= (1u << (16 + IX));	/* PWM5_CLK_BYPASS */
 		//	Step 5 PWM internal clock configuration: Set PCR[PWM_PRESCAL_K] to select any frequency division coefficient from 1 to 256.
 		PWM->CH [IX].PCR = (PWM->CH [IX].PCR & ~ ((0xFF << 0) | (1u << 9))) |
 			0 * (1u << 9) | /* PWM_MODE 0: Cycle mode */
