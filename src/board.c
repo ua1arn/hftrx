@@ -9142,17 +9142,13 @@ uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t adci, uint_fast8_t lower, u
 }
 
 /* получить значение от АЦП в диапазоне lower..upper (включая границы) */
-uint_fast8_t keyboard_getadc_unfiltered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast8_t keyboard_getadc_unfiltered_u8_low(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 {
-#if KEYBOARD_USE_ADC_LOW
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	const adcvalholder_t t = board_getadc_unfiltered_truevalue_low(adci);
 	const uint_fast8_t v = lower + (uint_fast8_t) ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
 	return v;
-#else /* KEYBOARD_USE_ADC_LOW */
-		return board_getadc_unfiltered_u8(adci, lower, upper);
-#endif /* KEYBOARD_USE_ADC_LOW */
 }
 
 /* получить значение от АЦП в диапазоне lower..upper (включая границы) */
@@ -9571,16 +9567,16 @@ board_get_pressed_key(void)
 	{
 	#if KEYBOARD_USE_ADC6
 		// шесть кнопок на одном входе АЦП
-		const uint_fast8_t v = kbd_adc6_decode(keyboard_getadc_unfiltered_u8(kitable [ki], 0, 255));
+		const uint_fast8_t v = kbd_adc6_decode(keyboard_getadc_unfiltered_u8_low(kitable [ki], 0, 255));
 	#elif KEYBOARD_USE_ADC6_V1
 		// шесть кнопок на одном входе АЦП
-		const uint_fast8_t v = kbd_adc6v1_decode(keyboard_getadc_unfiltered_u8(kitable [ki], 0, 255));
+		const uint_fast8_t v = kbd_adc6v1_decode(keyboard_getadc_unfiltered_u8_low(kitable [ki], 0, 255));
 	#else /* KEYBOARD_USE_ADC6 || KEYBOARD_USE_ADC6_V1 */
 		// исправление ошибочного срабатывания - вокруг значений при нажатых клавишах
 		// (между ними) добавляются защитные интервалы, обрабаатываемые как ненажатая клавиша.
 		// Последний инлекс не выдается, отпущеная кнопка - предпоследний.
 		// четыре кнопки на одном входе АЦП
-		const uint_fast8_t v = kixlat4 [keyboard_getadc_unfiltered_u8(kitable [ki], 0, sizeof kixlat4 / sizeof kixlat4 [0] - 1)];
+		const uint_fast8_t v = kixlat4 [keyboard_getadc_unfiltered_u8_low(kitable [ki], 0, sizeof kixlat4 / sizeof kixlat4 [0] - 1)];
 	#endif /* KEYBOARD_USE_ADC6 || KEYBOARD_USE_ADC6_V1 */
 		if (v != KEYBOARD_NOKEY)
 		{
