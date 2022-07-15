@@ -6809,6 +6809,20 @@ sysinit_pll_initialize(void)
 		MTU2.TGRC_0 = v - 1;	// Use C intstead of A
 	}
 
+#elif CPUSTYPE_T113
+
+	void hardware_dcdcfreq_pwm5_initialize(void)
+	{
+		CCU->PWM_BGR_REG |= (1u << 0);	// PWM_GATING
+		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
+		//PWM->PWM45
+	}
+
+	void hardware_dcdcfreq_pwm5_setdiv(uint_fast32_t v)
+	{
+	}
+
+
 #endif
 
 #endif /* WITHDCDCFREQCTL */

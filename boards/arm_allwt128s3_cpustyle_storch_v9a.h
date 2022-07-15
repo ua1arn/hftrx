@@ -157,9 +157,9 @@
 	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-	#define WITHUSBWCID	1
+//	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+//	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+//	#define WITHUSBWCID	1
 
 #endif /* WITHISBOOTLOADER */
 
@@ -808,10 +808,10 @@
 	// PWM5 AF6
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		arm_hardware_piof_altfn2((1U << 6), GPIO_CFG_AF6); /* PF6 - PWM5 */ \
-		/*hardware_dcdcfreq_tim17_ch1_initialize(); */ \
+		hardware_dcdcfreq_pwm5_initialize(); \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
-		/*hardware_dcdcfreq_tim17_ch1_setdiv(f); */\
+		hardware_dcdcfreq_pwm5_setdiv(f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \

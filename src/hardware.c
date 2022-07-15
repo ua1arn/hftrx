@@ -353,9 +353,9 @@ RAMFUNC void spool_systimerbundle1(void)
 	//spool_lfm();
 	tickers_spool();
 
-#if ! WITHCPUADCHW
+//#if ! WITHCPUADCHW
 	adcdones_spool();
-#endif /* ! WITHCPUADCHW */
+//#endif /* ! WITHCPUADCHW */
 }
 
 /* Машинно-независимый обработчик прерываний. */
