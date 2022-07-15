@@ -667,7 +667,7 @@ typedef struct GPIO_Type
 	__IO uint32_t DATA;                                  /*!< Offset 0x010 Data Register */
 	__IO uint32_t DRV [0x004];                           /*!< Offset 0x014 Multi_Driving Register */
 	__IO uint32_t PULL [0x002];                          /*!< Offset 0x024 Pull Register */
-	__IO uint32_t padding;                               /*!< Offset 0x02C Need for address arithmetics */
+	uint32_t reserved_0x02C;
 } GPIO_TypeDef; /* size of structure = 0x030 */
 /*
  * @brief SMHC
@@ -2186,8 +2186,7 @@ typedef struct DMAC_CH_Type
 	__IO uint32_t DMAC_MODE_REGN;                        /*!< Offset 0x028 DMAC Mode Register N (N = 0 to 15) 0x0128 + N*0x0040 */
 	__IO uint32_t DMAC_FDESC_ADDR_REGN;                  /*!< Offset 0x02C DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040 */
 	__IO uint32_t DMAC_PKG_NUM_REGN;                     /*!< Offset 0x030 DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040 */
-	uint32_t reserved_0x034 [0x0002];
-	__IO uint32_t padding;                               /*!< Offset 0x03C Placeholder for 0x40 alignment */
+	uint32_t reserved_0x034 [0x0003];
 } DMAC_CH_TypeDef; /* size of structure = 0x040 */
 /*
  * @brief DMAC
@@ -2220,7 +2219,7 @@ typedef struct PWM_CH_Type
 	__IO uint32_t CCR;                                   /*!< Offset 0x010 Capture Control Register */
 	__IO uint32_t CRLR;                                  /*!< Offset 0x014 Capture Rise Lock Register */
 	__IO uint32_t CFLR;                                  /*!< Offset 0x018 Capture Fall Lock Register */
-	__IO uint32_t padding;                               /*!< Offset 0x01C fill space up to 0x20 bytes */
+	uint32_t reserved_0x01C;
 } PWM_CH_TypeDef; /* size of structure = 0x020 */
 /*
  * @brief PWM

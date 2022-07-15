@@ -22,7 +22,7 @@ struct ddd
 {
 	char * fldname;
 	char * typname;
-	unsigned fldsize;
+	unsigned fldsize;	/* 0 - need align to offset (end paddings) */
 	unsigned fldoffs;
 	char * comment;
 	unsigned fldrept;   // 0 - plain field, 1..n - array
@@ -68,7 +68,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
              _snprintf(fldtype, sizeof fldtype / sizeof fldtype [0], "%s", fldtypes [p->fldsize]);
        }
 
-		if (p->fldoffs > offs)
+		if (p->fldoffs > offs || p->fldsize == 0)
 		{
 			// reserving
 			unsigned sz = p->fldoffs - offs;
@@ -90,6 +90,8 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 		}
 		if (p->fldoffs == offs)
 		{
+			if (p->fldsize != 0)
+			{
 			int eolpos;
             if (p->fldrept)
             {
@@ -124,6 +126,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 				printf("%*.*s", pad, pad, "");
 			}
 			printf("/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
+			}
 		}
 		else
 		{
