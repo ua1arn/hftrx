@@ -6815,7 +6815,7 @@ sysinit_pll_initialize(void)
 	{
 		CCU->PWM_BGR_REG |= (1u << 0);	// PWM_GATING
 		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
-		//PWM->PWM45
+		PWM->PCCR45;
 	}
 
 	void hardware_dcdcfreq_pwm5_setdiv(uint_fast32_t v)

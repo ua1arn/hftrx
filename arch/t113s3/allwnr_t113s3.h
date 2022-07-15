@@ -2207,6 +2207,56 @@ typedef struct DMAC_Type
 	uint32_t reserved_0x034 [0x0033];
 	DMAC_CH_TypeDef CH [0x010];                          /*!< Offset 0x100 Channel [0..15] */
 } DMAC_TypeDef; /* size of structure = 0x500 */
+/*
+ * @brief PWM_CH
+ */
+/*!< PWM_CH Controller Interface */
+typedef struct PWM_CH_Type
+{
+	__IO uint32_t PCR;                                   /*!< Offset 0x000 PWM Control Register */
+	__IO uint32_t PPR;                                   /*!< Offset 0x004 PWM Period Register */
+	__IO uint32_t PCNTR;                                 /*!< Offset 0x008 PWM Count Register */
+	__IO uint32_t PPCNTR;                                /*!< Offset 0x00C PWM Pulse Count Register */
+	__IO uint32_t CCR;                                   /*!< Offset 0x010 Capture Control Register */
+	__IO uint32_t CRLR;                                  /*!< Offset 0x014 Capture Rise Lock Register */
+	__IO uint32_t CFLR;                                  /*!< Offset 0x018 Capture Fall Lock Register */
+	__IO uint32_t padding;                               /*!< Offset 0x01C fill space up to 0x20 bytes */
+} PWM_CH_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief PWM
+ */
+/*!< PWM Controller Interface */
+typedef struct PWM_Type
+{
+	__IO uint32_t PIER;                                  /*!< Offset 0x000 PWM IRQ Enable Register */
+	__IO uint32_t PISR;                                  /*!< Offset 0x004 PWM IRQ Status Register */
+	uint32_t reserved_0x008 [0x0002];
+	__IO uint32_t CIER;                                  /*!< Offset 0x010 Capture IRQ Enable Register */
+	__IO uint32_t CISR;                                  /*!< Offset 0x014 Capture IRQ Status Register */
+	uint32_t reserved_0x018 [0x0002];
+	__IO uint32_t PCCR01;                                /*!< Offset 0x020 PWM01 Clock Configuration Register */
+	__IO uint32_t PCCR23;                                /*!< Offset 0x024 PWM23 Clock Configuration Register */
+	__IO uint32_t PCCR45;                                /*!< Offset 0x028 PWM45 Clock Configuration Register */
+	__IO uint32_t PCCR67;                                /*!< Offset 0x02C PWM67 Clock Configuration Register */
+	uint32_t reserved_0x030 [0x0004];
+	__IO uint32_t PCGR;                                  /*!< Offset 0x040 PWM Clock Gating Register */
+	uint32_t reserved_0x044 [0x0007];
+	__IO uint32_t PDZCR01;                               /*!< Offset 0x060 PWM01 Dead Zone Control Register */
+	__IO uint32_t PDZCR23;                               /*!< Offset 0x064 PWM23 Dead Zone Control Register */
+	__IO uint32_t PDZCR45;                               /*!< Offset 0x068 PWM45 Dead Zone Control Register */
+	__IO uint32_t PDZCR67;                               /*!< Offset 0x06C PWM67 Dead Zone Control Register */
+	uint32_t reserved_0x070 [0x0004];
+	__IO uint32_t PER;                                   /*!< Offset 0x080 PWM Enable Register */
+	uint32_t reserved_0x084 [0x0003];
+	__IO uint32_t PGR0;                                  /*!< Offset 0x090 PWM Group0 Register */
+	__IO uint32_t PGR1;                                  /*!< Offset 0x094 PWM Group1 Register */
+	__IO uint32_t PGR2;                                  /*!< Offset 0x098 PWM Group2 Register */
+	__IO uint32_t PGR3;                                  /*!< Offset 0x09C PWM Group3 Register */
+	uint32_t reserved_0x0A0 [0x0008];
+	__IO uint32_t CER;                                   /*!< Offset 0x0C0 Capture Enable Register */
+	uint32_t reserved_0x0C4 [0x000F];
+	PWM_CH_TypeDef CH [0x008];                           /*!< Offset 0x100 Channels[0..7] */
+} PWM_TypeDef; /* size of structure = 0x200 */
 /* Generated section end */
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
@@ -2303,7 +2353,8 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define USBOHCI1	((struct ohci_registers *) (USBEHCI1_BASE + 0x0400))		/*!< \brief USBOHCI1 Interface register set access pointer */
 #define USBPHY1		((USBPHYC_TypeDef *) (USBEHCI1_BASE + 0x0800))				/*!< \brief USBPHY1 Interface register set access pointer */
 
-#define DMAC		((DMAC_TypeDef *) DMAC_BASE)							/*!< \brief DMAC Interface register set access pointer */
+#define DMAC		((DMAC_TypeDef *) DMAC_BASE)						/*!< \brief DMAC Interface register set access pointer */
+#define PWM			((PWM_TypeDef *) PWM_BASE)							/*!< \brief PWM Interface register set access pointer */
 
 
 enum DMAC_SrcReqType
