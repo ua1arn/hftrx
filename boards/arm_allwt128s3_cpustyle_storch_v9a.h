@@ -803,6 +803,7 @@
 	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
 	#define WITHHWDCDCFREQMIN 400000L
 	#define WITHHWDCDCFREQMAX 1200000L
+	#define ALLW_PWMIX 5	/* PWM5 */
 
 	// PF6 - DC-DC synchro output
 	// PWM5 AF6
