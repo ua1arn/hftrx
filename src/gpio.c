@@ -882,18 +882,18 @@ static void gpioX_updown(
 	)
 {
 	const portholder_t iopins = ioup | iodown;
-	const portholder_t pull0mask = power2(iopins >> 0) * 0x03;				/* PULL0 bits */
+	const portholder_t pull0 = power2(iopins >> 0) * 0x03;		/* PULL0 bits */
 	const portholder_t pull0up = power2(ioup >> 0);
 	const portholder_t pull0down = power2(iodown >> 0);
-	const portholder_t pull1mask = power2(iopins >> 16) * 0x03;			/* PULL1 bits */
+	const portholder_t pull1 = power2(iopins >> 16) * 0x03;		/* PULL1 bits */
 	const portholder_t pull1up = power2(ioup >> 16);
 	const portholder_t pull1down = power2(iodown >> 16);
 
 	const uint32_t cpsr = gpioX_lock(gpio);
 
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
-	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0mask) | (0x01 * pull0up) | (0x02 * pull0down);
-	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1mask) | (0x01 * pull1up) | (0x02 * pull1down);
+	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0) | (0x01 * pull0up) | (0x02 * pull0down);
+	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1) | (0x01 * pull1up) | (0x02 * pull1down);
 
 	gpioX_unlock(gpio, cpsr);
 }
