@@ -78,6 +78,10 @@ void spool_encinterrupt(void)
 {
 	const uint_fast8_t new_val = hardware_get_encoder_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
+#if defined (ENCODER_INT_ACK)
+	ENCODER_INT_ACK();
+#endif /* defined (ENCODER_INT_ACK) */
+
 	SPIN_LOCK(& enc1lock);
 #if ENCODER_REVERSE
 	position1 -= graydecoder [old_val][new_val];
@@ -96,6 +100,9 @@ void spool_encinterrupt2(void)
 {
 	const uint_fast8_t new_val = hardware_get_encoder2_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
+#if defined (ENCODER2_INT_ACK)
+	ENCODER2_INT_ACK();
+#endif /* defined (ENCODER2_INT_ACK) */
 	SPIN_LOCK(& enc2lock);
 
 #if ENCODER2_REVERSE
