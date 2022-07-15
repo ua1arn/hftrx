@@ -7,6 +7,7 @@ SET OUTFILE=cmsis_t113s3.h
 %CONVERTER% sys_cfg.txt SYS_CFG >> %OUTFILE%
 %CONVERTER% uart.txt UART >> %OUTFILE%
 %CONVERTER% gpio.txt GPIO >> %OUTFILE%
+%CONVERTER% gpioint.txt GPIOINT >> %OUTFILE%
 %CONVERTER% smhc.txt SMHC >> %OUTFILE%
 %CONVERTER% i2s_pcm.txt I2S_PCM >> %OUTFILE%
 %CONVERTER% dmic.txt DMIC >> %OUTFILE%

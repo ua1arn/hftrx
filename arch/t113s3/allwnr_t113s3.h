@@ -349,6 +349,13 @@ typedef enum IRQn
 #define GPIOF_BASE		(GPIO_BASE + 0x030 * 5)		/*!< (GPIOF       ) Base Address */
 #define GPIOG_BASE		(GPIO_BASE + 0x030 * 6)		/*!< (GPIOG       ) Base Address */
 
+#define GPIOINTB_BASE		(GPIO_BASE + 0x200 + 0x020 * 1)		/*!< (GPIOINTB       ) Base Address */
+#define GPIOINTC_BASE		(GPIO_BASE + 0x200 + 0x020 * 2)		/*!< (GPIOINTC       ) Base Address */
+#define GPIOINTD_BASE		(GPIO_BASE + 0x200 + 0x020 * 3)		/*!< (GPIOINTD       ) Base Address */
+#define GPIOINTE_BASE		(GPIO_BASE + 0x200 + 0x020 * 4)		/*!< (GPIOINTE       ) Base Address */
+#define GPIOINTF_BASE		(GPIO_BASE + 0x200 + 0x020 * 5)		/*!< (GPIOINTF       ) Base Address */
+#define GPIOINTG_BASE		(GPIO_BASE + 0x200 + 0x020 * 6)		/*!< (GPIOINTG       ) Base Address */
+
 #define G2D_TOP_BASE        (0x00000 + G2D_BASE)
 #define G2D_MIXER_BASE      (0x00100 + G2D_BASE)
 #define G2D_BLD_BASE        (0x00400 + G2D_BASE)
@@ -669,6 +676,19 @@ typedef struct GPIO_Type
 	__IO uint32_t PULL [0x002];                          /*!< Offset 0x024 Pull Register */
 	uint32_t reserved_0x02C;
 } GPIO_TypeDef; /* size of structure = 0x030 */
+/*
+ * @brief GPIOINT
+ */
+/*!< GPIOINT Controller Interface */
+typedef struct GPIOINT_Type
+{
+	__IO uint32_t EINT_CFG [0x002];                      /*!< Offset 0x000 External Interrupt Configure Registers */
+	uint32_t reserved_0x008 [0x0002];
+	__IO uint32_t EINT_CTL;                              /*!< Offset 0x010 External Interrupt Control Register */
+	__IO uint32_t EINT_STATUS;                           /*!< Offset 0x014 External Interrupt Status Register */
+	__IO uint32_t EINT_DEB;                              /*!< Offset 0x018 External Interrupt Debounce Register */
+	uint32_t reserved_0x01C;
+} GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
  * @brief SMHC
  */
@@ -2259,12 +2279,21 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define UART3      ((UART_TypeDef *) UART3_BASE)		/*!< \brief UART3 Interface register set access pointer */
 #define UART4      ((UART_TypeDef *) UART4_BASE)		/*!< \brief UART4 Interface register set access pointer */
 #define UART5      ((UART_TypeDef *) UART5_BASE)		/*!< \brief UART5 Interface register set access pointer */
+
 #define GPIOB      ((GPIO_TypeDef *) GPIOB_BASE)		/*!< \brief GPIOB Interface register set access pointer */
 #define GPIOC      ((GPIO_TypeDef *) GPIOC_BASE)		/*!< \brief GPIOC Interface register set access pointer */
 #define GPIOD      ((GPIO_TypeDef *) GPIOD_BASE)		/*!< \brief GPIOD Interface register set access pointer */
 #define GPIOE      ((GPIO_TypeDef *) GPIOE_BASE)		/*!< \brief GPIOE Interface register set access pointer */
 #define GPIOF      ((GPIO_TypeDef *) GPIOF_BASE)		/*!< \brief GPIOF Interface register set access pointer */
 #define GPIOG      ((GPIO_TypeDef *) GPIOG_BASE)		/*!< \brief GPIOG Interface register set access pointer */
+
+#define GPIOINTB   ((GPIOINT_TypeDef *) GPIOINTB_BASE)	/*!< \brief GPIOINTB Interface register set access pointer */
+#define GPIOINTC   ((GPIOINT_TypeDef *) GPIOINTC_BASE)	/*!< \brief GPIOINTC Interface register set access pointer */
+#define GPIOINTD   ((GPIOINT_TypeDef *) GPIOINTD_BASE)	/*!< \brief GPIOINTD Interface register set access pointer */
+#define GPIOINTE   ((GPIOINT_TypeDef *) GPIOINTE_BASE)	/*!< \brief GPIOINTE Interface register set access pointer */
+#define GPIOINTF   ((GPIOINT_TypeDef *) GPIOINTF_BASE)	/*!< \brief GPIOINTF Interface register set access pointer */
+#define GPIOINTG   ((GPIOINT_TypeDef *) GPIOINTG_BASE)	/*!< \brief GPIOINTG Interface register set access pointer */
+
 #define SYS_CFG 	((SYS_CFG_TypeDef *) SYS_CFG_BASE)	/*!< \brief SYS_CFG Interface register set access pointer */
 #define SMHC0      	((SMHC_TypeDef *) SMHC0_BASE)		/*!< \brief SMHC0 Interface register set access pointer */
 #define SMHC1      	((SMHC_TypeDef *) SMHC1_BASE)		/*!< \brief SMHC1 Interface register set access pointer */
