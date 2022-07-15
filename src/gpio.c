@@ -928,7 +928,6 @@ gpioX_onchangeinterrupt(
 		)
 {
 	const unsigned gpioix = (gpio - GPIOBLOCK->GPIO_PINS);
-	const unsigned IRQbase = gpioix * 32 + GPIOA0_IRQn;
 	GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
 	unsigned pos;
 	//	0x0: Positive Edge
@@ -962,8 +961,7 @@ gpioX_onchangeinterrupt(
 		const portholder_t mask = (portholder_t) 0x01L << pos;
 		if ((ipins & mask) == 0)
 			continue;
-		arm_hardware_set_handler(IRQbase + pos, handler, priority, targetcpu);
-
+		arm_hardware_set_handler(GPIOB_NS_IRQn + gpioix * 2 - 2, handler, priority, targetcpu);	/* GPIOx_NS */
 	}
 
 	ints->EINT_CTL |= ipins;
