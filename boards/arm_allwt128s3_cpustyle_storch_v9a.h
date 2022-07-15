@@ -208,7 +208,7 @@
 	#define BOARD_GT911_INT_CONNECT() do { \
 		arm_hardware_pioe_inputs(BOARD_GT911_INT_PIN); \
 		arm_hardware_pioe_updown(BOARD_GT911_INT_PIN, 0); \
-		arm_hardware_pioe_onchangeinterrupt(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+		gpioX_onchangeinterrupt(GPIOE, BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
 	} while (0)
 	//gt911_interrupt_handler
 
@@ -235,10 +235,10 @@
 		do { \
 			arm_hardware_pioe_inputs(ENCODER_BITS); \
 			arm_hardware_pioe_updown(ENCODER_BITS, 0); \
-			arm_hardware_pioe_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			gpioX_onchangeinterrupt(GPIOE, ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT,spool_encinterrupt); \
 			arm_hardware_pioe_inputs(ENCODER2_BITS); \
 			arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
-			arm_hardware_pioe_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			gpioX_onchangeinterrupt(GPIOE, 0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt2); \
 		} while (0)
 
 #endif

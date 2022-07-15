@@ -583,6 +583,15 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		portholder_t mask,
 		portholder_t state
 		);
+	void
+	gpioX_onchangeinterrupt(
+			GPIO_TypeDef * gpio,
+			portholder_t ipins,
+			portholder_t raise, portholder_t fall,
+			uint32_t priority,
+			uint_fast8_t targetcpu,
+			void (* handler)(void)
+			);
 #endif /* CPUSTYPE_T113 */
 
 

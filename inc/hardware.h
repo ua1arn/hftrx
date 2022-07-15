@@ -583,6 +583,9 @@ void hardware_encoder_initialize(void);
 uint_fast8_t hardware_get_encoder_bits(void);/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 uint_fast8_t hardware_get_encoder2_bits(void);/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
+void gt911_interrupt_handler(void);
+void stmpe811_interrupt_handler(void);
+
 void hardware_adc_initialize(void);
 
 void watchdog_initialize(void);	/* разрешение сторожевого таймера в устройстве */
