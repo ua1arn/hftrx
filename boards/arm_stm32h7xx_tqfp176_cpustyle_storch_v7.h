@@ -217,6 +217,9 @@
 		/* arm_hardware_piod_altfn2(1uL << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
 		/* arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
+#else /* WITHSAI1HW */
+	#define SAI2HW_INITIALIZE()	do { \
+	} while (0)
 #endif /* WITHSAI1HW */
 
 /* Распределение битов в ARM контроллерах */
