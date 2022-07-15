@@ -537,8 +537,8 @@ void elements_state (window_t * win)
 				gui_elements [gui_element_count].type = TYPE_TEXT_FIELD;
 				gui_element_count ++;
 				debug_num ++;
-				tff->record = calloc(tff->h_str, sizeof(record_t));
-				GUI_MEM_ASSERT(tff->record);
+				tff->string = calloc(tff->h_str, sizeof(tf_entry_t));
+				GUI_MEM_ASSERT(tff->string);
 				tff->index = 0;
 			}
 			else
@@ -546,8 +546,8 @@ void elements_state (window_t * win)
 				debug_num --;
 				gui_element_count --;
 				tff->visible = NON_VISIBLE;
-				free(tff->record);
-				tff->record = NULL;
+				free(tff->string);
+				tff->string = NULL;
 				ASSERT(gui_element_count >= gui.footer_buttons_count);
 			}
 		}
@@ -1309,8 +1309,11 @@ void textfield_add_string(text_field_t * tf, const char * str, COLORMAIN_T color
 {
 	ASSERT(tf != NULL);
 
-	strncpy(tf->record [tf->index].text, str, TEXT_ARRAY_SIZE - 1);
-	tf->record [tf->index].color_line = color;
+	tf_entry_t * rec = &  tf->string [tf->index];
+
+	memset(rec->text, 0, ARRAY_SIZE(rec->text));
+	memcpy(rec->text, str, strlen(str));
+	rec->color_line = color;
 	tf->index ++;
 	tf->index = tf->index >= tf->h_str ? 0 : tf->index;
 }
@@ -1320,7 +1323,7 @@ void textfield_clean(text_field_t * tf)
 {
 	ASSERT(tf != NULL);
 	tf->index = 0;
-	memset(tf->record, 0, tf->h_str * sizeof(record_t));
+	memset(tf->string, 0, tf->h_str * sizeof(tf_entry_t));
 }
 
 /* Селектор запуска функций обработки событий */
@@ -1703,12 +1706,12 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 								if (tf->font)
 								{
 									UB_Font_DrawString(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * pos,
-											tf->record[j].text, tf->font, tf->record[j].color_line);
+											tf->string[j].text, tf->font, tf->string[j].color_line);
 								}
 								else
 								{
 									colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * pos,
-											tf->record[j].text, tf->record[j].color_line);
+											tf->string[j].text, tf->string[j].color_line);
 								}
 
 								j --;

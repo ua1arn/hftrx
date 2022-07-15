@@ -57,7 +57,7 @@ enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 enum { freq_swipe_step_vals = ARRAY_SIZE(freq_swipe_step) };
 
 static text_field_t * tf_debug = NULL;
-static record_t tmpbuf[TEXT_ARRAY_SIZE];
+static tf_entry_t tmpbuf[TEXT_ARRAY_SIZE];
 static uint_fast8_t tmpstr_index = 0;
 
 #if GUI_SHOW_INFOBAR
@@ -186,7 +186,10 @@ void gui_add_debug(char d)
 	static uint_fast8_t i = 0;
 
 	if (d == '\r')
+	{
 		i = 0;
+		return;
+	}
 
 	if (d != '\n')
 	{
@@ -202,7 +205,7 @@ void gui_add_debug(char d)
 		{
 			if (tmpstr_index < TEXT_ARRAY_SIZE)
 			{
-				strncpy(tmpbuf[tmpstr_index].text, str, TEXT_ARRAY_SIZE - 1);
+				memcpy(tmpbuf[tmpstr_index].text, str, TEXT_ARRAY_SIZE);
 				tmpstr_index ++;
 			}
 		}

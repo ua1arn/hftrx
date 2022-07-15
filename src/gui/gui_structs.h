@@ -99,7 +99,7 @@ typedef struct {
 typedef struct {
    char text[TEXT_ARRAY_SIZE];
    COLORMAIN_T color_line;
-} record_t;
+} tf_entry_t;
 
 typedef struct {
 	uint16_t w_sim;		// ширина строки в символах
@@ -111,7 +111,7 @@ typedef struct {
 	UB_Font * font;		// NULL - SMALLCHAR2
 	char name [NAME_ARRAY_SIZE];
 	uint8_t index;
-	record_t * record;
+	tf_entry_t * string;
 	uint16_t x1;
 	uint16_t y1;
 	uint16_t w;
