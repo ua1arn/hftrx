@@ -16121,6 +16121,8 @@ void display2_menu_valxx(
 			msg = PSTR("ZYNQ USCALE");
 #elif CPUSTYLE_R7S721
 			msg = PSTR("RENESAS");
+#elif CPUSTYPE_T113
+			msg = PSTR("Allw T128-S3");
 #else
 			msg = PSTR("CPUxxx");
 #endif
