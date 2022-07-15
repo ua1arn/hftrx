@@ -667,8 +667,7 @@ typedef struct GPIO_Type
 /*!< GPIOINT Controller Interface */
 typedef struct GPIOINT_Type
 {
-	__IO uint32_t EINT_CFG [0x002];                      /*!< Offset 0x000 External Interrupt Configure Registers */
-	uint32_t reserved_0x008 [0x0002];
+	__IO uint32_t EINT_CFG [0x004];                      /*!< Offset 0x000 External Interrupt Configure Registers */
 	__IO uint32_t EINT_CTL;                              /*!< Offset 0x010 External Interrupt Control Register */
 	__IO uint32_t EINT_STATUS;                           /*!< Offset 0x014 External Interrupt Status Register */
 	__IO uint32_t EINT_DEB;                              /*!< Offset 0x018 External Interrupt Debounce Register */

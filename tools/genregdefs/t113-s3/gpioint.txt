@@ -1,5 +1,5 @@
 EINT_CFG
-0x000 2
+0x000 4
 External Interrupt Configure Registers
 EINT_CTL
 0x010
