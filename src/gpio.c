@@ -930,6 +930,31 @@ gpioX_onchangeinterrupt(
 	const unsigned IRQbase = gpioix * 32 + GPIOA0_IRQn;
 	GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
 	unsigned pos;
+	//	0x0: Positive Edge
+	//	0x1: Negative Edge
+	//	0x2: High Level
+	//	0x3: Low Level
+	//	0x4: Double Edge (Positive/Negative)
+
+	unsigned cfgbits = 0;	// default - high level
+
+	if (! raise && ! fall)
+		cfgbits = 0x00;		// default - high level
+	else if (raise && ! fall)
+		cfgbits = 0x00;		// 0x0: Positive Edge
+	else if (! raise && fall)
+		cfgbits = 0x01;		// 0x1: Negative Edge
+	else if (raise && fall)
+		cfgbits = 0x04;		// 0x4: Double Edge (Positive/Negative)
+
+	const portholder_t cfg0 = power4(ipins >> 0);		/* EINT_CFG0 bits */
+	const portholder_t cfg1 = power4(ipins >> 8);		/* EINT_CFG1 bits */
+	const portholder_t cfg2 = power4(ipins >> 16);		/* EINT_CFG2 bits */
+	const portholder_t cfg3 = power4(ipins >> 24);		/* EINT_CFG3 bits */
+	ints->EINT_CFG [0] = (ints->EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
+	ints->EINT_CFG [1] = (ints->EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
+	ints->EINT_CFG [2] = (ints->EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
+	ints->EINT_CFG [3] = (ints->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
 
 	for (pos = 0; pos < 32; ++ pos)
 	{
