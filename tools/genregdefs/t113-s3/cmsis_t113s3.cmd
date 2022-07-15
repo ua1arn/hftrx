@@ -73,3 +73,5 @@ rem %CONVERTER% c0_cpux_mbist.txt C0_CPUX_MBIST >> %OUTFILE%
 %CONVERTER% pwm.txt PWM >> %OUTFILE%
 
 @echo /* Generated section end */ >> %OUTFILE%
+
+@pause
