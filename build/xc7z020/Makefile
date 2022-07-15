@@ -66,6 +66,7 @@ DADEFS = -D__ASSEMBLY__=1
 ARCHDIR = $(PRJROOT)/arch/zynq
 
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020
+ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
 # full qualified name
 ZYNQLIB = zynq7020.a
@@ -132,7 +133,7 @@ SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(MDLWHOSTDIR)
 #SRCDIRS += $(MDLWUSBDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
-SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
+#SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
 

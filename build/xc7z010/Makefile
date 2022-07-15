@@ -66,6 +66,7 @@ DADEFS = -D__ASSEMBLY__=1
 ARCHDIR = $(PRJROOT)/arch/zynq
 
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010
+ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
 # full qualified name
 ZYNQLIB = zynq7010.a
@@ -131,7 +132,7 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
-SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
+#SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
 # Define project name here
 PROJECT = tc1_xc7z010
