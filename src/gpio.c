@@ -948,8 +948,10 @@ static void ALLW_GPIO_IRQ_Handler_GPIOE(void)
 	const unsigned status = GPIOINTE->EINT_STATUS;
 	GPIOINTE->EINT_STATUS = status;
 
+#if ENCODER_BITS
 	if ((status & ENCODER_BITS) != 0)
 		spool_encinterrupt();
+#endif /* ENCODER_BITS */
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOF(void)
