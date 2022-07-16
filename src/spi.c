@@ -511,7 +511,25 @@ static void spi_operate_low(lowspiio_t * iospi)
 
 	spi_operate_lock();
 
-	spi_select2(target, iospi->spimode, iospi->spispeedindex);
+	switch (iospi->spiiosize)
+	{
+	case SPIIOSIZE_U8:
+		spi_select2(target, iospi->spimode, iospi->spispeedindex);
+		break;
+#if WITHSPI16BIT
+	case SPIIOSIZE_U16:
+		hardware_spi_connect_b16(iospi->spispeedindex, iospi->spimode);
+		break;
+#endif /* WITHSPI16BIT */
+#if WITHSPI32BIT
+	case SPIIOSIZE_U32:
+		hardware_spi_connect_b32(iospi->spispeedindex, iospi->spimode);
+		break;
+#endif /* WITHSPI32BIT */
+	default:
+		ASSERT(0);
+		break;
+	}
 	local_delay_us(iospi->csdelayUS);
 
 	ASSERT(iospi->count <= ARRAY_SIZE(iospi->chunks));
@@ -526,31 +544,131 @@ static void spi_operate_low(lowspiio_t * iospi)
 		switch (iospi->chunks [i].spiiotype)
 		{
 		case SPIIO_TX:
+			switch (iospi->spiiosize)
 			{
-				const uint8_t * txbuff = ex->txbuff;
-				spi_progval8_p1(target, * txbuff);
-				while (-- size)
-					spi_progval8_p2(target, * ++ txbuff);
-				spi_complete(target);
+			case SPIIOSIZE_U8:
+				{
+					const uint8_t * txbuff = ex->txbuff;
+					spi_progval8_p1(target, * txbuff);
+					while (-- size)
+						spi_progval8_p2(target, * ++ txbuff);
+					spi_complete(target);
+				}
+				break;
+		#if WITHSPI16BIT
+			case SPIIOSIZE_U16:
+				{
+					const uint16_t * txbuff = ex->txbuff;
+					hardware_spi_b16_p1(* txbuff);
+					while (-- size)
+						hardware_spi_b16_p2(* ++ txbuff);
+					hardware_spi_complete_b16();
+				}
+				break;
+		#endif /* WITHSPI16BIT */
+		#if WITHSPI32BIT
+			case SPIIOSIZE_U32:
+				{
+					const uint32_t * txbuff = ex->txbuff;
+					hardware_spi_b32_p1(* txbuff);
+					while (-- size)
+						hardware_spi_b32_p2(* ++ txbuff);
+					hardware_spi_complete_b32();
+				}
+				break;
+		#endif /* WITHSPI32BIT */
+			default:
+				ASSERT(0);
+				break;
 			}
 			break;
 		case SPIIO_RX:
+			switch (iospi->spiiosize)
 			{
-				uint8_t * rxbuff = ex->rxbuff;
-				spi_to_read(target);
-				while (size --)
-					* rxbuff ++ = spi_read_byte(target, 0xff);
-				spi_to_write(target);
+			case SPIIOSIZE_U8:
+				{
+					uint8_t * rxbuff = ex->rxbuff;
+					spi_to_read(target);
+					while (size --)
+						* rxbuff ++ = spi_read_byte(target, 0xff);
+					spi_to_write(target);
+				}
+				break;
+		#if WITHSPI16BIT
+			case SPIIOSIZE_U16:
+				{
+					uint16_t * rxbuff = ex->rxbuff;
+					spi_to_read(target);
+					while (size --)
+					{
+						hardware_spi_b16_p1(0xFFFF);
+						* rxbuff ++ = hardware_spi_complete_b16();
+					}
+					spi_to_write(target);
+				}
+				break;
+		#endif /* WITHSPI16BIT */
+		#if WITHSPI32BIT
+			case SPIIOSIZE_U32:
+				{
+					uint32_t * rxbuff = ex->rxbuff;
+					spi_to_read(target);
+					while (size --)
+					{
+						hardware_spi_b32_p1(0xFFFFFFFF);
+						* rxbuff ++ = hardware_spi_complete_b32();
+					}
+					spi_to_write(target);
+				}
+				break;
+		#endif /* WITHSPI32BIT */
+			default:
+				ASSERT(0);
+				break;
 			}
 			break;
 #if SPI_BIDIRECTIONAL
 #else /* SPI_BIDIRECTIONAL */
 		case SPIIO_EXCHANGE:
+			switch (iospi->spiiosize)
 			{
-				uint8_t * rxbuff = ex->rxbuff;
-				const uint8_t * txbuff = ex->txbuff;
-				while (size --)
-					* rxbuff ++ = spi_read_byte(target, * txbuff ++);
+			case SPIIOSIZE_U8:
+				{
+					uint8_t * rxbuff = ex->rxbuff;
+					const uint8_t * txbuff = ex->txbuff;
+					while (size --)
+						* rxbuff ++ = spi_read_byte(target, * txbuff ++);
+				}
+				break;
+		#if WITHSPI16BIT
+			case SPIIOSIZE_U16:
+				{
+					uint16_t * rxbuff = ex->rxbuff;
+					const uint16_t * txbuff = ex->txbuff;
+					while (size --)
+					{
+						hardware_spi_b16_p1(* txbuff ++);
+						* rxbuff ++ = hardware_spi_complete_b16();
+					}
+				}
+				break;
+		#endif /* WITHSPI16BIT */
+		#if WITHSPI32BIT
+			case SPIIOSIZE_U32:
+				{
+					uint32_t * rxbuff = ex->rxbuff;
+					const uint32_t * txbuff = ex->txbuff;
+					while (size --)
+					{
+						hardware_spi_b32_p1(* txbuff ++);
+						* rxbuff ++ = hardware_spi_complete_b32();
+					}
+				}
+				break;
+		#endif /* WITHSPI32BIT */
+			default:
+				ASSERT(0);
+				break;
 			}
 			break;
 #endif /* SPI_BIDIRECTIONAL */
@@ -559,9 +677,27 @@ static void spi_operate_low(lowspiio_t * iospi)
 		}
 	}
 
-	spi_unselect(target);
-	local_delay_us(iospi->csdelayUS);
 
+	switch (iospi->spiiosize)
+	{
+	case SPIIOSIZE_U8:
+		spi_unselect(target);
+		break;
+#if WITHSPI16BIT
+	case SPIIOSIZE_U16:
+		hardware_spi_disconnect();
+		break;
+#endif /* WITHSPI16BIT */
+#if WITHSPI32BIT
+	case SPIIOSIZE_U32:
+		hardware_spi_disconnect();
+		break;
+#endif /* WITHSPI32BIT */
+	default:
+		ASSERT(0);
+		break;
+	}
+	local_delay_us(iospi->csdelayUS);
 	spi_operate_unlock();
 }
 

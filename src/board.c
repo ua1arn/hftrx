@@ -9816,21 +9816,16 @@ mcp3208_read(
 	rv = ((uint_fast32_t) v0 << 16) | v1;
 
 #else
+	// Работа совместно с фоновым обменом SPI по прерываниям
 
-	uint_fast8_t v0, v1, v2, v3;
+	uint8_t txbuf [4];
+	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
-	spi_select2(target, MCP3208_SPISMODE, MCP3208_SPISPEED);	// for 50 kS/S and 24 bit words
-	local_delay_us(MCP3208_usCsDelay);
+	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
 
-	v0 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 24);
-	v1 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
-	v2 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 8);
-	v3 = spi_read_byte(target, 0x00);
+	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
-	spi_unselect(target);
-	local_delay_us(MCP3208_usCsDelay);
-
-	rv = ((uint_fast32_t) v0 << 24) | ((uint_fast32_t) v1 << 16) | ((uint_fast32_t) v2 << 8) | v3;
+	rv = USBD_peek_u32_BE(rxbuf);
 
 #endif
 
