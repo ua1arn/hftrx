@@ -8,10 +8,6 @@
 #include "formats.h"	// for debug prints
 
 //#define WITHBUFFERSDEBUG WITHDEBUG
-//#undef SPIN_LOCK
-//#undef SPIN_UNLOCK
-//#define SPIN_LOCK(p) do { (void) p; } while (0)
-//#define SPIN_UNLOCK(p) do { (void) p; } while (0)
 
 #if WITHINTEGRATEDDSP
 
