@@ -507,8 +507,6 @@ static void spi_operate_low(lowspiio_t * iospi)
 	const spitarget_t target = iospi->target;
 	unsigned i;
 
-	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
-
 	spi_operate_lock();
 
 	switch (iospi->spiiosize)
@@ -519,11 +517,13 @@ static void spi_operate_low(lowspiio_t * iospi)
 #if WITHSPI16BIT
 	case SPIIOSIZE_U16:
 		hardware_spi_connect_b16(iospi->spispeedindex, iospi->spimode);
+		prog_select(target);
 		break;
 #endif /* WITHSPI16BIT */
 #if WITHSPI32BIT
 	case SPIIOSIZE_U32:
 		hardware_spi_connect_b32(iospi->spispeedindex, iospi->spimode);
+		prog_select(target);
 		break;
 #endif /* WITHSPI32BIT */
 	default:
@@ -685,11 +685,13 @@ static void spi_operate_low(lowspiio_t * iospi)
 		break;
 #if WITHSPI16BIT
 	case SPIIOSIZE_U16:
+		prog_unselect(target);
 		hardware_spi_disconnect();
 		break;
 #endif /* WITHSPI16BIT */
 #if WITHSPI32BIT
 	case SPIIOSIZE_U32:
+		prog_unselect(target);
 		hardware_spi_disconnect();
 		break;
 #endif /* WITHSPI32BIT */
@@ -897,6 +899,44 @@ void prog_spi_exchange_low(
 	spi_operate_low(& io);
 }
 
+#if WITHSPI32BIT
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// Выдача и прием ответных байтов
+void prog_spi_exchange32_low(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint32_t * txbuff,
+	uint32_t * rxbuff,
+	unsigned int size
+	)
+{
+	// Работа совместно с фоновым обменом SPI по прерываниям
+
+	lowspiio_t io;
+
+	io.target = target;
+	io.spispeedindex = spispeedindex;
+	io.spimode = spimode;
+	io.csdelayUS = csdelayUS;
+	io.spiiosize = SPIIOSIZE_U32;
+
+	unsigned i = 0;
+	{
+		io.chunks [i].spiiotype = SPIIO_EXCHANGE;
+		io.chunks [i].bytecount = size;
+		io.chunks [i].txbuff = txbuff;
+		io.chunks [i].rxbuff = rxbuff;
+		++ i;
+	}
+
+	io.count = i;
+
+	spi_operate_low(& io);
+}
+
+#endif /* WITHSPI32BIT */
 
 #if USESPILOCK
 

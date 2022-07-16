@@ -339,6 +339,16 @@ void prog_spi_exchange_low(
 	uint8_t * rxbuff,
 	unsigned int size
 	);
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// Выдача и прием ответных байтов
+void prog_spi_exchange32_low(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint32_t * txbuff,
+	uint32_t * rxbuff,
+	unsigned int size
+	);
 
 void spi_operate_lock(void);
 void spi_operate_unlock(void);

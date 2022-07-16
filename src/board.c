@@ -9853,6 +9853,16 @@ mcp3208_read_low(
 
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
+#if WITHSPI32BIT
+	uint32_t txbuf [1];
+	uint32_t rxbuf [ARRAY_SIZE(txbuf)];
+
+	txbuf [0] = (uint_fast32_t) cmd1 << (LSBPOS + 14);
+
+	prog_spi_exchange32_low(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+
+	rv = rxbuf [0];
+#else
 	uint8_t txbuf [4];
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
@@ -9861,6 +9871,7 @@ mcp3208_read_low(
 	prog_spi_exchange_low(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
 	rv = USBD_peek_u32_BE(rxbuf);
+#endif /* WITHSPI32BIT */
 
 	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
 	return (rv >> LSBPOS) & 0xFFF;
