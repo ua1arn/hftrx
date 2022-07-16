@@ -492,12 +492,12 @@ typedef struct lowspiio_tag
 
 static SPINLOCK_t spilock = SPINLOCK_INIT;
 
-static void spi_operate_lock(void)
+void spi_operate_lock(void)
 {
 	SPIN_LOCK(& spilock);
 }
 
-static void spi_operate_unlock(void)
+void spi_operate_unlock(void)
 {
 	SPIN_UNLOCK(& spilock);
 }

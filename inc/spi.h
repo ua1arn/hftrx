@@ -340,6 +340,8 @@ void prog_spi_exchange_low(
 	unsigned int size
 	);
 
+void spi_operate_lock(void);
+void spi_operate_unlock(void);
 
 #if SPI_BIDIRECTIONAL
 

@@ -7269,6 +7269,10 @@ board_fpga_fir_complete(void)
 static void
 board_fpga_fir_connect(void)
 {
+#if WITHSPILOWSUPPORTT
+	system_disableIRQ();
+	spi_operate_lock();
+#endif /* WITHSPILOWSUPPORTT */
 #if WITHSPI32BIT
 	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
 
@@ -7318,6 +7322,10 @@ board_fpga_fir_disconnect(void)
 	hardware_spi_disconnect();
 #else /* WITHSPIHW */
 #endif
+#if WITHSPILOWSUPPORTT
+	spi_operate_unlock();
+	system_enableIRQ();
+#endif /* WITHSPILOWSUPPORTT */
 }
 
 /*
