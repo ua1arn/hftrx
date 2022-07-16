@@ -38,7 +38,7 @@
 #include "board.h"
 #include "xc7z_inc.h"
 
-#define COUNTS_PER_MSECOND  (XPAR_CPU_CORTEXA9_CORE_CLOCK_FREQ_HZ / (2U*1000U))
+#define COUNTS_PER_MSECOND  (XPAR_CPU_CORTEXA9_CORE_CLOCK_FREQ_HZ / (2U * 1000U))
 #define RESET_RX_CNTR_LIMIT	400
 #define ETH_LINK_DETECT_INTERVAL 4
 
@@ -54,8 +54,8 @@ static uint_fast8_t network_inited = 0;
 volatile int dhcp_timoutcntr = 24;
 volatile int TcpFastTmrFlag = 0;
 volatile int TcpSlowTmrFlag = 0;
-static int ResetRxCntr = 0;
 static volatile uint32_t sys_now_counter = 0;
+static struct udp_pcb * udp_pcb = NULL;
 
 void board_update_time(uint32_t sec)
 {
@@ -158,54 +158,70 @@ int start_echo_server(void)
 	return 0;
 }
 
+void udp_receive(void * arg, struct udp_pcb * pcb, struct pbuf * p_rx, const ip_addr_t * addr, u16_t port)
+{
+	if(p_rx != NULL)
+	{
+		char * pData = (char *) p_rx->payload;
+		PRINTF("%s\n", pData);
+	}
+	pbuf_free(p_rx);
+}
+
+
+int start_udp(unsigned int port) {
+	err_t err;
+	udp_pcb = udp_new();
+	if (! udp_pcb) {
+		PRINTF("Error creating PCB. Out of Memory\n");
+		return -1;
+	}
+	/* bind to specified @port */
+	err = udp_bind(udp_pcb, IP_ADDR_ANY, port);
+	if (err != ERR_OK) {
+		PRINTF("Unable to bind to port %d: err = %d\n", port, err);
+		return -2;
+	}
+	udp_recv(udp_pcb, udp_receive, 0);
+
+	return 0;
+}
+
 uint32_t sys_now(void)
 {
 	return sys_now_counter;
 }
 
+/* must be called every 1 ms */
 void lwip_timer_spool(void)
 {
-	static int DetectEthLinkStatus = 0;
-	static int odd = 1;
-	static int dhcp_timer = 0;
-
 	sys_now_counter ++;
 
 	sys_check_timeouts();
 
 	if (network_inited)
-		network_spool();
+		xemacif_input(netif);
 
-	DetectEthLinkStatus++;
-	TcpFastTmrFlag = 1;
-	odd = !odd;
-	ResetRxCntr ++;
-	if (odd)
-	{
-#if LWIP_DHCP==1
-		dhcp_timer ++;
-		dhcp_timoutcntr --;
-#endif
-		TcpSlowTmrFlag = 1;
-#if LWIP_DHCP == 1
-		dhcp_fine_tmr();
-		if (dhcp_timer >= 120)
-		{
-			dhcp_coarse_tmr();
-			dhcp_timer = 0;
-		}
-	}
-#endif
-	if (ResetRxCntr >= RESET_RX_CNTR_LIMIT)
-	{
-		xemacpsif_resetrx_on_no_rxdata(netif);
-		ResetRxCntr = 0;
-	}
-	if (DetectEthLinkStatus == ETH_LINK_DETECT_INTERVAL)
-	{
+	if (sys_now_counter % ETH_LINK_DETECT_INTERVAL == 0)
 		eth_link_detect(netif);
-		DetectEthLinkStatus = 0;
+
+	if (sys_now_counter % RESET_RX_CNTR_LIMIT == 0)
+		xemacpsif_resetrx_on_no_rxdata(netif);
+
+	if (sys_now_counter % TCP_FAST_INTERVAL == 0)
+	{
+		tcp_fasttmr();
+		dhcp_timoutcntr --;
 	}
+
+	if (sys_now_counter % TCP_SLOW_INTERVAL == 0)
+		tcp_slowtmr();
+
+	if (sys_now_counter % DHCP_FINE_TIMER_MSECS == 0)
+		dhcp_fine_tmr();
+
+	if (sys_now_counter % DHCP_COARSE_TIMER_MSECS == 0)
+		dhcp_coarse_tmr();
 }
 
 /* вызывается при разрешённых прерываниях. */
@@ -270,21 +286,14 @@ void network_initialize(void)
 
 	start_echo_server();
 	httpd_init();
+	start_udp(48700);
 
 	network_inited = 1;
 }
 
 void network_spool(void)
 {
-	if (TcpFastTmrFlag) {
-		tcp_fasttmr();
-		TcpFastTmrFlag = 0;
-	}
-	if (TcpSlowTmrFlag) {
-		tcp_slowtmr();
-		TcpSlowTmrFlag = 0;
-	}
-	xemacif_input(netif);
+
 }
 
 #elif WITHLWIP
