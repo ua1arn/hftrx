@@ -2376,7 +2376,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		else if (ep0_csr & MUSB2_MASK_CSR0L_SETUPEND)
 		{
 			usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_SETUPEND_CLR);
-			PRINTF("WRN: EP0 Setup End!!\n");
+			//PRINTF("WRN: EP0 Setup End!!\n");
 		}
 		else if (!(ep0_csr & MUSB2_MASK_CSR0L_TXPKTRDY))
 		{
