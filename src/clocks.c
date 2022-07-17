@@ -6633,8 +6633,7 @@ sysinit_pll_initialize(void)
 #if WITHDCDCFREQCTL
 
 	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
-	static unsigned pwm5ticksfreq = 50000000; /* Allwinner t113-s3 Set PCCR01[PWM01_CLK_SRC] to select HOSC or APB0 clock. */
-	//static unsigned pwm5ticksfreq = 64000000; //allwnrt113_get_hosc_freq() / 2;	/* Allwinner t113-s3 */
+	#define PWM5TICKSFREQ (allwnrt113_get_apb0_freq() / 2)	/* Allwinner t113-s3 */
 	/*
 		получение делителя частоты для синхронизации DC-DC конверторов
 		для исключения попадания в полосу обзора панорамы гармоник этой частоты.
@@ -6701,7 +6700,7 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYPE_T113
 
-		return calcdivround2(pwm5ticksfreq, 760000);
+		return calcdivround2(PWM5TICKSFREQ, 760000);
 
 #endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
 	}
@@ -6821,7 +6820,7 @@ sysinit_pll_initialize(void)
 //		unsigned divM = 1;		/* 0..8:  /1../256 */
 //		unsigned prescalK = 5;	/* 0..255: /1../256 */
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_apb0_freq(), pwm5ticksfreq), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
+		const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_apb0_freq(), PWM5TICKSFREQ), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 		PRINTF("hardware_dcdcfreq_pwm5_initialize: allwnrt113_get_apb0_freq()=%lu, prei=%u, divider=%u\n", allwnrt113_get_apb0_freq(), prei, value);
 		CCU->PWM_BGR_REG |= (1u << 0);	// PWM_GATING
 		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
