@@ -5566,7 +5566,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 #elif WITHDSPEXTDDC
 	// Режимы трансиверов с внешним DDC
 
-	#if 1
+	#if 0
 			// Тестирование - заменить приянтые квадратуры синтезированными
 			inject_testsignals((IFADCvalue_t *) (buff + i));
 
