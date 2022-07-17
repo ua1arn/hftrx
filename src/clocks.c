@@ -6631,6 +6631,8 @@ sysinit_pll_initialize(void)
 
 
 #if WITHDCDCFREQCTL
+
+	static unsigned pwm5ticksfreq = 24000000uL / 2;	/* Allwinner t113-s3 */
 	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
 	/*
 		получение делителя частоты для синхронизации DC-DC конверторов
@@ -6698,7 +6700,7 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYPE_T113
 
-		return 1;
+		return calcdivround2(pwm5ticksfreq, 760000);
 
 #endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
 	}
@@ -6811,7 +6813,6 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYPE_T113
 
-	static unsigned pwm5ticksfreq = 24000000uL / 2;
 
 	void hardware_dcdcfreq_pwm5_initialize(unsigned pwmch)
 	{
@@ -6855,11 +6856,8 @@ sysinit_pll_initialize(void)
 //		PWM->PER |= (1u << (0 + IX));
 	}
 
-	void hardware_dcdcfreq_pwm5_setdiv(unsigned pwmch, uint_fast32_t v)
+	void hardware_dcdcfreq_pwm5_setdiv(unsigned pwmch, uint_fast32_t cycle)
 	{
-		unsigned pwmoutfreq = 760000;
-		unsigned cycle = calcdivround2(pwm5ticksfreq, pwmoutfreq);
-		//enum { IX = HARDWARE_DCDC_PWMCH };
 		PWM->PER |= (1u << (0 + pwmch));
 		PWM->CH [pwmch].PPR =
 			(cycle - 1) * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
@@ -6867,9 +6865,6 @@ sysinit_pll_initialize(void)
 			0;
 		while ((PWM->CH [pwmch].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
 			;
-
-		//PWM->CH [IX].PCR |= (1u << 10);	/* PWM_PUL_START */
-
 	}
 
 
