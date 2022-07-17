@@ -6822,7 +6822,7 @@ sysinit_pll_initialize(void)
 //		unsigned divM = 1;		/* 0..8:  /1../256 */
 //		unsigned prescalK = 5;	/* 0..255: /1../256 */
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(24000000uL, pwm5ticksfreq * 2), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
+		const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), pwm5ticksfreq), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 		PRINTF("hardware_dcdcfreq_pwm5_initialize: prei=%u, divider=%u\n", prei, value);
 		CCU->PWM_BGR_REG |= (1u << 0);	// PWM_GATING
 		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
