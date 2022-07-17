@@ -6632,8 +6632,9 @@ sysinit_pll_initialize(void)
 
 #if WITHDCDCFREQCTL
 
-	static unsigned pwm5ticksfreq = 24000000uL / 2;	/* Allwinner t113-s3 */
 	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
+	static unsigned pwm5ticksfreq = 12000000; /* Allwinner t113-s3 Set PCCR01[PWM01_CLK_SRC] to select HOSC or APB0 clock. */
+	//static unsigned pwm5ticksfreq = 64000000; //allwnrt113_get_hosc_freq() / 2;	/* Allwinner t113-s3 */
 	/*
 		получение делителя частоты для синхронизации DC-DC конверторов
 		для исключения попадания в полосу обзора панорамы гармоник этой частоты.
@@ -6816,7 +6817,7 @@ sysinit_pll_initialize(void)
 
 	void hardware_dcdcfreq_pwm5_initialize(unsigned pwmch)
 	{
-		enum { ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1) };
+		enum { ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2) };
 //		enum { IX = HARDWARE_DCDC_PWMCH };
 //		unsigned divM = 1;		/* 0..8:  /1../256 */
 //		unsigned prescalK = 5;	/* 0..255: /1../256 */
@@ -6831,7 +6832,7 @@ sysinit_pll_initialize(void)
 		//	Step 2 PWM clock source select: Set PCCR01[PWM01_CLK_SRC] to select HOSC or APB0 clock.
 		//	Step 3 PWM clock divider: Set PCCR01[PWM01_CLK_DIV_M] to select different frequency division coefficient (1/2/4/8/16/32/64/128/256).
 		PWM->PCCR [pwmch / 2] = (PWM->PCCR [pwmch / 2] & ~ ((0x03u << 7) | (0x0Fu << 0))) |
-			0x00 * (1u << 7) |	/* 00: HOSC */
+			0x00 * (1u << 7) |	/* 00: HOSC 01: APB0 */
 			(1 << prei) * (1u << 0) | /* Clock Divide M */
 			0;
 		//	Step 4 PWM clock bypass: Set PCGR[PWM_CLK_SRC_BYPASS_TO_PWM] to 1, output the PWM clock after the secondary frequency division to the corresponding PWM output pin.
