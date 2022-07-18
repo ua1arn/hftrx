@@ -50,11 +50,6 @@ static unsigned finddivider(
     return i;
 }
 
-static unsigned distance(unsigned v1, unsigned v2)
-{
-    return (v1 + 1) == v2 || (v2 + 1) == v1;
-}
-
 static void generaterow(
     unsigned divider,
     unsigned f1, unsigned f2,
@@ -82,7 +77,7 @@ void buildtable(
     
     const unsigned dcdcdivmin = calcdivround2(fsync, dcdcfmin);
     const unsigned dcdcdivmax = calcdivround2(fsync, dcdcfmax);
-    const unsigned dcdcdivn = dcdcdivmin - dcdcdivmax;
+    const unsigned dcdcdivn = dcdcdivmin - dcdcdivmax + 1;
 
     if (dcdcdivn == 0)
     {
@@ -120,8 +115,7 @@ void buildtable(
     unsigned ftop = rxmax;
     unsigned f;
     unsigned df = wflwidth / 2;
-    unsigned tailseq = 0;
-    for (f = rxmin; f < rxmax/* && tailseq < 15 */;)
+    for (f = rxmin; f < rxmax;)
     {
         const unsigned fmin = f < df ? f : f - df;
         const unsigned fmax = (f + df) >= rxmax ? rxmax : f + df;
@@ -150,7 +144,6 @@ void buildtable(
         }
         else if (actindex != index)
         {
-            tailseq += distance(actindex, index) == 1;
             /* end previously opened interval, found next */
             generaterow(divs [actindex], fbottom, ftop, dcdcfrequs [actindex], checkvisible(fbottom, ftop, dcdcfrequs [actindex]), fp);
             fbottom = f;
@@ -177,11 +170,11 @@ void buildtable(
 
 int main(int argc, char* argv[])
 {
- //    buildtable(50000000, 400000, 1200000, 30000, 54000000, 96000, stdout);    /* Allwinner t113-s3 */
+     buildtable(50000000, 400000, 1200000, 30000, 54000000, 96000, stdout);    /* Allwinner t113-s3 */
  //   buildtable(32000000, 400000, 1200000, 30000, 54000000, 96000, stdout);  /* STM32MP1 */
 //    buildtable(16000000, 400000, 1200000, 30000, 54000000, 96000, stdout);  /* STM32H7 */
 //   buildtable(15000000, 400000, 1200000, 30000, 54000000, 96000, stdout);  /* Renesas RZA1/L @360 MHz */
-   buildtable(122880000 / 2, 400000, 1200000, 30000, 54000000, 96000, stdout);  /* Zynq 7020 */
+ //  buildtable(122880000 / 2, 400000, 1200000, 30000, 54000000, 96000, stdout);  /* Zynq 7020 */
 
 	return 0;
 }
