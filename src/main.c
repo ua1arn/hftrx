@@ -34,6 +34,9 @@
 #include <ctype.h>
 #include <math.h>
 
+#include "src/speex/arch.h"
+#include "src/speex/speex_preprocess.h"
+
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
 
@@ -9491,16 +9494,69 @@ enum {
 	AUTONOTCH_STATE_ARRAY_SIZE = AUTONOTCH_NUMTAPS + FIRBUFSIZE - 1,
 };
 
+
+#if 1
+/* заглушки для проверки компиляции в режиме обработки float_64 по умолчанию.
+ *
+ */
+
+/**
+ * @brief Instance structure for the floating-point normalized LMS filter.
+ */
 typedef struct
 {
-    arm_lms_norm_instance_f32	lms2Norm_instance;
-    arm_lms_instance_f32	    lms2_instance;
-    float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
-    float32_t	                norm [AUTONOTCH_NUMTAPS];
-    float32_t	                ref [AUTONOTCH_BUFFER_SIZE];
+        uint16_t numTaps;     /**< number of coefficients in the filter. */
+        float64_t *pState;    /**< points to the state variable array. The array is of length numTaps+blockSize-1. */
+        float64_t *pCoeffs;   /**< points to the coefficient array. The array is of length numTaps. */
+        float64_t mu;         /**< step size that control filter coefficient updates. */
+        float64_t energy;     /**< saves previous frame energy. */
+        float64_t x0;         /**< saves previous input sample. */
+} arm_lms_norm_instance_f64;
+
+
+/**
+ * @brief Instance structure for the floating-point LMS filter.
+ */
+typedef struct
+{
+        uint16_t numTaps;    /**< number of coefficients in the filter. */
+        float64_t *pState;   /**< points to the state variable array. The array is of length numTaps+blockSize-1. */
+        float64_t *pCoeffs;  /**< points to the coefficient array. The array is of length numTaps. */
+        float64_t mu;        /**< step size that controls filter coefficient updates. */
+} arm_lms_instance_f64;
+
+void arm_lms_norm_init_f64(
+        arm_lms_norm_instance_f64 * S,
+        uint16_t numTaps,
+		float64_t * pCoeffs,
+		float64_t * pState,
+		float64_t mu,
+        uint32_t blockSize)
+{
+}
+
+void arm_lms_norm_f64(
+        arm_lms_norm_instance_f64 * S,
+  const float64_t * pSrc,
+  float64_t * pRef,
+  float64_t * pOut,
+		float64_t * pErr,
+        uint32_t blockSize)
+{
+}
+
+#endif
+
+typedef struct
+{
+	ARM_MORPH(arm_lms_norm_instance)	lms2Norm_instance;
+	ARM_MORPH(arm_lms_instance)	    lms2_instance;
+    FLOAT_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
+    FLOAT_t	                norm [AUTONOTCH_NUMTAPS];
+    FLOAT_t	                ref [AUTONOTCH_BUFFER_SIZE];
     unsigned 					refold;
     unsigned 					refnew;
-    float32_t phonefence;
+    FLOAT_t phonefence;
 } LMSData_t;
 
 static void hamradio_autonotch_init(LMSData_t * const lmsd)
@@ -9508,9 +9564,9 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 	lmsd->phonefence = 1;
 	const FLOAT_t mu = LOG10F(((5 + 1.0f) / 1500.0f) + 1.0f);
 	//const float32_t mu = 0.0001f;		// UA3REO value
-	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
-	arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
-	arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+	ARM_MORPH(arm_lms_norm_init)(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
+	ARM_MORPH(arm_fill)(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+	ARM_MORPH(arm_fill)(0, lmsd->norm, AUTONOTCH_NUMTAPS);
 	lmsd->refold = 0;
 	lmsd->refnew = FIRBUFSIZE;
 }
@@ -9521,7 +9577,7 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 // pOutput - обработаный буфер FIRBUFSIZE сэмплов
 static void hamradio_autonotch_process(LMSData_t * const lmsd, FLOAT_t * pInput, FLOAT_t * pOutput)
 {
-    static float32_t errsig2 [FIRBUFSIZE];	/* unused output */
+    static FLOAT_t errsig2 [FIRBUFSIZE];	/* unused output */
 //	float32_t diag;
 //	float32_t diag2;
 //
@@ -9529,29 +9585,29 @@ static void hamradio_autonotch_process(LMSData_t * const lmsd, FLOAT_t * pInput,
 //	arm_mean_f32(lmsd->norm, AUTONOTCH_NUMTAPS, & diag2);
 //	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
 //	{
-//		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
-//		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+//		ARM_MORPH(arm_fill)(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+//		ARM_MORPH(arm_fill)(0, lmsd->norm, AUTONOTCH_NUMTAPS);
 //		lmsd->refold = 0;
 //		lmsd->refnew = FIRBUFSIZE;
 //		++ nrestarts;
 //	}
-	arm_copy_f32(pInput, & lmsd->ref [lmsd->refnew], FIRBUFSIZE);
-	arm_lms_norm_f32(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->refold], errsig2, pOutput, FIRBUFSIZE);
+    ARM_MORPH(arm_copy)(pInput, & lmsd->ref [lmsd->refnew], FIRBUFSIZE);
+    ARM_MORPH(arm_lms_norm)(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->refold], errsig2, pOutput, FIRBUFSIZE);
 	lmsd->refold += FIRBUFSIZE;
 	lmsd->refnew = lmsd->refold + FIRBUFSIZE;
 	lmsd->refold %= AUTONOTCH_BUFFER_SIZE;
 	lmsd->refnew %= AUTONOTCH_BUFFER_SIZE;
 
-	float32_t diagmin;
-	float32_t diagmax;
+	FLOAT_t diagmin;
+	FLOAT_t diagmax;
 	uint32_t index;
-	arm_min_f32(pOutput, FIRBUFSIZE, & diagmin, & index);
-	arm_max_no_idx_f32(pOutput, FIRBUFSIZE, & diagmax);
+	ARM_MORPH(arm_min)(pOutput, FIRBUFSIZE, & diagmin, & index);
+	ARM_MORPH(arm_max_no_idx)(pOutput, FIRBUFSIZE, & diagmax);
 	if (diagmin < - lmsd->phonefence || diagmax > lmsd->phonefence)
 	{
-		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
-		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
-		arm_fill_f32(0, pOutput, FIRBUFSIZE);
+		ARM_MORPH(arm_fill)(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+		ARM_MORPH(arm_fill)(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+		ARM_MORPH(arm_fill)(0, pOutput, FIRBUFSIZE);
 		lmsd->refold = 0;
 		lmsd->refnew = FIRBUFSIZE;
 		//++ nrestarts;
@@ -9590,6 +9646,9 @@ typedef struct rxaproc_tag
 	uint_fast16_t refnew;
 
 #else /* WITHNOSPEEX */
+
+//	#include "src/speex/arch.h"
+//	#include "src/speex/speex_preprocess.h"
 
 	SpeexPreprocessState * st_handle;
 
@@ -9734,8 +9793,8 @@ static void InitNoiseReduction(void)
 #if WITHNOSPEEX
 
 		arm_lms_norm_init_f32(& nrp->lms2_Norm_instance, NOISE_REDUCTION_TAPS, nrp->lms2_normCoeff_f32, nrp->lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
-		arm_fill_f32(0, nrp->ref, NOISE_REDUCTION_REFERENCE_SIZE);
-		arm_fill_f32(0, nrp->lms2_normCoeff_f32, NOISE_REDUCTION_TAPS);
+		ARM_MORPH(arm_fill)(0, nrp->ref, NOISE_REDUCTION_REFERENCE_SIZE);
+		ARM_MORPH(arm_fill)(0, nrp->lms2_normCoeff_f32, NOISE_REDUCTION_TAPS);
 
 		nrp->refold = 0;
 		nrp->refnew = 0;
@@ -9866,7 +9925,7 @@ static FLOAT_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 	}
 #endif /* WITHRTTY */
 	//nrp->outsp = p;
-	//arm_fill_f32(0, p, FIRBUFSIZE);
+	//ARM_MORPH(arm_fill)(0, p, FIRBUFSIZE);
 	return afpnoproc(pathi, nrp, p);
 }
 

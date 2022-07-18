@@ -851,12 +851,10 @@ void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
-	#include "src/speex/arch.h"
-	#include "src/speex/speex_preprocess.h"
 
 	typedef FLOAT_t speexel_t;
-	uint_fast8_t takespeexready_user(speexel_t * * dest);
-	void releasespeexbuffer_user(speexel_t * t);
+	uint_fast8_t takespeexready_user(FLOAT_t * * dest);
+	void releasespeexbuffer_user(FLOAT_t * t);
 #endif /* WITHINTEGRATEDDSP */
 
 

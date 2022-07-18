@@ -1301,7 +1301,7 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 
 	// Construct FIR coefficients from frequency response
 	/* Process the data through the CFFT/CIFFT module */
-	ARM_MORPH(arm_cfft)(& fftinstance, (float *) Sig, !0, 1);	// inverse FFT
+	ARM_MORPH(arm_cfft)(& fftinstance, (FLOAT_t *) Sig, !0, 1);	// inverse FFT
 
 	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
 }
