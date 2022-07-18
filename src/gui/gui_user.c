@@ -1227,13 +1227,13 @@ static void gui_main_process(void)
 
 	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 					// для больших токов (более 9 ампер)
-					const ldiv_t t = ldiv(drain / 10, 10);
-					local_snprintf_P(buf, buflen, PSTR("%2d.%01dA"), t.quot, ABS(t.rem));
+					const div_t t = div(drain / 10, 10);
+					local_snprintf_P(buf, buflen, PSTR("%2d.%01dA"), t.quot, abs(t.rem));
 
 	#else /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 					// Датчик тока до 5 ампер
-					const ldiv_t t = ldiv(drain, 100);
-					local_snprintf_P(buf, buflen, PSTR("%d.%02dA"), t.quot, ABS(t.rem));
+					const div_t t = div(drain, 100);
+					local_snprintf_P(buf, buflen, PSTR("%d.%02dA"), t.quot, abs(t.rem));
 
 	#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
