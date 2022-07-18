@@ -119,6 +119,17 @@ typedef struct {
 
 #if WITHLWIP
 
+#include "lwip/opt.h"
+#include "lwip/init.h"
+#include "lwip/ip.h"
+#include "lwip/udp.h"
+#include "lwip/dhcp.h"
+#include "lwip/ip_addr.h"
+#include "lwip/err.h"
+#include "lwip/tcp.h"
+#include "lwip/priv/tcp_priv.h"
+#include "lwip/timeouts.h"
+
 int ping_check_response(void);
 int ping_send_ip(const char * ip_str);
 
@@ -259,6 +270,7 @@ static window_t windows [] = {
 	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
 #if WITHLWIP
 	{ WINDOW_PING, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Network ping test",	 1, window_ping_proccess, },
+	{ WINDOW_NETWORK_CLIENT, WINDOW_UTILS,			ALIGN_CENTER_X, "Network client test",	 1, window_network_client_proccess, },
 #endif /* WITHLWIP */
 	{ WINDOW_3D, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Donut 3d ASCII demo",	 1, window_3d_proccess, },
 };
@@ -1991,6 +2003,7 @@ static void window_utilites_process(void)
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan",  "SWR|scanner", },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_kbdtest",  "Keyboard|test", },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_pingtest", "IP ping|test", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_client",   "Network|client", },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_3d", 		 "Donut|3d", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -2032,6 +2045,7 @@ static void window_utilites_process(void)
 			button_t * btn_kbdtest = find_gui_element(TYPE_BUTTON, win, "btn_kbdtest");
 			button_t * btn_pingtest = find_gui_element(TYPE_BUTTON, win, "btn_pingtest");
 			button_t * btn_3d = find_gui_element(TYPE_BUTTON, win, "btn_3d");
+			button_t * btn_client = find_gui_element(TYPE_BUTTON, win, "btn_client");
 
 			if (bh == btn_kbdtest)
 			{
@@ -2051,6 +2065,10 @@ static void window_utilites_process(void)
 			else if (bh == btn_pingtest)
 			{
 				open_window(get_win(WINDOW_PING));
+			}
+			else if (bh == btn_client)
+			{
+				open_window(get_win(WINDOW_NETWORK_CLIENT));
 			}
 #endif /* WITHLWIP */
 		}
@@ -5817,6 +5835,126 @@ static void window_ping_proccess(void)
 		btn_edit->state = is_ping ? DISABLED : CANCELLED;
 	}
 #endif
+}
+
+// *****************************************************************************************************************************
+
+typedef enum {
+	NET_DISCONNECTED,
+	NET_CONNECT_REQUEST,
+	NET_CONNECTED,
+	NET_DATA_REQUEST,
+	NET_DATA_RECEIVED,
+	NET_DISCONNECT_REQUEST,
+} net_state_t;
+
+static net_state_t net_state = NET_DISCONNECTED;
+static struct udp_pcb * udp_pcb_48700 = NULL;
+static char udp_buf [20];
+static uint_fast8_t rx_flag = 0;
+ip_addr_t myir7020_addr;
+
+void gui_udp_receive(void * arg, struct udp_pcb * pcb, struct pbuf * p_rx, const ip_addr_t * addr, u16_t port)
+{
+	if(p_rx != NULL)
+	{
+		char * pData = (char *) p_rx->payload;
+//		PRINTF("%s from %d.%d.%d.%d\n", pData, ip4_addr1(addr), ip4_addr2(addr), ip4_addr3(addr), ip4_addr4(addr));
+		memcpy(udp_buf, pData, 20 * sizeof(char));
+		rx_flag = 1;
+		pbuf_free(p_rx);
+	}
+}
+
+int gui_start_udp(void) {
+	err_t err;
+	udp_pcb_48700 = udp_new();
+	if (! udp_pcb_48700) {
+		PRINTF("Error creating PCB. Out of Memory\n");
+		return -1;
+	}
+	/* bind to specified @port */
+	err = udp_bind(udp_pcb_48700, IP_ADDR_ANY, 48700);
+	if (err != ERR_OK) {
+		PRINTF("Unable to bind to port %d: err = %d\n", 48700, err);
+		return -2;
+	}
+	udp_recv(udp_pcb_48700, gui_udp_receive, 0);
+
+	return 0;
+}
+
+static void window_network_client_proccess(void)
+{
+	window_t * const win = get_win(WINDOW_NETWORK_CLIENT);
+	static label_t * lbl_freq = NULL, * lbl_mode = NULL;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+
+		static const label_t labels [] = {
+			{ WINDOW_NETWORK_CLIENT, DISABLED, 0, NON_VISIBLE, "lbl_freq", "Freq: *********", FONT_LARGE, COLORMAIN_WHITE, },
+			{ WINDOW_NETWORK_CLIENT, DISABLED, 0, NON_VISIBLE, "lbl_mode", "Mode: *********", FONT_LARGE, COLORMAIN_WHITE, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
+		lbl_mode = find_gui_element(TYPE_LABEL, win, "lbl_mode");
+
+		lbl_freq->x = 0;
+		lbl_freq->y = 0;
+		lbl_freq->visible = VISIBLE;
+
+		lbl_mode->x = lbl_freq->x;
+		lbl_mode->y = lbl_freq->y + get_label_height(lbl_freq) * 2;
+		lbl_mode->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	switch (net_state)
+	{
+	case NET_DISCONNECTED:
+	{
+		gui_start_udp();
+		IP4_ADDR(& myir7020_addr, 192,168,0,121);
+		net_state = NET_CONNECTED;
+	}
+		break;
+
+	case NET_CONNECTED:
+	{
+		if (rx_flag)
+		{
+			rx_flag = 0;
+			local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), "Freq: %s", udp_buf);
+		}
+	}
+	break;
+
+	default:
+		break;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_CLOSE:
+	{
+		udp_disconnect(udp_pcb_48700);
+		udp_remove(udp_pcb_48700);
+		net_state = NET_DISCONNECTED;
+	}
+		break;
+
+	default:
+		break;
+	}
+
 }
 
 // *****************************************************************************************************************************

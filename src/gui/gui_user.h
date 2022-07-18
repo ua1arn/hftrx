@@ -43,6 +43,7 @@ static void window_kbd_proccess(void);
 static void window_kbd_test_proccess(void);
 static void window_ping_proccess(void);
 static void window_3d_proccess(void);
+static void window_network_client_proccess(void);
 
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
@@ -82,6 +83,7 @@ enum {
 	WINDOW_KBD_TEST,
 #if WITHLWIP
 	WINDOW_PING,
+	WINDOW_NETWORK_CLIENT,
 #endif /* WITHLWIP */
 	WINDOW_3D,
 

@@ -38,6 +38,12 @@
 #include "board.h"
 #include "xc7z_inc.h"
 
+#if defined WITHPS7BOARD_EBAZ4205
+	unsigned char mac_ethernet_address[] = { 0x00, 0x0a, 0x35, 0x00, 0x01, 0x02 }; // 192.168.0.120
+#elif defined WITHPS7BOARD_MYC_Y7Z020
+	unsigned char mac_ethernet_address[] = { 0x00, 0x0a, 0x35, 0x00, 0x01, 0x03 }; // 192.168.0.121
+#endif
+
 #define COUNTS_PER_MSECOND  (XPAR_CPU_CORTEXA9_CORE_CLOCK_FREQ_HZ / (2U * 1000U))
 #define RESET_RX_CNTR_LIMIT	400
 #define ETH_LINK_DETECT_INTERVAL 4
@@ -48,7 +54,6 @@ err_t dhcp_start(struct netif *netif);
 
 static struct netif server_netif;
 struct netif * netif;
-unsigned char mac_ethernet_address[] = { 0x00, 0x0a, 0x35, 0x00, 0x01, 0x02 };
 uint_fast8_t timezone = 3;  // GMT+3
 static uint_fast8_t network_inited = 0;
 volatile int dhcp_timoutcntr = 24;
@@ -56,6 +61,8 @@ volatile int TcpFastTmrFlag = 0;
 volatile int TcpSlowTmrFlag = 0;
 static volatile uint32_t sys_now_counter = 0;
 static struct udp_pcb * udp_pcb = NULL;
+ip_addr_t ebaz4205_addr;
+char udp_sendbuf [20];
 
 void board_update_time(uint32_t sec)
 {
@@ -163,7 +170,7 @@ void udp_receive(void * arg, struct udp_pcb * pcb, struct pbuf * p_rx, const ip_
 	if(p_rx != NULL)
 	{
 		char * pData = (char *) p_rx->payload;
-		PRINTF("%s\n", pData);
+		PRINTF("%s from %d.%d.%d.%d\n", pData, ip4_addr1(addr), ip4_addr2(addr), ip4_addr3(addr), ip4_addr4(addr));
 	}
 	pbuf_free(p_rx);
 }
@@ -182,7 +189,7 @@ int start_udp(unsigned int port) {
 		PRINTF("Unable to bind to port %d: err = %d\n", port, err);
 		return -2;
 	}
-	udp_recv(udp_pcb, udp_receive, 0);
+//	udp_recv(udp_pcb, udp_receive, 0);
 
 	return 0;
 }
@@ -222,6 +229,20 @@ void lwip_timer_spool(void)
 
 	if (sys_now_counter % DHCP_COARSE_TIMER_MSECS == 0)
 		dhcp_coarse_tmr();
+
+#if defined WITHPS7BOARD_MYC_Y7Z020 && 1
+	if (sys_now_counter % 100 == 0 && network_inited)
+	{
+		struct pbuf * q = pbuf_alloc(PBUF_TRANSPORT, 20, PBUF_POOL);
+		ASSERT(q);
+		uint_fast32_t freq = hamradio_get_freq_rx();
+		local_snprintf_P(udp_sendbuf, ARRAY_SIZE(udp_sendbuf), "%d", freq);
+		memcpy(q->payload, udp_sendbuf, ARRAY_SIZE(udp_sendbuf));
+		q->len = q->tot_len = 20;
+		udp_sendto(udp_pcb, q, & ebaz4205_addr, 48700);
+		pbuf_free(q);
+	}
+#endif /* defined WITHPS7BOARD_MYC_Y7Z020 */
 }
 
 /* вызывается при разрешённых прерываниях. */
@@ -285,8 +306,11 @@ void network_initialize(void)
 	sntp_init();
 
 	start_echo_server();
-	httpd_init();
-	start_udp(48700);
+//	httpd_init();
+#if defined WITHPS7BOARD_MYC_Y7Z020 && 1
+	start_udp(48710);
+	IP4_ADDR(& ebaz4205_addr, 192,168,0,120);
+#endif /* defined WITHPS7BOARD_MYC_Y7Z020 */
 
 	network_inited = 1;
 }
