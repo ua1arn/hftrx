@@ -28,4 +28,3 @@
 	#include "TransformFunctions/TransformFunctions.c"
 
 #endif  /* WITHINTEGRATEDDSP */
-
