@@ -9533,16 +9533,233 @@ void arm_lms_norm_init_f64(
 		float64_t mu,
         uint32_t blockSize)
 {
+	  /* Assign filter taps */
+	  S->numTaps = numTaps;
+
+	  /* Assign coefficient pointer */
+	  S->pCoeffs = pCoeffs;
+
+	  /* Clear state buffer and size is always blockSize + numTaps - 1 */
+	  memset(pState, 0, (numTaps + (blockSize - 1U)) * sizeof(float64_t));
+
+	  /* Assign state pointer */
+	  S->pState = pState;
+
+	  /* Assign Step size value */
+	  S->mu = mu;
+
+	  /* Initialise Energy to zero */
+	  S->energy = 0;
+
+	  /* Initialise x0 to zero */
+	  S->x0 = 0;
+
 }
 
 void arm_lms_norm_f64(
-        arm_lms_norm_instance_f64 * S,
-  const float64_t * pSrc,
-  float64_t * pRef,
-  float64_t * pOut,
-		float64_t * pErr,
-        uint32_t blockSize)
-{
+	arm_lms_norm_instance_f64 * S,
+	const float64_t * pSrc,
+	float64_t * pRef,
+	float64_t * pOut,
+	float64_t * pErr,
+	uint32_t blockSize)
+ {
+	float64_t *pState = S->pState; /* State pointer */
+	float64_t *pCoeffs = S->pCoeffs; /* Coefficient pointer */
+	float64_t *pStateCurnt; /* Points to the current sample of the state */
+	float64_t *px, *pb; /* Temporary pointers for state and coefficient buffers */
+	float64_t mu = S->mu; /* Adaptive factor */
+	float64_t acc, e; /* Accumulator, error */
+	float64_t w; /* Weight factor */
+	uint32_t numTaps = S->numTaps; /* Number of filter coefficients in the filter */
+	uint32_t tapCnt, blkCnt; /* Loop counters */
+	float64_t energy; /* Energy of the input */
+	float64_t x0, in; /* Temporary variable to hold input sample and state */
+
+	/* Initializations of error,  difference, Coefficient update */
+	e = 0.0f;
+	w = 0.0f;
+
+	energy = S->energy;
+	x0 = S->x0;
+
+	/* S->pState points to buffer which contains previous frame (numTaps - 1) samples */
+	/* pStateCurnt points to the location where the new input data should be written */
+	pStateCurnt = &(S->pState[(numTaps - 1U)]);
+
+	/* initialise loop count */
+	blkCnt = blockSize;
+
+	while (blkCnt > 0U) {
+		/* Copy the new input sample into the state buffer */
+		*pStateCurnt++ = *pSrc;
+
+		/* Initialize pState pointer */
+		px = pState;
+
+		/* Initialize coefficient pointer */
+		pb = pCoeffs;
+
+		/* Read the sample from input buffer */
+		in = *pSrc++;
+
+		/* Update the energy calculation */
+		energy -= x0 * x0;
+		energy += in * in;
+
+		/* Set the accumulator to zero */
+		acc = 0.0f;
+
+#if defined (ARM_MATH_LOOPUNROLL)
+
+		/* Loop unrolling: Compute 4 taps at a time. */
+		tapCnt = numTaps >> 2U;
+
+		while (tapCnt > 0U) {
+			/* Perform the multiply-accumulate */
+			acc += (*px++) * (*pb++);
+
+			acc += (*px++) * (*pb++);
+
+			acc += (*px++) * (*pb++);
+
+			acc += (*px++) * (*pb++);
+
+			/* Decrement loop counter */
+			tapCnt--;
+		}
+
+		/* Loop unrolling: Compute remaining taps */
+		tapCnt = numTaps % 0x4U;
+
+#else
+
+/* Initialize tapCnt with number of samples */
+tapCnt = numTaps;
+
+#endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+		while (tapCnt > 0U) {
+			/* Perform the multiply-accumulate */
+			acc += (*px++) * (*pb++);
+
+			/* Decrement the loop counter */
+			tapCnt--;
+		}
+
+		/* Store the result from accumulator into the destination buffer. */
+		*pOut++ = acc;
+
+		/* Compute and store error */
+		e = (float64_t) *pRef++ - acc;
+		*pErr++ = e;
+
+		/* Calculation of Weighting factor for updating filter coefficients */
+		/* epsilon value 0.000000119209289f */
+		w = (e * mu) / (energy + 0.000000119209289);
+
+		/* Initialize pState pointer */
+		px = pState;
+
+		/* Initialize coefficient pointer */
+		pb = pCoeffs;
+
+#if defined (ARM_MATH_LOOPUNROLL)
+
+		/* Loop unrolling: Compute 4 taps at a time. */
+		tapCnt = numTaps >> 2U;
+
+		/* Update filter coefficients */
+		while (tapCnt > 0U) {
+			/* Perform the multiply-accumulate */
+			*pb += w * (*px++);
+			pb++;
+
+			*pb += w * (*px++);
+			pb++;
+
+			*pb += w * (*px++);
+			pb++;
+
+			*pb += w * (*px++);
+			pb++;
+
+			/* Decrement loop counter */
+			tapCnt--;
+		}
+
+		/* Loop unrolling: Compute remaining taps */
+		tapCnt = numTaps % 0x4U;
+
+#else
+
+/* Initialize tapCnt with number of samples */
+tapCnt = numTaps;
+
+#endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+		while (tapCnt > 0U) {
+			/* Perform the multiply-accumulate */
+			*pb += w * (*px++);
+			pb++;
+
+			/* Decrement loop counter */
+			tapCnt--;
+		}
+
+		x0 = *pState;
+
+		/* Advance state pointer by 1 for the next sample */
+		pState = pState + 1;
+
+		/* Decrement loop counter */
+		blkCnt--;
+	}
+
+	/* Save energy and x0 values for the next frame */
+	S->energy = energy;
+	S->x0 = x0;
+
+	/* Processing is complete.
+	 Now copy the last numTaps - 1 samples to the start of the state buffer.
+	 This prepares the state buffer for the next function call. */
+
+	/* Points to the start of the pState buffer */
+	pStateCurnt = S->pState;
+
+	/* copy data */
+#if defined (ARM_MATH_LOOPUNROLL)
+
+	/* Loop unrolling: Compute 4 taps at a time. */
+	tapCnt = (numTaps - 1U) >> 2U;
+
+	while (tapCnt > 0U) {
+		*pStateCurnt++ = *pState++;
+		*pStateCurnt++ = *pState++;
+		*pStateCurnt++ = *pState++;
+		*pStateCurnt++ = *pState++;
+
+		/* Decrement loop counter */
+		tapCnt--;
+	}
+
+	/* Loop unrolling: Compute remaining taps */
+	tapCnt = (numTaps - 1U) % 0x4U;
+
+#else
+
+/* Initialize tapCnt with number of samples */
+tapCnt = (numTaps - 1U);
+
+#endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+	while (tapCnt > 0U) {
+		*pStateCurnt++ = *pState++;
+
+		/* Decrement loop counter */
+		tapCnt--;
+	}
+
 }
 
 #endif
