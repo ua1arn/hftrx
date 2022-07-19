@@ -6643,6 +6643,18 @@ sysinit_pll_initialize(void)
 		uint_fast32_t freq
 		)
 	{
+//	#define WITHHWDCDCFREQMIN 400000L
+//	#define WITHHWDCDCFREQMAX 1200000L
+//	#define DCDC_FREQ_0 960000
+//	#define DCDC_FREQ_1 1200000
+//		// set DC-DC Sync freq
+//		uint32_t dcdc_offset_0 = abs((int32_t)DCDC_FREQ_0 / 2 - freq % (int32_t)DCDC_FREQ_0);
+//		uint32_t dcdc_offset_1 = abs((int32_t)DCDC_FREQ_1 / 2 - freq % (int32_t)DCDC_FREQ_1);
+//		if (dcdc_offset_0 > dcdc_offset_1)
+//			TRX_DCDC_Freq = 1;
+//		else
+//			TRX_DCDC_Freq = 0;
+
 		struct FREQ
 		{
 			uint32_t dcdcdiv;
