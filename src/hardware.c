@@ -1862,16 +1862,28 @@ __STATIC_FORCEINLINE uint32_t __get_DFAR(void)
 
 void Undef_Handler(void)
 {
+	const volatile uint32_t marker = 0xDEADBEEF;
 	dbg_puts_impl_P(PSTR("UndefHandler trapped.\n"));
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+	unsigned i;
+	for (i = 0; i < 8; ++ i)
+	{
+		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+	}
 	for (;;)
 		;
 }
 
 void SWI_Handler(void)
 {
+	const volatile uint32_t marker = 0xDEADBEEF;
 	dbg_puts_impl_P(PSTR("SWIHandler trapped.\n"));
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+	unsigned i;
+	for (i = 0; i < 8; ++ i)
+	{
+		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+	}
 	for (;;)
 		;
 }
