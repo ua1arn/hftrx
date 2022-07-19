@@ -57,6 +57,12 @@ rem %CONVERTER% g2d.txt G2D >> %OUTFILE%
 %CONVERTER% tve_top.txt TVE_TOP >> %OUTFILE%
 %CONVERTER% tve.txt TVE >> %OUTFILE%
 
+%CONVERTER% csic_ccu.txt CSIC_CCU >> %OUTFILE%
+%CONVERTER% csic_top.txt CSIC_TOP >> %OUTFILE%
+%CONVERTER% csic_parser.txt CSIC_PARSER >> %OUTFILE%
+%CONVERTER% csic_dma.txt CSIC_DMA >> %OUTFILE%
+
+
 rem %CONVERTER% tv_full.txt TV_FILL >> %OUTFILE%
 rem %CONVERTER% tcon_tv.txt TCON_TV >> %OUTFILE%
 

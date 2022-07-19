@@ -240,6 +240,13 @@ typedef enum IRQn
 
 // VIDEO_IN_SYS related
 #define CSI_BASE 			0x05800000
+
+#define CSIC_CCU_BASE		(CSI_BASE + 0x0000)
+#define CSIC_TOP_BASE		(CSI_BASE + 0x0800)
+#define CSIC_PARSER0_BASE	(CSI_BASE + 0x1000)
+#define SIC_DMA0_BASE		(CSI_BASE + 0x9000)
+#define SIC_DMA1_BASE		(CSI_BASE + 0x9200)
+
 #define TVD_TOP_BASE 		0x05C00000
 #define TVD0_BASE 			0x05C01000
 
@@ -1953,6 +1960,149 @@ typedef struct TVE_Type
 	__IO uint32_t TVE_3A0_REG;                           /*!< Offset 0x3A0 TV Encoder Noise Reduction Register */
 } TVE_TypeDef; /* size of structure = 0x3A4 */
 /*
+ * @brief CSIC_CCU
+ */
+/*!< CSIC_CCU Controller Interface */
+typedef struct CSIC_CCU_Type
+{
+	__IO uint32_t CCU_CLK_MODE_REG;                      /*!< Offset 0x000 CCU Clock Mode Register */
+	__IO uint32_t CCU_PARSER_CLK_EN_REG;                 /*!< Offset 0x004 CCU Parser Clock Enable Register */
+	uint32_t reserved_0x008;
+	__IO uint32_t CCU_POST0_CLK_EN_REG;                  /*!< Offset 0x00C CCU Post0 Clock Enable Register */
+} CSIC_CCU_TypeDef; /* size of structure = 0x010 */
+/*
+ * @brief CSIC_TOP
+ */
+/*!< CSIC_TOP Controller Interface */
+typedef struct CSIC_TOP_Type
+{
+	__IO uint32_t CSIC_TOP_EN_REG;                       /*!< Offset 0x000 CSIC TOP Enable Register */
+	__IO uint32_t CSIC_PTN_GEN_EN_REG;                   /*!< Offset 0x004 CSIC Pattern Generation Enable Register */
+	__IO uint32_t CSIC_PTN_CTRL_REG;                     /*!< Offset 0x008 CSIC Pattern Control Register */
+	uint32_t reserved_0x00C [0x0005];
+	__IO uint32_t CSIC_PTN_LEN_REG;                      /*!< Offset 0x020 CSIC Pattern Generation Length Register */
+	__IO uint32_t CSIC_PTN_ADDR_REG;                     /*!< Offset 0x024 CSIC Pattern Generation Address Register */
+	__IO uint32_t CSIC_PTN_ISP_SIZE_REG;                 /*!< Offset 0x028 CSIC Pattern ISP Size Register */
+	uint32_t reserved_0x02C [0x001D];
+	__IO uint32_t CSIC_DMA0_INPUT_SEL_REG;               /*!< Offset 0x0A0 CSIC DMA0 Input Select Register */
+	__IO uint32_t CSIC_DMA1_INPUT_SEL_REG;               /*!< Offset 0x0A4 CSIC DMA1 Input Select Register */
+	uint32_t reserved_0x0A8 [0x000D];
+	__IO uint32_t CSIC_BIST_CS_REG;                      /*!< Offset 0x0DC CSIC BIST CS Register */
+	__IO uint32_t CSIC_BIST_CONTROL_REG;                 /*!< Offset 0x0E0 CSIC BIST Control Register */
+	__IO uint32_t CSIC_BIST_START_REG;                   /*!< Offset 0x0E4 CSIC BIST Start Register */
+	__IO uint32_t CSIC_BIST_END_REG;                     /*!< Offset 0x0E8 CSIC BIST End Register */
+	__IO uint32_t CSIC_BIST_DATA_MASK_REG;               /*!< Offset 0x0EC CSIC BIST Data Mask Register */
+	__IO uint32_t CSIC_MBUS_REQ_MAX_REG;                 /*!< Offset 0x0F0 CSIC MBUS REQ MAX Register */
+	uint32_t reserved_0x0F4 [0x0003];
+	__IO uint32_t CSIC_MULF_MOD_REG;                     /*!< Offset 0x100 CSIC Multi-Frame Mode Register */
+	__IO uint32_t CSIC_MULF_INT_REG;                     /*!< Offset 0x104 CSIC Multi-Frame Interrupt Register */
+} CSIC_TOP_TypeDef; /* size of structure = 0x108 */
+/*
+ * @brief CSIC_PARSER
+ */
+/*!< CSIC_PARSER Controller Interface */
+typedef struct CSIC_PARSER_Type
+{
+	__IO uint32_t PRS_EN_REG;                            /*!< Offset 0x000 Parser Enable Register */
+	__IO uint32_t PRS_NCSIC_IF_CFG_REG;                  /*!< Offset 0x004 Parser NCSIC Interface Configuration Register */
+	uint32_t reserved_0x008;
+	__IO uint32_t PRS_CAP_REG;                           /*!< Offset 0x00C Parser Capture Register */
+	__IO uint32_t CSIC_PRS_SIGNAL_STA_REG;               /*!< Offset 0x010 CSIC Parser Signal Status Register */
+	__IO uint32_t CSIC_PRS_NCSIC_BT656_HEAD_CFG_REG;     /*!< Offset 0x014 CSIC Parser NCSIC BT656 Header Configuration Register */
+	uint32_t reserved_0x018 [0x0003];
+	__IO uint32_t PRS_C0_INFMT_REG;                      /*!< Offset 0x024 Parser Channel_0 Input Format Register */
+	__IO uint32_t PRS_C0_OUTPUT_HSIZE_REG;               /*!< Offset 0x028 Parser Channel_0 Output Horizontal Size Register */
+	__IO uint32_t PRS_C0_OUTPUT_VSIZE_REG;               /*!< Offset 0x02C Parser Channel_0 Output Vertical Size Register */
+	__IO uint32_t PRS_C0_INPUT_PARA0_REG;                /*!< Offset 0x030 Parser Channel_0 Input Parameter0 Register */
+	__IO uint32_t PRS_C0_INPUT_PARA1_REG;                /*!< Offset 0x034 Parser Channel_0 Input Parameter1 Register */
+	__IO uint32_t PRS_C0_INPUT_PARA2_REG;                /*!< Offset 0x038 Parser Channel_0 Input Parameter2 Register */
+	__IO uint32_t PRS_C0_INPUT_PARA3_REG;                /*!< Offset 0x03C Parser Channel_0 Input Parameter3 Register */
+	__IO uint32_t PRS_C0_INT_EN_REG;                     /*!< Offset 0x040 Parser Channel_0 Interrupt Enable Register */
+	__IO uint32_t PRS_C0_INT_STA_REG;                    /*!< Offset 0x044 Parser Channel_0 Interrupt Status Register */
+	__IO uint32_t PRS_CH0_LINE_TIME_REG;                 /*!< Offset 0x048 Parser Channel_0 Line Time Register */
+	uint32_t reserved_0x04C [0x0036];
+	__IO uint32_t PRS_C1_INFMT_REG;                      /*!< Offset 0x124 Parser Channel_1 Input Format Register */
+	__IO uint32_t PRS_C1_OUTPUT_HSIZE_REG;               /*!< Offset 0x128 Parser Channel_1 Output Horizontal Size Register */
+	__IO uint32_t PRS_C1_OUTPUT_VSIZE_REG;               /*!< Offset 0x12C Parser Channel_1 Output Vertical Size Register */
+	__IO uint32_t PRS_C1_INPUT_PARA0_REG;                /*!< Offset 0x130 Parser Channel_1 Input Parameter0 Register */
+	__IO uint32_t PRS_C1_INPUT_PARA1_REG;                /*!< Offset 0x134 Parser Channel_1 Input Parameter1 Register */
+	__IO uint32_t PRS_C1_INPUT_PARA2_REG;                /*!< Offset 0x138 Parser Channel_1 Input Parameter2 Register */
+	__IO uint32_t PRS_C1_INPUT_PARA3_REG;                /*!< Offset 0x13C Parser Channel_1 Input Parameter3 Register */
+	__IO uint32_t PRS_C1_INT_EN_REG;                     /*!< Offset 0x140 Parser Channel_1 Interrupt Enable Register */
+	__IO uint32_t PRS_C1_INT_STA_REG;                    /*!< Offset 0x144 Parser Channel_1 Interrupt Status Register */
+	__IO uint32_t PRS_CH1_LINE_TIME_REG;                 /*!< Offset 0x148 Parser Channel_1 Line Time Register */
+	uint32_t reserved_0x14C [0x0036];
+	__IO uint32_t PRS_C2_INFMT_REG;                      /*!< Offset 0x224 Parser Channel_2 Input Format Register */
+	__IO uint32_t PRS_C2_OUTPUT_HSIZE_REG;               /*!< Offset 0x228 Parser Channel_2 Output Horizontal Size Register */
+	__IO uint32_t PRS_C2_OUTPUT_VSIZE_REG;               /*!< Offset 0x22C Parser Channel_2 Output Vertical Size Register */
+	__IO uint32_t PRS_C2_INPUT_PARA0_REG;                /*!< Offset 0x230 Parser Channel_2 Input Parameter0 Register */
+	__IO uint32_t PRS_C2_INPUT_PARA1_REG;                /*!< Offset 0x234 Parser Channel_2 Input Parameter1 Register */
+	__IO uint32_t PRS_C2_INPUT_PARA2_REG;                /*!< Offset 0x238 Parser Channel_2 Input Parameter2 Register */
+	__IO uint32_t PRS_C2_INPUT_PARA3_REG;                /*!< Offset 0x23C Parser Channel_2 Input Parameter3 Register */
+	__IO uint32_t PRS_C2_INT_EN_REG;                     /*!< Offset 0x240 Parser Channel_2 Interrupt Enable Register */
+	__IO uint32_t PRS_C2_INT_STA_REG;                    /*!< Offset 0x244 Parser Channel_2 Interrupt Status Register */
+	__IO uint32_t PRS_CH2_LINE_TIME_REG;                 /*!< Offset 0x248 Parser Channel_2 Line Time Register */
+	uint32_t reserved_0x24C [0x0036];
+	__IO uint32_t PRS_C3_INFMT_REG;                      /*!< Offset 0x324 Parser Channel_3 Input Format Register */
+	__IO uint32_t PRS_C3_OUTPUT_HSIZE_REG;               /*!< Offset 0x328 Parser Channel_3 Output Horizontal Size Register */
+	__IO uint32_t PRS_C3_OUTPUT_VSIZE_REG;               /*!< Offset 0x32C Parser Channel_3 Output Vertical Size Register */
+	__IO uint32_t PRS_C3_INPUT_PARA0_REG;                /*!< Offset 0x330 Parser Channel_3 Input Parameter0 Register */
+	__IO uint32_t PRS_C3_INPUT_PARA1_REG;                /*!< Offset 0x334 Parser Channel_3 Input Parameter1 Register */
+	__IO uint32_t PRS_C3_INPUT_PARA2_REG;                /*!< Offset 0x338 Parser Channel_3 Input Parameter2 Register */
+	__IO uint32_t PRS_C3_INPUT_PARA3_REG;                /*!< Offset 0x33C Parser Channel_3 Input Parameter3 Register */
+	__IO uint32_t PRS_C3_INT_EN_REG;                     /*!< Offset 0x340 Parser Channel_3 Interrupt Enable Register */
+	__IO uint32_t PRS_C3_INT_STA_REG;                    /*!< Offset 0x344 Parser Channel_3 Interrupt Status Register */
+	__IO uint32_t PRS_CH3_LINE_TIME_REG;                 /*!< Offset 0x348 Parser Channel_3 Line Time Register */
+	uint32_t reserved_0x34C [0x006D];
+	__IO uint32_t CSIC_PRS_NCSIC_RX_SIGNAL0_DLY_ADJ_REG; /*!< Offset 0x500 CSIC Parser NCSIC RX Signal0 Delay Adjust Register */
+	uint32_t reserved_0x504 [0x0004];
+	__IO uint32_t CSIC_PRS_NCSIC_RX_SIGNAL5_DLY_ADJ_REG; /*!< Offset 0x514 CSIC Parser NCSIC RX Signal5 Delay Adjust Register */
+	__IO uint32_t CSIC_PRS_NCSIC_RX_SIGNAL6_DLY_ADJ_REG; /*!< Offset 0x518 CSIC Parser NCSIC RX Signal6 Delay Adjust Register */
+} CSIC_PARSER_TypeDef; /* size of structure = 0x51C */
+/*
+ * @brief CSIC_DMA
+ */
+/*!< CSIC_DMA Controller Interface */
+typedef struct CSIC_DMA_Type
+{
+	__IO uint32_t CSIC_DMA_EN_REG;                       /*!< Offset 0x000 CSIC DMA Enable Register */
+	__IO uint32_t CSIC_DMA_CFG_REG;                      /*!< Offset 0x004 CSIC DMA Configuration Register */
+	uint32_t reserved_0x008 [0x0002];
+	__IO uint32_t CSIC_DMA_HSIZE_REG;                    /*!< Offset 0x010 CSIC DMA Horizontal Size Register */
+	__IO uint32_t CSIC_DMA_VSIZE_REG;                    /*!< Offset 0x014 CSIC DMA Vertical Size Register */
+	uint32_t reserved_0x018 [0x0002];
+	__IO uint32_t CSIC_DMA_F0_BUFA_REG;                  /*!< Offset 0x020 CSIC DMA FIFO 0 Output Buffer-A Address Register */
+	__IO uint32_t CSIC_DMA_F0_BUFA_RESULT_REG;           /*!< Offset 0x024 CSIC DMA FIFO 0 Output Buffer-A Address Result Register */
+	__IO uint32_t CSIC_DMA_F1_BUFA_REG;                  /*!< Offset 0x028 CSIC DMA FIFO 1 Output Buffer-A Address Register */
+	__IO uint32_t CSIC_DMA_F1_BUFA_RESULT_REG;           /*!< Offset 0x02C CSIC DMA FIFO 1 Output Buffer-A Address Result Register */
+	__IO uint32_t CSIC_DMA_F2_BUFA_REG;                  /*!< Offset 0x030 CSIC DMA FIFO 2 Output Buffer-A Address Register */
+	__IO uint32_t CSIC_DMA_F2_BUFA_RESULT_REG;           /*!< Offset 0x034 CSIC DMA FIFO 2 Output Buffer-A Address Result Register */
+	__IO uint32_t CSIC_DMA_BUF_LEN_REG;                  /*!< Offset 0x038 CSIC DMA Buffer Length Register */
+	__IO uint32_t CSIC_DMA_FLIP_SIZE_REG;                /*!< Offset 0x03C CSIC DMA Flip Size Register */
+	__IO uint32_t CSIC_DMA_VI_TO_TH0_REG;                /*!< Offset 0x040 CSIC DMA Video Input Timeout Threshold0 Register */
+	__IO uint32_t CSIC_DMA_VI_TO_TH1_REG;                /*!< Offset 0x044 CSIC DMA Video Input Timeout Threshold1 Register */
+	__IO uint32_t CSIC_DMA_VI_TO_CNT_VAL_REG;            /*!< Offset 0x048 CSIC DMA Video Input Timeout Counter Value Register */
+	__IO uint32_t CSIC_DMA_CAP_STA_REG;                  /*!< Offset 0x04C CSIC DMA Capture Status Register */
+	__IO uint32_t CSIC_DMA_INT_EN_REG;                   /*!< Offset 0x050 CSIC DMA Interrupt Enable Register */
+	__IO uint32_t CSIC_DMA_INT_STA_REG;                  /*!< Offset 0x054 CSIC DMA Interrupt Status Register */
+	__IO uint32_t CSIC_DMA_LINE_CNT_REG;                 /*!< Offset 0x058 CSIC DMA LINE Counter Register */
+	__IO uint32_t CSIC_DMA_FRM_CNT_REG;                  /*!< Offset 0x05C CSIC DMA Frame Counter Register */
+	__IO uint32_t CSIC_DMA_FRM_CLK_CNT_REG;              /*!< Offset 0x060 CSIC DMA Frame Clock Counter Register */
+	__IO uint32_t CSIC_DMA_ACC_ITNL_CLK_CNT_REG;         /*!< Offset 0x064 CSIC DMA Accumulated And Internal Clock Counter Register */
+	__IO uint32_t CSIC_DMA_FIFO_STAT_REG;                /*!< Offset 0x068 CSIC DMA FIFO Statistic Register */
+	__IO uint32_t CSIC_DMA_FIFO_THRS_REG;                /*!< Offset 0x06C CSIC DMA FIFO Threshold Register */
+	__IO uint32_t CSIC_DMA_PCLK_STAT_REG;                /*!< Offset 0x070 CSIC DMA PCLK Statistic Register */
+	uint32_t reserved_0x074 [0x0003];
+	__IO uint32_t CSIC_DMA_BUF_ADDR_FIFO0_ENTRY_REG;     /*!< Offset 0x080 CSIC DMA BUF Address FIFO0 Entry Register */
+	__IO uint32_t CSIC_DMA_BUF_ADDR_FIFO1_ENTRY_REG;     /*!< Offset 0x084 CSIC DMA BUF Address FIFO1 Entry Register */
+	__IO uint32_t CSIC_DMA_BUF_ADDR_FIFO2_ENTRY_REG;     /*!< Offset 0x088 CSIC DMA BUF Address FIFO2 Entry Register */
+	__IO uint32_t CSIC_DMA_BUF_TH_REG;                   /*!< Offset 0x08C CSIC DMA BUF Threshold Register */
+	__IO uint32_t CSIC_DMA_BUF_ADDR_FIFO_CON_REG;        /*!< Offset 0x090 CSIC DMA BUF Address FIFO Content Register */
+	__IO uint32_t CSIC_DMA_STORED_FRM_CNT_REG;           /*!< Offset 0x094 CSIC DMA Stored Frame Counter Register */
+	uint32_t reserved_0x098 [0x0057];
+	__IO uint32_t CSIC_FEATURE_REG;                      /*!< Offset 0x1F4 CSIC DMA Feature List Register */
+} CSIC_DMA_TypeDef; /* size of structure = 0x1F8 */
+/*
  * @brief C0_CPUX_CFG
  */
 /*!< C0_CPUX_CFG Controller Interface */
@@ -2266,7 +2416,12 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define TVE_TOP 	((TVE_TOP_TypeDef *) TVE_TOP_BASE)				/*!< \brief TVE_TOP Interface register set access pointer */
 #define TV_Encoder 	((TVE_TypeDef *) TV_Encoder_BASE)			/*!< \brief TV_Encoder Interface register set access pointer */
 
-#define CSI			((CSI_TypeDef *) CSI_BASE)					/*!< \brief CSI Interface register set access pointer */
+#define CSIC_CCU		((CSIC_CCU_TypeDef *) CSIC_CCU_BASE)	/*!< \brief CSIC_CCU Interface register set access pointer */
+#define CSIC_TOP		((CSIC_TOP_TypeDef *) CSIC_TOP_BASE)	/*!< \brief CSIC_TOP Interface register set access pointer */
+#define CSIC_PARSER0	((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)	/*!< \brief CSIC_PARSER0 Interface register set access pointer */
+#define SIC_DMA0		((CSIC_DMA_TypeDef *) SIC_DMA0_BASE)	/*!< \brief SIC_DMA0 Interface register set access pointer */
+#define SIC_DMA1		((CSIC_DMA_TypeDef *) SIC_DMA1_BASE)	/*!< \brief SIC_DMA1 Interface register set access pointer */
+
 #define TVD_TOP		((TVD_TypeDef *) TVD_TOP_BASE)				/*!< \brief TVD_TOP Interface register set access pointer */
 #define TVD0		((TV_TypeDef *) TVD0_BASE)					/*!< \brief TVD0 Interface register set access pointer */
 
