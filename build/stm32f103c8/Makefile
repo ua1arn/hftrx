@@ -46,6 +46,8 @@ DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
 	$(CMSISDIR)/Core/Include \
+	$(RTOSXDIR)/Include \
+	$(RTOSXDIR)/RTX/Include \
 	$(CMSISDSPDIR)/Include \
 	$(CMSISDSPDIR)/Source \
 	$(CMSISDSPDIR)/PrivateInclude
