@@ -34,10 +34,6 @@ SET OUTFILE=cmsis_t113s3.h
 %CONVERTER% usbotg.txt USBOTG >> %OUTFILE%
 %CONVERTER% usbphyc.txt USBPHYC >> %OUTFILE%
 
-
-%CONVERTER% csi.txt CSI >> %OUTFILE%
-%CONVERTER% tvd.txt TVD >> %OUTFILE%
-
 %CONVERTER% de.txt DE >> %OUTFILE% 
 %CONVERTER% di.txt DI >> %OUTFILE% 
 
@@ -62,6 +58,9 @@ rem %CONVERTER% g2d.txt G2D >> %OUTFILE%
 %CONVERTER% csic_parser.txt CSIC_PARSER >> %OUTFILE%
 %CONVERTER% csic_dma.txt CSIC_DMA >> %OUTFILE%
 
+%CONVERTER% tvd_adc.txt TVD_ADC >> %OUTFILE%
+%CONVERTER% tvd_top.txt TVD_TOP >> %OUTFILE%
+%CONVERTER% tvd.txt TVD >> %OUTFILE%
 
 rem %CONVERTER% tv_full.txt TV_FILL >> %OUTFILE%
 rem %CONVERTER% tcon_tv.txt TCON_TV >> %OUTFILE%
