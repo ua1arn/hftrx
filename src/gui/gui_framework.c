@@ -47,7 +47,7 @@ enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
-static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
+static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btn_close", "", };
 
 void gui_set_encoder2_rotate (int_fast8_t rotate)
 {
@@ -130,7 +130,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		else
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_ACTION;
-			win->queue.data [win->queue.size].type = type;
+			win->queue.data [win->queue.size].type = (element_type_t) type;
 			win->queue.data [win->queue.size].ptr = ptr;
 			win->queue.data [win->queue.size].action = action;
 			win->queue.size ++;
@@ -141,7 +141,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		break;
 
 	case WM_MESSAGE_ENC2_ROTATE:
-
+	{
 		va_start(arg, message);
 		int_fast8_t r = va_arg(arg, int_fast8_t);
 		va_end(arg);
@@ -154,21 +154,22 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		else
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_ENC2_ROTATE;
-			win->queue.data [win->queue.size].type = UINT8_MAX;
+			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = r;
 			win->queue.size ++;
 		}
 
 		return 1;
+	}
 		break;
 
 	case WM_MESSAGE_KEYB_CODE:
-
+	{
 		va_start(arg, message);
 
 		win->queue.data [win->queue.size].message = WM_MESSAGE_KEYB_CODE;
-		win->queue.data [win->queue.size].type = UINT8_MAX;
+		win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 		win->queue.data [win->queue.size].action = va_arg(arg, int_fast8_t);
 		win->queue.size ++;
@@ -176,6 +177,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		va_end(arg);
 
 		return 1;
+	}
 		break;
 
 	case WM_MESSAGE_UPDATE:
@@ -184,7 +186,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		if (win->queue.data [ind].message != WM_MESSAGE_UPDATE)		// предотвращение дублей сообщения WM_MESSAGE_UPDATE
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_UPDATE;
-			win->queue.data [win->queue.size].type = UINT8_MAX;
+			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = INT8_MAX;
 			win->queue.size ++;
@@ -199,7 +201,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		if (win->queue.data [ind].message != WM_MESSAGE_CLOSE)		// предотвращение дублей сообщения WM_MESSAGE_CLOSE
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_CLOSE;
-			win->queue.data [win->queue.size].type = UINT8_MAX;
+			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = INT8_MAX;
 			win->queue.size ++;
@@ -235,8 +237,8 @@ wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * 
 
 	wm_message_t m = win->queue.data [win->queue.size].message;
 
-	win->queue.data [win->queue.size].message = 0;		// очистить текущую запись
-	win->queue.data [win->queue.size].type = 0;
+	win->queue.data [win->queue.size].message = WM_NO_MESSAGE;		// очистить текущую запись
+	win->queue.data [win->queue.size].type = TYPE_DUMMY;
 	win->queue.data [win->queue.size].ptr = 0;
 	win->queue.data [win->queue.size].action = 0;
 
@@ -411,7 +413,6 @@ void footer_buttons_state (uint_fast8_t state, ...)
 	}
 }
 
-//todo: добавить признак инициализированности элементов и учитывать его при закрытии окна
 /* Установка статуса элементов после инициализации */
 void elements_state (window_t * win)
 {
@@ -537,7 +538,7 @@ void elements_state (window_t * win)
 				gui_elements [gui_element_count].type = TYPE_TEXT_FIELD;
 				gui_element_count ++;
 				debug_num ++;
-				tff->string = calloc(tff->h_str, sizeof(tf_entry_t));
+				tff->string = (tf_entry_t *) calloc(tff->h_str, sizeof(tf_entry_t));
 				GUI_MEM_ASSERT(tff->string);
 				tff->index = 0;
 			}
@@ -1335,6 +1336,7 @@ static void set_state_record(gui_element_t * val)
 			break;
 
 		case TYPE_BUTTON:
+		{
 			ASSERT(val->link != NULL);
 			button_t * bh = (button_t *) val->link;
 			gui.selected_type = TYPE_BUTTON;
@@ -1345,9 +1347,11 @@ static void set_state_record(gui_element_t * val)
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED))
 					dump_queue(val->win);
 			}
+		}
 			break;
 
 		case TYPE_LABEL:
+		{
 			ASSERT(val->link != NULL);
 			label_t * lh = (label_t *) val->link;
 			gui.selected_type = TYPE_LABEL;
@@ -1363,9 +1367,11 @@ static void set_state_record(gui_element_t * val)
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, MOVING))
 					dump_queue(val->win);
 			}
+		}
 			break;
 
 		case TYPE_SLIDER:
+		{
 			ASSERT(val->link != NULL);
 			slider_t * sh = (slider_t *) val->link;
 			gui.selected_type = TYPE_SLIDER;
@@ -1377,9 +1383,11 @@ static void set_state_record(gui_element_t * val)
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh, PRESSED))
 					dump_queue(val->win);
 			}
+		}
 			break;
 
 		case TYPE_TOUCH_AREA:
+		{
 			ASSERT(val->link != NULL);
 			touch_area_t * ta = (touch_area_t *) val->link;
 			gui.selected_type = TYPE_TOUCH_AREA;
@@ -1395,14 +1403,17 @@ static void set_state_record(gui_element_t * val)
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING))
 					dump_queue(val->win);
 			}
+		}
 			break;
 
 		case TYPE_TEXT_FIELD:
 			break;
 
 		default:
+		{
 			PRINTF("set_state_record: undefined type\n");
 			ASSERT(0);
+		}
 			break;
 	}
 }
