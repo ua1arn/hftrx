@@ -25,6 +25,6 @@ Spinlock Lockid3 Register
 SPINLOCK_LOCKID4_REG
 0x0090
 Spinlock Lockid4 Register
-SPINLOCK_LOCK_REGN
-0x0100 + N*0x0004
+SPINLOCK_LOCK_REG
+0x0100 32
 Spinlock Register N (N = 0 to 31)

@@ -2112,7 +2112,7 @@ typedef struct TVD_TOP_Type
 	__IO uint32_t TVD_3D_CTL4;                           /*!< Offset 0x014 TVD 3D DMA CONTROL Register4 */
 	__IO uint32_t TVD_3D_CTL5;                           /*!< Offset 0x018 TVD 3D DMA CONTROL Register5 */
 	uint32_t reserved_0x01C;
-	TVD_ADC_TypeDef TVD_ADC [0x004];                     /*!< Offset 0x020 TVD ADC Registers  ADCs[N] (N=0..3) */
+	TVD_ADC_TypeDef TVD_ADC [0x004];                     /*!< Offset 0x020 TVD ADC Registers N (N = 0 to 3) */
 } TVD_TOP_TypeDef; /* size of structure = 0x0A0 */
 /*
  * @brief TVD
@@ -2315,6 +2315,28 @@ typedef struct USB_EHCI_Capability_Type
 	__IO uint32_t ASYNCLISTADDR;                         /*!< Offset 0x028 EHCI Next Asynchronous List Address Register */
 } USB_EHCI_Capability_TypeDef; /* size of structure = 0x02C */
 /*
+ * @brief SPINLOCK
+ */
+/*!< SPINLOCK Controller Interface */
+typedef struct SPINLOCK_Type
+{
+	__IO uint32_t SPINLOCK_SYSTATUS_REG;                 /*!< Offset 0x000 Spinlock System Status Register */
+	uint32_t reserved_0x004 [0x0003];
+	__IO uint32_t SPINLOCK_STATUS_REG;                   /*!< Offset 0x010 Spinlock Status Register */
+	uint32_t reserved_0x014 [0x0003];
+	__IO uint32_t SPINLOCK_IRQ_EN_REG;                   /*!< Offset 0x020 Spinlock Interrupt Enable Register */
+	uint32_t reserved_0x024 [0x0007];
+	__IO uint32_t SPINLOCK_IRQ_STA_REG;                  /*!< Offset 0x040 Spinlock Interrupt Status Register */
+	uint32_t reserved_0x044 [0x000F];
+	__IO uint32_t SPINLOCK_LOCKID0_REG;                  /*!< Offset 0x080 Spinlock Lockid0 Register */
+	__IO uint32_t SPINLOCK_LOCKID1_REG;                  /*!< Offset 0x084 Spinlock Lockid1 Register */
+	__IO uint32_t SPINLOCK_LOCKID2_REG;                  /*!< Offset 0x088 Spinlock Lockid2 Register */
+	__IO uint32_t SPINLOCK_LOCKID3_REG;                  /*!< Offset 0x08C Spinlock Lockid3 Register */
+	__IO uint32_t SPINLOCK_LOCKID4_REG;                  /*!< Offset 0x090 Spinlock Lockid4 Register */
+	uint32_t reserved_0x094 [0x001B];
+	__IO uint32_t SPINLOCK_LOCK_REG [0x020];             /*!< Offset 0x100 Spinlock Register N (N = 0 to 31) */
+} SPINLOCK_TypeDef; /* size of structure = 0x180 */
+/*
  * @brief DMAC_CH
  */
 /*!< DMAC_CH Controller Interface */
@@ -2507,6 +2529,7 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define USBOHCI1	((struct ohci_registers *) (USBEHCI1_BASE + 0x0400))		/*!< \brief USBOHCI1 Interface register set access pointer */
 #define USBPHY1		((USBPHYC_TypeDef *) (USBEHCI1_BASE + 0x0800))				/*!< \brief USBPHY1 Interface register set access pointer */
 
+#define SPINLOCK	((SPINLOCK_TypeDef *) SPINLOCK_BASE)				/*!< \brief SPINLOCK Interface register set access pointer */
 #define DMAC		((DMAC_TypeDef *) DMAC_BASE)						/*!< \brief DMAC Interface register set access pointer */
 #define PWM			((PWM_TypeDef *) PWM_BASE)							/*!< \brief PWM Interface register set access pointer */
 
