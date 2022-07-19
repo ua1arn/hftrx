@@ -1884,8 +1884,8 @@ void SWI_Handler(void)
 	{
 		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
 	}
-	for (;;)
-		;
+//	for (;;)
+//		;
 }
 
 // Prefetch Abort
