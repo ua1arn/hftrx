@@ -6,6 +6,7 @@
 //
 
 #include "hardware.h"
+#include "audio.h"
 #include "board.h"
 #include "audio_compressor.h"
 
@@ -55,7 +56,7 @@ void audio_compressor_set_threshold(FLOAT_t ratio) {
 }
 
 FLOAT_t audio_compressor_calc(FLOAT_t in) {
-	if (fabs(in) > threshold) {
+	if (FABSF(in) > threshold) {
 		if (gain >= gainreduce) {
 			if (state == State_Idle || state == State_Release) {
 				state = State_Attack;
@@ -66,7 +67,7 @@ FLOAT_t audio_compressor_calc(FLOAT_t in) {
 		if (state == State_GainReduction) time_out = hold;
 	}
 
-	if (fabs(in) < threshold && gain <= 1) {
+	if (FABSF(in) < threshold && gain <= 1) {
 		if (time_out == 0 && state == State_GainReduction) {
 			state = State_Release;
 			time_out = release;
