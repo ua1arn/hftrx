@@ -9637,6 +9637,12 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
+#if 0
+	{
+		// CMSIS RTOS2 test
+		blinky_main();
+	}
+#endif
 //	PRINTF("TARGET_UART1_TX_MIO test\n");
 //	for (;;)
 //	{

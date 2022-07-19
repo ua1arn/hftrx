@@ -141,7 +141,7 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 #SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
-#SRCDIRS += $(RTOSXDIR)/RTX/Source
+#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 

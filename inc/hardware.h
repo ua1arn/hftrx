@@ -1232,4 +1232,8 @@ unsigned long ulmax(unsigned long a, unsigned long b);
 uint32_t sys_now(void);
 void sys_dram_init(void);
 
+// RTOS test stuff
+int blinky_main(void);
+#define GTIM_IRQ_NUM SecurePhysicalTimer_IRQn
+
 #endif // HARDWARE_H_INCLUDED

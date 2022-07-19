@@ -157,4 +157,4 @@ uint32_t CUndefHandler(uint32_t opcode, uint32_t state, uint32_t LR) {
     while(1);
 }
 
-//uint8_t IRQ_PendSV;
+uint8_t IRQ_PendSV;

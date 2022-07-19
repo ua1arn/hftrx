@@ -6629,6 +6629,11 @@ sysinit_pll_initialize(void)
 	SystemCoreClock = CPU_FREQ;
 }
 
+void SystemCoreClockUpdate(void)
+{
+	SystemCoreClock = CPU_FREQ;
+}
+
 
 #if WITHDCDCFREQCTL
 
