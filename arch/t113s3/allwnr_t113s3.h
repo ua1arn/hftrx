@@ -2070,7 +2070,7 @@ typedef struct MSI_MEMC_Type
 {
 	__IO uint32_t MEMC_REG_000;                          /*!< Offset 0x000 Reg_000 */
 	__IO uint32_t MEMC_REG_004;                          /*!< Offset 0x004 Reg_004 */
-	uint32_t reserved_0x008;
+	__IO uint32_t MEMC_REG_008;                          /*!< Offset 0x008 Reg_008 */
 	__IO uint32_t MEMC_REG_00C;                          /*!< Offset 0x00C Reg_00C */
 	uint32_t reserved_0x010 [0x0004];
 	__IO uint32_t MEMC_REG_020;                          /*!< Offset 0x020 Reg_020 */

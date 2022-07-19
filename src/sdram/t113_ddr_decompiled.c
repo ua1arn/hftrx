@@ -48,7 +48,7 @@ struct dram_para_t
 
 	//control configuration
 	unsigned int		dram_para1;		// 	4	16
-	unsigned int		dram_para2;		// 	5	20
+	unsigned int		dram_para2;		// 	5	20 high bit - autodetect DDR RAM size (high word - size in megabytes)
 
 	//timing configuration
 	unsigned int		dram_mr0;	// 	6	24
@@ -460,10 +460,10 @@ static int auto_scan_dram_rank_width(int *a1, struct dram_para_t * a2param)
   int result; // r0
 
   v1 = a1[4];
-  a1[4] = 11534512;
+  a1[4] = 0x00B000B0;
   v3 = a1[23];
-  a1[5] = a1[5] & 0xFFFFFFF0 | 0x1000;
-  a1[23] = v3 & 0xFFFFFFF7 | 5;
+  a1[5] = (a1[5] & 0xFFFFFFF0) | 0x1000;
+  a1[23] = (v3 & 0xFFFFFFF7) | 5;
 
   mctl_core_init(a1); //OK
 
@@ -612,12 +612,12 @@ static uint32_t *mctl_com_init(uint32_t *result) //OK
   v1 = result[1];
   v2 = result[5];
 
-  MEMORY(MSI_MEMC_BASE + 0x008) = MEMORY(MSI_MEMC_BASE + 0x008) & 0xFFFFC0FF | 0x2000;
+  MSI_MEMC->MEMC_REG_008 = (MSI_MEMC->MEMC_REG_008 & 0xFFFFC0FF) | 0x2000;
 
   v3 = v2 & 1;
   v4 = (v1 << 16) & 0x070000;
   v5 = v1 - 6;
-  v6 = v4 | MSI_MEMC->MEMC_REG_000 & 0xFF000FFF | 0x400000;
+  v6 = v4 | (MSI_MEMC->MEMC_REG_000 & 0xFF000FFF) | 0x400000;
 
   if ( (v2 & 1) != 0 )
     v7 = 0;
@@ -1788,6 +1788,7 @@ static int eye_delay_compensation(int a1) //OK
   return result;
 }
 
+/* return auto-detected size in megabyes */
 static int DRAMC_get_dram_size(void) //ok
 {
   int v0;   // r3
