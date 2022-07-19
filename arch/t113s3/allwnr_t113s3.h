@@ -1565,22 +1565,6 @@ typedef struct USBPHYC_Type
 	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x028 HCI SIE Port Disable Control Register */
 } USBPHYC_TypeDef; /* size of structure = 0x02C */
 /*
- * @brief CSI
- */
-/*!< CSI Controller Interface */
-typedef struct CSI_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} CSI_TypeDef; /* size of structure = 0x004 */
-/*
- * @brief TVD
- */
-/*!< TVD Controller Interface */
-typedef struct TVD_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} TVD_TypeDef; /* size of structure = 0x004 */
-/*
  * @brief DE
  */
 /*!< DE Controller Interface */
@@ -2103,6 +2087,80 @@ typedef struct CSIC_DMA_Type
 	__IO uint32_t CSIC_FEATURE_REG;                      /*!< Offset 0x1F4 CSIC DMA Feature List Register */
 } CSIC_DMA_TypeDef; /* size of structure = 0x1F8 */
 /*
+ * @brief TVD_ADC
+ */
+/*!< TVD_ADC Controller Interface */
+typedef struct TVD_ADC_Type
+{
+	uint32_t reserved_0x000;
+	__IO uint32_t TVD_TOP_CTL;                           /*!< Offset 0x004 TVD TOP CONTROL Register */
+	__IO uint32_t TVD_ADC_CTL;                           /*!< Offset 0x008 TVD ADC CONTROL Register */
+	__IO uint32_t TVD_ADC_CFG;                           /*!< Offset 0x00C TVD ADC CONFIGURATION Register */
+	uint32_t reserved_0x010 [0x0004];
+} TVD_ADC_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief TVD_TOP
+ */
+/*!< TVD_TOP Controller Interface */
+typedef struct TVD_TOP_Type
+{
+	__IO uint32_t TVD_TOP_MAP;                           /*!< Offset 0x000 TVD TOP MAP Register */
+	uint32_t reserved_0x004;
+	__IO uint32_t TVD_3D_CTL1;                           /*!< Offset 0x008 TVD 3D DMA CONTROL Register1 */
+	__IO uint32_t TVD_3D_CTL2;                           /*!< Offset 0x00C TVD 3D DMA CONTROL Register2 */
+	__IO uint32_t TVD_3D_CTL3;                           /*!< Offset 0x010 TVD 3D DMA CONTROL Register3 */
+	__IO uint32_t TVD_3D_CTL4;                           /*!< Offset 0x014 TVD 3D DMA CONTROL Register4 */
+	__IO uint32_t TVD_3D_CTL5;                           /*!< Offset 0x018 TVD 3D DMA CONTROL Register5 */
+	uint32_t reserved_0x01C;
+	TVD_ADC_TypeDef TVD_ADC [0x004];                     /*!< Offset 0x020 TVD ADC Registers  ADCs[N] (N=0..3) */
+} TVD_TOP_TypeDef; /* size of structure = 0x0A0 */
+/*
+ * @brief TVD
+ */
+/*!< TVD Controller Interface */
+typedef struct TVD_Type
+{
+	__IO uint32_t TVD_EN;                                /*!< Offset 0x000 TVD MODULE CONTROL Register */
+	__IO uint32_t TVD_MODE;                              /*!< Offset 0x004 TVD MODE CONTROL Register */
+	__IO uint32_t TVD_CLAMP_AGC1;                        /*!< Offset 0x008 TVD CLAMP & AGC CONTROL Register1 */
+	__IO uint32_t TVD_CLAMP_AGC2;                        /*!< Offset 0x00C TVD CLAMP & AGC CONTROL Register2 */
+	__IO uint32_t TVD_HLOCK1;                            /*!< Offset 0x010 TVD HLOCK CONTROL Register1 */
+	__IO uint32_t TVD_HLOCK2;                            /*!< Offset 0x014 TVD HLOCK CONTROL Register2 */
+	__IO uint32_t TVD_HLOCK3;                            /*!< Offset 0x018 TVD HLOCK CONTROL Register3 */
+	__IO uint32_t TVD_HLOCK4;                            /*!< Offset 0x01C TVD HLOCK CONTROL Register4 */
+	__IO uint32_t TVD_HLOCK5;                            /*!< Offset 0x020 TVD HLOCK CONTROL Register5 */
+	__IO uint32_t TVD_VLOCK1;                            /*!< Offset 0x024 TVD VLOCK CONTROL Register1 */
+	__IO uint32_t TVD_VLOCK2;                            /*!< Offset 0x028 TVD VLOCK CONTROL Register2 */
+	uint32_t reserved_0x02C;
+	__IO uint32_t TVD_CLOCK1;                            /*!< Offset 0x030 TVD CHROMA LOCK CONTROL Register1 */
+	__IO uint32_t TVD_CLOCK2;                            /*!< Offset 0x034 TVD CHROMA LOCK CONTROL Register2 */
+	uint32_t reserved_0x038 [0x0002];
+	__IO uint32_t TVD_YC_SEP1;                           /*!< Offset 0x040 TVD YC SEPERATION CONROL Register1 */
+	__IO uint32_t TVD_YC_SEP2;                           /*!< Offset 0x044 TVD YC SEPERATION CONROL Register2 */
+	uint32_t reserved_0x048 [0x0002];
+	__IO uint32_t TVD_ENHANCE1;                          /*!< Offset 0x050 TVD ENHANCEMENT CONTROL Register1 */
+	__IO uint32_t TVD_ENHANCE2;                          /*!< Offset 0x054 TVD ENHANCEMENT CONTROL Register2 */
+	__IO uint32_t TVD_ENHANCE3;                          /*!< Offset 0x058 TVD ENHANCEMENT CONTROL Register3 */
+	uint32_t reserved_0x05C;
+	__IO uint32_t TVD_WB1;                               /*!< Offset 0x060 TVD WB DMA CONTROL Register1 */
+	__IO uint32_t TVD_WB2;                               /*!< Offset 0x064 TVD WB DMA CONTROL Register2 */
+	__IO uint32_t TVD_WB3;                               /*!< Offset 0x068 TVD WB DMA CONTROL Register3 */
+	__IO uint32_t TVD_WB4;                               /*!< Offset 0x06C TVD WB DMA CONTROL Register4 */
+	uint32_t reserved_0x070 [0x0004];
+	__IO uint32_t TVD_IRQ_CTL;                           /*!< Offset 0x080 TVD DMA Interrupt Control Register */
+	uint32_t reserved_0x084 [0x0003];
+	__IO uint32_t TVD_IRQ_STATUS;                        /*!< Offset 0x090 TVD DMA Interrupt Status Register */
+	uint32_t reserved_0x094 [0x001B];
+	__IO uint32_t TVD_DEBUG1;                            /*!< Offset 0x100 TVD DEBUG CONTROL Register1 */
+	uint32_t reserved_0x104 [0x001F];
+	__IO uint32_t TVD_STATUS1;                           /*!< Offset 0x180 TVD DEBUG STATUS Register1 */
+	__IO uint32_t TVD_STATUS2;                           /*!< Offset 0x184 TVD DEBUG STATUS Register2 */
+	__IO uint32_t TVD_STATUS3;                           /*!< Offset 0x188 TVD DEBUG STATUS Register3 */
+	__IO uint32_t TVD_STATUS4;                           /*!< Offset 0x18C TVD DEBUG STATUS Register4 */
+	__IO uint32_t TVD_STATUS5;                           /*!< Offset 0x190 TVD DEBUG STATUS Register5 */
+	__IO uint32_t TVD_STATUS6;                           /*!< Offset 0x194 TVD DEBUG STATUS Register6 */
+} TVD_TypeDef; /* size of structure = 0x198 */
+/*
  * @brief C0_CPUX_CFG
  */
 /*!< C0_CPUX_CFG Controller Interface */
@@ -2416,16 +2474,16 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define TVE_TOP 	((TVE_TOP_TypeDef *) TVE_TOP_BASE)				/*!< \brief TVE_TOP Interface register set access pointer */
 #define TV_Encoder 	((TVE_TypeDef *) TV_Encoder_BASE)			/*!< \brief TV_Encoder Interface register set access pointer */
 
-#define CSIC_CCU		((CSIC_CCU_TypeDef *) CSIC_CCU_BASE)	/*!< \brief CSIC_CCU Interface register set access pointer */
-#define CSIC_TOP		((CSIC_TOP_TypeDef *) CSIC_TOP_BASE)	/*!< \brief CSIC_TOP Interface register set access pointer */
+#define CSIC_CCU		((CSIC_CCU_TypeDef *) CSIC_CCU_BASE)		/*!< \brief CSIC_CCU Interface register set access pointer */
+#define CSIC_TOP		((CSIC_TOP_TypeDef *) CSIC_TOP_BASE)		/*!< \brief CSIC_TOP Interface register set access pointer */
 #define CSIC_PARSER0	((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)	/*!< \brief CSIC_PARSER0 Interface register set access pointer */
-#define SIC_DMA0		((CSIC_DMA_TypeDef *) SIC_DMA0_BASE)	/*!< \brief SIC_DMA0 Interface register set access pointer */
-#define SIC_DMA1		((CSIC_DMA_TypeDef *) SIC_DMA1_BASE)	/*!< \brief SIC_DMA1 Interface register set access pointer */
+#define SIC_DMA0		((CSIC_DMA_TypeDef *) SIC_DMA0_BASE)		/*!< \brief SIC_DMA0 Interface register set access pointer */
+#define SIC_DMA1		((CSIC_DMA_TypeDef *) SIC_DMA1_BASE)		/*!< \brief SIC_DMA1 Interface register set access pointer */
 
-#define TVD_TOP		((TVD_TypeDef *) TVD_TOP_BASE)				/*!< \brief TVD_TOP Interface register set access pointer */
-#define TVD0		((TV_TypeDef *) TVD0_BASE)					/*!< \brief TVD0 Interface register set access pointer */
+#define TVD_TOP			((TVD_TOP_TypeDef *) TVD_TOP_BASE)			/*!< \brief TVD_TOP Interface register set access pointer */
+#define TVD0			((TVD_TypeDef *) TVD0_BASE)					/*!< \brief TVD0 Interface register set access pointer */
 
-#define RTC			((RTC_TypeDef *) RTC_BASE)					/*!< \brief RTC Interface register set access pointer */
+#define RTC				((RTC_TypeDef *) RTC_BASE)					/*!< \brief RTC Interface register set access pointer */
 
 #define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)			/*!< \brief CPU_SUBSYS_CTRL Interface register set access pointer */
 //#define TimeStamp_STA	((TimeStamp_STA_TypeDef *) TimeStamp_STA_BASE)
