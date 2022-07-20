@@ -6,6 +6,9 @@
 //
 
 #include "hardware.h"
+
+#if WITHCOMPRESSOR
+
 #include "audio.h"
 #include "board.h"
 #include "audio_compressor.h"
@@ -113,3 +116,4 @@ FLOAT_t audio_compressor_calc(FLOAT_t in) {
 
 	return in * gain;
 }
+#endif /* WITHCOMPRESSOR */

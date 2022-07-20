@@ -1860,6 +1860,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gmikehclip,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if WITHCOMPRESSOR
 	{
 		QLABEL("COMP ATK"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,	
@@ -1910,6 +1911,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gcompressor_threshold,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#endif /* WITHCOMPRESSOR */
 #if WITHREVERB
 	{
 		QLABEL2("REVERB  ", "Reverberator"), 7, 0, RJ_ON,	ISTEP1,

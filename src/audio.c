@@ -3460,22 +3460,6 @@ static RAMDTCM volatile agcparams_t txagcparams [NPROF];
 static RAMDTCM volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 static RAMDTCM volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
-/* Получение эффекта реверберации. На входе сэмпл, возвращаем обработанный или неизменный сэмпл
- *
- */
-static FLOAT_t txmikereverb(FLOAT_t isample)
-{
-#if WITHREVERB
-
-	return audio_reverb_calc(isample);
-
-#else /* WITHREVERB */
-
-	return isample;
-
-#endif /* WITHREVERB */
-}
-//	
 static void agc_initialize(void)
 {
 	// Установка параметров АРУ приёмника
@@ -3907,8 +3891,12 @@ static RAMFUNC FLOAT_t preparevi(
 			// источник - микрофон
 			vi0f = txmikeagc(vi0f * txlevelXXX);	// АРУ
 			vi0f = txmikeclip(vi0f);				// Ограничитель
-			vi0f = txmikereverb(vi0f);				// Ревербератор
+#if WITHREVERB
+			vi0f = audio_reverb_calc(vi0f);				// Ревербератор
+#endif /* WITHREVERB */
+#if WITHCOMPRESSOR
 			vi0f = audio_compressor_calc(vi0f);		// Компрессор
+#endif /* WITHCOMPRESSOR */
 			moni->IV = vi0f;
 			moni->QV = vi0f;
 			return injectsubtone(vi0f, ctcss);
@@ -5980,12 +5968,14 @@ txparam_update(uint_fast8_t profile)
 	}
 	{
 		// компрессор
+	#if WITHCOMPRESSOR
 		audio_compressor_set_attack(NSAITICKS(glob_compattack));
 		audio_compressor_set_release(NSAITICKS(glob_comprelease));
 		audio_compressor_set_hold(NSAITICKS(glob_comphold));
 		audio_compressor_set_gainreduce(db2ratio(- (int) glob_compgain));
 		audio_compressor_set_threshold(db2ratio(- (int) glob_compthreshold));
 		audio_compressor_recalc();
+	#endif /* WITHCOMPRESSOR */
 	}
 	{
 		// ревербератор
