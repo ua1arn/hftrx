@@ -3287,7 +3287,7 @@ sysinit_cache_cpu1_initialize(void)
  * mpidr determines the CPU to be turned on.
  * call by core 0 to activate core 1
  ******************************************************************************/
-static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
 	(void) PWR->CR1;
@@ -3320,7 +3320,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
 
 	/* Generate an IT to core 1 */
-	GIC_SendSGI(SGI8_IRQn, 0x01 << 1, 0x00);	// CPU1, filer=0
+	GIC_SendSGI(SGI8_IRQn, 0x01 << targetcore, 0x00);	// CPU1, filer=0
 }
 
 #elif CPUSTYLE_XC7Z
@@ -3328,7 +3328,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 // See also:
 //	https://stackoverflow.com/questions/60873390/zynq-7000-minimum-asm-code-to-init-cpu1-from-cpu0
 
-static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
@@ -3353,18 +3353,19 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 #define xACPU1_RESET_MASK          ((uint32_t)0X00000002U)
 #define xACPU0_RESET_MASK          ((uint32_t)0X00000001U)
 
+#define xXPAR_PSU_APU_S_AXI_BASEADDR 0xFD5C0000u
+
 // Invoke at SVC context
-static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
-	* (volatile uint32_t *) 0xFD5C0048 = startfunc;	// apu.rvbaraddr1l
+	* (volatile uint32_t *) (xXPAR_PSU_APU_S_AXI_BASEADDR + 0x048) = startfunc;	// apu.rvbaraddr1l
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
 
-	* (volatile uint32_t *) 0xFFD80220 = 1u << 1;
+	* (volatile uint32_t *) 0xFFD80220 = 1u << targetcore;
 	* (volatile uint32_t *) 0xFD5C0020 = 0;	//apu.config0
 
-	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ (xACPU1_RESET_MASK | xACPU1_PWRON_RESET_MASK);
+	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ ((xACPU0_RESET_MASK << targetcore) | (xACPU0_PWRON_RESET_MASK<< targetcore));
 }
-
 
 #elif CPUSTYPE_T113
 
@@ -3388,11 +3389,11 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 #define HARDWARE_SOFTENTRY_CPU0_ADDR (* (volatile uint32_t *) 0x070005C4)
 #define HARDWARE_SOFTENTRY_CPU1_ADDR (* (volatile uint32_t *) 0x070005C8)
 
-static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	HARDWARE_SOFTENTRY_CPU1_ADDR = startfunc;
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
-	C0_CPUX_CFG->C0_RST_CTRL |= (0x01uL << 1);
+	C0_CPUX_CFG->C0_RST_CTRL |= (0x01uL << targetcore);
 	(void) C0_CPUX_CFG->C0_RST_CTRL;
 }
 
@@ -3494,7 +3495,7 @@ void cpump_initialize(void)
 	SPIN_LOCK(& cpu1userstart);
 	SPINLOCK_INITIALIZE(& cpu1init);
 	SPIN_LOCK(& cpu1init);
-	cortexa_mp_cpu1_start((uintptr_t) Reset_CPU1_Handler);
+	cortexa_mp_cpu1_start((uintptr_t) Reset_CPU1_Handler, 1);
 	SPIN_LOCK(& cpu1init);
 	SPIN_UNLOCK(& cpu1init);
 
