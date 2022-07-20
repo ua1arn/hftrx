@@ -1482,7 +1482,12 @@ uint_fast8_t arm_hardware_clustersize(void)
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// Cortex-A computers
 
+#if WITHSMPSYSTEM
+	// Cortex-A53: check L2CTLR, [24:25]
 	return 2; //(__get_MPIDR() >> 8) & 0xFF;
+#else /* WITHSMPSYSTEM */
+	return 1;
+#endif /* WITHSMPSYSTEM */
 
 #else /* CPUSTYLE_STM32MP1 */
 
