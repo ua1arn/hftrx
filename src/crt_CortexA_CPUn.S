@@ -134,7 +134,7 @@ Reset_CPU1_HandlerSleep:
 		.endfunc
    .ltorg
 
-	.section .noinit
+	.section .bss
 	.align 8
 
 	.space	STACKSIZEIRQ
@@ -219,7 +219,7 @@ Reset_CPU2_HandlerSleep:
 		.endfunc
    .ltorg
 
-	.section .noinit
+	.section .bss
 	.align 8
 
 	.space	STACKSIZEIRQ
@@ -304,7 +304,7 @@ Reset_CPU3_HandlerSleep:
 		.endfunc
    .ltorg
 
-	.section .noinit
+	.section .bss
 	.align 8
 
 	.space	STACKSIZEIRQ

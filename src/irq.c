@@ -1473,6 +1473,23 @@ static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const 
 
 #if CPUSTYLE_ARM
 
+uint_fast8_t arm_hardware_clustersize(void)
+{
+#if CPUSTYLE_AT91SAM7S
+
+	return 1;
+
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	// Cortex-A computers
+
+	return 2; //(__get_MPIDR() >> 8) & 0xFF;
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	return 1;
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
 
 // This processor index (0..n-1)
 uint_fast8_t arm_hardware_cpuid(void)

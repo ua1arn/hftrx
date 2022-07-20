@@ -1066,6 +1066,7 @@ void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(vo
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_disable_handler(uint_fast16_t int_id);
 uint_fast8_t arm_hardware_cpuid(void);	// This processor index (0..n-1)
+uint_fast8_t arm_hardware_clustersize(void);
 void arm_hardware_populte_second_initialize(void);
 
 void audioproc_spool_user(void);	// вызывать при выполнении длительных операций

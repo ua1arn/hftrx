@@ -1896,7 +1896,7 @@ void PAbort_Handler(void)
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	PRINTF(PSTR("DFSR=%08lX, IFAR=%08lX, pc=%08lX, sp~%08lx\n"), __get_DFSR(), __get_IFAR(), (& marker) [2], (unsigned long) & marker);
+	PRINTF(PSTR("DFSR=%08lX, IFAR=%08lX, pc=%08lX, sp~%08lx __get_MPIDR()=%08lX\n"), __get_DFSR(), __get_IFAR(), (& marker) [2], (unsigned long) & marker, __get_MPIDR());
 #pragma GCC diagnostic pop
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
@@ -3241,7 +3241,7 @@ static void cortexa_cpuinfo(void)
 {
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, SCTLR=%08lX, ACTLR=%08lX, sp=%08lX\n"), (unsigned) (__get_MPIDR() & 0x03),  (unsigned long) __get_VBAR(), (unsigned long) __get_TTBR0(), (unsigned long) __get_CPSR(), (unsigned long) __get_SCTLR(), (unsigned long) __get_ACTLR(),(unsigned long) & vvv);
+	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, SCTLR=%08lX, ACTLR=%08lX, sp=%08lX, MPIDR=%08lX\n"), (unsigned) (__get_MPIDR() & 0x03),  (unsigned long) __get_VBAR(), (unsigned long) __get_TTBR0(), (unsigned long) __get_CPSR(), (unsigned long) __get_SCTLR(), (unsigned long) __get_ACTLR(),(unsigned long) & vvv, __get_MPIDR());
 }
 
 #if WITHSMPSYSTEM
@@ -3360,7 +3360,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 
 #define xXPAR_PSU_APU_S_AXI_BASEADDR 0xFD5C0000u
 
-#define HARDWARE_NCORES 4
+#define HARDWARE_NCORES 2
 
 // Invoke at SVC context
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
@@ -3371,7 +3371,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 	* (volatile uint32_t *) 0xFFD80220 = 1u << targetcore;
 	* (volatile uint32_t *) 0xFD5C0020 = 0;	//apu.config0
 
-	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ ((xACPU0_RESET_MASK << targetcore) | (xACPU0_PWRON_RESET_MASK<< targetcore));
+	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ ((xACPU0_RESET_MASK << targetcore) | (xACPU0_PWRON_RESET_MASK << targetcore));
 }
 
 #elif CPUSTYPE_T113
@@ -3503,7 +3503,7 @@ void cpump_initialize(void)
 	cortexa_cpuinfo();
 	SPINLOCK_INITIALIZE(& cpu1init);
 	unsigned core;
-	for (core = 1; core < HARDWARE_NCORES; ++ core)
+	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
 		static uintptr_t fns [4] =
 		{
@@ -3529,7 +3529,7 @@ void cpump_initialize(void)
 void cpump_runuser(void)
 {
 	unsigned core;
-	for (core = 1; core < 4; ++ core)
+	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
 		SPIN_UNLOCK(& cpu1userstart [core]);
 	}
