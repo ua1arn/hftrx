@@ -3338,6 +3338,21 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 
 #elif CPUSTYLE_XCZU
 
+/* RST_FPD_APU Address and mask definations */
+#define xXRESETPS_CRF_APB_BASE         (0XFD1A0000U)
+#define xXRESETPS_CRF_APB_RST_FPD_APU \
+				  ((xXRESETPS_CRF_APB_BASE) + ((uint32_t)0X00000104U))
+
+#define xACPU3_PWRON_RESET_MASK    ((uint32_t)0X00002000U)
+#define xACPU2_PWRON_RESET_MASK    ((uint32_t)0X00001000U)
+#define xACPU1_PWRON_RESET_MASK    ((uint32_t)0X00000800U)
+#define xACPU0_PWRON_RESET_MASK    ((uint32_t)0X00000400U)
+#define xAPU_L2_RESET_MASK         ((uint32_t)0X00000100U)
+#define xACPU3_RESET_MASK          ((uint32_t)0X00000008U)
+#define xACPU2_RESET_MASK          ((uint32_t)0X00000004U)
+#define xACPU1_RESET_MASK          ((uint32_t)0X00000002U)
+#define xACPU0_RESET_MASK          ((uint32_t)0X00000001U)
+
 // Invoke at SVC context
 static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 {
@@ -3347,7 +3362,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 	* (volatile uint32_t *) 0xFFD80220 = 1u << 1;
 	* (volatile uint32_t *) 0xFD5C0020 = 0;	//apu.config0
 
-	* (volatile uint32_t *) XRESETPS_CRF_APB_RST_FPD_APU &= ~ (ACPU1_RESET_MASK | ACPU1_PWRON_RESET_MASK);
+	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ (xACPU1_RESET_MASK | xACPU1_PWRON_RESET_MASK);
 }
 
 
