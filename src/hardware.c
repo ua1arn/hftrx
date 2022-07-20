@@ -3287,6 +3287,9 @@ sysinit_cache_cpu1_initialize(void)
  * mpidr determines the CPU to be turned on.
  * call by core 0 to activate core 1
  ******************************************************************************/
+
+#define HARDWARE_NCORES 2
+
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
@@ -3328,6 +3331,8 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 // See also:
 //	https://stackoverflow.com/questions/60873390/zynq-7000-minimum-asm-code-to-init-cpu1-from-cpu0
 
+#define HARDWARE_NCORES 2
+
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
@@ -3354,6 +3359,8 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 #define xACPU0_RESET_MASK          ((uint32_t)0X00000001U)
 
 #define xXPAR_PSU_APU_S_AXI_BASEADDR 0xFD5C0000u
+
+#define HARDWARE_NCORES 4
 
 // Invoke at SVC context
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
@@ -3389,6 +3396,8 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 #define HARDWARE_SOFTENTRY_CPU0_ADDR (* (volatile uint32_t *) 0x070005C4)
 #define HARDWARE_SOFTENTRY_CPU1_ADDR (* (volatile uint32_t *) 0x070005C8)
 
+#define HARDWARE_NCORES 2
+
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	HARDWARE_SOFTENTRY_CPU1_ADDR = startfunc;
@@ -3401,7 +3410,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 #endif /* CPU types */
 
 static RAMDTCM SPINLOCK_t cpu1init = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t cpu1userstart = SPINLOCK_INIT;
+static RAMDTCM SPINLOCK_t cpu1userstart [4];
 
 // Инициализация второго ппрцессора
 void Reset_CPUn_Handler(void)
@@ -3452,8 +3461,9 @@ void Reset_CPUn_Handler(void)
 	__enable_irq();
 	SPIN_UNLOCK(& cpu1init);
 
-	SPIN_LOCK(& cpu1userstart);		/* ждем пока основной user thread не разрешит выполняться */
-	SPIN_UNLOCK(& cpu1userstart);
+	unsigned core = arm_hardware_cpuid();
+	SPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
+	SPIN_UNLOCK(& cpu1userstart [core]);
 #if WITHNESTEDINTERRUPTS
 	GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
 #endif /* WITHNESTEDINTERRUPTS */
@@ -3491,13 +3501,25 @@ void cpump_initialize(void)
 #endif /* (__CORTEX_A == 9U) */
 
 	cortexa_cpuinfo();
-	SPINLOCK_INITIALIZE(& cpu1userstart);
-	SPIN_LOCK(& cpu1userstart);
 	SPINLOCK_INITIALIZE(& cpu1init);
-	SPIN_LOCK(& cpu1init);
-	cortexa_mp_cpu1_start((uintptr_t) Reset_CPU1_Handler, 1);
-	SPIN_LOCK(& cpu1init);
-	SPIN_UNLOCK(& cpu1init);
+	unsigned core;
+	for (core = 1; core < HARDWARE_NCORES; ++ core)
+	{
+		static uintptr_t fns [4] =
+		{
+			0,
+			(uintptr_t) Reset_CPU1_Handler,
+			(uintptr_t) Reset_CPU2_Handler,
+			(uintptr_t) Reset_CPU3_Handler,
+		};
+
+		SPINLOCK_INITIALIZE(& cpu1userstart [core]);
+		SPIN_LOCK(& cpu1userstart [core]);
+		SPIN_LOCK(& cpu1init);
+		cortexa_mp_cpu1_start(fns [core], core);
+		SPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
+		SPIN_UNLOCK(& cpu1init);
+	}
 
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 
@@ -3506,7 +3528,11 @@ void cpump_initialize(void)
 /* остальным ядрам разрешаем выполнять прерывания */
 void cpump_runuser(void)
 {
-	SPIN_UNLOCK(& cpu1userstart);
+	unsigned core;
+	for (core = 1; core < 4; ++ core)
+	{
+		SPIN_UNLOCK(& cpu1userstart [core]);
+	}
 }
 
 #else /* WITHSMPSYSTEM */
