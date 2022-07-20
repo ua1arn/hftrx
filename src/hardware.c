@@ -3338,15 +3338,16 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 
 #elif CPUSTYLE_XCZU
 
-// See also:
-//	https://stackoverflow.com/questions/60873390/zynq-7000-minimum-asm-code-to-init-cpu1-from-cpu0
-
+// Invoke at SVC context
 static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 {
-	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
+	* (volatile uint32_t *) 0xFD5C0048 = startfunc;	// apu.rvbaraddr1l
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
-	/* Generate an IT to core 1 */
-	__SEV();
+
+	* (volatile uint32_t *) 0xFFD80220 = 1u << 1;
+	* (volatile uint32_t *) 0xFD5C0020 = 0;	//apu.config0
+
+	* (volatile uint32_t *) XRESETPS_CRF_APB_RST_FPD_APU &= ~ (ACPU1_RESET_MASK | ACPU1_PWRON_RESET_MASK);
 }
 
 
