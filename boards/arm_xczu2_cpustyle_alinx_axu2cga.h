@@ -101,6 +101,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+    //#define WITHDCDCFREQCTL    1        // Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */

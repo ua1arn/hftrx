@@ -4273,9 +4273,9 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 #if defined (WITHSWRPROT)
 	static uint_fast8_t gswrprot = WITHSWRPROT;
-#else
+#else /* defined (WITHSWRPROT) */
 	static uint_fast8_t gswrprot = 1;	/* защита от превышения КСВ */
-#endif
+#endif /* defined (WITHSWRPROT) */
 #if WITHTHERMOLEVEL
 	static uint_fast8_t gheatprot = 1;	/* защита от перегрева */
 #endif /* WITHTHERMOLEVEL */
