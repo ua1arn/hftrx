@@ -56,7 +56,7 @@ static uint_fast8_t kbd_clean = 0, kbd_digits_only = 0;
 enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 enum { freq_swipe_step_vals = ARRAY_SIZE(freq_swipe_step) };
 
-static text_field_t * tf_debug = NULL;
+static uint_fast8_t main_init_done = 0;
 static tf_entry_t tmpbuf[TEXT_ARRAY_SIZE];
 static uint_fast8_t tmpstr_index = 0;
 
@@ -210,8 +210,8 @@ void gui_add_debug(char d)
 	else
 	{
 		i = 0;
-		if (tf_debug)
-			textfield_add_string(tf_debug, str, COLORMAIN_WHITE);
+		if (main_init_done)
+			set_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", TF_WRITE, str, COLORMAIN_WHITE);
 		else
 		{
 			if (tmpstr_index < TEXT_ARRAY_SIZE)
@@ -226,8 +226,13 @@ void gui_add_debug(char d)
 
 void gui_open_debug_window(void)
 {
-	if (tf_debug)
-		tf_debug->visible = ! tf_debug->visible;
+	if (main_init_done)
+	{
+		uint_fast8_t tf_debug_visible;
+		get_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", TF_VISIBLE, & tf_debug_visible);
+		tf_debug_visible = ! tf_debug_visible;
+		set_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", TF_VISIBLE, tf_debug_visible);
+	}
 }
 #endif /* WITHGUIDEBUG */
 
@@ -616,7 +621,8 @@ static void window_infobar_menu_process(void)
 
 static void gui_main_process(void)
 {
-	window_t * const win = get_win(WINDOW_MAIN);
+	const uint_fast8_t win_id = WINDOW_MAIN;
+	window_t * const win = get_win(win_id);
 
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	char buf [TEXT_ARRAY_SIZE];
@@ -643,10 +649,12 @@ static void gui_main_process(void)
 		GUI_MEM_ASSERT(win->tf_ptr);
 		memcpy(win->tf_ptr, text_field, tf_size);
 
-		tf_debug = find_gui_element(TYPE_TEXT_FIELD, win, "tf_debug");
-		textfield_update_size(tf_debug);
-		tf_debug->x1 = win->w / 2 - tf_debug->w / 2;
-		tf_debug->y1 = win->h / 2 - tf_debug->h / 2;
+		uint_fast16_t tf_debug_x = 0, tf_debug_y = 0, tf_debug_w = 0, tf_debug_h = 0;
+		get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_SIZE, & tf_debug_w, & tf_debug_h);
+		tf_debug_x = win->w / 2 - tf_debug_w / 2;
+		tf_debug_y = win->h / 2 - tf_debug_h / 2;
+		set_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_COORDS, tf_debug_x, tf_debug_y);
+
 #endif /* WITHGUIDEBUG */
 
 		static const button_t buttons [] = {
@@ -721,11 +729,12 @@ static void gui_main_process(void)
 
 		load_settings();
 		elements_state(win);
+		main_init_done = 1;
 
 #if WITHGUIDEBUG
 		for (uint_fast8_t i = 0; i < tmpstr_index; i ++)
 		{
-			textfield_add_string(tf_debug, tmpbuf[i].text, COLORMAIN_WHITE);
+			set_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_WRITE, tmpbuf[i].text, COLORMAIN_WHITE);
 		}
 #endif /* WITHGUIDEBUG */
 	}
@@ -1301,24 +1310,29 @@ static void gui_main_process(void)
 	}
 
 #if 0 //WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
-		if (hamradio_get_tx())
-		{
-			const ldiv_t t = ldiv(hamradio_get_temperature_value(), 10);
-			local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
-			PRINTF("%s\n", buf);		// пока вывод в консоль
-		}
+	if (hamradio_get_tx())
+	{
+		const ldiv_t t = ldiv(hamradio_get_temperature_value(), 10);
+		local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
+		PRINTF("%s\n", buf);		// пока вывод в консоль
+	}
 #endif /* WITHTHERMOLEVEL */
 
 #if WITHFT8
-		ft8_walkthrough_core0(secounds);
+	ft8_walkthrough_core0(secounds);
 #endif /* WITHFT8 */
 
 #endif /* GUI_SHOW_INFOBAR */
 
 #if WITHGUIDEBUG
-	if (tf_debug->visible)
+	uint_fast8_t tf_debug_v;
+	get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_VISIBLE, & tf_debug_v);
+	if (tf_debug_v)
 	{
-		display_transparency(tf_debug->x1 - 5, tf_debug->y1 - 5, tf_debug->x1 + tf_debug->w + 5, tf_debug->y1 + tf_debug->h + 5, DEFAULT_ALPHA);
+		uint_fast16_t tf_debug_x = 0, tf_debug_y = 0, tf_debug_w = 0, tf_debug_h = 0;
+		get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_COORDS, & tf_debug_x, & tf_debug_y);
+		get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_SIZE, & tf_debug_w, & tf_debug_h);
+		display_transparency(tf_debug_x - 5, tf_debug_y - 5, tf_debug_x + tf_debug_w + 5, tf_debug_y + tf_debug_h + 5, DEFAULT_ALPHA);
 	}
 #endif /* WITHGUIDEBUG */
 }
@@ -5688,15 +5702,16 @@ static void window_kbd_test_proccess(void)
 static void window_ping_proccess(void)
 {
 #if WITHLWIP
-	window_t * const win = get_win(WINDOW_PING);
+	const uint_fast8_t win_id = WINDOW_PING;
+	window_t * const win = get_win(win_id);
 	static uint_fast8_t is_ping = 0, ping_delay = 0, update = 0;
 	static char ip_str [20] = "8.8.8.8";
-	static text_field_t * tf_ping = NULL;
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
 		uint_fast8_t interval = 20;
+		uint_fast16_t x = 0, y = 0;
 		is_ping = 0;
 		ping_delay = 0;
 		update = 0;
@@ -5729,14 +5744,14 @@ static void window_ping_proccess(void)
 		GUI_MEM_ASSERT(win->tf_ptr);
 		memcpy(win->tf_ptr, text_field, tf_size);
 
-		tf_ping = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ping");
-		textfield_update_size(tf_ping);
-		tf_ping->x1 = 0;
-		tf_ping->y1 = 0;
-		tf_ping->visible = VISIBLE;
+		set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_COORDS, x, y);
+		set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_VISIBLE, VISIBLE);
+
+		uint_fast16_t tf_ping_w = 0, tf_ping_h = 0;
+		get_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_SIZE, & tf_ping_w, & tf_ping_h);
 
 		label_t * lbl_ip =  find_gui_element(TYPE_LABEL, win, "lbl_ip");
-		lbl_ip->x = tf_ping->x1 + tf_ping->w + interval;
+		lbl_ip->x = x + tf_ping_w + interval;
 		lbl_ip->y = 0;
 		lbl_ip->visible = VISIBLE;
 
@@ -5775,13 +5790,13 @@ static void window_ping_proccess(void)
 					{
 						char str[30];
 						local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, val);
-						textfield_add_string(tf_ping, str, COLORMAIN_RED);
+						set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_WRITE, str, COLORMAIN_RED);
 					}
 					else
 					{
 						is_ping = 1;
 						ping_delay = 0;
-						textfield_clean(tf_ping);
+						set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_CLEAR);
 					}
 				}
 				update = 1;
@@ -5800,7 +5815,7 @@ static void window_ping_proccess(void)
 
 	if (is_ping)
 	{
-		if (ping_delay > 80)
+		if (ping_delay > 40)
 		{
 			ping_delay = 0;
 			int resp = ping_check_response();
@@ -5809,14 +5824,14 @@ static void window_ping_proccess(void)
 			{
 				char str[30];
 				local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Answer from %s: %d ms"), ip_str, resp);
-				textfield_add_string(tf_ping, str, COLORMAIN_WHITE);
+				set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_WRITE, str, COLORMAIN_WHITE);
 
 				int send = ping_send_ip(ip_str);
-				if(send)
+				if (send)
 				{
 					char str[30];
 					local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, send);
-					textfield_add_string(tf_ping, str, COLORMAIN_RED);
+					set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_WRITE, str, COLORMAIN_RED);
 					is_ping = 0;
 					update = 1;
 				}

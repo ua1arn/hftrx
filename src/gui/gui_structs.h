@@ -26,6 +26,15 @@ typedef enum {
 } element_type_t;
 
 enum {
+	TF_CLEAR,
+	TF_WRITE,
+	TF_COORDS,
+	TF_VISIBLE,
+	TF_SIZE,
+
+};
+
+enum {
 	PRESSED,						// нажато
 	RELEASED,						// отпущено после нажатия внутри элемента
 	CANCELLED,						// первоначальное состояние или отпущено после нажатия вне элемента

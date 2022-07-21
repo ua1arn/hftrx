@@ -49,6 +49,147 @@ static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btn_close", "", };
 
+/* Text fields SET
+ *
+ * TF_CLEAR: 	nothing
+ * TF_WRITE: 	char * string, COLORMAIN_T color
+ * TF_COORDS: 	uint_fast16_t x, uint_fast16_t y
+ * TF_VISIBLE: 	uint_fast8_t visible
+ */
+
+void set_property(const uint8_t window_id, element_type_t type, const char * name, ...)
+{
+	ASSERT(window_id < WINDOWS_COUNT);
+
+	va_list arg;
+	window_t * win = get_win(window_id);
+	va_start(arg, name);
+
+	switch (type)
+	{
+	case TYPE_TEXT_FIELD:
+	{
+		text_field_t * tf = find_gui_element(TYPE_TEXT_FIELD, win, name);
+		uint_fast8_t operation = va_arg(arg, uint_fast8_t);
+
+		if (operation == TF_CLEAR)
+		{
+			tf->index = 0;
+			memset(tf->string, 0, tf->h_str * sizeof(tf_entry_t));
+		}
+		else if (operation == TF_WRITE)
+		{
+			char * str = va_arg(arg, char *);
+			COLORMAIN_T color = va_arg(arg, COLORMAIN_T);
+
+			tf_entry_t * rec = &  tf->string [tf->index];
+			strncpy(rec->text, str, TEXT_ARRAY_SIZE - 1);
+			rec->color_line = color;
+			tf->index ++;
+			tf->index = tf->index >= tf->h_str ? 0 : tf->index;
+		}
+		else if (operation == TF_COORDS)
+		{
+			tf->x1 = va_arg(arg, uint_fast16_t);
+			tf->y1 = va_arg(arg, uint_fast16_t);
+
+			if (tf->font)
+			{
+				tf->w = tf->font->width * tf->w_sim;
+				tf->h = tf->font->height * tf->h_str;
+			}
+			else
+			{
+				tf->w = SMALLCHARW2 * tf->w_sim;
+				tf->h = SMALLCHARH2 * tf->h_str;
+			}
+			ASSERT(tf->w < WITHGUIMAXX);
+			ASSERT(tf->h < WITHGUIMAXY - window_title_height);
+		}
+		else if (operation == TF_VISIBLE)
+		{
+			tf->visible = va_arg(arg, uint_fast8_t) != 0;
+		}
+
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	va_end(arg);
+}
+
+/* Text fields GET
+ *
+ * TF_SIZE: 	uint_fast16_t * w, uint_fast16_t * h
+ * TF_COORDS:  	uint_fast16_t * x, uint_fast16_t * y
+ * TF_VISIBLE: 	uint_fast8_t * visible
+ */
+
+void get_property(const uint8_t window_id, element_type_t type, const char * name, ...)
+{
+	ASSERT(window_id < WINDOWS_COUNT);
+
+	va_list arg;
+	window_t * win = get_win(window_id);
+	va_start(arg, name);
+
+	switch (type)
+	{
+	case TYPE_TEXT_FIELD:
+	{
+		text_field_t * tf = find_gui_element(TYPE_TEXT_FIELD, win, name);
+		uint_fast8_t operation = va_arg(arg, uint_fast8_t);
+
+		if (operation == TF_SIZE)
+		{
+			uint_fast16_t * w = va_arg(arg, uint_fast16_t *);
+			uint_fast16_t * h = va_arg(arg, uint_fast16_t *);
+
+			if (tf->font)
+			{
+				tf->w = tf->font->width * tf->w_sim;
+				tf->h = tf->font->height * tf->h_str;
+			}
+			else
+			{
+				tf->w = SMALLCHARW2 * tf->w_sim;
+				tf->h = SMALLCHARH2 * tf->h_str;
+			}
+			ASSERT(tf->w < WITHGUIMAXX);
+			ASSERT(tf->h < WITHGUIMAXY - window_title_height);
+
+			* w = tf->w;
+			* h = tf->h;
+		}
+		else if (operation == TF_COORDS)
+		{
+			uint_fast16_t * x = va_arg(arg, uint_fast16_t *);
+			uint_fast16_t * y = va_arg(arg, uint_fast16_t *);
+
+			* x = tf->x1;
+			* y = tf->y1;
+		}
+		else if (operation == TF_VISIBLE)
+		{
+			uint_fast8_t * visible = va_arg(arg, uint_fast8_t *);
+
+			* visible = tf->visible;
+		}
+
+
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	va_end(arg);
+}
+
 void gui_set_encoder2_rotate (int_fast8_t rotate)
 {
 	if (rotate != 0)
@@ -98,7 +239,7 @@ void dump_queue(window_t * win)
 	}
 }
 
-// WM_MESSAGE_ACTION: 		element_type type, uintptr_t element_ptr, int action
+// WM_MESSAGE_ACTION: 		element_type_t type, uintptr_t element_ptr, int action
 // WM_MESSAGE_ENC2_ROTATE:  int_fast8_t rotate
 // WM_MESSAGE_KEYB_CODE:	int_fast8_t keyb_code
 // WM_MESSAGE_UPDATE: 		nothing
