@@ -49,35 +49,26 @@ static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
 static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btn_close", "", };
 
-/* Text fields SET
- *
- * TF_CLEAR: 	nothing
- * TF_WRITE: 	char * string, COLORMAIN_T color
- * TF_COORDS: 	uint_fast16_t x, uint_fast16_t y
- * TF_VISIBLE: 	uint_fast8_t visible
- */
-
-void set_property(const uint8_t window_id, element_type_t type, const char * name, ...)
+void set_property(const uint8_t window_id, element_type_t type, const char * name, uint_fast8_t operation, ...)
 {
 	ASSERT(window_id < WINDOWS_COUNT);
 
 	va_list arg;
 	window_t * win = get_win(window_id);
-	va_start(arg, name);
+	va_start(arg, operation);
 
 	switch (type)
 	{
 	case TYPE_TEXT_FIELD:
 	{
 		text_field_t * tf = find_gui_element(TYPE_TEXT_FIELD, win, name);
-		uint_fast8_t operation = va_arg(arg, uint_fast8_t);
 
-		if (operation == TF_CLEAR)
+		if (operation == PROP_CLEAR)
 		{
 			tf->index = 0;
 			memset(tf->string, 0, tf->h_str * sizeof(tf_entry_t));
 		}
-		else if (operation == TF_WRITE)
+		else if (operation == PROP_TEXT)
 		{
 			char * str = va_arg(arg, char *);
 			COLORMAIN_T color = va_arg(arg, COLORMAIN_T);
@@ -88,27 +79,44 @@ void set_property(const uint8_t window_id, element_type_t type, const char * nam
 			tf->index ++;
 			tf->index = tf->index >= tf->h_str ? 0 : tf->index;
 		}
-		else if (operation == TF_COORDS)
+		else if (operation == PROP_X)
 		{
 			tf->x1 = va_arg(arg, uint_fast16_t);
-			tf->y1 = va_arg(arg, uint_fast16_t);
-
-			if (tf->font)
-			{
-				tf->w = tf->font->width * tf->w_sim;
-				tf->h = tf->font->height * tf->h_str;
-			}
-			else
-			{
-				tf->w = SMALLCHARW2 * tf->w_sim;
-				tf->h = SMALLCHARH2 * tf->h_str;
-			}
-			ASSERT(tf->w < WITHGUIMAXX);
-			ASSERT(tf->h < WITHGUIMAXY - window_title_height);
+			textfield_update_size(tf);
 		}
-		else if (operation == TF_VISIBLE)
+		else if (operation == PROP_Y)
+		{
+			tf->y1 = va_arg(arg, uint_fast16_t);
+			textfield_update_size(tf);
+		}
+		else if (operation == PROP_VISIBLE)
 		{
 			tf->visible = va_arg(arg, uint_fast8_t) != 0;
+		}
+
+		break;
+	}
+
+	case TYPE_LABEL:
+	{
+		label_t * lh = find_gui_element(TYPE_LABEL, win, name);
+
+		if (operation == PROP_TEXT)
+		{
+			char * str = va_arg(arg, char *);
+			strncpy(lh->text, str, ARRAY_SIZE(lh->text) - 1);
+		}
+		else if (operation == PROP_X)
+		{
+			lh->x = va_arg(arg, uint_fast16_t);
+		}
+		else if (operation == PROP_Y)
+		{
+			lh->y = va_arg(arg, uint_fast16_t);
+		}
+		else if (operation == PROP_VISIBLE)
+		{
+			lh->visible = va_arg(arg, uint_fast8_t) != 0;
 		}
 
 		break;
@@ -121,62 +129,83 @@ void set_property(const uint8_t window_id, element_type_t type, const char * nam
 	va_end(arg);
 }
 
-/* Text fields GET
- *
- * TF_SIZE: 	uint_fast16_t * w, uint_fast16_t * h
- * TF_COORDS:  	uint_fast16_t * x, uint_fast16_t * y
- * TF_VISIBLE: 	uint_fast8_t * visible
- */
-
-void get_property(const uint8_t window_id, element_type_t type, const char * name, ...)
+retval_t get_property(const uint8_t window_id, element_type_t type, const char * name, uint_fast8_t operation)
 {
 	ASSERT(window_id < WINDOWS_COUNT);
 
-	va_list arg;
+	retval_t retval;
 	window_t * win = get_win(window_id);
-	va_start(arg, name);
 
 	switch (type)
 	{
 	case TYPE_TEXT_FIELD:
 	{
 		text_field_t * tf = find_gui_element(TYPE_TEXT_FIELD, win, name);
-		uint_fast8_t operation = va_arg(arg, uint_fast8_t);
 
-		if (operation == TF_SIZE)
+		if (operation == PROP_WIDTH)
 		{
-			uint_fast16_t * w = va_arg(arg, uint_fast16_t *);
-			uint_fast16_t * h = va_arg(arg, uint_fast16_t *);
-
-			if (tf->font)
-			{
-				tf->w = tf->font->width * tf->w_sim;
-				tf->h = tf->font->height * tf->h_str;
-			}
-			else
-			{
-				tf->w = SMALLCHARW2 * tf->w_sim;
-				tf->h = SMALLCHARH2 * tf->h_str;
-			}
-			ASSERT(tf->w < WITHGUIMAXX);
-			ASSERT(tf->h < WITHGUIMAXY - window_title_height);
-
-			* w = tf->w;
-			* h = tf->h;
+			textfield_update_size(tf);
+			retval.i = tf->w;
 		}
-		else if (operation == TF_COORDS)
+		else if (operation == PROP_HEIGHT)
 		{
-			uint_fast16_t * x = va_arg(arg, uint_fast16_t *);
-			uint_fast16_t * y = va_arg(arg, uint_fast16_t *);
-
-			* x = tf->x1;
-			* y = tf->y1;
+			textfield_update_size(tf);
+			retval.i = tf->h;
 		}
-		else if (operation == TF_VISIBLE)
+		else if (operation == PROP_X)
 		{
-			uint_fast8_t * visible = va_arg(arg, uint_fast8_t *);
+			retval.i = tf->x1;
+		}
+		else if (operation == PROP_Y)
+		{
+			retval.i = tf->y1;
+		}
+		else if (operation == PROP_VISIBLE)
+		{
+			retval.i = tf->visible;
+		}
 
-			* visible = tf->visible;
+		break;
+	}
+
+	case TYPE_LABEL:
+	{
+		label_t * lh = find_gui_element(TYPE_LABEL, win, name);
+
+		if (operation == PROP_X)
+		{
+			retval.i = lh->x;
+		}
+		else if (operation == PROP_Y)
+		{
+			retval.i = lh->y;
+		}
+		else if (operation == PROP_HEIGHT)
+		{
+			if (lh->font_size == FONT_LARGE)
+				retval.i = SMALLCHARH;
+			else if (lh->font_size == FONT_MEDIUM)
+				retval.i = SMALLCHARH2;
+			else if (lh->font_size == FONT_SMALL)
+				retval.i = SMALLCHARH3;
+		}
+		else if (operation == PROP_WIDTH)
+		{
+			if (lh->font_size == FONT_LARGE)
+				retval.i = strlen(lh->text) * SMALLCHARW;
+			else if (lh->font_size == FONT_MEDIUM)
+				retval.i = strlen(lh->text) * SMALLCHARW2;
+			else if (lh->font_size == FONT_SMALL)
+				retval.i = strlen(lh->text) * SMALLCHARW3;
+		}
+		else if (operation == PROP_VISIBLE)
+		{
+			retval.i = lh->visible;
+		}
+		else if (operation == PROP_TEXT)
+		{
+			memset(lh->text, 0, TEXT_ARRAY_SIZE);
+			memcpy(retval.s, lh->text, TEXT_ARRAY_SIZE);
 		}
 
 
@@ -187,7 +216,7 @@ void get_property(const uint8_t window_id, element_type_t type, const char * nam
 		break;
 	}
 
-	va_end(arg);
+	return retval;
 }
 
 void gui_set_encoder2_rotate (int_fast8_t rotate)

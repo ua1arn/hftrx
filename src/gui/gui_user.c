@@ -211,7 +211,7 @@ void gui_add_debug(char d)
 	{
 		i = 0;
 		if (main_init_done)
-			set_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", TF_WRITE, str, COLORMAIN_WHITE);
+			set_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", PROP_TEXT, str, COLORMAIN_WHITE);
 		else
 		{
 			if (tmpstr_index < TEXT_ARRAY_SIZE)
@@ -228,10 +228,9 @@ void gui_open_debug_window(void)
 {
 	if (main_init_done)
 	{
-		uint_fast8_t tf_debug_visible;
-		get_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", TF_VISIBLE, & tf_debug_visible);
-		tf_debug_visible = ! tf_debug_visible;
-		set_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", TF_VISIBLE, tf_debug_visible);
+		retval_t tf_debug_visible = get_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", PROP_VISIBLE);
+		tf_debug_visible.i = ! tf_debug_visible.i;
+		set_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", PROP_VISIBLE, tf_debug_visible.i);
 	}
 }
 #endif /* WITHGUIDEBUG */
@@ -629,6 +628,7 @@ static void gui_main_process(void)
 	const uint_fast8_t buflen = ARRAY_SIZE(buf);
 	uint_fast8_t update = 0;
 	static uint_fast16_t freq_swipe;
+	static uint_fast16_t tf_debug_x, tf_debug_y, tf_debug_w, tf_debug_h;
 
 	if (win->first_call)
 	{
@@ -649,11 +649,13 @@ static void gui_main_process(void)
 		GUI_MEM_ASSERT(win->tf_ptr);
 		memcpy(win->tf_ptr, text_field, tf_size);
 
-		uint_fast16_t tf_debug_x = 0, tf_debug_y = 0, tf_debug_w = 0, tf_debug_h = 0;
-		get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_SIZE, & tf_debug_w, & tf_debug_h);
-		tf_debug_x = win->w / 2 - tf_debug_w / 2;
-		tf_debug_y = win->h / 2 - tf_debug_h / 2;
-		set_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_COORDS, tf_debug_x, tf_debug_y);
+		uint_fast16_t tf_x = 0, tf_y = 0;
+		retval_t tf_w = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_WIDTH);
+		retval_t tf_h = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_HEIGHT);
+		tf_x = win->w / 2 - tf_w.i / 2;
+		tf_y = win->h / 2 - tf_h.i / 2;
+		set_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_X, tf_x);
+		set_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_Y, tf_y);
 
 #endif /* WITHGUIDEBUG */
 
@@ -734,8 +736,17 @@ static void gui_main_process(void)
 #if WITHGUIDEBUG
 		for (uint_fast8_t i = 0; i < tmpstr_index; i ++)
 		{
-			set_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_WRITE, tmpbuf[i].text, COLORMAIN_WHITE);
+			set_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_TEXT, tmpbuf[i].text, COLORMAIN_WHITE);
 		}
+
+		retval_t v = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_X);
+		tf_debug_x = v.i;
+		v = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_Y);
+		tf_debug_y = v.i;
+		v = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_WIDTH);
+		tf_debug_w = v.i;
+		v = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_HEIGHT);
+		tf_debug_h = v.i;
 #endif /* WITHGUIDEBUG */
 	}
 
@@ -1325,13 +1336,9 @@ static void gui_main_process(void)
 #endif /* GUI_SHOW_INFOBAR */
 
 #if WITHGUIDEBUG
-	uint_fast8_t tf_debug_v;
-	get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_VISIBLE, & tf_debug_v);
-	if (tf_debug_v)
+	retval_t tf_debug_v = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_VISIBLE);
+	if (tf_debug_v.i)
 	{
-		uint_fast16_t tf_debug_x = 0, tf_debug_y = 0, tf_debug_w = 0, tf_debug_h = 0;
-		get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_COORDS, & tf_debug_x, & tf_debug_y);
-		get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", TF_SIZE, & tf_debug_w, & tf_debug_h);
 		display_transparency(tf_debug_x - 5, tf_debug_y - 5, tf_debug_x + tf_debug_w + 5, tf_debug_y + tf_debug_h + 5, DEFAULT_ALPHA);
 	}
 #endif /* WITHGUIDEBUG */
@@ -5744,14 +5751,14 @@ static void window_ping_proccess(void)
 		GUI_MEM_ASSERT(win->tf_ptr);
 		memcpy(win->tf_ptr, text_field, tf_size);
 
-		set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_COORDS, x, y);
-		set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_VISIBLE, VISIBLE);
+		set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_X, x);
+		set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_Y, y);
+		set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_VISIBLE, VISIBLE);
 
-		uint_fast16_t tf_ping_w = 0, tf_ping_h = 0;
-		get_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_SIZE, & tf_ping_w, & tf_ping_h);
+		retval_t tf_ping_w = get_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_WIDTH);
 
 		label_t * lbl_ip =  find_gui_element(TYPE_LABEL, win, "lbl_ip");
-		lbl_ip->x = x + tf_ping_w + interval;
+		lbl_ip->x = x + tf_ping_w.i + interval;
 		lbl_ip->y = 0;
 		lbl_ip->visible = VISIBLE;
 
@@ -5790,13 +5797,13 @@ static void window_ping_proccess(void)
 					{
 						char str[30];
 						local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, val);
-						set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_WRITE, str, COLORMAIN_RED);
+						set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_TEXT, str, COLORMAIN_RED);
 					}
 					else
 					{
 						is_ping = 1;
 						ping_delay = 0;
-						set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_CLEAR);
+						set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_CLEAR);
 					}
 				}
 				update = 1;
@@ -5824,14 +5831,14 @@ static void window_ping_proccess(void)
 			{
 				char str[30];
 				local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Answer from %s: %d ms"), ip_str, resp);
-				set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_WRITE, str, COLORMAIN_WHITE);
+				set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_TEXT, str, COLORMAIN_WHITE);
 
 				int send = ping_send_ip(ip_str);
 				if (send)
 				{
 					char str[30];
 					local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, send);
-					set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", TF_WRITE, str, COLORMAIN_RED);
+					set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_TEXT, str, COLORMAIN_RED);
 					is_ping = 0;
 					update = 1;
 				}

@@ -26,11 +26,13 @@ typedef enum {
 } element_type_t;
 
 enum {
-	TF_CLEAR,
-	TF_WRITE,
-	TF_COORDS,
-	TF_VISIBLE,
-	TF_SIZE,
+	PROP_CLEAR,
+	PROP_TEXT,
+	PROP_X,
+	PROP_Y,
+	PROP_VISIBLE,
+	PROP_WIDTH,
+	PROP_HEIGHT,
 
 };
 
@@ -301,6 +303,11 @@ typedef struct {
 	uint8_t win[WIN_GUI_COUNT];		// на экране не более 2х окон, одно из которых - основное на весь экран
 	uint8_t footer_buttons_count;
 } gui_t;
+
+typedef union {
+	uint_fast32_t i;
+	char s [TEXT_ARRAY_SIZE];
+} retval_t;
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_STRUCTS_H_INCLUDED */
