@@ -8,6 +8,7 @@
 #include "formats.h"	// for debug prints
 
 //#define WITHBUFFERSDEBUG WITHDEBUG
+#define BUFOVERSIZE 4
 
 #if WITHINTEGRATEDDSP
 
@@ -710,12 +711,8 @@ void buffers_initialize(void)
 
 #endif /* WITHSKIPUSERMODE */
 
-	// Могут быть преобразованы до двух буферов шумоподавителя при нормальной работе
-	enum { NVCOICESFREE16RX = 2 * MIKELEVEL + 1 * RESAMPLE16NORMAL};
-	enum { NVCOICESFREE16TX = 2 * PHONESLEVEL + 2 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX};
-
+	enum { NVCOICESFREE16RX = (2 * MIKELEVEL + 1 * RESAMPLE16NORMAL) * BUFOVERSIZE };
 	static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16rx_t voicesarray16rx [NVCOICESFREE16RX] ALIGNX_END;
-	static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16tx_t voicesarray16tx [NVCOICESFREE16TX] ALIGNX_END;
 
 	InitializeListHead3(& resample16rx, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
 
@@ -731,6 +728,10 @@ void buffers_initialize(void)
 	}
 	SPINLOCK_INITIALIZE(& locklist16rx);
 
+	// Могут быть преобразованы до двух буферов шумоподавителя при нормальной работе
+	enum { NVCOICESFREE16TX = (2 * PHONESLEVEL + 2 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX) * BUFOVERSIZE };
+	static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16tx_t voicesarray16tx [NVCOICESFREE16TX] ALIGNX_END;
+
 	InitializeListHead2(& voicesphones16tx);	// список для выдачи на ЦАП кодека
 	InitializeListHead2(& voicesmoni16tx);	// самоконтроль
 	InitializeListHead2(& voicesfree16tx);	// Незаполненные
@@ -743,7 +744,7 @@ void buffers_initialize(void)
 	}
 	SPINLOCK_INITIALIZE(& locklist16tx);
 
-	static RAMBIGDTCM_MDMA uacin16_t uacinarray16 [24];
+	static RAMBIGDTCM_MDMA uacin16_t uacinarray16 [24 * BUFOVERSIZE];
 
 	InitializeListHead2(& uacinfree16);	// Незаполненные
 	InitializeListHead2(& uacinready16);	// список для выдачи в канал USB AUDIO
@@ -764,7 +765,7 @@ void buffers_initialize(void)
 
 	#if WITHRTS192
 
-		RAMBIG static RAM_D1 voice192rts_t voicesarray192rts [4];
+		RAMBIG static RAM_D1 voice192rts_t voicesarray192rts [4 * BUFOVERSIZE];
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice192rts_t, item));
 		ASSERT(offsetof(uacin16_t, u.buff) == offsetof(voice192rts_t, u.buff));
@@ -786,7 +787,7 @@ void buffers_initialize(void)
 
 	#if WITHRTS96
 
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice96rts_t voicesarray96rts [4] ALIGNX_END;
+		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice96rts_t voicesarray96rts [4 * BUFOVERSIZE] ALIGNX_END;
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice96rts_t, item));
 		ASSERT(offsetof(uacin16_t, u.buff) == offsetof(voice96rts_t, u.buff));
@@ -808,7 +809,7 @@ void buffers_initialize(void)
 	#endif /* WITHRTS192 */
 	SPINLOCK_INITIALIZE(& locklistrts);
 
-	static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32tx_t voicesarray32tx [6] ALIGNX_END;
+	static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32tx_t voicesarray32tx [6 * BUFOVERSIZE] ALIGNX_END;
 
 	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
 	InitializeListHead2(& voicesfree32tx);	// Незаполненные
@@ -821,7 +822,7 @@ void buffers_initialize(void)
 	}
 	SPINLOCK_INITIALIZE(& locklist32tx);
 
-    static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32rx_t voicesarray32rx [6] ALIGNX_END;	// без WFM надо 2
+    static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32rx_t voicesarray32rx [6 * BUFOVERSIZE] ALIGNX_END;	// без WFM надо 2
 
 	InitializeListHead2(& voicesfree32rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
@@ -844,7 +845,7 @@ void buffers_initialize(void)
 	#elif defined (STM32H743xx)
 		static RAM_D1 records16_t recordsarray16 [5];
 	#else
-		static RAM_D1 records16_t recordsarray16 [8];
+		static RAM_D1 records16_t recordsarray16 [8 * BUFOVERSIZE];
 	#endif
 
 	/* Подготовка буферов для записи на SD CARD */
@@ -873,7 +874,7 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
-	static RAMBIGDTCM denoise16_t speexarray16 [4];	// буеры: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
+	static RAMBIGDTCM denoise16_t speexarray16 [4 * BUFOVERSIZE];	// буеры: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
 
 	InitializeListHead2(& speexfree16);	// Незаполненные
 	InitializeListHead2(& speexready16);	// Для обработки
