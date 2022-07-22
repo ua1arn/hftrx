@@ -211,7 +211,7 @@ void gui_add_debug(char d)
 	{
 		i = 0;
 		if (main_init_done)
-			set_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", PROP_TEXT, str, COLORMAIN_WHITE);
+			set_property(WINDOW_MAIN, "tf_debug", PROP_TEXT, str, COLORMAIN_WHITE);
 		else
 		{
 			if (tmpstr_index < TEXT_ARRAY_SIZE)
@@ -228,9 +228,9 @@ void gui_open_debug_window(void)
 {
 	if (main_init_done)
 	{
-		retval_t tf_debug_visible = get_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", PROP_VISIBLE);
+		retval_t tf_debug_visible = get_property(WINDOW_MAIN, "tf_debug", PROP_VISIBLE);
 		tf_debug_visible.i = ! tf_debug_visible.i;
-		set_property(WINDOW_MAIN, TYPE_TEXT_FIELD, "tf_debug", PROP_VISIBLE, tf_debug_visible.i);
+		set_property(WINDOW_MAIN, "tf_debug", PROP_VISIBLE, tf_debug_visible.i);
 	}
 }
 #endif /* WITHGUIDEBUG */
@@ -650,12 +650,12 @@ static void gui_main_process(void)
 		memcpy(win->tf_ptr, text_field, tf_size);
 
 		uint_fast16_t tf_x = 0, tf_y = 0;
-		retval_t tf_w = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_WIDTH);
-		retval_t tf_h = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_HEIGHT);
+		retval_t tf_w = get_property(win_id, "tf_debug", PROP_WIDTH);
+		retval_t tf_h = get_property(win_id, "tf_debug", PROP_HEIGHT);
 		tf_x = win->w / 2 - tf_w.i / 2;
 		tf_y = win->h / 2 - tf_h.i / 2;
-		set_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_X, tf_x);
-		set_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_Y, tf_y);
+		set_property(win_id, "tf_debug", PROP_X, tf_x);
+		set_property(win_id, "tf_debug", PROP_Y, tf_y);
 
 #endif /* WITHGUIDEBUG */
 
@@ -736,16 +736,16 @@ static void gui_main_process(void)
 #if WITHGUIDEBUG
 		for (uint_fast8_t i = 0; i < tmpstr_index; i ++)
 		{
-			set_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_TEXT, tmpbuf[i].text, COLORMAIN_WHITE);
+			set_property(win_id, "tf_debug", PROP_TEXT, tmpbuf[i].text, COLORMAIN_WHITE);
 		}
 
-		retval_t v = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_X);
+		retval_t v = get_property(win_id, "tf_debug", PROP_X);
 		tf_debug_x = v.i;
-		v = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_Y);
+		v = get_property(win_id, "tf_debug", PROP_Y);
 		tf_debug_y = v.i;
-		v = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_WIDTH);
+		v = get_property(win_id, "tf_debug", PROP_WIDTH);
 		tf_debug_w = v.i;
-		v = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_HEIGHT);
+		v = get_property(win_id, "tf_debug", PROP_HEIGHT);
 		tf_debug_h = v.i;
 #endif /* WITHGUIDEBUG */
 	}
@@ -1336,7 +1336,7 @@ static void gui_main_process(void)
 #endif /* GUI_SHOW_INFOBAR */
 
 #if WITHGUIDEBUG
-	retval_t tf_debug_v = get_property(win_id, TYPE_TEXT_FIELD, "tf_debug", PROP_VISIBLE);
+	retval_t tf_debug_v = get_property(win_id, "tf_debug", PROP_VISIBLE);
 	if (tf_debug_v.i)
 	{
 		display_transparency(tf_debug_x - 5, tf_debug_y - 5, tf_debug_x + tf_debug_w + 5, tf_debug_y + tf_debug_h + 5, DEFAULT_ALPHA);
@@ -5751,20 +5751,25 @@ static void window_ping_proccess(void)
 		GUI_MEM_ASSERT(win->tf_ptr);
 		memcpy(win->tf_ptr, text_field, tf_size);
 
-		set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_X, x);
-		set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_Y, y);
-		set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_VISIBLE, VISIBLE);
+		set_property(win_id, "tf_ping", PROP_X, x);
+		set_property(win_id, "tf_ping", PROP_Y, y);
+		set_property(win_id, "tf_ping", PROP_VISIBLE, VISIBLE);
 
-		retval_t tf_ping_w = get_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_WIDTH);
+		retval_t tf_ping_w = get_property(win_id, "tf_ping", PROP_WIDTH);
 
-		label_t * lbl_ip =  find_gui_element(TYPE_LABEL, win, "lbl_ip");
-		lbl_ip->x = x + tf_ping_w.i + interval;
-		lbl_ip->y = 0;
-		lbl_ip->visible = VISIBLE;
+		x += (x + tf_ping_w.i + interval);
+		set_property(win_id, "lbl_ip", PROP_X, x);
+		set_property(win_id, "lbl_ip", PROP_Y, y);
+		set_property(win_id, "lbl_ip", PROP_VISIBLE, VISIBLE);
+		set_property(win_id, "lbl_ip", PROP_TEXT, ip_str);
+
+		retval_t lbl_ip_x = get_property(win_id, "lbl_ip", PROP_X);
+		retval_t lbl_ip_y = get_property(win_id, "lbl_ip", PROP_Y);
+		retval_t lbl_ip_h = get_property(win_id, "lbl_ip", PROP_HEIGHT);
 
 		button_t * btn_edit = find_gui_element(TYPE_BUTTON, win, "btn_edit");
-		btn_edit->x1 = lbl_ip->x;
-		btn_edit->y1 = lbl_ip->y + get_label_height(lbl_ip) + interval;
+		btn_edit->x1 = lbl_ip_x.i;
+		btn_edit->y1 = lbl_ip_y.i + lbl_ip_h.i + interval;
 		btn_edit->visible = VISIBLE;
 
 		button_t * btn_ping = find_gui_element(TYPE_BUTTON, win, "btn_ping");
@@ -5773,7 +5778,6 @@ static void window_ping_proccess(void)
 		btn_ping->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		local_snprintf_P(lbl_ip->text, ARRAY_SIZE(lbl_ip->text), PSTR("%s"), ip_str);
 	}
 
 	GET_FROM_WM_QUEUE
@@ -5797,13 +5801,13 @@ static void window_ping_proccess(void)
 					{
 						char str[30];
 						local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, val);
-						set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_TEXT, str, COLORMAIN_RED);
+						set_property(win_id, "tf_ping", PROP_TEXT, str, COLORMAIN_RED);
 					}
 					else
 					{
 						is_ping = 1;
 						ping_delay = 0;
-						set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_CLEAR);
+						set_property(win_id, "tf_ping", PROP_CLEAR);
 					}
 				}
 				update = 1;
@@ -5831,14 +5835,14 @@ static void window_ping_proccess(void)
 			{
 				char str[30];
 				local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Answer from %s: %d ms"), ip_str, resp);
-				set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_TEXT, str, COLORMAIN_WHITE);
+				set_property(win_id, "tf_ping", PROP_TEXT, str, COLORMAIN_WHITE);
 
 				int send = ping_send_ip(ip_str);
 				if (send)
 				{
 					char str[30];
 					local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, send);
-					set_property(win_id, TYPE_TEXT_FIELD, "tf_ping", PROP_TEXT, str, COLORMAIN_RED);
+					set_property(win_id, "tf_ping", PROP_TEXT, str, COLORMAIN_RED);
 					is_ping = 0;
 					update = 1;
 				}

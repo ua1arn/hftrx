@@ -47,21 +47,44 @@ enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
-static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btn_close", "", };
+static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btc_close", "", };
 
-void set_property(const uint8_t window_id, element_type_t type, const char * name, uint_fast8_t operation, ...)
+static uint_fast8_t parse_element_name(const char * name)
+{
+	if (! strncmp(name, "btn_", 4))
+		return TYPE_BUTTON;
+	else if (! strncmp(name, "lbl_", 4))
+		return TYPE_LABEL;
+	else if (! strncmp(name, "sl_", 3))
+		return TYPE_SLIDER;
+	else if (! strncmp(name, "btc_", 4))
+		return TYPE_CLOSE_BUTTON;
+	else if (! strncmp(name, "ta_", 3))
+		return TYPE_TOUCH_AREA;
+	else if (! strncmp(name, "tf_", 3))
+		return TYPE_TEXT_FIELD;
+	else
+	{
+		PRINTF("unrecognized element type: %s\n", name);
+		ASSERT(0);
+		return 0;
+	}
+}
+
+void set_property(const uint8_t window_id, const char * name, uint_fast8_t operation, ...)
 {
 	ASSERT(window_id < WINDOWS_COUNT);
 
 	va_list arg;
 	window_t * win = get_win(window_id);
+	element_type_t type = parse_element_name(name);
 	va_start(arg, operation);
 
 	switch (type)
 	{
 	case TYPE_TEXT_FIELD:
 	{
-		text_field_t * tf = find_gui_element(TYPE_TEXT_FIELD, win, name);
+		text_field_t * tf = find_gui_element(type, win, name);
 
 		if (operation == PROP_CLEAR)
 		{
@@ -99,7 +122,7 @@ void set_property(const uint8_t window_id, element_type_t type, const char * nam
 
 	case TYPE_LABEL:
 	{
-		label_t * lh = find_gui_element(TYPE_LABEL, win, name);
+		label_t * lh = find_gui_element(type, win, name);
 
 		if (operation == PROP_TEXT)
 		{
@@ -129,18 +152,19 @@ void set_property(const uint8_t window_id, element_type_t type, const char * nam
 	va_end(arg);
 }
 
-retval_t get_property(const uint8_t window_id, element_type_t type, const char * name, uint_fast8_t operation)
+retval_t get_property(const uint8_t window_id, const char * name, uint_fast8_t operation)
 {
 	ASSERT(window_id < WINDOWS_COUNT);
 
 	retval_t retval;
 	window_t * win = get_win(window_id);
+	element_type_t type = parse_element_name(name);
 
 	switch (type)
 	{
 	case TYPE_TEXT_FIELD:
 	{
-		text_field_t * tf = find_gui_element(TYPE_TEXT_FIELD, win, name);
+		text_field_t * tf = find_gui_element(type, win, name);
 
 		if (operation == PROP_WIDTH)
 		{
@@ -170,7 +194,7 @@ retval_t get_property(const uint8_t window_id, element_type_t type, const char *
 
 	case TYPE_LABEL:
 	{
-		label_t * lh = find_gui_element(TYPE_LABEL, win, name);
+		label_t * lh = find_gui_element(type, win, name);
 
 		if (operation == PROP_X)
 		{
@@ -204,8 +228,8 @@ retval_t get_property(const uint8_t window_id, element_type_t type, const char *
 		}
 		else if (operation == PROP_TEXT)
 		{
-			memset(lh->text, 0, TEXT_ARRAY_SIZE);
-			memcpy(retval.s, lh->text, TEXT_ARRAY_SIZE);
+			memset(retval.s, 0, ARRAY_SIZE(retval.s));
+			memcpy(retval.s, lh->text, ARRAY_SIZE(lh->text));
 		}
 
 
