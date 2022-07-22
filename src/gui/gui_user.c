@@ -5723,33 +5723,10 @@ static void window_ping_proccess(void)
 		ping_delay = 0;
 		update = 0;
 
-		static const button_t buttons [] = {
-			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_PING, NON_VISIBLE, INT32_MAX, "btn_edit",  "Set IP", },
-			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_PING, NON_VISIBLE, INT32_MAX, "btn_ping",	"Ping", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		static const label_t labels [] = {
-			{ WINDOW_PING, CANCELLED, 0, NON_VISIBLE, "lbl_ip", "***************", FONT_MEDIUM, COLORMAIN_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		uint_fast16_t labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		static const text_field_t text_field [] = {
-			{ 35, 20, CANCELLED, WINDOW_PING, NON_VISIBLE, UP, & gothic_11x13, "tf_ping", },
-		};
-		win->tf_count = ARRAY_SIZE(text_field);
-		uint_fast16_t tf_size = sizeof(text_field);
-		win->tf_ptr = malloc(tf_size);
-		GUI_MEM_ASSERT(win->tf_ptr);
-		memcpy(win->tf_ptr, text_field, tf_size);
+		add_element(win_id, "lbl_ip", 0, FONT_MEDIUM, COLORMAIN_WHITE, 16);
+		add_element(win_id, "btn_edit", 86, 30, 0, 0, "Set IP");
+		add_element(win_id, "btn_ping", 86, 30, 0, 0, "Ping");
+		add_element(win_id, "tf_ping", 35, 20, UP, & gothic_11x13);
 
 		set_property(win_id, "tf_ping", PROP_X, x);
 		set_property(win_id, "tf_ping", PROP_Y, y);
@@ -5761,7 +5738,6 @@ static void window_ping_proccess(void)
 		set_property(win_id, "lbl_ip", PROP_X, x);
 		set_property(win_id, "lbl_ip", PROP_Y, y);
 		set_property(win_id, "lbl_ip", PROP_VISIBLE, VISIBLE);
-		set_property(win_id, "lbl_ip", PROP_TEXT, ip_str);
 
 		retval_t lbl_ip_x = get_property(win_id, "lbl_ip", PROP_X);
 		retval_t lbl_ip_y = get_property(win_id, "lbl_ip", PROP_Y);
@@ -5778,6 +5754,7 @@ static void window_ping_proccess(void)
 		btn_ping->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		set_property(win_id, "lbl_ip", PROP_TEXT, ip_str);
 	}
 
 	GET_FROM_WM_QUEUE

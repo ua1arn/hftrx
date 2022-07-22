@@ -44,6 +44,10 @@ static btn_bg_t btn_bg [] = {
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
+const label_t label_default = 	{ 0, CANCELLED, 0, NON_VISIBLE, "", "", FONT_MEDIUM, COLORMAIN_WHITE, };
+const button_t button_default = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 1, 0, NON_VISIBLE, INT32_MAX, "", "", };
+const text_field_t tf_default = { 0, 0, CANCELLED, 0, NON_VISIBLE, UP, NULL, "", };
+
 static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
@@ -241,6 +245,95 @@ retval_t get_property(const uint8_t window_id, const char * name, uint_fast8_t o
 	}
 
 	return retval;
+}
+
+// label: is_trackable, font_size, color, width_by_symbols
+// button: w, h, is_repeating, is_long_press, text,
+// text_field: w_sim, h_str, direction, font *, name
+
+void add_element(const uint8_t window_id, const char * element_name, ...)
+{
+	ASSERT(window_id < WINDOWS_COUNT);
+
+	window_t * win = get_win(window_id);
+	element_type_t type = parse_element_name(element_name);
+	va_list arg;
+	va_start(arg, element_name);
+
+	switch (type)
+	{
+	case TYPE_LABEL:
+	{
+		win->lh_ptr = realloc(win->lh_ptr, sizeof(label_t) * (win->lh_count + 1));
+		GUI_MEM_ASSERT(win->lh_ptr);
+
+		label_t * lh = & win->lh_ptr [win->lh_count];
+		memcpy(lh, & label_default, sizeof(label_t));
+
+		lh->parent = window_id;
+		lh->is_trackable = va_arg(arg, uint_fast8_t);
+		lh->font_size = va_arg(arg, int);
+		lh->color = va_arg(arg, COLORMAIN_T);
+
+		strncpy(lh->name, element_name, NAME_ARRAY_SIZE - 1);
+		lh->width = va_arg(arg, uint_fast8_t);
+		memset(lh->text, '*', lh->width);		// для совместимости, потом убрать
+
+		if (lh->font_size == FONT_LARGE)
+			lh->width_pix = lh->width * SMALLCHARW;
+		else if (lh->font_size == FONT_MEDIUM)
+			lh->width_pix = lh->width * SMALLCHARW2;
+		else if (lh->font_size == FONT_SMALL)
+			lh->width_pix = lh->width * SMALLCHARW3;
+
+		win->lh_count ++;
+		break;
+	}
+
+	case TYPE_BUTTON:
+	{
+		win->bh_ptr = realloc(win->bh_ptr, sizeof(button_t) * (win->bh_count + 1));
+		GUI_MEM_ASSERT(win->bh_ptr);
+
+		button_t * bh = & win->bh_ptr [win->bh_count];
+		memcpy(bh, & button_default, sizeof(button_t));
+
+		bh->parent = window_id;
+		bh->w = va_arg(arg, uint_fast16_t);
+		bh->h = va_arg(arg, uint_fast16_t);
+		bh->is_repeating = va_arg(arg, uint_fast8_t);
+		bh->is_long_press = va_arg(arg, uint_fast8_t);
+		strncpy(bh->name, element_name, NAME_ARRAY_SIZE - 1);
+		strncpy(bh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
+
+		win->bh_count ++;
+		break;
+	}
+
+	case TYPE_TEXT_FIELD:
+	{
+		win->tf_ptr = realloc(win->tf_ptr, sizeof(text_field_t) * (win->tf_count + 1));
+		GUI_MEM_ASSERT(win->tf_ptr);
+
+		text_field_t * tf = & win->tf_ptr [win->tf_count];
+		memcpy(tf, & tf_default, sizeof(text_field_t));
+
+		tf->parent = window_id;
+		tf->w_sim = va_arg(arg, uint_fast8_t);
+		tf->h_str = va_arg(arg, uint_fast8_t);
+		tf->direction = va_arg(arg, uint_fast8_t);
+		tf->font = va_arg(arg, UB_Font *);
+		strncpy(tf->name, element_name, NAME_ARRAY_SIZE - 1);
+
+		win->tf_count ++;
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	va_end(arg);
 }
 
 void gui_set_encoder2_rotate (int_fast8_t rotate)

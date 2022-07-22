@@ -176,6 +176,8 @@ typedef struct {
 	font_size_t font_size;
 	PACKEDCOLORMAIN_T color;
 	uint8_t index;
+	uint8_t width;			// ширина в символах
+	uint16_t width_pix;		// ширина в пикселях
 	uint16_t x;
 	uint16_t y;
 } label_t;

@@ -31,6 +31,7 @@ void textfield_clean(text_field_t * tf);
 void window_set_title_align(window_t * win, title_align_t align);
 void set_property(const uint8_t window_id, const char * name, uint_fast8_t operation, ...);
 retval_t get_property(const uint8_t window_id, const char * name, uint_fast8_t operation);
+void add_element(const uint8_t window_id, const char * element_name, ...);
 
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...);
 wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action);
