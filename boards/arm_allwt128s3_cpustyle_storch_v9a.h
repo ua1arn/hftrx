@@ -158,9 +158,9 @@
 	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-//	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-//	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-//	#define WITHUSBWCID	1
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	#define WITHUSBWCID	1
 
 #endif /* WITHISBOOTLOADER */
 
@@ -198,15 +198,14 @@
 	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
 	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
-	#define ENCODER_INITIALIZE() \
-		do { \
-			arm_hardware_pioe_altfn20(ENCODER_BITS, GPIO_CFG_AF14); \
-			arm_hardware_pioe_updown(ENCODER_BITS, 0); \
-			gpioX_onchangeinterrupt(GPIOE, ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt); \
-			arm_hardware_pioe_altfn20(ENCODER2_BITS, GPIO_CFG_AF14); \
-			arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
-			gpioX_onchangeinterrupt(GPIOE, 0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt2); \
-		} while (0)
+	#define ENCODER_INITIALIZE() do { \
+		arm_hardware_pioe_altfn20(ENCODER_BITS, GPIO_CFG_AF14); \
+		arm_hardware_pioe_updown(ENCODER_BITS, 0); \
+		gpioX_onchangeinterrupt(GPIOE, ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt); \
+		arm_hardware_pioe_altfn20(ENCODER2_BITS, GPIO_CFG_AF14); \
+		arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
+		gpioX_onchangeinterrupt(GPIOE, 0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt2); \
+	} while (0)
 
 #endif
 
@@ -246,13 +245,11 @@
 	//#define FROMCAT_BIT_DTR				(1uL << 12)	/* PA12 сигнал DTR от FT232RL	*/
 
 	/* манипуляция от порта RS-232 */
-	#define FROMCAT_DTR_INITIALIZE() \
-		do { \
+	#define FROMCAT_DTR_INITIALIZE() do { \
 		} while (0)
 
 	/* переход на передачу от порта RS-232 */
-	#define FROMCAT_RTS_INITIALIZE() \
-		do { \
+	#define FROMCAT_RTS_INITIALIZE() do { \
 		} while (0)
 
 #endif /* (WITHCAT && WITHCAT_USART2) */
