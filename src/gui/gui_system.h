@@ -17,8 +17,12 @@ uint_fast8_t get_label_height(const label_t * const lh);
 void footer_buttons_state (uint_fast8_t state, ...);
 void close_window(uint_fast8_t parent);
 void open_window(window_t * win);
+void open_window_id(uint_fast8_t win_id);
+void window_set_parent(uint_fast8_t win_id, uint_fast8_t parent_win_id);
+uint_fast8_t win_first_call(uint_fast8_t clear);
 void close_all_windows(void);
 void calculate_window_position(window_t * win, uint_fast8_t mode, ...);
+void calculate_window_position_by_id(uint8_t win_id, uint_fast8_t mode, ...);
 void elements_state (window_t * win);
 void remove_end_line_spaces(char * str);
 const char * remove_start_line_spaces(const char * str);
@@ -35,6 +39,7 @@ void add_element(const uint8_t window_id, const char * element_name, ...);
 
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...);
 wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action);
+wm_message_t get_from_wm_queue_by_id(uint8_t win_id, uint_fast8_t * type, int_fast8_t * action, char * name);
 
 uint_fast16_t gui_get_window_draw_width(window_t * win);
 uint_fast16_t gui_get_window_draw_height(window_t * win);

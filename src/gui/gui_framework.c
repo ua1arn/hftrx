@@ -75,6 +75,32 @@ static uint_fast8_t parse_element_name(const char * name)
 	}
 }
 
+/*
+set_property
+
+TYPE_TEXT_FIELD
+
+PROP_CLEAR: nothing
+PROP_TEXT: char * text, COLORMAIN_T color
+PROP_X: uint_fast16_t x
+PROP_Y: uint_fast16_t y
+PROP_VISIBLE: uint_fast8_t v
+
+TYPE_LABEL
+
+PROP_TEXT: char * text
+PROP_X: uint_fast16_t x
+PROP_Y: uint_fast16_t y
+PROP_VISIBLE: uint_fast8_t v
+
+TYPE_BUTTON
+
+PROP_TEXT: char * text
+PROP_X: uint_fast16_t x
+PROP_Y: uint_fast16_t y
+PROP_VISIBLE: uint_fast8_t v
+*/
+
 void set_property(const uint8_t window_id, const char * name, uint_fast8_t operation, ...)
 {
 	ASSERT(window_id < WINDOWS_COUNT);
@@ -144,6 +170,39 @@ void set_property(const uint8_t window_id, const char * name, uint_fast8_t opera
 		else if (operation == PROP_VISIBLE)
 		{
 			lh->visible = va_arg(arg, uint_fast8_t) != 0;
+		}
+
+		break;
+	}
+
+	case TYPE_BUTTON:
+	{
+		button_t * bh = find_gui_element(type, win, name);
+
+		if (operation == PROP_TEXT)
+		{
+			char * str = va_arg(arg, char *);
+			strncpy(bh->text, str, ARRAY_SIZE(bh->text) - 1);
+		}
+		else if (operation == PROP_X)
+		{
+			bh->x1 = va_arg(arg, uint_fast16_t);
+		}
+		else if (operation == PROP_Y)
+		{
+			bh->y1 = va_arg(arg, uint_fast16_t);
+		}
+		else if (operation == PROP_VISIBLE)
+		{
+			bh->visible = va_arg(arg, uint_fast8_t) != 0;
+		}
+		else if (operation == PROP_LOCK)
+		{
+			bh->is_locked = va_arg(arg, uint_fast8_t) != 0;
+		}
+		else if (operation == PROP_STATE)
+		{
+			bh->state = va_arg(arg, uint_fast8_t);
 		}
 
 		break;
@@ -236,6 +295,33 @@ retval_t get_property(const uint8_t window_id, const char * name, uint_fast8_t o
 			memcpy(retval.s, lh->text, ARRAY_SIZE(lh->text));
 		}
 
+		break;
+	}
+
+	case TYPE_BUTTON:
+	{
+		button_t * bh = find_gui_element(type, win, name);
+
+		if (operation == PROP_HEIGHT)
+		{
+			retval.i = bh->h;
+		}
+		else if (operation == PROP_WIDTH)
+		{
+			retval.i = bh->w;
+		}
+		else if (operation == PROP_VISIBLE)
+		{
+			retval.i = bh->visible;
+		}
+		else if (operation == PROP_LOCK)
+		{
+			retval.i = bh->is_locked;
+		}
+		else if (operation == PROP_STATE)
+		{
+			retval.i = bh->state;
+		}
 
 		break;
 	}
@@ -385,7 +471,7 @@ void dump_queue(window_t * win)
 	}
 }
 
-// WM_MESSAGE_ACTION: 		element_type_t type, uintptr_t element_ptr, int action
+// WM_MESSAGE_ACTION: 		element_type_t type, uintptr_t element_ptr, int action, char * name
 // WM_MESSAGE_ENC2_ROTATE:  int_fast8_t rotate
 // WM_MESSAGE_KEYB_CODE:	int_fast8_t keyb_code
 // WM_MESSAGE_UPDATE: 		nothing
@@ -408,6 +494,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		uint_fast8_t type = va_arg(arg, uint_fast8_t);
 		uintptr_t ptr = va_arg(arg, uintptr_t);
 		int_fast8_t action = va_arg(arg, int_fast8_t);
+		char * name = va_arg(arg, char *);
 
 		va_end(arg);
 
@@ -420,6 +507,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].type = (element_type_t) type;
 			win->queue.data [win->queue.size].ptr = ptr;
 			win->queue.data [win->queue.size].action = action;
+			strncpy(win->queue.data [win->queue.size].name, name, NAME_ARRAY_SIZE - 1);
 			win->queue.size ++;
 		}
 
@@ -444,6 +532,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = r;
+			memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
 			win->queue.size ++;
 		}
 
@@ -459,6 +548,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 		win->queue.data [win->queue.size].action = va_arg(arg, int_fast8_t);
+		memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
 		win->queue.size ++;
 
 		va_end(arg);
@@ -476,6 +566,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = INT8_MAX;
+			memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
 			win->queue.size ++;
 		}
 	}
@@ -491,6 +582,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = INT8_MAX;
+			memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
 			win->queue.size ++;
 		}
 	}
@@ -528,6 +620,34 @@ wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * 
 	win->queue.data [win->queue.size].type = TYPE_DUMMY;
 	win->queue.data [win->queue.size].ptr = 0;
 	win->queue.data [win->queue.size].action = 0;
+	memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
+
+	return m;
+}
+
+wm_message_t get_from_wm_queue_by_id(uint8_t win_id, uint_fast8_t * type, int_fast8_t * action, char * name)
+{
+	window_t * win = get_win(win_id);
+
+	if (! win->queue.size)
+		return WM_NO_MESSAGE;							// очередь сообщений пустая
+
+	win->queue.size --;
+
+	* type = win->queue.data [win->queue.size].type;
+	* action = win->queue.data [win->queue.size].action;
+	strncpy(name, win->queue.data [win->queue.size].name, NAME_ARRAY_SIZE - 1);
+
+//	if (win->window_id != WINDOW_MAIN)
+//		PRINTF("get_from_wm_queue: win - %s, message - %d, size - %d\n", win->name, win->queue.data [win->queue.size].message, win->queue.size);
+
+	wm_message_t m = win->queue.data [win->queue.size].message;
+
+	win->queue.data [win->queue.size].message = WM_NO_MESSAGE;		// очистить текущую запись
+	win->queue.data [win->queue.size].type = TYPE_DUMMY;
+	win->queue.data [win->queue.size].ptr = 0;
+	win->queue.data [win->queue.size].action = 0;
+	memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
 
 	return m;
 }
@@ -879,6 +999,24 @@ uint_fast8_t check_for_parent_window(void)
 	return gui.win [1];
 }
 
+uint_fast8_t win_first_call(uint_fast8_t clear)
+{
+	window_t * win;
+	uint_fast8_t v;
+
+	if (gui.win [1] == NO_PARENT_WINDOW)
+		win = get_win(WINDOW_MAIN);
+	else
+		win = get_win(gui.win [1]);
+
+	v = win->first_call;
+
+	if (clear)
+		win->first_call = 0;
+
+	return v;
+}
+
 /* Закрыть все окна (обработчик системной кнопки закрытия окна) */
 void close_all_windows(void)
 {
@@ -950,10 +1088,244 @@ void open_window(window_t * win)
 	gui.win [1] = win->window_id;
 }
 
+void open_window_id(uint_fast8_t win_id)
+{
+	window_t * win = get_win(win_id);
+	if (win->parent_id != NO_PARENT_WINDOW && gui.win [1] == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
+	{
+		close_window(0);
+	}
+
+	win->state = VISIBLE;
+	win->first_call = 1;
+	gui.win [1] = win->window_id;
+}
+
+void window_set_parent(uint_fast8_t win_id, uint_fast8_t parent_win_id)
+{
+	window_t * win = get_win(win_id);
+	window_t * pwin = get_win(parent_win_id);
+	win->parent_id = pwin->window_id;
+}
+
 /* Расчет экранных координат окна */
 /* при mode = WINDOW_POSITION_MANUAL_SIZE в качестве необязательных параметров передать xmax и ymax */
 void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 {
+	uint_fast16_t title_length = strlen(win->title) * SMALLCHARW;
+	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
+	win->size_mode = mode;
+
+	switch (mode)
+	{
+	case WINDOW_POSITION_MANUAL_SIZE:
+		{
+			va_list arg;
+			va_start(arg, mode);
+			xmax = va_arg(arg, uint_fast16_t);
+			ymax = va_arg(arg, uint_fast16_t);
+			va_end(arg);
+		}
+		break;
+
+	case WINDOW_POSITION_MANUAL_POSITION:
+		{
+			va_list arg;
+			va_start(arg, mode);
+			x_start = va_arg(arg, uint_fast16_t);
+			y_start = va_arg(arg, uint_fast16_t);
+			va_end(arg);
+		}
+		// no break
+
+	case WINDOW_POSITION_FULLSCREEN:
+	case WINDOW_POSITION_AUTO:
+		{
+			if (win->bh_ptr != NULL)
+			{
+				for (uint_fast8_t i = 0; i < win->bh_count; i++)
+				{
+					const button_t * bh = & win->bh_ptr [i];
+					xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+					ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
+					ASSERT(xmax < WITHGUIMAXX);
+					ASSERT(ymax < WITHGUIMAXY);
+				}
+			}
+
+			if (win->lh_ptr != NULL)
+			{
+				for (uint_fast8_t i = 0; i < win->lh_count; i++)
+				{
+					const label_t * lh = & win->lh_ptr [i];
+					xmax = (xmax > lh->x + get_label_width(lh)) ? xmax : (lh->x + get_label_width(lh));
+					ymax = (ymax > lh->y + get_label_height(lh)) ? ymax : (lh->y + get_label_height(lh));
+					ASSERT(xmax < WITHGUIMAXX);
+					ASSERT(ymax < WITHGUIMAXY);
+				}
+			}
+
+			if (win->tf_ptr != NULL)
+			{
+				for (uint_fast8_t i = 0; i < win->tf_count; i++)
+				{
+					const text_field_t * tf = & win->tf_ptr [i];
+					xmax = (xmax > tf->x1 + tf->w) ? xmax : (tf->x1 + tf->w);
+					ymax = (ymax > tf->y1 + tf->h) ? ymax : (tf->y1+ tf->h);
+					ASSERT(xmax < WITHGUIMAXX);
+					ASSERT(ymax < WITHGUIMAXY);
+				}
+			}
+
+			if (win->sh_ptr != NULL)
+			{
+				for (uint_fast8_t i = 0; i < win->sh_count; i++)
+				{
+					const slider_t * sh = & win->sh_ptr [i];
+					if (sh->orientation)	// ORIENTATION_HORIZONTAL
+					{
+						xmax = (xmax > sh->x + sh->size + sliders_w) ? xmax : (sh->x + sh->size + sliders_w);
+						ymax = (ymax > sh->y + sliders_h * 2) ? ymax : (sh->y + sliders_h * 2);
+					}
+					else					// ORIENTATION_VERTICAL
+					{
+						xmax = (xmax > sh->x + sliders_w * 2) ? xmax : (sh->x + sliders_w * 2);
+						ymax = (ymax > sh->y + sh->size + sliders_h) ? ymax : (sh->y + sh->size + sliders_h);
+					}
+					ASSERT(xmax < WITHGUIMAXX);
+					ASSERT(ymax < WITHGUIMAXY);
+				}
+			}
+		}
+		break;
+
+	default:
+
+		break;
+	}
+
+	// Выравнивание массива оконных элементов по центру окна
+	shift_x = edge_step;
+	shift_y = (title_length ? window_title_height : 0) + edge_step;
+
+	if (win->bh_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->bh_count; i++)
+		{
+			button_t * bh = & win->bh_ptr [i];
+			bh->x1 += shift_x;
+			bh->y1 += shift_y;
+			ASSERT(bh->x1 + bh->w < WITHGUIMAXX);
+			ASSERT(bh->y1 + bh->h < WITHGUIMAXY);
+		}
+	}
+
+	if (win->lh_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->lh_count; i++)
+		{
+			label_t * lh = & win->lh_ptr [i];
+			lh->x += shift_x;
+			lh->y += shift_y;
+			ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
+			ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
+		}
+	}
+
+	if (win->tf_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->tf_count; i++)
+		{
+			text_field_t * tf = & win->tf_ptr [i];
+			tf->x1 += shift_x;
+			tf->y1 += shift_y;
+			ASSERT(tf->x1 + tf->w < WITHGUIMAXX);
+			ASSERT(tf->y1 + tf->h < WITHGUIMAXY);
+		}
+	}
+
+	if (win->sh_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->sh_count; i++)
+		{
+			slider_t * sh = & win->sh_ptr [i];
+			sh->x += shift_x;
+			sh->y += shift_y;
+//			ASSERT(sh->x < WITHGUIMAXX);
+//			ASSERT(sh->y < WITHGUIMAXY);
+		}
+	}
+
+	if (mode == WINDOW_POSITION_FULLSCREEN)
+	{
+		const window_t * win_main = get_win(WINDOW_MAIN);
+		const uint_fast8_t h = win_main->bh_ptr[0].h;
+
+		win->x1 = 0;
+		win->y1 = 0;
+		win->w = WITHGUIMAXX;
+		win->h = WITHGUIMAXY - FOOTER_HEIGHT;
+	}
+	else if (mode == WINDOW_POSITION_MANUAL_POSITION)
+	{
+		win->x1 = x_start;
+		win->y1 = y_start;
+		win->w = xmax > title_length ? (xmax + edge_step * 2) : (title_length + edge_step * 2);
+		win->h = ymax + shift_y + edge_step;
+		if (win->x1 + win->w >= WITHGUIMAXX)
+			win->x1 = WITHGUIMAXX - win->w - 1;
+
+		ASSERT(win->x1 + win->w < WITHGUIMAXX);
+		ASSERT(win->y1 + win->h < WITHGUIMAXY);
+	}
+	else
+	{
+		win->w = xmax > title_length ? (xmax + edge_step * 2) : (title_length + edge_step * 2);
+		win->w = (win->is_close && win->w < title_length + window_close_button_size * 2) ? (win->w + window_close_button_size) : win->w;
+		win->h = ymax + shift_y + edge_step;
+		win->y1 = ALIGN_Y - win->h / 2;
+
+		switch (win->align_mode)
+		{
+		case ALIGN_LEFT_X:
+			if (ALIGN_LEFT_X - win->w / 2 < 0)
+				win->x1 = 0;
+			else
+				win->x1 = ALIGN_LEFT_X - win->w / 2;
+			break;
+
+		case ALIGN_RIGHT_X:
+			if (ALIGN_RIGHT_X + win->w / 2 > WITHGUIMAXX)
+				win->x1 = WITHGUIMAXX - win->w;
+			else
+				win->x1 = ALIGN_RIGHT_X - win->w / 2;
+			break;
+
+		case ALIGN_CENTER_X:
+		default:
+			win->x1 = ALIGN_CENTER_X - win->w / 2;
+			break;
+		}
+
+		ASSERT(win->x1 + win->w < WITHGUIMAXX);
+		ASSERT(win->y1 + win->h < WITHGUIMAXY);
+	}
+
+	win->draw_x1 = win->x1 + edge_step;
+	win->draw_y1 = win->y1 + edge_step + (title_length ? window_title_height : 0);
+	win->draw_x2 = win->x1 + win->w - edge_step;
+	win->draw_y2 = win->y1 + win->h - edge_step;
+
+	win->title_align = TITLE_ALIGNMENT_LEFT;
+
+	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
+	elements_state(win);
+}
+
+// копия предыдущей функции с указанием win_id вместо указателя
+void calculate_window_position_by_id(uint8_t win_id, uint_fast8_t mode, ...)
+{
+	window_t * win = get_win(win_id);
 	uint_fast16_t title_length = strlen(win->title) * SMALLCHARW;
 	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
 	win->size_mode = mode;
@@ -1631,7 +2003,7 @@ static void set_state_record(gui_element_t * val)
 			bh->state = val->state;
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED || bh->state == PRESS_REPEATING)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED, bh->name))
 					dump_queue(val->win);
 			}
 		}
@@ -1646,12 +2018,12 @@ static void set_state_record(gui_element_t * val)
 			lh->state = val->state;
 			if (lh->state == RELEASED)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, PRESSED))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, PRESSED, lh->name))
 					dump_queue(val->win);
 			}
 			else if (lh->state == PRESSED && lh->is_trackable)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, MOVING))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, MOVING, lh->name))
 					dump_queue(val->win);
 			}
 		}
@@ -1667,7 +2039,7 @@ static void set_state_record(gui_element_t * val)
 			if (sh->state == PRESSED)
 			{
 				slider_process(sh);
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh, PRESSED))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh, PRESSED, sh->name))
 					dump_queue(val->win);
 			}
 		}
@@ -1682,12 +2054,12 @@ static void set_state_record(gui_element_t * val)
 			ta->state = val->state;
 			if (ta->state == RELEASED)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, PRESSED))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, PRESSED, ta->name))
 					dump_queue(val->win);
 			}
 			else if (ta->state == PRESSED && ta->is_trackable)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING, ta->name))
 					dump_queue(val->win);
 			}
 		}

@@ -295,14 +295,13 @@ void gui_user_actions_after_close_window(void)
 	gui_update();
 }
 
-static void keyboard_edit_string(char * str, uint_fast8_t strlen, window_t * parent_win, uint_fast8_t clean)
+static void keyboard_edit_string(char * str, uint_fast8_t strlen, uint_fast8_t parent_win_id, uint_fast8_t clean)
 {
 	kbd_editstr = str;
 	kbd_clean = clean;
 	kbd_digits_only = 0;
-	window_t * win_kbd = get_win(WINDOW_KBD);
-	win_kbd->parent_id = parent_win->window_id;
-	open_window(win_kbd);
+	window_set_parent(WINDOW_KBD, parent_win_id);
+	open_window_id(WINDOW_KBD);
 }
 
 static void keyboard_edit_digits(uint16_t * val, window_t * parent_win)
@@ -817,18 +816,9 @@ static void gui_main_process(void)
 			}
 			else if (bh == btn_2)
 			{
-//				if (check_for_parent_window() != NO_PARENT_WINDOW)
-//				{
-//					close_window(OPEN_PARENT_WINDOW);
-//					footer_buttons_state(CANCELLED);
-//				}
-//				else
-//				{
-//					window_t * const win = get_win(WINDOW_SHIFT);
-//					open_window(win);
-//					footer_buttons_state(DISABLED, btn_2);
-//				}
+#if WITHGUIDEBUG
 				gui_open_debug_window();
+#endif /* WITHGUIDEBUG */
 			}
 #if WITHFT8
 			else if (bh == btn_ft8)
@@ -5695,7 +5685,7 @@ static void window_kbd_test_proccess(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			keyboard_edit_string((char *) bh->payload, 1, win, 0);
+			keyboard_edit_string((char *) bh->payload, 1, WINDOW_KBD_TEST, 0);
 		}
 		break;
 
@@ -5710,13 +5700,12 @@ static void window_ping_proccess(void)
 {
 #if WITHLWIP
 	const uint_fast8_t win_id = WINDOW_PING;
-	window_t * const win = get_win(win_id);
 	static uint_fast8_t is_ping = 0, ping_delay = 0, update = 0;
 	static char ip_str [20] = "8.8.8.8";
 
-	if (win->first_call)
+	if (win_first_call(0))
 	{
-		win->first_call = 0;
+		win_first_call(1);
 		uint_fast8_t interval = 20;
 		uint_fast16_t x = 0, y = 0;
 		is_ping = 0;
@@ -5732,42 +5721,38 @@ static void window_ping_proccess(void)
 		set_property(win_id, "tf_ping", PROP_Y, y);
 		set_property(win_id, "tf_ping", PROP_VISIBLE, VISIBLE);
 
-		retval_t tf_ping_w = get_property(win_id, "tf_ping", PROP_WIDTH);
+		retval_t v = get_property(win_id, "tf_ping", PROP_WIDTH);
+		x = x + v.i + interval;
 
-		x += (x + tf_ping_w.i + interval);
 		set_property(win_id, "lbl_ip", PROP_X, x);
 		set_property(win_id, "lbl_ip", PROP_Y, y);
 		set_property(win_id, "lbl_ip", PROP_VISIBLE, VISIBLE);
 
-		retval_t lbl_ip_x = get_property(win_id, "lbl_ip", PROP_X);
-		retval_t lbl_ip_y = get_property(win_id, "lbl_ip", PROP_Y);
-		retval_t lbl_ip_h = get_property(win_id, "lbl_ip", PROP_HEIGHT);
+		v = get_property(win_id, "lbl_ip", PROP_HEIGHT);
+		y = y + v.i + interval;
 
-		button_t * btn_edit = find_gui_element(TYPE_BUTTON, win, "btn_edit");
-		btn_edit->x1 = lbl_ip_x.i;
-		btn_edit->y1 = lbl_ip_y.i + lbl_ip_h.i + interval;
-		btn_edit->visible = VISIBLE;
+		set_property(win_id, "btn_edit", PROP_X, x);
+		set_property(win_id, "btn_edit", PROP_Y, y);
+		set_property(win_id, "btn_edit", PROP_VISIBLE, VISIBLE);
 
-		button_t * btn_ping = find_gui_element(TYPE_BUTTON, win, "btn_ping");
-		btn_ping->x1 = btn_edit->x1;
-		btn_ping->y1 = btn_edit->y1 + btn_edit->h + interval;
-		btn_ping->visible = VISIBLE;
+		v = get_property(win_id, "btn_edit", PROP_HEIGHT);
+		y = y + v.i + interval;
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		set_property(win_id, "btn_ping", PROP_X, x);
+		set_property(win_id, "btn_ping", PROP_Y, y);
+		set_property(win_id, "btn_ping", PROP_VISIBLE, VISIBLE);
+
+		calculate_window_position_by_id(win_id, WINDOW_POSITION_AUTO);
 		set_property(win_id, "lbl_ip", PROP_TEXT, ip_str);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE_ID
 	{
 	case WM_MESSAGE_ACTION:
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_edit = find_gui_element(TYPE_BUTTON, win, "btn_edit");
-			button_t * btn_ping = find_gui_element(TYPE_BUTTON, win, "btn_ping");
-
-			if (bh == btn_ping)
+			if (! strcmp (name, "btn_ping"))
 			{
 				if(is_ping)
 					is_ping = 0;
@@ -5789,9 +5774,9 @@ static void window_ping_proccess(void)
 				}
 				update = 1;
 			}
-			else if (bh == btn_edit)
+			else if (! strcmp (name, "btn_edit"))
 			{
-				keyboard_edit_string(ip_str, 20, win, 1);
+				keyboard_edit_string(ip_str, 20, win_id, 1);
 			}
 		}
 		break;
@@ -5832,10 +5817,8 @@ static void window_ping_proccess(void)
 	if (update)
 	{
 		update = 0;
-		button_t * btn_edit = find_gui_element(TYPE_BUTTON, win, "btn_edit");
-		button_t * btn_ping = find_gui_element(TYPE_BUTTON, win, "btn_ping");
-		btn_ping->is_locked = is_ping;
-		btn_edit->state = is_ping ? DISABLED : CANCELLED;
+		set_property(win_id, "btn_ping", PROP_LOCK, is_ping);
+		set_property(win_id, "btn_edit", PROP_STATE, is_ping ? DISABLED : CANCELLED);
 	}
 #endif
 }
@@ -5925,7 +5908,7 @@ static void window_network_client_proccess(void)
 	case NET_DISCONNECTED:
 	{
 		gui_start_udp();
-		IP4_ADDR(& myir7020_addr, 192,168,0,121);
+		IP4_ADDR(& myir7020_addr, 192, 168, 0, 121);
 		net_state = NET_CONNECTED;
 	}
 		break;

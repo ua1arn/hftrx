@@ -157,6 +157,11 @@ typedef struct {
 							uintptr_t ptr;		\
 							switch (get_from_wm_queue(win, & type, & ptr, & action))
 
+#define GET_FROM_WM_QUEUE_ID	uint_fast8_t type;	\
+								int_fast8_t action;	\
+								char name [NAME_ARRAY_SIZE];	\
+								switch (get_from_wm_queue_by_id(win_id, & type, & action, name))
+
 enum {
 	enc2step_default = 1,
 	freq_swipe_step_default = 3,

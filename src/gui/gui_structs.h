@@ -33,6 +33,8 @@ enum {
 	PROP_VISIBLE,
 	PROP_WIDTH,
 	PROP_HEIGHT,
+	PROP_LOCK,
+	PROP_STATE,
 
 };
 
@@ -234,6 +236,7 @@ typedef struct {
 	element_type_t type;			// тип элемента
 	uintptr_t ptr;
 	int_fast8_t action;
+	char name [NAME_ARRAY_SIZE];
 } wm_data_t;
 
 typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI
