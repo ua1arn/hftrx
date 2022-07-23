@@ -162,6 +162,8 @@ typedef struct {
 								char name [NAME_ARRAY_SIZE];	\
 								switch (get_from_wm_queue_by_id(win_id, & type, & action, name))
 
+#define IS_NAME(s) 			(strcmp(name, (s)) == 0)
+
 enum {
 	enc2step_default = 1,
 	freq_swipe_step_default = 3,

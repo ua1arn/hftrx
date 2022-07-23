@@ -304,13 +304,12 @@ static void keyboard_edit_string(char * str, uint_fast8_t strlen, uint_fast8_t p
 	open_window_id(WINDOW_KBD);
 }
 
-static void keyboard_edit_digits(uint16_t * val, window_t * parent_win)
+static void keyboard_edit_digits(uint16_t * val, uint_fast8_t parent_win_id)
 {
 	kbd_editdigits = val;
 	kbd_digits_only = 1;
-	window_t * win_kbd = get_win(WINDOW_KBD);
-	win_kbd->parent_id = parent_win->window_id;
-	open_window(win_kbd);
+	window_set_parent(WINDOW_KBD, parent_win_id);
+	open_window_id(WINDOW_KBD);
 }
 
 // *********************************************************************************************************************************************************************
@@ -4435,11 +4434,11 @@ static void window_ft8_settings_process(void)
 			}
 			else if (bh == btn_freq)
 			{
-				keyboard_edit_digits(& (gui_nvram.ft8_txfreq_val), win);
+				keyboard_edit_digits(& (gui_nvram.ft8_txfreq_val), WINDOW_FT8_SETTINGS);
 			}
 			else
 			{
-				keyboard_edit_string((char *) bh->payload, 1, win, 1);
+				keyboard_edit_string((char *) bh->payload, 1, WINDOW_FT8_SETTINGS, 1);
 			}
 		}
 
@@ -5752,7 +5751,7 @@ static void window_ping_proccess(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			if (! strcmp (name, "btn_ping"))
+			if (IS_NAME("btn_ping"))
 			{
 				if(is_ping)
 					is_ping = 0;
@@ -5774,7 +5773,7 @@ static void window_ping_proccess(void)
 				}
 				update = 1;
 			}
-			else if (! strcmp (name, "btn_edit"))
+			else if (IS_NAME("btn_edit"))
 			{
 				keyboard_edit_string(ip_str, 20, win_id, 1);
 			}

@@ -532,7 +532,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = r;
-			memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
+			win->queue.data [win->queue.size].name [0] = '\0';
 			win->queue.size ++;
 		}
 
@@ -548,7 +548,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 		win->queue.data [win->queue.size].action = va_arg(arg, int_fast8_t);
-		memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
+		win->queue.data [win->queue.size].name [0] = '\0';
 		win->queue.size ++;
 
 		va_end(arg);
@@ -566,7 +566,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = INT8_MAX;
-			memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
+			win->queue.data [win->queue.size].name [0] = '\0';
 			win->queue.size ++;
 		}
 	}
@@ -582,7 +582,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = INT8_MAX;
-			memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
+			win->queue.data [win->queue.size].name [0] = '\0';
 			win->queue.size ++;
 		}
 	}
@@ -620,7 +620,7 @@ wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * 
 	win->queue.data [win->queue.size].type = TYPE_DUMMY;
 	win->queue.data [win->queue.size].ptr = 0;
 	win->queue.data [win->queue.size].action = 0;
-	memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
+	win->queue.data [win->queue.size].name [0] = '\0';
 
 	return m;
 }
@@ -647,7 +647,7 @@ wm_message_t get_from_wm_queue_by_id(uint8_t win_id, uint_fast8_t * type, int_fa
 	win->queue.data [win->queue.size].type = TYPE_DUMMY;
 	win->queue.data [win->queue.size].ptr = 0;
 	win->queue.data [win->queue.size].action = 0;
-	memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
+	win->queue.data [win->queue.size].name [0] = '\0';
 
 	return m;
 }
