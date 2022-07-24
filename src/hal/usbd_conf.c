@@ -468,11 +468,11 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	//	#define PHY_CTL_SIDDQ			BIT(3)
 	//	#define PHY_CTL_H3_SIDDQ		BIT(1)
 
-	USBPHY0->USB_CTRL = 0x4300FC00;	// после запуска из QSPI было 0x40000000
+	USBOTG0->USB_ISCR = 0x4300FC00;	// после запуска из QSPI было 0x40000000
 	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
 	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
-	USBPHY0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
-	USBPHY0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
+	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
+	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
 
 #else
 	#error HAL_PCD_MspInit should be implemented
