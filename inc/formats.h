@@ -46,8 +46,12 @@ int dbg_getchar(char * r);
 #endif /* WITHDEBUG */
 
 #if WITHDEBUG
-
 	#define PRINTF	debug_printf_P
+#else /* WITHDEBUG */
+	#define PRINTF(...)	do {} while (0)
+#endif /* WITHDEBUG */
+
+#if WITHDEBUG && 1
 	#define ASSERT(v) do { if ((v) == 0) { \
 		PRINTF(PSTR("%s(%d): Assert '%s'\n"), __FILE__, __LINE__, (# v)); \
 		for (;;) ; \
@@ -67,7 +71,6 @@ int dbg_getchar(char * r);
 
 #else /* WITHDEBUG */
 
-	#define PRINTF(...)	do {} while (0)
 	#define ASSERT(v) ((void) (0))
 	#define VERIFY(v) ((void) (v))
 
