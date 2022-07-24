@@ -62,24 +62,10 @@ int dbg_getchar(char * r);
 		for (;;) ; \
 		} } while (0)
 
-	#define TRACE0(f)		do { PRINTF( PSTR(f)); } while (0)
-	#define TRACE1(f,a1)		do { PRINTF( PSTR(f),(a1)); } while (0)
-	#define TRACE2(f,a1,a2)		do { PRINTF( PSTR(f),(a1),(a2)); } while (0)
-	#define TRACE3(f,a1,a2,a3)	do { PRINTF( PSTR(f),(a1),(a2),(a3)); } while (0)
-	#define TRACE4(f,a1,a2,a3,a4)	do { PRINTF( PSTR(f),(a1),(a2),(a3),(a4)); } while (0)
-	#define TRACE5(f,a1,a2,a3,a4,a5) do { PRINTF( PSTR(f),(a1),(a2),(a3),(a4),(a5)); } while (0)
-
 #else /* WITHDEBUG */
 
 	#define ASSERT(v) ((void) (0))
 	#define VERIFY(v) ((void) (v))
-
-	#define TRACE0(f)			do {} while (0)
-	#define TRACE1(f,a1)			do {} while (0)
-	#define TRACE2(f,a1,a2)			do {} while (0)
-	#define TRACE3(f,a1,a2,a3)		do {} while (0)
-	#define TRACE4(f,a1,a2,a3,a4)		do {} while (0)
-	#define TRACE5(f,a1,a2,a3,a4,a5)		do {} while (0)
 
 #endif /* WITHDEBUG */
 
