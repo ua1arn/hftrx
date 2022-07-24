@@ -1513,14 +1513,9 @@ typedef struct USBOTG_Type
 	__IO uint8_t  USB_INTUSBE;                           /*!< Offset 0x050 USB_INTUSBE */
 	uint8_t reserved_0x051 [0x0003];
 	__IO uint16_t USB_FRAME;                             /*!< Offset 0x054 USB_FRAME */
-	uint8_t reserved_0x056 [0x001A];
-	__IO uint8_t  ULPI_VBUSCTL;                          /*!< Offset 0x070 ULPI_VBUSCTL */
-	uint8_t reserved_0x071 [0x0003];
-	__IO uint8_t  ULPI_REGDATA;                          /*!< Offset 0x074 ULPI_REGDATA */
-	__IO uint8_t  ULPI_REGADDR;                          /*!< Offset 0x075 ULPI_REGADDR */
-	__IO uint8_t  ULPI_REGCTL;                           /*!< Offset 0x076 ULPI_REGCTL */
-	uint8_t reserved_0x077 [0x0005];
-	__IO uint16_t USB_TESTMODE;                          /*!< Offset 0x07C USB_TESTMODE */
+	uint8_t reserved_0x056 [0x0026];
+	__IO uint8_t  USB_TESTMODE;                          /*!< Offset 0x07C USB_TESTMODE */
+	uint8_t reserved_0x07D [0x0001];
 	__IO uint8_t  USB_FSM;                               /*!< Offset 0x07E USB_FSM */
 	uint8_t reserved_0x07F [0x0001];
 	__IO uint16_t USB_TXMAXP;                            /*!< Offset 0x080 USB_TXMAXP */

@@ -299,7 +299,7 @@
 
  uint32_t usb_get_active_ep(pusb_struct pusb)
 {
-	return USBOTG0->USB_EPINDEX & 0x7FF & 0xf;
+	return USBOTG0->USB_EPINDEX & 0x0F;
 	//return get_bvalue(USBOTG0_BASE + USB_bINDEX_OFF) & 0xf;
 }
 
@@ -314,7 +314,7 @@
 	uint32_t reg_val;
 
 	reg_val = (maxpayload & 0x7FF);
-	reg_val |= ((pktcnt-1) & 0x1f) << 11;
+	reg_val |= ((pktcnt-1) & 0x1F) << 11;
 	USBOTG0->USB_TXMAXP = reg_val;
 }
 
@@ -2470,7 +2470,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 			}
 			else
 			{
-				PRINTF("EP0 intr, ep0_csr=%02X, ep0_count=%u, fsm=%02X\n", ep0_csr, usb_get_ep0_count(pusb), usb_get_fsm(pusb));
+				PRINTF("EP0 intr, ep0_csr=%02X, ep0_count=%u\n", ep0_csr, usb_get_ep0_count(pusb));
 			  	usb_ep0_flush_fifo(pusb);
 		    	PRINTF("Error: EP0 Rx Error Length = 0x%x, ep0_xfer_residue=%u\n", ep0_count, pusb->ep0_xfer_residue);
 			}
