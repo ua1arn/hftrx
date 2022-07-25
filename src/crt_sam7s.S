@@ -74,7 +74,7 @@ __Vectors:
    ldr pc, FIQAddr      /* FIQ interrupt         */
 
 
-ResetAddr:     .word Reset_Handler7
+ResetAddr:     .word Reset_Handler
 UndefAddr:     .word Undef_Handler
 SWIAddr:       .word SWI_Handler
 PAbortAddr:    .word PAbort_Handler
@@ -92,13 +92,13 @@ FIQAddr:       .word FIQ_Handler
    .section .startup0, "ax"
    .code 32
    
-   .global Reset_Handler7
+   .global Reset_Handler
    .extern main
    .extern SystemInit
 /****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/
-Reset_Handler7:
+Reset_Handler:
    /*
     * Setup a stack for each mode
     */    

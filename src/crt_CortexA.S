@@ -85,13 +85,13 @@ __Vectors:
    ldr pc, FIQAddr      /* FIQ interrupt         */
 
 
-ResetAddr:     .word Reset_Handler7
+ResetAddr:     .word Reset_Handler
 UndefAddr:     .word Undef_Handler
 SWIAddr:       .word SWI_Handler
 PAbortAddr:    .word PAbort_Handler
 DAbortAddr:    .word DAbort_Handler
 HypAddr:  	   .word Hyp_Handler
-IRQAddr:       .word IRQ_HandlerNested
+IRQAddr:       .word IRQ_Handler
 FIQAddr:       .word FIQ_Handler
 
    .ltorg
@@ -103,11 +103,11 @@ FIQAddr:       .word FIQ_Handler
    .extern _start
    /*.extern __libc_init_array*/
    .extern SystemInit
-   .global Reset_Handler7
+   .global Reset_Handler
  /****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/
-Reset_Handler7:
+Reset_Handler:
 
 	/* Mask interrupts */
     mov   	lr, #0
@@ -343,8 +343,8 @@ ExitFunction:
 /* Entry point for the IRQ handler */
 /* ================================================================== */
 
-    .func   IRQ_HandlerNested
-IRQ_HandlerNested:
+    .func   IRQ_Handler
+IRQ_Handler:
 
 	/* save interrupt context on the stack to allow nesting */
 	SUB		LR, LR, #4
