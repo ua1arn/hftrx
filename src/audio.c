@@ -19,10 +19,6 @@
 #include <string.h>
 #include <math.h>
 
-#if WITHFT8
-	#include "ft8.h"
-#endif /* WITHFT8 */
-
 #define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
 //#define WITHDOUBLEFIRCOEFS 1
 
@@ -3854,10 +3850,6 @@ static RAMFUNC FLOAT_t preparevi(
 	//FLOAT_t vi0f = vi0;
 	const FLOAT_t txlevelXXX = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
 	const int_fast32_t txlevelfenceXXX_INTEGER = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
-
-#if WITHFT8
-	ft8_txfill(& vi0f);
-#endif /* WITHFT8 */
 
 #if WITHTXCPATHCALIBRATE
 	return (FLOAT_t) glob_designscale / 100;

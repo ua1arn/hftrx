@@ -2476,35 +2476,15 @@ extern "C" {
 
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
-
 #if WITHTOUCHGUI
-
-#if ! defined TSC1_TYPE
-	#undef WITHTOUCHGUI									// Компиляция GUI без тачскрина бессмысленна
-#endif /* TSC1_TYPE */
-
-#if (DIM_X != 800 || DIM_Y != 480)						// не соблюдены требования к разрешению экрана
-	#undef WITHTOUCHGUI									// для функционирования touch GUI
-#endif
-
-#if (__CORTEX_M == 0)
-	#define FORMATFROMLIBRARY 		1
-#endif
-
-#if ! defined WITHUSEMALLOC								// необходима поддержка динамического управления памятью
-	#define WITHUSEMALLOC		1
-#endif /* ! defined WITHUSEMALLOC */
-
-#if ! WITHMENU
-	#error WITHMENU must be defined for WITHTOUCHGUI
-#endif
-
-#if ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL)
-	#undef WITHGUIHEAP
-	#define WITHGUIHEAP 		(80 * 1024uL)			// требуемый размер кучи для touch GUI
-#endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
-
+	#warning Touch GUI support has been removed to a separate project https://github.com/RA4ASN/hftrx_gui
+	#undef WITHTOUCHGUI
 #endif /* WITHTOUCHGUI */
+
+#if WITHFT8
+	#warning FT8 support has been removed to a separate project https://github.com/RA4ASN/hftrx_gui
+	#undef WITHFT8
+#endif /* WITHFT8 */
 
 #if WITHKEEPNVRAM && defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25XXXX)
 	#error WITHKEEPNVRAM and NVRAM_TYPE_FM25XXXX can not be used together

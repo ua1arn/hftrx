@@ -13,7 +13,6 @@
 
 #include <string.h>
 #include <math.h>
-#include "src/gui/gui.h"
 
 #if WITHALTERNATIVEFONTS
 	#include "../display/fonts/ub_fonts.h"
@@ -2379,22 +2378,6 @@ static void display2_mode3_a(
 	display2_text_P(x, y, labels, colors_1mode, 0);
 }
 
-#if WITHTOUCHGUI
-
-static void display2_mode_lower_a(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
-{
-	char labels[5];
-	local_snprintf_P(labels, ARRAY_SIZE(labels), PSTR(" %s"), hamradio_get_mode_a_value_P());
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	colpip_string2_tbg(fr, DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), labels, colors_1mode [0].fg);
-}
-
-#endif /* WITHTOUCHGUI */
-
 // SSB/CW/AM/FM/...
 static void display2_mode3_b(
 	uint_fast8_t x,
@@ -3511,14 +3494,12 @@ enum
     #include "display/dstyle/g_x240_y128.h"
 #elif DSTYLE_G_X320_Y240
     #include "display/dstyle/g_x320_y240.h"
-#elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF && ! WITHTOUCHGUI
+#elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF
     #include "display/dstyle/g_x480_y272_spectrum_notouch.h"
 #elif DSTYLE_G_X480_Y272
     #include "display/dstyle/g_x480_y272.h"
-#elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI && WITHALTERNATIVELAYOUT
-    #include "display/dstyle/g_x800_y480_touch_alternative.h"
-#elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI //&& WITHSPECTRUMWF
-    #include "display/dstyle/g_x800_y480_touch.h"
+#elif DSTYLE_G_X800_Y480 && WITHALTERNATIVELAYOUT		// Использовать не рекомендуется, т.к. не отображается
+    #include "display/dstyle/g_x800_y480_alternative.h" // меню 2го энкодера
 #elif DSTYLE_G_X800_Y480 // && (LCDMODE_MAIN_PAGES > 1)	//&& WITHSPECTRUMWF
     #include "display/dstyle/g_x800_y480.h"
 #elif DSTYLE_G_X800_Y480 && 1	//&& WITHSPECTRUMWF
@@ -5435,11 +5416,7 @@ static void display2_spectrum(
 	(void) y0;
 	(void) pctx;
 
-#if WITHTOUCHGUI
-	const uint_fast16_t spy = ALLDY - FOOTER_HEIGHT - 15;
-#else
 	const uint_fast16_t spy = ALLDY - 15;
-#endif
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
@@ -6663,18 +6640,3 @@ void display2_set_smetertype(uint_fast8_t v)
 	ASSERT(v < SMETER_TYPE_COUNT);
 	glob_smetertype = v;
 }
-
-#if WITHTOUCHGUI
-
-uint_fast8_t display_getpagegui(void)
-{
-	return DPAGE1;
-}
-
-uint_fast8_t display_getpage0(void)
-{
-	return DPAGE0;
-}
-
-#endif /* WITHTOUCHGUI */
-

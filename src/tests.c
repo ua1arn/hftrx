@@ -11,8 +11,8 @@
 #include "keyboard.h"
 #include "encoder.h"
 
-#include "src/gui/gui.h"
 #include "display/display.h"
+#include "display2.h"
 #include "formats.h"
 #include "codecs.h"
 #include "spi.h"
