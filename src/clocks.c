@@ -489,10 +489,10 @@ unsigned long stm32f7xx_get_apb2_tim_freq(void)
 	}
 }
 
-// TODO: проверить
+// TODO: проверить - USART3 работает
 unsigned long stm32f7xx_get_pclk1_freq(void)
 {
-	return hardware_get_apb1_freq();
+	return stm32f7xx_get_apb1_freq();
 }
 
 // TODO: проверить

@@ -48,6 +48,7 @@ unsigned long stm32f7xx_get_uart5_freq(void);
 unsigned long stm32f7xx_get_usart6_freq(void);
 unsigned long stm32f7xx_get_uart7_freq(void);
 unsigned long stm32f7xx_get_uart8_freq(void);
+unsigned long stm32f7xx_get_apb1_freq(void);
 
 unsigned long stm32h7xx_get_hse_freq(void);
 unsigned long stm32h7xx_get_pll1_freq(void);

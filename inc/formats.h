@@ -197,6 +197,44 @@ int dbg_getchar(char * r);
 
 #endif /* WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2 */
 
+#if WITHDEBUG && WITHUART3HW && WITHDEBUG_USART3
+	// Отладочные функции работают через USART3
+	// Вызывается из user-mode программы при запрещённых прерываниях.
+	#define HARDWARE_DEBUG_INITIALIZE() do { \
+			hardware_uart3_initialize(1); \
+		} while (0)
+	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
+			hardware_uart3_set_speed(baudrate); \
+		} while (0)
+	#define HARDWARE_DEBUG_PUTCHAR(c) \
+		(hardware_uart3_putchar(c))
+	#define HARDWARE_DEBUG_GETCHAR(pc) \
+		(hardware_uart3_getchar(pc))
+
+	// вызывается из обработчика прерываний USART2
+	// с принятым символом
+	#define HARDWARE_UART3_ONRXCHAR(c) do { \
+			(void) (c); \
+			hardware_uart3_enablerx(1); \
+		} while (0)
+	// вызывается из обработчика прерываний USART2
+	#define HARDWARE_UART3_ONOVERFLOW() do { \
+		} while (0)
+	// вызывается из обработчика прерываний USART2
+	// по готовности передатчика
+	#define HARDWARE_UART3_ONTXCHAR(ctx) do { \
+			(void) ctx; \
+			hardware_uart3_enabletx(0); \
+		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART3_ONTXDONE(ctx) do { \
+			(void) ctx; \
+			hardware_uart3_enabletx(0); \
+		} while (0)
+
+#endif /* WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2 */
+
 #if WITHDEBUG && WITHUART4HW && WITHDEBUG_USART4
 	// Отладочные функции работают через USART2
 	// Вызывается из user-mode программы при запрещённых прерываниях.
