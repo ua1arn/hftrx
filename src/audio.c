@@ -109,8 +109,6 @@ static int_fast32_t		glob_lo6 [2] = { 0, 0 };
 static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
 static uint_fast8_t 	glob_squelch;
 
-static uint_fast8_t 	glob_swapiq = 0;	// поменять местами I и Q сэмплы в потоке RTS96
-
 // codec-related parameters
 static uint_fast16_t 	glob_afgain;
 static uint_fast8_t 	glob_afmute;	/* отключить звук в наушниках и динамиках */
@@ -6342,17 +6340,6 @@ board_set_squelch(uint_fast8_t n)	/* уровень открывания шум�
 	if (glob_squelch != n)
 	{
 		glob_squelch = n;		board_dsp1regchanged();
-	}
-}
-
-void 
-board_set_swapiq(uint_fast8_t v)	/* поменять местами I и Q сэмплы в потоке RTS96 */
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_swapiq != n)
-	{
-		glob_swapiq = n;
-		board_dsp1regchanged();
 	}
 }
 
