@@ -10750,7 +10750,7 @@ updateboardZZZ(
 		#if WITHUSBUAC
 			board_set_uacplayer((gtx && gdatamode) || guacplayer);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
-				glob_swaprts(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
+				board_set_swaprts(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 			#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 			#if WITHTX
 				board_set_datavox(gdatavox);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
