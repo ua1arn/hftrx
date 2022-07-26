@@ -13,6 +13,8 @@
 #include "board.h"
 #include "audio_compressor.h"
 
+#define DELAY_SIZE	128
+
 enum CompStates {
 	State_Idle, 
 	State_Attack, 
@@ -33,9 +35,17 @@ static FLOAT_t			gain_step_attack = (1 - (FLOAT_t) 0.5) / 1442;
 static FLOAT_t			gain_step_release = (1 - (FLOAT_t) 0.5) / 962;
 static FLOAT_t			gain = 1.0;
 
+static FLOAT_t			delay_buf[DELAY_SIZE];
+static unsigned			delay_index = 0;
+
 void audio_compressor_recalc(void) {
 	gain_step_attack = (1 - gainreduce) / attack;
 	gain_step_release = (1 - gainreduce) / release;
+	
+	for (unsigned i = 0; i < DELAY_SIZE; i++)
+		delay_buf[i] = (FLOAT_t) 0;
+		
+	delay_index = 0;
 }
 
 void audio_compressor_set_attack(unsigned samples) {
@@ -59,6 +69,16 @@ void audio_compressor_set_threshold(FLOAT_t ratio) {
 }
 
 FLOAT_t audio_compressor_calc(FLOAT_t in) {
+	FLOAT_t	delayed = delay_buf[delay_index];
+
+	delay_buf[delay_index] = in;
+
+	delay_index++;
+	
+	if (delay_index >= DELAY_SIZE) {
+		delay_index = 0;
+	}
+
 	if (FABSF(in) > threshold) {
 		if (gain >= gainreduce) {
 			if (state == State_Idle || state == State_Release) {
@@ -114,6 +134,6 @@ FLOAT_t audio_compressor_calc(FLOAT_t in) {
 			break;
 	}
 
-	return in * gain;
+	return delayed * gain;
 }
 #endif /* WITHCOMPRESSOR */
