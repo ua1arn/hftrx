@@ -6658,35 +6658,35 @@ void board_set_datavox(uint_fast8_t v)
 #define EQ_STAGES				1
 #define BIQUAD_COEFF_IN_STAGE 	5
 
-float32_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
-float32_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
-float32_t EQ_RX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
-float32_t EQ_RX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-float32_t EQ_RX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-float32_t EQ_RX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+FLOAT_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
+FLOAT_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
+FLOAT_t EQ_RX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
+FLOAT_t EQ_RX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+FLOAT_t EQ_RX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+FLOAT_t EQ_RX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
 
-arm_biquad_cascade_df2T_instance_f32 EQ_RX_LOW_FILTER = { EQ_STAGES, EQ_RX_LOW_FILTER_State, EQ_RX_LOW_FILTER_Coeffs };
-arm_biquad_cascade_df2T_instance_f32 EQ_RX_MID_FILTER = { EQ_STAGES, EQ_RX_MID_FILTER_State, EQ_RX_MID_FILTER_Coeffs };
-arm_biquad_cascade_df2T_instance_f32 EQ_RX_HIGH_FILTER = { EQ_STAGES, EQ_RX_HIGH_FILTER_State, EQ_RX_HIGH_FILTER_Coeffs };
+ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_FILTER = { EQ_STAGES, EQ_RX_LOW_FILTER_State, EQ_RX_LOW_FILTER_Coeffs };
+ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_FILTER = { EQ_STAGES, EQ_RX_MID_FILTER_State, EQ_RX_MID_FILTER_Coeffs };
+ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIGH_FILTER = { EQ_STAGES, EQ_RX_HIGH_FILTER_State, EQ_RX_HIGH_FILTER_Coeffs };
 
-float32_t EQ_TX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
-float32_t EQ_TX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
-float32_t EQ_TX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
-float32_t EQ_TX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-float32_t EQ_TX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-float32_t EQ_TX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+FLOAT_t EQ_TX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
+FLOAT_t EQ_TX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
+FLOAT_t EQ_TX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
+FLOAT_t EQ_TX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+FLOAT_t EQ_TX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+FLOAT_t EQ_TX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
 
-arm_biquad_cascade_df2T_instance_f32 EQ_TX_LOW_FILTER = { EQ_STAGES, EQ_TX_LOW_FILTER_State, EQ_TX_LOW_FILTER_Coeffs };
-arm_biquad_cascade_df2T_instance_f32 EQ_TX_MID_FILTER = { EQ_STAGES, EQ_TX_MID_FILTER_State, EQ_TX_MID_FILTER_Coeffs };
-arm_biquad_cascade_df2T_instance_f32 EQ_TX_HIGH_FILTER = { EQ_STAGES, EQ_TX_HIGH_FILTER_State, EQ_TX_HIGH_FILTER_Coeffs };
+ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_LOW_FILTER = { EQ_STAGES, EQ_TX_LOW_FILTER_State, EQ_TX_LOW_FILTER_Coeffs };
+ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_MID_FILTER = { EQ_STAGES, EQ_TX_MID_FILTER_State, EQ_TX_MID_FILTER_Coeffs };
+ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_HIGH_FILTER = { EQ_STAGES, EQ_TX_HIGH_FILTER_State, EQ_TX_HIGH_FILTER_Coeffs };
 
-void calcBiquad(uint32_t Fc, uint32_t Fs, float32_t Q, float32_t peakGain, float32_t * outCoeffs)
+void calcBiquad(uint32_t Fc, uint32_t Fs, FLOAT_t Q, FLOAT_t peakGain, FLOAT_t * outCoeffs)
 {
-    float32_t a0, a1, a2, b1, b2, norm;
+	FLOAT_t a0, a1, a2, b1, b2, norm;
 
-    float32_t V = powf(10.0f, fabsf(peakGain) / 20.0f);
-    float32_t K = tanf(PI * Fc / Fs);
-    if (peakGain >= 0.0f)
+	FLOAT_t V = POWF(10.0f, FABSF(peakGain) / 20);
+	FLOAT_t K = TANF(PI * Fc / Fs);
+    if (peakGain >= 0)
     {
         norm = 1.0f / (1.0f + 1.0f / Q * K + K * K);
         a0 = (1.0f + V / Q * K + K * K) * norm;
@@ -6715,23 +6715,23 @@ void calcBiquad(uint32_t Fc, uint32_t Fs, float32_t Q, float32_t peakGain, float
 
 void audio_rx_equalizer_init(void)
 {
-	float base = hamradio_get_af_equalizer_base();
-	float max_coeff = 0;
+	FLOAT_t base = hamradio_get_af_equalizer_base();
+	FLOAT_t max_coeff = 0;
 
 	for (uint_fast8_t i = 0; i < 3; i ++)
 		max_coeff = max_coeff < glob_equalizer_rx_gains [i] ? glob_equalizer_rx_gains [i] : max_coeff;
 
 	max_coeff += base;
 
-    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [0] + base - max_coeff, EQ_RX_LOW_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [1] + base - max_coeff, EQ_RX_MID_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [2] + base - max_coeff, EQ_RX_HIGH_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1, glob_equalizer_rx_gains [0] + base - max_coeff, EQ_RX_LOW_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1, glob_equalizer_rx_gains [1] + base - max_coeff, EQ_RX_MID_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1, glob_equalizer_rx_gains [2] + base - max_coeff, EQ_RX_HIGH_FILTER_Coeffs);
 }
 
 void audio_tx_equalizer_init(void)
 {
-	float base = hamradio_get_af_equalizer_base();
-	float max_coeff = 0;
+	FLOAT_t base = hamradio_get_af_equalizer_base();
+	FLOAT_t max_coeff = 0;
 
 	for (uint_fast8_t i = 0; i < 3; i ++)
 		max_coeff = max_coeff < glob_equalizer_tx_gains [i] ? glob_equalizer_tx_gains [i] : max_coeff;
@@ -6743,13 +6743,13 @@ void audio_tx_equalizer_init(void)
     calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1.0f, glob_equalizer_tx_gains [2] + base - max_coeff, EQ_TX_HIGH_FILTER_Coeffs);
 }
 
-void audio_rx_equalizer(float32_t * buffer, uint_fast16_t size)
+void audio_rx_equalizer(FLOAT_t * buffer, uint_fast16_t size)
 {
 	if (glob_equalizer_rx)
 	{
-		arm_biquad_cascade_df2T_f32(& EQ_RX_LOW_FILTER, buffer, buffer, size);
-		arm_biquad_cascade_df2T_f32(& EQ_RX_MID_FILTER, buffer, buffer, size);
-		arm_biquad_cascade_df2T_f32(& EQ_RX_HIGH_FILTER, buffer, buffer, size);
+		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_LOW_FILTER, buffer, buffer, size);
+		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_MID_FILTER, buffer, buffer, size);
+		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_HIGH_FILTER, buffer, buffer, size);
 	}
 }
 
