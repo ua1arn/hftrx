@@ -4243,6 +4243,13 @@ int __attribute__((used)) (_getpid)(int id)
 	return (-1);
 }
 
+
+struct _reent * __getreent(void)
+{
+    static struct _reent r [4];
+    PRINTF("__getreent: CPU%u\n", arm_hardware_cpuid());
+    return r + arm_hardware_cpuid();
+}
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
