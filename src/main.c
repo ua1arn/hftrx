@@ -12351,7 +12351,7 @@ void nmea_parsrchar(uint_fast8_t c)
 				nmea_time.hours = (s [0] - '0') * 10 + (s [1] - '0');
 				nmea_time.minutes = (s [2] - '0') * 10 + (s [3] - '0');
 				nmea_time.secounds = (s [4] - '0') * 10 + (s [5] - '0');
-				nmea_time.ms = 0; //strtoul(s + 7, NULL, 10);
+				nmea_time.ms = 0; //_strtoul_r(& treent, s + 7, NULL, 10);
 				nmea_time.valid = 1;
 				time_next(& nmea_time);	// какое время надо будет поставить для установки в следующий PPS
 			}
@@ -19372,7 +19372,7 @@ static void siggen_mainloop(void)
 		case 'a':
 			// set att value
 			++ cp;
-			unsigned long value = strtoul(cp, NULL, 10);
+			unsigned long value = _strtoul_r(& treent, cp, NULL, 10);
 			PRINTF(PSTR("RFSG ATT value: %lu\n"), value);
 			if (value < 63)
 			{

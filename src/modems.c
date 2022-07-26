@@ -883,10 +883,10 @@ void modem_parsechar(uint_fast8_t c)
 		{
 			if (nmeaparser_param >= 2 && strcmp(nmeaparser_get_buff(0), "GPMDS") == 0)
 			{
-				const unsigned code = strtoul(nmeaparser_get_buff(1) , NULL, 10);
+				const unsigned code = _strtoul_r(& treent, nmeaparser_get_buff(1) , NULL, 10);
 				if (nmeaparser_param >= 4)
 				{
-					const unsigned page = strtoul(nmeaparser_get_buff(2) , NULL, 10);
+					const unsigned page = _strtoul_r(& treent, nmeaparser_get_buff(2) , NULL, 10);
 					switch (code)
 					{
 					case 1:
@@ -936,7 +936,7 @@ void modem_parsechar(uint_fast8_t c)
 				}
 				else if (nmeaparser_param >= 3)
 				{
-					const unsigned p2 = strtoul(nmeaparser_get_buff(2) , NULL, 10);
+					const unsigned p2 = _strtoul_r(& treent, nmeaparser_get_buff(2) , NULL, 10);
 					switch (code)
 					{
 					case 2:
