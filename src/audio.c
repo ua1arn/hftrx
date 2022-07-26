@@ -6682,6 +6682,17 @@ arm_biquad_cascade_df2T_instance_f32 EQ_RX_LOW_FILTER = { EQ_STAGES, EQ_RX_LOW_F
 arm_biquad_cascade_df2T_instance_f32 EQ_RX_MID_FILTER = { EQ_STAGES, EQ_RX_MID_FILTER_State, EQ_RX_MID_FILTER_Coeffs };
 arm_biquad_cascade_df2T_instance_f32 EQ_RX_HIGH_FILTER = { EQ_STAGES, EQ_RX_HIGH_FILTER_State, EQ_RX_HIGH_FILTER_Coeffs };
 
+float32_t EQ_TX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
+float32_t EQ_TX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
+float32_t EQ_TX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
+float32_t EQ_TX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+float32_t EQ_TX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+float32_t EQ_TX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+
+arm_biquad_cascade_df2T_instance_f32 EQ_TX_LOW_FILTER = { EQ_STAGES, EQ_TX_LOW_FILTER_State, EQ_TX_LOW_FILTER_Coeffs };
+arm_biquad_cascade_df2T_instance_f32 EQ_TX_MID_FILTER = { EQ_STAGES, EQ_TX_MID_FILTER_State, EQ_TX_MID_FILTER_Coeffs };
+arm_biquad_cascade_df2T_instance_f32 EQ_TX_HIGH_FILTER = { EQ_STAGES, EQ_TX_HIGH_FILTER_State, EQ_TX_HIGH_FILTER_Coeffs };
+
 void calcBiquad(uint32_t Fc, uint32_t Fs, float32_t Q, float32_t peakGain, float32_t * outCoeffs)
 {
     float32_t a0, a1, a2, b1, b2, norm;
@@ -6717,10 +6728,32 @@ void calcBiquad(uint32_t Fc, uint32_t Fs, float32_t Q, float32_t peakGain, float
 
 void audio_rx_equalizer_init(void)
 {
-	float32_t base = hamradio_get_af_equalizer_base();
-    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [0] + base, EQ_RX_LOW_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [1] + base, EQ_RX_MID_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [2] + base, EQ_RX_HIGH_FILTER_Coeffs);
+	float base = hamradio_get_af_equalizer_base();
+	float max_coeff = 0;
+
+	for (uint_fast8_t i = 0; i < 3; i ++)
+		max_coeff = max_coeff < glob_equalizer_rx_gains [i] ? glob_equalizer_rx_gains [i] : max_coeff;
+
+	max_coeff += base;
+
+    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [0] + base - max_coeff, EQ_RX_LOW_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [1] + base - max_coeff, EQ_RX_MID_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [2] + base - max_coeff, EQ_RX_HIGH_FILTER_Coeffs);
+}
+
+void audio_tx_equalizer_init(void)
+{
+	float base = hamradio_get_af_equalizer_base();
+	float max_coeff = 0;
+
+	for (uint_fast8_t i = 0; i < 3; i ++)
+		max_coeff = max_coeff < glob_equalizer_tx_gains [i] ? glob_equalizer_tx_gains [i] : max_coeff;
+
+	max_coeff += base;
+
+    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1.0f, glob_equalizer_tx_gains [0] + base - max_coeff, EQ_TX_LOW_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1.0f, glob_equalizer_tx_gains [1] + base - max_coeff, EQ_TX_MID_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1.0f, glob_equalizer_tx_gains [2] + base - max_coeff, EQ_TX_HIGH_FILTER_Coeffs);
 }
 
 void audio_rx_equalizer(float32_t * buffer, uint_fast16_t size)
@@ -6767,7 +6800,7 @@ void board_set_equalizer_tx_gains(const uint_fast8_t * p)
 	if (memcmp(glob_equalizer_tx_gains, p, sizeof glob_equalizer_tx_gains) != 0)
 	{
 		memcpy(glob_equalizer_tx_gains, p, sizeof glob_equalizer_tx_gains);
-//		audio_rx_equalizer_init();
+		audio_tx_equalizer_init();
 	}
 }
 
