@@ -59,6 +59,7 @@ OPT = -Og
 #OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
@@ -67,6 +68,7 @@ USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
+RTOSXDIR = $(CMSISDIR)/RTOS2
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -82,11 +84,13 @@ DINCDIR = \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
-	$(CMSISDIR)/DSP/Include \
-	$(CMSISDIR)/DSP/ComputeLibrary/Include \
+	$(RTOSXDIR)/Include \
+	$(RTOSXDIR)/RTX/Include \
+	$(CMSISDSPDIR)/Include \
+	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDIR)/Core_A/Source \
-	$(CMSISDIR)/DSP/Source \
-	$(CMSISDIR)/DSP/PrivateInclude \
+	$(CMSISDSPDIR)/Source \
+	$(CMSISDSPDIR)/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
 	$(LWIPDIR)/src/apps/http \
@@ -96,7 +100,7 @@ DINCDIR = \
 	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
-#DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
+#DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
@@ -137,6 +141,7 @@ ULIBS +=
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 SRCDIRS += $(PRJROOT)/src
+#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(OPENVGDIR)/src

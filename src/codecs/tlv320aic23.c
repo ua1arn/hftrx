@@ -41,7 +41,7 @@ static void tlv320aic23_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPILOWSUPPORTT
+	#if WITHSPILOWSUPPORTT || 1
 		// Работа совместно с фоновым обменом SPI по прерываниям
 		uint8_t txbuf [2];
 
@@ -103,10 +103,6 @@ static void tlv320aic23_initialize_fullduplex(void)
 	const uint_fast8_t master = 0;
 #endif /* CODEC_TYPE_TLV320AIC23B_MASTER */
 	const unsigned long framebits = CODEC1_FRAMEBITS;
-
-#if CPUSTYPE_ALLWNT113
-	I2S1HW_UNINITIALIZE(1);
-#endif /* CPUSTYPE_ALLWNT113 */
 
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
 
@@ -192,10 +188,6 @@ static void tlv320aic23_initialize_fullduplex(void)
 		TLV320AIC23_ACT_ON |		// Digital Interface Activation
 		0
 		);
-
-#if CPUSTYPE_ALLWNT113
-	I2S1HW_INITIALIZE(1);
-#endif /* CPUSTYPE_ALLWNT113 */
 }
 
 /* Установка громкости на наушники */

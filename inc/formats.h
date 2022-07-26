@@ -26,7 +26,8 @@ void debug_printf_P(const FLASHMEM char * __restrict format, ... );
 char * safestrcpy(char * dst, size_t blen, const char * src);
 void strtrim(char * s);
 
-void printhex(unsigned long voffs, const unsigned char * buff, unsigned length);
+void printhex(unsigned long voffs, const void * buff, unsigned length);
+void printhex32(unsigned long voffs, const void * vbuff, unsigned length);
 
 // spool-based functions for debug
 int dbg_puts_impl_P(const FLASHMEM char * s);
@@ -45,8 +46,12 @@ int dbg_getchar(char * r);
 #endif /* WITHDEBUG */
 
 #if WITHDEBUG
-
 	#define PRINTF	debug_printf_P
+#else /* WITHDEBUG */
+	#define PRINTF(...)	do {} while (0)
+#endif /* WITHDEBUG */
+
+#if WITHDEBUG && 1
 	#define ASSERT(v) do { if ((v) == 0) { \
 		PRINTF(PSTR("%s(%d): Assert '%s'\n"), __FILE__, __LINE__, (# v)); \
 		for (;;) ; \
@@ -57,25 +62,10 @@ int dbg_getchar(char * r);
 		for (;;) ; \
 		} } while (0)
 
-	#define TRACE0(f)		do { PRINTF( PSTR(f)); } while (0)
-	#define TRACE1(f,a1)		do { PRINTF( PSTR(f),(a1)); } while (0)
-	#define TRACE2(f,a1,a2)		do { PRINTF( PSTR(f),(a1),(a2)); } while (0)
-	#define TRACE3(f,a1,a2,a3)	do { PRINTF( PSTR(f),(a1),(a2),(a3)); } while (0)
-	#define TRACE4(f,a1,a2,a3,a4)	do { PRINTF( PSTR(f),(a1),(a2),(a3),(a4)); } while (0)
-	#define TRACE5(f,a1,a2,a3,a4,a5) do { PRINTF( PSTR(f),(a1),(a2),(a3),(a4),(a5)); } while (0)
-
 #else /* WITHDEBUG */
 
-	#define PRINTF(...)	do {} while (0)
 	#define ASSERT(v) ((void) (0))
 	#define VERIFY(v) ((void) (v))
-
-	#define TRACE0(f)			do {} while (0)
-	#define TRACE1(f,a1)			do {} while (0)
-	#define TRACE2(f,a1,a2)			do {} while (0)
-	#define TRACE3(f,a1,a2,a3)		do {} while (0)
-	#define TRACE4(f,a1,a2,a3,a4)		do {} while (0)
-	#define TRACE5(f,a1,a2,a3,a4,a5)		do {} while (0)
 
 #endif /* WITHDEBUG */
 

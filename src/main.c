@@ -6,7 +6,6 @@
 //
 
 #include "hardware.h"
-#include "gui/gui.h"
 #include "synthcalcs.h"
 #include "board.h"
 #include "keyboard.h"
@@ -19,10 +18,6 @@
 #include "audio.h"
 #include "codecs.h"
 
-#if WITHFT8
-	#include "ft8.h"
-#endif /* WITHFT8 */
-
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
@@ -33,6 +28,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+
+#include "src/speex/arch.h"
+#include "src/speex/speex_preprocess.h"
 
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
@@ -153,12 +151,6 @@
 
 #define NUMLPFADJ 16	/* Коррекция мощности по ФНЧ передачика - количество ФНЧ. */
 
-#if WITHTOUCHGUI
-static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
-static enc2_menu_t enc2_menu;
-static uint_fast8_t band_no_check = 0;
-static uint_fast8_t encoder2_redirect = 0;
-#endif /* WITHTOUCHGUI */
 static char menuw [20];						// буфер для вывода значений системного меню
 
 static uint_fast32_t 
@@ -2112,11 +2104,7 @@ static const FLASHMEM uint_fast8_t encresols [] =
 	600 / ENCRESSCALE,	// 10
 };
 
-#if WITHTOUCHGUI
-	#define BANDPAD	0
-#else
-	#define BANDPAD 15000UL	/* 15 kHz - запас по сторонам от любительского диапазона */
-#endif
+#define BANDPAD 15000UL	/* 15 kHz - запас по сторонам от любительского диапазона */
 
 #if (FIXSCALE_48M0_X1_DIV256 || (defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570))) && WITHMODESETSMART
 	#define BANDFUSBFREQ	13800000L	/* Выше этой частоты по умолчанию используется USB */
@@ -2394,11 +2382,6 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 		#define MBANDS_COUNT	1000 // (254 - MBANDS_BASE)	/* количество ячеек фиксированных частот */
 		typedef uint_fast16_t vindex_t;
 	#endif
-
-#elif WITHTOUCHGUI
-
-	#define MBANDS_COUNT	memory_cells_count	/* количество ячеек фиксированных частот */
-	typedef unsigned vindex_t;
 
 #else
 
@@ -2946,6 +2929,13 @@ struct nvmap
 	uint8_t gmikeagc;	/* Включение программной АРУ перед модулятором */
 	uint8_t gmikeagcgain;	/* Максимальное усидение АРУ микрофона */
 	uint8_t gmikehclip;		/* Ограничитель */
+	#if WITHCOMPRESSOR
+		uint8_t	gcompressor_attack;		/* Компрессор - время атаки */
+		uint8_t gcompressor_release;	/* Компрессор - время освобождения */
+		uint8_t gcompressor_hold;		/* Компрессор - время удержания */
+		uint8_t gcompressor_gain;		/* Компрессор - отношение компрессии */
+		uint8_t gcompressor_threshold;	/* Компрессор - порог срабатывания */
+	#endif /* WITHCOMPRESSOR */
 	#if WITHREVERB
 		uint8_t greverb;		/* ревербератор */
 		uint8_t greverbdelay;		/* ревербератор - задержка */
@@ -3287,13 +3277,6 @@ filter_t fi_2p0_455 =
 	uint8_t hffreqswitch; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
 #endif /* WITHANTSELECT2 */
 
-#if WITHTOUCHGUI
-	struct gui_nvram_t gui_nvram;
-
-	#if WITHAFCODEC1HAVEPROC
-		struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
-	#endif /* WITHAFCODEC1HAVEPROC */
-#endif /*  WITHTOUCHGUI */
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -3569,25 +3552,25 @@ static uint_fast8_t alignmode;		/* режимы для настройки апп
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #if defined (WITHDISPLAY_FPS)
 	static uint_fast8_t gdisplayfreqsfps = WITHDISPLAY_FPS;
-#else
+#else /* defined (WITHDISPLAY_FPS) */
 	static uint_fast8_t gdisplayfreqsfps = DISPLAY_FPS;
-#endif /* WITHDISPLAY_FPS */
+#endif /* defined (WITHDISPLAY_FPS) */
 #if defined (WITHDISPLAYSWR_FPS)
 	static uint_fast8_t gdisplaybarsfps = WITHDISPLAYSWR_FPS;
-#else
+#else /* defined (WITHDISPLAYSWR_FPS) */
 	static uint_fast8_t gdisplaybarsfps = DISPLAYSWR_FPS;
-#endif /* WITHDISPLAYSWR_FPS */
+#endif /* defined (WITHDISPLAYSWR_FPS) */
 #if WITHSPECTRUMWF
 #if defined (WITHDEFAULTVIEW)		/* стиль отображения спектра и панорамы */
 	static uint_fast8_t gviewstyle = WITHDEFAULTVIEW;
-#else
+#else /* defined (WITHDEFAULTVIEW) */
 	static uint_fast8_t gviewstyle = VIEW_COLOR;
-#endif
+#endif /* defined (WITHDEFAULTVIEW) */
 #if defined (WITHVIEW_3DSS_MARK)	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	static uint_fast8_t gview3dss_mark = WITHVIEW_3DSS_MARK;
-#else
+#else /* defined (WITHVIEW_3DSS_MARK) */
 	static uint_fast8_t gview3dss_mark = 0;
-#endif
+#endif /* defined (WITHVIEW_3DSS_MARK) */
 	static uint_fast8_t gtopdbspe [VFOS_COUNT] = { WITHTOPDBDEFAULT, WITHTOPDBDEFAULT, };	/* верхний предел FFT */
 	static uint_fast8_t gbottomdbspe [VFOS_COUNT] = { WITHBOTTOMDBDEFAULT, WITHBOTTOMDBDEFAULT, };	/* нижний предел FFT */
 	static uint_fast8_t gtopdbwfl [VFOS_COUNT] = { WITHTOPDBDEFAULT, WITHTOPDBDEFAULT, };	/* верхний предел FFT waterflow*/
@@ -3600,14 +3583,14 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
 #if defined (WITHSPECBETA_DEFAULT)
 	static uint_fast8_t gspecbeta100 = WITHSPECBETA_DEFAULT;
-#else
+#else /* defined (WITHSPECBETA_DEFAULT) */
 	static uint_fast8_t gspecbeta100 = 50;	/* beta = 0.1 .. 1.0 */
-#endif /* WITHSPECBETA_DEFAULT */
+#endif /* defined (WITHSPECBETA_DEFAULT) */
 #if defined (WITHWFLBETA_DEFAULT)
 	static uint_fast8_t gwflbeta100 = WITHWFLBETA_DEFAULT;
-#else
+#else /* defined (WITHWFLBETA_DEFAULT) */
 	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
-#endif /* WITHWFLBETA_DEFAULT */
+#endif /* defined (WITHWFLBETA_DEFAULT) */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -3805,6 +3788,13 @@ enum
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 	static uint_fast8_t gmikehclip = 20;		/* Ограничитель */
 
+	#if WITHCOMPRESSOR
+		static uint_fast8_t gcompressor_attack = 30;
+		static uint_fast8_t gcompressor_release = 20;
+		static uint_fast8_t gcompressor_hold = 10;
+		static uint_fast8_t gcompressor_gain = 6;
+		static uint_fast8_t gcompressor_threshold = 20;
+	#endif /* WITHCOMPRESSOR */
 	#if WITHREVERB
 		static uint_fast8_t greverb;		/* ревербератор */
 		static uint_fast8_t greverbdelay = 100;		/* ревербератор - задержка (ms) */
@@ -4256,9 +4246,9 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 #if defined (WITHSWRPROT)
 	static uint_fast8_t gswrprot = WITHSWRPROT;
-#else
+#else /* defined (WITHSWRPROT) */
 	static uint_fast8_t gswrprot = 1;	/* защита от превышения КСВ */
-#endif
+#endif /* defined (WITHSWRPROT) */
 #if WITHTHERMOLEVEL
 	static uint_fast8_t gheatprot = 1;	/* защита от перегрева */
 #endif /* WITHTHERMOLEVEL */
@@ -4271,12 +4261,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	enum { reqautotune = 0 };
 #endif /* WITHAUTOTUNER */
 
-#if WITHTOUCHGUI
-	static uint_fast8_t reqautotune2 = 0;
-#else
 	enum { reqautotune2 = 0 };
-#endif /* WITHTOUCHGUI */
-
 #else /* WITHTX */
 
 	enum { tunemode = 0, moxmode = 0, reqautotune = 0, reqautotune2 = 0 };
@@ -5594,11 +5579,6 @@ existingband(
 	if (get_band_bottom(b) >= TUNE_TOP || get_band_top(b) < TUNE_BOTTOM)
 		return 0;
 
-#if WITHTOUCHGUI
-	if (band_no_check)
-		return 1;
-#endif
-
 	switch (bandset)
 	{
 	default:
@@ -6495,21 +6475,6 @@ static void micproc_load(void)
 		gtxaprofiles [i] = loadvfy8up(RMT_TXAPROFIGLE_BASE(i), 0, NMICPROFILES - 1, gtxaprofiles [i]);
 	}
 
-#if WITHTOUCHGUI && WITHAFCODEC1HAVEPROC
-	for (i = 0; i < NMICPROFCELLS; i++)
-	{
-		micprof_t * const mp = & micprof_cells[i];
-		mp->cell_saved = loadvfy8up(RMT_MICPSAVE_BASE(i), 0, 1, 0);
-		mp->agc = loadvfy8up(RMT_MICAGC_BASE(i), 0, 1, 1);
-		mp->agcgain = loadvfy8up(RMT_MICAGCGAIN_BASE(i), WITHMIKEAGCMIN, WITHMIKEAGCMAX, 30);
-		mp->clip = loadvfy8up(RMT_MICCLIP_BASE(i), WITHMIKECLIPMIN, WITHMIKECLIPMAX, 0);
-		mp->level = loadvfy8up(RMT_MICLEVEL_BASE(i), WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, WITHMIKEINGAINMAX);
-		mp->mikeboost20db = loadvfy8up(RMT_MICBOOST_BASE(i), 0, 1, 0);
-		mp->eq_enable = loadvfy8up(RMT_MICEQ_BASE(i), 0, 1, 0);
-		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
-			mp->eq_params[j] = loadvfy8up(RMT_MICEQPARAMS_BASE(i, j), 0, EQUALIZERBASE * 2, EQUALIZERBASE);
-	}
-#endif /* WITHTOUCHGUI && WITHAFCODEC1HAVEPROC */
 }
 
 #endif /* WITHIF4DSP */
@@ -6965,69 +6930,36 @@ enc2menu_value(
 		value = mp->bottom;	/* чтобы не ругался компилятор */
 	}
 
-#if WITHTOUCHGUI
 	switch (mp->rj)
 	{
 #if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
-		local_snprintf_P(buff, sz, PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
+		local_snprintf_P(buff, sz, PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
 		break;
 #endif /* WITHSUBTONES && WITHTX */
 	case RJ_YES:
-		local_snprintf_P(buff, sz, PSTR("%s"), value ? "YES" : "NO");
+		local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "YES" : "NO");
 		break;
 	case RJ_CATSIG:
-		local_snprintf_P(buff, sz, PSTR("%s"), catsiglabels [value]);
+		local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, catsiglabels [value]);
 		break;
 	case RJ_ON:
-		local_snprintf_P(buff, sz, PSTR("%s"), value ? "ON" : "OFF");
+		local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "ON" : "OFF");
 		break;
 	case RJ_POW2:
-		local_snprintf_P(buff, sz, PSTR("%u"), 1U << value);
-		break;
-	case RJ_SIGNED:
-		local_snprintf_P(buff, sz, PSTR("%+ld"), (signed long) value);
+		local_snprintf_P(buff, sz, PSTR("%*u"), WDTH, 1U << value);
 		break;
 	case RJ_VIEW:
-		local_snprintf_P(buff, sz, PSTR("%s"), view_types [value]);
+		local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, view_types [value]);
+		break;
+	case RJ_SIGNED:
+		local_snprintf_P(buff, sz, PSTR("%-+*ld"), WDTH, (signed long) value);
 		break;
 	case RJ_UNSIGNED:
 	default:
-		local_snprintf_P(buff, sz, PSTR("%lu"), (unsigned long) value);
+		local_snprintf_P(buff, sz, PSTR("%*lu"), WDTH, (unsigned long) value);
 		break;
 	}
-#else
-	switch (mp->rj)
-		{
-	#if WITHSUBTONES && WITHTX
-		case RJ_SUBTONE:
-			local_snprintf_P(buff, sz, PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
-			break;
-	#endif /* WITHSUBTONES && WITHTX */
-		case RJ_YES:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "YES" : "NO");
-			break;
-		case RJ_CATSIG:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, catsiglabels [value]);
-			break;
-		case RJ_ON:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "ON" : "OFF");
-			break;
-		case RJ_POW2:
-			local_snprintf_P(buff, sz, PSTR("%*u"), WDTH, 1U << value);
-			break;
-		case RJ_VIEW:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, view_types [value]);
-			break;
-		case RJ_SIGNED:
-			local_snprintf_P(buff, sz, PSTR("%-+*ld"), WDTH, (signed long) value);
-			break;
-		case RJ_UNSIGNED:
-		default:
-			local_snprintf_P(buff, sz, PSTR("%*lu"), WDTH, (unsigned long) value);
-			break;
-		}
-#endif
 }
 
 enum
@@ -7066,13 +6998,7 @@ uif_encoder2_press(void)
 		break;
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
-#if ! WITHTOUCHGUI
 	display_redrawmodestimed(1);
-#else
-	enc2_menu.state = enc2state;
-	if (enc2state != ENC2STATE_INITIALIZE)
-		hamradio_gui_enc2_update();
-#endif /* ! WITHTOUCHGUI */
 }
 
 /* удержанное нажатие на второй валкодер - выход из режима редактирования */
@@ -7092,12 +7018,7 @@ uif_encoder2_hold(void)
 		break;
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
-#if ! WITHTOUCHGUI
 	display_redrawmodestimed(1);
-#else
-	if (enc2state == ENC2STATE_INITIALIZE)
-		hamradio_gui_enc2_update();
-#endif /* ! WITHTOUCHGUI */
 }
 
 /* обработка вращения второго валкодера */
@@ -7108,11 +7029,6 @@ uif_encoder2_rotate(
 {
 	if (nrotate == 0)
 		return 0;
-
-#if WITHTOUCHGUI
-	if (encoder2_redirect)
-		return 0;
-#endif
 
 	switch (enc2state)
 	{
@@ -7170,7 +7086,7 @@ void display2_fnlabel9(
 	dctx_t * pctx
 	)
 {
-#if WITHENCODER2 && ! WITHTOUCHGUI
+#if WITHENCODER2
 	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
 	switch (enc2state)
 	{
@@ -7194,7 +7110,7 @@ void display2_fnvalue9(
 	dctx_t * pctx
 	)
 {
-#if WITHENCODER2 && ! WITHTOUCHGUI
+#if WITHENCODER2
 	enum { WDTH = 9 };	// ширина поля для отображения
 	char b [WDTH + 1];	// тут формируется текст для отображения
 
@@ -9480,16 +9396,286 @@ enum {
 	AUTONOTCH_STATE_ARRAY_SIZE = AUTONOTCH_NUMTAPS + FIRBUFSIZE - 1,
 };
 
+
+#if 1
+/* заглушки для проверки компиляции в режиме обработки float_64 по умолчанию.
+ *
+ */
+
+/**
+ * @brief Instance structure for the floating-point normalized LMS filter.
+ */
 typedef struct
 {
-    arm_lms_norm_instance_f32	lms2Norm_instance;
-    arm_lms_instance_f32	    lms2_instance;
-    float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
-    float32_t	                norm [AUTONOTCH_NUMTAPS];
-    float32_t	                ref [AUTONOTCH_BUFFER_SIZE];
+        uint16_t numTaps;     /**< number of coefficients in the filter. */
+        float64_t *pState;    /**< points to the state variable array. The array is of length numTaps+blockSize-1. */
+        float64_t *pCoeffs;   /**< points to the coefficient array. The array is of length numTaps. */
+        float64_t mu;         /**< step size that control filter coefficient updates. */
+        float64_t energy;     /**< saves previous frame energy. */
+        float64_t x0;         /**< saves previous input sample. */
+} arm_lms_norm_instance_f64;
+
+
+/**
+ * @brief Instance structure for the floating-point LMS filter.
+ */
+typedef struct
+{
+        uint16_t numTaps;    /**< number of coefficients in the filter. */
+        float64_t *pState;   /**< points to the state variable array. The array is of length numTaps+blockSize-1. */
+        float64_t *pCoeffs;  /**< points to the coefficient array. The array is of length numTaps. */
+        float64_t mu;        /**< step size that controls filter coefficient updates. */
+} arm_lms_instance_f64;
+
+void arm_lms_norm_init_f64(
+        arm_lms_norm_instance_f64 * S,
+        uint16_t numTaps,
+		float64_t * pCoeffs,
+		float64_t * pState,
+		float64_t mu,
+        uint32_t blockSize)
+{
+	  /* Assign filter taps */
+	  S->numTaps = numTaps;
+
+	  /* Assign coefficient pointer */
+	  S->pCoeffs = pCoeffs;
+
+	  /* Clear state buffer and size is always blockSize + numTaps - 1 */
+	  memset(pState, 0, (numTaps + (blockSize - 1U)) * sizeof(float64_t));
+
+	  /* Assign state pointer */
+	  S->pState = pState;
+
+	  /* Assign Step size value */
+	  S->mu = mu;
+
+	  /* Initialise Energy to zero */
+	  S->energy = 0;
+
+	  /* Initialise x0 to zero */
+	  S->x0 = 0;
+
+}
+
+void arm_lms_norm_f64(
+	arm_lms_norm_instance_f64 * S,
+	const float64_t * pSrc,
+	float64_t * pRef,
+	float64_t * pOut,
+	float64_t * pErr,
+	uint32_t blockSize)
+ {
+	float64_t *pState = S->pState; /* State pointer */
+	float64_t *pCoeffs = S->pCoeffs; /* Coefficient pointer */
+	float64_t *pStateCurnt; /* Points to the current sample of the state */
+	float64_t *px, *pb; /* Temporary pointers for state and coefficient buffers */
+	float64_t mu = S->mu; /* Adaptive factor */
+	float64_t acc, e; /* Accumulator, error */
+	float64_t w; /* Weight factor */
+	uint32_t numTaps = S->numTaps; /* Number of filter coefficients in the filter */
+	uint32_t tapCnt, blkCnt; /* Loop counters */
+	float64_t energy; /* Energy of the input */
+	float64_t x0, in; /* Temporary variable to hold input sample and state */
+
+	/* Initializations of error,  difference, Coefficient update */
+	e = 0.0f;
+	w = 0.0f;
+
+	energy = S->energy;
+	x0 = S->x0;
+
+	/* S->pState points to buffer which contains previous frame (numTaps - 1) samples */
+	/* pStateCurnt points to the location where the new input data should be written */
+	pStateCurnt = &(S->pState[(numTaps - 1U)]);
+
+	/* initialise loop count */
+	blkCnt = blockSize;
+
+	while (blkCnt > 0U) {
+		/* Copy the new input sample into the state buffer */
+		*pStateCurnt++ = *pSrc;
+
+		/* Initialize pState pointer */
+		px = pState;
+
+		/* Initialize coefficient pointer */
+		pb = pCoeffs;
+
+		/* Read the sample from input buffer */
+		in = *pSrc++;
+
+		/* Update the energy calculation */
+		energy -= x0 * x0;
+		energy += in * in;
+
+		/* Set the accumulator to zero */
+		acc = 0.0f;
+
+#if defined (ARM_MATH_LOOPUNROLL)
+
+		/* Loop unrolling: Compute 4 taps at a time. */
+		tapCnt = numTaps >> 2U;
+
+		while (tapCnt > 0U) {
+			/* Perform the multiply-accumulate */
+			acc += (*px++) * (*pb++);
+
+			acc += (*px++) * (*pb++);
+
+			acc += (*px++) * (*pb++);
+
+			acc += (*px++) * (*pb++);
+
+			/* Decrement loop counter */
+			tapCnt--;
+		}
+
+		/* Loop unrolling: Compute remaining taps */
+		tapCnt = numTaps % 0x4U;
+
+#else
+
+/* Initialize tapCnt with number of samples */
+tapCnt = numTaps;
+
+#endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+		while (tapCnt > 0U) {
+			/* Perform the multiply-accumulate */
+			acc += (*px++) * (*pb++);
+
+			/* Decrement the loop counter */
+			tapCnt--;
+		}
+
+		/* Store the result from accumulator into the destination buffer. */
+		*pOut++ = acc;
+
+		/* Compute and store error */
+		e = (float64_t) *pRef++ - acc;
+		*pErr++ = e;
+
+		/* Calculation of Weighting factor for updating filter coefficients */
+		/* epsilon value 0.000000119209289f */
+		w = (e * mu) / (energy + 0.000000119209289);
+
+		/* Initialize pState pointer */
+		px = pState;
+
+		/* Initialize coefficient pointer */
+		pb = pCoeffs;
+
+#if defined (ARM_MATH_LOOPUNROLL)
+
+		/* Loop unrolling: Compute 4 taps at a time. */
+		tapCnt = numTaps >> 2U;
+
+		/* Update filter coefficients */
+		while (tapCnt > 0U) {
+			/* Perform the multiply-accumulate */
+			*pb += w * (*px++);
+			pb++;
+
+			*pb += w * (*px++);
+			pb++;
+
+			*pb += w * (*px++);
+			pb++;
+
+			*pb += w * (*px++);
+			pb++;
+
+			/* Decrement loop counter */
+			tapCnt--;
+		}
+
+		/* Loop unrolling: Compute remaining taps */
+		tapCnt = numTaps % 0x4U;
+
+#else
+
+/* Initialize tapCnt with number of samples */
+tapCnt = numTaps;
+
+#endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+		while (tapCnt > 0U) {
+			/* Perform the multiply-accumulate */
+			*pb += w * (*px++);
+			pb++;
+
+			/* Decrement loop counter */
+			tapCnt--;
+		}
+
+		x0 = *pState;
+
+		/* Advance state pointer by 1 for the next sample */
+		pState = pState + 1;
+
+		/* Decrement loop counter */
+		blkCnt--;
+	}
+
+	/* Save energy and x0 values for the next frame */
+	S->energy = energy;
+	S->x0 = x0;
+
+	/* Processing is complete.
+	 Now copy the last numTaps - 1 samples to the start of the state buffer.
+	 This prepares the state buffer for the next function call. */
+
+	/* Points to the start of the pState buffer */
+	pStateCurnt = S->pState;
+
+	/* copy data */
+#if defined (ARM_MATH_LOOPUNROLL)
+
+	/* Loop unrolling: Compute 4 taps at a time. */
+	tapCnt = (numTaps - 1U) >> 2U;
+
+	while (tapCnt > 0U) {
+		*pStateCurnt++ = *pState++;
+		*pStateCurnt++ = *pState++;
+		*pStateCurnt++ = *pState++;
+		*pStateCurnt++ = *pState++;
+
+		/* Decrement loop counter */
+		tapCnt--;
+	}
+
+	/* Loop unrolling: Compute remaining taps */
+	tapCnt = (numTaps - 1U) % 0x4U;
+
+#else
+
+/* Initialize tapCnt with number of samples */
+tapCnt = (numTaps - 1U);
+
+#endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+	while (tapCnt > 0U) {
+		*pStateCurnt++ = *pState++;
+
+		/* Decrement loop counter */
+		tapCnt--;
+	}
+
+}
+
+#endif
+
+typedef struct
+{
+	ARM_MORPH(arm_lms_norm_instance)	lms2Norm_instance;
+	ARM_MORPH(arm_lms_instance)	    lms2_instance;
+    FLOAT_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
+    FLOAT_t	                norm [AUTONOTCH_NUMTAPS];
+    FLOAT_t	                ref [AUTONOTCH_BUFFER_SIZE];
     unsigned 					refold;
     unsigned 					refnew;
-    float32_t phonefence;
+    FLOAT_t phonefence;
 } LMSData_t;
 
 static void hamradio_autonotch_init(LMSData_t * const lmsd)
@@ -9497,9 +9683,9 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 	lmsd->phonefence = 1;
 	const FLOAT_t mu = LOG10F(((5 + 1.0f) / 1500.0f) + 1.0f);
 	//const float32_t mu = 0.0001f;		// UA3REO value
-	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
-	arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
-	arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+	ARM_MORPH(arm_lms_norm_init)(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
+	ARM_MORPH(arm_fill)(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+	ARM_MORPH(arm_fill)(0, lmsd->norm, AUTONOTCH_NUMTAPS);
 	lmsd->refold = 0;
 	lmsd->refnew = FIRBUFSIZE;
 }
@@ -9510,7 +9696,7 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 // pOutput - обработаный буфер FIRBUFSIZE сэмплов
 static void hamradio_autonotch_process(LMSData_t * const lmsd, FLOAT_t * pInput, FLOAT_t * pOutput)
 {
-    static float32_t errsig2 [FIRBUFSIZE];	/* unused output */
+    static FLOAT_t errsig2 [FIRBUFSIZE];	/* unused output */
 //	float32_t diag;
 //	float32_t diag2;
 //
@@ -9518,29 +9704,29 @@ static void hamradio_autonotch_process(LMSData_t * const lmsd, FLOAT_t * pInput,
 //	arm_mean_f32(lmsd->norm, AUTONOTCH_NUMTAPS, & diag2);
 //	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
 //	{
-//		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
-//		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+//		ARM_MORPH(arm_fill)(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+//		ARM_MORPH(arm_fill)(0, lmsd->norm, AUTONOTCH_NUMTAPS);
 //		lmsd->refold = 0;
 //		lmsd->refnew = FIRBUFSIZE;
 //		++ nrestarts;
 //	}
-	arm_copy_f32(pInput, & lmsd->ref [lmsd->refnew], FIRBUFSIZE);
-	arm_lms_norm_f32(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->refold], errsig2, pOutput, FIRBUFSIZE);
+    ARM_MORPH(arm_copy)(pInput, & lmsd->ref [lmsd->refnew], FIRBUFSIZE);
+    ARM_MORPH(arm_lms_norm)(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->refold], errsig2, pOutput, FIRBUFSIZE);
 	lmsd->refold += FIRBUFSIZE;
 	lmsd->refnew = lmsd->refold + FIRBUFSIZE;
 	lmsd->refold %= AUTONOTCH_BUFFER_SIZE;
 	lmsd->refnew %= AUTONOTCH_BUFFER_SIZE;
 
-	float32_t diagmin;
-	float32_t diagmax;
+	FLOAT_t diagmin;
+	FLOAT_t diagmax;
 	uint32_t index;
-	arm_min_f32(pOutput, FIRBUFSIZE, & diagmin, & index);
-	arm_max_no_idx_f32(pOutput, FIRBUFSIZE, & diagmax);
+	ARM_MORPH(arm_min)(pOutput, FIRBUFSIZE, & diagmin, & index);
+	ARM_MORPH(arm_max_no_idx)(pOutput, FIRBUFSIZE, & diagmax);
 	if (diagmin < - lmsd->phonefence || diagmax > lmsd->phonefence)
 	{
-		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
-		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
-		arm_fill_f32(0, pOutput, FIRBUFSIZE);
+		ARM_MORPH(arm_fill)(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+		ARM_MORPH(arm_fill)(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+		ARM_MORPH(arm_fill)(0, pOutput, FIRBUFSIZE);
 		lmsd->refold = 0;
 		lmsd->refnew = FIRBUFSIZE;
 		//++ nrestarts;
@@ -9580,6 +9766,9 @@ typedef struct rxaproc_tag
 
 #else /* WITHNOSPEEX */
 
+//	#include "src/speex/arch.h"
+//	#include "src/speex/speex_preprocess.h"
+
 	SpeexPreprocessState * st_handle;
 
 #endif /* WITHNOSPEEX */
@@ -9617,10 +9806,6 @@ static RAM_D1 rxaproc_t rxaprocs [NTRX];
 	#if ! WITHNOSPEEX
 		static RAMHEAP uint8_t speexheap [ROUNDUP64(SPEEXALLOCSIZE)];
 	#endif /* ! WITHNOSPEEX */
-
-	#if WITHTOUCHGUI
-		static RAMHEAP uint8_t guiheap [ROUNDUP64(WITHGUIHEAP)];
-	#endif /* WITHTOUCHGUI */
 
 #endif /* WITHUSEMALLOC */
 
@@ -9673,11 +9858,11 @@ void speex_free (void *ptr)
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNT113
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_T113
 	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNT113 */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_T113 */
 	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNT113 */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_T113 */
 }
 
 static void speex_update_rx(void)
@@ -9723,8 +9908,8 @@ static void InitNoiseReduction(void)
 #if WITHNOSPEEX
 
 		arm_lms_norm_init_f32(& nrp->lms2_Norm_instance, NOISE_REDUCTION_TAPS, nrp->lms2_normCoeff_f32, nrp->lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
-		arm_fill_f32(0, nrp->ref, NOISE_REDUCTION_REFERENCE_SIZE);
-		arm_fill_f32(0, nrp->lms2_normCoeff_f32, NOISE_REDUCTION_TAPS);
+		ARM_MORPH(arm_fill)(0, nrp->ref, NOISE_REDUCTION_REFERENCE_SIZE);
+		ARM_MORPH(arm_fill)(0, nrp->lms2_normCoeff_f32, NOISE_REDUCTION_TAPS);
 
 		nrp->refold = 0;
 		nrp->refnew = 0;
@@ -9855,7 +10040,7 @@ static FLOAT_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 	}
 #endif /* WITHRTTY */
 	//nrp->outsp = p;
-	//arm_fill_f32(0, p, FIRBUFSIZE);
+	//ARM_MORPH(arm_fill)(0, p, FIRBUFSIZE);
 	return afpnoproc(pathi, nrp, p);
 }
 
@@ -9891,11 +10076,7 @@ audioproc_spool_user(void)
 			deliveryfloat(& speexoutfloat_user, outsp [0] [i], outsp [0] [i]);	// to AUDIO codec
 	#endif /* WITHUSEDUALWATCH */
 
-	#if WITHFT8
-			ft8_fill1(outsp [0] [i]);
-			ft8_fill2(outsp [0] [i]);
-	#endif /* WITHFT8 */
-		}
+	}
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);
 	}
@@ -10159,10 +10340,6 @@ updateboardZZZ(
 
 	if (full2)
 	{
-#if WITHTOUCHGUI
-		gui_update();
-#endif /* WITHTOUCHGUI */
-
 		/* Полная перенастройка. Изменился режим (или одно из значений hint). */
 		if (gtx == 0)
 		{
@@ -10581,10 +10758,17 @@ updateboardZZZ(
 		#endif /* WITHUSBUAC */
 		board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
 		board_set_lineamp(glineamp);	/* усиление с линейного входа */
+#if WITHUSBUAC
 		board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudio);	// Альтернативные источники сигнала при передаче
+#else /* WITHUSBUAC */
+		board_set_txaudio(txaudio);	// Альтернативные источники сигнала при передаче
+#endif /* WITHUSBUAC */
 		board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
 		board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
 		board_set_mikehclip(gmikehclip);	/* Ограничитель */
+#if WITHCOMPRESSOR
+		board_set_compressor(gcompressor_attack, gcompressor_release, gcompressor_hold, gcompressor_gain, gcompressor_threshold);
+#endif /* WITHCOMPRESSOR */
 #if WITHREVERB
 		board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
 #endif /* WITHREVERB */
@@ -14827,11 +15011,7 @@ static void dpc_1stimer(void * arg)
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
-#if WITHTOUCHGUI
-	gui_update();
-#endif /*WITHTOUCHGUI */
-
-#if WITHCPUTEMPERATURE && ! WITHTOUCHGUI && 0
+#if WITHCPUTEMPERATURE && 0
 	uint8_t c = GET_CPU_TEMPERATURE();
 	PRINTF(PSTR("CPU temp: %dC\n"), c);
 #endif
@@ -15251,28 +15431,6 @@ display_menu_digit(
 	uint_fast8_t rj
 	)
 {
-#if WITHTOUCHGUI
-		const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
-		const uint_fast32_t ca = ipow10(comma);
-
-		if (ca == 1)
-		{
-			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld"), value);
-		}
-		else if (value < 0)
-		{
-			ldiv_t d;
-			d = ldiv(- value, ca);
-			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("-%ld.%0*ld"), d.quot, (int) comma, d.rem);
-		}
-		else
-		{
-			ldiv_t d;
-			d = ldiv(value, ca);
-			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld.%0*ld"), d.quot, (int) comma, d.rem);
-		}
-		return;
-#endif /* WITHTOUCHGUI */
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
 	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
@@ -15294,10 +15452,6 @@ display_menu_string_P(
 	uint_fast8_t filled		// сколько символов сейчас в text
 	)
 {
-#if WITHTOUCHGUI
-	safestrcpy(menuw, ARRAY_SIZE(menuw), text);
-	return;
-#else
 	if (width > filled)
 	{
 		const size_t fill = width - filled;
@@ -15314,7 +15468,6 @@ display_menu_string_P(
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 		display_at_P(x + 0, y, text);
 	}
-#endif /* WITHTOUCHGUI */
 }
 
 #if WITHMENU
@@ -15360,3557 +15513,7 @@ struct menudef
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 };
 
-static const FLASHMEM struct menudef menutable [] =
-{
-#if WITHAUTOTUNER && 1 // Tuner parameters debug
-#if ! WITHFLATMENU
-	{
-		QLABEL2("TUNER   ", "Tuner"), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrptuner),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		LMIN, LMAX, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
-		nvramoffs0,
-		& tunerind,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TUNER C "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		CMIN, CMAX, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunercap),
-		nvramoffs0,
-		& tunercap,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TUNER TY"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		0, KSCH_COUNT - 1, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunertype),
-		nvramoffs0,
-		NULL,
-		& tunertype,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TUNER WT"), 7, 0, 0,	ISTEP5,	// задержка перед измерением после переключения реле
-		ITEM_VALUE, 
-		10, 250,
-		offsetof(struct nvmap, tunerdelay),
-		nvramoffs0,
-		NULL,
-		& tunerdelay,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHAUTOTUNER */
-#if ! WITHFLATMENU
-	{
-		QLABEL2("DISPLAY ", "Display"), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpdisplay),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-#if defined (DEFAULT_LCD_CONTRAST)
-	{
-		QLABEL("LCD CONT"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-#if LCDMODE_PCF8535
-		42, 70, 				// для TIC218 @ 3.3 volt - 45..60
-#elif LCDMODE_RDX0120
-		70, 120, 				// для amator - 110..220
-#elif LCDMODE_UC1601
-		75, 220, 				// для amator - 110..220
-#elif LCDMODE_LS020 || LCDMODE_ILI9320
-		0, 255, 				// LS020 - 0..255
-#elif LCDMODE_UC1608
-		0, 63, 					// UC1608 - 0..63
-#endif /* LCDMODE_UC1601 */
-		offsetof(struct nvmap, gcontrast),
-		nvramoffs0,
-		NULL,
-		& gcontrast,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* defined (DEFAULT_LCD_CONTRAST) */
-#if 0//WITHDCDCFREQCTL
-	{
-		QLABEL("DCDC DIV"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		4, UINT16_MAX, 
-		offsetof(struct nvmap, dcdcrefdiv),
-		nvramoffs0,
-		& dcdcrefdiv,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHDCDCFREQCTL */
-#if WITHLCDBACKLIGHT
-	{
-		QLABEL2("LCD LIGH", "TFT Backlight"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX, 
-		offsetof(struct nvmap, gbglight),
-		nvramoffs0,
-		NULL,
-		& gbglight,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHLCDBACKLIGHT */
-#if WITHKBDBACKLIGHT
-	{
-		QLABEL("KBD LIGH"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, gkblight),
-		nvramoffs0,
-		NULL,
-		& gkblight,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHKBDBACKLIGHT */
-#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-	{
-		QLABEL2("DIMM TIM", "Dimmer Time"), 7, 0, 0,	ISTEP5,
-		ITEM_VALUE,
-		0, 240, 
-		offsetof(struct nvmap, gdimmtime),
-		nvramoffs0,
-		NULL,
-		& gdimmtime,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHKBDBACKLIGHT */
-#if WITHSLEEPTIMER
-	{
-		QLABEL2("SLEEPTIM", "Sleep Time"), 7, 0, 0,	ISTEP5,
-		ITEM_VALUE,
-		0, 240, 
-		offsetof(struct nvmap, gsleeptime),
-		nvramoffs0,
-		NULL,
-		& gsleeptime,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHSLEEPTIMER */
-#if LCDMODE_COLORED
-	// Для цветных дисплеев можно менять цвет фона
-//	{
-//		QLABEL("BLUE BG "), 8, 3, RJ_ON,	ISTEP1,
-//		ITEM_VALUE,
-//		0, 1,
-//		offsetof(struct nvmap, gbluebgnd),
-//		nvramoffs0,
-//		NULL,
-//		& gbluebgnd,
-//		getzerobase, /* складывается со смещением и отображается */
-//	},
-#endif
-	{
-		QLABEL2("SHOW dBm", "Show dBm"), 8, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gshowdbm),
-		nvramoffs0,
-		NULL,
-		& gshowdbm,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("FREQ FPS"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		4, 25,							/* частота обновления показаний частоты от 5 до 25 раз в секунду */
-		offsetof(struct nvmap, gdisplayfreqsfps),
-		nvramoffs0,
-		NULL,
-		& gdisplayfreqsfps,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#if WITHBARS
-	{
-		QLABEL("BARS FPS"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
-		offsetof(struct nvmap, gdisplaybarsfps),
-		nvramoffs0,
-		NULL,
-		& gdisplaybarsfps,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHBARS */
-#if WITHSPECTRUMWF
-	{
-		QLABEL2("VIEW STL", "View style"), 7, 5, RJ_VIEW, ISTEP1,
-		ITEM_VALUE,
-		0, VIEW_COUNT - 1,				/* стиль отображения спектра и панорамы */
-		offsetof(struct nvmap, gviewstyle),
-		nvramoffs0,
-		NULL,
-		& gviewstyle,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,
-		ITEM_VALUE,
-		0, 1,				/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
-		offsetof(struct nvmap, gview3dss_mark),
-		nvramoffs0,
-		NULL,
-		& gview3dss_mark,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
-		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, bands [0].gtopdbspe),
-		nvramoffs_band_a,
-		NULL,
-		& gtopdbspe [0],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
-		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands [0].gbottomdbspe),
-		nvramoffs_band_a,
-		NULL,
-		& gbottomdbspe [0],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("WFPARAMS"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* водопад отдельными папаметрами */
-		offsetof(struct nvmap, gwflevelsep),
-		nvramoffs0,
-		NULL,
-		& gwflevelsep,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
-		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, bands [0].gtopdbwfl),
-		nvramoffs_band_a,
-		NULL,
-		& gtopdbwfl [0],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
-		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands [0].gbottomdbwfl),
-		nvramoffs_band_a,
-		NULL,
-		& gbottomdbwfl [0],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("STEP DB "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
-		offsetof(struct nvmap, glvlgridstep),
-		nvramoffs0,
-		NULL,
-		& glvlgridstep,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#if BOARD_FFTZOOM_POW2MAX > 0
-	{
-		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
-		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
-		offsetof(struct nvmap, bands [0].gzoomxpow2),
-		nvramoffs_band_a,
-		NULL,
-		& gzoomxpow2 [0],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* BOARD_FFTZOOM_POW2MAX > 0 */
-	{
-		QLABEL2("SPEC TX ", "TX Spectrum"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* разрешение или запрет раскраски спектра */
-		offsetof(struct nvmap, gtxloopback),
-		nvramoffs0,
-		NULL,
-		& gtxloopback,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("BETA PAN"), 7, 2, 0,	ISTEP1,
-		ITEM_VALUE,
-		10, 100,							/* beta - парамеры видеофильтра спектра */
-		offsetof(struct nvmap, gspecbeta100),
-		nvramoffs0,
-		NULL,
-		& gspecbeta100,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("BETA WFL"), 7, 2, 0,	ISTEP1,
-		ITEM_VALUE,
-		10, 100,							/* beta - парамеры видеофильтра водопада */
-		offsetof(struct nvmap, gwflbeta100),
-		nvramoffs0,
-		NULL,
-		& gwflbeta100,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
-	{
-		QLABEL2("SMETER ", "S-meter Type"), 7, 3, RJ_SMETER,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
-		offsetof(struct nvmap, gsmetertype),
-		nvramoffs0,
-		NULL,
-		& gsmetertype,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
-#endif /* WITHSPECTRUMWF */
-#if defined (RTC1_TYPE)
-#if ! WITHFLATMENU
-	{
-		QLABEL("CLOCK   "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpclock),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("TM YEAR "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		2015, 2099, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
-		nvramoffs0,
-		& grtcyear,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TM MONTH"), 7, 3, RJ_MONTH,	ISTEP1,
-		ITEM_VALUE, 
-		1, 12, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
-		nvramoffs0,
-		NULL,
-		& grtcmonth,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TM DAY  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		1, 31, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
-		nvramoffs0,
-		NULL,
-		& grtcday,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TM HOUR "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		0, 23, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
-		nvramoffs0,
-		NULL,
-		& grtchour,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TM MIN  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		0, 59, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
-		nvramoffs0,
-		NULL,
-		& grtcminute,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TM SET  "), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE, 
-		0, 1, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
-		nvramoffs0,
-		NULL,
-		& grtcstrobe,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* defined (RTC1_TYPE) */
-#if ! WITHFLATMENU
-	{
-		QLABEL2("FILTERS ", "Filters"), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpfilters),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	// разрешено не только в случае наличия электронного ключа - требуется при переключении режимов CW/SSB
-	{
-		QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP10,
-		ITEM_VALUE,
-		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 100 Hz steps */
-		offsetof(struct nvmap, gcwpitch10),
-		nvramoffs0,
-		NULL,
-		& gcwpitch10,
-		getzerobase, 
-	},
-#if WITHIF4DSP
-	{
-		QLABEL("NR LEVEL"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, NRLEVELMAX, 
-		offsetof(struct nvmap, gnoisereductvl),
-		nvramoffs0,
-		NULL,
-		& gnoisereductvl,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHIF4DSP */
-#if WITHIF4DSP
-	{
-		QLABEL("CW W WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
-		RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
-		nvramoffs0,
-		NULL,
-		& bwprop_cwwide.left10_width10,
-		getzerobase, 
-	},
-	{
-		QLABEL("CW N WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
-		RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
-		nvramoffs0,
-		NULL,
-		& bwprop_cwnarrow.left10_width10,
-		getzerobase, 
-	},
-	{
-		QLABEL("SSB W HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
-		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbwide.right100,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSB W LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
-		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbwide.left10_width10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSBW AFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
-		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbwide.afresponce,
-		getafresponcebase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSB M HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB MEDIUM */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
-		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBMEDIUM),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbmedium.right100,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSB M LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB MEDIUM */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
-		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBMEDIUM),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbmedium.left10_width10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSBM AFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
-		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBMEDIUM),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbmedium.afresponce,
-		getafresponcebase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSB N HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
-		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbnarrow.right100,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSB N LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
-		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbnarrow.left10_width10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSBN AFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
-		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBNARROW),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbnarrow.afresponce,
-		getafresponcebase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AM W HI "), 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
-		RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
-		nvramoffs0,
-		NULL,
-		& bwprop_amwide.right100,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AM W LO "), 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
-		RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
-		nvramoffs0,
-		NULL,
-		& bwprop_amwide.left10_width10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AM W AFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
-		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMWIDE),
-		nvramoffs0,
-		NULL,
-		& bwprop_amwide.afresponce,
-		getafresponcebase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AM N HI "), 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM NARROW */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
-		RMT_BWPROPSRIGHT_BASE(BWPROPI_AMNARROW),
-		nvramoffs0,
-		NULL,
-		& bwprop_amnarrow.right100,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AM N LO "), 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
-		RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
-		nvramoffs0,
-		NULL,
-		& bwprop_amnarrow.left10_width10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AM N AFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
-		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMNARROW),
-		nvramoffs0,
-		NULL,
-		& bwprop_amnarrow.afresponce,
-		getafresponcebase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSBTX HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
-		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbtx.right100,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSBTX LO"), 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
-		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbtx.left10_width10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("SSBTXAFR"), 3 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
-		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBTX),
-		nvramoffs0,
-		NULL,
-		& bwprop_ssbtx.afresponce,
-		getafresponcebase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("DIGI HI "), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
-		RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
-		nvramoffs0,
-		NULL,
-		& bwprop_digiwide.right100,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("DIGI LO "), 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
-		RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
-		nvramoffs0,
-		NULL,
-		& bwprop_digiwide.left10_width10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHIF4DSP */
-
-#if WITHIFSHIFT && ! WITHPOTIFSHIFT
-	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
-	{
-		QLABEL("IF SHIFT"), 4 + WSIGNFLAG, 2, 1, 	ISTEP50,
-		ITEM_VALUE,
-		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
-		offsetof(struct nvmap, ifshifoffset),
-		nvramoffs0,
-		& ifshifoffset.value,
-		NULL,
-		getifshiftbase, 
-	},
-#endif /* WITHIFSHIFT && ! WITHPOTIFSHIFT */
-
-#if CTLSTYLE_RA4YBO_V3
-/*
-filter_t fi_0p5 =
-filter_t fi_3p1 =
-filter_t fi_3p0_455 =
-filter_t fi_10p0_455 =
-filter_t fi_6p0_455 =
-filter_t fi_2p0_455 =	// strFlash2p0
-*/
-	{
-		QLABEL("3.1 USB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe3p1),
-		nvramoffs0,
-		& fi_3p1.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("3.1 LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe3p1),
-		nvramoffs0,
-		& fi_3p1.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("2.4 USB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe3p0),
-		nvramoffs0,
-		& fi_3p0_455.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("2.4 LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe3p0),
-		nvramoffs0,
-		& fi_3p0_455.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("CNTR 0.5"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, carr0p5),
-		nvramoffs0,
-		& fi_0p5.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("2K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq2k),
-		nvramoffs0,
-		& fi_2p0_455.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("6K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq6k),
-		nvramoffs0,
-		& fi_6p0_455.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("10K OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq10k),
-		nvramoffs0,
-		& fi_10p0_455.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-
-#elif WITHDUALFLTR	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
-	{
-		QLABEL("BFO FREQ"), 7, 2, 1,	ISTEP10,
-		ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lo4offset),
-		nvramoffs0,
-		& lo4offset,
-		NULL,
-		getlo4base, /* складывается со смещением и отображается */
-	},
-#elif WITHDUALBFO	/* Переворот боковых за счёт переключения частоты опорного генератора */
-	{
-		QLABEL("BFO USB "), 7, 2, 1,	ISTEP10,
-		ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lo4offsets [0]),
-		nvramoffs0,
-		& lo4offsets [0],
-		NULL,
-		getlo4base, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("BFO LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lo4offsets [1]),
-		nvramoffs0,
-		& lo4offsets [1],
-		NULL,
-		getlo4base, /* складывается со смещением и отображается */
-	},
-#elif WITHFIXEDBFO	/* Переворот боковых за счёт 1-го гетродина (особенно, если нет подстраиваемого BFO) */
-	{
-		QLABEL("BFO FREQ"), 7, 2, 1,	ISTEP10,
-		ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lo4offset),
-		nvramoffs0,
-		& lo4offset,
-		NULL,
-		getlo4base, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("LAST LSB"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, glo4lsb),
-		nvramoffs0,
-		NULL,
-		& glo4lsb,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-
-#elif CTLSTYLE_RA4YBO_V1 || (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
-	/* Обычная схема - выбор ПЧ делается перестановкой последнего гетеродина */
-
-#if ! CTLSTYLE_SW2011ALL
-#if WITHTX
-	{
-		QLABEL("DC TX CW"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, /* 0 - off, 1 - on */
-		offsetof(struct nvmap, dctxmodecw),
-		nvramoffs0,
-		NULL,
-		& dctxmodecw,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHTX */
-#endif /* ! CTLSTYLE_SW2011ALL */
-
-	#if (IF3_FMASK & IF3_FMASK_2P4)
-	{
-		QLABEL("2.4 USB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe2p4),
-		nvramoffs0,
-		& fi_2p4.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("2.4 LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe2p4),
-		nvramoffs0,
-		& fi_2p4.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	#endif /* (IF3_FMASK & IF3_FMASK_2P4) */
-	#if (IF3_FMASK & IF3_FMASK_2P7)
-	{
-		QLABEL("BFO7 USB"), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe2p7),
-		nvramoffs0,
-		& fi_2p7.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("BFO7 LSB"), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe2p7),
-		nvramoffs0,
-		& fi_2p7.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) != 0
-	{
-		QLABEL("CAR7 USB"), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe2p7tx),
-		nvramoffs0,
-		& fi_2p7_tx.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("CAR7 LSB"), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe2p7tx),
-		nvramoffs0,
-		& fi_2p7_tx.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	#endif /* WITHTX && WITHSAMEBFO == 0 */
-	#endif /* (IF3_FMASK & IF3_FMASK_2P7) */
-	
-	#if (IF3_FMASK & IF3_FMASK_3P1)
-	{
-		QLABEL("BFO USB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe3p1),
-		nvramoffs0,
-		& fi_3p1.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("BFO LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe3p1),
-		nvramoffs0,
-		& fi_3p1.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_3P1) != 0
-	{
-		QLABEL("CAR USB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe3p1tx),
-		nvramoffs0,
-		& fi_3p1_tx.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("CAR LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe3p1tx),
-		nvramoffs0,
-		& fi_3p1_tx.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	#endif /* WITHTX && WITHSAMEBFO == 0 */
-	#endif /* (IF3_FMASK & IF3_FMASK_3P1) */
-	
-	#if (IF3_FMASK & IF3_FMASK_0P3)
-	{
-		QLABEL("HAVE 0.3"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, hascw0p3),
-		nvramoffs0,
-		NULL,
-		& fi_0p3.present,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("CNTR 0.3"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, carr0p3),
-		nvramoffs0,
-		& fi_0p3.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	#endif /* (IF3_FMASK & IF3_FMASK_0P3) */
-
-	#if (IF3_FMASK & IF3_FMASK_0P5)
-	{
-		QLABEL("HAVE 0.5"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, hascw0p5),
-		nvramoffs0,
-		NULL,
-		& fi_0p5.present,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("CNTR 0.5"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, carr0p5),
-		nvramoffs0,
-		& fi_0p5.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	#endif /* (IF3_FMASK & IF3_FMASK_0P5) */
-
-	#if (IF3_FMASK & IF3_FMASK_1P8)
-	{
-		QLABEL("HAVE 1.8"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, hascw1p8),
-		nvramoffs0,
-		NULL,
-		& fi_1p8.present,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("1.8 USB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe1p8),
-		nvramoffs0,
-		& fi_1p8.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("1.8 LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe1p8),
-		nvramoffs0,
-		& fi_1p8.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	#endif /* (IF3_FMASK & IF3_FMASK_1P8) */
-
-	#if (IF3_FMASK & IF3_FMASK_2P4)
-	{
-		QLABEL("HAVE 2.4"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, hascw2p4),
-		nvramoffs0,
-		NULL,
-		& fi_2p4.present,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* (IF3_FMASK & IF3_FMASK_2P4) */
-
-	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P4)
-	{
-		QLABEL("HAVE T24"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, hascw2p4_tx),
-		nvramoffs0,
-		NULL,
-		& fi_2p4_tx.present,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P4) */
-
-	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7)
-	{
-		QLABEL("HAVE T27"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, hascw2p7_tx),
-		nvramoffs0,
-		NULL,
-		& fi_2p7_tx.present,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) */
-
-	#if 0 && WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_3P1)
-	{
-		QLABEL("HAVE T31"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, hascw3p1_tx),
-		nvramoffs0,
-		NULL,
-		& fi_3p1_tx.present,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) */
-
-	#if (IF3_FMASK & IF3_FMASK_6P0)
-	{
-		QLABEL("HAVE 6.0"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, hascw6p0),
-		nvramoffs0,
-		NULL,
-		& fi_6p0.present,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("6K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq6k),
-		nvramoffs0,
-		& fi_6p0.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	#endif /* (IF3_FMASK & IF3_FMASK_6P0) */
-
-	#if (IF3_FMASK & IF3_FMASK_7P8)
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("7K8 OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq7p8k),
-		nvramoffs0,
-		& fi_7p8.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	#endif /* (IF3_FMASK & IF3_FMASK_7P8) */
-
-	#if (IF3_FMASK & IF3_FMASK_8P0)
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("8K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq8k),
-		nvramoffs0,
-		& fi_8p0.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	#endif
-	#if (IF3_FMASK & IF3_FMASK_9P0)
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("9K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq9k),
-		nvramoffs0,
-		& fi_9p0.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	#endif /* (IF3_FMASK & IF3_FMASK_9P0) */
-	#if (IF3_FMASK & IF3_FMASK_15P0)
-	#if WITHDEDICATEDNFM /* Для NFM отдельный тракт со своим фильтром */
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("NFM OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq15k_nfm),
-		nvramoffs0,
-		& fi_15p0_tx_nfm.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	#else /* WITHDEDICATEDNFM */
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("15K OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq15k),
-		nvramoffs0,
-		& fi_15p0.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	#endif /* WITHDEDICATEDNFM */
-	#endif /* (IF3_FMASK & IF3_FMASK_15P0) */
-	#if (IF3_FMASK & IF3_FMASK_17P0)
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("17K OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq17k),
-		nvramoffs0,
-		& fi_17p0.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	#endif
-
-#endif /* defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS) */
-
-#if WITHNOTCHFREQ
-#if ! WITHFLATMENU
-	{
-		QLABEL("NOTCH   "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpnotch),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("NOTCH   "), 8, 3, RJ_NOTCH,	ISTEP1,		/* управление режимом NOTCH */
-		ITEM_VALUE,
-		0, NOTCHMODE_COUNT - 1,
-		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
-		nvramoffs0,
-		NULL,
-		& gnotchtype,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#if ! WITHPOTNOTCH
-	{
-		QLABEL("NTCH FRQ"), 7, 2, 1,	ISTEP50,		/* управление частотой NOTCH. */
-		ITEM_VALUE,
-		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
-		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		nvramoffs0,
-		& gnotchfreq.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("NTCH WDT"), 7, 0, 0,	ISTEP50,		/* полоса режекции NOTCH. */
-		ITEM_VALUE,
-		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
-		offsetof(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
-		nvramoffs0,
-		& gnotchwidth.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* ! WITHPOTNOTCH */
-#elif WITHNOTCHONOFF
-#if ! WITHFLATMENU
-	{
-		QLABEL("NOTCH   "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpnotch),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
-		ITEM_VALUE,
-		0, NOTCHMODE_COUNT - 1,
-		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
-		nvramoffs0,
-		NULL,
-		& gnotch,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHNOTCHFREQ */
-
-#if defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX)
-#if ! WITHPOTPBT && WITHPBT // && (LO3_SIDE != LOCODE_INVALID)
-#if ! WITHFLATMENU
-	{
-		QLABEL("PBTS   "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrppbts),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("PBT     "), 4 + WSIGNFLAG, 2, 1, 	ISTEP50,
-		ITEM_VALUE,
-		PBTMIN, PBTMAX,			/* -15 kHz..+15 kHz in 5 Hz steps */
-		offsetof(struct nvmap, pbtoffset),
-		nvramoffs0,
-		& gpbtoffset,
-		NULL,
-		getpbtbase, 
-	},
-#endif /* ! WITHPOTPBT && WITHPBT && (LO3_SIDE != LOCODE_INVALID) */
-#endif /* defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) */
-
-#if WITHELKEY
-#if ! WITHFLATMENU
-	{
-		QLABEL("ELKEY   "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpelkey),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-  #if ! WITHPOTWPM
-	{
-		QLABEL("CW SPEED"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
-		offsetof(struct nvmap, elkeywpm),
-		nvramoffs0,
-		NULL,
-		& elkeywpm.value,
-		getzerobase, 
-	},
-  #endif /* ! WITHPOTWPM */
-  #if WITHVIBROPLEX
-	{
-		QLABEL("VIBROPLX"), 7, 0, 0,	ISTEP1,		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
-		ITEM_VALUE,
-		0, 5,		// minimal 0 - без эффекта Виброплекса
-		offsetof(struct nvmap, elkeyslope),
-		nvramoffs0,
-		NULL,
-		& elkeyslope,
-		getzerobase, 
-	},
-    #if ELKEY328
-	{
-		QLABEL("VIBROENB"), 8, 3, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
-		ITEM_VALUE,
-		0, 1,		// minimal 0 - без эффекта Виброплекса
-		offsetof(struct nvmap, elkeyslopeenable),
-		nvramoffs0,
-		NULL,
-		& elkeyslopeenable,
-		getzerobase, 
-	},
-    #endif /* ELKEY328 */
-  #endif /* WITHVIBROPLEX */
-	{
-		QLABEL("KEYER   "), 6, 0, RJ_ELKEYMODE,	ISTEP1,
-		ITEM_VALUE,
-		0, 3,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-		offsetof(struct nvmap, elkeymode),
-		nvramoffs0,
-		NULL,
-		& elkeymode,
-		getzerobase, 
-	},
-	{
-		QLABEL("KEY REVE"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
-		offsetof(struct nvmap, elkeyreverse),
-		nvramoffs0,
-		NULL,
-		& elkeyreverse,
-		getzerobase, 
-	},
-	{
-		QLABEL("DASH LEN"), 7, 1, 0,	ISTEP1,
-		ITEM_VALUE,
-		23, 45, 
-		offsetof(struct nvmap, dashratio),
-		nvramoffs0,
-		NULL,
-		& dashratio,
-		getzerobase, 
-	},
-	{
-		QLABEL("DOT LEN "), 7, 1, 0,	ISTEP1,
-		ITEM_VALUE,
-		7, 13, 
-		offsetof(struct nvmap, spaceratio),
-		nvramoffs0,
-		NULL,
-		& spaceratio,
-		getzerobase, 
-	},
-#if WITHTX
-	{
-		QLABEL("BREAK-IN"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, bkinenable),
-		nvramoffs0,
-		NULL,
-		& bkinenable,
-		getzerobase, 
-	},
-	{
-		QLABEL("CW DELAY"), 7, 2, 0,	ISTEP5,	/* задержка в десятках ms */
-		ITEM_VALUE,
-		5, 160,						/* 0.05..1.6 секунды */
-		offsetof(struct nvmap, bkindelay),
-		nvramoffs0,
-		NULL,
-		& bkindelay,
-		getzerobase, 
-	},
-#endif /* WITHTX */
-#if WITHIF4DSP
-	{
-		QLABEL("EDGE TIM"), 7, 0, 0,	ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
-		ITEM_VALUE,
-		2, 16, 
-		offsetof(struct nvmap, gcwedgetime),	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
-		nvramoffs0,
-		NULL,
-		& gcwedgetime,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHIF4DSP */
-#endif /* WITHELKEY */
-#if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
-#if ! WITHFLATMENU
-	{
-		QLABEL("RF ADC  "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrprfadc),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-#if 0 && ! CTLREGMODE_STORCH_V9A
-	{
-		QLABEL("ADC RAND"), 8, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gadcrand),
-		nvramoffs0,
-		NULL,
-		& gadcrand,
-		getzerobase, 
-	},
-#endif /* ! CTLREGMODE_STORCH_V9A */
-	{
-		QLABEL("ADC DITH"), 8, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gdither),
-		nvramoffs0,
-		NULL,
-		& gdither,
-		getzerobase, 
-	},
-	{
-		QLABEL("ADC FIFO"), 8, 3, RJ_ON,	ISTEP1,	/*  */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gadcfifo),
-		nvramoffs0,
-		NULL,
-		& gadcfifo,
-		getzerobase, 
-	},
-	{
-		QLABEL("ADC OFFS"), 5 + WSIGNFLAG, 0, 0,	ISTEP1,	/* смещение для выходного сигнала с АЦП */
-		ITEM_VALUE,
-		ADCOFFSETMID - 200, ADCOFFSETMID + 200,
-		offsetof(struct nvmap, gadcoffset),
-		nvramoffs0,
-		& gadcoffset,
-		NULL,
-		getadcoffsbase,	/* складывается со смещением и отображается */
-	},
-#endif /* WITHDSPEXTDDC */
-#if WITHTX
-#if WITHVOX
-#if ! WITHFLATMENU
-	{
-		QLABEL("VOX     "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpvox),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("VOX EN  "), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, gvoxenable),
-		nvramoffs0,
-		NULL,
-		& gvoxenable,
-		getzerobase, 
-	},
-	{
-		QLABEL("VOXDELAY"), 7, 2, 0,	ISTEP5,	/* 50 mS step of changing value */
-		ITEM_VALUE,
-		WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 secounds delay */
-		offsetof(struct nvmap, voxdelay),
-		nvramoffs0,
-		NULL,
-		& voxdelay,
-		getzerobase, 
-	},
-	{
-		QLABEL("VOX LEVL"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		WITHVOXLEVELMIN, WITHVOXLEVELMAX,
-		offsetof(struct nvmap, gvoxlevel),
-		nvramoffs0,
-		NULL,
-		& gvoxlevel,
-		getzerobase, 
-	},
-	{
-		QLABEL("AVOX LEV"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		WITHAVOXLEVELMIN, WITHAVOXLEVELMAX,
-		offsetof(struct nvmap, gavoxlevel),
-		nvramoffs0,
-		NULL,
-		& gavoxlevel,
-		getzerobase, 
-	},
-#endif /* WITHVOX */
-#endif /* WITHTX */
-#if WITHCAT
-#if ! WITHFLATMENU
-	{
-		QLABEL("CAT     "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpcat),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, catenable),
-		nvramoffs0,
-		NULL,
-		& catenable,
-		getzerobase,
-	},
-	#if WITHUSBCDCACM == 0
-	{
-		QLABEL("CAT SPD "), 7, 0, RJ_CATSPEED,	ISTEP1,
-		ITEM_VALUE,
-		0, (sizeof catbr2int / sizeof catbr2int [0]) - 1,
-		offsetof(struct nvmap, catbaudrate),
-		nvramoffs0,
-		NULL,
-		& catbaudrate,
-		getzerobase,
-	},
-	#endif /* WITHUSBCDCACM == 0 */
-#if WITHTX
-	{
-		QLABEL("CAT PTT "), 8, 8, RJ_CATSIG,	ISTEP1,
-		ITEM_VALUE,
-		0, BOARD_CATSIG_count - 1,
-		offsetof(struct nvmap, catsigptt),
-		nvramoffs0,
-		NULL,
-		& catsigptt,
-		getzerobase,
-	},
-#endif /* WITHTX */
-	{
-		QLABEL("CAT KEY "), 8, 8, RJ_CATSIG,	ISTEP1,
-		ITEM_VALUE,
-		0, BOARD_CATSIG_count - 1,
-		offsetof(struct nvmap, catsigkey),
-		nvramoffs0,
-		NULL,
-		& catsigkey,
-		getzerobase, 
-	},
-#endif /* WITHCAT */
-
-#if WITHSUBTONES && WITHTX
-#if ! WITHFLATMENU
-	{
-		QLABEL("CTCSS   "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpctcss),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("CTCSS   "), 8, 3, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, gctssenable),
-		nvramoffs0,
-		NULL,
-		& gctssenable,
-		getzerobase, 
-	},
-	{
-		QLABEL("CTCSS FQ"), 7, 1, RJ_SUBTONE,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
-		ITEM_VALUE,
-		0, sizeof gsubtones / sizeof gsubtones [0] - 1, 
-		offsetof(struct nvmap, gsubtonei),
-		nvramoffs0,
-		NULL,
-		& gsubtonei,
-		getzerobase, 
-	},
-#if WITHIF4DSP
-	{
-		QLABEL("CTCSSLVL"), 7, 0, 0,	ISTEP1,		/* Select the CTCSS transmit level. */
-		ITEM_VALUE,
-		0, 100, 
-		offsetof(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-		nvramoffs0,
-		NULL,
-		& gsubtonelevel,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHIF4DSP */
-#endif /* WITHSUBTONES && WITHTX */
-#if ! WITHFLATMENU
-	{
-		QLABEL("AUDIO   "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpaudio),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-#if WITHIF4DSP
-	#if ! WITHPOTAFGAIN
-	{
-		QLABEL("AF GAIN "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
-		offsetof(struct nvmap, afgain1),
-		nvramoffs0,
-		& afgain1.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* ! WITHPOTAFGAIN */
-	#if ! WITHPOTIFGAIN
-	{
-		QLABEL("RF GAIN "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
-		offsetof(struct nvmap, rfgain1),
-		nvramoffs0,
-		& rfgain1.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* ! WITHPOTIFGAIN */
-#endif /* WITHIF4DSP */
-#if (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP
-	{
-		QLABEL("KEY BEEP"), 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
-		ITEM_VALUE,
-		80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
-		offsetof(struct nvmap, gkeybeep10),
-		nvramoffs0,
-		NULL,
-		& gkeybeep10,
-		getzerobase, 
-	},
-#endif /* (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP */
-#if WITHMUTEALL && WITHTX
-	{
-		QLABEL("MUTE ALL"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, gmuteall),
-		nvramoffs0,
-		NULL,
-		& gmuteall,
-		getzerobase, 
-	},
-#endif /* WITHMUTEALL && WITHTX */
-#if WITHIF4DSP
-	{
-		QLABEL("SQUELCH "), 7, 0, 0,	ISTEP1,		/* squelch level */
-		ITEM_VALUE,
-		0, SQUELCHMAX, 
-		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
-		nvramoffs0,
-		NULL,
-		& gsquelch.value,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#if ! WITHPOTNFMSQL
-	{
-		QLABEL("SQUELNFM"), 7, 0, 0,	ISTEP1,		/* squelch level */
-		ITEM_VALUE,
-		0, SQUELCHMAX,
-		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
-		nvramoffs0,
-		NULL,
-		& gsquelchNFM,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* ! WITHPOTNFMSQL */
-	{
-		QLABEL("SDTN LVL"), 7, 0, 0,	ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
-		ITEM_VALUE,
-		0, 100, 
-		offsetof(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-		nvramoffs0,
-		NULL,
-		& gsidetonelevel,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("MONI EN "), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output level.. */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
-		nvramoffs0,
-		NULL,
-		& gmoniflag,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHIF4DSP */
-#if WITHTX && WITHIF4DSP
-#if WITHWAVPLAYER || WITHSENDWAV
-	{
-		QLABEL("LOOP MSG"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
-		ITEM_VALUE,
-		0, (sizeof loopnames / sizeof loopnames [0]) - 1,
-		offsetof(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
-		nvramoffs0,
-		NULL,
-		& gloopmsg,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("LOOP SEC"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
-		ITEM_VALUE,
-		15, 240,
-		offsetof(struct nvmap, gloopsec),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
-		nvramoffs0,
-		NULL,
-		& gloopsec,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHWAVPLAYER || WITHSENDWAV */
-#if WITHMIC1LEVEL
-	{
-		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
-		ITEM_VALUE,
-		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
-		offsetof(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
-		nvramoffs0,
-		& gmik1level,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* ITHMIC1LEVEL */
-	#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
-	{
-		QLABEL("LINE LVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления с линейного входа через меню. */
-		ITEM_VALUE,
-		WITHLINEINGAINMIN, WITHLINEINGAINMAX, 
-		offsetof(struct nvmap, glineamp),	/* усиление с линейного входа */
-		nvramoffs0,
-		& glineamp,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
-	{
-		QLABEL("MIKE SSB"), 8, 5, RJ_TXAUDIO,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_SSB),
-		nvramoffs0,
-		NULL,
-		& gtxaudio [MODE_SSB],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("MIKE DIG"), 8, 5, RJ_TXAUDIO,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_DIGI),
-		nvramoffs0,
-		NULL,
-		& gtxaudio [MODE_DIGI],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("MIKE AM "), 8, 5, RJ_TXAUDIO,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_AM),
-		nvramoffs0,
-		NULL,
-		& gtxaudio [MODE_AM],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("MIKE FM "), 8, 5, RJ_TXAUDIO,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_NFM),
-		nvramoffs0,
-		NULL,
-		& gtxaudio [MODE_NFM],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("MIKE AGC"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,	
-		0, 1, 					/* Включение программной АРУ перед модулятором */
-		offsetof(struct nvmap, gmikeagc),
-		nvramoffs0,
-		NULL,
-		& gmikeagc,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("MK AGCGN"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,	
-		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
-		offsetof(struct nvmap, gmikeagcgain),
-		nvramoffs0,
-		NULL,
-		& gmikeagcgain,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("MIK CLIP"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,	
-		0, 90, 					/* Ограничение */
-		offsetof(struct nvmap, gmikehclip),
-		nvramoffs0,
-		NULL,
-		& gmikehclip,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#if WITHREVERB
-	{
-		QLABEL2("REVERB  ", "Reverberator"), 7, 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 					/* ревербератор */
-		offsetof(struct nvmap, greverb),
-		nvramoffs0,
-		NULL,
-		& greverb,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("RVB TIME", "Reverb Delay"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		WITHREVERBDELAYMIN, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
-		offsetof(struct nvmap, greverbdelay),
-		nvramoffs0,
-		NULL,
-		& greverbdelay,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("RVB LOSS", "Reverb Loss"), 7, 0, 0,	ISTEP3,
-		ITEM_VALUE,
-		WITHREVERBLOSSMIN, WITHREVERBLOSSMAX, 					/* ревербератор - ослабление на возврате */
-		offsetof(struct nvmap, greverbloss),
-		nvramoffs0,
-		NULL,
-		& greverbloss,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHREVERB */
-	{
-		QLABEL2("MIKBOOST", "Mike boost"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,	
-		0, 1, 					// предусилитель сигнала с микрофона
-		offsetof(struct nvmap, gmikeboost20db),
-		nvramoffs0,
-		NULL,
-		& gmikeboost20db,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
-	{
-		QLABEL("MIK EQUA"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gmikeequalizer),
-		nvramoffs0,
-		NULL,
-		& gmikeequalizer,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-	{
-		QLABEL("EQUA .08"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, EQUALIZERBASE * 2,
-		offsetof(struct nvmap, gmikeequalizerparams [0]),
-		nvramoffs0,
-		NULL,
-		& gmikeequalizerparams [0],
-		getequalizerbase, /* складывается с -12 и отображается */
-	},
-	{
-		QLABEL("EQUA .23"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, EQUALIZERBASE * 2,
-		offsetof(struct nvmap, gmikeequalizerparams [1]),
-		nvramoffs0,
-		NULL,
-		& gmikeequalizerparams [1],
-		getequalizerbase, /* складывается с -12 и отображается */
-	},
-	{
-		QLABEL("EQUA .65"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, EQUALIZERBASE * 2,
-		offsetof(struct nvmap, gmikeequalizerparams [2]),
-		nvramoffs0,
-		NULL,
-		& gmikeequalizerparams [2],
-		getequalizerbase, /* складывается с -12 и отображается */
-	},
-	{
-		QLABEL("EQUA 1.8"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, EQUALIZERBASE * 2,
-		offsetof(struct nvmap, gmikeequalizerparams [3]),
-		nvramoffs0,
-		NULL,
-		& gmikeequalizerparams [3],
-		getequalizerbase, /* складывается с -12 и отображается */
-	},
-	{
-		QLABEL("EQUA 5.3"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, EQUALIZERBASE * 2,
-		offsetof(struct nvmap, gmikeequalizerparams [4]),
-		nvramoffs0,
-		NULL,
-		& gmikeequalizerparams [4],
-		getequalizerbase, /* складывается с -12 и отображается */
-	},
-	#endif /* WITHAFCODEC1HAVEPROC */
-#if WITHAFEQUALIZER
-	{
-		QLABEL2("RX EQ   ", "RX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, geqrx),
-		nvramoffs0,
-		NULL,
-		& geqrx,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("RX 0.4k ", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [0]),
-		nvramoffs0,
-		NULL,
-		& geqrxparams [0],
-		hamradio_get_af_equalizer_base,
-	},
-	{
-		QLABEL2("RX 1.5k ", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [1]),
-		nvramoffs0,
-		NULL,
-		& geqrxparams [1],
-		hamradio_get_af_equalizer_base,
-	},
-	{
-		QLABEL2("RX 2.7k ", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [2]),
-		nvramoffs0,
-		NULL,
-		& geqrxparams [2],
-		hamradio_get_af_equalizer_base,
-	},
-	{
-		QLABEL2("TX EQ   ", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, geqtx),
-		nvramoffs0,
-		NULL,
-		& geqtx,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("TX 0.4k ", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [0]),
-		nvramoffs0,
-		NULL,
-		& geqtxparams [0],
-		hamradio_get_af_equalizer_base,
-	},
-	{
-		QLABEL2("TX 1.5k ", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [1]),
-		nvramoffs0,
-		NULL,
-		& geqtxparams [1],
-		hamradio_get_af_equalizer_base,
-	},
-	{
-		QLABEL2("TX 2.7k ", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [2]),
-		nvramoffs0,
-		NULL,
-		& geqtxparams [2],
-		hamradio_get_af_equalizer_base,
-	},
-#endif /* WITHAFEQUALIZER */
-#endif /* WITHTX && WITHIF4DSP */
-#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
-//	unsigned ALCNEN = 0;	// ALC noise gate function control bit
-//	unsigned ALCNTH = 0;	// ALC noise gate threshold level
-//	unsigned ALCEN = 1;	// only left channel ALC enabled
-//	unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
-//	unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
-	{
-		QLABEL("ALC NCEN"), 7, 0, RJ_ON,	ISTEP1,		/* ALC noise gate function control bit. */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, ALCNEN),	/* ALC noise gate function control bit */
-		nvramoffs0,
-		NULL,
-		& ALCNEN,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("ALCNTH  "), 7, 0, 0,	ISTEP1,		/* ALC noise gate threshold level. */
-		ITEM_VALUE,
-		0, 7,
-		offsetof(struct nvmap, ALCNTH),	/* ALC noise gate threshold level */
-		nvramoffs0,
-		NULL,
-		& ALCNTH,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("ALC EN  "), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, ALCEN),	/* ALC enabled */
-		nvramoffs0,
-		NULL,
-		& ALCEN,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("ALCMXGAN"), 7, 0, 0,	ISTEP1,		/* Set maximum gain limit for PGA volume setting changes under ALC control. */
-		ITEM_VALUE,
-		0, 7,
-		offsetof(struct nvmap, ALCMXGAIN),	/* Set maximum gain limit for PGA volume setting changes under ALC control */
-		nvramoffs0,
-		NULL,
-		& ALCMXGAIN,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("ALCMNGAN"), 7, 0, 0,	ISTEP1,		/* Set minimum gain value limit for PGA volume setting changes under ALC contro. */
-		ITEM_VALUE,
-		0, 7,
-		offsetof(struct nvmap, ALCMNGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
-		nvramoffs0,
-		NULL,
-		& ALCMNGAIN,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
-#if WITHUSEAUDIOREC
-	{
-		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, recmode),
-		nvramoffs0,
-		NULL,
-		& recmode,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHUSEAUDIOREC */
-#if WITHIF4DSP
-#if WITHUSBUAC
-#if WITHTX
-	{
-		QLABEL("DATA VOX"), 8, 3, RJ_ON,	ISTEP1,		/* автоматический переход на передачу при появлении звука со стороны компьютера */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gdatavox),
-		nvramoffs0,
-		NULL,
-		& gdatavox,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHTX */
-	{
-		QLABEL("PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-		offsetof(struct nvmap, guacplayer),
-		nvramoffs0,
-		NULL,
-		& guacplayer,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
-	{
-		QLABEL("I/Q SWAP"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
-		offsetof(struct nvmap, gswapiq),
-		nvramoffs0,
-		NULL,
-		& gswapiq,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
-#endif /* WITHUSBUAC */
-#endif /* WITHIF4DSP */
-#if WITHIF4DSP
-#if ! WITHFLATMENU
-	{
-		QLABEL("AGC     "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpagc),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("ADC FS  "), 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
-		ITEM_VALUE,
-		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
-		offsetof(struct nvmap, gfsadcpower10 [0]),
-		nvramoffs0,
-		& gfsadcpower10 [0],	// 16 bit
-		NULL,
-		getfsasdcbase10, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("ADC FSXV"), 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
-		ITEM_VALUE,
-		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
-		offsetof(struct nvmap, gfsadcpower10 [1]),
-		nvramoffs0,
-		& gfsadcpower10 [1],	// 16 bit
-		NULL,
-		getfsasdcbase10, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC OFF "), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,	
-		0, 1, 					// предусилитель сигнала с микрофона
-		offsetof(struct nvmap, gagcoff),
-		nvramoffs0,
-		NULL,
-		& gagcoff,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("IFGN MAX"), 7, 0, 0,	ISTEP1,		/* диапазон ручной (или автоматической) регулировки цифрового усиления - максимальное значение */
-		ITEM_VALUE,
-		40, 120, 		// 40..120 dB
-		offsetof(struct nvmap, gdigigainmax),
-		nvramoffs0,
-		NULL,
-		& gdigigainmax,	// 8 bit
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#if ! WITHFLATMENU
-	{
-		QLABEL("AGC SSB "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpagcssb),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		1, AGC_RATE_FLAT,
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_SSB].rate,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].thung10),	/* время удержания медленной цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_SSB].thung10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC T1  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].t1),	/* время срабатывания медленной цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_SSB].t1,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC T2  "), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		1, 100, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].release10),	/* время разряда медленной цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_SSB].release10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC T4  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].t4),	/* время разряда быстрой цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_SSB].t4,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#if ! WITHFLATMENU
-	{
-		QLABEL("AGC CW  "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpagccw),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		1, AGC_RATE_FLAT,
-		offsetof(struct nvmap, afsets [AGCSETI_CW].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_CW].rate,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].thung10),	/* время удержания медленной цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_CW].thung10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC T1  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].t1),	/* время срабатывания медленной цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_CW].t1,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC T2  "), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		1, 100, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].release10),	/* время разряда медленной цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_CW].release10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC T4  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].t4),	/* время разряда быстрой цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_CW].t4,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#if ! WITHFLATMENU
-	{
-		QLABEL("AGC DIGI"), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpagcdigi),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		1, AGC_RATE_FLAT,
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_DIGI].rate,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].thung10),	/* время удержания медленной цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_DIGI].thung10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC T1  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].t1),	/* время срабатывания медленной цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_DIGI].t1,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC T2  "), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		1, 100, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].release10),	/* время разряда медленной цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_DIGI].release10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("AGC T4  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].t4),	/* время разряда быстрой цепи АРУ */
-		nvramoffs0,
-		NULL,
-		& gagc [AGCSETI_DIGI].t4,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHIF4DSP */
-#if WITHMODEM
-#if ! WITHFLATMENU
-	{
-		QLABEL("MODEM   "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpmodem),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("DATA MOD"), 5, 0, RJ_MDMMODE, 	ISTEP1,
-		ITEM_VALUE,
-		0, 1,			/* 0: BPSK, 1: QPSK */
-		offsetof(struct nvmap, gmodemmode),
-		nvramoffs0,
-		NULL,
-		& gmodemmode,
-		getzerobase, 
-	},
-	{
-		QLABEL("DATA SPD"), 7, 2, RJ_MDMSPEED, 	ISTEP1,
-		ITEM_VALUE,
-		0, (sizeof modembr2int100 / sizeof modembr2int100 [0]) - 1, 
-		offsetof(struct nvmap, gmodemspeed),
-		nvramoffs0,
-		NULL,
-		& gmodemspeed,
-		getzerobase, 
-	},
-#endif /* WITHMODEM */
-#if WITHLFM
-#if ! WITHFLATMENU
-	{
-		QLABEL("LFM     "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrplfm),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("LFM MODE"), 8, 3, RJ_ON, 	ISTEP1,
-		ITEM_VALUE,
-		0, 1,			/* LFM mode enable */
-		offsetof(struct nvmap, lfmmode),
-		nvramoffs0,
-		NULL,
-		& lfmmode,
-		getzerobase, 
-	},
-	{
-		QLABEL("LFM STRT"), 5, 1, 0, 	ISTEP1,
-		ITEM_VALUE,
-		10, 300,			/* 10.0 MHz.. 30.0 MHz in 100 kHz steps */
-		offsetof(struct nvmap, lfmstart100k),
-		nvramoffs0,
-		& lfmstart100k,
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("LFM STOP"), 5, 1, 0, 	ISTEP1,
-		ITEM_VALUE,
-		10, 300,			/* 0.0 MHz.. 30.0 MHz in 100 kHz steps */
-		offsetof(struct nvmap, lfmstop100k),
-		nvramoffs0,
-		& lfmstop100k,
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("LFM SPD "), 5, 0, 0, 	ISTEP1,
-		ITEM_VALUE,
-		50, 550,			/* 50 kHz/sec..550 kHz/sec, 1 kHz/sec steps */
-		offsetof(struct nvmap, lfmspeed1k),
-		nvramoffs0,
-		& lfmspeed1k,
-		NULL,
-		getzerobase, 
-	},
-	// Секунды от начала часа до запуска
-	{
-		QLABEL("LFM OFST"), 5, 0, 0, 	ISTEP1,
-		ITEM_VALUE,
-		0, 60 * 60 - 1,			/* 0..59:59 */
-		offsetof(struct nvmap, lfmtoffset),
-		nvramoffs0,
-		& lfmtoffset,
-		NULL,
-		getzerobase, 
-	},
-	// Интервал в секундах между запусками в пределах часа
-	{
-		QLABEL("LFM PERI"), 5, 0, 0, 	ISTEP1,
-		ITEM_VALUE,
-		1, 60 * 60 - 1,			/* 00:01..59:59 */
-		offsetof(struct nvmap, lfmtinterval),
-		nvramoffs0,
-		& lfmtinterval,
-		NULL,
-		getzerobase,
-	},
-#endif /* WITHLFM */
-
-#if WITHTX
-/* settings page header */
-#if ! WITHFLATMENU
-	{
-		QLABEL("TX ADJ  "), 0, 0, 0, 0,
-		ITEM_GROUP,
-		0, 0,
-		offsetof(struct nvmap, ggrptxadj),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-
-/* settings page list */
-#if WITHIF4DSP
-	{
-		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gdacscale,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [0],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 160m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [1],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 80m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [2],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 40m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [3],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 30m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [4],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 20m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [5],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 17m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [6],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 15m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [7],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 12m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [8],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 10m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [9],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 6m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [10],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 2m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [11],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX 0.7m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [12],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [13],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [14],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	// gbandf2adj [NUMLPFADJ]
-	{
-		QLABEL("TX ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gbandf2adj [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gbandf2adj [15],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-
-	{
-		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gamdepth,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка девиации на передачу */
-		ITEM_VALUE,
-		0, 120,
-		offsetof(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
-		nvramoffs0,
-		NULL,
-		& gnfmdeviation,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-		ITEM_VALUE,
-		90, 300,
-		offsetof(struct nvmap, ggaindigitx),
-		nvramoffs0,
-		& ggaindigitx,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-		ITEM_VALUE,
-		30, 100,
-		offsetof(struct nvmap, ggaincwtx),
-		nvramoffs0,
-		& ggaincwtx,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-
-#endif /* WITHIF4DSP */
-#if WITHFANTIMER
-	{
-		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
-		ITEM_VALUE,
-		0, FANPATIMEMAX,
-		offsetof(struct nvmap, gfanpatime),
-		nvramoffs0,
-		NULL,
-		& gfanpatime,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#if WITHFANPWM
-	{
-		QLABEL("FAN PWM "), 7, 0, 0,	ISTEP5,
-		ITEM_VALUE,
-		0, 255,
-		offsetof(struct nvmap, gfanpapwm),
-		nvramoffs0,
-		& gfanpapwm,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* WITHFANPWM */
-#endif /* WITHFANTIMER */
-
-#if WITHPOWERTRIM
-  #if ! WITHPOTPOWER
-	{
-		QLABEL("TX POWER"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gnormalpower),
-		nvramoffs0,
-		NULL,
-		& gnormalpower.value,
-		getzerobase,
-	},
-#if WITHPACLASSA
-	/* усилитель мощности поддерживает переключение в класс А */
-	{
-		QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gclassamode),
-		nvramoffs0,
-		NULL,
-		& gclassamode,
-		getzerobase,
-	},
-	{
-		QLABEL2("CLASSA P", "Class A Pwr"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gclassapower),
-		nvramoffs0,
-		NULL,
-		& gclassapower,
-		getzerobase,
-	},
-#endif /* WITHPACLASSA */
-  #endif /* ! WITHPOTPOWER */
-  #if WITHLOWPOWEREXTTUNE
-	{
-		QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gtunepower),
-		nvramoffs0,
-		NULL,
-		& gtunepower,
-		getzerobase,
-	},
-  #endif /* WITHLOWPOWEREXTTUNE */
-#elif WITHPOWERLPHP
-	#if ! CTLSTYLE_SW2011ALL
-	{
-		QLABEL("TX POWER"), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		0, PWRMODE_COUNT - 1,
-		offsetof(struct nvmap, gpwri),
-		nvramoffs0,
-		NULL,
-		& gpwri,
-		getzerobase,
-	},
-	#endif /* ! CTLSTYLE_SW2011ALL */
-  	#if WITHLOWPOWEREXTTUNE
-	{
-		QLABEL("ATU PWR "), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
-		0, PWRMODE_COUNT - 1,
-		offsetof(struct nvmap, gtunepower),
-		nvramoffs0,
-		NULL,
-		& gtunepower,
-		getzerobase, 
-	},
-  #endif /* WITHLOWPOWEREXTTUNE */
-#endif /* WITHPOWERTRIM */
-
-#if ! CTLSTYLE_SW2011ALL
-	{
-		QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gtxgate),
-		nvramoffs0,
-		NULL,
-		& gtxgate,
-		getzerobase, 
-	},
-#endif /* ! CTLSTYLE_SW2011ALL */
-
-#if WITHPABIASTRIM
-	{
-		QLABEL("PA BIAS "), 7, 0, 0,	ISTEP1,		/* регулировка тока покоя оконечного каскада передатчика */
-		ITEM_VALUE,
-		WITHPABIASMIN, WITHPABIASMAX,
-		offsetof(struct nvmap, gpabias),
-		nvramoffs0,
-		NULL,
-		& gpabias,
-		getzerobase, 
-	},
-#endif /* WITHPABIASTRIM && WITHTX */
-#if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
-	{
-		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gdactest),
-		nvramoffs0,
-		NULL,
-		& gdactest,
-		getzerobase,
-	},
-#endif /* WITHDSPEXTDDC */
-
-#endif /* WITHTX */
-
-/* settings page header */
-#if ! WITHFLATMENU
-	{
-		QLABEL("SPECIAL "), 0, 0, 0, 0,
-		ITEM_GROUP,
-		0, 0,
-		offsetof(struct nvmap, ggrpsecial),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-
-/* settings page list */
-#if WITHRFSG
-	{
-		QLABEL("RFSG MOD"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, userfsg),
-		nvramoffs0,
-		NULL,
-		& userfsg,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHRFSG */
-#if WITHENCODER
-	{
-		QLABEL("ENC1 RES"), 7, 0, RJ_ENCRES,	ISTEP1,
-		ITEM_VALUE,
-		0, (sizeof encresols / sizeof encresols [0]) - 1,
-		offsetof(struct nvmap, genc1pulses),
-		nvramoffs0,
-		NULL,
-		& genc1pulses,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("ENC1 DYN"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, genc1dynamic),
-		nvramoffs0,
-		NULL,
-		& genc1dynamic,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("ENC1 DIV"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		1, 128, 	/* /1 ... /128 */
-		offsetof(struct nvmap, genc1div),
-		nvramoffs0,
-		NULL,
-		& genc1div,
-		getzerobase,
-	},
-	{
-		QLABEL("BIG STEP"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gbigstep),
-		nvramoffs0,
-		NULL,
-		& gbigstep,
-		getzerobase,
-	},
-#if WITHENCODER2
-	{
-		QLABEL("ENC2 DIV"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		1, 8, 	/* /1 ... /8 */
-		offsetof(struct nvmap, genc2div),
-		nvramoffs0,
-		NULL,
-		& genc2div,
-		getzerobase,
-	},
-#endif /* WITHENCODER2 */
-#endif /* WITHENCODER */
-
-#if WITHTX
-#if WITHIF4DSP
-	{
-		QLABEL("NFM GAIN"), 7, 1, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
-		ITEM_VALUE,
-		10, 100,
-		offsetof(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
-		nvramoffs0,
-		NULL,
-		& ggainnfmrx10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHIF4DSP */
-#if WITHIF4DSP
-	{
-		QLABEL2("RGR BERP", "Roger Beep"), 7, 0, RJ_ON,	ISTEP5,	/* разрешение (не-0) или запрещение (0) формирования roger beep */
-		ITEM_VALUE,
-		0, 1,						/* разрешение (не-0) или запрещение (0) формирования roger beep */
-		offsetof(struct nvmap, grgbeep),
-		nvramoffs0,
-		NULL,
-		& grgbeep,
-		getzerobase,
-	},
-#endif /* WITHIF4DSP */
-#endif /* WITHTX */
-
-#if defined(REFERENCE_FREQ)
-#if defined (DAC1_TYPE)
-	{
-		QLABEL("REF ADJ "), 7, 0, 0,	ISTEP1,		/* подстройка частоты опорного генератора (напряжением) через меню. */
-		ITEM_VALUE,
-		WITHDAC1VALMIN, WITHDAC1VALMAX, 
-		offsetof(struct nvmap, dac1level),
-		nvramoffs0,
-		NULL,	/* подстройка опорника */
-		& dac1level,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* defined (DAC1_TYPE) */
-	{
-		QLABEL("REF FREQ"), 9, 3, 0,	ISTEP1,		/* ввод реальной частоты опорного генератора через меню. */
-		ITEM_VALUE,
-		0, OSCSHIFT * 2 - 1, 
-		offsetof(struct nvmap, refbias),
-		nvramoffs0,
-		& refbias,	/* подстройка частоты опорника */
-		NULL,
-		getrefbase, 	/* складывается со смещением и отображается */
-	},
-#endif	/* defined(REFERENCE_FREQ) */
-#if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
-	{
-		QLABEL("LO3 FRQ "), 9, 3, 0,	ISTEP1,
-		ITEM_VALUE,
-		LO2AMIN, LO2AMAX, 
-		offsetof(struct nvmap, lo3offset),
-		nvramoffs0,
-		& lo3offset,	/* подстройка частоты гетеродина */
-		NULL,
-		getlo3base, 	/* складывается со смещением и отображается */
-	},
-#endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
-#if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
-	{
-		QLABEL("REFSI570"), 9, 3, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, OSCSHIFT * 2 - 1, 
-		offsetof(struct nvmap, si570_xtall_offset),
-		nvramoffs0,
-		& si570_xtall_offset,	/* подстройка опорника */
-		NULL,
-		si570_get_xtall_base, 	/* складывается со смещением и отображается */
-	},
-#endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
-#if WITHONLYBANDS
-	{
-		QLABEL("BANDONLY"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, withonlybands),
-		nvramoffs0,
-		NULL,
-		& withonlybands,
-		getzerobase, 
-	},
-#endif /* WITHONLYBANDS */
-	{
-		QLABEL("STAYFREQ"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, stayfreq),
-		nvramoffs0,
-		NULL,
-		& stayfreq,
-		getzerobase, 
-	},
-#if WITHVOLTLEVEL && ! WITHREFSENSOR
-	{
-		QLABEL("BAT CALI"), 7, 1, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
-		ITEM_VALUE,
-		ADCVREF_CPU, 255,	// 3.3/5.0 .. 25.5 вольта
-		offsetof(struct nvmap, voltcalibr100mV),
-		nvramoffs0,
-		NULL,
-		& voltcalibr100mV,
-		getzerobase,
-	},
-#endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
-#if (WITHCURRLEVEL || WITHCURRLEVEL2)
-	{
-		QLABEL("IPA CALI"), 5 + WSIGNFLAG, 2, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
-		ITEM_VALUE,
-		0, IPACALI_RANGE,
-		offsetof(struct nvmap, gipacali),
-		nvramoffs0,
-		& gipacali,
-		NULL,
-		getipacalibase,
-	},
-#endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
-#if WITHTX
-#if WITHSWRMTR && ! WITHSHOWSWRPWR
-	{
-		QLABEL("SWR SHOW"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, swrmode),
-		nvramoffs0,
-		NULL,
-		& swrmode,
-		getzerobase, 
-	},
-#endif /* WITHSWRMTR && ! WITHSHOWSWRPWR */
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
-	{
-		QLABEL("SWR CALI"), 7, 2, 0,	ISTEP1,		/* калибровка SWR-метра */
-		ITEM_VALUE,
-		50, 200, //80, 120, 
-		offsetof(struct nvmap, swrcalibr),
-		nvramoffs0,
-		NULL,
-		& swrcalibr,
-		getzerobase, 
-	},
-	{
-		QLABEL("FWD LOWR"), 7, 0, 0,	ISTEP1,		/* нечувствительность SWR-метра */
-		ITEM_VALUE,
-		1, (1U << HARDWARE_ADCBITS) - 1, 
-		offsetof(struct nvmap, minforward),
-		nvramoffs0,
-		& minforward,
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
-		ITEM_VALUE,
-		1, 255,
-		offsetof(struct nvmap, maxpwrcali),
-		nvramoffs0,
-		NULL,
-		& maxpwrcali,
-		getzerobase,
-	},
-	{
-		QLABEL("SWR PROT"), 7, 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,						/* защита от превышения КСВ */
-		offsetof(struct nvmap, gswrprot),
-		nvramoffs0,
-		NULL,
-		& gswrprot,
-		getzerobase,
-	},
-	
-#elif WITHPWRMTR
-	{
-		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
-		ITEM_VALUE,
-		10, 255,
-		offsetof(struct nvmap, maxpwrcali),
-		nvramoffs0,
-		NULL,
-		& maxpwrcali,
-		getzerobase,
-	},
-#endif
-#if WITHTHERMOLEVEL
-	{
-		QLABEL("HEAT LIM"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		20, 85,						/* порог срабатывания защиты по температуре */
-		offsetof(struct nvmap, gtempvmax),
-		nvramoffs0,
-		NULL,
-		& gtempvmax,
-		getzerobase,
-	},
-	{
-		QLABEL("HEATPROT"), 7, 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,						/* защита от перегрева */
-		offsetof(struct nvmap, gheatprot),
-		nvramoffs0,
-		NULL,
-		& gheatprot,
-		getzerobase,
-	},
-#endif /* WITHTHERMOLEVEL */
-#if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
-	{
-		QLABEL("RXTX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
-		ITEM_VALUE,
-		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
-		offsetof(struct nvmap, rxtxdelay),
-		nvramoffs0,
-		NULL,
-		& rxtxdelay,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXRX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
-		ITEM_VALUE,
-		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
-		offsetof(struct nvmap, txrxdelay),
-		nvramoffs0,
-		NULL,
-		& txrxdelay,
-		getzerobase, 
-	},
-#endif /* GATEs */
-#endif /* WITHTX */
-#if WITHLO1LEVELADJ
-	{
-		QLABEL("LO1 LEVL"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, 100, 		/* уровень (амплитуда) LO1 в процентах */
-		offsetof(struct nvmap, lo1level),
-		nvramoffs0,
-		NULL,
-		& lo1level,
-		getzerobase, 
-	},
-#endif /* WITHLO1LEVELADJ */
-#if LO1PHASES
-	{
-		QLABEL("PHASE RX"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, 65535, /* добавление к коду смещения фазы */
-		offsetof(struct nvmap, phaserx),
-		nvramoffs0,
-		& phasesmap [0],
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#if WITHTX
-	{
-		QLABEL("PHASE TX"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, 65535, /* добавление к коду смещения фазы */
-		offsetof(struct nvmap, phasetx),
-		nvramoffs0,
-		& phasesmap [1],
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHTX */
-#endif /* LO1PHASES */
-
-#if LO1MODE_HYBRID
-	{
-		QLABEL("ALIGN MD"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, alignmode),
-		nvramoffs0,
-		NULL,
-		& alignmode,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif	/* LO1MODE_HYBRID */
-
-#if LO1FDIV_ADJ
-	{
-		QLABEL("LO1DV RX"), 7, 0, RJ_POW2,	ISTEP1,
-		ITEM_VALUE,
-		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
-		offsetof(struct nvmap, lo1powrx),
-		nvramoffs0,
-		NULL,
-		& lo1powmap [0],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("LO1DV TX"), 7, 0, RJ_POW2,	ISTEP1,
-		ITEM_VALUE,
-		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
-		offsetof(struct nvmap, lo1powtx),
-		nvramoffs0,
-		NULL,
-		& lo1powmap [1],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif
-#if LO4FDIV_ADJ
-	{
-		QLABEL("LO4DV RX"), 7, 0, RJ_POW2,	ISTEP1,
-		ITEM_VALUE,
-		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
-		offsetof(struct nvmap, lo4powrx),
-		nvramoffs0,
-		NULL,
-		& lo4powmap [0],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("LO4DV TX"), 7, 0, RJ_POW2,	ISTEP1,
-		ITEM_VALUE,
-		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
-		offsetof(struct nvmap, lo4powtx),
-		nvramoffs0,
-		NULL,
-		& lo4powmap [1],
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif
-
-#if WITHBARS
-	{
-		QLABEL("S9 LEVEL"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		1, UINT8_MAX - 1, 
-		offsetof(struct nvmap, s9level),
-		nvramoffs0,
-		NULL,			/* калибровка уровней S-метра */
-		& s9level,
-		getzerobase, 
-	},
-	{
-		QLABEL("S9 DELTA"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		1, UINT8_MAX - 1, 
-		offsetof(struct nvmap, s9delta),
-		nvramoffs0,
-		NULL,			/* калибровка уровней S-метра */
-		& s9delta,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("+60DELTA"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		1, UINT8_MAX - 1, 
-		offsetof(struct nvmap, s9_60_delta),
-		nvramoffs0,
-		NULL,			/* калибровка уровней S-метра */
-		& s9_60_delta,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("ATTPRESH"), 7, 0, RJ_ON,	ISTEP1,	/* attenuator-preamplifier shift */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gattpresh),	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
-		nvramoffs0,
-		NULL,
-		& gattpresh,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHBARS */
-
-	{
-		QLABEL("BAND 27 "), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, bandset11m),
-		nvramoffs0,
-		NULL,
-		& bandset11m,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#if WITHANTSELECT2
-	{
-		QLABEL2("HF ANT F", "HF Ant freq"), 3, 0, 0, ISTEP1,
-		ITEM_VALUE,
-		TUNE_BOTTOM / 1000000, (TUNE_TOP - 1) / 1000000,
-		offsetof(struct nvmap, hffreqswitch),
-		nvramoffs0,
-		NULL,
-		& hffreqswitch,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHANTSELECT2 */
-#if WITHBCBANDS
-	{
-		QLABEL("BAND BC "), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, gbandsetbcast),
-		nvramoffs0,
-		NULL,
-		& gbandsetbcast,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHBCBANDS */
-
-#if CTLSTYLE_SW2011ALL
-#if TUNE_6MBAND
-	{
-		QLABEL("BAND 50 "), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, bandset6m),
-		nvramoffs0,
-		NULL,
-		& bandset6m,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* TUNE_6MBAND */
-#if TUNE_4MBAND
-	{
-		QLABEL("BAND 70 "), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, bandset4m),
-		nvramoffs0,
-		NULL,
-		& bandset4m,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* TUNE_6MBAND */
-#if TUNE_2MBAND
-	{
-		QLABEL("BAND 144"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, bandset2m),
-		nvramoffs0,
-		NULL,
-		& bandset2m,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* TUNE_2MBAND */
-#endif /* CTLSTYLE_SW2011ALL */
-
-#if CTLREGMODE_RA4YBO || CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A
-#if ! WITHFLATMENU
-	{
-		QLABEL("TXPARAMS"), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrptxparams),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("TXPW SSB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_SSB),
-		nvramoffs0,
-		& gtxpower [MODE_SSB],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW CW "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_CW),
-		nvramoffs0,
-		& gtxpower [MODE_CW],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW FM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_NFM),
-		nvramoffs0,
-		& gtxpower [MODE_NFM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW AM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_AM),
-		nvramoffs0,
-		& gtxpower [MODE_AM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW TUN"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_TUNE),
-		nvramoffs0,
-		& gtxpower [MODE_TUNE],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXCP SSB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_SSB),
-		nvramoffs0,
-		& gtxcompr [MODE_SSB],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXCP AM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_AM),
-		nvramoffs0,
-		& gtxcompr [MODE_AM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXCP FM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_NFM),
-		nvramoffs0,
-		& gtxcompr [MODE_NFM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-
-#endif /* CTLREGMODE_RA4YBO || CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A */
-#if ! WITHFLATMENU
-	{
-		QLABEL2("ABOUT   ", "About"), 0, 0, 0, 0,
-		ITEM_GROUP,
-		0, 0,
-		offsetof(struct nvmap, ggrpabout),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("CPU TYPE"), 7, 0, RJ_CPUTYPE, 	ISTEP1,	// тип процессора
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, 0,
-		MENUNONVRAM,
-		nvramoffs0,
-		& gzero,
-		NULL,
-		getzerobase,
-	},
-	{
-		QLABEL("CPU FREQ"), 7, 0, 0, 	ISTEP1,	// частота процессора
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, 0,
-		MENUNONVRAM,
-		nvramoffs0,
-		& gzero,
-		NULL,
-		getcpufreqbase,
-	},
-	{
-		QLABEL("COMPILED"), 7, 0, RJ_COMPILED, 	ISTEP1,	// тип процессора
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, 0,
-		MENUNONVRAM,
-		nvramoffs0,
-		& gzero,
-		NULL,
-		getzerobase,
-	},
-};
+#include "menu.h"
 
 /* входит ли данный пункт меню в группу разрешенных для показа */
 static uint_fast8_t
@@ -19655,6 +16258,8 @@ void display2_menu_valxx(
 			msg = PSTR("ZYNQ USCALE");
 #elif CPUSTYLE_R7S721
 			msg = PSTR("RENESAS");
+#elif CPUSTYPE_T113
+			msg = PSTR("Allw T128-S3");
 #else
 			msg = PSTR("CPUxxx");
 #endif
@@ -19992,9 +16597,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 		// Не нашли такой пункт
 		return;
 	}
-#if WITHTOUCHGUI
-	gui_uif_editmenu(name, menupos, exitkey);
-#else
+
 	display2_bgreset();
 
 	modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey, 1);
@@ -20002,7 +16605,6 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 	updateboard(1, 0);
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	display2_bgreset();		/* возможно уже с новой цветовой схемой */
-#endif /* WITHTOUCHGUI */
 }
 
 #if 0
@@ -20420,25 +17022,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 #endif /* WITHPWBUTTON */
 
 #if WITHENCODER2
-	#if WITHTOUCHGUI
-		case KBD_ENC2_PRESS:
-			gui_put_keyb_code(KBD_ENC2_PRESS);
-			if (! encoder2_redirect)
-				uif_encoder2_press();
-			return 0;
-		case KBD_ENC2_HOLD:
-			gui_put_keyb_code(KBD_ENC2_HOLD);
-			if (! encoder2_redirect)
-				uif_encoder2_hold();
-			return 0;
-	#else
-		case KBD_ENC2_PRESS:
-			uif_encoder2_press();
-			return 1;
-		case KBD_ENC2_HOLD:
-			uif_encoder2_hold();
-			return 1;
-	#endif /* WITHTOUCHGUI */
+	case KBD_ENC2_PRESS:
+		uif_encoder2_press();
+		return 1;
+	case KBD_ENC2_HOLD:
+		uif_encoder2_hold();
+		return 1;
 #endif /* WITHENCODER2 */
 
 #if WITHTX
@@ -20771,13 +17360,6 @@ void playhandler(uint8_t code)
 static uint_fast8_t
 processkeyboard(uint_fast8_t kbch)
 {
-#if WITHTOUCHGUI
-	if (keyboard_redirect)
-	{
-		gui_put_keyb_code(kbch);
-		return 0;
-	}
-#endif
 	const uint_fast8_t exitkey = getexitkey();	/* эта клавиша совмещена с menu - дополнительный код для выхода. */
 
 #if WITHDIRECTFREQENER
@@ -20839,7 +17421,7 @@ processkeyboard(uint_fast8_t kbch)
 	case KBD_CODE_MENU:
 		/* Вход в меню
 			 - не вызывает сохранение состояния диапазона */
-#if WITHMENU && ! WITHTOUCHGUI
+#if WITHMENU
 	#if WITHAUTOTUNER
 		if (reqautotune != 0)
 			return 1;
@@ -20857,15 +17439,11 @@ processkeyboard(uint_fast8_t kbch)
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		display2_bgreset();		/* возможно уже с новой цветовой схемой */
 		return 1;	// требуется обновление индикатора
-#elif WITHTOUCHGUI
-		gui_open_sys_menu();
-		return 0;
 #else
 		return 0;
-#endif //WITHMENU && ! WITHTOUCHGUI
+#endif //WITHMENU
 
 	case KBD_CODE_DISPMODE:
-#if ! WITHTOUCHGUI
 		if (display_getpagesmax() != 0)
 		{
 			/* Альтернативные функции кнопок - "Fn"
@@ -20875,7 +17453,6 @@ processkeyboard(uint_fast8_t kbch)
 			display2_bgreset();
 			return 1;	// требуется обновление индикатора
 		}
-#endif /* ! WITHTOUCHGUI */
 		return 0;	// не требуется обновление индикатора
 
 #if WITHMENU
@@ -21456,9 +18033,7 @@ hamradio_initialize(void)
 #if WITHRTTY
 	RTTYDecoder_Init();
 #endif /* WITHRTTY */
-#if WITHFT8
-	ft8_initialize();
-#endif /* WITHFT8 */
+
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHUSBHW
@@ -21505,14 +18080,6 @@ hamradio_initialize(void)
 #if WITHSPISLAVE
 	hardware_spi_slave_enable(SPIC_MODE3);
 #endif /* WITHSPISLAVE */
-
-#if WITHTOUCHGUI
-	gui_initialize();
-
-#if WITHENCODER2
-	hamradio_gui_enc2_update();
-#endif /* WITHENCODER2 */
-#endif /* WITHTOUCHGUI */
 }
 
 #if WITHSPISLAVE
@@ -21846,12 +18413,7 @@ hamradio_main_step(void)
 			if (uif_encoder2_rotate(nrotate2))
 			{
 				nrotate2 = 0;
-#if WITHTOUCHGUI && WITHENCODER2
-				hamradio_gui_enc2_update();
-				display2_mode_subset(0);
-#else
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-#endif /* WITHTOUCHGUI && WITHENCODER2 */
 			}
 	#if WITHDEBUG
 			{
@@ -21887,15 +18449,7 @@ hamradio_main_step(void)
 			{
 				/* обновление индикатора без сохранения состояния диапазона */
 				encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
-		#if WITHTOUCHGUI
-				display_redrawfreqstimed(1);
-				display_redrawmodestimed(1);
-
-		#else /* WITHTOUCHGUI */
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-
-		#endif /* WITHTOUCHGUI */
-
 			} // end keyboard processing
 	#endif /* WITHKEYBOARD */
 
@@ -21930,7 +18484,6 @@ hamradio_main_step(void)
 					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate), gstep, TUNE_TOP);
 					freqchanged = 1;
 				}
-#if ! WITHTOUCHGUI
 				if (nrotate2 < 0)
 				{
 					/* Валкодер B: вращали "вниз" */
@@ -21947,7 +18500,6 @@ hamradio_main_step(void)
 					//gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + (jumpsize2 * nrotate2), gstep, TUNE_TOP);
 					freqchanged = 1;
 				}
-#endif /* ! WITHTOUCHGUI */
 				if (freqchanged != 0)
 				{
 					// Ограничение по скорости обновления дисплея уже заложено в него
@@ -21955,9 +18507,6 @@ hamradio_main_step(void)
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
 			}
-#if WITHTOUCHGUI && WITHENCODER2
-			gui_set_encoder2_rotate(nrotate2);
-#endif /* WITHTOUCHGUI && WITHENCODER2 */
 
 #if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)		// тестовая прокрутка частоты
 			hamradio_set_freq(hamradio_get_freq_rx() + 1);
@@ -22469,534 +19018,6 @@ uint_fast16_t hamradio_notch_width(int_fast8_t step)
 
 #endif /* WITHNOTCHFREQ */
 
-#if WITHTOUCHGUI
-
-void hamradio_disable_keyboard_redirect(void)
-{
-	keyboard_redirect = 0;
-}
-
-void hamradio_enable_keyboard_redirect(void)
-{
-	keyboard_redirect = 1;
-}
-
-void hamradio_disable_encoder2_redirect(void)
-{
-	encoder2_redirect = 0;
-}
-
-void hamradio_enable_encoder2_redirect(void)
-{
-	encoder2_redirect = 1;
-}
-
-#if WITHIF4DSP
-//todo: добавить учет текущего режима
-void hamradio_set_agc_fast(void)
-{
-	const FLASHMEM struct modetempl * pamodetempl;
-	const uint_fast8_t asubmode = getasubmode(0);
-	pamodetempl = getmodetempl(asubmode);
-	const uint_fast8_t agcseti = pamodetempl->agcseti;
-
-	gagc [agcseti].rate = AGC_RATE_SSB;
-	gagc [agcseti].scale = 100;
-	gagc [agcseti].t0 = 0;
-	gagc [agcseti].t1 = 120;
-	gagc [agcseti].release10 = 1;
-	gagc [agcseti].t4 = 50;
-	gagc [agcseti].thung10 = 1;
-
-	updateboard (1, 0);
-}
-
-void hamradio_set_agc_slow(void)
-{
-	const FLASHMEM struct modetempl * pamodetempl;
-	const uint_fast8_t asubmode = getasubmode(0);
-	pamodetempl = getmodetempl(asubmode);
-	const uint_fast8_t agcseti = pamodetempl->agcseti;
-
-	gagc [agcseti].rate = AGC_RATE_SSB;
-	gagc [agcseti].scale = 100;
-	gagc [agcseti].t0 = 0;
-	gagc [agcseti].t1 = 120;
-	gagc [agcseti].release10 = 5;
-	gagc [agcseti].t4 = 50;
-	gagc [agcseti].thung10 = 3;
-
-	updateboard (1, 0);
-}
-
-uint_fast8_t hamradio_get_agc_type(void)	// 0 - slow, 1 - fast
-{
-	const uint_fast8_t pathi = 0;
-	const FLASHMEM struct modetempl * pamodetempl;
-	const uint_fast8_t asubmode = getasubmode(pathi);
-	pamodetempl = getmodetempl(asubmode);
-	const uint_fast8_t agcseti = pamodetempl->agcseti;
-
-	if (gagc [agcseti].release10 >= 5)		// 0.5 секунды и более - считаем медланная. Как иначе вытянуть признак, пока не придумал. Надо переделать
-		return 0;
-	else
-		return 1;
-}
-
-// 1 - wide (SSB style), 0 - narow (CW style)
-uint_fast8_t hamradio_get_bp_type_wide(void)
-{
-	const uint_fast8_t pathi = 0;
-	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(pathi);
-	const uint_fast8_t amode = submodes [asubmode].mode;
-	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
-	const uint_fast8_t pos = bwsetpos [bwseti];
-	return bwsetsc [bwseti].prop [pos]->type == BWSET_PAIR;
-}
-
-uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
-{
-	const uint_fast8_t pathi = 0;
-	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(pathi);
-	const uint_fast8_t amode = submodes [asubmode].mode;
-	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
-	const uint_fast8_t pos = bwsetpos [bwseti];
-	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
-
-	uint_fast16_t low;
-	switch (p->type)
-		{
-		case BWSET_PAIR:
-			if (rotate != 0 && (p->left10_width10 + rotate) > 0 && (p->left10_width10 + rotate) < p->right100 * 10)
-			{
-				p->left10_width10 += rotate;
-				updateboard (1, 0);
-			}
-			low =  p->left10_width10;
-			break;
-
-		default:
-			ASSERT(0);
-		case BWSET_SINGLE:
-			if (rotate < 0)
-			{
-				p->left10_width10 = prevfreq(p->left10_width10, p->left10_width10 - p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_low);
-				updateboard (1, 0);
-			}
-			if (rotate > 0)
-			{
-				p->left10_width10 = nextfreq(p->left10_width10, p->left10_width10 + p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_high);
-				updateboard (1, 0);
-			}
-
-			low = p->left10_width10;
-		}
-	return low;
-}
-
-uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
-{
-	const uint_fast8_t pathi = 0;
-	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(pathi);
-	const uint_fast8_t amode = submodes [asubmode].mode;
-	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
-	const uint_fast8_t pos = bwsetpos [bwseti];
-	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
-	uint_fast16_t high;
-
-	switch (p->type)
-	{
-	case BWSET_PAIR:
-		if (rotate != 0 && (p->right100 + rotate) * 10 > p->left10_width10 && (p->right100 + rotate) < 50)
-		{
-			p->right100 += rotate;
-			updateboard (1, 0);
-		}
-		high =  p->right100;
-		break;
-
-	default:
-		ASSERT(0);
-	case BWSET_SINGLE:
-		if (rotate != 0 && gcwpitch10 + rotate <= CWPITCHMAX10 && gcwpitch10 + rotate >= CWPITCHMIN10)
-		{
-			gcwpitch10 += rotate;
-			updateboard (1, 0);
-		}
-		high = gcwpitch10;
-	}
-	return high;
-}
-
-int_fast8_t hamradio_afresponce(int_fast8_t v)
-{
-	const uint_fast8_t pathi = 0;
-	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(pathi);
-	const uint_fast8_t amode = submodes [asubmode].mode;
-	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
-	const uint_fast8_t pos = bwsetpos [bwseti];
-	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
-
-	if (v > 0)
-		p->afresponce = calc_next(p->afresponce, AFRESPONCEMIN, AFRESPONCEMAX);
-	else if (v < 0)
-		p->afresponce = calc_prev(p->afresponce, AFRESPONCEMIN, AFRESPONCEMAX);
-
-	if (v != 0)
-	{
-		save_i8(RMT_BWPROPSAFRESPONCE_BASE(bwseti), p->afresponce);
-		updateboard(1, 0);
-	}
-
-	return p->afresponce + getafresponcebase();
-}
-
-#endif /* WITHIF4DSP */
-
-#if WITHMENU
-uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
-{
-	uint_fast16_t el;
-	uint_fast8_t count = 0;
-
-#if defined (RTC1_TYPE)
-	getstamprtc();
-#endif /* defined (RTC1_TYPE) */
-	for (el = 0; el < MENUROW_COUNT; el ++)
-	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
-		if (ismenukind(mv, ITEM_GROUP))
-		{
-			menu_names_t * const v = & vals [count];
-			safestrcpy(v->name, ARRAY_SIZE(v->name), mv->label);
-			v->index = el;
-			count++;
-		}
-	}
-	return count;
-}
-
-uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count)
-{
-	uint_fast16_t el;
-	uint_fast8_t count = 0;
-
-	for (el = index + 1; el < MENUROW_COUNT; el ++)
-	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
-		if (ismenukind(mv, ITEM_GROUP))
-			break;
-		if (ismenukind(mv, ITEM_VALUE))
-		{
-			menu_names_t * const v = & vals [count];
-			safestrcpy (v->name, ARRAY_SIZE(v->name), mv->label);
-			v->index = el;
-			count++;
-		}
-		if (count >= max_count)
-		{
-			PRINTF("Block count %d exceeding the array size %d\n", count, max_count);
-			ASSERT(0);
-		}
-	}
-	return count;
-}
-
-void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
-{
-	uint_fast16_t el;
-	uint_fast8_t count = 0;
-
-	for (el = index; el <= index + cnt; el ++)
-	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
-		if (ismenukind(mv, ITEM_VALUE))
-		{
-			menu_names_t * const v = & vals [count];
-			dctx_t dctx;
-			dctx.type = DCTX_MENU;
-			dctx.pv = mv;
-			display2_menu_valxx(0, 0, & dctx);
-			safestrcpy (v->name, ARRAY_SIZE(v->name), menuw);
-			v->index = el;
-			count++;
-		}
-	}
-}
-
-const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
-{
-	const FLASHMEM struct menudef * const mp = & menutable [index];
-	if (rotate != 0 && ismenukind(mp, ITEM_VALUE))
-	{
-		/* редактирование паратметра */
-		const uint_fast16_t step = mp->qistep;
-		uint_fast16_t * const pv16 = mp->qpval16;
-		uint_fast8_t * const pv8 = mp->qpval8;
-
-		if (rotate < 0)
-		{
-			// negative change value
-			const uint_fast32_t bottom = mp->qbottom;
-			if (pv16 != NULL)
-			{
-				* pv16 =
-					prevfreq(* pv16, * pv16 - (- rotate * step), step, bottom);
-			}
-			else
-			{
-				* pv8 =
-					prevfreq(* pv8, * pv8 - (- rotate * step), step, bottom);
-			}
-		}
-		else
-		{
-			// positive change value
-			const uint_fast32_t upper = mp->qupper;
-			if (pv16 != NULL)
-			{
-				* pv16 =
-					nextfreq(* pv16, * pv16 + (rotate * step), step, upper + (uint_fast32_t) step);
-			}
-			else
-			{
-				* pv8 =
-					nextfreq(* pv8, * pv8 + (rotate * step), step, upper + (uint_fast32_t) step);
-			}
-		}
-		updateboard(1, 0);
-		display_redrawfreqstimed(1);
-		display_redrawmodestimed(1);
-#if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
-		savemenuvalue(mp);		/* сохраняем отредактированное значение */
-#endif
-		}
-	dctx_t dctx;
-	dctx.type = DCTX_MENU;
-	dctx.pv = mp;
-	display2_menu_valxx(0, 0, & dctx);
-	return menuw;
-}
-#endif /* WITHMENU */
-
-const char * hamradio_get_submode_label(uint_fast8_t v)
-{
-	ASSERT(v < SUBMODE_COUNT);
-	return submodes [v].qlabel;
-}
-
-uint_fast8_t hamradio_get_submode(void)
-{
-	return getsubmode(0);
-}
-
-void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq)
-{
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
-	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
-	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
-
-	if (need_correct_freq)
-		gsubmodechange(getsubmode(bi), bi);
-	else
-		savebandstate(getvfoindex(bi), bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
-
-	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-	display_redrawfreqstimed(1);
-	display_redrawmodestimed(1);
-}
-
-void hamradio_clean_memory_cells(uint_fast8_t i)
-{
-	ASSERT(i < MBANDS_COUNT);
-	save_i32(RMT_BFREQ_BASE(MBANDS_BASE + i), 0);
-}
-
-void hamradio_save_memory_cells(uint_fast8_t i)
-{
-	ASSERT(i < MBANDS_COUNT);
-	savebandstate(MBANDS_BASE + i, getbankindex_tx(gtx));
-	savebandfreq(MBANDS_BASE + i, getbankindex_tx(gtx));
-}
-
-uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set)
-{
-	ASSERT(cell < MBANDS_COUNT);
-
-	int_fast32_t freq = restore_i32(RMT_BFREQ_BASE(MBANDS_BASE + cell));
-	if (freqvalid(freq, gtx))
-	{
-		if (set)
-		{
-			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-			const vindex_t vi = getvfoindex(bi);
-			loadnewband(MBANDS_BASE + cell, bi);	/* загрузка всех параметров (и частоты) нового режима */
-			savebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
-			savebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
-			updateboard(1, 1);
-		}
-		return freq;
-	}
-	else
-		return 0;
-}
-
-#if WITHAFCODEC1HAVEPROC
-
-void hamradio_clean_mic_profile(uint_fast8_t cell)
-{
-	ASSERT(cell < NMICPROFCELLS);
-
-	micprof_t * mp = & micprof_cells [cell];
-
-	mp->mikeboost20db = 0;
-	mp->level = 0;
-	mp->agc = 0;
-	mp->agcgain = 0;
-	mp->clip = 0;
-	mp->cell_saved = 0;
-	mp->eq_enable = 0;
-
-	save_i8(RMT_MICPSAVE_BASE(cell), mp->cell_saved);
-}
-
-void hamradio_save_mic_profile(uint_fast8_t cell)
-{
-	ASSERT(cell < NMICPROFCELLS);
-
-	micprof_t * mp = & micprof_cells [cell];
-
-	mp->cell_saved = 1;
-	mp->mikeboost20db = gmikeboost20db;
-	mp->level = gmik1level;
-	mp->agc = gmikeagc;
-	mp->agcgain = gmikeagcgain;
-	mp->clip = gmikehclip;
-	mp->eq_enable = gmikeequalizer;
-
-	for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
-	{
-		mp->eq_params [j] = gmikeequalizerparams [j];
-		save_i8(RMT_MICEQPARAMS_BASE(cell, j), mp->eq_params [j]);
-	}
-
-	save_i8(RMT_MICEQ_BASE(cell), mp->eq_enable);
-	save_i8(RMT_MICBOOST_BASE(cell), mp->mikeboost20db);
-	save_i8(RMT_MICLEVEL_BASE(cell), mp->level);
-	save_i8(RMT_MICAGC_BASE(cell), mp->agc);
-	save_i8(RMT_MICAGCGAIN_BASE(cell), mp->agcgain);
-	save_i8(RMT_MICCLIP_BASE(cell), mp->clip);
-	save_i8(RMT_MICPSAVE_BASE(cell), mp->cell_saved);
-}
-
-uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
-{
-	ASSERT(cell < NMICPROFCELLS);
-
-	micprof_t * mp = & micprof_cells [cell];
-
-	if (mp->cell_saved && set)
-	{
-		gmikeboost20db = mp->mikeboost20db;
-		gmik1level = mp->level;
-		gmikeagc = mp->agc;
-		gmikeagcgain = mp->agcgain;
-		gmikehclip = mp->clip;
-		gmikeequalizer = mp->eq_enable;
-
-		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
-			gmikeequalizerparams [j] = mp->eq_params [j];
-
-		updateboard(1, 0);
-	}
-	return mp->cell_saved;
-}
-
-#endif /* WITHAFCODEC1HAVEPROC */
-
-uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need)
-{
-	uint_fast8_t count = 0;
-
-	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
-	{
-		if (existingbandsingle(i, 0))		// check for HAM bands
-		{
-			if (! count_only)
-			{
-				band_array_t * const b = & bands [count];
-				const char * l = get_band_label(i);
-
-				b->index = i;
-				b->init_freq = get_band_init(i);
-				b->type = BAND_TYPE_HAM;
-				if (strcmp(l, ""))
-				{
-					strcpy(b->name, l);
-				}
-				else
-				{
-					local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
-				}
-			}
-			count ++;
-		}
-	}
-
-	if (is_bcast_need)
-	{
-		for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
-		{
-			if (existingbandsingle(i, 1))		// check for broadcast bands
-			{
-				if (! count_only)
-				{
-					band_array_t * const b = & bands [count];
-					const char * l = get_band_label(i);
-
-					b->index = i;
-					b->init_freq = get_band_init(i);
-					b->type = BAND_TYPE_BROADCAST;
-					if (strcmp(l, ""))
-					{
-						strcpy(b->name, l);
-					}
-					else
-					{
-						local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
-					}
-				}
-				count ++;
-			}
-		}
-	}
-	return count;
-}
-
-void hamradio_goto_band_by_freq(uint_fast32_t f)
-{
-	band_no_check = 1;
-
-	if (freqvalid(f, gtx))
-		uif_key_click_banddjump(f);
-
-	band_no_check = 0;
-}
-
-uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
-{
-	band_no_check = 1;
-	vindex_t v = getfreqband(hamradio_get_freq_rx()) == band;
-	band_no_check = 0;
-	return v;
-}
-
-#endif /* WITHTOUCHGUI */
-
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 uint_fast8_t hamradio_get_gsmetertype(void)
 {
@@ -23187,128 +19208,6 @@ const char * hamradio_get_preamp_value(void)
 	return attmodes [gatts [bi]].label;
 #endif
 }
-
-
-#if WITHTOUCHGUI
-
-void hamradio_change_att(void)
-{
-	uif_key_click_attenuator();
-}
-
-void hamradio_change_preamp(void)
-{
-#if ! WITHONEATTONEAMP
-	uif_key_click_pamp();
-#endif /* ! WITHONEATTONEAMP */
-}
-
-#if WITHTX
-
-uint_fast8_t hamradio_moxmode(uint_fast8_t v)
-{
-	if (v)
-		uif_key_tuneoff();
-	return moxmode;
-}
-
-uint_fast8_t hamradio_tunemode(uint_fast8_t v)
-{
-	if (v)
-		uif_key_tune();
-	return tunemode;
-}
-
-#endif /* WITHTX */
-
-uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit)
-{
-	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
-	const uint_fast8_t count = bwsetsc [bwseti].last + 1;
-
-	for (uint_fast8_t i = 0; i < count; i ++)
-	{
-		if (i > limit)
-			break;
-
-		strcpy(bws->label[i], bwsetsc [bwseti].labels [i]);
-	}
-
-	return count;
-}
-
-void hamradio_set_bw(uint_fast8_t v)
-{
-	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
-	ASSERT(v <= bwsetsc [bwseti].last);
-	bwsetpos [bwseti] = v;
-	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
-	updateboard(1, 1);
-}
-
-void hamradio_change_nr(void)
-{
-	uif_key_changenr();
-}
-
-void hamradio_load_gui_settings(void * ptrv)
-{
-	uint8_t * ptr = ptrv;
-	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
-	const size_t gui_nvram_size = sizeof (struct gui_nvram_t);
-	size_t i;
-
-	for (i = 0; i < gui_nvram_size; i ++)
-	{
-		* ptr ++ = restore_i8(offset ++);
-	}
-}
-
-void hamradio_save_gui_settings(const void * ptrv)
-{
-	const uint8_t * ptr = ptrv;
-	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
-	const size_t gui_nvram_size = sizeof (struct gui_nvram_t);
-	size_t i;
-
-	for (i = 0; i < gui_nvram_size; i ++)
-	{
-		save_i8(offset ++, * ptr ++);
-	}
-}
-
-#if WITHENCODER2
-void hamradio_gui_enc2_update(void)
-{
-	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
-	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-	enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
-	enc2_menu.updated = 1;
-	enc2_menu.state = enc2state;
-	gui_encoder2_menu(& enc2_menu);
-}
-#else /* WITHENCODER2 */
-void hamradio_gui_enc2_update(void)
-{
-}
-#endif /* WITHENCODER2 */
-
-#if WITHTX
-
-void hamradio_gui_set_reqautotune2(uint_fast8_t val)
-{
-	reqautotune2 = val != 0;
-}
-
-#endif /* WITHTX */
-
-void display2_set_page_temp(uint_fast8_t page)
-{
-	menuset = page;
-	display2_bgreset();
-}
-
-#endif /* WITHTOUCHGUI */
 
 #if WITHUSEDUALWATCH
 uint_fast8_t hamradio_split_toggle(void)
@@ -23577,6 +19476,7 @@ bootloader_launch_app(uintptr_t ip)
 	//GIC_DisableInterface();
 	//GIC_DisableDistributor();
 
+	// Disable all IRQs
 	{
 		// Get ITLinesNumber
 		const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;

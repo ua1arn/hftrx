@@ -57,7 +57,7 @@
 
 	#include "zynq7000_hal.h"
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	#include "allwnr_t113s3_hal.h"
 
@@ -149,10 +149,11 @@
 /**
   * @}
   */
- void MX_USB_HOST_Init(void);
- void MX_USB_HOST_DeInit(void);
+void MX_USB_HOST_Init(void);
+void MX_USB_HOST_DeInit(void);
 
- void MX_USB_HOST_Process(void);
+void MX_USB_HOST_Process(void);
+void MX_USB_DEVICE_Process(void);
 
 extern USBH_HandleTypeDef hUsbHostHS;
 

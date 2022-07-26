@@ -13,24 +13,6 @@
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-#if WITHFT8
-
-#include "ft8.h"
-
-void xcz_ipi_sendmsg_c0(uint8_t msg)
-{
-	ft8.int_core0 = msg;
-	GIC_SendSGI(ft8_interrupt_core0, TARGETCPU_CPU0, 0x00);
-}
-
-void xcz_ipi_sendmsg_c1(uint8_t msg)
-{
-	ft8.int_core1 = msg;
-	GIC_SendSGI(ft8_interrupt_core1, TARGETCPU_CPU1, 0x00);
-}
-
-#endif
-
 #if 0
 
 static const char * mode_trig(uint32_t mode)
@@ -1473,6 +1455,28 @@ static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const 
 
 #if CPUSTYLE_ARM
 
+uint_fast8_t arm_hardware_clustersize(void)
+{
+#if CPUSTYLE_AT91SAM7S
+
+	return 1;
+
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	// Cortex-A computers
+
+#if WITHSMPSYSTEM
+	// Cortex-A53: check L2CTLR, [24:25]
+	return 2; //(__get_MPIDR() >> 8) & 0xFF;
+#else /* WITHSMPSYSTEM */
+	return 1;
+#endif /* WITHSMPSYSTEM */
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	return 1;
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
 
 // This processor index (0..n-1)
 uint_fast8_t arm_hardware_cpuid(void)
@@ -1494,9 +1498,10 @@ uint_fast8_t arm_hardware_cpuid(void)
 }
 
 static RAMDTCM SPINLOCK_t gicpriority_lock = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t populate_lock = SPINLOCK_INIT;
 
 #if WITHSMPSYSTEM
+
+static RAMDTCM SPINLOCK_t populate_lock = SPINLOCK_INIT;
 
 //static USBALIGN_BEGIN uint8_t gicshadow_target [1024] USBALIGN_END;
 //static USBALIGN_BEGIN uint8_t gicshadow_config [1024] USBALIGN_END;
@@ -1610,7 +1615,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	GIC_SetTarget(int_id, targetcpu);
 
 
-	#if CPUSTYLE_STM32MP1 || CPUSTYPE_ALLWNT113
+	#if CPUSTYLE_STM32MP1 || CPUSTYPE_T113
 		// peripheral (hardware) interrupts using the GIC 1-N model.
 		uint_fast32_t cfg = GIC_GetConfiguration(int_id);
 		cfg &= ~ 0x02;	/* Set level sensitive configuration */

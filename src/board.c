@@ -4105,11 +4105,11 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_STORCH_V9A
 
-/* STM32MP157, дополнения для подключения трансвертора */
+/* STM32MP1, Allwinner t113-s3, STM32MP157, дополнения для подключения трансвертора */
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
-static void 
+static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
@@ -4217,8 +4217,8 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0034, 0);			// D4: CTLSPARE1
 		RBBIT(0033, 0);			// D3: not used
 		RBBIT(0032, ! glob_bglightoff);			// D2: LCD_BL_ENABLE
-		RBBIT(0031, 0);			// D1: not used
-		RBBIT(0030, 0);			// D0: not used
+		RBBIT(0031, ((glob_bglight - WITHLCDBACKLIGHTMIN) & 0x02));	// LCD_BL1
+		RBBIT(0030, ((glob_bglight - WITHLCDBACKLIGHTMIN) & 0x01));	// LCD_BL0
 
 		// DD22 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0021, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
@@ -6713,22 +6713,19 @@ const codec2if_t * board_getfpgacodecif(void)
 
 #endif /* defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_FPGAV1) */
 
-#if FPGA_CONF_DONE_BIT != 0
-/* получение сигнала завершения конфигурации FPGA. Возврат: 0 - конфигурация не завершена */
-static uint_fast8_t board_fpga_get_CONF_DONE(void)
+
+#if WITHFPGALOAD_DCFG
+static ALIGNX_BEGIN const FLASHMEMINIT uint32_t bitimage0 [] ALIGNX_END =
 {
-	return (FPGA_CONF_DONE_INPUT & FPGA_CONF_DONE_BIT) != 0;
-
-}
-#endif
-
-#if FPGA_NSTATUS_BIT != 0
-static uint_fast8_t board_fpga_get_NSTATUS(void)
+#include BOARD_BITIMAGE_NAME
+};
+/* получить расположение в памяти и количество элементов в массиве для загрузки PS ZYNQ */
+const uint32_t * getbitimage(size_t * count)
 {
-	return (FPGA_NSTATUS_INPUT & FPGA_NSTATUS_BIT) != 0;
-
+	* count = sizeof bitimage0 / sizeof bitimage0 [0];
+	return & bitimage0 [0];
 }
-#endif
+#endif /* WITHFPGALOAD_DCFG */
 
 #if WITHFPGALOAD_DCFG
 
@@ -6842,36 +6839,42 @@ static void board_fpga_loader_XDCFG(void)
 
 #endif /* WITHFPGALOAD_DCFG */
 
-#if WITHFPGALOAD_DCFG
-static ALIGNX_BEGIN const FLASHMEMINIT uint32_t bitimage0 [] ALIGNX_END =
-{
-#include BOARD_BITIMAGE_NAME
-};
-/* получить расположение в памяти и количество элементов в массиве для загрузки PS ZYNQ */
-const uint32_t * getbitimage(size_t * count)
-{
-	* count = sizeof bitimage0 / sizeof bitimage0 [0];
-	return & bitimage0 [0];
-}
-#endif /* WITHFPGALOAD_DCFG */
-
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 
-#if 0 && FPGA_INIT_DONE_BIT != 0
+/* получение сигнала завершения конфигурации FPGA. Возврат: 0 - конфигурация не завершена */
+static uint_fast8_t board_fpga_get_CONF_DONE(void)
+{
+#if FPGA_CONF_DONE_BIT != 0
+	return (FPGA_CONF_DONE_INPUT & FPGA_CONF_DONE_BIT) != 0;
+#else /* FPGA_CONF_DONE_BIT != 0 */
+	return 0;
+#endif /* FPGA_CONF_DONE_BIT != 0 */
+}
+
+static uint_fast8_t board_fpga_get_NSTATUS(void)
+{
+#if FPGA_NSTATUS_BIT != 0
+	return (FPGA_NSTATUS_INPUT & FPGA_NSTATUS_BIT) != 0;
+#else /* FPGA_NSTATUS_BIT != 0 */
+	return 1;
+#endif /* FPGA_NSTATUS_BIT != 0 */
+
+}
 
 /* не на всех платах соединено с процессором */
 static uint_fast8_t board_fpga_get_INIT_DONE(void)
 {
+#if 0 && FPGA_INIT_DONE_BIT != 0
 	return (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0;
-
-}
-
+#else
+	return 1;
 #endif
+}
 
 static void board_fpga_loader_initialize(void)
 {
-	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
+	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 	HARDWARE_FPGA_LOADER_INITIALIZE();
 }
 
@@ -6893,16 +6896,31 @@ const uint16_t * getrbfimage(size_t * count)
 
 #endif /* ! (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
 
+#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
+
 /* FPGA загружается процессором с помощью SPI */
 static void board_fpga_loader_PS(void)
 {
-#if (WITHSPIHW && WITHSPI16BIT)	// for skip in test configurations
 	unsigned retries = 0;
+
+#if WITHSPIEXT16	// for skip in test configurations
+	hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE0);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	// Software SPI
+	spi_select2(targetnone, SPIC_MODE0, SPIC_SPEEDFAST);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
 restart:
 
 	if (++ retries > 4)
 	{
 		PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
+
+#if WITHSPIEXT16	// for skip in test configurations
+		hardware_spi_disconnect();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+		spi_unselect(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 		return;
 	}
 	;
@@ -6911,6 +6929,7 @@ restart:
 	do {
 		size_t rbflength;
 		const uint16_t * p = getrbfimage(& rbflength);
+		unsigned score = 0;
 
 		PRINTF("fpga: board_fpga_loader_PS start\n");
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
@@ -6929,6 +6948,12 @@ restart:
 			if (-- w == 0)
 				goto restart;
 		}
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
+		if (board_fpga_get_CONF_DONE() != 0)
+		{
+			PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u\n", score);
+			goto restart;
+		}
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		local_delay_ms(1);
 		/* 2) Дождаться "1" на nSTATUS */
@@ -6939,6 +6964,12 @@ restart:
 			if (-- w == 0)
 				goto restart;
 		}
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 done\n");
+		if (board_fpga_get_CONF_DONE() != 0)
+		{
+			PRINTF("fpga: 2 Unexpected state of CONF_DONE==1, score=%u\n", score);
+			goto restart;
+		}
 		/* 3) Выдать байты (бладший бит .rbf файла первым) */
 		//PRINTF("fpga: start sending RBF image (%lu of 16-bit words)\n", rbflength);
 		if (rbflength != 0)
@@ -6947,30 +6978,52 @@ restart:
 			size_t n = rbflength - 1;
 			//
 
-			hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
-
+#if WITHSPIEXT16// for skip in test configurations
 			hardware_spi_b16_p1(* p ++);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+			// Software SPI
+			const uint_fast16_t v16 = * p ++;
+			spi_progval8_p1(targetnone, v16 >> 8);
+			spi_progval8_p2(targetnone, v16 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+			++ score;
 			while (n --)
 			{
 				if (board_fpga_get_CONF_DONE() != 0)
 				{
-					//PRINTF("fpga: Unexpected state of CONF_DONE==1\n");
-					break;
+					PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u\n", score);
+					goto restart;
 				}
+#if WITHSPIEXT16	// for skip in test configurations
 				hardware_spi_b16_p2(* p ++);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+				const uint_fast16_t v16_2 = * p ++;
+				spi_progval8_p2(targetnone, v16_2 >> 8);
+				spi_progval8_p2(targetnone, v16_2 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+				++ score;
 			}
+#if WITHSPIEXT16	// for skip in test configurations
+			hardware_spi_complete_b16();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+			spi_complete(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 
 			//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
 			/* 4) Дождаться "1" на CONF_DONE */
 			while (wcd < rbflength && board_fpga_get_CONF_DONE() == 0)
 			{
 				++ wcd;
-				hardware_spi_b16_p2(0xffff);
+#if WITHSPIEXT16	// for skip in test configurations
+				hardware_spi_b16_p1(0xffff);
+				hardware_spi_complete_b16();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+				const uint_fast16_t v16_3 = 0xFFFF;
+				spi_progval8_p1(targetnone, v16_3 >> 8);
+				spi_progval8_p2(targetnone, v16_3 >> 0);
+				spi_complete(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 			}
-
-			hardware_spi_complete_b16();
-
-			hardware_spi_disconnect();
 
 			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
 			if (wcd >= rbflength)
@@ -6990,8 +7043,13 @@ restart:
 		if (-- w == 0)
 			goto restart;
 	}
+
+#if WITHSPIEXT16	// for skip in test configurations
+	hardware_spi_disconnect();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	spi_unselect(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 	PRINTF("board_fpga_loader_PS: usermode okay\n");
-#endif /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 }
 
 #elif WITHFPGAWAIT_AS
@@ -7029,10 +7087,11 @@ static void board_fpga_loader_wait_AS(void)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-#if FPGA_NCONFIG_BIT != 0
-
+/* работоспособность функции под вопросом, были случаи незагрузки аппарата (с новыми версиями EP4CE22) */
 void board_fpga_reset(void)
 {
+#if FPGA_NCONFIG_BIT != 0
+
 	unsigned w = 500;
 	/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
@@ -7060,8 +7119,9 @@ void board_fpga_reset(void)
 	}
 restart:
 	;
-}
+
 #endif
+}
 
 #if WITHDSPEXTFIR
 
@@ -7201,7 +7261,7 @@ board_fpga_fir_complete(void)
 
 #else /* WITHSPI32BIT */
 	// Software SPI
-	spi_complete(0);
+	spi_complete(targetnone);
 
 #endif /* WITHSPI32BIT */
 }
@@ -7209,6 +7269,10 @@ board_fpga_fir_complete(void)
 static void
 board_fpga_fir_connect(void)
 {
+#if WITHSPILOWSUPPORTT
+	system_disableIRQ();
+	spi_operate_lock();
+#endif /* WITHSPILOWSUPPORTT */
 #if WITHSPI32BIT
 	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
 
@@ -7229,8 +7293,8 @@ board_fpga_fir_connect(void)
 
 #else /* WITHSPI32BIT */
 	// Software SPI
-	spi_progval8_p1(0, 0x00);	// provide clock for reset bit counter while CS=1
-	spi_complete(0);
+	spi_progval8_p1(targetnone, 0x00);	// provide clock for reset bit counter while CS=1
+	spi_complete(targetnone);
 
 #endif /* WITHSPI32BIT */
 
@@ -7258,6 +7322,10 @@ board_fpga_fir_disconnect(void)
 	hardware_spi_disconnect();
 #else /* WITHSPIHW */
 #endif
+#if WITHSPILOWSUPPORTT
+	spi_operate_unlock();
+	system_enableIRQ();
+#endif /* WITHSPILOWSUPPORTT */
 }
 
 /*
@@ -8900,8 +8968,8 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 		uint_fast8_t ch = adci - BOARD_ADCXKBASE;
 		adcvalholder_t rv = mcp3208_read(targetadck, 0, ch, & valid);
 		//PRINTF("targetadck: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
-		if (valid == 0)
-			PRINTF("ADC%u validation failed\n", adci);
+//		if (valid == 0)
+//			PRINTF("ADC%u validation failed\n", adci);
 		return rv;
 #else /* defined (targetadc2) */
 		return 0;
@@ -8915,8 +8983,8 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
 		adcvalholder_t rv = mcp3208_read(targetxad2, 0, ch, & valid);
 		//PRINTF("targetxad2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
-		if (valid == 0)
-			PRINTF("ADC%u validation failed\n", adci);
+//		if (valid == 0)
+//			PRINTF("ADC%u validation failed\n", adci);
 		return rv;
 #else /* defined (targetxad2) */
 		return 0;
@@ -8931,8 +8999,8 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 		//PRINTF("targetadc2: ch = %u\n", ch);
 		adcvalholder_t rv = mcp3208_read(targetadc2, 0, ch, & valid);
 		//PRINTF("targetadc2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
-		if (valid == 0)
-			PRINTF("ADC%u validation failed\n", adci);
+//		if (valid == 0)
+//			PRINTF("ADC%u validation failed\n", adci);
 		return rv;
 #else /* defined (targetadc2) */
 		return 0;
@@ -9082,17 +9150,13 @@ uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t adci, uint_fast8_t lower, u
 }
 
 /* получить значение от АЦП в диапазоне lower..upper (включая границы) */
-uint_fast8_t keyboard_getadc_unfiltered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast8_t keyboard_getadc_unfiltered_u8_low(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 {
-#if KEYBOARD_USE_ADC_LOW
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	const adcvalholder_t t = board_getadc_unfiltered_truevalue_low(adci);
 	const uint_fast8_t v = lower + (uint_fast8_t) ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
 	return v;
-#else /* KEYBOARD_USE_ADC_LOW */
-		return board_getadc_unfiltered_u8(adci, lower, upper);
-#endif /* KEYBOARD_USE_ADC_LOW */
 }
 
 /* получить значение от АЦП в диапазоне lower..upper (включая границы) */
@@ -9511,16 +9575,16 @@ board_get_pressed_key(void)
 	{
 	#if KEYBOARD_USE_ADC6
 		// шесть кнопок на одном входе АЦП
-		const uint_fast8_t v = kbd_adc6_decode(keyboard_getadc_unfiltered_u8(kitable [ki], 0, 255));
+		const uint_fast8_t v = kbd_adc6_decode(keyboard_getadc_unfiltered_u8_low(kitable [ki], 0, 255));
 	#elif KEYBOARD_USE_ADC6_V1
 		// шесть кнопок на одном входе АЦП
-		const uint_fast8_t v = kbd_adc6v1_decode(keyboard_getadc_unfiltered_u8(kitable [ki], 0, 255));
+		const uint_fast8_t v = kbd_adc6v1_decode(keyboard_getadc_unfiltered_u8_low(kitable [ki], 0, 255));
 	#else /* KEYBOARD_USE_ADC6 || KEYBOARD_USE_ADC6_V1 */
 		// исправление ошибочного срабатывания - вокруг значений при нажатых клавишах
 		// (между ними) добавляются защитные интервалы, обрабаатываемые как ненажатая клавиша.
 		// Последний инлекс не выдается, отпущеная кнопка - предпоследний.
 		// четыре кнопки на одном входе АЦП
-		const uint_fast8_t v = kixlat4 [keyboard_getadc_unfiltered_u8(kitable [ki], 0, sizeof kixlat4 / sizeof kixlat4 [0] - 1)];
+		const uint_fast8_t v = kixlat4 [keyboard_getadc_unfiltered_u8_low(kitable [ki], 0, sizeof kixlat4 / sizeof kixlat4 [0] - 1)];
 	#endif /* KEYBOARD_USE_ADC6 || KEYBOARD_USE_ADC6_V1 */
 		if (v != KEYBOARD_NOKEY)
 		{
@@ -9706,7 +9770,7 @@ mcp3208_read(
 
 	enum { LSBPOS = 0 };
 
-#if WITHSPILOWSUPPORTT
+#if WITHSPILOWSUPPORTT || 1
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	uint8_t txbuf [4];
@@ -9752,21 +9816,16 @@ mcp3208_read(
 	rv = ((uint_fast32_t) v0 << 16) | v1;
 
 #else
+	// Работа совместно с фоновым обменом SPI по прерываниям
 
-	uint_fast8_t v0, v1, v2, v3;
+	uint8_t txbuf [4];
+	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
-	spi_select2(target, MCP3208_SPISMODE, MCP3208_SPISPEED);	// for 50 kS/S and 24 bit words
-	local_delay_us(MCP3208_usCsDelay);
+	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
 
-	v0 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 24);
-	v1 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
-	v2 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 8);
-	v3 = spi_read_byte(target, 0x00);
+	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
-	spi_unselect(target);
-	local_delay_us(MCP3208_usCsDelay);
-
-	rv = ((uint_fast32_t) v0 << 24) | ((uint_fast32_t) v1 << 16) | ((uint_fast32_t) v2 << 8) | v3;
+	rv = USBD_peek_u32_BE(rxbuf);
 
 #endif
 
@@ -9774,7 +9833,7 @@ mcp3208_read(
 	return (rv >> LSBPOS) & 0xFFF;
 }
 
-#if WITHSPILOWSUPPORTT
+#if WITHSPILOWSUPPORTT || 1
 // Read ADC MCP3204/MCP3208
 uint_fast16_t
 mcp3208_read_low(
@@ -9794,6 +9853,16 @@ mcp3208_read_low(
 
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
+#if WITHSPI32BIT
+	uint32_t txbuf [1];
+	uint32_t rxbuf [ARRAY_SIZE(txbuf)];
+
+	txbuf [0] = (uint_fast32_t) cmd1 << (LSBPOS + 14);
+
+	prog_spi_exchange32_low(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+
+	rv = rxbuf [0];
+#else
 	uint8_t txbuf [4];
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
@@ -9802,6 +9871,7 @@ mcp3208_read_low(
 	prog_spi_exchange_low(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
 	rv = USBD_peek_u32_BE(rxbuf);
+#endif /* WITHSPI32BIT */
 
 	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
 	return (rv >> LSBPOS) & 0xFFF;
@@ -9904,7 +9974,10 @@ int _gettimeofday(struct timeval *p, void *tz)
 {
 	if (p != NULL)
 	{
-		memset(p, 0, sizeof * p);
+		const ldiv_t v = ldiv(sys_now(), 1000);
+		//memset(p, 0, sizeof * p);
+		p->tv_usec = v.rem * 1000;
+		p->tv_sec = v.quot;
 	}
 	return 0;
 }

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Allwinner T113-S3 layout */
+/* Allwinner t113-s3 layout */
 /* Linker script to configure memory regions. */
 
 MEMORY
@@ -38,7 +38,7 @@ MEMORY
  *   __StackTop
  *   __stack
  */
-	 ENTRY(Reset_Handler7)
+	 ENTRY(Reset_Handler)
 
 SECTIONS
 {

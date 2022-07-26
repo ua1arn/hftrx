@@ -35,10 +35,8 @@
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_ANTMINER 1
 
-#if WITHDEBUG
-	#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
-	#define WITHUARTFIFO	1	/* испольование FIFO */
-#endif /* WITHDEBUG */
+#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
+#define WITHUARTFIFO	1	/* испольование FIFO */
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART2	1
@@ -101,6 +99,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+    //#define WITHDCDCFREQCTL    1        // Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */

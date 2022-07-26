@@ -87,11 +87,23 @@ typedef uint_least64_t phase_t;
 //#define WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 //#define WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 
-#define WITHREVERBDELAYMIN 5	/* минимальная задержка ревербератора (ms) */
-#define WITHREVERBDELAYMAX 150	/* максимальная задержка ревербератора (ms) */
+#define WITHREVERBDELAYMIN 1	/* минимальная задержка ревербератора % */
+#define WITHREVERBDELAYMAX 100	/* максимальная задержка ревербератора % */
 
-#define WITHREVERBLOSSMIN 6		/* минимальное ослабление на возврате ревербератора (dB) - кратно ISTEP3 */
-#define WITHREVERBLOSSMAX 39	/* максимальная ослабление на возврате ревербератора (dB) - кратно ISTEP3 */
+#define WITHREVERBLOSSMIN 0		/* минимальное ослабление на возврате ревербератора db */
+#define WITHREVERBLOSSMAX 25	/* максимальная ослабление на возврате ревербератора (dB) */
+
+#define WITHCOMPATTACKMIN 1		/* минимальное время атаки компрессора (мс) */
+#define WITHCOMPATTACKMAX 100	/* максимальная время атаки компрессора (мс) */
+#define WITHCOMPRELEASEMIN 1	/* минимальное время освобождения компрессора (мс) */
+#define WITHCOMPRELEASEMAX 100	/* максимальная время освобождения компрессора (мс) */
+#define WITHCOMPHOLDMIN 1		/* минимальное время удержания компрессора (мс) */
+#define WITHCOMPHOLDMAX 100		/* максимальная время удержания компрессора (мс) */
+#define WITHCOMPGAINMIN 1		/* минимальное отношение компрессии (db) */
+#define WITHCOMPGAINMAX 20		/* максимальная отношение компрессии (db) */
+#define WITHCOMPTHRESHOLDMIN 1	/* минимальный порог компрессии (db) */
+#define WITHCOMPTHRESHOLDMAX 20	/* максимальная порог компрессии (db) */
+
 
 #if defined (DAC1_TYPE)
 	#define WITHDAC1VALMIN	0

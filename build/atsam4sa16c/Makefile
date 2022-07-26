@@ -44,12 +44,14 @@ DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
 	$(CMSISDIR)/Core/Include \
-	$(CMSISDIR)/DSP/Include \
-	$(CMSISDIR)/DSP/Source \
-	$(CMSISDIR)/DSP/PrivateInclude
+	$(RTOSXDIR)/Include \
+	$(RTOSXDIR)/RTX/Include \
+	$(CMSISDSPDIR)/Include \
+	$(CMSISDSPDIR)/Source \
+	$(CMSISDSPDIR)/PrivateInclude
 
 # List the default directory to look for the libraries here
-#DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
+#DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
 
 # List all default libraries here
 DLIBS = -lm

@@ -40,12 +40,12 @@ XUSBPS_Registers * EHCIxToUSBx(void * p)
     return USBx;
 }
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
-USB1_TypeDef * EHCIxToUSBx(void * p)
+USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
 {
-	USB1_TypeDef * const USBx = (WITHUSBHW_EHCI == USB1_EHCI) ? USB1 : USB0;
-    return USBx;
+	USBPHYC_TypeDef * const PHYCx = (WITHUSBHW_EHCI == USBEHCI1) ? USBPHY1 : USBPHY0;
+    return PHYCx;
 }
 
 #endif /* CPUSTYLE_XC7Z */
@@ -1183,7 +1183,7 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
-#if CPUSTYPE_ALLWNT113
+#if CPUSTYPE_T113
 
 //	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
 
@@ -1198,7 +1198,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
 	}
 
-	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
+	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
 	{
 		// Turn off USBOTG0
 		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
@@ -1247,22 +1247,36 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 
+	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY1)
+	{
+		// USBPHY1
+		USBPHY1->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
+		USBPHY1->USB_CTRL |=
+				(1uL << 11) |	// 1: Use INCR16 when appropriate
+				(1uL << 10) |	// 1: Use INCR8 when appropriate
+				(1uL << 9) |	// 1: Use INCR4 when appropriate
+				(1uL << 8) |	// 1: Start INCRx burst only on burst x-align address Note: This bit must enable if any bit of bit[11:9] is enabled
+				0;
 
-	#if WITHUSBHOST_HIGHSPEEDPHYC
+		USBPHY1->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
+	}
+	else
+	{
+		// USBPHY0
 
-		USB1_TypeDef * USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+		// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
+		//	/* A83T specific control bits for PHY0 */
+		//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
+		//	#define PHY_CTL_SIDDQ			BIT(3)
+		//	#define PHY_CTL_H3_SIDDQ		BIT(1)
 
-		USBx->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
-		USBx->USB_CTRL |=
-			(1uL << 11) |	// 1: Use INCR16 when appropriate
-			(1uL << 10) |	// 1: Use INCR8 when appropriate
-			(1uL << 9) |	// 1: Use INCR4 when appropriate
-			(1uL << 8) |	// 1: Start INCRx burst only on burst x-align address Note: This bit must enable if any bit of bit[11:9] is enabled
-			0;
-
-		USBx->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
-
-	#endif /* WITHUSBHOST_HIGHSPEEDPHYC */
+		USBPHY0->USB_CTRL = 0x4300FC00;	// после запуска из QSPI было 0x40000000
+		// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
+		//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
+		USBPHY0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
+		USBPHY0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
+		USBPHY0->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
+	}
 
 #elif CPUSTYLE_STM32MP1
 
@@ -1376,9 +1390,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
-#if CPUSTYPE_ALLWNT113
+#if CPUSTYPE_T113
 
-	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
+	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
 	{
 		ASSERT(0);					/* тут нет EHCI */
 
@@ -2434,6 +2448,7 @@ USBH_StatusTypeDef USBH_LL_Stop(USBH_HandleTypeDef *phost)
 	return usb_status;
 }
 
+/* User-mode function */
 void MX_USB_HOST_Init(void)
 {
 	static ticker_t usbticker;
@@ -2452,11 +2467,13 @@ void MX_USB_HOST_Init(void)
 
 }
 
+/* User-mode function */
 void MX_USB_HOST_DeInit(void)
 {
 	USBH_DeInit(& hUsbHostHS);
 }
 
+/* User-mode function */
 void MX_USB_HOST_Process(void)
 {
 	EHCI_HandleTypeDef * const hehci = hUsbHostHS.pData;

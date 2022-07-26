@@ -31,7 +31,7 @@ void cs42l51_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPILOWSUPPORTT
+	#if WITHSPILOWSUPPORTT || 1
 		// Работа совместно с фоновым обменом SPI по прерываниям
 		uint8_t txbuf [2];
 
@@ -115,7 +115,7 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
-		cs42l51_clocksneed.
+		cs42l51_clocksneed,
 		cs42l51_stop,
 		cs42l51_initialize_fullduplex,
 		cs42l51_setvolume,		/* Установка громкости на наушники */

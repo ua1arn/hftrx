@@ -4227,7 +4227,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #endif	//  CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 
-#if CPUSTYPE_ALLWNT113
+#if CPUSTYPE_T113
 
 #include "spi.h"
 
@@ -4289,15 +4289,17 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		.dram_tpr13 = 0x34000100,
 	};
 
-	bootloader_readimage(0x00040000, (void *) 0x00028000, 32768);
-	memcpy((void *) 0x00028038, & ddr3, sizeof ddr3);
-	arm_hardware_flush(0x00028000, 32768);
-	((void(*)(void))((void *) 0x00028000))();
+	//bootloader_readimage(0x00040000, (void *) 0x00028000, 32768);
+	//memcpy((void *) 0x00028038, & ddr3, sizeof ddr3);
+	//arm_hardware_flush(0x00028000, 32768);
+	//((void(*)(void))((void *) 0x00028000))();
+	sys_dram_init();
 	//PRINTF("arm_hardware_sdram_initialize done\n");
-#if WITHDEBUG
+	//local_delay_ms(1000);
+#if WITHDEBUG && 0
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */
 }
-#endif /* CPUSTYPE_ALLWNT113 */
+#endif /* CPUSTYPE_T113 */
 #endif /* WITHSDRAMHW */

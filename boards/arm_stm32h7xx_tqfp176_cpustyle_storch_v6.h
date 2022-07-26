@@ -256,7 +256,7 @@
 
 #if WITHI2S2HW
 	// Инициализируются I2S2 и I2S3
-	#define I2S2HW_INITIALIZE() do { \
+	#define I2S2HW_SLAVE_INITIALIZE() do { \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
 		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
 		arm_hardware_piob_updown(0, 1uL << 12); \
@@ -269,7 +269,27 @@
 		arm_hardware_piob_updown(0, 1uL << 3); \
 		arm_hardware_piob_altfn2(1uL << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
 	} while (0)
-#endif /* WITHSAI1HW */
+	// Инициализируются I2S2
+	#define I2S2HW_MASTER_INITIALIZE() do { \
+		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
+		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
+		arm_hardware_piob_updown(0, 1uL << 12); \
+		arm_hardware_piob_altfn2(1uL << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
+		arm_hardware_piob_updown(0, 1uL << 10); \
+		arm_hardware_pioc_altfn2(1uL << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
+	} while (0)
+#endif /* WITHI2S2HW */
+
+#if WITHI2S3HW
+	// Инициализируются I2S3
+	#define I2S3HW_SLAVE_INITIALIZE() do { \
+		arm_hardware_pioa_altfn2(1uL << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
+		arm_hardware_pioa_updown(0, 1uL << 15); \
+		arm_hardware_piob_altfn2(1uL << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
+		arm_hardware_piob_updown(0, 1uL << 3); \
+		arm_hardware_piob_altfn2(1uL << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
+	} while (0)
+#endif /* WITHI2S3HW */
 
 #if WITHSAI1HW
 	#define SAI1HW_INITIALIZE()	do { \
@@ -278,6 +298,12 @@
 		arm_hardware_pioe_altfn20(1uL << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
 		arm_hardware_pioe_altfn2(1uL << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 		arm_hardware_pioe_altfn2(1uL << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+	} while (0)
+	#define SAI1HW_SLAVE_INITIALIZE()	do { \
+		SAI1HW_INITIALIZE(); \
+	} while (0)
+	#define SAI1HW_MASTER_INITIALIZE()	do { \
+		SAI1HW_INITIALIZE(); \
 	} while (0)
 #endif /* WITHSAI1HW */
 

@@ -36,10 +36,8 @@
 // OHCI at USB1HSFSP2_BASE
 #define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
-#if WITHDEBUG
-	#define WITHUART4HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
-	#define WITHUARTFIFO	1	/* испольование FIFO */
-#endif /* WITHDEBUG */
+#define WITHUART4HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+#define WITHUARTFIFO	1	/* испольование FIFO */
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART4	1
@@ -100,6 +98,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	#define WITHFPGAIF_SAI2_A_TX_B_RX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
 	#define WITHCODEC1_I2S2_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S2 */
 
@@ -285,6 +284,8 @@
 		arm_hardware_piod_altfn20(1uL << 13, AF_SAI2);			/* PD13 - SAI2_SCK_A	*/ \
 		arm_hardware_pioi_altfn2(1uL << 6,	AF_SAI2);			/* PI6 - SAI2_SD_A	(i2s data to fpga)	*/ \
 		arm_hardware_pioe_altfn2(1uL << 11,	AF_SAI2);			/* PE11 - SAI2_SD_B	(i2s data from fpga)	*/ \
+	} while (0)
+	#define SAI1HW_INITIALIZE()	do { \
 	} while (0)
 #endif /* WITHSAI2HW */
 

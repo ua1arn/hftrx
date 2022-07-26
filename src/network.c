@@ -15,7 +15,313 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	/* зависящие от процессора функции работы с портами */
 
-#if 0 //WITHLWIP
+#if WITHLWIP && CPUSTYLE_XC7Z
+
+#include <time.h>
+#include <stdbool.h>
+#include "lwip/opt.h"
+
+#include "lwip/init.h"
+#include "lwip/ip.h"
+#include "lwip/udp.h"
+#include "lwip/dhcp.h"
+#include "netif/etharp.h"
+#include "netif/xadapter.h"
+#include "lwip/ip_addr.h"
+#include "lwip/err.h"
+#include "lwip/tcp.h"
+#include "lwip/apps/sntp.h"
+#include "lwip/apps/httpd.h"
+#include "lwip/priv/tcp_priv.h"
+#include "lwip/timeouts.h"
+
+#include "board.h"
+#include "xc7z_inc.h"
+
+#if defined WITHPS7BOARD_EBAZ4205
+	unsigned char mac_ethernet_address[] = { 0x00, 0x0a, 0x35, 0x00, 0x01, 0x02 }; // 192.168.0.120
+#elif defined WITHPS7BOARD_MYC_Y7Z020
+	unsigned char mac_ethernet_address[] = { 0x00, 0x0a, 0x35, 0x00, 0x01, 0x03 }; // 192.168.0.121
+#endif
+
+#define COUNTS_PER_MSECOND  (XPAR_CPU_CORTEXA9_CORE_CLOCK_FREQ_HZ / (2U * 1000U))
+#define RESET_RX_CNTR_LIMIT	400
+#define ETH_LINK_DETECT_INTERVAL 4
+
+void dhcp_fine_tmr(void);
+void dhcp_coarse_tmr(void);
+err_t dhcp_start(struct netif *netif);
+
+static struct netif server_netif;
+struct netif * netif;
+uint_fast8_t timezone = 3;  // GMT+3
+static uint_fast8_t network_inited = 0;
+volatile int dhcp_timoutcntr = 24;
+volatile int TcpFastTmrFlag = 0;
+volatile int TcpSlowTmrFlag = 0;
+static volatile uint32_t sys_now_counter = 0;
+static struct udp_pcb * udp_pcb = NULL;
+ip_addr_t ebaz4205_addr;
+char udp_sendbuf [20];
+
+void board_update_time(uint32_t sec)
+{
+	const time_t ut = sec + 60 * 60 * timezone;
+
+#if defined RTC1_TYPE
+	struct tm * datetime;
+	datetime = localtime(& ut);
+	board_rtc_setdatetime(datetime->tm_year, datetime->tm_mon + 1, datetime->tm_mday, datetime->tm_hour, datetime->tm_min, datetime->tm_sec);
+#endif /* RTC1_TYPE */
+
+	PRINTF("ntp time updated: %s", ctime(& ut));
+}
+
+void
+print_ip(const char * msg, ip_addr_t * ip)
+{
+	PRINTF(msg);
+	PRINTF("%d.%d.%d.%d\n", ip4_addr1(ip), ip4_addr2(ip),
+			ip4_addr3(ip), ip4_addr4(ip));
+}
+
+err_t recv_callback(void * arg, struct tcp_pcb * tpcb, struct pbuf * p, err_t err)
+{
+	/* do not read the packet if we are not in ESTABLISHED state */
+	if (!p) {
+		tcp_close(tpcb);
+		tcp_recv(tpcb, NULL);
+		return ERR_OK;
+	}
+
+	/* indicate that the packet has been received */
+	tcp_recved(tpcb, p->len);
+
+	/* echo back the payload */
+	/* in this case, we assume that the payload is < TCP_SND_BUF */
+	if (tcp_sndbuf(tpcb) > p->len) {
+		err = tcp_write(tpcb, p->payload, p->len, 1);
+	} else
+		PRINTF("no space in tcp_sndbuf\n");
+
+	/* free the received pbuf */
+	pbuf_free(p);
+
+	return ERR_OK;
+}
+
+err_t accept_callback(void  *arg, struct tcp_pcb * newpcb, err_t err)
+{
+	static int connection = 1;
+
+	/* set the receive callback for this connection */
+	tcp_recv(newpcb, recv_callback);
+
+	/* just use an integer number indicating the connection id as the
+	   callback argument */
+	tcp_arg(newpcb, (void*)(uintptr_t)connection);
+
+	/* increment for subsequent accepted connections */
+	connection++;
+
+	return ERR_OK;
+}
+
+int start_echo_server(void)
+{
+	struct tcp_pcb * pcb;
+	err_t err;
+	unsigned port = 7;
+
+	/* create new TCP PCB structure */
+	pcb = tcp_new_ip_type(IPADDR_TYPE_ANY);
+	if (!pcb) {
+		PRINTF("Error creating PCB. Out of Memory\n");
+		return -1;
+	}
+
+	/* bind to specified @port */
+	err = tcp_bind(pcb, IP_ANY_TYPE, port);
+	if (err != ERR_OK) {
+		PRINTF("Unable to bind to port %d: err = %d\n", port, err);
+		return -2;
+	}
+
+	/* we do not need any arguments to callback functions */
+	tcp_arg(pcb, NULL);
+
+	/* listen for connections */
+	pcb = tcp_listen(pcb);
+	if (!pcb) {
+		PRINTF("Out of memory while tcp_listen\n");
+		return -3;
+	}
+
+	/* specify callback to use for incoming connections */
+	tcp_accept(pcb, accept_callback);
+
+	PRINTF("TCP echo server started @ port %d\n", port);
+
+	return 0;
+}
+
+void udp_receive(void * arg, struct udp_pcb * pcb, struct pbuf * p_rx, const ip_addr_t * addr, u16_t port)
+{
+	if(p_rx != NULL)
+	{
+		char * pData = (char *) p_rx->payload;
+		PRINTF("%s from %d.%d.%d.%d\n", pData, ip4_addr1(addr), ip4_addr2(addr), ip4_addr3(addr), ip4_addr4(addr));
+	}
+	pbuf_free(p_rx);
+}
+
+
+int start_udp(unsigned int port) {
+	err_t err;
+	udp_pcb = udp_new();
+	if (! udp_pcb) {
+		PRINTF("Error creating PCB. Out of Memory\n");
+		return -1;
+	}
+	/* bind to specified @port */
+	err = udp_bind(udp_pcb, IP_ADDR_ANY, port);
+	if (err != ERR_OK) {
+		PRINTF("Unable to bind to port %d: err = %d\n", port, err);
+		return -2;
+	}
+//	udp_recv(udp_pcb, udp_receive, 0);
+
+	return 0;
+}
+
+uint32_t sys_now(void)
+{
+	return sys_now_counter;
+}
+
+/* must be called every 1 ms */
+void lwip_timer_spool(void)
+{
+	sys_now_counter ++;
+
+	sys_check_timeouts();
+
+	if (network_inited)
+		xemacif_input(netif);
+
+	if (sys_now_counter % ETH_LINK_DETECT_INTERVAL == 0)
+		eth_link_detect(netif);
+
+	if (sys_now_counter % RESET_RX_CNTR_LIMIT == 0)
+		xemacpsif_resetrx_on_no_rxdata(netif);
+
+	if (sys_now_counter % TCP_FAST_INTERVAL == 0)
+	{
+		tcp_fasttmr();
+		dhcp_timoutcntr --;
+	}
+
+	if (sys_now_counter % TCP_SLOW_INTERVAL == 0)
+		tcp_slowtmr();
+
+	if (sys_now_counter % DHCP_FINE_TIMER_MSECS == 0)
+		dhcp_fine_tmr();
+
+	if (sys_now_counter % DHCP_COARSE_TIMER_MSECS == 0)
+		dhcp_coarse_tmr();
+
+#if defined WITHPS7BOARD_MYC_Y7Z020 && 1
+	if (sys_now_counter % 100 == 0 && network_inited)
+	{
+		struct pbuf * q = pbuf_alloc(PBUF_TRANSPORT, 20, PBUF_POOL);
+		ASSERT(q);
+		uint_fast32_t freq = hamradio_get_freq_rx();
+		local_snprintf_P(udp_sendbuf, ARRAY_SIZE(udp_sendbuf), "%d", freq);
+		memcpy(q->payload, udp_sendbuf, ARRAY_SIZE(udp_sendbuf));
+		q->len = q->tot_len = 20;
+		udp_sendto(udp_pcb, q, & ebaz4205_addr, 48700);
+		pbuf_free(q);
+	}
+#endif /* defined WITHPS7BOARD_MYC_Y7Z020 */
+}
+
+/* вызывается при разрешённых прерываниях. */
+void network_initialize(void)
+{
+	ip_addr_t ipaddr, netmask, gw;
+	netif = &server_netif;
+    ipaddr.addr = 0;
+	gw.addr = 0;
+	netmask.addr = 0;
+
+	PTIM_SetControl(0);
+	PTIM_SetCurrentValue(0);
+	PTIM_SetLoadValue(1 * COUNTS_PER_MSECOND);
+	PTIM_SetControl(0x06U);
+	//arm_hardware_set_handler_system(PrivTimer_IRQn, lwip_timer_spool);
+	arm_hardware_set_handler(PrivTimer_IRQn, lwip_timer_spool, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);
+	PTIM_SetControl(PTIM_GetControl() | 0x01);
+
+	lwip_init();
+
+	if (!xemac_add(netif, & ipaddr, & netmask, & gw, mac_ethernet_address, XPAR_XEMACPS_0_BASEADDR))
+	{
+		PRINTF("Error adding N/W interface\n");
+		ASSERT(0);
+	}
+
+	netif_set_default(netif);
+	netif_set_up(netif);
+
+	dhcp_start(netif);
+	dhcp_timoutcntr = 24;
+
+	while(((netif->ip_addr.addr) == 0) && (dhcp_timoutcntr > 0))
+		xemacif_input(netif);
+
+	if (dhcp_timoutcntr <= 0) {
+		if ((netif->ip_addr.addr) == 0) {
+			PRINTF("DHCP Timeout\n");
+			PRINTF("Configuring default IP of 192.168.1.10\n");
+			IP4_ADDR(&(netif->ip_addr),  192, 168,   1, 10);
+			IP4_ADDR(&(netif->netmask), 255, 255, 255,  0);
+			IP4_ADDR(&(netif->gw),      192, 168,   1,  1);
+		}
+	}
+
+	ipaddr.addr = netif->ip_addr.addr;
+	gw.addr = netif->gw.addr;
+	netmask.addr = netif->netmask.addr;
+
+	print_ip("Board IP: ", & ipaddr);
+	print_ip("Netmask : ", & netmask);
+	print_ip("Gateway : ", & gw);
+
+	//132.163.97.1 time nist.gov
+
+	ip_addr_t ntps;
+	ipaddr_aton("132.163.97.1", & ntps);
+	sntp_setserver(0, & ntps);
+	sntp_setoperatingmode(SNTP_OPMODE_POLL);
+	sntp_init();
+
+	start_echo_server();
+//	httpd_init();
+#if defined WITHPS7BOARD_MYC_Y7Z020 && 1
+	start_udp(48710);
+	IP4_ADDR(& ebaz4205_addr, 192,168,0,120);
+#endif /* defined WITHPS7BOARD_MYC_Y7Z020 */
+
+	network_inited = 1;
+}
+
+void network_spool(void)
+{
+
+}
+
+#elif WITHLWIP
+
 #include "sdcard.h"
 
 #include <stdbool.h>
@@ -627,284 +933,6 @@ void network_initialize(void)
 #endif /* LWIP_HTTPD_CGI */
 	  //echo_init();
 
-}
-
-#elif (CPUSTYLE_XC7Z) && WITHLWIP /*  WITHLWIP */
-
-#include <time.h>
-#include <stdbool.h>
-#include "lwip/opt.h"
-
-#include "lwip/init.h"
-#include "lwip/ip.h"
-#include "lwip/udp.h"
-#include "lwip/dhcp.h"
-#include "netif/etharp.h"
-#include "netif/xadapter.h"
-#include "lwip/ip_addr.h"
-#include "lwip/err.h"
-#include "lwip/tcp.h"
-#include "lwip/apps/sntp.h"
-#include "lwip/priv/tcp_priv.h"
-#include "lwip/timeouts.h"
-
-#include "board.h"
-#include "xc7z_inc.h"
-
-#define COUNTS_PER_MSECOND  (XPAR_CPU_CORTEXA9_CORE_CLOCK_FREQ_HZ / (2U*1000U))
-
-err_t dhcp_start(struct netif *netif);
-static struct netif server_netif;
-struct netif * netif;
-unsigned char mac_ethernet_address[] =
-	{ 0x00, 0x0a, 0x35, 0x00, 0x01, 0x02 };
-
-uint_fast8_t timezone = 3;  // GMT+3
-
-static uint_fast8_t network_inited = 0;
-
-#define RESET_RX_CNTR_LIMIT	400
-#define ETH_LINK_DETECT_INTERVAL 4
-volatile int dhcp_timoutcntr = 24;
-void dhcp_fine_tmr(void);
-void dhcp_coarse_tmr(void);
-volatile int TcpFastTmrFlag = 0;
-volatile int TcpSlowTmrFlag = 0;
-static int ResetRxCntr = 0;
-
-void start_ping_action(void * arg);
-void check_ping_result(void * arg);
-
-void board_update_time(uint32_t sec)
-{
-	const time_t ut = sec + 60 * 60 * timezone;
-
-#if defined RTC1_TYPE
-	struct tm * datetime;
-	datetime = localtime(& ut);
-	board_rtc_setdatetime(datetime->tm_year, datetime->tm_mon + 1, datetime->tm_mday, datetime->tm_hour, datetime->tm_min, datetime->tm_sec);
-#endif /* RTC1_TYPE */
-
-	PRINTF("ntp time updated: %s", ctime(& ut));
-}
-
-void
-print_ip(const char *msg, ip_addr_t *ip)
-{
-	PRINTF(msg);
-	PRINTF("%d.%d.%d.%d\n\r", ip4_addr1(ip), ip4_addr2(ip),
-			ip4_addr3(ip), ip4_addr4(ip));
-}
-
-err_t recv_callback(void *arg, struct tcp_pcb *tpcb,
-                               struct pbuf *p, err_t err)
-{
-	/* do not read the packet if we are not in ESTABLISHED state */
-	if (!p) {
-		tcp_close(tpcb);
-		tcp_recv(tpcb, NULL);
-		return ERR_OK;
-	}
-
-	/* indicate that the packet has been received */
-	tcp_recved(tpcb, p->len);
-
-	/* echo back the payload */
-	/* in this case, we assume that the payload is < TCP_SND_BUF */
-	if (tcp_sndbuf(tpcb) > p->len) {
-		err = tcp_write(tpcb, p->payload, p->len, 1);
-	} else
-		PRINTF("no space in tcp_sndbuf\n\r");
-
-	/* free the received pbuf */
-	pbuf_free(p);
-
-	return ERR_OK;
-}
-
-err_t accept_callback(void *arg, struct tcp_pcb *newpcb, err_t err)
-{
-	static int connection = 1;
-
-	/* set the receive callback for this connection */
-	tcp_recv(newpcb, recv_callback);
-
-	/* just use an integer number indicating the connection id as the
-	   callback argument */
-	tcp_arg(newpcb, (void*)(uintptr_t)connection);
-
-	/* increment for subsequent accepted connections */
-	connection++;
-
-	return ERR_OK;
-}
-
-
-int start_echo_server(void)
-{
-	struct tcp_pcb *pcb;
-	err_t err;
-	unsigned port = 7;
-
-	/* create new TCP PCB structure */
-	pcb = tcp_new_ip_type(IPADDR_TYPE_ANY);
-	if (!pcb) {
-		PRINTF("Error creating PCB. Out of Memory\n\r");
-		return -1;
-	}
-
-	/* bind to specified @port */
-	err = tcp_bind(pcb, IP_ANY_TYPE, port);
-	if (err != ERR_OK) {
-		PRINTF("Unable to bind to port %d: err = %d\n\r", port, err);
-		return -2;
-	}
-
-	/* we do not need any arguments to callback functions */
-	tcp_arg(pcb, NULL);
-
-	/* listen for connections */
-	pcb = tcp_listen(pcb);
-	if (!pcb) {
-		PRINTF("Out of memory while tcp_listen\n\r");
-		return -3;
-	}
-
-	/* specify callback to use for incoming connections */
-	tcp_accept(pcb, accept_callback);
-
-	PRINTF("TCP echo server started @ port %d\n\r", port);
-
-	return 0;
-}
-
-static volatile uint32_t sys_now_counter = 0;
-uint32_t sys_now(void)
-{
-	return sys_now_counter;
-}
-
-void lwip_timer_spool(void)
-{
-	static int DetectEthLinkStatus = 0;
-	static int odd = 1;
-	static int dhcp_timer = 0;
-
-	sys_now_counter ++;
-
-	sys_check_timeouts();
-
-	if (network_inited)
-		network_spool();
-
-	DetectEthLinkStatus++;
-	TcpFastTmrFlag = 1;
-	odd = !odd;
-	ResetRxCntr++;
-	if (odd) {
-#if LWIP_DHCP==1
-	dhcp_timer++;
-	dhcp_timoutcntr--;
-#endif
-	TcpSlowTmrFlag = 1;
-#if LWIP_DHCP==1
-	dhcp_fine_tmr();
-	if (dhcp_timer >= 120) {
-		dhcp_coarse_tmr();
-		dhcp_timer = 0;
-		}
-	}
-#endif
-	if (ResetRxCntr >= RESET_RX_CNTR_LIMIT) {
-		xemacpsif_resetrx_on_no_rxdata(netif);
-		ResetRxCntr = 0;
-	}
-	if (DetectEthLinkStatus == ETH_LINK_DETECT_INTERVAL) {
-		eth_link_detect(netif);
-		DetectEthLinkStatus = 0;
-	}
-}
-
-/* вызывается при разрешённых прерываниях. */
-void network_initialize(void)
-{
-	ip_addr_t ipaddr, netmask, gw;
-	netif = &server_netif;
-    ipaddr.addr = 0;
-	gw.addr = 0;
-	netmask.addr = 0;
-
-	PTIM_SetControl(0);
-	PTIM_SetCurrentValue(0);
-	PTIM_SetLoadValue(1 * COUNTS_PER_MSECOND);
-	PTIM_SetControl(0x06U);
-	//arm_hardware_set_handler_system(PrivTimer_IRQn, lwip_timer_spool);
-	arm_hardware_set_handler(PrivTimer_IRQn, lwip_timer_spool, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);
-	PTIM_SetControl(PTIM_GetControl() | 0x01);
-
-	lwip_init();
-
-	if (!xemac_add(netif, &ipaddr, &netmask,
-						&gw, mac_ethernet_address,
-						XPAR_XEMACPS_0_BASEADDR)) {
-		PRINTF("Error adding N/W interface\n\r");
-		ASSERT(0);
-	}
-
-	netif_set_default(netif);
-	netif_set_up(netif);
-
-	dhcp_start(netif);
-	dhcp_timoutcntr = 24;
-
-	while(((netif->ip_addr.addr) == 0) && (dhcp_timoutcntr > 0))
-		xemacif_input(netif);
-
-	if (dhcp_timoutcntr <= 0) {
-		if ((netif->ip_addr.addr) == 0) {
-			PRINTF("DHCP Timeout\r\n");
-			PRINTF("Configuring default IP of 192.168.1.10\r\n");
-			IP4_ADDR(&(netif->ip_addr),  192, 168,   1, 10);
-			IP4_ADDR(&(netif->netmask), 255, 255, 255,  0);
-			IP4_ADDR(&(netif->gw),      192, 168,   1,  1);
-		}
-	}
-
-	ipaddr.addr = netif->ip_addr.addr;
-	gw.addr = netif->gw.addr;
-	netmask.addr = netif->netmask.addr;
-
-	print_ip("Board IP: ", & ipaddr);
-	print_ip("Netmask : ", & netmask);
-	print_ip("Gateway : ", & gw);
-
-	//132.163.97.1 time nist.gov
-
-	ip_addr_t ntps;
-	ipaddr_aton("132.163.97.1", & ntps);
-	sntp_setserver(0, & ntps);
-	sntp_setoperatingmode(SNTP_OPMODE_POLL);
-	sntp_init();
-
-	start_echo_server();
-
-//	sys_timeout(4000, start_ping_action, NULL);
-//	sys_timeout(100, check_ping_result, NULL);
-
-	network_inited = 1;
-}
-
-void network_spool(void)
-{
-	if (TcpFastTmrFlag) {
-		tcp_fasttmr();
-		TcpFastTmrFlag = 0;
-	}
-	if (TcpSlowTmrFlag) {
-		tcp_slowtmr();
-		TcpSlowTmrFlag = 0;
-	}
-	xemacif_input(netif);
 }
 
 #else

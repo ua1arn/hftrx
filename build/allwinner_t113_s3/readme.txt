@@ -1,5 +1,9 @@
 ﻿Каталог для сборки версии программы под процессор Allwinner T133-S3
 
+xfel:
+https://gitee.com/xboot/xfel/releases/v1.2.9
+
+
 Dual-core ARM CortexTM-A7
 32 KB L1 I-cache + 32 KB L1 D-cache per core, and 256 KB L2 cache
 

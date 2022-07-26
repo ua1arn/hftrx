@@ -450,7 +450,7 @@ extern "C" {
 	#define ARM_FAST_ALLOW_TABLES	1
 
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	// ST dual core A7 + M4
 
@@ -462,7 +462,7 @@ extern "C" {
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "arch/allwnr_t113s3/allwnr_t113s3.h"
+	#include "arch/t113s3/allwnr_t113s3.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
@@ -582,6 +582,9 @@ void spool_encinterrupt2(void);	/* прерывание по изменению 
 void hardware_encoder_initialize(void);
 uint_fast8_t hardware_get_encoder_bits(void);/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 uint_fast8_t hardware_get_encoder2_bits(void);/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+void gt911_interrupt_handler(void);
+void stmpe811_interrupt_handler(void);
 
 void hardware_adc_initialize(void);
 
@@ -920,10 +923,12 @@ void hardware_tim21_initialize(void);
 
 void hardware_dcdcfreq_tim16_ch1_initialize(void);
 void hardware_dcdcfreq_tim17_ch1_initialize(void);
+void hardware_dcdcfreq_pwm5_initialize(unsigned pwmch);	/* Allwinner */
 void hardware_dcdcfreq_tioc0a_mtu0_initialize(void);
 
 void hardware_dcdcfreq_tim16_ch1_setdiv(uint_fast32_t v);
 void hardware_dcdcfreq_tim17_ch1_setdiv(uint_fast32_t v);
+void hardware_dcdcfreq_pwm5_setdiv(unsigned pwmch, uint_fast32_t cycle);	/* Allwinner */
 void hardware_dcdcfreq_tioc0a_mtu0_setdiv(uint_fast32_t v);
 
 uint_fast32_t hardware_dcdc_calcdivider(uint_fast32_t freq);
@@ -1049,7 +1054,9 @@ void IRQ_Handler_GICv1(void);
 void IRQ_Handler_GICv2(void);
 void IRQ_Handler(void);			// No GIC
 
-void Reset_CPU1_Handler(void);	// startup located function
+void Reset_CPU1_Handler(void);	// crt_CortexA_CPUn.S located function
+void Reset_CPU2_Handler(void);	// crt_CortexA_CPUn.S located function
+void Reset_CPU3_Handler(void);	// crt_CortexA_CPUn.S located function
 void Reset_CPUn_Handler(void);
 
 // Set interrupt vector wrappers
@@ -1059,6 +1066,7 @@ void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(vo
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_disable_handler(uint_fast16_t int_id);
 uint_fast8_t arm_hardware_cpuid(void);	// This processor index (0..n-1)
+uint_fast8_t arm_hardware_clustersize(void);
 void arm_hardware_populte_second_initialize(void);
 
 void audioproc_spool_user(void);	// вызывать при выполнении длительных операций
@@ -1097,6 +1105,18 @@ extern uint8_t myGATEWAY [4];
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
+#define AX_PWM_AXI_SLV_REG0_OFFSET 0
+#define AX_PWM_AXI_SLV_REG1_OFFSET 4
+#define AX_PWM_AXI_SLV_REG2_OFFSET 8
+#define AX_PWM_AXI_SLV_REG3_OFFSET 12
+
+#define AX_PWM_mWriteReg(BaseAddress, RegOffset, Data) \
+  	Xil_Out32((BaseAddress) + (RegOffset), (u32)(Data))
+
+#define AX_PWM_mReadReg(BaseAddress, RegOffset) \
+    Xil_In32((BaseAddress) + (RegOffset))
+
+void xcz_dcdc_sync(uint32_t freq);
 void xc7z_hardware_initialize(void);
 float xc7z_get_cpu_temperature(void);
 uint_fast8_t xc7z_readpin(uint8_t pin);
@@ -1213,5 +1233,10 @@ unsigned long ulmax(unsigned long a, unsigned long b);
 #include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 #include "clocks.h"
 uint32_t sys_now(void);
+void sys_dram_init(void);
+
+// RTOS test stuff
+int blinky_main(void);
+#define GTIM_IRQ_NUM SecurePhysicalTimer_IRQn
 
 #endif // HARDWARE_H_INCLUDED

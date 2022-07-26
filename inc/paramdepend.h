@@ -713,7 +713,7 @@ extern "C" {
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
@@ -737,8 +737,8 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED (12000000uL)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 12000000uL	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		12000000uL	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	24000000uL	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
@@ -2476,35 +2476,15 @@ extern "C" {
 
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
-
-#if (DIM_X != 800 || DIM_Y != 480) && WITHTOUCHGUI		// не соблюдены требования к разрешению экрана
-	#undef WITHTOUCHGUI									// для функционирования touch GUI
-#endif
-
 #if WITHTOUCHGUI
-
-#if (__CORTEX_M == 0)
-	#define FORMATFROMLIBRARY 		1
-#endif
-
-#if ! defined WITHUSEMALLOC								// необходима поддержка динамического управления памятью
-	#define WITHUSEMALLOC		1
-#endif /* ! defined WITHUSEMALLOC */
-
-#if ! WITHMENU
-	#error WITHMENU must be defined for WITHTOUCHGUI
-#endif
-
-#if ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL)
-	#undef WITHGUIHEAP
-	#define WITHGUIHEAP 		(80 * 1024uL)			// требуемый размер кучи для touch GUI
-#endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
-
+	#warning Touch GUI support has been removed to a separate project https://github.com/RA4ASN/hftrx_gui
+	#undef WITHTOUCHGUI
 #endif /* WITHTOUCHGUI */
 
-#if defined WITHVIEW_3DSS && (! defined CPUSTYLE_XC7Z && ! defined CPUSTYLE_XCZU && ! defined CPUSTYLE_STM32MP1 && ! defined CPUSTYLE_R7S721)
-	#undef WITHVIEW_3DSS								// WITHVIEW_3DSS только для конфигураций с достаточным объемом памяти
-#endif
+#if WITHFT8
+	#warning FT8 support has been removed to a separate project https://github.com/RA4ASN/hftrx_gui
+	#undef WITHFT8
+#endif /* WITHFT8 */
 
 #if WITHKEEPNVRAM && defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25XXXX)
 	#error WITHKEEPNVRAM and NVRAM_TYPE_FM25XXXX can not be used together

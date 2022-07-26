@@ -12,9 +12,9 @@
 #ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED
 #define ARM_X7C7XX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED 1
 
-	#if ! defined(XC7Z020)
-		#error Wrong CPU selected. XC7Z010 expected
-	#endif /* ! defined(XC7Z020) */
+//	#if ! defined(XC7Z020)
+//		#error Wrong CPU selected. XC7Z020 expected
+//	#endif /* ! defined(XC7Z020) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -319,24 +319,21 @@
 		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 1
-			#define WITHDISPLAY_FPS		30
-			#define WITHDISPLAYSWR_FPS	30
-			#define WITHTOUCHGUI		1
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
-			#define WITHALPHA			24
-			#define FORMATFROMLIBRARY 	1
-			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT	150
-			#define WITHCPUTEMPERATURE	1
+		#if 0
+			#define WITHDISPLAY_FPS			30
+			#define WITHDISPLAYSWR_FPS		30
+			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
+			#define WITHALPHA				24
+			#define FORMATFROMLIBRARY 		1
+			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
+			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 			//#define WITHAFEQUALIZER		1
-			#define WITHALTERNATIVELAYOUT	1
-			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
-			#define WITHDEFAULTVIEW		VIEW_3DSS
-			#define WITHFT8				1
-			#define REALREFERENCE_FREQ 	122879000L
-			#define WITHSWRPROT		0	/* защита от превышения КСВ */
+			#define WITHALTERNATIVELAYOUT	1	// Использовать не рекоменуется, оптимизировано для GUI
+			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
+			#define WITHDEFAULTVIEW			VIEW_3DSS
+			#define REALREFERENCE_FREQ 		122879000L
+			#define WITHSWRPROT				0	/* защита от превышения КСВ */
 		#else
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
@@ -458,7 +455,7 @@
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 1
+	#if 0
 		#define WITHLWIP 1
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
@@ -467,6 +464,7 @@
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	//#define WITHFANPWM		1	/* есть управление скоростью вентилятора */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
+	#define WITHCPUFANPWM	1	/* Вентилятор процессора с управлением PWM */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
@@ -515,7 +513,6 @@
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
-	#define KEYBOARD_USE_ADC_LOW	1	/* АЦП опроса клавиатуры стоит на общей SPI шине устройства */
 
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
@@ -525,7 +522,11 @@
 
 #endif /* WITHISBOOTLOADER */
 
-	#define BOARD_BITIMAGE_NAME "build/xc7Z020/bitstream_myir7020.h"
+	#if XC7Z020
+		#define BOARD_BITIMAGE_NAME "build/xc7Z020/bitstream_myir7020.h"
+	#elif XC7Z010
+		#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_myir7010.h"
+	#endif
 
 	#define WITHMODESETFULLNFM 1
 	/* все возможные в данной конфигурации фильтры */
@@ -535,7 +536,6 @@
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
-	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор

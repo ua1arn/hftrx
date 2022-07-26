@@ -3,10 +3,10 @@ LOSC_CTRL_REG
 Low Oscillator Control Register
 LOSC_AUTO_SWT_STA_REG
 0x0004
-LOSC Auto Switch Status Register
+Low Oscillator Auto Switch Status Register
 INTOSC_CLK_PRESCAL_REG
 0x0008
-Internal OSC Clock Pre-scalar Register
+Internal OSC Clock Pre-scaler Register
 RTC_DAY_REG
 0x0010
 RTC Year-Month-Day Register

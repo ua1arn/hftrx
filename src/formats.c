@@ -376,6 +376,7 @@ void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 	va_end(ap);
 
 	dbg_puts_impl(b);
+
 	SPIN_UNLOCK(& locklistprintf);
 }
 
@@ -415,8 +416,9 @@ toprintc(int c)
 }
 
 void
-printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+printhex(unsigned long voffs, const void * vbuff, unsigned length)
 {
+	const uint8_t * buff = (const uint8_t *) vbuff;
 	enum { ROWSIZE = 16 };
 	unsigned i, j;
 	unsigned rows = (length + ROWSIZE - 1) / ROWSIZE;
@@ -439,6 +441,26 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 	}
 }
 
+void
+printhex32(unsigned long voffs, const void * vbuff, unsigned length)
+{
+	const uint32_t * buff = (const uint32_t *) vbuff;
+	enum { ROWSIZE = 8 };
+	unsigned i, j;
+	unsigned rows = ((length + 3) / 4 + ROWSIZE - 1) / ROWSIZE;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int remaining = (length + 3) / 4 - i * ROWSIZE;
+		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
+		debug_printf_P(PSTR("%08lX "), voffs + i * ROWSIZE * 4);
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %08X"), buff [i * ROWSIZE + j]);
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
 #else /* WITHDEBUG */
 
 void debug_printf_P(const FLASHMEM char *format, ... )
@@ -447,9 +469,15 @@ void debug_printf_P(const FLASHMEM char *format, ... )
 }
 
 void
-printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+printhex(unsigned long voffs, const void * buff, unsigned length)
 {
 }
+
+void
+printhex32(unsigned long voffs, const void * buff, unsigned length)
+{
+}
+
 #endif /* WITHDEBUG */
 
 void strtrim(char * s)

@@ -59,6 +59,9 @@
 #include "config.h"
 #endif
 
+#include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "audio.h"
+
 #include <math.h>
 #include "speex_preprocess.h"
 #include "speex_echo.h"
@@ -614,7 +617,7 @@ static void speex_compute_agc(SpeexPreprocessState *st, spx_word16_t Pframe, spx
 }
 #endif
 
-static void preprocess_analysis(SpeexPreprocessState *st, float *x)
+static void preprocess_analysis(SpeexPreprocessState *st, FLOAT_t *x)
 {
    int i;
    int N = st->ps_size;
@@ -717,12 +720,12 @@ static void update_noise_prob(SpeexPreprocessState *st)
 
 void speex_echo_get_residual(SpeexEchoState *st, spx_word32_t *Yout, int len);
 
-EXPORT int speex_preprocess(SpeexPreprocessState *st, float *x, spx_int32_t *echo)
+EXPORT int speex_preprocess(SpeexPreprocessState *st, FLOAT_t *x, spx_int32_t *echo)
 {
    return speex_preprocess_run(st, x);
 }
 
-EXPORT int speex_preprocess_run(SpeexPreprocessState *st, float *x)
+EXPORT int speex_preprocess_run(SpeexPreprocessState *st, FLOAT_t *x)
 {
    int i;
    int M;
@@ -1009,7 +1012,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, float *x)
    }
 }
 
-EXPORT void speex_preprocess_estimate_update(SpeexPreprocessState *st, float *x)
+EXPORT void speex_preprocess_estimate_update(SpeexPreprocessState *st, FLOAT_t *x)
 {
    int i;
    int N = st->ps_size;

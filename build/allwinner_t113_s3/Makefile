@@ -19,7 +19,7 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-XFEL = ./xfel-windows-v1.2.7/xfel
+XFEL = ./xfel-windows-v1.2.9/xfel
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -27,15 +27,15 @@ PRJROOT := ../..
 OBJDIR = obj
 
 # Define project name here
-PROJECT = tc1_alwnrt113s3
+PROJECT = tc1_t113s3
 
 # Define linker script file here
 LDSCRIPT_BOOT = ./allwnr_t113s3_boot.ld
 LDSCRIPT_APP = ./allwnr_t113s3_app.ld
-ARCHDIR = $(PRJROOT)/arch/allwnr_t13s3
+ARCHDIR = $(PRJROOT)/arch/t113s3
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYPE_ALLWNT113"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYPE_T113"=1 -D"EGL_STATIC_LIBRARY"=1
 #UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
@@ -62,6 +62,7 @@ CORE += -mfpu=vfpv4
 OPT = -Os -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
@@ -70,6 +71,7 @@ USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 #HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
+RTOSXDIR = $(CMSISDIR)/RTOS2
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -84,11 +86,13 @@ DINCDIR = \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
-	$(CMSISDIR)/DSP/Include \
-	$(CMSISDIR)/DSP/ComputeLibrary/Include \
 	$(CMSISDIR)/Core_A/Source \
-	$(CMSISDIR)/DSP/Source \
-	$(CMSISDIR)/DSP/PrivateInclude \
+	$(RTOSXDIR)/Include \
+	$(RTOSXDIR)/RTX/Include \
+	$(CMSISDSPDIR)/Include \
+	$(CMSISDSPDIR)/ComputeLibrary/Include \
+	$(CMSISDSPDIR)/Source \
+	$(CMSISDSPDIR)/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
 	$(LWIPDIR)/src/apps/http \
@@ -98,7 +102,7 @@ DINCDIR = \
 	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
-#DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
+#DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
@@ -139,6 +143,7 @@ ULIBS +=
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 SRCDIRS += $(PRJROOT)/src
+#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(OPENVGDIR)/src
@@ -231,7 +236,6 @@ app_runXBOOT: xboot_t113_800.bin
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00040000 ddr3init.bin
 	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
@@ -240,7 +244,7 @@ APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.alw32: $(PROJECT)_boot.bin
 	cp boottemplate.bin fsbl.alw32.tmp
-	./wtitefsbl.exe fsbl.alw32.tmp 0x00100 tc1_alwnrt113s3_boot.bin -w
+	./wtitefsbl.exe fsbl.alw32.tmp 0x00100 $(PROJECT)_boot.bin -w
 	./checksum.exe fsbl.alw32.tmp fsbl.alw32
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin

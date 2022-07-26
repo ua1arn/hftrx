@@ -11,8 +11,8 @@
 #include "keyboard.h"
 #include "encoder.h"
 
-#include "src/gui/gui.h"
 #include "display/display.h"
+#include "display2.h"
 #include "formats.h"
 #include "codecs.h"
 #include "spi.h"
@@ -6315,6 +6315,17 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && WITHDEBUG && CPUSTYPE_T113
+	{
+		// Allwinner t113-s3 boot node display
+
+		CCU->CE_CLK_REG |= (1uL << 31);	// CE_CLK_GATING
+		CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 2);	// CE_MCLK_EN
+		// bits 27:16: eFUSE boot select status,
+		// bit 0: 0: GPIO boot select, 1: eFuse boot select
+		PRINTF("SID->BOOT_MODE=%08lX\n", SID->BOOT_MODE);
+	}
+#endif
 #if 0 && (WIHSPIDFSW || WIHSPIDFHW || WIHSPIDFOVERSPI)
 	{
 		// QSPI test
@@ -6680,7 +6691,7 @@ void hightests(void)
 		PRINTF("stm32mp1_get_pll2_r_freq()=%lu (DDR3)\n", stm32mp1_get_pll2_r_freq());
 	}
 #endif
-#if 1 && defined (DDRPHYC) && WITHDEBUG
+#if 1 && defined (DDRPHYC) && WITHDEBUG && CPUSTYLE_STM32MP1
 	{
 		// Check DQS Gating System Latency (R0DGSL) and DQS Gating Phase Select (R0DGPS)
 		PRINTF("stm32mp1_ddr_init results: DX0DQSTR=%08lX, DX1DQSTR=%08lX, DX2DQSTR=%08lX, DX3DQSTR=%08lX\n",
@@ -7974,7 +7985,7 @@ void hightests(void)
 			//GridTest();
 			BarTest();
 			const time_t tend = time(NULL);
-			PRINTF("BarTest: %u, %ds, pixelsize=%d\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE);
+			PRINTF("BarTest: %u, %ds, pixelsize=%d @%lu MHz\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE, CPU_FREQ / 1000000);
 		}
 		// Divide result by 10
 		// 800x480, Renesas RZ/A1L, @360 MHz, L8, software (w cache: 5.6s..5.7s)
@@ -7983,7 +7994,7 @@ void hightests(void)
 		// 800x480, STM32MP157, @650 MHz, L8, hardware MDMA: (no cache - 0.9s..1s)
 		// 800x480, STM32MP157, @650 MHz, RGB565, hardware MDMA: (no cache - 1.4s)
 		// 800x480, STM32MP157, @650 MHz, ARGB8888, hardware MDMA: (no cache - 2.5s)
-		// 800x480, Allwinner T113-S3, @1200 MHz, RGB565, software 0.6s
+		// 800x480, Allwinner t113-s3, @1200 MHz, RGB565, software 0.6s
 	}
 #endif
 #if 0
@@ -9251,8 +9262,32 @@ void midtests(void)
 	}
 #endif
 #if 0
+	{
+		TP();
+//		nvramaddress_t place = 0;
+//		// NVRAM test
+//		save_i32(place, 0x12345678);
+//		const uint_fast32_t v1 = restore_i32(place);
+//		save_i32(place, 0xDEADBEEF);
+//		const uint_fast32_t v2 = restore_i32(place);
+//
+//		PRINTF("NVRAM test: v1=%08lX, v2=%07lX\n", v1, v2);
+		const uint8_t cmd [] =
+		{
+			0x03,	// FLASH READ
+			(uint_fast8_t) (0 >> 8),
+			(uint_fast8_t) (0 >> 0),
+		};
+		uint8_t data [32];
+		prog_spi_io(targetext1, SPIC_SPEEDFAST, SPIC_MODE3, 0, cmd, ARRAY_SIZE(cmd), NULL, 0, data, ARRAY_SIZE(data));
+		printhex(0, data, ARRAY_SIZE(data));
+
+	}
+#endif
+#if 0
 	// test SPI speed
 	{
+		TP();
 		const spitarget_t target = targetext1;
 		//#if WITHSPIHW
 		//	hardware_spi_master_setfreq(SPISPEED);
@@ -9266,21 +9301,30 @@ void midtests(void)
 		//}
 		for (;;)
 		{
+
 			// тестирование аппаратного SPI в 16-битном режиме
-			//prog_select(target);	
-			//hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE3);		// если есть возможность - работаем в 16-ти битном режиме
-			//hardware_spi_b16_p1(0xf0aa);
-			//hardware_spi_complete_b8();
-			//hardware_spi_disconnect();
-			//prog_unselect(target);
-			//continue;
-			
-			spi_select(target, SPIC_MODE3);
-			spi_progval8_p1(target, 0xf0aa);
-			spi_complete(target);
-			spi_unselect(target);
-			//local_delay_ms(1);
+			unsigned v = 0x1234;
+			prog_select(target);
+			hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE3);		// если есть возможность - работаем в 16-ти битном режиме
+			hardware_spi_b16_p1(v);
+			unsigned v2 = hardware_spi_complete_b16();
+			hardware_spi_disconnect();
+			prog_unselect(target);
+			local_delay_ms(1);
+			PRINTF("v=%04X, v2=%04X\n", v, v2);
 			continue;
+
+//			unsigned v = 0x12;
+//			unsigned v1 = 0x34;
+//			spi_select(target, SPIC_MODE3);
+//			spi_progval8_p1(target, v);
+//			unsigned v2 = spi_progval8_p2(target, v1);
+//			unsigned v3 = spi_complete(target);
+//			spi_unselect(target);
+//			local_delay_ms(1);
+//			//ASSERT(v == v2);
+//			PRINTF("v=%04X, v1=%04X v2=%04X, v3=%04X\n", v, v1, v2, v3);
+//			continue;
 
 			board_lcd_rs(0);
 			spi_select(target, SPIC_MODE3);
@@ -9593,6 +9637,12 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
+#if 0
+	{
+		// CMSIS RTOS2 test
+		blinky_main();
+	}
+#endif
 //	PRINTF("TARGET_UART1_TX_MIO test\n");
 //	for (;;)
 //	{

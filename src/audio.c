@@ -8,6 +8,8 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
+#include "audio_reverb.h"
+#include "audio_compressor.h"
 #include "spi.h"
 #include "formats.h"	// for debug prints
 
@@ -16,10 +18,6 @@
 #include <limits.h>
 #include <string.h>
 #include <math.h>
-
-#if WITHFT8
-	#include "ft8.h"
-#endif /* WITHFT8 */
 
 #define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
 //#define WITHDOUBLEFIRCOEFS 1
@@ -133,10 +131,16 @@ static uint_fast8_t		glob_equalizer_rx_gains [AF_EQUALIZER_BANDS];
 static uint_fast8_t		glob_equalizer_tx_gains [AF_EQUALIZER_BANDS];
 #endif /* WITHAFEQUALIZER */
 
+static uint_fast8_t		glob_compattack;
+static uint_fast8_t		glob_comprelease;
+static uint_fast8_t		glob_comphold;
+static uint_fast8_t		glob_compgain;
+static uint_fast8_t		glob_compthreshold;
+
 #if WITHREVERB
 	static uint_fast8_t glob_reverb;		/* ревербератор */
-	static uint_fast8_t glob_reverbdelay = 20;		/* ревербератор - задержка (ms) */
-	static uint_fast8_t glob_reverbloss = 30;		/* ревербератор - ослабление dB на возврате */
+	static uint_fast8_t glob_reverbdelay = 50;		/* ревербератор - задержка (%) */
+	static uint_fast8_t glob_reverbloss = 30;		/* ревербератор - ослабление db на возврате */
 #endif /* WITHREVERB */
 
 static uint_fast16_t 	glob_lineamp = WITHLINEINGAINMAX;
@@ -178,12 +182,8 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 static uint_fast8_t 	glob_dspagc;
 static uint_fast8_t		glob_dsploudspeaker_off;
 
-#if WITHUSBUAC
 static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	#if WITHTX
-	static volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
-	#endif /* WITHTX */
-#endif /* WITHUSBUAC */
+static volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 
 #if WITHINTEGRATEDDSP
 
@@ -484,6 +484,10 @@ static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
 
 //////////////////////////////////////////
 
+
+static RAMDTCM ncoftw_t anglestep_modulation = FTWAF001(10);	/* 0.1 s period */
+static RAMDTCM ncoftw_t angle_modulation;
+
 static RAMDTCM ncoftw_t anglestep_lout = FTWAF(700), anglestep_rout = FTWAF(500);
 static RAMDTCM ncoftw_t angle_lout, angle_rout;
 
@@ -527,6 +531,14 @@ FLOAT_t get_lout(void)
 	// Формирование значения для LOUT
 	const FLOAT_t v = getcosf(angle_lout);
 	angle_lout = FTWROUND(angle_lout + anglestep_lout);
+	return v;
+}
+
+FLOAT_t get_modulation(void)
+{
+	// Формирование значения для LOUT
+	const FLOAT_t v = getcosf(angle_modulation);
+	angle_modulation = FTWROUND(angle_modulation + anglestep_modulation);
 	return v;
 }
 
@@ -796,10 +808,7 @@ int64_t transform_do64(
 	return (v << tfm->lshift64) >> tfm->rshift64;
 }
 
-#if WITHDSPEXTFIR
 static adapter_t fpgafircoefsout;
-#endif /* #if WITHDSPEXTFIR */
-
 adapter_t afcodecio;
 adapter_t ifcodecin;
 adapter_t ifspectrumin;
@@ -823,10 +832,8 @@ transform_t if2rts192out;	// преобразование из выхода па
 
 static void adapterst_initialize(void)
 {
-#if WITHDSPEXTFIR
 	/* FPGA FIR коэффициенты */
 	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0);
-#endif /* WITHDSPEXTFIR */
 	/* Аудиокодек */
 	adpt_initialize(& afcodecio, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT);
 	/* IF codec / FPGA */
@@ -1230,14 +1237,7 @@ static void sigtocoeffs(FLOAT_t *dCoeff, int iCoefNum)
 static void scalecoeffs(FLOAT_t *dCoeff, int iCoefNum, FLOAT_t scale)
 {
 	const int j = NtapCoeffs(iCoefNum);
-	int i;
-	//---------------------------
-	// Magnitude in dB
-	//---------------------------
-	for (i = 0; i < j; ++ i) {
-		dCoeff [i] *= scale;
-	}
-
+	ARM_MORPH(arm_scale)(dCoeff, scale, dCoeff, j);
 }
 
 
@@ -1248,9 +1248,9 @@ static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int 
 // scale: общий масштаб изменения АЧХ
 static void correctspectrumcomplex(int_fast8_t targetdb)
 {
-	arm_cfft_instance_f32 fftinstance;
+	ARM_MORPH(arm_cfft_instance) fftinstance;
 
-	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, FFTSizeFilters));
+	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_cfft_init)(& fftinstance, FFTSizeFilters));
 #if 1
 	const FLOAT_t slope = db2ratio(targetdb);
 	// Центр симметрии Sig - ячейка с индексом FFTSizeFilters / 2
@@ -1296,8 +1296,8 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 #endif
 
 	// Construct FIR coefficients from frequency response
-  /* Process the data through the CFFT/CIFFT module */
-	arm_cfft_f32(& fftinstance, (float *) Sig, !0, 1);	// inverse FFT
+	/* Process the data through the CFFT/CIFFT module */
+	ARM_MORPH(arm_cfft)(& fftinstance, (FLOAT_t *) Sig, !0, 1);	// inverse FFT
 
 	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
 }
@@ -2251,7 +2251,7 @@ static void fir_design_bandpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutLow
 }
 
 
-#if WITHDSPEXTFIR
+#if WITHDSPEXTFIR || 1
 
 // преобразование к целым
 static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoeff, int iCoefNum)
@@ -3456,42 +3456,6 @@ static RAMDTCM volatile agcparams_t txagcparams [NPROF];
 static RAMDTCM volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 static RAMDTCM volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
-#if WITHREVERB
-	static FLOAT_t reverbRatioDirect [NPROF] = { 1, 1 };
-	static FLOAT_t reverbRatioDelayed [NPROF] = { 0, 0 };
-	static unsigned reverbDelay [NPROF];	/* задержка ревербератора в сэмплах */
-#endif /* WITHREVERB */
-
-/* Получение эффекта реверберации. На входе сэмпл, возвращаем обработанный или неизменный сэмпл
- *
- */
-static FLOAT_t txmikereverb(FLOAT_t isample)
-{
-#if WITHREVERB
-
-	enum { MAXDELAYSAMPLES = NSAITICKS(WITHREVERBDELAYMAX) };
-
-	/* Тут нельзя использовать память NOINIT для буфера. Если в ней встречается значение NaN, то
-	 * даже при выключенном ревербераторе результат вычисления результирующего сэмпла так же NaN и он пришется в буфер...
-	 * А я управляю включением/выключением через значения в reverbRatioDirect и reverbRatioDelayed.
-	 */
-	static RAM_D3 FLOAT_t delaybuf [MAXDELAYSAMPLES];
-	static unsigned pos;
-
-	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
-	const FLOAT_t oldsample = delaybuf [(pos + reverbDelay [gwagcproftx]) % MAXDELAYSAMPLES];
-	const FLOAT_t rsample = isample * reverbRatioDirect [gwagcproftx] + oldsample * reverbRatioDelayed [gwagcproftx];
-	delaybuf [pos] = rsample;
-
-	return rsample;
-
-#else /* WITHREVERB */
-
-	return isample;
-
-#endif /* WITHREVERB */
-}
-//	
 static void agc_initialize(void)
 {
 	// Установка параметров АРУ приёмника
@@ -3887,10 +3851,6 @@ static RAMFUNC FLOAT_t preparevi(
 	const FLOAT_t txlevelXXX = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
 	const int_fast32_t txlevelfenceXXX_INTEGER = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
 
-#if WITHFT8
-	ft8_txfill(& vi0f);
-#endif /* WITHFT8 */
-
 #if WITHTXCPATHCALIBRATE
 	return (FLOAT_t) glob_designscale / 100;
 #endif /* WITHTXCPATHCALIBRATE */
@@ -3922,8 +3882,13 @@ static RAMFUNC FLOAT_t preparevi(
 		case BOARD_TXAUDIO_MIKE:
 			// источник - микрофон
 			vi0f = txmikeagc(vi0f * txlevelXXX);	// АРУ
-			vi0f = txmikeclip(vi0f);	// Ограничитель
-			vi0f = txmikereverb(vi0f);	// Ревербератор
+			vi0f = txmikeclip(vi0f);				// Ограничитель
+#if WITHREVERB
+			vi0f = audio_reverb_calc(vi0f);				// Ревербератор
+#endif /* WITHREVERB */
+#if WITHCOMPRESSOR
+			vi0f = audio_compressor_calc(vi0f);		// Компрессор
+#endif /* WITHCOMPRESSOR */
 			moni->IV = vi0f;
 			moni->QV = vi0f;
 			return injectsubtone(vi0f, ctcss);
@@ -5441,7 +5406,8 @@ inject_testsignals(IFADCvalue_t * const dbuff)
 {
 #ifdef DMABUF32RX0I
 	static FLOAT_t simlevelRX = (FLOAT_t) 0.0000001;	// -140 dBFS
-	static FLOAT_t simlevelspec = (FLOAT_t) 1;	// 0 dBFS
+	static FLOAT_t simlevelspec = (FLOAT_t) 0.05;	// -6 dBFS
+	const FLOAT_t modulation = FABSF(get_modulation()) < (FLOAT_t) 0.7 ? 0 : 1;
 	// приёмник
 	const FLOAT32P_t simval = scalepair(get_float_monofreq(), simlevelRX);	// frequency
 	dbuff [DMABUF32RX0I] = adpt_output(& ifcodecin, simval.IV);
@@ -5450,14 +5416,14 @@ inject_testsignals(IFADCvalue_t * const dbuff)
 #if WITHRTS96
 	// панорама
 	// previous - oldest
-	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), simlevelspec);	// frequency2
-	dbuff [DMABUF32RTS0I] = adpt_output(& ifcodecin, simval0.IV);
-	dbuff [DMABUF32RTS0Q] = adpt_output(& ifcodecin, simval0.QV);
+	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
+	dbuff [DMABUF32RTS0I] = adpt_output(& ifspectrumin, simval0.IV);
+	dbuff [DMABUF32RTS0Q] = adpt_output(& ifspectrumin, simval0.QV);
 
 	// current	- nevest
-	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), simlevelspec);	// frequency2
-	dbuff [DMABUF32RTS1I] = adpt_output(& ifcodecin, simval1.IV);
-	dbuff [DMABUF32RTS1Q] = adpt_output(& ifcodecin, simval1.QV);
+	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
+	dbuff [DMABUF32RTS1I] = adpt_output(& ifspectrumin, simval1.IV);
+	dbuff [DMABUF32RTS1Q] = adpt_output(& ifspectrumin, simval1.QV);
 #endif /* WITHRTS96 */
 
 #endif
@@ -5993,16 +5959,21 @@ txparam_update(uint_fast8_t profile)
 		mickeclipleveln [profile] = - FS * grade;
 	}
 	{
+		// компрессор
+	#if WITHCOMPRESSOR
+		audio_compressor_set_attack(NSAITICKS(glob_compattack));
+		audio_compressor_set_release(NSAITICKS(glob_comprelease));
+		audio_compressor_set_hold(NSAITICKS(glob_comphold));
+		audio_compressor_set_gainreduce(db2ratio(- (int) glob_compgain));
+		audio_compressor_set_threshold(db2ratio(- (int) glob_compthreshold));
+		audio_compressor_recalc();
+	#endif /* WITHCOMPRESSOR */
+	}
+	{
 		// ревербератор
 	#if WITHREVERB
-		/* при выключенном ревербераторе сигнал все равно
-		 * помещается в линию задержки - чтобы при
-		 * включении уже был готов к работе
-		 * */
-		reverbRatioDelayed [profile] = glob_reverb ? db2ratio(- (int) glob_reverbloss) : 0;	/* ревербератор - ослабление на возврате */
-		reverbRatioDirect [profile] = 1 - reverbRatioDelayed [profile];
-		reverbDelay [profile] = NSAITICKS(glob_reverbdelay);
-
+		audio_reverb_set_loss(glob_reverb ? db2ratio(- (int) glob_reverbloss) : 0);
+		audio_reverb_set_delay(glob_reverbdelay);
 	#endif /* WITHREVERB */
 	}
 
@@ -6624,6 +6595,21 @@ board_set_mikehclip(uint_fast8_t v)
 	if (glob_mikehclip != v)
 	{
 		glob_mikehclip = v;
+		board_dsp1regchanged();
+	}
+}
+
+/* компрессор */
+void
+board_set_compressor(uint_fast8_t attack, uint_fast8_t release, uint_fast8_t hold, uint_fast8_t gain, uint_fast8_t threshold)
+{
+	if (glob_compattack != attack || glob_comprelease != release || glob_comphold != hold || glob_compgain != gain || glob_compthreshold != threshold)
+	{
+		glob_compattack = attack;
+		glob_comprelease = release;
+		glob_comphold = hold;
+		glob_compgain = gain;
+		glob_compthreshold = threshold;
 		board_dsp1regchanged();
 	}
 }

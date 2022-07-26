@@ -310,6 +310,16 @@
 #define XPAR_AXI_I2S_ADI_0_HIGHADDR 0x43C3FFFF
 
 
+/* Peripheral Definitions for peripheral CPU_FAN_PWM_0 */
+#define XPAR_CPU_FAN_PWM_0_S00_AXI_BASEADDR 0x43C20000
+#define XPAR_CPU_FAN_PWM_0_S00_AXI_HIGHADDR 0x43C2FFFF
+
+
+/* Peripheral Definitions for peripheral DCDC_PWM_1 */
+#define XPAR_DCDC_PWM_1_S00_AXI_BASEADDR 0x43C70000
+#define XPAR_DCDC_PWM_1_S00_AXI_HIGHADDR 0x43C7FFFF
+
+
 /* Peripheral Definitions for peripheral PS7_AFI_0 */
 #define XPAR_PS7_AFI_0_S_AXI_BASEADDR 0xF8008000
 #define XPAR_PS7_AFI_0_S_AXI_HIGHADDR 0xF8008FFF
@@ -410,6 +420,16 @@
 /******************************************************************/
 
 
+
+
+/* Canonical Definitions for peripheral CPU_FAN_PWM_0 */
+#define XPAR_AX_PWM_0_S00_AXI_BASEADDR 0x43C20000
+#define XPAR_AX_PWM_0_S00_AXI_HIGHADDR 0x43C2FFFF
+
+
+/* Canonical Definitions for peripheral DCDC_PWM_1 */
+#define XPAR_AX_PWM_1_S00_AXI_BASEADDR 0x43C70000
+#define XPAR_AX_PWM_1_S00_AXI_HIGHADDR 0x43C7FFFF
 
 
 

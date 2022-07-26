@@ -1,10 +1,10 @@
 /* $Id$ */
-/* Allwinner T113-S3 layout */
+/* Allwinner t113-s3 layout */
 /* Linker script to configure memory regions. */
 
 MEMORY
 {
-  RAM (rwx)	: ORIGIN = 0x00020100, LENGTH = 0x0007F00		/*  */
+  RAM (rwx)	: ORIGIN = 0x00020100, LENGTH = 0x000FF00		/*  */
   RAM2 (rwx): ORIGIN = 0x00030000, LENGTH = 16k		/*  */
   TTB (rwx) : ORIGIN = 0x00034000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
   DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 128M	/*  */
@@ -39,7 +39,7 @@ MEMORY
  *   __StackTop
  *   __stack
  */
-	 ENTRY(Reset_Handler7)
+	 ENTRY(Reset_Handler)
 
 SECTIONS
 {

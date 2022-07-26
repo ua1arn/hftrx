@@ -60,6 +60,7 @@ CORE += -mfpu=neon-vfpv3
 OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
@@ -67,6 +68,7 @@ DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
+RTOSXDIR = $(CMSISDIR)/RTOS2
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -81,11 +83,13 @@ DINCDIR = \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
-	$(CMSISDIR)/DSP/Include \
-	$(CMSISDIR)/DSP/ComputeLibrary/Include \
+	$(RTOSXDIR)/Include \
+	$(RTOSXDIR)/RTX/Include \
+	$(CMSISDSPDIR)/Include \
+	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDIR)/Core_A/Source \
-	$(CMSISDIR)/DSP/Source \
-	$(CMSISDIR)/DSP/PrivateInclude \
+	$(CMSISDSPDIR)/Source \
+	$(CMSISDSPDIR)/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
 	$(LWIPDIR)/src/apps/http \
@@ -95,7 +99,7 @@ DINCDIR = \
 	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
-#DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
+#DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
@@ -137,6 +141,7 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 #SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
+#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR)
 SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)

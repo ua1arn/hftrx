@@ -188,6 +188,7 @@ board_usb_tspool(void * ctx)
 #endif /* defined (WITHUSBHW_HOST) */
 }
 
+/* User-mode function */
 void MX_USB_HOST_Init(void)
 {
 	static ticker_t usbticker;
@@ -206,18 +207,28 @@ void MX_USB_HOST_Init(void)
 
 }
 
+/* User-mode function */
 void MX_USB_HOST_DeInit(void)
 {
 	USBH_DeInit(& hUsbHostHS);
 
 }
 
+/* User-mode function */
 void MX_USB_HOST_Process(void)
 {
 	USBH_Process(& hUsbHostHS);
 }
 
 #endif /* defined (WITHUSBHW_HOST) */
+
+#if defined (WITHUSBHW_DEVICE)
+
+/* User-mode function */
+void MX_USB_DEVICE_Process(void)
+{
+}
+#endif /* defined (WITHUSBHW_DEVICE) */
 
 /**
   * @}
@@ -306,22 +317,21 @@ void board_usb_activate(void)
 void board_usb_deactivate(void)
 {
 	//PRINTF(PSTR("board_usb_deactivate start.\n"));
-
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	USBH_Stop(& hUsbHostHS);
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
-
 #if defined (WITHUSBHW_DEVICE)
 	USBD_Stop(& hUsbDeviceHS);
 #endif /* defined (WITHUSBHW_DEVICE) */
-
 	//PRINTF(PSTR("board_usb_deactivate done.\n"));
 }
-
 void board_usbh_polling(void)
 {
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_Process();
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+#if defined (WITHUSBHW_DEVICE)
+	MX_USB_DEVICE_Process();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 }
 
@@ -359,11 +369,10 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 	{
 	case HOST_USER_SELECT_CONFIGURATION:
 		TP();
-		//phost->device.CfgDesc.bConfigurationValue = 1;
-		break;
+        //phost->device.CfgDesc.bConfigurationValue = 2;
+        break;
 
 	case HOST_USER_DISCONNECTION:
-		TP();
 		Appli_state = APPLICATION_DISCONNECT;
 		switch (USBH_GetActiveClass(phost))
 		{
@@ -373,10 +382,13 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 			PRINTF("Undefined device disconnected.\n");
 			break;
 
+#if WITHUSEUSBFLASH
 		case USB_MSC_CLASS:
 			TP();
 			PRINTF("MSC device disconnected.\n");
 			break;
+#endif /* WITHUSEUSBFLASH */
+
 //		case AC_CLASS:
 //			TP();
 //		      PRINTF("AUDIO device disconnected.\n");
@@ -398,18 +410,20 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 		Appli_state = APPLICATION_READY;
 	    switch(USBH_GetActiveClass(phost))
 	    {
+#if WITHUSEUSBFLASH
 	    case USB_MSC_CLASS:
 	      //Appli_state = APPLICATION_MSC;
 	      TP();
-	      PRINTF("MSC device connected.\n");
+	      PRINTF("MSC device active.\n");
 	      /* Link the USB disk I/O driver */
 	      //FATFS_LinkDriver(&USBH_Driver, USBDISKPath);
 	      break;
+#endif /* WITHUSEUSBFLASH */
 
 //	    case AC_CLASS:
 //	      Appli_state = APPLICATION_AUDIO;
 //	      TP();
-//	      PRINTF("AUDIO device connected.\n");
+//	      PRINTF("AUDIO device active.\n");
 //	      /* Init SD Storage */
 //	      if (SD_StorageInit() == 0)
 //	      {
@@ -420,12 +434,12 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 	    case USB_HID_CLASS:
 			//Appli_state = APPLICATION_HID;
 			TP();
-			PRINTF("MSC device connected.\n");
+			PRINTF("MSC device active.\n");
 			break;
 		case USB_HUB_CLASS:
 			//Appli_state = APPLICATION_HUB;
 			TP();
-			PRINTF("HUB device connected.\n");
+			PRINTF("HUB device active.\n");
 			break;
 	    }
 		break;

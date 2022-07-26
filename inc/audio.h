@@ -8,6 +8,8 @@
 #ifndef AUDIO_H_INCLUDED
 #define AUDIO_H_INCLUDED
 
+#include <math.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -28,7 +30,7 @@ extern "C" {
  */
 #if WITHDSPEXTDDC
 
-	#if CPUSTYLE_R7S721 || CPUSTYPE_ALLWNT113
+	#if CPUSTYLE_R7S721 || CPUSTYPE_T113
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
@@ -851,12 +853,10 @@ void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
-	#include "src/speex/arch.h"
-	#include "src/speex/speex_preprocess.h"
 
 	typedef FLOAT_t speexel_t;
-	uint_fast8_t takespeexready_user(speexel_t * * dest);
-	void releasespeexbuffer_user(speexel_t * t);
+	uint_fast8_t takespeexready_user(FLOAT_t * * dest);
+	void releasespeexbuffer_user(FLOAT_t * t);
 #endif /* WITHINTEGRATEDDSP */
 
 
@@ -920,6 +920,7 @@ void board_set_afresponcerx(int_fast8_t v);	/* изменение тембра �
 void board_set_afresponcetx(int_fast8_t v);	/* изменение тембра звука в канале передатчика */
 void board_set_mikehclip(uint_fast8_t gmikehclip);	/* Ограничитель */
 void board_set_reverb(uint_fast8_t greverb, uint_fast8_t greverbdelay, uint_fast8_t greverbloss); /* ревербератор */
+void board_set_compressor(uint_fast8_t attack, uint_fast8_t release, uint_fast8_t hold, uint_fast8_t gain, uint_fast8_t threshold);
 
 
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */

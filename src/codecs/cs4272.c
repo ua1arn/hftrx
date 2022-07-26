@@ -68,7 +68,7 @@ static void cs4272_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = tg ? targetcodec2 : targetcodec2;	/* addressing to chip */
 
-	#if WITHSPILOWSUPPORTT
+	#if WITHSPILOWSUPPORTT || 1
 		// Работа совместно с фоновым обменом SPI по прерываниям
 		const uint8_t txbuf [3] =
 		{

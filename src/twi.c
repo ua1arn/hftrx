@@ -1870,4 +1870,209 @@ void i2c2_write(uint_fast8_t d)
 
 
 #endif /* WITHTWIHW || WITHTWISW */
+#if WITHTWIHW
+
+void hardware_twi_master_configure(void)
+{
+#if CPUSTYLE_ATMEGA
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 8, ATMEGA_TWBR_WIDTH, ATMEGA_TWBR_TAPS, & value, 0);
+
+	TWSR = prei; 	/* prescaler */
+	TWBR = value;
+	TWCR = (1U << TWEN);
+
+#elif CPUSTYLE_AT91SAM7S
+
+	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TWI) | (1UL << AT91C_ID_PIOA);
+	//
+    // Reset the TWI
+    AT91C_BASE_TWI->TWI_CR = AT91C_TWI_SWRST;
+    (void) AT91C_BASE_TWI->TWI_RHR;
+
+    // Set master mode
+    AT91C_BASE_TWI->TWI_CR = AT91C_TWI_MSEN;
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 3, AT91SAM7_TWI_WIDTH, AT91SAM7_TWI_TAPS, & value, 0);
+
+    AT91C_BASE_TWI->TWI_CWGR = (prei << 16) | (value << 8) | value;
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	PMC->PMC_PCER0 = (1UL << ID_TWI0);	 // разрешить тактированние этого блока
+	//
+    // Reset the TWI
+    TWI0->TWI_CR = TWI_CR_SWRST;
+    (void) TWI0->TWI_RHR;
+
+    // Set master mode
+    TWI0->TWI_CR = TWI_CR_MSEN;
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 4, ATSAM3S_TWI_WIDTH, ATSAM3S_TWI_TAPS, & value, 1);
+	//prei = 0;
+	//value = 70;
+    TWI0->TWI_CWGR = TWI_CWGR_CKDIV(prei) | TWI_CWGR_CHDIV(value) | TWI_CWGR_CLDIV(value);
+
+#elif CPUSTYLE_ATXMEGA
+
+	TARGET_TWI.MASTER.BAUD = ((CPU_FREQ / (2 * SCL_CLOCK)) - 5);
+	TARGET_TWI.MASTER.CTRLA = TWI_MASTER_ENABLE_bm;
+  	//TARGET_TWI.MASTER.CTRLB = TWI_MASTER_SMEN_bm;
+	TARGET_TWI.MASTER.STATUS = TWI_MASTER_BUSSTATE_IDLE_gc;
+
+#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
+
+	//конфигурирую непосредствено I2С
+	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
+	(void) RCC->APB1ENR;
+
+	I2C1->CR1 |= I2C_CR1_SWRST;
+	I2C1->CR1 &= ~ I2C_CR1_SWRST;
+	I2C1->CR1 &= ~ I2C_CR1_PE; // все конфигурации необходимо проводить только со сброшеным битом PE
+
+/*
+	The FREQ bits must be configured with the APB clock frequency value (I2C peripheral
+	connected to APB). The FREQ field is used by the peripheral to generate data setup and
+	hold times compliant with the I2C specifications. The minimum allowed frequency is 2 MHz,
+	the maximum frequency is limited by the maximum APB frequency (42 MHz) and an intrinsic
+	limitation of 46 MHz.
+
+*/
+
+	I2C1->CR2 = (I2C1->CR2 & ~ (I2C_CR2_FREQ)) |
+		((I2C_CR2_FREQ_0 * 42) & I2C_CR2_FREQ) |
+		0;
+	// (1000 ns / 125 ns = 8 + 1)
+	// (1000 ns / 22 ns = 45 + 1)
+	I2C1->TRISE = 46; //время установления логического уровня в количестве цыклах тактового генератора I2C
+
+	I2C1->CCR = (I2C1->CCR & ~ (I2C_CCR_CCR | I2C_CCR_FS | I2C_CCR_DUTY)) |
+		(calcdivround2(BOARD_I2C_FREQ, SCL_CLOCK * 25) & I2C_CCR_CCR) |	// Делитель для получения 10 МГц (400 кHz * 25)
+	#if SCL_CLOCK == 400000UL
+		I2C_CCR_FS |
+		I2C_CCR_DUTY | // T high = 9 * CCR * TPCLK1, T low = 16 * CCR * TPCLK1: full cycle = 25 * CCR * TPCLK1
+	#endif /* SCL_CLOCK == 400000UL */
+		0;
+
+	I2C1->CR1 |= I2C_CR1_ACK | I2C_CR1_PE; // включаю тактирование переферии I2С
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
+
+	//конфигурирую непосредствено I2С
+	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
+	(void) RCC->APB1ENR;
+    // set I2C1 clock to PCLCK (72/64/36 MHz)
+    RCC->CFGR3 |= RCC_CFGR3_I2C1SW;		// PCLK1_FREQ or PCLK2_FREQ (PCLK of this BUS, PCLK1) selected as I2C spi clock source
+
+
+	I2C1->CR1 &= ~ I2C_CR1_PE; // все конфигурации необходимо проводить только со сброшеным битом PE
+
+	//I2C1->CR2 = (I2C1->CR2 & ~I2C_CR2_FREQ) | I2C_CR2_FREQ_0 * ( PCLK2_FREQ / SCL_CLOCK); // частота тактирования модуля I2C1 до делителя равна FREQ_IN
+	//I2C1->CR2 = I2C_CR2_FREQ_0 * 4; //255; // |= I2C_CR2_FREQ;	// debug
+
+	I2C1->TIMINGR = (I2C1->TIMINGR & ~ I2C_TIMINGR_PRESC) | (4UL << 28);
+
+	//I2C1->CCR &= ~I2C_CCR_CCR;
+	//I2C1->CCR |= (1000/(2*40000)) * ((I2C1->CR2&I2C_CR2_FREQ) / I2C_CR2_FREQ_0); // конечный коэффциент деления
+	////I2C1->CCR = 40; //36; // / 4;	//|= I2C_CCR_CCR;	// debug
+	//I2C1->CCR |= I2C_CCR_FS;
+
+	//I2C1->TRISE = 9; //время установления логического уровня в количестве циклов тактового генератора I2C
+
+    // disable analog filter
+    I2C1->CR1 |= I2C_CR1_ANFOFF;
+    // from stm32f3_i2c_calc.py (400KHz, 125ns rise/fall time, no AF/DFN)
+    const uint_fast8_t sdadel = 7;
+    const uint_fast8_t scldel = 5;
+    I2C1->TIMINGR = 0x30000C19 | ((scldel & 0x0F) << 20) | ((sdadel & 0x0F) << 16);
+
+	I2C1->CR1 |= I2C_CR1_PE; // включаю тактирование периферии I2С
+
+#elif CPUSTYLE_STM32F7XX
+	//конфигурирую непосредствено I2С
+	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
+	(void) RCC->APB1ENR;
+
+	// Disable the I2Cx peripheral
+	I2C1->CR1 &= ~ I2C_CR1_PE;
+	while ((I2C1->CR1 & I2C_CR1_PE) != 0)
+		;
+
+	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
+	I2C1->TIMINGR =
+		//0x00912732 |		// Discovery BSP code from ST examples
+		0x00913742 |		// подобрано для 400 кГц
+		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
+		0;
+
+
+
+	// Use 7-bit addresses
+	I2C1->CR2 &= ~ I2C_CR2_ADD10;
+
+	// Enable auto-end mode
+	//I2C1->CR2 |= I2C_CR2_AUTOEND;
+
+	// Disable the analog filter
+	I2C1->CR1 |= I2C_CR1_ANFOFF;
+
+	// Disable NOSTRETCH
+	I2C1->CR1 |= I2C_CR1_NOSTRETCH;
+
+	// Enable the I2Cx peripheral
+	I2C1->CR1 |= I2C_CR1_PE;
+
+#elif CPUSTYLE_STM32H7XX
+	//конфигурирую непосредствено I2С
+	RCC->APB1LENR |= (RCC_APB1LENR_I2C1EN); //вкл тактирование контроллера I2C
+	(void) RCC->APB1LENR;
+
+	// Disable the I2Cx peripheral
+	I2C1->CR1 &= ~ I2C_CR1_PE;
+	while ((I2C1->CR1 & I2C_CR1_PE) != 0)
+		;
+
+	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
+	I2C1->TIMINGR =
+		//0x00912732 |		// Discovery BSP code from ST examples
+		0x00913742 |		// подобрано для 400 кГц
+		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
+		0;
+
+
+
+	// Use 7-bit addresses
+	I2C1->CR2 &= ~ I2C_CR2_ADD10;
+
+	// Enable auto-end mode
+	//I2C1->CR2 |= I2C_CR2_AUTOEND;
+
+	// Disable the analog filter
+	I2C1->CR1 |= I2C_CR1_ANFOFF;
+
+	// Disable NOSTRETCH
+	I2C1->CR1 |= I2C_CR1_NOSTRETCH;
+
+	// Enable the I2Cx peripheral
+	I2C1->CR1 |= I2C_CR1_PE;
+
+#elif CPUSTYLE_XC7Z
+
+	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
+
+#elif CPUSTYLE_XCZU
+	#warning Plaxe ZynqMP IIC clocks initialization hers
+
+#else
+	#warning Undefined CPUSTYLE_XXX
+#endif
+}
+
+#endif /* WITHTWIHW */
 

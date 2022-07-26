@@ -47,6 +47,17 @@ void xc7z_hardware_initialize(void)
 		ASSERT(0);
 	}
 
+#if WITHCPUFANPWM
+	{
+		const float FS = powf(2, 32);
+		uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
+		AX_PWM_mWriteReg(XPAR_CPU_FAN_PWM_0_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG0_OFFSET, fan_pwm_period);
+
+		uint32_t fan_pwm_duty = FS * (1.0f - 0.7f) - 1;
+		AX_PWM_mWriteReg(XPAR_CPU_FAN_PWM_0_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG1_OFFSET, fan_pwm_duty);
+	}
+#endif /* WITHCPUFANPWM */
+
 #if WITHPS7BOARD_MYC_Y7Z020
 	// пока так
 	xc7z_gpio_output(TARGET_RFADC_SHDN_EMIO);
@@ -55,6 +66,8 @@ void xc7z_hardware_initialize(void)
 	xc7z_gpio_output(TARGET_RFADC_DITH_EMIO);
 	xc7z_writepin(TARGET_RFADC_DITH_EMIO, 0);
 #endif /* WITHPS7BOARD_MYC_Y7Z020 */
+
+	HARDWARE_DCDC_SETDIV(0);
 
 #if ! WITHISBOOTLOADER
 	XAdcPs_Config * xadccfg = XAdcPs_LookupConfig(XPAR_XADCPS_0_DEVICE_ID);
@@ -69,6 +82,25 @@ void xc7z_hardware_initialize(void)
 
 	XAdcPs_SetSequencerMode(& xc7z_xadc, XADCPS_SEQ_MODE_SAFE);
 #endif /* ! WITHISBOOTLOADER */
+}
+
+void xcz_dcdc_sync(uint32_t freq)
+{
+#if WITHDCDCFREQCTL
+	uint32_t fs = 1200000uL;
+	float pwm_duty = 0.5;
+
+	if (freq >= 3000000uL && freq < 5000000uL)
+		fs = 450000uL;
+	else if (freq >= 5000000 && freq < 8000000uL)
+		fs = 830000uL;
+
+	uint32_t dcdc_pwm_period = fs * pow(2, 32) / REFERENCE_FREQ;
+	AX_PWM_mWriteReg(XPAR_DCDC_PWM_1_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG0_OFFSET, dcdc_pwm_period);
+
+	float32_t dcdc_pwm_duty = powf(2, 32) * (1.0 - pwm_duty) - 1.0;
+	AX_PWM_mWriteReg(XPAR_DCDC_PWM_1_S00_AXI_BASEADDR, AX_PWM_AXI_SLV_REG1_OFFSET, dcdc_pwm_duty);
+#endif /* WITHDCDCFREQCTL */
 }
 
 float xc7z_get_cpu_temperature(void)
@@ -190,9 +222,6 @@ RAMFUNC void spool_elkeybundle(void)
 #if WITHELKEY
 	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 #endif /* WITHELKEY */
-#if WITHENCODER2 && defined (ENCODER2_BITS)
-	spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
-#endif /* WITHENCODER2 && ENCODER2_BITS */
 }
 
 /* 
@@ -297,7 +326,7 @@ static void adcdones_spool(void)
 
 static volatile uint32_t sys_now_counter;
 
-#if ! (CPUSTYLE_XC7Z)
+#if ! (WITHLWIP)
 
 uint32_t sys_now(void)
 {
@@ -321,9 +350,9 @@ RAMFUNC void spool_systimerbundle1(void)
 	//spool_lfm();
 	tickers_spool();
 
-#if ! WITHCPUADCHW
+//#if ! WITHCPUADCHW
 	adcdones_spool();
-#endif /* ! WITHCPUADCHW */
+//#endif /* ! WITHCPUADCHW */
 }
 
 /* Машинно-независимый обработчик прерываний. */
@@ -839,14 +868,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		#endif
 	#endif /* CPUSTYLE_ATMEGA_XXX4 && defined (PCIVECT) */
 
-#elif CPUSTYPE_ALLWNT113
-
-// Allwinner specific
-void ALLW_GPIO_IRQ_Handler(void)
-{
-	TP();
-	ASSERT(0);
-}
+#elif CPUSTYPE_T113
 
 #else
 
@@ -1443,9 +1465,9 @@ r7s721_adi_irq_handler(void)
 	}
 }
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 	// ADC IRQ handler
-	//#warning Unhandled CPUSTYPE_ALLWNT113
+	//#warning Unhandled CPUSTYPE_T113
 
 #else
 	#error No CPUSTYLE_XXXXX defined
@@ -1551,9 +1573,9 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_STM32F0XX
 	#warning: #warning Must be implemented for this CPU
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
-	//#warning Unhandled CPUSTYPE_ALLWNT113
+	//#warning Unhandled CPUSTYPE_T113
 
 #else
 
@@ -1673,7 +1695,7 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #else
@@ -1840,18 +1862,30 @@ __STATIC_FORCEINLINE uint32_t __get_DFAR(void)
 
 void Undef_Handler(void)
 {
+	const volatile uint32_t marker = 0xDEADBEEF;
 	dbg_puts_impl_P(PSTR("UndefHandler trapped.\n"));
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+	unsigned i;
+	for (i = 0; i < 8; ++ i)
+	{
+		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+	}
 	for (;;)
 		;
 }
 
 void SWI_Handler(void)
 {
+	const volatile uint32_t marker = 0xDEADBEEF;
 	dbg_puts_impl_P(PSTR("SWIHandler trapped.\n"));
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
-	for (;;)
-		;
+	unsigned i;
+	for (i = 0; i < 8; ++ i)
+	{
+		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+	}
+//	for (;;)
+//		;
 }
 
 // Prefetch Abort
@@ -1862,7 +1896,7 @@ void PAbort_Handler(void)
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	PRINTF(PSTR("DFSR=%08lX, IFAR=%08lX, pc=%08lX, sp~%08lx\n"), __get_DFSR(), __get_IFAR(), (& marker) [2], (unsigned long) & marker);
+	PRINTF(PSTR("DFSR=%08lX, IFAR=%08lX, pc=%08lX, sp~%08lx __get_MPIDR()=%08lX\n"), __get_DFSR(), __get_IFAR(), (& marker) [2], (unsigned long) & marker, __get_MPIDR());
 #pragma GCC diagnostic pop
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
@@ -2721,9 +2755,10 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 #elif CPUSTYLE_XC7Z
 
 	// Все сравнения должны быть не точнее 1 MB
-
+#if WITHLWIP
 	if (a == (uintptr_t) bd_space)
 		return addrbase | TTB_PARA_DEVICE;
+#endif /* WITHLWIP */
 
 	if (a >= 0x00000000uL && a < 0x00100000uL)			//  OCM (On Chip Memory), DDR3_SCU
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
@@ -2769,7 +2804,7 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 	if (a < 0x00400000uL)
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
@@ -2874,19 +2909,19 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t t
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
 // с точностью до 1 мегабайта
-static void
-FLASHMEMINITFUNC
-ttb_map(
-	uintptr_t va,	/* virtual address */
-	uintptr_t la,	/* linear (physical) address */
-	uint32_t (* accessbits)(uintptr_t a)
-	)
-{
-	volatile extern uint32_t __TTB_BASE;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __TTB_BASE;
-	unsigned i = va >> 20;
-	tlbbase [i] =  accessbits(la);
-}
+//static void
+//FLASHMEMINITFUNC
+//ttb_map(
+//	uintptr_t va,	/* virtual address */
+//	uintptr_t la,	/* linear (physical) address */
+//	uint32_t (* accessbits)(uintptr_t a)
+//	)
+//{
+//	volatile extern uint32_t __TTB_BASE;		// получено из скрипта линкера
+//	volatile uint32_t * const tlbbase = & __TTB_BASE;
+//	unsigned i = va >> 20;
+//	tlbbase [i] =  accessbits(la);
+//}
 
 #endif /* CPUSTYLE_R7S721 */
 
@@ -3181,17 +3216,6 @@ sysinit_cache_L2_cpu0_initialize(void)
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
 
-static void FLASHMEMINITFUNC
-sysinit_cache_cpu1_initialize(void)
-{
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
-	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
-	#else
-		//arm_hardware_flush_all();
-	#endif
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
-}
-
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
@@ -3204,9 +3228,6 @@ SystemInit(void)
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
-#if CPUSTYPE_ALLWNT113
-	set_pll_cpux_axi(PLL_CPU_N);
-#endif /* CPUSTYPE_ALLWNT113 */
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
@@ -3220,10 +3241,21 @@ static void cortexa_cpuinfo(void)
 {
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, SCTLR=%08lX, ACTLR=%08lX, sp=%08lX\n"), (unsigned) (__get_MPIDR() & 0x03),  (unsigned long) __get_VBAR(), (unsigned long) __get_TTBR0(), (unsigned long) __get_CPSR(), (unsigned long) __get_SCTLR(), (unsigned long) __get_ACTLR(),(unsigned long) & vvv);
+	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, SCTLR=%08lX, ACTLR=%08lX, sp=%08lX, MPIDR=%08lX\n"), (unsigned) (__get_MPIDR() & 0x03),  (unsigned long) __get_VBAR(), (unsigned long) __get_TTBR0(), (unsigned long) __get_CPSR(), (unsigned long) __get_SCTLR(), (unsigned long) __get_ACTLR(),(unsigned long) & vvv, __get_MPIDR());
 }
 
 #if WITHSMPSYSTEM
+
+static void FLASHMEMINITFUNC
+sysinit_cache_cpu1_initialize(void)
+{
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
+	#else
+		//arm_hardware_flush_all();
+	#endif
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+}
 
 #if CPUSTYLE_STM32MP1
 
@@ -3255,7 +3287,10 @@ static void cortexa_cpuinfo(void)
  * mpidr determines the CPU to be turned on.
  * call by core 0 to activate core 1
  ******************************************************************************/
-static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+
+#define HARDWARE_NCORES 2
+
+static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
 	(void) PWR->CR1;
@@ -3288,7 +3323,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
 
 	/* Generate an IT to core 1 */
-	GIC_SendSGI(SGI8_IRQn, 0x01 << 1, 0x00);	// CPU1, filer=0
+	GIC_SendSGI(SGI8_IRQn, 0x01 << targetcore, 0x00);	// CPU1, filer=0
 }
 
 #elif CPUSTYLE_XC7Z
@@ -3296,7 +3331,9 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 // See also:
 //	https://stackoverflow.com/questions/60873390/zynq-7000-minimum-asm-code-to-init-cpu1-from-cpu0
 
-static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+#define HARDWARE_NCORES 2
+
+static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
@@ -3306,19 +3343,38 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 
 #elif CPUSTYLE_XCZU
 
-// See also:
-//	https://stackoverflow.com/questions/60873390/zynq-7000-minimum-asm-code-to-init-cpu1-from-cpu0
+/* RST_FPD_APU Address and mask definations */
+#define xXRESETPS_CRF_APB_BASE         (0XFD1A0000U)
+#define xXRESETPS_CRF_APB_RST_FPD_APU \
+				  ((xXRESETPS_CRF_APB_BASE) + ((uint32_t)0X00000104U))
 
-static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+#define xACPU3_PWRON_RESET_MASK    ((uint32_t)0X00002000U)
+#define xACPU2_PWRON_RESET_MASK    ((uint32_t)0X00001000U)
+#define xACPU1_PWRON_RESET_MASK    ((uint32_t)0X00000800U)
+#define xACPU0_PWRON_RESET_MASK    ((uint32_t)0X00000400U)
+#define xAPU_L2_RESET_MASK         ((uint32_t)0X00000100U)
+#define xACPU3_RESET_MASK          ((uint32_t)0X00000008U)
+#define xACPU2_RESET_MASK          ((uint32_t)0X00000004U)
+#define xACPU1_RESET_MASK          ((uint32_t)0X00000002U)
+#define xACPU0_RESET_MASK          ((uint32_t)0X00000001U)
+
+#define xXPAR_PSU_APU_S_AXI_BASEADDR 0xFD5C0000u
+
+#define HARDWARE_NCORES 2
+
+// Invoke at SVC context
+static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
-	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
+	* (volatile uint32_t *) (xXPAR_PSU_APU_S_AXI_BASEADDR + 0x048) = startfunc;	// apu.rvbaraddr1l
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
-	/* Generate an IT to core 1 */
-	__SEV();
+
+	* (volatile uint32_t *) 0xFFD80220 = 1u << targetcore;
+	* (volatile uint32_t *) 0xFD5C0020 = 0;	//apu.config0
+
+	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ ((xACPU0_RESET_MASK << targetcore) | (xACPU0_PWRON_RESET_MASK << targetcore));
 }
 
-
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
 //	3.4.2.4 CPU0 Hotplug Process
 //
@@ -3340,18 +3396,21 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 #define HARDWARE_SOFTENTRY_CPU0_ADDR (* (volatile uint32_t *) 0x070005C4)
 #define HARDWARE_SOFTENTRY_CPU1_ADDR (* (volatile uint32_t *) 0x070005C8)
 
-static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+#define HARDWARE_NCORES 2
+
+static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	HARDWARE_SOFTENTRY_CPU1_ADDR = startfunc;
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
-	C0_CPUX_CFG->C0_RST_CTRL |= (0x01uL << 1);
+	C0_CPUX_CFG->C0_RST_CTRL |= (0x01uL << targetcore);
 	(void) C0_CPUX_CFG->C0_RST_CTRL;
 }
 
-#endif /* WITHSMPSYSTEM */
+
+#endif /* CPU types */
 
 static RAMDTCM SPINLOCK_t cpu1init = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t cpu1userstart = SPINLOCK_INIT;
+static RAMDTCM SPINLOCK_t cpu1userstart [4];
 
 // Инициализация второго ппрцессора
 void Reset_CPUn_Handler(void)
@@ -3390,7 +3449,7 @@ void Reset_CPUn_Handler(void)
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
 	#if (__L2C_PRESENT == 1)
-		// L2 контроллерп едминственный и уже инициализирован
+		// L2 контроллерп единственный и уже инициализирован
 		// Enable Level 2 Cache
 		//L2C_Enable();
 		//L2C_InvAllByWay();
@@ -3402,8 +3461,9 @@ void Reset_CPUn_Handler(void)
 	__enable_irq();
 	SPIN_UNLOCK(& cpu1init);
 
-	SPIN_LOCK(& cpu1userstart);		/* ждем пока основной user thread не разрешит выполняться */
-	SPIN_UNLOCK(& cpu1userstart);
+	unsigned core = arm_hardware_cpuid();
+	SPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
+	SPIN_UNLOCK(& cpu1userstart [core]);
 #if WITHNESTEDINTERRUPTS
 	GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
 #endif /* WITHNESTEDINTERRUPTS */
@@ -3441,13 +3501,25 @@ void cpump_initialize(void)
 #endif /* (__CORTEX_A == 9U) */
 
 	cortexa_cpuinfo();
-	SPINLOCK_INITIALIZE(& cpu1userstart);
-	SPIN_LOCK(& cpu1userstart);
 	SPINLOCK_INITIALIZE(& cpu1init);
-	SPIN_LOCK(& cpu1init);
-	cortexa_mp_cpu1_start((uintptr_t) Reset_CPU1_Handler);
-	SPIN_LOCK(& cpu1init);
-	SPIN_UNLOCK(& cpu1init);
+	unsigned core;
+	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
+	{
+		static uintptr_t fns [4] =
+		{
+			0,
+			(uintptr_t) Reset_CPU1_Handler,
+			(uintptr_t) Reset_CPU2_Handler,
+			(uintptr_t) Reset_CPU3_Handler,
+		};
+
+		SPINLOCK_INITIALIZE(& cpu1userstart [core]);
+		SPIN_LOCK(& cpu1userstart [core]);
+		SPIN_LOCK(& cpu1init);
+		cortexa_mp_cpu1_start(fns [core], core);
+		SPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
+		SPIN_UNLOCK(& cpu1init);
+	}
 
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 
@@ -3456,7 +3528,11 @@ void cpump_initialize(void)
 /* остальным ядрам разрешаем выполнять прерывания */
 void cpump_runuser(void)
 {
-	SPIN_UNLOCK(& cpu1userstart);
+	unsigned core;
+	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
+	{
+		SPIN_UNLOCK(& cpu1userstart [core]);
+	}
 }
 
 #else /* WITHSMPSYSTEM */
@@ -4106,7 +4182,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 }
 
 #if WITHUSEMALLOC
-#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNT113) && ! WITHISBOOTLOADER
+#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_T113) && ! WITHISBOOTLOADER
 
 	static RAMHEAP uint8_t heapplace [48 * 1024uL * 1024uL];
 

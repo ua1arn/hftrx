@@ -9,7 +9,7 @@
 
 #include "hardware.h"
 
-#if CPUSTYPE_ALLWNT113
+#if CPUSTYPE_T113
 
 #include "board.h"
 #include "formats.h"
@@ -58,4 +58,4 @@ HAL_StatusTypeDef HAL_Init(void)
 	  return HAL_OK;
 }
 
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYPE_T113 */

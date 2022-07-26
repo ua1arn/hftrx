@@ -34,10 +34,8 @@
 #define WITHPS7BOARD_EBAZ4205 1
 
 
-#if WITHDEBUG
-	#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
-	#define WITHUARTFIFO	1	/* испольование FIFO */
-#endif /* WITHDEBUG */
+#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
+#define WITHUARTFIFO	1	/* испольование FIFO */
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART2	1
@@ -147,7 +145,7 @@
 	//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
     //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
 	#if WITHLWIP
-		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+		//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	#endif /* WITHLWIP */

@@ -4770,3 +4770,454 @@ void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
 #endif /* CPUSTYLE_STM32H7XX */
 
 #endif /* WITHSDHCHW */
+
+#if WITHSDHCHW
+
+void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
+{
+	//PRINTF(PSTR("hardware_sdhost_setbuswidth: use4bit=%u\n"), (unsigned) use4bit);
+
+#if ! WITHSDHCHW4BIT
+	use4bit = 0;
+#endif /* ! WITHSDHCHW4BIT */
+
+#if CPUSTYLE_R7S721
+
+	if (use4bit != 0)
+		SDHI0.SD_OPTION &= ~ (1U << 15);	// WIDTH 0: 4-bit width
+	else
+		SDHI0.SD_OPTION |= (1U << 15);		// WIDTH 1: 1-bit width
+
+#elif CPUSTYLE_STM32F4XX
+
+	SDIO->CLKCR = (SDIO->CLKCR & ~ (SDIO_CLKCR_WIDBUS)) |
+		(use4bit != 0 ? 0x01 : 0x00) * SDIO_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
+		0;
+
+#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_WIDBUS)) |
+		(use4bit != 0 ? 0x01 : 0x00) * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
+		0;
+
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL = (SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x02uL)) |
+				(use4bit != 0) * 0x02uL |	// Data_Transfer_Width_SD1_or_SD4
+				0;
+
+#else
+	#error Wrong CPUSTYLE_xxx
+#endif
+}
+
+void hardware_sdhost_setspeed(unsigned long ticksfreq)
+{
+#if CPUSTYLE_R7S721
+	// Использование автоматического расчёта предделителя
+	//unsigned long ticksfreq = 400000uL;	// 400 kHz -> 260 kHz
+	//unsigned long ticksfreq = 24000000uL;	// 24 MHz -> 16.666 MHz
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(ticksfreq), 0, (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2), & value, 0);
+	PRINTF(PSTR("hardware_sdhost_setspeed: ticksfreq=%lu, prei=%lu\n"), (unsigned long) ticksfreq, (unsigned long) prei);
+
+	while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
+	{
+		//PRINTF(PSTR("hardware_sdhost_setspeed: SCLKDIVEN set clock prohibited, SD_INFO2=%08lX\n"), SDHI0.SD_INFO2);
+		TP();
+	}
+	while ((SDHI0.SD_INFO2 & (1uL << 14)) != 0)	// CBSY
+	{
+		//PRINTF(PSTR("hardware_sdhost_setspeed: CBSY set clock prohibited, SD_INFO2=%08lX\n"), SDHI0.SD_INFO2);
+		TP();
+	}
+
+	SDHI0.SD_CLK_CTRL =
+		0 * (1U << 9) |		// SDCLKOFFEN=0
+		1 * (1U << 8) |		// SCLKEN=1
+		((1U << prei) >> 1) * (1U << 0) |
+		0;
+
+#elif CPUSTYLE_STM32F4XX
+
+	#if defined (RCC_DCKCFGR2_SDIOSEL)
+		// stm32f446xx и некоторые другие
+
+		RCC->DCKCFGR2 = (RCC->DCKCFGR2 & ~ (RCC_DCKCFGR2_SDIOSEL)) |
+			0 * RCC_DCKCFGR2_SDIOSEL |	// 0: 48 MHz clock is selected as SDMMC clock
+			0;
+
+	#elif defined (RCC_DCKCFGR_SDIOSEL)
+		// stm32f469xx, stm32f479xx
+
+		RCC->DCKCFGR = (RCC->DCKCFGR & ~ (RCC_DCKCFGR_SDIOSEL)) |
+			0 * RCC_DCKCFGR_SDIOSEL |	// 0: 48 MHz clock is selected as SDMMC clock
+			0;
+	#else
+		// Остальные
+	#endif
+
+	const uint_fast32_t stm32f4xx_pllq = stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	// Использование автоматического расчёта делителя
+	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
+	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
+	// See RCC_PLLCFGR_PLLQ usage
+	const uint32_t SDIOCLK = PLL_FREQ / stm32f4xx_pllq;
+
+	const unsigned value = ulmin(calcdivround2(SDIOCLK, ticksfreq) - 2, 255);
+
+	SDIO->CLKCR = (SDIO->CLKCR & ~ (SDIO_CLKCR_CLKDIV_Msk)) |
+		(value & SDIO_CLKCR_CLKDIV_Msk);
+
+#elif CPUSTYLE_STM32F7XX
+
+	RCC->DCKCFGR2 = (RCC->DCKCFGR2 & ~ (RCC_DCKCFGR2_SDMMC1SEL)) |
+		0 * RCC_DCKCFGR2_SDMMC1SEL |	// 0: 48 MHz clock is selected as SDMMC clock
+		0;
+
+	const uint_fast32_t stm32f7xx_pllq = stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	// Использование автоматического расчёта делителя
+	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
+	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
+	// See RCC_PLLCFGR_PLLQ usage
+	const uint32_t SDMMCCLK = PLL_FREQ / stm32f7xx_pllq;
+	// Использование автоматического расчёта делителя
+	// Источником тактирования SDMMC сейчас установлен внутренний генератор 48 МГц
+	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32f7xx_pllq;
+	const unsigned value = ulmin(calcdivround2(SDMMCCLK, ticksfreq) - 2, 255);
+
+	//PRINTF(PSTR("hardware_sdhost_setspeed: stm32f7xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f7xx_pllq, stm32f4xx_48mhz);
+	PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
+
+	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV)) |
+		(value & SDMMC_CLKCR_CLKDIV);
+
+#elif CPUSTYLE_STM32H7XX
+
+	//RCC->DCKCFGR2 = (RCC->DCKCFGR2 & ~ (RCC_DCKCFGR2_SDMMC1SEL)) |
+	//	0 * RCC_DCKCFGR2_SDMMC1SEL |	// 0: 48 MHz clock is selected as SDMMC clock
+	//	0;
+
+	const uint_fast32_t stm32h7xx_pllq = stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	// Использование автоматического расчёта делителя
+	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
+	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
+	// See RCC_PLLCFGR_PLLQ usage
+	const uint32_t SDMMCCLK = PLL_FREQ / stm32h7xx_pllq;;
+	// Использование автоматического расчёта делителя
+	// Источником тактирования SDMMC сейчас установлен внутренний генератор 48 МГц
+	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32h7xx_pllq;
+	const unsigned value = ulmin(calcdivround2(SDMMCCLK / 2, ticksfreq), 0x03FF);
+
+	PRINTF(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
+	PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
+
+	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV_Msk)) |
+		((value << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
+
+
+
+#elif CPUSTYLE_STM32MP1
+
+	//RCC->DCKCFGR2 = (RCC->DCKCFGR2 & ~ (RCC_DCKCFGR2_SDMMC1SEL)) |
+	//	0 * RCC_DCKCFGR2_SDMMC1SEL |	// 0: 48 MHz clock is selected as SDMMC clock
+	//	0;
+
+	//const uint_fast32_t stm32h7xx_pllq = stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	// Использование автоматического расчёта делителя
+	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
+	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
+	// See RCC_PLLCFGR_PLLQ usage
+	const uint32_t SDMMCCLK = stm32mp1_sdmmc1_2_get_freq();
+	// Использование автоматического расчёта делителя
+	// Источником тактирования SDMMC сейчас установлен внутренний генератор 48 МГц
+	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32h7xx_pllq;
+	const unsigned clkdiv = ulmin(calcdivround2(SDMMCCLK / 2, ticksfreq), 0x03FF);
+
+	//PRINTF(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
+	//PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
+
+	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV_Msk)) |
+		((clkdiv << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
+
+
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+
+	const unsigned long ref = xc7z_get_sdio_freq();
+	unsigned divider = calcdivround2(ref / 2, ticksfreq);
+	divider = ulmin(divider, 255);
+	divider = ulmax(divider, 1);
+	PRINTF("hardware_sdhost_setspeed: ref=%lu, divider=%u\n", ref, divider);
+	if (ticksfreq <= 400000uL)
+	{
+		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
+			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
+			(0x80uL << 8) |	// SDCLK_Frequency_Select: 80h - base clock divided by 256
+			0;
+	}
+	else
+	{
+		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
+			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
+			((uint_fast32_t) divider << 8) |	// SDCLK_Frequency_Select: 10h - base clock divided by 32
+			0;
+	}
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= 0x01;	// Internal_Clock_Enable
+	// Wait Internal_Clock_Stable
+	while ((SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & 0x02) == 0)
+		;
+
+#else
+	#error Wrong CPUSTYLE_xxx
+#endif
+}
+
+#if CPUSTYLE_R7S721
+
+void r7s721_sdhi0_dma_handler(void)
+{
+	PRINTF(PSTR("r7s721_sdhi0_dma_handler trapped\n"));
+	for (;;)
+		;
+}
+
+#endif
+
+void hardware_sdhost_initialize(void)
+{
+#if CPUSTYLE_R7S721
+
+	// Инициализация SD CARD интерфейса на R7S721
+	/* ---- Supply clock to the SDHI(channel 0) ---- */
+	CPG.STBCR12 &= ~ ((1U << 3) | (1U << 2));	// Module Stop 123, 122  00: The SD host interface 00 runs.
+	(void) CPG.STBCR12;			/* Dummy read */
+
+	SDHI0.SOFT_RST = 0x0000;	// SDRST 0: Reset
+	SDHI0.SOFT_RST = 0x0001;	// SDRST 1: Reset released
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
+
+    arm_hardware_set_handler_system(DMAINT14_IRQn, r7s721_sdhi0_dma_handler);
+
+	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+
+#elif CPUSTYLE_STM32F4XX
+
+	RCC->APB2ENR |= RCC_APB2ENR_SDIOEN;   // подаем тактирование на SDIO
+	__DSB();
+
+	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
+	SDIO->CLKCR =
+		1 * SDIO_CLKCR_CLKEN |
+		(255 & SDIO_CLKCR_CLKDIV_Msk) |
+		1 * SDIO_CLKCR_HWFC_EN |
+		1 * SDIO_CLKCR_PWRSAV |		// выключается clock без обращений
+		0;
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
+
+	arm_hardware_set_handler_system(SDIO_IRQn, SDIO_IRQHandler);
+	arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
+
+	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+	// разрешить тактирование карты памяти
+	SDIO->POWER = 3 * SDIO_POWER_PWRCTRL_0;
+
+#elif CPUSTYLE_STM32F7XX
+
+	RCC->APB2ENR |= RCC_APB2ENR_SDMMC1EN;   // подаем тактирование на SDMMC1
+	__DSB();
+
+	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
+	SDMMC1->CLKCR =
+		1 * SDMMC_CLKCR_CLKEN |
+		(255 & SDMMC_CLKCR_CLKDIV) |
+		1 * SDMMC_CLKCR_HWFC_EN |
+		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
+		0;
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
+
+	arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
+	arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
+
+	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+	// разрешить тактирование карты памяти
+	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
+
+#elif CPUSTYLE_STM32H7XX
+
+	RCC->AHB3ENR |= RCC_AHB3ENR_SDMMC1EN;   // подаем тактирование на SDMMC1
+	(void) RCC->AHB3ENR;
+	__DSB();
+
+	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+
+	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
+	SDMMC1->CLKCR =
+		SDMMC_CLKCR_CLKDIV |
+		1 * SDMMC_CLKCR_HWFC_EN |
+		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
+		0;
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
+
+	arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
+
+	// разрешить тактирование карты памяти
+	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
+
+#elif CPUSTYLE_STM32MP1
+
+	//	0x0: hclk6 clock selected as kernel peripheral clock
+	//	0x1: pll3_r_ck clock selected as kernel peripheral clock
+	//	0x2: pll4_p_ck clock selected as kernel peripheral clock
+	//	0x3: hsi_ker_ck clock selected as kernel peripheral clock (default after reset)
+
+	RCC->SDMMC12CKSELR = (RCC->SDMMC12CKSELR & ~ (RCC_SDMMC12CKSELR_SDMMC12SRC_Msk)) |
+			(0x03uL << RCC_SDMMC12CKSELR_SDMMC12SRC_Pos) |	// hsi_ker_ck
+			0;
+	(void) RCC->SDMMC12CKSELR;
+
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_SDMMC1EN;   // подаем тактирование на SDMMC1
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_SDMMC1LPEN;   // подаем тактирование на SDMMC1
+	(void) RCC->MP_AHB6LPENSETR;
+
+	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+
+	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
+	SDMMC1->CLKCR =
+		SDMMC_CLKCR_CLKDIV |
+		1 * SDMMC_CLKCR_HWFC_EN |
+		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
+		0;
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
+
+	arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
+
+	// разрешить тактирование карты памяти
+	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
+
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+
+	const unsigned sdioix = 0;	// SD0
+
+//    SCLR->SDIO_RST_CTRL |= (0x11uL << sdioix);
+//    SCLR->SDIO_RST_CTRL &= ~ (0x11uL << sdioix);
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << (10 + sdioix));	// APER_CLK_CTRL.SDI0_CPU_1XCLKACT
+    //EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
+	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
+		((uint_fast32_t) SCLR_SDIO_CLK_CTRL_DIVISOR_VALUE << 8) | // DIVISOR
+		(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+		(0x01uL << sdioix) | // CLKACT0 - SDIO 0 reference clock active
+		0;
+
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
+		(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ ((0x0FuL << 16))) |
+		(0x0EuL << 16);	// Data_Timeout_Counter_Value
+
+	// SD_Bus_Power off
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			0 * (0x01uL << 8) |	// 0 - Power off
+			0;
+	// SD_Bus_Voltage_Select
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x07uL << 9)) |
+			(0x07uL << 9) |	// 111b - 3.3 Flattop
+			0;
+	// SD_Bus_Power on
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			1 * (0x01uL << 8) |	// 1 - Power on
+			0;
+	// DMA_Select
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x03uL << 3)) |
+			(0x00uL << 3) |	// SDMA select
+			0;
+
+	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+	ASSERT(((SD0->Vendor_Version_Number & 0xFFFF0000uL) >> 16) == 0x8901uL);
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
+
+//	PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+//	PRINTF("SD0->CAPABILITIES.SDMA_Support=%d\n", (SD0->CAPABILITIES >> 22) & 0x01);
+//	PRINTF("SD0->CAPABILITIES.Voltage_Support_3_3_V=%d\n", (SD0->CAPABILITIES >> 24) & 0x01);
+
+	//arm_hardware_set_handler_system(SDIO0_IRQn, SDIO0_IRQHandler);
+
+#else
+
+	#error Wrong CPUSTYLE_xxx
+
+#endif
+}
+
+// в ответ на прерывание изменения состояния card detect
+void hardware_sdhost_detect(uint_fast8_t Card_Inserted)
+{
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+
+	//	This bit indicates whether a card has been
+	//	inserted. Changing from 0 to 1 generates a Card
+	//	Insertion interrupt in the Normal Interrupt Status
+	//	register and changing from 1 to 0 generates a
+	//	Card Removal Interrupt in the Normal Interrupt
+	//	Status register. The Software Reset For All in the
+	//	Software Reset register shall not affect this bit. If
+	//	a Card is removed while its power is on and its
+	//	clock is oscillating, the HC shall clear SD Bus
+	//	Power in the Power Control register and SD Clock
+	//	Enable in the Clock control register. In addition
+	//	the HD should clear the HC by the Software Reset
+	//	For All in Software register. The card detect is
+	//	active regardless of the SD Bus Power.
+
+	return;
+
+	// SD_Bus_Power off
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			0 * (0x01uL << 8) |	// 0 - Power off
+			0;
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= (1uL << 24);	// Software_Reset_for_All
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL &= ~ (1uL << 24);	// Software_Reset_for_All
+
+	// SD_Bus_Voltage_Select
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x07uL << 9)) |
+			(0x07uL << 9) |	// 111b - 3.3 Flattop
+			0;
+	// SD_Bus_Power on
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			1 * (0x01uL << 8) |	// 1 - Power on
+			0;
+
+
+    //hardware_sdhost_initialize();
+
+ #endif
+}
+
+#endif /* WITHSDHCHW */
+

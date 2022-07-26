@@ -79,6 +79,7 @@ unsigned long stm32h7xx_get_usart2_to_8_freq(void);
 unsigned long stm32h7xx_get_spi1_2_3_freq(void);
 unsigned long stm32h7xx_get_spi4_5_freq(void);
 unsigned long stm32h7xx_get_adc_freq(void);
+uint_fast32_t stm32f7xx_pllq_initialize(void); // Настроить выход PLLQ на 48 МГц
 
 void stm32mp1_pll_initialize(void);
 void stm32mp1_usb_clocks_initialize(void);
@@ -148,7 +149,7 @@ unsigned long hardware_get_apb1_tim_freq(void);
 unsigned long hardware_get_apb2_freq(void);
 unsigned long hardware_get_apb2_tim_freq(void);
 
-// Allwinner T113-S3
+// Allwinner t113-s3
 unsigned long allwnrt113_get_usart_freq(void);
 unsigned long allwnrt113_get_spi0_freq(void);
 unsigned long allwnrt113_get_spi1_freq(void);
@@ -195,5 +196,214 @@ calcdivider(
 	uint_fast16_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
 	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
 	uint_fast8_t substract);
+
+
+#if CPUSTYLE_AT91SAM7S
+
+	// Параметры функции calcdivider().
+	enum
+	{
+		AT91SAM7_TIMER_WIDTH = 16,	AT91SAM7_TIMER_TAPS = (1024 | 128 | 32 | 8 | 2),
+		AT91SAM7_UART_BRGR_WIDTH = 16,	AT91SAM7_UART_BRGR_TAPS = (16),	// Регистр UART_BRGR не требует уменьшения на 1
+		AT91SAM7_USART_BRGR_WIDTH = 16,	AT91SAM7_USART_BRGR_TAPS = (16 | 8),	// Регистр US_BRGR не требует уменьшения на 1
+		AT91SAM7_PITPIV_WIDTH = 20,	AT91SAM7_PITPIV_TAPS = (16),	// Periodic Interval Timer (PIT)
+		AT91SAM7_TWI_WIDTH = 8,	AT91SAM7_TWI_TAPS = (255),	// I2C interface (TWI) используется MCLK / 2
+		AT91SAM7_ADC_PRESCAL_WIDTH = 6, AT91SAM7_ADC_PRESCAL_TAPS = 2,	// используется MCLK / 2
+		//
+		AT91SAM7_fillPAD
+	};
+
+	// Mask: AT91C_TC_CLKS
+	static const unsigned long tc_cmr_clks [] =
+	{
+		AT91C_TC_CLKS_TIMER_DIV1_CLOCK, // is a TCxCLK = MCLK / 2
+		AT91C_TC_CLKS_TIMER_DIV2_CLOCK, // is a TCxCLK = MCLK / 8
+		AT91C_TC_CLKS_TIMER_DIV3_CLOCK, // is a TCxCLK = MCLK / 32
+		AT91C_TC_CLKS_TIMER_DIV4_CLOCK, // is a TCxCLK = MCLK / 128
+		AT91C_TC_CLKS_TIMER_DIV5_CLOCK, // is a TCxCLK = MCLK / 1024
+	};
+
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+
+	// Параметры функции calcdivider().
+	//
+	// В stm32 три вида таймеров - General-purpose (2..5, 9..14), Advanced-control (1 & 8) & Basic (6 & 7)
+	enum
+	{
+		//STM32F_GP_TIMER_WIDTH = 16,	STM32F_GP_TIMER_TAPS = (65535), // General-purpose timers
+		// 32-bit timer: TIM2 on STM32F3xxx, TIM2 and TIM5 on STM32F4xxx
+		//STM32F_AC_TIMER_WIDTH = 16,	STM32F_AC_TIMER_TAPS = (65535), // Advanced-control timers
+		//STM32F_BA_TIMER_WIDTH = 16,	STM32F_BA_TIMER_TAPS = (65535), // Basic timers
+
+		// General-purpose timers (TIM2/TIM3/TIM4/TIM5)
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+		STM32F_TIM2_TIMER_WIDTH = 32,	STM32F_TIM2_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
+		STM32F_TIM5_TIMER_WIDTH = 32,	STM32F_TIM5_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
+#else /* CPUSTYLE_STM32F4XX */
+		STM32F_TIM2_TIMER_WIDTH = 16,	STM32F_TIM2_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
+		STM32F_TIM5_TIMER_WIDTH = 16,	STM32F_TIM5_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
+#endif /* CPUSTYLE_STM32F4XX */
+		STM32F_TIM1_TIMER_WIDTH = 16,	STM32F_TIM1_TIMER_TAPS = (65535),
+		STM32F_TIM3_TIMER_WIDTH = 16,	STM32F_TIM3_TIMER_TAPS = (65535),
+		STM32F_TIM4_TIMER_WIDTH = 16,	STM32F_TIM4_TIMER_TAPS = (65535),
+
+		STM32F_SPIBR_WIDTH = 0,	STM32F_SPIBR_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4 | 2),
+
+		// LTDC dot clock parameters
+		STM32F_LTDC_DIV_WIDTH = 3, // valid values for RCC_PLLSAICFGR_PLLSAIR: 2..7
+			STM32F_LTDC_DIV_TAPS = (16 | 8 | 4 | 2),	// valid values for RCC_DCKCFGR_PLLSAIDIVR: 0: /2, 1: /4, 2: /8, 3: /16
+
+		//STM32F103_BRGR_WIDTH = 16,	STM32F103_BRGR_TAPS = (16 | 8),	// Регистр US_BRGR не требует уменьшения на 1
+		//STM32F103_PITPIV_WIDTH = 20,	STM32F103_PITPIV_TAPS = (16),	// Periodic Interval Timer (PIT)
+		//STM32F103_TWI_WIDTH = 8,	STM32F103_TWI_TAPS = (255),	// I2C interface (TWI)
+		//STM32F103_ADC_PRESCAL_WIDTH = 8, STM32F103_ADC_PRESCAL_TAPS = 2,	// используется MCLK / 2
+		//
+		STM32F_fillPAD
+	};
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	// Параметры функции calcdivider().
+	enum
+	{
+		ATSAM3S_TIMER_WIDTH = 16,	ATSAM3S_TIMER_TAPS = (1024 | 128 | 32 | 8 | 2),
+		ATSAM3S_UART_BRGR_WIDTH = 16,	ATSAM3S_UART_BRGR_TAPS = (16),	// Регистр US_BRGR не требует уменьшения на 1
+		ATSAM3S_USART_BRGR_WIDTH = 16,	ATSAM3S_USART_BRGR_TAPS = (16 | 8),	// Регистр US_BRGR не требует уменьшения на 1
+		ATSAM3S_PITPIV_WIDTH = 20,	ATSAM3S_PITPIV_TAPS = (16),	// Periodic Interval Timer (PIT)
+		ATSAM3S_TWI_WIDTH = 8,	ATSAM3S_TWI_TAPS = (255),	// I2C interface (TWI)
+		ATSAM3S_ADC_PRESCAL_WIDTH = 8, ATSAM3S_ADC_PRESCAL_TAPS = 2,	// используется MCLK / 2
+		//
+		ATSAM3S_fillPAD
+	};
+
+	// Mask: AT91C_TC_CLKS
+	static const unsigned long tc_cmr_tcclks [] =
+	{
+		TC_CMR_TCCLKS_TIMER_CLOCK1, // is a TCxCLK = MCLK / 2
+		TC_CMR_TCCLKS_TIMER_CLOCK2, // is a TCxCLK = MCLK / 8
+		TC_CMR_TCCLKS_TIMER_CLOCK3, // is a TCxCLK = MCLK / 32
+		TC_CMR_TCCLKS_TIMER_CLOCK4, // is a TCxCLK = MCLK / 128
+		TC_CMR_TCCLKS_TIMER_CLOCK5, // is a TCxCLK = MCLK / 1024
+	};
+
+#elif CPUSTYLE_ATMEGA
+
+	// Параметры функции calcdivider().
+	enum
+	{
+		ATMEGA_SPCR_WIDTH = 0,			ATMEGA_SPCR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2),
+
+		ATMEGA128_TIMER0_WIDTH = 8,		ATMEGA128_TIMER0_TAPS = (1024 | 256 | 128 | 64 | 32 | 8 | 1),
+		ATMEGA_TIMER0_WIDTH = 8,		ATMEGA_TIMER0_TAPS = (1024 | 256 | 64 | 8 | 1),
+		ATMEGA_TIMER1_WIDTH = 16,		ATMEGA_TIMER1_TAPS = (1024 | 256 | 64 | 8 | 1),
+		ATMEGA_TIMER2_WIDTH = 8,		ATMEGA_TIMER2_TAPS = (1024 | 256 | 128 | 64 | 32 | 8 | 1),
+		ATMEGAXXX4_TIMER3_WIDTH = 16,	ATMEGAXXX4_TIMER3_TAPS = (1024 | 256 | 64 | 8 | 1),	/* avaliable only on ATMega1284P */
+
+		ATMEGA_UBR_WIDTH = 12,	ATMEGA_UBR_TAPS = (16 | 8),	/* UBR: USART Baud Rate Register */
+		ATMEGA_TWBR_WIDTH = 8,	ATMEGA_TWBR_TAPS = (64 | 16 | 4 | 1),	/* TWBR: TWI Bit Rate Register */
+		ATMEGA_ADPS_WIDTH = 0,	ATMEGA_ADPS_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2),	/* ADPS2:0: ADC Prescaler Select Bits */
+
+		ATMEGA8_TIMER2_WIDTH = 8,		ATMEGA8_TIMER2_TAPS = (1024 | 256 | 128 | 64 | 32 | 8 | 1),
+		//
+		ATMEGA8_fillPAD
+
+	};
+	// spcr и spsr - скорость SPI. Индексы соответствуют номерам битов в ATMEGA_SPCR_TAPS
+	// Document: 8272E-AVR-04/2013, Table 18-5. Relationship between SCK and the oscillator frequency.
+	static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t spsr, spcr; } spcr_spsr [] =
+	{
+		{ (1U << SPI2X), 	(0U << SPR1) | (0U << SPR0), }, 	/* /2 */
+		{ (0U << SPI2X), 	(0U << SPR1) | (0U << SPR0), }, 	/* /4 */
+		{ (1U << SPI2X), 	(0U << SPR1) | (1U << SPR0), }, 	/* /8 */
+		{ (0U << SPI2X), 	(0U << SPR1) | (1U << SPR0), }, 	/* /16 */
+		{ (1U << SPI2X), 	(1U << SPR1) | (0U << SPR0), }, 	/* /32 */
+		{ (0U << SPI2X), 	(1U << SPR1) | (0U << SPR0), }, 	/* /64 */
+		{ (0U << SPI2X), 	(1U << SPR1) | (1U << SPR0), }, 	/* /128 */
+	};
+
+#elif CPUSTYLE_ATXMEGA
+	// Параметры функции calcdivider().
+	enum
+	{
+		ATXMEGA_TIMER_WIDTH = 16,	ATXMEGA_TIMER_TAPS = (1024 | 256 | 64 | 8 | 4 | 2 | 1),
+		ATXMEGA_SPIBR_WIDTH = 0,	ATXMEGA_SPIBR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2),
+		ATXMEGA_UBR_WIDTH = 12,
+			ATXMEGA_UBR_GRADE = 3, // Допустимы значения 0 (без дробного делителя), 1, 2 и 3 (с периодом 8)
+			ATXMEGA_UBR_TAPS = (16 | 8) >> ATXMEGA_UBR_GRADE, ATXMEGA_UBR_BSEL = (0 - ATXMEGA_UBR_GRADE),
+		//
+		ATXMEGA_fillPAD
+	};
+	static const FLASHMEM uint_fast8_t spi_ctl [] =
+	{
+		(1U << SPI_CLK2X_bp) | 	SPI_PRESCALER_DIV4_gc,  /* /2 */
+		(0U << SPI_CLK2X_bp) | 	SPI_PRESCALER_DIV4_gc,  /* /4 */
+		(1U << SPI_CLK2X_bp) |	SPI_PRESCALER_DIV16_gc, 	/* /8 */
+		(0U << SPI_CLK2X_bp) |	SPI_PRESCALER_DIV16_gc, 	/* /16 */
+		(1U << SPI_CLK2X_bp) |	SPI_PRESCALER_DIV64_gc, 	/* /32 */
+		(0U << SPI_CLK2X_bp) |	SPI_PRESCALER_DIV64_gc, 	/* /64 */
+		(0U << SPI_CLK2X_bp) |	SPI_PRESCALER_DIV128_gc,	/* /128 */
+	};
+#elif CPUSTYLE_STM32F30X
+	#warning TODO: Add code for STM32F30X timers support
+
+#elif CPUSTYLE_R7S721
+
+	enum
+	{
+		R7S721_SCIF_SCBRR_WIDTH = 8,	R7S721_SCIF_SCBRR_TAPS = (2048 | 1024 | 512 | 256 | 128 | 64 | 32 | 16 ),	// Регистр SCIFx.SCBRR требует уменьшение на 1
+		R7S721_RSPI_SPBR_WIDTH = 8,		R7S721_RSPI_SPBR_TAPS = (16 | 8 | 4 | 2),
+	};
+
+	// scemr:
+	// b0=1: 1: Base clock frequency is 8 times the bit rate,
+	// b0=0: 0: Base clock frequency is 16 times the bit rate
+	// scmsr:
+	// b1..b0: 0: /1, 1: /4, 2: /16, 3: /64
+	enum
+	{
+		SCEMR_x16 = 0x00,	// ABCS=0
+		SCEMR_x8 = 0x01,	// ABCS=1
+		SCSMR_DIV1 = 0x00,
+		SCSMR_DIV4 = 0x01,
+		SCSMR_DIV16 = 0x02,
+		SCSMR_DIV64 = 0x03,
+	};
+	static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_scsmr [] =
+	{
+		{ SCEMR_x8, 	SCSMR_DIV1, },		/* /8 = 8 * 1 */
+		{ SCEMR_x16, 	SCSMR_DIV1, }, 		/* /16 = 16 * 1 */
+		{ SCEMR_x8, 	SCSMR_DIV4, },		/* /32 = 8 * 4 */
+		{ SCEMR_x16, 	SCSMR_DIV4, },		/* /64 = 16 * 4 */
+		{ SCEMR_x8, 	SCSMR_DIV16, }, 	/* /128 = 8 * 16 */
+		{ SCEMR_x16, 	SCSMR_DIV16, }, 	/* /256 = 16 * 16 */
+		{ SCEMR_x8, 	SCSMR_DIV64, },  	/* /512 = 8 * 64 */
+		{ SCEMR_x16, 	SCSMR_DIV64, }, 	/* /1024 = 16 * 64 */
+	};
+
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+
+	enum
+	{
+		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1),	// FPGA0_CLK_CTRL
+		XC7Z_SPI_BR_WIDTH = 0, XC7Z_SPI_BR_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4)
+	};
+
+#elif CPUSTYLE_XCZU
+
+	enum
+	{
+		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1)	// FPGA0_CLK_CTRL
+	};
+
+#elif CPUSTYPE_T113
+	enum
+	{
+		ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1),
+		ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2)
+	};
+
+#else
+	//#warning Undefined CPUSTYLE_XXX
+#endif
 
 #endif /* INC_CLOCKS_H_ */

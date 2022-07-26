@@ -57,6 +57,7 @@ CORE = -mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16 -ftree-vectori
 OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
@@ -65,6 +66,7 @@ USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32F7xx_HAL_Driver
+RTOSXDIR = $(CMSISDIR)/RTOS2
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -80,10 +82,12 @@ DINCDIR = \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core/Include \
-	$(CMSISDIR)/DSP/Include \
-	$(CMSISDIR)/DSP/ComputeLibrary/Include \
-	$(CMSISDIR)/DSP/Source \
-	$(CMSISDIR)/DSP/PrivateInclude \
+	$(RTOSXDIR)/Include \
+	$(RTOSXDIR)/RTX/Include \
+	$(CMSISDSPDIR)/Include \
+	$(CMSISDSPDIR)/ComputeLibrary/Include \
+	$(CMSISDSPDIR)/Source \
+	$(CMSISDSPDIR)/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
 	$(LWIPDIR)/src/apps/http \
@@ -93,7 +97,7 @@ DINCDIR = \
 	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
-#DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
+#DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
@@ -137,6 +141,7 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 #SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(OPENVGDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
+#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server

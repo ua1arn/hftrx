@@ -417,99 +417,62 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
 	}
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 	//	Allwinner USB DRD support (musb_otg)
 	//
 	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
 	//	different register layout and a few missing registers.
 	// Turn off EHCI0
+//	PRINTF("1 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
+
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
     arm_hardware_disable_handler(USB0_EHCI_IRQn);
     arm_hardware_disable_handler(USB0_OHCI_IRQn);
 
-	CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
-	CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
-	CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
+	CCU->USB_BGR_REG &= ~ (1uL << 16);	// USBOHCI0_RST
+	CCU->USB_BGR_REG &= ~ (1uL << 20);	// USBEHCI0_RST
+	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST
 
-	CCU->USB_BGR_REG &= ~ (0x01uL << 0);	// USBOHCI0_GATING
-	CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
-	CCU->USB0_CLK_REG &= ~ (0x01uL << 30);	// USBPHY0_RSTN
+	CCU->USB_BGR_REG &= ~ (1uL << 0);	// USBOHCI0_GATING
+	CCU->USB_BGR_REG &= ~ (1uL << 4);	// USBEHCI0_GATING
+	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN
 
-	PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled\n");
-	return;
+	//PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled. Enable for process.\n");
+	//return;
+
+	// Turn on USBOTG0
+	CCU->USB_BGR_REG |= (1uL << 24);	// USBOTG0_RST
+	CCU->USB_BGR_REG |= (1uL << 8);	// USBOTG0_GATING
 
 	// Enable
-	CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-	CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
-
-	// Turn off USBOTG0
-	CCU->USB_BGR_REG |= (0x01uL << 24);	// USBOTG0_RST
-	CCU->USB_BGR_REG |= (0x01uL << 8);	// USBOTG0_GATING
+	CCU->USB0_CLK_REG |= (1uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+	CCU->USB0_CLK_REG |= (1uL << 30);	// USBPHY0_RSTN
 
 	// OHCI0 12M Source Select
 	CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
-		(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+		(0x00 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+		(1uL << 31) |	// USB0_CLKEN - Gating Special Clock For OHCI0
+		(1uL << 30) |	// USBPHY0_RSTN
 		0;
-
-	USB1_TypeDef * USBx = USB0;
-
-	USBx->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
-	USBx->USB_CTRL |=
-		(1uL << 11) |	// 1: Use INCR16 when appropriate
-		(1uL << 10) |	// 1: Use INCR8 when appropriate
-		(1uL << 9) |	// 1: Use INCR4 when appropriate
-		(1uL << 8) |	// 1: Start INCRx burst only on burst x-align address Note: This bit must enable if any bit of bit[11:9] is enabled
-		0;
-
-	USBx->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
 
 	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
-//	unsigned ep;
-//	for (ep = 0; ep < 6; ++ ep)
-//	{
-//		PRINTF("EPFIFO%u=%08lX\n", ep, USB0_DEVICE->EPFIFO [ep]);
-//	}
-//	/* enable HighSpeed and ISO Update flags */
-//
-//	MUSB2_WRITE_1(sc, MUSB2_REG_POWER,
-//	    MUSB2_MASK_HSENAB | MUSB2_MASK_ISOUPD);
-//
-//	if (sc->sc_mode == MUSB2_DEVICE_MODE) {
-//		/* clear Session bit, if set */
-//		temp = MUSB2_READ_1(sc, MUSB2_REG_DEVCTL);
-//		temp &= ~MUSB2_MASK_SESS;
-//		MUSB2_WRITE_1(sc, MUSB2_REG_DEVCTL, temp);
-//	} else {
-//		/* Enter session for Host mode */
-//		temp = MUSB2_READ_1(sc, MUSB2_REG_DEVCTL);
-//		temp |= MUSB2_MASK_SESS;
-//		MUSB2_WRITE_1(sc, MUSB2_REG_DEVCTL, temp);
-//	}
-//
-//	/* wait a little for things to stabilise */
-//	usb_pause_mtx(&sc->sc_bus.bus_mtx, hz / 10);
 
-	// USB0_DEVICE->CONFDATA |= MUSB2_MASK_CD_UTMI_DW; // R/O register?
-	USB0_DEVICE->POWER = MUSB2_MASK_HSENAB | MUSB2_MASK_ISOUPD;
-	USB0_DEVICE->DEVCTL &= ~ (MUSB2_MASK_SESS);
-	local_delay_ms(10);
+	// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
+	//	/* A83T specific control bits for PHY0 */
+	//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
+	//	#define PHY_CTL_SIDDQ			BIT(3)
+	//	#define PHY_CTL_H3_SIDDQ		BIT(1)
 
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
-
-//	PRINTF("POWER=%08lX\n", USB0_DEVICE->POWER);
-//	PRINTF("DEVCTL=%08lX\n", USB0_DEVICE->DEVCTL);
-	PRINTF("CONFDATA=%08lX\n", USB0_DEVICE->CONFDATA);
-//	PRINTF("INTUSB=%08lX\n", USB0_DEVICE->INTUSB);
-//	PRINTF("INTTX=%08lX\n", USB0_DEVICE->INTTX);
-//	PRINTF("INTRX=%08lX\n", USB0_DEVICE->INTRX);
+	USBOTG0->USB_ISCR = 0x4300FC00;	// после запуска из QSPI было 0x40000000
+	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
+	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
+	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
+	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
 
 #else
 	#error HAL_PCD_MspInit should be implemented
@@ -592,10 +555,17 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 		  }
 	#endif /* defined (USB_OTG_FS) */
 
-#elif CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
 
-	#warning HAL_PCD_MspDeInit should be implemented
 	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+
+	CCU->USB_BGR_REG &= ~ (1uL << 16);	// USBOHCI0_RST
+	CCU->USB_BGR_REG &= ~ (1uL << 20);	// USBEHCI0_RST
+	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST
+
+	CCU->USB_BGR_REG &= ~ (1uL << 0);	// USBOHCI0_GATING
+	CCU->USB_BGR_REG &= ~ (1uL << 4);	// USBEHCI0_GATING
+	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN
 
 #else
 	#error HAL_PCD_MspDeInit should be implemented
@@ -1505,8 +1475,9 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 
 #if CPUSTYLE_R7S721
 	usbd_pipes_initialize(& hpcd_USB_OTG);
-#elif CPUSTYPE_ALLWNT113
-	#warning Implement for CPUSTYPE_ALLWNT113
+#elif CPUSTYPE_T113
+	//#warning Implement for CPUSTYPE_T113
+	//PRINTF("USBD_LL_Init\n");
 
 #else /* CPUSTYLE_R7S721 */
 	if (USB_Is_OTG_HS(hpcd_USB_OTG.Instance))
