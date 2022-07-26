@@ -10071,12 +10071,12 @@ audioproc_spool_user(void)
 		for (i = 0; i < FIRBUFSIZE; ++ i)
 		{
 	#if WITHUSEDUALWATCH
-			deliveryfloat(& speexoutfloat_user, outsp [0] [i], outsp [1] [i]);	// to AUDIO codec
+			deliveryfloat_user(& speexoutfloat_user, outsp [0] [i], outsp [1] [i]);	// to AUDIO codec
 	#else /* WITHUSEDUALWATCH */
-			deliveryfloat(& speexoutfloat_user, outsp [0] [i], outsp [0] [i]);	// to AUDIO codec
+			deliveryfloat_user(& speexoutfloat_user, outsp [0] [i], outsp [0] [i]);	// to AUDIO codec
 	#endif /* WITHUSEDUALWATCH */
 
-	}
+		}
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);
 	}

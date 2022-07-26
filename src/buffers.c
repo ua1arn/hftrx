@@ -3128,6 +3128,21 @@ void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 	SPIN_UNLOCK(& list->listlock);
 }
 
+/* предполагается что тут значения нормирования в диапазоне -1..+1 */
+void deliveryfloat_user(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
+{
+	PLIST_ENTRY t;
+	global_disableIRQ();
+	SPIN_LOCK(& list->listlock);
+	for (t = list->head.Blink; t != & list->head; t = t->Blink)
+	{
+		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
+		(p->cb)(p->ctx, ch0, ch1);
+	}
+	SPIN_UNLOCK(& list->listlock);
+	global_enableIRQ();
+}
+
 void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
 {
 	PLIST_ENTRY t;

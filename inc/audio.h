@@ -1034,6 +1034,7 @@ typedef struct deliverylist_tag
 void deliverylist_initialize(deliverylist_t * list);
 
 void deliveryfloat(deliverylist_t * head, FLOAT_t ch0, FLOAT_t ch1);
+void deliveryfloat_user(deliverylist_t * head, FLOAT_t ch0, FLOAT_t ch1);
 void deliveryint(deliverylist_t * head, int_fast32_t ch0, int_fast32_t ch1);
 
 void subscribefloat_user(deliverylist_t * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
