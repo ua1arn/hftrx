@@ -419,6 +419,7 @@ extern "C" {
 		#define COSF	cos
 		#define ATAN2F	atan2
 		#define ATANF	atan
+		#define TANF	tan
 		//#define EXPF	exp
 		#define EXPF	local_exp
 		#define FABSF	fabs
@@ -450,6 +451,7 @@ extern "C" {
 		#define COSF	cosf
 		#define ATAN2F	atan2f
 		#define ATANF	atanf
+		#define TANF	tanf
 		//#define EXPF	expf
 		#define EXPF	local_exp
 		#define FABSF	fabsf
