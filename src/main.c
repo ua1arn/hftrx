@@ -10062,14 +10062,18 @@ audioproc_spool_user(void)
 			// nrp->outsp указывает на результат обработки
 			outsp [pathi] = mdt [amode].afproc [gtx] (pathi, nrp, p + pathi * FIRBUFSIZE);
 		}
-#if WITHAFEQUALIZER
-		audio_rx_equalizer(outsp [0], FIRBUFSIZE);	/* todo: эквалайчер хранит состояние и обрабатывает только 1 канал */
-#endif /* WITHAFEQUALIZER */
 		//////////////////////////////////////////////
 		// Save results
 #if WITHUSEDUALWATCH
+#if WITHAFEQUALIZER
+		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
+		audio_rx_equalizer(outsp [1], FIRBUFSIZE);
+#endif /* WITHAFEQUALIZER */
 		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [1], FIRBUFSIZE);	// to AUDIO codec
 #else /* WITHUSEDUALWATCH */
+#if WITHAFEQUALIZER
+		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
+#endif /* WITHAFEQUALIZER */
 		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [0], FIRBUFSIZE);	// to AUDIO codec
 #endif /* WITHUSEDUALWATCH */
 		// Освобождаем буфер
