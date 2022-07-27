@@ -489,9 +489,7 @@ static uint_fast8_t glob_lvlgridstep = 12;	// Шаг сетки уровней �
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
-#if WITHSPECTRUMWF || (WITHAFSPECTRE && ! LCDMODE_DUMMY)
-static void fftzoom_af(float32_t * buffer, unsigned zoompow2, unsigned normalFFT);
-#endif /* WITHSPECTRUMWF */
+static void fftzoom_af(FLOAT_t * buffer, unsigned zoompow2, unsigned normalFFT);
 
 uint_fast16_t normalize(
 	uint_fast16_t raw,
@@ -4133,16 +4131,16 @@ enum
 };
 
 typedef struct {
-	float32_t raw_buf [WITHFFTSIZEAF * AFSP_DECIMATION];		// Для последующей децимации /2
-	float32_t fft_buf [WITHFFTSIZEAF * 2];		// комплексные числа
+	FLOAT_t raw_buf [WITHFFTSIZEAF * AFSP_DECIMATION];		// Для последующей децимации /2
+	FLOAT_t fft_buf [WITHFFTSIZEAF * 2];		// комплексные числа
 	uint_fast8_t is_ready;
 	uint_fast16_t x;
 	uint_fast16_t y;
 	uint_fast16_t w;
 	uint_fast16_t h;
-	float32_t max_val;
-	float32_t val_array [DIM_X];
-	arm_rfft_fast_instance_f32 rfft_instance;
+	FLOAT_t max_val;
+	FLOAT_t val_array [DIM_X];
+	ARM_MORPH(arm_rfft_fast_instance) rfft_instance;
 } afsp_t;
 
 #endif /* WITHAFSPECTRE */
@@ -4235,10 +4233,10 @@ struct ustates
 #else /* defined(ARM_MATH_NEON) */
 	float32_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 4];
 #endif /* defined(ARM_MATH_NEON) */
-	float32_t fir_state [ZOOMFFT_DECIM_STAGES_FIR + LARGEFFT - 1];
+	FLOAT_t fir_state [ZOOMFFT_DECIM_STAGES_FIR + LARGEFFT - 1];
 
-	float32_t cmplx_sig [NORMALFFT * 2];
-	float32_t ifspec_wndfn [NORMALFFT];
+	FLOAT_t cmplx_sig [NORMALFFT * 2];
+	FLOAT_t ifspec_wndfn [NORMALFFT];
 
 	FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
 	FLOAT_t Yold_wtf [ALLDX];
@@ -4253,7 +4251,7 @@ struct ustates
 	PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
 
 #if WITHAFSPECTRE
-	float32_t afspec_wndfn [WITHFFTSIZEAF];
+	FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
 	afsp_t afsp;
 #endif /* WITHAFSPECTRE */
 
@@ -4370,7 +4368,7 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	gvars.afsp.h = 40;
 	gvars.afsp.is_ready = 0;
 
-	VERIFY(ARM_MATH_SUCCESS == arm_rfft_fast_init_f32(& gvars.afsp.rfft_instance, WITHFFTSIZEAF));
+	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast_init)(& gvars.afsp.rfft_instance, WITHFFTSIZEAF));
 
 	int i;
 	for (i = 0; i < WITHFFTSIZEAF; ++ i)
@@ -4544,8 +4542,8 @@ static const struct zoom_param zoom_params [] =
 typedef struct fftbuff_tag
 {
 	LIST_ENTRY item;
-	float32_t largebuffI [LARGEFFT];
-	float32_t largebuffQ [LARGEFFT];
+	FLOAT_t largebuffI [LARGEFFT];
+	FLOAT_t largebuffQ [LARGEFFT];
 } fftbuff_t;
 
 static LIST_ENTRY fftbuffree;
@@ -4573,6 +4571,7 @@ uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
 		* dest = p;
 		return 1;
 	}
+	SPIN_UNLOCK(& fftlock);
 	return 0;
 }
 
@@ -4676,8 +4675,8 @@ void fftbuffer_initialize(void)
 		/* установка начальной позиции для заполнения со сдвигом. */
 		const unsigned filled = (i * LARGEFFT / NOVERLAP);
 		filleds [i] = filled;
-		arm_fill_f32(0, (* ppf)->largebuffI, filled);
-		arm_fill_f32(0, (* ppf)->largebuffQ, filled);
+		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffI, filled);
+		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffQ, filled);
 	}
 	SPINLOCK_INITIALIZE(& fftlock);
 }
@@ -4689,8 +4688,8 @@ static void fftzoom_filer_decimate_ifspectrum(
 {
 	union configs
 	{
-		arm_biquad_cascade_df2T_instance_f32 iir_config;
-		arm_fir_decimate_instance_f32 fir_config;
+		ARM_MORPH(arm_biquad_cascade_df2T_instance) iir_config;
+		ARM_MORPH(arm_fir_decimate_instance) fir_config;
 	} c;
 	const unsigned usedSize = NORMALFFT * prm->zoom;
 
@@ -4699,53 +4698,53 @@ static void fftzoom_filer_decimate_ifspectrum(
 	float32_t IIRCoeffs_NEON [ZOOMFFT_DECIM_STAGES_IIR * 8];
 
 	// Initialize floating-point Biquad cascade filter.
-    arm_biquad_cascade_df2T_compute_coefs_f32(ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs, IIRCoeffs_NEON);
-    arm_biquad_cascade_df2T_init_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, IIRCoeffs_NEON, gvars.iir_state);
+	ARM_MORPH(arm_biquad_cascade_df2T_compute_coefs)(ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs, IIRCoeffs_NEON);
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, IIRCoeffs_NEON, gvars.iir_state);
 
 #else /* defined (ARM_MATH_NEON) */
 	// Initialize floating-point Biquad cascade filter.
-	arm_biquad_cascade_df2T_init_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs, gvars.iir_state);
-	arm_biquad_cascade_df2T_f32(& c.iir_config, buffer, buffer, usedSize);
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs, gvars.iir_state);
+	ARM_MORPH(arm_biquad_cascade_df2T)(& c.iir_config, buffer, buffer, usedSize);
 
 #endif /* defined (ARM_MATH_NEON) */
 
 	// Дециматор
-	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& c.fir_config,
+	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_fir_decimate_init)(& c.fir_config,
 						prm->numTaps,
 						prm->zoom,          // Decimation factor
 						prm->pFIRCoeffs,
 						gvars.fir_state,            // Filter state variables
 						usedSize));
-	arm_fir_decimate_f32(& c.fir_config, buffer, buffer, usedSize);
+	ARM_MORPH(arm_fir_decimate)(& c.fir_config, buffer, buffer, usedSize);
 }
 
 // децимация НЧ спектра для увеличения разрешения
-static void fftzoom_af(float32_t * buffer, unsigned zoompow2, unsigned normalFFT)
+static void fftzoom_af(FLOAT_t * buffer, unsigned zoompow2, unsigned normalFFT)
 {
 	if (zoompow2 != 0)
 	{
 		ASSERT(ARRAY_SIZE(zoom_params) >= zoompow2);
 		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
-		arm_fir_decimate_instance_f32 fir_config;
+		ARM_MORPH(arm_fir_decimate_instance) fir_config;
 		const unsigned usedSize = normalFFT * prm->zoom;
 
-		VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& fir_config,
+		VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_fir_decimate_init)(& fir_config,
 							prm->numTaps,
 							prm->zoom,          // Decimation factor
 							prm->pFIRCoeffs,
 							gvars.fir_state,       	// Filter state variables
 							usedSize));
 
-		arm_fir_decimate_f32(& fir_config, buffer, buffer, usedSize);
+		ARM_MORPH(arm_fir_decimate)(& fir_config, buffer, buffer, usedSize);
 	}
 }
 
 static void
 make_cmplx(
-	float32_t * dst,
+	FLOAT_t * dst,
 	uint_fast16_t size,
-	const float32_t * realv,
-	const float32_t * imgev
+	const FLOAT_t * realv,
+	const FLOAT_t * imgev
 	)
 {
 	while (size --)
@@ -4782,7 +4781,7 @@ dsp_getspectrumrow(
 	const uint_fast32_t needsize = ((uint_fast32_t) NORMALFFT << zoompow2);
 	uint_fast16_t i;
 	uint_fast16_t x;
-	arm_cfft_instance_f32 fftinstance;
+	ARM_MORPH(arm_cfft_instance) fftinstance;
 
 	// проверка, есть ли накопленный буфер для формирования спектра
 	fftbuff_t * pf;
@@ -4790,9 +4789,9 @@ dsp_getspectrumrow(
 		return 0;
 
 	const unsigned usedsize = NORMALFFT << zoompow2;
-	float32_t * const largesigI = pf->largebuffI + LARGEFFT - usedsize;
-	float32_t * const largesigQ = pf->largebuffQ + LARGEFFT - usedsize;
-	float32_t * const fftinpt = gvars.cmplx_sig;
+	FLOAT_t * const largesigI = pf->largebuffI + LARGEFFT - usedsize;
+	FLOAT_t * const largesigQ = pf->largebuffQ + LARGEFFT - usedsize;
+	FLOAT_t * const fftinpt = gvars.cmplx_sig;
 
 	//beginstamp();	// performance diagnostics
 	// ARM_MATH_LOOPUNROLL=1, ARM_MATH_NEON=1
@@ -4816,10 +4815,10 @@ dsp_getspectrumrow(
 
 	release_fftbuffer(pf);
 
-	arm_cmplx_mult_real_f32(fftinpt, gvars.ifspec_wndfn, fftinpt,  NORMALFFT);	// Применить оконную функцию к IQ буферу
-	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, NORMALFFT));
-	arm_cfft_f32(& fftinstance, fftinpt, 0, 1);	// forward transform
-	arm_cmplx_mag_f32(fftinpt, fftinpt, NORMALFFT);	/* Calculate magnitudes */
+	ARM_MORPH(arm_cmplx_mult_real)(fftinpt, gvars.ifspec_wndfn, fftinpt,  NORMALFFT);	// Применить оконную функцию к IQ буферу
+	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_cfft_init)(& fftinstance, NORMALFFT));
+	ARM_MORPH(arm_cfft)(& fftinstance, fftinpt, 0, 1);	// forward transform
+	ARM_MORPH(arm_cmplx_mag)(fftinpt, fftinpt, NORMALFFT);	/* Calculate magnitudes */
 
 	//endstamp();	// performance diagnostics
 
