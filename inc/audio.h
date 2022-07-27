@@ -1036,18 +1036,20 @@ typedef struct deliverylist_tag
 void deliverylist_initialize(deliverylist_t * list);
 
 void deliveryfloat(deliverylist_t * head, FLOAT_t ch0, FLOAT_t ch1);
-void deliveryfloat_user(deliverylist_t * head, FLOAT_t ch0, FLOAT_t ch1);
+void deliveryfloat_user(deliverylist_t * head, const FLOAT_t * ch0, const FLOAT_t * ch1, unsigned n);
 void deliveryint(deliverylist_t * head, int_fast32_t ch0, int_fast32_t ch1);
 
+/* Функции target всегда вызываются в режиме с запрещенными прерываниями */
 void subscribefloat_user(deliverylist_t * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
 void subscribeint_user(deliverylist_t * head, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
 
+/* Функции target всегда вызываются в режиме с запрещенными прерываниями */
 void subscribefloat(deliverylist_t * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
 void subscribeint(deliverylist_t * head, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
 
 extern deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
-extern deliverylist_t speexoutfloat_user;	// выход sppeex и фильтра
-extern deliverylist_t afdemodoutfloat_rt;	// выход приемника
+extern deliverylist_t speexoutfloat;	// выход sppeex и фильтра
+extern deliverylist_t afdemodoutfloat;	// выход приемника
 
 #if WITHAFEQUALIZER
 

@@ -671,8 +671,8 @@ savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
-deliverylist_t speexoutfloat_user;	// выход sppeex и фильтра
-deliverylist_t afdemodoutfloat_rt;	// выход приемника
+deliverylist_t speexoutfloat;	// выход sppeex и фильтра
+deliverylist_t afdemodoutfloat;	// выход приемника
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -689,23 +689,23 @@ void buffers_initialize(void)
 #if WITHINTEGRATEDDSP
 
 	deliverylist_initialize(& rtstargetsint);
-	deliverylist_initialize(& speexoutfloat_user);
-	deliverylist_initialize(& afdemodoutfloat_rt);
+	deliverylist_initialize(& speexoutfloat);
+	deliverylist_initialize(& afdemodoutfloat);
 
 
 #if WITHUSBHEADSET || WITHSKIPUSERMODE || CTLSTYLE_V3D
 
 	// Обход user mode шумоподавителя
 	static subscribefloat_t afsample16register;
-	subscribefloat_user(& afdemodoutfloat_rt, & afsample16register, NULL, savesampleout16stereo_float);
+	subscribefloat_user(& afdemodoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
 
 #else /* WITHSKIPUSERMODE */
 
 	static subscribefloat_t afsample16register_user;
 	static subscribefloat_t afsample16register;
 
-	subscribefloat_user(& speexoutfloat_user, & afsample16register_user, NULL, savesampleout16stereo_float_user);
-	subscribefloat_user(& afdemodoutfloat_rt, & afsample16register, NULL, savesampleout16tospeex);
+	subscribefloat_user(& speexoutfloat, & afsample16register_user, NULL, savesampleout16stereo_float_user);
+	subscribefloat_user(& afdemodoutfloat, & afsample16register, NULL, savesampleout16tospeex);
 
 #endif /* WITHSKIPUSERMODE */
 
@@ -3129,7 +3129,7 @@ void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 /* предполагается что тут значения нормирования в диапазоне -1..+1 */
-void deliveryfloat_user(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
+void deliveryfloat_user(deliverylist_t * list, const FLOAT_t * ch0, const FLOAT_t * ch1, unsigned n)
 {
 	PLIST_ENTRY t;
 	global_disableIRQ();
@@ -3137,7 +3137,11 @@ void deliveryfloat_user(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
-		(p->cb)(p->ctx, ch0, ch1);
+		unsigned i;
+		for (i = 0; i < n; ++ i)
+		{
+			(p->cb)(p->ctx, ch0 [i], ch1 [i]);
+		}
 	}
 	SPIN_UNLOCK(& list->listlock);
 	global_enableIRQ();

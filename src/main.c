@@ -10063,20 +10063,15 @@ audioproc_spool_user(void)
 			outsp [pathi] = mdt [amode].afproc [gtx] (pathi, nrp, p + pathi * FIRBUFSIZE);
 		}
 #if WITHAFEQUALIZER
-		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
+		audio_rx_equalizer(outsp [0], FIRBUFSIZE);	/* todo: эквалайчер хранит состояние и обрабатывает только 1 канал */
 #endif /* WITHAFEQUALIZER */
 		//////////////////////////////////////////////
 		// Save results
-		unsigned i;
-		for (i = 0; i < FIRBUFSIZE; ++ i)
-		{
-	#if WITHUSEDUALWATCH
-			deliveryfloat_user(& speexoutfloat_user, outsp [0] [i], outsp [1] [i]);	// to AUDIO codec
-	#else /* WITHUSEDUALWATCH */
-			deliveryfloat_user(& speexoutfloat_user, outsp [0] [i], outsp [0] [i]);	// to AUDIO codec
-	#endif /* WITHUSEDUALWATCH */
-
-		}
+#if WITHUSEDUALWATCH
+		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [1], FIRBUFSIZE);	// to AUDIO codec
+#else /* WITHUSEDUALWATCH */
+		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [0], FIRBUFSIZE);	// to AUDIO codec
+#endif /* WITHUSEDUALWATCH */
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);
 	}
