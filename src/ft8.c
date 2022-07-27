@@ -68,7 +68,6 @@ uint32_t bufind = 0;
 uint8_t ft8_mox_request = 0;
 volatile uint8_t ft8_encode_req = 0;
 
-deliverylist_t ft8_out;
 static subscribefloat_t ft8_outregister;
 
 const int kMin_score = 10; // Minimum sync score threshold for candidates
@@ -629,8 +628,7 @@ void ft8_initialize(void)
 	arm_hardware_set_handler(ft8_interrupt_core0, ft8_irqhandler_core0, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU0);
 	arm_hardware_set_handler(ft8_interrupt_core1, ft8_irqhandler_core1, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);
 
-	deliverylist_initialize(& ft8_out);
-	subscribefloat_user(& ft8_out, & ft8_outregister, NULL, ft8fill);
+	subscribefloat_user(& speexoutfloat, & ft8_outregister, NULL, ft8fill);
 }
 
 #endif /* WITHFT8 */
