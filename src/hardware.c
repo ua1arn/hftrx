@@ -326,7 +326,7 @@ static void adcdones_spool(void)
 
 static volatile uint32_t sys_now_counter;
 
-#if ! (WITHLWIP)
+#if ! (CPUSTYLE_XC7Z)
 
 uint32_t sys_now(void)
 {

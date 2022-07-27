@@ -7,6 +7,7 @@
 
 #include "hardware.h"
 #include "formats.h"
+#include "gui/gui.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -548,6 +549,9 @@ int dbg_puts_impl(const char * s)
 	while ((c = * s ++) != '\0')
 	{
 		dbg_putchar(c);
+#if WITHTOUCHGUI && WITHGUIDEBUG
+		gui_add_debug(c);
+#endif /* WITHTOUCHGUI && WITHGUIDEBUG*/
 	}
 	return 0;
 }

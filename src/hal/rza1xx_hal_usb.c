@@ -18,6 +18,7 @@
 #include "formats.h"
 #include "gpio.h"
 
+#include "src/gui/gui.h"
 #include "src/display/display.h"
 
 #include <string.h>

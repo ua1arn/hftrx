@@ -13,6 +13,24 @@
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
+#if WITHFT8
+
+#include "ft8.h"
+
+void xcz_ipi_sendmsg_c0(uint8_t msg)
+{
+	ft8.int_core0 = msg;
+	GIC_SendSGI(ft8_interrupt_core0, TARGETCPU_CPU0, 0x00);
+}
+
+void xcz_ipi_sendmsg_c1(uint8_t msg)
+{
+	ft8.int_core1 = msg;
+	GIC_SendSGI(ft8_interrupt_core1, TARGETCPU_CPU1, 0x00);
+}
+
+#endif
+
 #if 0
 
 static const char * mode_trig(uint32_t mode)
