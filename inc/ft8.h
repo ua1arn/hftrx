@@ -48,6 +48,7 @@ typedef struct {
 } timestamp_t;
 
 extern ft8_t ft8;
+extern deliverylist_t ft8_out;
 
 void ft8_decode_buf(float * signal, timestamp_t ts);
 void ft8_fill1(float sample);

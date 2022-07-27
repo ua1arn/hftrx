@@ -68,6 +68,9 @@ uint32_t bufind = 0;
 uint8_t ft8_mox_request = 0;
 volatile uint8_t ft8_encode_req = 0;
 
+deliverylist_t ft8_out;
+static subscribefloat_t ft8_outregister;
+
 const int kMin_score = 10; // Minimum sync score threshold for candidates
 const int kMax_candidates = 120;
 const int kLDPC_iterations = 20;
@@ -551,13 +554,13 @@ void ft8_txfill(float * sample)
 	}
 }
 
-void ft8_fill1(float sample)
+static void ft8fill(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	system_disableIRQ();
 	if (fill_ft8_buf1 == 1)
 	{
+		system_disableIRQ();
 		ASSERT(bufind1 < bufsize);
-		ft8.rx_buf1 [bufind1] = sample;
+		ft8.rx_buf1 [bufind1] = ch0;
 		bufind1 ++;
 		if (bufind1 >= bufsize)
 		{
@@ -565,17 +568,14 @@ void ft8_fill1(float sample)
 			bufind1 = 0;
 			xcz_ipi_sendmsg_c1(FT8_MSG_DECODE_1);
 		}
+		system_enableIRQ();
 	}
-	system_enableIRQ();
-}
 
-void ft8_fill2(float sample)
-{
-	system_disableIRQ();
 	if (fill_ft8_buf2 == 1)
 	{
+		system_disableIRQ();
 		ASSERT(bufind2 < bufsize);
-		ft8.rx_buf2 [bufind2] = sample;
+		ft8.rx_buf2 [bufind2] = ch0;
 		bufind2 ++;
 		if (bufind2 >= bufsize)
 		{
@@ -583,8 +583,8 @@ void ft8_fill2(float sample)
 			bufind2 = 0;
 			xcz_ipi_sendmsg_c1(FT8_MSG_DECODE_2);
 		}
+		system_enableIRQ();
 	}
-	system_enableIRQ();
 }
 
 void ft8_start_fill(void)
@@ -628,6 +628,9 @@ void ft8_initialize(void)
 {
 	arm_hardware_set_handler(ft8_interrupt_core0, ft8_irqhandler_core0, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU0);
 	arm_hardware_set_handler(ft8_interrupt_core1, ft8_irqhandler_core1, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);
+
+	deliverylist_initialize(& ft8_out);
+	subscribefloat_user(& ft8_out, & ft8_outregister, NULL, ft8fill);
 }
 
 #endif /* WITHFT8 */

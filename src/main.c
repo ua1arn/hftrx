@@ -10181,6 +10181,9 @@ audioproc_spool_user(void)
 #endif /* WITHAFEQUALIZER */
 		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [0], FIRBUFSIZE);	// to AUDIO codec
 #endif /* WITHUSEDUALWATCH */
+#if WITHFT8
+		deliveryfloat_user(& ft8_out, outsp [0], outsp [0], FIRBUFSIZE);
+#endif /* WITHFT8 */
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);
 	}
