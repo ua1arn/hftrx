@@ -697,15 +697,15 @@ void buffers_initialize(void)
 
 	// Обход user mode шумоподавителя
 	static subscribefloat_t afsample16register;
-	subscribefloat_user(& afdemodoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
+	subscribefloat(& afdemodoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
 
 #else /* WITHSKIPUSERMODE */
 
 	static subscribefloat_t afsample16register_user;
 	static subscribefloat_t afsample16register;
 
-	subscribefloat_user(& speexoutfloat, & afsample16register_user, NULL, savesampleout16stereo_float_user);
-	subscribefloat_user(& afdemodoutfloat, & afsample16register, NULL, savesampleout16tospeex);
+	subscribefloat(& speexoutfloat, & afsample16register_user, NULL, savesampleout16stereo_float_user);
+	subscribefloat(& afdemodoutfloat, & afsample16register, NULL, savesampleout16tospeex);
 
 #endif /* WITHSKIPUSERMODE */
 
