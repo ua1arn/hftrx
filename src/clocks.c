@@ -7228,7 +7228,7 @@ void SystemCoreClockUpdate(void)
 //		unsigned prescalK = 5;	/* 0..255: /1../256 */
 		unsigned value;
 		const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_apb0_freq(), PWM5TICKSFREQ), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
-		PRINTF("hardware_dcdcfreq_pwm5_initialize: allwnrt113_get_apb0_freq()=%lu, prei=%u, divider=%u\n", allwnrt113_get_apb0_freq(), prei, value);
+		//PRINTF("hardware_dcdcfreq_pwm5_initialize: allwnrt113_get_apb0_freq()=%lu, prei=%u, divider=%u\n", allwnrt113_get_apb0_freq(), prei, value);
 		CCU->PWM_BGR_REG |= (1u << 0);	// PWM_GATING
 		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
 		// 9.10.4.1 Configuring Clock
