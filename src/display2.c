@@ -6121,15 +6121,6 @@ void display2_bgreset(void)
 
 void display2_initialize(void)
 {
-
-#if WITHDEBUG
-	{
-		static int inited;
-		ASSERT(inited == 0);	// Only one pass supported
-		inited = 1;
-	}
-#endif /* WITHDEBUG */
-
 	// параметр key игнорируеся обычно, но для случая старых дисплеев выделен особенный
 	display_walktrough(REDRM_INIS, REDRSUBSET_INIT, NULL);
 }
