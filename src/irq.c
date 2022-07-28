@@ -1336,7 +1336,7 @@ static void vectors_relocate(void)
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
-void spin_lock(volatile spinlock_t * p, const char * file, int line)
+void spin_lock(spinlock_t * __restrict p, const char * file, int line)
 {
 #if WITHDEBUG
 	unsigned v = 0xFFFFFFFF;
@@ -1345,7 +1345,7 @@ void spin_lock(volatile spinlock_t * p, const char * file, int line)
 	int status;
 	do
 	{
-		while (__LDREXW(& p->lock) != 0)// Wait until
+		while (__LDREXB(& p->lock) != 0)// Wait until
 		{
 			__NOP();	// !!!! strange, but unstable work without this line...
 #if WITHDEBUG
@@ -1403,7 +1403,7 @@ void spin_lock2(volatile spinlock_t * p, const char * file, int line)
 }
 */
 
-void spin_unlock(volatile spinlock_t *p)
+void spin_unlock(spinlock_t * __restrict p)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	__DMB(); // Ensure memory operations completed before

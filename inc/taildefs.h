@@ -117,7 +117,7 @@ typedef enum
 #endif /* WITHBOTTOMDBVAL */
 
 typedef struct spinlock_tag {
-	volatile uint32_t lock;
+	USBALIGN_BEGIN volatile uint8_t lock USBALIGN_END;
 #if WITHDEBUG
 	const char * file;
 	int line;
@@ -153,9 +153,9 @@ typedef struct spinlock_tag {
 //	#define SPIN_UNLOCK2(p) do { } while (0)
 //#endif
 
-	void spin_lock(volatile spinlock_t * lock, const char * file, int line);
-	//void spin_lock2(volatile spinlock_t * lock, const char * file, int line);
-	void spin_unlock(volatile spinlock_t * lock);
+	void spin_lock(spinlock_t * __restrict lock, const char * file, int line);
+	//void spin_lock2(spinlock_t * lock, const char * file, int line);
+	void spin_unlock(spinlock_t * __restrict lock);
 
 #else /* WITHSMPSYSTEM */
 	/* Единственный процесор. */
