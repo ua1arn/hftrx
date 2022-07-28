@@ -3440,14 +3440,6 @@ static unsigned width2fmt(unsigned width)
 	}
 }
 
-enum
-{
-	ALLWNT113_I2Sx_CLK_WIDTH = 5, ALLWNT113_I2Sx_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
-	ALLWNT113_AudioCodec_CLK_WIDTH = 5, ALLWNT113_AudioCodec_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
-	//
-	ALLWNT113_pad
-};
-
 /* I2S/PCM RX Channel Mapping Registers initialization */
 /* Простое отображение каналов с последовательно увеличивающимся номером */
 static void I2S_fill_RXCHMAP(
