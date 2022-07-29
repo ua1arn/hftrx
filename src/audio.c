@@ -811,7 +811,8 @@ int64_t transform_do64(
 }
 
 static adapter_t fpgafircoefsout;
-adapter_t afcodecio;
+adapter_t afcodecrx;	/* от микрофона */
+adapter_t afcodectx;	/* к наушникам */
 adapter_t ifcodecin;
 adapter_t ifspectrumin;
 adapter_t ifcodecout;
@@ -837,7 +838,8 @@ static void adapterst_initialize(void)
 	/* FPGA FIR коэффициенты */
 	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0);
 	/* Аудиокодек */
-	adpt_initialize(& afcodecio, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT);
+	adpt_initialize(& afcodecrx, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT);
+	adpt_initialize(& afcodectx, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT);
 	/* IF codec / FPGA */
 	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
 	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT);
@@ -5232,14 +5234,14 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 			moni.IV = 0;
 			moni.QV = 0;
 		}
-//		b [L] = adpt_output(& afcodecio, sdtnv);
-//		b [R] = adpt_output(& afcodecio, sdtnv);
+//		b [L] = adpt_output(& afcodectc, sdtnv);
+//		b [R] = adpt_output(& afcodectx, sdtnv);
 //		continue;
 		const FLOAT_t moniL = mixmonitor(sdtnshape, sdtnv, moni.IV);
 		const FLOAT_t moniR = mixmonitor(sdtnshape, sdtnv, moni.QV);
 
-		FLOAT_t left = adpt_input(& afcodecio, b [L] * usebuf);
-		FLOAT_t right = adpt_input(& afcodecio, b [R] * usebuf);
+		FLOAT_t left = adpt_input(& afcodectx, b [L] * usebuf);
+		FLOAT_t right = adpt_input(& afcodectx, b [R] * usebuf);
 		//
 #if WITHWAVPLAYER
 		{
@@ -5277,38 +5279,38 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 		}
 
 #if WITHUSBHEADSET
-		b [L] = adpt_outputexact(& afcodecio, left);
-		b [R] = adpt_outputexact(& afcodecio, right);
+		b [L] = adpt_outputexact(& afcodectx, left);
+		b [R] = adpt_outputexact(& afcodectx, right);
 #else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
 		{
 		default:
 		case BOARD_RXMAINSUB_A_A:
 			// left:A/right:A
-			b [L] = adpt_output(& afcodecio, injectsidetone(left, moniL));
-			b [R] = adpt_output(& afcodecio, injectsidetone(right, moniR));
+			b [L] = adpt_output(& afcodectx, injectsidetone(left, moniL));
+			b [R] = adpt_output(& afcodectx, injectsidetone(right, moniR));
 			break;
 		case BOARD_RXMAINSUB_A_B:
 			// left:A/right:B
-			b [L] = adpt_output(& afcodecio, injectsidetone(left, moniL));
-			b [R] = adpt_output(& afcodecio, injectsidetone(right, moniR));
+			b [L] = adpt_output(& afcodectx, injectsidetone(left, moniL));
+			b [R] = adpt_output(& afcodectx, injectsidetone(right, moniR));
 			break;
 		case BOARD_RXMAINSUB_B_A:
 			// left:B/right:A
-			b [L] = adpt_output(& afcodecio, injectsidetone(right, moniL));
-			b [R] = adpt_output(& afcodecio, injectsidetone(left, moniR));
+			b [L] = adpt_output(& afcodectx, injectsidetone(right, moniL));
+			b [R] = adpt_output(& afcodectx, injectsidetone(left, moniR));
 			break;
 		case BOARD_RXMAINSUB_B_B:
 			// left:B/right:B
-			b [L] = adpt_output(& afcodecio, injectsidetone(left, moniL));
-			b [R] = adpt_output(& afcodecio, injectsidetone(right, moniR));
+			b [L] = adpt_output(& afcodectx, injectsidetone(left, moniL));
+			b [R] = adpt_output(& afcodectx, injectsidetone(right, moniR));
 			break;
 		case BOARD_RXMAINSUB_TWO:
 			// left, right:A+B
 			{
 				const FLOAT_t sumv = ((FLOAT_t) left + right) / 2;
-				b [L] = adpt_output(& afcodecio, injectsidetone(sumv, moniL));
-				b [R] = adpt_output(& afcodecio, injectsidetone(sumv, moniR));
+				b [L] = adpt_output(& afcodectx, injectsidetone(sumv, moniL));
+				b [R] = adpt_output(& afcodectx, injectsidetone(sumv, moniR));
 			}
 			break;
 		}

@@ -1137,7 +1137,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	}
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	const FLOAT_t sample = adpt_input(& afcodecio, p->buff [pos * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
+	const FLOAT_t sample = adpt_input(& afcodecrx, p->buff [pos * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
 	// Использование данных.
 	v->ivqv [L] = sample;
 	v->ivqv [R] = sample;
@@ -1225,8 +1225,8 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 	ASSERT(p->tag3 == p);
 
 	// Использование данных.
-	v->ivqv [L] = adpt_input(& afcodecio, p->buff [pos * DMABUFFSTEP16TX + DMABUFF16TX_LEFT]);	// микрофон или левый канал
-	v->ivqv [R] = adpt_input(& afcodecio, p->buff [pos * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT]);	// правый канал
+	v->ivqv [L] = adpt_input(& afcodectx, p->buff [pos * DMABUFFSTEP16TX + DMABUFF16TX_LEFT]);	// микрофон или левый канал
+	v->ivqv [R] = adpt_input(& afcodectx, p->buff [pos * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT]);	// правый канал
 
 	if (++ pos >= CNT16TX)
 	{
@@ -1256,8 +1256,8 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = adpt_outputexact(& afcodecio, ch0);	// sample value
-	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = adpt_outputexact(& afcodecio, ch1);	// sample value
+	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = adpt_outputexact(& afcodectx, ch0);	// sample value
+	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = adpt_outputexact(& afcodectx, ch1);	// sample value
 
 	if (++ n >= CNT16TX)
 	{
@@ -2323,16 +2323,16 @@ static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 static void savesampleout16stereo_float_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	savesampleout16stereo_user(
-		adpt_output(& afcodecio, ch0),
-		adpt_output(& afcodecio, ch1)
+		adpt_output(& afcodectx, ch0),
+		adpt_output(& afcodectx, ch1)
 		);
 }
 
 static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	savesampleout16stereo(
-		adpt_output(& afcodecio, ch0),
-		adpt_output(& afcodecio, ch1)
+		adpt_output(& afcodectx, ch0),
+		adpt_output(& afcodectx, ch1)
 		);
 }
 

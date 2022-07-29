@@ -643,7 +643,8 @@ int32_t transform_do32(const transform_t * tfm, int32_t v); // точное пр
 int64_t transform_do64(const transform_t * tfm, int64_t v); // точное преобразование между внешними целочисленными представлениями.
 void transform_initialize(transform_t * tfm, const adapter_t * informat, const adapter_t * outformat);
 
-extern adapter_t afcodecio;
+extern adapter_t afcodecrx;	/* от микрофона */
+extern adapter_t afcodectx;	/* к наушникам */
 extern adapter_t ifcodecin;
 extern adapter_t ifcodecout;
 extern adapter_t ifspectrumin;
