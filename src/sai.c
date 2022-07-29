@@ -3444,18 +3444,19 @@ static unsigned width2fmt(unsigned width)
 /* Простое отображение каналов с последовательно увеличивающимся номером */
 static void I2S_fill_RXCHMAP(
 	I2S_PCM_TypeDef * i2s,
-	unsigned rxsdi
+	unsigned rxsdi,
+	unsigned NCH
 	)
 {
 	__IO uint32_t * const reg = & i2s->I2S_PCM_RXCHMAP0;
 	unsigned chnl;
-	for (chnl = 0; chnl < 16; ++ chnl)
+	for (chnl = 0; chnl < NCH; ++ chnl)
 	{
 		/* в каждом регистре управления для восьми каналов */
-		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP3
-		const portholder_t mask2 = power8((1uL << chnl) >> 4);	// биты в I2S_PCM_RXCHMAP2
-		const portholder_t mask1 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1
-		const portholder_t mask0 = power8((1uL << chnl) >> 12);	// биты в I2S_PCM_RXCHMAP0
+		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP3 - каналы 3..0
+		const portholder_t mask2 = power8((1uL << chnl) >> 4);	// биты в I2S_PCM_RXCHMAP2 - каналы 7..4
+		const portholder_t mask1 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1 - каналы 11..8
+		const portholder_t mask0 = power8((1uL << chnl) >> 12);	// биты в I2S_PCM_RXCHMAP0 - каналы 15..12
 
 		const portholder_t ALLMASK = 0x3F;
 		const portholder_t field =
@@ -3475,13 +3476,14 @@ static void I2S_fill_RXCHMAP(
 static void I2S_fill_TXxCHMAP(
 	I2S_PCM_TypeDef * i2s,
 	unsigned txoffs,	// 0..3 - I2S_PCM_TX0..I2S_PCM_TX3
-	unsigned txsdo_UNUSED		// 0..3 - DOUT0..DOUT3
+	unsigned txsdo_UNUSED,		// 0..3 - DOUT0..DOUT3
+	unsigned NCH
 	)
 {
 	__IO uint32_t * const reg = & i2s->I2S_PCM_TX0CHMAP0 + txoffs * 2;
 
 	unsigned chnl;
-	for (chnl = 0; chnl < 16; ++ chnl)
+	for (chnl = 0; chnl < NCH; ++ chnl)
 	{
 		const portholder_t mask1 = power4((1uL << chnl) >> 0);	// биты в I2S_PCM_TX0CHMAP1 - каналы 7..0
 		const portholder_t mask0 = power4((1uL << chnl) >> 8);	// биты в I2S_PCM_TX0CHMAP0 - каналы 15..8
@@ -3652,11 +3654,11 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	i2s->I2S_PCM_TX3CHSEL = txchsel;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	I2S_fill_RXCHMAP(i2s, din);
-	I2S_fill_TXxCHMAP(i2s, 0, dout);	// I2S_PCM_TX0CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 1, dout);	// I2S_PCM_TX1CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 2, dout);	// I2S_PCM_TX2CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 3, dout);	// I2S_PCM_TX3CHMAPx
+	I2S_fill_RXCHMAP(i2s, din, NCH);
+	I2S_fill_TXxCHMAP(i2s, 0, dout, NCH);	// I2S_PCM_TX0CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 1, dout, NCH);	// I2S_PCM_TX1CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 2, dout, NCH);	// I2S_PCM_TX2CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 3, dout, NCH);	// I2S_PCM_TX3CHMAPx
 
 	i2s->I2S_PCM_INT |= (1uL << 7); // TX_DRQ
 	i2s->I2S_PCM_INT |= (1uL << 3); // RX_DRQ
