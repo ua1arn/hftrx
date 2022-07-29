@@ -3447,7 +3447,7 @@ static void I2S_fill_RXCHMAP(
 	unsigned rxsdi
 	)
 {
-	__IO uint32_t * const reg = & I2S1->I2S_PCM_RXCHMAP0;
+	__IO uint32_t * const reg = & i2s->I2S_PCM_RXCHMAP0;
 	unsigned chnl;
 	for (chnl = 0; chnl < 16; ++ chnl)
 	{
@@ -3478,7 +3478,7 @@ static void I2S_fill_TXxCHMAP(
 	unsigned txsdo_UNUSED		// 0..3 - DOUT0..DOUT3
 	)
 {
-	__IO uint32_t * const reg = & I2S1->I2S_PCM_TX0CHMAP0 + txoffs * 2;
+	__IO uint32_t * const reg = & i2s->I2S_PCM_TX0CHMAP0 + txoffs * 2;
 
 	unsigned chnl;
 	for (chnl = 0; chnl < 16; ++ chnl)
@@ -4269,7 +4269,6 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;			// Source Address
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
 	descr0 [1] [4] = parameterDMAC;			// Parameter
