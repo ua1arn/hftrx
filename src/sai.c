@@ -3851,7 +3851,7 @@ static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
-//	printhex(addr, (void *) addr, DMABUFFSIZE16 * sizeof (aubufv_t));
+//	printhex(addr, (void *) addr, DMABUFFSIZE16RX * sizeof (aubufv_t));
 //	for (;;)
 //		;
 	/* Работа с только что принятыми данными */
