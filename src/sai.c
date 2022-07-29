@@ -3440,6 +3440,13 @@ static unsigned width2fmt(unsigned width)
 	}
 }
 
+/* Convert STM32 SAI sample numbering to Allwinner I2S/PCM sample sumbering */
+static unsigned i2s_chnl2sample(unsigned chnl, unsigned NCH)
+{
+	const unsigned lr = chnl >= (NCH / 2);
+	return (chnl % (NCH / 2) * 2) + lr;
+}
+
 /* I2S/PCM RX Channel Mapping Registers initialization */
 /* Простое отображение каналов с последовательно увеличивающимся номером */
 static void I2S_fill_RXCHMAP(
@@ -3461,7 +3468,7 @@ static void I2S_fill_RXCHMAP(
 		const portholder_t ALLMASK = 0x3F;
 		const portholder_t field =
 			((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
-			((portholder_t) chnl << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
+			((portholder_t) i2s_chnl2sample(chnl, NCH) << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
 			0;
 
 		reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
@@ -3485,8 +3492,9 @@ static void I2S_fill_TXxCHMAP(
 	unsigned chnl;
 	for (chnl = 0; chnl < NCH; ++ chnl)
 	{
-		const portholder_t mask1 = power4((1uL << chnl) >> 0);	// биты в I2S_PCM_TX0CHMAP1 - каналы 7..0
-		const portholder_t mask0 = power4((1uL << chnl) >> 8);	// биты в I2S_PCM_TX0CHMAP0 - каналы 15..8
+		unsigned sample = i2s_chnl2sample(chnl, NCH);
+		const portholder_t mask1 = power4((1uL << sample) >> 0);	// биты в I2S_PCM_TX0CHMAP1 - каналы 7..0
+		const portholder_t mask0 = power4((1uL << sample) >> 8);	// биты в I2S_PCM_TX0CHMAP0 - каналы 15..8
 
 		const portholder_t ALLMASK = 0x0F;
 		const portholder_t field = (portholder_t) chnl << 0;
