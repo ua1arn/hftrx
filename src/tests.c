@@ -8370,22 +8370,23 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHDEBUG
+	TP();
 	// Трансивер с DSPIF4 "Вороненок-DSP"
 	// Отображение значений с дополнительных входов АЦП
 	for (;;)
 	{
-		if (! display_refreshenabled_wpm())
-			continue;
+//		if (! display_refreshenabled_wpm())
+//			continue;
 		// подтверждаем, что обновление выполнено
-		display_refreshperformed_wpm();
+//		display_refreshperformed_wpm();
 
 		//const unsigned potrf = board_getadc_filtered_u8(POTIFGAIN, 0, UINT8_MAX);
 		const unsigned potrft = board_getadc_unfiltered_truevalue(POTIFGAIN);
-		const unsigned potrf = board_getpot_filtered_truevalue(POTIFGAIN);
+		const unsigned potrf = board_getadc_unfiltered_truevalue(POTIFGAIN);
 
 		//const unsigned potaf = board_getadc_smoothed_u8(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX);
 		const unsigned potaft = board_getadc_unfiltered_truevalue(POTAFGAIN);
-		const unsigned potaf = board_getpot_filtered_truevalue(POTAFGAIN);
+		const unsigned potaf = board_getadc_unfiltered_truevalue(POTAFGAIN);
 
 		//const unsigned aux1 = board_getadc_filtered_u8(POTAUX1, 0, UINT8_MAX);
 		//const unsigned aux2 = board_getadc_filtered_u8(POTAUX2, 0, UINT8_MAX);
@@ -8394,86 +8395,79 @@ void hightests(void)
 		const unsigned wpm = board_getpot_filtered_u8(POTWPM, 0, UINT8_MAX);
 #endif /* WITHPOTWPM */
 
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			char buff [22];
+		PRINTF("potrft=%u potaft=%u\n", potrf, potaft);
+		continue;
+		char buff [22];
 
 #if 1
-			// сокращённый вариант отображения
-			// AF gain
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("af= %4d"), potaf
-				 );
-			display_gotoxy(0, 0 * HALFCOUNT_SMALL + lowhalf);
-			display_at(buff, lowhalf);
-			// AF gain raw
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("aft=%4d"), potaft
-				 );
-			display_gotoxy(0, 1 * HALFCOUNT_SMALL + lowhalf);
-			display_at(buff, lowhalf);
-			continue;
+		// сокращённый вариант отображения
+		// AF gain
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("af= %4d"), potaf
+			 );
+		display_at(0, 0 * HALFCOUNT_SMALL, buff);
+		// AF gain raw
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("aft=%4d"), potaft
+			 );
+		display_at(0, 1 * HALFCOUNT_SMALL, buff);
+		continue;
 #else
-			// IF gain
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("rf= %4d"), potrf
-				 );
-			display_gotoxy(0, 0 + lowhalf);
-			display_at(buff, lowhalf);
-			// AF gain
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("af= %4d"), potaf
-				 );
-			display_gotoxy(7, 0 + lowhalf);
-			display_at(buff, lowhalf);
+		// IF gain
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("rf= %4d"), potrf
+			 );
+		display_at(0, 0 * HALFCOUNT_SMALL, buff);
+		// AF gain
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("af= %4d"), potaf
+			 );
+		display_at(0, 1 * HALFCOUNT_SMALL, buff);
 
-			// AUX1
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("A1= %4d"), aux1
-				 );
-			display_gotoxy(14, 0 + lowhalf);
-			display_at(buff, lowhalf);
+		// AUX1
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("A1= %4d"), aux1
+			 );
+		display_gotoxy(14, 0 + lowhalf);
+		display_at(buff, lowhalf);
 
-			// AUX2
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("A2= %4d"), aux2
-				 );
-			display_gotoxy(0, 1 + lowhalf);
-			display_at(buff, lowhalf);
+		// AUX2
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("A2= %4d"), aux2
+			 );
+		display_gotoxy(0, 1 + lowhalf);
+		display_at(buff, lowhalf);
 
-			// AUX3
-			/*
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("A3=%3d"), aux3
-				 );
-			display_gotoxy(7, 1 + lowhalf);
-			display_at(buff, lowhalf);
-			*/
+		// AUX3
+		/*
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("A3=%3d"), aux3
+			 );
+		display_gotoxy(7, 1 + lowhalf);
+		display_at(buff, lowhalf);
+		*/
 #if WITHPOTWPM
-			// WPM
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("cw=%3d"), wpm
-				 );
-			display_gotoxy(14, 1 + lowhalf);
-			display_at(buff, lowhalf);
+		// WPM
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("cw=%3d"), wpm
+			 );
+		display_gotoxy(14, 1 + lowhalf);
+		display_at(buff, lowhalf);
 #endif /* WITHPOTWPM */
 
-			// IF gain raw
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("rft=%4d"), potrft
-				 );
-			display_gotoxy(0, 2 + lowhalf);
-			display_at(buff, lowhalf);
-			// AF gain raw
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("aft=%4d"), potaft
-				 );
-			display_gotoxy(10, 2 + lowhalf);
-			display_at(buff, lowhalf);
+		// IF gain raw
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("rft=%4d"), potrft
+			 );
+		display_gotoxy(0, 2 + lowhalf);
+		display_at(buff, lowhalf);
+		// AF gain raw
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("aft=%4d"), potaft
+			 );
+		display_gotoxy(10, 2 + lowhalf);
+		display_at(buff, lowhalf);
 #endif
-
-		} while (lowhalf --);
 
 
 	}
