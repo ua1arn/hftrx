@@ -3453,9 +3453,9 @@ static void I2S_fill_RXCHMAP(
 	{
 		/* в каждом регистре управления для восьми каналов */
 		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP3
-		const portholder_t mask2 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP2
-		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP1
-		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP0
+		const portholder_t mask2 = power8((1uL << chnl) >> 4);	// биты в I2S_PCM_RXCHMAP2
+		const portholder_t mask1 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1
+		const portholder_t mask0 = power8((1uL << chnl) >> 12);	// биты в I2S_PCM_RXCHMAP0
 
 		const portholder_t ALLMASK = 0x3F;
 		const portholder_t field =
