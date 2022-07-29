@@ -1528,7 +1528,7 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 // со всеми положенными задержками на срабатывание/отпускание
 
 static void
-agc_perform(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t sample)
+agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample)
 {
 	SPIN_LOCK(& st->lock);
 
@@ -1574,7 +1574,7 @@ agc_perform(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t
 	SPIN_UNLOCK(& st->lock);
 }
 
-static FLOAT_t agc_result_slow(volatile agcstate_t * st)
+static FLOAT_t agc_result_slow(agcstate_t * st)
 {
 	SPIN_LOCK(& st->lock);
 	const FLOAT_t v = FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
@@ -1583,7 +1583,7 @@ static FLOAT_t agc_result_slow(volatile agcstate_t * st)
 	return v;
 }
 
-static FLOAT_t agc_result_fast(volatile agcstate_t * st)
+static FLOAT_t agc_result_fast(agcstate_t * st)
 {
 	SPIN_LOCK(& st->lock);
 	const FLOAT_t v = st->agcfastcap;
@@ -3447,13 +3447,13 @@ static RAMFUNC FLOAT_t agc_getsigpower(
 // Инициализация сделана для того, чтобы поместить эти переменные в обюласть CCM памяти
 // Присвоение осмысленных значений производится в соответствующих функциях инициализации.
 
-static RAMDTCM volatile agcstate_t rxsmeterstate [NTRX];	// На каждый приёмник
-static RAMDTCM volatile agcstate_t rxagcstate [NTRX];	// На каждый приёмник
-static RAMDTCM volatile agcstate_t txagcstate;
+static RAMDTCM agcstate_t rxsmeterstate [NTRX];	// На каждый приёмник
+static RAMDTCM agcstate_t rxagcstate [NTRX];	// На каждый приёмник
+static RAMDTCM agcstate_t txagcstate;
 
-static RAMDTCM volatile agcparams_t rxsmeterparams;
-static RAMDTCM volatile agcparams_t rxagcparams [NPROF] [NTRX];
-static RAMDTCM volatile agcparams_t txagcparams [NPROF];
+static RAMDTCM agcparams_t rxsmeterparams;
+static RAMDTCM agcparams_t rxagcparams [NPROF] [NTRX];
+static RAMDTCM agcparams_t txagcparams [NPROF];
 
 static RAMDTCM volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 static RAMDTCM volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
@@ -3503,8 +3503,8 @@ static RAMFUNC FLOAT_t agc_measure_float(
 {
 	//BEGIN_STAMP3();
 
-	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
-	volatile agcstate_t * const st = & rxagcstate [pathi];
+	const agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
+	agcstate_t * const st = & rxagcstate [pathi];
 	//BEGIN_STAMP();
 	const FLOAT_t strength = agccalcstrength_log(agcp, siglevel0);	// получение логарифмического хначения уровня сигнала
 	//END_STAMP();
@@ -3552,8 +3552,8 @@ static void agc_reset(
 	uint_fast8_t pathi
 	)
 {
-	volatile agcparams_t * const agcp = & rxsmeterparams;
-	volatile agcstate_t * const st = & rxsmeterstate [pathi];
+	agcparams_t * const agcp = & rxsmeterparams;
+	agcstate_t * const st = & rxsmeterstate [pathi];
 	FLOAT_t m0 = agcp->mininput;
 	FLOAT_t m1;
 
@@ -3598,8 +3598,8 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	uint_fast8_t pathi
 	)
 {
-	volatile agcparams_t * const agcp = & rxsmeterparams;
-	volatile agcstate_t * const st = & rxsmeterstate [pathi];
+	agcparams_t * const agcp = & rxsmeterparams;
+	agcstate_t * const st = & rxsmeterstate [pathi];
 
 	global_disableIRQ();
 	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
@@ -3686,11 +3686,11 @@ static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
 // На входе уже нормированный к txlevelfenceSSB сигнал
 static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 {
-	volatile agcparams_t * const agcp = & txagcparams [gwagcproftx];
+	agcparams_t * const agcp = & txagcparams [gwagcproftx];
 	if (agcp->agcoff == 0)
 	{
 		const FLOAT_t siglevel0 = FABSF(vi);
-		volatile agcstate_t * const st = & txagcstate;
+		agcstate_t * const st = & txagcstate;
 
 		agc_perform(agcp, st, agccalcstrength_log(agcp, siglevel0));	// измеритель уровня сигнала
 		const FLOAT_t gain = agccalcgain_log(agcp, agc_result_slow(st));
