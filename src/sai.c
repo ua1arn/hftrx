@@ -3579,9 +3579,9 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	i2s->I2S_PCM_FMT0 =
 		0 * (1uL << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
 		0 * (1uL << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
-		((framebits / 2) - 1) * (1uL << 8) |		// LRCK_PERIOD - for I2S - each channel width
-		width2fmt(framebits / 2) * (1uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
-		width2fmt(framebits / 2) * (1uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		((framebits / 2) - 1) * (1uL << 8) |	// LRCK_PERIOD - for I2S - each channel width
+		width2fmt(framebits / NCH) * (1uL << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebits / NCH) * (1uL << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
 	i2s->I2S_PCM_FMT1 =
 		0;
@@ -3598,8 +3598,8 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 
 	// I2S/PCM Channel Configuration Register
 	i2s->I2S_PCM_CHCFG =
-		(NCH - 1) * (1uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot
-		(NCH - 1) * (1uL << 0) |	// TX_SLOT_NUM 0111: 0001: 2 channel or slot
+		(NCH - 1) * (1uL << 4) |	// RX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
+		(NCH - 1) * (1uL << 0) |	// TX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
 		0;
 
 	// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
@@ -3636,7 +3636,7 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 
 	i2s->I2S_PCM_RXCHSEL =
 		txrx_offset * (1uL << 20) |	// RX_OFFSET (need for I2S mode
-		0x01 * (1uL << 16) |	// RX Channel (Slot) Number Select for Input
+		(NCH - 1) * (1uL << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
 		0;
 
 
