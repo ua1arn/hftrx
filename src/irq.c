@@ -1358,7 +1358,7 @@ void spin_lock(spinlock_t * __restrict p, const char * file, int line)
 #endif /* WITHDEBUG */
 		}
 		// Lock_Variable is free
-		status = __STREXW(1, & p->lock); // Try to set
+		status = __STREXB(1, & p->lock); // Try to set
 	// Lock_Variable
 	} while (status != 0); //retry until lock successfully
 	__DMB();		// Do not start any other memory access
