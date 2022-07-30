@@ -30,7 +30,7 @@ extern "C" {
  */
 #if WITHDSPEXTDDC
 
-	#if CPUSTYLE_R7S721 || CPUSTYPE_T113
+	#if CPUSTYLE_R7S721
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
@@ -169,6 +169,49 @@ extern "C" {
 				#define DMABUF32TXI	0		// TX, I
 				#define DMABUF32TXQ	1		// TX, Q
 		#endif
+
+		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
+
+		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
+		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
+
+	#elif CPUSTYPE_T113
+		// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
+
+		// buff data layout: I main/I sub/Q main/Q sub
+		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+
+		#define DMABUF32RX0I	0		// RX0, I
+		#define DMABUF32RX1I	1		// RX1, I
+		#define DMABUF32RX0Q	4		// RX0, Q
+		#define DMABUF32RX1Q	5		// RX1, Q
+
+		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		#define DMABUF32TXI	0		// TX, I
+		#define DMABUF32TXQ	4		// TX, Q
+
+		#if WITHRTS96
+			#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
+			#define DMABUF32RTS0Q	6		// RTS0, Q	// previous
+			#define DMABUF32RTS1I	3		// RTS1, I	// current	- nevest
+			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+		#endif /* WITHRTS96 */
+
+
+		// Slot S0, S4: Oldest sample (T-3)
+		// Slot S1, S5: Old sample (T-2)
+		// Slot S2, S6: Old sample (T-1)
+		// Slot S3, S7: Newest sample (T-0)
+		#define DMABUF32RXWFM0I	0		// WFM OLDEST
+		#define DMABUF32RXWFM0Q	4		// WFM
+		#define DMABUF32RXWFM1I	1		// WFM
+		#define DMABUF32RXWFM1Q	5		// WFM
+		#define DMABUF32RXWFM2I	2		// WFM
+		#define DMABUF32RXWFM2Q	6		// WFM
+		#define DMABUF32RXWFM3I	3		// WFM NEWEST
+		#define DMABUF32RXWFM3Q	7		// WFM
 
 		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
