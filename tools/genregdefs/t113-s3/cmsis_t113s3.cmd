@@ -81,6 +81,9 @@ rem %CONVERTER% c0_cpux_mbist.txt C0_CPUX_MBIST >> %OUTFILE%
 %CONVERTER% pwmchannels.txt PWM_CH >> %OUTFILE%
 %CONVERTER% pwm.txt PWM >> %OUTFILE%
 
+%CONVERTER% emac_addr.txt EMAC_ADDR >> %OUTFILE%
+%CONVERTER% emac.txt EMAC >> %OUTFILE%
+
 @echo /* Generated section end */ >> %OUTFILE%
 
 @pause

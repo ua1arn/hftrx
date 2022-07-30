@@ -46,18 +46,9 @@ EMAC Management Interface Command Register
 EMAC_MII_DATA
 0x004C
 EMAC Management Interface Data Register
-EMAC_ADDR_HIGH0
-0x0050
-EMAC MAC Address High Register0
-EMAC_ADDR_LOW0
-0x0054
-EMAC MAC Address Low Register0
-EMAC_ADDR_HIGHN
-0x0050+0x08*N (N=1–7)
-EMAC MAC Address High Register N (N=1–7)
-EMAC_ADDR_LOWN
-0x0054+0x08*N (N=1–7)
-EMAC MAC Address Low Register N (N=1–7)
+EMAC_ADDR 8 EMAC_ADDR_TypeDef
+0x0050 8
+EMAC MAC Address N (N=0-7)
 EMAC_TX_DMA_STA
 0x00B0
 EMAC Transmit DMA Status Register

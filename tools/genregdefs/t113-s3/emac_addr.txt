@@ -1,0 +1,6 @@
+HIGH
+0x000
+EMAC MAC Address High Register
+LOW
+0x004
+EMAC MAC Address Low Register

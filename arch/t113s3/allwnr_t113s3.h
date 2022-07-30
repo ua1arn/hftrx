@@ -2410,6 +2410,52 @@ typedef struct PWM_Type
 	uint32_t reserved_0x0C4 [0x000F];
 	PWM_CH_TypeDef CH [0x008];                           /*!< Offset 0x100 Channels[0..7] */
 } PWM_TypeDef; /* size of structure = 0x200 */
+/*
+ * @brief EMAC_ADDR
+ */
+/*!< EMAC_ADDR Controller Interface */
+typedef struct EMAC_ADDR_Type
+{
+	__IO uint32_t HIGH;                                  /*!< Offset 0x000 EMAC MAC Address High Register */
+	__IO uint32_t LOW;                                   /*!< Offset 0x004 EMAC MAC Address Low Register */
+} EMAC_ADDR_TypeDef; /* size of structure = 0x008 */
+/*
+ * @brief EMAC
+ */
+/*!< EMAC Controller Interface */
+typedef struct EMAC_Type
+{
+	__IO uint32_t EMAC_BASIC_CTL0;                       /*!< Offset 0x000 EMAC Basic Control Register0 */
+	__IO uint32_t EMAC_BASIC_CTL1;                       /*!< Offset 0x004 EMAC Basic Control Register1 */
+	__IO uint32_t EMAC_INT_STA;                          /*!< Offset 0x008 EMAC Interrupt Status Register */
+	__IO uint32_t EMAC_INT_EN;                           /*!< Offset 0x00C EMAC Interrupt Enable Register */
+	__IO uint32_t EMAC_TX_CTL0;                          /*!< Offset 0x010 EMAC Transmit Control Register0 */
+	__IO uint32_t EMAC_TX_CTL1;                          /*!< Offset 0x014 EMAC Transmit Control Register1 */
+	uint32_t reserved_0x018;
+	__IO uint32_t EMAC_TX_FLOW_CTL;                      /*!< Offset 0x01C EMAC Transmit Flow Control Register */
+	__IO uint32_t EMAC_TX_DMA_DESC_LIST;                 /*!< Offset 0x020 EMAC Transmit Descriptor List Address Register */
+	__IO uint32_t EMAC_RX_CTL0;                          /*!< Offset 0x024 EMAC Receive Control Register0 */
+	__IO uint32_t EMAC_RX_CTL1;                          /*!< Offset 0x028 EMAC Receive Control Register1 */
+	uint32_t reserved_0x02C [0x0002];
+	__IO uint32_t EMAC_RX_DMA_DESC_LIST;                 /*!< Offset 0x034 EMAC Receive Descriptor List Address Register */
+	__IO uint32_t EMAC_RX_FRM_FLT;                       /*!< Offset 0x038 EMAC Receive Frame Filter Register */
+	uint32_t reserved_0x03C;
+	__IO uint32_t EMAC_RX_HASH0;                         /*!< Offset 0x040 EMAC Hash Table Register0 */
+	__IO uint32_t EMAC_RX_HASH1;                         /*!< Offset 0x044 EMAC Hash Table Register1 */
+	__IO uint32_t EMAC_MII_CMD;                          /*!< Offset 0x048 EMAC Management Interface Command Register */
+	__IO uint32_t EMAC_MII_DATA;                         /*!< Offset 0x04C EMAC Management Interface Data Register */
+	EMAC_ADDR_TypeDef EMAC_ADDR [0x008];                 /*!< Offset 0x050 EMAC MAC Address N (N=0-7) */
+	uint32_t reserved_0x090 [0x0008];
+	__IO uint32_t EMAC_TX_DMA_STA;                       /*!< Offset 0x0B0 EMAC Transmit DMA Status Register */
+	__IO uint32_t EMAC_TX_CUR_DESC;                      /*!< Offset 0x0B4 EMAC Current Transmit Descriptor Register */
+	__IO uint32_t EMAC_TX_CUR_BUF;                       /*!< Offset 0x0B8 EMAC Current Transmit Buffer Address Register */
+	uint32_t reserved_0x0BC;
+	__IO uint32_t EMAC_RX_DMA_STA;                       /*!< Offset 0x0C0 EMAC Receive DMA Status Register */
+	__IO uint32_t EMAC_RX_CUR_DESC;                      /*!< Offset 0x0C4 EMAC Current Receive Descriptor Register */
+	__IO uint32_t EMAC_RX_CUR_BUF;                       /*!< Offset 0x0C8 EMAC Current Receive Buffer Address Register */
+	uint32_t reserved_0x0CC;
+	__IO uint32_t EMAC_RGMII_STA;                        /*!< Offset 0x0D0 EMAC RGMII Status Register */
+} EMAC_TypeDef; /* size of structure = 0x0D4 */
 /* Generated section end */
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
@@ -2527,7 +2573,7 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define SPINLOCK	((SPINLOCK_TypeDef *) SPINLOCK_BASE)				/*!< \brief SPINLOCK Interface register set access pointer */
 #define DMAC		((DMAC_TypeDef *) DMAC_BASE)						/*!< \brief DMAC Interface register set access pointer */
 #define PWM			((PWM_TypeDef *) PWM_BASE)							/*!< \brief PWM Interface register set access pointer */
-
+#define EMAC		((EMAC_TypeDef *) EMAC_BASE)						/*!< \brief EMAC Interface register set access pointer */
 
 enum DMAC_SrcReqType
 {
