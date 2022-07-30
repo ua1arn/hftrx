@@ -58,8 +58,8 @@ CORE += -mfpu=vfpv4
 # olny -Og for app
 # Application
 #OPT = -Og
-#OPT = -Ofast -flto
-OPT = -Os -flto
+OPT = -Ofast -flto
+#OPT = -Os -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
