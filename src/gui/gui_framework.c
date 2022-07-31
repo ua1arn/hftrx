@@ -6,21 +6,17 @@
 //
 // Touch GUI от RA4ASN
 
-#include "hardware.h"
-#include "board.h"
-#include "audio.h"
-
-#include "src/display/display.h"
-#include "formats.h"
 
 #include <string.h>
 #include <math.h>
-#include "src/touch/touch.h"
 
+#include "hardware.h"
 #include "keyboard.h"
-#include "src/display/fontmaps.h"
+#include "formats.h"
 #include "mslist.h"
-#include "codecs.h"
+#include "src/touch/touch.h"
+#include "src/display/display.h"
+#include "src/display/fontmaps.h"
 
 #include "src/gui/gui.h"
 #include "src/gui/gui_user.h"
