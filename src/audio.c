@@ -3818,7 +3818,8 @@ static FLOAT_t mainvolumetx = 1; //1 - subtonevolume;
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
-
+	if (uacoutplayer)
+		return sdtn;
 	return v * mainvolumerx + sdtn * sidetonevolume;
 }
 
