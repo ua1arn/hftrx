@@ -15,6 +15,7 @@
 	#include "lib/zynq/src_7010/llfifo_v5_5/xllfifo.h"
 	#include "lib/zynq/src_7010/vtc_v8_3/xvtc.h"
 	#include "lib/zynq/src_7010/xadcps_v2_6/xadcps.h"
+	#include "lib/zynq/src_7010/dmaps_v2_8/xdmaps.h"
 #elif defined(XC7Z020)
 	#if WITHTX || WITHDSPEXTFIR
 		#include "lib/zynq/src_7020/axidma_v9_13/xaxidma.h"
@@ -28,4 +29,5 @@
 	#include "lib/zynq/src_7020/llfifo_v5_5/xllfifo.h"
 	#include "lib/zynq/src_7020/vtc_v8_3/xvtc.h"
 	#include "lib/zynq/src_7020/xadcps_v2_6/xadcps.h"
+	#include "lib/zynq/src_7020/dmaps_v2_8/xdmaps.h"
 #endif /*  */
