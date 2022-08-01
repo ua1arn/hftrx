@@ -1498,6 +1498,9 @@ static RAMFUNC unsigned getsamplemsuacout(
 				part = NPARTS - 1;
 				datas [part] = & p->buff [0];
 				sizes [part] = DMABUFFSIZE16RX;
+#if WITHBUFFERSDEBUG
+			++ nbnorm;
+#endif /* WITHBUFFERSDEBUG */
 			}
 		}
 	}
@@ -1537,11 +1540,7 @@ static RAMFUNC void buffers_resample(void)
 	// направление получившегося буфера получателю.
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
-	// в динамики будет направлен после модулятора
 
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
 	SPIN_LOCK(& locklist16rx);
 	InsertHeadList3(& voicesusb16rx, & p->item, 0);
 	SPIN_UNLOCK(& locklist16rx);
