@@ -116,7 +116,7 @@ enum
 	// значениям DMABUFFSTEP32RX и DMABUFFSTEP32TX соответственно.
 	#if WITHFPGAIF_FRAMEBITS == 256
 		// FPGA версия
-		//#define DMABUFFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //8
+		#define DMABUFFSTEP32RX	8
 		SLOTEN_RX_SAIFPGA = 0x00FF,
 
 		// На передачу во всех версиях FPGA используется один и тот же блок
