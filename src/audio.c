@@ -3888,6 +3888,7 @@ static RAMFUNC FLOAT_t preparevi(
 		case BOARD_TXAUDIO_LINE:
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
 		case BOARD_TXAUDIO_MIKE:
+			//vi0f = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
 			// источник - микрофон
 			vi0f = txmikeagc(vi0f * txlevelXXX);	// АРУ
 			vi0f = txmikeclip(vi0f);				// Ограничитель
