@@ -3854,9 +3854,9 @@ static RAMFUNC FLOAT_t preparevi(
 	FLOAT32P_t * moni
 	)
 {
-	//FLOAT_t vi0f = vi0;
-	const FLOAT_t txlevelXXX = /*(dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : */txlevelfenceSSB;
-	const int_fast32_t txlevelfenceXXX_INTEGER = /*(dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : */txlevelfenceSSB;
+	const uint_fast8_t digitx = dspmode == DSPCTL_MODE_TX_DIGI;
+	const FLOAT_t txlevelXXX = digitx ? txlevelfenceDIGI : txlevelfenceSSB;
+	const int_fast32_t txlevelfenceXXX_INTEGER = digitx ? txlevelfenceDIGI : txlevelfenceSSB;
 
 #if WITHFT8
 	ft8_txfill(& vi0f);
