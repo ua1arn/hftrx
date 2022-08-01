@@ -857,6 +857,7 @@
 		arm_hardware_piod_altfn50(1uL << 18, GPIO_CFG_AF2); /* PD18 LCD_CLK */ \
 		/* RED */ \
 		arm_hardware_piod_altfn50(1uL << 12, GPIO_CFG_AF2); /* R3 PD13 LCD_D19 error in selected pin */ \
+		arm_hardware_piod_outputs(1uL << 12, 0 * 1uL << 12); /* temporry fix error */ \
 		arm_hardware_piod_altfn50(1uL << 14, GPIO_CFG_AF2); /* R4 PD14 LCD_D20 */ \
 		arm_hardware_piod_altfn50(1uL << 15, GPIO_CFG_AF2); /* R5 PD15 LCD_D21 */ \
 		arm_hardware_piod_altfn50(1uL << 16, GPIO_CFG_AF2); /* R6 PD16 LCD_D22 */ \
