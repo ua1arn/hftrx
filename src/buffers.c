@@ -2841,20 +2841,20 @@ void uacout_buffer_stop(void)
 	}
 }
 
-static aufastbufv_t fetch_le(const uint8_t * p, size_t usbsz)
+static int32_t fetch_le(const uint8_t * p, size_t usbsz)
 {
-	int32_t v = 0;
-	uint_fast8_t i;
-	for (i = 0; i < usbsz; ++ i)
+	switch (usbsz)
 	{
-		v = v * 256 + p [usbsz - i - 1];
+	default:
+	case 1:
+		return p [0];
+	case 2:
+		return p [1] * 256u + p [0];
+	case 3:
+		return (p [2] * 256u + p [1]) * 256u + p [0];
+	case 4:
+		return ((p [3] * 256u + p [2]) * 256u + p [1]) * 256u + p [0];
 	}
-	for (; i < 4; ++ i)
-	{
-		v = v * 256;
-	}
-	/* теперь старший бит полученного с USB сэмпла находится в знаковом бите переменной v */
-	return v >> (8 * (4 - sizeof (aubufv_t)));
 }
 
 /* вызыватся из не-realtime функции обработчика прерывания */
@@ -2890,29 +2890,25 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 			uint_fast16_t n = chunksamples;
 			while (n --)
 			{
-				const aufastbufv_t v = fetch_le(src, usbsz);
+				const aufastbufv_t v = transform_do32(& uac48toafcodecrx, fetch_le(src, usbsz));
 				* dst ++ = v;
-				* dst ++ = v;
-				src += usbsz;
-			}
-		}
-		else if (usbsz != sizeof (aubufv_t))
-		// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
-		{
-			/* копирование 16 бит сэмплов с расширением */
-			const uint8_t * src = buff;
-			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
-			uint_fast16_t n = chunksamples * ichannels;
-			while (n --)
-			{
-				const aufastbufv_t v = fetch_le(src, usbsz);
 				* dst ++ = v;
 				src += usbsz;
 			}
 		}
 		else
 		{
-			memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, inchunk);
+			// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
+			/* копирование 16 бит сэмплов с расширением */
+			const uint8_t * src = buff;
+			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			uint_fast16_t n = chunksamples * ichannels;
+			while (n --)
+			{
+				const aufastbufv_t v = transform_do32(& uac48toafcodecrx, fetch_le(src, usbsz));
+				* dst ++ = v;
+				src += usbsz;
+			}
 		}
 
 		size -= inchunk;	// проход по входому буферу

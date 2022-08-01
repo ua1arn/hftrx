@@ -820,17 +820,18 @@ adapter_t uac48io;
 adapter_t rts96out;
 adapter_t rts192o;
 adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
+transform_t uac48toafcodecrx;	// преобразование из выхода UAB AUDIO48 в формат кодека
 
 #if WITHUSEAUDIOREC
 adapter_t sdcardio;
 #endif /* WITHUSEAUDIOREC */
 
 #if WITHRTS96
-transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
+transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
 #endif /* WITHRTS96 */
 
 #if WITHRTS192
-transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
+transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
 #endif /* WITHRTS192 */
 
 static void adapterst_initialize(void)
@@ -849,6 +850,7 @@ static void adapterst_initialize(void)
 #endif /* WITHUSEAUDIOREC */
 	/* канал звука USB AUDIO */
 	adpt_initialize(& uac48io, UACOUT_AUDIO48_SAMPLEBITS, 0);
+	transform_initialize(& uac48toafcodecrx, & uac48io, & afcodecrx);
 #if WITHRTS96
 	/* канал квадратур USB AUDIO */
 	adpt_initialize(& ifspectrumin, WITHADAPTERRTS96_WIDTH, WITHADAPTERRTS96_SHIFT);
@@ -3853,8 +3855,8 @@ static RAMFUNC FLOAT_t preparevi(
 	)
 {
 	//FLOAT_t vi0f = vi0;
-	const FLOAT_t txlevelXXX = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
-	const int_fast32_t txlevelfenceXXX_INTEGER = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
+	const FLOAT_t txlevelXXX = /*(dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : */txlevelfenceSSB;
+	const int_fast32_t txlevelfenceXXX_INTEGER = /*(dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : */txlevelfenceSSB;
 
 #if WITHFT8
 	ft8_txfill(& vi0f);

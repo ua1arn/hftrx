@@ -698,8 +698,9 @@ extern adapter_t uac48io;
 extern adapter_t rts96out;
 extern adapter_t rts192out;
 extern adapter_t sdcardio;
-extern transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
-extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
+extern transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
+extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
+extern transform_t uac48toafcodecrx;	// преобразование из выхода UAB AUDIO48 в формат кодека
 
 unsigned audiorec_getwidth(void);
 
