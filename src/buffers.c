@@ -1185,8 +1185,8 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 	// Использование данных.
-	v->ivqv [L] = adpt_input(& uac48io, p->buff [pos * DMABUFFSTEP16RX + 0]);	// левый канал
-	v->ivqv [R] = adpt_input(& uac48io, p->buff [pos * DMABUFFSTEP16RX + 1]);	// правый канал
+	v->ivqv [L] = adpt_input(& afcodecrx, p->buff [pos * DMABUFFSTEP16RX + 0]);	// левый канал
+	v->ivqv [R] = adpt_input(& afcodecrx, p->buff [pos * DMABUFFSTEP16RX + 1]);	// правый канал
 
 	if (++ pos >= CNT16RX)
 	{
