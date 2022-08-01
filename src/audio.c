@@ -3856,7 +3856,7 @@ static RAMFUNC FLOAT_t preparevi(
 {
 	const uint_fast8_t digitx = dspmode == DSPCTL_MODE_TX_DIGI;
 	const FLOAT_t txlevelXXX = digitx ? txlevelfenceDIGI : txlevelfenceSSB;
-	const int_fast32_t txlevelfenceXXX_INTEGER = digitx ? txlevelfenceDIGI : txlevelfenceSSB;
+	//const int_fast32_t txlevelfenceXXX_INTEGER = digitx ? txlevelfenceDIGI : txlevelfenceSSB;
 
 #if WITHFT8
 	ft8_txfill(& vi0f);
@@ -3913,12 +3913,13 @@ static RAMFUNC FLOAT_t preparevi(
 #endif /* WITHUSBUACOUT */
 
 		case BOARD_TXAUDIO_NOISE:
-			// источник - шум
-			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
-			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			moni->IV = 0;
-			moni->QV = 0;
-			return injectsubtone((int) (local_random(2 * txlevelfenceXXX_INTEGER - 1) - txlevelfenceXXX_INTEGER), ctcss);	// шум
+			return 0;
+//			// источник - шум
+//			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
+//			// return audio sample in range [- txlevelfence.. + txlevelfence]
+//			moni->IV = 0;
+//			moni->QV = 0;
+//			return injectsubtone((int) (local_random(2 * txlevelfenceXXX_INTEGER - 1) - txlevelfenceXXX_INTEGER), ctcss);	// шум
 
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
