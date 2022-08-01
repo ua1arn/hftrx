@@ -38,7 +38,6 @@ XAxiDma dma_if_tx;
 
 XLlFifo fifo_mic_rx, fifo_if_rx, fifo_phones;
 ALIGNX_BEGIN u32 sinbuf32tx[DMABUFFSIZE16TX] ALIGNX_END;
-static uint_fast8_t fifo_divider = 0;
 
 uintptr_t dma_invalidate32rx(uintptr_t addr);
 int XLlFifo_iRead_Aligned(XLlFifo *InstancePtr, void *BufPtr, unsigned WordCount);
@@ -95,12 +94,10 @@ void xcz_tx_shift(uint32_t val)
 
 void xcz_ah_preinit(void)
 {
-	fifo_divider = 2;
 #if defined (XPAR_AXI_I2S_ADI_0_BASEADDR)
 	axi_i2s_adi_WriteReg(XPAR_AXI_I2S_ADI_0_BASEADDR, AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	axi_i2s_adi_WriteReg(XPAR_AXI_I2S_ADI_0_BASEADDR, AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	axi_i2s_adi_WriteReg(XPAR_AXI_I2S_ADI_0_BASEADDR, AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK | RX_ENABLE_MASK);
-	fifo_divider = 1;
 #endif /* defined (XPAR_AXI_I2S_ADI_0_BASEADDR) */
 
 	xcz_rxtx_state(1);
@@ -310,8 +307,9 @@ void xcz_fifo_phones_inthandler(void)
 //	if (ss & XLLF_INT_TFPE_MASK)
 	{
 		const uintptr_t addr = getfilled_dmabuffer16txphones();
-		XLlFifo_iWrite_Aligned(& fifo_phones, (u32 *) addr, DMABUFFSIZE16TX / fifo_divider);
-		XLlFifo_iTxSetLen(& fifo_phones, DMABUFFSIZE16TX * 4 / fifo_divider);
+
+		XLlFifo_iWrite_Aligned(& fifo_phones, (u32 *) addr, DMABUFFSIZE16TX);
+		XLlFifo_iTxSetLen(& fifo_phones, DMABUFFSIZE16TX * 4);
 		release_dmabuffer16tx(addr);
 	}
 }
@@ -321,7 +319,7 @@ void xcz_audio_tx_enable(uint_fast8_t state)
 //	XLlFifo_IntDisable(& fifo_phones, XLLF_INT_ALL_MASK);
 //	XLlFifo_IntEnable(& fifo_phones, XLLF_INT_TFPE_MASK);
 //	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_PHONES_INTERRUPT_INTR, xcz_fifo_phones_inthandler);
-//	XLlFifo_iWrite_Aligned(& fifo_phones, (u32 *) sinbuf32, DMABUFFSIZE16 / fifo_divider);	// пнуть, чтобы заработало
+//	XLlFifo_iWrite_Aligned(& fifo_phones, (u32 *) sinbuf32, DMABUFFSIZE16);	// пнуть, чтобы заработало
 //	XLlFifo_iTxSetLen(& fifo_phones, DMABUFFSIZE16 * 4 / fifo_divider);
 }
 
