@@ -460,9 +460,9 @@ static RAMBIGDTCM SPINLOCK_t locklistmsg8 = SPINLOCK_INIT;
 
 #if WITHBUFFERSDEBUG
 
-static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6;
+static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6, n7;
 static volatile unsigned e1, e2, e3, e4, e5, e6, e7, e8, purge16;
-static volatile unsigned nbadd, nbdel, nbzero;
+static volatile unsigned nbadd, nbdel, nbzero, nbnorm;
 
 static volatile unsigned debugcount_ms10;	// с точностью 0.1 ms
 
@@ -532,7 +532,7 @@ void buffers_diagnostics(void)
 	#endif /* WITHUSBUACIN */
 	#if WITHUSBUACOUT
 		LIST3PRINT(resample16rx);
-		PRINTF(PSTR(" (NORMAL=%d), uacoutalt=%d, add=%u, del=%u, zero=%u, "), RESAMPLE16NORMAL, uacoutalt, nbadd, nbdel, nbzero);
+		PRINTF(PSTR(" (NORMAL=%d), uacoutalt=%d, add=%u, del=%u, zero=%u, norm=%u "), RESAMPLE16NORMAL, uacoutalt, nbadd, nbdel, nbzero, nbnorm);
 	#endif /* WITHUSBUACOUT */
 
 		
@@ -541,7 +541,7 @@ void buffers_diagnostics(void)
 #endif
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
-	PRINTF(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u uacinalt=%d, purge16=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6, uacinalt, purge16);
+	PRINTF(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u n7=%u uacinalt=%d, purge16=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6, n7, uacinalt, purge16);
 	PRINTF(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8);
 
 	{
@@ -1171,6 +1171,9 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			pos = 0;
+#if WITHBUFFERSDEBUG
+			++ n7;
+#endif /* WITHBUFFERSDEBUG */
 		}
 		else
 		{
@@ -1181,7 +1184,6 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	}
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	const FLOAT_t sample = adpt_input(& uac48io, p->buff [pos * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
 	// Использование данных.
 	v->ivqv [L] = adpt_input(& uac48io, p->buff [pos * DMABUFFSTEP16RX + 0]);	// левый канал
 	v->ivqv [R] = adpt_input(& uac48io, p->buff [pos * DMABUFFSTEP16RX + 1]);	// правый канал
