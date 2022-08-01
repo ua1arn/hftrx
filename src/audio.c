@@ -3913,13 +3913,12 @@ static RAMFUNC FLOAT_t preparevi(
 #endif /* WITHUSBUACOUT */
 
 		case BOARD_TXAUDIO_NOISE:
-			return 0;
-//			// источник - шум
-//			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
-//			// return audio sample in range [- txlevelfence.. + txlevelfence]
-//			moni->IV = 0;
-//			moni->QV = 0;
-//			return injectsubtone((int) (local_random(2 * txlevelfenceXXX_INTEGER - 1) - txlevelfenceXXX_INTEGER), ctcss);	// шум
+			// источник - шум
+			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
+			// return audio sample in range [- txlevelfence.. + txlevelfence]
+			moni->IV = 0;
+			moni->QV = 0;
+			return 0; // injectsubtone((int) (local_random(2 * txlevelfenceXXX_INTEGER - 1) - txlevelfenceXXX_INTEGER), ctcss);	// шум
 
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
