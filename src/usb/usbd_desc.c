@@ -235,6 +235,37 @@ static const struct stringtempl strtemplates [] =
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 };
 
+static unsigned usbd_get_productId(void)
+{
+	unsigned v = 0;
+
+#if WITHISBOOTLOADER
+	v = USB_FUNCTION_PRODUCT_ID;
+#else /* WITHISBOOTLOADER */
+	#if WITHUSBDFU
+		#if WITHMOVEDFU
+			v |= (1u << 15);
+		#else /* WITHMOVEDFU */
+			v |= (1u << 14);
+		#endif /* WITHMOVEDFU */
+	#endif /* WWITHUSBDFU */
+	#if WITHUSBCDCACM
+		v |= WITHUSBCDCACM_N * (1u << 11);
+	#endif /* WITHUSBCDCACM */
+	#if WITHUAC2
+		v |= (1u << 10);
+	#endif /* WITHUAC2 */
+	#if WITHUSBUACINOUTRENESAS
+		v |= (7u << 7);
+	#elif WITHUSBUACINOUT
+		v |= (6u << 7);
+	#elif WITHUSBUAC
+		v |= (5u << 7);
+	#endif
+#endif /* WITHISBOOTLOADER */
+
+	return v;
+}
 // usb_20.pdf:
 // 5.9 High-Speed, High Bandwidth Endpoints
 // 9.6.6 Endpoint
@@ -4225,6 +4256,7 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
+	const uint_fast32_t iProductId = usbd_get_productId();
 	if (buff != NULL)
 	{
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
@@ -4238,8 +4270,8 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 		* buff ++ = USB_OTG_MAX_EP0_SIZE;               /*  7:bMaxPacketSize0 (for DCP), For 3x: 09H is the only valid value in this field when operating at Gen X speed. */
 		* buff ++ = LO_BYTE(USB_FUNCTION_VENDOR_ID);    /*  8:idVendor_lo */
 		* buff ++ = HI_BYTE(USB_FUNCTION_VENDOR_ID);	/*  9:idVendor_hi */
-		* buff ++ = LO_BYTE(USB_FUNCTION_PRODUCT_ID);   /* 10:idProduct_lo */
-		* buff ++ = HI_BYTE(USB_FUNCTION_PRODUCT_ID);	/* 11:idProduct_hi */
+		* buff ++ = LO_BYTE(iProductId);   				/* 10:idProduct_lo */
+		* buff ++ = HI_BYTE(iProductId);				/* 11:idProduct_hi */
 		* buff ++ = LO_BYTE(USB_FUNCTION_RELEASE_NO);   /* 12:bcdDevice_lo */
 		* buff ++ = HI_BYTE(USB_FUNCTION_RELEASE_NO);	/* 13:bcdDevice_hi */
 		* buff ++ = STRING_ID_1;                        /* 14:iManufacturer */
