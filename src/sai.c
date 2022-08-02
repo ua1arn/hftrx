@@ -3826,7 +3826,7 @@ static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
 
-#define DMAC_DESC_SIZE	8	/* требуется 6, но для удобства работы с кешем */
+#define DMAC_DESC_SIZE	6
 
 // DMA Source/Destination Data Width
 // 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -3870,7 +3870,7 @@ static void DMA_I2S1_AudioCodec_TX_Handler_codec1(unsigned dmach)
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
 	descraddr [DMAC_DESC_SRC] = dma_flush16tx(getfilled_dmabuffer16txphones());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
+	//ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16tx(addr);
@@ -3913,12 +3913,14 @@ static void (* dmac_handlers [16])(unsigned dmach);
 /* Обработчик прерывания от DMAC */
 static void DMAC_NS_IRQHandler(void)
 {
-	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
-	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	const unsigned flag = 0x07;
-
 	unsigned dmach;
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
+	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
+
+	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
+	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
 
 	for (dmach = 0; dmach < 8; ++ dmach)
 	{
@@ -3936,9 +3938,6 @@ static void DMAC_NS_IRQHandler(void)
 			dmac_handlers [dmach](dmach);
 		}
 	}
-
-	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
-	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
 }
 
 
@@ -3967,7 +3966,7 @@ static void DMAC_clock_initialize(void)
 static void DMAC_I2S1_RX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S1_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -4000,7 +3999,14 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	descr0 [1] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = parameterDMAC;				// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
+
+	descr0 [2] [0] = configDMAC;			// Cofigurarion
+	descr0 [2] [1] = portaddr;				// Source Address
+	descr0 [2] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
+	descr0 [2] [3] = NBYTES;				// Byte Counter
+	descr0 [2] [4] = parameterDMAC;				// Parameter
+	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	arm_hardware_flush(descraddr, sizeof descr0);
@@ -4022,7 +4028,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 static void DMAC_I2S1_TX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S1_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -4055,7 +4061,14 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
 	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
+
+	descr0 [2] [0] = configDMAC;			// Cofigurarion
+	descr0 [2] [1] = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;			// Source Address
+	descr0 [2] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
+	descr0 [2] [2] = portaddr;				// Destination Address
+	descr0 [2] [4] = parameterDMAC;			// Parameter
+	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	arm_hardware_flush(descraddr, sizeof descr0);
@@ -4077,7 +4090,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 static void DMAC_I2S2_RX_initialize_fpga(void)
 {
 	const size_t dw = sizeof (IFADCvalue_t);
-	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S2_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -4110,7 +4123,14 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	descr0 [1] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
+
+	descr0 [2] [0] = configDMAC;			// Cofigurarion
+	descr0 [2] [1] = portaddr;				// Source Address
+	descr0 [2] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	descr0 [2] [3] = NBYTES;				// Byte Counter
+	descr0 [2] [4] = parameterDMAC;			// Parameter
+	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	arm_hardware_flush(descraddr, sizeof descr0);
@@ -4132,7 +4152,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 static void DMAC_I2S2_TX_initialize_fpga(void)
 {
 	const size_t dw = sizeof (IFDACvalue_t);
-	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S2_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -4165,7 +4185,14 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	descr0 [1] [2] = portaddr;				// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
+
+	descr0 [2] [0] = configDMAC;			// Cofigurarion
+	descr0 [2] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
+	descr0 [2] [2] = portaddr;				// Destination Address
+	descr0 [2] [3] = NBYTES;				// Byte Counter
+	descr0 [2] [4] = parameterDMAC;			// Parameter
+	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	arm_hardware_flush(descraddr, sizeof descr0);
@@ -4187,7 +4214,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 static void DMAC_AudioCodec_RX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -4220,7 +4247,14 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	descr0 [1] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = parameterDMAC;				// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
+
+	descr0 [2] [0] = configDMAC;			// Cofigurarion
+	descr0 [2] [1] = portaddr;				// Source Address
+	descr0 [2] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
+	descr0 [2] [3] = NBYTES;				// Byte Counter
+	descr0 [2] [4] = parameterDMAC;				// Parameter
+	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	arm_hardware_flush(descraddr, sizeof descr0);
@@ -4242,7 +4276,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 static void DMAC_AudioCodec_TX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -4274,7 +4308,13 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
 	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
+
+	descr0 [2] [0] = configDMAC;			// Cofigurarion
+	descr0 [2] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
+	descr0 [2] [2] = portaddr;				// Destination Address
+	descr0 [2] [4] = parameterDMAC;			// Parameter
+	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	arm_hardware_flush(descraddr, sizeof descr0);
