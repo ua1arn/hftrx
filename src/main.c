@@ -3623,7 +3623,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	#if WITHISBOOTLOADER 
 		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMIN;
 	#else /* WITHISBOOTLOADER */
-		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMAX;
+		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMIN;
 	#endif /* WITHISBOOTLOADER */
 #else /* WITHLCDBACKLIGHT */
 	enum { gbglight = 0 };
