@@ -63,6 +63,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
