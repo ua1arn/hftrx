@@ -3845,6 +3845,14 @@ static unsigned long local_random(unsigned long num)
 	return (rand_val % num);
 }
 
+// генератор шума для настройки
+static RAMFUNC FLOAT_t get_noisefloat(void)
+{
+	const unsigned long middle = LONG_MAX;
+	// Формирование значения выборки
+	return (int) (local_random(2 * middle - 1) - middle) / (FLOAT_t) middle;
+}
+
 // return audio sample in range [- 1.. + 1]
 static RAMFUNC FLOAT_t preparevi(
 	FLOAT_t vi0f,
@@ -3856,7 +3864,6 @@ static RAMFUNC FLOAT_t preparevi(
 {
 	const uint_fast8_t digitx = dspmode == DSPCTL_MODE_TX_DIGI;
 	const FLOAT_t txlevelXXX = digitx ? txlevelfenceDIGI : txlevelfenceSSB;
-	//const int_fast32_t txlevelfenceXXX_INTEGER = digitx ? txlevelfenceDIGI : txlevelfenceSSB;
 
 #if WITHFT8
 	ft8_txfill(& vi0f);
@@ -3914,22 +3921,18 @@ static RAMFUNC FLOAT_t preparevi(
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
-			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
-			// return audio sample in range [- txlevelfence.. + txlevelfence]
 			moni->IV = 0;
 			moni->QV = 0;
-			return 0; // injectsubtone((int) (local_random(2 * txlevelfenceXXX_INTEGER - 1) - txlevelfenceXXX_INTEGER), ctcss);	// шум
+			return injectsubtone(get_noisefloat() * txlevelXXX, ctcss);	// шум
 
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
-			// return audio sample in range [- txlevelfence.. + txlevelfence]
 			moni->IV = 0;
 			moni->QV = 0;
 			return injectsubtone(get_dualtonefloat() * txlevelXXX, ctcss);		// источник сигнала - двухтональный генератор для настройки
 
 		case BOARD_TXAUDIO_1TONE:
 			// источник - синусоидальный сигнал
-			// return audio sample in range [- txlevelfence.. + txlevelfence]
 			moni->IV = 0;
 			moni->QV = 0;
 			return injectsubtone(get_singletonefloat() * txlevelXXX, ctcss);
