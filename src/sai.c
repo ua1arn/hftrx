@@ -3846,13 +3846,15 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 /* от встроенного в процессор или подключенного по I2S */
 static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
 {
+	//	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN)
+	//		;
+		local_delay_us(2);
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-	ASSERT(descbase != 0xFFFFF800);
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_DST];
 	descraddr [DMAC_DESC_DST] = dma_invalidate16rx(allocate_dmabuffer16rx());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
+	//ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
 //	printhex(addr, (void *) addr, DMABUFFSIZE16RX * sizeof (aubufv_t));
 //	for (;;)
@@ -3866,13 +3868,15 @@ static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
 /* на встроенный в процессор или подключенный по I2S */
 static void DMA_I2S1_AudioCodec_TX_Handler_codec1(unsigned dmach)
 {
+	//	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN)
+	//		;
+		local_delay_us(2);
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-	ASSERT(descbase != 0xFFFFF800);
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
 	descraddr [DMAC_DESC_SRC] = dma_flush16tx(getfilled_dmabuffer16txphones());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
+	//ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16tx(addr);
@@ -3881,13 +3885,15 @@ static void DMA_I2S1_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Прием от FPGA */
 static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 {
+	//	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN)
+	//		;
+		local_delay_us(2);
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-	ASSERT(descbase != 0xFFFFF800);
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_DST];
 	descraddr [DMAC_DESC_DST] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
+	//ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer32rx(addr);
@@ -3899,13 +3905,15 @@ static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 /* Передача в FPGA */
 static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 {
+//	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN)
+//		;
+	local_delay_us(2);
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-	ASSERT(descbase != 0xFFFFF800);
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
 	descraddr [DMAC_DESC_SRC] = dma_flush32tx(getfilled_dmabuffer32tx_main());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
+	//ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
@@ -3964,7 +3972,7 @@ static void DMAC_clock_initialize(void)
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 0);	// Gating MBUS Clock For DMA
 	CCU->DMA_BGR_REG |= (1uL << 0);			// DMA_GATING 1: Pass clock
 	CCU->DMA_BGR_REG |= (1uL << 16);		// DMA_RST 1: De-assert reset
-	DMAC->DMAC_AUTO_GATE_REG |= (1uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+	DMAC->DMAC_AUTO_GATE_REG |= 0x07; //(1uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
 }
 
 static void DMAC_I2S1_RX_initialize_codec1(void)
@@ -3979,7 +3987,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 
 	const uint_fast32_t parameterDMAC = 32;
 	const uint_fast32_t configDMAC =
-		0 * (1uL << 30) |	// BMODE_SEL
+		1 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
@@ -4034,7 +4042,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 
 	const uint_fast32_t parameterDMAC = 32;
 	const uint_fast32_t configDMAC =
-		0 * (1uL << 30) |	// BMODE_SEL
+		1 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
@@ -4054,9 +4062,9 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;			// Source Address
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
+	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = parameterDMAC;			// Parameter
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
@@ -4089,7 +4097,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 
 	const uint_fast32_t parameterDMAC = 32;
 	const uint_fast32_t configDMAC =
-		0 * (1uL << 30) |	// BMODE_SEL
+		1 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
@@ -4144,7 +4152,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 
 	const uint_fast32_t parameterDMAC = 32;
 	const uint_fast32_t configDMAC =
-		0 * (1uL << 30) |	// BMODE_SEL
+		1 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
@@ -4199,7 +4207,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 
 	const uint_fast32_t parameterDMAC = 32;
 	const uint_fast32_t configDMAC =
-		0 * (1uL << 30) |	// BMODE_SEL
+		1 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
@@ -4254,7 +4262,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 
 	const uint_fast32_t parameterDMAC = 32;
 	const uint_fast32_t configDMAC =
-		0 * (1uL << 30) |	// BMODE_SEL
+		1 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
@@ -4276,6 +4284,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
+	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = parameterDMAC;			// Parameter
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
