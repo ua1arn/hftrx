@@ -4006,7 +4006,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
 	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_RXFIFO;
 
-	const uint_fast32_t parameterDMAC = 32;
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4061,7 +4061,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
 	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;
 
-	const uint_fast32_t parameterDMAC = 32;
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4116,7 +4116,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
 	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_RXFIFO;
 
-	const uint_fast32_t parameterDMAC = 32;
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4171,7 +4171,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
 	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_TXFIFO;
 
-	const uint_fast32_t parameterDMAC = 32;
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4226,7 +4226,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
 	const uintptr_t portaddr = (uintptr_t) & AUDIO_CODEC->AC_ADC_RXDATA;
 
-	const uint_fast32_t parameterDMAC = 32;
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4281,7 +4281,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
 	const uintptr_t portaddr = (uintptr_t) & AUDIO_CODEC->AC_DAC_TXDATA;
 
-	const uint_fast32_t parameterDMAC = 32;
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
