@@ -3842,16 +3842,29 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 	}
 }
 
-/* Прием от кодека */
-/* от встроенного в процессор или подключенного по I2S */
-static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
+static void DMA_suspend(unsigned dmach)
 {
 	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Pause Transferring
 //	while ((DMAC->DMAC_STA_REG & (1u << dmach)) != 0)
 //		;
 	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
 		;
-	local_delay_us(2);
+	local_delay_us(1);
+	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
+		;
+}
+
+static void DMA_resume(unsigned dmach)
+{
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+}
+
+/* Приём от кодека */
+/* от встроенного в процессор или подключенного по I2S */
+static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
+{
+	DMA_suspend(dmach);
+
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_DST];
@@ -3859,7 +3872,7 @@ static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
-	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMA_resume(dmach);
 
 //	printhex(addr, (void *) addr, DMABUFFSIZE16RX * sizeof (aubufv_t));
 //	for (;;)
@@ -3873,12 +3886,8 @@ static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
 /* на встроенный в процессор или подключенный по I2S */
 static void DMA_I2S1_AudioCodec_TX_Handler_codec1(unsigned dmach)
 {
-	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Pause Transferring
-//	while ((DMAC->DMAC_STA_REG & (1u << dmach)) != 0)
-//		;
-	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
-		;
-	local_delay_us(2);
+	DMA_suspend(dmach);
+
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
@@ -3886,21 +3895,17 @@ static void DMA_I2S1_AudioCodec_TX_Handler_codec1(unsigned dmach)
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
-	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMA_resume(dmach);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16tx(addr);
 }
 
-/* Прием от FPGA */
+/* Приём от FPGA */
 static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 {
-	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Pause Transferring
-//	while ((DMAC->DMAC_STA_REG & (1u << dmach)) != 0)
-//		;
-	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
-		;
-	local_delay_us(2);
+	DMA_suspend(dmach);
+
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_DST];
@@ -3908,7 +3913,7 @@ static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
-	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMA_resume(dmach);
 
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer32rx(addr);
@@ -3920,12 +3925,8 @@ static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 /* Передача в FPGA */
 static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 {
-	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Pause Transferring
-//	while ((DMAC->DMAC_STA_REG & (1u << dmach)) != 0)
-//		;
-	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
-		;
-	local_delay_us(2);
+	DMA_suspend(dmach);
+
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
@@ -3933,7 +3934,7 @@ static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
-	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMA_resume(dmach);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
