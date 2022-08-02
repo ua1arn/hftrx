@@ -4055,7 +4055,8 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_RX_Handler_codec1);
@@ -4110,7 +4111,8 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_TX_Handler_codec1);
@@ -4165,7 +4167,8 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S2_RX_Handler_fpga);
@@ -4220,7 +4223,8 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S2_TX_Handler_fpga);
@@ -4275,7 +4279,8 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_RX_Handler_codec1);
@@ -4330,7 +4335,8 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_TX_Handler_codec1);
