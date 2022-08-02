@@ -3849,7 +3849,19 @@ static void DMA_suspend(unsigned dmach)
 //		;
 	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
 		;
-	local_delay_us(1);
+	//local_delay_us(1);
+	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
+		;
+	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
+		;
+	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
+		;
+	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
+		;
+	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
+		;
+	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
+		;
 	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
 		;
 }
