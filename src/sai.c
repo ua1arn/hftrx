@@ -3943,7 +3943,7 @@ static void DMAC_NS_IRQHandler(void)
 
 
 // 0x04: Queue, 0x02: Pkq, 0x01: half
-#define DMAC_I2S_IRQ_bit (0x01)
+#define DMAC_I2S_IRQ_PKG_bit (0x02)
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler2)(unsigned dmach))
 {
@@ -4013,7 +4013,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S1_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4068,7 +4068,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S1_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4123,7 +4123,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S2_RX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S2_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4178,7 +4178,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S2_TX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S2_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4233,7 +4233,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S1_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4287,7 +4287,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S1_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
