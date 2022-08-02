@@ -797,6 +797,7 @@ static void gui_main_process(void)
 			}
 			else if (bh == btn_2)
 			{
+#if WITHTOUCHGUI && WITHGUIDEBUG
 //				if (check_for_parent_window() != NO_PARENT_WINDOW)
 //				{
 //					close_window(OPEN_PARENT_WINDOW);
@@ -809,6 +810,7 @@ static void gui_main_process(void)
 //					footer_buttons_state(DISABLED, btn_2);
 //				}
 				gui_open_debug_window();
+#endif /* WITHTOUCHGUI && WITHGUIDEBUG */
 			}
 #if WITHFT8
 			else if (bh == btn_ft8)
