@@ -855,7 +855,7 @@
 	/* установка яркости и включение/выключение преобразователя подсветки */
 
 	#define HARDWARE_BL_SET(en, level) do { \
-		xc7z_writepin(TARGET_BL_ENABLE_MIO, en); \
+		xc7z_writepin(TARGET_BL_ENABLE_MIO, (en)); \
 	} while (0)
 #endif
 

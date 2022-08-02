@@ -988,9 +988,9 @@
 	/* установка яркости и включение/выключение преобразователя подсветки */
 
 	#define HARDWARE_BL_SET(en, level) do { \
-		gpio_writepin(TARGET_LCD_BL_ENABLE_EMIO, en); \
-		emio_drive(TARGET_LCD_BL_ADJ0_EMIO, (level & 0x01) != 0); \
-		emio_drive(TARGET_LCD_BL_ADJ1_EMIO, (level & 0x02) != 0); \
+		gpio_writepin(TARGET_LCD_BL_ENABLE_EMIO, (en)); \
+		emio_drive(TARGET_LCD_BL_ADJ0_EMIO, ((level) & 0x01) != 0); \
+		emio_drive(TARGET_LCD_BL_ADJ1_EMIO, ((level) & 0x02) != 0); \
 	} while (0)
 
 #endif
