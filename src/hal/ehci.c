@@ -1272,10 +1272,12 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 		USBPHY0->USB_CTRL = 0x4300FC00;	// после запуска из QSPI было 0x40000000
 		// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
-		//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
-		USBPHY0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
-		USBPHY0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
-		USBPHY0->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
+		//USB0_PHY->PHY_CTRL = 0x20;			// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
+		USBPHY0->PHY_CTRL &= ~ (1uL << 3);		// PHY_CTL_SIDDQ
+		USBPHY0->PHY_CTRL |= (1uL << 5);		// PHY_CTL_VBUSVLDEXT
+		USBPHY0->USB_CTRL |= (1uL << 0);		// 1: Enable UTMI interface, disable ULPI interface
+
+		USBPHY0->PHY_OTGCTL &= ~ (1uL << 0); 	// Host mode. Route phy0 to EHCI/OHCI
 	}
 
 #elif CPUSTYLE_STM32MP1

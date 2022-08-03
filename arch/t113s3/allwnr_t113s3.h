@@ -1540,7 +1540,8 @@ typedef struct USBOTG_Type
 	__IO uint32_t HCI_CTRL3;                             /*!< Offset 0x408 HCI Control 3 Register (bist) */
 	uint32_t reserved_0x40C;
 	__IO uint32_t PHY_CTRL;                              /*!< Offset 0x410 PHY Control Register (PHY_Control) */
-	uint32_t reserved_0x414 [0x0004];
+	uint32_t reserved_0x414 [0x0003];
+	__IO uint32_t PHY_OTGCTL;                            /*!< Offset 0x420 Control PHY routing to EHCI or OTG */
 	__IO uint32_t PHY_STATUS;                            /*!< Offset 0x424 PHY Status Register */
 	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x428 HCI SIE Port Disable Control Register */
 } USBOTG_TypeDef; /* size of structure = 0x42C */
@@ -1555,7 +1556,8 @@ typedef struct USBPHYC_Type
 	__IO uint32_t HCI_CTRL3;                             /*!< Offset 0x008 HCI Control 3 Register (bist) */
 	uint32_t reserved_0x00C;
 	__IO uint32_t PHY_CTRL;                              /*!< Offset 0x010 PHY Control Register (PHY_Control) */
-	uint32_t reserved_0x014 [0x0004];
+	uint32_t reserved_0x014 [0x0003];
+	__IO uint32_t PHY_OTGCTL;                            /*!< Offset 0x020 Control PHY routing to EHCI or OTG */
 	__IO uint32_t PHY_STATUS;                            /*!< Offset 0x024 PHY Status Register */
 	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x028 HCI SIE Port Disable Control Register */
 } USBPHYC_TypeDef; /* size of structure = 0x02C */
