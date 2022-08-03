@@ -7266,7 +7266,7 @@ void SystemCoreClockUpdate(void)
 		PWM->PER |= (1u << (0 + pwmch));
 		PWM->CH [pwmch].PPR =
 			(cycle - 1) * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
-			0 * (cycle / 2) * (1u << 0) |	/* PWM_ACT_CYCLE */
+			(cycle / 2) * (1u << 0) |	/* PWM_ACT_CYCLE */
 			0;
 		while ((PWM->CH [pwmch].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
 			;
