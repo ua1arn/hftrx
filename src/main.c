@@ -6944,6 +6944,8 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #endif /* WITHIFSHIFT && ! WITHPOTIFSHIFT */
 };
 
+#define ENC2POS_COUNT (sizeof enc2menus / sizeof enc2menus [0])
+
 /* получение названия редактируемого параметра */
 static 
 const FLASHMEM char * 
@@ -6953,6 +6955,7 @@ enc2menu_label_P(
 {
 	const FLASHMEM struct enc2menu * const p = & enc2menus [item];
 
+	ASSERT(item < ENC2POS_COUNT);
 	return p->label;
 }
 
@@ -6968,6 +6971,7 @@ enc2menu_value(
 	const FLASHMEM struct enc2menu * const mp = & enc2menus [item];
 	long int value;
 
+	ASSERT(item < ENC2POS_COUNT);
 	if (mp->pval16 != NULL)
 	{
 		value = mp->funcoffs() + * mp->pval16;
@@ -7055,8 +7059,6 @@ enum
 	//
 	ENC2STATE_COUNT
 };
-
-#define ENC2POS_COUNT (sizeof enc2menus / sizeof enc2menus [0])
 
 static const FLASHMEM char text_nul9_P [] = "         ";
 
