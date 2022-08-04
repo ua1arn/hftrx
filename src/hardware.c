@@ -2598,59 +2598,61 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
-#define TEXval_STGORD		0x00	/* Strongly-ordered, shareable */
-#define Bval_STGORD			0x00	/* Strongly-ordered, shareable */
-#define Cval_STGORD			0x00	/* Strongly-ordered, shareable */
+/* Strongly-ordered, shareable */
+//#define TEXval_STGORD		0x00
+//#define Cval_STGORD			0x00
+//#define Bval_STGORD			0x01
 
 #if 0///CPUSTYLE_STM32MP1
 	// for debug: no Write-Allocate
-	#define TEXval_WBCACHE		0x00	/* Outer and Inner Write-Back, no Write-Allocate */
-	#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, no Write-Allocate */
-	#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, no Write-Allocate */
+	/* Outer and Inner Write-Back, no Write-Allocate */
+	#define TEXval_WBCACHE		0x00
+	#define Cval_WBCACHE		0x01
+	#define Bval_WBCACHE		0x01
+	#define SHAREDval 1		// required for ldrex.. and strex.. functionality
 #else /* CPUSTYLE_STM32MP1 */
-	#define TEXval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
-	#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
-	#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+	/* Outer and Inner Write-Back, Write-Allocate */
+	#define TEXval_WBCACHE		0x01
+	#define Cval_WBCACHE		0x01
+	#define Bval_WBCACHE		0x01
+	#define SHAREDval 1		// required for ldrex.. and strex.. functionality
 #endif /* CPUSTYLE_STM32MP1 */
 
-#define TEXval_NOCACHE		0x01	/* Outer and Inner Non-cacheable, S bit */
-#define Bval_NOCACHE		0x00	/* Outer and Inner Non-cacheable, S bit */
-#define Cval_NOCACHE		0x00	/* Outer and Inner Non-cacheable, S bit */
+/* Outer and Inner Non-cacheable, S bit */
+//#define TEXval_NOCACHE		0x01
+//#define Cval_NOCACHE		0x00
+//#define Bval_NOCACHE		0x00
 
-#if 0
+#if 1
 	// test
-	#define TEXval_DEVICE		0x00	/* Shareable Device */
-	#define Bval_DEVICE			0x00	/* Shareable Device */
-	#define Cval_DEVICE			0x01	/* Shareable Device */
+	/* Shareable Device */
+	#define TEXval_DEVICE		0x00
+	#define Cval_DEVICE			0x00
+	#define Bval_DEVICE			0x01
+	#define Share_DEVICE 		0
 #else
 	// normal
-	#define TEXval_DEVICE		0x02	/* Non-shareable Device */
-	#define Bval_DEVICE			0x00	/* Non-shareable Device */
-	#define Cval_DEVICE			0x00	/* Non-shareable Device */
+	/* Non-shareable Device */
+	#define TEXval_DEVICE		0x02
+	#define Cval_DEVICE			0x00
+	#define Bval_DEVICE			0x00
+	#define Share_DEVICE 		0
 #endif
-
-#if WITHSMPSYSTEM
-	#define SHAREDval 1		// required for ldrex.. and strex.. functionality
-#else /* WITHSMPSYSTEM */
-	#define SHAREDval 0
-#endif /* WITHSMPSYSTEM */
-
-#define NoSHAREDval 0
 
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
 
 #define	TTB_PARA(TEX, B, C, DOMAIN, SHARED, AP, XN) ( \
 		(SECTIONval) * (1uL << 0) |	/* 0b10, Section or Supersection */ \
-		(B) * (1uL << 2) |	/* B */ \
-		(C) * (1uL << 3) |	/* C */ \
-		(XN) * (1uL << 4) |	/* XN The Execute-never bit. */ \
+		!! (B) * (1uL << 2) |	/* B */ \
+		!! (C) * (1uL << 3) |	/* C */ \
+		!! (XN) * (1uL << 4) |	/* XN The Execute-never bit. */ \
 		(DOMAIN) * (1uL << 5) |	/* DOMAIN */ \
 		0 * (1uL << 9) |	/* implementation defined */ \
 		(((AP) >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
 		(TEX) * (1uL << 12) |	/* TEX */ \
 		(((AP) >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
-		(SHARED) * (1uL << 16) |	/* S */ \
+		!! (SHARED) * (1uL << 16) |	/* S */ \
 		0 * (1uL << 17) |	/* nG */ \
 		0 * (1uL << 18) |	/* 0 */ \
 		0 * (1uL << 19) |	/* NS */ \
@@ -2660,7 +2662,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //; setting for Strongly-ordered memory
 //#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
 // not used
-#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, 0 /* Shareable mot depend of this bit */, APRWval, 1)
+//#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, 0 /* Shareable mot depend of this bit */, APRWval, 1)
 
 
 //; setting for Outer and inner not cache normal memory
@@ -2671,7 +2673,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
 #define	TTB_PARA_NORMAL_CACHE(ro, xn) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, SHAREDval, (ro) ? APROval : APRWval, (xn) != 0)
 
-#define	TTB_PARA_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, NoSHAREDval, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, Share_DEVICE, APRWval, 1 /* XN=1 */)
 
 #define	TTB_PARA_NO_ACCESS 0
 
