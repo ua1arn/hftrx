@@ -4248,9 +4248,9 @@ typedef int16_t WFL3DSS_T;
 struct ustates
 {
 #if defined(ARM_MATH_NEON)
-	float32_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 8];
+	FLOAT_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 8];
 #else /* defined(ARM_MATH_NEON) */
-	float32_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 4];
+	FLOAT_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 4];
 #endif /* defined(ARM_MATH_NEON) */
 	FLOAT_t fir_state [ZOOMFFT_DECIM_STAGES_FIR + LARGEFFT - 1];
 
@@ -4415,10 +4415,10 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		fftzoom_af(gvars.afsp.raw_buf, AFSP_DECIMATIONPOW2, WITHFFTSIZEAF);
 		// осталась половина буфера
 
-		arm_mult_f32(gvars.afsp.raw_buf, gvars.afspec_wndfn, gvars.afsp.raw_buf, WITHFFTSIZEAF); // apply window function
-		arm_rfft_fast_f32(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0); // 0-прямое, 1-обратное
+		ARM_MORPH(arm_mult)(gvars.afsp.raw_buf, gvars.afspec_wndfn, gvars.afsp.raw_buf, WITHFFTSIZEAF); // apply window function
+		ARM_MORPH(arm_rfft_fast)(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0); // 0-прямое, 1-обратное
 		gvars.afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
-		arm_cmplx_mag_f32(gvars.afsp.fft_buf, gvars.afsp.fft_buf, WITHFFTSIZEAF);
+		ARM_MORPH(arm_cmplx_mag)(gvars.afsp.fft_buf, gvars.afsp.fft_buf, WITHFFTSIZEAF);
 
 		ASSERT(gvars.afsp.w <= ARRAY_SIZE(gvars.afsp.val_array));
 		for (unsigned x = 0; x < gvars.afsp.w; x ++)
@@ -4428,7 +4428,7 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 			// filterig
 			gvars.afsp.val_array [x] = gvars.afsp.val_array [x] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * gvars.afsp.fft_buf [fftpos];
 		}
-		arm_max_no_idx_f32(gvars.afsp.val_array, gvars.afsp.w, & gvars.afsp.max_val);	// поиск в отображаемой части
+		ARM_MORPH(arm_max_no_idx)(gvars.afsp.val_array, gvars.afsp.w, & gvars.afsp.max_val);	// поиск в отображаемой части
 		gvars.afsp.max_val = FMAXF(gvars.afsp.max_val, (FLOAT_t) 0.001);
 	}
 }
@@ -4521,8 +4521,8 @@ struct zoom_param
 {
 	unsigned zoom;
 	unsigned numTaps;
-	const float32_t * pFIRCoeffs;
-	const float32_t * pIIRCoeffs;
+	const FLOAT_t * pFIRCoeffs;
+	const FLOAT_t * pIIRCoeffs;
 };
 
 static const struct zoom_param zoom_params [] =
@@ -4531,29 +4531,29 @@ static const struct zoom_param zoom_params [] =
 	{
 		.zoom = 2,
 		.numTaps = ZOOMFFT_DECIM_STAGES_FIR,
-		.pFIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
-		.pIIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.8384843639921, 0, 0, 0, 0, 1, 0.5130084793341, 1, 0.1784114407685, -0.6967733943344, 0.8744089756375, 0, 0, 0, 0, 1, 1.046379755684, 1, 0.3420998857106, -0.3982809814397, 1.83222755502, 0, 0, 0, 0, 1, 1.831496024383, 1, 0.5072844084012, -0.1179052535088, 0.01953722920982, 0, 0, 0, 0, 1, 0.3029841730578, 1, 0.09694668293684, -0.9095549467394, 1, 0, 0, 0, 0},
+		.pFIRCoeffs = (const FLOAT_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
+		.pIIRCoeffs = (const FLOAT_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.8384843639921, 0, 0, 0, 0, 1, 0.5130084793341, 1, 0.1784114407685, -0.6967733943344, 0.8744089756375, 0, 0, 0, 0, 1, 1.046379755684, 1, 0.3420998857106, -0.3982809814397, 1.83222755502, 0, 0, 0, 0, 1, 1.831496024383, 1, 0.5072844084012, -0.1179052535088, 0.01953722920982, 0, 0, 0, 0, 1, 0.3029841730578, 1, 0.09694668293684, -0.9095549467394, 1, 0, 0, 0, 0},
 	},
 	// x4 zoom lowpass
 	{
 		.zoom = 4,
 		.numTaps = ZOOMFFT_DECIM_STAGES_FIR,
-		.pFIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
-		.pIIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.6737499659657, 0, 0, 0, 0, 1, -1.102065194995, 1, 1.353694541279, -0.7896377861467, 0.53324811147, 0, 0, 0, 0, 1, -0.5853766477218, 1, 1.289175897987, -0.5882714065646, 0.6143152247695, 0, 0, 0, 0, 1, 1.182778527244, 1, 1.236309127239, -0.4063767082903, 0.01708381580242, 0, 0, 0, 0, 1, -1.245590418009, 1, 1.418191929315, -0.9374008035325, 1, 0, 0, 0, 0},
+		.pFIRCoeffs = (const FLOAT_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
+		.pIIRCoeffs = (const FLOAT_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.6737499659657, 0, 0, 0, 0, 1, -1.102065194995, 1, 1.353694541279, -0.7896377861467, 0.53324811147, 0, 0, 0, 0, 1, -0.5853766477218, 1, 1.289175897987, -0.5882714065646, 0.6143152247695, 0, 0, 0, 0, 1, 1.182778527244, 1, 1.236309127239, -0.4063767082903, 0.01708381580242, 0, 0, 0, 0, 1, -1.245590418009, 1, 1.418191929315, -0.9374008035325, 1, 0, 0, 0, 0},
 	},
 	// x8 zoom lowpass
 	{
 		.zoom = 8,
 		.numTaps = ZOOMFFT_DECIM_STAGES_FIR,
-		.pFIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
-		.pIIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.6469981129046, 0, 0, 0, 0, 1, -1.750671284068, 1, 1.766710155669, -0.8829517893283, 0.4645312725883, 0, 0, 0, 0, 1, -1.553480572725, 1, 1.681513354365, -0.7637556184482, 0.2925692260954, 0, 0, 0, 0, 1, -0.1114766808264, 1, 1.601891439147, -0.6499504503566, 0.01652325734055, 0, 0, 0, 0, 1, -1.797298202754, 1, 1.831125104215, -0.9660534813317, 1, 0, 0, 0, 0},
+		.pFIRCoeffs = (const FLOAT_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
+		.pIIRCoeffs = (const FLOAT_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.6469981129046, 0, 0, 0, 0, 1, -1.750671284068, 1, 1.766710155669, -0.8829517893283, 0.4645312725883, 0, 0, 0, 0, 1, -1.553480572725, 1, 1.681513354365, -0.7637556184482, 0.2925692260954, 0, 0, 0, 0, 1, -0.1114766808264, 1, 1.601891439147, -0.6499504503566, 0.01652325734055, 0, 0, 0, 0, 1, -1.797298202754, 1, 1.831125104215, -0.9660534813317, 1, 0, 0, 0, 0},
 	},
 	// x16 zoom lowpass
 	{
 		.zoom = 16,
 		.numTaps = ZOOMFFT_DECIM_STAGES_FIR,
-		.pFIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
-		.pIIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.6500044972642, 0, 0, 0, 0, 1, -1.935616780918, 1, 1.908632776595, -0.9387888949475, 0.4599444315799, 0, 0, 0, 0, 1, -1.880017827578, 1, 1.851418291083, -0.8732990221737, 0.2087317940803, 0, 0, 0, 0, 1, -1.278402634611, 1, 1.794539349192, -0.80764043772, 0.01645106748385, 0, 0, 0, 0, 1, -1.948135342532, 1, 1.948194658987, -0.9825675157696, 1, 0, 0, 0, 0},
+		.pFIRCoeffs = (const FLOAT_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
+		.pIIRCoeffs = (const FLOAT_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.6500044972642, 0, 0, 0, 0, 1, -1.935616780918, 1, 1.908632776595, -0.9387888949475, 0.4599444315799, 0, 0, 0, 0, 1, -1.880017827578, 1, 1.851418291083, -0.8732990221737, 0.2087317940803, 0, 0, 0, 0, 1, -1.278402634611, 1, 1.794539349192, -0.80764043772, 0.01645106748385, 0, 0, 0, 0, 1, -1.948135342532, 1, 1.948194658987, -0.9825675157696, 1, 0, 0, 0, 0},
 	},
 };
 
@@ -4700,9 +4700,486 @@ void fftbuffer_initialize(void)
 	SPINLOCK_INITIALIZE(& fftlock);
 }
 
+#if (__ARM_FP & 0x08) && 1
+
+void arm_cmplx_mult_real_f64(
+  const float64_t * pSrcCmplx,
+  const float64_t * pSrcReal,
+  	  	  float64_t * pCmplxDst,
+        uint32_t numSamples)
+{
+        uint32_t blkCnt;                               /* Loop counter */
+        float64_t in;                                  /* Temporary variable */
+
+#if defined(ARM_MATH_NEON) && !defined(ARM_MATH_AUTOVECTORIZE)
+    float32x4_t r;
+    float32x4x2_t ab,outCplx;
+
+    /* Compute 4 outputs at a time */
+    blkCnt = numSamples >> 2U;
+
+    while (blkCnt > 0U)
+    {
+        ab = vld2q_f32(pSrcCmplx);  // load & separate real/imag pSrcA (de-interleave 2)
+        r = vld1q_f32(pSrcReal);  // load & separate real/imag pSrcB
+
+	/* Increment pointers */
+        pSrcCmplx += 8;
+        pSrcReal += 4;
+
+        outCplx.val[0] = vmulq_f32(ab.val[0], r);
+        outCplx.val[1] = vmulq_f32(ab.val[1], r);
+
+        vst2q_f32(pCmplxDst, outCplx);
+        pCmplxDst += 8;
+
+        blkCnt--;
+    }
+
+    /* Tail */
+    blkCnt = numSamples & 3;
+#else
+#if defined (ARM_MATH_LOOPUNROLL) && !defined(ARM_MATH_AUTOVECTORIZE)
+
+  /* Loop unrolling: Compute 4 outputs at a time */
+  blkCnt = numSamples >> 2U;
+
+  while (blkCnt > 0U)
+  {
+    /* C[2 * i    ] = A[2 * i    ] * B[i]. */
+    /* C[2 * i + 1] = A[2 * i + 1] * B[i]. */
+
+    in = *pSrcReal++;
+    /* store result in destination buffer. */
+    *pCmplxDst++ = *pSrcCmplx++ * in;
+    *pCmplxDst++ = *pSrcCmplx++ * in;
+
+    in = *pSrcReal++;
+    *pCmplxDst++ = *pSrcCmplx++ * in;
+    *pCmplxDst++ = *pSrcCmplx++ * in;
+
+    in = *pSrcReal++;
+    *pCmplxDst++ = *pSrcCmplx++ * in;
+    *pCmplxDst++ = *pSrcCmplx++ * in;
+
+    in = *pSrcReal++;
+    *pCmplxDst++ = *pSrcCmplx++* in;
+    *pCmplxDst++ = *pSrcCmplx++ * in;
+
+    /* Decrement loop counter */
+    blkCnt--;
+  }
+
+  /* Loop unrolling: Compute remaining outputs */
+  blkCnt = numSamples % 0x4U;
+
+#else
+
+  /* Initialize blkCnt with number of samples */
+  blkCnt = numSamples;
+
+#endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+#endif /* #if defined(ARM_MATH_NEON) */
+
+  while (blkCnt > 0U)
+  {
+    /* C[2 * i    ] = A[2 * i    ] * B[i]. */
+    /* C[2 * i + 1] = A[2 * i + 1] * B[i]. */
+
+    in = *pSrcReal++;
+    /* store result in destination buffer. */
+    *pCmplxDst++ = *pSrcCmplx++ * in;
+    *pCmplxDst++ = *pSrcCmplx++ * in;
+
+    /* Decrement loop counter */
+    blkCnt--;
+  }
+
+}
+
+/**
+  @brief Instance structure for floating-point FIR decimator.
+ */
+typedef struct
+  {
+          uint8_t M;                  /**< decimation factor. */
+          uint16_t numTaps;           /**< number of coefficients in the filter. */
+    const float64_t *pCoeffs;         /**< points to the coefficient array. The array is of length numTaps.*/
+    	float64_t *pState;          /**< points to the state variable array. The array is of length numTaps+blockSize-1. */
+  } arm_fir_decimate_instance_f64;
+
+
+  arm_status arm_fir_decimate_init_f64(
+          arm_fir_decimate_instance_f64 * S,
+          uint16_t numTaps,
+          uint8_t M,
+    const float64_t * pCoeffs,
+	float64_t * pState,
+          uint32_t blockSize)
+  {
+    arm_status status;
+
+    /* The size of the input block must be a multiple of the decimation factor */
+    if ((blockSize % M) != 0U)
+    {
+      /* Set status as ARM_MATH_LENGTH_ERROR */
+      status = ARM_MATH_LENGTH_ERROR;
+    }
+    else
+    {
+      /* Assign filter taps */
+      S->numTaps = numTaps;
+
+      /* Assign coefficient pointer */
+      S->pCoeffs = pCoeffs;
+
+      /* Clear the state buffer. The size is always (blockSize + numTaps - 1) */
+      memset(pState, 0, (numTaps + (blockSize - 1U)) * sizeof(float64_t));
+
+      /* Assign state pointer */
+      S->pState = pState;
+
+      /* Assign Decimation Factor */
+      S->M = M;
+
+      status = ARM_MATH_SUCCESS;
+    }
+
+    return (status);
+
+  }
+
+  void arm_fir_decimate_f64(
+    const arm_fir_decimate_instance_f64 * S,
+    const float64_t * pSrc,
+			float64_t * pDst,
+          uint32_t blockSize)
+  {
+	  	  float64_t *pState = S->pState;                 /* State pointer */
+    const float64_t *pCoeffs = S->pCoeffs;               /* Coefficient pointer */
+		float64_t *pStateCur;                          /* Points to the current sample of the state */
+		float64_t *px0;                                /* Temporary pointer for state buffer */
+    const float64_t *pb;                                 /* Temporary pointer for coefficient buffer */
+		float64_t x0, c0;                              /* Temporary variables to hold state and coefficient values */
+		float64_t acc0;                                /* Accumulator */
+          uint32_t numTaps = S->numTaps;                 /* Number of filter coefficients in the filter */
+          uint32_t i, tapCnt, blkCnt, outBlockSize = blockSize / S->M;  /* Loop counters */
+
+  #if defined (ARM_MATH_LOOPUNROLL)
+          float64_t *px1, *px2, *px3;
+          float64_t x1, x2, x3;
+          float64_t acc1, acc2, acc3;
+  #endif
+
+    /* S->pState buffer contains previous frame (numTaps - 1) samples */
+    /* pStateCur points to the location where the new input data should be written */
+    pStateCur = S->pState + (numTaps - 1U);
+
+  #if defined (ARM_MATH_LOOPUNROLL)
+
+      /* Loop unrolling: Compute 4 samples at a time */
+    blkCnt = outBlockSize >> 2U;
+
+    /* Samples loop unrolled by 4 */
+    while (blkCnt > 0U)
+    {
+      /* Copy 4 * decimation factor number of new input samples into the state buffer */
+      i = S->M * 4;
+
+      do
+      {
+        *pStateCur++ = *pSrc++;
+
+      } while (--i);
+
+      /* Set accumulators to zero */
+      acc0 = 0.0f;
+      acc1 = 0.0f;
+      acc2 = 0.0f;
+      acc3 = 0.0f;
+
+      /* Initialize state pointer for all the samples */
+      px0 = pState;
+      px1 = pState + S->M;
+      px2 = pState + 2 * S->M;
+      px3 = pState + 3 * S->M;
+
+      /* Initialize coeff pointer */
+      pb = pCoeffs;
+
+      /* Loop unrolling: Compute 4 taps at a time */
+      tapCnt = numTaps >> 2U;
+
+      while (tapCnt > 0U)
+      {
+        /* Read the b[numTaps-1] coefficient */
+        c0 = *(pb++);
+
+        /* Read x[n-numTaps-1] sample for acc0 */
+        x0 = *(px0++);
+        /* Read x[n-numTaps-1] sample for acc1 */
+        x1 = *(px1++);
+        /* Read x[n-numTaps-1] sample for acc2 */
+        x2 = *(px2++);
+        /* Read x[n-numTaps-1] sample for acc3 */
+        x3 = *(px3++);
+
+        /* Perform the multiply-accumulate */
+        acc0 += x0 * c0;
+        acc1 += x1 * c0;
+        acc2 += x2 * c0;
+        acc3 += x3 * c0;
+
+        /* Read the b[numTaps-2] coefficient */
+        c0 = *(pb++);
+
+        /* Read x[n-numTaps-2] sample for acc0, acc1, acc2, acc3 */
+        x0 = *(px0++);
+        x1 = *(px1++);
+        x2 = *(px2++);
+        x3 = *(px3++);
+
+        /* Perform the multiply-accumulate */
+        acc0 += x0 * c0;
+        acc1 += x1 * c0;
+        acc2 += x2 * c0;
+        acc3 += x3 * c0;
+
+        /* Read the b[numTaps-3] coefficient */
+        c0 = *(pb++);
+
+        /* Read x[n-numTaps-3] sample acc0, acc1, acc2, acc3 */
+        x0 = *(px0++);
+        x1 = *(px1++);
+        x2 = *(px2++);
+        x3 = *(px3++);
+
+        /* Perform the multiply-accumulate */
+        acc0 += x0 * c0;
+        acc1 += x1 * c0;
+        acc2 += x2 * c0;
+        acc3 += x3 * c0;
+
+        /* Read the b[numTaps-4] coefficient */
+        c0 = *(pb++);
+
+        /* Read x[n-numTaps-4] sample acc0, acc1, acc2, acc3 */
+        x0 = *(px0++);
+        x1 = *(px1++);
+        x2 = *(px2++);
+        x3 = *(px3++);
+
+        /* Perform the multiply-accumulate */
+        acc0 += x0 * c0;
+        acc1 += x1 * c0;
+        acc2 += x2 * c0;
+        acc3 += x3 * c0;
+
+        /* Decrement loop counter */
+        tapCnt--;
+      }
+
+      /* Loop unrolling: Compute remaining taps */
+      tapCnt = numTaps % 0x4U;
+
+      while (tapCnt > 0U)
+      {
+        /* Read coefficients */
+        c0 = *(pb++);
+
+        /* Fetch state variables for acc0, acc1, acc2, acc3 */
+        x0 = *(px0++);
+        x1 = *(px1++);
+        x2 = *(px2++);
+        x3 = *(px3++);
+
+        /* Perform the multiply-accumulate */
+        acc0 += x0 * c0;
+        acc1 += x1 * c0;
+        acc2 += x2 * c0;
+        acc3 += x3 * c0;
+
+        /* Decrement loop counter */
+        tapCnt--;
+      }
+
+      /* Advance the state pointer by the decimation factor
+       * to process the next group of decimation factor number samples */
+      pState = pState + S->M * 4;
+
+      /* The result is in the accumulator, store in the destination buffer. */
+      *pDst++ = acc0;
+      *pDst++ = acc1;
+      *pDst++ = acc2;
+      *pDst++ = acc3;
+
+      /* Decrement loop counter */
+      blkCnt--;
+    }
+
+    /* Loop unrolling: Compute remaining samples */
+    blkCnt = outBlockSize % 0x4U;
+
+  #else
+
+    /* Initialize blkCnt with number of samples */
+    blkCnt = outBlockSize;
+
+  #endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+    while (blkCnt > 0U)
+    {
+      /* Copy decimation factor number of new input samples into the state buffer */
+      i = S->M;
+
+      do
+      {
+        *pStateCur++ = *pSrc++;
+
+      } while (--i);
+
+      /* Set accumulator to zero */
+      acc0 = 0.0f;
+
+      /* Initialize state pointer */
+      px0 = pState;
+
+      /* Initialize coeff pointer */
+      pb = pCoeffs;
+
+  #if defined (ARM_MATH_LOOPUNROLL)
+
+      /* Loop unrolling: Compute 4 taps at a time */
+      tapCnt = numTaps >> 2U;
+
+      while (tapCnt > 0U)
+      {
+        /* Read the b[numTaps-1] coefficient */
+        c0 = *pb++;
+
+        /* Read x[n-numTaps-1] sample */
+        x0 = *px0++;
+
+        /* Perform the multiply-accumulate */
+        acc0 += x0 * c0;
+
+        /* Read the b[numTaps-2] coefficient */
+        c0 = *pb++;
+
+        /* Read x[n-numTaps-2] sample */
+        x0 = *px0++;
+
+        /* Perform the multiply-accumulate */
+        acc0 += x0 * c0;
+
+        /* Read the b[numTaps-3] coefficient */
+        c0 = *pb++;
+
+        /* Read x[n-numTaps-3] sample */
+        x0 = *px0++;
+
+        /* Perform the multiply-accumulate */
+        acc0 += x0 * c0;
+
+        /* Read the b[numTaps-4] coefficient */
+        c0 = *pb++;
+
+        /* Read x[n-numTaps-4] sample */
+        x0 = *px0++;
+
+        /* Perform the multiply-accumulate */
+        acc0 += x0 * c0;
+
+        /* Decrement loop counter */
+        tapCnt--;
+      }
+
+      /* Loop unrolling: Compute remaining taps */
+      tapCnt = numTaps % 0x4U;
+
+  #else
+
+      /* Initialize tapCnt with number of taps */
+      tapCnt = numTaps;
+
+  #endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+      while (tapCnt > 0U)
+      {
+        /* Read coefficients */
+        c0 = *pb++;
+
+        /* Fetch 1 state variable */
+        x0 = *px0++;
+
+        /* Perform the multiply-accumulate */
+        acc0 += x0 * c0;
+
+        /* Decrement loop counter */
+        tapCnt--;
+      }
+
+      /* Advance the state pointer by the decimation factor
+       * to process the next group of decimation factor number samples */
+      pState = pState + S->M;
+
+      /* The result is in the accumulator, store in the destination buffer. */
+      *pDst++ = acc0;
+
+      /* Decrement loop counter */
+      blkCnt--;
+    }
+
+    /* Processing is complete.
+       Now copy the last numTaps - 1 samples to the satrt of the state buffer.
+       This prepares the state buffer for the next function call. */
+
+    /* Points to the start of the state buffer */
+    pStateCur = S->pState;
+
+  #if defined (ARM_MATH_LOOPUNROLL)
+
+    /* Loop unrolling: Compute 4 taps at a time */
+    tapCnt = (numTaps - 1U) >> 2U;
+
+    /* Copy data */
+    while (tapCnt > 0U)
+    {
+      *pStateCur++ = *pState++;
+      *pStateCur++ = *pState++;
+      *pStateCur++ = *pState++;
+      *pStateCur++ = *pState++;
+
+      /* Decrement loop counter */
+      tapCnt--;
+    }
+
+    /* Loop unrolling: Compute remaining taps */
+    tapCnt = (numTaps - 1U) % 0x04U;
+
+  #else
+
+    /* Initialize tapCnt with number of taps */
+    tapCnt = (numTaps - 1U);
+
+  #endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+    /* Copy data */
+    while (tapCnt > 0U)
+    {
+      *pStateCur++ = *pState++;
+
+      /* Decrement loop counter */
+      tapCnt--;
+    }
+
+  }
+
+#endif
+
 static void fftzoom_filer_decimate_ifspectrum(
 	const struct zoom_param * const prm,
-	float32_t * buffer
+	FLOAT_t * buffer
 	)
 {
 	union configs

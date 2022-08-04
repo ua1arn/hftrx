@@ -1927,6 +1927,8 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 
 #endif
 
+#if (__ARM_FP & 0x08) && 1
+
 // Calculate window function (blackman-harris, hamming, rectangular)
 static double fir_design_windowL(int iCnt, int iCoefNum, int wtype)
 {
@@ -2039,6 +2041,27 @@ static double fir_design_windowL(int iCnt, int iCoefNum, int wtype)
 	}
 }
 
+// Расчёт фильтра нижних частот
+// Расчёт фильтра без наложения оконной функции
+static void fir_design_lowpassL(double *dCoeff, int iCoefNum, double m_fCutHigh)
+{
+	const int iHalfLen = (iCoefNum - 1) / 2;
+	//float dCoeff [iHalfLen + 1];	/* Use GCC extension */
+	int iCnt;
+
+	/*------------------*/
+	/*  Lowpass filter  */
+	/*------------------*/
+
+	dCoeff [iHalfLen] = m_fCutHigh;
+	for (iCnt = 1; iCnt <= iHalfLen; iCnt ++)
+	{
+		const double a = (double) M_PI * iCnt;
+		const double k = sin(m_fCutHigh * a) / a;
+		dCoeff [iHalfLen - iCnt] = k;
+	}
+}
+#endif
 
 ////////////////////////////////////////////////
 
@@ -2059,27 +2082,6 @@ static void fir_design_lowpass(FLOAT_t *dCoeff, int iCoefNum, FLOAT_t m_fCutHigh
 	{
 		const FLOAT_t a = (FLOAT_t) M_PI * iCnt;
 		const FLOAT_t k = SINF(m_fCutHigh * a) / a;
-		dCoeff [iHalfLen - iCnt] = k;
-	}
-}
-
-// Расчёт фильтра нижних частот
-// Расчёт фильтра без наложения оконной функции
-static void fir_design_lowpassL(double *dCoeff, int iCoefNum, double m_fCutHigh)
-{
-	const int iHalfLen = (iCoefNum - 1) / 2;
-	//float dCoeff [iHalfLen + 1];	/* Use GCC extension */
-	int iCnt;
-
-	/*------------------*/
-	/*  Lowpass filter  */
-	/*------------------*/
-
-	dCoeff [iHalfLen] = m_fCutHigh;
-	for (iCnt = 1; iCnt <= iHalfLen; iCnt ++)
-	{
-		const double a = (double) M_PI * iCnt;
-		const double k = sin(m_fCutHigh * a) / a;
 		dCoeff [iHalfLen - iCnt] = k;
 	}
 }
