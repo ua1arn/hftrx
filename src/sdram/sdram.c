@@ -4293,7 +4293,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	bootloader_readimage(0x00040000, (void *) 0x00028000, 32768);
 	memcpy((void *) 0x00028038, & ddr3, sizeof ddr3);
 	arm_hardware_flush(0x00028000, 32768);
-	((void(*)(void))((void *) 0x00028000))();
+	((void(*)(void))(0x00028000))();
 	set_pll_cpux_axi(PLL_CPU_N);
 #else
 	sys_dram_init();
