@@ -2638,7 +2638,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 #define	TTB_PARA(TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
 		(SECTIONval) * (1uL << 0) |	/* 0b10, Section or Supersection */ \
-		(Bv) * (1uL << 2) |	/* B */ \
+		!! (Bv) * (1uL << 2) |	/* B */ \
 		!! (Cv) * (1uL << 3) |	/* C */ \
 		!! (XNv) * (1uL << 4) |	/* XN The Execute-never bit. */ \
 		(DOMAINv) * (1uL << 5) |	/* DOMAIN */ \
