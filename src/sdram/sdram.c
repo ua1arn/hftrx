@@ -4289,11 +4289,15 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		.dram_tpr13 = 0x34000100,
 	};
 
-	//bootloader_readimage(0x00040000, (void *) 0x00028000, 32768);
-	//memcpy((void *) 0x00028038, & ddr3, sizeof ddr3);
-	//arm_hardware_flush(0x00028000, 32768);
-	//((void(*)(void))((void *) 0x00028000))();
+#if 1
+	bootloader_readimage(0x00040000, (void *) 0x00028000, 32768);
+	memcpy((void *) 0x00028038, & ddr3, sizeof ddr3);
+	arm_hardware_flush(0x00028000, 32768);
+	((void(*)(void))((void *) 0x00028000))();
+	set_pll_cpux_axi(PLL_CPU_N);
+#else
 	sys_dram_init();
+#endif
 	//PRINTF("arm_hardware_sdram_initialize done\n");
 	//local_delay_ms(1000);
 #if WITHDEBUG && 0

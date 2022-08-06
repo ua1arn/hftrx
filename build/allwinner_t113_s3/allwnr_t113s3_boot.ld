@@ -4,7 +4,7 @@
 
 MEMORY
 {
-  RAM (rwx)	: ORIGIN = 0x00020100, LENGTH = 0x000FF00		/*  */
+  RAM (rwx)	: ORIGIN = 0x00020100, LENGTH = 0x0007F00		/*  */
   RAM2 (rwx): ORIGIN = 0x00030000, LENGTH = 16k		/*  */
   TTB (rwx) : ORIGIN = 0x00034000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
   DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 128M	/*  */
