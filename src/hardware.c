@@ -2636,17 +2636,17 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
 
-#define	TTB_PARA(TEX, B, C, DOMAIN, SHARED, AP, XN) ( \
+#define	TTB_PARA(TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
 		(SECTIONval) * (1uL << 0) |	/* 0b10, Section or Supersection */ \
-		(B) * (1uL << 2) |	/* B */ \
-		(C) * (1uL << 3) |	/* C */ \
-		(XN) * (1uL << 4) |	/* XN The Execute-never bit. */ \
-		(DOMAIN) * (1uL << 5) |	/* DOMAIN */ \
+		(Bv) * (1uL << 2) |	/* B */ \
+		!! (Cv) * (1uL << 3) |	/* C */ \
+		!! (XNv) * (1uL << 4) |	/* XN The Execute-never bit. */ \
+		(DOMAINv) * (1uL << 5) |	/* DOMAIN */ \
 		0 * (1uL << 9) |	/* implementation defined */ \
-		(((AP) >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
-		(TEX) * (1uL << 12) |	/* TEX */ \
-		(((AP) >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
-		(SHARED) * (1uL << 16) |	/* S */ \
+		(((APv) >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
+		((TEXv) & 0x07) * (1uL << 12) |	/* TEX */ \
+		(((APv) >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
+		!! (SHAREDv) * (1uL << 16) |	/* S */ \
 		0 * (1uL << 17) |	/* nG */ \
 		0 * (1uL << 18) |	/* 0 */ \
 		0 * (1uL << 19) |	/* NS */ \
