@@ -3842,50 +3842,36 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 	}
 }
 
-static void DMA_suspend(unsigned dmach)
+static uintptr_t DMA_suspend(unsigned dmach)
 {
-	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Pause Transferring
-//	while ((DMAC->DMAC_STA_REG & (1u << dmach)) != 0)
-//		;
-	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
+	while ((DMAC->DMAC_STA_REG & (1u << dmach)) != 0)	// 1: Busy
 		;
-	local_delay_us(1);
-	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
-		;
-	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
-		;
-	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
-		;
-	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
-		;
-	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
-		;
-	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
-		;
-	while (DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
-		;
+	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == 0xFFFFF800);
+	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+	ASSERT(0xFFFFF800 != descbase);
+	return descbase;
 }
 
-static void DMA_resume(unsigned dmach)
+static void DMA_resume(unsigned dmach, uintptr_t descbase)
 {
-	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
+		;
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
 /* Приём от кодека */
 /* от встроенного в процессор или подключенного по I2S */
 static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
 {
-	DMA_suspend(dmach);
+	const uintptr_t descbase = DMA_suspend(dmach);
 
-	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_DST];
 	descraddr [DMAC_DESC_DST] = dma_invalidate16rx(allocate_dmabuffer16rx());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
-	DMA_resume(dmach);
-
+	DMA_resume(dmach, descbase);
 //	printhex(addr, (void *) addr, DMABUFFSIZE16RX * sizeof (aubufv_t));
 //	for (;;)
 //		;
@@ -3898,16 +3884,14 @@ static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
 /* на встроенный в процессор или подключенный по I2S */
 static void DMA_I2S1_AudioCodec_TX_Handler_codec1(unsigned dmach)
 {
-	DMA_suspend(dmach);
+	const uintptr_t descbase = DMA_suspend(dmach);
 
-	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
 	descraddr [DMAC_DESC_SRC] = dma_flush16tx(getfilled_dmabuffer16txphones());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
-	DMA_resume(dmach);
+	DMA_resume(dmach, descbase);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16tx(addr);
@@ -3916,16 +3900,14 @@ static void DMA_I2S1_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Приём от FPGA */
 static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 {
-	DMA_suspend(dmach);
+	const uintptr_t descbase = DMA_suspend(dmach);
 
-	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_DST];
 	descraddr [DMAC_DESC_DST] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
-	DMA_resume(dmach);
+	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer32rx(addr);
@@ -3937,16 +3919,14 @@ static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 /* Передача в FPGA */
 static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 {
-	DMA_suspend(dmach);
+	const uintptr_t descbase = DMA_suspend(dmach);
 
-	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
 	descraddr [DMAC_DESC_SRC] = dma_flush32tx(getfilled_dmabuffer32tx_main());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
-	DMA_resume(dmach);
+	DMA_resume(dmach, descbase);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
@@ -3986,8 +3966,7 @@ static void DMAC_NS_IRQHandler(void)
 }
 
 
-// 0x04: Queue, 0x02: Pkq, 0x01: half
-#define DMAC_I2S_IRQ_PKG_bit (0x02)
+#define DMAC_I2S_IRQ (0x04)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler2)(unsigned dmach))
 {
@@ -4003,8 +3982,8 @@ static void DMAC_clock_initialize(void)
 {
 	CCU->MBUS_CLK_REG |= (1uL << 30);		// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 0);	// Gating MBUS Clock For DMA
-	CCU->DMA_BGR_REG |= (1uL << 0);			// DMA_GATING 1: Pass clock
 	CCU->DMA_BGR_REG |= (1uL << 16);		// DMA_RST 1: De-assert reset
+	CCU->DMA_BGR_REG |= (1uL << 0);			// DMA_GATING 1: Pass clock
 	DMAC->DMAC_AUTO_GATE_REG |= (1uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
 	DMAC->DMAC_AUTO_GATE_REG |= 0x07;
 }
@@ -4038,7 +4017,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
@@ -4059,7 +4038,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2S1_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4094,7 +4073,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
@@ -4115,7 +4094,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2S1_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4150,7 +4129,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	descr0 [0] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
@@ -4171,7 +4150,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S2_RX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2S2_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4206,7 +4185,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
@@ -4227,7 +4206,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S2_TX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2S2_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4262,7 +4241,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
@@ -4283,7 +4262,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2S1_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4318,7 +4297,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
@@ -4339,7 +4318,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_PKG_bit, DMA_I2S1_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2S1_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
