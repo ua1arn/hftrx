@@ -393,6 +393,10 @@ IRQ_Handler:
 	MOV		LR, PC
 	BX		R2     /* and jump... */
 
+	// Although FPSID is a read-only register, software
+	// can perform a VMSR to the FPSID to force Floating-point serialization,
+	VMRS	LR, FPSID
+	VMSR	FPSID, LR
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
 	VMRS	LR, FPSCR
 

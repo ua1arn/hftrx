@@ -2598,35 +2598,31 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
-#define TEXval_STGORD		0x00	/* Strongly-ordered, shareable */
-#define Bval_STGORD			0x00	/* Strongly-ordered, shareable */
-#define Cval_STGORD			0x00	/* Strongly-ordered, shareable */
-
 #if 0///CPUSTYLE_STM32MP1
 	// for debug: no Write-Allocate
-	#define TEXval_WBCACHE		0x00	/* Outer and Inner Write-Back, no Write-Allocate */
-	#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, no Write-Allocate */
-	#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, no Write-Allocate */
+	/* Outer and Inner Write-Back, no Write-Allocate */
+	#define TEXval_WBCACHE		0x00
+	#define Cval_WBCACHE		1
+	#define Bval_WBCACHE		1
 #else /* CPUSTYLE_STM32MP1 */
-	#define TEXval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
-	#define Bval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
-	#define Cval_WBCACHE		0x01	/* Outer and Inner Write-Back, Write-Allocate */
+	/* Outer and Inner Write-Back, Write-Allocate */
+	#define TEXval_WBCACHE		0x01
+	#define Cval_WBCACHE		1
+	#define Bval_WBCACHE		1
 #endif /* CPUSTYLE_STM32MP1 */
-
-#define TEXval_NOCACHE		0x01	/* Outer and Inner Non-cacheable, S bit */
-#define Bval_NOCACHE		0x00	/* Outer and Inner Non-cacheable, S bit */
-#define Cval_NOCACHE		0x00	/* Outer and Inner Non-cacheable, S bit */
 
 #if 0
 	// test
-	#define TEXval_DEVICE		0x00	/* Shareable Device */
-	#define Bval_DEVICE			0x00	/* Shareable Device */
-	#define Cval_DEVICE			0x01	/* Shareable Device */
+	/* Shareable Device */
+	#define TEXval_DEVICE		0x00
+	#define Cval_DEVICE			1
+	#define Bval_DEVICE			0
 #else
 	// normal
-	#define TEXval_DEVICE		0x02	/* Non-shareable Device */
-	#define Bval_DEVICE			0x00	/* Non-shareable Device */
-	#define Cval_DEVICE			0x00	/* Non-shareable Device */
+	/* Non-shareable Device */
+	#define TEXval_DEVICE		0x02
+	#define Cval_DEVICE			0
+	#define Bval_DEVICE			0
 #endif
 
 #if WITHSMPSYSTEM
@@ -2656,11 +2652,6 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 		0 * (1uL << 19) |	/* NS */ \
 		0 \
 	)
-
-//; setting for Strongly-ordered memory
-//#define	TTB_PARA_STRGLY             0b_0000_0000_1101_1110_0010
-// not used
-#define	TTB_PARA_STRGLY TTB_PARA(TEXval_STGORD, Bval_STGORD, Cval_STGORD, DOMAINval, 0 /* Shareable mot depend of this bit */, APRWval, 1)
 
 
 //; setting for Outer and inner not cache normal memory
