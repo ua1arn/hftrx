@@ -2593,8 +2593,8 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 #define APRWval 		0x03	/* Full access */
 #define APROval 		0x06	/* All write accesses generate Permission faults */
-#define DOMAINval	0x0F
-#define SECTIONval	0x02	/* 0b10, Section or Supersection */
+#define DOMAINval		0x0F
+#define SECTIONval		0x02	/* 0b10, Section or Supersection */
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
@@ -2604,11 +2604,13 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 	#define TEXval_WBCACHE		0x00
 	#define Cval_WBCACHE		1
 	#define Bval_WBCACHE		1
+	#define SHAREDval_WBCACHE 	1		// required for ldrex.. and strex.. functionality
 #else /* CPUSTYLE_STM32MP1 */
 	/* Outer and Inner Write-Back, Write-Allocate */
 	#define TEXval_WBCACHE		0x01
 	#define Cval_WBCACHE		1
 	#define Bval_WBCACHE		1
+	#define SHAREDval_WBCACHE 	1		// required for ldrex.. and strex.. functionality
 #endif /* CPUSTYLE_STM32MP1 */
 
 #if 0
@@ -2617,21 +2619,16 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 	#define TEXval_DEVICE		0x00
 	#define Cval_DEVICE			1
 	#define Bval_DEVICE			0
+	#define SHAREDval_DEVICE 0
 #else
 	// normal
 	/* Non-shareable Device */
 	#define TEXval_DEVICE		0x02
 	#define Cval_DEVICE			0
 	#define Bval_DEVICE			0
+	#define SHAREDval_DEVICE 	0
 #endif
 
-#if WITHSMPSYSTEM
-	#define SHAREDval 1		// required for ldrex.. and strex.. functionality
-#else /* WITHSMPSYSTEM */
-	#define SHAREDval 0
-#endif /* WITHSMPSYSTEM */
-
-#define NoSHAREDval 0
 
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
@@ -2656,13 +2653,13 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 //; setting for Outer and inner not cache normal memory
 // not used
-//#define	TTB_PARA_NORMAL_NOT_CACHE(ro, xn) TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, SHAREDval, (ro) ? APROval : APRWval, (xn) != 0)
+//#define	TTB_PARA_NORMAL_NOT_CACHE(ro, xn) TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, SHAREDval_WBCACHE, (ro) ? APROval : APRWval, (xn) != 0)
 
 //; setting for Outer and inner write back, write allocate normal memory (Cacheable)
 //#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
-#define	TTB_PARA_NORMAL_CACHE(ro, xn) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, SHAREDval, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_NORMAL_CACHE(ro, xn) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, SHAREDval_WBCACHE, (ro) ? APROval : APRWval, (xn) != 0)
 
-#define	TTB_PARA_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, NoSHAREDval, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 
 #define	TTB_PARA_NO_ACCESS 0
 
