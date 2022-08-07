@@ -6320,7 +6320,9 @@ savebandfreq(const vindex_t b, const uint_fast8_t bi)
 }
 
 #if WITHSPECTRUMWF
-static void storexoom(uint_fast8_t bg)
+
+/* сохранение параметров отображения спектра и водопада */
+static void storezoom(uint_fast8_t bg)
 {
 	save_i8(offsetof(struct nvmap, bandgroups [bg].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 	save_i8(offsetof(struct nvmap, bandgroups [bg].gtopdbspe), gtopdbspe);	/* нижний предел FFT */
@@ -6329,6 +6331,18 @@ static void storexoom(uint_fast8_t bg)
 	save_i8(offsetof(struct nvmap, bandgroups [bg].gbottomdbwfl), gbottomdbwfl);	/* верхний предел FFT waterflow */
 
 }
+
+/* восстановление параметров отображения спектра и водопада */
+static void loadzoom(uint_fast8_t bg)
+{
+	gzoomxpow2 = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
+	gtopdbspe = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gtopdbspe), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
+	gbottomdbspe = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gbottomdbspe), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
+	gtopdbwfl = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gtopdbwfl), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
+	gbottomdbwfl = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gbottomdbwfl), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
+
+}
+
 #endif /* WITHSPECTRUMWF */
 
 static void savebandpos(uint_fast8_t b)
@@ -7406,11 +7420,7 @@ loadnewband(
 	loadtuner(bg);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
-	gzoomxpow2 = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
-	gtopdbspe = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gtopdbspe), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
-	gbottomdbspe = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gbottomdbspe), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
-	gtopdbwfl = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gtopdbwfl), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
-	gbottomdbwfl = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gbottomdbwfl), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
+	loadzoom(bg);
 #endif /* WITHSPECTRUMWF */
 }
 
@@ -7578,11 +7588,7 @@ catchangefreq(
 	loadtuner(bg);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
-	gzoomxpow2 = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
-	gtopdbspe = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gtopdbspe), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
-	gbottomdbspe = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gbottomdbspe), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
-	gtopdbwfl = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gtopdbwfl), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
-	gbottomdbwfl = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].gbottomdbwfl), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
+	loadzoom(bg);
 #endif /* WITHSPECTRUMWF */
 }
 
@@ -15810,11 +15816,7 @@ defaultsettings(void)
 	uint_fast8_t bg;
 	for (bg = 0; bg < BANDGROUP_COUNT; ++ bg)
 	{
-			save_i8(offsetof(struct nvmap, bandgroups [bg].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
-			save_i8(offsetof(struct nvmap, bandgroups [bg].gtopdbspe), gtopdbspe);	/* нижний предел FFT */
-			save_i8(offsetof(struct nvmap, bandgroups [bg].gbottomdbspe), gbottomdbspe);	/* верхний предел FFT */
-			save_i8(offsetof(struct nvmap, bandgroups [bg].gtopdbwfl), gtopdbwfl);	/* нижний предел FFT waterflow */
-			save_i8(offsetof(struct nvmap, bandgroups [bg].gbottomdbwfl), gbottomdbwfl);	/* верхний предел FFT waterflow */
+		storezoom(bg);
 	}
 #endif /* WITHSPECTRUMWF */
 }
