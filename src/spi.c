@@ -1684,17 +1684,6 @@ void hardware_spi_master_initialize(void)
 	// De-assert hardware CS
 	//SPI0->SPI_TCR |= (1u << 7);
 
-
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
-		;
-
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
-		;
-
 	SPIIO_INITIALIZE();
 
 #else
@@ -2365,16 +2354,11 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+	const portholder_t v = * (volatile uint8_t *) & SPI0->SPI_RXD;
 
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
-		;
-
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+	// TXFIFO and RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
+	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
 		;
 
 	return v;
@@ -3381,17 +3365,13 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	unsigned v = __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
+	const portholder_t v = __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
 
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+	// TXFIFO and RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
+	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
 		;
 
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
-		;
 	return v & 0xFFFF;
 
 #else
@@ -3545,20 +3525,14 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	unsigned v = __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
+	const portholder_t v = __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
 
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
-		;
-
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+	// TXFIFO and RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
+	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
 		;
 
 	return v;
-
 
 #else
 	#error Wrong CPUSTYLE macro
