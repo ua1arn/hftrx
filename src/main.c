@@ -896,11 +896,16 @@ static const FLASHMEM struct {
 #define NOTCHMODE_COUNT (sizeof notchmodes / sizeof notchmodes [0])
 #define PAMPMODE_COUNT (sizeof pampmodes / sizeof pampmodes [0])
 #define ATTMODE_COUNT (sizeof attmodes / sizeof attmodes [0])
-#define RXANTMODE_COUNT (sizeof rxantmodes / sizeof rxantmodes [0])
-#define ANTMODE_COUNT (sizeof antmodes / sizeof antmodes [0])
 #define AGCMODE_COUNT (sizeof agcmodes / sizeof agcmodes [0])
 #define MAINSUBRXMODE_COUNT (sizeof mainsubrxmodes / sizeof mainsubrxmodes [0])
 #define TXAUDIOSRC_COUNT (sizeof txaudiosrcs / sizeof txaudiosrcs [0])
+
+#define RXANTMODE_COUNT (sizeof rxantmodes / sizeof rxantmodes [0])
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
+	#define ANTMODE_COUNT (sizeof antmodes / sizeof antmodes [0])
+#else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+	#define ANTMODE_COUNT 1
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 
@@ -2728,9 +2733,9 @@ struct bandinfo
 struct bandgroup_tag {
 	uint8_t	band;		/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #if ! WITHONEATTONEAMP
-	uint8_t pamp;		/* режим УВЧ */
+	uint8_t pamps [ANTMODE_COUNT];		/* режим УВЧ */
 #endif /* ! WITHONEATTONEAMP */
-	uint8_t att;		/* режим аттенюатора */
+	uint8_t atts [ANTMODE_COUNT];		/* режим аттенюатора */
 #if WITHANTSELECTRX
 	uint8_t rxant;		/* код выбора антенны (0/1) */
 	uint8_t ant;		/* признак включения приемной антенны */
@@ -3342,11 +3347,11 @@ filter_t fi_2p0_455 =
 
 #define RMT_BFREQ_BASE(i) offsetof(struct nvmap, bands [(i)].freq)			/* последняя частота, на которую настроились (4 байта) */
 
-#define RMT_BANDGROUP(i) offsetof(struct nvmap, bandgroups [(i)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
-#define RMT_PAMPBG_BASE(i) offsetof(struct nvmap, bandgroups [(i)].pamp)			/* признак включения аттенюатора (1 байт) */
-#define RMT_ATTBG_BASE(i) offsetof(struct nvmap, bandgroups [(i)].att)			/* признак включения аттенюатора (1 байт) */
-#define RMT_RXANTENNABG_BASE(i) offsetof(struct nvmap, bandgroups [(i)].rxant)			/* код включённой антенны (1 байт) */
-#define RMT_ANTENNABG_BASE(i) offsetof(struct nvmap, bandgroups [(i)].ant)			/* код включённой антенны (1 байт) */
+#define RMT_BANDGROUP(bg) offsetof(struct nvmap, bandgroups [(bg)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+#define RMT_PAMPBG_BASE(bg, ant) offsetof(struct nvmap, bandgroups [(bg)].pamps [(ant)])			/* признак включения аттенюатора (1 байт) */
+#define RMT_ATTBG_BASE(bg, ant) offsetof(struct nvmap, bandgroups [(bg)].atts [(ant)])			/* признак включения аттенюатора (1 байт) */
+#define RMT_RXANTENNABG_BASE(bg) offsetof(struct nvmap, bandgroups [(bg)].rxant)			/* код включённой антенны (1 байт) */
+#define RMT_ANTENNABG_BASE(bg) offsetof(struct nvmap, bandgroups [(bg)].ant)			/* код включённой антенны (1 байт) */
 #define RMT_MODEROW_BASE(i)	offsetof(struct nvmap, bands [(i)].moderow)			/* номер строки в массиве режимов. */
 #define RMT_MODECOLS_BASE(i, j)	offsetof(struct nvmap, bands [(i)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
 #define RMT_PWR_BASE offsetof(struct nvmap, gpwri)								/* большая мощность sw2012sf */
@@ -3397,6 +3402,8 @@ static uint_fast8_t hffreqswitch = 14; /* выше этой частоты (МГ
 static uint_fast8_t gantmanual;		/* 0 - выбор антенны автоматический */
 #elif WITHANTSELECT
 static uint_fast8_t gantenna;
+#else
+enum { gantenna = 0 };
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
 // Параметры, выставляемые в update board
@@ -6328,9 +6335,9 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 		save_i8(RMT_MODECOLS_BASE(b, i), gmodecolmaps [bi] [i]);
 
 #if ! WITHONEATTONEAMP
-	save_i8(RMT_PAMPBG_BASE(bg), gpamp);
+	save_i8(RMT_PAMPBG_BASE(bg, gantenna), gpamp);
 #endif /* ! WITHONEATTONEAMP */
-	save_i8(RMT_ATTBG_BASE(bg), gatt);
+	save_i8(RMT_ATTBG_BASE(bg, gantenna), gatt);
 #if WITHANTSELECTRX
 	save_i8(RMT_RXANTENNABG_BASE(bg), grxantenna);
 	save_i8(RMT_ANTENNABG_BASE(bg), gantenna);
@@ -7362,10 +7369,6 @@ loadnewband(
 	tune_bottom_active [bi] = get_band_bottom(hb);
 	tune_top_active [bi] = get_band_top(hb);
 #endif
-#if ! WITHONEATTONEAMP
-	gpamp = loadvfy8up(RMT_PAMPBG_BASE(bg), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
-#endif /* ! WITHONEATTONEAMP */
-	gatt = loadvfy8up(RMT_ATTBG_BASE(bg), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
 #if WITHANTSELECTRX
 	grxantenna = loadvfy8up(RMT_RXANTENNABG_BASE(bg), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
@@ -7374,6 +7377,12 @@ loadnewband(
 #elif WITHANTSELECT
 	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
+
+#if ! WITHONEATTONEAMP
+	gpamp = loadvfy8up(RMT_PAMPBG_BASE(bg, gantenna), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
+#endif /* ! WITHONEATTONEAMP */
+	gatt = loadvfy8up(RMT_ATTBG_BASE(bg, gantenna), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
+
 	const uint_fast8_t defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
 	uint_fast8_t defrow;
 	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
@@ -7527,18 +7536,6 @@ catchangefreq(
 	tune_bottom_active [bi] = get_band_bottom(b);
 	tune_top_active [bi] = get_band_top(b);
 #endif
-#if ! WITHONEATTONEAMP
-	gpamp = loadvfy8up(RMT_PAMPBG_BASE(bg), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
-	if (aistate != 0)
-	{
-		cat_answer_request(CAT_PA_INDEX);
-	}
-#endif /* ! WITHONEATTONEAMP */
-	gatt = loadvfy8up(RMT_ATTBG_BASE(bg), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
-	if (aistate != 0)
-	{
-		cat_answer_request(CAT_RA_INDEX);
-	}
 #if WITHANTSELECTRX
 	grxantenna = loadvfy8up(RMT_RXANTENNABG_BASE(bg), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
@@ -7560,6 +7557,18 @@ catchangefreq(
 		cat_answer_request(CAT_AN_INDEX);
 	}
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
+#if ! WITHONEATTONEAMP
+	gpamp = loadvfy8up(RMT_PAMPBG_BASE(bg, gantenna), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
+	if (aistate != 0)
+	{
+		cat_answer_request(CAT_PA_INDEX);
+	}
+#endif /* ! WITHONEATTONEAMP */
+	gatt = loadvfy8up(RMT_ATTBG_BASE(bg, gantenna), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
+	if (aistate != 0)
+	{
+		cat_answer_request(CAT_RA_INDEX);
+	}
 #if WITHAUTOTUNER
 	loadtuner(bg);
 #endif /* WITHAUTOTUNER */
