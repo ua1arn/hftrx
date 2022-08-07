@@ -3367,20 +3367,42 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #elif CPUSTYPE_T113
 
-enum
-{
-	DMAC_I2S1_TX_Ch = 0,
-	DMAC_I2S1_RX_Ch = 1,
-	DMAC_AudioCodec_TX_Ch = DMAC_I2S1_TX_Ch,
-	DMAC_AudioCodec_RX_Ch = DMAC_I2S1_RX_Ch,
-	DMAC_I2S2_TX_Ch = 2,
-	DMAC_I2S2_RX_Ch = 3,
-	//
-	DMAC_Ch_Total
-};
 
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0uL : (1uL << ((ch) * 4)))
 #define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0uL : (1uL << (((ch) - 8) * 4)))
+
+/* Обработчики прерываний от DMAC в зависимости от номера канала */
+static void (* dmac_handlers [16])(unsigned dmach);
+
+/* Обработчик прерывания от DMAC */
+static void DMAC_NS_IRQHandler(void)
+{
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	const unsigned flag = 0x07;
+	unsigned dmach;
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
+	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
+
+	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
+	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
+
+	for (dmach = 0; dmach < 8; ++ dmach)
+	{
+		const portholder_t maskreg0 = DMAC_REG0_MASK(dmach) * flag;
+		if ((reg0 & maskreg0) != 0)
+		{
+			dmac_handlers [dmach](dmach);
+		}
+	}
+	for (dmach = 8; dmach < 16; ++ dmach)
+	{
+		const portholder_t maskreg1 = DMAC_REG1_MASK(dmach) * flag;
+		if ((reg1 & maskreg1) != 0)
+		{
+			dmac_handlers [dmach](dmach);
+		}
+	}
+}
 
 
 static unsigned ratio2div(unsigned ratio)
@@ -3825,6 +3847,7 @@ static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
+#define DMAC_DESC_LINK	5	/* адрес сдедующего дескриптора */
 
 #define DMAC_DESC_SIZE	8	/* Требуется 6 - но для упрощения работы с кеш-памятью сделано 8 */
 
@@ -3844,20 +3867,21 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 
 static uintptr_t DMA_suspend(unsigned dmach)
 {
-	while ((DMAC->DMAC_STA_REG & (1u << dmach)) != 0)	// 1: Busy
-		;
-	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == 0xFFFFF800);
-	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-	ASSERT(0xFFFFF800 != descbase);
-	return descbase;
+	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
+	local_delay_us(2);
+	for (;;)
+	{
+		const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+		volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+		if (descraddr [DMAC_DESC_LINK] == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
+			return descbase;
+	}
 }
 
 static void DMA_resume(unsigned dmach, uintptr_t descbase)
 {
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
-		;
-	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+    ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
+    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 }
 
 /* Приём от кодека */
@@ -3932,41 +3956,8 @@ static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 	release_dmabuffer32tx(addr);
 }
 
-/* Обработчики прерываний от DMAC в зависимости от номерв канала */
-static void (* dmac_handlers [16])(unsigned dmach);
 
-/* Обработчик прерывания от DMAC */
-static void DMAC_NS_IRQHandler(void)
-{
-	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	const unsigned flag = 0x07;
-	unsigned dmach;
-	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
-	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
-
-	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
-	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
-
-	for (dmach = 0; dmach < 8; ++ dmach)
-	{
-		const portholder_t maskreg0 = DMAC_REG0_MASK(dmach) * flag;
-		if ((reg0 & maskreg0) != 0)
-		{
-			dmac_handlers [dmach](dmach);
-		}
-	}
-	for (dmach = 8; dmach < 16; ++ dmach)
-	{
-		const portholder_t maskreg1 = DMAC_REG1_MASK(dmach) * flag;
-		if ((reg1 & maskreg1) != 0)
-		{
-			dmac_handlers [dmach](dmach);
-		}
-	}
-}
-
-
-#define DMAC_I2S_IRQ (0x04)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_I2S_IRQ (0x02)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler2)(unsigned dmach))
 {
@@ -3987,6 +3978,18 @@ static void DMAC_clock_initialize(void)
 	DMAC->DMAC_AUTO_GATE_REG |= (1uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
 	DMAC->DMAC_AUTO_GATE_REG |= 0x07;
 }
+
+enum
+{
+	DMAC_I2S1_TX_Ch = 0,
+	DMAC_I2S1_RX_Ch = 1,
+	DMAC_AudioCodec_TX_Ch = DMAC_I2S1_TX_Ch,
+	DMAC_AudioCodec_RX_Ch = DMAC_I2S1_RX_Ch,
+	DMAC_I2S2_TX_Ch = 2,
+	DMAC_I2S2_RX_Ch = 3,
+	//
+	DMAC_Ch_Total
+};
 
 static void DMAC_I2S1_RX_initialize_codec1(void)
 {
@@ -4017,7 +4020,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
@@ -4073,7 +4076,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
@@ -4129,7 +4132,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	descr0 [0] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
@@ -4185,7 +4188,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
@@ -4241,7 +4244,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
@@ -4297,7 +4300,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) descr0 [1];	// Link to next
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
