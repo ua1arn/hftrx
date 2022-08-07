@@ -227,20 +227,20 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, bands [0].gtopdbspe),
-		nvramoffs_band_a,
+		offsetof(struct nvmap, bandgroups [0].gtopdbspe),
+		nvramoffs_bandgroup,
 		NULL,
-		& gtopdbspe [0],
+		& gtopdbspe,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands [0].gbottomdbspe),
-		nvramoffs_band_a,
+		offsetof(struct nvmap, bandgroups [0].gbottomdbspe),
+		nvramoffs_bandgroup,
 		NULL,
-		& gbottomdbspe [0],
+		& gbottomdbspe,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -257,20 +257,20 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, bands [0].gtopdbwfl),
-		nvramoffs_band_a,
+		offsetof(struct nvmap, bandgroups [0].gtopdbwfl),
+		nvramoffs_bandgroup,
 		NULL,
-		& gtopdbwfl [0],
+		& gtopdbwfl,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands [0].gbottomdbwfl),
-		nvramoffs_band_a,
+		offsetof(struct nvmap, bandgroups [0].gbottomdbwfl),
+		nvramoffs_bandgroup,
 		NULL,
-		& gbottomdbwfl [0],
+		& gbottomdbwfl,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -288,10 +288,10 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE | ITEM_ARRAY_BI,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
-		offsetof(struct nvmap, bands [0].gzoomxpow2),
-		nvramoffs_band_a,
+		offsetof(struct nvmap, bandgroups [0].gzoomxpow2),
+		nvramoffs_bandgroup,
 		NULL,
-		& gzoomxpow2 [0],
+		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
