@@ -46,7 +46,6 @@ int XLlFifo_iWrite_Aligned(XLlFifo *InstancePtr, void *BufPtr, unsigned WordCoun
 void xcz_fifo_if_tx_inthandler(void);
 void xcz_fifo_mic_inthandler(void);
 void xcz_fifo_phones_inthandler(void);
-void netaudio(uintptr_t addr);
 
 static uintptr_t dma_flush32tx(uintptr_t addr)
 {
@@ -308,9 +307,6 @@ void xcz_fifo_phones_inthandler(void)
 //	if (ss & XLLF_INT_TFPE_MASK)
 	{
 		const uintptr_t addr = getfilled_dmabuffer16txphones();
-#if WITHNETAUDIOSTREAM
-		netaudio(addr);
-#endif /* WITHNETAUDIOSTREAM */
 		XLlFifo_iWrite_Aligned(& fifo_phones, (u32 *) addr, DMABUFFSIZE16TX);
 		XLlFifo_iTxSetLen(& fifo_phones, DMABUFFSIZE16TX * 4);
 		release_dmabuffer16tx(addr);

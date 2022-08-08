@@ -61,8 +61,6 @@ volatile int TcpFastTmrFlag = 0;
 volatile int TcpSlowTmrFlag = 0;
 static volatile uint32_t sys_now_counter = 0;
 static struct udp_pcb * udp_pcb = NULL;
-ip_addr_t ebaz4205_addr, netaudio_addr;
-char udp_sendbuf [20];
 
 void board_update_time(uint32_t sec)
 {
@@ -194,60 +192,6 @@ int start_udp(unsigned int port) {
 	return 0;
 }
 
-#include "audio.h"
-
-#if WITHNETAUDIOSTREAM
-
-static subscribefloat_t netaudio_outregister;
-static aubufv_t netbuf0 [DMABUFFSIZE16TX], netbuf1 [DMABUFFSIZE16TX];
-volatile uint_fast16_t cnt = 0;
-static RAMBIGDTCM SPINLOCK_t locklistnet = SPINLOCK_INIT;
-struct pbuf * q;
-
-//static void netaudio_fill(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
-//{
-//	SPIN_LOCK(& locklistnet);
-//
-//	if (network_inited)
-//	{
-//		netbuf0 [cnt ++] = adpt_output(& afcodectx, ch0);
-//		netbuf0 [cnt ++] = adpt_output(& afcodectx, ch1);
-//	}
-//
-//	if (cnt >= DMABUFFSIZE16TX)
-//	{
-//		cnt = 0;
-//		memcpy(netbuf1, netbuf0, sizeof(netbuf0));
-////		GIC_SendSGI(SGI12_IRQn, TARGETCPU_CPU1, 0x00);
-////		q->payload = (aubufv_t *) netbuf;
-////		udp_sendto(udp_pcb, q, & netaudio_addr, 5555);
-//	}
-//
-//	SPIN_UNLOCK(& locklistnet);
-//}
-
-//void netaudio_send(void)
-//{
-//	if (network_inited)
-//	{
-//		SPIN_LOCK(& locklistnet);
-//		q->payload = (aubufv_t *) netbuf1;
-//		udp_sendto(udp_pcb, q, & netaudio_addr, 5555);
-//		SPIN_UNLOCK(& locklistnet);
-//	}
-//}
-
-void netaudio(uintptr_t addr)
-{
-	if (network_inited)
-	{
-		q->payload = (aubufv_t *) addr;
-		udp_sendto(udp_pcb, q, & netaudio_addr, 5555);
-	}
-}
-
-#endif /* WITHNETAUDIOSTREAM */
-
 uint32_t sys_now(void)
 {
 	return sys_now_counter;
@@ -283,20 +227,6 @@ void lwip_timer_spool(void)
 
 	if (sys_now_counter % DHCP_COARSE_TIMER_MSECS == 0)
 		dhcp_coarse_tmr();
-
-#if defined WITHPS7BOARD_MYC_Y7Z020 && 0
-	if (sys_now_counter % 100 == 0 && network_inited)
-	{
-		struct pbuf * q = pbuf_alloc(PBUF_TRANSPORT, 20, PBUF_POOL);
-		ASSERT(q);
-		uint_fast32_t freq = hamradio_get_freq_rx();
-		local_snprintf_P(udp_sendbuf, ARRAY_SIZE(udp_sendbuf), "%d", freq);
-		memcpy(q->payload, udp_sendbuf, ARRAY_SIZE(udp_sendbuf));
-		q->len = q->tot_len = 20;
-		udp_sendto(udp_pcb, q, & ebaz4205_addr, 48700);
-		pbuf_free(q);
-	}
-#endif /* defined WITHPS7BOARD_MYC_Y7Z020 */
 }
 
 /* вызывается при разрешённых прерываниях. */
@@ -361,20 +291,6 @@ void network_initialize(void)
 
 //	start_echo_server();
 //	httpd_init();
-#if defined WITHPS7BOARD_MYC_Y7Z020 && 0
-	start_udp(48710);
-	IP4_ADDR(& ebaz4205_addr, 192, 168, 0, 120);
-#endif /* defined WITHPS7BOARD_MYC_Y7Z020 */
-
-#if WITHNETAUDIOSTREAM
-	start_udp(5555);
-	IP4_ADDR(& netaudio_addr, 192, 168, 1, 125); //IP4_ADDR(& netaudio_addr, 192, 168, 0, 103);
-
-//	arm_hardware_set_handler(SGI12_IRQn, netaudio_send, ARM_REALTIME_PRIORITY, TARGETCPU_CPU1);
-//	subscribefloat_user(& speexoutfloat, & netaudio_outregister, NULL, netaudio_fill);
-	q = pbuf_alloc(PBUF_TRANSPORT, DMABUFFSIZE16TX * sizeof(aubufv_t), PBUF_RAM);
-	ASSERT(q);
-#endif /* WITHNETAUDIOSTREAM */
 
 	network_inited = 1;
 }
