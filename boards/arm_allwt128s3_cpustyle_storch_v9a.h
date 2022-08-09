@@ -266,13 +266,11 @@
 	//#define FROMCAT_BIT_DTR				(1uL << 12)	/* сигнал DTR от FT232RL	*/
 
 	/* манипуляция от виртуального CDC порта */
-	#define FROMCAT_DTR_INITIALIZE() \
-		do { \
+	#define FROMCAT_DTR_INITIALIZE() do { \
 		} while (0)
 
 	/* переход на передачу от виртуального CDC порта*/
-	#define FROMCAT_RTS_INITIALIZE() \
-		do { \
+	#define FROMCAT_RTS_INITIALIZE() do { \
 		} while (0)
 
 #endif /* (WITHCAT && WITHCAT_CDC) */
@@ -362,8 +360,7 @@
 	#define TXGFV_TX_AM		(1uL << 2)
 	#define TXGFV_TX_NFM	(1uL << 3)
 
-	#define TXPATH_INITIALIZE() \
-		do { \
+	#define TXPATH_INITIALIZE() do { \
 		} while (0)
 
 
@@ -373,8 +370,7 @@
 	#define TXDISABLE_BIT_TXDISABLE				(1U << 5)		// PF5 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
 	#define HARDWARE_GET_TXDISABLE() ((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
-	#define TXDISABLE_INITIALIZE() \
-		do { \
+	#define TXDISABLE_INITIALIZE() do { \
 			arm_hardware_piof_inputs(TXDISABLE_BIT_TXDISABLE); \
 			arm_hardware_piof_updown(0, TXDISABLE_BIT_TXDISABLE); \
 		} while (0)
@@ -389,8 +385,7 @@
 	#define PTT2_BIT_PTT				(1uL << 4)		// PF4 - PTT2
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() 			((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
-	#define PTT_INITIALIZE() \
-		do { \
+	#define PTT_INITIALIZE() do { \
 			arm_hardware_piof_inputs(PTT_BIT_PTT); \
 			arm_hardware_piof_updown(PTT_BIT_PTT, 0); \
 			arm_hardware_piof_inputs(PTT2_BIT_PTT); \
@@ -401,29 +396,25 @@
 	#define TUNE_TARGET_PIN				(GPIOF->DATA)
 	#define TUNE_BIT_TUNE				(1U << 2)		// PF2
 	#define HARDWARE_GET_TUNE() 		((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
-	#define TUNE_INITIALIZE() \
-		do { \
+	#define TUNE_INITIALIZE() do { \
 			arm_hardware_piof_inputs(TUNE_BIT_TUNE); \
 			arm_hardware_piof_updown(TUNE_BIT_TUNE, 0); \
 		} while (0)
 
 #else /* WITHTX */
 
-	#define TXDISABLE_INITIALIZE() \
-		do { \
+	#define TXDISABLE_INITIALIZE() do { \
 		} while (0)
-	#define PTT_INITIALIZE() \
-		do { \
+	#define PTT_INITIALIZE() do { \
 		} while (0)
-	#define TUNE_INITIALIZE() \
-		do { \
+	#define TUNE_INITIALIZE() do { \
 		} while (0)
 #endif /* WITHTX */
 
 #if WITHELKEY
 	// Electronic key inputs
 	#define ELKEY_BIT_LEFT				(1uL << 0)		// PF0
-	#define ELKEY_BIT_RIGHT				(1uL << 2)		// PF1
+	#define ELKEY_BIT_RIGHT				(1uL << 1)		// PF1
 
 	#define ELKEY_TARGET_PIN			(GPIOF->DATA)
 
@@ -431,8 +422,7 @@
 	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
 
 
-	#define ELKEY_INITIALIZE() \
-		do { \
+	#define ELKEY_INITIALIZE() do { \
 			arm_hardware_piof_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
 			arm_hardware_piof_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
