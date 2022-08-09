@@ -506,7 +506,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
   {
 	if (phost->gState == HOST_DELAY || phost->gState == HOST_DEV_BUS_RESET_OFF)
 	{
-		/* if bus reset command active - should be complete */
+		/* if bus reset command active - should be complete. Tnx MAN Alex [mantech@yandex.ru] */
 	}
 	else
 	{
