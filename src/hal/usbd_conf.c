@@ -457,6 +457,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		(1uL << 30) |	// USBPHY0_RSTN
 		0;
 
+
 	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
@@ -467,6 +468,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
 	//	#define PHY_CTL_SIDDQ			BIT(3)
 	//	#define PHY_CTL_H3_SIDDQ		BIT(1)
+
+	USBOTG0->PHY_OTGCTL |= (1uL << 0); 	// Device mode. Route phy0 to OTG0
 
 	USBOTG0->USB_ISCR = 0x4300FC00;	// после запуска из QSPI было 0x40000000
 	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)

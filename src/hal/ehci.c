@@ -1220,6 +1220,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
 			0;
 
+		USBOTG0->PHY_OTGCTL &= ~ (1uL << 0); 	// Host mode. Route phy0 to EHCI/OHCI
+
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
 		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
@@ -1277,7 +1279,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		USBPHY0->PHY_CTRL |= (1uL << 5);		// PHY_CTL_VBUSVLDEXT
 		USBPHY0->USB_CTRL |= (1uL << 0);		// 1: Enable UTMI interface, disable ULPI interface
 
-		USBPHY0->PHY_OTGCTL &= ~ (1uL << 0); 	// Host mode. Route phy0 to EHCI/OHCI
 	}
 
 #elif CPUSTYLE_STM32MP1
