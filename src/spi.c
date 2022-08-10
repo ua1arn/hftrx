@@ -12,6 +12,7 @@
 #include "formats.h"
 #include <string.h>
 #include <stdlib.h>
+#include <machine/endian.h>
 
 #define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYPE_T113)	/* доступ к SPI разделяет DFU устройство и user mode программа */
 
