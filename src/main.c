@@ -11619,7 +11619,7 @@ uif_key_next_autoantmode(void)
 	gantmanual = calc_next(gantmanual, 0, 1);
 	save_i8(RMT_ANTMANUAL_BASE, gantmanual);
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
-	loadbandgroup(bg, gantenna);
+	loadbandgroup(bg, gantmanual ? gantenna : getdefantenna(gfreqs [bi]));
 	updateboard(1, 0);
 }
 
