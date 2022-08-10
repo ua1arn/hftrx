@@ -165,14 +165,14 @@ static uint_fast8_t encoder2_redirect = 0;
 static char menuw [20];						// буфер для вывода значений системного меню
 
 static uint_fast32_t 
-//NOINLINEAT
 nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq, 
 							   uint_fast32_t step, uint_fast32_t top);
 static uint_fast32_t 
-//NOINLINEAT
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq, 
 							   uint_fast32_t step, uint_fast32_t bottom);
 
+
+static uint_fast8_t getdefantenna(uint_fast32_t f);
 
 extern volatile uint_fast8_t spool_lfm_enable;
 extern volatile uint_fast8_t spool_lfm_flag;
@@ -6373,7 +6373,7 @@ static void storebandgroup(uint_fast8_t bg)
 #endif /* WITHSPECTRUMWF */
 }
 
-static void loadantenna(uint_fast8_t bg)
+static void loadantenna(uint_fast8_t bi, uint_fast8_t bg)
 {
 #if WITHANTSELECTRX
 	grxantenna = loadvfy8up(RMT_RXANTENNABG_BASE(bg), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
@@ -7436,7 +7436,7 @@ loadnewband(
 		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MODECOLS_BASE(b, i), 0, 255, 255);	// везде прописывается 255 - потом ещё уточним.
 	}
 
-	loadantenna(bg);
+	loadantenna(bi, bg);
 	loadbandgroup(bg, gantenna);
 }
 
@@ -7575,7 +7575,7 @@ catchangefreq(
 		cat_answer_request(CAT_RA_INDEX);
 		cat_answer_request(CAT_PA_INDEX);
 	}
-	loadantenna(bg);
+	loadantenna(bi, bg);
 	loadbandgroup(bg, gantenna);
 }
 
@@ -11222,7 +11222,7 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
 			PSTR("%s %s"),
-			antmodes [gantmanual ? gantennas [bi] : getdefantenna(gfreqs [bi])].label2,
+			antmodes [gantmanual ? gantenna : getdefantenna(gfreqs [bi])].label2,
 			gantmanual ? "MN" : "AU"
 	);
 	return b;
@@ -11615,6 +11615,7 @@ uif_key_next_antenna(void)
 static void
 uif_key_next_autoantmode(void)
 {
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	gantmanual = calc_next(gantmanual, 0, 1);
 	save_i8(RMT_ANTMANUAL_BASE, gantmanual);
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
