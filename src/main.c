@@ -4796,20 +4796,20 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 	return best;
 }
 
-static void storetuner(uint_fast8_t bg)
+static void storetuner(uint_fast8_t bg, uint_fast8_t ant)
 {
-	save_i8(offsetof(struct nvmap, bandgroups [bg].tunercaps [gantenna]), tunercap);
-	save_i8(offsetof(struct nvmap, bandgroups [bg].tunerinds [gantenna]), tunerind);
-	save_i8(offsetof(struct nvmap, bandgroups [bg].tunertypes [gantenna]), tunertype);
-	save_i8(offsetof(struct nvmap, bandgroups [bg].tunerworks [gantenna]), tunerwork);
+	save_i8(offsetof(struct nvmap, bandgroups [bg].tunercaps [ant]), tunercap);
+	save_i8(offsetof(struct nvmap, bandgroups [bg].tunerinds [ant]), tunerind);
+	save_i8(offsetof(struct nvmap, bandgroups [bg].tunertypes [ant]), tunertype);
+	save_i8(offsetof(struct nvmap, bandgroups [bg].tunerworks [ant]), tunerwork);
 }
 
-static void loadtuner(uint_fast8_t bg)
+static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 {
-	tunercap = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunercaps [gantenna]), CMIN, CMAX, tunercap);
-	tunerind = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunerinds [gantenna]), LMIN, LMAX, tunerind);
-	tunertype = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunertypes [gantenna]), 0, KSCH_COUNT - 1, tunertype);
-	tunerwork = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunerworks [gantenna]), 0, 1, tunerwork);
+	tunercap = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunercaps [ant]), CMIN, CMAX, tunercap);
+	tunerind = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunerinds [ant]), LMIN, LMAX, tunerind);
+	tunertype = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunertypes [ant]), 0, KSCH_COUNT - 1, tunertype);
+	tunerwork = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunerworks [ant]), 0, 1, tunerwork);
 }
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
@@ -4821,6 +4821,7 @@ static void auto_tune(void)
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const vindex_t b = getvfoindex(bi);
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
 
 #if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
 	const uint_fast8_t addstepsLk = 3;
@@ -4891,14 +4892,14 @@ static void auto_tune(void)
 	updateboard_tuner();
 	PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
-	storetuner(bg);
+	storetuner(bg, ant);
 	return;
 
 aborted:
 	tunerwork = 1; //loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunerworks [gantenna]), 0, 1, tunerwork);	// всегда единица (сохранилось в начале настройки)
-	tunercap = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunercaps [gantenna]), CMIN, CMAX, tunercap);
-	tunerind = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunerinds [gantenna]), LMIN, LMAX, tunerind);
-	tunertype = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunertypes [gantenna]), 0, KSCH_COUNT - 1, tunertype);
+	tunercap = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunercaps [ant]), CMIN, CMAX, tunercap);
+	tunerind = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunerinds [ant]), LMIN, LMAX, tunerind);
+	tunertype = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].tunertypes [ant]), 0, KSCH_COUNT - 1, tunertype);
 	updateboard_tuner();
 	return;
 }
@@ -6351,7 +6352,7 @@ static void storebandpos(uint_fast8_t b)
 		save_i8(RMT_BANDPOS(bandgroup), b);
 }
 
-static void storebandgroup(uint_fast8_t bg)
+static void storebandgroup(uint_fast8_t bg, uint_fast8_t ant)
 {
 
 #if WITHANTSELECTRX
@@ -6377,7 +6378,7 @@ static void storebandgroup(uint_fast8_t bg)
 
 
 #if WITHAUTOTUNER
-	storetuner(bg);
+	storetuner(bg, ant);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
 	storezoom(bg);
@@ -6405,7 +6406,7 @@ static void loadbandgroup(uint_fast8_t bg, uint_fast8_t ant)
 	gatt = loadvfy8up(RMT_ATTBG_BASE(bg, ant), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
 
 #if WITHAUTOTUNER
-	loadtuner(bg);
+	loadtuner(bg, ant);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
 	loadzoom(bg);
@@ -6427,7 +6428,7 @@ storebandstate(const vindex_t b, const uint_fast8_t bi)
 	for (i = 0; i < MODEROW_COUNT; ++ i)
 		save_i8(RMT_MODECOLS_BASE(b, i), gmodecolmaps [bi] [i]);
 
-	storebandgroup(bg);
+	storebandgroup(bg, geteffantenna(gfreqs [bi]));
 }
 
 /* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
@@ -10385,9 +10386,7 @@ updateboardZZZ(
 	static uint_fast8_t bandf2hint = UINT8_MAX;
 	static uint_fast8_t bandf3hint = UINT8_MAX;	// управление через разъем ACC
 #endif /* CTLSTYLE_IGOR */
-#if WITHANTSELECT2
 	static uint_fast8_t ant2hint = UINT8_MAX;
-#endif /* WITHANTSELECT2 */
 	uint_fast8_t full2 = full; 
 
 	uint_fast8_t pathi;
@@ -10419,9 +10418,7 @@ updateboardZZZ(
 	#endif /* CTLSTYLE_IGOR */
 		full2 |= flagne_u8(& lo0side, getsidelo0(freq));	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 		full2 |= flagne_u32(& lo0hint, gethintlo0(freq, lo0side));
-	#if WITHANTSELECT2
 		full2 |= flagne_u8(& ant2hint, geteffantenna(freq));
-	#endif /* WITHANTSELECT2 */
 	}
 	/* --- проверка необходимости полной перенастройки из-за сменившихся условий выбора частот. */
 
@@ -10824,11 +10821,11 @@ updateboardZZZ(
 	#endif /* defined (RTC1_TYPE) */
 	#if WITHANTSELECTRX
 		board_set_rxantenna(rxantmodes [grxantenna].code);
-		board_set_antenna(antmodes [gantenna].code);
+		board_set_antenna(antmodes [ant2hint].code);
 	#elif WITHANTSELECT2
 		board_set_antenna(antmodes [ant2hint].code);
 	#elif WITHANTSELECT
-		board_set_antenna(antmodes [gantenna].code [gtx]);
+		board_set_antenna(antmodes [ant2hint].code [gtx]);
 	#endif /* WITHANTSELECT || WITHANTSELECTRX */
 	#if WITHELKEY
 		board_set_wpm(elkeywpm.value);	/* скорость электронного ключа */
@@ -11969,10 +11966,11 @@ uif_key_bypasstoggle(void)
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+    const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
 
 	tunerwork = calc_next(tunerwork, 0, 1);	// переключаем в противоположное состояние
 
-	storetuner(bg);
+	storetuner(bg, ant);
 
 	if (tunerwork == 0)
 		reqautotune = 0;	// сброс идущей настройки
@@ -14702,7 +14700,8 @@ processcatmsg(
 				const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
 				gantenna = vfy32up(p1, 1, ANTMODE_COUNT, 1) - 1;	/* 0..1 */;	// one step or fully attenuated
 				const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
-				loadtuner(bg);
+			    const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
+				loadtuner(bg, ant);
 				updateboard(1, 0);	/* полная перенастройка (как после смены режима) */
 			}
 			cat_answer_request(CAT_AN_INDEX);
