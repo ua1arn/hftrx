@@ -7402,16 +7402,6 @@ loadsavedstate(void)
 	}
 }
 
-#if WITHANTSELECT2
-/* получить номер антенны в зависимости от частоты */
-static uint_fast8_t getdefantenna(uint_fast32_t f)
-{
-	const uint_fast32_t fsw = hffreqswitch * 1000000uL;
-	ASSERT((fsw > TUNE_BOTTOM) && (fsw < TUNE_TOP));
-	return f > fsw;
-}
-#endif /* WITHANTSELECT2 */
-
 /* по диапазону вытащить все параметры (и частоту) нового диапазона */
 static void 
 //NOINLINEAT
@@ -11612,6 +11602,14 @@ uif_key_next_rxantenna(void)
 }
 
 #elif WITHANTSELECT2
+
+/* получить номер антенны в зависимости от частоты */
+static uint_fast8_t getdefantenna(uint_fast32_t f)
+{
+	const uint_fast32_t fsw = hffreqswitch * 1000000uL;
+	ASSERT((fsw > TUNE_BOTTOM) && (fsw < TUNE_TOP));
+	return f > fsw;
+}
 
 /* действительно выбранная антенна с учетом ручного или автоматического переключения */
 static uint_fast8_t geteffantenna(uint_fast32_t f)
