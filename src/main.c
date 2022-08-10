@@ -173,6 +173,7 @@ prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 
 
 static uint_fast8_t getdefantenna(uint_fast32_t f);
+static uint_fast8_t geteffantenna(uint_fast32_t f);	/* действительно выбранная антенна с учетом ручного или автоматического переключения */
 
 extern volatile uint_fast8_t spool_lfm_enable;
 extern volatile uint_fast8_t spool_lfm_flag;
@@ -3397,7 +3398,7 @@ static uint_fast8_t gatt;
 static uint_fast8_t grxantenna;
 static uint_fast8_t gantenna;
 #elif WITHANTSELECT2
-static uint_fast8_t gantenna;
+static uint_fast8_t gantennabym;	/* manualy selected antenna */
 static uint_fast8_t hffreqswitch = 14; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
 static uint_fast8_t gantmanual;		/* 0 - выбор антенны автоматический */
 #elif WITHANTSELECT
@@ -6354,16 +6355,26 @@ static void storebandgroup(uint_fast8_t bg)
 {
 
 #if WITHANTSELECTRX
-	save_i8(RMT_RXANTENNABG_BASE(bg), grxantenna);
-	save_i8(RMT_ANTENNABG_BASE(bg), gantenna);
-#elif WITHANTSELECT || WITHANTSELECT2
-	save_i8(RMT_ANTENNABG_BASE(bg), gantenna);
-#endif /* WITHANTSELECT || WITHANTSELECTRX */
-
 #if ! WITHONEATTONEAMP
 	save_i8(RMT_PAMPBG_BASE(bg, gantenna), gpamp);
 #endif /* ! WITHONEATTONEAMP */
+	save_i8(RMT_RXANTENNABG_BASE(bg), grxantenna);
+	save_i8(RMT_ANTENNABG_BASE(bg), gantenna);
 	save_i8(RMT_ATTBG_BASE(bg, gantenna), gatt);
+#elif WITHANTSELECT
+#if ! WITHONEATTONEAMP
+	save_i8(RMT_PAMPBG_BASE(bg, gantenna), gpamp);
+#endif /* ! WITHONEATTONEAMP */
+	save_i8(RMT_ANTENNABG_BASE(bg), gantenna);
+	save_i8(RMT_ATTBG_BASE(bg, gantenna), gatt);
+#elif WITHANTSELECT2
+#if ! WITHONEATTONEAMP
+	save_i8(RMT_PAMPBG_BASE(bg, gantennabym), gpamp);
+#endif /* ! WITHONEATTONEAMP */
+	save_i8(RMT_ATTBG_BASE(bg, gantennabym), gatt);
+	save_i8(RMT_ANTENNABG_BASE(bg), gantennabym);
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
+
 
 #if WITHAUTOTUNER
 	storetuner(bg);
@@ -6379,7 +6390,7 @@ static void loadantenna(uint_fast8_t bi, uint_fast8_t bg)
 	grxantenna = loadvfy8up(RMT_RXANTENNABG_BASE(bg), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT2
-	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
+	gantennabym = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT
 	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -7437,7 +7448,7 @@ loadnewband(
 	}
 
 	loadantenna(bi, bg);
-	loadbandgroup(bg, gantenna);
+	loadbandgroup(bg, geteffantenna(gfreqs [bi]));
 }
 
 /* Получить текущий submode для указанного банка
@@ -10419,7 +10430,7 @@ updateboardZZZ(
 		full2 |= flagne_u8(& lo0side, getsidelo0(freq));	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 		full2 |= flagne_u32(& lo0hint, gethintlo0(freq, lo0side));
 	#if WITHANTSELECT2
-		full2 |= flagne_u8(& ant2hint, getdefantenna(freq));
+		full2 |= flagne_u8(& ant2hint, geteffantenna(freq));
 	#endif /* WITHANTSELECT2 */
 	}
 	/* --- проверка необходимости полной перенастройки из-за сменившихся условий выбора частот. */
@@ -10825,7 +10836,7 @@ updateboardZZZ(
 		board_set_rxantenna(rxantmodes [grxantenna].code);
 		board_set_antenna(antmodes [gantenna].code);
 	#elif WITHANTSELECT2
-		board_set_antenna(gantmanual ? antmodes [gantenna].code : ant2hint);
+		board_set_antenna(antmodes [ant2hint].code);
 	#elif WITHANTSELECT
 		board_set_antenna(antmodes [gantenna].code [gtx]);
 	#endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -11222,7 +11233,7 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
 			PSTR("%s %s"),
-			antmodes [gantmanual ? gantenna : getdefantenna(gfreqs [bi])].label2,
+			antmodes [geteffantenna(gfreqs [bi])].label2,
 			gantmanual ? "MN" : "AU"
 	);
 	return b;
@@ -11564,6 +11575,12 @@ uif_key_click_agcmode(void)
 
 #if WITHANTSELECTRX
 
+/* действительно выбранная антенна с учетом ручного или автоматического переключения */
+static uint_fast8_t geteffantenna(uint_fast32_t f)
+{
+	return gantenna;
+}
+
 /* Antenna switch
 	  */
 static void
@@ -11596,6 +11613,12 @@ uif_key_next_rxantenna(void)
 
 #elif WITHANTSELECT2
 
+/* действительно выбранная антенна с учетом ручного или автоматического переключения */
+static uint_fast8_t geteffantenna(uint_fast32_t f)
+{
+	return gantmanual ? gantennabym : getdefantenna(f);
+}
+
 /* Antenna switch
 	  */
 static void
@@ -11605,8 +11628,9 @@ uif_key_next_antenna(void)
 	const vindex_t vi = getvfoindex(bi);
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
 
-	gantenna = calc_next(gantenna, 0, ANTMODE_COUNT - 1);
-	loadbandgroup(bg, gantenna);
+	gantennabym = calc_next(gantennabym, 0, ANTMODE_COUNT - 1);
+	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
+	loadbandgroup(bg, effantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard(1, 0);
 }
@@ -11618,12 +11642,19 @@ uif_key_next_autoantmode(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	gantmanual = calc_next(gantmanual, 0, 1);
 	save_i8(RMT_ANTMANUAL_BASE, gantmanual);
+	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
-	loadbandgroup(bg, gantmanual ? gantenna : getdefantenna(gfreqs [bi]));
+	loadbandgroup(bg, effantenna);
 	updateboard(1, 0);
 }
 
 #elif WITHANTSELECT
+
+/* действительно выбранная антенна с учетом ручного или автоматического переключения */
+static uint_fast8_t geteffantenna(uint_fast32_t f)
+{
+	return gantenna;
+}
 
 /* Antenna switch
 	  */
@@ -11638,6 +11669,14 @@ uif_key_next_antenna(void)
 	loadbandgroup(bg, gantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard(1, 0);
+}
+
+#else
+
+/* действительно выбранная антенна с учетом ручного или автоматического переключения */
+static uint_fast8_t geteffantenna(uint_fast32_t f)
+{
+	return gantenna;
 }
 
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
