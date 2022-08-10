@@ -56,7 +56,8 @@ uint32_t InterruptHandlerUnregister(IRQn_Type);
  * @brief  Setup the microcontroller system.
  *         Initialize the System and update the Systd short        int16_t;emCoreClock variable.
  */
-extern void SystemInit (void);
+void SystemInit (void);
+void SystemCoreClockUpdate(void);
 
 #ifdef __cplusplus
 }
