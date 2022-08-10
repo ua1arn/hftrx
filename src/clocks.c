@@ -2482,7 +2482,7 @@ unsigned long allwnrt113_get_pl1_timer_freq(void)
 	}
 
 	/* для устройств тактирующихся от P1 clock */
-	static uint_fast32_t
+	uint_fast32_t
 	calcdivround_p1clock(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
