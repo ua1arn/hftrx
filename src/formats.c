@@ -305,7 +305,8 @@ uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, con
 
 #if FORMATFROMLIBRARY
 	va_start(ap, format);
-	n = vsnprintf(buffer, count, format, ap);
+	struct _reent treent;
+	n = _vsnprintf_r(& treent, buffer, count, format, ap);
 	va_end(ap);
 #else /* FORMATFROMLIBRARY */
 
@@ -331,7 +332,7 @@ uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, co
 	int n;
 
 #if FORMATFROMLIBRARY
-	struct _reent treent = { 0 };
+	struct _reent treent;
 	n = _vsnprintf_r(& treent, buffer, count, format, ap);
 #else /* FORMATFROMLIBRARY */
 

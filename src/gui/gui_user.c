@@ -4233,14 +4233,14 @@ void parse_ft8_answer(char * str, COLORMAIN_T * color, uint8_t * cq_flag)
 
 	char lexem [10][10]; // time; freq; snr; text 2 - 4 pcs
 
-	char * l = _strtok_r(& treent, tmpstr, " ");
+	char * l = strtok_r(& treent, tmpstr, " ");
 	for (uint8_t i = 0; i < 10; i ++)
 	{
 		if (l == NULL)
 			break;
 
 		strcpy(lexem[i], l);
-		l = _strtok_r(& treent, NULL, " ");
+		l = strtok_r(& treent, NULL, " ");
 	}
 
 	if (! strcmp(lexem[3], "CQ") && strcmp(lexem[4], "CQ") && strcmp(lexem[4], "DX"))
