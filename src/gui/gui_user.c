@@ -4229,18 +4229,20 @@ void parse_ft8_answer(char * str, COLORMAIN_T * color, uint8_t * cq_flag)
 	* color = COLORMAIN_WHITE;
 	* cq_flag = 0;
 	char tmpstr [TEXT_ARRAY_SIZE];
+	char * saveptr;
+
 	strcpy(tmpstr, str);
 
 	char lexem [10][10]; // time; freq; snr; text 2 - 4 pcs
 
-	char * l = strtok_r(& treent, tmpstr, " ");
+	char * l = strtok_r(tmpstr, " ", & saveptr);
 	for (uint8_t i = 0; i < 10; i ++)
 	{
 		if (l == NULL)
 			break;
 
 		strcpy(lexem[i], l);
-		l = strtok_r(& treent, NULL, " ");
+		l = strtok_r(NULL, " ", & saveptr);
 	}
 
 	if (! strcmp(lexem[3], "CQ") && strcmp(lexem[4], "CQ") && strcmp(lexem[4], "DX"))
