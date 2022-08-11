@@ -3299,9 +3299,7 @@ filter_t fi_2p0_455 =
 	struct modeprops modes [MODE_COUNT];
 
 	struct bandinfo bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
-#if	WITHDIRECTBANDS
 	struct bandgroup_tag bandgroups [BANDGROUP_COUNT + 1];	/* один элемент для не относящихся к группам диапазонов */
-#endif	/* WITHDIRECTBANDS */
 
 #if WITHANTSELECT2
 	uint8_t hffreqswitch; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
