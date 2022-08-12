@@ -915,7 +915,7 @@ static void gpioX_updownoff(
 	gpioX_unlock(gpio, cpsr);
 }
 
-static void (* gpiohandlers [8][32])(void);
+//static void (* gpiohandlers [8][32])(void);
 
 static void ALLW_GPIO_IRQ_Handler_GPIOA(void)
 {
@@ -973,6 +973,11 @@ static void ALLW_GPIO_IRQ_Handler_GPIOH(void)
 	ASSERT(0);
 }
 
+void ALLW_GPIO_IRQ_Handler(void)	// Allwinner specific
+{
+
+}
+
 /* разрешение прерывания по изменению состояния указанных групп выводов */
 void
 gpioX_onchangeinterrupt(
@@ -981,7 +986,7 @@ gpioX_onchangeinterrupt(
 		portholder_t raise, portholder_t fall,
 		uint32_t priority,
 		uint_fast8_t targetcpu,
-		void (* handler)(void)
+		void (* handler_unused)(void)
 		)
 {
 	const unsigned gpioix = (gpio - GPIOBLOCK->GPIO_PINS);
@@ -1029,7 +1034,7 @@ gpioX_onchangeinterrupt(
 		const portholder_t mask = (portholder_t) 0x01L << pos;
 		if ((ipins & mask) == 0)
 			continue;
-		gpiohandlers [gpioix] [pos] = handler;
+		//gpiohandlers [gpioix] [pos] = handler;
 		arm_hardware_set_handler(GPIOB_NS_IRQn + gpioix * 2 - 2, handlers [gpioix], priority, targetcpu);	/* GPIOx_NS */
 	}
 

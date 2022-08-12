@@ -4183,7 +4183,9 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 extern int __HeapBase;
 extern int __HeapLimit;
 
-caddr_t __attribute__((used)) (_sbrk)(int incr)
+// This version of _sbrk_r() requires the heap area to be defined explicitly in linker script with symbols __heap_start and __heap_end.
+
+char * __attribute__((used)) (_sbrk)(ptrdiff_t incr)
 {
 	unsigned alignment = DCACHEROWSIZE;
 	static char * heap;
@@ -4203,12 +4205,12 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 	if ((heap + incr) > (char *) &__HeapLimit)
 	{
 		//errno = ENOMEM;
-		return (caddr_t) -1;
+		return (char *) -1;
 	}
 
 	heap += incr;
 
-	return (caddr_t) prev_heap;
+	return (char *) prev_heap;
 }
 #endif /* WITHUSEMALLOC */
 
