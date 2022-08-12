@@ -271,7 +271,7 @@ SECTIONS
 	
 	.ram :
 	{
-		KEEP(*(.ram*))
+		*(.ram*)
 	} > RAM
 
 	/* Set stack top to end of RAM, and stack limit move down by

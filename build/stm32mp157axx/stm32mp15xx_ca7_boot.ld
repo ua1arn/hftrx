@@ -58,7 +58,7 @@ SECTIONS
 	.text :
 	{
 		. = ALIGN(32);
-		KEEP(*(.vectors))
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		
@@ -69,8 +69,8 @@ SECTIONS
 		KEEP(*(.initdata*))
 		KEEP(*(.fini))
 
-		KEEP(*(.text*))
-		KEEP(*(.itcm*))
+		*(.text*)
+		*(.itcm*)
 		. = ALIGN(4);
 	} > RAM
 
@@ -126,7 +126,7 @@ SECTIONS
 	{
 		__data_start__ = .;
 		. = ALIGN(32);
-		KEEP(*(.dtcm*))
+		*(.dtcm*)
 
 		. = ALIGN(32);
 		/* .ctors */
@@ -147,7 +147,7 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 
-		KEEP(*(.data*))
+		*(.data*)
 	   . = ALIGN(4);	/* one line added by ua1arn */
 
 		. = ALIGN(4);
@@ -182,8 +182,8 @@ SECTIONS
 	{
 		__bss_start__ = .;
 		. = ALIGN(32);
-		KEEP(*(.bss*))
-		KEEP(*(COMMON))
+		*(.bss*)
+		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
 	} > RAM
@@ -191,14 +191,14 @@ SECTIONS
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(32);
-		KEEP(*(.noinit*))
+		*(.noinit*)
 		. = ALIGN(32);
 	} > RAM
 
 	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
-		KEEP(*(.framebuff*))
+		*(.framebuff*)
 		. = ALIGN(64);
 	} > DDR3
 

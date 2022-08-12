@@ -43,7 +43,7 @@ SECTIONS
 	.text :
 	{
 		. = ALIGN(32);
-		KEEP(*(.vectors))
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		
@@ -129,7 +129,7 @@ SECTIONS
 		KEEP(*(.eh_frame*))
 
 		KEEP(*(vtable))
-		KEEP(*(.data*))
+		*(.data*)
 	   . = ALIGN(4);	/* one line added by ua1arn */
 
 		. = ALIGN(4);
@@ -173,9 +173,9 @@ SECTIONS
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
-		KEEP(*(.noinit*))
+		*(.noinit*)
 		. = ALIGN(64);
-		KEEP(*(.framebuff*))
+		*(.framebuff*)
 		. = ALIGN(64);
 	} > RAM
 

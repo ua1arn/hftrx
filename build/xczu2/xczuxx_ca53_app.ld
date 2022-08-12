@@ -144,13 +144,13 @@ SECTIONS
 		. = ALIGN(4);
 		
 		. = ALIGN(32);
-		KEEP(*(.vectors))
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		. = ALIGN(64);
-		KEEP(*(.itcm*))
+		*(.itcm*)
 		. = ALIGN(64);
-		KEEP(*(.dtcm*))
+		*(.dtcm*)
 		. = ALIGN(32);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -184,14 +184,10 @@ SECTIONS
 	.sysram : AT (__etext2)
 	{
 		__data2_start__ = .;
-		. = ALIGN(32);
-		KEEP(*(.vectors))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
 		. = ALIGN(64);
-		KEEP(*(.itcm*))
+		*(.itcm*)
 		. = ALIGN(64);
-		KEEP(*(.dtcm*))
+		*(.dtcm*)
 		. = ALIGN(32);
 		__data2_end__ = .;
 	} > SYSRAM
@@ -212,9 +208,9 @@ SECTIONS
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
-		KEEP(*(.noinit*))
+		*(.noinit*)
 		. = ALIGN(64);
-		KEEP(*(.framebuff*))
+		*(.framebuff*)
 		. = ALIGN(64);
 	} > RAM
 

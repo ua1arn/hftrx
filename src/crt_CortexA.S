@@ -67,7 +67,7 @@
 	 STACKSIZESVCBOOT = 2048
   
 	.global __Vectors
-	.section .vectors, "ax"
+	.section .isr_vector, "ax"
 	.code 32
         
 /****************************************************************************/

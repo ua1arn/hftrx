@@ -162,13 +162,13 @@ SECTIONS
 	{
 		__data2_start__ = .;
 		. = ALIGN(32);
-		KEEP(*(.vectors))
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		. = ALIGN(64);
-		KEEP(*(.itcm*))
+		*(.itcm*)
 		. = ALIGN(64);
-		KEEP(*(.dtcm*))
+		*(.dtcm*)
 		. = ALIGN(32);
 		__data2_end__ = .;
 	} > RAM /* was: STSRAN */
@@ -189,9 +189,9 @@ SECTIONS
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
-		KEEP(*(.noinit*))
+		*(.noinit*)
 		. = ALIGN(64);
-		KEEP(*(.framebuff*))
+		*(.framebuff*)
 		. = ALIGN(64);
 	} > RAM
 
