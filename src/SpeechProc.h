@@ -5,8 +5,8 @@
 #define PH_STAGES_MAX 31
 #define SYMDETSMOOTH 0.99f
 #define COMP_SMOOTH_FACTOR 0.999f
-/*�� 110, 110-300, 300-800, 800-2000, 2000 � ����.  
-�� ������� ���� ��� �������������������� */
+/*до 110, 110-300, 300-800, 800-2000, 2000 и выше.
+По крайней мере оно среднеарифметическое */
 #define BAND1_MIN_FREQ 0
 #define BAND1_MAX_FREQ 110
 #define BAND2_MIN_FREQ 110
@@ -23,10 +23,10 @@
 typedef struct
 {
 float max_level_dB;
-float  slope;//����������, � ��
+float  slope;//компрессия, в дБ
 unsigned     sr;
 float threshold;
-int threshold_dB;//��, ������� -90, ����� ������������ max_level_dB, �������������
+int threshold_dB;//дБ, минимум -90, число относительно max_level_dB, отрицательное
 float gain;
 float gain_dB;
 float env;
@@ -34,7 +34,7 @@ float env_dB;
 float ratio;
 unsigned trel;
 float rel;
-float tatt;//����� �����, � ��, 
+float tatt;//время атаки, в мс,
 float att;
 float ave_out;
 float ave_gain;
@@ -61,7 +61,7 @@ float w[3];
 //float fs;// sample rate
 float Df;//bandwidth
 float G;
-//float GdB;//��������� �������� , � ��
+//float GdB;//требуемое усиление , в дБ
 float GB;
 float be;
 float c0;
