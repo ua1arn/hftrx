@@ -903,21 +903,23 @@ void buffers_initialize(void)
 
 #endif /* WITHINTEGRATEDDSP */
 
-	/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
-	static RAMBIGDTCM message_t messagesarray8 [12];
-
-	/* Подготовка буферов для обмена с модемом */
-	InitializeListHead(& msgsready8);	// Заполненные - готовые к обработке
-	InitializeListHead(& msgsfree8);	// Незаполненные
-	for (i = 0; i < (sizeof messagesarray8 / sizeof messagesarray8 [0]); ++ i)
 	{
-		message_t * const p = & messagesarray8 [i];
-		p->tag2 = p;
-		p->tag3 = p;
-		//InitializeListHead2(& p->item);
-		InsertHeadVList(& msgsfree8, & p->item);
+		/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
+		static RAMBIGDTCM message_t messagesarray8 [12];
+
+		/* Подготовка буферов для обмена с модемом */
+		InitializeListHead(& msgsready8);	// Заполненные - готовые к обработке
+		InitializeListHead(& msgsfree8);	// Незаполненные
+		for (i = 0; i < (sizeof messagesarray8 / sizeof messagesarray8 [0]); ++ i)
+		{
+			message_t * const p = & messagesarray8 [i];
+			p->tag2 = p;
+			p->tag3 = p;
+			//InitializeListHead2(& p->item);
+			InsertHeadVList(& msgsfree8, & p->item);
+		}
+		SPINLOCK_INITIALIZE(& locklistmsg8);
 	}
-	SPINLOCK_INITIALIZE(& locklistmsg8);
 }
 
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
