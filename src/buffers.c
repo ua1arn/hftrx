@@ -812,31 +812,33 @@ void buffers_initialize(void)
 		SPINLOCK_INITIALIZE(& locklistrts);
 		subscribeint(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
+	}
 	#endif /* WITHRTS192 */
-	}
-
-	static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32tx_t voicesarray32tx [6 * BUFOVERSIZE] ALIGNX_END;
-
-	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
-	InitializeListHead2(& voicesfree32tx);	// Незаполненные
-	for (i = 0; i < (sizeof voicesarray32tx / sizeof voicesarray32tx [0]); ++ i)
 	{
-		voice32tx_t * const p = & voicesarray32tx [i];
-		p->tag2 = p;
-		p->tag3 = p;
-		InsertHeadList2(& voicesfree32tx, & p->item);
+		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32tx_t voicesarray32tx [6 * BUFOVERSIZE] ALIGNX_END;
+
+		InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
+		InitializeListHead2(& voicesfree32tx);	// Незаполненные
+		for (i = 0; i < (sizeof voicesarray32tx / sizeof voicesarray32tx [0]); ++ i)
+		{
+			voice32tx_t * const p = & voicesarray32tx [i];
+			p->tag2 = p;
+			p->tag3 = p;
+			InsertHeadList2(& voicesfree32tx, & p->item);
+		}
+		SPINLOCK_INITIALIZE(& locklist32tx);
 	}
-	SPINLOCK_INITIALIZE(& locklist32tx);
-
-    static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32rx_t voicesarray32rx [6 * BUFOVERSIZE] ALIGNX_END;	// без WFM надо 2
-
-	InitializeListHead2(& voicesfree32rx);	// Незаполненные
-	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
 	{
-		voice32rx_t * const p = & voicesarray32rx [i];
-		InsertHeadList2(& voicesfree32rx, & p->item);
+	    static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32rx_t voicesarray32rx [6 * BUFOVERSIZE] ALIGNX_END;	// без WFM надо 2
+
+		InitializeListHead2(& voicesfree32rx);	// Незаполненные
+		for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
+		{
+			voice32rx_t * const p = & voicesarray32rx [i];
+			InsertHeadList2(& voicesfree32rx, & p->item);
+		}
+		SPINLOCK_INITIALIZE(& locklist32rx);
 	}
-	SPINLOCK_INITIALIZE(& locklist32rx);
 
 #if WITHUSEAUDIOREC
 
