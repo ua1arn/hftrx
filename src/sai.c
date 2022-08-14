@@ -3368,8 +3368,8 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 #elif CPUSTYPE_T113
 
 
-#define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0uL : (1uL << ((ch) * 4)))
-#define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0uL : (1uL << (((ch) - 8) * 4)))
+#define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0uL : (1u << ((ch) * 4)))
+#define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0uL : (1u << (((ch) - 8) * 4)))
 
 /* Обработчики прерываний от DMAC в зависимости от номера канала */
 static void (* dmac_handlers [16])(unsigned dmach);
@@ -3962,10 +3962,10 @@ static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 
 #define DMAC_I2S_IRQ (0x02)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
-static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler2)(unsigned dmach))
+static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
 {
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
-	dmac_handlers [dmach] = handler2;
+	dmac_handlers [dmach] = handler;
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
 	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
