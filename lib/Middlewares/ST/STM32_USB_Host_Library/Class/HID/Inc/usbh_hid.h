@@ -103,14 +103,14 @@ extern "C" {
 /* States for HID State Machine */
 typedef enum
 {
-  HID_INIT = 0,
-  HID_IDLE,
-  HID_SEND_DATA,
-  HID_BUSY,
-  HID_GET_DATA,
-  HID_SYNC,
-  HID_POLL,
-  HID_ERROR,
+  USBH_HID_INIT = 0,
+  USBH_HID_IDLE,
+  USBH_HID_SEND_DATA,
+  USBH_HID_BUSY,
+  USBH_HID_GET_DATA,
+  USBH_HID_SYNC,
+  USBH_HID_POLL,
+  USBH_HID_ERROR,
 }
 HID_StateTypeDef;
 
