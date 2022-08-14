@@ -3888,11 +3888,12 @@ static void DMA_resume(unsigned dmach, uintptr_t descbase)
 /* от встроенного в процессор или подключенного по I2S */
 static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
 {
+	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [DMAC_DESC_DST];
-	descraddr [DMAC_DESC_DST] = dma_invalidate16rx(allocate_dmabuffer16rx());
+	const uintptr_t addr = descraddr [ix];
+	descraddr [ix] = dma_invalidate16rx(allocate_dmabuffer16rx());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
@@ -3908,11 +3909,12 @@ static void DMA_I2S1_AudioCodec_RX_Handler_codec1(unsigned dmach)
 /* на встроенный в процессор или подключенный по I2S */
 static void DMA_I2S1_AudioCodec_TX_Handler_codec1(unsigned dmach)
 {
+	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
-	descraddr [DMAC_DESC_SRC] = dma_flush16tx(getfilled_dmabuffer16txphones());
+	const uintptr_t addr = descraddr [ix];
+	descraddr [ix] = dma_flush16tx(getfilled_dmabuffer16txphones());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
@@ -3924,11 +3926,11 @@ static void DMA_I2S1_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Приём от FPGA */
 static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 {
+	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
-
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [DMAC_DESC_DST];
-	descraddr [DMAC_DESC_DST] = dma_invalidate32rx(allocate_dmabuffer32rx());
+	const uintptr_t addr = descraddr [ix];
+	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
@@ -3943,11 +3945,12 @@ static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 /* Передача в FPGA */
 static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 {
+	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
-	descraddr [DMAC_DESC_SRC] = dma_flush32tx(getfilled_dmabuffer32tx_main());
+	const uintptr_t addr = descraddr [ix];
+	descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
