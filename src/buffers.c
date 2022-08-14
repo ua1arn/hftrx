@@ -840,8 +840,10 @@ void buffers_initialize(void)
 		SPINLOCK_INITIALIZE(& locklist32rx);
 	}
 
+
 #if WITHUSEAUDIOREC
 
+	{
 	#if CPUSTYLE_R7S721
 		static RAM_D1 records16_t recordsarray16 [8];
 	#elif defined (STM32F767xx)
@@ -856,43 +858,48 @@ void buffers_initialize(void)
 		static RAM_D1 records16_t recordsarray16 [8 * BUFOVERSIZE];
 	#endif
 
-	/* Подготовка буферов для записи на SD CARD */
-	InitializeListHead2(& recordsready16);	// Заполненные - готовые для записи на SD CARD
-	InitializeListHead2(& recordsfree16);	// Незаполненные
-	for (i = 0; i < (sizeof recordsarray16 / sizeof recordsarray16 [0]); ++ i)
-	{
-		records16_t * const p = & recordsarray16 [i];
-		InsertHeadList2(& recordsfree16, & p->item);
+		/* Подготовка буферов для записи на SD CARD */
+		InitializeListHead2(& recordsready16);	// Заполненные - готовые для записи на SD CARD
+		InitializeListHead2(& recordsfree16);	// Незаполненные
+		for (i = 0; i < (sizeof recordsarray16 / sizeof recordsarray16 [0]); ++ i)
+		{
+			records16_t * const p = & recordsarray16 [i];
+			InsertHeadList2(& recordsfree16, & p->item);
+		}
 	}
 
 #endif /* WITHUSEAUDIOREC */
 
 #if WITHMODEM
-	static modems8_t modemsarray8 [8];
-
-	/* Подготовка буферов для обмена с модемом */
-	InitializeListHead2(& modemsrx8);	// Заполненные - принятые с модема
-	//InitializeListHead2(& modemstx8);	// Заполненные - готовые для передачи через модем
-	InitializeListHead2(& modemsfree8);	// Незаполненные
-	for (i = 0; i < (sizeof modemsarray8 / sizeof modemsarray8 [0]); ++ i)
 	{
-		modems8_t * const p = & modemsarray8 [i];
-		//InitializeListHead2(& p->item);
-		InsertHeadList2(& modemsfree8, & p->item);
+		static modems8_t modemsarray8 [8];
+
+		/* Подготовка буферов для обмена с модемом */
+		InitializeListHead2(& modemsrx8);	// Заполненные - принятые с модема
+		//InitializeListHead2(& modemstx8);	// Заполненные - готовые для передачи через модем
+		InitializeListHead2(& modemsfree8);	// Незаполненные
+		for (i = 0; i < (sizeof modemsarray8 / sizeof modemsarray8 [0]); ++ i)
+		{
+			modems8_t * const p = & modemsarray8 [i];
+			//InitializeListHead2(& p->item);
+			InsertHeadList2(& modemsfree8, & p->item);
+		}
 	}
 #endif /* WITHMODEM */
 
-	static RAMBIGDTCM denoise16_t speexarray16 [4 * BUFOVERSIZE];	// буеры: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
-
-	InitializeListHead2(& speexfree16);	// Незаполненные
-	InitializeListHead2(& speexready16);	// Для обработки
-
-	for (i = 0; i < (sizeof speexarray16 / sizeof speexarray16 [0]); ++ i)
 	{
-		denoise16_t * const p = & speexarray16 [i];
-		InsertHeadList2(& speexfree16, & p->item);
+		static RAMBIGDTCM denoise16_t speexarray16 [4 * BUFOVERSIZE];	// буеры: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
+
+		InitializeListHead2(& speexfree16);	// Незаполненные
+		InitializeListHead2(& speexready16);	// Для обработки
+
+		for (i = 0; i < (sizeof speexarray16 / sizeof speexarray16 [0]); ++ i)
+		{
+			denoise16_t * const p = & speexarray16 [i];
+			InsertHeadList2(& speexfree16, & p->item);
+		}
+		SPINLOCK_INITIALIZE(& speexlock);
 	}
-	SPINLOCK_INITIALIZE(& speexlock);
 
 #endif /* WITHINTEGRATEDDSP */
 
