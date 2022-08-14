@@ -4295,15 +4295,15 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	memcpy((void *) 0x00028038, & ddr3, sizeof ddr3);
 	((void(*)(void))(0x00028000))();
 	//set_pll_cpux_axi(PLL_CPU_N);
+	#if WITHDEBUG && 1
+		//HARDWARE_DEBUG_INITIALIZE();
+		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+	#endif /* WITHDEBUG */
 #else
 	sys_dram_init();
 #endif
 	//PRINTF("arm_hardware_sdram_initialize done\n");
 	//local_delay_ms(1000);
-#if WITHDEBUG && 0
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-#endif /* WITHDEBUG */
 }
 #endif /* CPUSTYPE_T113 */
 #endif /* WITHSDRAMHW */
