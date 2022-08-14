@@ -4294,6 +4294,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	memcpy((void *) 0x00028038, & ddr3, sizeof ddr3);
 	arm_hardware_flush(0x00028000, 32768);
 	((void(*)(void))(0x00028000))();
+	arm_hardware_flush_all();	// Test patterns
 	set_pll_cpux_axi(PLL_CPU_N);
 #else
 	sys_dram_init();
