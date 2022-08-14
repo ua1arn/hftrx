@@ -3867,21 +3867,17 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 
 static uintptr_t DMA_suspend(unsigned dmach)
 {
-	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
-	local_delay_us(2);
-	for (;;)
-	{
-		const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-		volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-		if (descraddr [DMAC_DESC_LINK] == DMAC->CH [dmach].DMAC_DESC_ADDR_REGN)
-			return descbase;
-	}
+//	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
+//	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
+//		;
+	return DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
+//	volatile uint32_t * const descraddr = (volatile uint32_t *) DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
+//	return descraddr [DMAC_DESC_LINK];	/* для срабатывания по half packet - получаем неиспользуемый сейчас дескриптор */
 }
 
 static void DMA_resume(unsigned dmach, uintptr_t descbase)
 {
-    ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
-    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+//    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 }
 
 /* Приём от кодека */
@@ -3960,7 +3956,7 @@ static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 }
 
 
-#define DMAC_I2S_IRQ (0x02)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_I2S_IRQ (0x01)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
 {
