@@ -1854,7 +1854,7 @@ void set_pll_cpux_axi(unsigned n)
 
 	/* Set and change cpu clk src */
 	val = CCU->CPU_AXI_CFG_REG;
-	val &= ~(0x07 << 24 | 0x3 << 16 | 0x3 << 8 | 0xf << 0);
+	val &= ~ ((0x07 << 24) | (0x3 << 16 ) | ( 0x3 << 8 ) | ( 0xf << 0));
 	val |=
 		(0x03 << 24) |
 		(0x0 << 16) |	// PLL_CPU_OUT_EXT_DIVP
