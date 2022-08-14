@@ -2613,15 +2613,13 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 	#define SHAREDval_WBCACHE 	1		// required for ldrex.. and strex.. functionality
 #endif /* CPUSTYLE_STM32MP1 */
 
-#if 0
-	// test
+#if 1
 	/* Shareable Device */
 	#define TEXval_DEVICE		0x00
-	#define Cval_DEVICE			1
-	#define Bval_DEVICE			0
+	#define Cval_DEVICE			0
+	#define Bval_DEVICE			1
 	#define SHAREDval_DEVICE 0
 #else
-	// normal
 	/* Non-shareable Device */
 	#define TEXval_DEVICE		0x02
 	#define Cval_DEVICE			0
