@@ -280,7 +280,7 @@ flash: bitstreams $(PROJECT)_app_xyl32.bin
 	program_flash -f $(PROJECT)_app_xyl32.bin -offset 0x80000 $(XILINX_JTAGOPTS)
 
 $(PROJECT)_app_xyl32.bin: $(PROJECT)_app.bin
-	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -l 0x00104100 -e 0x00104100 -s $(PROJECT)_app.bin -d $@
 		
 BOOT2: version boot.bin
 	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
