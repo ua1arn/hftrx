@@ -9,8 +9,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре
 // rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_X7C7XX_BGAXXX_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED
-#define ARM_X7C7XX_BGAXXX_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED 1
+#ifndef ARM_X7C7XX_BGA400_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED
+#define ARM_X7C7XX_BGA400_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1166,6 +1166,10 @@
 		local_delay_ms(10); \
 	} while (0)
 
+#else /* WITHETHHW */
+
+	#define ETHERNET_INITIALIZE() do { } while (0)
+
 #endif /* WITHETHHW */
 
 #if 1
@@ -1209,4 +1213,4 @@
 		/*USBD_FS_INITIALIZE(); */\
 	} while (0)
 
-#endif /* ARM_X7C7XX_BGAXXX_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED */
+#endif /* ARM_X7C7XX_BGA400_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED */
