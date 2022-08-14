@@ -3,6 +3,9 @@
  *
  *  Created on: 31 мая 2022 г.
  *      Author: User
+ *
+ *       For details of A7 CPUX signals, refer to the technical
+ *       reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
  */
 
 #ifndef ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
