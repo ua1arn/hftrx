@@ -910,7 +910,7 @@ hwacc_fillrect_u16(
 		// программная реализация
 		const unsigned t = GXADJ(dx) - w;
 		//buffer += (GXADJ(dx) * row) + col;
-		volatile uint32_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+		volatile uint16_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
 		while (h --)
 		{
 			unsigned n = w;
@@ -918,6 +918,7 @@ hwacc_fillrect_u16(
 				* tbuffer ++ = color;
 			tbuffer += t;
 		}
+		arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 		return;
 	}
 	const unsigned stride = GXADJ(dx) * PIXEL_SIZE;
@@ -928,6 +929,8 @@ hwacc_fillrect_u16(
 
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+
+	const uint_fast32_t c24 = COLOR24(COLOR565_R(color), COLOR565_G(color), COLOR565_B(color));
 
 	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
@@ -942,7 +945,7 @@ hwacc_fillrect_u16(
 	G2D_V0->V0_MBSIZE = sizehw;
 	G2D_V0->V0_SIZE = sizehw;
 
-	G2D_BLD->BLD_BK_COLOR = color;	/* всегда RGB888. этим цветом заполняется */
+	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется */
 	G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	//G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_SIZE = sizehw;	/* расположение компонент размера проверено */

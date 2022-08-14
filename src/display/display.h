@@ -21,11 +21,11 @@ typedef uint16_t PACKEDCOLOR565_T;
 // RRRRRRR.GGGGGGGG.BBBBBBBB
 typedef uint_fast32_t COLOR24_T;
 #define COLOR24(red, green, blue) \
-	(  (unsigned long) \
+	(  (uint_fast32_t) \
 		(	\
-			(((unsigned long) (red) << 16) & 0xFF0000ul)  | \
-			(((unsigned long) (green) << 8) & 0xFF00ul) | \
-			(((unsigned long) (blue) << 0) & 0xFFul) \
+			(((uint_fast32_t) (red) << 16) & 0xFF0000u)  | \
+			(((uint_fast32_t) (green) << 8) & 0xFF00u) | \
+			(((uint_fast32_t) (blue) << 0) & 0xFFu) \
 		) \
 	)
 
@@ -35,6 +35,12 @@ typedef uint_fast32_t COLOR24_T;
 #define COLOR24_B(v) (((v) >> 0) & 0xFF)
 
 #define COLOR24_KEY	COLOR24(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
+
+// Get color componens from COLOR565_T value
+#define COLOR565_R(v) (((v) & 0xF800) >> 8)
+#define COLOR565_G(v) (((v) & 0x07E0) >> 3)
+#define COLOR565_B(v) (((v) & 0x001F) << 3)
+
 
 enum gradient_style
 {
