@@ -321,7 +321,7 @@ $(OBJSA_APP) $(ZOBJSA):
 #	-$(RM) -R $(OBJDIR)
 
 clean: version
-	-$(RM) $(OBJS)
+	-$(RM) $(OBJS) $(addsuffix .d, $(OBJS))
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) bitstream_ant_20.h
