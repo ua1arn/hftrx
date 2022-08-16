@@ -2437,6 +2437,7 @@ getvfoindex(uint_fast8_t bi)
 const char *
 get_band_label3(unsigned b)	/* b: диапазон в таблице bandsmap */
 {
+	ASSERT(b != ((vindex_t) - 1));
 	const uint_fast8_t bandgroup = bandsmap [b].bandgroup;
 	if (bandgroup >= ARRAY_SIZE(bandlabels))
 		return "ERR";
@@ -2450,6 +2451,7 @@ static uint_fast32_t
 //NOINLINEAT
 get_band_bottom(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
+	ASSERT(b != ((vindex_t) - 1));
 	return PEEK_BMF(bandsmap [b].bottom);
 }
 /* интерфейсная функция доступа к параметра диапазона */
@@ -2457,6 +2459,7 @@ static uint_fast32_t
 //NOINLINEAT
 get_band_top(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
+	ASSERT(b != ((vindex_t) - 1));
 	return PEEK_BMF(bandsmap [b].top);
 }
 /* интерфейсная функция доступа к параметра диапазона */
@@ -2464,6 +2467,7 @@ static uint_fast32_t
 //NOINLINEAT
 get_band_init(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
+	ASSERT(b != ((vindex_t) - 1));
 	return PEEK_BMF(bandsmap [b].init);
 }
 /* интерфейсная функция доступа к параметра диапазона */
@@ -2471,6 +2475,7 @@ static uint_fast8_t
 //NOINLINEAT
 get_band_defsubmode(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
+	ASSERT(b != ((vindex_t) - 1));
 	return bandsmap [b].defsubmode_bandset & BANDSET_SUBMODE;
 }
 
@@ -2479,11 +2484,13 @@ static uint_fast8_t
 //NOINLINEAT
 get_band_bandset(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
+	ASSERT(b != ((vindex_t) - 1));
 	return bandsmap [b].defsubmode_bandset & BANDSET_MASK;
 }
 
 static const char * get_band_label(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
+	ASSERT(b != ((vindex_t) - 1));
 	return bandsmap [b].label;
 }
 
@@ -3387,7 +3394,7 @@ filter_t fi_2p0_455 =
    */
 
 /* параметры диапазона, переключаемые при смене VFO */
-static uint_fast32_t gfreqs [VFOS_COUNT];		/* отображаемая на дисплее частота работы */
+static uint_fast32_t gfreqs [VFOS_COUNT] = { DEFAULTDIALFREQ, DEFAULTDIALFREQ };		/* отображаемая на дисплее частота работы */
 #if ! WITHONEATTONEAMP
 static uint_fast8_t gpamp;
 #endif /* ! WITHONEATTONEAMP */
@@ -6066,6 +6073,7 @@ static uint_fast8_t
 getfreqbandgroup(const uint_fast32_t freq)
 {
 	const vindex_t b = getfreqband(freq);
+	ASSERT(b != ((vindex_t) - 1));
 	const uint_fast8_t bandgroup = bandsmap [b].bandgroup;
 	return bandgroup;
 }
@@ -6482,7 +6490,7 @@ getdefaultbandsubmode(
 	)
 {
 	const vindex_t b = getfreqband(freq);
-	if (b < HBANDS_COUNT)
+	if (b != ((vindex_t) - 1) && b < HBANDS_COUNT)
 		return get_band_defsubmode(b);
 	return getdefaultsubmode(freq);
 }
@@ -6709,6 +6717,7 @@ static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base)
 
 	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
 	return base + RMT_BANDPOS(bg) - RMT_BANDPOS(0);
@@ -15687,6 +15696,7 @@ display_menu_string_P(
 #define ITEM_NOINITNVRAM	(0x01u << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
 
 #define ITEM_ARRAY_BI	(0x01u << 5)	/* указатель на переменную ссылается на массив. Индекс по bank index от getbankindex_ab_fordisplay(0) */
+#define ITEM_ARRAY_BG  (0x01u << 6)
 
 #if CPUSTYLE_ATMEGA
 	#define QLABEL(s) (s)
@@ -15749,6 +15759,18 @@ ismenufilterlsb(
 
 #define MENUROW_COUNT (sizeof menutable / sizeof menutable [0])
 
+static unsigned menubaloffset(const FLASHMEM struct menudef * const mp)
+{
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);
+	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	if (ismenukind(mp, ITEM_ARRAY_BI))
+		return bi;
+	if (ismenukind(mp, ITEM_ARRAY_BG))
+		return bg;
+	return 0;
+}
+
+
 /* Загрузка значений из NVRAM в переменные программы.
    Значением по умолчанию является то, на которое
    переменная инициализированна при запуске программы.
@@ -15764,14 +15786,14 @@ loadsettings(void)
 	for (i = 0; i < MENUROW_COUNT; ++ i)
 	{
 		const FLASHMEM struct menudef * const mp = & menutable [i];
-		if (ismenukind(mp, ITEM_VALUE) && ! ismenukind(mp, ITEM_NOINITNVRAM) && ! ismenukind(mp, ITEM_ARRAY_BI))
+		if (ismenukind(mp, ITEM_VALUE) && ! ismenukind(mp, ITEM_NOINITNVRAM) && ! ismenukind(mp, ITEM_ARRAY_BI) && ! ismenukind(mp, ITEM_ARRAY_BG))
 		{
 			const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram);
 			const uint_fast16_t bottom = mp->qbottom;
 			const uint_fast16_t upper = mp->qupper;
 			uint_fast16_t * const pv16 =  mp->qpval16;
 			uint_fast8_t * const pv8 = mp->qpval8;
-			const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
+			const unsigned valoffset = 0;//menubaloffset(mp);
 
 			if (nvram == MENUNONVRAM)
 				continue;
@@ -15799,7 +15821,7 @@ savemenuvalue(
 		const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram);
 		const uint_fast16_t * const pv16 = mp->qpval16;
 		const uint_fast8_t * const pv8 = mp->qpval8;
-		const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
+		const unsigned valoffset = menubaloffset(mp);
 
 		if (nvram == MENUNONVRAM)
 			return;
@@ -16213,7 +16235,7 @@ void display2_menu_valxx(
 	uint_fast8_t comma = mp->qcomma;
 	const uint_fast16_t * const pv16 = mp->qpval16;
 	const uint_fast8_t * const pv8 = mp->qpval8;
-	const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
+	const unsigned valoffset = menubaloffset(mp);
 
 	// получение значения для отображения
 	if (ismenufilterlsb(mp))

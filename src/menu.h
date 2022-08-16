@@ -225,7 +225,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
+		ITEM_VALUE | ITEM_ARRAY_BG,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 		offsetof(struct nvmap, bandgroups [0].gtopdbspe),
 		nvramoffs_bandgroup,
@@ -235,7 +235,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
+		ITEM_VALUE | ITEM_ARRAY_BG,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 		offsetof(struct nvmap, bandgroups [0].gbottomdbspe),
 		nvramoffs_bandgroup,
@@ -255,7 +255,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
+		ITEM_VALUE | ITEM_ARRAY_BG,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 		offsetof(struct nvmap, bandgroups [0].gtopdbwfl),
 		nvramoffs_bandgroup,
@@ -286,7 +286,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if BOARD_FFTZOOM_POW2MAX > 0
 	{
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
+		ITEM_VALUE | ITEM_ARRAY_BG,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
 		offsetof(struct nvmap, bandgroups [0].gzoomxpow2),
 		nvramoffs_bandgroup,
