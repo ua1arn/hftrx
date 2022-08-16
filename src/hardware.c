@@ -2598,27 +2598,29 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
-#if 0///CPUSTYLE_STM32MP1
-	// for debug: no Write-Allocate
-	/* Outer and Inner Write-Back, no Write-Allocate */
-	#define TEXval_WBCACHE		0x00
-	#define Cval_WBCACHE		1
-	#define Bval_WBCACHE		1
-	#define SHAREDval_WBCACHE 	1		// required for ldrex.. and strex.. functionality
-#else /* CPUSTYLE_STM32MP1 */
-	/* Outer and Inner Write-Back, Write-Allocate */
-	#define TEXval_WBCACHE		0x01
-	#define Cval_WBCACHE		1
-	#define Bval_WBCACHE		1
-	#define SHAREDval_WBCACHE 	1		// required for ldrex.. and strex.. functionality
-#endif /* CPUSTYLE_STM32MP1 */
+/* Outer and Inner Write-Back, Write-Allocate */
+#define TEXval_WBCACHE		0x01
+#define Cval_WBCACHE		1
+#define Bval_WBCACHE		1
 
-#if 1
-	/* Shareable Device */
+#if WITHSMPSYSTEM
+	#define SHAREDval_WBCACHE 1		// required for ldrex.. and strex.. functionality
+#else /* WITHSMPSYSTEM */
+	#define SHAREDval_WBCACHE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+#endif /* WITHSMPSYSTEM */
+
+#if 0
+	/* Outer and Inner Write-Through, no Write-Allocate */
 	#define TEXval_DEVICE		0x00
-	#define Cval_DEVICE			0
-	#define Bval_DEVICE			1
-	#define SHAREDval_DEVICE 0
+	#define Cval_DEVICE			1
+	#define Bval_DEVICE			0
+	#define SHAREDval_DEVICE 	1	/* has meaning */
+#elif 1
+	/* Shareable Device */
+	#define TEXval_DEVICE       0x00
+	#define Cval_DEVICE         0
+	#define Bval_DEVICE         1
+	#define SHAREDval_DEVICE	0
 #else
 	/* Non-shareable Device */
 	#define TEXval_DEVICE		0x02
