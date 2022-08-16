@@ -2611,6 +2611,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 	#endif /* WITHSMPSYSTEM */
 #else
 	// Cacheable memory attributes, without TEX remap
+	// DDI0406C_d_armv7ar_arm.pdf
 	// Table B3-11 Inner and Outer cache attribute encoding
 	#define ATTR_AA_WBCACHE 0x01	// Inner attribute - Write-Back, Write-Allocate
 	#define ATTR_BB_WBCACHE 0x01	// Outer attribute - Write-Back, Write-Allocate
