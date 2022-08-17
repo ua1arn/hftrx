@@ -4287,6 +4287,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #if WITHTX
 #if WITHTHERMOLEVEL
 	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
+	static uint_fast8_t gheatprot = 1;	/* защита от перегрева */
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 #if defined (WITHSWRPROT)
@@ -4294,9 +4295,6 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #else /* defined (WITHSWRPROT) */
 	static uint_fast8_t gswrprot = 1;	/* защита от превышения КСВ */
 #endif /* defined (WITHSWRPROT) */
-#if WITHTHERMOLEVEL
-	static uint_fast8_t gheatprot = 1;	/* защита от перегрева */
-#endif /* WITHTHERMOLEVEL */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	static uint_fast8_t tunemode;	/* режим настройки передающего тракта */
 	static uint_fast8_t moxmode;	/* передача, включённая кнопкой с клавиатуры */
@@ -15506,7 +15504,7 @@ uint_fast8_t hamradio_get_txdisable(void)
 		return 1;
 #endif /* defined (HARDWARE_GET_TXDISABLE) */
 #if WITHTHERMOLEVEL
-	if (gheatprot != 0 && hamradio_get_temperature_value() >= gtempvmax * 10)// Градусы в десятых долях
+	if (gheatprot != 0 && hamradio_get_temperature_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 		return 1;
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
