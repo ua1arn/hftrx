@@ -26,8 +26,8 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		LMIN, LMAX, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
-		nvramoffs0,
+		offsetof(struct nvmap, bandgroups [0].oants [0].tunerind),
+		nvramoffs_bandgroupant,
 		& tunerind,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -36,8 +36,8 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TUNER C "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		CMIN, CMAX, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunercap),
-		nvramoffs0,
+		offsetof(struct nvmap, bandgroups [0].oants [0].tunercap),
+		nvramoffs_bandgroupant,
 		& tunercap,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -46,8 +46,8 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TUNER TY"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		0, KSCH_COUNT - 1, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunertype),
-		nvramoffs0,
+		offsetof(struct nvmap, bandgroups [0].oants [0].tunertype),
+		nvramoffs_bandgroupant,
 		NULL,
 		& tunertype,
 		getzerobase, /* складывается со смещением и отображается */
