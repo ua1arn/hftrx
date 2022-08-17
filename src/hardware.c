@@ -2636,7 +2636,23 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 	#define TEXval_DEVICE       0x00
 	#define Cval_DEVICE         0
 	#define Bval_DEVICE         1
-	#define SHAREDval_DEVICE	0
+	#define SHAREDval_DEVICE 	0
+
+#elif 1
+	// Cacheable memory attributes, without TEX remap
+	// DDI0406C_d_armv7ar_arm.pdf
+	// Table B3-11 Inner and Outer cache attribute encoding
+	#define ATTR_AA_DEVICE 0x00	// Inner attribute - Non-cacheable
+	#define ATTR_BB_DEVICE 0x00	// Outer attribute - Non-cacheable
+	#define TEXval_DEVICE		(0x04 | (ATTR_BB_DEVICE))
+	#define Cval_DEVICE		(((ATTR_AA_DEVICE) & 0x02) != 0)
+	#define Bval_DEVICE		(((ATTR_AA_DEVICE) & 0x01) != 0)
+	#if WITHSMPSYSTEM
+		#define SHAREDval_DEVICE 1		// required for ldrex.. and strex.. functionality
+	#else /* WITHSMPSYSTEM */
+		#define SHAREDval_DEVICE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+	#endif /* WITHSMPSYSTEM */
+
 #else
 	/* Non-shareable Device */
 	#define TEXval_DEVICE		0x02
