@@ -354,11 +354,11 @@ IRQ_Handler:
 
     MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
 	STMFD   SP!, {R1-R12, LR}
-
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
 	VMRS	LR, FPSID
 	VMSR	FPSID, LR
+	PUSH	{LR}
 
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
 	// save VFP/Neon FPSCR register
@@ -422,6 +422,8 @@ IRQ_Handler:
 	// restore VFP/Neon FPSCR register
 	POP		{LR}
 	VMSR	FPSCR, LR
+	POP		{LR}
+	VMSR	FPSID, LR
 
 	LDMIA   SP!, {R1-R12, LR}
     MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
