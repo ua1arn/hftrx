@@ -7593,7 +7593,7 @@ catchangefreq(
 		cat_answer_request(CAT_PA_INDEX);
 	}
 	loadantenna(bi, bg);
-	loadbandgroup(bg, gantenna);
+	loadbandgroup(bg, geteffantenna(gfreqs [bi]));
 }
 
 static void catchangesplit(
@@ -13893,7 +13893,7 @@ static void ananswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) ((gantenna != 0) + 1)
+		(int) ((geteffantenna(gfreqs [getbankindex_tx(gtx)]) != 0) + 1)
 
 		);
 	cat_answer(len);
