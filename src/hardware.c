@@ -2599,71 +2599,27 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
 /* Outer and Inner Write-Back, Write-Allocate */
-#if 0
-	// b. For architectural compatibility with other processors, ARM recommends that this encoding is not used.
-	#define TEXval_WBCACHE		0x01
-	#define Cval_WBCACHE		1
-	#define Bval_WBCACHE		1
-	#if WITHSMPSYSTEM
-		#define SHAREDval_WBCACHE 1		// required for ldrex.. and strex.. functionality
-	#else /* WITHSMPSYSTEM */
-		#define SHAREDval_WBCACHE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
-	#endif /* WITHSMPSYSTEM */
-#else
-	// Cacheable memory attributes, without TEX remap
-	// DDI0406C_d_armv7ar_arm.pdf
-	// Table B3-11 Inner and Outer cache attribute encoding
-	#define ATTR_AA_WBCACHE 0x01	// Inner attribute - Write-Back, Write-Allocate
-	#define ATTR_BB_WBCACHE 0x01	// Outer attribute - Write-Back, Write-Allocate
-	#define TEXval_WBCACHE		(0x04 | (ATTR_BB_WBCACHE))
-	#define Cval_WBCACHE		(((ATTR_AA_WBCACHE) & 0x02) != 0)
-	#define Bval_WBCACHE		(((ATTR_AA_WBCACHE) & 0x01) != 0)
-	#if WITHSMPSYSTEM
-		#define SHAREDval_WBCACHE 1		// required for ldrex.. and strex.. functionality
-	#else /* WITHSMPSYSTEM */
-		#define SHAREDval_WBCACHE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
-	#endif /* WITHSMPSYSTEM */
-#endif
+// Cacheable memory attributes, without TEX remap
+// DDI0406C_d_armv7ar_arm.pdf
+// Table B3-11 Inner and Outer cache attribute encoding
+#define ATTR_AA_WBCACHE 0x01	// Inner attribute - Write-Back, Write-Allocate
+#define ATTR_BB_WBCACHE 0x01	// Outer attribute - Write-Back, Write-Allocate
+#define TEXval_WBCACHE		(0x04 | (ATTR_BB_WBCACHE))
+#define Cval_WBCACHE		(((ATTR_AA_WBCACHE) & 0x02) != 0)
+#define Bval_WBCACHE		(((ATTR_AA_WBCACHE) & 0x01) != 0)
+#if WITHSMPSYSTEM
+	#define SHAREDval_WBCACHE 1		// required for ldrex.. and strex.. functionality
+#else /* WITHSMPSYSTEM */
+	#define SHAREDval_WBCACHE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+#endif /* WITHSMPSYSTEM */
 
-#if 0
-	/* Outer and Inner Write-Through, no Write-Allocate */
-	#define TEXval_DEVICE		0x00
-	#define Cval_DEVICE			1
-	#define Bval_DEVICE			0
-	#define SHAREDval_DEVICE 	1	/* has meaning */
-#elif 1
-	/* Shareable Device */
-	#define TEXval_DEVICE       0x00
-	#define Cval_DEVICE         0
-	#define Bval_DEVICE         1
-	#define SHAREDval_DEVICE 	0
-
-#elif 1
-	// Cacheable memory attributes, without TEX remap
-	// DDI0406C_d_armv7ar_arm.pdf
-	// Table B3-11 Inner and Outer cache attribute encoding
-	#define ATTR_AA_DEVICE 0x00	// Inner attribute - Non-cacheable
-	#define ATTR_BB_DEVICE 0x00	// Outer attribute - Non-cacheable
-	#define TEXval_DEVICE		(0x04 | (ATTR_BB_DEVICE))
-	#define Cval_DEVICE		(((ATTR_AA_DEVICE) & 0x02) != 0)
-	#define Bval_DEVICE		(((ATTR_AA_DEVICE) & 0x01) != 0)
-	#if WITHSMPSYSTEM
-		#define SHAREDval_DEVICE 1		// required for ldrex.. and strex.. functionality
-	#else /* WITHSMPSYSTEM */
-		#define SHAREDval_DEVICE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
-	#endif /* WITHSMPSYSTEM */
-
-#else
-	/* Non-shareable Device */
-	#define TEXval_DEVICE		0x02
-	#define Cval_DEVICE			0
-	#define Bval_DEVICE			0
-	#define SHAREDval_DEVICE 	0
-#endif
-
+/* Shareable Device */
+#define TEXval_DEVICE       0x00
+#define Cval_DEVICE         0
+#define Bval_DEVICE         1
+#define SHAREDval_DEVICE 	0
 
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
-
 
 #define	TTB_PARA(TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
 		(SECTIONval) * (1uL << 0) |	/* 0b10, Section or Supersection */ \
@@ -2681,7 +2637,6 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 		0 * (1uL << 19) |	/* NS */ \
 		0 \
 	)
-
 
 //; setting for Outer and inner not cache normal memory
 // not used
