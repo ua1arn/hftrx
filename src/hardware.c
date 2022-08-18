@@ -2547,19 +2547,19 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
 #define	TTB_PARA(TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
-		(SECTIONval) * (1uL << 0) |	/* 0b10, Section or Supersection */ \
-		!! (Bv) * (1uL << 2) |	/* B */ \
-		!! (Cv) * (1uL << 3) |	/* C */ \
-		!! (XNv) * (1uL << 4) |	/* XN The Execute-never bit. */ \
-		(DOMAINv) * (1uL << 5) |	/* DOMAIN */ \
-		0 * (1uL << 9) |	/* implementation defined */ \
-		(((APv) >> 0) & 0x03) * (1uL << 10) |	/* AP [1..0] */ \
-		((TEXv) & 0x07) * (1uL << 12) |	/* TEX */ \
-		(((APv) >> 2) & 0x01) * (1uL << 15) |	/* AP[2] */ \
-		!! (SHAREDv) * (1uL << 16) |	/* S */ \
-		0 * (1uL << 17) |	/* nG */ \
-		0 * (1uL << 18) |	/* 0 */ \
-		0 * (1uL << 19) |	/* NS */ \
+		(SECTIONval) * (1u << 0) |	/* 0b10, Section or Supersection */ \
+		!! (Bv) * (1u << 2) |	/* B */ \
+		!! (Cv) * (1u << 3) |	/* C */ \
+		!! (XNv) * (1u << 4) |	/* XN The Execute-never bit. */ \
+		(DOMAINv) * (1u << 5) |	/* DOMAIN */ \
+		0 * (1u << 9) |	/* implementation defined */ \
+		(((APv) >> 0) & 0x03) * (1u << 10) |	/* AP [1..0] */ \
+		((TEXv) & 0x07) * (1u << 12) |	/* TEX */ \
+		(((APv) >> 2) & 0x01) * (1u << 15) |	/* AP[2] */ \
+		!! (SHAREDv) * (1u << 16) |	/* S */ \
+		0 * (1u << 17) |	/* nG */ \
+		0 * (1u << 18) |	/* 0 */ \
+		0 * (1u << 19) |	/* NS */ \
 		0 \
 	)
 
