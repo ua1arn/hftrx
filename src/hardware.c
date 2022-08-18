@@ -2509,81 +2509,6 @@ void IRQ_Handler_GIC(void)
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
-/******************************************************************************/
-
-// TTB initialize
-
-// SAM9XE512 bits
-//#define TLB_NCNB 0x0DF2 // Noncachable, Nonbufferable 11 0 1111 1 00 10
-//#define TLB_WT 0x0DFA // Write-through 11 0 1111 1 10 10
-//#define TLB_WB 0x0DFE // Write-back 11 0 1111 1 11 10
-//#define TLB_INVALID 0x0000 // Write-back 11 0 1111 1 11 10
-
-
-/*
-
-; ---- Parameter setting to level1 descriptor (bits 19:0) ----
-; setting for Strongly-ordered memory
-TTB_PARA_STRGLY             EQU     2_00000000000000000000110111100010
-; setting for Outer and inner not cache normal memory
-TTB_PARA_NORMAL_NOT_CACHE   EQU     2_00000000000000000001110111100010
-; setting for Outer and inner write back, write allocate normal memory (Cacheable)
-TTB_PARA_NORMAL_CACHE       EQU     2_00000000000000000001110111101110
-
-; ---- Memory area size (MB) ----
-M_SIZE_NOR      EQU     128             ; [Area00] CS0, CS1 area (for NOR flash)
-M_SIZE_SDRAM    EQU     128             ; [Area01] CS2, CS3 area (for SDRAM)
-M_SIZE_CS45     EQU     128             ; [Area02] CS4, CS5 area
-M_SIZE_SPI      EQU     128             ; [Area03] SPI, SP2 area (for Serial flash)
-M_SIZE_RAM      EQU     10              ; [Area04] Internal RAM
-M_SIZE_IO_1     EQU     502             ; [Area05] I/O area 1
-M_SIZE_NOR_M    EQU     128             ; [Area06] CS0, CS1 area (for NOR flash) (mirror)
-M_SIZE_SDRAM_M  EQU     128             ; [Area07] CS2, CS3 area (for SDRAM) (mirror)
-M_SIZE_CS45_M   EQU     128             ; [Area08] CS4, CS5 area (mirror)
-M_SIZE_SPI_M    EQU     128             ; [Area09] SPI, SP2 area (for Serial flash) (mirror)
-M_SIZE_RAM_M    EQU     10              ; [Area10] Internal RAM (mirror)
-M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
-;===================================================================
-; Cortex-A9 MMU Configuration
-; Set translation table base
-;===================================================================
-    ;;; Cortex-A9 supports two translation tables
-    ;;; Configure translation table base (TTB) control register cp15,c2
-    ;;; to a value of all zeros, indicates we are using TTB register 0.
-    MOV  r0,#0x0
-    MCR  p15, 0, r0, c2, c0, 2      ;;; TTBCR
-
-    ;;; write the address of our page table base to TTB register 0
-    LDR  r0,=||Image$$TTB$$ZI$$Base||
-    MOV  r1, #0x08                  ;;; RGN=b01  (outer cacheable write-back cached, write allocate)
-                                    ;;; S=0      (translation table walk to non-shared memory)
-    ORR  r1,r1,#0x40                ;;; IRGN=b01 (inner cacheability for the translation table walk is Write-back Write-allocate)
-    ORR  r0,r0,r1
-    MCR  p15, 0, r0, c2, c0, 0      ;;; TTBR0
-
-;===================================================================
-; PAGE TABLE generation
-; Generate the page tables
-; Build a flat translation table for the whole address space.
-; ie: Create 4096 1MB sections from 0x000xxxxx to 0xFFFxxxxx
-; 31                 20 19  18  17  16 15  14   12 11 10  9  8     5   4    3 2   1 0
-; |section base address| 0  0  |nG| S |AP2|  TEX  |  AP | P | Domain | XN | C B | 1 0|
-;
-; Bits[31:20]   - Top 12 bits of VA is pointer into table
-; nG[17]=0      - Non global, enables matching against ASID in the TLB when set.
-; S[16]=0       - Indicates normal memory is shared when set.
-; AP2[15]=0
-; AP[11:10]=11  - Configure for full read/write access in all modes
-; TEX[14:12]=000
-; CB[3:2]= 00   - Set attributes to Strongly-ordered memory.
-;                 (except for the descriptor where code segment is based, see below)
-; IMPP[9]=0     - Ignored
-; Domain[5:8]=1111   - Set all pages to use domain 15
-; XN[4]=0       - Execute never disabled
-; Bits[1:0]=10  - Indicate entry is a 1MB section
-;===================================================================
-
-  */
 
 // Short-descriptor format memory region attributes, without TEX remap
 // When using the Short-descriptor translation table formats, TEX remap is disabled when SCTLR.TRE is set to 0.
@@ -2638,17 +2563,9 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 		0 \
 	)
 
-//; setting for Outer and inner not cache normal memory
-// not used
-//#define	TTB_PARA_NORMAL_NOT_CACHE(ro, xn) TTB_PARA(TEXval_NOCACHE, Bval_NOCACHE, Cval_NOCACHE, DOMAINval, SHAREDval_WBCACHE, (ro) ? APROval : APRWval, (xn) != 0)
-
-//; setting for Outer and inner write back, write allocate normal memory (Cacheable)
-//#define	TTB_PARA_NORMAL_CACHE       0b_0000_0001_1101_1110_1110
-#define	TTB_PARA_NORMAL_CACHE(ro, xn) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, SHAREDval_WBCACHE, (ro) ? APROval : APRWval, (xn) != 0)
-
-#define	TTB_PARA_DEVICE TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
-
-#define	TTB_PARA_NO_ACCESS 0
+#define	TTB_PARA_CACHED(ro, xn) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, SHAREDval_WBCACHE, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_NO_ACCESS 		0
 
 /*
  * https://community.st.com/s/question/0D73W000000UagD/what-a-type-of-mmu-memory-regions-recommended-for-regions-with-peripheralsstronglyordered-or-device?s1oid=00Db0000000YtG6&s1nid=0DB0X000000DYbd&emkind=chatterCommentNotification&s1uid=0050X000007vtUt&emtm=1599464922440&fromEmail=1&s1ext=0&t=1599470826880
@@ -2670,22 +2587,22 @@ static uint32_t
 FLASHMEMINITFUNC
 ttb_accessbits(uintptr_t a, int ro, int xn)
 {
-	const uint32_t addrbase = a & 0xFFF00000uL;
+	const uint32_t addrbase = a & 0xFFF00000;
 
 #if CPUSTYLE_R7S721020
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	if (a == 0x00000000uL)
+	if (a == 0x00000000)
 		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
-	if (a >= 0x18000000uL && a < 0x20000000uL)			// FIXME: QSPI memory mapped should be R/O, but...
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 0, 0);
+	if (a >= 0x18000000 && a < 0x20000000)			// FIXME: QSPI memory mapped should be R/O, but...
+		return addrbase | TTB_PARA_CACHED(ro || 0, 0);
 
-	if (a >= 0x00000000uL && a < 0x00A00000uL)			// up to 10 MB
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
-	if (a >= 0x20000000uL && a < 0x20A00000uL)			// up to 10 MB
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0x00000000 && a < 0x00A00000)			// up to 10 MB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+	if (a >= 0x20000000 && a < 0x20A00000)			// up to 10 MB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	return addrbase | TTB_PARA_DEVICE;
 
@@ -2693,34 +2610,34 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	if (a < 0x10000000uL)			// BOOT
-		return addrbase | TTB_PARA_NO_ACCESS;			// NULL pointers access trap
+	if (a < 0x10000000)			// BOOT
+		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
-	if (a >= 0x20000000uL && a < 0x30000000uL)			// SYSRAM
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0x20000000 && a < 0x30000000)			// SYSRAM
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0x40000000uL && a < 0x60000000uL)			//  peripherials 1, peripherials 2
+	if (a >= 0x40000000 && a < 0x60000000)			//  peripherials 1, peripherials 2
 		return addrbase | TTB_PARA_DEVICE;
 
-	if (a >= 0x60000000uL && a < 0x70000000uL)			//  FMC NOR
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0x60000000 && a < 0x70000000)			//  FMC NOR
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0x70000000uL && a < 0xA0000000uL)			//  QUADSPI, FMC NAND, ...
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
+	if (a >= 0x70000000 && a < 0xA0000000)			//  QUADSPI, FMC NAND, ...
+		return addrbase | TTB_PARA_CACHED(ro || 1, 0);
 
-	if (a >= 0xA0000000uL && a < 0xC0000000uL)			//  GIC
+	if (a >= 0xA0000000 && a < 0xC0000000)			//  GIC
 		return addrbase | TTB_PARA_DEVICE;
 #if 1
 	// 1 GB DDR RAM memory size allowed
-	if (a >= 0xC0000000uL)								// DDR memory
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0xC0000000)							// DDR memory
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 #else
 
-	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0xC0000000 && a < 0xE0000000)			// DDR memory
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0xE0000000uL)								//  DEBUG
+	if (a >= 0xE0000000)							//  DEBUG
 		return addrbase | TTB_PARA_DEVICE;
 
 #endif
@@ -2735,23 +2652,23 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 		return addrbase | TTB_PARA_DEVICE;
 #endif /* WITHLWIP */
 
-	if (a >= 0x00000000uL && a < 0x00100000uL)			//  OCM (On Chip Memory), DDR3_SCU
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0x00100000uL && a < 0x40000000uL)			//  DDR3 - 255 MB
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0x00100000 && a < 0x40000000)			//  DDR3 - 255 MB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0xE1000000uL && a < 0xE6000000uL)			//  SMC (Static Memory Controller)
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0xE1000000 && a < 0xE6000000)			//  SMC (Static Memory Controller)
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0x40000000uL && a < 0xFC000000uL)	// PL, peripherials
+	if (a >= 0x40000000 && a < 0xFC000000)	// PL, peripherials
 		return addrbase | TTB_PARA_DEVICE;
 
-	if (a >= 0xFC000000uL && a < 0xFE000000uL)			//  Quad-SPI linear address for linear mode
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 0, 0);
+	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
+		return addrbase | TTB_PARA_CACHED(ro || 0, 0);
 
-	if (a >= 0xFFF00000uL)			// OCM (On Chip Memory) is mapped high
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	return addrbase | TTB_PARA_DEVICE;
 
@@ -2759,35 +2676,35 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	if (a >= 0x00000000uL && a < 0x00100000uL)			//  OCM (On Chip Memory), DDR3_SCU
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0x00100000uL && a < 0x40000000uL)			//  DDR3 - 255 MB
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0x00100000 && a < 0x40000000)			//  DDR3 - 255 MB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0xE1000000uL && a < 0xE6000000uL)			//  SMC (Static Memory Controller)
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0xE1000000 && a < 0xE6000000)			//  SMC (Static Memory Controller)
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0x40000000uL && a < 0xFC000000uL)	// PL, peripherials
+	if (a >= 0x40000000 && a < 0xFC000000)	// PL, peripherials
 		return addrbase | TTB_PARA_DEVICE;
 
-	if (a >= 0xFC000000uL && a < 0xFE000000uL)			//  Quad-SPI linear address for linear mode
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
+	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
+		return addrbase | TTB_PARA_CACHED(ro || 1, 0);
 
-	if (a >= 0xFFF00000uL)			// OCM (On Chip Memory) is mapped high
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYPE_T113
 
-	if (a < 0x00400000uL)
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a < 0x00400000)
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0x40000000uL && a < 0xC0000000uL)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR3 - 2 GB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+//		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	return addrbase | TTB_PARA_DEVICE;
 
