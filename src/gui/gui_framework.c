@@ -1093,6 +1093,7 @@ static void draw_button(const button_t * const bh)
 			bg = b1->bg_pressed;
 		else if (! bh->is_locked && bh->state != PRESSED)
 			bg = b1->bg_non_pressed;
+		ASSERT(bg != NULL);
 #if GUI_OLDBUTTONSTYLE
 		colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, y1, (uintptr_t) bg, GXSIZE(bh->w, bh->h), bg, bh->w, bh->h);
 #else
