@@ -406,9 +406,9 @@ static RAMDTCM volatile FLOAT_t amshapesignalHALF;
 static RAMDTCM volatile FLOAT_t amcarrierHALF;
 static RAMDTCM volatile FLOAT_t scaleDAC = 1;
 
-static RAMDTCM FLOAT_t shapeSidetoneStep(void);		// 0..1
-static RAMDTCM FLOAT_t shapeCWEnvelopStep(void);	// 0..1
-static RAMDTCM uint_fast8_t getTxShapeNotComplete(void);
+static FLOAT_t shapeSidetoneStep(void);		// 0..1
+static FLOAT_t shapeCWEnvelopStep(void);	// 0..1
+static uint_fast8_t getTxShapeNotComplete(void);
 
 static uint_fast8_t getRxGate(void);	/* разрешение работы тракта в режиме приёма */
 
