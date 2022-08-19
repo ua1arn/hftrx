@@ -374,7 +374,7 @@
 	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
 	/* датчик температуры MCP9700, без делителя и подтяжки на +12В, на R131 перемычка - параметры ниже */
-	#define WITHTHERMOLEVEL	1	/* отображение температуры */
+	//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 	#define THERMOSENSOR_UPPER		0	// 0 Ohm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1.0 kOhm - нижний резистор
 	#define THERMOSENSOR_OFFSET 	(- 500)	// температура при 0 вольт с датчика. MCP9700 parameter // При 0 °С на выходе 500 мВ. Шкала 10 mV / °С
