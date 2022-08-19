@@ -4229,12 +4229,11 @@ void parse_ft8_answer(char * str, COLORMAIN_T * color, uint8_t * cq_flag)
 	* color = COLORMAIN_WHITE;
 	* cq_flag = 0;
 	char tmpstr [TEXT_ARRAY_SIZE];
+	char lexem [10][10]; // time; freq; snr; text 2 - 4 pcs
 	strcpy(tmpstr, str);
 
-	char lexem [10][10]; // time; freq; snr; text 2 - 4 pcs
-
 	char * l = strtok(tmpstr, " ");
-	for (uint8_t i = 0; i < 10; i ++)
+	for (uint8_t i = 0; i < ARRAY_SIZE(lexem); i ++)
 	{
 		if (l == NULL)
 			break;
@@ -4247,7 +4246,7 @@ void parse_ft8_answer(char * str, COLORMAIN_T * color, uint8_t * cq_flag)
 	{
 		* color = COLORMAIN_GREEN;
 		* cq_flag = 1;
-		if (idx_cqcall < 6)
+		if (idx_cqcall < ARRAY_SIZE(cq_call))
 			strcpy(cq_call [idx_cqcall ++], lexem[4]);
 	}
 	else if (! strcmp(lexem[3], gui_nvram.ft8_callsign))
