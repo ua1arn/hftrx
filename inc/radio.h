@@ -130,6 +130,7 @@ typedef uint_least64_t phase_t;
 	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 #endif /* WITHIF4DSP */
 
 #define CWPITCHMIN10	(100 / 10) // (400 / 10) kenwood min value 400 Hz
