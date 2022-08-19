@@ -1143,24 +1143,23 @@ static void draw_button(const button_t * const bh)
 	}
 	else
 	{
-		struct _reent treent;
 		/* Двухстрочная надпись */
 		uint_fast8_t j = (bh->h - SMALLCHARH2 * 2) / 2;
 		char buf [TEXT_ARRAY_SIZE];
 		strcpy(buf, bh->text);
-		char * text2 = _strtok_r(& treent, buf, delimeters);
+		char * text2 = strtok(buf, delimeters);
 #if WITHALTERNATIVEFONTS
 		UB_Font_DrawPString(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
 				shift + y1 + j, text2, & FONT_BUTTONS, COLORMAIN_BLACK);
 
-		text2 = _strtok_r(& treent, NULL, delimeters);
+		text2 = strtok(NULL, delimeters);
 		UB_Font_DrawPString(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
 				shift + bh->h + y1 - FONT_BUTTONS.height - j, text2, & FONT_BUTTONS, COLORMAIN_BLACK);
 #else
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(text2))) / 2,
 				shift + y1 + j, text2, COLORMAIN_BLACK);
 
-		text2 = _strtok_r(& treent, NULL, delimeters);
+		text2 = strtok(NULL, delimeters);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(text2))) / 2,
 				shift + bh->h + y1 - SMALLCHARH2 - j, text2, COLORMAIN_BLACK);
 #endif /* WITHALTERNATIVEFONTS */
