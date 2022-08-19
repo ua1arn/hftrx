@@ -524,7 +524,7 @@ void nmea_parsechar(uint_fast8_t c)
 		{
 			if (strcmp(nmeaparser_get_buff(NMF_CODE), "ANSW") == 0)
 			{
-				struct _reent treent;
+				struct _reent treent = { 0 };
 				//
 				const adcvalholder_t EXTFS = 0x0FFF;	// в тюнере стоит 12-бит АЦП
 				// board_adc_store_data
