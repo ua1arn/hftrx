@@ -1998,7 +1998,6 @@ static void window_utilites_process(void)
 		uint_fast16_t x = 0, y = 0;
 		uint_fast8_t interval = 6, row_count = 4;
 		win->first_call = 0;
-		update = 1;
 
 		static const button_t buttons [] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan",  "SWR|scanner", },
@@ -2031,6 +2030,15 @@ static void window_utilites_process(void)
 			}
 		}
 
+		button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
+		button_t * btn_pingtest = find_gui_element(TYPE_BUTTON, win, "btn_pingtest");
+#if ! WITHTX
+		btn_SWRscan->state = DISABLED;
+#endif /* WITHTX */
+#if ! WITHLWIP
+		btn_pingtest->state = DISABLED;
+#endif /* WITHLWIP */
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
@@ -2045,7 +2053,6 @@ static void window_utilites_process(void)
 			button_t * btn_kbdtest = find_gui_element(TYPE_BUTTON, win, "btn_kbdtest");
 			button_t * btn_pingtest = find_gui_element(TYPE_BUTTON, win, "btn_pingtest");
 			button_t * btn_3d = find_gui_element(TYPE_BUTTON, win, "btn_3d");
-			button_t * btn_client = find_gui_element(TYPE_BUTTON, win, "btn_client");
 
 			if (bh == btn_kbdtest)
 			{
@@ -2073,18 +2080,6 @@ static void window_utilites_process(void)
 	default:
 
 		break;
-	}
-
-	if (update)
-	{
-		update = 0;
-
-		button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
-#if WITHTX
-		btn_SWRscan->state = CANCELLED;
-#else
-		btn_SWRscan->state = DISABLED;
-#endif /* WITHTX */
 	}
 }
 
