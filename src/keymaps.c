@@ -663,35 +663,6 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
-#elif ELKEY328
-// 328 
-const struct qmkey qmdefs [NQMKEYS] =
-{
-	// ADC7 (ki2)
-	{ KIF_NONE, KBD_CODE_VIBROCTL, 	KBD_CODE_VIBROCTL,  },		
-	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },	
-	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },	
-	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },	
-	// ADC6 (ki1)
-	{ KIF_SLOW, KBD_CODE_CWSPEEDUP, 	KBD_CODE_CWSPEEDUP,		 },
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX,	 },
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX,	 },
-	// ADC5 (ki0)
-	{ KIF_SLOW, KBD_CODE_CWSPEEDDOWN,	KBD_CODE_CWSPEEDDOWN, },	
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
-	// encoder2 & power buttons
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
-};
-
-uint_fast8_t getexitkey(void)
-{
-	return KBD_CODE_MAX;
-}
-
 #elif KEYB_VERTICAL
 
 // повернутое на 90 градусов - 4 строки по 3 кнопки
@@ -1950,69 +1921,6 @@ uint_fast8_t getexitkey(void)
 	{
 		return KBD_CODE_DISPMODE;
 	}
-
-#elif KEYBOARD_XXXXX
-/*
-
-	Геннадий привет! Вот набросал как я хотел бы распределить
-	назначение кнопок,если это конечно возможно:
-
-	17--	увеличение  скорости ТЛГ-ключа
-	16--	уменьшение ск-сти ТЛГ-ключа
-	15--	VOX  ВКЛ/Выкл
-	14--	MODE                                                                                      
-	13--	SPLIT                                                                                                 
-	12--	TX  передача
-                                                                                          
-	11--	Меню
-	10--	Запись  ТЛГ ключа в память
-	9---	Воспроиз-е ТЛГ ключа из памяти
-	8---	Полоса 0,7  ,2,7
-	7---	UP  диап-ны
-	6---	DOWN  диапазоны
-                                                                   
-	5---	перестрйка  по диапазону в верх
-	4---	блокировка
-	3---	перест-ка в низ
-	2---	TUNE                                                                                            
-	1---	УВЧ   вкл/выкл
-	0---	АТТ
-
-*/
-
-/* расположение кнопок для 18-ти клавишной клавиатуры */
-const struct qmkey qmdefs [NQMKEYS] =
-{
-	//ki2-правый ряд
-	{ KIF_NONE,	KBD_CODE_ATT,	KBD_CODE_MAX, },
-	{ KIF_NONE,	KBD_CODE_PAMP,	KBD_CODE_MAX, },
-	{ KIF_NONE,	KBD_CODE_TXTUNE,	KBD_CODE_MAX, },
-	{ KIF_FAST,	ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, },
-	{ KIF_FAST, ENC_CODE_STEP_UP, 	ENC_CODE_STEP_UP, },
-	{ KIF_NONE, KBD_CODE_LOCK, 	KBD_CODE_MAX, },
-	//ki1-центральный ряд
-	{ KIF_SLOW,	KBD_CODE_BAND_DOWN,	KBD_CODE_BAND_DOWN, },
-	{ KIF_SLOW,	KBD_CODE_BAND_UP,	KBD_CODE_BAND_UP, },
-	{ KIF_NONE,	KBD_CODE_BW,	KBD_CODE_MAX, },
-	{ KIF_NONE,	KBD_CODE_MAX,	KBD_CODE_MAX, },
-	{ KIF_NONE, KBD_CODE_MAX, 	KBD_CODE_MAX, },
-	{ KIF_EXTMENU, KBD_CODE_DISPMODE, KBD_CODE_MENU,  },
-	//ki0-левый ряд
-	{ KIF_NONE,	KBD_CODE_MOX,	KBD_CODE_MAX, },
-	{ KIF_ERASE,KBD_CODE_SPLIT,KBD_CODE_SPLIT_HOLDED, },
-	{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD,  },
-	{ KIF_NONE,	KBD_CODE_VOXTOGGLE,	KBD_CODE_MAX, },
-	{ KIF_SLOW, KBD_CODE_CWSPEEDDOWN, 	KBD_CODE_CWSPEEDDOWN, },
-	{ KIF_SLOW, KBD_CODE_CWSPEEDUP, 	KBD_CODE_CWSPEEDUP, },
-	// encoder2 & power buttons
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-};
-
-uint_fast8_t getexitkey(void)
-{
-	return KBD_CODE_DISPMODE;
-}
 
 #elif REQUEST_BA
 

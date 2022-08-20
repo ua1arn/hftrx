@@ -3488,13 +3488,8 @@ const char * get_band_label3(unsigned b); /* получение человеко
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 #endif /* WITHPOTGAIN */
 
-#if ELKEY328
-	#define CWWPMMIN	12 //328 10
-	#define CWWPMMAX	30 //328 60
-#else
-	#define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
-	#define CWWPMMAX	60
-#endif
+#define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
+#define CWWPMMAX	60
 
 
 #ifdef __cplusplus

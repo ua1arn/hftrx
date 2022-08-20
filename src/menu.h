@@ -1332,18 +1332,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& elkeyslope,
 		getzerobase, 
 	},
-    #if ELKEY328
-	{
-		QLABEL("VIBROENB"), 8, 3, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
-		ITEM_VALUE,
-		0, 1,		// minimal 0 - без эффекта Виброплекса
-		offsetof(struct nvmap, elkeyslopeenable),
-		nvramoffs0,
-		NULL,
-		& elkeyslopeenable,
-		getzerobase, 
-	},
-    #endif /* ELKEY328 */
   #endif /* WITHVIBROPLEX */
 	{
 		QLABEL("KEYER   "), 6, 0, RJ_ELKEYMODE,	ISTEP1,

@@ -8133,8 +8133,6 @@ hardware_get_ptt(void)
 {
 #if WITHBBOX && defined (WITHBBOXTX)
 	return WITHBBOXTX;	// автоматический переход на передачу
-#elif ELKEY328
-	return 1;	// todo: 328
 #elif defined (HARDWARE_GET_PTT)
 	return HARDWARE_GET_PTT();
 #else /*  */

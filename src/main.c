@@ -3234,7 +3234,6 @@ filter_t fi_2p0_455 =
 	uint8_t elkeyreverse;	
 #if WITHVIBROPLEX
 	uint8_t elkeyslope;	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
-	uint8_t elkeyslopeenable;	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 #endif /* WITHVIBROPLEX */
 #endif /* WITHELKEY */
 
@@ -4121,26 +4120,12 @@ enum
 	static uint_fast8_t spaceratio = 10;	/* отношение паузы к длительности точки - в десятках процентов */
 	static uint_fast8_t elkeyreverse;
 
-	#if WITHVIBROPLEX
-		#if ELKEY328
-			static uint_fast8_t elkeymode = 1;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-			static uint_fast8_t elkeyslope = 3;	/* ELKEY328 скорость уменьшения длительности точки и паузы - имитация виброплекса */
-			static uint_fast8_t elkeyslopeenable = 1;
-		#else
-			static uint_fast8_t elkeymode;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-			static uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
-			static uint_fast8_t elkeyslopeenable = 1;
-		#endif
-	#else
-		static uint_fast8_t elkeymode;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-		static uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
-		static uint_fast8_t elkeyslopeenable = 1;
+	static uint_fast8_t elkeymode;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+	static uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 
-	#endif /* WITHVIBROPLEX */
 #else
 	//static const uint_fast8_t elkeymode = 2;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	//static const uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
-	//static const uint_fast8_t elkeyslopeenable;
 #endif
 
 
@@ -7466,13 +7451,9 @@ getsubmode(
    )
 {
 	ASSERT(bi < 2);
-#if ELKEY328
-	return SUBMODE_CW;//328
-#else /* ELKEY328 */
 	const uint_fast8_t moderow = gmoderows [bi];
 	const uint_fast8_t modecol = getmodecol(moderow, modes [moderow][0] - 1, 0, bi);	/* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
 	return modes [moderow][modecol + 1];	/* выборка из битовой маски */
-#endif /* ELKEY328 */
 }
 
 /* функция вызывается из updateboard при измененияя параметров приёма
@@ -10845,13 +10826,9 @@ updateboardZZZ(
 	#if WITHELKEY
 		board_set_wpm(elkeywpm.value);	/* скорость электронного ключа */
 		#if WITHVIBROPLEX
-			elkey_set_slope(elkeyslopeenable ? elkeyslope : 0);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
+			elkey_set_slope(elkeyslope);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
-		#if ELKEY328
-			elkey_set_format(elkeyslopeenable ? 27 : dashratio, spaceratio);	/* соотношение тире к точке (в десятках процентов) */
-		#else
 			elkey_set_format(dashratio, spaceratio);	/* соотношение тире к точке (в десятках процентов) */
-		#endif
 			elkey_set_mode(elkeymode, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		#if WITHTX && WITHELKEY
 			seq_set_bkin_enable(bkinenable, bkindelay);			/* параметры BREAK-IN */
@@ -11746,17 +11723,6 @@ uif_key_click_notch(void)
 }
 
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
-
-#if ELKEY328
-
-static void 
-uif_key_click_vibroplex(void)
-{
-	elkeyslopeenable = calc_next(elkeyslopeenable, 0, 1);
-	updateboard(1, 0);
-}
-
-#endif /* ELKEY328 */
 
 /* блокировка енкодера */
 static void 
@@ -17376,36 +17342,6 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_user3();
 		return 1;	/* клавиша уже обработана */
 #endif /* KEYBSTYLE_RA4YBO_AM0 */
-
-#if WITHELKEY
-
-	case KBD_CODE_CWSPEEDDOWN:
-			if (elkeywpm.value > CWWPMMIN)
-			{
-				elkeywpm.value -= 1;
-				save_i8(offsetof(struct nvmap, elkeywpm), elkeywpm.value);
-				updateboard(1, 0);
-			}
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_CWSPEEDUP:
-			if (elkeywpm.value < CWWPMMAX)
-			{
-				elkeywpm.value += 1;
-				save_i8(offsetof(struct nvmap, elkeywpm), elkeywpm.value);
-				updateboard(1, 0);
-			}
-		return 1;	/* клавиша уже обработана */
-
-#endif /* WITHELKEY */
-
-#if ELKEY328
-	case KBD_CODE_VIBROCTL:
-		/* переключение режима аттенюатора  */
-		uif_key_click_vibroplex();
-		return 1;	// требуется обновление индикатора
-
-#endif /* ELKEY328 */
 
 	case KBD_CODE_ATT:
 		/* переключение режима аттенюатора  */
