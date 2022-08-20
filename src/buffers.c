@@ -684,8 +684,6 @@ void buffers_initialize(void)
 	ticker_add(& buffticker);
 #endif /* WITHBUFFERSDEBUG */
 
-	unsigned i;
-
 #if WITHINTEGRATEDDSP
 
 	deliverylist_initialize(& rtstargetsint);
@@ -710,6 +708,7 @@ void buffers_initialize(void)
 #endif /* WITHSKIPUSERMODE */
 
 	{
+		unsigned i;
 		enum { NVCOICESFREE16RX = (2 * MIKELEVEL + 1 * RESAMPLE16NORMAL) * BUFOVERSIZE };
 		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16rx_t voicesarray16rx [NVCOICESFREE16RX] ALIGNX_END;
 
@@ -729,6 +728,7 @@ void buffers_initialize(void)
 
 	}
 	{
+		unsigned i;
 		// Могут быть преобразованы до двух буферов шумоподавителя при нормальной работе
 		enum { NVCOICESFREE16TX = (2 * PHONESLEVEL + 2 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX) * BUFOVERSIZE };
 		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16tx_t voicesarray16tx [NVCOICESFREE16TX] ALIGNX_END;
@@ -746,7 +746,7 @@ void buffers_initialize(void)
 		SPINLOCK_INITIALIZE(& locklist16tx);
 	}
 	{
-
+		unsigned i;
 		static RAMBIGDTCM_MDMA uacin16_t uacinarray16 [24 * BUFOVERSIZE];
 
 		InitializeListHead2(& uacinfree16);	// Незаполненные
@@ -769,7 +769,7 @@ void buffers_initialize(void)
 
 	#if WITHRTS192
 	{
-
+		unsigned i;
 		RAMBIG static RAM_D1 voice192rts_t voicesarray192rts [4 * BUFOVERSIZE];
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice192rts_t, item));
@@ -792,6 +792,7 @@ void buffers_initialize(void)
 	}
 	#elif WITHRTS96
 	{
+		unsigned i;
 		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice96rts_t voicesarray96rts [4 * BUFOVERSIZE] ALIGNX_END;
 
 		ASSERT(offsetof(uacin16_t, item) == offsetof(voice96rts_t, item));
@@ -815,6 +816,7 @@ void buffers_initialize(void)
 	}
 	#endif /* WITHRTS192 */
 	{
+		unsigned i;
 		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32tx_t voicesarray32tx [6 * BUFOVERSIZE] ALIGNX_END;
 
 		InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
@@ -829,6 +831,7 @@ void buffers_initialize(void)
 		SPINLOCK_INITIALIZE(& locklist32tx);
 	}
 	{
+		unsigned i;
 	    static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32rx_t voicesarray32rx [6 * BUFOVERSIZE] ALIGNX_END;	// без WFM надо 2
 
 		InitializeListHead2(& voicesfree32rx);	// Незаполненные
@@ -857,6 +860,7 @@ void buffers_initialize(void)
 	#else
 		static RAM_D1 records16_t recordsarray16 [8 * BUFOVERSIZE];
 	#endif
+		unsigned i;
 
 		/* Подготовка буферов для записи на SD CARD */
 		InitializeListHead2(& recordsready16);	// Заполненные - готовые для записи на SD CARD
@@ -872,6 +876,7 @@ void buffers_initialize(void)
 
 #if WITHMODEM
 	{
+		unsigned i;
 		static modems8_t modemsarray8 [8];
 
 		/* Подготовка буферов для обмена с модемом */
@@ -888,7 +893,8 @@ void buffers_initialize(void)
 #endif /* WITHMODEM */
 
 	{
-		static RAMBIGDTCM denoise16_t speexarray16 [4 * BUFOVERSIZE];	// буеры: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
+		unsigned i;
+		static RAMBIGDTCM denoise16_t speexarray16 [4];	// буеры: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
 
 		InitializeListHead2(& speexfree16);	// Незаполненные
 		InitializeListHead2(& speexready16);	// Для обработки
@@ -904,6 +910,7 @@ void buffers_initialize(void)
 #endif /* WITHINTEGRATEDDSP */
 
 	{
+		unsigned i;
 		/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 		static RAMBIGDTCM message_t messagesarray8 [12];
 
