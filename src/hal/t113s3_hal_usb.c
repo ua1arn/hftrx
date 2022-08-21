@@ -23,8 +23,8 @@
 #include "usbh_core.h"
 #include "usbh_def.h"
 
-#include "allwnr_t113s3_hal.h"
-#include "allwnr_hal_usb.h"
+#include "t113s3_hal.h"
+#include "t113s3_hal_usb.h"
 
 
 

@@ -613,6 +613,6 @@ uint_fast8_t 			HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd);
 
 #endif
 
-#include "allwnr_hal_usb.h"
+#include "t113s3_hal_usb.h"
 
 #endif /* SRC_HAL_ALLWNRT113S3_HAL_H_ */

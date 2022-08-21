@@ -61,7 +61,7 @@
 
 #elif CPUSTYPE_T113
 
-	#include "allwnr_t113s3_hal.h"
+	#include "t113s3_hal.h"
 
 #endif
 

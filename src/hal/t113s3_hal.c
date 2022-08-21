@@ -13,7 +13,7 @@
 
 #include "board.h"
 #include "formats.h"
-#include "allwnr_t113s3_hal.h"
+#include "t113s3_hal.h"
 
 //uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
 

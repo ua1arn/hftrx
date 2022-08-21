@@ -3,12 +3,12 @@
  *
  */
 
-#ifndef SRC_HAL_RZA1XX_HAL_USB_H_
-#define SRC_HAL_RZA1XX_HAL_USB_H_
+#ifndef SRC_T113_S3_HAL_USB_H_
+#define SRC_T113_S3_HAL_USB_H_
 
 #include "hardware.h"
 
-#include "allwnr_t113s3_hal.h"
+#include "t113s3_hal.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -1779,4 +1779,4 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 
 
-#endif /* SRC_HAL_RZA1XX_HAL_USB_H_ */
+#endif /* SRC_T113_S3_HAL_USB_H_ */
