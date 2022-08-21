@@ -287,6 +287,7 @@ window_t * get_win(uint8_t window_id)
 void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
+	hamradio_set_lockmode(0);
 	gui_update();
 }
 
@@ -720,6 +721,7 @@ static void gui_main_process(void)
 
 		load_settings();
 		elements_state(win);
+		hamradio_set_lockmode(0);
 
 #if WITHGUIDEBUG
 		for (uint_fast8_t i = 0; i < tmpstr_index; i ++)
@@ -1991,7 +1993,6 @@ static void window_display_process(void)
 static void window_utilites_process(void)
 {
 	window_t * const win = get_win(WINDOW_UTILS);
-	uint_fast8_t update = 0;
 
 	if (win->first_call)
 	{
@@ -4573,6 +4574,7 @@ static void window_ft8_process(void)
 		}
 		work = 0;
 
+		hamradio_set_lockmode(1);
 		display2_set_page_temp(display_getpagegui());
 	}
 
