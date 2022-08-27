@@ -15,15 +15,6 @@ extern "C" {
 #endif
 
 
-
-#ifndef min
-#define min( x, y ) ( (x) < (y) ? (x) : (y) )
-#endif
-
-#define  wBoot_dma_QueryState(hdma)  0
-#define  wBoot_dma_stop(hdma)        do { } while (0)
-#define  wBoot_dma_request(sect)     0
-
 //#define DISK_DDR 1
 //#define  wBoot_part_start(part)      0
 //#define  wBoot_part_capacity(sect)   (AW_RAMDISK_SIZE/512)                     /* ����� �������� ������������ �����, ������ = 512 ���� */
@@ -93,12 +84,12 @@ typedef struct {
 	uint32_t bo_xfer_residue;			//Bulk only data residue length
 	uint32_t bo_xfer_tranferred;  //Bulk only data transferred length
 
-	//uint32_t bo_memory_base;
-	//uint32_t bo_capacity;
-	//uint32_t bo_seccnt;
-	//uint32_t bo_bufbase;
+	uint32_t bo_memory_base;
+	uint32_t bo_capacity;
+	uint32_t bo_seccnt;
+	uint32_t bo_bufbase;
 
-	//uint32_t csw_fail_flag;
+	uint32_t csw_fail_flag;
 } usb_device, *pusb_device;
 
 typedef struct {
@@ -151,8 +142,8 @@ typedef struct {
 	uint32_t ep0_xfer_tranferred;
 	//uSetupPKG ep0_setup;
 
-	//volatile uint32_t eptx_flag[USB_MAX_EP_NO];
-	//volatile uint32_t eprx_flag[USB_MAX_EP_NO];
+	volatile uint32_t eptx_flag[USB_MAX_EP_NO];
+	volatile uint32_t eprx_flag[USB_MAX_EP_NO];
 	#define USB_EPX_SETUP					0
 	#define USB_EPX_DATA					1
 	#define USB_EPX_END						2
@@ -178,75 +169,72 @@ typedef struct {
 	uint32_t timeout;   //timeout value (in ms)
 	uint32_t loop;      //Loop counter
 
-//	#define USB_BUFFER_SIZE							256
-//	#define USB_EP0_OUT_BUFFER_START		8
-	//uint8_t buffer[USB_BUFFER_SIZE];
-	//uint8_t setupb [8];
+	#define USB_BUFFER_SIZE							256
+	#define USB_EP0_OUT_BUFFER_START		8
+	uint8_t buffer[USB_BUFFER_SIZE];
+	uint8_t setupb [8];
 
   uint32_t power_debouce;
 } usb_struct, *pusb_struct;
 
-//typedef struct
-//{
-//    uint32_t dCBWSig;
-//    uint32_t dCBWTag;
-//    uint32_t dCBWDTL;
-//    uint8_t  bmCBWFlg;
-//    uint8_t  bCBWLUN   : 4;
-//    uint8_t  bCBWRes1  : 4;   //Reserved
-//    uint8_t  bCBWCBL   : 5;
-//    uint8_t  bCBWRes2  : 3;   //Reserved
-//    uint8_t  CBWCB[16];
-//} uCBWPKG, *pCBWPKG;
+typedef struct
+{
+    uint32_t dCBWSig;
+    uint32_t dCBWTag;
+    uint32_t dCBWDTL;
+    uint8_t  bmCBWFlg;
+    uint8_t  bCBWLUN   : 4;
+    uint8_t  bCBWRes1  : 4;   //Reserved
+    uint8_t  bCBWCBL   : 5;
+    uint8_t  bCBWRes2  : 3;   //Reserved
+    uint8_t  CBWCB[16];
+} uCBWPKG, *pCBWPKG;
 
-//typedef struct
-//{
-//  	uint32_t dCSWSig;
-//  	uint32_t dCSWTag;
-//  	uint32_t dCSWDataRes;
-//  	uint8_t  bCSWStatus;
-//} uCSWPKG, *pCSWPKG;
-//
-//
-//
-//
-//typedef struct
-//{
-//  uint8_t  bLength;
-//  uint8_t  bDesType;
-//  uint8_t  wTotalLen0;
-//  uint8_t  wTotalLen1;
-//  uint8_t  bNumIntf;
-//  uint8_t  bConfigVal;
-//  uint8_t  iConfig;
-//  uint8_t  bmAttrib;
-//  uint8_t  MaxPower;
-//} uConfigDes, *pConfigDes;
-//
-//typedef struct
-//{
-//  uint8_t  bLength;
-//  uint8_t  bDesType;
-//  uint8_t  bIntfNum;
-//  uint8_t  bAltSet;
-//  uint8_t  bNumEP;
-//  uint8_t  bIntfClass;
-//  uint8_t  bIntfSubClass;
-//  uint8_t  bIntfProtocol;
-//  uint8_t  iInterface;
-//} uIntfDes, *pIntfDes;
-//
-//
-//typedef struct
-//{
-//  uint8_t  bLength;
-//  uint8_t  bDesType;
-//  uint8_t  bEPAddr;
-//  uint8_t  bmAttrib;
-//  uint8_t  wMaxPktSize0;
-//  uint8_t  wMaxPktSize1;
-//  uint8_t  bInterval;
-//} uEPDes, *pEPDes;
+typedef struct
+{
+  	uint32_t dCSWSig;
+  	uint32_t dCSWTag;
+  	uint32_t dCSWDataRes;
+  	uint8_t  bCSWStatus;
+} uCSWPKG, *pCSWPKG;
+
+typedef struct
+{
+  uint8_t  bLength;
+  uint8_t  bDesType;
+  uint8_t  wTotalLen0;
+  uint8_t  wTotalLen1;
+  uint8_t  bNumIntf;
+  uint8_t  bConfigVal;
+  uint8_t  iConfig;
+  uint8_t  bmAttrib;
+  uint8_t  MaxPower;
+} uConfigDes, *pConfigDes;
+
+typedef struct
+{
+  uint8_t  bLength;
+  uint8_t  bDesType;
+  uint8_t  bIntfNum;
+  uint8_t  bAltSet;
+  uint8_t  bNumEP;
+  uint8_t  bIntfClass;
+  uint8_t  bIntfSubClass;
+  uint8_t  bIntfProtocol;
+  uint8_t  iInterface;
+} uIntfDes, *pIntfDes;
+
+
+typedef struct
+{
+  uint8_t  bLength;
+  uint8_t  bDesType;
+  uint8_t  bEPAddr;
+  uint8_t  bmAttrib;
+  uint8_t  wMaxPktSize0;
+  uint8_t  wMaxPktSize1;
+  uint8_t  bInterval;
+} uEPDes, *pEPDes;
 
 
 uint32_t usb_get_bus_interrupt_status(pusb_struct pusb);
