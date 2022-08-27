@@ -4295,7 +4295,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	bootloader_readimage(0x00040000, (void *) ddr3init_base, 0x8000);
 	memcpy((void *) (ddr3init_base + 0x0038), & ddr3, sizeof ddr3);
 	((void(*)(void))(ddr3init_base))();
-	//set_pll_cpux_axi(PLL_CPU_N);
+	set_pll_cpux_axi(PLL_CPU_N);
 	#if WITHDEBUG && 1
 		//HARDWARE_DEBUG_INITIALIZE();
 		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
