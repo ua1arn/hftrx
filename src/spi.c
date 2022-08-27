@@ -4319,6 +4319,9 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			    SPI0->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			break;
+		case SPDFIO_2WIRE:
+			ASSERT(0);
+			break;
 		}
 
 		SPI0->SPI_TCR |= (1 << 31);	// XCH
@@ -4330,7 +4333,6 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		for (i = 0; i < chunk; i ++)
 		{
 			const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
-			//PRINTF("RX: %02X\chunk", v);
 			if (rx != NULL)
 				* rx++ = v;
 		}
@@ -4339,7 +4341,6 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			tx += chunk;
 		count -= chunk;
 	}
-
 
 	return len;
 }
@@ -4355,7 +4356,7 @@ void spidf_initialize(void)
 {
 	hardware_spi_master_initialize();
 	prog_select_init();		// spi CS initialize
-	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
+	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 }
 
 static void spidf_unselect(void)
@@ -4421,7 +4422,7 @@ static void spidf_iostart(
 
 	spi_operate_lock();
 
-	hardware_spi_connect(SPIC_SPEEDFAST, SPIC_MODE0);
+	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE0);
 
 	// assert CS
 	prog_select(targetdataflash);

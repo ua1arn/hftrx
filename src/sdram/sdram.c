@@ -4290,10 +4290,11 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	};
 
 #if 1
+	const uintptr_t ddr3init_base = 0x00028000;
 	/* вызывается до разрешения MMU */
-	bootloader_readimage(0x00040000, (void *) 0x00028000, 32768);
-	memcpy((void *) 0x00028038, & ddr3, sizeof ddr3);
-	((void(*)(void))(0x00028000))();
+	bootloader_readimage(0x00040000, (void *) ddr3init_base, 0x8000);
+	memcpy((void *) (ddr3init_base + 0x0038), & ddr3, sizeof ddr3);
+	((void(*)(void))(ddr3init_base))();
 	//set_pll_cpux_axi(PLL_CPU_N);
 	#if WITHDEBUG && 1
 		//HARDWARE_DEBUG_INITIALIZE();
