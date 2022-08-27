@@ -35,8 +35,8 @@
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_ANTMINER 1
 
-#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
-#define WITHUARTFIFO	1	/* испольование FIFO */
+//#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
+//#define WITHUARTFIFO	1	/* испольование FIFO */
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART2	1

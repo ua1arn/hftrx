@@ -6,7 +6,8 @@
 #include <limits.h>
 #include "formats.h"	// for debug prints
 
-#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+#if (CPUSTYLE_XC7Z)
+
 #include <xdebug.h>
 #include <xil_io.h>
 #include "zynq_vdma.h"
@@ -503,4 +504,4 @@ int Vdma_Start(XAxiVdma *InstancePtr)
 	return XST_SUCCESS;
 }
 
-#endif /* (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) */
+#endif /* (CPUSTYLE_XC7Z) */

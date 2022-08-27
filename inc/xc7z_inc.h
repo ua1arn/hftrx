@@ -1,3 +1,5 @@
+#if (CPUSTYLE_XC7Z)
+
 #include "xparameters.h"
 #include "xil_exception.h"
 #include "xil_types.h"
@@ -31,3 +33,5 @@
 	#include "lib/zynq/src_7020/xadcps_v2_6/xadcps.h"
 	#include "lib/zynq/src_7020/dmaps_v2_8/xdmaps.h"
 #endif /*  */
+
+#endif /* (CPUSTYLE_XC7Z) */

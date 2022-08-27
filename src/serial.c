@@ -349,7 +349,7 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 		HARDWARE_UART1_ONTXCHAR(& SCIF0);
 	}
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 
 #elif CPUSTYPE_T113
@@ -544,7 +544,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 	else
 		SCIF0.SCSCR &= ~ SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 
 //	if (state)
@@ -675,7 +675,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 	else
 		SCIF0.SCSCR &= ~ SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 
 //	if (state)
@@ -755,7 +755,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 #elif CPUSTYLE_STM32MP1
 	#warning Insert code for CPUSTYLE_STM32MP1
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	UART0->FIFO = c;
 
@@ -863,7 +863,7 @@ hardware_uart1_getchar(char * cp)
 	* cp = SCIF0.SCFRDR;
 	SCIF0.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	if ((UART0->SR & XUARTPS_SR_RXEMPTY) != 0)
 		return 0;
@@ -970,7 +970,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 	SCIF0.SCFTDR = c;
 	SCIF0.SCFSR = (uint16_t) ~ (1U << SCIF0_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	if ((UART0->SR & XUARTPS_SR_TNFUL) != 0)
 		return 0;
@@ -1356,7 +1356,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	SCLR->APER_CLK_CTRL |= (0x01uL << 20);	// APER_CLK_CTRL.UART0_CPU_1XCLKACT
@@ -1600,7 +1600,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 		HARDWARE_UART2_ONTXCHAR(& SCIF3);
 	}
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 
 
@@ -1740,7 +1740,7 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 	else
 		SCIF3.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 
 #else
@@ -1851,7 +1851,7 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 	else
 		SCIF3.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 
 #else
@@ -1916,7 +1916,7 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	UART1->FIFO = c;
 
@@ -2030,7 +2030,7 @@ hardware_uart2_getchar(char * cp)
 	* cp = SCIF3.SCFRDR;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	if ((UART1->SR & XUARTPS_SR_RXEMPTY) != 0)
 		return 0;
@@ -2139,7 +2139,7 @@ hardware_uart2_putchar(uint_fast8_t c)
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	if ((UART1->SR & XUARTPS_SR_TNFUL) != 0)
 		return 0;
@@ -2532,7 +2532,7 @@ xxxx!;
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART1.
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	SCLR->APER_CLK_CTRL |= (0x01uL << 21);	// APER_CLK_CTRL.UART1_CPU_1XCLKACT
@@ -7019,7 +7019,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF0.SCBRR = value;	/* Bit rate register */
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	  uint32_t r; // Temporary value variable
 	  r = UART0->CR;
@@ -7213,7 +7213,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	  uint32_t r; // Temporary value variable
 	  r = UART1->CR;

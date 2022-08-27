@@ -3,7 +3,7 @@
 #define TAILDEFS_H_INCLUDED
 
 
-#if WITHINTEGRATEDDSP && CPUSTYLE_ARM && ! __aarch64__
+#if WITHINTEGRATEDDSP && CPUSTYLE_ARM && ! defined(__aarch64__)
 	#define ARM_MATH_LOOPUNROLL 1
 	#define DISABLEFLOAT16 1
 
