@@ -3962,7 +3962,13 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 extern "C" {
 #endif /* __cplusplus */
 
-#if (__CORTEX_M == 0)
+void _exit(int code)
+{
+	for (;;)
+		;
+}
+
+#if 0//(__CORTEX_M == 0) && 0
 
 // Используется в случае наличия ключа ld -nostartfiles
 // Так же смотреть вокруг software_init_hook
@@ -4016,62 +4022,62 @@ void _fini(void)
 extern "C" {
 #endif /* __cplusplus */
 
-static int SER_GetChar(void)
-{
-
-	return (-1);
-}
-
-/*-- GCC - Newlib runtime support --------------------------------------------*/
-
-int __attribute__((used)) (_open)(const char * path, int flags, ...)
-{
-	return (-1);
-}
-
-int __attribute__((used)) (_close)(int fd) {
-	return (-1);
-}
-
-int __attribute__((used)) (_lseek)(int fd, int ptr, int dir)
-{
-	return (0);
-}
-
-int __attribute__((used)) (_fstat)(int fd, struct stat * st)
-{
-	memset(st, 0, sizeof(*st));
-	st->st_mode = S_IFCHR;
-	return (0);
-}
-
-int __attribute__((used)) (_isatty)(int fd)
-{
-	return (1);
-}
-
-int __attribute__((used)) (_read)(int fd, char * ptr, int len) {
-	char c;
-	int i;
-
-	for (i = 0; i < len; i++) {
-		c = SER_GetChar();
-		if (c == 0x0D)
-			break;
-		*ptr++ = c;
-		dbg_putchar(c);
-	}
-	return (len - i);
-}
-
-int __attribute__((used)) (_write)(int fd, char * ptr, int len)
-{
-	int i;
-
-	for (i = 0; i < len; i++)
-		dbg_putchar(* ptr ++);
-	return (i);
-}
+//static int SER_GetChar(void)
+//{
+//
+//	return (-1);
+//}
+//
+///*-- GCC - Newlib runtime support --------------------------------------------*/
+//
+//int __attribute__((used)) (_open)(const char * path, int flags, ...)
+//{
+//	return (-1);
+//}
+//
+//int __attribute__((used)) (_close)(int fd) {
+//	return (-1);
+//}
+//
+//int __attribute__((used)) (_lseek)(int fd, int ptr, int dir)
+//{
+//	return (0);
+//}
+//
+//int __attribute__((used)) (_fstat)(int fd, struct stat * st)
+//{
+//	memset(st, 0, sizeof(*st));
+//	st->st_mode = S_IFCHR;
+//	return (0);
+//}
+//
+//int __attribute__((used)) (_isatty)(int fd)
+//{
+//	return (1);
+//}
+//
+//int __attribute__((used)) (_read)(int fd, char * ptr, int len) {
+//	char c;
+//	int i;
+//
+//	for (i = 0; i < len; i++) {
+//		c = SER_GetChar();
+//		if (c == 0x0D)
+//			break;
+//		*ptr++ = c;
+//		dbg_putchar(c);
+//	}
+//	return (len - i);
+//}
+//
+//int __attribute__((used)) (_write)(int fd, char * ptr, int len)
+//{
+//	int i;
+//
+//	for (i = 0; i < len; i++)
+//		dbg_putchar(* ptr ++);
+//	return (i);
+//}
 
 #if WITHUSEMALLOC
 #if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_T113) && ! WITHISBOOTLOADER
@@ -4120,22 +4126,22 @@ char * __attribute__((used)) (_sbrk)(ptrdiff_t incr)
 
 // Corte-A9 reauire
 
-
-void __attribute__((used)) (_exit)(int code)
-{
-	for (;;)
-		;
-}
-
-int __attribute__((used)) (_kill)(int id)
-{
-	return (-1);
-}
-
-int __attribute__((used)) (_getpid)(int id)
-{
-	return (-1);
-}
+//
+//void __attribute__((used)) (_exit)(int code)
+//{
+//	for (;;)
+//		;
+//}
+//
+//int __attribute__((used)) (_kill)(int id)
+//{
+//	return (-1);
+//}
+//
+//int __attribute__((used)) (_getpid)(int id)
+//{
+//	return (-1);
+//}
 
 
 struct _reent * __getreent(void)
