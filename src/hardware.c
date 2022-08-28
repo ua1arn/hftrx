@@ -3962,6 +3962,16 @@ void _exit(int code)
 		;
 }
 
+// See
+// https://github.com/littlekernel/newlib/blob/master/libgloss/arm/crt0.S
+
+// User mode only:           This routine makes default target specific Stack
+
+void _stack_init(void)
+{
+
+}
+
 #if 0//(__CORTEX_M == 0) && 0
 
 // Используется в случае наличия ключа ld -nostartfiles

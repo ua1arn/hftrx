@@ -46,13 +46,31 @@ SECTIONS
 	{
 		. = ALIGN(32);
 		KEEP(*(.startup0))
-		KEEP(*(.init))
-		KEEP(*(.initfunc*))
-		KEEP(*(.initdata*))
-		KEEP(*(.fini))
+		*(.initfunc*)
+		*(.initdata*)
 
 		*(.text*)
-		. = ALIGN(4);
+		KEEP(*(.init))
+		KEEP(*(.fini))
+		
+		/* .ctors */
+		*crtbegin.o(.ctors)
+		*crtbegin?.o(.ctors)
+		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+		*(SORT(.ctors.*))
+		*(.ctors)
+
+		/* .dtors */
+ 		*crtbegin.o(.dtors)
+ 		*crtbegin?.o(.dtors)
+ 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+ 		*(SORT(.dtors.*))
+ 		*(.dtors)
+
+		*(.rodata*)
+
+		KEEP(*(.eh_frame*))
+
 	} > RAM
 
 	.ARM.extab :
@@ -108,24 +126,6 @@ SECTIONS
 		__data_start__ = .;
 		. = ALIGN(64);
 
-		/* .ctors */
-		*crtbegin.o(.ctors)
-		*crtbegin?.o(.ctors)
-		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-		*(SORT(.ctors.*))
-		*(.ctors)
-
-		/* .dtors */
- 		*crtbegin.o(.dtors)
- 		*crtbegin?.o(.dtors)
- 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
- 		*(SORT(.dtors.*))
- 		*(.dtors)
-
-		*(.rodata*)
-
-		KEEP(*(.eh_frame*))
-
 		*(.data*)
 
 		. = ALIGN(4);
@@ -151,7 +151,7 @@ SECTIONS
 
 		KEEP(*(.jcr*))
 		/* All data end */
-		. = ALIGN(64);
+
 		__data_end__ = .;
 
 	} > RAM
@@ -161,15 +161,14 @@ SECTIONS
 	.sysram : AT (__etext2)
 	{
 		__data2_start__ = .;
-		. = ALIGN(32);
+		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
-		. = ALIGN(64);
+
 		*(.itcm*)
-		. = ALIGN(64);
 		*(.dtcm*)
-		. = ALIGN(32);
+
 		__data2_end__ = .;
 	} > RAM /* was: STSRAN */
 
@@ -179,10 +178,10 @@ SECTIONS
 	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
-		. = ALIGN(32);
+		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(32);
+
 		__bss_end__ = .;
 	} > RAM
 
@@ -190,9 +189,7 @@ SECTIONS
 	{
 		. = ALIGN(64);
 		*(.noinit*)
-		. = ALIGN(64);
 		*(.framebuff*)
-		. = ALIGN(64);
 	} > RAM
 
 	.heap (NOLOAD):
