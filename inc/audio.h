@@ -910,7 +910,7 @@ void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 #endif /* WITHINTEGRATEDDSP */
 
 
-uint32_t allocate_dmabuffer192rts(void);
+uintptr_t allocate_dmabuffer192rts(void);
 
 FLOAT_t get_lout(void); // тестовые функции
 FLOAT_t get_rout(void);

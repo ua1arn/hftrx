@@ -2262,7 +2262,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 
 	if (prepareout32tx == NULL)
 	{
-		const uint32_t addr = allocate_dmabuffer32tx();
+		const uintptr_t addr = allocate_dmabuffer32tx();
 		voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
 		prepareout32tx = p;
 		level32tx = 0;
@@ -2445,7 +2445,7 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		// Этой функцией пользуются обработчики прерываний DMA
 		// получить буфер для передачи в компьютер, через USB AUDIO
 		// Если в данный момент нет готового буфера, возврат 0
-		static uint32_t getfilled_dmabuffer96uacinrts(void)
+		static uintptr_t getfilled_dmabuffer96uacinrts(void)
 		{
 			SPIN_LOCK(& locklistrts);
 			if (! IsListEmpty2(& uacin96rtsready))
@@ -2481,7 +2481,7 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 			{
 				if (! isrts96())
 					return;
-				uint32_t addr = allocate_dmabuffer96rts();
+				uintptr_t addr = allocate_dmabuffer96rts();
 				p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
 				n = 0;
 				ASSERT(p->tag == BUFFTAG_RTS96);
@@ -2538,7 +2538,7 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		}
 
 		// Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
-		uint32_t allocate_dmabuffer192rts(void)
+		uintptr_t allocate_dmabuffer192rts(void)
 		{
 			SPIN_LOCK(& locklistrts);
 			if (! IsListEmpty2(& voicesfree192rts))
@@ -2592,7 +2592,7 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 		// Этой функцией пользуются обработчики прерываний DMA
 		// передали буфер, считать свободным
-		static void release_dmabuffer192rts(uint32_t addr)
+		static void release_dmabuffer192rts(uintptr_t addr)
 		{
 			voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
 			ASSERT(p->tag == BUFFTAG_RTS192);
@@ -2618,7 +2618,7 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 			{
 				if (! isrts192())
 					return;
-				uint32_t addr = allocate_dmabuffer192rts();
+				uintptr_t addr = allocate_dmabuffer192rts();
 				p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
 				n = 0;
 
