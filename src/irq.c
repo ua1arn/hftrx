@@ -1503,7 +1503,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 
 	return 0;
 
-#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#elif (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
 	// Cortex-A computers
 
 	return __get_MPIDR() & 0x03;

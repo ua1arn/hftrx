@@ -22,7 +22,7 @@
 	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
 #endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if CPUSTYLE_XC7Z
 
 extern uint8_t bd_space[];
 
@@ -2393,21 +2393,21 @@ void IRQ_Handler_GIC(void)
  * the GIC cpu interface. GIC_SPURIOUS_INTERRUPT is returned when there is no
  * interrupt pending.
  ******************************************************************************/
-unsigned int gicv2_get_pending_interrupt_id(void)
-{
-	unsigned int id;
-
-	id = GIC_GetHighPendingIRQ() & INT_ID_MASK;	// HIPPR
-
-	/*
-	 * Find out which non-secure interrupt it is under the assumption that
-	 * the GICC_CTLR.AckCtl bit is 0.
-	 */
-	if (id == PENDING_G1_INTID)
-		id = GICInterface->AHPPIR & INT_ID_MASK;
-
-	return id;
-}
+//unsigned int gicv2_get_pending_interrupt_id(void)
+//{
+//	unsigned int id;
+//
+//	id = GIC_GetHighPendingIRQ() & INT_ID_MASK;	// HIPPR
+//
+//	/*
+//	 * Find out which non-secure interrupt it is under the assumption that
+//	 * the GICC_CTLR.AckCtl bit is 0.
+//	 */
+//	if (id == PENDING_G1_INTID)
+//		id = GICInterface->AHPPIR & INT_ID_MASK;
+//
+//	return id;
+//}
 
 //static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
 
@@ -2438,10 +2438,10 @@ void IRQ_Handler_GIC(void)
 //	default:
 //		break;
 //	}
-	(void) GICInterface->HPPIR;
+	//(void) GICInterface->HPPIR;
+	(void) GIC_GetHighPendingIRQ();
 
-	//const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID in high bits, Interrupt ID
-	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID - use GIC_AcknowledgePending
+	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
 
 	const IRQn_ID_t int_id = gicc_iar & 0x3ffuL;
 
@@ -2457,7 +2457,8 @@ void IRQ_Handler_GIC(void)
 		//dbg_putchar('2');
 		//SPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-		GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority(0, GIC_GetPriority(0));
 		//SPIN_UNLOCK(& giclock);
 
 	}
@@ -2496,13 +2497,14 @@ void IRQ_Handler_GIC(void)
 		//dbg_putchar('3');
 		//SPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-		GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority(0, GIC_GetPriority(0));
 		//SPIN_UNLOCK(& giclock);
 	}
 	//dbg_putchar(' ');
 
-	//GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
-	GICInterface->EOIR = gicc_iar;
+	GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
+	//GICInterface->EOIR = gicc_iar;
 }
 #endif
 
@@ -2755,7 +2757,7 @@ sysinit_ttbr_initialize(void)
 	    ; 2     - IMP     0x0  (Implementation Defined)
 	    ; 1     - S       0x0  (Non-shared)
 	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
-	__set_TTBR0((unsigned int) tlbbase | 0x48);	// TTBR0
+	__set_TTBR0((uintptr_t) tlbbase | 0x48);	// TTBR0
 	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
 	  __ISB();
 
@@ -2942,7 +2944,7 @@ __STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
+#if(__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
 	extern unsigned long __Vectors;
 

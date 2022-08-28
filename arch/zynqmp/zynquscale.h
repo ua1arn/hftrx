@@ -214,7 +214,7 @@ typedef enum IRQn
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
 #define __CA_REV         		    0x0000    /*!< Core revision r0p0       */
 
-#define __CORTEX_A                    7U      /*!< Cortex-A# Core                              */
+#define __CORTEX_A                    53U      /*!< Cortex-A# Core                              */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
