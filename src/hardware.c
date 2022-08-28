@@ -2856,15 +2856,13 @@ sysinit_fpu_initialize(void)
 static void FLASHMEMINITFUNC
 sysintt_sdram_initialize(void)
 {
-#if WITHSDRAMHW && WITHISBOOTLOADER
+#if WITHSDRAMHW
 	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
-	arm_hardware_sdram_initialize();
+	#if WITHISBOOTLOADER || (CTLSTYLE_V1D || CTLSTYLE_V3D)
+		arm_hardware_sdram_initialize();
 
-#elif WITHSDRAMHW && (CTLSTYLE_V1D || CTLSTYLE_V3D)
-	/* В процессоре есть внешняя память - только данные */
-	arm_hardware_sdram_initialize();
-
-#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
+	#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
+#endif /* WITHSDRAMHW */
 }
 
 static void FLASHMEMINITFUNC
@@ -3066,8 +3064,6 @@ sysinit_cache_initialize(void)
 		L1C_InvalidateDCacheAll();
 		L1C_InvalidateICacheAll();
 		L1C_InvalidateBTAC();
-		L1C_EnableCaches();
-		L1C_EnableBTAC();
 		L1C_EnableCaches();
 		L1C_EnableBTAC();
 		#if (__CORTEX_A == 9U)
@@ -3336,8 +3332,6 @@ void Reset_CPUn_Handler(void)
 	L1C_InvalidateDCacheAll();
 	L1C_InvalidateICacheAll();
 	L1C_InvalidateBTAC();
-	L1C_EnableCaches();
-	L1C_EnableBTAC();
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
 	#if (__L2C_PRESENT == 1)

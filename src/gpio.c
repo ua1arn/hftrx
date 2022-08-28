@@ -836,6 +836,7 @@ void gpioX_setstate(
 	const uint32_t cpsr = gpioX_lock(gpio);
 
 	gpio->DATA = (gpio->DATA & ~ mask) | (state & mask);
+	(void) gpio->DATA;
 
 	gpioX_unlock(gpio, cpsr);
 }

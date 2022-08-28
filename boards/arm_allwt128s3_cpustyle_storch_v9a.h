@@ -458,9 +458,9 @@
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
 		switch (target) { \
-		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); local_delay_us(1); } break; /* PC3 SPI0_CS */ \
-		case targetrtc1: { gpioX_setstate(GPIOG, (target), 1 * (target)); local_delay_us(1); } break; \
-		default: { gpioX_setstate(GPIOG, (target), 0 * (target)); local_delay_us(1); } break; \
+		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; /* PC3 SPI0_CS */ \
+		case targetrtc1: { gpioX_setstate(GPIOG, (target), 1 * (target)); } break; \
+		default: { gpioX_setstate(GPIOG, (target), 0 * (target)); } break; \
 		case targetnone: break; \
 		} \
 	} while (0)
@@ -468,9 +468,9 @@
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
 		switch (target) { \
-		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); local_delay_us(1); } break; /* PC3 SPI0_CS */ \
-		case targetrtc1: { gpioX_setstate(GPIOG, (target), 0 * (target)); local_delay_us(1); } break; \
-		default: { gpioX_setstate(GPIOG, (target), 1 * (target)); local_delay_us(1); } break; \
+		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; /* PC3 SPI0_CS */ \
+		case targetrtc1: { gpioX_setstate(GPIOG, (target), 0 * (target)); } break; \
+		default: { gpioX_setstate(GPIOG, (target), 1 * (target)); } break; \
 		case targetnone: break; \
 		} \
 	} while (0)
@@ -502,11 +502,11 @@
 	#define SPDIF_D2_BIT (1u << 6)		// PC6 SPI0_WP/D2
 	#define SPDIF_D3_BIT (1u << 7)		// PC7 SPI0_HOLD/D3
 
-//	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
-//	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+//	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); } while (0)
+//	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); } while (0)
 //
-//	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
-//	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+//	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); } while (0)
+//	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); } while (0)
 //
 //	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
 
@@ -614,8 +614,8 @@
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
 	#define FPGA_NCONFIG_BIT		(1u << 12)	/* PE12 bit conneced to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
