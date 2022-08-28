@@ -25,7 +25,7 @@
 #include "RTE_Components.h"
 #include CMSIS_device_header
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) && ! defined(__aarch64__)
 
 //Fault Status Register (IFSR/DFSR) definitions
 #define FSR_ALIGNMENT_FAULT                  0x01   //DFSR only. Fault on first lookup

@@ -4711,7 +4711,7 @@ void arm_cmplx_mult_real_f64(
         uint32_t blkCnt;                               /* Loop counter */
         float64_t in;                                  /* Temporary variable */
 
-#if defined(ARM_MATH_NEON) && !defined(ARM_MATH_AUTOVECTORIZE)
+#if 0//defined(ARM_MATH_NEON) && !defined(ARM_MATH_AUTOVECTORIZE)
     float32x4_t r;
     float32x4x2_t ab,outCplx;
 

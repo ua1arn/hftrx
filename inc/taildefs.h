@@ -3,9 +3,16 @@
 #define TAILDEFS_H_INCLUDED
 
 
-#if WITHINTEGRATEDDSP && CPUSTYLE_ARM && ! defined(__aarch64__)
+#if WITHINTEGRATEDDSP && CPUSTYLE_ARM
 	#define ARM_MATH_LOOPUNROLL 1
 	#define DISABLEFLOAT16 1
+
+	#if defined(__aarch64__)
+		#define DISABLEFLOAT16 1
+		#define ARM_MATH_DSP 1
+		#define ARM_MATH_NEON 1
+		#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif
 
 	#include "arm_math.h"
 	#include "arm_const_structs.h"

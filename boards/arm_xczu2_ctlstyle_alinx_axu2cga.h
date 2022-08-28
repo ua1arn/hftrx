@@ -7,8 +7,8 @@
 //
 // Трансивер с DSP обработкой "Аист" на процессоре ZYNQ 7000
 
-#ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_ALINX_AXU2CGA_H_INCLUDED
-#define ARM_X7C7XX_BGAXXX_CTLSTYLE_ALINX_AXU2CGA_H_INCLUDED 1
+#ifndef ARM_XCZU_BGAXXX_CTLSTYLE_ALINX_AXU2CGA_H_INCLUDED
+#define ARM_XCZU_BGAXXX_CTLSTYLE_ALINX_AXU2CGA_H_INCLUDED 1
 
 	#if ! defined(XCZU2)
 		#error Wrong CPU selected. XCZU2 expected
@@ -275,8 +275,8 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-	#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
-	#define BOARD_BITIMAGE_NAME "build/xczu2/bitstream_alinx_axu2cga.h"
+//	#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+//	#define BOARD_BITIMAGE_NAME "build/xczu2/bitstream_alinx_axu2cga.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -331,6 +331,7 @@
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -606,4 +607,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_X7C7XX_BGAXXX_CTLSTYLE_ALINX_AXU2CGA_H_INCLUDED */
+#endif /* ARM_XCZU_BGAXXX_CTLSTYLE_ALINX_AXU2CGA_H_INCLUDED */

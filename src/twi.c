@@ -1434,7 +1434,7 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 	}
 }
 
-#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && WITHTWIHW
+#elif (CPUSTYLE_XC7Z) && WITHTWIHW
 
 #include "xc7z_inc.h"
 static XIicPs xc7z_iicps;

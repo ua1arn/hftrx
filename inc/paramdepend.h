@@ -911,31 +911,40 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-		// разрешены все
-		#define system_enableIRQ() do { \
-				/*ASSERT(RUNNING_PRI == 0x1F); */\
-				GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED); \
-			} while (0)
-		// разрешены только realtime
-		#define system_disableIRQ() do { \
-				/*ASSERT(RUNNING_PRI == 0x1F); */\
-				GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \
-			} while (0)
-		// разрешены все
-		#define system_enableIRQxxx() do { \
-				__enable_irq(); \
-			} while (0)
-		// разрешены только realtime
-		#define system_disableIRQxxx() do { \
-				__disable_irq(); \
+		#if defined(__aarch64__)
+
+			// разрешены все
+			#define system_enableIRQ() do { \
+				} while (0)
+			// разрешены только realtime
+			#define system_disableIRQ() do { \
+				} while (0)
+
+			#define global_enableIRQ() do { \
+				} while (0)
+			#define global_disableIRQ() do { \
 			} while (0)
 
-		#define global_enableIRQ() do { \
-			__enable_irq(); \
+		#else /* defined(__aarch64__) */
+
+			// разрешены все
+			#define system_enableIRQ() do { \
+					/*ASSERT(RUNNING_PRI == 0x1F); */\
+					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED); \
+				} while (0)
+			// разрешены только realtime
+			#define system_disableIRQ() do { \
+					/*ASSERT(RUNNING_PRI == 0x1F); */\
+					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \
+				} while (0)
+
+			#define global_enableIRQ() do { \
+				__enable_irq(); \
+				} while (0)
+			#define global_disableIRQ() do { \
+				__disable_irq(); \
 			} while (0)
-		#define global_disableIRQ() do { \
-			__disable_irq(); \
-		} while (0)
+		#endif /* defined(__aarch64__) */
 
 	#else /* WITHNESTEDINTERRUPTS */
 
