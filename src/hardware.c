@@ -3948,7 +3948,7 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 	return 1;
 }
 
-#if CPUSTYLE_ARM
+#if 1//CPUSTYLE_ARM
 
 #ifdef __cplusplus
 extern "C" {
@@ -3970,7 +3970,7 @@ void _stack_init(void)
 
 }
 
-#if 0//(__CORTEX_M == 0) && 0
+#if 1//(__CORTEX_M == 0) && 0
 
 // Используется в случае наличия ключа ld -nostartfiles
 // Так же смотреть вокруг software_init_hook
