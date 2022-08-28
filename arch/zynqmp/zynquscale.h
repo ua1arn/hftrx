@@ -120,30 +120,6 @@ typedef enum IRQn
 #define DDRC_CTRL                       0xF8006000L
 #define DDRC_MODE_STATUS                0xF8006054L
 
-/* GPIO registers are not indexed in a particularly convenient manner, but can be calculated
- * via the GPIO bank */
-
-#define GPIO_MASK_DATA_BASE         (GPIO_BASE + 0x0)
-#define GPIO_MASK_DATA_LSW(bank)    (GPIO_MASK_DATA_BASE + (8 * (bank)))
-#define GPIO_MASK_DATA_MSW(bank)    (GPIO_MASK_DATA_BASE + 4 + (8 * (bank)))
-
-#define GPIO_DATA_BASE              (GPIO_BASE + 0x40)
-#define GPIO_DATA(bank)             (GPIO_DATA_BASE + (4 * (bank)))
-
-#define GPIO_DATA_RO_BASE           (GPIO_BASE + 0x60)
-#define GPIO_DATA_RO(bank)          (GPIO_DATA_RO_BASE + (4 * (bank)))
-
-#define GPIO_REGS(bank)             (GPIO_BASE + 0x204 + (0x40 * (bank)))
-#define GPIO_DIRM(bank)             (GPIO_REGS(bank) + 0x0)
-#define GPIO_OEN(bank)              (GPIO_REGS(bank) + 0x4)
-#define GPIO_INT_MASK(bank)         (GPIO_REGS(bank) + 0x8)
-#define GPIO_INT_EN(bank)           (GPIO_REGS(bank) + 0xC)
-#define GPIO_INT_DIS(bank)          (GPIO_REGS(bank) + 0x10)
-#define GPIO_INT_STAT(bank)         (GPIO_REGS(bank) + 0x14)
-#define GPIO_INT_TYPE(bank)         (GPIO_REGS(bank) + 0x18)
-#define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
-#define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
-
 /* memory addresses */
 /* assumes sram is mapped at 0 the first MB of sdram is covered by it */
 #define SDRAM_BASE          (0x00100000)
@@ -422,6 +398,31 @@ typedef struct slcr_regs {
 } SLCR_Registers;
 
 #define ZYNQ_MIO_CNT    54
+
+
+/* GPIO registers are not indexed in a particularly convenient manner, but can be calculated
+ * via the GPIO bank */
+
+#define GPIO_MASK_DATA_BASE         (GPIO_BASE + 0x0)
+#define GPIO_MASK_DATA_LSW(bank)    (GPIO_MASK_DATA_BASE + (8 * (bank)))
+#define GPIO_MASK_DATA_MSW(bank)    (GPIO_MASK_DATA_BASE + 4 + (8 * (bank)))
+
+#define GPIO_DATA_BASE              (GPIO_BASE + 0x40)
+#define GPIO_DATA(bank)             (GPIO_DATA_BASE + (4 * (bank)))
+
+#define GPIO_DATA_RO_BASE           (GPIO_BASE + 0x60)
+#define GPIO_DATA_RO(bank)          (GPIO_DATA_RO_BASE + (4 * (bank)))
+
+#define GPIO_REGS(bank)             (GPIO_BASE + 0x204 + (0x40 * (bank)))
+#define GPIO_DIRM(bank)             (GPIO_REGS(bank) + 0x0)
+#define GPIO_OEN(bank)              (GPIO_REGS(bank) + 0x4)
+#define GPIO_INT_MASK(bank)         (GPIO_REGS(bank) + 0x8)
+#define GPIO_INT_EN(bank)           (GPIO_REGS(bank) + 0xC)
+#define GPIO_INT_DIS(bank)          (GPIO_REGS(bank) + 0x10)
+#define GPIO_INT_STAT(bank)         (GPIO_REGS(bank) + 0x14)
+#define GPIO_INT_TYPE(bank)         (GPIO_REGS(bank) + 0x18)
+#define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
+#define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
 
 #define SLCR_A9_CPU_CLKSTOP	0x10
 #define SLCR_A9_CPU_RST		0x01
