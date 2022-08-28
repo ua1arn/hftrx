@@ -2318,11 +2318,7 @@ void irqlog_print(void)
 }
 #endif
 
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
-
-#include "hardware.h"
-#include "formats.h"
-//#include "hardware_r7s721.h"
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
 //#define INTC_LEVEL_SENSITIVE    (0)     /* Level sense  */
 //#define INTC_EDGE_TRIGGER       (1)     /* Edge trigger */
@@ -2843,7 +2839,7 @@ sysinit_fpu_initialize(void)
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
 
-#elif (__CORTEX_A != 0)
+#elif (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
 
 	// FPU
 	__FPU_Enable();
@@ -2944,7 +2940,7 @@ __STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
-#if(__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
 	extern unsigned long __Vectors;
 
@@ -2967,7 +2963,7 @@ sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
 
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
 #if 0 && WITHDEBUG
@@ -3125,7 +3121,7 @@ SystemInit(void)
 }
 
 
-#if  (__CORTEX_A != 0) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
 static void cortexa_cpuinfo(void)
 {
@@ -3370,7 +3366,7 @@ void Reset_CPUn_Handler(void)
 // Вызывается из main
 void cpump_initialize(void)
 {
-#if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
+#if 1
 
 	SystemCoreClock = CPU_FREQ;
 
