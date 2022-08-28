@@ -1969,10 +1969,10 @@ static void set_mbus(void)
 
 static void set_module(volatile uint32_t * reg)
 {
-	uint32_t val;
 
 	if(!(* reg & (1 << 31)))
 	{
+		uint32_t val;
 		* reg |= (1 << 31) | (1 << 30);
 
 		/* Lock enable */
