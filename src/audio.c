@@ -816,9 +816,10 @@ adapter_t afcodectx;	/* к наушникам */
 adapter_t ifcodecin;
 adapter_t ifspectrumin;
 adapter_t ifcodecout;
-adapter_t uac48io;
-adapter_t rts96out;
-adapter_t rts192o;
+adapter_t uac48out;	/* Аудиоданные из компютера в трансивер */
+adapter_t uac48in;	/* Аудиоданные в компютер из трансивера */
+adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
+adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
 adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
 transform_t uac48toafcodecrx;	// преобразование из выхода UAB AUDIO48 в формат кодека
 
@@ -849,19 +850,20 @@ static void adapterst_initialize(void)
 	adpt_initialize(& sdcardio, audiorec_getwidth(), 0);
 #endif /* WITHUSEAUDIOREC */
 	/* канал звука USB AUDIO */
-	adpt_initialize(& uac48io, UACOUT_AUDIO48_SAMPLEBITS, 0);
-	transform_initialize(& uac48toafcodecrx, & uac48io, & afcodecrx);
+	adpt_initialize(& uac48in, UACIN_AUDIO48_SAMPLEBITS, 0);	/* Аудиоданные в компютер из трансивера */
+	adpt_initialize(& uac48out, UACOUT_AUDIO48_SAMPLEBITS, 0);	/* Аудиоданные из компютера в трансивер */
+	transform_initialize(& uac48toafcodecrx, & uac48out, & afcodecrx);
 #if WITHRTS96
 	/* канал квадратур USB AUDIO */
 	adpt_initialize(& ifspectrumin, WITHADAPTERRTS96_WIDTH, WITHADAPTERRTS96_SHIFT);
-	adpt_initialize(& rts96out, UACIN_RTS96_SAMPLEBITS, 0);
-	transform_initialize(& if2rts96out, & ifspectrumin, & rts96out);
+	adpt_initialize(& rts96in, UACIN_RTS96_SAMPLEBITS, 0);
+	transform_initialize(& if2rts96out, & ifspectrumin, & rts96in);
 #endif /* WITHRTS96 */
 #if WITHRTS192
 	/* канал квадратур USB AUDIO */
 	adpt_initialize(& ifspectrumin, WITHADAPTERRTS192_WIDTH, WITHADAPTERRTS192_SHIFT);
-	adpt_initialize(& rts192out, UACIN_RTS192_SAMPLEBITS, 0);
-	transform_initialize(& if2rts192out, & ifspectrumin, & rts192out);
+	adpt_initialize(& rts192in, UACIN_RTS192_SAMPLEBITS, 0);
+	transform_initialize(& if2rts192out, & ifspectrumin, & rts192in);
 #endif /* WITHRTS192 */
 	/* Преобразование выхода demodulator_FM() */
 	adpt_initialize(& nfmdemod, 32, 0);
@@ -5199,7 +5201,7 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 static RAMFUNC void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 {
 #if WITHUSBUACIN
-	savesamplerecord16uacin(adpt_output(& uac48io, left), adpt_output(& uac48io, right));	// Запись демодулированного сигнала без озвучки клавиш в USB
+	savesamplerecord16uacin(adpt_output(& uac48in, left), adpt_output(& uac48in, right));	// Запись демодулированного сигнала без озвучки клавиш в USB
 #endif /* WITHUSBUACIN */
 }
 

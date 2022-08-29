@@ -691,12 +691,15 @@ void transform_initialize(transform_t * tfm, const adapter_t * informat, const a
 
 extern adapter_t afcodecrx;	/* от микрофона */
 extern adapter_t afcodectx;	/* к наушникам */
-extern adapter_t ifcodecin;
-extern adapter_t ifcodecout;
-extern adapter_t ifspectrumin;
-extern adapter_t uac48io;
-extern adapter_t rts96out;
-extern adapter_t rts192out;
+
+extern adapter_t ifcodecin;	/* канал от FPGA к процессору */
+extern adapter_t ifcodecout;	/* канал от процессора к FPGA */
+extern adapter_t ifspectrumin;	/* канал от FPGA к процессору */
+
+extern adapter_t uac48out;	/* Аудиоданные из компютера в трансивер */
+extern adapter_t uac48in;	/* Аудиоданные в компютер из трансивера */
+extern adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
+extern adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
 extern adapter_t sdcardio;
 extern transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
 extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
