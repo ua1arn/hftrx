@@ -733,17 +733,14 @@ void adpt_initialize(
 	//PRINTF("adpt_initialize: leftbit=%d, rightspace=%d, lshift32=%d, rshift32=%d\n", leftbit, rightspace, adp->lshift32, adp->rshift32);
 }
 
-// Преобразование во внутреннее представление.
-// входное значение - "правильное" с точки зрения двоичного представления.
-// Обратить внимание на случаи 24-х битных форматов.
-// UPD: теперь можно и неправильное - расширение знака выполняется при преобразовании.
+// Преобразование значения целочисленного типа во внутреннее представление.
 FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
 {
 	return (FLOAT_t) ((v << adp->lshift32) >> adp->rshift32) * adp->inputK;
 	//return (FLOAT_t) (v >> adp->rightspace) * adp->inputK;
 }
 
-// Преобразование во внешнее представление.
+// Преобразование во внешнее (целочисленное) представление.
 int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
 {
 	ASSERT(v <= 1);
