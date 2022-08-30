@@ -533,9 +533,9 @@ void nmea_parsechar(uint_fast8_t c)
 				board_adc_store_data(FWD, _strtoul_r(& treent, nmeaparser_get_buff(NMF_FWD), NULL, 10) * FS / EXTFS);
 				board_adc_store_data(REF, _strtoul_r(& treent, nmeaparser_get_buff(NMF_REF), NULL, 10) * FS / EXTFS);
 				// для WITHTDIRECTDATA -  значения параметров напрямую получаются от контроллера усилителя мощности
-				board_adc_store_data(PASENSEIX, _strtol_r(& treent, (nmeaparser_get_buff(NMF_C_SENS), NULL, 10));
-				board_adc_store_data(XTHERMOIX, _strtol_r(& treent, (nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
-				board_adc_store_data(VOLTSOURCE, _strtol_r(& treent, (nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
+				board_adc_store_data(PASENSEIX, _strtol_r(& treent, nmeaparser_get_buff(NMF_C_SENS), NULL, 10));
+				board_adc_store_data(XTHERMOIX, _strtol_r(& treent, nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
+				board_adc_store_data(VOLTSOURCE, _strtol_r(& treent, nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
 
 				static dpclock_t dpc_ua1ceituner;
 				VERIFY(board_dpc(& dpc_ua1ceituner, ua1ceituner_send, NULL));
