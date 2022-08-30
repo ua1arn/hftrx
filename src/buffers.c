@@ -2908,7 +2908,7 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 			uint_fast16_t n = chunksamples;
 			while (n --)
 			{
-				const aufastbufv_t v = transform_do32(& uac48toafcodecrx, fetch_le(src, usbsz));
+				const aufastbufv_t v = transform_do32(& uac48out2afcodecrx, fetch_le(src, usbsz));
 				* dst ++ = v;
 				* dst ++ = v;
 				src += usbsz;
@@ -2923,7 +2923,7 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 			uint_fast16_t n = chunksamples * ichannels;
 			while (n --)
 			{
-				const aufastbufv_t v = transform_do32(& uac48toafcodecrx, fetch_le(src, usbsz));
+				const aufastbufv_t v = transform_do32(& uac48out2afcodecrx, fetch_le(src, usbsz));
 				* dst ++ = v;
 				src += usbsz;
 			}
