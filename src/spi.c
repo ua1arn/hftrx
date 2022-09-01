@@ -2026,9 +2026,9 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 		0;
 
 	const portholder_t tcr =
-			(0x00uL << 12) |	// FBS: 0: MSB first
-			(0x01uL << 6) |		// SS_OWNER: 1: Software
-			(0x01uL << 7) |		// SS_LEVEL: 1: Set SS to high
+			(0u << 12) |	// FBS: 0: MSB first
+			(1u << 6) |		// SS_OWNER: 1: Software
+			(1u << 7) |		// SS_LEVEL: 1: Set SS to high
 			0;
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
@@ -2192,7 +2192,13 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-
+	{
+		unsigned val = SPI0->SPI_TCR;
+		val &= ~((0x3 << 4) | (0x1 << 7));
+		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+		SPI0->SPI_TCR = val;
+		(void) SPI0->SPI_TCR;
+	}
  	HARDWARE_SPI_CONNECT();
 
 #else
@@ -2271,6 +2277,14 @@ void hardware_spi_disconnect(void)
 	HARDWARE_SPI_DISCONNECT();
 
 #elif CPUSTYPE_T113
+
+	{
+		unsigned val = SPI0->SPI_TCR;
+		val &= ~((0x3 << 4) | (0x1 << 7));
+		val |= ((0 & 0x3) << 4) | (0x1 << 7);	// SS=1
+		SPI0->SPI_TCR = val;
+		(void) SPI0->SPI_TCR;
+	}
 
 	HARDWARE_SPI_DISCONNECT();
 
@@ -3311,6 +3325,13 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	{
+		unsigned val = SPI0->SPI_TCR;
+		val &= ~((0x3 << 4) | (0x1 << 7));
+		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+		SPI0->SPI_TCR = val;
+		(void) SPI0->SPI_TCR;
+	}
 
  	HARDWARE_SPI_CONNECT();
 
@@ -3494,6 +3515,13 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	{
+		unsigned val = SPI0->SPI_TCR;
+		val &= ~((0x3 << 4) | (0x1 << 7));
+		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+		SPI0->SPI_TCR = val;
+		(void) SPI0->SPI_TCR;
+	}
 
  	HARDWARE_SPI_CONNECT();
 
