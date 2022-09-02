@@ -17440,6 +17440,13 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 
 	case KBD_CODE_LOCK_HOLDED:
+#if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
+		/* запись видимого изображения */
+		{
+
+		}
+		return;
+#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 #if WITHLCDBACKLIGHTOFF
 		{
 			dimmmode = calc_next(dimmmode, 0, 1);
