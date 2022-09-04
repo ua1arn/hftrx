@@ -16617,6 +16617,12 @@ modifysettings(
 				uif_key_lockencoder();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
+		#if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
+			case KBD_CODE_LOCK_HOLDED:
+				/* запись видимого изображения */
+				display_snapshot_req();
+				continue;	// требуется обновление индикатора
+		#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 
 #if WITHTX
 			case KBD_CODE_MOX:
@@ -17442,10 +17448,8 @@ process_key_menuset_common(uint_fast8_t kbch)
 	case KBD_CODE_LOCK_HOLDED:
 #if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
 		/* запись видимого изображения */
-		{
-
-		}
-		return;
+		display_snapshot_req();
+		return 1;
 #endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 #if WITHLCDBACKLIGHTOFF
 		{

@@ -656,6 +656,83 @@ void sdcardformat(void)
 
 #endif /* WITHUSEAUDIOREC */
 
+#if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
+
+// Начинаем запись
+// 1 - неудачно
+static uint_fast8_t screenshot_startrecording(void)
+{
+	FRESULT rc;				/* Result code */
+	char fname [FF_MAX_LFN + 1];
+
+#if defined (RTC1_TYPE)
+
+	uint_fast16_t year;
+	uint_fast8_t month, day;
+	uint_fast8_t hour, minute, secounds;
+	static unsigned long ver;
+
+	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+
+	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
+		PSTR("scr_%04d-%02d-%02d_%02d%02d%02d_%lu.bmp"),
+		year, month, day,
+		hour, minute, secounds,
+		++ ver
+		);
+
+#else /* defined (RTC1_TYPE) */
+
+	static uint_fast32_t rnd;
+	static unsigned long ver;
+
+	if (rnd == 0)
+		rnd = hardware_get_random();
+
+	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
+		PSTR("rec_%08lX_%lu.bmp"),
+		rnd,
+		++ ver
+		);
+
+#endif /* defined (RTC1_TYPE) */
+
+	PRINTF(PSTR("Write bmp file '%s'.\n"), fname);
+
+	rc = FR_OK;
+//	rc = write_wav_header(fname, dsp_get_sampleraterx());
+//	wave_irecorded = 0;
+	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
+}
+
+// Выполняем запись
+// 1 - неудачно
+static uint_fast8_t screenshot_bodyrecording(void)
+{
+	FRESULT rc;				/* Result code */
+
+	rc = FR_OK;
+	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
+}
+
+// Завершаем запись
+// 1 - неудачно
+static uint_fast8_t screenshot_stoprecording(void)
+{
+	FRESULT rc;				/* Result code */
+
+	rc = FR_OK;
+	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
+}
+
+/* запись видимого изображения в файл */
+void display_snapshot_write(PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+{
+	(void) (screenshot_startrecording() || screenshot_bodyrecording() || screenshot_stoprecording());
+}
+
+
+#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 
 #if WITHWAVPLAYER || WITHSENDWAV
 

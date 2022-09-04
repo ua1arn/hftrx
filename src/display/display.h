@@ -1008,7 +1008,10 @@ void colmain_putpixel(
 	COLORMAIN_T color
 	);
 
-void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
+void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);	/* вывод строки */
+void display_snapshot(PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения */
+void display_snapshot_write(PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения в файл */
+void display_snapshot_req(void);
 
 void board_set_topdb(int_fast16_t v);			/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);		/* нижний предел FFT */
