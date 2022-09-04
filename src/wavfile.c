@@ -658,6 +658,9 @@ void sdcardformat(void)
 
 #if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
 
+
+static ALIGNX_BEGIN RAMNOINIT_D1 FIL bmp_file ALIGNX_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+
 // Начинаем запись
 // 1 - неудачно
 static uint_fast8_t screenshot_startrecording(void)
@@ -700,18 +703,93 @@ static uint_fast8_t screenshot_startrecording(void)
 	PRINTF(PSTR("Write bmp file '%s'.\n"), fname);
 
 	rc = FR_OK;
-//	rc = write_wav_header(fname, dsp_get_sampleraterx());
-//	wave_irecorded = 0;
+
+	memset(& bmp_file, 0, sizeof bmp_file);
+	rc = f_open(& bmp_file, fname, FA_WRITE | FA_READ | FA_CREATE_ALWAYS);
 	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
 }
 
+typedef struct w32_tagBITMAPFILEHEADER {
+  WORD    bfType;
+  DWORD   bfSize;
+  WORD    bfReserved1;
+  WORD    bfReserved2;
+  DWORD   bfOffBits;
+} w32_BITMAPFILEHEADER;
+
+typedef struct w32_tagBITMAPINFOHEADER{
+  DWORD  biSize;
+  LONG   biWidth;
+  LONG   biHeight;
+  WORD   biPlanes;
+  WORD   biBitCount;
+  DWORD  biCompression;
+  DWORD  biSizeImage;
+  LONG   biXPelsPerMeter;
+  LONG   biYPelsPerMeter;
+  DWORD  biClrUsed;
+  DWORD  biClrImportant;
+} w32_BITMAPINFOHEADER;
+
 // Выполняем запись
 // 1 - неудачно
-static uint_fast8_t screenshot_bodyrecording(void)
+static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
 	FRESULT rc;				/* Result code */
-
+	UINT wrCount;
+	enum { PIX_BYTES = 3 };
 	rc = FR_OK;
+
+	w32_BITMAPFILEHEADER bmFh;
+	w32_BITMAPINFOHEADER bmiHeader;
+
+
+	bmiHeader.biSize = sizeof (w32_BITMAPINFOHEADER);
+	bmiHeader.biWidth = DIM_X;
+	bmiHeader.biHeight = DIM_Y;
+	bmiHeader.biPlanes = 1;
+	bmiHeader.biBitCount = PIX_BYTES * 8;
+	bmiHeader.biCompression = 0x00; //BI_RGB;
+	bmiHeader.biSizeImage = 0;
+	bmiHeader.biXPelsPerMeter = 10000;
+	bmiHeader.biYPelsPerMeter = 10000;
+	bmiHeader.biClrUsed = 0;
+	bmiHeader.biClrImportant = 0;
+
+	unsigned sz = sizeof bmFh + sizeof bmiHeader + bmiHeader.biClrUsed + (dx * dy) * PIX_BYTES;
+	bmFh.bfType = 0x4d42;	// "BM"
+	bmFh.bfReserved1 = 0;
+	bmFh.bfReserved2 = 0;
+	bmFh.bfOffBits = sz;
+	bmFh.bfSize = bmiHeader.biSizeImage;
+
+	if (rc != FR_OK)
+		return 1;
+
+	rc = f_write(& bmp_file, & bmFh, sizeof bmFh, & wrCount);
+	if (rc != FR_OK || wrCount != sizeof bmFh)
+		return 1;
+	rc = f_write(& bmp_file, & bmiHeader, sizeof bmiHeader, & wrCount);
+	if (rc != FR_OK || wrCount != sizeof bmiHeader)
+		return 1;
+	unsigned y;
+	for (y = 0; y < dy; ++ y)
+	{
+		uint8_t row [dx][PIX_BYTES];	// b, g, r, reserved
+		unsigned x;
+		for (x = 0; x < dx; ++ x)
+		{
+			const COLORMAIN_T c = * colmain_mem_at(buffer, dx, dy, x, y);
+			row [x] [0] = COLOR565_B(c);
+			row [x] [1] = COLOR565_G(c);
+			row [x] [2] = COLOR565_R(c);
+			//row [x] [3] = 0;	// reserved
+		}
+		rc = f_write(& bmp_file, & row, sizeof row, & wrCount);
+		if (rc != FR_OK || wrCount != sizeof row)
+			return 1;
+	}
+
 	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
 }
 
@@ -721,14 +799,14 @@ static uint_fast8_t screenshot_stoprecording(void)
 {
 	FRESULT rc;				/* Result code */
 
-	rc = FR_OK;
+	rc = f_close(& bmp_file);
 	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
 }
 
 /* запись видимого изображения в файл */
 void display_snapshot_write(PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
-	(void) (screenshot_startrecording() || screenshot_bodyrecording() || screenshot_stoprecording());
+	(void) (screenshot_startrecording() || screenshot_bodyrecording(buffer, dx, dy) || screenshot_stoprecording());
 }
 
 
