@@ -739,6 +739,8 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 	UINT wrCount;
 	enum { PIX_BYTES = 3 };
 	rc = FR_OK;
+	const unsigned padsize = 4 - (dx * PIX_BYTES) % 4;
+	const unsigned rastersize = (dx * PIX_BYTES + padsize) * dy;
 
 	w32_BITMAPFILEHEADER bmFh;
 	w32_BITMAPINFOHEADER bmiHeader;
@@ -750,13 +752,13 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 	bmiHeader.biPlanes = 1;
 	bmiHeader.biBitCount = PIX_BYTES * 8;
 	bmiHeader.biCompression = 0x00; //BI_RGB;
-	bmiHeader.biSizeImage = 0;
+	bmiHeader.biSizeImage = rastersize;
 	bmiHeader.biXPelsPerMeter = 10000;
 	bmiHeader.biYPelsPerMeter = 10000;
 	bmiHeader.biClrUsed = 0;
 	bmiHeader.biClrImportant = 0;
 
-	unsigned sz = sizeof bmFh + sizeof bmiHeader + bmiHeader.biClrUsed + (dx * dy) * PIX_BYTES;
+	unsigned sz = sizeof bmFh + sizeof bmiHeader + bmiHeader.biClrUsed;
 	bmFh.bfType = 0x4d42;	// "BM"
 	bmFh.bfReserved1 = 0;
 	bmFh.bfReserved2 = 0;
@@ -785,8 +787,12 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 			row [x] [2] = COLOR565_R(c);
 			//row [x] [3] = 0;	// reserved
 		}
-		rc = f_write(& bmp_file, & row, sizeof row, & wrCount);
+		rc = f_write(& bmp_file, row, sizeof row, & wrCount);
 		if (rc != FR_OK || wrCount != sizeof row)
+			return 1;
+		static const uint8_t zero [3];
+		rc = f_write(& bmp_file, zero, padsize, & wrCount);
+		if (rc != FR_OK || wrCount != padsize)
 			return 1;
 	}
 
@@ -806,7 +812,16 @@ static uint_fast8_t screenshot_stoprecording(void)
 /* запись видимого изображения в файл */
 void display_snapshot_write(PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
-	(void) (screenshot_startrecording() || screenshot_bodyrecording(buffer, dx, dy) || screenshot_stoprecording());
+	if (sdstate == SDSTATE_IDLE)
+	{
+		waveMount();
+		(void) (screenshot_startrecording() || screenshot_bodyrecording(buffer, dx, dy) || screenshot_stoprecording());
+		waveUnmount();
+	}
+	else
+	{
+		(void) (screenshot_startrecording() || screenshot_bodyrecording(buffer, dx, dy) || screenshot_stoprecording());
+	}
 }
 
 
