@@ -4165,6 +4165,114 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 
 #endif /* WITHUSBDFU */
 
+#if WITHUSBDMTP
+
+
+/* UAC IAD */
+// Interface Association Descriptor Audio
+// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDescriptor_ecn.pdf
+static unsigned MTP_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bFirstInterface,
+	uint_fast8_t bInterfaceCount
+	)
+{
+	const uint_fast8_t length = 8;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
+		* buff ++ = bFirstInterface;			// bFirstInterface
+		* buff ++ = bInterfaceCount;	// bInterfaceCount
+		* buff ++ = USB_MTP_INTRERFACE_CLASS;	// bFunctionClass: Audio
+		* buff ++ = USB_MTP_INTRERFACE_SUB_CLASS;	// bFunctionSubClass
+		* buff ++ = USB_MTP_INTRERFACE_PROTOCOL;	// bFunctionProtocol
+		* buff ++ = 0;	// Interface string index
+	}
+	return length;
+}
+
+static unsigned MTP_InterfaceDescriptorControlIf(
+		uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+		uint_fast8_t bInterfaceNumber,
+		uint_fast8_t bAlternateSetting
+		)
+{
+	const uint_fast8_t length = 8;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  // INTERFACE descriptor type (bDescriptorType)
+		* buff ++ = bInterfaceNumber;				// Index of this interface. (bInterfaceNumber)
+		* buff ++ = bAlternateSetting;				// Index of this alternate setting. (bAlternateSetting) - zero-based index
+		* buff ++ = 0x03;							// bNumEndpoints
+		* buff ++ = USB_MTP_INTRERFACE_CLASS;		// bFunctionClass: Audio
+		* buff ++ = USB_MTP_INTRERFACE_SUB_CLASS;	// bFunctionSubClass
+		* buff ++ = USB_MTP_INTRERFACE_PROTOCOL;	// bFunctionProtocol
+		* buff ++ = 0x00;							/* Unused iInterface */
+		/* 9 byte*/
+	}
+	return length;
+}
+
+//	/********************  MTP **** interface ********************/
+//	MTP_INTERFACE_DESC_SIZE,                      /* bLength: Interface Descriptor size */
+//	USB_DESC_TYPE_INTERFACE,                      /* bDescriptorType: Interface descriptor type */
+//	MTP_CMD_ITF_NBR,                              /* bInterfaceNumber: Number of Interface */
+//	0x00,                                         /* bAlternateSetting: Alternate setting */
+//	0x03,                                         /* bNumEndpoints:  */
+//	USB_MTP_INTRERFACE_CLASS,                     /* bInterfaceClass: bInterfaceClass: user's interface for MTP */
+//	USB_MTP_INTRERFACE_SUB_CLASS,                 /* bInterfaceSubClass:Abstract Control Model */
+//	USB_MTP_INTRERFACE_PROTOCOL,                  /* bInterfaceProtocol: Common AT commands */
+//	0x00,                                         /* iInterface: */
+//
+//	/********************  MTP   Endpoints ********************/
+//	MTP_ENDPOINT_DESC_SIZE,                       /* Endpoint descriptor length = 7 */
+//	USB_DESC_TYPE_ENDPOINT,                       /* Endpoint descriptor type */
+//	MTP_IN_EP,                                    /* Endpoint address (IN, address 1) */
+//	USBD_EP_TYPE_BULK,                            /* Bulk endpoint type */
+//	LOBYTE(MTP_DATA_MAX_FS_PACKET_SIZE),
+//	HIBYTE(MTP_DATA_MAX_FS_PACKET_SIZE),
+//	0x00,                                         /* Polling interval in milliseconds */
+//
+//	MTP_ENDPOINT_DESC_SIZE,                       /* Endpoint descriptor length = 7 */
+//	USB_DESC_TYPE_ENDPOINT,                       /* Endpoint descriptor type */
+//	MTP_OUT_EP,                                   /* Endpoint address (OUT, address 1) */
+//	USBD_EP_TYPE_BULK,                            /* Bulk endpoint type */
+//	LOBYTE(MTP_DATA_MAX_FS_PACKET_SIZE),
+//	HIBYTE(MTP_DATA_MAX_FS_PACKET_SIZE),
+//	0x00,                                         /* Polling interval in milliseconds */
+//
+//	MTP_ENDPOINT_DESC_SIZE,                       /* bLength: Endpoint Descriptor size */
+//	USB_DESC_TYPE_ENDPOINT,                       /* bDescriptorType:*/
+//	MTP_CMD_EP,                                   /* bEndpointAddress: Endpoint Address (IN) */
+//	USBD_EP_TYPE_INTR,                            /* bmAttributes: Interrupt endpoint */
+//	LOBYTE(MTP_CMD_PACKET_SIZE),
+//	HIBYTE(MTP_CMD_PACKET_SIZE),
+//	MTP_FS_BINTERVAL                              /* Polling interval in milliseconds */
+
+static unsigned fill_MTP_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
+{
+	unsigned n = 0;
+	//
+	n += MTP_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, INTERFACE_MTP_count);
+	n += MTP_InterfaceDescriptorControlIf(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, 0);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+	n += MTP_EndpointIn(fill, p + n, maxsize - n, highspeed);
+	n += MTP_EndpointOut(fill, p + n, maxsize - n, highspeed);
+	n += MTP_EndpointInt(fill, p + n, maxsize - n, highspeed);
+	//
+	return n;
+}
+
+#endif /* WITHUSBDMTP */
+
 // последовательность должна соответствовать порядку в enum interfaces_tag
 static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
@@ -4204,6 +4312,10 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #if WITHUSBHID
 	n += fill_HID_XXXX_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBHID */
+
+#if WITHUSBDMTP
+	n += fill_MTP_XXXX_function(fill, p + n, maxsize - n, highspeed);
+#endif /* WITHUSBDMTP */
 
 #if WITHUSBDFU && ! WITHMOVEDFU
 	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);

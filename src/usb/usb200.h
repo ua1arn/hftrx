@@ -667,4 +667,10 @@
 
 #define DFU_DESCRIPTOR_TYPE            0x21
 
+// MTP
+
+#define USB_MTP_INTRERFACE_CLASS                                    0x06U
+#define USB_MTP_INTRERFACE_SUB_CLASS                                0x01U
+#define USB_MTP_INTRERFACE_PROTOCOL                                 0x01U
+
 #endif   /* USB200_H_INCLUDED */
