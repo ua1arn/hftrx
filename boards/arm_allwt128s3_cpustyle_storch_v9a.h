@@ -159,6 +159,7 @@
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 	#define WITHUSBWCID	1
+	//#define WITHUSBDMTP	1	/* MTP USB Device */
 
 #endif /* WITHISBOOTLOADER */
 
