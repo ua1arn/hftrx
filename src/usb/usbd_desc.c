@@ -4257,6 +4257,68 @@ static unsigned MTP_InterfaceDescriptorControlIf(
 //	LOBYTE(MTP_CMD_PACKET_SIZE),
 //	HIBYTE(MTP_CMD_PACKET_SIZE),
 //	MTP_FS_BINTERVAL                              /* Polling interval in milliseconds */
+static unsigned MTP_EndpointIn(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MTP_DATA_MAX_PACKET_SIZE); // was: 0x300
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
+		* buff ++ = bEndpointAddress;                    // bEndpointAddress
+		* buff ++ = USBD_EP_TYPE_BULK; 				// bmAttributes
+		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
+		* buff ++ = HI_BYTE(wMaxPacketSize);
+		* buff ++ = 0x00;  						  /* bInterval */
+	}
+	return length;
+}
+
+static unsigned MTP_EndpointOut(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MTP_DATA_MAX_PACKET_SIZE); // was: 0x300
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
+		* buff ++ = bEndpointAddress;                    // bEndpointAddress
+		* buff ++ = USBD_EP_TYPE_BULK; // bmAttributes
+		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
+		* buff ++ = HI_BYTE(wMaxPacketSize);
+		* buff ++ = 0x00;  						  /* bInterval */
+	}
+	return length;
+}
+
+static unsigned MTP_EndpointInt(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MTP_CMD_PACKET_SIZE); // was: 0x300
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength: Endpoint Descriptor size */
+		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
+		* buff ++ = bEndpointAddress;                    // bEndpointAddress
+		* buff ++ = USBD_EP_TYPE_INTR; // bmAttributes: Interrupt endpoint
+		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
+		* buff ++ = HI_BYTE(wMaxPacketSize);
+		* buff ++ = highspeed ? MTP_HS_BINTERVAL : MTP_FS_BINTERVAL;    /* bInterval */
+	}
+	return length;
+}
 
 static unsigned fill_MTP_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
@@ -4264,9 +4326,9 @@ static unsigned fill_MTP_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	//
 	n += MTP_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, INTERFACE_MTP_count);
 	n += MTP_InterfaceDescriptorControlIf(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, 0);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
-	n += MTP_EndpointIn(fill, p + n, maxsize - n, highspeed);
-	n += MTP_EndpointOut(fill, p + n, maxsize - n, highspeed);
-	n += MTP_EndpointInt(fill, p + n, maxsize - n, highspeed);
+	n += MTP_EndpointIn(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_IN);
+	n += MTP_EndpointOut(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_OUT);
+	n += MTP_EndpointInt(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_INT);
 	//
 	return n;
 }

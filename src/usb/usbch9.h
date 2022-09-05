@@ -99,6 +99,11 @@ enum
 #if WITHUSBDFU
 		/* no endpoints need */
 #endif /* WITHUSBDFU */
+
+#if WITHUSBDMTP
+	USBD_EP_MTP_INT,	// MTP INT События в компьютер из TRX
+	USBD_EP_MTP_IN,		// MTP IN Данные в компьютер из TRX
+#endif /* WITHUSBDMTP */
 	//
 	epincount
 };
@@ -136,6 +141,10 @@ enum
 #if WITHUSBDFU
 		/* no endpoints need */
 #endif /* WITHUSBDFU */
+
+#if WITHUSBDMTP
+	USBD_EP_MTP_OUT,	// MTP OUT Данные от компьютера в TRX
+#endif /* WITHUSBDMTP */
 	//
 	epoutcount
 };

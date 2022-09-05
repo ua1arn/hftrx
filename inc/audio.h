@@ -358,6 +358,11 @@ extern "C" {
 
 #endif /* WITHUSBDEV_HSDESC */
 
+#define MTP_HS_BINTERVAL 16
+#define MTP_FS_BINTERVAL 16
+#define MTP_DATA_MAX_PACKET_SIZE 64
+#define MTP_CMD_PACKET_SIZE		8          /* Control Endpoint Packet size */
+
 #define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
 
 
