@@ -178,6 +178,8 @@ enum
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
 	STRING_ID_DFU_2,	/* RAM target for debug */
 	// 
+	STRING_ID_MTP,
+	//
 	STRING_ID_count
 };
 
@@ -197,6 +199,9 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_RNDIS, PRODUCTSTR " Remote NDIS", },
 
 	{ STRING_ID_DFU, PRODUCTSTR " DFU", },
+#if WITHUSBDMTP
+	{ STRING_ID_MTP, PRODUCTSTR " MTP", },
+#endif /* WITHUSBDMTP */
 
 #if WITHUSBUACINOUTRENESAS
 	{ STRING_ID_a0, PRODUCTSTR " Audio", },		// tag for Interface Descriptor 0/0 Audio
@@ -4193,7 +4198,7 @@ static unsigned MTP_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * 
 		* buff ++ = USB_MTP_INTRERFACE_CLASS;	// bFunctionClass: Audio
 		* buff ++ = USB_MTP_INTRERFACE_SUB_CLASS;	// bFunctionSubClass
 		* buff ++ = USB_MTP_INTRERFACE_PROTOCOL;	// bFunctionProtocol
-		* buff ++ = 0;	// Interface string index
+		* buff ++ = STRING_ID_MTP;	// Interface string index
 	}
 	return length;
 }
@@ -4219,7 +4224,7 @@ static unsigned MTP_InterfaceDescriptorControlIf(
 		* buff ++ = USB_MTP_INTRERFACE_CLASS;		// bFunctionClass: Audio
 		* buff ++ = USB_MTP_INTRERFACE_SUB_CLASS;	// bFunctionSubClass
 		* buff ++ = USB_MTP_INTRERFACE_PROTOCOL;	// bFunctionProtocol
-		* buff ++ = 0x00;							/* Unused iInterface */
+		* buff ++ = STRING_ID_MTP;					/* Unused iInterface */
 		/* 9 byte*/
 	}
 	return length;
