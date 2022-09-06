@@ -271,17 +271,17 @@ __packed typedef struct
 
 typedef struct
 {
-  uint32_t                     alt_setting;
-  uint32_t                     dev_status;
-  uint32_t                     ResponseLength;
-  uint32_t                     ResponseCode;
-  __IO uint16_t                MaxPcktLen;
-  uint32_t                     rx_buff[MTP_MEDIA_PACKET / 4U];               /* Force 32-bit alignment */
-  MTP_ResponsePhaseTypeDef     MTP_ResponsePhase;
-  MTP_SessionStateTypeDef      MTP_SessionState;
-  MTP_RECEIVE_DATA_STATUS      RECEIVE_DATA_STATUS;
-  MTP_OperationsTypeDef        OperationsContainer;
-  MTP_GenericContainerTypeDef  GenericContainer;
+	__ALIGN_BEGIN uint32_t       rx_buff [MTP_MEDIA_PACKET / 4U] __ALIGN_END;	/* Force 32-bit alignment */
+	uint32_t                     alt_setting;
+	uint32_t                     dev_status;
+	uint32_t                     ResponseLength;
+	uint32_t                     ResponseCode;
+	__IO uint16_t                MaxPcktLen;
+	MTP_ResponsePhaseTypeDef     MTP_ResponsePhase;
+	MTP_SessionStateTypeDef      MTP_SessionState;
+	MTP_RECEIVE_DATA_STATUS      RECEIVE_DATA_STATUS;
+	MTP_OperationsTypeDef        OperationsContainer;
+	MTP_GenericContainerTypeDef  GenericContainer;
 } USBD_MTP_HandleTypeDef;
 
 /** @defgroup USBD_CORE_Exported_Macros
