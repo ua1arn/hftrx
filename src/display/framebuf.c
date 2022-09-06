@@ -930,7 +930,7 @@ hwacc_fillrect_u16(
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
-	const uint_fast32_t c24 = COLOR24(COLOR565_R(color), COLOR565_G(color), COLOR565_B(color));
+	const uint_fast32_t c24 = COLOR24(COLORMAIN_R(color), COLORMAIN_G(color), COLORMAIN_B(color));
 
 	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U

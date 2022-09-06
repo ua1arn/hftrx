@@ -36,11 +36,6 @@ typedef uint_fast32_t COLOR24_T;
 
 #define COLOR24_KEY	COLOR24(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
 
-// Get color componens from COLOR565_T value
-#define COLOR565_R(v) (((v) & 0xF800) >> 8)
-#define COLOR565_G(v) (((v) & 0x07E0) >> 3)
-#define COLOR565_B(v) (((v) & 0x001F) << 3)
-
 
 enum gradient_style
 {
@@ -279,13 +274,18 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 		// RRRRRRR.GGGGGGGG.BBBBBBBB
 		#define TFTRGB(red, green, blue) \
-			(  (unsigned long) \
+			(  (uint32_t) \
 				(	\
-					(((unsigned long) (red) << 16) & 0xFF0000ul)  | \
-					(((unsigned long) (green) << 8) & 0xFF00ul) | \
-					(((unsigned long) (blue) << 0) & 0xFFul) \
+					(((uint_fast32_t) (red) << 16) & 0xFF0000)  | \
+					(((uint_fast32_t) (green) << 8) & 0xFF00) | \
+					(((uint_fast32_t) (blue) << 0) & 0xFF) \
 				) \
 			)
+
+		// Get color componens from framebuffer value
+		#define COLORMAIN_R(v) (((v) & 0xFF0000) >> 16)
+		#define COLORMAIN_G(v) (((v) & 0xFF00) >> 8)
+		#define COLORMAIN_B(v) (((v) & 0xFF) >> 0)
 
 	#elif LCDMODE_MAIN_L8
 
@@ -333,6 +333,11 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		// для формирования растра с изображением водопада и спектра
 		#define TFTRGB565 TFTRGB
 
+		// Get color componens from framebuffer value
+		#define COLORMAIN_R(v) (((v) & 0xFF0000) >> 16)
+		#define COLORMAIN_G(v) (((v) & 0xFF00) >> 8)
+		#define COLORMAIN_B(v) (((v) & 0xFF) >> 0)
+
 
 	#elif LCDMODE_MAIN_ARGB888
 
@@ -354,6 +359,11 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		// для формирования растра с изображением водопада и спектра
 		#define TFTRGB565 TFTRGB
 
+		// Get color componens from framebuffer value
+		#define COLORMAIN_R(v) (((v) & 0xFF0000) >> 16)
+		#define COLORMAIN_G(v) (((v) & 0xFF00) >> 8)
+		#define COLORMAIN_B(v) (((v) & 0xFF) >> 0)
+
 	#else /* LCDMODE_MAIN_L8 */
 
 		//#define LCDMODE_RGB565 1
@@ -373,6 +383,11 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		// для формирования растра с изображением водопада и спектра
 		#define TFTRGB565 TFTRGB
 
+		// Get color componens from framebuffer value
+		#define COLORMAIN_R(v) ((((v) & 0xF800) >> 8) | (((v) & 0xE000) >> 13))
+		#define COLORMAIN_G(v) ((((v) & 0x07E0) >> 3) | (((v) & 0x0600) >> 9))
+		#define COLORMAIN_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))
+
 	#endif /* LCDMODE_MAIN_L8 */
 
 	#if LCDMODE_PIP_L8
@@ -389,7 +404,6 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		typedef COLORMAIN_T COLORPIP_T;
 
 	#endif /* LCDMODE_PIP_L8 */
-
 
 #endif /* LCDMODE_LTDC */
 

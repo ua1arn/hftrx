@@ -709,103 +709,16 @@ static uint_fast8_t screenshot_startrecording(void)
 	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
 }
 
-typedef struct w32_tagBITMAPFILEHEADER {
-  WORD    bfType;
-  DWORD   bfSize;
-  WORD    bfReserved1;
-  WORD    bfReserved2;
-  DWORD   bfOffBits;
-} w32_BITMAPFILEHEADER;
-
-typedef struct w32_tagBITMAPINFOHEADER{
-  DWORD  biSize;
-  LONG   biWidth;
-  LONG   biHeight;
-  WORD   biPlanes;
-  WORD   biBitCount;
-  DWORD  biCompression;
-  DWORD  biSizeImage;
-  LONG   biXPelsPerMeter;
-  LONG   biYPelsPerMeter;
-  DWORD  biClrUsed;
-  DWORD  biClrImportant;
-} w32_BITMAPINFOHEADER;
-
-// Выполняем запись
-// 1 - неудачно
-static uint_fast8_t screenshot_bodyrecording_old(PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+typedef struct
 {
-	FRESULT rc;				/* Result code */
-	UINT wrCount;
-	enum { PIX_BYTES = 3 };
-	rc = FR_OK;
-	const unsigned padsize = 4 - (dx * PIX_BYTES) % 4;
-	const unsigned rastersize = (dx * PIX_BYTES + padsize) * dy;
-
-	w32_BITMAPFILEHEADER bmFh;
-	w32_BITMAPINFOHEADER bmiHeader;
-
-
-	bmiHeader.biSize = sizeof (w32_BITMAPINFOHEADER);
-	bmiHeader.biWidth = DIM_X;
-	bmiHeader.biHeight = DIM_Y;
-	bmiHeader.biPlanes = 1;
-	bmiHeader.biBitCount = PIX_BYTES * 8;
-	bmiHeader.biCompression = 0x00; //BI_RGB;
-	bmiHeader.biSizeImage = rastersize;
-	bmiHeader.biXPelsPerMeter = 10000;
-	bmiHeader.biYPelsPerMeter = 10000;
-	bmiHeader.biClrUsed = 0;
-	bmiHeader.biClrImportant = 0;
-
-	unsigned sz = sizeof bmFh + sizeof bmiHeader + bmiHeader.biClrUsed;
-	bmFh.bfType = 0x4d42;	// "BM"
-	bmFh.bfReserved1 = 0;
-	bmFh.bfReserved2 = 0;
-	bmFh.bfOffBits = sz;
-	bmFh.bfSize = bmiHeader.biSizeImage;
-
-	if (rc != FR_OK)
-		return 1;
-
-	rc = f_write(& bmp_file, & bmFh, sizeof bmFh, & wrCount);
-	if (rc != FR_OK || wrCount != sizeof bmFh)
-		return 1;
-	rc = f_write(& bmp_file, & bmiHeader, sizeof bmiHeader, & wrCount);
-	if (rc != FR_OK || wrCount != sizeof bmiHeader)
-		return 1;
-	unsigned y;
-	for (y = 0; y < dy; ++ y)
-	{
-		uint8_t row [dx][PIX_BYTES];	// b, g, r, reserved
-		unsigned x;
-		for (x = 0; x < dx; ++ x)
-		{
-			const COLORMAIN_T c = * colmain_mem_at(buffer, dx, dy, x, y);
-			row [x] [0] = COLOR565_B(c);
-			row [x] [1] = COLOR565_G(c);
-			row [x] [2] = COLOR565_R(c);
-			//row [x] [3] = 0;	// reserved
-		}
-		rc = f_write(& bmp_file, row, sizeof row, & wrCount);
-		if (rc != FR_OK || wrCount != sizeof row)
-			return 1;
-		static const uint8_t zero [3];
-		rc = f_write(& bmp_file, zero, padsize, & wrCount);
-		if (rc != FR_OK || wrCount != padsize)
-			return 1;
-	}
-
-	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
-}
-
-typedef struct{
     uint8_t signature[2];
     uint32_t filesize;
     uint32_t reserved;
     uint32_t fileoffset_to_pixelarray;
-} ATTRPACKED fileheader;
-typedef struct{
+} ATTRPACKED fileheader_t;
+
+typedef struct
+{
     uint32_t dibheadersize;
     uint32_t width;
     uint32_t height;
@@ -817,11 +730,12 @@ typedef struct{
     uint32_t xpixelpermeter;
     uint32_t numcolorspallette;
     uint32_t mostimpcolor;
-} ATTRPACKED bitmapinfoheader;
+} ATTRPACKED bitmapinfoheader_t;
+
 typedef struct {
-    fileheader fileheader;
-    bitmapinfoheader bitmapinfoheader;
-} ATTRPACKED bitmap;
+	fileheader_t fileheader;
+    bitmapinfoheader_t bitmapinfoheader;
+} ATTRPACKED bitmap_t;
 
 //#define pixel 0xFF
 
@@ -831,15 +745,15 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 {
 	enum { PIX_BYTES = 3 };
 	const unsigned _bitsperpixel = PIX_BYTES * 8;
-	const unsigned rowpadsize = 0; //4 - (dx * PIX_BYTES) % 4;
+	const unsigned rowpadsize = (4 - (dx * PIX_BYTES) % 4) % 4;
 	const unsigned _planes = 1;
-	const unsigned _compression = 0;
-	const unsigned _pixelbytesize = (dy  *(dx * _bitsperpixel / 8 + rowpadsize));
-	const unsigned _filesize = (_pixelbytesize+sizeof(bitmap));
+	const unsigned _compression = 0;	// RGB
+	const unsigned _pixelbytesize = (dy * (dx * _bitsperpixel / 8 + rowpadsize));
+	const unsigned _filesize = (_pixelbytesize + sizeof (bitmap_t));
 	const unsigned _xpixelpermeter = 0x130B; //2835 , 72 DPI
 	const unsigned _ypixelpermeter = 0x130B; //2835 , 72 DPI
 //	const unsigned rastersize = (dx * PIX_BYTES + rowpadsize) * dy;
-	bitmap bm;
+	bitmap_t bm;
 	FRESULT rc;				/* Result code */
 	UINT wrCount;
 	rc = FR_OK;
@@ -848,16 +762,16 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 	bm.fileheader.signature [0] = 'B';
 	bm.fileheader.signature [1] = 'M';
 	bm.fileheader.filesize = _filesize;
-    bm.fileheader.fileoffset_to_pixelarray = sizeof (bitmap);
-    bm.bitmapinfoheader.dibheadersize = sizeof (bitmapinfoheader);
+    bm.fileheader.fileoffset_to_pixelarray = sizeof (bitmap_t);
+    bm.bitmapinfoheader.dibheadersize = sizeof (bitmapinfoheader_t);
     bm.bitmapinfoheader.width = dx;
     bm.bitmapinfoheader.height = dy;
     bm.bitmapinfoheader.planes = _planes;
     bm.bitmapinfoheader.bitsperpixel = _bitsperpixel;
     bm.bitmapinfoheader.compression = _compression;
     bm.bitmapinfoheader.imagesize = _pixelbytesize;
-    bm.bitmapinfoheader.ypixelpermeter = _ypixelpermeter ;
-    bm.bitmapinfoheader.xpixelpermeter = _xpixelpermeter ;
+    bm.bitmapinfoheader.ypixelpermeter = _ypixelpermeter;
+    bm.bitmapinfoheader.xpixelpermeter = _xpixelpermeter;
     bm.bitmapinfoheader.numcolorspallette = 0;
 
 	if (rc != FR_OK)
@@ -874,10 +788,9 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 		for (x = 0; x < dx; ++ x)
 		{
 			const COLORMAIN_T c = * colmain_mem_at(buffer, dx, dy, x, dy - y - 1);
-			row [x] [0] = COLOR565_B(c);
-			row [x] [1] = COLOR565_G(c);
-			row [x] [2] = COLOR565_R(c);
-			//row [x] [3] = 0;	// reserved
+			row [x][0] = COLORMAIN_B(c);
+			row [x][1] = COLORMAIN_G(c);
+			row [x][2] = COLORMAIN_R(c);
 		}
 		rc = f_write(& bmp_file, row, sizeof row, & wrCount);
 		if (rc != FR_OK || wrCount != sizeof row)
