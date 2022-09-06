@@ -831,7 +831,7 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 {
 	enum { PIX_BYTES = 3 };
 	const unsigned _bitsperpixel = PIX_BYTES * 8;
-	const unsigned rowpadsize = 4 - (dx * PIX_BYTES) % 4;
+	const unsigned rowpadsize = 0; //4 - (dx * PIX_BYTES) % 4;
 	const unsigned _planes = 1;
 	const unsigned _compression = 0;
 	const unsigned _pixelbytesize = (dy  *(dx * _bitsperpixel / 8 + rowpadsize));
@@ -873,7 +873,7 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 		unsigned x;
 		for (x = 0; x < dx; ++ x)
 		{
-			const COLORMAIN_T c = * colmain_mem_at(buffer, dx, dy, x, y);
+			const COLORMAIN_T c = * colmain_mem_at(buffer, dx, dy, x, dy - y - 1);
 			row [x] [0] = COLOR565_B(c);
 			row [x] [1] = COLOR565_G(c);
 			row [x] [2] = COLOR565_R(c);
