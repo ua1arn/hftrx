@@ -262,6 +262,9 @@ static unsigned usbd_get_productId(void)
 	#elif WITHUSBUAC
 		v |= (5u << 7);
 	#endif
+	#if WITHUSBDMTP
+		v |= (5u << 6);
+	#endif /* WITHUSBDMTP */
 #endif /* WITHISBOOTLOADER */
 
 	return v;
