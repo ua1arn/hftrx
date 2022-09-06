@@ -4340,7 +4340,7 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 {
 	unsigned n = 0;
 
-	#if WITHUSBDFU && WITHMOVEDFU
+#if WITHUSBDFU && WITHMOVEDFU
 	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBDFU */
 
@@ -4375,13 +4375,13 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 	n += fill_HID_XXXX_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBHID */
 
-#if WITHUSBDMTP
-	n += fill_MTP_XXXX_function(fill, p + n, maxsize - n, highspeed);
-#endif /* WITHUSBDMTP */
-
 #if WITHUSBDFU && ! WITHMOVEDFU
 	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBDFU */
+
+#if WITHUSBDMTP
+	n += fill_MTP_XXXX_function(fill, p + n, maxsize - n, highspeed);
+#endif /* WITHUSBDMTP */
 
 	return n;
 }
