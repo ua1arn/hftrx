@@ -803,7 +803,7 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 			row [x][0] = COLORMAIN_B(c);
 			row [x][1] = COLORMAIN_G(c);
 			row [x][2] = COLORMAIN_R(c);
-#else /* LCDMODE_MAIN_L8 */
+#endif /* LCDMODE_MAIN_L8 */
 		}
 		rc = f_write(& bmp_file, row, sizeof row, & wrCount);
 		if (rc != FR_OK || wrCount != sizeof row)
