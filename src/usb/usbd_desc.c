@@ -4224,7 +4224,7 @@ static unsigned MTP_InterfaceDescriptorControlIf(
 		* buff ++ = USB_MTP_INTRERFACE_CLASS;		// bFunctionClass: Audio
 		* buff ++ = USB_MTP_INTRERFACE_SUB_CLASS;	// bFunctionSubClass
 		* buff ++ = USB_MTP_INTRERFACE_PROTOCOL;	// bFunctionProtocol
-		* buff ++ = STRING_ID_MTP;					/* Unused iInterface */
+		* buff ++ = 0x00;							/* Unused iInterface */
 		/* 9 byte*/
 	}
 	return length;
