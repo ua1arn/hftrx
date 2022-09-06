@@ -780,6 +780,12 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 	rc = f_write(& bmp_file, & bm, sizeof bm, & wrCount);
 	if (rc != FR_OK || wrCount != sizeof bm)
 		return 1;
+
+#if LCDMODE_MAIN_L8
+	COLOR24_T xltrgb24 [256];
+	display2_xltrgb24(xltrgb24);
+#endif /* LCDMODE_MAIN_L8 */
+
 	unsigned y;
 	for (y = 0; y < dy; ++ y)
 	{
@@ -788,9 +794,16 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 		for (x = 0; x < dx; ++ x)
 		{
 			const COLORMAIN_T c = * colmain_mem_at(buffer, dx, dy, x, dy - y - 1);
+#if LCDMODE_MAIN_L8
+			const COLOR24_T v24 = xltrgb24 [c];
+			row [x][0] = COLOR24_B(v24);
+			row [x][1] = COLOR24_G(v24);
+			row [x][2] = COLOR24_R(v24);
+#else /* LCDMODE_MAIN_L8 */
 			row [x][0] = COLORMAIN_B(c);
 			row [x][1] = COLORMAIN_G(c);
 			row [x][2] = COLORMAIN_R(c);
+#else /* LCDMODE_MAIN_L8 */
 		}
 		rc = f_write(& bmp_file, row, sizeof row, & wrCount);
 		if (rc != FR_OK || wrCount != sizeof row)
