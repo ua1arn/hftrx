@@ -133,6 +133,7 @@
  extern const USBD_ClassTypeDef USBD_CLASS_RNDIS;
  extern const USBD_ClassTypeDef USBD_CLASS_HID;
  extern const USBD_ClassTypeDef USBD_CLASS_MTP;
+ extern const USBD_ClassTypeDef USBD_CLASS_MSC;
 
  uint_fast16_t usbd_getuacinrtsmaxpacket(void);
  uint_fast16_t usbd_getuacinmaxpacket(void);

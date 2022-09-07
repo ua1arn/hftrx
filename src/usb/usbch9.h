@@ -104,6 +104,10 @@ enum
 	USBD_EP_MTP_INT,	// MTP INT События в компьютер из TRX
 	USBD_EP_MTP_IN,		// MTP IN Данные в компьютер из TRX
 #endif /* WITHUSBDMTP */
+
+#if WITHUSBDMSC
+	USBD_EP_MSC_IN,
+#endif /* WITHUSBDMSC */
 	//
 	epincount
 };
@@ -145,6 +149,10 @@ enum
 #if WITHUSBDMTP
 	USBD_EP_MTP_OUT,	// MTP OUT Данные от компьютера в TRX
 #endif /* WITHUSBDMTP */
+
+#if WITHUSBDMSC
+	USBD_EP_MSC_OUT,
+#endif /* WITHUSBDMSC */
 	//
 	epoutcount
 };
@@ -324,6 +332,10 @@ enum interfaces_tag
 	INTERFACE_MTP_CONTROL,	/* MTP control Interface */
 #endif /* WITHUSBDMTP */
 
+#if WITHUSBDMSC
+	INTERFACE_MSC_CONTROL,
+#endif /* WITHUSBDMSC */
+
 #if WITHUSBDFU && ! WITHMOVEDFU
 	// функция DFU
 	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
@@ -450,6 +462,14 @@ enum interfaces_tag
 			//
 		};
 	#endif /* WITHUSBDMTP */
+
+	#if WITHUSBDMSC
+		enum
+		{
+			INTERFACE_MSC_CONTROL	/* MSC control Interface */
+			//
+		};
+	#endif /* WITHUSBDMSC */
 
 	#if WITHUSBDFU
 		enum

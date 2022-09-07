@@ -268,8 +268,11 @@ static unsigned usbd_get_productId(void)
 		v |= (5u << 7);
 	#endif
 	#if WITHUSBDMTP
-		v |= (5u << 6);
+		v |= (1u << 6);
 	#endif /* WITHUSBDMTP */
+	#if WITHUSBDMSC
+		v |= (1u << 5);
+	#endif /* WITHUSBDMSC */
 #endif /* WITHISBOOTLOADER */
 
 	return v;
@@ -4370,6 +4373,24 @@ static unsigned fill_MTP_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 
 #endif /* WITHUSBDMTP */
 
+#if WITHUSBDMSC
+
+static unsigned fill_MSC_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
+{
+	unsigned n = 0;
+	//
+//	n += MTP_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, INTERFACE_MTP_count);
+//	n += MTP_InterfaceDescriptorControlIf(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, 0);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+//	n += MTP_EndpointIn(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_IN);
+//	n += MTP_EndpointOut(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_OUT);
+//	n += MTP_EndpointInt(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_INT);
+	//n += MTP_DEsc1(fill, p + n, maxsize - n, highspeed);
+	//
+	return n;
+}
+
+#endif /* WITHUSBDMSC */
+
 // последовательность должна соответствовать порядку в enum interfaces_tag
 static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
@@ -4413,6 +4434,10 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #if WITHUSBDMTP
 	n += fill_MTP_XXXX_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBDMTP */
+
+#if WITHUSBDMSC
+	n += fill_MSC_XXXX_function(fill, p + n, maxsize - n, highspeed);
+#endif /* WITHUSBDMSC */
 
 #if WITHUSBDFU && ! WITHMOVEDFU
 	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
