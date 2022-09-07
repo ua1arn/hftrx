@@ -320,14 +320,14 @@ enum interfaces_tag
 	INTERFACE_HID_CONTROL,	/* HID control Interface */
 #endif /* WITHUSBHID */
 
+#if WITHUSBDMTP
+	INTERFACE_MTP_CONTROL,	/* MTP control Interface */
+#endif /* WITHUSBDMTP */
+
 #if WITHUSBDFU && ! WITHMOVEDFU
 	// функция DFU
 	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
 #endif /* WITHUSBDFU */
-
-#if WITHUSBDMTP
-	INTERFACE_MTP_CONTROL,	/* MTP control Interface */
-#endif /* WITHUSBDMTP */
 	// 
 	INTERFACE_count				/* Значение для configuration descriptor */
 };

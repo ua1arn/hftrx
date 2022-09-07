@@ -4209,7 +4209,7 @@ static unsigned MTP_InterfaceDescriptorControlIf(
 		uint_fast8_t bAlternateSetting
 		)
 {
-	const uint_fast8_t length = 8;
+	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
@@ -4302,7 +4302,7 @@ static unsigned MTP_EndpointOut(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		* buff ++ = USBD_EP_TYPE_BULK; // bmAttributes
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize);
-		* buff ++ = 0x00;  						  /* bInterval */
+		* buff ++ = 0x01;  						  /* bInterval */
 	}
 	return length;
 }
@@ -4327,6 +4327,31 @@ static unsigned MTP_EndpointInt(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 	}
 	return length;
 }
+//0	bLength	1	08h
+//1	bDescriptorType	1	24h
+//2		6	80 0C 00 01 00 01
+
+static unsigned MTP_DEsc1(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed)
+{
+	const uint_fast8_t length = 8;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		//const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MTP_CMD_PACKET_SIZE); // was: 0x300
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;		/* bLength: Descriptor size */
+		* buff ++ = 0x24;
+		* buff ++ = 0x80;
+		* buff ++ = 0x0C;
+		* buff ++ = 0;
+		* buff ++ = 1;
+		* buff ++ = 0;
+		* buff ++ = 1;
+	}
+	return length;
+}
 
 static unsigned fill_MTP_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
@@ -4337,6 +4362,7 @@ static unsigned fill_MTP_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += MTP_EndpointIn(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_IN);
 	n += MTP_EndpointOut(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_OUT);
 	n += MTP_EndpointInt(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_INT);
+	//n += MTP_DEsc1(fill, p + n, maxsize - n, highspeed);
 	//
 	return n;
 }
@@ -4383,13 +4409,13 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 	n += fill_HID_XXXX_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBHID */
 
-#if WITHUSBDFU && ! WITHMOVEDFU
-	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
-#endif /* WITHUSBDFU */
-
 #if WITHUSBDMTP
 	n += fill_MTP_XXXX_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBDMTP */
+
+#if WITHUSBDFU && ! WITHMOVEDFU
+	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
+#endif /* WITHUSBDFU */
 
 	return n;
 }

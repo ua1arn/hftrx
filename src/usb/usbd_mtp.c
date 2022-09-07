@@ -203,6 +203,9 @@ static uint8_t USBD_MTP_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTyped
   {
     return (uint8_t)USBD_FAIL;
   }
+  const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+  if (interfacev != INTERFACE_MTP_CONTROL)
+		return USBD_OK;
 
   switch (req->bmRequest & USB_REQ_TYPE_MASK)
   {
