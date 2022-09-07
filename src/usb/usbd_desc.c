@@ -484,7 +484,7 @@ static unsigned UAC2_AC_InterfaceDescriptor(
 		* buff ++ = USB_DEVICE_CLASS_AUDIO;             /* bInterfaceClass */
 		* buff ++ = AUDIO_SUBCLASS_AUDIOCONTROL;        /* bInterfaceSubClass */
 		* buff ++ = AUDIO_PROTOCOL_IP_VERSION_02_00;   	/* bInterfaceProtocol */
-		* buff ++ = STRING_ID_a0 + offset;              /* iInterface */
+		* buff ++ = STRING_ID_0;        			      /* iInterface */
 		/* 09 byte*/
 	}
 	return length;
@@ -1821,7 +1821,7 @@ static unsigned UAC1_AC_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, u
 		* buff ++ = USB_DEVICE_CLASS_AUDIO;             /* bInterfaceClass */
 		* buff ++ = AUDIO_SUBCLASS_AUDIOCONTROL;        /* bInterfaceSubClass */
 		* buff ++ = AUDIO_PROTOCOL_UNDEFINED;           /* bInterfaceProtocol */
-		* buff ++ = STRING_ID_a0 + offset;               /* iInterface */
+		* buff ++ = STRING_ID_0;           			    /* iInterface */
 		/* 09 byte*/
 	}
 	return length;
@@ -3135,7 +3135,7 @@ static unsigned CDCEEM_fill_24(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		* buff ++ = 0x02;							// bInterfaceClass
 		* buff ++ = CDC_ETHERNET_EMULATION_MODEL;	/* bInterfaceSubclass */
 		* buff ++ = 0x07;							/* bInterfaceProtocol */
-		* buff ++ = STRING_ID_5;					/* Unused iInterface */
+		* buff ++ = STRING_ID_0;					/* Unused iInterface */
 		/* 9 byte*/
 	}
 	return length;
@@ -4199,6 +4199,7 @@ static unsigned MTP_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * 
 		* buff ++ = USB_MTP_INTRERFACE_SUB_CLASS;	// bFunctionSubClass
 		* buff ++ = USB_MTP_INTRERFACE_PROTOCOL;	// bFunctionProtocol
 		* buff ++ = STRING_ID_MTP;	// Interface string index
+		/* 8 bytes */
 	}
 	return length;
 }
@@ -4224,8 +4225,8 @@ static unsigned MTP_InterfaceDescriptorControlIf(
 		* buff ++ = USB_MTP_INTRERFACE_CLASS;		// bFunctionClass: Audio
 		* buff ++ = USB_MTP_INTRERFACE_SUB_CLASS;	// bFunctionSubClass
 		* buff ++ = USB_MTP_INTRERFACE_PROTOCOL;	// bFunctionProtocol
-		* buff ++ = 0x00;							/* Unused iInterface */
-		/* 9 byte*/
+		* buff ++ = STRING_ID_0;					/* Unused iInterface */
+		/* 9 bytes */
 	}
 	return length;
 }
@@ -4302,7 +4303,7 @@ static unsigned MTP_EndpointOut(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		* buff ++ = USBD_EP_TYPE_BULK; // bmAttributes
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize);
-		* buff ++ = 0x01;  						  /* bInterval */
+		* buff ++ = 0x00;  						  /* bInterval */
 	}
 	return length;
 }

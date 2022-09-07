@@ -113,7 +113,7 @@
 
 	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	#define WITHUSBDEV_DMAENABLE 1
@@ -148,8 +148,9 @@
 	#endif /* WITHINTEGRATEDDSP */
 
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
+	#define WITHUSBCDCACM_N		1	/* количество виртуальных последовательных портов */
     //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
+
 	#if WITHLWIP
 		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
