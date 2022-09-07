@@ -179,6 +179,7 @@ enum
 	STRING_ID_DFU_2,	/* RAM target for debug */
 	// 
 	STRING_ID_MTP,
+	STRING_ID_MSC,
 	//
 	STRING_ID_count
 };
@@ -202,6 +203,9 @@ static const struct stringtempl strtemplates [] =
 #if WITHUSBDMTP
 	{ STRING_ID_MTP, PRODUCTSTR " MTP", },
 #endif /* WITHUSBDMTP */
+#if WITHUSBDMSC
+	{ STRING_ID_MSC, PRODUCTSTR " MSC", },
+#endif /* WITHUSBDMSC */
 
 #if WITHUSBUACINOUTRENESAS
 	{ STRING_ID_a0, PRODUCTSTR " Audio", },		// tag for Interface Descriptor 0/0 Audio
@@ -4178,9 +4182,7 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 
 #if WITHUSBDMTP
 
-
-/* UAC IAD */
-// Interface Association Descriptor Audio
+// Interface Association Descriptor
 // documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDescriptor_ecn.pdf
 static unsigned MTP_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bFirstInterface,
@@ -4375,16 +4377,109 @@ static unsigned fill_MTP_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 
 #if WITHUSBDMSC
 
+// Interface Association Descriptor
+// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDescriptor_ecn.pdf
+static unsigned MSC_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bFirstInterface,
+	uint_fast8_t bInterfaceCount
+	)
+{
+	const uint_fast8_t length = 8;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
+		* buff ++ = bFirstInterface;			// bFirstInterface
+		* buff ++ = bInterfaceCount;	// bInterfaceCount
+		* buff ++ = 0x08;	// bFunctionClass: Audio
+		* buff ++ = 0x06;	// bFunctionSubClass
+		* buff ++ = 0x50;	// bFunctionProtocol
+		* buff ++ = STRING_ID_MSC;	// Interface string index
+		/* 8 bytes */
+	}
+	return length;
+}
+
+static unsigned MSC_InterfaceDescriptorControlIf(
+		uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+		uint_fast8_t bInterfaceNumber,
+		uint_fast8_t bAlternateSetting
+		)
+{
+	const uint_fast8_t length = 9;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  // INTERFACE descriptor type (bDescriptorType)
+		* buff ++ = bInterfaceNumber;				// Index of this interface. (bInterfaceNumber)
+		* buff ++ = bAlternateSetting;				// Index of this alternate setting. (bAlternateSetting) - zero-based index
+		* buff ++ = 0x02;							// bNumEndpoints
+		* buff ++ = 0x08;	// bFunctionClass: Audio
+		* buff ++ = 0x06;	// bFunctionSubClass
+		* buff ++ = 0x50;	// bFunctionProtocol
+		* buff ++ = STRING_ID_0;					/* Unused iInterface */
+		/* 9 bytes */
+	}
+	return length;
+}
+static unsigned MSC_EndpointIn(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MSC_DATA_MAX_PACKET_SIZE); // was: 0x300
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
+		* buff ++ = bEndpointAddress;                    // bEndpointAddress
+		* buff ++ = USBD_EP_TYPE_BULK; 				// bmAttributes
+		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
+		* buff ++ = HI_BYTE(wMaxPacketSize);
+		* buff ++ = 0x00;  						  /* bInterval */
+	}
+	return length;
+}
+
+static unsigned MSC_EndpointOut(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MSC_DATA_MAX_PACKET_SIZE); // was: 0x300
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
+		* buff ++ = bEndpointAddress;                    // bEndpointAddress
+		* buff ++ = USBD_EP_TYPE_BULK; // bmAttributes
+		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
+		* buff ++ = HI_BYTE(wMaxPacketSize);
+		* buff ++ = 0x00;  						  /* bInterval */
+	}
+	return length;
+}
+
 static unsigned fill_MSC_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
 	unsigned n = 0;
 	//
-//	n += MTP_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, INTERFACE_MTP_count);
-//	n += MTP_InterfaceDescriptorControlIf(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, 0);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
-//	n += MTP_EndpointIn(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_IN);
-//	n += MTP_EndpointOut(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_OUT);
-//	n += MTP_EndpointInt(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_INT);
-	//n += MTP_DEsc1(fill, p + n, maxsize - n, highspeed);
+	n += MSC_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_MSC_CONTROL, INTERFACE_MSC_count);
+	n += MSC_InterfaceDescriptorControlIf(fill, p + n, maxsize - n, INTERFACE_MSC_CONTROL, 0);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+	n += MSC_EndpointIn(fill, p + n, maxsize - n, highspeed, USBD_EP_MSC_IN);
+	n += MSC_EndpointOut(fill, p + n, maxsize - n, highspeed, USBD_EP_MSC_OUT);
 	//
 	return n;
 }
