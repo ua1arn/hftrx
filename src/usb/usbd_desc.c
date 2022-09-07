@@ -4395,9 +4395,9 @@ static unsigned MSC_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * 
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
 		* buff ++ = bFirstInterface;			// bFirstInterface
 		* buff ++ = bInterfaceCount;	// bInterfaceCount
-		* buff ++ = 0x08;	// bFunctionClass: Audio
-		* buff ++ = 0x06;	// bFunctionSubClass
-		* buff ++ = 0x50;	// bFunctionProtocol
+		* buff ++ = USB_DEVICE_CLASS_STORAGE;	// bFunctionClass: Mass Storage
+		* buff ++ = 0x06;	// bFunctionSubClass SCSI Transparent Command Set
+		* buff ++ = 0x50;	// bFunctionProtocol Bulk-Only Transport
 		* buff ++ = STRING_ID_MSC;	// Interface string index
 		/* 8 bytes */
 	}
@@ -4422,9 +4422,9 @@ static unsigned MSC_InterfaceDescriptorControlIf(
 		* buff ++ = bInterfaceNumber;				// Index of this interface. (bInterfaceNumber)
 		* buff ++ = bAlternateSetting;				// Index of this alternate setting. (bAlternateSetting) - zero-based index
 		* buff ++ = 0x02;							// bNumEndpoints
-		* buff ++ = 0x08;	// bFunctionClass: Audio
-		* buff ++ = 0x06;	// bFunctionSubClass
-		* buff ++ = 0x50;	// bFunctionProtocol
+		* buff ++ = USB_DEVICE_CLASS_STORAGE;	// bFunctionClass: Mass Storage
+		* buff ++ = 0x06;	// bFunctionSubClass SCSI Transparent Command Set
+		* buff ++ = 0x50;	// bFunctionProtocol Bulk-Only Transport
 		* buff ++ = STRING_ID_0;					/* Unused iInterface */
 		/* 9 bytes */
 	}

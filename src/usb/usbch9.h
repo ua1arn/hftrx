@@ -351,6 +351,7 @@ enum interfaces_tag
 #define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
 #define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
 #define INTERFACE_MTP_count 1	/* количество интерфейсов в одном MTP */
+#define INTERFACE_MSC_count 1	/* количество интерфейсов в одном MSC */
 
 //#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_SPK)
 
