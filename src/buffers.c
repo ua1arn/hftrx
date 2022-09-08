@@ -8,7 +8,7 @@
 #include "formats.h"	// for debug prints
 
 //#define WITHBUFFERSDEBUG WITHDEBUG
-#define BUFOVERSIZE 4
+#define BUFOVERSIZE 1
 
 #if WITHINTEGRATEDDSP
 
@@ -2270,6 +2270,14 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 
 	prepareout32tx->buff [level32tx + DMABUF32TXI] = ch0;
 	prepareout32tx->buff [level32tx + DMABUF32TXQ] = ch1;
+
+#if (DDS1_TYPE == DDS_TYPE_FPGAV1)
+	/* установка параметров приемника, передаваемых чрез I2S канал в FPGA */
+	prepareout32tx->buff [level32tx + DMABUF32TX_NCO1] = dspfpga_get_nco1();
+	prepareout32tx->buff [level32tx + DMABUF32TX_NCO2] = dspfpga_get_nco2();
+	prepareout32tx->buff [level32tx + DMABUF32TX_NCORTS] = dspfpga_get_ncorts();
+	prepareout32tx->buff [level32tx + DMABUF32TX_NBRX] = dspfpga_get_nbrx();
+#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) */
 
 	if ((level32tx += DMABUFFSTEP32TX) >= DMABUFFSIZE32TX)
 	{

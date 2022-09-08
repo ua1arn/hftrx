@@ -5999,7 +5999,6 @@ prog_dds1_ftw_sub(const ftw_t * value)
 	xcz_dds_ftw_sub(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq2(targetfpga1, value);
-	prog_pulse_ioupdate();
 #endif
 }
 
@@ -6009,7 +6008,6 @@ prog_dds1_ftw_sub3(const ftw_t * value)
 {
 #if (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq3(targetfpga1, value);
-	prog_pulse_ioupdate();
 #endif
 }
 
@@ -6019,7 +6017,6 @@ prog_dds1_ftw_sub4(const ftw_t * value)
 {
 #if (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq4(targetfpga1, value);
-	prog_pulse_ioupdate();
 #endif
 }
 
@@ -6182,7 +6179,6 @@ void prog_dds2_ftw(const ftw_t * value)
 	prog_pulse_ioupdate();
 #elif (DDS2_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1(targetfpga1, value);
-	prog_pulse_ioupdate();
 #elif (DDS2_TYPE == DDS_TYPE_AD9857)
 	prog_ad9857_freq(targetdds2, 0x00, value);
 	prog_pulse_ioupdate();

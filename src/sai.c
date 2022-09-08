@@ -121,8 +121,8 @@ enum
 
 		// На передачу во всех версиях FPGA используется один и тот же блок
 		// В каждой половине фрейма используется первый слот (первые 32 бита после переключения WS)
-		#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
-		SLOTEN_TX_SAIFPGA = 0x0011,
+		#define DMABUFFSTEP32TX	8
+		SLOTEN_TX_SAIFPGA = 0x00FF,
 
 	#elif WITHFPGAIF_FRAMEBITS == 64
 		//#if WITHRTS96 || WITHUSEDUALWATCH

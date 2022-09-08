@@ -44,6 +44,11 @@ extern "C" {
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	4		// TX, Q
 
+		#define DMABUF32TX_NCO1	2		// NCO RX A
+		#define DMABUF32TX_NCO2	6		// NCO RX B
+		#define DMABUF32TX_NCORTS	3		// NCO RTS
+		#define DMABUF32TX_NBRX	7		// NB RX PARAM
+
 		#if WITHRTS96
 			#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
 			#define DMABUF32RTS0Q	6		// RTS0, Q	// previous
@@ -165,10 +170,16 @@ extern "C" {
 				#define DMABUF32RXWFM3I	3		// WFM NEWEST
 				#define DMABUF32RXWFM3Q	7		// WFM
 
-				#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+				#define DMABUFFSTEP32TX	8		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 				#define DMABUF32TXI	0		// TX, I
-				#define DMABUF32TXQ	1		// TX, Q
-		#endif
+				#define DMABUF32TXQ	4		// TX, Q
+
+				#define DMABUF32TX_NCO1	2		// NCO RX A
+				#define DMABUF32TX_NCO2	6		// NCO RX B
+				#define DMABUF32TX_NCORTS	3		// NCO RTS
+				#define DMABUF32TX_NBRX	7		// NB RX PARAM
+
+	#endif
 
 		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
@@ -192,6 +203,11 @@ extern "C" {
 		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	1		// TX, Q
+
+		#define DMABUF32TX_NCO1	4		// NCO RX A
+		#define DMABUF32TX_NCO2	5		// NCO RX B
+		#define DMABUF32TX_NCORTS	6		// NCO RTS
+		#define DMABUF32TX_NBRX	7		// NB RX PARAM
 
 		#if WITHRTS96
 			#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
@@ -363,7 +379,7 @@ extern "C" {
 #define MTP_DATA_MAX_PACKET_SIZE 64
 #define MTP_CMD_PACKET_SIZE		8          /* Control Endpoint Packet size */
 
-#define MSC_DATA_MAX_PACKET_SIZE 64
+#define MSC_DATA_MAX_PACKET_SIZE 512//64
 
 #define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
 
@@ -1163,6 +1179,21 @@ void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
 #define M_INVLN2        1.4426950408889633870E0  /* 1 / log(2) */
 
 #endif /* __STDC__ && ! CPUSTYLE_ATMEGA */
+
+/* установка параметров приемника, передаваемых чрез I2S канал в FPGA */
+uint_fast32_t dspfpga_get_nco1(void);
+uint_fast32_t dspfpga_get_nco2(void);
+uint_fast32_t dspfpga_get_nco3(void);
+uint_fast32_t dspfpga_get_nco4(void);
+uint_fast32_t dspfpga_get_ncorts(void);
+uint_fast32_t dspfpga_get_nbrx(void);
+
+extern volatile phase_t mirror_nco1;
+extern volatile phase_t mirror_nco2;
+extern volatile phase_t mirror_nco3;
+extern volatile phase_t mirror_nco4;
+extern volatile phase_t mirror_ncorts;
+extern volatile uint_fast32_t mirror_nblevel;
 
 #ifdef __cplusplus
 }
