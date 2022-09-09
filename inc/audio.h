@@ -47,7 +47,6 @@ extern "C" {
 		#define DMABUF32TX_NCO1	2		// NCO RX A
 		#define DMABUF32TX_NCO2	6		// NCO RX B
 		#define DMABUF32TX_NCORTS	3		// NCO RTS
-		#define DMABUF32TX_NBRX	7		// NB RX PARAM
 
 		#if WITHRTS96
 			#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
@@ -177,7 +176,6 @@ extern "C" {
 				#define DMABUF32TX_NCO1	2		// NCO RX A
 				#define DMABUF32TX_NCO2	6		// NCO RX B
 				#define DMABUF32TX_NCORTS	3		// NCO RTS
-				#define DMABUF32TX_NBRX	7		// NB RX PARAM
 
 	#endif
 
@@ -207,7 +205,6 @@ extern "C" {
 		#define DMABUF32TX_NCO1	4		// NCO RX A
 		#define DMABUF32TX_NCO2	5		// NCO RX B
 		#define DMABUF32TX_NCORTS	6		// NCO RTS
-		#define DMABUF32TX_NBRX	7		// NB RX PARAM
 
 		#if WITHRTS96
 			#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
@@ -1186,14 +1183,12 @@ uint_fast32_t dspfpga_get_nco2(void);
 uint_fast32_t dspfpga_get_nco3(void);
 uint_fast32_t dspfpga_get_nco4(void);
 uint_fast32_t dspfpga_get_ncorts(void);
-uint_fast32_t dspfpga_get_nbrx(void);
 
 extern volatile phase_t mirror_nco1;
 extern volatile phase_t mirror_nco2;
 extern volatile phase_t mirror_nco3;
 extern volatile phase_t mirror_nco4;
 extern volatile phase_t mirror_ncorts;
-extern volatile uint_fast32_t mirror_nblevel;
 
 #ifdef __cplusplus
 }

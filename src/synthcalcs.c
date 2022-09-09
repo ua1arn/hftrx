@@ -77,39 +77,6 @@ freq2ftw(uint_fast32_t freq, uint_fast16_t divider, uint_fast64_t ddsosc)
 }
 #endif /* FTW_RESOLUTION */
 
-volatile phase_t mirror_nco1;
-volatile phase_t mirror_nco2;
-volatile phase_t mirror_nco3;
-volatile phase_t mirror_nco4;
-volatile phase_t mirror_ncorts;
-volatile uint_fast32_t mirror_nblevel;
-
-
-/* Получение параметров приемника, передаваемых чрез I2S канал в FPGA */
-/* вызывается из прерываний real-time */
-uint_fast32_t dspfpga_get_nco1(void)
-{
-	return mirror_nco1;
-}
-
-/* вызывается из прерываний real-time */
-uint_fast32_t dspfpga_get_nco2(void)
-{
-	return mirror_nco2;
-}
-
-/* вызывается из прерываний real-time */
-uint_fast32_t dspfpga_get_ncorts(void)
-{
-	return mirror_ncorts;
-}
-
-/* вызывается из прерываний real-time */
-uint_fast32_t dspfpga_get_nbrx(void)
-{
-	return mirror_nblevel;
-}
-
 #if WITHLFM && LO1MODE_DIRECT
 
 
@@ -222,13 +189,56 @@ void synth_lfm_setparams(uint_fast32_t astart, uint_fast32_t astop, uint_fast32_
 	lfm_lo1div = od;
 } 
 
-#else
+#else /* WITHLFM && LO1MODE_DIRECT */
 
 void spool_lfm(void)
 {
 	//return 0;
 }
-#endif
+#endif /* WITHLFM && LO1MODE_DIRECT */
+
+
+volatile phase_t mirror_nco1;
+volatile phase_t mirror_nco2;
+volatile phase_t mirror_nco3;
+volatile phase_t mirror_nco4;
+volatile phase_t mirror_ncorts;
+
+
+/* Получение параметров приемника, передаваемых чрез I2S канал в FPGA */
+/* вызывается из прерываний real-time с частотой ARMI2SRATE */
+uint_fast32_t dspfpga_get_nco1(void)
+{
+#if WITHLFM && LO1MODE_DIRECT
+	return mirror_nco1;
+#else /* WITHLFM && LO1MODE_DIRECT */
+	return mirror_nco1;
+#endif /* WITHLFM && LO1MODE_DIRECT */
+}
+
+/* вызывается из прерываний real-time с частотой ARMI2SRATE */
+uint_fast32_t dspfpga_get_nco2(void)
+{
+	return mirror_nco2;
+}
+
+/* вызывается из прерываний real-time с частотой ARMI2SRATE */
+uint_fast32_t dspfpga_get_nco3(void)
+{
+	return mirror_nco3;
+}
+
+/* вызывается из прерываний real-time с частотой ARMI2SRATE */
+uint_fast32_t dspfpga_get_nco4(void)
+{
+	return mirror_nco4;
+}
+
+/* вызывается из прерываний real-time с частотой ARMI2SRATE */
+uint_fast32_t dspfpga_get_ncorts(void)
+{
+	return mirror_ncorts;
+}
 
 #if LO1MODE_DIRECT && ! defined(DDS1_TYPE)
 

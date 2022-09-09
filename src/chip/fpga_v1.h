@@ -12,6 +12,7 @@ extern const phase_t phase_0;
 
 #define FPGA_DECODE_CTLREG	(1u << 0)
 #define FPGA_DECODE_FQMETER	(0)
+#define FPGA_DECODE_NBLVL	(1u << 6)
 
 
 // Send a frame of bytes via SPI
@@ -103,7 +104,7 @@ static void prog_fpga_nblevel(
 	uint_fast32_t val		/* FTW parameter for NCO */
 	)
 {
-	mirror_nblevel = val;
+	prog_fpga_valX(target, val, FPGA_DECODE_NBLVL);
 }
 
 // FPGA control register
