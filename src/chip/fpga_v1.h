@@ -11,6 +11,7 @@ extern const phase_t phase_0;
 #define FPGA_SPIMODE SPIC_MODE3
 
 #define FPGA_DECODE_CTLREG	(1u << 0)
+#define FPGA_DECODE_NCO1	(1u << 1)
 #define FPGA_DECODE_FQMETER	(0)
 #define FPGA_DECODE_NBLVL	(1u << 6)
 
@@ -64,7 +65,10 @@ static void prog_fpga_freq1(
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-	mirror_nco1 = * val;
+#if (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2)
+    prog_fpga_freqX(target, val, FPGA_DECODE_NCO1);
+#endif /* (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
+    mirror_nco1 = * val;
 }
 
 static void prog_fpga_freq2(

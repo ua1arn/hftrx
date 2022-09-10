@@ -12,8 +12,8 @@
 // 2xUSB
 // Rmainunit_v5em.pcb
 
-#ifndef ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V3_H_INCLUDED
-#define ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V3_H_INCLUDED 1
+#ifndef ARM_STM32F4XX_TQFP144_CPUSTYLE_OLEG4Z_V1_H_INCLUDED
+#define ARM_STM32F4XX_TQFP144_CPUSTYLE_OLEG4Z_V1_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
@@ -625,4 +625,4 @@
 
 	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_oleg4z.h"
 
-#endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V3_H_INCLUDED */
+#endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_OLEG4Z_V1_H_INCLUDED */
