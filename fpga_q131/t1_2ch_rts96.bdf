@@ -8684,12 +8684,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "nblvl[31..0]" (rect -3574 584 -3519 596)(font "Arial" ))
-	(pt -3568 600)
-	(pt -3528 600)
-	(bus)
-)
-(connector
 	(text "i2s_wsd" (rect -1630 296 -1592 308)(font "Arial" ))
 	(pt -1592 312)
 	(pt -1632 312)
@@ -8751,12 +8745,6 @@ applicable agreement for further details.
 	(pt -2040 480)
 )
 (connector
-	(text "nco1_ftw[31..0],nco2_ftw[31..0]" (rect -1886 448 -1730 460)(font "Arial" ))
-	(pt -1904 464)
-	(pt -1792 464)
-	(bus)
-)
-(connector
 	(pt -2416 280)
 	(pt -2416 336)
 	(bus)
@@ -8786,12 +8774,6 @@ applicable agreement for further details.
 	(text "tx_eop" (rect -2494 472 -2461 484)(font "Arial" ))
 	(pt -2448 488)
 	(pt -2496 488)
-)
-(connector
-	(text "nco3_ftw[31..0],nblvl[31..0]" (rect -2294 456 -2159 468)(font "Arial" ))
-	(pt -2312 472)
-	(pt -2216 472)
-	(bus)
 )
 (connector
 	(pt -2448 520)
@@ -8853,6 +8835,24 @@ applicable agreement for further details.
 (connector
 	(pt -2416 336)
 	(pt -2512 336)
+	(bus)
+)
+(connector
+	(text "nblvl[31..0]" (rect -3574 584 -3519 596)(font "Arial" ))
+	(pt -3608 600)
+	(pt -3528 600)
+	(bus)
+)
+(connector
+	(text "nco2_ftw[31..0],nco1_ftw[31..0]" (rect -1878 448 -1722 460)(font "Arial" ))
+	(pt -1904 464)
+	(pt -1744 464)
+	(bus)
+)
+(connector
+	(text "nco4_ftw[31..0],nco3_ftw[31..0]" (rect -2294 456 -2138 468)(font "Arial" ))
+	(pt -2312 472)
+	(pt -2216 472)
 	(bus)
 )
 (junction (pt -1592 -696))
@@ -8956,4 +8956,3 @@ applicable agreement for further details.
 (text "Previous" (rect -1904 -112 -1855 -98)(font "Arial" (font_size 8)))
 (text "Current" (rect -1904 -144 -1862 -130)(font "Arial" (font_size 8)))
 (text "decode[7..0]" (rect -3126 1056 -3065 1068)(font "Arial" ))
-(text "nco1_ftw[31..0],nco2_ftw[31..0]" (rect -1886 448 -1730 460)(font "Arial" ))
