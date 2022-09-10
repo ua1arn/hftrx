@@ -67,7 +67,7 @@
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-#if WITHINTEGRATEDDSP
+#if WITHINTEGRATEDDSP && WITHUSBHW
 
 	//#define WITHUAC2		1	/* UAC2 support */
 	#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
