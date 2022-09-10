@@ -10904,7 +10904,7 @@ updateboardZZZ(
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		board_set_moniflag(gmoniflag);	/* glob_moniflag */
-		#if WITHSPECTRUMWF
+		#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe);		/* верхний предел FFT */
 			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbspe);		/* нижний предел FFT */
@@ -10920,7 +10920,7 @@ updateboardZZZ(
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
 			display2_set_filter_spe(gspecbeta100);	/* beta - парамеры видеофильтра спектра */
 			display2_set_filter_wfl(gwflbeta100);	/* beta - парамеры видеофильтра водопада */
-		#endif /* WITHSPECTRUMWF */
+		#endif /* (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
 	#if WITHAFEQUALIZER

@@ -3271,6 +3271,30 @@ static void hardware_sai2_b_enable_fpga(uint_fast8_t state)		/* разрешен
 	}
 }
 
+static void hardware_sai2_a_enable_wfm(uint_fast8_t state)		/* разрешение работы SAI1 на STM32F4xx */
+{
+	if (state != 0)
+	{
+		SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
+	}
+	else
+	{
+		SAI2_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
+	}
+}
+
+static void hardware_sai2_b_enable_wfm(uint_fast8_t state)		/* разрешение работы SAI1 на STM32F4xx */
+{
+	if (state != 0)
+	{
+		SAI2_Block_B->CR1 |= SAI_xCR1_SAIEN;
+	}
+	else
+	{
+		SAI2_Block_B->CR1 &= ~ SAI_xCR1_SAIEN;
+	}
+}
+
 #if WITHCODEC1_SAI1_A_TX_B_RX_MASTER
 static const codechw_t audiocodechw_sai1_a_tx_b_rx_master =
 {
