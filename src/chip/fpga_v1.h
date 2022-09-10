@@ -67,8 +67,9 @@ static void prog_fpga_freq1(
 {
 #if (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2)
     prog_fpga_freqX(target, val, FPGA_DECODE_NCO1);
-#endif /* (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
+#else /* (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
     mirror_nco1 = * val;
+#endif /* (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
 }
 
 static void prog_fpga_freq2(

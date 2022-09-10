@@ -298,6 +298,7 @@
 	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
 	#if 0
 		#define WITHWAVPLAYER 1	/* трансивер работает проигрывателем файлов с USB/SD накопителя */

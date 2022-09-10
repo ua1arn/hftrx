@@ -44,9 +44,9 @@ extern "C" {
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	4		// TX, Q
 
-		#define DMABUF32TX_NCO1	2		// NCO RX A
-		#define DMABUF32TX_NCO2	6		// NCO RX B
-		#define DMABUF32TX_NCORTS	3		// NCO RTS
+		#define DMABUF32TX_NCO1		6		// NCO RX A
+		#define DMABUF32TX_NCO2		3		// NCO RX B
+		#define DMABUF32TX_NCORTS	7		// NCO RTS
 
 		#if WITHRTS96
 			#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
@@ -173,9 +173,9 @@ extern "C" {
 				#define DMABUF32TXI	0		// TX, I
 				#define DMABUF32TXQ	4		// TX, Q
 
-				#define DMABUF32TX_NCO1	2		// NCO RX A
-				#define DMABUF32TX_NCO2	6		// NCO RX B
-				#define DMABUF32TX_NCORTS	3		// NCO RTS
+				#define DMABUF32TX_NCO1		6		// NCO RX A
+				#define DMABUF32TX_NCO2		3		// NCO RX B
+				#define DMABUF32TX_NCORTS	7		// NCO RTS
 
 	#endif
 
@@ -202,9 +202,9 @@ extern "C" {
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	1		// TX, Q
 
-		#define DMABUF32TX_NCO1	4		// NCO RX A
-		#define DMABUF32TX_NCO2	5		// NCO RX B
-		#define DMABUF32TX_NCORTS	6		// NCO RTS
+		#define DMABUF32TX_NCO1		5		// NCO RX A
+		#define DMABUF32TX_NCO2		6		// NCO RX B
+		#define DMABUF32TX_NCORTS	7		// NCO RTS
 
 		#if WITHRTS96
 			#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
