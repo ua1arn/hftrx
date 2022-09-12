@@ -2284,20 +2284,6 @@ extern "C" {
 
 	#define WITHFASTWATERFLOW 1
 
-#elif LCDMODE_V1B
-	#error Use LCDMODE_V2 instedd of LCDMODE_V1B
-	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
-	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана */
-	#define LCDMODE_MAIN_PAGES	1
-	#define LCDMODE_PIXELSIZE 1
-
-	#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
-	#define LCDMODE_PIP_PAGES	3
-	#define COLORPIP_SHADED 128
-
-	#define WITHFASTWATERFLOW 1
-
 #elif LCDMODE_V2
 	/* только главный экран с двумя видеобуферами L8, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
