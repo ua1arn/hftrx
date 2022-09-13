@@ -159,7 +159,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
   }
 
   // check USBH_free
-  static RAMNOINIT_D1 HID_HandleTypeDef staticHID_Handle;
+  static HID_HandleTypeDef staticHID_Handle;
   phost->pActiveClass->pData = & staticHID_Handle;
   //phost->pActiveClass->pData = (HID_HandleTypeDef *)USBH_malloc(sizeof(HID_HandleTypeDef));
   phhid = (HID_HandleTypeDef *) phost->pActiveClass->pData;

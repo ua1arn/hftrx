@@ -63,9 +63,9 @@ USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status);
 
 
 /* PCD Handle Structure */
-__ALIGN4k_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN4k_END;
+__ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
 /* USB Device Core handle declaration */
-static __ALIGN4k_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN4k_END;
+static __ALIGN_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN_END;
 
 
 /* USER CODE BEGIN 1 */

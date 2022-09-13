@@ -94,8 +94,8 @@ static USBH_StatusTypeDef USBH_HID_KeybdDecode(USBH_HandleTypeDef *phost);
   */
 
 HID_KEYBD_Info_TypeDef     keybd_info;
-static RAMNOINIT_D1 __ALIGN4k_BEGIN uint32_t                   keybd_rx_report_buf[2] __ALIGN4k_END;
-static RAMNOINIT_D1 __ALIGN4k_BEGIN	uint32_t                   keybd_report_data[2] __ALIGN4k_END;
+static __ALIGN_BEGIN uint32_t                   keybd_rx_report_buf[2] __ALIGN_END;
+static __ALIGN_BEGIN	uint32_t                   keybd_report_data[2] __ALIGN_END;
 
 static const HID_Report_ItemTypedef imp_0_lctrl =
 {

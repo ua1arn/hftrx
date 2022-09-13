@@ -414,7 +414,7 @@ typedef struct _AUDIO_Process
   AUDIO_InterfaceStreamPropTypeDef   headphone;
   AUDIO_InterfaceStreamPropTypeDef   microphone;
   AUDIO_InterfaceControlPropTypeDef  control;
-  __ALIGN4k_BEGIN uint16_t                            mem [8] __ALIGN4k_END;
+  __ALIGN_BEGIN uint16_t                            mem [8] __ALIGN_END;
   uint8_t                            temp_feature;
   uint8_t                            temp_channels;
 

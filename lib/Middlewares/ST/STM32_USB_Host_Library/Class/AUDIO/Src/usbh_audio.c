@@ -209,7 +209,7 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost, co
   }
 
   // check USBH_free
-  static RAMNOINIT_D1 AUDIO_HandleTypeDef staticAUDIO_Handle;
+  static AUDIO_HandleTypeDef staticAUDIO_Handle;
   phost->pActiveClass->pData = & staticAUDIO_Handle;
   //phost->pActiveClass->pData = (AUDIO_HandleTypeDef *)USBH_malloc(sizeof(AUDIO_HandleTypeDef));
   AUDIO_Handle = (AUDIO_HandleTypeDef *) phost->pActiveClass->pData;

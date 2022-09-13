@@ -22,9 +22,9 @@
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
 /* USB Host Core handle declaration. */
-RAMNOINIT_D1 USBH_HandleTypeDef hUsbHostHS;
+USBH_HandleTypeDef hUsbHostHS;
 
-static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
+static EHCI_HandleTypeDef hehci_USB;
 
 #if WITHUSEUSBFLASH
 #include "../../Class/MSC/Inc/usbh_msc.h"

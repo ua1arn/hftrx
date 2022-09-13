@@ -83,8 +83,8 @@ static USBH_StatusTypeDef USBH_HID_TouchDecode(USBH_HandleTypeDef *phost);
   * @{
   */
 HID_TOUCH_Info_TypeDef    touch_info;
-static RAMNOINIT_D1 __ALIGN4k_BEGIN uint8_t touch_report_data [64] __ALIGN4k_END;
-static RAMNOINIT_D1 __ALIGN4k_BEGIN uint8_t touch_rx_report_buf [64] __ALIGN4k_END;
+static __ALIGN_BEGIN uint8_t touch_report_data [64] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t touch_rx_report_buf [64] __ALIGN_END;
 
 /* Structures defining how to access items in a HID touch report */
 /* Access button 1 state. */

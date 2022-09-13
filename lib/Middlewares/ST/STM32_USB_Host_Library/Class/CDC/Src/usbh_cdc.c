@@ -172,7 +172,7 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost, cons
   }
 
   // check USBH_free
-  static RAMNOINIT_D1 CDC_HandleTypeDef staticCDC_Handle;
+  static CDC_HandleTypeDef staticCDC_Handle;
   phost->pActiveClass->pData = & staticCDC_Handle;
   //phost->pActiveClass->pData = (CDC_HandleTypeDef *)USBH_malloc(sizeof(CDC_HandleTypeDef));
   CDC_Handle = (CDC_HandleTypeDef *) phost->pActiveClass->pData;

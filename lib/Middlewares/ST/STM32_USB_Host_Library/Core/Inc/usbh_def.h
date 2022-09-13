@@ -242,7 +242,7 @@ uint16_t_uint8_t;
 
 typedef union _USB_Setup
 {
-	__ALIGN4k_BEGIN uint32_t d8 [8 / sizeof (uint32_t)] __ALIGN4k_END;
+	__ALIGN_BEGIN uint32_t d8 [8 / sizeof (uint32_t)] __ALIGN_END;
 
   struct _SetupPkt_Struc
   {
@@ -466,8 +466,8 @@ typedef struct
 /* Attached device structure */
 typedef struct
 {
-  __ALIGN4k_BEGIN uint8_t           CfgDesc_Raw [USBH_MAX_SIZE_CONFIGURATION] __ALIGN4k_END;
-  __ALIGN4k_BEGIN uint8_t           Data [USBH_MAX_DATA_BUFFER] __ALIGN4k_END;
+  __ALIGN_BEGIN uint8_t           CfgDesc_Raw [USBH_MAX_SIZE_CONFIGURATION] __ALIGN_END;
+  __ALIGN_BEGIN uint8_t           Data [USBH_MAX_DATA_BUFFER] __ALIGN_END;
   uint8_t                           EnumCnt;
   uint8_t                           RstCnt;
   __IO uint8_t                      is_connected;

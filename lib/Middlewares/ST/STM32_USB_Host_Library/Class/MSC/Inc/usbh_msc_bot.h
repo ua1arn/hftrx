@@ -105,7 +105,7 @@ typedef union
     uint8_t  CBLength;
     uint8_t  CB[16];
   } field;
-  __ALIGN4k_BEGIN uint8_t data[31] __ALIGN4k_END;
+  __ALIGN_BEGIN uint8_t data[31] __ALIGN_END;
 }
 BOT_CBWTypeDef;
 
@@ -118,13 +118,13 @@ typedef union
     uint32_t DataResidue;
     uint8_t  Status;
   } field;
-  __ALIGN4k_BEGIN uint8_t data[13] __ALIGN4k_END;
+  __ALIGN_BEGIN uint8_t data[13] __ALIGN_END;
 }
 BOT_CSWTypeDef;
 
 typedef struct
 {
-	__ALIGN4k_BEGIN uint32_t                   data[512 / sizeof (uint32_t)] __ALIGN4k_END;	// was: 16 - in this buffer readed maximal endpoint data size (512 for HS)
+	__ALIGN_BEGIN uint32_t                   data[512 / sizeof (uint32_t)] __ALIGN_END;	// was: 16 - in this buffer readed maximal endpoint data size (512 for HS)
   BOT_StateTypeDef           state;
   BOT_StateTypeDef           prev_state;
   BOT_CMDStateTypeDef        cmd_state;

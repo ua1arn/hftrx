@@ -165,7 +165,7 @@ static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost, cons
   }
 
   // check USBH_free
-  static RAMNOINIT_D1 MTP_HandleTypeDef staticMTP_Handle;
+  static MTP_HandleTypeDef staticMTP_Handle;
   phost->pActiveClass->pData = & staticMTP_Handle;
   //phost->pActiveClass->pData = (MTP_HandleTypeDef *)USBH_malloc(sizeof(MTP_HandleTypeDef));
   MTP_Handle = (MTP_HandleTypeDef *)phost->pActiveClass->pData;
