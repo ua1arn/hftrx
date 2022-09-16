@@ -7,7 +7,7 @@
 //
 
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t113-s3
-// rmainunit_sv9e.pcb Allwinner t113-s2, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+// rmainunit_sv9f.pcb Allwinner t113-s2, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 
 #ifndef ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED
 #define ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED 1
@@ -667,7 +667,7 @@
 	// FPGA PIN_23
 	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0)
 	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (1u << 13)	/* PD13 - fir CS ~FPGA_FIR_CLK - error in selected pin */
+	#define TARGET_FPGA_FIR_CS_BIT (1u << 12)	/* PD12 - fir CS ~FPGA_FIR_CLK */
 	// FPGA PIN_8
 	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOG, (v), !! (0) * (v)); } while (0)
 	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOG, (v), !! (1) * (v)); } while (0)
@@ -848,8 +848,7 @@
 		/* pixel clock */ \
 		arm_hardware_piod_altfn50(1u << 18, GPIO_CFG_AF2); /* PD18 LCD_CLK */ \
 		/* RED */ \
-		arm_hardware_piod_altfn50(1u << 12, GPIO_CFG_AF2); /* R3 PD13 LCD_D19 error in selected pin */ \
-		arm_hardware_piod_outputs(1u << 12, 0 * 1u << 12); /* temporry fix error */ \
+		arm_hardware_piod_altfn50(1u << 13, GPIO_CFG_AF2); /* R3 PD13 LCD_D19 */ \
 		arm_hardware_piod_altfn50(1u << 14, GPIO_CFG_AF2); /* R4 PD14 LCD_D20 */ \
 		arm_hardware_piod_altfn50(1u << 15, GPIO_CFG_AF2); /* R5 PD15 LCD_D21 */ \
 		arm_hardware_piod_altfn50(1u << 16, GPIO_CFG_AF2); /* R6 PD16 LCD_D22 */ \
