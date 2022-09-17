@@ -196,7 +196,7 @@ typedef enum IRQn
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
-//#include "core_ca.h"
+#include "core_ca.h"
 
 #include <stdint.h>
 #define __IO volatile
