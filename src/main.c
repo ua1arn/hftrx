@@ -16460,6 +16460,8 @@ void display2_menu_valxx(
 			msg = PSTR("RENESAS");
 #elif CPUSTYPE_T113
 			msg = PSTR("Allw T128-S3");
+#elif defined (WITHCPUNAME)
+			msg = PSTR(WITHCPUNAME);
 #else
 			msg = PSTR("CPUxxx");
 #endif
