@@ -1511,10 +1511,8 @@ typedef struct USBOTG_Type
 	__IO uint16_t USB_INTRX;                             /*!< Offset 0x046 USB_INTRX */
 	__IO uint16_t USB_INTTXE;                            /*!< Offset 0x048 USB_INTTXE */
 	__IO uint16_t USB_INTRXE;                            /*!< Offset 0x04A USB_INTRXE */
-	__IO uint8_t  USB_INTUSB;                            /*!< Offset 0x04C USB_INTUSB */
-	uint8_t reserved_0x04D [0x0003];
-	__IO uint8_t  USB_INTUSBE;                           /*!< Offset 0x050 USB_INTUSBE */
-	uint8_t reserved_0x051 [0x0003];
+	__IO uint32_t USB_INTUSB;                            /*!< Offset 0x04C USB_INTUSB */
+	__IO uint32_t USB_INTUSBE;                           /*!< Offset 0x050 USB_INTUSBE */
 	__IO uint16_t USB_FRAME;                             /*!< Offset 0x054 USB_FRAME */
 	uint8_t reserved_0x056 [0x0026];
 	__IO uint8_t  USB_TESTMODE;                          /*!< Offset 0x07C USB_TESTMODE */
