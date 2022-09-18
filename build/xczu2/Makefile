@@ -66,7 +66,7 @@ ARCHDIR = $(PRJROOT)/arch/zynqmp
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src
 
 # full qualified name
-ZYNQLIB = zynq7000.a
+#ZYNQLIB = zynq7000.a
 
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
@@ -187,7 +187,7 @@ find_S = $(wildcard $(dir)*.S)
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 # List ASM source files here
-ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
+#ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
 
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))

@@ -777,7 +777,7 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	#define CPU_FREQ	(xc7z_get_arm_freq())
+	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
 	#define BOARD_SPI_FREQ (xc7z_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200

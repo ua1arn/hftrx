@@ -3155,6 +3155,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		PTIM_SetControl(PTIM_GetControl() | 0x01);
 
 	#endif
+#elif CPUSTYLE_XCZU
+	#warning Implement for CPUSTYLE_XCZU
 
 #else
 	#warning Undefined CPUSTYLE_XXX

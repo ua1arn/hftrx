@@ -1832,7 +1832,7 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 
 #endif /* CPUSTYLE_STM32H7XX */
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) && (! defined(__aarch64__))
 
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
@@ -2071,7 +2071,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 	SCB_CleanInvalidateDCache_by_Addr((void *) base, dsize);	// DCCIMVAC register used.
 }
 
-#elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
 
 //	MVA
 //	For more information about the possible meaning when the table shows that an MVA is required
@@ -2251,7 +2251,7 @@ uint_fast32_t cpu_getdebugticks(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
-#elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
 	{
 		uint32_t result;
 		// Read CCNT Register
@@ -2923,7 +2923,7 @@ sysinit_debug_initialize(void)
 #endif /* WITHDEBUG */
 }
 
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
+#if ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
 /** \brief  Set HVBAR
 
     This function assigns the given value to the Hyp Vector Base Address Register.
@@ -2936,6 +2936,15 @@ __STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
   __set_CP(15, 4, hvbar, 12, 0, 0);
 }
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 */
+
+#if defined(__aarch64__)
+uint32_t __Vectors [32];
+void __attribute__((used)) Reset_Handler(void)
+{
+	SystemInit();
+	main();
+}
+#endif /* defined(__aarch64__) */
 
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)

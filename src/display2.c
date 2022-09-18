@@ -4703,6 +4703,109 @@ void fftbuffer_initialize(void)
 
 #if (__ARM_FP & 0x08) && 1
 
+
+#if defined(ARM_MATH_NEON)
+/**
+  @brief         Compute new coefficient arrays for use in vectorized filter (Neon only).
+  @param[in]     numStages         number of 2nd order stages in the filter.
+  @param[in]     pCoeffs           points to the original filter coefficients.
+  @param[in]     pComputedCoeffs   points to the new computed coefficients for the vectorized Neon version.
+  @return        none
+
+  @par   Size of coefficient arrays:
+            pCoeffs has size 5 * numStages
+
+            pComputedCoeffs has size 8 * numStages
+
+            pComputedCoeffs is the array to be used in arm_biquad_cascade_df2T_init_f32.
+
+*/
+void arm_biquad_cascade_df2T_compute_coefs_f64(
+  uint8_t numStages,
+  const float64_t * pCoeffs,
+  float64_t * pComputedCoeffs)
+{
+   uint8_t cnt;
+   float64_t b0[4],b1[4],b2[4],a1[4],a2[4];
+
+   cnt = numStages >> 2;
+   while(cnt > 0)
+   {
+      for(int i=0;i<4;i++)
+      {
+        b0[i] = pCoeffs[0];
+        b1[i] = pCoeffs[1];
+        b2[i] = pCoeffs[2];
+        a1[i] = pCoeffs[3];
+        a2[i] = pCoeffs[4];
+        pCoeffs += 5;
+      }
+
+      /* Vec 1 */
+      *pComputedCoeffs++ = 0;
+      *pComputedCoeffs++ = b0[1];
+      *pComputedCoeffs++ = b0[2];
+      *pComputedCoeffs++ = b0[3];
+
+      /* Vec 2 */
+      *pComputedCoeffs++ = 0;
+      *pComputedCoeffs++ = 0;
+      *pComputedCoeffs++ = b0[1] * b0[2];
+      *pComputedCoeffs++ = b0[2] * b0[3];
+
+      /* Vec 3 */
+      *pComputedCoeffs++ = 0;
+      *pComputedCoeffs++ = 0;
+      *pComputedCoeffs++ = 0;
+      *pComputedCoeffs++ = b0[1] * b0[2] * b0[3];
+
+      /* Vec 4 */
+      *pComputedCoeffs++ = b0[0];
+      *pComputedCoeffs++ = b0[0] * b0[1];
+      *pComputedCoeffs++ = b0[0] * b0[1] * b0[2];
+      *pComputedCoeffs++ = b0[0] * b0[1] * b0[2] * b0[3];
+
+      /* Vec 5 */
+      *pComputedCoeffs++ = b1[0];
+      *pComputedCoeffs++ = b1[1];
+      *pComputedCoeffs++ = b1[2];
+      *pComputedCoeffs++ = b1[3];
+
+      /* Vec 6 */
+      *pComputedCoeffs++ = b2[0];
+      *pComputedCoeffs++ = b2[1];
+      *pComputedCoeffs++ = b2[2];
+      *pComputedCoeffs++ = b2[3];
+
+      /* Vec 7 */
+      *pComputedCoeffs++ = a1[0];
+      *pComputedCoeffs++ = a1[1];
+      *pComputedCoeffs++ = a1[2];
+      *pComputedCoeffs++ = a1[3];
+
+      /* Vec 8 */
+      *pComputedCoeffs++ = a2[0];
+      *pComputedCoeffs++ = a2[1];
+      *pComputedCoeffs++ = a2[2];
+      *pComputedCoeffs++ = a2[3];
+
+      cnt--;
+   }
+
+   cnt = numStages & 0x3;
+   while(cnt > 0)
+   {
+      *pComputedCoeffs++ = *pCoeffs++;
+      *pComputedCoeffs++ = *pCoeffs++;
+      *pComputedCoeffs++ = *pCoeffs++;
+      *pComputedCoeffs++ = *pCoeffs++;
+      *pComputedCoeffs++ = *pCoeffs++;
+      cnt--;
+   }
+
+}
+#endif
+
 void arm_cmplx_mult_real_f64(
   const float64_t * pSrcCmplx,
   const float64_t * pSrcReal,
@@ -5192,7 +5295,7 @@ static void fftzoom_filer_decimate_ifspectrum(
 
 	// Biquad LPF фильтр
 #if defined (ARM_MATH_NEON)
-	float32_t IIRCoeffs_NEON [ZOOMFFT_DECIM_STAGES_IIR * 8];
+	FLOAT_t IIRCoeffs_NEON [ZOOMFFT_DECIM_STAGES_IIR * 8];
 
 	// Initialize floating-point Biquad cascade filter.
 	ARM_MORPH(arm_biquad_cascade_df2T_compute_coefs)(ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs, IIRCoeffs_NEON);
