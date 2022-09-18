@@ -523,10 +523,15 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
 
+	#define ARM_MATH_NEON 1
 	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+
+	#define DISABLEFLOAT16 1
+	//#define ARM_MATH_DSP 1
+	#define ARM_MATH_NEON 1
+	//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 	#define ARM_FAST_ALLOW_TABLES	1
