@@ -265,6 +265,8 @@ extern "C" {
 
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
+			#define WITHCPUNAME "STM32H7xx"
+
 		#elif CPUSTYLE_STM32F7XX
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
@@ -284,6 +286,8 @@ extern "C" {
 
 			#define HSIFREQ 16000000uL
 
+			#define WITHCPUNAME "STM32F7xx"
+
 		#elif CPUSTYLE_STM32F4XX
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
@@ -292,6 +296,8 @@ extern "C" {
 			#define BOARD_SPI_FREQ (stm32f4xx_get_spi1_freq())
 
 			#define HSIFREQ 16000000uL	// 16 MHz
+
+			#define WITHCPUNAME "STM32F4xx"
 
 		#endif
 
@@ -393,6 +399,8 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
+	#define WITHCPUNAME "ATSAM3S"
+
 #elif CPUSTYLE_ATSAM4S
 
 	//#define CPU_FREQ ((18432000uL * 73) / 14 / 2)	// satmod9if_v0 ARM board
@@ -422,6 +430,8 @@ extern "C" {
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#define WITHCPUNAME "ATSAM4S"
 
 #elif CPUSTYLE_AT91SAM9XE
 
@@ -576,6 +586,8 @@ extern "C" {
 	// GIC_SetConfiguration parameters
 	#define GIC_CONFIG_EDGE 0x03
 	#define GIC_CONFIG_LEVEL 0x01
+
+	#define WITHCPUNAME "R7S721"
 
 #elif CPUSTYLE_STM32MP1
 

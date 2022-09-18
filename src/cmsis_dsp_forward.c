@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if WITHINTEGRATEDDSP && ! defined(__aarch64__)
+#if WITHINTEGRATEDDSP
 
 	#include "BasicMathFunctions/BasicMathFunctions.c"
 	//#include "BayesFunctions/BayesFunctions.c"
