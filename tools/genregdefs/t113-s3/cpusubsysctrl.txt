@@ -1,3 +1,5 @@
+#type CPU_SUBSYS_CTRL
+#base 0x08100000
 GENER_CTRL_REG0
 0x0000
 General Control Register0

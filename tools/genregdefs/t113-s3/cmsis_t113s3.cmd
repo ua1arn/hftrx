@@ -2,8 +2,8 @@ SET CONVERTER=..\Debug\genregdefs.exe
 SET OUTFILE=cmsis_t113s3.h
 
 @echo /* Generated section start */ > %OUTFILE%
-%CONVERTER% cpusubsysctrl.txt CPU_SUBSYS_CTRL >> %OUTFILE%
-%CONVERTER% ccu.txt CCU >> %OUTFILE%
+%CONVERTER% cpusubsysctrl.txt >> %OUTFILE%
+%CONVERTER% ccu.txt >> %OUTFILE%
 %CONVERTER% sys_cfg.txt SYS_CFG >> %OUTFILE%
 %CONVERTER% uart.txt UART >> %OUTFILE%
 %CONVERTER% gpio.txt GPIO >> %OUTFILE%
@@ -67,7 +67,7 @@ rem %CONVERTER% tcon_tv.txt TCON_TV >> %OUTFILE%
 
 %CONVERTER% c0_cpux_cfg.txt C0_CPUX_CFG >> %OUTFILE%
 rem %CONVERTER% c0_cpux_mbist.txt C0_CPUX_MBIST >> %OUTFILE%
-%CONVERTER% ddrphyc.txt DDRPHYC >> %OUTFILE%
+%CONVERTER% ddrphyc.txt >> %OUTFILE%
 %CONVERTER% msi_memc.txt MSI_MEMC >> %OUTFILE%
 %CONVERTER% sid.txt SID >> %OUTFILE%
 

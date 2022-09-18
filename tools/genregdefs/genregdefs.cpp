@@ -71,7 +71,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 		if (p->fldoffs > offs || p->fldsize == 0)
 		{
 			// reserving
-			unsigned sz = p->fldoffs - offs;
+			const unsigned sz = p->fldoffs - offs;
 
 
             if (sz == 4)
@@ -92,40 +92,40 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 		{
 			if (p->fldsize != 0)
 			{
-			int eolpos;
-            if (p->fldrept)
-            {
-                // Array forming
-				if (p->typname != NULL)
+				int eolpos;
+				if (p->fldrept)
 				{
-	  			    printf("\t" "%s %s [0x%03X];%n", p->typname, p->fldname, p->fldrept, & eolpos);
-				}
-				else
-				{
-	  			    printf("\t" "__IO %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
-				}
+					// Array forming
+					if (p->typname != NULL)
+					{
+						printf("\t" "%s %s [0x%03X];%n", p->typname, p->fldname, p->fldrept, & eolpos);
+					}
+					else
+					{
+						printf("\t" "__IO %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
+					}
 
- 			    offs += p->fldsize * p->fldrept;
-            }
-            else
-            {
-                // Plain field
-				if (p->typname != NULL)
-				{
-	  			    printf("\t" "%s %s;%n", p->typname, p->fldname, & eolpos);
+					offs += p->fldsize * p->fldrept;
 				}
 				else
 				{
-	  			    printf("\t" "__IO %s %s;%n", fldtype, p->fldname, & eolpos);
+					// Plain field
+					if (p->typname != NULL)
+					{
+						printf("\t" "%s %s;%n", p->typname, p->fldname, & eolpos);
+					}
+					else
+					{
+						printf("\t" "__IO %s %s;%n", fldtype, p->fldname, & eolpos);
+					}
+					offs += p->fldsize;
 				}
- 			    offs += p->fldsize;
-            }
-			if (eolpos < commentspos)
-			{
-				int pad = commentspos - eolpos;
-				printf("%*.*s", pad, pad, "");
-			}
-			printf("/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
+				if (eolpos < commentspos)
+				{
+					int pad = commentspos - eolpos;
+					printf("%*.*s", pad, pad, "");
+				}
+				printf("/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
 			}
 		}
 		else
@@ -137,7 +137,95 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 	printf("} %s_TypeDef; /* size of structure = 0x%03X */\n", bname, offs);
 }
 
-static int processfile(const char * file, const char * bname)
+static char bname [1024];
+
+static char * commentfgets(char * buff, size_t n, FILE * fp)
+{
+	char * s;
+	for (;;)
+	{
+		s = fgets(buff, n, fp);
+		if (s == NULL)
+			break;
+		if (s [0] != '#')
+			break;
+		int f1 = sscanf(s + 1, "type %[*a-zA-Z_]s", bname);
+	}
+	return s;
+}
+
+// return 0: 0k
+static int parseregister(struct ddd * regp, FILE * fp, const char * file)
+{
+    char fldname [1024];
+    char typname [1024];
+    int fldsize;
+    char buff [1024];
+    char * s0 = commentfgets(buff, sizeof buff / sizeof buff [0], fp);
+    if (s0 == NULL)
+        return 1;
+    int f1 = sscanf(s0, "%s %i %[*a-zA-Z_]s ", fldname, & fldsize, typname);
+    if (f1 == 3)
+    {
+		//fprintf(stderr, "fld3 '%s' '%s'\n", s0, typname);
+		regp->typname = strdup(typname);
+    }
+    else if (f1 == 2)
+    {
+		//fprintf(stderr, "fld2 '%s'\n", s0);
+		regp->typname = NULL;
+    }
+    else if (f1 == 1)
+    {
+		//fprintf(stderr, "fld1 '%s'\n", s0);
+		regp->typname = NULL;
+        fldsize = 4;
+    }
+    else
+    {
+        printf("#error: wrong format f1=%d, at parse file '%s': '%s'\n", f1, file, buff);
+        exit(1);
+    }
+    regp->fldsize = fldsize;
+
+     if (strchr(fldname, '\n') != NULL)
+        * strchr(fldname, '\n') = '\0';
+     if (strchr(fldname, '/') != NULL)
+        * strchr(fldname, '/') = '_';
+     if (strchr(fldname, '/') != NULL)
+        * strchr(fldname, '/') = '_';
+
+	regp->fldname = strdup(fldname);
+
+    char * s1 = commentfgets(buff, sizeof buff / sizeof buff [0], fp);
+    if (s1 == NULL)
+        return 1;
+
+    int nargs = sscanf(buff, "%i %i", & regp->fldoffs, & regp->fldrept);
+    switch (nargs)
+    {
+    case 1:
+        regp->fldrept = 0;
+        break;
+    case 2:
+        break;
+    default:
+        if (1 != sscanf(buff, "%i", & regp->fldoffs))
+			printf("WRONG offset format '%s'\n", regp->fldname);
+        break;
+    }
+
+    char * s2 = commentfgets(buff, sizeof buff / sizeof buff [0], fp);
+    if (s2 == NULL)
+        return 1;
+    if (strchr(s2, '\n') != NULL)
+        * strchr(s2, '\n') = '\0';
+   regp->comment = strdup(s2);
+    return 0;
+
+}
+
+static int processfile(const char * file)
 {
     FILE * fp = fopen(file, "rt");
     if (fp == NULL)
@@ -157,71 +245,9 @@ static int processfile(const char * file, const char * bname)
     size_t nregs;
     for (nregs = 0; nregs < maxrows; ++ nregs)
     {
-        char fldname [1024];
-        char typname [1024];
-        int fldsize;
-        char buff [1024];
-        char * s0 = fgets(buff, sizeof buff / sizeof buff [0], fp);
-        if (s0 == NULL)
-            break;
-        int f1 = sscanf(s0, "%s %i %[*a-zA-Z_]s ", fldname, & fldsize, typname);
-        if (f1 == 3)
-        {
-			//fprintf(stderr, "fld3 '%s' '%s'\n", s0, typname);
-			regs [nregs].typname = strdup(typname);
-        }
-        else if (f1 == 2)
-        {
-			//fprintf(stderr, "fld2 '%s'\n", s0);
-			regs [nregs].typname = NULL;
-        }
-        else if (f1 == 1)
-        {
-			//fprintf(stderr, "fld1 '%s'\n", s0);
-			regs [nregs].typname = NULL;
-            fldsize = 4;
-        }
-        else
-        {
-            printf("#error: wrong format f1=%d, at parse file '%s': '%s'\n", f1, file, buff);
-            exit(1);
-        }
-        regs [nregs].fldsize = fldsize;
-
-         if (strchr(fldname, '\n') != NULL)
-            * strchr(fldname, '\n') = '\0';
-         if (strchr(fldname, '/') != NULL)
-            * strchr(fldname, '/') = '_';
-         if (strchr(fldname, '/') != NULL)
-            * strchr(fldname, '/') = '_';
-
-		regs [nregs].fldname = strdup(fldname);
-
-        char * s1 = fgets(buff, sizeof buff / sizeof buff [0], fp);
-        if (s1 == NULL)
-            break;
-
-        int nargs = sscanf(buff, "%i %i", & regs [nregs].fldoffs, & regs [nregs].fldrept);
-        switch (nargs)
-        {
-        case 1:
-            regs [nregs].fldrept = 0;
-            break;
-        case 2:
-            break;
-        default:
-            if (1 != sscanf(buff, "%i", & regs [nregs].fldoffs))
-			    printf("WRONG offset format '%s'\n", regs [nregs].fldname);
-            break;
-        }
-
-        char * s2 = fgets(buff, sizeof buff / sizeof buff [0], fp);
-        if (s2 == NULL)
-            break;
-        if (strchr(s2, '\n') != NULL)
-            * strchr(s2, '\n') = '\0';
-       regs [nregs].comment = strdup(s2);
-
+		struct ddd * regp = & regs [nregs];
+		if (parseregister(regp, fp, file))
+			break;
     }
     if (nregs == 0)
     {
@@ -249,9 +275,12 @@ static int processfile(const char * file, const char * bname)
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
-    if (argc < 3)
+	strcpy(bname, "UNNAMED");
+    if (argc < 2)
         return 1;
-    processfile(argv [1], argv [2]);
+    if (argc > 2)
+    	strcpy(bname, argv [2]);
+    processfile(argv [1]);
 	return 0;
 }
 

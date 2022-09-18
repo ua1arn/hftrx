@@ -1,3 +1,5 @@
+#type CCU
+#base 0x02001000
 PLL_CPU_CTRL_REG
 0x0000
 PLL_CPU Control Register

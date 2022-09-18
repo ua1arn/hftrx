@@ -1,3 +1,5 @@
+#type AUDIO_CODEC
+#base 0x02030000
 AC_DAC_DPC
 0x0000
 DAC Digital Part Control Register

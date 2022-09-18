@@ -1,3 +1,5 @@
+#type DDRPHYC
+#base 0x03103000
 PHYC_REG_000
 0x000
 Reg_000
