@@ -1,3 +1,4 @@
+#type GPADC
 GP_SR_CON
 0x0000
 GPADC Sample Rate Configure Register

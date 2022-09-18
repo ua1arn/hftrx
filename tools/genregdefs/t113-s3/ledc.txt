@@ -1,3 +1,4 @@
+#type LEDC
 LEDC_CTRL_REG
 0x0000
 LEDC Control Register

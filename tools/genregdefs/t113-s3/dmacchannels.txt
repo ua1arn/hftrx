@@ -1,3 +1,4 @@
+#type DMAC_CH
 DMAC_EN_REGN
 0x000
 DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040

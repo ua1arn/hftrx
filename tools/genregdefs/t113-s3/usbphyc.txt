@@ -1,3 +1,4 @@
+#type USBPHYC
 USB_CTRL
 0x000
 HCI Interface Register (HCI_Interface)

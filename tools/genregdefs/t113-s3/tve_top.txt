@@ -1,3 +1,4 @@
+#type TVE_TOP
 TVE_DAC_MAP
 0x0020
 TV Encoder DAC MAP Register

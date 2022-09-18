@@ -1,3 +1,4 @@
+#type USBEHCI
 E_CAPLENGTH 2
 0x0000
 EHCI Capability Register Length Register

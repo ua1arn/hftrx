@@ -1,3 +1,4 @@
+#type MSI_MEMC
 MEMC_REG_000
 0x000
 Reg_000

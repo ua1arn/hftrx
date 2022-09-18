@@ -1,3 +1,4 @@
+#type UART
 DATA
 0x0000
 UART Receive Buffer Register/Transmit Holding Register

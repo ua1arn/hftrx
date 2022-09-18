@@ -1,3 +1,4 @@
+#type CAN
 CAN_MSEL
 0x0000
 CAN mode select register

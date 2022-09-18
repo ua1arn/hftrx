@@ -1,3 +1,4 @@
+#type GPIOINT
 EINT_CFG
 0x000 4
 External Interrupt Configure Registers

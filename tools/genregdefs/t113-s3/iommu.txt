@@ -1,3 +1,4 @@
+#type IOMMU
 IOMMU_RESET_REG
 0x0010
 IOMMU Reset Register

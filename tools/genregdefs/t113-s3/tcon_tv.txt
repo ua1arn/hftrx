@@ -1,3 +1,4 @@
+#type TCON_TV
 TV_GCTL_REG
 0x0000
 TV Global Control Register
@@ -45,10 +46,10 @@ TV_CEU_CTL_REG
 TV CEU Control Register
 TV_CEU_COEF_MUL_REG
 0x0110 11
-TV CEU Coefficient Register0 0x0110+N*0x04(N=0–10)
+TV CEU Coefficient Register0 0x0110+N*0x04(N=0ï¿½10)
 TV_CEU_COEF_RANG_REG
 0x0140 3
-TV CEU Coefficient Register2 0x0140+N*0x04(N=0–2)
+TV CEU Coefficient Register2 0x0140+N*0x04(N=0ï¿½2)
 TV_SAFE_PERIOD_REG
 0x01F0
 TV Safe Period Register
@@ -57,7 +58,7 @@ TV_FILL_CTL_REG
 TV Fill Data Control Register
 TV_FILL 3
 0x0304
-TV Fill array (N=0–2)
+TV Fill array (N=0ï¿½2)
 TV_DATA_IO_POL0_REG
 0x0330
 TCON Data IO Polarity Control0

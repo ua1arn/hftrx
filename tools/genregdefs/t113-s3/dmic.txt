@@ -1,3 +1,4 @@
+#type DMIC
 DMIC_EN
 0x0000
 DMIC Enable Control Register

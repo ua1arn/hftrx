@@ -1,3 +1,4 @@
+#type G2D_LAY
 V0_ATTCTL
 0x00
 V0_ATTCTL

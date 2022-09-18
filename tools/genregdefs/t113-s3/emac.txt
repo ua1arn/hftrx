@@ -1,3 +1,4 @@
+#type EMAC
 EMAC_BASIC_CTL0
 0x0000
 EMAC Basic Control Register0

@@ -1,3 +1,4 @@
+#type C0_CPUX_CFG
 C0_RST_CTRL
 0x0000
 Cluster 0 Reset Control Register

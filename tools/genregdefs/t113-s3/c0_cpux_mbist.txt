@@ -1,1 +1,1 @@
-c0_cpux_mbist
+#type C0_CPUX_MBIST

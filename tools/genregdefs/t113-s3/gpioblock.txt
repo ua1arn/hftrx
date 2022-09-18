@@ -1,3 +1,4 @@
+#type GPIOBLOCK
 GPIO_PINS 0x30 GPIO_TypeDef
 0x0000 7
 GPIO pin control

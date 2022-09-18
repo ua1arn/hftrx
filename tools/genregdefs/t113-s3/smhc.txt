@@ -1,3 +1,4 @@
+#type SMHC
 SMHC_CTRL
 0x0000
 Control Register

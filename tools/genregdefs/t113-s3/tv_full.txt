@@ -1,3 +1,4 @@
+#type TV_FULL
 TV_FILL_BEGIN_REG
 0x000
 TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2)

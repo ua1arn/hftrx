@@ -1,3 +1,4 @@
+#type TVE
 TVE_000_REG
 0x0000
 TV Encoder Clock Gating Register

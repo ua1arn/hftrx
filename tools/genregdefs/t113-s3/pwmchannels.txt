@@ -1,3 +1,4 @@
+#type PWM_CH
 PCR
 0x0000
 PWM Control Register

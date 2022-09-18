@@ -1,1 +1,1 @@
-ECHO is on.
+#type DISPLAY_TOP

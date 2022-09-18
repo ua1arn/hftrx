@@ -1,3 +1,4 @@
+#type CSIC_CCU
 CCU_CLK_MODE_REG
 0x0000
 CCU Clock Mode Register

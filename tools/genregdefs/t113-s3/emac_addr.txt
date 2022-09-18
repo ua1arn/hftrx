@@ -1,3 +1,4 @@
+#type EMAC_ADDR
 HIGH
 0x000
 EMAC MAC Address High Register

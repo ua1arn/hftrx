@@ -1,3 +1,4 @@
+#type HSTIMER
 HS_TMR_IRQ_EN_REG
 0x0000
 HS Timer IRQ Enable Register

@@ -1,3 +1,4 @@
+#type GPIO
 CFG
 0x000 4
 Configure Register

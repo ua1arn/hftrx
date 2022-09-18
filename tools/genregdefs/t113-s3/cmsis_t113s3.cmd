@@ -4,85 +4,85 @@ SET OUTFILE=cmsis_t113s3.h
 @echo /* Generated section start */ > %OUTFILE%
 %CONVERTER% cpusubsysctrl.txt >> %OUTFILE%
 %CONVERTER% ccu.txt >> %OUTFILE%
-%CONVERTER% sys_cfg.txt SYS_CFG >> %OUTFILE%
-%CONVERTER% uart.txt UART >> %OUTFILE%
-%CONVERTER% gpio.txt GPIO >> %OUTFILE%
-%CONVERTER% gpioint.txt GPIOINT >> %OUTFILE%
-%CONVERTER% gpioblock.txt GPIOBLOCK >> %OUTFILE%
-%CONVERTER% smhc.txt SMHC >> %OUTFILE%
-%CONVERTER% i2s_pcm.txt I2S_PCM >> %OUTFILE%
-%CONVERTER% dmic.txt DMIC >> %OUTFILE%
-%CONVERTER% owa.txt OWA >> %OUTFILE%
-%CONVERTER% audio_codec.txt AUDIO_CODEC >> %OUTFILE%
-%CONVERTER% twi.txt TWI >> %OUTFILE%
-%CONVERTER% spi.txt SPI >> %OUTFILE%
-%CONVERTER% cir_rx.txt CIR_RX >> %OUTFILE%
-%CONVERTER% cir_tx.txt CIR_TX >> %OUTFILE%
-%CONVERTER% ledc.txt LEDC >> %OUTFILE%
-%CONVERTER% tpadc.txt TPADC >> %OUTFILE%
-%CONVERTER% gpadc.txt GPADC >> %OUTFILE%
-%CONVERTER% spi_dbi.txt SPI_DBI >> %OUTFILE%
-%CONVERTER% ce.txt CE >> %OUTFILE%
-%CONVERTER% rtc.txt RTC >> %OUTFILE%
-%CONVERTER% iommu.txt IOMMU >> %OUTFILE%
-%CONVERTER% ths.txt THS >> %OUTFILE%
-%CONVERTER% timer.txt TIMER >> %OUTFILE%
-%CONVERTER% hstimer.txt HSTIMER >> %OUTFILE%
+%CONVERTER% sys_cfg.txt >> %OUTFILE%
+%CONVERTER% uart.txt >> %OUTFILE%
+%CONVERTER% gpio.txt >> %OUTFILE%
+%CONVERTER% gpioint.txt >> %OUTFILE%
+%CONVERTER% gpioblock.txt >> %OUTFILE%
+%CONVERTER% smhc.txt >> %OUTFILE%
+%CONVERTER% i2s_pcm.txt >> %OUTFILE%
+%CONVERTER% dmic.txt >> %OUTFILE%
+%CONVERTER% owa.txt >> %OUTFILE%
+%CONVERTER% audio_codec.txt >> %OUTFILE%
+%CONVERTER% twi.txt >> %OUTFILE%
+%CONVERTER% spi.txt >> %OUTFILE%
+%CONVERTER% cir_rx.txt >> %OUTFILE%
+%CONVERTER% cir_tx.txt >> %OUTFILE%
+%CONVERTER% ledc.txt >> %OUTFILE%
+%CONVERTER% tpadc.txt >> %OUTFILE%
+%CONVERTER% gpadc.txt >> %OUTFILE%
+%CONVERTER% spi_dbi.txt >> %OUTFILE%
+%CONVERTER% ce.txt >> %OUTFILE%
+%CONVERTER% rtc.txt >> %OUTFILE%
+%CONVERTER% iommu.txt >> %OUTFILE%
+%CONVERTER% ths.txt >> %OUTFILE%
+%CONVERTER% timer.txt >> %OUTFILE%
+%CONVERTER% hstimer.txt >> %OUTFILE%
 %CONVERTER% can.txt CAN >> %OUTFILE%
-%CONVERTER% usbehci.txt USBEHCI >> %OUTFILE%
-%CONVERTER% usbotg_fifo.txt USBOTGFIFO >> %OUTFILE%
-%CONVERTER% usbotg.txt USBOTG >> %OUTFILE%
-%CONVERTER% usbphyc.txt USBPHYC >> %OUTFILE%
+%CONVERTER% usbehci.txt >> %OUTFILE%
+%CONVERTER% usbotg_fifo.txt >> %OUTFILE%
+%CONVERTER% usbotg.txt >> %OUTFILE%
+%CONVERTER% usbphyc.txt >> %OUTFILE%
 
-%CONVERTER% de.txt DE >> %OUTFILE% 
-%CONVERTER% di.txt DI >> %OUTFILE% 
+%CONVERTER% de.txt >> %OUTFILE% 
+%CONVERTER% di.txt >> %OUTFILE% 
 
-%CONVERTER% g2d_top.txt G2D_TOP >> %OUTFILE%
-%CONVERTER% g2d_mixer.txt G2D_MIXER >> %OUTFILE%
-%CONVERTER% g2d_lay.txt G2D_LAY >> %OUTFILE%
-%CONVERTER% g2d_ui.txt G2D_UI >> %OUTFILE%
-%CONVERTER% g2d_vsu.txt G2D_VSU >> %OUTFILE%
-%CONVERTER% g2d_bld.txt G2D_BLD >> %OUTFILE%
-%CONVERTER% g2d_wb.txt G2D_WB >> %OUTFILE%
-%CONVERTER% g2d_rot.txt G2D_ROT >> %OUTFILE%
-rem %CONVERTER% g2d.txt G2D >> %OUTFILE%
+%CONVERTER% g2d_top.txt >> %OUTFILE%
+%CONVERTER% g2d_mixer.txt >> %OUTFILE%
+%CONVERTER% g2d_lay.txt >> %OUTFILE%
+%CONVERTER% g2d_ui.txt >> %OUTFILE%
+%CONVERTER% g2d_vsu.txt >> %OUTFILE%
+%CONVERTER% g2d_bld.txt >> %OUTFILE%
+%CONVERTER% g2d_wb.txt >> %OUTFILE%
+%CONVERTER% g2d_rot.txt >> %OUTFILE%
+rem %CONVERTER% g2d.txt >> %OUTFILE%
 
-%CONVERTER% dsi.txt DSI >> %OUTFILE%
-%CONVERTER% display_top.txt DISPLAY_TOP >> %OUTFILE%
-%CONVERTER% tcon_lcd.txt TCON_LCD >> %OUTFILE%
-%CONVERTER% tve_top.txt TVE_TOP >> %OUTFILE%
-%CONVERTER% tve.txt TVE >> %OUTFILE%
+%CONVERTER% dsi.txt >> %OUTFILE%
+%CONVERTER% display_top.txt >> %OUTFILE%
+%CONVERTER% tcon_lcd.txt >> %OUTFILE%
+%CONVERTER% tve_top.txt >> %OUTFILE%
+%CONVERTER% tve.txt >> %OUTFILE%
 
-%CONVERTER% csic_ccu.txt CSIC_CCU >> %OUTFILE%
-%CONVERTER% csic_top.txt CSIC_TOP >> %OUTFILE%
-%CONVERTER% csic_parser.txt CSIC_PARSER >> %OUTFILE%
-%CONVERTER% csic_dma.txt CSIC_DMA >> %OUTFILE%
+%CONVERTER% csic_ccu.txt >> %OUTFILE%
+%CONVERTER% csic_top.txt >> %OUTFILE%
+%CONVERTER% csic_parser.txt >> %OUTFILE%
+%CONVERTER% csic_dma.txt >> %OUTFILE%
 
-%CONVERTER% tvd_adc.txt TVD_ADC >> %OUTFILE%
-%CONVERTER% tvd_top.txt TVD_TOP >> %OUTFILE%
-%CONVERTER% tvd.txt TVD >> %OUTFILE%
+%CONVERTER% tvd_adc.txt >> %OUTFILE%
+%CONVERTER% tvd_top.txt >> %OUTFILE%
+%CONVERTER% tvd.txt >> %OUTFILE%
 
-rem %CONVERTER% tv_full.txt TV_FILL >> %OUTFILE%
-rem %CONVERTER% tcon_tv.txt TCON_TV >> %OUTFILE%
+rem %CONVERTER% tv_full.txt >> %OUTFILE%
+rem %CONVERTER% tcon_tv.txt >> %OUTFILE%
 
-%CONVERTER% c0_cpux_cfg.txt C0_CPUX_CFG >> %OUTFILE%
-rem %CONVERTER% c0_cpux_mbist.txt C0_CPUX_MBIST >> %OUTFILE%
+%CONVERTER% c0_cpux_cfg.txt >> %OUTFILE%
+rem %CONVERTER% c0_cpux_mbist.txt >> %OUTFILE%
 %CONVERTER% ddrphyc.txt >> %OUTFILE%
-%CONVERTER% msi_memc.txt MSI_MEMC >> %OUTFILE%
-%CONVERTER% sid.txt SID >> %OUTFILE%
+%CONVERTER% msi_memc.txt >> %OUTFILE%
+%CONVERTER% sid.txt >> %OUTFILE%
 
-%CONVERTER% usb_ehci_capability.txt USB_EHCI_Capability >> %OUTFILE%
+%CONVERTER% usb_ehci_capability.txt >> %OUTFILE%
 
-%CONVERTER% spinlock.txt SPINLOCK >> %OUTFILE%
+%CONVERTER% spinlock.txt >> %OUTFILE%
 
-%CONVERTER% dmacchannels.txt DMAC_CH >> %OUTFILE%
-%CONVERTER% dmac.txt DMAC >> %OUTFILE%
+%CONVERTER% dmacchannels.txt >> %OUTFILE%
+%CONVERTER% dmac.txt >> %OUTFILE%
 
-%CONVERTER% pwmchannels.txt PWM_CH >> %OUTFILE%
-%CONVERTER% pwm.txt PWM >> %OUTFILE%
+%CONVERTER% pwmchannels.txt >> %OUTFILE%
+%CONVERTER% pwm.txt >> %OUTFILE%
 
-%CONVERTER% emac_addr.txt EMAC_ADDR >> %OUTFILE%
-%CONVERTER% emac.txt EMAC >> %OUTFILE%
+%CONVERTER% emac_addr.txt >> %OUTFILE%
+%CONVERTER% emac.txt >> %OUTFILE%
 
 @echo /* Generated section end */ >> %OUTFILE%
 

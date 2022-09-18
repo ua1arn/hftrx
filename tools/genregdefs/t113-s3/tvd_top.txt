@@ -1,3 +1,4 @@
+#type TVD_TOP
 TVD_TOP_MAP
 0x0000
 TVD TOP MAP Register

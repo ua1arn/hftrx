@@ -149,7 +149,7 @@ static char * commentfgets(char * buff, size_t n, FILE * fp)
 			break;
 		if (s [0] != '#')
 			break;
-		int f1 = sscanf(s + 1, "type %[*a-zA-Z_]s", bname);
+		int f1 = sscanf(s + 1, "type %[*a-zA-Z_0-9]s", bname);
 	}
 	return s;
 }
@@ -164,7 +164,7 @@ static int parseregister(struct ddd * regp, FILE * fp, const char * file)
     char * s0 = commentfgets(buff, sizeof buff / sizeof buff [0], fp);
     if (s0 == NULL)
         return 1;
-    int f1 = sscanf(s0, "%s %i %[*a-zA-Z_]s ", fldname, & fldsize, typname);
+    int f1 = sscanf(s0, "%s %i %[*a-zA-Z_0-9]s ", fldname, & fldsize, typname);
     if (f1 == 3)
     {
 		//fprintf(stderr, "fld3 '%s' '%s'\n", s0, typname);
@@ -278,8 +278,6 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	strcpy(bname, "UNNAMED");
     if (argc < 2)
         return 1;
-    if (argc > 2)
-    	strcpy(bname, argv [2]);
     processfile(argv [1]);
 	return 0;
 }

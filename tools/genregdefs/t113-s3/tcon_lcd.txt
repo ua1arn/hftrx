@@ -1,3 +1,4 @@
+#type TCON_LCD
 LCD_GCTL_REG
 0x0000
 LCD Global Control Register

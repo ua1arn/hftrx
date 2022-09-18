@@ -1,3 +1,4 @@
+#type USB_EHCI_Capability
 HCCAPBASE
 0x0000
 EHCI Capability Register (HCIVERSION and CAPLENGTH) register

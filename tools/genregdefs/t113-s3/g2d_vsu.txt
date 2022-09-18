@@ -1,3 +1,4 @@
+#type G2D_VSU
 VS_CTRL
 0x000
 VS_CTRL

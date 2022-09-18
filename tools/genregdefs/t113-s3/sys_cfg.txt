@@ -1,3 +1,4 @@
+#type SYS_CFG
 DSP_BOOT_RAMMAP_REG
 0x0008
 DSP Boot SRAM Remap Control Register

@@ -1,3 +1,4 @@
+#type TVD
 TVD_EN
 0x0000
 TVD MODULE CONTROL Register

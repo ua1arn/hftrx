@@ -1,3 +1,4 @@
+#type CSIC_DMA
 CSIC_DMA_EN_REG
 0x0000
 CSIC DMA Enable Register

@@ -1,3 +1,4 @@
+#type PWM
 PIER
 0x0000
 PWM IRQ Enable Register

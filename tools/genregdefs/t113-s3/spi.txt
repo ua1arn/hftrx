@@ -1,3 +1,4 @@
+#type SPI
 SPI_GCR
 0x0004
 SPI Global Control Register

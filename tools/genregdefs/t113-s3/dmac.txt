@@ -1,3 +1,4 @@
+#type DMAC
 DMAC_IRQ_EN_REG0
 0x0000
 DMAC IRQ Enable Register 0

@@ -1,3 +1,4 @@
+#type CIR_RX
 CIR_CTL
 0x0000
 CIR Control Register

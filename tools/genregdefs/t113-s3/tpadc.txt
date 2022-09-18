@@ -1,3 +1,4 @@
+#type TPADC
 TP_CTRL_REG0
 0x0000
 TP Control Register 0

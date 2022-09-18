@@ -1,3 +1,4 @@
+#type THS
 THS_CTRL
 0x0000
 THS Control Register

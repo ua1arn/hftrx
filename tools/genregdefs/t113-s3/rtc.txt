@@ -1,3 +1,4 @@
+#type RTC
 LOSC_CTRL_REG
 0x0000
 Low Oscillator Control Register

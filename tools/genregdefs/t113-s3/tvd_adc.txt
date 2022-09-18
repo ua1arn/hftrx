@@ -1,3 +1,4 @@
+#type TVD_ADC
 TVD_TOP_CTL
 0x04
 TVD TOP CONTROL Register

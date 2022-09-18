@@ -1,3 +1,4 @@
+#type CSIC_PARSER
 PRS_EN_REG
 0x0000
 Parser Enable Register
