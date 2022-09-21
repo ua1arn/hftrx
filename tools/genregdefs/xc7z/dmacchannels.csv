@@ -1,0 +1,6 @@
+SAR;0x00;Source address for DMA channel
+DAR;0x04;Destination address for DMA channel
+CCR;0x08;Channel control for DMA channel 
+LCR0;0x0C;Loop counter 0 for DMA channel
+LCR1;0x10;Loop counter 1 for DMA channel
+allign 0;0x20;Fill up to size 0x20

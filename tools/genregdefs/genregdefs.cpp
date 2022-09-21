@@ -160,11 +160,21 @@ static int parseregister(struct ddd * regp, FILE * fp, const char * file)
     char fldname [1024];
     char typname [1024];
     int fldsize;
-    char buff [1024];
-    char * s0 = commentfgets(buff, sizeof buff / sizeof buff [0], fp);
-    if (s0 == NULL)
+    char b0 [1024];
+	static const char SEP [] = ";";
+
+    char * const s0z = commentfgets(b0, sizeof b0 / sizeof b0 [0], fp);
+    if (s0z == NULL)
         return 1;
-    int f1 = sscanf(s0, "%s %i %[*a-zA-Z_0-9]s ", fldname, & fldsize, typname);
+	char * token = strtok(s0z, SEP);
+	if (token == NULL)
+		return 1;
+
+	char * s0 = token;
+ 	while (isspace((unsigned char) * s0))
+		++ s0;
+
+   int f1 = sscanf(s0, "%s %i %[*a-zA-Z_0-9]s ", fldname, & fldsize, typname);
     if (f1 == 3)
     {
 		//fprintf(stderr, "fld3 '%s' '%s'\n", s0, typname);
@@ -183,7 +193,7 @@ static int parseregister(struct ddd * regp, FILE * fp, const char * file)
     }
     else
     {
-        printf("#error: wrong format f1=%d, at parse file '%s': '%s'\n", f1, file, buff);
+        printf("#error: wrong format f1=%d, at parse file '%s': '%s'\n", f1, file, s0);
         exit(1);
     }
     regp->fldsize = fldsize;
@@ -197,11 +207,15 @@ static int parseregister(struct ddd * regp, FILE * fp, const char * file)
 
 	regp->fldname = strdup(fldname);
 
-    char * s1 = commentfgets(buff, sizeof buff / sizeof buff [0], fp);
+ 	char * s1 = strtok(NULL, SEP);
+	//char * const s1 = commentfgets(b1, sizeof b1 / sizeof b1 [0], fp);
     if (s1 == NULL)
         return 1;
 
-    int nargs = sscanf(buff, "%i %i", & regp->fldoffs, & regp->fldrept);
+	while (isspace((unsigned char) * s1))
+		++ s1;
+
+    int nargs = sscanf(s1, "%i %i", & regp->fldoffs, & regp->fldrept);
     switch (nargs)
     {
     case 1:
@@ -210,17 +224,26 @@ static int parseregister(struct ddd * regp, FILE * fp, const char * file)
     case 2:
         break;
     default:
-        if (1 != sscanf(buff, "%i", & regp->fldoffs))
+        if (1 != sscanf(s1, "%i", & regp->fldoffs))
 			printf("WRONG offset format '%s'\n", regp->fldname);
         break;
     }
 
-    char * s2 = commentfgets(buff, sizeof buff / sizeof buff [0], fp);
+  	char * s2 = strtok(NULL, SEP);
+	//char * const s2 = commentfgets(b2, sizeof b2 / sizeof b2 [0], fp);
     if (s2 == NULL)
         return 1;
+	while (isspace((unsigned char) * s2))
+		++ s2;
+
     if (strchr(s2, '\n') != NULL)
         * strchr(s2, '\n') = '\0';
    regp->comment = strdup(s2);
+
+//   const size_t n0 = strleneol(s0);
+//   const size_t n1 = strleneol(s1);
+//   const size_t n2 = strleneol(s2);
+//   fprintf(fpregen, "%*.*s; %*.*s; %*.*s\n", n0, n0, s0, n1, n1, s1, n2, n2, s2);
     return 0;
 
 }

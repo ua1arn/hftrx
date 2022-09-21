@@ -1,0 +1,12 @@
+DSR;0x000;DMA Manager Status Register 
+DPC;0x004;DMA Program Counter Register
+INTEN;0x020;Interrupt Enable Register
+INT_EVENT_RIS;0x024;Event-Interrupt Raw Status Register
+INTMIS ;0x028;Interrupt Status Register on page 3-14
+INTCLR;0x02C;Interrupt Clear Register on page 3-15
+FSRD;0x030;Fault Status DMA Manager Register
+FSRC;0x034;Fault Status DMA Channel Register
+FTRD;0x038;Fault Type DMA Manager Register
+FTR;0x40 8;Fault type for DMA channel 0..7
+CH_THREAD 8 DMAC_THREAD_TypeDef;0x100 8;Channel status and PC for DMA channel 0..7
+CH 0x20 DMAC_CH_TypeDef;0x400 8;Channel status and PC for DMA channel 0..7

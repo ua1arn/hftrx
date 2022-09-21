@@ -1,2 +1,0 @@
-#type DSI
-ECHO is on.
