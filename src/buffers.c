@@ -275,7 +275,9 @@ int_fast32_t buffers_dmabuffer32rxcachesize(void)
 
 #if 1
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
-	enum { SKIPPED = 4000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
+	//enum { SKIPPED = 4000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
+	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 2000 сэмплов
+	enum { SKIPPED = 2000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
 
 #else
 	// исправляемая погрешность = 0.1% - один сэмпл добавить/убрать на 1000 сэмплов
@@ -709,7 +711,7 @@ void buffers_initialize(void)
 
 	{
 		unsigned i;
-		enum { NVCOICESFREE16RX = (2 * MIKELEVEL + 1 * RESAMPLE16NORMAL) * BUFOVERSIZE };
+		enum { NVCOICESFREE16RX = (2 * MIKELEVEL + 1 * RESAMPLE16NORMAL) * 2 * BUFOVERSIZE };
 		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16rx_t voicesarray16rx [NVCOICESFREE16RX] ALIGNX_END;
 
 		InitializeListHead3(& resample16rx, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
@@ -1074,11 +1076,11 @@ RAMFUNC static void buffers_savetoresampling16rx(voice16rx_t * p)
 		InsertHeadList2(& voicesfree16rx, & p->item);
 
 		// Очистить очередь принятых от USB UAC
-		while (GetCountList3(& resample16rx) != 0)
-		{
-			const PLIST_ENTRY t = RemoveTailList3(& resample16rx);
-			InsertHeadList2(& voicesfree16rx, t);
-		}
+//		while (GetCountList3(& resample16rx) != 0)
+//		{
+//			const PLIST_ENTRY t = RemoveTailList3(& resample16rx);
+//			InsertHeadList2(& voicesfree16rx, t);
+//		}
 	}
 	else
 	{
