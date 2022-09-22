@@ -28,6 +28,7 @@ struct ddd
 	unsigned fldrept;   // 0 - plain field, 1..n - array
 };
 
+static int option_base;	/* base address generate */
 
 void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 {
@@ -138,6 +139,9 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 }
 
 static char bname [1024];
+static int base_count = 0;
+enum { BASE_MAX = 32 };
+static unsigned base_array [BASE_MAX];
 
 static char * commentfgets(char * buff, size_t n, FILE * fp)
 {
@@ -150,6 +154,14 @@ static char * commentfgets(char * buff, size_t n, FILE * fp)
 		if (s [0] != '#')
 			break;
 		int f1 = sscanf(s + 1, "type %[*a-zA-Z_0-9]s", bname);
+		if (f1 != 1)
+		{
+			int f2 = sscanf(s + 1, "base %x", & base_array [base_count]);
+			if (f2 == 1 && base_count < BASE_MAX)
+			{
+				++ base_count;
+			}
+		}
 	}
 	return s;
 }
@@ -281,6 +293,22 @@ static int processfile(const char * file)
 
         nregs = 1;
     }
+
+	if (option_base != 0)
+	{
+		int i;
+		for (i = 0; i < base_count; ++ i)
+		{
+			if (base_count > 1)
+			{
+				fprintf(stdout, "#define %s%i_BASE 0x%08X\n", bname, i, base_array [i]);
+			}
+			else
+			{
+				fprintf(stdout, "#define %s_BASE 0x%08X\n", bname, base_array [i]);
+			}
+		}
+	}
 	//fprintf(stderr, "Generate structure\n");
 	genstruct(regs, nregs, bname);
 
@@ -301,7 +329,15 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	strcpy(bname, "UNNAMED");
     if (argc < 2)
         return 1;
-    processfile(argv [1]);
+	int i = 1;
+	if (strcmp(argv [i], "-b") == 0)
+	{
+		++ i;
+		option_base = 1;
+		if (argc < 3)
+			return 1;
+	}
+    processfile(argv [i]);
 	return 0;
 }
 
