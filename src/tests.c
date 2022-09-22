@@ -9631,6 +9631,11 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
+#if CPUSTYPE_T113
+	{
+		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected 0000190E)\n", SYS_CFG->SYS_LDO_CTRL_REG);
+	}
+#endif
 #if 0
 	{
 		// CMSIS RTOS2 test
