@@ -450,19 +450,37 @@ extern "C" {
 	#define ARM_FAST_ALLOW_TABLES	1
 
 
+#elif __riscv
+
+	// RISC-V processor Allwinner D1 XuanTie C906
+
+	#define CORE_CA7	1
+	#define CPUSTYLE_RISCV		1		/* архитектура процессора RISC-V */
+
+	#include "aw_d1s.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
+
+
 #elif CPUSTYPE_T113
-
-	// ST dual core A7 + M4
-
-	// STM32MP157Axx
-	// STM32MP157Dxx
-	// STM32MP157AAB3
-	// STM32MP157DAB1
 
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "arch/t113s3/allwnr_t113s3.h"
+	#include "allwnr_t113s3.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
@@ -604,6 +622,27 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	typedef uint_fast32_t spitarget_t;		
 	/* тип для хранения данных, считанных из порта ввода-вывода или для формируемого значения */
 	typedef uint_fast32_t portholder_t;		
+
+	#define FLASHMEM //__flash
+	#define NOINLINEAT // __attribute__((noinline))
+	#define strlen_P(s) strlen(s)
+
+	#define ATTRWEAK __WEAK
+	// Use __attribute__ ((weak, alias("Default_Handler")))
+
+	#define PSTR(s) (s)
+	//#define PSTR(s) (__extension__({static const char __c[] FLASHMEM = (s); &__c[0];}))
+
+	void local_delay_us(int timeUS);
+	void local_delay_ms(int timeMS);
+
+#elif CPUSTYLE_RISCV
+
+	/* тип для передачи параметра "адрес устройства на SPI шине" */
+	/* это может быть битовая маска в порту ввода-вывода */
+	typedef uint_fast32_t spitarget_t;
+	/* тип для хранения данных, считанных из порта ввода-вывода или для формируемого значения */
+	typedef uint_fast32_t portholder_t;
 
 	#define FLASHMEM //__flash
 	#define NOINLINEAT // __attribute__((noinline))

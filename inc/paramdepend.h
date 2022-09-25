@@ -774,6 +774,56 @@ extern "C" {
 		GPIO_CFG_AF15 = 0x0F,
 	} GPIOMode_TypeDef;
 
+
+#elif CPUSTYPE_D1S
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define HARDWARE_CLK32K_FREQ 32000uL
+	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
+
+	#define CPU_FREQ	(allwnrt113_get_arm_freq())
+	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
+	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		12000000uL	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	24000000uL	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+
+	typedef enum {
+		GPIO_CFG_IN  = 0x00,
+		GPIO_CFG_OUT = 0x01,
+		GPIO_CFG_AF2 = 0x02,
+		GPIO_CFG_AF3 = 0x03,
+		GPIO_CFG_AF4 = 0x04,
+		GPIO_CFG_AF5 = 0x05,
+		GPIO_CFG_AF6 = 0x06,
+		GPIO_CFG_AF7 = 0x07,
+		GPIO_CFG_AF8 = 0x08,
+		GPIO_CFG_AF9 = 0x09,
+		GPIO_CFG_AF10 = 0x0A,
+		GPIO_CFG_AF11 = 0x0B,
+		GPIO_CFG_AF12 = 0x0C,
+		GPIO_CFG_AF13 = 0x0D,
+		GPIO_CFG_AF14 = 0x0E,
+		GPIO_CFG_AF15 = 0x0F,
+	} GPIOMode_TypeDef;
+
 #elif CPUSTYLE_XCZU
 	// Zynq UltraScale+ Device
 	// XCZU2..XCZU9, XCZU11
@@ -924,6 +974,20 @@ extern "C" {
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
 		#if defined(__aarch64__)
+
+			// разрешены все
+			#define system_enableIRQ() do { \
+				} while (0)
+			// разрешены только realtime
+			#define system_disableIRQ() do { \
+				} while (0)
+
+			#define global_enableIRQ() do { \
+				} while (0)
+			#define global_disableIRQ() do { \
+			} while (0)
+
+		#elif defined(__riscv)
 
 			// разрешены все
 			#define system_enableIRQ() do { \

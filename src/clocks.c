@@ -2684,7 +2684,7 @@ void hardware_spi_io_delay(void)
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
-#elif CPUSTYPE_T113
+#elif CPUSTYPE_T113 && (__TIM_PRESENT == 1U)
 
 	#if WITHELKEY
 
@@ -8649,6 +8649,14 @@ hardware_elkey_timer_initialize(void)
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
 	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
+
+#elif CPUSTYPE_D1S
+
+//	TIMER->TMR0_CTRL_REG = 0;
+//
+//	TIMER->TMR_IRQ_EN_REG |= (1uL << 0);	// TMR0_IRQ_EN
+//	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);
+
 
 #elif CPUSTYPE_T113
 

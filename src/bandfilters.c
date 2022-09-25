@@ -23,6 +23,11 @@
 	#define BANDDIVPOWER	0	/* 1 Hz granulation */
 	typedef uint_fast32_t fseltype_t;
 
+#elif CPUSTYLE_RISCV
+
+	#define BANDDIVPOWER	0	/* 1 Hz granulation */
+	typedef uint_fast32_t fseltype_t;
+
 #else
 
 	#error Undefined CPUSTYLE_XXX

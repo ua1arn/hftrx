@@ -8,7 +8,9 @@
 1. Настраиваем окружение (компилятор и утилиты для сборки проекта) <br>
 1.1 **ARM:** ARM GNU Toolchain https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads (последняя проверенная сборка (Arm GNU Toolchain 11.3.Rel1) 11.3.1 20220712) <br>
 1.2 **ATMEGA/ATXMEGA:** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers или https://blog.zakkemble.net/wp-content/uploads/downloads/2021/04/avr-gcc-11.1.0-x64-windows.zip (распаковываем, прописываем путь к папке BIN в переменную окружения PATH)<br>
-1.3 Утилиты для сборки отсюда: tools/gnu-mcu-eclipse-build-tools-2.11-20180428-1604-win64.zip (разархивировать, обновляем переменную PATH в системе, указав путь к подпапке bin, например C:\user\hftrx\tools\gnu-mcu-eclipse-build-tools-2.11-20180428-1604-win64\GNU MCU Eclipse\Build Tools\2.11-20180428-1604\bin) <br>
+1.3 **RISC-V:** riscv-none-elf-gcc.exe (xPack GNU RISC-V Embedded GCC x86_64) 12.2.0    https://objects.githubusercontent.com/github-production-release-asset-2e65be/486846742/db02ab81-907a-45f7-bb81-8fbe372ab39a?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20220923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20220923T154729Z&X-Amz-Expires=300&X-Amz-Signature=45b54f85f826a1e144afda324ba4ff2da651c06792e814fa100005e4a0581440&X-Amz-SignedHeaders=host&actor_id=34999007&key_id=0&repo_id=486846742&response-content-disposition=attachment%3B%20filename%3Dxpack-riscv-none-elf-gcc-12.2.0-1-win32-x64.zip&response-content-type=application%2Foctet-stream
+
+1.4 Утилиты для сборки отсюда: tools/gnu-mcu-eclipse-build-tools-2.11-20180428-1604-win64.zip (разархивировать, обновляем переменную PATH в системе, указав путь к подпапке bin, например C:\user\hftrx\tools\gnu-mcu-eclipse-build-tools-2.11-20180428-1604-win64\GNU MCU Eclipse\Build Tools\2.11-20180428-1604\bin) <br>
 1.4 Утилиты для работы с GIT репозиториями https://git-scm.com/downloads <br>
 
 2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта. <br>
