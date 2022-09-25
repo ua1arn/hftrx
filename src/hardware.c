@@ -2950,6 +2950,9 @@ void __attribute__((used)) Reset_Handler(void)
 #endif /* defined(__aarch64__) */
 
 #if CPUSTYLE_RISCV
+
+// See https://codebrowser.dev/glibc/glibc/sysdeps/riscv/start.S.html
+
 uint32_t __Vectors [32];
 void __attribute__((used)) Reset_Handler(void)
 {
