@@ -2956,6 +2956,92 @@ void __attribute__((used)) Reset_Handler(void)
 	SystemInit();
 	main();
 }
+
+void isr_synctrap(void)
+{
+	TP();
+}
+
+void isr_vmsi(void)
+{
+	TP();
+}
+
+void isr_vmti(void)
+{
+	TP();
+}
+
+void isr_vmei(void)
+{
+	TP();
+}
+
+void isr_irq0(void)
+{
+	TP();
+}
+void isr_irq1(void)
+{
+	TP();
+}
+void isr_irq2(void)
+{
+	TP();
+}
+void isr_irq3(void)
+{
+	TP();
+}
+void isr_irq4(void)
+{
+	TP();
+}
+void isr_irq5(void)
+{
+	TP();
+}
+void isr_irq6(void)
+{
+	TP();
+}
+void isr_irq7(void)
+{
+	TP();
+}
+void isr_irq8(void)
+{
+	TP();
+}
+void isr_irq9(void)
+{
+	TP();
+}
+void isr_irq10(void)
+{
+	TP();
+}
+void isr_irq11(void)
+{
+	TP();
+}
+void isr_irq12(void)
+{
+	TP();
+}
+void isr_irq13(void)
+{
+	TP();
+}
+void isr_irq14(void)
+{
+	TP();
+}
+void isr_irq15(void)
+{
+	TP();
+}
+
 #endif /* CPUSTYLE_RISCV */
 
 static void FLASHMEMINITFUNC
