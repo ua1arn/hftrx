@@ -2065,10 +2065,10 @@ mmio_clrsetbits_32(uintptr_t addr, uint32_t cmask, uint32_t smask)
 
 
 // DDR clock in Hz
-unsigned long stm32mp_ddr_clk_get_rate(unsigned long id)
+uint_fast32_t stm32mp_ddr_clk_get_rate(unsigned long id)
 {
 	return stm32mp1_get_pll2_r_freq();
-	return DDR_FREQ;
+	//return DDR_FREQ;
 /*
 	int p = stm32mp1_clk_get_parent(id);
 

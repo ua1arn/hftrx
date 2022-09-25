@@ -28,7 +28,7 @@ calcdivround2(
 
 #elif CPUSTYLE_STM32F4XX
 
-unsigned long stm32f4xx_get_hse_freq(void)
+uint_fast32_t stm32f4xx_get_hse_freq(void)
 {
 #if WITHCPUXTAL
 	return WITHCPUXTAL;
@@ -40,72 +40,72 @@ unsigned long stm32f4xx_get_hse_freq(void)
 #endif
 }
 
-unsigned long stm32f4xx_get_hsi_freq(void)
+uint_fast32_t stm32f4xx_get_hsi_freq(void)
 {
 	return HSIFREQ;	// 16 MHz
 }
 
-unsigned long stm32f4xx_get_pllreference_freq(void)
+uint_fast32_t stm32f4xx_get_pllreference_freq(void)
 {
 	const uint_fast32_t divval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
 	return stm32f4xx_get_hse_freq() / divval;
 }
 
-unsigned long stm32f4xx_get_pll_freq(void)
+uint_fast32_t stm32f4xx_get_pll_freq(void)
 {
 	const uint_fast32_t mulval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN_Msk) >> RCC_PLLCFGR_PLLN_Pos;
 	return stm32f4xx_get_pllreference_freq() * mulval;
 }
 
-unsigned long stm32f4xx_get_pll_p_freq(void)
+uint_fast32_t stm32f4xx_get_pll_p_freq(void)
 {
 	const uint_fast32_t divval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLP_Msk) >> RCC_PLLCFGR_PLLP_Pos;
 	return stm32f4xx_get_pll_freq() / divval;
 }
 
-unsigned long stm32f4xx_get_pll_q_freq(void)
+uint_fast32_t stm32f4xx_get_pll_q_freq(void)
 {
 	const uint_fast32_t divval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLQ_Msk) >> RCC_PLLCFGR_PLLQ_Pos;
 	return stm32f4xx_get_pll_freq() / divval;
 }
 
-unsigned long stm32f4xx_get_plli2s_freq(void)
+uint_fast32_t stm32f4xx_get_plli2s_freq(void)
 {
 	const uint_fast32_t mulval = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SN_Msk) >> RCC_PLLI2SCFGR_PLLI2SN_Pos;
 	return stm32f4xx_get_pllreference_freq() * mulval;
 }
 
-unsigned long stm32f4xx_get_plli2s_q_freq(void)
+uint_fast32_t stm32f4xx_get_plli2s_q_freq(void)
 {
 	const uint_fast32_t divval = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SQ_Msk) >> RCC_PLLI2SCFGR_PLLI2SQ_Pos;
 	return stm32f4xx_get_plli2s_freq() / divval;
 }
 
-unsigned long stm32f4xx_get_plli2s_r_freq(void)
+uint_fast32_t stm32f4xx_get_plli2s_r_freq(void)
 {
 	const uint_fast32_t divval = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SR_Msk) >> RCC_PLLI2SCFGR_PLLI2SR_Pos;
 	return stm32f4xx_get_plli2s_freq() / divval;
 }
 
-unsigned long stm32f4xx_get_pllsai_freq(void)
+uint_fast32_t stm32f4xx_get_pllsai_freq(void)
 {
 	const uint_fast32_t mulval = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIN_Msk) >> RCC_PLLSAICFGR_PLLSAIN_Pos;
 	return stm32f4xx_get_pllreference_freq() * mulval;
 }
 
-unsigned long stm32f4xx_get_pllsai_q_freq(void)
+uint_fast32_t stm32f4xx_get_pllsai_q_freq(void)
 {
 	const uint_fast32_t divval = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIQ_Msk) >> RCC_PLLSAICFGR_PLLSAIQ_Pos;
 	return stm32f4xx_get_pllsai_freq() / divval;
 }
 
-unsigned long stm32f4xx_get_pllsai_r_freq(void)
+uint_fast32_t stm32f4xx_get_pllsai_r_freq(void)
 {
 	const uint_fast32_t divval = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIR_Msk) >> RCC_PLLSAICFGR_PLLSAIR_Pos;
 	return stm32f4xx_get_pllsai_freq() / divval;
 }
 
-unsigned long stm32f4xx_get_sysclk_freq(void)
+uint_fast32_t stm32f4xx_get_sysclk_freq(void)
 {
 	//	00: HSI oscillator used as the system clock
 	//	01: HSE oscillator used as the system clock
@@ -123,7 +123,7 @@ unsigned long stm32f4xx_get_sysclk_freq(void)
 	}
 }
 
-unsigned long stm32f4xx_get_ahb_freq(void)
+uint_fast32_t stm32f4xx_get_ahb_freq(void)
 {
 	//	0xxx: system clock not divided
 	//	1000: system clock divided by 2
@@ -158,13 +158,13 @@ unsigned long stm32f4xx_get_ahb_freq(void)
 	}
 }
 
-unsigned long stm32f4xx_get_hclk_freq(void)
+uint_fast32_t stm32f4xx_get_hclk_freq(void)
 {
 	return stm32f4xx_get_ahb_freq();
 }
 
 // PPRE2: APB high-speed prescaler (APB2)
-unsigned long stm32f4xx_get_apb2_freq(void)
+uint_fast32_t stm32f4xx_get_apb2_freq(void)
 {
 	const uint_fast32_t ppre2 = (RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos;
 	switch (ppre2)
@@ -184,7 +184,7 @@ unsigned long stm32f4xx_get_apb2_freq(void)
 }
 
 // PPRE1: APB Low speed prescaler (APB1)
-unsigned long stm32f4xx_get_apb1_freq(void)
+uint_fast32_t stm32f4xx_get_apb1_freq(void)
 {
 	const uint_fast32_t ppre1 = (RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos;
 	switch (ppre1)
@@ -203,7 +203,7 @@ unsigned long stm32f4xx_get_apb1_freq(void)
 	}
 }
 // PPRE2: APB high-speed prescaler (APB2)
-unsigned long stm32f4xx_get_apb2timer_freq(void)
+uint_fast32_t stm32f4xx_get_apb2timer_freq(void)
 {
 	const uint_fast32_t timpre  = (RCC->DCKCFGR & RCC_DCKCFGR_TIMPRE_Msk) >> RCC_DCKCFGR_TIMPRE_Pos;
 	const uint_fast32_t ppre2 = (RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos;
@@ -232,7 +232,7 @@ unsigned long stm32f4xx_get_apb2timer_freq(void)
 }
 
 // PPRE1: APB Low speed prescaler (APB1)
-unsigned long stm32f4xx_get_apb1timer_freq(void)
+uint_fast32_t stm32f4xx_get_apb1timer_freq(void)
 {
 	const uint_fast32_t timpre  = (RCC->DCKCFGR & RCC_DCKCFGR_TIMPRE_Msk) >> RCC_DCKCFGR_TIMPRE_Pos;
 	const uint_fast32_t ppre1 = (RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos;
@@ -260,12 +260,12 @@ unsigned long stm32f4xx_get_apb1timer_freq(void)
 	}
 }
 
-unsigned long stm32f4xx_get_spi1_freq(void)
+uint_fast32_t stm32f4xx_get_spi1_freq(void)
 {
 	return stm32f4xx_get_apb2_freq();
 }
 
-unsigned long stm32f4xx_get_tim3_freq(void)
+uint_fast32_t stm32f4xx_get_tim3_freq(void)
 {
 	return stm32f4xx_get_apb1timer_freq();
 }
@@ -289,7 +289,7 @@ unsigned long stm32f4xx_get_tim3_freq(void)
 #define BOARD_TIM3_FREQ (stm32f7xx_get_apb1_tim_freq())	// TODO: verify
 #define BOARD_ADC_FREQ (stm32f7xx_get_apb2_freq())
 
-unsigned long stm32f7xx_get_hse_freq(void)
+uint_fast32_t stm32f7xx_get_hse_freq(void)
 {
 #if WITHCPUXTAL
 	return WITHCPUXTAL;
@@ -301,33 +301,33 @@ unsigned long stm32f7xx_get_hse_freq(void)
 #endif
 }
 
-unsigned long stm32f7xx_get_pll_freq(void)
+uint_fast32_t stm32f7xx_get_pll_freq(void)
 {
-	const unsigned long pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
-	const unsigned long plln = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN_Msk) >> RCC_PLLCFGR_PLLN_Pos;
+	const uint_fast32_t pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
+	const uint_fast32_t plln = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN_Msk) >> RCC_PLLCFGR_PLLN_Pos;
 
 	return (uint_fast64_t) REFINFREQ * plln / pllm;
 }
 
-unsigned long stm32f7xx_get_pllsai_freq(void)
+uint_fast32_t stm32f7xx_get_pllsai_freq(void)
 {
-	const unsigned long pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
-	const unsigned long pllsain = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIN_Msk) >> RCC_PLLSAICFGR_PLLSAIN_Pos;
+	const uint_fast32_t pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
+	const uint_fast32_t pllsain = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIN_Msk) >> RCC_PLLSAICFGR_PLLSAIN_Pos;
 
 	return (uint_fast64_t) REFINFREQ * pllsain / pllm;
 }
 
-unsigned long stm32f7xx_get_plli2s_freq(void)
+uint_fast32_t stm32f7xx_get_plli2s_freq(void)
 {
-	const unsigned long pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
-	const unsigned long plli2sn = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SN_Msk) >> RCC_PLLI2SCFGR_PLLI2SN_Pos;
+	const uint_fast32_t pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
+	const uint_fast32_t plli2sn = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SN_Msk) >> RCC_PLLI2SCFGR_PLLI2SN_Pos;
 
 	return (uint_fast64_t) REFINFREQ * plli2sn / pllm;
 }
 
-unsigned long stm32f7xx_get_pll_p_freq(void)
+uint_fast32_t stm32f7xx_get_pll_p_freq(void)
 {
-	const unsigned long pll = stm32f7xx_get_pll_freq();
+	const uint_fast32_t pll = stm32f7xx_get_pll_freq();
 	switch ((RCC->PLLCFGR & RCC_PLLCFGR_PLLP_Msk) >> RCC_PLLCFGR_PLLP_Pos)
 	{
 	default:
@@ -341,7 +341,7 @@ unsigned long stm32f7xx_get_pll_p_freq(void)
 // PLLCLK=PLL_P
 // HSI/HSE/PLLCLK
 // SWS
-unsigned long stm32f7xx_get_sys_freq(void)
+uint_fast32_t stm32f7xx_get_sys_freq(void)
 {
 	//	00: HSI oscillator used as the system clock
 	//	01: HSE oscillator used as the system clock
@@ -356,14 +356,14 @@ unsigned long stm32f7xx_get_sys_freq(void)
 }
 
 // TODO: check
-//unsigned long stm32f7xx_get_sysclk_freq(void)
+//uint_fast32_t stm32f7xx_get_sysclk_freq(void)
 //{
 //	return stm32f7xx_get_sys_freq();
 //}
 
 // AHB prescaler
 // HPRE output
-unsigned long stm32f7xx_get_ahb_freq(void)
+uint_fast32_t stm32f7xx_get_ahb_freq(void)
 {
 	//	0xxx: system clock not divided
 	//	1000: system clock divided by 2
@@ -374,7 +374,7 @@ unsigned long stm32f7xx_get_ahb_freq(void)
 	//	1101: system clock divided by 128
 	//	1110: system clock divided by 256
 	//	1111: system clock divided by 512
-	const unsigned long sys = stm32f7xx_get_sys_freq();
+	const uint_fast32_t sys = stm32f7xx_get_sys_freq();
 	switch ((RCC->CFGR & RCC_CFGR_HPRE_Msk) >> RCC_CFGR_HPRE_Pos)
 	{
 	default: return sys;
@@ -392,14 +392,14 @@ unsigned long stm32f7xx_get_ahb_freq(void)
 // TODO: проверить
 // APB Low-speed prescaler (APB1)
 // PPRE1 output
-unsigned long stm32f7xx_get_apb1_freq(void)
+uint_fast32_t stm32f7xx_get_apb1_freq(void)
 {
 	//	0xx: AHB clock not divided
 	//	100: AHB clock divided by 2
 	//	101: AHB clock divided by 4
 	//	110: AHB clock divided by 8
 	//	111: AHB clock divided by 16
-	const unsigned long ahb = stm32f7xx_get_ahb_freq();
+	const uint_fast32_t ahb = stm32f7xx_get_ahb_freq();
 	switch ((RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos)
 	{
 	default: return ahb;
@@ -411,9 +411,9 @@ unsigned long stm32f7xx_get_apb1_freq(void)
 }
 
 // TODO: проверить
-unsigned long stm32f7xx_get_apb1_tim_freq(void)
+uint_fast32_t stm32f7xx_get_apb1_tim_freq(void)
 {
-	const unsigned long sysclk = stm32f7xx_get_sys_freq();
+	const uint_fast32_t sysclk = stm32f7xx_get_sys_freq();
 	const uint8_t timpre = (RCC->DCKCFGR1 & RCC_DCKCFGR1_TIMPRE_Msk) != 0;
 
 	// timpre 0:
@@ -428,7 +428,7 @@ unsigned long stm32f7xx_get_apb1_tim_freq(void)
 	//	to four times to the frequency of the APB domain to which the timers are connected:
 	//	TIMxCLK = 4xPCLKx.
 
-	const unsigned long ahb = stm32f7xx_get_ahb_freq();
+	const uint_fast32_t ahb = stm32f7xx_get_ahb_freq();
 	switch ((RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos)
 	{
 	default: return ahb;
@@ -442,14 +442,14 @@ unsigned long stm32f7xx_get_apb1_tim_freq(void)
 // TODO: проверить
 // APB high-speed prescaler (APB2)
 // PPRE2 output
-unsigned long stm32f7xx_get_apb2_freq(void)
+uint_fast32_t stm32f7xx_get_apb2_freq(void)
 {
 	//	0xx: AHB clock not divided
 	//	100: AHB clock divided by 2
 	//	101: AHB clock divided by 4
 	//	110: AHB clock divided by 8
 	//	111: AHB clock divided by 16
-	const unsigned long ahb = stm32f7xx_get_ahb_freq();
+	const uint_fast32_t ahb = stm32f7xx_get_ahb_freq();
 	switch ((RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos)
 	{
 	default: return ahb;
@@ -461,9 +461,9 @@ unsigned long stm32f7xx_get_apb2_freq(void)
 }
 
 // TODO: проверить
-unsigned long stm32f7xx_get_apb2_tim_freq(void)
+uint_fast32_t stm32f7xx_get_apb2_tim_freq(void)
 {
-	const unsigned long sysclk = stm32f7xx_get_sys_freq();
+	const uint_fast32_t sysclk = stm32f7xx_get_sys_freq();
 	const uint8_t timpre = (RCC->DCKCFGR1 & RCC_DCKCFGR1_TIMPRE_Msk) != 0;
 
 	// timpre 0:
@@ -478,7 +478,7 @@ unsigned long stm32f7xx_get_apb2_tim_freq(void)
 	//	to four times to the frequency of the APB domain to which the timers are connected:
 	//	TIMxCLK = 4xPCLKx.
 
-	const unsigned long ahb = stm32f7xx_get_ahb_freq();
+	const uint_fast32_t ahb = stm32f7xx_get_ahb_freq();
 	switch ((RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos)
 	{
 	default: return ahb;
@@ -490,13 +490,13 @@ unsigned long stm32f7xx_get_apb2_tim_freq(void)
 }
 
 // TODO: проверить - USART3 работает
-unsigned long stm32f7xx_get_pclk1_freq(void)
+uint_fast32_t stm32f7xx_get_pclk1_freq(void)
 {
 	return stm32f7xx_get_apb1_freq();
 }
 
 // TODO: проверить
-unsigned long stm32f7xx_get_pclk2_freq(void)
+uint_fast32_t stm32f7xx_get_pclk2_freq(void)
 {
 	return hardware_get_apb2_freq();
 }
@@ -505,11 +505,11 @@ unsigned long stm32f7xx_get_pclk2_freq(void)
 // получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
 unsigned long hardware_get_spi_freq(void)
 {
-	const unsigned long sysclk = stm32f7xx_get_sys_freq();
+	const uint_fast32_t sysclk = stm32f7xx_get_sys_freq();
 	return sysclk / 4;
 }
 
-unsigned long stm32f7xx_get_usart1_freq(void)
+uint_fast32_t stm32f7xx_get_usart1_freq(void)
 {
 	//	00: APB2 clock (PCLK2) is selected as USART 1 clock
 	//	01: System clock is selected as USART 1 clock
@@ -525,7 +525,7 @@ unsigned long stm32f7xx_get_usart1_freq(void)
 	}
 }
 
-unsigned long stm32f7xx_get_usart2_freq(void)
+uint_fast32_t stm32f7xx_get_usart2_freq(void)
 {
 	//	00: APB1 clock (PCLK1) is selected as USART 2 clock
 	//	01: System clock is selected as USART 2 clock
@@ -541,7 +541,7 @@ unsigned long stm32f7xx_get_usart2_freq(void)
 	}
 }
 
-unsigned long stm32f7xx_get_usart3_freq(void)
+uint_fast32_t stm32f7xx_get_usart3_freq(void)
 {
 	//	00: APB1 clock (PCLK1) is selected as USART 3 clock
 	//	01: System clock is selected as USART 3 clock
@@ -557,7 +557,7 @@ unsigned long stm32f7xx_get_usart3_freq(void)
 	}
 }
 
-unsigned long stm32f7xx_get_uart4_freq(void)
+uint_fast32_t stm32f7xx_get_uart4_freq(void)
 {
 	//	00: APB1 clock (PCLK1) is selected as USART 4 clock
 	//	01: System clock is selected as USART 4 clock
@@ -573,7 +573,7 @@ unsigned long stm32f7xx_get_uart4_freq(void)
 	}
 }
 
-unsigned long stm32f7xx_get_uart5_freq(void)
+uint_fast32_t stm32f7xx_get_uart5_freq(void)
 {
 	//	00: APB1 clock (PCLK1) is selected as USART 5 clock
 	//	01: System clock is selected as USART 5 clock
@@ -589,7 +589,7 @@ unsigned long stm32f7xx_get_uart5_freq(void)
 	}
 }
 
-unsigned long stm32f7xx_get_usart6_freq(void)
+uint_fast32_t stm32f7xx_get_usart6_freq(void)
 {
 	//	00: APB2 clock (PCLK2) is selected as USART 6 clock
 	//	01: System clock is selected as USART 6 clock
@@ -605,7 +605,7 @@ unsigned long stm32f7xx_get_usart6_freq(void)
 	}
 }
 
-unsigned long stm32f7xx_get_uart7_freq(void)
+uint_fast32_t stm32f7xx_get_uart7_freq(void)
 {
 	//	00: APB1 clock (PCLK1) is selected as USART 7 clock
 	//	01: System clock is selected as USART 7 clock
@@ -621,7 +621,7 @@ unsigned long stm32f7xx_get_uart7_freq(void)
 	}
 }
 
-unsigned long stm32f7xx_get_uart8_freq(void)
+uint_fast32_t stm32f7xx_get_uart8_freq(void)
 {
 	//	00: APB1 clock (PCLK1) is selected as USART 8 clock
 	//	01: System clock is selected as USART 8 clock
@@ -657,7 +657,7 @@ const  uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7,
 #define BOARD_SYSTICK_FREQ 	(stm32h7xx_get_sys_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 //#define BOARD_SYSTICK_FREQ (stm32h7xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
-unsigned long stm32h7xx_get_hse_freq(void)
+uint_fast32_t stm32h7xx_get_hse_freq(void)
 {
 #if WITHCPUXTAL
 	return WITHCPUXTAL;
@@ -670,76 +670,76 @@ unsigned long stm32h7xx_get_hse_freq(void)
 }
 //
 //// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-//unsigned long stm32h7xx_get_systick_freq(void)
+//uint_fast32_t stm32h7xx_get_systick_freq(void)
 //{
 //
 //
 //}
 
-unsigned long stm32h7xx_get_pll1_freq(void)
+uint_fast32_t stm32h7xx_get_pll1_freq(void)
 {
 	const uint32_t pll1divm1 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM1_Msk) >> RCC_PLLCKSELR_DIVM1_Pos);	// reference divisor - not need 1substracted
 	const uint32_t pll1divn1 = ((RCC->PLL1DIVR & RCC_PLL1DIVR_N1_Msk) >> RCC_PLL1DIVR_N1_Pos) + 1;
 	return (uint_fast64_t) REFINFREQ * pll1divn1 / pll1divm1;
 }
 
-unsigned long stm32h7xx_get_pll1_p_freq(void)
+uint_fast32_t stm32h7xx_get_pll1_p_freq(void)
 {
-	const unsigned long pll1divp = ((RCC->PLL1DIVR & RCC_PLL1DIVR_P1_Msk) >> RCC_PLL1DIVR_P1_Pos) + 1;
+	const uint_fast32_t pll1divp = ((RCC->PLL1DIVR & RCC_PLL1DIVR_P1_Msk) >> RCC_PLL1DIVR_P1_Pos) + 1;
 	return stm32h7xx_get_pll1_freq() / pll1divp;
 }
 
-unsigned long stm32h7xx_get_pll1_q_freq(void)
+uint_fast32_t stm32h7xx_get_pll1_q_freq(void)
 {
-	const unsigned long pll1divq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1_Msk) >> RCC_PLL1DIVR_Q1_Pos) + 1;
+	const uint_fast32_t pll1divq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1_Msk) >> RCC_PLL1DIVR_Q1_Pos) + 1;
 	return stm32h7xx_get_pll1_freq() / pll1divq;
 }
 
-unsigned long stm32h7xx_get_pll2_freq(void)
+uint_fast32_t stm32h7xx_get_pll2_freq(void)
 {
 	const uint32_t pll2divm2 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM2_Msk) >> RCC_PLLCKSELR_DIVM2_Pos);	// reference divisor - not need 1substracted
 	const uint32_t pll2divn2 = ((RCC->PLL2DIVR & RCC_PLL2DIVR_N2_Msk) >> RCC_PLL2DIVR_N2_Pos) + 1;
 	return (uint_fast64_t) REFINFREQ * pll2divn2 / pll2divm2;
 }
 
-unsigned long stm32h7xx_get_pll2_p_freq(void)
+uint_fast32_t stm32h7xx_get_pll2_p_freq(void)
 {
-	const unsigned long pll2divp = ((RCC->PLL2DIVR & RCC_PLL2DIVR_P2_Msk) >> RCC_PLL2DIVR_P2_Pos) + 1;
+	const uint_fast32_t pll2divp = ((RCC->PLL2DIVR & RCC_PLL2DIVR_P2_Msk) >> RCC_PLL2DIVR_P2_Pos) + 1;
 	return stm32h7xx_get_pll2_freq() / pll2divp;
 }
 
-unsigned long stm32h7xx_get_pll2_q_freq(void)
+uint_fast32_t stm32h7xx_get_pll2_q_freq(void)
 {
-	const unsigned long pll2divq = ((RCC->PLL2DIVR & RCC_PLL2DIVR_Q2_Msk) >> RCC_PLL2DIVR_Q2_Pos) + 1;
+	const uint_fast32_t pll2divq = ((RCC->PLL2DIVR & RCC_PLL2DIVR_Q2_Msk) >> RCC_PLL2DIVR_Q2_Pos) + 1;
 	return stm32h7xx_get_pll2_freq() / pll2divq;
 }
 
-unsigned long stm32h7xx_get_pll3_freq(void)
+uint_fast32_t stm32h7xx_get_pll3_freq(void)
 {
 	const uint32_t pll3divm3 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM3_Msk) >> RCC_PLLCKSELR_DIVM3_Pos);	// reference divisor - not need 1substracted
 	const uint32_t pll3divn3 = ((RCC->PLL3DIVR & RCC_PLL3DIVR_N3_Msk) >> RCC_PLL3DIVR_N3_Pos) + 1;
 	return (uint_fast64_t) REFINFREQ * pll3divn3 / pll3divm3;
 }
 
-unsigned long stm32h7xx_get_pll3_p_freq(void)
+uint_fast32_t stm32h7xx_get_pll3_p_freq(void)
 {
-	const unsigned long pll3divp = ((RCC->PLL3DIVR & RCC_PLL3DIVR_P3_Msk) >> RCC_PLL3DIVR_P3_Pos) + 1;
+	const uint_fast32_t pll3divp = ((RCC->PLL3DIVR & RCC_PLL3DIVR_P3_Msk) >> RCC_PLL3DIVR_P3_Pos) + 1;
 	return stm32h7xx_get_pll3_freq() / pll3divp;
 }
 
-unsigned long stm32h7xx_get_pll3_q_freq(void)
+uint_fast32_t stm32h7xx_get_pll3_q_freq(void)
 {
-	const unsigned long pll3divq = ((RCC->PLL3DIVR & RCC_PLL3DIVR_Q3_Msk) >> RCC_PLL3DIVR_Q3_Pos) + 1;
+	const uint_fast32_t pll3divq = ((RCC->PLL3DIVR & RCC_PLL3DIVR_Q3_Msk) >> RCC_PLL3DIVR_Q3_Pos) + 1;
 	return stm32h7xx_get_pll3_freq() / pll3divq;
 }
 
-unsigned long stm32h7xx_get_pll3_r_freq(void)
+uint_fast32_t stm32h7xx_get_pll3_r_freq(void)
 {
-	const unsigned long pll3divr = ((RCC->PLL3DIVR & RCC_PLL3DIVR_R3_Msk) >> RCC_PLL3DIVR_R3_Pos) + 1;
+	const uint_fast32_t pll3divr = ((RCC->PLL3DIVR & RCC_PLL3DIVR_R3_Msk) >> RCC_PLL3DIVR_R3_Pos) + 1;
 	return stm32h7xx_get_pll3_freq() / pll3divr;
 }
 
-unsigned long stm32h7xx_get_sys_freq(void)
+uint_fast32_t stm32h7xx_get_sys_freq(void)
 {
 	//	000: HSI used as system clock (hsi_ck) (default after reset)
 	//	001: CSI used as system clock (csi_ck)
@@ -758,9 +758,9 @@ unsigned long stm32h7xx_get_sys_freq(void)
 // sys_d1cpre_ck
 // rcc_c_ck
 // rcc_fclk_c
-unsigned long stm32h7xx_get_stm32h7xx_get_d1cpre_freq(void)
+uint_fast32_t stm32h7xx_get_stm32h7xx_get_d1cpre_freq(void)
 {
-	const unsigned long sys_ck = stm32h7xx_get_sys_freq();
+	const uint_fast32_t sys_ck = stm32h7xx_get_sys_freq();
 	//	0xxx: sys_ck not divided (default after reset)
 	//	1000: sys_ck divided by 2
 	//	1001: sys_ck divided by 4
@@ -785,9 +785,9 @@ unsigned long stm32h7xx_get_stm32h7xx_get_d1cpre_freq(void)
 
 }
 
-unsigned long stm32h7xx_get_hclk3_freq(void)
+uint_fast32_t stm32h7xx_get_hclk3_freq(void)
 {
-	const unsigned long rcc_d1cpre = stm32h7xx_get_stm32h7xx_get_d1cpre_freq();
+	const uint_fast32_t rcc_d1cpre = stm32h7xx_get_stm32h7xx_get_d1cpre_freq();
 	// HPRE output
 	//	0xxx: rcc_hclk3 = sys_d1cpre_ck (default after reset)
 	//	1000: rcc_hclk3 = sys_d1cpre_ck / 2
@@ -813,21 +813,21 @@ unsigned long stm32h7xx_get_hclk3_freq(void)
 }
 
 // HPRE output
-unsigned long stm32h7xx_get_aclk_freq(void)
+uint_fast32_t stm32h7xx_get_aclk_freq(void)
 {
 	return stm32h7xx_get_hclk3_freq();
 }
 
 // HPRE output
 // rcc_hclk1
-unsigned long stm32h7xx_get_hclk1_freq(void)
+uint_fast32_t stm32h7xx_get_hclk1_freq(void)
 {
 	return stm32h7xx_get_hclk3_freq();
 }
 
 // HPRE output
 // rcc_hclk2
-unsigned long stm32h7xx_get_hclk2_freq(void)
+uint_fast32_t stm32h7xx_get_hclk2_freq(void)
 {
 	return stm32h7xx_get_hclk3_freq();
 }
@@ -835,7 +835,7 @@ unsigned long stm32h7xx_get_hclk2_freq(void)
 // apb1
 // rcc_timx_ker_ck
 // rcc_pclk1
-unsigned long stm32h7xx_get_apb1_freq(void)
+uint_fast32_t stm32h7xx_get_apb1_freq(void)
 {
 	// D2PPRE1
 	//	0xx: rcc_pclk1 = rcc_hclk1 (default after reset)
@@ -856,7 +856,7 @@ unsigned long stm32h7xx_get_apb1_freq(void)
 // apb2
 // rcc_timy_ker_ck
 // rcc_pclk2
-unsigned long stm32h7xx_get_apb2_freq(void)
+uint_fast32_t stm32h7xx_get_apb2_freq(void)
 {
 	// D2PPRE2
 	//	0xx: rcc_pclk2 = rcc_hclk1 (default after reset)
@@ -877,9 +877,9 @@ unsigned long stm32h7xx_get_apb2_freq(void)
 // Table 56. Ratio between clock timer and pclk
 // rcc_timx_ker_ck
 // APB1 timers
-unsigned long stm32h7xx_get_timx_freq(void)
+uint_fast32_t stm32h7xx_get_timx_freq(void)
 {
-	const unsigned long rcc_hclk1 = stm32h7xx_get_hclk1_freq();
+	const uint_fast32_t rcc_hclk1 = stm32h7xx_get_hclk1_freq();
 	const uint8_t timpre = (RCC->CFGR & RCC_CFGR_TIMPRE) != 0;
 	switch ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE1_Msk) >> RCC_D2CFGR_D2PPRE1_Pos)
 	{
@@ -892,9 +892,9 @@ unsigned long stm32h7xx_get_timx_freq(void)
 
 // Table 56. Ratio between clock timer and pclk
 // rcc_pclk1
-unsigned long stm32h7xx_get_pclk1_freq(void)
+uint_fast32_t stm32h7xx_get_pclk1_freq(void)
 {
-	const unsigned long rcc_hclk1 = stm32h7xx_get_hclk1_freq();
+	const uint_fast32_t rcc_hclk1 = stm32h7xx_get_hclk1_freq();
 	switch ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE1_Msk) >> RCC_D2CFGR_D2PPRE1_Pos)
 	{
 	default: return rcc_hclk1;
@@ -908,9 +908,9 @@ unsigned long stm32h7xx_get_pclk1_freq(void)
 // Table 56. Ratio between clock timer and pclk
 // rcc_timy_ker_ck
 // APB2 timers
-unsigned long stm32h7xx_get_timy_freq(void)
+uint_fast32_t stm32h7xx_get_timy_freq(void)
 {
-	const unsigned long rcc_hclk1 = stm32h7xx_get_hclk2_freq();
+	const uint_fast32_t rcc_hclk1 = stm32h7xx_get_hclk2_freq();
 	const uint8_t timpre = (RCC->CFGR & RCC_CFGR_TIMPRE) != 0;
 	switch ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE2_Msk) >> RCC_D2CFGR_D2PPRE2_Pos)
 	{
@@ -923,9 +923,9 @@ unsigned long stm32h7xx_get_timy_freq(void)
 
 // Table 56. Ratio between clock timer and pclk
 // rcc_pclk2
-unsigned long stm32h7xx_get_pclk2_freq(void)
+uint_fast32_t stm32h7xx_get_pclk2_freq(void)
 {
-	const unsigned long rcc_hclk1 = stm32h7xx_get_hclk2_freq();
+	const uint_fast32_t rcc_hclk1 = stm32h7xx_get_hclk2_freq();
 	switch ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE2_Msk) >> RCC_D2CFGR_D2PPRE2_Pos)
 	{
 	default: return rcc_hclk1;
@@ -936,7 +936,7 @@ unsigned long stm32h7xx_get_pclk2_freq(void)
 	}
 }
 
-unsigned long stm32h7xx_get_per_freq(void)
+uint_fast32_t stm32h7xx_get_per_freq(void)
 {
 	// CKPERSEL
 	//	00: hsi_ker_ck clock selected as per_ck clock (default after reset)
@@ -954,9 +954,9 @@ unsigned long stm32h7xx_get_per_freq(void)
 
 // D1PPRE output
 // rcc_pclk3
-unsigned long stm32h7xx_get_pclk3_freq(void)
+uint_fast32_t stm32h7xx_get_pclk3_freq(void)
 {
-	const unsigned long rcc_hclk3 = stm32h7xx_get_hclk3_freq();	// HPRE output
+	const uint_fast32_t rcc_hclk3 = stm32h7xx_get_hclk3_freq();	// HPRE output
 	//	0xx: rcc_pclk3 = rcc_hclk3 (default after reset)
 	//	100: rcc_pclk3 = rcc_hclk3 / 2
 	//	101: rcc_pclk3 = rcc_hclk3 / 4
@@ -974,7 +974,7 @@ unsigned long stm32h7xx_get_pclk3_freq(void)
 }
 
 // USART1 and 6 kernel clock source selection
-unsigned long stm32h7xx_get_usart1_6_freq(void)
+uint_fast32_t stm32h7xx_get_usart1_6_freq(void)
 {
 	//	000: rcc_pclk2 clock is selected as kernel clock (default after reset)
 	//	001: pll2_q_ck clock is selected as kernel clock
@@ -996,7 +996,7 @@ unsigned long stm32h7xx_get_usart1_6_freq(void)
 }
 
 // USART2/3, UART4,5, 7/8 (APB1) kernel clock source selection
-unsigned long stm32h7xx_get_usart2_to_8_freq(void)
+uint_fast32_t stm32h7xx_get_usart2_to_8_freq(void)
 {
 	// RCC Domain 2 Kernel Clock Configuration Register
 	//	000: rcc_pclk1 clock is selected as kernel clock (default after reset)
@@ -1019,7 +1019,7 @@ unsigned long stm32h7xx_get_usart2_to_8_freq(void)
 }
 
 
-unsigned long stm32h7xx_get_spi1_2_3_freq(void)
+uint_fast32_t stm32h7xx_get_spi1_2_3_freq(void)
 {
 	// RCC Domain 2 Kernel Clock Configuration Register
 	//	000: pll1_q_ck clock selected as SPI/I2S1,2 and 3 kernel clock (default after reset)
@@ -1042,7 +1042,7 @@ unsigned long stm32h7xx_get_spi1_2_3_freq(void)
 	}
 }
 
-unsigned long stm32h7xx_get_spi4_5_freq(void)
+uint_fast32_t stm32h7xx_get_spi4_5_freq(void)
 {
 	// RCC Domain 2 Kernel Clock Configuration Register
 	//	000: APB clock is selected as kernel clock (default after reset)
@@ -1064,7 +1064,7 @@ unsigned long stm32h7xx_get_spi4_5_freq(void)
 	}
 }
 
-unsigned long stm32h7xx_get_adc_freq(void)
+uint_fast32_t stm32h7xx_get_adc_freq(void)
 {
 	//	00: pll2_p_ck clock selected as kernel peripheral clock (default after reset)
 	//	01: pll3_r_ck clock selected as kernel peripheral clock
@@ -1092,7 +1092,7 @@ unsigned long hardware_get_spi_freq(void)
 #define BOARD_TIM5_FREQ 	(stm32mp1_get_timg1_freq())
 #define BOARD_ADC_FREQ 		(stm32mp1_get_adc_freq())
 
-unsigned long stm32mp1_get_hse_freq(void)
+uint_fast32_t stm32mp1_get_hse_freq(void)
 {
 #if WITHCPUXTAL
 	return WITHCPUXTAL;
@@ -1106,14 +1106,14 @@ unsigned long stm32mp1_get_hse_freq(void)
 
 // hsi_ck
 // hsi_ker_ck
-unsigned long stm32mp1_get_hsi_freq(void)
+uint_fast32_t stm32mp1_get_hsi_freq(void)
 {
 	const uint_fast32_t hsi = HSI64FREQ;
 	const uint_fast32_t hsidiv = (RCC->HSICFGR & RCC_HSICFGR_HSIDIV_Msk) >> RCC_HSICFGR_HSIDIV_Pos;
 	return hsi >> hsidiv;
 }
 
-unsigned long stm32mp1_get_pll1_2_ref_freq(void)
+uint_fast32_t stm32mp1_get_pll1_2_ref_freq(void)
 {
 	// PLL1, PLL2 source mux
 	// 0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
@@ -1128,7 +1128,7 @@ unsigned long stm32mp1_get_pll1_2_ref_freq(void)
 	}
 }
 
-unsigned long stm32mp1_get_pll3_ref_freq(void)
+uint_fast32_t stm32mp1_get_pll3_ref_freq(void)
 {
 	// PLL3 source mux
 	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
@@ -1147,7 +1147,7 @@ unsigned long stm32mp1_get_pll3_ref_freq(void)
 	}
 }
 
-unsigned long stm32mp1_get_pll4_ref_freq(void)
+uint_fast32_t stm32mp1_get_pll4_ref_freq(void)
 {
 	// PLL4 source mux
 	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
@@ -1170,14 +1170,14 @@ unsigned long stm32mp1_get_pll4_ref_freq(void)
 }
 
 // PLL1 methods
-unsigned long stm32mp1_get_pll1_freq(void)
+uint_fast32_t stm32mp1_get_pll1_freq(void)
 {
 	const uint_fast32_t pll1divn = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVN_Msk) >> RCC_PLL1CFGR1_DIVN_Pos) + 1;
 	const uint_fast32_t pll1divm = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVM1_Msk) >> RCC_PLL1CFGR1_DIVM1_Pos) + 1;
 	return (uint_fast64_t) stm32mp1_get_pll1_2_ref_freq() * pll1divn / pll1divm;
 }
 
-unsigned long stm32mp1_get_pll1_p_freq(void)
+uint_fast32_t stm32mp1_get_pll1_p_freq(void)
 {
 	const uint_fast32_t pll1divp = ((RCC->PLL1CFGR2 & RCC_PLL1CFGR2_DIVP_Msk) >> RCC_PLL1CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll1_freq() / pll1divp;
@@ -1185,7 +1185,7 @@ unsigned long stm32mp1_get_pll1_p_freq(void)
 
 // MPU frequency
 // mpuss_ck
-unsigned long stm32mp1_get_mpuss_freq(void)
+uint_fast32_t stm32mp1_get_mpuss_freq(void)
 {
 	//	0x0: The MPUDIV is disabled; i.e. no clock generated
 	//	0x1: The mpuss_ck is equal to pll1_p_ck divided by 2 (default after reset)
@@ -1214,53 +1214,53 @@ unsigned long stm32mp1_get_mpuss_freq(void)
 }
 
 // PLL2 methods
-unsigned long stm32mp1_get_pll2_freq(void)
+uint_fast32_t stm32mp1_get_pll2_freq(void)
 {
 	const uint_fast32_t pll2divn = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVN_Msk) >> RCC_PLL2CFGR1_DIVN_Pos) + 1;
 	const uint_fast32_t pll2divm = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVM2_Msk) >> RCC_PLL2CFGR1_DIVM2_Pos) + 1;
 	return (uint_fast64_t) stm32mp1_get_pll1_2_ref_freq() * pll2divn / pll2divm;
 }
 
-unsigned long stm32mp1_get_pll2_p_freq(void)
+uint_fast32_t stm32mp1_get_pll2_p_freq(void)
 {
 	const uint_fast32_t pll2divp = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVP_Msk) >> RCC_PLL2CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll2_freq() / pll2divp;
 }
 
-unsigned long stm32mp1_get_pll2_r_freq(void)
+uint_fast32_t stm32mp1_get_pll2_r_freq(void)
 {
 	const uint_fast32_t pll2divr = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVR_Msk) >> RCC_PLL2CFGR2_DIVR_Pos) + 1;
 	return stm32mp1_get_pll2_freq() / pll2divr;
 }
 
 // PLL3 methods
-unsigned long stm32mp1_get_pll3_freq(void)
+uint_fast32_t stm32mp1_get_pll3_freq(void)
 {
 	const uint_fast32_t pll3divn = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVN_Msk) >> RCC_PLL3CFGR1_DIVN_Pos) + 1;
 	const uint_fast32_t pll3divm = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVM3_Msk) >> RCC_PLL3CFGR1_DIVM3_Pos) + 1;
 	return (uint_fast64_t) stm32mp1_get_pll3_ref_freq() * pll3divn / pll3divm;
 }
 
-unsigned long stm32mp1_get_pll3_p_freq(void)
+uint_fast32_t stm32mp1_get_pll3_p_freq(void)
 {
 	const uint_fast32_t pll3divp = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVP_Msk) >> RCC_PLL3CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll3_freq() / pll3divp;
 }
 
-unsigned long stm32mp1_get_pll3_q_freq(void)
+uint_fast32_t stm32mp1_get_pll3_q_freq(void)
 {
 	const uint_fast32_t pll3divq = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVQ_Msk) >> RCC_PLL3CFGR2_DIVQ_Pos) + 1;
 	return stm32mp1_get_pll3_freq() / pll3divq;
 }
 
-unsigned long stm32mp1_get_pll3_r_freq(void)
+uint_fast32_t stm32mp1_get_pll3_r_freq(void)
 {
 	const uint_fast32_t pll3divr = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVR_Msk) >> RCC_PLL3CFGR2_DIVR_Pos) + 1;
 	return stm32mp1_get_pll3_freq() / pll3divr;
 }
 
 // PLL4 methods
-unsigned long stm32mp1_get_pll4_freq(void)
+uint_fast32_t stm32mp1_get_pll4_freq(void)
 {
 	//#define PLL4_FREQ	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN))
 	const uint32_t pll4divn = ((RCC->PLL4CFGR1 & RCC_PLL4CFGR1_DIVN_Msk) >> RCC_PLL4CFGR1_DIVN_Pos) + 1;
@@ -1268,19 +1268,19 @@ unsigned long stm32mp1_get_pll4_freq(void)
 	return (uint_fast64_t) stm32mp1_get_pll4_ref_freq() * pll4divn / pll4divm;
 }
 
-unsigned long stm32mp1_get_pll4_q_freq(void)
+uint_fast32_t stm32mp1_get_pll4_q_freq(void)
 {
 	const uint_fast32_t pll4divq = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVQ_Msk) >> RCC_PLL4CFGR2_DIVQ_Pos) + 1;
 	return stm32mp1_get_pll4_freq() / pll4divq;
 }
 
-unsigned long stm32mp1_get_pll4_p_freq(void)
+uint_fast32_t stm32mp1_get_pll4_p_freq(void)
 {
 	const uint_fast32_t pll4divp = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVP_Msk) >> RCC_PLL4CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll4_freq() / pll4divp;
 }
 
-unsigned long stm32mp1_get_pll4_r_freq(void)
+uint_fast32_t stm32mp1_get_pll4_r_freq(void)
 {
 	const uint_fast32_t pll4divr = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVR_Msk) >> RCC_PLL4CFGR2_DIVR_Pos) + 1;
 	return stm32mp1_get_pll4_freq() / pll4divr;
@@ -1288,7 +1288,7 @@ unsigned long stm32mp1_get_pll4_r_freq(void)
 
 // Ethernet controller freq
 // ETHSRC
-unsigned long stm32mp1_get_eth_freq(void)
+uint_fast32_t stm32mp1_get_eth_freq(void)
 {
 	//0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll3_q_ck clock selected as kernel peripheral clock
@@ -1302,14 +1302,14 @@ unsigned long stm32mp1_get_eth_freq(void)
 }
 
 // clk_ptp_ref_i
-unsigned long stm32mp1_get_ethptp_freq(void)
+uint_fast32_t stm32mp1_get_ethptp_freq(void)
 {
-	const unsigned long d = ((RCC->ETHCKSELR & RCC_ETHCKSELR_ETHPTPDIV_Msk) >> RCC_ETHCKSELR_ETHPTPDIV_Pos) + 1;
+	const uint_fast32_t d = ((RCC->ETHCKSELR & RCC_ETHCKSELR_ETHPTPDIV_Msk) >> RCC_ETHCKSELR_ETHPTPDIV_Pos) + 1;
 	return stm32mp1_get_eth_freq() / d;
 }
 
 // Internal AXI clock frequency
-unsigned long stm32mp1_get_axiss_freq(void)
+uint_fast32_t stm32mp1_get_axiss_freq(void)
 {
 	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
 	//0x1: HSE selected as AXI sub-system clock (hse_ck)
@@ -1325,7 +1325,7 @@ unsigned long stm32mp1_get_axiss_freq(void)
 	}
 }
 
-unsigned long stm32mp1_get_per_freq(void)
+uint_fast32_t stm32mp1_get_per_freq(void)
 {
 	// per_ck source clock selection
 	//0x0: hsi_ker_ck clock selected (default after reset)
@@ -1341,7 +1341,7 @@ unsigned long stm32mp1_get_per_freq(void)
 	}
 
 }
-unsigned long stm32mp1_get_mcuss_freq(void)
+uint_fast32_t stm32mp1_get_mcuss_freq(void)
 {
 	// MCUSSRC
 	//	0x0: HSI selected as MCU sub-system clock (hsi_ck) (default after reset)
@@ -1359,7 +1359,7 @@ unsigned long stm32mp1_get_mcuss_freq(void)
 }
 
 // hclk5, hclk6, aclk
-unsigned long stm32mp1_get_aclk_freq(void)
+uint_fast32_t stm32mp1_get_aclk_freq(void)
 {
 	// AXI, AHB5 and AHB6 clock divisor
 	//	0x0: axiss_ck (default after reset)
@@ -1376,20 +1376,20 @@ unsigned long stm32mp1_get_aclk_freq(void)
 }
 
 // Internal AHB5 clock frequency
-unsigned long stm32mp1_get_hclk5_freq(void)
+uint_fast32_t stm32mp1_get_hclk5_freq(void)
 {
 	return stm32mp1_get_aclk_freq();
 }
 
 // Internal AHB6 clock frequency
-unsigned long stm32mp1_get_hclk6_freq(void)
+uint_fast32_t stm32mp1_get_hclk6_freq(void)
 {
 	return stm32mp1_get_aclk_freq();
 }
 
 // mlhclk_ck
 // 209 MHz max
-unsigned long stm32mp1_get_mlhclk_freq(void)
+uint_fast32_t stm32mp1_get_mlhclk_freq(void)
 {
 	// MCUDIV
 	switch ((RCC->MCUDIVR & RCC_MCUDIVR_MCUDIV_Msk) >> RCC_MCUDIVR_MCUDIV_Pos)
@@ -1409,7 +1409,7 @@ unsigned long stm32mp1_get_mlhclk_freq(void)
 
 // Internal APB1 clock frequency
 // 104.5 MHz max
-unsigned long stm32mp1_get_pclk1_freq(void)
+uint_fast32_t stm32mp1_get_pclk1_freq(void)
 {
 	// APB1 Output divisor (output max 104.5 MHz)
 	// Input MLHCK (209 MHz max)
@@ -1431,7 +1431,7 @@ unsigned long stm32mp1_get_pclk1_freq(void)
 
 // Internal APB2 clock frequency
 // 104.5 MHz max
-unsigned long stm32mp1_get_pclk2_freq(void)
+uint_fast32_t stm32mp1_get_pclk2_freq(void)
 {
 	// APB2 Output divisor (output max 104.5 MHz)
 	// Input MLHCK (209 MHz max)
@@ -1453,7 +1453,7 @@ unsigned long stm32mp1_get_pclk2_freq(void)
 
 // Internal APB3 clock frequency
 // 104.5 MHz max
-unsigned long stm32mp1_get_pclk3_freq(void)
+uint_fast32_t stm32mp1_get_pclk3_freq(void)
 {
 	// APB3 Output divisor (output max 104.5 MHz)
 	// Input MLHCK (209 MHz max)
@@ -1475,7 +1475,7 @@ unsigned long stm32mp1_get_pclk3_freq(void)
 
 // Internal APB4 clock frequency
 // 133 MHz max
-unsigned long stm32mp1_get_pclk4_freq(void)
+uint_fast32_t stm32mp1_get_pclk4_freq(void)
 {
 	// APB4 Output divisor
 	//	0x0: aclk (default after reset)
@@ -1495,7 +1495,7 @@ unsigned long stm32mp1_get_pclk4_freq(void)
 
 // Internal APB5 clock frequency
 // 133 MHz max
-unsigned long stm32mp1_get_pclk5_freq(void)
+uint_fast32_t stm32mp1_get_pclk5_freq(void)
 {
 	// APB5 Output divisor
 	//	0x0: aclk (default after reset)
@@ -1513,7 +1513,7 @@ unsigned long stm32mp1_get_pclk5_freq(void)
 	}
 }
 
-unsigned long stm32mp1_get_usbphy_freq(void)
+uint_fast32_t stm32mp1_get_usbphy_freq(void)
 {
 	//	0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_r_ck clock selected as kernel peripheral clock
@@ -1531,7 +1531,7 @@ unsigned long stm32mp1_get_usbphy_freq(void)
 	}
 }
 
-unsigned long stm32mp1_get_qspi_freq(void)
+uint_fast32_t stm32mp1_get_qspi_freq(void)
 {
 	//	0x0: aclk clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll3_r_ck clock selected as kernel peripheral clock
@@ -1551,7 +1551,7 @@ unsigned long stm32mp1_get_qspi_freq(void)
 	}
 }
 
-unsigned long stm32mp1_get_usbotg_freq(void)
+uint_fast32_t stm32mp1_get_usbotg_freq(void)
 {
 	//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
 	//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
@@ -1566,7 +1566,7 @@ unsigned long stm32mp1_get_usbotg_freq(void)
 	}
 }
 
-unsigned long stm32mp1_uart1_get_freq(void)
+uint_fast32_t stm32mp1_uart1_get_freq(void)
 {
 	//	0x0: pclk5 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll3_q_ck clock selected as kernel peripheral clock
@@ -1593,7 +1593,7 @@ unsigned long stm32mp1_uart1_get_freq(void)
 	}
 }
 
-unsigned long stm32mp1_uart2_4_get_freq(void)
+uint_fast32_t stm32mp1_uart2_4_get_freq(void)
 {
 	// UART2, UART4
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
@@ -1619,7 +1619,7 @@ unsigned long stm32mp1_uart2_4_get_freq(void)
 
 }
 
-unsigned long stm32mp1_uart3_5_get_freq(void)
+uint_fast32_t stm32mp1_uart3_5_get_freq(void)
 {
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -1644,7 +1644,7 @@ unsigned long stm32mp1_uart3_5_get_freq(void)
 	}
 }
 
-unsigned long stm32mp1_uart7_8_get_freq(void)
+uint_fast32_t stm32mp1_uart7_8_get_freq(void)
 {
 	// UART7, UART8
 	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
@@ -1670,7 +1670,7 @@ unsigned long stm32mp1_uart7_8_get_freq(void)
 
 }
 
-unsigned long stm32mp1_sdmmc1_2_get_freq(void)
+uint_fast32_t stm32mp1_sdmmc1_2_get_freq(void)
 {
 	// SDMMC1
 	//	0x0: hclk6 clock selected as kernel peripheral clock
@@ -1697,7 +1697,7 @@ unsigned long stm32mp1_sdmmc1_2_get_freq(void)
 // timg1_ck: TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM12, TIM13 and TIM14
 // kernel: Ftimg1_ck 209 MHz max
 // bus: Fpclk1 104.5 MHz max
-unsigned long stm32mp1_get_timg1_freq(void)
+uint_fast32_t stm32mp1_get_timg1_freq(void)
 {
 	const unsigned g1 = (RCC->TIMG1PRER & RCC_TIMG1PRER_TIMG1PRE_Msk) != 0;
 	switch ((RCC->APB1DIVR & RCC_APB1DIVR_APB1DIV_Msk) >> RCC_APB1DIVR_APB1DIV_Pos)
@@ -1715,7 +1715,7 @@ unsigned long stm32mp1_get_timg1_freq(void)
 // timg2_ck: TIM1, TIM8, TIM15, TIM16, and TIM17
 // kernel: Ftimg1_ck 209 MHz max
 // bus: Fpclk2 104.5 MHz max
-unsigned long stm32mp1_get_timg2_freq(void)
+uint_fast32_t stm32mp1_get_timg2_freq(void)
 {
 	const unsigned g2 = (RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRE_Msk) != 0;
 	switch ((RCC->APB2DIVR & RCC_APB2DIVR_APB2DIV_Msk) >> RCC_APB2DIVR_APB2DIV_Pos)
@@ -1729,7 +1729,7 @@ unsigned long stm32mp1_get_timg2_freq(void)
 	}
 }
 
-unsigned long stm32mp1_get_spi1_freq(void)
+uint_fast32_t stm32mp1_get_spi1_freq(void)
 {
 	//	0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll3_q_ck clock selected as kernel peripheral clock
@@ -1750,7 +1750,7 @@ unsigned long stm32mp1_get_spi1_freq(void)
 	}
 }
 
-unsigned long stm32mp1_get_adc_freq(void)
+uint_fast32_t stm32mp1_get_adc_freq(void)
 {
 	//	0x0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
 	//	0x1: per_ck clock selected as kernel peripheral clock
@@ -2064,7 +2064,7 @@ void allwnrt113_pll_initialize(void)
 	set_module(& CCU->PLL_AUDIO1_CTRL_REG);
 }
 
-unsigned long allwnrt113_get_hosc_freq(void)
+uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
 #if defined WITHCPUXTAL
 	return WITHCPUXTAL;
@@ -2084,7 +2084,7 @@ uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN;
 }
 
-unsigned long allwnrt113_get_pll_ddr_freq(void)
+uint_fast32_t allwnrt113_get_pll_ddr_freq(void)
 {
 	// PLL_DDR = InputFreq*N/M1/M0
 	const uint_fast32_t reg = CCU->PLL_DDR_CTRL_REG;
@@ -2102,21 +2102,21 @@ uint_fast64_t allwnrt113_get_pll_peri_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN;
 }
 
-unsigned long allwnrt113_get_peripll2x_freq(void)
+uint_fast32_t allwnrt113_get_peripll2x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
 	const uint_fast32_t pllP0 = 1 + ((reg >> 16) & 0x07);
 	return allwnrt113_get_pll_peri_freq() / pllP0;
 }
 
-unsigned long allwnrt113_get_pll_peri_800M_freq(void)
+uint_fast32_t allwnrt113_get_pll_peri_800M_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
 	const uint_fast32_t pllP1 = 1 + ((reg >> 20) & 0x07);
 	return allwnrt113_get_pll_peri_freq() / pllP1;
 }
 
-unsigned long allwnrt113_get_video0_x4_freq(void)
+uint_fast32_t allwnrt113_get_video0_x4_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VIDEO0_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2125,7 +2125,7 @@ unsigned long allwnrt113_get_video0_x4_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN / pllM0;
 }
 
-unsigned long allwnrt113_get_video1_x4_freq(void)
+uint_fast32_t allwnrt113_get_video1_x4_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VIDEO1_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2134,7 +2134,7 @@ unsigned long allwnrt113_get_video1_x4_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN / pllM0;
 }
 
-unsigned long allwnrt113_get_ve_freq(void)
+uint_fast32_t allwnrt113_get_ve_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VE_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2145,7 +2145,7 @@ unsigned long allwnrt113_get_ve_freq(void)
 
 //	By default, PLL_AUDIO0(1X) is 24.5714 MHz, and PLL_AUDIO0(4X) is 98.2856 MHz.
 
-unsigned long allwnrt113_get_audio0pll4x_freq(void)
+uint_fast32_t allwnrt113_get_audio0pll4x_freq(void)
 {
 	//PLL_AUDIO0(4X) = 24MHz*N/M1/M0/P
 	const uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
@@ -2161,7 +2161,7 @@ unsigned long allwnrt113_get_audio0pll4x_freq(void)
 // PLL_AUDIO1(DIV2) is 1536 MHz, and
 // PLL_AUDIO1(DIV5) is 614.4 MHz (24.576 MHz*25).
 
-unsigned long allwnrt113_get_audio1pll1x_freq(void)
+uint_fast32_t allwnrt113_get_audio1pll1x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2170,51 +2170,51 @@ unsigned long allwnrt113_get_audio1pll1x_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM0 * pllN / pllM1;
 }
 
-unsigned long allwnrt113_get_audio0pll1x_freq(void)
+uint_fast32_t allwnrt113_get_audio0pll1x_freq(void)
 {
 	return allwnrt113_get_audio0pll4x_freq() / 4;
 }
 
-unsigned long allwnrt113_get_audio1pll_div2_freq(void)
+uint_fast32_t allwnrt113_get_audio1pll_div2_freq(void)
 {
 	return allwnrt113_get_audio1pll1x_freq() / 2;
 }
 
-unsigned long allwnrt113_get_audio1pll_div5_freq(void)
+uint_fast32_t allwnrt113_get_audio1pll_div5_freq(void)
 {
 	return allwnrt113_get_audio1pll1x_freq() / 5;
 }
 
-unsigned long allwnrt113_get_video0_x2_freq(void)
+uint_fast32_t allwnrt113_get_video0_x2_freq(void)
 {
 	return allwnrt113_get_video0_x4_freq() / 2;
 }
 
-unsigned long allwnrt113_get_video0_x1_freq(void)
+uint_fast32_t allwnrt113_get_video0_x1_freq(void)
 {
 	return allwnrt113_get_video0_x4_freq() / 4;
 }
 
-unsigned long allwnrt113_get_video1_x2_freq(void)
+uint_fast32_t allwnrt113_get_video1_x2_freq(void)
 {
 	return allwnrt113_get_video1_x4_freq() / 2;
 }
 
-unsigned long allwnrt113_get_video1_x1_freq(void)
+uint_fast32_t allwnrt113_get_video1_x1_freq(void)
 {
 	return allwnrt113_get_video1_x4_freq() / 4;
 }
 
-unsigned long allwnrt113_get_peripll1x_freq(void)
+uint_fast32_t allwnrt113_get_peripll1x_freq(void)
 {
 	return allwnrt113_get_peripll2x_freq() / 2;
 }
 
-unsigned long allwnrt113_get_dram_freq(void)
+uint_fast32_t allwnrt113_get_dram_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DRAM_CLK_REG;
-	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const unsigned long M = 1uL + ((clkreg >> 0) & 0x03);
+	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x03);
 	switch ((clkreg >> 24) & 0x03)	/* DRAM_CLK_SEL */
 	{
 	default:
@@ -2229,12 +2229,12 @@ unsigned long allwnrt113_get_dram_freq(void)
 	}
 }
 
-unsigned long allwnrt113_get_i2s1_freq(void)
+uint_fast32_t allwnrt113_get_i2s1_freq(void)
 {
-	const unsigned long pgdiv = 1;// 5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
+	const uint_fast32_t pgdiv = 1;// 5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->I2S1_CLK_REG;
-	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
+	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x1F);
 	// I2S/PCM1_CLK = Clock Source/M/N
 	switch ((clkreg >> 24) & 0x03)	/* I2S1_CLK_SEL */
 	{
@@ -2250,12 +2250,12 @@ unsigned long allwnrt113_get_i2s1_freq(void)
 	}
 }
 
-unsigned long allwnrt113_get_i2s2_freq(void)
+uint_fast32_t allwnrt113_get_i2s2_freq(void)
 {
-	const unsigned long pgdiv = 1;//5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
+	const uint_fast32_t pgdiv = 1;//5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->I2S2_CLK_REG;
-	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
+	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x1F);
 	// I2S/PCM2_CLK = Clock Source/M/N
 	switch ((clkreg >> 24) & 0x03)	/* I2S2_CLK_SEL */
 	{
@@ -2271,11 +2271,11 @@ unsigned long allwnrt113_get_i2s2_freq(void)
 	}
 }
 
-unsigned long allwnrt113_get_psi_freq(void)
+uint_fast32_t allwnrt113_get_psi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->PSI_CLK_REG;
-	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const unsigned long M = 1uL + ((clkreg >> 0) & 0x03);
+	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x03);
 	switch ((clkreg >> 24) & 0x03)
 	{
 	default:
@@ -2294,11 +2294,11 @@ unsigned long allwnrt113_get_psi_freq(void)
 	}
 }
 
-unsigned long allwnrt113_get_apb0_freq(void)
+uint_fast32_t allwnrt113_get_apb0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB0_CLK_REG;
-	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
+	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x1F);
 	switch ((clkreg >> 24) & 0x03)
 	{
 	default:
@@ -2317,11 +2317,11 @@ unsigned long allwnrt113_get_apb0_freq(void)
 	}
 }
 
-unsigned long allwnrt113_get_apb1_freq(void)
+uint_fast32_t allwnrt113_get_apb1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB1_CLK_REG;
-	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
+	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x1F);
 	switch ((clkreg >> 24) & 0x03)
 	{
 	default:
@@ -2340,27 +2340,27 @@ unsigned long allwnrt113_get_apb1_freq(void)
 	}
 }
 
-unsigned long allwnrt113_get_ahb_freq(void)
+uint_fast32_t allwnrt113_get_ahb_freq(void)
 {
 	return allwnrt113_get_hosc_freq();
 }
 
-unsigned long allwnrt113_get_usart_freq(void)
+uint_fast32_t allwnrt113_get_usart_freq(void)
 {
 	return allwnrt113_get_apb1_freq();
 }
 
-unsigned long allwnrt113_get_twi_freq(void)
+uint_fast32_t allwnrt113_get_twi_freq(void)
 {
 	return allwnrt113_get_apb1_freq();
 }
 
-unsigned long allwnrt113_get_spi0_freq(void)
+uint_fast32_t allwnrt113_get_spi0_freq(void)
 {
-	const unsigned long pgdiv = 1; //= 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
+	const uint_fast32_t pgdiv = 1; //= 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
-//	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
-//	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
+//	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+//	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x07)
 	{
 	default:
@@ -2382,12 +2382,12 @@ unsigned long allwnrt113_get_spi0_freq(void)
 	}
 }
 
-unsigned long allwnrt113_get_spi1_freq(void)
+uint_fast32_t allwnrt113_get_spi1_freq(void)
 {
-	const unsigned long pgdiv = 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
+	const uint_fast32_t pgdiv = 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
-	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x07)
 	{
 	default:
@@ -2409,12 +2409,12 @@ unsigned long allwnrt113_get_spi1_freq(void)
 	}
 }
 
-unsigned long allwnrt113_get_arm_freq(void)
+uint_fast32_t allwnrt113_get_arm_freq(void)
 {
 	return allwnrt113_get_pll_cpu_freq();
 }
 
-unsigned long allwnrt113_get_pl1_timer_freq(void)
+uint_fast32_t allwnrt113_get_pl1_timer_freq(void)
 {
 	return allwnrt113_get_ahb_freq();
 }
@@ -4284,7 +4284,7 @@ static void program_use_xtal(
 	)
 {
 	// бит CKGR_MOR_MOSCSEL - источник MAINCK это кварцевый генератор
-	const unsigned long mor = PMC->CKGR_MOR & ~ CKGR_MOR_KEY_Msk;
+	const uint_fast32_t mor = PMC->CKGR_MOR & ~ CKGR_MOR_KEY_Msk;
 	if (((mor & CKGR_MOR_MOSCSEL) != 0) == (useXtalFlag != 0))
 		return;		// переключение не требуется
 
@@ -4315,20 +4315,20 @@ static void program_enable_RC_12MHz(void)
 
 static void program_disable_rc(void)
 {
-	const unsigned long mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCRCEN);
+	const uint_fast32_t mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCRCEN);
     PMC->CKGR_MOR = mor | CKGR_MOR_KEY(0x37);
 }
 
 static void program_disable_xtal(void)
 {
-	const unsigned long mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCXTEN);
+	const uint_fast32_t mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCXTEN);
     PMC->CKGR_MOR = mor | CKGR_MOR_KEY(0x37);
 }
 
 // Enable high-frequency XTAL oscillator
 static void program_enable_xtal(void)
 {
-	const unsigned long mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCXTST_Msk);
+	const uint_fast32_t mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCXTST_Msk);
 	if ((mor & CKGR_MOR_MOSCXTEN) != 0)
 		return;		// кварцевый генератор уже запущен
 
@@ -5585,7 +5585,7 @@ static void program_use_xtal(
 	)
 {
 	// бит CKGR_MOR_MOSCSEL - источник MAINCK это кварцевый генератор
-	const unsigned long mor = PMC->CKGR_MOR & ~ CKGR_MOR_KEY_Msk;
+	const uint_fast32_t mor = PMC->CKGR_MOR & ~ CKGR_MOR_KEY_Msk;
 	if (((mor & CKGR_MOR_MOSCSEL) != 0) == (useXtalFlag != 0))
 		return;		// переключение не требуется
 
@@ -5616,20 +5616,20 @@ static void program_enable_RC_12MHz(void)
 
 static void program_disable_rc(void)
 {
-	const unsigned long mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCRCEN);
+	const uint_fast32_t mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCRCEN);
     PMC->CKGR_MOR = mor | CKGR_MOR_KEY_PASSWD;
 }
 
 static void program_disable_xtal(void)
 {
-	const unsigned long mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCXTEN);
+	const uint_fast32_t mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCXTEN);
     PMC->CKGR_MOR = mor | CKGR_MOR_KEY_PASSWD;
 }
 
 // Enable high-frequency XTAL oscillator
 static void program_enable_xtal(void)
 {
-	const unsigned long mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCXTST_Msk);
+	const uint_fast32_t mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCXTST_Msk);
 	if ((mor & CKGR_MOR_MOSCXTEN) != 0)
 		return;		// кварцевый генератор уже запущен
 
@@ -6993,7 +6993,7 @@ void SystemCoreClockUpdate(void)
 		};
 
 #elif CPUSTYLE_STM32MP1
-		//const unsigned long ifreq = stm32mp1_get_timg2_freq();	// TIM17 это timg2
+		//const uint_fast32_t ifreq = stm32mp1_get_timg2_freq();	// TIM17 это timg2
 		//PRINTF("hardware_dcdc_calcdivider: ifreq=%lu\n", ifreq);
 		// сейчас делит 32 MHz
 		/* fsync=32000000, wflwidth=96000 */
@@ -7152,7 +7152,7 @@ void SystemCoreClockUpdate(void)
 
 	void hardware_dcdcfreq_tim17_ch1_initialize(void)
 	{
-		const unsigned long ifreq = stm32mp1_get_timg2_freq();	// TIM17 это timg2
+		const uint_fast32_t ifreq = stm32mp1_get_timg2_freq();	// TIM17 это timg2
 		PRINTF("hardware_dcdcfreq_tim17_ch1_initialize: ifreq=%lu\n", ifreq);
 		/* TIM17_CH1 */
 		RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_TIM17EN;   //подаем тактирование на TIM17
@@ -7344,7 +7344,7 @@ void hardware_adc_initialize(void)
 	unsigned prescal;
 	calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), ATSAM3S_ADC_PRESCAL_WIDTH, ATSAM3S_ADC_PRESCAL_TAPS, & prescal, 1);
 	// Settling time to change offset and gain
-	const unsigned long tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// Количество наносекунд в периоде частоты ADC_FREQ
+	const uint_fast32_t tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// Количество наносекунд в периоде частоты ADC_FREQ
     const unsigned int tracktime = ulmin(16, ulmax(1, (205 + (tADCnS / 2)) / (tADCnS == 0 ? 1 : tADCnS)));
 
 	ADC->ADC_MR =
@@ -7383,7 +7383,7 @@ void hardware_adc_initialize(void)
 
 	unsigned prescal;
 	calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), AT91SAM7_ADC_PRESCAL_WIDTH, AT91SAM7_ADC_PRESCAL_TAPS, & prescal, 1);
-	const unsigned long tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// Количество наносекунд в периоде частоты ADC_FREQ
+	const uint_fast32_t tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// Количество наносекунд в периоде частоты ADC_FREQ
     const unsigned int shtm = ulmin(15, ulmax(0, (600 + (tADCnS / 2)) / (tADCnS == 0 ? 1 : tADCnS)));
 
 	AT91C_BASE_ADC->ADC_MR =
