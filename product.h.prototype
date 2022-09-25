@@ -260,17 +260,17 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB
 #elif CPUSTYPE_T113 && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwt128s3_ctlstyle_storch_v9a.h"	// rmainunit_sv9e.pcb Allwinner t113-s2, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+	#include <boards/arm_allwt113s3_ctlstyle_storch_v9a.h>	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt128s3_cpustyle_storch_v9a.h"	// rmainunit_sv9e.pcb Allwinner t113-s2, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
-#elif CPUSTYPE_D1S && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwt128s3_ctlstyle_mango_pi.h"
+	#include <boards/arm_allwt113s3_cpustyle_storch_v9a.h>	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+#elif CPUSTYPE_F133 && CTLSTYLE_STORCH_V7 && 1
+	#include <boards/arm_allw_f133_ctlstyle_mango_pi.h>
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt128s3_cpustyle_mango_pi.h"
-#elif CPUSTYPE_T113 && CTLSTYLE_STORCH_V7
-	#include "boards/arm_allwt128s3_ctlstyle_mango_pi.h"
+	#include <boards/arm_allw_f133_cpustyle_mango_pi.h>
+#elif CPUSTYPE_T113 && CTLSTYLE_STORCH_V7 && 1
+	#include <boards/arm_allwt113s3_ctlstyle_mango_pi.h>
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt128s3_cpustyle_mango_pi.h"
+	#include <boards/arm_allwt113s3_cpustyle_mango_pi.h>
 #elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7
 	#include "boards/arm_xczu2_ctlstyle_alinx_axu2cga.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
