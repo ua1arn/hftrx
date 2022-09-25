@@ -260,7 +260,9 @@ typedef enum IRQn
 
 // CPUX related
 // Address (It is for Cluster CPU)
-#define CPU_SUBSYS_CTRL_BASE	0x08100000
+#define RISC_CFG_BASE 			0x06010000
+#define RISC_PLIC_BASE 			0x10000000
+
 #define TimeStamp_STA_BASE		0x08110000
 #define TimeStamp_CTRL_BASE		0x08120000
 #define IDC_BASE				0x08130000
@@ -302,19 +304,47 @@ typedef enum IRQn
 
 /* Generated section start */
 /*
- * @brief CPU_SUBSYS_CTRL
+ * @brief RISC_CFG
  */
-/*!< CPU_SUBSYS_CTRL Controller Interface */
-typedef struct CPU_SUBSYS_CTRL_Type
+/*!< RISC_CFG Controller Interface */
+typedef struct RISC_CFG_Type
 {
-	__IO uint32_t GENER_CTRL_REG0;                       /*!< Offset 0x000 General Control Register0 */
-	uint32_t reserved_0x004 [0x0002];
-	__IO uint32_t GIC_JTAG_RST_CTRL;                     /*!< Offset 0x00C GIC and JTAG Reset Control Register */
-	__IO uint32_t C0_INT_EN;                             /*!< Offset 0x010 Cluster0 Interrupt Enable Control Register */
-	__IO uint32_t RQ_FIQ_STATUS;                         /*!< Offset 0x014 IRQ/FIQ Status Register */
-	__IO uint32_t GENER_CTRL_REG2;                       /*!< Offset 0x018 General Control Register2 */
-	__IO uint32_t DBG_STATE;                             /*!< Offset 0x01C Debug State Register */
-} CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x020 */
+	uint32_t reserved_0x000;
+	__IO uint32_t RISC_STA_ADD0_REG;                     /*!< Offset 0x004 RISC Start Address0 Register */
+	__IO uint32_t RISC_STA_ADD1_REG;                     /*!< Offset 0x008 RISC Start Address1 Register */
+	uint32_t reserved_0x00C;
+	__IO uint32_t RF1P_CFG_REG;                          /*!< Offset 0x010 RF1P Configuration Register */
+	uint32_t reserved_0x014 [0x0002];
+	__IO uint32_t ROM_CFG_REG;                           /*!< Offset 0x01C ROM Configuration Register */
+	__IO uint32_t WAKEUP_EN_REG;                         /*!< Offset 0x020 Wakeup Enable Register */
+	__IO uint32_t WAKEUP_MASK0_REG;                      /*!< Offset 0x024 Wakeup Mask0 Register */
+	__IO uint32_t WAKEUP_MASK1_REG;                      /*!< Offset 0x028 Wakeup Mask1 Register */
+	__IO uint32_t WAKEUP_MASK2_REG;                      /*!< Offset 0x02C Wakeup Mask2 Register */
+	__IO uint32_t WAKEUP_MASK3_REG;                      /*!< Offset 0x030 Wakeup Mask3 Register */
+	__IO uint32_t WAKEUP_MASK4_REG;                      /*!< Offset 0x034 Wakeup Mask4 Register */
+	uint32_t reserved_0x038 [0x0002];
+	__IO uint32_t TS_TMODE_SEL_REG;                      /*!< Offset 0x040 Timestamp Test Mode Select Register */
+	__IO uint32_t SRAM_ADDR_TWIST_REG;                   /*!< Offset 0x044 SRAM Address Twist Register */
+	__IO uint32_t WORK_MODE_REG;                         /*!< Offset 0x048 Work Mode Register */
+	uint32_t reserved_0x04C;
+	__IO uint32_t RETITE_PC0_REG;                        /*!< Offset 0x050 Retire PC0 Register */
+	__IO uint32_t RETITE_PC1_REG;                        /*!< Offset 0x054 Retire PC1 Register */
+	uint32_t reserved_0x058 [0x0002];
+	__IO uint32_t IRQ_MODE0_REG;                         /*!< Offset 0x060 IRQ Mode0 Register */
+	__IO uint32_t IRQ_MODE1_REG;                         /*!< Offset 0x064 IRQ Mode1 Register */
+	__IO uint32_t IRQ_MODE2_REG;                         /*!< Offset 0x068 IRQ Mode2 Register */
+	__IO uint32_t IRQ_MODE3_REG;                         /*!< Offset 0x06C IRQ Mode3 Register */
+	__IO uint32_t IRQ_MODE4_REG;                         /*!< Offset 0x070 IRQ Mode4 Register */
+	uint32_t reserved_0x074 [0x0024];
+	__IO uint32_t RISC_AXI_PMU_CTRL;                     /*!< Offset 0x104 RISC AXI PMU Control Register */
+	__IO uint32_t RISC_AXI_PMU_PRD;                      /*!< Offset 0x108 RISC AXI PMU Period Register */
+	__IO uint32_t RISC_AXI_PMU_LAT_RD;                   /*!< Offset 0x10C RISC AXI PMU Read Latency Register */
+	__IO uint32_t RISC_AXI_PMU_LAT_WR;                   /*!< Offset 0x110 RISC AXI PMU Write Latency Register */
+	__IO uint32_t RISC_AXI_PMU_REQ_RD;                   /*!< Offset 0x114 RISC AXI PMU Read Request Register */
+	__IO uint32_t RISC_AXI_PMU_REQ_WR;                   /*!< Offset 0x118 RISC AXI PMU Write Request Register */
+	__IO uint32_t RISC_AXI_PMU_BW_RD;                    /*!< Offset 0x11C RISC AXI PMU Read Bandwidth Register */
+	__IO uint32_t RISC_AXI_PMU_BW_WR;                    /*!< Offset 0x120 RISC AXI PMU Write Bandwidth Register */
+} RISC_CFG_TypeDef; /* size of structure = 0x124 */
 /*
  * @brief CCU
  */
@@ -517,6 +547,20 @@ typedef struct CCU_Type
 	__IO uint32_t PCLK_FAN_REG;                          /*!< Offset 0xF38 PCLK FANOUT Register */
 	__IO uint32_t CCU_FAN_REG;                           /*!< Offset 0xF3C CCU FANOUT Register */
 } CCU_TypeDef; /* size of structure = 0xF40 */
+/*
+ * @brief RISC_PLIC
+ */
+/*!< RISC_PLIC Controller Interface */
+typedef struct RISC_PLIC_Type
+{
+	__IO uint32_t PLIC_PRIO_REGn [0x100];                /*!< Offset 0x000 (0<n<256) PLIC Priority Register n */
+	uint32_t reserved_0x400 [0x0300];
+	__IO uint32_t PLIC_IP_REGn [0x00A];                  /*!< Offset 0x1000 (0≤n<9) PLIC Interrupt Pending Register n */
+	uint32_t reserved_0x1028 [0x03F6];
+	__IO uint32_t PLIC_MIE_REGn [0x00A];                 /*!< Offset 0x2000 (0≤n<9) PLIC Machine Mode Interrupt Enable Register n */
+	uint32_t reserved_0x2028 [0x0016];
+	__IO uint32_t PLIC_SIE_REGn [0x00A];                 /*!< Offset 0x2080 (0≤n<9) PLIC Superuser Mode Interrupt Enable Register n */
+} RISC_PLIC_TypeDef; /* size of structure = 0x20A8 */
 /*
  * @brief SYS_CFG
  */
@@ -1420,19 +1464,7 @@ typedef struct CAN_Type
 	__IO uint32_t CAN_ACPC;                              /*!< Offset 0x028 CAN acceptance code 0 register(reset mode) */
 	__IO uint32_t CAN_ACPM;                              /*!< Offset 0x02C CAN acceptance mask 0 register(reset mode) */
 	uint32_t reserved_0x030 [0x0004];
-	__IO uint32_t CAN_TRBUF0;                            /*!< Offset 0x040 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF1;                            /*!< Offset 0x044 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF2;                            /*!< Offset 0x048 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF3;                            /*!< Offset 0x04C CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF4;                            /*!< Offset 0x050 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF5;                            /*!< Offset 0x054 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF6;                            /*!< Offset 0x058 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF7;                            /*!< Offset 0x05C CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF8;                            /*!< Offset 0x060 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF9;                            /*!< Offset 0x064 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF10;                           /*!< Offset 0x068 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF11;                           /*!< Offset 0x06C CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF12;                           /*!< Offset 0x070 CAN TX/RX message buffer 0 register */
+	__IO uint32_t CAN_TRBUF [0x00D];                     /*!< Offset 0x040 CAN TX/RX message buffer N (n=0..12) register */
 	uint32_t reserved_0x074 [0x0043];
 	__IO uint32_t CAN_RBUF_RBACK [0x030];                /*!< Offset 0x180 CAN transmit buffer for read back register (0x0180 ~0x1b0) */
 	uint32_t reserved_0x240 [0x0030];
@@ -2161,35 +2193,6 @@ typedef struct TVD_Type
 	__IO uint32_t TVD_STATUS6;                           /*!< Offset 0x194 TVD DEBUG STATUS Register6 */
 } TVD_TypeDef; /* size of structure = 0x198 */
 /*
- * @brief C0_CPUX_CFG
- */
-/*!< C0_CPUX_CFG Controller Interface */
-typedef struct C0_CPUX_CFG_Type
-{
-	__IO uint32_t C0_RST_CTRL;                           /*!< Offset 0x000 Cluster 0 Reset Control Register */
-	uint32_t reserved_0x004 [0x0003];
-	__IO uint32_t C0_CTRL_REG0;                          /*!< Offset 0x010 Cluster 0 Control Register0 */
-	__IO uint32_t C0_CTRL_REG1;                          /*!< Offset 0x014 Cluster 0 Control Register1 */
-	__IO uint32_t C0_CTRL_REG2;                          /*!< Offset 0x018 Cluster 0 Control Register2 */
-	uint32_t reserved_0x01C [0x0002];
-	__IO uint32_t CACHE_CFG_REG;                         /*!< Offset 0x024 Cache Configuration Register */
-	uint32_t reserved_0x028 [0x0016];
-	__IO uint32_t C0_CPU_STATUS;                         /*!< Offset 0x080 Cluster 0 CPU Status Register */
-	__IO uint32_t L2_STATUS_REG;                         /*!< Offset 0x084 Cluster 0 L2 Status Register */
-	uint32_t reserved_0x088 [0x000E];
-	__IO uint32_t DBG_REG0;                              /*!< Offset 0x0C0 Cluster 0 Debug Control Register0 */
-	__IO uint32_t DBG_REG1;                              /*!< Offset 0x0C4 Cluster 0 Debug Control Register1 */
-	uint32_t reserved_0x0C8 [0x0002];
-	__IO uint32_t AXI_MNT_CTRL_REG;                      /*!< Offset 0x0D0 AXI Monitor Control Register */
-	__IO uint32_t AXI_MNT_PRD_REG;                       /*!< Offset 0x0D4 AXI Monitor Period Register */
-	__IO uint32_t AXI_MNT_RLTCY_REG;                     /*!< Offset 0x0D8 AXI Monitor Read Total Latency Register */
-	__IO uint32_t AXI_MNT_WLTCY_REG;                     /*!< Offset 0x0DC AXI Monitor Write Total Latency Register */
-	__IO uint32_t AXI_MNT_RREQ_REG;                      /*!< Offset 0x0E0 AXI Monitor Read Request Times Register */
-	__IO uint32_t AXI_MNT_WREQ_REG;                      /*!< Offset 0x0E4 AXI Monitor Write Request Times Register */
-	__IO uint32_t AXI_MNT_RBD_REG;                       /*!< Offset 0x0E8 AXI Monitor Read Bandwidth Register */
-	__IO uint32_t AXI_MNT_WBD_REG;                       /*!< Offset 0x0EC AXI Monitor Write Bandwidth Register */
-} C0_CPUX_CFG_TypeDef; /* size of structure = 0x0F0 */
-/*
  * @brief DDRPHYC
  */
 /*!< DDRPHYC Controller Interface */
@@ -2492,6 +2495,8 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define GPIOINTF   (& GPIOBLOCK->GPIO_INTS [5])		/*!< \brief GPIOINTF Interface register set access pointer */
 #define GPIOINTG   (& GPIOBLOCK->GPIO_INTS [6])		/*!< \brief GPIOINTG Interface register set access pointer */
 
+#define RISC_CFG 	((RISC_CFG_TypeDef *) RISC_CFG_BASE)	/*!< \brief RISC_CFG Interface register set access pointer */
+#define RISC_PLIC 	((RISC_PLIC_TypeDef *) RISC_PLIC_BASE)	/*!< \brief RISC_PLIC Interface register set access pointer */
 #define SYS_CFG 	((SYS_CFG_TypeDef *) SYS_CFG_BASE)	/*!< \brief SYS_CFG Interface register set access pointer */
 #define SMHC0      	((SMHC_TypeDef *) SMHC0_BASE)		/*!< \brief SMHC0 Interface register set access pointer */
 #define SMHC1      	((SMHC_TypeDef *) SMHC1_BASE)		/*!< \brief SMHC1 Interface register set access pointer */
@@ -2553,11 +2558,10 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 
 #define RTC				((RTC_TypeDef *) RTC_BASE)					/*!< \brief RTC Interface register set access pointer */
 
-#define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)			/*!< \brief CPU_SUBSYS_CTRL Interface register set access pointer */
 //#define TimeStamp_STA	((TimeStamp_STA_TypeDef *) TimeStamp_STA_BASE)
 //#define TimeStamp_CTRL	((TimeStamp_CTRL_TypeDef *) TimeStamp_CTRL_BASE)
 //#define IDC				(IDC_TypeDef *) IDC_BASE)
-#define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)			/*!< \brief C0_CPUX_CFG Interface register set access pointer */
+//#define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)			/*!< \brief C0_CPUX_CFG Interface register set access pointer */
 //#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)			/*!< \brief C0_CPUX_MBIST Interface register set access pointer */
 #define DDRPHYC			((DDRPHYC_TypeDef *) DDRPHYC_BASE)				/*!< \brief DDRPHYC Interface register set access pointer */
 #define MSI_MEMC		((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)			/*!< \brief MSI_MEMC Interface register set access pointer */
