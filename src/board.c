@@ -8205,7 +8205,7 @@ void hardware_txpath_set(
 
 	#endif
 
-#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA || CPUSTYLE_RISCV
 	// если у процессора есть возможность ставить/сбрасывать биты в регистрах состояния вывода по отдельности,
 	// кроме этого - порт пограммируется на работу в режиме "открытый сток".
 	#if defined (TXPATH_BIT_GATE)

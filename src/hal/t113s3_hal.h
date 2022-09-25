@@ -1,5 +1,5 @@
 /*
- * allwnr_t113s3_hal.h
+ * t113s3_hal.h
  *
  *  Created on: 16 мар. 2022 г.
  *      Author: User

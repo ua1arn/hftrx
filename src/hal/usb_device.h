@@ -57,7 +57,7 @@
 
 	#include "zynq7000_hal.h"
 
-#elif CPUSTYPE_T113
+#elif CPUSTYPE_T113 || CPUSTYPE_D1S
 
 	#include "t113s3_hal.h"
 

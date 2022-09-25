@@ -9,7 +9,7 @@
 
 #include "hardware.h"
 
-#if CPUSTYPE_T113
+#if CPUSTYPE_T113 || CPUSTYPE_D1S
 
 #include "board.h"
 #include "formats.h"
@@ -58,4 +58,4 @@ HAL_StatusTypeDef HAL_Init(void)
 	  return HAL_OK;
 }
 
-#endif /* CPUSTYPE_T113 */
+#endif /* CPUSTYPE_T113 || CPUSTYPE_D1S */

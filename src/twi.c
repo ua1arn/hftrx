@@ -60,7 +60,7 @@
 
 #endif /* WITHTWISW */
 
-#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA || CPUSTYLE_RISCV
 
 	#define SET_TWCK() do { TARGET_TWI_TWCK_PORT_S(TARGET_TWI_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 1
 	#define CLR_TWCK() do { TARGET_TWI_TWCK_PORT_C(TARGET_TWI_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 0

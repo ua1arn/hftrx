@@ -8032,7 +8032,7 @@ void hardware_adc_initialize(void)
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
 
-#elif CPUSTYPE_T113
+#elif CPUSTYPE_T113 || CPUSTYPE_D1S
 
 	//#warning GPADC need to implement at CPUSTYPE_T113
 
@@ -8761,7 +8761,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		1 * (1U << 0) |	// Enables the interrupts when counting starts.
 		0;
 
-#elif CPUSTYPE_T113
+#elif CPUSTYPE_T113 || CPUSTYPE_D1S
 
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(24000000uL, ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);

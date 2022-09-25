@@ -450,11 +450,10 @@ extern "C" {
 	#define ARM_FAST_ALLOW_TABLES	1
 
 
-#elif __riscv
+#elif CPUSTYPE_D1S
 
 	// RISC-V processor Allwinner D1 XuanTie C906
 
-	#define CORE_CA7	1
 	#define CPUSTYLE_RISCV		1		/* архитектура процессора RISC-V */
 
 	#include "aw_d1s.h"
@@ -541,7 +540,6 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_NEON 1
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */

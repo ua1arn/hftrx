@@ -2162,6 +2162,7 @@ static void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum)
 		dWindow [iCnt] = fir_design_window(iCnt, iCoefNum, BOARD_WTYPE_FILTERS);
 	}
 }
+#if (__ARM_FP & 0x08) && 1
 
 // подготовка буфера с оконной функцией
 static void fir_design_windowbuffL(double *dWindow, int iCoefNum)
@@ -2173,6 +2174,7 @@ static void fir_design_windowbuffL(double *dWindow, int iCoefNum)
 		dWindow [iCnt] = fir_design_windowL(iCnt, iCoefNum, BOARD_WTYPE_FILTERS);
 	}
 }
+#endif
 
 // Масштабирование для симметричного фильтра
 static void fir_design_scale(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dScale)
@@ -2243,6 +2245,8 @@ static void fir_design_lowpass_freq_scaled(FLOAT_t * dCoeff, const FLOAT_t * dWi
 	//printdcoefs(dCoeff, iCoefNum, __LINE__, __FILE__);
 }
 
+#if (__ARM_FP & 0x08) && 1
+
 // с управлением крутизной скатов и нормированием усиления, с наложением окна
 static void fir_design_lowpass_freq_scaledL(double * dCoeff, const double * dWindow, int iCoefNum, int iCutHigh, double dGain)
 {
@@ -2250,6 +2254,7 @@ static void fir_design_lowpass_freq_scaledL(double * dCoeff, const double * dWin
 	fir_design_applaywindowL(dCoeff, dWindow, iCoefNum);
 	fir_design_scaleL(dCoeff, iCoefNum, dGain / testgain_float_DCL(dCoeff, iCoefNum));
 }
+#endif
 
 // Массив коэффициентов для несимметричного фильтра
 static void fir_design_bandpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutLow, int iCutHigh)
@@ -2287,6 +2292,7 @@ static void fir_design_integer_lowpass_scaled(int_fast32_t *lCoeff, const FLOAT_
 	fir_design_lowpass_freq_scaled(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 	fir_design_copy_integers(lCoeff, dCoeff, iCoefNum);
 }
+#if (__ARM_FP & 0x08) && 1
 
 // преобразование к целым
 static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoeff, int iCoefNum)
@@ -2308,6 +2314,7 @@ static void fir_design_integer_lowpass_scaledL(int_fast32_t *lCoeff, const doubl
 	fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 	fir_design_copy_integersL(lCoeff, dCoeff, iCoefNum);
 }
+#endif
 
 #endif /* WITHDSPEXTFIR */
 

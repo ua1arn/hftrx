@@ -9,7 +9,7 @@
 
 #include "hardware.h"
 
-#if CPUSTYPE_T113
+#if CPUSTYPE_T113 || CPUSTYPE_D1S
 
 #include "board.h"
 #include "audio.h"

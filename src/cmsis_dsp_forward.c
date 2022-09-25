@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if WITHINTEGRATEDDSP && CPUSTYLE_ARM
+#if WITHINTEGRATEDDSP
 
 	#include "BasicMathFunctions/BasicMathFunctions.c"
 	//#include "BayesFunctions/BayesFunctions.c"

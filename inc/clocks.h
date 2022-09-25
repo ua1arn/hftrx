@@ -375,7 +375,7 @@ calcdivider(
 		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1)	// FPGA0_CLK_CTRL
 	};
 
-#elif CPUSTYPE_T113
+#elif CPUSTYPE_T113 || CPUSTYPE_D1S
 	enum
 	{
 		ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1),

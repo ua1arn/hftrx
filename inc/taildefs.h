@@ -3,7 +3,7 @@
 #define TAILDEFS_H_INCLUDED
 
 
-#if WITHINTEGRATEDDSP && CPUSTYLE_ARM
+#if WITHINTEGRATEDDSP
 	#define ARM_MATH_LOOPUNROLL 1
 	#define DISABLEFLOAT16 1
 
@@ -492,7 +492,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 #endif /* CPUSTYLE_XC7Z */
 
-#if CPUSTYPE_T113
+#if CPUSTYPE_T113 || CPUSTYPE_D1S
 	// Bootloader parameters
 	#if WITHSDRAMHW
 		#define BOOTLOADER_RAMAREA DRAM_SPACE_BASE	/* адрес ОЗУ, куда перемещать application */
