@@ -3158,6 +3158,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 #elif CPUSTYLE_XCZU
 	#warning Implement for CPUSTYLE_XCZU
 
+#elif CPUSTYPE_D1S
+	#warning Implement for CPUSTYPE_D1S
+
 #else
 	#warning Undefined CPUSTYLE_XXX
 #endif

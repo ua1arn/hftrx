@@ -155,9 +155,9 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
-ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
-ASRC_BOOT += $(PRJROOT)/src/crt_CortexA.S
-ASRC_APP += $(ASRC_BOOT)
+#ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
+#ASRC_BOOT += $(PRJROOT)/src/crt_CortexA.S
+#ASRC_APP += $(ASRC_BOOT)
 
 VPATH = $(PRJROOT)
 

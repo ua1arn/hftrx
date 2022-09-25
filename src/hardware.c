@@ -2946,6 +2946,15 @@ void __attribute__((used)) Reset_Handler(void)
 }
 #endif /* defined(__aarch64__) */
 
+#if CPUSTYLE_RISCV
+uint32_t __Vectors [32];
+void __attribute__((used)) Reset_Handler(void)
+{
+	SystemInit();
+	main();
+}
+#endif /* CPUSTYLE_RISCV */
+
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {

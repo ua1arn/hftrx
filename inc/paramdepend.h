@@ -987,20 +987,6 @@ extern "C" {
 			#define global_disableIRQ() do { \
 			} while (0)
 
-		#elif defined(__riscv)
-
-			// разрешены все
-			#define system_enableIRQ() do { \
-				} while (0)
-			// разрешены только realtime
-			#define system_disableIRQ() do { \
-				} while (0)
-
-			#define global_enableIRQ() do { \
-				} while (0)
-			#define global_disableIRQ() do { \
-			} while (0)
-
 		#else /* defined(__aarch64__) */
 
 			// разрешены все
@@ -1043,6 +1029,18 @@ extern "C" {
 		} while (0)
 
 	#endif /* WITHNESTEDINTERRUPTS */
+
+#elif CPUSTYLE_RISCV
+
+	#if WITHNESTEDINTERRUPTS
+	#else /* WITHNESTEDINTERRUPTS */
+	#endif /* WITHNESTEDINTERRUPTS */
+
+	#define system_enableIRQ() do {   } while (0)
+	#define system_disableIRQ() do {   } while (0)
+
+	#define global_enableIRQ() do { system_enableIRQ(); } while (0)
+	#define global_disableIRQ() do { system_disableIRQ(); } while (0)
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
