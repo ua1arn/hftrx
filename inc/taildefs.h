@@ -228,7 +228,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
-#elif CPUSTYPE_D1S
+#elif CPUSTYPE_F133
 	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
@@ -492,7 +492,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 #endif /* CPUSTYLE_XC7Z */
 
-#if CPUSTYPE_T113 || CPUSTYPE_D1S
+#if CPUSTYPE_T113 || CPUSTYPE_F133
 	// Bootloader parameters
 	#if WITHSDRAMHW
 		#define BOOTLOADER_RAMAREA DRAM_SPACE_BASE	/* адрес ОЗУ, куда перемещать application */

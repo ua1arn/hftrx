@@ -775,7 +775,7 @@ extern "C" {
 	} GPIOMode_TypeDef;
 
 
-#elif CPUSTYPE_D1S
+#elif CPUSTYPE_F133
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений

@@ -576,7 +576,7 @@ void arm_hardware_pio11_onchangeinterrupt(unsigned long ipins, int edge, uint32_
 
 void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority, void (* vector)(void));
 
-#if CPUSTYPE_T113 || CPUSTYPE_D1S
+#if CPUSTYPE_T113 || CPUSTYPE_F133
 	/*!< Atomic port state change */
 	void gpioX_setstate(
 		GPIO_TypeDef * gpio,

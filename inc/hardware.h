@@ -450,14 +450,14 @@ extern "C" {
 	#define ARM_FAST_ALLOW_TABLES	1
 
 
-#elif CPUSTYPE_D1S
+#elif CPUSTYPE_F133
 
 	// RISC-V processor Allwinner D1 XuanTie C906
 
 	#define CPUSTYLE_RISCV		1		/* архитектура процессора RISC-V */
 
-	#include "aw_d1s.h"
-	#include "irq_ctrl.h"
+	#include "allwnr_f133.h"
+	//#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32

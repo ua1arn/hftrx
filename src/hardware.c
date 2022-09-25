@@ -1465,7 +1465,7 @@ r7s721_adi_irq_handler(void)
 	}
 }
 
-#elif CPUSTYPE_T113 || CPUSTYPE_D1S
+#elif CPUSTYPE_T113 || CPUSTYPE_F133
 	// ADC IRQ handler
 	//#warning Unhandled CPUSTYPE_T113
 
@@ -1573,7 +1573,7 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_STM32F0XX
 	#warning: #warning Must be implemented for this CPU
 
-#elif CPUSTYPE_T113 || CPUSTYPE_D1S
+#elif CPUSTYPE_T113 || CPUSTYPE_F133
 
 	//#warning Unhandled CPUSTYPE_T113
 

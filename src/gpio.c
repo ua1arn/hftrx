@@ -778,7 +778,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
 }
 
-#elif CPUSTYPE_T113 || CPUSTYPE_D1S
+#elif CPUSTYPE_T113 || CPUSTYPE_F133
 
 // DRV: 0x00 = level0, 0x01 = level1, 0x02 - level2, 0x03 - level3
 // PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down

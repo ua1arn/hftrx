@@ -3158,8 +3158,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 #elif CPUSTYLE_XCZU
 	#warning Implement for CPUSTYLE_XCZU
 
-#elif CPUSTYPE_D1S
-	#warning Implement for CPUSTYPE_D1S
+#elif CPUSTYPE_F133
+	#warning Implement for CPUSTYPE_F133
 
 #else
 	#warning Undefined CPUSTYLE_XXX
@@ -8035,7 +8035,7 @@ void hardware_adc_initialize(void)
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
 
-#elif CPUSTYPE_T113 || CPUSTYPE_D1S
+#elif CPUSTYPE_T113 || CPUSTYPE_F133
 
 	//#warning GPADC need to implement at CPUSTYPE_T113
 
@@ -8653,7 +8653,7 @@ hardware_elkey_timer_initialize(void)
 
 	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
-#elif CPUSTYPE_D1S
+#elif CPUSTYPE_F133
 
 //	TIMER->TMR0_CTRL_REG = 0;
 //
@@ -8764,7 +8764,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		1 * (1U << 0) |	// Enables the interrupts when counting starts.
 		0;
 
-#elif CPUSTYPE_T113 || CPUSTYPE_D1S
+#elif CPUSTYPE_T113 || CPUSTYPE_F133
 
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(24000000uL, ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);

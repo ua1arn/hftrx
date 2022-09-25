@@ -3389,7 +3389,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #endif /* WITHSAI1HW */
 
-#elif CPUSTYPE_T113 || CPUSTYPE_D1S
+#elif CPUSTYPE_T113 || CPUSTYPE_F133
 
 
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0uL : (1u << ((ch) * 4)))
@@ -5191,9 +5191,9 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 		"sai2-fpga spectrum for WFM"
 	};
 
-#elif CPUSTYPE_D1S
+#elif CPUSTYPE_F133
 
-	#warning Codecs not defined for CPUSTYPE_D1S
+	#warning Codecs not defined for CPUSTYPE_F133
 
 
 #elif CPUSTYPE_T113

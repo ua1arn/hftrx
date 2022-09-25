@@ -1,14 +1,11 @@
 ﻿/*
- * allwnr_t13s3.h
- *
- *  Created on: 31 мая 2022 г.
- *      Author: User
+ * allwnr_f133.h
  *
  * The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
  */
 
-#ifndef ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
-#define ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
+#ifndef ARCH_ALLWNR_F133_ALLWNR_T13S3_H_
+#define ARCH_ALLWNR_F133_ALLWNR_T13S3_H_
 
 /**
  * @brief Allwinner T128-S3 Interrupt Number Definition, according to the selected device
@@ -246,7 +243,7 @@ typedef enum IRQn
 #define __IO volatile
 
 //#include "core_ca.h"
-#include <arch/aw_d1s/system_aw_d1s.h>
+#include <arch/aw_d1s/system_allwnr_f133.h>
 
 
 /* Generated section start */
@@ -2732,4 +2729,4 @@ __attribute__((always_inline)) static inline uint32_t __ROR(uint32_t op1, uint32
   return (op1 >> op2) | (op1 << (32U - op2));
 }
 
-#endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
+#endif /* ARCH_ALLWNR_F133_ALLWNR_T13S3_H_ */

@@ -35,7 +35,7 @@ LDSCRIPT_APP = ./aw_d1s_app.ld
 ARCHDIR = $(PRJROOT)/arch/aw_d1s
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYPE_D1S"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYPE_F133"=1 -D"EGL_STATIC_LIBRARY"=1
 #UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
