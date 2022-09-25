@@ -388,7 +388,7 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
 			cdcXbuffinlevel [offset] = 0;
 #else
-			if (cdcXbuffin [offset] != 0)
+			if (cdcXbuffinlevel [offset] != 0)
 			{
 				usbd_cdc_zlp_pending [offset] = cdcXbuffinlevel [offset] == VIRTUAL_COM_PORT_IN_DATA_SIZE;
 				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
