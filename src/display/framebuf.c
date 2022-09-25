@@ -248,7 +248,7 @@ void arm_hardware_mdma_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 }
 
-#elif WITHMDMAHW & CPUSTYPE_T113
+#elif WITHMDMAHW & (CPUSTYPE_T113 || CPUSTYPE_F133)
 
 /* Использование G2D для формирования изображений */
 // https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_driver.c
@@ -732,9 +732,9 @@ hwacc_fillrect_u8(
 
 	mdma_startandwait();
 
-#elif WITHMDMAHW && (CPUSTYPE_T113)
+#elif WITHMDMAHW && (CPUSTYPE_T113 || CPUSTYPE_F133)
 	/* Использование G2D для формирования изображений */
-	#warning Implement for CPUSTYPE_T113
+	#warning Implement for (CPUSTYPE_T113 || CPUSTYPE_F133)
 
 #else /* WITHMDMAHW */
 	// программная реализация
@@ -901,7 +901,7 @@ hwacc_fillrect_u16(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && (CPUSTYPE_T113)
+#elif WITHMDMAHW && (CPUSTYPE_T113 || CPUSTYPE_F133)
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
@@ -1105,9 +1105,9 @@ hwacc_fillrect_u24(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && (CPUSTYPE_T113)
+#elif WITHMDMAHW && (CPUSTYPE_T113 || CPUSTYPE_F133)
 	/* Использование G2D для формирования изображений */
-	#warinig Implement for CPUSTYPE_T113
+	#warinig Implement for (CPUSTYPE_T113 || CPUSTYPE_F133)
 	const unsigned stride = GXADJ(dx);
 	(void) G2D;
 
@@ -1247,7 +1247,7 @@ hwacc_fillrect_u32(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && (CPUSTYPE_T113)
+#elif WITHMDMAHW && (CPUSTYPE_T113 || CPUSTYPE_F133)
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)

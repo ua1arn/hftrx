@@ -1789,7 +1789,7 @@ unsigned long hardware_get_spi_freq(void)
 #define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
 
-#elif CPUSTYPE_T113
+#elif CPUSTYPE_T113 || CPUSTYPE_F133
 
 
 void set_pll_cpux_axi(unsigned n)

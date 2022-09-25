@@ -1034,6 +1034,11 @@ extern "C" {
 
 	#if WITHNESTEDINTERRUPTS
 	#else /* WITHNESTEDINTERRUPTS */
+
+		#define ARM_OVERREALTIME_PRIORITY	(0)
+		#define ARM_REALTIME_PRIORITY	(0)
+		#define ARM_SYSTEM_PRIORITY	(0)
+
 	#endif /* WITHNESTEDINTERRUPTS */
 
 	#define system_enableIRQ() do {   } while (0)

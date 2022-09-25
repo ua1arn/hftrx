@@ -1634,7 +1634,7 @@ uint32_t hardware_get_random(void)
 }
 
 
-#if CPUSTYLE_ARM || CPUSTYPE_TMS320F2833X
+#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYPE_TMS320F2833X
 
 // количество циклов на микросекунду
 static unsigned long
@@ -1696,6 +1696,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYPE_T113
+	// калибровано для 800 МГц процессора
+	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYPE_F133
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #else

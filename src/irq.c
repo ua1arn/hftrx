@@ -1471,7 +1471,7 @@ static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const 
 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
-#if CPUSTYLE_ARM
+#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
@@ -1644,6 +1644,8 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 
 	VERIFY(IRQ_Enable(int_id) == 0);
 
+#elif CPUSTYLE_RISCV
+
 #else /* CPUSTYLE_STM32MP1 */
 
 	NVIC_DisableIRQ(int_id);
@@ -1674,6 +1676,8 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 		arm_hardware_populate(int_id);
 	#endif /* WITHSMPSYSTEM */
 
+#elif CPUSTYLE_RISCV
+
 #else /* CPUSTYLE_STM32MP1 */
 
 	NVIC_DisableIRQ(int_id);
@@ -1699,7 +1703,7 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);
 }
 
-#endif /* CPUSTYLE_ARM */
+#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 
 // Вызывается из main
 void cpu_initialize(void)

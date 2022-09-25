@@ -31,7 +31,7 @@
 #define USB_DEFAULT_BLOCK_SIZE 512
 
 static
-DSTATUS USB_Initialize (
+DRESULT USB_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
 	)
 {
@@ -53,7 +53,7 @@ DSTATUS USB_Initialize (
 
 
 static
-DSTATUS USB_Status (
+DRESULT USB_Status (
 	BYTE lun		/* Physical drive nmuber (0..) */
 	)
 {

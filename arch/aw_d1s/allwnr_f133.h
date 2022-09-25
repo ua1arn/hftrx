@@ -2638,6 +2638,11 @@ typedef enum
 #endif /* USE_HAL_DRIVER */
 
 
+__attribute__((always_inline)) static inline void __DMB(void)
+{
+  //__asm volatile ("dmb 0xF":::"memory");
+}
+
 /**
   \brief   Signed Saturate
   \details Saturates a signed value.
