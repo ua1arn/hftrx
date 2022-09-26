@@ -2447,10 +2447,11 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define GPIOINTF   (& GPIOBLOCK->GPIO_INTS [5])		/*!< \brief GPIOINTF Interface register set access pointer */
 #define GPIOINTG   (& GPIOBLOCK->GPIO_INTS [6])		/*!< \brief GPIOINTG Interface register set access pointer */
 
-#define RISC_WDG 	((RISC_CFG_TypeDef *) RISC_CFG_BASE)	/*!< \brief RISC_CFG Interface register set access pointer */
+#define RISC_CFG 	((RISC_CFG_TypeDef *) RISC_CFG_BASE)	/*!< \brief RISC_CFG Interface register set access pointer */
 #define RISC_WDG 	((RISC_WDG_TypeDef *) RISC_WDG_BASE)	/*!< \brief RISC_WDG Interface register set access pointer */
-#define RISC_TIMESTAMP 	((RISC_WDG_TypeDef *) RISC_WDG_BASE)	/*!< \brief RISC_WDG Interface register set access pointer */
+#define RISC_TIMESTAMP 	((RISC_TIMESTAMP_TypeDef *) RISC_TIMESTAMP_BASE)	/*!< \brief RISC_TIMESTAMP Interface register set access pointer */
 #define RISC_PLIC 	((RISC_PLIC_TypeDef *) RISC_PLIC_BASE)	/*!< \brief RISC_PLIC Interface register set access pointer */
+#define RISC_CLINT 	((RISC_CLINT_TypeDef *) RISC_CLINT_BASE)	/*!< \brief RISC_PLIC Interface register set access pointer */
 
 #define SYS_CFG 	((SYS_CFG_TypeDef *) SYS_CFG_BASE)	/*!< \brief SYS_CFG Interface register set access pointer */
 #define SMHC0      	((SMHC_TypeDef *) SMHC0_BASE)		/*!< \brief SMHC0 Interface register set access pointer */
@@ -2522,8 +2523,8 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define MSI_MEMC		((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)			/*!< \brief MSI_MEMC Interface register set access pointer */
 #define SID				((SID_TypeDef *) SID_BASE)						/*!< \brief SID Interface register set access pointer */
 
-#define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
-#define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
+//#define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
+//#define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
 
 #define USBOTG0		((USBOTG_TypeDef *) USBOTG0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
 #define USBEHCI0	((USB_EHCI_CapabilityTypeDef *) (USBOTG0_BASE + 0x1000))	/*!< \brief USBEHCI0 Interface register set access pointer */

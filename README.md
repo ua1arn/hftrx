@@ -1,4 +1,4 @@
-https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/# Проект HF Dream Receiver (КВ приёмник мечты)
+# Проект HF Dream Receiver (КВ приёмник мечты)
 ## автор Гена Завидовский mgs2001@mail.ru UA1ARN
 
 Инструкция по подготовке среды и компиляции:
