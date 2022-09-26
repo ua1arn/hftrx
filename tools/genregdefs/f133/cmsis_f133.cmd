@@ -66,15 +66,13 @@ rem %CONVERTER% g2d.csv >> %OUTFILE%
 rem %CONVERTER% tv_full.csv >> %OUTFILE%
 rem %CONVERTER% tcon_tv.csv >> %OUTFILE%
 
-rem %CONVERTER% c0_cpux_cfg.csv >> %OUTFILE%
+%CONVERTER% c0_cpux_cfg.csv >> %OUTFILE%
 rem %CONVERTER% c0_cpux_mbist.csv >> %OUTFILE%
 %CONVERTER% ddrphyc.csv >> %OUTFILE%
 %CONVERTER% msi_memc.csv >> %OUTFILE%
 %CONVERTER% sid.csv >> %OUTFILE%
 
 %CONVERTER% usb_ehci_capability.csv >> %OUTFILE%
-
-%CONVERTER% spinlock.csv >> %OUTFILE%
 
 %CONVERTER% dmacchannels.csv >> %OUTFILE%
 %CONVERTER% dmac.csv >> %OUTFILE%

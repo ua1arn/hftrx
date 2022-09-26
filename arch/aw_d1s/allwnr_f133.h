@@ -104,11 +104,9 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 // SP0 (SYS domain)
 #define GPIO_BASE			0x02000000
-#define SPC_BASE			0x02000800
 #define PWM_BASE			0x02000C00
 #define CCU_BASE			0x02001000
 #define CIR_TX_BASE			0x02003000
-#define TZMA_BASE			0x02004000
 #define LEDC_BASE			0x02008000
 #define GPADC_BASE			0x02009000
 #define THS_BASE			0x02009400
@@ -134,21 +132,16 @@ typedef enum IRQn
 #define TWI2_BASE 	     	0x02502800
 #define TWI3_BASE 	     	0x02502C00
 
-#define CAN0_BASE  			0x02504000
-#define CAN1_BASE  			0x02504400
+//#define CAN0_BASE  			0x02504000
+//#define CAN1_BASE  			0x02504400
 
 // SH0 (SYS domain)
 #define SYS_CFG_BASE      	0x03000000
 #define DMAC_BASE      		0x03002000
-#define CPUX_MSGBOX_BASE	0x03003000
-#define SPINLOCK_BASE     	0x03005000
 #define	SID_BASE  		   	0x03006000	/* 4 KB Security ID (SID) */
-#define SMC_BASE     		0x03007000
 #define HSTIMER_BASE     	0x03008000
 #define DCU_BASE      		0x03010000	/* 64 KB */
-#define GIC_BASE      		0x03020000
 #define CE_NS_BASE      	0x03040000
-#define CE_S_BASE   	   	0x03040800
 #define CE_KEY_SRAM_BASE    0x03041000	/* 4 KB (only CE access) */
 #define MSI_MEMC_BASE	    0x03102000	/* 2 MB MSI and MEMC base address */
 #define DDRPHYC_BASE	 	0x03103000
@@ -181,8 +174,8 @@ typedef enum IRQn
 //	The status of the FEL pin is the bit[8] of the system configuration module (register: 0x03000024).
 //	Fast Boot register (0x07090120) in RTC module
 
-#define CPU_0700_0000_BASE	0x07000000
-#define CPU_0701_0000_BASE	0x07010000
+//#define CPU_0700_0000_BASE	0x07000000
+//#define CPU_0701_0000_BASE	0x07010000
 
 // VIDEO_IN_SYS related
 #define CSI_BASE 			0x05800000
@@ -196,22 +189,27 @@ typedef enum IRQn
 #define TVD_TOP_BASE 		0x05C00000
 #define TVD0_BASE 			0x05C01000
 
+// RISC_SYS Related (SYS Domain)
+#define RISC_BROM_BASE 			0x06000000	// RISC Core accesses the brom address: 0x00000000---0x0000FFFF
+#define RISC_CFG_BASE 			0x06010000
+#define RISC_WDG_BASE 			0x06011000
+#define RISC_TIMESTAMP_BASE 	0x06012000
+
 // APBS0 related
-#define CIR_RX_BASE			0x07040000
+#define CIR_RX_BASE				0x07040000
 
 // AHBS related
-#define RTC_BASE			0x07090000				/*!< (RTC         ) Base Address */
+#define RTC_BASE				0x07090000				/*!< (RTC         ) Base Address */
 
 // CPUX related
 // Address (It is for Cluster CPU)
-#define RISC_CFG_BASE 			0x06010000
-#define RISC_PLIC_BASE 			0x10000000
-
 #define TimeStamp_STA_BASE		0x08110000
 #define TimeStamp_CTRL_BASE		0x08120000
 #define IDC_BASE				0x08130000
 #define C0_CPUX_CFG_BASE		0x09010000
 #define C0_CPUX_MBIST_BASE		0x09020000	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
+
+#define RISC_PLIC_BASE 			0x10000000
 
 // DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 		0x40000000			/*!< (DRAM        ) Base Address - 2GB */
@@ -2137,6 +2135,35 @@ typedef struct TVD_Type
 	__IO uint32_t TVD_STATUS6;                           /*!< Offset 0x194 TVD DEBUG STATUS Register6 */
 } TVD_TypeDef; /* size of structure = 0x198 */
 /*
+ * @brief C0_CPUX_CFG
+ */
+/*!< C0_CPUX_CFG Controller Interface */
+typedef struct C0_CPUX_CFG_Type
+{
+	__IO uint32_t C0_RST_CTRL;                           /*!< Offset 0x000 Cluster 0 Reset Control Register */
+	uint32_t reserved_0x004 [0x0003];
+	__IO uint32_t C0_CTRL_REG0;                          /*!< Offset 0x010 Cluster 0 Control Register0 */
+	__IO uint32_t C0_CTRL_REG1;                          /*!< Offset 0x014 Cluster 0 Control Register1 */
+	__IO uint32_t C0_CTRL_REG2;                          /*!< Offset 0x018 Cluster 0 Control Register2 */
+	uint32_t reserved_0x01C [0x0002];
+	__IO uint32_t CACHE_CFG_REG;                         /*!< Offset 0x024 Cache Configuration Register */
+	uint32_t reserved_0x028 [0x0016];
+	__IO uint32_t C0_CPU_STATUS;                         /*!< Offset 0x080 Cluster 0 CPU Status Register */
+	__IO uint32_t L2_STATUS_REG;                         /*!< Offset 0x084 Cluster 0 L2 Status Register */
+	uint32_t reserved_0x088 [0x000E];
+	__IO uint32_t DBG_REG0;                              /*!< Offset 0x0C0 Cluster 0 Debug Control Register0 */
+	__IO uint32_t DBG_REG1;                              /*!< Offset 0x0C4 Cluster 0 Debug Control Register1 */
+	uint32_t reserved_0x0C8 [0x0002];
+	__IO uint32_t AXI_MNT_CTRL_REG;                      /*!< Offset 0x0D0 AXI Monitor Control Register */
+	__IO uint32_t AXI_MNT_PRD_REG;                       /*!< Offset 0x0D4 AXI Monitor Period Register */
+	__IO uint32_t AXI_MNT_RLTCY_REG;                     /*!< Offset 0x0D8 AXI Monitor Read Total Latency Register */
+	__IO uint32_t AXI_MNT_WLTCY_REG;                     /*!< Offset 0x0DC AXI Monitor Write Total Latency Register */
+	__IO uint32_t AXI_MNT_RREQ_REG;                      /*!< Offset 0x0E0 AXI Monitor Read Request Times Register */
+	__IO uint32_t AXI_MNT_WREQ_REG;                      /*!< Offset 0x0E4 AXI Monitor Write Request Times Register */
+	__IO uint32_t AXI_MNT_RBD_REG;                       /*!< Offset 0x0E8 AXI Monitor Read Bandwidth Register */
+	__IO uint32_t AXI_MNT_WBD_REG;                       /*!< Offset 0x0EC AXI Monitor Write Bandwidth Register */
+} C0_CPUX_CFG_TypeDef; /* size of structure = 0x0F0 */
+/*
  * @brief DDRPHYC
  */
 /*!< DDRPHYC Controller Interface */
@@ -2261,28 +2288,6 @@ typedef struct USB_EHCI_Capability_Type
 	__IO uint32_t PERIODICLISTBASE;                      /*!< Offset 0x024 EHCI Frame List Base Address Register */
 	__IO uint32_t ASYNCLISTADDR;                         /*!< Offset 0x028 EHCI Next Asynchronous List Address Register */
 } USB_EHCI_Capability_TypeDef; /* size of structure = 0x02C */
-/*
- * @brief SPINLOCK
- */
-/*!< SPINLOCK Controller Interface */
-typedef struct SPINLOCK_Type
-{
-	__IO uint32_t SPINLOCK_SYSTATUS_REG;                 /*!< Offset 0x000 Spinlock System Status Register */
-	uint32_t reserved_0x004 [0x0003];
-	__IO uint32_t SPINLOCK_STATUS_REG;                   /*!< Offset 0x010 Spinlock Status Register */
-	uint32_t reserved_0x014 [0x0003];
-	__IO uint32_t SPINLOCK_IRQ_EN_REG;                   /*!< Offset 0x020 Spinlock Interrupt Enable Register */
-	uint32_t reserved_0x024 [0x0007];
-	__IO uint32_t SPINLOCK_IRQ_STA_REG;                  /*!< Offset 0x040 Spinlock Interrupt Status Register */
-	uint32_t reserved_0x044 [0x000F];
-	__IO uint32_t SPINLOCK_LOCKID0_REG;                  /*!< Offset 0x080 Spinlock Lockid0 Register */
-	__IO uint32_t SPINLOCK_LOCKID1_REG;                  /*!< Offset 0x084 Spinlock Lockid1 Register */
-	__IO uint32_t SPINLOCK_LOCKID2_REG;                  /*!< Offset 0x088 Spinlock Lockid2 Register */
-	__IO uint32_t SPINLOCK_LOCKID3_REG;                  /*!< Offset 0x08C Spinlock Lockid3 Register */
-	__IO uint32_t SPINLOCK_LOCKID4_REG;                  /*!< Offset 0x090 Spinlock Lockid4 Register */
-	uint32_t reserved_0x094 [0x001B];
-	__IO uint32_t SPINLOCK_LOCK_REG [0x020];             /*!< Offset 0x100 Spinlock Register N (N = 0 to 31) */
-} SPINLOCK_TypeDef; /* size of structure = 0x180 */
 /*
  * @brief DMAC_CH
  */
