@@ -365,10 +365,10 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceDeInit(USBH_HandleTypeDef *phost)
     AUDIO_Handle->control.Pipe = 0U;     /* Reset the pipe as Free */
   }
 
-  if ((phost->pActiveClass->pData) != 0U)
+  if ((phost->pActiveClass->pData) != NULL)
   {
     //USBH_free(phost->pActiveClass->pData);
-    phost->pActiveClass->pData = 0U;
+    phost->pActiveClass->pData = NULL;
   }
   return USBH_OK ;
 }

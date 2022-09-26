@@ -49,8 +49,11 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 
 # The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
 
-CORE = -march=rv32gcv
-#CORE = -march=rv64gcv
+# see https://github.com/stfc-aeg/try-it-out/wiki/RiscV!
+# see https://www.sifive.com/blog/all-aboard-part-1-compiler-args
+
+CORE = -march=rv32gcv -mabi=ilp32
+#CORE = -march=rv64gcv -mabi=lp64
 #CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
 #CORE += -mfpu=neon-vfpv4

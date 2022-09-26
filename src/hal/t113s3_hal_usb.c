@@ -984,7 +984,7 @@ void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t dest_addr, uint
 {
 	uint8_t temp;
 	uint8_t saved;
-	uint32_t dest;
+	uintptr_t dest;
 	uint32_t i;
 
 	if (ep_no>USB_MAX_EP_NO)
@@ -1011,11 +1011,11 @@ void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t dest_addr, uint
 }
 
 
-void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t src_addr, uint32_t count)
+void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t count)
 {
 	uint8_t  temp;
 	uint8_t  saved;
-	uint32_t src;
+	uintptr_t src;
 	uint32_t i;
 
 	if (ep_no>USB_MAX_EP_NO)
@@ -1090,7 +1090,7 @@ static uint32_t usb_dev_get_buf_base(pusb_struct pusb, uint32_t buf_tag)
 *
 ************************************************************************************************************
 */
-static USB_RETVAL epx_out_handler_dev(PCD_HandleTypeDef *hpcd, uint32_t ep_no, uint32_t dst_addr, uint32_t byte_count, uint32_t ep_type)
+static USB_RETVAL epx_out_handler_dev(PCD_HandleTypeDef *hpcd, uint32_t ep_no, uintptr_t dst_addr, uint32_t byte_count, uint32_t ep_type)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	usb_device * const pdevice = & hpcd->awxx_device;
@@ -1362,7 +1362,7 @@ static USB_RETVAL epx_out_handler_dev(PCD_HandleTypeDef *hpcd, uint32_t ep_no, u
 *
 ************************************************************************************************************
 */
-static USB_RETVAL epx_in_handler_dev(PCD_HandleTypeDef *hpcd, uint32_t ep_no, uint32_t src_addr, uint32_t byte_count, uint32_t ep_type)
+static USB_RETVAL epx_in_handler_dev(PCD_HandleTypeDef *hpcd, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	usb_device * const pdevice = & hpcd->awxx_device;
@@ -1656,7 +1656,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 	  		}
 	  		do
 	  		{
-	  			ret = epx_out_handler_dev(hpcd, pdevice->bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
+	  			ret = epx_out_handler_dev(hpcd, pdevice->bo_ep_out, (uintptr_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
 	  		}
 	  		while(ret == USB_RETVAL_NOTCOMP);
 
@@ -1695,7 +1695,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 					pCSW->dCSWSig = USB_CSW_SIG;
 					pCSW->dCSWDataRes = 0;
 					pCSW->bCSWStatus = 0;
-					pdevice->bo_xfer_addr = (uint32_t)pCSW;
+					pdevice->bo_xfer_addr = (uintptr_t)pCSW;
 					pdevice->bo_xfer_residue = USB_CSW_LEN;
 					pdevice->bo_xfer_tranferred = 0;
 					fret = epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -1722,7 +1722,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 					pCSW->dCSWSig = USB_CSW_SIG;
 					pCSW->dCSWDataRes = 0;
 					pCSW->bCSWStatus = 0;
-					pdevice->bo_xfer_addr = (uint32_t)pCSW;
+					pdevice->bo_xfer_addr = (uintptr_t)pCSW;
 					pdevice->bo_xfer_residue = USB_CSW_LEN;
 					pdevice->bo_xfer_tranferred = 0;
 					fret = epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -1740,7 +1740,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 					pCSW->dCSWSig = USB_CSW_SIG;
 					pCSW->dCSWDataRes = 0;
 					pCSW->bCSWStatus = 0;
-					pdevice->bo_xfer_addr = (uint32_t)pCSW;
+					pdevice->bo_xfer_addr = (uintptr_t)pCSW;
 					pdevice->bo_xfer_residue = USB_CSW_LEN;
 					pdevice->bo_xfer_tranferred = 0;
 					fret = epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -1755,7 +1755,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 					}
 	  				break;
 	  			case 0x12://Inquiry
-	  				pdevice->bo_xfer_addr = (uint32_t)InquiryData;
+	  				pdevice->bo_xfer_addr = (uintptr_t)InquiryData;
 	  				pdevice->bo_xfer_residue = min(pCBW->dCBWDTL, 36);
 	  				pdevice->bo_xfer_tranferred = 0;
 	  				fret = epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -1791,7 +1791,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 						formatcap[6] = sec_cnt[0]>>8;
 						formatcap[7] = sec_cnt[0];
 
-						pdevice->bo_xfer_addr = (uint32_t)formatcap;
+						pdevice->bo_xfer_addr = (uintptr_t)formatcap;
 						pdevice->bo_xfer_residue = min(pCBW->dCBWDTL, 12);
 						pdevice->bo_xfer_tranferred = 0;
 						fret = epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -1826,7 +1826,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 						capacity[2] = sec_cnt[0]>>8;
 						capacity[3] = sec_cnt[0];
 
-						pdevice->bo_xfer_addr = (uint32_t)capacity;
+						pdevice->bo_xfer_addr = (uintptr_t)capacity;
 						pdevice->bo_xfer_residue = min(pCBW->dCBWDTL, 8);
 						pdevice->bo_xfer_tranferred = 0;
 						fret = epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -1871,7 +1871,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 							pCSW->dCSWSig = USB_CSW_SIG;
 							pCSW->dCSWDataRes = pCBW->dCBWDTL;
 							pCSW->bCSWStatus = 1;
-							pdevice->bo_xfer_addr = (uint32_t)pCSW;
+							pdevice->bo_xfer_addr = (uintptr_t)pCSW;
 							pdevice->bo_xfer_residue = USB_CSW_LEN;
 							pdevice->bo_xfer_tranferred = 0;
 							epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -1898,7 +1898,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 					}
 	  				break;
 	  			case 0x1A://Mode Sense(6)
-					pdevice->bo_xfer_addr = (uint32_t)SenseData;
+					pdevice->bo_xfer_addr = (uintptr_t)SenseData;
 					pdevice->bo_xfer_residue = min(pCBW->dCBWDTL, 4);
 					pdevice->bo_xfer_tranferred = 0;
 					fret = epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -1948,7 +1948,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 							pCSW->dCSWSig = USB_CSW_SIG;
 							pCSW->dCSWDataRes = pCBW->dCBWDTL;
 							pCSW->bCSWStatus = 1;
-							pdevice->bo_xfer_addr = (uint32_t)pCSW;
+							pdevice->bo_xfer_addr = (uintptr_t)pCSW;
 							pdevice->bo_xfer_residue = USB_CSW_LEN;
 							pdevice->bo_xfer_tranferred = 0;
 							epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -1962,7 +1962,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 						pCSW->dCSWSig = USB_CSW_SIG;
 						pCSW->dCSWDataRes = pCBW->dCBWDTL - pdevice->bo_xfer_tranferred;
 						pCSW->bCSWStatus = 0;
-						pdevice->bo_xfer_addr = (uint32_t)pCSW;
+						pdevice->bo_xfer_addr = (uintptr_t)pCSW;
 						pdevice->bo_xfer_residue = USB_CSW_LEN;
 						pdevice->bo_xfer_tranferred = 0;
 						fret = epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -2009,7 +2009,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 					pCSW->dCSWSig = USB_CSW_SIG;
 					pCSW->dCSWDataRes = pCBW->dCBWDTL;
 					pCSW->bCSWStatus = 1;
-					pdevice->bo_xfer_addr = (uint32_t)pCSW;
+					pdevice->bo_xfer_addr = (uintptr_t)pCSW;
 					pdevice->bo_xfer_residue = USB_CSW_LEN;
 					pdevice->bo_xfer_tranferred = 0;
 					epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -2025,7 +2025,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 				pCSW->dCSWSig = USB_CSW_SIG;
 				pCSW->dCSWDataRes = pCBW->dCBWDTL - pdevice->bo_xfer_tranferred;
 				pCSW->bCSWStatus = 0;
-				pdevice->bo_xfer_addr = (uint32_t)pCSW;
+				pdevice->bo_xfer_addr = (uintptr_t)pCSW;
 				pdevice->bo_xfer_residue = USB_CSW_LEN;
 				pdevice->bo_xfer_tranferred = 0;
 				epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -2047,7 +2047,7 @@ USB_RETVAL usb_dev_bulk_xfer(PCD_HandleTypeDef *hpcd)
 				pCSW->dCSWSig = USB_CSW_SIG;
 				pCSW->dCSWDataRes = pCBW->dCBWDTL - pdevice->bo_xfer_tranferred;
 				pCSW->bCSWStatus = 0;
-				pdevice->bo_xfer_addr = (uint32_t)pCSW;
+				pdevice->bo_xfer_addr = (uintptr_t)pCSW;
 				pdevice->bo_xfer_residue = USB_CSW_LEN;
 				pdevice->bo_xfer_tranferred = 0;
 				epx_in_handler_dev(hpcd, pdevice->bo_ep_in, pdevice->bo_xfer_addr, pdevice->bo_xfer_residue, USB_PRTCL_BULK);
@@ -2206,13 +2206,13 @@ static int32_t ep0_in_handler_dev(PCD_HandleTypeDef *hpcd, const uSetupPKG * ep0
 				{
 					case 0x01:              //Get Device Desc
 						pusb->ep0_maxpktsz = 64;
-						pusb->ep0_xfer_srcaddr = (uint32_t) DeviceDescrTbl [0].data;
+						pusb->ep0_xfer_srcaddr = (uintptr_t) DeviceDescrTbl [0].data;
 						pusb->ep0_xfer_residue = min(DeviceDescrTbl [0].size, ep0_setup->wLength);
 						break;
 					case 0x02:              //Get Configuration Desc
 						if (index < ARRAY_SIZE(ConfigDescrTbl) &&  ConfigDescrTbl [index].size != 0)
 						{
-							pusb->ep0_xfer_srcaddr = (uint32_t) ConfigDescrTbl [index].data;
+							pusb->ep0_xfer_srcaddr = (uintptr_t) ConfigDescrTbl [index].data;
 							pusb->ep0_xfer_residue = min(ConfigDescrTbl [index].size, ep0_setup->wLength);
 						}
 						else
@@ -2229,7 +2229,7 @@ static int32_t ep0_in_handler_dev(PCD_HandleTypeDef *hpcd, const uSetupPKG * ep0
 							// See OS_Desc_Intro.doc, Table 3 describes the OS string descriptor’s fields.
 							if (MsftStringDescr [0].data != NULL &&  MsftStringDescr [0].size != 0)
 							{
-								pusb->ep0_xfer_srcaddr = (uint32_t) MsftStringDescr [0].data;
+								pusb->ep0_xfer_srcaddr = (uintptr_t) MsftStringDescr [0].data;
 								pusb->ep0_xfer_residue = min(MsftStringDescr [0].size, ep0_setup->wLength);
 							}
 							else
@@ -2239,7 +2239,7 @@ static int32_t ep0_in_handler_dev(PCD_HandleTypeDef *hpcd, const uSetupPKG * ep0
 						}
 						else if (index < usbd_get_stringsdesc_count() &&  StringDescrTbl [index].size != 0)
 						{
-							pusb->ep0_xfer_srcaddr = (uint32_t) StringDescrTbl [index].data;
+							pusb->ep0_xfer_srcaddr = (uintptr_t) StringDescrTbl [index].data;
 							pusb->ep0_xfer_residue = min(StringDescrTbl [index].size, ep0_setup->wLength);
 						}
 						else
@@ -2259,7 +2259,7 @@ static int32_t ep0_in_handler_dev(PCD_HandleTypeDef *hpcd, const uSetupPKG * ep0
 					case 0x06:           //Get Device Qualifier
 						if (index < ARRAY_SIZE(DeviceQualifierTbl) &&  DeviceQualifierTbl [index].size != 0)
 						{
-							pusb->ep0_xfer_srcaddr = (uint32_t)DeviceQualifierTbl [index].data;
+							pusb->ep0_xfer_srcaddr = (uintptr_t)DeviceQualifierTbl [index].data;
 							pusb->ep0_xfer_residue = min(DeviceQualifierTbl [index].size, ep0_setup->wLength);
 						}
 						else
@@ -2274,7 +2274,7 @@ static int32_t ep0_in_handler_dev(PCD_HandleTypeDef *hpcd, const uSetupPKG * ep0
 					case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
 						if (pusb->speed == USB_SPEED_HS &&  index < ARRAY_SIZE(OtherSpeedConfigurationTbl) &&  OtherSpeedConfigurationTbl [index].size != 0)
 						{
-							pusb->ep0_xfer_srcaddr = (uint32_t) OtherSpeedConfigurationTbl [index].data;
+							pusb->ep0_xfer_srcaddr = (uintptr_t) OtherSpeedConfigurationTbl [index].data;
 							pusb->ep0_xfer_residue = min(OtherSpeedConfigurationTbl [index].size, ep0_setup->wLength);
 						}
 						break;
@@ -2375,7 +2375,7 @@ static int32_t ep0_out_handler_dev(PCD_HandleTypeDef *hpcd, const uSetupPKG * ep
 							PRINTF("usb_device: Test SE0_NAK Now...\n");
 							break;
 						case 0x0400:
-							usb_write_ep_fifo(pusb, 0, (uint32_t)TestPkt, 53);
+							usb_write_ep_fifo(pusb, 0, (uintptr_t)TestPkt, 53);
 							usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_TXPKTRDY);
 							usb_set_test_mode(pusb, 0x08);
 
@@ -2541,7 +2541,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 			if (ep0_count == 8)
 			{
 				//pusb->ep0_flag = 0;
-				usb_read_ep_fifo(pusb, 0, (uint32_t) hpcd->Setup, 8);
+				usb_read_ep_fifo(pusb, 0, (uintptr_t) hpcd->Setup, 8);
 
 				if (ep0_setup->bmRequest & 0x80) //in
 				{
@@ -3638,7 +3638,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 
   if (hpcd->Init.dma_enable == 1U)
   {
-    ep->dma_addr = (uint32_t)pBuf;
+    ep->dma_addr = (uintptr_t)pBuf;
   }
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
@@ -3651,7 +3651,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 		usb_struct * const pusb = & hpcd->awxx_usb;
 		usb_device * const pdevice = & hpcd->awxx_device;
 
-		pusb->ep0_xfer_srcaddr = (uint32_t) pBuf;
+		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
 		pusb->ep0_xfer_residue = len;
 
 	   	pusb->ep0_xfer_state = USB_EP0_DATA;
@@ -3693,7 +3693,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 
   if (hpcd->Init.dma_enable == 1U)
   {
-    ep->dma_addr = (uint32_t)pBuf;
+    ep->dma_addr = (uintptr_t)pBuf;
   }
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
@@ -3704,7 +3704,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 		usb_struct * const pusb = & hpcd->awxx_usb;
 		usb_device * const pdevice = & hpcd->awxx_device;
 
-		pusb->ep0_xfer_srcaddr = (uint32_t) pBuf;
+		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
 		pusb->ep0_xfer_residue = len;
 
 		uint32_t ep_save = usb_get_active_ep(pusb);

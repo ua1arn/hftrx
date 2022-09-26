@@ -66,7 +66,7 @@ typedef struct {
 	uint32_t eprx_prtcl[USB_MAX_EP_NO];
 	uint32_t eptx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
 	uint32_t eprx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-	uint32_t epx_xfer_addr;
+	uintptr_t epx_xfer_addr;
 	uint32_t epx_xfer_residue;
 	uint32_t epx_xfer_tranferred;
 	uint32_t epx_buf_tag;
@@ -80,11 +80,11 @@ typedef struct {
 	uint32_t bo_state;						//Bulk only device state
 	uint32_t bo_ep_in;
 	uint32_t bo_ep_out;
-	uint32_t bo_xfer_addr;				//Bulk only data address
+	uintptr_t bo_xfer_addr;				//Bulk only data address
 	uint32_t bo_xfer_residue;			//Bulk only data residue length
 	uint32_t bo_xfer_tranferred;  //Bulk only data transferred length
 
-	uint32_t bo_memory_base;
+	uintptr_t bo_memory_base;
 	uint32_t bo_capacity;
 	uint32_t bo_seccnt;
 	uint32_t bo_bufbase;

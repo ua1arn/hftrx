@@ -918,7 +918,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	// Устанавливаем сегмент в 0
 	//hc->opRegs->ctrlDsSegment = 0;
 	EHCIx->CTRLDSSEGMENT = cpu_to_le32(0);
-	EHCIx->USBSTS = ~ 0uL;	// Clear status
+	EHCIx->USBSTS = ~ cpu_to_le32(0);	// Clear status
 
 	// Expected results (STM32MP1):
 	//	1 HAL_EHCI_Init: PORTSC=00002000

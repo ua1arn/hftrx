@@ -230,7 +230,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 			}
 			break;
 		case 'p':	/* Pointer print.	*/
-			cp = uconvert((unsigned) u.pval, 16, s + TMP_S_SIZE, ucase);
+			cp = uconvert((uintptr_t) u.pval, 16, s + TMP_S_SIZE, ucase);
 			fillc = '0';
 			width = (sizeof (void *)) * 2;
 			break;
