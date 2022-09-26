@@ -8,8 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре STM32MP1xx
 // rmainunit_v5km7.pcb STM32MP1xx, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_ALLW_F133_CTLSTYLE_MANGO_PI_H_INCLUDED
-#define ARM_ALLW_F133_CTLSTYLE_MANGO_PI_H_INCLUDED 1
+#ifndef RISCV_ALLW_F133_CTLSTYLE_MANGO_PI_H_INCLUDED
+#define RISCV_ALLW_F133_CTLSTYLE_MANGO_PI_H_INCLUDED 1
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -691,4 +691,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_ALLW_F133_CTLSTYLE_MANGO_PI_H_INCLUDED */
+#endif /* RISCV_ALLW_F133_CTLSTYLE_MANGO_PI_H_INCLUDED */
