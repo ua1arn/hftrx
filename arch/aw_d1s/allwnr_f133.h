@@ -288,6 +288,22 @@ typedef struct RISC_CFG_Type
 	__IO uint32_t RISC_AXI_PMU_BW_WR;                    /*!< Offset 0x120 RISC AXI PMU Write Bandwidth Register */
 } RISC_CFG_TypeDef; /* size of structure = 0x124 */
 /*
+ * @brief RISC_WDG
+ */
+/*!< RISC_WDG Controller Interface */
+typedef struct RISC_WDG_Type
+{
+	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
+} RISC_WDG_TypeDef; /* size of structure = 0x004 */
+/*
+ * @brief RISC_TIMESTAMP
+ */
+/*!< RISC_TIMESTAMP Controller Interface */
+typedef struct RISC_TIMESTAMP_Type
+{
+	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
+} RISC_TIMESTAMP_TypeDef; /* size of structure = 0x004 */
+/*
  * @brief CCU
  */
 /*!< CCU Controller Interface */
@@ -375,11 +391,7 @@ typedef struct CCU_Type
 	__IO uint32_t VE_BGR_REG;                            /*!< Offset 0x69C VE Bus Gating Reset Register */
 	uint32_t reserved_0x6A0 [0x001B];
 	__IO uint32_t DMA_BGR_REG;                           /*!< Offset 0x70C DMA Bus Gating Reset Register */
-	uint32_t reserved_0x710 [0x0003];
-	__IO uint32_t MSGBOX_BGR_REG;                        /*!< Offset 0x71C MSGBOX Bus Gating Reset Register */
-	uint32_t reserved_0x720 [0x0003];
-	__IO uint32_t SPINLOCK_BGR_REG;                      /*!< Offset 0x72C SPINLOCK Bus Gating Reset Register */
-	uint32_t reserved_0x730 [0x0003];
+	uint32_t reserved_0x710 [0x000B];
 	__IO uint32_t HSTIMER_BGR_REG;                       /*!< Offset 0x73C HSTIMER Bus Gating Reset Register */
 	__IO uint32_t AVS_CLK_REG;                           /*!< Offset 0x740 AVS Clock Register */
 	uint32_t reserved_0x744 [0x0012];
@@ -474,21 +486,12 @@ typedef struct CCU_Type
 	__IO uint32_t TPADC_CLK_REG;                         /*!< Offset 0xC50 TPADC Clock Register */
 	uint32_t reserved_0xC54 [0x0002];
 	__IO uint32_t TPADC_BGR_REG;                         /*!< Offset 0xC5C TPADC Bus Gating Reset Register */
-	uint32_t reserved_0xC60 [0x0004];
-	__IO uint32_t DSP_CLK_REG;                           /*!< Offset 0xC70 DSP Clock Register */
-	uint32_t reserved_0xC74 [0x0002];
-	__IO uint32_t DSP_BGR_REG;                           /*!< Offset 0xC7C DSP Bus Gating Reset Register */
-	uint32_t reserved_0xC80 [0x00A1];
-	__IO uint32_t PLL_LOCK_DBG_CTRL_REG;                 /*!< Offset 0xF04 PLL Lock Debug Control Register */
-	__IO uint32_t FRE_DET_CTRL_REG;                      /*!< Offset 0xF08 Frequency Detect Control Register */
-	__IO uint32_t FRE_UP_LIM_REG;                        /*!< Offset 0xF0C Frequency Up Limit Register */
-	__IO uint32_t FRE_DOWN_LIM_REG;                      /*!< Offset 0xF10 Frequency Down Limit Register */
-	uint32_t reserved_0xF14 [0x0007];
-	__IO uint32_t CCU_FAN_GATE_REG;                      /*!< Offset 0xF30 CCU FANOUT CLOCK GATE Register */
-	__IO uint32_t CLK27M_FAN_REG;                        /*!< Offset 0xF34 CLK27M FANOUT Register */
-	__IO uint32_t PCLK_FAN_REG;                          /*!< Offset 0xF38 PCLK FANOUT Register */
-	__IO uint32_t CCU_FAN_REG;                           /*!< Offset 0xF3C CCU FANOUT Register */
-} CCU_TypeDef; /* size of structure = 0xF40 */
+	uint32_t reserved_0xC60 [0x0028];
+	__IO uint32_t RISC_CLK_REG;                          /*!< Offset 0xD00 RISC Clock Register */
+	__IO uint32_t RISC_GATING_REG;                       /*!< Offset 0xD04 RISC Gating Configuration Register */
+	uint32_t reserved_0xD08;
+	__IO uint32_t RISC_CFG_BGR_REG;                      /*!< Offset 0xD0C RISC_CFG Bus Gating Reset Register */
+} CCU_TypeDef; /* size of structure = 0xD10 */
 /*
  * @brief RISC_PLIC
  */
@@ -2444,8 +2447,11 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define GPIOINTF   (& GPIOBLOCK->GPIO_INTS [5])		/*!< \brief GPIOINTF Interface register set access pointer */
 #define GPIOINTG   (& GPIOBLOCK->GPIO_INTS [6])		/*!< \brief GPIOINTG Interface register set access pointer */
 
-#define RISC_CFG 	((RISC_CFG_TypeDef *) RISC_CFG_BASE)	/*!< \brief RISC_CFG Interface register set access pointer */
+#define RISC_WDG 	((RISC_CFG_TypeDef *) RISC_CFG_BASE)	/*!< \brief RISC_CFG Interface register set access pointer */
+#define RISC_WDG 	((RISC_WDG_TypeDef *) RISC_WDG_BASE)	/*!< \brief RISC_WDG Interface register set access pointer */
+#define RISC_TIMESTAMP 	((RISC_WDG_TypeDef *) RISC_WDG_BASE)	/*!< \brief RISC_WDG Interface register set access pointer */
 #define RISC_PLIC 	((RISC_PLIC_TypeDef *) RISC_PLIC_BASE)	/*!< \brief RISC_PLIC Interface register set access pointer */
+
 #define SYS_CFG 	((SYS_CFG_TypeDef *) SYS_CFG_BASE)	/*!< \brief SYS_CFG Interface register set access pointer */
 #define SMHC0      	((SMHC_TypeDef *) SMHC0_BASE)		/*!< \brief SMHC0 Interface register set access pointer */
 #define SMHC1      	((SMHC_TypeDef *) SMHC1_BASE)		/*!< \brief SMHC1 Interface register set access pointer */

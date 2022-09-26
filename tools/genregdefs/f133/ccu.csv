@@ -48,8 +48,6 @@ CE_BGR_REG; 0x068C; CE Bus Gating Reset Register
 VE_CLK_REG; 0x0690; VE Clock Register
 VE_BGR_REG; 0x069C; VE Bus Gating Reset Register
 DMA_BGR_REG; 0x070C; DMA Bus Gating Reset Register
-MSGBOX_BGR_REG; 0x071C; MSGBOX Bus Gating Reset Register
-SPINLOCK_BGR_REG; 0x072C; SPINLOCK Bus Gating Reset Register
 HSTIMER_BGR_REG; 0x073C; HSTIMER Bus Gating Reset Register
 AVS_CLK_REG; 0x0740; AVS Clock Register
 DBGSYS_BGR_REG; 0x078C; DBGSYS Bus Gating Reset Register
@@ -107,12 +105,14 @@ CSI_MASTER_CLK_REG; 0x0C08; CSI Master Clock Register
 CSI_BGR_REG; 0x0C1C; CSI Bus Gating Reset Register
 TPADC_CLK_REG; 0x0C50; TPADC Clock Register
 TPADC_BGR_REG; 0x0C5C; TPADC Bus Gating Reset Register
-DSP_CLK_REG; 0x0C70; DSP Clock Register
-DSP_BGR_REG; 0x0C7C; DSP Bus Gating Reset Register
-PLL_LOCK_DBG_CTRL_REG; 0x0F04; PLL Lock Debug Control Register
+RISC_CLK_REG; 0x0D00; RISC Clock Register
+RISC_GATING_REG; 0x0D04; RISC Gating Configuration Register
+RISC_CFG_BGR_REG; 0x0D0C; RISC_CFG Bus Gating Reset Register
+PLL_LOCK_DBG_CTRL_REG; 0x0F04 PLL Lock Debug Control Register
 FRE_DET_CTRL_REG; 0x0F08; Frequency Detect Control Register
 FRE_UP_LIM_REG; 0x0F0C; Frequency Up Limit Register
 FRE_DOWN_LIM_REG; 0x0F10; Frequency Down Limit Register
+RISC_RST_REG; 0x0F20; RISC LOCK RESET Register
 CCU_FAN_GATE_REG; 0x0F30; CCU FANOUT CLOCK GATE Register
 CLK27M_FAN_REG; 0x0F34; CLK27M FANOUT Register
 PCLK_FAN_REG; 0x0F38; PCLK FANOUT Register
