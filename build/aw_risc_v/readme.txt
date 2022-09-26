@@ -11,6 +11,6 @@ The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (s
 
 Загрузчик:
 Выполнить make clean, затем make bootloader
-Результатом работы является файл tc1_v3s_boot.hex и tc1_v3s_boot.alw32
+Результатом работы является файл tc1_aw_d1s_boot.hex и tc1_aw_d1s_boot.alw32
 Требуются изменения в product.h
 
