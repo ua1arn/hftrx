@@ -2255,7 +2255,7 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 // применяетмся после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
 {
-	//arm_hardware_invalidate(0x40000000, 64U * 1024 * 1024);
+	//arm_hardware_invalidate(DRAM_SPACE_BASE, DRAM_SPACE_SIZE);
 	asm volatile ("fence w,w" ::: "memory");
 }
 
