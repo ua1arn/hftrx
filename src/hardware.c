@@ -2220,11 +2220,66 @@ void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 #endif /* (__L2C_PRESENT == 1) */
 }
 
+#elif CPUSTYLE_RISCV
+
+// See https://github.com/xboot/xboot/blob/master/src/arch/riscv64/mach-f133/cache-c906.c
+
+// Сейчас в эту память будем читать по DMA
+
+void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
+{
+	if (dsize > 0)
+	{
+		register unsigned long baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
+
+		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
+			__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
+		__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
+	}
+}
+
+// Сейчас эта память будет записываться по DMA куда-то
+void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
+{
+	if (dsize > 0)
+	{
+		register unsigned long baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
+
+		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
+			__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
+		__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
+	}
+}
+
+// Записать содержимое кэша данных в память
+// применяетмся после начальной инициализации среды выполнния
+void arm_hardware_flush_all(void)
+{
+	//arm_hardware_invalidate(0x40000000, 64U * 1024 * 1024);
+	asm volatile ("fence w,w" ::: "memory");
+}
+
+// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
+{
+
+	if (dsize > 0)
+	{
+		register unsigned long baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
+
+		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
+		{
+			__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
+			__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
+		}
+		__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
+	}
+}
+
 #else
 
 // Заглушки
 // Сейчас в эту память будем читать по DMA
-// Используется только в startup
 void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 }
