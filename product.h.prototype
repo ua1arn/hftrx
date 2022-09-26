@@ -22,11 +22,11 @@
 #ifndef NIGHTBUILD
 
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
-//#define DEBUGSPEED 500000L
-#define DEBUGSPEED 115200L
-//#define DEFAULTDIALFREQ	12798340L
-//#define DEFAULTDIALFREQ	225000L
-//#define DEFAULTDIALFREQ	14021000L
+//#define DEBUGSPEED 500000
+#define DEBUGSPEED 115200
+//#define DEFAULTDIALFREQ	12798340
+//#define DEFAULTDIALFREQ	225000
+//#define DEFAULTDIALFREQ	14021000
 //#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собираем bootloader */
 
 // Современные конфигурации:
@@ -264,9 +264,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include <boards/arm_allwt113s3_cpustyle_storch_v9a.h>	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 #elif CPUSTYPE_F133 && CTLSTYLE_STORCH_V7 && 1
-	#include <boards/arm_allw_f133_ctlstyle_mango_pi.h>
+	#include <boards/riscv_allw_f133_ctlstyle_mango_pi.h>
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include <boards/arm_allw_f133_cpustyle_mango_pi.h>
+	#include <boards/riscv_allw_f133_cpustyle_mango_pi.h>
 #elif CPUSTYPE_T113 && CTLSTYLE_STORCH_V7 && 1
 	#include <boards/arm_allwt113s3_ctlstyle_mango_pi.h>
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

@@ -8,8 +8,8 @@
 
 // mango-pi board
 
-#ifndef ARM_ALLW_F133_CPUSTYLE_MANGO_PI_H_INCLUDED
-#define ARM_ALLW_F133_CPUSTYLE_MANGO_PI_H_INCLUDED 1
+#ifndef RISCV_ALLW_F133_CPUSTYLE_MANGO_PI_H_INCLUDED
+#define RISCV_ALLW_F133_CPUSTYLE_MANGO_PI_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1007,4 +1007,4 @@
 			/*USBD_EHCI_INITIALIZE(); */\
 		} while (0)
 
-#endif /* ARM_ALLW_F133_CPUSTYLE_MANGO_PI_H_INCLUDED */
+#endif /* RISCV_ALLW_F133_CPUSTYLE_MANGO_PI_H_INCLUDED */
