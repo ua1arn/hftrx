@@ -4227,7 +4227,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #endif	//  CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 
-#if CPUSTYPE_T113
+#if CPUSTYPE_T113 || CPUSTYPE_F133
 
 #include "spi.h"
 
@@ -4306,5 +4306,5 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	//PRINTF("arm_hardware_sdram_initialize done\n");
 	//local_delay_ms(1000);
 }
-#endif /* CPUSTYPE_T113 */
+#endif /* CPUSTYPE_T113 || CPUSTYPE_F133 */
 #endif /* WITHSDRAMHW */

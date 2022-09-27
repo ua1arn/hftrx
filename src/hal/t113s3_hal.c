@@ -48,7 +48,7 @@ const uint32_t uwTickFreq = 1000 / TICKS_FREQUENCY;
   *      implementations in user file.
   * @retval None
   */
-__WEAK void HAL_IncTick(void)
+void HAL_IncTick(void)
 {
   uwTick += (uint32_t)uwTickFreq;
 }

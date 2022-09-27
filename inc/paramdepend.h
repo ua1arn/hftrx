@@ -1033,16 +1033,21 @@ extern "C" {
 #elif CPUSTYLE_RISCV
 
 	#if WITHNESTEDINTERRUPTS
+
+		#define ARM_OVERREALTIME_PRIORITY	0
+		#define ARM_REALTIME_PRIORITY		0
+		#define ARM_SYSTEM_PRIORITY			0
+
 	#else /* WITHNESTEDINTERRUPTS */
 
-		#define ARM_OVERREALTIME_PRIORITY	(0)
-		#define ARM_REALTIME_PRIORITY	(0)
-		#define ARM_SYSTEM_PRIORITY	(0)
+		#define ARM_OVERREALTIME_PRIORITY	0
+		#define ARM_REALTIME_PRIORITY		0
+		#define ARM_SYSTEM_PRIORITY			0
 
 	#endif /* WITHNESTEDINTERRUPTS */
 
-	#define system_enableIRQ() do {   } while (0)
-	#define system_disableIRQ() do {   } while (0)
+	#define system_enableIRQ() do { } while (0)
+	#define system_disableIRQ() do { } while (0)
 
 	#define global_enableIRQ() do { system_enableIRQ(); } while (0)
 	#define global_disableIRQ() do { system_disableIRQ(); } while (0)

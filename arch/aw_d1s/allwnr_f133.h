@@ -213,6 +213,7 @@ typedef enum IRQn
 
 // DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 		0x40000000			/*!< (DRAM        ) Base Address - 2GB */
+#define DRAM_SPACE_SIZE			0x04000000			/* 64 MB */
 
 #define G2D_TOP_BASE        (0x00000 + G2D_BASE)
 #define G2D_MIXER_BASE      (0x00100 + G2D_BASE)
@@ -2650,7 +2651,39 @@ typedef enum
 #endif /* USE_HAL_DRIVER */
 
 
-__attribute__((always_inline)) static inline void __DMB(void)
+/* CMSIS compiler specific defines */
+#ifndef   __ASM
+  #define __ASM                                  __asm
+#endif
+#ifndef   __INLINE
+  #define __INLINE                               inline
+#endif
+#ifndef   __STATIC_INLINE
+  #define __STATIC_INLINE                        static inline
+#endif
+#ifndef   __STATIC_FORCEINLINE
+  #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+#endif
+#ifndef   __NO_RETURN
+  #define __NO_RETURN                            __attribute__((__noreturn__))
+#endif
+#ifndef   __USED
+  #define __USED                                 __attribute__((used))
+#endif
+#ifndef   __WEAK
+  #define __WEAK                                 __attribute__((weak))
+#endif
+#ifndef   __PACKED
+  #define __PACKED                               __attribute__((packed, aligned(1)))
+#endif
+#ifndef   __PACKED_STRUCT
+  #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+#endif
+#ifndef   __PACKED_UNION
+  #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+#endif
+
+__STATIC_INLINE void __DMB(void)
 {
   //__asm volatile ("dmb 0xF":::"memory");
 }
@@ -2662,7 +2695,7 @@ __attribute__((always_inline)) static inline void __DMB(void)
   \param [in]    sat  Bit position to saturate to (1..32)
   \return             Saturated value
  */
-__attribute__((always_inline)) static inline int32_t __SSAT(int32_t val, uint32_t sat)
+__STATIC_INLINE int32_t __SSAT(int32_t val, uint32_t sat)
 {
   if ((sat >= 1U) && (sat <= 32U))
   {
@@ -2687,7 +2720,7 @@ __attribute__((always_inline)) static inline int32_t __SSAT(int32_t val, uint32_
   \param [in]    sat  Bit position to saturate to (0..31)
   \return             Saturated value
  */
-__attribute__((always_inline)) static inline uint32_t __USAT(int32_t val, uint32_t sat)
+__STATIC_INLINE uint32_t __USAT(int32_t val, uint32_t sat)
 {
   if (sat <= 31U)
   {
@@ -2710,7 +2743,7 @@ __attribute__((always_inline)) static inline uint32_t __USAT(int32_t val, uint32
   \param [in]  value  Value to count the leading zeros
   \return             number of leading zeros in value
  */
-__attribute__((always_inline)) static inline uint8_t __CLZ(uint32_t value)
+__STATIC_INLINE uint8_t __CLZ(uint32_t value)
 {
   /* Even though __builtin_clz produces a CLZ instruction on ARM, formally
      __builtin_clz(0) is undefined behaviour, so handle this case specially.
@@ -2736,7 +2769,7 @@ __attribute__((always_inline)) static inline uint8_t __CLZ(uint32_t value)
   \param [in]    op2  Number of Bits to rotate
   \return               Rotated value
  */
-__attribute__((always_inline)) static inline uint32_t __ROR(uint32_t op1, uint32_t op2)
+__STATIC_INLINE uint32_t __ROR(uint32_t op1, uint32_t op2)
 {
   op2 %= 32U;
   if (op2 == 0U)

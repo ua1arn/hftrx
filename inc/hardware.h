@@ -460,7 +460,7 @@ extern "C" {
 	//#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
-	#define ICACHEROWSIZE 32
+	#define ICACHEROWSIZE 64
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
