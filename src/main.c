@@ -4552,61 +4552,61 @@ static char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0, L_linear = 0,
 				1, C_mult = 1, P_High = 0, K_Mult = 32, Overload = 0, Loss_ind =
 				0, Relay_off = 0;
 static int Rel_Del, min_for_start, max_for_start, max_swr;
-int SWR_n7ddc, PWR_n7ddc, P_max, swr_a;
-char rready = 0, p_cnt = 0;
+static int SWR_n7ddc, PWR_n7ddc, P_max, swr_a;
+static char rready = 0, p_cnt = 0;
 //
-void btn_push(void);
-void lcd_prep(void);
-void lcd_swr(int);
-void lcd_pwr(void);
+//void btn_push(void);
+//void lcd_prep(void);
+//void lcd_swr(int);
+//void lcd_pwr(void);
 void show_pwr(int, int);
 void lcd_ind(void);
-void crypto(void);
-void show_reset(void);
-void cells_init(void);
-void test_init(void);
-void button_proc(void);
-void button_proc_test(void);
-void button_delay(void);
-void show_loss(void);
+//void crypto(void);
+//void show_reset(void);
+//void cells_init(void);
+//void test_init(void);
+//void button_proc(void);
+//void button_proc_test(void);
+//void button_delay(void);
+//void show_loss(void);
 //
-void atu_reset(void);
-int get_reverse(void);
-int get_forward(void);
-int correction(int);
-void get_swr_n7ddc(void);
-void get_pwr_n7ddc(void);
-void set_sw(char);
-void coarse_cap(void);
-void sharp_cap(void);
-void sharp_ind(void);
-void coarse_tune(void);
-void tune(void);
-void sub_tune(void);
+//void atu_reset(void);
+//int get_reverse(void);
+//int get_forward(void);
+//int correction(int);
+//void get_swr_n7ddc(void);
+//void get_pwr_n7ddc(void);
+//void set_sw(char);
+//void coarse_cap(void);
+//void sharp_cap(void);
+//void sharp_ind(void);
+//void coarse_tune(void);
+//void tune(void);
+//void sub_tune(void);
 //
 int ADC_Get_Sample(int ch);
 
 // Variables
-int SWR_fixed_old = 0, work_int;
-char work_char, work_str[7], work_str_2[7];
-float Forward;
-int Power =0, Power_old = 10000;
-int SWR_old = 10000;
-char type, Soft_tune = 0, Auto = 0, Track = 0;
-char bypas = 0, cap_mem = 0, ind_mem = 0, SW_mem = 0, Auto_mem = 0;
-int Auto_delta;
-char Restart = 0, Test = 0, lcd_prep_short = 0;
-char L = 1, but= 0;
-int Cap1, Cap2, Cap3, Cap4, Cap5, Cap6, Cap7;
-int Ind1, Ind2, Ind3, Ind4, Ind5, Ind6, Ind7;
-char Dysp_delay = 0;
-int dysp_cnt = 0;
-float dysp_cnt_mult = 2.3;
-char Loss_mode = 0, Fid_loss;
-char dysp = 1;
+static int SWR_fixed_old = 0, work_int;
+static char work_char, work_str[7], work_str_2[7];
+static float Forward;
+static int Power =0, Power_old = 10000;
+static int SWR_old = 10000;
+static char type, Soft_tune = 0, Auto = 0, Track = 0;
+static char bypas = 0, cap_mem = 0, ind_mem = 0, SW_mem = 0, Auto_mem = 0;
+static int Auto_delta;
+static char Restart = 0, Test = 0, lcd_prep_short = 0;
+static char L = 1, but= 0;
+static int Cap1, Cap2, Cap3, Cap4, Cap5, Cap6, Cap7;
+static int Ind1, Ind2, Ind3, Ind4, Ind5, Ind6, Ind7;
+static char Dysp_delay = 0;
+static int dysp_cnt = 0;
+static float dysp_cnt_mult = 2.3;
+static char Loss_mode = 0, Fid_loss;
+static char dysp = 1;
 //bit tune_btn_release;
 
-int correction(int input) {
+static int correction(int input) {
 	if (input <= 80)
 		return 0;
 	if (input <= 171)
@@ -4641,12 +4641,12 @@ int correction(int input) {
 
 //
 
-int get_reverse(void) {
+static int get_reverse(void) {
 	return ADC_Get_Sample(1) * 4.883;
 }
 //
 
-int get_forward(void) {
+static int get_forward(void) {
 	int Forward;
 	Forward = ADC_Get_Sample(0);
 	if (Forward > 1000)
@@ -4656,7 +4656,7 @@ int get_forward(void) {
 	return Forward * 4.883;
 }
 
-void get_pwr_n7ddc(void) {
+static void get_pwr_n7ddc(void) {
 	long Forward, Reverse;
 	float p;
 	/* asm CLRWDT */;
@@ -4692,7 +4692,7 @@ void get_pwr_n7ddc(void) {
 	return;
 }
 
-void get_swr_n7ddc(void) {
+static void get_swr_n7ddc(void) {
 	get_pwr_n7ddc();
 	if (p_cnt != 100) {
 		p_cnt += 1;
@@ -4727,7 +4727,7 @@ void get_swr_n7ddc(void) {
 	return;
 }
 
-void set_ind(char Ind) {  // 0 - 31
+static void set_ind(char Ind) {  // 0 - 31
 //	if (L_invert == 0) {
 //		Ind_005 = Ind.B0;
 //		Ind_011 = Ind.B1;
@@ -4750,7 +4750,7 @@ void set_ind(char Ind) {  // 0 - 31
 	local_delay_ms(Rel_Del);
 }
 
-void set_cap(char Cap) { // 0 - 31
+static void set_cap(char Cap) { // 0 - 31
 //	Cap_10 = Cap.B0;
 //	Cap_22 = Cap.B1;
 //	Cap_47 = Cap.B2;
@@ -4762,12 +4762,12 @@ void set_cap(char Cap) { // 0 - 31
 	local_delay_ms(Rel_Del);
 }
 
-void set_sw(char SW) {  // 0 - IN,  1 - OUT
+static void set_sw(char SW) {  // 0 - IN,  1 - OUT
 //	Cap_sw = SW;
 	local_delay_ms(Rel_Del);
 }
 
-void atu_reset(void) {
+static void atu_reset(void) {
 	ind = 0;
 	cap = 0;
 	set_ind(ind);
@@ -4775,7 +4775,7 @@ void atu_reset(void) {
 	local_delay_ms(Rel_Del);
 }
 
-void coarse_cap(void) {
+static void coarse_cap(void) {
 	char step = 3;
 	char count;
 	int min_swr;
@@ -4812,7 +4812,7 @@ void coarse_cap(void) {
 	return;
 }
 
-void coarse_tune(void) {
+static void coarse_tune(void) {
 	char step = 3;
 	char count;
 	char mem_cap, mem_step_cap;
@@ -4854,7 +4854,7 @@ void coarse_tune(void) {
 	return;
 }
 
-void sharp_cap(void) {
+static void sharp_cap(void) {
 	char range, count, max_range, min_range;
 	int min_SWR;	/* mgs: renamed */
 	range = step_cap * C_mult;
@@ -4897,7 +4897,7 @@ void sharp_cap(void) {
 	return;
 }
 
-void sharp_ind(void) {
+static void sharp_ind(void) {
 	char range, count, max_range, min_range;
 	int min_SWR;
 	range = step_ind * L_mult;
@@ -4940,7 +4940,7 @@ void sharp_ind(void) {
 	return;
 }
 
-void sub_tune(void) {
+static void sub_tune(void) {
 	int swr_mem, ind_mem, cap_mem;
 	//
 	swr_mem = SWR_n7ddc;
@@ -5028,7 +5028,7 @@ void sub_tune(void) {
 	return;
 }
 
-void tune(void) {
+static void tune_n7ddc(void) {
 	//int swr_mem, ind_mem, cap_mem, sw_mem;
 	/* asm CLRWDT */;
 	//
