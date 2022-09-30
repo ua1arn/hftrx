@@ -94,6 +94,7 @@ enum
 
 #if WITHUSBHID
 	//USBD_EP_HIDMOUSE_INT,	// HID INT События манипулятора в компьютер из TRX
+	USBD_EP_HIDKEYBOARD_INT,	// HID INT События манипулятора в компьютер из TRX
 #endif /* WITHUSBHID */
 
 #if WITHUSBDFU
@@ -169,7 +170,8 @@ enum
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBHID
-	#define HIDMOUSE_INT_DATA_SIZE 4
+	//#define HIDMOUSE_INT_DATA_SIZE 4
+	#define HIDKEYBOARD_INT_DATA_SIZE 8
 #endif /* WITHUSBHID */
 
 #if WITHUSBCDCEEM

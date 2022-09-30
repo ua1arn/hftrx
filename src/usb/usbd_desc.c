@@ -3753,6 +3753,29 @@ static unsigned fill_HID_Mouse_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned
 }
 #endif
 
+#if 1
+// Endpoint Descriptor In, Interrupt
+static unsigned fill_HID_Keyboard_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(HIDKEYBOARD_INT_DATA_SIZE);
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
+		* buff ++ = bEndpointAddress;			/* bEndpointAddress: (IN) */
+		* buff ++ = USB_ENDPOINT_TYPE_INTERRUPT;   	/* bmAttributes: Interrupt */
+		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
+		* buff ++ = HI_BYTE(wMaxPacketSize);
+		* buff ++ = highspeed ? HSINTERVAL_8MS : FSINTERVAL_8MS;	/* bInterval: 8 mS */
+	}
+	return length;
+}
+#endif
 // HID Report Descriptor
 // mouse
 static const uint8_t HID_report_desc_mouse []=
@@ -3819,9 +3842,46 @@ static const uint8_t HID_report_desc_keyboard []=
     0x29, 0x66, // Usage Maximum (102) // was 0x65
     0x81, 0x00, // Input (Data, Array) -- Key arrays (6 bytes)
     0xC0,       // End Collection
-
 };
-
+// HID Report Descriptor
+// keyboard 4 arrows ("joystick")
+static const uint8_t HID_report_desc_keyboard_4arrows []=
+{
+	0x05, 0x01, // Usage Page (Generic Desktop)
+	0x09, 0x06, // Usage (Keyboard)
+	0xA1, 0x01, // Collection (Application)
+	0x05, 0x07, // Usage Page (Key Codes)
+	0x19, 0xE0, // Usage Minimum (224)
+	0x29, 0xE7, // Usage Maximum (231)
+	0x15, 0x00, // Logical Minimum (0)
+	0x25, 0x01, // Logical Maximum (1)
+	0x75, 0x01, // Report Size (1)
+	0x95, 0x08, // Report Count (8)
+	0x81, 0x02, // Input (Data, Variable, Absolute) -- Modifier byte
+	0x05, 0x0C, // Report Count (1)
+	0x95, 0x01, // Report Size (8)
+	0x75, 0x08,
+	0x15, 0x00,
+	0x26, 0xFF, 0x00,
+	0x19, 0x00,
+	0x29, 0xFF,
+	0x81, 0x00,
+	0x05, 0x08,
+	0x19, 0x01,
+	0x29, 0x08,
+	0x95, 0x08,
+	0x75, 0x01,
+	0x91, 0x02,
+	0x05, 0x07,
+	0x95, 0x06,
+	0x75, 0x08,
+	0x15, 0x00,
+	0x26, 0xE7, 0x00,
+	0x19, 0x00,	// Usage Minimum (0)
+	0x29, 0xE7,	// Usage Maximum (102) // was 0x65
+	0x81, 0x00,	// Input (Data, Array) -- Key arrays (6 bytes)
+	0xC0,		// End Collection
+};
 
 // HID Report Descriptor
 // keyboard
@@ -4000,7 +4060,8 @@ static const uint8_t hid_report_desc_telephony [] =
 
 // HID Report Descriptor used for this function
 //#define HIDREPORTDESC HID_report_desc_keyboard
-#define HIDREPORTDESC HID_report_desc_mouse
+#define HIDREPORTDESC HID_report_desc_keyboard_4arrows
+//#define HIDREPORTDESC HID_report_desc_mouse
 //#define HIDREPORTDESC HID_report_desc_display
 //#define HIDREPORTDESC hid_report_desc_telephony
 
@@ -4016,6 +4077,7 @@ static unsigned fill_HID_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += HID_InterfaceDescriptorXXXX(fill, p + n, maxsize - n);	/* HID: HID Interface Descriptor */
 	n += HID_Descriptor(fill, p + n, maxsize - n, patternlength);	/* HID Descriptor */
 	//n += fill_HID_Mouse_IntEP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_HIDMOUSE_INT));
+	n += fill_HID_Keyboard_IntEP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_HIDKEYBOARD_INT));
 
 	return n;
 }

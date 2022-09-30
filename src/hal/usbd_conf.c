@@ -1329,12 +1329,13 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #endif /* WITHUSBRNDIS */
 
-#if WITHUSBHID && 0
+#if WITHUSBHID
 	{
 		/* ... устройство */
-		const uint_fast8_t pipe = USBD_EP_HIDMOUSE_INT & 0x7F;
+		const uint_fast8_t pipe = USBD_EP_HIDKEYBOARD_INT & 0x7F;
 
-		const uint_fast16_t size4 = size2buff4(HIDMOUSE_INT_DATA_SIZE);
+		//const uint_fast16_t size4 = size2buff4(HIDMOUSE_INT_DATA_SIZE);
+		const uint_fast16_t size4 = size2buff4(HIDKEYBOARD_INT_DATA_SIZE);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
