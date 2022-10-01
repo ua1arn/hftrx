@@ -1358,8 +1358,7 @@ void sysinit_gpio_initialize(void)
 		// speed: 0:low speed, 1:maximum speed, 2:fast speed, 3:high speed
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
 		// type: 0: Output push-pull, 1: output open-drain,
-		#define stm32f30x_pioX_prog(gpio, iomask0, moder, speed, pupdr, typer) \
-		  do { \
+		#define stm32f30x_pioX_prog(gpio, iomask0, moder, speed, pupdr, typer) do { \
 			const portholder_t iomask = (iomask0);	\
 			const portholder_t mask3 = power2(iomask);	\
 			(gpio)->MODER = ((gpio)->MODER & ~ (mask3 * GPIO_MODER_MODE0)) | mask3 * (moder) * GPIO_MODER_MODE0_0; \
@@ -1368,8 +1367,7 @@ void sysinit_gpio_initialize(void)
 			(gpio)->OTYPER = ((gpio)->OTYPER & ~ ((iomask) * GPIO_OTYPER_OT0)) | (iomask) * (typer); \
 		  } while (0)
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define tm32f30x_pioX_pupdr(gpio, up, down) \
-		  do { \
+		#define tm32f30x_pioX_pupdr(gpio, up, down) do { \
 			const portholder_t up3 = power2(up); \
 			const portholder_t down3 = power2(down); \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ ((up3 | down3) * GPIO_PUPDR_PUPD0)) | \
@@ -1379,14 +1377,12 @@ void sysinit_gpio_initialize(void)
 		  } while (0)
 		// отключение встроенной подтяжки на входе (так как программирование на ввод в данной библиотеке всегда включает подтяжку
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) \
-		  do { \
+		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) do { \
 			const portholder_t ipins3 = power2(ipins);	\
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPD0)) | ipins3 * (0) * GPIO_PUPDR_PUPD0_0; \
 		  } while (0)
 
-		#define stm32f30x_pioX_altfn(gpio, opins, afn) \
-			{ \
+		#define stm32f30x_pioX_altfn(gpio, opins, afn) do { \
 				const portholder_t op = (opins); \
 				const portholder_t lo = power4((op) >> 0); \
 				const portholder_t hi = power4((op) >> 8); \
@@ -1495,8 +1491,7 @@ void sysinit_gpio_initialize(void)
 		// speed: 0:low speed, 1:maximum speed, 2:fast speed, 3:high speed
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
 		// type: 0: Output push-pull, 1: output open-drain,
-		#define stm32f30x_pioX_prog(gpio, iomask0, moder, speed, pupdr, typer) \
-		  do { \
+		#define stm32f30x_pioX_prog(gpio, iomask0, moder, speed, pupdr, typer) do { \
 			const portholder_t iomask = (iomask0);	\
 			const portholder_t mask3 = power2(iomask);	\
 			(gpio)->MODER = ((gpio)->MODER & ~ (mask3 * GPIO_MODER_MODER0)) | mask3 * (moder) * GPIO_MODER_MODER0_0; \
@@ -1505,8 +1500,7 @@ void sysinit_gpio_initialize(void)
 			(gpio)->OTYPER = ((gpio)->OTYPER & ~ ((iomask) * GPIO_OTYPER_OT_0)) | (iomask) * (typer); \
 		  } while (0)
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define tm32f30x_pioX_pupdr(gpio, up, down) \
-		  do { \
+		#define tm32f30x_pioX_pupdr(gpio, up, down) do { \
 			const portholder_t up3 = power2(up); \
 			const portholder_t down3 = power2(down); \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ ((up3 | down3) * GPIO_PUPDR_PUPDR0)) | \
@@ -1516,14 +1510,12 @@ void sysinit_gpio_initialize(void)
 		  } while (0)
 		// отключение встроенной подтяжки на входе (так как программирование на ввод в данной библиотеке всегда включает подтяжку
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) \
-		  do { \
+		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) do { \
 			const portholder_t ipins3 = power2(ipins);	\
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPDR0)) | ipins3 * (0) * GPIO_PUPDR_PUPDR0_0; \
 		  } while (0)
 
-		#define stm32f30x_pioX_altfn(gpio, opins, afn) \
-			{ \
+		#define stm32f30x_pioX_altfn(gpio, opins, afn) do { \
 				const portholder_t op = (opins); \
 				const portholder_t lo = power4((op) >> 0); \
 				const portholder_t hi = power4((op) >> 8); \
