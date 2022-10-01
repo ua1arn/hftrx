@@ -170,8 +170,9 @@ enum
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBHID
+	/* наличие одного из определений выбирает нужный тип HID DEVICE */
 	//#define HIDMOUSE_INT_DATA_SIZE 4
-	#define HIDKEYBOARD_INT_DATA_SIZE 8
+	#define HIDKEYBOARD_INT_DATA_SIZE 64
 #endif /* WITHUSBHID */
 
 #if WITHUSBCDCEEM

@@ -3698,10 +3698,22 @@ static unsigned HID_InterfaceDescriptorXXXX(uint_fast8_t fill, uint8_t * buff, u
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType: */
 		* buff ++ = INTERFACE_HID_CONTROL;			// bInterfaceNumber
 		* buff ++ = 0x00;								/* bAlternateSetting */
+#if defined (HIDKEYBOARD_INT_DATA_SIZE)
+		* buff ++ = 0x01;								/* bNumEndpoints */
+		* buff ++ = USB_DEVICE_CLASS_HUMAN_INTERFACE;   /* bInterfaceClass */
+		* buff ++ = 0x01;								/* bInterfaceSubClass = boot interfsce */
+		* buff ++ = 0x01;							    /* bInterfaceProtocol: 1 = keyboard, 2 = mouse */
+#elif defined (HIDMOUSE_INT_DATA_SIZE)
+		* buff ++ = 0x01;								/* bNumEndpoints */
+		* buff ++ = USB_DEVICE_CLASS_HUMAN_INTERFACE;   /* bInterfaceClass */
+		* buff ++ = 0;/0x01;								/* bInterfaceSubClass = boot interfsce */
+		* buff ++ = 0x02;							    /* bInterfaceProtocol: 1 = keyboard, 2 = mouse */
+#else
 		* buff ++ = 0;//0x01;								/* bNumEndpoints */
 		* buff ++ = USB_DEVICE_CLASS_HUMAN_INTERFACE;   /* bInterfaceClass */
 		* buff ++ = 0;//0x01;								/* bInterfaceSubClass = boot interfsce */
-		* buff ++ = 0;//0x02;							    /* bInterfaceProtocol: 1 = keyboard, 2 = mouse */
+		* buff ++ = 0; //0x01;							    /* bInterfaceProtocol: 1 = keyboard, 2 = mouse */
+#endif
 		* buff ++ = 0;//STRING_ID_HIDa;						/* iInterface */
 	}
 	return length;
@@ -3732,7 +3744,7 @@ static unsigned HID_Descriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 
 }
 
-#if 0
+#if defined (HIDMOUSE_INT_DATA_SIZE)
 // Endpoint Descriptor In, Interrupt
 static unsigned fill_HID_Mouse_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
 {
@@ -3754,9 +3766,9 @@ static unsigned fill_HID_Mouse_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned
 	}
 	return length;
 }
-#endif
+#endif /* defined (HIDMOUSE_INT_DATA_SIZE) */
 
-#if 1
+#if defined (HIDKEYBOARD_INT_DATA_SIZE)
 // Endpoint Descriptor In, Interrupt
 static unsigned fill_HID_Keyboard_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
 {
@@ -3778,7 +3790,8 @@ static unsigned fill_HID_Keyboard_IntEP(uint_fast8_t fill, uint8_t * buff, unsig
 	}
 	return length;
 }
-#endif
+#endif /* defined (HIDKEYBOARD_INT_DATA_SIZE) */
+
 // HID Report Descriptor
 // mouse
 static const uint8_t HID_report_desc_mouse []=
@@ -4079,9 +4092,12 @@ static unsigned fill_HID_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	//
 	n += HID_InterfaceDescriptorXXXX(fill, p + n, maxsize - n);	/* HID: HID Interface Descriptor */
 	n += HID_Descriptor(fill, p + n, maxsize - n, patternlength);	/* HID Descriptor */
-	//n += fill_HID_Mouse_IntEP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_HIDMOUSE_INT));
+#if defined (HIDMOUSE_INT_DATA_SIZE)
+	n += fill_HID_Mouse_IntEP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_HIDMOUSE_INT));
+#elif defined (HIDKEYBOARD_INT_DATA_SIZE)
 	n += fill_HID_Keyboard_IntEP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_HIDKEYBOARD_INT));
-
+#else
+#endif
 	return n;
 }
 
