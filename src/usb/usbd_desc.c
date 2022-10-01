@@ -277,6 +277,9 @@ static unsigned usbd_get_productId(void)
 	#if WITHUSBDMSC
 		v |= (1u << 5);
 	#endif /* WITHUSBDMSC */
+	#if WITHUSBHID
+		v |= (1u << 4);
+	#endif /* WITHUSBDMSC */
 #endif /* WITHISBOOTLOADER */
 
 	return v;
