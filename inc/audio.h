@@ -203,7 +203,7 @@ extern "C" {
 		#define DMABUF32TXQ	1		// TX, Q
 
 		#define DMABUF32TX_NCO1		5		// NCO RX A
-		#define DMABUF32TX_NCO2		6		// NCO RX B
+		#define DMABUF32TX_NCO2		4		// NCO RX B
 		#define DMABUF32TX_NCORTS	7		// NCO RTS
 
 		#if WITHRTS96
