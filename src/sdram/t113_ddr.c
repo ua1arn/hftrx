@@ -45,17 +45,27 @@ static void sdelay(unsigned us)
 	local_delay_us(us * 2);
 }
 
-unsigned read32(uintptr_t addr)
+static unsigned read32(uintptr_t addr)
 {
 	return * (volatile uint32_t *) addr;
 }
 
-void write32(uintptr_t addr, unsigned value)
+static void write32(uintptr_t addr, unsigned value)
 {
 	* (volatile uint32_t *) addr = value;
 }
 
-char *memcpy_self(char *dst, char *src, int len)
+static void write32ptr(void * addr, unsigned value)
+{
+	write32((uintptr_t) addr, value);
+}
+
+static unsigned read32ptr(void * addr)
+{
+	return read32((uintptr_t) addr);
+}
+
+static char *memcpy_self(char *dst, char *src, int len)
 {
 	int i;
 	for (i = 0; i != len; i++) {
@@ -64,7 +74,7 @@ char *memcpy_self(char *dst, char *src, int len)
 	return dst;
 }
 
-void sid_read_ldoB_cal(dram_para_t *para)
+static void sid_read_ldoB_cal(dram_para_t *para)
 {
 	uint32_t reg;
 
@@ -87,7 +97,7 @@ void sid_read_ldoB_cal(dram_para_t *para)
 	return;
 }
 
-void dram_vol_set(dram_para_t *para)
+static void dram_vol_set(dram_para_t *para)
 {
 	int reg, vol = 0;
 
@@ -118,7 +128,7 @@ void dram_vol_set(dram_para_t *para)
 	sid_read_ldoB_cal(para);
 }
 
-void dram_enable_all_master(void)
+static void dram_enable_all_master(void)
 {
 	write32(0x3102020, -1);
 	write32(0x3102024, 0xff);
@@ -126,7 +136,7 @@ void dram_enable_all_master(void)
 	sdelay(10);
 }
 
-void dram_disable_all_master(void)
+static void dram_disable_all_master(void)
 {
 	write32(0x3102020, 1);
 	write32(0x3102024, 0);
@@ -134,7 +144,7 @@ void dram_disable_all_master(void)
 	sdelay(10);
 }
 
-void eye_delay_compensation(dram_para_t *para) // s1
+static void eye_delay_compensation(dram_para_t *para) // s1
 {
 	unsigned int val, ptr;
 
@@ -220,7 +230,7 @@ void eye_delay_compensation(dram_para_t *para) // s1
 	write32(0x3103280, val);
 }
 
-int auto_cal_timing(unsigned int time, unsigned int freq)
+static int auto_cal_timing(unsigned int time, unsigned int freq)
 {
 	unsigned int t = time * freq;
 	div_t d = div(t, 1000);
@@ -231,7 +241,7 @@ int auto_cal_timing(unsigned int time, unsigned int freq)
 // timing settings for the specific type of sdram used. Read together with
 // an sdram datasheet for context on the various variables.
 //
-void auto_set_timing_para(dram_para_t *para) // s5
+static void auto_set_timing_para(dram_para_t *para) // s5
 {
 	unsigned int   freq; // s4
 	unsigned int   type; // s8
@@ -669,7 +679,7 @@ void auto_set_timing_para(dram_para_t *para) // s5
 // Purpose of this routine seems to be to initialize the PLL driving
 // the MBUS and sdram.
 //
-int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
+static int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 {
 	unsigned int val, clk, n;
 
@@ -709,7 +719,7 @@ int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 // Main purpose of sys_init seems to be to initalise the clocks for
 // the sdram controller.
 //
-void mctl_sys_init(dram_para_t *para)
+static void mctl_sys_init(dram_para_t *para)
 {
 	unsigned int val;
 
@@ -754,7 +764,7 @@ void mctl_sys_init(dram_para_t *para)
 // from the dram_para1 and dram_para2 fields to the PHY configuration registers
 // (0x3102000, 0x3102004).
 //
-void mctl_com_init(dram_para_t *para)
+static void mctl_com_init(dram_para_t *para)
 {
 	unsigned int val, end, ptr;
 	int			 i;
@@ -835,7 +845,7 @@ void mctl_com_init(dram_para_t *para)
 // It is unclear which lines are being remapped. It seems to pick
 // table cfg7 for the Nezha board.
 //
-char cfg0[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static char cfg0[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static char cfg1[] = {1, 9, 3, 7, 8, 18, 4, 13, 5, 6, 10, 2, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22};
 static char cfg2[] = {4, 9, 3, 7, 8, 18, 1, 13, 2, 6, 10, 5, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22};
 static char cfg3[] = {1, 7, 8, 12, 10, 18, 4, 13, 5, 6, 3, 2, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22};
@@ -844,7 +854,7 @@ static char cfg5[] = {13, 2, 7, 9, 12, 19, 5, 1, 6, 3, 4, 8, 10, 0, 0, 0, 21, 22
 static char cfg6[] = {3, 10, 7, 13, 9, 11, 1, 2, 4, 6, 8, 5, 12, 0, 0, 0, 20, 1, 0, 21, 22, 17};
 static char cfg7[] = {3, 2, 4, 7, 9, 1, 17, 12, 18, 14, 13, 8, 15, 6, 10, 5, 19, 22, 16, 21, 20, 11};
 
-void mctl_phy_ac_remapping(dram_para_t *para)
+static void mctl_phy_ac_remapping(dram_para_t *para)
 {
 	unsigned int fuse, val;
 
@@ -911,7 +921,7 @@ void mctl_phy_ac_remapping(dram_para_t *para)
 // Init the controller channel. The key part is placing commands in the main
 // command register (PIR, 0x3103000) and checking command status (PGSR0, 0x3103010).
 //
-unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
+static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 {
 	unsigned int val, dqs_gating_mode;
 
@@ -1171,7 +1181,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 // the number of address bits in each rank available. It then calculates
 // total memory size in MB.
 //
-int DRAMC_get_dram_size(void)
+static int DRAMC_get_dram_size(void)
 {
 	unsigned int rval, temp, size0, size1;
 
@@ -1210,7 +1220,7 @@ int DRAMC_get_dram_size(void)
 // If there was an error, figure out whether it was half DQ, single rank,
 // or both. Set bit 12 and 0 in dram_para2 with the results.
 //
-int dqs_gate_detect(dram_para_t *para)
+static int dqs_gate_detect(dram_para_t *para)
 {
 	unsigned int u1;
 	unsigned int u2;
@@ -1256,7 +1266,7 @@ int dqs_gate_detect(dram_para_t *para)
 #define SDRAM_BASE ((unsigned int *)0x40000000)
 #define uint	   unsigned int
 
-int dramc_simple_wr_test(uint mem_mb, int len)
+static int dramc_simple_wr_test(uint mem_mb, int len)
 {
 	unsigned int  offs	= (mem_mb >> 1) << 18; // half of memory size
 	unsigned int  patt1 = 0x01234567;
@@ -1265,20 +1275,20 @@ int dramc_simple_wr_test(uint mem_mb, int len)
 
 	addr = SDRAM_BASE;
 	for (i = 0; i != len; i++, addr++) {
-		write32(addr, patt1 + i);
-		write32(addr + offs, patt2 + i);
+		write32ptr(addr, patt1 + i);
+		write32ptr(addr + offs, patt2 + i);
 	}
 
 	addr = SDRAM_BASE;
 	for (i = 0; i != len; i++) {
-		v1 = read32(addr + i);
+		v1 = read32ptr(addr + i);
 		v2 = patt1 + i;
 		if (v1 != v2) {
 			PRINTF("DRAM simple test FAIL.\n");
 			ddr_debug("%x != %x at address %x\n", v1, v2, addr + i);
 			return 1;
 		}
-		v1 = read32(addr + offs + i);
+		v1 = read32ptr(addr + offs + i);
 		v2 = patt2 + i;
 		if (v1 != v2) {
 			PRINTF("DRAM simple test FAIL.\n");
@@ -1292,7 +1302,7 @@ int dramc_simple_wr_test(uint mem_mb, int len)
 
 // Set the Vref mode for the controller
 //
-void mctl_vrefzq_init(dram_para_t *para)
+static void mctl_vrefzq_init(dram_para_t *para)
 {
 	unsigned int val;
 
@@ -1314,7 +1324,7 @@ void mctl_vrefzq_init(dram_para_t *para)
 // establish the actual ram size. The third time is final one, with the final
 // settings.
 //
-int mctl_core_init(dram_para_t *para)
+static int mctl_core_init(dram_para_t *para)
 {
 	mctl_sys_init(para);
 
@@ -1338,7 +1348,7 @@ int mctl_core_init(dram_para_t *para)
 // row addresses. Finally, the column address is allocated 13 lines and these are
 // tested. The results are placed in dram_para1 and dram_para2.
 //
-int auto_scan_dram_size(dram_para_t *para) // s7
+static int auto_scan_dram_size(dram_para_t *para) // s7
 {
 	unsigned int rval, i, j, rank, maxrank, offs, mc_work_mode;
 	unsigned int chk, ptr, shft;
@@ -1511,7 +1521,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 // full or half DQ width. it then resets the parameters to the original values.
 // dram_para2 is updated with the rank & width findings.
 //
-int auto_scan_dram_rank_width(dram_para_t *para)
+static int auto_scan_dram_rank_width(dram_para_t *para)
 {
 	unsigned int s1 = para->dram_tpr13;
 	unsigned int s2 = para->dram_para1;
@@ -1544,7 +1554,7 @@ int auto_scan_dram_rank_width(dram_para_t *para)
 // the size of each rank. It then updates dram_tpr13 to reflect that the sizes
 // are now known: a re-init will not repeat the autoscan.
 //
-int auto_scan_dram_config(dram_para_t *para)
+static int auto_scan_dram_config(dram_para_t *para)
 {
 	if (((para->dram_tpr13 & (1 << 14)) == 0) && (auto_scan_dram_rank_width(para) == 0)) {
 		PRINTF("[ERROR DEBUG] auto scan dram rank & width failed !\n");

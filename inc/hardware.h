@@ -1325,4 +1325,6 @@ typedef struct dram_para_t
 	unsigned int		dram_tpr13;
 } dram_para_t;
 
+signed int init_DRAM(int type, dram_para_t *para); // s0
+
 #endif // HARDWARE_H_INCLUDED
