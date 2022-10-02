@@ -114,15 +114,15 @@ static void dram_vol_set(dram_para_t *para)
 	}
 	vol = 25; // XXX
 
-	reg = read32(0x3000150);
+	reg = read32(0x03000150);
 	reg = (reg & 0xffdf00ff) | vol << 8;
 	/*
-		reg = read32(0x3000150);
+		reg = read32(0x03000150);
 		reg &= ~(0xff00);
 		reg |= vol << 8;
 		reg &= ~(0x200000);
 	*/
-	write32(0x3000150, reg);
+	write32(0x03000150, reg);
 
 	sdelay(1);
 
@@ -131,17 +131,17 @@ static void dram_vol_set(dram_para_t *para)
 
 static void dram_enable_all_master(void)
 {
-	write32(0x3102020, -1);
-	write32(0x3102024, 0xff);
-	write32(0x3102028, 0xffff);
+	write32(0x03102020, -1);
+	write32(0x03102024, 0xff);
+	write32(0x03102028, 0xffff);
 	sdelay(10);
 }
 
 static void dram_disable_all_master(void)
 {
-	write32(0x3102020, 1);
-	write32(0x3102024, 0);
-	write32(0x3102028, 0);
+	write32(0x03102020, 1);
+	write32(0x03102024, 0);
+	write32(0x03102028, 0);
 	sdelay(10);
 }
 
@@ -166,43 +166,43 @@ static void eye_delay_compensation(dram_para_t *para) // s1
 	}
 
 	// PGCR0: assert AC loopback FIFO reset
-	val = read32(0x3103100);
+	val = read32(0x03103100);
 	val &= 0xfbffffff;
-	write32(0x3103100, val);
+	write32(0x03103100, val);
 
 	// ??
-	val = read32(0x3103334);
+	val = read32(0x03103334);
 	val |= ((para->dram_tpr11 >> 16) << 9) & 0x1e00;
 	val |= ((para->dram_tpr12 >> 16) << 1) & 0x001e;
-	write32(0x3103334, val);
+	write32(0x03103334, val);
 
-	val = read32(0x3103338);
+	val = read32(0x03103338);
 	val |= ((para->dram_tpr11 >> 16) << 9) & 0x1e00;
 	val |= ((para->dram_tpr12 >> 16) << 1) & 0x001e;
-	write32(0x3103338, val);
+	write32(0x03103338, val);
 
-	val = read32(0x31033b4);
+	val = read32(0x031033b4);
 	val |= ((para->dram_tpr11 >> 20) << 9) & 0x1e00;
 	val |= ((para->dram_tpr12 >> 20) << 1) & 0x001e;
-	write32(0x31033b4, val);
+	write32(0x031033b4, val);
 
-	val = read32(0x31033b8);
+	val = read32(0x031033b8);
 	val |= ((para->dram_tpr11 >> 20) << 9) & 0x1e00;
 	val |= ((para->dram_tpr12 >> 20) << 1) & 0x001e;
-	write32(0x31033b8, val);
+	write32(0x031033b8, val);
 
-	val = read32(0x310333c);
+	val = read32(0x0310333c);
 	val |= ((para->dram_tpr11 >> 16) << 25) & 0x1e000000;
-	write32(0x310333c, val);
+	write32(0x0310333c, val);
 
-	val = read32(0x31033bc);
+	val = read32(0x031033bc);
 	val |= ((para->dram_tpr11 >> 20) << 25) & 0x1e000000;
-	write32(0x31033bc, val);
+	write32(0x031033bc, val);
 
 	// PGCR0: release AC loopback FIFO reset
-	val = read32(0x3103100);
+	val = read32(0x03103100);
 	val |= 0x04000000;
-	write32(0x3103100, val);
+	write32(0x03103100, val);
 
 	sdelay(1);
 
@@ -218,17 +218,17 @@ static void eye_delay_compensation(dram_para_t *para) // s1
 		write32(ptr, val);
 	}
 
-	val = read32(0x3103218);
+	val = read32(0x03103218);
 	val |= (para->dram_tpr10 << 8) & 0x0f00;
-	write32(0x3103218, val);
+	write32(0x03103218, val);
 
-	val = read32(0x310321c);
+	val = read32(0x0310321c);
 	val |= (para->dram_tpr10 << 8) & 0x0f00;
-	write32(0x310321c, val);
+	write32(0x0310321c, val);
 
-	val = read32(0x3103280);
+	val = read32(0x03103280);
 	val |= ((para->dram_tpr10 >> 12) << 8) & 0x0f00;
-	write32(0x3103280, val);
+	write32(0x03103280, val);
 }
 
 static int auto_cal_timing(unsigned int time, unsigned int freq)
@@ -637,44 +637,44 @@ static void auto_set_timing_para(dram_para_t *para) // s5
 		para->dram_mr3 = mr3;
 
 	// Set mode registers
-	write32(0x3103030, para->dram_mr0);
-	write32(0x3103034, para->dram_mr1);
-	write32(0x3103038, para->dram_mr2);
-	write32(0x310303c, para->dram_mr3);
-	write32(0x310302c, (para->dram_odt_en >> 4) & 0x3); // ??
+	write32(0x03103030, para->dram_mr0);
+	write32(0x03103034, para->dram_mr1);
+	write32(0x03103038, para->dram_mr2);
+	write32(0x0310303c, para->dram_mr3);
+	write32(0x0310302c, (para->dram_odt_en >> 4) & 0x3); // ??
 
 	// Set dram timing DRAMTMG0 - DRAMTMG5
 	reg_val = (twtp << 24) | (tfaw << 16) | (trasmax << 8) | (tras << 0);
-	write32(0x3103058, reg_val);
+	write32(0x03103058, reg_val);
 	reg_val = (txp << 16) | (trtp << 8) | (trc << 0);
-	write32(0x310305c, reg_val);
+	write32(0x0310305c, reg_val);
 	reg_val = (tcwl << 24) | (tcl << 16) | (trd2wr << 8) | (twr2rd << 0);
-	write32(0x3103060, reg_val);
+	write32(0x03103060, reg_val);
 	reg_val = (tmrw << 16) | (tmrd << 12) | (tmod << 0);
-	write32(0x3103064, reg_val);
+	write32(0x03103064, reg_val);
 	reg_val = (trcd << 24) | (tccd << 16) | (trrd << 8) | (trp << 0);
-	write32(0x3103068, reg_val);
+	write32(0x03103068, reg_val);
 	reg_val = (tcksrx << 24) | (tcksrx << 16) | (tckesr << 8) | (tcke << 0);
-	write32(0x310306c, reg_val);
+	write32(0x0310306c, reg_val);
 
 	// Set two rank timing
-	reg_val = read32(0x3103078);
+	reg_val = read32(0x03103078);
 	reg_val &= 0x0fff0000;
 	reg_val |= (para->dram_clk < 800) ? 0xf0006600 : 0xf0007600;
 	reg_val |= 0x10;
-	write32(0x3103078, reg_val);
+	write32(0x03103078, reg_val);
 
 	// Set phy interface time PITMG0, PTR3, PTR4
 	reg_val = (0x2 << 24) | (t_rdata_en << 16) | (0x1 << 8) | (wr_latency << 0);
-	write32(0x3103080, reg_val);
-	write32(0x3103050, ((tdinit0 << 0) | (tdinit1 << 20)));
-	write32(0x3103054, ((tdinit2 << 0) | (tdinit3 << 20)));
+	write32(0x03103080, reg_val);
+	write32(0x03103050, ((tdinit0 << 0) | (tdinit1 << 20)));
+	write32(0x03103054, ((tdinit2 << 0) | (tdinit3 << 20)));
 
 	// Set refresh timing and mode
 	reg_val = (trefi << 16) | (trfc << 0);
-	write32(0x3103090, reg_val);
+	write32(0x03103090, reg_val);
 	reg_val = 0x0fff0000 & (trefi << 15);
-	write32(0x3103094, reg_val);
+	write32(0x03103094, reg_val);
 }
 
 // Purpose of this routine seems to be to initialize the PLL driving
@@ -689,30 +689,30 @@ static int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 	// set VCO clock divider
 	n	= (clk * 2) / 24;
 
-	val = read32(0x2001010);
+	val = read32(0x02001010);
 	val &= 0xfff800fc; // clear dividers
 	val |= (n - 1) << 8; // set PLL division
 	val |= 0xc0000000; // enable PLL and LDO
 	val &= 0xdfffffff;
-	write32(0x2001010, val | 0x20000000);
+	write32(0x02001010, val | 0x20000000);
 
 	// wait for PLL to lock
-	while ((read32(0x2001010) & 0x10000000) == 0) {
+	while ((read32(0x02001010) & 0x10000000) == 0) {
 		;
 	}
 
 	sdelay(20);
 
 	// enable PLL output
-	val = read32(0x2001000);
+	val = read32(0x02001000);
 	val |= 0x08000000;
-	write32(0x2001000, val);
+	write32(0x02001000, val);
 
 	// turn clock gate on
-	val = read32(0x2001800);
+	val = read32(0x02001800);
 	val &= 0xfcfffcfc; // select DDR clk source, n=1, m=1
 	val |= 0x80000000; // turn clock on
-	write32(0x2001800, val);
+	write32(0x02001800, val);
 
 	return n * 24;
 }
@@ -727,11 +727,11 @@ static void mctl_sys_init(dram_para_t *para)
 	// s1 = 0x02001000
 
 	// assert MBUS reset
-	write32(0x2001540, read32(0x2001540) & 0xbfffffff);
+	write32(0x02001540, read32(0x02001540) & 0xbfffffff);
 
 	// turn off sdram clock gate, assert sdram reset
-	write32(0x200180c, read32(0x200180c) & 0xfffefffe);
-	write32(0x2001800, (read32(0x2001800) & 0x3fffffff) | 0x8000000);
+	write32(0x0200180c, read32(0x0200180c) & 0xfffefffe);
+	write32(0x02001800, (read32(0x02001800) & 0x3fffffff) | 0x8000000);
 	sdelay(10);
 
 	// set ddr pll clock
@@ -741,23 +741,23 @@ static void mctl_sys_init(dram_para_t *para)
 	dram_disable_all_master();
 
 	// release sdram reset
-	write32(0x200180c, read32(0x200180c) | 0x10000);
+	write32(0x0200180c, read32(0x0200180c) | 0x10000);
 
 	// release MBUS reset
-	write32(0x2001540, read32(0x2001540) | 0x40000000);
-	write32(0x2001800, read32(0x2001800) | 0x40000000);
+	write32(0x02001540, read32(0x02001540) | 0x40000000);
+	write32(0x02001800, read32(0x02001800) | 0x40000000);
 
 	sdelay(5);
 
 	// turn on sdram clock gate
-	write32(0x200180c, read32(0x200180c) | 0x1);
+	write32(0x0200180c, read32(0x0200180c) | 0x1);
 
 	// turn dram clock gate on, trigger sdr clock update
-	write32(0x2001800, read32(0x2001800) | 0x88000000);
+	write32(0x02001800, read32(0x02001800) | 0x88000000);
 	sdelay(5);
 
 	// mCTL clock enable
-	write32(0x310300c, 0x8000);
+	write32(0x0310300c, 0x8000);
 	sdelay(10);
 }
 
@@ -771,12 +771,12 @@ static void mctl_com_init(dram_para_t *para)
 	int			 i;
 
 	// purpose ??
-	val = read32(0x3102008) & 0xffffc0ff;
+	val = read32(0x03102008) & 0xffffc0ff;
 	val |= 0x2000;
-	write32(0x3102008, val);
+	write32(0x03102008, val);
 
 	// Set sdram type and word width
-	val = read32(0x3102000) & 0xff000fff;
+	val = read32(0x03102000) & 0xff000fff;
 	val |= (para->dram_type & 0x7) << 16; // DRAM type
 	val |= (~para->dram_para2 & 0x1) << 12; // DQ width
 	if ((para->dram_type) != 6 && (para->dram_type) != 7) {
@@ -785,7 +785,7 @@ static void mctl_com_init(dram_para_t *para)
 	} else {
 		val |= 0x480000; // type 6 and 7 must use 1T
 	}
-	write32(0x3102000, val);
+	write32(0x03102000, val);
 
 	// init rank / bank / row for single/dual or two different ranks
 	val = para->dram_para2;
@@ -822,23 +822,23 @@ static void mctl_com_init(dram_para_t *para)
 	}
 
 	// set ODTMAP based on number of ranks in use
-	val = (read32(0x3102000) & 0x1) ? 0x303 : 0x201;
-	write32(0x3103120, val);
+	val = (read32(0x03102000) & 0x1) ? 0x303 : 0x201;
+	write32(0x03103120, val);
 
 	// set mctl reg 3c4 to zero when using half DQ
 	if (para->dram_para2 & (1 << 0)) {
-		write32(0x31033c4, 0);
+		write32(0x031033c4, 0);
 	}
 
 	// purpose ??
 	if (para->dram_tpr4) {
-		val = read32(0x3102000);
+		val = read32(0x03102000);
 		val |= (para->dram_tpr4 << 25) & 0x06000000;
-		write32(0x3102000, val);
+		write32(0x03102000, val);
 
-		val = read32(0x3102004);
+		val = read32(0x03102004);
 		val |= ((para->dram_tpr4 >> 2) << 12) & 0x001ff000;
-		write32(0x3102004, val);
+		write32(0x03102004, val);
 	}
 }
 
@@ -859,7 +859,7 @@ static void mctl_phy_ac_remapping(dram_para_t *para)
 {
 	unsigned int fuse, val;
 
-	fuse = (read32(0x3006228) << 0x14) >> 0x1c;
+	fuse = (read32(0x03006228) << 0x14) >> 0x1c;
 	ddr_debug("ddr_efuse_type: 0x%x\n", fuse);
 
 	val = (unsigned int)(read32(0x03006200) << 0x10) >> 0x18;
@@ -903,19 +903,19 @@ static void mctl_phy_ac_remapping(dram_para_t *para)
 
 	if (para->dram_type == 2 || para->dram_type == 3) {
 		val = (cfg0[4] << 25) | (cfg0[3] << 20) | (cfg0[2] << 15) | (cfg0[1] << 10) | (cfg0[0] << 5);
-		write32(0x3102500, val);
+		write32(0x03102500, val);
 
 		val = (cfg0[10] << 25) | (cfg0[9] << 20) | (cfg0[8] << 15) | (cfg0[7] << 10) | (cfg0[6] << 5) | cfg0[5];
-		write32(0x3102504, val);
+		write32(0x03102504, val);
 
 		val = (cfg0[15] << 20) | (cfg0[14] << 15) | (cfg0[13] << 10) | (cfg0[12] << 5) | cfg0[11];
-		write32(0x3102508, val);
+		write32(0x03102508, val);
 
 		val = (cfg0[21] << 25) | (cfg0[20] << 20) | (cfg0[19] << 15) | (cfg0[18] << 10) | (cfg0[17] << 5) | cfg0[16];
-		write32(0x310250c, val);
+		write32(0x0310250c, val);
 
 		val = (cfg0[4] << 25) | (cfg0[3] << 20) | (cfg0[2] << 15) | (cfg0[1] << 10) | (cfg0[0] << 5) | 1;
-		write32(0x3102500, val);
+		write32(0x03102500, val);
 	}
 }
 
@@ -929,76 +929,76 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	dqs_gating_mode = (para->dram_tpr13 >> 2) & 0x3;
 
 	// set DDR clock to half of CPU clock
-	val = read32(0x310200c) & 0xfffff000;
+	val = read32(0x0310200c) & 0xfffff000;
 	val |= (para->dram_clk >> 1) - 1;
-	write32(0x310200c, val);
+	write32(0x0310200c, val);
 
 	// MRCTRL0 nibble 3 undocumented
-	val = read32(0x3103108) & 0xfffff0ff;
+	val = read32(0x03103108) & 0xfffff0ff;
 	val |= 0x300;
-	write32(0x3103108, val);
+	write32(0x03103108, val);
 
 	val = ((~para->dram_odt_en) & 1) << 5;
 
 	// DX0GCR0
 	if (para->dram_clk > 672) {
-		write32(0x3103344, read32(0x3103344) & 0xffff09c1);
+		write32(0x03103344, read32(0x03103344) & 0xffff09c1);
 	} else {
-		write32(0x3103344, read32(0x3103344) & 0xffff0fc1);
+		write32(0x03103344, read32(0x03103344) & 0xffff0fc1);
 	}
-	write32(0x3103344, read32(0x3103344) | val);
+	write32(0x03103344, read32(0x03103344) | val);
 
 	// DX1GCR0
 	if (para->dram_clk > 672) {
-		write32(0x3103344, read32(0x3103344) | 0x400);
-		write32(0x31033c4, read32(0x31033c4) & 0xffff09c1);
+		write32(0x03103344, read32(0x03103344) | 0x400);
+		write32(0x031033c4, read32(0x031033c4) & 0xffff09c1);
 	} else {
-		write32(0x31033c4, read32(0x31033c4) & 0xffff0fc1);
+		write32(0x031033c4, read32(0x031033c4) & 0xffff0fc1);
 	}
-	write32(0x31033c4, read32(0x31033c4) | val);
+	write32(0x031033c4, read32(0x031033c4) | val);
 
 	// 0x3103208 undocumented
-	write32(0x3103208, read32(0x3103208) | 2);
+	write32(0x03103208, read32(0x03103208) | 2);
 
 	eye_delay_compensation(para);
 
 	// set PLL SSCG ?
 	//
-	val = read32(0x3103108);
+	val = read32(0x03103108);
 	if (dqs_gating_mode == 1) {
 		val &= ~(0xc0);
-		write32(0x3103108, val);
+		write32(0x03103108, val);
 
-		val = read32(0x31030bc);
+		val = read32(0x031030bc);
 		val &= 0xfffffef8;
-		write32(0x31030bc, val);
+		write32(0x031030bc, val);
 	} else if (dqs_gating_mode == 2) {
 		val &= ~(0xc0);
 		val |= 0x80;
-		write32(0x3103108, val);
+		write32(0x03103108, val);
 
-		val = read32(0x31030bc);
+		val = read32(0x031030bc);
 		val &= 0xfffffef8;
 		val |= ((para->dram_tpr13 >> 16) & 0x1f) - 2;
 		val |= 0x100;
-		write32(0x31030bc, val);
+		write32(0x031030bc, val);
 
-		val = read32(0x310311c) & 0x7fffffff;
+		val = read32(0x0310311c) & 0x7fffffff;
 		val |= 0x08000000;
-		write32(0x310311c, val);
+		write32(0x0310311c, val);
 	} else {
 		val &= ~(0x40);
-		write32(0x3103108, val);
+		write32(0x03103108, val);
 
 		sdelay(10);
 
-		val = read32(0x3103108);
+		val = read32(0x03103108);
 		val |= 0xc0;
-		write32(0x3103108, val);
+		write32(0x03103108, val);
 	}
 
 	if (para->dram_type == 6 || para->dram_type == 7) {
-		val = read32(0x310311c);
+		val = read32(0x0310311c);
 		if (dqs_gating_mode == 1) {
 			val &= 0xf7ffff3f;
 			val |= 0x80000000;
@@ -1006,34 +1006,34 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 			val &= 0x88ffffff;
 			val |= 0x22000000;
 		}
-		write32(0x310311c, val);
+		write32(0x0310311c, val);
 	}
 
-	val = read32(0x31030c0);
+	val = read32(0x031030c0);
 	val &= 0xf0000000;
 	val |= (para->dram_para2 & (1 << 12)) ? 0x03000001 : 0x01000007; // 0x01003087 XXX
-	write32(0x31030c0, val);
+	write32(0x031030c0, val);
 
-	if (read32(0x70005d4) & (1 << 16)) {
-		val = read32(0x7010250);
+	if (read32(0x070005d4) & (1 << 16)) {
+		val = read32(0x07010250);
 		val &= 0xfffffffd;
-		write32(0x7010250, val);
+		write32(0x07010250, val);
 
 		sdelay(10);
 	}
 
 	// Set ZQ config
-	val = read32(0x3103140) & 0xfc000000;
+	val = read32(0x03103140) & 0xfc000000;
 	val |= para->dram_zq & 0x00ffffff;
 	val |= 0x02000000;
-	write32(0x3103140, val);
+	write32(0x03103140, val);
 
 	// Initialise DRAM controller
 	if (dqs_gating_mode == 1) {
-		//		write32(0x3103000, 0x52); // prep PHY reset + PLL init + z-cal
-		write32(0x3103000, 0x53); // Go
+		//		write32(0x03103000, 0x52); // prep PHY reset + PLL init + z-cal
+		write32(0x03103000, 0x53); // Go
 
-		while ((read32(0x3103010) & 0x1) == 0) {
+		while ((read32(0x03103010) & 0x1) == 0) {
 		} // wait for IDONE
 		sdelay(10);
 
@@ -1042,99 +1042,99 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 		//					     : 0x520;
 
 		if (para->dram_type == 3) {
-			write32(0x3103000, 0x5a0);
+			write32(0x03103000, 0x5a0);
 		} else {
-			write32(0x3103000, 0x520);
+			write32(0x03103000, 0x520);
 		}
 
 	} else {
-		if ((read32(0x70005d4) & (1 << 16)) == 0) {
+		if ((read32(0x070005d4) & (1 << 16)) == 0) {
 			// prep DRAM init + PHY reset + d-cal + PLL init + z-cal
 			//			val = (para->dram_type == 3) ? 0x1f2	// + DRAM reset
 			//						     : 0x172;
 
 			if (para->dram_type == 3) {
-				write32(0x3103000, 0x1f2);
+				write32(0x03103000, 0x1f2);
 			} else {
-				write32(0x3103000, 0x172);
+				write32(0x03103000, 0x172);
 			}
 		} else {
 			// prep PHY reset + d-cal + z-cal
 			//			val = 0x62;
-			write32(0x3103000, 0x62);
+			write32(0x03103000, 0x62);
 		}
 	}
 
-	//	write32(0x3103000, val); // Prep
+	//	write32(0x03103000, val); // Prep
 	//	val |= 1;
-	//	write32(0x3103000, val); // Go
+	//	write32(0x03103000, val); // Go
 
-	write32(0x3103000, read32(0x3103000) | 1); // GO
+	write32(0x03103000, read32(0x03103000) | 1); // GO
 
 	sdelay(10);
-	while ((read32(0x3103010) & 0x1) == 0) {
+	while ((read32(0x03103010) & 0x1) == 0) {
 	} // wait for IDONE
 
-	if (read32(0x70005d4) & (1 << 16)) {
-		val = read32(0x310310c);
+	if (read32(0x070005d4) & (1 << 16)) {
+		val = read32(0x0310310c);
 		val &= 0xf9ffffff;
 		val |= 0x04000000;
-		write32(0x310310c, val);
+		write32(0x0310310c, val);
 
 		sdelay(10);
 
-		val = read32(0x3103004);
+		val = read32(0x03103004);
 		val |= 0x1;
-		write32(0x3103004, val);
+		write32(0x03103004, val);
 
-		while ((read32(0x3103018) & 0x7) != 0x3) {
+		while ((read32(0x03103018) & 0x7) != 0x3) {
 		}
 
-		val = read32(0x7010250);
+		val = read32(0x07010250);
 		val &= 0xfffffffe;
-		write32(0x7010250, val);
+		write32(0x07010250, val);
 
 		sdelay(10);
 
-		val = read32(0x3103004);
+		val = read32(0x03103004);
 		val &= 0xfffffffe;
-		write32(0x3103004, val);
+		write32(0x03103004, val);
 
-		while ((read32(0x3103018) & 0x7) != 0x1) {
+		while ((read32(0x03103018) & 0x7) != 0x1) {
 		}
 
 		sdelay(15);
 
 		if (dqs_gating_mode == 1) {
-			val = read32(0x3103108);
+			val = read32(0x03103108);
 			val &= 0xffffff3f;
-			write32(0x3103108, val);
+			write32(0x03103108, val);
 
-			val = read32(0x310310c);
+			val = read32(0x0310310c);
 			val &= 0xf9ffffff;
 			val |= 0x02000000;
-			write32(0x310310c, val);
+			write32(0x0310310c, val);
 
 			sdelay(1);
-			write32(0x3103000, 0x401);
+			write32(0x03103000, 0x401);
 
-			while ((read32(0x3103010) & 0x1) == 0) {
+			while ((read32(0x03103010) & 0x1) == 0) {
 			}
 		}
 	}
 
 	// Check for training error
-	/*	val = read32(0x3103010);
+	/*	val = read32(0x03103010);
 		if (((val >> 20) & 0xff) && (val & 0x100000)) {
 			ddr_debug("ZQ calibration error, check external 240 ohm resistor.\n");
 			return 0;
 		}
 	*/
-	if ((read32(0x3103010) & 0xff00000) == 0) {
+	if ((read32(0x03103010) & 0xff00000) == 0) {
 		val = 1;
 
 	} else {
-		val = (read32(0x3103010) & 0x100000);
+		val = (read32(0x03103010) & 0x100000);
 
 		if (val != 0) {
 			PRINTF("ZQ calibration error, check external 240 ohm resistor.\n");
@@ -1143,36 +1143,36 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	}
 
 	// STATR = Zynq STAT? Wait for status 'normal'?
-	while ((read32(0x3103018) & 0x1) == 0) {
+	while ((read32(0x03103018) & 0x1) == 0) {
 	}
 
-	val = read32(0x310308c);
+	val = read32(0x0310308c);
 	val |= 0x80000000;
-	write32(0x310308c, val);
+	write32(0x0310308c, val);
 
 	sdelay(10);
 
-	val = read32(0x310308c);
+	val = read32(0x0310308c);
 	val &= 0x7fffffff;
-	write32(0x310308c, val);
+	write32(0x0310308c, val);
 
 	sdelay(10);
 
-	val = read32(0x3102014);
+	val = read32(0x03102014);
 	val |= 0x80000000;
-	write32(0x3102014, val);
+	write32(0x03102014, val);
 
 	sdelay(10);
 
-	val = read32(0x310310c);
+	val = read32(0x0310310c);
 	val &= 0xf9ffffff;
-	write32(0x310310c, val);
+	write32(0x0310310c, val);
 
 	if (dqs_gating_mode == 1) {
-		val = read32(0x310311c);
+		val = read32(0x0310311c);
 		val &= 0xffffff3f;
 		val |= 0x00000040;
-		write32(0x310311c, val);
+		write32(0x0310311c, val);
 	}
 
 	return 1;
@@ -1186,7 +1186,7 @@ static int DRAMC_get_dram_size(void)
 {
 	unsigned int rval, temp, size0, size1;
 
-	rval = read32(0x3102000); // MC_WORK_MODE0
+	rval = read32(0x03102000); // MC_WORK_MODE0
 
 	temp = (rval >> 8) & 0xf; // page size - 3
 	temp += (rval >> 4) & 0xf; // row width - 1
@@ -1199,7 +1199,7 @@ static int DRAMC_get_dram_size(void)
 		return size0;
 	}
 
-	rval = read32(0x3102004); // MC_WORK_MODE1
+	rval = read32(0x03102004); // MC_WORK_MODE1
 
 	temp = rval & 0x3;
 	if (temp == 0) { // two identical ranks
@@ -1226,7 +1226,7 @@ static int dqs_gate_detect(dram_para_t *para)
 	unsigned int u1;
 	unsigned int u2;
 
-	if (read32(0x3103010) & (1 << 22)) {
+	if (read32(0x03103010) & (1 << 22)) {
 		u1 = (uint32_t)(read32(0x03103348) << 6) >> 0x1e;
 		u2 = (uint32_t)(read32(0x031033c8) << 6) >> 0x1e;
 
@@ -1308,14 +1308,14 @@ static void mctl_vrefzq_init(dram_para_t *para)
 	unsigned int val;
 
 	if ((para->dram_tpr13 & (1 << 17)) == 0) {
-		val = read32(0x3103110) & 0x80808080; // IOCVR0
+		val = read32(0x03103110) & 0x80808080; // IOCVR0
 		val |= para->dram_tpr5;
-		write32(0x3103110, val);
+		write32(0x03103110, val);
 
 		if ((para->dram_tpr13 & (1 << 16)) == 0) {
-			val = read32(0x3103114) & 0xffffff80; // IOCVR1
+			val = read32(0x03103114) & 0xffffff80; // IOCVR1
 			val |= para->dram_tpr6 & 0x7f;
-			write32(0x3103114, val);
+			write32(0x03103114, val);
 		}
 	}
 }
@@ -1407,10 +1407,10 @@ static int auto_scan_dram_size(dram_para_t *para) // s7
 
 		if (rank == 1) {
 			// Set bank mode for rank0
-			rval = read32(0x3102000);
+			rval = read32(0x03102000);
 			rval &= 0xfffff003;
 			rval |= 0x000006a4;
-			write32(0x3102000, rval);
+			write32(0x03102000, rval);
 		}
 
 		// Set bank mode for current rank
@@ -1447,10 +1447,10 @@ static int auto_scan_dram_size(dram_para_t *para) // s7
 
 		if (rank == 1) {
 			// Set page mode for rank0
-			rval = read32(0x3102000);
+			rval = read32(0x03102000);
 			rval &= 0xfffff003;
 			rval |= 0x00000aa0;
-			write32(0x3102000, rval);
+			write32(0x03102000, rval);
 		}
 
 		// Set page mode for current rank
@@ -1490,15 +1490,15 @@ static int auto_scan_dram_size(dram_para_t *para) // s7
 		rank++;
 		if (rank != maxrank) {
 			if (rank == 1) {
-				rval = read32(0x3202000); // MC_WORK_MODE
+				rval = read32(0x03202000); // MC_WORK_MODE
 				rval &= 0xfffff003;
 				rval |= 0x000006f0;
-				write32(0x3202000, rval);
+				write32(0x03202000, rval);
 
-				rval = read32(0x3202004); // MC_WORK_MODE2
+				rval = read32(0x03202004); // MC_WORK_MODE2
 				rval &= 0xfffff003;
 				rval |= 0x000006f0;
-				write32(0x3202004, rval);
+				write32(0x03202004, rval);
 			}
 			offs += 16; // store rank1 config in upper half of para1
 			mc_work_mode += 4; // move to MC_WORK_MODE2
@@ -1537,7 +1537,7 @@ static int auto_scan_dram_rank_width(dram_para_t *para)
 
 	mctl_core_init(para);
 
-	if (read32(0x3103010) & (1 << 20)) {
+	if (read32(0x03103010) & (1 << 20)) {
 		return 0;
 	}
 
@@ -1578,18 +1578,18 @@ signed int init_DRAM(int type, dram_para_t *para) // s0
 	// Test ZQ status
 	if (para->dram_tpr13 & 0x10000) {
 		ddr_debug("DRAM only have internal ZQ!!\n");
-		write32(0x3000160, read32(0x3000160) | 0x100);
-		write32(0x3000168, 0);
+		write32(0x03000160, read32(0x03000160) | 0x100);
+		write32(0x03000168, 0);
 		sdelay(10);
 	} else {
-		write32(0x3000160, read32(0x3000160) & 0xfffffffc);
-		write32(0x7010254, para->dram_tpr13 & 0x10000);
+		write32(0x03000160, read32(0x03000160) & 0xfffffffc);
+		write32(0x07010254, para->dram_tpr13 & 0x10000);
 		sdelay(10);
-		write32(0x3000160, (read32(0x3000160) & 0xfffffef7) | 2);
+		write32(0x03000160, (read32(0x03000160) & 0xfffffef7) | 2);
 		sdelay(10);
-		write32(0x3000160, read32(0x3000160) | 0x001);
+		write32(0x03000160, read32(0x03000160) | 0x001);
 		sdelay(20);
-		ddr_debug("ZQ value = 0x%x\n", read32(0x300016c));
+		ddr_debug("ZQ value = 0x%x\n", read32(0x0300016c));
 	}
 
 	// Set voltage
@@ -1645,49 +1645,49 @@ signed int init_DRAM(int type, dram_para_t *para) // s0
 		if (rc == 0) {
 			rc = 0x10000200;
 		}
-		write32(0x31030a0, rc);
-		write32(0x310309c, 0x40a);
-		write32(0x3103004, read32(0x3103004) | 1);
+		write32(0x031030a0, rc);
+		write32(0x0310309c, 0x40a);
+		write32(0x03103004, read32(0x03103004) | 1);
 		ddr_debug("Enable Auto SR");
 	} else {
 #endif
-		write32(0x31030a0, read32(0x31030a0) & 0xffff0000);
-		write32(0x3103004, read32(0x3103004) & (~0x1));
+		write32(0x031030a0, read32(0x031030a0) & 0xffff0000);
+		write32(0x03103004, read32(0x03103004) & (~0x1));
 //	}
 
 	// Pupose ??
-	rc = read32(0x3103100) & ~(0xf000);
+	rc = read32(0x03103100) & ~(0xf000);
 	if ((para->dram_tpr13 & 0x200) == 0) {
 		if (para->dram_type != 6) {
-			write32(0x3103100, rc);
+			write32(0x03103100, rc);
 		}
 	} else {
-		write32(0x3103100, rc | 0x5000);
+		write32(0x03103100, rc | 0x5000);
 	}
 
-	write32(0x3103140, read32(0x3103140) | (1 << 31));
+	write32(0x03103140, read32(0x03103140) | (1 << 31));
 	if (para->dram_tpr13 & (1 << 8)) {
-		write32(0x31030b8, read32(0x3103140) | 0x300);
+		write32(0x031030b8, read32(0x03103140) | 0x300);
 	}
 
-	rc = read32(0x3103108);
+	rc = read32(0x03103108);
 	if (para->dram_tpr13 & (1 << 16)) {
 		rc &= 0xffffdfff;
 	} else {
 		rc |= 0x00002000;
 	}
-	write32(0x3103108, rc);
+	write32(0x03103108, rc);
 
 	// Purpose ??
 	if (para->dram_type == 7) {
-		rc = read32(0x310307c) & 0xfff0ffff;
+		rc = read32(0x0310307c) & 0xfff0ffff;
 		rc |= 0x0001000;
-		write32(0x310307c, rc);
+		write32(0x0310307c, rc);
 	}
 
 	dram_enable_all_master();
 	if (para->dram_tpr13 & (1 << 28)) {
-		rc = read32(0x70005d4);
+		rc = read32(0x070005d4);
 		if ((rc & (1 << 16)) || dramc_simple_wr_test(mem_size, 4096)) {
 			return 0;
 		}
