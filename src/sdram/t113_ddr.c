@@ -20,6 +20,7 @@
 #if CPUSTYPE_T113
 
 #include "formats.h"
+#include "clocks.h"
 
 // Sources taker from:
 //	https://raw.githubusercontent.com/szemzoa/awboot/main/arch/arm32/mach-t113s3/mctl_hal.c
@@ -687,7 +688,7 @@ static int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 	clk = (para->dram_tpr13 & (1 << 6)) ? para->dram_tpr9 : para->dram_clk;
 
 	// set VCO clock divider
-	n	= (clk * 2) / 24;
+	n	= (clk * 2) / (allwnrt113_get_hosc_freq() / 1000000);
 
 	val = read32(0x02001010);
 	val &= 0xfff800fc; // clear dividers

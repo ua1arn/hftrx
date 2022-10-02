@@ -4278,6 +4278,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 	#endif /* WITHDEBUG */
 #else
+	set_pll_cpux_axi(PLL_CPU_N);
 	sys_dram_init();
 #endif
 	//PRINTF("arm_hardware_sdram_initialize done\n");
