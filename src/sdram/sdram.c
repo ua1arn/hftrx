@@ -4230,65 +4230,42 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #if CPUSTYPE_T113 || CPUSTYPE_F133
 
 #include "spi.h"
-
-struct ddr3_param_t {
-	uint32_t dram_clk;
-	uint32_t dram_type;
-	uint32_t dram_zq;
-	uint32_t dram_odt_en;
-	uint32_t dram_para1;
-	uint32_t dram_para2;
-	uint32_t dram_mr0;
-	uint32_t dram_mr1;
-	uint32_t dram_mr2;
-	uint32_t dram_mr3;
-	uint32_t dram_tpr0;
-	uint32_t dram_tpr1;
-	uint32_t dram_tpr2;
-	uint32_t dram_tpr3;
-	uint32_t dram_tpr4;
-	uint32_t dram_tpr5;
-	uint32_t dram_tpr6;
-	uint32_t dram_tpr7;
-	uint32_t dram_tpr8;
-	uint32_t dram_tpr9;
-	uint32_t dram_tpr10;
-	uint32_t dram_tpr11;
-	uint32_t dram_tpr12;
-	uint32_t dram_tpr13;
-	uint32_t reserve[8];
+static struct dram_para_t ddr3 =
+{
+	.dram_clk = 792,
+	.dram_type = 3,
+	.dram_zq = 0x7b7bfb,
+	.dram_odt_en = 0x00,
+	.dram_para1 = 0x000010d2,
+	.dram_para2 = 0x0000,
+	.dram_mr0 = 0x1c70,
+	.dram_mr1 = 0x042,
+	.dram_mr2 = 0x18,
+	.dram_mr3 = 0x0,
+	.dram_tpr0 = 0x004A2195,
+	.dram_tpr1 = 0x02423190,
+	.dram_tpr2 = 0x0008B061,
+	.dram_tpr3 = 0xB4787896,
+	.dram_tpr4 = 0x0,
+	.dram_tpr5 = 0x48484848,
+	.dram_tpr6 = 0x00000048,
+	.dram_tpr7 = 0x1620121e,
+	.dram_tpr8 = 0x0,
+	.dram_tpr9 = 0x0,
+	.dram_tpr10 = 0x0,
+	.dram_tpr11 = 0x00340000,
+	.dram_tpr12 = 0x00000046,
+	.dram_tpr13 = 0x34000100,
 };
+
+void sys_dram_init(void)
+{
+ init_DRAM(0, &ddr3);
+}
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 	//PRINTF("arm_hardware_sdram_initialize start\n");
-	static const struct ddr3_param_t ddr3 = {
-		.dram_clk = 792,
-		.dram_type = 3,
-		.dram_zq = 0x7b7bfb,
-		.dram_odt_en = 0x00,
-		.dram_para1 = 0x000010d2,
-		.dram_para2 = 0x0000,
-		.dram_mr0 = 0x1c70,
-		.dram_mr1 = 0x042,
-		.dram_mr2 = 0x18,
-		.dram_mr3 = 0x0,
-		.dram_tpr0 = 0x004A2195,
-		.dram_tpr1 = 0x02423190,
-		.dram_tpr2 = 0x0008B061,
-		.dram_tpr3 = 0xB4787896,
-		.dram_tpr4 = 0x0,
-		.dram_tpr5 = 0x48484848,
-		.dram_tpr6 = 0x00000048,
-		.dram_tpr7 = 0x1620121e,
-		.dram_tpr8 = 0x0,
-		.dram_tpr9 = 0x0,
-		.dram_tpr10 = 0x0,
-		.dram_tpr11 = 0x00340000,
-		.dram_tpr12 = 0x00000046,
-		.dram_tpr13 = 0x34000100,
-	};
-
 #if 0
 	const uintptr_t ddr3init_base = 0x00028000;
 	/* вызывается до разрешения MMU */
