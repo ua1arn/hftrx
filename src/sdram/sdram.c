@@ -4289,7 +4289,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		.dram_tpr13 = 0x34000100,
 	};
 
-#if 1
+#if 0
 	const uintptr_t ddr3init_base = 0x00028000;
 	/* вызывается до разрешения MMU */
 	bootloader_readimage(0x00040000, (void *) ddr3init_base, 0x8000);
