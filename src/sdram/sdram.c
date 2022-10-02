@@ -4260,7 +4260,7 @@ static struct dram_para_t ddr3 =
 
 void sys_dram_init(void)
 {
- init_DRAM(0, &ddr3);
+	init_DRAM(0, & ddr3);
 }
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
