@@ -1353,7 +1353,7 @@ static int auto_scan_dram_size(dram_para_t *para) // s7
 {
 	unsigned int rval, i, j, rank, maxrank, offs, mc_work_mode;
 	unsigned int chk, ptr, shft;
-#ifdef CONFIG_DEBUG_DDR_DRIVER
+#ifdef WITHDEBUG
 	unsigned int banks;
 #endif
 
@@ -1433,7 +1433,7 @@ static int auto_scan_dram_size(dram_para_t *para) // s7
 			chk += 4;
 		}
 
-#ifdef CONFIG_DEBUG_DDR_DRIVER
+#if WITHDEBUG
 		banks = (j + 1) << 2; // 4 or 8
 #endif
 		ddr_debug("[AUTO DEBUG] rank %d bank = %d\n", rank, banks);
