@@ -2230,7 +2230,7 @@ void hardware_spi_disconnect(void)
 #elif CPUSTYLE_STM32H7XX
 
 	SPI1->CR1 |= SPI_CR1_CSUSP;
-	while ((SPI1->CR1 & SPI_CR1_CSTART) != 0)
+	while ((SPI1->CR1 & SPI_CR1_CSUSP) != 0)
 		;
 	SPI1->CR1 &= ~ SPI_CR1_SPE;
 	// connect back to GPIO
@@ -2265,7 +2265,7 @@ void hardware_spi_disconnect(void)
 	//#warning Insert code for CPUSTYLE_STM32MP1
 
 	SPI1->CR1 |= SPI_CR1_CSUSP;
-	while ((SPI1->CR1 & SPI_CR1_CSTART) != 0)
+	while ((SPI1->CR1 & SPI_CR1_CSUSP) != 0)
 		;
 	SPI1->CR1 &= ~ SPI_CR1_SPE;
 	// connect back to GPIO
