@@ -4138,6 +4138,51 @@ void _stack_init(void)
 
 }
 
+#if __riscv
+
+/**
+  \brief   Initializes data and bss sections
+  \details This default implementations initialized all data and additional bss
+           sections relying on .copy.table and .zero.table specified properly
+           in the used linker script.
+
+ */
+__NO_RETURN void __cmsis_start(void)
+{
+  extern void _start(void) __NO_RETURN;
+
+  typedef struct {
+    uint32_t const* src;
+    uint32_t* dest;
+    uint32_t  wlen;
+  } __copy_table_t;
+
+  typedef struct {
+    uint32_t* dest;
+    uint32_t  wlen;
+  } __zero_table_t;
+
+  extern const __copy_table_t __copy_table_start__;
+  extern const __copy_table_t __copy_table_end__;
+  extern const __zero_table_t __zero_table_start__;
+  extern const __zero_table_t __zero_table_end__;
+
+  for (__copy_table_t const* pTable = &__copy_table_start__; pTable < &__copy_table_end__; ++pTable) {
+    for(uint32_t i=0u; i<pTable->wlen; ++i) {
+      pTable->dest[i] = pTable->src[i];
+    }
+  }
+
+  for (__zero_table_t const* pTable = &__zero_table_start__; pTable < &__zero_table_end__; ++pTable) {
+    for(uint32_t i=0u; i<pTable->wlen; ++i) {
+      pTable->dest[i] = 0u;
+    }
+  }
+
+  _start();
+}
+#endif
+
 #if 1//(__CORTEX_M == 0) && 0
 
 // Используется в случае наличия ключа ld -nostartfiles
