@@ -1297,7 +1297,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	}
 #endif /* WITHUSBDMTP */
 #if WITHUSBDMSC
-#warning WITHUSBDMSCnot finished
+#warning WITHUSBDMSC not finished
 	{
 
 	}
