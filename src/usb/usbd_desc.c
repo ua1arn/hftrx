@@ -280,6 +280,10 @@ static unsigned usbd_get_productId(void)
 	#if WITHUSBHID
 		v |= (1u << 4);
 	#endif /* WITHUSBDMSC */
+	#if (WITHUSBCDCEEM || WITHUSBCDCECM || WITHUSBRNDIS)
+		v |= (1u << 3);
+	#endif /* (WITHUSBCDCEEM || WITHUSBCDCECM || WITHUSBRNDIS) */
+
 #endif /* WITHISBOOTLOADER */
 
 	return v;
