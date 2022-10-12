@@ -2811,11 +2811,10 @@ void usb_device_function0(void)
 	usb_device_function(pusb);
 }
 
-static uint8_t  ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
-static uint8_t  ALIGNX_BEGIN device_bo_bufbase [64 * 1024] ALIGNX_END;
-
 void usb_params_init(pusb_struct pusb)
 {
+	static uint8_t  ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
+	static uint8_t  ALIGNX_BEGIN device_bo_bufbase [64 * 1024] ALIGNX_END;
 	uint32_t i;
 
 	//usb_clock_init();
@@ -2838,7 +2837,7 @@ void usb_params_init(pusb_struct pusb)
 		pusb->device.dev_desc   = USB_FS_BULK_DevDesc;
 		pusb->device.config_desc= USB_FS_BULK_ConfigDesc;
 	}
-	for(i=0; i<4; i++)
+	for(i=0; i<ARRAY_SIZE(pusb->device.str_desc); i++)
 	{
 		pusb->device.str_desc[i]   = USB_StrDec0[i];
 	}
