@@ -98,7 +98,7 @@
 
 
 #define get_bvalue(n)    		(*((volatile uint8_t *)(n)))          /* byte input */
-#define put_bvalue(n,c)  		(*((volatile uint8_t *)(n)) = (c))    /* byte output */
+#define put_bvalue(n,c)  		do { (*((volatile uint8_t *)(n)) = (c)); } while (0)    /* byte output */
 
 #define  wBoot_part_start(part)      0
 #define  wBoot_dma_QueryState(hdma)  0
@@ -152,10 +152,6 @@ static int wBoot_block_write(unsigned int start,unsigned int nblock,void *pBuffe
 
 
 //////////////////////////////////////////////////////////////////
-static uint32_t usb_get_epx_fifo_access(pusb_struct pusb, uint32_t ep_no)
-{
-	return (USBOTG0_BASE + ((ep_no & 0xf) << 2));
-}
 
 static void usb_set_dev_addr(pusb_struct pusb, uint32_t addr)
 {

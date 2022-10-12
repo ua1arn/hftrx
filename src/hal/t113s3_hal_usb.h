@@ -254,17 +254,6 @@ typedef struct
 //#define   USB2DRAM_PARAMS    	0x0f000f0f
 //#define   DRAM2USB_PARAMS    	0x0f0f0f00
 
-
-
-#define get_bvalue(n)    		(*((volatile uint8_t *)(n)))          /* byte input */
-#define put_bvalue(n,c)  		(*((volatile uint8_t *)(n)) = (c))    /* byte output */
-#define get_hvalue(n)   		(*((volatile uint16_t *)(n)))         /* half word input */
-#define put_hvalue(n,c) 		(*((volatile uint16_t *)(n)) = (c))   /* half word output */
-#define get_wvalue(n)   		(*((volatile uint32_t *)(n)))          /* word input */
-#define put_wvalue(n,c) 		(*((volatile uint32_t *)(n)) = (c))    /* word output */
-
-
-
 #define __HAL_PCD_ENABLE(__HANDLE__)            //           (void)USB_EnableGlobalInt ((__HANDLE__)->Instance)
 #define __HAL_PCD_DISABLE(__HANDLE__)           //           (void)USB_DisableGlobalInt ((__HANDLE__)->Instance)
 
