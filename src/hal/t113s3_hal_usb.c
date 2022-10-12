@@ -2336,7 +2336,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 			case 0x00 :
     			PRINTF("usb_device: Get Status\n");
 			case 0x06 :
-				switch((ep0_setup->wValue>>8)&0xff)
+				switch(HI_BYTE(ep0_setup->wValue))
 				{
 					case 0x01:              //Get Device Desc
 						pusb->ep0_maxpktsz = *((uint8_t*)(pusb->device.dev_desc+7));
@@ -2351,7 +2351,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						pusb->ep0_xfer_residue = min(temp, ep0_setup->wLength);
 						break;
 					case 0x03:             //Get String Desc
-					   	temp = ep0_setup->wValue&0xff;
+					   	temp = LO_BYTE(ep0_setup->wValue);
 					   	if(temp < 4)
 						{
 							pusb->ep0_xfer_srcaddr = (uintptr_t)pusb->device.str_desc[temp];
@@ -2497,9 +2497,9 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 			break;
 
 		case 0x05 :
-			usb_set_dev_addr(pusb, ep0_setup->wValue);
-       		pusb->device.func_addr = ep0_setup->wValue;
-       		PRINTF("usb_device: Set Address 0x%x\n", ep0_setup->wValue);
+			usb_set_dev_addr(pusb, LO_BYTE(ep0_setup->wValue));
+       		pusb->device.func_addr = LO_BYTE(ep0_setup->wValue);
+       		PRINTF("usb_device: Set Address 0x%x\n", LO_BYTE(ep0_setup->wValue));
 			break;
 
 		case 0x07 :
