@@ -2811,126 +2811,14 @@ void usb_device_function0(void)
 	usb_device_function(pusb);
 }
 
-static void usb_clock_init(void)         //��������� ��� ����� � ����� ��� USB OTG, ����� �����, �������� SRAM �� USB OTG
-{
-// USB_BGR_REG|=(1<<8);             //Gating enable for OTG0
-//
-// USB0_CLK_REG|=(1UL<<31)|(1<<30); //Gate clock on for OHCI0, de-assert PHY0
-//
-// USB_BGR_REG|=(1<<24);            //de-assert reset OTG0
-//
-//
-//
-//// BUS_CLK_GATING_REG0|=(1<<24); //USB OTG Device Gating Pass
-//
-//// USBPHY_CFG_REG|=(1<<8)|1;     //Clock On, USB PHY0 RST de-assert
-//
-//// BUS_SOFT_RST_REG0|=(1<<24);   //USB OTG Device RST de-assert
-//
-//// SRAM_CFG_REG1|=1;             //SRAM map to USB OTG
-	//	Allwinner USB DRD support (musb_otg)
-	//
-	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
-	//	different register layout and a few missing registers.
-	// Turn off EHCI0
-//	PRINTF("1 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
-//	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
-//	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
-
-    arm_hardware_disable_handler(USB0_DEVICE_IRQn);
-    arm_hardware_disable_handler(USB0_EHCI_IRQn);
-    arm_hardware_disable_handler(USB0_OHCI_IRQn);
-
-	CCU->USB_BGR_REG &= ~ (1uL << 16);	// USBOHCI0_RST
-	CCU->USB_BGR_REG &= ~ (1uL << 20);	// USBEHCI0_RST
-	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST
-
-	CCU->USB_BGR_REG &= ~ (1uL << 0);	// USBOHCI0_GATING
-	CCU->USB_BGR_REG &= ~ (1uL << 4);	// USBEHCI0_GATING
-	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN
-
-	//PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled. Enable for process.\n");
-	//return;
-
-	// Turn on USBOTG0
-	CCU->USB_BGR_REG |= (1uL << 24);	// USBOTG0_RST
-	CCU->USB_BGR_REG |= (1uL << 8);	// USBOTG0_GATING
-
-	// Enable
-	CCU->USB0_CLK_REG |= (1uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-	CCU->USB0_CLK_REG |= (1uL << 30);	// USBPHY0_RSTN
-
-	// OHCI0 12M Source Select
-	CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
-		(0x00 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
-		(1uL << 31) |	// USB0_CLKEN - Gating Special Clock For OHCI0
-		(1uL << 30) |	// USBPHY0_RSTN
-		0;
-
-
-//
-//
-//
-
-
-	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
-	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
-
-	// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
-	//	/* A83T specific control bits for PHY0 */
-	//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
-	//	#define PHY_CTL_SIDDQ			BIT(3)
-	//	#define PHY_CTL_H3_SIDDQ		BIT(1)
-
-	USBOTG0->PHY_OTGCTL |= (1uL << 0); 	// Device mode. Route phy0 to OTG0
-
-	USBOTG0->USB_ISCR = 0x4300FC00;	// после запуска из QSPI было 0x40000000
-	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
-	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
-	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
-	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
-
-}
-
-static void usb_clock_exit(void)        //��������� ��� ����� � ����� ��� USB OTG, �������� SRAM ������� �� CPU
-{
-// USB0_CLK_REG&=~(1UL<<31);       //Clock off
-//
-// USB_BGR_REG&=~(1<<8);           //Gating disable
-//
-//
-//
-//// SRAM_CFG_REG1&=~1;             //SRAM map to CPU
-//
-//// USBPHY_CFG_REG&=~(1<<8);       //Clock off
-//
-//// BUS_CLK_GATING_REG0&=~(1<<24); //USB OTG Device Gating off
-}
-
-/*
-************************************************************************************************************
-*
-*                                             function
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ��
-*
-*
-************************************************************************************************************
-*/
 static uint8_t  ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
 static uint8_t  ALIGNX_BEGIN device_bo_bufbase [64 * 1024] ALIGNX_END;
-void usb_params_init(PCD_HandleTypeDef *hpcd)
+
+void usb_params_init(pusb_struct pusb)
 {
-	pusb_struct pusb = & hpcd->awxx_usb;
 	uint32_t i;
 
-	usb_clock_init();
+	//usb_clock_init();
 
 //	pusb->index = 0;
 //	pusb->reg_base = USBOTG0_BASE;
@@ -3120,23 +3008,6 @@ void usb_irq_handler(pusb_struct pusb)
 	return;
 }
 
-void usb0_irq_handler(void)
-{
-	extern PCD_HandleTypeDef hpcd_USB_OTG;
-
-	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
-}
-
-static void reg_usb_irq_handler(void) //��������� ���������� �� USB OTG
-{
-// CLI();                                                           //��������� ����������
-// eGon2_Int_Init();                                                //������������������� ���������� ����������
-// eGon2_InsINT_Func(GIC_SRC_USB0,(int*)usb0_irq_handler,(void*)0); //���������������� ���������� ���������� �� USB OTG
-// eGon2_EnableInt(GIC_SRC_USB0);                                   //��������� ���������� �� USB OTG
-// STI();                                                           //��������� ����������
-	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, usb0_irq_handler);
-}
-
 void usb_struct_init(pusb_struct pusb)
 {
 	uint32_t i=0;
@@ -3238,9 +3109,8 @@ void usb_init(pusb_struct pusb)
 
 static void musb2_prepare(PCD_HandleTypeDef *hpcd)
 {
-	usb_params_init(hpcd);
-
-	reg_usb_irq_handler();
+	pusb_struct pusb = & hpcd->awxx_usb;
+	usb_params_init(pusb);
 }
 
 
