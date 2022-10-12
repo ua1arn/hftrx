@@ -4,27 +4,24 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-#undef USE_HAL_DRIVER
 
 #include "hardware.h"
-#include "board.h"
-#include "audio.h"
-#include "formats.h"
-#include "spi.h"
 
 #if WITHUSBHW
 
-//#include "display/display.h"
-#include <string.h>
-#include <wchar.h>
-
+#include "formats.h"
+#include "board.h"
+#include "audio.h"
+#include "spi.h"
 #include "usb_device.h"
 #include "usbd_def.h"
 #include "usb200.h"
 #include "usbch9.h"
-
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
+
+#include <string.h>
+#include <wchar.h>
 
 // UAC audio device
 // USB\VID_FFFF&PID_0736&REV_0100&MI_00

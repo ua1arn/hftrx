@@ -1,11 +1,9 @@
 /* $Id$ */
-// allwnr_hal_usb.c
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-
 
 #include "hardware.h"
 
@@ -15,13 +13,8 @@
 #include "audio.h"
 #include "formats.h"
 
-#include "src/usb/usb200.h"
-#include "src/usb/usbch9.h"
-
 #include "usb_device.h"
-#include "usbd_core.h"
-#include "usbh_core.h"
-#include "usbh_def.h"
+#include "usbd_def.h"
 
 #include "t113s3_hal.h"
 #include "t113s3_hal_usb.h"
