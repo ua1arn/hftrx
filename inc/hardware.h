@@ -1327,4 +1327,7 @@ typedef struct dram_para_t
 
 signed int init_DRAM(int type, dram_para_t *para); // s0
 
+uintptr_t getRamDiskBase(void);
+size_t getRamDiskSize(void);
+
 #endif // HARDWARE_H_INCLUDED

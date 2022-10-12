@@ -23,6 +23,16 @@ static ALIGNX_BEGIN
 	uint8_t ramdiskbuff [(uint_fast64_t) WITHUSERAMDISKSIZEKB * 1024 / FF_MAX_SS][FF_MAX_SS]
 	ALIGNX_END;
 
+uintptr_t getRamDiskBase(void)
+{
+	return (uintptr_t) ramdiskbuff;
+}
+
+size_t getRamDiskSize(void)
+{
+	return sizeof ramdiskbuff;
+}
+
 // for _USE_MKFS
 static
 DRESULT RAMDISK_Get_Block_Size (

@@ -165,7 +165,7 @@ void MX_USB_DEVICE_Init(void)
 	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_MTP);
 #endif /* WITHUSBDMTP */
 #if WITHUSBDMSC
-	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_MSC);
+	//USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_MSC);
 #endif /* WITHUSBDMSC */
 
  /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
@@ -233,6 +233,9 @@ void MX_USB_HOST_Process(void)
 /* User-mode function */
 void MX_USB_DEVICE_Process(void)
 {
+#if (CPUSTYPE_T113 || CPUSTYPE_F133)
+	usb_device_function0();
+#endif /* (CPUSTYPE_T113 || CPUSTYPE_F133) */
 }
 #endif /* defined (WITHUSBHW_DEVICE) */
 

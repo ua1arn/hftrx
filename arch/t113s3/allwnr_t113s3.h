@@ -1522,8 +1522,7 @@ typedef struct USBOTG_Type
 	__IO uint16_t USB_TXMAXP;                            /*!< Offset 0x080 USB_TXMAXP */
 	__IO uint16_t USB_CSR0;                              /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
 	__IO uint16_t USB_RXMAXP;                            /*!< Offset 0x084 USB_RXMAXP */
-	__IO uint8_t  USB_RXCSRL;                            /*!< Offset 0x086 USB_RXCSRL */
-	__IO uint8_t  USB_RXCSRH;                            /*!< Offset 0x087 USB_RXCSRH */
+	__IO uint16_t USB_RXCSR;                             /*!< Offset 0x086 USB_RXCSRL */
 	__IO uint16_t USB_RXCOUNT;                           /*!< Offset 0x088 USB_RXCOUNT */
 	__IO uint16_t USB_RXPKTCNT;                          /*!< Offset 0x08A USB_RXPKTCNT */
 	__IO uint8_t  USB_TXTI;                              /*!< Offset 0x08C USB_TXTI */
