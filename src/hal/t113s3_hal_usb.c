@@ -2811,10 +2811,10 @@ void usb_device_function0(void)
 	usb_device_function(pusb);
 }
 
-void usb_params_init(pusb_struct pusb)
+static void usb_params_init(pusb_struct pusb)
 {
-	static uint8_t  ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
-	static uint8_t  ALIGNX_BEGIN device_bo_bufbase [64 * 1024] ALIGNX_END;
+	static uint8_t ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
+	static uint8_t ALIGNX_BEGIN device_bo_bufbase [64 * 1024] ALIGNX_END;
 	uint32_t i;
 
 	//usb_clock_init();
@@ -2861,23 +2861,8 @@ void usb_params_init(pusb_struct pusb)
 	}
 
 }
-/*
-************************************************************************************************************
-*
-*                                             function
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ��
-*
-*
-************************************************************************************************************
-*/
-void usb_irq_handler(pusb_struct pusb)
+
+static void usb_irq_handler(pusb_struct pusb)
 {
 	//uint32_t index;
 	uint32_t temp;
