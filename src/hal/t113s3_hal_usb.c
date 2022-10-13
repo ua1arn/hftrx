@@ -2333,7 +2333,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				switch(HI_BYTE(ep0_setup->wValue))
 				{
 					case 0x01:              //Get Device Desc
-						pusb->ep0_maxpktsz = *((uint8_t*)(pusb->device.dev_desc+7));
+						pusb->ep0_maxpktsz = USB_OTG_MAX_EP0_SIZE; // *((uint8_t*)(pusb->device.dev_desc+7));
 						pusb->ep0_xfer_srcaddr = (uintptr_t)DeviceDescrTbl [temp].data;
 						pusb->ep0_xfer_residue = min(DeviceDescrTbl [temp].size, ep0_setup->wLength);
 						break;
@@ -2346,7 +2346,8 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					   	}
 						else
 						{
-							PRINTF("Unkown String Desc!!\n");
+						    pusb->ep0_xfer_residue = 0;
+							PRINTF("Unkown Configuration Desc!!\n");
 						}
 						break;
 					case 0x03:             //Get String Desc
@@ -2358,6 +2359,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						}
 						else
 						{
+						    pusb->ep0_xfer_residue = 0;
 							PRINTF("Unkown String Desc!! 0x%02X\n", temp);
 						}
 						break;
@@ -2376,6 +2378,10 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					case 0x09:
 					    pusb->ep0_xfer_srcaddr = (uintptr_t)pusb->device.otg_desc;
 					    pusb->ep0_xfer_residue = min(*((uint8_t*)pusb->ep0_xfer_srcaddr), ep0_setup->wLength);
+				    	break;
+					case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
+						pusb->ep0_xfer_srcaddr = (uintptr_t)OtherSpeedConfigurationTbl [0].data;
+						pusb->ep0_xfer_residue = min(OtherSpeedConfigurationTbl [0].size, ep0_setup->wLength);
 				    	break;
 					default  :
 					    pusb->ep0_xfer_residue = 0;
