@@ -19,6 +19,10 @@
 #include "t113s3_hal.h"
 #include "t113s3_hal_usb.h"
 
+#include "usbd_def.h"
+#include "src/usb/usb200.h"
+#include "src/usb/usbch9.h"
+
 #define DISK_DDR 1 /* ������� USB: 0 - SD-�����, 1 - DDR-������ */
 
 #define AW_RAMDISK_BASE                (getRamDiskBase()) //(AW_USBD_BASE+AW_USBD_SIZE)             /* ������� ����� ������ ����� � ������ */
@@ -37,17 +41,14 @@
 	#define USB0_SPEED 				USB_SPEED_FS
 #endif /* WITHUSBDEV_HSDESC */
 
-#define BULK_IN_EP    			0x1
-#define BULK_OUT_EP				0x2
+#define BULK_IN_EP    			USBD_EP_MSC_IN
+#define BULK_OUT_EP				USBD_EP_MSC_OUT
 
 #define USB_DEV_SEC_BITS   		9//
 #define USB_DEV_SEC_SIZE   		(0x1u << USB_DEV_SEC_BITS)//
 
-
 #define USB_EP_FIFO_SIZE		512
 #define USB_FIFO_ADDR_BLOCK		64//(USB_EP_FIFO_SIZE<<1)
-
-#define USB_MAX_LUN    			0//
 
 #define MAX_DDMA_SIZE			(16*1024*1024)  //16MB
 
@@ -59,7 +60,7 @@
 //#define USB_BO_DEV0_MEM_BASE	0x80800000//
 
 //#define USB_BO_DEV0_BUF_BASE	(USB_BO_DEV0_MEM_BASE + (USB_DEV0_TOTAL_CAP<<20))//
-#define USB_BO_DEV_BUF_SIZE	    ( 64 * 1024)//
+#define USB_BO_DEV_BUF_SIZE	    (64 * 1024)//
 
 //VBUS Level
 #define USB_VBUS_SESSEND		0
@@ -2244,17 +2245,16 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 {
 	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
-	uConfigDes *pconfig;
 	uIntfDes *pintf;
 	uint32_t i;
 	uint32_t fifo_addr = 1024;    //
 
-	pconfig = (uConfigDes *)(pusb->device.config_desc);
-	if(pconfig->bConfigVal != ep0_setup->wValue)
-	{
-		PRINTF("Error: Right Configval %d; Error Configval %d\n", pconfig->bConfigVal, ep0_setup->wValue);
-		return 0;
-	}
+//	uConfigDes *pconfig = (uConfigDes *)(pusb->device.config_desc);
+//	if(pconfig->bConfigVal != ep0_setup->wValue)
+//	{
+//		PRINTF("Error: Right Configval %d; Error Configval %d\n", pconfig->bConfigVal, ep0_setup->wValue);
+//		return 0;
+//	}
 	pintf = (uIntfDes *)(&pusb->device.config_desc[USB_CONFIG_DESC_LEN]);
 	for(i=0; i<pintf->bNumEP; i++)
 	{
@@ -2263,15 +2263,9 @@ static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 		const uint32_t ep_attr = pep->bmAttrib & 0x3;
 		//uint32_t interval;
 		const uint32_t ep_dir = (pep->bEPAddr>>7) & 0x1; //0 for OUT, and 1 for IN
+		const uint32_t maxpktsz = (pep->wMaxPktSize1 & 0x7) * 256 + (pep->wMaxPktSize0 & 0xff);
 
-		uint32_t maxpktsz;
-
-
-
-
-		maxpktsz = pep->wMaxPktSize1 & 0x7;
-		maxpktsz <<= 8;
-		maxpktsz |= pep->wMaxPktSize0 & 0xff;
+		PRINTF("ep0_set_config_handler_dev: fifo=%d, ep_no=%02X, ep_attr=%02X, ep_dir=%d, maxpktsz=%u\n", i, ep_no, ep_attr, ep_dir, maxpktsz);
 
 		usb_select_ep(pusb, ep_no);
 		if(ep_dir)
@@ -2340,26 +2334,31 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				{
 					case 0x01:              //Get Device Desc
 						pusb->ep0_maxpktsz = *((uint8_t*)(pusb->device.dev_desc+7));
-						pusb->ep0_xfer_srcaddr = (uintptr_t)pusb->device.dev_desc;
-						pusb->ep0_xfer_residue = min(*((uint8_t*)pusb->ep0_xfer_srcaddr), ep0_setup->wLength);
+						pusb->ep0_xfer_srcaddr = (uintptr_t)DeviceDescrTbl [temp].data;
+						pusb->ep0_xfer_residue = min(DeviceDescrTbl [temp].size, ep0_setup->wLength);
 						break;
 					case 0x02:              //Get Configuration Desc
-						temp = pusb->device.config_desc[3] & 0xff;
-						temp = temp << 8;
-						temp |= pusb->device.config_desc[2] & 0xff;
-						pusb->ep0_xfer_srcaddr = (uintptr_t)pusb->device.config_desc;
-						pusb->ep0_xfer_residue = min(temp, ep0_setup->wLength);
-						break;
-					case 0x03:             //Get String Desc
 					   	temp = LO_BYTE(ep0_setup->wValue);
-					   	if(temp < 4)
-						{
-							pusb->ep0_xfer_srcaddr = (uintptr_t)pusb->device.str_desc[temp];
-							pusb->ep0_xfer_residue = min(*((uint8_t*)pusb->ep0_xfer_srcaddr), ep0_setup->wLength);
-						}
+					   	if (temp < USBD_CONFIGCOUNT)
+					   	{
+							pusb->ep0_xfer_srcaddr = (uintptr_t)ConfigDescrTbl [temp].data;
+							pusb->ep0_xfer_residue = min(ConfigDescrTbl [temp].size, ep0_setup->wLength);
+					   	}
 						else
 						{
 							PRINTF("Unkown String Desc!!\n");
+						}
+						break;
+					case 0x03:             //Get String Desc
+					   	temp = LO_BYTE(ep0_setup->wValue);
+					   	if(temp < usbd_get_stringsdesc_count())
+						{
+							pusb->ep0_xfer_srcaddr = (uintptr_t)StringDescrTbl [temp].data;
+							pusb->ep0_xfer_residue = min(StringDescrTbl [temp].size, ep0_setup->wLength);
+						}
+						else
+						{
+							PRINTF("Unkown String Desc!! 0x%02X\n", temp);
 						}
 						break;
 					case 0x04:           //Get Interface Desc
@@ -2371,8 +2370,8 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					    PRINTF("usb_device: Get Endpoint Descriptor\n");
 				    	break;
 					case 0x06:           //Get Device Qualifier
-					    pusb->ep0_xfer_srcaddr = (uintptr_t)pusb->device.dev_qual;
-					    pusb->ep0_xfer_residue = min(*((uint8_t*)pusb->ep0_xfer_srcaddr), ep0_setup->wLength);
+						pusb->ep0_xfer_srcaddr = (uintptr_t)DeviceQualifierTbl [0].data;
+						pusb->ep0_xfer_residue = min(DeviceQualifierTbl [0].size, ep0_setup->wLength);
 				    	break;
 					case 0x09:
 					    pusb->ep0_xfer_srcaddr = (uintptr_t)pusb->device.otg_desc;
@@ -2380,7 +2379,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				    	break;
 					default  :
 					    pusb->ep0_xfer_residue = 0;
-					    PRINTF("usb_device: Get Unkown Descriptor\n");
+					    PRINTF("usb_device: Get Unkown Descriptor 0x%02X\n", HI_BYTE(ep0_setup->wValue));
 				}
 		      	break;
 	     	case 0x08 :
@@ -2414,10 +2413,34 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				PRINTF("usb_device: Unkown Class-Specific Request = 0x%x\n", ep0_setup->bRequest);
 		}
 	}
+	else if((ep0_setup->bmRequest&0x60)==USB_REQ_TYPE_VENDOR)
+	{
+		if (ep0_setup->bRequest == USBD_WCID_VENDOR_CODE && ep0_setup->wIndex == 0x05)
+		{
+			const uint_fast8_t ifc = LO_BYTE(ep0_setup->wValue);
+			//PRINTF(PSTR("MS USBD_StdItfReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+			// Extended Properties OS Descriptor
+			// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
+
+			// Extended Properties OS Descriptor support
+			if (ifc < ARRAY_SIZE(ExtOsPropDescTbl) && ExtOsPropDescTbl[ifc].size != 0)
+			{
+				pusb->ep0_xfer_srcaddr = (uintptr_t)ExtOsPropDescTbl [ifc].data;
+				pusb->ep0_xfer_residue = min(ExtOsPropDescTbl [ifc].size, ep0_setup->wLength);
+			}
+			else
+			{
+			}
+		}
+		else
+		{
+			PRINTF("usb_device: Unkown Vendor-Specific Request = 0x%x, wIndex=0x%04X\n", ep0_setup->bRequest, ep0_setup->wIndex);
+		}
+	}
 	else
 	{
 		pusb->ep0_xfer_residue = 0;
-		PRINTF("usb_device: Unkown EP0 IN!!\n");
+		PRINTF("usb_device: Unkown EP0 IN!!, 0x%02X\n", ep0_setup->bmRequest&0x60);
 	}
 
 	return 0;

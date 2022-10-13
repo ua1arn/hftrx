@@ -16,20 +16,6 @@ extern "C" {
 
 #define USB_MAX_EP_NO		5
 
-//#define DISK_DDR 1
-//#define  wBoot_part_start(part)      0
-//#define  wBoot_part_capacity(sect)   (AW_RAMDISK_SIZE/512)                     /* ����� �������� ������������ �����, ������ = 512 ���� */
-//#define  wBoot_part_count(sect)      (1)
-
-//#define  device_bo_memory_base       AW_USBD_BASE
-//#define  device_bo_bufbase           AW_USBD_BASE+0x20000
-
-
-
-//#define USB_SIE_COUNT		1
-
-#define USB_MAX_EP_NO		5
-
 typedef enum {
 	USB_RETVAL_NOTCOMP = 0,
 	USB_RETVAL_COMPOK,
