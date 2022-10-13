@@ -2138,26 +2138,31 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t fifo_addr)
 {
+	const uint32_t alignedepfifosize = (USB_EP_FIFO_SIZE + (USB_FIFO_ADDR_BLOCK - 1)) & (~ (USB_FIFO_ADDR_BLOCK - 1));  //Align to USB_FIFO_ADDR_BLOCK
+	const uint32_t is_dpb = 1;
+	const uint32_t maxpayload = maxpktsz;
+	const uint32_t pktcnt = USB_EP_FIFO_SIZE / maxpktsz;
+
 	PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, maxpktsz=%u\n", ep_no, ep_dir, maxpktsz);
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
 	{
-		usb_set_eptx_maxpkt(pusb, maxpktsz, USB_EP_FIFO_SIZE/maxpktsz);
+		usb_set_eptx_maxpkt(pusb, maxpayload, pktcnt);
 		usb_set_eptx_fifo_addr(pusb, fifo_addr);
-		usb_set_eptx_fifo_size(pusb, 1, USB_EP_FIFO_SIZE);
+		usb_set_eptx_fifo_size(pusb, is_dpb, alignedepfifosize);
 		usb_eptx_flush_fifo(pusb);
 		usb_eptx_flush_fifo(pusb);
 	}
 	else
 	{
-		usb_set_eprx_maxpkt(pusb, maxpktsz, USB_EP_FIFO_SIZE/maxpktsz);
+		usb_set_eprx_maxpkt(pusb, maxpayload, pktcnt);
 		usb_set_eprx_fifo_addr(pusb, fifo_addr);
-		usb_set_eprx_fifo_size(pusb, 1, USB_EP_FIFO_SIZE);
+		usb_set_eprx_fifo_size(pusb, is_dpb, alignedepfifosize);
 		usb_eprx_flush_fifo(pusb);
 		usb_eprx_flush_fifo(pusb);
 	}
-	//fifo_addr += ((USB_EP_FIFO_SIZE<<1)+(USB_FIFO_ADDR_BLOCK-1))&(~(USB_FIFO_ADDR_BLOCK-1));  //Align to USB_FIFO_ADDR_BLOCK
-	fifo_addr += ((maxpktsz * 2)+(USB_FIFO_ADDR_BLOCK-1))&(~(USB_FIFO_ADDR_BLOCK-1));  //Align to USB_FIFO_ADDR_BLOCK
+	/* двойной размер после округления - возможно double buffer */
+	fifo_addr += alignedepfifosize * (is_dpb ? 2 : 1);
 	return fifo_addr;
 }
 /*
