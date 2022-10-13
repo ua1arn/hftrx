@@ -376,9 +376,6 @@ extern "C" {
 #define MTP_DATA_MAX_PACKET_SIZE 64
 #define MTP_CMD_PACKET_SIZE		8          /* Control Endpoint Packet size */
 
-#define MSC_DATA_MAX_PACKET_SIZE_HS 512
-#define MSC_DATA_MAX_PACKET_SIZE_FS 64
-
 #define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
 
 
