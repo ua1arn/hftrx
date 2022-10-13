@@ -947,16 +947,18 @@ static void usb_release_vbus(pusb_struct pusb)
 
 static void usb_force_vbus(pusb_struct pusb, uint32_t vbus)
 {
-	if (vbus) 	USBOTG0->USB_ISCR |= (0x1u << 12);
-	else 		USBOTG0->USB_ISCR &= ~ (0x1u << 12);
+	if (vbus)
+		USBOTG0->USB_ISCR |= (0x1u << 12);
+	else
+		USBOTG0->USB_ISCR &= ~ (0x1u << 12);
 	USBOTG0->USB_ISCR |= (0x1u << 13);
 }
 
 static void usb_drive_vbus(pusb_struct pusb, uint32_t vbus, uint32_t index)
 {
-uint32_t temp;
 	if (index == 0)
 	{
+		uint32_t temp;
 //	//Set PB9 Output,USB0-DRV SET
 //	 temp = get_wvalue(0x01c20800+0x28);
 //	 temp &= ~ (0x7 << 4);
@@ -1010,22 +1012,33 @@ static int32_t dram_copy(uintptr_t src_addr, uintptr_t dest_addr, uint32_t bytes
 
 
 
-static const unsigned char TestPkt[54] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xAA,
-	                                 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xEE, 0xEE, 0xEE,
-	                                 0xEE, 0xEE, 0xEE, 0xEE, 0xEE, 0xFE, 0xFF, 0xFF, 0xFF, 0xFF,
-	                                 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0xBF, 0xDF,
-	                                 0xEF, 0xF7, 0xFB, 0xFD, 0xFC, 0x7E, 0xBF, 0xDF, 0xEF, 0xF7,
-	                                 0xFB, 0xFD, 0x7E, 0x00};
+static const unsigned char TestPkt[54] =
+{
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xAA,
+	0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xEE, 0xEE, 0xEE,
+	0xEE, 0xEE, 0xEE, 0xEE, 0xEE, 0xFE, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0xBF, 0xDF,
+	0xEF, 0xF7, 0xFB, 0xFD, 0xFC, 0x7E, 0xBF, 0xDF, 0xEF, 0xF7,
+	0xFB, 0xFD, 0x7E, 0x00
+};
 
-static const unsigned char USB_OTGDesc[3] = {0x03, 0x09, 0x03};
+static const unsigned char USB_OTGDesc[3] =
+{
+	0x03, 0x09, 0x03
+};
 
 ///////////////////////////////////////////////////////////
 //For MassStorage Only
 ///////////////////////////////////////////////////////////
-static const unsigned char  InquiryData[]  = {  0x00, 0x80, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 'A', 'W',
-	                                     'T',  'e' , 'c' , 'h' , ' ',  ' ',  'U' , 'S',  'B', ' ',
-	                                     'S',  't',  'o' , 'r' , 'a' , 'g' , 'e' , ' ',  ' ', ' ',
-	                                     ' ',  0x20, 0x30, 0x31, 0x30, 0x30};
+static const unsigned char  InquiryData[]  =
+{
+	0x00, 0x80, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00,
+	'A', 'W',
+	'T',  'e' , 'c' , 'h' , ' ',  ' ',  'U' , 'S',  'B', ' ',
+	'S',  't',  'o' , 'r' , 'a' , 'g' , 'e' , ' ',  ' ', ' ',
+	' ',
+	0x20, 0x30, 0x31, 0x30, 0x30
+};
 
 static const unsigned char SenseData[] = {0x03, 0x00, 0x00, 0x00};
 
@@ -1664,8 +1677,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pusb->device.bo_xfer_addr = (uintptr_t) pCSW;
 		pusb->device.bo_xfer_residue = USB_CSW_LEN;
 		pusb->device.bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-				USB_PRTCL_BULK);
+		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pusb->device.bo_state = USB_BO_CSW;
@@ -1692,8 +1704,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pusb->device.bo_xfer_addr = (uintptr_t) pCSW;
 		pusb->device.bo_xfer_residue = USB_CSW_LEN;
 		pusb->device.bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-				USB_PRTCL_BULK);
+		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pusb->device.bo_state = USB_BO_CSW;
@@ -1711,8 +1722,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pusb->device.bo_xfer_addr = (uintptr_t) pCSW;
 		pusb->device.bo_xfer_residue = USB_CSW_LEN;
 		pusb->device.bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-				USB_PRTCL_BULK);
+		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pusb->device.bo_state = USB_BO_CSW;
@@ -1727,8 +1737,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pusb->device.bo_xfer_addr = (uintptr_t) InquiryData;
 		pusb->device.bo_xfer_residue = min(pCBW->dCBWDTL, 36);
 		pusb->device.bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-				USB_PRTCL_BULK);
+		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pusb->device.bo_state = USB_BO_TXDATA;
@@ -1761,8 +1770,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pusb->device.bo_xfer_addr = (uintptr_t) formatcap;
 		pusb->device.bo_xfer_residue = min(pCBW->dCBWDTL, 12);
 		pusb->device.bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-				USB_PRTCL_BULK);
+		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pusb->device.bo_state = USB_BO_TXDATA;
@@ -1793,8 +1801,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pusb->device.bo_xfer_addr = (uintptr_t) capacity;
 		pusb->device.bo_xfer_residue = min(pCBW->dCBWDTL, 8);
 		pusb->device.bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-				USB_PRTCL_BULK);
+		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pusb->device.bo_state = USB_BO_TXDATA;
@@ -1837,8 +1844,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 			pusb->device.bo_xfer_addr = (uintptr_t) pCSW;
 			pusb->device.bo_xfer_residue = USB_CSW_LEN;
 			pusb->device.bo_xfer_tranferred = 0;
-			epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-					USB_PRTCL_BULK);
+			epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 			pusb->device.bo_state = USB_BO_CSW;
 			PRINTF("Error: Flash Read Fail\n");
 			break;
@@ -1848,8 +1854,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pusb->device.bo_xfer_residue = min(read_len, MAX_DDMA_SIZE); //Max USB Packet is 64KB    //??
 		pusb->device.bo_xfer_tranferred = 0;
 	}
-		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-				USB_PRTCL_BULK);
+		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pusb->device.bo_state = USB_BO_TXDATA;
@@ -1864,8 +1869,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pusb->device.bo_xfer_addr = (uintptr_t) SenseData;
 		pusb->device.bo_xfer_residue = min(pCBW->dCBWDTL, 4);
 		pusb->device.bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-				USB_PRTCL_BULK);
+		fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pusb->device.bo_state = USB_BO_TXDATA;
@@ -1894,8 +1898,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pusb->device.bo_xfer_residue = min(write_len, MAX_DDMA_SIZE);
 		pusb->device.bo_xfer_tranferred = 0;
 	}
-		fret = epx_out_handler_dev(pusb, pusb->device.bo_ep_out, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-				USB_PRTCL_BULK);
+		fret = epx_out_handler_dev(pusb, pusb->device.bo_ep_out, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_COMPOK)
 		{
 			int32_t flash_ret, start, nsector;
@@ -1913,8 +1916,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 				pusb->device.bo_xfer_addr = (uintptr_t) pCSW;
 				pusb->device.bo_xfer_residue = USB_CSW_LEN;
 				pusb->device.bo_xfer_tranferred = 0;
-				epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-						USB_PRTCL_BULK);
+				epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 				pusb->device.bo_state = USB_BO_CSW;
 				PRINTF("Error: Flash Write Fail\n");
 				break;
@@ -1927,8 +1929,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 			pusb->device.bo_xfer_addr = (uintptr_t) pCSW;
 			pusb->device.bo_xfer_residue = USB_CSW_LEN;
 			pusb->device.bo_xfer_tranferred = 0;
-			fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue,
-					USB_PRTCL_BULK);
+			fret = epx_in_handler_dev(pusb, pusb->device.bo_ep_in, pusb->device.bo_xfer_addr, pusb->device.bo_xfer_residue, USB_PRTCL_BULK);
 			if (fret == USB_RETVAL_NOTCOMP)
 			{
 				pusb->device.bo_state = USB_BO_CSW;
