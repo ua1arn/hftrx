@@ -4520,7 +4520,7 @@ static unsigned MSC_EndpointIn(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MSC_DATA_MAX_PACKET_SIZE); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed ? MSC_DATA_MAX_PACKET_SIZE_HS : MSC_DATA_MAX_PACKET_SIZE_FS); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -4541,7 +4541,7 @@ static unsigned MSC_EndpointOut(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MSC_DATA_MAX_PACKET_SIZE); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed ? MSC_DATA_MAX_PACKET_SIZE_HS : MSC_DATA_MAX_PACKET_SIZE_FS); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType

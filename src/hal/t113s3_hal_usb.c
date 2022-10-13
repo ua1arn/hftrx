@@ -2162,7 +2162,8 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_attr, 
 		usb_eprx_flush_fifo(pusb);
 		usb_eprx_flush_fifo(pusb);
 	}
-	fifo_addr += ((USB_EP_FIFO_SIZE<<1)+(USB_FIFO_ADDR_BLOCK-1))&(~(USB_FIFO_ADDR_BLOCK-1));  //Align to USB_FIFO_ADDR_BLOCK
+	//fifo_addr += ((USB_EP_FIFO_SIZE<<1)+(USB_FIFO_ADDR_BLOCK-1))&(~(USB_FIFO_ADDR_BLOCK-1));  //Align to USB_FIFO_ADDR_BLOCK
+	fifo_addr += ((maxpktsz * 2)+(USB_FIFO_ADDR_BLOCK-1))&(~(USB_FIFO_ADDR_BLOCK-1));  //Align to USB_FIFO_ADDR_BLOCK
 	return fifo_addr;
 }
 /*
@@ -2185,10 +2186,16 @@ static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 {
 	uint32_t fifo_addr = 1024;    //
 
+
 	//set_fifo_ep: ep_no=01, ep_attr=02, ep_dir=1, bIntfProtocol=50, maxpktsz=512
 	//set_fifo_ep: ep_no=02, ep_attr=02, ep_dir=0, bIntfProtocol=50, maxpktsz=512
-	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), 0x02, 1, 0x50, MSC_DATA_MAX_PACKET_SIZE, fifo_addr);
-	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), 0x02, 0, 0x50, MSC_DATA_MAX_PACKET_SIZE, fifo_addr);
+#if WITHUSBDEV_HSDESC
+	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), 0x02, 1, 0x50, MSC_DATA_MAX_PACKET_SIZE_HS, fifo_addr);
+	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), 0x02, 0, 0x50, MSC_DATA_MAX_PACKET_SIZE_HS, fifo_addr);
+#else
+	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), 0x02, 1, 0x50, MSC_DATA_MAX_PACKET_SIZE_FS, fifo_addr);
+	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), 0x02, 0, 0x50, MSC_DATA_MAX_PACKET_SIZE_FS, fifo_addr);
+#endif
 
 
 	return 1;
