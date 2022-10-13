@@ -2236,8 +2236,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_attr, 
 		usb_set_eptx_fifo_addr(pusb, fifo_addr);
 		usb_set_eptx_fifo_size(pusb, 1, USB_EP_FIFO_SIZE);
 		pusb->device.eptx_prtcl[ep_no-1] = ep_attr;
-		pusb->device.eptx_fifo[ep_no-1] = (fifo_addr<<16)|(0x1u << 15)|(maxpktsz&0x7fff);
-		fifo_addr += ((USB_EP_FIFO_SIZE<<1)+(USB_FIFO_ADDR_BLOCK-1))&(~(USB_FIFO_ADDR_BLOCK-1));  //Align to USB_FIFO_ADDR_BLOCK
+		pusb->device.eptx_fifo[ep_no-1] = (fifo_addr<<16)|(0x1u << 15)|(maxpktsz&0x7fff);//[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
 		if(bIntfProtocol == 0x50)  //Bulk Only Device
 		{
 			pusb->device.bo_ep_in = ep_no;
@@ -2251,8 +2250,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_attr, 
 		usb_set_eprx_fifo_addr(pusb, fifo_addr);
 		usb_set_eprx_fifo_size(pusb, 1, USB_EP_FIFO_SIZE);
 		pusb->device.eprx_prtcl[ep_no-1] = ep_attr;
-		pusb->device.eprx_fifo[ep_no-1] = (fifo_addr<<16)|(0x1u << 15)|(maxpktsz&0x7fff);
-		fifo_addr += ((USB_EP_FIFO_SIZE<<1)+(USB_FIFO_ADDR_BLOCK-1))&(~(USB_FIFO_ADDR_BLOCK-1));
+		pusb->device.eprx_fifo[ep_no-1] = (fifo_addr<<16)|(0x1u << 15)|(maxpktsz&0x7fff);//[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
 		if(bIntfProtocol == 0x50)  //Bulk Only Device
 		{
 			pusb->device.bo_ep_out = ep_no;
@@ -2260,6 +2258,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_attr, 
 		usb_eprx_flush_fifo(pusb);
 		usb_eprx_flush_fifo(pusb);
 	}
+	fifo_addr += ((USB_EP_FIFO_SIZE<<1)+(USB_FIFO_ADDR_BLOCK-1))&(~(USB_FIFO_ADDR_BLOCK-1));  //Align to USB_FIFO_ADDR_BLOCK
 	return fifo_addr;
 }
 /*
