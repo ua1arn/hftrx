@@ -2462,8 +2462,6 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 	//uint32_t i=0;
 	uint32_t temp=0;
 	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
-	uint32_t is_last;
-	uint32_t byte_trans;
 	//uint32_t src_addr;
 
 	if(pusb->role != USB_ROLE_DEV) return 0;
@@ -2488,6 +2486,9 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 		{
 			if(pusb->ep0_xfer_residue)
 		 	{
+				uint32_t is_last;
+				uint32_t byte_trans;
+
 		 		pusb->ep0_xfer_srcaddr += pusb->ep0_maxpktsz;
 		 		if(pusb->ep0_xfer_residue == 0xffffffff)
 			  	{
@@ -2550,6 +2551,9 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 
 				if(ep0_setup->bmRequest&0x80)//in
 				{
+					uint32_t is_last;
+					uint32_t byte_trans;
+
 					usb_set_ep0_csr(pusb, 0x40);
 					ep0_in_handler_dev(pusb);
 
