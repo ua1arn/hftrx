@@ -2130,21 +2130,15 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 //                 usb control transfer
 ///////////////////////////////////////////////////////////////////
 
-static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_attr, uint32_t ep_dir, unsigned bFunctionProtocol, uint32_t maxpktsz, uint32_t fifo_addr)
+static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t fifo_addr)
 {
-	PRINTF("set_fifo_ep: ep_no=%02X, ep_attr=%02X, ep_dir=%d, bFunctionProtocol=%02X, maxpktsz=%u\n", ep_no, ep_attr, ep_dir, bFunctionProtocol, maxpktsz);
+	PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, maxpktsz=%u\n", ep_no, ep_dir, maxpktsz);
 	usb_select_ep(pusb, ep_no);
 	if(ep_dir)
 	{
 		usb_set_eptx_maxpkt(pusb, maxpktsz, USB_EP_FIFO_SIZE/maxpktsz);
 		usb_set_eptx_fifo_addr(pusb, fifo_addr);
 		usb_set_eptx_fifo_size(pusb, 1, USB_EP_FIFO_SIZE);
-		//pusb->device.eptx_prtcl[ep_no-1] = ep_attr;
-		//pusb->device.eptx_fifo[ep_no-1] = (fifo_addr<<16)|(0x1u << 15)|(maxpktsz&0x7fff);//[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-		if(bFunctionProtocol == 0x50)  //Bulk Only Device
-		{
-			pusb->device.bo_ep_in = ep_no;
-		}
 		usb_eptx_flush_fifo(pusb);
 		usb_eptx_flush_fifo(pusb);
 	}
@@ -2153,12 +2147,6 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_attr, 
 		usb_set_eprx_maxpkt(pusb, maxpktsz, USB_EP_FIFO_SIZE/maxpktsz);
 		usb_set_eprx_fifo_addr(pusb, fifo_addr);
 		usb_set_eprx_fifo_size(pusb, 1, USB_EP_FIFO_SIZE);
-		//pusb->device.eprx_prtcl[ep_no-1] = ep_attr;
-		//pusb->device.eprx_fifo[ep_no-1] = (fifo_addr<<16)|(0x1u << 15)|(maxpktsz&0x7fff);//[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-		if(bFunctionProtocol == 0x50)  //Bulk Only Device
-		{
-			pusb->device.bo_ep_out = ep_no;
-		}
 		usb_eprx_flush_fifo(pusb);
 		usb_eprx_flush_fifo(pusb);
 	}
@@ -2190,13 +2178,15 @@ static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 	//set_fifo_ep: ep_no=01, ep_attr=02, ep_dir=1, bIntfProtocol=50, maxpktsz=512
 	//set_fifo_ep: ep_no=02, ep_attr=02, ep_dir=0, bIntfProtocol=50, maxpktsz=512
 #if WITHUSBDEV_HSDESC
-	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), 0x02, 1, 0x50, MSC_DATA_MAX_PACKET_SIZE_HS, fifo_addr);
-	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), 0x02, 0, 0x50, MSC_DATA_MAX_PACKET_SIZE_HS, fifo_addr);
+	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), 1, MSC_DATA_MAX_PACKET_SIZE_HS, fifo_addr);
+	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), 0, MSC_DATA_MAX_PACKET_SIZE_HS, fifo_addr);
 #else
-	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), 0x02, 1, 0x50, MSC_DATA_MAX_PACKET_SIZE_FS, fifo_addr);
-	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), 0x02, 0, 0x50, MSC_DATA_MAX_PACKET_SIZE_FS, fifo_addr);
+	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), 1, MSC_DATA_MAX_PACKET_SIZE_FS, fifo_addr);
+	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), 0, MSC_DATA_MAX_PACKET_SIZE_FS, fifo_addr);
 #endif
 
+	pusb->device.bo_ep_in = (USBD_EP_MSC_IN & 0x0F);
+	pusb->device.bo_ep_out = (USBD_EP_MSC_OUT & 0x0F);
 
 	return 1;
 }
@@ -2433,7 +2423,8 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
        		PRINTF("usb_device: Set Descriptor\n");
       		break;
     	case 0x09 :
-      		ep0_set_config_handler_dev(pusb);
+       		PRINTF("usb_device: Set Config\n");
+     		ep0_set_config_handler_dev(pusb);
     		break;
     	case 0x0B :
 	       	PRINTF("usb_device: Set Interface\n");
