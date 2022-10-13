@@ -77,7 +77,7 @@ enum
 	#else /* WITHUSBCDCACMINTSHARING */
 
 		USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
-		USBD_EP_CDCACM_INT,		// CDC IN Данные ком-порта в компьютер из TRX
+		USBD_EP_CDCACM_INT,		// CDC INT состояние ком-порта в компьютер из TRX
 		USBD_EP_CDCACM_INlast = USBD_EP_CDCACM_IN + WITHUSBCDCACM_N * 2 - 1,
 
 	#endif /* WITHUSBCDCACMINTSHARING */
@@ -129,7 +129,7 @@ enum
 
 #if WITHUSBCDCACM
 	USBD_EP_CDCACM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
-	USBD_EP_CDCACM_OUTlast = USBD_EP_CDCACM_OUT + WITHUSBCDCACM_N - 1,
+	USBD_EP_CDCACM_OUTlast = USBD_EP_CDCACM_OUT + (WITHUSBCDCACM_N * 1) - 1,
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM
@@ -368,13 +368,19 @@ enum interfaces_tag
 
 #if WITHUSBCDCACMINTSHARING
 
-	#define USBD_CDCACM_EP(base, offset) ((base) + (offset))
-	#define USBD_CDCACM_OFFSET_BY_EP(ep, base) ((ep) - (base))
+	#define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 1)
+	#define USBD_CDCACM_OUT_EP(base, offset) ((base) + (offset) * 1)
+	#define USBD_CDCACM_OFFSET_BY_OUT_EP(ep, base) (((ep) - (base)) / 1)
+	#define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 1)
 
 #else /* WITHUSBCDCACMINTSHARING */
 
-	#define USBD_CDCACM_EP(base, offset) ((base) + (offset) * 2)
-	#define USBD_CDCACM_OFFSET_BY_EP(ep, base) (((ep) - (base)) / 2)
+	#define USBD_CDCACM_INT_EP(base, offset) ((base) + (offset) * 2)
+	#define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 2)
+	#define USBD_CDCACM_OUT_EP(base, offset) ((base) + (offset) * 1)
+	#define USBD_CDCACM_OFFSET_BY_OUT_EP(ep, base) (((ep) - (base)) / 1)
+	#define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 2)
+	#define USBD_CDCACM_OFFSET_BY_INT_EP(ep, base) (((ep) - (base)) / 2)
 
 #endif /* WITHUSBCDCACMINTSHARING */
 #define USBD_CDCACM_IFC(base, offset) ((base) + (offset) * INTERFACE_CDCACM_count)

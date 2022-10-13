@@ -3055,12 +3055,12 @@ static unsigned CDCACM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
 	unsigned n = 0;
-	const uint8_t inep = USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset);
-	const uint8_t outnep = USBD_CDCACM_EP(USBD_EP_CDCACM_OUT, offset);
+	const uint8_t inep = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset);
+	const uint8_t outnep = USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset);
 #if WITHUSBCDCACMINTSHARING
 	const uint8_t intnep = USBD_EP_CDCACM_INTSHARED;
 #else /* WITHUSBCDCACMINTSHARING */
-	const uint8_t intnep = USBD_CDCACM_EP(USBD_EP_CDCACM_INT, offset);;
+	const uint8_t intnep = USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset);;
 #endif /* WITHUSBCDCACMINTSHARING */
 
 	// CDC

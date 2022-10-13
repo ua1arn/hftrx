@@ -2206,9 +2206,9 @@ static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 	{
 		for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 		{
-			const uint_fast8_t pipeint =  USBD_CDCACM_EP(USBD_EP_CDCACM_INT, offset) & 0x0F;
-			const uint_fast8_t pipein = USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset) & 0x0F;
-			const uint_fast8_t pipeout = USBD_CDCACM_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F;
+			const uint_fast8_t pipeint =  USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset) & 0x0F;
+			const uint_fast8_t pipein = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F;
+			const uint_fast8_t pipeout = USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F;
 
 			fifo_addr = set_fifo_ep(pusb, pipeint, 1, VIRTUAL_COM_PORT_INT_SIZE, 0, fifo_addr);
 			fifo_addr = set_fifo_ep(pusb, pipein, 1, VIRTUAL_COM_PORT_IN_DATA_SIZE, 1, fifo_addr);

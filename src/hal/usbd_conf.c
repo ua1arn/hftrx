@@ -849,7 +849,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 #if ! WITHUSBCDCACMINTSHARING
 		{
 			// Прерывание CDC в компьютер из трансивера
-			const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDCACM_INT, offset);
+			const uint_fast8_t epnum = USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset);
 			const uint_fast8_t pipe = USBPhyHw_EP2PIPE(epnum);
 			const uint_fast8_t dir = 1;
 			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
@@ -874,7 +874,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 #endif /* WITHUSBCDCACMINTSHARING */
 		{
 			// Данные CDC из компьютера в трансивер
-			const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDCACM_OUT, offset);
+			const uint_fast8_t epnum = USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset);
 			const uint_fast8_t pipe = USBPhyHw_EP2PIPE(epnum);
 			const uint_fast8_t dir = 0;
 			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
@@ -898,7 +898,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		}
 		{
 			// Данные CDC в компьютер из трансивера
-			const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset);
+			const uint_fast8_t epnum = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset);
 			const uint_fast8_t pipe = USBPhyHw_EP2PIPE(epnum);
 			const uint_fast8_t dir = 1;
 			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
@@ -1207,13 +1207,13 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	{
 	#if ! WITHUSBCDCACMINTSHARING
 		{
-			const uint_fast8_t pipeint =  USBD_CDCACM_EP(USBD_EP_CDCACM_INT, offset) & 0x7F;
+			const uint_fast8_t pipeint =  USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset) & 0x7F;
 			USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 		}
 	#endif /* ! WITHUSBCDCACMINTSHARING */
 		{
 			/* полнофункциональное устройство */
-			const uint_fast8_t pipe = USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset) & 0x7F;
+			const uint_fast8_t pipe = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x7F;
 			numoutendpoints += 1;
 			if (bigbuff == 0 && offset > 0)
 			{
