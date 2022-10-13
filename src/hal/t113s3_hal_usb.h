@@ -32,14 +32,6 @@ typedef struct
 } uSetupPKG, *pSetupPKG;
 
 typedef struct {
-	uint32_t func_addr;
-
-	const uint8_t* dev_desc;
-	const uint8_t* config_desc; //Support 4 Configurations Most
-	const uint8_t* str_desc[4];
-	const uint8_t* intf_desc;
-	const uint8_t* endp_desc;
-	const uint8_t* dev_qual;
 	const uint8_t* otg_desc;
 
 	//uint32_t ConfigDesc_Len;
@@ -50,10 +42,10 @@ typedef struct {
 	#define USB_PRTCL_ISO  	1
 	#define USB_PRTCL_BULK 	2
 	#define USB_PRTCL_INT  	3
-	uint32_t eptx_prtcl[USB_MAX_EP_NO];
-	uint32_t eprx_prtcl[USB_MAX_EP_NO];
-	uint32_t eptx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-	uint32_t eprx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
+	//uint32_t eptx_prtcl[USB_MAX_EP_NO];
+	//uint32_t eprx_prtcl[USB_MAX_EP_NO];
+	//uint32_t eptx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
+	//uint32_t eprx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
 	uintptr_t epx_xfer_addr;
 	uint32_t epx_xfer_residue;
 	uint32_t epx_xfer_tranferred;

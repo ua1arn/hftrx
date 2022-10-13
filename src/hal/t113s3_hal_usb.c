@@ -997,102 +997,16 @@ static uintptr_t usb_get_ep_fifo_addr(pusb_struct pusb, uint32_t ep_no)
 
 
 #define USB_NO_DMA		1
-
-static uint32_t write_len = 0;
-static uint32_t write_offset = 0;
-static int32_t part_index = 0;
+//
+//static int32_t part_index = 0;
 
 
-static int32_t dram_copy(uint32_t src_addr, uint32_t dest_addr, uint32_t bytes)
+static int32_t dram_copy(uintptr_t src_addr, uintptr_t dest_addr, uint32_t bytes)
 {
 	memcpy((void *)src_addr, (void *)dest_addr, bytes);
 
 	return 1;
 }
-
-
-
-static const unsigned char USB_HS_BULK_DevDesc[18]    = {0x12, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x40,
-	                                        0x1A, 0x1F,   //VID -- Vendor ID
-	                                        0x00, 0x07,   //PID -- Product ID
-	                                        0x00, 0x01, 0x02, 0x03, 0x01, 0x01};
-
-static const unsigned char USB_HS_BULK_ConfigDesc[32] = {//Configuration Descriptor
-	                                        0x09, 0x02, 0x20, 0x00, 0x01,
-	                                        0x08,  //Value for SetConfig Request
-	                                        0x00, 0x80,
-	                                        50,  //Max Power = 2*n mA
-	                                        //Interface Descriptor
-	                                        0x09, 0x04, 0x00, 0x00, 0x02,
-	                                        0x08,  //Interface Class    -- 0x08, MassStorage
-	                                        0x06,  //Interface SubClass -- 0x06, SPC-2
-	                                        0x50,  //Interface Protocol -- Bulk Only
-	                                        0x00,
-	                                        //Bulk-only IN Endpoint Descriptor
-	                                        0x07, 0x05, (0x80|BULK_IN_EP), 0x02,
-	                                        0x00, 0x02,
-	                                        0x00,
-	                                        //Bulk-only OUT Endpoint Descriptor
-	                                        0x07, 0x05, BULK_OUT_EP, 0x02,
-	                                        0x00, 0x02,
-	                                        0x00
-	                                        };
-
-static const unsigned char USB_FS_BULK_DevDesc[18]    = {0x12, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x08,
-	                                        0x1A, 0x1F,   //VID -- Vendor ID
-	                                        0x00, 0x07,   //PID -- Product ID
-	                                        0x00, 0x01, 0x02, 0x03, 0x01, 0x01};
-
-static const unsigned char USB_FS_BULK_ConfigDesc[32] = {//Configuration Descriptor
-	                                        0x09, 0x02, 0x20, 0x00, 0x01,
-	                                        0x08,  //Value for SetConfig Request
-	                                        0x00, 0x80,
-	                                        50,  //Max Power = 2*n mA
-	                                        //Interface Descriptor
-	                                        0x09, 0x04, 0x00, 0x00, 0x02,
-	                                        0x08,  //Interface Class    -- 0x08, MassStorage
-	                                        0x06,  //Interface SubClass -- 0x06, SPC-2
-	                                        0x50,  //Interface Protocol -- Bulk Only
-	                                        0x00,
-	                                        //Bulk-only IN Endpoint Descriptor
-	                                        0x07, 0x05, (0x80|BULK_IN_EP), 0x02,
-	                                        0x40, 0x00,
-	                                        0x00,
-	                                        //Bulk-only OUT Endpoint Descriptor
-	                                        0x07, 0x05, BULK_OUT_EP, 0x02,
-	                                        0x40, 0x00,
-	                                        0x00
-	                                        };
-
-
-
-static const unsigned char  LangID[4]        = {0x04, 0x03, 0x09, 0x04};
-static const unsigned char  iSerialNum0[30]   = {0x1E, 0x03, '2' , 0x00, '0' , 0x00, '1' , 0x00, '0' , 0x00,
-	                                       '1' , 0x00, '2' , 0x00, '0' , 0x00, '1' , 0x00, '1' , 0x00,
-	                                       '2' , 0x00, '0' , 0x00, '0' , 0x00, '0' , 0x00, '1' , 0x00
-	                                       }; //"20101201120001"
-static const unsigned char  iSerialNum1[30]   = {0x1E, 0x03, '2' , 0x00, '0' , 0x00, '1' , 0x00, '0' , 0x00,
-	                                       '1' , 0x00, '2' , 0x00, '0' , 0x00, '1' , 0x00, '1' , 0x00,
-	                                       '2' , 0x00, '0' , 0x00, '0' , 0x00, '0' , 0x00, '2' , 0x00
-	                                       }; //"20101201120002"
-static const unsigned char  iSerialNum2[30]   = {0x1E, 0x03, '2' , 0x00, '0' , 0x00, '1' , 0x00, '0' , 0x00,
-	                                       '1' , 0x00, '2' , 0x00, '0' , 0x00, '1' , 0x00, '1' , 0x00,
-	                                       '2' , 0x00, '0' , 0x00, '0' , 0x00, '0' , 0x00, '3' , 0x00
-	                                       }; //"20101201120003"
-static const unsigned char  iManufacturer[42]=  {0x28,  0x03, 'A' , 0x00, 'l' , 0x00, 'l' , 0x00, 'W' , 0x00,
-	                                       'i',  0x00, 'n' , 0x00, 'n' , 0x00, 'e' , 0x00, 'r' , 0x00,
-	                                       ' ',  0x00, 'T' , 0x00, 'e' , 0x00, 'c' , 0x00, 'h' , 0x00,
-	                                       'n' , 0x00, 'o' , 0x00, 'l' , 0x00, 'o' , 0x00, 'g' , 0x00,
-	                                       'y' , 0x00};  //AllWinner Technology
-#if 0
-static const unsigned char  iProduct[22]     = {0x16, 0x03, 'U' , 0x00, 'S' , 0x00, 'B' , 0x00, ' ' , 0x00,
-	                                       'T' , 0x00, 'e' , 0x00, 's' , 0x00, 't' , 0x00, 'e' , 0x00,
-	                                       'r' , 0x00};      //"USB Tester"
-#endif
-static const unsigned char  iProduct_new[90]     = {0x22, 0x03, 'U', 0x00, 'S', 0x00, 'B', 0x00, ' ', 0x00,
-	                                          'S', 0x00, 't', 0x00, 'o', 0x00, 'r', 0x00, 'a', 0x00,
-	                                          'g', 0x00, 'e', 0x00, ' ', 0x00, 'T', 0x00, 'o', 0x00,
-	                                          'o', 0x00, 'l', 0x00};  //USB Storage Tool
 
 
 
@@ -1102,11 +1016,6 @@ static const unsigned char TestPkt[54] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x
 	                                 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0xBF, 0xDF,
 	                                 0xEF, 0xF7, 0xFB, 0xFD, 0xFC, 0x7E, 0xBF, 0xDF, 0xEF, 0xF7,
 	                                 0xFB, 0xFD, 0x7E, 0x00};
-
-
-static const unsigned char* USB_StrDec0[4]    = {LangID, iSerialNum0, iManufacturer, iProduct_new};
-
-static const unsigned char USB_DevQual[10]   = {0x0A, 0x06, 0x00, 0x02, 0x00, 0x00, 0x00, 0x40, 0x01, 0x00};
 
 static const unsigned char USB_OTGDesc[3] = {0x03, 0x09, 0x03};
 
@@ -1145,7 +1054,7 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t dest_add
 {
 	uint8_t temp;
 	uint8_t saved;
-	uint32_t dest;
+	uint8_t * dest;
 	uint32_t i;
 
 	if(ep_no>USB_MAX_EP_NO)
@@ -1156,12 +1065,10 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t dest_add
 	usb_fifo_accessed_by_cpu(pusb);
 
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
-	dest = dest_addr;
+	dest = (uint8_t *) dest_addr;
 	for(i=0; i<count; i++)
 	{
-		temp = get_bvalue(pipe);
-		put_bvalue(dest, temp);
-		dest += 1;
+		* dest ++ = get_bvalue(pipe);
 	}
 	if((count!=31)&&(count!=8))
 	{
@@ -1174,9 +1081,8 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t dest_add
 
 static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t src_addr, uint32_t count)
 {
-	uint8_t  temp;
 	uint8_t  saved;
-	uint32_t src;
+	const uint8_t * src;
 	uint32_t i;
 
 	if(ep_no>USB_MAX_EP_NO)
@@ -1186,13 +1092,11 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t src_add
 	saved = usb_get_fifo_access_config(pusb);
 	usb_fifo_accessed_by_cpu(pusb);
 
-	src = src_addr;
+	src = (const uint8_t *) src_addr;
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
 	for(i=0; i<count; i++)
 	{
-		temp = get_bvalue(src);
-		put_bvalue(pipe, temp);
-		src += 1;
+		put_bvalue(pipe, * src ++);
 	}
 
 	usb_set_fifo_access_config(pusb, saved);
@@ -1762,15 +1666,14 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 */
 static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 {
+	static uint32_t write_len;
+	static uint32_t write_offset;
 	uint32_t rx_count=0;
-	pCBWPKG pCBW;
-	pCSWPKG pCSW;
+	const pCBWPKG pCBW = (pCBWPKG)(pusb->buffer);
+	const pCSWPKG pCSW = (pCSWPKG)(pusb->buffer);
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-	uint32_t ep_save = usb_get_active_ep(pusb);
+	const uint32_t ep_save = usb_get_active_ep(pusb);
 	USB_RETVAL fret = USB_RETVAL_NOTCOMP;
-
-	pCBW = (pCBWPKG)(pusb->buffer);
-  	pCSW = (pCSWPKG)(pusb->buffer);
 
 	switch(pusb->device.bo_state)
 	{
@@ -2054,6 +1957,7 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 	  				break;
 	  			case 0x2A://Write(10)   read from host
 	  				{
+
 						write_len = pCBW->CBWCB[7];
 						write_len <<= 8;
 						write_len |= pCBW->CBWCB[8];			//���� write_len ��������
@@ -2226,18 +2130,18 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 //                 usb control transfer
 ///////////////////////////////////////////////////////////////////
 
-static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_attr, uint32_t ep_dir, unsigned bIntfProtocol, uint32_t maxpktsz, uint32_t fifo_addr)
+static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_attr, uint32_t ep_dir, unsigned bFunctionProtocol, uint32_t maxpktsz, uint32_t fifo_addr)
 {
-	PRINTF("set_fifo_ep: ep_no=%02X, ep_attr=%02X, ep_dir=%d, bIntfProtocol=%02X, maxpktsz=%u\n", ep_no, ep_attr, ep_dir, bIntfProtocol, maxpktsz);
+	PRINTF("set_fifo_ep: ep_no=%02X, ep_attr=%02X, ep_dir=%d, bFunctionProtocol=%02X, maxpktsz=%u\n", ep_no, ep_attr, ep_dir, bFunctionProtocol, maxpktsz);
 	usb_select_ep(pusb, ep_no);
 	if(ep_dir)
 	{
 		usb_set_eptx_maxpkt(pusb, maxpktsz, USB_EP_FIFO_SIZE/maxpktsz);
 		usb_set_eptx_fifo_addr(pusb, fifo_addr);
 		usb_set_eptx_fifo_size(pusb, 1, USB_EP_FIFO_SIZE);
-		pusb->device.eptx_prtcl[ep_no-1] = ep_attr;
-		pusb->device.eptx_fifo[ep_no-1] = (fifo_addr<<16)|(0x1u << 15)|(maxpktsz&0x7fff);//[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-		if(bIntfProtocol == 0x50)  //Bulk Only Device
+		//pusb->device.eptx_prtcl[ep_no-1] = ep_attr;
+		//pusb->device.eptx_fifo[ep_no-1] = (fifo_addr<<16)|(0x1u << 15)|(maxpktsz&0x7fff);//[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
+		if(bFunctionProtocol == 0x50)  //Bulk Only Device
 		{
 			pusb->device.bo_ep_in = ep_no;
 		}
@@ -2249,9 +2153,9 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_attr, 
 		usb_set_eprx_maxpkt(pusb, maxpktsz, USB_EP_FIFO_SIZE/maxpktsz);
 		usb_set_eprx_fifo_addr(pusb, fifo_addr);
 		usb_set_eprx_fifo_size(pusb, 1, USB_EP_FIFO_SIZE);
-		pusb->device.eprx_prtcl[ep_no-1] = ep_attr;
-		pusb->device.eprx_fifo[ep_no-1] = (fifo_addr<<16)|(0x1u << 15)|(maxpktsz&0x7fff);//[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-		if(bIntfProtocol == 0x50)  //Bulk Only Device
+		//pusb->device.eprx_prtcl[ep_no-1] = ep_attr;
+		//pusb->device.eprx_fifo[ep_no-1] = (fifo_addr<<16)|(0x1u << 15)|(maxpktsz&0x7fff);//[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
+		if(bFunctionProtocol == 0x50)  //Bulk Only Device
 		{
 			pusb->device.bo_ep_out = ep_no;
 		}
@@ -2279,29 +2183,13 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_attr, 
 */
 static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 {
-	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
-	uIntfDes *pintf;
-	uint32_t i;
 	uint32_t fifo_addr = 1024;    //
 
-//	uConfigDes *pconfig = (uConfigDes *)(pusb->device.config_desc);
-//	if(pconfig->bConfigVal != ep0_setup->wValue)
-//	{
-//		PRINTF("Error: Right Configval %d; Error Configval %d\n", pconfig->bConfigVal, ep0_setup->wValue);
-//		return 0;
-//	}
-	pintf = (uIntfDes *)(&pusb->device.config_desc[USB_CONFIG_DESC_LEN]);
-	for(i=0; i<pintf->bNumEP; i++)
-	{
-		const uEPDes * const pep = (uEPDes*)(&pusb->device.config_desc[USB_CONFIG_DESC_LEN + USB_INTF_DESC_LEN + USB_ENDP_DESC_LEN*i]);
-		const uint32_t ep_no = pep->bEPAddr & 0xf;
-		const uint32_t ep_attr = pep->bmAttrib & 0x3;
-		//uint32_t interval;
-		const uint32_t ep_dir = (pep->bEPAddr>>7) & 0x1; //0 for OUT, and 1 for IN
-		const uint32_t maxpktsz = (pep->wMaxPktSize1 & 0x7) * 256 + (pep->wMaxPktSize0 & 0xff);
-		const unsigned bIntfProtocol = pintf->bIntfProtocol;
-		fifo_addr = set_fifo_ep(pusb, ep_no, ep_attr, ep_dir, bIntfProtocol, maxpktsz, fifo_addr);
-	}
+	//set_fifo_ep: ep_no=01, ep_attr=02, ep_dir=1, bIntfProtocol=50, maxpktsz=512
+	//set_fifo_ep: ep_no=02, ep_attr=02, ep_dir=0, bIntfProtocol=50, maxpktsz=512
+	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), 0x02, 1, 0x50, MSC_DATA_MAX_PACKET_SIZE, fifo_addr);
+	fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), 0x02, 0, 0x50, MSC_DATA_MAX_PACKET_SIZE, fifo_addr);
+
 
 	return 1;
 }
@@ -2530,7 +2418,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 
 		case 0x05 :
 			usb_set_dev_addr(pusb, LO_BYTE(ep0_setup->wValue));
-       		pusb->device.func_addr = LO_BYTE(ep0_setup->wValue);
+       		//pusb->device.func_addr = LO_BYTE(ep0_setup->wValue);
        		PRINTF("usb_device: Set Address 0x%x\n", LO_BYTE(ep0_setup->wValue));
 			break;
 
@@ -2848,24 +2736,24 @@ static void usb_params_init(pusb_struct pusb)
 	pusb->role = USB0_ROLE;  //USB_ROLE_HST; //USB_ROLE_UNK
 	pusb->speed = USB0_SPEED;
 
-	if(pusb->speed==USB_SPEED_HS)
-	{
-		pusb->device.dev_desc   = USB_HS_BULK_DevDesc;
-		pusb->device.config_desc= USB_HS_BULK_ConfigDesc;
-	}
-	else
-	{
-		pusb->device.dev_desc   = USB_FS_BULK_DevDesc;
-		pusb->device.config_desc= USB_FS_BULK_ConfigDesc;
-	}
-	for(i=0; i<ARRAY_SIZE(pusb->device.str_desc); i++)
-	{
-		pusb->device.str_desc[i]   = USB_StrDec0[i];
-	}
-
-	pusb->device.intf_desc  = USB_HS_BULK_ConfigDesc;
-	pusb->device.endp_desc  = USB_HS_BULK_ConfigDesc;
-	pusb->device.dev_qual   = USB_DevQual;
+//	if(pusb->speed==USB_SPEED_HS)
+//	{
+//		pusb->device.dev_desc   = USB_HS_BULK_DevDesc;
+//		pusb->device.config_desc= USB_HS_BULK_ConfigDesc;
+//	}
+//	else
+//	{
+//		pusb->device.dev_desc   = USB_FS_BULK_DevDesc;
+//		pusb->device.config_desc= USB_FS_BULK_ConfigDesc;
+//	}
+//	for(i=0; i<ARRAY_SIZE(pusb->device.str_desc); i++)
+//	{
+//		pusb->device.str_desc[i]   = USB_StrDec0[i];
+//	}
+//
+//	pusb->device.intf_desc  = USB_HS_BULK_ConfigDesc;
+//	pusb->device.endp_desc  = USB_HS_BULK_ConfigDesc;
+//	pusb->device.dev_qual   = USB_DevQual;
 	pusb->device.otg_desc   = USB_OTGDesc;
 
 	pusb->device.MaxLUN = wBoot_part_count(1) - 1;
@@ -2944,7 +2832,8 @@ static void usb_irq_handler(pusb_struct pusb)
 				pusb->eptx_xfer_state[i] = USB_EPX_SETUP;
 				pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
 			}
-			pusb->device.func_addr = 0x00;
+			usb_set_dev_addr(pusb, 0x00);
+			//pusb->device.func_addr = 0x00;
 			pusb->device.bo_state = USB_BO_IDLE;
 			//pusb->timer = USB_IDLE_TIMER;
 
@@ -3035,7 +2924,8 @@ void usb_struct_init(pusb_struct pusb)
 		pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
 	}
 
-	pusb->device.func_addr = 0x00;
+	usb_set_dev_addr(pusb, 0x00);
+	//pusb->device.func_addr = 0x00;
 	pusb->device.bo_state = USB_BO_IDLE;
 	pusb->device.bo_ep_in = 1;
 	pusb->device.bo_ep_out = 1;
