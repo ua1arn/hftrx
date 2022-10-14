@@ -2108,7 +2108,7 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 
 #if WITHUSBCDCACM
 
-static USB_RETVAL epx_out_handler_dev_cdc(pusb_struct pusb, uint32_t ep_no, uint32_t dst_addr, uint32_t byte_count, uint32_t ep_type)
+static USB_RETVAL epx_out_handler_dev_cdc(pusb_struct pusb, uint32_t ep_no, uintptr_t dst_addr, uint32_t byte_count, uint32_t ep_type)
 {
 	usb_device_cdc * const pdev = & pusb->device_cdc;
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -2379,8 +2379,8 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 		{
 			break;
 		}
-
 		pusb->eprx_flag[bo_ep_out-1]--;
+
   		usb_select_ep(pusb, bo_ep_out);
   		if (!(usb_get_eprx_csr(pusb)&USB_RXCSR_RXPKTRDY))
   		{
@@ -2389,7 +2389,7 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
   		rx_count = usb_get_eprx_count(pusb);
   		do
   		{
-  			ret = epx_out_handler_dev_cdc(pusb, bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
+  			ret = epx_out_handler_dev_cdc(pusb, bo_ep_out, (uintptr_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
   		}
   		while(ret == USB_RETVAL_NOTCOMP);
 
@@ -2401,6 +2401,13 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
   		else
   		{
   			ret = USB_RETVAL_NOTCOMP;
+  			// использование данных
+  			//printhex(0, pusb->buffer, rx_count);
+  			unsigned i;
+  			for (i = 0; i < rx_count; ++ i)
+  			{
+  	  			HARDWARE_CDC_ONRXCHAR(0, pusb->buffer [i]);
+  			}
   		}
 
 	} while (0);
@@ -2412,8 +2419,14 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 		{
 			break;
 		}
+	 	TP();
 
 	} while (0);
+
+	{
+		//HARDWARE_CDC_ONTXCHAR(offset, pusb);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+
+	}
 
 	usb_select_ep(pusb, ep_save);
 	return ret;
