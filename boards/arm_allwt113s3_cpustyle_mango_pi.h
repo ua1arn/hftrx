@@ -133,17 +133,12 @@
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
-	#if WITHINTEGRATEDDSP && 0
+	#if WITHINTEGRATEDDSP
 
 		//#define WITHUAC2		1	/* UAC2 support */
-		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
+		#define WITHUSBUACINOUTRENESAS	1	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
 		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
-		#if WITHRTS96 || WITHRTS192
-			#define WITHUSBUACIN	1
-			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-		#else /* WITHRTS96 || WITHRTS192 */
-			#define WITHUSBUACIN	1
-		#endif /* WITHRTS96 || WITHRTS192 */
+		#define WITHUSBUACIN	1
 		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 	#endif /* WITHINTEGRATEDDSP */
 
@@ -162,7 +157,7 @@
 	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 	#define WITHUSBWCID	1
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
-	#define WITHUSBDMSC	1	/* MSC USB device */
+	//#define WITHUSBDMSC	1	/* MSC USB device */
 
 #endif /* WITHISBOOTLOADER */
 
