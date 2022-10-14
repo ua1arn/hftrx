@@ -84,23 +84,25 @@ typedef struct {
 	uint32_t epx_xfer_tranferredv[USB_MAX_EP_NO];
 	uint32_t epx_buf_tagv[USB_MAX_EP_NO];
 
-	//Bulk Only Device State Machine
-	#define USB_BO_IDLE				0
-	#define USB_BO_CBW				1
-	#define USB_BO_RXDATA			2
-	#define USB_BO_TXDATA			3
-	#define USB_BO_CSW				4
-//	uint32_t bo_state;						//Bulk only device state
-//	uintptr_t bo_xfer_addr[USB_MAX_EP_NO];				//Bulk only data address
-//	uint32_t bo_xfer_residue[USB_MAX_EP_NO];			//Bulk only data residue length
-//	uint32_t bo_xfer_tranferred[USB_MAX_EP_NO];  //Bulk only data transferred length
-//	uintptr_t bo_memory_base;
-//	//uint32_t bo_capacity;
-//	//uint32_t bo_seccnt;
-//	uintptr_t bo_bufbase;
-
-	uint32_t csw_fail_flag;
 } usb_device_cdc;
+
+typedef struct {
+
+	//EP protocol
+	#define USB_PRTCL_ILL  	0
+	#define USB_PRTCL_ISO  	1
+	#define USB_PRTCL_BULK 	2
+	#define USB_PRTCL_INT  	3
+	//uint32_t eptx_prtcl[USB_MAX_EP_NO];
+	//uint32_t eprx_prtcl[USB_MAX_EP_NO];
+	//uint32_t eptx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
+	//uint32_t eprx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
+	uintptr_t epx_xfer_addrv[USB_MAX_EP_NO];
+	uint32_t epx_xfer_residuev[USB_MAX_EP_NO];
+	uint32_t epx_xfer_tranferredv[USB_MAX_EP_NO];
+	uint32_t epx_buf_tagv[USB_MAX_EP_NO];
+
+} usb_device_uac;
 
 
 typedef struct {
@@ -165,9 +167,9 @@ typedef struct {
 #if WITHUSBDMSC
 	usb_device_msc device_msc;
 #endif /* WITHUSBDMSC */
-#if WITHUSBDUAC
+#if WITHUSBUAC
 	usb_device_uac device_uac;
-#endif /* WITHUSBDUAC */
+#endif /* WITHUSBUAC */
 #if WITHUSBCDCACM
 	usb_device_cdc device_cdc;
 #endif /* WITHUSBCDCACM */

@@ -91,14 +91,15 @@
 #define get_bvalue(n)    		(*((volatile uint8_t *)(n)))          /* byte input */
 #define put_bvalue(n,c)  		do { (*((volatile uint8_t *)(n)) = (c)); } while (0)    /* byte output */
 
+#define  wBoot_dma_QueryState(hdma)  0
+#define  wBoot_dma_stop(hdma)        do { } while (0)
+#define  wBoot_dma_request(sect)     0
+
 #if WITHUSBDMSC
 
 #define  wBoot_part_start(part)      0
-#define  wBoot_dma_QueryState(hdma)  0
-#define  wBoot_dma_stop(hdma)        do { } while (0)
 #define  wBoot_part_capacity(sect)   (AW_RAMDISK_SIZE/512)                     /* ����� �������� ������������ �����, ������ = 512 ���� */
 #define  wBoot_part_count(sect)      1
-#define  wBoot_dma_request(sect)     0
 
 //#define  device_bo_memory_base       AW_USBD_BASE
 //#define  device_bo_bufbase           (AW_USBD_BASE+0x20000)
@@ -2427,11 +2428,17 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 }
 
 
+static void usb_struct_idle_cdc(pusb_struct pusb)
+{
+	usb_device_cdc * const pdev = & pusb->device_cdc;
+//	pdev->bo_state = USB_BO_IDLE;
+}
+
 static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
 {
 
-	static uint8_t ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
-	static uint8_t ALIGNX_BEGIN device_bo_bufbase [USB_BO_DEV_BUF_SIZE] ALIGNX_END;
+//	static uint8_t ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
+//	static uint8_t ALIGNX_BEGIN device_bo_bufbase [USB_BO_DEV_BUF_SIZE] ALIGNX_END;
 	usb_device_cdc * const pdev = & pusb->device_cdc;
 
 //	pdev->bo_memory_base = (uintptr_t) device_bo_memory_base;//(uint32_t)wBoot_malloc(128 * 1024);		//use to storage user data
@@ -2440,14 +2447,33 @@ static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
 
 #endif /* WITHUSBCDCACM */
 
-#if WITHUSBDUAC
+#if WITHUSBUAC
 static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
 {
 	usb_device_uac * const pdev = & pusb->device_uac;
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	return ret;
 }
-#endif /* WITHUSBDUAC */
+
+
+static void usb_struct_idle_uac(pusb_struct pusb)
+{
+	usb_device_uac * const pdev = & pusb->device_uac;
+//	pdev->bo_state = USB_BO_IDLE;
+}
+
+static void usb_dev_bulk_xfer_uac_initialize(pusb_struct pusb)
+{
+
+//	static uint8_t ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
+//	static uint8_t ALIGNX_BEGIN device_bo_bufbase [USB_BO_DEV_BUF_SIZE] ALIGNX_END;
+	usb_device_uac * const pdev = & pusb->device_uac;
+
+//	pdev->bo_memory_base = (uintptr_t) device_bo_memory_base;//(uint32_t)wBoot_malloc(128 * 1024);		//use to storage user data
+//	pdev->bo_bufbase = (uintptr_t) device_bo_bufbase;//(uint32_t)wBoot_malloc(64 * 1024);				//use to usb ping-pang buffer
+}
+
+#endif /* WITHUSBUAC */
 
 
 static void usb_struct_idle(pusb_struct pusb)
@@ -2458,12 +2484,12 @@ static void usb_struct_idle(pusb_struct pusb)
 #if WITHUSBDMSC
 	usb_struct_idle_msc(pusb);
 #endif /* WITHUSBDMSC */
-#if WITHUSBDCDCACM
+#if WITHUSBCDCACM
 	usb_struct_idle_cdc(pusb);
-#endif /* WITHUSBDCDCACM */
-#if WITHUSBDUAC
+#endif /* WITHUSBCDCACM */
+#if WITHUSBUAC
 	usb_struct_idle_uac(pusb);
-#endif /* WITHUSBDUAC */
+#endif /* WITHUSBUAC */
 }
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
@@ -3010,9 +3036,9 @@ static uint32_t usb_device_function(pusb_struct pusb)
 #if WITHUSBDMSC
 	usb_dev_bulk_xfer_msc(pusb);
 #endif /* WITHUSBDMSC */
-#if WITHUSBDUAC
+#if WITHUSBUAC
 	usb_dev_bulk_xfer_uac(pusb);
-#endif /* WITHUSBDUAC */
+#endif /* WITHUSBUAC */
 #if WITHUSBCDCACM
 	usb_dev_bulk_xfer_cdc(pusb);
 #endif /* WITHUSBCDCACM */
@@ -3054,12 +3080,12 @@ static void usb_params_init(pusb_struct pusb)
 #if WITHUSBDMSC
 	usb_dev_bulk_xfer_msc_initialize(pusb);
 #endif /* WITHUSBDMSC */
-#if WITHUSBDCDCACM
+#if WITHUSBCDCACM
 	usb_dev_bulk_xfer_cdc_initialize(pusb);
-#endif /* WITHUSBDCDCACM */
-#if WITHUSBDUAC
+#endif /* WITHUSBCDCACM */
+#if WITHUSBUAC
 	usb_dev_bulk_xfer_uac_initialize(pusb);
-#endif /* WITHUSBDUAC */
+#endif /* WITHUSBUAC */
 
 	//pusb->ep0_flag = 0;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
