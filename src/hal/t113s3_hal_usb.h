@@ -198,6 +198,8 @@ typedef struct {
 	//uint32_t power_debouce;
 } usb_struct, *pusb_struct;
 
+#if WITHUSBDMSC
+
 typedef struct
 {
     uint32_t dCBWSig;
@@ -219,47 +221,7 @@ typedef struct
   	uint8_t  bCSWStatus;
 } uCSWPKG, *pCSWPKG;
 
-
-
-
-typedef struct
-{
-  uint8_t  bLength;
-  uint8_t  bDesType;
-  uint8_t  wTotalLen0;
-  uint8_t  wTotalLen1;
-  uint8_t  bNumIntf;
-  uint8_t  bConfigVal;
-  uint8_t  iConfig;
-  uint8_t  bmAttrib;
-  uint8_t  MaxPower;
-} uConfigDes, *pConfigDes;
-
-typedef struct
-{
-  uint8_t  bLength;
-  uint8_t  bDesType;
-  uint8_t  bIntfNum;
-  uint8_t  bAltSet;
-  uint8_t  bNumEP;
-  uint8_t  bIntfClass;
-  uint8_t  bIntfSubClass;
-  uint8_t  bIntfProtocol;
-  uint8_t  iInterface;
-} uIntfDes, *pIntfDes;
-
-
-typedef struct
-{
-  uint8_t  bLength;
-  uint8_t  bDesType;
-  uint8_t  bEPAddr;
-  uint8_t  bmAttrib;
-  uint8_t  wMaxPktSize0;
-  uint8_t  wMaxPktSize1;
-  uint8_t  bInterval;
-} uEPDes, *pEPDes;
-
+#endif /* WITHUSBDMSC */
 
 //VBUS Level
 #define USB_VBUS_SESSEND		0

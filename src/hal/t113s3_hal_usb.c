@@ -2962,7 +2962,7 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
   		rx_count = usb_get_eprx_count(pusb);
   		do
   		{
-  			ret = epx_out_handler_dev_uac(pusb, bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
+  			ret = epx_out_handler_dev_uac(pusb, bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_ISO);
   		}
   		while(ret == USB_RETVAL_NOTCOMP);
 
