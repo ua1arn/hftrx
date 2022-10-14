@@ -3151,6 +3151,8 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t rx_count=0;
 
+	static uint8_t uacoutbuffer [1024];
+	static uint8_t uacinbuffer [1024];
 	do
 	{
 		// Handle OUT pipe (from host to device)
@@ -3169,7 +3171,7 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
   		rx_count = usb_get_eprx_count(pusb);
   		do
   		{
-  			ret = epx_out_handler_dev_uac(pusb, bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_ISO);
+  			ret = epx_out_handler_dev_uac(pusb, bo_ep_out, (uintptr_t)uacoutbuffer, rx_count, USB_PRTCL_ISO);
   		}
   		while(ret == USB_RETVAL_NOTCOMP);
 
