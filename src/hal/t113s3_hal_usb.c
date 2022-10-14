@@ -723,6 +723,7 @@ static uint32_t aw_log2(uint32_t x)
  	return val;
 }
 
+//[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
 static void usb_set_eptx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t size)
 {
 	uint8_t reg_val;
@@ -733,6 +734,7 @@ static void usb_set_eptx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t s
 	USBOTG0->USB_TXFIFOSZ = reg_val;
 }
 
+//[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
 static void usb_set_eprx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t size)
 {
 	uint8_t reg_val;
@@ -2524,7 +2526,6 @@ static USB_RETVAL epx_in_handler_dev_cdc(pusb_struct pusb, uint32_t ep_no, uintp
 
 
 
-	//epx_out_handler_dev_cdc(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
 	usb_fifo_accessed_by_cpu(pusb);
 	usb_write_ep_fifo(pusb, ep_no, dst_addr, byte_count);
 //		pdev->epx_xfer_residuev[ep_no-1] -= maxpkt;
@@ -2581,7 +2582,6 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
   			//printhex(0, pusb->buffer, rx_count);
   			cdcXout_buffer_save(cdcXbuffout [offset], rx_count, 0);
    		}
-
 	} while (0);
 
 	do
@@ -2645,7 +2645,6 @@ static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
 
 static USB_RETVAL epx_out_handler_dev_uac(pusb_struct pusb, uint32_t ep_no, uint32_t dst_addr, uint32_t byte_count, uint32_t ep_type)
 {
-	TP();
 	usb_device_uac * const pdev = & pusb->device_uac;
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t maxpkt;
@@ -3151,8 +3150,8 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t rx_count=0;
 
-	static uint8_t uacoutbuffer [1024];
-	static uint8_t uacinbuffer [1024];
+	static uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE];
+	static uint8_t uacinbuff [1024];
 	do
 	{
 		// Handle OUT pipe (from host to device)
@@ -3162,16 +3161,16 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
 		}
 		pusb->eprx_flag[bo_ep_out-1]--;
 
-	 	TP();
   		usb_select_ep(pusb, bo_ep_out);
   		if (!(usb_get_eprx_csr(pusb)&USB_RXCSR_RXPKTRDY))
   		{
   			break;
   		}
   		rx_count = usb_get_eprx_count(pusb);
+  		ASSERT(UACOUT_AUDIO48_DATASIZE == rx_count || 0 == rx_count);
   		do
   		{
-  			ret = epx_out_handler_dev_uac(pusb, bo_ep_out, (uintptr_t)uacoutbuffer, rx_count, USB_PRTCL_ISO);
+  			ret = epx_out_handler_dev_uac(pusb, bo_ep_out, (uintptr_t)uacoutbuff, rx_count, USB_PRTCL_ISO);
   		}
   		while(ret == USB_RETVAL_NOTCOMP);
 
@@ -3184,7 +3183,11 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
   		{
   			ret = USB_RETVAL_NOTCOMP;
   		}
-
+  		{
+			// использование данных
+			//printhex(0, pusb->buffer, rx_count);
+			uacout_buffer_save_system(uacoutbuff, rx_count, UACOUT_AUDIO48_FMT_CHANNELS, UACOUT_AUDIO48_SAMPLEBITS);
+ 		}
 	} while (0);
 
 	do
@@ -3239,6 +3242,12 @@ static void usb_struct_idle(pusb_struct pusb)
 #if WITHUSBUAC
 	usb_struct_idle_uac(pusb);
 #endif /* WITHUSBUAC */
+}
+
+static void set_ep_iso(pusb_struct pusb, uint32_t ep_no)
+{
+	usb_select_ep(pusb, ep_no);
+	usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_ISO);
 }
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
@@ -3307,13 +3316,16 @@ static void awxx_setup_fifo(pusb_struct pusb)
 #if WITHUSBUACOUT
 	{
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_OUT & 0x0F), 0, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
+		set_ep_iso(pusb, (USBD_EP_AUDIO_OUT & 0x0F));
 	}
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
 	{
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_IN & 0x0F), 1, usbd_getuacinmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+		set_ep_iso(pusb, (USBD_EP_AUDIO_IN & 0x0F));
 	#if WITHUSBUACIN2
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_RTS_IN & 0x0F), 1, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+		set_ep_iso(pusb, (USBD_EP_RTS_IN & 0x0F));
 	#endif
 	}
 #endif /* WITHUSBUACIN */
@@ -3589,7 +3601,27 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
      		ep0_set_config_handler_dev(pusb);
     		break;
     	case 0x0B :
-	       	PRINTF("usb_device: Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+	       	//PRINTF("usb_device: Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+    		switch (interfacev)
+    		{
+#if WITHUSBUACOUT
+       		case INTERFACE_AUDIO_MIKE:
+				buffers_set_uacinalt(LO_BYTE(ep0_setup->wValue));
+				break;
+#endif /* WITHUSBUACOUT */
+#if WITHUSBUACIN
+      		case INTERFACE_AUDIO_SPK:
+				buffers_set_uacoutalt(LO_BYTE(ep0_setup->wValue));
+				break;
+#if WITHUSBUACIN2
+      		case INTERFACE_AUDIO_RTS:
+				buffers_set_uacinrtsalt(LO_BYTE(ep0_setup->wValue));
+				break;
+#endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
+      		default:
+      			break;
+    		}
 	      	break;
     	case CDC_SET_LINE_CODING:
     		//PRINTF("1: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
