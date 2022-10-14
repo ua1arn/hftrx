@@ -1976,6 +1976,8 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 {
 	usb_device * const pdev = & pusb->device;
 	uint32_t rx_count=0;
+	uint32_t bo_ep_in = pdev->bo_ep_in;
+	uint32_t bo_ep_out = pdev->bo_ep_out;
 	const pCBWPKG pCBW = (pCBWPKG)(pusb->buffer);
 	const pCSWPKG pCSW = (pCSWPKG)(pusb->buffer);
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -1986,13 +1988,13 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 	{
 		case USB_BO_IDLE:
 		case USB_BO_CBW:
-		 	if (!pusb->eprx_flag[pdev->bo_ep_out-1])
+		 	if (!pusb->eprx_flag[bo_ep_out-1])
   		 	{
   				break;
   		 	}
 
-			pusb->eprx_flag[pdev->bo_ep_out-1]--;
-	  		usb_select_ep(pusb, pdev->bo_ep_out);
+			pusb->eprx_flag[bo_ep_out-1]--;
+	  		usb_select_ep(pusb, bo_ep_out);
 	  		if (!(usb_get_eprx_csr(pusb)&USB_RXCSR_RXPKTRDY))
 	  		{
 	  			break;
@@ -2006,7 +2008,7 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 	  		}
 	  		do
 	  		{
-	  			ret = epx_out_handler_dev(pusb, pdev->bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
+	  			ret = epx_out_handler_dev(pusb, bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
 	  		}
 	  		while(ret == USB_RETVAL_NOTCOMP);
 
@@ -2044,7 +2046,7 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 			break;
 
 		case USB_BO_RXDATA:
-			fret = epx_out_handler_dev(pusb, pdev->bo_ep_out, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+			fret = epx_out_handler_dev(pusb, bo_ep_out, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 			if (fret==USB_RETVAL_COMPOK)
 			{
 				int32_t flash_ret, start, nsector;
@@ -2061,7 +2063,7 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 					pdev->bo_xfer_addr = (uintptr_t)pCSW;
 					pdev->bo_xfer_residue = USB_CSW_LEN;
 					pdev->bo_xfer_tranferred = 0;
-					epx_in_handler_dev(pusb, pdev->bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+					epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 					pdev->bo_state = USB_BO_CSW;
 
 					PRINTF("Error: Flash Write Fail\n");
@@ -2077,7 +2079,7 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 				pdev->bo_xfer_addr = (uintptr_t)pCSW;
 				pdev->bo_xfer_residue = USB_CSW_LEN;
 				pdev->bo_xfer_tranferred = 0;
-				epx_in_handler_dev(pusb, pdev->bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+				epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 				pdev->bo_state = USB_BO_CSW;
 			}
 			else if (fret == USB_RETVAL_COMPERR)
@@ -2088,7 +2090,7 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 			break;
 
 		case USB_BO_TXDATA:
-			fret = epx_in_handler_dev(pusb, pdev->bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+			fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 			if (fret==USB_RETVAL_COMPOK)
 			{
 				pdev->bo_xfer_tranferred = pdev->bo_xfer_residue;
@@ -2099,7 +2101,7 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 				pdev->bo_xfer_addr = (uintptr_t)pCSW;
 				pdev->bo_xfer_residue = USB_CSW_LEN;
 				pdev->bo_xfer_tranferred = 0;
-				epx_in_handler_dev(pusb, pdev->bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+				epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 				pdev->bo_state = USB_BO_CSW;
 			}
 			else if (fret == USB_RETVAL_COMPERR)
@@ -2110,7 +2112,7 @@ static USB_RETVAL usb_dev_bulk_xfer(pusb_struct pusb)
 			break;
 
 		case USB_BO_CSW:
-			fret = epx_in_handler_dev(pusb, pdev->bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+			fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 			if (fret==USB_RETVAL_COMPOK)
 			{
 				pdev->bo_xfer_tranferred = pdev->bo_xfer_residue;
