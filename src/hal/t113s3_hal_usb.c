@@ -3388,11 +3388,12 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 	       	PRINTF("usb_device: Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 	      	break;
     	case CDC_SET_LINE_CODING:
-    		PRINTF("CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
+    		PRINTF("1: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
+    		pusb->ep0_xfer_state = USB_EP0_DATA;
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	case CDC_SET_CONTROL_LINE_STATE:
-    		PRINTF("1: CDC_SET_CONTROL_LINE_STATE: ifc=%u %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+    		//PRINTF("1: CDC_SET_CONTROL_LINE_STATE: ifc=%u %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	default   :
