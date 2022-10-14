@@ -2506,6 +2506,38 @@ static USB_RETVAL epx_out_handler_dev_cdc(pusb_struct pusb, uint32_t ep_no, uint
 	return ret;
 }
 
+static USB_RETVAL epx_in_handler_dev_cdc(pusb_struct pusb, uint32_t ep_no, uintptr_t dst_addr, uint32_t byte_count, uint32_t ep_type)
+{
+	usb_device_cdc * const pdev = & pusb->device_cdc;
+	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+	uint32_t maxpkt;
+	uint32_t ep_save = usb_get_active_ep(pusb);
+	static uint32_t epout_timeout = 0;
+#ifndef USB_NO_DMA
+	__dma_setting_t  p;
+	uint32_t dram_addr;
+#endif
+
+	usb_select_ep(pusb, ep_no);
+	maxpkt = usb_get_eprx_maxpkt(pusb);
+	maxpkt = (maxpkt&0x7ff)*(((maxpkt&0xf800)>>11)+1);
+
+
+
+	//epx_out_handler_dev_cdc(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
+	usb_fifo_accessed_by_cpu(pusb);
+	usb_write_ep_fifo(pusb, ep_no, dst_addr, byte_count);
+//		pdev->epx_xfer_residuev[ep_no-1] -= maxpkt;
+//	  	pdev->epx_xfer_tranferredv[ep_no-1] += maxpkt;
+//	  	pdev->epx_xfer_addrv[ep_no-1] += maxpkt;
+	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
+
+
+	usb_select_ep(pusb, ep_save);
+
+	return ret;
+}
+
 static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 {
 	unsigned offset = 0;
@@ -2533,7 +2565,7 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
   		rx_count = usb_get_eprx_count(pusb);
   		do
   		{
-  			ret = epx_out_handler_dev_cdc(pusb, bo_ep_out, (uintptr_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
+  			ret = epx_out_handler_dev_cdc(pusb, bo_ep_out, (uintptr_t)cdcXbuffout [offset], rx_count, USB_PRTCL_BULK);
   		}
   		while(ret == USB_RETVAL_NOTCOMP);
 
@@ -2547,7 +2579,7 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
   			ret = USB_RETVAL_NOTCOMP;
   			// использование данных
   			//printhex(0, pusb->buffer, rx_count);
-  			cdcXout_buffer_save(pusb->buffer, rx_count, 0);
+  			cdcXout_buffer_save(cdcXbuffout [offset], rx_count, 0);
    		}
 
 	} while (0);
@@ -2560,7 +2592,7 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 			break;
 		}
 	 	pusb->eptx_flag[bo_ep_in-1]--;
-	 	TP();
+	 	//TP();
 
 	} while (0);
 
@@ -2570,23 +2602,15 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 			HARDWARE_CDC_ONTXCHAR(offset, pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 		}
 
-		unsigned ep_no = bo_ep_in;
-
 		if (cdcXbuffinlevel [offset])
 		{
 
-	  		usb_select_ep(pusb, ep_no);
-			//epx_out_handler_dev_cdc(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
-			usb_fifo_accessed_by_cpu(pusb);
-			usb_write_ep_fifo(pusb, ep_no, (uintptr_t) cdcXbuffin [offset], cdcXbuffinlevel [offset]);
-	//		pdev->epx_xfer_residuev[ep_no-1] -= maxpkt;
-	//	  	pdev->epx_xfer_tranferredv[ep_no-1] += maxpkt;
-	//	  	pdev->epx_xfer_addrv[ep_no-1] += maxpkt;
-			usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
-			cdcXbuffinlevel [offset] = 0;
+  			ret = epx_in_handler_dev_cdc(pusb, bo_ep_in, (uintptr_t)cdcXbuffin [offset], cdcXbuffinlevel [offset], USB_PRTCL_BULK);
+  			cdcXbuffinlevel [offset] = 0;
 		}
 		else
 		{
+	  		usb_select_ep(pusb, bo_ep_in);
 			usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
 
 		}
