@@ -2434,8 +2434,8 @@ static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
 	static uint8_t ALIGNX_BEGIN device_bo_bufbase [USB_BO_DEV_BUF_SIZE] ALIGNX_END;
 	usb_device_cdc * const pdev = & pusb->device_cdc;
 
-	pdev->bo_memory_base = (uintptr_t) device_bo_memory_base;//(uint32_t)wBoot_malloc(128 * 1024);		//use to storage user data
-	pdev->bo_bufbase = (uintptr_t) device_bo_bufbase;//(uint32_t)wBoot_malloc(64 * 1024);				//use to usb ping-pang buffer
+//	pdev->bo_memory_base = (uintptr_t) device_bo_memory_base;//(uint32_t)wBoot_malloc(128 * 1024);		//use to storage user data
+//	pdev->bo_bufbase = (uintptr_t) device_bo_bufbase;//(uint32_t)wBoot_malloc(64 * 1024);				//use to usb ping-pang buffer
 }
 
 #endif /* WITHUSBCDCACM */

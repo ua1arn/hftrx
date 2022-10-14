@@ -90,14 +90,14 @@ typedef struct {
 	#define USB_BO_RXDATA			2
 	#define USB_BO_TXDATA			3
 	#define USB_BO_CSW				4
-	uint32_t bo_state;						//Bulk only device state
-	uintptr_t bo_xfer_addr[USB_MAX_EP_NO];				//Bulk only data address
-	uint32_t bo_xfer_residue[USB_MAX_EP_NO];			//Bulk only data residue length
-	uint32_t bo_xfer_tranferred[USB_MAX_EP_NO];  //Bulk only data transferred length
-	uintptr_t bo_memory_base;
-	//uint32_t bo_capacity;
-	//uint32_t bo_seccnt;
-	uintptr_t bo_bufbase;
+//	uint32_t bo_state;						//Bulk only device state
+//	uintptr_t bo_xfer_addr[USB_MAX_EP_NO];				//Bulk only data address
+//	uint32_t bo_xfer_residue[USB_MAX_EP_NO];			//Bulk only data residue length
+//	uint32_t bo_xfer_tranferred[USB_MAX_EP_NO];  //Bulk only data transferred length
+//	uintptr_t bo_memory_base;
+//	//uint32_t bo_capacity;
+//	//uint32_t bo_seccnt;
+//	uintptr_t bo_bufbase;
 
 	uint32_t csw_fail_flag;
 } usb_device_cdc;
