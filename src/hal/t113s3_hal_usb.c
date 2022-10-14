@@ -2526,7 +2526,6 @@ static void awxx_setup_fifo(pusb_struct pusb)
 {
 
 	uint32_t fifo_addr = 1024;    //
-	unsigned offset;
 
 #if WITHUSBDMSC
 	{
@@ -2543,6 +2542,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 #endif /* WITHUSBDMSC */
 #if WITHUSBCDCACM
 	{
+		unsigned offset;
 		for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 		{
 			const uint_fast8_t pipeint =  USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset) & 0x0F;
@@ -2557,14 +2557,14 @@ static void awxx_setup_fifo(pusb_struct pusb)
 #endif /* WITHUSBCDCACM */
 #if WITHUSBUACOUT
 	{
-		fifo_addr = set_fifo_ep(pusb, USBD_EP_AUDIO_OUT & 0x0F, 0, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_OUT & 0x0F), 0, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
 	}
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
 	{
-		fifo_addr = set_fifo_ep(pusb, USBD_EP_AUDIO_IN & 0x0F, 1, usbd_getuacinmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_IN & 0x0F), 1, usbd_getuacinmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
 	#if WITHUSBUACIN2
-		fifo_addr = set_fifo_ep(pusb, USBD_EP_RTS_IN & 0x0F, 1, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_RTS_IN & 0x0F), 1, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
 	#endif
 	}
 #endif /* WITHUSBUACIN */
