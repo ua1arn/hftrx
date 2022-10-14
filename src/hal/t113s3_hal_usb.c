@@ -3126,6 +3126,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 	uint32_t temp = 0;
 	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
 
+	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	if ((ep0_setup->bmRequest&0x60)==0x00)
 	{
 		switch (ep0_setup->bRequest)
@@ -3205,7 +3206,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				break;
 	      	default   :
 	        	pusb->ep0_xfer_residue = 0;
-	        	PRINTF("usb_device: Unkown Standard Request = 0x%x\n", ep0_setup->bRequest);
+	        	PRINTF("usb_device: Unkown Standard Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 		}
 	}
 	else if ((ep0_setup->bmRequest&0x60)==0x20)
@@ -3220,8 +3221,17 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				break;
 #endif /* WITHUSBDMSC */
 			default     :
+#if WITHUSBCDCACM && 0
+			case 0x20:
+				break;
+			case 0x21:
+				break;
+			case 0x22:
+				break;
+
+#endif /* WITHUSBCDCACM */
 				pusb->ep0_xfer_residue = 0;
-				PRINTF("usb_device: Unkown Class-Specific Request = 0x%x\n", ep0_setup->bRequest);
+				PRINTF("usb_device: Unkown Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 		}
 	}
 	else if ((ep0_setup->bmRequest&0x60)==USB_REQ_TYPE_VENDOR)
@@ -3276,6 +3286,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 {
 	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
 
+	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	switch (ep0_setup->bRequest)
 	{
 		case 0x01 :
@@ -3344,7 +3355,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
      		ep0_set_config_handler_dev(pusb);
     		break;
     	case 0x0B :
-	       	PRINTF("usb_device: Set Interface\n");
+	       	PRINTF("usb_device: Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 	      	break;
     	default   :
       		PRINTF("usb_device: Unkown EP0 OUT: 0x%x!!\n", ep0_setup->bRequest);
