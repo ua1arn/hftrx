@@ -201,6 +201,10 @@ void USBD_static_free(void *p);
   * @}
   */
 
+void usbd_pipes_initialize(PCD_HandleTypeDef * hpcd);
+void usb_device_function0(PCD_HandleTypeDef * hpcd);
+
+
 #ifdef __cplusplus
 }
 #endif

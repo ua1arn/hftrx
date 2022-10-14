@@ -2166,24 +2166,10 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 	fifo_addr += alignedepfifosize * (is_dpb ? 2 : 1);
 	return fifo_addr;
 }
-/*
-************************************************************************************************************
-*
-*                                             function
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ��
-*
-*
-************************************************************************************************************
-*/
-static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
+
+static void awxx_setup_fifo(pusb_struct pusb)
 {
+
 	uint32_t fifo_addr = 1024;    //
 	unsigned offset;
 
@@ -2217,7 +2203,26 @@ static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 		}
 	}
 #endif /* WITHUSBCDCACM */
-
+}
+/*
+************************************************************************************************************
+*
+*                                             function
+*
+*    �������ƣ�
+*
+*    �����б�
+*
+*    ����ֵ  ��
+*
+*    ˵��    ��
+*
+*
+************************************************************************************************************
+*/
+static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
+{
+	awxx_setup_fifo(pusb);
 	return 1;
 }
 /*
@@ -2745,13 +2750,17 @@ static uint32_t usb_device_function(pusb_struct pusb)
 //static uint32_t eptx_irq_count = 0;
 //static uint32_t eprx_irq_count = 0;
 
-void usb_device_function0(void)
+void usb_device_function0(PCD_HandleTypeDef * hpcd)
 {
-	extern PCD_HandleTypeDef hpcd_USB_OTG;
-	usb_struct * const pusb = & hpcd_USB_OTG.awxx_usb;
+	usb_struct * const pusb = & hpcd->awxx_usb;
 	usb_device_function(pusb);
 }
 
+void usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
+{
+	usb_struct * const pusb = & hpcd->awxx_usb;
+	//awxx_setup_fifo(pusb);
+}
 static void usb_params_init(pusb_struct pusb)
 {
 	static uint8_t ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
@@ -3597,11 +3606,11 @@ HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
 HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd)
 {
 //  __HAL_LOCK(hpcd);
-	pusb_struct awxx_usb = & hpcd->awxx_usb;
+	pusb_struct pusb = & hpcd->awxx_usb;
 
-	usb_struct_init(&awxx_usb[0]);
+	usb_struct_init(pusb);
 
-	usb_init(&awxx_usb[0]);
+	usb_init(pusb);
 
 	USB_DevConnect (hpcd->Instance);
 //  __HAL_PCD_ENABLE(hpcd);
@@ -3853,15 +3862,15 @@ uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   * @param  address new device address
   * @retval HAL status
   */
-//HAL_StatusTypeDef HAL_PCD_SetAddress(PCD_HandleTypeDef *hpcd, uint8_t address)
-//{
-//  //__HAL_LOCK(hpcd);
-//  hpcd->USB_Address = address;
-//  //(void)USB_SetDevAddress(hpcd->Instance, address);
-//  usb_set_dev_addr(& hpcd->awxx_usb, address);
-//  //__HAL_UNLOCK(hpcd);
-//
-//  return HAL_OK;
-//}
+HAL_StatusTypeDef HAL_PCD_SetAddress(PCD_HandleTypeDef *hpcd, uint8_t address)
+{
+  //__HAL_LOCK(hpcd);
+  hpcd->USB_Address = address;
+  //(void)USB_SetDevAddress(hpcd->Instance, address);
+  usb_set_dev_addr(& hpcd->awxx_usb, address);
+  //__HAL_UNLOCK(hpcd);
+
+  return HAL_OK;
+}
 
 #endif /* (CPUSTYPE_T113 || CPUSTYPE_F133) */
