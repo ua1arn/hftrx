@@ -3061,8 +3061,8 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 
 static void awxx_setup_fifo(pusb_struct pusb)
 {
-
-	uint32_t fifo_addr = 1024;    //
+	const uint32_t fifo_base = 0*1024;
+	uint32_t fifo_addr = fifo_base;
 
 #if WITHUSBDMSC
 	{
@@ -3105,6 +3105,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	#endif
 	}
 #endif /* WITHUSBUACIN */
+	PRINTF("awxx_setup_fifo: fifo_addr delta = %u\n", fifo_addr - fifo_base);
 }
 
 
