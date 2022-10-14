@@ -3244,7 +3244,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				}
 				break;
 			case CDC_SET_CONTROL_LINE_STATE:
-				PRINTF("cdc: CDC_SET_CONTROL_LINE_STATE: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
+				PRINTF("cdc2: CDC_SET_CONTROL_LINE_STATE: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 				pusb->ep0_xfer_residue = 0;
 				break;
 
@@ -3381,7 +3381,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	case CDC_SET_CONTROL_LINE_STATE:
-    		PRINTF("CDC_SET_CONTROL_LINE_STATE: ifc=%u\n", interfacev);
+    		PRINTF("1: CDC_SET_CONTROL_LINE_STATE: ifc=%u %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	default   :
