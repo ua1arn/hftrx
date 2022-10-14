@@ -70,9 +70,6 @@ typedef struct {
 
 typedef struct {
 
-	//uint32_t ConfigDesc_Len;
-	uint32_t MaxLUN;
-
 	//EP protocol
 	#define USB_PRTCL_ILL  	0
 	#define USB_PRTCL_ISO  	1
@@ -82,10 +79,10 @@ typedef struct {
 	//uint32_t eprx_prtcl[USB_MAX_EP_NO];
 	//uint32_t eptx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
 	//uint32_t eprx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-	uintptr_t epx_xfer_addr[USB_MAX_EP_NO];
-	uint32_t epx_xfer_residue[USB_MAX_EP_NO];
-	uint32_t epx_xfer_tranferred[USB_MAX_EP_NO];
-	uint32_t epx_buf_tag[USB_MAX_EP_NO];
+	uintptr_t epx_xfer_addrv[USB_MAX_EP_NO];
+	uint32_t epx_xfer_residuev[USB_MAX_EP_NO];
+	uint32_t epx_xfer_tranferredv[USB_MAX_EP_NO];
+	uint32_t epx_buf_tagv[USB_MAX_EP_NO];
 
 	//Bulk Only Device State Machine
 	#define USB_BO_IDLE				0

@@ -41,9 +41,6 @@
 	#define USB0_SPEED 				USB_SPEED_FS
 #endif /* WITHUSBDEV_HSDESC */
 
-#define BULK_IN_EP    			USBD_EP_MSC_IN
-#define BULK_OUT_EP				USBD_EP_MSC_OUT
-
 #define USB_DEV_SEC_BITS   		9//
 #define USB_DEV_SEC_SIZE   		(0x1u << USB_DEV_SEC_BITS)//
 
@@ -94,6 +91,8 @@
 #define get_bvalue(n)    		(*((volatile uint8_t *)(n)))          /* byte input */
 #define put_bvalue(n,c)  		do { (*((volatile uint8_t *)(n)) = (c)); } while (0)    /* byte output */
 
+#if WITHUSBDMSC
+
 #define  wBoot_part_start(part)      0
 #define  wBoot_dma_QueryState(hdma)  0
 #define  wBoot_dma_stop(hdma)        do { } while (0)
@@ -143,7 +142,7 @@ static int wBoot_block_write(unsigned int start,unsigned int nblock,void *pBuffe
  #endif
   return 0;
 }
-
+#endif /* WITHUSBDMSC */
 
 //////////////////////////////////////////////////////////////////
 
@@ -1134,22 +1133,10 @@ static uint32_t usb_dev_get_buf_base(pusb_struct pusb, uint32_t buf_tag)
 	return (pusb->device.bo_bufbase + buf_tag*USB_BO_DEV_BUF_SIZE);
 }
 #endif
-/*
-************************************************************************************************************
-*
-*                                             epx_out_handler_dev_msc
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ����ȡUSB FIFO���ݺ���
-*
-*
-************************************************************************************************************
-*/
+
+
+#if WITHUSBDMSC
+
 static USB_RETVAL epx_out_handler_dev_msc(pusb_struct pusb, uint32_t ep_no, uint32_t dst_addr, uint32_t byte_count, uint32_t ep_type)
 {
 	usb_device_msc * const pdev = & pusb->device_msc;
@@ -1405,22 +1392,7 @@ static USB_RETVAL epx_out_handler_dev_msc(pusb_struct pusb, uint32_t ep_no, uint
 
 	return ret;
 }
-/*
-************************************************************************************************************
-*
-*                                             epx_in_handler_dev_msc
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ��д��USB FIFO���ݺ���
-*
-*
-************************************************************************************************************
-*/
+
 static USB_RETVAL epx_in_handler_dev_msc(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
 {
   	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -1959,8 +1931,6 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 	return fret;
 }
 
-#if WITHUSBDMSC
-
 static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 {
 	usb_device_msc * const pdev = & pusb->device_msc;
@@ -2145,9 +2115,259 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 
 #if WITHUSBCDCACM
 
-static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
+static USB_RETVAL epx_out_handler_dev_cdc(pusb_struct pusb, uint32_t ep_no, uint32_t dst_addr, uint32_t byte_count, uint32_t ep_type)
 {
+	usb_device_cdc * const pdev = & pusb->device_cdc;
+	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+	uint32_t maxpkt;
+	uint32_t ep_save = usb_get_active_ep(pusb);
+	static uint32_t epout_timeout = 0;
+#ifndef USB_NO_DMA
+	__dma_setting_t  p;
+	uint32_t dram_addr;
+#endif
 
+	usb_select_ep(pusb, ep_no);
+	maxpkt = usb_get_eprx_maxpkt(pusb);
+	maxpkt = (maxpkt&0x7ff)*(((maxpkt&0xf800)>>11)+1);
+
+	switch (pusb->eprx_xfer_state[ep_no-1])
+	{
+		case USB_EPX_SETUP:
+		{
+			pdev->epx_xfer_addrv [ep_no-1] = dst_addr;
+			pdev->epx_xfer_residuev [ep_no-1] = byte_count;
+			pdev->epx_xfer_tranferredv [ep_no-1] = 0;
+
+
+			if (!maxpkt)
+			{
+				return USB_RETVAL_COMPOK;
+			}
+
+			if (byte_count>=maxpkt)
+			{
+				uint32_t xfer_count=0;
+
+#ifndef USB_NO_DMA
+				xfer_count = min(pdev->epx_xfer_residue, USB_BO_DEV_BUF_SIZE);
+				pusb->dma_last_transfer = xfer_count;
+				usb_fifo_accessed_by_dma(pusb, ep_no, 0);  //rx
+
+				dram_addr = usb_dev_get_buf_base(pusb, pdev->epx_buf_tag);
+
+				p.cfg.src_drq_type      = DDMA_SRC_USB0;
+				p.cfg.src_addr_type     = 1;   //IO address
+				p.cfg.src_burst_length  = 1;   //burst length = 4
+				p.cfg.src_data_width    = 2;   //32bit
+				p.cfg.dst_drq_type      = DDMA_DST_SDRAM;
+				p.cfg.dst_addr_type     = 0;   //linear
+				p.cfg.dst_burst_length  = 1;   //burst length = 4
+				p.cfg.dst_data_width    = 2;   //32bit
+				p.cfg.wait_state        = 0;
+				p.cfg.continuous_mode   = 0;
+
+				p.pgsz                  = 0;
+				p.pgstp                 = 0;
+				p.cmt_blk_cnt           = USB2DRAM_PARAMS;
+
+				wBoot_dma_Setting(pusb->dma, (void *)&p);
+				//���Ƕ�����������ʱ��ˢ��Ŀ�ĵ�ַ��ԭ�����ˢ��DRAM(SRAM)
+				wlibc_CleanFlushDCacheRegion((void *)dram_addr, xfer_count);
+
+				wBoot_dma_start(pusb->dma, usb_get_ep_fifo_addr(pusb, ep_no), dram_addr, xfer_count);
+
+				usb_set_eprx_csrhi(pusb, (USB_RXCSR_AUTOCLR|USB_RXCSR_DMAREQEN)>>8);
+				pusb->eprx_xfer_state[ep_no-1] = USB_EPX_DATA;
+#else
+			    xfer_count = min(pdev->epx_xfer_residuev [ep_no-1], maxpkt);
+			    if (usb_get_eprx_csr(pusb)&USB_RXCSR_RXPKTRDY)
+				{
+					usb_fifo_accessed_by_cpu(pusb);
+					if (usb_get_fifo_access_config(pusb)&0x1)
+					{
+						PRINTF("Error: CPU Access Failed!!\n");
+					}
+					usb_read_ep_fifo(pusb, ep_no, pdev->epx_xfer_addrv [ep_no-1], xfer_count);
+					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO); //Clear RxPktRdy
+					pdev->epx_xfer_residuev [ep_no-1] -= xfer_count;
+					pdev->epx_xfer_addrv [ep_no-1] += xfer_count;
+					pdev->epx_xfer_tranferredv [ep_no-1]  += xfer_count;
+					pusb->eprx_xfer_state[ep_no-1] = USB_EPX_DATA;
+					epout_timeout = 0;
+				}
+				else
+				{
+					epout_timeout ++;
+
+					if (epout_timeout < 0x1000)
+					{
+						ret = USB_RETVAL_NOTCOMP;
+					}
+					else
+					{
+						ret = USB_RETVAL_COMPERR;
+						PRINTF("Error: RxPktRdy Timeout!!\n");
+					}
+				}
+#endif
+			}
+			else
+			{
+				if (usb_get_eprx_csr(pusb)&USB_RXCSR_RXPKTRDY)
+				{
+					usb_fifo_accessed_by_cpu(pusb);
+					if (usb_get_fifo_access_config(pusb)&0x1)
+					{
+						PRINTF("Error: CPU Access Failed!!\n");
+					}
+					usb_read_ep_fifo(pusb, ep_no, pdev->epx_xfer_addrv [ep_no-1], byte_count);
+					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO); //Clear RxPktRdy
+					pdev->epx_xfer_residuev [ep_no-1] -= byte_count;
+					pdev->epx_xfer_tranferredv [ep_no-1]  += byte_count;
+					pusb->eprx_xfer_state[ep_no-1] = USB_EPX_SETUP;
+					ret = USB_RETVAL_COMPOK;
+					epout_timeout = 0;
+				}
+				else
+				{
+					epout_timeout ++;
+
+					if (epout_timeout < 0x1000)
+					{
+						ret = USB_RETVAL_NOTCOMP;
+					}
+					else
+					{
+						ret = USB_RETVAL_COMPERR;
+						PRINTF("Error: RxPktRdy Timeout!!\n");
+					}
+				}
+			}
+		}
+		break;
+
+		case USB_EPX_DATA:
+#ifndef USB_NO_DMA
+		if (!wBoot_dma_QueryState(pusb->dma))
+	 	{
+	 		uint32_t data_xfered = pusb->dma_last_transferv [ep_no-1];
+
+		  	pdev->epx_xfer_residuev [ep_no-1] -= data_xfered;
+		  	pusb->dma_last_transfer  = 0;
+		  	pdev->epx_buf_tagv [ep_no-1] = pdev->epx_buf_tag ? 0:1;
+
+		  	if (pdev->epx_xfer_residue)
+		  	{
+		  		uint32_t xfer_count = min(pdev->epx_xfer_residue, USB_BO_DEV_BUF_SIZE);
+
+				pusb->dma_last_transfer = xfer_count;
+		  		usb_fifo_accessed_by_dma(pusb, ep_no, 0);
+
+		  		dram_addr = usb_dev_get_buf_base(pusb, pdev->epx_buf_tag);
+
+			    p.cfg.src_drq_type      = DDMA_SRC_USB0;
+			    p.cfg.src_addr_type     = 1;   //IO address
+			    p.cfg.src_burst_length  = 1;   //burst length = 4
+			    p.cfg.src_data_width    = 2;   //32bit
+			    p.cfg.dst_drq_type      = DDMA_DST_SDRAM;
+			    p.cfg.dst_addr_type     = 0;   //linear
+			    p.cfg.dst_burst_length  = 1;   //burst length = 4
+			    p.cfg.dst_data_width    = 2;   //32bit
+			    p.cfg.wait_state        = 0;
+			    p.cfg.continuous_mode   = 0;
+
+			    p.pgsz                  = 0;
+			    p.pgstp                 = 0;
+			    p.cmt_blk_cnt           = USB2DRAM_PARAMS;
+
+			    wBoot_dma_Setting(pusb->dma, (void *)&p);
+			    //���Ƕ�����������ʱ��ˢ��Ŀ�ĵ�ַ��ԭ�����ˢ��DRAM(SRAM)
+			    wlibc_CleanFlushDCacheRegion((void *)dram_addr, xfer_count);
+
+			    wBoot_dma_start(pusb->dma, usb_get_ep_fifo_addr(pusb, ep_no), dram_addr, xfer_count);
+		  	}
+		  	else
+		  	{
+		  		if (byte_count&0x1ff)
+			    {
+				    usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO);
+			    }
+			    else
+			   	{
+				   usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&(USB_RXCSR_ISO|USB_RXCSR_RXPKTRDY));
+			   	}
+			    pusb->eprx_xfer_state[ep_no-1] = USB_EPX_SETUP;
+			    ret = USB_RETVAL_COMPOK;
+		  	}
+
+			if (dram_copy(usb_dev_get_buf_base(pusb, pdev->epx_buf_tag? 0:1), pdev->epx_xfer_addr, data_xfered))
+		  	{
+		  		pdev->epx_xfer_addrv [ep_no-1] += data_xfered;
+		  		pdev->epx_xfer_tranferredv [ep_no-1] += data_xfered;
+		  	}
+		  	else
+		  	{
+		  		PRINTF("Error: buffer to storage copy error!!\n");
+			    pusb->eprx_xfer_state[ep_no-1] = USB_EPX_SETUP;
+			    ret = USB_RETVAL_COMPERR;
+		  	}
+	 	}
+	 	else
+	 	{
+	 		PRINTF("dma busy\n");
+	 	}
+#else
+		if (pdev->epx_xfer_residuev [ep_no-1]>0)
+		{
+			if (usb_get_eprx_csr(pusb)&USB_RXCSR_RXPKTRDY)
+			{
+				uint32_t xfer_count = min(pdev->epx_xfer_residuev [ep_no-1], maxpkt);
+
+				usb_fifo_accessed_by_cpu(pusb);
+				if (usb_get_fifo_access_config(pusb)&0x1)
+				{
+					PRINTF("Error: CPU Access Failed!!\n");
+				}
+				usb_read_ep_fifo(pusb, ep_no, pdev->epx_xfer_addrv [ep_no-1], xfer_count);
+				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO); //Clear RxPktRdy
+				pdev->epx_xfer_residuev [ep_no-1] -= xfer_count;
+				pdev->epx_xfer_addrv [ep_no-1] += xfer_count;
+				pdev->epx_xfer_tranferredv [ep_no-1]  += xfer_count;
+				pusb->eprx_xfer_state[ep_no-1] = USB_EPX_DATA;
+				epout_timeout = 0;
+			}
+			else
+			{
+				epout_timeout ++;
+
+				if (epout_timeout < 0x1000)
+				{
+					ret = USB_RETVAL_NOTCOMP;
+				}
+				else
+				{
+					ret = USB_RETVAL_COMPERR;
+					PRINTF("Error: RxPktRdy Timeout!!\n");
+				}
+			}
+		}
+		else
+		{
+			pusb->eprx_xfer_state[ep_no-1] = USB_EPX_SETUP;
+			ret = USB_RETVAL_COMPOK;
+		}
+#endif
+		break;
+
+		default:
+			PRINTF("Error: Wrong eprx_xfer_state=%d\n", pusb->eprx_xfer_state[ep_no-1]);
+			pusb->eprx_xfer_state[ep_no-1] = USB_EPX_SETUP;
+	}
+
+	usb_select_ep(pusb, ep_save);
+
+	return ret;
 }
 
 static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
@@ -2181,7 +2401,7 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
   		}
   		do
   		{
-  			ret = epx_out_handler_dev_msc(pusb, bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
+  			ret = epx_out_handler_dev_cdc(pusb, bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
   		}
   		while(ret == USB_RETVAL_NOTCOMP);
 
@@ -2205,6 +2425,19 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 
 	return ret;
 }
+
+
+static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
+{
+
+	static uint8_t ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
+	static uint8_t ALIGNX_BEGIN device_bo_bufbase [USB_BO_DEV_BUF_SIZE] ALIGNX_END;
+	usb_device_cdc * const pdev = & pusb->device_cdc;
+
+	pdev->bo_memory_base = (uintptr_t) device_bo_memory_base;//(uint32_t)wBoot_malloc(128 * 1024);		//use to storage user data
+	pdev->bo_bufbase = (uintptr_t) device_bo_bufbase;//(uint32_t)wBoot_malloc(64 * 1024);				//use to usb ping-pang buffer
+}
+
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBDUAC
