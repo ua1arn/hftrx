@@ -1137,7 +1137,7 @@ static uint32_t usb_dev_get_buf_base(pusb_struct pusb, uint32_t buf_tag)
 /*
 ************************************************************************************************************
 *
-*                                             epx_out_handler_dev
+*                                             epx_out_handler_dev_msc
 *
 *    �������ƣ�
 *
@@ -1150,7 +1150,7 @@ static uint32_t usb_dev_get_buf_base(pusb_struct pusb, uint32_t buf_tag)
 *
 ************************************************************************************************************
 */
-static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uint32_t dst_addr, uint32_t byte_count, uint32_t ep_type)
+static USB_RETVAL epx_out_handler_dev_msc(pusb_struct pusb, uint32_t ep_no, uint32_t dst_addr, uint32_t byte_count, uint32_t ep_type)
 {
 	usb_device_msc * const pdev = & pusb->device_msc;
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -1408,7 +1408,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uint32_t
 /*
 ************************************************************************************************************
 *
-*                                             epx_in_handler_dev
+*                                             epx_in_handler_dev_msc
 *
 *    �������ƣ�
 *
@@ -1421,7 +1421,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uint32_t
 *
 ************************************************************************************************************
 */
-static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
+static USB_RETVAL epx_in_handler_dev_msc(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
 {
   	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	usb_device_msc * const pdev = & pusb->device_msc;
@@ -1677,7 +1677,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pdev->bo_xfer_addr = (uintptr_t) pCSW;
 		pdev->bo_xfer_residue = USB_CSW_LEN;
 		pdev->bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+		fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pdev->bo_state = USB_BO_CSW;
@@ -1704,7 +1704,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pdev->bo_xfer_addr = (uintptr_t) pCSW;
 		pdev->bo_xfer_residue = USB_CSW_LEN;
 		pdev->bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+		fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pdev->bo_state = USB_BO_CSW;
@@ -1722,7 +1722,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pdev->bo_xfer_addr = (uintptr_t) pCSW;
 		pdev->bo_xfer_residue = USB_CSW_LEN;
 		pdev->bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+		fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pdev->bo_state = USB_BO_CSW;
@@ -1737,7 +1737,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pdev->bo_xfer_addr = (uintptr_t) InquiryData;
 		pdev->bo_xfer_residue = min(pCBW->dCBWDTL, 36);
 		pdev->bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+		fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pdev->bo_state = USB_BO_TXDATA;
@@ -1770,7 +1770,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pdev->bo_xfer_addr = (uintptr_t) formatcap;
 		pdev->bo_xfer_residue = min(pCBW->dCBWDTL, 12);
 		pdev->bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+		fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pdev->bo_state = USB_BO_TXDATA;
@@ -1801,7 +1801,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pdev->bo_xfer_addr = (uintptr_t) capacity;
 		pdev->bo_xfer_residue = min(pCBW->dCBWDTL, 8);
 		pdev->bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+		fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pdev->bo_state = USB_BO_TXDATA;
@@ -1844,7 +1844,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 			pdev->bo_xfer_addr = (uintptr_t) pCSW;
 			pdev->bo_xfer_residue = USB_CSW_LEN;
 			pdev->bo_xfer_tranferred = 0;
-			epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+			epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 			pdev->bo_state = USB_BO_CSW;
 			PRINTF("Error: Flash Read Fail\n");
 			break;
@@ -1854,7 +1854,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pdev->bo_xfer_residue = min(read_len, MAX_DDMA_SIZE); //Max USB Packet is 64KB    //??
 		pdev->bo_xfer_tranferred = 0;
 	}
-		fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+		fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pdev->bo_state = USB_BO_TXDATA;
@@ -1869,7 +1869,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pdev->bo_xfer_addr = (uintptr_t) SenseData;
 		pdev->bo_xfer_residue = min(pCBW->dCBWDTL, 4);
 		pdev->bo_xfer_tranferred = 0;
-		fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+		fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_NOTCOMP)
 		{
 			pdev->bo_state = USB_BO_TXDATA;
@@ -1898,7 +1898,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		pdev->bo_xfer_residue = min(write_len, MAX_DDMA_SIZE);
 		pdev->bo_xfer_tranferred = 0;
 	}
-		fret = epx_out_handler_dev(pusb, bo_ep_out, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+		fret = epx_out_handler_dev_msc(pusb, bo_ep_out, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 		if (fret == USB_RETVAL_COMPOK)
 		{
 			int32_t flash_ret, start, nsector;
@@ -1916,7 +1916,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 				pdev->bo_xfer_addr = (uintptr_t) pCSW;
 				pdev->bo_xfer_residue = USB_CSW_LEN;
 				pdev->bo_xfer_tranferred = 0;
-				epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+				epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 				pdev->bo_state = USB_BO_CSW;
 				PRINTF("Error: Flash Write Fail\n");
 				break;
@@ -1929,7 +1929,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 			pdev->bo_xfer_addr = (uintptr_t) pCSW;
 			pdev->bo_xfer_residue = USB_CSW_LEN;
 			pdev->bo_xfer_tranferred = 0;
-			fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+			fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 			if (fret == USB_RETVAL_NOTCOMP)
 			{
 				pdev->bo_state = USB_BO_CSW;
@@ -1959,22 +1959,8 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 	return fret;
 }
 
-/*
-************************************************************************************************************
-*
-*                                             usb_dev_bulk_xfer_msc
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ��
-*
-*
-************************************************************************************************************
-*/
+#if WITHUSBDMSC
+
 static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 {
 	usb_device_msc * const pdev = & pusb->device_msc;
@@ -2011,7 +1997,7 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 	  		}
 	  		do
 	  		{
-	  			ret = epx_out_handler_dev(pusb, bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
+	  			ret = epx_out_handler_dev_msc(pusb, bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
 	  		}
 	  		while(ret == USB_RETVAL_NOTCOMP);
 
@@ -2049,7 +2035,7 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 			break;
 
 		case USB_BO_RXDATA:
-			fret = epx_out_handler_dev(pusb, bo_ep_out, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+			fret = epx_out_handler_dev_msc(pusb, bo_ep_out, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 			if (fret==USB_RETVAL_COMPOK)
 			{
 				int32_t flash_ret, start, nsector;
@@ -2066,7 +2052,7 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 					pdev->bo_xfer_addr = (uintptr_t)pCSW;
 					pdev->bo_xfer_residue = USB_CSW_LEN;
 					pdev->bo_xfer_tranferred = 0;
-					epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+					epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 					pdev->bo_state = USB_BO_CSW;
 
 					PRINTF("Error: Flash Write Fail\n");
@@ -2082,7 +2068,7 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 				pdev->bo_xfer_addr = (uintptr_t)pCSW;
 				pdev->bo_xfer_residue = USB_CSW_LEN;
 				pdev->bo_xfer_tranferred = 0;
-				epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+				epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 				pdev->bo_state = USB_BO_CSW;
 			}
 			else if (fret == USB_RETVAL_COMPERR)
@@ -2093,7 +2079,7 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 			break;
 
 		case USB_BO_TXDATA:
-			fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+			fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 			if (fret==USB_RETVAL_COMPOK)
 			{
 				pdev->bo_xfer_tranferred = pdev->bo_xfer_residue;
@@ -2104,7 +2090,7 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 				pdev->bo_xfer_addr = (uintptr_t)pCSW;
 				pdev->bo_xfer_residue = USB_CSW_LEN;
 				pdev->bo_xfer_tranferred = 0;
-				epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+				epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 				pdev->bo_state = USB_BO_CSW;
 			}
 			else if (fret == USB_RETVAL_COMPERR)
@@ -2115,7 +2101,7 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 			break;
 
 		case USB_BO_CSW:
-			fret = epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
+			fret = epx_in_handler_dev_msc(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 			if (fret==USB_RETVAL_COMPOK)
 			{
 				pdev->bo_xfer_tranferred = pdev->bo_xfer_residue;
@@ -2137,9 +2123,115 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 	return ret;
 }
 
-///////////////////////////////////////////////////////////////////
-//                 usb control transfer
-///////////////////////////////////////////////////////////////////
+static void usb_struct_idle_msc(pusb_struct pusb)
+{
+	usb_device_msc * const pdev = & pusb->device_msc;
+	pdev->bo_state = USB_BO_IDLE;
+}
+
+static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
+{
+	static uint8_t ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
+	static uint8_t ALIGNX_BEGIN device_bo_bufbase [USB_BO_DEV_BUF_SIZE] ALIGNX_END;
+	usb_device_msc * const pdev = & pusb->device_msc;
+
+	pdev->MaxLUNv [0] = wBoot_part_count(1) - 1;
+	PRINTF("part count = %d\n", pdev->MaxLUNv [0] + 1);
+	pdev->bo_memory_base = (uintptr_t) device_bo_memory_base;//(uint32_t)wBoot_malloc(128 * 1024);		//use to storage user data
+	pdev->bo_bufbase = (uintptr_t) device_bo_bufbase;//(uint32_t)wBoot_malloc(64 * 1024);				//use to usb ping-pang buffer
+}
+
+#endif /* WITHUSBDMSC */
+
+#if WITHUSBCDCACM
+
+static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
+{
+
+}
+
+static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
+{
+	const uint32_t bo_ep_in = (USBD_EP_CDCACM_IN & 0x0F);
+	const uint32_t bo_ep_out = (USBD_EP_CDCACM_OUT & 0x0F);
+	usb_device_cdc * const pdev = & pusb->device_cdc;
+	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+	uint32_t rx_count=0;
+
+	do
+	{
+		// Handle OUT pipe (from host to device)
+	 	if (!pusb->eprx_flag[bo_ep_out-1])
+		 	{
+				break;
+		 	}
+
+		pusb->eprx_flag[bo_ep_out-1]--;
+  		usb_select_ep(pusb, bo_ep_out);
+  		if (!(usb_get_eprx_csr(pusb)&USB_RXCSR_RXPKTRDY))
+  		{
+  			break;
+  		}
+  		rx_count = usb_get_eprx_count(pusb);
+		if (rx_count != USB_CBW_LEN)
+  		{
+  			usb_eprx_flush_fifo(pusb);
+  			PRINTF("Error: Not CBW, RX Data Length=%d\n",rx_count);
+  			break;
+  		}
+  		do
+  		{
+  			ret = epx_out_handler_dev_msc(pusb, bo_ep_out, (uint32_t)pusb->buffer, rx_count, USB_PRTCL_BULK);
+  		}
+  		while(ret == USB_RETVAL_NOTCOMP);
+
+  		if (ret == USB_RETVAL_COMPERR)
+  		{
+  			PRINTF("Error: RX CBW Error\n");
+  			break;
+  		}
+  		else
+  		{
+  			ret = USB_RETVAL_NOTCOMP;
+  		}
+
+	} while (0);
+
+	do
+	{
+		// Handle IN pipe (from device to host)
+
+	} while (0);
+
+	return ret;
+}
+#endif /* WITHUSBCDCACM */
+
+#if WITHUSBDUAC
+static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
+{
+	usb_device_uac * const pdev = & pusb->device_uac;
+	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+	return ret;
+}
+#endif /* WITHUSBDUAC */
+
+
+static void usb_struct_idle(pusb_struct pusb)
+{
+	//Reset Function Address
+	usb_set_dev_addr(pusb, 0x00);
+
+#if WITHUSBDMSC
+	usb_struct_idle_msc(pusb);
+#endif /* WITHUSBDMSC */
+#if WITHUSBDCDCACM
+	usb_struct_idle_cdc(pusb);
+#endif /* WITHUSBDCDCACM */
+#if WITHUSBDUAC
+	usb_struct_idle_uac(pusb);
+#endif /* WITHUSBDUAC */
+}
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
 {
@@ -2205,43 +2297,17 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	}
 #endif /* WITHUSBCDCACM */
 }
-/*
-************************************************************************************************************
-*
-*                                             function
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ��
-*
-*
-************************************************************************************************************
-*/
+
+
+///////////////////////////////////////////////////////////////////
+//                 usb control transfer
+///////////////////////////////////////////////////////////////////
+
 static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 {
-	//awxx_setup_fifo(pusb);
 	return 1;
 }
-/*
-************************************************************************************************************
-*
-*                                             function
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ��
-*
-*
-************************************************************************************************************
-*/
+
 static int32_t ep0_in_handler_dev(pusb_struct pusb)
 {
 	uint32_t temp = 0;
@@ -2335,7 +2401,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 		{
 #if WITHUSBDMSC
 			case 0x00FE :
-				pusb->ep0_xfer_srcaddr = (uintptr_t)&(pusb->device_msc.MaxLUN);
+				pusb->ep0_xfer_srcaddr = (uintptr_t) pusb->device_msc.MaxLUNv;
 				pusb->ep0_xfer_residue = 1;
 				PRINTF("usb_device: Get MaxLUN\n");
 				break;
@@ -2708,7 +2774,15 @@ static uint32_t usb_device_function(pusb_struct pusb)
 		return 0;
 	}
 
+#if WITHUSBDMSC
 	usb_dev_bulk_xfer_msc(pusb);
+#endif /* WITHUSBDMSC */
+#if WITHUSBDUAC
+	usb_dev_bulk_xfer_uac(pusb);
+#endif /* WITHUSBDUAC */
+#if WITHUSBCDCACM
+	usb_dev_bulk_xfer_cdc(pusb);
+#endif /* WITHUSBCDCACM */
 
 	return 1;
 }
@@ -2732,8 +2806,6 @@ void usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 static void usb_params_init(pusb_struct pusb)
 {
-	static uint8_t ALIGNX_BEGIN device_bo_memory_base [128 * 1024] ALIGNX_END;
-	static uint8_t ALIGNX_BEGIN device_bo_bufbase [USB_BO_DEV_BUF_SIZE] ALIGNX_END;
 	uint32_t i;
 
 	//usb_clock_init();
@@ -2747,32 +2819,14 @@ static void usb_params_init(pusb_struct pusb)
 	pusb->speed = USB0_SPEED;
 
 #if WITHUSBDMSC
-//	if (pusb->speed==USB_SPEED_HS)
-//	{
-//		pusb->device.dev_desc   = USB_HS_BULK_DevDesc;
-//		pusb->device.config_desc= USB_HS_BULK_ConfigDesc;
-//	}
-//	else
-//	{
-//		pusb->device.dev_desc   = USB_FS_BULK_DevDesc;
-//		pusb->device.config_desc= USB_FS_BULK_ConfigDesc;
-//	}
-//	for(i=0; i<ARRAY_SIZE(pusb->device.str_desc); i++)
-//	{
-//		pusb->device.str_desc[i]   = USB_StrDec0[i];
-//	}
-//
-//	pusb->device.intf_desc  = USB_HS_BULK_ConfigDesc;
-//	pusb->device.endp_desc  = USB_HS_BULK_ConfigDesc;
-//	pusb->device.dev_qual   = USB_DevQual;
-//	pusb->device.otg_desc   = USB_OTGDesc;
-
-	pusb->device_msc.MaxLUN = wBoot_part_count(1) - 1;
-	PRINTF("part count = %d\n", pusb->device_msc.MaxLUN + 1);
-	pusb->device_msc.bo_memory_base = (uintptr_t) device_bo_memory_base;//(uint32_t)wBoot_malloc(128 * 1024);		//use to storage user data
-	pusb->device_msc.bo_bufbase = (uintptr_t) device_bo_bufbase;//(uint32_t)wBoot_malloc(64 * 1024);				//use to usb ping-pang buffer
-
+	usb_dev_bulk_xfer_msc_initialize(pusb);
 #endif /* WITHUSBDMSC */
+#if WITHUSBDCDCACM
+	usb_dev_bulk_xfer_cdc_initialize(pusb);
+#endif /* WITHUSBDCDCACM */
+#if WITHUSBDUAC
+	usb_dev_bulk_xfer_uac_initialize(pusb);
+#endif /* WITHUSBDUAC */
 
 	//pusb->ep0_flag = 0;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
@@ -2846,18 +2900,10 @@ static void usb_irq_handler(pusb_struct pusb)
 				pusb->eptx_xfer_state[i] = USB_EPX_SETUP;
 				pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
 			}
-			usb_set_dev_addr(pusb, 0x00);
-
-
-			//pusb->device.func_addr = 0x00;
-#if WITHUSBDMSC
-			pusb->device_msc.bo_state = USB_BO_IDLE;
-#endif /* WITHUSBDMSC */
+			usb_struct_idle(pusb);
 
 			//pusb->timer = USB_IDLE_TIMER;
 
-			//Reset Function Address
-			usb_set_dev_addr(pusb, 0x00);
 			//Bus Reset may disable all interrupt enable, re-enable the interrupts need
 			usb_set_bus_interrupt_enable(pusb, 0xf7);
 			usb_set_eptx_interrupt_enable(pusb, 0xffff);
@@ -2898,7 +2944,6 @@ static void usb_irq_handler(pusb_struct pusb)
 			if (temp & (0x2<<i))
 			{
 				pusb->eptx_flag[i] ++;
-				//usb_dev_bulk_xfer_msc(pusb);
 			}
 		}
 		//eptx_irq_count ++;
@@ -2914,7 +2959,6 @@ static void usb_irq_handler(pusb_struct pusb)
 			if (temp & (0x2<<i))
 			{
 				pusb->eprx_flag[i] ++;
-				//usb_dev_bulk_xfer_msc(pusb);
 			}
 		}
 		//eprx_irq_count ++;
@@ -2946,11 +2990,7 @@ void usb_struct_init(pusb_struct pusb)
 	}
 
 	usb_set_dev_addr(pusb, 0x00);
-
-#if WITHUSBDMSC
-	//pusb->device.func_addr = 0x00;
-	pusb->device_msc.bo_state = USB_BO_IDLE;
-#endif /* WITHUSBDMSC */
+	usb_struct_idle(pusb);
 
 	//pusb->timer = USB_IDLE_TIMER;
 	//pusb->loop = 0;
