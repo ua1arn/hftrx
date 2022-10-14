@@ -2555,6 +2555,19 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		}
 	}
 #endif /* WITHUSBCDCACM */
+#if WITHUSBUACOUT
+	{
+		fifo_addr = set_fifo_ep(pusb, USBD_EP_AUDIO_OUT, 0, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
+	}
+#endif /* WITHUSBUACOUT */
+#if WITHUSBUACIN
+	{
+		fifo_addr = set_fifo_ep(pusb, USBD_EP_AUDIO_IN, 1, usbd_getuacinmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+	#if WITHUSBUACIN2
+		fifo_addr = set_fifo_ep(pusb, USBD_EP_RTS_IN, 1, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+	#endif
+	}
+#endif /* WITHUSBUACIN */
 }
 
 
