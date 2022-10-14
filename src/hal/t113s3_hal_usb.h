@@ -31,7 +31,6 @@ typedef struct
     uint16_t wLength;
 } uSetupPKG, *pSetupPKG;
 
-#if WITHUSBDMSC
 typedef struct {
 
 	//uint32_t ConfigDesc_Len;
@@ -58,8 +57,6 @@ typedef struct {
 	#define USB_BO_TXDATA			3
 	#define USB_BO_CSW				4
 	uint32_t bo_state;						//Bulk only device state
-	uint32_t bo_ep_in;
-	uint32_t bo_ep_out;
 	uintptr_t bo_xfer_addr;				//Bulk only data address
 	uint32_t bo_xfer_residue;			//Bulk only data residue length
 	uint32_t bo_xfer_tranferred;  //Bulk only data transferred length
@@ -69,15 +66,8 @@ typedef struct {
 	uintptr_t bo_bufbase;
 
 	uint32_t csw_fail_flag;
-} usb_device, *pusb_device;
+} usb_device_msc;
 
-#else
-
-typedef struct {
-	int dummy;
-} usb_device, *pusb_device;
-
-#endif /* WITHUSBDMSC */
 
 typedef struct {
 	//USB SIE Hardware Config
@@ -138,7 +128,7 @@ typedef struct {
 	uint32_t eprx_xfer_state[USB_MAX_EP_NO];
 
 	//Function Description
-	usb_device device;
+	usb_device_msc device_msc;
 
 	//DMA Description
 	//DMADESC    dma;
