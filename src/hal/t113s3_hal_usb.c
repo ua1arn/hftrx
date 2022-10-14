@@ -1022,16 +1022,6 @@ static const unsigned char TestPkt[54] =
 	0xFB, 0xFD, 0x7E, 0x00
 };
 
-// descriptor consists of three fields
-// See table 6.1 of OTG1_0a.pdf
-
-static const unsigned char USB_OTGDesc[3] =
-{
-	0x03,	// bLength
-	0x09, 	// bDescriptorType (0x09 - OTG)
-	0x03,	// D1: HNP support, D0: SRP support
-};
-
 ///////////////////////////////////////////////////////////
 //For MassStorage Only
 ///////////////////////////////////////////////////////////
@@ -2315,8 +2305,8 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						pusb->ep0_xfer_residue = min(DeviceQualifierTbl [0].size, ep0_setup->wLength);
 				    	break;
 					case 0x09:
-					    pusb->ep0_xfer_srcaddr = (uintptr_t) USB_OTGDesc;
-					    pusb->ep0_xfer_residue = min(sizeof USB_OTGDesc, ep0_setup->wLength);
+					    pusb->ep0_xfer_srcaddr = (uintptr_t) OtgDescTbl[0].data;
+					    pusb->ep0_xfer_residue = min(DeviceQualifierTbl [0].size, ep0_setup->wLength);
 				    	break;
 					case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
 						pusb->ep0_xfer_srcaddr = (uintptr_t)OtherSpeedConfigurationTbl [0].data;

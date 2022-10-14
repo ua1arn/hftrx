@@ -121,6 +121,7 @@ extern "C" {
 #define  USB_DESC_TYPE_DEVICE_QUALIFIER                 0x06U
 #define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION        0x07U
 #define  USB_DESC_TYPE_IAD                              0x0BU
+#define  USB_DESC_TYPE_OTG                              0x09U
 #define  USB_DESC_TYPE_BOS                              0x0FU
 
 #define USB_CONFIG_REMOTE_WAKEUP                        0x02U
@@ -428,6 +429,7 @@ extern struct descholder BinaryDeviceObjectStoreTbl [1];
 extern struct descholder HIDReportDescrTbl [1];
 uint_fast8_t usbd_get_stringsdesc_count(void);
 extern struct descholder ExtOsPropDescTbl [32];
+extern struct descholder OtgDescTbl [1];
 
 /**
   * @}

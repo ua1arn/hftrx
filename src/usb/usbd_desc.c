@@ -4809,6 +4809,25 @@ static unsigned fill_BinaryDeviceObjectStore_descriptor(uint8_t * buff, unsigned
 	return totalsize;
 }
 
+// OTG Descriptor
+// See table 6.1 of OTG1_0a.pdf
+static unsigned fill_OTG_descriptor(uint8_t * buff, unsigned maxsize)
+{
+	const uint_fast8_t bmAttributes = 0x00;	// D1: HNP support, D0: SRP support
+	unsigned length = 3;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;                 /* bLength */
+		* buff ++ = USB_DESC_TYPE_OTG;		/* bDescriptorType (0x09 - OTG) */
+		* buff ++ = bmAttributes;			/* bmAttributes */
+	}
+	return length;
+}
+
 static unsigned fill_align4(uint8_t * buff, unsigned maxsize)
 {
 	const uintptr_t granulation = DCACHEROWSIZE;
@@ -5033,6 +5052,7 @@ struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
 struct descholder BinaryDeviceObjectStoreTbl [1];
 struct descholder HIDReportDescrTbl [1];
 struct descholder ExtOsPropDescTbl [32];
+struct descholder OtgDescTbl [1];
 
 
 uint_fast8_t usbd_get_stringsdesc_count(void)
@@ -5257,6 +5277,14 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	{
 		BinaryDeviceObjectStoreTbl [0].size = 0;
 		BinaryDeviceObjectStoreTbl [0].data = NULL;
+	}
+	{
+		unsigned partlen;
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_OTG_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		OtgDescTbl [0].size = partlen;
+		OtgDescTbl [0].data = alldescbuffer + score;
+		score += partlen;
 	}
 
 	// String descriptors

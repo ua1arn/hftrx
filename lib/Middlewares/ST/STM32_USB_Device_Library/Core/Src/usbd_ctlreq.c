@@ -559,6 +559,19 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 		}
 		break;
 
+	case USB_DESC_TYPE_OTG:
+		if (OtgDescTbl [0].size != 0)
+		{
+			len = OtgDescTbl [0].size;
+			pbuf = OtgDescTbl [0].data;
+		}
+		else
+		{
+			USBD_CtlError(pdev, req);
+			return;
+		}
+		break;
+
 	default:
 		USBD_CtlError(pdev, req);
 		return;
