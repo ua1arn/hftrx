@@ -3231,16 +3231,16 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 #endif /* WITHUSBDMSC */
 			default     :
 #if WITHUSBCDCACM
-//				case CDC_SET_LINE_CODING:
-//				{
-//					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
-//					PRINTF("cdc: CDC_SET_LINE_CODING: ifc=%u, wLength=%u\n", interfacev, ep0_setup->wLength);
-//					pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
-//					pusb->ep0_xfer_residue = 7;
-//					pusb->ep0_xfer_state = USB_EP0_DATA;
-////					pusb->ep0_xfer_residue = 0;
-//				}
-//				break;
+				case CDC_SET_LINE_CODING:
+				{
+					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
+					PRINTF("cdc: CDC_SET_LINE_CODING: ifc=%u, wLength=%u\n", interfacev, ep0_setup->wLength);
+					pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
+					pusb->ep0_xfer_residue = 7;
+					pusb->ep0_xfer_state = USB_EP0_SETUP;
+					pusb->ep0_xfer_residue = 0;
+				}
+				break;
 			case CDC_GET_LINE_CODING:
 				{
 					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
