@@ -2559,6 +2559,7 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 		{
 			break;
 		}
+	 	pusb->eptx_flag[bo_ep_in-1]--;
 	 	TP();
 
 	} while (0);
@@ -2583,6 +2584,11 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 	//	  	pdev->epx_xfer_addrv[ep_no-1] += maxpkt;
 			usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
 			cdcXbuffinlevel [offset] = 0;
+		}
+		else
+		{
+			usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
+
 		}
 
 	}
