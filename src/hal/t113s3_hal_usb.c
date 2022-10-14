@@ -3229,7 +3229,6 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				PRINTF("usb_device: Get MaxLUN\n");
 				break;
 #endif /* WITHUSBDMSC */
-			default     :
 #if WITHUSBCDCACM
 				case CDC_SET_LINE_CODING:
 				{
@@ -3259,8 +3258,10 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				break;
 
 #endif /* WITHUSBCDCACM */
+			default:
 				pusb->ep0_xfer_residue = 0;
 				PRINTF("usb_device: Unkown Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+				break;
 		}
 	}
 	else if ((ep0_setup->bmRequest&0x60)==USB_REQ_TYPE_VENDOR)
@@ -3566,14 +3567,13 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 				}
 				else
 				{
+					// OUT
+					static uint8_t buff [512];
+					usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, min(sizeof buff, ep0_count));
+					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO); //Clear RxPktRdy
 				  	usb_ep0_flush_fifo(pusb);
-//					// OUT
-//					static uint8_t buff [512];
-//					usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, min(sizeof buff, ep0_count));
-//					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO); //Clear RxPktRdy
-//				  	//usb_ep0_flush_fifo(pusb);
 			    	PRINTF("Error OUT: ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
-//			    	printhex(0, buff, ep0_count);
+			    	printhex(0, buff, ep0_count);
 					pusb->ep0_xfer_residue = 0;
 				}
 			}
