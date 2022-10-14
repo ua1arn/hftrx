@@ -3388,12 +3388,13 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 	       	PRINTF("usb_device: Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 	      	break;
     	case CDC_SET_LINE_CODING:
-    		PRINTF("1: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
+    		//PRINTF("1: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
     		pusb->ep0_xfer_state = USB_EP0_DATA;
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	case CDC_SET_CONTROL_LINE_STATE:
     		//PRINTF("1: CDC_SET_CONTROL_LINE_STATE: ifc=%u %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+       		pusb->ep0_xfer_state = USB_EP0_SETUP;
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	default   :
@@ -3573,8 +3574,8 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 					usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, min(sizeof buff, ep0_count));
 					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO); //Clear RxPktRdy
 				  	usb_ep0_flush_fifo(pusb);
-			    	PRINTF("Error OUT: ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
-			    	printhex(0, buff, ep0_count);
+			    	//PRINTF("Error OUT: ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
+			    	//printhex(0, buff, ep0_count);
 					pusb->ep0_xfer_residue = 0;
 				}
 			}
