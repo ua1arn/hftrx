@@ -2937,6 +2937,9 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
 	const uint32_t ep_save = usb_get_active_ep(pusb);
 	const uint32_t bo_ep_in = (USBD_EP_AUDIO_IN & 0x0F);
 	const uint32_t bo_ep_out = (USBD_EP_AUDIO_OUT & 0x0F);
+#if WITHUSBUACIN2
+	const uint32_t bo_ep_in_rts = (USBD_EP_RTS_IN & 0x0F);
+#endif
 	usb_device_uac * const pdev = & pusb->device_uac;
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t rx_count=0;
@@ -3061,7 +3064,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 
 static void awxx_setup_fifo(pusb_struct pusb)
 {
-	const uint32_t fifo_base = 0*1024;
+	const uint32_t fifo_base = 1024;
 	uint32_t fifo_addr = fifo_base;
 
 #if WITHUSBDMSC
