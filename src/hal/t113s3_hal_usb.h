@@ -31,8 +31,8 @@ typedef struct
     uint16_t wLength;
 } uSetupPKG, *pSetupPKG;
 
+#if WITHUSBDMSC
 typedef struct {
-	const uint8_t* otg_desc;
 
 	//uint32_t ConfigDesc_Len;
 	uint32_t MaxLUN;
@@ -70,6 +70,14 @@ typedef struct {
 
 	uint32_t csw_fail_flag;
 } usb_device, *pusb_device;
+
+#else
+
+typedef struct {
+	int dummy;
+} usb_device, *pusb_device;
+
+#endif /* WITHUSBDMSC */
 
 typedef struct {
 	//USB SIE Hardware Config
