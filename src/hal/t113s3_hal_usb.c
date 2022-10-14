@@ -2108,6 +2108,149 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 
 #if WITHUSBCDCACM
 
+
+
+// Control signal bitmap values for the SetControlLineState request
+// (usbcdc11.pdf, 6.2.14, Table 51)
+#define CDC_DTE_PRESENT                         (1 << 0)
+#define CDC_ACTIVATE_CARRIER                    (1 << 1)
+
+// Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
+//static uint8_t altinterfaces [INTERFACE_count];
+
+static volatile uint16_t usb_cdc_control_state [INTERFACE_count];
+
+static volatile uint8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
+static __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t cdcXbuffin [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_IN_DATA_SIZE] __ALIGN_END;
+static uint16_t cdcXbuffinlevel [WITHUSBCDCACM_N];
+
+static __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
+
+static uint32_t dwDTERate [INTERFACE_count];
+
+#define MAIN_CDC_OFFSET 0
+#if WITHUSBCDCACM_N > 1
+	#define SECOND_CDC_OFFSET 1
+#endif /* WITHUSBCDCACM_N > 1 */
+
+static SPINLOCK_t catlock = SPINLOCK_INIT;
+
+/* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
+/* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
+/* Биты: RTS = 0x02, DTR = 0x01 */
+
+// Обычно используется для переключения на передачу (PTT)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc1_getrts(void)
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	SPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		0;
+	SPIN_UNLOCK(& catlock);
+	return state;
+}
+
+// Обычно используется для телеграфной манипуляции (KEYDOWN)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc1_getdtr(void)
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	SPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_DTE_PRESENT) != 0) ||
+		0;
+	SPIN_UNLOCK(& catlock);
+	return state;
+}
+
+// Обычно используется для переключения на передачу (PTT)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc2_getrts(void)
+{
+#if WITHUSBCDCACM_N > 1
+	const unsigned offset = SECOND_CDC_OFFSET;
+	SPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		0;
+	SPIN_UNLOCK(& catlock);
+	return state;
+#else /* WITHUSBCDCACM_N > 1 */
+	return 0;
+#endif /* WITHUSBCDCACM_N > 1 */
+}
+
+// Обычно используется для телеграфной манипуляции (KEYDOWN)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc2_getdtr(void)
+{
+#if WITHUSBCDCACM_N > 1
+	const unsigned offset = SECOND_CDC_OFFSET;
+	SPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_DTE_PRESENT) != 0) ||
+		0;
+	SPIN_UNLOCK(& catlock);
+	return state;
+#else /* WITHUSBCDCACM_N > 1 */
+	return 0;
+#endif /* WITHUSBCDCACM_N > 1 */
+}
+
+static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
+
+/* Разрешение/запрещение прерывания по передаче символа */
+void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	SPIN_LOCK(& catlock);
+	usbd_cdc_txenabled [offset] = state;
+	SPIN_UNLOCK(& catlock);
+}
+
+/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
+/* Разрешение/запрещение прерываний про приёму символа */
+void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	SPIN_LOCK(& catlock);
+	usbd_cdcX_rxenabled [offset] = state;
+	SPIN_UNLOCK(& catlock);
+}
+
+/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+void
+usbd_cdc_tx(void * ctx, uint_fast8_t c)
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	USBD_HandleTypeDef * const pdev = ctx;
+	(void) ctx;
+	SPIN_LOCK(& catlock);
+	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
+	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;
+	SPIN_UNLOCK(& catlock);
+}
+
+/* использование буфера принятых данных */
+static void cdcXout_buffer_save(
+	const uint8_t * data,
+	unsigned length,
+	unsigned offset
+	)
+{
+	unsigned i;
+	//PRINTF("1:%u '%*.*s'", length, length, length, data);
+
+	for (i = 0; usbd_cdcX_rxenabled [offset] && i < length; ++ i)
+	{
+		HARDWARE_CDC_ONRXCHAR(offset, data [i]);
+	}
+}
+
 static USB_RETVAL epx_out_handler_dev_cdc(pusb_struct pusb, uint32_t ep_no, uintptr_t dst_addr, uint32_t byte_count, uint32_t ep_type)
 {
 	usb_device_cdc * const pdev = & pusb->device_cdc;
@@ -2365,6 +2508,7 @@ static USB_RETVAL epx_out_handler_dev_cdc(pusb_struct pusb, uint32_t ep_no, uint
 
 static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 {
+	unsigned offset = 0;
 	const uint32_t ep_save = usb_get_active_ep(pusb);
 	const uint32_t bo_ep_in = (USBD_EP_CDCACM_IN & 0x0F);
 	const uint32_t bo_ep_out = (USBD_EP_CDCACM_OUT & 0x0F);
@@ -2403,12 +2547,8 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
   			ret = USB_RETVAL_NOTCOMP;
   			// использование данных
   			//printhex(0, pusb->buffer, rx_count);
-  			unsigned i;
-  			for (i = 0; i < rx_count; ++ i)
-  			{
-  	  			HARDWARE_CDC_ONRXCHAR(0, pusb->buffer [i]);
-  			}
-  		}
+  			cdcXout_buffer_save(pusb->buffer, rx_count, 0);
+   		}
 
 	} while (0);
 
@@ -2424,7 +2564,26 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 	} while (0);
 
 	{
-		//HARDWARE_CDC_ONTXCHAR(offset, pusb);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+		while (usbd_cdc_txenabled [offset] && (cdcXbuffinlevel [offset] < ARRAY_SIZE(cdcXbuffin [offset])))
+		{
+			HARDWARE_CDC_ONTXCHAR(offset, pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+		}
+
+		unsigned ep_no = bo_ep_in;
+
+		if (cdcXbuffinlevel [offset])
+		{
+
+	  		usb_select_ep(pusb, ep_no);
+			//epx_out_handler_dev_cdc(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
+			usb_fifo_accessed_by_cpu(pusb);
+			usb_write_ep_fifo(pusb, ep_no, (uintptr_t) cdcXbuffin [offset], cdcXbuffinlevel [offset]);
+	//		pdev->epx_xfer_residuev[ep_no-1] -= maxpkt;
+	//	  	pdev->epx_xfer_tranferredv[ep_no-1] += maxpkt;
+	//	  	pdev->epx_xfer_addrv[ep_no-1] += maxpkt;
+			usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
+			cdcXbuffinlevel [offset] = 0;
+		}
 
 	}
 
@@ -3738,7 +3897,6 @@ static void usb_irq_handler(pusb_struct pusb)
 {
 	//uint32_t index;
 	uint32_t temp;
-	uint32_t i;
 
 	//bus interrupt
 	temp = usb_get_bus_interrupt_status(pusb);
@@ -3786,6 +3944,8 @@ static void usb_irq_handler(pusb_struct pusb)
 
 		if (busirq_status & busirq_en & USB_BUSINT_RESET)
 		{
+			uint32_t temp;
+			uint32_t i;
 			//Device Reset Service Subroutine
 			//pusb->rst_cnt ++;
 			for(i=0; i<USB_MAX_EP_NO; i++)
@@ -3823,40 +3983,48 @@ static void usb_irq_handler(pusb_struct pusb)
 	  	usb_select_ep(pusb, ep_save);
 	}
 
-	//tx interrupt
-	temp = usb_get_eptx_interrupt_status(pusb);
-	usb_clear_eptx_interrupt_status(pusb, temp);
-	if (temp&0x01)
 	{
-		//pusb->ep0_flag ++;
-		usb_dev_ep0xfer(pusb);
-		//ep0_irq_count ++;
-	}
-	if (temp&0xfffe)
-	{
-		for(i=0; i<USB_MAX_EP_NO; i++)
+		//tx interrupt
+		uint32_t temp;
+		uint32_t i;
+		temp = usb_get_eptx_interrupt_status(pusb);
+		usb_clear_eptx_interrupt_status(pusb, temp);
+		if (temp&0x01)
 		{
-			if (temp & (0x2<<i))
-			{
-				pusb->eptx_flag[i] ++;
-			}
+			//pusb->ep0_flag ++;
+			usb_dev_ep0xfer(pusb);
+			//ep0_irq_count ++;
 		}
-		//eptx_irq_count ++;
+		if (temp&0xfffe)
+		{
+			for(i=0; i<USB_MAX_EP_NO; i++)
+			{
+				if (temp & (0x2<<i))
+				{
+					pusb->eptx_flag[i] ++;
+				}
+			}
+			//eptx_irq_count ++;
+		}
 	}
 
-	//rx interrupt
-	temp = usb_get_eprx_interrupt_status(pusb);
-	usb_clear_eprx_interrupt_status(pusb, temp);
-	if (temp&0xfffe)
 	{
-		for(i=0; i<USB_MAX_EP_NO; i++)
+		//rx interrupt
+		uint32_t temp;
+		uint32_t i;
+		temp = usb_get_eprx_interrupt_status(pusb);
+		usb_clear_eprx_interrupt_status(pusb, temp);
+		if (temp&0xfffe)
 		{
-			if (temp & (0x2<<i))
+			for(i=0; i<USB_MAX_EP_NO; i++)
 			{
-				pusb->eprx_flag[i] ++;
+				if (temp & (0x2<<i))
+				{
+					pusb->eprx_flag[i] ++;
+				}
 			}
+			//eprx_irq_count ++;
 		}
-		//eprx_irq_count ++;
 	}
 
 	return;
