@@ -23,12 +23,8 @@
 	#define HARDWARE_USBD_PIPE_ISOC_OUT	1	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
 	#define HARDWARE_USBD_PIPE_ISOC_IN	2	// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
 
-#if WITHUSBCDCACMINTSHARING
-	#define HARDWARE_USBD_PIPE_CDC_INTSHARED	6	// CDC ACM shared interrupt endpoint
-#else /* WITHUSBCDCACMINTSHARING */
 	#define HARDWARE_USBD_PIPE_CDC_INT	6	//
 	#define HARDWARE_USBD_PIPE_CDC_INTb	7	//
-#endif /* WITHUSBCDCACMINTSHARING */
 
 	#define HARDWARE_USBD_PIPE_CDC_OUT	3	// CDC OUT Данные ком-порта от компьютера в TRX
 	#define HARDWARE_USBD_PIPE_CDC_IN	4	// CDC IN Данные ком-порта в компьютер из TRX
@@ -67,20 +63,9 @@ enum
 #endif /* WITHUSBUACIN */
 
 #if WITHUSBCDCACM
-
-	#if WITHUSBCDCACMINTSHARING
-		/* Использование общей notification endpoint на всех CDC ACM устрйоствах */
-		USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
-		USBD_EP_CDCACM_INlast = USBD_EP_CDCACM_IN + WITHUSBCDCACM_N - 1,
-		USBD_EP_CDCACM_INTSHARED,	// Shared EP: CDC INT События ком-порта в компьютер из TRX
-
-	#else /* WITHUSBCDCACMINTSHARING */
-
 		USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
 		USBD_EP_CDCACM_INT,		// CDC INT состояние ком-порта в компьютер из TRX
 		USBD_EP_CDCACM_INlast = USBD_EP_CDCACM_IN + WITHUSBCDCACM_N * 2 - 1,
-
-	#endif /* WITHUSBCDCACMINTSHARING */
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM
@@ -364,25 +349,13 @@ enum interfaces_tag
 
 //#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_SPK)
 
+#define USBD_CDCACM_INT_EP(base, offset) ((base) + (offset) * 2)
+#define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 2)
+#define USBD_CDCACM_OUT_EP(base, offset) ((base) + (offset) * 1)
+#define USBD_CDCACM_OFFSET_BY_OUT_EP(ep, base) (((ep) - (base)) / 1)
+#define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 2)
+#define USBD_CDCACM_OFFSET_BY_INT_EP(ep, base) (((ep) - (base)) / 2)
 
-
-#if WITHUSBCDCACMINTSHARING
-
-	#define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 1)
-	#define USBD_CDCACM_OUT_EP(base, offset) ((base) + (offset) * 1)
-	#define USBD_CDCACM_OFFSET_BY_OUT_EP(ep, base) (((ep) - (base)) / 1)
-	#define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 1)
-
-#else /* WITHUSBCDCACMINTSHARING */
-
-	#define USBD_CDCACM_INT_EP(base, offset) ((base) + (offset) * 2)
-	#define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 2)
-	#define USBD_CDCACM_OUT_EP(base, offset) ((base) + (offset) * 1)
-	#define USBD_CDCACM_OFFSET_BY_OUT_EP(ep, base) (((ep) - (base)) / 1)
-	#define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 2)
-	#define USBD_CDCACM_OFFSET_BY_INT_EP(ep, base) (((ep) - (base)) / 2)
-
-#endif /* WITHUSBCDCACMINTSHARING */
 #define USBD_CDCACM_IFC(base, offset) ((base) + (offset) * INTERFACE_CDCACM_count)
 
 #else /* WITHPLAINDESCROPTOR */
