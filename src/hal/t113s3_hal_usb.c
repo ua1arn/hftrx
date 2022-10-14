@@ -23,6 +23,11 @@
 #include "src/usb/usb200.h"
 #include "src/usb/usbch9.h"
 
+#define CDC_SET_LINE_CODING                     0x20
+#define CDC_GET_LINE_CODING                     0x21
+#define CDC_SET_CONTROL_LINE_STATE              0x22
+#define CDC_SEND_BREAK                          0x23
+
 #define DISK_DDR 1 /* ������� USB: 0 - SD-�����, 1 - DDR-������ */
 
 #define AW_RAMDISK_BASE                (getRamDiskBase()) //(AW_USBD_BASE+AW_USBD_SIZE)             /* ������� ����� ������ ����� � ������ */
@@ -1045,7 +1050,7 @@ static uint32_t aw_module(uint32_t x, uint32_t y)
 	return val;
 }
 
-static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t dest_addr, uint32_t count)
+static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_addr, uint32_t count)
 {
 	uint8_t temp;
 	uint8_t saved;
@@ -3221,12 +3226,26 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				break;
 #endif /* WITHUSBDMSC */
 			default     :
-#if WITHUSBCDCACM && 0
-			case 0x20:
+#if WITHUSBCDCACM
+			case CDC_SET_LINE_CODING:
+				PRINTF("cdc: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
+				pusb->ep0_xfer_residue = 0;
 				break;
-			case 0x21:
+			case CDC_GET_LINE_CODING:
+				{
+					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
+					//PRINTF("cdc: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
+					USBD_poke_u32(& buff [0], 115200); // dwDTERate
+					buff [4] = 0;	// 1 stop bit
+					buff [5] = 0;	// parity=none
+					buff [6] = 8;	// bDataBits
+					pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
+					pusb->ep0_xfer_residue =  min(7, ep0_setup->wLength);;
+				}
 				break;
-			case 0x22:
+			case CDC_SET_CONTROL_LINE_STATE:
+				PRINTF("cdc: CDC_SET_CONTROL_LINE_STATE: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
+				pusb->ep0_xfer_residue = 0;
 				break;
 
 #endif /* WITHUSBCDCACM */
@@ -3357,8 +3376,18 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
     	case 0x0B :
 	       	PRINTF("usb_device: Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 	      	break;
+    	case CDC_SET_LINE_CODING:
+    		PRINTF("CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
+			pusb->ep0_xfer_residue = 0;
+	      	break;
+    	case CDC_SET_CONTROL_LINE_STATE:
+    		PRINTF("CDC_SET_CONTROL_LINE_STATE: ifc=%u\n", interfacev);
+			pusb->ep0_xfer_residue = 0;
+	      	break;
     	default   :
-      		PRINTF("usb_device: Unkown EP0 OUT: 0x%x!!\n", ep0_setup->bRequest);
+     		PRINTF("usb_device: Unkown EP0 OUT: ifc=%u, 0x%02X, wLength=0x%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wLength);
+			pusb->ep0_xfer_residue = 0;
+	      	break;
 	}
 
 	return 0;
@@ -3469,7 +3498,7 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 			if (ep0_count==8)
 			{
 				//pusb->ep0_flag = 0;
-				usb_read_ep_fifo(pusb, 0, (uint32_t)pusb->buffer, 8);
+				usb_read_ep_fifo(pusb, 0, (uintptr_t)pusb->buffer, 8);
 
 				if (ep0_setup->bmRequest&0x80)//in
 				{
@@ -3518,8 +3547,14 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 			}
 			else
 			{
+				const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
+				static uint8_t buff [512];
+				usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, min(sizeof buff, ep0_count));
+				//usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO); //Clear RxPktRdy
 			  	usb_ep0_flush_fifo(pusb);
-		    	PRINTF("Error: EP0 Rx Error Length = 0x%x\n", ep0_count);
+		    	PRINTF("Error: ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
+		    	//printhex(0, buff, ep0_count);
+//		    	if (ep0_count == 7)
 			}
 		}
 		else
