@@ -3198,8 +3198,12 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				}
 		      	break;
 	     	case 0x08 :
-				pusb->ep0_xfer_residue = 0;
+			{
+				static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
 				PRINTF("usb_device: Get Configuration\n");
+				pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
+				pusb->ep0_xfer_residue = 1;
+			}
 				break;
 			case 0x0A :
 				pusb->ep0_xfer_residue = 0;
@@ -3227,10 +3231,16 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 #endif /* WITHUSBDMSC */
 			default     :
 #if WITHUSBCDCACM
-			case CDC_SET_LINE_CODING:
-				PRINTF("cdc: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
-				pusb->ep0_xfer_residue = 0;
-				break;
+//				case CDC_SET_LINE_CODING:
+//				{
+//					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
+//					PRINTF("cdc: CDC_SET_LINE_CODING: ifc=%u, wLength=%u\n", interfacev, ep0_setup->wLength);
+//					pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
+//					pusb->ep0_xfer_residue = 7;
+//					pusb->ep0_xfer_state = USB_EP0_DATA;
+////					pusb->ep0_xfer_residue = 0;
+//				}
+//				break;
 			case CDC_GET_LINE_CODING:
 				{
 					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
@@ -3548,13 +3558,24 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 			else
 			{
 				const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
-				static uint8_t buff [512];
-				usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, min(sizeof buff, ep0_count));
-				//usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO); //Clear RxPktRdy
-			  	usb_ep0_flush_fifo(pusb);
-		    	PRINTF("Error: ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
-		    	//printhex(0, buff, ep0_count);
-//		    	if (ep0_count == 7)
+				if (ep0_setup->bmRequest&0x80)//in
+				{
+			    	PRINTF("Error IN: ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
+				  	usb_ep0_flush_fifo(pusb);
+
+				}
+				else
+				{
+				  	usb_ep0_flush_fifo(pusb);
+//					// OUT
+//					static uint8_t buff [512];
+//					usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, min(sizeof buff, ep0_count));
+//					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO); //Clear RxPktRdy
+//				  	//usb_ep0_flush_fifo(pusb);
+			    	PRINTF("Error OUT: ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
+//			    	printhex(0, buff, ep0_count);
+					pusb->ep0_xfer_residue = 0;
+				}
 			}
 		}
 		else
