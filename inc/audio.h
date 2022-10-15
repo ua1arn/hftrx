@@ -45,8 +45,11 @@ extern "C" {
 		#define DMABUF32TXQ	4		// TX, Q
 
 		#define DMABUF32TX_NCO1		6		// NCO RX A
-		#define DMABUF32TX_NCO2		3		// NCO RX B
+		#define DMABUF32TX_NCO2		2		// NCO RX B
 		#define DMABUF32TX_NCORTS	7		// NCO RTS
+
+		// ws=0: 00 01 02 03
+		// ws=1: 04 05 06 07
 
 		#if WITHRTS96
 			#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
@@ -174,9 +177,11 @@ extern "C" {
 				#define DMABUF32TXQ	4		// TX, Q
 
 				#define DMABUF32TX_NCO1		6		// NCO RX A
-				#define DMABUF32TX_NCO2		3		// NCO RX B
+				#define DMABUF32TX_NCO2		2		// NCO RX B
 				#define DMABUF32TX_NCORTS	7		// NCO RTS
 
+				// ws=0: 00 01 02 03
+				// ws=1: 04 05 06 07
 	#endif
 
 		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
@@ -205,6 +210,9 @@ extern "C" {
 		#define DMABUF32TX_NCO1		5		// NCO RX A
 		#define DMABUF32TX_NCO2		4		// NCO RX B
 		#define DMABUF32TX_NCORTS	7		// NCO RTS
+
+		// ws=0: 00 02 04 06
+		// ws=1: 01 03 05 07
 
 		#if WITHRTS96
 			#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
