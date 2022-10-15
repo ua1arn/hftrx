@@ -259,8 +259,8 @@ enum interfaces_tag
 #if WITHUSBCDCACM
 	// функция виртуального последовательного порта
 	INTERFACE_CDC_base,
-	INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
-	INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
+	INTERFACE_CDC_CONTROL = INTERFACE_CDC_base,	/* CDC ACM control Interface */
+	INTERFACE_CDC_DATA,		/* CDC ACM data Interface */
 	INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBCDCACM_N * 2 - 1,
 #endif /* WITHUSBCDCACM */
 
@@ -419,8 +419,8 @@ enum interfaces_tag
 		{
 
 			INTERFACE_CDC_base,
-			INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
-			INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
+			INTERFACE_CDC_CONTROL = INTERFACE_CDC_base,	/* CDC ACM control Interface */
+			INTERFACE_CDC_DATA,		/* CDC ACM data Interface */
 			INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBCDCACM_N * 2 - 1,
 		};
 	#endif /* WITHUSBCDCACM */

@@ -2149,7 +2149,7 @@ uint_fast8_t usbd_cdc1_getrts(void)
 	const unsigned offset = MAIN_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
 	SPIN_UNLOCK(& catlock);
 	return state;
@@ -2162,7 +2162,7 @@ uint_fast8_t usbd_cdc1_getdtr(void)
 	const unsigned offset = MAIN_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_DTE_PRESENT) != 0) ||
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_DTE_PRESENT) != 0) ||
 		0;
 	SPIN_UNLOCK(& catlock);
 	return state;
@@ -2176,7 +2176,7 @@ uint_fast8_t usbd_cdc2_getrts(void)
 	const unsigned offset = SECOND_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
 	SPIN_UNLOCK(& catlock);
 	return state;
@@ -2193,7 +2193,7 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 	const unsigned offset = SECOND_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_DTE_PRESENT) != 0) ||
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_DTE_PRESENT) != 0) ||
 		0;
 	SPIN_UNLOCK(& catlock);
 	return state;

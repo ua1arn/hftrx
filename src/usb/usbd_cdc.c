@@ -10,18 +10,15 @@
 #if WITHUSBHW && WITHUSBCDCACM
 
 #include "board.h"
-#include "src/display/display.h"
 #include "formats.h"
-#include <string.h>
-
-#include "gpio.h"
-#include "spi.h"
-
 #include "usbd_def.h"
 #include "usbd_core.h"
 #include "usb200.h"
 #include "usbch9.h"
 
+#include <string.h>
+
+#define PFX //static	/* для отладки совместно с Allwinner */
 
 // CDC class-specific request codes
 // (usbcdc11.pdf, 6.2, Table 46)
@@ -143,7 +140,7 @@ static __ALIGN_BEGIN uint8_t sendState [WITHUSBCDCACM_N] [10] __ALIGN_END;
 
 static void notify(uint_fast8_t offset, uint_fast16_t state)
 {
-	const uint_fast8_t ifc = USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset);
+	const uint_fast8_t ifc = USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset);
 	const uint_fast16_t wLength = 2;
 	uint8_t * p = sendState [offset];
 
@@ -194,12 +191,12 @@ static SPINLOCK_t catlock = SPINLOCK_INIT;
 
 // Обычно используется для переключения на передачу (PTT)
 // вызывается в конексте system interrupt
-uint_fast8_t usbd_cdc1_getrts(void)
+uint_fast8_t PFX usbd_cdc1_getrts(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
 	SPIN_UNLOCK(& catlock);
 	return state;
@@ -207,12 +204,12 @@ uint_fast8_t usbd_cdc1_getrts(void)
 
 // Обычно используется для телеграфной манипуляции (KEYDOWN)
 // вызывается в конексте system interrupt
-uint_fast8_t usbd_cdc1_getdtr(void)
+uint_fast8_t PFX usbd_cdc1_getdtr(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_DTE_PRESENT) != 0) ||
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_DTE_PRESENT) != 0) ||
 		0;
 	SPIN_UNLOCK(& catlock);
 	return state;
@@ -220,13 +217,13 @@ uint_fast8_t usbd_cdc1_getdtr(void)
 
 // Обычно используется для переключения на передачу (PTT)
 // вызывается в конексте system interrupt
-uint_fast8_t usbd_cdc2_getrts(void)
+uint_fast8_t PFX usbd_cdc2_getrts(void)
 {
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
 	SPIN_UNLOCK(& catlock);
 	return state;
@@ -237,13 +234,13 @@ uint_fast8_t usbd_cdc2_getrts(void)
 
 // Обычно используется для телеграфной манипуляции (KEYDOWN)
 // вызывается в конексте system interrupt
-uint_fast8_t usbd_cdc2_getdtr(void)
+uint_fast8_t PFX usbd_cdc2_getdtr(void)
 {
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] & CDC_DTE_PRESENT) != 0) ||
+		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_DTE_PRESENT) != 0) ||
 		0;
 	SPIN_UNLOCK(& catlock);
 	return state;
@@ -256,7 +253,7 @@ static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуал�
 static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
 
 /* Разрешение/запрещение прерывания по передаче символа */
-void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+void PFX usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
@@ -266,7 +263,7 @@ void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обра
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /* Разрешение/запрещение прерываний про приёму символа */
-void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+void PFX usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
@@ -275,8 +272,7 @@ void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обра
 }
 
 /* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
-void
-usbd_cdc_tx(void * ctx, uint_fast8_t c)
+void PFX usbd_cdc_tx(void * ctx, uint_fast8_t c)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	USBD_HandleTypeDef * const pdev = ctx;
@@ -311,7 +307,7 @@ usbd_cdc_iscontrol_ifc(uint_fast8_t interfacev)
 
 	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
-		if (interfacev == USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset))	// CDC control interface
+		if (interfacev == USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset))	// CDC control interface
 			return 1;
 	}
 	return 0;
@@ -325,7 +321,7 @@ usbd_cdc_isisdata_ifc(uint_fast8_t interfacev)
 
 	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
-		if (interfacev == USBD_CDCACM_IFC(INTERFACE_CDC_DATA_4a, offset))	// CDC data interface
+		if (interfacev == USBD_CDCACM_IFC(INTERFACE_CDC_DATA, offset))	// CDC data interface
 			return 1;
 	}
 	return 0;
@@ -584,8 +580,8 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	{
 		/* CDC Prepare Out endpoint to receive 1st packet */
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset)), cdcXbuffout [offset],  VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-		usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] = 0;
-		dwDTERate [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] = 115200;
+		usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 0;
+		dwDTERate [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 115200;
 	}
 
 	return USBD_OK;
@@ -608,7 +604,7 @@ static USBD_StatusTypeDef USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	/* при потере связи с host снять запрос на передачу */
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
- 		usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] = 0;
+ 		usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 0;
 	}
 	return USBD_OK;
 }
@@ -618,7 +614,7 @@ static void USBD_CDC_ColdInit(void)
 	uint_fast8_t offset;
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
- 		usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL_3a, offset)] = 0;
+ 		usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 0;
 	}
 }
 
