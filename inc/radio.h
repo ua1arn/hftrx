@@ -91,7 +91,7 @@ typedef uint_least64_t phase_t;
 #define WITHREVERBDELAYMAX 100	/* максимальная задержка ревербератора % */
 
 #define WITHREVERBLOSSMIN 0		/* минимальное ослабление на возврате ревербератора db */
-#define WITHREVERBLOSSMAX 25	/* максимальная ослабление на возврате ревербератора (dB) */
+#define WITHREVERBLOSSMAX 30	/* максимальная ослабление на возврате ревербератора (dB) */
 
 #define WITHCOMPATTACKMIN 1		/* минимальное время атаки компрессора (мс) */
 #define WITHCOMPATTACKMAX 100	/* максимальная время атаки компрессора (мс) */

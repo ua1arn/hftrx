@@ -3846,7 +3846,7 @@ enum
 	#if WITHREVERB
 		static uint_fast8_t greverb;		/* ревербератор */
 		static uint_fast8_t greverbdelay = 100;		/* ревербератор - задержка (ms) */
-		static uint_fast8_t greverbloss = 30;		/* ревербератор - ослабление на возврате */
+		static uint_fast8_t greverbloss = WITHREVERBLOSSMAX;		/* ревербератор - ослабление на возврате */
 	#endif /* WITHREVERB */
 
 	#if WITHUSBUAC
