@@ -65,21 +65,26 @@
 //#define USB_FUNCTION_PRODUCT_ID	0x5740
 //#define USB_FUNCTION_RELEASE_NO	0x0200
 
+#ifndef WITHBRANDSTR
+	//#define WITHBRANDSTR "Falcon"
+	#define WITHBRANDSTR "Storch"
+#endif
+
 #if WITHISBOOTLOADER
 
+	#define PRODUCTSTR WITHBRANDSTR " Bootloader"
 	#if WITHUSBDFU && WITHMOVEDFU
 		#define USB_FUNCTION_PRODUCT_ID	0x0754
 	#else /* WITHUSBDFU && WITHMOVEDFU */
 		#define USB_FUNCTION_PRODUCT_ID	0x0750
 	#endif /* WITHUSBDFU && WITHMOVEDFU */
 
-	#define PRODUCTSTR "Storch Bootloader"
 	#define BUILD_ID 1	// модификатор serial number
 	#define USB_FUNCTION_RELEASE_NO	0x0000
 
 #elif WITHUSBUAC && WITHUSBUACIN2
-	#define PRODUCTSTR "Storch"
 
+	#define PRODUCTSTR WITHBRANDSTR
 	#if WITHUSBUACINOUTRENESAS
 		#define USB_FUNCTION_PRODUCT_ID	0x0731
 	#elif WITHUSBUACINOUT
@@ -101,7 +106,7 @@
 		#define USB_FUNCTION_RELEASE_NO	0x0104
 	#endif
 #else /* WITHUSBUAC && WITHUSBUACIN2 */
-	#define PRODUCTSTR "Storch"
+	#define PRODUCTSTR WITHBRANDSTR
 
 	#if WITHUSBUACINOUTRENESAS
 		#define USB_FUNCTION_PRODUCT_ID	0x0732
@@ -5189,7 +5194,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		unsigned partlen;
 		// Device Qualifier
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", "Storch DFU interface");
+		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", PRODUCTSTR " DFU interface");
 		ExtOsPropDescTbl [ifc].size = partlen;
 		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
 		score += partlen;
