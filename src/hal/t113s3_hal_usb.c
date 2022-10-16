@@ -396,6 +396,7 @@ static uint32_t usb_get_frame_number(pusb_struct pusb)
 
 static void usb_select_ep(pusb_struct pusb, uint32_t ep_no)
 {
+	ASSERT(ep_no < USB_MAX_EP_NO);
 	if (ep_no > USB_MAX_EP_NO)
 		return;
 	USBOTG0->USB_EPINDEX = ep_no;
@@ -594,16 +595,19 @@ static uint32_t usb_get_eprx_count(pusb_struct pusb)
 	return USBOTG0->USB_RXCOUNT & 0x1FFF;
 }
 
+/* host ? */
 static void usb_set_ep0_type(pusb_struct pusb, uint32_t speed)
 {
 	USBOTG0->USB_RXTI = (speed & 0x3) << 6;
 	//put_bvalue(USBOTG0_BASE + USB_bTXTYPE_OFF, (speed & 0x3) << 6);	// #define  USB_bRXTYPE_OFF      		(0x8E)
 }
 
+/* host ? */
 static void usb_set_eptx_type(pusb_struct pusb, uint32_t speed, uint32_t protocol, uint32_t ep_no)
 {
 	uint32_t reg_val;
 
+	ASSERT(ep_no < USB_MAX_EP_NO);
 	reg_val = (speed & 0x3) << 6;
 	reg_val |= (protocol & 0x3) << 4;
 	reg_val |= (ep_no & 0xf) << 0;
@@ -611,22 +615,26 @@ static void usb_set_eptx_type(pusb_struct pusb, uint32_t speed, uint32_t protoco
 	//put_bvalue(USBOTG0_BASE + USB_bTXTYPE_OFF, reg_val);
 }
 
+/* host ? */
 static void usb_set_ep0_naklimit(pusb_struct pusb, uint32_t naklimit)
 {
 	USBOTG0->USB_RXNAKLIMIT = naklimit & 0x1f;
 	//put_bvalue(USBOTG0_BASE + USB_bTXINTERVAL_OFF, naklimit & 0x1f);	// #define  USB_bRXINTERVAL_OFF  		(0x8F)
 }
 
+/* host ? */
 static void usb_set_eptx_interval(pusb_struct pusb, uint32_t interval)
 {
 	USBOTG0->USB_RXNAKLIMIT = interval & 0xFF;
 	//put_bvalue(USBOTG0_BASE + USB_bTXINTERVAL_OFF, interval & 0xFF);
 }
 
+/* host ? */
 static void usb_set_eprx_type(pusb_struct pusb, uint32_t speed, uint32_t protocol, uint32_t ep_no)
 {
 	uint32_t reg_val;
 
+	ASSERT(ep_no < USB_MAX_EP_NO);
 	reg_val = (speed & 0x3) << 6;
 	reg_val |= (protocol & 0x3) << 4;
 	reg_val |= (ep_no & 0xf) << 0;
@@ -634,6 +642,7 @@ static void usb_set_eprx_type(pusb_struct pusb, uint32_t speed, uint32_t protoco
 	//put_bvalue(USBOTG0_BASE + USB_bRXTYPE_OFF, reg_val);	// USB_bRXTYPE_OFF      		(0x8E)
 }
 
+/* host ? */
 static void usb_set_eprx_interval(pusb_struct pusb, uint32_t interval)
 {
 	USBOTG0->USB_RXNAKLIMIT = interval & 0xFF;
@@ -646,16 +655,19 @@ static void usb_set_eprx_interval(pusb_struct pusb, uint32_t interval)
 //	//return get_bvalue(USBOTG0_BASE + USB_bCORECONFIG_OFF);	// #define  USB_bCORECONFIG_OFF		(0xC0)
 //}
 
+/* host ? */
 static uint32_t usb_is_b_device(pusb_struct pusb)
 {
 	return (USBOTG0->USB_DEVCTL >> 7) & 0x1;
 }
 
+/* host ? */
 static uint32_t usb_device_connected_is_fs(pusb_struct pusb)
 {
 	return (USBOTG0->USB_DEVCTL >> 6) & 0x1;
 }
 
+/* host ? */
 static uint32_t usb_device_connected_is_ls(pusb_struct pusb)
 {
 	return (USBOTG0->USB_DEVCTL >> 5) & 0x1;
@@ -686,6 +698,7 @@ static uint32_t usb_hnp_in_porcess(pusb_struct pusb)
 	return (USBOTG0->USB_DEVCTL >> 1) & 0x1;
 }
 
+/* host ? */
 static void usb_start_session(pusb_struct pusb)
 {
 	uint8_t reg_val;
@@ -694,6 +707,7 @@ static void usb_start_session(pusb_struct pusb)
 	USBOTG0->USB_DEVCTL = reg_val;
 }
 
+/* host ? */
 static void usb_end_session(pusb_struct pusb)
 {
 	uint8_t reg_val;
@@ -702,6 +716,7 @@ static void usb_end_session(pusb_struct pusb)
 	USBOTG0->USB_DEVCTL = reg_val;
 }
 
+/* host ? */
 static uint32_t usb_check_session(pusb_struct pusb)
 {
 	return USBOTG0->USB_DEVCTL & 0x1;
@@ -764,6 +779,7 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 {
 	uint8_t reg_val;
 
+	ASSERT(ep_no < USB_MAX_EP_NO);
 	if (ep_no>USB_MAX_EP_NO)
 		return;
 	reg_val = 0x1;
@@ -977,6 +993,7 @@ static void usb_drive_vbus(pusb_struct pusb, uint32_t vbus, uint32_t index)
 
 static uintptr_t usb_get_ep_fifo_addr(pusb_struct pusb, uint32_t ep_no)
 {
+	ASSERT(ep_no < (USB_MAX_EP_NO + 1));
 	return (uintptr_t) & USBOTG0->USB_EPFIFO [ep_no];
 	//return (USBOTG0_BASE + USB_bFIFO_OFF(ep_no));
 }
@@ -3244,10 +3261,19 @@ static void usb_struct_idle(pusb_struct pusb)
 #endif /* WITHUSBUAC */
 }
 
-static void set_ep_iso(pusb_struct pusb, uint32_t ep_no)
+static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 {
 	usb_select_ep(pusb, ep_no);
-	usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_ISO);
+	if (ep_dir)
+	{
+		// IN
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_ISO);
+	}
+	else
+	{
+		// OUT
+		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_ISO);
+	}
 }
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
@@ -3261,6 +3287,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
 	{
+		// IN
 		usb_set_eptx_maxpkt(pusb, maxpayload, pktcnt);
 		usb_set_eptx_fifo_addr(pusb, fifo_addr);
 		usb_set_eptx_fifo_size(pusb, is_dpb, alignedepfifosize);
@@ -3269,6 +3296,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 	}
 	else
 	{
+		// OUT
 		usb_set_eprx_maxpkt(pusb, maxpayload, pktcnt);
 		usb_set_eprx_fifo_addr(pusb, fifo_addr);
 		usb_set_eprx_fifo_size(pusb, is_dpb, alignedepfifosize);
@@ -3316,16 +3344,16 @@ static void awxx_setup_fifo(pusb_struct pusb)
 #if WITHUSBUACOUT
 	{
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_OUT & 0x0F), 0, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
-		set_ep_iso(pusb, (USBD_EP_AUDIO_OUT & 0x0F));
+		set_ep_iso(pusb, (USBD_EP_AUDIO_OUT & 0x0F), 0);
 	}
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
 	{
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_IN & 0x0F), 1, usbd_getuacinmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
-		set_ep_iso(pusb, (USBD_EP_AUDIO_IN & 0x0F));
+		set_ep_iso(pusb, (USBD_EP_AUDIO_IN & 0x0F), 1);
 	#if WITHUSBUACIN2
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_RTS_IN & 0x0F), 1, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
-		set_ep_iso(pusb, (USBD_EP_RTS_IN & 0x0F));
+		set_ep_iso(pusb, (USBD_EP_RTS_IN & 0x0F), 1);
 	#endif
 	}
 #endif /* WITHUSBUACIN */
