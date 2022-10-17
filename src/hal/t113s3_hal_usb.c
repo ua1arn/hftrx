@@ -2925,22 +2925,73 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 
 	return 0;
 }
-/*
-************************************************************************************************************
-*
-*                                             function
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ��
-*
-*
-************************************************************************************************************
-*/
+
+
+static uintptr_t uacinaddr = 0;
+static uint_fast16_t uacinsize = 0;
+static uintptr_t uacinrtsaddr = 0;
+static uint_fast16_t uacinrtssize = 0;
+
+static uint32_t usb_dev_sof_handler(pusb_struct pusb)
+{
+#if WITHUSBUACIN
+	{
+		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+		const uint32_t bo_ep_in = USBD_EP_AUDIO_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
+		if (uacinaddr != 0)
+		{
+			global_disableIRQ();
+			release_dmabufferx(uacinaddr);
+			global_enableIRQ();
+		}
+
+		global_disableIRQ();
+		uacinaddr = getfilled_dmabufferx(& uacinsize);
+		global_enableIRQ();
+
+		do
+		{
+			ret = epx_in_handler_dev(pusb, bo_ep_in, uacinaddr, uacinaddr ? uacinsize : 0, USB_PRTCL_ISO);
+		} while (ret == USB_RETVAL_NOTCOMP);
+
+		if (ret == USB_RETVAL_COMPERR)
+		{
+			PRINTF("Error: TX CDC Error\n");
+		}
+	}
+
+#if WITHUSBUACIN2
+	{
+		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+		const uint32_t bo_ep_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
+		if (uacinrtsaddr != 0)
+		{
+			global_disableIRQ();
+			release_dmabufferxrts(uacinrtsaddr);
+			global_enableIRQ();
+		}
+
+		global_disableIRQ();
+		uacinrtsaddr = getfilled_dmabufferxrts(& uacinrtssize);
+		global_enableIRQ();
+
+
+		do
+		{
+			ret = epx_in_handler_dev(pusb, bo_ep_in, uacinrtsaddr, uacinrtsaddr ? uacinrtssize : 0, USB_PRTCL_ISO);
+		} while (ret == USB_RETVAL_NOTCOMP);
+
+		if (ret == USB_RETVAL_COMPERR)
+		{
+			PRINTF("Error: TX CDC Error\n");
+		}
+	}
+#endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
+
+	return 0;
+}
+
 static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 {
 	//uint32_t i=0;
@@ -3262,6 +3313,7 @@ static void usb_irq_handler(pusb_struct pusb)
 	{
 		//pusb->sof_count ++;
 		temp &= ~USB_BUSINT_SOF;
+		//usb_dev_sof_handler(pusb);
 	}
 
 	if (temp & usb_get_bus_interrupt_enable(pusb))

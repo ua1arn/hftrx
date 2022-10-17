@@ -998,7 +998,7 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 		USB_BUSINT_SESSREQ | \
 		USB_BUSINT_DISCONN | \
 		USB_BUSINT_CONNECT | \
-		0 * USB_BUSINT_SOF | \
+		USB_BUSINT_SOF | \
 		USB_BUSINT_RESET | \
 		USB_BUSINT_RESUME | \
 		USB_BUSINT_SUSPEND | \
