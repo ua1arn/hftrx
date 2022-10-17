@@ -2555,6 +2555,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	}
 #endif /* WITHUSBUACIN */
 	PRINTF("awxx_setup_fifo: fifo_addr delta = %u\n", fifo_addr - fifo_base);
+	ASSERT(fifo_addr < 0x10000);	/* 64 kB */
 }
 
 
