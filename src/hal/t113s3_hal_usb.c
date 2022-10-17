@@ -76,6 +76,10 @@
 
 #define get_bvalue(n)    		(*((volatile uint8_t *)(n)))          /* byte input */
 #define put_bvalue(n,c)  		do { (*((volatile uint8_t *)(n)) = (c)); } while (0)    /* byte output */
+#define get_hvalue(n)    		(*((volatile uint16_t *)(n)))          /* byte input */
+#define put_hvalue(n,c)  		do { (*((volatile uint16_t *)(n)) = (c)); } while (0)    /* byte output */
+#define get_wvalue(n)    		(*((volatile uint32_t *)(n)))          /* byte input */
+#define put_wvalue(n,c)  		do { (*((volatile uint32_t *)(n)) = (c)); } while (0)    /* byte output */
 
 #define  wBoot_dma_QueryState(hdma)  0
 #define  wBoot_dma_stop(hdma)        do { } while (0)
@@ -815,6 +819,7 @@ static void usb_set_eptx_faddr(pusb_struct pusb, uint32_t fifo, uint32_t faddr)
 	//(USBOTG0->USB_TXFADDR = faddr & 0x7F);
 }
 
+// host
 static void usb_set_eptx_haddr(pusb_struct pusb, uint32_t fifo, uint32_t haddr, uint32_t is_mtt)
 {
 	uint8_t reg_val;
@@ -828,6 +833,7 @@ static void usb_set_eptx_haddr(pusb_struct pusb, uint32_t fifo, uint32_t haddr, 
 	//put_bvalue(USBOTG0_BASE + USB_bTXHADDR_OFF, reg_val);
 }
 
+// host
 static void usb_set_eptx_hport(pusb_struct pusb, uint32_t fifo, uint32_t hport)
 {
 	USBOTG0->FIFO [fifo].USB_TXHUBPORT = hport & 0x7F;
@@ -840,6 +846,7 @@ static void usb_set_eprx_faddr(pusb_struct pusb, uint32_t fifo, uint32_t faddr)
 	//put_bvalue(USBOTG0_BASE + USB_bRXFADDR_OFF, faddr & 0x7F);
 }
 
+// host
 static void usb_set_eprx_haddr(pusb_struct pusb, uint32_t fifo, uint32_t haddr, uint32_t is_mtt)
 {
 	uint8_t reg_val;
@@ -853,12 +860,12 @@ static void usb_set_eprx_haddr(pusb_struct pusb, uint32_t fifo, uint32_t haddr, 
 	//put_bvalue(USBOTG0_BASE + USB_bRXHADDR_OFF, reg_val);
 }
 
+// host
 static void usb_set_eprx_hport(pusb_struct pusb, uint32_t fifo, uint32_t hport)
 {
 	USBOTG0->FIFO [fifo].USB_RXHUBPORT = hport & 0x7F;
 	//put_bvalue(USBOTG0_BASE + USB_bRXHPORT_OFF, hport & 0x7F);
 }
-
 
 static void usb_set_reqpkt_count(pusb_struct pusb, uint32_t count)
 {
@@ -885,6 +892,7 @@ static uint32_t usb_get_extiddig(pusb_struct pusb)
 	return (USBOTG0->USB_ISCR >> 28) & 0x1;
 }
 
+// host
 static uint32_t usb_get_linestate(pusb_struct pusb)
 {
 	return (USBOTG0->USB_ISCR >> 26) & 0x3;
@@ -904,6 +912,7 @@ static uint32_t usb_get_iddig(pusb_struct pusb)
 #endif
 }
 
+// host
 static uint32_t usb_get_fs_linestate(pusb_struct pusb)
 {
 	return ((USBOTG0->USB_ISCR) >> 20) & 0x03;
@@ -937,8 +946,10 @@ static void usb_release_id(pusb_struct pusb)
 static void usb_force_id(pusb_struct pusb, uint32_t id)
 {
 
-	if (id) 	USBOTG0->USB_ISCR |= (0x1u << 14);
-	else 	USBOTG0->USB_ISCR &= ~ (0x1u << 14);
+	if (id)
+		USBOTG0->USB_ISCR |= (0x1u << 14);
+	else
+		USBOTG0->USB_ISCR &= ~ (0x1u << 14);
 	USBOTG0->USB_ISCR |= (0x1u << 15);
 
 }
@@ -1073,8 +1084,6 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 {
 	uint8_t temp;
 	uint8_t saved;
-	uint8_t * dest;
-	uint32_t i;
 
 	if (ep_no>USB_MAX_EP_NO)
 	{
@@ -1084,14 +1093,33 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 	usb_fifo_accessed_by_cpu(pusb);
 
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
-	dest = (uint8_t *) dest_addr;
-	for(i=0; i<count; i++)
+
+	if ((dest_addr % 4) == 0 && (count % 4) == 0)
 	{
-		* dest ++ = get_bvalue(pipe);
+		uint32_t * dest = (uint32_t *) dest_addr;
+		uint32_t i;
+		for(i=0; i<count; i += 4)
+		{
+			* dest ++ = get_wvalue(pipe);
+		}
 	}
-	if ((count!=31)&&(count!=8))
+	else if ((dest_addr % 2) == 0 && (count % 2) == 0)
 	{
-		//USB_HAL_DBG("rxcount=%d, rxdata=0x%x\n", count, *((uint32_t*)dest_addr));
+		uint16_t * dest = (uint16_t *) dest_addr;
+		uint32_t i;
+		for(i=0; i<count; i += 2)
+		{
+			* dest ++ = get_hvalue(pipe);
+		}
+	}
+	else
+	{
+		uint8_t * dest = (uint8_t *) dest_addr;
+		uint32_t i;
+		for(i=0; i<count; i++)
+		{
+			* dest ++ = get_bvalue(pipe);
+		}
 	}
 
 	usb_set_fifo_access_config(pusb, saved);
@@ -1101,8 +1129,6 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t src_addr, uint32_t count)
 {
 	uint8_t  saved;
-	const uint8_t * src;
-	uint32_t i;
 
 	if (ep_no>USB_MAX_EP_NO)
 	{
@@ -1111,11 +1137,33 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t src_add
 	saved = usb_get_fifo_access_config(pusb);
 	usb_fifo_accessed_by_cpu(pusb);
 
-	src = (const uint8_t *) src_addr;
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
-	for(i=0; i<count; i++)
+	if ((src_addr % 4) == 0 && (count % 4) == 0)
 	{
-		put_bvalue(pipe, * src ++);
+		const uint32_t * src = (uint32_t *) src_addr;
+		uint32_t i;
+		for(i=0; i<count; i += 4)
+		{
+			put_wvalue(pipe, * src ++);
+		}
+	}
+	else if ((src_addr % 2) == 0 && (count % 2) == 0)
+	{
+		const uint16_t * src = (uint16_t *) src_addr;
+		uint32_t i;
+		for(i=0; i<count; i += 2)
+		{
+			put_hvalue(pipe, * src ++);
+		}
+	}
+	else
+	{
+		const uint8_t * src = (const uint8_t *) src_addr;
+		uint32_t i;
+		for(i=0; i<count; i++)
+		{
+			put_bvalue(pipe, * src ++);
+		}
 	}
 
 	usb_set_fifo_access_config(pusb, saved);
@@ -2368,7 +2416,7 @@ static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
 static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
 {
 	const uint32_t ep_save = usb_get_active_ep(pusb);
-	//const uint32_t bo_ep_in = (USBD_EP_AUDIO_IN & 0x0F);
+	const uint32_t bo_ep_in = (USBD_EP_AUDIO_IN & 0x0F);
 	const uint32_t bo_ep_out = (USBD_EP_AUDIO_OUT & 0x0F);
 #if WITHUSBUACIN2
 	const uint32_t bo_ep_in_rts = (USBD_EP_RTS_IN & 0x0F);
@@ -2416,27 +2464,28 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
  		}
 	} while (0);
 
-//	do
-//	{
-//		// Handle IN pipe (from device to host)
-//	 	if (!pusb->eptx_flag[bo_ep_in-1])
-//		{
-//			break;
-//		}
-//		pusb->eptx_flag[bo_ep_in-1]--;
-//
-//	 	TP();
-//		do
-//		{
-//			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)uacinbuff, 192, USB_PRTCL_ISO);
-//		} while (ret == USB_RETVAL_NOTCOMP);
+	do
+	{
+		// Handle IN pipe (from device to host)
+	 	if (!pusb->eptx_flag[bo_ep_in-1])
+		{
+			break;
+		}
+		pusb->eptx_flag[bo_ep_in-1]--;
+
+	 	//TP();
+		//do
+		//{
+		ret = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_ISO);
+		ret = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_ISO);
+		//} while (ret == USB_RETVAL_NOTCOMP);
 //
 //		if (ret == USB_RETVAL_COMPERR)
 //		{
 //  			PRINTF("Error: TX UAC Error\n");
 //		}
-//
-//	} while (0);
+
+	} while (0);
 
 	usb_select_ep(pusb, ep_save);
 	return ret;
@@ -2888,15 +2937,18 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
     		{
 #if WITHUSBUACOUT
        		case INTERFACE_AUDIO_MIKE:
+    	       	PRINTF("usb_device: in48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 				buffers_set_uacinalt(LO_BYTE(ep0_setup->wValue));
 				break;
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
       		case INTERFACE_AUDIO_SPK:
+    	       	PRINTF("usb_device: out48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 				buffers_set_uacoutalt(LO_BYTE(ep0_setup->wValue));
 				break;
 #if WITHUSBUACIN2
       		case INTERFACE_AUDIO_RTS:
+    	       	PRINTF("usb_device: rts Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 				buffers_set_uacinrtsalt(LO_BYTE(ep0_setup->wValue));
 				break;
 #endif /* WITHUSBUACIN2 */
@@ -2949,12 +3001,26 @@ static uint32_t usb_dev_sof_handler(pusb_struct pusb)
 		uacinaddr = getfilled_dmabufferx(& uacinsize);
 		global_enableIRQ();
 
+
 		if (uacinaddr)
 		{
-			printhex(uacinaddr, uacinaddr, uacinsize);
+			{
+				static int16_t v;
+				int16_t * const p = (int16_t *) uacinaddr;
+				unsigned j = uacinsize / 2;
+				unsigned i;
+				for (i = 0; i < j; i += 2, ++ v)
+				{
+					p [i + 0] = v;
+					p [i + 1] = v;
+				}
+
+			}
+			//printhex(uacinaddr, uacinaddr, uacinsize);
 		}
 		//do
 		//{
+		if (uacinaddr)
 			ret = epx_in_handler_dev(pusb, bo_ep_in, uacinaddr, uacinaddr ? uacinsize : 0, USB_PRTCL_ISO);
 		//} while (ret == USB_RETVAL_NOTCOMP);
 
