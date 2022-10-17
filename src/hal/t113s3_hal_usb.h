@@ -61,29 +61,6 @@ typedef struct {
 } usb_device_msc;
 
 typedef struct {
-	int dummy;
-
-	//EP protocol
-	#define USB_PRTCL_ILL  	0
-	#define USB_PRTCL_ISO  	1
-	#define USB_PRTCL_BULK 	2
-	#define USB_PRTCL_INT  	3
-
-} usb_device_cdc;
-
-typedef struct {
-	int dummy;
-
-	//EP protocol
-	#define USB_PRTCL_ILL  	0
-	#define USB_PRTCL_ISO  	1
-	#define USB_PRTCL_BULK 	2
-	#define USB_PRTCL_INT  	3
-
-} usb_device_uac;
-
-
-typedef struct {
 	//USB SIE Hardware Config
 	//uint32_t index;
 	//uintptr_t reg_base;
@@ -159,12 +136,6 @@ typedef struct {
 #if WITHUSBDMSC
 	usb_device_msc device_msc;
 #endif /* WITHUSBDMSC */
-#if WITHUSBUAC
-	usb_device_uac device_uac;
-#endif /* WITHUSBUAC */
-#if WITHUSBCDCACM
-	usb_device_cdc device_cdc;
-#endif /* WITHUSBCDCACM */
 
 	//DMA Description
 	//DMADESC    dma;
