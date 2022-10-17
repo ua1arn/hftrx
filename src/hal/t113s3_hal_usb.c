@@ -2411,7 +2411,7 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
   		}
   		{
 			// использование данных
-			//printhex(0, pusb->buffer, rx_count);
+			//printhex(0, uacoutbuff, rx_count);
 			uacout_buffer_save_system(uacoutbuff, rx_count, UACOUT_AUDIO48_FMT_CHANNELS, UACOUT_AUDIO48_SAMPLEBITS);
  		}
 	} while (0);
@@ -3598,8 +3598,9 @@ HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
-
-	usb_irq_handler(& hpcd->awxx_usb);
+	usb_struct * const pusb = & hpcd->awxx_usb;
+	usb_irq_handler(pusb);
+	usb_device_function(pusb);
 }
 
 //void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
