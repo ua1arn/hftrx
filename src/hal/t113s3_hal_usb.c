@@ -2488,12 +2488,13 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
 {
-	const uint32_t alignedepfifosize = 64 + ((maxpktsz + (USB_FIFO_ADDR_BLOCK - 1)) & (~ (USB_FIFO_ADDR_BLOCK - 1)));  //Align to USB_FIFO_ADDR_BLOCK
+	const uint32_t alignedepfifosize = ((maxpktsz + 64 + (USB_FIFO_ADDR_BLOCK - 1)) & (~ (USB_FIFO_ADDR_BLOCK - 1)));  //Align to USB_FIFO_ADDR_BLOCK
 	//const uint32_t is_dpb = 1;	// double buffer
 	const uint32_t maxpayload = maxpktsz;
-	const uint32_t pktcnt = 1;//USB_EP_FIFO_SIZE / maxpktsz;
+	const uint32_t pktcnt = 1;//USB_EP_FIFO_SIZE + (maxpktsz - 1) / maxpktsz;
 
 	PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, maxpktsz=%u\n", ep_no, ep_dir, maxpktsz);
+	//ASSERT(USB_EP_FIFO_SIZE >= maxpktsz);
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
 	{
@@ -2678,50 +2679,81 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 	}
 	else if ((ep0_setup->bmRequest&0x60)==0x20)
 	{
-		switch (ep0_setup->bRequest)
+		// class
+		switch (interfacev)
 		{
-#if WITHUSBDMSC
-			case 0x00FE :
-				pusb->ep0_xfer_srcaddr = (uintptr_t) pusb->device_msc.MaxLUNv;
-				pusb->ep0_xfer_residue = 1;
-				PRINTF("usb_device: Get MaxLUN\n");
-				break;
-#endif /* WITHUSBDMSC */
 #if WITHUSBCDCACM
-				case CDC_SET_LINE_CODING:
+			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, 0):
+			{
+				switch (ep0_setup->bRequest)
 				{
-					ASSERT(0);
-					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
-					PRINTF("ep0_in: CDC_SET_LINE_CODING: ifc=%u, wLength=%u\n", interfacev, ep0_setup->wLength);
-					pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
-					pusb->ep0_xfer_residue = 7;
-					pusb->ep0_xfer_state = USB_EP0_SETUP;
-					pusb->ep0_xfer_residue = 0;
+					case CDC_SET_LINE_CODING:
+					{
+						ASSERT(0);
+						static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
+						PRINTF("ep0_in: CDC_SET_LINE_CODING: ifc=%u, wLength=%u\n", interfacev, ep0_setup->wLength);
+						pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
+						pusb->ep0_xfer_residue = 7;
+						pusb->ep0_xfer_state = USB_EP0_SETUP;
+						pusb->ep0_xfer_residue = 0;
+					}
+					break;
+				case CDC_GET_LINE_CODING:
+					{
+						// work ok
+						static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
+						//PRINTF("ep0_in: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
+						USBD_poke_u32(& buff [0], 115200); // dwDTERate
+						buff [4] = 0;	// 1 stop bit
+						buff [5] = 0;	// parity=none
+						buff [6] = 8;	// bDataBits
+						pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
+						pusb->ep0_xfer_residue =  min(7, ep0_setup->wLength);;
+					}
+					break;
+				case CDC_SET_CONTROL_LINE_STATE:
+					{
+						ASSERT(0);
+						PRINTF("ep0_in: CDC_SET_CONTROL_LINE_STATE: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+						pusb->ep0_xfer_residue = 0;
+					}
+					break;
 				}
-				break;
-			case CDC_GET_LINE_CODING:
-				{
-					// work ok
-					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
-					//PRINTF("ep0_in: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
-					USBD_poke_u32(& buff [0], 115200); // dwDTERate
-					buff [4] = 0;	// 1 stop bit
-					buff [5] = 0;	// parity=none
-					buff [6] = 8;	// bDataBits
-					pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
-					pusb->ep0_xfer_residue =  min(7, ep0_setup->wLength);;
-				}
-				break;
-			case CDC_SET_CONTROL_LINE_STATE:
-				PRINTF("ep0_in: CDC_SET_CONTROL_LINE_STATE: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
-				pusb->ep0_xfer_residue = 0;
-				break;
-
+			}
+			break;
 #endif /* WITHUSBCDCACM */
-			default:
-				pusb->ep0_xfer_residue = 0;
-				PRINTF("ep0_in: Unknown Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
-				break;
+#if WITHUSBDMSC
+		case INTERFACE_MSC_CONTROL:
+			{
+				switch (ep0_setup->bRequest)
+				{
+				case 0x00FE :
+					pusb->ep0_xfer_srcaddr = (uintptr_t) pusb->device_msc.MaxLUNv;
+					pusb->ep0_xfer_residue = 1;
+					PRINTF("usb_device: Get MaxLUN, ifc=%u\n", interfacev);
+					break;
+				}
+			}
+			break;
+#endif /* WITHUSBDMSC */
+#if WITHUSBUAC
+		case INTERFACE_AUDIO_CONTROL_MIKE:
+			{
+				PRINTF("ep0_in: INTERFACE_AUDIO_CONTROL_MIKE Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+
+			}
+			break;
+		case INTERFACE_AUDIO_CONTROL_RTS:
+			{
+				PRINTF("ep0_in: INTERFACE_AUDIO_CONTROL_RTS Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+
+			}
+			break;
+#endif /* WITHUSBUAC */
+		default:
+			pusb->ep0_xfer_residue = 0;
+			PRINTF("ep0_in: Unknown Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+			break;
 		}
 	}
 	else if ((ep0_setup->bmRequest&0x60)==USB_REQ_TYPE_VENDOR)
@@ -2741,11 +2773,17 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 			}
 			else
 			{
+				pusb->ep0_xfer_residue = 0;
 			}
 		}
+//		else if (ep0_setup->bRequest == USBD_WCID_VENDOR_CODE && ep0_setup->wIndex == 0x04)
+//		{
+//			const uint_fast8_t ifc = LO_BYTE(ep0_setup->wValue);
+//		}
 		else
 		{
-			PRINTF("usb_device: Unknown Vendor-Specific Request = 0x%x, wIndex=0x%04X\n", ep0_setup->bRequest, ep0_setup->wIndex);
+			PRINTF("usb_device: Unknown Vendor-Specific Request = 0x%02X, wValue=0x%04X, wIndex=0x%04X\n", ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex);
+			pusb->ep0_xfer_residue = 0;
 		}
 	}
 	else
