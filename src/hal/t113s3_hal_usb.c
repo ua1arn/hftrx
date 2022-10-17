@@ -2368,7 +2368,7 @@ static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
 static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
 {
 	const uint32_t ep_save = usb_get_active_ep(pusb);
-	const uint32_t bo_ep_in = (USBD_EP_AUDIO_IN & 0x0F);
+	//const uint32_t bo_ep_in = (USBD_EP_AUDIO_IN & 0x0F);
 	const uint32_t bo_ep_out = (USBD_EP_AUDIO_OUT & 0x0F);
 #if WITHUSBUACIN2
 	const uint32_t bo_ep_in_rts = (USBD_EP_RTS_IN & 0x0F);
@@ -2416,27 +2416,27 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
  		}
 	} while (0);
 
-	do
-	{
-		// Handle IN pipe (from device to host)
-	 	if (!pusb->eptx_flag[bo_ep_in-1])
-		{
-			break;
-		}
-		pusb->eptx_flag[bo_ep_in-1]--;
-
-	 	TP();
-		do
-		{
-			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)uacinbuff, 192, USB_PRTCL_ISO);
-		} while (ret == USB_RETVAL_NOTCOMP);
-
-		if (ret == USB_RETVAL_COMPERR)
-		{
-  			PRINTF("Error: TX UAC Error\n");
-		}
-
-	} while (0);
+//	do
+//	{
+//		// Handle IN pipe (from device to host)
+//	 	if (!pusb->eptx_flag[bo_ep_in-1])
+//		{
+//			break;
+//		}
+//		pusb->eptx_flag[bo_ep_in-1]--;
+//
+//	 	TP();
+//		do
+//		{
+//			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)uacinbuff, 192, USB_PRTCL_ISO);
+//		} while (ret == USB_RETVAL_NOTCOMP);
+//
+//		if (ret == USB_RETVAL_COMPERR)
+//		{
+//  			PRINTF("Error: TX UAC Error\n");
+//		}
+//
+//	} while (0);
 
 	usb_select_ep(pusb, ep_save);
 	return ret;
@@ -2949,15 +2949,19 @@ static uint32_t usb_dev_sof_handler(pusb_struct pusb)
 		uacinaddr = getfilled_dmabufferx(& uacinsize);
 		global_enableIRQ();
 
-		do
+		if (uacinaddr)
 		{
-			ret = epx_in_handler_dev(pusb, bo_ep_in, uacinaddr, uacinaddr ? uacinsize : 0, USB_PRTCL_ISO);
-		} while (ret == USB_RETVAL_NOTCOMP);
-
-		if (ret == USB_RETVAL_COMPERR)
-		{
-			PRINTF("Error: TX CDC Error\n");
+			printhex(uacinaddr, uacinaddr, uacinsize);
 		}
+		//do
+		//{
+			ret = epx_in_handler_dev(pusb, bo_ep_in, uacinaddr, uacinaddr ? uacinsize : 0, USB_PRTCL_ISO);
+		//} while (ret == USB_RETVAL_NOTCOMP);
+
+//		if (ret == USB_RETVAL_COMPERR)
+//		{
+//			PRINTF("Error: TX UAC AUDIO48 Error\n");
+//		}
 	}
 
 #if WITHUSBUACIN2
@@ -2976,15 +2980,15 @@ static uint32_t usb_dev_sof_handler(pusb_struct pusb)
 		global_enableIRQ();
 
 
-		do
-		{
+		//do
+		//{
 			ret = epx_in_handler_dev(pusb, bo_ep_in, uacinrtsaddr, uacinrtsaddr ? uacinrtssize : 0, USB_PRTCL_ISO);
-		} while (ret == USB_RETVAL_NOTCOMP);
+		//} while (ret == USB_RETVAL_NOTCOMP);
 
-		if (ret == USB_RETVAL_COMPERR)
-		{
-			PRINTF("Error: TX CDC Error\n");
-		}
+//		if (ret == USB_RETVAL_COMPERR)
+//		{
+//			PRINTF("Error: TX UAC RTS Error\n");
+//		}
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
@@ -3313,7 +3317,7 @@ static void usb_irq_handler(pusb_struct pusb)
 	{
 		//pusb->sof_count ++;
 		temp &= ~USB_BUSINT_SOF;
-		//usb_dev_sof_handler(pusb);
+		usb_dev_sof_handler(pusb);
 	}
 
 	if (temp & usb_get_bus_interrupt_enable(pusb))
