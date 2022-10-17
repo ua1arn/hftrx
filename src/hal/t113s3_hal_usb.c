@@ -2268,43 +2268,11 @@ static void cdcXout_buffer_save(
 	}
 }
 
-
-static USB_RETVAL epx_in_handler_dev_cdc(pusb_struct pusb, uint32_t ep_no, uintptr_t dst_addr, uint32_t byte_count, uint32_t ep_type)
+static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 {
-	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-	uint32_t maxpkt;
-	uint32_t ep_save = usb_get_active_ep(pusb);
-	static uint32_t epout_timeout = 0;
-#ifndef USB_NO_DMA
-	__dma_setting_t  p;
-	uint32_t dram_addr;
-#endif
-
-	usb_select_ep(pusb, ep_no);
-	maxpkt = usb_get_eprx_maxpkt(pusb);
-	maxpkt = (maxpkt&0x7ff)*(((maxpkt&0xf800)>>11)+1);
-
-
-
-	usb_fifo_accessed_by_cpu(pusb);
-	usb_write_ep_fifo(pusb, ep_no, dst_addr, byte_count);
-//		pdev->epx_xfer_residuev[ep_no-1] -= maxpkt;
-//	  	pdev->epx_xfer_tranferredv[ep_no-1] += maxpkt;
-//	  	pdev->epx_xfer_addrv[ep_no-1] += maxpkt;
-	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
-
-
-	usb_select_ep(pusb, ep_save);
-
-	return ret;
-}
-
-static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
-{
-	unsigned offset = 0;
 	const uint32_t ep_save = usb_get_active_ep(pusb);
-	const uint32_t bo_ep_in = (USBD_EP_CDCACM_IN & 0x0F);
-	const uint32_t bo_ep_out = (USBD_EP_CDCACM_OUT & 0x0F);
+	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+	const uint32_t bo_ep_out = (USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F);
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t rx_count=0;
 
@@ -2364,14 +2332,11 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 		if (cdcXbuffinlevel [offset])
 		{
 
-  			ret = epx_in_handler_dev_cdc(pusb, bo_ep_in, (uintptr_t)cdcXbuffin [offset], cdcXbuffinlevel [offset], USB_PRTCL_BULK);
+			do
+			{
+  			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)cdcXbuffin [offset], cdcXbuffinlevel [offset], USB_PRTCL_BULK);
+			} while (ret == USB_RETVAL_NOTCOMP);
   			cdcXbuffinlevel [offset] = 0;
-		}
-		else
-		{
-//	  		usb_select_ep(pusb, bo_ep_in);
-//			usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
-
 		}
 
 	}
@@ -3159,7 +3124,7 @@ static uint32_t usb_device_function(pusb_struct pusb)
 	usb_dev_bulk_xfer_uac(pusb);
 #endif /* WITHUSBUAC */
 #if WITHUSBCDCACM
-	usb_dev_bulk_xfer_cdc(pusb);
+	usb_dev_bulk_xfer_cdc(pusb, 0);
 #endif /* WITHUSBCDCACM */
 
 	return 1;
