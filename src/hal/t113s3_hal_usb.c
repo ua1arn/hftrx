@@ -2299,7 +2299,7 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 
   		if (ret == USB_RETVAL_COMPERR)
   		{
-  			PRINTF("Error: RX CBW Error\n");
+  			PRINTF("Error: RX CDC Error\n");
   			break;
   		}
   		else
@@ -2334,8 +2334,14 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 
 			do
 			{
-  			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)cdcXbuffin [offset], cdcXbuffinlevel [offset], USB_PRTCL_BULK);
+				ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)cdcXbuffin [offset], cdcXbuffinlevel [offset], USB_PRTCL_BULK);
 			} while (ret == USB_RETVAL_NOTCOMP);
+
+			if (ret == USB_RETVAL_COMPERR)
+			{
+				PRINTF("Error: TX CDC Error\n");
+			}
+
   			cdcXbuffinlevel [offset] = 0;
 		}
 
@@ -2396,7 +2402,7 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
 
   		if (ret == USB_RETVAL_COMPERR)
   		{
-  			PRINTF("Error: RX CBW Error\n");
+  			PRINTF("Error: RX UAC Error\n");
   			break;
   		}
   		else
@@ -2420,6 +2426,15 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
 		pusb->eptx_flag[bo_ep_in-1]--;
 
 	 	TP();
+		do
+		{
+			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)uacinbuff, 192, USB_PRTCL_ISO);
+		} while (ret == USB_RETVAL_NOTCOMP);
+
+		if (ret == USB_RETVAL_COMPERR)
+		{
+  			PRINTF("Error: TX UAC Error\n");
+		}
 
 	} while (0);
 
