@@ -933,12 +933,12 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
   */
 
 //#define PCD_PHY_ULPI                 1U
-#define PCD_PHY_EMBEDDED             2U
-
-#define HC_PID_DATA0                           0U
-#define HC_PID_DATA2                           1U
-#define HC_PID_DATA1                           2U
-#define HC_PID_SETUP                           3U
+//#define PCD_PHY_EMBEDDED             2U
+//
+//#define HC_PID_DATA0                           0U
+//#define HC_PID_DATA2                           1U
+//#define HC_PID_DATA1                           2U
+//#define HC_PID_SETUP                           3U
 
 
 /* Common registers */
