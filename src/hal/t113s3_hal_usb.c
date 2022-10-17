@@ -1434,12 +1434,12 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 #ifndef USB_NO_DMA
 				uint32_t xfer_count = 0;
 
-		 		xfer_count = min(pdev->epx_xfer_residue, USB_BO_DEV_BUF_SIZE);
+		 		xfer_count = min(pdev->eptx_xfer_residue, USB_BO_DEV_BUF_SIZE);
 		 		ping_pang_addr = usb_dev_get_buf_base(pusb, pusb->eptx_buf_tag);
 		 		if (dram_copy(pusb->eptx_xfer_addr, ping_pang_addr, xfer_count))
 	 			{
-	 				pdev->epx_xfer_addr += xfer_count;
-	 				pdev->epx_xfer_residue -= xfer_count;
+	 				pdev->eptx_xfer_addr += xfer_count;
+	 				pdev->eptx_xfer_residue -= xfer_count;
 	 			}
 		 		else
 	 			{
@@ -1483,7 +1483,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 		    	{
 		    		xfer_count = min(pusb->eptx_xfer_residue, USB_BO_DEV_BUF_SIZE);
 
-		    		if (dram_copy(pdev->epx_xfer_addr, usb_dev_get_buf_base(pusb, pdev->epx_buf_tag), xfer_count))
+		    		if (dram_copy(pdev->epx_xfer_addr, usb_dev_get_buf_base(pusb, pdev->eptx_buf_tag), xfer_count))
 	    			{
 	    				pusb->eptx_xfer_addr += xfer_count;
 	    				pusb->eptx_xfer_residue -= xfer_count;
