@@ -4067,6 +4067,9 @@ static RAMFUNC void processafadcsampleiq(
 	#else /* WITHTXCPATHCALIBRATE */
 			savesampleout32stereo(adpt_output(& ifcodecout, vfb.IV), adpt_output(& ifcodecout, vfb.QV));	// Запись в поток к передатчику I/Q значений.
 	#endif /* WITHTXCPATHCALIBRATE */
+			/* самоконтроль с учётом фильтра передатчика */
+			moni->IV = vi;
+			moni->QV = vi;
 		}
 	}
 	else
