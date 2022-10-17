@@ -41,14 +41,6 @@ typedef struct {
 	#define USB_PRTCL_ISO  	1
 	#define USB_PRTCL_BULK 	2
 	#define USB_PRTCL_INT  	3
-	//uint32_t eptx_prtcl[USB_MAX_EP_NO];
-	//uint32_t eprx_prtcl[USB_MAX_EP_NO];
-	//uint32_t eptx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-	//uint32_t eprx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-	uintptr_t epx_xfer_addr;
-	uint32_t epx_xfer_residue;
-	uint32_t epx_xfer_tranferred;
-	uint32_t epx_buf_tag;
 
 	//Bulk Only Device State Machine
 	#define USB_BO_IDLE				0
@@ -69,38 +61,24 @@ typedef struct {
 } usb_device_msc;
 
 typedef struct {
+	int dummy;
 
 	//EP protocol
 	#define USB_PRTCL_ILL  	0
 	#define USB_PRTCL_ISO  	1
 	#define USB_PRTCL_BULK 	2
 	#define USB_PRTCL_INT  	3
-	//uint32_t eptx_prtcl[USB_MAX_EP_NO];
-	//uint32_t eprx_prtcl[USB_MAX_EP_NO];
-	//uint32_t eptx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-	//uint32_t eprx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-	uintptr_t epx_xfer_addrv[USB_MAX_EP_NO];
-	uint32_t epx_xfer_residuev[USB_MAX_EP_NO];
-	uint32_t epx_xfer_tranferredv[USB_MAX_EP_NO];
-	uint32_t epx_buf_tagv[USB_MAX_EP_NO];
 
 } usb_device_cdc;
 
 typedef struct {
+	int dummy;
 
 	//EP protocol
 	#define USB_PRTCL_ILL  	0
 	#define USB_PRTCL_ISO  	1
 	#define USB_PRTCL_BULK 	2
 	#define USB_PRTCL_INT  	3
-	//uint32_t eptx_prtcl[USB_MAX_EP_NO];
-	//uint32_t eprx_prtcl[USB_MAX_EP_NO];
-	//uint32_t eptx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-	//uint32_t eprx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-	uintptr_t epx_xfer_addrv[USB_MAX_EP_NO];
-	uint32_t epx_xfer_residuev[USB_MAX_EP_NO];
-	uint32_t epx_xfer_tranferredv[USB_MAX_EP_NO];
-	uint32_t epx_buf_tagv[USB_MAX_EP_NO];
 
 } usb_device_uac;
 
@@ -162,6 +140,20 @@ typedef struct {
 	#define USB_EPX_END						2
 	uint32_t eptx_xfer_state[USB_MAX_EP_NO];
 	uint32_t eprx_xfer_state[USB_MAX_EP_NO];
+
+	//uint32_t eptx_prtcl[USB_MAX_EP_NO];
+	//uint32_t eprx_prtcl[USB_MAX_EP_NO];
+	//uint32_t eptx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
+	//uint32_t eprx_fifo[USB_MAX_EP_NO];  //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
+	uintptr_t eprx_xfer_addrv[USB_MAX_EP_NO];
+	uint32_t eprx_xfer_residuev[USB_MAX_EP_NO];
+	uint32_t eprx_xfer_tranferredv[USB_MAX_EP_NO];
+	uint32_t eprx_buf_tagv[USB_MAX_EP_NO];
+
+	uintptr_t eptx_xfer_addrv[USB_MAX_EP_NO];
+	uint32_t eptx_xfer_residuev[USB_MAX_EP_NO];
+	uint32_t eptx_xfer_tranferredv[USB_MAX_EP_NO];
+	uint32_t eptx_buf_tagv[USB_MAX_EP_NO];
 
 	//Function Description
 #if WITHUSBDMSC
