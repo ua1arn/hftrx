@@ -2488,10 +2488,10 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
 {
-	const uint32_t alignedepfifosize = 64 + ((maxpktsz + (USB_FIFO_ADDR_BLOCK - 1)) & (~ (USB_FIFO_ADDR_BLOCK - 1)));  //Align to USB_FIFO_ADDR_BLOCK
+	const uint32_t alignedepfifosize = (USB_EP_FIFO_SIZE + (USB_FIFO_ADDR_BLOCK - 1)) & (~ (USB_FIFO_ADDR_BLOCK - 1));  //Align to USB_FIFO_ADDR_BLOCK
 	//const uint32_t is_dpb = 1;	// double buffer
 	const uint32_t maxpayload = maxpktsz;
-	const uint32_t pktcnt = (alignedepfifosize - 64) / maxpktsz;
+	const uint32_t pktcnt = USB_EP_FIFO_SIZE / maxpktsz;
 
 	PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, maxpktsz=%u\n", ep_no, ep_dir, maxpktsz);
 	usb_select_ep(pusb, ep_no);
