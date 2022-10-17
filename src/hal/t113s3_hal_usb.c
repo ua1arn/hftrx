@@ -3317,9 +3317,9 @@ static void usb_irq_handler(pusb_struct pusb)
 			//pusb->timer = USB_IDLE_TIMER;
 
 			//Bus Reset may disable all interrupt enable, re-enable the interrupts need
-			usb_set_bus_interrupt_enable(pusb, 0xf7);
-			usb_set_eptx_interrupt_enable(pusb, 0xffff);
-			usb_set_eprx_interrupt_enable(pusb, 0xfffe);
+			usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
+			usb_set_eptx_interrupt_enable(pusb, 0x003f);
+			usb_set_eprx_interrupt_enable(pusb, 0x003e);
 
 			awxx_setup_fifo(pusb);
 
@@ -3473,9 +3473,9 @@ void usb_init(pusb_struct pusb)
 	pusb->role = USB_ROLE_DEV;
 
 	usb_clear_bus_interrupt_enable(pusb, 0xff);
-	usb_set_bus_interrupt_enable(pusb, 0xf7);
-	usb_set_eptx_interrupt_enable(pusb, 0x3f);
-	usb_set_eprx_interrupt_enable(pusb, 0x3e);
+	usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
+	usb_set_eptx_interrupt_enable(pusb, 0x003f);
+	usb_set_eprx_interrupt_enable(pusb, 0x003e);
 
 	pusb->otg_dev = USB_OTG_B_DEVICE;
 
