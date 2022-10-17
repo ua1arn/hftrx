@@ -1449,6 +1449,20 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uint32_t
 	return ret;
 }
 
+static USB_RETVAL epx_in_handler_dev_iso(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
+{
+  	USB_RETVAL ret = USB_RETVAL_COMPOK;
+	uint32_t ep_save = usb_get_active_ep(pusb);
+	usb_select_ep(pusb, ep_no);
+	uint32_t saved = usb_get_fifo_access_config(pusb);
+	usb_fifo_accessed_by_cpu(pusb);
+	usb_write_ep_fifo(pusb, ep_no, src_addr, byte_count);
+	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO | USB_TXCSR_TXPKTRDY | USB_TXCSR_ISO);
+	usb_set_fifo_access_config(pusb, saved);
+	usb_select_ep(pusb, ep_save);
+	return ret;
+}
+
 static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
 {
   	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -2476,8 +2490,8 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
 	 	//TP();
 		//do
 		//{
-		ret = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_ISO);
-		ret = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_ISO);
+//		ret = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_ISO);
+//		ret = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_ISO);
 		//} while (ret == USB_RETVAL_NOTCOMP);
 //
 //		if (ret == USB_RETVAL_COMPERR)
@@ -3004,24 +3018,11 @@ static uint32_t usb_dev_sof_handler(pusb_struct pusb)
 
 		if (uacinaddr)
 		{
-			{
-				static int16_t v;
-				int16_t * const p = (int16_t *) uacinaddr;
-				unsigned j = uacinsize / 2;
-				unsigned i;
-				for (i = 0; i < j; i += 2, ++ v)
-				{
-					p [i + 0] = v;
-					p [i + 1] = v;
-				}
-
-			}
-			//printhex(uacinaddr, uacinaddr, uacinsize);
+			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinaddr ? uacinsize : 0, USB_PRTCL_ISO);
 		}
 		//do
 		//{
-		if (uacinaddr)
-			ret = epx_in_handler_dev(pusb, bo_ep_in, uacinaddr, uacinaddr ? uacinsize : 0, USB_PRTCL_ISO);
+		//	ret = epx_in_handler_dev(pusb, bo_ep_in, uacinaddr, uacinaddr ? uacinsize : 0, USB_PRTCL_ISO);
 		//} while (ret == USB_RETVAL_NOTCOMP);
 
 //		if (ret == USB_RETVAL_COMPERR)
@@ -3030,7 +3031,7 @@ static uint32_t usb_dev_sof_handler(pusb_struct pusb)
 //		}
 	}
 
-#if WITHUSBUACIN2
+#if WITHUSBUACIN2 && 0
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 		const uint32_t bo_ep_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
@@ -3044,11 +3045,14 @@ static uint32_t usb_dev_sof_handler(pusb_struct pusb)
 		global_disableIRQ();
 		uacinrtsaddr = getfilled_dmabufferxrts(& uacinrtssize);
 		global_enableIRQ();
-
+		if (uacinrtsaddr)
+		{
+			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinrtsaddr, uacinrtsaddr ? uacinrtssize : 0, USB_PRTCL_ISO);
+		}
 
 		//do
 		//{
-			ret = epx_in_handler_dev(pusb, bo_ep_in, uacinrtsaddr, uacinrtsaddr ? uacinrtssize : 0, USB_PRTCL_ISO);
+		//	ret = epx_in_handler_dev(pusb, bo_ep_in, uacinrtsaddr, uacinrtsaddr ? uacinrtssize : 0, USB_PRTCL_ISO);
 		//} while (ret == USB_RETVAL_NOTCOMP);
 
 //		if (ret == USB_RETVAL_COMPERR)
