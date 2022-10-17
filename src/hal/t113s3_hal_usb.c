@@ -2614,7 +2614,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						else
 						{
 						    pusb->ep0_xfer_residue = 0;
-							PRINTF("Unkown Configuration Desc!!\n");
+							PRINTF("Unknown Configuration Desc!!\n");
 						}
 						break;
 					case 0x03:             //Get String Desc
@@ -2627,7 +2627,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						else
 						{
 						    pusb->ep0_xfer_residue = 0;
-							PRINTF("Unkown String Desc!! 0x%02X\n", temp);
+							PRINTF("Unknown String Desc!! 0x%02X\n", temp);
 						}
 						break;
 					case 0x04:           //Get Interface Desc
@@ -2652,7 +2652,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				    	break;
 					default  :
 					    pusb->ep0_xfer_residue = 0;
-					    PRINTF("usb_device: Get Unkown Descriptor 0x%02X\n", HI_BYTE(ep0_setup->wValue));
+					    PRINTF("usb_device: Get Unknown Descriptor 0x%02X\n", HI_BYTE(ep0_setup->wValue));
 				}
 		      	break;
 	     	case 0x08 :
@@ -2673,7 +2673,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				break;
 	      	default   :
 	        	pusb->ep0_xfer_residue = 0;
-	        	PRINTF("usb_device: Unkown Standard Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+	        	PRINTF("usb_device: Unknown Standard Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 		}
 	}
 	else if ((ep0_setup->bmRequest&0x60)==0x20)
@@ -2691,7 +2691,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				case CDC_SET_LINE_CODING:
 				{
 					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
-					PRINTF("cdc: CDC_SET_LINE_CODING: ifc=%u, wLength=%u\n", interfacev, ep0_setup->wLength);
+					PRINTF("ep0_in: CDC_SET_LINE_CODING: ifc=%u, wLength=%u\n", interfacev, ep0_setup->wLength);
 					pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
 					pusb->ep0_xfer_residue = 7;
 					pusb->ep0_xfer_state = USB_EP0_SETUP;
@@ -2701,7 +2701,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 			case CDC_GET_LINE_CODING:
 				{
 					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
-					//PRINTF("cdc: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
+					//PRINTF("ep0_in: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
 					USBD_poke_u32(& buff [0], 115200); // dwDTERate
 					buff [4] = 0;	// 1 stop bit
 					buff [5] = 0;	// parity=none
@@ -2711,14 +2711,14 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				}
 				break;
 			case CDC_SET_CONTROL_LINE_STATE:
-				PRINTF("cdc2: CDC_SET_CONTROL_LINE_STATE: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+				PRINTF("ep0_in: CDC_SET_CONTROL_LINE_STATE: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 				pusb->ep0_xfer_residue = 0;
 				break;
 
 #endif /* WITHUSBCDCACM */
 			default:
 				pusb->ep0_xfer_residue = 0;
-				PRINTF("usb_device: Unkown Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+				PRINTF("ep0_in: Unknown Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 				break;
 		}
 	}
@@ -2743,13 +2743,13 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 		}
 		else
 		{
-			PRINTF("usb_device: Unkown Vendor-Specific Request = 0x%x, wIndex=0x%04X\n", ep0_setup->bRequest, ep0_setup->wIndex);
+			PRINTF("usb_device: Unknown Vendor-Specific Request = 0x%x, wIndex=0x%04X\n", ep0_setup->bRequest, ep0_setup->wIndex);
 		}
 	}
 	else
 	{
 		pusb->ep0_xfer_residue = 0;
-		PRINTF("usb_device: Unkown EP0 IN!!, 0x%02X\n", ep0_setup->bmRequest&0x60);
+		PRINTF("usb_device: Unknown EP0 IN!!, 0x%02X\n", ep0_setup->bmRequest&0x60);
 	}
 
 	return 0;
@@ -2814,7 +2814,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 	          				PRINTF("usb_device: Send Test Packet Now...\n");
 	         				break;
 				        	default:
-				          	PRINTF("usb_device: Unkown Test Mode: 0x%x\n", ep0_setup->wIndex);
+				          	PRINTF("usb_device: Unknown Test Mode: 0x%x\n", ep0_setup->wIndex);
 				    }
 	        		break;
 
@@ -2825,7 +2825,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 					break;
 
 				default:
-				PRINTF("usb_device: Unkown SetFeature Value: 0x%x\n", ep0_setup->wValue);
+				PRINTF("usb_device: Unknown SetFeature Value: 0x%x\n", ep0_setup->wValue);
 			}
 			break;
 
@@ -2866,17 +2866,17 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
     		}
 	      	break;
     	case CDC_SET_LINE_CODING:
-    		//PRINTF("1: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
-    		pusb->ep0_xfer_state = USB_EP0_DATA;
+    		//PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
+    		pusb->ep0_xfer_state = USB_EP0_DATA;	// continue read parameters block in ep0_in_handler_dev
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	case CDC_SET_CONTROL_LINE_STATE:
-    		//PRINTF("1: CDC_SET_CONTROL_LINE_STATE: ifc=%u %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+    		//PRINTF("ep0_out: CDC_SET_CONTROL_LINE_STATE: ifc=%u %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
        		pusb->ep0_xfer_state = USB_EP0_SETUP;
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	default   :
-     		PRINTF("usb_device: Unkown EP0 OUT: ifc=%u, 0x%02X, wLength=0x%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wLength);
+     		PRINTF("usb_device: Unknown EP0 OUT: ifc=%u, 0x%02X, wLength=0x%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wLength);
 			pusb->ep0_xfer_residue = 0;
 	      	break;
 	}
@@ -2977,7 +2977,7 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 		}
 		else
 		{
-			PRINTF("WRN: Unkown EP0 Interrupt, CSR=0x%x!!\n", temp);
+			PRINTF("WRN: Unknown EP0 Interrupt, CSR=0x%x!!\n", temp);
 		}
 	}
 	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
