@@ -2268,6 +2268,37 @@ static void cdcXout_buffer_save(
 	}
 }
 
+
+static USB_RETVAL epx_in_handler_dev_cdc(pusb_struct pusb, uint32_t ep_no, uintptr_t dst_addr, uint32_t byte_count, uint32_t ep_type)
+{
+	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+	uint32_t maxpkt;
+	uint32_t ep_save = usb_get_active_ep(pusb);
+	static uint32_t epout_timeout = 0;
+#ifndef USB_NO_DMA
+	__dma_setting_t  p;
+	uint32_t dram_addr;
+#endif
+
+	usb_select_ep(pusb, ep_no);
+	maxpkt = usb_get_eprx_maxpkt(pusb);
+	maxpkt = (maxpkt&0x7ff)*(((maxpkt&0xf800)>>11)+1);
+
+
+
+	usb_fifo_accessed_by_cpu(pusb);
+	usb_write_ep_fifo(pusb, ep_no, dst_addr, byte_count);
+//		pdev->epx_xfer_residuev[ep_no-1] -= maxpkt;
+//	  	pdev->epx_xfer_tranferredv[ep_no-1] += maxpkt;
+//	  	pdev->epx_xfer_addrv[ep_no-1] += maxpkt;
+	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
+
+
+	usb_select_ep(pusb, ep_save);
+
+	return ret;
+}
+
 static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 {
 	unsigned offset = 0;
@@ -2333,7 +2364,7 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb)
 		if (cdcXbuffinlevel [offset])
 		{
 
-  			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)cdcXbuffin [offset], cdcXbuffinlevel [offset], USB_PRTCL_BULK);
+  			ret = epx_in_handler_dev_cdc(pusb, bo_ep_in, (uintptr_t)cdcXbuffin [offset], cdcXbuffinlevel [offset], USB_PRTCL_BULK);
   			cdcXbuffinlevel [offset] = 0;
 		}
 		else
