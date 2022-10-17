@@ -2488,10 +2488,10 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
 {
-	const uint32_t alignedepfifosize = (USB_EP_FIFO_SIZE + (USB_FIFO_ADDR_BLOCK - 1)) & (~ (USB_FIFO_ADDR_BLOCK - 1));  //Align to USB_FIFO_ADDR_BLOCK
+	const uint32_t alignedepfifosize = 64 + ((maxpktsz + (USB_FIFO_ADDR_BLOCK - 1)) & (~ (USB_FIFO_ADDR_BLOCK - 1)));  //Align to USB_FIFO_ADDR_BLOCK
 	//const uint32_t is_dpb = 1;	// double buffer
 	const uint32_t maxpayload = maxpktsz;
-	const uint32_t pktcnt = USB_EP_FIFO_SIZE / maxpktsz;
+	const uint32_t pktcnt = 1;//USB_EP_FIFO_SIZE / maxpktsz;
 
 	PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, maxpktsz=%u\n", ep_no, ep_dir, maxpktsz);
 	usb_select_ep(pusb, ep_no);
@@ -2571,7 +2571,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 #endif /* WITHUSBUACIN */
 	PRINTF("awxx_setup_fifo: fifo_addr = %u\n", fifo_addr);
 	// Device and host controller share a 8K SRAM and a physical PHY
-	ASSERT(fifo_addr < 8192);	/* 8 kB */
+	//ASSERT(fifo_addr < 8192);	/* 8 kB */
 }
 
 
@@ -2690,6 +2690,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 #if WITHUSBCDCACM
 				case CDC_SET_LINE_CODING:
 				{
+					ASSERT(0);
 					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
 					PRINTF("ep0_in: CDC_SET_LINE_CODING: ifc=%u, wLength=%u\n", interfacev, ep0_setup->wLength);
 					pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
@@ -2700,6 +2701,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				break;
 			case CDC_GET_LINE_CODING:
 				{
+					// work ok
 					static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
 					//PRINTF("ep0_in: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
 					USBD_poke_u32(& buff [0], 115200); // dwDTERate
@@ -2866,11 +2868,13 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
     		}
 	      	break;
     	case CDC_SET_LINE_CODING:
+    		// work
     		//PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
     		pusb->ep0_xfer_state = USB_EP0_DATA;	// continue read parameters block in ep0_in_handler_dev
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	case CDC_SET_CONTROL_LINE_STATE:
+    		// work
     		//PRINTF("ep0_out: CDC_SET_CONTROL_LINE_STATE: ifc=%u %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
        		pusb->ep0_xfer_state = USB_EP0_SETUP;
 			pusb->ep0_xfer_residue = 0;
@@ -3041,7 +3045,7 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 				const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 				if (ep0_setup->bmRequest&0x80)//in
 				{
-			    	PRINTF("Error IN: ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
+			    	PRINTF("EP0 IN (not 8): ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
 				  	usb_ep0_flush_fifo(pusb);
 
 				}
@@ -3052,8 +3056,17 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 					usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, min(sizeof buff, ep0_count));
 					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb)&USB_RXCSR_ISO); //Clear RxPktRdy
 				  	usb_ep0_flush_fifo(pusb);
-			    	//PRINTF("Error OUT: ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
-			    	//printhex(0, buff, ep0_count);
+				  	switch (ep0_setup->bRequest)
+				  	{
+				  	case CDC_SET_LINE_CODING:
+				  		PRINTF("usb_dev_ep0xfer: CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
+				  		break;
+				  	default:
+				  		// work
+						PRINTF("EP0 OUT (not 8): ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
+						printhex(0, buff, ep0_count);
+				  		break;
+				  	}
 					pusb->ep0_xfer_residue = 0;
 				}
 			}
