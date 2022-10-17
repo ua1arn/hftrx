@@ -1729,7 +1729,6 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 
 #elif CPUSTYPE_T113
 
-#include "reg-ccu.h"
 #include "reg-de.h"
 #include "reg-tconlcd.h"
 
