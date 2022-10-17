@@ -396,7 +396,7 @@ static uint32_t usb_get_frame_number(pusb_struct pusb)
 
 static void usb_select_ep(pusb_struct pusb, uint32_t ep_no)
 {
-	ASSERT(ep_no < USB_MAX_EP_NO);
+	ASSERT(ep_no <= USB_MAX_EP_NO);
 	if (ep_no > USB_MAX_EP_NO)
 		return;
 	USBOTG0->USB_EPINDEX = ep_no;
