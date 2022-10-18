@@ -3330,8 +3330,10 @@ static uint32_t usb_device_function(pusb_struct pusb)
 
 void usb_device_function0(PCD_HandleTypeDef * hpcd)
 {
+	system_disableIRQ();
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	usb_device_function(pusb);
+	system_enableIRQ();
 }
 
 void usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
