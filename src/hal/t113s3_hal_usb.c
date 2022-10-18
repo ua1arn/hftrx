@@ -2839,10 +2839,12 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				pusb->ep0_xfer_residue = 0;
 			}
 		}
-//		else if (ep0_setup->bRequest == USBD_WCID_VENDOR_CODE && ep0_setup->wIndex == 0x04)
-//		{
-//			const uint_fast8_t ifc = LO_BYTE(ep0_setup->wValue);
-//		}
+		else if (ep0_setup->bRequest == USBD_WCID_VENDOR_CODE && ep0_setup->wIndex == 0x04)
+		{
+			//const uint_fast8_t ifc = LO_BYTE(ep0_setup->wValue);
+			pusb->ep0_xfer_srcaddr = (uintptr_t)MsftCompFeatureDescr [0].data;
+			pusb->ep0_xfer_residue = min(MsftCompFeatureDescr [0].size, ep0_setup->wLength);
+		}
 		else
 		{
 			PRINTF("usb_device: Unknown Vendor-Specific Request = 0x%02X, wValue=0x%04X, wIndex=0x%04X\n", ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex);
