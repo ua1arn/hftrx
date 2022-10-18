@@ -247,7 +247,7 @@ BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.alw32: $(PROJECT)_boot.bin
-	cp boottemplate.bin fsbl.alw32.tmp
+	sh -c "cp boottemplate.bin fsbl.alw32.tmp"
 	./wtitefsbl.exe fsbl.alw32.tmp 0x00100 $(PROJECT)_boot.bin -w
 	./checksum.exe fsbl.alw32.tmp fsbl.alw32
 	

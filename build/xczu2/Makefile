@@ -240,7 +240,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 .PHONY: all bootloader flash clean lib
 
 all: bitstream_alinx_axu2cga.h $(PROJECT)_app.xyl32
-	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
+	-sh -c "cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32"
 
 bitstream_alinx_axu2cga.h: bitstream_alinx_axu2cga.bit
 	./bit2c bitstream_alinx_axu2cga.bit bitstream_alinx_axu2cga.h
@@ -265,7 +265,7 @@ $(PROJECT)_app.xyl32: $(PROJECT)_app.bin
 	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
 		
 BOOT2: version boot.bin
-	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
+	-sh -c "cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin"
 
 boot.bin: boot_alinx_axu2cga.bif $(PROJECT)_boot.elf
 	bootgen -arch zynqmp -image boot_alinx_axu2cga.bif -w on -o $@

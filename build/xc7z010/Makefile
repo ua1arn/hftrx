@@ -249,7 +249,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 .PHONY: all bootloader flash clean lib
 
 all: bitstreams $(PROJECT)_app_xyl32.bin
-	-cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin
+	-sh -c "cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin"
 
 bitstreams: bitstream_4205_10.h bitstream_ant_10.h
 
@@ -286,7 +286,7 @@ $(PROJECT)_app_xyl32.bin: $(PROJECT)_app.bin
 	./stm32image -l 0x00104100 -e 0x00104100 -s $(PROJECT)_app.bin -d $@
 		
 BOOT2: version boot.bin
-	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
+	-sh -c "cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin"
 	
 BOOT3: version boot.bin
 	program_flash -f BOOT.bin -verify -offset 0x00000 $(XILINX_JTAGOPTS)
