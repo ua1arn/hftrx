@@ -1456,9 +1456,16 @@ static USB_RETVAL epx_in_handler_dev_iso(pusb_struct pusb, uint32_t ep_no, uintp
 	usb_select_ep(pusb, ep_no);
 	uint32_t saved = usb_get_fifo_access_config(pusb);
 	usb_fifo_accessed_by_cpu(pusb);
-	usb_write_ep_fifo(pusb, ep_no, src_addr, byte_count);
-	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO | USB_TXCSR_TXPKTRDY | USB_TXCSR_ISO);
-	usb_set_fifo_access_config(pusb, saved);
+    if ((USB_TXCSR_FIFONOTEMP & usb_get_eptx_csr(pusb)) == 0)
+    {
+        usb_write_ep_fifo(pusb, ep_no, src_addr, byte_count);
+    	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO | USB_TXCSR_TXPKTRDY | USB_TXCSR_ISO);
+    }
+    else
+    {
+    	ret = USB_RETVAL_NOTCOMP;
+    }
+ 	usb_set_fifo_access_config(pusb, saved);
 	usb_select_ep(pusb, ep_save);
 	return ret;
 }
@@ -3006,21 +3013,25 @@ static uint32_t usb_dev_sof_handler(pusb_struct pusb)
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 		const uint32_t bo_ep_in = USBD_EP_AUDIO_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
-		if (uacinaddr != 0)
+
+		if (uacinaddr == 0)
 		{
 			global_disableIRQ();
-			release_dmabufferx(uacinaddr);
+			uacinaddr = getfilled_dmabufferx(& uacinsize);
 			global_enableIRQ();
 		}
-
-		global_disableIRQ();
-		uacinaddr = getfilled_dmabufferx(& uacinsize);
-		global_enableIRQ();
 
 
 		if (uacinaddr)
 		{
 			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinaddr ? uacinsize : 0, USB_PRTCL_ISO);
+			if (ret == USB_RETVAL_COMPOK)
+			{
+				global_disableIRQ();
+				release_dmabufferx(uacinaddr);
+				global_enableIRQ();
+				uacinaddr = 0;
+			}
 		}
 		//do
 		//{
