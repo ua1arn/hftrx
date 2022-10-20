@@ -335,14 +335,11 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
-	static uint_fast16_t x = 0, y = 0;
 	uint8_t command = REG_TOUCHDATA;
 	uint8_t read_buf[9];
 
 	if (! tsc_ili2102_present)
 	{
-		* xr = 0;
-		* yr = 0;
 		return 0;
 	}
 
@@ -355,9 +352,6 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 		* yr = read_buf[3] | read_buf[4] << 8;
 		return 1;
 	}
-
-	* xr = x;
-	* yr = y;
 	return 0;
 }
 
@@ -438,6 +432,8 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 		* yr = board_tsc_normalize_y(x, y, NULL);
 		return 1;
 	}
+	* xr = 0;	/* зачем ? */
+	* yr = 0;	/* зачем ? */
 	return 0;
 }
 
