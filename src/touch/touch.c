@@ -69,7 +69,7 @@ uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void
 /* получение координаты нажатия в пределах 0..DIM_Y-1 */
 uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
 {
-	rertun tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
+	return tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
 }
 
 // On AT070TN90 with touch screen attached Y coordinate increments from bottom to top, X from left to right
