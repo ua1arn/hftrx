@@ -386,6 +386,7 @@ void ili2102_initialize(void)
 
 #if defined (TSC1_TYPE)
 
+/* вызывается при разрешённых прерываниях. */
 void board_tsc_initialize(void)
 {
 #if TSC1_TYPE == TSC_TYPE_GT911
@@ -420,6 +421,19 @@ void board_tsc_initialize(void)
 #if TSC1_TYPE == TSC_TYPE_ILI2102
 	ili2102_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_ILI2102 */
+
+	/* Тест - печать ненормализованных значений */
+#if WITHDEBUG && 0
+	for (;;)
+	{
+		uint_fast16_t x, y;
+		if (board_tsc_getraw(& x, & y))
+		{
+			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u\n", x, y);
+		}
+	}
+#endif
+
 }
 
 uint_fast8_t
