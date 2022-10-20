@@ -201,6 +201,7 @@ uint_fast32_t gt911_productID(void) {
 	return res;
 }
 
+/* получение ненормальзованных координат нажатия */
 uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 {
 	if (! tscpresetnt || ! gt911_interrupt_get())
@@ -213,16 +214,9 @@ uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 	if (contacts == 0)
 		return 0;
 
-#if BOARD_TSC1_XMIRROR
-	* xt = DIM_X - 1 - points [0].x;
-#else /* BOARD_TSC1_XMIRROR */
 	* xt = points [0].x;
-#endif /* BOARD_TSC1_XMIRROR */
-#if BOARD_TSC1_YMIRROR
-	* yt = DIM_Y - 1 - points [0].y;
-#else /* BOARD_TSC1_XMIRROR */
 	* yt = points [0].y;
-#endif /* BOARD_TSC1_XMIRROR */
+
 	return 1;
 }
 

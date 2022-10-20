@@ -131,63 +131,17 @@ xpt2046_read(
 }
 #endif /* WITHSPIHW || WITHSPISW */
 
-static uint_fast16_t
-tcsnormalize(
-		uint_fast16_t raw,
-		uint_fast16_t rawmin,
-		uint_fast16_t rawmax,
-		uint_fast16_t range
-		)
-{
-	if (rawmin < rawmax)
-	{
-		// Normal direction
-		const uint_fast16_t distance = rawmax - rawmin;
-		if (raw < rawmin)
-			return 0;
-		raw = raw - rawmin;
-		if (raw > distance)
-			return range;
-		return (uint_fast32_t) raw * range / distance;
-	}
-	else
-	{
-		// reverse direction
-		const uint_fast16_t distance = rawmin - rawmax;
-		if (raw >= rawmin)
-			return 0;
-		raw = rawmin - raw;
-		if (raw > distance)
-			return range;
-		return (uint_fast32_t) raw * range / distance;
-	}
-}
-
+/* получение ненормальзованных координат нажатия */
 uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	const spitarget_t target = targettsc1;
-	/* top left raw data values */
-	static uint_fast16_t xrawmin = 850;//330;
-	static uint_fast16_t yrawmin = 420;//510;
-
-	/* bottom right raw data values */
-	static uint_fast16_t xrawmax = 3990;//3610;
-	static uint_fast16_t yrawmax = 3890;//3640;
 
 	uint_fast16_t x = xpt2046_read(target, XPT2046_X);
 	uint_fast16_t y = xpt2046_read(target, XPT2046_Y);
 	uint_fast16_t z1 = xpt2046_read(target, XPT2046_Z1);
 
-#if BOARD_TSC1_XMIRROR
-	* xr = tcsnormalize(x, xrawmax, xrawmin, DIM_X - 1);
-#else /* BOARD_TSC1_XMIRROR */
-	* xr = tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
-#endif /* BOARD_TSC1_XMIRROR */
-#if BOARD_TSC1_YMIRROR
-	* yr = tcsnormalize(y, yrawmax, yrawmin, DIM_Y - 1);
-#else /* BOARD_TSC1_YMIRROR */
-	* yr = tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
-#endif /* BOARD_TSC1_YMIRROR */
+	* xr = x;
+	* yr = y;
 
 	return z1 > XPT2046_Z1_THRESHOLD;
 }

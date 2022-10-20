@@ -11,12 +11,65 @@
 #include "formats.h"
 #include "gpio.h"
 
+
+static uint_fast16_t
+tcsnormalize(
+		uint_fast16_t raw,
+		uint_fast16_t rawmin,
+		uint_fast16_t rawmax,
+		uint_fast16_t range
+		)
+{
+	if (rawmin < rawmax)
+	{
+		// Normal direction
+		const uint_fast16_t distance = rawmax - rawmin;
+		if (raw < rawmin)
+			return 0;
+		raw = raw - rawmin;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
+	}
+	else
+	{
+		// reverse direction
+		const uint_fast16_t distance = rawmin - rawmax;
+		if (raw >= rawmin)
+			return 0;
+		raw = rawmin - raw;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
+	}
+}
+
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
 
 uint_fast8_t board_tsc_is_pressed(void) /* Return 1 if touch detection */
 {
 	return stmpe811_is_pressed();
+}
+
+
+/* top left raw data values */
+static uint_fast16_t xrawmin = 70;
+static uint_fast16_t yrawmin = 3890;
+/* bottom right raw data values */
+static uint_fast16_t xrawmax = 3990;
+static uint_fast16_t yrawmax = 150;
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	rertun tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
 }
 
 // On AT070TN90 with touch screen attached Y coordinate increments from bottom to top, X from left to right
@@ -47,6 +100,28 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 #include "gt911.h"
 
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params, const void * params)
+{
+#if BOARD_TSC1_XMIRROR
+	return DIM_X - 1 - x;
+#else /* BOARD_TSC1_XMIRROR */
+	return x;
+#endif /* BOARD_TSC1_XMIRROR */
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params, const void * params)
+{
+#if BOARD_TSC1_YMIRROR
+	return DIM_Y - 1 - y;
+#else /* BOARD_TSC1_XMIRROR */
+	return y;
+#endif /* BOARD_TSC1_XMIRROR */
+}
+
+/* получение ненормальзованных координат нажатия */
 uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
@@ -76,6 +151,19 @@ tsc_interrupt_handler(void)
 	TP();
 }
 
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return x;
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return y;
+}
+
+/* получение ненормальзованных координат нажатия */
 uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
@@ -99,6 +187,35 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 #if defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_XPT2046
 
 #include "xpt2046.h"
+
+/* top left raw data values */
+static uint_fast16_t xrawmin = 850;//330;
+static uint_fast16_t yrawmin = 420;//510;
+
+/* bottom right raw data values */
+static uint_fast16_t xrawmax = 3990;//3610;
+static uint_fast16_t yrawmax = 3890;//3640;
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+
+#if BOARD_TSC1_XMIRROR
+	return tcsnormalize(x, xrawmax, xrawmin, DIM_X - 1);
+#else /* BOARD_TSC1_XMIRROR */
+	return tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
+#endif /* BOARD_TSC1_XMIRROR */
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+#if BOARD_TSC1_YMIRROR
+	return tcsnormalize(y, yrawmax, yrawmin, DIM_Y - 1);
+#else /* BOARD_TSC1_YMIRROR */
+	return tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
+#endif /* BOARD_TSC1_YMIRROR */
+}
 
 uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
@@ -148,6 +265,18 @@ int s3402_get_id(void)
 	return v0;
 }
 
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return x;
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return y;
+}
+
 uint_fast8_t
 board_tsc_getraw(uint_fast16_t * px, uint_fast16_t * py)
 {
@@ -190,6 +319,18 @@ board_tsc_getraw(uint_fast16_t * px, uint_fast16_t * py)
 #define MAX_TOUCHES    			2
 
 static uint8_t tsc_ili2102_present = 0;
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return x;
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return y;
+}
 
 uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
@@ -287,26 +428,14 @@ void board_tsc_initialize(void)
 #endif /* TSC1_TYPE == TSC_TYPE_ILI2102 */
 }
 
-/* получение координаты нажатия в пределах 0..DIM_X-1 */
-uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y)
-{
-	return x;
-}
-
-/* получение координаты нажатия в пределах 0..DIM_Y-1 */
-uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y)
-{
-	return y;
-}
-
 uint_fast8_t
 board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	uint_fast16_t x, y;
 	if (board_tsc_getraw(& x, & y))
 	{
-		* xr = board_tsc_normalize_x(x, y);
-		* yr = board_tsc_normalize_y(x, y);
+		* xr = board_tsc_normalize_x(x, y, NULL);
+		* yr = board_tsc_normalize_y(x, y, NULL);
 		return 1;
 	}
 	return 0;
