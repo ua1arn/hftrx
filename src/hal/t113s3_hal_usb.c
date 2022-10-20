@@ -3344,16 +3344,20 @@ static uint32_t usb_device_function(pusb_struct pusb)
 //static uint32_t eptx_irq_count = 0;
 //static uint32_t eprx_irq_count = 0;
 
-void usb_device_function0(PCD_HandleTypeDef * hpcd)
+void usb_device_function0(USBD_HandleTypeDef * pdev)
 {
-	system_disableIRQ();
+	PCD_HandleTypeDef * hpcd = pdev->pData;
+	ASSERT(hpcd != NULL);
 	usb_struct * const pusb = & hpcd->awxx_usb;
+	system_disableIRQ();
 	usb_device_function(pusb);
 	system_enableIRQ();
 }
 
-void usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
+void usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 {
+	PCD_HandleTypeDef * hpcd = pdev->pData;
+	ASSERT(hpcd != NULL);
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	awxx_setup_fifo(pusb);
 }

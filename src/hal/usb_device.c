@@ -234,8 +234,7 @@ void MX_USB_HOST_Process(void)
 void MX_USB_DEVICE_Process(void)
 {
 #if (CPUSTYPE_T113 || CPUSTYPE_F133)
-    extern PCD_HandleTypeDef hpcd_USB_OTG;
-    usb_device_function0(& hpcd_USB_OTG);
+    usb_device_function0(&hUsbDeviceHS);
 #endif /* (CPUSTYPE_T113 || CPUSTYPE_F133) */
 }
 #endif /* defined (WITHUSBHW_DEVICE) */

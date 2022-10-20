@@ -5635,10 +5635,10 @@ uint_fast8_t HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd)
 	  return (USB_GetHostSpeedReady(hhcd->Instance));
 }
 
-
 void
-usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
+usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 {
+	PCD_HandleTypeDef * hpcd = pdev->pData;
 	unsigned offset;
 	PCD_TypeDef * const USBx = hpcd->Instance;
 	PRINTF(PSTR("usbd_pipes_initialize\n"));

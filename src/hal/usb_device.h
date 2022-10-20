@@ -126,18 +126,21 @@
  */
 /* USER CODE BEGIN FD */
 
- extern const USBD_ClassTypeDef USBD_CLASS_UAC;
- extern const USBD_ClassTypeDef USBD_CLASS_CDCACM;
- extern const USBD_ClassTypeDef USBD_CLASS_DFU;
- extern const USBD_ClassTypeDef USBD_CLASS_CDC_EEM;
- extern const USBD_ClassTypeDef USBD_CLASS_RNDIS;
- extern const USBD_ClassTypeDef USBD_CLASS_HID;
- extern const USBD_ClassTypeDef USBD_CLASS_MTP;
- extern const USBD_ClassTypeDef USBD_CLASS_MSC;
+extern const USBD_ClassTypeDef USBD_CLASS_UAC;
+extern const USBD_ClassTypeDef USBD_CLASS_CDCACM;
+extern const USBD_ClassTypeDef USBD_CLASS_DFU;
+extern const USBD_ClassTypeDef USBD_CLASS_CDC_EEM;
+extern const USBD_ClassTypeDef USBD_CLASS_RNDIS;
+extern const USBD_ClassTypeDef USBD_CLASS_HID;
+extern const USBD_ClassTypeDef USBD_CLASS_MTP;
+extern const USBD_ClassTypeDef USBD_CLASS_MSC;
 
- uint_fast16_t usbd_getuacinrtsmaxpacket(void);
- uint_fast16_t usbd_getuacinmaxpacket(void);
- uint_fast16_t usbd_getuacoutmaxpacket(void);
+uint_fast16_t usbd_getuacinrtsmaxpacket(void);
+uint_fast16_t usbd_getuacinmaxpacket(void);
+uint_fast16_t usbd_getuacoutmaxpacket(void);
+
+void usbd_pipes_initialize(struct _USBD_HandleTypeDef * hpcd);
+void usb_device_function0(struct _USBD_HandleTypeDef * hpcd);
 
 /* USER CODE END FD */
 /**

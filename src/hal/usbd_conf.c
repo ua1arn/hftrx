@@ -1138,17 +1138,18 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 
 void
-usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
+usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 {
-	if (USB_Is_OTG_HS(hpcd_USB_OTG.Instance))
+	PCD_HandleTypeDef * const hpcd = pdev->pData;
+	if (USB_Is_OTG_HS(hpcd->Instance))
 	{
 		// У OTH_HS размер FIFO 4096 байт
-		usbd_fifo_initialize( & hpcd_USB_OTG, 4096, 1, hpcd_USB_OTG.Init.dma_enable);
+		usbd_fifo_initialize(hpcd, 4096, 1, hpcd_USB_OTG.Init.dma_enable);
 	}
 	else
 	{
 		// У OTH_FS размер FIFO 1280 байт
-		usbd_fifo_initialize( & hpcd_USB_OTG, 1280, 0, hpcd_USB_OTG.Init.dma_enable);
+		usbd_fifo_initialize(hpcd, 1280, 0, hpcd_USB_OTG.Init.dma_enable);
 	}
 }
 
@@ -1260,7 +1261,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 	HAL_PCD_RegisterIsoInIncpltCallback(& hpcd_USB_OTG, PCD_ISOINIncompleteCallback);
 #endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
 
-	usbd_pipes_initialize(& hpcd_USB_OTG);
+	usbd_pipes_initialize(pdev);
 
 	return USBD_OK;
 }
