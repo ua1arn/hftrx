@@ -21,7 +21,7 @@ uint_fast8_t board_tsc_is_pressed(void) /* Return 1 if touch detection */
 
 // On AT070TN90 with touch screen attached Y coordinate increments from bottom to top, X from left to right
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	static uint_fast16_t x = 0, y = 0;
 	uint_fast8_t z;
@@ -48,7 +48,7 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 #include "gt911.h"
 
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	static uint_fast16_t x = 0, y = 0;
 
@@ -77,7 +77,7 @@ tsc_interrupt_handler(void)
 }
 
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	static uint_fast16_t x = 0, y = 0;
 
@@ -101,7 +101,7 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 #include "xpt2046.h"
 
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	return xpt2046_getxy(xr, yr);
 }
@@ -149,7 +149,7 @@ int s3402_get_id(void)
 }
 
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * px, uint_fast16_t * py)
+board_tsc_getraw(uint_fast16_t * px, uint_fast16_t * py)
 {
 	const unsigned i2caddr = TSC_I2C_ADDR;
 
@@ -192,7 +192,7 @@ board_tsc_getxy(uint_fast16_t * px, uint_fast16_t * py)
 static uint8_t tsc_ili2102_present = 0;
 
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	static uint_fast16_t x = 0, y = 0;
 	uint8_t command = REG_TOUCHDATA;
@@ -285,6 +285,31 @@ void board_tsc_initialize(void)
 #if TSC1_TYPE == TSC_TYPE_ILI2102
 	ili2102_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_ILI2102 */
+}
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y)
+{
+	return x;
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y)
+{
+	return y;
+}
+
+uint_fast8_t
+board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	uint_fast16_t x, y;
+	if (board_tsc_getraw(& x, & y))
+	{
+		* xr = board_tsc_normalize_x(x, y);
+		* yr = board_tsc_normalize_y(x, y);
+		return 1;
+	}
+	return 0;
 }
 
 #endif /* defined (TSC1_TYPE) */
