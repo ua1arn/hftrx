@@ -188,13 +188,24 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 
 #include "xpt2046.h"
 
-/* top left raw data values */
-static uint_fast16_t xrawmin = 850;//330;
-static uint_fast16_t yrawmin = 420;//510;
+#if 1
+	static uint_fast16_t xrawmin = 180;//330;
+	static uint_fast16_t xrawmid = 2100;//330;
+	static uint_fast16_t xrawmax = 3850;//3610;
 
-/* bottom right raw data values */
-static uint_fast16_t xrawmax = 3990;//3610;
-static uint_fast16_t yrawmax = 3890;//3640;
+	static uint_fast16_t yrawmin = 380;//510;
+	static uint_fast16_t yrawmid = 2000;//510;
+	static uint_fast16_t yrawmax = 3750;//3640;
+
+#else
+	/* top left raw data values */
+	static uint_fast16_t xrawmin = 850;//330;
+	static uint_fast16_t yrawmin = 420;//510;
+
+	/* bottom right raw data values */
+	static uint_fast16_t xrawmax = 3990;//3610;
+	static uint_fast16_t yrawmax = 3890;//3640;
+#endif
 
 /* получение координаты нажатия в пределах 0..DIM_X-1 */
 uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
@@ -203,7 +214,10 @@ uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void
 #if BOARD_TSC1_XMIRROR
 	return tcsnormalize(x, xrawmax, xrawmin, DIM_X - 1);
 #else /* BOARD_TSC1_XMIRROR */
-	return tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
+	if (x < xrawmid)
+		return tcsnormalize(x, xrawmin, xrawmid - 1, DIM_X / 2 - 1);
+	else
+		return tcsnormalize(x, xrawmid, xrawmax, DIM_X / 2 - 1) + DIM_X / 2;
 #endif /* BOARD_TSC1_XMIRROR */
 }
 
@@ -213,7 +227,10 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 #if BOARD_TSC1_YMIRROR
 	return tcsnormalize(y, yrawmax, yrawmin, DIM_Y - 1);
 #else /* BOARD_TSC1_YMIRROR */
-	return tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
+	if (y < yrawmid)
+		return tcsnormalize(y, yrawmin, yrawmid - 1, DIM_Y / 2 - 1);
+	else
+		return tcsnormalize(y, yrawmid, yrawmax, DIM_Y / 2 - 1) + DIM_Y / 2;
 #endif /* BOARD_TSC1_YMIRROR */
 }
 
@@ -429,7 +446,9 @@ void board_tsc_initialize(void)
 		uint_fast16_t x, y;
 		if (board_tsc_getraw(& x, & y))
 		{
-			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u\n", x, y);
+			uint_fast16_t xc = board_tsc_normalize_x(x, y, NULL);
+			uint_fast16_t yc = board_tsc_normalize_y(x, y, NULL);
+			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u xc=%-5u, yc=%-5u\n", x, y, xc, yc);
 		}
 	}
 #endif
