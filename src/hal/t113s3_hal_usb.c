@@ -1134,6 +1134,8 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t src_add
 	{
 		return;
 	}
+	if (count == 0)
+		return;
 	saved = usb_get_fifo_access_config(pusb);
 	usb_fifo_accessed_by_cpu(pusb);
 
@@ -1454,18 +1456,18 @@ static USB_RETVAL epx_in_handler_dev_iso(pusb_struct pusb, uint32_t ep_no, uintp
   	USB_RETVAL ret = USB_RETVAL_COMPOK;
 	uint32_t ep_save = usb_get_active_ep(pusb);
 	usb_select_ep(pusb, ep_no);
-	uint32_t saved = usb_get_fifo_access_config(pusb);
-	usb_fifo_accessed_by_cpu(pusb);
-    if (1) //((USB_TXCSR_FIFONOTEMP & usb_get_eptx_csr(pusb)) == 0)
+    if ((USB_TXCSR_FIFONOTEMP & usb_get_eptx_csr(pusb)) == 0)
     {
+		uint32_t saved = usb_get_fifo_access_config(pusb);
+		usb_fifo_accessed_by_cpu(pusb);
         usb_write_ep_fifo(pusb, ep_no, src_addr, byte_count);
     	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO | USB_TXCSR_TXPKTRDY | USB_TXCSR_ISO);
+    	usb_set_fifo_access_config(pusb, saved);
     }
     else
     {
     	ret = USB_RETVAL_NOTCOMP;
     }
- 	usb_set_fifo_access_config(pusb, saved);
 	usb_select_ep(pusb, ep_save);
 	return ret;
 }
@@ -2375,7 +2377,7 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
   		{
   			ret = USB_RETVAL_NOTCOMP;
   			// использование данных
-  			//printhex(0, pusb->buffer, rx_count);
+  			printhex(0, cdcXbuffout [offset], rx_count);
   			cdcXout_buffer_save(cdcXbuffout [offset], rx_count, 0);
    		}
 	} while (0);
@@ -2401,6 +2403,7 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 		if (cdcXbuffinlevel [offset])
 		{
 
+  			printhex(1024, cdcXbuffin [offset], cdcXbuffinlevel [offset]);
 			do
 			{
 				ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)cdcXbuffin [offset], cdcXbuffinlevel [offset], USB_PRTCL_BULK);
@@ -2563,7 +2566,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 	const uint32_t maxpayload = maxpktsz;
 	const uint32_t pktcnt = 1;//USB_EP_FIFO_SIZE + (maxpktsz - 1) / maxpktsz;
 
-	PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, maxpktsz=%u\n", ep_no, ep_dir, maxpktsz);
+	PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, pktcnt=%u, maxpktsz=%u\n", ep_no, ep_dir, pktcnt, maxpktsz);
 	//ASSERT(USB_EP_FIFO_SIZE >= maxpktsz);
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
@@ -3025,7 +3028,7 @@ static uint32_t usb_dev_sof_handler(pusb_struct pusb)
 		if (uacinaddr)
 		{
 			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinaddr ? uacinsize : 0, USB_PRTCL_ISO);
-			if (ret == USB_RETVAL_COMPOK)
+			if (ret == USB_RETVAL_COMPOK && uacinaddr != 0)
 			{
 				global_disableIRQ();
 				release_dmabufferx(uacinaddr);
@@ -3393,93 +3396,80 @@ static void usb_params_init(pusb_struct pusb)
 static void usb_irq_handler(pusb_struct pusb)
 {
 	//uint32_t index;
-	uint32_t temp;
+	uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
+	uint32_t ep_save = usb_get_active_ep(pusb);
 
-	//bus interrupt
-	temp = usb_get_bus_interrupt_status(pusb);
-	usb_clear_bus_interrupt_status(pusb, temp);
-	if (temp & USB_BUSINT_SOF)
+	//sof interrupt
+
+	if (irqstatus & USB_BUSINT_SOF)
 	{
 		//pusb->sof_count ++;
-		temp &= ~USB_BUSINT_SOF;
-		usb_dev_sof_handler(pusb);
+		//usb_dev_sof_handler(pusb);
+		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SOF);
 	}
 
-	if (temp & usb_get_bus_interrupt_enable(pusb))
+	//bus interrupt
+  	if (irqstatus & USB_BUSINT_SUSPEND)
+  	{
+		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SUSPEND);
+	  	//Suspend Service Subroutine
+
+		if (wBoot_dma_QueryState(pusb->dma))
+		{
+			PRINTF("Error: DMA for EP is not finished after Bus Suspend\n");
+		}
+		wBoot_dma_stop(pusb->dma);
+	  	PRINTF("uSuspend\n");
+  	}
+
+	if (irqstatus & USB_BUSINT_RESUME)
 	{
-//		pusb->busirq_status |= temp;
-//		pusb->busirq_flag ++;
-		//bus_irq_count ++;
-		unsigned busirq_status = temp & usb_get_bus_interrupt_enable(pusb);
-
-		uint32_t busirq_en;
-		uint32_t i;
-		uint32_t ep_save = usb_get_active_ep(pusb);
-
-//		if (pusb->role != USB_ROLE_DEV) return 0;
-	//  	if (!pusb->busirq_flag) return 0;
-	//  	pusb->busirq_flag--;
-	  	usb_select_ep(pusb, 0);
-	  	busirq_en = usb_get_bus_interrupt_enable(pusb);
-
-	  	if (busirq_status & busirq_en & USB_BUSINT_SUSPEND)
-	  	{
-		  	//Suspend Service Subroutine
-
-			if (wBoot_dma_QueryState(pusb->dma))
-			{
-				PRINTF("Error: DMA for EP is not finished after Bus Suspend\n");
-			}
-			wBoot_dma_stop(pusb->dma);
-		  	PRINTF("uSuspend\n");
-	  	}
-
-		if (busirq_status & busirq_en & USB_BUSINT_RESUME)
-		{
-			//Resume Service Subroutine
-			PRINTF("uResume\n");
-		}
-
-		if (busirq_status & busirq_en & USB_BUSINT_RESET)
-		{
-			uint32_t temp;
-			uint32_t i;
-			//Device Reset Service Subroutine
-			//pusb->rst_cnt ++;
-			for(i=0; i<USB_MAX_EP_NO; i++)
-			{
-				pusb->eptx_flag[i] = 0;
-				pusb->eprx_flag[i] = 0;
-				pusb->eptx_xfer_state[i] = USB_EPX_SETUP;
-				pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
-			}
-			usb_struct_idle(pusb);
-
-			//pusb->timer = USB_IDLE_TIMER;
-
-			//Bus Reset may disable all interrupt enable, re-enable the interrupts need
-			usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-			usb_set_eptx_interrupt_enable(pusb, 0x003f);
-			usb_set_eprx_interrupt_enable(pusb, 0x003e);
-
-			awxx_setup_fifo(pusb);
-
-			if (wBoot_dma_QueryState(pusb->dma))
-			{
-				PRINTF("Error: DMA for EP is not finished after Bus Reset\n");
-			}
-			wBoot_dma_stop(pusb->dma);
-		  	PRINTF("uReset\n");
-		}
-
-	  	if (busirq_status & busirq_en & USB_BUSINT_SESSEND)
-	  	{
-	  		//Device Reset Service Subroutine
-			PRINTF("uSessend\n");
-	  	}
-
-	  	usb_select_ep(pusb, ep_save);
+		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESUME);
+		//Resume Service Subroutine
+		PRINTF("uResume\n");
 	}
+
+	if (irqstatus & USB_BUSINT_RESET)
+	{
+		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESET);
+		uint32_t temp;
+		uint32_t i;
+		//Device Reset Service Subroutine
+		//pusb->rst_cnt ++;
+		for(i=0; i<USB_MAX_EP_NO; i++)
+		{
+			pusb->eptx_flag[i] = 0;
+			pusb->eprx_flag[i] = 0;
+			pusb->eptx_xfer_state[i] = USB_EPX_SETUP;
+			pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
+		}
+		usb_struct_idle(pusb);
+
+		//pusb->timer = USB_IDLE_TIMER;
+
+		//Bus Reset may disable all interrupt enable, re-enable the interrupts need
+		usb_clear_bus_interrupt_enable(pusb, 0xff);
+		usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
+		usb_set_eptx_interrupt_enable(pusb, 0x003f);
+		usb_set_eprx_interrupt_enable(pusb, 0x003e);
+
+		awxx_setup_fifo(pusb);
+
+		if (wBoot_dma_QueryState(pusb->dma))
+		{
+			PRINTF("Error: DMA for EP is not finished after Bus Reset\n");
+		}
+		wBoot_dma_stop(pusb->dma);
+	  	PRINTF("uReset\n");
+	}
+
+  	if (irqstatus & USB_BUSINT_SESSEND)
+  	{
+		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SESSEND);
+  		//Device Reset Service Subroutine
+		PRINTF("uSessend\n");
+  	}
+
 
 	{
 		//tx interrupt
@@ -3524,7 +3514,7 @@ static void usb_irq_handler(pusb_struct pusb)
 			//eprx_irq_count ++;
 		}
 	}
-
+  	usb_select_ep(pusb, ep_save);
 	return;
 }
 
