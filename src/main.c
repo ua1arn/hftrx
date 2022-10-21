@@ -20330,7 +20330,22 @@ void hamradio_goto_band_by_freq(uint_fast32_t f)
 	band_no_check = 1;
 
 	if (freqvalid(f, gtx))
-		uif_key_click_bandjump(f);
+	{
+		const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+		const vindex_t vi = getvfoindex(bi);
+		const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
+		vindex_t bn = getfreqband(f);
+
+		verifyband(b);
+		verifyband(bn);
+		storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
+		storebandfreq(b, bi);
+
+		loadnewband(bn, bi);	/* загрузка всех параметров (и частоты) нового режима */
+		storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
+		storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
+		updateboard(1, 1);
+	}
 
 	band_no_check = 0;
 }
