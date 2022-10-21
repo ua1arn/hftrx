@@ -102,7 +102,7 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 
 
 /* получение координаты нажатия в пределах 0..DIM_X-1 */
-uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params, const void * params)
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
 {
 #if BOARD_TSC1_XMIRROR
 	return DIM_X - 1 - x;
@@ -112,7 +112,7 @@ uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void
 }
 
 /* получение координаты нажатия в пределах 0..DIM_Y-1 */
-uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params, const void * params)
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
 {
 #if BOARD_TSC1_YMIRROR
 	return DIM_Y - 1 - y;
