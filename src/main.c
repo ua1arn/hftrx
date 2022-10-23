@@ -16085,16 +16085,22 @@ uint_fast8_t hamradio_get_txdisable(void)
 {
 #if defined (HARDWARE_GET_TXDISABLE)
 	if (HARDWARE_GET_TXDISABLE())
+	{
+		//PRINTF("tx disabled\n");
 		return 1;
+	}
 #endif /* defined (HARDWARE_GET_TXDISABLE) */
 #if WITHTHERMOLEVEL
+	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_temperature_value(), (int) gtempvmax * 10);
 	if (gheatprot != 0 && hamradio_get_temperature_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 		return 1;
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
+	//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr(40));
 	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr(40) >= 20)	// SWR >= 3.0
 		return 1;
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+	//PRINTF("tx ok\n");
 	return 0;
 }
 
