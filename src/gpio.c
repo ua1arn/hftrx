@@ -4377,7 +4377,7 @@ arm_hardware_pioz_inputs(unsigned long ipins)
 
 	//GPIOZ->SECCFGR &= ~ (ipins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка режима выводов
-	stm32mp1_pioX_prog(GPIOZ, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	stm32mp1_pioX_prog(GPIOZ, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7175,7 +7175,7 @@ arm_hardware_pioj_inputs(unsigned long ipins)
 	RCC->MP_AHB4ENSETR = RCC_MP_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
 	(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
-	stm32mp1_pioX_prog(GPIOJ, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	stm32mp1_pioX_prog(GPIOJ, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
