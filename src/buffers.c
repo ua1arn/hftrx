@@ -273,11 +273,18 @@ int_fast32_t buffers_dmabuffer32rxcachesize(void)
 	return offsetof(voice32rx_t, item) - offsetof(voice32rx_t, buff);
 }
 
+// I/Q SPECTRUM data from FPGA or IF CODEC
+typedef ALIGNX_BEGIN struct voices32rts_tag
+{
+	ALIGNX_BEGIN IFADCvalue_t buff [DMABUFFSIZE32RTS] ALIGNX_END;
+	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
+} ALIGNX_END voice32rts_t;
+
 int_fast32_t buffers_dmabuffer32rtscachesize(void)
 {
 	/* надо сделать правильно - вернуь размер буфера в байтах */
 	ASSERT(0);
-	return buffers_dmabuffer32rxcachesize();
+	return offsetof(voice32rts_t, item) - offsetof(voice32rts_t, buff);
 }
 
 #if 1
