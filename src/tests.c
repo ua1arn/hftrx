@@ -6315,15 +6315,17 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0 && WITHDEBUG && (CPUSTYPE_T113 || CPUSTYPE_F133)
+#if 1 && WITHDEBUG && (CPUSTYPE_T113 || CPUSTYPE_F133)
 	{
 		// Allwinner t113-s3 boot mode display
 
-		CCU->CE_CLK_REG |= (1uL << 31);	// CE_CLK_GATING
-		CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 2);	// CE_MCLK_EN
+//		CCU->CE_CLK_REG |= (1uL << 31);	// CE_CLK_GATING
+//		CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 2);	// CE_MCLK_EN
 		// bits 27:16: eFUSE boot select status,
 		// bit 0: 0: GPIO boot select, 1: eFuse boot select
-		PRINTF("SID->BOOT_MODE=%08lX, SYS_CFG->VER_REG=%08lX\n", SID->BOOT_MODE, SYS_CFG->VER_REG);
+		// The status of the GPIO boot select pin can be read by the bit[12:11] of the system configuration module (register: 0x03000024).
+		//PRINTF("SID->BOOT_MODE=0x%08lX, SYS_CFG->VER_REG=0x%08lX\n", SID->BOOT_MODE, SYS_CFG->VER_REG);
+		PRINTF("BOOT_MODE=%u, Pin_Boot_Select=0x%02X\n", (SID->BOOT_MODE >> 0) & 0x01, (SYS_CFG->VER_REG >> 11) & 0x03);
 	}
 #endif
 #if 0 && (CPUSTYPE_T113 || CPUSTYPE_F133)
