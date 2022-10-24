@@ -254,7 +254,8 @@ enum
 /* Последовательность функций в данном enum должна соответствовать порядку использования в fill_Configuration_main_group */
 enum interfaces_tag
 {
-#if WITHUSBDFU && WITHMOVEDFU
+#if WITHUSBDFU
+	/* Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10 */
 	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
 #endif /* WITHUSBDFU */
 
@@ -331,11 +332,6 @@ enum interfaces_tag
 #if WITHUSBDMSC
 	INTERFACE_MSC_CONTROL,
 #endif /* WITHUSBDMSC */
-
-#if WITHUSBDFU && ! WITHMOVEDFU
-	// функция DFU
-	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
-#endif /* WITHUSBDFU */
 	// 
 	INTERFACE_count				/* Значение для configuration descriptor */
 };

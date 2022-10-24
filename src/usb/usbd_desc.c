@@ -73,11 +73,7 @@
 #if WITHISBOOTLOADER
 
 	#define PRODUCTSTR WITHBRANDSTR " Bootloader"
-	#if WITHUSBDFU && WITHMOVEDFU
-		#define USB_FUNCTION_PRODUCT_ID	0x0754
-	#else /* WITHUSBDFU && WITHMOVEDFU */
-		#define USB_FUNCTION_PRODUCT_ID	0x0750
-	#endif /* WITHUSBDFU && WITHMOVEDFU */
+	#define USB_FUNCTION_PRODUCT_ID	0x0754
 
 	#define BUILD_ID 1	// модификатор serial number
 	#define USB_FUNCTION_RELEASE_NO	0x0000
@@ -89,11 +85,11 @@
 		#define USB_FUNCTION_PRODUCT_ID	0x0731
 	#elif WITHUSBUACINOUT
 		#define USB_FUNCTION_PRODUCT_ID	0x0733
-	#elif WITHUSBDFU && WITHMOVEDFU
+	#elif WITHUSBDFU
 		#define USB_FUNCTION_PRODUCT_ID	0x073B
-	#else /* WITHUSBDFU && WITHMOVEDFU */
+	#else /* WITHUSBDFU */
 		#define USB_FUNCTION_PRODUCT_ID	0x0737
-	#endif /* WITHUSBDFU && WITHMOVEDFU */
+	#endif /* WITHUSBDFU */
 
 	#if WITHRTS96
 		#define BUILD_ID 6	// модификатор serial number
@@ -112,11 +108,11 @@
 		#define USB_FUNCTION_PRODUCT_ID	0x0732
 	#elif WITHUSBUACINOUT
 		#define USB_FUNCTION_PRODUCT_ID	0x0734
-	#elif WITHUSBDFU && WITHMOVEDFU
+	#elif WITHUSBDFU
 		#define USB_FUNCTION_PRODUCT_ID	0x073C
-	#else /* WITHUSBDFU && WITHMOVEDFU */
+	#else /* WITHUSBDFU */
 		#define USB_FUNCTION_PRODUCT_ID	0x0738
-	#endif /* WITHUSBDFU && WITHMOVEDFU */
+	#endif /* WITHUSBDFU */
 
 	#if WITHRTS96
 		#define BUILD_ID 2	// модификатор serial number
@@ -254,11 +250,7 @@ static unsigned usbd_get_productId(void)
 	v = USB_FUNCTION_PRODUCT_ID;
 #else /* WITHISBOOTLOADER */
 	#if WITHUSBDFU
-		#if WITHMOVEDFU
-			v |= (1u << 15);
-		#else /* WITHMOVEDFU */
-			v |= (1u << 14);
-		#endif /* WITHMOVEDFU */
+		v |= (1u << 15);
 	#endif /* WWITHUSBDFU */
 	#if WITHUSBCDCACM
 		v |= WITHUSBCDCACM_N * (1u << 11);
@@ -4551,7 +4543,7 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 {
 	unsigned n = 0;
 
-#if WITHUSBDFU && WITHMOVEDFU
+#if WITHUSBDFU
 	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBDFU */
 
@@ -4593,10 +4585,6 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #if WITHUSBDMSC
 	n += fill_MSC_XXXX_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBDMSC */
-
-#if WITHUSBDFU && ! WITHMOVEDFU
-	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
-#endif /* WITHUSBDFU */
 
 	return n;
 }
