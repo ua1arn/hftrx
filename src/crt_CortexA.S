@@ -67,7 +67,7 @@
 	 STACKSIZESVCBOOT = 2048
   
 	.global __Vectors
-	.section .isr_vector, "ax"
+	.section .isr_vector
 	.code 32
         
 /****************************************************************************/
@@ -97,7 +97,7 @@ FIQAddr:       .word FIQ_Handler
    .ltorg
 
 
-   .section .startup0, "ax"
+   .section .startup0
    .code 32
    
    .extern _start
