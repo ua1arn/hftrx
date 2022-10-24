@@ -90,6 +90,16 @@ dma_invalidate32rx(uintptr_t addr)
 	return addr;
 }
 
+// Сейчас в эту память будем читать по DMA
+uintptr_t
+dma_invalidate32rts(uintptr_t addr)
+{
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((buffers_dmabuffer32rxcachesize() % DCACHEROWSIZE) == 0);
+	arm_hardware_invalidate(addr, buffers_dmabuffer32rtscachesize());
+	return addr;
+}
+
 // Сейчас эта память будет записываться по DMA куда-то
 // Потом содержимое не требуется
 static uintptr_t dma_flush32tx(uintptr_t addr)
@@ -1826,6 +1836,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream5->M0AR;
 			DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
 		}
@@ -1833,6 +1844,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream5->M1AR;
 			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
 		}
@@ -2472,6 +2484,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
 			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
 		}
@@ -2479,6 +2492,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
 			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
 		}
@@ -2503,13 +2517,13 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rts192_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
 			DMA2_Stream7->M0AR = dma_invalidate192rts(allocate_dmabuffer192rts());
-			processing_dmabuffer32rts(addr);
+			processing_dmabuffer32rts192(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
 			DMA2_Stream7->M1AR = dma_invalidate192rts(allocate_dmabuffer192rts());
-			processing_dmabuffer32rts(addr);
+			processing_dmabuffer32rts192(addr);
 		}
 	}
 
@@ -3956,6 +3970,7 @@ static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
+	processing_dmabuffer32rts(addr);
 	processing_dmabuffer32rx(addr);
 	release_dmabuffer32rx(addr);
 
@@ -4762,6 +4777,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 		const uintptr_t addr = DMAC2.N0DA_n;
 		DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
+		processing_dmabuffer32rts(addr);
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
 	}
@@ -4770,6 +4786,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 		const uintptr_t addr = DMAC2.N1DA_n;
 		DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
+		processing_dmabuffer32rts(addr);
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
 	}
@@ -5001,12 +5018,12 @@ static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_WFMrx(void)
 	const uint_fast8_t b = (DMAC4.CHSTAT_n & (1U << DMAC4_CHSTAT_n_SR_SHIFT)) != 0;	// SR
 	if (b != 0)
 	{
-		processing_dmabuffer32rts(DMAC4.N0DA_n);
+		processing_dmabuffer32rts192(DMAC4.N0DA_n);
 		DMAC4.N0DA_n = dma_invalidate192rts(allocate_dmabuffer192rts());
 	}
 	else
 	{
-		processing_dmabuffer32rts(DMAC4.N1DA_n);
+		processing_dmabuffer32rts192(DMAC4.N1DA_n);
 		DMAC4.N1DA_n = dma_invalidate192rts(allocate_dmabuffer192rts());
 	}
 }

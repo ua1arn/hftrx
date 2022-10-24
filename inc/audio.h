@@ -33,7 +33,9 @@ extern "C" {
 	#if CPUSTYLE_R7S721
 
 		// buff data layout: I main/I sub/Q main/Q sub
-		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		#define DMABUFFSTEP32RX		8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
+		#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX1I	1		// RX1, I
@@ -84,6 +86,7 @@ extern "C" {
 		#if WITHFPGAIF_FRAMEBITS == 64
 
 			#define DMABUFFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			#define DMABUFFSTEP32RTS	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX0Q	1		// RX0, Q
 			#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
@@ -91,8 +94,10 @@ extern "C" {
 			#define DMABUF32TXQ		1		// TX, Q
 
 		#elif WITHFPGAIF_FRAMEBITS == 256
-				// buff data layout: I main/I sub/Q main/Q sub
-				#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			// buff data layout: I main/I sub/Q main/Q sub
+			#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
+			#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX0Q	1		// RX0, Q
@@ -137,6 +142,7 @@ extern "C" {
 		#if WITHFPGAIF_FRAMEBITS == 64
 
 			#define DMABUFFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			#define DMABUFFSTEP32RTS	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX0Q	1		// RX0, Q
 			#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
@@ -146,6 +152,8 @@ extern "C" {
 		#elif WITHFPGAIF_FRAMEBITS == 256
 				// buff data layout: I main/I sub/Q main/Q sub
 				#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+				// buff data layout: I_T0/Q_T0/I_T1/Q_T1
+				#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 				#define DMABUF32RX0I	0		// RX0, I
 				#define DMABUF32RX1I	1		// RX1, I
@@ -197,6 +205,8 @@ extern "C" {
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
+		#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX1I	2		// RX1, I
@@ -249,6 +259,8 @@ extern "C" {
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
+		#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX1I	1		// RX1, I
@@ -293,6 +305,7 @@ extern "C" {
 	// buff data layout: ADC data/unused channel
 	#define DMABUF32RX		0		// ADC data index
 	#define DMABUFFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+	#define DMABUFFSTEP32RTS	(WITHFPGARTS_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
 	#define DMABUF32RXI	0		// RX0, I
 	#define DMABUF32RXQ	1		// RX0, Q
 
@@ -400,8 +413,8 @@ extern "C" {
 #define DMABUFFSIZE16RX	(DMABUFCLUSTER * DMABUFFSTEP16RX * DMABUFSCALE)		/* AF CODEC ADC */
 #define DMABUFFSIZE16TX	(DMABUFCLUSTER * DMABUFFSTEP16TX * DMABUFSCALE)		/* AF CODEC DAC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFFSTEP32RX)		/* FPGA RX or IF CODEC RX */
+#define DMABUFFSIZE32RTS (DMABUFCLUSTER * DMABUFFSTEP32RTS)		/* FPGA RX or IF CODEC RX */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFFSTEP32TX * DMABUFSCALE)	/* FPGA TX or IF CODEC TX	*/
-
 
 // stereo, 16 bit samples
 // По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
@@ -881,14 +894,16 @@ uintptr_t getfilled_dmabuffer32tx_sub(void);
 uintptr_t getfilled_dmabuffer16txphones(void);
 
 void dsp_extbuffer32rx(const IFADCvalue_t * buff);	// RX
+void dsp_extbuffer32rts(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
 void dsp_addsidetone(aubufv_t * buff, int usebuf);			// перед передачей по DMA в аудиокодек
 
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 //void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
 void processing_dmabuffer32rx(uintptr_t addr);
-void release_dmabuffer32rx(uintptr_t addr);
 void processing_dmabuffer32rts(uintptr_t addr);
+void release_dmabuffer32rx(uintptr_t addr);
+void processing_dmabuffer32rts192(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
 void buffers_resampleuacin(unsigned nsamples);
 
@@ -897,6 +912,7 @@ int_fast32_t buffers_dmabuffer32txcachesize(void);
 int_fast32_t buffers_dmabuffer16rxcachesize(void);
 int_fast32_t buffers_dmabuffer16txcachesize(void);
 int_fast32_t buffers_dmabuffer192rtscachesize(void);
+int_fast32_t buffers_dmabuffer32rtscachesize(void);
 int_fast32_t buffers_dmabuffer96rtscachesize(void);
 
 void savesamplerecord16SD(int_fast16_t ch0, int_fast16_t ch1); /* to SD CARD */

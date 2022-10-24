@@ -5020,7 +5020,7 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 #if WITHDSPEXTDDC && WITHRTS96
 // использование данных о спектре, передаваемых в общем фрейме
 static void RAMFUNC 
-saverts96(const IFADCvalue_t * buff)
+saverts96pair(const IFADCvalue_t * buff)
 {
 	// формирование отображения спектра
 	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
@@ -5049,6 +5049,29 @@ saverts96(const IFADCvalue_t * buff)
 			buff [DMABUF32RTS1I],	// current
 			buff [DMABUF32RTS1Q]
 			);	
+	}
+}
+// использование данных о спектре, передаваемых в общем фрейме
+static void RAMFUNC
+saverts96(const IFADCvalue_t * buff)
+{
+	// формирование отображения спектра
+	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
+	if (glob_swaprts != 0)
+	{
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RTS0Q],	// previous
+			buff [DMABUF32RTS0I]
+			);
+	}
+	else
+	{
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RTS0I],	// previous
+			buff [DMABUF32RTS0Q]
+			);
 	}
 }
 
@@ -5457,6 +5480,25 @@ inject_testsignals(IFADCvalue_t * const dbuff)
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
+void RAMFUNC dsp_extbuffer32rts(const IFADCvalue_t * buff)
+{
+	unsigned i;
+	ASSERT(buff != NULL);
+
+	for (i = 0; i < DMABUFFSIZE32RTS; i += DMABUFFSTEP32RTS)
+	{
+#if 0
+		// Тестирование - заменить приянтые квадратуры синтезированными
+		inject_testsignals((IFADCvalue_t *) (buff + i));
+#endif
+#if WITHRTS96
+		saverts96pair(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
+#endif /* WITHRTS96 */
+	}
+}
+
+// Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
+// Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 {
 	ASSERT(buff != NULL);
@@ -5564,16 +5606,6 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 #elif WITHDSPEXTDDC
 	// Режимы трансиверов с внешним DDC
-
-	#if 0
-			// Тестирование - заменить приянтые квадратуры синтезированными
-			inject_testsignals((IFADCvalue_t *) (buff + i));
-
-	#endif
-
-#if WITHRTS96
-	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
-#endif /* WITHRTS96 */
 
 	#if 0
 		// Тестирование (самопрослушивание) того, что идет с микрофона

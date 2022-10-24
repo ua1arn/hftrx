@@ -273,6 +273,13 @@ int_fast32_t buffers_dmabuffer32rxcachesize(void)
 	return offsetof(voice32rx_t, item) - offsetof(voice32rx_t, buff);
 }
 
+int_fast32_t buffers_dmabuffer32rtscachesize(void)
+{
+	/* надо сделать правильно - вернуь размер буфера в байтах */
+	ASSERT(0);
+	return buffers_dmabuffer32rxcachesize();
+}
+
 #if 1
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 	//enum { SKIPPED = 4000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
@@ -289,6 +296,7 @@ enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количес�
 enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
 enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
+enum { CNT32RTS = DMABUFFSIZE32RTS / DMABUFFSTEP32RTS };
 enum { MIKELEVEL = 6 };
 enum { PHONESLEVEL = 6 };
 
@@ -2109,7 +2117,7 @@ static void processing_dmabuffer16rxuac(uintptr_t addr)
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
-// обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
+// обработать буфер после оцифровки IF ADC (спектроанализатор)
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 {
@@ -2120,6 +2128,20 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 	dsp_extbuffer32rx((const IFADCvalue_t *) addr);
+}
+
+// Этой функцией пользуются обработчики прерываний DMA
+// обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
+// Вызывается на ARM_REALTIME_PRIORITY уровне.
+void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
+{
+	//ASSERT(addr != 0);
+#if WITHBUFFERSDEBUG
+	//++ n77;
+	// подсчёт скорости в сэмплах за секунду
+	//debugcount_rx32rtsadc += CNT32RTS;	// в буфере пары сэмплов по четыре байта
+#endif /* WITHBUFFERSDEBUG */
+	dsp_extbuffer32rts((const IFADCvalue_t *) addr);
 }
 
 void release_dmabuffer32rx(uintptr_t addr)
@@ -2151,7 +2173,7 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 #if WITHRTS192
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки - канал спектроанализатора
-void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
+void RAMFUNC processing_dmabuffer32rts192(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG

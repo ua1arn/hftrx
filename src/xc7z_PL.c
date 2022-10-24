@@ -140,6 +140,7 @@ void xcz_fifo_if_rx_inthandler(void)
 {
 	enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
+	enum { CNT32RTS = DMABUFFSIZE32RTS / DMABUFFSTEP32RTS };
 	static unsigned rx_stage = 0;
 
 	u32 ss = XLlFifo_Status(& fifo_if_rx);
@@ -151,6 +152,7 @@ void xcz_fifo_if_rx_inthandler(void)
 	{
 		uintptr_t addr = allocate_dmabuffer32rx();
 		XLlFifo_iRead_Aligned(& fifo_if_rx, (IFADCvalue_t *) addr, DMABUFFSIZE32RX);
+		processing_dmabuffer32rts(addr);
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
 		rx_stage += CNT32RX;
