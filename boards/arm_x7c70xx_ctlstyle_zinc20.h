@@ -12,9 +12,9 @@
 #ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_ZINC20_H_INCLUDED
 #define ARM_X7C7XX_BGAXXX_CTLSTYLE_ZINC20_H_INCLUDED 1
 
-	#if ! defined(XC7Z010)
-		#error Wrong CPU selected. XC7Z010 expected
-	#endif /* ! defined(STM32MP153Dxx) */
+	#if ! defined(XC7Z020)
+		#error Wrong CPU selected. XC7Z020 expected
+	#endif /* ! defined(XC7Z020) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
