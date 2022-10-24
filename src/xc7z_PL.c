@@ -117,6 +117,8 @@ void xcz_ah_preinit(void)
 
 // ****************** IF RX ******************
 
+static uintptr_t addr32rx;
+
 void xcz_if_rx_init(void)
 {
 	XLlFifo_Config * config = XLlFfio_LookupConfig(XPAR_AXI_FIFO_IQ_RX_DEVICE_ID);
@@ -134,6 +136,7 @@ void xcz_if_rx_init(void)
 		PRINTF("fifo_if_rx reset fail %x \n", Status);
 		ASSERT(0);
 	}
+	uintptr_t addr32rx = allocate_dmabuffer32rx();
 }
 
 void xcz_fifo_if_rx_inthandler(void)
@@ -150,11 +153,9 @@ void xcz_fifo_if_rx_inthandler(void)
 
 	if (ss & XLLF_INT_RFPF_MASK)
 	{
-		uintptr_t addr = allocate_dmabuffer32rx();
-		XLlFifo_iRead_Aligned(& fifo_if_rx, (IFADCvalue_t *) addr, DMABUFFSIZE32RX);
-		processing_dmabuffer32rts(addr);
-		processing_dmabuffer32rx(addr);
-		release_dmabuffer32rx(addr);
+		XLlFifo_iRead_Aligned(& fifo_if_rx, (IFADCvalue_t *) addr32rx, DMABUFFSIZE32RX);
+		processing_dmabuffer32rts(addr32rx);
+		processing_dmabuffer32rx(addr32rx);
 		rx_stage += CNT32RX;
 	}
 
