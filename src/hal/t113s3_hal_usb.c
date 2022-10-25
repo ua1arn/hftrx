@@ -28,6 +28,18 @@
 #define CDC_SET_CONTROL_LINE_STATE              0x22
 #define CDC_SEND_BREAK                          0x23
 
+#define APP_STATE_IDLE                 0
+#define APP_STATE_DETACH               1
+#define DFU_STATE_IDLE                 2
+#define DFU_STATE_DNLOAD_SYNC          3
+#define DFU_STATE_DNLOAD_BUSY          4
+#define DFU_STATE_DNLOAD_IDLE          5
+#define DFU_STATE_MANIFEST_SYNC        6
+#define DFU_STATE_MANIFEST             7
+#define DFU_STATE_MANIFEST_WAIT_RESET  8
+#define DFU_STATE_UPLOAD_IDLE          9
+#define DFU_STATE_ERROR                10
+
 #define DISK_DDR 1 /* ������� USB: 0 - SD-�����, 1 - DDR-������ */
 
 #define AW_RAMDISK_BASE                (getRamDiskBase()) //(AW_USBD_BASE+AW_USBD_SIZE)             /* ������� ����� ������ ����� � ������ */
@@ -2827,6 +2839,58 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 			}
 			break;
 #endif /* WITHUSBUAC */
+#if WITHUSBDFU
+			case INTERFACE_DFU_CONTROL:
+			{
+
+				// INTERFACE_DFU_CONTROL bRequest codes
+				enum
+				{
+				  DFU_DETACH = 0,
+				  DFU_DNLOAD ,		// Write to flash
+				  DFU_UPLOAD,		// Read from flash
+				  DFU_GETSTATUS,
+				  DFU_CLRSTATUS,
+				  DFU_GETSTATE,
+				  DFU_ABORT
+				};
+
+				static int dev_state = DFU_STATE_IDLE;
+				static uint8_t dev_status [6];
+
+				switch (ep0_setup->bRequest)
+				{
+				case DFU_DETACH:
+					TP();
+					break;
+				case DFU_DNLOAD:
+					TP();
+					break;
+				case DFU_UPLOAD:
+					TP();
+					break;
+				case DFU_GETSTATUS:
+					dev_status[0] = 0;
+				    dev_status[4] = dev_state;
+					pusb->ep0_xfer_srcaddr = (uintptr_t) dev_status;
+					pusb->ep0_xfer_residue = min(6, ep0_setup->wLength);
+					break;
+				case DFU_CLRSTATUS:
+					TP();
+					break;
+				case DFU_GETSTATE:
+					TP();
+					break;
+				case DFU_ABORT:
+					TP();
+					break;
+				default:
+					PRINTF("ep0_in: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+					break;
+				}
+			}
+			break;
+#endif /* WITHUSBDFU */
 		default:
 			pusb->ep0_xfer_residue = 0;
 			PRINTF("ep0_in: Unknown Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
