@@ -4116,7 +4116,7 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 	return 1;
 }
 
-#if 1//CPUSTYLE_ARM
+#if 1//CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 #ifdef __cplusplus
 extern "C" {
@@ -4363,5 +4363,5 @@ struct _reent * __getreent(void)
 
 #endif	// at all
 
-#endif /* CPUSTYLE_ARM */
+#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 

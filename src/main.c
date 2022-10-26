@@ -2228,7 +2228,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 #else
 #endif
 
-#if (FLASHEND > 0x3FFF)	|| CPUSTYLE_ARM || CPUSTYPE_TMS320F2833X || (TUNE_TOP >= 65535000L)
+#if (FLASHEND > 0x3FFF)	|| CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYPE_TMS320F2833X || (TUNE_TOP >= 65535000L)
 
 	/* частоты хранятся с точностью до герца в 32-х битных переменных */
 	struct bandrange {
@@ -21229,9 +21229,9 @@ int
 //__attribute__ ((used))
 main(void)
 {
-#if CPUSTYLE_ARM
+#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 	sysinit_gpio_initialize();
-#endif /* CPUSTYLE_ARM */
+#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 #if WITHDEBUG && (! CPUSTYLE_ARM /* || WITHISBOOTLOADER */)
 
 	HARDWARE_DEBUG_INITIALIZE();

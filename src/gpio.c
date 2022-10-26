@@ -8999,4 +8999,4 @@ tms320_hardware_pioс_inputs(unsigned long ipins)
 	tms320f2833x_hardware_pioc_prog(ipins, 0, 0, 0);	/* На ввод, с pull-up */
 }
 
-#endif /* CPUSTYLE_ARM */
+#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */

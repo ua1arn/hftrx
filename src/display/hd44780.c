@@ -41,7 +41,7 @@ static void hd44780_delay(void)
 /* Можно только в случае использования SPI MODE3 */
 #define OLED_SPIMODE SPIC_MODE3
 
-#elif CPUSTYLE_ARM
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 // ARM subroutinue
 // sent four bits from d3..d0 of argument v
@@ -213,7 +213,7 @@ hd44780_io_initialize(void)
 
 #else // CPUSTYLE_ATMEGA
  	#error Undefined CPUSTYLE_XXX
-#endif // CPUSTYLE_ARM
+#endif // CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 
 // architecture-independet function

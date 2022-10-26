@@ -30,7 +30,7 @@ const uint_fast8_t rbvalues [8] =
 static void 
 spi_select255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 		UC1608_CSP_PORT_S(UC1608_CSP);
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT |= UC1608_CSP;
@@ -44,7 +44,7 @@ spi_select255(void)
 static void 
 spi_unselect255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 		UC1608_CSP_PORT_C(UC1608_CSP);
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT &= ~ UC1608_CSP;
@@ -57,7 +57,7 @@ spi_unselect255(void)
 static void 
 spi_hwinit255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 		UC1608_CSP_INITIALIZE();
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT &= ~ UC1608_CSP;	/* неактивное состояние */
@@ -166,7 +166,7 @@ spi_cs_enable(
 
 	SPI_CS_ASSERT(target);
 
-#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 
 	#if WITHSPISPLIT
 		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
@@ -305,7 +305,7 @@ prog_pulse_ioupdate(void)
 {
 	// SPI_IOUPDATE_PORT was SPI_TARGET_PORT
 #if defined (SPI_IOUPDATE_BIT)
-	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 
 		SPI_IOUPDATE_PORT_C(SPI_IOUPDATE_BIT);
 		hardware_spi_io_delay();
