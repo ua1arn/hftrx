@@ -242,7 +242,7 @@ typedef enum IRQn
 #define __IO volatile
 
 //#include "core_ca.h"
-#include <arch/aw_d1s/system_allwnr_f133.h>
+#include "system_allwnr_f133.h"
 
 
 /* Generated section start */

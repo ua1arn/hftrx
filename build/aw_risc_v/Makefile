@@ -19,7 +19,7 @@
 TRGT = riscv-none-elf-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-XFEL = ./xfel-windows-v1.2.9/xfel
+XFEL = ../../tools/xfel-windows-v1.2.9/xfel
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -27,12 +27,12 @@ PRJROOT := ../..
 OBJDIR = obj
 
 # Define project name here
-PROJECT = tc1_aw_d1s
+PROJECT = tc1_aw_f133
 
 # Define linker script file here
-LDSCRIPT_BOOT = ./aw_d1s_boot.ld
-LDSCRIPT_APP = ./aw_d1s_app.ld
-ARCHDIR = $(PRJROOT)/arch/aw_d1s
+LDSCRIPT_BOOT = ./aw_f133_boot.ld
+LDSCRIPT_APP = ./aw_f133_app.ld
+ARCHDIR = $(PRJROOT)/arch/aw_f133
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS += -D"NDEBUG"=1 -D"CPUSTYPE_F133"=1 -D"EGL_STATIC_LIBRARY"=1
@@ -217,7 +217,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean
 
-all: APP2 $(PROJECT)_app.alw32
+all: APP2 $(PROJECT)_app.f133
 
 allZ:
 	@echo Src
@@ -225,33 +225,28 @@ allZ:
 	@echo Obj at $(OBJDIR)
 	@echo $(abspath $(OBJS))
 
-bootloader: BOOT2 fsbl.alw32
+bootloader: BOOT2 fsbl.f133
   
-app_run: $(PROJECT)_app.alw32
-	$(XFEL) ddr t113-s3
-	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
+app_run: $(PROJECT)_app.f133
+	$(XFEL) ddr f133
+	$(XFEL) write 0x40000000 $(PROJECT)_app.f133
 	$(XFEL) exec 0x40000100 
 
-app_runXBOOT: xboot_t113_800.bin
-	$(XFEL) ddr t113-s3
-	$(XFEL) write 0x40000000 xboot_t113_800.bin
-	$(XFEL) exec 0x40000000 
-
 flash:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00040000 ddr3init.bin
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
+	$(XFEL) spinor write 0x00000000 fsbl.f133
+	-$(XFEL) spinor write 0x00040000 ddr3init.bin
+	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.f133
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
-fsbl.alw32: $(PROJECT)_boot.bin
-	sh -c "cp boottemplate.bin fsbl.alw32.tmp"
-	./wtitefsbl.exe fsbl.alw32.tmp 0x00100 $(PROJECT)_boot.bin -w
-	./checksum.exe fsbl.alw32.tmp fsbl.alw32
+fsbl.f133: $(PROJECT)_boot.bin
+	sh -c "cp boottemplate.bin fsbl.f133.tmp"
+	./wtitefsbl.exe fsbl.f133.tmp 0x00100 $(PROJECT)_boot.bin -w
+	./checksum.exe fsbl.f133.tmp fsbl.f133
 	
-$(PROJECT)_app.alw32: $(PROJECT)_app.bin
+$(PROJECT)_app.f133: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
 
 $(OBJSC):
