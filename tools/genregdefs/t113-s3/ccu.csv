@@ -64,6 +64,7 @@ SMHC2_CLK_REG; 0x0838; SMHC2 Clock Register
 SMHC_BGR_REG; 0x084C; SMHC Bus Gating Reset Register
 UART_BGR_REG; 0x090C; UART Bus Gating Reset Register
 TWI_BGR_REG; 0x091C; TWI Bus Gating Reset Register
+CAN_BGR_REG; 0x092C; CAN Bus Gating Reset Register
 SPI0_CLK_REG; 0x0940; SPI0 Clock Register
 SPI1_CLK_REG; 0x0944; SPI1 Clock Register
 SPI_BGR_REG; 0x096C; SPI Bus Gating Reset Register

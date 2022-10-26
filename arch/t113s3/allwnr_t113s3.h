@@ -429,7 +429,9 @@ typedef struct CCU_Type
 	__IO uint32_t UART_BGR_REG;                          /*!< Offset 0x90C UART Bus Gating Reset Register */
 	uint32_t reserved_0x910 [0x0003];
 	__IO uint32_t TWI_BGR_REG;                           /*!< Offset 0x91C TWI Bus Gating Reset Register */
-	uint32_t reserved_0x920 [0x0008];
+	uint32_t reserved_0x920 [0x0003];
+	__IO uint32_t CAN_BGR_REG;                           /*!< Offset 0x92C CAN Bus Gating Reset Register */
+	uint32_t reserved_0x930 [0x0004];
 	__IO uint32_t SPI0_CLK_REG;                          /*!< Offset 0x940 SPI0 Clock Register */
 	__IO uint32_t SPI1_CLK_REG;                          /*!< Offset 0x944 SPI1 Clock Register */
 	uint32_t reserved_0x948 [0x0009];
