@@ -132,8 +132,8 @@ typedef enum IRQn
 #define TWI2_BASE 	     	0x02502800
 #define TWI3_BASE 	     	0x02502C00
 
-//#define CAN0_BASE  			0x02504000
-//#define CAN1_BASE  			0x02504400
+#define CAN0_BASE  			0x02504000
+#define CAN1_BASE  			0x02504400
 
 // SH0 (SYS domain)
 #define SYS_CFG_BASE      	0x03000000
@@ -2525,8 +2525,8 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define MSI_MEMC		((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)			/*!< \brief MSI_MEMC Interface register set access pointer */
 #define SID				((SID_TypeDef *) SID_BASE)						/*!< \brief SID Interface register set access pointer */
 
-//#define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
-//#define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
+#define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
+#define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
 
 #define USBOTG0		((USBOTG_TypeDef *) USBOTG0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
 #define USBEHCI0	((USB_EHCI_CapabilityTypeDef *) (USBOTG0_BASE + 0x1000))	/*!< \brief USBEHCI0 Interface register set access pointer */
