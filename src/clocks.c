@@ -1792,6 +1792,7 @@ unsigned long hardware_get_spi_freq(void)
 #elif CPUSTYPE_T113 || CPUSTYPE_F133
 
 #if CPUSTYPE_F133
+
 void set_pll_riscv_axi(unsigned n)
 {
 	uint32_t val;
@@ -1804,9 +1805,9 @@ void set_pll_riscv_axi(unsigned n)
 
 	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
 	CCU->RISC_CLK_REG =
-			(0 << 24) | // old 0x03, old 011: PLL_CPU/P, new 000: HOSC
-			(3 << 8) |	// old 0x03 old CPU_DIV2=4, new same
-			(1 << 0) |	// old 0x01 old CPU_DIV1, new same
+			(0 << 24) | // 000: HOSC
+			(1 << 8) |	// RISC_AXI_DIV_CFG
+			(0 << 0) |	// RISC_DIV_CFG
 			0;
 
 	/* Disable pll gating */
@@ -1825,6 +1826,10 @@ void set_pll_riscv_axi(unsigned n)
 	val |= ((n - 1) << 8);
 	CCU->PLL_CPU_CTRL_REG = val;
 
+
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~(1 << 29);	// PLL Lock Enable
+	CCU->PLL_CPU_CTRL_REG = val;
 	/* Lock enable */
 	val = CCU->PLL_CPU_CTRL_REG;
 	val |= (1 << 29);
@@ -1854,11 +1859,11 @@ void set_pll_riscv_axi(unsigned n)
 
 	/* Set and change cpu clk src */
 	val = CCU->RISC_CLK_REG;
-	val &= ~ ((0x07 << 24) | ( 0x3 << 8 ) | ( 0xF << 0));
+	val &= ~ ((0x07 << 24) | ( 0x3 << 8 ) | ( 0x1F << 0));
 	val |=
 		(0x05 << 24) |	// 101: PLL_CPU
-		(0x3 << 8) |
-		(0x1 << 0) |
+		(0x1 << 8) |	// RISC_AXI_DIV_CFG
+		(0x0 << 0) |	// RISC_DIV_CFG
 		0;
 	CCU->RISC_CLK_REG = val;
 
@@ -1903,6 +1908,9 @@ void set_pll_cpux_axi(unsigned n)
 	val |= ((n - 1) << 8);
 	CCU->PLL_CPU_CTRL_REG = val;
 
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~(1 << 29);	// PLL Lock Enable
+	CCU->PLL_CPU_CTRL_REG = val;
 	/* Lock enable */
 	val = CCU->PLL_CPU_CTRL_REG;
 	val |= (1 << 29);
@@ -6748,6 +6756,9 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYPE_F133
 
+	allwnrt113_pll_initialize();
+
+	CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);
 	set_pll_riscv_axi(PLL_CPU_N);	// see sdram.c
 
 	CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);
