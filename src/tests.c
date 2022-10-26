@@ -9679,8 +9679,10 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 void riscv_fpu_init(void)
 {
     /* Enable FPU if present */
-    if (read_csr(0x301) & (1 << ('F' - 'A'))) {
-        write_csr(0x3, 0);             /* initialize rounding mode, undefined at reset */
+    if (read_csr(misa) & (1 << ('F' - 'A'))) {
+    	TP();
+        write_csr(fcsr, 0);             /* initialize rounding mode, undefined at reset */
+    	TP();
     }
 }
 #else
