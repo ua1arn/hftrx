@@ -1791,7 +1791,85 @@ unsigned long hardware_get_spi_freq(void)
 
 #elif CPUSTYPE_T113 || CPUSTYPE_F133
 
+#if CPUSTYPE_F133
+void set_pll_riscv_axi(unsigned n)
+{
+	uint32_t val;
 
+	// After ddr3_init
+	// PLL_CPU_CTRL_REG=CA002900
+	// CPU_AXI_CFG_REG=03000301
+	//TP();
+    //PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
+
+	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
+	CCU->RISC_CLK_REG =
+			(0 << 24) | // old 0x03, old 011: PLL_CPU/P, new 000: HOSC
+			(3 << 8) |	// old 0x03 old CPU_DIV2=4, new same
+			(1 << 0) |	// old 0x01 old CPU_DIV1, new same
+			0;
+
+	/* Disable pll gating */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~(1 << 27);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Enable pll ldo */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1 << 30);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Set default clk to 1008mhz */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~ ((0x3 << 16) | (0xff << 8) | (0x3 << 0));
+	val |= ((n - 1) << 8);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Lock enable */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1 << 29);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Enable pll */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1 << 31);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	//TP();
+	/* Wait pll stable */
+	while((CCU->PLL_CPU_CTRL_REG & (0x1 << 28)) == 0)
+		;
+	//TP();
+
+	/* Enable pll gating */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1 << 27);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Lock disable */
+//	val = CCU->PLL_CPU_CTRL_REG;
+//	val &= ~(1 << 29);
+//	CCU->PLL_CPU_CTRL_REG = val;
+	//local_delay_ms(1);
+
+	/* Set and change cpu clk src */
+	val = CCU->RISC_CLK_REG;
+	val &= ~ ((0x07 << 24) | ( 0x3 << 8 ) | ( 0xF << 0));
+	val |=
+		(0x05 << 24) |	// 101: PLL_CPU
+		(0x3 << 8) |
+		(0x1 << 0) |
+		0;
+	CCU->RISC_CLK_REG = val;
+
+	//local_delay_ms(1);
+	//sys_uart_puts("set_pll_cpux_axi Ok \n");
+//	TP();
+//    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
+}
+#endif
+
+#if CPUSTYPE_T113
 void set_pll_cpux_axi(unsigned n)
 {
 	uint32_t val;
@@ -1868,6 +1946,8 @@ void set_pll_cpux_axi(unsigned n)
 //	TP();
 //    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 }
+#endif /* CPUSTYPE_T113 */
+
 #if 0
 static void set_pll_periph0(void)
 {
@@ -6668,12 +6748,9 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYPE_F133
 
-	//set_pll_cpux_axi(PLL_CPU_N);	// see sdram.c
+	set_pll_riscv_axi(PLL_CPU_N);	// see sdram.c
 
 	CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);
-	CCU->RISC_CLK_REG = (CCU->RISC_CLK_REG & ~ (0x07 << 24)) |
-		(0x05 << 24) |
-		0;
 	//allwnrt113_pll_initialize();
 
 #endif

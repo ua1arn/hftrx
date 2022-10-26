@@ -362,10 +362,7 @@ typedef struct CCU_Type
 	__IO uint32_t PLL_AUDIO1_BIAS_REG;                   /*!< Offset 0x380 PLL_AUDIO1 Bias Register */
 	uint32_t reserved_0x384 [0x001F];
 	__IO uint32_t PLL_CPU_TUN_REG;                       /*!< Offset 0x400 PLL_CPU Tuning Register */
-	uint32_t reserved_0x404 [0x003F];
-	__IO uint32_t CPU_AXI_CFG_REG;                       /*!< Offset 0x500 CPU_AXI Configuration Register */
-	__IO uint32_t CPU_GATING_REG;                        /*!< Offset 0x504 CPU_GATING Configuration Register */
-	uint32_t reserved_0x508 [0x0002];
+	uint32_t reserved_0x404 [0x0043];
 	__IO uint32_t PSI_CLK_REG;                           /*!< Offset 0x510 PSI Clock Register */
 	uint32_t reserved_0x514 [0x0003];
 	__IO uint32_t APB0_CLK_REG;                          /*!< Offset 0x520 APB0 Clock Register */
