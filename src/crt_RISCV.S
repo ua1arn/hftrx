@@ -91,6 +91,7 @@
 .align 8
 	cfi_startproc
 	cfi_undefined (ra)
+	la    sp, __stack
 	//lla   gp, __global_pointer$
 	call SystemInit
 	call __cmsis_start
