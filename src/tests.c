@@ -9634,10 +9634,69 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 	return 10;
 }
 
+#if CPUSTYPE_F133
+// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/libcpu/risc-v/common/riscv-ops.h
+
+#if defined(__GNUC__) && !defined(__ASSEMBLER__)
+
+
+#define read_csr(reg) ({ unsigned long __tmp; \
+  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
+  __tmp; })
+
+#define write_csr(reg, val) ({ \
+  asm volatile ("csrw " #reg ", %0" :: "rK"(val)); })
+
+#define swap_csr(reg, val) ({ unsigned long __tmp; \
+  asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "rK"(val)); \
+  __tmp; })
+
+#define set_csr(reg, bit) ({ unsigned long __tmp; \
+  asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "rK"(bit)); \
+  __tmp; })
+
+#define clear_csr(reg, bit) ({ unsigned long __tmp; \
+  asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "rK"(bit)); \
+  __tmp; })
+
+#define rdtime() read_csr(time)
+#define rdcycle() read_csr(cycle)
+#define rdinstret() read_csr(instret)
+
+#endif /* end of __GNUC__ */
+
+
+// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/bsp/hifive1/freedom-e-sdk/bsp/env/encoding.h
+#define CSR_MISA 0x301
+#define CSR_FCSR 0x3
+
+//DECLARE_CSR(misa, CSR_MISA)
+//DECLARE_CSR(fcsr, CSR_FCSR)
+
+#define misa CSR_MISA
+#define fcsr CSR_FCSR
+
+void riscv_fpu_init(void)
+{
+    /* Enable FPU if present */
+    if (read_csr(0x301) & (1 << ('F' - 'A'))) {
+        write_csr(0x3, 0);             /* initialize rounding mode, undefined at reset */
+    }
+}
+#else
+void riscv_fpu_init(void)
+{
+}
+
+#endif
+
 // Сразу после начала main
 
 void lowtests(void)
 {
+	// deliverable/RIOT/cpu/riscv_common/riscv_init.c
+	riscv_fpu_init();
+
 #if 0 && defined (BOARD_BLINK_INITIALIZE)
 	{
 		// LED blink test

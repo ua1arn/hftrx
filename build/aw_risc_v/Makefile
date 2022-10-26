@@ -53,7 +53,8 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 # see https://www.sifive.com/blog/all-aboard-part-1-compiler-args
 
 #CORE = -march=rv32gcv
-CORE = -march=rv32gv
+CORE = -march=rv32g
+#CORE = -march=rv32imac -mabi=ilp32
 #CORE = -march=rv64gcv -mabi=lp64
 #CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
