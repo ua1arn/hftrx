@@ -6756,13 +6756,14 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYPE_F133
 
+	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 11);	// RISC_MCLK_EN
 	allwnrt113_pll_initialize();
+//
+	set_pll_riscv_axi(PLL_CPU_N);
 
 	CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);
-	set_pll_riscv_axi(PLL_CPU_N);	// see sdram.c
 
-	CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);
-	//allwnrt113_pll_initialize();
+//	CCU->RISC_GATING_REG = (0 * 1u << 31) | (0x16AA << 0);
 
 #endif
 

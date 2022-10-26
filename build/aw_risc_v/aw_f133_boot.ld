@@ -73,7 +73,7 @@ SECTIONS
  		*(SORT(.dtors.*))
  		*(.dtors)
 
-		*(.rodata*)
+		*(.rodata*  .srodata*)
 
 		KEEP(*(.eh_frame*))
 		
@@ -135,7 +135,7 @@ SECTIONS
 
 		. = ALIGN(64);
 
-		*(.data*)
+		*(.data* .sdata*)
 		*(.dtcm*)
 
 		. = ALIGN(4);
@@ -170,7 +170,7 @@ SECTIONS
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
-		*(.bss*)
+		*(.bss*  .sbss*)
 		*(COMMON)
 
 		__bss_end__ = .;

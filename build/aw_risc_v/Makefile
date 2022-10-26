@@ -63,6 +63,7 @@ CORE = -march=rv32gcv -mabi=ilp32
 OPT = -Og
 #OPT = -Ofast -flto
 #OPT = -Os -flto
+#OPT = -Os
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
