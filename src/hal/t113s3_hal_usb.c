@@ -1138,7 +1138,7 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 }
 
 
-static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uint32_t src_addr, uint32_t count)
+static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t count)
 {
 	uint8_t  saved;
 
@@ -2990,7 +2990,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 							PRINTF("usb_device: Test SE0_NAK Now...\n");
 							break;
 						case 0x0400:
-							usb_write_ep_fifo(pusb, 0, (uint32_t)TestPkt, 53);
+							usb_write_ep_fifo(pusb, 0, (uintptr_t)TestPkt, 53);
 							usb_set_ep0_csr(pusb, 0x02);
 							usb_set_test_mode(pusb, 0x08);
 
