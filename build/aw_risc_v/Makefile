@@ -52,7 +52,8 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 # see https://github.com/stfc-aeg/try-it-out/wiki/RiscV!
 # see https://www.sifive.com/blog/all-aboard-part-1-compiler-args
 
-CORE = -march=rv32gcv -mabi=ilp32
+#CORE = -march=rv32gcv
+CORE = -march=rv32gv
 #CORE = -march=rv64gcv -mabi=lp64
 #CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
@@ -60,10 +61,10 @@ CORE = -march=rv32gcv -mabi=ilp32
 #CORE += -mfpu=vfpv4
 
 # Define optimisation level here
-OPT = -Og
+#OPT = -Og
 #OPT = -Ofast -flto
 #OPT = -Os -flto
-#OPT = -Os
+OPT = -Os
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
