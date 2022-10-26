@@ -87,12 +87,17 @@
   mret
 .endm
 
+	.global Reset_Handler
 .section .startup0
 .align 8
 	cfi_startproc
 	cfi_undefined (ra)
+Reset_Handler:
+
 	la    sp, __stack
 	//lla   gp, __global_pointer$
+    mv  a0, zero
+    mv  a1, zero
 	call SystemInit
 	call __cmsis_start
 	j _start
