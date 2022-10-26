@@ -9638,6 +9638,27 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
+#if 0 && defined (BOARD_BLINK_INITIALIZE)
+	{
+		// LED blink test
+		uint_fast8_t state = 0;
+		BOARD_BLINK_INITIALIZE();
+		for (;;)
+		{
+			if (state)
+			{
+				state = 0;
+				BOARD_BLINK_SETSTATE(0);
+			}
+			else
+			{
+				state = 1;
+				BOARD_BLINK_SETSTATE(1);
+			}
+			local_delay_ms(250);
+		}
+	}
+#endif
 #if CPUSTYPE_T113
 	{
 		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected 0x0000190E)\n", SYS_CFG->SYS_LDO_CTRL_REG);
