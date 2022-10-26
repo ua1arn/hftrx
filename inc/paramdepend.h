@@ -791,7 +791,7 @@ extern "C" {
 	#define HARDWARE_CLK32K_FREQ 32000uL
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
-	#define CPU_FREQ	(allwnrt113_get_arm_freq())
+	#define CPU_FREQ	(allwnrf133_get_riscv_freq())
 	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
 	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
 

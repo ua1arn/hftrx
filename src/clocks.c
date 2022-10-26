@@ -2414,6 +2414,43 @@ uint_fast32_t allwnrt113_get_arm_freq(void)
 	return allwnrt113_get_pll_cpu_freq();
 }
 
+#if CPUSTYPE_F133
+
+uint_fast32_t allwnrf133_get_riscv_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->RISC_CLK_REG;
+	//const uint_fast32_t N = 1u + ((clkreg >> 8) & 0x03);	// RISC_AXI_DIV_CFG
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);	// RISC_DIV_CFG
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		/* 000: HOSC */
+		return allwnrt113_get_hosc_freq() / M;
+	case 0x01:
+		/* 001: CLK32K */
+		return HARDWARE_CLK32K_FREQ / M;
+	case 0x02:
+		/* 010: CLK16M_RC */
+		return HARDWARE_CLK16M_RC_FREQ / M;
+	case 0x03:
+		/* 011: PLL_PERI(800M) */
+		return allwnrt113_get_pll_peri_800M_freq() / M;
+	case 0x04:
+		/* 100: PLL_PERI(1X) */
+		return allwnrt113_get_peripll1x_freq() / M;
+	case 0x05:
+		/* 101: PLL_CPU */
+		return allwnrt113_get_pll_cpu_freq() / M;
+	case 0x06:
+		/*110: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_audio1pll_div2_freq() / M;
+
+	}
+}
+
+#endif /* CPUSTYPE_F133 */
+
 uint_fast32_t allwnrt113_get_pl1_timer_freq(void)
 {
 	return allwnrt113_get_ahb_freq();
@@ -6628,6 +6665,16 @@ sysinit_pll_initialize(void)
 #elif CPUSTYPE_T113
 
 	allwnrt113_pll_initialize();
+
+#elif CPUSTYPE_F133
+
+	//set_pll_cpux_axi(PLL_CPU_N);	// see sdram.c
+
+	CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);
+	CCU->RISC_CLK_REG = (CCU->RISC_CLK_REG & ~ (0x07 << 24)) |
+		(0x05 << 24) |
+		0;
+	//allwnrt113_pll_initialize();
 
 #endif
 

@@ -156,6 +156,7 @@ uint_fast32_t allwnrt113_get_usart_freq(void);
 uint_fast32_t allwnrt113_get_spi0_freq(void);
 uint_fast32_t allwnrt113_get_spi1_freq(void);
 uint_fast32_t allwnrt113_get_arm_freq(void);
+uint_fast32_t allwnrf133_get_riscv_freq(void);
 uint_fast32_t allwnrt113_get_pl1_timer_freq(void);
 uint_fast32_t allwnrt113_get_video0_x4_freq(void);
 uint_fast32_t allwnrt113_get_video0_x2_freq(void);
