@@ -6761,7 +6761,7 @@ sysinit_pll_initialize(void)
 //
 	set_pll_riscv_axi(PLL_CPU_N);
 
-	CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);
+	CCU->RISC_CFG_BGR_REG = 0;//|= (1u << 16) | (1u << 0);
 
 //	CCU->RISC_GATING_REG = (0 * 1u << 31) | (0x16AA << 0);
 
