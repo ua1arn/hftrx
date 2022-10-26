@@ -3011,12 +3011,7 @@ void __attribute__((used)) Reset_Handler(void)
 // https://twilco.github.io/riscv-from-scratch/2019/03/10/riscv-from-scratch-1.html
 // https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html
 
-uint32_t __Vectors [32];
-void __attribute__((used)) Reset_Handler(void)
-{
-	SystemInit();
-	main();
-}
+uint32_t __Vectors [1024];
 
 void isr_synctrap(void)
 {
