@@ -9676,7 +9676,7 @@ void lowtests(void)
 #endif
 #if (CPUSTYPE_T113 || CPUSTYPE_F133)
 	{
-		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected 0x0000190E)\n", SYS_CFG->SYS_LDO_CTRL_REG);
+		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected arm: 0x0000190E, risc-v: 0x00002F0F)\n", SYS_CFG->SYS_LDO_CTRL_REG);
 	}
 #endif
 #if (CPUSTYPE_T113)
