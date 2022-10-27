@@ -58,6 +58,8 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 # see https://five-embeddev.com/quickref/isa_ext.html#standard-isas--alias
 # see https://github.com/riscv-non-isa/riscv-toolchain-conventions
 
+# csr --X-VU-S-----M---I--F-DC-A
+
 #CORE = -march=rv32g
 CORE = -march=rv64ima -mabi=lp64
 
