@@ -9811,8 +9811,8 @@ void lowtests(void)
 		volatile unsigned v9;
 		volatile unsigned v10 = 10;
 
-		PRINTF(PSTR("Unititilalized SRAM=%08lX @%p\n"), v1, & v1);
-		PRINTF(PSTR("Ititilalized SRAM=%08lX @%p\n"), v2, & v2);
+		PRINTF(PSTR("Unititilalized static=%08lX @%p\n"), v1, & v1);
+		PRINTF(PSTR("Ititilalized static=%08lX @%p\n"), v2, & v2);
 		PRINTF(PSTR("Unititilalized RAMDTCM=%08lX @%p\n"), v3, & v3);
 		PRINTF(PSTR("Ititilalized RAMDTCM=%08lX @%p\n"), v4, & v4);
 		PRINTF(PSTR("Unititilalized RAMBIGDTCM=%08lX @%p\n"), v5, & v5);
