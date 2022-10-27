@@ -209,7 +209,8 @@ typedef enum IRQn
 //#define C0_CPUX_CFG_BASE		0x09010000
 //#define C0_CPUX_MBIST_BASE		0x09020000	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
 
-#define RISC_PLIC_BASE 			0x10000000
+#define PLIC_BASE 			0x10000000
+#define CLINT_BASE			0xXXXXXXXX
 
 // DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 		0x40000000			/*!< (DRAM        ) Base Address - 2GB */
@@ -493,10 +494,10 @@ typedef struct CCU_Type
 	__IO uint32_t RISC_CFG_BGR_REG;                      /*!< Offset 0xD0C RISC_CFG Bus Gating Reset Register */
 } CCU_TypeDef; /* size of structure = 0xD10 */
 /*
- * @brief RISC_PLIC
+ * @brief PLIC
  */
-/*!< RISC_PLIC Controller Interface */
-typedef struct RISC_PLIC_Type
+/*!< PLIC Controller Interface */
+typedef struct PLIC_Type
 {
 	__IO uint32_t PLIC_PRIO_REGn [0x100];                /*!< Offset 0x000 (0<n<256) PLIC Priority Register n */
 	uint32_t reserved_0x400 [0x0300];
@@ -505,7 +506,7 @@ typedef struct RISC_PLIC_Type
 	__IO uint32_t PLIC_MIE_REGn [0x00A];                 /*!< Offset 0x2000 (0≤n<9) PLIC Machine Mode Interrupt Enable Register n */
 	uint32_t reserved_0x2028 [0x0016];
 	__IO uint32_t PLIC_SIE_REGn [0x00A];                 /*!< Offset 0x2080 (0≤n<9) PLIC Superuser Mode Interrupt Enable Register n */
-} RISC_PLIC_TypeDef; /* size of structure = 0x20A8 */
+} PLIC_TypeDef; /* size of structure = 0x20A8 */
 /*
  * @brief SYS_CFG
  */
@@ -1501,7 +1502,7 @@ typedef struct USBOTG_Type
 	__IO uint16_t USB_TXMAXP;                            /*!< Offset 0x080 USB_TXMAXP */
 	__IO uint16_t USB_CSR0;                              /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
 	__IO uint16_t USB_RXMAXP;                            /*!< Offset 0x084 USB_RXMAXP */
-	__IO uint16_t USB_RXCSR;                             /*!< Offset 0x086 USB_RXCSRL */
+	__IO uint16_t USB_RXCSR;                             /*!< Offset 0x086 USB_RXCSR */
 	__IO uint16_t USB_RXCOUNT;                           /*!< Offset 0x088 USB_RXCOUNT */
 	__IO uint16_t USB_RXPKTCNT;                          /*!< Offset 0x08A USB_RXPKTCNT */
 	__IO uint8_t  USB_TXTI;                              /*!< Offset 0x08C USB_TXTI */
@@ -2137,9 +2138,6 @@ typedef struct TVD_Type
 	__IO uint32_t TVD_STATUS6;                           /*!< Offset 0x194 TVD DEBUG STATUS Register6 */
 } TVD_TypeDef; /* size of structure = 0x198 */
 /*
- * @brief C0_CPUX_CFG
- */
-/*
  * @brief DDRPHYC
  */
 /*!< DDRPHYC Controller Interface */
@@ -2423,8 +2421,8 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define RISC_CFG 	((RISC_CFG_TypeDef *) RISC_CFG_BASE)	/*!< \brief RISC_CFG Interface register set access pointer */
 #define RISC_WDG 	((RISC_WDG_TypeDef *) RISC_WDG_BASE)	/*!< \brief RISC_WDG Interface register set access pointer */
 #define RISC_TIMESTAMP 	((RISC_TIMESTAMP_TypeDef *) RISC_TIMESTAMP_BASE)	/*!< \brief RISC_TIMESTAMP Interface register set access pointer */
-#define RISC_PLIC 	((RISC_PLIC_TypeDef *) RISC_PLIC_BASE)	/*!< \brief RISC_PLIC Interface register set access pointer */
-#define RISC_CLINT 	((RISC_CLINT_TypeDef *) RISC_CLINT_BASE)	/*!< \brief RISC_PLIC Interface register set access pointer */
+#define PLIC 		((PLIC_TypeDef *) PLIC_BASE)		/*!< \brief PLIC Platform-Level Interrupt Controller Interface register set access pointer */
+#define CLINT 		((CLINT_TypeDef *) CLINT_BASE)		/*!< \brief CLINT RISC-V Advanced Core Local Interruptor Specification Interface register set access pointer */
 
 #define SYS_CFG 	((SYS_CFG_TypeDef *) SYS_CFG_BASE)	/*!< \brief SYS_CFG Interface register set access pointer */
 #define SMHC0      	((SMHC_TypeDef *) SMHC0_BASE)		/*!< \brief SMHC0 Interface register set access pointer */

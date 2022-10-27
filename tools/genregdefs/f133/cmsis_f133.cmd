@@ -6,7 +6,7 @@ SET OUTFILE=cmsis_f133.h
 %CONVERTER% risc_wdg.csv >> %OUTFILE%
 %CONVERTER% risc_timestamp.csv >> %OUTFILE%
 %CONVERTER% ccu.csv >> %OUTFILE%
-%CONVERTER% risc_plic.csv >> %OUTFILE%
+%CONVERTER% plic.csv >> %OUTFILE%
 %CONVERTER% sys_cfg.csv >> %OUTFILE%
 %CONVERTER% uart.csv >> %OUTFILE%
 %CONVERTER% gpio.csv >> %OUTFILE%

@@ -1,4 +1,4 @@
-#type RISC_PLIC
+#type PLIC
 #base 0x10000000
 PLIC_PRIO_REGn; 0x0000 256; (0<n<256) PLIC Priority Register n
 PLIC_IP_REGn; 0x1000 10; (0≤n<9) PLIC Interrupt Pending Register n
