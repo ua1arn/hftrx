@@ -4311,7 +4311,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 }
 
 #if WITHUSEMALLOC
-#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_T113) && ! WITHISBOOTLOADER
+#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_T113 || CPUSTYPE_F133) && ! WITHISBOOTLOADER
 
 	static RAMHEAP uint8_t heapplace [48 * 1024uL * 1024uL];
 
@@ -4328,7 +4328,7 @@ extern int __HeapLimit;
 
 char * __attribute__((used)) (_sbrk)(ptrdiff_t incr)
 {
-	unsigned alignment = DCACHEROWSIZE;
+	uintptr_t alignment = DCACHEROWSIZE;
 	static char * heap;
 	char * prev_heap;
 
