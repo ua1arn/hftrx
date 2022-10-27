@@ -2908,31 +2908,13 @@ sysinit_fpu_initialize(void)
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
 #endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
 
-#if __riscv
+#if __riscv && 0
 
-	#define rdtime() READ_CSR(time)
-	#define rdcycle() READ_CSR(cycle)
-	#define rdinstret() READ_CSR(instret)
-
-	// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/bsp/hifive1/freedom-e-sdk/bsp/env/encoding.h
-	#define CSR_MISA 0x301
-	#define CSR_FCSR 0x3
-
-	//DECLARE_CSR(misa, CSR_MISA)
-	//DECLARE_CSR(fcsr, CSR_FCSR)
-
-	#define misa CSR_MISA
-	#define fcsr CSR_FCSR
-
-	// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/libcpu/risc-v/common/riscv-ops.h
-	// https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/mcsr-ext.h
-	// https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/cache.h
 	// deliverable/RIOT/cpu/riscv_common/riscv_init.c
-
 	/* Enable FPU if present */
-    if (READ_CSR(misa) & (1 << ('F' - 'A'))) {
+    if (READ_CSR(0x0301/*CSR_MISA*/) & (1u << ('F' - 'A'))) {
     	TP();
-    	WRITE_CSR(fcsr, 0);             /* initialize rounding mode, undefined at reset */
+    	WRITE_CSR(0x0003 /*CSR_FCSR*/, 0);             /* initialize rounding mode, undefined at reset */
     	TP();
     }
 #endif /* __riscv */

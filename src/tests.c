@@ -9638,6 +9638,21 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
+#if 1 && __riscv
+	{
+		unsigned i;
+		PRINTF("READ_CSR(misa)=%08X: ", READ_CSR(0x0301 /* MISA */));
+		for (i = 0; i < 26; ++ i)
+		{
+			const int pos = 25 - i;
+			const unsigned mask = 1u << pos;
+			PRINTF("%c", (READ_CSR(0x0301 /* MISA */) & mask) ? 'A' + pos : '-');
+
+		}
+		PRINTF("\n");
+
+	}
+#endif
 #if 0 && defined (BOARD_BLINK_INITIALIZE)
 	{
 		// LED blink test
