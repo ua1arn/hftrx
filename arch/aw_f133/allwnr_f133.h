@@ -203,11 +203,11 @@ typedef enum IRQn
 
 // CPUX related
 // Address (It is for Cluster CPU)
-#define TimeStamp_STA_BASE		0x08110000
-#define TimeStamp_CTRL_BASE		0x08120000
-#define IDC_BASE				0x08130000
-#define C0_CPUX_CFG_BASE		0x09010000
-#define C0_CPUX_MBIST_BASE		0x09020000	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
+//#define TimeStamp_STA_BASE		0x08110000
+//#define TimeStamp_CTRL_BASE		0x08120000
+//#define IDC_BASE				0x08130000
+//#define C0_CPUX_CFG_BASE		0x09010000
+//#define C0_CPUX_MBIST_BASE		0x09020000	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
 
 #define RISC_PLIC_BASE 			0x10000000
 
@@ -2139,32 +2139,6 @@ typedef struct TVD_Type
 /*
  * @brief C0_CPUX_CFG
  */
-/*!< C0_CPUX_CFG Controller Interface */
-typedef struct C0_CPUX_CFG_Type
-{
-	__IO uint32_t C0_RST_CTRL;                           /*!< Offset 0x000 Cluster 0 Reset Control Register */
-	uint32_t reserved_0x004 [0x0003];
-	__IO uint32_t C0_CTRL_REG0;                          /*!< Offset 0x010 Cluster 0 Control Register0 */
-	__IO uint32_t C0_CTRL_REG1;                          /*!< Offset 0x014 Cluster 0 Control Register1 */
-	__IO uint32_t C0_CTRL_REG2;                          /*!< Offset 0x018 Cluster 0 Control Register2 */
-	uint32_t reserved_0x01C [0x0002];
-	__IO uint32_t CACHE_CFG_REG;                         /*!< Offset 0x024 Cache Configuration Register */
-	uint32_t reserved_0x028 [0x0016];
-	__IO uint32_t C0_CPU_STATUS;                         /*!< Offset 0x080 Cluster 0 CPU Status Register */
-	__IO uint32_t L2_STATUS_REG;                         /*!< Offset 0x084 Cluster 0 L2 Status Register */
-	uint32_t reserved_0x088 [0x000E];
-	__IO uint32_t DBG_REG0;                              /*!< Offset 0x0C0 Cluster 0 Debug Control Register0 */
-	__IO uint32_t DBG_REG1;                              /*!< Offset 0x0C4 Cluster 0 Debug Control Register1 */
-	uint32_t reserved_0x0C8 [0x0002];
-	__IO uint32_t AXI_MNT_CTRL_REG;                      /*!< Offset 0x0D0 AXI Monitor Control Register */
-	__IO uint32_t AXI_MNT_PRD_REG;                       /*!< Offset 0x0D4 AXI Monitor Period Register */
-	__IO uint32_t AXI_MNT_RLTCY_REG;                     /*!< Offset 0x0D8 AXI Monitor Read Total Latency Register */
-	__IO uint32_t AXI_MNT_WLTCY_REG;                     /*!< Offset 0x0DC AXI Monitor Write Total Latency Register */
-	__IO uint32_t AXI_MNT_RREQ_REG;                      /*!< Offset 0x0E0 AXI Monitor Read Request Times Register */
-	__IO uint32_t AXI_MNT_WREQ_REG;                      /*!< Offset 0x0E4 AXI Monitor Write Request Times Register */
-	__IO uint32_t AXI_MNT_RBD_REG;                       /*!< Offset 0x0E8 AXI Monitor Read Bandwidth Register */
-	__IO uint32_t AXI_MNT_WBD_REG;                       /*!< Offset 0x0EC AXI Monitor Write Bandwidth Register */
-} C0_CPUX_CFG_TypeDef; /* size of structure = 0x0F0 */
 /*
  * @brief DDRPHYC
  */
@@ -2516,8 +2490,8 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 //#define TimeStamp_STA	((TimeStamp_STA_TypeDef *) TimeStamp_STA_BASE)
 //#define TimeStamp_CTRL	((TimeStamp_CTRL_TypeDef *) TimeStamp_CTRL_BASE)
 //#define IDC				(IDC_TypeDef *) IDC_BASE)
-#define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)			/*!< \brief C0_CPUX_CFG Interface register set access pointer */
-#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)			/*!< \brief C0_CPUX_MBIST Interface register set access pointer */
+//#define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)			/*!< \brief C0_CPUX_CFG Interface register set access pointer */
+//#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)			/*!< \brief C0_CPUX_MBIST Interface register set access pointer */
 #define DDRPHYC			((DDRPHYC_TypeDef *) DDRPHYC_BASE)				/*!< \brief DDRPHYC Interface register set access pointer */
 #define MSI_MEMC		((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)			/*!< \brief MSI_MEMC Interface register set access pointer */
 #define SID				((SID_TypeDef *) SID_BASE)						/*!< \brief SID Interface register set access pointer */

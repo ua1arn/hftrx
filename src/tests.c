@@ -9659,9 +9659,13 @@ void lowtests(void)
 		}
 	}
 #endif
-#if CPUSTYPE_T113
+#if (CPUSTYPE_T113 || CPUSTYPE_F133)
 	{
 		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected 0x0000190E)\n", SYS_CFG->SYS_LDO_CTRL_REG);
+	}
+#endif
+#if (CPUSTYPE_T113)
+	{
 		PRINTF("C0_CPUX_CFG->C0_CTRL_REG0=0x%08X (expected 0x80000000)\n", C0_CPUX_CFG->C0_CTRL_REG0);
 	}
 #endif
