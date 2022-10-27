@@ -248,6 +248,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define FORMATFROMLIBRARY 	1
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24

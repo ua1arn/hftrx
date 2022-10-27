@@ -9686,12 +9686,12 @@ void lowtests(void)
 
 	}
 #endif
-#if 1
+#if 1 && WITHDEBUG
 	{
 		PRINTF("sqrtf=%d\n", (int) (sqrtf(2) * 10000));
 		PRINTF("sqrt=%d\n", (int) (sqrt(2) * 10000));
-		PRINTF("sqrtf=%f\n", sqrtf(2));
-		PRINTF("sqrt=%f\n", sqrt(2));
+//		PRINTF("sqrtf=%f\n", sqrtf(2));
+//		PRINTF("sqrt=%f\n", sqrt(2));
 
 	}
 #endif
