@@ -9638,8 +9638,9 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
-#if 0 && __riscv
+#if 1 && __riscv && defined(__riscv_zicsr)
 	{
+		// see https://github.com/five-embeddev/riscv-csr-access/blob/master/include/riscv-csr.h
 
 		//	0 A Atomic extension
 		//	1 B Reserved
