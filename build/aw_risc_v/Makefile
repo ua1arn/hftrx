@@ -52,6 +52,9 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 # see https://github.com/stfc-aeg/try-it-out/wiki/RiscV!
 # see https://www.sifive.com/blog/all-aboard-part-1-compiler-args
 
+# xfel payload compile use flags:
+# -march=rv64gvxthead -mabi=lp64d -mcmodel=medany -fno-stack-protector
+
 #CORE = -march=rv32gcv
 CORE = -march=rv32g
 #CORE = -march=rv32imac -mabi=ilp32
