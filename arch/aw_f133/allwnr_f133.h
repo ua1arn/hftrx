@@ -2777,8 +2777,6 @@ __STATIC_INLINE uint32_t __ROR(uint32_t op1, uint32_t op2)
   return (op1 >> op2) | (op1 << (32U - op2));
 }
 
-// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/libcpu/risc-v/common/riscv-ops.h
-
 #if defined(__GNUC__) && !defined(__ASSEMBLER__)
 
 

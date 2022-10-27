@@ -9634,45 +9634,10 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 	return 10;
 }
 
-#if CPUSTYPE_F133
-
-#define rdtime() READ_CSR(time)
-#define rdcycle() READ_CSR(cycle)
-#define rdinstret() READ_CSR(instret)
-
-// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/bsp/hifive1/freedom-e-sdk/bsp/env/encoding.h
-#define CSR_MISA 0x301
-#define CSR_FCSR 0x3
-
-//DECLARE_CSR(misa, CSR_MISA)
-//DECLARE_CSR(fcsr, CSR_FCSR)
-
-#define misa CSR_MISA
-#define fcsr CSR_FCSR
-
-void riscv_fpu_init(void)
-{
-    /* Enable FPU if present */
-    if (READ_CSR(misa) & (1 << ('F' - 'A'))) {
-    	TP();
-    	WRITE_CSR(fcsr, 0);             /* initialize rounding mode, undefined at reset */
-    	TP();
-    }
-}
-#else
-void riscv_fpu_init(void)
-{
-}
-
-#endif
-
 // Сразу после начала main
 
 void lowtests(void)
 {
-	// deliverable/RIOT/cpu/riscv_common/riscv_init.c
-	riscv_fpu_init();
-
 #if 0 && defined (BOARD_BLINK_INITIALIZE)
 	{
 		// LED blink test
