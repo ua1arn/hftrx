@@ -9682,14 +9682,15 @@ void lowtests(void)
 			PRINTF("%c", (misa_val & mask) ? 'A' + pos : '-');
 		}
 		PRINTF("\n");
-		PRINTF("-march=rv32g");
-		for (i = 0; i < 26; ++ i)
-		{
-			const unsigned mask = 1u << i;
-			if (misa_val & mask)
-				PRINTF("_Z%c", 'a' + i);
-		}
-		PRINTF("\n");
+
+	}
+#endif
+#if 1
+	{
+		PRINTF("sqrtf=%d\n", (int) (sqrtf(2) * 10000));
+		PRINTF("sqrt=%d\n", (int) (sqrt(2) * 10000));
+		PRINTF("sqrtf=%f\n", sqrtf(2));
+		PRINTF("sqrt=%f\n", sqrt(2));
 
 	}
 #endif
