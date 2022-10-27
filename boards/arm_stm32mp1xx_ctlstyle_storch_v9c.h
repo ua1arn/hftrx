@@ -628,7 +628,7 @@
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
 	//#define WITH_GT911_INTERRUPTS	1
-	#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
+	//#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	//#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
@@ -697,8 +697,8 @@
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 
-		//#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 
