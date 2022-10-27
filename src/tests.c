@@ -9638,16 +9638,56 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
-#if 1 && __riscv
+#if 0 && __riscv
 	{
+
+		//	0 A Atomic extension
+		//	1 B Reserved
+		//	2 C Compressed extension
+		//	3 D Double-precision floating-point extension
+		//	4 E RV32E base ISA
+		//	5 F Single-precision floating-point extension
+		//	6 G Reserved
+		//	7 H Hypervisor extension
+		//	8 I RV32I/64I/128I base ISA
+		//	9 J Reserved
+		//	10 K Reserved
+		//	11 L Reserved
+		//	12 M Integer Multiply/Divide extension
+		//	13 N Tentatively reserved for User-Level Interrupts extension
+		//	14 O Reserved
+		//	15 P Tentatively reserved for Packed-SIMD extension
+		//	16 Q Quad-precision floating-point extension
+		//	17 R Reserved
+		//	18 S Supervisor mode implemented
+		//	19 T Reserved
+		//	20 U User mode implemented
+		//	21 V “V” Vector extension implemented
+		//	22 W Reserved
+		//	23 X Non-standard extensions present
+		//	24 Y Reserved
+		//	25 Z Reserved
+
+		// Allwinner F133-A
+		//	READ_CSR(misa)=00B4112D: --X-VU-S-----M---I--F-DC-A
+		//	-march=RV32xvusmifdca
+
+		const unsigned misa_val = READ_CSR(0x0301 /* MISA */);
 		unsigned i;
-		PRINTF("READ_CSR(misa)=%08X: ", READ_CSR(0x0301 /* MISA */));
+		PRINTF("READ_CSR(misa)=%08X: ", misa_val);
 		for (i = 0; i < 26; ++ i)
 		{
 			const int pos = 25 - i;
 			const unsigned mask = 1u << pos;
-			PRINTF("%c", (READ_CSR(0x0301 /* MISA */) & mask) ? 'A' + pos : '-');
-
+			PRINTF("%c", (misa_val & mask) ? 'A' + pos : '-');
+		}
+		PRINTF("\n");
+		PRINTF("-march=rv32g");
+		for (i = 0; i < 26; ++ i)
+		{
+			const unsigned mask = 1u << i;
+			if (misa_val & mask)
+				PRINTF("_Z%c", 'a' + i);
 		}
 		PRINTF("\n");
 

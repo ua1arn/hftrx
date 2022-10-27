@@ -28,25 +28,6 @@
  * SOFTWARE.
  */
 
-# define cfi_startproc			.cfi_startproc
-# define cfi_endproc			.cfi_endproc
-# define cfi_def_cfa(reg, off)		.cfi_def_cfa reg, off
-# define cfi_def_cfa_register(reg)	.cfi_def_cfa_register reg
-# define cfi_def_cfa_offset(off)	.cfi_def_cfa_offset off
-# define cfi_adjust_cfa_offset(off)	.cfi_adjust_cfa_offset off
-# define cfi_offset(reg, off)		.cfi_offset reg, off
-# define cfi_rel_offset(reg, off)	.cfi_rel_offset reg, off
-# define cfi_register(r1, r2)		.cfi_register r1, r2
-# define cfi_return_column(reg)	.cfi_return_column reg
-# define cfi_restore(reg)		.cfi_restore reg
-# define cfi_same_value(reg)		.cfi_same_value reg
-# define cfi_undefined(reg)		.cfi_undefined reg
-# define cfi_remember_state		.cfi_remember_state
-# define cfi_restore_state		.cfi_restore_state
-# define cfi_window_save		.cfi_window_save
-# define cfi_personality(enc, exp)	.cfi_personality enc, exp
-# define cfi_lsda(enc, exp)		.cfi_lsda enc, exp
-
 .macro trap_entry
     addi sp, sp, -64
     sw x1,  0(sp)
@@ -92,53 +73,52 @@
 	.global Reset_Handler
 .section .startup0
 .align 8
-	cfi_startproc
-	cfi_undefined (ra)
 Reset_Handler:
-	//lla   gp, 0//__global_pointer$
-	/*
-   mv  a1, zero
-   mv  x1, zero
-   mv  x2, zero
-   mv  x3, zero
-   mv  x4, zero
-   mv  x5, zero
-   mv  x6, zero
-   mv  x7, zero
-   mv  x8, zero
-   mv  x9, zero
-   mv  x10, zero
-   mv  x11, zero
-   mv  x12, zero
-   mv  x13, zero
-   mv  x14, zero
-   mv  x15, zero
-   mv  x16, zero
-   mv  x17, zero
-   mv  x18, zero
-   mv  x19, zero
-   mv  x20, zero
-   mv  x21, zero
-   mv  x22, zero
-   mv  x23, zero
-   mv  x24, zero
-   mv  x25, zero
-   mv  x26, zero
-   mv  x27, zero
-   mv  x28, zero
-   mv  x29, zero
-   mv  x30, zero
-   mv  x31, zero
-*/
+	/* set all registers to zero */
+	mv  x1, x0
+	mv  x2, x1
+	mv  x3, x1
+	mv  x4, x1
+	mv  x5, x1
+	mv  x6, x1
+	mv  x7, x1
+	mv  x8, x1
+	mv  x9, x1
+	mv x10, x1
+	mv x11, x1
+	mv x12, x1
+	mv x13, x1
+	mv x14, x1
+	mv x15, x1
+	mv x16, x1
+	mv x17, x1
+	mv x18, x1
+	mv x19, x1
+	mv x20, x1
+	mv x21, x1
+	mv x22, x1
+	mv x23, x1
+	mv x24, x1
+	mv x25, x1
+	mv x26, x1
+	mv x27, x1
+	mv x28, x1
+	mv x29, x1
+	mv x30, x1
+	mv x31, x1
 
-	lla    sp, __stack
+	/* stack initilization */
+	la    sp, __stack
 	mv	gp, zero
     mv  a0, zero
     mv  a1, zero
 	call SystemInit
 	call __cmsis_start
-	j _start
-	cfi_endproc
+	call _start
+    /* to let simulator know program end point */
+    addi x1,x0,1
+    addi x2,x0,-1
+    sw x1, 0(x2)
 
 .section .isr_vector
 .align 8

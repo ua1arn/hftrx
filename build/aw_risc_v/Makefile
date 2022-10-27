@@ -55,14 +55,11 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 # xfel payload compile use flags:
 # -march=rv64gvxthead -mabi=lp64d -mcmodel=medany -fno-stack-protector
 
-#CORE = -march=rv32gcv
-CORE = -march=rv32g
-#CORE = -march=rv32imac -mabi=ilp32
-#CORE = -march=rv64gcv -mabi=lp64
-#CORE += -mfloat-abi=hard
-#CORE += -mfpu=neon
-#CORE += -mfpu=neon-vfpv4
-#CORE += -mfpu=vfpv4
+# see https://five-embeddev.com/quickref/isa_ext.html#standard-isas--alias
+# see https://github.com/riscv-non-isa/riscv-toolchain-conventions
+
+#CORE = -march=rv32g
+CORE = -march=rv64ima -mabi=lp64
 
 # Define optimisation level here
 #OPT = -Og
