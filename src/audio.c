@@ -3920,12 +3920,12 @@ static RAMFUNC FLOAT_t preparevi(
 			moni->QV = vi0f;
 			return injectsubtone(vi0f, ctcss);
 
-#if WITHUSBUACOUT
+#if WITHUSBHW && WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
 			// источник - USB
 			* moni = viusb0f;
 			return injectsubtone(viusb0f.IV * txlevelXXX, ctcss);
-#endif /* WITHUSBUACOUT */
+#endif /* WITHUSBHW && WITHUSBUACOUT */
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
