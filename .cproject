@@ -3862,10 +3862,11 @@
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1573193245" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.1001952264" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
+									<listOptionValue builtIn="false" value="__CORTEX_A=0"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYPE_F133=1"/>
+									<listOptionValue builtIn="false" value="___riscv=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1374465165" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -3880,10 +3881,11 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1368197055" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.370998963" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
+									<listOptionValue builtIn="false" value="__CORTEX_A=0"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYPE_F133=1"/>
+									<listOptionValue builtIn="false" value="___riscv=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.42807057" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
@@ -3902,10 +3904,11 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1461314956" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.4728771" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
+									<listOptionValue builtIn="false" value="__CORTEX_A=0"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYPE_F133=1"/>
+									<listOptionValue builtIn="false" value="___riscv=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.2012254851" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
