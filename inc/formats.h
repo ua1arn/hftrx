@@ -26,8 +26,8 @@ void debug_printf_P(const FLASHMEM char * __restrict format, ... );
 char * safestrcpy(char * dst, size_t blen, const char * src);
 void strtrim(char * s);
 
-void printhex(unsigned long voffs, const void * buff, unsigned length);
-void printhex32(unsigned long voffs, const void * vbuff, unsigned length);
+void printhex(uintptr_t offs, const void * buff, unsigned length);
+void printhex32(uintptr_t voffs, const void * vbuff, unsigned length);
 
 // spool-based functions for debug
 int dbg_puts_impl_P(const FLASHMEM char * s);

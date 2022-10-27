@@ -418,7 +418,7 @@ toprintc(int c)
 }
 
 void
-printhex(unsigned long voffs, const void * vbuff, unsigned length)
+printhex(uintptr_t voffs, const void * vbuff, unsigned length)
 {
 	const uint8_t * buff = (const uint8_t *) vbuff;
 	enum { ROWSIZE = 16 };
@@ -429,7 +429,7 @@ printhex(unsigned long voffs, const void * vbuff, unsigned length)
 	{
 		const int remaining = length - i * ROWSIZE;
 		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
-		debug_printf_P(PSTR("%08lX "), voffs + i * ROWSIZE);
+		debug_printf_P(PSTR("%08X "), (unsigned) (voffs + i * ROWSIZE));
 		for (j = 0; j < trl; ++ j)
 			debug_printf_P(PSTR(" %02X"), buff [i * ROWSIZE + j]);
 
@@ -444,7 +444,7 @@ printhex(unsigned long voffs, const void * vbuff, unsigned length)
 }
 
 void
-printhex32(unsigned long voffs, const void * vbuff, unsigned length)
+printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 {
 	const uint32_t * buff = (const uint32_t *) vbuff;
 	enum { ROWSIZE = 8 };
@@ -455,7 +455,7 @@ printhex32(unsigned long voffs, const void * vbuff, unsigned length)
 	{
 		const int remaining = (length + 3) / 4 - i * ROWSIZE;
 		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
-		debug_printf_P(PSTR("%08lX "), voffs + i * ROWSIZE * 4);
+		debug_printf_P(PSTR("%08X "), (unsigned) (voffs + i * ROWSIZE * 4));
 		for (j = 0; j < trl; ++ j)
 			debug_printf_P(PSTR(" %08X"), buff [i * ROWSIZE + j]);
 
