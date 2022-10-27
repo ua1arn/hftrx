@@ -2777,4 +2777,30 @@ __STATIC_INLINE uint32_t __ROR(uint32_t op1, uint32_t op2)
   return (op1 >> op2) | (op1 << (32U - op2));
 }
 
+// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/libcpu/risc-v/common/riscv-ops.h
+
+#if defined(__GNUC__) && !defined(__ASSEMBLER__)
+
+
+#define READ_CSR(reg) ({ unsigned long __tmp; \
+  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
+  __tmp; })
+
+#define WRITE_CSR(reg, val) ({ \
+  asm volatile ("csrw " #reg ", %0" :: "rK"(val)); })
+
+#define SWAP_CSR(reg, val) ({ unsigned long __tmp; \
+  asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "rK"(val)); \
+  __tmp; })
+
+#define SET_CSR(reg, bit) ({ unsigned long __tmp; \
+  asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "rK"(bit)); \
+  __tmp; })
+
+#define CLEAR_CSR(reg, bit) ({ unsigned long __tmp; \
+  asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "rK"(bit)); \
+  __tmp; })
+
+#endif /* end of __GNUC__ */
+
 #endif /* ARCH_ALLWNR_F133_ALLWNR_T13S3_H_ */

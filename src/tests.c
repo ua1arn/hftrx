@@ -9635,36 +9635,10 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 }
 
 #if CPUSTYPE_F133
-// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/libcpu/risc-v/common/riscv-ops.h
 
-#if defined(__GNUC__) && !defined(__ASSEMBLER__)
-
-
-#define read_csr(reg) ({ unsigned long __tmp; \
-  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
-  __tmp; })
-
-#define write_csr(reg, val) ({ \
-  asm volatile ("csrw " #reg ", %0" :: "rK"(val)); })
-
-#define swap_csr(reg, val) ({ unsigned long __tmp; \
-  asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "rK"(val)); \
-  __tmp; })
-
-#define set_csr(reg, bit) ({ unsigned long __tmp; \
-  asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "rK"(bit)); \
-  __tmp; })
-
-#define clear_csr(reg, bit) ({ unsigned long __tmp; \
-  asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "rK"(bit)); \
-  __tmp; })
-
-#define rdtime() read_csr(time)
-#define rdcycle() read_csr(cycle)
-#define rdinstret() read_csr(instret)
-
-#endif /* end of __GNUC__ */
-
+#define rdtime() READ_CSR(time)
+#define rdcycle() READ_CSR(cycle)
+#define rdinstret() READ_CSR(instret)
 
 // https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/bsp/hifive1/freedom-e-sdk/bsp/env/encoding.h
 #define CSR_MISA 0x301
@@ -9679,9 +9653,9 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 void riscv_fpu_init(void)
 {
     /* Enable FPU if present */
-    if (read_csr(misa) & (1 << ('F' - 'A'))) {
+    if (READ_CSR(misa) & (1 << ('F' - 'A'))) {
     	TP();
-        write_csr(fcsr, 0);             /* initialize rounding mode, undefined at reset */
+    	WRITE_CSR(fcsr, 0);             /* initialize rounding mode, undefined at reset */
     	TP();
     }
 }
