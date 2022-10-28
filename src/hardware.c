@@ -4181,18 +4181,18 @@ __NO_RETURN void __riscv_start(void)
   } __zero_table_t;
 #endif /* __LP64__ */
 
-  extern const __copy_table_t __copy_table_start__;
-  extern const __copy_table_t __copy_table_end__;
-  extern const __zero_table_t __zero_table_start__;
-  extern const __zero_table_t __zero_table_end__;
+  extern const __copy_table_t __copy_table_start64__;
+  extern const __copy_table_t __copy_table_end64__;
+  extern const __zero_table_t __zero_table_start64__;
+  extern const __zero_table_t __zero_table_end64__;
 
-  for (__copy_table_t const* pTable = &__copy_table_start__; pTable < &__copy_table_end__; ++pTable) {
+  for (__copy_table_t const* pTable = &__copy_table_start64__; pTable < &__copy_table_end64__; ++pTable) {
     for(uint32_t i=0u; i<pTable->wlen; ++i) {
       pTable->dest[i] = pTable->src[i];
     }
   }
 
-  for (__zero_table_t const* pTable = &__zero_table_start__; pTable < &__zero_table_end__; ++pTable) {
+  for (__zero_table_t const* pTable = &__zero_table_start64__; pTable < &__zero_table_end64__; ++pTable) {
     for(uint32_t i=0u; i<pTable->wlen; ++i) {
       pTable->dest[i] = 0u;
     }

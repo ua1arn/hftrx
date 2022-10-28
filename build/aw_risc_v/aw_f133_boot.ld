@@ -98,17 +98,17 @@ SECTIONS
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
 	.copy.table :
 	{
-		. = ALIGN(4);
-		__copy_table_start__ = .;
+		. = ALIGN(8);
+		__copy_table_start64__ = .;
 	/*
 		QUAD (__etext)
 		QUAD (__data_start__)
-		QUAD (__data_end__ - __data_start__)
+		LONG (__data_end__ - __data_start__)
 		QUAD (__etext2)
 		QUAD (__data2_start__)
-		QUAD (__data2_end__ - __data2_start__)
+		LONG (__data2_end__ - __data2_start__)
 	*/
-		__copy_table_end__ = .;
+		__copy_table_end64__ = .;
 	} > RAM
 
 	/* To clear multiple BSS sections,
@@ -116,15 +116,15 @@ SECTIONS
 	 * define __STARTUP_CLEAR_BSS_MULTIPLE in startup_ARMCMx.S */
 	.zero.table :
 	{
-		. = ALIGN(4);
-		__zero_table_start__ = .;
+		. = ALIGN(8);
+		__zero_table_start64__ = .;
 		QUAD (__bss_start__)
 		QUAD (__bss_end__ - __bss_start__)
 	/*
 		QUAD (__bss2_start__)
 		QUAD (__bss2_end__ - __bss2_start__)
 	*/
-		__zero_table_end__ = .;
+		__zero_table_end64__ = .;
 	} > RAM
 
 	__etext = .;
