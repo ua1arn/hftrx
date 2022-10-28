@@ -2904,8 +2904,12 @@ sysinit_fpu_initialize(void)
 
 #elif __riscv && defined(__riscv_zicsr)
 
-	csr_set_bits_mstatus(0x00006000);	// MSTATUS_FS = 0x00006000 = Dirty
- 	csr_write_fcsr(0);             /* initialize rounding mode, undefined at reset */
+	// See:
+	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
+	// 3.1.8 Extension Context Status in mstatus Register
+
+	csr_set_bits_mstatus(0x00006000);	/* MSTATUS_FS = 0x00006000 = Dirty */
+ 	csr_write_fcsr(0);             		/* initialize rounding mode, undefined at reset */
 
  #endif /* __riscv */
 
