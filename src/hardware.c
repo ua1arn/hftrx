@@ -2971,7 +2971,8 @@ sysinit_fpu_initialize(void)
 //    if (csr_read_misa() & (1u << ('F' - 'A'))) {
 //     	csr_write_fcsr(0);             /* initialize rounding mode, undefined at reset */
 //    }
-	RV_FPU_ENABLE();
+	//RV_FPU_ENABLE();
+	csr_set_bits_mstatus(MSTATUS_FS);	// MSTATUS_FS = 0x00006000 = Dirty
 #endif /* __riscv */
 }
 
