@@ -2778,7 +2778,11 @@ __STATIC_INLINE uint32_t __ROR(uint32_t op1, uint32_t op2)
 // https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/mcsr-ext.h
 // https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/cache.h
 
-#define CSR_MISA 0x0301
-#define CSR_FCSR 0x0003
+//#define CSR_MISA 0x0301
+//#define CSR_FCSR 0x0003
+
+#if  defined(__riscv_zicsr)
+#include "riscv_csr.h"
+#endif
 
 #endif /* ARCH_ALLWNR_F133_ALLWNR_T13S3_H_ */
