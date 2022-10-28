@@ -62,7 +62,7 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 
 #CORE = -march=rv64ima -mabi=lp64 -mcmodel=medany -fno-stack-protector
 #CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector
-CORE = -march=rv64imaf_zicsr -mabi=lp64f
+CORE = -march=rv64imafd_zicsr -mabi=lp64d
 
 # Define optimisation level here
 OPT = -Og
