@@ -2911,7 +2911,7 @@ sysinit_fpu_initialize(void)
 	csr_set_bits_mstatus(0x00006000);	/* MSTATUS_FS = 0x00006000 = Dirty */
  	csr_write_fcsr(0);             		/* initialize rounding mode, undefined at reset */
 
- #endif /* __riscv */
+#endif /* __riscv */
 
 #if (__CORTEX_M != 0) && CTLSTYLE_V3D
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
@@ -3201,7 +3201,31 @@ sysinit_mmu_initialize(void)
 
 #endif
 
-#endif /* (__CORTEX_A != 0) */
+
+#elif __riscv && defined(__riscv_zicsr)
+
+	// RISC-V MMU initialize
+	TP();
+
+	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __TTB_BASE;
+
+	csr_write_sptbr((uintptr_t) tlbbase);
+
+	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
+	// 3.1.6 Virtualization Management Field in mstatus Register
+	// Table 3.3: Encoding of virtualization management field VM[4:0]
+
+	{
+		uint_xlen_t v = csr_read_mstatus();
+		v &= ~ ((uint_xlen_t) 0x1F) << 17;	// VM[4:0]
+		v |= ((uint_xlen_t) 0x08) << 17;	// Set Page-based 32-bit virtual addressing.
+		//csr_write_mstatus(v);
+	}
+
+	TP();
+
+#endif
 
 	//PRINTF("sysinit_mmu_initialize done.\n");
 }
@@ -3249,7 +3273,13 @@ sysinit_cache_initialize(void)
 			__DSB();
 		#endif /* (__CORTEX_A == 9U) */
 	#endif
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+
+#elif __riscv && defined(__riscv_zicsr)
+
+	// RISC-V cache initialize
+	//TP();
+
+#endif
 }
 
 static void FLASHMEMINITFUNC
