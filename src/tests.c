@@ -9638,7 +9638,7 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
-#if 1 && __riscv && defined(__riscv_zicsr)
+#if 0 && __riscv && defined(__riscv_zicsr)
 	{
 		// see https://github.com/five-embeddev/riscv-csr-access/blob/master/include/riscv-csr.h
 
@@ -9684,7 +9684,7 @@ void lowtests(void)
 
 	}
 #endif
-#if 1 && WITHDEBUG && __riscv
+#if 0 && WITHDEBUG && __riscv
 	{
 		PRINTF("sqrtf=%d\n", (int) (sqrtf(2) * 10000));
 		PRINTF("sqrt=%d\n", (int) (sqrt(2) * 10000));
