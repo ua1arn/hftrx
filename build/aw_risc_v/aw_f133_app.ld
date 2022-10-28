@@ -93,13 +93,13 @@ SECTIONS
 		. = ALIGN(4);
 		__copy_table_start__ = .;
 	/*
-		LONG (__etext)
-		LONG (__data_start__)
-		LONG (__data_end__ - __data_start__)
+		QUAD (__etext)
+		QUAD (__data_start__)
+		QUAD (__data_end__ - __data_start__)
 	*/
-		LONG (__etext2)
-		LONG (__data2_start__)
-		LONG (__data2_end__ - __data2_start__)
+		QUAD (__etext2)
+		QUAD (__data2_start__)
+		QUAD (__data2_end__ - __data2_start__)
 		__copy_table_end__ = .;
 	} > RAM
 
@@ -110,11 +110,11 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		__zero_table_start__ = .;
-		LONG (__bss_start__)
-		LONG (__bss_end__ - __bss_start__)
+		QUAD (__bss_start__)
+		QUAD (__bss_end__ - __bss_start__)
 	/*
-		LONG (__bss2_start__)
-		LONG (__bss2_end__ - __bss2_start__)
+		QUAD (__bss2_start__)
+		QUAD (__bss2_end__ - __bss2_start__)
 	*/
 		__zero_table_end__ = .;
 	} > RAM

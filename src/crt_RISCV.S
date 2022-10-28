@@ -113,8 +113,7 @@ Reset_Handler:
     mv  a0, zero
     mv  a1, zero
 	call SystemInit
-	call __cmsis_start
-	call _start
+	call __riscv_start
     /* to let simulator know program end point */
     addi x1,x0,1
     addi x2,x0,-1

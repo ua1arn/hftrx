@@ -2908,8 +2908,8 @@ sysinit_fpu_initialize(void)
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
 #endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
 
-#if __riscv && 0
 
+#if __riscv && defined(__riscv_zicsr) && 0
 	// deliverable/RIOT/cpu/riscv_common/riscv_init.c
 	/* Enable FPU if present */
     if (READ_CSR(0x0301/*CSR_MISA*/) & (1u << ('F' - 'A'))) {
@@ -4153,10 +4153,22 @@ void _stack_init(void)
            in the used linker script.
 
  */
-__NO_RETURN void __cmsis_start(void)
+__NO_RETURN void __riscv_start(void)
 {
   extern void _start(void) __NO_RETURN;
 
+#if __LP64__
+  typedef struct {
+    uint32_t const* src;
+    uint32_t* dest;
+    uint64_t  wlen;
+  } __copy_table_t;
+
+  typedef struct {
+    uint32_t* dest;
+    uint64_t  wlen;
+  } __zero_table_t;
+#else /* __LP64__ */
   typedef struct {
     uint32_t const* src;
     uint32_t* dest;
@@ -4167,6 +4179,7 @@ __NO_RETURN void __cmsis_start(void)
     uint32_t* dest;
     uint32_t  wlen;
   } __zero_table_t;
+#endif /* __LP64__ */
 
   extern const __copy_table_t __copy_table_start__;
   extern const __copy_table_t __copy_table_end__;
