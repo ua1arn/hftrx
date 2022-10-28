@@ -471,12 +471,12 @@ void debug_printf_P(const FLASHMEM char *format, ... )
 }
 
 void
-printhex(unsigned long voffs, const void * buff, unsigned length)
+printhex(uintptr_t voffs, const void * buff, unsigned length)
 {
 }
 
 void
-printhex32(unsigned long voffs, const void * buff, unsigned length)
+printhex32(uintptr_t voffs, const void * buff, unsigned length)
 {
 }
 
