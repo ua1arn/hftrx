@@ -103,10 +103,10 @@ SECTIONS
 	/*
 		QUAD (__etext)
 		QUAD (__data_start__)
-		LONG (__data_end__ - __data_start__)
+		QUAD (__data_end__ - __data_start__)
 		QUAD (__etext2)
 		QUAD (__data2_start__)
-		LONG (__data2_end__ - __data2_start__)
+		QUAD (__data2_end__ - __data2_start__)
 	*/
 		__copy_table_end64__ = .;
 	} > RAM
