@@ -2749,39 +2749,12 @@ __STATIC_INLINE uint32_t __ROR(uint32_t op1, uint32_t op2)
   return (op1 >> op2) | (op1 << (32U - op2));
 }
 
-#if defined(__GNUC__) && !defined(__ASSEMBLER__)
-
-
-#define READ_CSR(reg) ({ unsigned long __tmp; \
-  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
-  __tmp; })
-
-#define WRITE_CSR(reg, val) ({ \
-  asm volatile ("csrw " #reg ", %0" :: "rK"(val)); })
-
-#define SWAP_CSR(reg, val) ({ unsigned long __tmp; \
-  asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "rK"(val)); \
-  __tmp; })
-
-#define SET_CSR(reg, bit) ({ unsigned long __tmp; \
-  asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "rK"(bit)); \
-  __tmp; })
-
-#define CLEAR_CSR(reg, bit) ({ unsigned long __tmp; \
-  asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "rK"(bit)); \
-  __tmp; })
-
-#endif /* end of __GNUC__ */
-
 // https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/bsp/hifive1/freedom-e-sdk/bsp/env/encoding.h
 // https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/libcpu/risc-v/common/riscv-ops.h
 // https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/mcsr-ext.h
 // https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/cache.h
 
-//#define CSR_MISA 0x0301
-//#define CSR_FCSR 0x0003
-
-#if  defined(__riscv_zicsr)
+#if defined(__riscv_zicsr)
 #include "riscv_csr.h"
 #endif
 

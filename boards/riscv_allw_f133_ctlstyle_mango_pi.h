@@ -248,8 +248,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define FORMATFROMLIBRARY 	1
-	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+//	#define FORMATFROMLIBRARY 	1
+//	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
