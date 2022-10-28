@@ -9634,31 +9634,6 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 	return 10;
 }
 
-
-#if defined(__GNUC__) && !defined(__ASSEMBLER__) && __riscv
-
-
-#define READ_CSR(reg) ({ unsigned long __tmp; \
-  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
-  __tmp; })
-
-#define WRITE_CSR(reg, val) ({ \
-  asm volatile ("csrw " #reg ", %0" :: "rK"(val)); })
-
-#define SWAP_CSR(reg, val) ({ unsigned long __tmp; \
-  asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "rK"(val)); \
-  __tmp; })
-
-#define SET_CSR(reg, bit) ({ unsigned long __tmp; \
-  asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "rK"(bit)); \
-  __tmp; })
-
-#define CLEAR_CSR(reg, bit) ({ unsigned long __tmp; \
-  asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "rK"(bit)); \
-  __tmp; })
-
-#endif /* end of __GNUC__ */
-
 // Сразу после начала main
 
 void lowtests(void)
@@ -9696,9 +9671,7 @@ void lowtests(void)
 
 		// Allwinner F133-A
 		//	READ_CSR(misa)=00B4112D: --X-VU-S-----M---I--F-DC-A
-		TP();
-		const unsigned misa_val = READ_CSR(0x0301 /* MISA */);
-		//const unsigned misa_val = csr_read_misa();
+		const unsigned misa_val = csr_read_misa();
 		unsigned i;
 		PRINTF("READ_CSR(misa)=%08X: ", misa_val);
 		for (i = 0; i < 26; ++ i)
@@ -9715,8 +9688,8 @@ void lowtests(void)
 	{
 		PRINTF("sqrtf=%d\n", (int) (sqrtf(2) * 10000));
 		PRINTF("sqrt=%d\n", (int) (sqrt(2) * 10000));
-//		PRINTF("sqrtf=%g\n", sqrtf(2));
-//		PRINTF("sqrt=%g\n", sqrt(2));
+		PRINTF("sqrtf=%g\n", sqrtf(2));
+		PRINTF("sqrt=%g\n", sqrt(2));
 
 	}
 #endif

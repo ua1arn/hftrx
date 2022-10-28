@@ -2873,6 +2873,60 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t t
 
 #endif /* CPUSTYLE_R7S721 */
 
+#if __riscv
+#ifdef __riscv
+
+#if (__riscv_xlen == 64) || (__riscv_xlen == 32)
+// Size of (unsigned) long equals xlen according to ABI
+typedef long rvxlen_signed_t;
+typedef unsigned long rvxlen_unsigned_t;
+#define RV_XLEN_BYTES (__riscv_xlen / 8)
+#if __SIZEOF_POINTER__ != (__riscv_xlen / 8)
+#error "Incompatible RISC-V ABI."
+#endif
+#else
+#error "Incompatible or undefined RISC-V XLEN."
+#endif
+
+#else
+
+#error "Archicetcure missmatch! Expected RISC-V."
+
+#endif
+
+/**
+ * @brief Print format for depending on arch
+ */
+#if (__riscv_xlen == 64)
+#define PRIxRVXLEN "016lx"
+#else
+#define PRIxRVXLEN "08lx"
+#endif
+
+
+/**
+ * @brief   Enable the FPU
+ */
+#define RV_FPU_ENABLE()  do {                   \
+    rvxlen_unsigned_t _tmp_fpuFlag = MSTATUS_FS;     \
+    __asm__ __volatile__ ( "csrs mstatus, %0" : "+r"(_tmp_fpuFlag) );     \
+} while(0)
+
+/**
+ * @brief   Disable the FPU
+ */
+#define RV_FPU_DISABLE()  do {                   \
+    rvxlen_unsigned_t _tmp_fpuFlag = MSTATUS_FS;     \
+    __asm__ __volatile__ ( "csrc mstatus, %0" : "+r"(_tmp_fpuFlag) );     \
+} while(0)
+
+#define MSTATUS_HPP         0x00000600
+#define MSTATUS_MPP         0x00001800
+#define MSTATUS_FS          0x00006000
+#define MSTATUS_XS          0x00018000
+
+#endif
+
 // PLL and caches iniitialize
 static void FLASHMEMINITFUNC
 sysinit_fpu_initialize(void)
@@ -2909,14 +2963,15 @@ sysinit_fpu_initialize(void)
 #endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
 
 
-#if __riscv && defined(__riscv_zicsr) && 0
+#if __riscv && defined(__riscv_zicsr) && 1
 	// deliverable/RIOT/cpu/riscv_common/riscv_init.c
-	/* Enable FPU if present */
-    if (READ_CSR(0x0301/*CSR_MISA*/) & (1u << ('F' - 'A'))) {
-    	TP();
-    	WRITE_CSR(0x0003 /*CSR_FCSR*/, 0);             /* initialize rounding mode, undefined at reset */
-    	TP();
-    }
+	// https://github.com/fzi-forschungszentrum-informatik/RIOT64/blob/d90ecc6159d3f222130ea89ab4f3d6d3a28748a0/cpu/riscv_common/riscv_cpu.c
+
+//	/* Enable FPU if present */
+//    if (csr_read_misa() & (1u << ('F' - 'A'))) {
+//     	csr_write_fcsr(0);             /* initialize rounding mode, undefined at reset */
+//    }
+	RV_FPU_ENABLE();
 #endif /* __riscv */
 }
 
