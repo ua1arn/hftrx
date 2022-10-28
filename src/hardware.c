@@ -2376,8 +2376,6 @@ void irqlog_print(void)
 }
 #endif
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
-
 //#define INTC_LEVEL_SENSITIVE    (0)     /* Level sense  */
 //#define INTC_EDGE_TRIGGER       (1)     /* Edge trigger */
 
@@ -2564,7 +2562,12 @@ void IRQ_Handler_GIC(void)
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
+
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9 || __riscv
+
 uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
+
+#if __CORTEX_A
 
 // Short-descriptor format memory region attributes, without TEX remap
 // When using the Short-descriptor translation table formats, TEX remap is disabled when SCTLR.TRE is set to 0.
@@ -2623,6 +2626,13 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 #define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 #define	TTB_PARA_NO_ACCESS 		0
 
+#else /* __CORTEX_A */
+
+#define	TTB_PARA_CACHED(ro, xn) 0//TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, SHAREDval_WBCACHE, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_DEVICE 		0//TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_NO_ACCESS 		0
+
+#endif /* __CORTEX_A */
 /*
  * https://community.st.com/s/question/0D73W000000UagD/what-a-type-of-mmu-memory-regions-recommended-for-regions-with-peripheralsstronglyordered-or-device?s1oid=00Db0000000YtG6&s1nid=0DB0X000000DYbd&emkind=chatterCommentNotification&s1uid=0050X000007vtUt&emtm=1599464922440&fromEmail=1&s1ext=0&t=1599470826880
  *
@@ -2764,6 +2774,18 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
+#elif CPUSTYPE_F133
+
+	if (a < 0x00400000)
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR3 - 2 GB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+//	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
+//		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
 #else
 
 	// Все сравнения должны быть не точнее 1 MB
@@ -2774,6 +2796,7 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 #endif
 }
+
 /* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 static void FLASHMEMINITFUNC
 sysinit_ttbr_initialize(void)
@@ -2782,6 +2805,7 @@ sysinit_ttbr_initialize(void)
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
 
+#if __CORTEX_A
 #if 0
 	/* Set location of level 1 page table
 	; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
@@ -2831,6 +2855,24 @@ sysinit_ttbr_initialize(void)
 #endif
 
 	MMU_Enable();
+
+#elif __riscv
+
+	//#warning Implement for RISC-C
+	csr_write_sptbr((uintptr_t) tlbbase);
+
+	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
+	// 3.1.6 Virtualization Management Field in mstatus Register
+	// Table 3.3: Encoding of virtualization management field VM[4:0]
+
+	{
+		uint_xlen_t v = csr_read_mstatus();
+		v &= ~ ((uint_xlen_t) 0x1F) << 17;	// VM[4:0]
+		v |= ((uint_xlen_t) 0x08) << 17;	// Set Page-based 32-bit virtual addressing.
+		//csr_write_mstatus(v);
+	}
+
+#endif
 }
 
 static void FLASHMEMINITFUNC
@@ -3207,21 +3249,9 @@ sysinit_mmu_initialize(void)
 	// RISC-V MMU initialize
 	TP();
 
-	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __TTB_BASE;
 
-	csr_write_sptbr((uintptr_t) tlbbase);
-
-	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
-	// 3.1.6 Virtualization Management Field in mstatus Register
-	// Table 3.3: Encoding of virtualization management field VM[4:0]
-
-	{
-		uint_xlen_t v = csr_read_mstatus();
-		v &= ~ ((uint_xlen_t) 0x1F) << 17;	// VM[4:0]
-		v |= ((uint_xlen_t) 0x08) << 17;	// Set Page-based 32-bit virtual addressing.
-		//csr_write_mstatus(v);
-	}
+	ttb_initialize(ttb_accessbits, 0, 0);
+	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 	TP();
 
