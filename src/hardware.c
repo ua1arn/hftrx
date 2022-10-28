@@ -2873,60 +2873,6 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t t
 
 #endif /* CPUSTYLE_R7S721 */
 
-#if __riscv
-#ifdef __riscv
-
-#if (__riscv_xlen == 64) || (__riscv_xlen == 32)
-// Size of (unsigned) long equals xlen according to ABI
-typedef long rvxlen_signed_t;
-typedef unsigned long rvxlen_unsigned_t;
-#define RV_XLEN_BYTES (__riscv_xlen / 8)
-#if __SIZEOF_POINTER__ != (__riscv_xlen / 8)
-#error "Incompatible RISC-V ABI."
-#endif
-#else
-#error "Incompatible or undefined RISC-V XLEN."
-#endif
-
-#else
-
-#error "Archicetcure missmatch! Expected RISC-V."
-
-#endif
-
-/**
- * @brief Print format for depending on arch
- */
-#if (__riscv_xlen == 64)
-#define PRIxRVXLEN "016lx"
-#else
-#define PRIxRVXLEN "08lx"
-#endif
-
-
-/**
- * @brief   Enable the FPU
- */
-#define RV_FPU_ENABLE()  do {                   \
-    rvxlen_unsigned_t _tmp_fpuFlag = MSTATUS_FS;     \
-    __asm__ __volatile__ ( "csrs mstatus, %0" : "+r"(_tmp_fpuFlag) );     \
-} while(0)
-
-/**
- * @brief   Disable the FPU
- */
-#define RV_FPU_DISABLE()  do {                   \
-    rvxlen_unsigned_t _tmp_fpuFlag = MSTATUS_FS;     \
-    __asm__ __volatile__ ( "csrc mstatus, %0" : "+r"(_tmp_fpuFlag) );     \
-} while(0)
-
-#define MSTATUS_HPP         0x00000600
-#define MSTATUS_MPP         0x00001800
-#define MSTATUS_FS          0x00006000
-#define MSTATUS_XS          0x00018000
-
-#endif
-
 // PLL and caches iniitialize
 static void FLASHMEMINITFUNC
 sysinit_fpu_initialize(void)
@@ -2956,24 +2902,16 @@ sysinit_fpu_initialize(void)
 	// FPU
 	__FPU_Enable();
 
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+#elif __riscv && defined(__riscv_zicsr)
+
+	csr_set_bits_mstatus(0x00006000);	// MSTATUS_FS = 0x00006000 = Dirty
+ 	csr_write_fcsr(0);             /* initialize rounding mode, undefined at reset */
+
+ #endif /* __riscv */
 
 #if (__CORTEX_M != 0) && CTLSTYLE_V3D
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
 #endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
-
-
-#if __riscv && defined(__riscv_zicsr) && 1
-	// deliverable/RIOT/cpu/riscv_common/riscv_init.c
-	// https://github.com/fzi-forschungszentrum-informatik/RIOT64/blob/d90ecc6159d3f222130ea89ab4f3d6d3a28748a0/cpu/riscv_common/riscv_cpu.c
-
-//	/* Enable FPU if present */
-//    if (csr_read_misa() & (1u << ('F' - 'A'))) {
-//     	csr_write_fcsr(0);             /* initialize rounding mode, undefined at reset */
-//    }
-	//RV_FPU_ENABLE();
-	csr_set_bits_mstatus(MSTATUS_FS);	// MSTATUS_FS = 0x00006000 = Dirty
-#endif /* __riscv */
 }
 
 static void FLASHMEMINITFUNC
