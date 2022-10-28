@@ -4216,13 +4216,13 @@ __NO_RETURN void __riscv_start(void)
   extern void _start(void) __NO_RETURN;
 
   typedef struct {
-    uint32_t const* src;
-    uint32_t* dest;
+    volatile uint32_t const* src;
+    volatile uint32_t* dest;
     ptrdiff_t  wlen;
   } __copy_table_t;
 
   typedef struct {
-    uint32_t* dest;
+	volatile uint32_t* dest;
     ptrdiff_t  wlen;
   } __zero_table_t;
 
@@ -4238,7 +4238,7 @@ __NO_RETURN void __riscv_start(void)
   }
 
   for (__zero_table_t const* pTable = &__zero_table_start64__; pTable < &__zero_table_end64__; ++pTable) {
-    for(uint32_t i=0u; i<pTable->wlen; ++i) {
+    for(ptrdiff_t i=0u; i<pTable->wlen; ++i) {
       pTable->dest[i] = 0u;
     }
   }
