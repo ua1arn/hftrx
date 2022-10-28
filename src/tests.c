@@ -9635,6 +9635,7 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 }
 
 // Сразу после начала main
+//#include "riscv_csr.h"
 
 void lowtests(void)
 {
@@ -9673,7 +9674,8 @@ void lowtests(void)
 		//	READ_CSR(misa)=00B4112D: --X-VU-S-----M---I--F-DC-A
 		//	-march=RV32xvusmifdca
 
-		const unsigned misa_val = READ_CSR(0x0301 /* MISA */);
+		//const unsigned misa_val = READ_CSR(0x0301 /* MISA */);
+		const unsigned misa_val = csr_read_misa();
 		unsigned i;
 		PRINTF("READ_CSR(misa)=%08X: ", misa_val);
 		for (i = 0; i < 26; ++ i)
@@ -9690,8 +9692,8 @@ void lowtests(void)
 	{
 		PRINTF("sqrtf=%d\n", (int) (sqrtf(2) * 10000));
 		PRINTF("sqrt=%d\n", (int) (sqrt(2) * 10000));
-		PRINTF("sqrtf=%g\n", sqrtf(2));
-		PRINTF("sqrt=%g\n", sqrt(2));
+//		PRINTF("sqrtf=%g\n", sqrtf(2));
+//		PRINTF("sqrt=%g\n", sqrt(2));
 
 	}
 #endif

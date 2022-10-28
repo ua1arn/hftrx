@@ -4157,29 +4157,16 @@ __NO_RETURN void __riscv_start(void)
 {
   extern void _start(void) __NO_RETURN;
 
-#if __LP64__
   typedef struct {
     uint32_t const* src;
     uint32_t* dest;
-    uint64_t  wlen;
+    ptrdiff_t  wlen;
   } __copy_table_t;
 
   typedef struct {
     uint32_t* dest;
-    uint64_t  wlen;
+    ptrdiff_t  wlen;
   } __zero_table_t;
-#else /* __LP64__ */
-  typedef struct {
-    uint32_t const* src;
-    uint32_t* dest;
-    uint32_t  wlen;
-  } __copy_table_t;
-
-  typedef struct {
-    uint32_t* dest;
-    uint32_t  wlen;
-  } __zero_table_t;
-#endif /* __LP64__ */
 
   extern const __copy_table_t __copy_table_start64__;
   extern const __copy_table_t __copy_table_end64__;
@@ -4187,7 +4174,7 @@ __NO_RETURN void __riscv_start(void)
   extern const __zero_table_t __zero_table_end64__;
 
   for (__copy_table_t const* pTable = &__copy_table_start64__; pTable < &__copy_table_end64__; ++pTable) {
-    for(uint32_t i=0u; i<pTable->wlen; ++i) {
+    for(ptrdiff_t i=0u; i<pTable->wlen; ++i) {
       pTable->dest[i] = pTable->src[i];
     }
   }
