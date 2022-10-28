@@ -58,17 +58,17 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 # see https://five-embeddev.com/quickref/isa_ext.html#standard-isas--alias
 # see https://github.com/riscv-non-isa/riscv-toolchain-conventions
 
-# csr --X-VU-S-----M---I--F-DC-A
+# misa --X-VU-S-----M---I--F-DC-A
 
 #CORE = -march=rv64ima -mabi=lp64 -mcmodel=medany -fno-stack-protector
 #CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector
 CORE = -march=rv64imafd_zicsr -mabi=lp64d
 
 # Define optimisation level here
-OPT = -Og
+#OPT = -Og
 #OPT = -Ofast -flto
 #OPT = -Os -flto
-#OPT = -Os
+OPT = -Os
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
