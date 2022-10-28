@@ -1008,7 +1008,7 @@ calcdivround2(
 	);
 
 #define CATPCOUNTSIZE (13)
-#define MSGBUFFERSIZE8 (9 + CATPCOUNTSIZE)
+#define MSGBUFFERSIZE8 64//(9 + CATPCOUNTSIZE) // See struct dpclayout
 
 enum messagetypes
 {

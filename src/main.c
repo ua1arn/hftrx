@@ -15770,13 +15770,42 @@ static void dpc_1stimer(void * arg)
 #endif
 }
 
+struct dpclayout
+{
+	uint8_t nargs;
+	uintptr_t func;
+	uintptr_t arg1;
+	uintptr_t arg2;
+	uintptr_t arg3;
+	uintptr_t lp;	/* lock pointer */
+} ATTRPACKED;
+
 static void
 poke_uintptr(volatile uint8_t * p, uintptr_t v)
 {
-	p [0] = (v >> 24) & 0xFF;
-	p [1] = (v >> 16) & 0xFF;
-	p [2] = (v >> 8) & 0xFF;
-	p [3] = (v >> 0) & 0xFF;
+	if (sizeof (uintptr_t) == 8)
+	{
+		p [0] = (v >> 56) & 0xFF;
+		p [1] = (v >> 48) & 0xFF;
+		p [2] = (v >> 40) & 0xFF;
+		p [3] = (v >> 32) & 0xFF;
+		p [4] = (v >> 24) & 0xFF;
+		p [5] = (v >> 16) & 0xFF;
+		p [6] = (v >> 8) & 0xFF;
+		p [7] = (v >> 0) & 0xFF;
+	}
+	else if (sizeof (uintptr_t) == 4)
+	{
+		p [0] = (v >> 24) & 0xFF;
+		p [1] = (v >> 16) & 0xFF;
+		p [2] = (v >> 8) & 0xFF;
+		p [3] = (v >> 0) & 0xFF;
+	}
+	else
+	{
+		p [0] = (v >> 8) & 0xFF;
+		p [1] = (v >> 0) & 0xFF;
+	}
 }
 
 static uintptr_t
@@ -15784,10 +15813,29 @@ peek_uintptr(volatile const uint8_t * p)
 {
 	uintptr_t v = 0;
 
-	v = (v << 8) + * p ++;
-	v = (v << 8) + * p ++;
-	v = (v << 8) + * p ++;
-	v = (v << 8) + * p ++;
+	if (sizeof (uintptr_t) == 8)
+	{
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+	}
+	else if (sizeof (uintptr_t) == 4)
+	{
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+	}
+	else
+	{
+		v = (v << 8) + * p ++;
+		v = (v << 8) + * p ++;
+	}
 
 	return v;
 }
@@ -15950,16 +15998,16 @@ processmessages(
 			void * arg3;
 			dpclock_t * lp;
 
-			ASSERT(MSGBUFFERSIZE8 >= 21);
+			ASSERT(MSGBUFFERSIZE8 >= sizeof (struct dpclayout));
 
-			func = (uintptr_t) peek_uintptr(buff + 1);
-			arg1 = (void *) peek_uintptr(buff + 5);
-			arg2 = (void *) peek_uintptr(buff + 9);
-			arg3 = (void *) peek_uintptr(buff + 13);
-			lp = (dpclock_t *) peek_uintptr(buff + 17);
+			func = (uintptr_t) peek_uintptr(buff + offsetof(struct dpclayout, func));
+			arg1 = (void *) peek_uintptr(buff + offsetof(struct dpclayout, arg1));
+			arg2 = (void *) peek_uintptr(buff + offsetof(struct dpclayout, arg2));
+			arg3 = (void *) peek_uintptr(buff + offsetof(struct dpclayout, arg3));
+			lp = (dpclock_t *) peek_uintptr(buff + offsetof(struct dpclayout, lp));
 
 			dpclock_exit(lp);	// освобождаем перед вызовом - чтобы была возможность самого себя повторно запросить
-			switch (buff [0])
+			switch (buff [offsetof(struct dpclayout, nargs)])
 			{
 			case 1:
 				((udpcfn_t) func)(arg1);
@@ -15987,13 +16035,13 @@ uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
-	ASSERT(MSGBUFFERSIZE8 >= 21);
+	ASSERT(MSGBUFFERSIZE8 >= sizeof (struct dpclayout));
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
-		buff [0] = 1;
-		poke_uintptr(buff + 1, (uintptr_t) func);
-		poke_uintptr(buff + 5, (uintptr_t) arg);
-		poke_uintptr(buff + 17, (uintptr_t) lp);
+		buff [offsetof(struct dpclayout, nargs)] = 1;
+		poke_uintptr(buff + offsetof(struct dpclayout, func), (uintptr_t) func);
+		poke_uintptr(buff + offsetof(struct dpclayout, arg1), (uintptr_t) arg);
+		poke_uintptr(buff + offsetof(struct dpclayout, lp), (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -16008,14 +16056,14 @@ uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
-	ASSERT(MSGBUFFERSIZE8 >= 21);
+	ASSERT(MSGBUFFERSIZE8 >= sizeof (struct dpclayout));
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
-		buff [0] = 2;
-		poke_uintptr(buff + 1, (uintptr_t) func);
-		poke_uintptr(buff + 5, (uintptr_t) arg1);
-		poke_uintptr(buff + 9, (uintptr_t) arg2);
-		poke_uintptr(buff + 17, (uintptr_t) lp);
+		buff [offsetof(struct dpclayout, nargs)] = 2;
+		poke_uintptr(buff + offsetof(struct dpclayout, func), (uintptr_t) func);
+		poke_uintptr(buff + offsetof(struct dpclayout, arg1), (uintptr_t) arg1);
+		poke_uintptr(buff + offsetof(struct dpclayout, arg2), (uintptr_t) arg2);
+		poke_uintptr(buff + offsetof(struct dpclayout, lp), (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -16030,15 +16078,15 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
-	ASSERT(MSGBUFFERSIZE8 >= 21);
+	ASSERT(MSGBUFFERSIZE8 >= sizeof (struct dpclayout));
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
-		buff [0] = 3;
-		poke_uintptr(buff + 1, (uintptr_t) func);
-		poke_uintptr(buff + 5, (uintptr_t) arg1);
-		poke_uintptr(buff + 9, (uintptr_t) arg2);
-		poke_uintptr(buff + 13, (uintptr_t) arg3);
-		poke_uintptr(buff + 17, (uintptr_t) lp);
+		buff [offsetof(struct dpclayout, nargs)] = 3;
+		poke_uintptr(buff + offsetof(struct dpclayout, func), (uintptr_t) func);
+		poke_uintptr(buff + offsetof(struct dpclayout, arg1), (uintptr_t) arg1);
+		poke_uintptr(buff + offsetof(struct dpclayout, arg2), (uintptr_t) arg2);
+		poke_uintptr(buff + offsetof(struct dpclayout, arg3), (uintptr_t) arg3);
+		poke_uintptr(buff + offsetof(struct dpclayout, lp), (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
