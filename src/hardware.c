@@ -2626,13 +2626,16 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 #define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 #define	TTB_PARA_NO_ACCESS 		0
 
-#else /* __CORTEX_A */
+#elif __riscv
 
-#define	TTB_PARA_CACHED(ro, xn) 0//TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, SHAREDval_WBCACHE, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_DEVICE 		0//TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+// See Table 4.2: Encoding of PTE Type field.
+
+#define	TTB_PARA_CACHED(ro, xn) ((0x00u << 1) | 0x01)
+#define	TTB_PARA_DEVICE 		((0x00u << 1) | 0x01)
 #define	TTB_PARA_NO_ACCESS 		0
 
 #endif /* __CORTEX_A */
+
 /*
  * https://community.st.com/s/question/0D73W000000UagD/what-a-type-of-mmu-memory-regions-recommended-for-regions-with-peripheralsstronglyordered-or-device?s1oid=00Db0000000YtG6&s1nid=0DB0X000000DYbd&emkind=chatterCommentNotification&s1uid=0050X000007vtUt&emtm=1599464922440&fromEmail=1&s1ext=0&t=1599470826880
  *
@@ -3307,6 +3310,7 @@ sysinit_cache_initialize(void)
 #elif __riscv && defined(__riscv_zicsr)
 
 	// RISC-V cache initialize
+	// https://riscv.org/wp-content/uploads/2016/07/riscv-privileged-v1.9-1.pdf#page=49
 	//TP();
 
 #endif
