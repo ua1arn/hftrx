@@ -1809,40 +1809,41 @@ void set_pll_riscv_axi(unsigned n)
 			(1 << 8) |	// RISC_AXI_DIV_CFG
 			(0 << 0) |	// RISC_DIV_CFG
 			0;
+	(void) CCU->RISC_CLK_REG;
 
 	/* Disable pll gating */
 	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~(1 << 27);
+	val &= ~ (1u << 27);
 	CCU->PLL_CPU_CTRL_REG = val;
 
 	/* Enable pll ldo */
 	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1 << 30);
+	val |= (1u << 30);
 	CCU->PLL_CPU_CTRL_REG = val;
 
 	/* Set default clk to 1008mhz */
 	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~ ((0x3 << 16) | (0xff << 8) | (0x3 << 0));
+	val &= ~ ((0x3u << 16) | (0xff << 8) | (0x3 << 0));
 	val |= ((n - 1) << 8);
 	CCU->PLL_CPU_CTRL_REG = val;
 
 
 	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~(1 << 29);	// PLL Lock Enable
+	val &= ~(1u << 29);	// PLL Lock Enable
 	CCU->PLL_CPU_CTRL_REG = val;
 	/* Lock enable */
 	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1 << 29);
+	val |= (1u << 29);
 	CCU->PLL_CPU_CTRL_REG = val;
 
 	/* Enable pll */
 	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1 << 31);
+	val |= (1u << 31);
 	CCU->PLL_CPU_CTRL_REG = val;
 
 	//TP();
 	/* Wait pll stable */
-	while((CCU->PLL_CPU_CTRL_REG & (0x1 << 28)) == 0)
+	while((CCU->PLL_CPU_CTRL_REG & (0x1u << 28)) == 0)
 		;
 	//TP();
 
@@ -1853,9 +1854,9 @@ void set_pll_riscv_axi(unsigned n)
 
 	/* Lock disable */
 //	val = CCU->PLL_CPU_CTRL_REG;
-//	val &= ~(1 << 29);
+//	val &= ~(1u << 29);
 //	CCU->PLL_CPU_CTRL_REG = val;
-	//local_delay_ms(1);
+//	//local_delay_ms(1);
 
 	/* Set and change cpu clk src */
 	val = CCU->RISC_CLK_REG;
@@ -6752,18 +6753,21 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYPE_T113
 
+		CCU->USB_BGR_REG = 0;	// reset all USBs
 	allwnrt113_pll_initialize();
 
 #elif CPUSTYPE_F133
+
+	CCU->USB_BGR_REG = 0;	// reset all USBs
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 11);	// RISC_MCLK_EN
 	allwnrt113_pll_initialize();
 //
 	set_pll_riscv_axi(PLL_CPU_N);
 
-	CCU->RISC_CFG_BGR_REG = 0;//|= (1u << 16) | (1u << 0);
+	CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);	// не проищзволит видимого эффекта
 
-//	CCU->RISC_GATING_REG = (0 * 1u << 31) | (0x16AA << 0);
+	//CCU->RISC_GATING_REG = (1 * 1u << 31) | (0x16AA << 0);
 
 #endif
 
