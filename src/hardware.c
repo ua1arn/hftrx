@@ -2862,7 +2862,8 @@ sysinit_ttbr_initialize(void)
 #elif __riscv
 
 	//#warning Implement for RISC-C
-	csr_write_sptbr((uintptr_t) tlbbase);
+	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
+	csr_write_sptbr((uintptr_t) tlbbase >> 10);
 
 	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
 	// 3.1.6 Virtualization Management Field in mstatus Register
@@ -3311,7 +3312,7 @@ sysinit_cache_initialize(void)
 
 	// RISC-V cache initialize
 	// https://riscv.org/wp-content/uploads/2016/07/riscv-privileged-v1.9-1.pdf#page=49
-	//TP();
+	TP();
 
 #endif
 }
