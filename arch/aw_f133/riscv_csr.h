@@ -3798,6 +3798,9 @@ static inline uint_xlen_t csr_read_write_mtval2(uint_xlen_t new_value) {
     return prev_value;
 }
 
+/*******************************************
+ * sptbr - MRW - Supervisor Page-Table Base Register.
+ */
 static inline void csr_write_sptbr(uint_xlen_t value) {
     __asm__ volatile ("csrw    sptbr, %0"
                       : /* output: none */
