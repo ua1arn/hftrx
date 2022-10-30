@@ -13432,7 +13432,7 @@ display2_redrawbarstimed(
 	if (immed || display_refreshenabled_voltage())
 	{
 		looptests();		// Периодически вызывается в главном цикле - тесты
-#if WITHAUTOTUNER
+#if WITHAUTOTUNER && 0
 		//if (gtx && ! reqautotune)
 		{
 			adcvalholder_t r;
@@ -15783,7 +15783,10 @@ struct dpclayout
 static void
 poke_uintptr(volatile uint8_t * p, uintptr_t v)
 {
-	if (sizeof (uintptr_t) == 8)
+	if (0)
+		;
+#if __LP64__ || CPUSTYLE_XCZU
+	else if (sizeof (uintptr_t) == 8)
 	{
 		p [0] = (v >> 56) & 0xFF;
 		p [1] = (v >> 48) & 0xFF;
@@ -15794,6 +15797,7 @@ poke_uintptr(volatile uint8_t * p, uintptr_t v)
 		p [6] = (v >> 8) & 0xFF;
 		p [7] = (v >> 0) & 0xFF;
 	}
+#endif
 	else if (sizeof (uintptr_t) == 4)
 	{
 		p [0] = (v >> 24) & 0xFF;
@@ -17144,7 +17148,7 @@ static uint_fast16_t menulooklast(uint_fast16_t menupos)
 	do
 	{
 		mp = & menutable [++ menupos];
-	} while (menupos < MENUROW_COUNT && (mp->qspecial & ITEM_VALUE) != 0);
+	} while (menupos < MENUROW_COUNT && ismenukind(mp, ITEM_VALUE) != 0);
 	return menupos - 1;
 }
 
@@ -17408,17 +17412,16 @@ modifysettings(
 static void 
 uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 {
+	uint_fast16_t menupos;
 #if WITHAUTOTUNER
 	if (reqautotune != 0)
 		return;
 #endif /* WITHAUTOTUNER */
 
-	uint_fast16_t menupos;
-
 	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
 	{
 		const FLASHMEM struct menudef * const mp = & menutable [menupos];
-		if ((mp->qspecial & ITEM_VALUE) == 0)
+		if (ismenukind(mp, ITEM_VALUE) == 0)
 			continue;
 	#if CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
 		// Сравнение строки в SRAM и FLASH
@@ -17446,6 +17449,372 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 	display2_bgreset();		/* возможно уже с новой цветовой схемой */
 #endif /* WITHTOUCHGUI */
 }
+
+static void
+print_menu_string_P(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	const FLASHMEM  char * text,
+	uint_fast8_t width,
+	uint_fast8_t filled		// сколько символов сейчас в text
+	)
+{
+	PRINTF("=\"%s\n", text);
+}
+
+// При редактировании настроек - показ цифровых значений параметров.
+// Или диагностическое сообщение при запуске
+static void
+//NOINLINEAT
+print_menu_digit(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	int_fast32_t value,
+	uint_fast8_t width,		// WSIGNFLAG can be added for display '+; or '-'
+	uint_fast8_t comma,
+	uint_fast8_t rj
+	)
+{
+	switch (comma)
+	{
+	default:
+		PRINTF("=\"%d\n", (int) value);
+		break;
+	case 1:
+		PRINTF("=\"%d.%01d\n", (int) value / 10, (int) value % 10);
+		break;
+	case 2:
+		PRINTF("=\"%d.%02d\n", (int) value / 100, (int) value % 100);
+		break;
+	case 3:
+		PRINTF("=\"%d.%03d\n", (int) value / 1000, (int) value % 1000);
+		break;
+	}
+}
+/* создание списка пунктов мею для получения шаблона документа */
+static void menu_print(void)
+{
+	uint_fast16_t menupos;
+	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
+	{
+        const FLASHMEM struct menudef * mp = & menutable [menupos];
+        if (ismenukind(mp, ITEM_GROUP) == 0)
+        	continue;
+        const FLASHMEM struct menudef * const mpgroup = mp ++;	/* группа */
+    	PRINTF("%s,,\n", mpgroup->qlabel);
+        for (; ismenukind(mp, ITEM_VALUE); ++ mp)
+        {
+        	int x = 0;
+        	int y = 0;
+        	/* параметры полей вывода значений в меню */
+        	const uint_fast8_t VALUEW = 32;//window.valuew;
+        	PRINTF(",,%s,", mp->qlabel);
+
+        	int_fast32_t value;
+        	const uint_fast8_t rj = mp->qrj;
+        	uint_fast8_t width = mp->qwidth;
+        	uint_fast8_t comma = mp->qcomma;
+        	const uint_fast16_t * const pv16 = mp->qpval16;
+        	const uint_fast8_t * const pv8 = mp->qpval8;
+        	const unsigned valoffset = 0;//menuvaloffset(mp);
+
+        	// получение значения для отображения
+        	if (ismenufilterlsb(mp))
+        	{
+        		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, low_or_center);
+        		value = getlo4baseflt(filter) + pv16 [valoffset];
+        	}
+        	else if (ismenufilterusb(mp))
+        	{
+        		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, high);
+        		value = getlo4baseflt(filter) + pv16 [valoffset];
+        	}
+        	else if (pv16 != NULL)
+        	{
+        		const int_fast32_t offs = mp->funcoffs();
+        		value = offs + pv16 [valoffset];
+        	}
+        	else if (pv8 != NULL)
+        	{
+        		const int_fast32_t offs = mp->funcoffs();
+        		value = offs + pv8 [valoffset];
+        	}
+        	else
+        	{
+        		value = mp->qbottom;	/* чтобы не ругался компилятор */
+        	}
+
+        	// отображение параметра, отличающиеся от цифрового
+        	switch (rj)
+        	{
+        #if WITHTX && WITHIF4DSP
+        	case RJ_TXAUDIO:
+        		{
+        			static const FLASHMEM char msg [] [6] =
+        			{
+         				"MIKE ",	// BOARD_TXAUDIO_MIKE
+        #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
+         				"LINE ",	// BOARD_TXAUDIO_LINE
+        #endif /* WITHAFCODEC1HAVELINEINLEVEL */
+        #if WITHUSBHW && WITHUSBUACOUT
+        				"USB  ",	// BOARD_TXAUDIO_USB
+        #endif /* WITHUSBHW && WITHUSBUACOUT */
+        				"2TONE",	// BOARD_TXAUDIO_2TONE
+        				"NOISE",	// BOARD_TXAUDIO_NOISE
+        				"1TONE",	// BOARD_TXAUDIO_1TONE
+        				"MUTE ",	// BOARD_TXAUDIO_MUTE
+        			};
+
+        			width = VALUEW;
+        			print_menu_string_P(x, y, msg [value], width, comma);
+        		}
+        		break;
+        #endif /* WITHTX && WITHIF4DSP */
+
+        #if WITHMODEM
+
+        	case RJ_MDMSPEED:
+        		width = VALUEW;
+        		print_menu_digit(x, y, modembr2int100 [value], width, comma, 0);
+        		break;
+
+        	case RJ_MDMMODE:
+        		{
+        			static const FLASHMEM char msg [] [5] =
+        			{
+         				"BPSK",
+        				"QPSK",
+        			};
+
+        			width = VALUEW;
+        			comma = 4;
+        			print_menu_string_P(x, y, msg [value], width, comma);
+        		}
+        		break;
+
+        #endif /* WITHMODEM */
+
+        #if defined (RTC1_TYPE)
+        	case RJ_MONTH:
+        		{
+        			static const FLASHMEM char months [13] [4] =
+        			{
+        				"JAN",
+        				"FEB",
+        				"MAR",
+        				"APR",
+        				"MAY",
+        				"JUN",
+        				"JUL",
+        				"AUG",
+        				"SEP",
+        				"OCT",
+        				"NOV",
+        				"DEC",
+        			};
+
+        			width = VALUEW;
+        			comma = 3;
+        			print_menu_string_P(x, y, months [value - mp->qbottom], width, comma);
+        		}
+        		break;
+        #endif /* defined (RTC1_TYPE) */
+
+        	case RJ_YES:
+        		{
+        			static const FLASHMEM char msg_yes [] = "YES";
+        			static const FLASHMEM char msg_no  [] = " NO";
+
+        			width = VALUEW;
+        			comma = 3;
+        			print_menu_string_P(x, y, value ? msg_yes : msg_no, width, comma);
+        		}
+        		break;
+
+        	case RJ_SMETER:
+        		{
+        			static const FLASHMEM char msg_dial [] = "DIAL";
+        			static const FLASHMEM char msg_bars [] = "BARS";
+
+        			width = VALUEW;
+        			comma = 4;
+        			print_menu_string_P(x, y, value ? msg_dial : msg_bars, width, comma);
+        		}
+        		break;
+
+        #if WITHNOTCHFREQ || WITHNOTCHONOFF
+        	case RJ_NOTCH:
+        		{
+        			width = VALUEW;
+        			comma = 4;
+        			switch (notchmodes [value].code)
+        			{
+        			default:
+        			case BOARD_NOTCH_OFF:
+        				print_menu_string_P(x, y, PSTR("OFF "), width, comma);
+        				break;
+        			case BOARD_NOTCH_MANUAL:
+        				print_menu_string_P(x, y, PSTR("FREQ"), width, comma);
+        				break;
+        			case BOARD_NOTCH_AUTO:
+        				print_menu_string_P(x, y, PSTR("AUTO"), width, comma);
+        				break;
+        			}
+        		}
+        		break;
+        #endif /* WITHNOTCHFREQ || WITHNOTCHONOFF */
+
+        	case RJ_ON:
+        		{
+        			static const FLASHMEM char msg_on  [] = " ON";
+        			static const FLASHMEM char msg_off [] = "OFF";
+
+        			width = VALUEW;
+        			comma = 3;
+        			print_menu_string_P(x, y, value ? msg_on : msg_off, width, comma);
+        		}
+        		break;
+
+        	case RJ_ENCRES:
+        		width = comma ? VALUEW - 1 : VALUEW;
+        		print_menu_digit(x, y, encresols [value] * ENCRESSCALE, width, comma, 0);
+        		break;
+
+        #if WITHCAT
+        	case RJ_CATSPEED:
+        		width = comma ? VALUEW - 1 : VALUEW;
+        		print_menu_digit(x, y, catbr2int [value] * BRSCALE, width, comma, 0);
+        		break;
+
+        	case RJ_CATSIG:
+        	{
+        		comma = 8;
+        		width = VALUEW;
+        		print_menu_string_P(x, y, catsiglabels [value], width, comma);
+        	}
+        	break;
+        #endif /* WITHCAT */
+
+        #if WITHSUBTONES && WITHTX
+        	case RJ_SUBTONE:
+        		width = comma ? VALUEW - 1 : VALUEW;
+        		print_menu_digit(x, y, gsubtones [value], width, comma, 0);
+        		break;
+        #endif /* WITHSUBTONES && WITHTX */
+
+        	case RJ_POW2:
+        		width = comma ? VALUEW - 1 : VALUEW;
+        		print_menu_digit(x, y, 1UL << value, width, comma, 0);
+        		break;
+
+        #if WITHELKEY
+        	case RJ_ELKEYMODE:
+        		{
+        			/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+        			static const FLASHMEM char msg [][4] =
+        			{
+        				"ACS", 	//
+        				"ELE",
+        				"OFF",
+        				"BUG",
+        			};
+
+        			width = VALUEW;
+        			comma = 3;
+        			print_menu_string_P(x, y, msg [value], width, comma);
+        		}
+        		break;
+        #endif /* WITHELKEY */
+
+        #if WITHPOWERLPHP
+        	case RJ_POWER:	/* отображние мощности HP/LP */
+        		width = VALUEW;
+        		comma = 2;
+        			print_menu_string_P(x, y, pwrmodes [value].label, width, comma);
+        		break;
+        #endif /* WITHPOWERLPHP */
+
+        	case RJ_CPUTYPE:
+        		{
+        			const FLASHMEM char * msg;
+        #if CPUSTYLE_STM32MP1
+        			RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
+        			(void) RCC->MP_APB5ENSETR;
+        			RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_BSECLPEN;
+        			(void) RCC->MP_APB5LPENSETR;
+
+        			const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+        			switch (rpn)
+        			{
+        			case 0x24: 	msg = PSTR("STM32MP153Cx"); break;
+        			case 0x25: 	msg = PSTR("STM32MP153Ax"); break;
+        			case 0xA4: 	msg = PSTR("STM32MP153Fx"); break;
+        			case 0xA5: 	msg = PSTR("STM32MP153Dx"); break;
+        			case 0x00: 	msg = PSTR("STM32MP157Cx"); break;
+        			case 0x01: 	msg = PSTR("STM32MP157Ax"); break;
+        			case 0x80: 	msg = PSTR("STM32MP157Fx"); break;
+        			case 0x81:	msg = PSTR("STM32MP157Dx"); break;
+        			default: 	msg = PSTR("STM32MP15xxx"); break;
+        			}
+        #elif CPUSTYLE_XC7Z
+        			msg = PSTR("ZYNQ 7020");
+        #elif CPUSTYLE_XCZU
+        			msg = PSTR("ZYNQ USCALE");
+        #elif CPUSTYLE_R7S721
+        			msg = PSTR("RENESAS");
+        #elif CPUSTYPE_T113
+        			msg = PSTR("Allw T128-S3");
+        #elif defined (WITHCPUNAME)
+        			msg = PSTR(WITHCPUNAME);
+        #else
+        			msg = PSTR("CPUxxx");
+        #endif
+        			width = VALUEW;
+        			comma = strlen_P(msg);
+        			print_menu_string_P(x, y, msg, width, comma);
+        		}
+        		break;
+
+        	case RJ_COMPILED:
+        		{
+        			static const FLASHMEM char msg [] =
+        					__DATE__
+        					//" " __TIME__
+        					;
+        			const FLASHMEM char * const p = msg + strlen_P(msg) - ulmin(VALUEW, strlen_P(msg));	// сколько может поместиться в поле отображения
+        			width = VALUEW;
+        			comma = strlen_P(p);
+        			print_menu_string_P(x, y, p, width, comma);
+        		}
+        		break;
+
+        	case RJ_VIEW:
+        		{
+        			/* стиль отображения спектра и панорамы */
+        			width = VALUEW;
+        			print_menu_string_P(x, y, view_types [value], width, comma);
+        		}
+        		break;
+
+        	default:
+        		if (width & WSIGNFLAG)
+        			width = (VALUEW - 1) | WSIGNFLAG;
+        		else
+        			width = VALUEW;
+
+        		if (comma)
+        			width = width - 1;
+
+        		print_menu_digit(x, y, value, width, comma, rj);
+        		break;
+
+        	}
+        }
+        menupos = mp - menutable - 1;
+	}
+
+}
+
 
 #if 0
 
@@ -19289,6 +19658,13 @@ hamradio_main_step(void)
 					default:
 						PRINTF("key=%02X\n", (unsigned char) c);
 						break;
+		#if WITHDEBUG && WITHMENU
+						case 'm':
+						PRINTF("menu items:\n");
+						menu_print();
+						PRINTF("menu items end\n");
+						break;
+		#endif
 		#if WITHUSBHOST_HIGHSPEEDULPI
 					case 'u':
 						PRINTF("hkey:\n");
@@ -20436,7 +20812,7 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
 	{
 		const FLASHMEM struct menudef * const mp = & menutable [menupos];
-		if ((mp->qspecial & ITEM_VALUE) == 0)
+		if (ismenukind(mp, ITEM_VALUE) == 0)
 			continue;
 
 		if (! strcmp(name, mp->qlabel))
