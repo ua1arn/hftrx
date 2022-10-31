@@ -1332,6 +1332,106 @@ static void vectors_relocate(void)
 
 #endif /* ( __ARM_ARCH == 8) */
 
+
+#if CPUSTYLE_RISCV
+
+// See:
+// https://codebrowser.dev/glibc/glibc/sysdeps/riscv/start.S.html
+// https://twilco.github.io/riscv-from-scratch/2019/03/10/riscv-from-scratch-1.html
+// https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html
+
+void isr_empty(void)
+{
+	TP();
+}
+
+void isr_synctrap(void)
+{
+	TP();
+}
+
+void isr_vmsi(void)
+{
+	TP();
+}
+
+void isr_vmti(void)
+{
+	TP();
+}
+
+void isr_vmei(void)
+{
+	TP();
+}
+
+void isr_irq0(void)
+{
+	TP();
+}
+void isr_irq1(void)
+{
+	TP();
+}
+void isr_irq2(void)
+{
+	TP();
+}
+void isr_irq3(void)
+{
+	TP();
+}
+void isr_irq4(void)
+{
+	TP();
+}
+void isr_irq5(void)
+{
+	TP();
+}
+void isr_irq6(void)
+{
+	TP();
+}
+void isr_irq7(void)
+{
+	TP();
+}
+void isr_irq8(void)
+{
+	TP();
+}
+void isr_irq9(void)
+{
+	TP();
+}
+void isr_irq10(void)
+{
+	TP();
+}
+void isr_irq11(void)
+{
+	TP();
+}
+void isr_irq12(void)
+{
+	TP();
+}
+void isr_irq13(void)
+{
+	TP();
+}
+void isr_irq14(void)
+{
+	TP();
+}
+void isr_irq15(void)
+{
+	TP();
+}
+
+#endif /* CPUSTYLE_RISCV */
+
 #if CPUSTYLE_ARM && WITHSMPSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
