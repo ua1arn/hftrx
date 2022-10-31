@@ -506,7 +506,14 @@ typedef struct PLIC_Type
 	__IO uint32_t PLIC_MIE_REGn [0x00A];                 /*!< Offset 0x2000 (0≤n<9) PLIC Machine Mode Interrupt Enable Register n */
 	uint32_t reserved_0x2028 [0x0016];
 	__IO uint32_t PLIC_SIE_REGn [0x00A];                 /*!< Offset 0x2080 (0≤n<9) PLIC Superuser Mode Interrupt Enable Register n */
-} PLIC_TypeDef; /* size of structure = 0x20A8 */
+	uint32_t reserved_0x20A8 [0x7F7D5];
+	__IO uint32_t PLIC_CTRL_REG;                         /*!< Offset 0x1FFFFC PLIC Control Register */
+	__IO uint32_t PLIC_MTH_REG;                          /*!< Offset 0x200000 PLIC Machine Threshold Register */
+	__IO uint32_t PLIC_MCLAIM_REG;                       /*!< Offset 0x200004 PLIC Machine Claim Register */
+	uint32_t reserved_0x200008 [0x03FE];
+	__IO uint32_t PLIC_STH_REG;                          /*!< Offset 0x201000 PLIC Superuser Threshold Register */
+	__IO uint32_t PLIC_SCLAIM_REG;                       /*!< Offset 0x201004 PLIC Superuser Claim Register */
+} PLIC_TypeDef; /* size of structure = 0x201008 */
 /*
  * @brief SYS_CFG
  */
