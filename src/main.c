@@ -19665,7 +19665,7 @@ hamradio_main_step(void)
 						PRINTF("menu items end\n");
 						break;
 		#endif /* WITHDEBUG && WITHMENU */
-		#if 1
+		#if 1 && WITHDEBUG && __riscv
 					case ' ':
 						{
 							uint64_t mtimer_get_raw_time(void);
