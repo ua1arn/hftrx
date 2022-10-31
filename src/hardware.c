@@ -3059,6 +3059,80 @@ void __attribute__((used)) Reset_Handler(void)
 }
 #endif /* defined(__aarch64__) */
 
+#define CLINT_BASEx 0x04000000
+#define RISCV_MSIP0 (CLINT_BASEx  + 0x0000)
+#define RISCV_MTIMECMP_ADDR (CLINT_BASEx  + 0x4000)
+#define RISCV_MTIME_ADDR    (CLINT_BASEx  + 0xBFF8)
+
+/** Read the raw time of the system timer in system timer clocks
+ */
+uint64_t mtimer_get_raw_time(void) {
+#if ( __riscv_xlen == 64)
+    // Directly read 64 bit value
+    volatile uint64_t *mtime = (volatile uint64_t *)(RISCV_MTIME_ADDR);
+    return *mtime;
+#elif ( __riscv_xlen == 32)
+    volatile uint32_t * mtimel = (volatile uint32_t *)(RISCV_MTIME_ADDR);
+    volatile uint32_t * mtimeh = (volatile uint32_t *)(RISCV_MTIME_ADDR+4);
+    uint32_t mtimeh_val;
+    uint32_t mtimel_val;
+    do {
+        // There is a small risk the mtimeh will tick over after reading mtimel
+        mtimeh_val = *mtimeh;
+        mtimel_val = *mtimel;
+        // Poll mtimeh to ensure it's consistent after reading mtimel
+        // The frequency of mtimeh ticking over is low
+    } while (mtimeh_val != *mtimeh);
+    return (uint64_t) ( ( ((uint64_t)mtimeh_val)<<32) | mtimel_val);
+#else
+    return 999;
+#endif
+}
+
+uint64_t mtimer_get_raw_time_cmp(void) {
+#if ( __riscv_xlen == 64)
+    // Directly read 64 bit value
+    volatile uint64_t *mtime = (volatile uint64_t *)(RISCV_MTIMECMP_ADDR);
+    return *mtime;
+#elif ( __riscv_xlen == 32)
+    volatile uint32_t * mtimel = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
+    volatile uint32_t * mtimeh = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
+    uint32_t mtimeh_val;
+    uint32_t mtimel_val;
+    do {
+        // There is a small risk the mtimeh will tick over after reading mtimel
+        mtimeh_val = *mtimeh;
+        mtimel_val = *mtimel;
+        // Poll mtimeh to ensure it's consistent after reading mtimel
+        // The frequency of mtimeh ticking over is low
+    } while (mtimeh_val != *mtimeh);
+    return (uint64_t) ( ( ((uint64_t)mtimeh_val)<<32) | mtimel_val);
+#else
+    return 888;
+#endif
+}
+
+void mtimer_set_raw_time_cmp(uint64_t clock_offset) {
+    // First of all set
+	uint64_t new_mtimecmp = mtimer_get_raw_time() + clock_offset;
+#if (__riscv_xlen == 64)
+    // Single bus access
+    volatile uint32_t *mtimecmp = (volatile uint32_t*)(RISCV_MTIMECMP_ADDR);
+    *mtimecmp = new_mtimecmp;
+#elif ( __riscv_xlen == 32)
+    volatile uint32_t *mtimecmpl = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
+    volatile uint32_t *mtimecmph = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
+    // AS we are doing 32 bit writes, an intermediate mtimecmp value may cause spurious interrupts.
+    // Prevent that by first setting the dummy MSB to an unacheivable value
+    *mtimecmph = 0xFFFFFFFF;  // cppcheck-suppress redundantAssignment
+    // set the LSB
+    *mtimecmpl = (uint32_t)(new_mtimecmp & 0x0FFFFFFFFUL);
+    // Set the correct MSB
+    *mtimecmph = (uint32_t)(new_mtimecmp >> 32); // cppcheck-suppress redundantAssignment
+#else
+#endif
+}
+
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
@@ -3084,6 +3158,9 @@ sysinit_vbar_initialize(void)
 	// 3.1.7 Machine Trap-Vector Base-Address Register (mtvec)
 	// https://five-embeddev.com/baremetal/vectored_interrupts/
 
+	//PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
+	//* (volatile uint32_t *) RISCV_MSIP0 |= 0x01;
+	//PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
 	extern uint32_t __Vectors [];
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
 	ASSERT((vbase & 0x03) == 0);
@@ -3106,21 +3183,29 @@ sysinit_vbar_initialize(void)
 #define MSTATUS_MIE_BIT_MASK     0x8
 #define MIE_MTI_BIT_MASK     0x80
 
-	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
-    csr_write_mie(0);
+//	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+//    csr_write_mie(0);
+//
+//    // Setup the IRQ handler entry point, set the mode to vectored
+//    //csr_write_mtvec((uint_xlen_t) riscv_mtvec_table | RISCV_MTVEC_MODE_VECTORED);
+//
+//    // Enable MIE.MTI
+//    csr_set_bits_mie(MIE_MTI_BIT_MASK);
+//
+//    // Global interrupt enable
+//    csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+//
+//    // Setup timer for 1 second interval
+//    //timestamp = mtimer_get_raw_time();
+	TP();
 
-    // Setup the IRQ handler entry point, set the mode to vectored
-    //csr_write_mtvec((uint_xlen_t) riscv_mtvec_table | RISCV_MTVEC_MODE_VECTORED);
-
-    // Enable MIE.MTI
-    csr_set_bits_mie(MIE_MTI_BIT_MASK);
-
-    // Global interrupt enable
-    csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
-
-    // Setup timer for 1 second interval
-    //timestamp = mtimer_get_raw_time();
-    csr_write_mtimecmp(24000000);
+	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
+	//printhex32(0, PLIC->PLIC_IP_REGn, 16 * 4);
+	//printhex32(0, PLIC->PLIC_MIE_REGn, 10 * 4);
+	//printhex32(0, PLIC->PLIC_SIE_REGn, 10 * 4);
+//	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
+//    mtimer_set_raw_time_cmp(24000000);
+//	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
 
 #endif /* CPUSTYLE_RISCV */
 }
