@@ -3059,7 +3059,7 @@ void __attribute__((used)) Reset_Handler(void)
 }
 #endif /* defined(__aarch64__) */
 
-#define CLINT_BASEx 0x04000000
+#define CLINT_BASEx 0x14000000
 #define RISCV_MSIP0 (CLINT_BASEx  + 0x0000)
 #define RISCV_MTIMECMP_ADDR (CLINT_BASEx  + 0x4000)
 #define RISCV_MTIME_ADDR    (CLINT_BASEx  + 0xBFF8)
