@@ -3059,10 +3059,9 @@ void __attribute__((used)) Reset_Handler(void)
 }
 #endif /* defined(__aarch64__) */
 
-#define CLINT_BASEx 0x14000000
-#define RISCV_MSIP0 (CLINT_BASEx  + 0x0000)
-#define RISCV_MTIMECMP_ADDR (CLINT_BASEx  + 0x4000)
-#define RISCV_MTIME_ADDR    (CLINT_BASEx  + 0xBFF8)
+#define RISCV_MSIP0 (CLINT_BASE  + 0x0000)
+#define RISCV_MTIMECMP_ADDR (CLINT_BASE  + 0x4000)
+#define RISCV_MTIME_ADDR    (CLINT_BASE  + 0xBFF8)
 
 /** Read the raw time of the system timer in system timer clocks
  */
@@ -3158,54 +3157,62 @@ sysinit_vbar_initialize(void)
 	// 3.1.7 Machine Trap-Vector Base-Address Register (mtvec)
 	// https://five-embeddev.com/baremetal/vectored_interrupts/
 
-	//PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
+	TP();
+	PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
 	//* (volatile uint32_t *) RISCV_MSIP0 |= 0x01;
-	//PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
+	PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
 	extern uint32_t __Vectors [];
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
 	ASSERT((vbase & 0x03) == 0);
+	TP();
 
 	const uintptr_t vbaseval = vbase | 0x01;	/* set Vectored mode */
 	csr_write_mtvec(vbaseval);	/* Machine */
 //	csr_write_stvec(vbaseval);	/* for supervisor privileges */
 //	csr_write_utvec(vbaseval);	/* for user privilege*/
 
+	TP();
 	ASSERT(csr_read_mtvec() == vbaseval);
+	TP();
 
 	// 3.1.9 Machine Interrupt Registers (mip and mie)
 	//csr_write_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
-	csr_set_bits_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
+	//csr_set_bits_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
+	TP();
 //
 //	csr_set_bits_sie(~ (uint_xlen_t) 0);	/* for supervisor enable all interrupts */
 //	csr_set_bits_uie(~ (uint_xlen_t) 0);	/* for user enable all interrupts */
 	// Global interrupt disable
+	TP();
 
 #define MSTATUS_MIE_BIT_MASK     0x8
 #define MIE_MTI_BIT_MASK     0x80
 
-//	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
-//    csr_write_mie(0);
-//
-//    // Setup the IRQ handler entry point, set the mode to vectored
-//    //csr_write_mtvec((uint_xlen_t) riscv_mtvec_table | RISCV_MTVEC_MODE_VECTORED);
-//
-//    // Enable MIE.MTI
-//    csr_set_bits_mie(MIE_MTI_BIT_MASK);
-//
-//    // Global interrupt enable
-//    csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
-//
-//    // Setup timer for 1 second interval
-//    //timestamp = mtimer_get_raw_time();
+	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+    csr_write_mie(0);
+
+    // Setup the IRQ handler entry point, set the mode to vectored
+    //csr_write_mtvec((uint_xlen_t) riscv_mtvec_table | RISCV_MTVEC_MODE_VECTORED);
+
+    // Enable MIE.MTI
+    csr_set_bits_mie(MIE_MTI_BIT_MASK);
+
+    // Global interrupt enable
+    csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+
+    // Setup timer for 1 second interval
+    //timestamp = mtimer_get_raw_time();
 	TP();
 
 	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
 	//printhex32(0, PLIC->PLIC_IP_REGn, 16 * 4);
 	//printhex32(0, PLIC->PLIC_MIE_REGn, 10 * 4);
 	//printhex32(0, PLIC->PLIC_SIE_REGn, 10 * 4);
-//	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
-//    mtimer_set_raw_time_cmp(24000000);
-//	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
+	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
+	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
+	//PRINTF("mtimer_get_raw_time = %lX\n", mtimer_get_raw_time());
+    //mtimer_set_raw_time_cmp(24000000);
+	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
 
 #endif /* CPUSTYLE_RISCV */
 }
