@@ -3111,12 +3111,10 @@ uint64_t mtimer_get_raw_time_cmp(void) {
 #endif
 }
 
-void mtimer_set_raw_time_cmp(uint64_t clock_offset) {
-    // First of all set
-	uint64_t new_mtimecmp = mtimer_get_raw_time() + clock_offset;
+void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 #if (__riscv_xlen == 64)
     // Single bus access
-    volatile uint32_t *mtimecmp = (volatile uint32_t*)(RISCV_MTIMECMP_ADDR);
+    volatile uint64_t *mtimecmp = (volatile uint64_t*)(RISCV_MTIMECMP_ADDR);
     *mtimecmp = new_mtimecmp;
 #elif ( __riscv_xlen == 32)
     volatile uint32_t *mtimecmpl = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
@@ -3203,16 +3201,18 @@ sysinit_vbar_initialize(void)
     // Setup timer for 1 second interval
     //timestamp = mtimer_get_raw_time();
 	TP();
-
+	csr_write_mcounteren(1);
 	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
 	//printhex32(0, PLIC->PLIC_IP_REGn, 16 * 4);
 	//printhex32(0, PLIC->PLIC_MIE_REGn, 10 * 4);
 	//printhex32(0, PLIC->PLIC_SIE_REGn, 10 * 4);
 	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
 	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
+	mtimer_set_raw_time_cmp(1000);
 	//PRINTF("mtimer_get_raw_time = %lX\n", mtimer_get_raw_time());
-    //mtimer_set_raw_time_cmp(24000000);
+    //mtimer_set_raw_time_cmp(mtimer_get_raw_time() + 24000000);
 	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
+	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
 
 #endif /* CPUSTYLE_RISCV */
 }
