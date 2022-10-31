@@ -2563,7 +2563,7 @@ void IRQ_Handler_GIC(void)
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9 || __riscv
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
 uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 
@@ -2626,7 +2626,7 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 #define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 #define	TTB_PARA_NO_ACCESS 		0
 
-#elif __riscv
+#elif CPUSTYLE_RISCV
 
 // See Table 4.2: Encoding of PTE Type field.
 
@@ -2859,7 +2859,7 @@ sysinit_ttbr_initialize(void)
 
 	MMU_Enable();
 
-#elif __riscv
+#elif CPUSTYLE_RISCV
 
 	//#warning Implement for RISC-C
 	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
@@ -2948,7 +2948,7 @@ sysinit_fpu_initialize(void)
 	// FPU
 	__FPU_Enable();
 
-#elif __riscv && defined(__riscv_zicsr)
+#elif CPUSTYLE_RISCV
 
 	// See:
 	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
@@ -2957,7 +2957,7 @@ sysinit_fpu_initialize(void)
 	csr_set_bits_mstatus(0x00006000);	/* MSTATUS_FS = 0x00006000 = Dirty */
  	csr_write_fcsr(0);             		/* initialize rounding mode, undefined at reset */
 
-#endif /* __riscv */
+#endif /*  */
 
 #if (__CORTEX_M != 0) && CTLSTYLE_V3D
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
@@ -3078,7 +3078,7 @@ sysinit_vbar_initialize(void)
 	//PRINTF("vbar=%08lX, mvbar=%08lX\n", __get_VBAR(), __get_MVBAR());
 
 #endif /* (__CORTEX_A != 0) */
-#if __riscv
+#if CPUSTYLE_RISCV
 
 	// http://five-embeddev.com/riscv-isa-manual/latest/machine.html#machine-trap-vector-base-address-register-mtvec
 	// 3.1.7 Machine Trap-Vector Base-Address Register (mtvec)
@@ -3102,7 +3102,7 @@ sysinit_vbar_initialize(void)
 	csr_set_bits_sie(~ (uint_xlen_t) 0);	/* for supervisor enable all interrupts */
 	csr_set_bits_uie(~ (uint_xlen_t) 0);	/* for user enable all interrupts */
 
-#endif
+#endif /* CPUSTYLE_RISCV */
 }
 
 static void FLASHMEMINITFUNC
@@ -3177,7 +3177,7 @@ sysinit_mmu_initialize(void)
 #endif
 
 
-#elif __riscv && defined(__riscv_zicsr)
+#elif CPUSTYLE_RISCV
 
 	// RISC-V MMU initialize
 	TP();
@@ -3237,13 +3237,13 @@ sysinit_cache_initialize(void)
 		#endif /* (__CORTEX_A == 9U) */
 	#endif
 
-#elif __riscv && defined(__riscv_zicsr)
+#elif CPUSTYLE_RISCV
 
 	// RISC-V cache initialize
 	// https://riscv.org/wp-content/uploads/2016/07/riscv-privileged-v1.9-1.pdf#page=49
 	TP();
 
-#endif
+#endif /* CPUSTYLE_RISCV */
 }
 
 static void FLASHMEMINITFUNC
@@ -4136,7 +4136,7 @@ void _stack_init(void)
 
 }
 
-#if __riscv
+#if CPUSTYLE_RISCV
 
 /**
   \brief   Initializes data and bss sections
@@ -4179,7 +4179,7 @@ __NO_RETURN void __riscv_start(void)
 
   _start();
 }
-#endif
+#endif /* CPUSTYLE_RISCV */
 
 #if 1//(__CORTEX_M == 0) && 0
 
