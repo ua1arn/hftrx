@@ -19667,7 +19667,12 @@ hamradio_main_step(void)
 		#endif /* WITHDEBUG && WITHMENU */
 		#if 0
 					case ' ':
-						PRINTF("%lu\n", (long) csr_read_time());
+						{
+							uint_xlen_t v = csr_read_time();
+							static uint_xlen_t v0;
+							PRINTF("%lu\n", (long) (v - v0) / 1000000);
+							v0 = v;
+						}
 						break;
 		#endif
 		#if WITHUSBHOST_HIGHSPEEDULPI
