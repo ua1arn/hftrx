@@ -3101,6 +3101,26 @@ sysinit_vbar_initialize(void)
 //
 //	csr_set_bits_sie(~ (uint_xlen_t) 0);	/* for supervisor enable all interrupts */
 //	csr_set_bits_uie(~ (uint_xlen_t) 0);	/* for user enable all interrupts */
+	// Global interrupt disable
+
+#define MSTATUS_MIE_BIT_MASK     0x8
+#define MIE_MTI_BIT_MASK     0x80
+
+	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+    csr_write_mie(0);
+
+    // Setup the IRQ handler entry point, set the mode to vectored
+    //csr_write_mtvec((uint_xlen_t) riscv_mtvec_table | RISCV_MTVEC_MODE_VECTORED);
+
+    // Enable MIE.MTI
+    csr_set_bits_mie(MIE_MTI_BIT_MASK);
+
+    // Global interrupt enable
+    csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+
+    // Setup timer for 1 second interval
+    //timestamp = mtimer_get_raw_time();
+    csr_write_mtimecmp(24000000);
 
 #endif /* CPUSTYLE_RISCV */
 }

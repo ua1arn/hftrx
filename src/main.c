@@ -19668,8 +19668,9 @@ hamradio_main_step(void)
 		#if 0
 					case ' ':
 						{
-							uint_xlen_t v = csr_read_time();
-							static uint_xlen_t v0;
+							//uint64_t mtimer_get_raw_time(void);
+							uint64_t v = csr_read_mtime();
+							static uint64_t v0;
 							PRINTF("%lu\n", (long) (v - v0) / 1000000);
 							v0 = v;
 						}
