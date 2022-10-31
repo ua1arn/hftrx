@@ -49,15 +49,6 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 
 # The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
 
-# see https://github.com/stfc-aeg/try-it-out/wiki/RiscV!
-# see https://www.sifive.com/blog/all-aboard-part-1-compiler-args
-
-# xfel payload compile use flags:
-# -march=rv64gvxthead -mabi=lp64d -mcmodel=medany -fno-stack-protector
-
-# see https://five-embeddev.com/quickref/isa_ext.html#standard-isas--alias
-# see https://github.com/riscv-non-isa/riscv-toolchain-conventions
-
 # misa --X-VU-S-----M---I--F-DC-A
 
 CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector
