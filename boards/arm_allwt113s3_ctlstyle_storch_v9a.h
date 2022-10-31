@@ -418,8 +418,7 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#if 0
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define WITHAUTOTUNER_UA1CEI_V2 1
+		#define WITHAUTOTUNER_UA1CEI_V2 1	/* Есть функция автотюнера */
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
@@ -597,6 +596,7 @@
 
 	#if WITHAUTOTUNER_UA1CEI_V2
 
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
