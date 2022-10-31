@@ -520,8 +520,7 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#if 1
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define WITHAUTOTUNER_UA1CEI_V2 1
+		#define WITHAUTOTUNER_UA1CEI_V2 1	/* Есть функция автотюнера */
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
@@ -687,8 +686,7 @@
 	//#define WITHALTERNATIVEFONTS    1
 
 	#if WITHAUTOTUNER_UA1CEI_V2
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
