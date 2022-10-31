@@ -3174,10 +3174,14 @@ sysinit_vbar_initialize(void)
 #endif /* (__CORTEX_A != 0) */
 #if __riscv
 
-	extern uintptr_t __Vectors [];
+	// http://five-embeddev.com/riscv-isa-manual/latest/machine.html#machine-trap-vector-base-address-register-mtvec
+	// 3.1.7 Machine Trap-Vector Base-Address Register (mtvec)
+
+	extern uint32_t __Vectors [];
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
-	csr_write_mtvec(vbase);
-	ASSERT(csr_read_mtvec() == vbase);
+	ASSERT((vbase & 0x03) == 0);
+	csr_write_mtvec(vbase | 0x01);	/* set Vectored mode */
+	ASSERT(csr_read_mtvec() == (vbase | 0x01));
 #endif
 }
 

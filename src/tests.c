@@ -9711,6 +9711,14 @@ void lowtests(void)
 {
 #if 0 && __riscv && defined(__riscv_zicsr)
 	{
+		PRINTF("mvendorid=0x%08X\n", csr_read_mvendorid());
+		PRINTF("marchid=0x%08X\n", csr_read_marchid());
+		PRINTF("mimpid=0x%08X\n", csr_read_mimpid());
+		PRINTF("mhartid=0x%08X\n", csr_read_mhartid());
+	}
+#endif
+#if 0 && __riscv && defined(__riscv_zicsr)
+	{
 		// see https://github.com/five-embeddev/riscv-csr-access/blob/master/include/riscv-csr.h
 
 		//	0 A Atomic extension
@@ -9744,7 +9752,7 @@ void lowtests(void)
 		//	READ_CSR(misa)=00B4112D: --X-VU-S-----M---I--F-DC-A
 		const unsigned misa_val = csr_read_misa();
 		unsigned i;
-		PRINTF("READ_CSR(misa)=%08X: ", misa_val);
+		PRINTF("misa=%08X: ", misa_val);
 		for (i = 0; i < 26; ++ i)
 		{
 			const int pos = 25 - i;
