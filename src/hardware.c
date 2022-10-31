@@ -3181,12 +3181,22 @@ sysinit_vbar_initialize(void)
 
 	// http://five-embeddev.com/riscv-isa-manual/latest/machine.html#machine-trap-vector-base-address-register-mtvec
 	// 3.1.7 Machine Trap-Vector Base-Address Register (mtvec)
+	// https://five-embeddev.com/baremetal/vectored_interrupts/
 
 	extern uint32_t __Vectors [];
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
 	ASSERT((vbase & 0x03) == 0);
-	csr_write_mtvec(vbase | 0x01);	/* set Vectored mode */
-	ASSERT(csr_read_mtvec() == (vbase | 0x01));
+
+	const uintptr_t vbaseval = vbase | 0x01;	/* set Vectored mode */
+	csr_write_mtvec(vbaseval);	/*  */
+	csr_write_stvec(vbaseval);	/* for supervisor privileges */
+	csr_write_utvec(vbaseval);	/* for user  privilege*/
+
+	ASSERT(csr_read_mtvec() == vbaseval);
+
+	//csr_write_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
+	csr_set_bits_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
+
 #endif
 }
 
