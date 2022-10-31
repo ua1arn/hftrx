@@ -3066,6 +3066,11 @@ void __attribute__((used)) Reset_Handler(void)
 // https://twilco.github.io/riscv-from-scratch/2019/03/10/riscv-from-scratch-1.html
 // https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html
 
+void isr_empty(void)
+{
+	TP();
+}
+
 void isr_synctrap(void)
 {
 	TP();

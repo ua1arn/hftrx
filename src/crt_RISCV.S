@@ -70,6 +70,13 @@
   mret
 .endm
 
+.macro trap_handler func
+trap_\func:
+	trap_entry
+	jal isr_\func
+	trap_exit
+.endm
+
 	.global Reset_Handler
 .section .startup0
 .align 8
@@ -125,7 +132,7 @@ Reset_Handler:
 .global __Vectors
 
 __Vectors:
-    j _synctrap
+    j trap_synctrap
     .align 2
     j trap_empty
     .align 2
@@ -190,104 +197,31 @@ __Vectors:
     j trap_irq15
     .align 2
 
-_synctrap:
-  trap_entry
-  jal isr_synctrap
-  trap_exit
+ //   .space (4096 - (16 + 16) * 4)
 
-trap_vmsi:
-  trap_entry
-  jal isr_vmsi
-  trap_exit
+.section .text
 
-trap_vmti:
-  trap_entry
-  jal isr_vmti
-  trap_exit
+	trap_handler synctrap
+	trap_handler vmsi
+	trap_handler vmti
+	trap_handler vmei
 
-trap_vmei:
-  trap_entry
-  jal isr_vmei
-  trap_exit
+	trap_handler irq0
+	trap_handler irq1
+	trap_handler irq2
+	trap_handler irq3
+	trap_handler irq4
+	trap_handler irq5
+	trap_handler irq6
+	trap_handler irq7
+	trap_handler irq8
+	trap_handler irq9
+	trap_handler irq10
+	trap_handler irq11
+	trap_handler irq12
+	trap_handler irq13
+	trap_handler irq14
+	trap_handler irq15
 
-trap_irq0:
-  trap_entry
-  jal isr_irq0
-  trap_exit
+	trap_handler empty
 
-trap_irq1:
-  trap_entry
-  jal isr_irq1
-  trap_exit
-
-trap_irq2:
-  trap_entry
-  jal isr_irq2
-  trap_exit
-
-trap_irq3:
-  trap_entry
-  jal isr_irq3
-  trap_exit
-
-trap_irq4:
-  trap_entry
-  jal isr_irq4
-  trap_exit
-
-trap_irq5:
-  trap_entry
-  jal isr_irq5
-  trap_exit
-
-trap_irq6:
-  trap_entry
-  jal isr_irq6
-  trap_exit
-
-trap_irq7:
-  trap_entry
-  jal isr_irq7
-  trap_exit
-
-trap_irq8:
-  trap_entry
-  jal isr_irq8
-  trap_exit
-
-trap_irq9:
-  trap_entry
-  jal isr_irq9
-  trap_exit
-
-trap_irq10:
-  trap_entry
-  jal isr_irq10
-  trap_exit
-
-trap_irq11:
-  trap_entry
-  jal isr_irq11
-  trap_exit
-
-trap_irq12:
-  trap_entry
-  jal isr_irq12
-  trap_exit
-
-trap_irq13:
-  trap_entry
-  jal isr_irq13
-  trap_exit
-
-trap_irq14:
-  trap_entry
-  jal isr_irq14
-  trap_exit
-
-trap_irq15:
-  trap_entry
-  jal isr_irq15
-  trap_exit
-trap_empty:
-    nop
