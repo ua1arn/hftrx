@@ -3090,17 +3090,17 @@ sysinit_vbar_initialize(void)
 
 	const uintptr_t vbaseval = vbase | 0x01;	/* set Vectored mode */
 	csr_write_mtvec(vbaseval);	/* Machine */
-	csr_write_stvec(vbaseval);	/* for supervisor privileges */
-	csr_write_utvec(vbaseval);	/* for user privilege*/
+//	csr_write_stvec(vbaseval);	/* for supervisor privileges */
+//	csr_write_utvec(vbaseval);	/* for user privilege*/
 
 	ASSERT(csr_read_mtvec() == vbaseval);
 
 	// 3.1.9 Machine Interrupt Registers (mip and mie)
 	//csr_write_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
 	csr_set_bits_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
-
-	csr_set_bits_sie(~ (uint_xlen_t) 0);	/* for supervisor enable all interrupts */
-	csr_set_bits_uie(~ (uint_xlen_t) 0);	/* for user enable all interrupts */
+//
+//	csr_set_bits_sie(~ (uint_xlen_t) 0);	/* for supervisor enable all interrupts */
+//	csr_set_bits_uie(~ (uint_xlen_t) 0);	/* for user enable all interrupts */
 
 #endif /* CPUSTYLE_RISCV */
 }
