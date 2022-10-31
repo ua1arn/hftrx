@@ -19659,10 +19659,15 @@ hamradio_main_step(void)
 						PRINTF("key=%02X\n", (unsigned char) c);
 						break;
 		#if WITHDEBUG && WITHMENU
-						case 'm':
+					case 'm':
 						PRINTF("menu items:\n");
 						menu_print();
 						PRINTF("menu items end\n");
+						break;
+		#endif /* WITHDEBUG && WITHMENU */
+		#if 0
+					case ' ':
+						PRINTF("%lu\n", (long) csr_read_time());
 						break;
 		#endif
 		#if WITHUSBHOST_HIGHSPEEDULPI
