@@ -1646,6 +1646,11 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 
 #elif CPUSTYLE_RISCV
 
+	/* Set interrupt handler */
+	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
+
+
+
 #else /* CPUSTYLE_STM32MP1 */
 
 	NVIC_DisableIRQ(int_id);
@@ -1677,6 +1682,9 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 	#endif /* WITHSMPSYSTEM */
 
 #elif CPUSTYLE_RISCV
+
+	/* Disable interrupt handler */
+	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
 
 #else /* CPUSTYLE_STM32MP1 */
 
@@ -1754,6 +1762,10 @@ void cpu_initialize(void)
 #elif CPUSTYLE_ATXMEGA
 
 	cpu_atxmega_switchto32MHz();
+
+#elif CPUSTYLE_RISCV
+
+	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
 
 #endif
 

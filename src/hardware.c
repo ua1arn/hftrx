@@ -3066,8 +3066,6 @@ void __attribute__((used)) Reset_Handler(void)
 // https://twilco.github.io/riscv-from-scratch/2019/03/10/riscv-from-scratch-1.html
 // https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html
 
-uint32_t __Vectors [1024];
-
 void isr_synctrap(void)
 {
 	TP();
@@ -3174,6 +3172,13 @@ sysinit_vbar_initialize(void)
 	//PRINTF("vbar=%08lX, mvbar=%08lX\n", __get_VBAR(), __get_MVBAR());
 
 #endif /* (__CORTEX_A != 0) */
+#if __riscv
+
+	extern uintptr_t __Vectors [];
+	const uintptr_t vbase = (uintptr_t) & __Vectors;
+	csr_write_mtvec(vbase);
+	ASSERT(csr_read_mtvec() == vbase);
+#endif
 }
 
 static void FLASHMEMINITFUNC

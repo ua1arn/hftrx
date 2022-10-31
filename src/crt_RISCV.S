@@ -122,9 +122,9 @@ Reset_Handler:
 .section .isr_vector
 .align 8
 
-.global IV
+.global __Vectors
 
-IV:
+__Vectors:
     j _synctrap
     .align 2
     j trap_empty
