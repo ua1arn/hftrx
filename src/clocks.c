@@ -2761,6 +2761,56 @@ void hardware_spi_io_delay(void)
 #endif
 }
 
+#if __riscv_xlen
+
+#define RISCV_MSIP0 (CLINT_BASE  + 0x0000)
+#define RISCV_MTIMECMP_ADDR (CLINT_BASE  + 0x4000)
+
+// На Allwinner F133-A доступ к регистрам таймера только 32-х битный
+static uint64_t mtimer_get_raw_time_cmp(void) {
+#if 0//( __riscv_xlen == 64)
+    // Directly read 64 bit value
+    volatile uint64_t *mtime = (volatile uint64_t *)(RISCV_MTIMECMP_ADDR);
+    return *mtime;
+#elif 1//( __riscv_xlen == 32)
+    volatile uint32_t * mtimel = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
+    volatile uint32_t * mtimeh = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
+    uint32_t mtimeh_val;
+    uint32_t mtimel_val;
+    do {
+        // There is a small risk the mtimeh will tick over after reading mtimel
+        mtimeh_val = *mtimeh;
+        mtimel_val = *mtimel;
+        // Poll mtimeh to ensure it's consistent after reading mtimel
+        // The frequency of mtimeh ticking over is low
+    } while (mtimeh_val != *mtimeh);
+    return (uint64_t) ( ( ((uint64_t)mtimeh_val)<<32) | mtimel_val);
+#else
+    return 888;
+#endif
+}
+
+// На Allwinner F133-A доступ к регистрам таймера только 32-х битный
+void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
+#if 0//(__riscv_xlen == 64)
+    // Single bus access
+    volatile uint64_t *mtimecmp = (volatile uint64_t*)(RISCV_MTIMECMP_ADDR);
+    *mtimecmp = new_mtimecmp;
+#elif 1//( __riscv_xlen == 32)
+    volatile uint32_t *mtimecmpl = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
+    volatile uint32_t *mtimecmph = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
+    // AS we are doing 32 bit writes, an intermediate mtimecmp value may cause spurious interrupts.
+    // Prevent that by first setting the dummy MSB to an unacheivable value
+    *mtimecmph = 0xFFFFFFFF;  // cppcheck-suppress redundantAssignment
+    // set the LSB
+    *mtimecmpl = (uint32_t)(new_mtimecmp & 0x0FFFFFFFFUL);
+    // Set the correct MSB
+    *mtimecmph = (uint32_t)(new_mtimecmp >> 32); // cppcheck-suppress redundantAssignment
+#else
+#endif
+}
+#endif /* __riscv_xlen */
+
 #if CPUSTYLE_STM32MP1
 
 	#if WITHELKEY
@@ -2809,6 +2859,62 @@ void hardware_spi_io_delay(void)
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
+
+#elif CPUSTYPE_F133
+
+	#if WITHELKEY
+
+	// 1/20 dot length interval timer
+	void
+	TIMER0_IRQHandler(void)
+	{
+		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
+		if ((st & (1uL << 0)) != 0)	// TMR0_IRQ_PEND
+		{
+			//TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
+			spool_elkeybundle();
+		}
+		else
+		{
+			ASSERT(0);
+		}
+		TIMER->TMR_IRQ_STA_REG = st;
+	}
+	#endif /* WITHELKEY */
+//
+//	void
+//	TIM5_IRQHandler(void)
+//	{
+//		const portholder_t st = TIM5->SR;
+//		if ((st & TIM_SR_UIF) != 0)
+//		{
+//			TIM5->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
+//			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+//			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+//		}
+//		else
+//		{
+//			ASSERT(0);
+//		}
+//	}
+
+	static uint_fast64_t gtimloadvalue;
+
+	void
+	isr_vmti(void)
+	{
+		mtimer_set_raw_time_cmp(gtimloadvalue);
+		gtimloadvalue += 1ll * allwnrt113_get_hosc_freq()/* / TICKS_FREQUENCY*/;
+		//TP();
+		{
+			static uint_fast8_t state;
+			state = ! state;
+			BOARD_BLINK_SETSTATE(state);
+		}
+		//spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+		//spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+	}
+
 
 #elif CPUSTYPE_T113 && (__TIM_PRESENT == 1U)
 
@@ -3285,7 +3391,13 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	#warning Implement for CPUSTYLE_XCZU
 
 #elif CPUSTYPE_F133
-	#warning Implement for CPUSTYPE_F133
+	//#warning Implement for CPUSTYPE_F133
+
+	// 3.1.7 Machine Trap-Vector Base-Address Register (mtvec)
+	// https://five-embeddev.com/baremetal/vectored_interrupts/
+	mtimer_set_raw_time_cmp(csr_read_time() + 1ll * allwnrt113_get_hosc_freq()/* / TICKS_FREQUENCY*/);
+    // Enable MIE.MTI
+    csr_set_bits_mie(MIE_MTI_BIT_MASK);
 
 #else
 	#warning Undefined CPUSTYLE_XXX

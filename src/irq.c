@@ -1343,93 +1343,126 @@ static void vectors_relocate(void)
 void isr_empty(void)
 {
 	TP();
+	for (;;)
+		;
 }
 
 void isr_synctrap(void)
 {
 	TP();
+	for (;;)
+		;
 }
 
 void isr_vmsi(void)
 {
 	TP();
-}
-void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp);
-void isr_vmti(void)
-{
-	TP();
-	/* Установка времени прерывания через 1 секунду */
-	mtimer_set_raw_time_cmp(csr_read_time() + 1ll * allwnrt113_get_hosc_freq());
+	for (;;)
+		;
 }
 
 void isr_vmei(void)
 {
 	TP();
+	for (;;)
+		;
 }
 
 void isr_irq0(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq1(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq2(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq3(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq4(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq5(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq6(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq7(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq8(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq9(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq10(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq11(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq12(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq13(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq14(void)
 {
 	TP();
+	for (;;)
+		;
 }
 void isr_irq15(void)
 {
 	TP();
+	for (;;)
+		;
 }
 
 #endif /* CPUSTYLE_RISCV */

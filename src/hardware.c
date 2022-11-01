@@ -3059,56 +3059,6 @@ void __attribute__((used)) Reset_Handler(void)
 }
 #endif /* defined(__aarch64__) */
 
-#if __riscv_xlen
-
-#define RISCV_MSIP0 (CLINT_BASE  + 0x0000)
-#define RISCV_MTIMECMP_ADDR (CLINT_BASE  + 0x4000)
-
-// На Allwinner F133-A доступ к регистрам таймера только 32-х битный
-static uint64_t mtimer_get_raw_time_cmp(void) {
-#if 0//( __riscv_xlen == 64)
-    // Directly read 64 bit value
-    volatile uint64_t *mtime = (volatile uint64_t *)(RISCV_MTIMECMP_ADDR);
-    return *mtime;
-#elif 1//( __riscv_xlen == 32)
-    volatile uint32_t * mtimel = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
-    volatile uint32_t * mtimeh = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
-    uint32_t mtimeh_val;
-    uint32_t mtimel_val;
-    do {
-        // There is a small risk the mtimeh will tick over after reading mtimel
-        mtimeh_val = *mtimeh;
-        mtimel_val = *mtimel;
-        // Poll mtimeh to ensure it's consistent after reading mtimel
-        // The frequency of mtimeh ticking over is low
-    } while (mtimeh_val != *mtimeh);
-    return (uint64_t) ( ( ((uint64_t)mtimeh_val)<<32) | mtimel_val);
-#else
-    return 888;
-#endif
-}
-
-// На Allwinner F133-A доступ к регистрам таймера только 32-х битный
-void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
-#if 0//(__riscv_xlen == 64)
-    // Single bus access
-    volatile uint64_t *mtimecmp = (volatile uint64_t*)(RISCV_MTIMECMP_ADDR);
-    *mtimecmp = new_mtimecmp;
-#elif 1//( __riscv_xlen == 32)
-    volatile uint32_t *mtimecmpl = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
-    volatile uint32_t *mtimecmph = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
-    // AS we are doing 32 bit writes, an intermediate mtimecmp value may cause spurious interrupts.
-    // Prevent that by first setting the dummy MSB to an unacheivable value
-    *mtimecmph = 0xFFFFFFFF;  // cppcheck-suppress redundantAssignment
-    // set the LSB
-    *mtimecmpl = (uint32_t)(new_mtimecmp & 0x0FFFFFFFFUL);
-    // Set the correct MSB
-    *mtimecmph = (uint32_t)(new_mtimecmp >> 32); // cppcheck-suppress redundantAssignment
-#else
-#endif
-}
-#endif /* __riscv_xlen */
-
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
@@ -3134,7 +3084,7 @@ sysinit_vbar_initialize(void)
 	// 3.1.7 Machine Trap-Vector Base-Address Register (mtvec)
 	// https://five-embeddev.com/baremetal/vectored_interrupts/
 
-	TP();
+	//TP();
 //	PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
 //	* (volatile uint32_t *) RISCV_MSIP0 |= 0x01;
 //	PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
@@ -3143,7 +3093,7 @@ sysinit_vbar_initialize(void)
 	ASSERT((vbase & 0x03) == 0);
 //	TP();
 
-	PRINTF("vbase=%p\n", (void *) vbase);
+	//PRINTF("vbase=%p\n", (void *) vbase);
 	const uintptr_t vbaseval = vbase | 0x01;	/* set Vectored mode */
 	csr_write_mtvec(vbaseval);	/* Machine */
 	csr_write_stvec(vbaseval);	/* for supervisor privileges */
@@ -3162,40 +3112,6 @@ sysinit_vbar_initialize(void)
 //	csr_set_bits_uie(~ (uint_xlen_t) 0);	/* for user enable all interrupts */
 	// Global interrupt disable
 //	TP();
-
-//	{
-//		unsigned sxl = (csr_read_mstatus() >> 34) & 0x03;
-//		unsigned uxl = (csr_read_mstatus() >> 32) & 0x03;
-//		unsigned xs = (csr_read_mstatus() >> 15) & 0x03;
-//		PRINTF("mstatus=%08lX, sxl=%u, uxl=%u, xs=%u\n", csr_read_mstatus(), sxl, uxl, xs);
-//	}
-	//csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
-
-    //csr_write_mie(0);
-
-    // Setup the IRQ handler entry point, set the mode to vectored
-    //csr_write_mtvec((uint_xlen_t) riscv_mtvec_table | RISCV_MTVEC_MODE_VECTORED);
-
-    // Global interrupt enable
-    //csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
-
-    // Setup timer for 1 second interval
-    //timestamp = mtimer_get_raw_time();
-	//TP();
-	//csr_set_bits_mcounteren(MCOUNTEREN_CY_BIT_MASK | MCOUNTEREN_TM_BIT_MASK | MCOUNTEREN_IR_BIT_MASK);
-//	TP();
-//	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
-
-#if 1
-	/* Установка времени прерывания через 1 секунду */
-	mtimer_set_raw_time_cmp(csr_read_time() + 1ll * allwnrt113_get_hosc_freq());
-	//PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
-	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
-	PRINTF("mtimer_get_raw_time     = %lX\n", csr_read_time());
-
-    // Enable MIE.MTI
-    csr_set_bits_mie(MIE_MTI_BIT_MASK);
-#endif
 
 #endif /* CPUSTYLE_RISCV */
 }
