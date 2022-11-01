@@ -1814,31 +1814,25 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 
 	/* Set interrupt handler */
 	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
-	uint_xlen_t mstatus;
-	uint_xlen_t addmask =
-		MSTATUS_MIE_BIT_MASK |
-		MSTATUS_SIE_BIT_MASK |
-		MSTATUS_MPIE_BIT_MASK |
-		MSTATUS_SPIE_BIT_MASK |
-		0;
-	mstatus = csr_read_clr_bits_mstatus(addmask);
 
-	csr_write_mstatus(mstatus | addmask);	/* восстаноавливаем старое состояние */
-//	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
-//	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
-	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
-//	csr_set_bits_mie(~ 1ull);	// all
-
-	plic_vectors [int_id] = handler;
 	const div_t d = div(int_id, 32);
 	ASSERT(d.quot < 10);
-	PLIC->PLIC_MIE_REGn [d.quot] |= 1u << d.rem;
+	const unsigned mask = (1u << d.rem);
+
+	PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
+
+	plic_vectors [int_id] = handler;
 	PLIC->PLIC_PRIO_REGn [int_id] = priority;
+
+	PLIC->PLIC_MIE_REGn [d.quot] |= mask;
 
 	// 1: The machine mode can access to all registers in PLIC.
 	// The super-user mode can access all registers except PLL_CTRL in PLIC.
 	// The normal-user mode can not access any registers in PLIC.
 	//PLIC->PLIC_CTRL_REG |= (1u << 0);
+
+	csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
 
 #else /* CPUSTYLE_STM32MP1 */
 
@@ -1875,7 +1869,9 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 	/* Disable interrupt handler */
 		const div_t d = div(int_id, 32);
 		ASSERT(d.quot < 10);
-		PLIC->PLIC_MIE_REGn [d.quot] &= ~ (1u << d.rem);
+
+		const unsigned mask = (1u << d.rem);
+		PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
 
 #else /* CPUSTYLE_STM32MP1 */
 
