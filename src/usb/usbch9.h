@@ -102,9 +102,9 @@ enum
 enum
 {
 	ep0outxxx = 0x00,
-#if ! (CPUSTYPE_T113 || CPUSTYPE_F133)
+#if ! (CPUSTYLE_T113 || CPUSTYLE_F133)
 	epoutbase = (epincount - 1) & 0x7F,
-#endif /* ! (CPUSTYPE_T113 || CPUSTYPE_F133) */
+#endif /* ! (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
 #if WITHUSBRNDIS
 	USBD_EP_RNDIS_OUT,

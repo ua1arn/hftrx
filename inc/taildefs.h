@@ -213,7 +213,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
@@ -228,7 +228,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
-#elif CPUSTYPE_F133
+#elif CPUSTYLE_F133
 	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
@@ -394,7 +394,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP //__attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	#define FLASHMEM //__flash
 	#define FLASHMEMINIT	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -492,7 +492,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 #endif /* CPUSTYLE_XC7Z */
 
-#if CPUSTYPE_T113 || CPUSTYPE_F133
+#if CPUSTYLE_T113 || CPUSTYLE_F133
 	// Bootloader parameters
 	#if WITHSDRAMHW
 		#define BOOTLOADER_RAMAREA DRAM_SPACE_BASE	/* адрес ОЗУ, куда перемещать application */
@@ -514,6 +514,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "W25Q128JV"
-#endif /* CPUSTYPE_T113 */
+#endif /* CPUSTYLE_T113 */
 
 #endif /* TAILDEFS_H_INCLUDED */

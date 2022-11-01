@@ -1527,7 +1527,7 @@ void i2c_initialize(void)
 }
 
 #else
-	#error I2C hardware implementation for CPUSTYPE_xxx is not avaliable
+	#error I2C hardware implementation for CPUSTYLE_xxx is not avaliable
 
 #endif // CPUSTYLE_ATMEGA
 

@@ -233,9 +233,9 @@ void MX_USB_HOST_Process(void)
 /* User-mode function */
 void MX_USB_DEVICE_Process(void)
 {
-#if (CPUSTYPE_T113 || CPUSTYPE_F133)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
     usb_device_function0(&hUsbDeviceHS);
-#endif /* (CPUSTYPE_T113 || CPUSTYPE_F133) */
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 }
 #endif /* defined (WITHUSBHW_DEVICE) */
 

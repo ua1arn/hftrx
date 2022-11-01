@@ -524,7 +524,7 @@ extern "C" {
 	typedef uint_fast8_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	#define TICKS_FREQUENCY	 (200U * 2)	// 400 Hz - use compare/match interrupt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
@@ -725,7 +725,7 @@ extern "C" {
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
@@ -775,7 +775,7 @@ extern "C" {
 	} GPIOMode_TypeDef;
 
 
-#elif CPUSTYPE_F133
+#elif CPUSTYLE_F133
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений

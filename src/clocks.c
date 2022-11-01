@@ -1789,9 +1789,9 @@ unsigned long hardware_get_spi_freq(void)
 #define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-#if CPUSTYPE_F133
+#if CPUSTYLE_F133
 
 void set_pll_riscv_axi(unsigned n)
 {
@@ -1875,7 +1875,7 @@ void set_pll_riscv_axi(unsigned n)
 }
 #endif
 
-#if CPUSTYPE_T113
+#if CPUSTYLE_T113
 void set_pll_cpux_axi(unsigned n)
 {
 	uint32_t val;
@@ -1955,7 +1955,7 @@ void set_pll_cpux_axi(unsigned n)
 //	TP();
 //    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 }
-#endif /* CPUSTYPE_T113 */
+#endif /* CPUSTYLE_T113 */
 
 #if 0
 static void set_pll_periph0(void)
@@ -2503,7 +2503,7 @@ uint_fast32_t allwnrt113_get_arm_freq(void)
 	return allwnrt113_get_pll_cpu_freq();
 }
 
-#if CPUSTYPE_F133
+#if CPUSTYLE_F133
 
 uint_fast32_t allwnrf133_get_riscv_freq(void)
 {
@@ -2538,7 +2538,7 @@ uint_fast32_t allwnrf133_get_riscv_freq(void)
 	}
 }
 
-#endif /* CPUSTYPE_F133 */
+#endif /* CPUSTYLE_F133 */
 
 uint_fast32_t allwnrt113_get_pl1_timer_freq(void)
 {
@@ -2761,7 +2761,7 @@ void hardware_spi_io_delay(void)
 #endif
 }
 
-#if CPUSTYPE_F133
+#if CPUSTYLE_F133
 
 #define RISCV_MSIP0 (CLINT_BASE  + 0x0000)
 #define RISCV_MTIMECMP_ADDR (CLINT_BASE  + 0x4000)
@@ -2809,7 +2809,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 #else
 #endif
 }
-#endif /* CPUSTYPE_F133 */
+#endif /* CPUSTYLE_F133 */
 
 #if CPUSTYLE_STM32MP1
 
@@ -2860,7 +2860,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
-#elif CPUSTYPE_F133
+#elif CPUSTYLE_F133
 
 	#if WITHELKEY
 
@@ -2901,7 +2901,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 	}
 
 
-#elif CPUSTYPE_T113 && (__TIM_PRESENT == 1U)
+#elif CPUSTYLE_T113 && (__TIM_PRESENT == 1U)
 
 	#if WITHELKEY
 
@@ -3308,7 +3308,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 	// Prepare funcionality: use CNTP
 	const uint_fast32_t gtimfreq = allwnrt113_get_pl1_timer_freq();
 
@@ -3361,7 +3361,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 #elif CPUSTYLE_XCZU
 	#warning Implement for CPUSTYLE_XCZU
 
-#elif CPUSTYPE_F133
+#elif CPUSTYLE_F133
 
 	// 3.1.7 Machine Trap-Vector Base-Address Register (mtvec)
 	// https://five-embeddev.com/baremetal/vectored_interrupts/
@@ -6838,12 +6838,12 @@ sysinit_pll_initialize(void)
 
 	#endif /* WITHISBOOTLOADER */
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 
 		CCU->USB_BGR_REG = 0;	// reset all USBs
 	allwnrt113_pll_initialize();
 
-#elif CPUSTYPE_F133
+#elif CPUSTYLE_F133
 
 	CCU->USB_BGR_REG = 0;	// reset all USBs
 
@@ -7113,7 +7113,7 @@ void SystemCoreClockUpdate(void)
 
 		return 1;
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 
 		/* fsync=50000000, wflwidth=96000 */
 		/* number of dividers=83 42..125 */
@@ -7450,7 +7450,7 @@ void SystemCoreClockUpdate(void)
 		MTU2.TGRC_0 = v - 1;	// Use C intstead of A
 	}
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 
 	void hardware_dcdcfreq_pwm5_initialize(unsigned pwmch)
 	{
@@ -8262,9 +8262,9 @@ void hardware_adc_initialize(void)
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	//#warning GPADC need to implement at CPUSTYPE_T113
+	//#warning GPADC need to implement at CPUSTYLE_T113
 
 
 	(void) GPADC;
@@ -8880,7 +8880,7 @@ hardware_elkey_timer_initialize(void)
 
 	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	TIMER->TMR0_CTRL_REG = 0;
 
@@ -8983,7 +8983,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		1 * (1U << 0) |	// Enables the interrupts when counting starts.
 		0;
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);

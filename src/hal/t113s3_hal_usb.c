@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if (CPUSTYPE_T113 || CPUSTYPE_F133)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 #include "board.h"
 #include "audio.h"
@@ -4502,4 +4502,4 @@ HAL_StatusTypeDef HAL_PCD_SetAddress(PCD_HandleTypeDef *hpcd, uint8_t address)
   return HAL_OK;
 }
 
-#endif /* (CPUSTYPE_T113 || CPUSTYPE_F133) */
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */

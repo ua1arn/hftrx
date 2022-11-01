@@ -417,7 +417,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
 	}
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	//	Allwinner USB DRD support (musb_otg)
 	//
 	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
@@ -558,7 +558,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 		  }
 	#endif /* defined (USB_OTG_FS) */
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 

@@ -1824,7 +1824,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	GIC_SetTarget(int_id, targetcpu);
 
 
-	#if CPUSTYLE_STM32MP1 || CPUSTYPE_T113
+	#if CPUSTYLE_STM32MP1 || CPUSTYLE_T113
 		// peripheral (hardware) interrupts using the GIC 1-N model.
 		uint_fast32_t cfg = GIC_GetConfiguration(int_id);
 		cfg &= ~ 0x02;	/* Set level sensitive configuration */
@@ -2029,7 +2029,7 @@ void cpu_initialize(void)
 	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module halts.
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	EALLOW;
 	WDCR = 0x0068;

@@ -199,7 +199,7 @@ extern "C" {
 		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
 		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
-	#elif CPUSTYPE_T113 || CPUSTYPE_F133
+	#elif CPUSTYLE_T113 || CPUSTYLE_F133
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
 		// ws=0: even samples, ws=1: odd samples
 

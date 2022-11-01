@@ -40,7 +40,7 @@ XUSBPS_Registers * EHCIxToUSBx(void * p)
     return USBx;
 }
 
-#elif (CPUSTYPE_T113 || CPUSTYPE_F133)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
 {
@@ -1183,7 +1183,7 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
-#if (CPUSTYPE_T113 || CPUSTYPE_F133)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
 
@@ -1393,7 +1393,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
-#if (CPUSTYPE_T113 || CPUSTYPE_F133)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
 	{

@@ -17,7 +17,7 @@
 #include "hardware.h"
 
 #if WITHSDRAMHW
-#if CPUSTYPE_T113
+#if CPUSTYLE_T113
 
 #include "formats.h"
 #include "clocks.h"
@@ -1702,5 +1702,5 @@ signed int init_DRAM(int type, dram_para_t *para) // s0
 //------------------------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------------------------
-#endif /* CPUSTYPE_T113 */
+#endif /* CPUSTYLE_T113 */
 #endif /* WITHSDRAMHW */

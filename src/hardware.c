@@ -869,7 +869,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		#endif
 	#endif /* CPUSTYLE_ATMEGA_XXX4 && defined (PCIVECT) */
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 
 #else
 
@@ -1466,9 +1466,9 @@ r7s721_adi_irq_handler(void)
 	}
 }
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// ADC IRQ handler
-	//#warning Unhandled CPUSTYPE_T113
+	//#warning Unhandled CPUSTYLE_T113
 
 #else
 	#error No CPUSTYLE_XXXXX defined
@@ -1574,9 +1574,9 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_STM32F0XX
 	#warning: #warning Must be implemented for this CPU
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	//#warning Unhandled CPUSTYPE_T113
+	//#warning Unhandled CPUSTYLE_T113
 
 #else
 
@@ -1635,7 +1635,7 @@ uint32_t hardware_get_random(void)
 }
 
 
-#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYPE_TMS320F2833X
+#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_TMS320F2833X
 
 // количество циклов на микросекунду
 static unsigned long
@@ -1689,17 +1689,17 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYPE_TMS320F2833X && 1 // RAM code0
+#elif CPUSTYLE_TMS320F2833X && 1 // RAM code0
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 760uL / cpufreq_MHz;	// tested @ 100 MHz Execute from RAM
 	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
+#elif CPUSTYLE_TMS320F2833X	&& 0	// FLASH code
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYPE_F133
+#elif CPUSTYLE_F133
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #else
@@ -1737,7 +1737,7 @@ void local_delay_ms(int timeMS)
 	}
 }
 
-#endif /* CPUSTYLE_ARM || CPUSTYPE_TMS320F2833X */
+#endif /* CPUSTYLE_ARM || CPUSTYLE_TMS320F2833X */
 
 
 #if CPUSTYLE_STM32H7XX
@@ -2766,7 +2766,7 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 
 	if (a < 0x00400000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -2778,7 +2778,7 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
-#elif CPUSTYPE_F133
+#elif CPUSTYLE_F133
 
 	if (a < 0x00400000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -3435,7 +3435,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ ((xACPU0_RESET_MASK << targetcore) | (xACPU0_PWRON_RESET_MASK << targetcore));
 }
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 
 //	3.4.2.4 CPU0 Hotplug Process
 //
@@ -3777,7 +3777,7 @@ static void cpu_atxmega_switchto32MHz()
 
 #endif /* CPUSTYLE_ATXMEGA */
 
-#if CPUSTYPE_TMS320F2833X
+#if CPUSTYLE_TMS320F2833X
 
 void cpu_tms320f2833x_pll_initialize(
 		uint_fast8_t pllcrDIV, 		// PLL multiplier
@@ -3860,7 +3860,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 
 	asm(" RPT #8 || NOP");
 }
-#endif /* CPUSTYPE_TMS320F2833X */
+#endif /* CPUSTYLE_TMS320F2833X */
 
 // секция init больше не нужна
 void cpu_initdone(void)
@@ -4313,7 +4313,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 
 #if WITHUSEMALLOC
 
-#if (CPUSTYPE_T113 || CPUSTYPE_F133) && ! WITHISBOOTLOADER
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && ! WITHISBOOTLOADER
 
 	static RAMHEAP uint8_t heapplace [4 * 1024uL * 1024uL];
 

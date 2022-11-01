@@ -6315,7 +6315,7 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 1 && WITHDEBUG && (CPUSTYPE_T113 || CPUSTYPE_F133)
+#if 1 && WITHDEBUG && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		// Allwinner t113-s3 boot mode display
 
@@ -6328,7 +6328,7 @@ void hightests(void)
 		PRINTF("BOOT_MODE=%u, Pin_Boot_Select=0x%02X\n", (SID->BOOT_MODE >> 0) & 0x01, (SYS_CFG->VER_REG >> 11) & 0x03);
 	}
 #endif
-#if 0 && (CPUSTYPE_T113 || CPUSTYPE_F133)
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		RTC->FBOOT_INFO_REG0 = (1u << 28);	// Try process: SMHC0->SPI NOR->SPI NAND->EMMC2_USER->EMMC2_BOOT.
 	}
@@ -9802,12 +9802,12 @@ void lowtests(void)
 		}
 	}
 #endif
-#if (CPUSTYPE_T113 || CPUSTYPE_F133)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected arm: 0x0000190E, risc-v: 0x00002F0F)\n", SYS_CFG->SYS_LDO_CTRL_REG);
 	}
 #endif
-#if (CPUSTYPE_T113)
+#if (CPUSTYLE_T113)
 	{
 		PRINTF("C0_CPUX_CFG->C0_CTRL_REG0=0x%08X (expected 0x80000000)\n", C0_CPUX_CFG->C0_CTRL_REG0);
 	}

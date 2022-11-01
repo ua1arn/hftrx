@@ -2228,7 +2228,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 #else
 #endif
 
-#if (FLASHEND > 0x3FFF)	|| CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYPE_TMS320F2833X || (TUNE_TOP >= 65535000L)
+#if (FLASHEND > 0x3FFF)	|| CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_TMS320F2833X || (TUNE_TOP >= 65535000L)
 
 	/* частоты хранятся с точностью до герца в 32-х битных переменных */
 	struct bandrange {
@@ -10547,11 +10547,11 @@ void speex_free (void *ptr)
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_T113
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113
 	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_T113 */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 */
 	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_T113 */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 */
 }
 
 static void speex_update_rx(void)
@@ -17091,7 +17091,7 @@ void display2_menu_valxx(
 			msg = PSTR("ZYNQ USCALE");
 #elif CPUSTYLE_R7S721
 			msg = PSTR("RENESAS");
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 			msg = PSTR("Allw T128-S3");
 #elif defined (WITHCPUNAME)
 			msg = PSTR(WITHCPUNAME);
@@ -17762,7 +17762,7 @@ static void menu_print(void)
         			msg = PSTR("ZYNQ USCALE");
         #elif CPUSTYLE_R7S721
         			msg = PSTR("RENESAS");
-        #elif CPUSTYPE_T113
+        #elif CPUSTYLE_T113
         			msg = PSTR("Allw T128-S3");
         #elif defined (WITHCPUNAME)
         			msg = PSTR(WITHCPUNAME);

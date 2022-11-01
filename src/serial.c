@@ -352,7 +352,7 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 	{
@@ -530,7 +530,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 	else
 		USARTE0.CTRLA = (USARTE0.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIACTL2 |= (1U << 0);	// TX INT ENA
@@ -553,7 +553,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 //		 UART0->CR &= ~ SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
 //
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	if (state)
 		 UART0->DLH_IER |= (0x01uL << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -661,7 +661,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 	else
 		USART1->CR1 &= ~ USART_CR1_RXNEIE;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIACTL2 |= (1U << 1);	// RX/BK INT ENA
@@ -684,7 +684,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 //		 UART0->CR &= ~ SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
 //
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	if (state)
 		 UART0->DLH_IER |= (0x01uL << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -742,7 +742,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 	USART1->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	SCIATXBUF = c;
 
@@ -759,7 +759,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 	UART0->FIFO = c;
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	UART0->DATA = c;
 
@@ -850,7 +850,7 @@ hardware_uart1_getchar(char * cp)
 		return 0;
 	* cp = USART1->RDR;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIARXST & (1U << 6)) == 0)	// Wait for RXRDY bit
 		return 0;
@@ -869,7 +869,7 @@ hardware_uart1_getchar(char * cp)
 		return 0;
 	* cp = UART0->FIFO;
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	if ((UART0->UART_USR & (0x1uL << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -957,7 +957,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 		return 0;
 	USART1->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIACTL2 & (1U << 7)) == 0)	// wait for TXRDY bit
 		return 0;
@@ -976,7 +976,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 		return 0;
 	UART0->FIFO = c;
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	if ((UART0->UART_USR & (0x1uL << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -1253,7 +1253,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	USARTE0.CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc;
 	USARTE0.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	// Enable SCI-A clock
 	PCLKCR0 |= (1U << 10);	// SCIAENCLK
@@ -1389,7 +1389,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 0;
 
 	/* Open the clock gate for uart0 */
@@ -1726,7 +1726,7 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 	else
 		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIBCTL2 |= (1U << 0);	// TX INT ENA
@@ -1837,7 +1837,7 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 	else
 		USART2->CR1 &= ~ USART_CR1_RXNEIE;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIBCTL2 |= (1U << 1);	// RX/BK INT ENA
@@ -1906,7 +1906,7 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 
 	USART2->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	SCIBTXBUF = c;
 
@@ -2017,7 +2017,7 @@ hardware_uart2_getchar(char * cp)
 		return 0;
 	* cp = USART2->RDR;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIBRXST & (1U << 6)) == 0)	// Wait for RXRDY bit
 		return 0;
@@ -2126,7 +2126,7 @@ hardware_uart2_putchar(uint_fast8_t c)
 		return 0;
 	USART2->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIBCTL2 & (1U << 7)) == 0)	// wait for TXRDY bit
 		return 0;
@@ -2429,7 +2429,7 @@ xxxx!;
 
 	#error WITHUART2HW with CPUSTYLE_ATMEGA not supported
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 xxxx!;
 	// Enable SCI-B clock
 	PCLKCR0 |= (1U << 10);	// SCIBENCLK
@@ -2872,7 +2872,7 @@ void hardware_uart3_enabletx(uint_fast8_t state)
 	else
 		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIBCTL2 |= (1U << 0);	// TX INT ENA
@@ -2980,7 +2980,7 @@ void hardware_uart3_enablerx(uint_fast8_t state)
 	else
 		USART3->CR1 &= ~ USART_CR1_RXNEIE;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIBCTL2 |= (1U << 1);	// RX/BK INT ENA
@@ -3046,7 +3046,7 @@ void hardware_uart3_tx(void * ctx, uint_fast8_t c)
 
 	USART3->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	SCIBTXBUF = c;
 
@@ -3153,7 +3153,7 @@ hardware_uart3_getchar(char * cp)
 		return 0;
 	* cp = USART3->RDR;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIBRXST & (1U << 6)) == 0)	// Wait for RXRDY bit
 		return 0;
@@ -3256,7 +3256,7 @@ hardware_uart3_putchar(uint_fast8_t c)
 		return 0;
 	USART3->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIBCTL2 & (1U << 7)) == 0)	// wait for TXRDY bit
 		return 0;
@@ -3553,7 +3553,7 @@ xxxx!;
 
 	#error WITHUART2HW with CPUSTYLE_ATMEGA not supported
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 xxxx!;
 	// Enable SCI-B clock
 	PCLKCR0 |= (1U << 10);	// SCIBENCLK
@@ -3964,7 +3964,7 @@ void hardware_uart4_enabletx(uint_fast8_t state)
 	else
 		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIBCTL2 |= (1U << 0);	// TX INT ENA
@@ -4072,7 +4072,7 @@ void hardware_uart4_enablerx(uint_fast8_t state)
 	else
 		UART4->CR1 &= ~ USART_CR1_RXNEIE;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIBCTL2 |= (1U << 1);	// RX/BK INT ENA
@@ -4138,7 +4138,7 @@ void hardware_uart4_tx(void * ctx, uint_fast8_t c)
 
 	UART4->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	SCIBTXBUF = c;
 
@@ -4245,7 +4245,7 @@ hardware_uart4_getchar(char * cp)
 		return 0;
 	* cp = UART4->RDR;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIBRXST & (1U << 6)) == 0)	// Wait for RXRDY bit
 		return 0;
@@ -4348,7 +4348,7 @@ hardware_uart4_putchar(uint_fast8_t c)
 		return 0;
 	UART4->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIBCTL2 & (1U << 7)) == 0)	// wait for TXRDY bit
 		return 0;
@@ -4645,7 +4645,7 @@ xxxx!;
 
 	#error WITHUART2HW with CPUSTYLE_ATMEGA not supported
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 xxxx!;
 	// Enable SCI-B clock
 	PCLKCR0 |= (1U << 10);	// SCIBENCLK
@@ -4969,7 +4969,7 @@ void hardware_uart7_enabletx(uint_fast8_t state)
 	else
 		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIBCTL2 |= (1U << 0);	// TX INT ENA
@@ -5077,7 +5077,7 @@ void hardware_uart7_enablerx(uint_fast8_t state)
 	else
 		UART7->CR1 &= ~ USART_CR1_RXNEIE;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIBCTL2 |= (1U << 1);	// RX/BK INT ENA
@@ -5143,7 +5143,7 @@ void hardware_uart7_tx(void * ctx, uint_fast8_t c)
 
 	UART7->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	SCIBTXBUF = c;
 
@@ -5250,7 +5250,7 @@ hardware_uart7_getchar(char * cp)
 		return 0;
 	* cp = UART7->RDR;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIBRXST & (1U << 6)) == 0)	// Wait for RXRDY bit
 		return 0;
@@ -5353,7 +5353,7 @@ hardware_uart7_putchar(uint_fast8_t c)
 		return 0;
 	UART4->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIBCTL2 & (1U << 7)) == 0)	// wait for TXRDY bit
 		return 0;
@@ -5650,7 +5650,7 @@ xxxx!;
 
 	#error WITHUART7HW with CPUSTYLE_ATMEGA not supported
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 xxxx!;
 	// Enable SCI-B clock
 	PCLKCR0 |= (1U << 10);	// SCIBENCLK
@@ -6060,7 +6060,7 @@ void hardware_uart5_enabletx(uint_fast8_t state)
 	else
 		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIBCTL2 |= (1U << 0);	// TX INT ENA
@@ -6168,7 +6168,7 @@ void hardware_uart5_enablerx(uint_fast8_t state)
 	else
 		UART5->CR1 &= ~ USART_CR1_RXNEIE;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if (state)
 		SCIBCTL2 |= (1U << 1);	// RX/BK INT ENA
@@ -6234,7 +6234,7 @@ void hardware_uart5_tx(void * ctx, uint_fast8_t c)
 
 	UART5->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	SCIBTXBUF = c;
 
@@ -6341,7 +6341,7 @@ hardware_uart5_getchar(char * cp)
 		return 0;
 	* cp = UART5->RDR;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIBRXST & (1U << 6)) == 0)	// Wait for RXRDY bit
 		return 0;
@@ -6444,7 +6444,7 @@ hardware_uart5_putchar(uint_fast8_t c)
 		return 0;
 	UART5->TDR = c;
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	if ((SCIBCTL2 & (1U << 7)) == 0)	// wait for TXRDY bit
 		return 0;
@@ -6741,7 +6741,7 @@ xxxx!;
 
 	#error WITHUART5HW with CPUSTYLE_ATMEGA not supported
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 xxxx!;
 	// Enable SCI-B clock
 	PCLKCR0 |= (1U << 10);	// SCIBENCLK
@@ -6996,7 +6996,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 	USART1->BRR = calcdivround2(BOARD_USART1_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	const unsigned long lspclk = CPU_FREQ / 4;
 	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
@@ -7039,7 +7039,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART0->CR = r;
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
@@ -7190,7 +7190,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 	USART2->BRR = calcdivround2(BOARD_USART2_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	const unsigned long lspclk = CPU_FREQ / 4;
 	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
@@ -7377,7 +7377,7 @@ hardware_uart3_set_speed(uint_fast32_t baudrate)
 
 	USART3->BRR = calcdivround2(BOARD_USART3_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	const unsigned long lspclk = CPU_FREQ / 4;
 	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
@@ -7400,7 +7400,7 @@ hardware_uart3_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
@@ -7551,7 +7551,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 
 	UART4->BRR = calcdivround2(BOARD_UART4_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	const unsigned long lspclk = CPU_FREQ / 4;
 	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
@@ -7574,7 +7574,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
@@ -7726,7 +7726,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 
 	USART5->BRR = calcdivround2(BOARD_UART5_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	const unsigned long lspclk = CPU_FREQ / 4;
 	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
@@ -7749,7 +7749,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF4.SCBRR = value;	/* Bit rate register */
 
-#elif CPUSTYPE_T113 || CPUSTYPE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
@@ -7900,7 +7900,7 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 
 	USART7->BRR = calcdivround2(BOARD_UART7_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	const unsigned long lspclk = CPU_FREQ / 4;
 	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed

@@ -450,7 +450,7 @@ extern "C" {
 	#define ARM_FAST_ALLOW_TABLES	1
 
 
-#elif CPUSTYPE_F133
+#elif CPUSTYLE_F133
 
 	// RISC-V processor Allwinner D1 XuanTie C906
 
@@ -474,7 +474,7 @@ extern "C" {
 	#define ARM_FAST_ALLOW_TABLES	1
 
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
@@ -556,7 +556,7 @@ extern "C" {
 	defined (__TMS320C28X__) || \
 	0
 
-	#define CPUSTYPE_TMS320F2833X 1
+	#define CPUSTYLE_TMS320F2833X 1
 	#include "tms320f2833x.h"
 
 	//#define CPU_FREQ 150000000uL
@@ -680,7 +680,7 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 
 	#define ATTRWEAK __attribute__ ((weak))
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 	/* тип для передачи параметра "адрес устройства на SPI шине" */
 	/* это может быть битовая маска в порту ввода-вывода */
 	typedef uint_fast32_t spitarget_t;
