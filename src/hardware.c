@@ -3169,14 +3169,14 @@ sysinit_vbar_initialize(void)
     //csr_write_mtvec((uint_xlen_t) riscv_mtvec_table | RISCV_MTVEC_MODE_VECTORED);
 
     // Enable MIE.MTI
-    //csr_set_bits_mie(MIE_MTI_BIT_MASK);
+    csr_set_bits_mie(MIE_MTI_BIT_MASK);
 
     // Global interrupt enable
-    //csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+    csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
 
     // Setup timer for 1 second interval
     //timestamp = mtimer_get_raw_time();
-	TP();
+	//TP();
 	//csr_set_bits_mcounteren(MCOUNTEREN_CY_BIT_MASK | MCOUNTEREN_TM_BIT_MASK | MCOUNTEREN_IR_BIT_MASK);
 	TP();
 	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
@@ -3184,10 +3184,10 @@ sysinit_vbar_initialize(void)
 	PRINTF("mtimer_get_raw_time_cmp = %llu\n", mtimer_get_raw_time_cmp());
 	PRINTF("mtimer_get_raw_time_cmp = %llX\n", mtimer_get_raw_time_cmp());
 
-	mtimer_set_raw_time_cmp(1000);
+	//mtimer_set_raw_time_cmp(1000);
     //mtimer_set_raw_time_cmp(mtimer_get_raw_time() + 24000000);
-	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
-	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
+	//PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
+	//PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
 
 	mtimer_set_raw_time_cmp(0x12345678DEADBEEF);
 	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
@@ -3195,6 +3195,7 @@ sysinit_vbar_initialize(void)
     mtimer_set_raw_time_cmp(csr_read_mcycle() + 20ll * CPU_FREQ);
 	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
 	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
+	PRINTF("CPU_FREQ = %lu\n", CPU_FREQ);
 	TP();
 
 #endif /* CPUSTYLE_RISCV */
