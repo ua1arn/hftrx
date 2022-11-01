@@ -2889,12 +2889,15 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 	void
 	VMTI_Handler(void)
 	{
-		mtimer_set_raw_time_cmp(mtimloadvalue);
-		mtimloadvalue += mtimloadinc;
 		const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);	// MEI MTI
 
+		mtimer_set_raw_time_cmp(mtimloadvalue);
+		mtimloadvalue += mtimloadinc;
+
+		//dbg_putchar('(');
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		//dbg_putchar(')');
 
 		csr_write_mie(miev);		/* restore old value */
 	}
