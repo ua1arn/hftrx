@@ -2848,7 +2848,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 		}
 	}
 
-	static uint_fast32_t gtimloadvalue;
+	static volatile uint_fast32_t gtimloadvalue;
 
 	void
 	SecurePhysicalTimer_IRQHandler(void)
@@ -2864,6 +2864,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 
 	#if WITHELKEY
 
+	// Таймер электронного ключа
 	// 1/20 dot length interval timer
 	void
 	TIMER0_IRQHandler(void)
@@ -2871,7 +2872,6 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
 		if ((st & (1uL << 0)) != 0)	// TMR0_IRQ_PEND
 		{
-			//TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
 			spool_elkeybundle();
 		}
 		else
@@ -2881,26 +2881,11 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 		TIMER->TMR_IRQ_STA_REG = st;
 	}
 	#endif /* WITHELKEY */
-//
-//	void
-//	TIM5_IRQHandler(void)
-//	{
-//		const portholder_t st = TIM5->SR;
-//		if ((st & TIM_SR_UIF) != 0)
-//		{
-//			TIM5->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
-//			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-//			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
-//		}
-//		else
-//		{
-//			ASSERT(0);
-//		}
-//	}
 
-	static uint_fast64_t mtimloadvalue;
-	static uint_fast64_t mtimloadinc;
+	static volatile uint_fast64_t mtimloadvalue;
+	static volatile uint_fast64_t mtimloadinc;
 
+	// Таймер "тиков"
 	void
 	VMTI_Handler(void)
 	{
@@ -2915,6 +2900,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 
 	#if WITHELKEY
 
+	// Таймер электронного ключа
 	// 1/20 dot length interval timer
 	void
 	TIMER0_IRQHandler(void)
@@ -2922,7 +2908,6 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
 		if ((st & (1uL << 0)) != 0)	// TMR0_IRQ_PEND
 		{
-			//TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
 			spool_elkeybundle();
 		}
 		else
@@ -2932,25 +2917,10 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 		TIMER->TMR_IRQ_STA_REG = st;
 	}
 	#endif /* WITHELKEY */
-//
-//	void
-//	TIM5_IRQHandler(void)
-//	{
-//		const portholder_t st = TIM5->SR;
-//		if ((st & TIM_SR_UIF) != 0)
-//		{
-//			TIM5->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
-//			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-//			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
-//		}
-//		else
-//		{
-//			ASSERT(0);
-//		}
-//	}
 
-	static uint_fast32_t gtimloadvalue;
+	static volatile uint_fast32_t gtimloadvalue;
 
+	// Таймер "тиков"
 	void
 	SecurePhysicalTimer_IRQHandler(void)
 	{

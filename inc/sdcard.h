@@ -9,8 +9,8 @@
 
 struct drvfunc
 {
-	DRESULT (* Initialize)(BYTE drv);	// detect media
-	DRESULT (* Status)(BYTE drv);
+	DSTATUS (* Initialize)(BYTE drv);	// detect media
+	DSTATUS (* Status)(BYTE drv);
 	DRESULT (* Sync)(BYTE drv);
 	DRESULT (* Disk_write) (
 		BYTE drv,			/* Physical drive number (0..) */

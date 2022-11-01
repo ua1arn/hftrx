@@ -3100,19 +3100,9 @@ sysinit_vbar_initialize(void)
 	csr_write_stvec(vbaseval);	/* for supervisor privileges */
 	//csr_write_utvec(vbaseval);	/* for user privilege*/
 
-//	TP();
 	ASSERT(csr_read_mtvec() == vbaseval);
-//	TP();
 
-	// 3.1.9 Machine Interrupt Registers (mip and mie)
-	//csr_write_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
-	//csr_set_bits_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
-//	TP();
-//
-//	csr_set_bits_sie(~ (uint_xlen_t) 0);	/* for supervisor enable all interrupts */
-//	csr_set_bits_uie(~ (uint_xlen_t) 0);	/* for user enable all interrupts */
-	// Global interrupt disable
-//	TP();
+	PLIC->PLIC_MTH_REG = ARM_USER_PRIORITY;
 
 #endif /* CPUSTYLE_RISCV */
 }
@@ -4322,7 +4312,12 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 }
 
 #if WITHUSEMALLOC
-#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_T113 || CPUSTYPE_F133) && ! WITHISBOOTLOADER
+
+#if (CPUSTYPE_T113 || CPUSTYPE_F133) && ! WITHISBOOTLOADER
+
+	static RAMHEAP uint8_t heapplace [4 * 1024uL * 1024uL];
+
+#elif (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
 
 	static RAMHEAP uint8_t heapplace [48 * 1024uL * 1024uL];
 

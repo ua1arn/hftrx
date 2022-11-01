@@ -1343,6 +1343,8 @@ static void vectors_relocate(void)
 void EMPTY_Handler(void)
 {
 	PRINTF("EMPTY_Handler\n");
+	const uint_fast16_t mcause = csr_read_mcause();
+	PRINTF("EMPTY_Handler: mcause=%u\n", (unsigned) mcause);
 	for (;;)
 		;
 }
@@ -1350,6 +1352,25 @@ void EMPTY_Handler(void)
 void SYNCTRAP_Handler(void)
 {
 	PRINTF("SYNCTRAP_Handler\n");
+	const uint_fast16_t mcause = csr_read_mcause();
+	switch (mcause)
+	{
+	case 0: 	PRINTF("Instruction address misaligned\n"); break;
+	case 1:		PRINTF("Instruction access fault\n"); break;
+	case 2:		PRINTF("Illegal instruction\n"); break;
+	case 3:		PRINTF("Breakpoint\n"); break;
+	case 4:		PRINTF("Load address misaligned\n"); break;
+	case 5:		PRINTF("Load access fault\n"); break;
+	case 6:		PRINTF("Store/AMO address misaligned\n"); break;
+	case 7:		PRINTF("Store/AMO access fault\n"); break;
+	case 8:		PRINTF("Environment call from U-mode\n"); break;
+	case 9:		PRINTF("Environment call from S-mode\n"); break;
+	case 11:	PRINTF("Environment call from M-mode\n"); break;
+	case 12:	PRINTF("Instruction page fault\n"); break;
+	case 13:	PRINTF("Load page fault\n"); break;
+	case 15:	PRINTF("Store/AMO page fault\n"); break;
+	default:	PRINTF("mcause=%u\n", (unsigned) mcause); break;
+	}
 	for (;;)
 		;
 }
@@ -1357,15 +1378,34 @@ void SYNCTRAP_Handler(void)
 void VMSI_Handler(void)
 {
 	PRINTF("VMSI_Handler\n");
+	const uint_fast16_t mcause = csr_read_mcause();
+	PRINTF("VMSI_Handler: mcause=%u\n", (unsigned) mcause);
 	for (;;)
 		;
 }
 
+static void (* volatile plic_vectors [MAX_IRQ_n])(void);
+
 void VMEI_Handler(void)
 {
-	PRINTF("VMEI_Handler\n");
-	for (;;)
-		;
+	const uint_fast16_t mcause = csr_read_mcause();
+	switch (mcause)
+	{
+	case 11: /* 11 Machine external interrupt */
+		{
+			uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;
+			//PRINTF("VMEI_Handler: int_id=%u\n", (unsigned) int_id);
+			ASSERT(int_id < MAX_IRQ_n);
+			(plic_vectors [int_id])();
+			PLIC->PLIC_MCLAIM_REG = int_id;
+		}
+		break;
+	default:
+		PRINTF("VMEI_Handler: mcause=%u\n", (unsigned) mcause);
+		for (;;)
+			;
+		break;
+	}
 }
 
 void IRQ0_Handler(void)
@@ -1653,6 +1693,10 @@ uint_fast8_t arm_hardware_cpuid(void)
 
 	return __get_MPIDR() & 0x03;
 
+#elif CPUSTYLE_RISCV
+
+	return csr_read_mhartid();
+
 #else /* CPUSTYLE_STM32MP1 */
 
 	return 0;
@@ -1798,21 +1842,27 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 
 	/* Set interrupt handler */
 	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
-	uint_xlen_t mstatus;
-	uint_xlen_t addmask =
-		MSTATUS_MIE_BIT_MASK |
-		MSTATUS_SIE_BIT_MASK |
-		MSTATUS_MPIE_BIT_MASK |
-		MSTATUS_SPIE_BIT_MASK |
-		0;
-	mstatus = csr_read_clr_bits_mstatus(addmask);
 
-	csr_write_mstatus(mstatus | addmask);	/* восстаноавливаем старое состояние */
-//	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
-//	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
+	const div_t d = div(int_id, 32);
+	ASSERT(d.quot < 10);
+	const unsigned mask = (1u << d.rem);
+
+	PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
+
+	ASSERT(int_id < MAX_IRQ_n);
+
+	plic_vectors [int_id] = handler;
+	PLIC->PLIC_PRIO_REGn [int_id] = priority;
+
+	PLIC->PLIC_MIE_REGn [d.quot] |= mask;
+
+	// 1: The machine mode can access to all registers in PLIC.
+	// The super-user mode can access all registers except PLL_CTRL in PLIC.
+	// The normal-user mode can not access any registers in PLIC.
+	//PLIC->PLIC_CTRL_REG |= (1u << 0);
+
+	csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
 	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
-	csr_set_bits_mie(~ 1ull);	// all
-
 
 #else /* CPUSTYLE_STM32MP1 */
 
@@ -1847,7 +1897,11 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 #elif CPUSTYLE_RISCV
 
 	/* Disable interrupt handler */
-	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
+		const div_t d = div(int_id, 32);
+		ASSERT(d.quot < 10);
+
+		const unsigned mask = (1u << d.rem);
+		PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
 
 #else /* CPUSTYLE_STM32MP1 */
 
