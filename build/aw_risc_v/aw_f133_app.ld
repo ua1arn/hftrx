@@ -70,6 +70,11 @@ SECTIONS
 		*(.rodata* .srodata*)
 
 		KEEP(*(.eh_frame*))
+		
+		. = ALIGN(4);
+		KEEP(*(.isr_vector))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
 
 	} > RAM
 
@@ -161,10 +166,6 @@ SECTIONS
 	.sysram : AT (__etext2)
 	{
 		__data2_start__ = .;
-		. = ALIGN(64);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
 
 		*(.itcm*)
 		*(.dtcm*)

@@ -9711,6 +9711,15 @@ void lowtests(void)
 {
 #if 0 && __riscv && defined(__riscv_zicsr)
 	{
+		unsigned sxl = (csr_read_mstatus() >> 34) & 0x03;
+		unsigned uxl = (csr_read_mstatus() >> 32) & 0x03;
+		unsigned xs = (csr_read_mstatus() >> 15) & 0x03;
+		PRINTF("1 mstatus=%08lX, sxl=%u, uxl=%u, xs=%u\n", csr_read_mstatus(), sxl, uxl, xs);
+	}
+#endif
+#if 0 && __riscv && defined(__riscv_zicsr)
+	{
+		PRINTF("misa=0x%016lX\n", (unsigned long) csr_read_misa());
 		PRINTF("mvendorid=0x%08X\n", csr_read_mvendorid());
 		PRINTF("marchid=0x%08X\n", csr_read_marchid());
 		PRINTF("mimpid=0x%08X\n", csr_read_mimpid());

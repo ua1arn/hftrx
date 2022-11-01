@@ -3089,7 +3089,7 @@ static uint64_t mtimer_get_raw_time_cmp(void) {
 }
 
 // На Allwinner F133-A доступ к регистрам таймера только 32-х битный
-static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
+void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 #if 0//(__riscv_xlen == 64)
     // Single bus access
     volatile uint64_t *mtimecmp = (volatile uint64_t*)(RISCV_MTIMECMP_ADDR);
@@ -3143,6 +3143,7 @@ sysinit_vbar_initialize(void)
 	ASSERT((vbase & 0x03) == 0);
 //	TP();
 
+	PRINTF("vbase=%p\n", (void *) vbase);
 	const uintptr_t vbaseval = vbase | 0x01;	/* set Vectored mode */
 	csr_write_mtvec(vbaseval);	/* Machine */
 	csr_write_stvec(vbaseval);	/* for supervisor privileges */
@@ -3162,6 +3163,12 @@ sysinit_vbar_initialize(void)
 	// Global interrupt disable
 //	TP();
 
+//	{
+//		unsigned sxl = (csr_read_mstatus() >> 34) & 0x03;
+//		unsigned uxl = (csr_read_mstatus() >> 32) & 0x03;
+//		unsigned xs = (csr_read_mstatus() >> 15) & 0x03;
+//		PRINTF("mstatus=%08lX, sxl=%u, uxl=%u, xs=%u\n", csr_read_mstatus(), sxl, uxl, xs);
+//	}
 	//csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
 
     //csr_write_mie(0);
@@ -3179,9 +3186,9 @@ sysinit_vbar_initialize(void)
 //	TP();
 //	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
 
-#if 0
-	/* Установка времени прерывания через 10 секунд */
-	mtimer_set_raw_time_cmp(csr_read_time() + 10ll * allwnrt113_get_hosc_freq());
+#if 1
+	/* Установка времени прерывания через 1 секунду */
+	mtimer_set_raw_time_cmp(csr_read_time() + 1ll * allwnrt113_get_hosc_freq());
 	//PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
 	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
 	PRINTF("mtimer_get_raw_time     = %lX\n", csr_read_time());

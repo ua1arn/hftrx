@@ -1354,10 +1354,12 @@ void isr_vmsi(void)
 {
 	TP();
 }
-
+void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp);
 void isr_vmti(void)
 {
 	TP();
+	/* Установка времени прерывания через 1 секунду */
+	mtimer_set_raw_time_cmp(csr_read_time() + 1ll * allwnrt113_get_hosc_freq());
 }
 
 void isr_vmei(void)
