@@ -347,7 +347,6 @@ RAMFUNC void spool_systimerbundle1(void)
 
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
 
-	//spool_lfm();
 	tickers_spool();
 
 //#if ! WITHCPUADCHW
