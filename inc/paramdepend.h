@@ -1046,11 +1046,14 @@ extern "C" {
 
 	#endif /* WITHNESTEDINTERRUPTS */
 
-	#define system_enableIRQ() do { } while (0)
-	#define system_disableIRQ() do { } while (0)
+	#define MSTATUS_MIE_BIT_MASK     0x8
+	#define MIE_MTI_BIT_MASK     0x80
 
-	#define global_enableIRQ() do { system_enableIRQ(); } while (0)
-	#define global_disableIRQ() do { system_disableIRQ(); } while (0)
+	#define system_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
+	#define system_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
+
+	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
+	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 

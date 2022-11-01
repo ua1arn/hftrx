@@ -3162,20 +3162,15 @@ sysinit_vbar_initialize(void)
 	// Global interrupt disable
 //	TP();
 
-#define MSTATUS_MIE_BIT_MASK     0x8
-#define MIE_MTI_BIT_MASK     0x80
+	//csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
 
-	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
-    csr_write_mie(0);
+    //csr_write_mie(0);
 
     // Setup the IRQ handler entry point, set the mode to vectored
     //csr_write_mtvec((uint_xlen_t) riscv_mtvec_table | RISCV_MTVEC_MODE_VECTORED);
 
-    // Enable MIE.MTI
-    csr_set_bits_mie(MIE_MTI_BIT_MASK);
-
     // Global interrupt enable
-    csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+    //csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
 
     // Setup timer for 1 second interval
     //timestamp = mtimer_get_raw_time();
@@ -3185,14 +3180,24 @@ sysinit_vbar_initialize(void)
 //	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
 
 #if 0
-	/* Установка времени прерывания через 20 секунд */
-	mtimer_set_raw_time_cmp(csr_read_time() + 20ll * allwnrt113_get_hosc_freq());
+	/* Установка времени прерывания через 10 секунд */
+	mtimer_set_raw_time_cmp(csr_read_time() + 10ll * allwnrt113_get_hosc_freq());
 	//PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
 	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
 	PRINTF("mtimer_get_raw_time     = %lX\n", csr_read_time());
+
+    // Enable MIE.MTI
+    csr_set_bits_mie(MIE_MTI_BIT_MASK);
 #endif
 
 #endif /* CPUSTYLE_RISCV */
+}
+
+void xtrap(void)
+{
+	dbg_putchar('#');
+	for (;;)
+		;
 }
 
 static void FLASHMEMINITFUNC

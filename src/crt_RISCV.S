@@ -67,14 +67,14 @@
   lw x30, 56(sp)
   lw x31, 60(sp)
   addi sp, sp, 64
-  mret
 .endm
 
-.macro trap_handler func
+.macro mtrap_handler func
 trap_\func:
 	trap_entry
 	jal isr_\func
 	trap_exit
+  	mret
 .endm
 
 	.global Reset_Handler
@@ -201,27 +201,28 @@ __Vectors:
 
 .section .text
 
-	trap_handler synctrap
-	trap_handler vmsi
-	trap_handler vmti
-	trap_handler vmei
+	mtrap_handler synctrap
+	mtrap_handler vmsi
+	mtrap_handler vmti
+	mtrap_handler vmei
 
-	trap_handler irq0
-	trap_handler irq1
-	trap_handler irq2
-	trap_handler irq3
-	trap_handler irq4
-	trap_handler irq5
-	trap_handler irq6
-	trap_handler irq7
-	trap_handler irq8
-	trap_handler irq9
-	trap_handler irq10
-	trap_handler irq11
-	trap_handler irq12
-	trap_handler irq13
-	trap_handler irq14
-	trap_handler irq15
+	mtrap_handler irq0
+	mtrap_handler irq1
+	mtrap_handler irq2
+	mtrap_handler irq3
+	mtrap_handler irq4
+	mtrap_handler irq5
+	mtrap_handler irq6
+	mtrap_handler irq7
+	mtrap_handler irq8
+	mtrap_handler irq9
+	mtrap_handler irq10
+	mtrap_handler irq11
+	mtrap_handler irq12
+	mtrap_handler irq13
+	mtrap_handler irq14
+	mtrap_handler irq15
 
-	trap_handler empty
+	mtrap_handler empty
+
 
