@@ -3061,14 +3061,14 @@ void __attribute__((used)) Reset_Handler(void)
 
 #define RISCV_MSIP0 (CLINT_BASE  + 0x0000)
 #define RISCV_MTIMECMP_ADDR (CLINT_BASE  + 0x4000)
-#define RISCV_HMTIMECMP_ADDR (CLINT_BASE  + 0xD000)
 
+// На Allwinner F133-A доступ к регистрам таймера только 32-х битный
 static uint64_t mtimer_get_raw_time_cmp(void) {
-#if ( __riscv_xlen == 64)
+#if 0//( __riscv_xlen == 64)
     // Directly read 64 bit value
     volatile uint64_t *mtime = (volatile uint64_t *)(RISCV_MTIMECMP_ADDR);
     return *mtime;
-#elif ( __riscv_xlen == 32)
+#elif 1//( __riscv_xlen == 32)
     volatile uint32_t * mtimel = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
     volatile uint32_t * mtimeh = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
     uint32_t mtimeh_val;
@@ -3086,12 +3086,13 @@ static uint64_t mtimer_get_raw_time_cmp(void) {
 #endif
 }
 
+// На Allwinner F133-A доступ к регистрам таймера только 32-х битный
 static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
-#if (__riscv_xlen == 64)
+#if 0//(__riscv_xlen == 64)
     // Single bus access
     volatile uint64_t *mtimecmp = (volatile uint64_t*)(RISCV_MTIMECMP_ADDR);
     *mtimecmp = new_mtimecmp;
-#elif ( __riscv_xlen == 32)
+#elif 1//( __riscv_xlen == 32)
     volatile uint32_t *mtimecmpl = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
     volatile uint32_t *mtimecmph = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
     // AS we are doing 32 bit writes, an intermediate mtimecmp value may cause spurious interrupts.
@@ -3180,28 +3181,21 @@ sysinit_vbar_initialize(void)
 	TP();
 	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
 
-	printhex32(RISCV_MTIMECMP_ADDR, RISCV_MTIMECMP_ADDR, 8);
-	printhex32(RISCV_HMTIMECMP_ADDR, RISCV_HMTIMECMP_ADDR, 8);
-	//printhex32(0, PLIC->PLIC_IP_REGn, 16 * 4);
-	//printhex32(0, PLIC->PLIC_MIE_REGn, 10 * 4);
-	//printhex32(0, PLIC->PLIC_SIE_REGn, 10 * 4);
-	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
-	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
+	PRINTF("mtimer_get_raw_time_cmp = %llu\n", mtimer_get_raw_time_cmp());
+	PRINTF("mtimer_get_raw_time_cmp = %llX\n", mtimer_get_raw_time_cmp());
+
 	mtimer_set_raw_time_cmp(1000);
-	//PRINTF("mtimer_get_raw_time = %lX\n", mtimer_get_raw_time());
     //mtimer_set_raw_time_cmp(mtimer_get_raw_time() + 24000000);
 	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
 	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
+
 	mtimer_set_raw_time_cmp(0x12345678DEADBEEF);
-	//PRINTF("mtimer_get_raw_time = %lX\n", mtimer_get_raw_time());
-    mtimer_set_raw_time_cmp(csr_read_mcycle() + 24000000);
+	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
+
+    mtimer_set_raw_time_cmp(csr_read_mcycle() + 20ll * CPU_FREQ);
 	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
 	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
 	TP();
-	PRINTF("mtimer_get_raw_time = %lu\n", csr_read_mcycle());
-	PRINTF("mtimer_get_raw_time = %lu\n", csr_read_mcycle());
-	PRINTF("mtimer_get_raw_time = %lu\n", csr_read_mcycle());
-	PRINTF("mtimer_get_raw_time = %lX\n", csr_read_mcycle());
 
 #endif /* CPUSTYLE_RISCV */
 }
