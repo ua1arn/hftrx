@@ -2902,7 +2902,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 	static uint_fast64_t mtimloadinc;
 
 	void
-	isr_vmti(void)
+	VMTI_Handler(void)
 	{
 		mtimer_set_raw_time_cmp(mtimloadvalue);
 		mtimloadvalue += mtimloadinc;

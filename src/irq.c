@@ -1361,13 +1361,6 @@ void VMSI_Handler(void)
 		;
 }
 
-void VMTI_Handler(void)
-{
-	PRINTF("VMTI_Handler\n");
-	for (;;)
-		;
-}
-
 void VMEI_Handler(void)
 {
 	PRINTF("VMEI_Handler\n");
