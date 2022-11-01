@@ -69,10 +69,10 @@
 	addi sp, sp, 64
 .endm
 
-.macro mtrap_handler func
+.macro mtrap_handler func, tail=_Handler
 trap_\func:
 	trap_entry
-	call isr_\func
+	call \func\tail
 	trap_exit
 	mret
 .endm
@@ -132,97 +132,97 @@ Reset_Handler:
 .global __Vectors
 
 __Vectors:
-    j trap_synctrap
+    j trap_SYNCTRAP
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_vmsi
+    j trap_VMSI
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_vmti
+    j trap_VMTI
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_vmei
+    j trap_VMEI
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_empty
+    j trap_EMPTY
     .align 2
-    j trap_irq0
+    j trap_IRQ0
     .align 2
-    j trap_irq1
+    j trap_IRQ1
     .align 2
-    j trap_irq2
+    j trap_IRQ2
     .align 2
-    j trap_irq3
+    j trap_IRQ3
     .align 2
-    j trap_irq4
+    j trap_IRQ4
     .align 2
-    j trap_irq5
+    j trap_IRQ5
     .align 2
-    j trap_irq6
+    j trap_IRQ6
     .align 2
-    j trap_irq7
+    j trap_IRQ7
     .align 2
-    j trap_irq8
+    j trap_IRQ8
     .align 2
-    j trap_irq9
+    j trap_IRQ9
     .align 2
-    j trap_irq10
+    j trap_IRQ10
     .align 2
-    j trap_irq11
+    j trap_IRQ11
     .align 2
-    j trap_irq12
+    j trap_IRQ12
     .align 2
-    j trap_irq13
+    j trap_IRQ13
     .align 2
-    j trap_irq14
+    j trap_IRQ14
     .align 2
-    j trap_irq15
+    j trap_IRQ15
     .align 2
 
  //   .space (4096 - (16 + 16) * 4)
 
 .section .text
 
-	mtrap_handler synctrap
-	mtrap_handler vmsi
-	mtrap_handler vmti
-	mtrap_handler vmei
+	mtrap_handler SYNCTRAP
+	mtrap_handler VMSI
+	mtrap_handler VMTI
+	mtrap_handler VMEI
 
-	mtrap_handler irq0
-	mtrap_handler irq1
-	mtrap_handler irq2
-	mtrap_handler irq3
-	mtrap_handler irq4
-	mtrap_handler irq5
-	mtrap_handler irq6
-	mtrap_handler irq7
-	mtrap_handler irq8
-	mtrap_handler irq9
-	mtrap_handler irq10
-	mtrap_handler irq11
-	mtrap_handler irq12
-	mtrap_handler irq13
-	mtrap_handler irq14
-	mtrap_handler irq15
+	mtrap_handler IRQ0
+	mtrap_handler IRQ1
+	mtrap_handler IRQ2
+	mtrap_handler IRQ3
+	mtrap_handler IRQ4
+	mtrap_handler IRQ5
+	mtrap_handler IRQ6
+	mtrap_handler IRQ7
+	mtrap_handler IRQ8
+	mtrap_handler IRQ9
+	mtrap_handler IRQ10
+	mtrap_handler IRQ11
+	mtrap_handler IRQ12
+	mtrap_handler IRQ13
+	mtrap_handler IRQ14
+	mtrap_handler IRQ15
 
-	mtrap_handler empty
+	mtrap_handler EMPTY
 
 

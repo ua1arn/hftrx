@@ -1340,127 +1340,149 @@ static void vectors_relocate(void)
 // https://twilco.github.io/riscv-from-scratch/2019/03/10/riscv-from-scratch-1.html
 // https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html
 
-void isr_empty(void)
+void EMPTY_Handler(void)
 {
-	TP();
+	PRINTF("EMPTY_Handler\n");
 	for (;;)
 		;
 }
 
-void isr_synctrap(void)
+void SYNCTRAP_Handler(void)
 {
-	TP();
+	PRINTF("SYNCTRAP_Handler\n");
 	for (;;)
 		;
 }
 
-void isr_vmsi(void)
+void VMSI_Handler(void)
 {
-	TP();
+	PRINTF("VMSI_Handler\n");
 	for (;;)
 		;
 }
 
-void isr_vmei(void)
+void VMTI_Handler(void)
 {
-	TP();
+	PRINTF("VMTI_Handler\n");
 	for (;;)
 		;
 }
 
-void isr_irq0(void)
+void VMEI_Handler(void)
 {
-	TP();
+	PRINTF("VMEI_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq1(void)
+
+void IRQ0_Handler(void)
 {
-	TP();
+	PRINTF("IRQ0_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq2(void)
+
+void IRQ1_Handler(void)
 {
-	TP();
+	PRINTF("IRQ1_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq3(void)
+
+void IRQ2_Handler(void)
 {
-	TP();
+	PRINTF("IRQ2_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq4(void)
+
+void IRQ3_Handler(void)
 {
-	TP();
+	PRINTF("IRQ3_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq5(void)
+
+void IRQ4_Handler(void)
 {
-	TP();
+	PRINTF("IRQ4_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq6(void)
+
+void IRQ5_Handler(void)
 {
-	TP();
+	PRINTF("IRQ5_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq7(void)
+
+void IRQ6_Handler(void)
 {
-	TP();
+	PRINTF("IRQ6_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq8(void)
+
+void IRQ7_Handler(void)
 {
-	TP();
+	PRINTF("IRQ7_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq9(void)
+
+void IRQ8_Handler(void)
 {
-	TP();
+	PRINTF("IRQ8_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq10(void)
+
+void IRQ9_Handler(void)
 {
-	TP();
+	PRINTF("IRQ9_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq11(void)
+
+void IRQ10_Handler(void)
 {
-	TP();
+	PRINTF("IRQ10_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq12(void)
+
+void IRQ11_Handler(void)
 {
-	TP();
+	PRINTF("IRQ11_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq13(void)
+
+void IRQ12_Handler(void)
 {
-	TP();
+	PRINTF("IRQ12_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq14(void)
+
+void IRQ13_Handler(void)
 {
-	TP();
+	PRINTF("IRQ13_Handler\n");
 	for (;;)
 		;
 }
-void isr_irq15(void)
+
+void IRQ14_Handler(void)
 {
-	TP();
+	PRINTF("IRQ14_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ15_Handler(void)
+{
+	PRINTF("IRQ15_Handler\n");
 	for (;;)
 		;
 }
@@ -1784,7 +1806,12 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	/* Set interrupt handler */
 	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
 	uint_xlen_t mstatus;
-	uint_xlen_t addmask = MSTATUS_MIE_BIT_MASK | MSTATUS_SIE_BIT_MASK | MSTATUS_MPIE_BIT_MASK | MSTATUS_SPIE_BIT_MASK;
+	uint_xlen_t addmask =
+		MSTATUS_MIE_BIT_MASK |
+		MSTATUS_SIE_BIT_MASK |
+		MSTATUS_MPIE_BIT_MASK |
+		MSTATUS_SPIE_BIT_MASK |
+		0;
 	mstatus = csr_read_clr_bits_mstatus(addmask);
 
 	csr_write_mstatus(mstatus | addmask);	/* восстаноавливаем старое состояние */
