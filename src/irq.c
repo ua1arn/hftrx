@@ -1693,6 +1693,10 @@ uint_fast8_t arm_hardware_cpuid(void)
 
 	return __get_MPIDR() & 0x03;
 
+#elif CPUSTYLE_RISCV
+
+	return csr_read_mhartid();
+
 #else /* CPUSTYLE_STM32MP1 */
 
 	return 0;
