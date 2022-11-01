@@ -1361,11 +1361,27 @@ void VMSI_Handler(void)
 		;
 }
 
+static void (* plic_vectors [1024])(void);
+
 void VMEI_Handler(void)
 {
-	PRINTF("VMEI_Handler\n");
-	for (;;)
-		;
+	uint_fast16_t mcause = csr_read_mcause();
+	switch (mcause)
+	{
+	case 11: /* 11 Machine external interrupt */
+		{
+			uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;
+			//PRINTF("VMEI_Handler: int_id=%u\n", (unsigned) int_id);
+			(plic_vectors[int_id])();
+			PLIC->PLIC_MCLAIM_REG = int_id;
+		}
+		break;
+	default:
+		PRINTF("VMEI_Handler: mcause=%u\n", (unsigned) mcause);
+		for (;;)
+			;
+		break;
+	}
 }
 
 void IRQ0_Handler(void)
@@ -1811,8 +1827,18 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 //	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
 //	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
 	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
-	csr_set_bits_mie(~ 1ull);	// all
+//	csr_set_bits_mie(~ 1ull);	// all
 
+	plic_vectors [int_id] = handler;
+	const div_t d = div(int_id, 32);
+	ASSERT(d.quot < 10);
+	PLIC->PLIC_MIE_REGn [d.quot] |= 1u << d.rem;
+	PLIC->PLIC_PRIO_REGn [int_id] = priority;
+
+	// 1: The machine mode can access to all registers in PLIC.
+	// The super-user mode can access all registers except PLL_CTRL in PLIC.
+	// The normal-user mode can not access any registers in PLIC.
+	//PLIC->PLIC_CTRL_REG |= (1u << 0);
 
 #else /* CPUSTYLE_STM32MP1 */
 
@@ -1847,7 +1873,9 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 #elif CPUSTYLE_RISCV
 
 	/* Disable interrupt handler */
-	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
+		const div_t d = div(int_id, 32);
+		ASSERT(d.quot < 10);
+		PLIC->PLIC_MIE_REGn [d.quot] &= ~ (1u << d.rem);
 
 #else /* CPUSTYLE_STM32MP1 */
 
