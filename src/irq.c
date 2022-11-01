@@ -1388,7 +1388,7 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
 void VMEI_Handler(void)
 {
-	//const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);	// MEI MTI
+	const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);	// MEI MTI
 	const uint_xlen_t mcause = csr_read_mcause();
 	switch (mcause & 0xFFF)
 	{
@@ -1409,7 +1409,7 @@ void VMEI_Handler(void)
 			;
 		break;
 	}
-	//csr_write_mie(miev);		/* restore old value */
+	csr_write_mie(miev);		/* restore old value */
 }
 
 void IRQ0_Handler(void)
