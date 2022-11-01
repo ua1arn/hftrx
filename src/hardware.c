@@ -3061,34 +3061,9 @@ void __attribute__((used)) Reset_Handler(void)
 
 #define RISCV_MSIP0 (CLINT_BASE  + 0x0000)
 #define RISCV_MTIMECMP_ADDR (CLINT_BASE  + 0x4000)
-#define RISCV_MTIME_ADDR    (CLINT_BASE  + 0xBFF8)
+#define RISCV_HMTIMECMP_ADDR (CLINT_BASE  + 0xD000)
 
-/** Read the raw time of the system timer in system timer clocks
- */
-uint64_t mtimer_get_raw_time(void) {
-#if ( __riscv_xlen == 64)
-    // Directly read 64 bit value
-    volatile uint64_t *mtime = (volatile uint64_t *)(RISCV_MTIME_ADDR);
-    return *mtime;
-#elif ( __riscv_xlen == 32)
-    volatile uint32_t * mtimel = (volatile uint32_t *)(RISCV_MTIME_ADDR);
-    volatile uint32_t * mtimeh = (volatile uint32_t *)(RISCV_MTIME_ADDR+4);
-    uint32_t mtimeh_val;
-    uint32_t mtimel_val;
-    do {
-        // There is a small risk the mtimeh will tick over after reading mtimel
-        mtimeh_val = *mtimeh;
-        mtimel_val = *mtimel;
-        // Poll mtimeh to ensure it's consistent after reading mtimel
-        // The frequency of mtimeh ticking over is low
-    } while (mtimeh_val != *mtimeh);
-    return (uint64_t) ( ( ((uint64_t)mtimeh_val)<<32) | mtimel_val);
-#else
-    return 999;
-#endif
-}
-
-uint64_t mtimer_get_raw_time_cmp(void) {
+static uint64_t mtimer_get_raw_time_cmp(void) {
 #if ( __riscv_xlen == 64)
     // Directly read 64 bit value
     volatile uint64_t *mtime = (volatile uint64_t *)(RISCV_MTIMECMP_ADDR);
@@ -3111,7 +3086,7 @@ uint64_t mtimer_get_raw_time_cmp(void) {
 #endif
 }
 
-void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
+static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 #if (__riscv_xlen == 64)
     // Single bus access
     volatile uint64_t *mtimecmp = (volatile uint64_t*)(RISCV_MTIMECMP_ADDR);
@@ -3166,8 +3141,8 @@ sysinit_vbar_initialize(void)
 
 	const uintptr_t vbaseval = vbase | 0x01;	/* set Vectored mode */
 	csr_write_mtvec(vbaseval);	/* Machine */
-//	csr_write_stvec(vbaseval);	/* for supervisor privileges */
-//	csr_write_utvec(vbaseval);	/* for user privilege*/
+	csr_write_stvec(vbaseval);	/* for supervisor privileges */
+	//csr_write_utvec(vbaseval);	/* for user privilege*/
 
 	TP();
 	ASSERT(csr_read_mtvec() == vbaseval);
@@ -3193,16 +3168,20 @@ sysinit_vbar_initialize(void)
     //csr_write_mtvec((uint_xlen_t) riscv_mtvec_table | RISCV_MTVEC_MODE_VECTORED);
 
     // Enable MIE.MTI
-    csr_set_bits_mie(MIE_MTI_BIT_MASK);
+    //csr_set_bits_mie(MIE_MTI_BIT_MASK);
 
     // Global interrupt enable
-    csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+    //csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
 
     // Setup timer for 1 second interval
     //timestamp = mtimer_get_raw_time();
 	TP();
-	csr_write_mcounteren(1);
+	//csr_set_bits_mcounteren(MCOUNTEREN_CY_BIT_MASK | MCOUNTEREN_TM_BIT_MASK | MCOUNTEREN_IR_BIT_MASK);
+	TP();
 	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
+
+	printhex32(RISCV_MTIMECMP_ADDR, RISCV_MTIMECMP_ADDR, 8);
+	printhex32(RISCV_HMTIMECMP_ADDR, RISCV_HMTIMECMP_ADDR, 8);
 	//printhex32(0, PLIC->PLIC_IP_REGn, 16 * 4);
 	//printhex32(0, PLIC->PLIC_MIE_REGn, 10 * 4);
 	//printhex32(0, PLIC->PLIC_SIE_REGn, 10 * 4);
@@ -3213,6 +3192,16 @@ sysinit_vbar_initialize(void)
     //mtimer_set_raw_time_cmp(mtimer_get_raw_time() + 24000000);
 	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
 	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
+	mtimer_set_raw_time_cmp(0x12345678DEADBEEF);
+	//PRINTF("mtimer_get_raw_time = %lX\n", mtimer_get_raw_time());
+    mtimer_set_raw_time_cmp(csr_read_mcycle() + 24000000);
+	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
+	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
+	TP();
+	PRINTF("mtimer_get_raw_time = %lu\n", csr_read_mcycle());
+	PRINTF("mtimer_get_raw_time = %lu\n", csr_read_mcycle());
+	PRINTF("mtimer_get_raw_time = %lu\n", csr_read_mcycle());
+	PRINTF("mtimer_get_raw_time = %lX\n", csr_read_mcycle());
 
 #endif /* CPUSTYLE_RISCV */
 }
