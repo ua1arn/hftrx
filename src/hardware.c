@@ -3135,32 +3135,32 @@ sysinit_vbar_initialize(void)
 	// https://five-embeddev.com/baremetal/vectored_interrupts/
 
 	TP();
-	PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
-	//* (volatile uint32_t *) RISCV_MSIP0 |= 0x01;
-	PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
+//	PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
+//	* (volatile uint32_t *) RISCV_MSIP0 |= 0x01;
+//	PRINTF("MSIP0: %08X\n", * (volatile uint32_t *) RISCV_MSIP0);
 	extern uint32_t __Vectors [];
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
 	ASSERT((vbase & 0x03) == 0);
-	TP();
+//	TP();
 
 	const uintptr_t vbaseval = vbase | 0x01;	/* set Vectored mode */
 	csr_write_mtvec(vbaseval);	/* Machine */
 	csr_write_stvec(vbaseval);	/* for supervisor privileges */
 	//csr_write_utvec(vbaseval);	/* for user privilege*/
 
-	TP();
+//	TP();
 	ASSERT(csr_read_mtvec() == vbaseval);
-	TP();
+//	TP();
 
 	// 3.1.9 Machine Interrupt Registers (mip and mie)
 	//csr_write_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
 	//csr_set_bits_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
-	TP();
+//	TP();
 //
 //	csr_set_bits_sie(~ (uint_xlen_t) 0);	/* for supervisor enable all interrupts */
 //	csr_set_bits_uie(~ (uint_xlen_t) 0);	/* for user enable all interrupts */
 	// Global interrupt disable
-	TP();
+//	TP();
 
 #define MSTATUS_MIE_BIT_MASK     0x8
 #define MIE_MTI_BIT_MASK     0x80
@@ -3181,25 +3181,16 @@ sysinit_vbar_initialize(void)
     //timestamp = mtimer_get_raw_time();
 	//TP();
 	//csr_set_bits_mcounteren(MCOUNTEREN_CY_BIT_MASK | MCOUNTEREN_TM_BIT_MASK | MCOUNTEREN_IR_BIT_MASK);
-	TP();
-	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
+//	TP();
+//	PRINTF("PLIC_CTRL_REG = %08X\n", PLIC->PLIC_CTRL_REG);
 
-	PRINTF("mtimer_get_raw_time_cmp = %llu\n", mtimer_get_raw_time_cmp());
-	PRINTF("mtimer_get_raw_time_cmp = %llX\n", mtimer_get_raw_time_cmp());
-
-	//mtimer_set_raw_time_cmp(1000);
-    //mtimer_set_raw_time_cmp(mtimer_get_raw_time() + 24000000);
+#if 0
+	/* Установка времени прерывания через 20 секунд */
+	mtimer_set_raw_time_cmp(csr_read_time() + 20ll * allwnrt113_get_hosc_freq());
 	//PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
-	//PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
-
-	mtimer_set_raw_time_cmp(0x12345678DEADBEEF);
 	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
-
-    mtimer_set_raw_time_cmp(csr_read_mcycle() + 20ll * CPU_FREQ);
-	PRINTF("mtimer_get_raw_time_cmp = %lu\n", mtimer_get_raw_time_cmp());
-	PRINTF("mtimer_get_raw_time_cmp = %lX\n", mtimer_get_raw_time_cmp());
-	PRINTF("CPU_FREQ = %lu\n", CPU_FREQ);
-	TP();
+	PRINTF("mtimer_get_raw_time     = %lX\n", csr_read_time());
+#endif
 
 #endif /* CPUSTYLE_RISCV */
 }
