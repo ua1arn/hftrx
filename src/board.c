@@ -7683,7 +7683,6 @@ void board_initialize(void)
 	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
 #endif /* WITHDSPEXTFIR */
 
-	adcdones_initialize(); // регистрируются обработчики конца преобразвания АЦП
 	adcfilters_initialize();	// раотают даже если нет аппаратного АЦП в процссоре
 
 	board_adc_initialize();

@@ -3169,6 +3169,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 void
 hardware_timer_initialize(uint_fast32_t ticksfreq)
 {
+	adcdones_initialize();
 	tickers_initialize();
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7

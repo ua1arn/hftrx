@@ -265,6 +265,7 @@ static void tickers_spool(void)
 	PVLIST_ENTRY t;
 	for (t = tickers.Blink; t != & tickers; t = t->Blink)
 	{
+		ASSERT(t != NULL);
 		ticker_t * const p = CONTAINING_RECORD(t, ticker_t, item);
 	
 		//if (p->next <= nowtick)
@@ -316,6 +317,7 @@ static void adcdones_spool(void)
 	PVLIST_ENTRY t;
 	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
 	{
+		ASSERT(t != NULL);
 		adcdone_t * const p = CONTAINING_RECORD(t, adcdone_t, item);
 
 		if (p->cb != NULL)
