@@ -2050,7 +2050,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 	else
 	{
 		SPIN_UNLOCK(& locklist16tx);
-		PRINTF(PSTR("allocate_dmabuffer16() failure\n"));
+		PRINTF(PSTR("allocate_dmabuffer16tx() failure\n"));
 		for (;;)
 			;
 	}
