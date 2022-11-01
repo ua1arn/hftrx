@@ -2,7 +2,7 @@ SET CONVERTER=..\Debug\genregdefs.exe
 SET OUTFILE=cmsis_f133.h
 
 @echo /* Generated section start */ > %OUTFILE%
-%CONVERTER% risc_reg.csv >> %OUTFILE%
+%CONVERTER% risc_cfg.csv >> %OUTFILE%
 %CONVERTER% risc_wdg.csv >> %OUTFILE%
 %CONVERTER% risc_timestamp.csv >> %OUTFILE%
 %CONVERTER% ccu.csv >> %OUTFILE%
