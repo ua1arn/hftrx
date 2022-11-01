@@ -9011,7 +9011,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 #elif CPUSTYPE_T113 || CPUSTYPE_F133
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(24000000uL, ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
 
 	TIMER->TMR0_INTV_VALUE_REG = value;
 	TIMER->TMR0_CTRL_REG =

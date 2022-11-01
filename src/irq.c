@@ -1784,9 +1784,10 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	/* Set interrupt handler */
 	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
 	uint_xlen_t mstatus;
-	mstatus = csr_read_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+	uint_xlen_t addmask = MSTATUS_MIE_BIT_MASK | MSTATUS_SIE_BIT_MASK | MSTATUS_MPIE_BIT_MASK | MSTATUS_SPIE_BIT_MASK;
+	mstatus = csr_read_clr_bits_mstatus(addmask);
 
-	csr_write_mstatus(mstatus);	/* восстаноавливаем старое состояние */
+	csr_write_mstatus(mstatus | addmask);	/* восстаноавливаем старое состояние */
 
 #else /* CPUSTYLE_STM32MP1 */
 

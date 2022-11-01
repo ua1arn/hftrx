@@ -1046,9 +1046,6 @@ extern "C" {
 
 	#endif /* WITHNESTEDINTERRUPTS */
 
-	#define MSTATUS_MIE_BIT_MASK     0x8
-	#define MIE_MTI_BIT_MASK     0x80
-
 	#define system_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 	#define system_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 
