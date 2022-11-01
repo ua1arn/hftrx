@@ -2761,7 +2761,7 @@ void hardware_spi_io_delay(void)
 #endif
 }
 
-#if __riscv_xlen
+#if CPUSTYPE_F133
 
 #define RISCV_MSIP0 (CLINT_BASE  + 0x0000)
 #define RISCV_MTIMECMP_ADDR (CLINT_BASE  + 0x4000)
@@ -2809,7 +2809,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 #else
 #endif
 }
-#endif /* __riscv_xlen */
+#endif /* CPUSTYPE_F133 */
 
 #if CPUSTYLE_STM32MP1
 
@@ -2891,8 +2891,12 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 	{
 		mtimer_set_raw_time_cmp(mtimloadvalue);
 		mtimloadvalue += mtimloadinc;
+		const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);	// MEI MTI
+
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+
+		csr_write_mie(miev);		/* restore old value */
 	}
 
 

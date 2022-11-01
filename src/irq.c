@@ -1352,8 +1352,8 @@ void EMPTY_Handler(void)
 void SYNCTRAP_Handler(void)
 {
 	PRINTF("SYNCTRAP_Handler\n");
-	const uint_fast16_t mcause = csr_read_mcause();
-	switch (mcause)
+	const uint_xlen_t mcause = csr_read_mcause();
+	switch (mcause & 0xFFF)
 	{
 	case 0: 	PRINTF("Instruction address misaligned\n"); break;
 	case 1:		PRINTF("Instruction access fault\n"); break;
@@ -1388,8 +1388,9 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
 void VMEI_Handler(void)
 {
-	const uint_fast16_t mcause = csr_read_mcause();
-	switch (mcause)
+	const uint_xlen_t mcause = csr_read_mcause();
+	//const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);	// MEI MTI
+	switch (mcause & 0xFFF)
 	{
 	case 11: /* 11 Machine external interrupt */
 		{
@@ -1397,7 +1398,7 @@ void VMEI_Handler(void)
 			//PRINTF("VMEI_Handler: int_id=%u\n", (unsigned) int_id);
 			ASSERT(int_id < MAX_IRQ_n);
 			(plic_vectors [int_id])();
-			PLIC->PLIC_MCLAIM_REG = int_id;
+			PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
 		}
 		break;
 	default:
@@ -1406,6 +1407,7 @@ void VMEI_Handler(void)
 			;
 		break;
 	}
+	//csr_write_mie(miev);		/* restore old value */
 }
 
 void IRQ0_Handler(void)
