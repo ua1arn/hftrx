@@ -1808,6 +1808,11 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	mstatus = csr_read_clr_bits_mstatus(addmask);
 
 	csr_write_mstatus(mstatus | addmask);	/* восстаноавливаем старое состояние */
+//	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
+//	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
+	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
+	csr_set_bits_mie(~ 1ull);	// all
+
 
 #else /* CPUSTYLE_STM32MP1 */
 
