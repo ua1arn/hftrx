@@ -8905,15 +8905,7 @@ hardware_elkey_timer_initialize(void)
 
 	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
-#elif CPUSTYPE_F133
-
-//	TIMER->TMR0_CTRL_REG = 0;
-//
-//	TIMER->TMR_IRQ_EN_REG |= (1uL << 0);	// TMR0_IRQ_EN
-//	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);
-
-
-#elif CPUSTYPE_T113
+#elif CPUSTYPE_T113 || CPUSTYPE_F133
 
 	TIMER->TMR0_CTRL_REG = 0;
 
