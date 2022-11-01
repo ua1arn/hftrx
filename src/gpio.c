@@ -841,26 +841,34 @@ void sysinit_gpio_initialize(void)
 	}
 }
 
-static uint32_t gpioX_lock(GPIO_TypeDef * gpio)
+#if __riscv_xlen
+typedef uint_xlen_t irqstatus_t;
+#else
+typedef uint32_t irqstatus_t;
+#endif
+
+
+static irqstatus_t gpioX_lock(GPIO_TypeDef * gpio)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
 #if CPUSTYPE_T113
-	const uint32_t cpsr = __get_CPSR();
+	const irqstatus_t cpsr = __get_CPSR();
 	__disable_irq();
 #elif CPUSTYPE_F133
-	const uint32_t cpsr = 0;
+	const irqstatus_t cpsr = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
 #endif
 	SPIN_LOCK(lck);
 	return cpsr;
 }
 
-static void gpioX_unlock(GPIO_TypeDef * gpio, uint32_t cpsr)
+static void gpioX_unlock(GPIO_TypeDef * gpio, irqstatus_t cpsr)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
 	SPIN_UNLOCK(lck);
 #if CPUSTYPE_T113
 	__set_CPSR(cpsr);
 #elif CPUSTYPE_F133
+	csr_write_mie(cpsr);
 #endif
 }
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */
@@ -871,7 +879,7 @@ void gpioX_setstate(
 	portholder_t state
 	)
 {
-	const uint32_t cpsr = gpioX_lock(gpio);
+	const irqstatus_t cpsr = gpioX_lock(gpio);
 
 	gpio->DATA = (gpio->DATA & ~ mask) | (state & mask);
 	(void) gpio->DATA;

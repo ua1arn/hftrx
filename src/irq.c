@@ -1397,9 +1397,7 @@ void VMEI_Handler(void)
 			uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;
 			//PRINTF("VMEI_Handler: int_id=%u\n", (unsigned) int_id);
 			ASSERT(int_id < MAX_IRQ_n);
-			//dbg_putchar('[');
 			(plic_vectors [int_id])();
-			//dbg_putchar(']');
 			PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
 		}
 		break;
