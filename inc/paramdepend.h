@@ -1050,10 +1050,10 @@ extern "C" {
 	#endif /* WITHNESTEDINTERRUPTS */
 
 	#define system_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK); } while (0)
-	#define system_disableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK); } while (0)
+	#define system_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK); } while (0)
 
 	#define global_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK); } while (0)
-	#define global_disableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK); } while (0)
+	#define global_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK); } while (0)
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
