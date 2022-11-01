@@ -1343,6 +1343,8 @@ static void vectors_relocate(void)
 void EMPTY_Handler(void)
 {
 	PRINTF("EMPTY_Handler\n");
+	const uint_fast16_t mcause = csr_read_mcause();
+	PRINTF("EMPTY_Handler: mcause=%u\n", (unsigned) mcause);
 	for (;;)
 		;
 }
@@ -1350,6 +1352,25 @@ void EMPTY_Handler(void)
 void SYNCTRAP_Handler(void)
 {
 	PRINTF("SYNCTRAP_Handler\n");
+	const uint_fast16_t mcause = csr_read_mcause();
+	switch (mcause)
+	{
+	case 0: 	PRINTF("Instruction address misaligned\n"); break;
+	case 1:		PRINTF("Instruction access fault\n"); break;
+	case 2:		PRINTF("Illegal instruction\n"); break;
+	case 3:		PRINTF("Breakpoint\n"); break;
+	case 4:		PRINTF("Load address misaligned\n"); break;
+	case 5:		PRINTF("Load access fault\n"); break;
+	case 6:		PRINTF("Store/AMO address misaligned\n"); break;
+	case 7:		PRINTF("Store/AMO access fault\n"); break;
+	case 8:		PRINTF("Environment call from U-mode\n"); break;
+	case 9:		PRINTF("Environment call from S-mode\n"); break;
+	case 11:	PRINTF("Environment call from M-mode\n"); break;
+	case 12:	PRINTF("Instruction page fault\n"); break;
+	case 13:	PRINTF("Load page fault\n"); break;
+	case 15:	PRINTF("Store/AMO page fault\n"); break;
+	default:	PRINTF("mcause=%u\n", (unsigned) mcause); break;
+	}
 	for (;;)
 		;
 }
@@ -1357,6 +1378,8 @@ void SYNCTRAP_Handler(void)
 void VMSI_Handler(void)
 {
 	PRINTF("VMSI_Handler\n");
+	const uint_fast16_t mcause = csr_read_mcause();
+	PRINTF("VMSI_Handler: mcause=%u\n", (unsigned) mcause);
 	for (;;)
 		;
 }
@@ -1365,7 +1388,7 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
 void VMEI_Handler(void)
 {
-	uint_fast16_t mcause = csr_read_mcause();
+	const uint_fast16_t mcause = csr_read_mcause();
 	switch (mcause)
 	{
 	case 11: /* 11 Machine external interrupt */

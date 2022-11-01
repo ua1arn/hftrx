@@ -2872,7 +2872,6 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
 		if ((st & (1uL << 0)) != 0)	// TMR0_IRQ_PEND
 		{
-			//TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
 			spool_elkeybundle();
 		}
 		else
@@ -2909,7 +2908,6 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
 		if ((st & (1uL << 0)) != 0)	// TMR0_IRQ_PEND
 		{
-			//TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
 			spool_elkeybundle();
 		}
 		else
