@@ -3059,6 +3059,8 @@ void __attribute__((used)) Reset_Handler(void)
 }
 #endif /* defined(__aarch64__) */
 
+#if __riscv_xlen
+
 #define RISCV_MSIP0 (CLINT_BASE  + 0x0000)
 #define RISCV_MTIMECMP_ADDR (CLINT_BASE  + 0x4000)
 
@@ -3105,6 +3107,7 @@ static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 #else
 #endif
 }
+#endif /* __riscv_xlen */
 
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
