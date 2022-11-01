@@ -2898,21 +2898,16 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 //		}
 //	}
 
-	static uint_fast64_t gtimloadvalue;
+	static uint_fast64_t mtimloadvalue;
+	static uint_fast64_t mtimloadinc;
 
 	void
 	isr_vmti(void)
 	{
-		mtimer_set_raw_time_cmp(gtimloadvalue);
-		gtimloadvalue += 1ll * allwnrt113_get_hosc_freq()/* / TICKS_FREQUENCY*/;
-		//TP();
-		{
-			static uint_fast8_t state;
-			state = ! state;
-			BOARD_BLINK_SETSTATE(state);
-		}
-		//spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		//spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		mtimer_set_raw_time_cmp(mtimloadvalue);
+		mtimloadvalue += mtimloadinc;
+		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
 
@@ -3391,11 +3386,15 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	#warning Implement for CPUSTYLE_XCZU
 
 #elif CPUSTYPE_F133
-	//#warning Implement for CPUSTYPE_F133
 
 	// 3.1.7 Machine Trap-Vector Base-Address Register (mtvec)
 	// https://five-embeddev.com/baremetal/vectored_interrupts/
-	mtimer_set_raw_time_cmp(csr_read_time() + 1ll * allwnrt113_get_hosc_freq()/* / TICKS_FREQUENCY*/);
+
+	// Disable MIE.MTI
+	csr_clr_bits_mie(MIE_MTI_BIT_MASK);
+	mtimloadinc = 1ll * allwnrt113_get_hosc_freq() / TICKS_FREQUENCY;
+	mtimloadvalue = csr_read_time() + mtimloadinc;
+	mtimer_set_raw_time_cmp(mtimloadvalue);
     // Enable MIE.MTI
     csr_set_bits_mie(MIE_MTI_BIT_MASK);
 
