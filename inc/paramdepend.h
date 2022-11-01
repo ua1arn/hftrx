@@ -1034,15 +1034,18 @@ extern "C" {
 
 	#if WITHNESTEDINTERRUPTS
 
-		#define ARM_OVERREALTIME_PRIORITY	1
-		#define ARM_REALTIME_PRIORITY		1
-		#define ARM_SYSTEM_PRIORITY			1
+		#define ARM_OVERREALTIME_PRIORITY	6
+		#define ARM_REALTIME_PRIORITY		5
+		#define ARM_SYSTEM_PRIORITY			4
+		#define ARM_USER_PRIORITY			3	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
 	#else /* WITHNESTEDINTERRUPTS */
 
 		#define ARM_OVERREALTIME_PRIORITY	1
 		#define ARM_REALTIME_PRIORITY		1
 		#define ARM_SYSTEM_PRIORITY			1
+		#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+
 
 	#endif /* WITHNESTEDINTERRUPTS */
 

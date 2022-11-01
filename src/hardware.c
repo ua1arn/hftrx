@@ -3100,19 +3100,9 @@ sysinit_vbar_initialize(void)
 	csr_write_stvec(vbaseval);	/* for supervisor privileges */
 	//csr_write_utvec(vbaseval);	/* for user privilege*/
 
-//	TP();
 	ASSERT(csr_read_mtvec() == vbaseval);
-//	TP();
 
-	// 3.1.9 Machine Interrupt Registers (mip and mie)
-	//csr_write_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
-	//csr_set_bits_mie(~ (uint_xlen_t) 0);	/* enable all interrupts */
-//	TP();
-//
-//	csr_set_bits_sie(~ (uint_xlen_t) 0);	/* for supervisor enable all interrupts */
-//	csr_set_bits_uie(~ (uint_xlen_t) 0);	/* for user enable all interrupts */
-	// Global interrupt disable
-//	TP();
+	PLIC->PLIC_MTH_REG = ARM_USER_PRIORITY;
 
 #endif /* CPUSTYLE_RISCV */
 }

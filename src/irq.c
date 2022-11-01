@@ -1361,7 +1361,7 @@ void VMSI_Handler(void)
 		;
 }
 
-static void (* plic_vectors [1024])(void);
+static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
 void VMEI_Handler(void)
 {
@@ -1372,7 +1372,8 @@ void VMEI_Handler(void)
 		{
 			uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;
 			//PRINTF("VMEI_Handler: int_id=%u\n", (unsigned) int_id);
-			(plic_vectors[int_id])();
+			ASSERT(int_id < MAX_IRQ_n);
+			(plic_vectors [int_id])();
 			PLIC->PLIC_MCLAIM_REG = int_id;
 		}
 		break;
@@ -1820,6 +1821,8 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	const unsigned mask = (1u << d.rem);
 
 	PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
+
+	ASSERT(int_id < MAX_IRQ_n);
 
 	plic_vectors [int_id] = handler;
 	PLIC->PLIC_PRIO_REGn [int_id] = priority;
