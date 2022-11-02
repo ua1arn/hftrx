@@ -7450,7 +7450,7 @@ void SystemCoreClockUpdate(void)
 		MTU2.TGRC_0 = v - 1;	// Use C intstead of A
 	}
 
-#elif CPUSTYLE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	void hardware_dcdcfreq_pwm5_initialize(unsigned pwmch)
 	{
