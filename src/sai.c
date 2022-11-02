@@ -3885,6 +3885,7 @@ static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
+#define DMAC_DESC_PARAM	4	/* Parameter */
 #define DMAC_DESC_LINK	5	/* адрес сдедующего дескриптора */
 
 #define DMAC_DESC_SIZE	8	/* Требуется 6 - но для упрощения работы с кеш-памятью сделано 8 */
