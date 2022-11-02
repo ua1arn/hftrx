@@ -2674,6 +2674,9 @@ static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 	return 1;
 }
 
+
+static unsigned gbaudrate = 115200;
+
 static int32_t ep0_in_handler_dev(pusb_struct pusb)
 {
 	uint32_t temp = 0;
@@ -2792,7 +2795,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						// work ok
 						static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
 						//PRINTF("ep0_in: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
-						USBD_poke_u32(& buff [0], 115200); // dwDTERate
+						USBD_poke_u32(& buff [0], gbaudrate); // dwDTERate
 						buff [4] = 0;	// 1 stop bit
 						buff [5] = 0;	// parity=none
 						buff [6] = 8;	// bDataBits
@@ -2953,6 +2956,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 *
 ************************************************************************************************************
 */
+
 static int32_t ep0_out_handler_dev(pusb_struct pusb)
 {
 	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
@@ -3307,6 +3311,7 @@ static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
 				  	{
 				  	case CDC_SET_LINE_CODING:
 				  		PRINTF("usb_dev_ep0xfer: CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
+				  		gbaudrate = USBD_peek_u32(buff);
 				  		break;
 				  	default:
 				  		// work
