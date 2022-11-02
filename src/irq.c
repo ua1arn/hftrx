@@ -1390,17 +1390,20 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
 void  __attribute__ ((interrupt ("machine"))) VMEI_Handler(void)
 {
-	const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);	// MEI MTI
+	const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MTI_BIT_MASK);	// MTI
 	const uint_xlen_t mcause = csr_read_mcause();
 	switch (mcause & 0xFFF)
 	{
 	case 11: /* 11 Machine external interrupt */
 		{
-			uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;
-			//PRINTF("VMEI_Handler: int_id=%u\n", (unsigned) int_id);
-			ASSERT(int_id < MAX_IRQ_n);
-			(plic_vectors [int_id])();
-			PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
+			uint_fast16_t int_id;
+			while ((int_id = PLIC->PLIC_MCLAIM_REG) != 0)
+			{
+				//PRINTF("VMEI_Handler: int_id=%u\n", (unsigned) int_id);
+				ASSERT(int_id < MAX_IRQ_n);
+				(plic_vectors [int_id])();
+				PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
+			}
 		}
 		break;
 	default:
