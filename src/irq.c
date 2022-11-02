@@ -1340,7 +1340,7 @@ static void vectors_relocate(void)
 // https://twilco.github.io/riscv-from-scratch/2019/03/10/riscv-from-scratch-1.html
 // https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html
 
-void EMPTY_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) EMPTY_Handler(void)
 {
 	PRINTF("EMPTY_Handler\n");
 	const uint_fast16_t mcause = csr_read_mcause();
@@ -1349,7 +1349,7 @@ void EMPTY_Handler(void)
 		;
 }
 
-void SYNCTRAP_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) SYNCTRAP_Handler(void)
 {
 	PRINTF("SYNCTRAP_Handler\n");
 	const uint_xlen_t mcause = csr_read_mcause();
@@ -1375,7 +1375,7 @@ void SYNCTRAP_Handler(void)
 		;
 }
 
-void VMSI_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) VMSI_Handler(void)
 {
 	PRINTF("VMSI_Handler\n");
 	const uint_fast16_t mcause = csr_read_mcause();
@@ -1386,7 +1386,9 @@ void VMSI_Handler(void)
 
 static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
-void VMEI_Handler(void)
+// See https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
+
+void  __attribute__ ((interrupt ("machine"))) VMEI_Handler(void)
 {
 	const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);	// MEI MTI
 	const uint_xlen_t mcause = csr_read_mcause();
@@ -1410,112 +1412,112 @@ void VMEI_Handler(void)
 	csr_write_mie(miev);		/* restore old value */
 }
 
-void IRQ0_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ0_Handler(void)
 {
 	PRINTF("IRQ0_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ1_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ1_Handler(void)
 {
 	PRINTF("IRQ1_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ2_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ2_Handler(void)
 {
 	PRINTF("IRQ2_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ3_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ3_Handler(void)
 {
 	PRINTF("IRQ3_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ4_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ4_Handler(void)
 {
 	PRINTF("IRQ4_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ5_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ5_Handler(void)
 {
 	PRINTF("IRQ5_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ6_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ6_Handler(void)
 {
 	PRINTF("IRQ6_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ7_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ7_Handler(void)
 {
 	PRINTF("IRQ7_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ8_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ8_Handler(void)
 {
 	PRINTF("IRQ8_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ9_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ9_Handler(void)
 {
 	PRINTF("IRQ9_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ10_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ10_Handler(void)
 {
 	PRINTF("IRQ10_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ11_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ11_Handler(void)
 {
 	PRINTF("IRQ11_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ12_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ12_Handler(void)
 {
 	PRINTF("IRQ12_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ13_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ13_Handler(void)
 {
 	PRINTF("IRQ13_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ14_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ14_Handler(void)
 {
 	PRINTF("IRQ14_Handler\n");
 	for (;;)
 		;
 }
 
-void IRQ15_Handler(void)
+void  __attribute__ ((interrupt ("machine"))) IRQ15_Handler(void)
 {
 	PRINTF("IRQ15_Handler\n");
 	for (;;)

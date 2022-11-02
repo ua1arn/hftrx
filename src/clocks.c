@@ -2886,7 +2886,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 	static volatile uint_fast64_t mtimloadinc;
 
 	// Таймер "тиков"
-	void
+	void  __attribute__ ((interrupt ("machine")))
 	VMTI_Handler(void)
 	{
 		const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);	// MEI MTI
