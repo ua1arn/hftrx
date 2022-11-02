@@ -7113,7 +7113,7 @@ void SystemCoreClockUpdate(void)
 
 		return 1;
 
-#elif CPUSTYLE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 		/* fsync=50000000, wflwidth=96000 */
 		/* number of dividers=83 42..125 */
