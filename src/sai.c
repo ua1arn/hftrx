@@ -5279,7 +5279,7 @@ static const codechw_t audiocodechw_dummy =
 	hardware_dummy_initialize,
 	hardware_dummy_enable,
 	hardware_dummy_enable,
-	"dummy codec"
+	"dummy audio codec"
 };
 
 static const codechw_t fpgaiqhw_dummy =
@@ -5290,7 +5290,7 @@ static const codechw_t fpgaiqhw_dummy =
 	hardware_dummy_initialize,
 	hardware_dummy_enable,
 	hardware_dummy_enable,
-	"dummy I/Q"
+	"dummy FPGA I/Q"
 };
 
 static const codechw_t fpgaspectrumhw_dummy =
@@ -5301,149 +5301,111 @@ static const codechw_t fpgaspectrumhw_dummy =
 	hardware_dummy_initialize,
 	hardware_dummy_enable,
 	hardware_dummy_enable,
-	"dummy SAIx-fpga spectrum for WFM"
+	"dummy FPGA spectrum for WFM"
 };
 
+static const codechw_t * const channels [] =
+{
 
 #if WITHISBOOTLOADER || ! WITHINTEGRATEDDSP
 
-	static const codechw_t * const channels [] =
-	{
 		& audiocodechw_dummy,		// Интерфейс к НЧ кодеку
 		& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
 		& fpgaspectrumhw_dummy,		// Интерфейс к FPGA - широкополосный канал (WFM)
-	};
 
 #elif CPUSTYLE_R7S721
-	static const codechw_t * const channels [] =
-	{
-#if WITHCODEC1_SSIF0_DUPLEX_MASTER
-			& audiocodec_ssif0_duplex_master,				// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_SSIF0_DUPLEX_MASTER */
-#if WITHFPGAIF_SSIF1_DUPLEX_MASTER
-			& fpgacodechw_ssif1_duplex_master,			// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_SSIF1_DUPLEX_MASTER */
-#if WITHFPGARTS_SSIF2_RX_MASTER
-			& fpgaspectrumhw_ssif2_rx_master,			// Интерфейс к FPGA - широкополосный канал (WFM)
-#endif /* WITHFPGARTS_SSIF2_RX_MASTER */
-	};
 
-#elif CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
-	static const codechw_t * const channels [] =
-	{
-#if WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE
-		& fpgacodechw_sai1_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE */
-#if WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE
-		& fpgacodechw_sai2_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE */
-#if WITHFPGAIF_SAI2_A_TX_B_RX_MASTER
-		& fpgacodechw_sai2_a_tx_b_rx_master,				// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_SAI2_A_TX_B_RX_MASTER */
-#if WITHCODEC1_I2S2_TX_SLAVE
-		& audiocodechw_i2s2_tx_slave,					// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_I2S2_TX_SLAVE */
-#if WITHCODEC1_I2S3_RX_SLAVE
-		& audiocodechw_i2s3_rx_slave,					// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_I2S3_RX_SLAVE */
-#if WITHCODEC1_I2S2_DUPLEX_SLAVE
-		& audiocodechw_i2s2_duplex_slave,	// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_I2S2_DUPLEX_SLAVE */
-#if WITHCODEC1_I2S2_DUPLEX_MASTER
-		& audiocodechw_i2s2_duplex_master,	// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_I2S2_DUPLEX_MASTER */
-#if WITHCODEC1_SAI2_A_TX_B_RX_MASTER
-		& audiocodechw_sai2_a_tx_b_rx_master,	// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_SAI2_A_TX_B_RX_MASTER */
-#if WITHFPGARTS_SAI2_B_RX_SLAVE
-		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
-#endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
-#if WITHCODEC1_SAI1_A_TX_B_RX_MASTER 	/* Обмен с аудиокодеком через SAI1: SAI1_A - TX, SAI1_B - RX */
-		& audiocodechw_sai1_a_tx_b_rx_master,	// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_SAI1_A_TX_B_RX_MASTER */
-	};
+	#if WITHCODEC1_SSIF0_DUPLEX_MASTER
+		& audiocodec_ssif0_duplex_master,				// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_SSIF0_DUPLEX_MASTER */
+	#if WITHFPGAIF_SSIF1_DUPLEX_MASTER
+		& fpgacodechw_ssif1_duplex_master,			// Интерфейс к IF кодеку/FPGA
+	#endif /* WITHFPGAIF_SSIF1_DUPLEX_MASTER */
+	#if WITHFPGARTS_SSIF2_RX_MASTER
+		& fpgaspectrumhw_ssif2_rx_master,			// Интерфейс к FPGA - широкополосный канал (WFM)
+	#endif /* WITHFPGARTS_SSIF2_RX_MASTER */
 
 #elif CPUSTYLE_STM32F4XX
-	static const codechw_t * const channels [] =
-	{
 		& audiocodechw_i2s2_i2s2ext_duplex_master,		// Интерфейс к НЧ кодеку
-#if WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE
+	#if WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE
 		& fpgacodechw_sai1_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE */
-#if WITHFPGARTS_SAI2_B_RX_SLAVE
+	#endif /* WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE */
+	#if WITHFPGARTS_SAI2_B_RX_SLAVE
 		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
-#endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
-	};
+	#endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
 
-#elif WITHSUSBSPKONLY
-	static const codechw_t * const channels [] =
-	{
-		& audiocodechw_sai2_master_spkonly,	// Интерфейс к НЧ кодеку
-#if WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE
-		& fpgacodechw_sai1_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE */
-#if WITHFPGARTS_SAI2_B_RX_SLAVE
-		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
-#endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
-	};
 
-#elif CTLSTYLE_V3D
-	static const codechw_t * const channels [] =
-	{
-#if WITHCODEC1_SAI2_A_TX_B_RX_MASTER
-		& audiocodechw_sai2_a_tx_b_rx_master,	// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_SAI2_A_TX_B_RX_MASTER */
-#if WITHFPGAIF_SAI1_A_TX_B_RX_MASTER
-		& fpgacodechw_sai1_a_tx_b_rx_master,				// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_SAI1_A_TX_B_RX_MASTER */
-		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
-	};
+#elif WITHINTEGRATEDDSP
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
-	static const codechw_t * const channels [] =
-	{
+	#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		& audiocodechw_xc7z,				// Интерфейс к НЧ кодеку
 		& ifcodechw_xc7z,					// Интерфейс к IF кодеку/FPGA
 		//& fpgaspectrumhw_dummy,				// Интерфейс к FPGA - широкополосный канал (WFM)
-	};
-
-#elif WITHINTEGRATEDDSP
-	static const codechw_t * const channels [] =
-	{
-#if WITHCODEC1_I2S2_TX_SLAVE
-		& audiocodechw_i2s2_tx_slave,					// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_I2S2_TX_SLAVE */
-#if WITHCODEC1_I2S3_RX_SLAVE
-		& audiocodechw_i2s3_rx_slave,					// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_I2S3_RX_SLAVE */
-#if WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE
+	#endif
+	#if WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE	// (stm32mp157 9a)
 		& fpgacodechw_sai1_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE */
-#if WITHCODEC1_I2S1_DUPLEX_SLAVE
+	#endif /* WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE */
+	#if WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE
+		& fpgacodechw_sai2_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
+	#endif /* WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE */
+	#if WITHFPGAIF_SAI2_A_TX_B_RX_MASTER	// (stm32mp157 9c)
+		& fpgacodechw_sai2_a_tx_b_rx_master,				// Интерфейс к IF кодеку/FPGA
+	#endif /* WITHFPGAIF_SAI2_A_TX_B_RX_MASTER */
+	#if WITHCODEC1_I2S2_TX_SLAVE
+		& audiocodechw_i2s2_tx_slave,					// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_I2S2_TX_SLAVE */
+	#if WITHCODEC1_I2S3_RX_SLAVE
+		& audiocodechw_i2s3_rx_slave,					// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_I2S3_RX_SLAVE */
+	#if WITHCODEC1_I2S2_DUPLEX_SLAVE		// (stm32mp157 9a)
+		& audiocodechw_i2s2_duplex_slave,	// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_I2S2_DUPLEX_SLAVE */
+	#if WITHCODEC1_I2S2_DUPLEX_MASTER	// (stm32mp157 9c)
+		& audiocodechw_i2s2_duplex_master,	// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_I2S2_DUPLEX_MASTER */
+	#if WITHCODEC1_SAI2_A_TX_B_RX_MASTER
+		& audiocodechw_sai2_a_tx_b_rx_master,	// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_SAI2_A_TX_B_RX_MASTER */
+	#if WITHFPGARTS_SAI2_B_RX_SLAVE
+		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
+	#endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
+	#if WITHCODEC1_SAI1_A_TX_B_RX_MASTER 	/* Обмен с аудиокодеком через SAI1: SAI1_A - TX, SAI1_B - RX */
+		& audiocodechw_sai1_a_tx_b_rx_master,	// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_SAI1_A_TX_B_RX_MASTER */
+	#if WITHCODEC1_SAI2_A_TX_B_RX_MASTER
+		& audiocodechw_sai2_a_tx_b_rx_master,	// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_SAI2_A_TX_B_RX_MASTER */
+	#if WITHFPGAIF_SAI1_A_TX_B_RX_MASTER
+		& fpgacodechw_sai1_a_tx_b_rx_master,				// Интерфейс к IF кодеку/FPGA
+	#endif /* WITHFPGAIF_SAI1_A_TX_B_RX_MASTER */
+	#if WITHCODEC1_I2S2_TX_SLAVE
+		& audiocodechw_i2s2_tx_slave,					// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_I2S2_TX_SLAVE */
+	#if WITHCODEC1_I2S3_RX_SLAVE
+		& audiocodechw_i2s3_rx_slave,					// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_I2S3_RX_SLAVE */
+	#if WITHCODEC1_I2S1_DUPLEX_SLAVE	// allwinner t113-s3 or F133
 		& audiocodechw_i2s1_duplex_slave,					// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_I2S1_DUPLEX_SLAVE */
-#if WITHFPGAIF_I2S2_DUPLEX_SLAVE
+	#endif /* WITHCODEC1_I2S1_DUPLEX_SLAVE */
+	#if WITHFPGAIF_I2S2_DUPLEX_SLAVE	// allwinner t113-s3 or F133
 		& fpgacodechw_i2s2_duplex_slave,					// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_I2S2_DUPLEX_SLAVE */
-#if WITHCODEC1_I2S1_DUPLEX_MASTER
+	#endif /* WITHFPGAIF_I2S2_DUPLEX_SLAVE */
+	#if WITHCODEC1_I2S1_DUPLEX_MASTER	// allwinner t113-s3 or F133
 		& audiocodechw_i2s1_duplex_master,					// Интерфейс к НЧ кодеку
-#endif /* WITHCODEC1_I2S1_DUPLEX_MASTER */
-#if WITHFPGAIF_I2S2_DUPLEX_MASTER
+	#endif /* WITHCODEC1_I2S1_DUPLEX_MASTER */
+	#if WITHFPGAIF_I2S2_DUPLEX_MASTER	// allwinner t113-s3 or F133
 		& fpgacodechw_i2s2_duplex_master,					// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_I2S2_DUPLEX_MASTER */
-#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
+	#endif /* WITHFPGAIF_I2S2_DUPLEX_MASTER */
+	#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER	// allwinner t113-s3 or F133
 		& audiocodechw_hwblock_duplex_master,					// Интерфейс к НЧ кодеку (встроенный в процессор)
-#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
+	#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
 		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
-	};
 
 #else
-	static const codechw_t * const channels [] =
-	{
 		& fpgaiqhw_dummy,					// Интерфейс к IF кодеку/FPGA
-	};
 
 #endif
+};
 
 void hardware_channels_initialize(void)
 {
