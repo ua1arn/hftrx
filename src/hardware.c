@@ -2223,8 +2223,154 @@ void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 
 #elif CPUSTYLE_RISCV
 
+
+#if 0
+
+// https://github.com/Tina-Linux/d1s-melis/blob/26ea5f09f53b49b9efce8a4dd487f875b0496f86/ekernel/arch/riscv/rv64gc/c906_cache.c
+
+#define L1_CACHE_BYTES (64)
+
+static void dcache_wb_range(unsigned long start, unsigned long end)
+{
+    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
+
+    for (; i < end; i += L1_CACHE_BYTES)
+    {
+        asm volatile("dcache.cva %0\n"::"r"(i):"memory");
+    }
+    asm volatile(".long 0x01b0000b");
+}
+
+static void dcache_inv_range(unsigned long start, unsigned long end)
+{
+    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
+
+    for (; i < end; i += L1_CACHE_BYTES)
+    {
+        asm volatile("dcache.iva %0\n"::"r"(i):"memory");
+    }
+    asm volatile(".long 0x01b0000b");
+}
+
+static void dcache_wbinv_range(unsigned long start, unsigned long end)
+{
+    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
+
+    for (; i < end; i += L1_CACHE_BYTES)
+    {
+        asm volatile("dcache.civa %0\n"::"r"(i):"memory");
+    }
+    asm volatile(".long 0x01b0000b");
+}
+
+static void icache_inv_range(unsigned long start, unsigned long end)
+{
+    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
+
+    for (; i < end; i += L1_CACHE_BYTES)
+    {
+        asm volatile("icache.iva %0\n"::"r"(i):"memory");
+    }
+    asm volatile(".long 0x01b0000b");
+}
+
+void awos_arch_clean_dcache(void)
+{
+    asm volatile("dcache.call\n":::"memory");
+}
+
+void awos_arch_clean_flush_dcache(void)
+{
+    asm volatile("dcache.ciall\n":::"memory");
+}
+
+void awos_arch_flush_dcache(void)
+{
+    asm volatile("dcache.iall\n":::"memory");
+}
+
+void awos_arch_flush_icache(void)
+{
+    asm volatile("icache.iall\n":::"memory");
+}
+
+void awos_arch_mems_flush_icache_region(unsigned long start, unsigned long len)
+{
+    icache_inv_range(start, start + len);
+}
+
+void awos_arch_mems_clean_dcache_region(unsigned long start, unsigned long len)
+{
+    dcache_wb_range(start, start + len);
+}
+
+void awos_arch_mems_clean_flush_dcache_region(unsigned long start, unsigned long len)
+{
+    dcache_wbinv_range(start, start + len);
+}
+
+void awos_arch_mems_flush_dcache_region(unsigned long start, unsigned long len)
+{
+    dcache_inv_range(start, start + len);
+}
+
+void awos_arch_clean_flush_cache(void)
+{
+    awos_arch_clean_flush_dcache();
+    awos_arch_flush_icache();
+}
+
+void awos_arch_clean_flush_cache_region(unsigned long start, unsigned long len)
+{
+    awos_arch_mems_clean_flush_dcache_region(start, len);
+    awos_arch_mems_flush_icache_region(start, len);
+}
+
+void awos_arch_flush_cache(void)
+{
+    awos_arch_flush_dcache();
+    awos_arch_flush_icache();
+}
+
+#endif
+
+//	cache.c/iva means three instructions:
+//	 - dcache.cva %0  : writeback     by virtual address cacheline
+//	 - dcache.iva %0  : invalid       by virtual address cacheline
+//	 - dcache.civa %0 : writeback+inv by virtual address cacheline
+
+//static inline void local_flush_icache_all(void)
+//{
+//	asm volatile ("fence.i" ::: "memory");
+//}
+
 // See https://github.com/xboot/xboot/blob/master/src/arch/riscv64/mach-f133/cache-c906.c
 
+#define L1_CACHE_BYTES	(64)
+
+/*
+ * Flush range(clean & invalidate), affects the range [start, stop - 1]
+ */
+void cache_flush_range(unsigned long start, unsigned long stop)
+{
+	register unsigned long i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
+
+	for(; i < stop; i += L1_CACHE_BYTES)
+		__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
+	__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
+}
+
+/*
+ * Invalidate range, affects the range [start, stop - 1]
+ */
+void cache_inv_range(unsigned long start, unsigned long stop)
+{
+	register unsigned long i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
+
+	for(; i < stop; i += L1_CACHE_BYTES)
+		__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
+	__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
+}
 // Сейчас в эту память будем читать по DMA
 
 void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
@@ -2320,6 +2466,12 @@ uint_fast32_t cpu_getdebugticks(void)
 		__get_CP(15, 0, result, 9, 13, 0);
 		return(result);
 	}
+
+#elif __risc_v
+
+	uint64_t v = csr_read_mcycle();
+	return v;
+
 #else
 	//#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks not work
 	return 0;
