@@ -16280,7 +16280,7 @@ static void
 display_menu_string_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	const FLASHMEM  char * text,
+	const FLASHMEM char * text,
 	uint_fast8_t width,
 	uint_fast8_t filled		// сколько символов сейчас в text
 	)
@@ -16304,6 +16304,38 @@ display_menu_string_P(
 	{
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 		display_at_P(x + 0, y, text);
+	}
+#endif /* WITHTOUCHGUI */
+}
+
+static void
+display_menu_string(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	const char * text,
+	uint_fast8_t width,
+	uint_fast8_t filled		// сколько символов сейчас в text
+	)
+{
+#if WITHTOUCHGUI
+	safestrcpy(menuw, ARRAY_SIZE(menuw), text);
+	return;
+#else
+	if (width > filled)
+	{
+		const size_t fill = width - filled;
+		char notext [fill + 1];
+		memset(notext, ' ', fill);
+		notext [fill] = '\0';
+
+		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
+		display_at(x + 0, y, notext);
+		display_at(x + fill, y, text);
+	}
+	else
+	{
+		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
+		display_at(x + 0, y, text);
 	}
 #endif /* WITHTOUCHGUI */
 }
@@ -16827,6 +16859,22 @@ void display2_menu_valxx(
 	dctx_t * pctx
 	)
 {
+	static const FLASHMEM char months [13] [4] =
+	{
+		"---",
+		"JAN",
+		"FEB",
+		"MAR",
+		"APR",
+		"MAY",
+		"JUN",
+		"JUL",
+		"AUG",
+		"SEP",
+		"OCT",
+		"NOV",
+		"DEC",
+	};
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
 	const FLASHMEM struct menudef * const mp = pctx->pv;
@@ -16926,25 +16974,10 @@ void display2_menu_valxx(
 #if defined (RTC1_TYPE)
 	case RJ_MONTH:
 		{
-			static const FLASHMEM char months [13] [4] = 
-			{
-				"JAN",
-				"FEB",
-				"MAR",
-				"APR",
-				"MAY",
-				"JUN",
-				"JUL",
-				"AUG",
-				"SEP",
-				"OCT",
-				"NOV",
-				"DEC",
-			};
 
 			width = VALUEW;
 			comma = 3;
-			display_menu_string_P(x, y, months [value - mp->qbottom], width, comma);
+			display_menu_string_P(x, y, months [value - mp->qbottom + 1], width, comma);
 		}
 		break;
 #endif /* defined (RTC1_TYPE) */
@@ -17066,7 +17099,9 @@ void display2_menu_valxx(
 	case RJ_CPUTYPE:
 		{
 			const FLASHMEM char * msg;
-#if CPUSTYLE_STM32MP1
+#if defined (WITHCPUNAME)
+			msg = PSTR(WITHCPUNAME);
+#elif CPUSTYLE_STM32MP1
 			RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
 			(void) RCC->MP_APB5ENSETR;
 			RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_BSECLPEN;
@@ -17093,8 +17128,8 @@ void display2_menu_valxx(
 			msg = PSTR("RENESAS");
 #elif CPUSTYLE_T113
 			msg = PSTR("Allw T128-S3");
-#elif defined (WITHCPUNAME)
-			msg = PSTR(WITHCPUNAME);
+#elif CPUSTYLE_F133
+			msg = PSTR("Allw F133-A");
 #else
 			msg = PSTR("CPUxxx");
 #endif
@@ -17106,14 +17141,19 @@ void display2_menu_valxx(
 
 	case RJ_COMPILED:
 		{
-			static const FLASHMEM char msg [] =
-					__DATE__
-					//" " __TIME__
-					;
-			const FLASHMEM char * const p = msg + strlen_P(msg) - ulmin(VALUEW, strlen_P(msg));	// сколько может поместиться в поле отображения
+			uint_fast16_t year;
+			uint_fast8_t month, day;
+			uint_fast8_t hour, minute, secounds;
+
+			board_get_compile_datetime(& year, & month, & day, & hour, & minute, & secounds);
+
+			char msg [VALUEW + 1];
+			const uint_fast8_t n = local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("%02d-%3.3s-%02d"), day, months [month], year % 100);
+			msg [VALUEW] = '\0';
+			const char * const p = msg + n - ulmin(VALUEW, n);	// сколько может поместиться в поле отображения
 			width = VALUEW;
-			comma = strlen_P(p);
-			display_menu_string_P(x, y, p, width, comma);
+			comma = strlen(p);
+			display_menu_string(x, y, p, width, comma);
 		}
 		break;
 

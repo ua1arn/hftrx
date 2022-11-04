@@ -267,6 +267,14 @@ void board_rtc_setdatetime(
 	uint_fast8_t secounds
 	);
 uint_fast8_t board_rtc_chip_initialize(void);
+void board_get_compile_datetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * dayofmonth,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	);
 
 #if defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 

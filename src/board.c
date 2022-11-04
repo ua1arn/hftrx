@@ -7722,6 +7722,33 @@ static void board_rtc_cache_update(void * ctx)
 
 #endif /* WITHRTCCACHED */
 
+void board_get_compile_datetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * dayofmonth,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	)
+{
+	// Алгоритм найден тут: https://electronix.ru/forum/index.php?showtopic=141655&view=findpost&p=1495868
+	static FLASHMEM const char ds [] = __DATE__;
+	static FLASHMEM const char ts [] = __TIME__;
+
+	* hour = (((ts [0] - '0') * 10) + (ts [1] - '0'));
+	* minute = (((ts [3] - '0') * 10) + (ts [4] - '0'));
+	* secounds = (((ts [6] - '0') * 10) + (ts [7] - '0'));
+
+	* year = ((((ds [7] - '0') * 10 + (ds [8] - '0')) * 10 + (ds [9] - '0')) * 10 + (ds [10] - '0'));
+
+	* month = ((ds [2] == 'n' ? (ds [1] == 'a' ? 0 : 5) : ds [2] == 'b' ? 1 : ds [2] == 'r' ? (ds [0] == 'M' ? 2 : 3) :
+				ds [2] == 'y' ? 4 : ds [2] == 'l' ? 6 : ds [2] == 'g' ? 7 : ds [2] == 'p' ? 8 : ds [2] == 't' ? 9 :
+				ds [2] == 'v' ? 10 : 11) + 1);
+
+	* dayofmonth = ((ds [4] == ' ' ? 0 : ds [4] - '0') * 10 + (ds [5] - '0'));
+
+}
+
 /* вызывается при разрешённых прерываниях. */
 static void board_rtc_initialize(void)
 {
@@ -7747,31 +7774,12 @@ static void board_rtc_initialize(void)
 
 	if (loadreq != 0)
 	{
-		// Алгоритм найден тут: https://electronix.ru/forum/index.php?showtopic=141655&view=findpost&p=1495868
-		static const char ds [] = __DATE__;
-		static const char ts [] = __TIME__;
-
-		#define COMPILE_HOUR   (((ts [0]-'0')*10) + (ts [1]-'0'))
-		#define COMPILE_MINUTE (((ts [3]-'0')*10) + (ts [4]-'0'))
-		#define COMPILE_SECOND (((ts [6]-'0')*10) + (ts [7]-'0'))
-
-		#define COMPILE_YEAR  ((((ds [7]-'0')*10+(ds [8]-'0'))*10+(ds [9]-'0'))*10+(ds [10]-'0'))
-
-		#define COMPILE_MONTH   ((ds [2] == 'n' ? (ds [1] == 'a'? 0 : 5) \
-								: ds [2] == 'b' ? 1 \
-								: ds [2] == 'r' ? (ds [0] == 'M'? 2 : 3) \
-								: ds [2] == 'y' ? 4 \
-								: ds [2] == 'l' ? 6 \
-								: ds [2] == 'g' ? 7 \
-								: ds [2] == 'p' ? 8 \
-								: ds [2] == 't' ? 9 \
-								: ds [2] == 'v' ? 10 : 11)+1)
-
-		#define COMPILE_DAY  ((ds [4]==' ' ? 0 : ds [4]-'0')*10+(ds [5]-'0'))	
+		uint_fast16_t year;
+		uint_fast8_t month, day;
+		uint_fast8_t hour, minute, secounds;
 		
-		board_rtc_setdatetime(COMPILE_YEAR, COMPILE_MONTH, COMPILE_DAY, COMPILE_HOUR, COMPILE_MINUTE, COMPILE_SECOND);
-
-		//board_rtc_setdate(2016, 3, 1);
+		board_get_compile_datetime(& year, & month, & day, & hour, & minute, & secounds);
+		board_rtc_setdatetime(year, month, day, hour, minute, secounds);
 	}
 #if WITHRTCCACHED
 
