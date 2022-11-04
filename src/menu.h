@@ -2821,7 +2821,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
 	{
-		QLABEL("TX POWER"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
+		QLABEL("TX POWER"), 7, 0, 0,	ISTEP5,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
