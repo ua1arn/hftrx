@@ -51,7 +51,7 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 
 # misa --X-VU-S-----M---I--F-DC-A
 
-CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector
+CORE = -march=rv64imafdc_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector
 
 # Define optimisation level here
 #OPT = -Og
@@ -154,7 +154,7 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
 #ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
-ASRC_BOOT += $(PRJROOT)/src/crt_RISCV.S
+ASRC_BOOT += $(PRJROOT)/src/crt_RV64IFDV.S
 ASRC_APP += $(ASRC_BOOT)
 
 VPATH = $(PRJROOT)

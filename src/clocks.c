@@ -2886,7 +2886,7 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 	static volatile uint_fast64_t mtimloadinc;
 
 	// Таймер "тиков"
-	void  __attribute__ ((interrupt ("machine")))
+	void
 	VMTI_Handler(void)
 	{
 		const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);	// MEI MTI
@@ -2899,7 +2899,6 @@ void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 
 		csr_write_mie(miev);		/* restore old value */
 	}
-
 
 #elif CPUSTYLE_T113 && (__TIM_PRESENT == 1U)
 

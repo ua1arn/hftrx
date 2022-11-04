@@ -28,17 +28,90 @@
  * SOFTWARE.
  */
 
+// __attribute__ ((interrupt ("machine")))
+
 .macro trap_entry
+	addi	sp,sp,-288
+	sd	a5,208(sp)
+	sd	ra,280(sp)
+	sd	t0,272(sp)
+	sd	t1,264(sp)
+	sd	t2,256(sp)
+	sd	a0,248(sp)
+	sd	a1,240(sp)
+	sd	a2,232(sp)
+	sd	a3,224(sp)
+	sd	a4,216(sp)
+	sd	a6,200(sp)
+	sd	a7,192(sp)
+	sd	t3,184(sp)
+	sd	t4,176(sp)
+	sd	t5,168(sp)
+	sd	t6,160(sp)
+	fsd	ft0,152(sp)
+	fsd	ft1,144(sp)
+	fsd	ft2,136(sp)
+	fsd	ft3,128(sp)
+	fsd	ft4,120(sp)
+	fsd	ft5,112(sp)
+	fsd	ft6,104(sp)
+	fsd	ft7,96(sp)
+	fsd	fa0,88(sp)
+	fsd	fa1,80(sp)
+	fsd	fa2,72(sp)
+	fsd	fa3,64(sp)
+	fsd	fa4,56(sp)
+	fsd	fa5,48(sp)
+	fsd	fa6,40(sp)
+	fsd	fa7,32(sp)
+	fsd	ft8,24(sp)
 .endm
 
 
 .macro trap_exit
+	ld	ra,280(sp)
+	ld	t0,272(sp)
+	ld	t1,264(sp)
+	ld	t2,256(sp)
+	ld	a0,248(sp)
+	ld	a1,240(sp)
+	ld	a2,232(sp)
+	ld	a3,224(sp)
+	ld	a4,216(sp)
+	ld	a5,208(sp)
+	ld	a6,200(sp)
+	ld	a7,192(sp)
+	ld	t3,184(sp)
+	ld	t4,176(sp)
+	ld	t5,168(sp)
+	ld	t6,160(sp)
+	fld	ft0,152(sp)
+	fld	ft1,144(sp)
+	fld	ft2,136(sp)
+	fld	ft3,128(sp)
+	fld	ft4,120(sp)
+	fld	ft5,112(sp)
+	fld	ft6,104(sp)
+	fld	ft7,96(sp)
+	fld	fa0,88(sp)
+	fld	fa1,80(sp)
+	fld	fa2,72(sp)
+	fld	fa3,64(sp)
+	fld	fa4,56(sp)
+	fld	fa5,48(sp)
+	fld	fa6,40(sp)
+	fld	fa7,32(sp)
+	fld	ft8,24(sp)
+	fld	ft9,16(sp)
+	fld	ft10,8(sp)
+	fld	ft11,0(sp)
+	addi	sp,sp,288
 .endm
 
 .macro mtrap_handler func, tail=_Handler
 trap_\func:
 	trap_entry
-	j \func\tail
+	call \func\tail
 	trap_exit
 	mret
 .endm
