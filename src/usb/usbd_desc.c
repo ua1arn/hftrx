@@ -442,7 +442,7 @@ static unsigned UAC2_clock_multiplier(
 /* UAC IAD */
 // Interface Association Descriptor Audio
 // Audio10.pdf 4.3.2.8 Associated Interface Descriptor
-// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDescriptor_ecn.pdf
+// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDesc_ecn.pdf
 static unsigned UAC2_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bFirstInterface,
 	uint_fast8_t bInterfaceCount,
@@ -1780,7 +1780,7 @@ static unsigned fill_UAC2_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 /* UAC IAD */
 // Interface Association Descriptor Audio
 // Audio10.pdf 4.3.2.8 Associated Interface Descriptor
-// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDescriptor_ecn.pdf
+// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDesc_ecn.pdf
 static unsigned UAC1_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bFirstInterface,
 	uint_fast8_t bInterfaceCount,
@@ -2821,8 +2821,8 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 /* CDC IAD */
 
 // ISBLyzer: Interface Association Descriptor Abstract Control Model
-// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDescriptor_ecn.pdf
-static unsigned CDCACM_InterfaceAssociationDescriptor_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset)
+// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDesc_ecn.pdf
+static unsigned CDCACM_InterfaceAssociationDesc_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset)
 {
 	const uint_fast8_t length = 8;
 	ASSERT(maxsize >= length);
@@ -2847,7 +2847,7 @@ static unsigned CDCACM_InterfaceAssociationDescriptor_a(uint_fast8_t fill, uint8
 
 /*Interface Descriptor*/
 // USBLyzer: Interface Descriptor 3/0 CDC Control, 1 Endpoint 
-static unsigned CDCACM_InterfaceDescriptorControlIf_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset, uint_fast8_t bNumEndpoints)
+static unsigned CDCACM_InterfaceDescControlIf_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset, uint_fast8_t bNumEndpoints)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -2871,7 +2871,7 @@ static unsigned CDCACM_InterfaceDescriptorControlIf_a(uint_fast8_t fill, uint8_t
 
 /* Call Managment Functional Descriptor */
 // Call Management Functional Descriptor 
-static unsigned CDCACM_fill_32_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset)
+static unsigned CDCACM_CallManagementDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset)
 {
 	const uint_fast8_t length = 5;
 	ASSERT(maxsize >= length);
@@ -2891,7 +2891,7 @@ static unsigned CDCACM_fill_32_a(uint_fast8_t fill, uint8_t * buff, unsigned max
 
 /* Union Functional Descriptor */
 // Union Functional Descriptor 
-static unsigned CDC_UnionFunctionalDescriptor_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset)
+static unsigned CDC_UnionFunctionalDesc_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset)
 {
 	const uint_fast8_t length = 5;
 	ASSERT(maxsize >= length);
@@ -2911,7 +2911,7 @@ static unsigned CDC_UnionFunctionalDescriptor_a(uint_fast8_t fill, uint8_t * buf
 
 /* Data class interface descriptor*/
 // USBLyzer: Interface Descriptor 4/0 CDC Data, 2 Endpoints
-static unsigned CDCACM_InterfaceDescriptorDataIf_a(
+static unsigned CDCACM_InterfaceDescDataIf_a(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bAlternateSetting, uint_fast8_t bNumEndpoints, 
 	uint_fast8_t offset
@@ -2939,7 +2939,7 @@ static unsigned CDCACM_InterfaceDescriptorDataIf_a(
 
 /* ACM Functional Descriptor */
 // Abstract Control Management Functional Descriptor
-static unsigned CDCACM_ACMFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned CDCACM_ACMFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 4;
 	ASSERT(maxsize >= length);
@@ -3034,15 +3034,15 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	const uint8_t intnep = USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset);;
 
 	// CDC
-	n += CDCACM_InterfaceAssociationDescriptor_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */
-	n += CDCACM_InterfaceDescriptorControlIf_a(fill, p + n, maxsize - n, offset, 0x01);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+	n += CDCACM_InterfaceAssociationDesc_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */
+	n += CDCACM_InterfaceDescControlIf_a(fill, p + n, maxsize - n, offset, 0x01);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	n += CDCACM_fill_31(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
-	n += CDCACM_fill_32_a(fill, p + n, maxsize - n, offset);	/* Call Managment Functional Descriptor*/
-	n += CDCACM_ACMFunctionalDescriptor(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
-	n += CDC_UnionFunctionalDescriptor_a(fill, p + n, maxsize - n, offset);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
+	n += CDCACM_CallManagementDesc(fill, p + n, maxsize - n, offset);	/* Call Managment Functional Descriptor*/
+	n += CDCACM_ACMFunctionalDesc(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
+	n += CDC_UnionFunctionalDesc_a(fill, p + n, maxsize - n, offset);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
 	n += CDCACM_fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(intnep));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
-	n += CDCACM_InterfaceDescriptorDataIf_a(fill, p + n, maxsize - n, 0x00, 2, offset);	/* INTERFACE_CDC_DATA Data class interface descriptor */
+	n += CDCACM_InterfaceDescDataIf_a(fill, p + n, maxsize - n, 0x00, 2, offset);	/* INTERFACE_CDC_DATA Data class interface descriptor */
 	n += CDCACM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(outnep));	/* Endpoint Descriptor USBD_EP_CDCACM_OUT Out, Bulk, 64 bytes */
 	n += CDCACM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(inep));	/* Endpoint Descriptor USBD_EP_CDCACM_IN In, Bulk, 64 bytes */
 
@@ -3064,7 +3064,7 @@ static unsigned fill_CDCACM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 
 #if WITHUSBCDCEEM
 
-static unsigned CDCEEM_InterfaceAssociationDescriptor(
+static unsigned CDCEEM_InterfaceAssociationDesc(
 	uint_fast8_t fill, 
 	uint8_t * buff, 
 	unsigned maxsize
@@ -3175,9 +3175,9 @@ static unsigned fill_CDCEEM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	unsigned n = 0;
 
 	// iadclasscode_r10.pdf
-	// InterfaceAssociationDescriptor требуется только для многоинтерфейсных
+	// InterfaceAssociationDesc требуется только для многоинтерфейсных
 	// Провда, там написано что iadclasscode_r10.pdf
-	n += CDCEEM_InterfaceAssociationDescriptor(fill, p + n, maxsize - n);	/* CDC EEM: Interface Association Descriptor Abstract Control Model */
+	n += CDCEEM_InterfaceAssociationDesc(fill, p + n, maxsize - n);	/* CDC EEM: Interface Association Descriptor Abstract Control Model */
 	n += CDCEEM_fill_24(fill, p + n, maxsize - n, INTERFACE_CDCEEM_DATA, 0x00, 2);	/* INTERFACE_CDCEEM_DATA Data class interface descriptor */
 	n += CDCEEM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 	n += CDCEEM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT));	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
@@ -3190,8 +3190,8 @@ static unsigned fill_CDCEEM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 #if WITHUSBCDCECM
 
 // ISBLyzer: Interface Association Descriptor Abstract Control Model
-// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDescriptor_ecn.pdf
-static unsigned CDCECM_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDesc_ecn.pdf
+static unsigned CDCECM_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 8;
 	ASSERT(maxsize >= length);
@@ -3217,7 +3217,7 @@ static unsigned CDCECM_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t
 
 /*Interface Descriptor*/
 // USBLyzer: Interface Descriptor 3/0 CDC Control, 1 Endpoint 
-static unsigned CDCECM_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned CDCECM_InterfaceDescControlIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -3242,7 +3242,7 @@ static unsigned CDCECM_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t *
 
 /* Union Functional Descriptor */
 // Union Functional Descriptor 
-static unsigned CDCECM_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned CDCECM_UnionFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 5;
 	ASSERT(maxsize >= length);
@@ -3261,7 +3261,7 @@ static unsigned CDCECM_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * bu
 }
 
 // Ethernet Networking Functional Descriptor
-static unsigned CDCECM_EthernetNetworkingFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned CDCECM_EthernetNetworkingFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 13;
 	ASSERT(maxsize >= length);
@@ -3362,7 +3362,7 @@ static unsigned CDCECM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 	return length;
 }
 
-static unsigned CDCECM_InterfaceDescriptorDataIf(
+static unsigned CDCECM_InterfaceDescDataIf(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bInterfaceNumber, 
 	uint_fast8_t bAlternateSetting, 
@@ -3396,16 +3396,16 @@ static unsigned fill_CDCECM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	uint_fast8_t ialt = 0;
 	unsigned n = 0;
 
-	n += CDCECM_InterfaceAssociationDescriptor(fill, p + n, maxsize - n);	/* CDC: Interface Association Descriptor Abstract Control Model */
-	n += CDCECM_InterfaceDescriptorControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+	n += CDCECM_InterfaceAssociationDesc(fill, p + n, maxsize - n);	/* CDC: Interface Association Descriptor Abstract Control Model */
+	n += CDCECM_InterfaceDescControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	n += CDCACM_fill_31(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
-	n += CDCECM_UnionFunctionalDescriptor(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
-	n += CDCECM_EthernetNetworkingFunctionalDescriptor(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
+	n += CDCECM_UnionFunctionalDesc(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
+	n += CDCECM_EthernetNetworkingFunctionalDesc(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
 	n += CDCECM_fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_CDCECM_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
-	n += CDCECM_InterfaceDescriptorDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA, ialt ++, 0);	/* INTERFACE_CDCECM_DATA Data class interface descriptor */
+	n += CDCECM_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA, ialt ++, 0);	/* INTERFACE_CDCECM_DATA Data class interface descriptor */
 
-	n += CDCECM_InterfaceDescriptorDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA, ialt ++, 2);	/* INTERFACE_CDCECM_DATA Data class interface descriptor */
+	n += CDCECM_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA, ialt ++, 2);	/* INTERFACE_CDCECM_DATA Data class interface descriptor */
 	n += CDCECM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(USBD_EP_CDCECM_OUT));	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
 	n += CDCECM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_CDCECM_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 
@@ -3418,8 +3418,8 @@ static unsigned fill_CDCECM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 
 
 // Interface Association Descriptor RF Controller
-// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDescriptor_ecn.pdf
-static unsigned RNDIS_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDesc_ecn.pdf
+static unsigned RNDIS_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 8;
 	ASSERT(maxsize >= length);
@@ -3445,7 +3445,7 @@ static unsigned RNDIS_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t 
 // Interface Descriptor 0/0 Wireless Controller, 1 Endpoint
 //  Communication Class INTERFACE descriptor          
 // https://msdn.microsoft.com/en-US/library/ee485851(v=winembedded.60).aspx
-static unsigned RNDIS_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned RNDIS_InterfaceDescControlIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -3488,7 +3488,7 @@ static unsigned RNDIS_fill_32(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 }
 
 // Abstract Control Management Functional Descriptor
-static unsigned RNDIS_ACMFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned RNDIS_ACMFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 4;
 	ASSERT(maxsize >= length);
@@ -3509,7 +3509,7 @@ static unsigned RNDIS_ACMFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff,
 
 /* Union Functional Descriptor */
 // Union Functional Descriptor 
-static unsigned RNDIS_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned RNDIS_UnionFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 5;
 	ASSERT(maxsize >= length);
@@ -3553,7 +3553,7 @@ static unsigned RNDIS_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 
 /* Data class interface descriptor*/
 // USBLyzer: Interface Descriptor 1/0 CDC Data, 2 Endpoints
-static unsigned RNDIS_InterfaceDescriptorDataIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned RNDIS_InterfaceDescDataIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -3627,23 +3627,23 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	unsigned n = 0;
 	// Interface Association Descriptor RF Controller
 	// Configuration descriptor           https://msdn.microsoft.com/en-US/library/ee482887(v=winembedded.60).aspx
-	n += RNDIS_InterfaceAssociationDescriptor(fill, p + n, maxsize - n);	/* CDC: Interface Association Descriptor Abstract Control Model */
+	n += RNDIS_InterfaceAssociationDesc(fill, p + n, maxsize - n);	/* CDC: Interface Association Descriptor Abstract Control Model */
 	// Interface Descriptor 0/0 Wireless Controller, 1 Endpoint
 	//  Communication Class INTERFACE descriptor          https://msdn.microsoft.com/en-US/library/ee485851(v=winembedded.60).aspx
-	n += RNDIS_InterfaceDescriptorControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+	n += RNDIS_InterfaceDescControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	//  Functional Descriptors for Communication Class Interface per RNDIS spec.
 	// Header Functional Descriptor
 	////n += CDCACM_fill_31(fill, p + n, maxsize - n);
 	// Call Management Functional Descriptor
 	n += RNDIS_fill_32(fill, p + n, maxsize - n);
 	// Abstract Control Management Functional Descriptor
-	n += RNDIS_ACMFunctionalDescriptor(fill, p + n, maxsize - n);
+	n += RNDIS_ACMFunctionalDesc(fill, p + n, maxsize - n);
 	// Union Functional Descriptor
-	n += RNDIS_UnionFunctionalDescriptor(fill, p + n, maxsize - n);
+	n += RNDIS_UnionFunctionalDesc(fill, p + n, maxsize - n);
 	// Endpoint descriptors for Communication Class Interface     https://msdn.microsoft.com/en-US/library/ee482509(v=winembedded.60).aspx
 	n += RNDIS_fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_RNDIS_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
 	//  Data Class INTERFACE descriptor           https://msdn.microsoft.com/en-US/library/ee481260(v=winembedded.60).aspx
-	n += RNDIS_InterfaceDescriptorDataIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_DATA Data class interface descriptor */
+	n += RNDIS_InterfaceDescDataIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_DATA Data class interface descriptor */
 	// IN Endpoint descriptor     https://msdn.microsoft.com/en-US/library/ee484483(v=winembedded.60).aspx
 	n += RNDIS_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_RNDIS_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 	// OUT Endpoint descriptor     https://msdn.microsoft.com/en-US/library/ee482464(v=winembedded.60).aspx
@@ -3656,7 +3656,7 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 
 #if WITHUSBHID
 
-static unsigned HID_InterfaceDescriptorXXXX(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned HID_InterfaceDescXXXX(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -4061,7 +4061,7 @@ static unsigned fill_HID_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	//
 	unsigned n = 0;
 	//
-	n += HID_InterfaceDescriptorXXXX(fill, p + n, maxsize - n);	/* HID: HID Interface Descriptor */
+	n += HID_InterfaceDescXXXX(fill, p + n, maxsize - n);	/* HID: HID Interface Descriptor */
 	n += HID_Descriptor(fill, p + n, maxsize - n, patternlength);	/* HID Descriptor */
 #if defined (HIDMOUSE_INT_DATA_SIZE)
 	n += fill_HID_Mouse_IntEP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_HIDMOUSE_INT));
@@ -4076,7 +4076,7 @@ static unsigned fill_HID_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 
 #if WITHUSBDFU
 
-static unsigned DFU_InterfaceAssociationDescriptor(
+static unsigned DFU_InterfaceAssociationDesc(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bFirstInterface,
 	uint_fast8_t bInterfaceCount
@@ -4103,7 +4103,7 @@ static unsigned DFU_InterfaceAssociationDescriptor(
 
 
 /* Table 4.1 Run-Time DFU Interface Descriptor */
-static unsigned DFU_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+static unsigned DFU_InterfaceDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bInterfaceNumber,
 	uint_fast8_t bAlternateSetting,
 	uint_fast8_t iInterface
@@ -4131,7 +4131,7 @@ static unsigned DFU_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, unsig
 }
 
 /* 4.1.3 Run-Time DFU Functional Descriptor */
-static unsigned DFU_FunctionalDescriptorReadWrite(
+static unsigned DFU_FunctionalDescReadWrite(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast16_t wTransferSize
 	)
@@ -4165,7 +4165,7 @@ static unsigned DFU_FunctionalDescriptorReadWrite(
 	return length;
 }
 /* 4.1.3 Run-Time DFU Functional Descriptor */
-static unsigned DFU_FunctionalDescriptorWriteOnly(
+static unsigned DFU_FunctionalDescWriteOnly(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast16_t wTransferSize
 	)
@@ -4206,24 +4206,24 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	uint_fast8_t ialt = 0;
 	unsigned n = 0;
 	//
-	n += DFU_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
+	n += DFU_InterfaceAssociationDesc(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
 
 #if WIHSPIDFHW || WIHSPIDFSW
-	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
-	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
+	n += DFU_InterfaceDesc(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
 
 #if BOOTLOADER_SELFSIZE
-	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
-	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
+	n += DFU_InterfaceDesc(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
 #endif /* BOOTLOADER_SELFSIZE */
 
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
 
 #if WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE
-	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
-	n += DFU_FunctionalDescriptorWriteOnly(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
+	n += DFU_InterfaceDesc(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescWriteOnly(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
 #endif /* WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE */
 
@@ -4235,8 +4235,8 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 #if WITHUSBDMTP
 
 // Interface Association Descriptor
-// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDescriptor_ecn.pdf
-static unsigned MTP_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDesc_ecn.pdf
+static unsigned MTP_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bFirstInterface,
 	uint_fast8_t bInterfaceCount
 	)
@@ -4261,7 +4261,7 @@ static unsigned MTP_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * 
 	return length;
 }
 
-static unsigned MTP_InterfaceDescriptorControlIf(
+static unsigned MTP_InterfaceDescControlIf(
 		uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 		uint_fast8_t bInterfaceNumber,
 		uint_fast8_t bAlternateSetting
@@ -4415,8 +4415,8 @@ static unsigned fill_MTP_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 {
 	unsigned n = 0;
 	//
-	n += MTP_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, INTERFACE_MTP_count);
-	n += MTP_InterfaceDescriptorControlIf(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, 0);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+	n += MTP_InterfaceAssociationDesc(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, INTERFACE_MTP_count);
+	n += MTP_InterfaceDescControlIf(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, 0);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	n += MTP_EndpointIn(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_IN);
 	n += MTP_EndpointOut(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_OUT);
 	n += MTP_EndpointInt(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_INT);
@@ -4430,8 +4430,8 @@ static unsigned fill_MTP_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 #if WITHUSBDMSC
 
 // Interface Association Descriptor
-// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDescriptor_ecn.pdf
-static unsigned MSC_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDesc_ecn.pdf
+static unsigned MSC_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bFirstInterface,
 	uint_fast8_t bInterfaceCount
 	)
@@ -4456,7 +4456,7 @@ static unsigned MSC_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * 
 	return length;
 }
 
-static unsigned MSC_InterfaceDescriptorControlIf(
+static unsigned MSC_InterfaceDescControlIf(
 		uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 		uint_fast8_t bInterfaceNumber,
 		uint_fast8_t bAlternateSetting
@@ -4528,8 +4528,8 @@ static unsigned fill_MSC_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 {
 	unsigned n = 0;
 	//
-	n += MSC_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_MSC_CONTROL, INTERFACE_MSC_count);
-	n += MSC_InterfaceDescriptorControlIf(fill, p + n, maxsize - n, INTERFACE_MSC_CONTROL, 0);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+	n += MSC_InterfaceAssociationDesc(fill, p + n, maxsize - n, INTERFACE_MSC_CONTROL, INTERFACE_MSC_count);
+	n += MSC_InterfaceDescControlIf(fill, p + n, maxsize - n, INTERFACE_MSC_CONTROL, 0);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	n += MSC_EndpointIn(fill, p + n, maxsize - n, highspeed, USBD_EP_MSC_IN);
 	n += MSC_EndpointOut(fill, p + n, maxsize - n, highspeed, USBD_EP_MSC_OUT);
 	//

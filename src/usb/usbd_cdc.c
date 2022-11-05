@@ -380,7 +380,7 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 			{
 				HARDWARE_CDC_ONTXCHAR(offset, pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 			}
-#if 1
+#if 0
 			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
 			cdcXbuffinlevel [offset] = 0;
 #else
@@ -393,6 +393,11 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 			else if (usbd_cdc_zlp_pending [offset] != 0)
 			{
 				usbd_cdc_zlp_pending [offset] = 0;
+				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);	// Send ZLP
+			}
+			else
+			{
+				// что делать если нечего передавать?
 				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);	// Send ZLP
 			}
 #endif
