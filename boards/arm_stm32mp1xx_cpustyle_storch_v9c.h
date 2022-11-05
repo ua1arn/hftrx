@@ -746,9 +746,8 @@
 #if 1
 	/* получение состояния переполнения АЦП */
 	// PI8
-	#define TARGET_FPGA_OVF_INPUT		(GPIOI->IDR)
 	#define TARGET_FPGA_OVF_BIT			(1u << 8)	// PI8
-	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
+	#define TARGET_FPGA_OVF_GET			(((GPIOI->IDR) & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
 	#define TARGET_FPGA_OVF_INITIALIZE() do { \
 				arm_hardware_pioi_inputs(TARGET_FPGA_OVF_BIT); \
 			} while (0)
