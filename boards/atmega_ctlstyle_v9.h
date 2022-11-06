@@ -205,7 +205,7 @@
 	#define KI_COUNT 2	// количество используемых под клавиатуру входов АЦП
 
 
-	#define WITHPOWERTRIMMAX 100	/* stub */
+	#define BOARDPOWERMAX 100	/* stub */
 	#define BOARD_NOTCH_OFF 0	/* stub */
 	#define BOARD_NOTCH_AUTO 1	/* stub */
 	#define BOARD_NOTCH_MANUAL 2	/* stub */

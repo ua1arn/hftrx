@@ -232,7 +232,7 @@
 	#define BOARD_AGCCODE_OFF 0
 	#define WITHLCDBACKLIGHTMIN 0
 	#define WITHLCDBACKLIGHTMAX 1
-	#define WITHPOWERTRIMMAX 1
+	#define BOARDPOWERMAX 1
 
 	/* Первая ПЧ - 64455, вторая - 500/455 кГц */
 

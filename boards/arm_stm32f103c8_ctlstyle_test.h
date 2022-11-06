@@ -505,7 +505,7 @@
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
-	#define  WITHPOWERTRIMMAX 100
+	#define  BOARDPOWERMAX 100
 	#define LCDMODE_PIXELSIZE 1
 
 #endif /* ARM_STM32F103C8_CTLSTYLE_TEST_H_INCLUDED */

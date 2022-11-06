@@ -58,7 +58,7 @@ static uint_fast8_t dds3_profile;		/* информация о последнем
 
 static uint_fast8_t 	glob_boardagc;
 static uint_fast8_t		glob_loudspeaker_off;
-static uint_fast8_t 	glob_opowerlevel = WITHPOWERTRIMMAX;	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+static uint_fast8_t 	glob_opowerlevel = BOARDPOWERMAX;	/* BOARDPOWERMIN..BOARDPOWERMAX */
 
 static uint_fast8_t 	glob_tx;			// находимся в режиме передачи
 static uint_fast8_t 	glob_sleep;			// находимся в режиме минимального потребления
@@ -742,8 +742,8 @@ prog_gpioreg(void)
 //#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
 	// ALC
 	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
-	//HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
-	HARDWARE_DAC_ALC((WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
+	//HARDWARE_DAC_ALC((glob_opowerlevel - BOARDPOWERMIN) * dac_dacfs_coderange / (BOARDPOWERMAX - BOARDPOWERMIN) + dac_dacfs_lowcode);
+	HARDWARE_DAC_ALC((BOARDPOWERMAX - BOARDPOWERMIN) * dac_dacfs_coderange / (BOARDPOWERMAX - BOARDPOWERMIN) + dac_dacfs_lowcode);
 //#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
 #endif /* defined (HARDWARE_DAC_ALC) */
 
@@ -1093,7 +1093,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(010, glob_lcdreset);			/* pin 15: d0: lctl0 */
 
 	/* регистр управления (74HC595), расположенный на плате синтезатора */
-	RBVAL(006, WITHPOWERTRIMMAX - glob_opowerlevel, 2);								/* d6..d7: spare or power level */
+	RBVAL(006, BOARDPOWERMAX - glob_opowerlevel, 2);								/* d6..d7: spare or power level */
 	RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
 	RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
 	RBBIT(003, glob_att);				/* pin 03: d3: ATT */
@@ -1143,7 +1143,7 @@ prog_ctrlreg(uint_fast8_t plane)
 				/* --- Управление согласующим устройством */
 			#endif
 				/* регистр управления (74HC595), расположенный на плате синтезатора */
-				RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
+				RBVAL(006, glob_opowerlevel - BOARDPOWERMIN, 2);								/* d6..d7: spare or power level */
 				RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
 				RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
 				RBBIT(003, glob_att);				/* pin 03: d3: ATT */
@@ -1174,7 +1174,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			//RBBIT(010, glob_lcdreset);			/* pin 15: d0: lctl0 */
 
 			/* регистр управления (74HC595), расположенный на плате синтезатора */
-			RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
+			RBVAL(006, glob_opowerlevel - BOARDPOWERMIN, 2);								/* d6..d7: spare or power level */
 			RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
 			RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
 			RBBIT(003, glob_att);				/* pin 03: d3: ATT */
@@ -1234,7 +1234,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		/* --- Управление согласующим устройством */
 
 		/* регистр управления (74HC595), расположенный на плате синтезатора */
-		RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
+		RBVAL(006, glob_opowerlevel - BOARDPOWERMIN, 2);								/* d6..d7: spare or power level */
 		RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
 		RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
 		RBBIT(003, glob_att);				/* pin 03: d3: ATT */
@@ -1278,7 +1278,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		/* --- Управление согласующим устройством */
 
 		/* регистр управления (74HC595), расположенный на плате синтезатора */
-		//RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
+		//RBVAL(006, glob_opowerlevel - BOARDPOWERMIN, 2);								/* d6..d7: spare or power level */
 		RBBIT(007, glob_antenna);			/* pin 07: antenna select */
 		RBBIT(006, 1);						/* pin 06: FAN */
 		RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
@@ -1320,7 +1320,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления IC5 (74HC595), расположенный на плате синтезатора */
 	RBVAL(004, glob_bandf, 4);			/* pin 04..pin 07 - band selection d0..d7 */
@@ -1361,7 +1361,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления IC5 (74HC595), расположенный на плате синтезатора */
 	RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1405,7 +1405,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления IC5 (74HC595), расположенный на плате синтезатора */
 	//RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1449,7 +1449,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления IC5 (74HC595), расположенный на плате синтезатора */
 	//RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1502,7 +1502,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (IC5 74HC595), расположенный на плате синтезатора */
 	RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1552,7 +1552,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_notch);				/* pin 02: d2: NOTCH ON */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (IC5 74HC595), расположенный на плате синтезатора */
 	RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1605,7 +1605,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_bandf >= glob_bandfonuhf);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (74HC595), расположенный ближе к процессору */
 	RBVAL(004, glob_bandf, 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1660,7 +1660,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_bandf >= glob_bandfonuhf);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (74HC595), расположенный ближе к процессору */
 	RBVAL(004, glob_bandf, 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1701,10 +1701,10 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	//RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	//RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (74HC595), расположенный на плате синтезатора */
-	RBVAL(004, (glob_opowerlevel - WITHPOWERTRIMMIN), 4);		/* pin 04..pin 07 - power level d0..d7 */
+	RBVAL(004, (glob_opowerlevel - BOARDPOWERMIN), 4);		/* pin 04..pin 07 - power level d0..d7 */
 	RBVAL(002, (glob_bglight - WITHLCDBACKLIGHTMIN), 2);	/* зшт 02, pin 03 - lcd backlight */
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: in control register - ad9951 RESET */
@@ -1740,7 +1740,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (74HC595), расположенный на плате синтезатора */
 	RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -5211,7 +5211,7 @@ board_set_boardagc(uint_fast8_t n)
 }
 
 
-/* установить выходную мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+/* установить выходную мощность BOARDPOWERMIN..BOARDPOWERMAX */
 void 
 board_set_txlevel(uint_fast8_t n)
 {
