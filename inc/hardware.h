@@ -813,6 +813,9 @@ void usbd_cdc_tx(void * ctx, uint_fast8_t c);			/* передача символ
 void usbd_cdc_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 void usbd_cdc_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 
+uint_fast8_t usbd_cdc_send(const void * buff, size_t length);	/* временное решение для передачи */
+uint_fast8_t usbd_cdc_ready(void);	/* временное решение для передачи */
+
 /* отладочная выдача через USB CDC */
 void debugusb_initialize(void);				/* Вызывается из user-mode программы при запрещённых прерываниях. */
 uint_fast8_t debugusb_putchar(uint_fast8_t c);/* передача символа если готов порт */

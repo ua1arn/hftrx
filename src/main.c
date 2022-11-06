@@ -13671,12 +13671,40 @@ void cat2_sendchar(void * ctx)
 	}
 }
 
+static uint_fast8_t
+cat_answer_ready(void)
+{
+#if WITHUSBHW && WITHUSBCDCACM
+	uint_fast8_t f;
+	system_disableIRQ();
+	f = usbd_cdc_ready();
+	system_enableIRQ();
+	return f;
+#else /* WITHUSBHW && WITHUSBCDCACM */
+	return 1;
+#endif /* WITHUSBHW && WITHUSBCDCACM */
+}
 // Вызов из user-mode программы
-void 
-//NOINLINEAT
-static cat_answervariable(const char * p, uint_fast8_t len)
+static void
+cat_answervariable(const char * p, uint_fast8_t len)
 {
 	//PRINTF(PSTR("cat_answervariable: '%*.*s'"), len, len, p);
+
+#if WITHUSBHW && WITHUSBCDCACM
+	system_disableIRQ();
+	if (catstateout != CATSTATEO_SENDREADY)
+	{
+		// Сейчас ещё передается сообщение - новое игнорируем.
+		// Добавлено для поддержки отладки при работающем CAT
+		system_enableIRQ();
+		return;
+	}
+	usbd_cdc_send(p, len);
+	catstateout = CATSTATEO_SENDREADY;
+	system_enableIRQ();
+	return;
+#endif /* WITHUSBHW && WITHUSBCDCACM */
+
 	system_disableIRQ();
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
@@ -14789,7 +14817,7 @@ cat_answer_forming(void)
 	static uint_fast8_t ilast;
 	uint_fast8_t original;
 	original = ilast;
-	for (;;)
+	while (cat_answer_ready())
 	{
 		const uint_fast8_t i = ilast;
 		ilast = calc_next(i, 0, (sizeof cat_answer_map / sizeof cat_answer_map [0]) - 1);

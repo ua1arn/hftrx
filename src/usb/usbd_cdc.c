@@ -251,6 +251,32 @@ uint_fast8_t PFX usbd_cdc2_getdtr(void)
 
 static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
+static USBD_HandleTypeDef * volatile gpdev = NULL;
+static volatile uint8_t usbd_cdc_txstarted [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+
+/* временное решение для передачи (вызывается при запрещённых прерываниях). */
+uint_fast8_t PFX usbd_cdc_send(const void * buff, size_t length)
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	if (gpdev != NULL && usbd_cdc_txstarted [offset] == 0)
+	{
+		usbd_cdc_zlp_pending [offset] = length == VIRTUAL_COM_PORT_IN_DATA_SIZE;
+		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset)), buff, length);
+		usbd_cdc_txstarted [offset] = 1;
+		return 1;
+	}
+	return 0;
+}
+
+uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	if (gpdev != NULL && usbd_cdc_txstarted [offset] == 0)
+	{
+		return 1;
+	}
+	return 0;
+}
 
 /* Разрешение/запрещение прерывания по передаче символа */
 void PFX usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
@@ -398,7 +424,8 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 			else
 			{
 				// что делать если нечего передавать?
-				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);	// Send ZLP
+				//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);	// Send ZLP
+				usbd_cdc_txstarted [offset] = 0;
 			}
 #endif
 			break;
@@ -564,6 +591,8 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
     /* cdc Open EP IN */
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
+		usbd_cdc_txenabled [offset] = 0;
+		usbd_cdc_txstarted [offset] = 0;
 		usbd_cdc_zlp_pending [offset] = 0;
 
 		USBD_LL_OpenEP(pdev,
@@ -571,7 +600,7 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 			   USBD_EP_TYPE_BULK,
 			   VIRTUAL_COM_PORT_IN_DATA_SIZE);
 
-		USBD_LL_Transmit(pdev, USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset), NULL, 0);
+		//USBD_LL_Transmit(pdev, USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset), NULL, 0);
 		/* cdc Open EP OUT */
 		USBD_LL_OpenEP(pdev, USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset), USBD_EP_TYPE_BULK, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 
@@ -589,6 +618,7 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 		dwDTERate [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 115200;
 	}
 
+ 	gpdev = pdev;
 	return USBD_OK;
 
 }
@@ -597,6 +627,7 @@ static USBD_StatusTypeDef USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 {
 	uint_fast8_t offset;
 
+	gpdev = NULL;
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
 		USBD_LL_CloseEP(pdev, USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset));
