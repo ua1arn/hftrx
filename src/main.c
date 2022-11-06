@@ -13733,7 +13733,7 @@ cat_answervariable(const char * p, uint_fast8_t len)
 //#define CAT_ASKBUFF_SIZE (43 + 28)
 #define CAT_ASKBUFF_SIZE (43)
 
-static __ALIGN_BEGIN char cat_ask_buffer [CAT_ASKBUFF_SIZE] __ALIGN_END;
+static char cat_ask_buffer [CAT_ASKBUFF_SIZE];
 
 static void 
 //NOINLINEAT
@@ -14625,7 +14625,7 @@ static void ifanswer(uint_fast8_t arg)
 
 static void badcommandanswer(uint_fast8_t arg)
 {
-	static __ALIGN_BEGIN const char badcommand [] __ALIGN_END = "?;";	// ответ на команду с неправильным синтаксисом
+	static const char badcommand [] = "?;";	// ответ на команду с неправильным синтаксисом
 
 	cat_answervariable(badcommand, 2);	// после ответа - ждём новую.
 }

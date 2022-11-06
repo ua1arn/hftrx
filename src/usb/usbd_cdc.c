@@ -260,8 +260,10 @@ uint_fast8_t PFX usbd_cdc_send(const void * buff, size_t length)
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpdev != NULL && usbd_cdc_txstarted [offset] == 0)
 	{
-		usbd_cdc_zlp_pending [offset] = length == VIRTUAL_COM_PORT_IN_DATA_SIZE;
-		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset)), buff, length);
+		const size_t n = ulmin(length, VIRTUAL_COM_PORT_IN_DATA_SIZE);
+		memcpy(cdcXbuffin [offset], buff, n);
+		usbd_cdc_zlp_pending [offset] = n == VIRTUAL_COM_PORT_IN_DATA_SIZE;
+		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset)), cdcXbuffin [offset], n);
 		usbd_cdc_txstarted [offset] = 1;
 		return 1;
 	}
