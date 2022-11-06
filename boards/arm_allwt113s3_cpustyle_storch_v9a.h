@@ -837,6 +837,9 @@
 		const portholder_t VSmask = (1U << 21); 	/* PD21 LCD_VSYNC */ \
 		const portholder_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
 		const portholder_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
+		const portholder_t MODEmask = (1U << 0); 	/* PD0 mode */ \
+		/* set LCD DE/SYNC mode */ \
+		arm_hardware_piod_outputs(MODEmask, (demode != 0) * MODEmask);	/* PD0 = state */ \
 		/* synchro signals - sync mode */ \
 		arm_hardware_piod_outputs((demode == 0) * DEmask, 0 * DEmask); /* PD19 LCD_DE */ \
 		arm_hardware_piod_altfn50((demode == 0) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
