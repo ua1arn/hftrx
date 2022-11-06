@@ -5213,7 +5213,7 @@ board_set_boardagc(uint_fast8_t n)
 
 /* установить выходную мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 void 
-board_set_opowerlevel(uint_fast8_t n)
+board_set_txlevel(uint_fast8_t n)
 {
 	if (glob_opowerlevel != n)
 	{

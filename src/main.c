@@ -8960,10 +8960,12 @@ getbandf2adjust(uint_fast8_t lpfno)
 
 /* Возвращает WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 static uint_fast8_t
-getactualpower(void)
+getactualtxampl(void)
 {
 #if WITHPOWERTRIM
-	return getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
+    return getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
+//    unsigned v = getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
+//	return ((uint_fast64_t) WITHPOWERTRIMMAX * v * v) / (WITHPOWERTRIMMAX * WITHPOWERTRIMMAX);
 
 #elif WITHPOWERLPHP
 	/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
@@ -11260,7 +11262,7 @@ updateboardZZZ(
 			#endif /* WITHVOX */
 			board_set_mikemute(gmuteall || getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
 			seq_set_txgate_P(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
-			board_set_opowerlevel(getactualpower());	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+			board_set_txlevel(getactualtxampl());	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 
 		#if WITHPABIASTRIM
 			board_set_pabias(gpabias);	/* регулировка тока покоя оконечного каскада передатчика */
@@ -11502,7 +11504,7 @@ updateboardZZZ(
 		#if WITHNOTXDACCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			// 0..10000
-			board_set_dacscale(getbandf2adjust(bandf3hint) * (unsigned long) gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
+			board_set_dacscale(getbandf2adjust(bandf3hint) * (unsigned long) gdacscale * (unsigned long) (getactualtxampl() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
 		#else /* CPUDAC */
 			/* мощность регулируется постоянны напряжением на ЦАП */
 			// 0..10000
