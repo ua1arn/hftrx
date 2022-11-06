@@ -2863,10 +2863,10 @@ struct nvmap
 		uint8_t gpwri;		// индекс в pwrmodes - мощность при обычной работе
 		uint8_t gpwratunei;	// индекс в pwrmodes - моность при работе автотюнера или по внешнему запросу
 	#elif WITHPOWERTRIM
-		uint8_t gnormalpower;/* мощность BOARDPOWERMIN..BOARDPOWERMAX */
-		uint8_t gclassapower;/* мощность при работе в классе А BOARDPOWERMIN..BOARDPOWERMAX */
+		uint8_t gnormalpower;/* мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+		uint8_t gclassapower;/* мощность при работе в классе А WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 		uint8_t gclassamode;	/* использование режима клвсс А при передаче */
-		uint8_t gtunepower;/* мощность при работе автоматического согласующего устройства BOARDPOWERMIN..BOARDPOWERMAX */
+		uint8_t gtunepower;/* мощность при работе автоматического согласующего устройства WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 	#endif /* WITHPOWERLPHP, WITHPOWERTRIM */
 #endif /* WITHTX */
 
@@ -8970,7 +8970,7 @@ getactualtxampl(void)
 #if WITHPOWERTRIM
     //return getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
 	unsigned v = getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
-	return BOARDPOWERMIN + (((uint_fast64_t) BOARDPOWERMAX * v * v) / (WITHPOWERTRIMMAX * WITHPOWERTRIMMAX));
+	return BOARDPOWERMIN + (((uint_fast64_t) (BOARDPOWERMAX - BOARDPOWERMIN) * v * v) / (WITHPOWERTRIMMAX * WITHPOWERTRIMMAX));
 
 #elif WITHPOWERLPHP
 	/* установить выходную мощность передатчика BOARDPOWERMIN..BOARDPOWERMAX */
@@ -13542,7 +13542,7 @@ directctlupdate(
 	#if WITHPOTPOWER
 		{
 			static adcvalholder_t powerstate;
-			changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, BOARDPOWERMIN, BOARDPOWERMAX, & powerstate), CAT_PC_INDEX);	// регулировка мощности
+			changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX, & powerstate), CAT_PC_INDEX);	// регулировка мощности
 		}
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTWPM
