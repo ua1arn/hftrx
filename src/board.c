@@ -7598,7 +7598,9 @@ void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned 
 /* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_fpga_adcoverflow(void)
 {
-#if defined (TARGET_FPGA_OVF_GET)
+#if WITHOVFHIDE
+	return 0;
+#elif defined (TARGET_FPGA_OVF_GET)
 	return TARGET_FPGA_OVF_GET;
 #else /* defined (TARGET_FPGA_OVF_GET) */
 	return 0;
