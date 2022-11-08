@@ -201,6 +201,14 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 	uint8_t * buff
 	)
 {
+	/* значения для немодифицируемых управляющих элементов громкости */
+	enum
+	{
+		VolMin = 0,
+		VolMax = 256,
+		VolRes = 4,
+		VolCur = VolMax
+	};
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t CS = HI_BYTE(req->wValue);	// The Control Selector indicates which type of Control this request is manipulating. (Volume, Mute, etc.)
@@ -229,7 +237,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 		{
 		case AUDIO_REQUEST_GET_CUR:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d\n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 0), req->wLength);
+			return ulmin16(USBD_poke_u16(buff, VolCur), req->wLength);
 
 		case AUDIO_REQUEST_SET_CUR:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val16);
@@ -238,15 +246,15 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 
 		case AUDIO_REQUEST_GET_MIN:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 0), req->wLength);
+			return ulmin16(USBD_poke_u16(buff, VolMin), req->wLength);
 
 		case AUDIO_REQUEST_GET_MAX:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 0 * 100), req->wLength);
+			return ulmin16(USBD_poke_u16(buff, VolMax), req->wLength);
 
 		case AUDIO_REQUEST_GET_RES:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_RES: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 1), req->wLength);
+			return ulmin16(USBD_poke_u16(buff, VolRes), req->wLength);
 		}
 	}
 	else
