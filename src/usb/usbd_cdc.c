@@ -270,7 +270,7 @@ uint_fast8_t PFX usbd_cdc_send(const void * buff, size_t length)
 	return 0;
 }
 
-uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
+uint_fast8_t PFX usbd_cdc_ready(void)	/* временное решение для передачи */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpdev != NULL && usbd_cdc_txstarted [offset] == 0)
