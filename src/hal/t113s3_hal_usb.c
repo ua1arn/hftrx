@@ -2306,6 +2306,7 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 
 static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
+static volatile uint8_t usbd_cdc_txstarted [WITHUSBCDCACM_N];
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 uint_fast8_t usbd_cdc_send(const void * buff, size_t length)
