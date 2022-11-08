@@ -7082,8 +7082,6 @@ static void board_fpga_loader_wait_AS(void)
 }
 #endif
 
-#endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
-
 /* работоспособность функции под вопросом, были случаи незагрузки аппарата (с новыми версиями EP4CE22) */
 void board_fpga_reset(void)
 {
@@ -7119,6 +7117,8 @@ restart:
 
 #endif
 }
+
+#endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
 #if WITHDSPEXTFIR
 
