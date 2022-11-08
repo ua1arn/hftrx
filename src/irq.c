@@ -1384,6 +1384,15 @@ void VMSI_Handler(void)
 		;
 }
 
+void VMTI_Handler(void)
+{
+	PRINTF("VMTI_Handler\n");
+	const uint_fast16_t mcause = csr_read_mcause();
+	PRINTF("VMTI_Handler: mcause=%u\n", (unsigned) mcause);
+	for (;;)
+		;
+}
+
 static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
 // See https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
