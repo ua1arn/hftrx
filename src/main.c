@@ -7207,6 +7207,7 @@ enum
 	RJ_CPUTYPE,		/* текст типа процессора */
 	RJ_VIEW,		/* стиль отображения спектра и панорамы */
 	RJ_COMPILED,		/* текст даты компиляции */
+	RJ_SERIALNR,		/* текст серийного номера */
 	//
 	RJ_notused
 };
@@ -17171,6 +17172,21 @@ void display2_menu_valxx(
 			width = VALUEW;
 			comma = strlen_P(msg);
 			display_menu_string_P(x, y, msg, width, comma);
+		}
+		break;
+
+	case RJ_SERIALNR:
+		{
+			unsigned serialnr;
+			board_get_serialnr(& serialnr);
+
+			char msg [VALUEW + 1];
+			const uint_fast8_t n = local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("%04X:%04X"), (serialnr >> 16) & 0xFFFF, (serialnr >> 0) & 0xFFFF);
+			msg [VALUEW] = '\0';
+			const char * const p = msg + n - ulmin(VALUEW, n);	// сколько может поместиться в поле отображения
+			width = VALUEW;
+			comma = strlen(p);
+			display_menu_string(x, y, p, width, comma);
 		}
 		break;
 

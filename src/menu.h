@@ -3588,7 +3588,17 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getcpufreqbase,
 	},
 	{
-		QLABEL("COMPILED"), 7, 0, RJ_COMPILED, 	ISTEP1,	// тип процессора
+		QLABEL("VERSION "), 7, 0, RJ_COMPILED, 	ISTEP1,	// тип процессора
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 0,
+		MENUNONVRAM,
+		nvramoffs0,
+		& gzero,
+		NULL,
+		getzerobase,
+	},
+	{
+		QLABEL("S/N     "), 7, 0, RJ_SERIALNR, 	ISTEP1,	// Индивидуальный номер изделия
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,

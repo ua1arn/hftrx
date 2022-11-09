@@ -9990,3 +9990,41 @@ int _gettimeofday(struct timeval *p, void *tz)
 #endif /* ! CPUSTYLE_ATMEGA */
 
 
+// CRC-CCITT calculations:
+// http://www.barrgroup.com/Embedded-Systems/How-To/CRC-Calculation-C-Code
+
+static const uint_fast32_t MODEM_CRC_POLYNOM = 0x04C11DB7; // CRC-32
+static const uint_fast32_t MODEM_CRC_INITVAL = 0xFFFFFFFF;
+static const uint_fast32_t MODEM_CRC_MASK = 0xFFFFFFFF;
+static const uint_fast32_t MODEM_CRC_BITS = 32;
+
+// Обновление CRC для очередного бита
+static uint_fast32_t crcupdate(
+	uint_fast32_t crc,
+	uint_fast8_t v		// очередной бит
+	)
+{
+	const uint_fast32_t MODEM_CRC_LASTBIT = (uint_fast32_t) 1 << (MODEM_CRC_BITS - 1);
+	if (((MODEM_CRC_LASTBIT & crc) != 0) != (v != 0))
+		return (crc * 2) ^ MODEM_CRC_POLYNOM;
+	else
+		return (crc * 2);
+}
+
+void board_get_serialnr(unsigned * sn)
+{
+#if CPUSTYLE_STM32MP1
+	uint_fast32_t crc = MODEM_CRC_INITVAL;
+	unsigned i;
+
+	for (i = 0; i < 3; ++ i)
+	{
+		const uint32_t v = ((const volatile uint32_t *) UID_BASE) [i];
+		for (unsigned i = 0; i < 32; ++ i)
+			crc = crcupdate(crc, (v >> i) & 0x01);
+	}
+	* sn = crc & MODEM_CRC_MASK;
+#else
+	* sn = 0;
+#endif
+}
