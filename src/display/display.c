@@ -1141,16 +1141,16 @@ void display_pixelbuffer_line(
 
 static const FLASHMEM int32_t vals10 [] =
 {
-	1000000000UL,
-	100000000UL,
-	10000000UL,
-	1000000UL,
-	100000UL,
-	10000UL,
-	1000UL,
-	100UL,
-	10UL,
-	1UL,
+	1000000000U,
+	100000000U,
+	10000000U,
+	1000000U,
+	100000U,
+	10000U,
+	1000U,
+	100U,
+	10U,
+	1U,
 };
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
@@ -1170,8 +1170,10 @@ display_value_big(
 	uint_fast8_t lowhalf		// lower half
 	)
 {
+	if (width > ARRAY_SIZE(vals10))
+		width = ARRAY_SIZE(vals10);
 	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
-	const uint_fast8_t j = (sizeof vals10 / sizeof vals10 [0]) - rj;
+	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
 	uint_fast8_t i = (j - width);
 	uint_fast8_t z = blinkpos == 255 ? 1 : 0;	// only zeroes
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
@@ -1233,7 +1235,9 @@ display_value_lower(
 	uint_fast8_t rj	// = 1;		// right truncated
 	)
 {
-	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
+	if (width > ARRAY_SIZE(vals10))
+		width = ARRAY_SIZE(vals10);
+	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
 	uint_fast8_t i = (j - width);
 	uint_fast8_t z = 1;	// only zeroes
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
@@ -1276,9 +1280,11 @@ display_value_small(
 	uint_fast8_t lowhalf
 	)
 {
+	if (width > ARRAY_SIZE(vals10))
+		width = ARRAY_SIZE(vals10);
 	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
 	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
-	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
+	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
 	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
 	uint_fast8_t z = 1;	// only zeroes
 
@@ -1339,7 +1345,7 @@ void display_value_small_xy(
 	uint_fast8_t lowhalf = 0;
 	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
 	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
-	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
+	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
 	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
 	uint_fast8_t z = 1;	// only zeroes
 
