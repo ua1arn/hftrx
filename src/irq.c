@@ -1339,6 +1339,9 @@ static void vectors_relocate(void)
 // https://codebrowser.dev/glibc/glibc/sysdeps/riscv/start.S.html
 // https://twilco.github.io/riscv-from-scratch/2019/03/10/riscv-from-scratch-1.html
 // https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html
+//
+// https://www.shincbm.com/embedded/2021/04/30/riscv-and-modern-c++-part1-1.html
+// https://www.shincbm.com/embedded/2021/06/24/riscv-and-modern-c++-part1-7.html
 
 void EMPTY_Handler(void)
 {
@@ -1399,7 +1402,7 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
 void VMEI_Handler(void)
 {
-	const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MTI_BIT_MASK);	// MTI
+	//const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MTI_BIT_MASK);	// MTI
 	const uint_xlen_t mcause = csr_read_mcause();
 	switch (mcause & 0xFFF)
 	{
@@ -1421,7 +1424,7 @@ void VMEI_Handler(void)
 			;
 		break;
 	}
-	csr_write_mie(miev);		/* restore old value */
+	//csr_write_mie(miev);		/* restore old value */
 }
 
 void IRQ0_Handler(void)
