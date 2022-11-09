@@ -1170,8 +1170,8 @@ display_value_big(
 	uint_fast8_t lowhalf		// lower half
 	)
 {
-	if (width > ARRAY_SIZE(vals10))
-		width = ARRAY_SIZE(vals10);
+//	if (width > ARRAY_SIZE(vals10))
+//		width = ARRAY_SIZE(vals10);
 	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
 	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
 	uint_fast8_t i = (j - width);
@@ -1235,8 +1235,8 @@ display_value_lower(
 	uint_fast8_t rj	// = 1;		// right truncated
 	)
 {
-	if (width > ARRAY_SIZE(vals10))
-		width = ARRAY_SIZE(vals10);
+//	if (width > ARRAY_SIZE(vals10))
+//		width = ARRAY_SIZE(vals10);
 	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
 	uint_fast8_t i = (j - width);
 	uint_fast8_t z = 1;	// only zeroes
@@ -1280,8 +1280,8 @@ display_value_small(
 	uint_fast8_t lowhalf
 	)
 {
-	if (width > ARRAY_SIZE(vals10))
-		width = ARRAY_SIZE(vals10);
+//	if (width > ARRAY_SIZE(vals10))
+//		width = ARRAY_SIZE(vals10);
 	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
 	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
 	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
