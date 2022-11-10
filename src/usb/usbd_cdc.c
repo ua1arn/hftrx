@@ -249,33 +249,48 @@ uint_fast8_t PFX usbd_cdc2_getdtr(void)
 #endif /* WITHUSBCDCACM_N > 1 */
 }
 
+enum { TXRETRIES = 5 };
 static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
 static USBD_HandleTypeDef * volatile gpdev = NULL;
-static volatile uint8_t usbd_cdc_txstarted [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+static volatile uint8_t usbd_cdc_txretries [WITHUSBCDCACM_N];	/* склько осталось повторов ожидания конца передачи */
+static uint32_t usbd_cdc_txstarted [WITHUSBCDCACM_N];	/* время начала передачи */
+static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void PFX usbd_cdc_send(const void * buff, size_t length)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	if (gpdev != NULL && usbd_cdc_txstarted [offset] == 0)
+	if (gpdev != NULL && usbd_cdc_txretries [offset] == 0)
 	{
 		const size_t n = ulmin(length, VIRTUAL_COM_PORT_IN_DATA_SIZE);
 		memcpy(cdcXbuffin [offset], buff, n);
 		usbd_cdc_zlp_pending [offset] = n == VIRTUAL_COM_PORT_IN_DATA_SIZE;
-		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset)), cdcXbuffin [offset], n);
-		usbd_cdc_txstarted [offset] = 1;
+		usbd_cdc_txlen [offset] = n;
+		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset)), cdcXbuffin [offset], usbd_cdc_txlen [offset]);
+		usbd_cdc_txstarted [offset] = sys_now();
+		usbd_cdc_txretries [offset] = TXRETRIES;
 	}
 }
 
 uint_fast8_t PFX usbd_cdc_ready(void)	/* временное решение для передачи */
 {
+	const uint32_t waittm = 50;
 	const unsigned offset = MAIN_CDC_OFFSET;
-	if (gpdev != NULL && usbd_cdc_txstarted [offset] == 0)
+	if (gpdev == NULL)
+		return 0;
+	if (usbd_cdc_txretries [offset] != 0)
 	{
-		return 1;
+		if ((sys_now() - usbd_cdc_txstarted [offset]) < waittm)
+			return 0;
+		if (-- usbd_cdc_txretries [offset] != 0)
+		{
+			USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset)), cdcXbuffin [offset], usbd_cdc_txlen [offset]);
+			usbd_cdc_txstarted [offset] = sys_now();
+			return 0;
+		}
 	}
-	return 0;
+	return 1;
 }
 
 /* Разрешение/запрещение прерывания по передаче символа */
@@ -425,7 +440,7 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 			{
 				// что делать если нечего передавать?
 				//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);	// Send ZLP
-				usbd_cdc_txstarted [offset] = 0;
+				usbd_cdc_txretries [offset] = 0;
 			}
 #endif
 			break;
@@ -592,7 +607,7 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
 		usbd_cdc_txenabled [offset] = 0;
-		usbd_cdc_txstarted [offset] = 0;
+		usbd_cdc_txretries [offset] = 0;
 		usbd_cdc_zlp_pending [offset] = 0;
 
 		USBD_LL_OpenEP(pdev,
