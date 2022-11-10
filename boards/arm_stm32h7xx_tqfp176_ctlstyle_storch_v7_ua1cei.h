@@ -125,9 +125,6 @@
 	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	
 
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 

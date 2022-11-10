@@ -262,8 +262,8 @@
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	#define CTLREGMODE_NOCTLREG	1
-	#define BOARDPOWERMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	
+	
 	
 
 	#define WITHPABIASMIN		0

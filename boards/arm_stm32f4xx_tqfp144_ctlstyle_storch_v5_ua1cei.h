@@ -129,8 +129,8 @@
 	#define CTLREGMODE_STORCH_V5	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch - mini RX */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define BOARDPOWERMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	
+	
 	
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея

@@ -439,8 +439,8 @@
 
 #endif /* WITHISBOOTLOADER */
 
-	#define BOARDPOWERMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	
+	
 	
 
 	#if 0

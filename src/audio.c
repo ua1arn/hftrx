@@ -160,7 +160,7 @@ static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала �
 static uint_fast8_t 	glob_moniflag = 1;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
-static uint_fast16_t	glob_dacscale = 10000;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
+static uint_fast16_t	glob_dacscale = BOARDDACSCALEMAX;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
 static uint_fast16_t	glob_digiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 static uint_fast16_t	glob_cwscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 static uint_fast16_t	glob_designscale = 100;	/* используется при калибровке параметров интерполятора */
@@ -6042,7 +6042,7 @@ txparam_update(uint_fast8_t profile)
 		amcarrierHALF = txlevelfenceAM - txlevelfenceAM * amshapesignal;
 	}
 
-	scaleDAC = (FLOAT_t) (int) glob_dacscale / 10000;
+	scaleDAC = (FLOAT_t) (int) glob_dacscale / BOARDDACSCALEMAX;
 
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 	mainvolumetx = 1 - subtonevolume;
@@ -6504,15 +6504,18 @@ board_set_amdepth(uint_fast8_t n)	/* Глубина модуляции в АМ -
 	}
 }
 
+//	#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
+//	#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+
 void 
 board_set_dacscale(uint_fast16_t n)	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
 {
 	if (glob_dacscale != n)
 	{
-		glob_dacscale = n;
+		glob_dacscale = n;	// BOARDDACSCALEMIN..BOARDDACSCALEMAX
 		board_dsp1regchanged();
 	}
-	//PRINTF("board_set_dacscale = %d\n", (int) glob_dacscale);
+	//PRINTF("board_set_dacscale = %u\n", (unsigned) glob_dacscale);
 }
 
 void 

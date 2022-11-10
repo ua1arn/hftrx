@@ -2606,10 +2606,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [0],
+		& gbandf2adj [0].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2617,10 +2617,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 160m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [1],
+		& gbandf2adj [1].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2628,10 +2628,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 80m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [2],
+		& gbandf2adj [2].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2639,10 +2639,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 40m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [3],
+		& gbandf2adj [3].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2650,10 +2650,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 30m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [4],
+		& gbandf2adj [4].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2661,10 +2661,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 20m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [5],
+		& gbandf2adj [5].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2672,10 +2672,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 17m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [6],
+		& gbandf2adj [6].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2683,10 +2683,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 15m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [7],
+		& gbandf2adj [7].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2694,10 +2694,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 12m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [8],
+		& gbandf2adj [8].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2705,10 +2705,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 10m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [9],
+		& gbandf2adj [9].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2716,10 +2716,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 6m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [10],
+		& gbandf2adj [10].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2727,10 +2727,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 2m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [11],
+		& gbandf2adj [11].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2738,10 +2738,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX 0.7m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [12],
+		& gbandf2adj [12].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2749,10 +2749,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [13],
+		& gbandf2adj [13].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2760,10 +2760,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [14],
+		& gbandf2adj [14].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
@@ -2771,10 +2771,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("TX ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [15],
+		& gbandf2adj [15].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 

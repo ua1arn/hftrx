@@ -159,7 +159,7 @@
 /* на плату/dsp идут значения в диапазоне BOARDPOWERMIN..BOARDPOWERMAX */
 #define WITHPOWERTRIMMIN    5    	// Нижний предел регулировки (показываемый на дисплее)
 #define WITHPOWERTRIMMAX    100    	// Верхний предел регулировки (показываемый на дисплее)
-#define WITHPOWERTRIMATU    15    	// Значение для работы автотюнера
+#define WITHPOWERTRIMATU    50    	// Значение для работы автотюнера
 
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
@@ -2858,7 +2858,8 @@ struct nvmap
 #if WITHTX
 	uint8_t	ggrptxparams; // последний посещённый пункт группы
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
-	uint8_t gbandf2adj [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
+	uint8_t gbandf2adj_a [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
+	uint8_t gbandf2adj_b [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
 	#if WITHPOWERLPHP
 		uint8_t gpwri;		// индекс в pwrmodes - мощность при обычной работе
 		uint8_t gpwratunei;	// индекс в pwrmodes - моность при работе автотюнера или по внешнему запросу
@@ -4024,8 +4025,13 @@ enum
 		static uint_fast8_t gctssenable;	// разрешить формирование subtone
 	#endif /* WITHSUBTONES */
 
-
-	static uint_fast8_t gbandf2adj [NUMLPFADJ]; /* коррекция мощности по ФНЧ передачика */
+		/* пара значений для 10% выходной мощности и 100% выходной мощности */
+		struct pwradj
+		{
+			uint_fast8_t adj_a;	/* 10%	*/
+			uint_fast8_t adj_b;	/* 100% */
+		};
+		static struct pwradj gbandf2adj [NUMLPFADJ]; /* коррекция мощности по ФНЧ передачика */
 
 	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
 	static void
@@ -4035,7 +4041,8 @@ enum
 
 		for (i = 0; i < ARRAY_SIZE(gbandf2adj); ++ i)
 		{
-			gbandf2adj [i] = 100;
+			gbandf2adj [i].adj_a = 50;
+			gbandf2adj [i].adj_b = 100;
 		}
 	}
 
@@ -7435,7 +7442,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 	{
 		"TX POWER ",
 		RJ_UNSIGNED,		// rj
-		ISTEP1,
+		ISTEP5,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
 		nvramoffs0,
@@ -8957,21 +8964,33 @@ getactualdownpower(void)
 
 /* возвращаем 0..100 для кода на разъеме ACC */
 static uint_fast8_t
-getbandf2adjust(uint_fast8_t lpfno)
+makebandf2adjust(uint_fast8_t lpfno, uint_fast8_t amplitude)
 {
 	if (lpfno >= ARRAY_SIZE(gbandf2adj))
-		return 100;
-	return gbandf2adj [lpfno];
+		return 100 * amplitude;
+
+	const uint_fast8_t a_ref = 31;	// sqrt(100)
+	const uint_fast8_t b_ref = 100;
+	const uint_fast8_t a = ulmin(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 10%	*/
+	const uint_fast8_t b = ulmax(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 100%	*/
+
+	return b * amplitude;
 }
 
-/* Возвращает BOARDPOWERMIN..BOARDPOWERMAX */
+/* возвращает 0..WITHPOWERTRIMMAX */
+static uint_fast8_t
+getactualtxpwr(void)
+{
+	return getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
+}
+
+/* Возвращает 0..WITHPOWERTRIMMAX */
 static uint_fast8_t
 getactualtxampl(void)
 {
 #if WITHPOWERTRIM
-    //return getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
-	unsigned v = getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
-	return BOARDPOWERMIN + (((uint_fast64_t) (BOARDPOWERMAX - BOARDPOWERMIN) * v * v) / (WITHPOWERTRIMMAX * WITHPOWERTRIMMAX));
+	unsigned v = getactualtxpwr();
+	return sqrtf((float) v / WITHPOWERTRIMMAX) * WITHPOWERTRIMMAX;
 
 #elif WITHPOWERLPHP
 	/* установить выходную мощность передатчика BOARDPOWERMIN..BOARDPOWERMAX */
@@ -11507,15 +11526,10 @@ updateboardZZZ(
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
 			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
-		#if WITHNOTXDACCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			// 0..10000
-			board_set_dacscale(getbandf2adjust(bandf3hint) * (unsigned long) gdacscale * (unsigned long) (getactualtxampl() - BOARDPOWERMIN) / (BOARDPOWERMAX - BOARDPOWERMIN));
-		#else /* CPUDAC */
-			/* мощность регулируется постоянны напряжением на ЦАП */
-			// 0..10000
-			board_set_dacscale(getbandf2adjust(bandf3hint) * (unsigned long) gdacscale);
-		#endif /* CPUDAC */
+			board_set_dacscale(makebandf2adjust(bandf3hint, (int) gdacscale * getactualtxampl()));
+
 			board_set_digiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
 			board_set_designscale(gdesignscale);	/* используется при калибровке параметров интерполятора */

@@ -143,8 +143,8 @@
 	#define CTLREGMODE_STORCH_V1_R4DR	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define BOARDPOWERMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	
+	
 	
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
@@ -357,8 +357,8 @@
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define BOARDPOWERMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	
+	
 	
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
