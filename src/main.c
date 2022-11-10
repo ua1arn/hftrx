@@ -8981,7 +8981,7 @@ makebandf2adjust(
 
 	/* наклон графика */
 	const int multiplier = b - a;
-	const int divider = b_ref - a_ref;
+	const int divider = b_ref - a_ref;	/* входная разница 100 - 10 процентов от амплитуды */
 
 	const int distance_a = amplitude - a_ref;
 	const int outv = (int) ((long) distance_a * multiplier / divider) + a;
@@ -11541,7 +11541,7 @@ updateboardZZZ(
 			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			// 0..10000
-			board_set_dacscale((int) gdacscale * makebandf2adjust(bandf3hint, getactualtxampl()));
+			board_set_dacscale(makebandf2adjust(bandf3hint, getactualtxampl()) * (int) gdacscale);
 
 			board_set_digiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
