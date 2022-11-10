@@ -2309,7 +2309,7 @@ static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
 static volatile uint8_t usbd_cdc_txstarted [WITHUSBCDCACM_N];
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
-uint_fast8_t usbd_cdc_send(const void * buff, size_t length)
+void usbd_cdc_send(const void * buff, size_t length)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 //	if (gpdev != NULL && usbd_cdc_txstarted [offset] == 0)
@@ -2321,7 +2321,6 @@ uint_fast8_t usbd_cdc_send(const void * buff, size_t length)
 //		usbd_cdc_txstarted [offset] = 1;
 //		return 1;
 //	}
-	return 0;
 }
 
 uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
