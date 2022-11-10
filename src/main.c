@@ -159,7 +159,7 @@
 /* на плату/dsp идут значения в диапазоне BOARDPOWERMIN..BOARDPOWERMAX */
 #define WITHPOWERTRIMMIN    5    	// Нижний предел регулировки (показываемый на дисплее)
 #define WITHPOWERTRIMMAX    100    	// Верхний предел регулировки (показываемый на дисплее)
-#define WITHPOWERTRIMATU    50    	// Значение для работы автотюнера
+#define WITHPOWERTRIMATU    10    	// Значение для работы автотюнера
 
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
