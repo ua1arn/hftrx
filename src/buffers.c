@@ -911,7 +911,7 @@ void buffers_initialize(void)
 
 	{
 		unsigned i;
-		static RAMBIGDTCM denoise16_t speexarray16 [16];	// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
+		static RAMBIGDTCM denoise16_t speexarray16 [4];	// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
 
 		InitializeListHead2(& speexfree16);	// Незаполненные
 		InitializeListHead2(& speexready16);	// Для обработки
