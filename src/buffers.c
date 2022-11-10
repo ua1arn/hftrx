@@ -477,20 +477,20 @@ static RAMBIGDTCM SPINLOCK_t locklistmsg8 = SPINLOCK_INIT;
 
 #if WITHBUFFERSDEBUG
 
-static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6, n7;
-static volatile unsigned e1, e2, e3, e4, e5, e6, e7, e8, purge16;
-static volatile unsigned nbadd, nbdel, nbzero, nbnorm;
+static unsigned n1, n1wfm, n2, n3, n4, n5, n6, n7;
+static unsigned e1, e2, e3, e4, e5, e6, e7, e8, purge16;
+static unsigned nbadd, nbdel, nbzero, nbnorm;
 
-static volatile unsigned debugcount_ms10;	// с точностью 0.1 ms
+static unsigned debugcount_ms10;	// с точностью 0.1 ms
 
-static volatile unsigned debugcount_uacout;
-static volatile unsigned debugcount_mikeadc;
-static volatile unsigned debugcount_phonesdac;
-static volatile unsigned debugcount_uacinrts;
-static volatile unsigned debugcount_uacin;
-static volatile unsigned debugcount_rx32adc;
-static volatile unsigned debugcount_rx32wfm;
-static volatile unsigned debugcount_tx32dac;
+static unsigned debugcount_uacout;
+static unsigned debugcount_mikeadc;
+static unsigned debugcount_phonesdac;
+static unsigned debugcount_uacinrts;
+static unsigned debugcount_uacin;
+static unsigned debugcount_rx32adc;
+static unsigned debugcount_rx32wfm;
+static unsigned debugcount_tx32dac;
 	
 #endif /* WITHBUFFERSDEBUG */
 
@@ -747,7 +747,7 @@ void buffers_initialize(void)
 	{
 		unsigned i;
 		// Могут быть преобразованы до двух буферов шумоподавителя при нормальной работе
-		enum { NVCOICESFREE16TX = (2 * PHONESLEVEL + 2 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX) * BUFOVERSIZE };
+		enum { NVCOICESFREE16TX = (16 * PHONESLEVEL + 16 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX) * BUFOVERSIZE };
 		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16tx_t voicesarray16tx [NVCOICESFREE16TX] ALIGNX_END;
 
 		InitializeListHead2(& voicesphones16tx);	// список для выдачи на ЦАП кодека
@@ -911,7 +911,7 @@ void buffers_initialize(void)
 
 	{
 		unsigned i;
-		static RAMBIGDTCM denoise16_t speexarray16 [4];	// буеры: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
+		static RAMBIGDTCM denoise16_t speexarray16 [7];	// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
 
 		InitializeListHead2(& speexfree16);	// Незаполненные
 		InitializeListHead2(& speexready16);	// Для обработки
@@ -2021,7 +2021,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 		ASSERT(p->tag3 == p);
 		return (uintptr_t) & p->buff;
 	}
-	else if (! IsListEmpty2(& voicesphones16tx))
+	else if (! IsListEmpty2(& voicesphones16tx) && ! IsListEmpty2(& voicesmoni16tx))
 	{
 		// Ошибочная ситуация - если буферы не освобождены вовремя -
 		// берём из очереди готовых к прослушиванию
@@ -2029,13 +2029,22 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 		uint_fast8_t n = 3;
 		do
 		{
-			const PLIST_ENTRY t = RemoveTailList2(& voicesphones16tx);
-			voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
-			InsertHeadList2(& voicesfree16tx, t);
+			{
+				const PLIST_ENTRY t = RemoveTailList2(& voicesphones16tx);
+				voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
+				ASSERT(p->tag2 == p);
+				ASSERT(p->tag3 == p);
+				InsertHeadList2(& voicesfree16tx, t);
+			}
+			{
+				const PLIST_ENTRY t = RemoveTailList2(& voicesmoni16tx);
+				voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
+				ASSERT(p->tag2 == p);
+				ASSERT(p->tag3 == p);
+				InsertHeadList2(& voicesfree16tx, t);
+			}
 		}
-		while (-- n && ! IsListEmpty2(& voicesphones16tx));
+		while (-- n && ! IsListEmpty2(& voicesphones16tx) && ! IsListEmpty2(& voicesmoni16tx));
 
 		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16tx);
 		SPIN_UNLOCK(& locklist16tx);
