@@ -22,36 +22,63 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
+#if WITHPOWERTRIM
+	#if WITHLOWPOWEREXTTUNE
+		{
+			QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+			ITEM_VALUE,
+			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+			offsetof(struct nvmap, gtunepower),
+			nvramoffs0,
+			NULL,
+			& gtunepower,
+			getzerobase,
+		},
+	#endif /* WITHLOWPOWEREXTTUNE */
+#elif WITHPOWERLPHP
+	#if WITHLOWPOWEREXTTUNE
 	{
-		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		LMIN, LMAX, 
-		offsetof(struct nvmap, bandgroups [0].oants [0].tunerind),
-		nvramoffs_bandgroupant,
-		& tunerind,
+		QLABEL("ATU PWR "), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		ITEM_VALUE,
+		0, PWRMODE_COUNT - 1,
+		offsetof(struct nvmap, gtunepower),
+		nvramoffs0,
 		NULL,
-		getzerobase, /* складывается со смещением и отображается */
+		& gtunepower,
+		getzerobase,
 	},
-	{
-		QLABEL("TUNER C "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		CMIN, CMAX, 
-		offsetof(struct nvmap, bandgroups [0].oants [0].tunercap),
-		nvramoffs_bandgroupant,
-		& tunercap,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("TUNER TY"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		0, KSCH_COUNT - 1, 
-		offsetof(struct nvmap, bandgroups [0].oants [0].tunertype),
-		nvramoffs_bandgroupant,
-		NULL,
-		& tunertype,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	#endif /* WITHLOWPOWEREXTTUNE */
+#endif /* WITHPOWERTRIM */
+//	{
+//		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
+//		ITEM_VALUE,
+//		LMIN, LMAX,
+//		offsetof(struct nvmap, bandgroups [0].oants [0].tunerind),
+//		nvramoffs_bandgroupant,
+//		& tunerind,
+//		NULL,
+//		getzerobase, /* складывается со смещением и отображается */
+//	},
+//	{
+//		QLABEL("TUNER C "), 7, 0, 0,	ISTEP1,
+//		ITEM_VALUE,
+//		CMIN, CMAX,
+//		offsetof(struct nvmap, bandgroups [0].oants [0].tunercap),
+//		nvramoffs_bandgroupant,
+//		& tunercap,
+//		NULL,
+//		getzerobase, /* складывается со смещением и отображается */
+//	},
+//	{
+//		QLABEL("TUNER TY"), 7, 0, 0,	ISTEP1,
+//		ITEM_VALUE,
+//		0, KSCH_COUNT - 1,
+//		offsetof(struct nvmap, bandgroups [0].oants [0].tunertype),
+//		nvramoffs_bandgroupant,
+//		NULL,
+//		& tunertype,
+//		getzerobase, /* складывается со смещением и отображается */
+//	},
 	{
 		QLABEL("TUNER WT"), 7, 0, 0,	ISTEP5,	// задержка перед измерением после переключения реле
 		ITEM_VALUE, 
@@ -2830,42 +2857,30 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gnormalpower.value,
 		getzerobase,
 	},
-#if WITHPACLASSA
-	/* усилитель мощности поддерживает переключение в класс А */
-	{
-		QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gclassamode),
-		nvramoffs0,
-		NULL,
-		& gclassamode,
-		getzerobase,
-	},
-	{
-		QLABEL2("CLASSA P", "Class A Pwr"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gclassapower),
-		nvramoffs0,
-		NULL,
-		& gclassapower,
-		getzerobase,
-	},
-#endif /* WITHPACLASSA */
+	#if WITHPACLASSA
+		/* усилитель мощности поддерживает переключение в класс А */
+		{
+			QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
+			ITEM_VALUE,
+			0, 1,
+			offsetof(struct nvmap, gclassamode),
+			nvramoffs0,
+			NULL,
+			& gclassamode,
+			getzerobase,
+		},
+		{
+			QLABEL2("CLASSA P", "Class A Pwr"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
+			ITEM_VALUE,
+			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+			offsetof(struct nvmap, gclassapower),
+			nvramoffs0,
+			NULL,
+			& gclassapower,
+			getzerobase,
+		},
+	#endif /* WITHPACLASSA */
   #endif /* ! WITHPOTPOWER */
-  #if WITHLOWPOWEREXTTUNE
-	{
-		QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gtunepower),
-		nvramoffs0,
-		NULL,
-		& gtunepower,
-		getzerobase,
-	},
-  #endif /* WITHLOWPOWEREXTTUNE */
 #elif WITHPOWERLPHP
 	#if ! CTLSTYLE_SW2011ALL
 	{
@@ -2879,18 +2894,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 	#endif /* ! CTLSTYLE_SW2011ALL */
-  	#if WITHLOWPOWEREXTTUNE
-	{
-		QLABEL("ATU PWR "), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
-		0, PWRMODE_COUNT - 1,
-		offsetof(struct nvmap, gtunepower),
-		nvramoffs0,
-		NULL,
-		& gtunepower,
-		getzerobase, 
-	},
-  #endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
 
 #if ! CTLSTYLE_SW2011ALL
