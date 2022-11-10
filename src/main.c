@@ -8972,7 +8972,7 @@ makebandf2adjust(
 	if (lpfno >= ARRAY_SIZE(gbandf2adj))
 		return amplitude;
 
-	const uint_fast8_t a_ref = 31;	// sqrt(100)
+	const uint_fast8_t a_ref = 31;	// sqrt(10000)
 	const uint_fast8_t b_ref = 100;
 	const uint_fast8_t a = ulmin(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 10%	*/
 	const uint_fast8_t b = ulmax(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 100%	*/
