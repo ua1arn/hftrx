@@ -1264,6 +1264,8 @@ uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b);
 uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b);
 unsigned long ulmin(unsigned long a, unsigned long b);
 unsigned long ulmax(unsigned long a, unsigned long b);
+signed long slmin(signed long a, signed long b);
+signed long slmax(signed long a, signed long b);
 
 #define  HI_32BY(w)  (((w) >> 24) & 0xFF)   /* Extract 31..24 bits from unsigned word */
 #define  HI_24BY(w)  (((w) >> 16) & 0xFF)   /* Extract 23..16 bits from unsigned word */

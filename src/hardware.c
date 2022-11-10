@@ -4111,6 +4111,20 @@ unsigned long ulmax(
 	return a > b ? a : b;
 }
 
+signed long slmin(
+	signed long a,
+	signed long b)
+{
+	return a < b ? a : b;
+}
+
+signed long slmax(
+	signed long a,
+	signed long b)
+{
+	return a > b ? a : b;
+}
+
 uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
 {
 	return a < b ? a : b;

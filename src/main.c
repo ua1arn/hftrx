@@ -4041,7 +4041,7 @@ enum
 
 		for (i = 0; i < ARRAY_SIZE(gbandf2adj); ++ i)
 		{
-			gbandf2adj [i].adj_a = 31;
+			gbandf2adj [i].adj_a = 20;
 			gbandf2adj [i].adj_b = 100;
 		}
 	}
@@ -8962,22 +8962,32 @@ getactualdownpower(void)
 
 #if WITHTX
 
-/* возвращаем BOARDDACSCALEMIN..BOARDDACSCALEMAX для кода на разъеме ACC */
+/* возвращаем 0..100 для кода на разъеме ACC */
 static uint_fast8_t
 makebandf2adjust(
 	uint_fast8_t lpfno, 	// 0..15 - код диапазона
-	uint_fast8_t amplitude	// BOARDDACSCALEMIN..BOARDDACSCALEMAX
+	int amplitude	// 0..100 - относительная мощность
 	)
 {
 	if (lpfno >= ARRAY_SIZE(gbandf2adj))
 		return amplitude;
 
-	const uint_fast8_t a_ref = 31;	// sqrt(10000)
-	const uint_fast8_t b_ref = 100;
-	const uint_fast8_t a = ulmin(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 10%	*/
-	const uint_fast8_t b = ulmax(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 100%	*/
+	// расчет наклона графика
+	const int a_ref = 31;	// значение множителя для точки а - sqrt(10000)
+	const int b_ref = 100;	// значение множителя для точки b
+
+	const int a = ulmin(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 10%	*/
+	const int b = ulmax(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 100%	*/
+
+	/* наклон графика */
+	const int multiplier = b - a;
+	const int divider = b_ref - a_ref;
+
+	const int distance_a = amplitude - a_ref;
+	const int outv = (int) ((long) distance_a * multiplier / divider) + a;
+
 	//PRINTF("makebandf2adjust: ampl=%u, a=%u, b=%u\n", amplitude, a, b);
-	return (uint_fast64_t) b * amplitude / 100;
+	return slmin(b, slmax(outv, 0));
 }
 
 /* возвращает 0..WITHPOWERTRIMMAX */
@@ -11531,7 +11541,7 @@ updateboardZZZ(
 			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			// 0..10000
-			board_set_dacscale(makebandf2adjust(bandf3hint, (int) gdacscale * getactualtxampl()));
+			board_set_dacscale((int) gdacscale * makebandf2adjust(bandf3hint, getactualtxampl()));
 
 			board_set_digiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
