@@ -2611,7 +2611,7 @@ extern "C" {
 #endif /* WITHIF4DSP */
 
 #define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
-#define BOARDDACSCALEMAX	100000	// Верхний предел мощности (аргумент board_set_dacscale() */
+#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
 
 #ifdef __cplusplus
 }

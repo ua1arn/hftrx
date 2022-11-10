@@ -4041,7 +4041,7 @@ enum
 
 		for (i = 0; i < ARRAY_SIZE(gbandf2adj); ++ i)
 		{
-			gbandf2adj [i].adj_a = 50;
+			gbandf2adj [i].adj_a = 31;
 			gbandf2adj [i].adj_b = 100;
 		}
 	}
@@ -8964,9 +8964,11 @@ getactualdownpower(void)
 
 /* возвращаем BOARDDACSCALEMIN..BOARDDACSCALEMAX для кода на разъеме ACC */
 static uint_fast8_t
-makebandf2adjust(uint_fast8_t lpfno, uint_fast8_t amplitude)
+makebandf2adjust(
+	uint_fast8_t lpfno, 	// 0..15 - код диапазона
+	uint_fast8_t amplitude	// BOARDDACSCALEMIN..BOARDDACSCALEMAX
+	)
 {
-	return BOARDDACSCALEMAX;
 	if (lpfno >= ARRAY_SIZE(gbandf2adj))
 		return amplitude;
 
@@ -8974,7 +8976,7 @@ makebandf2adjust(uint_fast8_t lpfno, uint_fast8_t amplitude)
 	const uint_fast8_t b_ref = 100;
 	const uint_fast8_t a = ulmin(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 10%	*/
 	const uint_fast8_t b = ulmax(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 100%	*/
-
+	//PRINTF("makebandf2adjust: ampl=%u, a=%u, b=%u\n", amplitude, a, b);
 	return (uint_fast64_t) b * amplitude / 100;
 }
 
