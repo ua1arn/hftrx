@@ -8962,19 +8962,20 @@ getactualdownpower(void)
 
 #if WITHTX
 
-/* возвращаем 0..100 для кода на разъеме ACC */
+/* возвращаем BOARDDACSCALEMIN..BOARDDACSCALEMAX для кода на разъеме ACC */
 static uint_fast8_t
 makebandf2adjust(uint_fast8_t lpfno, uint_fast8_t amplitude)
 {
+	return BOARDDACSCALEMAX;
 	if (lpfno >= ARRAY_SIZE(gbandf2adj))
-		return 100 * amplitude;
+		return amplitude;
 
 	const uint_fast8_t a_ref = 31;	// sqrt(100)
 	const uint_fast8_t b_ref = 100;
 	const uint_fast8_t a = ulmin(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 10%	*/
 	const uint_fast8_t b = ulmax(gbandf2adj [lpfno].adj_a, gbandf2adj [lpfno].adj_b);	/* 100%	*/
 
-	return b * amplitude;
+	return (uint_fast64_t) b * amplitude / 100;
 }
 
 /* возвращает 0..WITHPOWERTRIMMAX */
