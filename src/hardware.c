@@ -2388,6 +2388,7 @@ void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 {
+	return;
 	if (dsize > 0)
 	{
 		register uintptr_t baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
@@ -2402,6 +2403,7 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 // применяетмся после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
 {
+	return;
 	//arm_hardware_invalidate(DRAM_SPACE_BASE, DRAM_SPACE_SIZE);
 	asm volatile ("fence w,w" ::: "memory");
 }
@@ -3485,22 +3487,22 @@ sysinit_cache_initialize(void)
 		csr_write_mhcr(v);
 	}
 
-	if (1)
-	{
-		// enable D-cache Write-allocate (C906-specific)
-		uint_xlen_t v = csr_read_mhcr();;
-		v |= (1u << 2);	// WA
-		csr_write_mhcr(v);
-	}
-
-	if (1)
-	{
-		// enable D-cache Write-back (C906-specific)
-		uint_xlen_t v = csr_read_mhcr();;
-		v = csr_read_mhcr();
-		v |= (1u << 3);	// WB
-		csr_write_mhcr(v);
-	}
+//	if (1)
+//	{
+//		// enable D-cache Write-allocate (C906-specific)
+//		uint_xlen_t v = csr_read_mhcr();;
+//		v |= (1u << 2);	// WA
+//		csr_write_mhcr(v);
+//	}
+//
+//	if (1)
+//	{
+//		// enable D-cache Write-back (C906-specific)
+//		uint_xlen_t v = csr_read_mhcr();;
+//		v = csr_read_mhcr();
+//		v |= (1u << 3);	// WB
+//		csr_write_mhcr(v);
+//	}
 
 #endif /* CPUSTYLE_RISCV */
 }
