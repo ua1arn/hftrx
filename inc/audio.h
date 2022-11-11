@@ -708,6 +708,7 @@ typedef struct adapter_tag
 	int rightspace;
 	int lshift32;	// input convrtsion
 	int rshift32;
+	const char * name;
 } adapter_t;
 
 typedef struct transform_tag
@@ -723,7 +724,7 @@ int32_t adpt_output(const adapter_t * adp, FLOAT_t v);
 int32_t adpt_outputL(const adapter_t * adp, double v);
 int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v);	// точное преобразование между внешними целочисленными представлениями.
 int32_t adpt_outputexactL(const adapter_t * adp, double v);	// точное преобразование между внешними целочисленными представлениями.
-void adpt_initialize(adapter_t * adp, int leftbit, int rightspace);
+void adpt_initialize(adapter_t * adp, int leftbit, int rightspace, const char * name);
 int32_t transform_do32(const transform_t * tfm, int32_t v); // точное преобразование между внешними целочисленными представлениями.
 int64_t transform_do64(const transform_t * tfm, int64_t v); // точное преобразование между внешними целочисленными представлениями.
 void transform_initialize(transform_t * tfm, const adapter_t * informat, const adapter_t * outformat);
@@ -733,7 +734,8 @@ extern adapter_t afcodectx;	/* к наушникам */
 
 extern adapter_t ifcodecin;	/* канал от FPGA к процессору */
 extern adapter_t ifcodecout;	/* канал от процессора к FPGA */
-extern adapter_t ifspectrumin;	/* канал от FPGA к процессору */
+extern adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
+extern adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
 
 extern adapter_t uac48out;	/* Аудиоданные из компютера в трансивер */
 extern adapter_t uac48in;	/* Аудиоданные в компютер из трансивера */

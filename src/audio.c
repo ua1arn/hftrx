@@ -718,7 +718,8 @@ static FLOAT_t db2ratio(FLOAT_t valueDBb)
 void adpt_initialize(
 	adapter_t * adp,
 	int leftbit,	// Номер бита слева от знакового во внешнем формате в значащих разрядах
-	int rightspace	// количество незанятых битов справа.
+	int rightspace,	// количество незанятых битов справа.
+	const char * name
 	)
 {
 	int signpos = leftbit - 1;
@@ -731,6 +732,7 @@ void adpt_initialize(
 	adp->lshift32 = 32 - leftbit - rightspace;
 	adp->rshift32 = 32 - leftbit;
 	//PRINTF("adpt_initialize: leftbit=%d, rightspace=%d, lshift32=%d, rshift32=%d\n", leftbit, rightspace, adp->lshift32, adp->rshift32);
+	adp->name = name;
 }
 
 // Преобразование значения целочисленного типа во внутреннее представление.
@@ -743,6 +745,10 @@ FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
 // Преобразование во внешнее (целочисленное) представление.
 int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
 {
+	if (v < -1 || v > 1)
+	{
+		PRINTF("adpt_output: '%s' v=%f\n", adp->name, v);
+	}
 	ASSERT(v <= 1);
 	ASSERT(v >= - 1);
 	return (int32_t) (adp->outputK * v) << adp->rightspace;
@@ -751,6 +757,10 @@ int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
 // Преобразование во внешнее представление.
 int32_t adpt_outputL(const adapter_t * adp, double v)
 {
+	if (v < -1 || v > 1)
+	{
+		PRINTF("adpt_outputL: '%s' v=%f\n", adp->name, v);
+	}
 	ASSERT(v <= 1);
 	ASSERT(v >= - 1);
 	return (int32_t) (adp->outputK * v) << adp->rightspace;
@@ -759,6 +769,10 @@ int32_t adpt_outputL(const adapter_t * adp, double v)
 // точное преобразование во внешнее представление.
 int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v)
 {
+	if (v < -1 || v > 1)
+	{
+		PRINTF("adpt_outputexact: '%s' v=%f\n", adp->name, v);
+	}
 	ASSERT(v <= 1);
 	ASSERT(v >= - 1);
 	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
@@ -767,6 +781,10 @@ int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v)
 // точное преобразование во внешнее представление.
 int32_t adpt_outputexactL(const adapter_t * adp, double v)
 {
+	if (v < -1 || v > 1)
+	{
+		PRINTF("adpt_outputexactL: '%s' v=%f\n", adp->name, v);
+	}
 	ASSERT(v <= 1);
 	ASSERT(v >= - 1);
 	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
@@ -811,7 +829,8 @@ static adapter_t fpgafircoefsout;
 adapter_t afcodecrx;	/* от микрофона */
 adapter_t afcodectx;	/* к наушникам */
 adapter_t ifcodecin;
-adapter_t ifspectrumin;
+adapter_t ifspectrumin96;
+adapter_t ifspectrumin192;
 adapter_t ifcodecout;
 adapter_t uac48out;	/* Аудиоданные из компютера в трансивер */
 adapter_t uac48in;	/* Аудиоданные в компютер из трансивера */
@@ -835,35 +854,35 @@ transform_t if2rts192out;	// преобразование из выхода па
 static void adapterst_initialize(void)
 {
 	/* FPGA FIR коэффициенты */
-	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0);
+	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0, "fpgafircoefsout");
 	/* Аудиокодек */
-	adpt_initialize(& afcodecrx, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT);
-	adpt_initialize(& afcodectx, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT);
+	adpt_initialize(& afcodecrx, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT, "afcodecrx");
+	adpt_initialize(& afcodectx, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT, "afcodectx");
 	/* IF codec / FPGA */
-	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
-	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT);
+	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT, "ifcodecin");
+	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT, "ifcodecout");
 #if WITHUSEAUDIOREC
 	/* SD CARD */
 	adpt_initialize(& sdcardio, audiorec_getwidth(), 0);
 #endif /* WITHUSEAUDIOREC */
 	/* канал звука USB AUDIO */
-	adpt_initialize(& uac48in, UACIN_AUDIO48_SAMPLEBITS, 0);	/* Аудиоданные в компютер из трансивера */
-	adpt_initialize(& uac48out, UACOUT_AUDIO48_SAMPLEBITS, 0);	/* Аудиоданные из компютера в трансивер */
+	adpt_initialize(& uac48in, UACIN_AUDIO48_SAMPLEBITS, 0, "uac48in");	/* Аудиоданные в компютер из трансивера */
+	adpt_initialize(& uac48out, UACOUT_AUDIO48_SAMPLEBITS, 0, "uac48out");	/* Аудиоданные из компютера в трансивер */
 	transform_initialize(& uac48out2afcodecrx, & uac48out, & afcodecrx);
 #if WITHRTS96
 	/* канал квадратур USB AUDIO */
-	adpt_initialize(& ifspectrumin, WITHADAPTERRTS96_WIDTH, WITHADAPTERRTS96_SHIFT);
-	adpt_initialize(& rts96in, UACIN_RTS96_SAMPLEBITS, 0);
-	transform_initialize(& if2rts96out, & ifspectrumin, & rts96in);
+	adpt_initialize(& ifspectrumin96, WITHADAPTERRTS96_WIDTH, WITHADAPTERRTS96_SHIFT, "ifspectrumin96");
+	adpt_initialize(& rts96in, UACIN_RTS96_SAMPLEBITS, 0, "rts96in");
+	transform_initialize(& if2rts96out, & ifspectrumin96, & rts96in);
 #endif /* WITHRTS96 */
 #if WITHRTS192
 	/* канал квадратур USB AUDIO */
-	adpt_initialize(& ifspectrumin, WITHADAPTERRTS192_WIDTH, WITHADAPTERRTS192_SHIFT);
-	adpt_initialize(& rts192in, UACIN_RTS192_SAMPLEBITS, 0);
-	transform_initialize(& if2rts192out, & ifspectrumin, & rts192in);
+	adpt_initialize(& ifspectrumin192, WITHADAPTERRTS192_WIDTH, WITHADAPTERRTS192_SHIFT, "ifspectrumin192");
+	adpt_initialize(& rts192in, UACIN_RTS192_SAMPLEBITS, 0, "rts192in");
+	transform_initialize(& if2rts192out, & ifspectrumin192, & rts192in);
 #endif /* WITHRTS192 */
 	/* Преобразование выхода demodulator_FM() */
-	adpt_initialize(& nfmdemod, 32, 0);
+	adpt_initialize(& nfmdemod, 32, 0, "nfmdemod");
 }
 
 //////////////////////////////////////////
@@ -5466,13 +5485,13 @@ inject_testsignals(IFADCvalue_t * const dbuff)
 	// панорама
 	// previous - oldest
 	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
-	dbuff [DMABUF32RTS0I] = adpt_output(& ifspectrumin, simval0.IV);
-	dbuff [DMABUF32RTS0Q] = adpt_output(& ifspectrumin, simval0.QV);
+	dbuff [DMABUF32RTS0I] = adpt_output(& ifspectrumin96, simval0.IV);
+	dbuff [DMABUF32RTS0Q] = adpt_output(& ifspectrumin96, simval0.QV);
 
 	// current	- nevest
 	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
-	dbuff [DMABUF32RTS1I] = adpt_output(& ifspectrumin, simval1.IV);
-	dbuff [DMABUF32RTS1Q] = adpt_output(& ifspectrumin, simval1.QV);
+	dbuff [DMABUF32RTS1I] = adpt_output(& ifspectrumin96, simval1.IV);
+	dbuff [DMABUF32RTS1Q] = adpt_output(& ifspectrumin96, simval1.QV);
 #endif /* WITHRTS96 */
 
 #endif

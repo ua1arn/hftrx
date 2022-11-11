@@ -4645,8 +4645,8 @@ static unsigned filleds [NOVERLAP]; // 0..LARGEFFT-1
 static void
 saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 {
-	const FLOAT_t ivf = adpt_input(& ifspectrumin, qv);	// нормализованное к -1..+1
-	const FLOAT_t qvf = adpt_input(& ifspectrumin, iv);	// нормализованное к -1..+1
+	const FLOAT_t ivf = adpt_input(& ifspectrumin96, qv);	// нормализованное к -1..+1
+	const FLOAT_t qvf = adpt_input(& ifspectrumin96, iv);	// нормализованное к -1..+1
 	unsigned i;
 	for (i = 0; i < NOVERLAP; ++ i)
 	{
