@@ -3446,63 +3446,57 @@ sysinit_cache_initialize(void)
 	//	WBR is fixed to 1 in C906.
 
 
-	// enable I-cache (C906-specific)
 	if (1)
 	{
-		uint_xlen_t v;
-		v = csr_read_mhcr();
+		// enable I-cache (C906-specific)
+		uint_xlen_t v = csr_read_mhcr();;
 		v |= (1u << 0);	// IE
 		csr_write_mhcr(v);
 	}
 
-	// Allow Predictive Jump (C906-specific)
 	if (1)
 	{
-		uint_xlen_t v;
-		v = csr_read_mhcr();
+		// Allow Predictive Jump (C906-specific)
+		uint_xlen_t v = csr_read_mhcr();;
 		v |= (1u << 5);	// BPE
 		csr_write_mhcr(v);
 	}
-	// Branch Target Prediction Enable (C906-specific)
 	if (1)
 	{
-		uint_xlen_t v;
-		v = csr_read_mhcr();
+		// Branch Target Prediction Enable (C906-specific)
+		uint_xlen_t v = csr_read_mhcr();;
 		v |= (1u << 6);	// BTB
 		csr_write_mhcr(v);
 	}
-	// RS-Address Return Stack (C906-specific)
 	if (1)
 	{
-		uint_xlen_t v;
-		v = csr_read_mhcr();
+		// RS-Address Return Stack (C906-specific)
+		uint_xlen_t v = csr_read_mhcr();;
 		v |= (1u << 4);	// RS
 		csr_write_mhcr(v);
 	}
 
 
-	// enable D-cache (C906-specific)
 	if (1)
 	{
-		uint_xlen_t v;
-		v = csr_read_mhcr();
+		// enable D-cache (C906-specific)
+		uint_xlen_t v = csr_read_mhcr();;
 		v |= (1u << 1);	// DE
 		csr_write_mhcr(v);
 	}
 
-	// enable D-cache Write-allocate (C906-specific)
 	if (1)
 	{
-		uint_xlen_t v;
-		v = csr_read_mhcr();
+		// enable D-cache Write-allocate (C906-specific)
+		uint_xlen_t v = csr_read_mhcr();;
 		v |= (1u << 2);	// WA
 		csr_write_mhcr(v);
 	}
 
-	// enable D-cache Write-back (C906-specific)
 	if (1)
 	{
-		uint_xlen_t v;
+		// enable D-cache Write-back (C906-specific)
+		uint_xlen_t v = csr_read_mhcr();;
 		v = csr_read_mhcr();
 		v |= (1u << 3);	// WB
 		csr_write_mhcr(v);
