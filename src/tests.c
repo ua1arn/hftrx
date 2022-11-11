@@ -9714,7 +9714,7 @@ void lowtests(void)
 		unsigned sxl = (csr_read_mstatus() >> 34) & 0x03;
 		unsigned uxl = (csr_read_mstatus() >> 32) & 0x03;
 		unsigned xs = (csr_read_mstatus() >> 15) & 0x03;
-		PRINTF("1 mstatus=%08lX, sxl=%u, uxl=%u, xs=%u\n", csr_read_mstatus(), sxl, uxl, xs);
+		PRINTF("1 mstatus=%08lX, vm=%u, sxl=%u, uxl=%u, xs=%u\n", csr_read_mstatus(), vm, sxl, uxl, xs);
 	}
 #endif
 #if 0 && __riscv && defined(__riscv_zicsr)

@@ -2351,9 +2351,9 @@ void awos_arch_flush_cache(void)
 /*
  * Flush range(clean & invalidate), affects the range [start, stop - 1]
  */
-void cache_flush_range(unsigned long start, unsigned long stop)
+void cache_flush_range(uintptr_t start, uintptr_t stop)
 {
-	register unsigned long i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
+	register uintptr_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
 
 	for(; i < stop; i += L1_CACHE_BYTES)
 		__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
@@ -2363,9 +2363,9 @@ void cache_flush_range(unsigned long start, unsigned long stop)
 /*
  * Invalidate range, affects the range [start, stop - 1]
  */
-void cache_inv_range(unsigned long start, unsigned long stop)
+void cache_inv_range(uintptr_t start, uintptr_t stop)
 {
-	register unsigned long i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
+	register uintptr_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
 
 	for(; i < stop; i += L1_CACHE_BYTES)
 		__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
@@ -2377,7 +2377,7 @@ void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
-		register unsigned long baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
+		register uintptr_t baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
 			__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
@@ -2390,7 +2390,7 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
-		register unsigned long baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
+		register uintptr_t baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
 			__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
@@ -2412,7 +2412,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 
 	if (dsize > 0)
 	{
-		register unsigned long baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
+		register uintptr_t baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
 		{
@@ -3024,8 +3024,8 @@ sysinit_ttbr_initialize(void)
 
 	{
 		uint_xlen_t v = csr_read_mstatus();
-		v &= ~ ((uint_xlen_t) 0x1F) << 17;	// VM[4:0]
-		v |= ((uint_xlen_t) 0x08) << 17;	// Set Page-based 32-bit virtual addressing.
+		v &= ~ ((uint_xlen_t) 0x1F) << 24;	// VM[4:0]
+		v |= ((uint_xlen_t) 0x08) << 24;	// Set Page-based 32-bit virtual addressing.
 		//csr_write_mstatus(v);
 	}
 
