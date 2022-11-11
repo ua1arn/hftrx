@@ -9711,6 +9711,7 @@ void lowtests(void)
 {
 #if 0 && __riscv && defined(__riscv_zicsr)
 	{
+		unsigned vm = (csr_read_mstatus() >> 24) & 0x1F;
 		unsigned sxl = (csr_read_mstatus() >> 34) & 0x03;
 		unsigned uxl = (csr_read_mstatus() >> 32) & 0x03;
 		unsigned xs = (csr_read_mstatus() >> 15) & 0x03;

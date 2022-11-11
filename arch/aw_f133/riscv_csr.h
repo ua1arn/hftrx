@@ -3808,6 +3808,34 @@ static inline void csr_write_sptbr(uint_xlen_t value) {
                       : /* clobbers: none */);
 }
 
+/*******************************************
+ * C906 specific register
+ *
+ * mhcr - 0x7C1 - Machine Mode Hardware Configuration Register.
+ */
+static inline uint_xlen_t csr_read_mhcr(void) {
+    uint_xlen_t value;
+    __asm__ volatile ("csrr    %0, 0x7C1"
+                      : "=r" (value)  /* output : register */
+                      : /* input : none */
+                      : /* clobbers: none */);
+    return value;
+}
+static inline void csr_write_mhcr(uint_xlen_t value) {
+    __asm__ volatile ("csrw    0x7C1, %0"
+                      : /* output: none */
+                      : "r" (value) /* input : from register */
+                      : /* clobbers: none */);
+}
+static inline uint_xlen_t csr_read_write_mhcr(uint_xlen_t new_value) {
+    uint_xlen_t prev_value;
+    __asm__ volatile ("csrrw    %0, 0x7C1, %1"
+                      : "=r" (prev_value) /* output: register %0 */
+                      : "r" (new_value)  /* input : register */
+                      : /* clobbers: none */);
+    return prev_value;
+}
+
 #endif // #define RISCV_CSR_H
 
 

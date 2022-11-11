@@ -3404,6 +3404,31 @@ sysinit_cache_initialize(void)
 	// https://riscv.org/wp-content/uploads/2016/07/riscv-privileged-v1.9-1.pdf#page=49
 	TP();
 
+
+	//	7.3.1 L1 Cache Extension Register
+	//	C906 L1 cache related extended registers are mainly divided into:
+	//	• Cache Enable and Mode Configuration: The Machine Mode Hardware Configuration Register (mhcr) enables switching of instruction and data caches as well as write allocation and
+	//	Configuration for writeback mode. The supervisor mode hardware configuration register (shcr) is a map of mhcr and is a read-only register.
+	//	• Dirty entry cleanup and invalidation operations: The Machine Mode Cache Operation Register (mcor) can dirty and invalidate instruction and data caches
+	//	operation.
+	//	• Cache Reads: Machine Mode Cache Access Instruction Registers (mcins), Cache Access Index Registers (mcindex) and Cache
+	//	Access to data register 0/1 (mcdata0/1), through which the read operation of the instruction and data caches can be realized.
+	//	The specific control register description can refer to the machine mode processor control and status extension register group.
+
+
+	uint_xlen_t v;
+
+	// enable D-cache
+	v = csr_read_mhcr();
+	v |= (1u << 1);	// DE
+	csr_write_mhcr(v);
+
+
+	// enable I-cache
+	v = csr_read_mhcr();
+	v |= (1u << 0);	// IE
+	csr_write_mhcr(v);
+
 #endif /* CPUSTYLE_RISCV */
 }
 
