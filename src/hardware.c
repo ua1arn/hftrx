@@ -3341,13 +3341,11 @@ sysinit_mmu_initialize(void)
 #elif CPUSTYLE_RISCV
 
 	// RISC-V MMU initialize
-	TP();
 
 
 	ttb_initialize(ttb_accessbits, 0, 0);
 	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
-	TP();
 
 #endif
 
@@ -3402,8 +3400,6 @@ sysinit_cache_initialize(void)
 
 	// RISC-V cache initialize
 	// https://riscv.org/wp-content/uploads/2016/07/riscv-privileged-v1.9-1.pdf#page=49
-	TP();
-
 
 	//	7.3.1 L1 Cache Extension Register
 	//	C906 L1 cache related extended registers are mainly divided into:
