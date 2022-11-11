@@ -4701,7 +4701,7 @@ void fftbuffer_initialize(void)
 	SPINLOCK_INITIALIZE(& fftlock);
 }
 
-#if (__ARM_FP & 0x08) && 1
+#if (__ARM_FP & 0x08) || __riscv_d
 
 
 #if defined(ARM_MATH_NEON)

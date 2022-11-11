@@ -487,7 +487,7 @@ extern "C" {
 
 //#if WITHINTEGRATEDDSP
 
-	#if (__ARM_FP & 0x08) && defined(__aarch64__)
+	#if (((__ARM_FP & 0x08) && defined(__aarch64__)) || (__riscv_d)) && 0
 
 		typedef double FLOAT_t;
 
