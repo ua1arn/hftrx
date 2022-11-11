@@ -10794,15 +10794,17 @@ audioproc_spool_user(void)
 		//////////////////////////////////////////////
 		// Save results
 #if WITHUSEDUALWATCH
-#if WITHAFEQUALIZER
+	#if WITHAFEQUALIZER
 		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
 		audio_rx_equalizer(outsp [1], FIRBUFSIZE);
-#endif /* WITHAFEQUALIZER */
+	#endif /* WITHAFEQUALIZER */
+//			memset(outsp [0], 0, FIRBUFSIZE * sizeof outsp [0][0]);
+//			memset(outsp [1], 0, FIRBUFSIZE * sizeof outsp [1][0]);
 		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [1], FIRBUFSIZE);	// to AUDIO codec
 #else /* WITHUSEDUALWATCH */
-#if WITHAFEQUALIZER
+	#if WITHAFEQUALIZER
 		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
-#endif /* WITHAFEQUALIZER */
+	#endif /* WITHAFEQUALIZER */
 		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [0], FIRBUFSIZE);	// to AUDIO codec
 #endif /* WITHUSEDUALWATCH */
 		// Освобождаем буфер
