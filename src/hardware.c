@@ -1701,7 +1701,7 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_F133
 	// калибровано для 1200 МГц процессора
-	const unsigned long top = 100uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 165uL * cpufreq_MHz * timeUS / 1000;
 #else
 	#error TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
@@ -3396,7 +3396,7 @@ sysinit_cache_initialize(void)
 		#endif /* (__CORTEX_A == 9U) */
 	#endif
 
-#elif CPUSTYLE_RISCV
+#elif CPUSTYLE_F133
 
 	// RISC-V cache initialize
 	// https://riscv.org/wp-content/uploads/2016/07/riscv-privileged-v1.9-1.pdf#page=49
@@ -3412,18 +3412,101 @@ sysinit_cache_initialize(void)
 	//	The specific control register description can refer to the machine mode processor control and status extension register group.
 
 
-	uint_xlen_t v;
+	//	IE-Icache enable bit:
+	//	• When IE=0, Icache is closed;
+	//	• When IE=1, Icache is turned on.
+	//	This bit will be reset to 1'b0.
+	//	DE-Dcache enable bit:
+	//	• When DE=0, Dcache is closed;
+	//	• When DE=1, Dcache is on.
+	//	This bit will be reset to 1'b0.
+	//	WA - Cache Write Allocation Set Bits:
+	//	• When WA=0, the data cache is in write non-allocate mode;
+	//	• When WA=1, the data cache is in write allocate mode.
+	//	This bit will be reset to 1'b0.
+	//	WB - Cache Write Back Set Bits:
+	//	• When WB=0, the data cache is in write through mode.
+	//	• When WB=1, the data cache is in write back mode.
+	//	C906 only supports write back mode, and WB is fixed to 1.
+	//	RS-Address Return Stack Set Bits:
+	//	• When RS=0, the return stack is closed;
+	//	• When RS=1, the return stack is turned on.
+	//	This bit will be reset to 1'b0.
+	//	BPE - Allow Predictive Jump Set bit:
+	//	• When BPE=0, predictive jumps are turned off;
+	//	• When BPE=1, predictive jumps are turned on.
+	//	This bit will be reset to 1'b0.
+	//	BTB-Branch Target Prediction Enable Bit:
+	//	• When BTB=0, branch target prediction is turned off.
+	//	• When BTB=1, branch target prediction is on.
+	//	This bit will be reset to 1'b0.
+	//	WBR - Write Burst Enable Bit:
+	//	• When WBR=0, write burst transfers are not supported.
+	//	• When WBR=1, write burst transfers are supported.
+	//	WBR is fixed to 1 in C906.
 
-	// enable D-cache
-	v = csr_read_mhcr();
-	v |= (1u << 1);	// DE
-	csr_write_mhcr(v);
+
+	// enable I-cache (C906-specific)
+	if (1)
+	{
+		uint_xlen_t v;
+		v = csr_read_mhcr();
+		v |= (1u << 0);	// IE
+		csr_write_mhcr(v);
+	}
+
+	// Allow Predictive Jump (C906-specific)
+	if (1)
+	{
+		uint_xlen_t v;
+		v = csr_read_mhcr();
+		v |= (1u << 5);	// BPE
+		csr_write_mhcr(v);
+	}
+	// Branch Target Prediction Enable (C906-specific)
+	if (1)
+	{
+		uint_xlen_t v;
+		v = csr_read_mhcr();
+		v |= (1u << 6);	// BTB
+		csr_write_mhcr(v);
+	}
+	// RS-Address Return Stack (C906-specific)
+	if (1)
+	{
+		uint_xlen_t v;
+		v = csr_read_mhcr();
+		v |= (1u << 4);	// RS
+		csr_write_mhcr(v);
+	}
 
 
-	// enable I-cache
-	v = csr_read_mhcr();
-	v |= (1u << 0);	// IE
-	csr_write_mhcr(v);
+	// enable D-cache (C906-specific)
+	if (1)
+	{
+		uint_xlen_t v;
+		v = csr_read_mhcr();
+		v |= (1u << 1);	// DE
+		csr_write_mhcr(v);
+	}
+
+	// enable D-cache Write-allocate (C906-specific)
+	if (1)
+	{
+		uint_xlen_t v;
+		v = csr_read_mhcr();
+		v |= (1u << 2);	// WA
+		csr_write_mhcr(v);
+	}
+
+	// enable D-cache Write-back (C906-specific)
+	if (1)
+	{
+		uint_xlen_t v;
+		v = csr_read_mhcr();
+		v |= (1u << 3);	// WB
+		csr_write_mhcr(v);
+	}
 
 #endif /* CPUSTYLE_RISCV */
 }
