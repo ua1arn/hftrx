@@ -11,6 +11,8 @@
 #ifndef RISCV_ALLW_F133_CTLSTYLE_MANGO_PI_H_INCLUDED
 #define RISCV_ALLW_F133_CTLSTYLE_MANGO_PI_H_INCLUDED 1
 
+	#define WITHBRANDSTR "Falcon"
+
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
