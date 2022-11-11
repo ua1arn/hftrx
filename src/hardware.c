@@ -1701,7 +1701,7 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_F133
 	// калибровано для 1200 МГц процессора
-	const unsigned long top = 90uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 100uL * cpufreq_MHz * timeUS / 1000;
 #else
 	#error TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
