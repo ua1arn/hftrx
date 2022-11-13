@@ -3234,6 +3234,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	TIMER->TMR1_CTRL_REG |= (1uL << 1);	// TMR1_RELOAD
 
 	TIMER->TMR_IRQ_EN_REG |= (1uL << 1);	// TMR1_IRQ_EN
+
+	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);
 
 #elif CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
@@ -8784,6 +8786,7 @@ hardware_elkey_timer_initialize(void)
 
 	TIMER->TMR_IRQ_EN_REG |= (1uL << 0);	// TMR0_IRQ_EN
 	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);
+	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);
 
 #else
 	#warning Undefined CPUSTYLE_XXX
