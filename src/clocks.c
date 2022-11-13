@@ -2813,7 +2813,7 @@ void hardware_spi_io_delay(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	#if WITHELKEY
+	//#if WITHELKEY
 	void
 	TIMER0_IRQHandler(void)
 	{
@@ -2826,14 +2826,29 @@ void hardware_spi_io_delay(void)
 
 			TIMER->TMR_IRQ_STA_REG = (1uL << 0);	// TMR0_IRQ_PEND
 		}
+		if ((st & (1uL << 1)) != 0)	// TMR1_IRQ_PEND
+		{
+			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+
+			TIMER->TMR_IRQ_STA_REG = (1uL << 1);	// TMR1_IRQ_PEND
+		}
 	}
-	#endif /* WITHELKEY */
+	//#endif /* WITHELKEY */
 
 	// Таймер "тиков"
 	void
 	TIMER1_IRQHandler(void)
 	{
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
+		if ((st & (1uL << 0)) != 0)	// TMR0_IRQ_PEND
+		{
+			// Таймер электронного ключа
+			// 1/20 dot length interval timer
+			spool_elkeybundle();
+
+			TIMER->TMR_IRQ_STA_REG = (1uL << 0);	// TMR0_IRQ_PEND
+		}
 		if ((st & (1uL << 1)) != 0)	// TMR1_IRQ_PEND
 		{
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
