@@ -474,6 +474,12 @@ void bandf_calc_initialize(void)
 #elif \
 	WITHAUTOTUNER_UA1CEI_V2 || \
 	0
+	//	 2.000
+	//	 3.850
+	//	 7.200
+	//	14.500
+	//	21.500
+	//	30.000
 
 	static const fseltype_t board_band2fs [] =
 	{

@@ -863,7 +863,7 @@ static void adapterst_initialize(void)
 	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT, "ifcodecout");
 #if WITHUSEAUDIOREC
 	/* SD CARD */
-	adpt_initialize(& sdcardio, audiorec_getwidth(), 0);
+	adpt_initialize(& sdcardio, audiorec_getwidth(), 0, "sdcardio");
 #endif /* WITHUSEAUDIOREC */
 	/* канал звука USB AUDIO */
 	adpt_initialize(& uac48in, UACIN_AUDIO48_SAMPLEBITS, 0, "uac48in");	/* Аудиоданные в компютер из трансивера */

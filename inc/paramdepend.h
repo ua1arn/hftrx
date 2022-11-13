@@ -2605,10 +2605,8 @@ extern "C" {
 #endif /* (WIHSPIDFSW || WIHSPIDFHW) && WIHSPIDFOVERSPI */
 
 
-#if WITHIF4DSP
-	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-#endif /* WITHIF4DSP */
+#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
 #define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
 #define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
