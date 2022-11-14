@@ -4288,7 +4288,7 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t r
 
 #elif WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
+static void spidf_spi_write_txbuf(const volatile uint8_t * buf, int len)
 {
 
     if (buf != NULL)
@@ -4312,9 +4312,9 @@ static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
 static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fast8_t readnb)
 {
 	int count = len;
-	const uint8_t * tx = txbuf;
-	uint8_t * rx = rxbuf;
-	const int MAXCHUNK = 64;
+	const volatile uint8_t * tx = txbuf;
+	volatile uint8_t * rx = rxbuf;
+	enum { MAXCHUNK = 64 };
 
 
 	while (count > 0)
@@ -4328,18 +4328,18 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		default:
 		case SPDFIO_1WIRE:
 			spidf_spi_write_txbuf(tx, chunk);
-		    SPI0->SPI_MTC = chunk & 0xFFFFFFuL;	// MWTC - Master Write Transmit Counter - bursts before dummy
+		    SPI0->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-			SPI0->SPI_BCC = chunk & 0xFFFFFFuL;
+			SPI0->SPI_BCC = chunk & 0xFFFFFF;
 			break;
 
 		case SPDFIO_4WIRE:
-			SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
-			if (tx != 0)
+			SPI0->SPI_BCC = (0x01u << 29);	/* Quad_EN */
+			if (tx != NULL)
 			{
 				// 4-wire write
 				spidf_spi_write_txbuf(tx, chunk);
-			    SPI0->SPI_MTC = chunk & 0xFFFFFFuL;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			    SPI0->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			else
 			{
@@ -4352,11 +4352,11 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			break;
 		}
 
-		SPI0->SPI_TCR |= (1 << 31);	// XCH
+		SPI0->SPI_TCR |= (1u << 31);	// XCH
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-		while ((SPI0->SPI_TCR & (1 << 31)) != 0)	// XCH
+		while ((SPI0->SPI_TCR & (1u << 31)) != 0)	// XCH
 			;
-		SPI0->SPI_BCC &= ~ (0x01uL << 29);	/* Quad_EN */
+		SPI0->SPI_BCC &= ~ (0x01u << 29);	/* Quad_EN */
 
 		for (i = 0; i < chunk; i ++)
 		{

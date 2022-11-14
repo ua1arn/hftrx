@@ -109,6 +109,7 @@ FIQAddr:       .word FIQ_Handler
 /****************************************************************************/
 Reset_Handler:
 
+	cpsid 	fi
 	/* Mask interrupts */
     mov   	lr, #0
 	cpsid   if
