@@ -56,11 +56,21 @@ static uint32_t cks(const void * buff, unsigned size, uint32_t sum)
 	return sum;
 }
 
+static void place_uint32_le(void * buff, uint32_t v)
+{
+	uint8_t * const p = (uint8_t * const) buff;
+
+	p [0] = (v >> 0);
+	p [1] = (v >> 8);
+	p [2] = (v >> 16);
+	p [3] = (v >> 24);
+}
+
 int main(int argc, char* argv[])
 {
 
 	const char * const infilename = "../../build/allwinner_t113_s3/tc1_t113s3_boot.bin";
-	const char * const outfilename = "../../build/allwinner_t113_s3/fsbl2.alw32";
+	const char * const outfilename = "../../build/allwinner_t113_s3/fsbl.alw32";
 
 	FILE * infile = fopen(infilename,"rb");
 	FILE * outfile = fopen(outfilename,"wb");
@@ -75,8 +85,8 @@ int main(int argc, char* argv[])
 	static const uint8_t magic [8] = { 'e', 'G', 'O', 'N', '.', 'B', 'T', '0' };	/* eGON.BT0 */
 	static const uint8_t pub_head_vsn [8] = { '3', '0', '0', '0' };	/* 3000 */
 	static const uint8_t platform [8] = {  '\0',  '\0',  '\0',  '\0', '4', '.', '0', '\0' };	/* 4.0 */
-	static const uint8_t Boot_vsn [4]		= {  0x00, 0x00, 0x02, 0x00 };
-	static const uint8_t file_head_vsn [4]	= {  0x00, 0x00, 0x02, 0x00 };
+	//static const uint8_t Boot_vsn [4]		= {  0x00, 0x00, 0x02 * 0, 0x00 };
+	//static const uint8_t file_head_vsn [4]	= {  0x00, 0x00, 0x02 * 0, 0x00 };
 	const unsigned execoffset = 0x100;
 
 	uint32_t check_sum;
@@ -107,20 +117,20 @@ int main(int argc, char* argv[])
 
 
 	/* Fill head */
-	head.jump_instruction = 0xEA000000 + (execoffset - 8) / 4;	/// Jump to $ + 0x0100
+	place_uint32_le(& head.jump_instruction, 0xEA000000 + (execoffset - 8) / 4);	/// Jump to $ + 0x0100
 	memcpy(& head.magic, magic, 8);
-	head.check_sum = 0x5F0A6C39;//check_sum;
-	head.length = silesizealigned;//binsize;
-	head.pub_head_size = sizeof head;
+	place_uint32_le(& head.check_sum, 0x5F0A6C39);//check_sum;
+	place_uint32_le(& head.length, silesizealigned);//binsize;
+	place_uint32_le(& head.pub_head_size, sizeof head);
 	memcpy(& head.pub_head_vsn, pub_head_vsn, sizeof head.pub_head_vsn);
-	memcpy(& head.file_head_vsn, file_head_vsn, sizeof head.file_head_vsn);
-	memcpy(& head.Boot_vsn, Boot_vsn, sizeof head.Boot_vsn);
+	place_uint32_le(& head.file_head_vsn, 0x00020000);
+	place_uint32_le(& head.Boot_vsn, 0x00020000);
 	memset(& head.eGON_vsn, 0x00, sizeof head.eGON_vsn);
 	memcpy(& head.platform, platform, sizeof head.platform);
 
 	check_sum = cks((const uint8_t *) & head, sizeof head, check_sum);
 
-	head.check_sum = check_sum;
+	place_uint32_le(& head.check_sum, check_sum);
 
 
 	fwrite(& head, 1, sizeof head, outfile);
