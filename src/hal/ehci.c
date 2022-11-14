@@ -2206,17 +2206,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 //	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
 
-	/* Off bootloader USB */
-	if (0)
-	{
-		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~  (0x01uL << 24);	// USBOTG0_RST
-
-		CCU->USB0_CLK_REG &= ~  (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
-	}
-
 	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
 	{
 		// Turn off USBOTG0

@@ -6755,12 +6755,30 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_T113
 
-		CCU->USB_BGR_REG = 0;	// reset all USBs
+	/* Off bootloader USB */
+	if (1)
+	{
+		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~  (0x01uL << 24);	// USBOTG0_RST
+
+		CCU->USB0_CLK_REG &= ~  (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
+	}
 	allwnrt113_pll_initialize();
 
 #elif CPUSTYLE_F133
 
-	CCU->USB_BGR_REG = 0;	// reset all USBs
+	/* Off bootloader USB */
+	if (1)
+	{
+		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~  (0x01uL << 24);	// USBOTG0_RST
+
+		CCU->USB0_CLK_REG &= ~  (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
+	}
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 11);	// RISC_MCLK_EN
 	allwnrt113_pll_initialize();
