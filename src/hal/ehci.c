@@ -911,13 +911,12 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 	// копируем адрес асинхронной очереди в регистр
 	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-	EHCIx->ASYNCLISTADDR = cpu_to_le32(virt_to_phys(& hehci->asynclisthead));
-	ASSERT(
-			EHCIx->ASYNCLISTADDR
-					== cpu_to_le32(virt_to_phys(& hehci->asynclisthead)));
+	const uint64_t asyncListAddr = cpu_to_le32(virt_to_phys(& hehci->asynclisthead));
+	EHCIx->ASYNCLISTADDR = asyncListAddr;
+	ASSERT(EHCIx->ASYNCLISTADDR == (asyncListAddr & 0xFFFFFFFF));
 	// Устанавливаем сегмент в 0
 	//hc->opRegs->ctrlDsSegment = 0;
-	EHCIx->CTRLDSSEGMENT = cpu_to_le32(0);
+	EHCIx->CTRLDSSEGMENT = cpu_to_le32(asyncListAddr >> 32);
 	EHCIx->USBSTS = ~ cpu_to_le32(0);	// Clear status
 
 	// Expected results (STM32MP1):
