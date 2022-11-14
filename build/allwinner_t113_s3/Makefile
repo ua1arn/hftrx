@@ -59,8 +59,9 @@ CORE += -mfpu=vfpv4
 
 # Define optimisation level here
 #OPT = -Og
-OPT = -Ofast -flto
+#OPT = -Ofast -flto
 #OPT = -Os -flto
+OPT = -Os
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -249,9 +250,7 @@ BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.alw32: $(PROJECT)_boot.bin
-	sh -c "cp boottemplate.bin fsbl.alw32.tmp"
-	./wtitefsbl.exe fsbl.alw32.tmp 0x00100 $(PROJECT)_boot.bin -w
-	./checksum.exe fsbl.alw32.tmp fsbl.alw32
+	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
