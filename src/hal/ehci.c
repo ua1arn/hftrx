@@ -1181,308 +1181,6 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 
 #endif /* WITHUSBHOST_HIGHSPEEDULPI */
 
-void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
-{
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
-
-//	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
-
-	/* Off bootloader USB */
-	if (0)
-	{
-		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~  (0x01uL << 24);	// USBOTG0_RST
-
-		CCU->USB0_CLK_REG &= ~  (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
-	}
-
-	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
-	{
-		// Turn off USBOTG0
-		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
-		CCU->USB_BGR_REG &= ~ (0x01uL << 8);	// USBOTG0_GATING
-
-		// Enable
-		CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
-
-		CCU->USB_BGR_REG |= (0x01uL << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG |= (0x01uL << 20);	// USBEHCI0_RST
-
-		CCU->USB_BGR_REG |= (0x01uL << 0);	// USBOHCI0_GATING
-		CCU->USB_BGR_REG |= (0x01uL << 4);	// USBEHCI0_GATING
-
-
-		// OHCI0 12M Source Select
-		CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
-			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
-			0;
-
-		USBOTG0->PHY_OTGCTL &= ~ (1uL << 0); 	// Host mode. Route phy0 to EHCI/OHCI
-
-	#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
-		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
-	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
-	}
-	else
-	{
-		CCU->USB1_CLK_REG |= (0x01uL << 31);	// USB1_CLKEN
-		CCU->USB1_CLK_REG |= (0x01uL << 30);	// USBPHY1_RSTN
-
-		CCU->USB_BGR_REG |= (0x01uL << 17);	// USBOHCI1_RST
-		CCU->USB_BGR_REG |= (0x01uL << 21);	// USBEHCI1_RST
-
-		CCU->USB_BGR_REG |= (0x01uL << 1);	// USBOHCI1_GATING
-		CCU->USB_BGR_REG |= (0x01uL << 5);	// USBEHCI1_GATING
-
-		// OHCI0 12M Source Select
-		CCU->USB1_CLK_REG = (CCU->USB1_CLK_REG & ~ (0x03 << 24)) |
-			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
-			0;
-
-	#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
-		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
-	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
-	}
-
-	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY1)
-	{
-		// USBPHY1
-		USBPHY1->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
-		USBPHY1->USB_CTRL |=
-				(1uL << 11) |	// 1: Use INCR16 when appropriate
-				(1uL << 10) |	// 1: Use INCR8 when appropriate
-				(1uL << 9) |	// 1: Use INCR4 when appropriate
-				(1uL << 8) |	// 1: Start INCRx burst only on burst x-align address Note: This bit must enable if any bit of bit[11:9] is enabled
-				0;
-
-		USBPHY1->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
-	}
-	else
-	{
-		// USBPHY0
-
-		// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
-		//	/* A83T specific control bits for PHY0 */
-		//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
-		//	#define PHY_CTL_SIDDQ			BIT(3)
-		//	#define PHY_CTL_H3_SIDDQ		BIT(1)
-
-		USBPHY0->USB_CTRL = 0x4300FC00;	// после запуска из QSPI было 0x40000000
-		// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
-		//USB0_PHY->PHY_CTRL = 0x20;			// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
-		USBPHY0->PHY_CTRL &= ~ (1uL << 3);		// PHY_CTL_SIDDQ
-		USBPHY0->PHY_CTRL |= (1uL << 5);		// PHY_CTL_VBUSVLDEXT
-		USBPHY0->USB_CTRL |= (1uL << 0);		// 1: Enable UTMI interface, disable ULPI interface
-
-	}
-
-#elif CPUSTYLE_STM32MP1
-
-	USBD_EHCI_INITIALIZE();
-	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_USBHEN;
-	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_USBHLPEN;
-	(void) RCC->MP_AHB6LPENSETR;
-
-	{
-		/* SYSCFG clock enable */
-		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;
-		(void) RCC->MP_APB3ENSETR;
-		RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;
-		(void) RCC->MP_APB3LPENSETR;
-		/*
-		 * Interconnect update : select master using the port 1.
-		 * MCU interconnect (USBH) = AXI_M1, AXI_M2.
-		 */
-		//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
-		(void) SYSCFG->ICNR;
-		//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
-		(void) SYSCFG->ICNR;
-	}
-
-	USB_HS_PHYCInit();
-
-#if WITHEHCIHWSOFTSPOLL == 0
-	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
-	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
-#endif /* WITHEHCIHWSOFTSPOLL == 0 */
-
-#elif CPUSTYLE_XC7Z
-
-		XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
-		enum {  SRCSEL_SHIFT = 4 };
-		const unsigned long SRCSEL_MASK = (0x07uL << SRCSEL_SHIFT);
-		if (WITHUSBHW_EHCI == EHCI0)
-		{
-			enum { usbIX = 0 };
-			//PRINTF("HAL_EHCI_MspInit: EHCI0\n");
-
-			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
-
-			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
-				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
-				0;
-			(void) SCLR->USB0_CLK_CTRL;
-
-	#if WITHUSBHOST_HIGHSPEEDULPI
-			ulpi_chip_initialize();
-			ulpi_chip_sethost(1);
-			TARGET_USBFS_VBUSON_SET(1);
-			//ulpi_chip_debug();
-	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
-
-			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
-			(void) SCLR->USB_RST_CTRL;
-			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
-			(void) SCLR->USB_RST_CTRL;
-
-			//USBH_POSTRESET_INIT();
-
-#if WITHEHCIHWSOFTSPOLL == 0
-			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
-#endif /* WITHEHCIHWSOFTSPOLL == 0 */
-		}
-		else if (WITHUSBHW_EHCI == EHCI1)
-		{
-			enum { usbIX = 1 };
-			//PRINTF("HAL_EHCI_MspInit: EHCI1\n");
-
-			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB1_CPU_1XCLKACT
-
-			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ SRCSEL_MASK) |
-				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
-				0;
-			(void) SCLR->USB1_CLK_CTRL;
-
-	#if WITHUSBHOST_HIGHSPEEDULPI
-			ulpi_chip_initialize();
-			ulpi_chip_sethost(1);
-			TARGET_USBFS_VBUSON_SET(1);
-			//ulpi_chip_debug();
-	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
-
-			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
-			(void) SCLR->USB_RST_CTRL;
-			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
-			(void) SCLR->USB_RST_CTRL;
-
-			//USBH_POSTRESET_INIT();
-
-#if WITHEHCIHWSOFTSPOLL == 0
-			arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
-#endif /* WITHEHCIHWSOFTSPOLL == 0 */
-		}
-		else
-		{
-			ASSERT(0);
-		}
-
-#else
-
-	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
-
-#endif
-}
-
-void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
-{
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
-
-	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
-	{
-		ASSERT(0);					/* тут нет EHCI */
-
-		CCU->USB_BGR_REG &= ~ (0x01uL << 0);	// USBOHCI0_GATING
-	#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_disable_handler(USB0_OHCI_IRQn);
-		arm_hardware_disable_handler(USB0_EHCI_IRQn);
-	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
-
-		CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
-		//CCU->USB_BGR_REG &= ~ (0x01uL << 8);	// USBOTG0_GATING
-		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
-
-		CCU->USB0_CLK_REG &= ~ (0x01uL << 30);	// USBPHY0_RSTN
-		CCU->USB0_CLK_REG &= ~ (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-	}
-	else
-	{
-	#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_disable_handler(USB1_OHCI_IRQn);
-		arm_hardware_disable_handler(USB1_EHCI_IRQn);
-	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
-
-		CCU->USB_BGR_REG &= ~ (0x01uL << 1);	// USBOHCI1_GATING
-		CCU->USB_BGR_REG &= ~ (0x01uL << 5);	// USBEHCI1_GATING
-		CCU->USB_BGR_REG &= ~ (0x01uL << 17);	// USBOHCI1_RST
-		CCU->USB_BGR_REG &= ~ (0x01uL << 21);	// USBEHCI1_RST
-
-		CCU->USB1_CLK_REG &= ~ (0x01uL << 30);	// USBPHY1_RSTN
-		CCU->USB1_CLK_REG &= ~ (0x01uL << 31);	// USB1_CLKEN
-	}
-
-#elif CPUSTYLE_STM32MP1
-
-#if WITHEHCIHWSOFTSPOLL == 0
-	arm_hardware_disable_handler(USBH_OHCI_IRQn);
-	arm_hardware_disable_handler(USBH_EHCI_IRQn);
-#endif /* WITHEHCIHWSOFTSPOLL == 0 */
-
-	/* Perform USBH reset */
-	RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_USBHRST;
-	(void) RCC->AHB6RSTSETR;
-	RCC->AHB6RSTCLRR = RCC_AHB6RSTCLRR_USBHRST;
-	(void) RCC->AHB6RSTCLRR;
-
-	/* Clock Off */
-	RCC->MP_AHB6LPENCLRR = RCC_MP_AHB6LPENCLRR_USBHLPEN;
-	(void) RCC->MP_AHB6ENCLRR;
-	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_USBHEN;
-	(void) RCC->MP_AHB6ENCLRR;
-
-#elif CPUSTYLE_XC7Z
-
-		if (WITHUSBHW_EHCI == EHCI0)
-		{
-			enum { usbIX = 0 };
-
-			arm_hardware_disable_handler(USB0_IRQn);
-
-			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
-			(void) SCLR->USB_RST_CTRL;
-
-		}
-		else if (WITHUSBHW_EHCI == EHCI1)
-		{
-			enum { usbIX = 1 };
-
-			arm_hardware_disable_handler(USB1_IRQn);
-
-			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
-			(void) SCLR->USB_RST_CTRL;
-		}
-		else
-		{
-			ASSERT(0);
-		}
-
-
-#else
-
-	#warning HAL_EHCI_MspDeInit Not implemented for CPUSTYLE_xxxxx
-
-#endif
-}
-
 
 /**
   * @brief  Start the host driver.
@@ -2495,3 +2193,315 @@ void MX_USB_HOST_Process(void)
 #endif /* WITHUSBHW && WITHEHCIHW */
 
 
+#if WITHUSBHW && WITHEHCIHW
+
+
+#if defined (WITHUSBHW_EHCI)
+
+#include "ehci.h"
+
+void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
+{
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+
+//	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
+
+	/* Off bootloader USB */
+	if (0)
+	{
+		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~  (0x01uL << 24);	// USBOTG0_RST
+
+		CCU->USB0_CLK_REG &= ~  (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
+	}
+
+	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
+	{
+		// Turn off USBOTG0
+		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 8);	// USBOTG0_GATING
+
+		// Enable
+		CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
+
+		CCU->USB_BGR_REG |= (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG |= (0x01uL << 20);	// USBEHCI0_RST
+
+		CCU->USB_BGR_REG |= (0x01uL << 0);	// USBOHCI0_GATING
+		CCU->USB_BGR_REG |= (0x01uL << 4);	// USBEHCI0_GATING
+
+
+		// OHCI0 12M Source Select
+		CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
+			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+			0;
+
+		USBOTG0->PHY_OTGCTL &= ~ (1uL << 0); 	// Host mode. Route phy0 to EHCI/OHCI
+
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+	}
+	else
+	{
+		CCU->USB1_CLK_REG |= (0x01uL << 31);	// USB1_CLKEN
+		CCU->USB1_CLK_REG |= (0x01uL << 30);	// USBPHY1_RSTN
+
+		CCU->USB_BGR_REG |= (0x01uL << 17);	// USBOHCI1_RST
+		CCU->USB_BGR_REG |= (0x01uL << 21);	// USBEHCI1_RST
+
+		CCU->USB_BGR_REG |= (0x01uL << 1);	// USBOHCI1_GATING
+		CCU->USB_BGR_REG |= (0x01uL << 5);	// USBEHCI1_GATING
+
+		// OHCI0 12M Source Select
+		CCU->USB1_CLK_REG = (CCU->USB1_CLK_REG & ~ (0x03 << 24)) |
+			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+			0;
+
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+	}
+
+	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY1)
+	{
+		// USBPHY1
+		USBPHY1->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
+		USBPHY1->USB_CTRL |=
+				(1uL << 11) |	// 1: Use INCR16 when appropriate
+				(1uL << 10) |	// 1: Use INCR8 when appropriate
+				(1uL << 9) |	// 1: Use INCR4 when appropriate
+				(1uL << 8) |	// 1: Start INCRx burst only on burst x-align address Note: This bit must enable if any bit of bit[11:9] is enabled
+				0;
+
+		USBPHY1->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
+	}
+	else
+	{
+		// USBPHY0
+
+		// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
+		//	/* A83T specific control bits for PHY0 */
+		//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
+		//	#define PHY_CTL_SIDDQ			BIT(3)
+		//	#define PHY_CTL_H3_SIDDQ		BIT(1)
+
+		USBPHY0->USB_CTRL = 0x4300FC00;	// после запуска из QSPI было 0x40000000
+		// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
+		//USB0_PHY->PHY_CTRL = 0x20;			// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
+		USBPHY0->PHY_CTRL &= ~ (1uL << 3);		// PHY_CTL_SIDDQ
+		USBPHY0->PHY_CTRL |= (1uL << 5);		// PHY_CTL_VBUSVLDEXT
+		USBPHY0->USB_CTRL |= (1uL << 0);		// 1: Enable UTMI interface, disable ULPI interface
+
+	}
+
+#elif CPUSTYLE_STM32MP1
+
+	USBD_EHCI_INITIALIZE();
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_USBHEN;
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_USBHLPEN;
+	(void) RCC->MP_AHB6LPENSETR;
+
+	{
+		/* SYSCFG clock enable */
+		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;
+		(void) RCC->MP_APB3ENSETR;
+		RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;
+		(void) RCC->MP_APB3LPENSETR;
+		/*
+		 * Interconnect update : select master using the port 1.
+		 * MCU interconnect (USBH) = AXI_M1, AXI_M2.
+		 */
+		//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
+		(void) SYSCFG->ICNR;
+		//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
+		(void) SYSCFG->ICNR;
+	}
+
+	USB_HS_PHYCInit();
+
+#if WITHEHCIHWSOFTSPOLL == 0
+	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
+	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+#elif CPUSTYLE_XC7Z
+
+		XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+		enum {  SRCSEL_SHIFT = 4 };
+		const unsigned long SRCSEL_MASK = (0x07uL << SRCSEL_SHIFT);
+		if (WITHUSBHW_EHCI == EHCI0)
+		{
+			enum { usbIX = 0 };
+			//PRINTF("HAL_EHCI_MspInit: EHCI0\n");
+
+			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
+
+			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
+				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
+				0;
+			(void) SCLR->USB0_CLK_CTRL;
+
+	#if WITHUSBHOST_HIGHSPEEDULPI
+			ulpi_chip_initialize();
+			ulpi_chip_sethost(1);
+			TARGET_USBFS_VBUSON_SET(1);
+			//ulpi_chip_debug();
+	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+
+			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
+			(void) SCLR->USB_RST_CTRL;
+			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
+			(void) SCLR->USB_RST_CTRL;
+
+			//USBH_POSTRESET_INIT();
+
+#if WITHEHCIHWSOFTSPOLL == 0
+			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+		}
+		else if (WITHUSBHW_EHCI == EHCI1)
+		{
+			enum { usbIX = 1 };
+			//PRINTF("HAL_EHCI_MspInit: EHCI1\n");
+
+			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB1_CPU_1XCLKACT
+
+			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ SRCSEL_MASK) |
+				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
+				0;
+			(void) SCLR->USB1_CLK_CTRL;
+
+	#if WITHUSBHOST_HIGHSPEEDULPI
+			ulpi_chip_initialize();
+			ulpi_chip_sethost(1);
+			TARGET_USBFS_VBUSON_SET(1);
+			//ulpi_chip_debug();
+	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+
+			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
+			(void) SCLR->USB_RST_CTRL;
+			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
+			(void) SCLR->USB_RST_CTRL;
+
+			//USBH_POSTRESET_INIT();
+
+#if WITHEHCIHWSOFTSPOLL == 0
+			arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+		}
+		else
+		{
+			ASSERT(0);
+		}
+
+#else
+
+	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
+
+#endif
+}
+
+void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
+{
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+
+	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
+	{
+		ASSERT(0);					/* тут нет EHCI */
+
+		CCU->USB_BGR_REG &= ~ (0x01uL << 0);	// USBOHCI0_GATING
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_disable_handler(USB0_OHCI_IRQn);
+		arm_hardware_disable_handler(USB0_EHCI_IRQn);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+		CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
+		//CCU->USB_BGR_REG &= ~ (0x01uL << 8);	// USBOTG0_GATING
+		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
+
+		CCU->USB0_CLK_REG &= ~ (0x01uL << 30);	// USBPHY0_RSTN
+		CCU->USB0_CLK_REG &= ~ (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+	}
+	else
+	{
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_disable_handler(USB1_OHCI_IRQn);
+		arm_hardware_disable_handler(USB1_EHCI_IRQn);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+		CCU->USB_BGR_REG &= ~ (0x01uL << 1);	// USBOHCI1_GATING
+		CCU->USB_BGR_REG &= ~ (0x01uL << 5);	// USBEHCI1_GATING
+		CCU->USB_BGR_REG &= ~ (0x01uL << 17);	// USBOHCI1_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 21);	// USBEHCI1_RST
+
+		CCU->USB1_CLK_REG &= ~ (0x01uL << 30);	// USBPHY1_RSTN
+		CCU->USB1_CLK_REG &= ~ (0x01uL << 31);	// USB1_CLKEN
+	}
+
+#elif CPUSTYLE_STM32MP1
+
+#if WITHEHCIHWSOFTSPOLL == 0
+	arm_hardware_disable_handler(USBH_OHCI_IRQn);
+	arm_hardware_disable_handler(USBH_EHCI_IRQn);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+	/* Perform USBH reset */
+	RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_USBHRST;
+	(void) RCC->AHB6RSTSETR;
+	RCC->AHB6RSTCLRR = RCC_AHB6RSTCLRR_USBHRST;
+	(void) RCC->AHB6RSTCLRR;
+
+	/* Clock Off */
+	RCC->MP_AHB6LPENCLRR = RCC_MP_AHB6LPENCLRR_USBHLPEN;
+	(void) RCC->MP_AHB6ENCLRR;
+	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_USBHEN;
+	(void) RCC->MP_AHB6ENCLRR;
+
+#elif CPUSTYLE_XC7Z
+
+		if (WITHUSBHW_EHCI == EHCI0)
+		{
+			enum { usbIX = 0 };
+
+			arm_hardware_disable_handler(USB0_IRQn);
+
+			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
+			(void) SCLR->USB_RST_CTRL;
+
+		}
+		else if (WITHUSBHW_EHCI == EHCI1)
+		{
+			enum { usbIX = 1 };
+
+			arm_hardware_disable_handler(USB1_IRQn);
+
+			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
+			(void) SCLR->USB_RST_CTRL;
+		}
+		else
+		{
+			ASSERT(0);
+		}
+
+
+#else
+
+	#warning HAL_EHCI_MspDeInit Not implemented for CPUSTYLE_xxxxx
+
+#endif
+}
+
+#endif /* defined (WITHUSBHW_EHCI) */
+
+#endif /* WITHUSBHW && WITHEHCIHW */
