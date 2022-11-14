@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 	const long binsize = ftell(infile);
 	const long silesizealigned = alignup(binsize + execoffset, 16 * 1024);
 
-	fprintf(stderr, "Okay open files... %ld %ld\n", binsize, silesizealigned);
+	//fprintf(stderr, "Okay open files... %ld %ld\n", binsize, silesizealigned);
 
 	{
 		/* checksum calculate */
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
 
 	fillpad(outfile, silesizealigned - binsize - execoffset);
 
-	fprintf(stderr, "Okay processing... %ld %ld\n", binsize, silesizealigned);
+	//fprintf(stderr, "Okay processing... %ld %ld\n", binsize, silesizealigned);
 
 	return 0;
 }
