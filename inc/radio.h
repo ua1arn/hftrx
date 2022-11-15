@@ -433,7 +433,7 @@ enum
 	//
 	BOARD_RXMAINSUB_count
 };
-void spool_lfm(void);	// возврат не-0, если включён режим LFM
+void spool_lfm(void);
 void lfm_run(void);
 void hardware_lfm_setupdatefreq(unsigned ticksfreq);
 void hardware_lfm_timer_initialize(void);

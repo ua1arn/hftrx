@@ -180,9 +180,6 @@ prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 static uint_fast8_t getdefantenna(uint_fast32_t f);
 static uint_fast8_t geteffantenna(uint_fast32_t f);	/* действительно выбранная антенна с учетом ручного или автоматического переключения */
 
-extern volatile uint_fast8_t spool_lfm_enable;
-extern volatile uint_fast8_t spool_lfm_flag;
-
 typedef struct dualctl8_tag
 {
 	uint_fast8_t value;		/* результирующее знаяение для формирования управляющего воздействия и инфопмирования по CAT */
@@ -19716,7 +19713,7 @@ hamradio_main_step(void)
 			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	#if WITHLFM && defined (LO1MODE_DIRECT)
-			if (lfmmode && spool_lfm_enable)
+			if (lfmmode)
 			{
 				testlfm();
 			}
