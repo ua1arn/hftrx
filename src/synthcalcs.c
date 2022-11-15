@@ -79,6 +79,7 @@ freq2ftw(uint_fast32_t freq, uint_fast16_t divider, uint_fast64_t ddsosc)
 
 #if WITHLFM && LO1MODE_DIRECT
 
+#define LFMTICKSFREQ 48000
 
 volatile uint_fast8_t spool_lfm_enable;
 volatile uint_fast8_t spool_lfm_flag;

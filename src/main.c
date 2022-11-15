@@ -250,6 +250,32 @@ display_redrawmodestimed(
 	);
 
 
+#if WITHLFM
+	static uint_fast16_t lfmtoffset = 0;
+	static uint_fast16_t lfmtinterval = 30;
+	static uint_fast8_t lfmmode = 1;
+	static uint_fast16_t lfmstart100k = 80;
+	static uint_fast16_t lfmstop100k = 180;
+	static uint_fast16_t lfmspeed1k = 500;
+
+// Используются параметры
+// lfmtoffset - Секунды от начала часа до запуска
+// lfmtinterval - Интервал в секундах между запусками в пределах часа
+// возврат не-0 в случае подходящего времени для запуска.
+static uint_fast8_t
+islfmstart(unsigned now)
+{
+	unsigned s;
+	for (s = lfmtoffset; s < 60 * 60; s += lfmtinterval)
+	{
+		if (s == now)
+			return 1;
+	}
+	return 0;
+}
+
+#endif /* WITHLFM */
+
 static uint_fast8_t local_isdigit(char c)
 {
 	//return isdigit((unsigned char) c) != 0;
@@ -12978,7 +13004,7 @@ uif_key_click_xxxx(void)
 // ****************
 // NMEA parser
 // dummy function
-#if WITHNMEA && 0
+#if WITHNMEA && 1
 
 enum nmea_states
 {
@@ -13134,32 +13160,6 @@ void nmea_parsrchar(uint_fast8_t c)
 	}
 }
 
-
-#if WITHLFM
-	static uint_fast16_t lfmtoffset = 0;
-	static uint_fast16_t lfmtinterval = 30;
-	static uint_fast8_t lfmmode = 1;
-	static uint_fast16_t lfmstart100k = 80;
-	static uint_fast16_t lfmstop100k = 180;
-	static uint_fast16_t lfmspeed1k = 500;
-
-// Используются параметры
-// lfmtoffset - Секунды от начала часа до запуска
-// lfmtinterval - Интервал в секундах между запусками в пределах часа
-// возврат не-0 в случае подходящего времени для запуска.
-static uint_fast8_t 
-islfmstart(unsigned now)
-{
-	unsigned s;
-	for (s = lfmtoffset; s < 60 * 60; s += lfmtinterval)
-	{
-		if (s == now)
-			return 1;
-	}
-	return 0;
-}
-
-#endif /* WITHLFM */
 
 static timeholder_t th;
 // Обработчик вызывается при приходе очередного импульса PPS
