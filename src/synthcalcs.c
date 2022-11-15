@@ -112,51 +112,6 @@ static ftw_t rlfm_SCALE;// = lfm_nsteps;
 static ftw_t rlfm_SCALEDIV2;// = lfm_nsteps / 2;
 static ftw_t rlfm_y1_scaled;// = ftw0 * lfm_SCALE;	// начальное значение
 
-static void 
-scanfreq(ftw_t ftw0, ftw_t ftw_last, uint_fast64_t lfm_nsteps)
-{
-	rlfm_nsteps = lfm_nsteps;
-	rlfm_dy = ftw_last - ftw0;
-	rlfm_SCALE = lfm_nsteps;
-	rlfm_SCALEDIV2 = lfm_nsteps / 2;
-	rlfm_y1_scaled = ftw0 * rlfm_SCALE;	// начальное значение
-	rlfm_position = 1;
-
-	// Начальное выставление частоты, соответствующей началу сканируемого диапазона
-	// Потом ждём первого импульса (в момент Tstart+delta), пришедьшего от аппаратуры синхронизации с GPS
-
-//	//prog_dds1_ftw(& ftw0);
-//
-//
-//	//board_set_ddsext(1);	// внешнее управление IOUPDATE DDS1
-//	//board_update();
-//
-//	spool_lfm_flag = 0;
-//	//rlfm_isrunning = 1;
-//	hardware_lfm_setupdatefreq(LFMTICKSFREQ);
-//
-//	//display_freq(position, ftw0); //
-//    do
-//    {
-//		// Подготавливаем параметры для программирования DDS
-//		const ftw_t lfm_value = ((lfm_y1_scaled += lfm_dy) + lfm_SCALEDIV2) / lfm_SCALE;
-//		// Выдаём FTW в микросхему синтезатора частоты, ждём прохода
-//		// очередного синхронизирующего импульса.
-//		board_waitextsync();
-//		system_disableIRQ();
-//		prog_dds1_ftw_noioupdate(& lfm_value);
-//		system_enableIRQ();
-//		//display_freq(position, value); // но это тоже может боком
-//    } while (++ lfm_position < lfm_nsteps);
-//	// цикл перестройки частоты завершён
-//
-//	hardware_lfm_setupdatefreq(20);
-//	rlfm_isrunning = 0;
-
-	//board_set_ddsext(0);	// внутреннее управление IOUPDATE DDS1
-	//board_update();
-} 
-
 static long int lfm_speed;		// скорость перестройки герц / секунду
 static long int lfm_start;	// начальная частота
 static long int lfm_stop;	// конечная частота
@@ -189,9 +144,18 @@ void synth_lfm_setparams(uint_fast32_t astart, uint_fast32_t astop, uint_fast32_
 
 		rlfm_currfreqX = (uint_fast64_t) lfm_start * LFMTICKSFREQ;
 		rlfm_freqStepX = (uint_fast64_t) lfm_speed * 1;
-		uint_fast64_t nsteps = (uint_fast64_t) (lfm_stop - lfm_start) * LFMTICKSFREQ / lfm_speed;
+		uint_least64_t nsteps = (uint_fast64_t) (lfm_stop - lfm_start) * LFMTICKSFREQ / lfm_speed;
 		//PRINTF(PSTR("nsteps = %d\n"), nsteps);
-		scanfreq(freq2ftw(synth_freq2lo1(lfm_start, fi), dds1refdiv * lfm_lo1div, dds1ref), freq2ftw(synth_freq2lo1(lfm_stop, fi), dds1refdiv * lfm_lo1div, dds1ref), nsteps);
+
+		const ftw_t ftw0 = freq2ftw(synth_freq2lo1(lfm_start, fi), dds1refdiv * lfm_lo1div, dds1ref);
+		const ftw_t ftw_last = freq2ftw(synth_freq2lo1(lfm_stop, fi), dds1refdiv * lfm_lo1div, dds1ref);
+
+		rlfm_dy = ftw_last - ftw0;
+		rlfm_nsteps = nsteps;
+		rlfm_SCALE = nsteps;
+		rlfm_SCALEDIV2 = nsteps / 2;
+		rlfm_y1_scaled = ftw0 * rlfm_SCALE;	// начальное значение
+		rlfm_position = 1;
 	}
 } 
 
