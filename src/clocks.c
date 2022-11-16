@@ -2943,9 +2943,6 @@ void hardware_spi_io_delay(void)
 		// TC0 used for generate LFM sweep
 		if ((AT91C_BASE_TCB->TCB_TC0.TC_SR & AT91C_TC_CPCS) != 0)	// read status register - reset interrupt request
 		{
-#if WITHLFM
-			spool_lfm();
-#endif
 		}
 	}
 
@@ -2992,9 +2989,6 @@ void hardware_spi_io_delay(void)
 		// TC2 used for generate 1/20 of morse dot length intervals
 		if ((TC0->TC_CHANNEL [0].TC_SR & TC_SR_CPCS) != 0)	// read status register - reset interrupt request
 		{
-#if WITHLFM
-			spool_lfm();
-#endif
 		}
 	}
 

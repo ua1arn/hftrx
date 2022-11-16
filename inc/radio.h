@@ -433,7 +433,7 @@ enum
 	//
 	BOARD_RXMAINSUB_count
 };
-void spool_lfm(void);
+
 void lfm_run(void);
 int iflfmactive(void);
 uint_fast32_t getlfmfreq(void);

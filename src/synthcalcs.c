@@ -89,17 +89,6 @@ static volatile uint_fast64_t rlfm_nsteps;
 static volatile uint_fast64_t rlfm_currfreqX;	//текущач частота
 static volatile uint_fast64_t rlfm_freqStepX;	//шаг приращения
 
-void spool_lfm(void)
-{
-//	if (rlfm_isrunning != 0)
-//	{
-//		prog_pulse_ioupdate();
-//		spool_lfm_flag = 1;
-//		//return 1;
-//	}
-	//return 0;
-}
-
 // Вызывается из обработчика PPS при совпадении времени начала.
 void lfm_run(void)
 {
@@ -174,10 +163,6 @@ void synth_lfm_setparams(uint_fast32_t astart, uint_fast32_t astop, uint_fast32_
 
 #else /* WITHLFM && LO1MODE_DIRECT */
 
-void spool_lfm(void)
-{
-	//return 0;
-}
 #endif /* WITHLFM && LO1MODE_DIRECT */
 
 
