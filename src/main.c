@@ -6831,16 +6831,20 @@ const char * hamradio_get_vfomode5_value(uint_fast8_t * flag)
 // Частота VFO A для маркировки файлов
 uint_fast32_t hamradio_get_freq_rx(void)
 {
+#if WITHLFM
 	if (iflfmactive())
 		return getlfmfreq();
+#endif /* WITHLFM */
 	return gfreqs [getbankindex_tx(0)];
 }
 
 // Частота VFO A для отображения на дисплее
 uint_fast32_t hamradio_get_freq_a(void)
 {
+#if WITHLFM
 	if (iflfmactive())
 		return getlfmfreq();
+#endif /* WITHLFM */
 	return gfreqs [getbankindex_ab_fordisplay(0)];		/* VFO A modifications */
 }
 // Частота VFO A для отображения на дисплее
@@ -11054,7 +11058,11 @@ updateboardZZZ(
 	// параметры, не имеющие специфики для разных приемников
 	{
 		const uint_fast8_t bi = getbankindex_pathi(0); //getbankindex_tx(gtx);
+#if WITHLFM
 		const int_fast32_t freq = iflfmactive() ? getlfmfreq() : gfreqs [bi];
+#else /* WITHLFM */
+		const int_fast32_t freq = gfreqs [bi];
+#endif /*  WITHLFM */
 	#if CTLSTYLE_IGOR
 		full2 |= flagne_u16(& bandf100khint, freq / 100000uL);
 	#else /* CTLSTYLE_IGOR */
