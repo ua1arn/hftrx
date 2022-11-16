@@ -5262,6 +5262,13 @@ static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
+// формирование маркера начала записи по PPS в одном из каналов USB
+// system_level irq handler:
+void dsp_sidetone_ping(void)
+{
+
+}
+
 // sdtn, moni: значение выборки в диапазоне, допустимом для кодека
 // shape: 0..1: 0 - monitor, 1 - sidetone
 static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)

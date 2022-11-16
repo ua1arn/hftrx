@@ -104,6 +104,7 @@ void spool_lfm(void)
 void lfm_run(void)
 {
 	rlfm_isrunning = 1;
+	dsp_sidetone_ping();	// формирование маркера начала записи по PPS в одном из каналов USB
 }
 
 // Параметры chirp-генератора
