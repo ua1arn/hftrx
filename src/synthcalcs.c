@@ -226,7 +226,19 @@ uint_fast32_t dspfpga_get_nco4(void)
 /* вызывается из прерываний real-time с частотой ARMI2SRATE */
 uint_fast32_t dspfpga_get_ncorts(void)
 {
+#if WITHLFM && LO1MODE_DIRECT
+	if (rlfm_isrunning)
+	{
+		// Подготавливаем параметры для программирования DDS
+		const ftw_t lfm_value = ((rlfm_y1_scaled += rlfm_dy) + rlfm_SCALEDIV2) / rlfm_SCALE;
+		rlfm_isrunning = ++ rlfm_position < rlfm_nsteps;
+		rlfm_currfreqX += rlfm_freqStepX;
+		return lfm_value;
+	}
+	return mirror_nco1;
+#else /* WITHLFM && LO1MODE_DIRECT */
 	return mirror_ncorts;
+#endif /* WITHLFM && LO1MODE_DIRECT */
 }
 
 #if LO1MODE_DIRECT && ! defined(DDS1_TYPE)
