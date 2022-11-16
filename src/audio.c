@@ -5262,11 +5262,12 @@ static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
+static int pingcount;
 // формирование маркера начала записи по PPS в одном из каналов USB
 // system_level irq handler:
 void dsp_sidetone_ping(void)
 {
-
+	pingcount = ARMSAIRATE;
 }
 
 // sdtn, moni: значение выборки в диапазоне, допустимом для кодека
@@ -5735,7 +5736,14 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 				dspmodeA,
 				0		// MAIN RX
 				);	
+#if WITHLFM
+			if (pingcount != 0)
+				-- pingcount;
+			const FLOAT_t right = get_lout() * (pingcount != 0);
+			save16demod(left, right);
+#else /* WITHLFM */
 			save16demod(left, left);
+#endif /* WITHLFM */
 		}
 
 	#endif /*  WITHUSEDUALWATCH */
