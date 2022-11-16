@@ -37,7 +37,12 @@
 #define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
 #if WITHDEBUG
-	#define WITHUART4HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
+	#define WITHUARTFIFO	1	/* испольование FIFO */
+#endif /* WITHDEBUG */
+
+#if WITHLFM
+	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
 	#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
@@ -342,6 +347,17 @@
 		} while (0)
 
 #endif /* (WITHCAT && WITHCAT_CDC) */
+
+#if WITHLFM
+		#define BOARD_PPSIN_BIT (1u << 14)		/* PD7 - PPS signal from GPS */
+
+		#define NMEA_INITIALIZE() do { \
+			arm_hardware_piod_inputs(BOARD_PPSIN_BIT); \
+			arm_hardware_piod_updown(0, BOARD_PPSIN_BIT); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, 1 * BOARD_PPSIN_BIT, 0 * BOARD_PPSIN_BIT, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+		} while (0)
+
+#endif /* WITHLFM */
 
 #if WITHSDHCHW
 	#if WITHSDHCHW4BIT
