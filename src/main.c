@@ -248,12 +248,17 @@ display_redrawmodestimed(
 
 
 #if WITHLFM
+
+	#define LFMFREQBIAS 20000
+
 	static uint_fast16_t lfmtoffset = 0;
 	static uint_fast16_t lfmtinterval = 5 * 60;
 	static uint_fast8_t lfmmode = 1;
 	static uint_fast16_t lfmstart100k = 80;
 	static uint_fast16_t lfmstop100k = 300;
 	static uint_fast16_t lfmspeed1k = 100;
+	static uint_fast16_t lfmfreqbias = LFMFREQBIAS;
+
 
 // Используются параметры
 // lfmtoffset - Секунды от начала часа до запуска
@@ -3325,6 +3330,7 @@ filter_t fi_2p0_455 =
 	uint16_t lfmstart100k;
 	uint16_t lfmstop100k;
 	uint16_t lfmspeed1k;
+	uint16_t lfmfreqbias;
 #endif /* WITHLFM */
 
 #if WITHUSEAUDIOREC
@@ -4383,6 +4389,12 @@ static int_fast32_t getzerobase(void)
 static int_fast32_t getcpufreqbase(void)
 {
 	return CPU_FREQ / 1000000L;
+}
+
+
+static int_fast32_t getlfmbias(void)
+{
+	return - LFMFREQBIAS;
 }
 
 static uint_fast16_t gzero;
@@ -11644,7 +11656,7 @@ updateboardZZZ(
 	#endif /* WITHMODEM */
 
 	#if WITHLFM
-		synth_lfm_setparams(lfmstart100k * 100000ul, lfmstop100k * 100000ul, lfmspeed1k * 1000ul, getlo1div(gtx));
+		synth_lfm_setparams(lfmstart100k * 100000ul + (int32_t) lfmfreqbias - LFMFREQBIAS, lfmstop100k * 100000ul + (int32_t) lfmfreqbias - LFMFREQBIAS, lfmspeed1k * 1000ul, getlo1div(gtx));
 	#endif /* WITHLFM */
 
 	#if WITHLO1LEVELADJ
@@ -19700,13 +19712,16 @@ hamradio_main_step(void)
 
 			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
-	#if WITHLFM && defined (LO1MODE_DIRECT)
+	#if WITHLFM
 			if (lfmmode)
 			{
+				/*  роверяем секунды начала */
+
+				/* обновить настройку полосовых фильтров */
 				updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				testlfm();
 			}
-	#endif
+	#endif /* WITHLFM */
 			if (alignmode)
 			{
 	#if MULTIVFO
