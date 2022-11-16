@@ -18399,7 +18399,13 @@ process_key_menuset_common(uint_fast8_t kbch)
 
 #endif /* WITHTX */
 
-#if WITHUSEDUALWATCH
+#if WITHLFM
+	case KBD_CODE_DWATCHTOGGLE:
+		system_disableIRQ();
+		lfm_run();
+		system_enableIRQ();
+		return 1;	/* клавиша уже обработана */
+#elif WITHUSEDUALWATCH
 	case KBD_CODE_DWATCHHOLD:
 		return 1;	/* клавиша уже обработана */
 
@@ -18974,13 +18980,6 @@ lowinitialize(void)
 #endif /* WITHGPUHW */
 #if WITHENCODER
 	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_initialize - иначе не собирается под Cortex-A9.
-#endif /* WITHENCODER */
-
-#if WITHLFM
-	hardware_lfm_timer_initialize();
-	hardware_lfm_setupdatefreq(20);
-#endif /* WITHLFM */
-#if WITHENCODER
 	encoder_initialize();
 #endif /* WITHENCODER */
 #if WITHELKEY
