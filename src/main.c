@@ -255,7 +255,7 @@ display_redrawmodestimed(
 	static uint_fast16_t lfmtinterval = 5 * 60;
 	static uint_fast8_t lfmmode = 1;
 	static uint_fast16_t lfmstart100k = 80;
-	static uint_fast16_t lfmstop100k = 300;
+	static uint_fast16_t lfmstop100k = 350;
 	static uint_fast16_t lfmspeed1k = 100;
 	static uint_fast16_t lfmfreqbias = LFMFREQBIAS;
 
@@ -13189,17 +13189,12 @@ RAMFUNC_NONILINE
 spool_nmeapps(void)
 {
 	th = nmea_time;
-#if WITHLFM
-	//lfm_run();
-	//return;
-	//memcpy(& th, & nmea_time, sizeof th);
-	//th = nmea_time;
-	//secoundticks = 0;	// следующее обновление через секунду
-	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))
-	{
-		lfm_run();
-	}
-#endif /* WITHLFM */
+//#if WITHLFM
+//	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))
+//	{
+//		lfm_run();
+//	}
+//#endif /* WITHLFM */
 }
 
 
@@ -19727,7 +19722,16 @@ hamradio_main_step(void)
 	#if WITHLFM
 			if (lfmmode)
 			{
-				/*  роверяем секунды начала */
+				/*  проверяем секунды начала */
+					uint_fast8_t hour, minute, secounds;
+
+					board_rtc_cached_gettime(& hour, & minute, & secounds);
+					if (islfmstart(minute * 60 + secounds))
+					{
+						system_disableIRQ();
+						lfm_run();
+						system_enableIRQ();
+					}
 
 				/* обновить настройку полосовых фильтров */
 				updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */

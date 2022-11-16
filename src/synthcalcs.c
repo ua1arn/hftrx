@@ -103,6 +103,8 @@ void spool_lfm(void)
 // Вызывается из обработчика PPS при совпадении времени начала.
 void lfm_run(void)
 {
+	if (rlfm_isrunning)
+		return 0;
 	rlfm_isrunning = 1;
 	dsp_sidetone_ping();	// формирование маркера начала записи по PPS в одном из каналов USB
 }
@@ -235,7 +237,7 @@ uint_fast32_t dspfpga_get_ncorts(void)
 		rlfm_currfreqX += rlfm_freqStepX;
 		return lfm_value;
 	}
-	return mirror_nco1;
+	return mirror_ncorts;
 #else /* WITHLFM && LO1MODE_DIRECT */
 	return mirror_ncorts;
 #endif /* WITHLFM && LO1MODE_DIRECT */
