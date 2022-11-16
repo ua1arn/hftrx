@@ -180,9 +180,6 @@ prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 static uint_fast8_t getdefantenna(uint_fast32_t f);
 static uint_fast8_t geteffantenna(uint_fast32_t f);	/* действительно выбранная антенна с учетом ручного или автоматического переключения */
 
-extern volatile uint_fast8_t spool_lfm_enable;
-extern volatile uint_fast8_t spool_lfm_flag;
-
 typedef struct dualctl8_tag
 {
 	uint_fast8_t value;		/* результирующее знаяение для формирования управляющего воздействия и инфопмирования по CAT */
@@ -251,12 +248,17 @@ display_redrawmodestimed(
 
 
 #if WITHLFM
+
+	#define LFMFREQBIAS 20000
+
 	static uint_fast16_t lfmtoffset = 0;
-	static uint_fast16_t lfmtinterval = 30;
+	static uint_fast16_t lfmtinterval = 5 * 60;
 	static uint_fast8_t lfmmode = 1;
 	static uint_fast16_t lfmstart100k = 80;
-	static uint_fast16_t lfmstop100k = 180;
-	static uint_fast16_t lfmspeed1k = 500;
+	static uint_fast16_t lfmstop100k = 350;
+	static uint_fast16_t lfmspeed1k = 100;
+	static uint_fast16_t lfmfreqbias = LFMFREQBIAS;
+
 
 // Используются параметры
 // lfmtoffset - Секунды от начала часа до запуска
@@ -3328,6 +3330,7 @@ filter_t fi_2p0_455 =
 	uint16_t lfmstart100k;
 	uint16_t lfmstop100k;
 	uint16_t lfmspeed1k;
+	uint16_t lfmfreqbias;
 #endif /* WITHLFM */
 
 #if WITHUSEAUDIOREC
@@ -4386,6 +4389,12 @@ static int_fast32_t getzerobase(void)
 static int_fast32_t getcpufreqbase(void)
 {
 	return CPU_FREQ / 1000000L;
+}
+
+
+static int_fast32_t getlfmbias(void)
+{
+	return - LFMFREQBIAS;
 }
 
 static uint_fast16_t gzero;
@@ -6822,12 +6831,20 @@ const char * hamradio_get_vfomode5_value(uint_fast8_t * flag)
 // Частота VFO A для маркировки файлов
 uint_fast32_t hamradio_get_freq_rx(void)
 {
+#if WITHLFM
+	if (iflfmactive())
+		return getlfmfreq();
+#endif /* WITHLFM */
 	return gfreqs [getbankindex_tx(0)];
 }
 
 // Частота VFO A для отображения на дисплее
 uint_fast32_t hamradio_get_freq_a(void)
 {
+#if WITHLFM
+	if (iflfmactive())
+		return getlfmfreq();
+#endif /* WITHLFM */
 	return gfreqs [getbankindex_ab_fordisplay(0)];		/* VFO A modifications */
 }
 // Частота VFO A для отображения на дисплее
@@ -11041,7 +11058,11 @@ updateboardZZZ(
 	// параметры, не имеющие специфики для разных приемников
 	{
 		const uint_fast8_t bi = getbankindex_pathi(0); //getbankindex_tx(gtx);
+#if WITHLFM
+		const int_fast32_t freq = iflfmactive() ? getlfmfreq() : gfreqs [bi];
+#else /* WITHLFM */
 		const int_fast32_t freq = gfreqs [bi];
+#endif /*  WITHLFM */
 	#if CTLSTYLE_IGOR
 		full2 |= flagne_u16(& bandf100khint, freq / 100000uL);
 	#else /* CTLSTYLE_IGOR */
@@ -11647,7 +11668,7 @@ updateboardZZZ(
 	#endif /* WITHMODEM */
 
 	#if WITHLFM
-		synth_lfm_setparams(lfmstart100k * 100000ul, lfmstop100k * 100000ul, lfmspeed1k * 1000ul, getlo1div(gtx));
+		synth_lfm_setparams(lfmstart100k * 100000ul + (int32_t) lfmfreqbias - LFMFREQBIAS, lfmstop100k * 100000ul + (int32_t) lfmfreqbias - LFMFREQBIAS, lfmspeed1k * 1000ul, getlo1div(gtx));
 	#endif /* WITHLFM */
 
 	#if WITHLO1LEVELADJ
@@ -13029,7 +13050,7 @@ typedef struct timeholder
 
 // исправить время на следующую секунду
 void time_next(
-	timeholder_t * t
+	volatile timeholder_t * t
 	)
 {
 	const uint_fast8_t a = 1;
@@ -13073,7 +13094,7 @@ static uint_fast8_t nmea_param;		// номер принимаемого пара
 static uint_fast8_t nmea_chars;		// количество символов, помещённых в буфер
 
 #define NMEA_PARAMS 20
-#define NMEA_CHARS 12	// really need 11
+#define NMEA_CHARS 16	// really need 11
 static char nmea_buff [NMEA_PARAMS] [NMEA_CHARS];
 static volatile timeholder_t nmea_time;
 static timeholder_t th;
@@ -13090,7 +13111,7 @@ static unsigned char hex2int(uint_fast8_t c)
 	return 0;
 }
 
-void nmea_parsrchar(uint_fast8_t c)
+void nmea_parsechar(uint_fast8_t c)
 {
 
 	switch (nmea_state)
@@ -13168,32 +13189,16 @@ RAMFUNC_NONILINE
 spool_nmeapps(void)
 {
 	th = nmea_time;
-#if WITHLFM
-	//lfm_run();
-	//return;
-	//memcpy(& th, & nmea_time, sizeof th);
-	//th = nmea_time;
-	//secoundticks = 0;	// следующее обновление через секунду
-	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))
-	{
-		lfm_run();
-	}
-#endif /* WITHLFM */
+//#if WITHLFM
+//	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))
+//	{
+//		lfm_run();
+//	}
+//#endif /* WITHLFM */
 }
 
-/* вызывается из обработчика прерываний */
-// произошла потеря символа (символов) при получении данных с CAT компорта
-void nmea_rxoverflow(void)
-{
 
-}
 
-// dummy function
-/* вызывается из обработчика прерываний */
-void nmea_sendchar(void * ctx)
-{
-
-}
 #endif /* WITHNMEA */
 
 // S-METER, SWR-METER, POWER-METER
@@ -18413,7 +18418,13 @@ process_key_menuset_common(uint_fast8_t kbch)
 
 #endif /* WITHTX */
 
-#if WITHUSEDUALWATCH
+#if WITHLFM
+	case KBD_CODE_DWATCHTOGGLE:
+		system_disableIRQ();
+		lfm_run();
+		system_enableIRQ();
+		return 1;	/* клавиша уже обработана */
+#elif WITHUSEDUALWATCH
 	case KBD_CODE_DWATCHHOLD:
 		return 1;	/* клавиша уже обработана */
 
@@ -18988,13 +18999,6 @@ lowinitialize(void)
 #endif /* WITHGPUHW */
 #if WITHENCODER
 	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_initialize - иначе не собирается под Cortex-A9.
-#endif /* WITHENCODER */
-
-#if WITHLFM
-	hardware_lfm_timer_initialize();
-	hardware_lfm_setupdatefreq(20);
-#endif /* WITHLFM */
-#if WITHENCODER
 	encoder_initialize();
 #endif /* WITHENCODER */
 #if WITHELKEY
@@ -19715,12 +19719,25 @@ hamradio_main_step(void)
 
 			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
-	#if WITHLFM && defined (LO1MODE_DIRECT)
-			if (lfmmode && spool_lfm_enable)
+	#if WITHLFM
+			if (lfmmode)
 			{
+				/*  проверяем секунды начала */
+					uint_fast8_t hour, minute, secounds;
+
+					board_rtc_cached_gettime(& hour, & minute, & secounds);
+					if (islfmstart(minute * 60 + secounds))
+					{
+						system_disableIRQ();
+						lfm_run();
+						system_enableIRQ();
+					}
+
+				/* обновить настройку полосовых фильтров */
+				updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				testlfm();
 			}
-	#endif
+	#endif /* WITHLFM */
 			if (alignmode)
 			{
 	#if MULTIVFO

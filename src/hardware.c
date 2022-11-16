@@ -415,6 +415,12 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
 	}
 #endif /* BOARD_STMPE811_INT_PIN */
+#if WITHLFM && BOARD_PPSIN_BIT
+	if ((pr & BOARD_PPSIN_BIT) != 0)
+	{
+		spool_nmeapps();	/* прерывание по изменению сигнала на входе от PPS */
+	}
+#endif /* WITHLFM && BOARD_PPSIN_BIT */
 }
 
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F */

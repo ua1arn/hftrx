@@ -2571,6 +2571,16 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getzerobase,
 	},
+    {
+        QLABEL("LFM OFFS"), 5 + WSIGNFLAG, 0, 0,     ISTEP1,
+        ITEM_VALUE,
+        0, 2 * LFMFREQBIAS,            /*  */
+        offsetof(struct nvmap, lfmfreqbias),
+        nvramoffs0,
+        & lfmfreqbias,
+        NULL,
+        getlfmbias,
+    },
 #endif /* WITHLFM */
 
 #if WITHTX
