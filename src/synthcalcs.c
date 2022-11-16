@@ -107,6 +107,16 @@ void lfm_run(void)
 	dsp_sidetone_ping();	// формирование маркера начала записи по PPS в одном из каналов USB
 }
 
+int iflfmactive(void)
+{
+	return rlfm_isrunning;
+}
+
+uint_fast32_t getlfmfreq(void)
+{
+	return rlfm_currfreqX / LFMTICKSFREQ;
+}
+
 // Параметры chirp-генератора
 static ftw_t rlfm_dy;// = ftw_last - ftw0;
 static ftw_t rlfm_SCALE;// = lfm_nsteps;

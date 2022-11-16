@@ -435,6 +435,8 @@ enum
 };
 void spool_lfm(void);
 void lfm_run(void);
+int iflfmactive(void);
+uint_fast32_t getlfmfreq(void);
 
 /* подготовка работы задержек переключения приём-передача */
 void vox_initialize(void);

@@ -249,11 +249,11 @@ display_redrawmodestimed(
 
 #if WITHLFM
 	static uint_fast16_t lfmtoffset = 0;
-	static uint_fast16_t lfmtinterval = 30;
+	static uint_fast16_t lfmtinterval = 5 * 60;
 	static uint_fast8_t lfmmode = 1;
 	static uint_fast16_t lfmstart100k = 80;
-	static uint_fast16_t lfmstop100k = 180;
-	static uint_fast16_t lfmspeed1k = 500;
+	static uint_fast16_t lfmstop100k = 300;
+	static uint_fast16_t lfmspeed1k = 100;
 
 // Используются параметры
 // lfmtoffset - Секунды от начала часа до запуска
@@ -11042,7 +11042,7 @@ updateboardZZZ(
 	#if CTLSTYLE_IGOR
 		full2 |= flagne_u16(& bandf100khint, freq / 100000uL);
 	#else /* CTLSTYLE_IGOR */
-		full2 |= flagne_u8(& bandfhint, bandf_calc(nyquistadj(freq)));
+		full2 |= flagne_u8(& bandfhint, bandf_calc(nyquistadj(iflfmactive() ? getlfmfreq() : freq)));
 		full2 |= flagne_u8(& bandf2hint, bandf2_calc(nyquistadj2(freq)));
 		full2 |= flagne_u8(& bandf3hint, bandf3_calc(nyquistadj3(freq)));
 	#endif /* CTLSTYLE_IGOR */
@@ -19703,6 +19703,7 @@ hamradio_main_step(void)
 	#if WITHLFM && defined (LO1MODE_DIRECT)
 			if (lfmmode)
 			{
+				updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				testlfm();
 			}
 	#endif

@@ -5262,7 +5262,7 @@ static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
-static int pingcount;
+static volatile int pingcount;
 // формирование маркера начала записи по PPS в одном из каналов USB
 // system_level irq handler:
 void dsp_sidetone_ping(void)
@@ -5321,7 +5321,7 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 				right = dual.QV;
 			}
 		}
-#elif WITHUSBHEADSET
+#elif WITHUSBHEADSET || WITHLFM
 		// Обеспечиваем прослушивание стерео
 #else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
@@ -5334,7 +5334,13 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 			break;
 		}
 #endif /* WITHUSBHEADSET */
-		//
+
+#if WITHLFM
+		if (pingcount != 0)
+			-- pingcount;
+		right = get_lout() * (pingcount != 0);
+#endif /* WITHLFM */
+
 		if (tx)
 		{
 			recordsampleSD(moniL, moniR);	// Запись самоконтроля и самопрослушки
@@ -5346,7 +5352,7 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 			recordsampleUAC(left, right);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
-#if WITHUSBHEADSET
+#if WITHUSBHEADSET || WITHLFM
 		b [L] = adpt_outputexact(& afcodectx, left);
 		b [R] = adpt_outputexact(& afcodectx, right);
 #else /* WITHUSBHEADSET */
@@ -5736,14 +5742,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 				dspmodeA,
 				0		// MAIN RX
 				);	
-#if WITHLFM
-			if (pingcount != 0)
-				-- pingcount;
-			const FLOAT_t right = get_lout() * (pingcount != 0);
-			save16demod(left, right);
-#else /* WITHLFM */
 			save16demod(left, left);
-#endif /* WITHLFM */
 		}
 
 	#endif /*  WITHUSEDUALWATCH */

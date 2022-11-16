@@ -361,7 +361,7 @@
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
@@ -518,7 +518,7 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
-	#if 1
+	#if 0
 		#define WITHAUTOTUNER_UA1CEI_V2 1	/* Есть функция автотюнера */
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
