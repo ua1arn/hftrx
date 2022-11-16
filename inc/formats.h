@@ -888,6 +888,49 @@ int dbg_getchar(char * r);
 
 #endif /* WITHNMEA && WITHUART2HW && WITHMODEM_USART2 */
 
+#if WITHNMEA && WITHUART4HW && WITHNMEA_USART4
+	// Модемные функции работают через USART4
+	// Вызывается из user-mode программы
+	#define HARDWARE_NMEA_INITIALIZE() do { \
+			hardware_uart4_initialize(0); \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_NMEA_SET_SPEED(baudrate) do { \
+			hardware_uart4_set_speed(baudrate); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_NMEA_ENABLETX(v) do { \
+			hardware_uart4_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_NMEA_ENABLERX(v) do { \
+			hardware_uart4_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_NMEA_TX(ctx, c) do { \
+			hardware_uart4_tx((ctx), (c)); \
+		} while (0)
+
+	// вызывается из обработчика прерываний UART2
+	// с принятым символом
+	#define HARDWARE_UART4_ONRXCHAR(c) do { \
+			nmea_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний UART2
+	#define HARDWARE_UART4_ONOVERFLOW() do { \
+			nmea_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний UART2
+	// по готовности передатчика
+	#define HARDWARE_UART4_ONTXCHAR(ctx) do { \
+			nmea_sendchar(ctx); \
+		} while (0)
+
+#endif /* WITHNMEA && WITHUART2HW && WITHMODEM_USART4 */
+
 #if WITHUART2HW
 	// Заглушки, если есть последовательный порт #2, но нигде не используется.
 	#if ! defined (HARDWARE_UART2_ONRXCHAR)

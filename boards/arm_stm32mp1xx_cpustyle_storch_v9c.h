@@ -41,6 +41,11 @@
 	#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
+#if WITHLFM
+	#define WITHUART4HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+	#define WITHUARTFIFO	1	/* испольование FIFO */
+#endif /* WITHDEBUG */
+
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART4	1
 #define WITHNMEA_USART4		1	/* порт подключения GPS/GLONASS */
@@ -342,6 +347,17 @@
 		} while (0)
 
 #endif /* (WITHCAT && WITHCAT_CDC) */
+
+#if WITHLFM
+		#define BOARD_PPSIN_BIT (1u << 14)		/* PD7 - PPS signal from GPS */
+
+		#define NMEA_INITIALIZE() do { \
+			arm_hardware_piod_inputs(BOARD_PPSIN_BIT); \
+			arm_hardware_piod_updown(0, BOARD_PPSIN_BIT); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, 1 * BOARD_PPSIN_BIT, 0 * BOARD_PPSIN_BIT, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+		} while (0)
+
+#endif /* WITHLFM */
 
 #if WITHSDHCHW
 	#if WITHSDHCHW4BIT

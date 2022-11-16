@@ -13026,7 +13026,7 @@ typedef struct timeholder
 
 // исправить время на следующую секунду
 void time_next(
-	timeholder_t * t
+	volatile timeholder_t * t
 	)
 {
 	const uint_fast8_t a = 1;
@@ -13070,7 +13070,7 @@ static uint_fast8_t nmea_param;		// номер принимаемого пара
 static uint_fast8_t nmea_chars;		// количество символов, помещённых в буфер
 
 #define NMEA_PARAMS 20
-#define NMEA_CHARS 12	// really need 11
+#define NMEA_CHARS 16	// really need 11
 static char nmea_buff [NMEA_PARAMS] [NMEA_CHARS];
 static volatile timeholder_t nmea_time;
 static timeholder_t th;
@@ -13087,7 +13087,7 @@ static unsigned char hex2int(uint_fast8_t c)
 	return 0;
 }
 
-void nmea_parsrchar(uint_fast8_t c)
+void nmea_parsechar(uint_fast8_t c)
 {
 
 	switch (nmea_state)
@@ -13178,19 +13178,8 @@ spool_nmeapps(void)
 #endif /* WITHLFM */
 }
 
-/* вызывается из обработчика прерываний */
-// произошла потеря символа (символов) при получении данных с CAT компорта
-void nmea_rxoverflow(void)
-{
 
-}
 
-// dummy function
-/* вызывается из обработчика прерываний */
-void nmea_sendchar(void * ctx)
-{
-
-}
 #endif /* WITHNMEA */
 
 // S-METER, SWR-METER, POWER-METER
