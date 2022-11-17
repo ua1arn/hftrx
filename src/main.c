@@ -4391,11 +4391,14 @@ static int_fast32_t getcpufreqbase(void)
 	return CPU_FREQ / 1000000L;
 }
 
+#if WITHLFM
 
 static int_fast32_t getlfmbias(void)
 {
 	return - LFMFREQBIAS;
 }
+
+#endif /* WITHLFM */
 
 static uint_fast16_t gzero;
 
