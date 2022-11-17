@@ -109,12 +109,6 @@
 #define  wBoot_part_capacity(sect)   (AW_RAMDISK_SIZE/512)                     /* ����� �������� ������������ �����, ������ = 512 ���� */
 #define  wBoot_part_count(sect)      1
 
-//#define  device_bo_memory_base       AW_USBD_BASE
-//#define  device_bo_bufbase           (AW_USBD_BASE+0x20000)
-
-
-//uint64_t USBWriteNum=0; //������� ����� ���������� �������� �� ������� USB
-
 static int wBoot_block_read(unsigned int start,unsigned int nblock,void *pBuffer)
 {
  #if DISK_DDR
@@ -2307,29 +2301,37 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
 static volatile uint8_t usbd_cdc_txstarted [WITHUSBCDCACM_N];
+static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
+static usb_struct * volatile gpusb = NULL;
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void usbd_cdc_send(const void * buff, size_t length)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-//	if (gpdev != NULL && usbd_cdc_txstarted [offset] == 0)
-//	{
-//		const size_t n = ulmin(length, VIRTUAL_COM_PORT_IN_DATA_SIZE);
-//		memcpy(cdcXbuffin [offset], buff, n);
-//		usbd_cdc_zlp_pending [offset] = n == VIRTUAL_COM_PORT_IN_DATA_SIZE;
-//		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset)), cdcXbuffin [offset], n);
-//		usbd_cdc_txstarted [offset] = 1;
-//		return 1;
-//	}
+	if (gpusb != NULL && usbd_cdc_txstarted [offset] == 0)
+	{
+		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+		const size_t n = ulmin(length, VIRTUAL_COM_PORT_IN_DATA_SIZE);
+		memcpy(cdcXbuffin [offset], buff, n);
+		usbd_cdc_zlp_pending [offset] = n == VIRTUAL_COM_PORT_IN_DATA_SIZE;
+		usbd_cdc_txlen [offset] = n;
+		//printhex(0, cdcXbuffin [offset], usbd_cdc_txlen [offset]);
+ 		do
+  		{
+  			ret = epx_in_handler_dev(gpusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
+  		}
+  		while(ret == USB_RETVAL_NOTCOMP);
+	}
 }
 
 uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-//	if (gpdev != NULL && usbd_cdc_txstarted [offset] == 0)
-//	{
-//		return 1;
-//	}
+	if (gpusb != NULL)
+	{
+		return 1;
+	}
 	return 0;
 }
 
@@ -2436,30 +2438,30 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 
 	} while (0);
 
-	{
-		while (usbd_cdc_txenabled [offset] && (cdcXbuffinlevel [offset] < ARRAY_SIZE(cdcXbuffin [offset])))
-		{
-			HARDWARE_CDC_ONTXCHAR(offset, pusb);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
-		}
-
-		if (cdcXbuffinlevel [offset])
-		{
-
-  			//printhex(1024, cdcXbuffin [offset], cdcXbuffinlevel [offset]);
-			do
-			{
-				ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)cdcXbuffin [offset], cdcXbuffinlevel [offset], USB_PRTCL_BULK);
-			} while (ret == USB_RETVAL_NOTCOMP);
-
-			if (ret == USB_RETVAL_COMPERR)
-			{
-				PRINTF("Error: TX CDC Error\n");
-			}
-
-  			cdcXbuffinlevel [offset] = 0;
-		}
-
-	}
+//	{
+//		while (usbd_cdc_txenabled [offset] && (cdcXbuffinlevel [offset] < ARRAY_SIZE(cdcXbuffin [offset])))
+//		{
+//			HARDWARE_CDC_ONTXCHAR(offset, pusb);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+//		}
+//
+//		if (cdcXbuffinlevel [offset])
+//		{
+//
+//  			//printhex(1024, cdcXbuffin [offset], cdcXbuffinlevel [offset]);
+//			do
+//			{
+//				ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t)cdcXbuffin [offset], cdcXbuffinlevel [offset], USB_PRTCL_BULK);
+//			} while (ret == USB_RETVAL_NOTCOMP);
+//
+//			if (ret == USB_RETVAL_COMPERR)
+//			{
+//				PRINTF("Error: TX CDC Error\n");
+//			}
+//
+//  			cdcXbuffinlevel [offset] = 0;
+//		}
+//
+//	}
 
 	usb_select_ep(pusb, ep_save);
 	return ret;
@@ -2966,22 +2968,6 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 
 	return 0;
 }
-/*
-************************************************************************************************************
-*
-*                                             function
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ��
-*
-*
-************************************************************************************************************
-*/
 
 static int32_t ep0_out_handler_dev(pusb_struct pusb)
 {
@@ -3508,6 +3494,7 @@ static void usb_irq_handler(pusb_struct pusb)
 		}
 		wBoot_dma_stop(pusb->dma);
 	  	PRINTF("uSuspend\n");
+		gpusb = NULL;
   	}
 
 	if (irqstatus & USB_BUSINT_RESUME)
@@ -3548,6 +3535,7 @@ static void usb_irq_handler(pusb_struct pusb)
 			PRINTF("Error: DMA for EP is not finished after Bus Reset\n");
 		}
 		wBoot_dma_stop(pusb->dma);
+		gpusb = pusb;
 	  	PRINTF("uReset\n");
 	}
 
