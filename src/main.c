@@ -10633,11 +10633,11 @@ void speex_free (void *ptr)
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 || CPUSTYLE_F133
 	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 || CPUSTYLE_F133 */
 	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 || CPUSTYLE_F133 */
 }
 
 static void speex_update_rx(void)
@@ -10746,9 +10746,6 @@ static FLOAT_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * 
 
 static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
-	// FIXME: speex внутри использует целочисленные вычисления
-	static const FLOAT_t ki = 32768;
-	static const FLOAT_t ko = 1. / 32768;
 	const uint_fast8_t amode = getamode(pathi);
 	const uint_fast8_t denoise = ispathprocessing(pathi) && gnoisereducts [amode];
 	const uint_fast8_t anotch = ispathprocessing(pathi) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
@@ -10792,12 +10789,16 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 #else /* WITHLEAKYLMSANR */
 	if (ispathprocessing(pathi))
 	{
+		//ARM_MORPH(arm_fill)(0, nrp->wire1, FIRBUFSIZE);
+		// FIXME: speex внутри использует целочисленные вычисления
+		static const FLOAT_t ki = 32768;
+		static const FLOAT_t ko = 1. / 32768;
 		ARM_MORPH(arm_scale)(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
 		speex_preprocess_run(nrp->st_handle, nrp->wire1);
 		ARM_MORPH(arm_scale)(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
+		//ARM_MORPH(arm_fill)(0, nrp->wire1, FIRBUFSIZE);
 	}
 #endif /* WITHLEAKYLMSANR */
-	//ARM_MORPH(arm_fill)(0, nrp->wire1, FIRBUFSIZE);
 	return nrp->wire1;
 
 #endif /* WITHNOSPEEX */
