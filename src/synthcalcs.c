@@ -171,6 +171,7 @@ volatile phase_t mirror_nco2;
 volatile phase_t mirror_nco3;
 volatile phase_t mirror_nco4;
 volatile phase_t mirror_ncorts;
+volatile phase_t mirror_lfm;
 
 
 /* Получение параметров приемника, передаваемых чрез I2S канал в FPGA */
@@ -181,10 +182,10 @@ uint_fast32_t dspfpga_get_nco1(void)
 	if (rlfm_isrunning)
 	{
 		// Подготавливаем параметры для программирования DDS
-		const ftw_t lfm_value = ((rlfm_y1_scaled += rlfm_dy) + rlfm_SCALEDIV2) / rlfm_SCALE;
+		mirror_lfm = ((rlfm_y1_scaled += rlfm_dy) + rlfm_SCALEDIV2) / rlfm_SCALE;
 		rlfm_isrunning = ++ rlfm_position < rlfm_nsteps;
 		rlfm_currfreqX += rlfm_freqStepX;
-		return lfm_value;
+		return mirror_lfm;
 	}
 	return mirror_nco1;
 #else /* WITHLFM && LO1MODE_DIRECT */
@@ -216,11 +217,7 @@ uint_fast32_t dspfpga_get_ncorts(void)
 #if WITHLFM && LO1MODE_DIRECT
 	if (rlfm_isrunning)
 	{
-		// Подготавливаем параметры для программирования DDS
-		const ftw_t lfm_value = ((rlfm_y1_scaled += rlfm_dy) + rlfm_SCALEDIV2) / rlfm_SCALE;
-		rlfm_isrunning = ++ rlfm_position < rlfm_nsteps;
-		rlfm_currfreqX += rlfm_freqStepX;
-		return lfm_value;
+		return mirror_lfm;
 	}
 	return mirror_ncorts;
 #else /* WITHLFM && LO1MODE_DIRECT */
