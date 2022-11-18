@@ -2817,23 +2817,14 @@ void hardware_spi_io_delay(void)
 	TIMER0_IRQHandler(void)
 	{
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
-		if ((st & (1uL << 0)) != 0)	// TMR0_IRQ_PEND
+		if ((st & (1u << 0)) != 0)	// TMR0_IRQ_PEND
 		{
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
 			dbg_putchar('e');
 
-			TIMER->TMR_IRQ_STA_REG = (1uL << 0);	// TMR0_IRQ_PEND
-		}
-		if ((st & (1uL << 1)) != 0)	// TMR1_IRQ_PEND
-		{
-			// timebase
-			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
-			dbg_putchar('t');
-
-			TIMER->TMR_IRQ_STA_REG = (1uL << 1);	// TMR1_IRQ_PEND
+			TIMER->TMR_IRQ_STA_REG = (1u << 0);	// TMR0_IRQ_PEND
 		}
 	}
 
@@ -2841,23 +2832,14 @@ void hardware_spi_io_delay(void)
 	TIMER1_IRQHandler(void)
 	{
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
-		if ((st & (1uL << 0)) != 0)	// TMR0_IRQ_PEND
-		{
-			// Таймер электронного ключа
-			// 1/20 dot length interval timer
-			spool_elkeybundle();
-			dbg_putchar('E');
-
-			TIMER->TMR_IRQ_STA_REG = (1uL << 0);	// TMR0_IRQ_PEND
-		}
-		if ((st & (1uL << 1)) != 0)	// TMR1_IRQ_PEND
+		if ((st & (1u << 1)) != 0)	// TMR1_IRQ_PEND
 		{
 			// timebase
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 			dbg_putchar('T');
 
-			TIMER->TMR_IRQ_STA_REG = (1uL << 1);	// TMR1_IRQ_PEND
+			TIMER->TMR_IRQ_STA_REG = (1u << 1);	// TMR1_IRQ_PEND
 		}
 	}
 
@@ -3253,8 +3235,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	PRINTF("tb timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
 	PRINTF("tb timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
-	//arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
+
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer
+
 	PRINTF("tb timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
 	PRINTF("tb timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
