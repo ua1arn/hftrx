@@ -19107,7 +19107,7 @@ static void initialize2(void)
 
 #if defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 
-	//PRINTF(PSTR("initialize2(): NVRAM initialization started.\n"));
+	//PRINTF(PSTR("initialize2: NVRAM initialization started.\n"));
 
 	mclearnvram = kbd_get_ishold(KIF_ERASE) != 0;
 	//extmenu = kbd_get_ishold(KIF_EXTMENU);
@@ -19153,13 +19153,13 @@ static void initialize2(void)
 
 #endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
-	//PRINTF(PSTR("initialize2(): NVRAM initialization passed.\n"));
+	//PRINTF(PSTR("initialize2: NVRAM initialization passed.\n"));
 
 #if HARDWARE_IGNORENONVRAM
 
 #elif NVRAM_TYPE == NVRAM_TYPE_FM25XXXX
 
-	//PRINTF(PSTR("initialize2(): NVRAM autodetection start.\n"));
+	//PRINTF(PSTR("initialize2: NVRAM autodetection start.\n"));
 
 	uint_fast8_t ab = 0;
 	const uint_fast8_t ABMAX = 2;
@@ -19215,7 +19215,7 @@ static void initialize2(void)
 		if (ab >= ABMAX)
 		{
 			// в случае неправильно работающего NVRAM зависаем
-			PRINTF(PSTR("initialize2(): NVRAM initialization: wrong NVRAM pattern in any address sizes.\n"));
+			PRINTF(PSTR("initialize2: NVRAM initialization: wrong NVRAM pattern in any address sizes.\n"));
 
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 			board_update();
@@ -19237,12 +19237,12 @@ static void initialize2(void)
 
 #else /* NVRAM_TYPE == NVRAM_TYPE_FM25XXXX */
 
-	//PRINTF(PSTR("initialize2(): NVRAM(BKPSRAM/CPU EEPROM/SPI MEMORY) initialization: verify NVRAM signature.\n"));
+	//PRINTF(PSTR("initialize2: NVRAM(BKPSRAM/CPU EEPROM/SPI MEMORY) initialization: verify NVRAM signature.\n"));
 
 	if (verifynvramsignature())
 		mclearnvram = 2;
 
-	//PRINTF(PSTR("initialize2(): NVRAM initialization: work on NVRAM signature, mclearnvram=%d\n"), mclearnvram);
+	//PRINTF(PSTR("initialize2: NVRAM initialization: work on NVRAM signature, mclearnvram=%d\n"), mclearnvram);
 
 	if (mclearnvram != 0)
 	{
@@ -19267,19 +19267,19 @@ static void initialize2(void)
 			display2_bgreset();
 		}
 		
-		//PRINTF(PSTR("initialize2(): NVRAM initialization: erase NVRAM.\n"));
+		//PRINTF(PSTR("initialize2: NVRAM initialization: erase NVRAM.\n"));
 		/* стирание всей памяти */
 		uint_least16_t i;
 		for (i = 0; i < sizeof (struct nvmap); ++ i)
 			save_i8(i, 0xFF);
 
-		//PRINTF(PSTR("initialize2(): NVRAM initialization: write NVRAM pattern.\n"));
+		//PRINTF(PSTR("initialize2: NVRAM initialization: write NVRAM pattern.\n"));
 		initnvrampattern();
-		//PRINTF(PSTR("initialize2(): NVRAM initialization: verify NVRAM pattern.\n"));
+		//PRINTF(PSTR("initialize2: NVRAM initialization: verify NVRAM pattern.\n"));
 
 		if (verifynvrampattern())
 		{
-			PRINTF(PSTR("initialize2(): NVRAM initialization: wrong NVRAM pattern.\n"));
+			PRINTF(PSTR("initialize2: NVRAM initialization: wrong NVRAM pattern.\n"));
 			// проверяем только что записанную сигнатуру
 			// в случае неправильно работающего NVRAM зависаем
 
@@ -19298,7 +19298,7 @@ static void initialize2(void)
 		defaultsettings();		/* загрузка в nvram установок по умолчанию */
 #endif //WITHMENU
 
-		//PRINTF(PSTR("initialize2(): NVRAM initialization: write NVRAM signature.\n"));
+		//PRINTF(PSTR("initialize2: NVRAM initialization: write NVRAM signature.\n"));
 		initnvramsignature();
 		//extmenu = 1;	/* сразу включаем инженерный режим - без перезагрузки доступны все пункты */
 	}
@@ -19308,7 +19308,7 @@ static void initialize2(void)
 	(void) mclearnvram;
 
 #if WITHDEBUG
-	dbg_puts_impl_P(PSTR("initialize2() finished.\n"));
+	dbg_puts_impl_P(PSTR("initialize2: finished.\n"));
 #endif
 }
 

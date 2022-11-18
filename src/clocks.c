@@ -2813,7 +2813,6 @@ void hardware_spi_io_delay(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	//#if WITHELKEY
 	void
 	TIMER0_IRQHandler(void)
 	{
@@ -2823,20 +2822,21 @@ void hardware_spi_io_delay(void)
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
+			dbg_putchar('e');
 
 			TIMER->TMR_IRQ_STA_REG = (1uL << 0);	// TMR0_IRQ_PEND
 		}
 		if ((st & (1uL << 1)) != 0)	// TMR1_IRQ_PEND
 		{
+			// timebase
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			dbg_putchar('t');
 
 			TIMER->TMR_IRQ_STA_REG = (1uL << 1);	// TMR1_IRQ_PEND
 		}
 	}
-	//#endif /* WITHELKEY */
 
-	// Таймер "тиков"
 	void
 	TIMER1_IRQHandler(void)
 	{
@@ -2846,15 +2846,18 @@ void hardware_spi_io_delay(void)
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
+			dbg_putchar('E');
 
 			TIMER->TMR_IRQ_STA_REG = (1uL << 0);	// TMR0_IRQ_PEND
 		}
 		if ((st & (1uL << 1)) != 0)	// TMR1_IRQ_PEND
 		{
+			// timebase
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			dbg_putchar('T');
 
-			TIMER->TMR_IRQ_STA_REG = (1uL << 1);// TMR1_IRQ_PEND
+			TIMER->TMR_IRQ_STA_REG = (1uL << 1);	// TMR1_IRQ_PEND
 		}
 	}
 
@@ -3226,26 +3229,28 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
+	// timebase timer
+	TP();
 	TIMER->TMR1_CTRL_REG = 0;
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
 
 	TIMER->TMR1_INTV_VALUE_REG = value;
 	TIMER->TMR1_CTRL_REG =
-		0 * (1uL << 7) |	// TMR1_MODE 0: Periodic mode.
-		prei * (1uL << 4) |
-		0x01 * (1uL << 2) |	// TMR1_CLK_SRC 01: OSC24M
-		(1uL << 0) | // TMR1_EN
+		0 * (1u << 7) |	// TMR1_MODE 0: Periodic mode.
+		prei * (1u << 4) |
+		0x01 * (1u << 2) |	// TMR1_CLK_SRC 01: OSC24M
+		(1u << 0) | // TMR1_EN
 		0;
 
-	while ((TIMER->TMR1_CTRL_REG & (1uL << 1)) != 0)
+	while ((TIMER->TMR1_CTRL_REG & (1u << 1)) != 0)
 		;
-	TIMER->TMR1_CTRL_REG |= (1uL << 1);	// TMR1_RELOAD
+	TIMER->TMR1_CTRL_REG |= (1u << 1);	// TMR1_RELOAD
 
-	TIMER->TMR_IRQ_EN_REG |= (1uL << 1);	// TMR1_IRQ_EN
+	TIMER->TMR_IRQ_EN_REG |= (1u << 1);	// TMR1_IRQ_EN
 
-	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);
-	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);
+	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
+	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer
 
 #elif CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
@@ -8723,11 +8728,13 @@ hardware_elkey_timer_initialize(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
+	// elkey timer
+	TP();
 	TIMER->TMR0_CTRL_REG = 0;
 
-	TIMER->TMR_IRQ_EN_REG |= (1uL << 0);	// TMR0_IRQ_EN
-	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);
-	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);
+	TIMER->TMR_IRQ_EN_REG |= (1u << 0);	// TMR0_IRQ_EN
+
+	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer, timebase timer
 
 #else
 	#warning Undefined CPUSTYLE_XXX
