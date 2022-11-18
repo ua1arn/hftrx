@@ -914,6 +914,21 @@
 		/* while ((GPIOA->DATA & VSmask) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_piod_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
+
+	#define HARDWARE_LVDS_INITIALIZE() do { \
+		arm_hardware_piod_altfn50(1u << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
+		arm_hardware_piod_altfn50(1u << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
+		arm_hardware_piod_altfn50(1u << 2, GPIO_CFG_AF3); 	/* PD2 LVDS0_V1P */ \
+		arm_hardware_piod_altfn50(1u << 3, GPIO_CFG_AF3); 	/* PD3 LVDS0_V1N */ \
+		arm_hardware_piod_altfn50(1u << 4, GPIO_CFG_AF3); 	/* PD4 LVDS0_V2P */ \
+		arm_hardware_piod_altfn50(1u << 5, GPIO_CFG_AF3); 	/* PD5 LVDS0_V2N */ \
+		arm_hardware_piod_altfn50(1u << 6, GPIO_CFG_AF3); 	/* PD6 LVDS0_CKP */ \
+		arm_hardware_piod_altfn50(1u << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
+		arm_hardware_piod_altfn50(1u << 8, GPIO_CFG_AF3); 	/* PD8 LVDS0_V3P */ \
+		arm_hardware_piod_altfn50(1u << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
+	} while (0)
+
+
 #endif /* WITHLTDCHW */
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)

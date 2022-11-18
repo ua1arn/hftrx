@@ -43,7 +43,10 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 	}
 	else
 	{
-#if defined (HARDWARE_LTDC_INITIALIZE)
+#if defined (HARDWARE_LVDS_INITIALIZE) && 0
+		/* Configure the LCD Control pins */
+		HARDWARE_LVDS_INITIALIZE();
+#elif defined (HARDWARE_LTDC_INITIALIZE)
 		/* Configure the LCD Control pins */
 #if WITHLCDDEMODE
 		HARDWARE_LTDC_INITIALIZE(1);	// подключение к выводам процессора сигналов периферийного контроллера
@@ -2055,15 +2058,27 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	pdat->timing.clk_active = 0;
 	//pdat->backlight = NULL;
 
-    CCU->DE_CLK_REG |= (0x01uL << 31) | (0x03uL << 0);	// 300 MHz
+    CCU->DE_CLK_REG |= (0x01u << 31) | (0x03uL << 0);	// 300 MHz
 
-    CCU->DE_BGR_REG |= (0x01uL << 0);		// Open the clock gate
-    CCU->DE_BGR_REG |= (0x01uL << 16);		// Deassert reset
+    CCU->DE_BGR_REG |= (0x01u << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (0x01u << 16);		// Deassert reset
 
-    CCU->TCONLCD_CLK_REG |= (0x01uL << 31);
-    CCU->TCONLCD_BGR_REG |= (0x01uL << 0);	// Open the clock gate
-    CCU->TCONLCD_BGR_REG |= (0x01uL << 16); // Deassert reset
+    CCU->TCONLCD_CLK_REG |= (0x01u << 31);
+    CCU->TCONLCD_BGR_REG |= (0x01u << 0);	// Open the clock gate
+    CCU->TCONLCD_BGR_REG |= (0x01u << 16); // Deassert reset
 
+#if 0
+    // step 2
+    CCU->LVDS_BGR_REG |= (0x01u << 16); // LVDS0_RST: Deassert reset
+
+    // step 5
+    TCON_LCD0->LCD_LVDS_IF_REG =
+		0;
+    TCON_LCD0->LCD_DCLK_REG =
+		(1u << 28) |	// LCD_DCLK_EN
+		(0x07u << 0) |	// LCD_DCLK_DIV
+		0;
+#endif
 
 	t113_tconlcd_disable(pdat);
 	t113_tconlcd_set_timing(pdat, vdmode);
