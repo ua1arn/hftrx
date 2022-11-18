@@ -136,7 +136,7 @@ void xcz_if_rx_init(void)
 		PRINTF("fifo_if_rx reset fail %x \n", Status);
 		ASSERT(0);
 	}
-	uintptr_t addr32rx = allocate_dmabuffer32rx();
+	addr32rx = allocate_dmabuffer32rx();
 }
 
 void xcz_fifo_if_rx_inthandler(void)
