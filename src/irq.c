@@ -1814,7 +1814,7 @@ void arm_hardware_populte_second_initialize(void)
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
-	//PRINTF("arm_hardware_set_handler: int_id=%u\n", (unsigned) int_id);
+	PRINTF("arm_hardware_set_handler: int_id=%u\n", (unsigned) int_id);
 #if CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
@@ -1897,7 +1897,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 // Disable interrupt vector
 void arm_hardware_disable_handler(uint_fast16_t int_id)
 {
-	//PRINTF("arm_hardware_disable_handler: int_id=%u\n", (unsigned) int_id);
+	PRINTF("arm_hardware_disable_handler: int_id=%u\n", (unsigned) int_id);
 	ASSERT(arm_hardware_cpuid() == 0);
 
 #if CPUSTYLE_AT91SAM7S

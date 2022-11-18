@@ -3247,7 +3247,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		;
 	TIMER->TMR1_CTRL_REG |= (1u << 1);	// TMR1_RELOAD
 
+	PRINTF("tb TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 	TIMER->TMR_IRQ_EN_REG |= (1u << 1);	// TMR1_IRQ_EN
+	PRINTF("tb TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 
 	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer
@@ -8732,9 +8734,12 @@ hardware_elkey_timer_initialize(void)
 	TP();
 	TIMER->TMR0_CTRL_REG = 0;
 
+	PRINTF("ek TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 	TIMER->TMR_IRQ_EN_REG |= (1u << 0);	// TMR0_IRQ_EN
+	PRINTF("ek TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 
 	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer, timebase timer
+	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// elkey timer, timebase timer - без этой строки не работает системный тамер
 
 #else
 	#warning Undefined CPUSTYLE_XXX
