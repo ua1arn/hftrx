@@ -3251,8 +3251,12 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	TIMER->TMR_IRQ_EN_REG |= (1u << 1);	// TMR1_IRQ_EN
 	PRINTF("tb TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 
+	PRINTF("tb timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
+	PRINTF("tb timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer
+	PRINTF("tb timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
+	PRINTF("tb timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
 #elif CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
@@ -8738,8 +8742,12 @@ hardware_elkey_timer_initialize(void)
 	TIMER->TMR_IRQ_EN_REG |= (1u << 0);	// TMR0_IRQ_EN
 	PRINTF("ek TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 
+	PRINTF("ek timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
+	PRINTF("ek timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer, timebase timer
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// elkey timer, timebase timer - без этой строки не работает системный тамер
+	PRINTF("ek timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
+	PRINTF("ek timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
 #else
 	#warning Undefined CPUSTYLE_XXX
