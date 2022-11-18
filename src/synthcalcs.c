@@ -88,14 +88,22 @@ static volatile uint_fast64_t rlfm_position;// = 0;
 static volatile uint_fast64_t rlfm_nsteps;
 static volatile uint_fast64_t rlfm_currfreqX;	//текущач частота
 static volatile uint_fast64_t rlfm_freqStepX;	//шаг приращения
+static SPINLOCK_t lfmlock = SPINLOCK_INIT;
 
 // Вызывается из обработчика PPS при совпадении времени начала.
 void lfm_run(void)
 {
-	if (rlfm_isrunning)
-		return 0;
-	rlfm_isrunning = 1;
-	dsp_sidetone_ping();	// формирование маркера начала записи по PPS в одном из каналов USB
+	global_disableIRQ();
+	SPIN_LOCK(& lfmlock);
+
+	if (rlfm_isrunning == 0)
+	{
+		rlfm_isrunning = 1;
+		dsp_sidetone_ping();	// формирование маркера начала записи по PPS в одном из каналов USB
+	}
+
+	SPIN_UNLOCK(& lfmlock);
+	global_enableIRQ();
 }
 
 int iflfmactive(void)
