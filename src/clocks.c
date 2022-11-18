@@ -8727,8 +8727,10 @@ hardware_elkey_timer_initialize(void)
 
 	PRINTF("ek timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
 	PRINTF("ek timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
-	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer, timebase timer
-	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// elkey timer, timebase timer - без этой строки не работает системный тамер, хотя уже устновили обраьотчик ренее
+
+	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
+	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer - без этой строки не работает системный тамер, хотя уже устновили обраьотчик ренее
+
 	PRINTF("ek timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
 	PRINTF("ek timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
