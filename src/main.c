@@ -10785,6 +10785,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 		hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
 	}
 
+
 #if WITHLEAKYLMSANR
 	if (pathi == 0)
 		AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
@@ -10796,6 +10797,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 		ARM_MORPH(arm_scale)(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
 	}
 #endif /* WITHLEAKYLMSANR */
+	//ARM_MORPH(arm_fill)(0, nrp->wire1, FIRBUFSIZE);
 	return nrp->wire1;
 
 #endif /* WITHNOSPEEX */
@@ -10835,7 +10837,7 @@ audioproc_spool_user(void)
 			rxaproc_t * const nrp = & rxaprocs [pathi];
 			const uint_fast8_t amode = getamode(pathi);
 			// nrp->outsp указывает на результат обработки
-			outsp [pathi] = mdt [amode].afproc (pathi, nrp, p + pathi * FIRBUFSIZE);
+			outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
 		}
 		//////////////////////////////////////////////
 		// Save results
@@ -10844,8 +10846,6 @@ audioproc_spool_user(void)
 		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
 		audio_rx_equalizer(outsp [1], FIRBUFSIZE);
 	#endif /* WITHAFEQUALIZER */
-//			memset(outsp [0], 0, FIRBUFSIZE * sizeof outsp [0][0]);
-//			memset(outsp [1], 0, FIRBUFSIZE * sizeof outsp [1][0]);
 		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [1], FIRBUFSIZE);	// to AUDIO codec
 #else /* WITHUSEDUALWATCH */
 	#if WITHAFEQUALIZER
