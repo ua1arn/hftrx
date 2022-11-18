@@ -2353,7 +2353,7 @@ void awos_arch_flush_cache(void)
 // See https://github.com/xboot/xboot/blob/master/src/arch/riscv64/mach-f133/cache-c906.c
 
 #define L1_CACHE_BYTES	(64)
-
+#if 0
 /*
  * Flush range(clean & invalidate), affects the range [start, stop - 1]
  */
@@ -2377,6 +2377,9 @@ void cache_inv_range(uintptr_t start, uintptr_t stop)
 		__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
 	__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
 }
+
+#endif
+
 // Сейчас в эту память будем читать по DMA
 
 void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
@@ -2394,7 +2397,6 @@ void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 {
-	return;
 	if (dsize > 0)
 	{
 		register uintptr_t baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
@@ -2409,7 +2411,6 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 // применяетмся после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
 {
-	return;
 	//arm_hardware_invalidate(DRAM_SPACE_BASE, DRAM_SPACE_SIZE);
 	asm volatile ("fence w,w" ::: "memory");
 }
@@ -2417,7 +2418,6 @@ void arm_hardware_flush_all(void)
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 {
-
 	if (dsize > 0)
 	{
 		register uintptr_t baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
