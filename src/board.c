@@ -4146,7 +4146,14 @@ prog_ctrlreg(uint_fast8_t plane)
 		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
 		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
-#if WITHAUTOTUNER
+#if WITH_PALPF_ICM710
+
+		RBBIT(0061, 0x00);	// REF
+		RBBIT(0060, 0x00);	// FOR
+
+		RBVAL(0050, 1U << glob_bandf2, 8);		// D0..D7: band select бит выбора диапазонного фильтра передатчика
+
+#elif WITHAUTOTUNER
 	#if WITHAUTOTUNER_UA1CEI_V2
 
 		#if ! SHORTSET_7L8C && ! FULLSET_7L8C

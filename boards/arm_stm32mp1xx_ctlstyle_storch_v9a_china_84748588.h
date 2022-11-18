@@ -206,10 +206,7 @@
 	// --- вариации прошивки, специфические для разных частот
 
 	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
-
-	
-	
-	
+	#define WITH_PALPF_ICM710		1	/* ask from 84748588@qq.com */
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
