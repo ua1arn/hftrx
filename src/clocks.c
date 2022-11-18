@@ -2822,7 +2822,7 @@ void hardware_spi_io_delay(void)
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
-			dbg_putchar('e');
+			//dbg_putchar('e');
 
 			TIMER->TMR_IRQ_STA_REG = (1u << 0);	// TMR0_IRQ_PEND
 		}
@@ -2837,7 +2837,7 @@ void hardware_spi_io_delay(void)
 			// timebase
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
-			dbg_putchar('T');
+			//dbg_putchar('T');
 
 			TIMER->TMR_IRQ_STA_REG = (1u << 1);	// TMR1_IRQ_PEND
 		}
@@ -3229,17 +3229,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		;
 	TIMER->TMR1_CTRL_REG |= (1u << 1);	// TMR1_RELOAD
 
-	PRINTF("tb TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 	TIMER->TMR_IRQ_EN_REG |= (1u << 1);	// TMR1_IRQ_EN
-	PRINTF("tb TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
-
-	PRINTF("tb timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
-	PRINTF("tb timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer
-
-	PRINTF("tb timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
-	PRINTF("tb timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
 #elif CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
@@ -8721,18 +8713,12 @@ hardware_elkey_timer_initialize(void)
 	TP();
 	TIMER->TMR0_CTRL_REG = 0;
 
-	PRINTF("ek TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 	TIMER->TMR_IRQ_EN_REG |= (1u << 0);	// TMR0_IRQ_EN
-	PRINTF("ek TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 
-	PRINTF("ek timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
-	PRINTF("ek timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
 	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer - без этой строки не работает системный тамер, хотя уже устновили обраьотчик ренее
-
-	PRINTF("ek timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
-	PRINTF("ek timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
+	//arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer - без этой строки не работает системный тамер, хотя уже устновили обраьотчик ренее
 
 #else
 	#warning Undefined CPUSTYLE_XXX
