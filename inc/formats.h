@@ -774,34 +774,6 @@ int dbg_getchar(char * r);
 
 #endif /* WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC */
 
-#if WITHUART1HW
-	// Заглушки, если есть последовательный порт #1, но нигде не используется.
-	#if ! defined (HARDWARE_UART1_ONRXCHAR)
-		// вызывается из обработчика прерываний CDC
-		// с принятым символом
-		#define HARDWARE_UART1_ONRXCHAR(c) do { \
-				(void) (c); \
-				hardware_uart1_enablerx(1); \
-			} while (0)
-	#endif /* ! defined (HARDWARE_UART1_ONRXCHAR) */
-
-	#if ! defined (HARDWARE_UART1_ONOVERFLOW)
-		// вызывается из обработчика прерываний UART1
-		#define HARDWARE_UART1_ONOVERFLOW() do { \
-				hardware_uart1_enablerx(1); \
-			} while (0)
-	#endif /* ! defined (HARDWARE_UART1_ONOVERFLOW) */
-
-	#if ! defined (HARDWARE_UART1_ONTXCHAR)
-		// вызывается из обработчика прерываний UART1
-		// по готовности передатчика
-		#define HARDWARE_UART1_ONTXCHAR(ctx) do { \
-				hardware_uart1_enabletx(0); \
-			} while (0)
-	#endif /* ! defined (HARDWARE_UART1_ONTXCHAR) */
-
-#endif /* WITHUART1HW */
-
 #if WITHNMEA && WITHUART1HW && WITHNMEA_USART1
 	// Модемные функции работают через USART1
 	// Вызывается из user-mode программы
@@ -930,6 +902,34 @@ int dbg_getchar(char * r);
 		} while (0)
 
 #endif /* WITHNMEA && WITHUART2HW && WITHMODEM_USART4 */
+
+#if WITHUART1HW
+	// Заглушки, если есть последовательный порт #1, но нигде не используется.
+	#if ! defined (HARDWARE_UART1_ONRXCHAR)
+		// вызывается из обработчика прерываний CDC
+		// с принятым символом
+		#define HARDWARE_UART1_ONRXCHAR(c) do { \
+				(void) (c); \
+				hardware_uart1_enablerx(1); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART1_ONRXCHAR) */
+
+	#if ! defined (HARDWARE_UART1_ONOVERFLOW)
+		// вызывается из обработчика прерываний UART1
+		#define HARDWARE_UART1_ONOVERFLOW() do { \
+				hardware_uart1_enablerx(1); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART1_ONOVERFLOW) */
+
+	#if ! defined (HARDWARE_UART1_ONTXCHAR)
+		// вызывается из обработчика прерываний UART1
+		// по готовности передатчика
+		#define HARDWARE_UART1_ONTXCHAR(ctx) do { \
+				hardware_uart1_enabletx(0); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART1_ONTXCHAR) */
+
+#endif /* WITHUART1HW */
 
 #if WITHUART2HW
 	// Заглушки, если есть последовательный порт #2, но нигде не используется.
