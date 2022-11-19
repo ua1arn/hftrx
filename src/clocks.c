@@ -2813,47 +2813,49 @@ void hardware_spi_io_delay(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	void
-	TIMER0_IRQHandler(void)
+	// Таймер электронного ключа
+	void TIMER0_IRQHandler(void)
 	{
+		enum { IX = 0 };
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
-		if ((st & (1u << 0)) != 0)	// TMR0_IRQ_PEND
+		if ((st & (1u << IX)) != 0)	// TMR0_IRQ_PEND
 		{
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
 			//dbg_putchar('e');
 
-			TIMER->TMR_IRQ_STA_REG = (1u << 0);	// TMR0_IRQ_PEND
+			TIMER->TMR_IRQ_STA_REG = (1u << IX);	// TMR0_IRQ_PEND
 		}
 	}
 
-	void
-	TIMER1_IRQHandler(void)
+	// Таймер "тиков"
+	void TIMER1_IRQHandler(void)
 	{
+		enum { IX = 1 };
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
-		if ((st & (1u << 1)) != 0)	// TMR1_IRQ_PEND
+		if ((st & (1u << IX)) != 0)	// TMR1_IRQ_PEND
 		{
 			// timebase
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 			//dbg_putchar('T');
 
-			TIMER->TMR_IRQ_STA_REG = (1u << 1);	// TMR1_IRQ_PEND
+			TIMER->TMR_IRQ_STA_REG = (1u << IX);	// TMR1_IRQ_PEND
 		}
 	}
 
 #elif CPUSTYLE_R7S721
 
 	// Таймер "тиков"
-	static void OSTMI0TINT_IRQHandler(void)
+	void OSTMI0TINT_IRQHandler(void)
 	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
 	// Таймер электронного ключа
-	static void OSTMI1TINT_IRQHandler(void)
+	void OSTMI1TINT_IRQHandler(void)
 	{
 		spool_elkeybundle();
 	}
