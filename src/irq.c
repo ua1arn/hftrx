@@ -1860,18 +1860,16 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 
 	/* Set interrupt handler */
 	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
-
-	const div_t d = div(int_id, 32);
-	ASSERT(d.quot < 10);
-	const unsigned mask = (1u << d.rem);
-
-	PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
+	// https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic.adoc
 
 	ASSERT(int_id < MAX_IRQ_n);
 
+	const div_t d = div(int_id, 32);
+	const unsigned mask = (1u << d.rem);
+
+	PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
 	plic_vectors [int_id] = handler;
 	PLIC->PLIC_PRIO_REGn [int_id] = priority;
-
 	PLIC->PLIC_MIE_REGn [d.quot] |= mask;
 
 	// 1: The machine mode can access to all registers in PLIC.

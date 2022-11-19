@@ -498,14 +498,12 @@ typedef struct CCU_Type
 /*!< PLIC Controller Interface */
 typedef struct PLIC_Type
 {
-	__IO uint32_t PLIC_PRIO_REGn [0x100];                /*!< Offset 0x000 (0<n<256) PLIC Priority Register n */
-	uint32_t reserved_0x400 [0x0300];
-	__IO uint32_t PLIC_IP_REGn [0x00A];                  /*!< Offset 0x1000 (0≤n<9) PLIC Interrupt Pending Register n */
-	uint32_t reserved_0x1028 [0x03F6];
-	__IO uint32_t PLIC_MIE_REGn [0x00A];                 /*!< Offset 0x2000 (0≤n<9) PLIC Machine Mode Interrupt Enable Register n */
-	uint32_t reserved_0x2028 [0x0016];
-	__IO uint32_t PLIC_SIE_REGn [0x00A];                 /*!< Offset 0x2080 (0≤n<9) PLIC Superuser Mode Interrupt Enable Register n */
-	uint32_t reserved_0x20A8 [0x7F7D5];
+	__IO uint32_t PLIC_PRIO_REGn [0x400];                /*!< Offset 0x000 (0<n<256) PLIC Priority Register n */
+	__IO uint32_t PLIC_IP_REGn [0x080];                  /*!< Offset 0x1000 (0≤n<9) PLIC Interrupt Pending Register n */
+	uint32_t reserved_0x1200 [0x0380];
+	__IO uint32_t PLIC_MIE_REGn [0x020];                 /*!< Offset 0x2000 (0≤n<9) PLIC Machine Mode Interrupt Enable Register n */
+	__IO uint32_t PLIC_SIE_REGn [0x020];                 /*!< Offset 0x2080 (0≤n<9) PLIC Superuser Mode Interrupt Enable Register n */
+	uint32_t reserved_0x2100 [0x7F7BF];
 	__IO uint32_t PLIC_CTRL_REG;                         /*!< Offset 0x1FFFFC PLIC Control Register */
 	__IO uint32_t PLIC_MTH_REG;                          /*!< Offset 0x200000 PLIC Machine Threshold Register */
 	__IO uint32_t PLIC_MCLAIM_REG;                       /*!< Offset 0x200004 PLIC Machine Claim Register */
