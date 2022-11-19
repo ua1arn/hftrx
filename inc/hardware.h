@@ -1198,6 +1198,8 @@ void xcz_dds_ftw(const uint_least64_t * value);	// Установка центр
 void xcz_dds_ftw_sub(const uint_least64_t * value);// Установка центральной частоты тракта дополнительного приёмника
 void xcz_dds_rts(const uint_least64_t * value);// Установка центральной частоты панорамного индикатора
 
+void nmea_parser_init(void);
+
 #endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 /* получить 32-бит значение */
