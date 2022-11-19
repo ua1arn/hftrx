@@ -3214,7 +3214,6 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// timebase timer
-	TP();
 	TIMER->TMR1_CTRL_REG = 0;
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
@@ -8712,15 +8711,11 @@ hardware_elkey_timer_initialize(void)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// elkey timer
-	TP();
 	TIMER->TMR0_CTRL_REG = 0;
 
 	TIMER->TMR_IRQ_EN_REG |= (1u << 0);	// TMR0_IRQ_EN
 
-
 	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
-	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer - без этой строки не работает системный тамер, хотя уже устновили обраьотчик ренее
-	//arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer - без этой строки не работает системный тамер, хотя уже устновили обраьотчик ренее
 
 #else
 	#warning Undefined CPUSTYLE_XXX
