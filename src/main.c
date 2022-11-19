@@ -21471,7 +21471,7 @@ static uint_fast8_t bootloader_get_start(
 	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
 	uint_fast32_t checksum = hdr->image_checksum;
 	uint_fast32_t length = hdr->image_length;
-	const uint8_t * p = (const uint8_t *) hdr->load_address;
+	const uint8_t * p = (const uint8_t *) (uintptr_t) hdr->load_address;
 	if (hdr->magic_number != HEADER_MAGIC)
 		return 1;
 	* ip = hdr->image_entry_point;
@@ -21494,8 +21494,8 @@ static uint_fast8_t bootloader_copyapp(
 	if (hdr->magic_number != HEADER_MAGIC)
 		return 1;
 	* ip = hdr->image_entry_point;
-	PRINTF("bootloader_copyapp: ip=%08lX (addr=%08lX, len=%08lX)\n", (unsigned long) * ip, hdr->load_address, hdr->image_length);
-	bootloader_readimage(appoffset + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
+	PRINTF("bootloader_copyapp: ip=%08X (addr=%08X, len=%08X)\n", (unsigned) * ip, (unsigned) hdr->load_address, (unsigned) hdr->image_length);
+	bootloader_readimage(appoffset + HEADERSIZE, (void *) (uintptr_t) hdr->load_address, hdr->image_length);
 	PRINTF("bootloader_copyapp done.\n");
 	return 0;
 }
@@ -21505,7 +21505,7 @@ static uint_fast8_t bootloader_copyapp(
 static void
 bootloader_launch_app(uintptr_t ip)
 {
-	__disable_irq();
+	global_disableIRQ();
 #if WITHUSBHW
 		board_usb_deinitialize();
 #endif /* WITHUSBHW */

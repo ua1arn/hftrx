@@ -1137,7 +1137,7 @@ int toshiba_ddr_power_init(void)
 
 #include "sdram.h"
 
-void sdram_test_pattern(uint_fast32_t addr, uint_fast16_t buffer_size, uint_fast16_t pattern)
+void sdram_test_pattern(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t pattern)
 {
 	for (uint32_t i = 0; i < buffer_size; i++)
 		*(volatile uint16_t*) (addr + 2 * i) = pattern;
@@ -1152,7 +1152,7 @@ void sdram_test_pattern(uint_fast32_t addr, uint_fast16_t buffer_size, uint_fast
 
 }
 
-void sdram_test_increment(uint_fast32_t addr, uint_fast16_t buffer_size, uint_fast16_t seed)
+void sdram_test_increment(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t seed)
 {
 	for (uint32_t i = 0; i < buffer_size; i++)
 		*(volatile uint16_t*) (addr + 2 * i) = seed + i;
@@ -1167,7 +1167,7 @@ void sdram_test_increment(uint_fast32_t addr, uint_fast16_t buffer_size, uint_fa
 
 }
 
-void sdram_test_random(uint_fast32_t addr, uint_fast16_t buffer_size)
+void sdram_test_random(uintptr_t addr, uint_fast16_t buffer_size)
 {
 	volatile uint16_t aTxBuffer[buffer_size];
 	volatile uint16_t r;
@@ -4230,7 +4230,9 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 
 #include "spi.h"
-static struct dram_para_t ddr3 =
+
+#if CPUSTYLE_T113
+static struct dram_para_t ddrp =
 {
 	.dram_clk = 792,
 	.dram_type = 3,
@@ -4257,31 +4259,69 @@ static struct dram_para_t ddr3 =
 	.dram_tpr12 = 0x00000046,
 	.dram_tpr13 = 0x34000100,
 };
+void sys_dram_init(void)
+{
+	set_pll_cpux_axi(PLL_CPU_N);
+	init_DRAM(0, & ddrp);
+}
+
+#elif CPUSTYLE_F133
+
+static struct dram_para_t ddrp = {
+	.dram_clk = 528,
+	.dram_type = 2,
+	.dram_zq = 0x07b7bf9,
+	.dram_odt_en = 0x00,
+	.dram_para1 = 0x000000d2,
+	.dram_para2 = 0x00000000,
+	.dram_mr0 = 0x00000e73,
+	.dram_mr1 = 0x02,
+	.dram_mr2 = 0x0,
+	.dram_mr3 = 0x0,
+	.dram_tpr0 = 0x00471992,
+	.dram_tpr1 = 0x0131a10c,
+	.dram_tpr2 = 0x00057041,
+	.dram_tpr3 = 0xb4787896,
+	.dram_tpr4 = 0x0,
+	.dram_tpr5 = 0x48484848,
+	.dram_tpr6 = 0x48,
+	.dram_tpr7 = 0x1621121e,
+	.dram_tpr8 = 0x0,
+	.dram_tpr9 = 0x0,
+	.dram_tpr10 = 0x00000000,
+	.dram_tpr11 = 0x00030010,
+	.dram_tpr12 = 0x00000035,
+	.dram_tpr13 = 0x34000000,
+};
 
 void sys_dram_init(void)
 {
-	init_DRAM(0, & ddr3);
+	set_pll_riscv_axi(PLL_CPU_N);
+	init_DRAM(0, & ddrp);
 }
+
+#endif
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
-	//PRINTF("arm_hardware_sdram_initialize start\n");
-#if 0
+	PRINTF("arm_hardware_sdram_initialize start\n");
+#if 0 && CPUSTYLE_T113
 	const uintptr_t ddr3init_base = 0x00028000;
 	/* вызывается до разрешения MMU */
 	bootloader_readimage(0x00040000, (void *) ddr3init_base, 0x8000);
-	memcpy((void *) (ddr3init_base + 0x0038), & ddr3, sizeof ddr3);
+	memcpy((void *) (ddr3init_base + 0x0038), & ddrp, sizeof ddrp);
 	((void(*)(void))(ddr3init_base))();
 	set_pll_cpux_axi(PLL_CPU_N);
 	#if WITHDEBUG && 1
 		//HARDWARE_DEBUG_INITIALIZE();
 		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 	#endif /* WITHDEBUG */
+
 #else
-	set_pll_cpux_axi(PLL_CPU_N);
 	sys_dram_init();
+
 #endif
-	//PRINTF("arm_hardware_sdram_initialize done\n");
+	PRINTF("arm_hardware_sdram_initialize done\n");
 	//local_delay_ms(1000);
 }
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
