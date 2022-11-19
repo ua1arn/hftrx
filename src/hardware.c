@@ -3493,14 +3493,14 @@ sysinit_cache_initialize(void)
 		csr_write_mhcr(v);
 	}
 
-//	if (1)
-//	{
-//		// enable D-cache Write-allocate (C906-specific)
-//		uint_xlen_t v = csr_read_mhcr();;
-//		v |= (1u << 2);	// WA
-//		csr_write_mhcr(v);
-//	}
-//
+	if (1)
+	{
+		// enable D-cache Write-allocate (C906-specific)
+		uint_xlen_t v = csr_read_mhcr();;
+		v |= (1u << 2);	// WA
+		csr_write_mhcr(v);
+	}
+
 //	if (1)
 //	{
 //		// enable D-cache Write-back (C906-specific)
