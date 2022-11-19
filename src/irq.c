@@ -1723,7 +1723,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
-static RAMDTCM SPINLOCK_t gicpriority_lock = SPINLOCK_INIT;
+static RAMDTCM SPINLOCK_t gicdistrib_lock = SPINLOCK_INIT;
 
 #if WITHSMPSYSTEM
 
@@ -1740,12 +1740,12 @@ static void arm_hardware_gicsfetch(void)
 	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
 	unsigned int_id;
 
-	SPIN_LOCK(& gicpriority_lock);
+	SPIN_LOCK(& gicdistrib_lock);
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
 		GIC_SetPriority(int_id, gicshadow_prio [int_id]);	// non-atomic operation
 	}
-	SPIN_UNLOCK(& gicpriority_lock);
+	SPIN_UNLOCK(& gicdistrib_lock);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
@@ -1782,14 +1782,14 @@ static void arm_hardware_populate_initialize(void)
 	{
 		gicshadow_prio [int_id] = GIC_GetPriority(int_id);
 	}
-	//SPINLOCK_INITIALIZE(& gicpriority_lock);
+	//SPINLOCK_INITIALIZE(& gicdistrib_lock);
 	//SPINLOCK_INITIALIZE(& populate_lock);
 	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 
-	SPIN_LOCK(& gicpriority_lock);
+	SPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
-	SPIN_UNLOCK(& gicpriority_lock);
+	SPIN_UNLOCK(& gicdistrib_lock);
 	arm_hardware_flush_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, BOARD_SGI_PRIO, 0x01u << 1);
@@ -1801,9 +1801,9 @@ void arm_hardware_populte_second_initialize(void)
 	ASSERT(arm_hardware_cpuid() != 0);
 	//PRINTF("arm_hardware_populte_second_initialize\n");
 
-	SPIN_LOCK(& gicpriority_lock);
+	SPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
-	SPIN_UNLOCK(& gicpriority_lock);
+	SPIN_UNLOCK(& gicdistrib_lock);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
@@ -1836,23 +1836,21 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_Disable(int_id) == 0);
 
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
-	SPIN_LOCK(& gicpriority_lock);
+
+	SPIN_LOCK(& gicdistrib_lock);
+
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);	// non-atomic operation
-	SPIN_UNLOCK(& gicpriority_lock);
-	GIC_SetTarget(int_id, targetcpu);
+	GIC_SetTarget(int_id, targetcpu);	// non-atomic operation
 
+	// peripherial (hardware) interrupts using the GIC 1-N model.
+	uint_fast32_t cfg = GIC_GetConfiguration(int_id) & 0x03u;
+	cfg &= ~ 0x02;	/* Set level sensitive configuration */
+	cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
+	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
 
-	#if CPUSTYLE_STM32MP1 || CPUSTYLE_T113
-		// peripheral (hardware) interrupts using the GIC 1-N model.
-		uint_fast32_t cfg = GIC_GetConfiguration(int_id) & 0x03u;
-		cfg &= ~ 0x02;	/* Set level sensitive configuration */
-		cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
-		GIC_SetConfiguration(int_id, cfg);// non-atomic operation
-	#endif /* CPUSTYLE_STM32MP1 */
-
+	SPIN_UNLOCK(& gicdistrib_lock);
 
 	#if WITHSMPSYSTEM
-
 		arm_hardware_populate(int_id);	// populate for other CPUs
 	#endif /* WITHSMPSYSTEM */
 
