@@ -1844,8 +1844,8 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 
 	// peripherial (hardware) interrupts using the GIC 1-N model.
 	uint_fast32_t cfg = GIC_GetConfiguration(int_id) & 0x03u;
-	cfg &= ~ 0x02;	/* Set level sensitive configuration */
-	cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
+	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
+	cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
 
 	SPIN_UNLOCK(& gicdistrib_lock);
