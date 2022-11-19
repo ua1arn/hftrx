@@ -2823,7 +2823,6 @@ void hardware_spi_io_delay(void)
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
-			//dbg_putchar('e');
 
 			TIMER->TMR_IRQ_STA_REG = (1u << IX);	// TMR0_IRQ_PEND
 		}
@@ -2839,7 +2838,6 @@ void hardware_spi_io_delay(void)
 			// timebase
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
-			//dbg_putchar('T');
 
 			TIMER->TMR_IRQ_STA_REG = (1u << IX);	// TMR1_IRQ_PEND
 		}
