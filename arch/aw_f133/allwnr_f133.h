@@ -499,8 +499,8 @@ typedef struct CCU_Type
 typedef struct PLIC_Type
 {
 	__IO uint32_t PLIC_PRIO_REGn [0x400];                /*!< Offset 0x000 (0<n<256) PLIC Priority Register n */
-	__IO uint32_t PLIC_IP_REGn [0x080];                  /*!< Offset 0x1000 (0≤n<9) PLIC Interrupt Pending Register n */
-	uint32_t reserved_0x1200 [0x0380];
+	__IO uint32_t PLIC_IP_REGn [0x020];                  /*!< Offset 0x1000 (0≤n<9) PLIC Interrupt Pending Register n */
+	uint32_t reserved_0x1080 [0x03E0];
 	__IO uint32_t PLIC_MIE_REGn [0x020];                 /*!< Offset 0x2000 (0≤n<9) PLIC Machine Mode Interrupt Enable Register n */
 	__IO uint32_t PLIC_SIE_REGn [0x020];                 /*!< Offset 0x2080 (0≤n<9) PLIC Superuser Mode Interrupt Enable Register n */
 	uint32_t reserved_0x2100 [0x7F7BF];
