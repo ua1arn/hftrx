@@ -2066,7 +2066,7 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 }
 
 // Записать содержимое кэша данных в память
-// применяетмся после начальной инициализации среды выполнния
+// применяется после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
 {
 	SCB_CleanDCache();	// DCCMVAC register used.
@@ -2191,7 +2191,7 @@ __STATIC_FORCEINLINE void L2_InvalidateDCache_by_Addr(volatile void *addr, int32
 #endif /* (__L2C_PRESENT == 1) */
 
 // Записать содержимое кэша данных в память
-// применяетмся после начальной инициализации среды выполнния
+// применяется после начальной инициализации среды выполнния
 void FLASHMEMINITFUNC arm_hardware_flush_all(void)
 {
 	L1C_CleanInvalidateDCacheAll();
@@ -2386,7 +2386,7 @@ void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
-		register uintptr_t baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
+		register uintptr_t baseval asm("a0") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
 			__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
@@ -2399,7 +2399,7 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
-		register uintptr_t baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
+		register uintptr_t baseval asm("a0") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
 			__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
@@ -2408,7 +2408,7 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 }
 
 // Записать содержимое кэша данных в память
-// применяетмся после начальной инициализации среды выполнния
+// применяется после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
 {
 	//arm_hardware_invalidate(DRAM_SPACE_BASE, DRAM_SPACE_SIZE);
@@ -2420,7 +2420,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
-		register uintptr_t baseval asm("a0") = base & ~ (DCACHEROWSIZE - 1);
+		register uintptr_t baseval asm("a0") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
 		{
@@ -2445,7 +2445,7 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 }
 
 // Записать содержимое кэша данных в память
-// применяетмся после начальной инициализации среды выполнния
+// применяется после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
 {
 }
