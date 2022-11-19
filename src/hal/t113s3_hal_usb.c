@@ -97,6 +97,8 @@
 #define  wBoot_dma_stop(hdma)        do { } while (0)
 #define  wBoot_dma_request(sect)     0
 
+static usb_struct * volatile gpusb = NULL;
+
 #if WITHUSBDMSC
 
 #define USB_CBW_LEN				(31)
@@ -2302,7 +2304,6 @@ static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуал�
 static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
 static volatile uint8_t usbd_cdc_txstarted [WITHUSBCDCACM_N];
 static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
-static usb_struct * volatile gpusb = NULL;
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void usbd_cdc_send(const void * buff, size_t length)
