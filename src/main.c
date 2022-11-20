@@ -13193,12 +13193,13 @@ RAMFUNC_NONILINE
 spool_nmeapps(void)
 {
 	th = nmea_time;
-//#if WITHLFM
-//	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))
-//	{
-//		lfm_run();
-//	}
-//#endif /* WITHLFM */
+	//PRINTF("pps nmea time %02d:%02d:%02d\n", nmea_time.hours, nmea_time.minutes, nmea_time.secounds);
+#if WITHLFM
+	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))
+	{
+		lfm_run();
+	}
+#endif /* WITHLFM */
 }
 
 
@@ -19722,7 +19723,7 @@ hamradio_main_step(void)
 
 			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
-	#if WITHLFM
+	#if WITHLFM && ! BOARD_PPSIN_BIT
 			if (lfmmode)
 			{
 				/*  проверяем секунды начала */

@@ -225,10 +225,7 @@ void xc7z_uart0_inthandler(void)
 void nmea_parser_init(void)
 {
 #if WITHUART1HW && WITHNMEA
-	uint32_t mask = 1; 			/* RX FIFO trigger interrupt */
-	UART0->RXWM = 1; 			/* set RX FIFO Trigger Level */
-	UART0->IER = mask;
-	UART0->IDR = ~ mask;
+	NMEA_INITIALIZE();
 	arm_hardware_set_handler_system(UART0_IRQn, xc7z_uart0_inthandler);
 #endif /* WITHUART1HW && WITHNMEA */
 }

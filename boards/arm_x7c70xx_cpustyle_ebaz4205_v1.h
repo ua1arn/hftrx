@@ -41,6 +41,17 @@
 #define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 #define WITHETHHW 1	/* Hardware Ethernet controller */
 
+#if WITHNMEA
+
+	#define BOARD_PPSIN_BIT	38
+	#define NMEA_INITIALIZE() do { \
+		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 1); \
+		gpio_input2(BOARD_PPSIN_BIT, pinmode_input); 													\
+		gpio_onrisinginterrupt(BOARD_PPSIN_BIT, spool_nmeapps, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);	\
+	} while (0)
+
+#endif /* WITHNMEA */
+
 
 #if WITHISBOOTLOADER
 
