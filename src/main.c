@@ -13117,7 +13117,7 @@ static unsigned char hex2int(uint_fast8_t c)
 
 void nmea_parsechar(uint_fast8_t c)
 {
-
+	//dbg_putchar(c);
 	switch (nmea_state)
 	{
 	case NMEAST_INITIALIZED:
@@ -19644,7 +19644,6 @@ static void hamradio_main_initialize(void)
 	}
 #endif /* FQMODEL_GEN500 */
 
-
 	encoder_clear();
 
 	/* начальное отображение */
@@ -21832,6 +21831,10 @@ main(void)
 #endif /* WITHLWIP */
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
+
+#if WITHNMEA && CPUSTYLE_XC7Z
+	nmea_parser_init(); // пока тут
+#endif /* WITHNMEA && CPUSTYLE_XC7Z */
 
 #if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
 	bootloader_fatfs_mainloop();
