@@ -59,7 +59,7 @@ static void generaterow(
     )
 
 {
-    fprintf(fp, "\t{ %-3u, %-8u, %-8u, },\t/* dcdc=%u Hz */\n", divider, f1, f2, dcdc, visible);
+    fprintf(fp, "\t{ %-3u, %-8u, %-8u, },\t/* dcdc=%u Hz visible=%s */\n", divider, f1, f2, dcdc, visible ? "yes" : "no");
 }
 
 void buildtable(
@@ -170,11 +170,11 @@ void buildtable(
 
 int main(int argc, char* argv[])
 {
-     buildtable(50000000, 400000, 1200000, 30000, 54000000, 96000, stdout);    /* Allwinner t113-s3 */
- //   buildtable(32000000, 400000, 1200000, 30000, 54000000, 96000, stdout);  /* STM32MP1 */
-//    buildtable(16000000, 400000, 1200000, 30000, 54000000, 96000, stdout);  /* STM32H7 */
-//   buildtable(15000000, 400000, 1200000, 30000, 54000000, 96000, stdout);  /* Renesas RZA1/L @360 MHz */
- //  buildtable(122880000 / 2, 400000, 1200000, 30000, 54000000, 96000, stdout);  /* Zynq 7020 */
+    const unsigned bw = 96000 * 1;
+     buildtable(50000000, 400000, 1200000, 30000, 54000000, bw, stdout);    /* Allwinner t113-s3 */
+//    buildtable(16000000, 400000, 1200000, 30000, 54000000, bw, stdout);  /* STM32H7 */
+//   buildtable(15000000, 400000, 1200000, 30000, 54000000, bw, stdout);  /* Renesas RZA1/L @360 MHz */
+ //  buildtable(122880000 / 2, 400000, 1200000, 30000, 54000000, bw, stdout);  /* Zynq 7020 */
 
 	return 0;
 }
