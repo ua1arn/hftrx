@@ -211,25 +211,6 @@ void xc7z_gpio_output(uint8_t pin)
 			XGPIOPS_OUTEN_OFFSET, OpEnableReg);
 }
 
-void xc7z_uart0_inthandler(void)
-{
-	char c;
-	UART0->ISR = UART0->IMR;	// clear interrupt status
-
-	while(hardware_uart1_getchar(& c))
-	{
-		HARDWARE_UART1_ONRXCHAR(c);
-	}
-}
-
-void nmea_parser_init(void)
-{
-#if WITHUART1HW && WITHNMEA
-	NMEA_INITIALIZE();
-	arm_hardware_set_handler_system(UART0_IRQn, xc7z_uart0_inthandler);
-#endif /* WITHUART1HW && WITHNMEA */
-}
-
 #endif /* CPUSTYLE_XC7Z */
 
 /* 
