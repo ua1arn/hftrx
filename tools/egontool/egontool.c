@@ -1,8 +1,7 @@
 // egontool.cpp : Defines the entry point for the console application.
 //
-
-#include "stdafx.h"
-
+#include <stdio.h>
+#include <string.h>
 
 
 #if defined   (__GNUC__)        /* GNU Compiler */
@@ -49,8 +48,8 @@ static void fillpad(FILE * fp, long size)
 
 static uint32_t cks(const void * buff, unsigned size, uint32_t sum)
 {
-	size /= 4;
 	const uint32_t * p = (const uint32_t *) buff;
+	size /= 4;
 	while (size --)
 		sum += * p ++;
 	return sum;
@@ -66,43 +65,30 @@ static void place_uint32_le(void * buff, uint32_t v)
 	p [3] = (v >> 24);
 }
 
-int main(int argc, char* argv[])
+static void process(
+	FILE * infile,
+	FILE * outfile)
 {
-
-	if (argc < 3)
-		return 1;
-
-	const char * const infilename = argv [1]; //"../../build/allwinner_t113_s3/tc1_t113s3_boot.bin";
-	const char * const outfilename = argv [2]; //"../../build/allwinner_t113_s3/fsbl.alw32";
-
-	FILE * infile = fopen(infilename,"rb");
-	FILE * outfile = fopen(outfilename,"wb");
-
-	if (infile == NULL || outfile == NULL)
-	{
-		fprintf(stderr, "Can not open files...\n");
-		return 1;
-	}
-	
 	boot_file_head_t head;
 	static const uint8_t magic_eGON_BT0 [8] = { 'e', 'G', 'O', 'N', '.', 'B', 'T', '0' };	/* eGON.BT0 */
 	static const uint8_t pub_head_vsn [8] = { '3', '0', '0', '0' };	/* 3000 */
 	static const uint8_t platform [8] = {  '\0',  '\0',  '\0',  '\0', '4', '.', '0', '\0' };	/* 4.0 */
 	const unsigned execoffset = 0x100;
-
+	long binsize;
+	long silesizealigned;
 	uint32_t check_sum;
 
 	fseek(infile, 0, SEEK_END);
-	const long binsize = ftell(infile);
-	const long silesizealigned = alignup(binsize + execoffset, 16 * 1024);
+	binsize = ftell(infile);
+	silesizealigned = alignup(binsize + execoffset, 16 * 1024);
 
 	//fprintf(stderr, "Okay open files... %ld %ld\n", binsize, silesizealigned);
 
 	{
+		long i;
 		/* checksum calculate */
 		check_sum = 0;
 		rewind(infile);
-		long i;
 		for (i = 0; i < binsize;)
 		{
 			enum { CHUNKSIZE = 256 };
@@ -138,9 +124,9 @@ int main(int argc, char* argv[])
 	fillpad(outfile, execoffset - sizeof head);
 
 	{
+		long i;
 		/* copy file */
 		rewind(infile);
-		long i;
 		for (i = 0; i < binsize; )
 		{
 			enum { CHUNKSIZE = 256 };
@@ -153,8 +139,31 @@ int main(int argc, char* argv[])
 	}
 
 	fillpad(outfile, silesizealigned - binsize - execoffset);
+}
 
-	//fprintf(stderr, "Okay processing... %ld %ld\n", binsize, silesizealigned);
+int main(int argc, char* argv[])
+{
+
+	if (argc < 3)
+		return 1;
+	else
+	{
+		const char * const infilename = argv [1]; //"../../build/allwinner_t113_s3/tc1_t113s3_boot.bin";
+		const char * const outfilename = argv [2]; //"../../build/allwinner_t113_s3/fsbl.alw32";
+
+		FILE * infile = fopen(infilename,"rb");
+		FILE * outfile = fopen(outfilename,"wb");
+
+		if (infile == NULL || outfile == NULL)
+		{
+			fprintf(stderr, "Can not open files...\n");
+			return 1;
+		}
+		
+		process(infile, outfile);
+
+		//fprintf(stderr, "Okay processing... %ld %ld\n", binsize, silesizealigned);
+	}
 
 	return 0;
 }
