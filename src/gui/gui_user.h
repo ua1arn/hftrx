@@ -35,14 +35,15 @@ static void window_ft8_process(void);
 static void window_ft8_bands_process(void);
 static void window_ft8_settings_process(void);
 static void window_infobar_menu_process(void);
-static void window_af_eq_proccess(void);
-static void window_shift_proccess(void);
-static void window_menu_params_proccess(void);
-static void window_time_proccess(void);
-static void window_kbd_proccess(void);
-static void window_kbd_test_proccess(void);
-static void window_ping_proccess(void);
-static void window_3d_proccess(void);
+static void window_af_eq_process(void);
+static void window_shift_process(void);
+static void window_menu_params_process(void);
+static void window_time_process(void);
+static void window_kbd_process(void);
+static void window_kbd_test_process(void);
+static void window_ping_process(void);
+static void window_3d_process(void);
+static void window_lfm_process(void);
 
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
@@ -84,6 +85,9 @@ enum {
 	WINDOW_PING,
 #endif /* WITHLWIP */
 	WINDOW_3D,
+#if WITHLFM
+	WINDOW_LFM,
+#endif /* WITHLFM  */
 
 	WINDOWS_COUNT
 };
