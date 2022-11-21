@@ -2813,8 +2813,8 @@ void hardware_spi_io_delay(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	void
-	TIMER0_IRQHandler(void)
+	// Таймер электронного ключа
+	void TIMER0_IRQHandler(void)
 	{
 		enum { IX = 0 };
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
@@ -2823,14 +2823,13 @@ void hardware_spi_io_delay(void)
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
-			dbg_putchar('e');
 
 			TIMER->TMR_IRQ_STA_REG = (1u << IX);	// TMR0_IRQ_PEND
 		}
 	}
 
-	void
-	TIMER1_IRQHandler(void)
+	// Таймер "тиков"
+	void TIMER1_IRQHandler(void)
 	{
 		enum { IX = 1 };
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
@@ -2839,7 +2838,6 @@ void hardware_spi_io_delay(void)
 			// timebase
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
-			dbg_putchar('T');
 
 			TIMER->TMR_IRQ_STA_REG = (1u << IX);	// TMR1_IRQ_PEND
 		}
@@ -2848,14 +2846,14 @@ void hardware_spi_io_delay(void)
 #elif CPUSTYLE_R7S721
 
 	// Таймер "тиков"
-	static void OSTMI0TINT_IRQHandler(void)
+	void OSTMI0TINT_IRQHandler(void)
 	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
 	// Таймер электронного ключа
-	static void OSTMI1TINT_IRQHandler(void)
+	void OSTMI1TINT_IRQHandler(void)
 	{
 		spool_elkeybundle();
 	}
@@ -3214,7 +3212,6 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// timebase timer
-	TP();
 	TIMER->TMR1_CTRL_REG = 0;
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
@@ -3231,17 +3228,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		;
 	TIMER->TMR1_CTRL_REG |= (1u << 1);	// TMR1_RELOAD
 
-	PRINTF("tb TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 	TIMER->TMR_IRQ_EN_REG |= (1u << 1);	// TMR1_IRQ_EN
-	PRINTF("tb TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
-
-	PRINTF("tb timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
-	PRINTF("tb timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer
-
-	PRINTF("tb timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
-	PRINTF("tb timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
 #elif CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
@@ -8720,21 +8709,11 @@ hardware_elkey_timer_initialize(void)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// elkey timer
-	TP();
 	TIMER->TMR0_CTRL_REG = 0;
 
-	PRINTF("ek TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
 	TIMER->TMR_IRQ_EN_REG |= (1u << 0);	// TMR0_IRQ_EN
-	PRINTF("ek TIMER->TMR_IRQ_EN_REG=%08X\n", TIMER->TMR_IRQ_EN_REG);
-
-	PRINTF("ek timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
-	PRINTF("ek timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
 	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
-	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer - без этой строки не работает системный тамер, хотя уже устновили обраьотчик ренее
-
-	PRINTF("ek timer0 enable state=%u\n", IRQ_GetEnableState(TIMER0_IRQn));
-	PRINTF("ek timer1 enable state=%u\n", IRQ_GetEnableState(TIMER1_IRQn));
 
 #else
 	#warning Undefined CPUSTYLE_XXX

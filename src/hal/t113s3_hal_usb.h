@@ -968,6 +968,7 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 #define USB_TXCSR_ERROR				(0x1u << 2)
 #define USB_TXCSR_FIFONOTEMP		(0x1u << 1)
 #define USB_TXCSR_TXPKTRDY			(0x1u << 0)
+
 #define USB_BUSINT_VBUSERROR		(0x1u << 7)
 #define USB_BUSINT_SESSREQ			(0x1u << 6)
 #define USB_BUSINT_SESSEND			(0x1u << 5)

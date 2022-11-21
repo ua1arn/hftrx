@@ -2318,6 +2318,16 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 	prepareout32tx->buff [level32tx + DMABUF32TX_NCORTS] = dspfpga_get_ncorts();
 #endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
 
+#if CPUSTYLE_XC7Z && WITHLFM
+	if (iflfmactive())
+	{
+		ftw_t v = dspfpga_get_nco1();
+		xcz_dds_ftw(& v);
+		v = dspfpga_get_ncorts();
+		xcz_dds_rts(& v);
+	}
+#endif /* CPUSTYLE_XC7Z && WITHLFM */
+
 	if ((level32tx += DMABUFFSTEP32TX) >= DMABUFFSIZE32TX)
 	{
 		SPIN_LOCK(& locklist32tx);

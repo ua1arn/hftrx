@@ -33,14 +33,24 @@
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_EBAZ4205 1
 
-
+#define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 #define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
-#define WITHUARTFIFO	1	/* испольование FIFO */
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART2	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 #define WITHETHHW 1	/* Hardware Ethernet controller */
+
+#if WITHNMEA
+
+	#define BOARD_PPSIN_BIT	38
+	#define NMEA_INITIALIZE() do { \
+		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 1); \
+		gpio_input2(BOARD_PPSIN_BIT, pinmode_input); 													\
+		gpio_onrisinginterrupt(BOARD_PPSIN_BIT, spool_nmeapps, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);	\
+	} while (0)
+
+#endif /* WITHNMEA */
 
 
 #if WITHISBOOTLOADER
@@ -666,10 +676,22 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
+#if WITHUART1HW
+	// RXD: mio30 C15
+	// TXD: mio31 E16
+	// ebaz4205 board
+	// WITHUART1HW
+	#define HARDWARE_UART1_INITIALIZE() do { \
+		MIO_SET_MODE(31, 0x000016E0uL);	/*  MIO_PIN_31 UART0_TXD */ \
+		MIO_SET_MODE(30, 0x000016E1uL);	/*  MIO_PIN_30 UART0_RXD */ \
+		} while (0)
+
+#endif /* WITHUART1HW */
+
 #if WITHUART2HW
 	// RXD: U3.V13
 	// TXD: U3.U12
-	// little board
+	// ebaz4205 board
 	// WITHUART1HW
 	#define HARDWARE_UART2_INITIALIZE() do { \
 		MIO_SET_MODE(24, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \

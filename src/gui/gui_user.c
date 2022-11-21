@@ -238,7 +238,7 @@ static window_t windows [] = {
 	{ WINDOW_AF,    		 WINDOW_RECEIVE,		ALIGN_CENTER_X, "AF settings",    		 1, window_af_process, },
 	{ WINDOW_FREQ,  		 WINDOW_BANDS,			ALIGN_CENTER_X, "Freq:", 	   			 1, window_freq_process, },
 	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Settings",	   		 	 1, window_menu_process, },
-	{ WINDOW_MENU_PARAMS,    WINDOW_MENU,		    ALIGN_CENTER_X, "Settings",	   		 	 1, window_menu_params_proccess, },
+	{ WINDOW_MENU_PARAMS,    WINDOW_MENU,		    ALIGN_CENTER_X, "Settings",	   		 	 1, window_menu_params_process, },
 	{ WINDOW_UIF, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X, 	"",   		   	 		 0, window_uif_process, },
 	{ WINDOW_SWR_SCANNER,	 WINDOW_UTILS, 			ALIGN_CENTER_X, "SWR band scanner",		 0, window_swrscan_process, },
 	{ WINDOW_AUDIOSETTINGS,  WINDOW_OPTIONS,		ALIGN_CENTER_X, "Audio settings", 		 1, window_audiosettings_process, },
@@ -263,15 +263,18 @@ static window_t windows [] = {
 	{ WINDOW_FT8_SETTINGS, 	 WINDOW_FT8,			ALIGN_CENTER_X, "FT8 settings",		 	 0, window_ft8_settings_process, },
 #endif /* #if WITHFT8 */
 	{ WINDOW_INFOBAR_MENU, 	 NO_PARENT_WINDOW,		ALIGN_MANUAL,   "",		 				 0, window_infobar_menu_process, },
-	{ WINDOW_AF_EQ, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "AF equalizer",			 1, window_af_eq_proccess, },
-	{ WINDOW_SHIFT, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "IQ shift",				 1, window_shift_proccess, },
-	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_proccess, },
-	{ WINDOW_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "Keyboard",		 		 0, window_kbd_proccess, },
-	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
+	{ WINDOW_AF_EQ, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "AF equalizer",			 1, window_af_eq_process, },
+	{ WINDOW_SHIFT, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "IQ shift",				 1, window_shift_process, },
+	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_process, },
+	{ WINDOW_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "Keyboard",		 		 0, window_kbd_process, },
+	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_process, },
 #if WITHLWIP
-	{ WINDOW_PING, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Network ping test",	 1, window_ping_proccess, },
+	{ WINDOW_PING, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Network ping test",	 1, window_ping_process, },
 #endif /* WITHLWIP */
-	{ WINDOW_3D, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Donut 3d ASCII demo",	 1, window_3d_proccess, },
+	{ WINDOW_3D, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Donut 3d ASCII demo",	 1, window_3d_process, },
+#if WITHLFM
+	{ WINDOW_LFM, 		 	 WINDOW_UTILS,			ALIGN_RIGHT_X, "LFM",			 		 1, window_lfm_process, },
+#endif /* WITHLFM  */
 };
 
 /* Возврат ссылки на окно */
@@ -1982,10 +1985,17 @@ static void window_utilites_process(void)
 		uint_fast8_t interval = 6, row_count = 4;
 		win->first_call = 0;
 
+#if WITHTX
 		add_element("btn_SWRscan",  100, 44, 0, 0, "SWR|scanner");
+#endif /* WITHTX */
 		add_element("btn_kbdtest",  100, 44, 0, 0, "Keyboard|test");
-		add_element("btn_pingtest", 100, 44, 0, 0, "IP ping|test");
 		add_element("btn_3d",       100, 44, 0, 0, "Donut|3d");
+#if WITHLWIP
+		add_element("btn_pingtest", 100, 44, 0, 0, "IP ping|test");
+#endif /* WITHLWIP */
+#if WITHLFM
+		add_element("btn_lfm",      100, 44, 0, 0, "LFM");
+#endif /* WITHLFM  */
 
 		x = 0;
 		y = 0;
@@ -2006,15 +2016,6 @@ static void window_utilites_process(void)
 			}
 		}
 
-		button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
-		button_t * btn_pingtest = find_gui_element(TYPE_BUTTON, win, "btn_pingtest");
-#if ! WITHTX
-		btn_SWRscan->state = DISABLED;
-#endif /* WITHTX */
-#if ! WITHLWIP
-		btn_pingtest->state = DISABLED;
-#endif /* WITHLWIP */
-
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
@@ -2025,31 +2026,33 @@ static void window_utilites_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
-			button_t * btn_kbdtest = find_gui_element(TYPE_BUTTON, win, "btn_kbdtest");
-			button_t * btn_pingtest = find_gui_element(TYPE_BUTTON, win, "btn_pingtest");
-			button_t * btn_3d = find_gui_element(TYPE_BUTTON, win, "btn_3d");
 
-			if (bh == btn_kbdtest)
+			if (bh == find_gui_element(TYPE_BUTTON, win, "btn_kbdtest"))
 			{
 				open_window(get_win(WINDOW_KBD_TEST));
 			}
-			else if (bh == btn_3d)
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_3d"))
 			{
 				open_window(get_win(WINDOW_3D));
 			}
 #if WITHTX
-			else if (bh == btn_SWRscan)
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_SWRscan"))
 			{
 				open_window(get_win(WINDOW_SWR_SCANNER));
 			}
 #endif /* WITHTX */
 #if WITHLWIP
-			else if (bh == btn_pingtest)
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_pingtest"))
 			{
 				open_window(get_win(WINDOW_PING));
 			}
 #endif /* WITHLWIP */
+#if WITHLFM
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_lfm"))
+			{
+				open_window(get_win(WINDOW_LFM));
+			}
+#endif /* WITHLFM  */
 		}
 		break;
 
@@ -3183,7 +3186,7 @@ static void window_ap_mic_eq_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_af_eq_proccess(void)
+static void window_af_eq_process(void)
 {
 #if WITHAFEQUALIZER
 	window_t * const win = get_win(WINDOW_AF_EQ);
@@ -3955,7 +3958,7 @@ static void window_gui_settings_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_shift_proccess(void)
+static void window_shift_process(void)
 {
 #if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR
 	window_t * const win = get_win(WINDOW_SHIFT);
@@ -5209,7 +5212,7 @@ static void window_freq_process (void)
 
 // *****************************************************************************************************************************
 
-static void window_time_proccess(void)
+static void window_time_process(void)
 {
 #if defined (RTC1_TYPE)
 	window_t * const win = get_win(WINDOW_TIME);
@@ -5375,7 +5378,7 @@ static void window_time_proccess(void)
 #endif /* defined (RTC1_TYPE) */
 }
 
-static void window_kbd_proccess(void)
+static void window_kbd_process(void)
 {
 	window_t * const win = get_win(WINDOW_KBD);
 	static uint_fast8_t update = 0, is_shift = 0;
@@ -5557,7 +5560,7 @@ static void window_kbd_proccess(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_kbd_test_proccess(void)
+static void window_kbd_test_process(void)
 {
 	window_t * const win = get_win(WINDOW_KBD_TEST);
 	static char str_lbl1 [TEXT_ARRAY_SIZE] = "12345", str_lbl2 [TEXT_ARRAY_SIZE] = "qwerty";
@@ -5632,7 +5635,7 @@ static void window_kbd_test_proccess(void)
 
 // *****************************************************************************************************************************
 
-static void window_ping_proccess(void)
+static void window_ping_process(void)
 {
 #if WITHLWIP
 	window_t * const win = get_win(WINDOW_PING);
@@ -5765,7 +5768,7 @@ static void window_ping_proccess(void)
 
 /* https://www.a1k0n.net/2011/07/20/donut-math.html */
 
-static void window_3d_proccess(void)
+static void window_3d_process(void)
 {
 	window_t * const win = get_win(WINDOW_3D);
 	static text_field_t * tf_3d = NULL;
@@ -5832,7 +5835,7 @@ static void window_3d_proccess(void)
 #define MENU_PARAMS_MAX	50
 static uint8_t index_param = 0;
 
-static void window_menu_params_proccess(void)
+static void window_menu_params_process(void)
 {
 	window_t * const win = get_win(WINDOW_MENU_PARAMS);
 	static menu_names_t menup [MENU_PARAMS_MAX], menuv;
@@ -5993,6 +5996,76 @@ static void window_menu_process(void)
 	default:
 	break;
 	}
+}
+
+// *****************************************************************************************************************************
+
+static void window_lfm_process(void)
+{
+#if WITHLFM
+	window_t * const win = get_win(WINDOW_LFM);
+	static unsigned update = 0;
+
+	if (win->first_call)
+	{
+		unsigned x = 0, y = 0, interval = 6;
+		win->first_call = 0;
+
+		add_element("lbl_timeoffset", 0, FONT_MEDIUM, COLORMAIN_WHITE, 12);
+		add_element("btn_timeoffset", 86, 30, 0, 0, "");
+		add_element("lbl_endfreq", 0, FONT_MEDIUM, COLORMAIN_WHITE, 10);
+		add_element("btn_endfreq", 86, 30, 0, 0, "");
+		add_element("lbl_onoff", 0, FONT_MEDIUM, COLORMAIN_WHITE, 6);
+		add_element("btn_onoff", 86, 30, 0, 0, "Disabled");
+
+		label_t * lbl_timeoffset = find_gui_element(TYPE_LABEL, win, "lbl_timeoffset");
+		local_snprintf_P(lbl_timeoffset->text, ARRAY_SIZE(lbl_timeoffset->text), "Time offset");
+		label_t * lbl_endfreq = find_gui_element(TYPE_LABEL, win, "lbl_endfreq");
+		local_snprintf_P(lbl_endfreq->text, ARRAY_SIZE(lbl_endfreq->text), "Stop freq");
+		label_t * lbl_onoff = find_gui_element(TYPE_LABEL, win, "lbl_onoff");
+		local_snprintf_P(lbl_onoff->text, ARRAY_SIZE(lbl_onoff->text), "State");
+
+		unsigned max_x = get_label_width(lbl_timeoffset);
+		//bh2->x1 = (sl_micLevel->x + sl_micLevel->size) / 2 - (bh2->w / 2);
+
+		for (unsigned i = 0; i < win->bh_count; i ++)
+		{
+			button_t * bh = & win->bh_ptr [i];
+			label_t * lh = & win->lh_ptr [i];
+
+			lh->x = max_x / 2 - get_label_width(lh) / 2;
+			lh->y = y;
+			lh->visible = VISIBLE;
+
+			bh->x1 = max_x / 2 - bh->w / 2;
+			bh->y1 = lh->y + get_label_height(lh) + interval;
+			bh->visible = VISIBLE;
+
+			y = bh->y1 + bh->h + interval * 2;
+		}
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+
+		}
+		break;
+
+	default:
+		break;
+	}
+
+
+
+
+#endif /* WITHLFM  */
 }
 
 #endif /* WITHTOUCHGUI */

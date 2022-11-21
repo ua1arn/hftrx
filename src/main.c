@@ -13117,7 +13117,7 @@ static unsigned char hex2int(uint_fast8_t c)
 
 void nmea_parsechar(uint_fast8_t c)
 {
-
+	//dbg_putchar(c);
 	switch (nmea_state)
 	{
 	case NMEAST_INITIALIZED:
@@ -13193,12 +13193,13 @@ RAMFUNC_NONILINE
 spool_nmeapps(void)
 {
 	th = nmea_time;
-//#if WITHLFM
-//	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))
-//	{
-//		lfm_run();
-//	}
-//#endif /* WITHLFM */
+	//PRINTF("pps nmea time %02d:%02d:%02d\n", nmea_time.hours, nmea_time.minutes, nmea_time.secounds);
+#if WITHLFM
+	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))
+	{
+		lfm_run();
+	}
+#endif /* WITHLFM */
 }
 
 
@@ -19644,7 +19645,6 @@ static void hamradio_main_initialize(void)
 	}
 #endif /* FQMODEL_GEN500 */
 
-
 	encoder_clear();
 
 	/* начальное отображение */
@@ -19723,7 +19723,7 @@ hamradio_main_step(void)
 
 			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
-	#if WITHLFM
+	#if WITHLFM && ! BOARD_PPSIN_BIT
 			if (lfmmode)
 			{
 				/*  проверяем секунды начала */
@@ -21471,7 +21471,7 @@ static uint_fast8_t bootloader_get_start(
 	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
 	uint_fast32_t checksum = hdr->image_checksum;
 	uint_fast32_t length = hdr->image_length;
-	const uint8_t * p = (const uint8_t *) hdr->load_address;
+	const uint8_t * p = (const uint8_t *) (uintptr_t) hdr->load_address;
 	if (hdr->magic_number != HEADER_MAGIC)
 		return 1;
 	* ip = hdr->image_entry_point;
@@ -21494,8 +21494,8 @@ static uint_fast8_t bootloader_copyapp(
 	if (hdr->magic_number != HEADER_MAGIC)
 		return 1;
 	* ip = hdr->image_entry_point;
-	PRINTF("bootloader_copyapp: ip=%08lX (addr=%08lX, len=%08lX)\n", (unsigned long) * ip, hdr->load_address, hdr->image_length);
-	bootloader_readimage(appoffset + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
+	PRINTF("bootloader_copyapp: ip=%08X (addr=%08X, len=%08X)\n", (unsigned) * ip, (unsigned) hdr->load_address, (unsigned) hdr->image_length);
+	bootloader_readimage(appoffset + HEADERSIZE, (void *) (uintptr_t) hdr->load_address, hdr->image_length);
 	PRINTF("bootloader_copyapp done.\n");
 	return 0;
 }
@@ -21505,7 +21505,7 @@ static uint_fast8_t bootloader_copyapp(
 static void
 bootloader_launch_app(uintptr_t ip)
 {
-	__disable_irq();
+	global_disableIRQ();
 #if WITHUSBHW
 		board_usb_deinitialize();
 #endif /* WITHUSBHW */
@@ -21832,6 +21832,10 @@ main(void)
 #endif /* WITHLWIP */
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
+
+#if WITHNMEA && CPUSTYLE_XC7Z
+	nmea_parser_init(); // пока тут
+#endif /* WITHNMEA && CPUSTYLE_XC7Z */
 
 #if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
 	bootloader_fatfs_mainloop();

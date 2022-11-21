@@ -38,10 +38,6 @@ void prog_dds3_ftw(const ftw_t * value);
 void prog_rts1_ftw(const ftw_t * value);	// Установка центральной частоты панорамного индикатора
 void prog_xvtr_freq(uint_fast32_t f,uint_fast8_t enable);	// Установка частоты конвертора
 
-void xcz_dds_ftw(const ftw_t * value);	// Установка центральной частоты тракта основного приёмника
-void xcz_dds_ftw_sub(const ftw_t * value);// Установка центральной частоты тракта дополнительного приёмника
-void xcz_dds_rts(const ftw_t * value);// Установка центральной частоты панорамного индикатора
-
 typedef uint_fast32_t pllhint_t;
 
 void si570_initialize(void);

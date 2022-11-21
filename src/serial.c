@@ -61,6 +61,8 @@ static void serial_set_handler(uint_fast16_t int_id, void (* handler)(void))
 
 #if WITHNMEA
 
+static void UART0_IRQHandler(void);
+
 // Очереди символов для обмена с согласующим устройством
 enum { qSZ = 512 };
 static uint8_t queue [qSZ];
@@ -163,6 +165,14 @@ void nmea_rxoverflow(void)
 void nmea_disconnect(void)
 {
 
+}
+
+void nmea_parser_init(void)
+{
+#if WITHUART1HW
+	NMEA_INITIALIZE();
+	serial_set_handler(UART0_IRQn, UART0_IRQHandler);
+#endif /* WITHUART1HW */
 }
 
 #endif /* WITHNMEA */
@@ -351,6 +361,16 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
+	static void UART0_IRQHandler(void)
+	{
+		char c;
+		UART0->ISR = UART0->IMR;	// clear interrupt status
+
+		while(hardware_uart1_getchar(& c))
+		{
+			HARDWARE_UART1_ONRXCHAR(c);
+		}
+	}
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -677,12 +697,10 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
-
-//	if (state)
-//		 UART0->CR |= SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
-//	else
-//		 UART0->CR &= ~ SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
-//
+	uint32_t mask = state ? 1 : 0; 			/* RX FIFO trigger interrupt */
+	UART0->RXWM = 1; 						/* set RX FIFO Trigger Level */
+	UART0->IER = mask;
+	UART0->IDR = ~ mask;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -1853,6 +1871,10 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
+	uint32_t mask = state ? 1 : 0; 			/* RX FIFO trigger interrupt */
+	UART1->RXWM = 1; 						/* set RX FIFO Trigger Level */
+	UART1->IER = mask;
+	UART1->IDR = ~ mask;
 
 #else
 	#error Undefined CPUSTYLE_XXX

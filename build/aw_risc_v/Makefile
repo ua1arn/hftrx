@@ -229,7 +229,6 @@ app_run: $(PROJECT)_app.f133
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.f133
-	-$(XFEL) spinor write 0x00040000 ddr3init.bin
 	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.f133
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
@@ -237,9 +236,7 @@ BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.f133: $(PROJECT)_boot.bin
-	sh -c "cp boottemplate.bin fsbl.f133.tmp"
-	./wtitefsbl.exe fsbl.f133.tmp 0x00100 $(PROJECT)_boot.bin -w
-	./checksum.exe fsbl.f133.tmp fsbl.f133
+	./egontool $(PROJECT)_boot.bin fsbl.f133
 	
 $(PROJECT)_app.f133: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
