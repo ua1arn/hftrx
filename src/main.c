@@ -276,6 +276,38 @@ islfmstart(unsigned now)
 	return 0;
 }
 
+uint_fast8_t hamradio_get_lfmmode(void)
+{
+	return lfmmode;
+}
+
+void hamradio_set_lfmmode(uint_fast8_t v)
+{
+	lfmmode = v != 0;
+}
+
+uint_fast16_t hamradio_get_lfmstop100k(void)
+{
+	return lfmstop100k;
+}
+
+void hamradio_set_lfmstop100k(uint_fast16_t v)
+{
+	if (v <= 350)
+		lfmstop100k = v;
+}
+
+uint_fast16_t hamradio_get_lfmtoffset(void)
+{
+	return lfmtoffset;
+}
+
+void hamradio_set_lfmtoffset(uint_fast16_t v)
+{
+	if (v < 60)
+		lfmtoffset = v;
+}
+
 #endif /* WITHLFM */
 
 static uint_fast8_t local_isdigit(char c)

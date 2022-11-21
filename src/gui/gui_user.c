@@ -636,6 +636,10 @@ static void gui_main_process(void)
 		gui_enc2_menu.updated = 1;
 		update = 1;
 
+#if WITHLFM
+		hamradio_set_lfmmode(0);
+#endif /* WITHLFM */
+
 #if WITHGUIDEBUG
 		static const text_field_t text_field [] = {
 			{ TEXT_ARRAY_SIZE, 25, CANCELLED, WINDOW_MAIN, NON_VISIBLE, DOWN, NULL, "tf_debug", },
@@ -6004,19 +6008,33 @@ static void window_lfm_process(void)
 {
 #if WITHLFM
 	window_t * const win = get_win(WINDOW_LFM);
-	static unsigned update = 0;
+	static unsigned update = 0, update_settings = 0;
+	static uint16_t time_offset = 0, freq_stop = 0;
 
 	if (win->first_call)
 	{
 		unsigned x = 0, y = 0, interval = 6;
 		win->first_call = 0;
+		update = 1;
+
+		if (update_settings)
+		{
+			update_settings = 0;
+			hamradio_set_lfmstop100k(freq_stop * 10);
+			hamradio_set_lfmtoffset(time_offset);
+		}
+		else
+		{
+			freq_stop = hamradio_get_lfmstop100k();
+			time_offset = hamradio_get_lfmtoffset();
+		}
 
 		add_element("lbl_timeoffset", 0, FONT_MEDIUM, COLORMAIN_WHITE, 12);
-		add_element("btn_timeoffset", 86, 30, 0, 0, "");
+		add_element("btn_timeoffset", 86, 36, 0, 0, "");
 		add_element("lbl_endfreq", 0, FONT_MEDIUM, COLORMAIN_WHITE, 10);
-		add_element("btn_endfreq", 86, 30, 0, 0, "");
+		add_element("btn_stopfreq", 86, 36, 0, 0, "");
 		add_element("lbl_onoff", 0, FONT_MEDIUM, COLORMAIN_WHITE, 6);
-		add_element("btn_onoff", 86, 30, 0, 0, "Disabled");
+		add_element("btn_state", 86, 36, 0, 0, "");
 
 		label_t * lbl_timeoffset = find_gui_element(TYPE_LABEL, win, "lbl_timeoffset");
 		local_snprintf_P(lbl_timeoffset->text, ARRAY_SIZE(lbl_timeoffset->text), "Time offset");
@@ -6026,7 +6044,6 @@ static void window_lfm_process(void)
 		local_snprintf_P(lbl_onoff->text, ARRAY_SIZE(lbl_onoff->text), "State");
 
 		unsigned max_x = get_label_width(lbl_timeoffset);
-		//bh2->x1 = (sl_micLevel->x + sl_micLevel->size) / 2 - (bh2->w / 2);
 
 		for (unsigned i = 0; i < win->bh_count; i ++)
 		{
@@ -6055,14 +6072,49 @@ static void window_lfm_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 
+			if (bh == find_gui_element(TYPE_BUTTON, win, "btn_state"))
+			{
+				hamradio_set_lfmmode(! hamradio_get_lfmmode());
+				update = 1;
+			}
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_timeoffset"))
+			{
+				update_settings = 1;
+				keyboard_edit_digits(& time_offset, win);
+			}
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_stopfreq"))
+			{
+				update_settings = 1;
+				keyboard_edit_digits(& freq_stop, win);
+			}
 		}
+		break;
+
+	case WM_MESSAGE_UPDATE:
+
+		update = 1;
 		break;
 
 	default:
 		break;
 	}
 
+	if (update)
+	{
+		update = 0;
 
+		button_t * btn_state = find_gui_element(TYPE_BUTTON, win, "btn_state");
+		btn_state->is_locked = iflfmactive() != 0;
+		const char states[3][9] = { "Disabled", "Standby", "Scan..." };
+		unsigned s = hamradio_get_lfmmode() == 0 ? 0 : btn_state->is_locked ? 2 : 1;
+		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[s]);
+
+		button_t * btn_timeoffset = find_gui_element(TYPE_BUTTON, win, "btn_timeoffset");
+		local_snprintf_P(btn_timeoffset->text, ARRAY_SIZE(btn_timeoffset->text), "%d sec", hamradio_get_lfmtoffset());
+
+		button_t * btn_stopfreq = find_gui_element(TYPE_BUTTON, win, "btn_stopfreq");
+		local_snprintf_P(btn_stopfreq->text, ARRAY_SIZE(btn_stopfreq->text), "%d MHz", hamradio_get_lfmstop100k() / 10);
+	}
 
 
 #endif /* WITHLFM  */
