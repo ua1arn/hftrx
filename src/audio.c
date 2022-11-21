@@ -5335,7 +5335,7 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 		}
 #endif /* WITHUSBHEADSET */
 
-#if WITHLFM
+#if WITHLFM && ! WITHTOUCHGUI
 		if (pingcount != 0)
 			-- pingcount;
 		right = get_lout() * (pingcount != 0);

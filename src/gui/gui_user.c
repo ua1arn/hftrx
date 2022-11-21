@@ -6035,6 +6035,7 @@ static void window_lfm_process(void)
 		add_element("btn_stopfreq", 86, 36, 0, 0, "");
 		add_element("lbl_onoff", 0, FONT_MEDIUM, COLORMAIN_WHITE, 6);
 		add_element("btn_state", 86, 36, 0, 0, "");
+		add_element("lbl_nmeatime", 0, FONT_MEDIUM, COLORMAIN_YELLOW, 8);
 
 		label_t * lbl_timeoffset = find_gui_element(TYPE_LABEL, win, "lbl_timeoffset");
 		local_snprintf_P(lbl_timeoffset->text, ARRAY_SIZE(lbl_timeoffset->text), "Time offset");
@@ -6044,6 +6045,12 @@ static void window_lfm_process(void)
 		local_snprintf_P(lbl_onoff->text, ARRAY_SIZE(lbl_onoff->text), "State");
 
 		unsigned max_x = get_label_width(lbl_timeoffset);
+
+		label_t * lbl_nmeatime = find_gui_element(TYPE_LABEL, win, "lbl_nmeatime");
+		lbl_nmeatime->x = max_x / 2 - get_label_width(lbl_nmeatime) / 2;
+		lbl_nmeatime->y = 0;
+		lbl_nmeatime->visible = VISIBLE;
+		y += lbl_nmeatime->y + get_label_height(lbl_nmeatime) + interval;
 
 		for (unsigned i = 0; i < win->bh_count; i ++)
 		{
@@ -6074,7 +6081,14 @@ static void window_lfm_process(void)
 
 			if (bh == find_gui_element(TYPE_BUTTON, win, "btn_state"))
 			{
-				hamradio_set_lfmmode(! hamradio_get_lfmmode());
+				if (bh->is_locked)
+				{
+					hamradio_lfm_disable();
+					bh->is_locked = 0;
+				}
+				else
+					hamradio_set_lfmmode(! hamradio_get_lfmmode());
+
 				update = 1;
 			}
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_timeoffset"))
@@ -6114,6 +6128,9 @@ static void window_lfm_process(void)
 
 		button_t * btn_stopfreq = find_gui_element(TYPE_BUTTON, win, "btn_stopfreq");
 		local_snprintf_P(btn_stopfreq->text, ARRAY_SIZE(btn_stopfreq->text), "%d MHz", hamradio_get_lfmstop100k() / 10);
+
+		label_t * lbl_nmeatime = find_gui_element(TYPE_LABEL, win, "lbl_nmeatime");
+		gui_get_nmea_time(lbl_nmeatime->text);
 	}
 
 

@@ -106,6 +106,17 @@ void lfm_run(void)
 	global_enableIRQ();
 }
 
+void lfm_disable(void)
+{
+	global_disableIRQ();
+	SPIN_LOCK(& lfmlock);
+
+	rlfm_isrunning = 0;
+
+	SPIN_UNLOCK(& lfmlock);
+	global_enableIRQ();
+}
+
 int iflfmactive(void)
 {
 	return rlfm_isrunning;

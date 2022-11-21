@@ -37,6 +37,9 @@
 #include "src/speex/arch.h"
 #include "src/speex/speex_preprocess.h"
 
+static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * file, int line);
+#define updateboard(full, mute) do { updateboardZZZ((full), (mute), __FILE__, __LINE__); } while (0)
+
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
 
@@ -166,6 +169,13 @@ static uint_fast8_t keyboard_redirect = 0;	// перенаправление к�
 static enc2_menu_t enc2_menu;
 static uint_fast8_t band_no_check = 0;
 static uint_fast8_t encoder2_redirect = 0;
+static char nmea_time_str[9];
+
+void gui_get_nmea_time(char * p)
+{
+	strcpy(p, nmea_time_str);
+}
+
 #endif /* WITHTOUCHGUI */
 static char menuw [20];						// буфер для вывода значений системного меню
 
@@ -284,6 +294,8 @@ uint_fast8_t hamradio_get_lfmmode(void)
 void hamradio_set_lfmmode(uint_fast8_t v)
 {
 	lfmmode = v != 0;
+
+	updateboard(1, 1);
 }
 
 uint_fast16_t hamradio_get_lfmstop100k(void)
@@ -295,6 +307,8 @@ void hamradio_set_lfmstop100k(uint_fast16_t v)
 {
 	if (v <= 350)
 		lfmstop100k = v;
+
+	updateboard(1, 1);
 }
 
 uint_fast16_t hamradio_get_lfmtoffset(void)
@@ -306,6 +320,14 @@ void hamradio_set_lfmtoffset(uint_fast16_t v)
 {
 	if (v < 60)
 		lfmtoffset = v;
+
+	updateboard(1, 1);
+}
+
+void hamradio_lfm_disable(void)
+{
+	lfm_disable();
+	updateboard(1, 1);
 }
 
 #endif /* WITHLFM */
@@ -348,8 +370,6 @@ static uint_fast8_t getbankindex_pathi(uint_fast8_t pathi);
 static uint_fast8_t getbankindex_tx(uint_fast8_t tx);
 static uint_fast8_t getbankindex_ab_fordisplay(uint_fast8_t ab);
 //static void updateboard(uint_fast8_t full, uint_fast8_t mute);
-static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * file, int line);
-#define updateboard(full, mute) do { updateboardZZZ((full), (mute), __FILE__, __LINE__); } while (0)
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
 static uint_fast8_t getactualmainsubrx(void);
 static uint_fast8_t getfreqbandgroup(const uint_fast32_t freq);
@@ -13225,7 +13245,9 @@ RAMFUNC_NONILINE
 spool_nmeapps(void)
 {
 	th = nmea_time;
-	//PRINTF("pps nmea time %02d:%02d:%02d\n", nmea_time.hours, nmea_time.minutes, nmea_time.secounds);
+#if WITHTOUCHGUI
+	local_snprintf_P(nmea_time_str, ARRAY_SIZE(nmea_time_str), "%02d:%02d:%02d\n", nmea_time.hours, nmea_time.minutes, nmea_time.secounds);
+#endif /* WITHTOUCHGUI */
 #if WITHLFM
 	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))
 	{
@@ -13233,8 +13255,6 @@ spool_nmeapps(void)
 	}
 #endif /* WITHLFM */
 }
-
-
 
 #endif /* WITHNMEA */
 

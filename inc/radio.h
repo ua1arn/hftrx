@@ -435,6 +435,7 @@ enum
 };
 
 void lfm_run(void);
+void lfm_disable(void);
 int iflfmactive(void);
 uint_fast32_t getlfmfreq(void);
 
