@@ -6008,7 +6008,7 @@ static void window_lfm_process(void)
 {
 #if WITHLFM
 	window_t * const win = get_win(WINDOW_LFM);
-	static unsigned update = 0;
+	static unsigned update = 0, update_settings = 0;
 	static uint16_t time_offset = 0, freq_stop = 0;
 
 	if (win->first_call)
@@ -6017,7 +6017,17 @@ static void window_lfm_process(void)
 		win->first_call = 0;
 		update = 1;
 
-		freq_stop = hamradio_get_lfmstop100k();
+		if (update_settings)
+		{
+			update_settings = 0;
+			hamradio_set_lfmstop100k(freq_stop * 10);
+			hamradio_set_lfmtoffset(time_offset);
+		}
+		else
+		{
+			freq_stop = hamradio_get_lfmstop100k();
+			time_offset = hamradio_get_lfmtoffset();
+		}
 
 		add_element("lbl_timeoffset", 0, FONT_MEDIUM, COLORMAIN_WHITE, 12);
 		add_element("btn_timeoffset", 86, 36, 0, 0, "");
@@ -6068,9 +6078,15 @@ static void window_lfm_process(void)
 				update = 1;
 			}
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_timeoffset"))
+			{
+				update_settings = 1;
 				keyboard_edit_digits(& time_offset, win);
+			}
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_stopfreq"))
+			{
+				update_settings = 1;
 				keyboard_edit_digits(& freq_stop, win);
+			}
 		}
 		break;
 
@@ -6094,11 +6110,10 @@ static void window_lfm_process(void)
 		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[s]);
 
 		button_t * btn_timeoffset = find_gui_element(TYPE_BUTTON, win, "btn_timeoffset");
-		local_snprintf_P(btn_timeoffset->text, ARRAY_SIZE(btn_timeoffset->text), "%d sec", time_offset);
+		local_snprintf_P(btn_timeoffset->text, ARRAY_SIZE(btn_timeoffset->text), "%d sec", hamradio_get_lfmtoffset());
 
 		button_t * btn_stopfreq = find_gui_element(TYPE_BUTTON, win, "btn_stopfreq");
-		local_snprintf_P(btn_stopfreq->text, ARRAY_SIZE(btn_stopfreq->text), "%d MHz", freq_stop / 10);
-		hamradio_set_lfmstop100k(freq_stop * 10);
+		local_snprintf_P(btn_stopfreq->text, ARRAY_SIZE(btn_stopfreq->text), "%d MHz", hamradio_get_lfmstop100k() / 10);
 	}
 
 
