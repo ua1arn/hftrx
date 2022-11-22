@@ -6058,6 +6058,7 @@ static void window_lfm_process(void)
 		bh->visible = VISIBLE;
 
 		hamradio_enable_encoder2_redirect();
+		enable_window_move(win);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 

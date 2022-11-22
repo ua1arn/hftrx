@@ -48,6 +48,7 @@ static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PA
 const label_t label_default = 	{ 0, CANCELLED, 0, NON_VISIBLE, "", "", FONT_MEDIUM, COLORMAIN_WHITE, };
 const button_t button_default = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 1, 0, NON_VISIBLE, INT32_MAX, "", "", };
 const text_field_t tf_default = { 0, 0, CANCELLED, 0, NON_VISIBLE, UP, NULL, "", };
+const touch_area_t ta_default = { 0, 0, 0, 0, 0, "", 0, 0, 0, 0, 0, };
 
 static uint_fast8_t parse_element_name(const char * name)
 {
@@ -74,6 +75,7 @@ static uint_fast8_t parse_element_name(const char * name)
 // label: is_trackable, font_size, color, width_by_symbols
 // button: w, h, is_repeating, is_long_press, text,
 // text_field: w_sim, h_str, direction, font *
+// touch area: x, y, w, h, state
 
 void add_element(const char * element_name, ...)
 {
@@ -149,6 +151,26 @@ void add_element(const char * element_name, ...)
 		strncpy(tf->name, element_name, NAME_ARRAY_SIZE - 1);
 
 		win->tf_count ++;
+		break;
+	}
+
+	case TYPE_TOUCH_AREA:
+	{
+		win->ta_ptr = realloc(win->ta_ptr, sizeof(touch_area_t) * (win->ta_count + 1));
+		GUI_MEM_ASSERT(win->ta_ptr);
+
+		touch_area_t * ta = & win->ta_ptr [win->ta_count];
+		memcpy(ta, & ta_default, sizeof(touch_area_t));
+
+		ta->parent = window_id;
+		ta->x1 = va_arg(arg, uint_fast16_t);
+		ta->y1 = va_arg(arg, uint_fast16_t);
+		ta->w = va_arg(arg, uint_fast16_t);
+		ta->h = va_arg(arg, uint_fast16_t);
+		ta->is_trackable = va_arg(arg, uint_fast16_t);
+		strncpy(ta->name, element_name, NAME_ARRAY_SIZE - 1);
+
+		win->ta_count ++;
 		break;
 	}
 
@@ -773,13 +795,28 @@ void open_window(window_t * win)
 	gui.win [1] = win->window_id;
 }
 
+/* Разрешить перетаскивание окна */
+void enable_window_move(window_t * win)
+{
+	ASSERT(win != NULL);
+	win->is_moving = 1;
+
+	add_element("ta_winmove", win->x1, win->y1, win->w - window_close_button_size, window_title_height, 1);
+	touch_area_t * ta = find_gui_element(TYPE_TOUCH_AREA, win, "ta_winmove");
+	ta->visible = VISIBLE;
+	ta->state = CANCELLED;
+}
+
 /* Расчет экранных координат окна */
 /* при mode = WINDOW_POSITION_MANUAL_SIZE в качестве необязательных параметров передать xmax и ymax */
 void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 {
 	uint_fast16_t title_length = strlen(win->title) * SMALLCHARW;
 	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
+
+	ASSERT(win != NULL);
 	win->size_mode = mode;
+	win->is_moving = 0;
 
 	switch (mode)
 	{
@@ -985,6 +1022,22 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 
 	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
 	elements_state(win);
+}
+
+void move_window(window_t * win, int_fast16_t ax, int_fast16_t ay)
+{
+	ASSERT(win != NULL);
+
+	// защита от переполнения экранных координат
+	if (win->x1 + ax < 0 || win->x1 + win->w + ax >= WITHGUIMAXX || win->y1 + ay < 0 || win->y1 + win->h + ay >= WITHGUIMAXY - FOOTER_HEIGHT)
+		return;
+
+	win->x1 += ax;
+	win->y1 += ay;
+	win->draw_x1 += ax;
+	win->draw_x2 += ax;
+	win->draw_y1 += ay;
+	win->draw_y2 += ay;
 }
 
 void window_set_title_align(window_t * win, title_align_t align)
@@ -1512,7 +1565,12 @@ static void set_state_record(gui_element_t * val)
 			}
 			else if (ta->state == PRESSED && ta->is_trackable)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING))
+				if (! strcmp(ta->name, "ta_winmove"))
+				{
+					move_window(val->win, gui.vector_move_x, gui.vector_move_y);
+					reset_tracking();
+				}
+				else if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING))
 					dump_queue(val->win);
 			}
 		}

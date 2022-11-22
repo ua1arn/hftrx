@@ -263,6 +263,7 @@ typedef struct {
 	uint16_t draw_y2;
 	title_align_t title_align;
 	uint8_t size_mode;
+	uint8_t is_moving;
 } window_t;
 
 typedef struct {
