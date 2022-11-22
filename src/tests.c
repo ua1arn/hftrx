@@ -6315,6 +6315,18 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && WITHDEBUG
+	{
+		PTT_INITIALIZE();
+		for (;;)
+		{
+			unsigned ptt = (PTT_TARGET_PIN & PTT_BIT_PTT) == 0;
+			unsigned ptt2 = (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0;
+			unsigned ptt3 = (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0;
+			PRINTF("ptt=%u ptt2=%u, ptt3=%u\n", ptt, ptt2, ptt3);
+		}
+	}
+#endif
 #if 1 && WITHDEBUG && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		// Allwinner t113-s3 boot mode display
