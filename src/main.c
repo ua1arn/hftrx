@@ -286,6 +286,17 @@ islfmstart(unsigned now)
 	return 0;
 }
 
+uint_fast8_t hamradio_get_lfmtinterval(void)
+{
+	return lfmtinterval;
+}
+
+void hamradio_set_lfmtinterval(uint_fast8_t v)
+{
+	if (lfmtinterval < 60 * 60)
+		lfmtinterval = v;
+}
+
 uint_fast8_t hamradio_get_lfmmode(void)
 {
 	return lfmmode;
@@ -305,7 +316,7 @@ uint_fast16_t hamradio_get_lfmstop100k(void)
 
 void hamradio_set_lfmstop100k(uint_fast16_t v)
 {
-	if (v <= 350)
+	if (v > 80 && v <= 350)
 		lfmstop100k = v;
 
 	updateboard(1, 1);
@@ -13246,7 +13257,7 @@ spool_nmeapps(void)
 {
 	th = nmea_time;
 #if WITHTOUCHGUI
-	local_snprintf_P(nmea_time_str, ARRAY_SIZE(nmea_time_str), "%02d:%02d:%02d\n", nmea_time.hours, nmea_time.minutes, nmea_time.secounds);
+	local_snprintf_P(nmea_time_str, ARRAY_SIZE(nmea_time_str), "%02d:%02d:%02d", nmea_time.hours, nmea_time.minutes, nmea_time.secounds);
 #endif /* WITHTOUCHGUI */
 #if WITHLFM
 	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))

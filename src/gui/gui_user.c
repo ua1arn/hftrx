@@ -1729,7 +1729,7 @@ static void window_display_process(void)
 {
 #if WITHSPECTRUMWF && WITHMENU
 	window_t * const win = get_win(WINDOW_DISPLAY);
-	static display_var_t display_t;
+	static enc_var_t display_t;
 
 	if (win->first_call)
 	{
@@ -3687,7 +3687,7 @@ static void window_ap_mic_prof_process(void)
 static void window_notch_process(void)
 {
 	window_t * const win = get_win(WINDOW_NOTCH);
-	static notch_var_t notch;
+	static enc_var_t notch;
 
 	if (win->first_call)
 	{
@@ -3968,7 +3968,7 @@ static void window_shift_process(void)
 	window_t * const win = get_win(WINDOW_SHIFT);
 
 	static uint8_t shift = 45;
-	static bp_var_t shift_t;
+	static enc_var_t shift_t;
 
 	if (win->first_call)
 	{
@@ -4687,7 +4687,7 @@ static void window_ft8_process(void)
 static void window_af_process(void)
 {
 	window_t * const win = get_win(WINDOW_AF);
-	static bp_var_t bp_t;
+	static enc_var_t bp_t;
 
 	if (win->first_call)
 	{
@@ -6008,66 +6008,56 @@ static void window_lfm_process(void)
 {
 #if WITHLFM
 	window_t * const win = get_win(WINDOW_LFM);
-	static unsigned update = 0, update_settings = 0;
-	static uint16_t time_offset = 0, freq_stop = 0;
+	static unsigned update = 0;
+	static enc_var_t enc;
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6;
+		unsigned x = 0, y = 0, interval = 12;
 		win->first_call = 0;
 		update = 1;
+		enc.select = 1;
+		enc.change = 0;
+		enc.updated = 1;
 
-		if (update_settings)
-		{
-			update_settings = 0;
-			hamradio_set_lfmstop100k(freq_stop * 10);
-			hamradio_set_lfmtoffset(time_offset);
-		}
-		else
-		{
-			freq_stop = hamradio_get_lfmstop100k();
-			time_offset = hamradio_get_lfmtoffset();
-		}
+		static const label_t labels [] = {
+			{ WINDOW_LFM, DISABLED,  0, VISIBLE, "lbl_nmeatime",		"00:00:00", 	FONT_MEDIUM, COLORMAIN_GREEN, 0, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset",		"Time offset",	FONT_MEDIUM, COLORMAIN_WHITE, 1, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset_val",	"xx sec",		FONT_MEDIUM, COLORMAIN_WHITE, 2, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq",    	"Stop freq",	FONT_MEDIUM, COLORMAIN_WHITE, 3, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq_val",	"xx MHz",		FONT_MEDIUM, COLORMAIN_WHITE, 4, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval",    	"Interval",		FONT_MEDIUM, COLORMAIN_WHITE, 5, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval_val",	"xx sec",		FONT_MEDIUM, COLORMAIN_WHITE, 6, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
 
-		add_element("lbl_timeoffset", 0, FONT_MEDIUM, COLORMAIN_WHITE, 12);
-		add_element("btn_timeoffset", 86, 36, 0, 0, "");
-		add_element("lbl_endfreq", 0, FONT_MEDIUM, COLORMAIN_WHITE, 10);
-		add_element("btn_stopfreq", 86, 36, 0, 0, "");
-		add_element("lbl_onoff", 0, FONT_MEDIUM, COLORMAIN_WHITE, 6);
 		add_element("btn_state", 86, 36, 0, 0, "");
-		add_element("lbl_nmeatime", 0, FONT_MEDIUM, COLORMAIN_YELLOW, 8);
 
-		label_t * lbl_timeoffset = find_gui_element(TYPE_LABEL, win, "lbl_timeoffset");
-		local_snprintf_P(lbl_timeoffset->text, ARRAY_SIZE(lbl_timeoffset->text), "Time offset");
-		label_t * lbl_endfreq = find_gui_element(TYPE_LABEL, win, "lbl_endfreq");
-		local_snprintf_P(lbl_endfreq->text, ARRAY_SIZE(lbl_endfreq->text), "Stop freq");
-		label_t * lbl_onoff = find_gui_element(TYPE_LABEL, win, "lbl_onoff");
-		local_snprintf_P(lbl_onoff->text, ARRAY_SIZE(lbl_onoff->text), "State");
+		label_t * lh = find_gui_element(TYPE_LABEL, win, "lbl_timeoffset");
+		unsigned mid_x = get_label_width(lh) / 2;
 
-		unsigned max_x = get_label_width(lbl_timeoffset);
-
-		label_t * lbl_nmeatime = find_gui_element(TYPE_LABEL, win, "lbl_nmeatime");
-		lbl_nmeatime->x = max_x / 2 - get_label_width(lbl_nmeatime) / 2;
-		lbl_nmeatime->y = 0;
-		lbl_nmeatime->visible = VISIBLE;
-		y += lbl_nmeatime->y + get_label_height(lbl_nmeatime) + interval;
-
-		for (unsigned i = 0; i < win->bh_count; i ++)
+		for (unsigned i = 0; i < win->lh_count; i ++)
 		{
-			button_t * bh = & win->bh_ptr [i];
-			label_t * lh = & win->lh_ptr [i];
+			lh = & win->lh_ptr [i];
 
-			lh->x = max_x / 2 - get_label_width(lh) / 2;
+			lh->x = mid_x - get_label_width(lh) / 2;
 			lh->y = y;
 			lh->visible = VISIBLE;
 
-			bh->x1 = max_x / 2 - bh->w / 2;
-			bh->y1 = lh->y + get_label_height(lh) + interval;
-			bh->visible = VISIBLE;
-
-			y = bh->y1 + bh->h + interval * 2;
+			y = lh->y + get_label_height(lh) + interval;
+			y = (i + 1) % 2 ? (y + interval) : y;
 		}
 
+		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_state");
+		bh->x1 = mid_x - bh->w / 2;
+		bh->y1 = lh->y + get_label_height(lh) + interval * 2;
+		bh->visible = VISIBLE;
+
+		hamradio_enable_encoder2_redirect();
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
@@ -6091,17 +6081,20 @@ static void window_lfm_process(void)
 
 				update = 1;
 			}
-			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_timeoffset"))
-			{
-				update_settings = 1;
-				keyboard_edit_digits(& time_offset, win);
-			}
-			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_stopfreq"))
-			{
-				update_settings = 1;
-				keyboard_edit_digits(& freq_stop, win);
-			}
 		}
+		else if (IS_LABEL_PRESS)
+		{
+			label_t * lh = (label_t *) ptr;
+			enc.select = lh->index;
+			enc.change = 0;
+			enc.updated = 1;
+		}
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		enc.change = action;
+		enc.updated = 1;
 		break;
 
 	case WM_MESSAGE_UPDATE:
@@ -6111,6 +6104,40 @@ static void window_lfm_process(void)
 
 	default:
 		break;
+	}
+
+	if (enc.updated)
+	{
+		enc.updated = 0;
+
+		for(uint_fast8_t i = 1; i < win->lh_count; i ++)
+			win->lh_ptr [i].color = COLORMAIN_WHITE;
+
+		ASSERT(enc.select < win->lh_count);
+
+		if (enc.select == 1 || enc.select == 2)
+		{
+			win->lh_ptr [1].color = COLORMAIN_YELLOW;
+			win->lh_ptr [2].color = COLORMAIN_YELLOW;
+			uint_fast16_t v = hamradio_get_lfmtoffset();
+			hamradio_set_lfmtoffset(v + enc.change);
+		}
+		else if (enc.select == 3 || enc.select == 4)
+		{
+			win->lh_ptr [3].color = COLORMAIN_YELLOW;
+			win->lh_ptr [4].color = COLORMAIN_YELLOW;
+			uint_fast16_t v = hamradio_get_lfmstop100k();
+			hamradio_set_lfmstop100k(v + enc.change * 10);
+		}
+		else if (enc.select == 5 || enc.select == 6)
+		{
+			win->lh_ptr [5].color = COLORMAIN_YELLOW;
+			win->lh_ptr [6].color = COLORMAIN_YELLOW;
+			uint_fast16_t v = hamradio_get_lfmtinterval();
+			hamradio_set_lfmtinterval(v + enc.change);
+		}
+
+		update = 1;
 	}
 
 	if (update)
@@ -6123,14 +6150,17 @@ static void window_lfm_process(void)
 		unsigned s = hamradio_get_lfmmode() == 0 ? 0 : btn_state->is_locked ? 2 : 1;
 		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[s]);
 
-		button_t * btn_timeoffset = find_gui_element(TYPE_BUTTON, win, "btn_timeoffset");
-		local_snprintf_P(btn_timeoffset->text, ARRAY_SIZE(btn_timeoffset->text), "%d sec", hamradio_get_lfmtoffset());
-
-		button_t * btn_stopfreq = find_gui_element(TYPE_BUTTON, win, "btn_stopfreq");
-		local_snprintf_P(btn_stopfreq->text, ARRAY_SIZE(btn_stopfreq->text), "%d MHz", hamradio_get_lfmstop100k() / 10);
-
 		label_t * lbl_nmeatime = find_gui_element(TYPE_LABEL, win, "lbl_nmeatime");
 		gui_get_nmea_time(lbl_nmeatime->text);
+
+		label_t * lbl_timeoffset_val = find_gui_element(TYPE_LABEL, win, "lbl_timeoffset_val");
+		local_snprintf_P(lbl_timeoffset_val->text, ARRAY_SIZE(lbl_timeoffset_val->text), "%02d sec", hamradio_get_lfmtoffset());
+
+		label_t * lbl_stopfreq_val = find_gui_element(TYPE_LABEL, win, "lbl_stopfreq_val");
+		local_snprintf_P(lbl_stopfreq_val->text, ARRAY_SIZE(lbl_stopfreq_val->text), "%02d MHz", hamradio_get_lfmstop100k() / 10);
+
+		label_t * lbl_interval_val = find_gui_element(TYPE_LABEL, win, "lbl_interval_val");
+		local_snprintf_P(lbl_interval_val->text, ARRAY_SIZE(lbl_interval_val->text), "%02d sec", hamradio_get_lfmtinterval());
 	}
 
 

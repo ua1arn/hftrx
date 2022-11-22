@@ -143,11 +143,7 @@ typedef struct {
 	uint_fast8_t updated;
 	uint_fast8_t select;
 	int8_t change;
-} bp_var_t;
-
-typedef bp_var_t notch_var_t;
-typedef bp_var_t display_var_t;
-typedef bp_var_t power_var_t;
+} enc_var_t;
 
 typedef struct {
 	uint_fast16_t step;
