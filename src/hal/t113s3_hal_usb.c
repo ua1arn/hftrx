@@ -2653,10 +2653,10 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	#if WITHUSBDEV_HSDESC
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), ep_dir_in, MSC_DATA_MAX_PACKET_SIZE_HS, 1, fifo_addr);
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), ep_dir_out, MSC_DATA_MAX_PACKET_SIZE_HS, 1, fifo_addr);
-	#else
+	#else /* WITHUSBDEV_HSDESC */
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), ep_dir_in, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), ep_dir_out, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
-	#endif
+	#endif /* WITHUSBDEV_HSDESC */
 	}
 #endif /* WITHUSBDMSC */
 #if WITHUSBCDCACM
