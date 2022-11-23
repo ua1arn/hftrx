@@ -75,7 +75,7 @@ static uint_fast8_t parse_element_name(const char * name)
 // label: is_trackable, font_size, color, width_by_symbols
 // button: w, h, is_repeating, is_long_press, text,
 // text_field: w_sim, h_str, direction, font *
-// touch area: x, y, w, h, state
+// touch area: x, y, w, h, is_trackable
 
 void add_element(const char * element_name, ...)
 {
@@ -792,6 +792,7 @@ void open_window(window_t * win)
 
 	win->state = VISIBLE;
 	win->first_call = 1;
+	win->is_moving = 0;
 	gui.win [1] = win->window_id;
 }
 
@@ -800,11 +801,6 @@ void enable_window_move(window_t * win)
 {
 	ASSERT(win != NULL);
 	win->is_moving = 1;
-
-	add_element("ta_winmove", win->x1, win->y1, win->w - window_close_button_size, window_title_height, 1);
-	touch_area_t * ta = find_gui_element(TYPE_TOUCH_AREA, win, "ta_winmove");
-	ta->visible = VISIBLE;
-	ta->state = CANCELLED;
 }
 
 /* Расчет экранных координат окна */
@@ -816,7 +812,6 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 
 	ASSERT(win != NULL);
 	win->size_mode = mode;
-	win->is_moving = 0;
 
 	switch (mode)
 	{
@@ -946,6 +941,18 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		}
 	}
 
+//	if (win->ta_ptr != NULL)
+//	{
+//		for (uint_fast8_t i = 0; i < win->ta_count; i++)
+//		{
+//			text_field_t * ta = & win->ta_ptr [i];
+//			ta->x1 += shift_x;
+//			ta->y1 += shift_y;
+//			ASSERT(ta->x1 + ta->w < WITHGUIMAXX);
+//			ASSERT(ta->y1 + ta->h < WITHGUIMAXY);
+//		}
+//	}
+
 	if (win->sh_ptr != NULL)
 	{
 		for (uint_fast8_t i = 0; i < win->sh_count; i++)
@@ -1019,6 +1026,14 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	win->draw_y2 = win->y1 + win->h - edge_step;
 
 	win->title_align = TITLE_ALIGNMENT_LEFT;
+
+	if (win->is_moving)
+	{
+		add_element("ta_winmove", 0, 0, win->w - window_close_button_size, window_title_height, 1);
+		touch_area_t * tm = find_gui_element(TYPE_TOUCH_AREA, win, "ta_winmove");
+		tm->visible = VISIBLE;
+		tm->state = CANCELLED;
+	}
 
 	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
 	elements_state(win);
