@@ -68,8 +68,13 @@ const uint8_t infobar_places [infobar_num_places] = {
 		INFOBAR_AF_VOLUME,
 		INFOBAR_ATT,
 		INFOBAR_DNR,
+#if WITHPS7BOARD_EBAZ4205
+		INFOBAR_EMPTY,
+		INFOBAR_EMPTY,
+#else
 		INFOBAR_TX_POWER,
 		INFOBAR_VOLTAGE | INFOBAR_NOACTION,
+#endif /* WITHPS7BOARD_EBAZ4205 */
 		INFOBAR_CPU_TEMP | INFOBAR_NOACTION,
 		INFOBAR_2ND_ENC_MENU
 };
@@ -1303,6 +1308,7 @@ static void gui_main_process(void)
 			}
 				break;
 
+			case INFOBAR_EMPTY:
 			default:
 				break;
 
