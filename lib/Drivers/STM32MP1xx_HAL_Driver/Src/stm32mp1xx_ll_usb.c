@@ -110,7 +110,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 
 	// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
 
-	const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
+	const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000;	// 1.44 GHz
 	const uint_fast32_t usbphyref = LL_RCC_GetUSBPHYClockFreq(LL_RCC_USBPHY_CLKSOURCE);
 	//uint_fast32_t usbphyref = stm32mp1_get_usbphy_freq();
 	//ASSERT(usbphyref >= 19200000uL && usbphyref <= 38400000uL);
@@ -147,8 +147,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		((PLLFRACCTL_VAL * (FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
 		(PLLFRACCTL_VAL * USBPHYC_PLL_PLLFRACCTL_Msk) |
 		(1 * USBPHYC_PLL_PLLSTRBYP_Msk) |
-		USBPHYC_PLL_PLLDITHEN0_Msk |
-		USBPHYC_PLL_PLLDITHEN1_Msk |
+		USBPHYC_PLL_PLLDITHEN0_Msk |	// 1: Disables the triangular PDF dither input to SDM of PLL
+		USBPHYC_PLL_PLLDITHEN1_Msk |	// 1: Disables the rectangular PDF dither input to SDM of PLL
 		0;
 
 	if ((newPLLvalue & validmask) != (USBPHYC->PLL & validmask) || (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
