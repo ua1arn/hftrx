@@ -2585,7 +2585,7 @@ static void window_tx_power_process(void)
 	window_t * const win = get_win(WINDOW_TX_POWER);
 
 	static label_t * lbl_tx_power = NULL, * lbl_tune_power = NULL;
-	static power_var_t pw;
+	static enc_var_t pw;
 	static uint_fast16_t power_min, power_max, power_full, power_tune;
 	slider_t * sl;
 

@@ -63,11 +63,13 @@ void xcz_rxtx_state(uint8_t tx)
 void xcz_dds_ftw(const uint_least64_t * val)
 {
 	Xil_Out32(XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR + 4, * val);
+	mirror_nco1 = * val;
 }
 
 void xcz_dds_rts(const uint_least64_t * val)
 {
 	Xil_Out32(XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR + 8, * val);
+	mirror_ncorts = * val;
 }
 
 void xcz_rx_iq_shift(uint32_t val) // 48
@@ -78,6 +80,7 @@ void xcz_rx_iq_shift(uint32_t val) // 48
 void xcz_dds_ftw_sub(const uint_least64_t * val)
 {
 	Xil_Out32(XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR + 28, * val);
+	mirror_nco2 = * val;
 }
 
 void xcz_rx_cic_shift(uint32_t val)
