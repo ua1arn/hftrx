@@ -1,22 +1,10 @@
-// genregdefs.cpp : Defines the entry point for the console application.
+// genregdefs.c 
 //
 
-#include "stdafx.h"
-#include "genregdefs.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// The one and only application object
-
-CWinApp theApp;
-
-using namespace std;
-
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 struct ddd
 {
@@ -33,6 +21,7 @@ static int option_base;	/* base address generate */
 void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 {
 	unsigned i;
+	unsigned offs;
 
 	printf("/*\n");
 	printf(" * @brief %s\n", bname);
@@ -41,7 +30,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 	printf("/*!< %s Controller Interface */\n", bname);
 	printf("typedef struct %s_Type\n", bname);
 	printf("{\n");
-	unsigned offs = 0;
+	offs = 0;
 	for (i = 0; i < szregs; ++ i)
 	{
         static const char * fldtypes [] =
@@ -148,12 +137,13 @@ static char * commentfgets(char * buff, size_t n, FILE * fp)
 	char * s;
 	for (;;)
 	{
+        int f1;
 		s = fgets(buff, n, fp);
 		if (s == NULL)
 			break;
 		if (s [0] != '#')
 			break;
-		int f1 = sscanf(s + 1, "type %[*a-zA-Z_0-9]s", bname);
+		f1 = sscanf(s + 1, "type %[*a-zA-Z_0-9]s", bname);
 		if (f1 != 1)
 		{
 			int f2 = sscanf(s + 1, "base %x", & base_array [base_count]);
@@ -174,19 +164,25 @@ static int parseregister(struct ddd * regp, FILE * fp, const char * file)
     int fldsize;
     char b0 [1024];
 	static const char SEP [] = ";";
+    char * token;
+    char * s0;
+    int f1;
+    char * s1;
+    int nargs;
+    char * s2;
 
     char * const s0z = commentfgets(b0, sizeof b0 / sizeof b0 [0], fp);
     if (s0z == NULL)
         return 1;
-	char * token = strtok(s0z, SEP);
+	token = strtok(s0z, SEP);
 	if (token == NULL)
 		return 1;
 
-	char * s0 = token;
+	s0 = token;
  	while (isspace((unsigned char) * s0))
 		++ s0;
 
-   int f1 = sscanf(s0, "%s %i %[*a-zA-Z_0-9]s ", fldname, & fldsize, typname);
+    f1 = sscanf(s0, "%s %i %[*a-zA-Z_0-9]s ", fldname, & fldsize, typname);
     if (f1 == 3)
     {
 		//fprintf(stderr, "fld3 '%s' '%s'\n", s0, typname);
@@ -219,7 +215,7 @@ static int parseregister(struct ddd * regp, FILE * fp, const char * file)
 
 	regp->fldname = strdup(fldname);
 
- 	char * s1 = strtok(NULL, SEP);
+ 	s1 = strtok(NULL, SEP);
 	//char * const s1 = commentfgets(b1, sizeof b1 / sizeof b1 [0], fp);
     if (s1 == NULL)
         return 1;
@@ -227,7 +223,7 @@ static int parseregister(struct ddd * regp, FILE * fp, const char * file)
 	while (isspace((unsigned char) * s1))
 		++ s1;
 
-    int nargs = sscanf(s1, "%i %i", & regp->fldoffs, & regp->fldrept);
+    nargs = sscanf(s1, "%i %i", & regp->fldoffs, & regp->fldrept);
     switch (nargs)
     {
     case 1:
@@ -241,7 +237,7 @@ static int parseregister(struct ddd * regp, FILE * fp, const char * file)
         break;
     }
 
-  	char * s2 = strtok(NULL, SEP);
+  	s2 = strtok(NULL, SEP);
 	//char * const s2 = commentfgets(b2, sizeof b2 / sizeof b2 [0], fp);
     if (s2 == NULL)
         return 1;
@@ -262,6 +258,10 @@ static int parseregister(struct ddd * regp, FILE * fp, const char * file)
 
 static int processfile(const char * file)
 {
+    unsigned i;
+    size_t nregs;
+    struct ddd * regs;
+    const size_t maxrows = 1024;
     FILE * fp = fopen(file, "rt");
     if (fp == NULL)
     {
@@ -269,15 +269,13 @@ static int processfile(const char * file)
         return 1;
     }
 
-    size_t maxrows = 1024;
-    struct ddd * regs = (struct ddd *) calloc(sizeof (struct ddd), maxrows);
+    regs = (struct ddd *) calloc(sizeof (struct ddd), maxrows);
     if (regs == NULL)
     {
         printf("#error Can not allocate memory for file '%s'\n", file);
         return 1;
     }
 	//fprintf(stderr, "Parse file\n");
-    size_t nregs;
     for (nregs = 0; nregs < maxrows; ++ nregs)
     {
 		struct ddd * regp = & regs [nregs];
@@ -313,7 +311,6 @@ static int processfile(const char * file)
 	genstruct(regs, nregs, bname);
 
 	//fprintf(stderr, "Release memory\n");
-    unsigned i;
     for (i = 0; i < nregs; ++ i)
     {
         free(regs [i].fldname);
@@ -324,12 +321,12 @@ static int processfile(const char * file)
     return 0;
 }
 
-int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+int main(int argc, char* argv[], char* envp[])
 {
+	int i = 1;
 	strcpy(bname, "UNNAMED");
     if (argc < 2)
         return 1;
-	int i = 1;
 	if (strcmp(argv [i], "-b") == 0)
 	{
 		++ i;
