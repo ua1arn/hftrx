@@ -397,36 +397,24 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
  */
 static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-	PCD_HandleTypeDef *hpcd = (PCD_HandleTypeDef *)pdev->pData;
-	//PRINTF("USBD_CDC_DataIn: epnum=%d\n", (int) epnum);
 	if (USB_ENDPOINT_IN(epnum) >= USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, 0) && USB_ENDPOINT_IN(epnum) < USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, WITHUSBCDCACM_N))
 	{
-		const unsigned offset = USBD_CDCACM_OFFSET_BY_IN_EP(USB_ENDPOINT_IN(epnum), USBD_EP_CDCACM_IN);
-		ASSERT(offset < WITHUSBCDCACM_N);
-		if (1)
+		PCD_HandleTypeDef * const hpcd = (PCD_HandleTypeDef *) pdev->pData;
+		//PRINTF("USBD_CDC_DataIn: epnum=%02X\n", (unsigned) epnum);
+		if ((pdev->ep_in[epnum & 0xFU].total_length > 0U) &&
+				((pdev->ep_in[epnum & 0xFU].total_length % hpcd->IN_ep[epnum & 0xFU].maxpacket) == 0U))
 		{
-			if ((pdev->ep_in[epnum & 0xFU].total_length > 0U) &&
-					((pdev->ep_in[epnum & 0xFU].total_length % hpcd->IN_ep[epnum & 0xFU].maxpacket) == 0U))
-			{
-				/* Update the packet total length */
-				pdev->ep_in[epnum & 0xFU].total_length = 0U;
+			/* Update the packet total length */
+			pdev->ep_in[epnum & 0xFU].total_length = 0U;
 
-				/* Send ZLP */
-				(void)USBD_LL_Transmit(pdev, epnum, NULL, 0U);
-			}
-			else
-			{
-				usbd_cdc_txstate [offset] = 0;
-			}
+			/* Send ZLP */
+			(void)USBD_LL_Transmit(pdev, epnum, NULL, 0U);
 		}
 		else
 		{
-			// test usb tx fifo initialization
-			//enum { TLENNNN = (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0) };
-			static const char pattern [] = "Ok! ";
-			enum { TLENNNN = ARRAY_SIZE(pattern) - 1};
-			memcpy(cdcXbuffin [offset], pattern, TLENNNN);
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], TLENNNN);
+			const unsigned offset = USBD_CDCACM_OFFSET_BY_IN_EP(USB_ENDPOINT_IN(epnum), USBD_EP_CDCACM_IN);
+			ASSERT(offset < WITHUSBCDCACM_N);
+			usbd_cdc_txstate [offset] = 0;
 		}
 	}
 	return USBD_OK;
