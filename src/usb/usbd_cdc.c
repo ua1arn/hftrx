@@ -400,12 +400,12 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 	if (USB_ENDPOINT_IN(epnum) >= USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, 0) && USB_ENDPOINT_IN(epnum) < USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, WITHUSBCDCACM_N))
 	{
 		PCD_HandleTypeDef * const hpcd = (PCD_HandleTypeDef *) pdev->pData;
+		const unsigned ix = epnum & 0x0F;
 		//PRINTF("USBD_CDC_DataIn: epnum=%02X\n", (unsigned) epnum);
-		if ((pdev->ep_in[epnum & 0xFU].total_length > 0U) &&
-				((pdev->ep_in[epnum & 0xFU].total_length % hpcd->IN_ep[epnum & 0xFU].maxpacket) == 0U))
+		if ((pdev->ep_in[ix].total_length > 0U) && ((pdev->ep_in[ix].total_length % hpcd->IN_ep[ix].maxpacket) == 0U))
 		{
 			/* Update the packet total length */
-			pdev->ep_in[epnum & 0xFU].total_length = 0U;
+			pdev->ep_in[ix].total_length = 0U;
 
 			/* Send ZLP */
 			(void)USBD_LL_Transmit(pdev, epnum, NULL, 0U);
