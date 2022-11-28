@@ -2815,7 +2815,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 
 static uint32_t
 FLASHMEMINITFUNC
-ttb_accessbits(uintptr_t a, int ro, int xn)
+ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 {
 	const uint32_t addrbase = a & 0xFFF00000;
 
@@ -2954,7 +2954,7 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	#warning ttb_accessbits: Unhandled CPUSTYLE_xxxx
+	#warning ttb_1MB_accessbits: Unhandled CPUSTYLE_xxxx
 
 	return addrbase | TTB_PARA_DEVICE;
 
@@ -3022,26 +3022,28 @@ sysinit_ttbr_initialize(void)
 
 #elif CPUSTYLE_RISCV
 
-	//#warning Implement for RISC-C
-	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
-	csr_write_sptbr((uintptr_t) tlbbase >> 10);
-
-	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
-	// 3.1.6 Virtualization Management Field in mstatus Register
-	// Table 3.3: Encoding of virtualization management field VM[4:0]
-
-	{
-		uint_xlen_t v = csr_read_mstatus();
-		v &= ~ ((uint_xlen_t) 0x1F) << 24;	// VM[4:0]
-		v |= ((uint_xlen_t) 0x08) << 24;	// Set Page-based 32-bit virtual addressing.
-		//csr_write_mstatus(v);
-	}
+	csr_write_satp(0);
+//
+//	//#warning Implement for RISC-C
+//	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
+//	csr_write_sptbr((uintptr_t) tlbbase >> 10);
+//
+//	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
+//	// 3.1.6 Virtualization Management Field in mstatus Register
+//	// Table 3.3: Encoding of virtualization management field VM[4:0]
+//
+//	{
+//		uint_xlen_t v = csr_read_mstatus();
+//		v &= ~ ((uint_xlen_t) 0x1F) << 24;	// VM[4:0]
+//		v |= ((uint_xlen_t) 0x08) << 24;	// Set Page-based 32-bit virtual addressing.
+//		//csr_write_mstatus(v);
+//	}
 
 #endif
 }
 
 static void FLASHMEMINITFUNC
-ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
+ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
@@ -3329,18 +3331,18 @@ sysinit_mmu_initialize(void)
 #if WITHISBOOTLOADER || CPUSTYLE_R7S721
 
 	// MMU iniitialize
-	ttb_initialize(ttb_accessbits, 0, 0);
+	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
 	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #elif CPUSTYLE_STM32MP1
 	extern uint32_t __data_start__;
 	// MMU iniitialize
-	ttb_initialize(ttb_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
+	ttb_1MB_initialize(ttb_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
 	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #else
 	// MMU iniitialize
-	ttb_initialize(ttb_accessbits, 0, 0);
+	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
 	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #endif
@@ -3351,7 +3353,7 @@ sysinit_mmu_initialize(void)
 	// RISC-V MMU initialize
 
 
-	ttb_initialize(ttb_accessbits, 0, 0);
+	//ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
 	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 
