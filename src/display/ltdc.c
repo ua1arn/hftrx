@@ -107,7 +107,7 @@ static void vdc5_wait(
 	const uint_fast8_t pos = (ipos); \
 	uint_fast32_t mask = 0; \
 	while (width --) \
-		mask = (mask << 1) | 1uL; \
+		mask = (mask << 1) | 1u; \
 	mask <<= (pos); \
 	val <<= (pos); \
 	ASSERT((val & mask) == val); \
@@ -127,7 +127,7 @@ static void vdc5_wait(
 	const uint_fast8_t pos = (ipos); \
 	uint_fast32_t mask = 0; \
 	while (width --) \
-		mask = (mask << 1) | 1uL; \
+		mask = (mask << 1) | 1u; \
 	mask <<= (pos); \
 	val <<= (pos); \
 	ASSERT((val & mask) == val); \
@@ -352,7 +352,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
 	VDC5_fillLUT_L8(& VDC5_CH0_GR2_CLUT_TBL, xltrgb24);
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
-	//vdc->GR2_CLUT ^= (1uL << 16);	// GR2_CLT_SEL Switch to filled table
+	//vdc->GR2_CLUT ^= (1u << 16);	// GR2_CLT_SEL Switch to filled table
 //#endif /* LCDMODE_MAIN_L8 */
 
 //#if LCDMODE_PIP_L8
@@ -1788,8 +1788,8 @@ struct fb_t113_rgb_pdata_t
 static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
 	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);
-	write32((uintptr_t) & glb->dbuff, 0x01uL);	// 1: register value be ready for update (self-cleaning bit)
-	while ((read32((uintptr_t) & glb->dbuff) & 0x01uL) != 0)
+	write32((uintptr_t) & glb->dbuff, 0x01u);	// 1: register value be ready for update (self-cleaning bit)
+	while ((read32((uintptr_t) & glb->dbuff) & 0x01u) != 0)
 		;
 }
 
@@ -2110,9 +2110,9 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 
-	TCON_LCD0->LCD_GINT0_REG |= (1uL << 31); 		//Enable the Vertical Blank interrupt
-	TCON_LCD0->LCD_GINT0_REG &= ~ (1uL << 15);         //clear LCD_VB_INT_FLAG
-	while((TCON_LCD0->LCD_GINT0_REG & (1uL << 15)) == 0) //wait  LCD_VB_INT_FLAG
+	TCON_LCD0->LCD_GINT0_REG |= (1u << 31); 		//Enable the Vertical Blank interrupt
+	TCON_LCD0->LCD_GINT0_REG &= ~ (1u << 15);         //clear LCD_VB_INT_FLAG
+	while((TCON_LCD0->LCD_GINT0_REG & (1u << 15)) == 0) //wait  LCD_VB_INT_FLAG
 		;
 
 
