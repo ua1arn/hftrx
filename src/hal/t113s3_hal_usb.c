@@ -2646,6 +2646,20 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	const uint32_t ep_dir_in = 1;
 	const uint32_t ep_dir_out = 0;
 
+#if WITHUSBDMTP
+	{
+		//set_fifo_ep: ep_no=02, ep_attr=02, ep_dir=0, bIntfProtocol=50, maxpktsz=512
+		//set_fifo_ep: ep_no=01, ep_attr=02, ep_dir=1, bIntfProtocol=50, maxpktsz=512
+	#if WITHUSBDEV_HSDESC
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_IN & 0x0F), ep_dir_in, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_OUT & 0x0F), ep_dir_out, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
+	#else /* WITHUSBDEV_HSDESC */
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_IN & 0x0F), ep_dir_in, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_OUT & 0x0F), ep_dir_out, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
+	#endif /* WITHUSBDEV_HSDESC */
+	}
+#endif /* WITHUSBDMTP */
+
 #if WITHUSBDMSC
 	{
 		//set_fifo_ep: ep_no=02, ep_attr=02, ep_dir=0, bIntfProtocol=50, maxpktsz=512
@@ -2743,7 +2757,16 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						break;
 					case 0x03:             //Get String Desc
 					   	temp = LO_BYTE(ep0_setup->wValue);
-					   	if (temp < usbd_get_stringsdesc_count())
+					   	if (temp == 0xEE)
+					   	{
+							// WCID devices support
+							// Microsoft OS String Descriptor, ReqLength=0x12
+							// See OS_Desc_Intro.doc, Table 3 describes the OS string descriptor’s fields.
+							pusb->ep0_xfer_srcaddr = (uintptr_t)MsftStringDescr [0].data;
+							pusb->ep0_xfer_residue = min(MsftStringDescr [0].size, ep0_setup->wLength);
+							pusb->ep0_xfer_residue = MsftStringDescr [0].size;
+					   	}
+					   	else if (temp < usbd_get_stringsdesc_count())
 						{
 							pusb->ep0_xfer_srcaddr = (uintptr_t)StringDescrTbl [temp].data;
 							pusb->ep0_xfer_residue = min(StringDescrTbl [temp].size, ep0_setup->wLength);
