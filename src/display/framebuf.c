@@ -1264,7 +1264,7 @@ hwacc_fillrect_u32(
 				* tbuffer ++ = color;
 			tbuffer += t;
 		}
-		arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+		arm_hardware_flush((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 		return;
 	}
 	const unsigned stride = GXADJ(dx) * PIXEL_SIZE;
@@ -1325,6 +1325,7 @@ hwacc_fillrect_u32(
 			* tbuffer ++ = color;
 		tbuffer += t;
 	}
+	arm_hardware_flush((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
 }
