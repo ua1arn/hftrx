@@ -3674,7 +3674,10 @@ static uint_fast8_t bandset2m = 1;	/* используется ли диапаз
 	static uint_fast8_t catstatetx;		/* запрос перехода трансивера на передачу от CAT команды */
 	static uint_fast8_t catstatetxdata;		/* запрос перехода трансивера на передачу от CAT команды TX1 */
 	static uint_fast8_t cattunemode;		/* запрос перехода трансивера на передачу от CAT команды */
-#else
+//	static uint_fast8_t catautotuner_p1;			/* запрос ржима настройки тюнера от CAT команды */
+//	static uint_fast8_t catautotuner_p2;			/* запрос ржима настройки тюнера от CAT команды */
+//	static uint_fast8_t catautotuner_p3;			/* запрос ржима настройки тюнера от CAT команды */
+#else /* WITHCAT */
 	enum { catstatetx = 0, catstatetxdata = 0, cattunemode = 0 };
 #endif /* WITHCAT */
 
@@ -11166,6 +11169,9 @@ updateboardZZZ(
 #if WITHIF4DSP
 			cat_answer_request(CAT_NR_INDEX);
 #endif /* WITHIF4DSP */
+#if WITHTX && WITHAUTOTUNER
+			cat_answer_request(CAT_AC_INDEX);
+#endif /* WITHTX && WITHAUTOTUNER */
 		}
 		else
 		{
@@ -12656,6 +12662,7 @@ uif_key_tuneoff(void)
 		tunemode = 0;		/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 #if WITHCAT
 		cattunemode = 0;
+		//catautotuner_p3 = 0;
 #endif /* WITHCAT */
 	}
 	else
@@ -13944,6 +13951,9 @@ void cat2_disconnect(void)
 
 	//aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
 	cattunemode = catstatetx = 0;
+//	catautotuner_p1 = 0;
+//	catautotuner_p2 = 0;
+//	catautotuner_p3 = 0;
 	catstatein = CATSTATE_WAITCOMMAND1;
 	catstateout = CATSTATEO_SENDREADY;
 }
@@ -14106,9 +14116,9 @@ static void acanswer(uint_fast8_t arg)
 		";";				// 1 char - line terminator
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_3,
-		(int) 1,
-		(int) 1,
-		(int) 1
+		(int) tunerwork != 0,
+		(int) tunerwork != 0,
+		(int) reqautotune != 0
 		);
 	cat_answer(len);
 }
@@ -15606,6 +15616,33 @@ processcatmsg(
 	{
 		if (cathasparam != 0)
 		{
+			if (catpcount == 3)
+			{
+				const uint_fast32_t p1 = catp [0] == '1';
+				const uint_fast32_t p2 = catp [1] == '1';
+				const uint_fast32_t p3 = catp [2] == '1';
+//				catautotuner_p1 = p1;
+//				catautotuner_p2 = p2;
+//				catautotuner_p3 = p3;
+
+				const uint_fast8_t tx = 1;
+				const uint_fast8_t bi = getbankindex_tx(tx);
+				const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+			    const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
+
+				tunerwork = p1 || p2;
+
+				reqautotune = p3;
+
+				storetuner(bg, ant);
+				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+				rc = 1;
+				cat_answer_request(CAT_AC_INDEX);
+			}
+			else
+			{
+				cat_answer_request(CAT_BADCOMMAND_INDEX);
+			}
 //			const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
 //			vindex_t vi = getvfoindex(bi);
 //			const uint_fast32_t v = catparam;
