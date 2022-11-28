@@ -118,7 +118,7 @@ typedef USBALIGN_BEGIN struct
   uint32_t             wblock_num;
   uint32_t             wlength;
   uint32_t             data_ptr;
-  volatile uint32_t    alt_setting;
+  USBALIGN_BEGIN volatile uint8_t    alt_setting [1] USBALIGN_END;
 
 } USBALIGN_END USBD_DFU_HandleTypeDef;
 
@@ -1149,7 +1149,7 @@ static USBD_StatusTypeDef  USBD_DFU_Init(USBD_HandleTypeDef *pdev, uint_fast8_t 
     //hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
     hdfu = & gdfu;
 
-    hdfu->alt_setting = 0;
+    hdfu->alt_setting [0] = 0;
     hdfu->data_ptr = 0; //USBD_DFU_APP_DEFAULT_ADD;
     hdfu->wblock_num = 0;
     hdfu->wlength = 0;

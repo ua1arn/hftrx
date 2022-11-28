@@ -41,34 +41,34 @@ extern "C" {
 /** @defgroup USBD_MTP_Exported_Defines
   * @{
   */
-#ifndef MTP_IN_EP
-#define MTP_IN_EP                                                   0x81U       /* EP1 for data IN */
-#endif /* MTP_IN_EP */
-#ifndef MTP_OUT_EP
-#define MTP_OUT_EP                                                  0x01U       /* EP1 for data OUT */
-#endif /* MTP_OUT_EP */
-#ifndef MTP_CMD_EP
-#define MTP_CMD_EP                                                  0x82U       /* EP2 for MTP commands */
-#endif /* MTP_CMD_EP */
-
-#ifndef MTP_CMD_ITF_NBR
-#define MTP_CMD_ITF_NBR                                             0x00U       /* Command Interface Number 0 */
-#endif /* MTP_CMD_ITF_NBR */
-
-#ifndef MTP_COM_ITF_NBR
-#define MTP_COM_ITF_NBR                                             0x01U       /* Communication Interface Number 0 */
-#endif /* MTP_CMD_ITF_NBR */
-
-#ifndef MTP_HS_BINTERVAL
-#define MTP_HS_BINTERVAL                                            0x10U
-#endif /* MTP_HS_BINTERVAL */
-
-#ifndef MTP_FS_BINTERVAL
-#define MTP_FS_BINTERVAL                                            0x10U
-#endif /* MTP_FS_BINTERVAL */
-
-#define MTP_DATA_MAX_PACKET_SIZE                                 64U         /* Endpoint IN & OUT Packet size */
-#define MTP_CMD_PACKET_SIZE                                         8U          /* Control Endpoint Packet size */
+//#ifndef MTP_IN_EP
+//#define MTP_IN_EP                                                   0x81U       /* EP1 for data IN */
+//#endif /* MTP_IN_EP */
+//#ifndef MTP_OUT_EP
+//#define MTP_OUT_EP                                                  0x01U       /* EP1 for data OUT */
+//#endif /* MTP_OUT_EP */
+//#ifndef MTP_CMD_EP
+//#define MTP_CMD_EP                                                  0x82U       /* EP2 for MTP commands */
+//#endif /* MTP_CMD_EP */
+//
+//#ifndef MTP_CMD_ITF_NBR
+//#define MTP_CMD_ITF_NBR                                             0x00U       /* Command Interface Number 0 */
+//#endif /* MTP_CMD_ITF_NBR */
+//
+//#ifndef MTP_COM_ITF_NBR
+//#define MTP_COM_ITF_NBR                                             0x01U       /* Communication Interface Number 0 */
+//#endif /* MTP_CMD_ITF_NBR */
+//
+//#ifndef MTP_HS_BINTERVAL
+//#define MTP_HS_BINTERVAL                                            0x10U
+//#endif /* MTP_HS_BINTERVAL */
+//
+//#ifndef MTP_FS_BINTERVAL
+//#define MTP_FS_BINTERVAL                                            0x10U
+//#endif /* MTP_FS_BINTERVAL */
+//
+//#define MTP_DATA_MAX_PACKET_SIZE                                 64U         /* Endpoint IN & OUT Packet size */
+//#define MTP_CMD_PACKET_SIZE                                         8U          /* Control Endpoint Packet size */
 
 #define MTP_MEDIA_PACKET                                            512U
 #define MTP_CONT_HEADER_SIZE                                        12U
@@ -271,8 +271,8 @@ __packed typedef struct
 typedef struct
 {
 	__ALIGN_BEGIN uint32_t       rx_buff [MTP_MEDIA_PACKET / 4U] __ALIGN_END;	/* Force 32-bit alignment */
-	uint32_t                     alt_setting;
-	uint32_t                     dev_status;
+	__ALIGN_BEGIN uint8_t        alt_setting [1] __ALIGN_END;
+	__ALIGN_BEGIN uint8_t        dev_status [4] __ALIGN_END;
 	uint32_t                     ResponseLength;
 	uint32_t                     ResponseCode;
 	__IO uint16_t                MaxPcktLen;

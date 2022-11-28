@@ -7349,7 +7349,7 @@ struct enc2menu
 
 static const FLASHMEM char catsiglabels [BOARD_CATSIG_count] [9] =
 {
-	"NONE    ",
+	"    NONE",
 	"SER1 DTR",
 	"SER1 RTS",
 #if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1

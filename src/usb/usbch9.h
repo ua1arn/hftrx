@@ -162,6 +162,13 @@ enum
 	#endif /* WITHUSBDEV_HSDESC */
 #endif /* WITHUSBCDCACM */
 
+#if WITHUSBDMTP
+	#define MTP_HS_BINTERVAL 0x10U
+	#define MTP_FS_BINTERVAL 0x10U
+	#define MTP_DATA_MAX_PACKET_SIZE                                 64U         /* Endpoint IN & OUT Packet size */
+	#define MTP_CMD_PACKET_SIZE                                         8U          /* Control Endpoint Packet size */
+#endif /* WITHUSBDMTP */
+
 #if WITHUSBHID
 	/* наличие одного из определений выбирает нужный тип HID DEVICE */
 	//#define HIDMOUSE_INT_DATA_SIZE 4

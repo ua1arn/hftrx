@@ -1001,31 +1001,29 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBDMTP
-#warning WITHUSBDMTP not finished
-	{
-		const uint_fast8_t pipeint = USBD_EP_MTP_INT & 0x7F;
-		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, MTP_CMD_PACKET_SIZE);
-	}
 	{
 		const uint_fast8_t pipe = USBD_EP_MTP_IN & 0x7F;
+		const uint_fast8_t pipeint = USBD_EP_MTP_INT & 0x7F;
 
 		numoutendpoints += 1;
-		const int ncdceemindatapackets = 1 * mul2 + 1, ncdceemoutdatapackets = 3;
+		const int nmtpindatapackets = 1 * mul2 + 1, nmtpoutdatapackets = 3;
+		const int nmtpintdatapackets = 1;
 
-		maxoutpacketsize4 = MAX(maxoutpacketsize4, ncdceemoutdatapackets * size2buff4(MTP_DATA_MAX_PACKET_SIZE));
+		maxoutpacketsize4 = MAX(maxoutpacketsize4, nmtpoutdatapackets * size2buff4(MTP_DATA_MAX_PACKET_SIZE));
 
 
-		const uint_fast16_t size4 = ncdcindatapackets * (size2buff4(MTP_DATA_MAX_PACKET_SIZE) + add3tx);
+		const uint_fast16_t size4 = nmtpindatapackets * (size2buff4(MTP_DATA_MAX_PACKET_SIZE) + add3tx);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
 
 
-		const uint_fast16_t size4 = ncdceemindatapackets * (size2buff4(MTP_DATA_MAX_PACKET_SIZE) + add3tx);
-		ASSERT(last4 >= size4);
-		last4 -= size4;
-		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		//PRINTF(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		const uint_fast16_t size4int = nmtpintdatapackets * (size2buff4(MTP_CMD_PACKET_SIZE) + add3tx);
+		ASSERT(last4 >= size4int);
+		last4 -= size4int;
+		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
+
+		//PRINTF(PSTR("usbd_fifo_initialize5 MTP %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBDMTP */
 #if WITHUSBDMSC

@@ -30,15 +30,18 @@ typedef enum
 
 uint8_t USBD_MTP_STORAGE_Init(USBD_HandleTypeDef  *pdev)
 {
+	TP();
 	return 0;
 }
 
 uint8_t USBD_MTP_STORAGE_DeInit(USBD_HandleTypeDef  *pdev)
 {
+	TP();
 	return 0;
 }
 void USBD_MTP_STORAGE_Cancel(USBD_HandleTypeDef  *pdev, MTP_ResponsePhaseTypeDef MTP_ResponsePhase)
 {
+	TP();
 }
 uint8_t USBD_MTP_STORAGE_ReadData(USBD_HandleTypeDef  *pdev)
 {
@@ -46,14 +49,17 @@ uint8_t USBD_MTP_STORAGE_ReadData(USBD_HandleTypeDef  *pdev)
 }
 uint8_t USBD_MTP_STORAGE_SendContainer(USBD_HandleTypeDef  *pdev, MTP_CONTAINER_TYPE CONT_TYPE)
 {
+	TP();
 	return 0;
 }
 uint8_t USBD_MTP_STORAGE_ReceiveOpt(USBD_HandleTypeDef  *pdev)
 {
+	TP();
 	return 0;
 }
 uint8_t USBD_MTP_STORAGE_ReceiveData(USBD_HandleTypeDef  *pdev)
 {
+	TP();
 	return 0;
 }
 
@@ -233,17 +239,17 @@ static USBD_StatusTypeDef USBD_MTP_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
           {
             case MTP_READ_DATA :
               len = 4U;
-              hmtp->dev_status = ((uint32_t)MTP_RESPONSE_DEVICE_BUSY << 16) | len;
+              USBD_poke_u32(hmtp->dev_status, ((uint32_t)MTP_RESPONSE_DEVICE_BUSY << 16) | len);
               break;
 
             case MTP_RECEIVE_DATA :
               len = 4U;
-              hmtp->dev_status = ((uint32_t)MTP_RESPONSE_TRANSACTION_CANCELLED << 16) | len;
+              USBD_poke_u32(hmtp->dev_status, ((uint32_t)MTP_RESPONSE_TRANSACTION_CANCELLED << 16) | len);
               break;
 
             case MTP_PHASE_IDLE :
               len = 4U;
-              hmtp->dev_status = ((uint32_t)MTP_RESPONSE_OK << 16) | len;
+              USBD_poke_u32(hmtp->dev_status, ((uint32_t)MTP_RESPONSE_OK << 16) | len);
               break;
 
             default:
@@ -267,7 +273,7 @@ static USBD_StatusTypeDef USBD_MTP_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 
           if (pdev->dev_state == USBD_STATE_CONFIGURED)
           {
-            hmtp->alt_setting = 0U;
+            hmtp->alt_setting [0] = 0U;
             (void)USBD_CtlSendData(pdev, (uint8_t *)&hmtp->alt_setting, 1U);
           }
           break;
