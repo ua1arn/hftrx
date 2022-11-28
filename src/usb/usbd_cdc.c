@@ -249,27 +249,28 @@ uint_fast8_t PFX usbd_cdc2_getdtr(void)
 #endif /* WITHUSBCDCACM_N > 1 */
 }
 
-enum { TXRETRIES = 5 };
 static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
-static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
 static USBD_HandleTypeDef * volatile gpdev = NULL;
-static volatile uint8_t usbd_cdc_txretries [WITHUSBCDCACM_N];	/* склько осталось повторов ожидания конца передачи */
-static uint32_t usbd_cdc_txstarted [WITHUSBCDCACM_N];	/* время начала передачи */
-static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
+static volatile uint8_t usbd_cdc_txstate [WITHUSBCDCACM_N];	/* склько осталось повторов ожидания конца передачи */
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void PFX usbd_cdc_send(const void * buff, size_t length)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	if (gpdev != NULL && usbd_cdc_txretries [offset] == 0)
+	if (gpdev != NULL && usbd_cdc_txstate [offset] == 0)
 	{
+		USBD_HandleTypeDef * const pdev = gpdev;
+
+		const uint_fast8_t CDCInEpAdd = USB_ENDPOINT_IN(USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset));
 		const size_t n = ulmin(length, VIRTUAL_COM_PORT_IN_DATA_SIZE);
 		memcpy(cdcXbuffin [offset], buff, n);
-		usbd_cdc_zlp_pending [offset] = n == VIRTUAL_COM_PORT_IN_DATA_SIZE;
-		usbd_cdc_txlen [offset] = n;
-		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset)), cdcXbuffin [offset], usbd_cdc_txlen [offset]);
-		usbd_cdc_txstarted [offset] = sys_now();
-		usbd_cdc_txretries [offset] = TXRETRIES;
+
+	    /* Update the packet total length */
+	    pdev->ep_in[CDCInEpAdd & 0xFU].total_length = n;
+	    /* Transmit next packet */
+		USBD_LL_Transmit(pdev, CDCInEpAdd, cdcXbuffin [offset], n);
+
+		usbd_cdc_txstate [offset] = 1;
 	}
 }
 
@@ -279,16 +280,9 @@ uint_fast8_t PFX usbd_cdc_ready(void)	/* временное решение дл�
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpdev == NULL)
 		return 0;
-	if (usbd_cdc_txretries [offset] != 0)
+	if (usbd_cdc_txstate [offset] != 0)
 	{
-		if ((sys_now() - usbd_cdc_txstarted [offset]) < waittm)
 			return 0;
-		if (-- usbd_cdc_txretries [offset] != 0)
-		{
-			USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset)), cdcXbuffin [offset], usbd_cdc_txlen [offset]);
-			usbd_cdc_txstarted [offset] = sys_now();
-			return 0;
-		}
 	}
 	return 1;
 }
@@ -403,65 +397,37 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
  */
 static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
+	PCD_HandleTypeDef *hpcd = (PCD_HandleTypeDef *)pdev->pData;
 	//PRINTF("USBD_CDC_DataIn: epnum=%d\n", (int) epnum);
 	if (USB_ENDPOINT_IN(epnum) >= USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, 0) && USB_ENDPOINT_IN(epnum) < USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, WITHUSBCDCACM_N))
 	{
 		const unsigned offset = USBD_CDCACM_OFFSET_BY_IN_EP(USB_ENDPOINT_IN(epnum), USBD_EP_CDCACM_IN);
 		ASSERT(offset < WITHUSBCDCACM_N);
-#if 0
-		// test usb tx fifo initialization
-		enum { TLENNNN = (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0) };
-		memset(cdcXbuffin [offset], '$', TLENNNN);
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], TLENNNN);
-#else
-		switch (offset)
+		if (1)
 		{
-		case MAIN_CDC_OFFSET:
-			while (usbd_cdc_txenabled [offset] && (cdcXbuffinlevel [offset] < ARRAY_SIZE(cdcXbuffin [offset])))
+			if ((pdev->ep_in[epnum & 0xFU].total_length > 0U) &&
+					((pdev->ep_in[epnum & 0xFU].total_length % hpcd->IN_ep[epnum & 0xFU].maxpacket) == 0U))
 			{
-				HARDWARE_CDC_ONTXCHAR(offset, pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
-			}
-#if 0
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
-			cdcXbuffinlevel [offset] = 0;
-#else
-			if (cdcXbuffinlevel [offset] != 0)
-			{
-				usbd_cdc_zlp_pending [offset] = cdcXbuffinlevel [offset] == VIRTUAL_COM_PORT_IN_DATA_SIZE;
-				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
-				cdcXbuffinlevel [offset] = 0;
-			}
-			else if (usbd_cdc_zlp_pending [offset] != 0)
-			{
-				usbd_cdc_zlp_pending [offset] = 0;
-				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);	// Send ZLP
+				/* Update the packet total length */
+				pdev->ep_in[epnum & 0xFU].total_length = 0U;
+
+				/* Send ZLP */
+				(void)USBD_LL_Transmit(pdev, epnum, NULL, 0U);
 			}
 			else
 			{
-				// что делать если нечего передавать?
-				//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);	// Send ZLP
-				usbd_cdc_txretries [offset] = 0;
+				usbd_cdc_txstate [offset] = 0;
 			}
-#endif
-			break;
-		default:
-			if (1)
-			{
-				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
-				cdcXbuffinlevel [offset] = 0;
-			}
-			else
-			{
-				// test usb tx fifo initialization
-				//enum { TLENNNN = (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0) };
-				static const char pattern [] = "Ok! ";
-				enum { TLENNNN = ARRAY_SIZE(pattern) - 1};
-				memcpy(cdcXbuffin [offset], pattern, TLENNNN);
-				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], TLENNNN);
-			}
-			break;
 		}
-#endif
+		else
+		{
+			// test usb tx fifo initialization
+			//enum { TLENNNN = (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0) };
+			static const char pattern [] = "Ok! ";
+			enum { TLENNNN = ARRAY_SIZE(pattern) - 1};
+			memcpy(cdcXbuffin [offset], pattern, TLENNNN);
+			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], TLENNNN);
+		}
 	}
 	return USBD_OK;
 }
@@ -603,39 +569,26 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 {
 	uint_fast8_t offset;
 
-    /* cdc Open EP IN */
- 	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
+  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
 		usbd_cdc_txenabled [offset] = 0;
-		usbd_cdc_txretries [offset] = 0;
-		usbd_cdc_zlp_pending [offset] = 0;
-
-		USBD_LL_OpenEP(pdev,
-			   USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset),
-			   USBD_EP_TYPE_BULK,
-			   VIRTUAL_COM_PORT_IN_DATA_SIZE);
-
-		//USBD_LL_Transmit(pdev, USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset), NULL, 0);
-		/* cdc Open EP OUT */
-		USBD_LL_OpenEP(pdev, USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset), USBD_EP_TYPE_BULK, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-
-
-		/* CDC Open EP interrupt */
-		USBD_LL_OpenEP(pdev, USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset), USBD_EP_TYPE_INTR, VIRTUAL_COM_PORT_INT_SIZE);
-
-	}
-
- 	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
-	{
-		/* CDC Prepare Out endpoint to receive 1st packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset)), cdcXbuffout [offset],  VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+		//usbd_cdc_rxenabled [offset] = 0;
+		usbd_cdc_txstate [offset] = 0;
 		usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 0;
 		dwDTERate [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 115200;
+
+		/* cdc Open EP IN */
+		USBD_LL_OpenEP(pdev, USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset), USBD_EP_TYPE_BULK, VIRTUAL_COM_PORT_IN_DATA_SIZE);
+		/* cdc Open EP OUT */
+		USBD_LL_OpenEP(pdev, USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset), USBD_EP_TYPE_BULK, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+		/* CDC Open EP interrupt */
+		USBD_LL_OpenEP(pdev, USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset), USBD_EP_TYPE_INTR, VIRTUAL_COM_PORT_INT_SIZE);
+		/* CDC Prepare Out endpoint to receive 1st packet */
+		USBD_LL_PrepareReceive(pdev, USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset), cdcXbuffout [offset],  VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 	}
 
  	gpdev = pdev;
 	return USBD_OK;
-
 }
 
 static USBD_StatusTypeDef USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
