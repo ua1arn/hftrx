@@ -2919,12 +2919,66 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					TP();
 					break;
 				default:
+					pusb->ep0_xfer_residue = 0;
 					PRINTF("ep0_in: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 					break;
 				}
 			}
 			break;
 #endif /* WITHUSBDFU */
+#if WITHUSBDMTP
+			case INTERFACE_MTP_CONTROL:
+			{
+				/* MTP class requests */
+				#define MTP_REQ_CANCEL                                              0x64U
+				#define MTP_REQ_GET_EXT_EVENT_DATA                                  0x65U
+				#define MTP_REQ_RESET                                               0x66U
+				#define MTP_REQ_GET_DEVICE_STATUS                                   0x67U
+				/* MTP response code */
+				#define MTP_RESPONSE_OK                                             0x2001U
+				#define MTP_RESPONSE_GENERAL_ERROR                                  0x2002U
+				#define MTP_RESPONSE_PARAMETER_NOT_SUPPORTED                        0x2006U
+				#define MTP_RESPONSE_INCOMPLETE_TRANSFER                            0x2007U
+				#define MTP_RESPONSE_INVALID_STORAGE_ID                             0x2008U
+				#define MTP_RESPONSE_INVALID_OBJECT_HANDLE                          0x2009U
+				#define MTP_RESPONSE_DEVICEPROP_NOT_SUPPORTED                       0x200AU
+				#define MTP_RESPONSE_STORE_FULL                                     0x200CU
+				#define MTP_RESPONSE_ACCESS_DENIED                                  0x200FU
+				#define MTP_RESPONSE_STORE_NOT_AVAILABLE                            0x2013U
+				#define MTP_RESPONSE_SPECIFICATION_BY_FORMAT_NOT_SUPPORTED          0x2014U
+				#define MTP_RESPONSE_NO_VALID_OBJECT_INFO                           0x2015U
+				#define MTP_RESPONSE_DEVICE_BUSY                                    0x2019U
+				#define MTP_RESPONSE_INVALID_PARENT_OBJECT                          0x201AU
+				#define MTP_RESPONSE_INVALID_PARAMETER                              0x201DU
+				#define MTP_RESPONSE_SESSION_ALREADY_OPEN                           0x201EU
+				#define MTP_RESPONSE_TRANSACTION_CANCELLED                          0x201FU
+				#define MTP_RESPONSE_INVALID_OBJECT_PROP_CODE                       0xA801U
+				#define MTP_RESPONSE_SPECIFICATION_BY_GROUP_UNSUPPORTED             0xA807U
+				#define MTP_RESPONSE_OBJECT_PROP_NOT_SUPPORTED                      0xA80AU
+
+				//static int dev_state = DFU_STATE_IDLE;
+				static uint8_t dev_status [4];
+
+				switch (ep0_setup->bRequest)
+				{
+				case MTP_REQ_RESET:
+					pusb->ep0_xfer_residue = min(0, ep0_setup->wLength);
+					PRINTF("ep0_in: INTERFACE_MTP_CONTROL MTP_REQ_RESET ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+					break;
+				case MTP_REQ_GET_DEVICE_STATUS:
+					USBD_poke_u32(dev_status, (MTP_RESPONSE_OK << 16) | 4);
+					pusb->ep0_xfer_srcaddr = (uintptr_t) dev_status;
+					pusb->ep0_xfer_residue = 4;//min(4, ep0_setup->wLength);
+					PRINTF("ep0_in: INTERFACE_MTP_CONTROL MTP_REQ_GET_DEVICE_STATUS ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+					break;
+				default:
+					pusb->ep0_xfer_residue = min(0, ep0_setup->wLength);
+					PRINTF("ep0_in: INTERFACE_MTP_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+					break;
+				}
+			}
+			break;
+#endif /* WITHUSBDMTP */
 		default:
 			pusb->ep0_xfer_residue = 0;
 			PRINTF("ep0_in: Unknown Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);

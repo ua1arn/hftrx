@@ -79,7 +79,7 @@ static __ALIGN_BEGIN USBD_MTP_HandleTypeDef mtpHandle __ALIGN_END;
   * @param  cfgidx: Configuration index
   * @retval status
   */
-static uint8_t USBD_MTP_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
+static USBD_StatusTypeDef USBD_MTP_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
   UNUSED(cfgidx);
   USBD_MTP_HandleTypeDef * const hmtp = & mtpHandle;
@@ -143,7 +143,7 @@ static uint8_t USBD_MTP_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
   * @param  cfgidx: Configuration index
   * @retval status
   */
-static uint8_t USBD_MTP_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
+static USBD_StatusTypeDef USBD_MTP_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
   UNUSED(cfgidx);
 
@@ -187,7 +187,7 @@ static uint8_t USBD_MTP_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
   * @param  req: usb requests
   * @retval status
   */
-static uint8_t USBD_MTP_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
+static USBD_StatusTypeDef USBD_MTP_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
   //USBD_MTP_HandleTypeDef *hmtp = (USBD_MTP_HandleTypeDef *)pdev->pClassDataCmsit[pdev->classId];
   USBD_MTP_HandleTypeDef * const hmtp = & mtpHandle;
@@ -313,7 +313,7 @@ static uint8_t USBD_MTP_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTyped
   * @param  epnum: endpoint number
   * @retval status
   */
-static uint8_t USBD_MTP_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+static USBD_StatusTypeDef USBD_MTP_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
   UNUSED(epnum);
   //USBD_MTP_HandleTypeDef *hmtp = (USBD_MTP_HandleTypeDef *)pdev->pClassDataCmsit[pdev->classId];
@@ -370,7 +370,7 @@ static uint8_t USBD_MTP_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
   * @param  epnum: endpoint number
   * @retval status
   */
-static uint8_t USBD_MTP_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+static USBD_StatusTypeDef USBD_MTP_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
   UNUSED(epnum);
   //USBD_MTP_HandleTypeDef *hmtp = (USBD_MTP_HandleTypeDef *)pdev->pClassDataCmsit[pdev->classId];
