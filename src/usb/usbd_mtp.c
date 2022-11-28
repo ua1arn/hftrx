@@ -388,45 +388,48 @@ static USBD_StatusTypeDef USBD_MTP_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
   MTPOutEpAdd = USBD_CoreGetEPAdd(pdev, USBD_EP_OUT, USBD_EP_TYPE_BULK, (uint8_t)pdev->classId);
 #endif /* USE_USBD_COMPOSITE */
 
-  (void)USBD_MTP_STORAGE_ReceiveOpt(pdev);
-
-  switch (hmtp->MTP_ResponsePhase)
+  if (epnum == (MTPOutEpAdd & 0x7FU))
   {
-    case MTP_RESPONSE_PHASE :
+	  (void)USBD_MTP_STORAGE_ReceiveOpt(pdev);
 
-      if (hmtp->ResponseLength == MTP_CONT_HEADER_SIZE)
-      {
-        (void)USBD_MTP_STORAGE_SendContainer(pdev, REP_TYPE);
-        hmtp->MTP_ResponsePhase = MTP_PHASE_IDLE;
-      }
-      else
-      {
-        (void)USBD_MTP_STORAGE_SendContainer(pdev, DATA_TYPE);
-      }
-      break;
+	  switch (hmtp->MTP_ResponsePhase)
+	  {
+	    case MTP_RESPONSE_PHASE :
 
-    case MTP_READ_DATA :
-      (void)USBD_MTP_STORAGE_ReadData(pdev);
-      break;
+	      if (hmtp->ResponseLength == MTP_CONT_HEADER_SIZE)
+	      {
+	        (void)USBD_MTP_STORAGE_SendContainer(pdev, REP_TYPE);
+	        hmtp->MTP_ResponsePhase = MTP_PHASE_IDLE;
+	      }
+	      else
+	      {
+	        (void)USBD_MTP_STORAGE_SendContainer(pdev, DATA_TYPE);
+	      }
+	      break;
 
-    case MTP_RECEIVE_DATA :
-      (void)USBD_MTP_STORAGE_ReceiveData(pdev);
+	    case MTP_READ_DATA :
+	      (void)USBD_MTP_STORAGE_ReadData(pdev);
+	      break;
 
-      /* prepare endpoint to receive operations */
-      len = MIN(hmtp->MaxPcktLen, pdev->request.wLength);
+	    case MTP_RECEIVE_DATA :
+	      (void)USBD_MTP_STORAGE_ReceiveData(pdev);
 
-      (void)USBD_LL_PrepareReceive(pdev, MTPOutEpAdd, (uint8_t *)&hmtp->rx_buff, len);
-      break;
+	      /* prepare endpoint to receive operations */
+	      len = MIN(hmtp->MaxPcktLen, pdev->request.wLength);
 
-    case MTP_PHASE_IDLE :
-      /* prepare to receive next operation */
-      len = MIN(hmtp->MaxPcktLen, pdev->request.wLength);
+	      (void)USBD_LL_PrepareReceive(pdev, MTPOutEpAdd, (uint8_t *)&hmtp->rx_buff, len);
+	      break;
 
-      (void)USBD_LL_PrepareReceive(pdev, MTPOutEpAdd, (uint8_t *)&hmtp->rx_buff, len);
-      break;
+	    case MTP_PHASE_IDLE :
+	      /* prepare to receive next operation */
+	      len = MIN(hmtp->MaxPcktLen, pdev->request.wLength);
 
-    default:
-      break;
+	      (void)USBD_LL_PrepareReceive(pdev, MTPOutEpAdd, (uint8_t *)&hmtp->rx_buff, len);
+	      break;
+
+	    default:
+	      break;
+	  }
   }
 
   return (uint8_t)USBD_OK;
