@@ -2657,6 +2657,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_IN & 0x0F), ep_dir_in, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_OUT & 0x0F), ep_dir_out, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
 	#endif /* WITHUSBDEV_HSDESC */
+		  /* Open INTR EP IN */
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_INT & 0x0F), ep_dir_in, MTP_CMD_PACKET_SIZE, 0, fifo_addr);
 	}
 #endif /* WITHUSBDMTP */
 
