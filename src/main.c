@@ -425,6 +425,9 @@ enum
 	CAT_RM2_INDEX,		// rm2answer()
 	CAT_RM3_INDEX,		// rm3answer()
 #endif /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
+#if WITHTX && WITHAUTOTUNER
+	CAT_AC_INDEX,		// acanswer()
+#endif /* WITHTX && WITHAUTOTUNER */
 #endif /* WITHCATEXT */
 	CAT_ID_INDEX,		// idanswer()	
 	CAT_FV_INDEX,		// fvanswer()
@@ -14092,6 +14095,24 @@ void cat2_parsechar(uint_fast8_t c)
 	}
 }
 
+#if WITHTX && WITHAUTOTUNER
+static void acanswer(uint_fast8_t arg)
+{
+	static const FLASHMEM char fmt_3 [] =
+		"AC"			// 2 characters - status information code
+		"%d"		// P1 1 characters - 0: RX-AT THRU 1: RX-AT IN
+		"%d"		// P2 1 characters - 0: TX-AT THRU 1: TX-AT IN
+		"%d"		// P3 1 characters - 0: Stop Tuning (Set)/ Tuning is stopped (Answer) 1: Start Tuning (Set)/ Tuning is active (Answer)
+		";";				// 1 char - line terminator
+	// answer mode
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_3,
+		(int) 1,
+		(int) 1,
+		(int) 1
+		);
+	cat_answer(len);
+}
+#endif /* WITHTX && WITHAUTOTUNER */
 static void idanswer(uint_fast8_t arg)
 {
 	static const FLASHMEM char fmt_1 [] =
@@ -14887,6 +14908,9 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 	rm2answer,
 	rm3answer,
 #endif /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
+#if WITHTX && WITHAUTOTUNER
+	acanswer,
+#endif /* WITHTX && WITHAUTOTUNER */
 #endif /* WITHCATEXT */
 	idanswer,				
 	fvanswer,
@@ -15577,6 +15601,25 @@ processcatmsg(
 		}
 	}
 #endif /*  WITHTX && WITHSWRMTR && WITHCATEXT */
+#if WITHTX && WITHAUTOTUNER
+	else if (match2('A', 'C'))
+	{
+		if (cathasparam != 0)
+		{
+//			const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+//			vindex_t vi = getvfoindex(bi);
+//			const uint_fast32_t v = catparam;
+//			storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
+//			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
+//			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+//			rc = 1;
+		}
+		else
+		{
+			cat_answer_request(CAT_AC_INDEX);
+		}
+	}
+#endif /* WITHTX && WITHAUTOTUNER */
 #endif /*  WITHTX */
 	else if (match2('F', 'W'))
 	{
