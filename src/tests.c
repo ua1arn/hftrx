@@ -5281,11 +5281,9 @@ static void BarTest(void)
 		int x2 = local_randomgr(DIM_X);
 		int y2 = local_randomgr(DIM_Y);
 
-		display_solidbar(x, y, x2, y2, color);
-		// MDMA работает минуя кеш-память
-#if ! defined (WITHMDMAHW) && ! defined (WITHDMA2DHW)
+		display_solidbar(x, y, x2, y2, color);	// MDMA работает минуя кеш-память
+
 		display_flush();
-#endif /* ! defined (WITHMDMAHW) && ! defined (WITHDMA2DHW) */
 		//local_delay_ms(5);
 	}
 
