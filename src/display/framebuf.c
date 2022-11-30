@@ -625,32 +625,58 @@ static uint32_t mixer_reg_init(void){
 	return 0;
 }
 
+/* Запуск и ожидание завершения работы G2D */
+/* 0 - timeout. 1 - OK */
+static int hwacc_waitdone(void)
+{
+	unsigned n = 0x20000000;
+	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
+	for (;;)
+	{
+		const uint_fast32_t MASK = (1u << 0);
+		const uint_fast32_t sts = G2D_MIXER->G2D_MIXER_INT;
+		if (((sts & MASK) != 0))
+		{
+			G2D_MIXER->G2D_MIXER_INT = MASK;
+			break;
+		}
+		hardware_nonguiyield();
+		if (-- n == 0)
+		{
+			PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X, G2D_MIXER->G2D_MIXER_INT=%08X\n", G2D_MIXER->G2D_MIXER_CTL, G2D_MIXER->G2D_MIXER_INT);
+			return 0;
+		}
+	}
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
+	return 1;
+}
+
 void arm_hardware_mdma_initialize(void)
 {
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
-	CCU->MBUS_CLK_REG |= (1uL << 30);				// MBUS Reset 1: De-assert reset
-	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 10);	// Gating MBUS Clock For G2D
+	CCU->MBUS_CLK_REG |= (1u << 30);				// MBUS Reset 1: De-assert reset
+	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 10);	// Gating MBUS Clock For G2D
 
 	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (0x07uL << 24)) |
-		0x01 * (1uL << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
+		0x01 * (1u << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
 		0;
-	CCU->G2D_CLK_REG |= (1uL << 31);	// G2D_CLK_GATING
+	CCU->G2D_CLK_REG |= (1u << 31);	// G2D_CLK_GATING
 
 	//CCU->G2D_BGR_REG = 0;
-	CCU->G2D_BGR_REG |= (1uL << 0);		/* Enable gating clock for G2D 1: Pass */
-	//CCU->G2D_BGR_REG &= ~ (1uL << 16);	/* G2D reset 0: Assert */
-	CCU->G2D_BGR_REG |= (1uL << 16);	/* G2D reset 1: De-assert */
+	CCU->G2D_BGR_REG |= (1u << 0);		/* Enable gating clock for G2D 1: Pass */
+	//CCU->G2D_BGR_REG &= ~ (1u << 16);	/* G2D reset 0: Assert */
+	CCU->G2D_BGR_REG |= (1u << 16);	/* G2D reset 1: De-assert */
 	//memset(G2D, 0xFF, sizeof * G2D);
 	//printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
 	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFFuL) |
-		4 * (1uL << 4) |	// ROT divider (looks like power of 2)
-		4 * (1uL << 0) |	// MIXER divider (looks like power of 2)
+		4 * (1u << 4) |	// ROT divider (looks like power of 2)
+		4 * (1u << 0) |	// MIXER divider (looks like power of 2)
 		0;
-	G2D_TOP->G2D_SCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
-	G2D_TOP->G2D_HCLK_GATE |= (1uL << 1) | (1uL << 0);	// Gate open: 0x02: rot, 0x01: mixer
-	G2D_TOP->G2D_AHB_RESET |= (1uL << 1) | (1uL << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_SCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_HCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 
@@ -906,8 +932,8 @@ hwacc_fillrect_u16(
 
 	if (w == 1)
 	{
-		/* Горизонтальные линии в 1 пиксель рисовать умеет аппаратура. */
-		// программная реализация
+		/* Горизонтальные линии в один пиксель рисовать умеет аппаратура. */
+		/* программная реализация отрисовки вертикальной линии в один пиксель */
 		const unsigned t = GXADJ(dx) - w;
 		//buffer += (GXADJ(dx) * row) + col;
 		volatile uint16_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
@@ -918,7 +944,6 @@ hwacc_fillrect_u16(
 				* tbuffer ++ = color;
 			tbuffer += t;
 		}
-		arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 		return;
 	}
 	const unsigned stride = GXADJ(dx) * PIXEL_SIZE;
@@ -958,16 +983,11 @@ hwacc_fillrect_u16(
 	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
 
-	G2D_MIXER->G2D_MIXER_CTL |= (1uL << 31);	/* start the module */
-	for (;;)
+	if (hwacc_waitdone() == 0)
 	{
-		const uint_fast32_t sts = G2D_MIXER->G2D_MIXER_INT;
-		G2D_MIXER->G2D_MIXER_INT = sts;
-		if (((sts & (1uL << 0)) != 0))
-			break;
-		hardware_nonguiyield();
+		PRINTF("hwacc_fillrect_u16: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
+		ASSERT(0);
 	}
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
@@ -1252,8 +1272,8 @@ hwacc_fillrect_u32(
 
 	if (w == 1)
 	{
-		/* Горизонтальные линии в 1 пиксель рисовать умеет аппаратура. */
-		// программная реализация
+		/* Горизонтальные линии в один пиксель рисовать умеет аппаратура. */
+		/* программная реализация отрисовки вертикальной линии в один пиксель */
 		const unsigned t = GXADJ(dx) - w;
 		//buffer += (GXADJ(dx) * row) + col;
 		volatile uint32_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
@@ -1301,16 +1321,11 @@ hwacc_fillrect_u32(
 	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
 
-	G2D_MIXER->G2D_MIXER_CTL |= (1uL << 31);	/* start the module */
-	for (;;)
+	if (hwacc_waitdone() == 0)
 	{
-		const uint_fast32_t sts = G2D_MIXER->G2D_MIXER_INT;
-		G2D_MIXER->G2D_MIXER_INT = sts;
-		if (((sts & (1uL << 0)) != 0))
-			break;
-		hardware_nonguiyield();
+		PRINTF("hwacc_fillrect_u32: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
+		ASSERT(0);
 	}
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
