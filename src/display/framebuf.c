@@ -633,7 +633,7 @@ static int hwacc_waitdone(void)
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	for (;;)
 	{
-		const uint_fast32_t MASK = (1u << 0);
+		const uint_fast32_t MASK = (1u << 0);	/* FINISH_IRQ */
 		const uint_fast32_t sts = G2D_MIXER->G2D_MIXER_INT;
 		if (((sts & MASK) != 0))
 		{
@@ -653,12 +653,14 @@ static int hwacc_waitdone(void)
 
 void arm_hardware_mdma_initialize(void)
 {
+	unsigned M = 2;	/* M = 1..32 */
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
 	CCU->MBUS_CLK_REG |= (1u << 30);				// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 10);	// Gating MBUS Clock For G2D
 
-	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (0x07uL << 24)) |
-		0x01 * (1u << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
+	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ ((0x07u << 24) | (0x1Fu << 0))) |
+		0x00 * (1u << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
+		(M - 1) * (1u << 0) | // FACTOR_M
 		0;
 	CCU->G2D_CLK_REG |= (1u << 31);	// G2D_CLK_GATING
 
@@ -669,14 +671,17 @@ void arm_hardware_mdma_initialize(void)
 	//memset(G2D, 0xFF, sizeof * G2D);
 	//printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
 	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
-
-	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFFuL) |
-		4 * (1u << 4) |	// ROT divider (looks like power of 2)
-		4 * (1u << 0) |	// MIXER divider (looks like power of 2)
+	PRINTF("arm_hardware_mdma_initialize: G2D_TOP->G2D_SCLK_DIV=%08X\n", (unsigned) G2D_TOP->G2D_SCLK_DIV);
+	unsigned divider = 2;
+	/* на Allwinner T113-S3 и F133 модифицируемы только младшие 8 бит */
+	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
+		divider * (1u << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
+		divider * (1u << 0) |	// MIXER divider (looks like power of 2) CORE0_SCLK_DIV
 		0;
 	G2D_TOP->G2D_SCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_HCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	PRINTF("arm_hardware_mdma_initialize: G2D_TOP->G2D_SCLK_DIV=%08X\n", (unsigned) G2D_TOP->G2D_SCLK_DIV);
 
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 
