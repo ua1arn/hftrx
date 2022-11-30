@@ -32,8 +32,9 @@
 	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
 	#if CPUSTYLE_F133
-		//#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz */
-		#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
+		//#define PLL_CPU_N 20	/* 24 MHz * 20 = 480 MHz */
+		#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz */
+		//#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
 		//#define PLL_CPU_N 33	/* 24 MHz * 33 = 792 MHz */
 	#elif CPUSTYLE_T113
 		#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz */
