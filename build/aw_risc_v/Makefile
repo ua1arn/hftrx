@@ -236,7 +236,7 @@ BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.f133: $(PROJECT)_boot.bin
-	./egontool $(PROJECT)_boot.bin fsbl.f133
+	./egontool -rv $(PROJECT)_boot.bin fsbl.f133
 	
 $(PROJECT)_app.f133: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@

@@ -15,6 +15,7 @@ typedef unsigned char uint8_t;
 #endif /* __GNUC__ */
 
 
+static int targetRV = 0;
 
 /* boot_file_head copied from mksunxiboot */
 /* boot head definition from sun4i boot code */
@@ -104,7 +105,11 @@ static void process(
 
 
 	/* Fill head */
-	place_uint32_le(& head.jump_instruction, 0xEA000000 + (execoffset - 8) / 4);	/// Jump to $ + 0x0100
+	if (targetRV)
+		place_uint32_le(& head.jump_instruction, 0x1000006F);	/// Jump to $ + 0x0100
+	else
+		place_uint32_le(& head.jump_instruction, 0xEA000000 | (execoffset - 8) / 4);	/// Jump to $ + 0x0100
+
 	memcpy(& head.magic, magic_eGON_BT0, 8);
 	place_uint32_le(& head.check_sum, 0x5F0A6C39);//check_sum;
 	place_uint32_le(& head.length, silesizealigned);//binsize;
@@ -143,7 +148,13 @@ static void process(
 
 int main(int argc, char* argv[])
 {
-
+	if (argc > 1 && strcmp(argv [1], "-rv") == 0)
+	{
+		++ argv;
+		-- argc;
+		targetRV = 1;
+		//fprintf(stderr, "RISC-V header generate\n");
+	}
 	if (argc < 3)
 		return 1;
 	else
