@@ -4699,7 +4699,7 @@ static char rready = 0, p_cnt = 0;
 //void lcd_prep(void);
 //void lcd_swr(int);
 //void lcd_pwr(void);
-void show_pwr(int, int);
+void show_pwr(int pmax, int swr);
 void lcd_ind(void);
 //void crypto(void);
 //void show_reset(void);
@@ -4724,8 +4724,6 @@ void lcd_ind(void);
 //void tune(void);
 //void sub_tune(void);
 //
-int ADC_Get_Sample(int ch);
-
 // Variables
 static int SWR_fixed_old = 0, work_int;
 static char work_char, work_str[7], work_str_2[7];
@@ -4745,6 +4743,18 @@ static float dysp_cnt_mult = 2.3;
 static char Loss_mode = 0, Fid_loss;
 static char dysp = 1;
 //bit tune_btn_release;
+
+// Заглушка
+void show_pwr(int pmax, int swr)
+{
+
+}
+
+// Заглушка
+void lcd_ind(void)
+{
+
+}
 
 static int correction(int input) {
 	if (input <= 80)
@@ -4782,13 +4792,13 @@ static int correction(int input) {
 //
 
 static int get_reverse(void) {
-	return ADC_Get_Sample(1) * 4.883;
+	return board_getadc_unfiltered_truevalue(REF) / 16 * 4.883;
 }
 //
 
 static int get_forward(void) {
 	int Forward;
-	Forward = ADC_Get_Sample(0);
+	Forward = board_getadc_unfiltered_truevalue(FWD) / 16;
 	if (Forward > 1000)
 		Overload = 1;
 	else
@@ -5168,7 +5178,7 @@ static void sub_tune(void) {
 	return;
 }
 
-static void tune_n7ddc(void) {
+static void auto_tune_n7ddc(void) {
 	//int swr_mem, ind_mem, cap_mem, sw_mem;
 	/* asm CLRWDT */;
 	//
@@ -19745,6 +19755,7 @@ static STTE_t hamradio_tune_step(void)
 	display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	updateboard(1, 0);
 	auto_tune();
+	//auto_tune_n7ddc();
 	reqautotune = 0;
 	updateboard(1, 0);
 #endif /* WITHAUTOTUNER */
