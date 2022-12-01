@@ -417,9 +417,9 @@ enum
 	CAT_SM_INDEX,		// smanswer()
 	CAT_RA_INDEX,		// raanswer()
 	CAT_PA_INDEX,		// paanswer()
-#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	CAT_AN_INDEX,		// ananswer()
-#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	CAT_RM1_INDEX,		// rm1answer()
 	CAT_RM2_INDEX,		// rm2answer()
@@ -870,13 +870,34 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	#error WITHAGCMODExxxx undefined
 #endif
 
-#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
+#if WITHANTSELECT1RX
+	enum { NANTENNAS = 1 };		// одна антенна с возможным подключением приемной
+#elif WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 	enum { NANTENNAS = 2 };		// выбираем одну из двух антенн
-#else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+#else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
 	enum { NANTENNAS = 1 };		// eдинственная антенна
-#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
 
-#if WITHANTSELECTRX
+#if WITHANTSELECT1RX
+
+static const FLASHMEM struct {
+	uint8_t code;
+	char label2 [3];
+}  antmodes [] =
+{
+	{	0,	"A1" },
+};
+
+static const FLASHMEM struct {
+	uint8_t code;
+	char label2 [3];
+}  rxantmodes [] =
+{
+	{	0,	"  " },
+	{	1,	"RA" },
+};
+
+#elif WITHANTSELECTRX
 
 static const FLASHMEM struct {
 	uint8_t code;
@@ -1001,11 +1022,11 @@ static const FLASHMEM struct {
 #define TXAUDIOSRC_COUNT (sizeof txaudiosrcs / sizeof txaudiosrcs [0])
 
 #define RXANTMODE_COUNT (sizeof rxantmodes / sizeof rxantmodes [0])
-#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	#define ANTMODE_COUNT (sizeof antmodes / sizeof antmodes [0])
-#else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+#else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
 	#define ANTMODE_COUNT 1
-#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
 
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 
@@ -2852,7 +2873,7 @@ struct oneant_tag {
  	 Информация, сохраняемая для группы диапазонов */
 struct bandgroup_tag {
 	uint8_t	band;		/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
-#if WITHANTSELECTRX
+#if WITHANTSELECTRX || WITHANTSELECT1RX
 	uint8_t rxant;		/* признак включения приемной антенны */
 	uint8_t ant;		/* код выбора антенны (0/1) */
 #elif WITHANTSELECT2
@@ -3503,7 +3524,7 @@ static uint_fast32_t gfreqs [VFOS_COUNT] = { DEFAULTDIALFREQ, DEFAULTDIALFREQ };
 static uint_fast8_t gpamp;
 #endif /* ! WITHONEATTONEAMP */
 static uint_fast8_t gatt;
-#if WITHANTSELECTRX
+#if WITHANTSELECTRX || WITHANTSELECT1RX
 static uint_fast8_t grxantenna;
 static uint_fast8_t gantenna;
 #elif WITHANTSELECT2
@@ -7030,7 +7051,7 @@ static void storebandpos(uint_fast8_t b)
 static void storebandgroup(uint_fast8_t bg, uint_fast8_t ant)
 {
 
-#if WITHANTSELECTRX
+#if WITHANTSELECTRX || WITHANTSELECT1RX
 
 #if ! WITHONEATTONEAMP
 	save_i8(RMT_PAMPBG_BASE(bg, gantenna), gpamp);
@@ -7062,7 +7083,7 @@ static void storebandgroup(uint_fast8_t bg, uint_fast8_t ant)
 #endif /* ! WITHONEATTONEAMP */
 	save_i8(RMT_ATTBG_BASE(bg, gantenna), gatt);
 
-#endif /* WITHANTSELECT || WITHANTSELECTRX */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
 
 
 #if WITHAUTOTUNER
@@ -7075,14 +7096,14 @@ static void storebandgroup(uint_fast8_t bg, uint_fast8_t ant)
 
 static void loadantenna(uint_fast8_t bi, uint_fast8_t bg)
 {
-#if WITHANTSELECTRX
+#if WITHANTSELECTRX || WITHANTSELECT1RX
 	grxantenna = loadvfy8up(RMT_RXANTENNABG_BASE(bg), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT2
 	gantennabym = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT
 	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
-#endif /* WITHANTSELECT || WITHANTSELECTRX */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
 }
 
 static void loadbandgroup(uint_fast8_t bg, uint_fast8_t ant)
@@ -8263,9 +8284,9 @@ catchangefreq(
 #endif
 	if (aistate != 0)
 	{
-#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 		cat_answer_request(CAT_AN_INDEX);
-#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
 		cat_answer_request(CAT_RA_INDEX);
 		cat_answer_request(CAT_PA_INDEX);
 	}
@@ -11549,7 +11570,7 @@ updateboardZZZ(
 	#if defined (RTC1_TYPE)
 		board_setrtcstrobe(grtcstrobe);
 	#endif /* defined (RTC1_TYPE) */
-	#if WITHANTSELECTRX
+	#if WITHANTSELECTRX || WITHANTSELECT1RX
 		board_set_rxantenna(rxantmodes [grxantenna].code);
 		board_set_antenna(antmodes [ant2hint].code);
 	#elif WITHANTSELECT2
@@ -11910,7 +11931,21 @@ uint_fast8_t hamradio_get_voxvalue(void)
 #endif /* WITHVOX && WITHTX */
 
 
-#if WITHANTSELECTRX
+#if WITHANTSELECT1RX
+
+// antenna
+const FLASHMEM char * hamradio_get_ant5_value_P(void)
+{
+	static char b [6];
+	local_snprintf_P(b, ARRAY_SIZE(b),
+			PSTR("   %s"),
+			antmodes [gantenna].label2,
+			rxantmodes[grxantenna].label2
+	);
+	return b;
+}
+
+#elif WITHANTSELECTRX
 
 // antenna
 const FLASHMEM char * hamradio_get_ant5_value_P(void)
@@ -12302,7 +12337,7 @@ uif_key_click_agcmode(void)
 	updateboard(1, 0);
 }
 
-#if WITHANTSELECTRX
+#if WITHANTSELECTRX || WITHANTSELECT1RX
 
 /* действительно выбранная антенна с учетом ручного или автоматического переключения */
 static uint_fast8_t geteffantenna(uint_fast32_t f)
@@ -14603,7 +14638,7 @@ static void paanswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 
-#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 
 static void ananswer(uint_fast8_t arg)
 {
@@ -14624,7 +14659,7 @@ static void ananswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 
-#endif /* WITHANTSELECT || WITHANTSELECTRX */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
 
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 
@@ -14910,9 +14945,9 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 	smanswer,
 	raanswer,
 	paanswer,
-#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	ananswer,
-#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	rm1answer,
 	rm2answer,
@@ -15432,7 +15467,7 @@ processcatmsg(
 			cat_answer_request(CAT_PA_INDEX);
 		}
 	}
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX
 	else if (match2('A', 'N'))
 	{
 		// in differencies from documentation, ant1=1, ant2=2
@@ -15447,7 +15482,9 @@ processcatmsg(
 				const uint_fast32_t freq = gfreqs [bi];
 				const uint_fast8_t bg = getfreqbandgroup(freq);
 				const uint_fast8_t ant = geteffantenna(freq);
+			#if WITHAUTOTUNER
 				loadtuner(bg, ant);
+			#endif /* WITHAUTOTUNER */
 				updateboard(1, 0);	/* полная перенастройка (как после смены режима) */
 			}
 			cat_answer_request(CAT_AN_INDEX);
@@ -15459,7 +15496,7 @@ processcatmsg(
 			cat_answer_request(CAT_AN_INDEX);
 		}
 	}
-#endif /* WITHANTSELECT || WITHANTSELECTRX */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
 	else if (match2('P', 'S'))
 	{
 		if (cathasparam)
@@ -18458,7 +18495,15 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* ! WITHAGCMODENONE */
 
-#if WITHANTSELECTRX
+#if WITHANTSELECT1RX
+	/* только приемная антенна может подключаться */
+	case KBD_CODE_ANTENNA:
+		/* RX Antenna switch */
+		uif_key_next_rxantenna();
+		return 1;	/* клавиша уже обработана */
+
+#elif WITHANTSELECTRX
+		/* одна из двух антенн и приемная */
 	case KBD_CODE_ANTENNA_HOLDED:
 		/* Antenna switch */
 		uif_key_next_antenna();
@@ -18481,6 +18526,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 
 #elif WITHANTSELECT
+		/* одна из двух антенн */
 	case KBD_CODE_ANTENNA:
 		/* Antenna switch
 			 - не вызывает сохранение состояния диапазона */

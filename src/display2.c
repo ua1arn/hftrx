@@ -2244,7 +2244,7 @@ static void display2_ant5(
 	dctx_t * pctx
 	)
 {
-#if WITHANTSELECTRX || WITHANTSELECT2
+#if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
 	ASSERT(strlen(labels [0]) == 5);
 	display2_text_P(x, y, labels, colors_1state, 0);
@@ -2262,7 +2262,7 @@ static void display2_ant7alt(
 	dctx_t * pctx
 	)
 {
-#if WITHANTSELECTRX || WITHANTSELECT2
+#if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
 	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORMAIN_BLACK, colors_2state_alt [1]);
 #elif WITHANTSELECT
