@@ -653,8 +653,11 @@ static int hwacc_waitdone(void)
 
 void arm_hardware_mdma_initialize(void)
 {
-	unsigned M = 2;	/* M = 1..32 */
+	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
+	unsigned M = 2;	/* M = 1..32 */
+	unsigned divider = 2;
+
 	CCU->MBUS_CLK_REG |= (1u << 30);				// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 10);	// Gating MBUS Clock For G2D
 
@@ -670,9 +673,6 @@ void arm_hardware_mdma_initialize(void)
 	CCU->G2D_BGR_REG |= (1u << 16);	/* G2D reset 1: De-assert */
 	//memset(G2D, 0xFF, sizeof * G2D);
 	//printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
-	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
-	PRINTF("arm_hardware_mdma_initialize: G2D_TOP->G2D_SCLK_DIV=%08X\n", (unsigned) G2D_TOP->G2D_SCLK_DIV);
-	unsigned divider = 2;
 	/* на Allwinner T113-S3 и F133 модифицируемы только младшие 8 бит */
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
 		divider * (1u << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
@@ -681,11 +681,10 @@ void arm_hardware_mdma_initialize(void)
 	G2D_TOP->G2D_SCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_HCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-	PRINTF("arm_hardware_mdma_initialize: G2D_TOP->G2D_SCLK_DIV=%08X\n", (unsigned) G2D_TOP->G2D_SCLK_DIV);
 
-	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
-
+	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
+
 #endif /* WITHMDMAHW */
 
 #if ! (LCDMODE_DUMMY || LCDMODE_HD44780)
