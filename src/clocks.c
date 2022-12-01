@@ -2205,7 +2205,7 @@ uint_fast32_t allwnrt113_get_pll_peri_800M_freq(void)
 	return allwnrt113_get_pll_peri_freq() / pllP1;
 }
 
-uint_fast32_t allwnrt113_get_video0_x4_freq(void)
+uint_fast32_t allwnrt113_get_video0pllx4_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VIDEO0_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2214,7 +2214,7 @@ uint_fast32_t allwnrt113_get_video0_x4_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN / pllM0;
 }
 
-uint_fast32_t allwnrt113_get_video1_x4_freq(void)
+uint_fast32_t allwnrt113_get_video1pllx4_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VIDEO1_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2223,7 +2223,7 @@ uint_fast32_t allwnrt113_get_video1_x4_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN / pllM0;
 }
 
-uint_fast32_t allwnrt113_get_ve_freq(void)
+uint_fast32_t allwnrt113_get_vepll_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VE_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2276,22 +2276,22 @@ uint_fast32_t allwnrt113_get_audio1pll_div5_freq(void)
 
 uint_fast32_t allwnrt113_get_video0_x2_freq(void)
 {
-	return allwnrt113_get_video0_x4_freq() / 2;
+	return allwnrt113_get_video0pllx4_freq() / 2;
 }
 
 uint_fast32_t allwnrt113_get_video0_x1_freq(void)
 {
-	return allwnrt113_get_video0_x4_freq() / 4;
+	return allwnrt113_get_video0pllx4_freq() / 4;
 }
 
 uint_fast32_t allwnrt113_get_video1_x2_freq(void)
 {
-	return allwnrt113_get_video1_x4_freq() / 2;
+	return allwnrt113_get_video1pllx4_freq() / 2;
 }
 
 uint_fast32_t allwnrt113_get_video1_x1_freq(void)
 {
-	return allwnrt113_get_video1_x4_freq() / 4;
+	return allwnrt113_get_video1pllx4_freq() / 4;
 }
 
 uint_fast32_t allwnrt113_get_peripll1x_freq(void)
@@ -2303,7 +2303,7 @@ uint_fast32_t allwnrt113_get_dram_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DRAM_CLK_REG;
 	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x03);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x03);
 	switch ((clkreg >> 24) & 0x03)	/* DRAM_CLK_SEL */
 	{
 	default:
@@ -2323,7 +2323,7 @@ uint_fast32_t allwnrt113_get_i2s1_freq(void)
 	const uint_fast32_t pgdiv = 1;// 5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->I2S1_CLK_REG;
 	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x1F);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);
 	// I2S/PCM1_CLK = Clock Source/M/N
 	switch ((clkreg >> 24) & 0x03)	/* I2S1_CLK_SEL */
 	{
@@ -2344,7 +2344,7 @@ uint_fast32_t allwnrt113_get_i2s2_freq(void)
 	const uint_fast32_t pgdiv = 1;//5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->I2S2_CLK_REG;
 	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x1F);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);
 	// I2S/PCM2_CLK = Clock Source/M/N
 	switch ((clkreg >> 24) & 0x03)	/* I2S2_CLK_SEL */
 	{
@@ -2360,11 +2360,29 @@ uint_fast32_t allwnrt113_get_i2s2_freq(void)
 	}
 }
 
+uint_fast32_t allwnrt113_get_g2d_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->G2D_CLK_REG;
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);	/* M=FACTOR_M+1 */
+	switch ((clkreg >> 24) & 0x07)	/* G2D_CLK_REG */
+	{
+	default:
+	case 0x00:	/* 000: PLL_PERI(2X) */
+		return allwnrt113_get_peripll2x_freq() / M;
+	case 0x01:	/* 001: PLL_VIDEO0(4X) */
+		return allwnrt113_get_video0pllx4_freq() / M;
+	case 0x02:	/* 001: PLL_VIDEO1(4X) */
+		return allwnrt113_get_video1pllx4_freq() / M;
+	case 0x03: /* 011: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_audio1pll_div2_freq() / M ;
+	}
+}
+
 uint_fast32_t allwnrt113_get_psi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->PSI_CLK_REG;
 	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x03);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x03);
 	switch ((clkreg >> 24) & 0x03)
 	{
 	default:
@@ -2387,7 +2405,7 @@ uint_fast32_t allwnrt113_get_apb0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB0_CLK_REG;
 	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x1F);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);
 	switch ((clkreg >> 24) & 0x03)
 	{
 	default:
@@ -2410,7 +2428,7 @@ uint_fast32_t allwnrt113_get_apb1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB1_CLK_REG;
 	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x1F);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);
 	switch ((clkreg >> 24) & 0x03)
 	{
 	default:
@@ -2449,7 +2467,7 @@ uint_fast32_t allwnrt113_get_spi0_freq(void)
 	const uint_fast32_t pgdiv = 1; //= 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
 //	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
-//	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x0F);
+//	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x07)
 	{
 	default:
@@ -2476,7 +2494,7 @@ uint_fast32_t allwnrt113_get_spi1_freq(void)
 	const uint_fast32_t pgdiv = 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
 	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const uint_fast32_t M = 1uL + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x07)
 	{
 	default:

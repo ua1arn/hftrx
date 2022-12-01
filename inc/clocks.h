@@ -158,13 +158,13 @@ uint_fast32_t allwnrt113_get_spi1_freq(void);
 uint_fast32_t allwnrt113_get_arm_freq(void);
 uint_fast32_t allwnrf133_get_riscv_freq(void);
 uint_fast32_t allwnrt113_get_pl1_timer_freq(void);
-uint_fast32_t allwnrt113_get_video0_x4_freq(void);
+uint_fast32_t allwnrt113_get_video0pllx4_freq(void);
 uint_fast32_t allwnrt113_get_video0_x2_freq(void);
 uint_fast32_t allwnrt113_get_video0_x1_freq(void);
-uint_fast32_t allwnrt113_get_video1_x4_freq(void);
+uint_fast32_t allwnrt113_get_video1pllx4_freq(void);
 uint_fast32_t allwnrt113_get_video1_x2_freq(void);
 uint_fast32_t allwnrt113_get_video1_x1_freq(void);
-uint_fast32_t allwnrt113_get_ve_freq(void);
+uint_fast32_t allwnrt113_get_vepll_freq(void);
 uint_fast32_t allwnrt113_get_audio0pll4x_freq(void);
 uint_fast32_t allwnrt113_get_audio0pll1x_freq(void);
 uint_fast32_t allwnrt113_get_audio1pll1x_freq(void);
@@ -178,6 +178,7 @@ uint_fast32_t allwnrt113_get_peripll2x_freq(void);
 uint_fast32_t allwnrt113_get_pll_peri_800M_freq(void);
 uint_fast32_t allwnrt113_get_i2s1_freq(void);
 uint_fast32_t allwnrt113_get_i2s2_freq(void);
+uint_fast32_t allwnrt113_get_g2d_freq(void);
 
 /* PLL initialization functions. Take care on glitches. */
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n);

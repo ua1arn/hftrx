@@ -671,8 +671,8 @@ void arm_hardware_mdma_initialize(void)
 	CCU->G2D_BGR_REG |= (1u << 0);		/* Enable gating clock for G2D 1: Pass */
 	//CCU->G2D_BGR_REG &= ~ (1u << 16);	/* G2D reset 0: Assert */
 	CCU->G2D_BGR_REG |= (1u << 16);	/* G2D reset 1: De-assert */
-	//memset(G2D, 0xFF, sizeof * G2D);
-	//printhex(G2D_V0, G2D_V0, sizeof * G2D_V0);
+	(void) CCU->G2D_BGR_REG;
+
 	/* на Allwinner T113-S3 и F133 модифицируемы только младшие 8 бит */
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
 		divider * (1u << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
@@ -681,6 +681,10 @@ void arm_hardware_mdma_initialize(void)
 	G2D_TOP->G2D_SCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_HCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+
+	// peri:   allwnrt113_get_g2d_freq()=600000000
+	// video0: allwnrt113_get_g2d_freq()=297000000
+	PRINTF("allwnrt113_get_g2d_freq()=%u\n", (unsigned) allwnrt113_get_g2d_freq());
 
 	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
