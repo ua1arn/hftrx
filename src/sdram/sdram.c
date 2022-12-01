@@ -4291,7 +4291,7 @@ static struct dram_para_t ddrp2 = {
 	.dram_tpr10 = 0x00000000,
 	.dram_tpr11 = 0x00030010,
 	.dram_tpr12 = 0x00000035,
-	.dram_tpr13 = 0x34000000,
+	.dram_tpr13 = 0x34000001,	// bit0: 1-skip sdram auto config
 };
 
 void sys_dram_init(void)
