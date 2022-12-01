@@ -4,10 +4,8 @@
 
 MEMORY
 {
-  RAM (rwx)	: ORIGIN = 0x00020100, LENGTH = 0x0007F00		/*  */
-  RAM2 (rwx): ORIGIN = 0x00030000, LENGTH = 16k		/*  */
-  TTB (rwx) : ORIGIN = 0x00034000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
-  DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 64M	/*  */
+   RAM (rwx)	: ORIGIN = 0x00020000 + 256, LENGTH = 64k - 256		/*  */
+   DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 64M	/*  */
 }
 
 /* Library configurations */
@@ -174,14 +172,14 @@ SECTIONS
 		*(COMMON)
 
 		__bss_end__ = .;
-	} > RAM2
+	} > RAM
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.noinit*)
 
-	} > RAM2
+	} > RAM
 
 	.vram (NOLOAD):
 	{
@@ -197,7 +195,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > RAM2
+	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -212,9 +210,6 @@ SECTIONS
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
-
-	PROVIDE(__TTB_BASE = ORIGIN(TTB));
-	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/
