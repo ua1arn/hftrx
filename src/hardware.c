@@ -2965,11 +2965,12 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 static void FLASHMEMINITFUNC
 sysinit_ttbr_initialize(void)
 {
+#if __CORTEX_A
+
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
 
-#if __CORTEX_A
 #if 0
 	/* Set location of level 1 page table
 	; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)

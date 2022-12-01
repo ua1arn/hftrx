@@ -4232,7 +4232,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #include "spi.h"
 
 #if CPUSTYLE_T113
-static struct dram_para_t ddrp =
+static struct dram_para_t ddrp3 =
 {
 	.dram_clk = 792,
 	.dram_type = 3,
@@ -4262,12 +4262,12 @@ static struct dram_para_t ddrp =
 void sys_dram_init(void)
 {
 	set_pll_cpux_axi(PLL_CPU_N);
-	init_DRAM(0, & ddrp);
+	init_DRAM(0, & ddrp3);
 }
 
 #elif CPUSTYLE_F133
 
-static struct dram_para_t ddrp = {
+static struct dram_para_t ddrp2 = {
 	.dram_clk = 528,
 	.dram_type = 2,
 	.dram_zq = 0x07b7bf9,
@@ -4297,7 +4297,7 @@ static struct dram_para_t ddrp = {
 void sys_dram_init(void)
 {
 	set_pll_riscv_axi(PLL_CPU_N);
-	init_DRAM(0, & ddrp);
+	init_DRAM(0, & ddrp2);
 }
 
 #endif
@@ -4312,6 +4312,23 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	memcpy((void *) (ddr3init_base + 0x0038), & ddrp, sizeof ddrp);
 	((void(*)(void))(ddr3init_base))();
 	set_pll_cpux_axi(PLL_CPU_N);
+	#if WITHDEBUG && 1
+		//HARDWARE_DEBUG_INITIALIZE();
+		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+	#endif /* WITHDEBUG */
+
+#elif 0 && CPUSTYLE_F133
+	const uintptr_t ddr3init_base = 0x00020000;
+	/* вызывается до разрешения MMU */
+	TP();
+	bootloader_readimage(0x00040000, (void *) ddr3init_base, 20 * 1024);
+	printhex(ddr3init_base, (void *) ddr3init_base, 256);
+	TP();
+	memcpy((void *) (ddr3init_base + 0x0018), & ddrp2, sizeof ddrp2);
+	TP();
+	((void(*)(void))(ddr3init_base))();
+	TP();
+	set_pll_riscv_axi(PLL_CPU_N);
 	#if WITHDEBUG && 1
 		//HARDWARE_DEBUG_INITIALIZE();
 		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
