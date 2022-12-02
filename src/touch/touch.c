@@ -9,6 +9,7 @@
 #include "board.h"
 #include "src/display/display.h"
 #include "formats.h"
+#include "touch.h"
 #include "gpio.h"
 
 

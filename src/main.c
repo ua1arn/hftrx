@@ -7077,34 +7077,34 @@ static void storebandgroup(uint_fast8_t bg, uint_fast8_t ant)
 
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 
-#if ! WITHONEATTONEAMP
-	save_i8(RMT_PAMPBG_BASE(bg, gantenna), gpamp);
-#endif /* ! WITHONEATTONEAMP */
+	#if ! WITHONEATTONEAMP
+		save_i8(RMT_PAMPBG_BASE(bg, gantenna), gpamp);
+	#endif /* ! WITHONEATTONEAMP */
 	save_i8(RMT_RXANTENNABG_BASE(bg), grxantenna);
 	save_i8(RMT_ANTENNABG_BASE(bg), gantenna);
 	save_i8(RMT_ATTBG_BASE(bg, gantenna), gatt);
 
 #elif WITHANTSELECT
 
-#if ! WITHONEATTONEAMP
-	save_i8(RMT_PAMPBG_BASE(bg, gantenna), gpamp);
-#endif /* ! WITHONEATTONEAMP */
+	#if ! WITHONEATTONEAMP
+		save_i8(RMT_PAMPBG_BASE(bg, gantenna), gpamp);
+	#endif /* ! WITHONEATTONEAMP */
 	save_i8(RMT_ANTENNABG_BASE(bg), gantenna);
 	save_i8(RMT_ATTBG_BASE(bg, gantenna), gatt);
 
 #elif WITHANTSELECT2
 
-#if ! WITHONEATTONEAMP
-	save_i8(RMT_PAMPBG_BASE(bg, gantennabym), gpamp);
-#endif /* ! WITHONEATTONEAMP */
+	#if ! WITHONEATTONEAMP
+		save_i8(RMT_PAMPBG_BASE(bg, gantennabym), gpamp);
+	#endif /* ! WITHONEATTONEAMP */
 	save_i8(RMT_ATTBG_BASE(bg, gantennabym), gatt);
 	save_i8(RMT_ANTENNABG_BASE(bg), gantennabym);
 
 #else
 
-#if ! WITHONEATTONEAMP
-	save_i8(RMT_PAMPBG_BASE(bg, gantenna), gpamp);
-#endif /* ! WITHONEATTONEAMP */
+	#if ! WITHONEATTONEAMP
+		save_i8(RMT_PAMPBG_BASE(bg, gantenna), gpamp);
+	#endif /* ! WITHONEATTONEAMP */
 	save_i8(RMT_ATTBG_BASE(bg, gantenna), gatt);
 
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
@@ -11963,7 +11963,6 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
 			PSTR("   %s"),
-			antmodes [gantenna].label2,
 			rxantmodes[grxantenna].label2
 	);
 	return b;
