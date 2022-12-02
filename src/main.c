@@ -349,13 +349,26 @@ static uint_fast8_t local_isdigit(char c)
 	return c >= '0' && c <= '9';
 }
 
+enum { RPTOFFSMIN = 0, RPTOFFSHALF = 900, RPTOFFSMAX = 2 * RPTOFFSHALF };
+
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
+
+static uint_fast16_t rptroffshf1k = RPTOFFSHALF;		/* Repeater offset HF */
+static uint_fast16_t rptroffsuhf1k = RPTOFFSHALF;		/* Repeater offset UHF */
+
+
+static int_fast32_t getrptoffsbase(void)
+{
+	return - RPTOFFSHALF;
+}
+
 #if WITHIF4DSP
 static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
 static uint_fast8_t gsquelchNFM;	/* squelch level for NFM */
 static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 #endif /* WITHIF4DSP */
+
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 
 #endif /* WITHDSPEXTDDC */
@@ -3039,7 +3052,8 @@ struct nvmap
 	uint8_t splitmode;		/* не-0, если работа с фиксированными ячейками (vfo/vfoa/vfob/mem) */
 	uint8_t vfoab;		/* 1, если работа с VFO B, 0 - с VFO A */
 #endif /* WITHSPLIT */
-
+//	uint16_t rptroffshf1k;		/* Repeater offset HF */
+//	uint16_t rptroffsuhf1k;	/* Repeater offset UHF */
 	uint8_t gcwpitch10;	/* тон в CW/CWR режиме */
 	uint8_t gkeybeep10;	/* тон озвучки нажатий клавиш */
 	uint8_t stayfreq;	/* при изменении режимов кнопками - не меняем частоту */

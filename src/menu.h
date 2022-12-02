@@ -3230,6 +3230,26 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 #endif /* WITHIF4DSP */
+//	{
+//		QLABEL("REPT HF "), 5 + WSIGNFLAG, 0, 0, 	ISTEP1,
+//		ITEM_VALUE,
+//		RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
+//		offsetof(struct nvmap, rptroffshf1k),
+//		nvramoffs0,
+//		& rptroffshf1k,
+//		NULL,
+//		getrptoffsbase,
+//	},
+//	{
+//		QLABEL("REPT UHF"), 5 + WSIGNFLAG, 0, 0, 	ISTEP1,
+//		ITEM_VALUE,
+//		RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
+//		offsetof(struct nvmap, rptroffsuhf1k),
+//		nvramoffs0,
+//		& rptroffsuhf1k,
+//		NULL,
+//		getrptoffsbase,
+//	},
 #endif /* WITHTX */
 
 #if defined(REFERENCE_FREQ)
