@@ -2380,6 +2380,27 @@ void cache_inv_range(uintptr_t start, uintptr_t stop)
 
 #endif
 
+//
+//	Here are the DMA sync ops needed by Allwinner D1. RISC-V CMO
+//	extension is still in progress, and D1 is using custom CMO
+//	instructions:
+//
+//	 dcache.ipa rs1 (invalidate)
+//	 | 31 - 25 | 24 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
+//	   0000001    01010      rs1       000      00000  0001011
+//
+//	 dcache.cpa rs1 (clean)
+//	 | 31 - 25 | 24 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
+//	   0000001    01001      rs1       000      00000  0001011
+//
+//	 dcache.cipa rs1 (clean then invalidate)
+//	 | 31 - 25 | 24 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
+//	   0000001    01011      rs1       000      00000  0001011
+//
+//	 sync.s (completion barrier)
+//	 | 31 - 25 | 24 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
+//	   0000000    11001     00000      000      00000  0001011
+
 // Сейчас в эту память будем читать по DMA
 
 void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
@@ -2407,14 +2428,6 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 	}
 }
 
-// Записать содержимое кэша данных в память
-// применяется после начальной инициализации среды выполнния
-void arm_hardware_flush_all(void)
-{
-	//arm_hardware_invalidate(DRAM_SPACE_BASE, DRAM_SPACE_SIZE);
-	asm volatile ("fence w,w" ::: "memory");
-}
-
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 {
@@ -2424,11 +2437,20 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
-			__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
+			//__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
+			//__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
+			__asm__ __volatile__(".long 0x02b5000b");	/* dcache.cipa a0 */
 		}
 		__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
 	}
+}
+
+// Записать содержимое кэша данных в память
+// применяется после начальной инициализации среды выполнния
+void arm_hardware_flush_all(void)
+{
+	//arm_hardware_invalidate(DRAM_SPACE_BASE, DRAM_SPACE_SIZE);
+	asm volatile ("fence w,w" ::: "memory");
 }
 
 #else
