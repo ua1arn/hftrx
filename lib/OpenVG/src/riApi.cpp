@@ -1909,9 +1909,13 @@ void RI_APIENTRY vgMask(VGHandle mask, VGMaskOperation operation, VGint x, VGint
         RI_RETURN(RI_NO_RETVAL);	//no EGL surface is current at the moment or context has no mask buffer
     }
     if(isImage)
+    {
         drawable->getMaskBuffer()->mask((Image*)mask, operation, x, y, width, height);
+    }
     else
+    {
         drawable->getMaskBuffer()->mask((Surface*)mask, operation, x, y, width, height);
+    }
 	RI_RETURN(RI_NO_RETVAL);
 }
 
