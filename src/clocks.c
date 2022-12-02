@@ -2208,28 +2208,28 @@ uint_fast32_t allwnrt113_get_pll_peri_800M_freq(void)
 uint_fast32_t allwnrt113_get_video0pllx4_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VIDEO0_CTRL_REG;
-	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);	// >= 12
 	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN / pllM0;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM / pllM0;
 }
 
 uint_fast32_t allwnrt113_get_video1pllx4_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VIDEO1_CTRL_REG;
-	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);	// >= 12
 	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN / pllM0;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM / pllM0;
 }
 
 uint_fast32_t allwnrt113_get_vepll_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VE_CTRL_REG;
-	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);	// >= 12
 	const uint_fast32_t pllM1 = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM1 * pllN / pllM0;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM1 / pllM0;
 }
 
 //	By default, PLL_AUDIO0(1X) is 24.5714 MHz, and PLL_AUDIO0(4X) is 98.2856 MHz.
@@ -2242,7 +2242,7 @@ uint_fast32_t allwnrt113_get_audio0pll4x_freq(void)
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM1 = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM0 * pllN / pllM1 / pllPostDivP;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM0 / pllM1 / pllPostDivP;
 }
 
 // By default,
@@ -2374,7 +2374,7 @@ uint_fast32_t allwnrt113_get_g2d_freq(void)
 	case 0x02:	/* 001: PLL_VIDEO1(4X) */
 		return allwnrt113_get_video1pllx4_freq() / M;
 	case 0x03: /* 011: PLL_AUDIO1(DIV2) */
-		return allwnrt113_get_audio1pll_div2_freq() / M ;
+		return allwnrt113_get_audio1pll_div2_freq() / M;
 	}
 }
 

@@ -662,14 +662,14 @@ void arm_hardware_mdma_initialize(void)
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 10);	// Gating MBUS Clock For G2D
 
 	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ ((0x07u << 24) | (0x1Fu << 0))) |
-		0x00 * (1u << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
+		0x01 * (1u << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
 		(M - 1) * (1u << 0) | // FACTOR_M
 		0;
 	CCU->G2D_CLK_REG |= (1u << 31);	// G2D_CLK_GATING
 
 	//CCU->G2D_BGR_REG = 0;
 	CCU->G2D_BGR_REG |= (1u << 0);		/* Enable gating clock for G2D 1: Pass */
-	//CCU->G2D_BGR_REG &= ~ (1u << 16);	/* G2D reset 0: Assert */
+	CCU->G2D_BGR_REG &= ~ (1u << 16);	/* G2D reset 0: Assert */
 	CCU->G2D_BGR_REG |= (1u << 16);	/* G2D reset 1: De-assert */
 	(void) CCU->G2D_BGR_REG;
 
@@ -684,6 +684,8 @@ void arm_hardware_mdma_initialize(void)
 
 	// peri:   allwnrt113_get_g2d_freq()=600000000
 	// video0: allwnrt113_get_g2d_freq()=297000000
+	// video1: allwnrt113_get_g2d_freq()=297000000
+	// audio1: allwnrt113_get_g2d_freq()=768000000
 	PRINTF("allwnrt113_get_g2d_freq()=%u\n", (unsigned) allwnrt113_get_g2d_freq());
 
 	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
