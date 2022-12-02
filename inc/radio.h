@@ -1039,7 +1039,8 @@ void spool_0p128(void);	// OPERA support
 	#define LO4_POWER2 0
 	#define IF3_MODEL IF3_TYPE_BYPASS
 
-	#if BANDSELSTYLERE_UPCONV56M && XVTR_NYQ1
+	#if defined (TUNE_BOTTOM) && (TUNE_TOP)
+	#elif BANDSELSTYLERE_UPCONV56M && XVTR_NYQ1
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP (DUCDDC_FREQ * 1 + 56000000L)		/* верхняя частота настройки */
 		//#define TUNE_TOP 56000000L		/* верхняя частота настройки */
