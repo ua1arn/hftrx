@@ -539,6 +539,13 @@
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 		#define WITHANTSELECT1RX	1	/* Управление переключением антенн - только приемной антенны */
 
+		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
+
+		#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
+		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
+		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+
 	#else
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
@@ -768,7 +775,7 @@
 
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-		#define WITHTHERMOLEVEL	1	/* отображение температуры */
+		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#if WITHCURRLEVEL
 			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
@@ -780,12 +787,6 @@
 
 		#if WITHTHERMOLEVEL
 			XTHERMOIX = BOARD_ADCX1IN(6),		// Exernal thermo sensor ST LM235Z
-
-		#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
-		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
-
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR
