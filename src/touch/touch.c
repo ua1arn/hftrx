@@ -45,7 +45,7 @@ tcsnormalize(
 	}
 }
 
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC1_TYPE_STMPE811)
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
 
 uint_fast8_t board_tsc_is_pressed(void) /* Return 1 if touch detection */
@@ -96,9 +96,9 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 	return 0;
 }
 
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC1_TYPE_STMPE811) */
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC1_TYPE_GT911)
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 #include "gt911.h"
 
 
@@ -139,9 +139,9 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 	return 0;
 }
 
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC1_TYPE_GT911) */
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911) */
 
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC1_TYPE_FT5336)
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336)
 #include "ft5336.h"
 
 static TS_StateTypeDef ts_ft5336;
@@ -183,9 +183,9 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 	return 0;
 }
 
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC1_TYPE_FT5336) */
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336) */
 
-#if defined (TSC1_TYPE) && TSC1_TYPE == TSC1_TYPE_XPT2046
+#if defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_XPT2046
 
 #include "xpt2046.h"
 
@@ -241,9 +241,9 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 	return xpt2046_getxy(xr, yr);
 }
 
-#endif /* defined (TSC1_TYPE) && TSC1_TYPE == TSC1_TYPE_XPT2046 */
+#endif /* defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_XPT2046 */
 
-#if defined(TSC1_TYPE) && (TSC1_TYPE == TSC1_TYPE_S3402)
+#if defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_S3402)
 
 #define TSC_I2C_ADDR (0x20 * 2)
 
@@ -323,9 +323,9 @@ board_tsc_getraw(uint_fast16_t * px, uint_fast16_t * py)
 	}
 	return 0;
 }
-#endif /* defined(TSC1_TYPE) && (TSC1_TYPE == TSC1_TYPE_S3402) */
+#endif /* defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_S3402) */
 
-#if defined(TSC1_TYPE) && (TSC1_TYPE == TSC1_TYPE_ILI2102)
+#if defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102)
 
 #define TSC_ILI2102_ADDR		0x82
 
@@ -400,7 +400,7 @@ void ili2102_initialize(void)
 	PRINTF("ili2102 initialize successful\n");
 }
 
-#endif /*defined(TSC1_TYPE) && (TSC1_TYPE == TSC1_TYPE_ILI2102) */
+#endif /*defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102) */
 
 #if TSC1_TYPE == TSC_TYPE_AWTPADC
 
@@ -449,38 +449,38 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 /* вызывается при разрешённых прерываниях. */
 void board_tsc_initialize(void)
 {
-#if TSC1_TYPE == TSC1_TYPE_GT911
+#if TSC1_TYPE == TSC_TYPE_GT911
 	if (gt911_initialize())
 		PRINTF("gt911 initialization successful\n");
 	else
 		PRINTF("gt911 initialization error\n");
-#endif /* TSC1_TYPE == TSC1_TYPE_GT911 */
+#endif /* TSC1_TYPE == TSC_TYPE_GT911 */
 
-#if TSC1_TYPE == TSC1_TYPE_STMPE811
+#if TSC1_TYPE == TSC_TYPE_STMPE811
 	stmpe811_initialize();
-#endif /* TSC1_TYPE == TSC1_TYPE_STMPE811 */
+#endif /* TSC1_TYPE == TSC_TYPE_STMPE811 */
 
-#if TSC1_TYPE == TSC1_TYPE_FT5336
+#if TSC1_TYPE == TSC_TYPE_FT5336
 	if (ft5336_Initialize(DIM_X, DIM_Y) == FT5336_I2C_INITIALIZED)
 		PRINTF("ft5336 initialization successful\n");
 	else
 	{
 		PRINTF("ft5336 initialization error\n");
 	}
-#endif /* TSC1_TYPE == TSC1_TYPE_FT5336 */
+#endif /* TSC1_TYPE == TSC_TYPE_FT5336 */
 
-#if TSC1_TYPE == TSC1_TYPE_XPT2046
+#if TSC1_TYPE == TSC_TYPE_XPT2046
 	xpt2046_initialize();
-#endif /* TSC1_TYPE == TSC1_TYPE_XPT2046 */
+#endif /* TSC1_TYPE == TSC_TYPE_XPT2046 */
 
-#if TSC1_TYPE == TSC1_TYPE_S3402
+#if TSC1_TYPE == TSC_TYPE_S3402
 	s3402_initialize();
 	s3402_get_id();	// test
-#endif /* TSC1_TYPE == TSC1_TYPE_XPT2046 */
+#endif /* TSC1_TYPE == TSC_TYPE_XPT2046 */
 
-#if TSC1_TYPE == TSC1_TYPE_ILI2102
+#if TSC1_TYPE == TSC_TYPE_ILI2102
 	ili2102_initialize();
-#endif /* TSC1_TYPE == TSC1_TYPE_ILI2102 */
+#endif /* TSC1_TYPE == TSC_TYPE_ILI2102 */
 
 #if TSC1_TYPE == TSC_TYPE_AWTPADC
 	awgpadc_initialize();
