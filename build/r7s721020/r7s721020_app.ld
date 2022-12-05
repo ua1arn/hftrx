@@ -3,7 +3,7 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x20000100, LENGTH = 0x2FBF00
+  RAM (rwx)  : ORIGIN = 0x20000100, LENGTH = 3072k - 16k - 256
   TTB (rwx)  : ORIGIN = 0x202FC000, LENGTH = 16k
 }
 
