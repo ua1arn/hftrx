@@ -381,6 +381,8 @@
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+			#define WITHALTERNATIVEFONTS	1
+			#define WITHALTERNATIVELAYOUT	1
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
@@ -561,6 +563,7 @@
 		#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 
 		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 		#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
