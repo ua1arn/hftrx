@@ -2227,7 +2227,9 @@ void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 #endif /* (__L2C_PRESENT == 1) */
 }
 
-#elif CPUSTYLE_RISCV
+#elif CPUSTYLE_F133
+
+	// C906 core specific cache operations
 
 
 #if 0
