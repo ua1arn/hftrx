@@ -875,7 +875,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		#endif
 	#endif /* CPUSTYLE_ATMEGA_XXX4 && defined (PCIVECT) */
 
-#elif CPUSTYLE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 #else
 

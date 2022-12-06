@@ -81,7 +81,7 @@ static void sid_read_ldoB_cal(dram_para_t *para)
 {
 	uint32_t reg;
 
-	reg = (read32(0x0300621c) << 0x10) >> 0x18;
+	reg = (read32(SID_BASE + 0x21c) << 0x10) >> 0x18;
 
 	if (reg != 0) {
 		if (para->dram_type != 2) {
@@ -691,30 +691,30 @@ static int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 	// set VCO clock divider
 	n	= (clk * 2) / (allwnrt113_get_hosc_freq() / 1000000);
 
-	val = read32(0x02001010);
+	val = read32(CCU_BASE + 0x010);
 	val &= 0xfff800fc; // clear dividers
 	val |= (n - 1) << 8; // set PLL division
 	val |= 0xc0000000; // enable PLL and LDO
 	val &= 0xdfffffff;
-	write32(0x02001010, val | 0x20000000);
+	write32(CCU_BASE + 0x010, val | 0x20000000);
 
 	// wait for PLL to lock
-	while ((read32(0x02001010) & 0x10000000) == 0) {
+	while ((read32(CCU_BASE + 0x010) & 0x10000000) == 0) {
 		;
 	}
 
 	sdelay(20);
 
 	// enable PLL output
-	val = read32(0x02001000);
+	val = read32(CCU_BASE + 0x000);
 	val |= 0x08000000;
-	write32(0x02001000, val);
+	write32(CCU_BASE + 0x000, val);
 
 	// turn clock gate on
-	val = read32(0x02001800);
+	val = read32(CCU_BASE + 0x800);
 	val &= 0xfcfffcfc; // select DDR clk source, n=1, m=1
 	val |= 0x80000000; // turn clock on
-	write32(0x02001800, val);
+	write32(CCU_BASE + 0x800, val);
 
 	return n * 24;
 }
@@ -729,11 +729,11 @@ static void mctl_sys_init(dram_para_t *para)
 	// s1 = 0x02001000
 
 	// assert MBUS reset
-	write32(0x02001540, read32(0x02001540) & 0xbfffffff);
+	write32(CCU_BASE + 0x540, read32(CCU_BASE + 0x540) & 0xbfffffff);
 
 	// turn off sdram clock gate, assert sdram reset
-	write32(0x0200180c, read32(0x0200180c) & 0xfffefffe);
-	write32(0x02001800, (read32(0x02001800) & 0x3fffffff) | 0x8000000);
+	write32(CCU_BASE + 0x80c, read32(CCU_BASE + 0x80c) & 0xfffefffe);
+	write32(CCU_BASE + 0x800, (read32(CCU_BASE + 0x800) & 0x3fffffff) | 0x8000000);
 	sdelay(10);
 
 	// set ddr pll clock
@@ -743,19 +743,19 @@ static void mctl_sys_init(dram_para_t *para)
 	dram_disable_all_master();
 
 	// release sdram reset
-	write32(0x0200180c, read32(0x0200180c) | 0x10000);
+	write32(CCU_BASE + 0x80c, read32(CCU_BASE + 0x80c) | 0x10000);		// DRAM_BGR_REG
 
 	// release MBUS reset
-	write32(0x02001540, read32(0x02001540) | 0x40000000);
-	write32(0x02001800, read32(0x02001800) | 0x40000000);
+	write32(CCU_BASE + 0x540, read32(CCU_BASE + 0x540) | 0x40000000);	// MBUS_CLK_REG
+	write32(CCU_BASE + 0x800, read32(CCU_BASE + 0x800) | 0x40000000);	// DRAM_CLK_REG
 
 	sdelay(5);
 
 	// turn on sdram clock gate
-	write32(0x0200180c, read32(0x0200180c) | 0x1);
+	write32(CCU_BASE + 0x80c, read32(CCU_BASE + 0x80c) | 0x1);		// DRAM_BGR_REG
 
 	// turn dram clock gate on, trigger sdr clock update
-	write32(0x02001800, read32(0x02001800) | 0x88000000);
+	write32(CCU_BASE + 0x800, read32(CCU_BASE + 0x800) | 0x88000000);	// DRAM_CLK_REG
 	sdelay(5);
 
 	// mCTL clock enable
@@ -861,10 +861,10 @@ static void mctl_phy_ac_remapping(dram_para_t *para)
 {
 	unsigned int fuse, val;
 
-	fuse = (read32(0x03006228) << 0x14) >> 0x1c;
+	fuse = (read32(SID_BASE + 0x228) << 0x14) >> 0x1c;
 	ddr_debug("ddr_efuse_type: 0x%x\n", fuse);
 
-	val = (unsigned int)(read32(0x03006200) << 0x10) >> 0x18;
+	val = (unsigned int)(read32(SID_BASE + 0x200) << 0x10) >> 0x18;
 	ddr_debug("mark_id: 0x%x\n", val);
 
 	if ((para->dram_tpr13 >> 18) & 0x3) {
