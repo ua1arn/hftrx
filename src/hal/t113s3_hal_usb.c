@@ -3176,8 +3176,9 @@ static uint_fast16_t uacinsize = 0;
 static uintptr_t uacinrtsaddr = 0;
 static uint_fast16_t uacinrtssize = 0;
 
-static uint32_t usb_dev_sof_handler(pusb_struct pusb)
+static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 {
+	usb_struct * const pusb = & hpcd->awxx_usb;
 #if WITHUSBUACIN
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -3248,8 +3249,9 @@ static uint32_t usb_dev_sof_handler(pusb_struct pusb)
 	return 0;
 }
 
-static uint32_t usb_dev_ep0xfer(pusb_struct pusb)
+static uint32_t usb_dev_ep0xfer(PCD_HandleTypeDef *hpcd)
 {
+	usb_struct * const pusb = & hpcd->awxx_usb;
 	//uint32_t i=0;
 	uint32_t csr=0;
 	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
@@ -3558,131 +3560,7 @@ static void usb_params_init(pusb_struct pusb)
 }
 
 static void usb_irq_handler(pusb_struct pusb)
-{
-	//uint32_t index;
-	uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
-	uint32_t ep_save = usb_get_active_ep(pusb);
-
-	//sof interrupt
-
-	if (irqstatus & USB_BUSINT_SOF)
-	{
-		//pusb->sof_count ++;
-		//usb_dev_sof_handler(pusb);
-		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SOF);
-	}
-
-	//bus interrupt
-  	if (irqstatus & USB_BUSINT_SUSPEND)
-  	{
-		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SUSPEND);
-	  	//Suspend Service Subroutine
-
-		if (wBoot_dma_QueryState(pusb->dma))
-		{
-			PRINTF("Error: DMA for EP is not finished after Bus Suspend\n");
-		}
-		wBoot_dma_stop(pusb->dma);
-	  	PRINTF("uSuspend\n");
-		gpusb = NULL;
-  	}
-
-	if (irqstatus & USB_BUSINT_RESUME)
-	{
-		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESUME);
-		//Resume Service Subroutine
-		PRINTF("uResume\n");
-	}
-
-	if (irqstatus & USB_BUSINT_RESET)
-	{
-		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESET);
-		uint32_t temp;
-		uint32_t i;
-		//Device Reset Service Subroutine
-		//pusb->rst_cnt ++;
-		for(i=0; i<USB_MAX_EP_NO; i++)
-		{
-			pusb->eptx_flag[i] = 0;
-			pusb->eprx_flag[i] = 0;
-			pusb->eptx_xfer_state[i] = USB_EPX_SETUP;
-			pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
-		}
-		usb_struct_idle(pusb);
-
-		//pusb->timer = USB_IDLE_TIMER;
-
-		//Bus Reset may disable all interrupt enable, re-enable the interrupts need
-		usb_clear_bus_interrupt_enable(pusb, 0xff);
-		usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-		usb_set_eptx_interrupt_enable(pusb, 0x003f);
-		usb_set_eprx_interrupt_enable(pusb, 0x003e);
-
-		awxx_setup_fifo(pusb);
-
-		if (wBoot_dma_QueryState(pusb->dma))
-		{
-			PRINTF("Error: DMA for EP is not finished after Bus Reset\n");
-		}
-		wBoot_dma_stop(pusb->dma);
-		gpusb = pusb;
-	  	PRINTF("uReset\n");
-	}
-
-  	if (irqstatus & USB_BUSINT_SESSEND)
-  	{
-		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SESSEND);
-  		//Device Reset Service Subroutine
-		PRINTF("uSessend\n");
-  	}
-
-
-	{
-		//tx interrupt
-		uint32_t temp;
-		uint32_t i;
-		temp = usb_get_eptx_interrupt_status(pusb);
-		usb_clear_eptx_interrupt_status(pusb, temp);
-		if (temp&0x01)
-		{
-			//pusb->ep0_flag ++;
-			usb_dev_ep0xfer(pusb);
-			//ep0_irq_count ++;
-		}
-		if (temp&0xfffe)
-		{
-			for(i=0; i<USB_MAX_EP_NO; i++)
-			{
-				if (temp & (0x2<<i))
-				{
-					pusb->eptx_flag[i] ++;
-				}
-			}
-			//eptx_irq_count ++;
-		}
-	}
-
-	{
-		//rx interrupt
-		uint32_t temp;
-		uint32_t i;
-		temp = usb_get_eprx_interrupt_status(pusb);
-		usb_clear_eprx_interrupt_status(pusb, temp);
-		if (temp&0xfffe)
-		{
-			for(i=0; i<USB_MAX_EP_NO; i++)
-			{
-				if (temp & (0x2<<i))
-				{
-					pusb->eprx_flag[i] ++;
-				}
-			}
-			//eprx_irq_count ++;
-		}
-	}
-  	usb_select_ep(pusb, ep_save);
-	return;
-}
+{}
 
 void usb_struct_init(pusb_struct pusb)
 {
@@ -3896,87 +3774,133 @@ HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
-	usb_irq_handler(pusb);
-	usb_device_function(pusb);
-}
 
-//void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
-//{
-//	pusb_struct pusb = & hpcd->awxx_usb;
-//
-//	//uint32_t index;
-//
-//	//bus interrupt
-//	{
-//		uint32_t busintstatus;
-//		busintstatus = usb_get_bus_interrupt_status(pusb);
-//		usb_clear_bus_interrupt_status(pusb, busintstatus);
-//
-////		if (busintstatus & USB_BUSINT_SOF)
-////		{
-////			//pusb->sof_count ++;
-////			busintstatus &= ~ USB_BUSINT_SOF;
-////			HAL_PCD_SOFCallback(hpcd);
-////		}
-//
-//		busintstatus &= usb_get_bus_interrupt_enable(pusb);
-//		if (busintstatus != 0)
-//		{
-//			//pusb->busirq_status |= temp;
-//			//pusb->busirq_flag ++;
-//			//bus_irq_count ++;
-//			usb_bus_irq_handler_dev(hpcd, busintstatus);
-//		}
-//	}
-//
-//	//tx interrupt, ep0 interrupt
-//	{
-//		uint32_t eptxstatus;
-//		eptxstatus = usb_get_eptx_interrupt_status(pusb);
-//		usb_clear_eptx_interrupt_status(pusb, eptxstatus);
-//
-//		if (eptxstatus & 0x01)
-//		{
-//			//pusb->ep0_flag ++;
-//			//ep0_irq_count ++;
-//			usb_dev_ep0xfer_handler(hpcd);
-//		}
-//		if (eptxstatus & 0xfffe)
-//		{
-//			uint32_t i;
-//			for (i=0; i<USB_MAX_EP_NO; i++)
-//			{
-//				if (eptxstatus & (0x2 << i))
-//				{
-//					//pusb->eptx_flag[i] ++;
-//					usb_dev_eptx_handler(hpcd, i);
-//				}
-//			}
-//			//eptx_irq_count ++;
-//		}
-//	}
-//
-//	//rx interrupt
-//	{
-//		uint32_t eprxstatus;
-//		eprxstatus = usb_get_eprx_interrupt_status(pusb);
-//		usb_clear_eprx_interrupt_status(pusb, eprxstatus);
-//
-//		if (eprxstatus & 0xfffe)
-//		{
-//			uint32_t i;
-//			for (i=0; i<USB_MAX_EP_NO; i++)
-//			{
-//				if (eprxstatus & (0x2 << i))
-//				{
-//					pusb->eprx_flag[i] ++;
-//					usb_dev_eprx_handler(hpcd, i);
-//				}
-//			}
-//			//eprx_irq_count ++;
-//		}
-//	}
-//}
+	//uint32_t index;
+	uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
+	uint32_t ep_save = usb_get_active_ep(pusb);
+
+	//sof interrupt
+
+	if (irqstatus & USB_BUSINT_SOF)
+	{
+		//pusb->sof_count ++;
+		usb_dev_sof_handler(hpcd);
+		//HAL_PCD_SOFCallback(hpcd);
+		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SOF);
+	}
+
+	//bus interrupt
+  	if (irqstatus & USB_BUSINT_SUSPEND)
+  	{
+		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SUSPEND);
+	  	//Suspend Service Subroutine
+
+		if (wBoot_dma_QueryState(pusb->dma))
+		{
+			PRINTF("Error: DMA for EP is not finished after Bus Suspend\n");
+		}
+		wBoot_dma_stop(pusb->dma);
+	  	PRINTF("uSuspend\n");
+		gpusb = NULL;
+  	}
+
+	if (irqstatus & USB_BUSINT_RESUME)
+	{
+		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESUME);
+		//Resume Service Subroutine
+		PRINTF("uResume\n");
+	}
+
+	if (irqstatus & USB_BUSINT_RESET)
+	{
+		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESET);
+		uint32_t temp;
+		uint32_t i;
+		//Device Reset Service Subroutine
+		//pusb->rst_cnt ++;
+		for(i=0; i<USB_MAX_EP_NO; i++)
+		{
+			pusb->eptx_flag[i] = 0;
+			pusb->eprx_flag[i] = 0;
+			pusb->eptx_xfer_state[i] = USB_EPX_SETUP;
+			pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
+		}
+		usb_struct_idle(pusb);
+
+		//pusb->timer = USB_IDLE_TIMER;
+
+		//Bus Reset may disable all interrupt enable, re-enable the interrupts need
+		usb_clear_bus_interrupt_enable(pusb, 0xff);
+		usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
+		usb_set_eptx_interrupt_enable(pusb, 0x003f);
+		usb_set_eprx_interrupt_enable(pusb, 0x003e);
+
+		awxx_setup_fifo(pusb);
+
+		if (wBoot_dma_QueryState(pusb->dma))
+		{
+			PRINTF("Error: DMA for EP is not finished after Bus Reset\n");
+		}
+		wBoot_dma_stop(pusb->dma);
+		gpusb = pusb;
+	  	PRINTF("uReset\n");
+	}
+
+  	if (irqstatus & USB_BUSINT_SESSEND)
+  	{
+		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SESSEND);
+  		//Device Reset Service Subroutine
+		PRINTF("uSessend\n");
+  	}
+
+
+	{
+		//tx interrupt
+		uint32_t temp;
+		uint32_t i;
+		temp = usb_get_eptx_interrupt_status(pusb);
+		usb_clear_eptx_interrupt_status(pusb, temp);
+		if (temp&0x01)
+		{
+			//pusb->ep0_flag ++;
+			usb_dev_ep0xfer(hpcd);
+			//ep0_irq_count ++;
+		}
+		if (temp&0xfffe)
+		{
+			for(i=0; i<USB_MAX_EP_NO; i++)
+			{
+				if (temp & (0x2<<i))
+				{
+					pusb->eptx_flag[i] ++;
+				}
+			}
+			//eptx_irq_count ++;
+		}
+	}
+
+	{
+		//rx interrupt
+		uint32_t temp;
+		uint32_t i;
+		temp = usb_get_eprx_interrupt_status(pusb);
+		usb_clear_eprx_interrupt_status(pusb, temp);
+		if (temp&0xfffe)
+		{
+			for(i=0; i<USB_MAX_EP_NO; i++)
+			{
+				if (temp & (0x2<<i))
+				{
+					pusb->eprx_flag[i] ++;
+				}
+			}
+			//eprx_irq_count ++;
+		}
+	}
+  	usb_select_ep(pusb, ep_save);
+
+  	usb_device_function(pusb);
+}
 
 /**
   * @brief  USB_DevConnect : Connect the USB device by enabling Rpu
