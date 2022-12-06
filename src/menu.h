@@ -49,36 +49,36 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
-//	{
-//		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
-//		ITEM_VALUE,
-//		LMIN, LMAX,
-//		offsetof(struct nvmap, bandgroups [0].oants [0].tunerind),
-//		nvramoffs_bandgroupant,
-//		& tunerind,
-//		NULL,
-//		getzerobase, /* складывается со смещением и отображается */
-//	},
-//	{
-//		QLABEL("TUNER C "), 7, 0, 0,	ISTEP1,
-//		ITEM_VALUE,
-//		CMIN, CMAX,
-//		offsetof(struct nvmap, bandgroups [0].oants [0].tunercap),
-//		nvramoffs_bandgroupant,
-//		& tunercap,
-//		NULL,
-//		getzerobase, /* складывается со смещением и отображается */
-//	},
-//	{
-//		QLABEL("TUNER TY"), 7, 0, 0,	ISTEP1,
-//		ITEM_VALUE,
-//		0, KSCH_COUNT - 1,
-//		offsetof(struct nvmap, bandgroups [0].oants [0].tunertype),
-//		nvramoffs_bandgroupant,
-//		NULL,
-//		& tunertype,
-//		getzerobase, /* складывается со смещением и отображается */
-//	},
+	{
+		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		LMIN, LMAX,
+		offsetof(struct nvmap, bandgroups [0].oants [0].tunerind),
+		nvramoffs_bandgroupant,
+		& tunerind,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("TUNER C "), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		CMIN, CMAX,
+		offsetof(struct nvmap, bandgroups [0].oants [0].tunercap),
+		nvramoffs_bandgroupant,
+		& tunercap,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("TUNER TY"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, KSCH_COUNT - 1,
+		offsetof(struct nvmap, bandgroups [0].oants [0].tunertype),
+		nvramoffs_bandgroupant,
+		NULL,
+		& tunertype,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 	{
 		QLABEL("TUNER WT"), 7, 0, 0,	ISTEP5,	// задержка перед измерением после переключения реле
 		ITEM_VALUE, 
