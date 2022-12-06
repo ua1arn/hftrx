@@ -93,10 +93,14 @@ DINCDIR = \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDIR)/Core_A/Source \
 	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude \
+	$(CMSISDSPDIR)/PrivateInclude
+		
+DINCDIR += \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/apps/http \
+	$(LWIPDIR)/src/apps/http
+	
+DINCDIR += \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \

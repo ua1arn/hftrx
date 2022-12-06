@@ -18070,7 +18070,9 @@ static void menu_print(void)
         	case RJ_CPUTYPE:
         		{
         			const FLASHMEM char * msg;
-        #if CPUSTYLE_STM32MP1
+			#if defined (WITHCPUNAME)
+				msg = PSTR(WITHCPUNAME);
+			#elif CPUSTYLE_STM32MP1
         			RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
         			(void) RCC->MP_APB5ENSETR;
         			RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_BSECLPEN;
@@ -18089,19 +18091,19 @@ static void menu_print(void)
         			case 0x81:	msg = PSTR("STM32MP157Dx"); break;
         			default: 	msg = PSTR("STM32MP15xxx"); break;
         			}
-        #elif CPUSTYLE_XC7Z
+			#elif CPUSTYLE_XC7Z
         			msg = PSTR("ZYNQ 7020");
-        #elif CPUSTYLE_XCZU
+        	#elif CPUSTYLE_XCZU
         			msg = PSTR("ZYNQ USCALE");
-        #elif CPUSTYLE_R7S721
+        	#elif CPUSTYLE_R7S721
         			msg = PSTR("RENESAS");
-        #elif CPUSTYLE_T113
-        			msg = PSTR("Allw T128-S3");
-        #elif defined (WITHCPUNAME)
-        			msg = PSTR(WITHCPUNAME);
-        #else
+			#elif CPUSTYLE_T113
+					msg = PSTR("Allw T128-S3");
+			#elif CPUSTYLE_F133
+					msg = PSTR("Allw F133-A");
+        	#else
         			msg = PSTR("CPUxxx");
-        #endif
+        	#endif
         			width = VALUEW;
         			comma = strlen_P(msg);
         			print_menu_string_P(x, y, msg, width, comma);
