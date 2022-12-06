@@ -150,6 +150,14 @@ typedef struct {
 	char label [10];
 } val_step_t;
 
+typedef struct {
+	char * str;				// указатель на редактируемую строку
+	uint32_t * num;			// указатель на редактируемое числовое зачение
+	uint8_t clean;			// признак очистки строки перед открытием окна
+	uint8_t digits_only;	// только цифровая клавиатура
+	uint8_t max_len;		// максимальная длина редактируемой строки
+} keyb_t ;
+
 #define GET_FROM_WM_QUEUE	uint_fast8_t type;	\
 							int_fast8_t action;	\
 							uintptr_t ptr;		\

@@ -64,7 +64,7 @@ struct gui_nvram_t {
 	char ft8_snr [end_max_lenght];
 	char ft8_end [end_max_lenght];
 	uint8_t ft8_band;
-	uint16_t ft8_txfreq_val;
+	uint32_t ft8_txfreq_val;
 	uint8_t ft8_txfreq_equal;
 #endif /* WITHFT8 */
 #if WITHWIFI
