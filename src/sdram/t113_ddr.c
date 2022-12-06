@@ -48,13 +48,14 @@ static void sdelay(unsigned us)
 
 static unsigned read32(uintptr_t addr)
 {
+	__DSB();
 	return * (volatile uint32_t *) addr;
 }
 
 static void write32(uintptr_t addr, unsigned value)
 {
 	* (volatile uint32_t *) addr = value;
-	(void) * (volatile uint32_t *) addr;
+	__DSB();
 }
 
 static void write32ptr(void * addr, unsigned value)
