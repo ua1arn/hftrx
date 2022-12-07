@@ -78,22 +78,32 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
-	$(ARCHDIR) \
+	$(ARCHDIR)
+	
+DINCDIR += \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
-	$(DSP3DDIR) \
+	$(DSP3DDIR)
+	
+DINCDIR += \
 	$(CMSISDIR)/Core_A/Include \
 	$(CMSISDIR)/Core_A/Source \
 	$(RTOSXDIR)/Include \
-	$(RTOSXDIR)/RTX/Include \
+	$(RTOSXDIR)/RTX/Include
+	
+DINCDIR += \
 	$(CMSISDSPDIR)/Include \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude \
+	$(CMSISDSPDIR)/PrivateInclude
+	
+DINCDIR += \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/apps/http \
+	$(LWIPDIR)/src/apps/http
+	
+DINCDIR += \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \

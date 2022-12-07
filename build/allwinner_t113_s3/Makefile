@@ -271,7 +271,7 @@ $(OBJSA_APP) $(ZOBJSA):
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP)
+%_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
