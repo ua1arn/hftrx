@@ -65,6 +65,9 @@
 	fsd	fa6,40(sp)
 	fsd	fa7,32(sp)
 	fsd	ft8,24(sp)
+	fsd	ft9,16(sp)
+	fsd	ft10,8(sp)
+	fsd	ft11,0(sp)
 .endm
 
 
