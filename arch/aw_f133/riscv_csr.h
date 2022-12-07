@@ -3811,6 +3811,45 @@ static inline void csr_write_sptbr(uint_xlen_t value) {
 /*******************************************
  * C906 specific register
  *
+ * mxstatus - 0x7C0 - Machine mode extended status register.
+ */
+static inline uint_xlen_t csr_read_mxstatus(void) {
+    uint_xlen_t value;
+    __asm__ volatile ("csrr    %0, 0x7C0"
+                      : "=r" (value)  /* output : register */
+                      : /* input : none */
+                      : /* clobbers: none */);
+    return value;
+}
+static inline void csr_write_mxstatus(uint_xlen_t value) {
+    __asm__ volatile ("csrw    0x7C0, %0"
+                      : /* output: none */
+                      : "r" (value) /* input : from register */
+                      : /* clobbers: none */);
+}
+static inline uint_xlen_t csr_read_write_mxstatus(uint_xlen_t new_value) {
+    uint_xlen_t prev_value;
+    __asm__ volatile ("csrrw    %0, 0x7C0, %1"
+                      : "=r" (prev_value) /* output: register %0 */
+                      : "r" (new_value)  /* input : register */
+                      : /* clobbers: none */);
+    return prev_value;
+}
+static inline void csr_set_bits_mxstatus(uint_xlen_t mask) {
+    __asm__ volatile ("csrrs    zero, 0x7C0, %0"
+                      : /* output: none */
+                      : "r" (mask)  /* input : register */
+                      : /* clobbers: none */);
+}
+static inline void csr_clr_bits_mxstatus(uint_xlen_t mask) {
+    __asm__ volatile ("csrrc    zero, 0x7C0, %0"
+                      : /* output: none */
+                      : "r" (mask)  /* input : register */
+                      : /* clobbers: none */);
+}
+/*******************************************
+ * C906 specific register
+ *
  * mhcr - 0x7C1 - Machine Mode Hardware Configuration Register.
  */
 static inline uint_xlen_t csr_read_mhcr(void) {
@@ -3834,6 +3873,58 @@ static inline uint_xlen_t csr_read_write_mhcr(uint_xlen_t new_value) {
                       : "r" (new_value)  /* input : register */
                       : /* clobbers: none */);
     return prev_value;
+}
+static inline void csr_set_bits_mhcr(uint_xlen_t mask) {
+    __asm__ volatile ("csrrs    zero, 0x7C1, %0"
+                      : /* output: none */
+                      : "r" (mask)  /* input : register */
+                      : /* clobbers: none */);
+}
+static inline void csr_clr_bits_mhcr(uint_xlen_t mask) {
+    __asm__ volatile ("csrrc    zero, 0x7C1, %0"
+                      : /* output: none */
+                      : "r" (mask)  /* input : register */
+                      : /* clobbers: none */);
+}
+
+/*******************************************
+ * C906 specific register
+ *
+ * mcor - 0x7C2 - Machine mode hardware operation register.
+ */
+static inline uint_xlen_t csr_read_mcor(void) {
+    uint_xlen_t value;
+    __asm__ volatile ("csrr    %0, 0x7C2"
+                      : "=r" (value)  /* output : register */
+                      : /* input : none */
+                      : /* clobbers: none */);
+    return value;
+}
+static inline void csr_write_mcor(uint_xlen_t value) {
+    __asm__ volatile ("csrw    0x7C2, %0"
+                      : /* output: none */
+                      : "r" (value) /* input : from register */
+                      : /* clobbers: none */);
+}
+static inline uint_xlen_t csr_read_write_mcor(uint_xlen_t new_value) {
+    uint_xlen_t prev_value;
+    __asm__ volatile ("csrrw    %0, 0x7C2, %1"
+                      : "=r" (prev_value) /* output: register %0 */
+                      : "r" (new_value)  /* input : register */
+                      : /* clobbers: none */);
+    return prev_value;
+}
+static inline void csr_set_bits_mcor(uint_xlen_t mask) {
+    __asm__ volatile ("csrrs    zero, 0x7C2, %0"
+                      : /* output: none */
+                      : "r" (mask)  /* input : register */
+                      : /* clobbers: none */);
+}
+static inline void csr_clr_bits_mcor(uint_xlen_t mask) {
+    __asm__ volatile ("csrrc    zero, 0x7C2, %0"
+                      : /* output: none */
+                      : "r" (mask)  /* input : register */
+                      : /* clobbers: none */);
 }
 
 #endif // #define RISCV_CSR_H

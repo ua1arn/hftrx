@@ -3436,6 +3436,7 @@ sysinit_cache_initialize(void)
 	// RISC-V cache initialize
 	// https://riscv.org/wp-content/uploads/2016/07/riscv-privileged-v1.9-1.pdf#page=49
 
+
 	//	7.3.1 L1 Cache Extension Register
 	//	C906 L1 cache related extended registers are mainly divided into:
 	//	• Cache Enable and Mode Configuration: The Machine Mode Hardware Configuration Register (mhcr) enables switching of instruction and data caches as well as write allocation and
@@ -3481,61 +3482,94 @@ sysinit_cache_initialize(void)
 	//	WBR is fixed to 1 in C906.
 
 
-	if (1)
-	{
-		// enable I-cache (C906-specific)
-		uint_xlen_t v = csr_read_mhcr();;
-		v |= (1u << 0);	// IE
-		csr_write_mhcr(v);
-	}
+	//	https://github.com/DongshanPI/eLinuxCore_dongshannezhastu/blob/master/spl/arch/riscv/cpu/riscv64/mmu.c
+	//	/*
+	//	(0:1) When CACHE_SEL=2'b11, select instruction and data cache
+	//	(4) When INV=1, the cache is invalidated
+	//	(16) When BHT_INV=1, the data in the branch history table is invalidated
+	//	(17) When TB_INV=1, the data in the branch target buffer is invalidated
+	//	*/
+	//	csr_write(CSR_MCOR, 0x70013);
+	//
+	//	/*
+	//	(0) Icache is turned on when IE=1
+	//	(1) Dcache is turned on when DE=1
+	//	(2) When WA=1, the data cache is in write allocate mode (c906 is not supported)
+	//	(3) When WB=1, the data cache is in writeback mode (c906 is fixed to 1)
+	//	(4) When RS=1, return to the stack to open
+	//	(5) When BPE=1, the prediction jump is turned on
+	//	(6) When BTB=1, branch target prediction is enabled
+	//	(8) Support write burst transmission write when WBR=1 (c906 fixed to 1)
+	//	(12) When L0BTB=1, the prediction of the target of the first level branch is enabled
+	//	*/
+	//	csr_write(CSR_MHCR, 0x11ff);
+	//
+	//
+	//	/*
+	//	(15) When MM is 1, unaligned access is supported, and the hardware handles unaligned access
+	//	(16) When UCME is 1, user mode can execute extended cache operation instructions
+	//	(17) When CLINTEE is 1, CLINT-initiated superuser software interrupts and timer interrupts can be responded to
+	//	(21) When the MAEE is 1, the address attribute bit is extended in the PTE of the MMU, and the user can configure the address attribute of the page
+	//	(22) When the THEADISAE is 1, the C906 extended instruction set can be used
+	//	*/
+	//	csr_set(CSR_MXSTATUS, 0x638000);
+	//
+	//
+	//	/*
+	//	(2) DPLD=1, dcache prefetching is enabled
+	//	(3,4,5,6,7) AMR=1, when a storage operation of three consecutive cache rows occurs, the storage operation of subsequent consecutive addresses is no longer written to L1Cache
+	//	(8) IPLD=1ICACHE prefetch is enabled
+	//	(9) LPE=1 cycle acceleration on
+	//	(13,14) When DPLD is 2, 8 cache rows are prefetched
+	//	*/
+	//	csr_write(CSR_MHINT, 0x16e30c
 
-	if (1)
-	{
-		// Allow Predictive Jump (C906-specific)
-		uint_xlen_t v = csr_read_mhcr();;
-		v |= (1u << 5);	// BPE
-		csr_write_mhcr(v);
-	}
-	if (1)
-	{
-		// Branch Target Prediction Enable (C906-specific)
-		uint_xlen_t v = csr_read_mhcr();;
-		v |= (1u << 6);	// BTB
-		csr_write_mhcr(v);
-	}
-	if (1)
-	{
-		// RS-Address Return Stack (C906-specific)
-		uint_xlen_t v = csr_read_mhcr();;
-		v |= (1u << 4);	// RS
-		csr_write_mhcr(v);
-	}
+	csr_write_mcor(0x70013);
+	csr_write_mhcr(0x011ff);
+	csr_set_bits_mxstatus( 0x638000);
 
-
-	if (1)
-	{
-		// enable D-cache (C906-specific)
-		uint_xlen_t v = csr_read_mhcr();;
-		v |= (1u << 1);	// DE
-		csr_write_mhcr(v);
-	}
-
-	if (1)
-	{
-		// enable D-cache Write-allocate (C906-specific)
-		uint_xlen_t v = csr_read_mhcr();;
-		v |= (1u << 2);	// WA
-		csr_write_mhcr(v);
-	}
-
-//	if (1)
-//	{
-//		// enable D-cache Write-back (C906-specific)
-//		uint_xlen_t v = csr_read_mhcr();;
-//		v = csr_read_mhcr();
-//		v |= (1u << 3);	// WB
-//		csr_write_mhcr(v);
-//	}
+//	/*C906 will invalid all I-cache automatically when reset*/
+//	/*you can invalid I-cache by yourself if necessarily*/
+//	/*invalid I-cache*/
+//	//	li x3, 0x33
+//	//	csrc mcor, x3
+//	//	li x3, 0x11
+//	//	csrs mcor, x3
+//
+//	csr_clr_bits_mcor(0x0033);
+//	csr_set_bits_mcor(0x0011);
+//
+//	// Allow Predictive Jump (C906-specific)
+//	csr_set_bits_mhcr((uint_xlen_t) 1u << 5);	// BPE
+//	// Branch Target Prediction Enable (C906-specific)
+//	csr_set_bits_mhcr((uint_xlen_t) 1u << 6);	// BTB
+//	// RS-Address Return Stack (C906-specific)
+//	csr_set_bits_mhcr((uint_xlen_t) 1u << 4);	// RS
+//	// enable I-cache (C906-specific)
+//	csr_set_bits_mhcr((uint_xlen_t) 1u << 0);	// IE
+//
+//
+//	/*C906 will invalid all D-cache automatically when reset*/
+//	/*you can invalid D-cache by yourself if necessarily*/
+//	/*invalid D-cache*/
+////	li x3, 0x33
+////	csrc mcor, x3
+////	li x3, 0x12
+////	csrs mcor, x3
+//	csr_clr_bits_mcor(0x0033);
+//	csr_set_bits_mcor(0x0012);
+//
+//	// enable D-cache Write-allocate (C906-specific)
+//	//csr_set_bits_mhcr((uint_xlen_t) 1u << 2);	// WA
+//	// enable D-cache Write-back (C906-specific)
+//	csr_set_bits_mhcr((uint_xlen_t) 1u << 3);	// WB
+//	// enable D-cache (C906-specific)
+//	csr_set_bits_mhcr((uint_xlen_t) 1u << 1);	// DE
+//
+	// Disable D-cache (C906-specific)
+	//csr_clr_bits_mhcr((uint_xlen_t) 1u << 1);	// DE
+	// 0x0108:
+	PRINTF("MHCR=%08X\n", (unsigned) csr_read_mhcr());
 
 #endif /* CPUSTYLE_RISCV */
 }
