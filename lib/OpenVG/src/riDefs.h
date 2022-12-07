@@ -57,12 +57,12 @@ namespace OpenVGRI
 
 //=======================================================================
 
-typedef int				RIint32;
-typedef unsigned int	RIuint32;
-typedef short			RIint16;
-typedef unsigned short	RIuint16;
-typedef signed char		RIint8;
-typedef unsigned char	RIuint8;
+typedef int32_t				RIint32;
+typedef uint32_t	RIuint32;
+typedef int16_t			RIint16;
+typedef uint16_t	RIuint16;
+typedef int8_t		RIint8;
+typedef uint8_t	RIuint8;
 typedef float			RIfloat32;
 //TODO add compile-time assertions to guarantee the sizes
 
