@@ -3927,6 +3927,46 @@ static inline void csr_clr_bits_mcor(uint_xlen_t mask) {
                       : /* clobbers: none */);
 }
 
+/*******************************************
+ * C906 specific register
+ *
+ * mhint - 0x7C5 - The machine mode implicit operation register.
+ */
+static inline uint_xlen_t csr_read_mhint(void) {
+    uint_xlen_t value;
+    __asm__ volatile ("csrr    %0, 0x7C5"
+                      : "=r" (value)  /* output : register */
+                      : /* input : none */
+                      : /* clobbers: none */);
+    return value;
+}
+static inline void csr_write_mhint(uint_xlen_t value) {
+    __asm__ volatile ("csrw    0x7C5, %0"
+                      : /* output: none */
+                      : "r" (value) /* input : from register */
+                      : /* clobbers: none */);
+}
+static inline uint_xlen_t csr_read_write_mhint(uint_xlen_t new_value) {
+    uint_xlen_t prev_value;
+    __asm__ volatile ("csrrw    %0, 0x7C5, %1"
+                      : "=r" (prev_value) /* output: register %0 */
+                      : "r" (new_value)  /* input : register */
+                      : /* clobbers: none */);
+    return prev_value;
+}
+static inline void csr_set_bits_mhint(uint_xlen_t mask) {
+    __asm__ volatile ("csrrs    zero, 0x7C5, %0"
+                      : /* output: none */
+                      : "r" (mask)  /* input : register */
+                      : /* clobbers: none */);
+}
+static inline void csr_clr_bits_mhint(uint_xlen_t mask) {
+    __asm__ volatile ("csrrc    zero, 0x7C5, %0"
+                      : /* output: none */
+                      : "r" (mask)  /* input : register */
+                      : /* clobbers: none */);
+}
+
 #endif // #define RISCV_CSR_H
 
 

@@ -3490,6 +3490,8 @@ sysinit_cache_initialize(void)
 	//	(17) When TB_INV=1, the data in the branch target buffer is invalidated
 	//	*/
 	//	csr_write(CSR_MCOR, 0x70013);
+	csr_write_mcor(0x70013);
+
 	//
 	//	/*
 	//	(0) Icache is turned on when IE=1
@@ -3503,6 +3505,8 @@ sysinit_cache_initialize(void)
 	//	(12) When L0BTB=1, the prediction of the target of the first level branch is enabled
 	//	*/
 	//	csr_write(CSR_MHCR, 0x11ff);
+	csr_write_mhcr(0x011FF);
+
 	//
 	//
 	//	/*
@@ -3513,6 +3517,8 @@ sysinit_cache_initialize(void)
 	//	(22) When the THEADISAE is 1, the C906 extended instruction set can be used
 	//	*/
 	//	csr_set(CSR_MXSTATUS, 0x638000);
+	csr_set_bits_mxstatus(0x638000);
+
 	//
 	//
 	//	/*
@@ -3522,11 +3528,8 @@ sysinit_cache_initialize(void)
 	//	(9) LPE=1 cycle acceleration on
 	//	(13,14) When DPLD is 2, 8 cache rows are prefetched
 	//	*/
-	//	csr_write(CSR_MHINT, 0x16e30c
-
-	csr_write_mcor(0x70013);
-	csr_write_mhcr(0x011ff);
-	csr_set_bits_mxstatus( 0x638000);
+	//	csr_write(CSR_MHINT, 0x16e30c);
+	csr_write_mhint(0x16E30C);
 
 //	/*C906 will invalid all I-cache automatically when reset*/
 //	/*you can invalid I-cache by yourself if necessarily*/
@@ -3569,7 +3572,7 @@ sysinit_cache_initialize(void)
 	// Disable D-cache (C906-specific)
 	//csr_clr_bits_mhcr((uint_xlen_t) 1u << 1);	// DE
 	// 0x0108:
-	PRINTF("MHCR=%08X\n", (unsigned) csr_read_mhcr());
+//	PRINTF("MHCR=%08X\n", (unsigned) csr_read_mhcr());
 
 #endif /* CPUSTYLE_RISCV */
 }
