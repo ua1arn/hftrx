@@ -35,10 +35,11 @@ void enable_window_move(window_t * win);
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...);
 wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action);
 
-uint_fast16_t gui_get_window_draw_width(window_t * win);
-uint_fast16_t gui_get_window_draw_height(window_t * win);
-void gui_drawstring(window_t * win, uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORMAIN_T color);
-void gui_drawline(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color);
+uint_fast16_t gui_get_window_draw_width(void);
+uint_fast16_t gui_get_window_draw_height(void);
+void gui_drawstring(uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORMAIN_T color);
+void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color);
+void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORMAIN_T color);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

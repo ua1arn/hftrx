@@ -44,6 +44,7 @@ static void window_kbd_test_process(void);
 static void window_ping_process(void);
 static void window_3d_process(void);
 static void window_lfm_process(void);
+static void window_test_process(void);
 
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
@@ -88,6 +89,7 @@ enum {
 #if WITHLFM
 	WINDOW_LFM,
 #endif /* WITHLFM  */
+	WINDOW_TEST,
 
 	WINDOWS_COUNT
 };

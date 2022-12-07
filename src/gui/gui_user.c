@@ -278,6 +278,7 @@ static window_t windows [] = {
 #if WITHLFM
 	{ WINDOW_LFM, 		 	 WINDOW_UTILS,			ALIGN_RIGHT_X, "LFM",			 		 1, window_lfm_process, },
 #endif /* WITHLFM  */
+	{ WINDOW_TEST, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "test",	 				 1, window_test_process, },
 };
 
 /* Возврат ссылки на окно */
@@ -2007,6 +2008,7 @@ static void window_utilites_process(void)
 #if WITHLFM
 		add_element("btn_lfm",      100, 44, 0, 0, "LFM");
 #endif /* WITHLFM  */
+		add_element("btn_test",      100, 44, 0, 0, "Test");
 
 		x = 0;
 		y = 0;
@@ -2045,6 +2047,10 @@ static void window_utilites_process(void)
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_3d"))
 			{
 				open_window(get_win(WINDOW_3D));
+			}
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_test"))
+			{
+				open_window(get_win(WINDOW_TEST));
 			}
 #if WITHTX
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_SWRscan"))
@@ -6186,6 +6192,54 @@ static void window_lfm_process(void)
 
 
 #endif /* WITHLFM  */
+}
+
+static void window_test_process(void)
+{
+	const uint32_t xmax = 600, ymax = 200, x1 = (800 / 2) - 100, x2 = (800 / 2) + 100;
+	window_t * const win = get_win(WINDOW_TEST);
+	static COLORMAIN_T d[600][200];
+	static int shift = 0;
+
+	static uint32_t x = 0;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		x = 0;
+		shift = 0;
+
+		memset(d, 0, sizeof(d));
+		calculate_window_position(win, WINDOW_POSITION_MANUAL_SIZE, xmax, ymax);
+		return;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		shift += (action * 5);
+		break;
+
+	default:
+		break;
+	}
+
+	for (int j = 0; j < xmax; j ++)
+		for (int k = 0; k < x2 - x1; k ++)
+			gui_drawpoint(j, k, d[j][k]);
+
+	if (x < xmax)
+	{
+		for (int i = x1, y = 0; i < x2; i ++, y ++)
+		{
+			COLORMAIN_T v = display2_get_spectrum(i + shift);
+			gui_drawpoint(x, y, v);
+			d[x][y] = v;
+		}
+
+		x ++;
+	}
 }
 
 #endif /* WITHTOUCHGUI */

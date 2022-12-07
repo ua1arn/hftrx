@@ -7248,5 +7248,11 @@ uint_fast8_t display_getpage0(void)
 	return DPAGE0;
 }
 
+COLORMAIN_T display2_get_spectrum(int x)
+{
+	int v = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
+	return gvars.color_scale [v];
+}
+
 #endif /* WITHTOUCHGUI */
 

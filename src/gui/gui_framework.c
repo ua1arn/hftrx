@@ -1920,9 +1920,10 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 
 // *************************************
 
-void gui_drawstring(window_t * win, uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORMAIN_T color)
+void gui_drawstring(uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORMAIN_T color)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	window_t * win = get_win(check_for_parent_window());
 
 	const uint_fast16_t x1 = x + win->draw_x1;
 	const uint_fast16_t y1 = y + win->draw_y1;
@@ -1938,20 +1939,23 @@ void gui_drawstring(window_t * win, uint_fast16_t x, uint_fast16_t y, const char
 		colpip_string3_tbg(fr, DIM_X, DIM_Y, x1, y1, str, color);
 }
 
-uint_fast16_t gui_get_window_draw_width(window_t * win)
+uint_fast16_t gui_get_window_draw_width(void)
 {
+	window_t * win = get_win(check_for_parent_window());
 	return win->draw_x2 - win->draw_x1;
 }
 
-uint_fast16_t gui_get_window_draw_height(window_t * win)
+uint_fast16_t gui_get_window_draw_height(void)
 {
+	window_t * win = get_win(check_for_parent_window());
 	return win->draw_y2 - win->draw_y1;
 }
 
 // Нарисовать линию в границах окна
-void gui_drawline(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color)
+void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	window_t * win = get_win(check_for_parent_window());
 
 	const uint_fast16_t xn = x1 + win->draw_x1;
 	const uint_fast16_t yn = y1 + win->draw_y1;
@@ -1966,9 +1970,10 @@ void gui_drawline(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast1
 	colmain_line(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, 1);
 }
 
-void gui_drawrect(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color, uint_fast8_t fill)
+void gui_drawrect(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color, uint_fast8_t fill)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	window_t * win = get_win(check_for_parent_window());
 
 	const uint_fast16_t xn = x1 + win->draw_x1;
 	const uint_fast16_t yn = y1 + win->draw_y1;
@@ -1983,9 +1988,10 @@ void gui_drawrect(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast1
 	colpip_rect(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, fill);
 }
 
-void gui_drawpoint(window_t * win, uint_fast16_t x1, uint_fast16_t y1, COLORMAIN_T color)
+void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORMAIN_T color)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	window_t * win = get_win(check_for_parent_window());
 
 	const uint_fast16_t xp = x1 + win->draw_x1;
 	const uint_fast16_t yp = y1 + win->draw_y1;
