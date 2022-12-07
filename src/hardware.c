@@ -4651,7 +4651,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && ! WITHISBOOTLOADER
 
-	static RAMHEAP uint8_t heapplace [4 * 1024uL * 1024uL];
+	static RAMHEAP uint8_t heapplace [42 * 1024uL * 1024uL];
 
 #elif (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
 
@@ -4687,7 +4687,9 @@ char * __attribute__((used)) (_sbrk)(ptrdiff_t incr)
 
 	if ((heap + incr) > (char *) &__HeapLimit)
 	{
+		PRINTF(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
 		//errno = ENOMEM;
+		ASSERT(0);
 		return (char *) -1;
 	}
 
