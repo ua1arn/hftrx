@@ -88,9 +88,7 @@ DINCDIR += \
 	
 DINCDIR += \
 	$(CMSISDIR)/Core_A/Include \
-	$(CMSISDIR)/Core_A/Source \
-	$(RTOSXDIR)/Include \
-	$(RTOSXDIR)/RTX/Include
+	$(CMSISDIR)/Core_A/Source
 	
 DINCDIR += \
 	$(CMSISDSPDIR)/Include \
@@ -135,13 +133,8 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-# taken from
-# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
-rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
-
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
-#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 #SRCDIRS += $(DSP3DDIR)/src
 
 ifeq (1, 0)
@@ -153,6 +146,14 @@ DINCDIR += \
 	$(LWIPDIR)/src/apps/http
 endif
 
+ifeq (1, 1)
+# RTOS
+#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
+DINCDIR += \
+	$(RTOSXDIR)/Include \
+	$(RTOSXDIR)/RTX/Include
+endif
+
 ifeq (1, 0)
 # OPENVG
 SRCDIRS += $(OPENVGDIR)/src
@@ -160,6 +161,11 @@ DINCDIR += $(OPENVGDIR)/include/VG $(OPENVGDIR)/include $(OPENVGDIR)/include/EGL
 endif
 
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
+
+
+# taken from
+# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
+rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
