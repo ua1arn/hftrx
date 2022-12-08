@@ -16,8 +16,8 @@
 ##############################################################################################
 # Start of default section
 #
-TRGT = arm-none-eabi-
-#TRGT = C:\user\klen\bin\arm-kgp-eabi-
+TRGT2 = arm-none-eabi
+TRGT = $(TRGT2)-
 
 #UADEFS += -D"WITHSMPSYSTEM"
 

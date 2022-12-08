@@ -16,7 +16,8 @@
 ##############################################################################################
 # Start of default section
 #
-TRGT = riscv-none-elf-
+TRGT2 = riscv-none-elf-
+TRGT = $(TRGT2)-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
 XFEL = ../../tools/xfel-windows-v1.2.9/xfel
