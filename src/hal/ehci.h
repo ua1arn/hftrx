@@ -777,7 +777,7 @@ typedef struct
 //  uint8_t   toggle_out;         /*!< OUT transfer current toggle flag
 //                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
-  uint32_t  dma_addr;           /*!< 32 bits aligned transfer buffer address.                                   */
+  uintptr_t  dma_addr;           /*!< 32 bits aligned transfer buffer address.                                   */
 
   uint32_t  ErrCnt;             /*!< Host channel error count.                                                  */
 
