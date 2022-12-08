@@ -812,7 +812,6 @@ static void gui_main_process(void)
 			}
 			else if (bh == btn_2)
 			{
-#if WITHTOUCHGUI && WITHGUIDEBUG
 //				if (check_for_parent_window() != NO_PARENT_WINDOW)
 //				{
 //					close_window(OPEN_PARENT_WINDOW);
@@ -824,8 +823,6 @@ static void gui_main_process(void)
 //					open_window(win);
 //					footer_buttons_state(DISABLED, btn_2);
 //				}
-				gui_open_debug_window();
-#endif /* WITHTOUCHGUI && WITHGUIDEBUG */
 			}
 #if WITHFT8
 			else if (bh == btn_ft8)
@@ -1996,7 +1993,9 @@ static void window_utilites_process(void)
 		uint_fast16_t x = 0, y = 0;
 		uint_fast8_t interval = 6, row_count = 4;
 		win->first_call = 0;
-
+#if WITHGUIDEBUG
+		add_element("btn_debug",  100, 44, 0, 0, "Debug|view");
+#endif /* WITHGUIDEBUG */
 #if WITHTX
 		add_element("btn_SWRscan",  100, 44, 0, 0, "SWR|scanner");
 #endif /* WITHTX */
@@ -2028,6 +2027,11 @@ static void window_utilites_process(void)
 				y = y + bh->h + interval;
 			}
 		}
+
+#if WITHGUIDEBUG
+		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_debug");
+		bh->is_locked = tf_debug->visible != 0;
+#endif /* WITHGUIDEBUG */
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -2070,6 +2074,13 @@ static void window_utilites_process(void)
 				open_window(get_win(WINDOW_LFM));
 			}
 #endif /* WITHLFM  */
+#if WITHGUIDEBUG
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_debug"))
+			{
+				gui_open_debug_window();
+				close_all_windows();
+			}
+#endif /* WITHGUIDEBUG */
 		}
 		break;
 
@@ -2337,13 +2348,13 @@ static void window_tx_process(void)
 			button_t * const btn_tx_power = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_power");
 			button_t * const btn_tx_vox_settings = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox_settings");
 
-#if WITHPOWERTRIM
+#if WITHPOWERTRIM && WITHTX
 			if (bh == btn_tx_power)
 			{
 				open_window(winPower);
 				return;
 			}
-#endif /* WITHPOWERTRIM */
+#endif /* WITHPOWERTRIM  && WITHTX*/
 #if WITHVOX
 			if (bh == btn_tx_vox)
 			{
