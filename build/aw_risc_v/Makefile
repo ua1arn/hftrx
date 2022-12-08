@@ -97,17 +97,6 @@ DINCDIR += \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDSPDIR)/Source \
 	$(CMSISDSPDIR)/PrivateInclude
-	
-DINCDIR += \
-	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/apps/http
-	
-DINCDIR += \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -151,11 +140,25 @@ ULIBS +=
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 SRCDIRS += $(PRJROOT)/src
+SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 #SRCDIRS += $(DSP3DDIR)/src
-#SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
-#SRCDIRS += $(OPENVGDIR)/src
-SRCDIRS += $(ARCHDIR)
+
+ifeq (1, 0)
+# LWIP
+SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+DINCDIR += \
+	$(LWIPDIR)/src/include \
+	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/src/apps/http
+endif
+
+ifeq (1, 0)
+# OPENVG
+SRCDIRS += $(OPENVGDIR)/src
+DINCDIR += $(OPENVGDIR)/include/VG $(OPENVGDIR)/include $(OPENVGDIR)/include/EGL $(OPENVGDIR)/src
+endif
+
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
