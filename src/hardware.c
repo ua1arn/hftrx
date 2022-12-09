@@ -2433,7 +2433,7 @@ void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(register uintptr_t base, int_fast32_t dsize)
+void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
