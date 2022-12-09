@@ -2422,7 +2422,9 @@ void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 		register uintptr_t baseval asm("x10") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
-			__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
+		{
+			__asm__ __volatile__(".long 0x0265000b"); /* dcache.iva a0 */
+		}
 		__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
 	}
 }
@@ -2435,7 +2437,9 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 		register uintptr_t baseval asm("x10") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
-			__asm__ __volatile__(".long 0x0285000b");	/* dcache.cpa a0 */
+		{
+			__asm__ __volatile__(".long 0x0245000b"); /* dcache.cva a0 */
+		}
 		__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
 	}
 }
@@ -2449,7 +2453,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(".long 0x02b5000b");	/* dcache.cipa a0 */
+			__asm__ __volatile__(".long 0x0275000b"); /* dcache.civa a0 */
 		}
 		__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
 	}
