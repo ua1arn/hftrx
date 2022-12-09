@@ -3573,15 +3573,15 @@ sysinit_cache_initialize(void)
 //	csr_clr_bits_mcor(0x0033);
 //	csr_set_bits_mcor(0x0012);
 //
-//	// enable D-cache Write-allocate (C906-specific)
-//	//csr_set_bits_mhcr((uint_xlen_t) 1u << 2);	// WA
+	// enable D-cache Write-allocate (C906-specific)
+//	csr_set_bits_mhcr((uint_xlen_t) 1u << 2);	// WA
 //	// enable D-cache Write-back (C906-specific)
 //	csr_set_bits_mhcr((uint_xlen_t) 1u << 3);	// WB
 //	// enable D-cache (C906-specific)
 //	csr_set_bits_mhcr((uint_xlen_t) 1u << 1);	// DE
 //
-	// Disable D-cache (C906-specific)
-	//csr_clr_bits_mhcr((uint_xlen_t) 1u << 1);	// DE
+//	// Disable D-cache (C906-specific)
+//	csr_clr_bits_mhcr((uint_xlen_t) 1u << 1);	// DE
 	// 0x0108:
 //	PRINTF("MHCR=%08X\n", (unsigned) csr_read_mhcr());
 
