@@ -16,7 +16,7 @@
 ##############################################################################################
 # Start of default section
 #
-TRGT2 = riscv-none-elf-
+TRGT2 = riscv-none-elf
 TRGT = $(TRGT2)-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
