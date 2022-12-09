@@ -2420,29 +2420,32 @@ void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
-		register uintptr_t baseval asm("x10") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
-
-		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
+		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
+		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(".long 0x0265000b\n":::"memory"); /* dcache.iva a0 */
+			__asm__ __volatile__(
+					"\t" "mv a0,%0\n"
+					"\t" ".4byte 0x0265000b\n" /* dcache.iva a0 */
+					:: "r"(base):"a0");
 		}
-		__asm__ __volatile__(".long 0x01b0000b\n":::"memory");		/* sync.is */
+		__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
+void arm_hardware_flush(register uintptr_t base, int_fast32_t dsize)
 {
-	__asm__ __volatile__(".long 0x0010000b\n":::"memory"); /* dcache.call */
 	if (dsize > 0)
 	{
-		register uintptr_t baseval asm("x10") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
-
-		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
+		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
+		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(".long 0x0245000b\n":::"memory"); /* dcache.cva a0 */
+			__asm__ __volatile__(
+					"\t" "mv a0,%0\n"
+					"\t" ".4byte 0x0245000b\n" /* dcache.cva a0 */
+					:: "r"(base):"a0");
 		}
-		__asm__ __volatile__(".long 0x01b0000b\n":::"memory");		/* sync.is */
+		__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2451,13 +2454,15 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
-		register uintptr_t baseval asm("x10") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
-
-		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
+		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
+		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(".long 0x0275000b\n":::"memory"); /* dcache.civa a0 */
+			__asm__ __volatile__(
+					"\t" "mv a0,%0\n"
+					"\t" ".4byte 0x0275000b\n" /* dcache.civa a0 */
+					:: "r"(base):"a0");
 		}
-		__asm__ __volatile__(".long 0x01b0000b\n":::"memory");		/* sync.is */
+		__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2465,7 +2470,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 // применяется после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
 {
-	__asm__ __volatile__(".long 0x0010000b\n":::"memory"); /* dcache.call */
+	__asm__ __volatile__(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
 }
 
 #else
