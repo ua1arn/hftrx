@@ -1271,7 +1271,7 @@ HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
   *           0 : do ping inactive / 1 : do ping active
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
+static HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
                                            uint8_t ch_num,
                                            uint8_t direction,
                                            uint8_t ep_type,
