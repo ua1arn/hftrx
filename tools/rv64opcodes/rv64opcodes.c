@@ -6,7 +6,7 @@ static void opcode1(unsigned p1, unsigned p2, unsigned rs, unsigned p4, unsigned
 	unsigned result =
 		((p1 & 0x7F) << 25) |	/* 31..25 */
 		((p2 & 0x1F) << 20) |	/* 24..20 */
-		//((rs & 0x1F) << 15) |	/* 19..15 */
+		((rs & 0x1F) << 15) |	/* 19..15 */
 		((p4 & 0x07) << 12) |	/* 14..12 */
 		((p5 & 0x1F) << 7) |	/* 11..7 */
 		((p6 & 0x7F) << 0) |	/* 6..0 */
