@@ -2415,7 +2415,6 @@ void cache_inv_range(uintptr_t start, uintptr_t stop)
 //
 
 // Сейчас в эту память будем читать по DMA
-
 void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
