@@ -402,7 +402,6 @@ static void EHCI_StopAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 	(void) EHCIx->USBCMD;
 	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
 		;
-
 }
 
 static void EHCI_StartAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
@@ -633,7 +632,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			ASSERT(hc->ehci_urb_state == URB_IDLE);
 //			if (/*hc->ch_num >= ARRAY_SIZE(hehci->hc) || */ hc->ch_num != ch_num)
 //				continue;
-			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
+			const volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
 			const uint_fast8_t status = qtd->status;
 			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
 			unsigned pktcnt = hc->xfer_len - len;
