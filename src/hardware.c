@@ -2403,13 +2403,23 @@ void cache_inv_range(uintptr_t start, uintptr_t stop)
 //	 | 31 - 25 | 24 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
 //	   0000000    11001     00000      000      00000  0001011
 
+
+//__asm__ __volatile__(".long 0x0245000b"); /* dcache.cva a0 */
+//__asm__ __volatile__(".long 0x0285000b"); /* dcache.cpa a0 */
+//__asm__ __volatile__(".long 0x0265000b"); /* dcache.iva a0 */
+//__asm__ __volatile__(".long 0x02a5000b"); /* dcache.ipa a0 */
+//__asm__ __volatile__(".long 0x0275000b"); /* dcache.civa a0 */
+//__asm__ __volatile__(".long 0x02b5000b"); /* dcache.cipa a0 */
+//__asm__ __volatile__(".long 0x0010000b"); /* dcache.call */
+//
+
 // Сейчас в эту память будем читать по DMA
 
 void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
-		register uintptr_t baseval asm("a0") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
+		register uintptr_t baseval asm("x10") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
 			__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
@@ -2422,10 +2432,10 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
-		register uintptr_t baseval asm("a0") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
+		register uintptr_t baseval asm("x10") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
-			__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
+			__asm__ __volatile__(".long 0x0285000b");	/* dcache.cpa a0 */
 		__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
 	}
 }
@@ -2435,12 +2445,10 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
-		register uintptr_t baseval asm("a0") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
+		register uintptr_t baseval asm("x10") = base & ~ (uintptr_t) (DCACHEROWSIZE - 1);
 
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, baseval += DCACHEROWSIZE)
 		{
-			//__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
-			//__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
 			__asm__ __volatile__(".long 0x02b5000b");	/* dcache.cipa a0 */
 		}
 		__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
@@ -2451,8 +2459,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 // применяется после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
 {
-	//arm_hardware_invalidate(DRAM_SPACE_BASE, DRAM_SPACE_SIZE);
-	asm volatile ("fence w,w" ::: "memory");
+	__asm__ __volatile__(".long 0x0010000b"); /* dcache.call */
 }
 
 #else
