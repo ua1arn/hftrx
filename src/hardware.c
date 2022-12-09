@@ -2382,36 +2382,14 @@ void cache_inv_range(uintptr_t start, uintptr_t stop)
 
 #endif
 
-//
-//	Here are the DMA sync ops needed by Allwinner D1. RISC-V CMO
-//	extension is still in progress, and D1 is using custom CMO
-//	instructions:
-//
-//	 dcache.ipa rs1 (invalidate)
-//	 | 31 - 25 | 24 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
-//	   0000001    01010      rs1       000      00000  0001011
-//
-//	 dcache.cpa rs1 (clean)
-//	 | 31 - 25 | 24 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
-//	   0000001    01001      rs1       000      00000  0001011
-//
-//	 dcache.cipa rs1 (clean then invalidate)
-//	 | 31 - 25 | 24 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
-//	   0000001    01011      rs1       000      00000  0001011
-//
-//	 sync.s (completion barrier)
-//	 | 31 - 25 | 24 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
-//	   0000000    11001     00000      000      00000  0001011
-
-
-//	__asm__ __volatile__(".long 0x0245000b\n":::"memory"); /* dcache.cva a0 */
-//	__asm__ __volatile__(".long 0x0285000b\n":::"memory"); /* dcache.cpa a0 */
-//	__asm__ __volatile__(".long 0x0265000b\n":::"memory"); /* dcache.iva a0 */
-//	__asm__ __volatile__(".long 0x02a5000b\n":::"memory"); /* dcache.ipa a0 */
-//	__asm__ __volatile__(".long 0x0275000b\n":::"memory"); /* dcache.civa a0 */
-//	__asm__ __volatile__(".long 0x02b5000b\n":::"memory"); /* dcache.cipa a0 */
-//	__asm__ __volatile__(".long 0x0010000b\n":::"memory"); /* dcache.call */
-//	__asm__ __volatile__(".long 0x0190000b\n":::"memory"); /* sync.s */
+//	__asm__ __volatile__(".4byte 0x0245000b\n":::"memory"); /* dcache.cva a0 */
+//	__asm__ __volatile__(".4byte 0x0285000b\n":::"memory"); /* dcache.cpa a0 */
+//	__asm__ __volatile__(".4byte 0x0265000b\n":::"memory"); /* dcache.iva a0 */
+//	__asm__ __volatile__(".4byte 0x02a5000b\n":::"memory"); /* dcache.ipa a0 */
+//	__asm__ __volatile__(".4byte 0x0275000b\n":::"memory"); /* dcache.civa a0 */
+//	__asm__ __volatile__(".4byte 0x02b5000b\n":::"memory"); /* dcache.cipa a0 */
+//	__asm__ __volatile__(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
+//	__asm__ __volatile__(".4byte 0x0190000b\n":::"memory"); /* sync.s */
 //
 
 // Сейчас в эту память будем читать по DMA
