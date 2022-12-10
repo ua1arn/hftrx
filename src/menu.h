@@ -453,9 +453,9 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* ! WITHFLATMENU */
 	// разрешено не только в случае наличия электронного ключа - требуется при переключении режимов CW/SSB
 	{
-		QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP10,
+		QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP1,
 		ITEM_VALUE,
-		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 100 Hz steps */
+		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
 		offsetof(struct nvmap, gcwpitch10),
 		nvramoffs0,
 		NULL,

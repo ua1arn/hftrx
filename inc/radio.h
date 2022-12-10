@@ -30,8 +30,6 @@ extern "C" {
 typedef uint_least64_t ftw_t;	/* тип, подходящий по размерам для хранения промежуточных результатов вычислений */
 typedef uint_least64_t phase_t;
 
-#define CWPITCHSCALE 10
-
 #if WITHBBOX && defined (WITHBBOXFREQ)
 	#define DEFAULTDIALFREQ	WITHBBOXFREQ
 #elif ! defined (DEFAULTDIALFREQ)
@@ -133,8 +131,9 @@ typedef uint_least64_t phase_t;
 	#define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 #endif /* WITHIF4DSP */
 
-#define CWPITCHMIN10	(100 / 10) // (400 / 10) kenwood min value 400 Hz
-#define CWPITCHMAX10	(1900 / 10)
+#define CWPITCHSCALE 	10
+#define CWPITCHMIN10	(100 / CWPITCHSCALE) // (400 / 10) kenwood min value 400 Hz
+#define CWPITCHMAX10	(1900 / CWPITCHSCALE)
 
 #if LO3_SIDE == LOCODE_INVALID
 	//#error PBT can be used only with triple conversion schemes
@@ -327,7 +326,7 @@ getif3byedge(
 	uint_fast8_t mode,			/* код семейства режима работы */
 	uint_fast8_t mix4lsb,		/* формируем гетеродин для указанной боковой полосы */
 	uint_fast8_t tx,			/* для режима передачи - врежиме CW - смещения частоты не требуется. */
-	uint_fast8_t gcwpitch10
+	uint_fast8_t cwpitch10
 	);
 
 int_fast32_t

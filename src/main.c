@@ -14789,6 +14789,7 @@ static void ptanswer(uint_fast8_t arg)
 
 	cat_answer(len);
 }
+
 // information request
 // Reads status of the transceiver.
 static void ifanswer(uint_fast8_t arg)
