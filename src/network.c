@@ -38,9 +38,9 @@
 #include "board.h"
 #include "xc7z_inc.h"
 
-#if defined WITHPS7BOARD_EBAZ4205
+#if WITHPS7BOARD_EBAZ4205 || WITHPS7BOARD_EBAZ_7020
 	unsigned char mac_ethernet_address[] = { 0x00, 0x0a, 0x35, 0x00, 0x01, 0x02 }; // 192.168.0.120
-#elif defined WITHPS7BOARD_MYC_Y7Z020
+#elif WITHPS7BOARD_MYC_Y7Z020
 	unsigned char mac_ethernet_address[] = { 0x00, 0x0a, 0x35, 0x00, 0x01, 0x03 }; // 192.168.0.121
 #endif
 

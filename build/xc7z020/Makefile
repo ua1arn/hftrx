@@ -65,8 +65,8 @@ DADEFS = -D__ASSEMBLY__=1
 
 ARCHDIR = $(PRJROOT)/arch/zynq
 
-ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_myir
-#ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
+#ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_myir
+ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
 #ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
 # full qualified name
@@ -255,18 +255,24 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: bitstreams $(PROJECT)_app_xyl32.bin
 	-sh -c "cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin"
 
-bitstreams: bitstream_ant_20.h bitstream_myir7020.h 
+bitstreams: bitstream_ant_20.h bitstream_myir7020.h bitstream_ebaz7020.h   
 
 bitstream_ant_20.h: bitstream_ant_20.bit
 	./bit2c bitstream_ant_20.bit bitstream_ant_20.h
 
 bitstream_myir7020.h: bitstream_myir7020.bit
-	./bit2c  bitstream_myir7020.bit bitstream_myir7020.h
+	./bit2c  bitstream_myir7020.bit bitstream_myir7020.h 
+  
+bitstream_ebaz7020.h: bitstream_ebaz7020.bit
+	./bit2c  bitstream_ebaz7020.bit bitstream_ebaz7020.h
 	
 bootloader: bitstreams BOOT2
   
-app_run: $(PROJECT)_app.elf bitstream_myir7020.bit app_run_myir7020.tcl
-	xsct.bat app_run_myir7020.tcl 
+#app_run: $(PROJECT)_app.elf bitstream_myir7020.bit app_run_myir7020.tcl
+#	xsct.bat app_run_myir7020.tcl 
+  
+app_run: $(PROJECT)_app.elf bitstream_ebaz7020.bit app_run_ebaz7020.tcl
+	xsct.bat app_run_ebaz7020.tcl
 
 lib: $(ZYNQLIB)
 
