@@ -24,6 +24,7 @@
 
 // Sources taker from:
 //	https://raw.githubusercontent.com/szemzoa/awboot/main/arch/arm32/mach-t113s3/mctl_hal.c
+//	https://github.com/szemzoa/awboot/blob/main/arch/arm32/mach-t113s3/mctl_hal.c
 
 // SPDX-License-Identifier: GPL-2.0+
 
