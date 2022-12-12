@@ -26,6 +26,9 @@
 //	https://raw.githubusercontent.com/szemzoa/awboot/main/arch/arm32/mach-t113s3/mctl_hal.c
 //	https://github.com/szemzoa/awboot/blob/main/arch/arm32/mach-t113s3/mctl_hal.c
 
+#define SDRAM_BASE 0x40000000
+typedef uintptr_t virtual_addr_t;
+
 // SPDX-License-Identifier: GPL-2.0+
 
 //#include <inttypes.h>
@@ -46,8 +49,6 @@ static void sdelay(unsigned us)
 {
 	local_delay_us(us * 2);
 }
-
-typedef uintptr_t virtual_addr_t;
 
 static unsigned read32(uintptr_t addr)
 {
@@ -236,19 +237,12 @@ void eye_delay_compensation(dram_para_t *para) // s1
 	write32(0x3103280, val);
 }
 
-
-static int auto_cal_timing(unsigned int time, unsigned int freq)
+int auto_cal_timing(unsigned int time, unsigned int freq)
 {
 	unsigned int t = time * freq;
 	div_t d = div(t, 1000);
 	return d.quot + ((d.rem != 0) ? 1 : 0);
 }
-
-//int auto_cal_timing(unsigned int time, unsigned int freq)
-//{
-//	unsigned int t = time * freq;
-//	return div(t, 1000) + (((mod(t, 1000)) != 0) ? 1 : 0);
-//}
 
 // Main purpose of the auto_set_timing routine seems to be to calculate all
 // timing settings for the specific type of sdram used. Read together with
@@ -1275,15 +1269,14 @@ int dqs_gate_detect(dram_para_t *para)
 	return 1;
 }
 
-#define SDRAM_BASE ((uint32_t *)0x40000000)
-#define uint	   uint32_t
+#define uint unsigned int
 
 int dramc_simple_wr_test(uint mem_mb, int len)
 {
 	unsigned int  offs	= (mem_mb >> 1) << 18; // half of memory size
-	uint32_t  patt1 = 0x01234567;
-	uint32_t  patt2 = 0xfedcba98;
-	uint32_t *addr, v1, v2, i;
+	unsigned int  patt1 = 0x01234567;
+	unsigned int  patt2 = 0xfedcba98;
+	unsigned int *addr, v1, v2, i;
 
 	addr = (unsigned int *)SDRAM_BASE;
 	for (i = 0; i != len; i++, addr++) {
@@ -1297,7 +1290,7 @@ int dramc_simple_wr_test(uint mem_mb, int len)
 		v2 = patt1 + i;
 		if (v1 != v2) {
 			PRINTF("DRAM simple test FAIL.\n");
-			PRINTF("%x != %x at address %p\n", v1, v2, addr + i);
+			PRINTF("%x != %x at address %x\n", v1, v2, addr + i);
 			return 1;
 		}
 		v1 = read32((virtual_addr_t)(addr + offs + i));
@@ -1362,8 +1355,7 @@ int mctl_core_init(dram_para_t *para)
 int auto_scan_dram_size(dram_para_t *para) // s7
 {
 	unsigned int rval, i, j, rank, maxrank, offs, mc_work_mode;
-	unsigned int shft;
-	void * ptr, * chk;
+	unsigned int chk, ptr, shft;
 
 	if (mctl_core_init(para) == 0) {
 		PRINTF("[ERROR DEBUG] DRAM initialisation error : 0!\n");
@@ -1376,7 +1368,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 	// write test pattern
 	for (i = 0, ptr = SDRAM_BASE; i < 64; i++, ptr += 4) {
-		write32ptr(ptr, (i & 1) ? (uintptr_t) ptr : ~(uintptr_t) ptr);
+		write32(ptr, (i & 1) ? ptr : ~ptr);
 	}
 
 	for (rank = 0; rank < maxrank;) {
@@ -1394,7 +1386,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 			chk = SDRAM_BASE + (1 << (i + 11));
 			ptr = SDRAM_BASE;
 			for (j = 0; j < 64; j++) {
-				if (read32ptr(chk) != (uint32_t) (((j & 1) ? (uintptr_t) ptr : ~ (uintptr_t)  ptr)))
+				if (read32(chk) != ((j & 1) ? ptr : ~ptr))
 					goto out1;
 				ptr += 4;
 				chk += 4;
@@ -1433,7 +1425,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 		chk = SDRAM_BASE + (1 << 22);
 		ptr = SDRAM_BASE;
 		for (i = 0, j = 0; i < 64; i++) {
-			if (read32ptr(chk) != (uint32_t) (((i & 1) ? (uintptr_t)ptr : ~(uintptr_t)ptr))) {
+			if (read32(chk) != ((i & 1) ? ptr : ~ptr)) {
 				j = 1;
 				break;
 			}
@@ -1471,7 +1463,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 			chk = SDRAM_BASE + (1 << i);
 			ptr = SDRAM_BASE;
 			for (j = 0; j < 64; j++) {
-				if (read32ptr(chk) != ((j & 1) ? (uintptr_t) ptr : ~(uintptr_t) ptr))
+				if (read32(chk) != ((j & 1) ? ptr : ~ptr))
 					goto out2;
 				ptr += 4;
 				chk += 4;
@@ -1646,7 +1638,7 @@ int init_DRAM(int type, dram_para_t *para) // s0
 #if 0
 	// Purpose ??
 	if (para->dram_tpr13 & (1 << 30)) {
-		rc = read32(para->dram_tpr8);
+		rc = read32(&para->dram_tpr8);
 		if (rc == 0) {
 			rc = 0x10000200;
 		}
