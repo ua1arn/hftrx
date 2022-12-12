@@ -65,7 +65,8 @@ DADEFS = -D__ASSEMBLY__=1
 
 ARCHDIR = $(PRJROOT)/arch/zynq
 
-ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020
+ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_myir
+#ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
 #ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
 # full qualified name

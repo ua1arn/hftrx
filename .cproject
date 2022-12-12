@@ -3604,7 +3604,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/lib/zynq/src_7020}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/lib/zynq/src_7020_ebaz}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/lib/zynq/src_7020_myir}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1548325087" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -3631,7 +3632,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/lib/zynq/src_7020}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/lib/zynq/src_7020_ebaz}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/lib/zynq/src_7020_myir}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1607594533" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -3651,7 +3653,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/lib/zynq/src_7020}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/lib/zynq/src_7020_ebaz}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/lib/zynq/src_7020_myir}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1182213164" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>

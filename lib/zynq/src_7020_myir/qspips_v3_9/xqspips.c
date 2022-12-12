@@ -307,7 +307,7 @@ void XQspiPs_Abort(XQspiPs *InstancePtr)
 	 */
 	IsLock = XQspiPs_ReadReg(XPAR_XSLCR_0_BASEADDR, SLCR_LOCKSTA);
 	if (IsLock) {
-		XQspiPs_WriteReg(XPAR_XSLCR_0_BASEADDR, SLCR_UNLOCK,
+		XQspiPs_WriteReg(XPAR_XSLCR_0_BASEADDR, SLCR_UNLOCK_VAL,
 				SLCR_UNLOCK_MASK);
 	}
 	XQspiPs_WriteReg(XPAR_XSLCR_0_BASEADDR, LQSPI_RST_CTRL,

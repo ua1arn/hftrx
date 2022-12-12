@@ -18,20 +18,37 @@
 	#include "lib/zynq/src_7010/vtc_v8_3/xvtc.h"
 	#include "lib/zynq/src_7010/xadcps_v2_6/xadcps.h"
 	#include "lib/zynq/src_7010/dmaps_v2_8/xdmaps.h"
-#elif defined(XC7Z020)
+#elif defined(XC7Z020) && WITHPS7BOARD_MYC_Y7Z020			// MYC-Y7Z020-4E512D-766-I
 	#if WITHTX || WITHDSPEXTFIR
-		#include "lib/zynq/src_7020/axidma_v9_13/xaxidma.h"
+		#include "lib/zynq/src_7020_myir/axidma_v9_13/xaxidma.h"
 	#endif /* WITHTX || WITHDSPEXTFIR */
 	#if WITHETHHW
-		#include "lib/zynq/src_7020/emacps_v3_14/xemacps.h"
+		#include "lib/zynq/src_7020_myir/emacps_v3_14/xemacps.h"
 	#endif /* WITHETHHW */
-	#include "lib/zynq/src_7020/axivdma_v6_9/xaxivdma.h"
-	#include "lib/zynq/src_7020/gpiops_v3_9/xgpiops.h"
-	#include "lib/zynq/src_7020/iicps_v3_13/xiicps.h"
-	#include "lib/zynq/src_7020/llfifo_v5_5/xllfifo.h"
-	#include "lib/zynq/src_7020/vtc_v8_3/xvtc.h"
-	#include "lib/zynq/src_7020/xadcps_v2_6/xadcps.h"
-	#include "lib/zynq/src_7020/dmaps_v2_8/xdmaps.h"
+	#if WIHSPIDFHW
+		#include "lib\zynq\src_7020_myir\qspips_v3_9\xqspips.h"
+	#endif /* WIHSPIDFHW */
+	#include "lib/zynq/src_7020_myir/axivdma_v6_9/xaxivdma.h"
+	#include "lib/zynq/src_7020_myir/gpiops_v3_9/xgpiops.h"
+	#include "lib/zynq/src_7020_myir/iicps_v3_13/xiicps.h"
+	#include "lib/zynq/src_7020_myir/llfifo_v5_5/xllfifo.h"
+	#include "lib/zynq/src_7020_myir/vtc_v8_3/xvtc.h"
+	#include "lib/zynq/src_7020_myir/xadcps_v2_6/xadcps.h"
+	#include "lib/zynq/src_7020_myir/dmaps_v2_8/xdmaps.h"
+#elif defined(XC7Z020) && WITHPS7BOARD_EBAZ_7020			// EBAZ4205 with xc7z020
+	#if WITHTX || WITHDSPEXTFIR
+		#include "lib/zynq/src_7020_ebaz/axidma_v9_13/xaxidma.h"
+	#endif /* WITHTX || WITHDSPEXTFIR */
+	#if WITHETHHW
+		#include "lib/zynq/src_7020_ebaz/emacps_v3_14/xemacps.h"
+	#endif /* WITHETHHW */
+	#include "lib/zynq/src_7020_ebaz/axivdma_v6_9/xaxivdma.h"
+	#include "lib/zynq/src_7020_ebaz/gpiops_v3_9/xgpiops.h"
+	#include "lib/zynq/src_7020_ebaz/iicps_v3_13/xiicps.h"
+	#include "lib/zynq/src_7020_ebaz/llfifo_v5_5/xllfifo.h"
+	#include "lib/zynq/src_7020_ebaz/vtc_v8_3/xvtc.h"
+	#include "lib/zynq/src_7020_ebaz/xadcps_v2_6/xadcps.h"
+	#include "lib/zynq/src_7020_ebaz/dmaps_v2_8/xdmaps.h"
 #endif /*  */
 
 #endif /* (CPUSTYLE_XC7Z) */
