@@ -1355,6 +1355,7 @@ void EMPTY_Handler(void)
 void SYNCTRAP_Handler(void)
 {
 	PRINTF("SYNCTRAP_Handler\n");
+	PRINTF("pc=%p\n", (void *) csr_read_mepc());
 	const uint_xlen_t mcause = csr_read_mcause();
 	switch (mcause & 0xFFF)
 	{
