@@ -2543,7 +2543,7 @@ static USB_RETVAL usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 		}
 	}
 
-#if WITHUSBUACIN2 && 0
+#if WITHUSBUACIN2
 	{
 		if (uacinrtsaddr)
 		{
@@ -2556,7 +2556,7 @@ static USB_RETVAL usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 				global_disableIRQ();
 				release_dmabufferxrts(uacinrtsaddr);
 				global_enableIRQ();
-				uacinaddr = 0;
+				uacinrtsaddr = 0;
 			}
 		}
 	}
@@ -3203,7 +3203,7 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 		}
 	}
 
-#if WITHUSBUACIN2 && 0
+#if WITHUSBUACIN2
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 		const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
@@ -3226,7 +3226,7 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 				global_disableIRQ();
 				release_dmabufferxrts(uacinrtsaddr);
 				global_enableIRQ();
-				uacinaddr = 0;
+				uacinrtsaddr = 0;
 			}
 		}
 	}
