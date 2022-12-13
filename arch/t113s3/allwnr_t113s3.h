@@ -271,6 +271,7 @@ typedef enum IRQn
 
 // DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 		0x40000000			/*!< (DRAM        ) Base Address - 2GB */
+#define DRAM_SPACE_SIZE			0x08000000			/* 128 MB */
 
 #define G2D_TOP_BASE        (0x00000 + G2D_BASE)
 #define G2D_MIXER_BASE      (0x00100 + G2D_BASE)

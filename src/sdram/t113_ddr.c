@@ -26,7 +26,6 @@
 //	https://raw.githubusercontent.com/szemzoa/awboot/main/arch/arm32/mach-t113s3/mctl_hal.c
 //	https://github.com/szemzoa/awboot/blob/main/arch/arm32/mach-t113s3/mctl_hal.c
 
-#define SDRAM_BASE 0x40000000
 typedef uintptr_t virtual_addr_t;
 
 // SPDX-License-Identifier: GPL-2.0+
@@ -1259,9 +1258,7 @@ int dqs_gate_detect(dram_para_t *para)
 	return 1;
 }
 
-#define uint unsigned int
-
-int dramc_simple_wr_test(uint mem_mb, int len)
+int dramc_simple_wr_test(unsigned int mem_mb, int len)
 {
 	unsigned int  offs	= (mem_mb >> 1) << 18; // half of memory size
 	const uint32_t  patt1 = 0x01234567;
@@ -1374,8 +1371,8 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 		// Scan per address line, until address wraps (i.e. see shadow)
 		for (i = 11; i < 17; i++) {
-			chk = SDRAM_BASE + (1 << (i + 11));
-			ptr = SDRAM_BASE;
+			chk = DRAM_SPACE_BASE + (1 << (i + 11));
+			ptr = DRAM_SPACE_BASE;
 			for (j = 0; j < 64; j++) {
 				if (read32(chk) != ((j & 1) ? ptr : ~ptr))
 					goto out1;
@@ -1413,8 +1410,8 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 			;
 
 		// Test if bit A23 is BA2 or mirror XXX A22?
-		chk = SDRAM_BASE + (1 << 22);
-		ptr = SDRAM_BASE;
+		chk = DRAM_SPACE_BASE + (1 << 22);
+		ptr = DRAM_SPACE_BASE;
 		for (i = 0, j = 0; i < 64; i++) {
 			if (read32(chk) != ((i & 1) ? ptr : ~ptr)) {
 				j = 1;
@@ -1451,8 +1448,8 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 		// Scan per address line, until address wraps (i.e. see shadow)
 		for (i = 9; i < 14; i++) {
-			chk = SDRAM_BASE + (1 << i);
-			ptr = SDRAM_BASE;
+			chk = DRAM_SPACE_BASE + (1 << i);
+			ptr = DRAM_SPACE_BASE;
 			for (j = 0; j < 64; j++) {
 				if (read32(chk) != ((j & 1) ? ptr : ~ptr))
 					goto out2;
