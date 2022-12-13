@@ -3188,7 +3188,6 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 
 #if WITHUSBUACIN2
 	{
-		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 		const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
 
 		if (uacinrtsaddr != 0)
@@ -3203,6 +3202,8 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 		global_enableIRQ();
 		if (uacinrtsaddr)
 		{
+			USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+
 			ret = epx_in_handler_dev_iso(pusb, bo_ep_rts_in, uacinrtsaddr, uacinrtssize, USB_PRTCL_ISO);
 			if (ret == USB_RETVAL_COMPOK)
 			{
