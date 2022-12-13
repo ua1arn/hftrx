@@ -1726,8 +1726,8 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 
 #if WITHUSBDMSC
 
-static uint32_t write_len;
-static uint32_t write_offset;
+static uint64_t write_len;
+static uint64_t write_offset;
 
 static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct pusb)
 {
@@ -1882,29 +1882,21 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		break;
 	case 0x28: //Read(10)  write to host
 	{
-		uint32_t read_len = 0;
-		uint32_t read_offset = 0;
+		uint32_t read_len;
+		uint32_t read_offset;
 		int32_t part_start;
-		read_len = pCBW->CBWCB [7];
-		read_len <<= 8;
-		read_len |= pCBW->CBWCB [8]; //���� read_len ��������
-		//read_len <<= USB_DEV_SEC_BITS;   //���� read_len ���ֽ���
-		read_offset = pCBW->CBWCB [2];
-		read_offset <<= 8;
-		read_offset |= pCBW->CBWCB [3];
-		read_offset <<= 8;
-		read_offset |= pCBW->CBWCB [4];
-		read_offset <<= 8;
-		read_offset |= pCBW->CBWCB [5]; //���� read_offset ��ƫ�Ƶ�����
-		//read_offset <<= USB_DEV_SEC_BITS;  //From Blocks to Bytes  //���� read_offset ��ƫ�Ƶ��ֽ���
+
+		read_len = USBD_peek_u16_BE(& pCBW->CBWCB [7]);
+		read_offset = USBD_peek_u32_BE(& pCBW->CBWCB [2]);
+
 		pdev->bo_xfer_addr = pdev->bo_memory_base;
 		//����flash����
 		part_start = wBoot_part_start(pCBW->bCBWLUN);
 		//PRINTF("part index = %d, start = %d\n", pCBW->bCBWLUN, part_start);
 		if (wBoot_block_read(read_offset + part_start, read_len, (void*) pdev->bo_memory_base) < 0)
 		{
-			PRINTF("part index = %d, start = %d, read_start = %d, len = %d\n", pCBW->bCBWLUN, part_start,
-					read_offset + part_start, read_len);
+			PRINTF("part index = %d, start = %d, read_start = %d, len = %d\n", pCBW->bCBWLUN, part_start, read_offset + part_start, read_len);
+
 			pCSW->dCSWSig = USB_CSW_SIG;
 			pCSW->dCSWDataRes = pCBW->dCBWDTL;
 			pCSW->bCSWStatus = 1;
@@ -1913,6 +1905,7 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 			pdev->bo_xfer_tranferred = 0;
 			epx_in_handler_dev(pusb, bo_ep_in, pdev->bo_xfer_addr, pdev->bo_xfer_residue, USB_PRTCL_BULK);
 			pdev->bo_state = USB_BO_CSW;
+
 			PRINTF("Error: Flash Read Fail\n");
 			break;
 		}
@@ -1949,18 +1942,12 @@ static USB_RETVAL parse_cbw(const pCBWPKG pCBW, const pCSWPKG pCSW, pusb_struct 
 		break;
 	case 0x2A: //Write(10)   read from host
 	{
-		write_len = pCBW->CBWCB [7];
-		write_len <<= 8;
-		write_len |= pCBW->CBWCB [8]; //���� write_len ��������
+		write_len = USBD_peek_u16_BE(& pCBW->CBWCB [7]);
+		write_offset = USBD_peek_u32_BE(& pCBW->CBWCB [2]);
+
 		write_len <<= USB_DEV_SEC_BITS; //���� write_len ���ֽ���
-		write_offset = pCBW->CBWCB [2];
-		write_offset <<= 8;
-		write_offset |= pCBW->CBWCB [3];
-		write_offset <<= 8;
-		write_offset |= pCBW->CBWCB [4];
-		write_offset <<= 8;
-		write_offset |= pCBW->CBWCB [5]; //���� write_offset ��ƫ�Ƶ�����
 		write_offset <<= USB_DEV_SEC_BITS; //���� write_offset ��ƫ�Ƶ��ֽ���
+
 		pdev->bo_xfer_addr = pdev->bo_memory_base;
 		pdev->bo_xfer_residue = min(write_len, MAX_DDMA_SIZE);
 		pdev->bo_xfer_tranferred = 0;
