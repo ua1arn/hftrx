@@ -3524,8 +3524,9 @@ void usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 	awxx_setup_fifo(pusb);
 }
 
-static void usb_params_init(pusb_struct pusb)
+static void usb_params_init(PCD_HandleTypeDef *hpcd)
 {
+	usb_struct * const pusb = & hpcd->awxx_usb;
 	uint32_t i;
 
 	//usb_clock_init();
@@ -3559,11 +3560,9 @@ static void usb_params_init(pusb_struct pusb)
 
 }
 
-static void usb_irq_handler(pusb_struct pusb)
-{}
-
-void usb_struct_init(pusb_struct pusb)
+void usb_struct_init(PCD_HandleTypeDef *hpcd)
 {
+	usb_struct * const pusb = & hpcd->awxx_usb;
 	uint32_t i=0;
 
 	//pusb->sof_count = 0;
@@ -3616,12 +3615,14 @@ void usb_struct_init(pusb_struct pusb)
 *
 ************************************************************************************************************
 */
-void usb_init(pusb_struct pusb)
+void usb_init(PCD_HandleTypeDef *hpcd)
 {
+
+	usb_struct * const pusb = & hpcd->awxx_usb;
 	//uint32_t i=0;
 	//uint32_t temp;
 
-	usb_struct_init(pusb);
+	usb_struct_init(hpcd);
 
 	//usb_set_phytune(pusb);
 	//usb_drive_vbus(pusb, 0, pusb->index);
@@ -3656,14 +3657,6 @@ void usb_init(pusb_struct pusb)
 
 	return;
 }
-
-
-static void musb2_prepare(PCD_HandleTypeDef *hpcd)
-{
-	pusb_struct pusb = & hpcd->awxx_usb;
-	usb_params_init(pusb);
-}
-
 
 /**
   * @brief  Set a STALL condition over an endpoint
@@ -4109,7 +4102,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	    return HAL_ERROR;
 	  }
 
-	  musb2_prepare(hpcd);
+	  usb_params_init(hpcd);
 
 	  /* Check the parameters */
 	  //assert_param(IS_PCD_ALL_INSTANCE(hpcd->Instance));
@@ -4270,9 +4263,9 @@ HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd)
 //  __HAL_LOCK(hpcd);
 	pusb_struct pusb = & hpcd->awxx_usb;
 
-	usb_struct_init(pusb);
+	usb_struct_init(hpcd);
 
-	usb_init(pusb);
+	usb_init(hpcd);
 
 	USB_DevConnect (hpcd->Instance);
 //  __HAL_PCD_ENABLE(hpcd);
