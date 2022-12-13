@@ -2484,10 +2484,10 @@ static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
 
 #if WITHUSBUAC
 
-static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
+static USB_RETVAL usb_dev_iso_xfer_uac(pusb_struct pusb)
 {
 	const uint32_t ep_save = usb_get_active_ep(pusb);
-	const uint32_t bo_ep_in = (USBD_EP_AUDIO_IN & 0x0F);
+	//const uint32_t bo_ep_in = (USBD_EP_AUDIO_IN & 0x0F);
 	const uint32_t bo_ep_out = (USBD_EP_AUDIO_OUT & 0x0F);
 #if WITHUSBUACIN2
 	const uint32_t bo_ep_in_rts = (USBD_EP_RTS_IN & 0x0F);
@@ -2535,29 +2535,6 @@ static USB_RETVAL usb_dev_bulk_xfer_uac(pusb_struct pusb)
  		}
 	} while (0);
 
-	do
-	{
-		// Handle IN pipe (from device to host)
-	 	if (!pusb->eptx_flag[bo_ep_in-1])
-		{
-			break;
-		}
-		pusb->eptx_flag[bo_ep_in-1]--;
-
-	 	//TP();
-		//do
-		//{
-//		ret = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_ISO);
-//		ret = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_ISO);
-		//} while (ret == USB_RETVAL_NOTCOMP);
-//
-//		if (ret == USB_RETVAL_COMPERR)
-//		{
-//  			PRINTF("Error: TX UAC Error\n");
-//		}
-
-	} while (0);
-
 	usb_select_ep(pusb, ep_save);
 	return ret;
 }
@@ -2568,7 +2545,7 @@ static void usb_struct_idle_uac(pusb_struct pusb)
 //	pdev->bo_state = USB_BO_IDLE;
 }
 
-static void usb_dev_bulk_xfer_uac_initialize(pusb_struct pusb)
+static void usb_dev_iso_xfer_uac_initialize(pusb_struct pusb)
 {
 }
 
@@ -3212,7 +3189,7 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 #if WITHUSBUACIN2 && 0
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-		const uint32_t bo_ep_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
+		const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
 
 		if (uacinrtsaddr != 0)
 		{
@@ -3226,7 +3203,7 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 		global_enableIRQ();
 		if (uacinrtsaddr)
 		{
-			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinrtsaddr, uacinrtsaddr ? uacinrtssize : 0, USB_PRTCL_ISO);
+			ret = epx_in_handler_dev_iso(pusb, bo_ep_rts_in, uacinrtsaddr, uacinrtsaddr ? uacinrtssize : 0, USB_PRTCL_ISO);
 			if (ret == USB_RETVAL_COMPOK && uacinrtsaddr != 0)
 			{
 				global_disableIRQ();
@@ -3269,9 +3246,9 @@ static uint32_t usb_dev_sof_handler2(PCD_HandleTypeDef *hpcd)
 		if (uacinrtsaddr)
 		{
 			USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-			const uint32_t bo_ep_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
+			const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
 
-			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinrtsaddr, uacinrtsaddr ? uacinrtssize : 0, USB_PRTCL_ISO);
+			ret = epx_in_handler_dev_iso(pusb, bo_ep_rts_in, uacinrtsaddr, uacinrtsaddr ? uacinrtssize : 0, USB_PRTCL_ISO);
 			if (ret == USB_RETVAL_COMPOK && uacinrtsaddr != 0)
 			{
 				global_disableIRQ();
@@ -3531,7 +3508,7 @@ static uint32_t usb_device_function(PCD_HandleTypeDef *hpcd)
 	usb_dev_bulk_xfer_msc(pusb);
 #endif /* WITHUSBDMSC */
 #if WITHUSBUAC
-	usb_dev_bulk_xfer_uac(pusb);
+	usb_dev_iso_xfer_uac(pusb);
 #endif /* WITHUSBUAC */
 #if WITHUSBCDCACM
 	usb_dev_bulk_xfer_cdc(pusb, 0);
@@ -3585,7 +3562,7 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 	usb_dev_bulk_xfer_cdc_initialize(pusb);
 #endif /* WITHUSBCDCACM */
 #if WITHUSBUAC
-	usb_dev_bulk_xfer_uac_initialize(pusb);
+	usb_dev_iso_xfer_uac_initialize(pusb);
 #endif /* WITHUSBUAC */
 
 	//pusb->ep0_flag = 0;
