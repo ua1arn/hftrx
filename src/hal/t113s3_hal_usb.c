@@ -3768,9 +3768,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
-	//uint32_t index;
-	uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
-	uint32_t ep_save = usb_get_active_ep(pusb);
+	const uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
+	const uint32_t ep_save = usb_get_active_ep(pusb);
 
 	//sof interrupt
 
