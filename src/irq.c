@@ -1356,6 +1356,7 @@ void SYNCTRAP_Handler(void)
 {
 	PRINTF("SYNCTRAP_Handler\n");
 	PRINTF("pc=%p\n", (void *) csr_read_mepc());
+	PRINTF("mtval=%p\n", (void *) csr_read_mtval());
 	const uint_xlen_t mcause = csr_read_mcause();
 	switch (mcause & 0xFFF)
 	{
@@ -1403,29 +1404,15 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
 void VMEI_Handler(void)
 {
-	//const uint_xlen_t miev = csr_read_clr_bits_mie(MIE_MTI_BIT_MASK);	// MTI
-	const uint_xlen_t mcause = csr_read_mcause();
-	switch (mcause & 0xFFF)
+	const uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;
+	if (int_id != 0)
 	{
-	case 11: /* 11 Machine external interrupt */
-		{
-			uint_fast16_t int_id;
-			while ((int_id = PLIC->PLIC_MCLAIM_REG) != 0)
-			{
-				//PRINTF("VMEI_Handler: int_id=%u\n", (unsigned) int_id);
-				ASSERT(int_id < MAX_IRQ_n);
-				(plic_vectors [int_id])();
-				PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
-			}
-		}
-		break;
-	default:
-		PRINTF("VMEI_Handler: mcause=%u\n", (unsigned) mcause);
-		for (;;)
-			;
-		break;
+		//const uint32_t prio = PLIC->PLIC_MTH_REG;
+		ASSERT(int_id < MAX_IRQ_n);
+		(plic_vectors [int_id])();
+		//PLIC->PLIC_MTH_REG = prio;
+		PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
 	}
-	//csr_write_mie(miev);		/* restore old value */
 }
 
 void IRQ0_Handler(void)
