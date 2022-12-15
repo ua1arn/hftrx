@@ -1,0 +1,7 @@
+/*lcd_dis_system_top*/
+the_ROM_image:
+{
+[bootloader] fsbl_4205v2.elf
+bitstream_ebaz7020.bit
+tc1_xc7z020_app.elf
+}
