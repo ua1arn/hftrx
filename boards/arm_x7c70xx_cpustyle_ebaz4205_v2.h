@@ -13,7 +13,7 @@
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -210,8 +210,8 @@
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
 	void gt911_interrupt_handler(void);
-	#define BOARD_GT911_INT_PIN 	64
-	#define BOARD_GT911_RESET_PIN 	65
+	#define BOARD_GT911_INT_PIN 	46
+	#define BOARD_GT911_RESET_PIN 	39
 
 	#define BOARD_GT911_RESET_SET(v) do { if (v) xc7z_writepin(BOARD_GT911_RESET_PIN, 1); else xc7z_writepin(BOARD_GT911_RESET_PIN, 0);  } while (0)
 
@@ -225,16 +225,6 @@
 	} while (0)
 
 #endif
-
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102)
-
-	#define BOARD_ILI2102_INT_PIN 	64
-	#define BOARD_ILI2102_RESET_PIN 65
-
-	#define BOARD_ILI2102_RESET_SET(v) do { if (v) xc7z_writepin(BOARD_ILI2102_RESET_PIN, 1); else xc7z_writepin(BOARD_ILI2102_RESET_PIN, 0);  } while (0)
-	#define BOARD_ILI2102_INT_SET(v) do { if (v) xc7z_writepin(BOARD_ILI2102_INT_PIN, 1); else xc7z_writepin(BOARD_ILI2102_INT_PIN, 0); } while (0)
-
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102) */
 
 #if WITHCPUTEMPERATURE
 	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
@@ -299,8 +289,8 @@
 	// Выводы подключения енкодера #1
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_BITA		55
-	#define ENCODER2_BITB		54
+	#define ENCODER2_BITA		29
+	#define ENCODER2_BITB		28
 
 	#define ENCODER_INITIALIZE() \
 		do { \
@@ -699,17 +689,7 @@
 
 #if WITHKEYBOARD
 
-	#define TARGET_ENC2BTN_BIT_MIO 		56
-
-	#define ROW1_MIO	46
-	#define ROW2_MIO	18
-	#define ROW3_MIO	39
-	#define ROW4_MIO	16
-
-	#define COL1_MIO	49
-	#define COL2_MIO	47
-	#define COL3_MIO	50
-	#define COL4_MIO	48
+	#define TARGET_ENC2BTN_BIT_MIO 		38
 
 #if WITHENCODER2
 	#define TARGET_ENC2BTN_GET (xc7z_readpin(TARGET_ENC2BTN_BIT_MIO) == 0)
@@ -723,14 +703,6 @@
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 		xc7z_gpio_input(TARGET_ENC2BTN_BIT_MIO); \
-		xc7z_gpio_input(COL1_MIO);	\
-		xc7z_gpio_input(COL2_MIO);	\
-		xc7z_gpio_input(COL3_MIO);	\
-		xc7z_gpio_input(COL4_MIO);	\
-		xc7z_gpio_output(ROW1_MIO);	\
-		xc7z_gpio_output(ROW2_MIO);	\
-		xc7z_gpio_output(ROW3_MIO);	\
-		xc7z_gpio_output(ROW4_MIO);	\
 		} while (0)
 
 #else /* WITHKEYBOARD */

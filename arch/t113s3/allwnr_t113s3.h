@@ -209,6 +209,7 @@ typedef enum IRQn
 #define CE_KEY_SRAM_BASE    0x03041000	/* 4 KB (only CE access) */
 #define MSI_MEMC_BASE	    0x03102000	/* 2 MB MSI and MEMC base address */
 #define DDRPHYC_BASE	 	0x03103000
+#define MC_MEMC_BASE		0x03202000	/* MC */
 
 // SH2 (SYS domain)
 #define SMHC0_BASE      	0x04020000
@@ -270,6 +271,7 @@ typedef enum IRQn
 
 // DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 		0x40000000			/*!< (DRAM        ) Base Address - 2GB */
+#define DRAM_SPACE_SIZE			0x08000000			/* 128 MB */
 
 #define G2D_TOP_BASE        (0x00000 + G2D_BASE)
 #define G2D_MIXER_BASE      (0x00100 + G2D_BASE)
