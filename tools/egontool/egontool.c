@@ -9,8 +9,8 @@
 	#define ATTRPACKED __attribute__ ((packed))
 #else
 	#define ATTRPACKED
-typedef unsigned int uint32_t;
-typedef unsigned char uint8_t;
+	typedef unsigned int uint32_t;
+	typedef unsigned char uint8_t;
 
 #endif /* __GNUC__ */
 
