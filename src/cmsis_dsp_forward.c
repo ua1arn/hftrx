@@ -18,6 +18,7 @@
 	//#include "DistanceFunctions/DistanceFunctions.c"
 	#include "FastMathFunctions/FastMathFunctions.c"
 	#include "FilteringFunctions/FilteringFunctions.c"
+	#include "WindowFunctions/WindowFunctions.c"
 	//#include "InterpolationFunctions/InterpolationFunctions.c"
 	//#include "MatrixFunctions/MatrixFunctions.c"
 
