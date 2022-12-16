@@ -1945,7 +1945,7 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 
 #endif
 
-#if (__ARM_FP & 0x08) && 1
+//#if (__ARM_FP & 0x08) && 1
 
 // Calculate window function (blackman-harris, hamming, rectangular)
 static double fir_design_windowL(int iCnt, int iCoefNum, int wtype)
@@ -2079,7 +2079,7 @@ static void fir_design_lowpassL(double *dCoeff, int iCoefNum, double m_fCutHigh)
 		dCoeff [iHalfLen - iCnt] = k;
 	}
 }
-#endif
+//#endif
 
 ////////////////////////////////////////////////
 
@@ -2172,6 +2172,7 @@ static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int 
 }
 
 // подготовка буфера с оконной функцией
+// Учтываем симметрию.
 static void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -2181,9 +2182,10 @@ static void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum)
 		dWindow [iCnt] = fir_design_window(iCnt, iCoefNum, BOARD_WTYPE_FILTERS);
 	}
 }
-#if (__ARM_FP & 0x08) && 1
+//#if (__ARM_FP & 0x08) && 1
 
 // подготовка буфера с оконной функцией
+// Учтываем симметрию.
 static void fir_design_windowbuffL(double *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -2193,7 +2195,7 @@ static void fir_design_windowbuffL(double *dWindow, int iCoefNum)
 		dWindow [iCnt] = fir_design_windowL(iCnt, iCoefNum, BOARD_WTYPE_FILTERS);
 	}
 }
-#endif
+//#endif
 
 // Масштабирование для симметричного фильтра
 static void fir_design_scale(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dScale)
