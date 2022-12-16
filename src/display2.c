@@ -4376,6 +4376,8 @@ afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	}
 }
 
+#include "dsp/window_functions.h"
+
 static void
 display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)		// вызывать после display2_smeter15_init
 {
@@ -4389,12 +4391,8 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	gvars.afsp.is_ready = 0;
 
 	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast_init)(& gvars.afsp.rfft_instance, WITHFFTSIZEAF));
+	ARM_MORPH(arm_nuttall4b)(gvars.afspec_wndfn, WITHFFTSIZEAF);
 
-	int i;
-	for (i = 0; i < WITHFFTSIZEAF; ++ i)
-	{
-		gvars.afspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEAF, BOARD_WTYPE_SPECTRUM);
-	}
 #if 0 && CTLSTYLE_V3D
 	// делать так не стоит - afsp_save_sample функция работающая в user mode, из real time контекста её вызывать нельзя
 	// возможно нужен "переходник", выкачивающий из real time очереди для показа спектра
@@ -5619,6 +5617,8 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLOR
 			p, ALLDX, 1, x, y);
 }
 
+#include "dsp/window_functions.h"
+
 static void
 display2_wfl_init(
 	uint_fast8_t xgrid,
@@ -5627,11 +5627,7 @@ display2_wfl_init(
 	)
 {
 	static subscribeint32_t rtsregister;
-	int i;
-	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
-	{
-		gvars.ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
-	}
+    ARM_MORPH(arm_nuttall4b)(gvars.ifspec_wndfn, WITHFFTSIZEWIDE);
 	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
 	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
 	fftbuffer_initialize();
@@ -5650,14 +5646,17 @@ display2_wfl_init(
 	}
 #endif /* !  defined (COLORPIP_SHADED) */
 
-	/* массив значений для раскраски спектра */
-	for (i = 0; i < SPDY; ++ i)
 	{
-#if LCDMODE_MAIN_L8
-		gvars.color_scale [i] = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
-#else /* LCDMODE_MAIN_L8 */
-		gvars.color_scale [i] = wfpalette [normalize(i, 0, SPDY - 1, PALETTESIZE - 1)];
-#endif /* LCDMODE_MAIN_L8 */
+		int i;
+		/* массив значений для раскраски спектра */
+		for (i = 0; i < SPDY; ++ i)
+		{
+	#if LCDMODE_MAIN_L8
+			gvars.color_scale [i] = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
+	#else /* LCDMODE_MAIN_L8 */
+			gvars.color_scale [i] = wfpalette [normalize(i, 0, SPDY - 1, PALETTESIZE - 1)];
+	#endif /* LCDMODE_MAIN_L8 */
+		}
 	}
 
 	wflclear();	// Очистка водопада
