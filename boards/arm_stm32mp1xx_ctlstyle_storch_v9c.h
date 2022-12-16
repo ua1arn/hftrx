@@ -183,6 +183,8 @@
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
 		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
+		#define TUNE_BOTTOM	 	10000L		/* 10 kHz нижняя частота настройки */
+		#define TUNE_TOP 		56000000L		/* верхняя частота настройки */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
@@ -236,6 +238,7 @@
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
 	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB888, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
@@ -361,7 +364,7 @@
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
@@ -397,6 +400,7 @@
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
+	//#define WITHOVFHIDE 1	/* отключить показ индикатора перегрузки */
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
@@ -686,6 +690,8 @@
 
 	#if WITHAUTOTUNER_UA1CEI_V2
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
