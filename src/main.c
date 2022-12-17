@@ -13180,6 +13180,11 @@ typedef struct timeholder
 	uint_fast8_t secounds;
 	uint_fast8_t minutes;
 	uint_fast8_t hours;
+#if defined (RTC1_TYPE)
+	uint_fast8_t day;
+	uint_fast8_t month;
+	uint_fast8_t year;
+#endif /* defined (RTC1_TYPE) */
 	uint_fast8_t valid;
 } timeholder_t;
 
@@ -13234,6 +13239,7 @@ static char nmea_buff [NMEA_PARAMS] [NMEA_CHARS];
 static volatile timeholder_t nmea_time;
 static timeholder_t th;
 static volatile uint_fast8_t secoundticks;
+static uint_fast8_t rtc_nmea_updated = 0;
 
 static unsigned char hex2int(uint_fast8_t c)
 {
@@ -13308,6 +13314,12 @@ void nmea_parsechar(uint_fast8_t c)
 				nmea_time.minutes = (s [2] - '0') * 10 + (s [3] - '0');
 				nmea_time.secounds = (s [4] - '0') * 10 + (s [5] - '0');
 				nmea_time.ms = 0; //_strtoul_r(& treent, s + 7, NULL, 10);
+#if defined (RTC1_TYPE)
+				const char * const d = nmea_buff [9];
+				nmea_time.day = (d [0] - '0') * 10 + (d [1] - '0');
+				nmea_time.month = (d [2] - '0') * 10 + (d [3] - '0');
+				nmea_time.year = (d [4] - '0') * 10 + (d [5] - '0');
+#endif /* defined (RTC1_TYPE) */
 				nmea_time.valid = 1;
 				time_next(& nmea_time);	// какое время надо будет поставить для установки в следующий PPS
 			}
@@ -13333,6 +13345,14 @@ spool_nmeapps(void)
 		lfm_run();
 	}
 #endif /* WITHLFM */
+#if defined (RTC1_TYPE)
+	if (! rtc_nmea_updated && nmea_time.valid)
+	{
+		rtc_nmea_updated = 1;
+		// todo: добавить в меню выбор часового пояса
+		board_rtc_setdatetime(nmea_time.year, nmea_time.month, nmea_time.day, nmea_time.hours + 3, nmea_time.minutes, nmea_time.secounds);
+	}
+#endif /* defined (RTC1_TYPE) */
 }
 
 #endif /* WITHNMEA */
@@ -20161,8 +20181,8 @@ uint_fast16_t hamradio_get_afgain(void)
 #if ! WITHPOTAFGAIN
 void hamradio_set_afgain(uint_fast16_t v)
 {
-	ASSERT(v >= BOARD_AFGAIN_MIN);
-	ASSERT(v <= BOARD_AFGAIN_MAX);
+	if (v <= BOARD_AFGAIN_MIN || v >= BOARD_AFGAIN_MAX)
+		return;
 
 	afgain1.value = v;
 	save_i16(offsetof(struct nvmap, afgain1), afgain1.value);
