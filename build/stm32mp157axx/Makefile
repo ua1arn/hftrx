@@ -64,9 +64,7 @@ OPT = -Ofast -flto
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
-DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
@@ -85,7 +83,6 @@ DINCDIR = \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
-	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
 	$(RTOSXDIR)/Include \
 	$(RTOSXDIR)/RTX/Include \
@@ -95,17 +92,6 @@ DINCDIR = \
 	$(CMSISDSPDIR)/Source \
 	$(CMSISDSPDIR)/PrivateInclude
 		
-DINCDIR += \
-	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/apps/http
-	
-DINCDIR += \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
-
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
 
@@ -149,9 +135,27 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
-#SRCDIRS += $(DSP3DDIR)/src
-#SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
-#SRCDIRS += $(OPENVGDIR)/src
+
+ifeq (1, 0)
+# LwIP
+SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+DINCDIR += \
+	$(LWIPDIR)/src/include \
+	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/src/apps/http
+endif
+
+ifeq (1, 0)
+# OpenVG
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+SRCDIRS += $(OPENVGDIR)/src
+DINCDIR += \
+	$(OPENVGDIR)/include/VG \
+	$(OPENVGDIR)/include \
+	$(OPENVGDIR)/include/EGL \
+	$(OPENVGDIR)/src
+endif
+
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
