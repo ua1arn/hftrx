@@ -40,7 +40,7 @@
 
 #if WITHNMEA
 
-	#define BOARD_PPSIN_BIT	38
+	#define BOARD_PPSIN_BIT	48
 	#define NMEA_INITIALIZE() do { \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 1); \
 		gpio_input2(BOARD_PPSIN_BIT, pinmode_input); 													\
@@ -664,13 +664,13 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 #if WITHUART1HW
-	// RXD: mio30 C15
-	// TXD: mio31 E16
+	// RXD: mio46 D16
+	// TXD: mio47 B14
 	// ebaz4205 board
 	// WITHUART1HW
 	#define HARDWARE_UART1_INITIALIZE() do { \
-		MIO_SET_MODE(31, 0x000016E0uL);	/*  MIO_PIN_31 UART0_TXD */ \
-		MIO_SET_MODE(30, 0x000016E1uL);	/*  MIO_PIN_30 UART0_RXD */ \
+		MIO_SET_MODE(47, 0x000016E0uL);	/*  MIO_PIN_47 UART0_TXD */ \
+		MIO_SET_MODE(46, 0x000016E1uL);	/*  MIO_PIN_46 UART0_RXD */ \
 		} while (0)
 
 #endif /* WITHUART1HW */

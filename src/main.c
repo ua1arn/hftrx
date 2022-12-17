@@ -19175,7 +19175,7 @@ lowinitialize(void)
 	HARDWARE_NMEA_SET_SPEED(250000L);
 	HARDWARE_NMEA_ENABLERX(1);
 
-#elif WITHNMEA
+#elif WITHNMEA && ! CPUSTYLE_XC7Z
 
 	HARDWARE_NMEA_INITIALIZE();
 	HARDWARE_NMEA_SET_SPEED(115200L);
@@ -22050,6 +22050,9 @@ main(void)
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 
 #if WITHNMEA && CPUSTYLE_XC7Z
+	HARDWARE_NMEA_INITIALIZE();
+	HARDWARE_NMEA_SET_SPEED(115200L);
+	HARDWARE_NMEA_ENABLERX(1);
 	nmea_parser_init(); // пока тут
 #endif /* WITHNMEA && CPUSTYLE_XC7Z */
 
