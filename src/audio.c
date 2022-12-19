@@ -1341,7 +1341,7 @@ static void fir_design_adjust_rx(FLOAT_t * dCoeff, const FLOAT_t * dWindow, int 
 
 	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
 	const FLOAT_t resp = getmaxresponce();
-	scalecoeffs(dCoeff, iCoefNum, gain / resp);	// нормализация к. передаци к заданному значению (1)
+	scalecoeffs(dCoeff, iCoefNum, gain / resp);	// нормализация коэффициентоа передачи к заданному значению (1)
 }
 
 // Формирование наклона АЧХ звукового тракта передатчика
@@ -2144,8 +2144,6 @@ static void fir_design_passtrough(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dGain)
 static void fir_design_bandpass(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t fCutLow, FLOAT_t fCutHigh)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
-	//float dCoeff [iHalfLen + 1];	/* Use GCC extension */
-	//const float dGain = 1;		// Требуемое усиление фильтра
 	int iCnt;
 
 	dCoeff [iHalfLen] = fCutHigh - fCutLow;
@@ -2171,7 +2169,7 @@ static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int 
 }
 
 // подготовка буфера с оконной функцией
-// Учтываем симметрию.
+// Учитываем симметрию.
 static void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -2184,7 +2182,7 @@ static void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum)
 //#if (__ARM_FP & 0x08) && 1
 
 // подготовка буфера с оконной функцией
-// Учтываем симметрию.
+// Учитываем симметрию.
 static void fir_design_windowbuffL(double *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -2253,6 +2251,7 @@ static void printdcoefs(const FLOAT_t * dCoeff, int iCoefNum, int line, const ch
 	}
 	PRINTF("(iCnt=%d)\n", iCnt);
 }
+
 // с управлением крутизной скатов и нормированием усиления, с наложением окна
 static void fir_design_lowpass_freq_scaled(FLOAT_t * dCoeff, const FLOAT_t * dWindow, int iCoefNum, int iCutHigh, FLOAT_t dGain)
 {
@@ -2265,7 +2264,7 @@ static void fir_design_lowpass_freq_scaled(FLOAT_t * dCoeff, const FLOAT_t * dWi
 	//printdcoefs(dCoeff, iCoefNum, __LINE__, __FILE__);
 }
 
-#if (__ARM_FP & 0x08) && 1
+//#if (__ARM_FP & 0x08) && 1
 
 // с управлением крутизной скатов и нормированием усиления, с наложением окна
 static void fir_design_lowpass_freq_scaledL(double * dCoeff, const double * dWindow, int iCoefNum, int iCutHigh, double dGain)
@@ -2274,7 +2273,7 @@ static void fir_design_lowpass_freq_scaledL(double * dCoeff, const double * dWin
 	fir_design_applaywindowL(dCoeff, dWindow, iCoefNum);
 	fir_design_scaleL(dCoeff, iCoefNum, dGain / testgain_float_DCL(dCoeff, iCoefNum));
 }
-#endif
+//#endif
 
 // Массив коэффициентов для несимметричного фильтра
 static void fir_design_bandpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutLow, int iCutHigh)
@@ -2312,7 +2311,7 @@ static void fir_design_integer_lowpass_scaled(int_fast32_t *lCoeff, const FLOAT_
 	fir_design_lowpass_freq_scaled(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 	fir_design_copy_integers(lCoeff, dCoeff, iCoefNum);
 }
-#if (__ARM_FP & 0x08) && 1
+//#if (__ARM_FP & 0x08) && 1
 
 // преобразование к целым
 static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoeff, int iCoefNum)
@@ -2334,7 +2333,7 @@ static void fir_design_integer_lowpass_scaledL(int_fast32_t *lCoeff, const doubl
 	fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 	fir_design_copy_integersL(lCoeff, dCoeff, iCoefNum);
 }
-#endif
+//#endif
 
 #endif /* WITHDSPEXTFIR */
 
@@ -2391,7 +2390,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ_A(FLOAT32P_t NewSample)
 {
 	const FLOAT_t * const k = FIRCoef_rx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_rx_SSB_IQ, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
+	// буфер с сохранёнными значениями сэмплов
 	static RAMDTCM FLOAT32P_t x [Ntap * 2];
 	static RAMDTCM uint_fast16_t fir_head = 0;
 
@@ -2431,7 +2430,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ_B(FLOAT32P_t NewSample)
 {
 	const FLOAT_t * const k = FIRCoef_rx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_rx_SSB_IQ, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
+	// буфер с сохранёнными значениями сэмплов
 	static RAMDTCM FLOAT32P_t x [Ntap * 2];
 	static RAMDTCM uint_fast16_t fir_head = 0;
 
@@ -2470,7 +2469,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
 {
 	const FLOAT_t * const k = FIRCoef_tx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
+	// буфер с сохранёнными значениями сэмплов
 	static RAMDTCM FLOAT32P_t x [Ntap * 2];
 	static RAMDTCM uint_fast16_t fir_head = 0;
 
@@ -2515,7 +2514,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_rx_SSB_IQ(FLOAT32P_t NewSample, u
 	enum { Ntap = Ntap_rx_SSB_IQ, NtapHalf = Ntap / 2 };
 	FLOAT32P_t rv;
 
-	// буфер с сохраненными значениями сэмплов
+	// буфер с сохранёнными значениями сэмплов
 	static RAMDTCM FLOAT32P_t x [Ntap * 2]; // input samples (force CCM allocation)
 	static RAMDTCM uint_fast16_t fir_head = 0;		// позиция записи в буфер в последний раз
 
@@ -2624,7 +2623,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_tx_SSB_IQ(FLOAT32P_t NewSample, u
 {
 	const FLOAT_t * const k = FIRCoef_tx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
+	// буфер с сохранёнными значениями сэмплов
 	static RAMDTCM FLOAT32P_t x [Ntap * 2]; // input samples (force CCM allocation)
 	static RAMDTCM uint_fast16_t fir_head = 0;
 
@@ -2677,7 +2676,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
 {
 	const FLOAT_t * const k = FIRCoef_tx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
+	// буфер с сохранёнными значениями сэмплов
 	static RAMDTCM FLOAT32P_t x [Ntap * 2];
 	static RAMDTCM uint_fast16_t fir_head = 0;
 
@@ -2821,7 +2820,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir_compute_Pair2(const FLOAT_t * cons
 static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8_t bypass) 
 {
 	enum { Ntap = Ntap_tx_MIKE, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
+	// буфер с сохранёнными значениями сэмплов
 	static RAMDTCM FLOAT_t xshift [Ntap * 2];
 	static RAMDTCM uint_fast16_t fir_head = 0;
 
@@ -2837,7 +2836,7 @@ static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8
 static RAMFUNC_NONILINE FLOAT32P_t filter_fir_rx_AUDIO_Pair2(FLOAT32P_t NewSample)
 {
 	enum { Ntap = Ntap_rx_AUDIO, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
+	// буфер с сохранёнными значениями сэмплов
 	static RAMDTCM FLOAT32P_t xshift [Ntap * 2];
 	static RAMDTCM uint_fast16_t fir_head;
 
@@ -2852,7 +2851,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir_rx_AUDIO_Pair2(FLOAT32P_t NewSampl
 static RAMFUNC_NONILINE FLOAT_t filter_fir_rx_AUDIO_A(FLOAT_t NewSample)
 {
 	enum { Ntap = Ntap_rx_AUDIO, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
+	// буфер с сохранёнными значениями сэмплов
 	static RAMDTCM FLOAT_t xshift [Ntap * 2];
 	static RAMDTCM uint_fast16_t fir_head;
 
@@ -4192,7 +4191,7 @@ static RAMFUNC ncoftwi_t demodulator_FMnew(
 	//
 	enum { Ntap = 3 };
 
-	// буфер с сохраненными значениями сэмплов
+	// буфер с сохранёнными значениями сэмплов
 	static RAMDTCM FLOAT32P_t xs [NTRX] [Ntap * 2]; // input samples (force CCM allocation)
 	static RAMDTCM uint_fast8_t fir_heads [NTRX];		// позиция записи в буфер в последний раз
 	uint_fast8_t * const phead = & fir_heads [pathi];
