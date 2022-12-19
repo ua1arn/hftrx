@@ -262,7 +262,7 @@
 
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	////#define WITHCAT		1	/* используется CAT */
-	//#define WITHTX	1
+	#define WITHTX	1
 	#if WITHTX
 		#define WITHVOX			1	/* используется VOX */
 		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */

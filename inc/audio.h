@@ -668,10 +668,10 @@ typedef struct
 	#define WITHADAPTERRTS192_WIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHADAPTERRTS192_SHIFT	0		// количество незанятых битов справа.
 	// IF TX
-	#define WITHADAPTERIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
 	typedef int32_t IFADCvalue_t;
-	typedef int32_t IFDACvalue_t;
+	typedef int16_t IFDACvalue_t;
 
 
 #else /* CPUSTYLE_XC7Z */
