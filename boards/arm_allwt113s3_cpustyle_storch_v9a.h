@@ -776,6 +776,7 @@
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
+		arm_hardware_piof_outputs((1U << 6), 0 * (1U << 6)); /* PF6 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		(void) (f); \
