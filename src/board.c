@@ -7137,7 +7137,7 @@ XAxiDma xcz_dma_fir_coeffs;
 
 void board_fpga_fir_initialize(void)
 {
-	XAxiDma_Config * config = XAxiDma_LookupConfig(XPAR_AXI_DMA_FIR_RELOAD_DEVICE_ID);
+	XAxiDma_Config * config = XAxiDma_LookupConfig(XPAR_IQ_MODEM_AXI_DMA_FIR_RELOAD_DEVICE_ID);
 	int Status = XAxiDma_CfgInitialize(& xcz_dma_fir_coeffs, config);
 
 	if (Status != XST_SUCCESS) {

@@ -9,3 +9,4 @@
 bitstream*.h
 *.xyl32
 !fsbl_4205.elf
+!fsbl_4205v2.elf
