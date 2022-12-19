@@ -2139,7 +2139,7 @@ void allwnrt113_set_pll_audio1(unsigned m, unsigned n)
 
 void allwnrt113_pll_initialize(void)
 {
-	//set_pll_cpux_axi(PLL_CPU_N);	// see sdram.c
+	set_pll_cpux_axi(PLL_CPU_N);	// see sdram.c
 	//set_pll_periph0();
 	//set_ahb();
 	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
