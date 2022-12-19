@@ -367,8 +367,8 @@ void endstamp3(void)
 static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
 static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
-static RAMBIGDTCM FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [Ntap_rx_AUDIO];
-static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
+static RAMBIGDTCM FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [Ntap_rx_AUDIO];	/* полный размет без учета симметрии */
+static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
 
 //static void * fft_lookup;
 
@@ -1203,7 +1203,6 @@ static FLOAT_t getmaxresponce(void)
 //====================================================
 
 // Получение АЧХ из коэффициентов симмметричного FIR
-
 static void imp_response(const FLOAT_t *dCoeff, int iCoefNum) 
 {
 	ARM_MORPH(arm_cfft_instance) fftinstance;
@@ -3049,18 +3048,6 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	}
 }
 
-// Duplicate symmetrical part of coeffs.
-void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap)
-{
-	const int half = Ntap / 2;
-	int i;
-	for (i = 1; i <= half; ++ i)
-	{
-		dCoeff [half + i] = dCoeff [half - i];
-	}
-
-}
-
 // Установка параметров тракта приёмника
 static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
@@ -3068,8 +3055,7 @@ static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
 	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;
 	//enum { iCoefNum = Ntap_rx_AUDIO };
 
-	dsp_recalceq_coeffs(pathi, dCoeff, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
-	fir_expand_symmetric(dCoeff, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
+	dsp_recalceq_coeffs(pathi, dCoeff, Ntap_rx_AUDIO);	// calculate coefficients
 }
 // установить частоты среза тракта ПЧ
 // Вызывается из пользовательской программы, но может быть вызвана и до инициализации DSP - вызывается из updateboard.
@@ -3107,7 +3093,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 }
 
 // calculate 1/2 of coefficients
-void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
+static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
@@ -3116,8 +3102,6 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
 	switch (glob_dspmodes [pathi])
 	{
 	case DSPCTL_MODE_RX_DSB:
-		// В этом режиме фильтр не используется
-		//fir_design_passtrough(dCoeff, iCoefNum, 1);
 		// ФНЧ
 		fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
 		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
@@ -3196,6 +3180,25 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
 		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
 		break;
 	}
+}
+
+
+// Duplicate symmetrical part of coeffs.
+static void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap)
+{
+	const int half = Ntap / 2;
+	int i;
+	for (i = 1; i <= half; ++ i)
+	{
+		dCoeff [half + i] = dCoeff [half - i];
+	}
+}
+
+// calculate full array of coefficients
+void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
+{
+	dsp_recalceq_coeffs_half(pathi, dCoeff, iCoefNum);	// calculate 1/2 of coefficients
+	fir_expand_symmetric(dCoeff, iCoefNum);	// Duplicate symmetrical part of coeffs.
 }
 
 #if WITHMODEM

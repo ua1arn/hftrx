@@ -10769,8 +10769,7 @@ static void speex_update_rx(void)
 
 		// Получение параметров эквалайзера
 		FLOAT_t * const dCoefs = nrp->firEQcoeff;
-		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
-		fir_expand_symmetric(dCoefs, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
+		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate coefficients
 
 #if WITHNOSPEEX
 #else /* WITHNOSPEEX */

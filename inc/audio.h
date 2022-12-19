@@ -1073,8 +1073,7 @@ void endstamp3(void);
 
 void buffers_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum);	// calculate 1/2 of coefficients
-void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap);			// Duplicate symmetrical part of coeffs.
+void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum);	// calculate full array of coefficients
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);
