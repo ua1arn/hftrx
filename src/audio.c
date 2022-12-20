@@ -4057,6 +4057,7 @@ static RAMFUNC void processafadcsampleiq(
 	FLOAT32P_t viusb0,	// выборка с USB (в vi)
 	uint_fast8_t dspmode,
 	FLOAT_t shapecw,	// 0..1 - огибающая
+	FLOAT_t shapecwssb,	// 0..1 - огибающая замены звуковой модуляции тоном самоконтроля
 	FLOAT_t ctcss,		// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
 	FLOAT32P_t * moni
 	)
@@ -5633,7 +5634,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		//dual.IV = vi.IV; //get_lout();
 		dual.IV = get_lout();
 		dual.QV = 0;
-		processafadcsampleiq(dual, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(dual, viusb, dspmodeA, swapecw, shapecwssb, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		// Тестирование распознавания DTMF
 		if (dtmfbi < DTMF_STEPS)
@@ -5648,21 +5649,21 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#if 0
 		// Тестирование (самопрослушивание) того, что идет с микрофона
-		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, shapecwssb, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		save16demod(vi.IV, vi.QV);
 
 	#elif WITHLOOPBACKTEST
 
 		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, swapecw, & moni);
-		processafadcsampleiq(dual, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(dual, viusb, dspmodeA, swapecw, shapecwssb, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		//
 		// Тестирование источников и потребителей звука
 		save16demod(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
-		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, shapecwssb, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 
 
@@ -5673,7 +5674,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#elif WITHUSEDUALWATCH
 
-		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, shapecwssb, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		//
 		// Двухканальный приёмник
@@ -5715,7 +5716,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#else /* WITHUSEDUALWATCH */
 
-		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, shapecwssb, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		// Одноканальный приёмник
 
