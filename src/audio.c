@@ -388,23 +388,23 @@ static RAM_D2 struct ComplexHFTRX Sig [FFTSizeFilters];
 #define fftixreal(i) ((i * 2) + 0)
 #define fftiximag(i) ((i * 2) + 1)
 
-static RAMDTCM FLOAT_t txlevelfenceAM = (FLOAT_t) 1 / 2;
+static FLOAT_t txlevelfenceAM = (FLOAT_t) 1 / 2;
 
-static RAMDTCM FLOAT_t txlevelfenceSSB = (FLOAT_t) 1 / 2;
-static RAMDTCM FLOAT_t txlevelfenceDIGI = (FLOAT_t) 1 / 2;
+static FLOAT_t txlevelfenceSSB = (FLOAT_t) 1 / 2;
+static FLOAT_t txlevelfenceDIGI = (FLOAT_t) 1 / 2;
 
-static RAMDTCM FLOAT_t txlevelfenceNFM = (FLOAT_t) 1 / 2;
-static RAMDTCM FLOAT_t txlevelfenceBPSK = (FLOAT_t) 1 / 2;
-static RAMDTCM FLOAT_t txlevelfenceCW = (FLOAT_t) 1 / 2;
+static FLOAT_t txlevelfenceNFM = (FLOAT_t) 1 / 2;
+static FLOAT_t txlevelfenceBPSK = (FLOAT_t) 1 / 2;
+static FLOAT_t txlevelfenceCW = (FLOAT_t) 1 / 2;
 
-static RAMDTCM uint_fast8_t gwprof = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+static uint_fast8_t gwprof = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
-static RAMDTCM uint_fast8_t globDSPMode [NPROF] [2] = { { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE }, { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE } };
+static uint_fast8_t globDSPMode [NPROF] [2] = { { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE }, { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE } };
 
 /* Параметры АМ модулятора */
-static RAMDTCM volatile FLOAT_t amshapesignalHALF;
-static RAMDTCM volatile FLOAT_t amcarrierHALF;
-static RAMDTCM volatile FLOAT_t scaleDAC = 1;
+static volatile FLOAT_t amshapesignalHALF;
+static volatile FLOAT_t amcarrierHALF;
+static volatile FLOAT_t scaleDAC = 1;
 
 static FLOAT_t shapeSidetoneStep(void);		// 0..1
 static FLOAT_t shapeCWEnvelopStep(void);	// 0..1
@@ -447,7 +447,7 @@ static RAMFUNC FLOAT_t peekvalf(uint32_t a)
 }
 #endif
 
-static RAMFUNC FLOAT_t getsinf(ncoftw_t angle)
+static FLOAT_t getsinf(ncoftw_t angle)
 {
 	FLOAT_t v;
 	const q31_t sinv = arm_sin_q31(FTW2_COS_Q31(angle));
@@ -457,7 +457,7 @@ static RAMFUNC FLOAT_t getsinf(ncoftw_t angle)
 	return v;
 }
 
-static RAMFUNC FLOAT_t getcosf(ncoftw_t angle)
+static FLOAT_t getcosf(ncoftw_t angle)
 {
 	FLOAT_t v;
 	const q31_t cosv = arm_cos_q31(FTW2_COS_Q31(angle));
@@ -467,7 +467,7 @@ static RAMFUNC FLOAT_t getcosf(ncoftw_t angle)
 	return v;
 }
 
-static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
+static FLOAT32P_t getsincosf(ncoftw_t angle)
 {
 	FLOAT32P_t v;
 	//q31_t sincosv [2];
@@ -488,22 +488,22 @@ static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
 //////////////////////////////////////////
 
 
-static RAMDTCM ncoftw_t anglestep_modulation = FTWAF001(10);	/* 0.1 s period */
-static RAMDTCM ncoftw_t angle_modulation;
+static ncoftw_t anglestep_modulation = FTWAF001(10);	/* 0.1 s period */
+static ncoftw_t angle_modulation;
 
-static RAMDTCM ncoftw_t anglestep_lout = FTWAF(700), anglestep_rout = FTWAF(500);
-static RAMDTCM ncoftw_t angle_lout, angle_rout;
+static ncoftw_t anglestep_lout = FTWAF(700), anglestep_rout = FTWAF(500);
+static ncoftw_t angle_lout, angle_rout;
 
-static RAMDTCM ncoftw_t anglestep_lout2 = FTWAF(5600), anglestep_rout2 = FTWAF(6300);
-static RAMDTCM ncoftw_t angle_lout2, angle_rout2;
-
-// test IQ frequency
-static RAMDTCM ncoftw_t anglestep_monofreq = FTWAF(0);
-static RAMDTCM ncoftw_t angle_monofreq;
+static ncoftw_t anglestep_lout2 = FTWAF(5600), anglestep_rout2 = FTWAF(6300);
+static ncoftw_t angle_lout2, angle_rout2;
 
 // test IQ frequency
-static RAMDTCM ncoftw_t anglestep_monofreq2 = FTWAF(5600);
-static RAMDTCM ncoftw_t angle_monofreq2;
+static ncoftw_t anglestep_monofreq = FTWAF(0);
+static ncoftw_t angle_monofreq;
+
+// test IQ frequency
+static ncoftw_t anglestep_monofreq2 = FTWAF(5600);
+static ncoftw_t angle_monofreq2;
 
 // test IQ frequency
 static RAMFUNC FLOAT32P_t get_float_monofreq(void)
@@ -514,7 +514,7 @@ static RAMFUNC FLOAT32P_t get_float_monofreq(void)
 }
 
 // test IQ frequency
-static RAMFUNC FLOAT32P_t get_float_monofreq2(void)
+static FLOAT32P_t get_float_monofreq2(void)
 {
 	const FLOAT32P_t v = getsincosf(angle_monofreq2);
 	angle_monofreq2 = FTWROUND(angle_monofreq2 + anglestep_monofreq2);
@@ -546,21 +546,37 @@ FLOAT_t get_modulation(void)
 }
 
 //////////////////////////////////////////
-static RAMDTCM ncoftw_t anglestep_sidetone;
-static RAMDTCM ncoftw_t angle_sidetone;
+/// получение тона для самоконтроля телеграфа (или озвучки клавиш)
+static ncoftw_t anglestep_sidetone;
+static ncoftw_t angle_sidetone;
 
-static RAMFUNC FLOAT_t get_float_sidetone(void)
+static FLOAT_t get_float_sidetone(void)
 {
 	const FLOAT_t v = getcosf(angle_sidetone);
 	angle_sidetone = FTWROUND(angle_sidetone + anglestep_sidetone);
 	return v;
 }
 
-//////////////////////////////////////////
-static RAMDTCM ncoftw_t anglestep_subtone;
-static RAMDTCM ncoftw_t angle_subtone;
 
-static RAMFUNC FLOAT_t get_float_subtone(void)
+//////////////////////////////////////////
+/// получение тона для замещения передачи SSB телеграфом
+///
+static ncoftw_t anglestep_sidetonetxssb;
+static ncoftw_t angle_sidetonetxssb;
+
+static FLOAT_t get_float_sidetonetxssb(void)
+{
+	const FLOAT_t v = getcosf(angle_sidetonetxssb);
+	angle_sidetonetxssb = FTWROUND(angle_sidetonetxssb + anglestep_sidetonetxssb);
+	return v;
+}
+
+//////////////////////////////////////////
+/// получение тона для формирования ctcss
+static ncoftw_t anglestep_subtone;
+static ncoftw_t angle_subtone;
+
+static FLOAT_t get_float_subtone(void)
 {
 	const FLOAT_t v = getcosf(angle_subtone);
 	angle_subtone = FTWROUND(angle_subtone + anglestep_subtone);
@@ -568,10 +584,10 @@ static RAMFUNC FLOAT_t get_float_subtone(void)
 }
 
 //////////////////////////////////////////
-static RAMDTCM ncoftw_t anglestep_toneout = FTWAF(700);
-static RAMDTCM ncoftw_t angle_toneout;
+static ncoftw_t anglestep_toneout = FTWAF(700);
+static ncoftw_t angle_toneout;
 
-static RAMFUNC FLOAT_t get_singletonefloat(void)
+static FLOAT_t get_singletonefloat(void)
 {
 	// Формирование значения для LOUT
 	const FLOAT_t v = getcosf(angle_toneout);
