@@ -727,8 +727,8 @@ void transform_initialize(transform_t * tfm, const adapter_t * informat, const a
 extern adapter_t afcodecrx;	/* от микрофона */
 extern adapter_t afcodectx;	/* к наушникам */
 
-extern adapter_t ifcodecin;	/* канал от FPGA к процессору */
-extern adapter_t ifcodecout;	/* канал от процессора к FPGA */
+//extern adapter_t ifcodecrx;	/* канал от FPGA к процессору */
+//extern adapter_t ifcodectx;	/* канал от процессора к FPGA */
 extern adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
 extern adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
 
