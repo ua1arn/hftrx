@@ -5889,6 +5889,7 @@ static uint_fast8_t getRxGate(void)
 
 
 // манипуляция и переключение на передачу
+// вызывается из SYSTEM обработчика прерываний
 void dsp_txpath_set(portholder_t txpathstate)
 {
 #if WITHINTEGRATEDDSP

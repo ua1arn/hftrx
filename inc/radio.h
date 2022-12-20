@@ -570,7 +570,7 @@ uint_fast8_t hardware_get_txdisable(void);
 
 void hardware_txpath_initialize(void);
 void hardware_txpath_set(portholder_t txpathstate);
-void dsp_txpath_set(portholder_t txpathstate);
+void dsp_txpath_set(portholder_t txpathstate);	// вызывается из SYSTEM обработчика прерываний
 
 /* сиквенсор приём-передача - и по таймерным и по 1/ELKEY_DISCRETE точки */
 void elkey_spool_dots(void);	/* электронный ключ - вызывается с периодом 1/ELKEY_DISCRETE от длительности точки. */

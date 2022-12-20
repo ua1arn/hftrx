@@ -354,6 +354,7 @@ seqhastxrequest(void)
 	return 0;
 }
 
+// вызывается из SYSTEM обработчика прерываний
 static void
 seq_txpath_set(portholder_t txpathstate)
 {
@@ -378,7 +379,7 @@ seq_txpath_set(portholder_t txpathstate)
 //
 
 
-// вызывается из обработчика прерываний. Желательно вызывать самым первым для уменьшения
+// вызывается из SYSTEM обработчика прерываний. Желательно вызывать самым первым для уменьшения
 // паразитного дрейфа по времени
 
 static void 

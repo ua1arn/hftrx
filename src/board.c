@@ -8190,7 +8190,7 @@ hardware_ptt_port_initialize(void)
 #endif /* WITHCAT */
 }
 
-/* функция вызывается из обработчиков прерывания или при запрещённых прерываниях. */
+/* функция вызывается из SYSTEM обработчиков прерывания или при запрещённых прерываниях. */
 void hardware_txpath_set(
 	portholder_t txpathstate
 	)
