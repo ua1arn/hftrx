@@ -34,6 +34,14 @@
 //#define WITHPS7BOARD_ANTMINER 1
 #define WITHPS7BOARD_MYC_Y7Z020 1
 
+#define XPAR_FABRIC_AXI_FIFO_PHONES_IRQ_INTR		65
+#define XPAR_FABRIC_AXI_FIFO_MIC_IRQ_INTR			64
+#define XPAR_FABRIC_AXI_FIFO_IQ_RX_IRQ_INTR			63
+#define XPAR_FABRIC_AXI_FIFO_IQ_TX_IRQ_INTR			62
+
+#define CALIBRATION_IQ_RX_SHIFT	45
+#define CALIBRATION_TX_SHIFT	24
+
 #define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS33
 #define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
 
@@ -799,27 +807,7 @@
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
 #if WITHDSPEXTFIR
-	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-
-	// FPGA PIN_23
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (1u << 13)	/* PC13 - fir CS ~FPGA_FIR_CLK */
-
-	// FPGA PIN_8
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (1u << 1)	/* PD1 - fir1 WE */
-
-	// FPGA PIN_7
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (1u << 0)	/* PD0 - fir2 WE */
-
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-		arm_hardware_piod_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-		arm_hardware_piod_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-		arm_hardware_pioc_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 	} while (0)
 #endif /* WITHDSPEXTFIR */
 

@@ -30,6 +30,14 @@
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_EBAZ_7020 1
 
+#define XPAR_FABRIC_AXI_FIFO_PHONES_IRQ_INTR		63
+#define XPAR_FABRIC_AXI_FIFO_MIC_IRQ_INTR			65
+#define XPAR_FABRIC_AXI_FIFO_IQ_RX_IRQ_INTR			61
+#define XPAR_FABRIC_AXI_FIFO_IQ_TX_IRQ_INTR			64
+
+#define CALIBRATION_IQ_RX_SHIFT	52
+#define CALIBRATION_TX_SHIFT	24
+
 #define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 #define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 

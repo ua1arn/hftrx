@@ -348,7 +348,7 @@ int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynCl
 	}
 
 	XVtc_IntrEnable(&(dispPtr->vtc), XVTC_IXR_G_VBLANK_MASK);
-	arm_hardware_set_handler_system(XPAR_FABRIC_V_TC_0_IRQ_INTR, vtc_inthandler);
+	arm_hardware_set_handler_system(XPAR_FABRIC_VIDEO_V_TC_0_IRQ_INTR, vtc_inthandler);
 	vtc = dispPtr->vtc;
 
 	dispPtr->vdma = vdma;
