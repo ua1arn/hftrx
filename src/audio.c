@@ -408,6 +408,7 @@ static RAMDTCM volatile FLOAT_t scaleDAC = 1;
 
 static FLOAT_t shapeSidetoneStep(void);		// 0..1
 static FLOAT_t shapeCWEnvelopStep(void);	// 0..1
+static FLOAT_t shapeCWSSBEnvelopStep(void);	// 0..1
 static uint_fast8_t getTxShapeNotComplete(void);
 
 static uint_fast8_t getRxGate(void);	/* разрешение работы тракта в режиме приёма */
@@ -4055,8 +4056,8 @@ static RAMFUNC void processafadcsampleiq(
 	FLOAT32P_t vi0,	// выборка с микрофона (в vi)
 	FLOAT32P_t viusb0,	// выборка с USB (в vi)
 	uint_fast8_t dspmode,
-	FLOAT_t shape,	// 0..1 - огибающая
-	FLOAT_t ctcss,	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
+	FLOAT_t shapecw,	// 0..1 - огибающая
+	FLOAT_t ctcss,		// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
 	FLOAT32P_t * moni
 	)
 {
@@ -4081,9 +4082,9 @@ static RAMFUNC void processafadcsampleiq(
 		{
 			vi = filter_fir_tx_MIKE(vi, 0);
 	#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
-			const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shape));
+			const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shapecw));
 	#else /* WITHDSPLOCALFIR */
-			const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
+			const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shapecw);
 	#endif /* WITHDSPLOCALFIR */
 	#if WITHTXCPATHCALIBRATE
 			savesampleout32stereo(adpt_outputexact(& ifcodectx, vfb.IV), adpt_outputexact(& ifcodectx, vfb.QV));	// Запись в поток к передатчику I/Q значений.
@@ -5569,7 +5570,8 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
 		const FLOAT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		const FLOAT32P_t viusb = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
-		const FLOAT_t shape = shapeCWEnvelopStep() * scaleDAC;	// 0..1
+		const FLOAT_t swapecw = shapeCWEnvelopStep() * scaleDAC;	// 0..1
+		const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep() * scaleDAC;	// 0..1
 		FLOAT32P_t moni;
 	#endif /* ! WITHTRANSPARENTIQ */
 
@@ -5586,7 +5588,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 		if (isdspmodetx(dspmodeA))
 		{
-			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
+			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, swapecw);
 			INT32P_t dual;
 			dual.IV = get_lout();		// тон 700 Hz
 			dual.QV = get_rout();		// тон 500 Hz
@@ -5596,7 +5598,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		}
 		else if (isdspmoderx(dspmodeA))
 		{
-			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
+			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, swapecw);
 			const FLOAT32P_t dual = vi;
 			savesampleout32stereo(adpt_output(& ifcodectx, dual.IV), adpt_output(& ifcodectx, dual.QV));	// Запись в поток к передатчику I/Q значений.
 			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
@@ -5631,7 +5633,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		//dual.IV = vi.IV; //get_lout();
 		dual.IV = get_lout();
 		dual.QV = 0;
-		processafadcsampleiq(dual, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(dual, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		// Тестирование распознавания DTMF
 		if (dtmfbi < DTMF_STEPS)
@@ -5646,21 +5648,21 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#if 0
 		// Тестирование (самопрослушивание) того, что идет с микрофона
-		processafadcsampleiq(vi, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		save16demod(vi.IV, vi.QV);
 
 	#elif WITHLOOPBACKTEST
 
-		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape, & moni);
-		processafadcsampleiq(dual, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, swapecw, & moni);
+		processafadcsampleiq(dual, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		//
 		// Тестирование источников и потребителей звука
 		save16demod(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
-		processafadcsampleiq(vi, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 
 
@@ -5671,7 +5673,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#elif WITHUSEDUALWATCH
 
-		processafadcsampleiq(vi, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		//
 		// Двухканальный приёмник
@@ -5713,7 +5715,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#else /* WITHUSEDUALWATCH */
 
-		processafadcsampleiq(vi, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, swapecw, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		// Одноканальный приёмник
 
@@ -5756,15 +5758,15 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#if WITHLOOPBACKTEST
 
-		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
-		processafadcsample(dual, dspmodeA, shape, ctcss);	// обработка одного сэмпла с микрофона
+		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, swapecw);
+		processafadcsample(dual, dspmodeA, swapecw, ctcss);	// обработка одного сэмпла с микрофона
 		//
 		// Тестирование источников и потребителей звука
 		save16demod(dual.IV, dual.QV);
 
 	#else /* WITHLOOPBACKTEST */
 
-		processafadcsample(vi, dspmodeA, shape, ctcss);	// Передатчик - использование принятого с AF ADC буфера
+		processafadcsample(vi, dspmodeA, swapecw, ctcss);	// Передатчик - использование принятого с AF ADC буфера
 		const FLOAT_t left = processifadcsamplei(buff [i + DMABUF32RX] * rxgate, dspmodeA);	// Расширяем 24-х битные числа до 32 бит
 		save16demod(left, left);
 
@@ -5781,7 +5783,9 @@ static unsigned shapeSidetonePos = 0;
 static volatile uint_fast8_t shapeSidetoneInpit = 0;
 
 static unsigned shapeCWEnvelopPos = 0;
+static unsigned shapeCWSSBEnvelopPos = 0;
 static volatile uint_fast8_t cwgateflag = 0;
+static volatile uint_fast8_t cwssbgateflag = 0;
 static volatile uint_fast8_t rxgateflag = 0;
 
 // 0..1
@@ -5826,6 +5830,23 @@ static RAMFUNC FLOAT_t shapeCWEnvelopStep(void)
 		shapeCWEnvelopPos = shapeCWEnvelopPos >= enveloplen ? enveloplen : (shapeCWEnvelopPos + 1);
 	else
 		shapeCWEnvelopPos = shapeCWEnvelopPos == 0 ? 0 : (shapeCWEnvelopPos - 1);
+	return v;
+}
+
+// Формирование огибающей для передачи
+// 0..1
+static RAMFUNC FLOAT_t shapeCWSSBEnvelopStep(void)
+{
+	const unsigned enveloplen = enveloplen0;
+	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
+	if (shapeCWSSBEnvelopPos >= enveloplen)
+		shapeCWSSBEnvelopPos = enveloplen;
+	const FLOAT_t v = peakshapef(shapeCWSSBEnvelopPos);
+
+	if (cwssbgateflag != 0)
+		shapeCWSSBEnvelopPos = shapeCWSSBEnvelopPos >= enveloplen ? enveloplen : (shapeCWSSBEnvelopPos + 1);
+	else
+		shapeCWSSBEnvelopPos = shapeCWSSBEnvelopPos == 0 ? 0 : (shapeCWSSBEnvelopPos - 1);
 	return v;
 }
 
