@@ -63,7 +63,9 @@
 // From STMicroelectronics Communication Device Class driver (CDC) INF FILE:
 //#define USB_FUNCTION_VENDOR_ID	0x0483	// STM
 //#define USB_FUNCTION_PRODUCT_ID	0x5740
-//#define USB_FUNCTION_RELEASE_NO	0x0200
+//#define USB_FUNCTION_RELEASE_NO	0x0200	// bcdDevice
+
+//#define USB_FUNCTION_PRODUCT_ID	0x5732	// PID Need for FT8CN in conjunction with VID 0x0483
 
 #ifndef WITHBRANDSTR
 	//#define WITHBRANDSTR "Falcon"
@@ -76,7 +78,7 @@
 	#define USB_FUNCTION_PRODUCT_ID	0x0754
 
 	#define BUILD_ID 1	// модификатор serial number
-	#define USB_FUNCTION_RELEASE_NO	0x0000
+	#define USB_FUNCTION_RELEASE_NO	0x0000		// bcdDevice
 
 #elif WITHUSBUAC && WITHUSBUACIN2
 
@@ -93,13 +95,13 @@
 
 	#if WITHRTS96
 		#define BUILD_ID 6	// модификатор serial number
-		#define USB_FUNCTION_RELEASE_NO	0x0106
+		#define USB_FUNCTION_RELEASE_NO	0x0106		// bcdDevice
 	#elif WITHRTS192
 		#define BUILD_ID 5	// модификатор serial number
-		#define USB_FUNCTION_RELEASE_NO	0x0105
+		#define USB_FUNCTION_RELEASE_NO	0x0105		// bcdDevice
 	#else
 		#define BUILD_ID 4	// модификатор serial number
-		#define USB_FUNCTION_RELEASE_NO	0x0104
+		#define USB_FUNCTION_RELEASE_NO	0x0104		// bcdDevice
 	#endif
 #else /* WITHUSBUAC && WITHUSBUACIN2 */
 	#define PRODUCTSTR WITHBRANDSTR
@@ -116,13 +118,13 @@
 
 	#if WITHRTS96
 		#define BUILD_ID 2	// модификатор serial number
-		#define USB_FUNCTION_RELEASE_NO	0x0102
+		#define USB_FUNCTION_RELEASE_NO	0x0102		// bcdDevice
 	#elif WITHRTS192
 		#define BUILD_ID 1	// модификатор serial number
-		#define USB_FUNCTION_RELEASE_NO	0x0101
+		#define USB_FUNCTION_RELEASE_NO	0x0101		// bcdDevice
 	#else
 		#define BUILD_ID 0	// модификатор serial number
-		#define USB_FUNCTION_RELEASE_NO	0x0100
+		#define USB_FUNCTION_RELEASE_NO	0x0100		// bcdDevice
 	#endif
 #endif /* WITHUSBUAC && WITHUSBUACIN2 */
 
@@ -244,17 +246,18 @@ static const struct stringtempl strtemplates [] =
 
 static unsigned usbd_get_productId(void)
 {
+	//return 0x5732;	// Need for FT8CN
 	unsigned v = 0;
 
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER && 0
 	v = USB_FUNCTION_PRODUCT_ID;
 #else /* WITHISBOOTLOADER */
-	#if WITHUSBDFU
-		v |= (1u << 15);
-	#endif /* WWITHUSBDFU */
 	#if WITHUSBCDCACM
-		v |= WITHUSBCDCACM_N * (1u << 11);
+		v |= WITHUSBCDCACM_N * (1u << 12);
 	#endif /* WITHUSBCDCACM */
+#if WITHUSBDFU
+	v |= (1u << 11);
+#endif /* WWITHUSBDFU */
 	#if WITHUAC2
 		v |= (1u << 10);
 	#endif /* WITHUAC2 */
