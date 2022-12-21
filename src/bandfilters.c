@@ -59,16 +59,6 @@
 	};
 	#define BANDCALCS ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
-#elif \
-	BANDSELSTYLERE_RA4YBO_AM0 || \
-	0
-	// 2.2 MHz
-	static const fseltype_t board_bandfs [] =
-	{
-		(fseltype_t) (2200000u >> BANDDIVPOWER),
-	};
-	#define BANDCALCS ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
-
 #elif BANDSELSTYLERE_R3PAV 
 
 	// 8 диапазонных ФНЧ где 12м и 10м совмещенны для дешифратора 74HCT238
@@ -128,39 +118,6 @@
 		(fseltype_t) (30000000u >> BANDDIVPOWER),
 	};
 	#define BANDCALCS ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
-
-#elif \
-	CTLSTYLE_RA4YBO || \
-	0
-
-	/* up-conversion RX */
-	/* for version 0...1.6, 1.6...56.0 MHz - 8 bands. */
-
-	#define BANDF_FREQMIN 1600000u
-	#define BANDF_FREQ_SCALE 1661809u
-	#define BANDF_FREQ_DENOM 1000000u
-
-	#define BANDCALCS	12	//	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
-	#define BANDF_USE_BANDINIT 1	/* необходимость функции инициализации. */
-
-	static fseltype_t board_bandfs [BANDCALCS];
-
-#elif \
-	CTLSTYLE_RA4YBO_V1 || \
-	CTLSTYLE_RA4YBO_V2 || \
-	CTLSTYLE_RA4YBO_V3 || \
-	0
-
-	/* up-conversion RX */
-
-	#define BANDF_FREQMIN 1600000u
-	#define BANDF_FREQ_SCALE 1661809u
-	#define BANDF_FREQ_DENOM 1000000u
-
-	#define BANDCALCS	13	//	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
-	#define BANDF_USE_BANDINIT 1	/* необходимость функции инициализации. */
-
-	static fseltype_t board_bandfs [BANDCALCS];
 
 #elif \
 	BANDSELSTYLERE_SW20XX || \
@@ -338,10 +295,6 @@
 		FQMODEL_FMRADIO || \
 		0
 	// В этих аппаратах не требовалось выбирать диапазонные фильтры
-#elif \
-	BANDSELSTYLERE_RA4YBO_AM0 || \
-	0
-	// Вычисления производятся в bandf_calc
 #else
 	#error No band selection hardware supported
 #endif
@@ -372,21 +325,6 @@ void bandf_calc_initialize(void)
 		board_bandfs [BANDCALCS - 1] = (fseltype_t) (BANDF_FREQ_TOP >> BANDDIVPOWER);
 	#endif /* BANDF_FREQ_TOP */
 
-	#if CTLSTYLE_RA4YBO
-			board_bandfs [7] = (fseltype_t) (56000000u >> BANDDIVPOWER);
-			board_bandfs [8] = (fseltype_t) (80000000u >> BANDDIVPOWER);
-			board_bandfs [9] = (fseltype_t) (100000000u >> BANDDIVPOWER);
-			board_bandfs [10] = (fseltype_t) (120000000u >> BANDDIVPOWER);
-			board_bandfs [11] = (fseltype_t) (140000000u >> BANDDIVPOWER);
-	#endif /* CTLSTYLE_RA4YBO */
-	#if CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2
-			board_bandfs [7] = (fseltype_t) (60000000u >> BANDDIVPOWER);
-			board_bandfs [8] = (fseltype_t) (90000000u >> BANDDIVPOWER);
-			board_bandfs [9] = (fseltype_t) (111000000u >> BANDDIVPOWER);
-			board_bandfs [10] = (fseltype_t) (120000000u >> BANDDIVPOWER);
-			board_bandfs [11] = (fseltype_t) (140000000u >> BANDDIVPOWER);
-			board_bandfs [12] = (fseltype_t) (160000000u >> BANDDIVPOWER);
-	#endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 */
 #endif /* BANDF_USE_BANDINIT */
 
 	if (0)

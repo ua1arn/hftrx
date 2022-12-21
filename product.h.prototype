@@ -1,4 +1,3 @@
-/* $Id$ */
 /* template for product.h */
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
@@ -84,11 +83,6 @@
 // "Персональные" конфигурации:
 //#define CTLSTYLE_V1A 1		// ATMega: DU VENT SI570+AD9834 (66MHz), LS020, ATMega32 - без внешнего дешифратора адресов - atmega_cpustyle_v1a.h, atmega_ctlstyle_v1a.h - похожа на sw2011
 //#define STYLE_TS850_V1 	1	// ARM: Vorobey board for (rd3pq@rambler.ru - Si570), new call: R2PM
-//#define CTLSTYLE_RA4YBO	1	// "Стационарный c Павлином" ATMega1284, up-conversion to 73050 для RA4YBO
-//#define CTLSTYLE_RA4YBO_V1	1	// "Портативный с LS020 с тюнерм без часов" ATMega644 @8MHz, up-conversion to 64455 для RA4YBO
-//#define CTLSTYLE_RA4YBO_V2	1	// "Стационарный с LS020" ATMega644 @8MHz, up-conversion to 64455 для RA4YBO
-//#define CTLSTYLE_RA4YBO_V3	1	// "Стационарный с Павлином" STM32F101RB, Si570+LMX2306+AD9834, up-conversion to 64455 для RA4YBO
-//#define CTLSTYLE_RA4YBO_AM0	1	// WH1602, IF=10.7 MHz, Si5351A
 //#define CTLSTYLE_IGOR		1		// Версия для Игоря (45 МГц -> 128 kГц с фиксированными гетеродинами)
 //#define CTLSTYLE_4Z5KY_V1	1		// Новая прошивка для синтезатора 4Z5KY с двухстрочником http://ur5yfv.ucoz.ua/forum/28-19-2
 //#define CTLSTYLE_4Z5KY_V2	1		// Синтезатор 4Z5KY с двухстрочником http://www.cqham.ru/trx92_19.htm AD9951+AD9834
@@ -473,26 +467,6 @@
 	#include "boards/atmega_ctlstyle_rx24.h"	// Down-conversion аппараты с ПЧ 4.0..10.7 МГц, 24/16  бита в управляющем регистре
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v8a.h"	// новая плата Explorer, текущая версия для 40/44 ногих процессоров ATMega
-#elif CPUSTYLE_ATMEGA32 && CTLSTYLE_RA4YBO
-	#include "boards/atmega_ctlstyle_ra4ybo.h"	// ATMega1284, up-conversion to 73050->0.5 MHz, Si570, LMX2306, AD9834
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega_cpustyle_v8a.h"	// новая плата Explorer, текущая версия для 40/44 ногих процессоров ATMega
-#elif CPUSTYLE_ATMEGA32 && CTLSTYLE_RA4YBO_V1
-	#include "boards/atmega_ctlstyle_ra4ybo_v1.h"	// ATMega644, up-conversion to 64455->0.5 MHz, Si570, LMX2306, AD9834
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega_cpustyle_v8a.h"	// новая плата Explorer, текущая версия для 40/44 ногих процессоров ATMega
-#elif CPUSTYLE_ATMEGA32 && CTLSTYLE_RA4YBO_V2
-	#include "boards/atmega_ctlstyle_ra4ybo_v2.h"	// ATMega644, up-conversion to 73050->0.5 MHz, Si570, LMX2306, AD9834
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega_cpustyle_v8a.h"	// новая плата Explorer, текущая версия для 40/44 ногих процессоров ATMega
-#elif CPUSTYLE_STM32F && CTLSTYLE_RA4YBO_V3
-	#include "boards/atmega_ctlstyle_ra4ybo_v3.h"	// "Стационарный с Павлином" STM32F103C8T6, 2*HMC830, up-conversion to 64455 для RA4YBO
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32fxxx_tqfp48_cpustyle_ra4ybo_v3.h"	/* STM32F103C8T6	*/
-#elif CPUSTYLE_ATMEGA32 && CTLSTYLE_RA4YBO_AM0
-	#include "boards/atmega_ctlstyle_RA4YBO_AM0.h"	// WH1602, IF=10.7 MHz
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega_cpustyle_RA4YBO_AM0.h"	// WH1602, IF=10.7 MHz
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2011
 	#include "boards/atmega_ctlstyle_v9.h"	// SW-2011-RDX
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */

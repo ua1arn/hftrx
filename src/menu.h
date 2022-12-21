@@ -711,100 +711,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHIFSHIFT && ! WITHPOTIFSHIFT */
 
-#if CTLSTYLE_RA4YBO_V3
-/*
-filter_t fi_0p5 =
-filter_t fi_3p1 =
-filter_t fi_3p0_455 =
-filter_t fi_10p0_455 =
-filter_t fi_6p0_455 =
-filter_t fi_2p0_455 =	// strFlash2p0
-*/
-	{
-		QLABEL("3.1 USB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe3p1),
-		nvramoffs0,
-		& fi_3p1.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("3.1 LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe3p1),
-		nvramoffs0,
-		& fi_3p1.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("2.4 USB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe3p0),
-		nvramoffs0,
-		& fi_3p0_455.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("2.4 LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe3p0),
-		nvramoffs0,
-		& fi_3p0_455.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("CNTR 0.5"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, carr0p5),
-		nvramoffs0,
-		& fi_0p5.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("2K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq2k),
-		nvramoffs0,
-		& fi_2p0_455.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("6K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq6k),
-		nvramoffs0,
-		& fi_6p0_455.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("10K OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq10k),
-		nvramoffs0,
-		& fi_10p0_455.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-
-#elif WITHDUALFLTR	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
+#if WITHDUALFLTR	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
 	{
 		QLABEL("BFO FREQ"), 7, 2, 1,	ISTEP10,
 		ITEM_VALUE,
@@ -858,7 +765,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 
-#elif CTLSTYLE_RA4YBO_V1 || (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
+#elif (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
 	/* Обычная схема - выбор ПЧ делается перестановкой последнего гетеродина */
 
 #if ! CTLSTYLE_SW2011ALL
@@ -3670,101 +3577,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* TUNE_2MBAND */
 #endif /* CTLSTYLE_SW2011ALL */
 
-#if CTLREGMODE_RA4YBO || CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A
-#if ! WITHFLATMENU
-	{
-		QLABEL("TXPARAMS"), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrptxparams),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("TXPW SSB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_SSB),
-		nvramoffs0,
-		& gtxpower [MODE_SSB],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW CW "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_CW),
-		nvramoffs0,
-		& gtxpower [MODE_CW],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW FM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_NFM),
-		nvramoffs0,
-		& gtxpower [MODE_NFM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW AM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_AM),
-		nvramoffs0,
-		& gtxpower [MODE_AM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW TUN"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_TUNE),
-		nvramoffs0,
-		& gtxpower [MODE_TUNE],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXCP SSB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_SSB),
-		nvramoffs0,
-		& gtxcompr [MODE_SSB],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXCP AM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_AM),
-		nvramoffs0,
-		& gtxcompr [MODE_AM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXCP FM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_NFM),
-		nvramoffs0,
-		& gtxcompr [MODE_NFM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-
-#endif /* CTLREGMODE_RA4YBO || CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A */
 #if ! WITHFLATMENU
 	{
 		QLABEL2("ABOUT   ", "About"), 0, 0, 0, 0,
