@@ -11075,7 +11075,10 @@ flagne_u8_cat(dualctl8_t * oldval, uint_fast8_t v, uint_fast8_t catindex)
 	if (flagne_u8(& oldval->potvalue, v) != 0)
 	{
 		oldval->value = v;
-		cat_answer_request(catindex);
+		if (aistate != 0)
+		{
+			cat_answer_request(catindex);
+		}
 		return 1;
 	}
 	return 0;
@@ -11088,7 +11091,10 @@ flagne_u16_cat(dualctl16_t * oldval, uint_fast16_t v, uint_fast8_t catindex)
 	if (flagne_u16(& oldval->potvalue, v) != 0)
 	{
 		oldval->value = v;
-		cat_answer_request(catindex);
+		if (aistate != 0)
+		{
+			cat_answer_request(catindex);
+		}
 		return 1;
 	}
 	return 0;
@@ -11101,7 +11107,10 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 	if (flagne_u32(& oldval->potvalue, v) != 0)
 	{
 		oldval->value = v;
-		cat_answer_request(catindex);
+		if (aistate != 0)
+		{
+			cat_answer_request(catindex);
+		}
 		return 1;
 	}
 	return 0;
