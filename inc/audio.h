@@ -199,9 +199,41 @@ extern "C" {
 		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
 		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
+	#elif FPGAMODE_GW2A
+		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
+		// ws=0: even samples, ws=1: odd samples
+
+		/* FPGA */
+		// buff data layout: I main/I sub/Q main/Q sub
+		#define DMABUFFSTEP32RX	2		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
+		#define DMABUFFSTEP32RTS	2		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+
+		#define DMABUF32RX0I	0		// RX0, I
+		#define DMABUF32RX0Q	1		// RX0, Q
+
+		#define DMABUF32RTS0I	0		// RTS0, I	// previous - oldest
+		#define DMABUF32RTS0Q	1		// RTS0, Q	// previous
+
+		/* FPGA */
+		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		#define DMABUF32TXI	0		// TX, I
+		#define DMABUF32TXQ	1		// TX, Q
+
+		/* CODEC */
+		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
+		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
+
+		/* CODEC */
+		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
+
+
 	#elif CPUSTYLE_T113 || CPUSTYLE_F133
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
 		// ws=0: even samples, ws=1: odd samples
+
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
@@ -673,6 +705,23 @@ typedef struct
 	typedef int32_t IFADCvalue_t;
 	typedef int16_t IFDACvalue_t;
 
+#elif FPGAMODE_GW2A
+
+	/* параметры входного/выходного адаптеров */
+	// IF RX
+	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
+	// RTS96
+	#define WITHADAPTERRTS96_WIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERRTS96_SHIFT	0		// количество незанятых битов справа.
+	// RTS192
+	#define WITHADAPTERRTS192_WIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERRTS192_SHIFT	0		// количество незанятых битов справа.
+	// IF TX
+	#define WITHADAPTERIFDACWIDTH	32		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
+	typedef int32_t IFADCvalue_t;
+	typedef int32_t IFDACvalue_t;
 
 #else /* CPUSTYLE_XC7Z */
 

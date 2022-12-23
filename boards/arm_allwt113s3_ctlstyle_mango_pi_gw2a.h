@@ -80,7 +80,8 @@
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
-		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
+		//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
+		#define DIRECT_49M152_X1	1
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
@@ -92,7 +93,7 @@
 	//#define CTLREGMODE_MANGO_PI	1	/* STM32MP157, дополнения для подключения трансвертора */
 	#define CTLREGMODE_NOCTLREG 1
 
-	
+	#define FPGAMODE_GW2A	1
 	
 	
 
@@ -319,7 +320,7 @@
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	#define WITHUSEDUALWATCH	1	// Второй приемник
+	////#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
