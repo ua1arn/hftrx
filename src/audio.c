@@ -4533,6 +4533,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		// режим передачи
 		{
 			r = 0;	
+			//r = (pathi != 0 ? get_rout() : get_lout()) * (FLOAT_t) 0.9;
 		}
 		break;
 
@@ -4660,10 +4661,10 @@ static RAMFUNC FLOAT_t processifadcsampleIQ(
 	uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
 {
+#if WITHDSPLOCALFIR
 	if (isdspmoderx(dspmode))
 	{
 		FLOAT32P_t vp0 = { { adpt_input(& ifcodecrx, iv0), adpt_input(& ifcodecrx, qv0) } };
-#if WITHDSPLOCALFIR
 		// BEGIN_STAMP();
 
 #if WITHUSEDUALWATCH
@@ -4676,13 +4677,16 @@ static RAMFUNC FLOAT_t processifadcsampleIQ(
 #endif /* WITHUSEDUALWATCH */
 
 		//END_STAMP();
-#endif /* WITHDSPLOCALFIR */
 		return baseband_demodulator(vp0, dspmode, pathi);
 	}
 	else
 	{
 		return 0;
 	}
+#else /* WITHUSEDUALWATCH */
+	FLOAT32P_t vp0 = { { adpt_input(& ifcodecrx, iv0), adpt_input(& ifcodecrx, qv0) } };
+	return baseband_demodulator(vp0, dspmode, pathi);
+#endif /* WITHDSPLOCALFIR */
 }
 
 #else /* WITHDSPEXTDDC */
