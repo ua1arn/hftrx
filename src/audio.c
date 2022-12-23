@@ -5996,7 +5996,11 @@ int_fast32_t dsp_get_samplerateuacin_audio48(void)
 // todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
 int_fast32_t dsp_get_samplerateuacin_RTS96(void)
 {
+#if FPGAMODE_GW2A
+	return dsp_get_sampleraterxscaled(1);
+#else
 	return dsp_get_sampleraterxscaled(2);
+#endif
 }
 
 // UAC IN samplerate

@@ -19,9 +19,9 @@
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
-#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
@@ -158,9 +158,9 @@
 	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	
-	#define WITHUSBWCID	1
+	//#define WITHUSBWCID	1
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
@@ -257,12 +257,12 @@
 	// Инициализируются I2S2 в дуплексном режиме.
 	// FPGA или IF codec
 	#define I2S2HW_INITIALIZE(master) do { \
-		arm_hardware_piob_altfn20(0 * 1u << 6,	GPIO_CFG_AF3); /* PB6 I2S2-LRCK	*/ \
-		arm_hardware_piob_altfn20(0 * 1u << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
-		arm_hardware_piob_altfn20(0 * 1u << 4,	GPIO_CFG_AF3); /* PB4 I2S2-DOUT0 to FPGA */ \
-		arm_hardware_piob_altfn20(0 * 1u << 3,	GPIO_CFG_AF5); /* PB3 I2S2-DIN0 from FPGA */ \
+		arm_hardware_piob_altfn20(1u << 6,	GPIO_CFG_AF3); /* PB6 I2S2-LRCK	*/ \
+		arm_hardware_piob_altfn20(1u << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
+		/*arm_hardware_piob_altfn20(1u << 4,	GPIO_CFG_AF3); */ /* PB4 I2S2-DOUT0 to FPGA */ \
+		arm_hardware_piob_altfn20(1u << 4,	GPIO_CFG_AF5); /* PB4 I2S2-DIN1 from FPGA */ \
 	} while (0)
-	#define HARDWARE_I2S2HW_DIN 0	/* DIN0 used */
+	#define HARDWARE_I2S2HW_DIN 1	/* DIN1 used */
 	#define HARDWARE_I2S2HW_DOUT 0	/* DOUT0 used */
 
 /* Распределение битов в ARM контроллерах */
@@ -450,8 +450,8 @@
 
 #if WITHELKEY
 	// Electronic key inputs
-	#define ELKEY_BIT_LEFT				(1u << 4)		// PB4
-	#define ELKEY_BIT_RIGHT				(1u << 5)		// PB5
+	//#define ELKEY_BIT_LEFT				(1u << 4)		// PB4 - user for FPGA now!!!
+	//#define ELKEY_BIT_RIGHT				(1u << 5)		// PB5
 
 	#define ELKEY_TARGET_PIN			(GPIOB->DATA)
 

@@ -199,7 +199,7 @@ extern "C" {
 		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
 		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
-	#elif FPGAMODE_GW2A
+	#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
 		// ws=0: even samples, ws=1: odd samples
 
@@ -705,7 +705,7 @@ typedef struct
 	typedef int32_t IFADCvalue_t;
 	typedef int16_t IFDACvalue_t;
 
-#elif FPGAMODE_GW2A
+#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
 
 	/* параметры входного/выходного адаптеров */
 	// IF RX
@@ -835,6 +835,24 @@ unsigned audiorec_getwidth(void);
 
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+
+	#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
+
+		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
+		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+		#define FPGADECIMATION 2560uL
+		#define FPGADIVIDERATIO 5uL
+		#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+		#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+
+		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
 
 	#else /* CPUSTYLE_XC7Z */
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах

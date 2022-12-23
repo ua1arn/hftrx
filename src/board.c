@@ -293,6 +293,14 @@ board_ctlregs_spi_send_frame(
 	#endif /* (RTC1_TYPE == RTC_TYPE_M41T81) */
 #endif /* defined(RTC1_TYPE) */
 
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
+static void
+prog_fpga_ctrlreg(
+	spitarget_t target		/* addressing to chip */
+	)
+{
+}
+#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0) */
 #if defined (RTC1_TYPE) && RTC1_TYPE == RTC_TYPE_ZYNQ_MP
 
 #include "xrtcpsu.h"
