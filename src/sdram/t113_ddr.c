@@ -37,12 +37,14 @@ static void sdelay(unsigned us)
 
 static uint32_t read32(uintptr_t addr)
 {
+	__DSB();
 	return * (volatile uint32_t *) addr;
 }
 
 static void write32(uintptr_t addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
+	__DSB();
 }
 
 static void write32ptr(void * addr, uint32_t value)
