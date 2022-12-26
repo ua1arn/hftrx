@@ -3924,13 +3924,9 @@ static RAMFUNC FLOAT_t preparevi(
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
-		moni->IV = 0;
-		moni->QV = 0;
 		return 0;	//txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
-		moni->IV = 0;
-		moni->QV = 0;
 		return txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_DIGI:
@@ -3969,25 +3965,17 @@ static RAMFUNC FLOAT_t preparevi(
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
-			moni->IV = 0;
-			moni->QV = 0;
 			return injectsubtone(get_noisefloat() * txlevelXXX, ctcss);	// шум
 
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
-			moni->IV = 0;
-			moni->QV = 0;
 			return injectsubtone(get_dualtonefloat() * txlevelXXX, ctcss);		// источник сигнала - двухтональный генератор для настройки
 
 		case BOARD_TXAUDIO_1TONE:
 			// источник - синусоидальный сигнал
-			moni->IV = 0;
-			moni->QV = 0;
 			return injectsubtone(get_singletonefloat() * txlevelXXX, ctcss);
 
 		case BOARD_TXAUDIO_MUTE:
-			moni->IV = 0;
-			moni->QV = 0;
 			return injectsubtone(0, ctcss);
 		}
 	}
@@ -3998,8 +3986,6 @@ static RAMFUNC FLOAT_t preparevi(
 	}
 	else
 	{
-		moni->IV = 0;
-		moni->QV = 0;
 	}
 	return 0;
 }
@@ -5604,7 +5590,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		const FLOAT32P_t viusb = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
 		const FLOAT_t swapecw = shapeCWEnvelopStep() * scaleDAC;	// 0..1
 		const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep() * scaleDAC;	// 0..1
-		FLOAT32P_t moni;
+		FLOAT32P_t moni = { { 0, 0 } };
 	#endif /* ! WITHTRANSPARENTIQ */
 
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
