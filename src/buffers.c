@@ -713,11 +713,11 @@ void buffers_initialize(void)
 
 #else /* WITHSKIPUSERMODE */
 
-	static subscribefloat_t afsample16register_user;
 	static subscribefloat_t afsample16register;
+	static subscribefloat_t afsample16registertospeex;
 
-	subscribefloat(& speexoutfloat, & afsample16register_user, NULL, savesampleout16stereo_float);
-	subscribefloat(& afdemodoutfloat, & afsample16register, NULL, savesampleout16tospeex);
+	subscribefloat(& speexoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
+	subscribefloat(& afdemodoutfloat, & afsample16registertospeex, NULL, savesampleout16tospeex);
 
 #endif /* WITHSKIPUSERMODE */
 
