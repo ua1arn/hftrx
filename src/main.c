@@ -10941,7 +10941,7 @@ void
 audioproc_spool_user(void)
 {
 	speexel_t * p;
-	if (takespeexready_user(& p))
+	while (takespeexready_user(& p))
 	{
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;

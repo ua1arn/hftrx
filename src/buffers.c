@@ -344,10 +344,7 @@ static const uint_fast8_t uacoutalt = 0;
 #endif /* WITHUSBHW && WITHUSBUAC */
 
 
-static void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1);
 static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1);
-
-static void savesampleout16stereo_float_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 
 // USB AUDIO IN
@@ -688,7 +685,7 @@ savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
-deliverylist_t speexoutfloat;	// выход sppeex и фильтра
+deliverylist_t speexoutfloat;	// выход speex и фильтра
 deliverylist_t afdemodoutfloat;	// выход приемника
 
 #endif /* WITHINTEGRATEDDSP */
@@ -719,7 +716,7 @@ void buffers_initialize(void)
 	static subscribefloat_t afsample16register_user;
 	static subscribefloat_t afsample16register;
 
-	subscribefloat(& speexoutfloat, & afsample16register_user, NULL, savesampleout16stereo_float_user);
+	subscribefloat(& speexoutfloat, & afsample16register_user, NULL, savesampleout16stereo_float);
 	subscribefloat(& afdemodoutfloat, & afsample16register, NULL, savesampleout16tospeex);
 
 #endif /* WITHSKIPUSERMODE */
@@ -2341,37 +2338,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 
 //////////////////////////////////////////
 // Поэлементное заполнение DMA буфера AF DAC
-static void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
-{
-	// если есть инициализированный канал для выдачи звука
-	static voice16tx_t * p = NULL;
-	static unsigned n;
-
-	if (p == NULL)
-	{
-		global_disableIRQ();
-		uintptr_t addr = allocate_dmabuffer16tx();
-		global_enableIRQ();
-		p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-		n = 0;
-	}
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-
-	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = ch0;	// sample value
-	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = ch1;	// sample value
-
-	if (++ n >= CNT16TX)
-	{
-		global_disableIRQ();
-		buffers_savefromrxout16tx(p);
-		global_enableIRQ();
-		p = NULL;
-	}
-}
-
-//////////////////////////////////////////
-// Поэлементное заполнение DMA буфера AF DAC
+/* вызывается при запрещённых глобавльных прерываниях */
 static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	// если есть инициализированный канал для выдачи звука
@@ -2397,15 +2364,7 @@ static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 	}
 }
 
-
-static void savesampleout16stereo_float_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
-{
-	savesampleout16stereo_user(
-		adpt_output(& afcodectx, ch0),
-		adpt_output(& afcodectx, ch1)
-		);
-}
-
+/* вызывается при запрещённых глобальных прерываниях */
 static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	savesampleout16stereo(

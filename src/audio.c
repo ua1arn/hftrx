@@ -756,7 +756,6 @@ void adpt_initialize(
 FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
 {
 	return (FLOAT_t) ((v << adp->lshift32) >> adp->rshift32) * adp->inputK;
-	//return (FLOAT_t) (v >> adp->rightspace) * adp->inputK;
 }
 
 // Преобразование во внешнее (целочисленное) представление.

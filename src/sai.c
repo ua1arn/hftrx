@@ -3999,7 +3999,7 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_flush16tx(getfilled_dmabuffer16txphones());
+	descraddr [ix] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);

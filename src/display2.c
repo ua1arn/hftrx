@@ -4176,6 +4176,7 @@ static int raster2fftsingle(
 }
 
 // RT context function
+/* вызывается при запрещённых глобальных прерываниях */
 static void
 afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
@@ -4213,11 +4214,9 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	ARM_MORPH(arm_nuttall4b)(gvars.afspec_wndfn, WITHFFTSIZEAF);	/* оконная функция для показа звукового спектра */
 
 #if 0 && CTLSTYLE_V3D
-	// делать так не стоит - afsp_save_sample функция работающая в user mode, из real time контекста её вызывать нельзя
-	// возможно нужен "переходник", выкачивающий из real time очереди для показа спектра
 	subscribefloat_user(& afdemodoutfloat, & afspectreregister, NULL, afsp_save_sample);
 #else
-	subscribefloat_user(& speexoutfloat, & afspectreregister, NULL, afsp_save_sample);	// выход sppeex и фильтра
+	subscribefloat_user(& speexoutfloat, & afspectreregister, NULL, afsp_save_sample);	// выход speex и фильтра
 #endif /* CTLSTYLE_V3D */
 }
 
@@ -4491,7 +4490,7 @@ saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 	}
 }
 
-// вызывается при запрещенных прерываниях.
+// вызывается при запрещённых прерываниях.
 void fftbuffer_initialize(void)
 {
 	static RAMBIG fftbuff_t fftbuffersarray [NOVERLAP * 3];
