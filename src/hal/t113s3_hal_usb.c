@@ -1034,7 +1034,6 @@ static uintptr_t usb_get_ep_fifo_addr(pusb_struct pusb, uint32_t ep_no)
 //
 //static int32_t part_index = 0;
 
-
 static int32_t dram_copy(uintptr_t src_addr, uintptr_t dest_addr, uint32_t bytes)
 {
 	memcpy((void *)src_addr, (void *)dest_addr, bytes);
@@ -1042,9 +1041,7 @@ static int32_t dram_copy(uintptr_t src_addr, uintptr_t dest_addr, uint32_t bytes
 	return 1;
 }
 
-
-
-static const unsigned char TestPkt[54] =
+static const uint8_t TestPkt[54] =
 {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xAA,
 	0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xEE, 0xEE, 0xEE,
@@ -1057,7 +1054,7 @@ static const unsigned char TestPkt[54] =
 ///////////////////////////////////////////////////////////
 //For MassStorage Only
 ///////////////////////////////////////////////////////////
-static const unsigned char  InquiryData[]  =
+static const uint8_t InquiryData[]  =
 {
 	0x00, 0x80, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00,
 	'A', 'W',
@@ -1067,11 +1064,7 @@ static const unsigned char  InquiryData[]  =
 	0x20, 0x30, 0x31, 0x30, 0x30
 };
 
-static const unsigned char SenseData[] = {0x03, 0x00, 0x00, 0x00};
-
-
-
-
+static const uint8_t SenseData[] = {0x03, 0x00, 0x00, 0x00};
 
 static uint32_t aw_module(uint32_t x, uint32_t y)
 {
@@ -3545,6 +3538,7 @@ void usb_struct_init(PCD_HandleTypeDef *hpcd)
 	//pusb->ep0_flag = 0;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
 	pusb->ep0_maxpktsz = 64;
+	pusb->ep0_ret = USB_RETVAL_COMPOK;
 
 	for(i=0; i<USB_MAX_EP_NO; i++)
 	{
@@ -3552,6 +3546,8 @@ void usb_struct_init(PCD_HandleTypeDef *hpcd)
 		pusb->eprx_flag[i] = 0;
 		pusb->eptx_xfer_state[i] = USB_EPX_SETUP;
 		pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
+		pusb->eprx_ret[i] = USB_RETVAL_COMPOK;
+		pusb->eptx_ret[i] = USB_RETVAL_COMPOK;
 	}
 
 	usb_set_dev_addr(pusb, 0x00);
@@ -3787,6 +3783,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			pusb->eprx_flag[i] = 0;
 			pusb->eptx_xfer_state[i] = USB_EPX_SETUP;
 			pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
+			pusb->eprx_ret[i] = USB_RETVAL_COMPOK;
+			pusb->eptx_ret[i] = USB_RETVAL_COMPOK;
 		}
 		usb_struct_idle(pusb);
 
