@@ -243,8 +243,6 @@ board_ctlregs_spi_send_frame(
 		#include "chip/ad9835.h"
 	#elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 		#include "chip/fpga_v1.h"
-	#elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
-		#include "chip/fpga_v2.h"
 	#endif
 #endif /* defined(DDS1_TYPE) */
 
@@ -5683,8 +5681,6 @@ prog_dds1_ftw(const ftw_t * value)
 		prog_pulse_ioupdate();
 	#elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 		prog_fpga_freq1(targetfpga1, value);
-	#elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
-		prog_fpga_freq1(targetfpga1, value);
 	#elif (DDS1_TYPE == DDS_TYPE_AD9857)
 		prog_ad9857_freq(targetdds1, 0x00, value);
 		prog_pulse_ioupdate();
@@ -5718,8 +5714,6 @@ prog_rts1_ftw(const ftw_t * value)
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	xcz_dds_rts(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
-	prog_fpga_freq1_rts(targetfpga1, value);
-#elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
 	prog_fpga_freq1_rts(targetfpga1, value);
 #endif
 }
@@ -5755,8 +5749,6 @@ prog_dds1_ftw_noioupdate(const ftw_t * value)
 	prog_ad9852_freq1(targetdds1, value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1(targetfpga1, value);
-#elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
-	prog_fpga_freq1(targetfpga1, value);
 #elif (DDS1_TYPE == DDS_TYPE_AD9857)
 	prog_ad9857_freq(targetdds1, 0x00, value);
 #elif (DDS1_TYPE == DDS_TYPE_AD9951)
@@ -5788,8 +5780,6 @@ prog_dds1_initialize(void)
 #if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_AD9852)
 	prog_ad9852_init(targetdds1, 0, DDS1_CLK_MUL);
 #elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
-	prog_fpga_initialize(targetfpga1);
-#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV2)
 	prog_fpga_initialize(targetfpga1);
 #elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_AD9857)
 	prog_ad9857_init(targetdds1, 0, DDS1_CLK_MUL);
