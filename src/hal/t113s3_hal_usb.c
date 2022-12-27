@@ -3460,7 +3460,11 @@ static uint32_t usb_device_function(PCD_HandleTypeDef *hpcd)
 	usb_dev_iso_xfer_uac(hpcd);
 #endif /* WITHUSBUAC */
 #if WITHUSBCDCACM
-	usb_dev_bulk_xfer_cdc(pusb, 0);
+	unsigned offset;
+	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
+	{
+		usb_dev_bulk_xfer_cdc(pusb, offset);
+	}
 #endif /* WITHUSBCDCACM */
 
 	return 1;
