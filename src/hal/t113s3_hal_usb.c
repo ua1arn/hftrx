@@ -1030,7 +1030,7 @@ static uintptr_t usb_get_ep_fifo_addr(pusb_struct pusb, uint32_t ep_no)
 //}
 
 
-#define USB_NO_DMA		1
+#define USB_NO_DMA		(! WITHUSBDEV_DMAENABLE)
 //
 //static int32_t part_index = 0;
 

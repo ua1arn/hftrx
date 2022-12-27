@@ -62,7 +62,7 @@
 //	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 //	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
-//	#define WITHUSBDEV_DMAENABLE 1
+//	//#define WITHUSBDEV_DMAENABLE 1
 //
 //	//#define WITHUSBHW_HOST		USB_OTG_HS
 //	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
@@ -115,7 +115,7 @@
 	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
-	#define WITHUSBDEV_DMAENABLE 1
+	//#define WITHUSBDEV_DMAENABLE 1
 
 //	#define WITHUSBHW_HOST		USBOTG0
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
