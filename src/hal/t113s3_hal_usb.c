@@ -2725,11 +2725,10 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						pusb->ep0_xfer_residue = min(DeviceDescrTbl [temp].size, ep0_setup->wLength);
 						break;
 					case 0x02:              //Get Configuration Desc
-					   	temp = LO_BYTE(ep0_setup->wValue);
-					   	if (temp < USBD_CONFIGCOUNT)
+					   	if (index < USBD_CONFIGCOUNT)
 					   	{
-							pusb->ep0_xfer_srcaddr = (uintptr_t)ConfigDescrTbl [temp].data;
-							pusb->ep0_xfer_residue = min(ConfigDescrTbl [temp].size, ep0_setup->wLength);
+							pusb->ep0_xfer_srcaddr = (uintptr_t)ConfigDescrTbl [index].data;
+							pusb->ep0_xfer_residue = min(ConfigDescrTbl [index].size, ep0_setup->wLength);
 					   	}
 						else
 						{
@@ -2738,8 +2737,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						}
 						break;
 					case 0x03:             //Get String Desc
-					   	temp = LO_BYTE(ep0_setup->wValue);
-					   	if (temp == 0xEE && MsftStringDescr [0].size != 0)
+					   	if (index == 0xEE && MsftStringDescr [0].size != 0)
 					   	{
 							// WCID devices support
 							// Microsoft OS String Descriptor, ReqLength=0x12
@@ -2747,15 +2745,15 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 							pusb->ep0_xfer_srcaddr = (uintptr_t)MsftStringDescr [0].data;
 							pusb->ep0_xfer_residue = min(MsftStringDescr [0].size, ep0_setup->wLength);
 					   	}
-					   	else if (temp < usbd_get_stringsdesc_count())
+					   	else if (index < usbd_get_stringsdesc_count())
 						{
-							pusb->ep0_xfer_srcaddr = (uintptr_t)StringDescrTbl [temp].data;
-							pusb->ep0_xfer_residue = min(StringDescrTbl [temp].size, ep0_setup->wLength);
+							pusb->ep0_xfer_srcaddr = (uintptr_t)StringDescrTbl [index].data;
+							pusb->ep0_xfer_residue = min(StringDescrTbl [index].size, ep0_setup->wLength);
 						}
 						else
 						{
 						    pusb->ep0_xfer_residue = 0;
-							PRINTF("Unknown String Desc!! 0x%02X\n", temp);
+							PRINTF("Unknown String Desc!! 0x%02X\n", index);
 						}
 						break;
 					case 0x04:           //Get Interface Desc
@@ -2766,7 +2764,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					    pusb->ep0_xfer_residue = 0;
 					    PRINTF("usb_device: Get Endpoint Descriptor\n");
 				    	break;
-					case 0x06:           //Get Device Qualifier
+					case USB_DESC_TYPE_DEVICE_QUALIFIER:           //Get Device Qualifier
 						pusb->ep0_xfer_srcaddr = (uintptr_t)DeviceQualifierTbl [0].data;
 						pusb->ep0_xfer_residue = min(DeviceQualifierTbl [0].size, ep0_setup->wLength);
 				    	break;
