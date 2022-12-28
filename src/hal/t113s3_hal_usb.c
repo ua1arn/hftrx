@@ -2711,6 +2711,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	if ((ep0_setup->bmRequest&0x60)==0x00)
 	{
+		const uint_fast8_t index = LO_BYTE(ep0_setup->wValue);
 		switch (ep0_setup->bRequest)
 		{
 			case 0x00 :
@@ -2738,14 +2739,13 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						break;
 					case 0x03:             //Get String Desc
 					   	temp = LO_BYTE(ep0_setup->wValue);
-					   	if (temp == 0xEE)
+					   	if (temp == 0xEE && MsftStringDescr [0].size != 0)
 					   	{
 							// WCID devices support
 							// Microsoft OS String Descriptor, ReqLength=0x12
 							// See OS_Desc_Intro.doc, Table 3 describes the OS string descriptor’s fields.
 							pusb->ep0_xfer_srcaddr = (uintptr_t)MsftStringDescr [0].data;
 							pusb->ep0_xfer_residue = min(MsftStringDescr [0].size, ep0_setup->wLength);
-							pusb->ep0_xfer_residue = MsftStringDescr [0].size;
 					   	}
 					   	else if (temp < usbd_get_stringsdesc_count())
 						{
@@ -2778,6 +2778,29 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						pusb->ep0_xfer_srcaddr = (uintptr_t)OtherSpeedConfigurationTbl [0].data;
 						pusb->ep0_xfer_residue = min(OtherSpeedConfigurationTbl [0].size, ep0_setup->wLength);
 				    	break;
+					case USB_DESC_TYPE_BOS:
+						if (BinaryDeviceObjectStoreTbl [0].size != 0)
+						{
+							pusb->ep0_xfer_residue = min(BinaryDeviceObjectStoreTbl [0].size, ep0_setup->wLength);
+							pusb->ep0_xfer_srcaddr = (uintptr_t)BinaryDeviceObjectStoreTbl [0].data;
+						}
+						else
+						{
+							pusb->ep0_xfer_residue = 0;
+						}
+						break;
+
+//					case USB_DESC_TYPE_OTG:
+//						if (OtgDescTbl [0].size != 0)
+//						{
+//							pusb->ep0_xfer_residue = OtgDescTbl [0].size;
+//							pusb->ep0_xfer_srcaddr = (uintptr_t)OtgDescTbl [0].data;
+//						}
+//						else
+//						{
+//							pusb->ep0_xfer_residue = 0;
+//						}
+//						break;
 					default  :
 					    pusb->ep0_xfer_residue = 0;
 					    PRINTF("usb_device: Get Unknown Descriptor 0x%02X\n", HI_BYTE(ep0_setup->wValue));
@@ -2799,6 +2822,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				pusb->ep0_xfer_residue = 0;
 				PRINTF("usb_device: Sync Frame\n");
 				break;
+
 	      	default   :
 	        	pusb->ep0_xfer_residue = 0;
 	        	PRINTF("usb_device: Unknown Standard Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
