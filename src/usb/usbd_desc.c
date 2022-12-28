@@ -5161,7 +5161,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBCDCACM */
 
-	if (HSdesc != 0)
+	if ((USB_FUNCTION_BCD_USB >= 0x0201) || (HSdesc != 0))
 	{
 		unsigned partlen;
 		// Device Qualifier
