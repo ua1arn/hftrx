@@ -2770,7 +2770,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				    	break;
 					case 0x09:
 					    pusb->ep0_xfer_srcaddr = (uintptr_t) OtgDescTbl[0].data;
-					    pusb->ep0_xfer_residue = min(DeviceQualifierTbl [0].size, ep0_setup->wLength);
+					    pusb->ep0_xfer_residue = min(OtgDescTbl [0].size, ep0_setup->wLength);
 				    	break;
 					case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
 						pusb->ep0_xfer_srcaddr = (uintptr_t)OtherSpeedConfigurationTbl [0].data;
