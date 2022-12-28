@@ -2719,12 +2719,12 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 			case 0x06 :
 				switch (HI_BYTE(ep0_setup->wValue))
 				{
-					case 0x01:              //Get Device Desc
+					case USB_DESC_TYPE_DEVICE:              //Get Device Desc
 						pusb->ep0_maxpktsz = USB_OTG_MAX_EP0_SIZE; // *((uint8_t*)(pusb->device.dev_desc+7));
 						pusb->ep0_xfer_srcaddr = (uintptr_t)DeviceDescrTbl [temp].data;
 						pusb->ep0_xfer_residue = min(DeviceDescrTbl [temp].size, ep0_setup->wLength);
 						break;
-					case 0x02:              //Get Configuration Desc
+					case USB_DESC_TYPE_CONFIGURATION:              //Get Configuration Desc
 					   	if (index < USBD_CONFIGCOUNT)
 					   	{
 							pusb->ep0_xfer_srcaddr = (uintptr_t)ConfigDescrTbl [index].data;
@@ -2736,7 +2736,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 							PRINTF("Unknown Configuration Desc!!\n");
 						}
 						break;
-					case 0x03:             //Get String Desc
+					case USB_DESC_TYPE_STRING:             //Get String Desc
 					   	if (index == 0xEE && MsftStringDescr [0].size != 0)
 					   	{
 							// WCID devices support
@@ -2756,11 +2756,11 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 							PRINTF("Unknown String Desc!! 0x%02X\n", index);
 						}
 						break;
-					case 0x04:           //Get Interface Desc
+					case USB_DESC_TYPE_INTERFACE:           //Get Interface Desc
 					    pusb->ep0_xfer_residue = 0;
 					    PRINTF("usb_device: Get Interface Descriptor\n");
 				    	break;
-					case 0x05:          //Get Endpoint Desc
+					case USB_DESC_TYPE_ENDPOINT:          //Get Endpoint Desc
 					    pusb->ep0_xfer_residue = 0;
 					    PRINTF("usb_device: Get Endpoint Descriptor\n");
 				    	break;
@@ -2768,7 +2768,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 						pusb->ep0_xfer_srcaddr = (uintptr_t)DeviceQualifierTbl [0].data;
 						pusb->ep0_xfer_residue = min(DeviceQualifierTbl [0].size, ep0_setup->wLength);
 				    	break;
-					case 0x09:
+					case USB_DESC_TYPE_OTG:
 					    pusb->ep0_xfer_srcaddr = (uintptr_t) OtgDescTbl[0].data;
 					    pusb->ep0_xfer_residue = min(OtgDescTbl [0].size, ep0_setup->wLength);
 				    	break;
@@ -2787,18 +2787,6 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 							pusb->ep0_xfer_residue = 0;
 						}
 						break;
-
-//					case USB_DESC_TYPE_OTG:
-//						if (OtgDescTbl [0].size != 0)
-//						{
-//							pusb->ep0_xfer_residue = OtgDescTbl [0].size;
-//							pusb->ep0_xfer_srcaddr = (uintptr_t)OtgDescTbl [0].data;
-//						}
-//						else
-//						{
-//							pusb->ep0_xfer_residue = 0;
-//						}
-//						break;
 					default  :
 					    pusb->ep0_xfer_residue = 0;
 					    PRINTF("usb_device: Get Unknown Descriptor 0x%02X\n", HI_BYTE(ep0_setup->wValue));
