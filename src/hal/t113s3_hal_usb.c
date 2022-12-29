@@ -3027,7 +3027,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 		}
 		else
 		{
-			PRINTF("usb_device: Unknown Vendor-Specific Request = 0x%02X, wValue=0x%04X, wIndex=0x%04X\n", ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex);
+			PRINTF("usb_device: Unknown Vendor-Specific Request = 0x%02X, wValue=0x%04X, wIndex=0x%04X, wLength=0x%04X\n", ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength);
 			pusb->ep0_xfer_residue = 0;
 		}
 	}
