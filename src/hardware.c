@@ -4646,7 +4646,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && ! WITHISBOOTLOADER
 
-	static RAMHEAP uint8_t heapplace [42 * 1024uL * 1024uL];
+	static RAMHEAP uint8_t heapplace [38 * 1024uL * 1024uL];
 
 #elif (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
 
