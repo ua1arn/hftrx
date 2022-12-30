@@ -10884,7 +10884,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 
 	// Filtering and denoise.
 	BEGIN_STAMP();
-	ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+	ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);		/* фильтр выхода детектора */
 	END_STAMP();
 	if (anotch)
 	{
@@ -10951,20 +10951,17 @@ audioproc_spool_user(void)
 			rxaproc_t * const nrp = & rxaprocs [pathi];
 			const uint_fast8_t amode = getamode(pathi);
 			// nrp->outsp указывает на результат обработки
-			outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
+			//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
+			outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
+		#if WITHAFEQUALIZER
+			audio_rx_equalizer(outsp [pathi], FIRBUFSIZE);
+		#endif /* WITHAFEQUALIZER */
 		}
 		//////////////////////////////////////////////
 		// Save results
 #if WITHUSEDUALWATCH
-	#if WITHAFEQUALIZER
-		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
-		audio_rx_equalizer(outsp [1], FIRBUFSIZE);
-	#endif /* WITHAFEQUALIZER */
 		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [1], FIRBUFSIZE);	// to AUDIO codec
 #else /* WITHUSEDUALWATCH */
-	#if WITHAFEQUALIZER
-		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
-	#endif /* WITHAFEQUALIZER */
 		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [0], FIRBUFSIZE);	// to AUDIO codec
 #endif /* WITHUSEDUALWATCH */
 		// Освобождаем буфер
