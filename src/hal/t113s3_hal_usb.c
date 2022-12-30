@@ -2409,7 +2409,7 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
   		}
   		else
   		{
-  			ret = USB_RETVAL_NOTCOMP;
+  			//ret = USB_RETVAL_NOTCOMP;
   			// использование данных
   			//printhex(0, cdcXbuffout [offset], rx_count);
   			cdcXout_buffer_save(cdcXbuffout [offset], rx_count, 0);
@@ -2421,7 +2421,7 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 		switch (pusb->eptx_ret[bo_ep_in-1])
 		{
 		case USB_RETVAL_NOTCOMP:
-			pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_BULK);
+			pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
 			break;
 		case USB_RETVAL_COMPERR:
 			pusb->eptx_ret[bo_ep_in-1] = USB_RETVAL_COMPOK;
@@ -2521,16 +2521,22 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 
 		if (uacinaddr)
 		{
-			USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 			const uint32_t bo_ep_in = USBD_EP_AUDIO_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
 
-			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinsize, USB_PRTCL_ISO);
-			if (ret == USB_RETVAL_COMPOK)
+			switch (pusb->eptx_ret[bo_ep_in-1])
 			{
+			case USB_RETVAL_NOTCOMP:
+				pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinsize, USB_PRTCL_ISO);
+				break;
+			case USB_RETVAL_COMPERR:
+				pusb->eptx_ret[bo_ep_in-1] = USB_RETVAL_COMPOK;
+				break;
+			case USB_RETVAL_COMPOK:
 				global_disableIRQ();
 				release_dmabufferx(uacinaddr);
 				global_enableIRQ();
 				uacinaddr = 0;
+				break;
 			}
 		}
 	}
@@ -2540,15 +2546,22 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 		if (uacinrtsaddr)
 		{
 			USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-			const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
+			const uint32_t bo_ep_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
 
-			ret = epx_in_handler_dev_iso(pusb, bo_ep_rts_in, uacinrtsaddr, uacinrtssize, USB_PRTCL_ISO);
-			if (ret == USB_RETVAL_COMPOK)
+			switch (pusb->eptx_ret[bo_ep_in-1])
 			{
+			case USB_RETVAL_NOTCOMP:
+				pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinrtsaddr, uacinrtssize, USB_PRTCL_ISO);
+				break;
+			case USB_RETVAL_COMPERR:
+				pusb->eptx_ret[bo_ep_in-1] = USB_RETVAL_COMPOK;
+				break;
+			case USB_RETVAL_COMPOK:
 				global_disableIRQ();
 				release_dmabufferxrts(uacinrtsaddr);
 				global_enableIRQ();
 				uacinrtsaddr = 0;
+				break;
 			}
 		}
 	}
@@ -3193,20 +3206,13 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 
 		if (uacinaddr)
 		{
-			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinsize, USB_PRTCL_ISO);
-			if (ret == USB_RETVAL_COMPOK)
-			{
-				global_disableIRQ();
-				release_dmabufferx(uacinaddr);
-				global_enableIRQ();
-				uacinaddr = 0;
-			}
+			pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinsize, USB_PRTCL_ISO);
 		}
 	}
 
 #if WITHUSBUACIN2
 	{
-		const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
+		const uint32_t bo_ep_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
 
 		if (uacinrtsaddr != 0)
 		{
@@ -3220,16 +3226,7 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 		global_enableIRQ();
 		if (uacinrtsaddr)
 		{
-			USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-
-			ret = epx_in_handler_dev_iso(pusb, bo_ep_rts_in, uacinrtsaddr, uacinrtssize, USB_PRTCL_ISO);
-			if (ret == USB_RETVAL_COMPOK)
-			{
-				global_disableIRQ();
-				release_dmabufferxrts(uacinrtsaddr);
-				global_enableIRQ();
-				uacinrtsaddr = 0;
-			}
+			pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinrtsaddr, uacinrtssize, USB_PRTCL_ISO);
 		}
 	}
 #endif /* WITHUSBUACIN2 */
