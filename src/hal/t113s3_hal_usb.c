@@ -2284,27 +2284,30 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 
 static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
-static volatile uint8_t usbd_cdc_txstarted [WITHUSBCDCACM_N];
 static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void usbd_cdc_send(const void * buff, size_t length)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	if (gpusb != NULL && usbd_cdc_txstarted [offset] == 0)
+	if (gpusb != NULL)
 	{
+		usb_struct * const pusb = gpusb;
 		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+		if (pusb->eptx_ret[bo_ep_in-1] != USB_RETVAL_COMPOK)
+			return;
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 		const size_t n = ulmin(length, VIRTUAL_COM_PORT_IN_DATA_SIZE);
 		memcpy(cdcXbuffin [offset], buff, n);
 		usbd_cdc_zlp_pending [offset] = n == VIRTUAL_COM_PORT_IN_DATA_SIZE;
 		usbd_cdc_txlen [offset] = n;
 		//printhex(0, cdcXbuffin [offset], usbd_cdc_txlen [offset]);
- 		do
-  		{
-  			ret = epx_in_handler_dev(gpusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
-  		}
-  		while(ret == USB_RETVAL_NOTCOMP);
+		pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
+// 		do
+//  		{
+//  			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
+//  		}
+//  		while(ret == USB_RETVAL_NOTCOMP);
 	}
 }
 
@@ -2313,6 +2316,10 @@ uint_fast8_t usbd_cdc_ready(void)	/* временное решение для п
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpusb != NULL)
 	{
+		usb_struct * const pusb = gpusb;
+		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+		if (pusb->eptx_ret[bo_ep_in-1] != USB_RETVAL_COMPOK)
+			return 0;
 		return 1;
 	}
 	return 0;
@@ -2366,16 +2373,16 @@ static void cdcXout_buffer_save(
 	}
 }
 
-static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
+static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 {
 	const uint32_t ep_save = usb_get_active_ep(pusb);
 	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
 	const uint32_t bo_ep_out = (USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F);
-	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t rx_count=0;
 
 	do
 	{
+		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 		// Handle OUT pipe (from host to device)
 	 	if (!pusb->eprx_flag[bo_ep_out-1])
 		{
@@ -2411,19 +2418,28 @@ static USB_RETVAL usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 
 	do
 	{
-		// Handle IN pipe (from device to host)
-	 	if (!pusb->eptx_flag[bo_ep_in-1])
+		switch (pusb->eptx_ret[bo_ep_in-1])
 		{
+		case USB_RETVAL_NOTCOMP:
+			pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_BULK);
+			break;
+		case USB_RETVAL_COMPERR:
+			pusb->eptx_ret[bo_ep_in-1] = USB_RETVAL_COMPOK;
+			break;
+		case USB_RETVAL_COMPOK:
 			break;
 		}
-	 	pusb->eptx_flag[bo_ep_in-1]--;
+//		// Handle IN pipe (from device to host)
+//	 	if (!pusb->eptx_flag[bo_ep_in-1])
+//		{
+//			break;
+//		}
+//	 	pusb->eptx_flag[bo_ep_in-1]--;
 	 	//TP();
 
 	} while (0);
 
 	usb_select_ep(pusb, ep_save);
-
-	return ret;
 }
 
 
@@ -2450,14 +2466,14 @@ static uintptr_t uacinrtsaddr = 0;
 static uint_fast16_t uacinrtssize = 0;
 #endif /* WITHUSBUACIN2 */
 
-static USB_RETVAL usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
+static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	const uint32_t ep_save = usb_get_active_ep(pusb);
-	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 
 	do
 	{
+	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 		uint32_t rx_count=0;
 		static uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE];
 		const uint32_t bo_ep_out = (USBD_EP_AUDIO_OUT & 0x0F);
@@ -2538,7 +2554,6 @@ static USB_RETVAL usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
-	return ret;
 }
 
 
