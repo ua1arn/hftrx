@@ -1456,27 +1456,6 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 	return ret;
 }
 
-static USB_RETVAL epx_in_handler_dev_iso(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
-{
-  	USB_RETVAL ret = USB_RETVAL_COMPOK;
-	uint32_t ep_save = usb_get_active_ep(pusb);
-	usb_select_ep(pusb, ep_no);
-    if ((USB_TXCSR_FIFONOTEMP & usb_get_eptx_csr(pusb)) == 0)
-    {
-		uint32_t saved = usb_get_fifo_access_config(pusb);
-		usb_fifo_accessed_by_cpu(pusb);
-        usb_write_ep_fifo(pusb, ep_no, src_addr, byte_count);
-    	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO | USB_TXCSR_TXPKTRDY | (usb_get_eptx_csr(pusb) & USB_TXCSR_ISO));
-    	usb_set_fifo_access_config(pusb, saved);
-    }
-    else
-    {
-    	ret = USB_RETVAL_NOTCOMP;
-    }
-	usb_select_ep(pusb, ep_save);
-	return ret;
-}
-
 static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
 {
   	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -1716,6 +1695,26 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 	return ret;
 }
 
+static USB_RETVAL epx_in_handler_dev_iso(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
+{
+	USB_RETVAL ret = USB_RETVAL_COMPOK;
+	uint32_t ep_save = usb_get_active_ep(pusb);
+	usb_select_ep(pusb, ep_no);
+    if ((USB_TXCSR_FIFONOTEMP & usb_get_eptx_csr(pusb)) == 0)
+    {
+		uint32_t saved = usb_get_fifo_access_config(pusb);
+		usb_fifo_accessed_by_cpu(pusb);
+        usb_write_ep_fifo(pusb, ep_no, src_addr, byte_count);
+    	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO | USB_TXCSR_TXPKTRDY | (usb_get_eptx_csr(pusb) & USB_TXCSR_ISO));
+    	usb_set_fifo_access_config(pusb, saved);
+    }
+    else
+    {
+    	ret = USB_RETVAL_NOTCOMP;
+    }
+	usb_select_ep(pusb, ep_save);
+	return ret;
+}
 
 #if WITHUSBDMSC
 
