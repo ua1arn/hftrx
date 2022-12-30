@@ -367,7 +367,9 @@ void endstamp3(void)
 static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
 static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
+#if WITHSKIPUSERMODE
 static RAMBIGDTCM FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [Ntap_rx_AUDIO];	/* полный размет без учета симметрии */
+#endif /* WITHSKIPUSERMODE */
 static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
 
 //static void * fft_lookup;
@@ -2186,11 +2188,13 @@ static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int 
 
 // подготовка буфера с оконной функцией
 // Учитываем симметрию.
-static void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum)
+static void fir_design_windowbuff_half(FLOAT_t *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
 	int iCnt;
-	for (iCnt = 0; iCnt < j; iCnt ++)
+
+    ASSERT((iCoefNum % 2) == 1);
+    for (iCnt = 0; iCnt < j; iCnt ++)
 	{
 		dWindow [iCnt] = fir_design_window(iCnt, iCoefNum, BOARD_WTYPE_FILTERS);
 	}
@@ -2199,7 +2203,7 @@ static void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum)
 
 // подготовка буфера с оконной функцией
 // Учитываем симметрию.
-static void fir_design_windowbuffL(double *dWindow, int iCoefNum)
+static void fir_design_windowbuffL_half(double *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
 	int iCnt;
@@ -2847,6 +2851,9 @@ static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8
 	return bypass ? xshift [fir_head + NtapHalf] : filter_fir_compute(FIRCoef_tx_MIKE [gwprof], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
 }
 
+
+#if WITHSKIPUSERMODE
+
 // Звуковой фильтр приёмника.
 // фильтрация пар значений разными фильтрами
 static RAMFUNC_NONILINE FLOAT32P_t filter_fir_rx_AUDIO_Pair2(FLOAT32P_t NewSample)
@@ -2878,6 +2885,7 @@ static RAMFUNC_NONILINE FLOAT_t filter_fir_rx_AUDIO_A(FLOAT_t NewSample)
 	return filter_fir_compute(FIRCoef_rx_AUDIO [gwprof] [0], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
 }
 
+#endif /* WITHSKIPUSERMODE */
 
 static RAMFUNC uint_fast8_t isdspmoderx(uint_fast8_t dspmode)
 {
@@ -3063,15 +3071,6 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	}
 }
 
-// Установка параметров тракта приёмника
-static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
-{
-	FLOAT_t * const dCoeff = FIRCoef_rx_AUDIO [spf] [pathi];
-	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;
-	//enum { iCoefNum = Ntap_rx_AUDIO };
-
-	dsp_recalceq_coeffs(pathi, dCoeff, Ntap_rx_AUDIO);	// calculate coefficients
-}
 // установить частоты среза тракта ПЧ
 // Вызывается из пользовательской программы, но может быть вызвана и до инициализации DSP - вызывается из updateboard.
 static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
@@ -3090,7 +3089,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 	const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
 	nco_setlo_ftw(lo6_ftw, pathi);
 #if WITHSKIPUSERMODE
-	audio_setup_rx(spf, pathi);
+	dsp_recalceq_coeffs_rx_AUDIO(pathi, FIRCoef_rx_AUDIO [spf] [pathi]);	// calculate coefficients
 #endif /* WITHSKIPUSERMODE */
 	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
 
@@ -3108,12 +3107,12 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 }
 
 // calculate 1/2 of coefficients
-static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
+static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, const FLOAT_t * dWindow, int iCoefNum)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
-	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;
 
+	ASSERT((iCoefNum % 2) == 1);
 	switch (glob_dspmodes [pathi])
 	{
 	case DSPCTL_MODE_RX_DSB:
@@ -3201,6 +3200,7 @@ static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int i
 // Duplicate symmetrical part of coeffs.
 static void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap)
 {
+	ASSERT((Ntap % 2) == 1);
 	const int half = Ntap / 2;
 	int i;
 	for (i = 1; i <= half; ++ i)
@@ -3210,9 +3210,11 @@ static void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap)
 }
 
 // calculate full array of coefficients
-void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
+void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff)
 {
-	dsp_recalceq_coeffs_half(pathi, dCoeff, iCoefNum);	// calculate 1/2 of coefficients
+	int iCoefNum = Ntap_rx_AUDIO;
+	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;	// Array of NtapCoeffs(Ntap_rx_AUDIO) values
+	dsp_recalceq_coeffs_half(pathi, dCoeff, dWindow, iCoefNum);	// calculate 1/2 of coefficients
 	fir_expand_symmetric(dCoeff, iCoefNum);	// Duplicate symmetrical part of coeffs.
 }
 
@@ -3951,6 +3953,7 @@ static RAMFUNC FLOAT_t preparevi(
 #if WITHCOMPRESSOR
 			vi0f = audio_compressor_calc(vi0f);		// Компрессор
 #endif /* WITHCOMPRESSOR */
+			vi0f = filter_fir_tx_MIKE(vi0f, 0);
 			moni->IV = vi0f;
 			moni->QV = vi0f;
 			return injectsubtone(vi0f, ctcss);
@@ -4082,7 +4085,6 @@ static RAMFUNC void processafadcsampleiq(
 		}
 		else
 		{
-			vi = filter_fir_tx_MIKE(vi, 0);
 	#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
 			const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shapecw));
 	#else /* WITHDSPLOCALFIR */
@@ -4093,9 +4095,6 @@ static RAMFUNC void processafadcsampleiq(
 	#else /* WITHTXCPATHCALIBRATE */
 			savesampleout32stereo(adpt_output(& ifcodectx, vfb.IV), adpt_output(& ifcodectx, vfb.QV));	// Запись в поток к передатчику I/Q значений.
 	#endif /* WITHTXCPATHCALIBRATE */
-			/* самоконтроль с учётом фильтра передатчика */
-			moni->IV = vi;
-			moni->QV = vi;
 		}
 	}
 	else
@@ -6147,24 +6146,24 @@ void dsp_initialize(void)
 	PRINTF("dsp_initialize: ARMI2SRATE=%lu, ARMI2SRATE100=%lu.%02lu\n", (unsigned long) ARMI2SRATE, (unsigned long) (ARMI2SRATE100 / 100), (unsigned long) (ARMI2SRATE100 % 100));
 	//PRINTF("DMABUFFSIZE32RX=%d, DMABUFFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFFSTEP32RX);
 
-	fir_design_windowbuff(FIRCwnd_tx_MIKE, Ntap_tx_MIKE);
-	fir_design_windowbuff(FIRCwnd_rx_AUDIO, Ntap_rx_AUDIO);
+	fir_design_windowbuff_half(FIRCwnd_tx_MIKE, Ntap_tx_MIKE);
+	fir_design_windowbuff_half(FIRCwnd_rx_AUDIO, Ntap_rx_AUDIO);
 	//fft_lookup = spx_fft_init(2*SPEEXNN);
 
 #if WITHDSPEXTFIR
 	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
-		fir_design_windowbuffL(FIRCwndL_trxi_IQ, Ntap_trxi_IQ);
+		fir_design_windowbuffL_half(FIRCwndL_trxi_IQ, Ntap_trxi_IQ);
 	#else
-		fir_design_windowbuff(FIRCwnd_trxi_IQ, Ntap_trxi_IQ);
+		fir_design_windowbuff_half(FIRCwnd_trxi_IQ, Ntap_trxi_IQ);
 	#endif
 #endif /* WITHDSPEXTFIR */
 
 #if WITHDSPLOCALFIR	
-	fir_design_windowbuff(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ);
-	fir_design_windowbuff(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ);
+	fir_design_windowbuff_half(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ);
+	fir_design_windowbuff_half(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ);
 #endif /* WITHDSPLOCALFIR */
 #if WITHDSPLOCALTXFIR
-	fir_design_windowbuff(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ);
+	fir_design_windowbuff_half(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ);
 #endif /* WITHDSPLOCALTXFIR */
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);

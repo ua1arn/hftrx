@@ -1140,7 +1140,7 @@ void endstamp3(void);
 
 void buffers_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum);	// calculate full array of coefficients
+void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff);	// calculate full array of coefficients
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);
