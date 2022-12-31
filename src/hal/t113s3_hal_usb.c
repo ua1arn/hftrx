@@ -1030,7 +1030,6 @@ static uintptr_t usb_get_ep_fifo_addr(pusb_struct pusb, uint32_t ep_no)
 //}
 
 
-#define USB_NO_DMA		(! WITHUSBDEV_DMAENABLE)
 //
 //static int32_t part_index = 0;
 
@@ -1192,7 +1191,7 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 *
 ************************************************************************************************************
 */
-#ifndef USB_NO_DMA
+#if WITHUSBDEV_DMAENABLE
 static uint32_t usb_dev_get_buf_base(pusb_struct pusb, uint32_t buf_tag)
 {
 	return (pusb->device.bo_bufbase + buf_tag*USB_BO_DEV_BUF_SIZE);
@@ -1205,7 +1204,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 	uint32_t maxpkt;
 	uint32_t ep_save = usb_get_active_ep(pusb);
 	static uint32_t epout_timeout = 0;
-#ifndef USB_NO_DMA
+#if WITHUSBDEV_DMAENABLE
 	__dma_setting_t  p;
 	uint32_t dram_addr;
 #endif
@@ -1234,7 +1233,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 			{
 				uint32_t xfer_count=0;
 
-#ifndef USB_NO_DMA
+#if WITHUSBDEV_DMAENABLE
 				xfer_count = min(pusb->eprx_xfer_residue, USB_BO_DEV_BUF_SIZE);
 				pusb->dma_last_transfer = xfer_count;
 				usb_fifo_accessed_by_dma(pusb, ep_no, 0);  //rx
@@ -1333,7 +1332,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 		break;
 
 		case USB_EPX_DATA:
-#ifndef USB_NO_DMA
+#if WITHUSBDEV_DMAENABLE
 		if (!wBoot_dma_QueryState(pusb->dma))
 	 	{
 	 		uint32_t data_xfered = pusb->dma_last_transfer;
@@ -1461,7 +1460,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
   	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t maxpkt;
 	uint32_t ep_save = usb_get_active_ep(pusb);
-#ifndef USB_NO_DMA
+#if WITHUSBDEV_DMAENABLE
 	__dma_setting_t  p;
 	uint32_t dram_addr;
 	uint32_t ping_pang_addr;
@@ -1487,7 +1486,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 
 			if (byte_count>=maxpkt)
 		 	{
-#ifndef USB_NO_DMA
+#if WITHUSBDEV_DMAENABLE
 				uint32_t xfer_count = 0;
 
 		 		xfer_count = min(pdev->eptx_xfer_residue, USB_BO_DEV_BUF_SIZE);
@@ -1588,7 +1587,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 
 		case USB_EPX_DATA:
 		{
-#ifndef USB_NO_DMA
+#if WITHUSBDEV_DMAENABLE
 			if (!wBoot_dma_QueryState(pusb->dma))
 		 	{
 		 		if (pusb->dma_last_transfer)
