@@ -508,7 +508,6 @@ extern "C" {
 
 	#include "arch/zynq/zynq7000.h"
 	#include "irq_ctrl.h"
-	#include "xparameters.h"
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32

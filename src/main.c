@@ -20900,21 +20900,18 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
 {
 	uint_fast16_t el;
-	uint_fast8_t count = 0;
 
 	for (el = index; el <= index + cnt; el ++)
 	{
 		const FLASHMEM struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_VALUE))
 		{
-			menu_names_t * const v = & vals [count];
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
 			display2_menu_valxx(0, 0, & dctx);
-			safestrcpy (v->name, ARRAY_SIZE(v->name), menuw);
-			v->index = el;
-			count++;
+			safestrcpy (vals->name, ARRAY_SIZE(vals->name), menuw);
+			vals->index = el;
 		}
 	}
 }
