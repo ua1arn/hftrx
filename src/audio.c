@@ -5275,14 +5275,6 @@ static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
-static volatile int pingcount;
-// формирование маркера начала записи по PPS в одном из каналов USB
-// system_level irq handler:
-void dsp_sidetone_ping(void)
-{
-	pingcount = ARMSAIRATE;
-}
-
 // sdtn, moni: значение выборки в диапазоне, допустимом для кодека
 // shape: 0..1: 0 - monitor, 1 - sidetone
 static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
@@ -5307,6 +5299,8 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 		aubufv_t * const b = & buff [i];
 		const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
 		const FLOAT_t sdtnv = get_float_sidetone();
+		ASSERT(sdtnshape >= 0 && sdtnshape <= 1);
+		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
 		FLOAT32P_t moni;
 		if (getsampmlemoni(& moni) == 0)
 		{
@@ -5347,12 +5341,6 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 			break;
 		}
 #endif /* WITHUSBHEADSET */
-
-#if WITHLFM && ! WITHTOUCHGUI
-		if (pingcount != 0)
-			-- pingcount;
-		right = get_lout() * (pingcount != 0);
-#endif /* WITHLFM */
 
 		if (tx)
 		{

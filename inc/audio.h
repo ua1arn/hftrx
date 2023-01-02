@@ -985,8 +985,6 @@ void processing_dmabuffer32rts192(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
 void buffers_resampleuacin(unsigned nsamples);
 
-void dsp_sidetone_ping(void);	// system_level irq handler: формирование маркера начала записи по PPS в одном из каналов USB
-
 int_fast32_t buffers_dmabuffer32rxcachesize(void);
 int_fast32_t buffers_dmabuffer32txcachesize(void);
 int_fast32_t buffers_dmabuffer16rxcachesize(void);
