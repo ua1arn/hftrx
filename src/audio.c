@@ -3131,6 +3131,8 @@ static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, const
 	case DSPCTL_MODE_RX_WFM:
 	case DSPCTL_MODE_RX_AM:
 	case DSPCTL_MODE_RX_WIDE:
+	case DSPCTL_MODE_TX_SSB:
+	case DSPCTL_MODE_RX_ISB:
 		// audio
 		if (glob_notch_mode == BOARD_NOTCH_MANUAL)
 		{
@@ -3169,6 +3171,7 @@ static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, const
 		}
 		break;
 
+	case DSPCTL_MODE_TX_CW:
 	case DSPCTL_MODE_RX_NARROW:
 	case DSPCTL_MODE_RX_FREEDV:
 		// audio
