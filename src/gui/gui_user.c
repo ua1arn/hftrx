@@ -276,9 +276,9 @@ static window_t windows [] = {
 #endif /* WITHLWIP */
 	{ WINDOW_3D, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Donut 3d ASCII demo",	 1, window_3d_process, },
 #if WITHLFM
-	{ WINDOW_LFM, 		 	 WINDOW_UTILS,			ALIGN_RIGHT_X, "LFM",			 		 1, window_lfm_process, },
+	{ WINDOW_LFM, 		 	 WINDOW_UTILS,			ALIGN_RIGHT_X,  "LFM",			 		 1, window_lfm_process, },
+	{ WINDOW_LFM_SPECTRE, 	 WINDOW_LFM,			ALIGN_CENTER_X, "LFM spectre draw",	 	 1, window_lfm_spectre_process, },
 #endif /* WITHLFM  */
-	{ WINDOW_TEST, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "test",	 				 1, window_test_process, },
 };
 
 /* Возврат ссылки на окно */
@@ -2005,9 +2005,8 @@ static void window_utilites_process(void)
 		add_element("btn_pingtest", 100, 44, 0, 0, "IP ping|test");
 #endif /* WITHLWIP */
 #if WITHLFM
-		add_element("btn_lfm",      100, 44, 0, 0, "LFM");
+		add_element("btn_lfm",      100, 44, 0, 0, "LFM|receive");
 #endif /* WITHLFM  */
-		add_element("btn_test",      100, 44, 0, 0, "Test");
 
 		x = 0;
 		y = 0;
@@ -2051,10 +2050,6 @@ static void window_utilites_process(void)
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_3d"))
 			{
 				open_window(get_win(WINDOW_3D));
-			}
-			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_test"))
-			{
-				open_window(get_win(WINDOW_TEST));
 			}
 #if WITHTX
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_SWRscan"))
@@ -6045,54 +6040,62 @@ static void window_lfm_process(void)
 {
 #if WITHLFM
 	window_t * const win = get_win(WINDOW_LFM);
-	static unsigned update = 0;
+	static uint update = 0;
 	static enc_var_t enc;
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 12;
+		uint x = 0, y = 0, interval = 24;
 		win->first_call = 0;
 		update = 1;
-		enc.select = 1;
+		enc.select = 2;
 		enc.change = 0;
 		enc.updated = 1;
 
 		static const label_t labels [] = {
-			{ WINDOW_LFM, DISABLED,  0, VISIBLE, "lbl_nmeatime",		"00:00:00", 	FONT_MEDIUM, COLORMAIN_GREEN, 0, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset",		"Time offset",	FONT_MEDIUM, COLORMAIN_WHITE, 1, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset_val",	"xx sec",		FONT_MEDIUM, COLORMAIN_WHITE, 2, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq",    	"Stop freq",	FONT_MEDIUM, COLORMAIN_WHITE, 3, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq_val",	"xx MHz",		FONT_MEDIUM, COLORMAIN_WHITE, 4, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval",    	"Interval",		FONT_MEDIUM, COLORMAIN_WHITE, 5, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval_val",	"xx sec",		FONT_MEDIUM, COLORMAIN_WHITE, 6, },
+			{ WINDOW_LFM, DISABLED,  0, VISIBLE, "lbl_nmeatime",		"NMEA time:", 	FONT_MEDIUM, COLORMAIN_WHITE, 0, },
+			{ WINDOW_LFM, DISABLED,  0, VISIBLE, "lbl_nmeatime_val",	"00:00:00", 	FONT_MEDIUM, COLORMAIN_GREEN, 1, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset",		"Time offset:",	FONT_MEDIUM, COLORMAIN_WHITE, 2, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset_val",	"xx sec",		FONT_MEDIUM, COLORMAIN_WHITE, 3, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq",    	"Stop freq:",	FONT_MEDIUM, COLORMAIN_WHITE, 4, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq_val",	"xx MHz",		FONT_MEDIUM, COLORMAIN_WHITE, 5, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval",    	"Interval:",		FONT_MEDIUM, COLORMAIN_WHITE, 6, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval_val",	"xx sec",		FONT_MEDIUM, COLORMAIN_WHITE, 7, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
-		uint_fast16_t labels_size = sizeof(labels);
+		uint labels_size = sizeof(labels);
 		win->lh_ptr = malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		add_element("btn_state", 86, 36, 0, 0, "");
+		add_element("btn_state", 86, 40, 0, 0, "");
+		add_element("btn_draw", 86, 40, 0, 0, "Draw|spectre");
 
-		label_t * lh = find_gui_element(TYPE_LABEL, win, "lbl_timeoffset");
-		unsigned mid_x = get_label_width(lh) / 2;
-
-		for (unsigned i = 0; i < win->lh_count; i ++)
+		for (uint i = 0; i < win->lh_count; i += 2)
 		{
-			lh = & win->lh_ptr [i];
+			label_t * lh1 = & win->lh_ptr [i];
+			label_t * lh2 = & win->lh_ptr [i + 1];
 
-			lh->x = mid_x - get_label_width(lh) / 2;
-			lh->y = y;
-			lh->visible = VISIBLE;
+			lh1->x = x;
+			lh1->y = y;
+			lh1->visible = VISIBLE;
 
-			y = lh->y + get_label_height(lh) + interval;
-			y = (i + 1) % 2 ? (y + interval) : y;
+			lh2->x = x + 130;
+			lh2->y = y;
+			lh2->visible = VISIBLE;
+
+			y = y + get_label_height(lh1) + interval;
 		}
 
-		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_state");
-		bh->x1 = mid_x - bh->w / 2;
-		bh->y1 = lh->y + get_label_height(lh) + interval * 2;
-		bh->visible = VISIBLE;
+		button_t * btn_state = find_gui_element(TYPE_BUTTON, win, "btn_state");
+		btn_state->x1 = 5;
+		btn_state->y1 = y;
+		btn_state->visible = VISIBLE;
+
+		button_t * btn_draw = find_gui_element(TYPE_BUTTON, win, "btn_draw");
+		btn_draw->x1 = btn_state->x1 + btn_state->w + interval;
+		btn_draw->y1 = y;
+		btn_draw->visible = VISIBLE;
 
 		hamradio_enable_encoder2_redirect();
 		enable_window_move(win);
@@ -6118,6 +6121,10 @@ static void window_lfm_process(void)
 					hamradio_set_lfmmode(! hamradio_get_lfmmode());
 
 				update = 1;
+			}
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_draw"))
+			{
+				open_window(get_win(WINDOW_LFM_SPECTRE));
 			}
 		}
 		else if (IS_LABEL_PRESS)
@@ -6148,29 +6155,29 @@ static void window_lfm_process(void)
 	{
 		enc.updated = 0;
 
-		for(uint_fast8_t i = 1; i < win->lh_count; i ++)
+		for(uint i = 2; i < win->lh_count; i ++)
 			win->lh_ptr [i].color = COLORMAIN_WHITE;
 
 		ASSERT(enc.select < win->lh_count);
 
-		if (enc.select == 1 || enc.select == 2)
+		if (enc.select == 2 || enc.select == 3)
 		{
-			win->lh_ptr [1].color = COLORMAIN_YELLOW;
 			win->lh_ptr [2].color = COLORMAIN_YELLOW;
+			win->lh_ptr [3].color = COLORMAIN_YELLOW;
 			uint_fast16_t v = hamradio_get_lfmtoffset();
 			hamradio_set_lfmtoffset(v + enc.change);
 		}
-		else if (enc.select == 3 || enc.select == 4)
+		else if (enc.select == 4 || enc.select == 5)
 		{
-			win->lh_ptr [3].color = COLORMAIN_YELLOW;
 			win->lh_ptr [4].color = COLORMAIN_YELLOW;
+			win->lh_ptr [5].color = COLORMAIN_YELLOW;
 			uint_fast16_t v = hamradio_get_lfmstop100k();
 			hamradio_set_lfmstop100k(v + enc.change * 10);
 		}
-		else if (enc.select == 5 || enc.select == 6)
+		else if (enc.select == 6 || enc.select == 7)
 		{
-			win->lh_ptr [5].color = COLORMAIN_YELLOW;
 			win->lh_ptr [6].color = COLORMAIN_YELLOW;
+			win->lh_ptr [7].color = COLORMAIN_YELLOW;
 			uint_fast16_t v = hamradio_get_lfmtinterval();
 			hamradio_set_lfmtinterval(v + enc.change);
 		}
@@ -6188,8 +6195,8 @@ static void window_lfm_process(void)
 		unsigned s = hamradio_get_lfmmode() == 0 ? 0 : btn_state->is_locked ? 2 : 1;
 		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[s]);
 
-		label_t * lbl_nmeatime = find_gui_element(TYPE_LABEL, win, "lbl_nmeatime");
-		gui_get_nmea_time(lbl_nmeatime->text);
+		label_t * lbl_nmeatime_val = find_gui_element(TYPE_LABEL, win, "lbl_nmeatime_val");
+		gui_get_nmea_time(lbl_nmeatime_val->text);
 
 		label_t * lbl_timeoffset_val = find_gui_element(TYPE_LABEL, win, "lbl_timeoffset_val");
 		local_snprintf_P(lbl_timeoffset_val->text, ARRAY_SIZE(lbl_timeoffset_val->text), "%02d sec", hamradio_get_lfmtoffset());
@@ -6205,10 +6212,10 @@ static void window_lfm_process(void)
 #endif /* WITHLFM  */
 }
 
-static void window_test_process(void)
+static void window_lfm_spectre_process(void)
 {
 	const uint32_t xmax = 600, ymax = 200, x1 = (800 / 2) - 100, x2 = (800 / 2) + 100;
-	window_t * const win = get_win(WINDOW_TEST);
+	window_t * const win = get_win(WINDOW_LFM_SPECTRE);
 	static COLORMAIN_T d[600][200];
 	static int shift = 0;
 
