@@ -4100,7 +4100,6 @@ static RAMFUNC void processafadcsampleiq(
 	else
 	{
 		// RX
-		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
 		savesampleout32stereo(0, 0);
 	}
 }
