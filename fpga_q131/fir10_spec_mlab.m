@@ -25,7 +25,7 @@
  DECI_FACTOR  =  10;
  MSB_RM  = 11;
  MSB_TYPE  = 0;
- LSB_RM  = 31;
+ LSB_RM  = 27;
  LSB_TYPE  = 0;
  FIR_WIDTH  = 28 + MSB_RM + LSB_RM;
  OUT_WIDTH  = 28 ;  %28

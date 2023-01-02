@@ -37,13 +37,13 @@ module fir10_spec_st (clk,
               fir_result ); 
 
 parameter DATA_WIDTH  = 28;
-parameter COEF_WIDTH  = 32;
-parameter COEF_WIDTH_IN  = 32;
-parameter ACCUM_WIDTH = 70;
+parameter COEF_WIDTH  = 28;
+parameter COEF_WIDTH_IN  = 28;
+parameter ACCUM_WIDTH = 66;
 
 parameter CH_WIDTH = 1;
  parameter MSB_RM = 11;
-parameter LSB_RM = 31;
+parameter LSB_RM = 27;
 parameter WIDTH_SAT = ACCUM_WIDTH-LSB_RM;
 
 input clk, rst;
@@ -67,11 +67,10 @@ wire coef_in_clk;
 assign coef_in_clk = clk;
 wire [27:0] tdl_dat_0_n;
 wire [27:0] tdl_dat_1_n;
-wire [27:0] tdl_dat_1_n_pre;
 wire [27:0] data_in_mux;
 wire [27:0] data_rev;
 wire [27:0] data_rev_pre;
-mux_2to1_cen tdl_mux(.clk(clk), .rst(rst), .gclk_en(clk_en), .bin(tdl_dat_0_n), .ain(data_in),
+mux_2to1_cen tdl_mux(.clk(clk), .rst(rst), .gclk_en(clk_en), .bin(tdl_dat_1_n), .ain(data_in),
  .data_out(data_in_mux), .sel(rdy_int));
 defparam tdl_mux.IN_WIDTH = 28;
 msft_mem tdl_ff_0_n(.rst(rst), .clk(clk), .clk_en(clk_en), .we(data_ld), .data_in(data_in_mux),.data_out(tdl_dat_0_n));
@@ -81,96 +80,83 @@ defparam tdl_ff_0_n.ADDR_WIDTH = 11;
 defparam tdl_ff_0_n.READ_ST = 3;
 defparam tdl_ff_0_n.MEM_CORE = "AUTO";
 defparam tdl_ff_0_n.INIT_FILE = "fir10_spec_zero.hex";
-msft_mem tdl_ff_1_n(.rst(rst), .clk(clk), .clk_en(clk_en), .we(data_ld), .data_in(data_rev),.data_out(tdl_dat_1_n));
+msft_mem tdl_ff_1_n(.rst(rst), .clk(clk), .clk_en(clk_en), .we(data_ld), .data_in(tdl_dat_0_n),.data_out(tdl_dat_1_n));
 defparam tdl_ff_1_n.WIDTH = 28;
 defparam tdl_ff_1_n.LENGTH = 1280;
 defparam tdl_ff_1_n.ADDR_WIDTH = 11;
 defparam tdl_ff_1_n.READ_ST = 3;
 defparam tdl_ff_1_n.MEM_CORE = "AUTO";
 defparam tdl_ff_1_n.INIT_FILE = "fir10_spec_zero.hex";
-msft_mem_reseq tdl_ff_2_n(.rst(rst), .clk(clk), .clk_en(clk_en), .we(data_ld), .data_in(tdl_dat_0_n),.data_out(data_rev_pre));
-defparam tdl_ff_2_n.WIDTH = 28;
-defparam tdl_ff_2_n.LENGTH = 1280;
-defparam tdl_ff_2_n.ADDR_WIDTH = 12;
-defparam tdl_ff_2_n.WRITE_ST = 3;
-defparam tdl_ff_2_n.READ_ST = 1276;
-defparam tdl_ff_2_n.MEM_CORE = "AUTO";
-defparam tdl_ff_2_n.INIT_FILE = "fir10_spec_zero_res.hex";
-delay_mux tdl_ff_3_n(.rst(rst), .clk(clk), .clk_en(clk_en), .we(data_ld),.sel(rev_copy), .data_in(data_rev_pre),.data_out_delay(data_rev));
-defparam tdl_ff_3_n.WIDTH = 28;
-defparam tdl_ff_3_n.LENGTH = 79998;
 
-// symmetrical adders ...
-wire [28:0] sym_res_0_n;
-sadd_cen U_0_sym_add (.clk(clk), .gclk_en(clk_en), .ain(tdl_dat_0_n), .bin(tdl_dat_1_n), .res(sym_res_0_n) );
-defparam U_0_sym_add.IN_WIDTH = 28;
-defparam U_0_sym_add.PIPE_DEPTH = 1;
-
-
-wire [10:0]mem_wr_addr;
-wire [0:0]coef_wr_mem;
-wire mem_done, one_set_done;
-wire [31:0]coef_in_reg;
-tdl_da_lc in_coef(.clk(coef_in_clk),.clk_en(coef_we), .rst(rst),.data_in(coef_in),.data_out(coef_in_reg));
-defparam in_coef.WIDTH = 32;
-addr_cnt_dn addr_cnt(.clk(coef_in_clk),.rst(coef_we),.cnt_out(mem_wr_addr),.cnt_done(mem_done),.enable(one_set_done));
-defparam addr_cnt.NUM_DATA = 640;
-defparam addr_cnt.DATA_ADDR_WIDTH = 11;
-defparam addr_cnt.IS_DECI = 1;
-defparam addr_cnt.STARTER = 0;	
-wr_en_gen we_shift(.clk(coef_in_clk), .rst(coef_we), .done(mem_done), .shift_out(coef_wr_mem),.addr_inc(one_set_done));
-defparam we_shift.SHIFT_WIDTH =1;	
-defparam we_shift.SUB_CNT =1;	
-defparam we_shift.FULL_CNT =1;      
-defparam we_shift.SUB_ADDR =0;	
-defparam we_shift.FULL_ADDR =1;	
 wire coef_en ;
-assign coef_en = coef_we | clk_en;
-wire [31:0] coef_st_comb_0_n;
+assign coef_en = clk_en;
+wire [27:0] coef_st_comb_0_n;
 wire [COEF_WIDTH-1:0]coef_st_0_n;
-assign coef_st_0_n = coef_st_comb_0_n[31:0];
-msft_mem_coef Ucoef_0_n (.rst(rst), .clk_in(coef_in_clk), .clk_out(clk),.clk_en(clk_en), .we(coef_wr_mem[0]),.wr_addr(mem_wr_addr),.data_in(coef_in_reg),.data_out(coef_st_comb_0_n));
-defparam Ucoef_0_n.WIDTH = 32;
+assign coef_st_0_n = coef_st_comb_0_n[27:0];
+msft_mem_coef Ucoef_0_n (.rst(rst), .clk_in(coef_in_clk), .clk_out(clk),.clk_en(clk_en), .we(1'b0),.wr_addr(10'b0),.data_in(28'b0),.data_out(coef_st_comb_0_n));
+defparam Ucoef_0_n.WIDTH = 28;
 defparam Ucoef_0_n.LENGTH = 640;
-defparam Ucoef_0_n.READ_ST = 638;
+defparam Ucoef_0_n.READ_ST = 639;
 defparam Ucoef_0_n.ADDR_WIDTH = 10;
 defparam Ucoef_0_n.INIT_FILE = "fir10_spec_coef_0.hex";
 defparam Ucoef_0_n.MEM_CORE = "AUTO";
+wire [27:0] coef_st_comb_1_n;
+wire [COEF_WIDTH-1:0]coef_st_1_n;
+assign coef_st_1_n = coef_st_comb_1_n[27:0];
+msft_mem_coef Ucoef_1_n (.rst(rst), .clk_in(coef_in_clk), .clk_out(clk),.clk_en(clk_en), .we(1'b0),.wr_addr(10'b0),.data_in(28'b0),.data_out(coef_st_comb_1_n));
+defparam Ucoef_1_n.WIDTH = 28;
+defparam Ucoef_1_n.LENGTH = 640;
+defparam Ucoef_1_n.READ_ST = 639;
+defparam Ucoef_1_n.ADDR_WIDTH = 10;
+defparam Ucoef_1_n.INIT_FILE = "fir10_spec_coef_1.hex";
+defparam Ucoef_1_n.MEM_CORE = "AUTO";
 
 
-wire [60:0] mlu_resx_0_n;
-mlu_nd Umlu_0_n (.clk(clk), .data_in(sym_res_0_n), .coef_in(coef_st_0_n), .clk_en(clk_en), .mlu_out(mlu_resx_0_n) );
-defparam Umlu_0_n.DATA_WIDTH = 29;
+wire [55:0] mlu_resx_0_n;
+mlu_nd Umlu_0_n (.clk(clk), .data_in(tdl_dat_0_n), .coef_in(coef_st_0_n), .clk_en(clk_en), .mlu_out(mlu_resx_0_n) );
+defparam Umlu_0_n.DATA_WIDTH = 28;
 defparam Umlu_0_n.COEF_WIDTH = COEF_WIDTH;
 defparam Umlu_0_n.PIPE = 5;
 defparam Umlu_0_n.DSP_USE = "YES";
-wire [60:0] mlu_res_0_n;
+wire [55:0] mlu_res_0_n;
 mac_tl Umtl_0_n             (.clk(clk), 
              .data_in(mlu_resx_0_n),
              .data_out(mlu_res_0_n));
-defparam Umtl_0_n.DATA_WIDTH = 61;
+defparam Umtl_0_n.DATA_WIDTH = 56;
 
-wire [61:0] tree_l_0_n_0_n;
-sadd_reg_top_cen Uaddl_0_n_0_n (.clk(clk),  .gclk_en(clk_en), .ain(mlu_res_0_n), .bin(61'd0), .res(tree_l_0_n_0_n) );
-defparam Uaddl_0_n_0_n.IN_WIDTH = 61;
+wire [55:0] mlu_resx_1_n;
+mlu_nd Umlu_1_n (.clk(clk), .data_in(tdl_dat_1_n), .coef_in(coef_st_1_n), .clk_en(clk_en), .mlu_out(mlu_resx_1_n) );
+defparam Umlu_1_n.DATA_WIDTH = 28;
+defparam Umlu_1_n.COEF_WIDTH = COEF_WIDTH;
+defparam Umlu_1_n.PIPE = 5;
+defparam Umlu_1_n.DSP_USE = "YES";
+wire [55:0] mlu_res_1_n;
+mac_tl Umtl_1_n             (.clk(clk), 
+             .data_in(mlu_resx_1_n),
+             .data_out(mlu_res_1_n));
+defparam Umtl_1_n.DATA_WIDTH = 56;
+
+wire [56:0] tree_l_0_n_0_n;
+sadd_reg_top_cen Uaddl_0_n_0_n (.clk(clk),  .gclk_en(clk_en), .ain(mlu_res_0_n), .bin(mlu_res_1_n), .res(tree_l_0_n_0_n) );
+defparam Uaddl_0_n_0_n.IN_WIDTH = 56;
 defparam Uaddl_0_n_0_n.PIPE_DEPTH = 1;
 
-wire [61:0] fir_mc_res;
+wire [56:0] fir_mc_res;
 assign fir_mc_res=tree_l_0_n_0_n;
-wire [69:0] fir_acc_in;
-wire [69:0] fir_temp_res;
-wire [69:0] fir_acc_in_reg;
-assign fir_acc_in = {fir_mc_res[61], fir_mc_res[61], fir_mc_res[61], fir_mc_res[61], fir_mc_res[61], fir_mc_res[61], fir_mc_res[61], fir_mc_res[61], fir_mc_res};
+wire [65:0] fir_acc_in;
+wire [65:0] fir_temp_res;
+wire [65:0] fir_acc_in_reg;
+assign fir_acc_in = {fir_mc_res[56], fir_mc_res[56], fir_mc_res[56], fir_mc_res[56], fir_mc_res[56], fir_mc_res[56], fir_mc_res[56], fir_mc_res[56], fir_mc_res[56], fir_mc_res};
 lc_store_cen Uaccum_reg (.clk(clk), .ce(1'b1), .gclk_en(clk_en),.rst(rst), .data_in(fir_acc_in), .q(fir_acc_in_reg) );
 defparam Uaccum_reg.WIDTH = ACCUM_WIDTH;
 maccum_cen Usa (.clk(clk), .gclk_en(clk_en),.rst(acc_rst_out), .ain(fir_acc_in_reg), .accum_out(fir_temp_res));
 defparam Usa.WIDTH_A = ACCUM_WIDTH;
-wire [69:0] fir_int_res;
+wire [65:0] fir_int_res;
 lc_store_cen Ures_reg (.clk(clk), .ce(done_int), .rst(rst), .gclk_en(clk_en),.data_in(fir_temp_res[ACCUM_WIDTH-1:0]), .q(fir_int_res) );
 defparam Ures_reg.WIDTH = ACCUM_WIDTH;
 // ---- Limiting Precision ---- 
-wire [69:0]fir_int_res_fill;
-assign fir_int_res_fill =  fir_int_res[69 :0];
+wire [65:0]fir_int_res_fill;
+assign fir_int_res_fill =  fir_int_res[65 :0];
 parameter TOT_WIDTH = ACCUM_WIDTH;
 assign fir_result = fir_int_res_fill[TOT_WIDTH-MSB_RM-1:LSB_RM];
 
@@ -181,10 +167,10 @@ mcv_ctrl_deci ctrl
 defparam ctrl.REG_LEN   = 64;
 defparam ctrl.DECI_FACT   = 10;
 defparam ctrl.DECI_WIDTH   = 4;
-defparam ctrl.PIPE_DLY  = 1291;
+defparam ctrl.PIPE_DLY  = 1290;
 defparam ctrl.PIPE_WIDTH  = 11;
 defparam ctrl.IS_ODD  = 0;
-defparam ctrl.IS_SYM  = 1;
+defparam ctrl.IS_SYM  = 0;
 defparam ctrl.SINGLE_COEF_SET  = 1;
 defparam ctrl.NUM_CH  = 2;
 defparam ctrl.CH_WIDTH  = 1;

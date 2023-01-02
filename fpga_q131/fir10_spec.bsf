@@ -89,8 +89,8 @@ applicable agreement for further details.
 	(port
 		(pt 0 176)
 		(input)
-		(text "coef_in[31..0]" (rect 0 0 53 12)(font "Arial" ))
-		(text "coef_in[31..0]" (rect 21 171 74 183)(font "Arial" ))
+		(text "coef_in[27..0]" (rect 0 0 54 12)(font "Arial" ))
+		(text "coef_in[27..0]" (rect 21 171 75 183)(font "Arial" ))
 		(line (pt 0 176)(pt 16 176)(line_width 3))
 	)
 	(port

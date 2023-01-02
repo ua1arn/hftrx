@@ -231,6 +231,7 @@ set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_20a_rx
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_20a_rx_2ch_coef_[0..1]_inv.hex ]
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_20a_rx_2ch_mlab.m ]
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_20a_rx_2ch_model.m ]
+set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_20a_rx_2ch_coef_in_mlab.txt ]
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_20a_rx_2ch.vec ]
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) tb_fir_20a_rx_2ch.vhd ]
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_20a_rx_2ch_msim.tcl ]

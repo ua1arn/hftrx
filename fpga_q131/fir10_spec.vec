@@ -1,6 +1,6 @@
 % units default to ns %
 START 0 ;
-STOP 395005 ;
+STOP 558845 ;
 INTERVAL 5 ;
 INPUTS clk ;
 PATTERN
@@ -20,18 +20,6 @@ PATTERN         % test Inpluse %
 INPUTS clk_en;
 PATTERN
 0>    1;
-INPUTS coef_we;
-PATTERN
-0> 0 
-;
-INPUTS coef_in[31..0];
-PATTERN
-0> 0 
-;
-INPUTS coef_in_clk;
-PATTERN
-1 0 ;           % relative vector values %
-                % coef_in_clk is not depend on clock %
 OUTPUTS fir_result[27..0];
 OUTPUTS done;
 OUTPUTS rdy_to_ld;

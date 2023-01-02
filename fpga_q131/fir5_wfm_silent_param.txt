@@ -15,7 +15,7 @@ out_sbf_chk : 0
 out_msb_rad : MSB_TRN
 out_lsb_rad : LSB_TRN
 out_lose_msb : 2
-out_lose_lsb : 18
+out_lose_lsb : 22
 arch_struct_sel : 4
 arch_data_store : 4
 arch_coef_store : 2
@@ -24,7 +24,7 @@ arch_reload_coef_sgl_clock : 0
 arch_num_mbs : 2
 arch_no_sym : 1
 num_bank_set : 1
-length : 959
+length : 512
 num_cycles : 24
 arch_pipeline : 2
 poly_type : 2
