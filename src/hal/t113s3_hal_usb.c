@@ -1464,7 +1464,7 @@ static USB_RETVAL epx_in_handler_dev_iso(pusb_struct pusb, uint32_t ep_no, uintp
 		uint32_t saved = usb_get_fifo_access_config(pusb);
 		usb_fifo_accessed_by_cpu(pusb);
         usb_write_ep_fifo(pusb, ep_no, src_addr, byte_count);
-    	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO | USB_TXCSR_TXPKTRDY | USB_TXCSR_ISO);
+    	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO | USB_TXCSR_TXPKTRDY | (usb_get_eptx_csr(pusb) & USB_TXCSR_ISO));
     	usb_set_fifo_access_config(pusb, saved);
     }
     else
@@ -2471,7 +2471,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 
 	do
 	{
-	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 		uint32_t rx_count=0;
 		static uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE];
 		const uint32_t bo_ep_out = (USBD_EP_AUDIO_OUT & 0x0F);
