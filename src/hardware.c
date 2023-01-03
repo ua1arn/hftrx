@@ -3182,12 +3182,12 @@ sysinit_debug_initialize(void)
 #if ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
 
 	#if WITHDEBUG
-	{
-		uint32_t value;
-		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
-		PRINTF("PMNC=0x%" PRIX32 "\n", value);
-		PRINTF("counters=%" PRIu32 "\n", (value >> 11) & 0x1F);
-	}
+//	{
+//		uint32_t value;
+//		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
+//		PRINTF("PMNC=0x%" PRIX32 "\n", value);
+//		PRINTF("counters=%" PRIu32 "\n", (value >> 11) & 0x1F);
+//	}
 	{
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
