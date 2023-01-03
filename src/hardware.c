@@ -3174,16 +3174,25 @@ sysinit_debug_initialize(void)
 
 #endif /* __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U */
 
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
+#if ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
 
 	#if WITHDEBUG
 	{
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
+		    /* enable user-mode access to the performance counter*/
+		// User Enable Register (USEREN)
+		//asm ("MCR p15, 0, %0, C9, C14, 0\n\t" :: "r"(1));
+		__set_CP(15, 0, 1, 9, 14, 0);
+
+		/* disable counter overflow interrupts (just in case)*/
+		// Interrupt Enable Clear Register (INTENC)
+		//asm ("MCR p15, 0, %0, C9, C14, 2\n\t" :: "r"(0x8000000f));
+		__set_CP(15, 0, 0x8000000f, 9, 14, 2);
 
 		enum { do_reset = 0, enable_divider = 0 };
 		// in general enable all counters (including cycle counter)
-		int32_t value = 1;
+		int32_t value = 1;	// ENABLE bit
 
 		// peform reset:
 		if (do_reset)
@@ -3193,30 +3202,36 @@ sysinit_debug_initialize(void)
 		}
 
 		if (enable_divider)
-			value |= 8;     // enable "by 64" divider for CCNT.
+			value |= 8;     // enable "by 64" divider for CCNT. Clock Divider, bit [3]
 
-		value |= 16;
+		value |= 16;		// Export Enable, bit [4]
 
-		// program the performance-counter control-register:
+		// program the performance-counter control-register PMNC:
 		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
 		__set_CP(15, 0, value, 9, 12, 0);
 
-		// enable all counters:
+		// enable all counters: Count Enable Set Register (CNTENS)
 		//asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
 		__set_CP(15, 0, 0x8000000f, 9, 12, 1);
 
-		// clear overflows:
+		// clear overflows: Overflow Flag Status Register (FLAG)
 		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
 		__set_CP(15, 0, 0x8000000f, 9, 12, 3);
 	}
 	#endif /* WITHDEBUG */
 
-#endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 */
+#endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
 
 #if WITHDEBUG
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */
+//	{
+//		int32_t value;
+//		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
+//		PRINTF("PMNC=0x%" PRIX32 "\n", value);
+//		PRINTF("counters=%" PRIu32 "\n", (value >> 11) & 0x1F);
+//	}
 }
 
 #if ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
