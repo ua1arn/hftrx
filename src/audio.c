@@ -6803,27 +6803,27 @@ void board_set_datavox(uint_fast8_t v)
 #define EQ_STAGES				1
 #define BIQUAD_COEFF_IN_STAGE 	5
 
-ststic FLOAT_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
-ststic FLOAT_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
-ststic FLOAT_t EQ_RX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
-ststic FLOAT_t EQ_RX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-ststic FLOAT_t EQ_RX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-ststic FLOAT_t EQ_RX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
 
-ststic ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_FILTER = { EQ_STAGES, EQ_RX_LOW_FILTER_State, EQ_RX_LOW_FILTER_Coeffs };
-ststic ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_FILTER = { EQ_STAGES, EQ_RX_MID_FILTER_State, EQ_RX_MID_FILTER_Coeffs };
-ststic ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIGH_FILTER = { EQ_STAGES, EQ_RX_HIGH_FILTER_State, EQ_RX_HIGH_FILTER_Coeffs };
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_FILTER = { EQ_STAGES, EQ_RX_LOW_FILTER_State, EQ_RX_LOW_FILTER_Coeffs };
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_FILTER = { EQ_STAGES, EQ_RX_MID_FILTER_State, EQ_RX_MID_FILTER_Coeffs };
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIGH_FILTER = { EQ_STAGES, EQ_RX_HIGH_FILTER_State, EQ_RX_HIGH_FILTER_Coeffs };
 
-ststic FLOAT_t EQ_TX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
-ststic FLOAT_t EQ_TX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
-ststic FLOAT_t EQ_TX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
-ststic FLOAT_t EQ_TX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-ststic FLOAT_t EQ_TX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-ststic FLOAT_t EQ_TX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
 
-ststic ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_LOW_FILTER = { EQ_STAGES, EQ_TX_LOW_FILTER_State, EQ_TX_LOW_FILTER_Coeffs };
-ststic ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_MID_FILTER = { EQ_STAGES, EQ_TX_MID_FILTER_State, EQ_TX_MID_FILTER_Coeffs };
-ststic ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_HIGH_FILTER = { EQ_STAGES, EQ_TX_HIGH_FILTER_State, EQ_TX_HIGH_FILTER_Coeffs };
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_LOW_FILTER = { EQ_STAGES, EQ_TX_LOW_FILTER_State, EQ_TX_LOW_FILTER_Coeffs };
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_MID_FILTER = { EQ_STAGES, EQ_TX_MID_FILTER_State, EQ_TX_MID_FILTER_Coeffs };
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_HIGH_FILTER = { EQ_STAGES, EQ_TX_HIGH_FILTER_State, EQ_TX_HIGH_FILTER_Coeffs };
 
 void calcBiquad(uint32_t Fc, uint32_t Fs, FLOAT_t Q, FLOAT_t peakGain, FLOAT_t * outCoeffs)
 {
