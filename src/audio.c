@@ -3928,9 +3928,11 @@ static RAMFUNC FLOAT_t preparevi(
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
+		vi0f = filter_fir_tx_MIKE(vi0f, 1);
 		return 0;	//txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
+		vi0f = filter_fir_tx_MIKE(vi0f, 1);
 		return txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_DIGI:
@@ -3956,43 +3958,56 @@ static RAMFUNC FLOAT_t preparevi(
 #if WITHCOMPRESSOR
 			vi0f = audio_compressor_calc(vi0f);		// Компрессор
 #endif /* WITHCOMPRESSOR */
+			vi0f = injectsubtone(vi0f, ctcss);
 			vi0f = filter_fir_tx_MIKE(vi0f, 0);
 			moni->IV = vi0f;
 			moni->QV = vi0f;
-			return injectsubtone(vi0f, ctcss);
+			return vi0f;
 
 #if WITHUSBHW && WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
 			// источник - USB
 			* moni = viusb0f;
-			return injectsubtone(viusb0f.IV * txlevelXXX, ctcss);
+			vi0f = injectsubtone(viusb0f.IV * txlevelXXX, ctcss);
+			vi0f = filter_fir_tx_MIKE(vi0f, 0);
+			return vi0f;
 #endif /* WITHUSBHW && WITHUSBUACOUT */
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
-			return injectsubtone(get_noisefloat() * txlevelXXX, ctcss);	// шум
+			vi0f = injectsubtone(get_noisefloat() * txlevelXXX, ctcss);	// шум
+			vi0f = filter_fir_tx_MIKE(vi0f, 0);
+			return vi0f;
 
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
-			return injectsubtone(get_dualtonefloat() * txlevelXXX, ctcss);		// источник сигнала - двухтональный генератор для настройки
+			vi0f = injectsubtone(get_dualtonefloat() * txlevelXXX, ctcss);		// источник сигнала - двухтональный генератор для настройки
+			vi0f = filter_fir_tx_MIKE(vi0f, 0);
+			return vi0f;
 
 		case BOARD_TXAUDIO_1TONE:
 			// источник - синусоидальный сигнал
-			return injectsubtone(get_singletonefloat() * txlevelXXX, ctcss);
+			vi0f = injectsubtone(get_singletonefloat() * txlevelXXX, ctcss);
+			vi0f = filter_fir_tx_MIKE(vi0f, 0);
+			return vi0f;
 
 		case BOARD_TXAUDIO_MUTE:
-			return injectsubtone(0, ctcss);
+			vi0f = injectsubtone(0, ctcss);
+			vi0f = filter_fir_tx_MIKE(vi0f, 0);
+			return vi0f;
 		}
+
+	default:
+		// В режиме приёма или bypass ничего не делаем.
+		if (uacoutplayer)
+		{
+			* moni = viusb0f;
+		}
+		else
+		{
+		}
+		return 0;
 	}
-	// В режиме приёма или bypass ничего не делаем.
-	if (uacoutplayer)
-	{
-		* moni = viusb0f;
-	}
-	else
-	{
-	}
-	return 0;
 }
 
 /* получить I/Q пару для передачи в up-converter */
@@ -4127,7 +4142,6 @@ static RAMFUNC void processafadcsample(
 	// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 	if (isdspmodetx(dspmode))
 	{
-		vi = filter_fir_tx_MIKE(vi, 0);
 		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
 		// Здесь, имея квадратурные сигналы vfb.IV и vfb.QV,
 		// производим Digital Up Conversion
@@ -4139,7 +4153,6 @@ static RAMFUNC void processafadcsample(
 	}
 	else
 	{
-		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
 		savesampleout32stereo(0, 0);
 	}
 }
