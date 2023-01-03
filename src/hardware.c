@@ -3162,6 +3162,11 @@ sysintt_sdram_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_debug_initialize(void)
 {
+#if WITHDEBUG
+	HARDWARE_DEBUG_INITIALIZE();
+	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+#endif /* WITHDEBUG */
+
 #if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 
 	#if WITHDEBUG && __CORTEX_M == 7U
@@ -3178,33 +3183,39 @@ sysinit_debug_initialize(void)
 
 	#if WITHDEBUG
 	{
+		uint32_t value;
+		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
+		PRINTF("PMNC=0x%" PRIX32 "\n", value);
+		PRINTF("counters=%" PRIu32 "\n", (value >> 11) & 0x1F);
+	}
+	{
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
 		    /* enable user-mode access to the performance counter*/
 		// User Enable Register (USEREN)
 		//asm ("MCR p15, 0, %0, C9, C14, 0\n\t" :: "r"(1));
-		__set_CP(15, 0, 1, 9, 14, 0);
+		__set_CP(15, 0, 0x00000001, 9, 14, 0);
 
 		/* disable counter overflow interrupts (just in case)*/
 		// Interrupt Enable Clear Register (INTENC)
 		//asm ("MCR p15, 0, %0, C9, C14, 2\n\t" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x8000000f, 9, 14, 2);
+		__set_CP(15, 0, 0x80000000, 9, 14, 2);
 
 		enum { do_reset = 0, enable_divider = 0 };
 		// in general enable all counters (including cycle counter)
-		int32_t value = 1;	// ENABLE bit
+		uint32_t value = (1u << 0);	// ENABLE bit
 
 		// peform reset:
 		if (do_reset)
 		{
-			value |= 2;     // reset all counters to zero.
-			value |= 4;     // reset cycle counter to zero.
+			value |= (1u << 1);     // reset all counters to zero.
+			value |= (1u << 2);     // reset cycle counter to zero.
 		}
 
 		if (enable_divider)
-			value |= 8;     // enable "by 64" divider for CCNT. Clock Divider, bit [3]
+			value |= (1u << 3);     // enable "by 64" divider for CCNT. Clock Divider, bit [3]
 
-		value |= 16;		// Export Enable, bit [4]
+		value |= (1u << 4);		// Export Enable, bit [4]
 
 		// program the performance-counter control-register PMNC:
 		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
@@ -3212,26 +3223,15 @@ sysinit_debug_initialize(void)
 
 		// enable all counters: Count Enable Set Register (CNTENS)
 		//asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x8000000f, 9, 12, 1);
+		__set_CP(15, 0, 0x80000000, 9, 12, 1);
 
 		// clear overflows: Overflow Flag Status Register (FLAG)
 		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x8000000f, 9, 12, 3);
+		__set_CP(15, 0, 0x80000000, 9, 12, 3);
 	}
 	#endif /* WITHDEBUG */
 
 #endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
-
-#if WITHDEBUG
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-#endif /* WITHDEBUG */
-//	{
-//		int32_t value;
-//		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
-//		PRINTF("PMNC=0x%" PRIX32 "\n", value);
-//		PRINTF("counters=%" PRIu32 "\n", (value >> 11) & 0x1F);
-//	}
 }
 
 #if ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
