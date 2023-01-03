@@ -2141,6 +2141,7 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 	dsp_extbuffer32rx((const IFADCvalue_t *) addr);
+	dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
