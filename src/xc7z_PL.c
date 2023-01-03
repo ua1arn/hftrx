@@ -8,6 +8,8 @@
 
 #include "xc7z_inc.h"
 
+void xcz_fifo_phones_inthandler(void);
+
 /* Audio register map definitions */
 #define AUDIO_REG_I2S_RESET 		 0x00   //Write only
 #define AUDIO_REG_I2S_CTRL			 0x04
@@ -94,6 +96,10 @@ void xcz_if_rx_init(void)
 
 void xcz_fifo_if_rx_inthandler(void)
 {
+	enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
+	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
+	static unsigned rx_stage = 0;
+
 	uint32_t * r = (uint32_t *) addr32rx;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE32RX; i ++)
@@ -101,6 +107,14 @@ void xcz_fifo_if_rx_inthandler(void)
 
 	processing_dmabuffer32rx(addr32rx);
 	processing_dmabuffer32rts(addr32rx);
+
+	rx_stage += CNT32RX;
+
+	while (rx_stage >= CNT16TX)
+	{
+		xcz_fifo_phones_inthandler();
+		rx_stage -= CNT16TX;
+	}
 }
 
 void xcz_if_rx_enable(uint_fast8_t state)
@@ -182,7 +196,7 @@ void xcz_fifo_phones_inthandler(void)
 
 void xcz_audio_tx_enable(uint_fast8_t state)
 {
-	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_PHONES_IRQ_INTR, xcz_fifo_phones_inthandler);
+	//arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_PHONES_IRQ_INTR, xcz_fifo_phones_inthandler);
 }
 
 #endif /* WITHRTS96 */
