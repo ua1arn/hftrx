@@ -303,6 +303,7 @@ enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количес�
 enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
 enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
+enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
 enum { CNT32RTS = DMABUFFSIZE32RTS / DMABUFFSTEP32RTS };
 enum { MIKELEVEL = 6 };
 enum { PHONESLEVEL = 6 };
@@ -475,7 +476,7 @@ static RAMBIGDTCM SPINLOCK_t locklistmsg8 = SPINLOCK_INIT;
 #if WITHBUFFERSDEBUG
 
 static unsigned n1, n1wfm, n2, n3, n4, n5, n6, n7;
-static unsigned e1, e2, e3, e4, e5, e6, e7, e8, purge16;
+static unsigned e1, e2, e3, e4, e5, e6, e7, e8, e9, purge16;
 static unsigned nbadd, nbdel, nbzero, nbnorm;
 
 static unsigned debugcount_ms10;	// с точностью 0.1 ms
@@ -556,7 +557,7 @@ void buffers_diagnostics(void)
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
 	PRINTF(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u n7=%u uacinalt=%d, purge16=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6, n7, uacinalt, purge16);
-	PRINTF(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8);
+	PRINTF(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u e9=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8, e9);
 
 	{
 		const unsigned ms10 = getresetval(& debugcount_ms10);
@@ -2230,6 +2231,9 @@ uintptr_t getfilled_dmabuffer32tx_main(void)
 		return (uintptr_t) & p->buff;
 	}
 	SPIN_UNLOCK(& locklist32tx);
+#if WITHBUFFERSDEBUG
+	++ e9;
+#endif /* WITHBUFFERSDEBUG */
 	return allocate_dmabuffer32tx();	// аварийная ветка - работает первые несколько раз
 }
 

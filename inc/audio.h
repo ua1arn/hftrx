@@ -633,7 +633,7 @@ typedef struct
 // Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
 
-#define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)
+#define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)	/* Гарантируется пригодность для симметричного фильтра */
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
 
 #if WITHDSPLOCALFIR
@@ -674,8 +674,7 @@ typedef struct
 	typedef int_fast32_t aufastbufv_t;
 	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
 
-
-#else /* CODEC1_FRAMEBITS == 64 */
+#elif CODEC1_FRAMEBITS == 32
 
 	/* параметры входного/выходного адаптеров */
 	#define WITHADAPTERCODEC1WIDTH	16		// 1 бит знак и 15 бит значащих
@@ -683,6 +682,10 @@ typedef struct
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
 	typedef int_fast32_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
+
+#else /* CODEC1_FRAMEBITS == 64 */
+
+	#error Unsupported CODEC1_FRAMEBITS value
 
 #endif /* CODEC1_FRAMEBITS == 64 */
 
