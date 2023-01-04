@@ -2844,6 +2844,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir_compute_Pair2(const FLOAT_t * cons
 enum { tx_MIKE_blockSize = DMABUFFSIZE32RX / DMABUFFSTEP32RX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
 //enum { tx_MIKE_blockSize = DMABUFFSIZE32TX / DMABUFFSTEP32TX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
 //enum { tx_MIKE_blockSize = DMABUFFSIZE16RX / DMABUFFSTEP16RX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
+
 static FLOAT_t tx_firEQcoeff [Ntap_tx_MIKE];
 static ARM_MORPH(arm_fir_instance) tx_fir_instance;
 static FLOAT_t tx_fir_state [tx_MIKE_blockSize - 1 + Ntap_tx_MIKE];
