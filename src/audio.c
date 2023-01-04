@@ -5440,17 +5440,17 @@ RAMFUNC void dsp_processtx(void)
 	}
 	/* формирование АЧХ перед модулятором */
 	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);
-	/* Сабтон */
-	for (i = 0; i < tx_MIKE_blockSize; ++ i)
-	{
-		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
-		txfirbuff [i] = injectsubtone(txfirbuff [i], ctcss);
-	}
 	/* Самопрослушивание (сигнал SSB берется после фильтра) */
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
 		monimux(dspmodeA, & monitorbuff [i], & txfirbuff [i]);
 		savemonistereo(monitorbuff [i].IV, monitorbuff [i].QV);
+	}
+	/* Сабтон */
+	for (i = 0; i < tx_MIKE_blockSize; ++ i)
+	{
+		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
+		txfirbuff [i] = injectsubtone(txfirbuff [i], ctcss);
 	}
 	/* Передача */
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
