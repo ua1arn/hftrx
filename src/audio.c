@@ -2483,45 +2483,6 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ_B(FLOAT32P_t NewSample)
 
     return v;
 }
-// Фильтр квадратурных каналов передатчика
-// Используется в случае внешнего DUC
-static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
-{
-	const FLOAT_t * const k = FIRCoef_tx_SSB_IQ [gwprof];
-	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
-	// буфер с сохранёнными значениями сэмплов
-	static RAMDTCM FLOAT32P_t x [Ntap * 2];
-	static RAMDTCM uint_fast16_t fir_head = 0;
-
-	// shift the old samples
-	// fir_head -  Начало обрабатываемой части буфера
-	// fir_head + Ntap -  Позиция за концом обрабатываемого буфера
-	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
-    x [fir_head] = x [fir_head + Ntap] = NewSample;
-
-	uint_fast16_t bh = fir_head + NtapHalf;			// Начало обрабатываемой части буфера
-	uint_fast16_t bt = bh;	// Позиция за концом обрабатываемого буфера
-    // Calculate the new output
-	uint_fast16_t n = NtapHalf;
-	// Выборка в середине буфера
-	FLOAT32P_t v = scalepair(x [bh], k [n]);            // sample at middle of buffer
-	do
-	{	
-		{
-			const FLOAT_t kv = k [-- n];
-			v.IV += kv * (x [-- bh].IV + x [++ bt].IV);
-			v.QV += kv * (x [bh].QV + x [bt].QV);
-		}
-		{
-			const FLOAT_t kv = k [-- n];
-			v.IV += kv * (x [-- bh].IV + x [++ bt].IV);
-			v.QV += kv * (x [bh].QV + x [bt].QV);
-		}
-	}
-	while (n != 0);
-
-    return v;
-}
 
 #else  /* WITHDSPEXTDDC */
 // Приёмник
@@ -2691,7 +2652,9 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_tx_SSB_IQ(FLOAT32P_t NewSample, u
 
 #endif /* WITHDSPLOCALFIR */
 
-#if WITHDSPLOCALTXFIR
+#if WITHDSPLOCALTXFIR || WITHDSPLOCALFIR
+// Фильтр квадратурных каналов передатчика
+// Используется в случае внешнего DUC
 static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
 {
 	const FLOAT_t * const k = FIRCoef_tx_SSB_IQ [gwprof];
@@ -4013,7 +3976,7 @@ static RAMFUNC FLOAT_t preparevi(
 static RAMFUNC FLOAT32P_t baseband_modulator(
 	FLOAT_t vi,
 	uint_fast8_t dspmode,
-	FLOAT_t shape
+	FLOAT_t shape	// 0..1 - огибающая
 	)
 {
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый при передаче
@@ -4026,17 +3989,30 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 			return vfb;
 		}
 
-#if WITHMODEM
-	case DSPCTL_MODE_TX_BPSK:
+	#if WITHMODEM
+		case DSPCTL_MODE_TX_BPSK:
+		{
+				// высокоскоростной модем. До вызова baseband_modulator и в нём modem_get_tx_iq дело не доходит.
+				const int txb = modem_get_tx_b(getTxShapeNotComplete());
+		#if WITHMODEMIQLOOPBACK
+				const int_fast32_t ph = (1 - txb * 2);
+				const FLOAT32P_t iq = { { ph, ph } };
+				modem_demod_iq(iq);	// debug loopback
+		#endif /* WITHMODEMIQLOOPBACK */
+				const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
+				const FLOAT32P_t iqr = { { vv, vv } };
+				return iqr;
+
+		}
 		{
 			// add done inside processafadcsampleiq
 			const FLOAT32P_t vfb = scalepair(modem_get_tx_iq(getTxShapeNotComplete()), txlevelfenceBPSK * shape);
-	#if WITHMODEMIQLOOPBACK
-			modem_demod_iq(vfb);	// debug loopback
-	#endif /* WITHMODEMIQLOOPBACK */
+		#if WITHMODEMIQLOOPBACK
+				modem_demod_iq(vfb);	// debug loopback
+		#endif /* WITHMODEMIQLOOPBACK */
 			return vfb;
 		}
-#endif /* WITHMODEM */
+	#endif /* WITHMODEM */
 
 	case DSPCTL_MODE_TX_CW:
 	case DSPCTL_MODE_TX_DIGI:
@@ -4066,92 +4042,6 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 		}
 	}
 }
-
-#if WITHDSPEXTDDC
-
-
-// Передатчик - формирование одного сэмпла (пары I/Q).
-// обрабатывается 16 битное (WITHAFADCWIDTH) число
-// используется в случае внешнего DUC
-static RAMFUNC void processafadcsampleiq(
-	FLOAT_t vi,	// выборка с микрофона (в vi)
-	uint_fast8_t dspmode,
-	FLOAT_t shapecw,	// 0..1 - огибающая
-	FLOAT_t shapecwssb	// 0..1 - огибающая замены звуковой модуляции тоном самоконтроля
-	)
-{
-	if (isdspmodetx(dspmode))
-	{
-		if (dspmode == DSPCTL_MODE_TX_BPSK)
-		{
-#if WITHMODEM
-			// высокоскоростной модем. До вызова baseband_modulator и в нём modem_get_tx_iq дело не доходит.
-			const int txb = modem_get_tx_b(getTxShapeNotComplete());
-	#if WITHMODEMIQLOOPBACK
-			const int_fast32_t ph = (1 - txb * 2);
-			const FLOAT32P_t iq = { { ph, ph } };
-			modem_demod_iq(iq);	// debug loopback
-	#endif /* WITHMODEMIQLOOPBACK */
-			const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
-			savesampleout32stereo(adpt_output(& ifcodectx, vv), adpt_output(& ifcodectx, vv));	// Запись в поток к передатчику I/Q значений.
-#else /* WITHMODEM */
-			savesampleout32stereo(0, 0);
-#endif /* WITHMODEM */
-		}
-		else
-		{
-	#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
-			const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shapecw));
-	#else /* WITHDSPLOCALFIR */
-			const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shapecw);
-	#endif /* WITHDSPLOCALFIR */
-	#if WITHTXCPATHCALIBRATE
-			savesampleout32stereo(adpt_outputexact(& ifcodectx, vfb.IV), adpt_outputexact(& ifcodectx, vfb.QV));	// Запись в поток к передатчику I/Q значений.
-	#else /* WITHTXCPATHCALIBRATE */
-			savesampleout32stereo(adpt_output(& ifcodectx, vfb.IV), adpt_output(& ifcodectx, vfb.QV));	// Запись в поток к передатчику I/Q значений.
-	#endif /* WITHTXCPATHCALIBRATE */
-		}
-	}
-	else
-	{
-		// RX
-		savesampleout32stereo(0, 0);
-	}
-}
-
-#else /* WITHDSPEXTDDC */
-
-// ПЕРЕДАЧА
-static RAMFUNC void processafadcsample(
-	FLOAT32P_t vi0,	// выборка с микрофона (в vi)
-	uint_fast8_t dspmode,
-	FLOAT_t shapecw	// 0..1 - огибающая
-	)
-{
-#if WITHDSPLOCALFIR == 0
-	#error WITHDSPLOCALFIR should be defined
-#endif /* WITHDSPLOCALFIR == 0 */
-
-	// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-	if (isdspmodetx(dspmode))
-	{
-		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shapecw);
-		// Здесь, имея квадратурные сигналы vfb.IV и vfb.QV,
-		// производим Digital Up Conversion
-		const FLOAT32P_t v_if = get_float4_iflo();	// частота 12 кГц - 1/4 частоты выборок АЦП - можно воспользоваться целыми значениями.
-		const FLOAT32P_t e1 = filter_fir4_tx_SSB_IQ(vfb, v_if.IV != 0);		// 1.85 kHz - фильтр имеет усиление 2.0
-		const FLOAT_t r = (e1.QV * v_if.QV + e1.IV * v_if.IV);	// переносим на выходную частоту ("+" - без инверсии).
-		// Интерфейс с ВЧ - одноканальный ADC/DAC
-		savesampleout32stereo(adpt_output(& ifcodectx, r), 0);	// кодек получает 24 бита left justified в 32-х битном числе.
-	}
-	else
-	{
-		// RX
-		savesampleout32stereo(0, 0);
-	}
-}
-
-#endif /* WITHDSPEXTDDC */
 
 //
 // Todo: Use FLT_EPSILON (DBL_EPSILON)
@@ -5513,6 +5403,7 @@ RAMFUNC void dsp_processtx(void)
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
 		const FLOAT32P_t vi0 = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		const FLOAT32P_t viusb0 = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
+		const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep() * scaleDAC;	// 0..1
 		FLOAT32P_t moni = { { 0, 0 } };
 		txfirbuff [i] = preparevi(vi0.IV, viusb0, dspmodeA, ctcss, & moni);
 		savemonistereo(moni.IV, moni.QV);
@@ -5523,13 +5414,31 @@ RAMFUNC void dsp_processtx(void)
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
 		const FLOAT_t shapecw = shapeCWEnvelopStep() * scaleDAC;	// 0..1
-		const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep() * scaleDAC;	// 0..1
+		FLOAT32P_t vfb = baseband_modulator(txfirbuff [i], dspmodeA, shapecw);	// Передатчик - формирование одного сэмпла (пары I/Q).
+
+#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
+		if (dspmodeA != DSPCTL_MODE_TX_BPSK)
+		{
+			/* работа без FIR фильтра в FPGA */
+			vfb = filter_firp_tx_SSB_IQ(vfb);
+		}
+#endif /* WITHDSPLOCALFIR */
 #if WITHDSPEXTDDC
-		processafadcsampleiq(txfirbuff [i], dspmodeA, shapecw, shapecwssb);	// Передатчик - формирование одного сэмпла (пары I/Q).
+
+#if WITHTXCPATHCALIBRATE
+		savesampleout32stereo(adpt_outputexact(& ifcodectx, vfb.IV), adpt_outputexact(& ifcodectx, vfb.QV));	// Запись в поток к передатчику I/Q значений.
+#else /* WITHTXCPATHCALIBRATE */
+		savesampleout32stereo(adpt_output(& ifcodectx, vfb.IV), adpt_output(& ifcodectx, vfb.QV));	// Запись в поток к передатчику I/Q значений.
+#endif /* WITHTXCPATHCALIBRATE */
+
 #else /* WITHDSPEXTDDC */
-		// Режимы трансиверов без внешнкго DDC
-		processafadcsample(txfirbuff [i], dspmodeA, shapecw);	// Передатчик - использование принятого с AF ADC буфера
+		const FLOAT32P_t v_if = get_float4_iflo();	// частота 12 кГц - 1/4 частоты выборок АЦП - можно воспользоваться целыми значениями.
+		const FLOAT32P_t e1 = filter_fir4_tx_SSB_IQ(vfb, v_if.IV != 0);		// 1.85 kHz - фильтр имеет усиление 2.0
+		const FLOAT_t r = (e1.QV * v_if.QV + e1.IV * v_if.IV);	// переносим на выходную частоту ("+" - без инверсии).
+		// Интерфейс с ВЧ - одноканальный ADC/DAC
+		savesampleout32stereo(adpt_output(& ifcodectx, r), 0);	// кодек получает 24 бита left justified в 32-х битном числе.
 #endif /* WITHDSPEXTDDC */
+
 	}
 #endif /* ! WITHTRANSPARENTIQ */
 }
@@ -5636,23 +5545,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 #elif WITHDSPEXTDDC
 	// Режимы трансиверов с внешним DDC
 
-	#if 0
-		// Тестирование (самопрослушивание) того, что идет с микрофона
-		processafadcsampleiq(vi, viusb, dspmodeA, shapecw, shapecwssb, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
-		savemonistereo(moni.IV, moni.QV);
-		save16demod(vi.IV, vi.QV);
-
-	#elif WITHUSBHEADSET
-		processafadcsampleiq(vi, viusb, dspmodeA, shapecw, shapecwssb, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
-		savemonistereo(moni.IV, moni.QV);
-
-
-		save16demod(vi.IV, vi.QV);		// данные игнорируются
-		//FLOAT_t t = get_lout();
-		//save16demod(t, t);
-		//save16demod(get_lout(), get_rout());
-
-	#elif WITHUSEDUALWATCH
+	#if WITHUSEDUALWATCH
 
 		//
 		// Двухканальный приёмник
