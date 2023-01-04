@@ -4094,6 +4094,8 @@ static RAMFUNC void processafadcsampleiq(
 	#endif /* WITHMODEMIQLOOPBACK */
 			const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
 			savesampleout32stereo(adpt_output(& ifcodectx, vv), adpt_output(& ifcodectx, vv));	// Запись в поток к передатчику I/Q значений.
+#else /* WITHMODEM */
+			savesampleout32stereo(0, 0);
 #endif /* WITHMODEM */
 		}
 		else
