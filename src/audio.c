@@ -2841,25 +2841,10 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir_compute_Pair2(const FLOAT_t * cons
 
 #endif /* WITHSKIPUSERMODE */
 
-// Фильтр микрофона передатчика
-//static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8_t bypass)
-//{
-//	enum { Ntap = Ntap_tx_MIKE, NtapHalf = Ntap / 2 };
-//	// буфер с сохранёнными значениями сэмплов
-//	static RAMDTCM FLOAT_t xshift [Ntap * 2];
-//	static RAMDTCM uint_fast16_t fir_head = 0;
-//
-//	// shift the old samples
-//	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
-//    xshift [fir_head] = xshift [fir_head + Ntap] = NewSample;
-//
-//	return bypass ? xshift [fir_head + NtapHalf] : filter_fir_compute(FIRCoef_tx_MIKE [gwprof], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
-//}
-
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
 
-enum { tx_MIKE_buff = CNT32RX };
+enum { tx_MIKE_buff = CNT32RX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
 static FLOAT_t tx_firEQcoeff [Ntap_tx_MIKE];
 static ARM_MORPH(arm_fir_instance) tx_fir_instance;
 static FLOAT_t tx_fir_state [tx_MIKE_buff + Ntap_tx_MIKE - 1];
@@ -5512,6 +5497,7 @@ void RAMFUNC dsp_extbuffer32rts(const IFADCvalue_t * buff)
 }
 
 /* выборка tx_MIKE_buff семплов из источников звука и формирование потока на передатчик */
+/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx - меняем tx_MIKE_buff */
 RAMFUNC void dsp_processtx(void)
 {
 #if ! WITHTRANSPARENTIQ
@@ -5519,7 +5505,6 @@ RAMFUNC void dsp_processtx(void)
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	/* обработка передачи */
 	FLOAT_t txfirbuff [tx_MIKE_buff];
-	//BEGIN_STAMP2();
 	/* заполнение буфера сэмплами от микрофона или USB */
 	for (i = 0; i < tx_MIKE_buff; ++ i)
 	{
@@ -5531,13 +5516,7 @@ RAMFUNC void dsp_processtx(void)
 		savemonistereo(moni.IV, moni.QV);
 	}
 	/* формирование АЧХ перед модулятором */
-	//BEGIN_STAMP3();
 	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_buff);
-//	for (i = 0; i < tx_MIKE_buff; ++ i)
-//	{
-//		txfirbuff [i] = filter_fir_tx_MIKE(txfirbuff [i], 0);
-//	}
-	//END_STAMP3();
 	/* Передача */
 	for (i = 0; i < tx_MIKE_buff; ++ i)
 	{
@@ -5550,7 +5529,6 @@ RAMFUNC void dsp_processtx(void)
 		processafadcsample(txfirbuff [i], dspmodeA, shapecw);	// Передатчик - использование принятого с AF ADC буфера
 #endif /* WITHDSPEXTDDC */
 	}
-	//END_STAMP2();
 #endif /* ! WITHTRANSPARENTIQ */
 }
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
