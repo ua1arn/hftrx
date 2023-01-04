@@ -3892,6 +3892,31 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 	return sdtn * shape + moni * glob_moniflag * (1 - shape);
 }
 
+static void monimux(
+	uint_fast8_t dspmode,
+	FLOAT32P_t * moni,
+	const FLOAT_t * ssbtx
+	)
+{
+	const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
+	const FLOAT_t sdtnv = get_float_sidetone();
+	switch (dspmode)
+	{
+	case DSPCTL_MODE_TX_DIGI:
+	case DSPCTL_MODE_TX_SSB:
+	case DSPCTL_MODE_TX_AM:
+	case DSPCTL_MODE_TX_NFM:
+	case DSPCTL_MODE_TX_FREEDV:
+		moni->IV = mixmonitor(sdtnshape, sdtnv, * ssbtx);
+		moni->QV = mixmonitor(sdtnshape, sdtnv, * ssbtx);
+		break;
+
+	default:
+		moni->IV = mixmonitor(sdtnshape, sdtnv, moni->IV);
+		moni->QV = mixmonitor(sdtnshape, sdtnv, moni->QV);
+		break;
+	}
+}
 // return audio sample in range [- 1.. + 1]
 static RAMFUNC FLOAT_t mikeinmux(
 	uint_fast8_t dspmode,
@@ -3902,8 +3927,6 @@ static RAMFUNC FLOAT_t mikeinmux(
 	const FLOAT_t txlevelXXX = digitx ? txlevelfenceDIGI : txlevelfenceSSB;
 	const FLOAT32P_t vi0p = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 	const FLOAT32P_t viusb0f = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
-	const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
-	const FLOAT_t sdtnv = get_float_sidetone();
 	FLOAT_t vi0f = vi0p.IV;
 
 #if WITHFT8
@@ -3920,8 +3943,6 @@ static RAMFUNC FLOAT_t mikeinmux(
 		return 0;	//txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
-		moni->IV = mixmonitor(sdtnshape, sdtnv, 0);
-		moni->QV = mixmonitor(sdtnshape, sdtnv, 0);
 		return txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_DIGI:
@@ -3947,15 +3968,15 @@ static RAMFUNC FLOAT_t mikeinmux(
 #if WITHCOMPRESSOR
 			vi0f = audio_compressor_calc(vi0f);		// Компрессор
 #endif /* WITHCOMPRESSOR */
-			moni->IV = mixmonitor(sdtnshape, sdtnv, vi0f);
-			moni->QV = mixmonitor(sdtnshape, sdtnv, vi0f);
+			moni->IV = vi0f;
+			moni->QV = vi0f;
 			return vi0f;
 
 #if WITHUSBHW && WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
 			// источник - USB
-			moni->IV = mixmonitor(sdtnshape, sdtnv, viusb0f.IV);
-			moni->QV = mixmonitor(sdtnshape, sdtnv, viusb0f.QV);
+			moni->IV = viusb0f.IV;
+			moni->QV = viusb0f.QV;
 			return viusb0f.IV * txlevelXXX;
 
 #endif /* WITHUSBHW && WITHUSBUACOUT */
@@ -3984,8 +4005,8 @@ static RAMFUNC FLOAT_t mikeinmux(
 		}
 		else
 		{
-			moni->IV = mixmonitor(sdtnshape, sdtnv, 0);
-			moni->QV = mixmonitor(sdtnshape, sdtnv, 0);
+			moni->IV = 0;
+			moni->QV = 0;
 		}
 		return 0;
 	}
@@ -5408,13 +5429,14 @@ RAMFUNC void dsp_processtx(void)
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	/* обработка передачи */
 	FLOAT_t txfirbuff [tx_MIKE_blockSize];
+	FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
 	/* заполнение буфера сэмплами от микрофона или USB */
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
 		//const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep() * scaleDAC;	// 0..1
-		FLOAT32P_t moni = { { 0, 0 } };
-		txfirbuff [i] = mikeinmux(dspmodeA, & moni);
-		savemonistereo(moni.IV, moni.QV);
+		monitorbuff [i].IV = 0;
+		monitorbuff [i].QV = 0;
+		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);
 	}
 	/* формирование АЧХ перед модулятором */
 	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);
@@ -5423,6 +5445,12 @@ RAMFUNC void dsp_processtx(void)
 	{
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
 		txfirbuff [i] = injectsubtone(txfirbuff [i], ctcss);
+	}
+	/* Самопрослушивание (сигнал SSB берется после фильтра) */
+	for (i = 0; i < tx_MIKE_blockSize; ++ i)
+	{
+		monimux(dspmodeA, & monitorbuff [i], & txfirbuff [i]);
+		savemonistereo(monitorbuff [i].IV, monitorbuff [i].QV);
 	}
 	/* Передача */
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
