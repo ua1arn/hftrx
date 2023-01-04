@@ -2729,7 +2729,10 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
 
     return v;
 }
+
 #endif /* WITHDSPLOCALTXFIR */
+
+#if WITHSKIPUSERMODE
 
 /* Выполнение обработки в симметричном FIR фильтре */
 static RAMFUNC FLOAT_t filter_fir_compute(const FLOAT_t * const pk0, const FLOAT_t * xbh, uint_fast16_t n)
@@ -2836,20 +2839,22 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir_compute_Pair2(const FLOAT_t * cons
 	return v;
 }
 
+#endif /* WITHSKIPUSERMODE */
+
 // Фильтр микрофона передатчика
-static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8_t bypass)
-{
-	enum { Ntap = Ntap_tx_MIKE, NtapHalf = Ntap / 2 };
-	// буфер с сохранёнными значениями сэмплов
-	static RAMDTCM FLOAT_t xshift [Ntap * 2];
-	static RAMDTCM uint_fast16_t fir_head = 0;
-
-	// shift the old samples
-	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
-    xshift [fir_head] = xshift [fir_head + Ntap] = NewSample;
-
-	return bypass ? xshift [fir_head + NtapHalf] : filter_fir_compute(FIRCoef_tx_MIKE [gwprof], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
-}
+//static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8_t bypass)
+//{
+//	enum { Ntap = Ntap_tx_MIKE, NtapHalf = Ntap / 2 };
+//	// буфер с сохранёнными значениями сэмплов
+//	static RAMDTCM FLOAT_t xshift [Ntap * 2];
+//	static RAMDTCM uint_fast16_t fir_head = 0;
+//
+//	// shift the old samples
+//	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
+//    xshift [fir_head] = xshift [fir_head + Ntap] = NewSample;
+//
+//	return bypass ? xshift [fir_head + NtapHalf] : filter_fir_compute(FIRCoef_tx_MIKE [gwprof], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
+//}
 
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 
@@ -5505,8 +5510,10 @@ void RAMFUNC dsp_extbuffer32rts(const IFADCvalue_t * buff)
 }
 
 /* выборка семплов из источников звука и формирование потока на передатчик */
-RAMFUNC void dsp_processtx(unsigned nsamples)
+RAMFUNC void dsp_processtx(unsigned xnsamples)
 {
+	enum { nsamples = CNT32RX };
+	ASSERT(nsamples == xnsamples);
 #if ! WITHTRANSPARENTIQ
 	unsigned i;
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
@@ -5525,11 +5532,11 @@ RAMFUNC void dsp_processtx(unsigned nsamples)
 	}
 	/* формирование АЧХ перед модулятором */
 	//BEGIN_STAMP3();
-//	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, nsamples);
-	for (i = 0; i < nsamples; ++ i)
-	{
-		txfirbuff [i] = filter_fir_tx_MIKE(txfirbuff [i], 0);
-	}
+	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, nsamples);
+//	for (i = 0; i < nsamples; ++ i)
+//	{
+//		txfirbuff [i] = filter_fir_tx_MIKE(txfirbuff [i], 0);
+//	}
 	//END_STAMP3();
 	/* Передача */
 	for (i = 0; i < nsamples; ++ i)
