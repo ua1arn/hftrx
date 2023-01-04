@@ -642,15 +642,15 @@ typedef struct
 
 #else /* WITHDSPLOCALFIR */
 
-	#if CPUSTYLE_STM32MP1
+	#if CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
 		#define Ntap_tx_MIKE	NtapValidate(511)
 
 	#else /* CPUSTYLE_STM32MP1 */
 
-	#define	Ntap_rx_AUDIO	NtapValidate(511)
-	#define Ntap_tx_MIKE	NtapValidate(241)
+		#define	Ntap_rx_AUDIO	NtapValidate(511)
+		#define Ntap_tx_MIKE	NtapValidate(241)
 
 	#endif /* CPUSTYLE_STM32MP1 */
 	#if WITHNOSPEEX
@@ -987,7 +987,7 @@ void release_dmabuffer32rx(uintptr_t addr);
 void processing_dmabuffer32rts192(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
 void buffers_resampleuacin(unsigned nsamples);
-void dsp_processtx(unsigned nsamples);	/* выборка семплов из источников звука и формирование потока на передатчик */
+void dsp_processtx(void);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void);
 int_fast32_t buffers_dmabuffer32txcachesize(void);
