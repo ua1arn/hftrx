@@ -2841,13 +2841,12 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir_compute_Pair2(const FLOAT_t * cons
 
 #endif /* WITHSKIPUSERMODE */
 
-enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
-enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
-
-enum { tx_MIKE_buff = CNT32RX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
+enum { tx_MIKE_blockSize = DMABUFFSIZE32RX / DMABUFFSTEP32RX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
+//enum { tx_MIKE_blockSize = DMABUFFSIZE32TX / DMABUFFSTEP32TX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
+//enum { tx_MIKE_blockSize = DMABUFFSIZE16RX / DMABUFFSTEP16RX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
 static FLOAT_t tx_firEQcoeff [Ntap_tx_MIKE];
 static ARM_MORPH(arm_fir_instance) tx_fir_instance;
-static FLOAT_t tx_fir_state [tx_MIKE_buff + Ntap_tx_MIKE - 1];
+static FLOAT_t tx_fir_state [tx_MIKE_blockSize - 1 + Ntap_tx_MIKE];
 
 #if WITHSKIPUSERMODE
 
@@ -5496,17 +5495,17 @@ void RAMFUNC dsp_extbuffer32rts(const IFADCvalue_t * buff)
 	}
 }
 
-/* выборка tx_MIKE_buff семплов из источников звука и формирование потока на передатчик */
-/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx - меняем tx_MIKE_buff */
+/* выборка tx_MIKE_blockSize семплов из источников звука и формирование потока на передатчик */
+/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx - меняем tx_MIKE_blockSize */
 RAMFUNC void dsp_processtx(void)
 {
 #if ! WITHTRANSPARENTIQ
 	unsigned i;
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	/* обработка передачи */
-	FLOAT_t txfirbuff [tx_MIKE_buff];
+	FLOAT_t txfirbuff [tx_MIKE_blockSize];
 	/* заполнение буфера сэмплами от микрофона или USB */
-	for (i = 0; i < tx_MIKE_buff; ++ i)
+	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
 		const FLOAT32P_t vi0 = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
@@ -5516,9 +5515,9 @@ RAMFUNC void dsp_processtx(void)
 		savemonistereo(moni.IV, moni.QV);
 	}
 	/* формирование АЧХ перед модулятором */
-	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_buff);
+	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);
 	/* Передача */
-	for (i = 0; i < tx_MIKE_buff; ++ i)
+	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
 		const FLOAT_t shapecw = shapeCWEnvelopStep() * scaleDAC;	// 0..1
 		const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep() * scaleDAC;	// 0..1
@@ -6127,7 +6126,7 @@ void dsp_initialize(void)
 		rxparam_update(rprofile, pathi);
 	gwagcprofrx = rprofile;
 
-	ARM_MORPH(arm_fir_init)(& tx_fir_instance, Ntap_tx_MIKE, tx_firEQcoeff, tx_fir_state, tx_MIKE_buff);
+	ARM_MORPH(arm_fir_init)(& tx_fir_instance, Ntap_tx_MIKE, tx_firEQcoeff, tx_fir_state, tx_MIKE_blockSize);
 
 	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
 	txparam_update(tprofile);

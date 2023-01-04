@@ -2116,6 +2116,9 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 	SPIN_LOCK(& locklist16rx);
 	InsertHeadList3(& voicesmike16rx, & p->item, 0);
 	SPIN_UNLOCK(& locklist16rx);
+
+	//dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
+
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
