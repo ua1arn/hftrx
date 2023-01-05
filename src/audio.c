@@ -409,7 +409,7 @@ static volatile FLOAT_t amcarrierHALF;
 static volatile FLOAT_t scaleDAC = 1;
 
 static FLOAT_t shapeSidetoneStep(void);		// 0..1
-static FLOAT_t shapeCWEnvelopStep(void);	// 0..1
+static FLOAT_t shapeTXEnvelopStep(void);	// 0..1
 static FLOAT_t shapeCWSSBEnvelopStep(void);	// 0..1
 static uint_fast8_t getTxShapeNotComplete(void);
 
@@ -4017,7 +4017,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	uint_fast8_t dspmode
 	)
 {
-	const FLOAT_t shape = shapeCWEnvelopStep() * scaleDAC;	// 0..1 - огибающая
+	const FLOAT_t shape = shapeTXEnvelopStep() * scaleDAC;	// 0..1 - огибающая
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый при передаче
 	switch (dspmode)
 	{
@@ -5681,9 +5681,9 @@ static unsigned shapeSidetonePos = 0;
 static volatile uint_fast8_t shapeSidetoneInpit = 0;
 static volatile uint_fast8_t shapeCWSSBSidetoneInpit = 0;
 
-static unsigned shapeCWEnvelopPos = 0;
+static unsigned shapeTXEnvelopPos = 0;
 static unsigned shapeCWSSBEnvelopPos = 0;
-static volatile uint_fast8_t cwgateflag = 0;
+static volatile uint_fast8_t txgateInput = 0;
 static volatile uint_fast8_t rxgateflag = 0;
 
 // 0..1
@@ -5716,18 +5716,18 @@ static RAMFUNC FLOAT_t shapeSidetoneStep(void)
 
 // Формирование огибающей для передачи
 // 0..1
-static RAMFUNC FLOAT_t shapeCWEnvelopStep(void)
+static RAMFUNC FLOAT_t shapeTXEnvelopStep(void)
 {
 	const unsigned enveloplen = enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (shapeCWEnvelopPos >= enveloplen)
-		shapeCWEnvelopPos = enveloplen;
-	const FLOAT_t v = peakshapef(shapeCWEnvelopPos);
+	if (shapeTXEnvelopPos >= enveloplen)
+		shapeTXEnvelopPos = enveloplen;
+	const FLOAT_t v = peakshapef(shapeTXEnvelopPos);
 
-	if (cwgateflag != 0)
-		shapeCWEnvelopPos = shapeCWEnvelopPos >= enveloplen ? enveloplen : (shapeCWEnvelopPos + 1);
+	if (txgateInput != 0)
+		shapeTXEnvelopPos = shapeTXEnvelopPos >= enveloplen ? enveloplen : (shapeTXEnvelopPos + 1);
 	else
-		shapeCWEnvelopPos = shapeCWEnvelopPos == 0 ? 0 : (shapeCWEnvelopPos - 1);
+		shapeTXEnvelopPos = shapeTXEnvelopPos == 0 ? 0 : (shapeTXEnvelopPos - 1);
 	return v;
 }
 
@@ -5753,9 +5753,9 @@ static RAMFUNC uint_fast8_t getTxShapeNotComplete(void)
 {
 	const unsigned enveloplen = enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (shapeCWEnvelopPos >= enveloplen)
-		shapeCWEnvelopPos = enveloplen;
-	return shapeCWEnvelopPos != enveloplen;
+	if (shapeTXEnvelopPos >= enveloplen)
+		shapeTXEnvelopPos = enveloplen;
+	return shapeTXEnvelopPos != enveloplen;
 }
 
 /* разрешение работы тракта в режиме приёма */
@@ -5764,7 +5764,7 @@ static uint_fast8_t getRxGate(void)
 #if TXGFV_RX != 0
 	return rxgateflag;
 #else
-	return ! cwgateflag;
+	return ! txgateInput;
 #endif
 }
 
@@ -5775,7 +5775,7 @@ void dsp_txpath_set(portholder_t txpathstate)
 {
 #if WITHINTEGRATEDDSP
 	#if WITHTX
-		cwgateflag = (txpathstate & (TXGFV_TX_CW | TXGFV_TX_SSB | TXGFV_TX_AM | TXGFV_TX_NFM)) != 0;
+		txgateInput = (txpathstate & (TXGFV_TX_CW | TXGFV_TX_SSB | TXGFV_TX_AM | TXGFV_TX_NFM)) != 0;
 		#if TXGFV_RX != 0
 			rxgateflag = (txpathstate & (TXGFV_RX)) != 0;
 		#endif /* TXGFV_RX != 0 */
