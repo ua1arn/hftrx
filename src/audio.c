@@ -5179,20 +5179,13 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 	for (i = 0; i < DMABUFFSIZE16TX; i += DMABUFFSTEP16TX)
 	{
 		aubufv_t * const b = & buff [i];
-//		const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
-//		const FLOAT_t sdtnv = get_float_sidetone();
-//		ASSERT(sdtnshape >= 0 && sdtnshape <= 1);
-//		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
 		FLOAT32P_t moni;
 		if (getsampmlemoni(& moni) == 0)
 		{
 			// Еще нет сэмплов в канале самоконтроля (самопрослушивание)
-			// TODO: сделать самоконтроль телеграфа в этом же канале.
 			moni.IV = 0;
 			moni.QV = 0;
 		}
-//		b [L] = adpt_output(& afcodectc, sdtnv);
-//		b [R] = adpt_output(& afcodectx, sdtnv);
 //		continue;
 		const FLOAT_t moniL = moni.IV;
 		const FLOAT_t moniR = moni.QV;
