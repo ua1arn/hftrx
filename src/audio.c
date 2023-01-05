@@ -3892,6 +3892,7 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 	return sdtn * shape + moni * glob_moniflag * (1 - shape);
 }
 
+/* При необходимости добавить в самопрослушивание самоконтроль ключа и пердаваемый SSB сигнал */
 static void monimux(
 	uint_fast8_t dspmode,
 	FLOAT32P_t * moni,
@@ -5440,22 +5441,14 @@ RAMFUNC void dsp_processtx(void)
 	}
 	/* формирование АЧХ перед модулятором */
 	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);
-	/* Самопрослушивание (сигнал SSB берется после фильтра) */
-	for (i = 0; i < tx_MIKE_blockSize; ++ i)
-	{
-		monimux(dspmodeA, & monitorbuff [i], & txfirbuff [i]);
-		savemonistereo(monitorbuff [i].IV, monitorbuff [i].QV);
-	}
-	/* Сабтон */
-	for (i = 0; i < tx_MIKE_blockSize; ++ i)
-	{
-		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
-		txfirbuff [i] = injectsubtone(txfirbuff [i], ctcss);
-	}
+
 	/* Передача */
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
-		FLOAT32P_t vfb = baseband_modulator(txfirbuff [i], dspmodeA);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
+		monimux(dspmodeA, & monitorbuff [i], & txfirbuff [i]);	/* При необходимости добавить в самопрослушивание самоконтроль ключа и пердаваемый SSB сигнал */
+		savemonistereo(monitorbuff [i].IV, monitorbuff [i].QV);	/* Самопрослушивание (сигнал SSB берется после фильтра) */
+		FLOAT32P_t vfb = baseband_modulator(injectsubtone(txfirbuff [i], ctcss), dspmodeA);	// Передатчик - формирование одного сэмпла (пары I/Q).
 
 #if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
 		if (dspmodeA != DSPCTL_MODE_TX_BPSK)
