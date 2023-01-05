@@ -3895,7 +3895,7 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 /* При необходимости добавить в самопрослушивание самоконтроль ключа и пердаваемый SSB сигнал */
 static void monimux(
 	uint_fast8_t dspmode,
-	FLOAT32P_t * moni,
+	FLOAT32P_t * moni,		/* здесь может быть пара сэмплов от USB */
 	const FLOAT_t * ssbtx
 	)
 {
