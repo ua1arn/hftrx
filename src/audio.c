@@ -3899,8 +3899,6 @@ static void monimux(
 	const FLOAT_t * ssbtx
 	)
 {
-	const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
-	const FLOAT_t sdtnv = get_float_sidetone();
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_DIGI:
@@ -3908,13 +3906,13 @@ static void monimux(
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
-		moni->IV = mixmonitor(sdtnshape, sdtnv, * ssbtx);
-		moni->QV = mixmonitor(sdtnshape, sdtnv, * ssbtx);
+//		moni->IV = mixmonitor(sdtnshape, sdtnv, * ssbtx);
+//		moni->QV = mixmonitor(sdtnshape, sdtnv, * ssbtx);
 		break;
 
 	default:
-		moni->IV = mixmonitor(sdtnshape, sdtnv, moni->IV);
-		moni->QV = mixmonitor(sdtnshape, sdtnv, moni->QV);
+//		moni->IV = mixmonitor(sdtnshape, sdtnv, moni->IV);
+//		moni->QV = mixmonitor(sdtnshape, sdtnv, moni->QV);
 		break;
 	}
 }
@@ -5179,16 +5177,23 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 	for (i = 0; i < DMABUFFSIZE16TX; i += DMABUFFSTEP16TX)
 	{
 		aubufv_t * const b = & buff [i];
+		const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
+		const FLOAT_t sdtnv = get_float_sidetone();
+		ASSERT(sdtnshape >= 0 && sdtnshape <= 1);
+		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
 		FLOAT32P_t moni;
 		if (getsampmlemoni(& moni) == 0)
 		{
 			// Еще нет сэмплов в канале самоконтроля (самопрослушивание)
+			// TODO: сделать самоконтроль телеграфа в этом же канале.
 			moni.IV = 0;
 			moni.QV = 0;
 		}
+//		b [L] = adpt_output(& afcodectc, sdtnv);
+//		b [R] = adpt_output(& afcodectx, sdtnv);
 //		continue;
-		const FLOAT_t moniL = moni.IV;
-		const FLOAT_t moniR = moni.QV;
+		const FLOAT_t moniL = mixmonitor(sdtnshape, sdtnv, moni.IV);
+		const FLOAT_t moniR = mixmonitor(sdtnshape, sdtnv, moni.QV);
 
 		FLOAT_t left = adpt_input(& afcodectx, b [L] * usebuf);
 		FLOAT_t right = adpt_input(& afcodectx, b [R] * usebuf);
@@ -5427,7 +5432,6 @@ RAMFUNC void dsp_processtx(void)
 	/* заполнение буфера сэмплами от микрофона или USB */
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
-		//const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep() * scaleDAC;	// 0..1
 		monitorbuff [i].IV = 0;
 		monitorbuff [i].QV = 0;
 		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);
@@ -5438,10 +5442,17 @@ RAMFUNC void dsp_processtx(void)
 	/* Передача */
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
+		const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep();
+		const FLOAT_t cwssbtone = get_float_sidetonetxssb() * txlevelfenceSSB;
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
 		monimux(dspmodeA, & monitorbuff [i], & txfirbuff [i]);	/* При необходимости добавить в самопрослушивание самоконтроль ключа и пердаваемый SSB сигнал */
 		savemonistereo(monitorbuff [i].IV, monitorbuff [i].QV);	/* Самопрослушивание (сигнал SSB берется после фильтра) */
-		FLOAT32P_t vfb = baseband_modulator(injectsubtone(txfirbuff [i], ctcss), dspmodeA);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		FLOAT_t v = txfirbuff [i];
+		if (dspmodeA == DSPCTL_MODE_TX_SSB)
+		{
+			v = v * (1 - shapecwssb) + (cwssbtone * shapecwssb);
+		}
+		FLOAT32P_t vfb = baseband_modulator(injectsubtone(v, ctcss), dspmodeA);	// Передатчик - формирование одного сэмпла (пары I/Q).
 
 #if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
 		if (dspmodeA != DSPCTL_MODE_TX_BPSK)
@@ -5668,11 +5679,11 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 static volatile unsigned enveloplen0 = NSAITICKS(5) + 1;	/* Изменяется через меню. */
 static unsigned shapeSidetonePos = 0;
 static volatile uint_fast8_t shapeSidetoneInpit = 0;
+static volatile uint_fast8_t shapeCWSSBSidetoneInpit = 0;
 
 static unsigned shapeCWEnvelopPos = 0;
 static unsigned shapeCWSSBEnvelopPos = 0;
 static volatile uint_fast8_t cwgateflag = 0;
-static volatile uint_fast8_t cwssbgateflag = 0;
 static volatile uint_fast8_t rxgateflag = 0;
 
 // 0..1
@@ -5691,8 +5702,8 @@ static RAMFUNC FLOAT_t shapeSidetoneStep(void)
 {
 	const unsigned enveloplen = enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (shapeSidetoneInpit >= enveloplen)
-		shapeSidetoneInpit = enveloplen;
+	if (shapeSidetonePos >= enveloplen)
+		shapeSidetonePos = enveloplen;
 
 	const FLOAT_t v = peakshapef(shapeSidetonePos);
 	
@@ -5730,7 +5741,7 @@ static RAMFUNC FLOAT_t shapeCWSSBEnvelopStep(void)
 		shapeCWSSBEnvelopPos = enveloplen;
 	const FLOAT_t v = peakshapef(shapeCWSSBEnvelopPos);
 
-	if (cwssbgateflag != 0)
+	if (shapeCWSSBSidetoneInpit != 0)
 		shapeCWSSBEnvelopPos = shapeCWSSBEnvelopPos >= enveloplen ? enveloplen : (shapeCWSSBEnvelopPos + 1);
 	else
 		shapeCWSSBEnvelopPos = shapeCWSSBEnvelopPos == 0 ? 0 : (shapeCWSSBEnvelopPos - 1);
@@ -5781,6 +5792,9 @@ void hardware_sounds_disable(void)
 {
 	//anglestep_sidetone = 0;
 	shapeSidetoneInpit = 0;
+
+	/* TODO: пока нет различий в передаче ключем и озвучке нажатий кнопок */
+	shapeCWSSBSidetoneInpit = 0;
 }
 
 #if SIDETONE_TARGET_BIT != 0
@@ -5795,6 +5809,10 @@ void hardware_sounds_setfreq(
 {
 	anglestep_sidetone = value;
 	shapeSidetoneInpit = 1;
+
+	/* TODO: пока нет различий в передаче ключем и озвучке нажатий кнопок */
+	anglestep_sidetonetxssb = value;
+	shapeCWSSBSidetoneInpit = 1;
 }
 
 // return code: prescaler
