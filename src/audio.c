@@ -3892,13 +3892,15 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 	return sdtn * shape + moni * glob_moniflag * (1 - shape);
 }
 
-/* При необходимости добавить в самопрослушивание самоконтроль ключа и пердаваемый SSB сигнал */
+/* При необходимости добавить в самопрослушивание пердаваемый SSB сигнал */
 static void monimux(
 	uint_fast8_t dspmode,
 	FLOAT32P_t * moni,		/* здесь может быть пара сэмплов от USB */
 	const FLOAT_t * ssbtx
 	)
 {
+	if (isdspmoderx(dspmode))
+		return;
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_DIGI:
@@ -3906,13 +3908,14 @@ static void monimux(
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
-//		moni->IV = mixmonitor(sdtnshape, sdtnv, * ssbtx);
-//		moni->QV = mixmonitor(sdtnshape, sdtnv, * ssbtx);
+		if (glob_txaudio != BOARD_TXAUDIO_USB)
+		{
+			moni->IV = * ssbtx;
+			moni->QV = * ssbtx;
+		}
 		break;
 
 	default:
-//		moni->IV = mixmonitor(sdtnshape, sdtnv, moni->IV);
-//		moni->QV = mixmonitor(sdtnshape, sdtnv, moni->QV);
 		break;
 	}
 }
