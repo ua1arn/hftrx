@@ -451,17 +451,6 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
-	// разрешено не только в случае наличия электронного ключа - требуется при переключении режимов CW/SSB
-	{
-		QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP1,
-		ITEM_VALUE,
-		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
-		offsetof(struct nvmap, gcwpitch10),
-		nvramoffs0,
-		NULL,
-		& gcwpitch10,
-		getzerobase, 
-	},
 #if WITHIF4DSP
 	{
 		QLABEL("NR LEVEL"), 7, 0, 0,	ISTEP1,
@@ -1243,6 +1232,17 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
+	// разрешено не только в случае наличия электронного ключа - требуется при переключении режимов CW/SSB
+	{
+		QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP1,
+		ITEM_VALUE,
+		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
+		offsetof(struct nvmap, gcwpitch10),
+		nvramoffs0,
+		NULL,
+		& gcwpitch10,
+		getzerobase,
+	},
   #if ! WITHPOTWPM
 	{
 		QLABEL("CW SPEED"), 7, 0, 0,	ISTEP1,
@@ -1278,7 +1278,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, 
 	},
 	{
-		QLABEL("KEY REVE"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("KEY REV "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
 		offsetof(struct nvmap, elkeyreverse),
@@ -1341,6 +1341,18 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP */
+#if WITHTX && WITHIF4DSP
+	{
+		QLABEL("SSB TXCW"), 8, 3, RJ_ON,	ISTEP1,		/*  */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gcwssbtx),	/* разрешение передачи телеграфа как тона в режиме SSB */
+		nvramoffs0,
+		NULL,
+		& gcwssbtx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHTX && WITHIF4DSP */
 #endif /* WITHELKEY */
 #if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
 #if ! WITHFLATMENU
@@ -1655,7 +1667,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("MONI EN "), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output level.. */
+		QLABEL("MONI EN "), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output enable */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */

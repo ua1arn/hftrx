@@ -3085,6 +3085,7 @@ struct nvmap
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmoniflag;		/* разрешение самопрослушивания */
+	uint8_t gcwssbtx;		/* разрешение самопрослушивания */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 #if WITHWAVPLAYER || WITHSENDWAV
 	uint8_t gloopmsg, gloopsec;
@@ -4623,6 +4624,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	};
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
+	static uint_fast8_t gcwssbtx;		/* разрешение передачи телеграфа как тона в режиме SSB */
 
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -11673,7 +11675,8 @@ updateboardZZZ(
 #endif /* WITHREVERB */
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-		board_set_moniflag(gmoniflag);	/* glob_moniflag */
+		board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
+		board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
 		#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe);		/* верхний предел FFT */

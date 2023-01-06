@@ -158,6 +158,7 @@ static uint_fast8_t 	glob_notch_mode = BOARD_NOTCH_OFF;		/* включение N
 static uint_fast8_t 	glob_cwedgetime = 4;		/* CW Rise Time (in 1 ms discrete) */
 static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 static uint_fast8_t 	glob_moniflag = 1;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+static uint_fast8_t		glob_cwssbtx = 1;			/* разрешение передачи телеграфа как тона в режиме SSB */
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 static uint_fast16_t	glob_dacscale = BOARDDACSCALEMAX;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
@@ -5451,9 +5452,9 @@ RAMFUNC void dsp_processtx(void)
 		monimux(dspmodeA, & monitorbuff [i], & txfirbuff [i]);	/* При необходимости добавить в самопрослушивание самоконтроль ключа и пердаваемый SSB сигнал */
 		savemonistereo(monitorbuff [i].IV, monitorbuff [i].QV);	/* Самопрослушивание (сигнал SSB берется после фильтра) */
 		FLOAT_t v = txfirbuff [i];
-		if (dspmodeA == DSPCTL_MODE_TX_SSB)
+		if (dspmodeA == DSPCTL_MODE_TX_SSB && glob_cwssbtx != 0)
 		{
-			v = v * (1 - shapecwssb) + (cwssbtone * shapecwssb);
+			v = v * (1 - shapecwssb) + (cwssbtone * shapecwssb);	/* Заменяем передаваемый сигнал на тон пропорционально огибающей. */
 		}
 		FLOAT32P_t vfb = baseband_modulator(injectsubtone(v, ctcss), dspmodeA);	// Передатчик - формирование одного сэмпла (пары I/Q).
 
@@ -6443,6 +6444,17 @@ board_set_moniflag(uint_fast8_t v)	/* разрешение самопрослу�
 	if (glob_moniflag != n)
 	{
 		glob_moniflag = n;
+		board_dsp1regchanged();
+	}
+}
+
+void
+board_set_cwssbtx(uint_fast8_t v)	/* разрешение передачи телеграфа как тона в режиме SSB */
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_cwssbtx != n)
+	{
+		glob_cwssbtx = n;
 		board_dsp1regchanged();
 	}
 }
