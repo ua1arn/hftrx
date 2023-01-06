@@ -5775,18 +5775,20 @@ static uint_fast8_t getRxGate(void)
 
 // манипуляция и переключение на передачу
 // вызывается из SYSTEM обработчика прерываний
-void dsp_txpath_set(portholder_t txpathstate)
+void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
 {
 #if WITHINTEGRATEDDSP
 	#if WITHTX
 		txgateInput = (txpathstate & (TXGFV_TX_CW | TXGFV_TX_SSB | TXGFV_TX_AM | TXGFV_TX_NFM)) != 0;
-		#if TXGFV_RX != 0
-			rxgateflag = (txpathstate & (TXGFV_RX)) != 0;
-		#endif /* TXGFV_RX != 0 */
+		shapeCWSSBSidetoneInpit = keydown;
+	#if TXGFV_RX != 0
+		rxgateflag = (txpathstate & (TXGFV_RX)) != 0;
+	#endif /* TXGFV_RX != 0 */
 	#else /* WITHTX */
 		rxgateflag = 1;
 	#endif /* WITHTX */
 #endif /* WITHINTEGRATEDDSP */
+//	PRINTF("%u", shapeCWSSBSidetoneInpit);
 }
 
 //////////////////////////////////////////
@@ -5796,9 +5798,6 @@ void hardware_sounds_disable(void)
 {
 	//anglestep_sidetone = 0;
 	shapeSidetoneInpit = 0;
-
-	/* TODO: пока нет различий в передаче ключем и озвучке нажатий кнопок */
-	shapeCWSSBSidetoneInpit = 0;
 }
 
 #if SIDETONE_TARGET_BIT != 0
@@ -5814,18 +5813,21 @@ void hardware_sounds_setfreq(
 	anglestep_sidetone = value;
 	shapeSidetoneInpit = 1;
 
-	/* TODO: пока нет различий в передаче ключем и озвучке нажатий кнопок */
-	anglestep_sidetonetxssb = value;
-	shapeCWSSBSidetoneInpit = 1;
 }
 
+void dsp_sidetone_setfreq(uint_least16_t tonefreq01)	/* tonefreq01 - частота в десятых долях герца. . */
+{
+	anglestep_sidetonetxssb = FTWAF001(tonefreq01 * 10u);	// В сотых долях герца
+
+
+}
 // return code: prescaler
 uint_fast8_t
 hardware_calc_sound_params(
-	uint_least16_t tonefreq,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
+	uint_least16_t tonefreq01,	/* tonefreq01 - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
 	unsigned * pvalue)
 {
-	* pvalue = FTWAF001(tonefreq * 10u);	// В сотых долях герца
+	* pvalue = FTWAF001(tonefreq01 * 10u);	// В сотых долях герца
 	return 0;
 }
 

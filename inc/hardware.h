@@ -707,7 +707,7 @@ void spool_nmeapps(void);	// Обработчик вызывается при п
 // получить прескалер и значение для программирования таймера
 uint_fast8_t
 hardware_calc_sound_params(
-	uint_least16_t tonefreq,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
+	uint_least16_t tonefreq01,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
 	unsigned * pvalue);
 // установить прескалер и значение для программирования таймера
 // called from interrupt or with disabled interrupts

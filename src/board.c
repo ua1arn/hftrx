@@ -8185,14 +8185,18 @@ void
 board_sidetone_setfreq(
 	uint_least16_t tonefreq)	/* tonefreq - частота в герцах. Минимум - 400 герц (определено набором команд CAT). */
 {
+	const uint_least16_t tonefreq01 = tonefreq * 10;
 	enum { sndi = SNDI_SIDETONE };
-	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
+	if (board_calcs_setfreq(sndi, tonefreq01) != 0)	/* если частота изменилась - перепрограммируем */
 	{
 		system_disableIRQ();
 		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		SPIN_UNLOCK(& gpreilock);
 		system_enableIRQ();
+#if WITHIF4DSP
+		dsp_sidetone_setfreq(tonefreq01);
+#endif /* WITHIF4DSP */
 	}
 }
 
