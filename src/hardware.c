@@ -3166,7 +3166,11 @@ sysinit_debug_initialize(void)
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */
+}
 
+static void FLASHMEMINITFUNC
+sysinit_perfmeter_initialize(void)
+{
 #if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 
 	#if WITHDEBUG && __CORTEX_M == 7U
@@ -3620,6 +3624,7 @@ SystemInit(void)
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
+	sysinit_perfmeter_initialize();
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
@@ -3822,6 +3827,7 @@ void Reset_CPUn_Handler(void)
 #endif /* (__CORTEX_A == 9U) */
 
 	sysinit_fpu_initialize();
+	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
 	sysinit_cache_initialize();	// caches iniitialize
