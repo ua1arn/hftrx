@@ -10942,6 +10942,7 @@ static FLOAT_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 void
 audioproc_spool_user(void)
 {
+#if ! WITHSKIPUSERMODE
 	speexel_t * p;
 	while (takespeexready_user(& p))
 	{
@@ -10969,6 +10970,7 @@ audioproc_spool_user(void)
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);
 	}
+#endif /* ! WITHSKIPUSERMODE */
 }
 
 #else /* WITHINTEGRATEDDSP */
