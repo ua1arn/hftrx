@@ -5170,7 +5170,7 @@ static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 // перед передачей по DMA в аудиокодек
 //  Здесь ответвляются потоки в USB и для записи на SD CARD
 // realtime level
-void dsp_addsidetone(aubufv_t * buff, int usebuf)
+void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 {
 	enum { L = DMABUFF16TX_LEFT, R = DMABUFF16TX_RIGHT };
 	ASSERT(buff != NULL);
@@ -5181,23 +5181,20 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 	for (i = 0; i < DMABUFFSIZE16TX; i += DMABUFFSTEP16TX)
 	{
 		aubufv_t * const b = & buff [i];
-		const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
+		const FLOAT_t sdtnenvelop = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
 		const FLOAT_t sdtnv = get_float_sidetone();
-		ASSERT(sdtnshape >= 0 && sdtnshape <= 1);
+		ASSERT(sdtnenvelop >= 0 && sdtnenvelop <= 1);
 		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
 		FLOAT32P_t moni;
-		if (getsampmlemoni(& moni) == 0)
-		{
-			// Еще нет сэмплов в канале самоконтроля (самопрослушивание)
-			// TODO: сделать самоконтроль телеграфа в этом же канале.
-			moni.IV = 0;
-			moni.QV = 0;
-		}
+		// Использование данных.
+		moni.IV = adpt_input(& afcodectx, monibuff [i + L]);	// микрофон или левый канал
+		moni.QV = adpt_input(& afcodectx, monibuff [i + R]);	// правый канал
 //		b [L] = adpt_output(& afcodectc, sdtnv);
 //		b [R] = adpt_output(& afcodectx, sdtnv);
 //		continue;
-		const FLOAT_t moniL = mixmonitor(sdtnshape, sdtnv, moni.IV);
-		const FLOAT_t moniR = mixmonitor(sdtnshape, sdtnv, moni.QV);
+		/* Замещаем звук из мониторинга на sidetone пропорционально огибающей */
+		const FLOAT_t moniL = mixmonitor(sdtnenvelop, sdtnv, 0 * moni.IV);
+		const FLOAT_t moniR = mixmonitor(sdtnenvelop, sdtnv, 0 * moni.QV);
 
 		FLOAT_t left = adpt_input(& afcodectx, b [L] * usebuf);
 		FLOAT_t right = adpt_input(& afcodectx, b [R] * usebuf);
