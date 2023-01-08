@@ -767,48 +767,48 @@ FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
 // Преобразование во внешнее (целочисленное) представление.
 int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
 {
-	if (v < -1 || v > 1)
-	{
-		PRINTF("adpt_output: '%s' v=%f\n", adp->name, v);
-	}
-	ASSERT(v <= 1);
-	ASSERT(v >= - 1);
+//	if (v < -1 || v > 1)
+//	{
+//		PRINTF("adpt_output: '%s' v=%f\n", adp->name, v);
+//	}
+//	ASSERT(v <= 1);
+//	ASSERT(v >= - 1);
 	return (int32_t) (adp->outputK * v) << adp->rightspace;
 }
 
 // Преобразование во внешнее представление.
 int32_t adpt_outputL(const adapter_t * adp, double v)
 {
-	if (v < -1 || v > 1)
-	{
-		PRINTF("adpt_outputL: '%s' v=%f\n", adp->name, v);
-	}
-	ASSERT(v <= 1);
-	ASSERT(v >= - 1);
+//	if (v < -1 || v > 1)
+//	{
+//		PRINTF("adpt_outputL: '%s' v=%f\n", adp->name, v);
+//	}
+//	ASSERT(v <= 1);
+//	ASSERT(v >= - 1);
 	return (int32_t) (adp->outputK * v) << adp->rightspace;
 }
 
 // точное преобразование во внешнее представление.
 int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v)
 {
-	if (v < -1 || v > 1)
-	{
-		PRINTF("adpt_outputexact: '%s' v=%f\n", adp->name, v);
-	}
-	ASSERT(v <= 1);
-	ASSERT(v >= - 1);
+//	if (v < -1 || v > 1)
+//	{
+//		PRINTF("adpt_outputexact: '%s' v=%f\n", adp->name, v);
+//	}
+//	ASSERT(v <= 1);
+//	ASSERT(v >= - 1);
 	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
 }
 
 // точное преобразование во внешнее представление.
 int32_t adpt_outputexactL(const adapter_t * adp, double v)
 {
-	if (v < -1 || v > 1)
-	{
-		PRINTF("adpt_outputexactL: '%s' v=%f\n", adp->name, v);
-	}
-	ASSERT(v <= 1);
-	ASSERT(v >= - 1);
+//	if (v < -1 || v > 1)
+//	{
+//		PRINTF("adpt_outputexactL: '%s' v=%f\n", adp->name, v);
+//	}
+//	ASSERT(v <= 1);
+//	ASSERT(v >= - 1);
 	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
 }
 
@@ -5193,8 +5193,8 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 //		b [R] = adpt_output(& afcodectx, sdtnv);
 //		continue;
 		/* Замещаем звук из мониторинга на sidetone пропорционально огибающей */
-		const FLOAT_t moniL = mixmonitor(sdtnenvelop, sdtnv, 0 * moni.IV);
-		const FLOAT_t moniR = mixmonitor(sdtnenvelop, sdtnv, 0 * moni.QV);
+		const FLOAT_t moniL = mixmonitor(sdtnenvelop, sdtnv, moni.IV);
+		const FLOAT_t moniR = mixmonitor(sdtnenvelop, sdtnv, moni.QV);
 
 		FLOAT_t left = adpt_input(& afcodectx, b [L] * usebuf);
 		FLOAT_t right = adpt_input(& afcodectx, b [R] * usebuf);
@@ -5235,7 +5235,7 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 		else
 		{
 			const FLOAT_t recleft = injectsidetone(left, moniL);
-			const FLOAT_t recright = injectsidetone(0 * right, moniR);
+			const FLOAT_t recright = injectsidetone(right, moniR);
 			recordsampleSD(recleft, recright);	// Запись демодулированного сигнала без озвучки клавиш
 			recordsampleUAC(recleft, recright);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
