@@ -5100,7 +5100,8 @@ typedef struct
 
 static void fftzoom_filer_decimate_ifspectrum(
 	const struct zoom_param * const prm,
-	FLOAT_t * buffer
+	FLOAT_t * buffer,
+	unsigned usedSizeChk
 	)
 {
 	union configs
@@ -5109,6 +5110,7 @@ static void fftzoom_filer_decimate_ifspectrum(
 		ARM_MORPH(arm_fir_decimate_instance) fir_config;
 	} c;
 	const unsigned usedSize = NORMALFFT / FFTOVERLAP * prm->zoom;
+	ASSERT(usedSize == usedSizeChk);
 
 	// Biquad LPF фильтр
 #if defined (ARM_MATH_NEON)
@@ -5216,8 +5218,8 @@ dsp_getspectrumrow(
 		ASSERT(ARRAY_SIZE(zoom_params) >= zoompow2);
 		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
 
-		fftzoom_filer_decimate_ifspectrum(prm, largesigI);
-		fftzoom_filer_decimate_ifspectrum(prm, largesigQ);
+		fftzoom_filer_decimate_ifspectrum(prm, largesigI, usedsize);
+		fftzoom_filer_decimate_ifspectrum(prm, largesigQ, usedsize);
 	}
 
 	if (prevpf == NULL)
