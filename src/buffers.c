@@ -647,6 +647,11 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 		const PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		SPIN_UNLOCK(& speexlock);
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
+		unsigned i;
+		for (i = 0; i < FIRBUFSIZE; ++ i)
+		{
+			deliveryfloat(& speexoutfloat, 0, 0);	// to AUDIO codec
+		}
 		return p;
 	}
 	SPIN_UNLOCK(& speexlock);
@@ -910,7 +915,7 @@ void buffers_initialize(void)
 
 	{
 		unsigned i;
-		static RAMBIGDTCM denoise16_t speexarray16 [4];	// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
+		static RAMBIGDTCM denoise16_t speexarray16 [5];	// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
 
 		InitializeListHead2(& speexfree16);	// Незаполненные
 		InitializeListHead2(& speexready16);	// Для обработки

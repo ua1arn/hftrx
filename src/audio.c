@@ -5222,16 +5222,22 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 			break;
 		}
 #endif /* WITHUSBHEADSET */
-
 		if (tx)
+		{
+			left = 0;
+			right = 0;
+		}
+		if (0 && tx)
 		{
 			recordsampleSD(moniL, moniR);	// Запись самоконтроля и самопрослушки
 			recordsampleUAC(moniL, moniR);	// Запись самоконтроля и самопрослушки
 		}
 		else
 		{
-			recordsampleSD(left, right);	// Запись демодулированного сигнала без озвучки клавиш
-			recordsampleUAC(left, right);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+			const FLOAT_t recleft = injectsidetone(left, moniL);
+			const FLOAT_t recright = injectsidetone(0 * right, moniR);
+			recordsampleSD(recleft, recright);	// Запись демодулированного сигнала без озвучки клавиш
+			recordsampleUAC(recleft, recright);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
 #if WITHUSBHEADSET || WITHLFM
