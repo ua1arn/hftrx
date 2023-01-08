@@ -5108,7 +5108,7 @@ static void fftzoom_filer_decimate_ifspectrum(
 		ARM_MORPH(arm_biquad_cascade_df2T_instance) iir_config;
 		ARM_MORPH(arm_fir_decimate_instance) fir_config;
 	} c;
-	const unsigned usedSize = NORMALFFT * prm->zoom;
+	const unsigned usedSize = NORMALFFT / FFTOVERLAP * prm->zoom;
 
 	// Biquad LPF фильтр
 #if defined (ARM_MATH_NEON)
@@ -5232,8 +5232,8 @@ dsp_getspectrumrow(
 
 	// Подготовить массив комплексных чисел для преобразования в частотную область
 	make_cmplx(fftinpt + NORMALFFT * 0, NORMALFFT, largesigQ, largesigI);
-	//make_cmplx(fftinpt + NORMALFFT * 0, NORMALFFT / FFTOVERLAP, prevLargesigQ, prevLargesigI);
-	//make_cmplx(fftinpt + NORMALFFT * 1, NORMALFFT / FFTOVERLAP, largesigQ, largesigI);
+//	make_cmplx(fftinpt + NORMALFFT * 1, NORMALFFT / FFTOVERLAP, prevLargesigQ, prevLargesigI);
+//	make_cmplx(fftinpt + NORMALFFT * 0, NORMALFFT / FFTOVERLAP, largesigQ, largesigI);
 	//ARM_MORPH(arm_fill)(0, fftinpt + NORMALFFT * 1, NORMALFFT / FFTOVERLAP);
 
 
