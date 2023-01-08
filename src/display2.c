@@ -3943,10 +3943,11 @@ static FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old va
 
 enum
 {
+	FFTOVERLAP = 1,
 	NOVERLAP = 1 << WITHFFTOVERLAPPOW2,		// Количество перекрывающися буферов FFT спектра
 	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX),
 
-	LARGEFFT = WITHFFTSIZEWIDE * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
+	LARGEFFT = WITHFFTSIZEWIDE / FFTOVERLAP * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
 	NORMALFFT = WITHFFTSIZEWIDE				// размер буфера для отображения
 };
 
@@ -5205,7 +5206,7 @@ dsp_getspectrumrow(
 	if (getfilled_fftbuffer(& pf) == 0)
 		return 0;
 
-	const unsigned usedsize = NORMALFFT << zoompow2;
+	const unsigned usedsize = (NORMALFFT / FFTOVERLAP) << zoompow2;
 	FLOAT_t * const largesigI = pf->largebuffI + LARGEFFT - usedsize;
 	FLOAT_t * const largesigQ = pf->largebuffQ + LARGEFFT - usedsize;
 
@@ -5226,9 +5227,14 @@ dsp_getspectrumrow(
 	}
 
 	FLOAT_t * const fftinpt = gvars.cmplx_sig;
+	FLOAT_t * const prevLargesigI = prevpf->largebuffI + LARGEFFT - usedsize;
+	FLOAT_t * const prevLargesigQ = prevpf->largebuffQ + LARGEFFT - usedsize;
 
 	// Подготовить массив комплексных чисел для преобразования в частотную область
-	make_cmplx(fftinpt, NORMALFFT, largesigQ, largesigI);
+	make_cmplx(fftinpt + NORMALFFT * 0, NORMALFFT, largesigQ, largesigI);
+	//make_cmplx(fftinpt + NORMALFFT * 0, NORMALFFT / FFTOVERLAP, prevLargesigQ, prevLargesigI);
+	//make_cmplx(fftinpt + NORMALFFT * 1, NORMALFFT / FFTOVERLAP, largesigQ, largesigI);
+	//ARM_MORPH(arm_fill)(0, fftinpt + NORMALFFT * 1, NORMALFFT / FFTOVERLAP);
 
 
 	ARM_MORPH(arm_cmplx_mult_real)(fftinpt, gvars.ifspec_wndfn, fftinpt,  NORMALFFT);	// Применить оконную функцию к IQ буферу
