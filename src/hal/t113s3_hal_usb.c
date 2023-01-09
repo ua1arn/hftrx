@@ -2716,6 +2716,21 @@ static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 
 static unsigned gbaudrate = 115200;
 
+// INTERFACE_DFU_CONTROL bRequest codes
+enum
+{
+  DFU_DETACH = 0,
+  DFU_DNLOAD ,		// Write to flash
+  DFU_UPLOAD,		// Read from flash
+  DFU_GETSTATUS,
+  DFU_CLRSTATUS,
+  DFU_GETSTATE,
+  DFU_ABORT
+};
+
+static int dev_state = DFU_STATE_IDLE;
+static uint8_t dev_status [6];
+
 static int32_t ep0_in_handler_dev(pusb_struct pusb)
 {
 	uint32_t temp = 0;
@@ -2841,7 +2856,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					{
 						ASSERT(0);
 						static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
-						PRINTF("ep0_in: CDC_SET_LINE_CODING: ifc=%u, wLength=%u\n", interfacev, ep0_setup->wLength);
+						PRINTF("ep0_in_handler_dev: CDC_SET_LINE_CODING: ifc=%u, wLength=%u\n", interfacev, ep0_setup->wLength);
 						pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
 						pusb->ep0_xfer_residue = 7;
 						pusb->ep0_xfer_state = USB_EP0_SETUP;
@@ -2852,7 +2867,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					{
 						// work ok
 						static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
-						//PRINTF("ep0_in: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
+						//PRINTF("ep0_in_handler_dev: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
 						USBD_poke_u32(& buff [0], gbaudrate); // dwDTERate
 						buff [4] = 0;	// 1 stop bit
 						buff [5] = 0;	// parity=none
@@ -2864,7 +2879,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				case CDC_SET_CONTROL_LINE_STATE:
 					{
 						ASSERT(0);
-						PRINTF("ep0_in: CDC_SET_CONTROL_LINE_STATE: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+						PRINTF("ep0_in_handler_dev: CDC_SET_CONTROL_LINE_STATE: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
 						pusb->ep0_xfer_residue = 0;
 					}
 					break;
@@ -2889,14 +2904,14 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 #if WITHUSBUAC
 		case INTERFACE_AUDIO_CONTROL_MIKE:
 			{
-				PRINTF("ep0_in: INTERFACE_AUDIO_CONTROL_MIKE Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+				PRINTF("ep0_in_handler_dev: INTERFACE_AUDIO_CONTROL_MIKE Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 
 			}
 			break;
 #if WITHUSBUACIN2
 		case INTERFACE_AUDIO_CONTROL_RTS:
 			{
-				PRINTF("ep0_in: INTERFACE_AUDIO_CONTROL_RTS Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+				PRINTF("ep0_in_handler_dev: INTERFACE_AUDIO_CONTROL_RTS Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 
 			}
 			break;
@@ -2905,22 +2920,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 #if WITHUSBDFU
 			case INTERFACE_DFU_CONTROL:
 			{
-
-				// INTERFACE_DFU_CONTROL bRequest codes
-				enum
-				{
-				  DFU_DETACH = 0,
-				  DFU_DNLOAD ,		// Write to flash
-				  DFU_UPLOAD,		// Read from flash
-				  DFU_GETSTATUS,
-				  DFU_CLRSTATUS,
-				  DFU_GETSTATE,
-				  DFU_ABORT
-				};
-
-				static int dev_state = DFU_STATE_IDLE;
-				static uint8_t dev_status [6];
-
+				PRINTF("ep0_in_handler_dev: DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength);
 				switch (ep0_setup->bRequest)
 				{
 				case DFU_DETACH:
@@ -2949,7 +2949,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					break;
 				default:
 					pusb->ep0_xfer_residue = 0;
-					PRINTF("ep0_in: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+					PRINTF("ep0_in_handler_dev: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 					break;
 				}
 			}
@@ -3405,6 +3405,38 @@ static uint32_t usb_dev_ep0xfer(PCD_HandleTypeDef *hpcd)
 				  	case INTERFACE_DFU_CONTROL:
 						PRINTF("DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
 						printhex(0, buff, ep0_count);
+
+						switch (ep0_setup->bRequest)
+						{
+						case DFU_DETACH:
+							TP();
+							break;
+						case DFU_DNLOAD:
+							TP();
+							break;
+						case DFU_UPLOAD:
+							TP();
+							break;
+						case DFU_GETSTATUS:
+							dev_status[0] = 0;
+						    dev_status[4] = dev_state;
+							pusb->ep0_xfer_srcaddr = (uintptr_t) dev_status;
+							pusb->ep0_xfer_residue = min(6, ep0_setup->wLength);
+							break;
+						case DFU_CLRSTATUS:
+							TP();
+							break;
+						case DFU_GETSTATE:
+							TP();
+							break;
+						case DFU_ABORT:
+							TP();
+							break;
+						default:
+							pusb->ep0_xfer_residue = 0;
+							PRINTF("ep0_in: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+							break;
+						}
 				  		break;
 #endif /* WITHUSBDFU */
 
