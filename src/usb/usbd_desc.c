@@ -5162,7 +5162,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		// Device Qualifier
 		static const wchar_t label [] = L"DeviceInterfaceGUIDs";
 		const size_t labellen = ARRAY_SIZE(label);
-		static const wchar_t value [] = L"{1E9AA6EB-4456-4a09-B756-D3783B11CB87}\0";		// Extra NUL for muulti-sz value
+		static const wchar_t value [] = L"{1E9AA6EB-4456-4a09-B756-D3783B11CB87}" L"\0";		// Extra NUL for multi-sz value
 		const size_t valuelen = ARRAY_SIZE(value);
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0x0007, label, labellen, value, valuelen);
