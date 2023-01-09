@@ -1,6 +1,6 @@
 #type CAN
-#base 0x02504000
-#base 0x02504400
+#base CAN0 0x02504000
+#base CAN1 0x02504400
 CAN_MSEL; 0x0000; CAN mode select register
 CAN_CMD; 0x0004; CAN command register
 CAN_STA; 0x0008; CAN status register

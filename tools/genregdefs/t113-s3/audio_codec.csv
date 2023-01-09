@@ -1,5 +1,5 @@
 #type AUDIO_CODEC
-#base 0x02030000
+#base AUDIO_CODEC 0x02030000
 AC_DAC_DPC; 0x0000; DAC Digital Part Control Register
 DAC_VOL_CTRL; 0x0004; DAC Volume Control Register
 AC_DAC_FIFOC; 0x0010; DAC FIFO Control Register

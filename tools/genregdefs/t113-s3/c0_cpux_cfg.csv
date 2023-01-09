@@ -1,5 +1,5 @@
 #type C0_CPUX_CFG
-#base 0x09010000
+#base C0_CPUX_CFG 0x09010000
 C0_RST_CTRL; 0x0000; Cluster 0 Reset Control Register
 C0_CTRL_REG0; 0x0010; Cluster 0 Control Register0
 C0_CTRL_REG1; 0x0014; Cluster 0 Control Register1

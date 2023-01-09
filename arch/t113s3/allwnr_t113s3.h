@@ -1422,19 +1422,7 @@ typedef struct CAN_Type
 	__IO uint32_t CAN_ACPC;                              /*!< Offset 0x028 CAN acceptance code 0 register(reset mode) */
 	__IO uint32_t CAN_ACPM;                              /*!< Offset 0x02C CAN acceptance mask 0 register(reset mode) */
 	uint32_t reserved_0x030 [0x0004];
-	__IO uint32_t CAN_TRBUF0;                            /*!< Offset 0x040 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF1;                            /*!< Offset 0x044 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF2;                            /*!< Offset 0x048 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF3;                            /*!< Offset 0x04C CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF4;                            /*!< Offset 0x050 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF5;                            /*!< Offset 0x054 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF6;                            /*!< Offset 0x058 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF7;                            /*!< Offset 0x05C CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF8;                            /*!< Offset 0x060 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF9;                            /*!< Offset 0x064 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF10;                           /*!< Offset 0x068 CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF11;                           /*!< Offset 0x06C CAN TX/RX message buffer 0 register */
-	__IO uint32_t CAN_TRBUF12;                           /*!< Offset 0x070 CAN TX/RX message buffer 0 register */
+	__IO uint32_t CAN_TRBUF [0x00D];                     /*!< Offset 0x040 CAN TX/RX message buffer N (n=0..12) register */
 	uint32_t reserved_0x074 [0x0043];
 	__IO uint32_t CAN_RBUF_RBACK [0x030];                /*!< Offset 0x180 CAN transmit buffer for read back register (0x0180 ~0x1b0) */
 	uint32_t reserved_0x240 [0x0030];
@@ -1526,7 +1514,7 @@ typedef struct USBOTG_Type
 	__IO uint16_t USB_TXMAXP;                            /*!< Offset 0x080 USB_TXMAXP */
 	__IO uint16_t USB_CSR0;                              /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
 	__IO uint16_t USB_RXMAXP;                            /*!< Offset 0x084 USB_RXMAXP */
-	__IO uint16_t USB_RXCSR;                             /*!< Offset 0x086 USB_RXCSRL */
+	__IO uint16_t USB_RXCSR;                             /*!< Offset 0x086 USB_RXCSR */
 	__IO uint16_t USB_RXCOUNT;                           /*!< Offset 0x088 USB_RXCOUNT */
 	__IO uint16_t USB_RXPKTCNT;                          /*!< Offset 0x08A USB_RXPKTCNT */
 	__IO uint8_t  USB_TXTI;                              /*!< Offset 0x08C USB_TXTI */
@@ -1565,22 +1553,6 @@ typedef struct USBPHYC_Type
 	__IO uint32_t PHY_STATUS;                            /*!< Offset 0x024 PHY Status Register */
 	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x028 HCI SIE Port Disable Control Register */
 } USBPHYC_TypeDef; /* size of structure = 0x02C */
-/*
- * @brief DE
- */
-/*!< DE Controller Interface */
-typedef struct DE_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} DE_TypeDef; /* size of structure = 0x004 */
-/*
- * @brief DI
- */
-/*!< DI Controller Interface */
-typedef struct DI_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} DI_TypeDef; /* size of structure = 0x004 */
 /*
  * @brief G2D_TOP
  */
@@ -1798,22 +1770,6 @@ typedef struct G2D_ROT_Type
 	__IO uint32_t ROT_OLADD2;                            /*!< Offset 0x0B0 ROT_OLADD2 */
 	__IO uint32_t ROT_OHADD2;                            /*!< Offset 0x0B4 ROT_OHADD2 */
 } G2D_ROT_TypeDef; /* size of structure = 0x0B8 */
-/*
- * @brief DSI
- */
-/*!< DSI Controller Interface */
-typedef struct DSI_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} DSI_TypeDef; /* size of structure = 0x004 */
-/*
- * @brief DISPLAY_TOP
- */
-/*!< DISPLAY_TOP Controller Interface */
-typedef struct DISPLAY_TOP_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} DISPLAY_TOP_TypeDef; /* size of structure = 0x004 */
 /*
  * @brief TCON_LCD
  */

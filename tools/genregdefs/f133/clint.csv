@@ -1,2 +1,2 @@
 #type CLINT
-#base 0x14000000
+#base CLINT 0x14000000

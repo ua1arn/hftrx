@@ -292,22 +292,6 @@ typedef struct RISC_CFG_Type
 	__IO uint32_t RISC_AXI_PMU_BW_WR;                    /*!< Offset 0x120 RISC AXI PMU Write Bandwidth Register */
 } RISC_CFG_TypeDef; /* size of structure = 0x124 */
 /*
- * @brief RISC_WDG
- */
-/*!< RISC_WDG Controller Interface */
-typedef struct RISC_WDG_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} RISC_WDG_TypeDef; /* size of structure = 0x004 */
-/*
- * @brief RISC_TIMESTAMP
- */
-/*!< RISC_TIMESTAMP Controller Interface */
-typedef struct RISC_TIMESTAMP_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} RISC_TIMESTAMP_TypeDef; /* size of structure = 0x004 */
-/*
  * @brief CCU
  */
 /*!< CCU Controller Interface */
@@ -1549,22 +1533,6 @@ typedef struct USBPHYC_Type
 	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x028 HCI SIE Port Disable Control Register */
 } USBPHYC_TypeDef; /* size of structure = 0x02C */
 /*
- * @brief DE
- */
-/*!< DE Controller Interface */
-typedef struct DE_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} DE_TypeDef; /* size of structure = 0x004 */
-/*
- * @brief DI
- */
-/*!< DI Controller Interface */
-typedef struct DI_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} DI_TypeDef; /* size of structure = 0x004 */
-/*
  * @brief G2D_TOP
  */
 /*!< G2D_TOP Controller Interface */
@@ -1781,22 +1749,6 @@ typedef struct G2D_ROT_Type
 	__IO uint32_t ROT_OLADD2;                            /*!< Offset 0x0B0 ROT_OLADD2 */
 	__IO uint32_t ROT_OHADD2;                            /*!< Offset 0x0B4 ROT_OHADD2 */
 } G2D_ROT_TypeDef; /* size of structure = 0x0B8 */
-/*
- * @brief DSI
- */
-/*!< DSI Controller Interface */
-typedef struct DSI_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} DSI_TypeDef; /* size of structure = 0x004 */
-/*
- * @brief DISPLAY_TOP
- */
-/*!< DISPLAY_TOP Controller Interface */
-typedef struct DISPLAY_TOP_Type
-{
-	__IO uint32_t DUMMY;                                 /*!< Offset 0x000 Dummy field definition */
-} DISPLAY_TOP_TypeDef; /* size of structure = 0x004 */
 /*
  * @brief TCON_LCD
  */
