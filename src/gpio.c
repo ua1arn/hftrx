@@ -617,35 +617,17 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 #elif CPUSTYLE_XCZU
 
-void xc7z_writepin(uint8_t pin, uint8_t val)
-{
-
-}
 void xc7z_gpio_input(uint8_t pin)
 {
 }
+
 void xc7z_gpio_output(uint8_t pin)
 {
-
 }
+
 void sysinit_gpio_initialize(void)
 {
-
 }
-
-
-void xcz_dds_ftw(const uint_least64_t * val)
-{
-}
-
-void xcz_dds_rts(const uint_least64_t * val)
-{
-}
-
-void xcz_rx_iq_shift(uint32_t val) // 48
-{
-}
-
 
 #elif CPUSTYLE_XC7Z
 
