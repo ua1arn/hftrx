@@ -5562,15 +5562,6 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 
 #endif /* WITHSAI2HW */
 
-#elif LINUX_SUBSYSTEM
-
-	static const codechw_t * const channels [] =
-	{
-		& audiocodechw_dummy,		// Интерфейс к НЧ кодеку
-		& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
-		& fpgaspectrumhw_dummy,		// Интерфейс к FPGA - широкополосный канал (WFM)
-	};
-
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	static const codechw_t audiocodechw_xc7z =
@@ -5734,6 +5725,11 @@ static const codechw_t * const channels [] =
 		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
 	#endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
 
+#elif LINUX_SUBSYSTEM
+
+		& audiocodechw_dummy,		// Интерфейс к НЧ кодеку
+		& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
+		& fpgaspectrumhw_dummy,		// Интерфейс к FPGA - широкополосный канал (WFM)
 
 #elif WITHINTEGRATEDDSP
 

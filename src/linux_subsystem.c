@@ -501,19 +501,19 @@ void linux_iq_receive(void)
 			for (int i = 0; i < DMABUFFSIZE16TX; i ++)
 				* ph_fifo = sinbuf32[i]; //b[i];
 
-			qq ++;
-			if (qq > 5000)
-			{
-				qq = 0;
-				for (int i = 4; i < DMABUFFSIZE16TX; i += 8)
-				{
-					PRINTF("%03d: %08X ", i + 0, b[i + 0]);
-					PRINTF("%03d: %08X ", i + 1, b[i + 1]);
-					PRINTF("%03d: %08X ", i + 2, b[i + 2]);
-					PRINTF("%03d: %08X\n", i + 3, b[i + 3]);
-				}
-				PRINTF("\n****\n");
-			}
+//			qq ++;
+//			if (qq > 5000)
+//			{
+//				qq = 0;
+//				for (int i = 4; i < DMABUFFSIZE16TX; i += 8)
+//				{
+//					PRINTF("%03d: %08X ", i + 0, b[i + 0]);
+//					PRINTF("%03d: %08X ", i + 1, b[i + 1]);
+//					PRINTF("%03d: %08X ", i + 2, b[i + 2]);
+//					PRINTF("%03d: %08X\n", i + 3, b[i + 3]);
+//				}
+//				PRINTF("\n****\n");
+//			}
 
 			release_dmabuffer16tx(addr2);
 			rx_stage -= CNT16TX;
@@ -714,6 +714,18 @@ void board_rtc_gettime(
 	* secounds = 0;
 	* minute = 0;
 	* hour = 0;
+}
+
+uint_fast8_t dummy_putchar(uint_fast8_t c)
+{
+	printf("%c", c);
+	return 1;
+}
+
+uint_fast8_t dummy_getchar(char * cp)
+{
+	* cp = 0;
+	return 1;
 }
 
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void)) 	{}

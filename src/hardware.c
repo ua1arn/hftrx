@@ -3170,7 +3170,7 @@ sysintt_sdram_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_debug_initialize(void)
 {
-#if WITHDEBUG
+#if WITHDEBUG && ! LINUX_SUBSYSTEM
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */

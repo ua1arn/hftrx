@@ -16073,7 +16073,7 @@ static void dpc_1stimer(void * arg)
 //	sys_check_timeouts();
 #endif /* WITHLWIP */
 
-#if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 

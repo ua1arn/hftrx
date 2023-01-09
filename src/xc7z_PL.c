@@ -201,7 +201,7 @@ void xcz_audio_tx_enable(uint_fast8_t state)
 
 #endif /* WITHRTS96 */
 
-#else // заглушки для бутлоадера
+#elif ! LINUX_SUBSYSTEM // заглушки для бутлоадера
 
 void xcz_rxtx_state(uint8_t tx)
 {

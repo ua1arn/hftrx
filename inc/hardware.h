@@ -547,7 +547,7 @@ extern "C" {
 
 	#define DISABLEFLOAT16 1
 	//#define ARM_MATH_DSP 1
-	#define ARM_MATH_NEON 1
+	//#define ARM_MATH_NEON 1
 	//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
@@ -1193,7 +1193,7 @@ void xcz_if_rx_init(void);
 void xcz_if_tx_init(void);
 void xcz_if_rx_enable(uint_fast8_t state);
 void xcz_if_tx_enable(uint_fast8_t state);
-void xcz_rx_iq_shift(uint32_t val);
+void xcz_rx_iq_shift(uint8_t val);
 void xcz_rx_cic_shift(uint32_t val);
 void xcz_tx_shift(uint32_t val);
 void xcz_adcrand_set(uint8_t val);

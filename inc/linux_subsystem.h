@@ -63,8 +63,16 @@ extern pthread_mutex_t md;
 #define SPINLOCK_INIT	PTHREAD_MUTEX_INITIALIZER
 #define SPINLOCK_INITIALIZE(p)	do { memcpy((void *) p, & md, sizeof(md)); } while(0)
 
-void HARDWARE_DEBUG_GETCHAR(char * c)	{ * c = 0; }
-void HARDWARE_DEBUG_PUTCHAR(char c)		{  }
+
+uint_fast8_t dummy_putchar(uint_fast8_t c);
+uint_fast8_t dummy_getchar(char * cp);
+
+#define HARDWARE_DEBUG_INITIALIZE() 		do { } while (0)
+#define HARDWARE_DEBUG_SET_SPEED(baudrate) 	do { } while (0)
+#define HARDWARE_DEBUG_PUTCHAR(c) \
+	(dummy_putchar(c))
+#define HARDWARE_DEBUG_GETCHAR(pc) \
+	(dummy_getchar(pc))
 
 typedef pthread_mutex_t spinlock_t;
 

@@ -2777,7 +2777,7 @@ void hardware_spi_io_delay(void)
 #elif	CPUSTYLE_ARM_CM0
 	__NOP();
 #elif _WIN32
-#else
+#elif ! LINUX_SUBSYSTEM
 	// Cortex A7, Cortex A9
 	local_delay_us(5);
 #endif

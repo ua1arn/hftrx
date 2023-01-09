@@ -1526,6 +1526,8 @@ void i2c_initialize(void)
 	hardware_iicps_configure();			// Peripheral
 }
 
+#elif LINUX_SUBSYSTEM
+
 #else
 	#error I2C hardware implementation for CPUSTYLE_xxx is not avaliable
 
@@ -2066,8 +2068,7 @@ void hardware_twi_master_configure(void)
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
 
-#elif CPUSTYLE_XCZU
-	#warning Plaxe ZynqMP IIC clocks initialization hers
+#elif LINUX_SUBSYSTEM
 
 #else
 	#warning Undefined CPUSTYLE_XXX
