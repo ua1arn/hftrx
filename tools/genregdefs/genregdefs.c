@@ -6,6 +6,21 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+/* debug stuff */
+#if 0
+
+	#define TP() do { \
+		fprintf(stdout, "%s/%d\n", __FILE__, __LINE__); \
+		fflush(stdout); \
+		} while (0)
+
+#else
+
+	#define TP() do { \
+		} while (0)
+
+#endif
+
 struct ddd
 {
 	char * fldname;
@@ -126,18 +141,19 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 }
 
 enum { BASE_MAX = 32 };
+enum { VNAME_MAX = 96 };
 
 struct parsedfile
 {
     size_t nregs;
     struct ddd * regs;
-	char bname [64];
+	char bname [VNAME_MAX];
 	int base_count;
 	unsigned base_array [BASE_MAX];
-	char base_names [BASE_MAX] [64];
+	char base_names [BASE_MAX] [VNAME_MAX];
 	int irq_count;
-	//unsigned irq_array [BASE_MAX];
-	//char irq_names [BASE_MAX] [64];
+	unsigned irq_array [BASE_MAX];
+	char irq_names [BASE_MAX] [VNAME_MAX];
 };
 
 static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE * fp)
@@ -155,26 +171,31 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 		f2 = sscanf(s + 1, "type %[*a-zA-Z_0-9]s", pfl->bname);
 		if (f2 == 1)
 		{
+			//printf("type %s processrd\n", pfl->bname);
 			continue;
 		}
 
 		if (pfl->base_count < BASE_MAX)
 		{
-			f2 = sscanf(s + 1, "base %[*a-zA-Z_0-9]s %x", pfl->base_names [pfl->base_count], & pfl->base_array [pfl->base_count]);
+			f2 = sscanf(s + 1, "base %s %x", pfl->base_names [pfl->base_count], & pfl->base_array [pfl->base_count]);
 			if (f2 == 2)
 			{
 				++ pfl->base_count;
+				//printf("base %s processrd\n", pfl->bname);
+				continue;
 			}
 		}
-
 		if (pfl->irq_count < BASE_MAX)
 		{
-			f2 = sscanf(s + 1, "irq %[*a-zA-Z_0-9]s %x", pfl->base_names [pfl->irq_count], & pfl->base_array [pfl->irq_count]);
+			f2 = sscanf(s + 1, "irq %s %u", pfl->irq_names [pfl->irq_count], & pfl->irq_array [pfl->irq_count]);
 			if (f2 == 2)
 			{
 				++ pfl->irq_count;
+				//printf("irq %s processrd\n", pfl->bname);
+				continue;
 			}
 		}
+		printf("# # f2=%d undeined %s", f2, s);
 	}
 	return s;
 }
@@ -182,8 +203,8 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 // return 0: 0k
 static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, const char * file)
 {
-    char fldname [64];
-    char typname [64];
+    char fldname [VNAME_MAX];
+    char typname [VNAME_MAX];
     int fldsize;
     char b0 [1024];
 	static const char SEP [] = ";";
@@ -197,10 +218,13 @@ static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, 
     char * const s0z = commentfgets(pfl, b0, sizeof b0 / sizeof b0 [0], fp);
     if (s0z == NULL)
         return 1;
+	//fprintf(stdout, "#R %s", s0z);
+	TP();
 	token = strtok(s0z, SEP);
 	if (token == NULL)
 		return 1;
 
+	TP();
 	s0 = token;
  	while (isspace((unsigned char) * s0))
 		++ s0;
@@ -228,6 +252,7 @@ static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, 
         exit(1);
     }
     regp->fldsize = fldsize;
+	TP();
 
      if (strchr(fldname, '\n') != NULL)
         * strchr(fldname, '\n') = '\0';
@@ -235,8 +260,10 @@ static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, 
         * strchr(fldname, '/') = '_';
      if (strchr(fldname, '/') != NULL)
         * strchr(fldname, '/') = '_';
+	TP();
 
 	regp->fldname = strdup(fldname);
+	TP();
 
  	s1 = strtok(NULL, SEP);
 	//char * const s1 = commentfgets(b1, sizeof b1 / sizeof b1 [0], fp);
@@ -246,6 +273,7 @@ static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, 
 	while (isspace((unsigned char) * s1))
 		++ s1;
 
+	TP();
     nargs = sscanf(s1, "%i %i", & regp->fldoffs, & regp->fldrept);
     switch (nargs)
     {
@@ -259,11 +287,13 @@ static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, 
 			printf("WRONG offset format '%s'\n", regp->fldname);
         break;
     }
+	TP();
 
   	s2 = strtok(NULL, SEP);
 	//char * const s2 = commentfgets(b2, sizeof b2 / sizeof b2 [0], fp);
     if (s2 == NULL)
         return 1;
+	TP();
 	while (isspace((unsigned char) * s2))
 		++ s2;
 
@@ -275,7 +305,8 @@ static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, 
 //   const size_t n1 = strleneol(s1);
 //   const size_t n2 = strleneol(s2);
 //   fprintf(fpregen, "%*.*s; %*.*s; %*.*s\n", n0, n0, s0, n1, n1, s1, n2, n2, s2);
-    return 0;
+ 	TP();
+   return 0;
 
 }
 
@@ -285,15 +316,17 @@ static int loadregs(struct parsedfile * pfl, const char * file)
     struct ddd * regs;
 
 
-    const size_t maxrows = 512;
+    const size_t maxrows = 256;
     FILE * fp = fopen(file, "rt");
  
+	TP();
 	strcpy(pfl->bname, "UNNAMED");
 	pfl->base_count = 0;
 	pfl->irq_count = 0;
 	pfl->regs = NULL; 
 	pfl->nregs = 0; 
 	
+	TP();
 	if (fp == NULL)
     {
         printf("#error Can not open file '%s'\n", file);
@@ -307,13 +340,14 @@ static int loadregs(struct parsedfile * pfl, const char * file)
         return 1;
     }
 
-	//fprintf(stderr, "Parse file\n");
+	TP();
     for (nregs = 0; nregs < maxrows; ++ nregs)
     {
 		struct ddd * regp = & regs [nregs];
 		if (parseregister(pfl, regp, fp, file))
 			break;
     }
+	TP();
 
 	pfl->regs = regs; 
 	pfl->nregs = nregs; 
@@ -366,7 +400,7 @@ static void processfile_irq(struct parsedfile * pfl)
 	int i;
 	for (i = 0; i < pfl->irq_count; ++ i)
 	{
-		//fprintf(stdout, "#define\t%s\t((%s_TypeDef *) %s_BASE)\t/*!< \\brief %s Interface register set access pointer */\n", pfl->base_names [i], pfl->bname, pfl->base_names [i], pfl->base_names [i]);
+		fprintf(stdout, "#define\t%s_IRQn\t%u\n", pfl->irq_names [i], pfl->irq_array [i]);
 	}
 }
 
@@ -383,7 +417,7 @@ static void freeregs(struct parsedfile * pfl)
     free(pfl->regs);
 }
 
-#define MAXPARSEDFILES 256
+#define MAXPARSEDFILES 96
 
 int main(int argc, char* argv[], char* envp[])
 {
@@ -394,6 +428,7 @@ int main(int argc, char* argv[], char* envp[])
     if (argc < 2)
         return 1;
 
+	TP();
 	/* Load files */
 	for (nperoiph = 0; nperoiph < MAXPARSEDFILES && i < argc; ++ i, ++ nperoiph)
 	{
@@ -403,15 +438,8 @@ int main(int argc, char* argv[], char* envp[])
 			continue;
 	}
 
-	/* structures */
-	for (i = 0; i < nperoiph; ++ i)
-	{
-		struct parsedfile * const pfl = & pfls [i];
-
-		processfile_periphregs(pfl);
-	}
-
-	if (0)
+	TP();
+	if (1)
 	{
 
 		fprintf(stdout, "\n");
@@ -426,7 +454,20 @@ int main(int argc, char* argv[], char* envp[])
 		}
 	}
 
-	if (0)
+	TP();
+	if (1)
+	{
+		/* structures */
+		for (i = 0; i < nperoiph; ++ i)
+		{
+			struct parsedfile * const pfl = & pfls [i];
+
+			processfile_periphregs(pfl);
+		}
+	}
+
+	TP();
+	if (1)
 	{
 
 		fprintf(stdout, "\n");
@@ -441,7 +482,8 @@ int main(int argc, char* argv[], char* envp[])
 		}
 	}
 
-	if (0)
+	TP();
+	if (1)
 	{
 		fprintf(stdout, "\n");
 		fprintf(stdout, "/* Access pointers */\n");
@@ -455,6 +497,7 @@ int main(int argc, char* argv[], char* envp[])
 		}
 	}
 
+	TP();
 	/* release memory */
 	for (i = 0; i < nperoiph; ++ i)
 	{
