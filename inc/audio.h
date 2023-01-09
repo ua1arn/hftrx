@@ -435,8 +435,8 @@ extern "C" {
 
 
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
-#define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
-#define DMABUFSCALE		4	// внутрений параметр, указыват на сколько реже ьулут происходить прерывания по обмену буфрами от остальны каналов по отношению к приему от FPGA
+#define DMABUFCLUSTER	33	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
+#define DMABUFSCALE		2	// внутрений параметр, указывает, на сколько реже будут происходить прерывания по обмену буфрами от остальны каналов по отношению к приему от FPGA
 #define DMABUFFSIZE16RX	(DMABUFCLUSTER * DMABUFFSTEP16RX * DMABUFSCALE)		/* AF CODEC ADC */
 #define DMABUFFSIZE16TX	(DMABUFCLUSTER * DMABUFFSTEP16TX * DMABUFSCALE)		/* AF CODEC DAC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFFSTEP32RX)		/* FPGA RX or IF CODEC RX */
@@ -633,7 +633,7 @@ typedef struct
 // Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
 
-#define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)
+#define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)	/* Гарантируется пригодность для симметричного фильтра */
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
 
 #if WITHDSPLOCALFIR
@@ -642,15 +642,15 @@ typedef struct
 
 #else /* WITHDSPLOCALFIR */
 
-	#if CPUSTYLE_STM32MP1
+	#if CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
 		#define Ntap_tx_MIKE	NtapValidate(511)
 
 	#else /* CPUSTYLE_STM32MP1 */
 
-	#define	Ntap_rx_AUDIO	NtapValidate(511)
-	#define Ntap_tx_MIKE	NtapValidate(241)
+		#define	Ntap_rx_AUDIO	NtapValidate(511)
+		#define Ntap_tx_MIKE	NtapValidate(241)
 
 	#endif /* CPUSTYLE_STM32MP1 */
 	#if WITHNOSPEEX
@@ -674,8 +674,7 @@ typedef struct
 	typedef int_fast32_t aufastbufv_t;
 	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
 
-
-#else /* CODEC1_FRAMEBITS == 64 */
+#elif CODEC1_FRAMEBITS == 32
 
 	/* параметры входного/выходного адаптеров */
 	#define WITHADAPTERCODEC1WIDTH	16		// 1 бит знак и 15 бит значащих
@@ -683,6 +682,10 @@ typedef struct
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
 	typedef int_fast32_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
+
+#else /* CODEC1_FRAMEBITS == 64 */
+
+	#error Unsupported CODEC1_FRAMEBITS value
 
 #endif /* CODEC1_FRAMEBITS == 64 */
 
@@ -937,7 +940,6 @@ modem_frames_decode(
 
 uint_fast8_t getsampmlemike(FLOAT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
 uint_fast8_t getsampmleusb(FLOAT32P_t * v);				/* получить очередной оцифрованый сэмпл с USB UAC OUT после ресэмплигнга */
-uint_fast8_t getsampmlemoni(FLOAT32P_t * v);			/* получить очередной сэмпл для самоконтроля */
 
 FLOAT_t local_log(FLOAT_t x);
 FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
@@ -970,11 +972,12 @@ void refreshDMA_uacin(void); // Канал DMA ещё занят - оставл�
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
 uintptr_t getfilled_dmabuffer16txphones(void);
+uintptr_t getfilled_dmabuffer16txmoni(void);
 
 void dsp_extbuffer32rx(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32rts(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
-void dsp_addsidetone(aubufv_t * buff, int usebuf);			// перед передачей по DMA в аудиокодек
+void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf);			// перед передачей по DMA в аудиокодек
 
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 //void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
@@ -984,8 +987,7 @@ void release_dmabuffer32rx(uintptr_t addr);
 void processing_dmabuffer32rts192(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
 void buffers_resampleuacin(unsigned nsamples);
-
-void dsp_sidetone_ping(void);	// system_level irq handler: формирование маркера начала записи по PPS в одном из каналов USB
+void dsp_processtx(void);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void);
 int_fast32_t buffers_dmabuffer32txcachesize(void);
@@ -1066,6 +1068,7 @@ void board_set_notch_mode(uint_fast8_t n);	/* включение NOTCH филь�
 void board_set_cwedgetime(uint_fast8_t n);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 void board_set_sidetonelevel(uint_fast8_t n);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 void board_set_moniflag(uint_fast8_t n);	/* разрешение самопрослушивания */
+void board_set_cwssbtx(uint_fast8_t v);	/* разрешение передачи телеграфа как тона в режиме SSB */
 void board_set_subtonelevel(uint_fast8_t n);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 void board_set_amdepth(uint_fast8_t n);		/* Глубина модуляции в АМ - 0..100% */
 void board_set_swaprts(uint_fast8_t v);	/* если используется конвертор на Rafael Micro R820T - требуется инверсия спектра */
@@ -1140,7 +1143,7 @@ void endstamp3(void);
 
 void buffers_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum);	// calculate full array of coefficients
+void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff);	// calculate full array of coefficients
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);

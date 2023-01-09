@@ -50,6 +50,7 @@
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
 //
+//	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 //	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 //	//#define WITHGPUHW	1	/* Graphic processor unit */
 //	//#define WITHEHCIHW	1	/* USB_EHCI controller */

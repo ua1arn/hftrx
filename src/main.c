@@ -1997,7 +1997,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_DSB, DSPCTL_MODE_TX_CW, },	// Управление для DSP в режиме приёма и передачи - режим узкого фильтра
-		{ BWSETI_SSB, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
+		{ BWSETI_SSB, BWSETI_CW, },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
@@ -3085,6 +3085,7 @@ struct nvmap
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmoniflag;		/* разрешение самопрослушивания */
+	uint8_t gcwssbtx;		/* разрешение самопрослушивания */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 #if WITHWAVPLAYER || WITHSENDWAV
 	uint8_t gloopmsg, gloopsec;
@@ -4623,6 +4624,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	};
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
+	static uint_fast8_t gcwssbtx;		/* разрешение передачи телеграфа как тона в режиме SSB */
 
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -10769,7 +10771,7 @@ static void speex_update_rx(void)
 
 		// Получение параметров эквалайзера
 		FLOAT_t * const dCoefs = nrp->firEQcoeff;
-		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate coefficients
+		dsp_recalceq_coeffs_rx_AUDIO(pathi, dCoefs);	// calculate coefficients
 
 #if WITHNOSPEEX
 #else /* WITHNOSPEEX */
@@ -10884,7 +10886,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 
 	// Filtering and denoise.
 	BEGIN_STAMP();
-	ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+	ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);		/* фильтр выхода детектора */
 	END_STAMP();
 	if (anotch)
 	{
@@ -10940,6 +10942,7 @@ static FLOAT_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 void
 audioproc_spool_user(void)
 {
+#if ! WITHSKIPUSERMODE
 	speexel_t * p;
 	while (takespeexready_user(& p))
 	{
@@ -10951,25 +10954,31 @@ audioproc_spool_user(void)
 			rxaproc_t * const nrp = & rxaprocs [pathi];
 			const uint_fast8_t amode = getamode(pathi);
 			// nrp->outsp указывает на результат обработки
-			outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
+			//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
+			outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
+		#if WITHAFEQUALIZER
+			audio_rx_equalizer(outsp [pathi], FIRBUFSIZE);
+		#endif /* WITHAFEQUALIZER */
 		}
 		//////////////////////////////////////////////
 		// Save results
-#if WITHUSEDUALWATCH
-	#if WITHAFEQUALIZER
-		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
-		audio_rx_equalizer(outsp [1], FIRBUFSIZE);
-	#endif /* WITHAFEQUALIZER */
-		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [1], FIRBUFSIZE);	// to AUDIO codec
-#else /* WITHUSEDUALWATCH */
-	#if WITHAFEQUALIZER
-		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
-	#endif /* WITHAFEQUALIZER */
-		deliveryfloat_user(& speexoutfloat, outsp [0], outsp [0], FIRBUFSIZE);	// to AUDIO codec
-#endif /* WITHUSEDUALWATCH */
+		unsigned score;
+		for (score = 0; score < FIRBUFSIZE; )
+		{
+			const unsigned len = 256;
+			const unsigned rest = (FIRBUFSIZE - score);
+			const unsigned chunk = rest >= len ? len : rest;
+	#if WITHUSEDUALWATCH
+			deliveryfloat_user(& speexoutfloat, outsp [0] + score, outsp [1] + score, chunk);	// to AUDIO codec
+	#else /* WITHUSEDUALWATCH */
+			deliveryfloat_user(& speexoutfloat, outsp [0] + score, outsp [0] + score, chunk);	// to AUDIO codec
+	#endif /* WITHUSEDUALWATCH */
+			score += chunk;
+		}
 		// Освобождаем буфер
 		releasespeexbuffer_user(p);
 	}
+#endif /* ! WITHSKIPUSERMODE */
 }
 
 #else /* WITHINTEGRATEDDSP */
@@ -11676,7 +11685,8 @@ updateboardZZZ(
 #endif /* WITHREVERB */
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-		board_set_moniflag(gmoniflag);	/* glob_moniflag */
+		board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
+		board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
 		#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe);		/* верхний предел FFT */
@@ -20903,21 +20913,18 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
 {
 	uint_fast16_t el;
-	uint_fast8_t count = 0;
 
 	for (el = index; el <= index + cnt; el ++)
 	{
 		const FLASHMEM struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_VALUE))
 		{
-			menu_names_t * const v = & vals [count];
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
 			display2_menu_valxx(0, 0, & dctx);
-			safestrcpy (v->name, ARRAY_SIZE(v->name), menuw);
-			v->index = el;
-			count++;
+			safestrcpy (vals->name, ARRAY_SIZE(vals->name), menuw);
+			vals->index = el;
 		}
 	}
 }

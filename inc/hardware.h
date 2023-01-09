@@ -492,7 +492,7 @@ extern "C" {
 		//#define ARM_MATH_NEON 1
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 	#define ARM_FAST_ALLOW_TABLES	1
 
@@ -508,7 +508,6 @@ extern "C" {
 
 	#include "arch/zynq/zynq7000.h"
 	#include "irq_ctrl.h"
-	#include "xparameters.h"
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -708,7 +707,7 @@ void spool_nmeapps(void);	// Обработчик вызывается при п
 // получить прескалер и значение для программирования таймера
 uint_fast8_t
 hardware_calc_sound_params(
-	uint_least16_t tonefreq,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
+	uint_least16_t tonefreq01,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
 	unsigned * pvalue);
 // установить прескалер и значение для программирования таймера
 // called from interrupt or with disabled interrupts

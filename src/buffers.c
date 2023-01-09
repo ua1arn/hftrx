@@ -303,6 +303,7 @@ enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количес�
 enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
 enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
+enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
 enum { CNT32RTS = DMABUFFSIZE32RTS / DMABUFFSTEP32RTS };
 enum { MIKELEVEL = 6 };
 enum { PHONESLEVEL = 6 };
@@ -314,8 +315,8 @@ static RAMBIGDTCM LIST_HEAD3 voicesusb16rx;	// буферы с оцифрова�
 static RAMBIGDTCM SPINLOCK_t locklist16rx = SPINLOCK_INIT;
 
 static RAMBIGDTCM LIST_HEAD2 voicesfree16tx;
-static RAMBIGDTCM LIST_HEAD2 voicesphones16tx;	// буферы, предназначенные для выдачи на наушники
-static RAMBIGDTCM LIST_HEAD2 voicesmoni16tx;	// буферы, предназначенные для звука самоконтроля
+static RAMBIGDTCM LIST_HEAD3 voicesphones16tx;	// буферы, предназначенные для выдачи на наушники
+static RAMBIGDTCM LIST_HEAD3 voicesmoni16tx;	// буферы, предназначенные для звука самоконтроля
 static RAMBIGDTCM SPINLOCK_t locklist16tx = SPINLOCK_INIT;
 
 static RAMBIGDTCM LIST_HEAD2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
@@ -475,7 +476,7 @@ static RAMBIGDTCM SPINLOCK_t locklistmsg8 = SPINLOCK_INIT;
 #if WITHBUFFERSDEBUG
 
 static unsigned n1, n1wfm, n2, n3, n4, n5, n6, n7;
-static unsigned e1, e2, e3, e4, e5, e6, e7, e8, purge16;
+static unsigned e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, purge16;
 static unsigned nbadd, nbdel, nbzero, nbnorm;
 
 static unsigned debugcount_ms10;	// с точностью 0.1 ms
@@ -503,14 +504,15 @@ static void buffers_spool(void * ctx)
 
 #if WITHBUFFERSDEBUG
 
+/* Запрещение прерывений убрано для уменьшения влияения на работу системы. Иногда может ошибаться в расчете скорости */
 static unsigned 
 getresetval(volatile unsigned * p)
 {
 	unsigned v;
-	global_disableIRQ();
+	//global_disableIRQ();
 	v = * p;
 	* p = 0;
-	global_enableIRQ();
+	//global_enableIRQ();
 	return v;
 }
 
@@ -521,16 +523,16 @@ void buffers_diagnostics(void)
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
 
 	LIST2PRINT(speexfree16);
-	LIST2PRINT(speexready16);
 	LIST2PRINT(voicesfree32tx);
-	LIST2PRINT(voicesready32tx);
-	PRINTF(PSTR("\n"));
 	LIST2PRINT(voicesfree16rx);
 	LIST2PRINT(voicesfree16tx);
+	LIST2PRINT(speexready16);
+	LIST2PRINT(voicesready32tx);
+	PRINTF(PSTR("\n"));
 	LIST3PRINT(voicesmike16rx);
 	LIST3PRINT(voicesusb16rx);
-	LIST2PRINT(voicesphones16tx);
-	LIST2PRINT(voicesmoni16tx);
+	LIST3PRINT(voicesphones16tx);
+	LIST3PRINT(voicesmoni16tx);
 	PRINTF(PSTR("\n"));
 
 	#if WITHUSBUACIN
@@ -556,7 +558,7 @@ void buffers_diagnostics(void)
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
 	PRINTF(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u n7=%u uacinalt=%d, purge16=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6, n7, uacinalt, purge16);
-	PRINTF(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8);
+	PRINTF(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u e9=%u e10=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8, e9, e10);
 
 	{
 		const unsigned ms10 = getresetval(& debugcount_ms10);
@@ -645,6 +647,11 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 		const PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		SPIN_UNLOCK(& speexlock);
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
+		unsigned i;
+		for (i = 0; i < FIRBUFSIZE; ++ i)
+		{
+			deliveryfloat(& speexoutfloat, 0, 0);	// to AUDIO codec
+		}
 		return p;
 	}
 	SPIN_UNLOCK(& speexlock);
@@ -747,8 +754,8 @@ void buffers_initialize(void)
 		enum { NVCOICESFREE16TX = (16 * PHONESLEVEL + 16 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX) * BUFOVERSIZE };
 		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16tx_t voicesarray16tx [NVCOICESFREE16TX] ALIGNX_END;
 
-		InitializeListHead2(& voicesphones16tx);	// список для выдачи на ЦАП кодека
-		InitializeListHead2(& voicesmoni16tx);	// самоконтроль
+		InitializeListHead3(& voicesphones16tx, 3 * DMABUFSCALE);	// список для выдачи на ЦАП кодека
+		InitializeListHead3(& voicesmoni16tx, 2 * DMABUFSCALE);	// самопрослушивание
 		InitializeListHead2(& voicesfree16tx);	// Незаполненные
 		for (i = 0; i < (sizeof voicesarray16tx / sizeof voicesarray16tx [0]); ++ i)
 		{
@@ -908,7 +915,7 @@ void buffers_initialize(void)
 
 	{
 		unsigned i;
-		static RAMBIGDTCM denoise16_t speexarray16 [4];	// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
+		static RAMBIGDTCM denoise16_t speexarray16 [5];	// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
 
 		InitializeListHead2(& speexfree16);	// Незаполненные
 		InitializeListHead2(& speexready16);	// Для обработки
@@ -1019,7 +1026,7 @@ static RAMFUNC void buffers_tophones16tx(voice16tx_t * p)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 	SPIN_LOCK(& locklist16tx);
-	InsertHeadList2(& voicesphones16tx, & p->item);
+	InsertHeadList3(& voicesphones16tx, & p->item, 0);
 	SPIN_UNLOCK(& locklist16tx);
 }
 
@@ -1029,7 +1036,7 @@ static RAMFUNC void buffers_tomoni16tx(voice16tx_t * p)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 	SPIN_LOCK(& locklist16tx);
-	InsertHeadList2(& voicesmoni16tx, & p->item);
+	InsertHeadList3(& voicesmoni16tx, & p->item, 0);
 	SPIN_UNLOCK(& locklist16tx);
 }
 
@@ -1223,48 +1230,6 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	if (++ pos >= CNT16RX)
 	{
 		buffers_tonull16rx(p);
-		p = NULL;
-	}
-	return 1;
-}
-
-// 16 bit, signed
-RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
-{
-	enum { L, R };
-	static voice16tx_t * p = NULL;
-	static unsigned pos = 0;	// позиция по выходному количеству
-
-	if (p == NULL)
-	{
-		SPIN_LOCK(& locklist16tx);
-		if (! IsListEmpty2(& voicesmoni16tx))
-		{
-			PLIST_ENTRY t = RemoveTailList2(& voicesmoni16tx);
-			SPIN_UNLOCK(& locklist16tx);
-			p = CONTAINING_RECORD(t, voice16tx_t, item);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
-			pos = 0;
-		}
-		else
-		{
-			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
-			SPIN_UNLOCK(& locklist16tx);
-			return 0;
-		}
-	}
-
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-
-	// Использование данных.
-	v->ivqv [L] = adpt_input(& afcodectx, p->buff [pos * DMABUFFSTEP16TX + DMABUFF16TX_LEFT]);	// микрофон или левый канал
-	v->ivqv [R] = adpt_input(& afcodectx, p->buff [pos * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT]);	// правый канал
-
-	if (++ pos >= CNT16TX)
-	{
-		buffers_tonull16tx(p);
 		p = NULL;
 	}
 	return 1;
@@ -2018,7 +1983,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 		ASSERT(p->tag3 == p);
 		return (uintptr_t) & p->buff;
 	}
-	else if (! IsListEmpty2(& voicesphones16tx) && ! IsListEmpty2(& voicesmoni16tx))
+	else if (! IsListEmpty3(& voicesphones16tx) && ! IsListEmpty3(& voicesmoni16tx))
 	{
 		// Ошибочная ситуация - если буферы не освобождены вовремя -
 		// берём из очереди готовых к прослушиванию
@@ -2027,21 +1992,21 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 		do
 		{
 			{
-				const PLIST_ENTRY t = RemoveTailList2(& voicesphones16tx);
+				const PLIST_ENTRY t = RemoveTailList3(& voicesphones16tx);
 				voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
 				InsertHeadList2(& voicesfree16tx, t);
 			}
 			{
-				const PLIST_ENTRY t = RemoveTailList2(& voicesmoni16tx);
+				const PLIST_ENTRY t = RemoveTailList3(& voicesmoni16tx);
 				voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
 				InsertHeadList2(& voicesfree16tx, t);
 			}
 		}
-		while (-- n && ! IsListEmpty2(& voicesphones16tx) && ! IsListEmpty2(& voicesmoni16tx));
+		while (-- n && ! IsListEmpty3(& voicesphones16tx) && ! IsListEmpty3(& voicesmoni16tx));
 
 		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16tx);
 		SPIN_UNLOCK(& locklist16tx);
@@ -2115,6 +2080,9 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 	SPIN_LOCK(& locklist16rx);
 	InsertHeadList3(& voicesmike16rx, & p->item, 0);
 	SPIN_UNLOCK(& locklist16rx);
+
+	//dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
+
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
@@ -2140,7 +2108,11 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
+
 	dsp_extbuffer32rx((const IFADCvalue_t *) addr);
+
+	dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
+
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
@@ -2217,8 +2189,10 @@ uintptr_t getfilled_dmabuffer32tx_main(void)
 {
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_tx32dac += DMABUFFSIZE32TX / DMABUFFSTEP32TX;	// в буфере пары сэмплов по четыре байта
+	debugcount_tx32dac += CNT32TX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
+
+	//dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
 
 	SPIN_LOCK(& locklist32tx);
 	if (! IsListEmpty2(& voicesready32tx))
@@ -2229,6 +2203,9 @@ uintptr_t getfilled_dmabuffer32tx_main(void)
 		return (uintptr_t) & p->buff;
 	}
 	SPIN_UNLOCK(& locklist32tx);
+#if WITHBUFFERSDEBUG
+	++ e9;
+#endif /* WITHBUFFERSDEBUG */
 	return allocate_dmabuffer32tx();	// аварийная ветка - работает первые несколько раз
 }
 
@@ -2265,14 +2242,15 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_phonesdac += DMABUFFSIZE16TX / DMABUFFSTEP16TX;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
-
+	const uintptr_t monibuf = getfilled_dmabuffer16txmoni();
 	SPIN_LOCK(& locklist16tx);
-	if (! IsListEmpty2(& voicesphones16tx))
+	if (GetReadyList3(& voicesphones16tx))
 	{
-		PLIST_ENTRY t = RemoveTailList2(& voicesphones16tx);
+		PLIST_ENTRY t = RemoveTailList3(& voicesphones16tx);
 		SPIN_UNLOCK(& locklist16tx);
 		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
-		dsp_addsidetone(p->buff, 1);
+		dsp_addsidetone(p->buff, (aubufv_t *) monibuf, 1);
+		release_dmabuffer16tx(monibuf);
 		return (uintptr_t) & p->buff;	// алрес для DMA
 	}
 	SPIN_UNLOCK(& locklist16tx);
@@ -2283,7 +2261,31 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 
 	const uintptr_t addr = allocate_dmabuffer16tx();
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-	dsp_addsidetone(p->buff, 0); // Заполнение "тишиной"
+	dsp_addsidetone(p->buff, (aubufv_t *) monibuf, 0);
+	release_dmabuffer16tx(monibuf);
+	return (uintptr_t) & p->buff;
+}
+
+// Этой функцией пользуются обработчики прерываний DMA
+uintptr_t getfilled_dmabuffer16txmoni(void)
+{
+	SPIN_LOCK(& locklist16tx);
+	if (GetReadyList3(& voicesmoni16tx))
+	{
+		PLIST_ENTRY t = RemoveTailList3(& voicesmoni16tx);
+		SPIN_UNLOCK(& locklist16tx);
+		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
+		return (uintptr_t) & p->buff;	// алрес для DMA
+	}
+	SPIN_UNLOCK(& locklist16tx);
+
+#if WITHBUFFERSDEBUG
+	++ e10;
+#endif /* WITHBUFFERSDEBUG */
+
+	const uintptr_t addr = allocate_dmabuffer16tx();
+	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
+	memset(p->buff, 0, sizeof p->buff); // Заполнение "тишиной"
 	return (uintptr_t) & p->buff;
 }
 
