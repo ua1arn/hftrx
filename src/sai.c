@@ -3576,7 +3576,7 @@ void I2S_PCM2_IrqHandler(void)
 static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned NCH, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
 {
 	const unsigned ix = i2s == I2S1 ? 1 : 2;
-	const unsigned irq = I2S1_IRQn + ix - 1;
+	const unsigned irq = I2S_PCM1_IRQn + ix - 1;
 
 	arm_hardware_disable_handler(irq);
 	// ARMI2SRATE // I2S sample rate audio codec (human side)

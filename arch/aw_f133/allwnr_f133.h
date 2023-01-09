@@ -28,6 +28,8 @@ typedef enum IRQn
 	PWM_IRQn = 34, 			/*	PWM	*/
 	CIR_TX_IRQn = 35, 		/*	CIR_TX	*/
 	LEDC_IRQn = 36, 		/*	LEDC	*/
+	CAN0_IRQ = 37, 			/*  CAN0 */
+	CAN1_IRQ = 38, 			/*  CAN1 */
 	OWA_IRQn = 39, 			/*	OWA	*/
 	DMIC_IRQn = 40, 		/*	DMIC	*/
 	AUDIO_CODEC_IRQn = 41, 	/*	AUDIO_CODEC	*/
