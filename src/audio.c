@@ -3915,6 +3915,9 @@ static void monimux(
 			moni->IV = * ssbtx;
 			moni->QV = * ssbtx;
 		}
+#else /* WITHUSBHW && WITHUSBUACOUT */
+		moni->IV = * ssbtx;
+		moni->QV = * ssbtx;
 #endif /* WITHUSBHW && WITHUSBUACOUT */
 		break;
 
