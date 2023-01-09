@@ -5001,7 +5001,7 @@ static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const 
 #endif /* CTLSTYLE_V3D && WITHSDRAMHW */
 
 struct descholder MsftStringDescr [1];
-struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
+struct descholder MsftCompFeatureDescr [INTERFACE_count];	// Microsoft Compatible ID Feature Descriptor
 struct descholder StringDescrTbl [STRING_ID_count];
 struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
 struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
@@ -5110,6 +5110,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 
 #if WITHUSBDFU && WITHUSBWCID
 	{
+		const uint_fast8_t ifc = INTERFACE_DFU_CONTROL;
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-os-1-0-descriptors-specification
 		// Microsoft Compatible ID Feature Descriptor
@@ -5137,8 +5138,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_pattern_descriptor(1, alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, MsftCompFeatureDescrProto, sizeof MsftCompFeatureDescrProto);
-		MsftCompFeatureDescr [0].size = partlen;
-		MsftCompFeatureDescr [0].data = alldescbuffer + score;
+		MsftCompFeatureDescr [ifc].size = partlen;
+		MsftCompFeatureDescr [ifc].data = alldescbuffer + score;
 		score += partlen;
 	}
 #endif /* WITHUSBDFU */
