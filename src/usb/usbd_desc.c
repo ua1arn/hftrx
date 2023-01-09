@@ -70,6 +70,10 @@
 
 //#define USB_FUNCTION_PRODUCT_ID	0x5732	// PID Need for FT8CN in conjunction with VID 0x0483
 
+/* Слитное добавление L перед открывающей кавыйкой строкового литерала */
+#define _LSTRM(_s) L ## _s
+#define LSTRM(_s) _LSTRM(_s)
+
 #ifndef WITHBRANDSTR
 	//#define WITHBRANDSTR "Falcon"
 	#define WITHBRANDSTR "Storch"
@@ -78,6 +82,7 @@
 #if WITHISBOOTLOADER
 
 	#define PRODUCTSTR WITHBRANDSTR " Bootloader"
+	#define LPRODUCTSTR LSTRM(WITHBRANDSTR) L" Bootloader"
 	#define USB_FUNCTION_PRODUCT_ID	0x0754
 
 	#define BUILD_ID 1	// модификатор serial number
@@ -86,7 +91,7 @@
 #elif WITHUSBUAC && WITHUSBUACIN2
 
 	#define PRODUCTSTR WITHBRANDSTR
-	//#define LPRODUCTSTR L # WITHBRANDSTR
+	#define LPRODUCTSTR LSTRM(WITHBRANDSTR)
 	#if WITHUSBUACINOUTRENESAS
 		#define USB_FUNCTION_PRODUCT_ID	0x0731
 	#elif WITHUSBUACINOUT
@@ -109,6 +114,7 @@
 	#endif
 #else /* WITHUSBUAC && WITHUSBUACIN2 */
 	#define PRODUCTSTR WITHBRANDSTR
+	#define LPRODUCTSTR LSTRM(WITHBRANDSTR)
 
 	#if WITHUSBUACINOUTRENESAS
 		#define USB_FUNCTION_PRODUCT_ID	0x0732
@@ -5137,21 +5143,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBDFU */
 #if WITHUSBDFU
-//	{
-//		const uint_fast8_t ifc = INTERFACE_DFU_CONTROL;
-//		unsigned partlen;
-//
-//		// Device Qualifier
-//		static const wchar_t label [] = L"Label";
-//		const size_t labellen = ARRAY_SIZE(label);
-//		static const wchar_t value [] = /*LPRODUCTSTR */ L"X DFU interface";
-//		const size_t valuelen = wcslen(value) + 1;
-//		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-//		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0x0001, label, labellen, value, valuelen);
-//		ExtOsPropDescTbl [ifc].size = partlen;
-//		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
-//		score += partlen;
-//	}
+	if (INTERFACE_count > 1)
 	{
 		// Add property: label=DeviceInterfaceGUIDs
 		// Value (REG_MULTI_SZ)={1E9AA6EB-4456-4a09-B756-D3783B11CB87}
@@ -5162,10 +5154,28 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		// Device Qualifier
 		static const wchar_t label [] = L"DeviceInterfaceGUIDs";
 		const size_t labellen = ARRAY_SIZE(label);
-		static const wchar_t value [] = L"{1E9AA6EB-4456-4a09-B756-D3783B11CB87}" L"\0";		// Extra NUL for multi-sz value
+		static const wchar_t value [] =
+				L"{1E9AA6EB-4456-4a09-B756-D3783B11CB87}" L"\0"		// Extra NUL for multi-sz value
+				;
 		const size_t valuelen = ARRAY_SIZE(value);
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0x0007, label, labellen, value, valuelen);
+		ExtOsPropDescTbl [ifc].size = partlen;
+		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
+		score += partlen;
+	}
+	else
+	{
+		const uint_fast8_t ifc = INTERFACE_DFU_CONTROL;
+		unsigned partlen;
+
+		// Device Qualifier
+		static const wchar_t label [] = L"Label";
+		const size_t labellen = ARRAY_SIZE(label);
+		static const wchar_t value [] = LPRODUCTSTR L" DFU interface";
+		const size_t valuelen = ARRAY_SIZE(value);
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0x0001, label, labellen, value, valuelen);
 		ExtOsPropDescTbl [ifc].size = partlen;
 		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
 		score += partlen;
