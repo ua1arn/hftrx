@@ -1682,6 +1682,33 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 			hardware_nonguiyield();
 	}
 }
+#elif LINUX_SUBSYSTEM
+
+void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+{
+}
+
+/* Palette reload (dummy fuction) */
+void arm_hardware_ltdc_L8_palette(void)
+{
+}
+
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+{
+	uint32_t size;
+	uint32_t * linux_fb = linux_get_fb(& size);
+	memcpy(linux_fb, (uint32_t *) addr, size);
+}
+
+/* Set MAIN frame buffer address. */
+void arm_hardware_ltdc_main_set(uintptr_t addr)
+{
+	uint32_t size;
+	uint32_t * linux_fb = linux_get_fb(& size);
+	memcpy(linux_fb, (uint32_t *) addr, size);
+}
 
 #elif (CPUSTYLE_XC7Z) && 1
 

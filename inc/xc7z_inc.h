@@ -1,4 +1,4 @@
-#if (CPUSTYLE_XC7Z)
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 #if defined(XC7Z010)
 	#include "lib/zynq/src_7010/xparameters.h"
@@ -54,4 +54,4 @@
 	#include "lib/zynq/src_7020_ebaz/dmaps_v2_8/xdmaps.h"
 #endif /*  */
 
-#endif /* (CPUSTYLE_XC7Z) */
+#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */

@@ -150,6 +150,7 @@ static uint_fast8_t 	glob_user3;
 static uint_fast8_t 	glob_user4;
 static uint_fast8_t 	glob_user5;
 static uint_fast8_t		glob_attvalue;	// RF signal gen attenuator value
+static uint_fast8_t		glob_tsc_reset = 1;
 
 static void prog_rfadc_update(void);
 
@@ -753,7 +754,7 @@ prog_gpioreg(void)
 //#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
 #endif /* defined (HARDWARE_DAC_ALC) */
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 	xcz_rxtx_state(glob_tx);
 #if defined (TARGET_RFADC_PGA_EMIO)
 	xc7z_gpio_output(TARGET_RFADC_PGA_EMIO);
@@ -763,9 +764,8 @@ prog_gpioreg(void)
 	xc7z_gpio_output(TARGET_DAC_SLEEP_EMIO);
 	xc7z_writepin(TARGET_DAC_SLEEP_EMIO, ! glob_tx);
 #endif /* defined (TARGET_DAC_SLEEP_EMIO) */
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM*/
 }
-
 
 /* 
 	сигналы управления индикатором, требующим кроме SPI ещё двух сигналов - RS (register select) и RST (reset).
@@ -4559,6 +4559,91 @@ prog_ctrlreg(uint_fast8_t plane)
 	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
+#elif CTLREGMODE_XCZU && WITHQRPBOARD_UA3REO
+
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+const uint_fast8_t bpf_xlat [6] = { 1, 3, 0, 2, 1, 3 };
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	enum
+	{
+		HARDWARE_OPA2674I_FULLPOWER = 0x03,
+		HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
+		HARDWARE_OPA2674I_IDLEPOWER = 0x01,
+		HARDWARE_OPA2674I_SHUTDOWN = 0x00
+	};
+	static const FLASHMEM uint_fast8_t powerxlat [] =
+	{
+		HARDWARE_OPA2674I_IDLEPOWER,
+		HARDWARE_OPA2674I_POWERCUTBACK,
+		HARDWARE_OPA2674I_FULLPOWER,
+	};
+	const uint_fast8_t txgated = glob_tx && glob_txgate;
+
+	{
+		spitarget_t target = targetextctl;
+		rbtype_t rbbuff [3] = { 0 };
+		const uint_fast8_t att_db = revbits8(hamradio_get_att_db()) >> 3;
+		const uint_fast8_t bpf1 = glob_bandf == 5 || glob_bandf == 6;
+		const uint_fast8_t bpf2 = glob_bandf >= 1 || glob_bandf <= 4;
+
+		/* U7 */
+		RBBIT(027, ! glob_bandf);	// LPF_ON
+		RBBIT(026, glob_preamp);	// LNA_ON
+		RBBIT(025, 0);	// ATT_ON_0.5
+		RBVAL(020, att_db, 5);
+
+		/* U1 */
+		RBBIT(017, 0);	// not use
+		RBVAL(015, bpf2 ? revbits8(bpf_xlat [glob_bandf - 1]) >> 6 : 0 , 2);
+		RBBIT(014, ! bpf2);
+		RBVAL(012, bpf1 ? revbits8(bpf_xlat [glob_bandf - 1]) >> 6 : 0 , 2);
+		RBBIT(011, ! bpf1);
+		RBBIT(010, bpf1 || bpf2);
+
+		/* U3 */
+		RBBIT(007, 0);	// not use
+		RBBIT(006, glob_tx);	// tx amp
+		RBBIT(005, 0);	// not use
+		RBBIT(004, 0);	// not use
+		RBBIT(003, 0);	// not use
+		RBBIT(002, 0);	// not use
+		RBBIT(001, 0);	// not use
+		RBBIT(000, glob_tx);	// tx & ant 1-2
+
+		spi_select(target, CTLREG_SPIMODE);
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		spi_unselect(target);
+	}
+
+	{
+		spitarget_t target = targetctl1;
+		spi_select(target, CTLREG_SPIMODE);
+		rbtype_t rbbuff [1] = { 0 };
+
+		RBBIT(007, 1);
+		RBBIT(006, glob_tsc_reset);
+		RBBIT(005, 0);	// glob_adcrand
+		RBBIT(004, 0);	// adc pga
+		RBBIT(003, glob_dither);	// adc dith
+		RBBIT(002, 0);	// ltc6401 always on
+		RBVAL(000, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
+//		RBBIT(001, 0);
+//		RBBIT(000, 0);
+
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+
+		spi_unselect(target);
+	}
+
+	//xcz_rxtx_state(glob_tx);
+	//xcz_adcrand_set(glob_adcrand);
+}
+
 #elif CTLREGMODE_ZYNQ_4205
 
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -5579,7 +5664,11 @@ board_set_attvalue(uint_fast8_t v)
 	}
 }
 
-
+void board_tsc_reset_state(uint_fast8_t v)
+{
+	glob_tsc_reset = v;
+	board_ctlreg1changed();
+}
 
 /////////////////////////////////////////////
 // --- Набор функций требования установки сигналов на управляющих выходах.
@@ -6756,7 +6845,7 @@ restart:
 
 #if WITHDSPEXTFIR
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! LINUX_SUBSYSTEM
 
 #include "xc7z_inc.h"
 XAxiDma xcz_dma_fir_coeffs;
@@ -9606,7 +9695,7 @@ int _gettimeofday(struct timeval *p, void *tz)
 	return 0;
 }
 
-#else
+#elif ! LINUX_SUBSYSTEM
 
 #include <time.h>
 #include <sys/_timeval.h>

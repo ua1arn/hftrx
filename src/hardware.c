@@ -22,7 +22,7 @@
 	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
 #endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 extern uint8_t bd_space[];
 
@@ -211,7 +211,7 @@ void xc7z_gpio_output(uint8_t pin)
 			XGPIOPS_OUTEN_OFFSET, OpEnableReg);
 }
 
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 
 /* 
 	Машинно-независимый обработчик прерываний.
@@ -935,7 +935,7 @@ hardware_get_encoder2_bits(void)
 #elif WITHENCODER2 && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
 	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER2 && CPUSTYLE_XC7Z
+#elif WITHENCODER2 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 	return ((gpio_readpin(ENCODER2_BITA) != 0) * 2 + (gpio_readpin(ENCODER2_BITB) != 0));
 #else /* WITHENCODER2 */
 	return 0;
@@ -1719,6 +1719,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 // TODO: перекалибровать для FLASH контроллеров.
 void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 {
+#if LINUX_SUBSYSTEM
+	usleep(timeUS);
+#else
 	// Частота процессора приволится к мегагерцам.
 	const unsigned long top = local_delay_uscycles(timeUS, CPU_FREQ / 1000000uL);
 	//
@@ -1726,11 +1729,15 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 	for (t = 0; t < top; ++ t)
 	{
 	}
+#endif /* LINUX_SUBSYSTEM */
 }
 // exactly as required
 //
 void local_delay_ms(int timeMS)
 {
+#if LINUX_SUBSYSTEM
+	usleep(timeMS * 1000);
+#else
 	// Частота процессора приволится к мегагерцам.
 	const unsigned long top = local_delay_uscycles(1000, CPU_FREQ / 1000000uL);
 	int n;
@@ -1741,6 +1748,7 @@ void local_delay_ms(int timeMS)
 		{
 		}
 	}
+#endif /* LINUX_SUBSYSTEM */
 }
 
 #endif /* CPUSTYLE_ARM || CPUSTYLE_TMS320F2833X */
@@ -4542,7 +4550,7 @@ __NO_RETURN void __riscv_start(void)
 }
 #endif /* CPUSTYLE_RISCV */
 
-#if 1//(__CORTEX_M == 0) && 0
+#if ! LINUX_SUBSYSTEM && 1//(__CORTEX_M == 0) && 0
 
 // Используется в случае наличия ключа ld -nostartfiles
 // Так же смотреть вокруг software_init_hook
@@ -4581,7 +4589,7 @@ void _fini(void)
 }
 #endif /* __cplusplus */
 
-#if 1//WITHUSEMALLOC
+#if ! LINUX_SUBSYSTEM && 1//WITHUSEMALLOC
 
 /*
  *

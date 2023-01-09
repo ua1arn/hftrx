@@ -1529,7 +1529,7 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if CPUSTYLE_ARM && WITHSMPSYSTEM
+#if CPUSTYLE_ARM && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
@@ -1668,7 +1668,7 @@ static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const 
 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
-#if CPUSTYLE_ARM || CPUSTYLE_RISCV
+#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 
 uint_fast8_t arm_hardware_clustersize(void)
 {

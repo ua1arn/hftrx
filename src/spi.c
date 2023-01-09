@@ -12,7 +12,10 @@
 #include "formats.h"
 #include <string.h>
 #include <stdlib.h>
-#include <machine/endian.h>
+
+#if ! LINUX_SUBSYSTEM
+	#include <machine/endian.h>
+#endif /* ! LINUX_SUNSYSTEM */
 
 #define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_T113 || CPUSTYLE_F133)	/* доступ к SPI разделяет DFU устройство и user mode программа */
 

@@ -4,7 +4,7 @@
 #include "formats.h"
 #include <math.h>
 
-#if (CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
+#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM
 
 #include "xc7z_inc.h"
 
@@ -208,4 +208,4 @@ void xcz_rxtx_state(uint8_t tx)
 
 }
 
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */
