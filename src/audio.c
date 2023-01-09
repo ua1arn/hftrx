@@ -3909,11 +3909,13 @@ static void monimux(
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
+#if WITHUSBHW && WITHUSBUACOUT
 		if (glob_txaudio != BOARD_TXAUDIO_USB)
 		{
 			moni->IV = * ssbtx;
 			moni->QV = * ssbtx;
 		}
+#endif /* WITHUSBHW && WITHUSBUACOUT */
 		break;
 
 	default:
