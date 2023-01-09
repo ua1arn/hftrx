@@ -6943,9 +6943,9 @@ board_set_view_style(uint_fast8_t v)
 
 /* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 void
-board_set_view3dss_mark(int_fast16_t v)
+board_set_view3dss_mark(uint_fast8_t v)
 {
-	gview3dss_mark = v;
+	gview3dss_mark = v != 0;
 }
 
 /* верхний предел FFT - spectrum */
