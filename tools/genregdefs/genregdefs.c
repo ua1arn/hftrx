@@ -143,21 +143,36 @@ struct parsedfile
 static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE * fp)
 {
 	char * s;
-	for (;pfl->base_count < BASE_MAX;)
+	for (;;)
 	{
-        int f1;
+        int f2;
 		s = fgets(buff, n, fp);
 		if (s == NULL)
 			break;
 		if (s [0] != '#')
 			break;
-		f1 = sscanf(s + 1, "type %[*a-zA-Z_0-9]s", pfl->bname);
-		if (f1 != 1)
+
+		f2 = sscanf(s + 1, "type %[*a-zA-Z_0-9]s", pfl->bname);
+		if (f2 == 1)
 		{
-			int f2 = sscanf(s + 1, "base %s %x", pfl->base_names [pfl->base_count], & pfl->base_array [pfl->base_count]);
+			continue;
+		}
+
+		if (pfl->base_count < BASE_MAX)
+		{
+			f2 = sscanf(s + 1, "base %[*a-zA-Z_0-9]s %x", pfl->base_names [pfl->base_count], & pfl->base_array [pfl->base_count]);
 			if (f2 == 2)
 			{
 				++ pfl->base_count;
+			}
+		}
+
+		if (pfl->irq_count < BASE_MAX)
+		{
+			f2 = sscanf(s + 1, "irq %[*a-zA-Z_0-9]s %x", pfl->base_names [pfl->irq_count], & pfl->base_array [pfl->irq_count]);
+			if (f2 == 2)
+			{
+				++ pfl->irq_count;
 			}
 		}
 	}
