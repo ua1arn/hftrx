@@ -56,6 +56,8 @@
 	#define USB_FUNCTION_BCD_USB	0x0200
 #endif /* (USBD_LPM_ENABLED == 1) */
 
+/* Remove hive in \HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\usbflags\ */
+
 #define USB_FUNCTION_VENDOR_ID	0xFFFF	// Generic
 //#define USB_FUNCTION_VENDOR_ID	0x041C	// Altera Corp.
 //#define USB_FUNCTION_VENDOR_ID	0x04d9	// Holtek Semiconductor, Inc.
@@ -84,6 +86,7 @@
 #elif WITHUSBUAC && WITHUSBUACIN2
 
 	#define PRODUCTSTR WITHBRANDSTR
+	#define LPRODUCTSTR L ## WITHBRANDSTR
 	#if WITHUSBUACINOUTRENESAS
 		#define USB_FUNCTION_PRODUCT_ID	0x0731
 	#elif WITHUSBUACINOUT
@@ -343,7 +346,7 @@ UAC_count_channels(
 }
 
 /* Header Functional Descriptor */
-static unsigned CDCACM_fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned CDC_HeaderFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 5;
 	ASSERT(maxsize >= length);
@@ -3039,7 +3042,7 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	// CDC
 	n += CDCACM_InterfaceAssociationDesc_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */
 	n += CDCACM_InterfaceDescControlIf_a(fill, p + n, maxsize - n, offset, 0x01);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
-	n += CDCACM_fill_31(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
+	n += CDC_HeaderFunctionalDesc(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
 	n += CDCACM_CallManagementDesc(fill, p + n, maxsize - n, offset);	/* Call Managment Functional Descriptor*/
 	n += CDCACM_ACMFunctionalDesc(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
 	n += CDC_UnionFunctionalDesc_a(fill, p + n, maxsize - n, offset);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
@@ -3401,7 +3404,7 @@ static unsigned fill_CDCECM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 
 	n += CDCECM_InterfaceAssociationDesc(fill, p + n, maxsize - n);	/* CDC: Interface Association Descriptor Abstract Control Model */
 	n += CDCECM_InterfaceDescControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
-	n += CDCACM_fill_31(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
+	n += CDC_HeaderFunctionalDesc(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
 	n += CDCECM_UnionFunctionalDesc(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
 	n += CDCECM_EthernetNetworkingFunctionalDesc(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
 	n += CDCECM_fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_CDCECM_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
@@ -3636,7 +3639,7 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	n += RNDIS_InterfaceDescControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	//  Functional Descriptors for Communication Class Interface per RNDIS spec.
 	// Header Functional Descriptor
-	////n += CDCACM_fill_31(fill, p + n, maxsize - n);
+	////n += CDC_HeaderFunctionalDesc(fill, p + n, maxsize - n);
 	// Call Management Functional Descriptor
 	n += RNDIS_fill_32(fill, p + n, maxsize - n);
 	// Abstract Control Management Functional Descriptor
@@ -4841,11 +4844,11 @@ static unsigned fill_string_c2descriptor(
 	uint_fast8_t fill,
 	uint8_t * buff,
 	unsigned maxsize,
-	const char * s
+	const wchar_t * s,
+	size_t n	// nul include
 	)
 {
-	size_t n = strlen(s) + 1;	// nul include
-	unsigned length = 2 + n * 2;
+	const unsigned length = 2 + n * 2;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
@@ -4867,11 +4870,11 @@ static unsigned fill_string_c4descriptor(
 	uint_fast8_t fill,
 	uint8_t * buff,
 	unsigned maxsize,
-	const char * s
+	const wchar_t * s,
+	size_t n	// nul include
 	)
 {
-	size_t n = strlen(s) + 1;	// nul include
-	unsigned length = 4 + n * 2;
+	const unsigned length = 4 + n * 2;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
@@ -4896,16 +4899,19 @@ static unsigned fill_string_c4descriptor(
 static unsigned fill_extprop_descriptor(
 	uint8_t * buff,
 	unsigned maxsize,
-	const char * name,
-	const char * value
+	uint_fast16_t dwPropertyDataType,	// 0x00000001 (Unicode string)  0x00000002 (Unicode string with environment variables) 0x07 0x00000001 (Unicode string)
+	const wchar_t * name,	// binary array start
+	size_t namelen,		// binary array length
+	const wchar_t * value,
+	size_t valuelen
 	)
 {
 	unsigned lengthprops =
 			//{
 			4 + 	// dwSize
 			4 +		// dwPropertyDataType
-			fill_string_c2descriptor(0, buff, maxsize, name) +	// wPropertyNameLength, bPropertyName
-			fill_string_c4descriptor(0, buff, maxsize, value) +	// dwPropertyDataLength, bPropertyData
+			fill_string_c2descriptor(0, buff, maxsize, name, namelen) +	// wPropertyNameLength, bPropertyName
+			fill_string_c4descriptor(0, buff, maxsize, value, valuelen) +	// dwPropertyDataLength, bPropertyData
 			//}
 			0;
 	unsigned lengthheader =
@@ -4939,7 +4945,7 @@ static unsigned fill_extprop_descriptor(
 		while (n --)
 		{
 			// The DEVICE_LABEL custom property section contains the device label.
-			const uint_fast16_t dwPropertyDataType = 0x01;	// 0x00000001 (Unicode string)
+			//const uint_fast16_t dwPropertyDataType = 0x01;	// 0x00000001 (Unicode string)
 			//const uint_fast16_t dwPropertyDataType = 0x02;	// 0x00000002 (Unicode string with environment variables)
 			// properties
 			* buff ++ = LO_BYTE(lengthprops);   /* dwSize */
@@ -4950,8 +4956,8 @@ static unsigned fill_extprop_descriptor(
 			* buff ++ = HI_BYTE(dwPropertyDataType);
 			* buff ++ = HI_24BY(dwPropertyDataType);
 			* buff ++ = HI_32BY(dwPropertyDataType);
-			buff += fill_string_c2descriptor(1, buff, maxsize, name);
-			buff += fill_string_c4descriptor(1, buff, maxsize, value);
+			buff += fill_string_c2descriptor(1, buff, maxsize, name, namelen);
+			buff += fill_string_c4descriptor(1, buff, maxsize, value, valuelen);
 		}
 	}
 	return length;
@@ -5131,12 +5137,34 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBDFU */
 #if WITHUSBDFU
+//	{
+//		const uint_fast8_t ifc = INTERFACE_DFU_CONTROL;
+//		unsigned partlen;
+//
+//		// Device Qualifier
+//		static const wchar_t label [] = L"Label";
+//		const size_t labellen = wcslen(label) + 1;
+//		static const wchar_t value [] = /*LPRODUCTSTR */ L"X DFU interface";
+//		const size_t valuelen = wcslen(value) + 1;
+//		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+//		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0x0001, label, labellen, value, valuelen);
+//		ExtOsPropDescTbl [ifc].size = partlen;
+//		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
+//		score += partlen;
+//	}
 	{
+		// Add property: label=DeviceInterfaceGUIDs
+		// Value (REG_MULTI_SZ)={38FFC6B8-EF25-4074-AB1A-ECA9BA6DE29C}
 		const uint_fast8_t ifc = INTERFACE_DFU_CONTROL;
 		unsigned partlen;
+
 		// Device Qualifier
+		static const wchar_t label [] = L"DeviceInterfaceGUIDs";
+		const size_t labellen = wcslen(label) + 1;
+		static const wchar_t value [] = L"{38FFC6B8-EF25-4074-AB1A-ECA9BA6DE29C}\0";
+		const size_t valuelen = wcslen(value) + 1 + 1;
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", PRODUCTSTR " DFU interface");
+		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0x0007, label, labellen, value, valuelen);
 		ExtOsPropDescTbl [ifc].size = partlen;
 		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
 		score += partlen;
@@ -5144,20 +5172,23 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* WITHUSBDFU */
 
 #if WITHUSBCDCACM
-	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
-	{
-		const uint_fast8_t ifc = USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset);
-		unsigned partlen;
-		char label [32];
-
-		local_snprintf_P(label, ARRAY_SIZE(label), PSTR(PRODUCTSTR " Serial Port #%d"), offset + 1);
-		// Device Qualifier
-		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, "Label", label);
-		ExtOsPropDescTbl [ifc].size = partlen;
-		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
-		score += partlen;
-	}
+//	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
+//	{
+//		const uint_fast8_t ifc = USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset);
+//		unsigned partlen;
+//
+//		// Device Qualifier
+//		static const wchar_t label [] = L"Label";
+//		const size_t labellen = wcslen(label) + 1;
+//		wchar_t value [32];
+//		swprintf(value, ARRAY_SIZE(value), /*LPRODUCTSTR */ L" Serial Port #%d", offset + 1);
+//		const size_t valuelen = wcslen(value) + 1;
+//		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+//		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0x0001, label, labellen, value, valuelen);
+//		ExtOsPropDescTbl [ifc].size = partlen;
+//		ExtOsPropDescTbl [ifc].data = alldescbuffer + score;
+//		score += partlen;
+//	}
 #endif /* WITHUSBCDCACM */
 
 	if ((USB_FUNCTION_BCD_USB >= 0x0201) || (HSdesc != 0))
