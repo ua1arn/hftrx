@@ -2893,12 +2893,14 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 
 			}
 			break;
+#if WITHUSBUACIN2
 		case INTERFACE_AUDIO_CONTROL_RTS:
 			{
 				PRINTF("ep0_in: INTERFACE_AUDIO_CONTROL_RTS Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 
 			}
 			break;
+#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
 #if WITHUSBDFU
 			case INTERFACE_DFU_CONTROL:
@@ -3401,7 +3403,7 @@ static uint32_t usb_dev_ep0xfer(PCD_HandleTypeDef *hpcd)
 				  	{
 #if WITHUSBDFU
 				  	case INTERFACE_DFU_CONTROL:
-						PRINTF("DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_count);
+						PRINTF("DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
 						printhex(0, buff, ep0_count);
 				  		break;
 #endif /* WITHUSBDFU */
@@ -3417,7 +3419,7 @@ static uint32_t usb_dev_ep0xfer(PCD_HandleTypeDef *hpcd)
 					  		break;
 					  	default:
 					  		// work
-							PRINTF("CDC: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_count);
+							PRINTF("CDC: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
 							//printhex(0, buff, ep0_count);
 					  		break;
 					  	}
@@ -3431,11 +3433,11 @@ static uint32_t usb_dev_ep0xfer(PCD_HandleTypeDef *hpcd)
 					  	switch (ep0_setup->bRequest)
 					  	{
 					  	case AUDIO_REQUEST_SET_CUR:
-					  		PRINTF("AUDIO: EP0 OUT (not 8): AUDIO_REQUEST_SET_CUR: ifc=%u, wValue=%04X, wIndex=%04X, ep0_count=%u, v=%u\n", interfacev, ep0_setup->wValue, ep0_setup->wIndex, ep0_count, ep0_count == 1 ? buff [0] : USBD_peek_u16(buff));
+					  		PRINTF("AUDIO: EP0 OUT (not 8): AUDIO_REQUEST_SET_CUR: ifc=%u, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u, v=%u\n", interfacev, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count, ep0_count == 1 ? buff [0] : USBD_peek_u16(buff));
 					  		break;
 					  	default:
 					  		// work
-							PRINTF("AUDIO: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_count);
+							PRINTF("AUDIO: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
 							//printhex(0, buff, ep0_count);
 					  		break;
 					  	}
@@ -3443,7 +3445,7 @@ static uint32_t usb_dev_ep0xfer(PCD_HandleTypeDef *hpcd)
 #endif /* WITHUSBUACIN */
 
 					default:
-						PRINTF("xxx: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_count);
+						PRINTF("xxx: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
 				  		break;
 
 				  	}
