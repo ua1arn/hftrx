@@ -3036,11 +3036,11 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 		}
 		else if (ep0_setup->bRequest == USBD_WCID_VENDOR_CODE && ep0_setup->wIndex == 0x04)
 		{
-			const uint_fast8_t ifc = LO_BYTE(ep0_setup->wValue);
+			//const uint_fast8_t ifc = LO_BYTE(ep0_setup->wValue);
 			//PRINTF("usb_device: WCID Vendor-Specific Request = 0x%02X, wValue=0x%04X, wIndex=0x%04X, wLength=0x%04X\n", ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength);
 
-			pusb->ep0_xfer_srcaddr = (uintptr_t)MsftCompFeatureDescr [ifc].data;
-			pusb->ep0_xfer_residue = min(MsftCompFeatureDescr [ifc].size, ep0_setup->wLength);
+			pusb->ep0_xfer_srcaddr = (uintptr_t)MsftCompFeatureDescr [0].data;
+			pusb->ep0_xfer_residue = min(MsftCompFeatureDescr [0].size, ep0_setup->wLength);
 		}
 		else
 		{

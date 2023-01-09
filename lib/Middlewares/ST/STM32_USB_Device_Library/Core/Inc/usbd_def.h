@@ -419,7 +419,7 @@ struct descholder
 #define USBD_CONFIGCOUNT 4
 
 extern struct descholder MsftStringDescr [1];	// Microsoft OS String Descriptor
-extern struct descholder MsftCompFeatureDescr [];	// Microsoft Compatible ID Feature Descriptor
+extern struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
 extern struct descholder StringDescrTbl [];
 extern struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
 extern struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];

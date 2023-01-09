@@ -103,11 +103,11 @@ USBD_StatusTypeDef USBD_StdDevReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
 	if ((req->bmRequest & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_VENDOR && req->bRequest == USBD_WCID_VENDOR_CODE)
 	{
 		// WCID devices support - WINUSB driver request
-		const uint_fast8_t ifc = LO_BYTE(req->wValue);	// INTERFACE_DFU_CONTROL
+		//const uint_fast8_t ifc = LO_BYTE(req->wValue);	// INTERFACE_DFU_CONTROL
 
-		if (MsftCompFeatureDescr [ifc].size != 0)
+		if (MsftCompFeatureDescr [0].size != 0)
 		{
-			USBD_CtlSendData(pdev, MsftCompFeatureDescr [ifc].data, MIN(MsftCompFeatureDescr [ifc].size, req->wLength));
+			USBD_CtlSendData(pdev, MsftCompFeatureDescr [0].data, MIN(MsftCompFeatureDescr [0].size, req->wLength));
 		}
 		else
 		{
