@@ -86,7 +86,7 @@
 #elif WITHUSBUAC && WITHUSBUACIN2
 
 	#define PRODUCTSTR WITHBRANDSTR
-	#define LPRODUCTSTR L ## WITHBRANDSTR
+	//#define LPRODUCTSTR L # WITHBRANDSTR
 	#if WITHUSBUACINOUTRENESAS
 		#define USB_FUNCTION_PRODUCT_ID	0x0731
 	#elif WITHUSBUACINOUT
@@ -5143,7 +5143,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 //
 //		// Device Qualifier
 //		static const wchar_t label [] = L"Label";
-//		const size_t labellen = wcslen(label) + 1;
+//		const size_t labellen = ARRAY_SIZE(label);
 //		static const wchar_t value [] = /*LPRODUCTSTR */ L"X DFU interface";
 //		const size_t valuelen = wcslen(value) + 1;
 //		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
@@ -5154,15 +5154,16 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 //	}
 	{
 		// Add property: label=DeviceInterfaceGUIDs
-		// Value (REG_MULTI_SZ)={38FFC6B8-EF25-4074-AB1A-ECA9BA6DE29C}
+		// Value (REG_MULTI_SZ)={1E9AA6EB-4456-4a09-B756-D3783B11CB87}
+		// my own generated GUID
 		const uint_fast8_t ifc = INTERFACE_DFU_CONTROL;
 		unsigned partlen;
 
 		// Device Qualifier
 		static const wchar_t label [] = L"DeviceInterfaceGUIDs";
-		const size_t labellen = wcslen(label) + 1;
-		static const wchar_t value [] = L"{38FFC6B8-EF25-4074-AB1A-ECA9BA6DE29C}\0";
-		const size_t valuelen = wcslen(value) + 1 + 1;
+		const size_t labellen = ARRAY_SIZE(label);
+		static const wchar_t value [] = L"{1E9AA6EB-4456-4a09-B756-D3783B11CB87}\0";		// Extra NUL for muulti-sz value
+		const size_t valuelen = ARRAY_SIZE(value);
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_extprop_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0x0007, label, labellen, value, valuelen);
 		ExtOsPropDescTbl [ifc].size = partlen;
