@@ -132,10 +132,12 @@ struct parsedfile
     size_t nregs;
     struct ddd * regs;
 	char bname [64];
-	int irq_count;
 	int base_count;
 	unsigned base_array [BASE_MAX];
 	char base_names [BASE_MAX] [64];
+	int irq_count;
+	//unsigned irq_array [BASE_MAX];
+	//char irq_names [BASE_MAX] [64];
 };
 
 static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE * fp)
@@ -322,10 +324,6 @@ static void processfile_base(struct parsedfile * pfl)
 	/* print base addresses */
 	int i;
 
-	fprintf(stdout, "\n");
-	fprintf(stdout, "/* Peripheral and RAM base address */\n");
-	fprintf(stdout, "\n");
-
 	for (i = 0; i < pfl->base_count; ++ i)
 	{
 		fprintf(stdout, "#define\t%s_BASE\t0x%08X\n", pfl->base_names [i], pfl->base_array [i]);
@@ -339,9 +337,6 @@ static void processfile_access(struct parsedfile * pfl)
 	/* print acces pointers */
 	int i;
 
-	fprintf(stdout, "\n");
-	fprintf(stdout, "/* Access pointers */\n");
-	fprintf(stdout, "\n");
 	for (i = 0; i < pfl->base_count; ++ i)
 	{
 		fprintf(stdout, "#define\t%s\t((%s_TypeDef *) %s_BASE)\t/*!< \\brief %s Interface register set access pointer */\n", pfl->base_names [i], pfl->bname, pfl->base_names [i], pfl->base_names [i]);
@@ -400,17 +395,49 @@ int main(int argc, char* argv[], char* envp[])
 
 		processfile_periphregs(pfl);
 	}
-	for (i = 0; i < nperoiph; ++ i)
-	{
-		struct parsedfile * const pfl = & pfls [i];
 
-		//processfile_base(pfl);
+	if (0)
+	{
+
+		fprintf(stdout, "\n");
+		fprintf(stdout, "/* IRQs */\n");
+		fprintf(stdout, "\n");
+
+		for (i = 0; i < nperoiph; ++ i)
+		{
+			struct parsedfile * const pfl = & pfls [i];
+
+			processfile_irq(pfl);
+		}
 	}
-	for (i = 0; i < nperoiph; ++ i)
-	{
-		struct parsedfile * const pfl = & pfls [i];
 
-		//processfile_access(pfl);
+	if (0)
+	{
+
+		fprintf(stdout, "\n");
+		fprintf(stdout, "/* Peripheral and RAM base address */\n");
+		fprintf(stdout, "\n");
+
+		for (i = 0; i < nperoiph; ++ i)
+		{
+			struct parsedfile * const pfl = & pfls [i];
+
+			processfile_base(pfl);
+		}
+	}
+
+	if (0)
+	{
+		fprintf(stdout, "\n");
+		fprintf(stdout, "/* Access pointers */\n");
+		fprintf(stdout, "\n");
+
+		for (i = 0; i < nperoiph; ++ i)
+		{
+			struct parsedfile * const pfl = & pfls [i];
+
+			processfile_access(pfl);
+		}
 	}
 
 	/* release memory */
