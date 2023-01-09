@@ -504,7 +504,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 	/* DFU device разделяет по приходящему адресу куда писать */
 	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
-	#define BOOTLOADER_SELFBASE 0xC0000000uL	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFBASE 0x40000000uL	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
@@ -514,6 +514,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "W25Q128JV"
-#endif /* CPUSTYLE_T113 */
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
 
 #endif /* TAILDEFS_H_INCLUDED */
