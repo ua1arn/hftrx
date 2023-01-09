@@ -4858,7 +4858,7 @@ static unsigned fill_string_c2descriptor(
 		* buff ++ = HI_BYTE(n * 2);
 		while (n --)
 		{
-			const int c = * s ++;
+			const wchar_t c = * s ++;
 			* buff ++ = LO_BYTE(c);   /* character */
 			* buff ++ = HI_BYTE(c);
 		}
@@ -4886,7 +4886,7 @@ static unsigned fill_string_c4descriptor(
 		* buff ++ = HI_32BY(n * 2);
 		while (n --)
 		{
-			const int c = * s ++;
+			const wchar_t c = * s ++;
 			* buff ++ = LO_BYTE(c);   /* character */
 			* buff ++ = HI_BYTE(c);
 		}
