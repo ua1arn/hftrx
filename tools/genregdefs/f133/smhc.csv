@@ -1,4 +1,7 @@
 #type SMHC
+#base SMHC0 0x04020000
+#base SMHC1 0x04021000
+#base SMHC2 0x04022000
 SMHC_CTRL; 0x0000; Control Register
 SMHC_CLKDIV; 0x0004; Clock Control Register
 SMHC_TMOUT; 0x0008; Time Out Register

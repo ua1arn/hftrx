@@ -5,6 +5,17 @@
 #base GPIOINTE 0x02000280
 #base GPIOINTF 0x020002A0
 #base GPIOINTG 0x020002C0
+#irq GPIOB_NS 101 
+#irq GPIOB_S 102 
+#irq GPIOC_NS 103 
+#irq GPIOC_S 104 
+#irq GPIOD_NS 105 
+#irq GPIOD_S 106 
+#irq GPIOE_NS 107 
+#irq GPIOE_S 108 
+#irq GPIOF_NS 109 
+#irq GPIOF_S 110 
+#irq GPIOG_NS 111 
 EINT_CFG; 0x000 4; External Interrupt Configure Registers
 EINT_CTL; 0x010; External Interrupt Control Register
 EINT_STATUS; 0x014; External Interrupt Status Register

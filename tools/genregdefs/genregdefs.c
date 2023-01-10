@@ -156,6 +156,37 @@ struct parsedfile
 	char irq_names [BASE_MAX] [VNAME_MAX];
 };
 
+struct basemap
+{
+	unsigned base;
+	char name [VNAME_MAX];
+};
+
+struct irqmap
+{
+	int irq;
+	char name [VNAME_MAX];
+};
+
+/* qsort parameter */
+int compare_base(const void * v1, const void * v2)
+{
+	const struct basemap * p1 = v1;
+	const struct basemap * p2 = v2;
+
+	return p1->base - p2->base;
+}
+
+/* qsort parameter */
+int compare_irq(const void * v1, const void * v2)
+{
+	const struct irqmap * p1 = v1;
+	const struct irqmap * p2 = v2;
+
+	return p1->irq - p2->irq;
+}
+
+
 static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE * fp)
 {
 	char * s;
@@ -320,7 +351,7 @@ static int loadregs(struct parsedfile * pfl, const char * file)
     FILE * fp = fopen(file, "rt");
  
 	TP();
-	strcpy(pfl->bname, "UNNAMED");
+	strcpy(pfl->bname, "");
 	pfl->base_count = 0;
 	pfl->irq_count = 0;
 	pfl->regs = NULL; 
@@ -367,16 +398,17 @@ static void processfile_periphregs(struct parsedfile * pfl)
 	}
 }
 
-static void processfile_base(struct parsedfile * pfl)
+static int collect_base(struct parsedfile * pfl, int n, struct basemap * v)
 {
-
-	/* print base addresses */
+	/* collect base pointers */
 	int i;
-
-	for (i = 0; i < pfl->base_count; ++ i)
+	int score = 0;
+	for (i = 0; i < pfl->base_count && n --; ++ i, ++ v, ++ score)
 	{
-		fprintf(stdout, "#define\t%s_BASE\t0x%08X\n", pfl->base_names [i], pfl->base_array [i]);
+		strcpy(v->name, pfl->base_names [i]);
+		v->base = pfl->base_array [i];
 	}
+	return score;
 }
 
 
@@ -386,6 +418,8 @@ static void processfile_access(struct parsedfile * pfl)
 	/* print acces pointers */
 	int i;
 
+	if (pfl->nregs == 0)
+		return;
 	for (i = 0; i < pfl->base_count; ++ i)
 	{
 		fprintf(stdout, "#define\t%s\t((%s_TypeDef *) %s_BASE)\t/*!< \\brief %s Interface register set access pointer */\n", pfl->base_names [i], pfl->bname, pfl->base_names [i], pfl->base_names [i]);
@@ -393,15 +427,17 @@ static void processfile_access(struct parsedfile * pfl)
 }
 
 
-static void processfile_irq(struct parsedfile * pfl)
+static int collect_irq(struct parsedfile * pfl, int n, struct irqmap * v)
 {
-
-	/* print base pointers */
+	/* collect irq vectors */
 	int i;
-	for (i = 0; i < pfl->irq_count; ++ i)
+	int score = 0;
+	for (i = 0; i < pfl->irq_count && n --; ++ i, ++ v, ++ score)
 	{
-		fprintf(stdout, "#define\t%s_IRQn\t%d\n", pfl->irq_names [i], pfl->irq_array [i]);
+		strcpy(v->name, pfl->irq_names [i]);
+		v->irq = pfl->irq_array [i];
 	}
+	return score;
 }
 
 static void freeregs(struct parsedfile * pfl)
@@ -428,7 +464,6 @@ int main(int argc, char* argv[], char* envp[])
     if (argc < 2)
         return 1;
 
-	TP();
 	/* Load files */
 	for (nperoiph = 0; nperoiph < MAXPARSEDFILES && i < argc; ++ i, ++ nperoiph)
 	{
@@ -438,23 +473,65 @@ int main(int argc, char* argv[], char* envp[])
 			continue;
 	}
 
-	TP();
 	if (1)
 	{
+		/* collect IRQ vectors */
+		int nitems = 0;
+		struct irqmap irqs [1024];
+		for (i = 0; i < nperoiph && nitems < sizeof irqs / sizeof irqs [0]; ++ i)
+		{
+			struct parsedfile * const pfl = & pfls [i];
+
+			nitems += collect_irq(pfl, 1024 - nitems, irqs + nitems);
+		}
+
+		qsort(irqs, nitems, sizeof irqs [0], compare_irq);
 
 		fprintf(stdout, "\n");
 		fprintf(stdout, "/* IRQs */\n");
 		fprintf(stdout, "\n");
+		fprintf(stdout, "typedef enum IRQn\n"); 
+		fprintf(stdout, "{\n"); 
+		for (i = 0; i < nitems; ++ i)
+		{
+			struct irqmap * const p = & irqs [i];
 
-		for (i = 0; i < nperoiph; ++ i)
+			fprintf(stdout, "\t%s_IRQn\t= %d,\n", p->name, p->irq);
+		}
+		fprintf(stdout, "\n"); 
+		fprintf(stdout, "\t%MAX_IRQ_n,\n");
+		fprintf(stdout, "\tForce_IRQn_enum_size\t= %d\t/* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n", 1048);
+		fprintf(stdout, "} IRQn_Type;\n"); 
+		fprintf(stdout, "\n"); 
+	}
+
+	if (1)
+	{
+
+		/* collect base addresses */
+		int nitems = 0;
+		struct basemap maps [256];
+		for (i = 0; i < nperoiph && nitems < sizeof maps / sizeof maps [0]; ++ i)
 		{
 			struct parsedfile * const pfl = & pfls [i];
 
-			processfile_irq(pfl);
+			nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
+		}
+
+		qsort(maps, nitems, sizeof maps [0], compare_base);
+
+		fprintf(stdout, "\n");
+		fprintf(stdout, "/* Peripheral and RAM base address */\n");
+		fprintf(stdout, "\n");
+
+		for (i = 0; i < nitems; ++ i)
+		{
+			struct basemap * const p = & maps [i];
+
+			fprintf(stdout, "#define\t%s_BASE\t0x%08X\n", p->name, p->base);
 		}
 	}
 
-	TP();
 	if (1)
 	{
 		/* structures */
@@ -466,23 +543,6 @@ int main(int argc, char* argv[], char* envp[])
 		}
 	}
 
-	TP();
-	if (1)
-	{
-
-		fprintf(stdout, "\n");
-		fprintf(stdout, "/* Peripheral and RAM base address */\n");
-		fprintf(stdout, "\n");
-
-		for (i = 0; i < nperoiph; ++ i)
-		{
-			struct parsedfile * const pfl = & pfls [i];
-
-			processfile_base(pfl);
-		}
-	}
-
-	TP();
 	if (1)
 	{
 		fprintf(stdout, "\n");
@@ -497,7 +557,6 @@ int main(int argc, char* argv[], char* envp[])
 		}
 	}
 
-	TP();
 	/* release memory */
 	for (i = 0; i < nperoiph; ++ i)
 	{
