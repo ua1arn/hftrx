@@ -4496,7 +4496,7 @@ saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 // вызывается при запрещённых прерываниях.
 void fftbuffer_initialize(void)
 {
-	static RAMBIG fftbuff_t fftbuffersarray [NOVERLAP * 3 + 1];
+	static RAMBIG fftbuff_t fftbuffersarray [NOVERLAP * 3 + 1 * 0];
 	unsigned i;
 
 	InitializeListHead(& fftbuffree);	// Свободные
@@ -5204,7 +5204,7 @@ dsp_getspectrumrow(
 	ARM_MORPH(arm_cfft_instance) fftinstance;
 
 	// проверка, есть ли накопленный буфер для формирования спектра
-	static fftbuff_t * prevpf = NULL;
+	//static fftbuff_t * prevpf = NULL;
 	fftbuff_t * pf;
 	if (getfilled_fftbuffer(& pf) == 0)
 		return 0;
@@ -5223,21 +5223,20 @@ dsp_getspectrumrow(
 		fftzoom_filer_decimate_ifspectrum(prm, largesigQ, usedsize);
 	}
 
-	if (prevpf == NULL)
-	{
-		prevpf = pf;
-		return 0;
-	}
+//	if (prevpf == NULL)
+//	{
+//		prevpf = pf;
+//		return 0;
+//	}
 
 	FLOAT_t * const fftinpt = gvars.cmplx_sig;
-	FLOAT_t * const prevLargesigI = prevpf->largebuffI + LARGEFFT - usedsize;
-	FLOAT_t * const prevLargesigQ = prevpf->largebuffQ + LARGEFFT - usedsize;
+//	FLOAT_t * const prevLargesigI = prevpf->largebuffI + LARGEFFT - usedsize;
+//	FLOAT_t * const prevLargesigQ = prevpf->largebuffQ + LARGEFFT - usedsize;
 
 	// Подготовить массив комплексных чисел для преобразования в частотную область
 	make_cmplx(fftinpt + NORMALFFT * 0, NORMALFFT, largesigQ, largesigI);
 //	make_cmplx(fftinpt + NORMALFFT * 1, NORMALFFT / FFTOVERLAP, prevLargesigQ, prevLargesigI);
 //	make_cmplx(fftinpt + NORMALFFT * 0, NORMALFFT / FFTOVERLAP, largesigQ, largesigI);
-	//ARM_MORPH(arm_fill)(0, fftinpt + NORMALFFT * 1, NORMALFFT / FFTOVERLAP);
 
 
 	ARM_MORPH(arm_cmplx_mult_real)(fftinpt, gvars.ifspec_wndfn, fftinpt,  NORMALFFT);	// Применить оконную функцию к IQ буферу
@@ -5256,8 +5255,9 @@ dsp_getspectrumrow(
 		hbase [x] = fftinpt [fftpos] * fftcoeff;
 	}
 
-	prevpf = pf;
-	release_fftbuffer(prevpf);
+//	prevpf = pf;
+//	release_fftbuffer(prevpf);
+	release_fftbuffer(pf);
 	return 1;
 }
 
