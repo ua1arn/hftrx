@@ -152,7 +152,7 @@ struct parsedfile
 	unsigned base_array [BASE_MAX];
 	char base_names [BASE_MAX] [VNAME_MAX];
 	int irq_count;
-	unsigned irq_array [BASE_MAX];
+	int irq_array [BASE_MAX];
 	char irq_names [BASE_MAX] [VNAME_MAX];
 };
 
@@ -187,7 +187,7 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 		}
 		if (pfl->irq_count < BASE_MAX)
 		{
-			f2 = sscanf(s + 1, "irq %s %u", pfl->irq_names [pfl->irq_count], & pfl->irq_array [pfl->irq_count]);
+			f2 = sscanf(s + 1, "irq %s %d", pfl->irq_names [pfl->irq_count], & pfl->irq_array [pfl->irq_count]);
 			if (f2 == 2)
 			{
 				++ pfl->irq_count;
@@ -400,7 +400,7 @@ static void processfile_irq(struct parsedfile * pfl)
 	int i;
 	for (i = 0; i < pfl->irq_count; ++ i)
 	{
-		fprintf(stdout, "#define\t%s_IRQn\t%u\n", pfl->irq_names [i], pfl->irq_array [i]);
+		fprintf(stdout, "#define\t%s_IRQn\t%d\n", pfl->irq_names [i], pfl->irq_array [i]);
 	}
 }
 
