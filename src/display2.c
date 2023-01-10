@@ -5199,7 +5199,6 @@ dsp_getspectrumrow(
 	uint_fast8_t zoompow2	// horisontal magnification power of two
 	)
 {
-	const uint_fast32_t needsize = ((uint_fast32_t) NORMALFFT << zoompow2);
 	uint_fast16_t i;
 	uint_fast16_t x;
 	ARM_MORPH(arm_cfft_instance) fftinstance;
