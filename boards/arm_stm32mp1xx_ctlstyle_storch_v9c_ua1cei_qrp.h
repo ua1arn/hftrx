@@ -358,12 +358,13 @@
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
+	#define ENCDIV_DEFAULT 2		/* значение делителя по умолчанию для основного валкодера */
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
