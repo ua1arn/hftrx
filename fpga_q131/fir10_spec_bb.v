@@ -31,8 +31,6 @@ module fir10_spec (
 	ast_sink_sop,
 	ast_sink_eop,
 	ast_sink_error,
-	coef_we,
-	coef_in,
 	ast_source_data,
 	ast_sink_ready,
 	ast_source_valid,
@@ -49,8 +47,6 @@ module fir10_spec (
 	input		ast_sink_sop;
 	input		ast_sink_eop;
 	input	[1:0]	ast_sink_error;
-	input		coef_we;
-	input	[27:0]	coef_in;
 	output	[27:0]	ast_source_data;
 	output		ast_sink_ready;
 	output		ast_source_valid;
