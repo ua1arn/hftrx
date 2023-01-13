@@ -241,10 +241,10 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_e1, "RX audio USB streaming", },	// Audio Control Output Terminal Descriptor  - pin name
 	{ STRING_ID_e1, "RX audio USB streaming", },	// Audio Control Output Terminal Descriptor  - pin name
 
-	{ STRING_ID_IN48, PRODUCTSTR " RX Voice", },	// Audio Control Output Terminal Descriptor
-	{ STRING_ID_OUT48, PRODUCTSTR " TX Voice", },	// Audio Control Output Terminal Descriptor
-	{ STRING_ID_INRTS, PRODUCTSTR " RX Spectrum", },	// Audio Control Output Terminal Descriptor
-	{ STRING_ID_IN48_INRTS, PRODUCTSTR " RX Voice/Spectrum", },	// Audio Control Output Terminal Descriptor
+	{ STRING_ID_IN48, PRODUCTSTR " RX Voice", },	// MAC OS specific
+	{ STRING_ID_OUT48, PRODUCTSTR " TX Voice", },	// MAC OS specific
+	{ STRING_ID_INRTS, PRODUCTSTR " RX Spectrum", },	// MAC OS specific
+	{ STRING_ID_IN48_INRTS, PRODUCTSTR " RX Voice/Spectrum", },	// MAC OS specific
 
 	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
@@ -1171,7 +1171,7 @@ static unsigned UAC2_InterfaceDesc(
 	uint_fast8_t bAlternateSetting,
 	uint_fast8_t bNumEndpoints,
 	uint_fast8_t offset,
-	uint_fast8_t iInterface		/* название цстройства, появляется в списке устройств на MAC */
+	uint_fast8_t iInterface		/* название цстройства, появляется в списке устройств на MAC OS */
 	)
 {
 	const uint_fast8_t length = 9;
@@ -2366,7 +2366,7 @@ static unsigned UAC1_InterfaceDesc(
 	uint_fast8_t bAlternateSetting,
 	uint_fast8_t bNumEndpoints,
 	uint_fast8_t offset,
-	uint_fast8_t iInterface		/* название цстройства, появляется в списке устройств на MAC */
+	uint_fast8_t iInterface		/* название цстройства, появляется в списке устройств на MAC OS */
 	)
 {
 	const uint_fast8_t length = 9;
