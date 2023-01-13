@@ -233,18 +233,18 @@ static const struct stringtempl strtemplates [] =
 
 	//{ STRING_ID_b, "xxx_id11", },	// tag for USB Speaker Audio Feature Unit Descriptor
 
-	{ STRING_ID_d0, "eeee 1", },	// Audio Control Input Terminal Descriptor 
-	{ STRING_ID_d1, "eeee 2", },	// Audio Control Input Terminal Descriptor 
-	{ STRING_ID_d2, "tx audio USB streaming", },	// Audio Control Input Terminal Descriptor
+	{ STRING_ID_d0, "TX audio USB streaming", },	// вход модулятора (ASIO4ALL) - pin name
+	{ STRING_ID_d1, "TX audio USB streaming", },	// Audio Control Input Terminal Descriptor  - pin name
+	{ STRING_ID_d2, "TX audio USB streaming", },	// Audio Control Input Terminal Descriptor - pin name
 
-	{ STRING_ID_e0, "wwww 1", },	// Audio Control Output Terminal Descriptor 
-	{ STRING_ID_e1, "wwww 2", },	// Audio Control Output Terminal Descriptor 
-	{ STRING_ID_e1, "wwww 3", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_e0, "RX audio USB streaming", },	// выход демодулятора (ASIO4ALL) - pin name
+	{ STRING_ID_e1, "RX audio USB streaming", },	// Audio Control Output Terminal Descriptor  - pin name
+	{ STRING_ID_e1, "RX audio USB streaming", },	// Audio Control Output Terminal Descriptor  - pin name
 
-	{ STRING_ID_IN48, PRODUCTSTR " Voice", },	// Audio Control Output Terminal Descriptor
-	{ STRING_ID_OUT48, PRODUCTSTR " Voice", },	// Audio Control Output Terminal Descriptor
-	{ STRING_ID_INRTS, PRODUCTSTR " Spectrum", },	// Audio Control Output Terminal Descriptor
-	{ STRING_ID_IN48_INRTS, PRODUCTSTR " Voice/Spectrum", },	// Audio Control Output Terminal Descriptor
+	{ STRING_ID_IN48, PRODUCTSTR " RX Voice", },	// Audio Control Output Terminal Descriptor
+	{ STRING_ID_OUT48, PRODUCTSTR " TX Voice", },	// Audio Control Output Terminal Descriptor
+	{ STRING_ID_INRTS, PRODUCTSTR " RX Spectrum", },	// Audio Control Output Terminal Descriptor
+	{ STRING_ID_IN48_INRTS, PRODUCTSTR " RX Voice/Spectrum", },	// Audio Control Output Terminal Descriptor
 
 	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
