@@ -108,7 +108,6 @@
 //#define CTLSTYLE_V1E	1	// Плата с процессором STM32F030F4P (TSSOP-20)
 //#define CTLSTYLE_V1F	1	// Плата с процессором STM32F051C6T (TQFP-48)
 //#define CTLSTYLE_V1G	1	// Плата с процессором STM32L051K6T (TQFP-32)
-//#define CTLSTYLE_V1H	1	// Плата с процессором ATMega328 (DIP-28) - тестирование Hittite HMC830
 //#define CTLSTYLE_V1X	1	// Плата с процессором ATXMega128A4U
 //#define CTLSTYLE_V1M	1	// Плата с процессором ATmega64 (RA1AGO)
 
@@ -336,10 +335,6 @@
 	#include "boards/atmega328_ctlstyle_v1.h"	// Синтезатор "Колибри"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega328_cpustyle_v1.h"
-#elif CPUSTYLE_ATMEGA328 && CTLSTYLE_V1H
-	#include "boards/atmega328_ctlstyle_v1h.h"	// Плата с процессором ATMega328 (DIP-28) - тестирование Hittite HMC830
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega328_cpustyle_v1h.h"
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_FMPLL_V1
 	#include "boards/atmega_fmradio_v1.h"	// Синтезатор "Воробей-2"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */

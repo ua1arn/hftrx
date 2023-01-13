@@ -19719,80 +19719,6 @@ dspcontrol_mainloop(void)
 }
 #endif /* WITHSPISLAVE */
 
-#if CTLSTYLE_V1H
-
-static void df(
-	uint_fast32_t f
-	)
-{
-	char s [21];
-	local_snprintf_P(s, 21, PSTR("%10lu.%1lu"), f / 1000, (f % 10) / 100);
-	display_at(0, 0, s);
-}
-
-static void
-hamradio_mainloop_vh1(void)
-{
-	const uint_fast8_t tx = 0;
-	uint_fast32_t dfreq = 435000000UL;
-	synth_lo1_setfrequ(0, dfreq, getlo1div(tx));
-	df(dfreq);
-	for (;;)
-	{
-		int nrotate = 0;
-		int jumpsize = 1;
-		int gstep = 12500;
-
-		uint_fast8_t key;
-		const uint_fast8_t repeat = kbd_scan(& key);
-		if (repeat != 0)
-		{
-			switch (key)
-			{
-			case KBD_CODE_4:
-				jumpsize = 20;
-				nrotate = -1;
-				break;
-			case KBD_CODE_5:
-				nrotate = -1;
-				break;
-			case KBD_CODE_6:
-				nrotate = +1;
-				break;
-			case KBD_CODE_7:
-				jumpsize = 20;
-				nrotate = +1;
-				break;
-			}
-		}
-
-		if (nrotate < 0)
-		{
-			/* вращали "вниз" */
-			//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-			dfreq = prevfreq(dfreq, dfreq - ((uint_fast32_t) gstep * jumpsize * - nrotate), gstep, RFSGTUNE_BOTTOM);
-
-			//gfreqs [bi] = prevfreq(gfreqs [bi], gfreqs [bi] - (jumpsize * - nrotate), gstep, TUNE_BOTTOM);
-
-			df(dfreq);
-			synth_lo1_setfrequ(0, dfreq, getlo1div(tx));
-			continue;
-		}
-		if (nrotate > 0)
-		{
-			/* вращали "вверх" */
-			//const uint_fast32_t topfreq = bandsmap [b].top;
-			dfreq = nextfreq(dfreq, dfreq + ((uint_fast32_t) gstep * jumpsize * nrotate), gstep, RFSGTUNE_TOP);
-
-			//gfreqs [bi] = nextfreq(gfreqs [bi], gfreqs [bi] + (jumpsize * nrotate), gstep, TUNE_TOP);
-
-			df(dfreq);
-			synth_lo1_setfrequ(0, dfreq, getlo1div(tx));
-			continue;
-		}
-	}
-}
-#endif /* CTLSTYLE_V1H */
 
 // инициализация машины состояний тюнера
 static void hamradio_tune_initialize(void)
@@ -22110,8 +22036,6 @@ main(void)
 	hamradio_mainloop_beacon();
 #elif WITHSPISLAVE
 	dspcontrol_mainloop();
-#elif CTLSTYLE_V1H
-	hamradio_mainloop_vh1();
 #else /* WITHSPISLAVE */
 	hamradio_mainloop();
 #endif /* WITHSPISLAVE */
