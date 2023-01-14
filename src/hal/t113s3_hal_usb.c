@@ -3371,7 +3371,11 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
 	{
+#if WITHWAWXXUSB
 		pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
+#else /* WITHWAWXXUSB */
+		pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
+#endif /* WITHWAWXXUSB */
 
 		if (csr & 0x1)
 		{
@@ -3380,7 +3384,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 			if (ep0_count == 8)
 			{
 				//pusb->ep0_flag = 0;
-				usb_read_ep_fifo(pusb, 0, (uintptr_t)pusb->buffer, 8);
+				usb_read_ep_fifo(pusb, 0, (uintptr_t)ep0_setup, 8);
 
 				if (ep0_setup->bmRequest & 0x80) //in
 				{
@@ -4460,47 +4464,46 @@ HAL_StatusTypeDef HAL_PCD_EP_Close(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   */
 HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, uint8_t *pBuf, uint32_t len)
 {
-//  PCD_EPTypeDef *ep;
-//
-//  ep = &hpcd->OUT_ep[ep_addr & EP_ADDR_MSK];
-//
-//  /*setup and start the Xfer */
-//  ep->xfer_buff = pBuf;
-//  ep->xfer_len = len;
-//  ep->xfer_count = 0U;
-//  ep->is_in = 0U;
-//  ep->num = ep_addr & EP_ADDR_MSK;
-//
-//  if (hpcd->Init.dma_enable == 1U)
-//  {
-//    ep->dma_addr = (uintptr_t)pBuf;
-//  }
-//
-//  if ((ep_addr & EP_ADDR_MSK) == 0U)
-//  {
-////#if WITHNEWUSBHAL
-////	  USBPhyHw_ep0_read(hpcd, pBuf, len);
-////#else /* WITHNEWUSBHAL */
-////    (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-////#endif /* WITHNEWUSBHAL */
-//		usb_struct * const pusb = & hpcd->awxx_usb;
-//		usb_device * const pdevice = & hpcd->awxx_device;
-//
-//		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
-//		pusb->ep0_xfer_residue = len;
-//
-//	   	pusb->ep0_xfer_state = USB_EP0_DATA;
-//
-//	   	//PRINTF("HAL_PCD_EP_Receive: len=%u\n", len);
-//  }
-//  else
-//  {
-////#if WITHNEWUSBHAL
-////	  USBPhyHw_endpoint_read(hpcd, ep_addr, pBuf, len);
-////#else /* WITHNEWUSBHAL */
-////    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-////#endif /* WITHNEWUSBHAL */
-//  }
+  PCD_EPTypeDef *ep;
+
+  ep = &hpcd->OUT_ep[ep_addr & EP_ADDR_MSK];
+
+  /*setup and start the Xfer */
+  ep->xfer_buff = pBuf;
+  ep->xfer_len = len;
+  ep->xfer_count = 0U;
+  ep->is_in = 0U;
+  ep->num = ep_addr & EP_ADDR_MSK;
+
+  if (hpcd->Init.dma_enable == 1U)
+  {
+    ep->dma_addr = (uintptr_t)pBuf;
+  }
+
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
+//#if WITHNEWUSBHAL
+//	  USBPhyHw_ep0_read(hpcd, pBuf, len);
+//#else /* WITHNEWUSBHAL */
+//    (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+//#endif /* WITHNEWUSBHAL */
+		usb_struct * const pusb = & hpcd->awxx_usb;
+
+		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
+		pusb->ep0_xfer_residue = len;
+
+	   	pusb->ep0_xfer_state = USB_EP0_DATA;
+
+	   	//PRINTF("HAL_PCD_EP_Receive: len=%u\n", len);
+  }
+  else
+  {
+//#if WITHNEWUSBHAL
+//	  USBPhyHw_endpoint_read(hpcd, ep_addr, pBuf, len);
+//#else /* WITHNEWUSBHAL */
+//    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+//#endif /* WITHNEWUSBHAL */
+  }
 
   return HAL_OK;
 }
@@ -4515,77 +4518,38 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
   */
 HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, const uint8_t *pBuf, uint32_t len)
 {
-//  PCD_EPTypeDef *ep;
-//
-//  ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
-//
-//  /*setup and start the Xfer */
-//  ep->xfer_buff = (uint8_t *) pBuf;
-//  ep->xfer_len = len;
-//  ep->xfer_count = 0U;
-//  ep->is_in = 1U;
-//  ep->num = ep_addr & EP_ADDR_MSK;
-//
-//  if (hpcd->Init.dma_enable == 1U)
-//  {
-//    ep->dma_addr = (uintptr_t)pBuf;
-//  }
-//
-//  if ((ep_addr & EP_ADDR_MSK) == 0U)
-//  {
-//		uint32_t is_last;
-//		uint32_t byte_trans;
-//    //(void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-//		usb_struct * const pusb = & hpcd->awxx_usb;
-//		usb_device * const pdevice = & pusb->device;
-//
-//		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
-//		pusb->ep0_xfer_residue = len;
-//
-//		uint32_t ep_save = usb_get_active_ep(pusb);
-//	  	usb_select_ep(pusb, 0);
-//		//
-//
-//		if (pusb->ep0_xfer_residue < pusb->ep0_maxpktsz)
-//		{
-//			// Last packet
-//			is_last = 1;
-//			byte_trans = pusb->ep0_xfer_residue;
-//			pusb->ep0_xfer_residue = 0;
-//		}
-//	 	else if (pusb->ep0_xfer_residue == pusb->ep0_maxpktsz)
-//		{
-//	 		// ZLP on next packet
-//			is_last = 0;
-//			byte_trans = pusb->ep0_xfer_residue;
-//			pusb->ep0_xfer_residue = 0xffffffff;
-//		}
-//		else
-//		{
-//			// Not a last packet
-//			is_last = 0;
-//			byte_trans = pusb->ep0_maxpktsz;
-//			pusb->ep0_xfer_residue -= pusb->ep0_maxpktsz;
-//		}
-//
-//	 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, byte_trans);
-//
-//	 	if (is_last || (!byte_trans))
-//	 	{
-//	 		usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_DATAEND | MUSB2_MASK_CSR0L_TXPKTRDY);
-//	   	}
-//	   	else
-//	   	{
-//	   		usb_set_ep0_csr(pusb, MUSB2_MASK_CSR0L_TXPKTRDY);
-//	   	}
-//	  	usb_select_ep(pusb, ep_save);
-//
-//	   	pusb->ep0_xfer_state = USB_EP0_DATA;
-//  }
-//  else
-//  {
-//    //(void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-//  }
+  usb_struct * const pusb = & hpcd->awxx_usb;
+  PCD_EPTypeDef *ep;
+
+  ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
+
+  /*setup and start the Xfer */
+  ep->xfer_buff = (uint8_t *) pBuf;
+  ep->xfer_len = len;
+  ep->xfer_count = 0U;
+  ep->is_in = 1U;
+  ep->num = ep_addr & EP_ADDR_MSK;
+
+  if (hpcd->Init.dma_enable == 1U)
+  {
+    ep->dma_addr = (uintptr_t)pBuf;
+  }
+
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
+    //(void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+
+		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
+		pusb->ep0_xfer_residue = len;
+
+		usb_ep0_complete_send(pusb);
+
+	   	pusb->ep0_xfer_state = USB_EP0_DATA;
+  }
+  else
+  {
+    //(void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+  }
 
   return HAL_OK;
 }
