@@ -23,6 +23,8 @@
 #include "src/usb/usb200.h"
 #include "src/usb/usbch9.h"
 
+#define WITHWAWXXUSB	1	// check PFX in usbd_cdc.c
+
 #define CDC_SET_LINE_CODING                     0x20
 #define CDC_GET_LINE_CODING                     0x21
 #define CDC_SET_CONTROL_LINE_STATE              0x22
@@ -1171,6 +1173,95 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 
 	usb_set_fifo_access_config(pusb, saved);
 }
+
+
+static void usb_ep0_complete_send(pusb_struct pusb)
+{
+	uint32_t is_last;
+	uint32_t byte_trans;
+
+	if (pusb->ep0_xfer_residue<pusb->ep0_maxpktsz)
+	{
+		is_last = 1;
+		byte_trans = pusb->ep0_xfer_residue;
+		pusb->ep0_xfer_residue = 0;
+	}
+ 	else if (pusb->ep0_xfer_residue==pusb->ep0_maxpktsz)
+	{
+		is_last = 0;
+		byte_trans = pusb->ep0_xfer_residue;
+		pusb->ep0_xfer_residue = 0xffffffff;
+	}
+	else
+	{
+		is_last = 0;
+		byte_trans = pusb->ep0_maxpktsz;
+		pusb->ep0_xfer_residue -= pusb->ep0_maxpktsz;
+	}
+
+ 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, byte_trans);
+ 	if (is_last || (!byte_trans))
+ 	{
+ 		usb_set_ep0_csr(pusb, 0x0a);
+   	}
+   	else
+   	{
+   		usb_set_ep0_csr(pusb, 0x02);
+   	}
+}
+
+static void usb_ep0_complete_send_data(pusb_struct pusb)
+{
+	if (pusb->ep0_xfer_residue)
+ 	{
+		uint32_t is_last;
+		uint32_t byte_trans;
+
+ 		pusb->ep0_xfer_srcaddr += pusb->ep0_maxpktsz;
+ 		if (pusb->ep0_xfer_residue == 0xffffffff)
+	  	{
+		  	is_last = 1;
+		  	byte_trans = 0;
+		  	pusb->ep0_xfer_residue = 0;
+	   	}
+	  	else
+	   	{
+	   		if (pusb->ep0_xfer_residue < pusb->ep0_maxpktsz)
+	    	{
+				is_last = 1;
+				byte_trans = pusb->ep0_xfer_residue;
+				pusb->ep0_xfer_residue = 0;
+	    	}
+	   		else if (pusb->ep0_xfer_residue == pusb->ep0_maxpktsz)
+			{
+				is_last = 0;
+				byte_trans = pusb->ep0_xfer_residue;
+				pusb->ep0_xfer_residue = 0xffffffff;  //Send a zero packet next time
+			}
+			else
+			{
+				is_last = 0;
+				byte_trans = pusb->ep0_maxpktsz;
+				pusb->ep0_xfer_residue -= pusb->ep0_maxpktsz;
+	   		}
+	 	}
+	 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, byte_trans);
+	 	if (is_last || (!byte_trans))
+	 	{
+	 		usb_set_ep0_csr(pusb, 0x0a);	// USB_TXCSR_FLUSHFIFO | USB_TXCSR_FIFONOTEMP
+	 	}
+	 	else
+	 	{
+	 		usb_set_ep0_csr(pusb, 0x02);	// USB_TXCSR_FIFONOTEMP
+		}
+
+	 	if (usb_get_ep0_count(pusb))
+	 	{
+  			PRINTF("Error: COUNT0 = 0x%x\n", usb_get_ep0_count(pusb));
+ 		}
+ 	}
+}
+
 ///////////////////////////////////////////////////////////////////
 //                 usb bulk transfer
 ///////////////////////////////////////////////////////////////////
@@ -2605,7 +2696,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 	const uint32_t maxpayload = maxpktsz;
 	const uint32_t pktcnt = 1;//USB_EP_FIFO_SIZE + (maxpktsz - 1) / maxpktsz;
 
-	PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, pktcnt=%u, maxpktsz=%u\n", ep_no, ep_dir, pktcnt, maxpktsz);
+	//PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, pktcnt=%u, maxpktsz=%u\n", ep_no, ep_dir, pktcnt, maxpktsz);
 	//ASSERT(USB_EP_FIFO_SIZE >= maxpktsz);
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
@@ -2698,7 +2789,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	#endif
 	}
 #endif /* WITHUSBUACIN */
-	PRINTF("awxx_setup_fifo: fifo_addr = %u\n", fifo_addr);
+	//PRINTF("awxx_setup_fifo: fifo_addr = %u\n", fifo_addr);
 	// Device and host controller share a 8K SRAM and a physical PHY
 	//ASSERT(fifo_addr < 8192);	/* 8 kB */
 }
@@ -2713,6 +2804,7 @@ static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 	return 1;
 }
 
+#if WITHWAWXXUSB
 
 static unsigned gbaudrate = 115200;
 
@@ -3240,12 +3332,13 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 	return 0;
 }
 
-static uint32_t usb_dev_ep0xfer(PCD_HandleTypeDef *hpcd)
+#endif /* WITHWAWXXUSB */
+
+static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	//uint32_t i=0;
 	uint32_t csr=0;
-	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
 	//uint32_t src_addr;
 
 	if (pusb->role != USB_ROLE_DEV) return 0;
@@ -3268,54 +3361,7 @@ static uint32_t usb_dev_ep0xfer(PCD_HandleTypeDef *hpcd)
 		}
 		else if (!(csr & (0x1u << 1)))
 		{
-			if (pusb->ep0_xfer_residue)
-		 	{
-				uint32_t is_last;
-				uint32_t byte_trans;
-
-		 		pusb->ep0_xfer_srcaddr += pusb->ep0_maxpktsz;
-		 		if (pusb->ep0_xfer_residue == 0xffffffff)
-			  	{
-				  	is_last = 1;
-				  	byte_trans = 0;
-				  	pusb->ep0_xfer_residue = 0;
-			   	}
-			  	else
-			   	{
-			   		if (pusb->ep0_xfer_residue < pusb->ep0_maxpktsz)
-			    	{
-						is_last = 1;
-						byte_trans = pusb->ep0_xfer_residue;
-						pusb->ep0_xfer_residue = 0;
-			    	}
-			   		else if (pusb->ep0_xfer_residue == pusb->ep0_maxpktsz)
-					{
-						is_last = 0;
-						byte_trans = pusb->ep0_xfer_residue;
-						pusb->ep0_xfer_residue = 0xffffffff;  //Send a zero packet next time
-					}
-					else
-					{
-						is_last = 0;
-						byte_trans = pusb->ep0_maxpktsz;
-						pusb->ep0_xfer_residue -= pusb->ep0_maxpktsz;
-			   		}
-			 	}
-			 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, byte_trans);
-			 	if (is_last || (!byte_trans))
-			 	{
-			 		usb_set_ep0_csr(pusb, 0x0a);	// USB_TXCSR_FLUSHFIFO | USB_TXCSR_FIFONOTEMP
-			 	}
-			 	else
-			 	{
-			 		usb_set_ep0_csr(pusb, 0x02);	// USB_TXCSR_FIFONOTEMP
-				}
-
-			 	if (usb_get_ep0_count(pusb))
-			 	{
-		  			PRINTF("Error: COUNT0 = 0x%x\n", usb_get_ep0_count(pusb));
-		 		}
-		 	}
+			usb_ep0_complete_send_data(pusb);
 		}
 		else
 		{
@@ -3325,6 +3371,8 @@ static uint32_t usb_dev_ep0xfer(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
 	{
+		pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
+
 		if (csr & 0x1)
 		{
 			uint32_t ep0_count = usb_get_ep0_count(pusb);
@@ -3336,40 +3384,11 @@ static uint32_t usb_dev_ep0xfer(PCD_HandleTypeDef *hpcd)
 
 				if (ep0_setup->bmRequest & 0x80) //in
 				{
-					uint32_t is_last;
-					uint32_t byte_trans;
 
 					usb_set_ep0_csr(pusb, 0x40);
 					ep0_in_handler_dev(pusb);
 
-					if (pusb->ep0_xfer_residue<pusb->ep0_maxpktsz)
-					{
-						is_last = 1;
-						byte_trans = pusb->ep0_xfer_residue;
-						pusb->ep0_xfer_residue = 0;
-					}
-				 	else if (pusb->ep0_xfer_residue==pusb->ep0_maxpktsz)
-					{
-						is_last = 0;
-						byte_trans = pusb->ep0_xfer_residue;
-						pusb->ep0_xfer_residue = 0xffffffff;
-					}
-					else
-					{
-						is_last = 0;
-						byte_trans = pusb->ep0_maxpktsz;
-						pusb->ep0_xfer_residue -= pusb->ep0_maxpktsz;
-					}
-
-				 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, byte_trans);
-				 	if (is_last || (!byte_trans))
-				 	{
-				 		usb_set_ep0_csr(pusb, 0x0a);
-				   	}
-				   	else
-				   	{
-				   		usb_set_ep0_csr(pusb, 0x02);
-				   	}
+					usb_ep0_complete_send(pusb);
 
 				   	pusb->ep0_xfer_state = USB_EP0_DATA;
 				}
@@ -3922,7 +3941,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		if (temp&0x01)
 		{
 			//pusb->ep0_flag ++;
-			usb_dev_ep0xfer(hpcd);
+			usb_dev_ep0xfer_handler(hpcd);
 			//ep0_irq_count ++;
 		}
 		if (temp&0xfffe)
