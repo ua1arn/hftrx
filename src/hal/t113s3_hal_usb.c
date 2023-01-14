@@ -1806,7 +1806,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 }
 
 
-#if WITHUSBDMSC
+#if WITHUSBDMSC && WITHWAWXXUSB
 
 static uint64_t write_len;
 static uint64_t write_offset;
@@ -2277,7 +2277,7 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 
 #endif /* WITHUSBDMSC */
 
-#if WITHUSBCDCACM
+#if WITHUSBCDCACM && WITHWAWXXUSB
 
 
 
@@ -2543,7 +2543,7 @@ static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
 
 #endif /* WITHUSBCDCACM */
 
-#if WITHUSBUAC
+#if WITHUSBUAC && WITHWAWXXUSB
 
 /* Audio output */
 static uintptr_t uacinaddr = 0;
@@ -2663,13 +2663,13 @@ static void usb_struct_idle(pusb_struct pusb)
 	//Reset Function Address
 	usb_set_dev_addr(pusb, 0x00);
 
-#if WITHUSBDMSC
+#if WITHUSBDMSC && WITHWAWXXUSB
 	usb_struct_idle_msc(pusb);
 #endif /* WITHUSBDMSC */
-#if WITHUSBCDCACM
+#if WITHUSBCDCACM && WITHWAWXXUSB
 	usb_struct_idle_cdc(pusb);
 #endif /* WITHUSBCDCACM */
-#if WITHUSBUAC
+#if WITHUSBUAC && WITHWAWXXUSB
 	usb_struct_idle_uac(pusb);
 #endif /* WITHUSBUAC */
 }
@@ -2799,12 +2799,12 @@ static void awxx_setup_fifo(pusb_struct pusb)
 //                 usb control transfer
 ///////////////////////////////////////////////////////////////////
 
+#if WITHWAWXXUSB
+
 static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 {
 	return 1;
 }
-
-#if WITHWAWXXUSB
 
 static unsigned gbaudrate = 115200;
 
@@ -3390,9 +3390,13 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				{
 
 					usb_set_ep0_csr(pusb, 0x40);
-					ep0_in_handler_dev(pusb);
 
+#if WITHWAWXXUSB
+					ep0_in_handler_dev(pusb);
 					usb_ep0_complete_send(pusb);
+#else
+					HAL_PCD_SetupStageCallback(hpcd);
+#endif
 
 				   	pusb->ep0_xfer_state = USB_EP0_DATA;
 				}
@@ -3424,7 +3428,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				  	// Parse setup packet on output
 				  	switch (interfacev)
 				  	{
-#if WITHUSBDFU
+#if WITHUSBDFU && WITHWAWXXUSB
 				  	case INTERFACE_DFU_CONTROL:
 						PRINTF("DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
 						printhex(0, buff, ep0_count);
@@ -3463,7 +3467,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				  		break;
 #endif /* WITHUSBDFU */
 
-#if WITHUSBCDCACM
+#if WITHUSBCDCACM && WITHWAWXXUSB
 				  	case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, 0):
 					  	// Parse setup packet on output
 					  	switch (ep0_setup->bRequest)
@@ -3481,7 +3485,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				  		break;
 #endif /* WITHUSBCDCACM */
 
-#if WITHUSBUACIN
+#if WITHUSBUACIN && WITHWAWXXUSB
 					case INTERFACE_AUDIO_CONTROL_MIKE:
 					case INTERFACE_AUDIO_CONTROL_RTS:
 					  	// Parse setup packet on output
@@ -3500,7 +3504,11 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 #endif /* WITHUSBUACIN */
 
 					default:
+#if WITHWAWXXUSB
 						PRINTF("xxx: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
+#else
+	                    HAL_PCD_SetupStageCallback(hpcd);
+#endif
 				  		break;
 
 				  	}
@@ -3510,7 +3518,11 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		}
 		else
 		{
+#if WITHWAWXXUSB
 			ep0_out_handler_dev(pusb);
+#else
+			HAL_PCD_SetupStageCallback(hpcd);
+#endif
 		}
 	}
 
@@ -3570,17 +3582,35 @@ static uint32_t usb_device_function(PCD_HandleTypeDef *hpcd)
 		return 0;
 	}
 
-#if WITHUSBDMSC
+#if WITHUSBDMSC && WITHWAWXXUSB
 	usb_dev_bulk_xfer_msc(pusb);
 #endif /* WITHUSBDMSC */
-#if WITHUSBUAC
+#if WITHUSBUAC && WITHWAWXXUSB
 	usb_dev_iso_xfer_uac(hpcd);
 #endif /* WITHUSBUAC */
-#if WITHUSBCDCACM
+#if WITHUSBCDCACM && WITHWAWXXUSB
 	unsigned offset;
 	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
 		usb_dev_bulk_xfer_cdc(pusb, offset);
+	}
+#endif /* WITHUSBCDCACM */
+#if WITHUSBCDCACM && ! WITHWAWXXUSB
+	unsigned offset;
+	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
+	{
+		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+		switch (pusb->eptx_ret[bo_ep_in-1])
+		{
+		case USB_RETVAL_NOTCOMP:
+			pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev(pusb, bo_ep_in, 0, 0, USB_PRTCL_BULK);
+			break;
+		case USB_RETVAL_COMPERR:
+			pusb->eptx_ret[bo_ep_in-1] = USB_RETVAL_COMPOK;
+			break;
+		case USB_RETVAL_COMPOK:
+			break;
+		}
 	}
 #endif /* WITHUSBCDCACM */
 
@@ -3624,13 +3654,13 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 	pusb->role = USB0_ROLE;  //USB_ROLE_HST; //USB_ROLE_UNK
 	pusb->speed = USB0_SPEED;
 
-#if WITHUSBDMSC
+#if WITHUSBDMSC && WITHWAWXXUSB
 	usb_dev_bulk_xfer_msc_initialize(pusb);
 #endif /* WITHUSBDMSC */
-#if WITHUSBCDCACM
+#if WITHUSBCDCACM && WITHWAWXXUSB
 	usb_dev_bulk_xfer_cdc_initialize(pusb);
 #endif /* WITHUSBCDCACM */
-#if WITHUSBUAC
+#if WITHUSBUAC && WITHWAWXXUSB
 	usb_dev_iso_xfer_uac_initialize(pusb);
 #endif /* WITHUSBUAC */
 
@@ -3864,8 +3894,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	if (irqstatus & USB_BUSINT_SOF)
 	{
 		//pusb->sof_count ++;
+#if WITHWAWXXUSB
 		usb_dev_sof_handler(hpcd);
-		//HAL_PCD_SOFCallback(hpcd);
+#else
+		HAL_PCD_SOFCallback(hpcd);
+#endif
 		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SOF);
 	}
 
@@ -3880,6 +3913,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			PRINTF("Error: DMA for EP is not finished after Bus Suspend\n");
 		}
 		wBoot_dma_stop(pusb->dma);
+#if ! WITHWAWXXUSB
+		HAL_PCD_SuspendCallback(hpcd);
+#endif
 	  	PRINTF("uSuspend\n");
 		gpusb = NULL;
   	}
@@ -3888,6 +3924,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	{
 		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESUME);
 		//Resume Service Subroutine
+#if ! WITHWAWXXUSB
+		HAL_PCD_ResumeCallback(hpcd);
+#endif
 		PRINTF("uResume\n");
 	}
 
@@ -3925,6 +3964,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		}
 		wBoot_dma_stop(pusb->dma);
 		gpusb = pusb;
+#if ! WITHWAWXXUSB
+		HAL_PCD_ResetCallback(hpcd);
+#endif
 	  	PRINTF("uReset\n");
 	}
 
@@ -4464,6 +4506,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Close(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   */
 HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, uint8_t *pBuf, uint32_t len)
 {
+#if ! WITHWAWXXUSB
   PCD_EPTypeDef *ep;
 
   ep = &hpcd->OUT_ep[ep_addr & EP_ADDR_MSK];
@@ -4504,7 +4547,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 //    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
 //#endif /* WITHNEWUSBHAL */
   }
-
+#endif
   return HAL_OK;
 }
 
@@ -4518,6 +4561,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
   */
 HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, const uint8_t *pBuf, uint32_t len)
 {
+#if ! WITHWAWXXUSB
   usb_struct * const pusb = & hpcd->awxx_usb;
   PCD_EPTypeDef *ep;
 
@@ -4549,8 +4593,17 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
   else
   {
     //(void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+		const uint32_t bo_ep_in = ep->num;
+		switch (pusb->eptx_ret[bo_ep_in-1])
+		{
+		default:
+			break;
+		case USB_RETVAL_COMPOK:
+			pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t) pBuf, len, USB_PRTCL_BULK);
+			break;
+		}
   }
-
+#endif
   return HAL_OK;
 }
 
