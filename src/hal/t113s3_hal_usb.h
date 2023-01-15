@@ -10,6 +10,8 @@
 
 #include "t113s3_hal.h"
 
+#define WITHWAWXXUSB	1	// check PFX in usbd_cdc.c
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -158,9 +160,11 @@ typedef struct {
 //	uint32_t loop;      //Loop counter
 
 	#define USB_BUFFER_SIZE							256
-	#define USB_EP0_OUT_BUFFER_START		8
-	volatile uint8_t buffer[USB_BUFFER_SIZE];
 
+#if WITHWAWXXUSB
+	//#define USB_EP0_OUT_BUFFER_START		8
+	volatile uint8_t buffer[USB_BUFFER_SIZE];
+#endif
 	//uint32_t power_debouce;
 } usb_struct, *pusb_struct;
 

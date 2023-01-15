@@ -23,8 +23,6 @@
 #include "src/usb/usb200.h"
 #include "src/usb/usbch9.h"
 
-#define WITHWAWXXUSB	1	// check PFX in usbd_cdc.c
-
 #define CDC_SET_LINE_CODING                     0x20
 #define CDC_GET_LINE_CODING                     0x21
 #define CDC_SET_CONTROL_LINE_STATE              0x22
