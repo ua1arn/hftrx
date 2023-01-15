@@ -2838,6 +2838,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 		{
 			case 0x00 :
     			PRINTF("usb_device: Get Status\n");
+		    	break;
 			case 0x06 :
 				switch (HI_BYTE(ep0_setup->wValue))
 				{
@@ -2934,6 +2935,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 	      	default   :
 	        	pusb->ep0_xfer_residue = 0;
 	        	PRINTF("usb_device: Unknown Standard Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+		    	break;
 		}
 	}
 	else if ((ep0_setup->bmRequest&0x60)==0x20)
@@ -3766,7 +3768,7 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	usb_select_ep(pusb, 0);
 	usb_ep0_flush_fifo(pusb);
 
-	PRINTF("USB Device!!\n");
+	//PRINTF("USB Device!!\n");
 
 	pusb->role = USB_ROLE_DEV;
 
@@ -3971,14 +3973,14 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 #if ! WITHWAWXXUSB
 		HAL_PCD_ResetCallback(hpcd);
 #endif
-	  	PRINTF("uReset\n");
+	  	//PRINTF("uReset\n");
 	}
 
   	if (irqstatus & USB_BUSINT_SESSEND)
   	{
 		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_SESSEND);
   		//Device Reset Service Subroutine
-		PRINTF("uSessend\n");
+		//PRINTF("uSessend\n");
   	}
 
 
@@ -4037,7 +4039,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef  USB_DevConnect(USBOTG_TypeDef *USBx)
 {
-	PRINTF("USB_DevConnect\n");
+	//PRINTF("USB_DevConnect\n");
 
     /* Enable pullup on D+ */
 	USBx->USB_POWER |= MUSB2_MASK_SOFTC;
@@ -4052,7 +4054,7 @@ HAL_StatusTypeDef  USB_DevConnect(USBOTG_TypeDef *USBx)
   */
 HAL_StatusTypeDef  USB_DevDisconnect(USBOTG_TypeDef *USBx)
 {
-	PRINTF("USB_DevDisconnect\n");
+	//PRINTF("USB_DevDisconnect\n");
 
 	/* Disable pullup on D+ */
 	USBx->USB_POWER &= ~ MUSB2_MASK_SOFTC;
@@ -4351,7 +4353,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
 {
-	PRINTF("HAL_PCD_DeInit\n");
+//	PRINTF("HAL_PCD_DeInit\n");
 //	  /* Check the PCD handle allocation */
 //	  if (hpcd == NULL)
 //	  {
