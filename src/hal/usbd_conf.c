@@ -471,7 +471,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	USBOTG0->PHY_OTGCTL |= (1uL << 0); 	// Device mode. Route phy0 to OTG0
 
-	USBOTG0->USB_ISCR = 0x4300FC00;	// после запуска из QSPI было 0x40000000
+	USBOTG0->USB_ISCR = 0;//0x4300FC00;	// после запуска из QSPI было 0x40000000
 	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
 	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
 	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
