@@ -20851,6 +20851,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 			display2_menu_valxx(0, 0, & dctx);
 			safestrcpy (vals->name, ARRAY_SIZE(vals->name), menuw);
 			vals->index = el;
+			return;
 		}
 	}
 }

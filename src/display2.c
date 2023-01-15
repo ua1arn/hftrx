@@ -4197,9 +4197,7 @@ afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	}
 }
 
-#if ! LINUX_SUBSYSTEM
-	#include "dsp/window_functions.h"
-#endif /* ! LINUX_SUBSYSTEM */
+#include "dsp/window_functions.h"
 
 static void
 display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)		// вызывать после display2_smeter15_init

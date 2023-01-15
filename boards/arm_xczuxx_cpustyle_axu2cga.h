@@ -1,10 +1,14 @@
 /* $Id$ */
 /* board-specific CPU attached signals */
-//
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
-// UA1ARN
-//
+/*
+ * Проект HF Dream Receiver (КВ приёмник мечты)
+ * автор Гена Завидовский mgs2001@mail.ru
+ * UA1ARN
+ *
+ * Среда выполнения для ZYNQ Ultrascale+ - Linux
+ * Alinx AXU2CGA, LTC2209, DAC904E
+ *
+ */
 
 #ifndef ARM_XCZUXX_CPUSTYLE_AXU2CGA_H_INCLUDED
 #define ARM_XCZUXX_CPUSTYLE_AXU2CGA_H_INCLUDED 1
@@ -194,7 +198,7 @@ enum {
 	#define GT911_RESET_INIT(v) 	do { board_tsc_reset_state(1); board_update(); } while (0)
 #else
 #define BOARD_GT911_RESET_PIN 	XGPO0
-	#define BOARD_GT911_RESET_SET(v) do { if (v) linux_xgpo_write_pin(BOARD_GT911_RESET_PIN, 1); else linux_xgpo_write_pin(BOARD_GT911_RESET_PIN, 0);  } while (0)
+	#define BOARD_GT911_RESET_SET(v) do { if (v) gpio_writepin(BOARD_GT911_RESET_PIN, 1); else gpio_writepin(BOARD_GT911_RESET_PIN, 0);  } while (0)
 	#define GT911_RESET_INIT(v) {}
 #endif /* TSC_RESET_BY_REG */
 
@@ -593,24 +597,6 @@ enum {
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 //#define SPI_IOUPDATE_BIT		(1uL << 15)	// * PA15
 
-//enum {
-//	XGPI0,	// encoder2 bit A
-//	XGPI1,	// encoder2 bit B
-//	XGPI2,	// encoder2 button
-//	XGPI3,	// spi_miso
-//};
-//
-//enum {
-//	XGPO0,	// touch reset
-//	XGPO1,	// cs_ctrl_int
-//	XGPO2,	// dac_sleep
-//	XGPO3,	// spi_mosi
-//	XGPO4,	// spi_sck
-//	XGPO5,	// cs_fram
-//	XGPO6,	// cs_adc
-//	XGPO7,	// cs_bands
-//};
-
 #if WITHSPIHW || WITHSPISW
 
 	#define targetnvram		XGPO5	// nvram FM25L256
@@ -619,18 +605,18 @@ enum {
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
-		linux_xgpo_write_pin((target), 0); \
+		gpio_writepin((target), 0); \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
-		linux_xgpo_write_pin((target), 1); \
+		gpio_writepin((target), 1); \
 	} while (0)
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
-			linux_xgpo_write_pin(targetnvram, 1);		\
-			linux_xgpo_write_pin(targetextctl, 1);		\
+			gpio_writepin(targetnvram, 1);		\
+			gpio_writepin(targetextctl, 1);		\
 		} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
@@ -643,13 +629,13 @@ enum {
 	#define	SPI_MOSI_MIO 	XGPO3
 	#define	SPI_MISO_MIO 	XGPI3
 
-	#define SPI_SCLK_C()	do { linux_xgpo_write_pin(SPI_SCLK_MIO, 0); } while (0)
-	#define SPI_SCLK_S()	do { linux_xgpo_write_pin(SPI_SCLK_MIO, 1); } while (0)
+	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); } while (0)
+	#define SPI_SCLK_S()	do { gpio_writepin(SPI_SCLK_MIO, 1); } while (0)
 
-	#define SPI_MOSI_C()	do { linux_xgpo_write_pin(SPI_MOSI_MIO, 0); } while (0)
-	#define SPI_MOSI_S()	do { linux_xgpo_write_pin(SPI_MOSI_MIO, 1); } while (0)
+	#define SPI_MOSI_C()	do { gpio_writepin(SPI_MOSI_MIO, 0); } while (0)
+	#define SPI_MOSI_S()	do { gpio_writepin(SPI_MOSI_MIO, 1); } while (0)
 
-	#define SPI_TARGET_MISO_PIN		(linux_xgpi_read_pin(SPI_MISO_MIO))
+	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
 		} while (0)
@@ -683,7 +669,7 @@ enum {
 #if WITHKEYBOARD
 
 #if WITHENCODER2
-	#define TARGET_ENC2BTN_GET (linux_xgpi_read_pin(XGPI2) == 0)
+	#define TARGET_ENC2BTN_GET (gpio_readpin(XGPI2) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON

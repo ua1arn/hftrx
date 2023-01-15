@@ -15,6 +15,7 @@
 #include "keyboard.h"
 #include "touch/touch.h"
 #include "display/display.h"
+#include "gui/gui.h"
 
 #include <string.h>
 #include <math.h>
