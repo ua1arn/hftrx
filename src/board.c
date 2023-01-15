@@ -6846,7 +6846,7 @@ restart:
 
 #if WITHDSPEXTFIR
 
-#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 #include "xc7z_inc.h"
 XAxiDma xcz_dma_fir_coeffs;
@@ -6895,7 +6895,7 @@ void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned 
 		while(XAxiDma_Busy(& xcz_dma_fir_coeffs, XAXIDMA_DMA_TO_DEVICE));
 	}
 }
-#else
+#elif ! LINUX_SUBSYSTEM
 
 void board_fpga_fir_initialize(void)
 {
@@ -9618,7 +9618,9 @@ mcp3208_read_low(
 #if defined(RTC1_TYPE)
 
 #include <time.h>
+	#if ! LINUX_SUBSYSTEM
 #include <sys/_timeval.h>
+#endif /* ! LINUX_SUBSYSTEM */
 
 /* поддержка получения времени */
 int _gettimeofday(struct timeval *p, void *tz)

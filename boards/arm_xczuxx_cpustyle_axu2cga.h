@@ -63,7 +63,7 @@ enum {
 #define AXI_IQ_COUNT_ADDR		0x80044000
 #define AXI_ADI_ADDR			0x80040000
 #define AXI_FIFO_PHONES_ADDR	0x80043000
-//#define AXI_FIR_RELOAD_ADDR		0x80047000
+#define AXI_FIR_RELOAD_ADDR		0x8004b000
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 //#define WITHUARTFIFO	1	/* испольование FIFO */

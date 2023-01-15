@@ -2309,7 +2309,7 @@ static void fir_design_bandpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutLow
 #if WITHDSPEXTFIR || 1
 
 // преобразование к целым
-static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoeff, int iCoefNum)
+static void fir_design_copy_integers(int32_t * lCoeff, const FLOAT_t * dCoeff, int iCoefNum)
 {
 	//const FLOAT_t scaleout = POWF(2, HARDWARE_COEFWIDTH - 1);
 	int iCnt;
@@ -2322,14 +2322,14 @@ static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoe
 	}
 }
 
-static void fir_design_integers_passtrough(int_fast32_t *lCoeff, int iCoefNum, FLOAT_t dGain)
+static void fir_design_integers_passtrough(int32_t *lCoeff, int iCoefNum, FLOAT_t dGain)
 {
 	FLOAT_t dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
 	fir_design_passtrough(dCoeff, iCoefNum, dGain);
 	fir_design_copy_integers(lCoeff, dCoeff, iCoefNum);
 }
 
-static void fir_design_integer_lowpass_scaled(int_fast32_t *lCoeff, const FLOAT_t *dWindow, int iCoefNum, int iCutHigh, FLOAT_t dGain)
+static void fir_design_integer_lowpass_scaled(int32_t *lCoeff, const FLOAT_t *dWindow, int iCoefNum, int iCutHigh, FLOAT_t dGain)
 {
 	FLOAT_t dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
 	fir_design_lowpass_freq_scaled(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
@@ -2880,7 +2880,7 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
 #if 1//WITHDSPEXTDDC && WITHDSPEXTFIR
-	static int_fast32_t FIRCoef_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];
+	static int32_t FIRCoef_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];
 #endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
 
 	const uint_fast8_t dspmode = glob_dspmodes [pathi];

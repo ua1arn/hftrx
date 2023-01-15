@@ -335,7 +335,7 @@ uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, con
 
 /*************************************************************/
 
-volatile uint32_t *ftw, *ftw_sub, *rts, *iq_shift,  *ph_fifo, *fir_reload, *iq_count, *iq_fifo;
+volatile uint32_t *ftw, *ftw_sub, *rts, *iq_shift,  *ph_fifo, *iq_count, *iq_fifo;
 int32_t sinbuf[DMABUFFSIZE16TX];
 
 void linux_iq_init(void)
@@ -347,10 +347,6 @@ void linux_iq_init(void)
 	iq_count = 	get_highmem_ptr(AXI_IQ_COUNT_ADDR, 1);
 	ph_fifo = 	get_highmem_ptr(AXI_FIFO_PHONES_ADDR, 1);
 	iq_fifo = 	get_highmem_ptr(AXI_IQ_FIFO_RX, 1);
-
-#if WITHDSPEXTFIR
-	fir_reload = get_highmem_ptr(AXI_FIR_RELOAD_ADDR);
-#endif
 
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
@@ -537,24 +533,26 @@ void xcz_tx_shift(uint32_t val)
 }
 
 #if WITHDSPEXTFIR
+volatile uint32_t * fir_reload = NULL;
+
 void board_fpga_fir_initialize(void)
 {
-
+	fir_reload = get_highmem_ptr(AXI_FIR_RELOAD_ADDR, 1);
 }
 
-void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap, unsigned CWidth)
 {
 	if (fir_reload)
 	{
 		const int iHalfLen = (Ntap - 1) / 2;
-		int i, j = 0;
+		int i = 0;
 
-		for (i = 0; i <= iHalfLen; ++ i)
-			*((uint32_t *) fir_reload) = k[i];
+		for (; i <= iHalfLen; ++ i)
+			* fir_reload = k[i];
 
 		i -= 1;
 		for (; -- i >= 0;)
-			*((uint32_t *) fir_reload) = k[i];
+			* fir_reload = k[i];
 	}
 }
 #endif /* WITHDSPEXTFIR */
@@ -565,9 +563,14 @@ void board_rtc_getdate(
 	uint_fast8_t * dayofmonth
 	)
 {
-	* dayofmonth = 0;
-	* month = 0;
-	* year = 0;
+	struct tm * tm;
+
+	time_t lt = time(NULL);
+	tm = localtime (& lt);
+
+	* dayofmonth = tm->tm_mday;
+	* month = tm->tm_mon;
+	* year = tm->tm_year;
 }
 
 void board_rtc_gettime(
@@ -576,9 +579,53 @@ void board_rtc_gettime(
 	uint_fast8_t * secounds
 	)
 {
-	* secounds = 0;
-	* minute = 0;
-	* hour = 0;
+	struct tm * tm;
+
+	time_t lt = time(NULL);
+	tm = localtime (& lt);
+
+	* secounds = tm->tm_sec;
+	* minute = tm->tm_min;
+	* hour = tm->tm_hour;
+}
+
+void board_rtc_getdatetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * dayofmonth,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	)
+{
+	struct tm * tm;
+
+	time_t lt = time(NULL);
+	tm = localtime (& lt);
+
+	* secounds = tm->tm_sec;
+	* minute = tm->tm_min;
+	* hour = tm->tm_hour;
+	* dayofmonth = tm->tm_mday;
+	* month = tm->tm_mon;
+	* year = tm->tm_year;
+}
+
+void board_rtc_setdatetime(
+	uint_fast16_t year,
+	uint_fast8_t month,
+	uint_fast8_t dayofmonth,
+	uint_fast8_t hours,
+	uint_fast8_t minutes,
+	uint_fast8_t secounds
+	)
+{
+
+}
+
+uint_fast8_t board_rtc_chip_initialize(void)
+{
+	return 0;
 }
 
 uint_fast8_t dummy_putchar(uint_fast8_t c)

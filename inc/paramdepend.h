@@ -1155,7 +1155,7 @@ extern "C" {
 #define RTC_TYPE_STM32F4xx	53	/* STM32F4xx internal RTC peripherial */
 #define RTC_TYPE_STM32F0xx	54	/* STM32F0xx internal RTC peripherial */
 #define RTC_TYPE_STM32L0xx	55	/* STM32L0xx internal RTC peripherial */
-#define RTC_TYPE_ZYNQ_MP	56	/* Xilinx ZYNQ Ultrascale+ internal RTC peripherial */
+#define RTC_TYPE_LINUX		56	/* Linux local time */
 
 #define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046
 #define TSC_TYPE_STMPE811	61	// Resistive touch screen controller ST STMPE811
