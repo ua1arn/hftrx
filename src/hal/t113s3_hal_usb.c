@@ -3341,7 +3341,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	//uint32_t i=0;
-	uint32_t csr=0;
+	uint32_t ep0_csr=0;
 	//uint32_t src_addr;
 
 	if (pusb->role != USB_ROLE_DEV) return 0;
@@ -3349,26 +3349,26 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 //	pusb->ep0_flag--;
 
 	usb_select_ep(pusb, 0);
-	csr = usb_get_ep0_csr(pusb);
+	ep0_csr = usb_get_ep0_csr(pusb);
 
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
-		if (csr & 0x1)
+		if (ep0_csr & 0x1u)	// ? USB_TXCSR_TXPKTRDY
 		{
 			pusb->ep0_xfer_state = USB_EP0_SETUP;
 		}
-		else if (csr & (0x1u << 4))
+		else if (ep0_csr & (0x1u << 4))
 		{
 			usb_set_ep0_csr(pusb, 0x80);
 			PRINTF("usb_dev_ep0xfer_handler: WRN: EP0 Setup End!!\n");
 		}
-		else if (!(csr & (0x1u << 1)))
+		else if (!(ep0_csr & (0x1u << 1)))	// ? USB_RXCSR_FIFOFULL, USB_TXCSR_FIFONOTEMP
 		{
 			usb_ep0_complete_send_data(pusb);
 		}
 		else
 		{
-			PRINTF("usb_dev_ep0xfer_handler: WRN: Unknown EP0 Interrupt, CSR=0x%x!!\n", csr);
+			PRINTF("usb_dev_ep0xfer_handler: WRN: Unknown EP0 Interrupt, CSR=0x%x!!\n", ep0_csr);
 		}
 	}
 
@@ -3380,7 +3380,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
 #endif /* WITHWAWXXUSB */
 
-		if (csr & 0x1)
+		if (ep0_csr & 0x1)// ? USB_TXCSR_TXPKTRDY
 		{
 			uint32_t ep0_count = usb_get_ep0_count(pusb);
 
@@ -3491,7 +3491,9 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 #if WITHUSBUACIN && WITHWAWXXUSB
 					case INTERFACE_AUDIO_CONTROL_MIKE:
+#if WITHUSBUACIN2
 					case INTERFACE_AUDIO_CONTROL_RTS:
+#endif /* WITHUSBUACIN2 */
 					  	// Parse setup packet on output
 					  	switch (ep0_setup->bRequest)
 					  	{

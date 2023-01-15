@@ -105,7 +105,7 @@ typedef struct {
 	uint32_t ep0_maxpktsz;
 	#define USB_EP0_SETUP					0
 	#define USB_EP0_DATA					1
-	#define USB_EP0_STATUS				2
+	//#define USB_EP0_STATUS				2
 	uint32_t ep0_xfer_state;
 	uintptr_t ep0_xfer_srcaddr;
 	uint32_t ep0_xfer_residue;
@@ -950,8 +950,8 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 /* Common registers */
 
-#define	MUSB2_REG_FADDR 0x0000		/* function address register */
-#define	MUSB2_MASK_FADDR 0x7F
+//#define	MUSB2_REG_FADDR 0x0000		/* function address register */
+//#define	MUSB2_MASK_FADDR 0x7F
 
 //#define	MUSB2_REG_POWER 0x0001		/* power register */
 #define	MUSB2_MASK_SUSPM_ENA 0x01
@@ -964,7 +964,7 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 #define	MUSB2_MASK_ISOUPD 0x80
 
 
-#define USB_CSRX_REQPKT            	(0x1u << 21)
+//#define USB_CSRX_REQPKT            	(0x1u << 21)
 #define USB_TXCSR_AUTOSET			(0x1u << 15)
 #define USB_TXCSR_ISO				(0x1u << 14)
 #define USB_TXCSR_TXFIFO			(0x1u << 13)
