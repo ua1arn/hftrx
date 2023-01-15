@@ -199,10 +199,10 @@
 	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
 	#define ENCODER_INITIALIZE() do { \
-		arm_hardware_pioe_altfn20(ENCODER_BITS, GPIO_CFG_AF14); \
+		arm_hardware_pioe_altfn20(ENCODER_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(ENCODER_BITS, 0); \
 		gpioX_onchangeinterrupt(GPIOE, ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt); \
-		arm_hardware_pioe_altfn20(ENCODER2_BITS, GPIO_CFG_AF14); \
+		arm_hardware_pioe_altfn20(ENCODER2_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
 		gpioX_onchangeinterrupt(GPIOE, 0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt2); \
 	} while (0)
@@ -911,7 +911,7 @@
 	#define BOARD_STMPE811_RESET_PIN (1u << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
 
 	#define BOARD_STMPE811_INT_CONNECT() do { \
-		arm_hardware_pioe_altfn20(BOARD_STMPE811_INT_PIN, GPIO_CFG_AF14); \
+		arm_hardware_pioe_altfn20(BOARD_STMPE811_INT_PIN, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_STMPE811_INT_PIN, 0); \
 		/*arm_hardware_pioe_onchangeinterrupt(0 * BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); */ \
 		gpioX_onchangeinterrupt(GPIOE, 0 * BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
@@ -944,7 +944,7 @@
 	} while (0)
 
 	#define BOARD_GT911_INT_CONNECT() do { \
-		arm_hardware_pioe_altfn20(BOARD_GT911_INT_PIN, GPIO_CFG_AF14); \
+		arm_hardware_pioe_altfn20(BOARD_GT911_INT_PIN, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GT911_INT_PIN, 0); \
 		gpioX_onchangeinterrupt(GPIOE, 0 * BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
 	} while (0)

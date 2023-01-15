@@ -770,8 +770,8 @@ extern "C" {
 		GPIO_CFG_AF11 = 0x0B,
 		GPIO_CFG_AF12 = 0x0C,
 		GPIO_CFG_AF13 = 0x0D,
-		GPIO_CFG_AF14 = 0x0E,
-		GPIO_CFG_AF15 = 0x0F,
+		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
+		GPIO_CFG_IODISABLE = 0x0F,
 	} GPIOMode_TypeDef;
 
 
@@ -820,8 +820,8 @@ extern "C" {
 		GPIO_CFG_AF11 = 0x0B,
 		GPIO_CFG_AF12 = 0x0C,
 		GPIO_CFG_AF13 = 0x0D,
-		GPIO_CFG_AF14 = 0x0E,
-		GPIO_CFG_AF15 = 0x0F,
+		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
+		GPIO_CFG_IODISABLE = 0x0F,
 	} GPIOMode_TypeDef;
 
 #elif CPUSTYLE_XCZU
