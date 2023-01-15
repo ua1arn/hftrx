@@ -891,9 +891,9 @@ unsigned audiorec_getwidth(void);
 
 #if WITHDTMFPROCESSING
 
-	#define ARMI2SRATE			((unsigned long) 8000)	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATEX(scale)	((unsigned long) (ARMI2SRATE * (scale)))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATE100		((unsigned long) ARMI2SRATEX(100))
+	#define ARMI2SRATE			((int32_t) 8000)	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SRATE * (scale)))	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATE100		((int32_t) ARMI2SRATEX(100))
 
 #else /* WITHDTMFPROCESSING */
 
