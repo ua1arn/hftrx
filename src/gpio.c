@@ -981,6 +981,14 @@ static void ALLW_GPIO_IRQ_Handler_GPIOE(void)
 	if ((status & ENCODER_BITS) != 0)
 		spool_encinterrupt();
 #endif /* ENCODER_BITS */
+#if BOARD_GT911_INT_PIN
+//	if ((status & ENCODER_BITS) != 0)
+//		xspool_encinterrupt();
+#endif /* BOARD_GT911_INT_PIN */
+#if BOARD_STMPE811_INT_PIN
+//	if ((status & ENCODER_BITS) != 0)
+//		xspool_encinterrupt();
+#endif /* BOARD_STMPE811_INT_PIN */
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOF(void)
