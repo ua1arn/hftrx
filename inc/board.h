@@ -187,7 +187,7 @@ void board_subtone_enable_user(uint_fast8_t state);
 
 /* загрузка коэффициентов FIR фильтра в FPGA */
 void board_fpga_fir_initialize(void);
-void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth); /* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap, unsigned CWidth); /* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
 /* управление полосовыми фильтрами - bandpass.c */
 void bandf_calc_initialize(void);
 void bandf2_calc_initialize(void);

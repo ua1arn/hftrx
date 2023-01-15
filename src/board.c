@@ -7070,7 +7070,7 @@ static void sendbatch(uint_fast8_t ifir)
 // two banks, symmetrical 961:
 // coef_seq.exe fir_normalized_coeff961_lpf_1550.txt fir_normalized_coeff961_lpf_1550_reseq_b.txt MCV M4K MSYM 128 2 SGL 1 32
 //
-static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length, int coef_bit_width)
+static void single_rate_out_write_mcv(const int32_t * coef, int coef_length, int coef_bit_width)
 {
 
 	enum coef_store_type { LC, M512, M4K, DUMMY, AUTO };
@@ -7138,8 +7138,8 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 			zeros_insert = (int) floorf((float) (mcv_coef_length - coef_length));
 		}
 
-		int_fast32_t tmp_coef [mcv_coef_length];
-		int_fast32_t wrk_coef [mcv_coef_length];
+		int32_t tmp_coef [mcv_coef_length];
+		int32_t wrk_coef [mcv_coef_length];
 
 		// сперва "0", потом значения
 		for (i=0; i < zeros_insert; ++ i)
@@ -7229,7 +7229,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 static void 
 board_fpga_fir_send(
 	const uint_fast8_t ifir,	// номер FIR фильтра в FPGA
-	const int_fast32_t * const k, unsigned Ntap, unsigned CWidth
+	const int32_t * const k, unsigned Ntap, unsigned CWidth
 	)
 {
 	ASSERT(CWidth <= 24);
@@ -7301,7 +7301,7 @@ static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
 #endif /* WITHDEBUG */
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
-void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap, unsigned CWidth)
 {
 #if 0 && WITHDEBUG
 	int_fast64_t sum = 0;
