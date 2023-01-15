@@ -685,7 +685,7 @@ typedef struct
 
 #else /* CODEC1_FRAMEBITS == 64 */
 
-	#error Unsupported CODEC1_FRAMEBITS value
+	//#error Unsupported CODEC1_FRAMEBITS value
 
 #endif /* CODEC1_FRAMEBITS == 64 */
 
@@ -977,7 +977,6 @@ uintptr_t getfilled_dmabuffer16txmoni(void);
 void dsp_extbuffer32rx(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32rts(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
-void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf);			// перед передачей по DMA в аудиокодек
 
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 //void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
@@ -1031,6 +1030,7 @@ void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
 
+	void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf);			// перед передачей по DMA в аудиокодек
 	typedef FLOAT_t speexel_t;
 	uint_fast8_t takespeexready_user(FLOAT_t * * dest);
 	void releasespeexbuffer_user(FLOAT_t * t);
