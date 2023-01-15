@@ -965,6 +965,10 @@ static void usb_force_id(pusb_struct pusb, uint32_t id)
 }
 
 /* src = 0..3 */
+//	//0 * (1u << 10) |	// vbus25=0 dv=1
+//	1 * (1u << 10) |	// vbus25=0 dv=1
+//	//2 * (1u << 10) |	// vbus25=1 dv=3
+//	//3 * (1u << 10) |	// vbus25=1 dv=3
 static void usb_vbus_src(pusb_struct pusb, uint32_t src)
 {
 	USBOTG0->USB_ISCR &= ~ (0x3 << 10);
@@ -3756,6 +3760,7 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	//usb_vbus_src(pusb, 0x0);	// 11..10 = state. 0 - not work, 1, 2, 3 - work
 	//usb_release_vbus(pusb);	// 13 = 0, 12 = 0
 	//usb_force_vbus(pusb, 1);	// 13=1, 12=state. state=1: игнорировать состояние входа VBUS, считать единичным
+	usb_vbus_src(pusb, 0x0);
 	usb_force_vbus(pusb, 1);
 
 	usb_select_ep(pusb, 0);
