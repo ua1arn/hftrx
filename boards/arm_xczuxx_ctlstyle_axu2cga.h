@@ -69,10 +69,6 @@
 	#define CTLREGMODE_XCZU	1
 	#define WITHQRPBOARD_UA3REO	1
 
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
-
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
 
@@ -220,7 +216,7 @@
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHVIEW_3DSS		1
-//		#define WITHDEFAULTVIEW		VIEW_3DSS
+		#define WITHDEFAULTVIEW		VIEW_3DSS
 		#define WITHVIEW_3DSS_MARK	1
 		#define WITHDISPLAY_FPS		30
 		#define WITHDISPLAYSWR_FPS	30

@@ -96,12 +96,12 @@ void add_element(const char * element_name, ...)
 		memcpy(lh, & label_default, sizeof(label_t));
 
 		lh->parent = window_id;
-		lh->is_trackable = va_arg(arg, uint_fast8_t);
+		lh->is_trackable = va_arg(arg, uint32_t);
 		lh->font_size = va_arg(arg, int);
 		lh->color = va_arg(arg, COLORMAIN_T);
 
 		strncpy(lh->name, element_name, NAME_ARRAY_SIZE - 1);
-		lh->width = va_arg(arg, uint_fast8_t);
+		lh->width = va_arg(arg, uint32_t);
 		memset(lh->text, '*', lh->width);		// для совместимости, потом убрать
 
 		if (lh->font_size == FONT_LARGE)
@@ -126,8 +126,8 @@ void add_element(const char * element_name, ...)
 		bh->parent = window_id;
 		bh->w = va_arg(arg, uint_fast16_t);
 		bh->h = va_arg(arg, uint_fast16_t);
-		bh->is_repeating = va_arg(arg, uint_fast8_t);
-		bh->is_long_press = va_arg(arg, uint_fast8_t);
+		bh->is_repeating = va_arg(arg, uint32_t);
+		bh->is_long_press = va_arg(arg, uint32_t);
 		strncpy(bh->name, element_name, NAME_ARRAY_SIZE - 1);
 		strncpy(bh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 
@@ -144,9 +144,9 @@ void add_element(const char * element_name, ...)
 		memcpy(tf, & tf_default, sizeof(text_field_t));
 
 		tf->parent = window_id;
-		tf->w_sim = va_arg(arg, uint_fast8_t);
-		tf->h_str = va_arg(arg, uint_fast8_t);
-		tf->direction = va_arg(arg, uint_fast8_t);
+		tf->w_sim = va_arg(arg, uint32_t);
+		tf->h_str = va_arg(arg, uint32_t);
+		tf->direction = va_arg(arg, uint32_t);
 		tf->font = va_arg(arg, UB_Font *);
 		strncpy(tf->name, element_name, NAME_ARRAY_SIZE - 1);
 
@@ -250,9 +250,9 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	{
 		va_start(arg, message);
 
-		uint_fast8_t type = va_arg(arg, uint_fast8_t);
+		uint32_t type = va_arg(arg, uint32_t);
 		uintptr_t ptr = va_arg(arg, uintptr_t);
-		int_fast8_t action = va_arg(arg, int_fast8_t);
+		int32_t action = va_arg(arg, int32_t);
 
 		va_end(arg);
 
@@ -275,7 +275,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	case WM_MESSAGE_ENC2_ROTATE:
 	{
 		va_start(arg, message);
-		int_fast8_t r = va_arg(arg, int_fast8_t);
+		int32_t r = va_arg(arg, int32_t);
 		va_end(arg);
 
 		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;				// если первое в очереди сообщение - WM_MESSAGE_ENC2_ROTATE,
@@ -303,7 +303,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		win->queue.data [win->queue.size].message = WM_MESSAGE_KEYB_CODE;
 		win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
 		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
-		win->queue.data [win->queue.size].action = va_arg(arg, int_fast8_t);
+		win->queue.data [win->queue.size].action = va_arg(arg, int32_t);
 		win->queue.size ++;
 
 		va_end(arg);

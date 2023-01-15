@@ -48,7 +48,7 @@ void xcz_dds_rts(const uint_least64_t * val)
 	mirror_ncorts = * val;
 }
 
-void xcz_rx_iq_shift(uint32_t val) // 48
+void xcz_rx_iq_shift(uint8_t val) // 48
 {
 	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 12, val);
 }

@@ -20,7 +20,7 @@
 #include <linux/kd.h>
 #include <linux/gpio.h>
 
-void * get_highmem_ptr (uint32_t addr)
+void * get_highmem_ptr (uint32_t addr, uint8_t size)
 {
 	int fd;
 	if((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0)
@@ -31,7 +31,7 @@ void * get_highmem_ptr (uint32_t addr)
 
 	void *map_base, *virt_addr;
 	unsigned page_size, mapped_size, offset_in_page;
-	mapped_size = page_size = 4096;
+	mapped_size = page_size = 4096 * size;
 	offset_in_page = (unsigned)addr & (page_size - 1);
 
 	map_base = (unsigned*) mmap(0, mapped_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, addr & ~(off_t)(page_size - 1));
@@ -149,21 +149,8 @@ volatile uint32_t * xgpo, * xgpi;
 
 void linux_xgpio_init(void)
 {
-	int fd;
-
-	if((fd = open("/dev/mem", O_RDWR)) < 0)
-	{
-		PRINTF("open /dev/mem failed \n");
-		return;
-	}
-
-	xgpo = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, XGPO_ADDR);
-	xgpi = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, XGPI_ADDR);
-
-	ASSERT(xgpo != NULL);
-	ASSERT(xgpi != NULL);
-
-	close(fd);
+	xgpo = get_highmem_ptr(AXI_XGPO_ADDR, 1);
+	xgpi = get_highmem_ptr(AXI_XGPI_ADDR, 1);
 }
 
 uint8_t linux_xgpi_read_pin(uint8_t pin)
@@ -207,25 +194,9 @@ uint_fast8_t gpio_readpin(uint8_t pin)
 
 void reg_write(uint32_t addr, uint32_t val)
 {
-	int fd;
-	void *ptr;
-	uint32_t page_addr, page_offset;
-	uint32_t page_size=sysconf(_SC_PAGESIZE);
+	void * ptr = get_highmem_ptr(addr, 1);
 
-	fd=open("/dev/mem",O_RDWR);
-	if(fd<1)
-		err(errno, "Failed to open\n");
-
-	page_addr=(addr & ~(page_size-1));
-	page_offset=addr-page_addr;
-
-	ptr=mmap(NULL,page_size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,(addr & ~(page_size-1)));
-	if((int)ptr==-1)
-		err(errno, "Failed to mmap\n");
-
-	*((unsigned *)(ptr+page_offset))=val;
-
-	close(fd);
+	* (uint32_t *)(ptr) = val;
 
 	//reg_read(addr);
 	//printf("reg_write: 0x%08x, 0x%08x\n", addr, val);
@@ -233,25 +204,9 @@ void reg_write(uint32_t addr, uint32_t val)
 
 uint32_t reg_read(uint32_t addr)
 {
-	int fd;
-	void *ptr;
-	uint32_t page_addr, page_offset;
-	uint32_t page_size=sysconf(_SC_PAGESIZE);
+	void * ptr = get_highmem_ptr(addr, 1);
 
-	fd=open("/dev/mem", O_RDWR);
-	if(fd<1)
-		err(errno, "Failed to open\n");
-
-	page_addr=(addr & ~(page_size-1));
-	page_offset=addr-page_addr;
-
-	ptr=mmap(NULL,page_size,PROT_READ,MAP_SHARED,fd,(addr & ~(page_size-1)));
-	if((int)ptr==-1)
-		err(errno, "Failed to mmap\n");
-
-	uint32_t res = *((unsigned *)(ptr+page_offset));
-
-	close(fd);
+	uint32_t res = * (uint32_t *) ptr;
 
 	printf("reg_read: 0x%08X, 0x%08X\n", addr, res);
 	return res;
@@ -346,9 +301,6 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 
 	if (fd_i2c)
 	{
-//		if (ioctl(fd_i2c, I2C_SLAVE, slave_address >> 1) < 0)
-//			PRINTF("Failed to set slave\n");
-
 		rc = read(fd_i2c, buf, size);
 		if (rc < 0)
 			PRINTF("Tried to read from address '0x%02x'\n", slave_address);
@@ -383,153 +335,69 @@ uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, con
 
 /*************************************************************/
 
-volatile uint32_t *ftw, *rts, *iq_shift, *iq_fifo, *ph_fifo, *fir_reload, *iq_count;
-uint32_t sinbuf32[DMABUFFSIZE16TX];
+volatile uint32_t *ftw, *ftw_sub, *rts, *iq_shift,  *ph_fifo, *fir_reload, *iq_count, *iq_fifo;
+int32_t sinbuf[DMABUFFSIZE16TX];
 
 void linux_iq_init(void)
 {
-	int fd;
+	ftw = 		get_highmem_ptr(AXI_IQ_FTW, 1);
+	ftw_sub = 	get_highmem_ptr(AXI_IQ_FTW_SUB, 1);
+	rts = 		get_highmem_ptr(AXI_IQ_RTS, 1);
+	iq_shift = 	get_highmem_ptr(AXI_IQ_SHIFT, 1);
+	iq_count = 	get_highmem_ptr(AXI_IQ_COUNT_ADDR, 1);
+	ph_fifo = 	get_highmem_ptr(AXI_FIFO_PHONES_ADDR, 1);
+	iq_fifo = 	get_highmem_ptr(AXI_IQ_FIFO_RX, 1);
 
-	if((fd = open("/dev/mem", O_RDWR)) < 0)
-	{
-		PRINTF("open /dev/mem failed \n");
-		return;
-	}
-
-	ftw = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0x8004a000);
-	ASSERT(ftw);
-	rts = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0x80042000);
-	ASSERT(rts);
-	iq_shift = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0x80049000);
-	ASSERT(iq_shift);
-	iq_count = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, AXI_IQ_COUNT_ADDR);
-	ASSERT(iq_count);
-	iq_fifo = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, AXI_IQ_FIFO_ADDR);
-	ASSERT(iq_fifo);
-	ph_fifo = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, AXI_FIFO_PHONES_ADDR);
-	ASSERT(ph_fifo);
 #if WITHDSPEXTFIR
-	fir_reload = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, AXI_FIR_RELOAD_ADDR);
-	ASSERT(fir_reload);
+	fir_reload = get_highmem_ptr(AXI_FIR_RELOAD_ADDR);
 #endif
-	close(fd);
 
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
 
 	xcz_rx_iq_shift(52);
-
-	uint32_t amp = 16384, ss = DMABUFFSIZE16TX;
-    for(int i = 0; i < ss; i+=2)
-    {
-    	sinbuf32[i + 0] = cos(i / ss * 2 * M_PI) * amp;
-    	sinbuf32[i + 1] = sin(i / ss * 2 * M_PI) * amp;
-    }
 }
 
 void linux_iq_receive(void)
 {
-//	static int offset, position, limit, qq = 0;
-//	static unsigned rx_stage = 0;
-//
-//	enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
-//	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
-//
-//	position = *((uint32_t *) sts);
-//	offset = position >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
-//
-//	uintptr_t addr = allocate_dmabuffer32rx();
-//	memcpy((uint32_t *) addr, (uint32_t *) (ram + offset), DMABUFFSIZE32RX * 4);
-//
-////	qq ++;
-////	if (qq > 5000)
-////	{
-////		qq = 0;
-////		uint32_t * q = (uint32_t *) addr;
-////		for (int i = 4; i < DMABUFFSIZE32RX; i += 8)
-////		{
-////			PRINTF("%03d: %08X ", i + 0, q[i + 0]);
-////			PRINTF("%03d: %08X ", i + 1, q[i + 1]);
-////			PRINTF("%03d: %08X ", i + 2, q[i + 2]);
-////			PRINTF("%03d: %08X\n", i + 3, q[i + 3]);
-////		}
-////		PRINTF("\n****\n");
-////	}
-//
-//
-//	processing_dmabuffer32rx(addr);
-//	release_dmabuffer32rx(addr);
-//	rx_stage += CNT32RX;
-//
-//	while (rx_stage >= CNT16TX)
-//	{
-//		const uintptr_t addr = getfilled_dmabuffer16txphones();
-//		uint32_t * b = (uint32_t *) addr;
-//
-//		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
-//			*((uint32_t *) ph_fifo) = b[i];
-//
-//		release_dmabuffer16tx(addr);
-//		rx_stage -= CNT16TX;
-//	}
-
 	enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
-	static int rx_stage = 0, qq = 0;;
+	static int rx_stage = 0, qq = 0;
 
-	//printf("%d\n", * iq_count);
+	int position = * iq_count;
 
-	if (* iq_count >= DMABUFFSIZE32RX)
+	if (position >= DMABUFFSIZE32RX)
 	{
-		const uintptr_t addr = allocate_dmabuffer32rx();
-		uint32_t * r = (uint32_t *) addr;
+		uintptr_t addr32rx = allocate_dmabuffer32rx();
+		uint32_t * r = (uint32_t *) addr32rx;
 
 		for (int i = 0; i < DMABUFFSIZE32RX; i ++)
 			r[i] = * iq_fifo;
 
-		processing_dmabuffer32rx(addr);
-		release_dmabuffer32rx(addr);
+		processing_dmabuffer32rx(addr32rx);
+		processing_dmabuffer32rts(addr32rx);
+		release_dmabuffer32rx(addr32rx);
 
 		rx_stage += CNT32RX;
 
 		while (rx_stage >= CNT16TX)
 		{
 			const uintptr_t addr2 = getfilled_dmabuffer16txphones();
-			uint64_t * b = (uint64_t *) addr2;
+			uint32_t * b = (uint32_t *) addr2;
 
 			for (int i = 0; i < DMABUFFSIZE16TX; i ++)
-				* ph_fifo = sinbuf32[i]; //b[i];
+				* ph_fifo = b[i];
 
-//			qq ++;
-//			if (qq > 5000)
-//			{
-//				qq = 0;
-//				for (int i = 4; i < DMABUFFSIZE16TX; i += 8)
-//				{
-//					PRINTF("%03d: %08X ", i + 0, b[i + 0]);
-//					PRINTF("%03d: %08X ", i + 1, b[i + 1]);
-//					PRINTF("%03d: %08X ", i + 2, b[i + 2]);
-//					PRINTF("%03d: %08X\n", i + 3, b[i + 3]);
-//				}
-//				PRINTF("\n****\n");
-//			}
 
 			release_dmabuffer16tx(addr2);
 			rx_stage -= CNT16TX;
 		}
 	}
-//	else
-//		printf("%d\n", * iq_count);
 }
 
 void linux_iq_interrupt_thread(void)
 {
-//	while(1)
-//	{
-//		linux_iq_receive();
-//	}
-
 	uint32_t uio_key = 1;
 	uint32_t uio_value = 0;
 
@@ -539,9 +407,6 @@ void linux_iq_interrupt_thread(void)
         return;
     }
 
-	* (uint32_t *) iq_shift &= ~(1 << 8);
-	* (uint32_t *) iq_shift |= (1 << 8);
-
     while(1)
     {
         //Acknowledge IRQ
@@ -550,13 +415,13 @@ void linux_iq_interrupt_thread(void)
             return;
         }
 
-        linux_iq_receive();
-
         //Wait for next IRQ
         if (read(fd_int, &uio_value, sizeof(uio_value)) < 0) {
             PRINTF("Failed to wait for IRQ: %s\n", strerror(errno));
             return;
         }
+
+        linux_iq_receive();
     }
 }
 
@@ -598,8 +463,8 @@ void linux_subsystem_init(void)
 void linux_user_init(void)
 {
 	linux_create_thread(process_linux_timer_spool, 50, 0);
-	linux_create_thread(linux_iq_interrupt_thread, 90, 1);
 	linux_create_thread(linux_encoder_spool, 50, 1);
+	linux_create_thread(linux_iq_interrupt_thread, 90, 1);
 
 	const float FS = powf(2, 32);
 	uint32_t fan_pwm_period = 25000 * FS / 61440000;
@@ -653,7 +518,7 @@ void xcz_dds_rts(const uint_least64_t * val)
 
 void xcz_rx_iq_shift(uint8_t val) // 52
 {
-	 * (uint32_t *) iq_shift |= (val & 0xff);
+	* (uint32_t *) iq_shift = val;
 }
 
 void xcz_dds_ftw_sub(const uint_least64_t * val)

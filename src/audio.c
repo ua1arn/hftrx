@@ -424,7 +424,7 @@ typedef int32_t ncoftwi_t;
 #define NCOFTWBITS 32	// количество битов в ncoftw_t
 #define FTWROUND(ftw) ((uint32_t) (ftw))
 #define FTWAF001(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100)
-#define FTWAF(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE)
+#define FTWAF(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / (int_fast64_t) ARMI2SRATE)
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
@@ -433,7 +433,7 @@ static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))
 // Convert ncoftw_t to q31 argument for arm_sin_q31
 // The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*PI).
-#define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) (angle)) + 0x80000000uL) / 2))
+#define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) (angle)) + 0x80000000) / 2))
 #define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
 
 #if 0

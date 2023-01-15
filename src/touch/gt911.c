@@ -193,7 +193,7 @@ void gt911_fwResolution(uint_fast16_t maxX, uint_fast16_t maxY)
 }
 
 uint32_t gt911_productID(void) {
-	uint_fast8_t res;
+	uint32_t res;
 	uint8_t buf [4];
 
 	gt911_read(GOODIX_REG_ID, buf, 4);

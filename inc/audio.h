@@ -897,9 +897,9 @@ unsigned audiorec_getwidth(void);
 
 #else /* WITHDTMFPROCESSING */
 
-	#define ARMI2SRATE			((unsigned long) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATEX(scale)	((unsigned long) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATE100		((unsigned long) (ARMI2SRATEX(100)))
+	#define ARMI2SRATE			((int32_t) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATE100		((int32_t) (ARMI2SRATEX(100)))
 
 #endif /* WITHDTMFPROCESSING */
 
@@ -910,7 +910,7 @@ unsigned audiorec_getwidth(void);
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 
-	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
+	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation

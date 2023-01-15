@@ -434,7 +434,7 @@ static void window_infobar_menu_process(void)
 
 		case INFOBAR_ATT:
 		{
-			uint atts [6];
+			uint_fast8_t atts [6];
 			uint count = hamradio_get_att_dbs(atts, 6);
 
 			for (uint i = 0; i < count; i ++)
@@ -3965,7 +3965,7 @@ static void window_gui_settings_process(void)
 
 static void window_shift_process(void)
 {
-#if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR
+#if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_IQ_SHIFT
 	window_t * const win = get_win(WINDOW_SHIFT);
 
 	static uint shift = 45;
