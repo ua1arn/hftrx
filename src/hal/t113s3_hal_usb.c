@@ -1177,10 +1177,13 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 }
 
 
-static void usb_ep0_complete_send(pusb_struct pusb)
+static void usb_ep0_complete_send(pusb_struct pusb, uintptr_t addr, uint32_t len)
 {
 	uint32_t is_last;
 	uint32_t byte_trans;
+
+	pusb->ep0_xfer_srcaddr = addr;
+	pusb->ep0_xfer_residue = len;
 
 	if (pusb->ep0_xfer_residue<pusb->ep0_maxpktsz)
 	{
@@ -3151,6 +3154,8 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 		PRINTF("usb_device: Unknown EP0 IN!!, 0x%02X\n", ep0_setup->bmRequest&0x60);
 	}
 
+	usb_ep0_complete_send(pusb, pusb->ep0_xfer_srcaddr, pusb->ep0_xfer_residue);
+
 	return 0;
 }
 
@@ -3397,7 +3402,6 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 #if WITHWAWXXUSB
 					ep0_in_handler_dev(pusb);
-					usb_ep0_complete_send(pusb);
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
@@ -4595,7 +4599,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
 		pusb->ep0_xfer_residue = len;
 
-		usb_ep0_complete_send(pusb);
+		usb_ep0_complete_send(pusb, (uintptr_t) pBuf, len);
 
 	   	pusb->ep0_xfer_state = USB_EP0_DATA;
   }
