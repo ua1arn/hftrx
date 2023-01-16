@@ -267,7 +267,7 @@ static window_t windows [] = {
 #endif /* #if WITHFT8 */
 	{ WINDOW_INFOBAR_MENU, 	 NO_PARENT_WINDOW,		ALIGN_MANUAL,   "",		 				 0, window_infobar_menu_process, },
 	{ WINDOW_AF_EQ, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "AF equalizer",			 1, window_af_eq_process, },
-	{ WINDOW_SHIFT, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "IQ shift",				 1, window_shift_process, },
+	{ WINDOW_SHIFT, 	 	 WINDOW_UTILS,			ALIGN_CENTER_X, "IQ shift",				 1, window_shift_process, },
 	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_process, },
 	{ WINDOW_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "Keyboard",		 		 0, window_kbd_process, },
 	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_process, },
@@ -808,20 +808,6 @@ static void gui_main_process(void)
 			{
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
-			}
-			else if (bh == btn_2)
-			{
-//				if (check_for_parent_window() != NO_PARENT_WINDOW)
-//				{
-//					close_window(OPEN_PARENT_WINDOW);
-//					footer_buttons_state(CANCELLED);
-//				}
-//				else
-//				{
-//					window_t * const win = get_win(WINDOW_SHIFT);
-//					open_window(win);
-//					footer_buttons_state(DISABLED, btn_2);
-//				}
 			}
 #if WITHFT8
 			else if (bh == btn_ft8)
@@ -1995,6 +1981,9 @@ static void window_utilites_process(void)
 #if WITHLFM
 		add_element("btn_lfm",      100, 44, 0, 0, "LFM|receive");
 #endif /* WITHLFM  */
+#if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
+		add_element("btn_shift",    100, 44, 0, 0, "IQ shift");
+#endif /* defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR */
 
 		x = 0;
 		y = 0;
@@ -2064,6 +2053,12 @@ static void window_utilites_process(void)
 				close_all_windows();
 			}
 #endif /* WITHGUIDEBUG */
+#if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_shift"))
+			{
+				open_window(get_win(WINDOW_SHIFT));
+			}
+#endif /* defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR */
 		}
 		break;
 
@@ -3965,7 +3960,7 @@ static void window_gui_settings_process(void)
 
 static void window_shift_process(void)
 {
-#if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_IQ_SHIFT
+#if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
 	window_t * const win = get_win(WINDOW_SHIFT);
 
 	static uint shift = 45;

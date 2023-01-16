@@ -43,27 +43,28 @@ enum {
 };
 
 enum {
-	XGPO0,	// C11
-	XGPO1,	// C14 cs_ctrl_int
-	XGPO2,	// F2  dac_sleep
-	XGPO3,	// A11 spi_mosi
-	XGPO4,	// A13 spi_sck
-	XGPO5,	// A12 cs_fram
-	XGPO6,	// B10 cs_adc
-	XGPO7,	// B10 cs_bands
+	XGPO0,	// C14 cs_ctrl_int
+	XGPO1,	// A11 spi_mosi
+	XGPO2,	// A13 spi_sck
+	XGPO3,	// A12 cs_fram
+	XGPO4,	// B10 cs_adc
+	XGPO5,	// B10 cs_bands
 };
 
-#define AXI_IQ_FTW				0x8004a000
-#define AXI_IQ_FTW_SUB			0x80045000
-#define AXI_IQ_RTS				0x80042000
-#define AXI_IQ_SHIFT			0x80049000
-#define AXI_IQ_FIFO_RX			0x80041000
+#define AXI_IQ_FTW_ADDR			0x8004a000
+#define AXI_IQ_FTW_SUB_ADDR		0x80045000
+#define AXI_IQ_RTS_ADDR			0x80042000
+#define AXI_MODEM_CTRL_ADDR		0x80049000
+#define AXI_IQ_FIFO_RX_ADDR		0x80041000
+#define AXI_IQ_FIFO_TX_ADDR		0x8004c000
 #define AXI_XGPI_ADDR			0x80046000
 #define AXI_XGPO_ADDR			0x80047000
-#define AXI_IQ_COUNT_ADDR		0x80044000
+#define AXI_IQ_RX_COUNT_ADDR	0x80044000
+#define AXI_IQ_TX_COUNT_ADDR	0x8004d000
 #define AXI_ADI_ADDR			0x80040000
 #define AXI_FIFO_PHONES_ADDR	0x80043000
 #define AXI_FIR_RELOAD_ADDR		0x8004b000
+
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 //#define WITHUARTFIFO	1	/* испольование FIFO */
@@ -599,9 +600,9 @@ enum {
 
 #if WITHSPIHW || WITHSPISW
 
-	#define targetnvram		XGPO5	// nvram FM25L256
-	#define targetctl1		XGPO1
-	#define targetextctl	XGPO7
+	#define targetnvram		XGPO3	// nvram FM25L256
+	#define targetctl1		XGPO0
+	#define targetextctl	XGPO5
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
@@ -625,8 +626,8 @@ enum {
 		} while (0)
 
 	// MOSI & SCK port
-	#define	SPI_SCLK_MIO 	XGPO4
-	#define	SPI_MOSI_MIO 	XGPO3
+	#define	SPI_SCLK_MIO 	XGPO2
+	#define	SPI_MOSI_MIO 	XGPO1
 	#define	SPI_MISO_MIO 	XGPI3
 
 	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); } while (0)

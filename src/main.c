@@ -10886,7 +10886,8 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 
 	// Filtering and denoise.
 	BEGIN_STAMP();
-	ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);		/* фильтр выхода детектора */
+	//ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);		/* фильтр выхода детектора */
+	ARM_MORPH(arm_copy)(p, nrp->wire1, FIRBUFSIZE);
 	END_STAMP();
 	if (anotch)
 	{

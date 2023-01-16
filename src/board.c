@@ -755,7 +755,7 @@ prog_gpioreg(void)
 //#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
 #endif /* defined (HARDWARE_DAC_ALC) */
 
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	xcz_rxtx_state(glob_tx);
 #if defined (TARGET_RFADC_PGA_EMIO)
 	xc7z_gpio_output(TARGET_RFADC_PGA_EMIO);

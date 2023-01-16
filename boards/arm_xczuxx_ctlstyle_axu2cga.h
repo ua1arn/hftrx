@@ -185,6 +185,7 @@
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	#define WITHDSPLOCALTXFIR 1
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -231,7 +232,7 @@
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT		170
+			#define WITHAFGAINDEFAULT		150
 //			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1

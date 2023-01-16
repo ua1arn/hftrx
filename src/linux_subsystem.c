@@ -335,41 +335,44 @@ uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, con
 
 /*************************************************************/
 
-volatile uint32_t *ftw, *ftw_sub, *rts, *iq_shift,  *ph_fifo, *iq_count, *iq_fifo;
+volatile uint32_t *ftw, *ftw_sub, *rts, *modem_ctrl,  *ph_fifo, *iq_count_rx, *iq_count_tx, *iq_fifo_rx, *iq_fifo_tx;
 int32_t sinbuf[DMABUFFSIZE16TX];
+static uint8_t rx_shift = 0, tx_shift = 0, tx_state = 0;
 
 void linux_iq_init(void)
 {
-	ftw = 		get_highmem_ptr(AXI_IQ_FTW, 1);
-	ftw_sub = 	get_highmem_ptr(AXI_IQ_FTW_SUB, 1);
-	rts = 		get_highmem_ptr(AXI_IQ_RTS, 1);
-	iq_shift = 	get_highmem_ptr(AXI_IQ_SHIFT, 1);
-	iq_count = 	get_highmem_ptr(AXI_IQ_COUNT_ADDR, 1);
-	ph_fifo = 	get_highmem_ptr(AXI_FIFO_PHONES_ADDR, 1);
-	iq_fifo = 	get_highmem_ptr(AXI_IQ_FIFO_RX, 1);
+	ftw = 			get_highmem_ptr(AXI_IQ_FTW_ADDR, 1);
+	ftw_sub = 		get_highmem_ptr(AXI_IQ_FTW_SUB_ADDR, 1);
+	rts = 			get_highmem_ptr(AXI_IQ_RTS_ADDR, 1);
+	ph_fifo = 		get_highmem_ptr(AXI_FIFO_PHONES_ADDR, 1);
+	iq_fifo_rx = 	get_highmem_ptr(AXI_IQ_FIFO_RX_ADDR, 1);
+	iq_fifo_tx = 	get_highmem_ptr(AXI_IQ_FIFO_TX_ADDR, 1);
+	modem_ctrl = 	get_highmem_ptr(AXI_MODEM_CTRL_ADDR, 1);
+	iq_count_rx = 	get_highmem_ptr(AXI_IQ_RX_COUNT_ADDR, 1);
+	iq_count_tx = 	get_highmem_ptr(AXI_IQ_TX_COUNT_ADDR, 1);
+
 
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
 
-	xcz_rx_iq_shift(52);
+	xcz_rx_iq_shift(44);
+	xcz_tx_shift(25);
 }
 
-void linux_iq_receive(void)
+void linux_iq_thread(void)
 {
 	enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 	static int rx_stage = 0, qq = 0;
 
-	int position = * iq_count;
-
-	if (position >= DMABUFFSIZE32RX)
+	if (* iq_count_rx >= DMABUFFSIZE32RX)
 	{
 		uintptr_t addr32rx = allocate_dmabuffer32rx();
 		uint32_t * r = (uint32_t *) addr32rx;
 
 		for (int i = 0; i < DMABUFFSIZE32RX; i ++)
-			r[i] = * iq_fifo;
+			r[i] = * iq_fifo_rx;
 
 		processing_dmabuffer32rx(addr32rx);
 		processing_dmabuffer32rts(addr32rx);
@@ -389,6 +392,21 @@ void linux_iq_receive(void)
 			release_dmabuffer16tx(addr2);
 			rx_stage -= CNT16TX;
 		}
+	}
+
+	if (* iq_count_tx < DMABUFFSIZE32TX / 2)
+	{
+		uintptr_t addr_mic = allocate_dmabuffer16rx();
+		// todo: fill buffer from mic FIFO
+		processing_dmabuffer16rx(addr_mic);
+
+		const uintptr_t addr = getfilled_dmabuffer32tx_main();
+		uint32_t * r = (uint32_t *) addr;
+
+		for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
+			* iq_fifo_tx = r[i];
+
+		release_dmabuffer32tx(addr);
 	}
 }
 
@@ -417,7 +435,7 @@ void linux_iq_interrupt_thread(void)
             return;
         }
 
-        linux_iq_receive();
+        linux_iq_thread();
     }
 }
 
@@ -497,7 +515,10 @@ void system_enableIRQ(void)
 
 void xcz_rxtx_state(uint8_t tx)
 {
+	tx_state = tx != 0;
 
+	uint32_t v = rx_shift | (tx_shift << 8) | (tx_state << 16);
+	* modem_ctrl = v;
 }
 
 void xcz_dds_ftw(const uint_least64_t * val)
@@ -514,7 +535,10 @@ void xcz_dds_rts(const uint_least64_t * val)
 
 void xcz_rx_iq_shift(uint8_t val) // 52
 {
-	* (uint32_t *) iq_shift = val;
+	rx_shift = val & 0xFF;
+
+	uint32_t v = rx_shift | (tx_shift << 8) | (tx_state << 16);
+	* modem_ctrl = v;
 }
 
 void xcz_dds_ftw_sub(const uint_least64_t * val)
@@ -529,7 +553,10 @@ void xcz_rx_cic_shift(uint32_t val)
 
 void xcz_tx_shift(uint32_t val)
 {
+	tx_shift = val & 0xFF;
 
+	uint32_t v = rx_shift | (tx_shift << 8) | (tx_state << 16);
+	* modem_ctrl = v;
 }
 
 #if WITHDSPEXTFIR
