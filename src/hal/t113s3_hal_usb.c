@@ -2833,15 +2833,16 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
 
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
-	if ((ep0_setup->bmRequest&0x60)==0x00)
+	if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_STANDARD)
 	{
 		const uint_fast8_t index = LO_BYTE(ep0_setup->wValue);
 		switch (ep0_setup->bRequest)
 		{
-			case 0x00 :
-    			PRINTF("usb_device: Get Status\n");
-		    	break;
-			case 0x06 :
+//			case USB_REQ_GET_STATUS :
+//    			PRINTF("usb_device: Get Status, sLength=%04X\n", ep0_setup->wLength);
+//				pusb->ep0_xfer_residue = 0;
+//		    	break;
+			case USB_REQ_GET_DESCRIPTOR :
 				switch (HI_BYTE(ep0_setup->wValue))
 				{
 					case USB_DESC_TYPE_DEVICE:              //Get Device Desc
@@ -2917,7 +2918,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					    PRINTF("usb_device: Get Unknown Descriptor 0x%02X\n", HI_BYTE(ep0_setup->wValue));
 				}
 		      	break;
-	     	case 0x08 :
+	     	case USB_REQ_GET_CONFIGURATION :
 			{
 				static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
 				PRINTF("usb_device: Get Configuration\n");
@@ -2925,11 +2926,11 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				pusb->ep0_xfer_residue = 1;
 			}
 				break;
-			case 0x0A :
+			case USB_REQ_GET_INTERFACE :
 				pusb->ep0_xfer_residue = 0;
 				PRINTF("usb_device: Get Interface\n");
 				break;
-			case 0x0C :
+			case USB_REQ_SYNCH_FRAME :
 				pusb->ep0_xfer_residue = 0;
 				PRINTF("usb_device: Sync Frame\n");
 				break;
@@ -2940,7 +2941,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 		    	break;
 		}
 	}
-	else if ((ep0_setup->bmRequest&0x60)==0x20)
+	else if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_CLASS)
 	{
 		// class
 		switch (interfacev)
@@ -3110,7 +3111,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 			break;
 		}
 	}
-	else if ((ep0_setup->bmRequest&0x60)==USB_REQ_TYPE_VENDOR)
+	else if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_VENDOR)
 	{
 		if (ep0_setup->bRequest == USBD_WCID_VENDOR_CODE && ep0_setup->wIndex == 0x05)
 		{
