@@ -21306,10 +21306,7 @@ void hamradio_set_att_db(uint_fast8_t db)
 	const vindex_t vi = getvfoindex(bi);
 
 	verifyband(vi);
-
-#warning use symmetric conversion like hamradio_get_att_dbs
-	gatt = db != 0;
-
+	gatt = db;
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard(1, 0);
 }
