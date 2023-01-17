@@ -255,16 +255,16 @@
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_RK1AQ.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include <boards/arm_allwt113s3_ctlstyle_storch_v9a.h>	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include <boards/arm_allwt113s3_cpustyle_storch_v9a.h>	// rmainunit_sv9f.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	//#include <boards/arm_allwt113s3_cpustyle_storch_v9a_bad.h>	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)  && CTLSTYLE_STORCH_V7 && 0
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
 	#include <boards/arm_allwt113s3_ctlstyle_mango_pi.h>
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include <boards/arm_allwt113s3_cpustyle_mango_pi.h>
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)  && CTLSTYLE_STORCH_V7 && 0
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
 	#include <boards/arm_allwt113s3_ctlstyle_mango_pi_gw2a.h>
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include <boards/arm_allwt113s3_cpustyle_mango_pi_gw2a.h>
