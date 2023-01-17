@@ -636,19 +636,45 @@ typedef struct
 #define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)	/* Гарантируется пригодность для симметричного фильтра */
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
 
-#if WITHDSPLOCALFIR
+#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
+
 	/* Фильтрация квадратур осуществляется процессором */
-	#define	Ntap_rx_AUDIO	NtapValidate(241)
+
+	#if CPUSTYLE_R7S721
+		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
+		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
+		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+		#define	Ntap_rx_AUDIO	NtapValidate(241)
+
+	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
+		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
+		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation
+		#define	Ntap_rx_AUDIO	NtapValidate(241)
+
+	#elif CPUSTYLE_STM32F7XX
+		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
+		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
+		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+		#define	Ntap_rx_AUDIO	NtapValidate(241)
+
+	#else
+		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
+		#define Ntap_tx_SSB_IQ	NtapValidate(181)	// SSB/CW TX filter: complex numbers, floating-point implementation
+		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+		#define	Ntap_rx_AUDIO	NtapValidate(241)
+
+	#endif
 
 #else /* WITHDSPLOCALFIR */
 
-	#if CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+	/* Фильтрация квадратур осуществляется FPGA */
 
+	#if CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
 		#define Ntap_tx_MIKE	NtapValidate(511)
 
 	#else /* CPUSTYLE_STM32MP1 */
-
 		#define	Ntap_rx_AUDIO	NtapValidate(511)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 
@@ -662,6 +688,7 @@ typedef struct
 		////#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
 
 	#endif /* ! WITHDSPLOCALFIR */
+
 
 #endif /* WITHDSPLOCALFIR */
 
@@ -902,32 +929,6 @@ unsigned audiorec_getwidth(void);
 	#define ARMI2SRATE100		((int32_t) (ARMI2SRATEX(100)))
 
 #endif /* WITHDTMFPROCESSING */
-
-#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
-	/* Фильтрация квадратур осуществляется процессором */
-	#if CPUSTYLE_R7S721
-		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
-		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
-
-	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU
-		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
-		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation
-
-	#elif CPUSTYLE_STM32F7XX
-		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
-		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
-
-	#else
-		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
-		#define Ntap_tx_SSB_IQ	NtapValidate(181)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
-
-	#endif
-
-#endif /* WITHDSPLOCALFIR */
 
 uint_fast8_t modem_getnextbit(
 	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей

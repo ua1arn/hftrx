@@ -5467,7 +5467,7 @@ RAMFUNC void dsp_processtx(void)
 		FLOAT32P_t vfb = baseband_modulator(injectsubtone(v, ctcss), dspmodeA);	// Передатчик - формирование одного сэмпла (пары I/Q).
 
 #if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
-		if (dspmodeA != DSPCTL_MODE_TX_BPSK)
+		if (dspmodeA != DSPCTL_MODE_TX_BPSK /*&& isdspmodetx(dspmodeA)*/)
 		{
 			/* работа без FIR фильтра в FPGA */
 			vfb = filter_firp_tx_SSB_IQ(vfb);
