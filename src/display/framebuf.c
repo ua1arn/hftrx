@@ -630,14 +630,19 @@ static uint32_t mixer_reg_init(void){
 static int hwacc_waitdone(void)
 {
 	unsigned n = 0x20000000;
-	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	for (;;)
 	{
 		const uint_fast32_t MASK = (1u << 0);	/* FINISH_IRQ */
-		const uint_fast32_t sts = G2D_MIXER->G2D_MIXER_INT;
-		if (((sts & MASK) != 0))
+		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INT;
+		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
+		if (((mixer_int & MASK) != 0))
 		{
 			G2D_MIXER->G2D_MIXER_INT = MASK;
+			break;
+		}
+		if (((rot_int & MASK) != 0))
+		{
+			G2D_ROT->ROT_INT = MASK;
 			break;
 		}
 		hardware_nonguiyield();
@@ -647,7 +652,6 @@ static int hwacc_waitdone(void)
 			return 0;
 		}
 	}
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 	return 1;
 }
 
@@ -993,11 +997,13 @@ hwacc_fillrect_u16(
 	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
 
+	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
 		PRINTF("hwacc_fillrect_u16: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
 		ASSERT(0);
 	}
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
@@ -1331,11 +1337,13 @@ hwacc_fillrect_u32(
 	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
 
+	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
 		PRINTF("hwacc_fillrect_u32: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
 		ASSERT(0);
 	}
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
