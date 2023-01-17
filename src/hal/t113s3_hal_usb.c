@@ -2843,9 +2843,13 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 		{
 			case USB_REQ_GET_STATUS :
 			{
-    			//PRINTF("usb_device: Get Status, sLength=%04X\n", ep0_setup->wLength);
+				uint_fast16_t dev_config_status = 0; // D1=remote wakeup D0=self powered
+				//PRINTF("usb_device: Get Status, sLength=%04X\n", ep0_setup->wLength);
+#if (USBD_SELF_POWERED == 1U)
+				dev_config_status |= USB_CONFIG_SELF_POWERED;
+#endif
 				static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
-				USBD_poke_u16(& buff [0], 0x0001); // D1=remote wakeup D0=self powered
+				USBD_poke_u16(& buff [0], dev_config_status);
 				pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
 				pusb->ep0_xfer_residue = min(2, ep0_setup->wLength);
 			}
