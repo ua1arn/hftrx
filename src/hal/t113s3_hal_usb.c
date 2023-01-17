@@ -2841,10 +2841,15 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 		const uint_fast8_t index = LO_BYTE(ep0_setup->wValue);
 		switch (ep0_setup->bRequest)
 		{
-//			case USB_REQ_GET_STATUS :
-//    			PRINTF("usb_device: Get Status, sLength=%04X\n", ep0_setup->wLength);
-//				pusb->ep0_xfer_residue = 0;
-//		    	break;
+			case USB_REQ_GET_STATUS :
+			{
+    			//PRINTF("usb_device: Get Status, sLength=%04X\n", ep0_setup->wLength);
+				static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
+				USBD_poke_u16(& buff [0], 0x0001); // D1=remote wakeup D0=self powered
+				pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
+				pusb->ep0_xfer_residue = min(2, ep0_setup->wLength);
+			}
+		    	break;
 			case USB_REQ_GET_DESCRIPTOR :
 				switch (HI_BYTE(ep0_setup->wValue))
 				{
@@ -3151,7 +3156,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 	else
 	{
 		pusb->ep0_xfer_residue = 0;
-		PRINTF("usb_device: Unknown EP0 IN!!, 0x%02X\n", ep0_setup->bmRequest&0x60);
+		PRINTF("usb_device: Unknown EP0 IN!!, 0x%02X\n", ep0_setup->bmRequest & USB_REQ_TYPE_MASK);
 	}
 
 	usb_ep0_complete_send(pusb, pusb->ep0_xfer_srcaddr, pusb->ep0_xfer_residue);
@@ -3220,15 +3225,13 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 
 		case 0x05 :
 			usb_set_dev_addr(pusb, LO_BYTE(ep0_setup->wValue));
-       		//pusb->device.func_addr = LO_BYTE(ep0_setup->wValue);
-       		PRINTF("usb_device: Set Address 0x%x\n", LO_BYTE(ep0_setup->wValue));
+       		//PRINTF("usb_device: Set Address 0x%x\n", LO_BYTE(ep0_setup->wValue));
 			break;
-
 		case 0x07 :
        		PRINTF("usb_device: Set Descriptor\n");
       		break;
     	case 0x09 :
-       		PRINTF("usb_device: Set Config\n");
+       		//PRINTF("usb_device: Set Config\n");
      		ep0_set_config_handler_dev(pusb);
     		break;
     	case 0x0B :
@@ -3929,7 +3932,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 #if ! WITHWAWXXUSB
 		HAL_PCD_SuspendCallback(hpcd);
 #endif
-	  	PRINTF("uSuspend\n");
+	  	//PRINTF("uSuspend\n");
 		gpusb = NULL;
   	}
 
@@ -3940,7 +3943,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 #if ! WITHWAWXXUSB
 		HAL_PCD_ResumeCallback(hpcd);
 #endif
-		PRINTF("uResume\n");
+		//PRINTF("uResume\n");
 	}
 
 	if (irqstatus & USB_BUSINT_RESET)
