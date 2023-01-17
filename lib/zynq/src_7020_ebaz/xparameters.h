@@ -18,8 +18,8 @@
 
 #include "xparameters_ps.h"
 
-#define STDIN_BASEADDRESS 0xE0001000
-#define STDOUT_BASEADDRESS 0xE0001000
+#define STDIN_BASEADDRESS 0xE0000000
+#define STDOUT_BASEADDRESS 0xE0000000
 
 /******************************************************************/
 
@@ -228,14 +228,24 @@
 #define XPAR_AUDIO_AXI_I2S_ADI_0_HIGHADDR 0x43C2FFFF
 
 
-/* Peripheral Definitions for peripheral IQ_MODEM_AXI_FIFO_IQ_RX */
+/* Peripheral Definitions for peripheral IQ_MODEM_FIFO_IQ_RX */
 #define XPAR_IQ_MODEM_AXI_FIFO_IQ_RX_BASEADDR 0x43C70000
 #define XPAR_IQ_MODEM_AXI_FIFO_IQ_RX_HIGHADDR 0x43C7FFFF
 
 
-/* Peripheral Definitions for peripheral IQ_MODEM_AXI_FIFO_IQ_TX */
+/* Peripheral Definitions for peripheral IQ_MODEM_FIFO_IQ_TX */
 #define XPAR_IQ_MODEM_AXI_FIFO_IQ_TX_BASEADDR 0x43C60000
 #define XPAR_IQ_MODEM_AXI_FIFO_IQ_TX_HIGHADDR 0x43C6FFFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_FIR_RELOAD_RX */
+#define XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR 0x43C80000
+#define XPAR_IQ_MODEM_FIR_RELOAD_RX_HIGHADDR 0x43C80FFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_FIR_RELOAD_TX */
+#define XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR 0x43C90000
+#define XPAR_IQ_MODEM_FIR_RELOAD_TX_HIGHADDR 0x43C90FFF
 
 
 /* Peripheral Definitions for peripheral IQ_MODEM_TRX_CONTROL2_0 */
@@ -348,14 +358,24 @@
 #define XPAR_AXI_I2S_ADI_0_HIGHADDR 0x43C2FFFF
 
 
-/* Canonical Definitions for peripheral IQ_MODEM_AXI_FIFO_IQ_RX */
+/* Canonical Definitions for peripheral IQ_MODEM_FIFO_IQ_RX */
 #define XPAR_AXI_AXIS_READER_1_BASEADDR 0x43C70000
 #define XPAR_AXI_AXIS_READER_1_HIGHADDR 0x43C7FFFF
 
 
-/* Canonical Definitions for peripheral IQ_MODEM_AXI_FIFO_IQ_TX */
+/* Canonical Definitions for peripheral IQ_MODEM_FIFO_IQ_TX */
 #define XPAR_AXI_AXIS_WRITER_1_BASEADDR 0x43C60000
 #define XPAR_AXI_AXIS_WRITER_1_HIGHADDR 0x43C6FFFF
+
+
+/* Canonical Definitions for peripheral IQ_MODEM_FIR_RELOAD_RX */
+#define XPAR_AXI_AXIS_WRITER_2_BASEADDR 0x43C80000
+#define XPAR_AXI_AXIS_WRITER_2_HIGHADDR 0x43C80FFF
+
+
+/* Canonical Definitions for peripheral IQ_MODEM_FIR_RELOAD_TX */
+#define XPAR_AXI_AXIS_WRITER_3_BASEADDR 0x43C90000
+#define XPAR_AXI_AXIS_WRITER_3_HIGHADDR 0x43C90FFF
 
 
 /* Canonical Definitions for peripheral IQ_MODEM_TRX_CONTROL2_0 */

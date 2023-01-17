@@ -40,9 +40,6 @@
 	#include "lib/zynq/src_7020_ebaz/xparameters.h"
 	#include "lib/zynq/src_7020_ebaz/xil_exception.h"
 	#include "lib/zynq/src_7020_ebaz/xil_types.h"
-	#if WITHDSPEXTFIR
-		#include "lib/zynq/src_7020_ebaz/axidma_v9_13/xaxidma.h"
-	#endif /* WITHDSPEXTFIR */
 	#if WITHETHHW
 		#include "lib/zynq/src_7020_ebaz/emacps_v3_14/xemacps.h"
 	#endif /* WITHETHHW */
