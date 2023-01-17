@@ -4094,12 +4094,12 @@ static void DMAC_clock_initialize(void)
 
 enum
 {
-	DMAC_I2S1_TX_Ch = 0,
-	DMAC_I2S1_RX_Ch = 1,
-	DMAC_AudioCodec_TX_Ch = DMAC_I2S1_TX_Ch,
-	DMAC_AudioCodec_RX_Ch = DMAC_I2S1_RX_Ch,
-	DMAC_I2S2_TX_Ch = 2,
-	DMAC_I2S2_RX_Ch = 3,
+	DMAC_I2S1_TX_Ch,
+	DMAC_I2S1_RX_Ch,
+	DMAC_AudioCodec_TX_Ch,// = DMAC_I2S1_TX_Ch,
+	DMAC_AudioCodec_RX_Ch,// = DMAC_I2S1_RX_Ch,
+	DMAC_I2S2_TX_Ch,
+	DMAC_I2S2_RX_Ch,
 	//
 	DMAC_Ch_Total
 };
