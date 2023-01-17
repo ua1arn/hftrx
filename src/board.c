@@ -6849,50 +6849,32 @@ restart:
 #if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 #include "xc7z_inc.h"
-XAxiDma xcz_dma_fir_coeffs;
 
 void board_fpga_fir_initialize(void)
 {
-	XAxiDma_Config * config = XAxiDma_LookupConfig(XPAR_IQ_MODEM_AXI_DMA_FIR_RELOAD_DEVICE_ID);
-	int Status = XAxiDma_CfgInitialize(& xcz_dma_fir_coeffs, config);
 
-	if (Status != XST_SUCCESS) {
-		PRINTF("xcz_dma_fir_coeffs Initialization failed %d\r\n", Status);
-		ASSERT(0);
-	}
-
-	if(XAxiDma_HasSg(& xcz_dma_fir_coeffs))
-	{
-		PRINTF("xcz_dma_fir_coeffs Device configured as SG mode \r\n");
-		ASSERT(0);
-	}
 }
 
-void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap, unsigned CWidth)
 {
-	int_fast32_t firbuf[Ntap_trxi_IQ];
-
 	const int iHalfLen = (Ntap - 1) / 2;
-	int i, j = 0;
+	int i = 0;
 
-	if (xcz_dma_fir_coeffs.Initialized)
+	for (; i <= iHalfLen; ++ i)
 	{
-		for (i = 0; i <= iHalfLen; ++ i)
-			firbuf[j ++] = k [i];
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, k[i]);
+#if ! WITHDSPLOCALTXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, k[i]);
+#endif /* ! WITHDSPLOCALTXFIR */
+	}
 
-		i -= 1;
-		for (; -- i >= 0;)
-			firbuf[j ++] = k [i];
-
-		size_t len = Ntap * sizeof(int_fast32_t);
-		arm_hardware_flush((uintptr_t) firbuf, len);
-		int Status = XAxiDma_SimpleTransfer(& xcz_dma_fir_coeffs, (uintptr_t) firbuf, len, XAXIDMA_DMA_TO_DEVICE);
-		if (Status != XST_SUCCESS)
-		{
-			PRINTF("board_reload_fir transmit error %d\n", Status);
-			ASSERT(0);
-		}
-		while(XAxiDma_Busy(& xcz_dma_fir_coeffs, XAXIDMA_DMA_TO_DEVICE));
+	i -= 1;
+	for (; -- i >= 0;)
+	{
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, k[i]);
+#if ! WITHDSPLOCALTXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, k[i]);
+#endif /* ! WITHDSPLOCALTXFIR */
 	}
 }
 #elif ! LINUX_SUBSYSTEM

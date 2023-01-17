@@ -35,8 +35,17 @@
 #define XPAR_FABRIC_AXI_FIFO_IQ_RX_IRQ_INTR			61
 #define XPAR_FABRIC_AXI_FIFO_IQ_TX_IRQ_INTR			64
 
-#define CALIBRATION_IQ_RX_SHIFT	52
-#define CALIBRATION_TX_SHIFT	24
+#if defined WITHDSPLOCALFIR
+	#define CALIBRATION_IQ_RX_SHIFT	52
+#else
+	#define CALIBRATION_IQ_RX_SHIFT	44
+#endif /* defined WITHDSPLOCALFIR */
+
+#if defined WITHDSPLOCALTXFIR
+	#define CALIBRATION_TX_SHIFT	24
+#else
+	#define CALIBRATION_TX_SHIFT	19
+#endif /* defined WITHDSPLOCALTXFIR */
 
 #define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 #define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */

@@ -21,6 +21,7 @@
 #include "codecs.h"
 
 #include "src/gui/gui.h"
+#include "xc7z_inc.h"
 
 #if WITHTOUCHGUI
 
