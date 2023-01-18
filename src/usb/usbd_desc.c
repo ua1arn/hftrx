@@ -2617,6 +2617,7 @@ static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, un
 	const uint_fast8_t terminalOutID = TERMINAL_UACOUT48 + offset * MAX_TERMINALS_IN_INTERFACE;
 	const uint_fast8_t iInterfaceIN48 = STRING_ID_IN48;
 	const uint_fast8_t iInterfaceOUT48 = STRING_ID_OUT48;
+	const uint_fast8_t iInterfaceINRTS = STRING_ID_INRTS;
 	const uint_fast8_t coll [] =
 	{
 		mikeifv,
