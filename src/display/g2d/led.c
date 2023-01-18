@@ -1,9 +1,5 @@
 #if (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-#include "src/display/display.h"
-#define VIDEO_MEMORY0 ((uintptr_t) colmain_fb_draw())
-#define VIDEO_MEMORY1 ((uintptr_t) colmain_fb_draw())
-
 #ifndef min
 #define min( x, y ) ( (x) < (y) ? (x) : (y) )
 #endif
@@ -66,7 +62,7 @@ void PNG_Draw(u32 px,u32 py,LuImage *png,u8 layer)   //выводит PNG на дисплей в 
   dst+=LCD_PIXEL_WIDTH;
   src+=png->width;
  }
- arm_hardware_flush((uintptr_t) dst0, LCD_PIXEL_WIDTH * png->height);
+ arm_hardware_flush((uintptr_t) dst0, LCD_PIXEL_WIDTH * png->height * BYTE_PER_PIXEL);
 }
 
 void PNG_Free(LuImage *png)                          //освобождает память разжатого PNG
@@ -106,8 +102,8 @@ void PNG_Background(LuImage *png,u32 memory)           //выводит фоновый PNG на 
  G2D_BLT.src_rect.h=png->height;
 
  G2D_BLT.dst_image.addr[0]=memory;
- G2D_BLT.dst_image.addr[0]=memory;
- G2D_BLT.dst_image.addr[0]=memory;
+ G2D_BLT.dst_image.addr[1]=memory;	// was index=0
+ G2D_BLT.dst_image.addr[2]=memory;	// was index=0
  G2D_BLT.dst_image.w=LCD_PIXEL_WIDTH;
  G2D_BLT.dst_image.h=LCD_PIXEL_HEIGHT;
  G2D_BLT.dst_image.format=G2D_FMT_ABGR_AVUY8888;
@@ -127,7 +123,7 @@ void PNG_Background(LuImage *png,u32 memory)           //выводит фоновый PNG на 
 // if(png)MEMCPY((u8*)memory,png->data,LCD_PIXEL_WIDTH*LCD_PIXEL_HEIGHT*4);
 //}
 
-void Rect(void)
+void xRect(void)
 {
  G2D_FILLRECT.flag=G2D_FIL_NONE; //G2D_FIL_PIXEL_ALPHA; //G2D_FIL_PLANE_ALPHA; //опеделяет смешение на плоскости
 
@@ -195,8 +191,8 @@ void g2d_main(void)
  G2D_BLT.flag=G2D_BLT_NONE|G2D_BLT_SRC_COLORKEY; // G2D_BLT_PIXEL_ALPHA; //обе прозрачности работают - через colorkey или alpha
 
  G2D_BLT.src_image.addr[0]=(u32)png[0]->data;    //память, где хранится картинка
- G2D_BLT.src_image.addr[0]=(u32)png[0]->data;
- G2D_BLT.src_image.addr[0]=(u32)png[0]->data;
+ G2D_BLT.src_image.addr[1]=(u32)png[0]->data;	// was index=0
+ G2D_BLT.src_image.addr[2]=(u32)png[0]->data;	// was index=0
  G2D_BLT.src_image.w=png[0]->width;              //габариты атласа
  G2D_BLT.src_image.h=png[0]->height;
  G2D_BLT.src_image.format=G2D_FMT_ABGR_AVUY8888;
@@ -209,8 +205,8 @@ void g2d_main(void)
  G2D_BLT.src_rect.h=png[0]->height;
 
  G2D_BLT.dst_image.addr[0]=VIDEO_MEMORY1;
- G2D_BLT.dst_image.addr[0]=VIDEO_MEMORY1;
- G2D_BLT.dst_image.addr[0]=VIDEO_MEMORY1;
+ G2D_BLT.dst_image.addr[1]=VIDEO_MEMORY1;	// was index=0
+ G2D_BLT.dst_image.addr[2]=VIDEO_MEMORY1;	// was index=0
  G2D_BLT.dst_image.w=LCD_PIXEL_WIDTH;
  G2D_BLT.dst_image.h=LCD_PIXEL_HEIGHT;
  G2D_BLT.dst_image.format=G2D_FMT_ABGR_AVUY8888;
@@ -249,7 +245,7 @@ void g2d_main(void)
 
 #if 1
 
- G2D_STRETCHBLT.flag=G2D_BLT_NONE|G2D_BLT_PIXEL_ALPHA;
+ G2D_STRETCHBLT.flag=G2D_BLT_NONE|G2D_BLT_PIXEL_ALPHA /*|G2D_BLT_SRC_COLORKEY */;
 
  G2D_STRETCHBLT.src_image.addr[0]=(u32)png[0]->data;    //память, где хранится картинка
  G2D_STRETCHBLT.src_image.addr[1]=(u32)png[0]->data;
