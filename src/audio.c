@@ -2914,7 +2914,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	#endif /* WITHDSPLOCALFIR */
 #if WITHDSPLOCALTXFIR
 		if (isdspmodetx(dspmode))
-			fir_design_passtrough(FIRCoef_tx_SSB_IQ [spf], Ntap_tx_SSB_IQ, 1, ap);
+			fir_design_passtrough(FIRCoef_tx_SSB_IQ [spf], Ntap_tx_SSB_IQ, 1);
 #endif /* WITHDSPLOCALTXFIR */
 	}
 	else
@@ -2939,12 +2939,12 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 				}
 		}
 		else if (isdspmodetx(dspmode))
-			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain, & fpgafircoefsout);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 
 	#else /* WITHDSPLOCALFIR */
 	#if WITHDSPLOCALTXFIR
 			if (isdspmodetx(dspmode))
-				fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, 1, & fpgafircoefsout);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+				fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, 1);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 	#endif /* WITHDSPLOCALTXFIR */
 
 		(void) dspmode;
