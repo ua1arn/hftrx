@@ -44,26 +44,26 @@ void PNG_Load(LuImage **png,const void *buffer)      //разжимает PNG из buffer в
  *png=luPngReadMemory((char*)buffer);
 }
 
-void PNG_Draw(u32 px,u32 py,LuImage *png,u8 layer)   //выводит PNG на дисплей в заданных координатах
-{
- if(png==NULL)return;
-
- u32 line=png->width<<2;
-
- u32 * __restrict__ src=(u32*)png->data;
- u32 * __restrict__ dst=(u32*)(layer?VIDEO_MEMORY1:VIDEO_MEMORY0);
- u32 * __restrict__ dst0=dst;
-
- dst+=(LCD_PIXEL_WIDTH*py)+px;
-
- for(u32 y=0;y<png->height;y++)
- {
-  memcpy(dst,src,line);
-  dst+=LCD_PIXEL_WIDTH;
-  src+=png->width;
- }
- arm_hardware_flush((uintptr_t) dst0, LCD_PIXEL_WIDTH * png->height * BYTE_PER_PIXEL);
-}
+//void xPNG_Draw(u32 px,u32 py,LuImage *png,u8 layer)   //выводит PNG на дисплей в заданных координатах
+//{
+// if(png==NULL)return;
+//
+// u32 line=png->width<<2;
+//
+// u32 * __restrict__ src=(u32*)png->data;
+// u32 * __restrict__ dst=(u32*)(layer?VIDEO_MEMORY1:VIDEO_MEMORY0);
+// u32 * __restrict__ dst0=dst;
+//
+// dst+=(LCD_PIXEL_WIDTH*py)+px;
+//
+// for(u32 y=0;y<png->height;y++)
+// {
+//  memcpy(dst,src,line);
+//  dst+=LCD_PIXEL_WIDTH;
+//  src+=png->width;
+// }
+// arm_hardware_flush((uintptr_t) dst0, LCD_PIXEL_WIDTH * png->height * BYTE_PER_PIXEL);
+//}
 
 void PNG_Free(LuImage *png)                          //освобождает память разжатого PNG
 {
@@ -85,7 +85,7 @@ void PNG_Background(LuImage *png,u32 memory)           //выводит фоновый PNG на 
 {
  if(png==NULL)return;
 
- G2D_BLT.flag=G2D_BLT_NONE|G2D_BLT_PLANE_ALPHA;
+ G2D_BLT.flag=G2D_BLT_NONE|0*G2D_BLT_PLANE_ALPHA;
 
  G2D_BLT.src_image.addr[0]=(u32)png->data;    //память, где хранится картинка
  G2D_BLT.src_image.addr[0]=(u32)png->data;
@@ -218,6 +218,7 @@ void g2d_main(void)
  G2D_BLT.color=*(u32*)png[0]->data; //0x00000000; //цветовой ключ RGB
  G2D_BLT.alpha=0xFF;       //альфа плоскости
 
+ PRINTF("G2D_BLT.color=%08X\n", (unsigned) G2D_BLT.color);
  u32 t;
  //t=AVS_CNT0_REG;
  u32 d;
@@ -281,6 +282,7 @@ void g2d_main(void)
 
  G2D_STRETCHBLT.color=*(u32*)png[0]->data; //0x00000000; //цветовой ключ RGB
  G2D_STRETCHBLT.alpha=0xFF;       //альфа плоскости
+ PRINTF("G2D_STRETCHBLT.color=%08X\n", (unsigned) G2D_BLT.color);
 
  PorterDuff=G2D_BLD_SRCOVER;
 
