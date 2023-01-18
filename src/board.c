@@ -6847,6 +6847,7 @@ restart:
 #if WITHDSPEXTFIR
 
 static adapter_t plfircoefsout;
+static adapter_t plfircoefsout32;
 
 #if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
@@ -6902,6 +6903,7 @@ void board_fpga_fir_initialize(void)
 
 	/* FPGA FIR коэффициенты */
 	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "plfircoefsout");
+	adpt_initialize(& plfircoefsout32, 32, 0, "plfircoefsout32");
 
 	TARGET_FPGA_FIR_INITIALIZE();
 
@@ -7234,7 +7236,7 @@ board_fpga_fir_send(
 	const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth
 	)
 {
-	ASSERT(CWidth <= 24);
+	//ASSERT(CWidth <= 24);
 	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
 	board_fpga_fir_connect();
 
@@ -7394,6 +7396,10 @@ void board_initialize(void)
 	board_fpga_loader_PS();
 #endif /* WITHFPGALOAD_PS */
 
+#if WITHDSPEXTFIR
+	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
+#endif /* WITHDSPEXTFIR */
+
 	board_update_initial();		// Обнуление теневых переменных, синхронизация регистров с теневыми переменными.
 	board_reset();			/* формирование импульса на reset_n */
 
@@ -7406,10 +7412,6 @@ void board_initialize(void)
 #if WITHCPUDACHW
 	hardware_dac_initialize();	/* инициализация DAC на STM32F4xx */
 #endif /* WITHCPUDACHW */
-
-#if WITHDSPEXTFIR
-	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
-#endif /* WITHDSPEXTFIR */
 
 	adcfilters_initialize();	// раотают даже если нет аппаратного АЦП в процссоре
 
