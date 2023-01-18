@@ -6858,22 +6858,34 @@ void board_fpga_fir_initialize(void)
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
-	int i = 0;
+	int i = 0, m = 0, bits = 0;
 
+	// Приведение разрядности значений коэффициентов к CWidth
 	for (; i <= iHalfLen; ++ i)
+		m = k[i] > m ? k[i] : m;
+
+	while(m > 0)
 	{
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, k[i]);
+		m  = m >> 1;
+		bits ++;
+	}
+
+	bits = CWidth - bits;
+
+	for (i = 0; i <= iHalfLen; ++ i)
+	{
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, k[i] << bits);
 #if ! WITHDSPLOCALTXFIR
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, k[i]);
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, k[i] << bits);
 #endif /* ! WITHDSPLOCALTXFIR */
 	}
 
 	i -= 1;
 	for (; -- i >= 0;)
 	{
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, k[i]);
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, k[i] << bits);
 #if ! WITHDSPLOCALTXFIR
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, k[i]);
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, k[i] << bits);
 #endif /* ! WITHDSPLOCALTXFIR */
 	}
 }

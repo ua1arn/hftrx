@@ -572,14 +572,26 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap,
 	if (fir_reload)
 	{
 		const int iHalfLen = (Ntap - 1) / 2;
-		int i = 0;
+		int i = 0, m = 0, bits = 0;
 
+		// Приведение разрядности значений коэффициентов к CWidth
 		for (; i <= iHalfLen; ++ i)
-			* fir_reload = k[i];
+			m = k[i] > m ? k[i] : m;
+
+		while(m > 0)
+		{
+			m  = m >> 1;
+			bits ++;
+		}
+
+		bits = CWidth - bits;
+
+		for (i = 0; i <= iHalfLen; ++ i)
+			* fir_reload = k[i] << bits;
 
 		i -= 1;
 		for (; -- i >= 0;)
-			* fir_reload = k[i];
+			* fir_reload = k[i] << bits;
 	}
 }
 #endif /* WITHDSPEXTFIR */
