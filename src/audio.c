@@ -2956,7 +2956,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		{
 			const int iCoefNum = Ntap_trxi_IQ;
 			const double * const dWindow = FIRCwndL_trxi_IQ;
-			double dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
+			double * const dCoeff = dCoeff_trxi_IQ;
 			//fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 			{
 				fir_design_lowpassL(dCoeff, iCoefNum, fir_design_normfreqL(cutfreq));
@@ -2976,7 +2976,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		{
 			const int iCoefNum = Ntap_trxi_IQ;
 			const FLOAT_t * const dWindow = FIRCwnd_trxi_IQ;
-			FLOAT_t dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
+			FLOAT_t * const dCoeff = dCoeff_trxi_IQ;
 			//fir_design_lowpass_freq_scaled(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 			{
 				fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(cutfreq));
