@@ -561,18 +561,22 @@ void xcz_tx_shift(uint32_t val)
 
 #if WITHDSPEXTFIR
 volatile uint32_t * fir_reload = NULL;
+static adapter_t plfircoefsout;		/* параметры прербразования к PL */
 
 void board_fpga_fir_initialize(void)
 {
+	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "fpgafircoefsout");
 	fir_reload = get_highmem_ptr(AXI_FIR_RELOAD_ADDR, 1);
 }
 
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	if (fir_reload)
 	{
 		const int iHalfLen = (Ntap - 1) / 2;
 		int i = 0, m = 0, bits = 0;
+
+		// int32_t coeff = adpt_output(& plfircoefsout, kf [i]);		/* вот так получать целочисленное значение требуемой разрядности */
 
 		// Приведение разрядности значений коэффициентов к CWidth
 		for (; i <= iHalfLen; ++ i)

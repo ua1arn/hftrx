@@ -6846,20 +6846,25 @@ restart:
 
 #if WITHDSPEXTFIR
 
+static adapter_t plfircoefsout;
+
 #if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 #include "xc7z_inc.h"
 
 void board_fpga_fir_initialize(void)
 {
+	/* FPGA FIR коэффициенты */
+	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "plfircoefsout");
 
 }
 
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
 	int i = 0, m = 0, bits = 0;
 
+	// int32_t coeff = adpt_output(& plfircoefsout, kf [i]);		/* вот так получать целочисленное значение требуемой разрядности */
 	// Приведение разрядности значений коэффициентов к CWidth
 	for (; i <= iHalfLen; ++ i)
 		m = k[i] > m ? k[i] : m;
@@ -6894,6 +6899,9 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap,
 void board_fpga_fir_initialize(void)
 {
 	//PRINTF(PSTR("board_fpga_fir_initialize start\n"));
+
+	/* FPGA FIR коэффициенты */
+	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "plfircoefsout");
 
 	TARGET_FPGA_FIR_INITIALIZE();
 
@@ -7064,7 +7072,7 @@ static void sendbatch(uint_fast8_t ifir)
 // two banks, symmetrical 961:
 // coef_seq.exe fir_normalized_coeff961_lpf_1550.txt fir_normalized_coeff961_lpf_1550_reseq_b.txt MCV M4K MSYM 128 2 SGL 1 32
 //
-static void single_rate_out_write_mcv(const int32_t * coef, int coef_length, int coef_bit_width)
+static void single_rate_out_write_mcv(const FLOAT_t * kf, int coef_length, int coef_bit_width)
 {
 
 	enum coef_store_type { LC, M512, M4K, DUMMY, AUTO };
@@ -7139,7 +7147,7 @@ static void single_rate_out_write_mcv(const int32_t * coef, int coef_length, int
 		for (i=0; i < zeros_insert; ++ i)
 			tmp_coef [i] = 0;
 		for (i=0; i < coef_length; ++ i)
-			tmp_coef [i + zeros_insert] = coef [i];
+			tmp_coef [i + zeros_insert] = adpt_output(& plfircoefsout, kf [i]);
 
 		//assert(mcv_coef_length == (coef_length + zeros_insert));
 
@@ -7223,7 +7231,7 @@ static void single_rate_out_write_mcv(const int32_t * coef, int coef_length, int
 static void 
 board_fpga_fir_send(
 	const uint_fast8_t ifir,	// номер FIR фильтра в FPGA
-	const int32_t * const k, unsigned Ntap, unsigned CWidth
+	const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth
 	)
 {
 	ASSERT(CWidth <= 24);
@@ -7250,8 +7258,8 @@ board_fpga_fir_send(
 	board_fpga_fir_coef_p1(0x00000000);	// 1-st dummy
 	board_fpga_fir_coef_p2(0x00000000);	// 2-nd dummy
 
-	//single_rate_out_write_ser(k, Ntap / 2 + 1); // NtapCoeffs(Ntap);
-	single_rate_out_write_mcv(k, Ntap, CWidth); // NtapCoeffs(Ntap);
+	//single_rate_out_write_ser(kf, Ntap / 2 + 1); // NtapCoeffs(Ntap);
+	single_rate_out_write_mcv(kf, Ntap, CWidth); // NtapCoeffs(Ntap);
 	//sendbatch();
 
 	board_fpga_fir_complete();
@@ -7295,7 +7303,7 @@ static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
 #endif /* WITHDEBUG */
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 #if 0 && WITHDEBUG
 	int_fast64_t sum = 0;
@@ -7304,7 +7312,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, unsigned Ntap,
 		sum += expandsign(k [i], CWidth);
 	PRINTF(PSTR("board_reload_fir: ifir=%u, Ntap=%u, sum=%08lX%08lX, CWidth=%u\n"), ifir, Ntap, (unsigned long) (sum >> 32), (unsigned long) (sum >> 0), CWidth);
 #endif /* WITHDEBUG */
-	board_fpga_fir_send(ifir, k, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
+	board_fpga_fir_send(ifir, kf, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
 }
 
