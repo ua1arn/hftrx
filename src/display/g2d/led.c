@@ -91,9 +91,9 @@ void PNG_Background(LuImage *png,u32 memory)           //выводит фоновый PNG на 
 
  G2D_BLT.flag=G2D_BLT_NONE|0*G2D_BLT_PLANE_ALPHA;
 
- G2D_BLT.src_image.addr[0]=(u32)png->data;    //память, где хранится картинка
- G2D_BLT.src_image.addr[0]=(u32)png->data;
- G2D_BLT.src_image.addr[0]=(u32)png->data;
+ G2D_BLT.src_image.addr[0]=(uintptr_t)png->data;    //память, где хранится картинка
+ G2D_BLT.src_image.addr[0]=(uintptr_t)png->data;
+ G2D_BLT.src_image.addr[0]=(uintptr_t)png->data;
  G2D_BLT.src_image.w=png->width;              //габариты атласа
  G2D_BLT.src_image.h=png->height;
  G2D_BLT.src_image.format=G2D_FMT_ABGR_AVUY8888;
@@ -200,9 +200,9 @@ void g2d_main(void)
 #if 1
  G2D_BLT.flag=G2D_BLT_NONE|G2D_BLT_SRC_COLORKEY; // G2D_BLT_PIXEL_ALPHA; //обе прозрачности работают - через colorkey или alpha
 
- G2D_BLT.src_image.addr[0]=(u32)png[0]->data;    //память, где хранится картинка
- G2D_BLT.src_image.addr[1]=(u32)png[0]->data;	// was index=0
- G2D_BLT.src_image.addr[2]=(u32)png[0]->data;	// was index=0
+ G2D_BLT.src_image.addr[0]=(uintptr_t)png[0]->data;    //память, где хранится картинка
+ G2D_BLT.src_image.addr[1]=(uintptr_t)png[0]->data;	// was index=0
+ G2D_BLT.src_image.addr[2]=(uintptr_t)png[0]->data;	// was index=0
  G2D_BLT.src_image.w=png[0]->width;              //габариты атласа
  G2D_BLT.src_image.h=png[0]->height;
  G2D_BLT.src_image.format=G2D_FMT_ABGR_AVUY8888;
@@ -255,9 +255,9 @@ void g2d_main(void)
 
  G2D_STRETCHBLT.flag=G2D_BLT_NONE|G2D_BLT_PIXEL_ALPHA /*|G2D_BLT_SRC_COLORKEY */;
 
- G2D_STRETCHBLT.src_image.addr[0]=(u32)png[0]->data;    //память, где хранится картинка
- G2D_STRETCHBLT.src_image.addr[1]=(u32)png[0]->data;
- G2D_STRETCHBLT.src_image.addr[2]=(u32)png[0]->data;
+ G2D_STRETCHBLT.src_image.addr[0]=(uintptr_t)png[0]->data;    //память, где хранится картинка
+ G2D_STRETCHBLT.src_image.addr[1]=(uintptr_t)png[0]->data;
+ G2D_STRETCHBLT.src_image.addr[2]=(uintptr_t)png[0]->data;
 
  G2D_STRETCHBLT.src_image.w=png[0]->width;              //габариты атласа
  G2D_STRETCHBLT.src_image.h=png[0]->height;

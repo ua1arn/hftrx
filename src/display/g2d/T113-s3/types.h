@@ -17,15 +17,15 @@ typedef unsigned int			u32_t;
 typedef signed long long		s64_t;
 typedef unsigned long long		u64_t;
 
-typedef signed long long		intmax_t;
-typedef unsigned long long		uintmax_t;
-
-typedef signed int				ptrdiff_t;
-typedef signed int				intptr_t;
-typedef unsigned int 			uintptr_t;
-
-typedef unsigned int			size_t;
-typedef signed int				ssize_t;
+//typedef signed long long		intmax_t;
+//typedef unsigned long long		uintmax_t;
+//
+//typedef signed int				ptrdiff_t;
+//typedef signed int				intptr_t;
+//typedef unsigned int 			uintptr_t;
+//
+//typedef unsigned int			size_t;
+//typedef signed int				ssize_t;
 
 //typedef signed int				off_t;
 typedef signed long long		loff_t;
@@ -33,10 +33,10 @@ typedef signed long long		loff_t;
 typedef signed int				bool_t;
 typedef unsigned int			irq_flags_t;
 
-typedef unsigned int			virtual_addr_t;
-typedef unsigned int			virtual_size_t;
-typedef unsigned int			physical_addr_t;
-typedef unsigned int			physical_size_t;
+typedef uintptr_t			virtual_addr_t;
+typedef ptrdiff_t			virtual_size_t;
+typedef uintptr_t			physical_addr_t;
+typedef ptrdiff_t			physical_size_t;
 
 typedef struct {
 	volatile int counter;
