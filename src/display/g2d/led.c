@@ -186,6 +186,9 @@ void g2d_main(void)
  Again:
 
  PNG_Background(png[1],VIDEO_MEMORY1);
+ u32 t;
+ //t=AVS_CNT0_REG;
+ u32 d;
 
 #if 1
  G2D_BLT.flag=G2D_BLT_NONE|G2D_BLT_SRC_COLORKEY; // G2D_BLT_PIXEL_ALPHA; //обе прозрачности работают - через colorkey или alpha
@@ -219,9 +222,6 @@ void g2d_main(void)
  G2D_BLT.alpha=0xFF;       //альфа плоскости
 
  PRINTF("G2D_BLT.color=%08X\n", (unsigned) G2D_BLT.color);
- u32 t;
- //t=AVS_CNT0_REG;
- u32 d;
 
  for (t=0; t < 100; ++t)
  {
