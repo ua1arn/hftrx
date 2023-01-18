@@ -12,10 +12,6 @@
 
 #include "fb-t113-rgb.h"
 
-#include "src/display/display.h"
-#define VIDEO_MEMORY0 ((uintptr_t) colmain_fb_draw())
-#define VIDEO_MEMORY1 ((uintptr_t) colmain_fb_draw())
-
 static uint32_t read32(uintptr_t a)
 {
 	return * (volatile uint32_t *) a;

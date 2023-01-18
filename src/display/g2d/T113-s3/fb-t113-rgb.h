@@ -5,6 +5,10 @@
 extern "C" {
 #endif
 
+#include "src/display/display.h"
+#define VIDEO_MEMORY0 ((uintptr_t) colmain_fb_draw())
+#define VIDEO_MEMORY1 ((uintptr_t) colmain_fb_draw())
+
 #define LCD_PIXEL_WIDTH  DIM_X
 #define LCD_PIXEL_HEIGHT DIM_Y
 #define BYTE_PER_PIXEL     4
