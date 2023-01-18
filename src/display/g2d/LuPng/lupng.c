@@ -825,6 +825,20 @@ LuImage *luPngReadUC(const LuUserContext *userCtx)
     userCtx->freeProc(info.palette, userCtx->freeProcUserPtr);
     inflateEnd(&info.stream);
 
+    if (status == PNG_DONE) {
+    	unsigned len = info.img->height * info.img->width;
+//    	unsigned i;
+//    	uint32_t * data = (uint32_t *) info.img->data;
+//    	unsigned bgcolor = * data;
+//    	unsigned max_color  = __UQADD8(bgcolor, 0x00010101); //para->color;
+//    	unsigned min_color  = __UQSUB8(bgcolor, 0x00010101); //para->color;
+//    	for (i = 0; i < len; ++ i, ++ data) {
+//    		if (* data <= max_color && * data >= min_color)
+//    			* data = bgcolor;
+//    	}
+    	arm_hardware_flush((uintptr_t) info.img->data, len * 4);
+    }
+
     if (status == PNG_DONE)
         return info.img;
     else if (info.img)

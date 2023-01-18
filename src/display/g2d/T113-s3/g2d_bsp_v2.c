@@ -458,7 +458,7 @@ __s32 ck_para_set(g2d_ck *para)
 	__u32 tmp = 0x0;
 
 	if (para->match_rule)
-		tmp = 0x7;
+		tmp = 0x7;	/* цсловие - НЕ попадание в интервал */
 	write_wvalue(BLD_KEY_CON, tmp);
 	write_wvalue(BLD_KEY_MAX, para->max_color & 0x00ffffff);
 	write_wvalue(BLD_KEY_MIN, para->min_color & 0x00ffffff);
@@ -1958,9 +1958,12 @@ __s32 mixer_blt(g2d_blt *para, enum g2d_scan_order scan_order)
 			src->mode = G2D_MIXER_ALPHA;
 			dst->mode = G2D_MIXER_ALPHA;
 		}
+		/* почему? Разбега значений нет */
 		ck_para->match_rule = 0;
 		ck_para->max_color  = __UQADD8(para->color,0x00010101); //para->color;
 		ck_para->min_color  = __UQSUB8(para->color,0x00010101); //para->color;
+//		ck_para->max_color  = para->color;
+//		ck_para->min_color  = para->color;
 
 		result = g2d_bsp_bld(src, dst, PorterDuff /*G2D_BLD_SRCOVER*/ /*G2D_BLD_DSTOVER*/ , ck_para /*NULL*/); //приоритет отрисовки и цветовой ключ!
 

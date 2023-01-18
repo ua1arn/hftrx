@@ -94,8 +94,8 @@
 #define G2D_INFO_MSG(...) do { } while (0)
 
 #define pr_info(...) do { } while (0)
-#define pr_err(...) PRINTF
-#define pr_warn(...) PRINTF
+#define pr_err PRINTF
+#define pr_warn PRINTF
 
 #endif
 
