@@ -37,6 +37,10 @@
 
 LuImage *png[5]; //массив указателей на объект PNG (число PNG)
 
+
+//#define DstImageFormat G2D_FMT_ABGR_AVUY8888;
+#define DstImageFormat G2D_FMT_XRGB8888;
+
 //----------------------------------------------------------------------------------------------------------
 
 void PNG_Load(LuImage **png,const void *buffer)      //разжимает PNG из buffer в новую выделенную память(malloc)
@@ -106,7 +110,7 @@ void PNG_Background(LuImage *png,u32 memory)           //выводит фоновый PNG на 
  G2D_BLT.dst_image.addr[2]=memory;	// was index=0
  G2D_BLT.dst_image.w=LCD_PIXEL_WIDTH;
  G2D_BLT.dst_image.h=LCD_PIXEL_HEIGHT;
- G2D_BLT.dst_image.format=G2D_FMT_ABGR_AVUY8888;
+ G2D_BLT.dst_image.format=DstImageFormat;
  G2D_BLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
 
  G2D_BLT.dst_x=0;                              //координаты вывода
@@ -212,7 +216,7 @@ void g2d_main(void)
  G2D_BLT.dst_image.addr[2]=VIDEO_MEMORY1;	// was index=0
  G2D_BLT.dst_image.w=LCD_PIXEL_WIDTH;
  G2D_BLT.dst_image.h=LCD_PIXEL_HEIGHT;
- G2D_BLT.dst_image.format=G2D_FMT_ABGR_AVUY8888;
+ G2D_BLT.dst_image.format=DstImageFormat;
  G2D_BLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
 
 // G2D_BLT.dst_x=0;                                 //координаты вывода
@@ -271,7 +275,7 @@ void g2d_main(void)
  G2D_STRETCHBLT.dst_image.w=LCD_PIXEL_WIDTH;
  G2D_STRETCHBLT.dst_image.h=LCD_PIXEL_HEIGHT;
 
- G2D_STRETCHBLT.dst_image.format=G2D_FMT_ABGR_AVUY8888;
+ G2D_STRETCHBLT.dst_image.format=DstImageFormat;
  G2D_STRETCHBLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
 
  G2D_STRETCHBLT.dst_rect.x=0;                           //коодинаты вывода
@@ -383,7 +387,7 @@ void g2d_main(void)
  G2D_BLT.dst_image.addr[0]=VIDEO_MEMORY1;
  G2D_BLT.dst_image.w=LCD_PIXEL_WIDTH;
  G2D_BLT.dst_image.h=LCD_PIXEL_HEIGHT;
- G2D_BLT.dst_image.format=G2D_FMT_ABGR_AVUY8888;
+ G2D_BLT.dst_image.format=DstImageFormat;
  G2D_BLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
 
 // G2D_BLT.dst_x=0;                                 //координаты вывода
