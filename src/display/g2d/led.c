@@ -127,7 +127,7 @@ void PNG_Background(LuImage *png,u32 memory)           //выводит фоновый PNG на 
 // if(png)MEMCPY((u8*)memory,png->data,LCD_PIXEL_WIDTH*LCD_PIXEL_HEIGHT*4);
 //}
 
-void xRect(void)
+void Rect(void)
 {
  G2D_FILLRECT.flag=G2D_FIL_NONE; //G2D_FIL_PIXEL_ALPHA; //G2D_FIL_PLANE_ALPHA; //опеделяет смешение на плоскости
 
@@ -186,6 +186,9 @@ void g2d_main(void)
 // flush_dcache();
 
  G2D_Init();
+
+// Rect();
+// local_delay_ms(200);
 
  Again:
 

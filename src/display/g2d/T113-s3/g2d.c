@@ -37,10 +37,10 @@ static const g2d_init_para G2D_INIT=
 
 void G2D_Init(void)
 {
- G2D_Clk();                  //клоки, гейты, сбросы...
+ //G2D_Clk();                  //клоки, гейты, сбросы...
  g2d_init((void*)&G2D_INIT); //настройка базового адреса
 
- g2d_bsp_open();
+ //g2d_bsp_open();
 
  PRINTF("\nG2D Open!\n");
 }
