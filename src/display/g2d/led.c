@@ -56,6 +56,7 @@ void PNG_Draw(u32 px,u32 py,LuImage *png,u8 layer)   //выводит PNG на дисплей в 
 
  u32 * __restrict__ src=(u32*)png->data;
  u32 * __restrict__ dst=(u32*)(layer?VIDEO_MEMORY1:VIDEO_MEMORY0);
+ u32 * __restrict__ dst0=dst;
 
  dst+=(LCD_PIXEL_WIDTH*py)+px;
 
@@ -65,6 +66,7 @@ void PNG_Draw(u32 px,u32 py,LuImage *png,u8 layer)   //выводит PNG на дисплей в 
   dst+=LCD_PIXEL_WIDTH;
   src+=png->width;
  }
+ arm_hardware_flush((uintptr_t) dst0, LCD_PIXEL_WIDTH * png->height);
 }
 
 void PNG_Free(LuImage *png)                          //освобождает память разжатого PNG
