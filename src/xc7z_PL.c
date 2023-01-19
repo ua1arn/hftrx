@@ -105,9 +105,9 @@ void xcz_ah_preinit(void)
 
 	xcz_rxtx_state(1);
 	xcz_rxtx_state(0);
-	xcz_rx_iq_shift(CALIBRATION_IQ_RX_SHIFT);
+	xcz_rx_iq_shift(CALIBRATION_IQ_FIR_RX_SHIFT);
+	xcz_rx_cic_shift(CALIBRATION_IQ_CIC_RX_SHIFT);
 	xcz_tx_shift(CALIBRATION_TX_SHIFT);
-	xcz_rx_cic_shift(64);
 }
 
 // ****************** IF RX ******************
