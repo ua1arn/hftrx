@@ -336,8 +336,8 @@ uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, con
 /*************************************************************/
 
 volatile uint32_t *ftw, *ftw_sub, *rts, *modem_ctrl,  *ph_fifo, *iq_count_rx, *iq_count_tx, *iq_fifo_rx, *iq_fifo_tx;
-int32_t sinbuf[DMABUFFSIZE16TX];
-static uint8_t rx_shift = 0, tx_shift = 0, tx_state = 0;
+static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0;
+const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
 
 void linux_iq_init(void)
 {
@@ -355,8 +355,9 @@ void linux_iq_init(void)
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
 
-	xcz_rx_iq_shift(44);
-	xcz_tx_shift(25);
+	xcz_rx_iq_shift(CALIBRATION_IQ_FIR_RX_SHIFT);
+	xcz_rx_cic_shift(CALIBRATION_IQ_CIC_RX_SHIFT);
+	xcz_tx_shift(CALIBRATION_TX_SHIFT);
 }
 
 void linux_iq_thread(void)
@@ -516,7 +517,7 @@ void xcz_rxtx_state(uint8_t tx)
 {
 	tx_state = tx != 0;
 
-	uint32_t v = rx_shift | (tx_shift << 8) | (tx_state << 16);
+	uint32_t v = rx_fir_shift | (tx_shift << 8) | (rx_cic_shift << 16) | (tx_state << 24);
 	* modem_ctrl = v;
 }
 
@@ -532,12 +533,17 @@ void xcz_dds_rts(const uint_least64_t * val)
     * rts = v;
 }
 
-void xcz_rx_iq_shift(uint8_t val) // 52
+uint32_t xcz_rx_iq_shift(uint8_t val) // 52
 {
-	rx_shift = val & 0xFF;
+	if (val > 0)
+	{
+		if (val >= rx_fir_shift_min && val <= rx_fir_shift_max)
+			rx_fir_shift = val & 0xFF;
 
-	uint32_t v = rx_shift | (tx_shift << 8) | (tx_state << 16);
-	* modem_ctrl = v;
+		uint32_t v = rx_fir_shift | (tx_shift << 8) | (rx_cic_shift << 16) | (tx_state << 24);
+		* modem_ctrl = v;
+	}
+	return rx_fir_shift;
 }
 
 void xcz_dds_ftw_sub(const uint_least64_t * val)
@@ -545,17 +551,30 @@ void xcz_dds_ftw_sub(const uint_least64_t * val)
 
 }
 
-void xcz_rx_cic_shift(uint32_t val)
+uint32_t xcz_rx_cic_shift(uint32_t val)
 {
+	if (val > 0)
+	{
+		if (val >= rx_cic_shift_min && val <= rx_cic_shift_max)
+			rx_cic_shift = val & 0xFF;
 
+		uint32_t v = rx_fir_shift | (tx_shift << 8) | (rx_cic_shift << 16) | (tx_state << 24);
+		* modem_ctrl = v;
+	}
+	return rx_cic_shift;
 }
 
-void xcz_tx_shift(uint32_t val)
+uint32_t xcz_tx_shift(uint32_t val)
 {
-	tx_shift = val & 0xFF;
+	if (val > 0)
+	{
+		if (val >= tx_shift_min && val <= tx_shift_max)
+			tx_shift = val & 0xFF;
 
-	uint32_t v = rx_shift | (tx_shift << 8) | (tx_state << 16);
-	* modem_ctrl = v;
+		uint32_t v = rx_fir_shift | (tx_shift << 8) | (rx_cic_shift << 16) | (tx_state << 24);
+		* modem_ctrl = v;
+	}
+	return tx_shift;
 }
 
 #if WITHDSPEXTFIR

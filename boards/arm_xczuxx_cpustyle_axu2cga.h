@@ -65,6 +65,9 @@ enum {
 #define AXI_FIFO_PHONES_ADDR	0x80043000
 #define AXI_FIR_RELOAD_ADDR		0x8004b000
 
+#define CALIBRATION_IQ_FIR_RX_SHIFT		50
+#define CALIBRATION_IQ_CIC_RX_SHIFT		62
+#define CALIBRATION_TX_SHIFT			25
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 //#define WITHUARTFIFO	1	/* испольование FIFO */

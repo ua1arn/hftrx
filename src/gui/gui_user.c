@@ -5877,31 +5877,34 @@ static void window_3d_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	memset(b,' ', 80 * 22 * sizeof(char));
-	memset(z, 0, 1760 * sizeof(float));
-	for(float j = 0; 6.28 > j; j += 0.07)
+	if (win->state == VISIBLE)
 	{
-		for(float i = 0; 6.28 > i; i += 0.02)
+		memset(b,' ', 80 * 22 * sizeof(char));
+		memset(z, 0, 1760 * sizeof(float));
+		for(float j = 0; 6.28 > j; j += 0.07)
 		{
-			float c = arm_sin_f32(i), d = arm_cos_f32(j), e = arm_sin_f32(A), f = arm_sin_f32(j),
-					g = arm_cos_f32(A), h = d + 2, D = 1 / (c * h * e + f * g + 5), l = arm_cos_f32(i),
-					m = arm_cos_f32(B), n = arm_sin_f32(B), t = c * h * g - f * e;
-			int x = 30 + 30 * D * (l * h * m - t * n), y = 12 + 15 * D * (l * h * n + t * m),
-					o = x + 80 * y, N = 8 * ((f * e - c * d * g) * m - c * d * e - f * g - l * d * n);
-			if(22 > y && y > 0 && x > 0 && 80 > x && D > z[o])
+			for(float i = 0; 6.28 > i; i += 0.02)
 			{
-				z [o] = D;
-				b [y][x] = ".,-~:;=!*#$@" [N > 0 ? N : 0];
+				float c = arm_sin_f32(i), d = arm_cos_f32(j), e = arm_sin_f32(A), f = arm_sin_f32(j),
+						g = arm_cos_f32(A), h = d + 2, D = 1 / (c * h * e + f * g + 5), l = arm_cos_f32(i),
+						m = arm_cos_f32(B), n = arm_sin_f32(B), t = c * h * g - f * e;
+				int x = 30 + 30 * D * (l * h * m - t * n), y = 12 + 15 * D * (l * h * n + t * m),
+						o = x + 80 * y, N = 8 * ((f * e - c * d * g) * m - c * d * e - f * g - l * d * n);
+				if(22 > y && y > 0 && x > 0 && 80 > x && D > z[o])
+				{
+					z [o] = D;
+					b [y][x] = ".,-~:;=!*#$@" [N > 0 ? N : 0];
+				}
 			}
 		}
+
+		textfield_clean(tf_3d);
+		for (int k = 0; k < 22; k ++)
+			textfield_add_string(tf_3d, b[k], COLORMAIN_WHITE);
+
+		A += 0.08;
+		B += 0.04;
 	}
-
-	textfield_clean(tf_3d);
-	for (int k = 0; k < 22; k ++)
-		textfield_add_string(tf_3d, b[k], COLORMAIN_WHITE);
-
-	A += 0.08;
-	B += 0.04;
 
 	GET_FROM_WM_QUEUE
 	{
