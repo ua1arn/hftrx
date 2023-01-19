@@ -1193,9 +1193,9 @@ void xcz_if_rx_init(void);
 void xcz_if_tx_init(void);
 void xcz_if_rx_enable(uint_fast8_t state);
 void xcz_if_tx_enable(uint_fast8_t state);
-void xcz_rx_iq_shift(uint8_t val);
-void xcz_rx_cic_shift(uint32_t val);
-void xcz_tx_shift(uint32_t val);
+uint32_t xcz_rx_iq_shift(uint8_t val);
+uint32_t xcz_rx_cic_shift(uint32_t val);
+uint32_t xcz_tx_shift(uint32_t val);
 void xcz_adcrand_set(uint8_t val);
 
 void xcz_dds_ftw(const uint_least64_t * value);	// Установка центральной частоты тракта основного приёмника

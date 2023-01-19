@@ -3964,54 +3964,131 @@ static void window_shift_process(void)
 #if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
 	window_t * const win = get_win(WINDOW_SHIFT);
 
-	static uint shift = 45;
-	static enc_var_t shift_t;
+	static uint update = 0;
+	static enc_var_t enc;
 
 	if (win->first_call)
 	{
-		uint x = 0, y = 0, interval = 6, row_count = 4;
+		uint x = 0, y = 0, interval = 6;
 		win->first_call = 0;
+		update = 1;
+		enc.updated = 1;
+		enc.select = 0;
+		enc.change = 0;
 
-		static const label_t labels [] = {
-			{ WINDOW_SHIFT, CANCELLED, 0, NON_VISIBLE, "lbl_shift",  "****",  FONT_MEDIUM, COLORMAIN_YELLOW, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		uint labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
+		add_element("lbl_rx_cic_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
+		add_element("lbl_rx_cic_shift_val", 0, FONT_MEDIUM, COLORMAIN_WHITE, 3);
+		add_element("lbl_rx_fir_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
+		add_element("lbl_rx_fir_shift_val", 0, FONT_MEDIUM, COLORMAIN_WHITE, 3);
+		add_element("lbl_tx_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
+		add_element("lbl_tx_shift_val", 0, FONT_MEDIUM, COLORMAIN_WHITE, 3);
 
-		label_t * lbl_shift = find_gui_element(TYPE_LABEL, win, "lbl_shift");
-		local_snprintf_P(lbl_shift->text, ARRAY_SIZE(lbl_shift->text), "%d", shift);
-		lbl_shift->x = 10;
-		lbl_shift->y = 10;
-		lbl_shift->visible = VISIBLE;
+		label_t * lbl_rx_cic_shift = find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift");
+		local_snprintf_P(lbl_rx_cic_shift->text, ARRAY_SIZE(lbl_rx_cic_shift->text), "RX CIC shift");
+		label_t * lbl_rx_fir_shift = find_gui_element(TYPE_LABEL, win, "lbl_rx_fir_shift");
+		local_snprintf_P(lbl_rx_fir_shift->text, ARRAY_SIZE(lbl_rx_fir_shift->text), "RX FIR shift");
+		label_t * lbl_tx_shift = find_gui_element(TYPE_LABEL, win, "lbl_tx_shift");
+		local_snprintf_P(lbl_tx_shift->text, ARRAY_SIZE(lbl_tx_shift->text), "TX CIC shift");
+
+		for (uint i = 0; i < win->lh_count; i += 2)
+		{
+			label_t * lh1 = & win->lh_ptr [i];
+			label_t * lh2 = & win->lh_ptr [i + 1];
+
+			lh1->x = x;
+			lh1->y = y;
+			lh1->index = i;
+			lh1->visible = VISIBLE;
+			lh1->state = CANCELLED;
+
+			y += get_label_height(lh1) + interval;
+
+			lh2->x = get_label_width(lh1) / 2 - get_label_width(lh2) / 2;
+			lh2->y = y;
+			lh2->index = i + 1;
+			lh2->visible = VISIBLE;
+			lh2->state = CANCELLED;
+
+			y += get_label_height(lh1) + interval * 4;
+		}
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
 	GET_FROM_WM_QUEUE
 	{
+	case WM_MESSAGE_ACTION:
+		if (IS_LABEL_PRESS)
+		{
+			label_t * lh = (label_t *) ptr;
+			enc.select = lh->index;
+			enc.change = 0;
+			enc.updated = 1;
+		}
+		break;
+
 	case WM_MESSAGE_ENC2_ROTATE:
 
-		shift += action;
+		enc.change = action;
+		enc.updated = 1;
+		break;
 
-		shift = shift > 56 ? 56 : shift;
-		shift = shift < 32 ? 32 : shift;
-		xcz_rx_iq_shift(shift);
-//		shift = shift > 30 ? 30 : shift;
-//		shift = shift < 0 ? 0 : shift;
-//		xcz_tx_shift(shift);
+	case WM_MESSAGE_UPDATE:
 
-		label_t * lbl_shift = find_gui_element(TYPE_LABEL, win, "lbl_shift");
-		local_snprintf_P(lbl_shift->text, ARRAY_SIZE(lbl_shift->text), "%d", shift);
-
+		update = 1;
 		break;
 
 	default:
 
 		break;
 	}
+
+	if (enc.updated)
+	{
+		enc.updated = 0;
+
+		for(uint i = 0; i < win->lh_count; i ++)
+			win->lh_ptr [i].color = COLORMAIN_WHITE;
+
+		ASSERT(enc.select < win->lh_count);
+
+		if (enc.select == 0 || enc.select == 1)
+		{
+			win->lh_ptr [0].color = COLORMAIN_YELLOW;
+			win->lh_ptr [1].color = COLORMAIN_YELLOW;
+			uint v = xcz_rx_cic_shift(0);
+			xcz_rx_cic_shift(v + enc.change);
+		}
+		else if (enc.select == 2 || enc.select == 3)
+		{
+			win->lh_ptr [2].color = COLORMAIN_YELLOW;
+			win->lh_ptr [3].color = COLORMAIN_YELLOW;
+			uint v = xcz_rx_iq_shift(0);
+			xcz_rx_iq_shift(v + enc.change);
+		}
+		else if (enc.select == 4 || enc.select == 5)
+		{
+			win->lh_ptr [4].color = COLORMAIN_YELLOW;
+			win->lh_ptr [5].color = COLORMAIN_YELLOW;
+			uint v = xcz_tx_shift(0);
+			xcz_tx_shift(v + enc.change);
+		}
+
+		update = 1;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		label_t * lbl_rx_cic_shift_val = find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift_val");
+		local_snprintf_P(lbl_rx_cic_shift_val->text, ARRAY_SIZE(lbl_rx_cic_shift_val->text), "%d", xcz_rx_cic_shift(0));
+		label_t * lbl_rx_fir_shift_val = find_gui_element(TYPE_LABEL, win, "lbl_rx_fir_shift_val");
+		local_snprintf_P(lbl_rx_fir_shift_val->text, ARRAY_SIZE(lbl_rx_fir_shift_val->text), "%d", xcz_rx_iq_shift(0));
+		label_t * lbl_tx_shift_val = find_gui_element(TYPE_LABEL, win, "lbl_tx_shift_val");
+		local_snprintf_P(lbl_tx_shift_val->text, ARRAY_SIZE(lbl_tx_shift_val->text), "%d", xcz_tx_shift(0));
+	}
+
 #endif /* XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR */
 }
 
