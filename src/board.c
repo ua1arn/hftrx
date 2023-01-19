@@ -6865,10 +6865,12 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	const int iHalfLen = (Ntap - 1) / 2;
 	int i = 0, m = 0, bits = 0;
 
-	// int32_t coeff = adpt_output(& plfircoefsout, kf [i]);		/* вот так получать целочисленное значение требуемой разрядности */
 	// Приведение разрядности значений коэффициентов к CWidth
 	for (; i <= iHalfLen; ++ i)
-		m = k[i] > m ? k[i] : m;
+	{
+		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+		m = coeff > m ? coeff : m;
+	}
 
 	while(m > 0)
 	{
@@ -6876,22 +6878,24 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 		bits ++;
 	}
 
-	bits = CWidth - bits;
+	bits = CWidth - bits - 1;
 
 	for (i = 0; i <= iHalfLen; ++ i)
 	{
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, k[i] << bits);
+		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff << bits);
 #if ! WITHDSPLOCALTXFIR
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, k[i] << bits);
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff << bits);
 #endif /* ! WITHDSPLOCALTXFIR */
 	}
 
 	i -= 1;
 	for (; -- i >= 0;)
 	{
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, k[i] << bits);
+		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff << bits);
 #if ! WITHDSPLOCALTXFIR
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, k[i] << bits);
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff << bits);
 #endif /* ! WITHDSPLOCALTXFIR */
 	}
 }

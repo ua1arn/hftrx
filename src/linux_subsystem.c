@@ -351,7 +351,6 @@ void linux_iq_init(void)
 	iq_count_rx = 	get_highmem_ptr(AXI_IQ_RX_COUNT_ADDR, 1);
 	iq_count_tx = 	get_highmem_ptr(AXI_IQ_TX_COUNT_ADDR, 1);
 
-
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
@@ -364,7 +363,7 @@ void linux_iq_thread(void)
 {
 	enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
-	static int rx_stage = 0, qq = 0;
+	static int rx_stage = 0;
 
 	if (* iq_count_rx >= DMABUFFSIZE32RX)
 	{
@@ -576,11 +575,12 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 		const int iHalfLen = (Ntap - 1) / 2;
 		int i = 0, m = 0, bits = 0;
 
-		// int32_t coeff = adpt_output(& plfircoefsout, kf [i]);		/* вот так получать целочисленное значение требуемой разрядности */
-
 		// Приведение разрядности значений коэффициентов к CWidth
 		for (; i <= iHalfLen; ++ i)
-			m = k[i] > m ? k[i] : m;
+		{
+			int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+			m = coeff > m ? coeff : m;
+		}
 
 		while(m > 0)
 		{
@@ -588,14 +588,20 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 			bits ++;
 		}
 
-		bits = CWidth - bits;
+		bits = CWidth - bits - 1;
 
 		for (i = 0; i <= iHalfLen; ++ i)
-			* fir_reload = k[i] << bits;
+		{
+			int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+			* fir_reload = coeff << bits;
+		}
 
 		i -= 1;
 		for (; -- i >= 0;)
-			* fir_reload = k[i] << bits;
+		{
+			int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+			* fir_reload = coeff << bits;
+		}
 	}
 }
 #endif /* WITHDSPEXTFIR */
