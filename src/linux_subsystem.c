@@ -637,8 +637,8 @@ void board_rtc_getdate(
 	tm = localtime (& lt);
 
 	* dayofmonth = tm->tm_mday;
-	* month = tm->tm_mon;
-	* year = tm->tm_year;
+	* month = 1 + tm->tm_mon;
+	* year = 1900 + tm->tm_year;
 }
 
 void board_rtc_gettime(
@@ -675,8 +675,8 @@ void board_rtc_getdatetime(
 	* minute = tm->tm_min;
 	* hour = tm->tm_hour;
 	* dayofmonth = tm->tm_mday;
-	* month = tm->tm_mon;
-	* year = tm->tm_year;
+	* month = 1 + tm->tm_mon;
+	* year = 1900 + tm->tm_year;
 }
 
 void board_rtc_setdatetime(
