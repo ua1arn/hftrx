@@ -664,6 +664,7 @@ hwacc_fillrect_u16(
 	G2D_BLD->BLD_SIZE = sizehw;
 	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
+	G2D_BLD->ROP_CTL = 0x00;
 	G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
@@ -1009,6 +1010,7 @@ hwacc_fillrect_u32(
 	G2D_BLD->BLD_SIZE = sizehw;
 	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
+	G2D_BLD->ROP_CTL = 0x00;
 	G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
@@ -1622,7 +1624,7 @@ void hwaccel_copy(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
+#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
 	/* Копирование - использование G2D для формирования изображений */
 
 	enum { PIXEL_SIZE = sizeof * src };
@@ -1633,12 +1635,72 @@ void hwaccel_copy(
 	const uintptr_t saddr = (uintptr_t) src;
 	const uint_fast32_t tsizehw = ((tdy - 1) << 16) | ((tdx - 1) << 0);
 	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
+	const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
 
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+
+	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_SIZE = ssizehw;	/* расположение компонент размера проверено */
+	G2D_WB->WB_PITCH0 = tstride;
+	G2D_WB->WB_LADD0 = taddr;
+	G2D_WB->WB_HADD0 = taddr >> 32;
+
+	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
+	//G2D_BLD->BLD_EN_CTL |= (1u << 9);	// 8 or 9 - sel 1 or sel 0
+	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
+	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
+
+	G2D_BLD->BLD_BK_COLOR = 0x000F00;	/* всегда RGB888. этим цветом заполняется */
+	G2D_BLD->BLD_KEY_CTL = 0;
+	G2D_BLD->BLD_KEY_CON = 0;
+	G2D_BLD->BLD_SIZE = ssizehwf;
+	G2D_BLD->BLD_CH_ISIZE0 = ssizehw;
+	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
+	G2D_BLD->ROP_CTL = 0xF0;
+	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+	G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_SRCOVER
+
+	unsigned ui_attr = 0;
+	ui_attr = 111 /*(img->alpha & 0xff) */ << 24;
+//	if (img->bpremul)
+//		ui_attr |= 0x1 << 17;
+	ui_attr |= G2D_FMT_XRGB8888/*img->format */ << 8;
+	ui_attr |= G2D_MIXER_ALPHA /*img->mode */ << 1;
+	ui_attr |= 1;
+
+//	G2D_UI0->UI_ATTR = 0*ui_attr;
+//	G2D_UI0->UI_LADD = saddr;
+//	G2D_UI0->UI_HADD = saddr >> 32;
+//	G2D_UI0->UI_COOR = 0;
+//	G2D_UI0->UI_MBSIZE = ssizehw;
+//	G2D_UI0->UI_SIZE = ssizehw;
+//	G2D_UI0->UI_PITCH = sstride;
+//	G2D_UI0->UI_FILLC = 0xFF0000;
+//
+//	G2D_UI1->UI_ATTR = 0*ui_attr;
+//	G2D_UI1->UI_LADD = saddr;
+//	G2D_UI1->UI_HADD = saddr >> 32;
+//	G2D_UI1->UI_COOR = 0;
+//	G2D_UI1->UI_MBSIZE = ssizehw;
+//	G2D_UI1->UI_SIZE = ssizehw;
+//	G2D_UI1->UI_PITCH = sstride;
+//	G2D_UI1->UI_FILLC = 0xFF0000;
+//
+//	G2D_UI2->UI_ATTR = 0*ui_attr;
+//	G2D_UI2->UI_LADD = saddr;
+//	G2D_UI2->UI_HADD = saddr >> 32;
+//	G2D_UI2->UI_COOR = 0;
+//	G2D_UI2->UI_MBSIZE = ssizehw;
+//	G2D_UI2->UI_SIZE = ssizehw;
+//	G2D_UI2->UI_PITCH = sstride;
+//	G2D_UI2->UI_FILLC = 0x0F0000;
+
+	G2D_V0->V0_ATTCTL = 1*ui_attr;
 
 	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
@@ -1656,64 +1718,6 @@ void hwaccel_copy(
 	//G2D_V0->V0_LADD1 = saddr;
 	//G2D_V0->V0_LADD2 = saddr;
 	G2D_V0->V0_HADD = ((saddr >> 32) & 0xFF) << 0;
-
-	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = ssizehw;	/* расположение компонент размера проверено */
-	G2D_WB->WB_PITCH0 = tstride;
-	G2D_WB->WB_LADD0 = taddr;
-	G2D_WB->WB_HADD0 = taddr >> 32;
-
-	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
-	G2D_BLD->BLD_EN_CTL |= (1u << 9);	// 8 or 9 - sel 1 or sel 0
-	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
-	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
-
-	G2D_BLD->BLD_BK_COLOR = 0x000F00;	/* всегда RGB888. этим цветом заполняется */
-	G2D_BLD->BLD_KEY_CTL = 0;
-	G2D_BLD->BLD_KEY_CON = 0;
-	G2D_BLD->BLD_SIZE = ssizehw;
-	G2D_BLD->BLD_CH_ISIZE0 = ssizehw;
-	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
-	G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-	//G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_SRCOVER
-
-	unsigned ui_attr = 0;
-	ui_attr = 111 /*(img->alpha & 0xff) */ << 24;
-//	if (img->bpremul)
-//		ui_attr |= 0x1 << 17;
-	ui_attr |= G2D_FMT_XRGB8888/*img->format */ << 8;
-	ui_attr |= G2D_MIXER_ALPHA /*img->mode */ << 1;
-	ui_attr |= 1;
-
-//	G2D_UI0->UI_ATTR = 0*ui_attr;
-//	G2D_UI0->UI_LADD = saddr;
-//	G2D_UI0->UI_HADD = saddr >> 32;
-//	G2D_UI0->UI_COOR = 0;
-//	G2D_UI0->UI_MBSIZE = ssizehw;
-//	G2D_UI0->UI_SIZE = ssizehw;
-//	G2D_UI0->UI_PITCH = PIXEL_SIZE;
-//	G2D_UI0->UI_FILLC = 0xFF0000;
-//
-//	G2D_UI1->UI_ATTR = 0*ui_attr;
-//	G2D_UI1->UI_LADD = saddr;
-//	G2D_UI1->UI_HADD = saddr >> 32;
-//	G2D_UI1->UI_COOR = 0;
-//	G2D_UI1->UI_MBSIZE = ssizehw;
-//	G2D_UI1->UI_SIZE = ssizehw;
-//	G2D_UI1->UI_PITCH = PIXEL_SIZE;
-//	G2D_UI1->UI_FILLC = 0xFF0000;
-
-	G2D_UI2->UI_ATTR = 1*ui_attr;
-	G2D_UI2->UI_LADD = saddr;
-	G2D_UI2->UI_HADD = saddr >> 32;
-	G2D_UI2->UI_COOR = 0;
-	G2D_UI2->UI_MBSIZE = ssizehw;
-	G2D_UI2->UI_SIZE = ssizehw;
-	G2D_UI2->UI_PITCH = sstride;
-	G2D_UI2->UI_FILLC = 0x0F0000;
-
-	G2D_V0->V0_ATTCTL = 1*ui_attr;
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
