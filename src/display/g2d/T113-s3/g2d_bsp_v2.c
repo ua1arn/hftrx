@@ -1425,9 +1425,12 @@ __s32 mixer_fillrectangle(g2d_fillrect *para)
 		dst->format =
 			g2d_format_trans(para->dst_image.format,
 					para->dst_image.pixel_seq);
-		dst->laddr[0] = para->dst_image.addr[0];
-		dst->laddr[1] = para->dst_image.addr[1];
-		dst->laddr[2] = para->dst_image.addr[2];
+		dst->laddr[0] = para->dst_image.waddr[0];
+		dst->laddr[1] = para->dst_image.waddr[1];
+		dst->laddr[2] = para->dst_image.waddr[2];
+		dst->haddr[0] = para->dst_image.waddr[0] >> 32;
+		dst->haddr[1] = para->dst_image.waddr[1] >> 32;
+		dst->haddr[2] = para->dst_image.waddr[2] >> 32;
 		dst->width = para->dst_image.w;
 		dst->height = para->dst_image.h;
 		dst->clip_rect.x = para->dst_rect.x;
@@ -1445,9 +1448,12 @@ __s32 mixer_fillrectangle(g2d_fillrect *para)
 	dst->format =
 		g2d_format_trans(para->dst_image.format,
 				para->dst_image.pixel_seq);
-	dst->laddr[0] = para->dst_image.addr[0];
-	dst->laddr[1] = para->dst_image.addr[1];
-	dst->laddr[2] = para->dst_image.addr[2];
+	dst->laddr[0] = para->dst_image.waddr[0];
+	dst->laddr[1] = para->dst_image.waddr[1];
+	dst->laddr[2] = para->dst_image.waddr[2];
+	dst->haddr[0] = para->dst_image.waddr[0] >> 32;
+	dst->haddr[1] = para->dst_image.waddr[1] >> 32;
+	dst->haddr[2] = para->dst_image.waddr[2] >> 32;
 	dst->width = para->dst_image.w;
 	dst->height = para->dst_image.h;
 	dst->clip_rect.x = para->dst_rect.x;
@@ -1467,7 +1473,8 @@ __s32 mixer_fillrectangle(g2d_fillrect *para)
 	src->format = dst->format;
 	src->gamut = G2D_BT709;
 	src->format = 0;
-	dst->laddr[0] = para->dst_image.addr[0];
+	dst->laddr[0] = para->dst_image.waddr[0];
+	dst->haddr[0] = para->dst_image.waddr[0] >> 32;
 	src->width = para->dst_image.w;
 	src->height = para->dst_image.h;
 	src->clip_rect.x = para->dst_rect.x;
@@ -1715,9 +1722,12 @@ __s32 mixer_stretchblt(g2d_stretchblt *para,
 	src->format =
 		g2d_format_trans(para->src_image.format,
 				para->src_image.pixel_seq);
-	src->laddr[0] = para->src_image.addr[0];
-	src->laddr[1] = para->src_image.addr[1];
-	src->laddr[2] = para->src_image.addr[2];
+	src->laddr[0] = para->src_image.waddr[0];
+	src->laddr[1] = para->src_image.waddr[1];
+	src->laddr[2] = para->src_image.waddr[2];
+	src->haddr[0] = para->src_image.waddr[0] >> 32;
+	src->haddr[1] = para->src_image.waddr[1] >> 32;
+	src->haddr[2] = para->src_image.waddr[2] >> 32;
 	src->width = para->src_image.w;
 	src->height = para->src_image.h;
 	src->clip_rect.x = para->src_rect.x;
@@ -1731,9 +1741,12 @@ __s32 mixer_stretchblt(g2d_stretchblt *para,
 	dst->format =
 		g2d_format_trans(para->dst_image.format,
 				para->dst_image.pixel_seq);
-	dst->laddr[0] = para->dst_image.addr[0];
-	dst->laddr[1] = para->dst_image.addr[1];
-	dst->laddr[2] = para->dst_image.addr[2];
+	dst->laddr[0] = para->dst_image.waddr[0];
+	dst->laddr[1] = para->dst_image.waddr[1];
+	dst->laddr[2] = para->dst_image.waddr[2];
+	dst->haddr[0] = para->dst_image.waddr[0] >> 32;
+	dst->haddr[1] = para->dst_image.waddr[1] >> 32;
+	dst->haddr[2] = para->dst_image.waddr[2] >> 32;
 	dst->width = para->dst_image.w;
 	dst->height = para->dst_image.h;
 	dst->clip_rect.x = para->dst_rect.x;
@@ -1855,9 +1868,12 @@ __s32 mixer_blt(g2d_blt *para, enum g2d_scan_order scan_order)
 	src->format =
 			g2d_format_trans(para->src_image.format,
 					para->src_image.pixel_seq);
-	src->laddr[0] = para->src_image.addr[0];
-	src->laddr[1] = para->src_image.addr[1];
-	src->laddr[2] = para->src_image.addr[2];
+	src->laddr[0] = para->src_image.waddr[0];
+	src->laddr[1] = para->src_image.waddr[1];
+	src->laddr[2] = para->src_image.waddr[2];
+	src->haddr[0] = para->src_image.waddr[0] >> 32;
+	src->haddr[1] = para->src_image.waddr[1] >> 32;
+	src->haddr[2] = para->src_image.waddr[2] >> 32;
 	src->width = para->src_image.w;
 	src->height = para->src_image.h;
 	src->clip_rect.x = para->src_rect.x;
@@ -1870,9 +1886,12 @@ __s32 mixer_blt(g2d_blt *para, enum g2d_scan_order scan_order)
 	dst->format =
 		g2d_format_trans(para->dst_image.format,
 						para->dst_image.pixel_seq);
-	dst->laddr[0] = para->dst_image.addr[0];
-	dst->laddr[1] = para->dst_image.addr[1];
-	dst->laddr[2] = para->dst_image.addr[2];
+	dst->laddr[0] = para->dst_image.waddr[0];
+	dst->laddr[1] = para->dst_image.waddr[1];
+	dst->laddr[2] = para->dst_image.waddr[2];
+	dst->haddr[0] = para->dst_image.waddr[0] >> 32;
+	dst->haddr[1] = para->dst_image.waddr[1] >> 32;
+	dst->haddr[2] = para->dst_image.waddr[2] >> 32;
 	dst->width = para->dst_image.w;
 	dst->height = para->dst_image.h;
 	dst->clip_rect.x = para->dst_x;

@@ -307,7 +307,7 @@ typedef enum {
 
 /* image struct */
 typedef struct {
-	uintptr_t	addr[3];/* base addr of image frame buffer in byte */
+	uintptr_t	waddr[3];/* base addr of image frame buffer in byte */
 	__u32		w;	/* width of image frame buffer in pixel */
 	__u32		h;	/* height of image frame buffer in pixel */
 	g2d_data_fmt	format;	/* pixel format of image frame buffer */
@@ -324,8 +324,8 @@ typedef struct {
 	int		 bbuff;
 	__u32		 color;
 	g2d_fmt_enh	 format;
-	uintptr_t  	 laddr[3];
-	uintptr_t	 haddr[3];
+	__u32  	 laddr[3];
+	__u32	 haddr[3];
 	__u32		 width;
 	__u32		 height;
 	__u32		 align[3];

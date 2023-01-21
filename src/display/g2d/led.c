@@ -91,9 +91,9 @@ void PNG_Background(LuImage *png,u32 memory)           //выводит фоновый PNG на 
 
  G2D_BLT.flag=G2D_BLT_NONE|0*G2D_BLT_PLANE_ALPHA;
 
- G2D_BLT.src_image.addr[0]=(uintptr_t)png->data;    //память, где хранится картинка
- G2D_BLT.src_image.addr[1]=0;//(uintptr_t)png->data;	// was index=0
- G2D_BLT.src_image.addr[2]=0;//(uintptr_t)png->data;	// was index=0
+ G2D_BLT.src_image.waddr[0]=(uintptr_t)png->data;    //память, где хранится картинка
+ G2D_BLT.src_image.waddr[1]=0;//(uintptr_t)png->data;	// was index=0
+ G2D_BLT.src_image.waddr[2]=0;//(uintptr_t)png->data;	// was index=0
  G2D_BLT.src_image.w=png->width;              //габариты атласа
  G2D_BLT.src_image.h=png->height;
  G2D_BLT.src_image.format=SrcImageFormat;
@@ -105,9 +105,9 @@ void PNG_Background(LuImage *png,u32 memory)           //выводит фоновый PNG на 
  G2D_BLT.src_rect.w=png->width;               //размер
  G2D_BLT.src_rect.h=png->height;
 
- G2D_BLT.dst_image.addr[0]=memory;
- G2D_BLT.dst_image.addr[1]=0;//memory;	// was index=0
- G2D_BLT.dst_image.addr[2]=0;//memory;	// was index=0
+ G2D_BLT.dst_image.waddr[0]=memory;
+ G2D_BLT.dst_image.waddr[1]=0;//memory;	// was index=0
+ G2D_BLT.dst_image.waddr[2]=0;//memory;	// was index=0
  G2D_BLT.dst_image.w=LCD_PIXEL_WIDTH;
  G2D_BLT.dst_image.h=LCD_PIXEL_HEIGHT;
  G2D_BLT.dst_image.format=DstImageFormat;
@@ -132,9 +132,9 @@ void Rect(void)
  G2D_FILLRECT.flag=G2D_FIL_NONE; //G2D_FIL_PIXEL_ALPHA; //G2D_FIL_PLANE_ALPHA; //опеделяет смешение на плоскости
 
  //Параметры приёмной плоскости
- G2D_FILLRECT.dst_image.addr[0]=VIDEO_MEMORY1;
- G2D_FILLRECT.dst_image.addr[1]=VIDEO_MEMORY1;
- G2D_FILLRECT.dst_image.addr[2]=VIDEO_MEMORY1;
+ G2D_FILLRECT.dst_image.waddr[0]=VIDEO_MEMORY1;
+ G2D_FILLRECT.dst_image.waddr[1]=VIDEO_MEMORY1;
+ G2D_FILLRECT.dst_image.waddr[2]=VIDEO_MEMORY1;
  G2D_FILLRECT.dst_image.w=LCD_PIXEL_WIDTH;
  G2D_FILLRECT.dst_image.h=LCD_PIXEL_HEIGHT;
  G2D_FILLRECT.dst_image.format=G2D_FMT_XBGR8888;
@@ -195,7 +195,11 @@ void g2d_main(void)
 
  Again:
 
+ PRINTF("1 src color=%08X\n", (unsigned)*(volatile u32*)png[0]->data);
+ arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
  PNG_Background(png[1],VIDEO_MEMORY1);
+ PRINTF("2 src color=%08X\n", (unsigned)*(volatile u32*)png[0]->data);
+ arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
  u32 t;
  //t=AVS_CNT0_REG;
  u32 d;
@@ -203,9 +207,9 @@ void g2d_main(void)
 #if 1
  G2D_BLT.flag=G2D_BLT_NONE | 1*G2D_BLT_SRC_COLORKEY | 0*G2D_BLT_PIXEL_ALPHA; // G2D_BLT_PIXEL_ALPHA; //обе прозрачности работают - через colorkey или alpha
 
- G2D_BLT.src_image.addr[0]=(uintptr_t)png[0]->data;    //память, где хранится картинка
- G2D_BLT.src_image.addr[1]=0;//(uintptr_t)png[0]->data;	// was index=0
- G2D_BLT.src_image.addr[2]=0;//(uintptr_t)png[0]->data;	// was index=0
+ G2D_BLT.src_image.waddr[0]=(uintptr_t)png[0]->data;    //память, где хранится картинка
+ G2D_BLT.src_image.waddr[1]=0;//(uintptr_t)png[0]->data;	// was index=0
+ G2D_BLT.src_image.waddr[2]=0;//(uintptr_t)png[0]->data;	// was index=0
  G2D_BLT.src_image.w=png[0]->width;              //габариты атласа
  G2D_BLT.src_image.h=png[0]->height;
  G2D_BLT.src_image.format=SrcImageFormat;
@@ -217,9 +221,9 @@ void g2d_main(void)
  G2D_BLT.src_rect.w=png[0]->width;               //размер
  G2D_BLT.src_rect.h=png[0]->height;
 
- G2D_BLT.dst_image.addr[0]=VIDEO_MEMORY1;
- G2D_BLT.dst_image.addr[1]=0;//VIDEO_MEMORY1;	// was index=0
- G2D_BLT.dst_image.addr[2]=0;//VIDEO_MEMORY1;	// was index=0
+ G2D_BLT.dst_image.waddr[0]=VIDEO_MEMORY1;
+ G2D_BLT.dst_image.waddr[1]=0;//VIDEO_MEMORY1;	// was index=0
+ G2D_BLT.dst_image.waddr[2]=0;//VIDEO_MEMORY1;	// was index=0
  G2D_BLT.dst_image.w=LCD_PIXEL_WIDTH;
  G2D_BLT.dst_image.h=LCD_PIXEL_HEIGHT;
  G2D_BLT.dst_image.format=DstImageFormat;
@@ -228,9 +232,11 @@ void g2d_main(void)
 // G2D_BLT.dst_x=0;                                 //координаты вывода
 // G2D_BLT.dst_y=0;
 
- G2D_BLT.color=*(u32*)png[0]->data; //0x00000000; //цветовой ключ RGB
+ G2D_BLT.color=*(volatile u32*)png[0]->data; //0x00000000; //цветовой ключ RGB
  G2D_BLT.alpha=0xFF;       //альфа плоскости
 
+ PRINTF("3 src color=%08X\n", (unsigned)*(volatile u32*)png[0]->data);
+ arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
  PRINTF("G2D_BLT.color=%08X\n", (unsigned) G2D_BLT.color);
 
  for (t=0; t < 100; ++t)
@@ -252,15 +258,17 @@ void g2d_main(void)
   local_delay_ms(50);
 
  }
+ PRINTF("4 src color=%08X\n", (unsigned)*(volatile u32*)png[0]->data);
+ arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
 #endif
 
 #if 1
 
  G2D_STRETCHBLT.flag=G2D_BLT_NONE|0*G2D_BLT_PIXEL_ALPHA | 1*G2D_BLT_SRC_COLORKEY;
 
- G2D_STRETCHBLT.src_image.addr[0]=(uintptr_t)png[0]->data;    //память, где хранится картинка
- G2D_STRETCHBLT.src_image.addr[1]=(uintptr_t)png[0]->data;
- G2D_STRETCHBLT.src_image.addr[2]=(uintptr_t)png[0]->data;
+ G2D_STRETCHBLT.src_image.waddr[0]=(uintptr_t)png[0]->data;    //память, где хранится картинка
+ G2D_STRETCHBLT.src_image.waddr[1]=(uintptr_t)png[0]->data;
+ G2D_STRETCHBLT.src_image.waddr[2]=(uintptr_t)png[0]->data;
 
  G2D_STRETCHBLT.src_image.w=png[0]->width;              //габариты атласа
  G2D_STRETCHBLT.src_image.h=png[0]->height;
@@ -274,9 +282,9 @@ void g2d_main(void)
  G2D_STRETCHBLT.src_rect.w=png[0]->width;               //размер
  G2D_STRETCHBLT.src_rect.h=png[0]->height;
 
- G2D_STRETCHBLT.dst_image.addr[0]=VIDEO_MEMORY1;        //выводить на плоскость 1 (UI), так как плоскость 0 (VI) не имеет пиксельной альфы (будет шов на краях)
- G2D_STRETCHBLT.dst_image.addr[1]=VIDEO_MEMORY1;
- G2D_STRETCHBLT.dst_image.addr[2]=VIDEO_MEMORY1;
+ G2D_STRETCHBLT.dst_image.waddr[0]=VIDEO_MEMORY1;        //выводить на плоскость 1 (UI), так как плоскость 0 (VI) не имеет пиксельной альфы (будет шов на краях)
+ G2D_STRETCHBLT.dst_image.waddr[1]=VIDEO_MEMORY1;
+ G2D_STRETCHBLT.dst_image.waddr[2]=VIDEO_MEMORY1;
 
  G2D_STRETCHBLT.dst_image.w=LCD_PIXEL_WIDTH;
  G2D_STRETCHBLT.dst_image.h=LCD_PIXEL_HEIGHT;
@@ -290,11 +298,11 @@ void g2d_main(void)
  G2D_STRETCHBLT.dst_rect.w=png[0]->width/2;             //размер
  G2D_STRETCHBLT.dst_rect.h=png[0]->height/2;
 
- G2D_STRETCHBLT.color=*(u32*)png[0]->data; //0x00000000; //цветовой ключ RGB
+ G2D_STRETCHBLT.color=*(volatile u32*)png[0]->data; //0x00000000; //цветовой ключ RGB
  G2D_STRETCHBLT.alpha=0xFF;       //альфа плоскости
  PRINTF("G2D_STRETCHBLT.color=%08X\n", (unsigned) G2D_BLT.color);
 
- PorterDuff=G2D_BLD_SRCOVER;
+ //PorterDuff=G2D_BLD_SRCOVER;
 
 // g2d_stretchblit(&G2D_STRETCHBLT);
 
@@ -337,6 +345,8 @@ void g2d_main(void)
 // DelayMS(300);
 
  }
+ PRINTF("5 src color=%08X\n", (unsigned)*(volatile u32*)png[0]->data);
+ arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
 
 #endif
 
@@ -423,6 +433,7 @@ void g2d_main(void)
  goto Loop;
 #endif
 
+ goto Again;
  ASSERT(0);
 }
 #endif
