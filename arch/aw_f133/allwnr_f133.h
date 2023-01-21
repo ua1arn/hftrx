@@ -2708,6 +2708,58 @@ __STATIC_INLINE uint32_t __ROR(uint32_t op1, uint32_t op2)
   return (op1 >> op2) | (op1 << (32U - op2));
 }
 
+__STATIC_FORCEINLINE uint8_t __UADD8_Sat(uint8_t op1, uint8_t op2)
+{
+	  uint_fast16_t result = (uint_fast16_t) op1 + op2;
+	  return result > 255 ?  255 : result;
+}
+
+/**
+ * Unsigned Saturating Add 8 performs four unsigned 8-bit integer additions,
+ * saturates the results to the 8-bit unsigned integer range 0 ≤ x ≤ 256 - 1,
+ * and writes the results to the destination register.
+ *
+ * @param op1
+ * @param op2
+ * @return
+ */
+__STATIC_FORCEINLINE uint32_t __UQADD8(uint32_t op1, uint32_t op2)
+{
+	  uint32_t result =
+			  ((uint32_t) __UADD8_Sat(0xFF & (op1 >> 24), 0xFF & (op2 >> 24)) << 24) |
+			  ((uint32_t) __UADD8_Sat(0xFF & (op1 >> 16), 0xFF & (op2 >> 16)) << 16) |
+			  ((uint32_t) __UADD8_Sat(0xFF & (op1 >> 8), 0xFF & (op2 >> 8)) << 8) |
+			  ((uint32_t) __UADD8_Sat(0xFF & (op1 >> 0), 0xFF & (op2 >> 0)) << 0);
+
+	  return (result);
+}
+
+__STATIC_FORCEINLINE uint8_t __USUB8_Sat(uint8_t op1, uint8_t op2)
+{
+	  return op1 >= op2 ?  0 : (op1 - op2);
+}
+
+/**
+ * Unsigned Saturating Subtract 8 performs four unsigned 8-bit integer subtractions,
+ * saturates the results to the 8-bit unsigned integer
+ * range 0 ≤ x ≤ 256 - 1, and writes the results to the destination register
+
+ * @param op1
+ * @param op2
+ * @return
+ */
+__STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
+{
+  uint32_t result =
+		  ((uint32_t) __USUB8_Sat(0xFF & (op1 >> 24), 0xFF & (op2 >> 24)) << 24) |
+		  ((uint32_t) __USUB8_Sat(0xFF & (op1 >> 16), 0xFF & (op2 >> 16)) << 16) |
+		  ((uint32_t) __USUB8_Sat(0xFF & (op1 >> 8), 0xFF & (op2 >> 8)) << 8) |
+		  ((uint32_t) __USUB8_Sat(0xFF & (op1 >> 0), 0xFF & (op2 >> 0)) << 0);
+
+  return (result);
+}
+
+
 // https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/bsp/hifive1/freedom-e-sdk/bsp/env/encoding.h
 // https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/libcpu/risc-v/common/riscv-ops.h
 // https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/mcsr-ext.h
