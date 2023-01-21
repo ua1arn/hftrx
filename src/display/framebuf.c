@@ -646,8 +646,8 @@ hwacc_fillrect_u16(
 	G2D_V0->V0_VDS_CTL0 = 0;
 	G2D_V0->V0_VDS_CTL1 = 0;
 
-	G2D_V0->V0_COOR = 0;
-	G2D_V0->V0_MBSIZE = sizehw;
+	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+	G2D_V0->V0_MBSIZE = sizehw;	// сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
 	G2D_V0->V0_SIZE = sizehw;
 
 	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется */
@@ -663,7 +663,7 @@ hwacc_fillrect_u16(
 //	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
-	G2D_BLD->BLD_SIZE = sizehw;
+	G2D_BLD->BLD_SIZE = sizehw;	// may not be zero
 	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
 	G2D_BLD->ROP_CTL = 0x00;
@@ -994,8 +994,8 @@ hwacc_fillrect_u32(
 	G2D_V0->V0_VDS_CTL0 = 0;
 	G2D_V0->V0_VDS_CTL1 = 0;
 
-	G2D_V0->V0_COOR = 0;
-	G2D_V0->V0_MBSIZE = sizehw;
+	G2D_V0->V0_COOR = 0;				// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+	G2D_V0->V0_MBSIZE = sizehw;	// сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
 	G2D_V0->V0_SIZE = sizehw;
 
 	G2D_BLD->BLD_BK_COLOR = color;	/* всегда RGB888. этим цветом заполняется */
@@ -1011,7 +1011,7 @@ hwacc_fillrect_u32(
 //	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
-	G2D_BLD->BLD_SIZE = sizehw;
+	G2D_BLD->BLD_SIZE = sizehw;	// may not be zero
 	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
 	G2D_BLD->ROP_CTL = 0x00;
@@ -1631,6 +1631,10 @@ void hwaccel_copy(
 #elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
 	/* Копирование - использование G2D для формирования изображений */
 
+//	PRINTF("hwaccel_copy: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
+//	ASSERT(sdx > 1 && sdy > 1);
+//	ASSERT(sdx > 2 && sdy > 2);
+
 	enum { PIXEL_SIZE = sizeof * src };
 	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
@@ -1643,6 +1647,21 @@ void hwaccel_copy(
 	const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
 	const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
+	* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 0, 0) = TFTRGB(255, 0, 0);
+
+	* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 1, sdy - 1) = TFTRGB(0, 255, 0);
+
+	if (sdx > 2 && sdy > 2)
+	{
+		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 0, 1) = TFTRGB(255, 0, 0);
+		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 1, 0) = TFTRGB(255, 0, 0);
+		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 1, 1) = TFTRGB(255, 0, 0);
+
+		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 2, sdy - 1) = TFTRGB(0, 255, 0);
+		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 1, sdy - 2) = TFTRGB(0, 255, 0);
+		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 2, sdy - 2) = TFTRGB(0, 255, 0);
+	}
+
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
 
@@ -1651,24 +1670,35 @@ void hwaccel_copy(
 
 	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = ssizehw;	/* расположение компонент размера проверено */
+	G2D_WB->WB_SIZE = ssizehwf;	/* расположение компонент размера проверено */
 	G2D_WB->WB_PITCH0 = tstride;
 	G2D_WB->WB_LADD0 = taddr;
 	G2D_WB->WB_HADD0 = taddr >> 32;
+	G2D_WB->WB_PITCH1 = 0;
+	G2D_WB->WB_LADD1 = 0;
+	G2D_WB->WB_HADD1 = 0;
+	G2D_WB->WB_PITCH2 = 0;
+	G2D_WB->WB_LADD2 = 0;
+	G2D_WB->WB_HADD2 = 0;
 
-	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
-	//G2D_BLD->BLD_EN_CTL |= (1u << 9);	// 8 or 9 - sel 1 or sel 0
+	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 - sel 0
+	//G2D_BLD->BLD_EN_CTL |= (1u << 9);	// 9 - sel 1 -  need abp process
 	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
 
-	G2D_BLD->BLD_BK_COLOR = TFTRGB(0, 255, 0);	/* всегда RGB888. этим цветом заполняется */
+	G2D_BLD->BLD_BK_COLOR = TFTRGB(0, 255, 0);	/* всегда RGB888. этим цветом заполняется вне исходного окна*/
 	G2D_BLD->BLD_KEY_CTL = 0;
 	G2D_BLD->BLD_KEY_CON = 0;
-	G2D_BLD->BLD_SIZE = ssizehw;
-	G2D_BLD->BLD_CH_ISIZE0 = ssizehwf;
+	G2D_BLD->BLD_SIZE = ssizehwf;	// may not be zero
+
+	G2D_BLD->BLD_CH_ISIZE0 = ssizehwf;	// may be zero
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
-//	G2D_BLD->BLD_CH_ISIZE1 = ssizehw;
-//	G2D_BLD->BLD_CH_OFFSET1 = 0;// ((row) << 16) | ((col) << 0);
+	G2D_BLD->BLD_FILLC0 = ~ 0;
+
+	G2D_BLD->BLD_CH_ISIZE1 = ssizehw;
+	G2D_BLD->BLD_CH_OFFSET1 = 0;// ((row) << 16) | ((col) << 0);
+	G2D_BLD->BLD_FILLC1 = ~ 0;
+
 	G2D_BLD->ROP_CTL = 0xF0;	// Use G2D_V0 as source
 	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 	G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_SRCOVER
@@ -1709,7 +1739,7 @@ void hwaccel_copy(
 //	G2D_UI2->UI_PITCH = sstride;
 //	G2D_UI2->UI_FILLC = 0x0F0000;
 
-	G2D_V0->V0_ATTCTL = 1*ui_attr;	// Use this block as source for copy
+	G2D_V0->V0_ATTCTL = ui_attr;	// Use this block as source for copy
 
 	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
@@ -1720,19 +1750,19 @@ void hwaccel_copy(
 	G2D_V0->V0_VDS_CTL0 = 0;
 	G2D_V0->V0_VDS_CTL1 = 0;
 
-	G2D_V0->V0_FILLC = TFTRGB(0, 0, 255);
+	G2D_V0->V0_FILLC = TFTRGB(255, 0, 0);	// unused
 	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_V0->V0_MBSIZE = ssizehwf3; // сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
+	G2D_V0->V0_MBSIZE = ssizehwf; // сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
 	G2D_V0->V0_SIZE = ssizehwf;		// параметры окна исходного буфера
 	G2D_V0->V0_LADD0 = saddr;
-	//G2D_V0->V0_LADD1 = saddr;
-	//G2D_V0->V0_LADD2 = saddr;
+	G2D_V0->V0_LADD1 = 0;
+	G2D_V0->V0_LADD2 = 0;
 	G2D_V0->V0_HADD = ((saddr >> 32) & 0xFF) << 0;
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
-		PRINTF("hwaccel_copy: timeout tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) tdx, (unsigned) sdy);
+		PRINTF("hwaccel_copy: timeout tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
 		ASSERT(0);
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
