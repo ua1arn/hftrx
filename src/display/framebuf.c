@@ -20,6 +20,19 @@
 #include "fontmaps.h"
 #include <string.h>
 
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+	/* Использование G2D для формирования изображений */
+
+	#include "g2d/T113-s3/Type.h"
+	#include "g2d/T113-s3/g2d.h"
+
+	#define DstImageFormat G2D_FMT_XRGB8888
+
+	//#define SrcImageFormat G2D_FMT_ARGB_AVUY8888
+	#define SrcImageFormat G2D_FMT_XRGB8888
+
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
+
 /*
 	Dead time value in the AXI clock cycle inserted between two consecutive accesses on
 	the AXI master port. These bits represent the minimum guaranteed number of cycles
@@ -254,167 +267,168 @@ void arm_hardware_mdma_initialize(void)
 // https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_driver.c
 // https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_regs.h
 // https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_bsp_sun8iw11.c
-/* Input DMA setting */
-#define G2D_FILL_ENABLE		(1<<16)
-#define G2D_FILL_DISABLE	(0<<16)
 
-/* Work Mode Select */
-#define G2D_IDMA_ENABLE		(1<<0)
-#define G2D_IDMA_DISABLE	(0<<0)
-
-/* Scaler Control Select */
-#define G2D_SCALER_DISABLE	(0<<0)
-#define G2D_SCALER_ENABLE	(1<<0)
-#define G2D_SCALER_4TAP4	(0<<4)
-
-#define G2D_FINISH_IRQ		(1<<8)
-#define G2D_ERROR_IRQ			(1<<9)
-
-/* mixer data format */
-typedef enum {
-	/* share data format */
-	G2D_FMT_ARGB_AYUV8888	= (0x0),
-	G2D_FMT_BGRA_VUYA8888	= (0x1),
-	G2D_FMT_ABGR_AVUY8888	= (0x2),
-	G2D_FMT_RGBA_YUVA8888	= (0x3),
-
-	G2D_FMT_XRGB8888		= (0x4),
-	G2D_FMT_BGRX8888		= (0x5),
-	G2D_FMT_XBGR8888		= (0x6),
-	G2D_FMT_RGBX8888		= (0x7),
-
-	G2D_FMT_ARGB4444		= (0x8),
-	G2D_FMT_ABGR4444		= (0x9),
-	G2D_FMT_RGBA4444		= (0xA),
-	G2D_FMT_BGRA4444		= (0xB),
-
-	G2D_FMT_ARGB1555		= (0xC),
-	G2D_FMT_ABGR1555		= (0xD),
-	G2D_FMT_RGBA5551		= (0xE),
-	G2D_FMT_BGRA5551		= (0xF),
-
-	G2D_FMT_RGB565			= (0x10),
-	G2D_FMT_BGR565			= (0x11),
-
-	G2D_FMT_IYUV422			= (0x12),
-
-	G2D_FMT_8BPP_MONO		= (0x13),
-	G2D_FMT_4BPP_MONO		= (0x14),
-	G2D_FMT_2BPP_MONO		= (0x15),
-	G2D_FMT_1BPP_MONO		= (0x16),
-
-	G2D_FMT_PYUV422UVC		= (0x17),
-	G2D_FMT_PYUV420UVC		= (0x18),
-	G2D_FMT_PYUV411UVC		= (0x19),
-
-	/* just for output format */
-	G2D_FMT_PYUV422			= (0x1A),
-	G2D_FMT_PYUV420			= (0x1B),
-	G2D_FMT_PYUV411			= (0x1C),
-
-	/* just for input format */
-	G2D_FMT_8BPP_PALETTE	= (0x1D),
-	G2D_FMT_4BPP_PALETTE	= (0x1E),
-	G2D_FMT_2BPP_PALETTE	= (0x1F),
-	G2D_FMT_1BPP_PALETTE	= (0x20),
-
-	G2D_FMT_PYUV422UVC_MB16	= (0x21),
-	G2D_FMT_PYUV420UVC_MB16	= (0x22),
-	G2D_FMT_PYUV411UVC_MB16	= (0x23),
-	G2D_FMT_PYUV422UVC_MB32	= (0x24),
-	G2D_FMT_PYUV420UVC_MB32	= (0x25),
-	G2D_FMT_PYUV411UVC_MB32	= (0x26),
-	G2D_FMT_PYUV422UVC_MB64	= (0x27),
-	G2D_FMT_PYUV420UVC_MB64	= (0x28),
-	G2D_FMT_PYUV411UVC_MB64	= (0x29),
-	G2D_FMT_PYUV422UVC_MB128= (0x2A),
-	G2D_FMT_PYUV420UVC_MB128= (0x2B),
-	G2D_FMT_PYUV411UVC_MB128= (0x2C),
-
-}g2d_data_fmt;
-
-typedef enum {
-	G2D_SEQ_NORMAL = 0x0,
-
-	/* for interleaved yuv422 */
-	G2D_SEQ_VYUY   = 0x1,				/* pixel 0�ڵ�16λ */
-	G2D_SEQ_YVYU   = 0x2,				/* pixel 1�ڵ�16λ */
-
-	/* for uv_combined yuv420 */
-	G2D_SEQ_VUVU   = 0x3,
-
-	/* for 16bpp rgb */
-	G2D_SEQ_P10	= 0x4,				/* pixel 0�ڵ�16λ */
-	G2D_SEQ_P01	= 0x5,				/* pixel 1�ڵ�16λ */
-
-	/* planar format or 8bpp rgb */
-	G2D_SEQ_P3210  = 0x6,				/* pixel 0�ڵ�8λ */
-	G2D_SEQ_P0123  = 0x7,				/* pixel 3�ڵ�8λ */
-
-	/* for 4bpp rgb */
-	G2D_SEQ_P76543210  = 0x8,			/* 7,6,5,4,3,2,1,0 */
-	G2D_SEQ_P67452301  = 0x9,			/* 6,7,4,5,2,3,0,1 */
-	G2D_SEQ_P10325476  = 0xA,			/* 1,0,3,2,5,4,7,6 */
-	G2D_SEQ_P01234567  = 0xB,			/* 0,1,2,3,4,5,6,7 */
-
-	/* for 2bpp rgb */
-	G2D_SEQ_2BPP_BIG_BIG	   = 0xC,	/* 15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0 */
-	G2D_SEQ_2BPP_BIG_LITTER	= 0xD,	/* 12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3 */
-	G2D_SEQ_2BPP_LITTER_BIG	= 0xE,	/* 3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12 */
-	G2D_SEQ_2BPP_LITTER_LITTER = 0xF,	/* 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 */
-
-	/* for 1bpp rgb */
-	G2D_SEQ_1BPP_BIG_BIG	   = 0x10,	/* 31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0 */
-	G2D_SEQ_1BPP_BIG_LITTER	= 0x11,	/* 24,25,26,27,28,29,30,31,16,17,18,19,20,21,22,23,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7 */
-	G2D_SEQ_1BPP_LITTER_BIG	= 0x12,	/* 7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8,23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24 */
-	G2D_SEQ_1BPP_LITTER_LITTER = 0x13,	/* 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 */
-}g2d_pixel_seq;
-
-
-typedef enum {
-	G2D_FIL_NONE			= 0x00000000,
-	G2D_FIL_PIXEL_ALPHA		= 0x00000001,
-	G2D_FIL_PLANE_ALPHA		= 0x00000002,
-	G2D_FIL_MULTI_ALPHA		= 0x00000004,
-}g2d_fillrect_flags;
-
-typedef enum {
-	G2D_BLT_NONE			= 0x00000000,
-	G2D_BLT_PIXEL_ALPHA		= 0x00000001,
-	G2D_BLT_PLANE_ALPHA		= 0x00000002,
-	G2D_BLT_MULTI_ALPHA		= 0x00000004,
-	G2D_BLT_SRC_COLORKEY	= 0x00000008,
-	G2D_BLT_DST_COLORKEY	= 0x00000010,
-	G2D_BLT_FLIP_HORIZONTAL	= 0x00000020,
-	G2D_BLT_FLIP_VERTICAL	= 0x00000040,
-	G2D_BLT_ROTATE90		= 0x00000080,
-	G2D_BLT_ROTATE180		= 0x00000100,
-	G2D_BLT_ROTATE270		= 0x00000200,
-	G2D_BLT_MIRROR45		= 0x00000400,
-	G2D_BLT_MIRROR135		= 0x00000800,
-	G2D_BLT_SRC_PREMULTIPLY	= 0x00001000,
-	G2D_BLT_DST_PREMULTIPLY	= 0x00002000,
-} g2d_blt_flags;
-
-/* g2d color gamut */
-typedef enum {
-	G2D_BT601,
-	G2D_BT709,
-	G2D_BT2020,
-} g2d_color_gmt;
-/*
- * 0:Top to down, Left to right
- * 1:Top to down, Right to left
- * 2:Down to top, Left to right
- * 3:Down to top, Right to left
- */
-enum g2d_scan_order{
-	G2D_SM_TDLR = 0x00000000,
-	G2D_SM_TDRL = 0x00000001,
-	G2D_SM_DTLR = 0x00000002,
-	G2D_SM_DTRL = 0x00000003,
-};
-
+///* Input DMA setting */
+//#define G2D_FILL_ENABLE		(1<<16)
+//#define G2D_FILL_DISABLE	(0<<16)
+//
+///* Work Mode Select */
+//#define G2D_IDMA_ENABLE		(1<<0)
+//#define G2D_IDMA_DISABLE	(0<<0)
+//
+///* Scaler Control Select */
+//#define G2D_SCALER_DISABLE	(0<<0)
+//#define G2D_SCALER_ENABLE	(1<<0)
+//#define G2D_SCALER_4TAP4	(0<<4)
+//
+//#define G2D_FINISH_IRQ		(1<<8)
+//#define G2D_ERROR_IRQ			(1<<9)
+//
+///* mixer data format */
+//typedef enum {
+//	/* share data format */
+//	G2D_FMT_ARGB_AYUV8888	= (0x0),
+//	G2D_FMT_BGRA_VUYA8888	= (0x1),
+//	G2D_FMT_ABGR_AVUY8888	= (0x2),
+//	G2D_FMT_RGBA_YUVA8888	= (0x3),
+//
+//	G2D_FMT_XRGB8888		= (0x4),
+//	G2D_FMT_BGRX8888		= (0x5),
+//	G2D_FMT_XBGR8888		= (0x6),
+//	G2D_FMT_RGBX8888		= (0x7),
+//
+//	G2D_FMT_ARGB4444		= (0x8),
+//	G2D_FMT_ABGR4444		= (0x9),
+//	G2D_FMT_RGBA4444		= (0xA),
+//	G2D_FMT_BGRA4444		= (0xB),
+//
+//	G2D_FMT_ARGB1555		= (0xC),
+//	G2D_FMT_ABGR1555		= (0xD),
+//	G2D_FMT_RGBA5551		= (0xE),
+//	G2D_FMT_BGRA5551		= (0xF),
+//
+//	G2D_FMT_RGB565			= (0x10),
+//	G2D_FMT_BGR565			= (0x11),
+//
+//	G2D_FMT_IYUV422			= (0x12),
+//
+//	G2D_FMT_8BPP_MONO		= (0x13),
+//	G2D_FMT_4BPP_MONO		= (0x14),
+//	G2D_FMT_2BPP_MONO		= (0x15),
+//	G2D_FMT_1BPP_MONO		= (0x16),
+//
+//	G2D_FMT_PYUV422UVC		= (0x17),
+//	G2D_FMT_PYUV420UVC		= (0x18),
+//	G2D_FMT_PYUV411UVC		= (0x19),
+//
+//	/* just for output format */
+//	G2D_FMT_PYUV422			= (0x1A),
+//	G2D_FMT_PYUV420			= (0x1B),
+//	G2D_FMT_PYUV411			= (0x1C),
+//
+//	/* just for input format */
+//	G2D_FMT_8BPP_PALETTE	= (0x1D),
+//	G2D_FMT_4BPP_PALETTE	= (0x1E),
+//	G2D_FMT_2BPP_PALETTE	= (0x1F),
+//	G2D_FMT_1BPP_PALETTE	= (0x20),
+//
+//	G2D_FMT_PYUV422UVC_MB16	= (0x21),
+//	G2D_FMT_PYUV420UVC_MB16	= (0x22),
+//	G2D_FMT_PYUV411UVC_MB16	= (0x23),
+//	G2D_FMT_PYUV422UVC_MB32	= (0x24),
+//	G2D_FMT_PYUV420UVC_MB32	= (0x25),
+//	G2D_FMT_PYUV411UVC_MB32	= (0x26),
+//	G2D_FMT_PYUV422UVC_MB64	= (0x27),
+//	G2D_FMT_PYUV420UVC_MB64	= (0x28),
+//	G2D_FMT_PYUV411UVC_MB64	= (0x29),
+//	G2D_FMT_PYUV422UVC_MB128= (0x2A),
+//	G2D_FMT_PYUV420UVC_MB128= (0x2B),
+//	G2D_FMT_PYUV411UVC_MB128= (0x2C),
+//
+//}g2d_data_fmt;
+//
+//typedef enum {
+//	G2D_SEQ_NORMAL = 0x0,
+//
+//	/* for interleaved yuv422 */
+//	G2D_SEQ_VYUY   = 0x1,				/* pixel 0�ڵ�16λ */
+//	G2D_SEQ_YVYU   = 0x2,				/* pixel 1�ڵ�16λ */
+//
+//	/* for uv_combined yuv420 */
+//	G2D_SEQ_VUVU   = 0x3,
+//
+//	/* for 16bpp rgb */
+//	G2D_SEQ_P10	= 0x4,				/* pixel 0�ڵ�16λ */
+//	G2D_SEQ_P01	= 0x5,				/* pixel 1�ڵ�16λ */
+//
+//	/* planar format or 8bpp rgb */
+//	G2D_SEQ_P3210  = 0x6,				/* pixel 0�ڵ�8λ */
+//	G2D_SEQ_P0123  = 0x7,				/* pixel 3�ڵ�8λ */
+//
+//	/* for 4bpp rgb */
+//	G2D_SEQ_P76543210  = 0x8,			/* 7,6,5,4,3,2,1,0 */
+//	G2D_SEQ_P67452301  = 0x9,			/* 6,7,4,5,2,3,0,1 */
+//	G2D_SEQ_P10325476  = 0xA,			/* 1,0,3,2,5,4,7,6 */
+//	G2D_SEQ_P01234567  = 0xB,			/* 0,1,2,3,4,5,6,7 */
+//
+//	/* for 2bpp rgb */
+//	G2D_SEQ_2BPP_BIG_BIG	   = 0xC,	/* 15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0 */
+//	G2D_SEQ_2BPP_BIG_LITTER	= 0xD,	/* 12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3 */
+//	G2D_SEQ_2BPP_LITTER_BIG	= 0xE,	/* 3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12 */
+//	G2D_SEQ_2BPP_LITTER_LITTER = 0xF,	/* 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 */
+//
+//	/* for 1bpp rgb */
+//	G2D_SEQ_1BPP_BIG_BIG	   = 0x10,	/* 31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0 */
+//	G2D_SEQ_1BPP_BIG_LITTER	= 0x11,	/* 24,25,26,27,28,29,30,31,16,17,18,19,20,21,22,23,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7 */
+//	G2D_SEQ_1BPP_LITTER_BIG	= 0x12,	/* 7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8,23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24 */
+//	G2D_SEQ_1BPP_LITTER_LITTER = 0x13,	/* 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 */
+//}g2d_pixel_seq;
+//
+//
+//typedef enum {
+//	G2D_FIL_NONE			= 0x00000000,
+//	G2D_FIL_PIXEL_ALPHA		= 0x00000001,
+//	G2D_FIL_PLANE_ALPHA		= 0x00000002,
+//	G2D_FIL_MULTI_ALPHA		= 0x00000004,
+//}g2d_fillrect_flags;
+//
+//typedef enum {
+//	G2D_BLT_NONE			= 0x00000000,
+//	G2D_BLT_PIXEL_ALPHA		= 0x00000001,
+//	G2D_BLT_PLANE_ALPHA		= 0x00000002,
+//	G2D_BLT_MULTI_ALPHA		= 0x00000004,
+//	G2D_BLT_SRC_COLORKEY	= 0x00000008,
+//	G2D_BLT_DST_COLORKEY	= 0x00000010,
+//	G2D_BLT_FLIP_HORIZONTAL	= 0x00000020,
+//	G2D_BLT_FLIP_VERTICAL	= 0x00000040,
+//	G2D_BLT_ROTATE90		= 0x00000080,
+//	G2D_BLT_ROTATE180		= 0x00000100,
+//	G2D_BLT_ROTATE270		= 0x00000200,
+//	G2D_BLT_MIRROR45		= 0x00000400,
+//	G2D_BLT_MIRROR135		= 0x00000800,
+//	G2D_BLT_SRC_PREMULTIPLY	= 0x00001000,
+//	G2D_BLT_DST_PREMULTIPLY	= 0x00002000,
+//} g2d_blt_flags;
+//
+///* g2d color gamut */
+//typedef enum {
+//	G2D_BT601,
+//	G2D_BT709,
+//	G2D_BT2020,
+//} g2d_color_gmt;
+///*
+// * 0:Top to down, Left to right
+// * 1:Top to down, Right to left
+// * 2:Down to top, Left to right
+// * 3:Down to top, Right to left
+// */
+//enum g2d_scan_order{
+//	G2D_SM_TDLR = 0x00000000,
+//	G2D_SM_TDRL = 0x00000001,
+//	G2D_SM_DTLR = 0x00000002,
+//	G2D_SM_DTRL = 0x00000003,
+//};
+//
 
 // https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 
@@ -609,7 +623,7 @@ enum g2d_scan_order{
 //#define ROT_OHADD2         (0xB4 + G2D_ROT)
 
 /* clear most of the registers value to default */
-static uint32_t mixer_reg_init(void){
+static uint32_t local_mixer_reg_init(void){
 	//uint32_t i;
 
 //	for(i=0;i<=0x148;i+=4)
@@ -692,6 +706,7 @@ void arm_hardware_mdma_initialize(void)
 	// audio1: allwnrt113_get_g2d_freq()=768000000
 	//PRINTF("allwnrt113_get_g2d_freq()=%u\n", (unsigned) allwnrt113_get_g2d_freq());
 
+	 mixer_set_reg_base(G2D_BASE);
 	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
 
@@ -1947,6 +1962,46 @@ void hwaccel_copy(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
 	__DMB();
+
+#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
+	/* Использование G2D для формирования изображений */
+
+	static g2d_blt        G2D_BLT;
+
+	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
+
+	G2D_BLT.flag=G2D_BLT_NONE|0*G2D_BLT_PLANE_ALPHA;
+
+	G2D_BLT.src_image.waddr[0]=(uintptr_t)src;    //память, где хранится картинка
+	G2D_BLT.src_image.waddr[1]=0;//(uintptr_t)png->data;	// was index=0
+	G2D_BLT.src_image.waddr[2]=0;//(uintptr_t)png->data;	// was index=0
+	G2D_BLT.src_image.w = GXADJ(sdx);              //габариты атласа
+	G2D_BLT.src_image.h = sdy;
+	G2D_BLT.src_image.format=SrcImageFormat;
+	G2D_BLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
+
+	G2D_BLT.src_rect.x=0;                        //смещение
+	G2D_BLT.src_rect.y=0;
+
+	G2D_BLT.src_rect.w = sdx;               //размер
+	G2D_BLT.src_rect.h = sdy;
+
+	G2D_BLT.dst_image.waddr[0]=(uintptr_t) dst;
+	G2D_BLT.dst_image.waddr[1]=0;//memory;	// was index=0
+	G2D_BLT.dst_image.waddr[2]=0;//memory;	// was index=0
+	G2D_BLT.dst_image.w=tdx;
+	G2D_BLT.dst_image.h=tdy;
+	G2D_BLT.dst_image.format=DstImageFormat;
+	G2D_BLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
+
+	G2D_BLT.dst_x=0;                              //координаты вывода
+	G2D_BLT.dst_y=0;
+
+	G2D_BLT.color=0x00000000; //цветовой ключ RGB
+	G2D_BLT.alpha=0xFF;       //альфа плоскости
+
+	g2d_blit(&G2D_BLT);
 
 #else
 	// программная реализация
