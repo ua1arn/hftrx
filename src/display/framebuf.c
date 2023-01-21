@@ -1007,6 +1007,10 @@ hwacc_fillrect_u16(
 	G2D_WB->WB_LADD0 = addr;
 	G2D_WB->WB_HADD0 = addr >> 32;
 
+	// не трбуется
+//	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
+//	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
+
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
 	G2D_BLD->BLD_SIZE = sizehw;
 	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
@@ -1346,6 +1350,10 @@ hwacc_fillrect_u32(
 	G2D_WB->WB_PITCH0 = stride;
 	G2D_WB->WB_LADD0 = addr;
 	G2D_WB->WB_HADD0 = addr >> 32;
+
+	// не трбуется
+//	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
+//	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
 	G2D_BLD->BLD_SIZE = sizehw;
@@ -1964,7 +1972,7 @@ void hwaccel_copy(
 	__DMB();
 
 #elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
-	/* Использование G2D для формирования изображений */
+	/* Копирование - использование G2D для формирования изображений */
 
 	enum { PIXEL_SIZE = sizeof * src };
 	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
@@ -2002,7 +2010,10 @@ void hwaccel_copy(
 	G2D_WB->WB_LADD0 = taddr;
 	G2D_WB->WB_HADD0 = taddr >> 32;
 
+	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
+	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
+
 	G2D_BLD->BLD_SIZE = ssizehw;
 	G2D_BLD->BLD_CH_ISIZE0 = ssizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
@@ -2016,7 +2027,7 @@ void hwaccel_copy(
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
-	/* Использование G2D для формирования изображений */
+	/* Копирование - использование G2D для формирования изображений */
 
 	g2d_blt        G2D_BLT;
 
