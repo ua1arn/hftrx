@@ -20,6 +20,16 @@
 #include <linux/kd.h>
 #include <linux/gpio.h>
 
+void xcz_resetn_modem_state(uint8_t val);
+
+enum {
+	rx_fir_shift_pos 	= 0,
+	tx_shift_pos 		= 8,
+	rx_cic_shift_pos 	= 16,
+	tx_state_pos 		= 24,
+	resetn_modem_pos 	= 25,
+};
+
 void * get_highmem_ptr (uint32_t addr, uint8_t size)
 {
 	int fd;
@@ -336,7 +346,7 @@ uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, con
 /*************************************************************/
 
 volatile uint32_t *ftw, *ftw_sub, *rts, *modem_ctrl,  *ph_fifo, *iq_count_rx, *iq_count_tx, *iq_fifo_rx, *iq_fifo_tx;
-static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0;
+static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
 
 void linux_iq_init(void)
@@ -476,6 +486,10 @@ void linux_subsystem_init(void)
 
 void linux_user_init(void)
 {
+	xcz_resetn_modem_state(0);
+	usleep(5);
+	xcz_resetn_modem_state(1);
+
 	linux_create_thread(process_linux_timer_spool, 50, 0);
 	linux_create_thread(linux_encoder_spool, 50, 1);
 	linux_create_thread(linux_iq_interrupt_thread, 90, 1);
@@ -513,12 +527,25 @@ void system_enableIRQ(void)
 
 }
 
+void update_modem_ctrl(void)
+{
+	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) | ((tx_shift & 0xFF) << tx_shift_pos)
+			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) | (!!tx_state << tx_state_pos)
+			| (!!resetn_modem << resetn_modem_pos);
+
+	* modem_ctrl = v;
+}
+
+void xcz_resetn_modem_state(uint8_t val)
+{
+	resetn_modem = val != 0;
+	update_modem_ctrl();
+}
+
 void xcz_rxtx_state(uint8_t tx)
 {
 	tx_state = tx != 0;
-
-	uint32_t v = rx_fir_shift | (tx_shift << 8) | (rx_cic_shift << 16) | (tx_state << 24);
-	* modem_ctrl = v;
+	update_modem_ctrl();
 }
 
 void xcz_dds_ftw(const uint_least64_t * val)
@@ -540,8 +567,7 @@ uint32_t xcz_rx_iq_shift(uint8_t val) // 52
 		if (val >= rx_fir_shift_min && val <= rx_fir_shift_max)
 			rx_fir_shift = val & 0xFF;
 
-		uint32_t v = rx_fir_shift | (tx_shift << 8) | (rx_cic_shift << 16) | (tx_state << 24);
-		* modem_ctrl = v;
+		update_modem_ctrl();
 	}
 	return rx_fir_shift;
 }
@@ -558,8 +584,7 @@ uint32_t xcz_rx_cic_shift(uint32_t val)
 		if (val >= rx_cic_shift_min && val <= rx_cic_shift_max)
 			rx_cic_shift = val & 0xFF;
 
-		uint32_t v = rx_fir_shift | (tx_shift << 8) | (rx_cic_shift << 16) | (tx_state << 24);
-		* modem_ctrl = v;
+		update_modem_ctrl();
 	}
 	return rx_cic_shift;
 }
@@ -571,8 +596,7 @@ uint32_t xcz_tx_shift(uint32_t val)
 		if (val >= tx_shift_min && val <= tx_shift_max)
 			tx_shift = val & 0xFF;
 
-		uint32_t v = rx_fir_shift | (tx_shift << 8) | (rx_cic_shift << 16) | (tx_state << 24);
-		* modem_ctrl = v;
+		update_modem_ctrl();
 	}
 	return tx_shift;
 }
