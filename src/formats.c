@@ -467,6 +467,26 @@ printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 	}
 }
 
+void
+printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
+{
+	const uint64_t * buff = (const uint64_t *) vbuff;
+	enum { ROWSIZE = 4 };
+	unsigned i, j;
+	unsigned rows = ((length + 7) / 8 + ROWSIZE - 1) / ROWSIZE;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int remaining = (length + 7) / 8 - i * ROWSIZE;
+		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
+		debug_printf_P(PSTR("%08X "), (unsigned) (voffs + i * ROWSIZE * 8));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %08X%08X"), (unsigned) (buff [i * ROWSIZE + j] >> 32), (unsigned) (buff [i * ROWSIZE + j] >> 0));
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
 #else /* WITHDEBUG */
 
 void debug_printf_P(const FLASHMEM char *format, ... )

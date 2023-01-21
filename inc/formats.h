@@ -28,6 +28,7 @@ void strtrim(char * s);
 
 void printhex(uintptr_t offs, const void * buff, unsigned length);
 void printhex32(uintptr_t voffs, const void * vbuff, unsigned length);
+void printhex64(uintptr_t voffs, const void * vbuff, unsigned length);
 
 // spool-based functions for debug
 int dbg_puts_impl_P(const FLASHMEM char * s);
