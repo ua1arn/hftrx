@@ -35,12 +35,12 @@
 //#include "Logo.png.h"
 //#include "scale03.png.h"
 
-LuImage *png[5]; //массив указателей на объект PNG (число PNG)
+static LuImage *png[5]; //массив указателей на объект PNG (число PNG)
 
+#define DstImageFormat G2D_FMT_XRGB8888
 
-//#define DstImageFormat G2D_FMT_ABGR_AVUY8888;
-#define DstImageFormat G2D_FMT_XRGB8888;
-
+//#define SrcImageFormat G2D_FMT_ABGR_AVUY8888
+#define SrcImageFormat G2D_FMT_XBGR8888 // можно попробовать без alpha канала
 //----------------------------------------------------------------------------------------------------------
 
 void PNG_Load(LuImage **png,const void *buffer)      //разжимает PNG из buffer в новую выделенную память(malloc)
@@ -96,7 +96,7 @@ void PNG_Background(LuImage *png,u32 memory)           //выводит фоновый PNG на 
  G2D_BLT.src_image.addr[0]=(uintptr_t)png->data;
  G2D_BLT.src_image.w=png->width;              //габариты атласа
  G2D_BLT.src_image.h=png->height;
- G2D_BLT.src_image.format=G2D_FMT_ABGR_AVUY8888;
+ G2D_BLT.src_image.format=SrcImageFormat;
  G2D_BLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
 
  G2D_BLT.src_rect.x=0;                        //смещение
@@ -205,7 +205,7 @@ void g2d_main(void)
  G2D_BLT.src_image.addr[2]=(uintptr_t)png[0]->data;	// was index=0
  G2D_BLT.src_image.w=png[0]->width;              //габариты атласа
  G2D_BLT.src_image.h=png[0]->height;
- G2D_BLT.src_image.format=G2D_FMT_ABGR_AVUY8888;
+ G2D_BLT.src_image.format=SrcImageFormat;
  G2D_BLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
 
  G2D_BLT.src_rect.x=0;                           //смещение
@@ -262,7 +262,7 @@ void g2d_main(void)
  G2D_STRETCHBLT.src_image.w=png[0]->width;              //габариты атласа
  G2D_STRETCHBLT.src_image.h=png[0]->height;
 
- G2D_STRETCHBLT.src_image.format=G2D_FMT_ABGR_AVUY8888;
+ G2D_STRETCHBLT.src_image.format=SrcImageFormat;
  G2D_STRETCHBLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
 
  G2D_STRETCHBLT.src_rect.x=0;                           //смещение
@@ -377,7 +377,7 @@ void g2d_main(void)
  G2D_BLT.src_image.addr[0]=(u32)png[1]->data;
  G2D_BLT.src_image.w=png[1]->width;              //габариты атласа
  G2D_BLT.src_image.h=png[1]->height;
- G2D_BLT.src_image.format=G2D_FMT_ABGR_AVUY8888;
+ G2D_BLT.src_image.format=SrcImageFormat;
  G2D_BLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
 
  G2D_BLT.src_rect.x=0;                           //смещение

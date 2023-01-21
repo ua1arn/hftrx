@@ -1842,8 +1842,8 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
 	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565, 0x08: RGB_888
 #if LCDMODE_MAIN_ARGB888
-	const uint32_t ovl_ui_format = 0x00;	//  0x08: ARGB_8888
-	//const uint32_t ovl_ui_format = 0x04;	// 0x04: XRGB_8888
+	//const uint32_t ovl_ui_format = 0x00;	//  0x08: ARGB_8888
+	const uint32_t ovl_ui_format = 0x04;	// 0x04: XRGB_8888
 #elif LCDMODE_MAIN_RGB565
 	const uint32_t ovl_ui_format = 0x0A;	// 0x0A: RGB_565
 #else
