@@ -1966,7 +1966,59 @@ void hwaccel_copy(
 #elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
 	/* Использование G2D для формирования изображений */
 
-	static g2d_blt        G2D_BLT;
+	enum { PIXEL_SIZE = sizeof * src };
+	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
+	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
+	//const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	const uintptr_t taddr = (uintptr_t) dst;
+	const uintptr_t saddr = (uintptr_t) src;
+	//const uint_fast32_t tsizehw = ((tdy - 1) << 16) | ((tdx - 1) << 0);
+	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
+
+	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
+
+
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+
+	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
+	G2D_V0->V0_PITCH1 = 0;	// U
+	G2D_V0->V0_PITCH2 = 0;	// V
+
+	G2D_V0->V0_HDS_CTL0 = 0;
+	G2D_V0->V0_HDS_CTL1 = 0;
+	G2D_V0->V0_VDS_CTL0 = 0;
+	G2D_V0->V0_VDS_CTL1 = 0;
+
+	G2D_V0->V0_COOR = 0;
+	G2D_V0->V0_MBSIZE = ssizehw;
+	G2D_V0->V0_SIZE = ssizehw;
+
+	G2D_BLD->BLD_BK_COLOR = 0x00FF00;	/* всегда RGB888. этим цветом заполняется */
+	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_SIZE = ssizehw;	/* расположение компонент размера проверено */
+	G2D_WB->WB_PITCH0 = tstride;
+	G2D_WB->WB_LADD0 = taddr;
+	G2D_WB->WB_HADD0 = taddr >> 32;
+
+	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
+	G2D_BLD->BLD_SIZE = ssizehw;
+	G2D_BLD->BLD_CH_ISIZE0 = ssizehw;
+	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
+
+	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
+	if (hwacc_waitdone() == 0)
+	{
+		PRINTF("hwaccel_copy: timeout tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) tdx, (unsigned) sdy);
+		ASSERT(0);
+	}
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
+
+#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
+	/* Использование G2D для формирования изображений */
+
+	g2d_blt        G2D_BLT;
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
@@ -1974,8 +2026,8 @@ void hwaccel_copy(
 	G2D_BLT.flag=G2D_BLT_NONE|0*G2D_BLT_PLANE_ALPHA;
 
 	G2D_BLT.src_image.waddr[0]=(uintptr_t)src;    //память, где хранится картинка
-	G2D_BLT.src_image.waddr[1]=0;//(uintptr_t)png->data;	// was index=0
-	G2D_BLT.src_image.waddr[2]=0;//(uintptr_t)png->data;	// was index=0
+//	G2D_BLT.src_image.waddr[1]=0;//(uintptr_t)png->data;	// was index=0
+//	G2D_BLT.src_image.waddr[2]=0;//(uintptr_t)png->data;	// was index=0
 	G2D_BLT.src_image.w = GXADJ(sdx);              //габариты атласа
 	G2D_BLT.src_image.h = sdy;
 	G2D_BLT.src_image.format=SrcImageFormat;
@@ -1990,7 +2042,7 @@ void hwaccel_copy(
 	G2D_BLT.dst_image.waddr[0]=(uintptr_t) dst;
 	G2D_BLT.dst_image.waddr[1]=0;//memory;	// was index=0
 	G2D_BLT.dst_image.waddr[2]=0;//memory;	// was index=0
-	G2D_BLT.dst_image.w=tdx;
+	G2D_BLT.dst_image.w=GXADJ(tdx);
 	G2D_BLT.dst_image.h=tdy;
 	G2D_BLT.dst_image.format=DstImageFormat;
 	G2D_BLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
@@ -2001,7 +2053,7 @@ void hwaccel_copy(
 	G2D_BLT.color=0x00000000; //цветовой ключ RGB
 	G2D_BLT.alpha=0xFF;       //альфа плоскости
 
-	g2d_blit(&G2D_BLT);
+	VERIFY(g2d_blit(&G2D_BLT) > 0);
 
 #else
 	// программная реализация
