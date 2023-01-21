@@ -2708,10 +2708,20 @@ __STATIC_INLINE uint32_t __ROR(uint32_t op1, uint32_t op2)
   return (op1 >> op2) | (op1 << (32U - op2));
 }
 
+// See https://locklessinc.com/articles/sat_arithmetic/
+
 __STATIC_FORCEINLINE uint8_t __UADD8_Sat(uint8_t op1, uint8_t op2)
 {
 	  uint_fast16_t result = (uint_fast16_t) op1 + op2;
-	  return result > 255 ?  255 : result;
+	  result |= -(result < op1);
+
+	  return result;
+}
+
+__STATIC_FORCEINLINE uint8_t __USUB8_Sat(uint8_t op1, uint8_t op2)
+{
+	  result |= -(result < op1);
+	  return op1 >= op2 ?  0 : (op1 - op2);
 }
 
 /**
@@ -2734,11 +2744,6 @@ __STATIC_FORCEINLINE uint32_t __UQADD8(uint32_t op1, uint32_t op2)
 	  return (result);
 }
 
-__STATIC_FORCEINLINE uint8_t __USUB8_Sat(uint8_t op1, uint8_t op2)
-{
-	  return op1 >= op2 ?  0 : (op1 - op2);
-}
-
 /**
  * Unsigned Saturating Subtract 8 performs four unsigned 8-bit integer subtractions,
  * saturates the results to the 8-bit unsigned integer
@@ -2759,6 +2764,7 @@ __STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
   return (result);
 }
 
+#endif /* defined (__riscv_v) */
 
 // https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/bsp/hifive1/freedom-e-sdk/bsp/env/encoding.h
 // https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/libcpu/risc-v/common/riscv-ops.h
