@@ -653,7 +653,7 @@ hwacc_fillrect_u16(
 	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется */
 	G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	//G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = sizehw;	/* расположение компонент размера проверено */
+	G2D_WB->WB_SIZE = sizehw;
 	G2D_WB->WB_PITCH0 = stride;
 	G2D_WB->WB_LADD0 = addr;
 	G2D_WB->WB_HADD0 = addr >> 32;
@@ -1001,7 +1001,7 @@ hwacc_fillrect_u32(
 	G2D_BLD->BLD_BK_COLOR = color;	/* всегда RGB888. этим цветом заполняется */
 	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = sizehw;	/* расположение компонент размера проверено */
+	G2D_WB->WB_SIZE = sizehw;
 	G2D_WB->WB_PITCH0 = stride;
 	G2D_WB->WB_LADD0 = addr;
 	G2D_WB->WB_HADD0 = addr >> 32;
@@ -1648,9 +1648,7 @@ void hwaccel_copy(
 	const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
 //	* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 0, 0) = TFTRGB(255, 0, 0);
-//
 //	* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 1, sdy - 1) = TFTRGB(0, 0, 255);
-//
 //	if (sdx > 2 && sdy > 2)
 //	{
 //		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 0, 1) = TFTRGB(255, 0, 0);
@@ -1662,7 +1660,7 @@ void hwaccel_copy(
 //		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 2, sdy - 2) = TFTRGB(0, 0, 255);
 //	}
 
-	if (sdx < 2 || sdy << 2 || tdx < 2 || tdy < 2)
+	if (sdx < 2 || sdy < 2 || tdx < 2 || tdy < 2)
 	{
 		// программная реализация
 
@@ -1694,35 +1692,35 @@ void hwaccel_copy(
 
 	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = ssizehwf;	/* расположение компонент размера проверено */
-	G2D_WB->WB_PITCH0 = tstride;
+	G2D_WB->WB_SIZE = ssizehw;
+	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
 	G2D_WB->WB_LADD0 = taddr;
 	G2D_WB->WB_HADD0 = taddr >> 32;
-	G2D_WB->WB_PITCH1 = 0;
-	G2D_WB->WB_LADD1 = 0;
-	G2D_WB->WB_HADD1 = 0;
-	G2D_WB->WB_PITCH2 = 0;
-	G2D_WB->WB_LADD2 = 0;
-	G2D_WB->WB_HADD2 = 0;
+//	G2D_WB->WB_PITCH1 = 0;
+//	G2D_WB->WB_LADD1 = 0;
+//	G2D_WB->WB_HADD1 = 0;
+//	G2D_WB->WB_PITCH2 = 0;
+//	G2D_WB->WB_LADD2 = 0;
+//	G2D_WB->WB_HADD2 = 0;
 
 	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 - sel 0
 	//G2D_BLD->BLD_EN_CTL |= (1u << 9);	// 9 - sel 1 -  need abp process
 	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
 
-	G2D_BLD->BLD_BK_COLOR = TFTRGB(192, 192, 192);	/* всегда RGB888. этим цветом заполняется вне исходного окна*/
+	G2D_BLD->BLD_BK_COLOR = TFTRGB(192, 192, 0);	/* всегда RGB888. этим цветом заполняется вне исходного окна */
 	G2D_BLD->BLD_KEY_CTL = 0;
 	G2D_BLD->BLD_KEY_CON = 0;
 	G2D_BLD->BLD_SIZE = ssizehwf;	// may not be zero
 
-	G2D_BLD->BLD_CH_ISIZE0 = ssizehw;	// may be zero
+	G2D_BLD->BLD_CH_ISIZE0 = ssizehwf;	// may be zero
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
-	G2D_BLD->BLD_FILLC0 = ~ 0;
+	//G2D_BLD->BLD_FILLC0 = ~ 0;
 
 	G2D_BLD->ROP_CTL = 0xF0;	// Use G2D_V0 as source
 	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-	G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_SRCOVER
-	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+	//G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_SRCOVER
+	G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
 	unsigned ui_attr = 0;
 	ui_attr = 111 /*(img->alpha & 0xff) */ << 24;
@@ -1732,32 +1730,6 @@ void hwaccel_copy(
 	ui_attr |= G2D_MIXER_ALPHA /*img->mode */ << 1;
 	ui_attr |= 1;
 
-//	G2D_UI0->UI_ATTR = 0*ui_attr;
-//	G2D_UI0->UI_LADD = saddr;
-//	G2D_UI0->UI_HADD = saddr >> 32;
-//	G2D_UI0->UI_COOR = 0;
-//	G2D_UI0->UI_MBSIZE = ssizehw;
-//	G2D_UI0->UI_SIZE = ssizehw;
-//	G2D_UI0->UI_PITCH = sstride;
-//	G2D_UI0->UI_FILLC = 0xFF0000;
-//
-//	G2D_UI1->UI_ATTR = 0*ui_attr;
-//	G2D_UI1->UI_LADD = saddr;
-//	G2D_UI1->UI_HADD = saddr >> 32;
-//	G2D_UI1->UI_COOR = 0;
-//	G2D_UI1->UI_MBSIZE = ssizehw;
-//	G2D_UI1->UI_SIZE = ssizehw;
-//	G2D_UI1->UI_PITCH = sstride;
-//	G2D_UI1->UI_FILLC = 0xFF0000;
-//
-//	G2D_UI2->UI_ATTR = 0*ui_attr;
-//	G2D_UI2->UI_LADD = saddr;
-//	G2D_UI2->UI_HADD = saddr >> 32;
-//	G2D_UI2->UI_COOR = 0;
-//	G2D_UI2->UI_MBSIZE = ssizehw;
-//	G2D_UI2->UI_SIZE = ssizehw;
-//	G2D_UI2->UI_PITCH = sstride;
-//	G2D_UI2->UI_FILLC = 0x0F0000;
 
 	G2D_V0->V0_ATTCTL = ui_attr;	// Use this block as source for copy
 
