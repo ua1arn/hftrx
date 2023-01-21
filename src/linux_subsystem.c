@@ -19,6 +19,7 @@
 #include <linux/fb.h>
 #include <linux/kd.h>
 #include <linux/gpio.h>
+#include <sys/stat.h>
 
 void xcz_resetn_modem_state(uint8_t val);
 
@@ -41,7 +42,7 @@ void * get_highmem_ptr (uint32_t addr, uint8_t size)
 
 	void *map_base, *virt_addr;
 	unsigned page_size, mapped_size, offset_in_page;
-	mapped_size = page_size = 4096 * size;
+	mapped_size = page_size = sysconf(_SC_PAGESIZE) * size;
 	offset_in_page = (unsigned)addr & (page_size - 1);
 
 	map_base = (unsigned*) mmap(0, mapped_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, addr & ~(off_t)(page_size - 1));
@@ -735,5 +736,25 @@ uint_fast8_t dummy_getchar(char * cp)
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void)) 	{}
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void)) 		{}
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void)) 			{}
+
+void linux_exit(void)
+{
+	munmap((void *) ftw, sysconf(_SC_PAGESIZE));
+	munmap((void *) ftw_sub, sysconf(_SC_PAGESIZE));
+	munmap((void *) rts, sysconf(_SC_PAGESIZE));
+	munmap((void *) modem_ctrl, sysconf(_SC_PAGESIZE));
+	munmap((void *) ph_fifo, sysconf(_SC_PAGESIZE));
+	munmap((void *) iq_count_rx, sysconf(_SC_PAGESIZE));
+	munmap((void *) iq_count_tx, sysconf(_SC_PAGESIZE));
+	munmap((void *) iq_fifo_tx, sysconf(_SC_PAGESIZE));
+
+#if WITHDSPEXTFIR
+	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
+#endif /* WITHDSPEXTFIR */
+
+	framebuffer_close();
+
+	exit(EXIT_SUCCESS);
+}
 
 #endif /* LINUX_SUBSYSTEM */

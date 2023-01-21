@@ -76,6 +76,7 @@ uint_fast8_t dummy_getchar(char * cp);
 
 typedef pthread_mutex_t spinlock_t;
 
+void linux_exit(void);
 void linux_subsystem_init(void);
 void linux_user_init(void);
 int linux_framebuffer_init(void);

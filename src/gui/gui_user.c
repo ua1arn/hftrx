@@ -1616,7 +1616,9 @@ static void window_options_process(void)
 		add_element("btn_Display", 100, 44, 0, 0, "Display|settings");
 		add_element("btn_gui", 	   100, 44, 0, 0, "GUI|settings");
 		add_element("btn_Utils",   100, 44, 0, 0, "Utils");
+#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 		add_element("btn_Time",    100, 44, 0, 0, "Set time|& date");
+#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
 
 		for (uint i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -1656,16 +1658,18 @@ static void window_options_process(void)
 			button_t * btn_AUDsett = find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
 			button_t * btn_SysMenu = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
 			button_t * btn_Display = find_gui_element(TYPE_BUTTON, win, "btn_Display");
+#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 			button_t * btn_Time = find_gui_element(TYPE_BUTTON, win, "btn_Time");
-
+			if (bh == btn_Time)
+			{
+				window_t * const win = get_win(WINDOW_TIME);
+				open_window(win);
+			}
+			else
+#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
 			if (bh == btn_Utils)
 			{
 				window_t * const win = get_win(WINDOW_UTILS);
-				open_window(win);
-			}
-			else if (bh == btn_Time)
-			{
-				window_t * const win = get_win(WINDOW_TIME);
 				open_window(win);
 			}
 			else if (bh == btn_gui)
@@ -1985,6 +1989,9 @@ static void window_utilites_process(void)
 #if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
 		add_element("btn_shift",    100, 44, 0, 0, "IQ shift");
 #endif /* defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR */
+#if LINUX_SUBSYSTEM
+		add_element("btn_exit",		100, 44, 0, 0, "Terminate|program");
+#endif /* LINUX_SUBSYSTEM */
 
 		x = 0;
 		y = 0;
@@ -2060,6 +2067,12 @@ static void window_utilites_process(void)
 				open_window(get_win(WINDOW_SHIFT));
 			}
 #endif /* defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR */
+#if LINUX_SUBSYSTEM
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_exit"))
+			{
+				linux_exit();		// Terminate all
+			}
+#endif /* LINUX_SUBSYSTEM */
 		}
 		break;
 
@@ -2387,7 +2400,7 @@ static void window_tx_vox_process(void)
 
 	static slider_t * sl_vox_delay = NULL, * sl_vox_level = NULL, * sl_avox_level = NULL;
 	static label_t * lbl_vox_delay = NULL, * lbl_vox_level = NULL, * lbl_avox_level = NULL;
-	static uint_fast16_t delay_min, delay_max, level_min, level_max, alevel_min, alevel_max;
+	static uint_fast8_t delay_min, delay_max, level_min, level_max, alevel_min, alevel_max;
 	slider_t * sl;
 
 	if (win->first_call)
@@ -2582,7 +2595,7 @@ static void window_tx_power_process(void)
 
 	static label_t * lbl_tx_power = NULL, * lbl_tune_power = NULL;
 	static enc_var_t pw;
-	static uint_fast16_t power_min, power_max, power_full, power_tune;
+	static uint_fast8_t power_min, power_max, power_full, power_tune;
 	slider_t * sl;
 
 	if (win->first_call)
@@ -5283,7 +5296,7 @@ static void window_freq_process (void)
 
 static void window_time_process(void)
 {
-#if defined (RTC1_TYPE)
+#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 	window_t * const win = get_win(WINDOW_TIME);
 	static uint year, month, day, hour, minute, secound, update;
 
@@ -5443,7 +5456,7 @@ static void window_time_process(void)
 		lh =  find_gui_element(TYPE_LABEL, win, "lbl_second");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", secound);
 	}
-#endif /* defined (RTC1_TYPE) */
+#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
 }
 
 static void window_kbd_process(void)
