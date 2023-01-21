@@ -635,6 +635,8 @@ hwacc_fillrect_u16(
 
 	const uint_fast32_t c24 = COLOR24(COLORMAIN_R(color), COLORMAIN_G(color), COLORMAIN_B(color));
 
+	G2D_V0->V0_ATTCTL = 0;
+
 	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
 	G2D_V0->V0_PITCH2 = 0;	// V
@@ -980,6 +982,8 @@ hwacc_fillrect_u32(
 
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+
+	G2D_V0->V0_ATTCTL = 0;
 
 	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
@@ -1634,8 +1638,10 @@ void hwaccel_copy(
 	const uintptr_t taddr = (uintptr_t) dst;
 	const uintptr_t saddr = (uintptr_t) src;
 	const uint_fast32_t tsizehw = ((tdy - 1) << 16) | ((tdx - 1) << 0);
+	const uint_fast32_t tsizehwf = ((tdy) << 16) | ((tdx) << 0);
 	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
 	const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
+	const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
@@ -1655,15 +1661,18 @@ void hwaccel_copy(
 	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
 
-	G2D_BLD->BLD_BK_COLOR = 0x000F00;	/* всегда RGB888. этим цветом заполняется */
+	G2D_BLD->BLD_BK_COLOR = TFTRGB(0, 255, 0);	/* всегда RGB888. этим цветом заполняется */
 	G2D_BLD->BLD_KEY_CTL = 0;
 	G2D_BLD->BLD_KEY_CON = 0;
-	G2D_BLD->BLD_SIZE = ssizehwf;
-	G2D_BLD->BLD_CH_ISIZE0 = ssizehw;
+	G2D_BLD->BLD_SIZE = ssizehw;
+	G2D_BLD->BLD_CH_ISIZE0 = ssizehwf;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
-	G2D_BLD->ROP_CTL = 0xF0;
+//	G2D_BLD->BLD_CH_ISIZE1 = ssizehw;
+//	G2D_BLD->BLD_CH_OFFSET1 = 0;// ((row) << 16) | ((col) << 0);
+	G2D_BLD->ROP_CTL = 0xF0;	// Use G2D_V0 as source
 	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 	G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_SRCOVER
+	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
 	unsigned ui_attr = 0;
 	ui_attr = 111 /*(img->alpha & 0xff) */ << 24;
@@ -1700,7 +1709,7 @@ void hwaccel_copy(
 //	G2D_UI2->UI_PITCH = sstride;
 //	G2D_UI2->UI_FILLC = 0x0F0000;
 
-	G2D_V0->V0_ATTCTL = 1*ui_attr;
+	G2D_V0->V0_ATTCTL = 1*ui_attr;	// Use this block as source for copy
 
 	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
@@ -1711,9 +1720,10 @@ void hwaccel_copy(
 	G2D_V0->V0_VDS_CTL0 = 0;
 	G2D_V0->V0_VDS_CTL1 = 0;
 
-	G2D_V0->V0_COOR = 0;
-	G2D_V0->V0_MBSIZE = ssizehw;
-	G2D_V0->V0_SIZE = ssizehw;
+	G2D_V0->V0_FILLC = TFTRGB(0, 0, 255);
+	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+	G2D_V0->V0_MBSIZE = ssizehwf3; // сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
+	G2D_V0->V0_SIZE = ssizehwf;		// параметры окна исходного буфера
 	G2D_V0->V0_LADD0 = saddr;
 	//G2D_V0->V0_LADD1 = saddr;
 	//G2D_V0->V0_LADD2 = saddr;
