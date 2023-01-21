@@ -1590,7 +1590,7 @@ typedef struct G2D_LAY_Type
 	__IO uint32_t V0_LADD1;                              /*!< Offset 0x01C V0_LADD1 */
 	__IO uint32_t V0_LADD2;                              /*!< Offset 0x020 V0_LADD2 */
 	__IO uint32_t V0_FILLC;                              /*!< Offset 0x024 V0_FILLC */
-	__IO uint32_t V0_HADD;                               /*!< Offset 0x028 V0_HADD */
+	__IO uint32_t V0_HADD;                               /*!< Offset 0x028 V0_HADD [31:24]: 0, [23:16]: V0_LADD2 bits 40..32, [15:8]: V0_LADD1 bits 40..32, [7:0]: V0_LADD0 bits 40..32_HADD */
 	__IO uint32_t V0_SIZE;                               /*!< Offset 0x02C V0_SIZE */
 	__IO uint32_t V0_HDS_CTL0;                           /*!< Offset 0x030 V0_HDS_CTL0 */
 	__IO uint32_t V0_HDS_CTL1;                           /*!< Offset 0x034 V0_HDS_CTL1 */

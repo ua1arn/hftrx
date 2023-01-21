@@ -1826,8 +1826,8 @@ __s32 mixer_stretchblt(g2d_stretchblt *para,
 			dst->mode = G2D_MIXER_ALPHA;
 		}
 		ck_para->match_rule = 0;
-		ck_para->max_color  = /*__UQADD8(para->color,0x00010101);*/ para->color;
-		ck_para->min_color  = /*__UQSUB8(para->color,0x00010101);*/ para->color;
+		ck_para->max_color  = __UQADD8(para->color,0x00010101);
+		ck_para->min_color  = __UQSUB8(para->color,0x00010101);
 
 		result = g2d_bsp_bitblt(src, dst, G2D_BLT_NONE /*G2D_BLT_NONE*/ );
 

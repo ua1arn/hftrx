@@ -990,7 +990,7 @@ hwacc_fillrect_u16(
 	G2D_WB->WB_SIZE = sizehw;	/* расположение компонент размера проверено */
 	G2D_WB->WB_PITCH0 = stride;
 	G2D_WB->WB_LADD0 = addr;
-	G2D_WB->WB_HADD0 = 0;
+	G2D_WB->WB_HADD0 = addr >> 32;
 
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
 	G2D_BLD->BLD_SIZE = sizehw;
@@ -1330,7 +1330,7 @@ hwacc_fillrect_u32(
 	G2D_WB->WB_SIZE = sizehw;	/* расположение компонент размера проверено */
 	G2D_WB->WB_PITCH0 = stride;
 	G2D_WB->WB_LADD0 = addr;
-	G2D_WB->WB_HADD0 = 0;
+	G2D_WB->WB_HADD0 = addr >> 32;
 
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
 	G2D_BLD->BLD_SIZE = sizehw;
