@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 
 void xcz_resetn_modem_state(uint8_t val);
+void ft8_thread(void);
 
 enum {
 	rx_fir_shift_pos 	= 0,
@@ -493,7 +494,13 @@ void linux_user_init(void)
 
 	linux_create_thread(process_linux_timer_spool, 50, 0);
 	linux_create_thread(linux_encoder_spool, 50, 1);
+
+#if WITHFT8
+	linux_create_thread(linux_iq_interrupt_thread, 90, 0);
+	linux_create_thread(ft8_thread, 50, 1);
+#else
 	linux_create_thread(linux_iq_interrupt_thread, 90, 1);
+#endif /* WITHFT8 */
 
 	const float FS = powf(2, 32);
 	uint32_t fan_pwm_period = 25000 * FS / 61440000;
