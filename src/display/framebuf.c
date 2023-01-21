@@ -1647,21 +1647,45 @@ void hwaccel_copy(
 	const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
 	const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
-	* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 0, 0) = TFTRGB(255, 0, 0);
+//	* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 0, 0) = TFTRGB(255, 0, 0);
+//
+//	* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 1, sdy - 1) = TFTRGB(0, 0, 255);
+//
+//	if (sdx > 2 && sdy > 2)
+//	{
+//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 0, 1) = TFTRGB(255, 0, 0);
+//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 1, 0) = TFTRGB(255, 0, 0);
+//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 1, 1) = TFTRGB(255, 0, 0);
+//
+//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 2, sdy - 1) = TFTRGB(0, 0, 255);
+//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 1, sdy - 2) = TFTRGB(0, 0, 255);
+//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 2, sdy - 2) = TFTRGB(0, 0, 255);
+//	}
 
-	* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 1, sdy - 1) = TFTRGB(0, 255, 0);
-
-	if (sdx > 2 && sdy > 2)
+	if (sdx < 2 || sdy << 2 || tdx < 2 || tdy < 2)
 	{
-		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 0, 1) = TFTRGB(255, 0, 0);
-		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 1, 0) = TFTRGB(255, 0, 0);
-		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 1, 1) = TFTRGB(255, 0, 0);
+		// программная реализация
 
-		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 2, sdy - 1) = TFTRGB(0, 255, 0);
-		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 1, sdy - 2) = TFTRGB(0, 255, 0);
-		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 2, sdy - 2) = TFTRGB(0, 255, 0);
+		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
+		if (tdx == sdx)
+		{
+			const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
+			// ширина строки одинаковая в получателе и источнике
+			memcpy(dst, src, len);
+		}
+		else
+		{
+			const size_t len = sdx * sizeof * src;
+			while (sdy --)
+			{
+				memcpy(dst, src, len);
+				//arm_hardware_flush((uintptr_t) dst, len);
+				src += GXADJ(sdx);
+				dst += GXADJ(tdx);
+			}
+		}
+		return;
 	}
-
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
 
@@ -1686,18 +1710,14 @@ void hwaccel_copy(
 	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
 
-	G2D_BLD->BLD_BK_COLOR = TFTRGB(0, 255, 0);	/* всегда RGB888. этим цветом заполняется вне исходного окна*/
+	G2D_BLD->BLD_BK_COLOR = TFTRGB(192, 192, 192);	/* всегда RGB888. этим цветом заполняется вне исходного окна*/
 	G2D_BLD->BLD_KEY_CTL = 0;
 	G2D_BLD->BLD_KEY_CON = 0;
 	G2D_BLD->BLD_SIZE = ssizehwf;	// may not be zero
 
-	G2D_BLD->BLD_CH_ISIZE0 = ssizehwf;	// may be zero
+	G2D_BLD->BLD_CH_ISIZE0 = ssizehw;	// may be zero
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
 	G2D_BLD->BLD_FILLC0 = ~ 0;
-
-	G2D_BLD->BLD_CH_ISIZE1 = ssizehw;
-	G2D_BLD->BLD_CH_OFFSET1 = 0;// ((row) << 16) | ((col) << 0);
-	G2D_BLD->BLD_FILLC1 = ~ 0;
 
 	G2D_BLD->ROP_CTL = 0xF0;	// Use G2D_V0 as source
 	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
