@@ -32,7 +32,7 @@ enum {
 	resetn_modem_pos 	= 25,
 };
 
-void * get_highmem_ptr (uint32_t addr, uint8_t size)
+void * get_highmem_ptr (uint32_t addr)
 {
 	int fd;
 	if((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0)
@@ -43,7 +43,7 @@ void * get_highmem_ptr (uint32_t addr, uint8_t size)
 
 	void *map_base, *virt_addr;
 	unsigned page_size, mapped_size, offset_in_page;
-	mapped_size = page_size = sysconf(_SC_PAGESIZE) * size;
+	mapped_size = page_size = sysconf(_SC_PAGESIZE);
 	offset_in_page = (unsigned)addr & (page_size - 1);
 
 	map_base = (unsigned*) mmap(0, mapped_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, addr & ~(off_t)(page_size - 1));
@@ -161,8 +161,8 @@ volatile uint32_t * xgpo, * xgpi;
 
 void linux_xgpio_init(void)
 {
-	xgpo = get_highmem_ptr(AXI_XGPO_ADDR, 1);
-	xgpi = get_highmem_ptr(AXI_XGPI_ADDR, 1);
+	xgpo = get_highmem_ptr(AXI_XGPO_ADDR);
+	xgpi = get_highmem_ptr(AXI_XGPI_ADDR);
 }
 
 uint8_t linux_xgpi_read_pin(uint8_t pin)
@@ -206,7 +206,7 @@ uint_fast8_t gpio_readpin(uint8_t pin)
 
 void reg_write(uint32_t addr, uint32_t val)
 {
-	void * ptr = get_highmem_ptr(addr, 1);
+	void * ptr = get_highmem_ptr(addr);
 
 	* (uint32_t *)(ptr) = val;
 
@@ -216,7 +216,7 @@ void reg_write(uint32_t addr, uint32_t val)
 
 uint32_t reg_read(uint32_t addr)
 {
-	void * ptr = get_highmem_ptr(addr, 1);
+	void * ptr = get_highmem_ptr(addr);
 
 	uint32_t res = * (uint32_t *) ptr;
 
@@ -353,15 +353,15 @@ const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 3
 
 void linux_iq_init(void)
 {
-	ftw = 			get_highmem_ptr(AXI_IQ_FTW_ADDR, 1);
-	ftw_sub = 		get_highmem_ptr(AXI_IQ_FTW_SUB_ADDR, 1);
-	rts = 			get_highmem_ptr(AXI_IQ_RTS_ADDR, 1);
-	ph_fifo = 		get_highmem_ptr(AXI_FIFO_PHONES_ADDR, 1);
-	iq_fifo_rx = 	get_highmem_ptr(AXI_IQ_FIFO_RX_ADDR, 1);
-	iq_fifo_tx = 	get_highmem_ptr(AXI_IQ_FIFO_TX_ADDR, 1);
-	modem_ctrl = 	get_highmem_ptr(AXI_MODEM_CTRL_ADDR, 1);
-	iq_count_rx = 	get_highmem_ptr(AXI_IQ_RX_COUNT_ADDR, 1);
-	iq_count_tx = 	get_highmem_ptr(AXI_IQ_TX_COUNT_ADDR, 1);
+	ftw = 			get_highmem_ptr(AXI_IQ_FTW_ADDR);
+	ftw_sub = 		get_highmem_ptr(AXI_IQ_FTW_SUB_ADDR);
+	rts = 			get_highmem_ptr(AXI_IQ_RTS_ADDR);
+	ph_fifo = 		get_highmem_ptr(AXI_FIFO_PHONES_ADDR);
+	iq_fifo_rx = 	get_highmem_ptr(AXI_IQ_FIFO_RX_ADDR);
+	iq_fifo_tx = 	get_highmem_ptr(AXI_IQ_FIFO_TX_ADDR);
+	modem_ctrl = 	get_highmem_ptr(AXI_MODEM_CTRL_ADDR);
+	iq_count_rx = 	get_highmem_ptr(AXI_IQ_RX_COUNT_ADDR);
+	iq_count_tx = 	get_highmem_ptr(AXI_IQ_TX_COUNT_ADDR);
 
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
@@ -453,11 +453,10 @@ void linux_iq_interrupt_thread(void)
 
 /*************************************************************/
 
-void linux_create_thread(void * process, int priority, int cpuid)
+void linux_create_thread(pthread_t * tid, void * process, int priority, int cpuid)
 {
 	pthread_attr_t attr;
 	struct sched_param param;
-	pthread_t thread;
 	cpu_set_t mask;
 
 	ASSERT(cpuid < sysconf(_SC_NPROCESSORS_ONLN));
@@ -471,12 +470,19 @@ void linux_create_thread(void * process, int priority, int cpuid)
 	CPU_SET(cpuid, & mask);
 	pthread_attr_setaffinity_np(& attr, sizeof(mask), & mask);
 
-    if(pthread_create(& thread, & attr, process, NULL) < 0)
-    {
+    if(pthread_create(tid, & attr, process, NULL) < 0)
       perror("pthread_create");
-    }
 
-    pthread_detach(thread);
+    pthread_detach(* tid);
+}
+
+void linux_cancel_thread(pthread_t tid)
+{
+    if(pthread_cancel (tid) < 0)
+      perror("pthread_cancel");
+
+    if(pthread_join(tid, NULL) < 0)
+    	perror("pthread_join");
 }
 
 void linux_subsystem_init(void)
@@ -486,24 +492,26 @@ void linux_subsystem_init(void)
 	linux_iq_init();
 }
 
+pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8_t;
+
 void linux_user_init(void)
 {
 	xcz_resetn_modem_state(0);
 	usleep(5);
 	xcz_resetn_modem_state(1);
 
-	linux_create_thread(process_linux_timer_spool, 50, 0);
-	linux_create_thread(linux_encoder_spool, 50, 1);
+	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
+	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 1);
 
 #if WITHFT8
-	linux_create_thread(linux_iq_interrupt_thread, 90, 0);
-	linux_create_thread(ft8_thread, 50, 1);
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 0);
+	linux_create_thread(& ft8_t, ft8_thread, 50, 1);
 #else
-	linux_create_thread(linux_iq_interrupt_thread, 90, 1);
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 1);
 #endif /* WITHFT8 */
 
 	const float FS = powf(2, 32);
-	uint32_t fan_pwm_period = 25000 * FS / 61440000;
+	uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
 	reg_write(0x80048000 + 0, fan_pwm_period);
 
 	uint32_t fan_pwm_duty = FS * (1.0f - 0.7f) - 1;
@@ -616,7 +624,7 @@ static adapter_t plfircoefsout;		/* параметры прербразован�
 void board_fpga_fir_initialize(void)
 {
 	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "fpgafircoefsout");
-	fir_reload = get_highmem_ptr(AXI_FIR_RELOAD_ADDR, 1);
+	fir_reload = get_highmem_ptr(AXI_FIR_RELOAD_ADDR);
 }
 
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
@@ -746,6 +754,13 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 
 void linux_exit(void)
 {
+	linux_cancel_thread(timer_spool_t);
+	linux_cancel_thread(encoder_spool_t);
+	linux_cancel_thread(iq_interrupt_t);
+#if WITHFT8
+	linux_cancel_thread(ft8_t);
+#endif /* WITHFT8 */
+
 	munmap((void *) ftw, sysconf(_SC_PAGESIZE));
 	munmap((void *) ftw_sub, sysconf(_SC_PAGESIZE));
 	munmap((void *) rts, sysconf(_SC_PAGESIZE));
@@ -760,7 +775,6 @@ void linux_exit(void)
 #endif /* WITHDSPEXTFIR */
 
 	framebuffer_close();
-
 	exit(EXIT_SUCCESS);
 }
 

@@ -21456,7 +21456,7 @@ hamradio_mainloop(void)
 	{
 		hamradio_main_step();
 #if LINUX_SUBSYSTEM
-		usleep(200);
+		usleep(100);
 #endif /* LINUX_SUBSYSTEM */
 	}
 }
