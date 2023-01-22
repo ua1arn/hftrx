@@ -1815,8 +1815,8 @@ struct fb_t113_rgb_pdata_t
 static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
 	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);
-	write32((uintptr_t) & glb->dbuff, 0x01u);	// 1: register value be ready for update (self-cleaning bit)
-	while ((read32((uintptr_t) & glb->dbuff) & 0x01u) != 0)
+	write32((uintptr_t) & glb->dbuff, 1u);	// 1: register value be ready for update (self-cleaning bit)
+	while ((read32((uintptr_t) & glb->dbuff) & 1u) != 0)
 		;
 }
 
@@ -1871,9 +1871,9 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	val &= ~(1 << 0);
 	write32((uintptr_t) & clk->sel_cfg, val);
 
-	write32((uintptr_t) & glb->ctl, (0x01uL << 0));
+	write32((uintptr_t) & glb->ctl, (1u << 0));
 	write32((uintptr_t) & glb->status, 0x00uL);
-	write32((uintptr_t) & glb->dbuff, 0x01uL);		// 1: register value be ready for update (self-cleaning bit)
+	write32((uintptr_t) & glb->dbuff, 1u);		// 1: register value be ready for update (self-cleaning bit)
 	write32((uintptr_t) & glb->size, ovl_ui_mbsize);
 
 	for(i = 0; i < 4; i++)
@@ -1971,7 +1971,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 
 	// ctrl
 	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
-	write32((uintptr_t) & tcon->ctrl, (0x01uL << 31) | (0x00uL << 24) | (0x00uL << 23) | ((val & 0x1f) << 4) | (0x00uL << 0));
+	write32((uintptr_t) & tcon->ctrl, (1u << 31) | (0x00uL << 24) | (0x00uL << 23) | ((val & 0x1f) << 4) | (0x00uL << 0));
 
 	// dclk
 	// 31..28: TCON0_Dclk_En
@@ -1999,20 +1999,22 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	// 7.2.5.19. TCON0_IO_POL_REG
 	// io_polarity
 	val = (0x00uL << 31) | 	// IO_Output_Sel: 0: nirmal, 1: sync to dclk
-			(0x01uL << 28);	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
+			(1u << 28);	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
 
 	if(!pdat->timing.h_sync_active)
-		val |= (0x01uL << 25);	// IO1_Inv
+		val |= (1u << 25);	// IO1_Inv
 	if(!pdat->timing.v_sync_active)
-		val |= (0x01uL << 24);	// IO0_Inv
+		val |= (1u << 24);	// IO0_Inv
 	if(!pdat->timing.den_active)
-		val |= (0x01uL << 27);	// IO3_Inv
+		val |= (1u << 27);	// IO3_Inv
 	if(!pdat->timing.clk_active)
-		val |= (0x01uL << 26);	// IO2_Inv
-	write32((uintptr_t) & tcon->io_polarity, val);
+		val |= (1u << 26);	// IO2_Inv
+	//write32((uintptr_t) & tcon->io_polarity, val);
+	TCON_LCD0->LCD_IO_POL_REG = val;
 
 	// io_tristate
-	write32((uintptr_t) & tcon->io_tristate, 0);
+	//write32((uintptr_t) & tcon->io_tristate, 0);
+	TCON_LCD0->LCD_IO_TRI_REG = 0;
 }
 
 #if 0
@@ -2042,9 +2044,9 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
 		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
 		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
-		write32((uintptr_t) & tcon->frm_ctrl, (1u << 31) | TCON_FRM_MODE_VAL);
+		write32((uintptr_t) & tcon->frm_ctrl, TCON_FRM_MODE_VAL);
 		/* режим и формат выхода */
-		TCON_LCD0->LCD_FRM_CTL_REG = (1u << 31) | TCON_FRM_MODE_VAL;
+		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 	}
 }
 
@@ -2085,18 +2087,18 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	pdat->timing.clk_active = 0;
 	//pdat->backlight = NULL;
 
-    CCU->DE_CLK_REG |= (0x01u << 31) | (0x03uL << 0);	// 300 MHz
+    CCU->DE_CLK_REG |= (1u << 31) | (0x03u << 0);	// 300 MHz
 
-    CCU->DE_BGR_REG |= (0x01u << 0);		// Open the clock gate
-    CCU->DE_BGR_REG |= (0x01u << 16);		// Deassert reset
+    CCU->DE_BGR_REG |= (1u << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (1u << 16);		// Deassert reset
 
-    CCU->TCONLCD_CLK_REG |= (0x01u << 31);
-    CCU->TCONLCD_BGR_REG |= (0x01u << 0);	// Open the clock gate
-    CCU->TCONLCD_BGR_REG |= (0x01u << 16); // Deassert reset
+    CCU->TCONLCD_CLK_REG |= (1u << 31);
+    CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
+    CCU->TCONLCD_BGR_REG |= (1u << 16); // Deassert reset
 
 #if 0
     // step 2
-    CCU->LVDS_BGR_REG |= (0x01u << 16); // LVDS0_RST: Deassert reset
+    CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: Deassert reset
 
     // step 5
     TCON_LCD0->LCD_LVDS_IF_REG =
@@ -2120,7 +2122,7 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
 		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
 		/* режим и формат выхода */
-		TCON_LCD0->LCD_FRM_CTL_REG = (1u << 31) | TCON_FRM_MODE_VAL;
+		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 
 	}
 	t113_tconlcd_enable(pdat);
