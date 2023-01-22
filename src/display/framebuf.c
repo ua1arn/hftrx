@@ -1628,7 +1628,7 @@ void hwaccel_copy(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
+#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
 	/* Копирование - использование G2D для формирования изображений */
 
 //	PRINTF("hwaccel_copy: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
@@ -1647,45 +1647,45 @@ void hwaccel_copy(
 	const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
 	//const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
-	const COLORMAIN_T lefftup = TFTRGB(255, 0, 0);
-	const COLORMAIN_T rightdown = TFTRGB(0, 0, 255);
-	* colmain_mem_at((void *) src, sdx, sdy, 0, 0) = lefftup;
-	* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 1) = rightdown;
-	if (sdx > 2 && sdy > 2)
-	{
-		* colmain_mem_at((void *) src, sdx, sdy, 0, 1) = lefftup;
-		* colmain_mem_at((void *) src, sdx, sdy, 1, 0) = lefftup;
-		* colmain_mem_at((void *) src, sdx, sdy, 1, 1) = lefftup;
+//	const COLORMAIN_T lefftup = TFTRGB(255, 0, 0);
+//	const COLORMAIN_T rightdown = TFTRGB(0, 0, 255);
+//	* colmain_mem_at((void *) src, sdx, sdy, 0, 0) = lefftup;
+//	* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 1) = rightdown;
+//	if (sdx > 2 && sdy > 2)
+//	{
+//		* colmain_mem_at((void *) src, sdx, sdy, 0, 1) = lefftup;
+//		* colmain_mem_at((void *) src, sdx, sdy, 1, 0) = lefftup;
+//		* colmain_mem_at((void *) src, sdx, sdy, 1, 1) = lefftup;
+//
+//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 1) = rightdown;
+//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 2) = rightdown;
+//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 2) = rightdown;
+//	}
 
-		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 1) = rightdown;
-		* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 2) = rightdown;
-		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 2) = rightdown;
-	}
-
-	if (sdx < 2 || sdy < 2 || tdx < 2 || tdy < 2)
-	{
-		// программная реализация
-
-		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
-		if (tdx == sdx)
-		{
-			const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
-			// ширина строки одинаковая в получателе и источнике
-			memcpy(dst, src, len);
-		}
-		else
-		{
-			const size_t len = sdx * sizeof * src;
-			while (sdy --)
-			{
-				memcpy(dst, src, len);
-				//arm_hardware_flush((uintptr_t) dst, len);
-				src += GXADJ(sdx);
-				dst += GXADJ(tdx);
-			}
-		}
-		return;
-	}
+//	if (sdx < 2 || sdy < 2 || tdx < 2 || tdy < 2)
+//	{
+//		// программная реализация
+//
+//		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
+//		if (tdx == sdx)
+//		{
+//			const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
+//			// ширина строки одинаковая в получателе и источнике
+//			memcpy(dst, src, len);
+//		}
+//		else
+//		{
+//			const size_t len = sdx * sizeof * src;
+//			while (sdy --)
+//			{
+//				memcpy(dst, src, len);
+//				//arm_hardware_flush((uintptr_t) dst, len);
+//				src += GXADJ(sdx);
+//				dst += GXADJ(tdx);
+//			}
+//		}
+//		return;
+//	}
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
@@ -1695,7 +1695,7 @@ void hwaccel_copy(
 
 	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = ssizehwf;
+	G2D_WB->WB_SIZE = ssizehw;
 	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
 	G2D_WB->WB_LADD0 = taddr;
 	G2D_WB->WB_HADD0 = taddr >> 32;
@@ -1714,7 +1714,7 @@ void hwaccel_copy(
 	G2D_BLD->BLD_BK_COLOR = TFTRGB(192, 192, 0);	/* всегда RGB888. этим цветом заполняется вне исходного окна */
 	G2D_BLD->BLD_KEY_CTL = 0;
 	G2D_BLD->BLD_KEY_CON = 0;
-	G2D_BLD->BLD_SIZE = ssizehwf;	// may not be zero
+	G2D_BLD->BLD_SIZE = ssizehw;	// ! may not be zero
 
 	G2D_BLD->BLD_CH_ISIZE0 = ssizehw;	// may be zero
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
@@ -1722,23 +1722,23 @@ void hwaccel_copy(
 
 	G2D_BLD->ROP_CTL = 0xF0;	// Use G2D_V0 as source
 	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-	//G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_SRCOVER
-	G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER
+	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
 	unsigned ui_attr = 0;
-	ui_attr = 111 /*(img->alpha & 0xff) */ << 24;
+	ui_attr = 255 /*(img->alpha & 0xff) */ << 24;
 //	if (img->bpremul)
 //		ui_attr |= 0x1 << 17;
 	ui_attr |= G2D_FMT_XRGB8888/*img->format */ << 8;
-	ui_attr |= G2D_MIXER_ALPHA /*img->mode */ << 1;
+	ui_attr |= G2D_GLOBAL_ALPHA /*img->mode */ << 1;		// linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	ui_attr |= 1;
 
+	//PRINTF("calculated ui_attr=%08X\n", ui_attr);	// 0xFF000405
+	G2D_V0->V0_ATTCTL = ui_attr;
 
-	G2D_V0->V0_ATTCTL = ui_attr;	// Use this block as source for copy
-
-	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
-	G2D_V0->V0_PITCH1 = 0;	// U
-	G2D_V0->V0_PITCH2 = 0;	// V
+	G2D_V0->V0_PITCH0 = sstride;
+	G2D_V0->V0_PITCH1 = 0;
+	G2D_V0->V0_PITCH2 = 0;
 
 	G2D_V0->V0_HDS_CTL0 = 0;
 	G2D_V0->V0_HDS_CTL1 = 0;
@@ -1747,12 +1747,14 @@ void hwaccel_copy(
 
 	G2D_V0->V0_FILLC = TFTRGB(255, 0, 0);	// unused
 	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_V0->V0_MBSIZE = ssizehwf; // сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
-	G2D_V0->V0_SIZE = ssizehwf;		// параметры окна исходного буфера
+	G2D_V0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
+	G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
 	G2D_V0->V0_LADD0 = saddr;
 	G2D_V0->V0_LADD1 = 0;
 	G2D_V0->V0_LADD2 = 0;
 	G2D_V0->V0_HADD = ((saddr >> 32) & 0xFF) << 0;
+
+	//hwaccprint();
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
