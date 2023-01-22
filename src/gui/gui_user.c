@@ -1619,6 +1619,9 @@ static void window_options_process(void)
 #if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 		add_element("btn_Time",    100, 44, 0, 0, "Set time|& date");
 #endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
+#if LINUX_SUBSYSTEM
+		add_element("btn_exit",		100, 44, 0, 0, "Terminate|program");
+#endif /* LINUX_SUBSYSTEM */
 
 		for (uint i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -1700,6 +1703,12 @@ static void window_options_process(void)
 				open_window(win);
 			}
 #endif /* WITHSPECTRUMWF && WITHMENU */
+#if LINUX_SUBSYSTEM
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_exit"))
+			{
+				linux_exit();		// Terminate all
+			}
+#endif /* LINUX_SUBSYSTEM */
 		}
 		break;
 
@@ -1989,9 +1998,6 @@ static void window_utilites_process(void)
 #if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
 		add_element("btn_shift",    100, 44, 0, 0, "IQ shift");
 #endif /* defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR */
-#if LINUX_SUBSYSTEM
-		add_element("btn_exit",		100, 44, 0, 0, "Terminate|program");
-#endif /* LINUX_SUBSYSTEM */
 
 		x = 0;
 		y = 0;
@@ -2067,12 +2073,6 @@ static void window_utilites_process(void)
 				open_window(get_win(WINDOW_SHIFT));
 			}
 #endif /* defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR */
-#if LINUX_SUBSYSTEM
-			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_exit"))
-			{
-				linux_exit();		// Terminate all
-			}
-#endif /* LINUX_SUBSYSTEM */
 		}
 		break;
 
