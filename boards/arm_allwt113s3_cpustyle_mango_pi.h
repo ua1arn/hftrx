@@ -168,11 +168,11 @@
 
 
 #define LS020_RS_INITIALIZE() do { \
-		arm_hardware_piod_outputs2m(LS020_RS, LS020_RS); /* PD3 */ \
+		/*arm_hardware_piod_outputs2m(LS020_RS, LS020_RS); *//* PD3 */ \
 	} while (0)
 
 #define LS020_RESET_INITIALIZE() do { \
-		arm_hardware_piod_outputs2m(LS020_RESET, LS020_RESET); /* PD4 */ \
+		/*arm_hardware_piod_outputs2m(LS020_RESET, LS020_RESET); *//* PD4 */ \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
