@@ -6324,6 +6324,34 @@ void hightests(void)
 		g2d_main();
 	}
 #endif
+#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+	{
+		const COLORMAIN_T bg = display_getbgcolor();
+		PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+//		TP();
+//		colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
+//		TP();
+//		colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
+//		TP();
+//		colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
+//		for (;;)
+//			;
+
+		for (int pos = 0; pos < 16; ++ pos)
+		{
+			COLORMAIN_T c = 1u << pos;
+			colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, c);
+			PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
+			local_delay_ms(2000);
+		}
+		for (;;)
+			;
+
+	}
+#endif
 #if 0 && WITHDEBUG
 	{
 		PTT_INITIALIZE();
