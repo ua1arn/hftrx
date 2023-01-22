@@ -1054,7 +1054,7 @@ hwacc_fillrect_u32(
 	{
 		unsigned n = w;
 		while (n --)
-			* tbuffer ++ = color;
+			* tbuffer ++ = color24;
 		tbuffer += t;
 	}
 
