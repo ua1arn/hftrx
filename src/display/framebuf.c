@@ -1645,19 +1645,19 @@ void hwaccel_copy(
 	const uint_fast32_t tsizehwf = ((tdy) << 16) | ((tdx) << 0);
 	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
 	const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
-	const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
+	//const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
-//	* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 0, 0) = TFTRGB(255, 0, 0);
-//	* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 1, sdy - 1) = TFTRGB(0, 0, 255);
+	* colmain_mem_at((void *) src, sdx, sdy, 0, 0) = TFTRGB(255, 0, 0);
+	* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 1) = TFTRGB(0, 0, 255);
 //	if (sdx > 2 && sdy > 2)
 //	{
-//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 0, 1) = TFTRGB(255, 0, 0);
-//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 1, 0) = TFTRGB(255, 0, 0);
-//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, 1, 1) = TFTRGB(255, 0, 0);
+//		* colmain_mem_at((void *) src, sdx, sdy, 0, 1) = TFTRGB(255, 0, 0);
+//		* colmain_mem_at((void *) src, sdx, sdy, 1, 0) = TFTRGB(255, 0, 0);
+//		* colmain_mem_at((void *) src, sdx, sdy, 1, 1) = TFTRGB(255, 0, 0);
 //
-//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 2, sdy - 1) = TFTRGB(0, 0, 255);
-//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 1, sdy - 2) = TFTRGB(0, 0, 255);
-//		* colmain_mem_at(srcinvalidateaddr, sdx, sdy, sdx - 2, sdy - 2) = TFTRGB(0, 0, 255);
+//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 1) = TFTRGB(0, 0, 255);
+//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 2) = TFTRGB(0, 0, 255);
+//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 2) = TFTRGB(0, 0, 255);
 //	}
 
 	if (sdx < 2 || sdy < 2 || tdx < 2 || tdy < 2)
