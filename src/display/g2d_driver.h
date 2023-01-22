@@ -26,8 +26,8 @@
 #include <linux/ioctl.h>
 */
 
-#include "types2.h"
-#include "ioctl.h"
+//#include "types2.h"
+//#include "ioctl.h"
 
 /* data format */
 typedef enum {
@@ -215,7 +215,7 @@ typedef enum {
 	G2D_BLT_NOTCOPYPEN,
 	G2D_BLT_MASKPENNOT,
 	G2D_BLT_NOT,
-	G2D_BLT_XORPEN, //
+	G2D_BLT_XORPEN,
 	G2D_BLT_NOTMASKPEN,
 	G2D_BLT_MASKPEN,
 	G2D_BLT_NOTXORPEN,
@@ -292,10 +292,10 @@ typedef enum {
 
 /* flip rectangle struct */
 typedef struct {
-	__s32		x;		/* left top point coordinate x */
-	__s32		y;		/* left top point coordinate y */
-	__u32		w;		/* rectangle width */
-	__u32		h;		/* rectangle height */
+	int32_t		x;		/* left top point coordinate x */
+	int32_t		y;		/* left top point coordinate y */
+	uint32_t		w;		/* rectangle width */
+	uint32_t		h;		/* rectangle height */
 } g2d_rect;
 
 /* g2d color gamut */
@@ -307,9 +307,9 @@ typedef enum {
 
 /* image struct */
 typedef struct {
-	uintptr_t	waddr[3];/* base addr of image frame buffer in byte */
-	__u32		w;	/* width of image frame buffer in pixel */
-	__u32		h;	/* height of image frame buffer in pixel */
+	uint32_t		addr[3];/* base addr of image frame buffer in byte */
+	uint32_t		w;	/* width of image frame buffer in pixel */
+	uint32_t		h;	/* height of image frame buffer in pixel */
 	g2d_data_fmt	format;	/* pixel format of image frame buffer */
 	g2d_pixel_seq	pixel_seq;/* pixel sequence of image frame buffer */
 } g2d_image;
@@ -322,22 +322,22 @@ enum color_range {
 /* image struct */
 typedef struct {
 	int		 bbuff;
-	__u32		 color;
+	uint32_t		 color;
 	g2d_fmt_enh	 format;
-	__u32  	 laddr[3];
-	__u32	 haddr[3];
-	__u32		 width;
-	__u32		 height;
-	__u32		 align[3];
+	uint32_t		 laddr[3];
+	uint32_t		 haddr[3];
+	uint32_t		 width;
+	uint32_t		 height;
+	uint32_t		 align[3];
 
 	g2d_rect	 clip_rect;
 
 	g2d_color_gmt	 gamut;
 	int		 bpremul;
-	__u8		 alpha;
+	uint8_t		 alpha;
 	g2d_alpha_mode_enh mode;
 	int		 fd;
-	__u32 use_phy_addr;
+	uint32_t use_phy_addr;
 	enum color_range color_range;
 } g2d_image_enh;
 
@@ -359,8 +359,8 @@ typedef struct {
 	g2d_image			 dst_image;
 	g2d_rect			 dst_rect;
 
-	__u32				 color;		/* fill color */
-	__u32				 alpha;		/* plane alpha value */
+	uint32_t				 color;		/* fill color */
+	uint32_t				 alpha;		/* plane alpha value */
 
 } g2d_fillrect;
 
@@ -375,12 +375,12 @@ typedef struct {
 
 	g2d_image		dst_image;
 	/* left top point coordinate x of dst rect */
-	__s32			dst_x;
+	int32_t			dst_x;
 	/* left top point coordinate y of dst rect */
-	__s32			dst_y;
+	int32_t			dst_y;
 
-	__u32			color;		/* colorkey color */
-	__u32			alpha;		/* plane alpha value */
+	uint32_t			color;		/* colorkey color */
+	uint32_t			alpha;		/* plane alpha value */
 
 } g2d_blt;
 
@@ -398,8 +398,8 @@ typedef struct {
 	g2d_image			 dst_image;
 	g2d_rect			 dst_rect;
 
-	__u32				 color;		/* colorkey color */
-	__u32				 alpha;		/* plane alpha value */
+	uint32_t				 color;		/* colorkey color */
+	uint32_t				 alpha;		/* plane alpha value */
 
 
 } g2d_stretchblt;
@@ -434,8 +434,8 @@ typedef enum {
 } g2d_bld_cmd_flag;
 
 typedef struct {
-	__u32		*pbuffer;
-	__u32		 size;
+	uint32_t		*pbuffer;
+	uint32_t		 size;
 
 } g2d_palette;
 
@@ -448,10 +448,10 @@ typedef struct {
 
 /* CK PARA struct */
 typedef struct {
-	bool match_rule;
+	int match_rule;
 /*	int match_rule; */
-	__u32 max_color;
-	__u32 min_color;
+	uint32_t max_color;
+	uint32_t min_color;
 } g2d_ck;
 
 typedef struct {
@@ -485,36 +485,36 @@ struct mixer_para {
 	g2d_ck ck_para;
 };
 
-#define SUNXI_G2D_IOC_MAGIC 'G'
-#define SUNXI_G2D_IO(nr)          _IO(SUNXI_G2D_IOC_MAGIC, nr)
-#define SUNXI_G2D_IOR(nr, size)   _IOR(SUNXI_G2D_IOC_MAGIC, nr, size)
-#define SUNXI_G2D_IOW(nr, size)   _IOW(SUNXI_G2D_IOC_MAGIC, nr, size)
-#define SUNXI_G2D_IOWR(nr, size)  _IOWR(SUNXI_G2D_IOC_MAGIC, nr, size)
-
-typedef enum {
-	G2D_CMD_BITBLT			=	0x50,
-	G2D_CMD_FILLRECT		=	0x51,
-	G2D_CMD_STRETCHBLT		=	0x52,
-	G2D_CMD_PALETTE_TBL		=	0x53,
-	G2D_CMD_QUEUE			=	0x54,
-	G2D_CMD_BITBLT_H		=	0x55,
-	G2D_CMD_FILLRECT_H		=	0x56,
-	G2D_CMD_BLD_H			=	0x57,
-	G2D_CMD_MASK_H			=	0x58,
-
-	G2D_CMD_MEM_REQUEST		=	0x59,
-	G2D_CMD_MEM_RELEASE		=	0x5A,
-	G2D_CMD_MEM_GETADR		=	0x5B,
-	G2D_CMD_MEM_SELIDX		=	0x5C,
-	G2D_CMD_MEM_FLUSH_CACHE		=	0x5D,
-	G2D_CMD_INVERTED_ORDER		=	0x5E,
-	G2D_CMD_MIXER_TASK = 0x5F,
-	G2D_CMD_CREATE_TASK = SUNXI_G2D_IOW(0x1, struct mixer_para),
-	G2D_CMD_TASK_APPLY = SUNXI_G2D_IOW(0x2, struct mixer_para),
-	G2D_CMD_TASK_DESTROY = SUNXI_G2D_IOW(0x3, unsigned int),
-	G2D_CMD_TASK_GET_PARA = SUNXI_G2D_IOR(0x4, struct mixer_para),
-
-} g2d_cmd;
+//#define SUNXI_G2D_IOC_MAGIC 'G'
+//#define SUNXI_G2D_IO(nr)          _IO(SUNXI_G2D_IOC_MAGIC, nr)
+//#define SUNXI_G2D_IOR(nr, size)   _IOR(SUNXI_G2D_IOC_MAGIC, nr, size)
+//#define SUNXI_G2D_IOW(nr, size)   _IOW(SUNXI_G2D_IOC_MAGIC, nr, size)
+//#define SUNXI_G2D_IOWR(nr, size)  _IOWR(SUNXI_G2D_IOC_MAGIC, nr, size)
+//
+//typedef enum {
+//	G2D_CMD_BITBLT			=	0x50,
+//	G2D_CMD_FILLRECT		=	0x51,
+//	G2D_CMD_STRETCHBLT		=	0x52,
+//	G2D_CMD_PALETTE_TBL		=	0x53,
+//	G2D_CMD_QUEUE			=	0x54,
+//	G2D_CMD_BITBLT_H		=	0x55,
+//	G2D_CMD_FILLRECT_H		=	0x56,
+//	G2D_CMD_BLD_H			=	0x57,
+//	G2D_CMD_MASK_H			=	0x58,
+//
+//	G2D_CMD_MEM_REQUEST		=	0x59,
+//	G2D_CMD_MEM_RELEASE		=	0x5A,
+//	G2D_CMD_MEM_GETADR		=	0x5B,
+//	G2D_CMD_MEM_SELIDX		=	0x5C,
+//	G2D_CMD_MEM_FLUSH_CACHE		=	0x5D,
+//	G2D_CMD_INVERTED_ORDER		=	0x5E,
+//	G2D_CMD_MIXER_TASK = 0x5F,
+//	G2D_CMD_CREATE_TASK = SUNXI_G2D_IOW(0x1, struct mixer_para),
+//	G2D_CMD_TASK_APPLY = SUNXI_G2D_IOW(0x2, struct mixer_para),
+//	G2D_CMD_TASK_DESTROY = SUNXI_G2D_IOW(0x3, unsigned int),
+//	G2D_CMD_TASK_GET_PARA = SUNXI_G2D_IOR(0x4, struct mixer_para),
+//
+//} g2d_cmd;
 
 #endif	/* __G2D_DRIVER_H */
 

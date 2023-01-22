@@ -23,8 +23,9 @@
 #if (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Использование G2D для формирования изображений */
 
-	#include "g2d/T113-s3/Type.h"
-	#include "g2d/T113-s3/g2d.h"
+//	#include "g2d/T113-s3/Type.h"
+//	#include "g2d/T113-s3/g2d.h"
+	#include "g2d_driver.h"
 
 #if LCDMODE_MAIN_ARGB888
 	#define DstImageFormat G2D_FMT_XRGB8888
@@ -55,15 +56,15 @@ static unsigned awxx_get_ui_attr(void)
 	return ui_attr;
 }
 
-void debug_g2d(const char * place)
-{
+//void debug_g2d(const char * place)
+//{
 //	PRINTF("**** %s\n", place);
 //	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
 //	G2D_WB_Type_print(G2D_WB, "G2D_WB");
 //	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
 //	G2D_UI_Type_print(G2D_UI0, "G2D_UI0");
 //	G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
-}
+//}
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
@@ -390,7 +391,7 @@ void arm_hardware_mdma_initialize(void)
 	// audio1: allwnrt113_get_g2d_freq()=768000000
 	//PRINTF("allwnrt113_get_g2d_freq()=%u\n", (unsigned) allwnrt113_get_g2d_freq());
 
-	 mixer_set_reg_base(G2D_BASE);
+	 //mixer_set_reg_base(G2D_BASE);
 	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
 
@@ -667,36 +668,6 @@ hwacc_fillrect_u16(
 
 	const uint_fast32_t c24 = COLOR24(COLORMAIN_R(color), COLORMAIN_G(color), COLORMAIN_B(color));
 
-#if 0
-	g2d_fillrect G2D_FILLRECT;
-
-	G2D_FILLRECT.flag=G2D_FIL_NONE;
-
-	//Параметры приёмной плоскости
-	G2D_FILLRECT.dst_image.waddr[0]= (uintptr_t) buffer;
-	G2D_FILLRECT.dst_image.waddr[1]= (uintptr_t) buffer;
-	G2D_FILLRECT.dst_image.waddr[2]= (uintptr_t) buffer;
-
-	G2D_FILLRECT.dst_image.w=GXADJ(dx);
-	G2D_FILLRECT.dst_image.h=dy;
-
-	G2D_FILLRECT.dst_image.format=DstImageFormat;
-	G2D_FILLRECT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
-
-	G2D_FILLRECT.dst_rect.x=col;   //координаты прямоугольника
-	G2D_FILLRECT.dst_rect.y=row;
-
-	G2D_FILLRECT.dst_rect.w=w;   //размеры прямоугольника
-	G2D_FILLRECT.dst_rect.h=h;
-
-	G2D_FILLRECT.color=c24;        //цвет прямоугольника
-	G2D_FILLRECT.alpha=0;        //альфа прямоугольника (не используется)
-
-	g2d_fill(&G2D_FILLRECT);
-
-	return;
-#endif
-
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
 	G2D_V0->V0_ATTCTL = 1;//0x00000A11; //awxx_get_ui_attr();
@@ -743,7 +714,7 @@ hwacc_fillrect_u16(
 	G2D_BLD->BLD_OUT_COLOR=0*0x00000001; /* 0x00000001 */
 
 
-	debug_g2d("my");
+	//debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
@@ -1059,36 +1030,6 @@ hwacc_fillrect_u32(
 
 	const uint_fast32_t c24 = color24;
 
-#if 0
-	g2d_fillrect G2D_FILLRECT;
-
-	G2D_FILLRECT.flag=G2D_FIL_NONE;
-
-	//Параметры приёмной плоскости
-	G2D_FILLRECT.dst_image.waddr[0]= (uintptr_t) buffer;
-	G2D_FILLRECT.dst_image.waddr[1]= (uintptr_t) buffer;
-	G2D_FILLRECT.dst_image.waddr[2]= (uintptr_t) buffer;
-
-	G2D_FILLRECT.dst_image.w=GXADJ(dx);
-	G2D_FILLRECT.dst_image.h=dy;
-
-	G2D_FILLRECT.dst_image.format=DstImageFormat;
-	G2D_FILLRECT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
-
-	G2D_FILLRECT.dst_rect.x=col;   //координаты прямоугольника
-	G2D_FILLRECT.dst_rect.y=row;
-
-	G2D_FILLRECT.dst_rect.w=w;   //размеры прямоугольника
-	G2D_FILLRECT.dst_rect.h=h;
-
-	G2D_FILLRECT.color=c24;        //цвет прямоугольника
-	G2D_FILLRECT.alpha=0;        //альфа прямоугольника (не используется)
-
-	g2d_fill(&G2D_FILLRECT);
-
-	return;
-#endif
-
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
 	G2D_V0->V0_ATTCTL = 1;//0x00000A11; //awxx_get_ui_attr();
@@ -1135,7 +1076,7 @@ hwacc_fillrect_u32(
 	G2D_BLD->BLD_OUT_COLOR=0*0x00000001; /* 0x00000001 */
 
 
-	debug_g2d("my");
+	//debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
@@ -1863,7 +1804,7 @@ void hwaccel_copy(
 	G2D_V0->V0_LADD2 = 0;
 	G2D_V0->V0_HADD = ((saddr >> 32) & 0xFF) << 0;
 
-	debug_g2d("my");
+	//debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
@@ -1871,61 +1812,6 @@ void hwaccel_copy(
 		ASSERT(0);
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
-
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
-	/* Копирование - использование G2D для формирования изображений */
-
-//	const COLORMAIN_T lefftup = TFTRGB(255, 0, 0);
-//	const COLORMAIN_T rightdown = TFTRGB(0, 0, 255);
-//	* colmain_mem_at((void *) src, sdx, sdy, 0, 0) = lefftup;
-//	* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 1) = rightdown;
-//	if (sdx > 2 && sdy > 2)
-//	{
-//		* colmain_mem_at((void *) src, sdx, sdy, 0, 1) = lefftup;
-//		* colmain_mem_at((void *) src, sdx, sdy, 1, 0) = lefftup;
-//		* colmain_mem_at((void *) src, sdx, sdy, 1, 1) = lefftup;
-//
-//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 1) = rightdown;
-//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 2) = rightdown;
-//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 2) = rightdown;
-//	}
-
-	g2d_blt        G2D_BLT;
-
-	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
-
-	G2D_BLT.flag=G2D_BLT_NONE|0*G2D_BLT_PLANE_ALPHA;
-
-	G2D_BLT.src_image.waddr[0]=(uintptr_t)src;    //память, где хранится картинка
-//	G2D_BLT.src_image.waddr[1]=0;//(uintptr_t)png->data;	// was index=0
-//	G2D_BLT.src_image.waddr[2]=0;//(uintptr_t)png->data;	// was index=0
-	G2D_BLT.src_image.w = GXADJ(sdx);              //габариты атласа
-	G2D_BLT.src_image.h = sdy;
-	G2D_BLT.src_image.format=SrcImageFormat;
-	G2D_BLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
-
-	G2D_BLT.src_rect.x=0;                        //смещение
-	G2D_BLT.src_rect.y=0;
-
-	G2D_BLT.src_rect.w = sdx;               //размер
-	G2D_BLT.src_rect.h = sdy;
-
-	G2D_BLT.dst_image.waddr[0]=(uintptr_t) dst;
-	G2D_BLT.dst_image.waddr[1]=0;//memory;	// was index=0
-	G2D_BLT.dst_image.waddr[2]=0;//memory;	// was index=0
-	G2D_BLT.dst_image.w=GXADJ(tdx);
-	G2D_BLT.dst_image.h=tdy;
-	G2D_BLT.dst_image.format=DstImageFormat;
-	G2D_BLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
-
-	G2D_BLT.dst_x=0;                              //координаты вывода
-	G2D_BLT.dst_y=0;
-
-	G2D_BLT.color=0x00000000; //цветовой ключ RGB
-	G2D_BLT.alpha=0xFF;       //альфа плоскости
-
-	VERIFY(g2d_blit(&G2D_BLT) > 0);
 
 #else
 	// программная реализация
