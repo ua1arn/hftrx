@@ -69,7 +69,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
         else
         {
              _snprintf(fldtype, sizeof fldtype / sizeof fldtype [0], "%s", fldtypes [p->fldsize]);
-       }
+		}
 
 		if (p->fldoffs > offs || p->fldsize == 0)
 		{
@@ -139,6 +139,32 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 	}
 	printf("} %s_TypeDef; /* size of structure = 0x%03X */\n", bname, offs);
 }
+
+
+void genstructprint(const struct ddd * regs, unsigned szregs, const char * bname)
+{
+	unsigned i;
+
+	printf("/* Print %s */\n", bname);
+	printf("static void %s_Type_print(const %s_TypeDef * p)\n", bname, bname);
+	printf("{\n");
+	for (i = 0; i < szregs; ++ i)
+	{
+		const struct ddd * p = & regs [i];
+
+		if (p->fldsize != 0)
+		{
+			if (p->fldrept == 0 &&p->typname == NULL)
+			{
+				// Plain field
+				printf("\t" "PRINTF(\"%%s->%s=0x%%08X\\n\", p);", p->fldname);
+				printf("\t/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
+			}
+		}
+	}
+	printf("}\n");
+}
+
 
 enum { BASE_MAX = 32 };
 enum { VNAME_MAX = 96 };
@@ -392,11 +418,19 @@ static void processfile_periphregs(struct parsedfile * pfl)
 
 	if (pfl->nregs != 0)
 	{
-
-		//fprintf(stderr, "Generate structure\n");
 		genstruct(pfl->regs, pfl->nregs, pfl->bname);
 	}
 }
+
+static void processfile_periphregsdebug(struct parsedfile * pfl)
+{
+
+	if (pfl->nregs != 0)
+	{
+		genstructprint(pfl->regs, pfl->nregs, pfl->bname);
+	}
+}
+
 
 static int collect_base(struct parsedfile * pfl, int n, struct basemap * v)
 {
@@ -473,7 +507,7 @@ int main(int argc, char* argv[], char* envp[])
 			continue;
 	}
 
-	if (1)
+	if (0)
 	{
 		/* collect IRQ vectors */
 		int nitems = 0;
@@ -555,6 +589,20 @@ int main(int argc, char* argv[], char* envp[])
 
 			processfile_access(pfl);
 		}
+	}
+
+	if (0)
+	{
+		/* print structire debug */
+		/* structures */
+		printf("#ifdef PRINTF\n");
+		for (i = 0; i < nperoiph; ++ i)
+		{
+			struct parsedfile * const pfl = & pfls [i];
+
+			processfile_periphregsdebug(pfl);
+		}
+		printf("#endif /* PRINTF */\n");
 	}
 
 	/* release memory */

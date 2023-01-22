@@ -1,5 +1,5 @@
 SET CONVERTER=..\Debug\genregdefs.exe
-SET OUTFILE=cmsis_t113s3.h
+SET OUTFILE=..\..\arch\t113s3\cmsis_t113s3.h
 
 @echo /* Generated section start */ > %OUTFILE%
 
