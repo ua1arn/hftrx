@@ -912,7 +912,7 @@
 		const portholder_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
 		/* while ((GPIOA->DATA & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
 		/* while ((GPIOA->DATA & VSmask) == 0) ; */ /* дождаться 1 */ \
-		arm_hardware_piod_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
+		arm_hardware_piod_outputs(0*DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 
 	#define HARDWARE_LVDS_INITIALIZE() do { \
