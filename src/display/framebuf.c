@@ -1628,7 +1628,7 @@ void hwaccel_copy(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
+#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
 	/* Копирование - использование G2D для формирования изображений */
 
 //	PRINTF("hwaccel_copy: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
@@ -1647,18 +1647,20 @@ void hwaccel_copy(
 	const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
 	//const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
-	* colmain_mem_at((void *) src, sdx, sdy, 0, 0) = TFTRGB(255, 0, 0);
-	* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 1) = TFTRGB(0, 0, 255);
-//	if (sdx > 2 && sdy > 2)
-//	{
-//		* colmain_mem_at((void *) src, sdx, sdy, 0, 1) = TFTRGB(255, 0, 0);
-//		* colmain_mem_at((void *) src, sdx, sdy, 1, 0) = TFTRGB(255, 0, 0);
-//		* colmain_mem_at((void *) src, sdx, sdy, 1, 1) = TFTRGB(255, 0, 0);
-//
-//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 1) = TFTRGB(0, 0, 255);
-//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 2) = TFTRGB(0, 0, 255);
-//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 2) = TFTRGB(0, 0, 255);
-//	}
+	const COLORMAIN_T lefftup = TFTRGB(255, 0, 0);
+	const COLORMAIN_T rightdown = TFTRGB(0, 0, 255);
+	* colmain_mem_at((void *) src, sdx, sdy, 0, 0) = lefftup;
+	* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 1) = rightdown;
+	if (sdx > 2 && sdy > 2)
+	{
+		* colmain_mem_at((void *) src, sdx, sdy, 0, 1) = lefftup;
+		* colmain_mem_at((void *) src, sdx, sdy, 1, 0) = lefftup;
+		* colmain_mem_at((void *) src, sdx, sdy, 1, 1) = lefftup;
+
+		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 1) = rightdown;
+		* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 2) = rightdown;
+		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 2) = rightdown;
+	}
 
 	if (sdx < 2 || sdy < 2 || tdx < 2 || tdy < 2)
 	{
@@ -1684,6 +1686,7 @@ void hwaccel_copy(
 		}
 		return;
 	}
+
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
 
@@ -1692,7 +1695,7 @@ void hwaccel_copy(
 
 	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = ssizehw;
+	G2D_WB->WB_SIZE = ssizehwf;
 	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
 	G2D_WB->WB_LADD0 = taddr;
 	G2D_WB->WB_HADD0 = taddr >> 32;
@@ -1713,7 +1716,7 @@ void hwaccel_copy(
 	G2D_BLD->BLD_KEY_CON = 0;
 	G2D_BLD->BLD_SIZE = ssizehwf;	// may not be zero
 
-	G2D_BLD->BLD_CH_ISIZE0 = ssizehwf;	// may be zero
+	G2D_BLD->BLD_CH_ISIZE0 = ssizehw;	// may be zero
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
 	//G2D_BLD->BLD_FILLC0 = ~ 0;
 
@@ -1761,6 +1764,21 @@ void hwaccel_copy(
 
 #elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
 	/* Копирование - использование G2D для формирования изображений */
+
+//	const COLORMAIN_T lefftup = TFTRGB(255, 0, 0);
+//	const COLORMAIN_T rightdown = TFTRGB(0, 0, 255);
+//	* colmain_mem_at((void *) src, sdx, sdy, 0, 0) = lefftup;
+//	* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 1) = rightdown;
+//	if (sdx > 2 && sdy > 2)
+//	{
+//		* colmain_mem_at((void *) src, sdx, sdy, 0, 1) = lefftup;
+//		* colmain_mem_at((void *) src, sdx, sdy, 1, 0) = lefftup;
+//		* colmain_mem_at((void *) src, sdx, sdy, 1, 1) = lefftup;
+//
+//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 1) = rightdown;
+//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 2) = rightdown;
+//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 2) = rightdown;
+//	}
 
 	g2d_blt        G2D_BLT;
 
