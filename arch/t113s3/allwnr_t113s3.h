@@ -285,8 +285,8 @@ typedef enum IRQn
 #define G2D_ROT_BASE        (0x28000 + G2D_BASE)
 #define G2D_GSU_BASE        (0x30000 + G2D_BASE)
 
-#define GIC_DISTRIBUTOR_BASE (GIC_BASE + 0x1000)
-#define GIC_INTERFACE_BASE   (GIC_BASE + 0x2000)
+#define	GIC_DISTRIBUTOR_BASE	0x03021000
+#define	GIC_INTERFACE_BASE	0x03022000
 
 /* ===========================  Configuration of the ARM Cortex-A Processor and Core Peripherals  ============================ */
 #define __CORTEX_A                    7U      /*!< Cortex-A# Core                              */
