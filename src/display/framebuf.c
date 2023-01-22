@@ -1057,10 +1057,41 @@ hwacc_fillrect_u32(
 	const uint_fast32_t sizehw = ((h - 1) << 16) | ((w - 1) << 0);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
+	const uint_fast32_t c24 = color24;
+
+#if 0
+	g2d_fillrect G2D_FILLRECT;
+
+	G2D_FILLRECT.flag=G2D_FIL_NONE;
+
+	//Параметры приёмной плоскости
+	G2D_FILLRECT.dst_image.waddr[0]= (uintptr_t) buffer;
+	G2D_FILLRECT.dst_image.waddr[1]= (uintptr_t) buffer;
+	G2D_FILLRECT.dst_image.waddr[2]= (uintptr_t) buffer;
+
+	G2D_FILLRECT.dst_image.w=GXADJ(dx);
+	G2D_FILLRECT.dst_image.h=dy;
+
+	G2D_FILLRECT.dst_image.format=DstImageFormat;
+	G2D_FILLRECT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
+
+	G2D_FILLRECT.dst_rect.x=col;   //координаты прямоугольника
+	G2D_FILLRECT.dst_rect.y=row;
+
+	G2D_FILLRECT.dst_rect.w=w;   //размеры прямоугольника
+	G2D_FILLRECT.dst_rect.h=h;
+
+	G2D_FILLRECT.color=c24;        //цвет прямоугольника
+	G2D_FILLRECT.alpha=0;        //альфа прямоугольника (не используется)
+
+	g2d_fill(&G2D_FILLRECT);
+
+	return;
+#endif
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
-	G2D_V0->V0_ATTCTL = awxx_get_ui_attr();
+	G2D_V0->V0_ATTCTL = 1;//0x00000A11; //awxx_get_ui_attr();
 
 	G2D_V0->V0_PITCH0 = stride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
@@ -1071,19 +1102,26 @@ hwacc_fillrect_u32(
 	G2D_V0->V0_VDS_CTL0 = 0;
 	G2D_V0->V0_VDS_CTL1 = 0;
 
-	G2D_V0->V0_COOR = 0;				// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 	G2D_V0->V0_MBSIZE = sizehw;	// сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
 	G2D_V0->V0_SIZE = sizehw;
 
-	G2D_BLD->BLD_BK_COLOR = color24;	/* всегда RGB888. этим цветом заполняется */
-	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_V0->V0_LADD0 = (uintptr_t) addr;
+	G2D_V0->V0_LADD2 = (uintptr_t) addr;
+	G2D_V0->V0_HADD = (uintptr_t) addr >> 32;
+
+	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется */
 	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_SIZE = sizehw;
 	G2D_WB->WB_PITCH0 = stride;
 	G2D_WB->WB_LADD0 = addr;
 	G2D_WB->WB_HADD0 = addr >> 32;
+//	G2D_WB->WB_LADD1 = addr;
+//	G2D_WB->WB_HADD1 = addr >> 32;
+	G2D_WB->WB_LADD2 = addr;
+	G2D_WB->WB_HADD2 = addr >> 32;
 
-	// не требуется
 //	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
 //	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 
@@ -1091,9 +1129,16 @@ hwacc_fillrect_u32(
 	G2D_BLD->BLD_SIZE = sizehw;	// may not be zero
 	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
-	G2D_BLD->ROP_CTL = 0x00;
-	G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+	G2D_BLD->ROP_CTL = 0*0xF0;	// Use G2D_V0 as source
+	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+	G2D_BLD->BLD_CTL = 0*0x03010301;	// G2D_BLD_SRCOVER
+	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
+	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
+	G2D_BLD->BLD_OUT_COLOR=0*0x00000001; /* 0x00000001 */
+
+
+	debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
