@@ -26,10 +26,16 @@
 	#include "g2d/T113-s3/Type.h"
 	#include "g2d/T113-s3/g2d.h"
 
+#if LCDMODE_MAIN_ARGB888
 	#define DstImageFormat G2D_FMT_XRGB8888
-
-	//#define SrcImageFormat G2D_FMT_ARGB_AVUY8888
 	#define SrcImageFormat G2D_FMT_XRGB8888
+#elif LCDMODE_MAIN_RGB565
+	#define DstImageFormat G2D_FMT_RGB565
+	#define SrcImageFormat G2D_FMT_RGB565
+#else
+	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
+#endif
+
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
@@ -637,7 +643,7 @@ hwacc_fillrect_u16(
 
 	G2D_V0->V0_ATTCTL = 0;
 
-	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
+	G2D_V0->V0_PITCH0 = stride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
 	G2D_V0->V0_PITCH2 = 0;	// V
 
@@ -851,7 +857,7 @@ hwacc_fillrect_u32(
 	uint_fast16_t row,	// начальная координата
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	uint_fast32_t color	// цвет
+	uint_fast32_t color24	// цвет
 	)
 {
 	if (w == 0 || h == 0)
@@ -864,7 +870,7 @@ hwacc_fillrect_u32(
 
 	//static ALIGNX_BEGIN volatile uint32_t tgcolor [(DCACHEROWSIZE + sizeof (uint32_t) - 1) / sizeof (uint32_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	//tgcolor [0] = color;
-	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
+	MDMA_DATA = color24;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
 	(void) MDMA_DATA;
 
 	//arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
@@ -934,7 +940,7 @@ hwacc_fillrect_u32(
 		0;
 
 	DMA2D->OCOLR =
-		color |
+		color24 |
 		0;
 
 	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
@@ -969,7 +975,7 @@ hwacc_fillrect_u32(
 		{
 			unsigned n = w;
 			while (n --)
-				* tbuffer ++ = color;
+				* tbuffer ++ = color24;
 			tbuffer += t;
 		}
 		return;
@@ -985,7 +991,7 @@ hwacc_fillrect_u32(
 
 	G2D_V0->V0_ATTCTL = 0;
 
-	G2D_V0->V0_PITCH0 = PIXEL_SIZE;//PIXEL_SIZE;	// Y
+	G2D_V0->V0_PITCH0 = stride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
 	G2D_V0->V0_PITCH2 = 0;	// V
 
@@ -998,7 +1004,7 @@ hwacc_fillrect_u32(
 	G2D_V0->V0_MBSIZE = sizehw;	// сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
 	G2D_V0->V0_SIZE = sizehw;
 
-	G2D_BLD->BLD_BK_COLOR = color;	/* всегда RGB888. этим цветом заполняется */
+	G2D_BLD->BLD_BK_COLOR = color24;	/* всегда RGB888. этим цветом заполняется */
 	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_SIZE = sizehw;
@@ -1642,9 +1648,9 @@ void hwaccel_copy(
 	const uintptr_t taddr = (uintptr_t) dst;
 	const uintptr_t saddr = (uintptr_t) src;
 	const uint_fast32_t tsizehw = ((tdy - 1) << 16) | ((tdx - 1) << 0);
-	const uint_fast32_t tsizehwf = ((tdy) << 16) | ((tdx) << 0);
+	//const uint_fast32_t tsizehwf = ((tdy) << 16) | ((tdx) << 0);
 	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
-	const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
+	//const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
 	//const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
 //	const COLORMAIN_T lefftup = TFTRGB(255, 0, 0);
@@ -1662,7 +1668,7 @@ void hwaccel_copy(
 //		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 2) = rightdown;
 //	}
 
-//	if (sdx < 2 || sdy < 2 || tdx < 2 || tdy < 2)
+//	if (1) //(sdx < 2 || sdy < 2 || tdx < 2 || tdy < 2)
 //	{
 //		// программная реализация
 //
@@ -1693,8 +1699,8 @@ void hwaccel_copy(
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
-	//G2D_WB->WB_ATT = G2D_FMT_RGB565;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_ATT = G2D_FMT_XRGB8888;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	//G2D_WB->WB_ATT = DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_ATT = DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_SIZE = ssizehw;
 	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
 	G2D_WB->WB_LADD0 = taddr;
@@ -1711,7 +1717,7 @@ void hwaccel_copy(
 	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 	//printhex(G2D_BLD, G2D_BLD, sizeof * G2D_BLD);
 
-	G2D_BLD->BLD_BK_COLOR = TFTRGB(192, 192, 0);	/* всегда RGB888. этим цветом заполняется вне исходного окна */
+	G2D_BLD->BLD_BK_COLOR = COLOR24(192, 192, 0);	/* всегда RGB888. этим цветом заполняется вне исходного окна */
 	G2D_BLD->BLD_KEY_CTL = 0;
 	G2D_BLD->BLD_KEY_CON = 0;
 	G2D_BLD->BLD_SIZE = ssizehw;	// ! may not be zero
@@ -1729,7 +1735,7 @@ void hwaccel_copy(
 	ui_attr = 255 /*(img->alpha & 0xff) */ << 24;
 //	if (img->bpremul)
 //		ui_attr |= 0x1 << 17;
-	ui_attr |= G2D_FMT_XRGB8888/*img->format */ << 8;
+	ui_attr |= DstImageFormat /*img->format */ << 8;
 	ui_attr |= G2D_GLOBAL_ALPHA /*img->mode */ << 1;		// linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	ui_attr |= 1;
 
@@ -1747,7 +1753,7 @@ void hwaccel_copy(
 
 	G2D_V0->V0_FILLC = TFTRGB(255, 0, 0);	// unused
 	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_V0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
+	G2D_V0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
 	G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
 	G2D_V0->V0_LADD0 = saddr;
 	G2D_V0->V0_LADD1 = 0;

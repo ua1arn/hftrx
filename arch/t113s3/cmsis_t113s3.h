@@ -1988,7 +1988,7 @@ typedef struct MSI_MEMC_Type
 typedef struct SID_Type
 {
 	uint32_t reserved_0x000 [0x0005];
-	__IO uint32_t THS;                                   /*!< Offset 0x014 [27:16]: The calibration value of the T-sensor. */
+	__IO uint32_t SID_THS;                               /*!< Offset 0x014 [27:16]: The calibration value of the T-sensor. */
 	uint32_t reserved_0x018 [0x007E];
 	__IO uint32_t BOOT_MODE;                             /*!< Offset 0x210 [27:16]: eFUSE boot select status, [0]: 0: GPIO boot select, 1: eFuse boot select */
 } SID_TypeDef; /* size of structure = 0x214 */

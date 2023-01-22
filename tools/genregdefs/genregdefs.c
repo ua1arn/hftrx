@@ -36,13 +36,13 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 	unsigned i;
 	unsigned offs;
 
-	printf("/*\n");
-	printf(" * @brief %s\n", bname);
-	printf(" */\n");
+	fprintf(stdout, "/*\n");
+	fprintf(stdout, " * @brief %s\n", bname);
+	fprintf(stdout, " */\n");
 
-	printf("/*!< %s Controller Interface */\n", bname);
-	printf("typedef struct %s_Type\n", bname);
-	printf("{\n");
+	fprintf(stdout, "/*!< %s Controller Interface */\n", bname);
+	fprintf(stdout, "typedef struct %s_Type\n", bname);
+	fprintf(stdout, "{\n");
 	offs = 0;
 	for (i = 0; i < szregs; ++ i)
 	{
@@ -79,15 +79,15 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 
             if (sz == 4)
             {
-			    printf("\t" "uint32_t reserved_0x%03X;\n", offs);
+			    fprintf(stdout, "\t" "uint32_t reserved_0x%03X;\n", offs);
             }
             else if ((sz % 4) == 0)
             {
-			    printf("\t" "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
+			    fprintf(stdout, "\t" "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
             }
             else
             {
-		    	printf("\t" "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
+		    	fprintf(stdout, "\t" "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
             }
 			offs = p->fldoffs;
 		}
@@ -101,11 +101,11 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 					// Array forming
 					if (p->typname != NULL)
 					{
-						printf("\t" "%s %s [0x%03X];%n", p->typname, p->fldname, p->fldrept, & eolpos);
+						fprintf(stdout, "\t" "%s %s [0x%03X];%n", p->typname, p->fldname, p->fldrept, & eolpos);
 					}
 					else
 					{
-						printf("\t" "__IO %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
+						fprintf(stdout, "\t" "__IO %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
 					}
 
 					offs += p->fldsize * p->fldrept;
@@ -115,29 +115,29 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 					// Plain field
 					if (p->typname != NULL)
 					{
-						printf("\t" "%s %s;%n", p->typname, p->fldname, & eolpos);
+						fprintf(stdout, "\t" "%s %s;%n", p->typname, p->fldname, & eolpos);
 					}
 					else
 					{
-						printf("\t" "__IO %s %s;%n", fldtype, p->fldname, & eolpos);
+						fprintf(stdout, "\t" "__IO %s %s;%n", fldtype, p->fldname, & eolpos);
 					}
 					offs += p->fldsize;
 				}
 				if (eolpos < commentspos)
 				{
 					int pad = commentspos - eolpos;
-					printf("%*.*s", pad, pad, "");
+					fprintf(stdout, "%*.*s", pad, pad, "");
 				}
-				printf("/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
+				fprintf(stdout, "/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
 			}
 		}
 		else
 		{
-			printf("#error WRONG offset of field '%s' type '%s' at (0x%03X)\n",  p->fldname, fldtype, p->fldoffs);
+			fprintf(stdout, "#error WRONG offset of field '%s' type '%s' at (0x%03X)\n",  p->fldname, fldtype, p->fldoffs);
 			break;
 		}
 	}
-	printf("} %s_TypeDef; /* size of structure = 0x%03X */\n", bname, offs);
+	fprintf(stdout, "} %s_TypeDef; /* size of structure = 0x%03X */\n", bname, offs);
 }
 
 
@@ -145,9 +145,9 @@ void genstructprint(const struct ddd * regs, unsigned szregs, const char * bname
 {
 	unsigned i;
 
-	printf("/* Print %s */\n", bname);
-	printf("static void %s_Type_print(const %s_TypeDef * p)\n", bname, bname);
-	printf("{\n");
+	fprintf(stdout, "/* Print %s */\n", bname);
+	fprintf(stdout, "static void %s_Type_print(const %s_TypeDef * p, const char * base)\n", bname, bname);
+	fprintf(stdout, "{\n");
 	for (i = 0; i < szregs; ++ i)
 	{
 		const struct ddd * p = & regs [i];
@@ -157,12 +157,12 @@ void genstructprint(const struct ddd * regs, unsigned szregs, const char * bname
 			if (p->fldrept == 0 &&p->typname == NULL)
 			{
 				// Plain field
-				printf("\t" "PRINTF(\"%%s->%s=0x%%08X\\n\", p);", p->fldname);
-				printf("\t/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
+				fprintf(stdout, "\t" "PRINTF(\"%%s->%s=0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );", p->fldname, p->fldname, p->fldname);
+				fprintf(stdout, "\t/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
 			}
 		}
 	}
-	printf("}\n");
+	fprintf(stdout, "}\n");
 }
 
 
@@ -228,7 +228,7 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 		f2 = sscanf(s + 1, "type %[*a-zA-Z_0-9]s", pfl->bname);
 		if (f2 == 1)
 		{
-			//printf("type %s processrd\n", pfl->bname);
+			//fprintf(stdout, "type %s processrd\n", pfl->bname);
 			continue;
 		}
 
@@ -238,7 +238,7 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 			if (f2 == 2)
 			{
 				++ pfl->base_count;
-				//printf("base %s processrd\n", pfl->bname);
+				//fprintf(stdout, "base %s processrd\n", pfl->bname);
 				continue;
 			}
 		}
@@ -248,11 +248,11 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 			if (f2 == 2)
 			{
 				++ pfl->irq_count;
-				//printf("irq %s processrd\n", pfl->bname);
+				//fprintf(stdout, "irq %s processrd\n", pfl->bname);
 				continue;
 			}
 		}
-		printf("# # f2=%d undeined %s", f2, s);
+		fprintf(stdout, "# # f2=%d undeined %s", f2, s);
 	}
 	return s;
 }
@@ -305,7 +305,7 @@ static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, 
     }
     else
     {
-        printf("#error: wrong format f1=%d, at parse file '%s': '%s'\n", f1, file, s0);
+        fprintf(stdout, "#error: wrong format f1=%d, at parse file '%s': '%s'\n", f1, file, s0);
         exit(1);
     }
     regp->fldsize = fldsize;
@@ -341,7 +341,7 @@ static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, 
         break;
     default:
         if (1 != sscanf(s1, "%i", & regp->fldoffs))
-			printf("WRONG offset format '%s'\n", regp->fldname);
+			fprintf(stdout, "WRONG offset format '%s'\n", regp->fldname);
         break;
     }
 	TP();
@@ -386,14 +386,14 @@ static int loadregs(struct parsedfile * pfl, const char * file)
 	TP();
 	if (fp == NULL)
     {
-        printf("#error Can not open file '%s'\n", file);
+        fprintf(stdout, "#error Can not open file '%s'\n", file);
         return 1;
     }
 
     regs = (struct ddd *) calloc(sizeof (struct ddd), maxrows);
     if (regs == NULL)
     {
-        printf("#error Can not allocate memory for file '%s'\n", file);
+        fprintf(stdout, "#error Can not allocate memory for file '%s'\n", file);
         return 1;
     }
 
@@ -595,14 +595,14 @@ int main(int argc, char* argv[], char* envp[])
 	{
 		/* print structire debug */
 		/* structures */
-		printf("#ifdef PRINTF\n");
+		fprintf(stdout, "#ifdef PRINTF\n");
 		for (i = 0; i < nperoiph; ++ i)
 		{
 			struct parsedfile * const pfl = & pfls [i];
 
 			processfile_periphregsdebug(pfl);
 		}
-		printf("#endif /* PRINTF */\n");
+		fprintf(stdout, "#endif /* PRINTF */\n");
 	}
 
 	/* release memory */
