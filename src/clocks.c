@@ -2757,7 +2757,7 @@ calcdivider(
 		}
 	}
 
-	PRINTF("calcdivider: no parameters for divisor=%u, width=%u, taps=%08X\n", (unsigned long) divisor, (unsigned) width, (unsigned) taps);
+	PRINTF("calcdivider: no parameters for divisor=%lu, width=%u, taps=%08X\n", (unsigned long) divisor, (unsigned) width, (unsigned) taps);
 
 	// Не подобрать комбинацию прескалера и делителя для ожидаемого коэффициента деления.
 	* dvalue = (1U << width) - 1;	// просто пустышка - максимальный делитель

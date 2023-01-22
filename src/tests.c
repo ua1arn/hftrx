@@ -3541,7 +3541,7 @@ static void printtextfile(const char * filename)
 		}
 	}
 
-	PRINTF(PSTR("read complete: %u bytes\n"), filepos);
+	PRINTF(PSTR("read complete: %lu bytes\n"), filepos);
 
 	if (rc) 
 	{

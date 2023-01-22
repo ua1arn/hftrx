@@ -754,8 +754,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	if ((usbsts & (1u << 4)))	// Host System Error
  	{
  		EHCIx->USBSTS = cpu_to_le32(1u << 4);	// Clear Host System Error interrupt
- 		uint_fast32_t portsc = le32_to_cpu(hehci->portsc [WITHEHCIHW_EHCIPORT]);
-		PRINTF("HAL_EHCI_IRQHandler: Host System Error, usbsts=%08X, portsc=%08X, ls=%lu, pe=%lu, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
+ 		unsigned portsc = le32_to_cpu(hehci->portsc [WITHEHCIHW_EHCIPORT]);
+		PRINTF("HAL_EHCI_IRQHandler: Host System Error, usbsts=%08X, portsc=%08X, ls=%u, pe=%u, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
 		//hehci->urbState = USBH_URB_ERROR;
  	}
 
@@ -1873,7 +1873,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 	{
 		/* Port not connected */
 		//speed = USB_SPEED_NONE;
-		PRINTF("speed=USB_SPEED_NONE, portsc=%08X\n");
+		PRINTF("speed=USB_SPEED_NONE, portsc=%08X\n", portsc);
 	}
 	else if (line == EHCI_PORTSC_LINE_STATUS_LOW)
 	{

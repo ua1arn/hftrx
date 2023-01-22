@@ -5325,7 +5325,7 @@ static void printSeqError(void)
 		PRINTF("hist [%2d] %02d @%p :", i, seqHistR [ix], seqHistP [ix]);
 		unsigned col;
 		for (col = 0; col < DMABUFFSTEP32RX; ++ col)
-			PRINTF("%08lx ", seqHist [ix] [col]);
+			PRINTF("%08x ", seqHist [ix] [col]);
 		PRINTF("\n");
 	}
 	for (;;)

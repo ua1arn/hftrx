@@ -4711,7 +4711,7 @@ char * __attribute__((used)) (_sbrk)(ptrdiff_t incr)
 
 	if ((heap + incr) > (char *) &__HeapLimit)
 	{
-		PRINTF(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
+		PRINTF(PSTR("_sbrk: incr=%X, new heap=%p, & __HeapBase=%p, & __HeapLimit=%p\n"), (unsigned) incr, heap + incr, & __HeapBase, & __HeapLimit);
 		//errno = ENOMEM;
 		ASSERT(0);
 		return (char *) -1;

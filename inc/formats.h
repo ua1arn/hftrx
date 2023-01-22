@@ -21,7 +21,7 @@ extern "C" {
 uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, ... );
 uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, va_list ap );
 // Отладочная печать
-void debug_printf_P(const FLASHMEM char * __restrict format, ... );
+void debug_printf_P(const FLASHMEM char * __restrict format, ... ) _ATTRIBUTE ((__format__ (__printf__, 1, 2)));
 
 char * safestrcpy(char * dst, size_t blen, const char * src);
 void strtrim(char * s);
