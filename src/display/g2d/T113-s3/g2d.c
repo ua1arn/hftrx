@@ -82,11 +82,14 @@ int g2d_wait_cmd_finish(void)
 
  if(mixer_irq_flag==0)
  {
+	debug_g2d("linux");
+
   g2d_mixer_reset();
   return 1;
  }
  else if(rot_irq_flag==0)
  {
+	debug_g2d("linux");
   g2d_rot_reset();
   return 2;
  }
