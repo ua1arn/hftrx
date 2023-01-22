@@ -5306,13 +5306,13 @@ atwflj(uint_fast16_t x, uint_fast16_t y)
 // стираем буфер усреднения FFT
 static void fft_avg_clear(void)
 {
-	memset(gvars.Yold_spe, 0x00, sizeof gvars.Yold_spe);
+	ARM_MORPH(arm_fill)(0, gvars.Yold_spe, ALLDX);
 }
 
 // стираем буфер усреднения водопада
 static void wfl_avg_clear(void)
 {
-	memset(gvars.Yold_wtf, 0x00, sizeof gvars.Yold_wtf);
+	ARM_MORPH(arm_fill)(0, gvars.Yold_wtf, ALLDX);
 }
 
 // стираем целиком старое изображение водопада
@@ -5343,10 +5343,10 @@ static void wflshiftleft(uint_fast16_t pixels)
 
 	// двигаем буфер усреднения значений WTF и FFT
 	memmove(& gvars.Yold_spe [0], & gvars.Yold_spe [pixels], (ALLDX - pixels) * sizeof gvars.Yold_spe [0]);
-	memset(& gvars.Yold_spe [ALLDX - pixels], 0x00, pixels * sizeof gvars.Yold_spe[0]);
+	ARM_MORPH(arm_fill)(0, & gvars.Yold_spe [ALLDX - pixels], pixels);
 
 	memmove(& gvars.Yold_wtf [0], & gvars.Yold_wtf [pixels], (ALLDX - pixels) * sizeof gvars.Yold_wtf [0]);
-	memset(& gvars.Yold_wtf [ALLDX - pixels], 0x00, pixels * sizeof gvars.Yold_wtf[0]);
+	ARM_MORPH(arm_fill)(0, & gvars.Yold_wtf [ALLDX - pixels], pixels);
 
     switch (glob_view_style)
     {
@@ -5390,10 +5390,10 @@ static void wflshiftright(uint_fast16_t pixels)
 		return;
 	// двигаем буфер усреднения значений WTF и FFT
 	memmove(& gvars.Yold_spe [pixels], & gvars.Yold_spe [0], (ALLDX - pixels) * sizeof gvars.Yold_spe [0]);
-	memset(& gvars.Yold_spe [0], 0x00, pixels * sizeof gvars.Yold_spe [0]);
+	ARM_MORPH(arm_fill)(0, & gvars.Yold_spe [0], pixels);
 
 	memmove(& gvars.Yold_wtf [pixels], & gvars.Yold_wtf [0], (ALLDX - pixels) * sizeof gvars.Yold_wtf [0]);
-	memset(& gvars.Yold_wtf [0], 0x00, pixels * sizeof gvars.Yold_wtf [0]);
+	ARM_MORPH(arm_fill)(0, & gvars.Yold_wtf [0], pixels);
 
 
     switch (glob_view_style)
