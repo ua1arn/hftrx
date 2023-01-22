@@ -8041,7 +8041,7 @@ void hightests(void)
 			//GridTest();
 			BarTest();
 			const time_t tend = time(NULL);
-			PRINTF("BarTest: %u, %ds, pixelsize=%d @%lu MHz\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE, CPU_FREQ / 1000000);
+			PRINTF("BarTest: %u, %ds, pixelsize=%d @%u MHz\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE, (unsigned) (CPU_FREQ / 1000000));
 		}
 		// Divide result by 10
 		// 800x480, Renesas RZ/A1L, @360 MHz, L8, software (w cache: 5.6s..5.7s)
@@ -8051,7 +8051,8 @@ void hightests(void)
 		// 800x480, STM32MP157, @650 MHz, RGB565, hardware MDMA: (no cache - 1.4s)
 		// 800x480, STM32MP157, @650 MHz, ARGB8888, hardware MDMA: (no cache - 2.5s)
 		// 800x480, Allwinner t113-s3, @1200 MHz, RGB565, software 0.6s
-		// 800x480, Allwinner F133-A, @1008 MHz, ARGB8888, software 0.6s
+		// 800x480, Allwinner F133-A, @1200 MHz, RGB565, hardware G2D 0.7s
+		// 800x480, Allwinner F133-A, @1200 MHz, XRGB8888, hardware G2D 0.9s
 	}
 #endif
 #if 0
