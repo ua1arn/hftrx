@@ -37,6 +37,18 @@
 #endif
 
 
+static unsigned awxx_get_ui_attr(void)
+{
+	unsigned ui_attr = 0;
+	ui_attr = 255 << 24;
+	//	if (img->bpremul)
+	//		ui_attr |= 0x1 << 17;
+	ui_attr |= DstImageFormat << 8;
+	ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	ui_attr |= 1;
+	return ui_attr;
+}
+
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
 /*
@@ -495,6 +507,7 @@ hwacc_fillrect_u8(
 //}
 
 #if LCDMODE_PIXELSIZE == 2
+
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
 hwacc_fillrect_u16(
@@ -641,7 +654,7 @@ hwacc_fillrect_u16(
 
 	const uint_fast32_t c24 = COLOR24(COLORMAIN_R(color), COLORMAIN_G(color), COLORMAIN_B(color));
 
-	G2D_V0->V0_ATTCTL = 0;
+	G2D_V0->V0_ATTCTL = awxx_get_ui_attr();
 
 	G2D_V0->V0_PITCH0 = stride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
@@ -989,7 +1002,7 @@ hwacc_fillrect_u32(
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
-	G2D_V0->V0_ATTCTL = 0;
+	G2D_V0->V0_ATTCTL = awxx_get_ui_attr();
 
 	G2D_V0->V0_PITCH0 = stride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_PITCH1 = 0;	// U
@@ -1731,16 +1744,7 @@ void hwaccel_copy(
 	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER
 	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
-	unsigned ui_attr = 0;
-	ui_attr = 255 /*(img->alpha & 0xff) */ << 24;
-//	if (img->bpremul)
-//		ui_attr |= 0x1 << 17;
-	ui_attr |= DstImageFormat /*img->format */ << 8;
-	ui_attr |= G2D_GLOBAL_ALPHA /*img->mode */ << 1;		// linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	ui_attr |= 1;
-
-	//PRINTF("calculated ui_attr=%08X\n", ui_attr);	// 0xFF000405
-	G2D_V0->V0_ATTCTL = ui_attr;
+	G2D_V0->V0_ATTCTL = awxx_get_ui_attr();
 
 	G2D_V0->V0_PITCH0 = sstride;
 	G2D_V0->V0_PITCH1 = 0;

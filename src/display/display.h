@@ -371,12 +371,11 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		typedef uint16_t PACKEDCOLORMAIN_T;
 
 		// RRRR.RGGG.GGGB.BBBB
-		#define TFTRGB(red, green, blue) \
-			(  (uint_fast16_t) \
-				(	\
-					(((uint_fast16_t) (red) << 8) &   0xf800)  | \
-					(((uint_fast16_t) (green) << 3) & 0x07e0) | \
-					(((uint_fast16_t) (blue) >> 3) &  0x001f) \
+		#define TFTRGB(red, green, blue) ( \
+				(uint_fast16_t) (	\
+					(((uint_fast16_t) (red) << 8) &   0xF800)  | \
+					(((uint_fast16_t) (green) << 3) & 0x07E0) | \
+					(((uint_fast16_t) (blue) >> 3) &  0x001F) \
 				) \
 			)
 
