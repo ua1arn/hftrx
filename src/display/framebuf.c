@@ -381,6 +381,7 @@ void arm_hardware_mdma_initialize(void)
 		0;
 	G2D_TOP->G2D_SCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_HCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RESET &= ~ (1u << 1) | (1u << 0);	// Assert reset: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	// peri:   allwnrt113_get_g2d_freq()=600000000
@@ -895,6 +896,8 @@ hwacc_fillrect_u24(
 	#warinig Implement for (CPUSTYLE_T113 || CPUSTYLE_F133)
 	const unsigned stride = GXADJ(dx);
 	(void) G2D;
+
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
 #else
 	// программная реализация
@@ -1750,7 +1753,7 @@ void hwaccel_copy(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
+#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
 	/* Копирование - использование G2D для формирования изображений */
 
 //	PRINTF("hwaccel_copy: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
@@ -1866,8 +1869,7 @@ void hwaccel_copy(
 	G2D_V0->V0_LADD2 = 0;
 	G2D_V0->V0_HADD = ((saddr >> 32) & 0xFF) << 0;
 
-	//hwaccprint();
-
+	debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
