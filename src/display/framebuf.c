@@ -718,6 +718,7 @@ hwacc_fillrect_u16(
 	G2D_V0->V0_LADD2 = (uintptr_t) addr;
 	G2D_V0->V0_HADD = (uintptr_t) addr >> 32;
 
+	G2D_BLD->BLD_EN_CTL = 0;
 	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется */
 	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
@@ -725,10 +726,6 @@ hwacc_fillrect_u16(
 	G2D_WB->WB_PITCH0 = stride;
 	G2D_WB->WB_LADD0 = addr;
 	G2D_WB->WB_HADD0 = addr >> 32;
-//	G2D_WB->WB_LADD1 = addr;
-//	G2D_WB->WB_HADD1 = addr >> 32;
-	G2D_WB->WB_LADD2 = addr;
-	G2D_WB->WB_HADD2 = addr >> 32;
 
 //	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
 //	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
@@ -1113,6 +1110,7 @@ hwacc_fillrect_u32(
 	G2D_V0->V0_LADD2 = (uintptr_t) addr;
 	G2D_V0->V0_HADD = (uintptr_t) addr >> 32;
 
+	G2D_BLD->BLD_EN_CTL = 0;
 	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется */
 	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
@@ -1120,10 +1118,6 @@ hwacc_fillrect_u32(
 	G2D_WB->WB_PITCH0 = stride;
 	G2D_WB->WB_LADD0 = addr;
 	G2D_WB->WB_HADD0 = addr >> 32;
-//	G2D_WB->WB_LADD1 = addr;
-//	G2D_WB->WB_HADD1 = addr >> 32;
-	G2D_WB->WB_LADD2 = addr;
-	G2D_WB->WB_HADD2 = addr >> 32;
 
 //	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
 //	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
@@ -1753,7 +1747,7 @@ void hwaccel_copy(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
+#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
 	/* Копирование - использование G2D для формирования изображений */
 
 //	PRINTF("hwaccel_copy: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
