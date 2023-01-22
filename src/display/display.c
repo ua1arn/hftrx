@@ -72,9 +72,9 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 
 	void colmain_fb_initialize(void)
 	{
-		uint_fast8_t i;
-		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-			memset(fbfX [i], 0, sizeof fbfX [0]);
+//		uint_fast8_t i;
+//		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+//			memset(fbfX [i], 0, sizeof fbfX [0]);
 	}
 
 	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
@@ -105,7 +105,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 
 	void colmain_fb_initialize(void)
 	{
-		memset(framebuff, 0, sizeof framebuff);
+		//memset(framebuff, 0, sizeof framebuff);
 	}
 
 	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
@@ -137,7 +137,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 
 	void colmain_fb_initialize(void)
 	{
-		memset(fbf, 0, sizeof fbf);
+		//memset(fbf, 0, sizeof fbf);
 	}
 
 	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)

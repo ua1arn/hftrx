@@ -45,6 +45,7 @@ static unsigned awxx_get_ui_attr(void)
 	//		ui_attr |= 0x1 << 17;
 	ui_attr |= DstImageFormat << 8;
 	ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	// ui_attr |= (1u << 4);	/* Use FILLC register
 	ui_attr |= 1;
 	return ui_attr;
 }
