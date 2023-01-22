@@ -16,7 +16,6 @@
 #include "sdcard.h"
 #include "fatfs/ff.h"
 
-#include "display/display.h"	/* используем функцию получения рабочей частоты */
 #include "audio.h"
 
 ///////////////////////////////////////////////////
