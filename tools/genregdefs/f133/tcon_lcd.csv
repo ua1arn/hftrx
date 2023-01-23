@@ -1,4 +1,5 @@
 #type TCON_LCD
+#base TCON_LCD0 0x05461000
 LCD_GCTL_REG; 0x0000; LCD Global Control Register
 LCD_GINT0_REG; 0x0004; LCD Global Interrupt Register0
 LCD_GINT1_REG; 0x0008; LCD Global Interrupt Register1

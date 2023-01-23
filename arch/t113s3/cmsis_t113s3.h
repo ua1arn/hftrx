@@ -38,6 +38,7 @@
 #define	SMHC0_BASE	0x04020000
 #define	SMHC1_BASE	0x04021000
 #define	SMHC2_BASE	0x04022000
+#define	TCON_LCD0_BASE	0x05461000
 #define	CPU_SUBSYS_CTRL_BASE	0x08100000
 #define	C0_CPUX_CFG_BASE	0x09010000
 /*
@@ -2216,6 +2217,7 @@ typedef struct MSGBOX_Type
 #define	TIMER	((TIMER_TypeDef *) TIMER_BASE)	/*!< \brief TIMER Interface register set access pointer */
 #define	CAN0	((CAN_TypeDef *) CAN0_BASE)	/*!< \brief CAN0 Interface register set access pointer */
 #define	CAN1	((CAN_TypeDef *) CAN1_BASE)	/*!< \brief CAN1 Interface register set access pointer */
+#define	TCON_LCD0	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)	/*!< \brief TCON_LCD0 Interface register set access pointer */
 #define	C0_CPUX_CFG	((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)	/*!< \brief C0_CPUX_CFG Interface register set access pointer */
 #define	DDRPHYC	((DDRPHYC_TypeDef *) DDRPHYC_BASE)	/*!< \brief DDRPHYC Interface register set access pointer */
 #define	CPUX_MSGBOX	((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)	/*!< \brief CPUX_MSGBOX Interface register set access pointer */

@@ -34,6 +34,7 @@
 #define	SMHC0_BASE	0x04020000
 #define	SMHC1_BASE	0x04021000
 #define	SMHC2_BASE	0x04022000
+#define	TCON_LCD0_BASE	0x05461000
 #define	RISC_CFG_BASE	0x06010000
 #define	RISC_WDG_BASE	0x06011000
 #define	RISC_TIMESTAMP_BASE	0x06012000
@@ -2171,5 +2172,6 @@ typedef struct EMAC_Type
 #define	TWI3	((TWI_TypeDef *) TWI3_BASE)	/*!< \brief TWI3 Interface register set access pointer */
 #define	CAN0	((CAN_TypeDef *) CAN0_BASE)	/*!< \brief CAN0 Interface register set access pointer */
 #define	CAN1	((CAN_TypeDef *) CAN1_BASE)	/*!< \brief CAN1 Interface register set access pointer */
+#define	TCON_LCD0	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)	/*!< \brief TCON_LCD0 Interface register set access pointer */
 #define	DDRPHYC	((DDRPHYC_TypeDef *) DDRPHYC_BASE)	/*!< \brief DDRPHYC Interface register set access pointer */
 /* Generated section end */ 
