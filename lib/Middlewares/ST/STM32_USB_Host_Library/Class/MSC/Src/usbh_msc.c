@@ -456,7 +456,7 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
       						(int) MSC_Handle->current_lun,
       						(unsigned long) (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
       			      USBH_UsrLog("Block number : %llu", (unsigned long long)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64));
-                      USBH_UsrLog("Block Size   : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
+                      USBH_UsrLog("Block Size   : %u", (unsigned)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
                     }
                     MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
                     MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_OK;
@@ -484,11 +484,11 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
             {
               if (MSC_Handle->unit[MSC_Handle->current_lun].state_changed == 1U)
               {
-                USBH_UsrLog("MSC Device capacity (lun=%d): %lu KBytes",
+                USBH_UsrLog("MSC Device capacity (lun=%d): %u KBytes",
 						(int) MSC_Handle->current_lun,
-						(unsigned long) (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
+						(unsigned) (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
 			    USBH_UsrLog("Block number : %llu", (unsigned long long)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64));
-                USBH_UsrLog("Block Size   : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
+                USBH_UsrLog("Block Size   : %u", (unsigned)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
               }
               MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
               MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_OK;

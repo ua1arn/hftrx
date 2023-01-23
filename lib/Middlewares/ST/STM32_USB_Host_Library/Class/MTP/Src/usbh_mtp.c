@@ -487,7 +487,7 @@ static USBH_StatusTypeDef USBH_MTP_Process(USBH_HandleTypeDef *phost)
 
       if (status == USBH_OK)
       {
-        USBH_UsrLog("Volume#%lu: %s   [%s]", MTP_Handle->current_storage_unit,
+        USBH_UsrLog("Volume#%u: %s   [%s]", (unsigned) MTP_Handle->current_storage_unit,
                     MTP_Handle->info.storinfo[MTP_Handle->current_storage_unit].StorageDescription,
                     MTP_Handle->info.storinfo[MTP_Handle->current_storage_unit].VolumeLabel);
         if (++MTP_Handle->current_storage_unit >= MTP_Handle->info.storids.n)
