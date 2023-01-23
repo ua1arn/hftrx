@@ -5701,7 +5701,7 @@ static void window_kbd_test_process(void)
 		btn_num->x1 = btn_text->x1;
 		btn_num->y1 = lbl_num->y;
 
-		local_snprintf_P(lbl_num->text, ARRAY_SIZE(lbl_num->text), "%lu", num_lbl1);
+		local_snprintf_P(lbl_num->text, ARRAY_SIZE(lbl_num->text), "%u", (unsigned) num_lbl1);
 		strcpy(lbl_text->text, str_lbl2);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
