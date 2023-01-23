@@ -1351,8 +1351,7 @@ void EMPTY_Handler(void)
 void SYNCTRAP_Handler(void)
 {
 	PRINTF("SYNCTRAP_Handler\n");
-	PRINTF("pc=%p\n", (void *) csr_read_mepc());
-	PRINTF("mtval=%p\n", (void *) csr_read_mtval());
+	PRINTF("mepc=%p, mtval=%p\n", (void *) csr_read_mepc(), (void *) csr_read_mtval());
 	const uint_xlen_t mcause = csr_read_mcause();
 	switch (mcause & 0xFFF)
 	{
@@ -1380,7 +1379,7 @@ void VMSI_Handler(void)
 {
 	PRINTF("VMSI_Handler\n");
 	const uint_fast16_t mcause = csr_read_mcause();
-	PRINTF("VMSI_Handler: mcause=%u\n", (unsigned) mcause);
+	PRINTF("VMSI_Handler: mcause=%u, mepc=%p\n", (unsigned) mcause, (void *) csr_read_mepc());
 	for (;;)
 		;
 }
@@ -1401,6 +1400,7 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 void VMEI_Handler(void)
 {
 	const uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;
+	//PRINTF("VMEI_Handler: mepc=%p\n", (void *) csr_read_mepc());
 	if (int_id != 0)
 	{
 		//const uint32_t prio = PLIC->PLIC_MTH_REG;
