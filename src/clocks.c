@@ -7313,7 +7313,7 @@ void SystemCoreClockUpdate(void)
 	void hardware_dcdcfreq_tim17_ch1_initialize(void)
 	{
 		const uint_fast32_t ifreq = stm32mp1_get_timg2_freq();	// TIM17 это timg2
-		PRINTF("hardware_dcdcfreq_tim17_ch1_initialize: ifreq=%lu\n", ifreq);
+		PRINTF("hardware_dcdcfreq_tim17_ch1_initialize: ifreq=%u\n", ifreq);
 		/* TIM17_CH1 */
 		RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_TIM17EN;   //подаем тактирование на TIM17
 		(void) RCC->MP_APB2ENSETR;

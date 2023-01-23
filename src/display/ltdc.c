@@ -74,7 +74,7 @@ static void vdc5_update(
 		local_delay_ms(1);
 		if (-- count == 0)
 		{
-			PRINTF(PSTR("vdc5_update: wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			PRINTF(PSTR("vdc5_update: wait reg=%p %s mask=%08X, stay=%08X\n"), reg, label, (unsigned) mask, (unsigned) (* reg & mask));
 			return;
 		}
 	}
@@ -93,7 +93,7 @@ static void vdc5_wait(
 		local_delay_ms(1);
 		if (-- count == 0)
 		{
-			PRINTF(PSTR("vdc5_wait: wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			PRINTF(PSTR("vdc5_wait: wait reg=%p %s mask=%08X, stay=%08X\n"), reg, label, (unsigned) mask, (unsigned) (* reg & mask));
 			return;
 		}
 	}

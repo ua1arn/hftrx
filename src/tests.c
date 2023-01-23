@@ -4194,10 +4194,10 @@ static void fatfs_filesystest(int speedtest)
 					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 					static unsigned ser;
 					local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
-						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
+						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08X_%u.txt"),
 						year, month, day,
 						hour, minute, seconds,
-						hardware_get_random(),
+						(unsigned) hardware_get_random(),
 						++ ser
 						);
 					PRINTF(PSTR("FAT FS test - write file '%s'.\n"), testlog);
@@ -4247,10 +4247,10 @@ static int fatfs_filesyspeedstest(void)
 
 	mmcInitialize();
 	local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
-		PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
+		PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08X_%u.txt"),
 		year, month, day,
 		hour, minute, seconds,
-		hardware_get_random(),
+		(unsigned) hardware_get_random(),
 		++ ser
 		);
 	return dosaveblocks(testlog);
@@ -9610,14 +9610,14 @@ static void r7s721_ostm0_interrupt_test(void)
 	LOCK(& locklist8);
 	auto int marker;
 	global_disableIRQ();
-	PRINTF(PSTR("  Sy:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("  Sy:@%p INTCICCRPR=%02x cpsr=%08x!\n"), & marker, (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(5);
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	PRINTF(PSTR("  Sy: INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("  Sy: INTCICCRPR=%02x cpsr=%08x.\n"), (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 	UNLOCK(& locklist8);
 }
@@ -9629,7 +9629,7 @@ static void r7s721_ostm1_interrupt_test(void)
 
 	auto int marker;
 	global_disableIRQ();
-	PRINTF(PSTR("    Rt:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    Rt:@%p INTCICCRPR=%02x cpsr=%08x!\n"), & marker, (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(5);
@@ -9637,7 +9637,7 @@ static void r7s721_ostm1_interrupt_test(void)
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	PRINTF(PSTR("    rt: INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    rt: INTCICCRPR=%02x cpsr=%08x.\n"), (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 
 	UNLOCK(& locklist16);
@@ -9650,14 +9650,14 @@ static void spool_encinterruptR(void)
 
 	auto int marker;
 	global_disableIRQ();
-	PRINTF(PSTR("    E:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    E:@%p INTCICCRPR=%02x cpsr=%08x!\n"), & marker, (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(25);
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	PRINTF(PSTR("    e:INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    e:INTCICCRPR=%02x cpsr=%08x.\n"), (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 
 	UNLOCK(& locklist16);
@@ -9671,7 +9671,7 @@ void xSWIHandler(void)
 	for (;;)
 	{
 		global_disableIRQ();
-		PRINTF(PSTR("B: INTCICCRPR=%02x cpsr=%08lx*\n"), INTCICCRPR, __get_CPSR());
+		PRINTF(PSTR("B: INTCICCRPR=%02x cpsr=%08x*\n"), (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 		global_enableIRQ();
 
 		local_delay_ms(20);
@@ -9695,7 +9695,7 @@ nestedirqtest(void)
 	//for (;;)
 	//	dbg_putchar(0xff);
 	// тестирование приёма и передачи символов
-	PRINTF(PSTR("INTCICCPMR=%02X\n"), INTCICCPMR);
+	PRINTF(PSTR("INTCICCPMR=%02X\n"), (unsigned) INTCICCPMR);
 	PRINTF(PSTR("ECHO test. Press ESC for done.\n"));
 	for (;1;)
 	{

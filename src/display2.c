@@ -1731,7 +1731,7 @@ static void display2_notchfreq5(
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
 	char buf2 [6];
-	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%5lu"), freq);
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%5u"), (unsigned) freq);
 	display_2states(x, y, state, buf2, text_nul5);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }

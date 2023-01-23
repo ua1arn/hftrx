@@ -3346,7 +3346,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 				{
 					if (bcnt == 0)
 					{
-						PRINTF("NO DATA. hc->xfer_len=%d, hc->xfer_count=%d\n", hc->xfer_len, hc->xfer_count);
+						PRINTF("NO DATA. hc->xfer_len=%d, hc->xfer_count=%d\n", (int) hc->xfer_len, (int) hc->xfer_count);
 					}
 					else
 					{

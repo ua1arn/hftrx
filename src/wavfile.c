@@ -17,13 +17,14 @@
 #include "fatfs/ff.h"
 
 #include "audio.h"
+#include "display/display.h"	// PACKEDCOLORMAIN_T
 
 ///////////////////////////////////////////////////
 
 static ALIGNX_BEGIN RAMNOINIT_D1 FIL wav_file ALIGNX_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 static FSIZE_t wav_lengthpos_riff;	/* position for write length at RIFF header */
 static FSIZE_t wav_lengthpos_data;	/* position for write length at data subchunk*/
-static unsigned long wave_num_bytes;
+static uint_fast32_t wave_num_bytes;
 static const unsigned int bytes_per_sample = 2;	/* 2: 16-bit samples */
 static const unsigned long wFormatTag = 0x01;	/* 1 - integers, 3 - float */
 #if WITHUSEAUDIOREC2CH
@@ -60,21 +61,13 @@ unsigned audiorec_getwidth(void)
 	return bytes_per_sample * 8;
 }
 
-static FRESULT write_little_endian(unsigned int word, int num_bytes)
+static FRESULT write_little_endian(uint_fast32_t word, int num_bytes)
 {
-#if 1
-	// for little-endian machines
+	uint8_t buff [4];
 	UINT bw;
-	return f_write(& wav_file, & word, num_bytes, & bw) != FR_OK || bw != num_bytes;
-#else
-	// machine-independent version
-    while (num_bytes > 0)
-    {   unsigned char buf = word & 0xff;
-        fwrite(& buf, 1, 1, wav_file);
-        num_bytes --;
-		word >>= 8;
-    }
-#endif
+	ASSERT(num_bytes <= ARRAY_SIZE(buff));
+	USBD_poke_u32(buff, word);
+	return (f_write(& wav_file, & word, num_bytes, & bw) != FR_OK || bw != num_bytes) ? FR_INT_ERR : FR_OK;
 }
 /*
 static FRESULT write_wav_sample(int data)
@@ -358,12 +351,12 @@ static uint_fast8_t wave_startrecording(void)
 	uint_fast16_t year;
 	uint_fast8_t month, day;
 	uint_fast8_t hour, minute, seconds;
-	static unsigned long ver;
+	static unsigned ver;
 
 	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 
 	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
-		PSTR("rec_%lu_%04d-%02d-%02d_%02d%02d%02d_%lu.wav"),
+		PSTR("rec_%lu_%04d-%02d-%02d_%02d%02d%02d_%u.wav"),
 		(hamradio_get_freq_rx() + 500) / 1000uL,	// частота с точностью до килогерц
 		year, month, day,
 		hour, minute, seconds,
@@ -373,15 +366,15 @@ static uint_fast8_t wave_startrecording(void)
 #else /* defined (RTC1_TYPE) */
 
 	static uint_fast32_t rnd;
-	static unsigned long ver;
+	static unsigned ver;
 
 	if (rnd == 0)
 		rnd = hardware_get_random();
 
 	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
-		PSTR("rec_%lu_%08lX_%lu.wav"),
-		(hamradio_get_freq_rx() + 500) / 1000uL,	// частота с точностью до килогерц
-		rnd,
+		PSTR("rec_%u_%08X_%u.wav"),
+		(hamradio_get_freq_rx() + 500) / 1000u,	// частота с точностью до килогерц
+		(unsigned) rnd,
 		++ ver
 		);
 
@@ -672,12 +665,12 @@ static uint_fast8_t screenshot_startrecording(void)
 	uint_fast16_t year;
 	uint_fast8_t month, day;
 	uint_fast8_t hour, minute, seconds;
-	static unsigned long ver;
+	static unsigned ver;
 
 	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 
 	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
-		PSTR("scr_%04d-%02d-%02d_%02d%02d%02d_%lu.bmp"),
+		PSTR("scr_%04d-%02d-%02d_%02d%02d%02d_%u.bmp"),
 		year, month, day,
 		hour, minute, seconds,
 		++ ver
@@ -686,14 +679,14 @@ static uint_fast8_t screenshot_startrecording(void)
 #else /* defined (RTC1_TYPE) */
 
 	static uint_fast32_t rnd;
-	static unsigned long ver;
+	static unsigned ver;
 
 	if (rnd == 0)
 		rnd = hardware_get_random();
 
 	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
-		PSTR("rec_%08lX_%lu.bmp"),
-		rnd,
+		PSTR("rec_%08X_%u.bmp"),
+		(unsigned) rnd,
 		++ ver
 		);
 

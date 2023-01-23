@@ -3647,7 +3647,16 @@ static void cortexa_cpuinfo(void)
 {
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, SCTLR=%08lX, ACTLR=%08lX, sp=%08lX, MPIDR=%08lX\n"), (unsigned) (__get_MPIDR() & 0x03),  (unsigned long) __get_VBAR(), (unsigned long) __get_TTBR0(), (unsigned long) __get_CPSR(), (unsigned long) __get_SCTLR(), (unsigned long) __get_ACTLR(),(unsigned long) & vvv, __get_MPIDR());
+	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%p, MPIDR=%08X\n"),
+			(unsigned) (__get_MPIDR() & 0x03),
+			(void *) __get_VBAR(),
+			(void *) __get_TTBR0(),
+			(unsigned) __get_CPSR(),
+			(unsigned) __get_SCTLR(),
+			(unsigned) __get_ACTLR(),
+			& vvv,
+			(unsigned) __get_MPIDR()
+			);
 }
 
 #if WITHSMPSYSTEM
