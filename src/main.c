@@ -8451,7 +8451,7 @@ gsubmodechange(
 
 	static uint_fast16_t grtcyear;
 	static uint_fast8_t grtcmonth, grtcday;
-	static uint_fast8_t grtchour, grtcminute, grtcsecounds;
+	static uint_fast8_t grtchour, grtcminute, grtcseconds;
 
 	static uint_fast8_t grtcstrobe;
 	static uint_fast8_t grtcstrobe_shadow;
@@ -8460,7 +8460,7 @@ gsubmodechange(
 	{
 		grtcstrobe = 0;
 		grtcstrobe_shadow = 0;
-		board_rtc_getdatetime(& grtcyear, & grtcmonth, & grtcday, & grtchour, & grtcminute, & grtcsecounds);
+		board_rtc_getdatetime(& grtcyear, & grtcmonth, & grtcday, & grtchour, & grtcminute, & grtcseconds);
 	}
 
 	static void board_setrtcstrobe(uint_fast8_t val)
@@ -13196,7 +13196,7 @@ enum nmea_states
 typedef struct timeholder
 {
 	uint_fast8_t ms;
-	uint_fast8_t secounds;
+	uint_fast8_t seconds;
 	uint_fast8_t minutes;
 	uint_fast8_t hours;
 #if defined (RTC1_TYPE)
@@ -13213,9 +13213,9 @@ void time_next(
 	)
 {
 	const uint_fast8_t a = 1;
-	if ((t->secounds += a) >= 60)
+	if ((t->seconds += a) >= 60)
 	{
-		t->secounds -= 60;
+		t->seconds -= 60;
 		if ((t->minutes += 1) >= 60)
 		{
 			t->minutes -= 60;
@@ -13232,9 +13232,9 @@ void time_prev(
 	)
 {
 	const uint_fast8_t a = 1;
-	if ((t->secounds -= a) >= 60)
+	if ((t->seconds -= a) >= 60)
 	{
-		t->secounds += 60;
+		t->seconds += 60;
 		if ((t->minutes -= 1) >= 60)
 		{
 			t->minutes += 60;
@@ -13257,7 +13257,7 @@ static uint_fast8_t nmea_chars;		// количество символов, по�
 static char nmea_buff [NMEA_PARAMS] [NMEA_CHARS];
 static volatile timeholder_t nmea_time;
 static timeholder_t th;
-static volatile uint_fast8_t secoundticks;
+static volatile uint_fast8_t secondticks;
 static uint_fast8_t rtc_nmea_updated = 0;
 
 static unsigned char hex2int(uint_fast8_t c)
@@ -13331,7 +13331,7 @@ void nmea_parsechar(uint_fast8_t c)
 				const char * const s = nmea_buff [1];	// начало буфера, где лежит строка времени.формата 044709.00 или 044709.000
 				nmea_time.hours = (s [0] - '0') * 10 + (s [1] - '0');
 				nmea_time.minutes = (s [2] - '0') * 10 + (s [3] - '0');
-				nmea_time.secounds = (s [4] - '0') * 10 + (s [5] - '0');
+				nmea_time.seconds = (s [4] - '0') * 10 + (s [5] - '0');
 				nmea_time.ms = 0; //_strtoul_r(& treent, s + 7, NULL, 10);
 #if defined (RTC1_TYPE)
 				const char * const d = nmea_buff [9];
@@ -13356,10 +13356,10 @@ spool_nmeapps(void)
 {
 	th = nmea_time;
 #if WITHTOUCHGUI
-	local_snprintf_P(nmea_time_str, ARRAY_SIZE(nmea_time_str), "%02d:%02d:%02d", nmea_time.hours, nmea_time.minutes, nmea_time.secounds);
+	local_snprintf_P(nmea_time_str, ARRAY_SIZE(nmea_time_str), "%02d:%02d:%02d", nmea_time.hours, nmea_time.minutes, nmea_time.seconds);
 #endif /* WITHTOUCHGUI */
 #if WITHLFM
-	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.secounds))
+	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.seconds))
 	{
 		lfm_run();
 	}
@@ -13369,7 +13369,7 @@ spool_nmeapps(void)
 	{
 		rtc_nmea_updated = 1;
 		// todo: добавить в меню выбор часового пояса
-		board_rtc_setdatetime(nmea_time.year, nmea_time.month, nmea_time.day, nmea_time.hours + 3, nmea_time.minutes, nmea_time.secounds);
+		board_rtc_setdatetime(nmea_time.year, nmea_time.month, nmea_time.day, nmea_time.hours + 3, nmea_time.minutes, nmea_time.seconds);
 	}
 #endif /* defined (RTC1_TYPE) */
 }
@@ -13422,15 +13422,15 @@ display_spool(void * ctx)
 	// таймер обновления часов/минут/секунд
 	{
 		enum { n = NTICKS(1000) };
-		const uint_fast8_t t = secoundticks + 1;
+		const uint_fast8_t t = secondticks + 1;
 		if (t >= n)
 		{
 			time_next(& th);
-			secoundticks = 0;
+			secondticks = 0;
 		}
 		else
 		{
-			secoundticks = t;
+			secondticks = t;
 		}
 	}
 	#endif /* WITHNMEA */
@@ -16418,7 +16418,7 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 
 static dpclock_t dpc_1slock;
 /* Вызывается из обработчика прерываний раз в секунду */
-static void spool_secound(void * ctx)
+static void spool_second(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
@@ -17476,9 +17476,9 @@ void display2_menu_valxx(
 		{
 			uint_fast16_t year;
 			uint_fast8_t month, day;
-			uint_fast8_t hour, minute, secounds;
+			uint_fast8_t hour, minute, seconds;
 
-			board_get_compile_datetime(& year, & month, & day, & hour, & minute, & secounds);
+			board_get_compile_datetime(& year, & month, & day, & hour, & minute, & seconds);
 
 			char msg [VALUEW + 1];
 			const uint_fast8_t n = local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("%02d-%3.3s-%02d"), day, months [month], year % 100);
@@ -19245,7 +19245,7 @@ lowinitialize(void)
 
 	ticker_initialize(& displayticker, 1, display_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& displayticker);
-	ticker_initialize(& ticker_1S, NTICKS(1000), spool_secound, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& ticker_1S, NTICKS(1000), spool_second, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& ticker_1S);
 
 	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
@@ -19318,7 +19318,7 @@ keyboard_test(void)
 {
 	uint_fast8_t n;
 
-	// 1 secound total
+	// 1 second total
 	for (n = 0; n < 100; ++ n)
 	{
 		if (kbd_is_tready() != 0)
@@ -19908,10 +19908,10 @@ hamradio_main_step(void)
 			if (lfmmode)
 			{
 				/*  проверяем секунды начала */
-					uint_fast8_t hour, minute, secounds;
+					uint_fast8_t hour, minute, seconds;
 
-					board_rtc_cached_gettime(& hour, & minute, & secounds);
-					if (islfmstart(minute * 60 + secounds))
+					board_rtc_cached_gettime(& hour, & minute, & seconds);
+					if (islfmstart(minute * 60 + seconds))
 					{
 						system_disableIRQ();
 						lfm_run();

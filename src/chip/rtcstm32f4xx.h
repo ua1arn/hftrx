@@ -276,7 +276,7 @@ static void board_rtc_initmode(uint_fast8_t on)
 void board_rtc_settime(
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain
@@ -287,7 +287,7 @@ void board_rtc_settime(
 	RTC->TR =
 		stm32f4xx_bin2bcd(hours) * RTC_TR_HU_0 |
 		stm32f4xx_bin2bcd(minutes) * RTC_TR_MNU_0 |
-		stm32f4xx_bin2bcd(secounds) * RTC_TR_SU_0 |
+		stm32f4xx_bin2bcd(seconds) * RTC_TR_SU_0 |
 		0;
 	
 	stm32f4xx_rtc_wrdisable();	/* Enable the write protection for RTC registers */
@@ -322,7 +322,7 @@ void board_rtc_setdatetime(
 	uint_fast8_t dayofmonth,
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain
@@ -338,7 +338,7 @@ void board_rtc_setdatetime(
 	RTC->TR =
 		stm32f4xx_bin2bcd(hours) * RTC_TR_HU_0 |
 		stm32f4xx_bin2bcd(minutes) * RTC_TR_MNU_0 |
-		stm32f4xx_bin2bcd(secounds) * RTC_TR_SU_0 |
+		stm32f4xx_bin2bcd(seconds) * RTC_TR_SU_0 |
 		0;
 
 	stm32f4xx_rtc_wrdisable();	/* Enable the write protection for RTC registers */
@@ -373,7 +373,7 @@ void board_rtc_getdate(
 void board_rtc_gettime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	uint_fast32_t dr2;
@@ -391,7 +391,7 @@ void board_rtc_gettime(
 
 	* hour = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_HT | RTC_TR_HU)) / RTC_TR_HU_0), 23), 0);
 	* minute = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_MNT | RTC_TR_MNU)) / RTC_TR_MNU_0), 59), 0);
-	* secounds = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_ST | RTC_TR_SU)) / RTC_TR_SU_0), 59), 0);
+	* seconds = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_ST | RTC_TR_SU)) / RTC_TR_SU_0), 59), 0);
 }
 
 void board_rtc_getdatetime(
@@ -400,7 +400,7 @@ void board_rtc_getdatetime(
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	uint_fast32_t dr2;
@@ -421,7 +421,7 @@ void board_rtc_getdatetime(
 	* dayofmonth = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((dr & (RTC_DR_DT | RTC_DR_DU)) / RTC_DR_DU_0), 31), 1);
 	* hour = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_HT | RTC_TR_HU)) / RTC_TR_HU_0), 23), 0);
 	* minute = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_MNT | RTC_TR_MNU)) / RTC_TR_MNU_0), 59), 0);
-	* secounds = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_ST | RTC_TR_SU)) / RTC_TR_SU_0), 59), 0);
+	* seconds = stm32f4xx_max(stm32f4xx_min(stm32f4xx_bcd2bin((tr & (RTC_TR_ST | RTC_TR_SU)) / RTC_TR_SU_0), 59), 0);
 }
 
 /* возврат не-0 если требуется начальная загрузка значений */

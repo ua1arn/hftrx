@@ -886,7 +886,7 @@ typedef struct videomode_tag
 	unsigned hsyncneg; 		/* negative polarity required for hsync signal */
 	unsigned deneg; 		/* negative de polarity: (normal: de is 0 while sync) */
 	unsigned lq43reset; /* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
-	unsigned fps;	/* frames per secound */
+	unsigned fps;	/* frames per second */
 
 } videomode_t;
 

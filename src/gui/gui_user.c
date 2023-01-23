@@ -43,7 +43,7 @@ val_step_t freq_swipe_step [] = {
 };
 
 static uint_fast16_t year;
-static uint_fast8_t month, day, hour, minute, secounds;
+static uint_fast8_t month, day, hour, minute, seconds;
 
 struct gui_nvram_t gui_nvram;
 static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
@@ -1007,7 +1007,7 @@ static void gui_main_process(void)
 #endif /* WITHTX */
 
 #if defined (RTC1_TYPE)
-		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 #endif /* defined (RTC1_TYPE) */
 	}
 
@@ -1283,7 +1283,7 @@ static void gui_main_process(void)
 					local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
 					uint xx = current_place * infobar_label_width + infobar_label_width / 2;
 					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
-					local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
+					local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((seconds & 1) ? ' ' : ':'), minute);
 					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
 	#endif 	/* defined (RTC1_TYPE) */
 				}
@@ -1308,7 +1308,7 @@ static void gui_main_process(void)
 #endif /* WITHTHERMOLEVEL */
 
 #if WITHFT8
-		ft8_walkthrough_core0(secounds);
+		ft8_walkthrough_core0(seconds);
 #endif /* WITHFT8 */
 
 #endif /* GUI_SHOW_INFOBAR */
@@ -4603,7 +4603,7 @@ static void window_ft8_process(void)
 		btn_settings->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_FULLSCREEN);
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, secounds);
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, seconds);
 
 		if (! work)
 		{
@@ -4758,7 +4758,7 @@ static void window_ft8_process(void)
 			local_snprintf_P(lh_array_tx [3].ptr->text, ARRAY_SIZE(lh_array_tx [3].ptr->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_end);
 		}
 
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, secounds);
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, seconds);
 	}
 }
 
@@ -5298,7 +5298,7 @@ static void window_time_process(void)
 {
 #if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 	window_t * const win = get_win(WINDOW_TIME);
-	static uint year, month, day, hour, minute, secound, update;
+	static uint year, month, day, hour, minute, second, update;
 
 	if (win->first_call)
 	{
@@ -5378,7 +5378,7 @@ static void window_time_process(void)
 		button_t * btn_set =  find_gui_element(TYPE_BUTTON, win, "btn_set");
 		btn_set->is_locked = BUTTON_LOCKED;
 
-		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute,	& secound);
+		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute,	& second);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
@@ -5415,12 +5415,12 @@ static void window_time_process(void)
 			else if (bh == btn_minutep || bh == btn_minuten)
 				minute += bh->payload;
 			else if (bh == btn_secondp || bh == btn_secondn)
-				secound += bh->payload;
+				second += bh->payload;
 			else if (bh == btn_sec0)
-				secound = 0;
+				second = 0;
 			else if (bh == btn_set)
 			{
-				board_rtc_setdatetime(year, month, day, hour, minute, secound);
+				board_rtc_setdatetime(year, month, day, hour, minute, second);
 				close_all_windows();
 				return;
 			}
@@ -5454,7 +5454,7 @@ static void window_time_process(void)
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", minute);
 
 		lh =  find_gui_element(TYPE_LABEL, win, "lbl_second");
-		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", secound);
+		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", second);
 	}
 #endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
 }

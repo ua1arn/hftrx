@@ -1437,7 +1437,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("VOXDELAY"), 7, 2, 0,	ISTEP5,	/* 50 mS step of changing value */
 		ITEM_VALUE,
-		WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 secounds delay */
+		WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 seconds delay */
 		offsetof(struct nvmap, voxdelay),
 		nvramoffs0,
 		NULL,

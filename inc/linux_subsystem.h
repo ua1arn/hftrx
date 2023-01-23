@@ -107,7 +107,7 @@ void board_rtc_getdate(
 void board_rtc_gettime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	);
 
 #endif /* LINUX_SUBSYSTEM */

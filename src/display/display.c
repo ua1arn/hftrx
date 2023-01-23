@@ -1532,7 +1532,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 1,		/* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
 	//.ltdc_dotclk = 9000000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per secound */
+	.fps = 60	/* frames per second */
 };
 	/* SONY PSP-1000 display (4.3") required. */
 	/* Используется при BOARD_DEMODE = 0 */
@@ -1572,7 +1572,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per secound */
+	.fps = 60	/* frames per second */
 };
 
 #elif 1 && LCDMODE_AT070TNA2
@@ -1610,7 +1610,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
-	.fps = 60	/* frames per secound */
+	.fps = 60	/* frames per second */
 };
 
 
@@ -1666,7 +1666,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 74250000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per secound */
+	.fps = 60	/* frames per second */
 };
 
 #elif LCDMODE_TCG104XGLPAPNN
@@ -1701,7 +1701,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
-	.fps = 60	/* frames per secound 50 60 70 */
+	.fps = 60	/* frames per second 50 60 70 */
 };
 
 #elif LCDMODE_ILI8961
@@ -1727,7 +1727,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 24000000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per secound */
+	.fps = 60	/* frames per second */
 };
 
 #elif LCDMODE_ILI9341
@@ -1754,7 +1754,7 @@ static const const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 3000000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per secound */
+	.fps = 60	/* frames per second */
 };
 
 #elif LCDMODE_H497TLB01P4
@@ -1791,7 +1791,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per secound */
+	.fps = 60	/* frames per second */
 };
 
 #elif LCDMODE_TV101WXM
@@ -1828,7 +1828,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per secound */
+	.fps = 60	/* frames per second */
 };
 
 #else

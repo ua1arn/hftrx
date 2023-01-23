@@ -1481,7 +1481,7 @@ static void agc_parameters_initialize(volatile agcparams_t * agcp)
 	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.095);
 	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.2);	
 
-	agcp->hungticks = NSAITICKS(300);			// 0.3 secounds
+	agcp->hungticks = NSAITICKS(300);			// 0.3 seconds
 
 	agcp->gainlimit = db2ratio(60);
 	agcp->mininput = db2ratio(- 160);
@@ -1549,7 +1549,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.200);
 	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.200);
 
-	agcp->hungticks = NSAITICKS(300);			// 0.3 secounds
+	agcp->hungticks = NSAITICKS(300);			// 0.3 seconds
 
 	agcp->gainlimit = db2ratio(60);
 	agcp->mininput = db2ratio(- 160);

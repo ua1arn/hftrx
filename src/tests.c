@@ -4190,13 +4190,13 @@ static void fatfs_filesystest(int speedtest)
 				{
 					uint_fast16_t year;
 					uint_fast8_t month, day;
-					uint_fast8_t hour, minute, secounds;
-					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+					uint_fast8_t hour, minute, seconds;
+					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 					static unsigned ser;
 					local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
 						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
 						year, month, day,
-						hour, minute, secounds,
+						hour, minute, seconds,
 						hardware_get_random(),
 						++ ser
 						);
@@ -4212,13 +4212,13 @@ static void fatfs_filesystest(int speedtest)
 				{
 					uint_fast16_t year;
 					uint_fast8_t month, day;
-					uint_fast8_t hour, minute, secounds;
-					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+					uint_fast8_t hour, minute, seconds;
+					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 					static unsigned ser;
 					local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
 						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
 						year, month, day,
-						hour, minute, secounds,
+						hour, minute, seconds,
 						hardware_get_random(),
 						++ ser
 						);
@@ -4237,8 +4237,8 @@ static int fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
 	uint_fast8_t month, day;
-	uint_fast8_t hour, minute, secounds;
-	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	uint_fast8_t hour, minute, seconds;
+	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 	static unsigned ser;
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
@@ -4249,7 +4249,7 @@ static int fatfs_filesyspeedstest(void)
 	local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
 		PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
 		year, month, day,
-		hour, minute, secounds,
+		hour, minute, seconds,
 		hardware_get_random(),
 		++ ser
 		);
@@ -8224,7 +8224,7 @@ void hightests(void)
 		{
 			char buff [32];
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d:%02d:%02d,ky=%d"), 
-				th.hours, th.minutes, th.secounds, 
+				th.hours, th.minutes, th.seconds, 
 				HARDWARE_NMEA_GET_KEYDOWN());
 
 			uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -8271,18 +8271,18 @@ void hightests(void)
 		{
 			uint_fast16_t year;
 			uint_fast8_t month, day;
-			uint_fast8_t hour, minute, secounds;
+			uint_fast8_t hour, minute, seconds;
 
 			//board_rtc_getdate(& year, & month, & day);
-			//board_rtc_gettime(& hour, & minute, & secounds);
+			//board_rtc_gettime(& hour, & minute, & seconds);
 
 			//PRINTF(PSTR("%04d-%02d-%02d "), year, month, day);
-			//PRINTF(PSTR("%02d:%02d:%02d "), hour, minute, secounds);
+			//PRINTF(PSTR("%02d:%02d:%02d "), hour, minute, seconds);
 
-			board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+			board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 
 			PRINTF(PSTR("%04d-%02d-%02d "), year, month, day);
-			PRINTF(PSTR("%02d:%02d:%02d\n"), hour, minute, secounds);
+			PRINTF(PSTR("%02d:%02d:%02d\n"), hour, minute, seconds);
 
 			local_delay_ms(1250);
 			

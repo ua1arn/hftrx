@@ -357,16 +357,16 @@ static uint_fast8_t wave_startrecording(void)
 
 	uint_fast16_t year;
 	uint_fast8_t month, day;
-	uint_fast8_t hour, minute, secounds;
+	uint_fast8_t hour, minute, seconds;
 	static unsigned long ver;
 
-	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 
 	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
 		PSTR("rec_%lu_%04d-%02d-%02d_%02d%02d%02d_%lu.wav"),
 		(hamradio_get_freq_rx() + 500) / 1000uL,	// частота с точностью до килогерц
 		year, month, day,
-		hour, minute, secounds,
+		hour, minute, seconds,
 		++ ver
 		);
 
@@ -671,15 +671,15 @@ static uint_fast8_t screenshot_startrecording(void)
 
 	uint_fast16_t year;
 	uint_fast8_t month, day;
-	uint_fast8_t hour, minute, secounds;
+	uint_fast8_t hour, minute, seconds;
 	static unsigned long ver;
 
-	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 
 	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
 		PSTR("scr_%04d-%02d-%02d_%02d%02d%02d_%lu.bmp"),
 		year, month, day,
-		hour, minute, secounds,
+		hour, minute, seconds,
 		++ ver
 		);
 

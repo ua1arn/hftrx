@@ -509,16 +509,16 @@ void ft8_irqhandler_core1(void)
 }
 #endif /* ! LINUX_SUBSYSTEM */
 
-void ft8_walkthrough_core0(uint_fast8_t rtc_secounds)
+void ft8_walkthrough_core0(uint_fast8_t rtc_seconds)
 {
 	static uint_fast8_t old_s = 99;
 
-	if (rtc_secounds == 0 || rtc_secounds == 15 || rtc_secounds == 30 || rtc_secounds == 45)
+	if (rtc_seconds == 0 || rtc_seconds == 15 || rtc_seconds == 30 || rtc_seconds == 45)
 	{
-		if ((ft8_enable && ! ft8_encode_req) && (old_s != rtc_secounds))
+		if ((ft8_enable && ! ft8_encode_req) && (old_s != rtc_seconds))
 		{
 			xcz_ipi_sendmsg_c0(FT8_MSG_START_FILL);
-			old_s = rtc_secounds;
+			old_s = rtc_seconds;
 		}
 	}
 

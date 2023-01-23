@@ -326,7 +326,7 @@ void board_rtc_getdatetime(
 	uint_fast8_t * day,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	XRtcPsu_DT dt;
@@ -338,7 +338,7 @@ void board_rtc_getdatetime(
 	* day = dt.Day;
 	* hour = dt.Hour;
 	* minute = dt.Min;
-	* secounds = dt.Sec;
+	* seconds = dt.Sec;
 }
 
 void board_rtc_setdatetime(
@@ -347,7 +347,7 @@ void board_rtc_setdatetime(
 	uint_fast8_t dayofmonth,
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 	XRtcPsu_DT dt;
@@ -356,7 +356,7 @@ void board_rtc_setdatetime(
 	dt.Day = dayofmonth;
 	dt.Hour = hours;
 	dt.Min = minutes;
-	dt.Sec = secounds;
+	dt.Sec = seconds;
 	XRtcPsu_SetTime(& xczu_rtc, XRtcPsu_DateTimeToSec(& dt));
 	board_rtc_chip_initialize();
 }
@@ -7444,13 +7444,13 @@ void board_initialize(void)
 	static volatile uint_fast8_t board_rtc_cached_dayofmonth = 1;
 	static volatile uint_fast8_t board_rtc_cached_hour;
 	static volatile uint_fast8_t board_rtc_cached_minute;
-	static volatile uint_fast8_t board_rtc_cached_secounds;
+	static volatile uint_fast8_t board_rtc_cached_seconds;
 
 static void board_rtc_cache_update(void * ctx)
 {
 	board_rtc_getdatetime_low(
 			& board_rtc_cached_year, & board_rtc_cached_month, & board_rtc_cached_dayofmonth,
-			& board_rtc_cached_hour, & board_rtc_cached_minute, & board_rtc_cached_secounds
+			& board_rtc_cached_hour, & board_rtc_cached_minute, & board_rtc_cached_seconds
 			);
 }
 
@@ -7466,14 +7466,14 @@ static void board_rtc_initialize(void)
 		/* проверка значений в RTC на допустимость */
 		uint_fast16_t year;
 		uint_fast8_t month, day;
-		uint_fast8_t hour, minute, secounds;
-		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+		uint_fast8_t hour, minute, seconds;
+		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 		
-		PRINTF(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, secounds);
+		PRINTF(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, seconds);
 
 		if (month < 1 || month > 12 ||
 			day < 1 || day > 31 ||
-			hour > 23 || minute > 59 || secounds > 59)
+			hour > 23 || minute > 59 || seconds > 59)
 		{
 			loadreq = 1;
 		}
@@ -7483,10 +7483,10 @@ static void board_rtc_initialize(void)
 	{
 		uint_fast16_t year;
 		uint_fast8_t month, day;
-		uint_fast8_t hour, minute, secounds;
+		uint_fast8_t hour, minute, seconds;
 		
-		board_get_compile_datetime(& year, & month, & day, & hour, & minute, & secounds);
-		board_rtc_setdatetime(year, month, day, hour, minute, secounds);
+		board_get_compile_datetime(& year, & month, & day, & hour, & minute, & seconds);
+		board_rtc_setdatetime(year, month, day, hour, minute, seconds);
 	}
 #if WITHRTCCACHED
 
@@ -7511,7 +7511,7 @@ void board_rtc_getdatetime(
 	uint_fast8_t * day,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	// Алгоритм найден тут: https://electronix.ru/forum/index.php?showtopic=141655&view=findpost&p=1495868
@@ -7541,7 +7541,7 @@ void board_rtc_getdatetime(
 	* day = COMPILE_DAY;
 	* hour = COMPILE_HOUR;
 	* minute = COMPILE_MINUTE;
-	* secounds = COMPILE_SECOND;
+	* seconds = COMPILE_SECOND;
 }
 
 #endif /* defined (RTC1_TYPE) */
@@ -7571,7 +7571,7 @@ void board_rtc_cached_getdate(
 void board_rtc_cached_gettime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 #if WITHRTCCACHED
@@ -7580,12 +7580,12 @@ void board_rtc_cached_gettime(
 
 	* hour = board_rtc_cached_hour;
 	* minute = board_rtc_cached_minute;
-	* secounds = board_rtc_cached_secounds;
+	* seconds = board_rtc_cached_seconds;
 
 	system_enableIRQ();
 
 #else /* WITHRTCCACHED */
-	board_rtc_gettime(hour, minute, secounds);
+	board_rtc_gettime(hour, minute, seconds);
 #endif /* WITHRTCCACHED */
 }
 
@@ -7595,7 +7595,7 @@ void board_rtc_cached_getdatetime(
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 #if WITHRTCCACHED
@@ -7607,12 +7607,12 @@ void board_rtc_cached_getdatetime(
 	* dayofmonth = board_rtc_cached_dayofmonth;
 	* hour = board_rtc_cached_hour;
 	* minute = board_rtc_cached_minute;
-	* secounds = board_rtc_cached_secounds;
+	* seconds = board_rtc_cached_seconds;
 
 	system_enableIRQ();
 
 #else /* WITHRTCCACHED */
-	board_rtc_getdatetime(year, month, dayofmonth, hour, minute, secounds);
+	board_rtc_getdatetime(year, month, dayofmonth, hour, minute, seconds);
 #endif /* WITHRTCCACHED */
 }
 
@@ -7622,7 +7622,7 @@ void board_get_compile_datetime(
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	// Алгоритм найден тут: https://electronix.ru/forum/index.php?showtopic=141655&view=findpost&p=1495868
@@ -7631,7 +7631,7 @@ void board_get_compile_datetime(
 
 	* hour = (((ts [0] - '0') * 10) + (ts [1] - '0'));
 	* minute = (((ts [3] - '0') * 10) + (ts [4] - '0'));
-	* secounds = (((ts [6] - '0') * 10) + (ts [7] - '0'));
+	* seconds = (((ts [6] - '0') * 10) + (ts [7] - '0'));
 
 	* year = ((((ds [7] - '0') * 10 + (ds [8] - '0')) * 10 + (ds [9] - '0')) * 10 + (ds [10] - '0'));
 
@@ -9640,9 +9640,9 @@ int _gettimeofday(struct timeval *p, void *tz)
 		// получаем локальное время в секундах из компонент
 		uint_fast16_t year;
 		uint_fast8_t month, dayofmonth;
-		uint_fast8_t hour, minute, secounds;
+		uint_fast8_t hour, minute, seconds;
 
-		board_rtc_getdatetime( & year, & month, & dayofmonth, & hour, & minute, & secounds);
+		board_rtc_getdatetime( & year, & month, & dayofmonth, & hour, & minute, & seconds);
 
 		static const unsigned int years [2] [13] =
 		{
@@ -9692,13 +9692,13 @@ int _gettimeofday(struct timeval *p, void *tz)
 		if (leap != 0)
 		{
 			p->tv_sec = XSEC_PER_DAY * (((year) - 1980) * 365 + ((year) - 1980) / 4 + years [leap] [(month) - 1] + ((dayofmonth) - 1))
-					+ 3600 * (hour) + 60 * (minute) + (secounds);
+					+ 3600 * (hour) + 60 * (minute) + (seconds);
 		}
 		else
 		{
 			p->tv_sec = XSEC_PER_DAY
 					* (((year) - 1980) * 365 + ((year) - 1980) / 4 + 1 + years [leap] [(month) - 1] + ((dayofmonth) - 1))
-					+ 3600 * (hour) + 60 * (minute) + (secounds);
+					+ 3600 * (hour) + 60 * (minute) + (seconds);
 		}
 		p->tv_usec = 0;
 	}

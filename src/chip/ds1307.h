@@ -83,20 +83,20 @@ static uint_fast8_t ds1307_bin2bcd(uint_fast8_t v)
 void board_rtc_settime(
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 #if WITHTWIHW
 	uint8_t buf[4];
 	buf [0] = 0;
-	buf [1] = ds1307_bin2bcd(secounds);
+	buf [1] = ds1307_bin2bcd(seconds);
 	buf [2] = ds1307_bin2bcd(minutes);
 	buf [3] = ds1307_bin2bcd(hours);
 	i2chw_write(DS1307_ADDRESS_W, buf, 4);
 #elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x00);	// register address
-	i2c_write(ds1307_bin2bcd(secounds));
+	i2c_write(ds1307_bin2bcd(seconds));
 	i2c_write(ds1307_bin2bcd(minutes));
 	i2c_write(ds1307_bin2bcd(hours));
 	i2c_waitsend();
@@ -110,13 +110,13 @@ void board_rtc_setdatetime(
 	uint_fast8_t dayofmonth,
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 #if WITHTWIHW
 	uint8_t buf[8];
 	buf [0] = 0;
-	buf [1] = ds1307_bin2bcd(secounds);
+	buf [1] = ds1307_bin2bcd(seconds);
 	buf [2] = ds1307_bin2bcd(minutes);
 	buf [3] = ds1307_bin2bcd(hours);
 	buf [4] = 0x02;
@@ -127,7 +127,7 @@ void board_rtc_setdatetime(
 #elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x00);	// register address
-	i2c_write(ds1307_bin2bcd(secounds));	// 0
+	i2c_write(ds1307_bin2bcd(seconds));	// 0
 	i2c_write(ds1307_bin2bcd(minutes));		// 1
 	i2c_write(ds1307_bin2bcd(hours));		// 2
 	i2c_write(0x02);						// 3
@@ -183,7 +183,7 @@ void board_rtc_getdate(
 void board_rtc_gettime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	const uint_fast8_t r = 0x00;	// Addr
@@ -193,7 +193,7 @@ void board_rtc_gettime(
 
 	* hour = ds1307_bcd2bin(b [2]);		// r=2
 	* minute = ds1307_bcd2bin(b [1]);	// r=1
-	* secounds = ds1307_bcd2bin(b [0]);	// r=0
+	* seconds = ds1307_bcd2bin(b [0]);	// r=0
 }
 
 void board_rtc_getdatetime(
@@ -202,7 +202,7 @@ void board_rtc_getdatetime(
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	const uint_fast8_t r = 0x00;
@@ -215,7 +215,7 @@ void board_rtc_getdatetime(
 	* dayofmonth = ds1307_bcd2bin(b [4]);// r=4
 	* hour = ds1307_bcd2bin(b [2]);		// r=2
 	* minute = ds1307_bcd2bin(b [1]);	// r=1
-	* secounds = ds1307_bcd2bin(b [0]);	// r=0
+	* seconds = ds1307_bcd2bin(b [0]);	// r=0
 }
 
 /* возврат не-0 если требуется начальная загрузка значений */

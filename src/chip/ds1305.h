@@ -118,7 +118,7 @@ ds1305_bin2bcd(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
 void board_rtc_settime(
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 	const uint_fast8_t rt = DS1305REG_TIME;	// Addr
@@ -126,7 +126,7 @@ void board_rtc_settime(
 	static const uint8_t b_WP [1] = { 0x40 };
 	static const uint8_t b_WE [1] = { 0x00 };
 
-	bt [0] = 0x7f & ds1305_bin2bcd(secounds, 0, 59);	// r=0
+	bt [0] = 0x7f & ds1305_bin2bcd(seconds, 0, 59);	// r=0
 	bt [1] = 0x7f & ds1305_bin2bcd(minutes, 0, 59);	// r=1
 	bt [2] = 0x3f & ds1305_bin2bcd(hours, 0, 23);		// r=2
 
@@ -144,7 +144,7 @@ void board_rtc_setdatetime(
 	uint_fast8_t dayofmonth,
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 	static const uint8_t b_WP [1] = { 0x40 };
@@ -152,7 +152,7 @@ void board_rtc_setdatetime(
 	const uint_fast8_t rt = DS1305REG_TIME;	// Addr
 	uint8_t bt [3];
 
-	bt [0] = 0x7f & ds1305_bin2bcd(secounds, 0, 59);	// r=0
+	bt [0] = 0x7f & ds1305_bin2bcd(seconds, 0, 59);	// r=0
 	bt [1] = 0x7f & ds1305_bin2bcd(minutes, 0, 59);	// r=1
 	bt [2] = 0x3f & ds1305_bin2bcd(hours, 0, 23);		// r=2
 
@@ -220,7 +220,7 @@ void board_rtc_getdate(
 void board_rtc_gettime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	const uint_fast8_t r = DS1305REG_TIME;	// Addr
@@ -230,7 +230,7 @@ void board_rtc_gettime(
 
 	//PRINTF(PSTR("board_rtc_gettime: %02X:%02X:%02X\n"), b [0], b [1], b [2]);
 
-	* secounds = ds1305_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
+	* seconds = ds1305_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
 	* minute = ds1305_bcd2bin(b [1] & 0x7f, 0, 59);	// r=2
 	* hour = ds1305_bcd2bin(b [2] & 0x3f, 0, 23);		// r=3
 }
@@ -241,7 +241,7 @@ void board_rtc_getdatetime(
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	const uint_fast8_t r = DS1305REG_TIME;
@@ -249,7 +249,7 @@ void board_rtc_getdatetime(
 
 	ds1305_readbuff(b, sizeof b / sizeof b[0], r);
 
-	* secounds = ds1305_bcd2bin(b [0] & 0x7f, 0, 59);	// r=0
+	* seconds = ds1305_bcd2bin(b [0] & 0x7f, 0, 59);	// r=0
 	* minute = ds1305_bcd2bin(b [1] & 0x7f, 0, 59);	// r=1
 	* hour = ds1305_bcd2bin(b [2] & 0x3f, 0, 23);		// r=2
 	* dayofmonth = ds1305_bcd2bin(b [4] & 0x3f, 1, 31);		// r=4
@@ -263,7 +263,7 @@ void board_rtc_getdatetime_low(
 	volatile uint_fast8_t * dayofmonth,
 	volatile uint_fast8_t * hour,
 	volatile uint_fast8_t * minute,
-	volatile uint_fast8_t * secounds
+	volatile uint_fast8_t * seconds
 	)
 {
 	const uint_fast8_t r = DS1305REG_TIME;
@@ -271,7 +271,7 @@ void board_rtc_getdatetime_low(
 
 	ds1305_readbuff_low(b, sizeof b / sizeof b[0], r);
 
-	* secounds = ds1305_bcd2bin(b [0] & 0x7f, 0, 59);	// r=0
+	* seconds = ds1305_bcd2bin(b [0] & 0x7f, 0, 59);	// r=0
 	* minute = ds1305_bcd2bin(b [1] & 0x7f, 0, 59);	// r=1
 	* hour = ds1305_bcd2bin(b [2] & 0x3f, 0, 23);		// r=2
 	* dayofmonth = ds1305_bcd2bin(b [4] & 0x3f, 1, 31);		// r=4

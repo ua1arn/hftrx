@@ -684,7 +684,7 @@ void board_rtc_getdate(
 void board_rtc_gettime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	struct tm * tm;
@@ -692,7 +692,7 @@ void board_rtc_gettime(
 	time_t lt = time(NULL);
 	tm = localtime (& lt);
 
-	* secounds = tm->tm_sec;
+	* seconds = tm->tm_sec;
 	* minute = tm->tm_min;
 	* hour = tm->tm_hour;
 }
@@ -703,7 +703,7 @@ void board_rtc_getdatetime(
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	struct tm * tm;
@@ -711,7 +711,7 @@ void board_rtc_getdatetime(
 	time_t lt = time(NULL);
 	tm = localtime (& lt);
 
-	* secounds = tm->tm_sec;
+	* seconds = tm->tm_sec;
 	* minute = tm->tm_min;
 	* hour = tm->tm_hour;
 	* dayofmonth = tm->tm_mday;
@@ -725,7 +725,7 @@ void board_rtc_setdatetime(
 	uint_fast8_t dayofmonth,
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 

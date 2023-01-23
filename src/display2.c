@@ -2851,12 +2851,12 @@ static void display_time8(
 	)
 {
 #if defined (RTC1_TYPE)
-	uint_fast8_t hour, minute, secounds;
+	uint_fast8_t hour, minute, seconds;
 	char buf2 [9];
 
-	board_rtc_cached_gettime(& hour, & minute, & secounds);
+	board_rtc_cached_gettime(& hour, & minute, & seconds);
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%02d:%02d:%02d"),
-			(int) hour, (int) minute, (int) secounds
+			(int) hour, (int) minute, (int) seconds
 		);
 
 	const char * const labels [1] = { buf2, };
@@ -2872,13 +2872,13 @@ static void display_time5(
 	)
 {
 #if defined (RTC1_TYPE)
-	uint_fast8_t hour, minute, secounds;
+	uint_fast8_t hour, minute, seconds;
 	char buf2 [6];
 
-	board_rtc_cached_gettime(& hour, & minute, & secounds);
+	board_rtc_cached_gettime(& hour, & minute, & seconds);
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%02d%c%02d"),
 		(int) hour,
-		((secounds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
+		((seconds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
 		(int) minute
 		);
 
@@ -2923,7 +2923,7 @@ static void display2_datetime12(
 
 	uint_fast16_t year;
 	uint_fast8_t month, day;
-	uint_fast8_t hour, minute, secounds;
+	uint_fast8_t hour, minute, seconds;
 	static const char months [12] [4] =
 	{
 		"JAN",
@@ -2940,13 +2940,13 @@ static void display2_datetime12(
 		"DEC",
 	};
 
-	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%s-%02d %02d%c%02d"),
 		months [month - 1],
 		(int) day,
 		(int) hour,
-		((secounds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
+		((seconds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
 		(int) minute
 		);
 

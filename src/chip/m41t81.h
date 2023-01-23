@@ -111,7 +111,7 @@ m41t81_bin2bcd(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
 void board_rtc_settime(
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 	const uint_fast8_t rt = 0x01;	// Addr
@@ -119,7 +119,7 @@ void board_rtc_settime(
 
 	m41t81_readbuff(bt, sizeof bt / sizeof bt [0], rt);
 
-	bt [0] = (bt [0] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(secounds, 0, 59));	// r=1
+	bt [0] = (bt [0] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(seconds, 0, 59));	// r=1
 	bt [1] = (bt [1] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(minutes, 0, 59));	// r=2
 	bt [2] = (bt [2] & ~ 0x3f) | (0x3f & m41t81_bin2bcd(hours, 0, 23));	// r=3
 
@@ -132,7 +132,7 @@ void board_rtc_setdatetime(
 	uint_fast8_t dayofmonth,
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 	const uint_fast8_t rd = 0x05;	// Addr
@@ -151,7 +151,7 @@ void board_rtc_setdatetime(
 
 	m41t81_readbuff(bt, sizeof bt / sizeof bt [0], rt);
 
-	bt [0] = (bt [0] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(secounds, 0, 59));	// r=1
+	bt [0] = (bt [0] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(seconds, 0, 59));	// r=1
 	bt [1] = (bt [1] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(minutes, 0, 59));	// r=2
 	bt [2] = (bt [2] & ~ 0x3f) | (0x3f & m41t81_bin2bcd(hours, 0, 23));		// r=3
 
@@ -197,7 +197,7 @@ void board_rtc_getdate(
 void board_rtc_gettime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	const uint_fast8_t r = 0x01;	// Addr
@@ -207,7 +207,7 @@ void board_rtc_gettime(
 
 	* hour = m41t81_bcd2bin(b [2] & 0x3f, 0, 23);		// r=3
 	* minute = m41t81_bcd2bin(b [1] & 0x7f, 0, 59);	// r=2
-	* secounds = m41t81_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
+	* seconds = m41t81_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
 }
 
 void board_rtc_getdatetime(
@@ -216,7 +216,7 @@ void board_rtc_getdatetime(
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	const uint_fast8_t r = 0x01;
@@ -229,7 +229,7 @@ void board_rtc_getdatetime(
 	* dayofmonth = m41t81_bcd2bin(b [4] & 0x3f, 1, 31);		// r=5
 	* hour = m41t81_bcd2bin(b [2] & 0x3f, 0, 23);		// r=3
 	* minute = m41t81_bcd2bin(b [1] & 0x7f, 0, 59);	// r=2
-	* secounds = m41t81_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
+	* seconds = m41t81_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
 }
 
 /* возврат не-0 если требуется начальная загрузка значений */

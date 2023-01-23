@@ -61,7 +61,7 @@ void ft8_set_state(uint8_t v);
 uint8_t get_ft8_state(void);
 void ft8_tx_enable(void);
 void ft8_initialize(void);
-void ft8_walkthrough_core0(uint_fast8_t rtc_secounds);
+void ft8_walkthrough_core0(uint_fast8_t rtc_seconds);
 
 void xcz_ipi_sendmsg_c0(uint8_t msg);
 void xcz_ipi_sendmsg_c1(uint8_t msg);
