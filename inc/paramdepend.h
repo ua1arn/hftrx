@@ -2561,10 +2561,12 @@ extern "C" {
 #if WITHTOUCHGUI
 
 #if ! defined TSC1_TYPE
+	#warning WITHTOUCHGUI without TSC1_TYPE can not compile
 	#undef WITHTOUCHGUI									// Компиляция GUI без тачскрина бессмысленна
 #endif /* TSC1_TYPE */
 
 #if (DIM_X != 800 || DIM_Y != 480)						// не соблюдены требования к разрешению экрана
+	#warning WITHTOUCHGUI and (DIM_X != 800 || DIM_Y != 480)
 	#undef WITHTOUCHGUI									// для функционирования touch GUI
 #endif
 

@@ -23,7 +23,7 @@
 
 #if LCDMODE_LTDC
 
-#include "display/fontmaps.h"
+	#include "display/fontmaps.h"
 
 	static PACKEDCOLORMAIN_T * getscratchwnd(void);
 
@@ -116,6 +116,7 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 	}
 
 #if WITHALTERNATIVEFONTS
+	//PRINTF("%s: xx=%d, width_p=%d, width_str=%d, buf='%s'\n", __func__, xx, width_p, width_str, buf);
 	UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 2, buf, & gothic_12x16_p, color_fg);
 #else
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 4, buf, color_fg);
