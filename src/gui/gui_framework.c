@@ -224,7 +224,7 @@ void dump_queue(window_t * win)
 			break;
 
 		default:
-			PRINTF("%d: unknown message type! - \n", i, win->queue.data[i].message);
+			PRINTF("%d: unknown message type! - %d\n", i, win->queue.data[i].message);
 			break;
 		}
 	}
