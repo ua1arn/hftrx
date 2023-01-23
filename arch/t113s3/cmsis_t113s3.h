@@ -41,10 +41,24 @@
 #define	GIC_INTERFACE_BASE	0x03022000
 #define	CE_NS_BASE	0x03040000
 #define	CE_S_BASE	0x03040800
+#define	MSI_MEMC_BASE	0x03102000
 #define	DDRPHYC_BASE	0x03103000
 #define	SMHC0_BASE	0x04020000
 #define	SMHC1_BASE	0x04021000
 #define	SMHC2_BASE	0x04022000
+#define	SPI0_BASE	0x04025000
+#define	SPI_DBI_BASE	0x04026000
+#define	EMAC_BASE	0x04500000
+#define	G2D_TOP_BASE	0x05410000
+#define	G2D_MIXER_BASE	0x05410100
+#define	G2D_BLD_BASE	0x05410400
+#define	G2D_V0_BASE	0x05410800
+#define	G2D_UI0_BASE	0x05411000
+#define	G2D_UI1_BASE	0x05411800
+#define	G2D_UI2_BASE	0x05412000
+#define	G2D_WB_BASE	0x05413000
+#define	G2D_VSU_BASE	0x05418000
+#define	G2D_ROT_BASE	0x05438000
 #define	TCON_LCD0_BASE	0x05461000
 #define	CSIC_CCU_BASE	0x05800000
 #define	CSIC_TOP_BASE	0x05800800
@@ -52,6 +66,7 @@
 #define	CSIC_DMA0_BASE	0x05809000
 #define	CSIC_DMA1_BASE	0x05809200
 #define	CIR_RX_BASE	0x07040000
+#define	RTC_BASE	0x07090000
 #define	CPU_SUBSYS_CTRL_BASE	0x08100000
 #define	C0_CPUX_CFG_BASE	0x09010000
 /*
@@ -2228,15 +2243,28 @@ typedef struct MSGBOX_Type
 #define	TWI1	((TWI_TypeDef *) TWI1_BASE)	/*!< \brief TWI1 Interface register set access pointer */
 #define	TWI2	((TWI_TypeDef *) TWI2_BASE)	/*!< \brief TWI2 Interface register set access pointer */
 #define	TWI3	((TWI_TypeDef *) TWI3_BASE)	/*!< \brief TWI3 Interface register set access pointer */
+#define	SPI0	((SPI_TypeDef *) SPI0_BASE)	/*!< \brief SPI0 Interface register set access pointer */
 #define	CIR_RX	((CIR_RX_TypeDef *) CIR_RX_BASE)	/*!< \brief CIR_RX Interface register set access pointer */
 #define	CIR_TX	((CIR_TX_TypeDef *) CIR_TX_BASE)	/*!< \brief CIR_TX Interface register set access pointer */
 #define	LEDC	((LEDC_TypeDef *) LEDC_BASE)	/*!< \brief LEDC Interface register set access pointer */
+#define	SPI_DBI	((SPI_DBI_TypeDef *) SPI_DBI_BASE)	/*!< \brief SPI_DBI Interface register set access pointer */
 #define	CE_NS	((CE_TypeDef *) CE_NS_BASE)	/*!< \brief CE_NS Interface register set access pointer */
 #define	CE_S	((CE_TypeDef *) CE_S_BASE)	/*!< \brief CE_S Interface register set access pointer */
+#define	RTC	((RTC_TypeDef *) RTC_BASE)	/*!< \brief RTC Interface register set access pointer */
 #define	IOMMU	((IOMMU_TypeDef *) IOMMU_BASE)	/*!< \brief IOMMU Interface register set access pointer */
 #define	TIMER	((TIMER_TypeDef *) TIMER_BASE)	/*!< \brief TIMER Interface register set access pointer */
 #define	CAN0	((CAN_TypeDef *) CAN0_BASE)	/*!< \brief CAN0 Interface register set access pointer */
 #define	CAN1	((CAN_TypeDef *) CAN1_BASE)	/*!< \brief CAN1 Interface register set access pointer */
+#define	G2D_TOP	((G2D_TOP_TypeDef *) G2D_TOP_BASE)	/*!< \brief G2D_TOP Interface register set access pointer */
+#define	G2D_MIXER	((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)	/*!< \brief G2D_MIXER Interface register set access pointer */
+#define	G2D_V0	((G2D_LAY_TypeDef *) G2D_V0_BASE)	/*!< \brief G2D_V0 Interface register set access pointer */
+#define	G2D_UI0	((G2D_UI_TypeDef *) G2D_UI0_BASE)	/*!< \brief G2D_UI0 Interface register set access pointer */
+#define	G2D_UI1	((G2D_UI_TypeDef *) G2D_UI1_BASE)	/*!< \brief G2D_UI1 Interface register set access pointer */
+#define	G2D_UI2	((G2D_UI_TypeDef *) G2D_UI2_BASE)	/*!< \brief G2D_UI2 Interface register set access pointer */
+#define	G2D_VSU	((G2D_VSU_TypeDef *) G2D_VSU_BASE)	/*!< \brief G2D_VSU Interface register set access pointer */
+#define	G2D_BLD	((G2D_BLD_TypeDef *) G2D_BLD_BASE)	/*!< \brief G2D_BLD Interface register set access pointer */
+#define	G2D_WB	((G2D_WB_TypeDef *) G2D_WB_BASE)	/*!< \brief G2D_WB Interface register set access pointer */
+#define	G2D_ROT	((G2D_ROT_TypeDef *) G2D_ROT_BASE)	/*!< \brief G2D_ROT Interface register set access pointer */
 #define	TCON_LCD0	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)	/*!< \brief TCON_LCD0 Interface register set access pointer */
 #define	CSIC_CCU	((CSIC_CCU_TypeDef *) CSIC_CCU_BASE)	/*!< \brief CSIC_CCU Interface register set access pointer */
 #define	CSIC_TOP	((CSIC_TOP_TypeDef *) CSIC_TOP_BASE)	/*!< \brief CSIC_TOP Interface register set access pointer */
@@ -2245,6 +2273,8 @@ typedef struct MSGBOX_Type
 #define	CSIC_DMA1	((CSIC_DMA_TypeDef *) CSIC_DMA1_BASE)	/*!< \brief CSIC_DMA1 Interface register set access pointer */
 #define	C0_CPUX_CFG	((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)	/*!< \brief C0_CPUX_CFG Interface register set access pointer */
 #define	DDRPHYC	((DDRPHYC_TypeDef *) DDRPHYC_BASE)	/*!< \brief DDRPHYC Interface register set access pointer */
+#define	MSI_MEMC	((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)	/*!< \brief MSI_MEMC Interface register set access pointer */
 #define	DMAC	((DMAC_TypeDef *) DMAC_BASE)	/*!< \brief DMAC Interface register set access pointer */
+#define	EMAC	((EMAC_TypeDef *) EMAC_BASE)	/*!< \brief EMAC Interface register set access pointer */
 #define	CPUX_MSGBOX	((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)	/*!< \brief CPUX_MSGBOX Interface register set access pointer */
 /* Generated section end */ 

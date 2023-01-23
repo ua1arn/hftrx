@@ -6374,7 +6374,7 @@ void hightests(void)
 		// bit 0: 0: GPIO boot select, 1: eFuse boot select
 		// The status of the GPIO boot select pin can be read by the bit[12:11] of the system configuration module (register: 0x03000024).
 		//PRINTF("SID->BOOT_MODE=0x%08lX, SYS_CFG->VER_REG=0x%08lX\n", SID->BOOT_MODE, SYS_CFG->VER_REG);
-		PRINTF("BOOT_MODE=%u, Pin_Boot_Select=0x%02X\n", (SID->BOOT_MODE >> 0) & 0x01, (SYS_CFG->VER_REG >> 11) & 0x03);
+		PRINTF("BOOT_MODE=%u, Pin_Boot_Select=0x%02X\n", (unsigned) (SID->BOOT_MODE >> 0) & 0x01, (unsigned) (SYS_CFG->VER_REG >> 11) & 0x03);
 	}
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
@@ -9856,12 +9856,12 @@ void lowtests(void)
 #endif
 #if (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
-		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected arm: 0x0000190E, risc-v: 0x00002F0F)\n", SYS_CFG->SYS_LDO_CTRL_REG);
+		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected arm: 0x0000190E, risc-v: 0x00002F0F)\n", (unsigned) SYS_CFG->SYS_LDO_CTRL_REG);
 	}
 #endif
 #if (CPUSTYLE_T113)
 	{
-		PRINTF("C0_CPUX_CFG->C0_CTRL_REG0=0x%08X (expected 0x80000000)\n", C0_CPUX_CFG->C0_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->C0_CTRL_REG0=0x%08X (expected 0x80000000)\n", (unsigned) C0_CPUX_CFG->C0_CTRL_REG0);
 	}
 #endif
 #if 0

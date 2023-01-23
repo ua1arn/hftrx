@@ -212,17 +212,17 @@ typedef enum IRQn
 #define DRAM_SPACE_BASE 		0x40000000			/*!< (DRAM        ) Base Address - 2GB */
 #define DRAM_SPACE_SIZE			0x04000000			/* 64 MB */
 
-#define G2D_TOP_BASE        (G2D_BASE + 0x00000)
-#define G2D_MIXER_BASE      (G2D_BASE + 0x00100)
-#define G2D_BLD_BASE        (G2D_BASE + 0x00400)
-#define G2D_V0_BASE         (G2D_BASE + 0x00800)
-#define G2D_UI0_BASE        (G2D_BASE + 0x01000)
-#define G2D_UI1_BASE        (G2D_BASE + 0x01800)
-#define G2D_UI2_BASE        (G2D_BASE + 0x02000)
-#define G2D_WB_BASE         (G2D_BASE + 0x03000)
-#define G2D_VSU_BASE        (G2D_BASE + 0x08000)
-#define G2D_ROT_BASE        (G2D_BASE + 0x28000)
-#define G2D_GSU_BASE        (G2D_BASE + 0x30000)
+//#define G2D_TOP_BASE        (G2D_BASE + 0x00000)
+//#define G2D_MIXER_BASE      (G2D_BASE + 0x00100)
+//#define G2D_BLD_BASE        (G2D_BASE + 0x00400)
+//#define G2D_V0_BASE         (G2D_BASE + 0x00800)
+//#define G2D_UI0_BASE        (G2D_BASE + 0x01000)
+//#define G2D_UI1_BASE        (G2D_BASE + 0x01800)
+//#define G2D_UI2_BASE        (G2D_BASE + 0x02000)
+//#define G2D_WB_BASE         (G2D_BASE + 0x03000)
+//#define G2D_VSU_BASE        (G2D_BASE + 0x08000)
+//#define G2D_ROT_BASE        (G2D_BASE + 0x28000)
+//#define G2D_GSU_BASE        (G2D_BASE + 0x30000)
 
 #define GIC_DISTRIBUTOR_BASE (GIC_BASE + 0x1000)
 #define GIC_INTERFACE_BASE   (GIC_BASE + 0x2000)

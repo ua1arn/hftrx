@@ -1,4 +1,5 @@
 #type G2D_BLD
+#base G2D_BLD 0x05410400
 BLD_EN_CTL        ; 0x000 ; BLD_EN_CTL         
 BLD_FILLC0        ; 0x010 ; BLD_FILLC0         
 BLD_FILLC1        ; 0x014 ; BLD_FILLC1         

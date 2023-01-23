@@ -7,6 +7,10 @@
 #irq TWI1 42
 #irq TWI2 43
 #irq TWI3 44
+#irqrv TWI0 25
+#irqrv TWI1 26
+#irqrv TWI2 27
+#irqrv TWI3 28
 TWI_ADDR; 0x0000; TWI Slave Address Register
 TWI_XADDR; 0x0004; TWI Extended Slave Address Register
 TWI_DATA; 0x0008; TWI Data Byte Register
