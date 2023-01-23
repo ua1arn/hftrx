@@ -435,7 +435,7 @@ printhex(uintptr_t voffs, const void * vbuff, unsigned length)
 		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
 		debug_printf_P(PSTR("%08X "), (unsigned) (voffs + i * ROWSIZE));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %02X"), buff [i * ROWSIZE + j]);
+			debug_printf_P(PSTR(" %02X"), (unsigned) buff [i * ROWSIZE + j]);
 
 		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
 
@@ -461,7 +461,7 @@ printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
 		debug_printf_P(PSTR("%08X "), (unsigned) (voffs + i * ROWSIZE * 4));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %08X"), buff [i * ROWSIZE + j]);
+			debug_printf_P(PSTR(" %08X"), (unsigned) buff [i * ROWSIZE + j]);
 
 		debug_printf_P(PSTR("\n"));
 	}

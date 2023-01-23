@@ -5302,9 +5302,9 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 // Проверка качества линии передачи от FPGA
 static int32_t seqNext [DMABUFFSTEP32RX];
 static uint_fast8_t  seqValid [DMABUFFSTEP32RX];
-static long int seqErrors;
-static long int seqTotal;
-static long int seqRun;
+static int seqErrors;
+static int seqTotal;
+static int seqRun;
 static int seqDone;
 
 enum { MAXSEQHIST = DMABUFCLUSTER + 5 };
@@ -5317,7 +5317,7 @@ static unsigned seqAfterError;
 
 static void printSeqError(void)
 {
-	PRINTF("seqErrors=%ld, seqTotal=%ld, seqRun=%ld\n", seqErrors, seqTotal, seqRun);
+	PRINTF("seqErrors=%d, seqTotal=%d, seqRun=%d\n", seqErrors, seqTotal, seqRun);
 	unsigned i;
 	for (i = 0; i < MAXSEQHIST; ++ i)
 	{
@@ -5325,7 +5325,7 @@ static void printSeqError(void)
 		PRINTF("hist [%2d] %02d @%p :", i, seqHistR [ix], seqHistP [ix]);
 		unsigned col;
 		for (col = 0; col < DMABUFFSTEP32RX; ++ col)
-			PRINTF("%08x ", seqHist [ix] [col]);
+			PRINTF("%08x ", (unsigned) seqHist [ix] [col]);
 		PRINTF("\n");
 	}
 	for (;;)

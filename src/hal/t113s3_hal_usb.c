@@ -1262,7 +1262,7 @@ static void usb_ep0_complete_send_data(pusb_struct pusb)
 
 	 	if (usb_get_ep0_count(pusb))
 	 	{
-  			PRINTF("Error: COUNT0 = 0x%x\n", usb_get_ep0_count(pusb));
+  			PRINTF("Error: COUNT0 = 0x%x\n", (unsigned) usb_get_ep0_count(pusb));
  		}
  	}
 }
@@ -1540,7 +1540,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 		break;
 
 		default:
-			PRINTF("Error: Wrong eprx_xfer_state=%d\n", pusb->eprx_xfer_state[ep_no-1]);
+			PRINTF("Error: Wrong eprx_xfer_state=%d\n", (unsigned) pusb->eprx_xfer_state[ep_no-1]);
 			pusb->eprx_xfer_state[ep_no-1] = USB_EPX_SETUP;
 			break;
 	}
@@ -1801,7 +1801,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 		break;
 
 		default:
-			PRINTF("Error: Wrong eptx_xfer_state=%d\n", pusb->eptx_xfer_state[ep_no-1]);
+			PRINTF("Error: Wrong eptx_xfer_state=%d\n", (unsigned) pusb->eptx_xfer_state[ep_no-1]);
 			pusb->eptx_xfer_state[ep_no-1] = USB_EPX_SETUP;
 			break;
 	}
@@ -3381,7 +3381,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		}
 		else
 		{
-			PRINTF("usb_dev_ep0xfer_handler: WRN: Unknown EP0 Interrupt, CSR=0x%x!!\n", ep0_csr);
+			PRINTF("usb_dev_ep0xfer_handler: WRN: Unknown EP0 Interrupt, CSR=0x%x!!\n", (unsigned) ep0_csr);
 		}
 	}
 
@@ -3427,7 +3427,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 				if (ep0_setup->bmRequest&0x80)//in
 				{
-			    	PRINTF("usb_dev_ep0xfer_handler (not 8): ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, ep0_count);
+			    	PRINTF("usb_dev_ep0xfer_handler (not 8): ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, (unsigned) ep0_count);
 					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) & USB_RXCSR_ISO); //Clear RxPktRdy - добавил но не уверен в необходимовсти
 				  	usb_ep0_flush_fifo(pusb);
 

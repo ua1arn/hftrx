@@ -1908,8 +1908,8 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		hehci->ohci->HcCommandStatus = cpu_to_le32(1u << 3);	// OwnershipChangeRequest
 
 		local_delay_ms(1000);
-		PRINTF("OHCI: HcRhPortStatus[0]=%08X\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
-		PRINTF("OHCI: HcRhPortStatus[1]=%08X\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
+		PRINTF("OHCI: HcRhPortStatus[0]=%08X\n", (unsigned) le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
+		PRINTF("OHCI: HcRhPortStatus[1]=%08X\n", (unsigned) le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
 	}
 #endif /* CPUSTYLE_XC7Z */
 	//PRINTF("USBH_LL_GetSpeed: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
