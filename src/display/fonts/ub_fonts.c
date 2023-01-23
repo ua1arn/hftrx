@@ -1,4 +1,5 @@
 #include "hardware.h"
+#include "formats.h"
 
 #if WITHALTERNATIVEFONTS
 #include "ub_fonts.h"
@@ -106,7 +107,7 @@ void UB_Font_DrawString32(PACKEDCOLORMAIN_T * __restrict buffer,
 	uint_fast16_t pos;
 
     pos=x;
-    while (*ptr != 0) {
+    while (*ptr != '\0') {
       UB_Font_DrawChar32(buffer, dx, dy, pos,y,*ptr,font,vg);
       pos+=font->width;
       ptr++;
@@ -174,8 +175,11 @@ void UB_Font_DrawPString(PACKEDCOLORMAIN_T * __restrict buffer,
 		COLORMAIN_T vg)
 {
 	uint_fast16_t pos = x, width;
-	while (*ptr != 0)
+
+	ASSERT(y < dy);
+	while (*ptr != '\0')
 	{
+		ASSERT(pos < dx);
 		width = UB_Font_DrawPChar(buffer, dx, dy, pos, y, * ptr, font, vg);
 		pos += width;
 		ptr ++;
@@ -242,6 +246,7 @@ void UB_Font_DrawPString32(PACKEDCOLORMAIN_T * __restrict buffer,
 	uint_fast16_t pos = x, width;
 	while (* ptr != 0)
 	{
+		ASSERT(pos < dx);
 		width = UB_Font_DrawPChar32(buffer, dx, dy, pos, y, * ptr, font, vg);
 		pos += width;
 		ptr ++;

@@ -1115,12 +1115,13 @@ colmain_mem_at_debug(
 	int line
 	)
 {
-	if (x >= dx || y >= dy)
+	if (x >= dx || y >= dy || buffer == NULL)
 	{
 		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%d, y=%d, savestring='%s', savewhere='%s'\n", file, line, dx, dy, x, y, savestring, savewhere);
 	}
 	ASSERT(x < dx);
 	ASSERT(y < dy);
+	ASSERT(buffer != NULL);
 #if LCDMODE_HORFILL
 	return & buffer [y * GXADJ(dx) + x];
 #else /* LCDMODE_HORFILL */

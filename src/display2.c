@@ -105,11 +105,15 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 		}
 	} while (++ i < ARRAY_SIZE(label_bg));
 
-	if (lbl_bg != NULL)
+	if (lbl_bg != NULL && lbl_bg->label_bg != NULL)
+	{
 		colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, xx, yy,
 				(uintptr_t) lbl_bg->label_bg, lbl_bg->size, lbl_bg->label_bg, lbl_bg->w, lbl_bg->h);
+	}
 	else
+	{
 		colmain_rounded_rect(fr, DIM_X, DIM_Y, xx, yy, xx + width_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
+	}
 
 #if WITHALTERNATIVEFONTS
 	UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 2, buf, & gothic_12x16_p, color_fg);
@@ -686,6 +690,7 @@ display2_smeter15_layout(
 	case SMETER_TYPE_DIAL:
 
 		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX];
+		ASSERT(bg != NULL);
 #if WITHRLEDECOMPRESS
 		graw_picture_RLE_buf(bg, SM_BG_W, SM_BG_H, 0, 0, & smeter_bg_new, COLORMAIN_BLACK);
 #else
@@ -723,6 +728,7 @@ display2_smeter15_layout(
 #endif /* WITHRLEDECOMPRESS */
 
 		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX];
+		ASSERT(bg != NULL);
 #if WITHRLEDECOMPRESS
 		graw_picture_RLE_buf(bg, SM_BG_W, SM_BG_H, 0, 0, & smeter_bg_new, COLORMAIN_BLACK);
 #else
@@ -767,6 +773,7 @@ display2_smeter15_layout(
 	case SMETER_TYPE_BARS:
 
 		bg = smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX];
+		ASSERT(bg != NULL);
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 //		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
 //		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
@@ -6193,6 +6200,7 @@ static void display2_waterfall(
 
 		{
 			/* перенос свежей части растра */
+			ASSERT(atwflj(0, wfrow) != NULL);
 			colpip_plot(
 					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
@@ -6202,6 +6210,7 @@ static void display2_waterfall(
 		}
 		if (p2h != 0)
 		{
+			ASSERT(atwflj(0, 0) != NULL);
 			/* перенос старой части растра */
 			colpip_plot(
 					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORMAIN_T),

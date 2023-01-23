@@ -123,6 +123,7 @@ void display_vtty_x2_show(
 	const uint_fast16_t tgh2 = vt->scroll * H;	// высота
 	const uint_fast16_t tgy2 = tgh1;
 
+	ASSERT(vt->fb != NULL);
 	// отрисовываем буфер двумя кусками
 	if (1)
 	{

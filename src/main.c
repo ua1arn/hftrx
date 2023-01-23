@@ -16566,7 +16566,7 @@ display_menu_digit(
 
 		if (ca == 1)
 		{
-			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld"), value);
+			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld"), (long) value);
 		}
 		else if (value < 0)
 		{
