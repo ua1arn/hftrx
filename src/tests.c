@@ -9723,7 +9723,7 @@ nestedirqtest(void)
 		} while (0);
 	#endif
 #endif /* defined (ENCODER_BITS) */
-	PRINTF(PSTR("INTCICCRPR=%02x cpsr=%08lx* \n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("INTCICCRPR=%02x cpsr=%08x* \n"), (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	//hw_swi();
 	global_enableIRQ();
 
@@ -9736,7 +9736,7 @@ nestedirqtest(void)
 		system_enableIRQ();
 
 		global_disableIRQ();
-		PRINTF(PSTR("iccrpr0=%02x, iccrpr1=%02x, INTCICCRPR=%02x cpsr=%08lx*\n"), iccrpr0, iccrpr1, INTCICCRPR, __get_CPSR());
+		PRINTF(PSTR("iccrpr0=%02x, iccrpr1=%02x, INTCICCRPR=%02x cpsr=%08x*\n"), (unsigned) iccrpr0, (unsigned) iccrpr1, (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 		global_enableIRQ();
 
 		local_delay_ms(20);

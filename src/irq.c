@@ -941,7 +941,7 @@ uint32_t gARM_BASEPRI_ALL_ENABLED;
 /* Initialize segments */
 void Default_Handler(void)
 {
-	PRINTF(PSTR("Default_Handler trapped, ICSR=%08lX (IRQn=%u).\n"), SCB->ICSR, (SCB->ICSR & 0xFF) - 16);
+	PRINTF(PSTR("Default_Handler trapped, ICSR=%08X (IRQn=%u).\n"), (unsigned) SCB->ICSR, (unsigned) ((SCB->ICSR & 0xFF) - 16));
 	for (;;)
 		;
 }
@@ -1139,9 +1139,7 @@ void Reset_Handler(void)
  *------------------------------------------------------------------------------*/
 
 
-const
-__VECTOR_TABLE_ATTRIBUTE
-IntFunc __Vectors [NVIC_USER_IRQ_OFFSET] = {
+const IntFunc __VECTOR_TABLE [NVIC_USER_IRQ_OFFSET] __VECTOR_TABLE_ATTRIBUTE = {
 
     /* Configure Initial Stack Pointer, using linker-generated symbols */
     (IntFunc)(& __stack),
@@ -1171,7 +1169,7 @@ static void vectors_relocate(void)
 	unsigned i;
 
 	//PRINTF(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
-	memcpy((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4);
+	memcpy((void *) ramVectors, __VECTOR_TABLE, NVIC_USER_IRQ_OFFSET * 4);
 	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
 	{
 		ramVectors [i] = Default_Handler;
@@ -1282,9 +1280,7 @@ void Reset_Handler(void)
  *------------------------------------------------------------------------------*/
 
 
-const
-__VECTOR_TABLE_ATTRIBUTE
-IntFunc __Vectors [512] = {
+const IntFunc __Vectors [512] __VECTOR_TABLE_ATTRIBUTE = {
 
     /* Configure Initial Stack Pointer, using linker-generated symbols */
     (IntFunc)(& __stack),
