@@ -245,12 +245,6 @@ typedef enum IRQn
 // VIDEO_IN_SYS related
 #define CSI_BASE 			0x05800000
 
-#define CSIC_CCU_BASE		(CSI_BASE + 0x0000)
-#define CSIC_TOP_BASE		(CSI_BASE + 0x0800)
-#define CSIC_PARSER0_BASE	(CSI_BASE + 0x1000)
-#define SIC_DMA0_BASE		(CSI_BASE + 0x9000)
-#define SIC_DMA1_BASE		(CSI_BASE + 0x9200)
-
 #define TVD_TOP_BASE 		0x05C00000
 #define TVD0_BASE 			0x05C01000
 

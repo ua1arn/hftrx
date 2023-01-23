@@ -1,4 +1,5 @@
 #type DMIC
+#base DMIC 0x02031000
 DMIC_EN; 0x0000; DMIC Enable Control Register
 DMIC_SR; 0x0004; DMIC Sample Rate Register
 DMIC_CTR; 0x0008; DMIC Control Register

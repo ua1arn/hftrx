@@ -16,7 +16,9 @@
 #define	GPIOINTF_BASE	0x020002A0
 #define	GPIOINTG_BASE	0x020002C0
 #define	CCU_BASE	0x02001000
+#define	CIR_TX_BASE	0x02003000
 #define	AUDIO_CODEC_BASE	0x02030000
+#define	DMIC_BASE	0x02031000
 #define	OWA_BASE	0x02036000
 #define	TIMER_BASE	0x02050000
 #define	UART0_BASE	0x02500000
@@ -31,14 +33,23 @@
 #define	TWI3_BASE	0x02502C00
 #define	CAN0_BASE	0x02504000
 #define	CAN1_BASE	0x02504400
+#define	DMAC_BASE	0x03002000
+#define	CE_NS_BASE	0x03040000
+#define	CE_S_BASE	0x03040800
 #define	DDRPHYC_BASE	0x03103000
 #define	SMHC0_BASE	0x04020000
 #define	SMHC1_BASE	0x04021000
 #define	SMHC2_BASE	0x04022000
 #define	TCON_LCD0_BASE	0x05461000
+#define	CSIC_CCU_BASE	0x05800000
+#define	CSIC_TOP_BASE	0x05800800
+#define	CSIC_PARSER0_BASE	0x05801000
+#define	CSIC_DMA0_BASE	0x05809000
+#define	CSIC_DMA1_BASE	0x05809200
 #define	RISC_CFG_BASE	0x06010000
 #define	RISC_WDG_BASE	0x06011000
 #define	RISC_TIMESTAMP_BASE	0x06012000
+#define	CIR_RX_BASE	0x07040000
 #define	PLIC_BASE	0x10000000
 /*
  * @brief RISC_CFG
@@ -2165,15 +2176,26 @@ typedef struct EMAC_Type
 #define	SMHC0	((SMHC_TypeDef *) SMHC0_BASE)	/*!< \brief SMHC0 Interface register set access pointer */
 #define	SMHC1	((SMHC_TypeDef *) SMHC1_BASE)	/*!< \brief SMHC1 Interface register set access pointer */
 #define	SMHC2	((SMHC_TypeDef *) SMHC2_BASE)	/*!< \brief SMHC2 Interface register set access pointer */
+#define	DMIC	((DMIC_TypeDef *) DMIC_BASE)	/*!< \brief DMIC Interface register set access pointer */
 #define	OWA	((OWA_TypeDef *) OWA_BASE)	/*!< \brief OWA Interface register set access pointer */
 #define	AUDIO_CODEC	((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)	/*!< \brief AUDIO_CODEC Interface register set access pointer */
 #define	TWI0	((TWI_TypeDef *) TWI0_BASE)	/*!< \brief TWI0 Interface register set access pointer */
 #define	TWI1	((TWI_TypeDef *) TWI1_BASE)	/*!< \brief TWI1 Interface register set access pointer */
 #define	TWI2	((TWI_TypeDef *) TWI2_BASE)	/*!< \brief TWI2 Interface register set access pointer */
 #define	TWI3	((TWI_TypeDef *) TWI3_BASE)	/*!< \brief TWI3 Interface register set access pointer */
+#define	CIR_RX	((CIR_RX_TypeDef *) CIR_RX_BASE)	/*!< \brief CIR_RX Interface register set access pointer */
+#define	CIR_TX	((CIR_TX_TypeDef *) CIR_TX_BASE)	/*!< \brief CIR_TX Interface register set access pointer */
+#define	CE_NS	((CE_TypeDef *) CE_NS_BASE)	/*!< \brief CE_NS Interface register set access pointer */
+#define	CE_S	((CE_TypeDef *) CE_S_BASE)	/*!< \brief CE_S Interface register set access pointer */
 #define	TIMER	((TIMER_TypeDef *) TIMER_BASE)	/*!< \brief TIMER Interface register set access pointer */
 #define	CAN0	((CAN_TypeDef *) CAN0_BASE)	/*!< \brief CAN0 Interface register set access pointer */
 #define	CAN1	((CAN_TypeDef *) CAN1_BASE)	/*!< \brief CAN1 Interface register set access pointer */
 #define	TCON_LCD0	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)	/*!< \brief TCON_LCD0 Interface register set access pointer */
+#define	CSIC_CCU	((CSIC_CCU_TypeDef *) CSIC_CCU_BASE)	/*!< \brief CSIC_CCU Interface register set access pointer */
+#define	CSIC_TOP	((CSIC_TOP_TypeDef *) CSIC_TOP_BASE)	/*!< \brief CSIC_TOP Interface register set access pointer */
+#define	CSIC_PARSER0	((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)	/*!< \brief CSIC_PARSER0 Interface register set access pointer */
+#define	CSIC_DMA0	((CSIC_DMA_TypeDef *) CSIC_DMA0_BASE)	/*!< \brief CSIC_DMA0 Interface register set access pointer */
+#define	CSIC_DMA1	((CSIC_DMA_TypeDef *) CSIC_DMA1_BASE)	/*!< \brief CSIC_DMA1 Interface register set access pointer */
 #define	DDRPHYC	((DDRPHYC_TypeDef *) DDRPHYC_BASE)	/*!< \brief DDRPHYC Interface register set access pointer */
+#define	DMAC	((DMAC_TypeDef *) DMAC_BASE)	/*!< \brief DMAC Interface register set access pointer */
 /* Generated section end */ 

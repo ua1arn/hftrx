@@ -1,4 +1,5 @@
 #type CSIC_TOP
+#base CSIC_TOP 0x05800800
 CSIC_TOP_EN_REG; 0x0000; CSIC TOP Enable Register
 CSIC_PTN_GEN_EN_REG; 0x0004; CSIC Pattern Generation Enable Register
 CSIC_PTN_CTRL_REG; 0x0008; CSIC Pattern Control Register
