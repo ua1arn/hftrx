@@ -1,9 +1,0 @@
-#type PWM_CH
-PCR; 0x0000; PWM Control Register
-PPR; 0x0004; PWM Period Register
-PCNTR; 0x0008; PWM Count Register
-PPCNTR; 0x000C; PWM Pulse Count Register
-CCR; 0x0010; Capture Control Register
-CRLR; 0x0014; Capture Rise Lock Register
-CFLR; 0x0018; Capture Fall Lock Register
-padding 0; 0x0020; fill space up to 0x20 bytes

@@ -18,6 +18,7 @@
 #define	CCU_BASE	0x02001000
 #define	AUDIO_CODEC_BASE	0x02030000
 #define	OWA_BASE	0x02036000
+#define	TIMER_BASE	0x02050000
 #define	UART0_BASE	0x02500000
 #define	UART1_BASE	0x02500400
 #define	UART2_BASE	0x02500800
@@ -2170,6 +2171,7 @@ typedef struct EMAC_Type
 #define	TWI1	((TWI_TypeDef *) TWI1_BASE)	/*!< \brief TWI1 Interface register set access pointer */
 #define	TWI2	((TWI_TypeDef *) TWI2_BASE)	/*!< \brief TWI2 Interface register set access pointer */
 #define	TWI3	((TWI_TypeDef *) TWI3_BASE)	/*!< \brief TWI3 Interface register set access pointer */
+#define	TIMER	((TIMER_TypeDef *) TIMER_BASE)	/*!< \brief TIMER Interface register set access pointer */
 #define	CAN0	((CAN_TypeDef *) CAN0_BASE)	/*!< \brief CAN0 Interface register set access pointer */
 #define	CAN1	((CAN_TypeDef *) CAN1_BASE)	/*!< \brief CAN1 Interface register set access pointer */
 #define	TCON_LCD0	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)	/*!< \brief TCON_LCD0 Interface register set access pointer */

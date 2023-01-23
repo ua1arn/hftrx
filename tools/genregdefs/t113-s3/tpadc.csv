@@ -1,9 +1,0 @@
-#type TPADC
-TP_CTRL_REG0; 0x0000; TP Control Register 0
-TP_CTRL_REG1; 0x0004; TP Control Register 1
-TP_CTRL_REG2; 0x0008; TP Control Register 2
-TP_CTRL_REG3; 0x000C; TP Control Register 3
-TP_INT_FIFO_CTRL_REG; 0x0010; TP Interrupt FIFO Control Register
-TP_INT_FIFO_STAT_REG; 0x0014; TP Interrupt FIFO Status Register
-TP_CALI_DATA_REG; 0x001C; TP Calibration Data Register
-TP_DATA_REG; 0x0024; TP Data Register

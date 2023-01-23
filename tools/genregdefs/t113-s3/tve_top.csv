@@ -1,8 +1,0 @@
-#type TVE_TOP
-TVE_DAC_MAP; 0x0020; TV Encoder DAC MAP Register
-TVE_DAC_STATUS; 0x0024; TV Encoder DAC STAUTS Register
-TVE_DAC_CFG0; 0x0028; TV Encoder DAC CFG0 Register
-TVE_DAC_CFG1; 0x002C; TV Encoder DAC CFG1 Register
-TVE_DAC_CFG2; 0x0030; TV Encoder DAC CFG2 Register
-TVE_DAC_CFG3; 0x0034; TV Encoder DAC CFG2 Register
-TVE_DAC_TEST; 0x00F0; TV Encoder DAC TEST Register

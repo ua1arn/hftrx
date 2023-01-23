@@ -1,8 +1,0 @@
-#type SYS_CFG
-DSP_BOOT_RAMMAP_REG; 0x0008; DSP Boot SRAM Remap Control Register
-VER_REG; 0x0024; Version Register
-EMAC_EPHY_CLK_REG0; 0x0030; EMAC-EPHY Clock Register 0
-SYS_LDO_CTRL_REG; 0x0150; System LDO Control Register
-RESCAL_CTRL_REG; 0x0160; Resistor Calibration Control Register
-RES240_CTRL_REG; 0x0168; 240ohms Resistor Manual Control Register
-RESCAL_STATUS_REG; 0x016C; Resistor Calibration Status Register

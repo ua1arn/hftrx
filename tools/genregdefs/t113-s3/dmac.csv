@@ -1,8 +1,0 @@
-#type DMAC
-DMAC_IRQ_EN_REG0; 0x0000; DMAC IRQ Enable Register 0
-DMAC_IRQ_EN_REG1; 0x0004; DMAC IRQ Enable Register 1
-DMAC_IRQ_PEND_REG0; 0x0010; DMAC IRQ Pending Register 0
-DMAC_IRQ_PEND_REG1; 0x0014; DMAC IRQ Pending Register 1
-DMAC_AUTO_GATE_REG; 0x0028; DMAC Auto Gating Register
-DMAC_STA_REG; 0x0030; DMAC Status Register
-CH 0x40 DMAC_CH_TypeDef; 0x100 16; Channel [0..15]
