@@ -68,11 +68,15 @@ typedef struct UB_pFont32_t {
 // Цвет шрифта плана и фона (шрифт = макс 16 пикселей в ширину)
 // Шрифт должен быть передан с оператором &
 //--------------------------------------------------------------
-void UB_Font_DrawPString(PACKEDCOLORMAIN_T * __restrict buffer,
+void UB_Font_DrawPStringDbg(
+		const char * file, int line,
+		PACKEDCOLORMAIN_T * __restrict buffer,
 		uint_fast16_t dx, uint_fast16_t dy,
 		uint_fast16_t x, uint_fast16_t y,
 		const char * ptr, const UB_pFont * font,
 		COLORMAIN_T vg);
+
+#define UB_Font_DrawPString(...) do { UB_Font_DrawPStringDbg(__FILE__, __LINE__, __VA_ARGS__); } while (0)
 
 //--------------------------------------------------------------
 // Рисование строку пропорционального шрифта с позицией X, Y

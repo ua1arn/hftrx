@@ -168,7 +168,9 @@ uint16_t UB_Font_DrawPChar(PACKEDCOLORMAIN_T * __restrict buffer,
 // Цвет шрифта плана и фона (шрифт = макс 16 пикселей в ширину)
 // Шрифт должен быть передан с оператором &
 //--------------------------------------------------------------
-void UB_Font_DrawPString(PACKEDCOLORMAIN_T * __restrict buffer,
+void UB_Font_DrawPStringDbg(
+		const char * file, int line,
+		PACKEDCOLORMAIN_T * __restrict buffer,
 		uint_fast16_t dx, uint_fast16_t dy,
 		uint_fast16_t x, uint_fast16_t y,
 		const char * ptr, const UB_pFont * font,
@@ -178,6 +180,10 @@ void UB_Font_DrawPString(PACKEDCOLORMAIN_T * __restrict buffer,
 
 	savestring = ptr;
 	savewhere = __func__;
+	if (x >= dx)
+	{
+		PRINTF("%s called from %s/%d\n", __func__, file, line);
+	}
 	ASSERT(y < dy);
 	while (*ptr != '\0')
 	{
@@ -316,6 +322,8 @@ uint16_t UB_Font_getPcharw(uint8_t ascii, const UB_pFont * font)
 uint16_t getwidth_Pstring(const char * str, const UB_pFont * font)
 {
 	uint_fast16_t width = 0;
+	ASSERT(str != NULL);
+	ASSERT(font != NULL);
 	while (* str != 0)
 	{
 		width += UB_Font_getPcharw(* str, font);
