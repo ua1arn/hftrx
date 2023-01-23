@@ -17,6 +17,8 @@
 #define	GPIOINTG_BASE	0x020002C0
 #define	CCU_BASE	0x02001000
 #define	CIR_TX_BASE	0x02003000
+#define	LEDC_BASE	0x02008000
+#define	IOMMU_BASE	0x02010000
 #define	AUDIO_CODEC_BASE	0x02030000
 #define	DMIC_BASE	0x02031000
 #define	OWA_BASE	0x02036000
@@ -2185,8 +2187,10 @@ typedef struct EMAC_Type
 #define	TWI3	((TWI_TypeDef *) TWI3_BASE)	/*!< \brief TWI3 Interface register set access pointer */
 #define	CIR_RX	((CIR_RX_TypeDef *) CIR_RX_BASE)	/*!< \brief CIR_RX Interface register set access pointer */
 #define	CIR_TX	((CIR_TX_TypeDef *) CIR_TX_BASE)	/*!< \brief CIR_TX Interface register set access pointer */
+#define	LEDC	((LEDC_TypeDef *) LEDC_BASE)	/*!< \brief LEDC Interface register set access pointer */
 #define	CE_NS	((CE_TypeDef *) CE_NS_BASE)	/*!< \brief CE_NS Interface register set access pointer */
 #define	CE_S	((CE_TypeDef *) CE_S_BASE)	/*!< \brief CE_S Interface register set access pointer */
+#define	IOMMU	((IOMMU_TypeDef *) IOMMU_BASE)	/*!< \brief IOMMU Interface register set access pointer */
 #define	TIMER	((TIMER_TypeDef *) TIMER_BASE)	/*!< \brief TIMER Interface register set access pointer */
 #define	CAN0	((CAN_TypeDef *) CAN0_BASE)	/*!< \brief CAN0 Interface register set access pointer */
 #define	CAN1	((CAN_TypeDef *) CAN1_BASE)	/*!< \brief CAN1 Interface register set access pointer */

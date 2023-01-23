@@ -252,7 +252,7 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 				continue;
 			}
 		}
-		fprintf(stdout, "# # f2=%d undeined %s", f2, s);
+		//fprintf(stdout, "# # f2=%d undeined %s", f2, s);
 	}
 	return s;
 }
