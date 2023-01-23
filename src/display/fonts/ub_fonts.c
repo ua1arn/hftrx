@@ -176,6 +176,8 @@ void UB_Font_DrawPString(PACKEDCOLORMAIN_T * __restrict buffer,
 {
 	uint_fast16_t pos = x, width;
 
+	savestring = ptr;
+	savewhere = __func__;
 	ASSERT(y < dy);
 	while (*ptr != '\0')
 	{
@@ -244,6 +246,8 @@ void UB_Font_DrawPString32(PACKEDCOLORMAIN_T * __restrict buffer,
 		COLORMAIN_T vg)
 {
 	uint_fast16_t pos = x, width;
+	savestring = ptr;
+	savewhere = __func__;
 	while (* ptr != 0)
 	{
 		ASSERT(pos < dx);
@@ -277,6 +281,8 @@ uint16_t UB_Font_getPcharw32(uint8_t ascii, const UB_pFont32 * font)
 uint16_t getwidth_Pstring32(const char * str, const UB_pFont32 * font)
 {
 	uint_fast16_t width = 0;
+	savestring = str;
+	savewhere = __func__;
 	while (* str != 0)
 	{
 		width += UB_Font_getPcharw32(* str, font);
