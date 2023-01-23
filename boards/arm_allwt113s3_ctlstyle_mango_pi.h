@@ -332,7 +332,7 @@
 	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
-	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
+	#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	#define FORMATFROMLIBRARY 	1
 
@@ -348,7 +348,7 @@
 		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 0
+		#if 1
 			#define WITHTOUCHGUI		1
 			#define WITHDISPLAY_FPS		30
 			#define WITHDISPLAYSWR_FPS	30
