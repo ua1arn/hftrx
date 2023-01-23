@@ -5531,7 +5531,7 @@ static void disableAllIRQs(void)
 #endif
 
 
-#if WITHOPENVG && 1
+//#if WITHOPENVG && 1
 
 #include "tiger.h"
 
@@ -5807,7 +5807,7 @@ static void rendertiger(PS* const tiger, int w, int h)
 
 }
 
-#endif /* WITHOPENVG */
+//#endif /* WITHOPENVG */
 /*--------------------------------------------------------------*/
 
 // See https://github.com/Ajou-Khronies/OpenVG_tutorital_examples/blob/14d30f9a26cb5ed70ccb136bef7b229c8a51c444/samples/Chapter13/Sample_13_03/Sample_13_03.c
@@ -6886,7 +6886,7 @@ void hightests(void)
 		PRINTF("zynq pin & bank calculations test passed.\n");
 	}
 #endif
-#if 0 && WITHOPENVG
+#if 1 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();

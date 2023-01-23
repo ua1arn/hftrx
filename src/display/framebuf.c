@@ -346,7 +346,7 @@ static int hwacc_waitdone(void)
 		hardware_nonguiyield();
 		if (-- n == 0)
 		{
-			PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X, G2D_MIXER->G2D_MIXER_INT=%08X\n", G2D_MIXER->G2D_MIXER_CTL, G2D_MIXER->G2D_MIXER_INT);
+			PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X, G2D_MIXER->G2D_MIXER_INT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTL, (unsigned) G2D_MIXER->G2D_MIXER_INT);
 			return 0;
 		}
 	}
