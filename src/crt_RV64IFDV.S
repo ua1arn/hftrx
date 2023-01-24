@@ -165,7 +165,7 @@
 .endm
 
 /* set all integer registers to zero */
-.macro fill0
+.macro fill0_i64
 	mv	x3, zero	/* x0 */
 	mv  x4, x3
 	mv  x5, x3
@@ -197,47 +197,47 @@
 	mv x31, x3
 .endm
 
-/* set all floating registers to zero */
-.macro fill0fp
-	fcvt.s.w f0, x0
-	fcvt.s.w f1, x0
-	fcvt.s.w f2, x0
-	fcvt.s.w f3, x0
-	fcvt.s.w f4, x0
-	fcvt.s.w f5, x0
-	fcvt.s.w f6, x0
-	fcvt.s.w f7, x0
-	fcvt.s.w f8, x0
-	fcvt.s.w f9, x0
-	fcvt.s.w f10, x0
-	fcvt.s.w f11, x0
-	fcvt.s.w f12, x0
-	fcvt.s.w f13, x0
-	fcvt.s.w f14, x0
-	fcvt.s.w f15, x0
-	fcvt.s.w f16, x0
-	fcvt.s.w f17, x0
-	fcvt.s.w f18, x0
-	fcvt.s.w f19, x0
-	fcvt.s.w f20, x0
-	fcvt.s.w f21, x0
-	fcvt.s.w f22, x0
-	fcvt.s.w f23, x0
-	fcvt.s.w f24, x0
-	fcvt.s.w f25, x0
-	fcvt.s.w f26, x0
-	fcvt.s.w f27, x0
-	fcvt.s.w f28, x0
-	fcvt.s.w f29, x0
-	fcvt.s.w f30, x0
-	fcvt.s.w f31, x0
+/* Set all double precision floating registers to zero */
+.macro fill0_fp64
+	fcvt.d.w f0, x0
+	fcvt.d.w f1, x0
+	fcvt.d.w f2, x0
+	fcvt.d.w f3, x0
+	fcvt.d.w f4, x0
+	fcvt.d.w f5, x0
+	fcvt.d.w f6, x0
+	fcvt.d.w f7, x0
+	fcvt.d.w f8, x0
+	fcvt.d.w f9, x0
+	fcvt.d.w f10, x0
+	fcvt.d.w f11, x0
+	fcvt.d.w f12, x0
+	fcvt.d.w f13, x0
+	fcvt.d.w f14, x0
+	fcvt.d.w f15, x0
+	fcvt.d.w f16, x0
+	fcvt.d.w f17, x0
+	fcvt.d.w f18, x0
+	fcvt.d.w f19, x0
+	fcvt.d.w f20, x0
+	fcvt.d.w f21, x0
+	fcvt.d.w f22, x0
+	fcvt.d.w f23, x0
+	fcvt.d.w f24, x0
+	fcvt.d.w f25, x0
+	fcvt.d.w f26, x0
+	fcvt.d.w f27, x0
+	fcvt.d.w f28, x0
+	fcvt.d.w f29, x0
+	fcvt.d.w f30, x0
+	fcvt.d.w f31, x0
 .endm
 
 .macro mtrap_handler func, tail=_Handler
 trap_\func:
 	trap_entry
-	//fill0
-	//fill0fp		/* set all floating registers to zero */
+	//fill0_i64
+	fill0_fp64		/* set all floating registers to zero */
 	call \func\tail
 	trap_exit
 	mret
@@ -247,7 +247,7 @@ trap_\func:
 .section .startup0
 .align 8
 Reset_Handler:
-	fill0		/* set all integer registers to zero */
+	fill0_i64		/* set all integer registers to zero */
 
 	/* stack initilization */
 	la    sp, __stack

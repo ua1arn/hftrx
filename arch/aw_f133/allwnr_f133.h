@@ -489,9 +489,76 @@ typedef enum
   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
 #endif
 
+
+// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/bsp/hifive1/freedom-e-sdk/bsp/env/encoding.h
+// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/libcpu/risc-v/common/riscv-ops.h
+// https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/mcsr-ext.h
+// https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/cache.h
+
+#if defined(__riscv_zicsr)
+#include "riscv_csr.h"
+#endif
+
 __STATIC_INLINE void __DMB(void)
 {
   //__asm volatile ("dmb 0xF":::"memory");
+}
+
+__STATIC_INLINE void __WFI(void)
+{
+	__asm volatile ("wfi":::);
+}
+
+__STATIC_INLINE void __NOP(void)
+{
+	__asm volatile ("nop":::);
+}
+
+/** \brief  Enable Floating Point Unit
+ */
+__STATIC_INLINE void __FPU_Enable(void)
+{
+	csr_set_bits_mstatus(0x00006000);	/* MSTATUS_FS = 0x00006000 = Dirty */
+ 	csr_write_fcsr(0);             		/* initialize rounding mode, undefined at reset */
+  __ASM volatile(
+			" fcvt.d.w f0, zero \n"
+			" fcvt.d.w f1, zero \n"
+			" fcvt.d.w f2, zero \n"
+			" fcvt.d.w f3, zero \n"
+			" fcvt.d.w f4, zero \n"
+			" fcvt.d.w f5, zero \n"
+			" fcvt.d.w f6, zero \n"
+			" fcvt.d.w f7, zero \n"
+			" fcvt.d.w f8, zero \n"
+			" fcvt.d.w f9, zero \n"
+			" fcvt.d.w f10, zero \n"
+			" fcvt.d.w f11, zero \n"
+			" fcvt.d.w f12, zero \n"
+			" fcvt.d.w f13, zero \n"
+			" fcvt.d.w f14, zero \n"
+			" fcvt.d.w f15, zero \n"
+			" fcvt.d.w f16, zero \n"
+			" fcvt.d.w f17, zero \n"
+			" fcvt.d.w f18, zero \n"
+			" fcvt.d.w f19, zero \n"
+			" fcvt.d.w f20, zero \n"
+			" fcvt.d.w f21, zero \n"
+			" fcvt.d.w f22, zero \n"
+			" fcvt.d.w f23, zero \n"
+			" fcvt.d.w f24, zero \n"
+			" fcvt.d.w f25, zero \n"
+			" fcvt.d.w f26, zero \n"
+			" fcvt.d.w f27, zero \n"
+			" fcvt.d.w f28, zero \n"
+			" fcvt.d.w f29, zero \n"
+			" fcvt.d.w f30, zero \n"
+			" fcvt.d.w f31, zero \n"
+		  	  : : :
+				"f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9",
+				"f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19",
+				"f20", "f21", "f22", "f23", "f24", "f25", "f26", "f27", "f28", "f29",
+				"f30", "f31"
+  );
 }
 
 /**
@@ -639,14 +706,5 @@ __STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
 
   return (result);
 }
-
-// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/bsp/hifive1/freedom-e-sdk/bsp/env/encoding.h
-// https://github.com/yinglangli/rt-thread/blob/514be9cc47420ff970ae9bcba19d071f5293ea5c/libcpu/risc-v/common/riscv-ops.h
-// https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/mcsr-ext.h
-// https://github.com/Ouyancheng/FlatHeadBro/blob/c33df09f9f79523f51eabc7404e1eef35c36afa9/modules/c906/include/cache.h
-
-#if defined(__riscv_zicsr)
-#include "riscv_csr.h"
-#endif
 
 #endif /* ARCH_ALLWNR_F133_ALLWNR_T13S3_H_ */

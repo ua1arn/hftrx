@@ -3147,6 +3147,7 @@ sysinit_fpu_initialize(void)
 
 	csr_set_bits_mstatus(0x00006000);	/* MSTATUS_FS = 0x00006000 = Dirty */
  	csr_write_fcsr(0);             		/* initialize rounding mode, undefined at reset */
+	//__FPU_Enable();
 
 #endif /*  */
 

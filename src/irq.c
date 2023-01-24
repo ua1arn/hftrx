@@ -1400,13 +1400,18 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 void VMEI_Handler(void)
 {
 	const uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;
-	//PRINTF("VMEI_Handler: mepc=%p\n", (void *) csr_read_mepc());
+	//PRINTF("VMEI_Handler: mepc=%p, int_id=%u\n", (void *) csr_read_mepc(), int_id);
 	if (int_id != 0)
 	{
 		//const uint32_t prio = PLIC->PLIC_MTH_REG;
+	#if WITHNESTEDINTERRUPTS
+		//csr_set_bits_mie(MIE_MEI_BIT_MASK);	/* раразршение прерываний - было запрещено в обработчике */
+	#endif /* WITHNESTEDINTERRUPTS */
 		ASSERT(int_id < MAX_IRQ_n);
+		__FPU_Enable();
 		(plic_vectors [int_id])();
 		//PLIC->PLIC_MTH_REG = prio;
+		//PRINTF("VMEI_Handler exit: int_id=%u\n", int_id);
 		PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
 	}
 }
