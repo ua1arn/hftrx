@@ -28,6 +28,26 @@
  * SOFTWARE.
  */
 
+.macro trap_entry_status
+	addi	sp,sp,-24
+	csrr    a0,mstatus
+	csrr    a1,mepc
+	csrr    a2,mcause
+	sd    a0,0(sp)
+	sd    a1,8(sp)
+	sd    a2,16(sp)
+.endm
+
+.macro trap_exit_status
+	ld    a0,0(sp)
+	ld    a1,8(sp)
+	ld    a2,16(sp)
+	csrw    mstatus,a0
+	//csrw    mepc,a1
+	//csrw    mcause,a2
+	addi	sp,sp,24
+.endm
+
 .macro trap_entry
 	addi	sp,sp,-512
 //	sd x0,0(sp)		/* zero register */
@@ -95,6 +115,7 @@
 	fsd f30,496(sp)
 	fsd f31,504(sp)
 .endm
+
 
 .macro trap_exit
 //	ld x0,0(sp)		/* zero register */
@@ -236,9 +257,11 @@
 .macro mtrap_handler func, tail=_Handler
 trap_\func:
 	trap_entry
+	trap_entry_status
 	//fill0_i64
 	//fill0_fp64		/* set all floating registers to zero */
 	call \func\tail
+	trap_exit_status
 	trap_exit
 	mret
 .endm
@@ -250,11 +273,13 @@ Reset_Handler:
 	fill0_i64		/* set all integer registers to zero */
 
 	/* stack initilization */
-	la    sp, __stack
+	la	sp, __stack
+	mv	ra, zero	// return address - link register
 	mv	gp, zero
     mv  a0, zero
     mv  a1, zero
 	call SystemInit
+	fill0_fp64		/* set all floating registers to zero */
 	call __riscv_start
     /* to let simulator know program end point */
     addi x1,x0,1
