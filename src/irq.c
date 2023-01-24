@@ -1399,13 +1399,13 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
 void VMEI_Handler(void)
 {
-	const uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;
 	//PRINTF("VMEI_Handler enter: int_id=%u\n", int_id);
+	const uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;		// bits 9..0
 	if (int_id != 0)
 	{
 		//const uint32_t prio = PLIC->PLIC_MTH_REG;
 	#if WITHNESTEDINTERRUPTS
-		const uint_fast8_t priority = PLIC->PLIC_MTH_REG;	/* текущий уровень приоритета */
+		const uint_fast8_t priority = PLIC->PLIC_MTH_REG;	/* текущий уровень приоритета (bits 4..0) */
 		PLIC->PLIC_MTH_REG = PLIC->PLIC_PRIO_REGn [int_id];	/* обрабатываемый уровень приоритета */
 		const uint_xlen_t mepc = csr_read_mepc();
 		const uint_xlen_t mcause = csr_read_mcause();
@@ -1416,7 +1416,7 @@ void VMEI_Handler(void)
 		ASSERT(int_id < MAX_IRQ_n);
 		(plic_vectors [int_id])();
 	#if WITHNESTEDINTERRUPTS
-		csr_write_mstatus(mstatus);
+		csr_write_mstatus(mstatus);		/* прерывания запрещаются здесь - до mret */
 		csr_write_mcause(mcause);
 		csr_write_mepc(mepc);
 		PLIC->PLIC_MTH_REG = priority;	/* восстанавливаем обрабатываемый уровень приоритета */
