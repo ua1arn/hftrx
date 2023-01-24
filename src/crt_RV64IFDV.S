@@ -237,7 +237,7 @@
 trap_\func:
 	trap_entry
 	//fill0_i64
-	fill0_fp64		/* set all floating registers to zero */
+	//fill0_fp64		/* set all floating registers to zero */
 	call \func\tail
 	trap_exit
 	mret
