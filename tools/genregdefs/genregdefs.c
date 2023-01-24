@@ -562,7 +562,7 @@ int main(int argc, char* argv[], char* envp[])
 		{
 			struct basemap * const p = & maps [i];
 
-			fprintf(stdout, "#define\t%s_BASE\t0x%08X\n", p->name, p->base);
+			fprintf(stdout, "#define\t%s_BASE\t ((uintptr_t) 0x%08X)\n", p->name, p->base);
 		}
 	}
 
