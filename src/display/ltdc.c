@@ -1840,8 +1840,8 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, int ch)
 	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
 	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565, 0x08: RGB_888
 #if LCDMODE_MAIN_ARGB888
-	//const uint32_t ovl_ui_format = 0x00;	//  0x08: ARGB_8888	G2D_FMT_ARGB_AYUV8888
-	const uint32_t ovl_ui_format = 0x04;	// 0x04: XRGB_8888	G2D_FMT_XRGB8888
+	const uint32_t ovl_ui_format = 0x00;	//  0x08: ARGB_8888	G2D_FMT_ARGB_AYUV8888
+	//const uint32_t ovl_ui_format = 0x04;	// 0x04: XRGB_8888	G2D_FMT_XRGB8888
 #elif LCDMODE_MAIN_RGB565
 	const uint32_t ovl_ui_format = 0x0A;	// 0x0A: RGB_565	G2D_FMT_RGB565
 #else
@@ -1896,7 +1896,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, int ch)
 	write32((uintptr_t) & bld->ck_ctl, 0);
 	for(i = 0; i < 4; i++)
 	{
-		write32((uintptr_t) & bld->attr [i].fcolor, 0xff000000);
+		write32((uintptr_t) & bld->attr [i].fcolor, 0*0xff000000);
 		write32((uintptr_t) & bld->attr [i].insize, ovl_ui_mbsize);
 	}
 
@@ -1919,10 +1919,11 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, int ch)
 
 	// 5.10.8.1 OVL_UI attribute control register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].attr,
-			(0xff << 24) |	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
+			(111 << 24) |	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
+			(0 << 23) | 	// LAY0_TOP_BOTTOM_ADDR_EN
 			(ovl_ui_format << 8) | // 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
-			(0x1u << 1) |	// LAY_ALPHA_MODE
-			(1u << 0) |		// LAY_ALPHA_MODE
+			0*(0x1u << 1) |	// LAY_ALPHA_MODE: 0 - 0:Ignore Input alpha value = pixels alpha, if no pixel alpha, the alpha value equal 0xf
+			(1u << 0) |		// LAY_EN
 			0
 			);
 	// 5.10.8.2 OVL_UI memory block size register
@@ -1932,7 +1933,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, int ch)
 	// 5.10.8.4 OVL_UI memory pitch register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch, LCDMODE_PIXELSIZE * GXADJ(DIM_X));	// размер строки в байтах
 	// 5.10.8.5 OVL_UI top field memory block low address register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
+	//write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
 	// 5.10.8.6 OVL_UI bottom field memory block low address register
 	// ...
 	// 5.10.8.2 OVL_UI memory block size register
@@ -2001,34 +2002,50 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 
 	// ctrl
 	val = (timing.v_front_porch + timing.v_back_porch + timing.v_sync_len) / 2;
-	write32((uintptr_t) & tcon->ctrl, (1u << 31) | (0x00uL << 24) | (0x00uL << 23) | ((val & 0x1f) << 4) | (0x00uL << 0));
+	write32((uintptr_t) & tcon->ctrl,
+			(1u << 31) |
+			(0x00u << 24) |
+			(0x00u << 23) |
+			((val & 0x1f) << 4) |
+			(0x00u << 0)
+			);
 
 	// dclk
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
 	val = allwnrt113_get_video0_x2_freq() / timing.pixel_clock_hz;
-	write32((uintptr_t) & tcon->dclk, (0x0FuL << 28) | (val << 0));
+	write32((uintptr_t) & tcon->dclk,
+			(0x0Fu << 28) | (val << 0));
 
 	// timing0 (window)
-	write32((uintptr_t) & tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
+	write32((uintptr_t) & tcon->timing0,
+			((pdat->width - 1) << 16) | ((pdat->height - 1) << 0)
+			);
 
 	// timing1 (horizontal)
 	hbp = timing.h_sync_len + timing.h_back_porch;
 	htotal = pdat->width + timing.h_front_porch + hbp;
-	write32((uintptr_t) & tcon->timing1, ((htotal - 1) << 16) | ((hbp - 1) << 0));
+	write32((uintptr_t) & tcon->timing1,
+			((htotal - 1) << 16) | ((hbp - 1) << 0)
+			);
 
 	// timing2 (vertical)
 	vbp = timing.v_sync_len + timing.v_back_porch;
 	vtotal = pdat->height + timing.v_front_porch + vbp;
-	write32((uintptr_t) & tcon->timing2, ((vtotal * 2) << 16) | ((vbp - 1) << 0));
+	write32((uintptr_t) & tcon->timing2,
+			((vtotal * 2) << 16) | ((vbp - 1) << 0)
+			);
 
 	// timing3
-	write32((uintptr_t) & tcon->timing3, ((timing.h_sync_len - 1) << 16) | ((timing.v_sync_len - 1) << 0));
+	write32((uintptr_t) & tcon->timing3,
+			((timing.h_sync_len - 1) << 16) |
+			((timing.v_sync_len - 1) << 0)
+			);
 
 	// Sochip_VE_S3_Datasheet_V1.0.pdf
 	// 7.2.5.19. TCON0_IO_POL_REG
 	// io_polarity
-	val = (0x00uL << 31) | 	// IO_Output_Sel: 0: nirmal, 1: sync to dclk
+	val = (0x00u << 31) | 	// IO_Output_Sel: 0: nirmal, 1: sync to dclk
 			(1u << 28);	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
 
 	if(!timing.h_sync_active)
@@ -2145,9 +2162,11 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	}
 	t113_tconlcd_enable(pdat);
 
-	t113_de_set_mode(pdat, DE_MUX_CHAN_INDEX);
-	//t113_de_set_mode(pdat, 2);
-	//t113_de_set_mode(pdat, 3);
+	//t113_de_set_mode(pdat, DE_MUX_CHAN_INDEX);
+	// for overlay test
+	t113_de_set_mode(pdat, 3);
+	t113_de_set_mode(pdat, 2);
+	t113_de_set_mode(pdat, 1);
 	t113_de_enable(pdat);
 
 	t113_de_set_address(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);

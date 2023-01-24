@@ -6365,6 +6365,29 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+		static PACKEDCOLORMAIN_T fb1 [GXSIZE(DIM_Y, DIM_X)];
+		static PACKEDCOLORMAIN_T fb2 [GXSIZE(DIM_Y, DIM_X)];
+		static PACKEDCOLORMAIN_T fb3 [GXSIZE(DIM_Y, DIM_X)];
+
+		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTARGB(111, 0, 0, 0));	/* transparent black */
+		colmain_fillrect(fb2, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTARGB(111, 0, 0, 0));	/* transparent black */
+		colmain_fillrect(fb3, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTARGB(111, 0, 0, 0));	/* transparent black */
+
+		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, 100, 100, TFTARGB(111, 255, 0, 0));
+		colmain_fillrect(fb2, DIM_X, DIM_Y, 0, 120, 100, 100, TFTARGB(111, 0, 255, 0));
+		colmain_fillrect(fb3, DIM_X, DIM_Y, 120, 0, 100, 100, TFTARGB(111, 0, 0, 255));
+
+		arm_hardware_ltdc_main_set_no_vsync3((uintptr_t) fb3, (uintptr_t) fb2, (uintptr_t) fb1);
+		TP();
+		for (;;)
+			;
+	}
+#endif
 #if 0 && defined (CLINT) && CPUSTYLE_F133
 	{
 		TP();

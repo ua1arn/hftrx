@@ -28,9 +28,9 @@
 	#include "g2d_driver.h"
 
 #if LCDMODE_MAIN_ARGB888
-	#define DstImageFormat G2D_FMT_XRGB8888
-	#define SrcImageFormat G2D_FMT_XRGB8888
-	#define WB_DstImageFormat G2D_FMT_XRGB8888
+	#define DstImageFormat G2D_FMT_ARGB_AYUV8888
+	#define SrcImageFormat G2D_FMT_ARGB_AYUV8888
+	#define WB_DstImageFormat G2D_FMT_ARGB_AYUV8888
 
 #elif LCDMODE_MAIN_RGB565
 	#define DstImageFormat G2D_FMT_RGB565

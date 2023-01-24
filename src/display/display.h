@@ -346,15 +346,24 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		typedef uint32_t PACKEDCOLORMAIN_T;
 
 		// RRRR.RGGG.GGGB.BBBB
-		#define TFTRGB(red, green, blue) \
-			(  (uint_fast32_t) \
-				(	\
-					((uint_fast32_t) (255) << 24)  | /* Alpha value */ \
-					(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
-					(((uint_fast32_t) (green) << 8) & 0xFF00) | \
-					(((uint_fast32_t) (blue) >> 0) &  0x00FF) \
-				) \
-			)
+	#define TFTRGB(red, green, blue) \
+		(  (uint_fast32_t) \
+			(	\
+				((uint_fast32_t) (255) << 24)  | /* Alpha value */ \
+				(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
+				(((uint_fast32_t) (green) << 8) & 0xFF00) | \
+				(((uint_fast32_t) (blue) >> 0) &  0x00FF) \
+			) \
+		)
+	#define TFTARGB(alpha, red, green, blue) \
+		(  (uint_fast32_t) \
+			(	\
+				((uint_fast32_t) (alpha) << 24)  | /* Alpha value */ \
+				(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
+				(((uint_fast32_t) (green) << 8) & 0xFF00) | \
+				(((uint_fast32_t) (blue) >> 0) &  0x00FF) \
+			) \
+		)
 
 		// для формирования растра с изображением водопада и спектра
 		#define TFTRGB565 TFTRGB
