@@ -1795,20 +1795,6 @@ struct fb_t113_rgb_pdata_t
 	uintptr_t vram [2];
 	//struct region_list_t * nrl, * orl;
 
-	struct {
-		int pixel_clock_hz;
-		int h_front_porch;
-		int h_back_porch;
-		int h_sync_len;
-		int v_front_porch;
-		int v_back_porch;
-		int v_sync_len;
-		int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-		int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-		int den_active;		// 1 - negatibe pulses, 0 - positice pulses
-		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
-	} timing;
-
 //	struct led_t * backlight;
 //	int brightness;
 };
@@ -1825,6 +1811,7 @@ static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintpt
 {
 	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * DE_MUX_CHAN_INDEX);
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
+	write32((uintptr_t) & ui->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
 }
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
@@ -1873,7 +1860,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	write32((uintptr_t) & clk->sel_cfg, val);
 
 	write32((uintptr_t) & glb->ctl, (1u << 0));
-	write32((uintptr_t) & glb->status, 0x00uL);
+	write32((uintptr_t) & glb->status, 0x00u);
 	write32((uintptr_t) & glb->dbuff, 1u);		// 1: register value be ready for update (self-cleaning bit)
 	write32((uintptr_t) & glb->size, ovl_ui_mbsize);
 
@@ -1921,9 +1908,13 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// Note: the layer priority is layer3>layer2>layer1>layer0
 
 	// 5.10.8.1 OVL_UI attribute control register
-	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
-	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].attr, (1 << 0) | (ovl_ui_format << 8) | (1 << 1) | (0xff << 24));
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].attr,
+			(0xff << 24) |	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
+			(ovl_ui_format << 8) | // 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
+			(0x1u << 1) |	// LAY_ALPHA_MODE
+			(1u << 0) |		// LAY_ALPHA_MODE
+			0
+			);
 	// 5.10.8.2 OVL_UI memory block size register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].size, ovl_ui_mbsize);
 	// 5.10.8.3 OVL_UI memory block coordinate register
@@ -1931,7 +1922,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// 5.10.8.4 OVL_UI memory pitch register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch, LCDMODE_PIXELSIZE * GXADJ(DIM_X));	// размер строки в байтах
 	// 5.10.8.5 OVL_UI top field memory block low address register
-	//write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
 	// 5.10.8.6 OVL_UI bottom field memory block low address register
 	// ...
 	// 5.10.8.2 OVL_UI memory block size register
@@ -1965,36 +1956,64 @@ static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
 {
+
+	struct {
+		int pixel_clock_hz;
+		int h_front_porch;
+		int h_back_porch;
+		int h_sync_len;
+		int v_front_porch;
+		int v_back_porch;
+		int v_sync_len;
+		int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+		int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+		int den_active;		// 1 - negatibe pulses, 0 - positice pulses
+		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
+	} timing;
+
+	timing.pixel_clock_hz = display_getdotclock(vdmode);
+	timing.h_front_porch = vdmode->hfp;
+	timing.h_back_porch = vdmode->hbp;
+	timing.h_sync_len =  vdmode->hsync;
+	timing.v_front_porch = vdmode->vfp;
+	timing.v_back_porch = vdmode->vbp;
+	timing.v_sync_len = vdmode->vsync;
+	timing.h_sync_active = vdmode->vsyncneg;
+	timing.v_sync_active = vdmode->hsyncneg;
+	timing.den_active = ! vdmode->deneg;
+	timing.clk_active = 0;
+
+	//pdat->backlight = NULL;
 	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
 	int vbp, vtotal;
 	int hbp, htotal;
 	uint32_t val;
 
 	// ctrl
-	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
+	val = (timing.v_front_porch + timing.v_back_porch + timing.v_sync_len) / 2;
 	write32((uintptr_t) & tcon->ctrl, (1u << 31) | (0x00uL << 24) | (0x00uL << 23) | ((val & 0x1f) << 4) | (0x00uL << 0));
 
 	// dclk
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
-	val = allwnrt113_get_video0_x2_freq() / pdat->timing.pixel_clock_hz;
+	val = allwnrt113_get_video0_x2_freq() / timing.pixel_clock_hz;
 	write32((uintptr_t) & tcon->dclk, (0x0FuL << 28) | (val << 0));
 
 	// timing0 (window)
 	write32((uintptr_t) & tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
 
 	// timing1 (horizontal)
-	hbp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
-	htotal = pdat->width + pdat->timing.h_front_porch + hbp;
+	hbp = timing.h_sync_len + timing.h_back_porch;
+	htotal = pdat->width + timing.h_front_porch + hbp;
 	write32((uintptr_t) & tcon->timing1, ((htotal - 1) << 16) | ((hbp - 1) << 0));
 
 	// timing2 (vertical)
-	vbp = pdat->timing.v_sync_len + pdat->timing.v_back_porch;
-	vtotal = pdat->height + pdat->timing.v_front_porch + vbp;
+	vbp = timing.v_sync_len + timing.v_back_porch;
+	vtotal = pdat->height + timing.v_front_porch + vbp;
 	write32((uintptr_t) & tcon->timing2, ((vtotal * 2) << 16) | ((vbp - 1) << 0));
 
 	// timing3
-	write32((uintptr_t) & tcon->timing3, ((pdat->timing.h_sync_len - 1) << 16) | ((pdat->timing.v_sync_len - 1) << 0));
+	write32((uintptr_t) & tcon->timing3, ((timing.h_sync_len - 1) << 16) | ((timing.v_sync_len - 1) << 0));
 
 	// Sochip_VE_S3_Datasheet_V1.0.pdf
 	// 7.2.5.19. TCON0_IO_POL_REG
@@ -2002,13 +2021,13 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	val = (0x00uL << 31) | 	// IO_Output_Sel: 0: nirmal, 1: sync to dclk
 			(1u << 28);	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
 
-	if(!pdat->timing.h_sync_active)
+	if(!timing.h_sync_active)
 		val |= (1u << 25);	// IO1_Inv
-	if(!pdat->timing.v_sync_active)
+	if(!timing.v_sync_active)
 		val |= (1u << 24);	// IO0_Inv
-	if(!pdat->timing.den_active)
+	if(!timing.den_active)
 		val |= (1u << 27);	// IO3_Inv
-	if(!pdat->timing.clk_active)
+	if(!timing.clk_active)
 		val |= (1u << 26);	// IO2_Inv
 	//write32((uintptr_t) & tcon->io_polarity, val);
 	TCON_LCD0->LCD_IO_POL_REG = val;
@@ -2074,19 +2093,7 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	//pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
 	pdat->vram [0] = frames [0];
 	pdat->vram [1] = frames [1];
-
-	pdat->timing.pixel_clock_hz = display_getdotclock(vdmode);
-	pdat->timing.h_front_porch = vdmode->hfp;
-	pdat->timing.h_back_porch = vdmode->hbp;
-	pdat->timing.h_sync_len =  vdmode->hsync;
-	pdat->timing.v_front_porch = vdmode->vfp;
-	pdat->timing.v_back_porch = vdmode->vbp;
-	pdat->timing.v_sync_len = vdmode->vsync;
-	pdat->timing.h_sync_active = vdmode->vsyncneg;
-	pdat->timing.v_sync_active = vdmode->hsyncneg;
-	pdat->timing.den_active = ! vdmode->deneg;
-	pdat->timing.clk_active = 0;
-	//pdat->backlight = NULL;
+	pdat->index = 0;
 
     CCU->DE_CLK_REG |= (1u << 31) | (0x03u << 0);	// 300 MHz
 
