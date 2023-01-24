@@ -1885,19 +1885,46 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, int ch)
 	// peripherial registers
 	memset(bld, 0, sizeof (struct de_bld_t));
 
-	write32((uintptr_t) & bld->fcolor_ctl, 0x00000101);
-	write32((uintptr_t) & bld->route, 1);
-	write32((uintptr_t) & bld->premultiply, 0);
-	write32((uintptr_t) & bld->bkcolor, 0xff000000);
-	write32((uintptr_t) & bld->bld_mode [0], 0x03010301);
-	write32((uintptr_t) & bld->bld_mode [1], 0x03010301);
-	write32((uintptr_t) & bld->output_size, ovl_ui_mbsize);
-	write32((uintptr_t) & bld->out_ctl, 0);
-	write32((uintptr_t) & bld->ck_ctl, 0);
+	// 5.10.9.1 BLD fill color control register
+	write32((uintptr_t) & bld->fcolor_ctl,
+			(0x00000101 << 0) |	// P0_EN P0_FCEN
+//			(0x00000101 << 1) |
+//			(0x00000101 << 2) |
+			0
+			);
+
+	// 5.10.9.5 BLD routing control register
+	// BLD_CH_RTCTL
+	write32((uintptr_t) & bld->route,
+			(1u << 0) |	// pipe 0 from ch 1
+//			(2u << 4) |	// pipe 1 from ch 2
+//			(3u << 8) |	// pipe 2 from ch 3
+//			(0u << 12) |	// pipe 2 from ch 3
+			0
+			);
+	write32((uintptr_t) & bld->premultiply,
+			0);
+	write32((uintptr_t) & bld->bkcolor,
+			0xff000000
+			);
+	write32((uintptr_t) & bld->bld_mode [0],
+			0x03010301
+			);
+	write32((uintptr_t) & bld->bld_mode [1],
+			0x03010301
+			);
+	write32((uintptr_t) & bld->output_size,
+			ovl_ui_mbsize
+			);
+	write32((uintptr_t) & bld->out_ctl,
+			0);
+	write32((uintptr_t) & bld->ck_ctl,
+			0);
 	for(i = 0; i < 4; i++)
 	{
 		write32((uintptr_t) & bld->attr [i].fcolor, 0*0xff000000);
 		write32((uintptr_t) & bld->attr [i].insize, ovl_ui_mbsize);
+		write32((uintptr_t) & bld->attr [i].offset, 0);
 	}
 
 	write32(DE_BASE + T113_DE_MUX_VSU, 0);
@@ -1920,18 +1947,23 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, int ch)
 	// 5.10.8.1 OVL_UI attribute control register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].attr,
 			(111 << 24) |	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
-			(0 << 23) | 	// LAY0_TOP_BOTTOM_ADDR_EN
+			(0u << 23) | 	// TOP_BOTTOM_ADDR_EN
+			(0u << 16) | 	// LAY_PREMUL_CTL
 			(ovl_ui_format << 8) | // 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
+			(0u << 4) |	// LAY_FILLCOLOR_EN
 			0*(0x1u << 1) |	// LAY_ALPHA_MODE: 0 - 0:Ignore Input alpha value = pixels alpha, if no pixel alpha, the alpha value equal 0xf
 			(1u << 0) |		// LAY_EN
 			0
 			);
 	// 5.10.8.2 OVL_UI memory block size register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].size, ovl_ui_mbsize);
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].size,
+			ovl_ui_mbsize);
 	// 5.10.8.3 OVL_UI memory block coordinate register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].coord, 0);
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].coord,
+			0);
 	// 5.10.8.4 OVL_UI memory pitch register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch, LCDMODE_PIXELSIZE * GXADJ(DIM_X));	// размер строки в байтах
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch,
+			LCDMODE_PIXELSIZE * GXADJ(DIM_X));	// размер строки в байтах
 	// 5.10.8.5 OVL_UI top field memory block low address register
 	//write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
 	// 5.10.8.6 OVL_UI bottom field memory block low address register
@@ -2162,11 +2194,11 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	}
 	t113_tconlcd_enable(pdat);
 
-	//t113_de_set_mode(pdat, DE_MUX_CHAN_INDEX);
+	t113_de_set_mode(pdat, DE_MUX_CHAN_INDEX);
 	// for overlay test
-	t113_de_set_mode(pdat, 3);
-	t113_de_set_mode(pdat, 2);
-	t113_de_set_mode(pdat, 1);
+//	t113_de_set_mode(pdat, 3);
+//	t113_de_set_mode(pdat, 2);
+//	t113_de_set_mode(pdat, 1);
 	t113_de_enable(pdat);
 
 	t113_de_set_address(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);
@@ -2192,6 +2224,7 @@ void arm_hardware_ltdc_main_set_no_vsync3(uintptr_t p1, uintptr_t p2, uintptr_t 
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 
+	// Note: the layer priority is layer3>layer2>layer1>layer0
 	t113_de_set_address(pdat, p1, 1);
 	t113_de_set_address(pdat, p2, 2);
 	t113_de_set_address(pdat, p3, 3);

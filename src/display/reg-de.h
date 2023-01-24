@@ -48,7 +48,7 @@ struct de_bld_t {
 		uint32_t dum;		/**  filler */
 	} attr[4];
 	uint32_t dum0[15];
-	uint32_t route;			/** Offset 0x080 BLD routing control register */
+	uint32_t route;			/** BLD_CH_RTCTL Offset 0x080 BLD routing control register */
 	uint32_t premultiply;	/** Offset 0x080 BLD pre-multiply control register */
 	uint32_t bkcolor;
 	uint32_t output_size;

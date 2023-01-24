@@ -6382,7 +6382,7 @@ void hightests(void)
 		colmain_fillrect(fb2, DIM_X, DIM_Y, 0, 120, 100, 100, TFTARGB(111, 0, 255, 0));
 		colmain_fillrect(fb3, DIM_X, DIM_Y, 120, 0, 100, 100, TFTARGB(111, 0, 0, 255));
 
-		arm_hardware_ltdc_main_set_no_vsync3((uintptr_t) fb3, (uintptr_t) fb2, (uintptr_t) fb1);
+		arm_hardware_ltdc_main_set_no_vsync3((uintptr_t) fb1, (uintptr_t) fb2, (uintptr_t) fb3);
 		TP();
 		for (;;)
 			;
