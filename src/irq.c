@@ -1400,27 +1400,29 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 void VMEI_Handler(void)
 {
 	const uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;
-	//PRINTF("VMEI_Handler: mepc=%p, int_id=%u\n", (void *) csr_read_mepc(), int_id);
+	//PRINTF("VMEI_Handler enter: int_id=%u\n", int_id);
 	if (int_id != 0)
 	{
 		//const uint32_t prio = PLIC->PLIC_MTH_REG;
 	#if WITHNESTEDINTERRUPTS
-		const uint_xlen_t mstatus = csr_read_mstatus();
+		const uint_fast8_t priority = PLIC->PLIC_MTH_REG;	/* текущий уровень приоритета */
+		PLIC->PLIC_MTH_REG = PLIC->PLIC_PRIO_REGn [int_id];	/* обрабатываемый уровень приоритета */
 		const uint_xlen_t mepc = csr_read_mepc();
 		const uint_xlen_t mcause = csr_read_mcause();
-		csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); /* раразршение прерываний */
+		const uint_xlen_t mstatus = csr_read_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); /* раразршение прерываний */
+		ASSERT((mstatus & MSTATUS_MIE_BIT_MASK) == 0);	/* прерывания были запрещены при входе в обработчик */
 	#endif /* WITHNESTEDINTERRUPTS */
-		ASSERT(int_id < MAX_IRQ_n);
 		__FPU_Enable();
+		ASSERT(int_id < MAX_IRQ_n);
 		(plic_vectors [int_id])();
 	#if WITHNESTEDINTERRUPTS
-		csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);	/* запрещение прерываний */
+		csr_write_mstatus(mstatus);
 		csr_write_mcause(mcause);
 		csr_write_mepc(mepc);
-		csr_write_mstatus(mstatus);
+		PLIC->PLIC_MTH_REG = priority;	/* восстанавливаем обрабатываемый уровень приоритета */
 	#endif /* WITHNESTEDINTERRUPTS */
 		//PLIC->PLIC_MTH_REG = prio;
-		//PRINTF("VMEI_Handler exit: int_id=%u\n", int_id);
+		//PRINTF("VMEI_Handler  exit: int_id=%u\n", int_id);
 		PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
 	}
 }
@@ -1875,8 +1877,9 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	// The normal-user mode can not access any registers in PLIC.
 	//PLIC->PLIC_CTRL_REG |= (1u << 0);
 
-	csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
-	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
+	//csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+	//csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
+	//csr_set_bits_mie(MIE_MTI_BIT_MASK);	// MTI - timer
 
 #else /* CPUSTYLE_STM32MP1 */
 
