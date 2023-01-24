@@ -28,28 +28,9 @@
  * SOFTWARE.
  */
 
-.macro trap_entry_status
-	addi	sp,sp,-24
-	csrr    a0,mstatus
-	csrr    a1,mepc
-	csrr    a2,mcause
-	sd    a0,0(sp)
-	sd    a1,8(sp)
-	sd    a2,16(sp)
-.endm
-
-.macro trap_exit_status
-	ld    a0,0(sp)
-	ld    a1,8(sp)
-	ld    a2,16(sp)
-	csrw    mstatus,a0
-	//csrw    mepc,a1
-	//csrw    mcause,a2
-	addi	sp,sp,24
-.endm
-
 .macro trap_entry
 	addi	sp,sp,-512
+
 //	sd x0,0(sp)		/* zero register */
 	sd x1,8(sp)		/* ABI link register ra */
 //	sd x2,16(sp)	/* ABI stack pointer sp */
@@ -182,6 +163,7 @@
 	fld f29,488(sp)
 	fld f30,496(sp)
 	fld f31,504(sp)
+
 	addi	sp,sp,512
 .endm
 
@@ -257,11 +239,9 @@
 .macro mtrap_handler func, tail=_Handler
 trap_\func:
 	trap_entry
-	trap_entry_status
 	//fill0_i64
 	//fill0_fp64		/* set all floating registers to zero */
 	call \func\tail
-	trap_exit_status
 	trap_exit
 	mret
 .endm
