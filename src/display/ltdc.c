@@ -1809,6 +1809,7 @@ static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 
 static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int ch)
 {
+	ASSERT(ch >= 1 && ch <= 3);
 	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * ch);
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
 	write32((uintptr_t) & ui->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
@@ -1816,6 +1817,7 @@ static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintpt
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, int ch)
 {
+	ASSERT(ch >= 1 && ch <= 3);
 	struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
 	struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
@@ -2162,6 +2164,18 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 
 	t113_de_set_address(pdat, p, DE_MUX_CHAN_INDEX);
+	t113_de_enable(pdat);
+}
+
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
+void arm_hardware_ltdc_main_set_no_vsync3(uintptr_t p1, uintptr_t p2, uintptr_t p3)
+{
+	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+
+	t113_de_set_address(pdat, p1, 1);
+	t113_de_set_address(pdat, p2, 2);
+	t113_de_set_address(pdat, p3, 3);
 	t113_de_enable(pdat);
 }
 
