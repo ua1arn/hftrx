@@ -19,15 +19,7 @@ TV_CEU_COEF_MUL_REG; 0x0110 11; TV CEU Coefficient Register0 0x0110+N*0x04(N=0�
 TV_CEU_COEF_RANG_REG; 0x0140 3; TV CEU Coefficient Register2 0x0140+N*0x04(N=0�2)
 TV_SAFE_PERIOD_REG; 0x01F0; TV Safe Period Register
 TV_FILL_CTL_REG; 0x0300; TV Fill Data Control Register
-TV_FILL_BEGIN_REG0; 0x0304  ; TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2
-TV_FILL_END_REG0; 0x0308  ; TV Fill Data End Register 0x0308+N*0x0C(N=0–2)
-TV_FILL_DATA_REG0; 0x030C  ; TV Fill Data Value Register 0x030C+N*0x0C(N=0–2)
-TV_FILL_BEGIN_REG1; 0x0310  ; TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2
-TV_FILL_END_REG1; 0x0314  ; TV Fill Data End Register 0x0308+N*0x0C(N=0–2)
-TV_FILL_DATA_REG1; 0x0318  ; TV Fill Data Value Register 0x030C+N*0x0C(N=0–2)
-TV_FILL_BEGIN_REG2; 0x031C  ; TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2
-TV_FILL_END_REG2; 0x0320  ; TV Fill Data End Register 0x0308+N*0x0C(N=0–2)
-TV_FILL_DATA_REG2; 0x0324  ;TV Fill Data Value Register 0x030C+N*0x0C(N=0–2)
+TV_FILL 0x0C TV_FILL_TypeDef; 0x030C 3; TV Fill Channel [0..2]
 TV_DATA_IO_POL0_REG; 0x0330; TCON Data IO Polarity Control0
 TV_DATA_IO_POL1_REG; 0x0334; TCON Data IO Polarity Control1
 TV_DATA_IO_TRI0_REG; 0x0338; TCON Data IO Enable Control0

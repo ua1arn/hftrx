@@ -1651,6 +1651,16 @@ typedef struct TCON_LCD_Type
 	__IO uint32_t LCD_GAMMA_TABLE_REG [0x100];           /*!< Offset 0x400 LCD Gamma Table Register */
 } TCON_LCD_TypeDef; /* size of structure = 0x800 */
 /*
+ * @brief TV_FILL
+ */
+/*!< TV_FILL Controller Interface */
+typedef struct TV_FILL_Type
+{
+	__IO uint32_t TV_FILL_BEGIN_REG;                     /*!< Offset 0x000 TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2) */
+	__IO uint32_t TV_FILL_END_REG;                       /*!< Offset 0x004 TV Fill Data End Register 0x0308+N*0x0C(N=0–2) */
+	__IO uint32_t TV_FILL_DATA_REG;                      /*!< Offset 0x008 TV Fill Data Value Register 0x030C+N*0x0C(N=0–2) */
+} TV_FILL_TypeDef; /* size of structure = 0x00C */
+/*
  * @brief TCON_TV
  */
 /*!< TCON_TV Controller Interface */
@@ -1683,16 +1693,8 @@ typedef struct TCON_TV_Type
 	__IO uint32_t TV_SAFE_PERIOD_REG;                    /*!< Offset 0x1F0 TV Safe Period Register */
 	uint32_t reserved_0x1F4 [0x0043];
 	__IO uint32_t TV_FILL_CTL_REG;                       /*!< Offset 0x300 TV Fill Data Control Register */
-	__IO uint32_t TV_FILL_BEGIN_REG0;                    /*!< Offset 0x304 TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2 */
-	__IO uint32_t TV_FILL_END_REG0;                      /*!< Offset 0x308 TV Fill Data End Register 0x0308+N*0x0C(N=0–2) */
-	__IO uint32_t TV_FILL_DATA_REG0;                     /*!< Offset 0x30C TV Fill Data Value Register 0x030C+N*0x0C(N=0–2) */
-	__IO uint32_t TV_FILL_BEGIN_REG1;                    /*!< Offset 0x310 TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2 */
-	__IO uint32_t TV_FILL_END_REG1;                      /*!< Offset 0x314 TV Fill Data End Register 0x0308+N*0x0C(N=0–2) */
-	__IO uint32_t TV_FILL_DATA_REG1;                     /*!< Offset 0x318 TV Fill Data Value Register 0x030C+N*0x0C(N=0–2) */
-	__IO uint32_t TV_FILL_BEGIN_REG2;                    /*!< Offset 0x31C TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2 */
-	__IO uint32_t TV_FILL_END_REG2;                      /*!< Offset 0x320 TV Fill Data End Register 0x0308+N*0x0C(N=0–2) */
-	__IO uint32_t TV_FILL_DATA_REG2;                     /*!< Offset 0x324 TV Fill Data Value Register 0x030C+N*0x0C(N=0–2) */
-	uint32_t reserved_0x328 [0x0002];
+	uint32_t reserved_0x304 [0x0002];
+	TV_FILL_TypeDef TV_FILL [0x003];                     /*!< Offset 0x30C TV Fill Channel [0..2] */
 	__IO uint32_t TV_DATA_IO_POL0_REG;                   /*!< Offset 0x330 TCON Data IO Polarity Control0 */
 	__IO uint32_t TV_DATA_IO_POL1_REG;                   /*!< Offset 0x334 TCON Data IO Polarity Control1 */
 	__IO uint32_t TV_DATA_IO_TRI0_REG;                   /*!< Offset 0x338 TCON Data IO Enable Control0 */
