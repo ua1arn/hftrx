@@ -1,7 +1,7 @@
 #ifndef __T113_REG_TCONLCD_H__
 #define __T113_REG_TCONLCD_H__
 
-#define T113_TCONLCD_BASE		(0x05461000)
+#define T113_TCONLCD_BASE		TCON_LCD0_BASE
 
 // Sochip_VE_S3_Datasheet_V1.0.pdf
 // 7.2.4. TCON Module register list

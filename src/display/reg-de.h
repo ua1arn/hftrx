@@ -1,7 +1,7 @@
 #ifndef __T113_REG_DE_H__
 #define __T113_REG_DE_H__
 
-#define T113_DE_BASE		(0x05000000)
+#define T113_DE_BASE		DE_BASE
 
 #define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
 #define T113_DE_MUX_BLD		(0x00100000 + 0x01000)
