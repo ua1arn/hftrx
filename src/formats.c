@@ -425,7 +425,7 @@ void
 printhex(uintptr_t voffs, const void * vbuff, unsigned length)
 {
 	const uint8_t * buff = (const uint8_t *) vbuff;
-	enum { ROWSIZE = 16 };
+	enum { ROWSIZE = 16 };	/* elements in one row */
 	unsigned i, j;
 	unsigned rows = (length + ROWSIZE - 1) / ROWSIZE;
 
@@ -451,7 +451,7 @@ void
 printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 {
 	const uint32_t * buff = (const uint32_t *) vbuff;
-	enum { ROWSIZE = 8 };
+	enum { ROWSIZE = 8 };	/* elements in one row */
 	unsigned i, j;
 	unsigned rows = ((length + 3) / 4 + ROWSIZE - 1) / ROWSIZE;
 
@@ -461,7 +461,7 @@ printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
 		debug_printf_P(PSTR("%08X "), (unsigned) (voffs + i * ROWSIZE * 4));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %08X"), (unsigned) buff [i * ROWSIZE + j]);
+			debug_printf_P(PSTR(" %08" PRIX32), buff [i * ROWSIZE + j]);
 
 		debug_printf_P(PSTR("\n"));
 	}
@@ -471,7 +471,7 @@ void
 printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
 {
 	const uint64_t * buff = (const uint64_t *) vbuff;
-	enum { ROWSIZE = 4 };
+	enum { ROWSIZE = 4 };	/* elements in one row */
 	unsigned i, j;
 	unsigned rows = ((length + 7) / 8 + ROWSIZE - 1) / ROWSIZE;
 
@@ -481,7 +481,7 @@ printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
 		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
 		debug_printf_P(PSTR("%08X "), (unsigned) (voffs + i * ROWSIZE * 8));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %08X%08X"), (unsigned) (buff [i * ROWSIZE + j] >> 32), (unsigned) (buff [i * ROWSIZE + j] >> 0));
+			debug_printf_P(PSTR(" %08" PRIX32 "%08" PRIX32), (uint32_t) (buff [i * ROWSIZE + j] >> 32), (unsigned) (buff [i * ROWSIZE + j] >> 0));
 
 		debug_printf_P(PSTR("\n"));
 	}

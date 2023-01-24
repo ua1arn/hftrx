@@ -2179,11 +2179,13 @@ typedef struct EMAC_Type
 /*!< CLINT Controller Interface */
 typedef struct CLINT_Type
 {
-	__IO uint32_t MSIP;                                  /*!< Offset 0x000 This register generates machine mode software interrupts when set. */
+	__IO uint32_t msip;                                  /*!< Offset 0x000 This register generates machine mode software interrupts when set. */
 	uint32_t reserved_0x004 [0x0FFF];
-	__IO uint64_t MTIMECMP;                              /*!< Offset 0x4000 This register holds the compare value for the timer. */
+	__IO uint32_t mtimecmplo;                            /*!< Offset 0x4000 This register holds the compare value for the timer. */
+	__IO uint32_t mtimecmphi;                            /*!< Offset 0x4004 This register holds the compare value for the timer. */
 	uint32_t reserved_0x4008 [0x1FFC];
-	__IO uint64_t MTIME;                                 /*!< Offset 0xBFF8 Provides the current timer value. */
+	__IO uint32_t mtimelo;                               /*!< Offset 0xBFF8 Provides the current timer value. */
+	__IO uint32_t mtimehi;                               /*!< Offset 0xBFFC Provides the current timer value. */
 } CLINT_TypeDef; /* size of structure = 0xC000 */
 
 /* Access pointers */

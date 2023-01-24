@@ -6308,17 +6308,93 @@ static uint_fast32_t adis161xx_read32(unsigned page, unsigned addr)
 
 #endif
 
+#if CPUSTYLE_F133
+
+// https://github.com/bluespec/CLINT/blob/main/src/CLINT_AXI4.bsv
+
+//#define RISCV_MSIP0 (CLINT_BASE  + 0x0000)
+#define RISCV_MTIMECMP_ADDR (CLINT_BASE  + 0x4000)
+
+// На Allwinner F133-A доступ к регистрам таймера только 32-х битный
+static uint64_t mtimer_get_raw_time_cmp(void) {
+#if 0//( __riscv_xlen == 64)
+    // Directly read 64 bit value
+    volatile uint64_t *mtime = (volatile uint64_t *)(RISCV_MTIMECMP_ADDR);
+    return *mtime;
+#elif 1//( __riscv_xlen == 32)
+    volatile uint32_t * mtimel = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
+    volatile uint32_t * mtimeh = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
+    uint32_t mtimeh_val;
+    uint32_t mtimel_val;
+    do {
+        // There is a small risk the mtimeh will tick over after reading mtimel
+        mtimeh_val = *mtimeh;
+        mtimel_val = *mtimel;
+        // Poll mtimeh to ensure it's consistent after reading mtimel
+        // The frequency of mtimeh ticking over is low
+    } while (mtimeh_val != *mtimeh);
+    return (uint64_t) ( ( ((uint64_t)mtimeh_val)<<32) | mtimel_val);
+#else
+    return 888;
+#endif
+}
+
+// На Allwinner F133-A доступ к регистрам таймера только 32-х битный
+static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
+#if 0//(__riscv_xlen == 64)
+    // Single bus access
+    volatile uint64_t *mtimecmp = (volatile uint64_t*)(RISCV_MTIMECMP_ADDR);
+    *mtimecmp = new_mtimecmp;
+#elif 1//( __riscv_xlen == 32)
+    volatile uint32_t *mtimecmpl = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
+    volatile uint32_t *mtimecmph = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
+    // AS we are doing 32 bit writes, an intermediate mtimecmp value may cause spurious interrupts.
+    // Prevent that by first setting the dummy MSB to an unacheivable value
+    *mtimecmph = 0xFFFFFFFF;  // cppcheck-suppress redundantAssignment
+    // set the LSB
+    *mtimecmpl = (uint32_t)(new_mtimecmp & 0x0FFFFFFFFUL);
+    // Set the correct MSB
+    *mtimecmph = (uint32_t)(new_mtimecmp >> 32); // cppcheck-suppress redundantAssignment
+#else
+#endif
+}
+#endif /* CPUSTYLE_F133 */
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0 && defined (CLINT)
+#if 0 && defined (CLINT) && CPUSTYLE_F133
 	{
+		TP();
+		//csr_set_bits_mcounteren(MCOUNTEREN_CY_BIT_MASK | MCOUNTEREN_TM_BIT_MASK | MCOUNTEREN_IR_BIT_MASK);
+
+		PRINTF("mtimer_get_raw_time_cmp = 0x%" PRIX64 "\n", mtimer_get_raw_time_cmp());
+		PRINTF("mtimer_get_raw_time_cmp = %" PRIu64 "\n", mtimer_get_raw_time_cmp());
+
+		mtimer_set_raw_time_cmp(1000);
+	    //mtimer_set_raw_time_cmp(mtimer_get_raw_time() + 24000000);
+		PRINTF("mtimer_get_raw_time_cmp = 0x%" PRIX64 "\n", mtimer_get_raw_time_cmp());
+		PRINTF("mtimer_get_raw_time_cmp = %" PRIu64 "\n", mtimer_get_raw_time_cmp());
+
+		mtimer_set_raw_time_cmp(0x12345678DEADBEEF);
+		PRINTF("mtimer_get_raw_time_cmp = 0x%" PRIX64 "\n", mtimer_get_raw_time_cmp());
+		PRINTF("mtimer_get_raw_time_cmp = %" PRIu64 "\n", mtimer_get_raw_time_cmp());
+
 		// https://chromitem-soc.readthedocs.io/en/latest/clint.html
-		PRINTF("mtime=%08lX\n", CLINT->MTIME);
-		PRINTF("mtime=%08lX\n", CLINT->MTIME);
-		PRINTF("mtime=%08lX\n", CLINT->MTIME);
+		PRINTF("mtimecmp=0x%08" PRIX32 "%08" PRIX32"\n",  CLINT->mtimecmphi,  CLINT->mtimecmplo);
+
+	    mtimer_set_raw_time_cmp(csr_read_mcycle() + 20ll * CPU_FREQ);
+		PRINTF("mtimer_get_raw_time_cmp = 0x%" PRIX64 "\n", mtimer_get_raw_time_cmp());
+		PRINTF("mtimer_get_raw_time_cmp = %" PRIu64 "\n", mtimer_get_raw_time_cmp());
+		TP();
+		const uintptr_t a = CLINT_BASE + 0xB000;
+		PRINTF("mtimecmp=0x%08" PRIX32 "%08" PRIX32"\n",  CLINT->mtimecmphi,  CLINT->mtimecmplo);
+		//printhex32(a, (void *) a, 0x10000);
+		// https://chromitem-soc.readthedocs.io/en/latest/clint.html
+		PRINTF("mtimecmp=0x%08" PRIX32 "%08" PRIX32"\n",  CLINT->mtimecmphi,  CLINT->mtimecmplo);
+		//PRINTF("mtime=0x%08" PRIX32 "%08" PRIX32 "\n",  CLINT->mtimehi,  CLINT->mtimelo);
 	}
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
