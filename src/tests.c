@@ -6370,9 +6370,9 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
-		static PACKEDCOLORMAIN_T fb1 [GXSIZE(DIM_Y, DIM_X)];
-		static PACKEDCOLORMAIN_T fb2 [GXSIZE(DIM_Y, DIM_X)];
-		static PACKEDCOLORMAIN_T fb3 [GXSIZE(DIM_Y, DIM_X)];
+		static PACKEDCOLORMAIN_T fb1 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORMAIN_T fb2 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORMAIN_T fb3 [GXSIZE(DIM_X, DIM_Y)];
 
 		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTARGB(111, 0, 0, 0));	/* transparent black */
 		colmain_fillrect(fb2, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTARGB(111, 0, 0, 0));	/* transparent black */
