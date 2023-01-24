@@ -1399,11 +1399,10 @@ static void (* volatile plic_vectors [MAX_IRQ_n])(void);
 
 void VMEI_Handler(void)
 {
-	//PRINTF("VMEI_Handler enter: int_id=%u\n", int_id);
 	const uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;		// bits 9..0
+	//PRINTF(/* "VMEI_Handler enter: int_" */ "ID=%u\n", int_id);
 	if (int_id != 0)
 	{
-		//const uint32_t prio = PLIC->PLIC_MTH_REG;
 	#if WITHNESTEDINTERRUPTS
 		const uint_fast8_t priority = PLIC->PLIC_MTH_REG;	/* текущий уровень приоритета (bits 4..0) */
 		PLIC->PLIC_MTH_REG = PLIC->PLIC_PRIO_REGn [int_id];	/* обрабатываемый уровень приоритета */
@@ -1411,6 +1410,7 @@ void VMEI_Handler(void)
 		const uint_xlen_t mcause = csr_read_mcause();
 		const uint_xlen_t mstatus = csr_read_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); /* раразршение прерываний */
 		ASSERT((mstatus & MSTATUS_MIE_BIT_MASK) == 0);	/* прерывания были запрещены при входе в обработчик */
+		//ASSERT(PLIC->PLIC_MTH_REG > priority);
 	#endif /* WITHNESTEDINTERRUPTS */
 		__FPU_Enable();
 		ASSERT(int_id < MAX_IRQ_n);
@@ -1422,9 +1422,9 @@ void VMEI_Handler(void)
 		PLIC->PLIC_MTH_REG = priority;	/* восстанавливаем обрабатываемый уровень приоритета */
 	#endif /* WITHNESTEDINTERRUPTS */
 		//PLIC->PLIC_MTH_REG = prio;
-		//PRINTF("VMEI_Handler  exit: int_id=%u\n", int_id);
 		PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
 	}
+	//PRINTF(/* "VMEI_Handler  exit: int_" */ "id=%u\n", int_id);
 }
 
 void IRQ0_Handler(void)
@@ -1868,6 +1868,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	const unsigned mask = (1u << d.rem);
 
 	PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
+	PLIC->PLIC_SIE_REGn [d.quot] &= ~ mask;		// Supervisor mode disable
 	plic_vectors [int_id] = handler;
 	PLIC->PLIC_PRIO_REGn [int_id] = priority;
 	PLIC->PLIC_MIE_REGn [d.quot] |= mask;
