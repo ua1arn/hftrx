@@ -1,5 +1,6 @@
 #type CCU
 #base CCU 0x02001000
+#irq CCU_FERR 80
 PLL_CPU_CTRL_REG;0x0000;PLL_CPU Control Register
 PLL_DDR_CTRL_REG;0x0010;PLL_DDR Control Register
 PLL_PERI_CTRL_REG;0x0020;PLL_PERI Control Register
