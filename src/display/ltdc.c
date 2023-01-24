@@ -1807,19 +1807,19 @@ static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 		;
 }
 
-static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
+static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int ch)
 {
-	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * DE_MUX_CHAN_INDEX);
+	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * ch);
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
 	write32((uintptr_t) & ui->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
 }
 
-static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
+static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, int ch)
 {
 	struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
 	struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
-	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * DE_MUX_CHAN_INDEX);
+	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * ch);
 
 //	PRINTF("#define de_clk_t_base %p\n", clk);
 //	PRINTF("#define de_glb_t_base @%p\n", glb);
@@ -2143,10 +2143,12 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	}
 	t113_tconlcd_enable(pdat);
 
-	t113_de_set_mode(pdat);
+	t113_de_set_mode(pdat, DE_MUX_CHAN_INDEX);
+	//t113_de_set_mode(pdat, 2);
+	//t113_de_set_mode(pdat, 3);
 	t113_de_enable(pdat);
 
-	t113_de_set_address(pdat, pdat->vram [pdat->index]);
+	t113_de_set_address(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);
 	t113_de_enable(pdat);
 
 	// Set DE MODE if need
@@ -2159,7 +2161,7 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 
-	t113_de_set_address(pdat, p);
+	t113_de_set_address(pdat, p, DE_MUX_CHAN_INDEX);
 	t113_de_enable(pdat);
 }
 
@@ -2174,7 +2176,7 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		;
 
 
-	t113_de_set_address(pdat, p);
+	t113_de_set_address(pdat, p, DE_MUX_CHAN_INDEX);
 	t113_de_enable(pdat);
 }
 

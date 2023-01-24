@@ -2,9 +2,9 @@
 #define __T113_REG_DE_H__
 
 #define T113_DE_BASE		DE_BASE
-
+//
 //#define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
-//#define T113_DE_MUX_BLD		(0x00100000 + 0x01000)
+//#define T113_DE_MUX_BLD		(0x00100000 + 0x01000)	/* 5.10.3.4 Blender */
 #define T113_DE_MUX_CHAN	(0x00100000 + 0x02000)
 #define T113_DE_MUX_VSU		(0x00100000 + 0x20000)
 #define T113_DE_MUX_GSU1	(0x00100000 + 0x30000)
@@ -81,6 +81,8 @@ struct de_vi_t {
 	uint32_t vert[2];
 };
 
+// 5.10.3.4 Blender
+// part
 struct de_ui_t {
 	struct {
 		uint32_t attr;
