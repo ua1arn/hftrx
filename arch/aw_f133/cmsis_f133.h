@@ -18,9 +18,13 @@
 #define	CCU_BASE	0x02001000
 #define	CIR_TX_BASE	0x02003000
 #define	LEDC_BASE	0x02008000
+#define	GPADC_BASE	0x02009000
+#define	TPADC_BASE	0x02009C00
 #define	IOMMU_BASE	0x02010000
 #define	AUDIO_CODEC_BASE	0x02030000
 #define	DMIC_BASE	0x02031000
+#define	I2S1_BASE	0x02033000
+#define	I2S2_BASE	0x02034000
 #define	OWA_BASE	0x02036000
 #define	TIMER_BASE	0x02050000
 #define	UART0_BASE	0x02500000
@@ -35,16 +39,19 @@
 #define	TWI3_BASE	0x02502C00
 #define	CAN0_BASE	0x02504000
 #define	CAN1_BASE	0x02504400
+#define	SYS_CFG_BASE	0x03000000
 #define	DMAC_BASE	0x03002000
+#define	SID_BASE	0x03006000
 #define	CE_NS_BASE	0x03040000
 #define	CE_S_BASE	0x03040800
-#define	MSI_MEMC_BASE	0x03102000
 #define	DDRPHYC_BASE	0x03103000
+#define	MSI_MEMC_BASE	0x03202000
 #define	SMHC0_BASE	0x04020000
 #define	SMHC1_BASE	0x04021000
 #define	SMHC2_BASE	0x04022000
 #define	SPI0_BASE	0x04025000
 #define	SPI_DBI_BASE	0x04026000
+#define	USBOTG0_BASE	0x04100000
 #define	EMAC_BASE	0x04500000
 #define	G2D_TOP_BASE	0x05410000
 #define	G2D_MIXER_BASE	0x05410100
@@ -68,6 +75,7 @@
 #define	CIR_RX_BASE	0x07040000
 #define	RTC_BASE	0x07090000
 #define	PLIC_BASE	0x10000000
+#define	CLINT_BASE	0x14000000
 /*
  * @brief RISC_CFG
  */
@@ -304,18 +312,18 @@ typedef struct CCU_Type
 /*!< PLIC Controller Interface */
 typedef struct PLIC_Type
 {
-	__IO uint32_t PLIC_PRIO_REGn [0x400];                /*!< Offset 0x000 (0<n<256) PLIC Priority Register n */
-	__IO uint32_t PLIC_IP_REGn [0x020];                  /*!< Offset 0x1000 (0≤n<9) PLIC Interrupt Pending Register n */
+	__IO uint32_t PLIC_PRIO_REGn [0x400];                /*!< Offset 0x000 (0<n<256) PLIC Priority Register n - Interrupt Source Priority */
+	__IO uint32_t PLIC_IP_REGn [0x020];                  /*!< Offset 0x1000 (0≤n<9) PLIC Interrupt Pending Register n - Interrupt Pending Bits */
 	uint32_t reserved_0x1080 [0x03E0];
-	__IO uint32_t PLIC_MIE_REGn [0x020];                 /*!< Offset 0x2000 (0≤n<9) PLIC Machine Mode Interrupt Enable Register n */
-	__IO uint32_t PLIC_SIE_REGn [0x020];                 /*!< Offset 0x2080 (0≤n<9) PLIC Superuser Mode Interrupt Enable Register n */
+	__IO uint32_t PLIC_MIE_REGn [0x020];                 /*!< Offset 0x2000 (0≤n<9) PLIC Machine Mode Interrupt Enable Register n - Machine Interrupt Enable Bits */
+	__IO uint32_t PLIC_SIE_REGn [0x020];                 /*!< Offset 0x2080 (0≤n<9) PLIC Superuser Mode Interrupt Enable Register n - Superuser Interrupt Enable Bits */
 	uint32_t reserved_0x2100 [0x7F7BF];
 	__IO uint32_t PLIC_CTRL_REG;                         /*!< Offset 0x1FFFFC PLIC Control Register */
-	__IO uint32_t PLIC_MTH_REG;                          /*!< Offset 0x200000 PLIC Machine Threshold Register */
-	__IO uint32_t PLIC_MCLAIM_REG;                       /*!< Offset 0x200004 PLIC Machine Claim Register */
+	__IO uint32_t PLIC_MTH_REG;                          /*!< Offset 0x200000 PLIC Machine Threshold Register - Priority Threshold  for context 0 */
+	__IO uint32_t PLIC_MCLAIM_REG;                       /*!< Offset 0x200004 PLIC Machine Claim Register (EOI) - Interrupt Claim Process for context 0 */
 	uint32_t reserved_0x200008 [0x03FE];
-	__IO uint32_t PLIC_STH_REG;                          /*!< Offset 0x201000 PLIC Superuser Threshold Register */
-	__IO uint32_t PLIC_SCLAIM_REG;                       /*!< Offset 0x201004 PLIC Superuser Claim Register */
+	__IO uint32_t PLIC_STH_REG;                          /*!< Offset 0x201000 PLIC Superuser Threshold Register - Priority Threshold  for context 1 */
+	__IO uint32_t PLIC_SCLAIM_REG;                       /*!< Offset 0x201004 PLIC Superuser Claim Register (EOI) - Interrupt Claim Process for context 1 */
 } PLIC_TypeDef; /* size of structure = 0x201008 */
 /*
  * @brief SYS_CFG
@@ -2165,12 +2173,25 @@ typedef struct EMAC_Type
 	uint32_t reserved_0x0CC;
 	__IO uint32_t EMAC_RGMII_STA;                        /*!< Offset 0x0D0 EMAC RGMII Status Register */
 } EMAC_TypeDef; /* size of structure = 0x0D4 */
+/*
+ * @brief CLINT
+ */
+/*!< CLINT Controller Interface */
+typedef struct CLINT_Type
+{
+	__IO uint32_t MSIP;                                  /*!< Offset 0x000 This register generates machine mode software interrupts when set. */
+	uint32_t reserved_0x004 [0x0FFF];
+	__IO uint64_t MTIMECMP;                              /*!< Offset 0x4000 This register holds the compare value for the timer. */
+	uint32_t reserved_0x4008 [0x1FFC];
+	__IO uint64_t MTIME;                                 /*!< Offset 0xBFF8 Provides the current timer value. */
+} CLINT_TypeDef; /* size of structure = 0xC000 */
 
 /* Access pointers */
 
 #define	RISC_CFG	((RISC_CFG_TypeDef *) RISC_CFG_BASE)	/*!< \brief RISC_CFG Interface register set access pointer */
 #define	CCU	((CCU_TypeDef *) CCU_BASE)	/*!< \brief CCU Interface register set access pointer */
 #define	PLIC	((PLIC_TypeDef *) PLIC_BASE)	/*!< \brief PLIC Interface register set access pointer */
+#define	SYS_CFG	((SYS_CFG_TypeDef *) SYS_CFG_BASE)	/*!< \brief SYS_CFG Interface register set access pointer */
 #define	UART0	((UART_TypeDef *) UART0_BASE)	/*!< \brief UART0 Interface register set access pointer */
 #define	UART1	((UART_TypeDef *) UART1_BASE)	/*!< \brief UART1 Interface register set access pointer */
 #define	UART2	((UART_TypeDef *) UART2_BASE)	/*!< \brief UART2 Interface register set access pointer */
@@ -2193,6 +2214,8 @@ typedef struct EMAC_Type
 #define	SMHC0	((SMHC_TypeDef *) SMHC0_BASE)	/*!< \brief SMHC0 Interface register set access pointer */
 #define	SMHC1	((SMHC_TypeDef *) SMHC1_BASE)	/*!< \brief SMHC1 Interface register set access pointer */
 #define	SMHC2	((SMHC_TypeDef *) SMHC2_BASE)	/*!< \brief SMHC2 Interface register set access pointer */
+#define	I2S1	((I2S_PCM_TypeDef *) I2S1_BASE)	/*!< \brief I2S1 Interface register set access pointer */
+#define	I2S2	((I2S_PCM_TypeDef *) I2S2_BASE)	/*!< \brief I2S2 Interface register set access pointer */
 #define	DMIC	((DMIC_TypeDef *) DMIC_BASE)	/*!< \brief DMIC Interface register set access pointer */
 #define	OWA	((OWA_TypeDef *) OWA_BASE)	/*!< \brief OWA Interface register set access pointer */
 #define	AUDIO_CODEC	((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)	/*!< \brief AUDIO_CODEC Interface register set access pointer */
@@ -2204,6 +2227,8 @@ typedef struct EMAC_Type
 #define	CIR_RX	((CIR_RX_TypeDef *) CIR_RX_BASE)	/*!< \brief CIR_RX Interface register set access pointer */
 #define	CIR_TX	((CIR_TX_TypeDef *) CIR_TX_BASE)	/*!< \brief CIR_TX Interface register set access pointer */
 #define	LEDC	((LEDC_TypeDef *) LEDC_BASE)	/*!< \brief LEDC Interface register set access pointer */
+#define	TPADC	((TPADC_TypeDef *) TPADC_BASE)	/*!< \brief TPADC Interface register set access pointer */
+#define	GPADC	((GPADC_TypeDef *) GPADC_BASE)	/*!< \brief GPADC Interface register set access pointer */
 #define	SPI_DBI	((SPI_DBI_TypeDef *) SPI_DBI_BASE)	/*!< \brief SPI_DBI Interface register set access pointer */
 #define	CE_NS	((CE_TypeDef *) CE_NS_BASE)	/*!< \brief CE_NS Interface register set access pointer */
 #define	CE_S	((CE_TypeDef *) CE_S_BASE)	/*!< \brief CE_S Interface register set access pointer */
@@ -2212,6 +2237,7 @@ typedef struct EMAC_Type
 #define	TIMER	((TIMER_TypeDef *) TIMER_BASE)	/*!< \brief TIMER Interface register set access pointer */
 #define	CAN0	((CAN_TypeDef *) CAN0_BASE)	/*!< \brief CAN0 Interface register set access pointer */
 #define	CAN1	((CAN_TypeDef *) CAN1_BASE)	/*!< \brief CAN1 Interface register set access pointer */
+#define	USBOTG0	((USBOTG_TypeDef *) USBOTG0_BASE)	/*!< \brief USBOTG0 Interface register set access pointer */
 #define	G2D_TOP	((G2D_TOP_TypeDef *) G2D_TOP_BASE)	/*!< \brief G2D_TOP Interface register set access pointer */
 #define	G2D_MIXER	((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)	/*!< \brief G2D_MIXER Interface register set access pointer */
 #define	G2D_V0	((G2D_LAY_TypeDef *) G2D_V0_BASE)	/*!< \brief G2D_V0 Interface register set access pointer */
@@ -2230,6 +2256,8 @@ typedef struct EMAC_Type
 #define	CSIC_DMA1	((CSIC_DMA_TypeDef *) CSIC_DMA1_BASE)	/*!< \brief CSIC_DMA1 Interface register set access pointer */
 #define	DDRPHYC	((DDRPHYC_TypeDef *) DDRPHYC_BASE)	/*!< \brief DDRPHYC Interface register set access pointer */
 #define	MSI_MEMC	((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)	/*!< \brief MSI_MEMC Interface register set access pointer */
+#define	SID	((SID_TypeDef *) SID_BASE)	/*!< \brief SID Interface register set access pointer */
 #define	DMAC	((DMAC_TypeDef *) DMAC_BASE)	/*!< \brief DMAC Interface register set access pointer */
 #define	EMAC	((EMAC_TypeDef *) EMAC_BASE)	/*!< \brief EMAC Interface register set access pointer */
+#define	CLINT	((CLINT_TypeDef *) CLINT_BASE)	/*!< \brief CLINT Interface register set access pointer */
 /* Generated section end */ 

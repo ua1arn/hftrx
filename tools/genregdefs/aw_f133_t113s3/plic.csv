@@ -1,11 +1,11 @@
 #type PLIC
 #base PLIC 0x10000000
-PLIC_PRIO_REGn; 0x0000 1024; (0<n<256) PLIC Priority Register n
-PLIC_IP_REGn; 0x1000 32; (0≤n<9) PLIC Interrupt Pending Register n
-PLIC_MIE_REGn; 0x2000 32; (0≤n<9) PLIC Machine Mode Interrupt Enable Register n
-PLIC_SIE_REGn; 0x2080 32; (0≤n<9) PLIC Superuser Mode Interrupt Enable Register n
+PLIC_PRIO_REGn; 0x0000 1024; (0<n<256) PLIC Priority Register n - Interrupt Source Priority
+PLIC_IP_REGn; 0x1000 32; (0≤n<9) PLIC Interrupt Pending Register n - Interrupt Pending Bits
+PLIC_MIE_REGn; 0x2000 32; (0≤n<9) PLIC Machine Mode Interrupt Enable Register n - Machine Interrupt Enable Bits
+PLIC_SIE_REGn; 0x2080 32; (0≤n<9) PLIC Superuser Mode Interrupt Enable Register n - Superuser Interrupt Enable Bits
 PLIC_CTRL_REG; 0x1FFFFC; PLIC Control Register
-PLIC_MTH_REG; 0x200000; PLIC Machine Threshold Register
-PLIC_MCLAIM_REG; 0x200004; PLIC Machine Claim Register
-PLIC_STH_REG; 0x201000; PLIC Superuser Threshold Register
-PLIC_SCLAIM_REG; 0x201004; PLIC Superuser Claim Register
+PLIC_MTH_REG; 0x200000; PLIC Machine Threshold Register - Priority Threshold  for context 0
+PLIC_MCLAIM_REG; 0x200004; PLIC Machine Claim Register (EOI) - Interrupt Claim Process for context 0
+PLIC_STH_REG; 0x201000; PLIC Superuser Threshold Register - Priority Threshold  for context 1
+PLIC_SCLAIM_REG; 0x201004; PLIC Superuser Claim Register (EOI) - Interrupt Claim Process for context 1

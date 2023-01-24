@@ -1,6 +1,7 @@
 #type OWA
 #base OWA 0x02036000
 #irq OWA 55
+#irqrv OWA 39
 OWA_GEN_CTL; 0x0000; OWA General Control Register
 OWA_TX_CFIG; 0x0004; OWA TX Configuration Register
 OWA_RX_CFIG; 0x0008; OWA RX Configuration Register
