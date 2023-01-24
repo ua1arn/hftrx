@@ -1762,7 +1762,7 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 #include "reg-de.h"
 #include "reg-tconlcd.h"
 
-#define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
+#define UI_CFG_INDEX 1	/* 0..3 используется одна конфигурация */
 #define DE_MUX_CHAN_INDEX 1	/* 0-vi as source, 1..3 используется одна конфигурация 1, остальные - темно-зеленые */
 
 static uint32_t read32(uintptr_t a)
@@ -1807,18 +1807,18 @@ static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 		;
 }
 
-static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int ch)
+static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int uich)
 {
-	ASSERT(ch >= 1 && ch <= 3);
-	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * ch);
+	ASSERT(uich >= 1 && uich <= 3);
+	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
 	write32((uintptr_t) & ui->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
 }
 
-static inline void t113_de_set_mode_ui(struct fb_t113_rgb_pdata_t * pdat, int ch)
+static inline void t113_de_set_mode_ui(struct fb_t113_rgb_pdata_t * pdat, int uich)
 {
-	ASSERT(ch >= 1 && ch <= 3);
-	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * ch);
+	ASSERT(uich >= 1 && uich <= 3);
+	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
 	// 5.10.8.1 OVL_UI attribute control register
 	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
@@ -1917,9 +1917,9 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// BLD_FILL_COLOR_CTL
 	write32((uintptr_t) & bld->fcolor_ctl,
 			(1u << 8)	| // pipe0 enable
-//			(1u << 9)	| // pipe1 enable
-//			(1u << 10)	| // pipe2 enable
-//			(1u << 11)	| // pipe3 enable
+			//(1u << 9)	| // pipe1 enable
+			//(1u << 10)	| // pipe2 enable
+			//(1u << 11)	| // pipe3 enable
 			//(0x00000100 << 0) |	// P0_EN P0_FCEN
 			//(0x00000100 << 1) |
 			//(0x00000100 << 2) |
@@ -1930,9 +1930,9 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// BLD_CH_RTCTL
 	write32((uintptr_t) & bld->route,
 			(1u << 0) |	// pipe 0 from ch 1
-			(2u << 4) |	// pipe 1 from ch 2
-			(3u << 8) |	// pipe 2 from ch 3
-//			(0u << 12) |	// pipe 2 from ch 3
+			//(1u << 4) |	// pipe 1 from ch 2
+			//(1u << 8) |	// pipe 2 from ch 3
+			//(1u << 12) |	// pipe 3 from ch 3
 			0
 			);
 	write32((uintptr_t) & bld->premultiply,
@@ -1940,12 +1940,19 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	write32((uintptr_t) & bld->bkcolor,
 			0xff000000
 			);
-	write32((uintptr_t) & bld->bld_mode [0],
-			0x03010301
-			);
-	write32((uintptr_t) & bld->bld_mode [1],
-			0x03010301
-			);
+
+	// 5.10.9.1 BLD fill color control register
+	// BLD_CTL
+	for(i = 0; i < 4; i++)
+	{
+		const unsigned bld_mode =
+					 0x03010301;
+		write32((uintptr_t) & bld->bld_mode [i],
+				bld_mode
+				);
+
+	}
+
 	write32((uintptr_t) & bld->output_size,
 			ovl_ui_mbsize
 			);

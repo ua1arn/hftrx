@@ -40,7 +40,7 @@ struct de_glb_t {
 // 5.10.3.4 Blender
 // BLD
 struct de_bld_t {
-	uint32_t fcolor_ctl;	/** Offset 0x000 BLD fill color control register */
+	uint32_t fcolor_ctl;	/** BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
 	struct {
 		uint32_t fcolor;	/**  BLD fill color register */
 		uint32_t insize;	/**  BLD input memory size register */
@@ -52,7 +52,7 @@ struct de_bld_t {
 	uint32_t premultiply;	/** Offset 0x080 BLD pre-multiply control register */
 	uint32_t bkcolor;
 	uint32_t output_size;
-	uint32_t bld_mode[4];
+	uint32_t bld_mode[4];	/* BLD_CTL */
 	uint32_t dum1[4];
 	uint32_t ck_ctl;
 	uint32_t ck_cfg;
