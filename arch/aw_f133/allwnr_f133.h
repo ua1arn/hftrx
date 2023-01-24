@@ -288,8 +288,8 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define IOMMU		((IOMMU_TypeDef *) IOMMU_BASE)		/*!< \brief IOMMU Interface register set access pointer */
 #define CCU			((CCU_TypeDef *) CCU_BASE)			/*!< \brief CCU Interface register set access pointer */
 
-#define DE 			((DE_TypeDef *) DE_BASE)					/*!< \brief DE Interface register set access pointer */
-#define DI 			((DI_TypeDef *) DI_BASE)					/*!< \brief DI Interface register set access pointer */
+//#define DE 			((DE20_TypeDef *) DE_BASE)					/*!< \brief DE Interface register set access pointer */
+//#define DI 			((DI_TypeDef *) DI_BASE)					/*!< \brief DI Interface register set access pointer */
 
 #define G2D_TOP     ((G2D_TOP_TypeDef *) G2D_TOP_BASE)			/*!< \brief G2D_TOP Interface register set access pointer */
 #define G2D_MIXER   ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)		/*!< \brief G2D_MIXER Interface register set access pointer */

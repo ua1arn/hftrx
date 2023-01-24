@@ -256,7 +256,7 @@ typedef enum IRQn
 
 // CPUX related
 // Address (It is for Cluster CPU)
-#define CPU_SUBSYS_CTRL_BASE	0x08100000
+//#define CPU_SUBSYS_CTRL_BASE	0x08100000
 #define TimeStamp_STA_BASE		0x08110000
 #define TimeStamp_CTRL_BASE		0x08120000
 #define IDC_BASE				0x08130000
@@ -279,8 +279,8 @@ typedef enum IRQn
 //#define G2D_ROT_BASE        (0x28000 + G2D_BASE)
 //#define G2D_GSU_BASE        (0x30000 + G2D_BASE)
 
-#define	GIC_DISTRIBUTOR_BASE	0x03021000
-#define	GIC_INTERFACE_BASE	0x03022000
+//#define	GIC_DISTRIBUTOR_BASE	 ((uintptr_t) 0x03021000)
+//#define	GIC_INTERFACE_BASE	 ((uintptr_t) 0x03022000)
 
 /* ===========================  Configuration of the ARM Cortex-A Processor and Core Peripherals  ============================ */
 #define __CORTEX_A                    7U      /*!< Cortex-A# Core                              */
@@ -290,10 +290,10 @@ typedef enum IRQn
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
+#include "cmsis_t113s3.h"
+
 #include "core_ca.h"
 #include "system_allwnr_t113s3.h"
-
-#include "cmsis_t113s3.h"
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
 
@@ -334,8 +334,8 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define IOMMU		((IOMMU_TypeDef *) IOMMU_BASE)		/*!< \brief IOMMU Interface register set access pointer */
 #define CCU			((CCU_TypeDef *) CCU_BASE)			/*!< \brief CCU Interface register set access pointer */
 
-#define DE 			((DE_TypeDef *) DE_BASE)					/*!< \brief DE Interface register set access pointer */
-#define DI 			((DI_TypeDef *) DI_BASE)					/*!< \brief DI Interface register set access pointer */
+//#define DE 			((DE20_TypeDef *) DE_BASE)					/*!< \brief DE Interface register set access pointer */
+//#define DI 			((DI_TypeDef *) DI_BASE)					/*!< \brief DI Interface register set access pointer */
 
 #define G2D_TOP     ((G2D_TOP_TypeDef *) G2D_TOP_BASE)			/*!< \brief G2D_TOP Interface register set access pointer */
 #define G2D_MIXER   ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)		/*!< \brief G2D_MIXER Interface register set access pointer */

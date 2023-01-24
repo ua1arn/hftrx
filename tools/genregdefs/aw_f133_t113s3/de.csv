@@ -1,9 +1,10 @@
-#type DE
+#type DE20
 #base DE 0x05000000
 #base DE_CLK 0x5000000
-#base DE_GLB 0x5100000
-#base DE_BLD 0x5101000
-#base DE_VI 0x5102000
-#base DE_UI1 0x5103000
-#base DE_UI2 0x5104000
-#base DE_UI3 0x5105000
+SCLK_GATE; 0x000; DE SCLK Gating Register
+HCLK_GATE; 0x004; DE HCLK Gating Register
+AHB_RESET; 0x008; DE AHB Reset register
+SCLK_DIV; 0x00C; DE SCLK Division register
+DE2TCON_MUX; 0x010 DE2TCON MUX register
+CMD_CTL; 0x014; CMD Control register
+DI_CTL; 0x01C; DI Control register

@@ -105,7 +105,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 					}
 					else
 					{
-						fprintf(stdout, "\t" "__IO %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
+						fprintf(stdout, "\t" "volatile %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
 					}
 
 					offs += p->fldsize * p->fldrept;
@@ -119,7 +119,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 					}
 					else
 					{
-						fprintf(stdout, "\t" "__IO %s %s;%n", fldtype, p->fldname, & eolpos);
+						fprintf(stdout, "\t" "volatile %s %s;%n", fldtype, p->fldname, & eolpos);
 					}
 					offs += p->fldsize;
 				}
@@ -506,6 +506,9 @@ int main(int argc, char* argv[], char* envp[])
 		if (loadregs(pfl, argv [i]))
 			continue;
 	}
+
+	fprintf(stdout, "#include <stdint.h>" "\n");
+	fprintf(stdout, "\n");
 
 	if (0)
 	{
