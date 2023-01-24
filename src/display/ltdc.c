@@ -1763,6 +1763,7 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 #include "reg-tconlcd.h"
 
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
+#define DE_MUX_CHAN_INDEX 1	/* 1..3 используется одна конфигурация 1, остальные - темно-зеленые */
 
 static uint32_t read32(uintptr_t a)
 {
@@ -1776,8 +1777,8 @@ static void write32(uintptr_t a, uint32_t v)
 
 struct fb_t113_rgb_pdata_t
 {
-	uintptr_t virt_de;	// 0: struct de_vi_t, 1..3: struct de_ui_t
-	uintptr_t virt_tconlcd;
+	//uintptr_t virt_de;	// 0: struct de_vi_t, 1..3: struct de_ui_t
+	//uintptr_t virt_tconlcd;
 
 	//char * clk_de;
 	//char * clk_tconlcd;
@@ -1814,7 +1815,7 @@ struct fb_t113_rgb_pdata_t
 
 static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);
+	struct de_glb_t * const glb = (struct de_glb_t *) (DE_BASE + T113_DE_MUX_GLB);
 	write32((uintptr_t) & glb->dbuff, 1u);	// 1: register value be ready for update (self-cleaning bit)
 	while ((read32((uintptr_t) & glb->dbuff) & 1u) != 0)
 		;
@@ -1822,16 +1823,16 @@ static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 
 static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
 {
-	struct de_ui_t * const ui = (struct de_ui_t *) (pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
+	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * DE_MUX_CHAN_INDEX);
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
 }
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct de_clk_t * const clk = (struct de_clk_t *) (pdat->virt_de);
-	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);		// Global control register
-	struct de_bld_t * const bld = (struct de_bld_t *) (pdat->virt_de + T113_DE_MUX_BLD);
-	struct de_ui_t * const ui = (struct de_ui_t *) (pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
+	struct de_clk_t * const clk = (struct de_clk_t *) (DE_BASE);
+	struct de_glb_t * const glb = (struct de_glb_t *) (DE_BASE + T113_DE_MUX_GLB);		// Global control register
+	struct de_bld_t * const bld = (struct de_bld_t *) (DE_BASE + T113_DE_MUX_BLD);
+	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * DE_MUX_CHAN_INDEX);
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
 	// 5.10.8.2 OVL_UI memory block size register
@@ -1878,7 +1879,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 	for(i = 0; i < 4; i++)
 	{
-		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
+		void * chan = (void *)(T113_DE_BASE + T113_DE_MUX_CHAN + 0x1000 * i);
 
 		// peripherial registers
 		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
@@ -1902,17 +1903,17 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t) & bld->attr [i].insize, ovl_ui_mbsize);
 	}
 
-	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU1, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU2, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU3, 0);
-	write32(pdat->virt_de + T113_DE_MUX_FCE, 0);
-	write32(pdat->virt_de + T113_DE_MUX_BWS, 0);
-	write32(pdat->virt_de + T113_DE_MUX_LTI, 0);
-	write32(pdat->virt_de + T113_DE_MUX_PEAK, 0);
-	write32(pdat->virt_de + T113_DE_MUX_ASE, 0);
-	write32(pdat->virt_de + T113_DE_MUX_FCC, 0);
-	write32(pdat->virt_de + T113_DE_MUX_DCSC, 0);
+	write32(DE_BASE + T113_DE_MUX_VSU, 0);
+	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
+	write32(DE_BASE + T113_DE_MUX_GSU2, 0);
+	write32(DE_BASE + T113_DE_MUX_GSU3, 0);
+	write32(DE_BASE + T113_DE_MUX_FCE, 0);
+	write32(DE_BASE + T113_DE_MUX_BWS, 0);
+	write32(DE_BASE + T113_DE_MUX_LTI, 0);
+	write32(DE_BASE + T113_DE_MUX_PEAK, 0);
+	write32(DE_BASE + T113_DE_MUX_ASE, 0);
+	write32(DE_BASE + T113_DE_MUX_FCC, 0);
+	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
 
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
@@ -1930,7 +1931,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// 5.10.8.4 OVL_UI memory pitch register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch, LCDMODE_PIXELSIZE * GXADJ(DIM_X));	// размер строки в байтах
 	// 5.10.8.5 OVL_UI top field memory block low address register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
+	//write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
 	// 5.10.8.6 OVL_UI bottom field memory block low address register
 	// ...
 	// 5.10.8.2 OVL_UI memory block size register
@@ -1941,7 +1942,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
+	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
 	uint32_t val;
 
 	val = read32((uintptr_t) & tcon->gctrl);
@@ -1951,7 +1952,7 @@ static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
+	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
 	uint32_t val;
 
 	val = read32((uintptr_t) & tcon->dclk);
@@ -1964,7 +1965,7 @@ static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
 {
-	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
+	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
 	int vbp, vtotal;
 	int hbp, htotal;
 	uint32_t val;
@@ -2021,7 +2022,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 
 static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)TCON_LCD0_BASE;
 
 	if((pdat->bits_per_pixel == 16) || (pdat->bits_per_pixel == 18))
 	{
@@ -2060,8 +2061,8 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	uint32_t val;
 
-	pdat->virt_tconlcd = T113_TCONLCD_BASE;
-    pdat->virt_de = T113_DE_BASE;
+//	pdat->virt_tconlcd = T113_TCONLCD_BASE;
+//    pdat->virt_de = T113_DE_BASE;
 	//pdat->clk_tconlcd = (void *) allwnrt113_get_video0_x2_freq();
     //pdat->clk_de = (void *) 396000000;
 	pdat->width = vdmode->width;

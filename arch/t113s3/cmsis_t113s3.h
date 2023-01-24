@@ -2,83 +2,83 @@
 
 /* Peripheral and RAM base address */
 
-#define	GPIOBLOCK_BASE	0x02000000
-#define	GPIOB_BASE	0x02000030
-#define	GPIOC_BASE	0x02000060
-#define	GPIOD_BASE	0x02000090
-#define	GPIOE_BASE	0x020000C0
-#define	GPIOF_BASE	0x020000F0
-#define	GPIOG_BASE	0x02000120
-#define	GPIOINTB_BASE	0x02000220
-#define	GPIOINTC_BASE	0x02000240
-#define	GPIOINTD_BASE	0x02000260
-#define	GPIOINTE_BASE	0x02000280
-#define	GPIOINTF_BASE	0x020002A0
-#define	GPIOINTG_BASE	0x020002C0
-#define	CCU_BASE	0x02001000
-#define	CIR_TX_BASE	0x02003000
-#define	LEDC_BASE	0x02008000
-#define	GPADC_BASE	0x02009000
-#define	TPADC_BASE	0x02009C00
-#define	IOMMU_BASE	0x02010000
-#define	AUDIO_CODEC_BASE	0x02030000
-#define	DMIC_BASE	0x02031000
-#define	I2S1_BASE	0x02033000
-#define	I2S2_BASE	0x02034000
-#define	OWA_BASE	0x02036000
-#define	TIMER_BASE	0x02050000
-#define	UART0_BASE	0x02500000
-#define	UART1_BASE	0x02500400
-#define	UART2_BASE	0x02500800
-#define	UART3_BASE	0x02500C00
-#define	UART4_BASE	0x02501000
-#define	UART5_BASE	0x02501400
-#define	TWI0_BASE	0x02502000
-#define	TWI1_BASE	0x02502400
-#define	TWI2_BASE	0x02502800
-#define	TWI3_BASE	0x02502C00
-#define	CAN0_BASE	0x02504000
-#define	CAN1_BASE	0x02504400
-#define	SYS_CFG_BASE	0x03000000
-#define	DMAC_BASE	0x03002000
-#define	CPUX_MSGBOX_BASE	0x03003000
-#define	SID_BASE	0x03006000
-#define	GIC_DISTRIBUTOR_BASE	0x03021000
-#define	GIC_INTERFACE_BASE	0x03022000
-#define	CE_NS_BASE	0x03040000
-#define	CE_S_BASE	0x03040800
-#define	DDRPHYC_BASE	0x03103000
-#define	MSI_MEMC_BASE	0x03202000
-#define	SMHC0_BASE	0x04020000
-#define	SMHC1_BASE	0x04021000
-#define	SMHC2_BASE	0x04022000
-#define	SPI0_BASE	0x04025000
-#define	SPI_DBI_BASE	0x04026000
-#define	USBOTG0_BASE	0x04100000
-#define	EMAC_BASE	0x04500000
-#define	DE_BASE	0x05000000
-#define	DI_BASE	0x05400000
-#define	G2D_TOP_BASE	0x05410000
-#define	G2D_MIXER_BASE	0x05410100
-#define	G2D_BLD_BASE	0x05410400
-#define	G2D_V0_BASE	0x05410800
-#define	G2D_UI0_BASE	0x05411000
-#define	G2D_UI1_BASE	0x05411800
-#define	G2D_UI2_BASE	0x05412000
-#define	G2D_WB_BASE	0x05413000
-#define	G2D_VSU_BASE	0x05418000
-#define	G2D_ROT_BASE	0x05438000
-#define	TCON_LCD0_BASE	0x05461000
-#define	TCON_TV0_BASE	0x05470000
-#define	CSIC_CCU_BASE	0x05800000
-#define	CSIC_TOP_BASE	0x05800800
-#define	CSIC_PARSER0_BASE	0x05801000
-#define	CSIC_DMA0_BASE	0x05809000
-#define	CSIC_DMA1_BASE	0x05809200
-#define	CIR_RX_BASE	0x07040000
-#define	RTC_BASE	0x07090000
-#define	CPU_SUBSYS_CTRL_BASE	0x08100000
-#define	C0_CPUX_CFG_BASE	0x09010000
+#define	GPIOBLOCK_BASE	 ((uintptr_t) 0x02000000)
+#define	GPIOB_BASE	 ((uintptr_t) 0x02000030)
+#define	GPIOC_BASE	 ((uintptr_t) 0x02000060)
+#define	GPIOD_BASE	 ((uintptr_t) 0x02000090)
+#define	GPIOE_BASE	 ((uintptr_t) 0x020000C0)
+#define	GPIOF_BASE	 ((uintptr_t) 0x020000F0)
+#define	GPIOG_BASE	 ((uintptr_t) 0x02000120)
+#define	GPIOINTB_BASE	 ((uintptr_t) 0x02000220)
+#define	GPIOINTC_BASE	 ((uintptr_t) 0x02000240)
+#define	GPIOINTD_BASE	 ((uintptr_t) 0x02000260)
+#define	GPIOINTE_BASE	 ((uintptr_t) 0x02000280)
+#define	GPIOINTF_BASE	 ((uintptr_t) 0x020002A0)
+#define	GPIOINTG_BASE	 ((uintptr_t) 0x020002C0)
+#define	CCU_BASE	 ((uintptr_t) 0x02001000)
+#define	CIR_TX_BASE	 ((uintptr_t) 0x02003000)
+#define	LEDC_BASE	 ((uintptr_t) 0x02008000)
+#define	GPADC_BASE	 ((uintptr_t) 0x02009000)
+#define	TPADC_BASE	 ((uintptr_t) 0x02009C00)
+#define	IOMMU_BASE	 ((uintptr_t) 0x02010000)
+#define	AUDIO_CODEC_BASE	 ((uintptr_t) 0x02030000)
+#define	DMIC_BASE	 ((uintptr_t) 0x02031000)
+#define	I2S1_BASE	 ((uintptr_t) 0x02033000)
+#define	I2S2_BASE	 ((uintptr_t) 0x02034000)
+#define	OWA_BASE	 ((uintptr_t) 0x02036000)
+#define	TIMER_BASE	 ((uintptr_t) 0x02050000)
+#define	UART0_BASE	 ((uintptr_t) 0x02500000)
+#define	UART1_BASE	 ((uintptr_t) 0x02500400)
+#define	UART2_BASE	 ((uintptr_t) 0x02500800)
+#define	UART3_BASE	 ((uintptr_t) 0x02500C00)
+#define	UART4_BASE	 ((uintptr_t) 0x02501000)
+#define	UART5_BASE	 ((uintptr_t) 0x02501400)
+#define	TWI0_BASE	 ((uintptr_t) 0x02502000)
+#define	TWI1_BASE	 ((uintptr_t) 0x02502400)
+#define	TWI2_BASE	 ((uintptr_t) 0x02502800)
+#define	TWI3_BASE	 ((uintptr_t) 0x02502C00)
+#define	CAN0_BASE	 ((uintptr_t) 0x02504000)
+#define	CAN1_BASE	 ((uintptr_t) 0x02504400)
+#define	SYS_CFG_BASE	 ((uintptr_t) 0x03000000)
+#define	DMAC_BASE	 ((uintptr_t) 0x03002000)
+#define	CPUX_MSGBOX_BASE	 ((uintptr_t) 0x03003000)
+#define	SID_BASE	 ((uintptr_t) 0x03006000)
+#define	GIC_DISTRIBUTOR_BASE	 ((uintptr_t) 0x03021000)
+#define	GIC_INTERFACE_BASE	 ((uintptr_t) 0x03022000)
+#define	CE_NS_BASE	 ((uintptr_t) 0x03040000)
+#define	CE_S_BASE	 ((uintptr_t) 0x03040800)
+#define	DDRPHYC_BASE	 ((uintptr_t) 0x03103000)
+#define	MSI_MEMC_BASE	 ((uintptr_t) 0x03202000)
+#define	SMHC0_BASE	 ((uintptr_t) 0x04020000)
+#define	SMHC1_BASE	 ((uintptr_t) 0x04021000)
+#define	SMHC2_BASE	 ((uintptr_t) 0x04022000)
+#define	SPI0_BASE	 ((uintptr_t) 0x04025000)
+#define	SPI_DBI_BASE	 ((uintptr_t) 0x04026000)
+#define	USBOTG0_BASE	 ((uintptr_t) 0x04100000)
+#define	EMAC_BASE	 ((uintptr_t) 0x04500000)
+#define	DE_BASE	 ((uintptr_t) 0x05000000)
+#define	DI_BASE	 ((uintptr_t) 0x05400000)
+#define	G2D_TOP_BASE	 ((uintptr_t) 0x05410000)
+#define	G2D_MIXER_BASE	 ((uintptr_t) 0x05410100)
+#define	G2D_BLD_BASE	 ((uintptr_t) 0x05410400)
+#define	G2D_V0_BASE	 ((uintptr_t) 0x05410800)
+#define	G2D_UI0_BASE	 ((uintptr_t) 0x05411000)
+#define	G2D_UI1_BASE	 ((uintptr_t) 0x05411800)
+#define	G2D_UI2_BASE	 ((uintptr_t) 0x05412000)
+#define	G2D_WB_BASE	 ((uintptr_t) 0x05413000)
+#define	G2D_VSU_BASE	 ((uintptr_t) 0x05418000)
+#define	G2D_ROT_BASE	 ((uintptr_t) 0x05438000)
+#define	TCON_LCD0_BASE	 ((uintptr_t) 0x05461000)
+#define	TCON_TV0_BASE	 ((uintptr_t) 0x05470000)
+#define	CSIC_CCU_BASE	 ((uintptr_t) 0x05800000)
+#define	CSIC_TOP_BASE	 ((uintptr_t) 0x05800800)
+#define	CSIC_PARSER0_BASE	 ((uintptr_t) 0x05801000)
+#define	CSIC_DMA0_BASE	 ((uintptr_t) 0x05809000)
+#define	CSIC_DMA1_BASE	 ((uintptr_t) 0x05809200)
+#define	CIR_RX_BASE	 ((uintptr_t) 0x07040000)
+#define	RTC_BASE	 ((uintptr_t) 0x07090000)
+#define	CPU_SUBSYS_CTRL_BASE	 ((uintptr_t) 0x08100000)
+#define	C0_CPUX_CFG_BASE	 ((uintptr_t) 0x09010000)
 /*
  * @brief CPU_SUBSYS_CTRL
  */

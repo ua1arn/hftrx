@@ -154,7 +154,7 @@ typedef enum IRQn
 //#define SMHC2_BASE      	0x04022000
 //#define SPI0_BASE    	  	0x04025000
 //#define SPI_DBI_BASE  		0x04026000
-#define USBOTG0_BASE 	    0x04100000
+//#define USBOTG0_BASE 	    0x04100000
 #define USBEHCI1_BASE 	    0x04200000
 //#define EMAC_BASE 	     	0x04500000
 
