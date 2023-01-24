@@ -1034,10 +1034,10 @@ extern "C" {
 
 	#if WITHNESTEDINTERRUPTS
 
-		#define ARM_OVERREALTIME_PRIORITY	6
-		#define ARM_REALTIME_PRIORITY		5
-		#define ARM_SYSTEM_PRIORITY			4
-		#define ARM_USER_PRIORITY			3	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+		#define ARM_OVERREALTIME_PRIORITY	3	/* валкодер */
+		#define ARM_REALTIME_PRIORITY		2	/* звук */
+		#define ARM_SYSTEM_PRIORITY			1	/* таймеры, USB */
+		#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
 		#define system_enableIRQ() do { PLIC->PLIC_MTH_REG = ARM_USER_PRIORITY; } while (0)
 		#define system_disableIRQ() do { PLIC->PLIC_MTH_REG = ARM_SYSTEM_PRIORITY; } while (0)
@@ -1053,7 +1053,7 @@ extern "C" {
 		#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
 		#define system_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
-		#define system_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK); } while (0)
+		#define system_disableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
 
 		#define global_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
 		#define global_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK); } while (0)

@@ -160,77 +160,77 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 // SP0 (SYS domain)
-#define GPIO_BASE			0x02000000
-#define SPC_BASE			0x02000800
-#define PWM_BASE			0x02000C00
-#define CCU_BASE			0x02001000
-#define CIR_TX_BASE			0x02003000
-#define TZMA_BASE			0x02004000
-#define LEDC_BASE			0x02008000
-#define GPADC_BASE			0x02009000
-#define THS_BASE			0x02009400
-#define TPADC_BASE			0x02009C00
-#define IOMMU_BASE			0x02010000
-#define AUDIO_CODEC_BASE	0x02030000
-#define DMIC_BASE			0x02031000
-#define I2S1_BASE			0x02033000
-#define I2S2_BASE			0x02034000
-#define OWA_BASE			0x02036000
-#define TIMER_BASE			0x02050000
+//#define GPIO_BASE			0x02000000
+//#define SPC_BASE			0x02000800
+//#define PWM_BASE			0x02000C00
+//#define CCU_BASE			0x02001000
+//#define CIR_TX_BASE			0x02003000
+//#define TZMA_BASE			0x02004000
+//#define LEDC_BASE			0x02008000
+//#define GPADC_BASE			0x02009000
+//#define THS_BASE			0x02009400
+//#define TPADC_BASE			0x02009C00
+//#define IOMMU_BASE			0x02010000
+//#define AUDIO_CODEC_BASE	0x02030000
+//#define DMIC_BASE			0x02031000
+//#define I2S1_BASE			0x02033000
+//#define I2S2_BASE			0x02034000
+//#define OWA_BASE			0x02036000
+//#define TIMER_BASE			0x02050000
 
 // SP1 (SYS domain)
-#define UART0_BASE      	0x02500000
-#define UART1_BASE      	0x02500400
-#define UART2_BASE     		0x02500800
-#define UART3_BASE			0x02500C00
-#define UART4_BASE      	0x02501000
-#define UART5_BASE      	0x02501400
+//#define UART0_BASE      	0x02500000
+//#define UART1_BASE      	0x02500400
+//#define UART2_BASE     		0x02500800
+//#define UART3_BASE			0x02500C00
+//#define UART4_BASE      	0x02501000
+//#define UART5_BASE      	0x02501400
 
-#define TWI0_BASE 	     	0x02502000
-#define TWI1_BASE 	     	0x02502400
-#define TWI2_BASE 	     	0x02502800
-#define TWI3_BASE 	     	0x02502C00
+//#define TWI0_BASE 	     	0x02502000
+//#define TWI1_BASE 	     	0x02502400
+//#define TWI2_BASE 	     	0x02502800
+//#define TWI3_BASE 	     	0x02502C00
 
-#define CAN0_BASE  			0x02504000
-#define CAN1_BASE  			0x02504400
+//#define CAN0_BASE  			0x02504000
+//#define CAN1_BASE  			0x02504400
 
 // SH0 (SYS domain)
-#define SYS_CFG_BASE      	0x03000000
-#define DMAC_BASE      		0x03002000
-#define CPUX_MSGBOX_BASE	0x03003000
-#define SPINLOCK_BASE     	0x03005000
-#define	SID_BASE  		   	0x03006000	/* 4 KB Security ID (SID) */
-#define SMC_BASE     		0x03007000
-#define HSTIMER_BASE     	0x03008000
-#define DCU_BASE      		0x03010000	/* 64 KB */
-#define GIC_BASE      		0x03020000
-#define CE_NS_BASE      	0x03040000
-#define CE_S_BASE   	   	0x03040800
-#define CE_KEY_SRAM_BASE    0x03041000	/* 4 KB (only CE access) */
-#define MSI_MEMC_BASE	    0x03102000	/* 2 MB MSI and MEMC base address */
-#define DDRPHYC_BASE	 	0x03103000
-#define MC_MEMC_BASE		0x03202000	/* MC */
+//#define SYS_CFG_BASE      	0x03000000
+//#define DMAC_BASE      		0x03002000
+//#define CPUX_MSGBOX_BASE	0x03003000
+//#define SPINLOCK_BASE     	0x03005000
+//#define	SID_BASE  		   	0x03006000	/* 4 KB Security ID (SID) */
+//#define SMC_BASE     		0x03007000
+//#define HSTIMER_BASE     	0x03008000
+//#define DCU_BASE      		0x03010000	/* 64 KB */
+//#define GIC_BASE      		0x03020000
+//#define CE_NS_BASE      	0x03040000
+//#define CE_S_BASE   	   	0x03040800
+//#define CE_KEY_SRAM_BASE    0x03041000	/* 4 KB (only CE access) */
+//#define MSI_MEMC_BASE	    0x03102000	/* 2 MB MSI and MEMC base address */
+//#define DDRPHYC_BASE	 	0x03103000
+//#define MC_MEMC_BASE		0x03202000	/* MC */
 
 // SH2 (SYS domain)
-#define SMHC0_BASE      	0x04020000
-#define SMHC1_BASE      	0x04021000
-#define SMHC2_BASE      	0x04022000
-#define SPI0_BASE    	  	0x04025000
-#define SPI_DBI_BASE  		0x04026000
+//#define SMHC0_BASE      	0x04020000
+//#define SMHC1_BASE      	0x04021000
+//#define SMHC2_BASE      	0x04022000
+//#define SPI0_BASE    	  	0x04025000
+//#define SPI_DBI_BASE  		0x04026000
 #define USBOTG0_BASE 	    0x04100000
 #define USBEHCI1_BASE 	    0x04200000
-#define EMAC_BASE 	     	0x04500000
+//#define EMAC_BASE 	     	0x04500000
 
 // VIDEO_OUT_SYS related
-#define DE_BASE 			0x05000000
-#define DI_BASE 			0x05400000
-#define G2D_BASE 			0x05410000
-#define DSI_BASE 			0x05450000
-#define DISPLAY_TOP_BASE 	0x05460000
-#define TCON_LCD0_BASE 		0x05461000
-#define TCON_TV0_BASE 		0x05470000
-#define TVE_TOP_BASE 		0x05600000
-#define TV_Encoder_BASE 	0x05604000
+//#define DE_BASE 			0x05000000
+//#define DI_BASE 			0x05400000
+//#define G2D_BASE 			0x05410000
+//#define DSI_BASE 			0x05450000
+//#define DISPLAY_TOP_BASE 	0x05460000
+//#define TCON_LCD0_BASE 		0x05461000
+//#define TCON_TV0_BASE 		0x05470000
+//#define TVE_TOP_BASE 		0x05600000
+//#define TV_Encoder_BASE 	0x05604000
 
 // Undocumented registers
 //	The Hotplug Flag Register is 0x070005C0
@@ -243,16 +243,16 @@ typedef enum IRQn
 #define CPU_0701_0000_BASE	0x07010000
 
 // VIDEO_IN_SYS related
-#define CSI_BASE 			0x05800000
+//#define CSI_BASE 			0x05800000
 
-#define TVD_TOP_BASE 		0x05C00000
-#define TVD0_BASE 			0x05C01000
+//#define TVD_TOP_BASE 		0x05C00000
+//#define TVD0_BASE 			0x05C01000
 
 // APBS0 related
-#define CIR_RX_BASE			0x07040000
+//#define CIR_RX_BASE			0x07040000
 
 // AHBS related
-#define RTC_BASE			0x07090000				/*!< (RTC         ) Base Address */
+//#define RTC_BASE			0x07090000				/*!< (RTC         ) Base Address */
 
 // CPUX related
 // Address (It is for Cluster CPU)
@@ -260,7 +260,7 @@ typedef enum IRQn
 #define TimeStamp_STA_BASE		0x08110000
 #define TimeStamp_CTRL_BASE		0x08120000
 #define IDC_BASE				0x08130000
-#define C0_CPUX_CFG_BASE		0x09010000
+//#define C0_CPUX_CFG_BASE		0x09010000
 #define C0_CPUX_MBIST_BASE		0x09020000	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
 
 // DRAM Space (SYS domain)

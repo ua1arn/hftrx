@@ -1410,7 +1410,7 @@ void VMEI_Handler(void)
 		const uint_xlen_t mcause = csr_read_mcause();
 		const uint_xlen_t mstatus = csr_read_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); /* раразршение прерываний */
 		ASSERT((mstatus & MSTATUS_MIE_BIT_MASK) == 0);	/* прерывания были запрещены при входе в обработчик */
-		//ASSERT(PLIC->PLIC_MTH_REG > priority);
+		//ASSERT(PLIC->PLIC_MTH_REG > priority);		/* прервать может только более высокий уровень */
 	#endif /* WITHNESTEDINTERRUPTS */
 		__FPU_Enable();
 		ASSERT(int_id < MAX_IRQ_n);
@@ -1421,7 +1421,6 @@ void VMEI_Handler(void)
 		csr_write_mepc(mepc);
 		PLIC->PLIC_MTH_REG = priority;	/* восстанавливаем обрабатываемый уровень приоритета */
 	#endif /* WITHNESTEDINTERRUPTS */
-		//PLIC->PLIC_MTH_REG = prio;
 		PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
 	}
 	//PRINTF(/* "VMEI_Handler  exit: int_" */ "id=%u\n", int_id);

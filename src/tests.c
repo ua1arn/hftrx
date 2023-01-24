@@ -6313,6 +6313,14 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && defined (CLINT)
+	{
+		// https://chromitem-soc.readthedocs.io/en/latest/clint.html
+		PRINTF("mtime=%08lX\n", CLINT->MTIME);
+		PRINTF("mtime=%08lX\n", CLINT->MTIME);
+		PRINTF("mtime=%08lX\n", CLINT->MTIME);
+	}
+#endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку

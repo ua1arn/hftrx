@@ -297,6 +297,7 @@
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
 	#if CPUSTYLE_T113
 		#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
+		#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#endif /* CPUSTYLE_T113 */
 	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
