@@ -1914,10 +1914,15 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	//memset(bld, 0, sizeof (struct de_bld_t));
 
 	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
 	write32((uintptr_t) & bld->fcolor_ctl,
-			(0x00000101 << 0) |	// P0_EN P0_FCEN
-//			(0x00000101 << 1) |
-//			(0x00000101 << 2) |
+			(1u << 8)	| // pipe0 enable
+//			(1u << 9)	| // pipe1 enable
+//			(1u << 10)	| // pipe2 enable
+//			(1u << 11)	| // pipe3 enable
+			//(0x00000100 << 0) |	// P0_EN P0_FCEN
+			//(0x00000100 << 1) |
+			//(0x00000100 << 2) |
 			0
 			);
 
@@ -1925,8 +1930,8 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// BLD_CH_RTCTL
 	write32((uintptr_t) & bld->route,
 			(1u << 0) |	// pipe 0 from ch 1
-//			(2u << 4) |	// pipe 1 from ch 2
-//			(3u << 8) |	// pipe 2 from ch 3
+			(2u << 4) |	// pipe 1 from ch 2
+			(3u << 8) |	// pipe 2 from ch 3
 //			(0u << 12) |	// pipe 2 from ch 3
 			0
 			);
@@ -2192,7 +2197,10 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	t113_tconlcd_enable(pdat);
 
 	t113_de_set_mode(pdat);
-	t113_de_set_mode_ui(pdat, DE_MUX_CHAN_INDEX);
+	//t113_de_set_mode_ui(pdat, DE_MUX_CHAN_INDEX);
+	t113_de_set_mode_ui(pdat, 1);
+	t113_de_set_mode_ui(pdat, 2);
+	t113_de_set_mode_ui(pdat, 3);
 	t113_de_enable(pdat);
 
 	t113_de_set_address(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);
