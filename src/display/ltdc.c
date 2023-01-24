@@ -1763,7 +1763,7 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 #include "reg-tconlcd.h"
 
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
-#define DE_MUX_CHAN_INDEX 1	/* 1..3 используется одна конфигурация 1, остальные - темно-зеленые */
+#define DE_MUX_CHAN_INDEX 1	/* 0-vi as source, 1..3 используется одна конфигурация 1, остальные - темно-зеленые */
 
 static uint32_t read32(uintptr_t a)
 {
@@ -1801,7 +1801,7 @@ struct fb_t113_rgb_pdata_t
 
 static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct de_glb_t * const glb = (struct de_glb_t *) (DE_BASE + T113_DE_MUX_GLB);
+	struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;
 	write32((uintptr_t) & glb->dbuff, 1u);	// 1: register value be ready for update (self-cleaning bit)
 	while ((read32((uintptr_t) & glb->dbuff) & 1u) != 0)
 		;
@@ -1816,10 +1816,18 @@ static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintpt
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct de_clk_t * const clk = (struct de_clk_t *) (DE_BASE);
-	struct de_glb_t * const glb = (struct de_glb_t *) (DE_BASE + T113_DE_MUX_GLB);		// Global control register
-	struct de_bld_t * const bld = (struct de_bld_t *) (DE_BASE + T113_DE_MUX_BLD);
+	struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
+	struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
+	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * DE_MUX_CHAN_INDEX);
+
+//	PRINTF("#define de_clk_t_base %p\n", clk);
+//	PRINTF("#define de_glb_t_base @%p\n", glb);
+//	PRINTF("#define de_bld_t_base @%p\n", bld);
+//	PRINTF("#define de_vi_t_base @%p\n", (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0));
+//	PRINTF("#define de_ui1_t_base @%p\n", (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 1));
+//	PRINTF("#define de_ui2_t_base @%p\n", (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 2));
+//	PRINTF("#define de_ui3_t_base @%p\n", (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 3));
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
 	// 5.10.8.2 OVL_UI memory block size register
@@ -1844,19 +1852,19 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	int i;
 
 	val = read32((uintptr_t) & clk->rst_cfg);
-	val |= 1 << 0;
+	val |= 1u << 0;
 	write32((uintptr_t) & clk->rst_cfg, val);
 
 	val = read32((uintptr_t) & clk->gate_cfg);
-	val |= 1 << 0;
+	val |= 1u << 0;
 	write32((uintptr_t) & clk->gate_cfg, val);
 
 	val = read32((uintptr_t) & clk->bus_cfg);
-	val |= 1 << 0;
+	val |= 1u << 0;
 	write32((uintptr_t) & clk->bus_cfg, val);
 
 	val = read32((uintptr_t) & clk->sel_cfg);
-	val &= ~(1 << 0);
+	val &= ~(1u << 0);
 	write32((uintptr_t) & clk->sel_cfg, val);
 
 	write32((uintptr_t) & glb->ctl, (1u << 0));
