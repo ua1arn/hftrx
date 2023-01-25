@@ -1088,7 +1088,7 @@ hwacc_fillrect_u32(
 	G2D_BLD->BLD_SIZE = tsizehw;//tsizehwfull;	// размр выходного буфера
 	G2D_BLD->BLD_CH_ISIZE0 = 1 * tsizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = tcoord;// ((row) << 16) | ((col) << 0);
-	G2D_BLD->ROP_CTL = 0*0x55F0;	// 0xF0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+	G2D_BLD->ROP_CTL = 0*0x55F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 	G2D_BLD->BLD_CTL = 0*0x03010301;	// G2D_BLD_SRCOVER - default value
 	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
@@ -1796,19 +1796,19 @@ void hwaccel_copy(
 
 	G2D_BLD->BLD_EN_CTL = 0;	// Нет источников
 
-#if 1
-	G2D_UI2->UI_ATTR = awxx_get_ui_attr();
+#if 0
+	G2D_UI0->UI_ATTR = awxx_get_ui_attr();
 
-	G2D_UI2->UI_PITCH = sstride;
+	G2D_UI0->UI_PITCH = sstride;
 
-	G2D_UI2->UI_FILLC = TFTRGB(255, 0, 0);	// unused
-	G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
-	G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
-	G2D_UI2->UI_LADD = saddr;
-	G2D_UI2->UI_HADD = saddr >> 32;
+	G2D_UI0->UI_FILLC = TFTRGB(255, 0, 0);	// unused
+	G2D_UI0->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+	G2D_UI0->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+	G2D_UI0->UI_SIZE = ssizehw;		// параметры окна исходного буфера
+	G2D_UI0->UI_LADD = saddr;
+	G2D_UI0->UI_HADD = saddr >> 32;
 
-	//G2D_BLD->BLD_EN_CTL |= (1u << 10);	// 8 - sel 0
+	G2D_BLD->BLD_EN_CTL |= (1u << 9);	// 8 - sel 0
 
 #endif
 #if 1
@@ -1846,24 +1846,17 @@ void hwaccel_copy(
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
 	//G2D_BLD->BLD_FILLC0 = ~ 0;
 
-	G2D_BLD->ROP_CTL = 0xF0;	// Use G2D_V0 as source
+	G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER
 	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
 	/* Write-back settings */
-	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_SIZE = ssizehw;
 	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
 	G2D_WB->WB_LADD0 = taddr;
 	G2D_WB->WB_HADD0 = taddr >> 32;
-//	G2D_WB->WB_PITCH1 = 0;
-//	G2D_WB->WB_LADD1 = 0;
-//	G2D_WB->WB_HADD1 = 0;
-//	G2D_WB->WB_PITCH2 = 0;
-//	G2D_WB->WB_LADD2 = 0;
-//	G2D_WB->WB_HADD2 = 0;
 
 	//debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
