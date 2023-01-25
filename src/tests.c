@@ -6438,8 +6438,14 @@ void hightests(void)
 		TP();
 
 		display2_bgreset();
+
+		 mixer_set_reg_base(G2D_TOP_BASE);
+
 		void g2d_main(void);
-		g2d_main();
+		void g2d_main0(void);
+
+		g2d_main0();
+		//g2d_main();
 	}
 #endif
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY

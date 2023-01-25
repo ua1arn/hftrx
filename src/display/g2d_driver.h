@@ -19,7 +19,8 @@
 #ifndef __G2D_DRIVER_H
 #define __G2D_DRIVER_H
 
-#include <stdbool.h>
+#include "hardware.h"
+//#include <stdbool.h>
 
 /*
 #include <linux/types.h>
@@ -307,7 +308,7 @@ typedef enum {
 
 /* image struct */
 typedef struct {
-	uint32_t		addr[3];/* base addr of image frame buffer in byte */
+	uintptr_t		addr[3];/* base addr of image frame buffer in byte */
 	uint32_t		w;	/* width of image frame buffer in pixel */
 	uint32_t		h;	/* height of image frame buffer in pixel */
 	g2d_data_fmt	format;	/* pixel format of image frame buffer */
