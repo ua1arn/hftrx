@@ -6433,20 +6433,17 @@ void hightests(void)
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
+		/* Allwinner G2D tests */
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
 
 		display2_bgreset();
 
+		/* Запуск теста одного из */
 
-		void g2d_main_layers_alpha(void);
-		void g2d_main0(void);
-
-		/* Запуск теста */
-
-		g2d_main0();
-		//g2d_main_layers_alpha();
+		//g2d_main0();
+		g2d_main_layers_alpha();
 	}
 #endif
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
