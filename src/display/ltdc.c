@@ -1823,105 +1823,6 @@ static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uin
 	write32((uintptr_t) & ui->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
 }
 
-static inline void t113_de_set_mode_ui(struct fb_t113_rgb_pdata_t * pdat, int uich)
-{
-	ASSERT(uich >= 1 && uich <= 3);
-	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
-	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
-	// 5.10.8.1 OVL_UI attribute control register
-	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
-	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565, 0x08: RGB_888
-#if LCDMODE_MAIN_ARGB888
-	const uint32_t ovl_ui_format = 0x00;	//  0x08: ARGB_8888	G2D_FMT_ARGB_AYUV8888
-	//const uint32_t ovl_ui_format = 0x04;	// 0x04: XRGB_8888	G2D_FMT_XRGB8888
-#elif LCDMODE_MAIN_RGB565
-	const uint32_t ovl_ui_format = 0x0A;	// 0x0A: RGB_565	G2D_FMT_RGB565
-#else
-	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
-	const uint32_t ovl_ui_format = 0x0A;
-#endif
-
-	// Note: the layer priority is layer3>layer2>layer1>layer0
-
-	// 5.10.8.1 OVL_UI attribute control register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].attr,
-			(111 << 24) |	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
-			(0u << 23) | 	// TOP_BOTTOM_ADDR_EN
-			(0u << 16) | 	// LAY_PREMUL_CTL
-			(ovl_ui_format << 8) | // 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
-			(0u << 4) |	// LAY_FILLCOLOR_EN
-			0*(0x1u << 1) |	// LAY_ALPHA_MODE: 0 - 0:Ignore Input alpha value = pixels alpha, if no pixel alpha, the alpha value equal 0xf
-			(1u << 0) |		// LAY_EN
-			0
-			);
-	// 5.10.8.2 OVL_UI memory block size register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].size,
-			ovl_ui_mbsize);
-	// 5.10.8.3 OVL_UI memory block coordinate register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].coord,
-			0);
-	// 5.10.8.4 OVL_UI memory pitch register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch,
-			LCDMODE_PIXELSIZE * GXADJ(DIM_X));	// размер строки в байтах
-	// 5.10.8.5 OVL_UI top field memory block low address register
-	//write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
-	// 5.10.8.6 OVL_UI bottom field memory block low address register
-	// ...
-	// 5.10.8.2 OVL_UI memory block size register
-	// 28..16: LAY_HEIGHT
-	// 12..0: LAY_WIDTH
-	write32((uintptr_t) & ui->ovl_size, ovl_ui_mbsize);
-}
-
-static inline void t113_de_set_mode_vi(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
-	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
-	// 5.10.8.1 OVL_UI attribute control register
-	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
-	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565, 0x08: RGB_888
-#if LCDMODE_MAIN_ARGB888
-	const uint32_t ovl_ui_format = 0x00;	//  0x08: ARGB_8888	G2D_FMT_ARGB_AYUV8888
-	//const uint32_t ovl_ui_format = 0x04;	// 0x04: XRGB_8888	G2D_FMT_XRGB8888
-#elif LCDMODE_MAIN_RGB565
-	const uint32_t ovl_ui_format = 0x0A;	// 0x0A: RGB_565	G2D_FMT_RGB565
-#else
-	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
-	const uint32_t ovl_ui_format = 0x0A;
-#endif
-	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
-	// Note: the layer priority is layer3>layer2>layer1>layer0
-
-	// 5.10.8.1 OVL_UI attribute control register
-	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].attr,
-			(111 << 24) |	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
-			(0u << 23) | 	// TOP_BOTTOM_ADDR_EN
-			(0u << 16) | 	// LAY_PREMUL_CTL
-			(ovl_ui_format << 8) | // 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
-			(0u << 4) |	// LAY_FILLCOLOR_EN
-			0*(0x1u << 1) |	// LAY_ALPHA_MODE: 0 - 0:Ignore Input alpha value = pixels alpha, if no pixel alpha, the alpha value equal 0xf
-			(1u << 0) |		// LAY_EN
-			0
-			);
-	// 5.10.8.2 OVL_UI memory block size register
-	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].size,
-			ovl_ui_mbsize);
-	// 5.10.8.3 OVL_UI memory block coordinate register
-	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].coord,
-			0);
-	// 5.10.8.4 OVL_UI memory pitch register
-	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].pitch,
-			uipitch);	// размер строки в байтах
-	// 5.10.8.5 OVL_UI top field memory block low address register
-	//write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
-	// 5.10.8.6 OVL_UI bottom field memory block low address register
-	// ...
-	// 5.10.8.2 OVL_UI memory block size register
-	// 28..16: LAY_HEIGHT
-	// 12..0: LAY_WIDTH
-	write32((uintptr_t) & vi->ovl_size, ovl_ui_mbsize);
-}
-
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 {
 	struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
@@ -2336,7 +2237,10 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 
-	t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
+	// Используем слой VI вместо UI1
+	//t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
+	t113_de_set_address_vi(pdat, p);
+
 	t113_de_enable(pdat);
 }
 
@@ -2351,6 +2255,7 @@ void arm_hardware_ltdc_main_set_no_vsync4(uintptr_t p1, uintptr_t p2, uintptr_t 
 	t113_de_set_address_ui(pdat, p2, 1);	// green
 	t113_de_set_address_ui(pdat, p3, 2);
 	t113_de_set_address_ui(pdat, p4, 3);
+
 	t113_de_enable(pdat);
 }
 
@@ -2364,9 +2269,10 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	while((TCON_LCD0->LCD_GINT0_REG & (1u << 15)) == 0) //wait  LCD_VB_INT_FLAG
 		;
 
-
+	// Используем слой VI вместо UI1
 	//t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
 	t113_de_set_address_vi(pdat, p);
+
 	t113_de_enable(pdat);
 }
 
