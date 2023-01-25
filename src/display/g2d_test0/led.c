@@ -12,7 +12,6 @@
 #include <string.h>
 #include <math.h>
 
-#include "T113-s3/fb-t113-rgb.h"
 #include "T113-s3/g2d.h"
 
 #include "LuPng/lupng.h"
