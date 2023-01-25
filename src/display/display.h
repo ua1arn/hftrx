@@ -287,6 +287,8 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORMAIN_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORMAIN_B(v) (((v) & 0xFF) >> 0)
 
+		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
+
 	#elif LCDMODE_MAIN_L8
 
 		/* При использовании frame buffer цвета восьмибитные */
@@ -313,6 +315,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 					(((uint_fast16_t) (blue) >> 3) &  0x001F) \
 				) \
 			)
+		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
 
 	#elif LCDMODE_MAIN_ARGB888 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHTFT_OVER_LVDS
 
@@ -391,6 +394,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORMAIN_R(v) ((((v) & 0xF800) >> 8) | (((v) & 0xE000) >> 13))
 		#define COLORMAIN_G(v) ((((v) & 0x07E0) >> 3) | (((v) & 0x0600) >> 9))
 		#define COLORMAIN_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))
+		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
 
 	#endif /* LCDMODE_MAIN_L8 */
 
