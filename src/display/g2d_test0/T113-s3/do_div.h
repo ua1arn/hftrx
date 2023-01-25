@@ -9,25 +9,23 @@ extern "C" {
 #include <strings.h> //fls, __always_inline
 #include <stdbool.h> //bool
 
-#include "Type.h"
-
 #include "types.h"
 #include "types2.h"
 
-#define BITS_PER_LONG 32 /* число бит в long на 32-битных платформах */
+#define BITS_PER_LONG 32 /* пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ long пїЅпїЅ 32-пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 
 #define likely(x)       __builtin_expect((x),1)
 
 #if BITS_PER_LONG == 32
-static __always_inline int fls64(__u64 x)
+static __always_inline int fls64(uint64_t x)
 {
-	__u32 h = x >> 32;
+	uint32_t h = x >> 32;
 	if (h)
 		return fls(h) + 32;
 	return fls(x);
 }
 #elif BITS_PER_LONG == 64
-static __always_inline int fls64(__u64 x)
+static __always_inline int fls64(uint64_t x)
 {
 	if (x == 0)
 		return 0;
@@ -57,7 +55,7 @@ bool is_power_of_2(unsigned long n)
  */
 #ifndef CONFIG_ARCH_HAS_ILOG2_U32
 static __always_inline __attribute__((const))
-int __ilog2_u32(u32 n)
+int __ilog2_u32(uint32_t n)
 {
 	return fls(n) - 1;
 }
@@ -65,7 +63,7 @@ int __ilog2_u32(u32 n)
 
 #ifndef CONFIG_ARCH_HAS_ILOG2_U64
 static __always_inline __attribute__((const))
-int __ilog2_u64(u64 n)
+int __ilog2_u64(uint64_t n)
 {
 	return fls64(n) - 1;
 }

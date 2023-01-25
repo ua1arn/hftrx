@@ -1,3 +1,8 @@
+
+#include "hardware.h"
+#include "formats.h"
+#include "src/display/display.h"
+
 #if (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 #ifndef min
@@ -6,17 +11,6 @@
 
 #include <string.h>
 #include <math.h>
-
-#include "T113-s3/Type.h"
-//
-//#include "LowLevel.h"
-//#include "UART.h"
-//#include "PIO.h"
-//#include "delay.h"
-//#include "Gate.h"
-//#include "timer.h"
-//#include "core_armv7.h"
-//#include "interrupt.h"
 
 #include "T113-s3/fb-t113-rgb.h"
 #include "T113-s3/g2d.h"
@@ -48,19 +42,19 @@ void PNG_Load(LuImage **png,const void *buffer)      //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï
  *png=luPngReadMemory((char*)buffer);
 }
 
-//void xPNG_Draw(u32 px,u32 py,LuImage *png,u8 layer)   //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PNG ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//void xPNG_Draw(uint32_t px,uint32_t py,LuImage *png,u8 layer)   //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PNG ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //{
 // if(png==NULL)return;
 //
-// u32 line=png->width<<2;
+// uint32_t line=png->width<<2;
 //
-// u32 * __restrict__ src=(u32*)png->data;
-// u32 * __restrict__ dst=(u32*)(layer?VIDEO_MEMORY1:VIDEO_MEMORY0);
-// u32 * __restrict__ dst0=dst;
+// uint32_t * __restrict__ src=(uint32_t*)png->data;
+// uint32_t * __restrict__ dst=(uint32_t*)(layer?VIDEO_MEMORY1:VIDEO_MEMORY0);
+// uint32_t * __restrict__ dst0=dst;
 //
 // dst+=(LCD_PIXEL_WIDTH*py)+px;
 //
-// for(u32 y=0;y<png->height;y++)
+// for(uint32_t y=0;y<png->height;y++)
 // {
 //  memcpy(dst,src,line);
 //  dst+=LCD_PIXEL_WIDTH;
@@ -85,7 +79,7 @@ static g2d_fillrect   G2D_FILLRECT;
 static g2d_blt        G2D_BLT;
 static g2d_stretchblt G2D_STRETCHBLT;
 
-void PNG_Background(LuImage *png,u32 memory)           //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PNG ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void PNG_Background(LuImage *png,uint32_t memory)           //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PNG ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 {
  if(png==NULL)return;
 
@@ -122,7 +116,7 @@ void PNG_Background(LuImage *png,u32 memory)           //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï
  g2d_blit(&G2D_BLT);
 }
 //
-//void PNG_Background_NEON(LuImage *png,u32 memory)
+//void PNG_Background_NEON(LuImage *png,uint32_t memory)
 //{
 // if(png)MEMCPY((u8*)memory,png->data,LCD_PIXEL_WIDTH*LCD_PIXEL_HEIGHT*4);
 //}
@@ -176,7 +170,7 @@ void g2d_main0(void)
  PNG_Load(&png[0],dog_png);
 
 /*
- u32 *p=(u32*)png[0]->data;
+ uint32_t *p=(uint32_t*)png[0]->data;
  for(int y=0;y<png[0]->height;y++)
  for(int x=0;x<png[0]->width;x++)
  {
@@ -188,21 +182,21 @@ void g2d_main0(void)
 
 // flush_dcache();
 
- G2D_Init();
+ //G2D_Init();
 
 // Rect();
 // local_delay_ms(200);
 
  Again:
 
- PRINTF("1 src color=%08X\n", (unsigned)*(volatile u32*)png[0]->data);
+ PRINTF("1 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
  arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
  PNG_Background(png[1],VIDEO_MEMORY1);
- PRINTF("2 src color=%08X\n", (unsigned)*(volatile u32*)png[0]->data);
+ PRINTF("2 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
  arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
- u32 t;
+ uint32_t t;
  //t=AVS_CNT0_REG;
- u32 d;
+ uint32_t d;
 
 #if 1
  G2D_BLT.flag=G2D_BLT_NONE | 1*G2D_BLT_SRC_COLORKEY | 0*G2D_BLT_PIXEL_ALPHA; // G2D_BLT_PIXEL_ALPHA; //ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ - ï¿½ï¿½ï¿½ï¿½ï¿½ colorkey ï¿½ï¿½ï¿½ alpha
@@ -232,10 +226,10 @@ void g2d_main0(void)
 // G2D_BLT.dst_x=0;                                 //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 // G2D_BLT.dst_y=0;
 
- G2D_BLT.color=*(volatile u32*)png[0]->data; //0x00000000; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ RGB
+ G2D_BLT.color=*(volatile uint32_t*)png[0]->data; //0x00000000; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ RGB
  G2D_BLT.alpha=0xFF;       //ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
- PRINTF("3 src color=%08X\n", (unsigned)*(volatile u32*)png[0]->data);
+ PRINTF("3 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
  arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
  PRINTF("G2D_BLT.color=%08X\n", (unsigned) G2D_BLT.color);
 
@@ -258,7 +252,7 @@ void g2d_main0(void)
   local_delay_ms(50);
 
  }
- PRINTF("4 src color=%08X\n", (unsigned)*(volatile u32*)png[0]->data);
+ PRINTF("4 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
  arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
 #endif
 
@@ -298,7 +292,7 @@ void g2d_main0(void)
  G2D_STRETCHBLT.dst_rect.w=png[0]->width/2;             //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  G2D_STRETCHBLT.dst_rect.h=png[0]->height/2;
 
- G2D_STRETCHBLT.color=*(volatile u32*)png[0]->data; //0x00000000; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ RGB
+ G2D_STRETCHBLT.color=*(volatile uint32_t*)png[0]->data; //0x00000000; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ RGB
  G2D_STRETCHBLT.alpha=0xFF;       //ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  PRINTF("G2D_STRETCHBLT.color=%08X\n", (unsigned) G2D_BLT.color);
 
@@ -345,7 +339,7 @@ void g2d_main0(void)
 // DelayMS(300);
 
  }
- PRINTF("5 src color=%08X\n", (unsigned)*(volatile u32*)png[0]->data);
+ PRINTF("5 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
  arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
 
 #endif
@@ -360,13 +354,13 @@ void g2d_main0(void)
  PNG_Load(&png[1],Back1_png);
 
 // PNG_Load(&png[1],Cobra_png);
- flush_dcache();
+ //flush_dcache();
 
- G2D_Init();
+ //G2D_Init();
 
  u8 p=0;
 
- u32 t;
+ uint32_t t;
 
  for (t=0; t < 100; ++t)
  {
@@ -385,9 +379,9 @@ void g2d_main0(void)
 
  G2D_BLT.flag=G2D_BLT_NONE|G2D_BLT_SRC_PREMULTIPLY;
 
- G2D_BLT.src_image.addr[0]=(u32)png[1]->data;    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- G2D_BLT.src_image.addr[0]=(u32)png[1]->data;
- G2D_BLT.src_image.addr[0]=(u32)png[1]->data;
+ G2D_BLT.src_image.addr[0]=(uint32_t)png[1]->data;    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ G2D_BLT.src_image.addr[0]=(uint32_t)png[1]->data;
+ G2D_BLT.src_image.addr[0]=(uint32_t)png[1]->data;
  G2D_BLT.src_image.w=png[1]->width;              //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  G2D_BLT.src_image.h=png[1]->height;
  G2D_BLT.src_image.format=SrcImageFormat;
@@ -414,7 +408,7 @@ void g2d_main0(void)
 
 
 
- //u32 t=0;
+ //uint32_t t=0;
 
  Loop:
 

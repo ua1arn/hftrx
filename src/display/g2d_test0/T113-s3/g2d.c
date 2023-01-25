@@ -4,46 +4,43 @@
 
 #include "g2d.h"
 
-#include "Gate.h"
-//#include "delay.h"
-
 #include "g2d_regs_v2.h"
 
 int g2d_ext_hd_finish_flag=0;
-
-void G2D_Clk(void)
-{
- G2D_BGR_REG&=~(1<<16);               //assert Reset
-
- G2D_CLK_REG=(1UL<<31)|(1<<24)|(3-1); //enable clk, PLLVIDEO0(4x), div 3
-
- G2D_BGR_REG|=1;                      //pass G2D clock
-
- MBUS_MAT_CLK_GATING_REG|=(1<<10)|1;  //MBUS gating for G2D & DMA
-
- G2D_BGR_REG|=(1<<16);                //de-assert Reset
-}
-
-int g2d_init(g2d_init_para *para)
-{
- mixer_set_reg_base(G2D_TOP_BASE);
- return 0;
-}
-
-static const g2d_init_para G2D_INIT=
-{
- .g2d_base=G2D_TOP_BASE
-};
-
-void G2D_Init(void)
-{
- //G2D_Clk();                  //�����, �����, ������...
- g2d_init((void*)&G2D_INIT); //��������� �������� ������
-
- //g2d_bsp_open();
-
- PRINTF("\nG2D Open!\n");
-}
+//
+//void G2D_Clk(void)
+//{
+// G2D_BGR_REG&=~(1<<16);               //assert Reset
+//
+// G2D_CLK_REG=(1UL<<31)|(1<<24)|(3-1); //enable clk, PLLVIDEO0(4x), div 3
+//
+// G2D_BGR_REG|=1;                      //pass G2D clock
+//
+// MBUS_MAT_CLK_GATING_REG|=(1<<10)|1;  //MBUS gating for G2D & DMA
+//
+// G2D_BGR_REG|=(1<<16);                //de-assert Reset
+//}
+//
+//int g2d_init(g2d_init_para *para)
+//{
+// mixer_set_reg_base(G2D_TOP_BASE);
+// return 0;
+//}
+//
+//static const g2d_init_para G2D_INIT=
+//{
+// .g2d_base=G2D_TOP_BASE
+//};
+//
+//void G2D_Init(void)
+//{
+// //G2D_Clk();                  //�����, �����, ������...
+// g2d_init((void*)&G2D_INIT); //��������� �������� ������
+//
+// g2d_bsp_open();
+//
+// PRINTF("\nG2D Open!\n");
+//}
 
 /* ������ � �������� ���������� ������ G2D */
 /* 0 - timeout. 1 - OK */
@@ -73,7 +70,7 @@ void G2D_Init(void)
 
 int g2d_wait_cmd_finish(void)
 {
- u32 mixer_irq_flag,rot_irq_flag;
+ uint32_t mixer_irq_flag,rot_irq_flag;
 
  Loop:
 
@@ -96,7 +93,7 @@ int g2d_wait_cmd_finish(void)
 
 int g2d_fill(g2d_fillrect *para)
 {
-	__s32 err = 0;
+	int32_t err = 0;
 
 	/* check the parameter valid */
 	if (((para->dst_rect.x < 0) &&
@@ -137,8 +134,8 @@ enum g2d_scan_order scan_order=G2D_SM_TDLR;
 
 int g2d_blit(g2d_blt *para)
 {
-	__s32 err = 0;
-	__u32 tmp_w, tmp_h;
+	int32_t err = 0;
+	uint32_t tmp_w, tmp_h;
 
 	if ((para->flag & G2D_BLT_ROTATE90) ||
 			(para->flag & G2D_BLT_ROTATE270)) {
@@ -222,7 +219,7 @@ int g2d_blit(g2d_blt *para)
 
 int g2d_stretchblit(g2d_stretchblt *para)
 {
-	__s32 err = 0;
+	int32_t err = 0;
 
 	/* check the parameter valid */
 	if (((para->src_rect.x < 0) &&

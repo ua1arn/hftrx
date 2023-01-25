@@ -6439,13 +6439,13 @@ void hightests(void)
 
 		display2_bgreset();
 
-		 mixer_set_reg_base(G2D_TOP_BASE);
 
-		void g2d_main(void);
+		void g2d_main_layers_alpha(void);
 		void g2d_main0(void);
 
+		mixer_set_reg_base(G2D_TOP_BASE);
 		g2d_main0();
-		//g2d_main();
+		//g2d_main_layers_alpha();
 	}
 #endif
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY

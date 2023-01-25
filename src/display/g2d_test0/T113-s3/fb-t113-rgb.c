@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "reg-ccu.h"
+//#include "reg-ccu.h"
 #include "reg-de.h"
 #include "reg-tconlcd.h"
 
@@ -11,6 +11,7 @@
 //#include "Lowlevel.h"
 
 #include "fb-t113-rgb.h"
+#include "../../g2d_driver.h"
 
 static uint32_t read32(uintptr_t a)
 {
@@ -144,7 +145,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 //CH0 VI ----------------------------------------------------------------------------
 
-	write32((virtual_addr_t)&vi->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(1<<15));            //нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+	write32((virtual_addr_t)&vi->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(1<<15));            //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ: 32 bit ABGR 8:8:8:8 пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 	write32((virtual_addr_t)&vi->cfg[0].size, size);
 	write32((virtual_addr_t)&vi->cfg[0].coord, 0);
         write32((virtual_addr_t)&vi->cfg[0].pitch[0], BYTE_PER_PIXEL * pdat->width);
@@ -153,7 +154,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 //CH1 UI -----------------------------------------------------------------------------
 
-	write32((virtual_addr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(0xff<<24)|(1<<16)); //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+	write32((virtual_addr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(0xff<<24)|(1<<16)); //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ: 32 bit ABGR 8:8:8:8 пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	write32((virtual_addr_t)&ui->cfg[0].size, size);
 	write32((virtual_addr_t)&ui->cfg[0].coord, 0);
 	write32((virtual_addr_t)&ui->cfg[0].pitch, BYTE_PER_PIXEL * pdat->width);
@@ -192,7 +193,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat)
 	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
 	write32((virtual_addr_t)&tcon->ctrl, (1 << 31) | (0 << 24) | (0 << 23) | ((val & 0x1f) << 4) | (0 << 0));
 	val = pdat->clk_tconlcd / pdat->timing.pixel_clock_hz;
-	write32((virtual_addr_t)&tcon->dclk, (0xf << 28) | ((val /* /2 */ ) << 0));                     //делили на 2, дисплей шпарил на ускоренной в 2 раза развёртке
+	write32((virtual_addr_t)&tcon->dclk, (0xf << 28) | ((val /* /2 */ ) << 0));                     //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ 2, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ 2 пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	write32((virtual_addr_t)&tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
 	bp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
 	total = pdat->width + pdat->timing.h_front_porch + bp;
@@ -241,7 +242,7 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 
 static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t *pdat)
 {
-//GPIO инициализированы в PIO.c
+//GPIO пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ PIO.c
 
 /*
 	GPIO_InitTypeDef InitGpio;
@@ -312,64 +313,4 @@ void tol_init(void){
 	GPIO_SetBits(GPIOD,GPIO_Pin_0);
 }
 #endif
-
-void xlcd_init(void)
-{
-	struct fb_t113_rgb_pdata_t pdat;
-	unsigned int val;
-
-	val = read32(T113_CCU_BASE + CCU_DE_CLK_REG);
-	val |= (1 << 31) | (3 << 0);					//300 MHz
-	write32((T113_CCU_BASE + CCU_DE_CLK_REG), val);
-	//Open the clock gate
-	val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
-	val |= (1 << 0);
-	write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
-	//eassert reset
-	val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
-	val |= (1 << 16);
-	write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
-
-	val = read32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG);
-	val |= (1 << 31) | (1 << 24);					//24*99/2=1188 MHz
-	write32((T113_CCU_BASE + CCU_TCONLCD_CLK_REG), val);
-	//Open the clock gate
-	val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
-	val |= (1 << 0);
-	write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
-	//eassert reset
-	val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
-	val |= (1 << 16);
-	write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
-
-	pdat.virt_tconlcd = T113_TCONLCD_BASE;
-	pdat.virt_de = T113_DE_BASE;
-	pdat.clk_tconlcd = 1188000000;
-	pdat.width = LCD_PIXEL_WIDTH;
-	pdat.height = LCD_PIXEL_HEIGHT;
-	pdat.bits_per_pixel  = BYTE_PER_PIXEL*8;
-	pdat.bytes_per_pixel = BYTE_PER_PIXEL;
-	pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
-	pdat.index = 0;
-	//pdat.vram[0] = (void*)buffer; //typecast
-
-	//memset(pdat.vram[0], 0x00, pdat.pixlen);
-
-	pdat.timing.pixel_clock_hz = 29232000; //33000000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
-	pdat.timing.h_front_porch  = 40;       //160;
-	pdat.timing.h_back_porch   = 87;       //140;
-	pdat.timing.h_sync_len     = 1;        //20;
-	pdat.timing.v_front_porch  = 13;       //13;
-	pdat.timing.v_back_porch   = 31;       //31;
-	pdat.timing.v_sync_len     = 1;        //2;
-	pdat.timing.h_sync_active  = 0;
-	pdat.timing.v_sync_active  = 0;
-	pdat.timing.den_active     = 1;	       //!!!
-	pdat.timing.clk_active     = 0;
-
-	fb_t113_rgb_init(&pdat);
-
-	//lcd_backlight_init();
-	//tol_init();
-}
 #endif

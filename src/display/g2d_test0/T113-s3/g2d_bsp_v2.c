@@ -22,9 +22,9 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "types2.h"
+//#include "types2.h"
 
-static unsigned long base_addr;
+static uintptr_t base_addr;
 /* byte input */
 #define read_bvalue(offset)		get_bvalue(base_addr + offset)
 /* byte output */
@@ -38,25 +38,25 @@ static unsigned long base_addr;
 /* word output */
 #define write_wvalue(offset, value)	put_wvalue(base_addr + offset, value)
 
-__s32 g2d_fc_set(__u32 sel, __u32 color_value);
-__s32 g2d_format_trans(__s32 data_fmt, __s32 pixel_seq);
-__s32 rgb2Ycbcr_709[12] = {
+int32_t g2d_fc_set(uint32_t sel, uint32_t color_value);
+int32_t g2d_format_trans(int32_t data_fmt, int32_t pixel_seq);
+int32_t rgb2Ycbcr_709[12] = {
 	0x0bb, 0x0275, 0x03f, 0x4200, 0xFFFFFF99, 0xFFFFFEA6, 0x01c2, 0x20200,
 	0x01c2, 0xFFFFFE67, 0xFFFFFFD7, 0x20200, };
-__s32 Ycbcr2rgb_709[12] = {
+int32_t Ycbcr2rgb_709[12] = {
 	0x04a8, 0x0, 0x072c, 0xFFFC1F7D, 0x04a8, 0xFFFFFF26, 0xFFFFFDDD,
 	0x133F8, 0x04a8, 0x0876, 0, 0xFFFB7AA0, };
 
-__s32 rgb2Ycbcr_601[12] = {
+int32_t rgb2Ycbcr_601[12] = {
 	0x0107, 0x0204, 0x064, 0x4200,
 	0xFFFFFF68, 0xFFFFFED6, 0x01c2, 0x20200,
 	0x01c2, 0xFFFFFE87, 0xFFFFFFB7, 0x20200,};
-__s32 Ycbcr2rgb_601[12] = {
+int32_t Ycbcr2rgb_601[12] = {
 	0x04a8, 0x0, 0x0662, 0xFFFC865A,
 	0x04a8, 0xFFFFFE70, 0xFFFFFCBF, 0x21FF4,
 	0x04a8, 0x0812, 0x0, 0xFFFBAE4A,};
 
-__s32 lan2coefftab32_full[512] = {
+int32_t lan2coefftab32_full[512] = {
 	0x00004000, 0x000140ff, 0x00033ffe, 0x00043ffd, 0x00063efc, 0xff083dfc,
 	0x000a3bfb, 0xff0d39fb, 0xff0f37fb, 0xff1136fa, 0xfe1433fb,
 	0xfe1631fb, 0xfd192ffb, 0xfd1c2cfb, 0xfd1f29fb, 0xfc2127fc,
@@ -187,7 +187,7 @@ __s32 lan2coefftab32_full[512] = {
 	/* counter = 16 */
 };
 
-__s32 linearcoefftab32[32] = {
+int32_t linearcoefftab32[32] = {
 	0x00004000, 0x00023e00, 0x00043c00, 0x00063a00, 0x00083800,
 	0x000a3600, 0x000c3400, 0x000e3200, 0x00103000, 0x00122e00,
 	0x00142c00, 0x00162a00, 0x00182800, 0x001a2600, 0x001c2400,
@@ -195,7 +195,7 @@ __s32 linearcoefftab32[32] = {
 	0x00281800, 0x002a1600, 0x002c1400, 0x002e1200, 0x00301000,
 	0x00320e00, 0x00340c00, 0x00360a00, 0x00380800, 0x003a0600,
 	0x003c0400, 0x003e0200, };
-__s32 g2d_bsp_open(void)
+int32_t g2d_bsp_open(void)
 {
 	write_wvalue(G2D_SCLK_GATE, 0x3);
 	write_wvalue(G2D_HCLK_GATE, 0x3);
@@ -203,7 +203,7 @@ __s32 g2d_bsp_open(void)
 	return 0;
 }
 
-__s32 g2d_bsp_close(void)
+int32_t g2d_bsp_close(void)
 {
 	write_wvalue(G2D_AHB_RESET, 0x0);
 	write_wvalue(G2D_HCLK_GATE, 0x0);
@@ -211,16 +211,16 @@ __s32 g2d_bsp_close(void)
 	return 0;
 }
 
-__s32 g2d_bsp_reset(void)
+int32_t g2d_bsp_reset(void)
 {
 	write_wvalue(G2D_AHB_RESET, 0x0);
 	write_wvalue(G2D_AHB_RESET, 0x3);
 	return 0;
 }
 
-__s32 g2d_mixer_reset(void)
+int32_t g2d_mixer_reset(void)
 {
-	__u32 reg_val;
+	uint32_t reg_val;
 
 	reg_val = read_wvalue(G2D_AHB_RESET);
 	write_wvalue(G2D_AHB_RESET, reg_val & 0xfffffffe);
@@ -228,9 +228,9 @@ __s32 g2d_mixer_reset(void)
 	return 0;
 }
 
-__s32 g2d_rot_reset(void)
+int32_t g2d_rot_reset(void)
 {
-	__u32 reg_val;
+	uint32_t reg_val;
 
 	reg_val = read_wvalue(G2D_AHB_RESET);
 	write_wvalue(G2D_AHB_RESET, reg_val & 0xfffffffd);
@@ -238,9 +238,9 @@ __s32 g2d_rot_reset(void)
 	return 0;
 }
 
-__s32 g2d_scan_order_fun(__u32 scan_order)
+int32_t g2d_scan_order_fun(uint32_t scan_order)
 {
-	__u32 tmp;
+	uint32_t tmp;
 
 	tmp = read_wvalue(G2D_MIXER_CTL);
 	tmp |= ((scan_order >> 24) & 0xf0);
@@ -255,9 +255,9 @@ __s32 g2d_scan_order_fun(__u32 scan_order)
  * and return 1
  * if the IRQ was set to 0, then return 0
  */
-__s32 mixer_irq_query(void)
+int32_t mixer_irq_query(void)
 {
-	__u32 tmp;
+	uint32_t tmp;
 
 	tmp = read_wvalue(G2D_MIXER_INT);
 	if (tmp & 0x1) {
@@ -274,9 +274,9 @@ __s32 mixer_irq_query(void)
  * and return 1
  * if the IRQ was set to 0, then return 0
  */
-__s32 rot_irq_query(void)
+int32_t rot_irq_query(void)
 {
-	__u32 tmp;
+	uint32_t tmp;
 
 	tmp = read_wvalue(ROT_INT);
 	if (tmp & 0x1) {
@@ -286,33 +286,33 @@ __s32 rot_irq_query(void)
 	return -1;
 }
 
-__s32 mixer_irq_enable(void)
+int32_t mixer_irq_enable(void)
 {
 	write_wvalue(G2D_MIXER_INT, 0x10);
 	return 0;
 }
 
-__s32 rot_irq_enable(void)
+int32_t rot_irq_enable(void)
 {
 	write_wvalue(ROT_INT, 0x10000);
 	return 0;
 }
 
-__s32 g2d_irq_disable(void)
+int32_t g2d_irq_disable(void)
 {
 	write_wvalue(G2D_MIXER_INT, 0x0);
 	return 0;
 }
 
-__s32 rot_irq_disable(void)
+int32_t rot_irq_disable(void)
 {
 	write_wvalue(ROT_INT, 0x0);
 	return 0;
 }
 
-__s32 g2d_sclk_div(__u32 div)
+int32_t g2d_sclk_div(uint32_t div)
 {
-	__u32 reg_val;
+	uint32_t reg_val;
 
 	reg_val = read_wvalue(G2D_SCLK_DIV);
 	reg_val &= 0xfffffff0;
@@ -321,9 +321,9 @@ __s32 g2d_sclk_div(__u32 div)
 	return 0;
 }
 
-__s32 rot_sclk_div(__u32 div)
+int32_t rot_sclk_div(uint32_t div)
 {
-	__u32 reg_val;
+	uint32_t reg_val;
 
 	reg_val = read_wvalue(G2D_SCLK_DIV);
 	reg_val &= 0xffffff0f;
@@ -332,7 +332,7 @@ __s32 rot_sclk_div(__u32 div)
 	return 0;
 }
 
-__s32 porter_duff(__u32 cmd)
+int32_t porter_duff(uint32_t cmd)
 {
 	switch (cmd) {
 	case G2D_BLD_CLEAR:
@@ -384,11 +384,11 @@ __s32 porter_duff(__u32 cmd)
  * @csc_sel: CSC format, G2D support the ITU-R 601. ITU-R 709. standard trans-
  *  form between RGB and YUV colorspace.
  */
-__s32 g2d_csc_reg_set(__u32 csc_no, g2d_csc_sel csc_sel)
+int32_t g2d_csc_reg_set(uint32_t csc_no, g2d_csc_sel csc_sel)
 {
-	__u32 i;
-	__u32 csc_base_addr;
-	__u32 tmp;
+	uint32_t i;
+	uint32_t csc_base_addr;
+	uint32_t tmp;
 
 	switch (csc_no) {
 	case 0:
@@ -453,9 +453,9 @@ __s32 g2d_csc_reg_set(__u32 csc_no, g2d_csc_sel csc_sel)
 /**
  * set colorkey para.
  */
-__s32 ck_para_set(g2d_ck *para)
+int32_t ck_para_set(g2d_ck *para)
 {
-	__u32 tmp = 0x0;
+	uint32_t tmp = 0x0;
 
 	if (para->match_rule)
 		tmp = 0x7;	/* ������� - �� ��������� � �������� */
@@ -468,7 +468,7 @@ __s32 ck_para_set(g2d_ck *para)
 
 /**
  */
-__s32 g2d_byte_cal(__u32 format, __u32 *ycnt, __u32 *ucnt, __u32 *vcnt)
+int32_t g2d_byte_cal(uint32_t format, uint32_t *ycnt, uint32_t *ucnt, uint32_t *vcnt)
 {
 	*ycnt = 0;
 	*ucnt = 0;
@@ -538,7 +538,7 @@ __s32 g2d_byte_cal(__u32 format, __u32 *ycnt, __u32 *ucnt, __u32 *vcnt)
 
 /**
  */
-__u32 cal_align(__u32 width, __u32 align)
+uint32_t cal_align(uint32_t width, uint32_t align)
 {
 	switch (align) {
 	case 0:
@@ -564,13 +564,13 @@ __u32 cal_align(__u32 width, __u32 align)
 /**
  * @sel:layer no.
  */
-__s32 g2d_vlayer_set(__u32 sel, g2d_image_enh *image)
+int32_t g2d_vlayer_set(uint32_t sel, g2d_image_enh *image)
 {
 	unsigned long long addr0, addr1, addr2;
-	__u32 tmp;
-	__u32 ycnt, ucnt, vcnt;
-	__u32 pitch0, pitch1, pitch2;
-	__u32 ch, cw, cy, cx;
+	uint32_t tmp;
+	uint32_t ycnt, ucnt, vcnt;
+	uint32_t pitch0, pitch1, pitch2;
+	uint32_t ch, cw, cy, cx;
 
 	switch (sel) {
 	case 0:
@@ -640,15 +640,15 @@ __s32 g2d_vlayer_set(__u32 sel, g2d_image_enh *image)
 	G2D_INFO_MSG("VInAddrB: 0x%x, 0x%x, 0x%x\n",
 			image->laddr[0], image->laddr[1], image->laddr[2]);
 	addr0 =
-	    image->laddr[0] + ((__u64) image->haddr[0] << 32) +
+	    image->laddr[0] + ((uint64_t) image->haddr[0] << 32) +
 	    pitch0 * image->clip_rect.y + ycnt * image->clip_rect.x;
 	write_wvalue(V0_LADD0, addr0 & 0xffffffff);
 	addr1 =
-	    image->laddr[1] + ((__u64) image->haddr[1] << 32) + pitch1 * cy +
+	    image->laddr[1] + ((uint64_t) image->haddr[1] << 32) + pitch1 * cy +
 	    ucnt * cx;
 	write_wvalue(V0_LADD1, addr1 & 0xffffffff);
 	addr2 =
-	    image->laddr[2] + ((__u64) image->haddr[2] << 32) + pitch2 * cy +
+	    image->laddr[2] + ((uint64_t) image->haddr[2] << 32) + pitch2 * cy +
 	    vcnt * cx;
 	write_wvalue(V0_LADD2, addr2 & 0xffffffff);
 	tmp = ((addr0 >> 32) & 0xff) | ((addr1 >> 32) & 0xff) << 8 |
@@ -661,12 +661,12 @@ __s32 g2d_vlayer_set(__u32 sel, g2d_image_enh *image)
 	return 0;
 }
 
-__s32 g2d_uilayer_set(__u32 sel, g2d_image_enh *img)
+int32_t g2d_uilayer_set(uint32_t sel, g2d_image_enh *img)
 {
-	__u64 addr0;
-	__u32 base_addr_u, tmp;
-	__u32 ycnt, ucnt, vcnt;
-	__u32 pitch0;
+	uint64_t addr0;
+	uint32_t base_addr_u, tmp;
+	uint32_t ycnt, ucnt, vcnt;
+	uint32_t pitch0;
 
 	switch (sel) {
 	case 0:
@@ -700,7 +700,7 @@ __s32 g2d_uilayer_set(__u32 sel, g2d_image_enh *img)
 	pitch0 = cal_align(ycnt * img->width, img->align[0]);
 	write_wvalue(base_addr_u + 0xC, pitch0);
 	addr0 =
-	    img->laddr[0] + ((__u64) img->haddr[0] << 32) +
+	    img->laddr[0] + ((uint64_t) img->haddr[0] << 32) +
 	    pitch0 * img->clip_rect.y + ycnt * img->clip_rect.x;
 	write_wvalue(base_addr_u + 0x10, addr0 & 0xffffffff);
 	write_wvalue(base_addr_u + 0x18, (addr0 >> 32) & 0xff);
@@ -709,13 +709,13 @@ __s32 g2d_uilayer_set(__u32 sel, g2d_image_enh *img)
 	return 0;
 }
 
-__s32 g2d_wb_set(g2d_image_enh *image)
+int32_t g2d_wb_set(g2d_image_enh *image)
 {
-	__u64 addr0, addr1, addr2;
-	__u32 tmp;
-	__u32 ycnt, ucnt, vcnt;
-	__u32 pitch0, pitch1, pitch2;
-	__u32 ch, cw, cy, cx;
+	uint64_t addr0, addr1, addr2;
+	uint32_t tmp;
+	uint32_t ycnt, ucnt, vcnt;
+	uint32_t pitch0, pitch1, pitch2;
+	uint32_t ch, cw, cy, cx;
 
 	write_wvalue(WB_ATT, image->format);
 	tmp =
@@ -777,17 +777,17 @@ __s32 g2d_wb_set(g2d_image_enh *image)
 	G2D_INFO_MSG("OutputPitch: %d, %d, %d\n", pitch0, pitch1, pitch2);
 
 	addr0 =
-	    image->laddr[0] + ((__u64) image->haddr[0] << 32) +
+	    image->laddr[0] + ((uint64_t) image->haddr[0] << 32) +
 	    pitch0 * image->clip_rect.y + ycnt * image->clip_rect.x;
 	write_wvalue(WB_LADD0, addr0 & 0xffffffff);
 	write_wvalue(WB_HADD0, (addr0 >> 32) & 0xff);
 	addr1 =
-	    image->laddr[1] + ((__u64) image->haddr[1] << 32) + pitch1 * cy +
+	    image->laddr[1] + ((uint64_t) image->haddr[1] << 32) + pitch1 * cy +
 	    ucnt * cx;
 	write_wvalue(WB_LADD1, addr1 & 0xffffffff);
 	write_wvalue(WB_HADD1, (addr1 >> 32) & 0xff);
 	addr2 =
-	    image->laddr[2] + ((__u64) image->haddr[2] << 32) + pitch2 * cy +
+	    image->laddr[2] + ((uint64_t) image->haddr[2] << 32) + pitch2 * cy +
 	    vcnt * cx;
 	write_wvalue(WB_LADD2, addr2 & 0xffffffff);
 	write_wvalue(WB_HADD2, (addr2 >> 32) & 0xff);
@@ -801,9 +801,9 @@ __s32 g2d_wb_set(g2d_image_enh *image)
  * @sel:layer_no, 0--Layer Video,1--Layer UI0,2--Layer UI1,3--Layer UI2
  * @color_value:fill color value
  */
-__s32 g2d_fc_set(__u32 sel, __u32 color_value)
+int32_t g2d_fc_set(uint32_t sel, uint32_t color_value)
 {
-	__u32 tmp;
+	uint32_t tmp;
 
 	G2D_INFO_MSG("FILLCOLOR: sel: %d, color: 0x%x\n", sel, color_value);
 
@@ -845,7 +845,7 @@ __s32 g2d_fc_set(__u32 sel, __u32 color_value)
  * dst mapping ch0'
  * src mapping ch1'
  */
-__s32 g2d_rop2_set(__u32 rop_cmd)
+int32_t g2d_rop2_set(uint32_t rop_cmd)
 {
 	if (rop_cmd == G2D_BLT_BLACKNESS) {
 		/* blackness */
@@ -929,9 +929,9 @@ __s32 g2d_rop2_set(__u32 rop_cmd)
  * ptn mapping ch2'
  * -1 return meaning that the operate is not supported by now
  */
-__s32 g2d_rop3_set(__u32 sel, __u32 rop3_cmd)
+int32_t g2d_rop3_set(uint32_t sel, uint32_t rop3_cmd)
 {
-	__u32 addr;
+	uint32_t addr;
 
 	if (sel == 0)
 		addr = ROP_INDEX0;
@@ -1008,7 +1008,7 @@ __s32 g2d_rop3_set(__u32 sel, __u32 rop3_cmd)
 /**
  * background color set
  */
-__s32 g2d_bk_set(__u32 color)
+int32_t g2d_bk_set(uint32_t color)
 {
 	write_wvalue(BLD_BK_COLOR, color & 0xffffffff);
 	return 0;
@@ -1022,10 +1022,10 @@ __s32 g2d_bk_set(__u32 color)
  * return         :
  *                  offset (in word) of coefficient table
  */
-static __u32 g2d_vsu_calc_fir_coef(__u32 step)
+static uint32_t g2d_vsu_calc_fir_coef(uint32_t step)
 {
-	__u32 pt_coef;
-	__u32 scale_ratio, int_part, float_part, fir_coef_ofst;
+	uint32_t pt_coef;
+	uint32_t scale_ratio, int_part, float_part, fir_coef_ofst;
 
 	scale_ratio = step >> (VSU_PHASE_FRAC_BITWIDTH - 3);
 	int_part = scale_ratio >> 3;
@@ -1044,7 +1044,7 @@ static __u32 g2d_vsu_calc_fir_coef(__u32 step)
 	return pt_coef;
 }
 
-__s32 g2d_rop_by_pass(__u32 sel)
+int32_t g2d_rop_by_pass(uint32_t sel)
 {
 	if (sel == 0)
 		write_wvalue(ROP_CTL, 0xF0);
@@ -1060,15 +1060,15 @@ __s32 g2d_rop_by_pass(__u32 sel)
 	return 0;
 }
 
-__s32 g2d_vsu_para_set(__u32 fmt, __u32 in_w, __u32 in_h, __u32 out_w,
-			   __u32 out_h, __u8 alpha)
+int32_t g2d_vsu_para_set(uint32_t fmt, uint32_t in_w, uint32_t in_h, uint32_t out_w,
+			   uint32_t out_h, uint8_t alpha)
 {
-	__u32 i;
-	__u64 tmp, temp;
-	__u32 yhstep, yvstep;
-	__u32 incw, inch;
-	__u32 yhcoef_offset, yvcoef_offset, chcoef_offset;
-	__u32 format;
+	uint32_t i;
+	uint64_t tmp, temp;
+	uint32_t yhstep, yvstep;
+	uint32_t incw, inch;
+	uint32_t yhcoef_offset, yvcoef_offset, chcoef_offset;
+	uint32_t format;
 
 	if (fmt > G2D_FORMAT_IYUV422_Y1U0Y0V0)
 		write_wvalue(VS_CTRL, 0x10101);
@@ -1244,10 +1244,10 @@ __s32 g2d_vsu_para_set(__u32 fmt, __u32 in_w, __u32 in_h, __u32 out_w,
 }
 
 
-__s32 g2d_calc_coarse(__u32 format, __u32 inw, __u32 inh, __u32 outw,
-			  __u32 outh, __u32 *midw, __u32 *midh)
+int32_t g2d_calc_coarse(uint32_t format, uint32_t inw, uint32_t inh, uint32_t outw,
+			  uint32_t outh, uint32_t *midw, uint32_t *midh)
 {
-	__u32 tmp;
+	uint32_t tmp;
 
 	switch (format) {
 	case G2D_FORMAT_IYUV422_V0Y1U0Y0:
@@ -1344,10 +1344,10 @@ __s32 g2d_calc_coarse(__u32 format, __u32 inw, __u32 inh, __u32 outw,
 /*
  * sel: 0-->pipe0 1-->pipe1 other:error
  */
-__s32 g2d_bldin_set(__u32 sel, g2d_rect rect, int premul)
+int32_t g2d_bldin_set(uint32_t sel, g2d_rect rect, int premul)
 {
-	__u32 tmp;
-	__u32 offset;
+	uint32_t tmp;
+	uint32_t offset;
 
 	if (sel == 0) {
 		offset = 0;
@@ -1393,9 +1393,9 @@ __s32 g2d_bldin_set(__u32 sel, g2d_rect rect, int premul)
  * if the format is UI, then set the bld in RGB color space
  * if the format is Video, then set the bld in YUV color space
  */
-__s32 g2d_bld_cs_set(__u32 format)
+int32_t g2d_bld_cs_set(uint32_t format)
 {
-	__u32 tmp;
+	uint32_t tmp;
 
 	if (format <= G2D_FORMAT_BGRA1010102) {
 		tmp = read_wvalue(BLD_OUT_COLOR);
@@ -1410,12 +1410,12 @@ __s32 g2d_bld_cs_set(__u32 format)
 	return 0;
 }
 
-__s32 mixer_fillrectangle(g2d_fillrect *para)
+int32_t mixer_fillrectangle(g2d_fillrect *para)
 {
 	g2d_image_enh src_tmp, dst_tmp;
 	g2d_image_enh *src = &src_tmp;
 	g2d_image_enh *dst = &dst_tmp;
-	__s32 result;
+	int32_t result;
 
 	g2d_mixer_reset();
 	if (para->flag == G2D_FIL_NONE) {
@@ -1485,11 +1485,11 @@ __s32 mixer_fillrectangle(g2d_fillrect *para)
 	return result;
 }
 
-__s32 g2d_fillrectangle(g2d_image_enh *dst, __u32 color_value)
+int32_t g2d_fillrectangle(g2d_image_enh *dst, uint32_t color_value)
 {
 	g2d_rect rect0;
-	__u32 tmp;
-	__s32 result;
+	uint32_t tmp;
+	int32_t result;
 
 	g2d_bsp_reset();
 
@@ -1550,14 +1550,14 @@ __s32 g2d_fillrectangle(g2d_image_enh *dst, __u32 color_value)
  * if mask is set to NULL, do ROP3 among src, ptn, and dst using the
  * fore_flag
  */
-__s32 g2d_bsp_maskblt(g2d_image_enh *src, g2d_image_enh *ptn,
+int32_t g2d_bsp_maskblt(g2d_image_enh *src, g2d_image_enh *ptn,
 			  g2d_image_enh *mask, g2d_image_enh *dst,
-			  __u32 back_flag, __u32 fore_flag)
+			  uint32_t back_flag, uint32_t fore_flag)
 {
-	__u32 tmp;
+	uint32_t tmp;
 	g2d_rect rect0;
 	bool b_pre;
-	__s32 result;
+	int32_t result;
 
 	/* int b_pre; */
 	g2d_bsp_reset();
@@ -1635,7 +1635,7 @@ __s32 g2d_bsp_maskblt(g2d_image_enh *src, g2d_image_enh *ptn,
 	return result;
 }
 
-__s32 g2d_format_trans(__s32 data_fmt, __s32 pixel_seq)
+int32_t g2d_format_trans(int32_t data_fmt, int32_t pixel_seq)
 {
 	/* transform the g2d format 2 enhance format */
 	switch (data_fmt) {
@@ -1704,14 +1704,14 @@ __s32 g2d_format_trans(__s32 data_fmt, __s32 pixel_seq)
 	}
 }
 
-__s32 mixer_stretchblt(g2d_stretchblt *para,
+int32_t mixer_stretchblt(g2d_stretchblt *para,
 			   enum g2d_scan_order scan_order)
 {
 	g2d_image_enh src_tmp, dst_tmp;
 	g2d_image_enh *src = &src_tmp, *dst = &dst_tmp;
 	g2d_ck ck_para_tmp;
 	g2d_ck *ck_para = &ck_para_tmp;
-	__s32 result;
+	int32_t result;
 
 	memset(src, 0, sizeof(g2d_image_enh));
 	memset(dst, 0, sizeof(g2d_image_enh));
@@ -1837,14 +1837,14 @@ __s32 mixer_stretchblt(g2d_stretchblt *para,
 
 unsigned int PorterDuff=G2D_BLD_SRCOVER;
 
-__s32 mixer_blt(g2d_blt *para, enum g2d_scan_order scan_order)
+int32_t mixer_blt(g2d_blt *para, enum g2d_scan_order scan_order)
 {
 	g2d_image_enh src_tmp, dst_tmp;
 	g2d_image_enh *src = &src_tmp;
 	g2d_image_enh *dst = &dst_tmp;
 	g2d_ck ck_para_tmp;
 	g2d_ck *ck_para = &ck_para_tmp;
-	__s32 result;
+	int32_t result;
 
 	memset(src, 0, sizeof(g2d_image_enh));
 	memset(dst, 0, sizeof(g2d_image_enh));
@@ -1990,17 +1990,17 @@ __s32 mixer_blt(g2d_blt *para, enum g2d_scan_order scan_order)
 	}
 }
 
-__s32 g2d_bsp_bitblt(g2d_image_enh *src, g2d_image_enh *dst, __u32 flag)
+int32_t g2d_bsp_bitblt(g2d_image_enh *src, g2d_image_enh *dst, uint32_t flag)
 {
 	g2d_rect rect0, rect1;
 	bool bpre;
-	__u32 ycnt, ucnt, vcnt;
-	__u32 pitch0, pitch1, pitch2;
-	__u64 addr0, addr1, addr2;
-	__u32 midw, midh;
-	__u32 tmp;
-	__u32 ch, cw, cy, cx;
-	__s32 result;
+	uint32_t ycnt, ucnt, vcnt;
+	uint32_t pitch0, pitch1, pitch2;
+	uint64_t addr0, addr1, addr2;
+	uint32_t midw, midh;
+	uint32_t tmp;
+	uint32_t ch, cw, cy, cx;
+	int32_t result;
 
 	g2d_bsp_reset();
 	if (dst == NULL) {
@@ -2213,17 +2213,17 @@ __s32 g2d_bsp_bitblt(g2d_image_enh *src, g2d_image_enh *dst, __u32 flag)
 		G2D_INFO_MSG("SRC_ADDR2: 0x%x\n", src->laddr[2]);
 
 		addr0 =
-		    src->laddr[0] + ((__u64) src->haddr[0] << 32) +
+		    src->laddr[0] + ((uint64_t) src->haddr[0] << 32) +
 		    pitch0 * src->clip_rect.y + ycnt * src->clip_rect.x;
 		write_wvalue(ROT_ILADD0, addr0 & 0xffffffff);
 		write_wvalue(ROT_IHADD0, (addr0 >> 32) & 0xff);
 		addr1 =
-		    src->laddr[1] + ((__u64) src->haddr[1] << 32) +
+		    src->laddr[1] + ((uint64_t) src->haddr[1] << 32) +
 		    pitch1 * cy + ucnt * cx;
 		write_wvalue(ROT_ILADD1, addr1 & 0xffffffff);
 		write_wvalue(ROT_IHADD1, (addr1 >> 32) & 0xff);
 		addr2 =
-		    src->laddr[2] + ((__u64) src->haddr[2] << 32) +
+		    src->laddr[2] + ((uint64_t) src->haddr[2] << 32) +
 		    pitch2 * cy + vcnt * cx;
 		write_wvalue(ROT_ILADD2, addr2 & 0xffffffff);
 		write_wvalue(ROT_IHADD2, (addr2 >> 32) & 0xff);
@@ -2302,17 +2302,17 @@ __s32 g2d_bsp_bitblt(g2d_image_enh *src, g2d_image_enh *dst, __u32 flag)
 		G2D_INFO_MSG("outClipRectW:  %d\n", dst->clip_rect.w);
 		G2D_INFO_MSG("outClipRectH: %d\n", dst->clip_rect.h);
 		addr0 =
-		    dst->laddr[0] + ((__u64) dst->haddr[0] << 32) +
+		    dst->laddr[0] + ((uint64_t) dst->haddr[0] << 32) +
 		    pitch0 * dst->clip_rect.y + ycnt * dst->clip_rect.x;
 		write_wvalue(ROT_OLADD0, addr0 & 0xffffffff);
 		write_wvalue(ROT_OHADD0, (addr0 >> 32) & 0xff);
 		addr1 =
-		    dst->laddr[1] + ((__u64) dst->haddr[1] << 32) +
+		    dst->laddr[1] + ((uint64_t) dst->haddr[1] << 32) +
 		    pitch1 * cy + ucnt * cx;
 		write_wvalue(ROT_OLADD1, addr1 & 0xffffffff);
 		write_wvalue(ROT_OHADD1, (addr1 >> 32) & 0xff);
 		addr2 =
-		    dst->laddr[2] + ((__u64) dst->haddr[2] << 32) +
+		    dst->laddr[2] + ((uint64_t) dst->haddr[2] << 32) +
 		    pitch2 * cy + vcnt * cx;
 		write_wvalue(ROT_OLADD2, addr2 & 0xffffffff);
 		write_wvalue(ROT_OHADD2, (addr2 >> 32) & 0xff);
@@ -2345,12 +2345,12 @@ __s32 g2d_bsp_bitblt(g2d_image_enh *src, g2d_image_enh *dst, __u32 flag)
 	return result;
 }
 
-__s32 g2d_bsp_bld(g2d_image_enh *src, g2d_image_enh *dst, __u32 flag,
+int32_t g2d_bsp_bld(g2d_image_enh *src, g2d_image_enh *dst, uint32_t flag,
 		    g2d_ck *ck_para)
 {
 	g2d_rect rect0, rect1;
-	__u32 tmp;
-	__s32 result;
+	uint32_t tmp;
+	int32_t result;
 
 	if (dst == NULL)
 		return -1;
@@ -2408,9 +2408,9 @@ flag|=G2D_CK_SRC;
 	return result;
 }
 
-__s32 g2d_get_clk_cnt(__u32 *clk)
+int32_t g2d_get_clk_cnt(uint32_t *clk)
 {
-	__s32 ret;
+	int32_t ret;
 
 	ret = read_wvalue(G2D_MIXER_CLK);
 	if (ret != 0)
@@ -2421,7 +2421,7 @@ __s32 g2d_get_clk_cnt(__u32 *clk)
 	return 0;
 }
 
-__u32 mixer_set_reg_base(unsigned long addr)
+uint32_t mixer_set_reg_base(uintptr_t addr)
 {
 	base_addr = addr;
 	return 0;

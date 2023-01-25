@@ -517,5 +517,22 @@ struct mixer_para {
 //
 //} g2d_cmd;
 
+/* Обеспечиваем работу тестов из linux
+ *
+ */
+
+#include "src/display/display.h"
+#define LCD_PIXEL_WIDTH DIM_X
+#define LCD_PIXEL_HEIGHT DIM_Y
+#define BYTE_PER_PIXEL     LCDMODE_PIXELSIZE
+
+#define VIDEO_MEMORY1 ((uintptr_t) colmain_fb_draw()) //((uintptr_t) tfb1)
+#define VIDEO_MEMORY0 ((uintptr_t) colmain_fb_draw()) //((uintptr_t) tfb1)
+extern ALIGNX_BEGIN PACKEDCOLORMAIN_T tfb0 [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
+extern ALIGNX_BEGIN PACKEDCOLORMAIN_T tfb1 [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
+void g2d_main_layers_alpha(void);
+void g2d_main0(void);
+uint32_t mixer_set_reg_base(uintptr_t addr);
+
 #endif	/* __G2D_DRIVER_H */
 

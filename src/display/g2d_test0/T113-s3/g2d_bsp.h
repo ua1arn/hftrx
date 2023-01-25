@@ -69,15 +69,11 @@
 #include <stddef.h>
 
 #include "types2.h"
-#include "irqreturn.h"
 
 //#include "UART.h"
 //#include "LowLevel.h"
 
 #define EINVAL 22 /* Invalid argument */
-
-#define G2D_FINISH_IRQ		(1<<8)
-#define G2D_ERROR_IRQ		(1<<9)
 
 #if 0
 
@@ -150,39 +146,39 @@ typedef enum {
 #define VI_LAYER_NUMBER 1
 #define UI_LAYER_NUMBER 3
 
-__s32 g2d_bsp_open(void);
-__s32 g2d_bsp_close(void);
-__s32 g2d_bsp_reset(void);
-__s32 mixer_irq_query(void);
-__s32 rot_irq_query(void);
-__s32 g2d_mixer_reset(void);
-__s32 g2d_rot_reset(void);
-__s32 g2d_bsp_bld(g2d_image_enh *, g2d_image_enh *, __u32, g2d_ck *);
-__s32 g2d_fillrectangle(g2d_image_enh *dst, __u32 color_value);
-__s32 g2d_bsp_maskblt(g2d_image_enh *src, g2d_image_enh *ptn,
+int32_t g2d_bsp_open(void);
+int32_t g2d_bsp_close(void);
+int32_t g2d_bsp_reset(void);
+int32_t mixer_irq_query(void);
+int32_t rot_irq_query(void);
+int32_t g2d_mixer_reset(void);
+int32_t g2d_rot_reset(void);
+int32_t g2d_bsp_bld(g2d_image_enh *, g2d_image_enh *, uint32_t, g2d_ck *);
+int32_t g2d_fillrectangle(g2d_image_enh *dst, uint32_t color_value);
+int32_t g2d_bsp_maskblt(g2d_image_enh *src, g2d_image_enh *ptn,
 		      g2d_image_enh *mask, g2d_image_enh *dst,
-		      __u32 back_flag, __u32 fore_flag);
-__s32 g2d_bsp_bitblt(g2d_image_enh *src, g2d_image_enh *dst, __u32 flag);
-__s32 g2d_byte_cal(__u32 format, __u32 *ycnt, __u32 *ucnt, __u32 *vcnt);
+		      uint32_t back_flag, uint32_t fore_flag);
+int32_t g2d_bsp_bitblt(g2d_image_enh *src, g2d_image_enh *dst, uint32_t flag);
+int32_t g2d_byte_cal(uint32_t format, uint32_t *ycnt, uint32_t *ucnt, uint32_t *vcnt);
 
 extern int g2d_wait_cmd_finish(void);
 
-__u32	mixer_reg_init(void);
-__s32	mixer_blt(g2d_blt *para, enum g2d_scan_order scan_order);
-__s32	mixer_fillrectangle(g2d_fillrect *para);
-__s32	mixer_stretchblt(g2d_stretchblt *para, enum g2d_scan_order scan_order);
-__s32	mixer_maskblt(g2d_maskblt *para);
-__u32	mixer_set_palette(g2d_palette *para);
-__u64	mixer_get_addr(__u32 buffer_addr, __u32 format,
-			__u32 stride, __u32 x, __u32 y);
-__u32	mixer_set_reg_base(unsigned long addr);
-__u32	mixer_get_irq(void);
-__u32	mixer_get_irq0(void);
-__u32	mixer_clear_init(void);
-__u32	mixer_clear_init0(void);
-__s32	mixer_cmdq(__u32 addr);
-__u32	mixer_premultiply_set(__u32 flag);
-__u32	mixer_micro_block_set(g2d_blt *para);
+uint32_t	mixer_reg_init(void);
+int32_t	mixer_blt(g2d_blt *para, enum g2d_scan_order scan_order);
+int32_t	mixer_fillrectangle(g2d_fillrect *para);
+int32_t	mixer_stretchblt(g2d_stretchblt *para, enum g2d_scan_order scan_order);
+int32_t	mixer_maskblt(g2d_maskblt *para);
+uint32_t	mixer_set_palette(g2d_palette *para);
+uint64_t	mixer_get_addr(uint32_t buffer_addr, uint32_t format,
+			uint32_t stride, uint32_t x, uint32_t y);
+uint32_t	mixer_set_reg_base(unsigned long addr);
+uint32_t	mixer_get_irq(void);
+uint32_t	mixer_get_irq0(void);
+uint32_t	mixer_clear_init(void);
+uint32_t	mixer_clear_init0(void);
+int32_t	mixer_cmdq(uint32_t addr);
+uint32_t	mixer_premultiply_set(uint32_t flag);
+uint32_t	mixer_micro_block_set(g2d_blt *para);
 
 #endif	/* __G2D_BSP_H */
 

@@ -5,14 +5,6 @@
 extern "C" {
 #endif
 
-#include "src/display/display.h"
-#define VIDEO_MEMORY0 ((uintptr_t) colmain_fb_draw())
-#define VIDEO_MEMORY1 ((uintptr_t) colmain_fb_draw())
-
-#define LCD_PIXEL_WIDTH  DIM_X
-#define LCD_PIXEL_HEIGHT DIM_Y
-#define BYTE_PER_PIXEL     LCDMODE_PIXELSIZE
-
 #define DE2_FORMAT_ARGB_8888	0x00
 #define DE2_FORMAT_ABGR_8888	0x01
 #define DE2_FORMAT_BGRA_8888	0x03

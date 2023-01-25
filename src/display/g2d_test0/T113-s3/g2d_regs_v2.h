@@ -220,17 +220,17 @@
 /* #define read_wvalue(addr) get_wvalue(addr) */
 
 /* byte input */
-#define get_bvalue(n)	(*((volatile __u8 *)(n)))
+#define get_bvalue(n)	(*((volatile uint8_t *)(n)))
 /* byte output */
-#define put_bvalue(n, c)	(*((volatile __u8 *)(n)) = (c))
+#define put_bvalue(n, c)	(*((volatile uint8_t *)(n)) = (c))
 /* half word input */
-#define get_hvalue(n)	(*((volatile __u16 *)(n)))
+#define get_hvalue(n)	(*((volatile uint16_t *)(n)))
 /* half word output */
-#define put_hvalue(n, c)	(*((volatile __u16 *)(n)) = (c))
+#define put_hvalue(n, c)	(*((volatile uint16_t *)(n)) = (c))
 /* word input */
-#define get_wvalue(n)	(*((volatile __u32 *)(n)))
+#define get_wvalue(n)	(*((volatile uint32_t *)(n)))
 /* word output */
-#define put_wvalue(n, c)	(*((volatile __u32 *)(n)) = (c))
+#define put_wvalue(n, c)	(*((volatile uint32_t *)(n)) = (c))
 
 #endif /*
  */
