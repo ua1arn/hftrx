@@ -1791,13 +1791,23 @@ struct fb_t113_rgb_pdata_t
 	//int bits_per_pixel;
 	//int bytes_per_pixel;
 	//int pixlen;
-	int index;
-	uintptr_t vram [2];
+	//int index;
+	//uintptr_t vram [2];
 	//struct region_list_t * nrl, * orl;
 
 //	struct led_t * backlight;
 //	int brightness;
 };
+
+#if LCDMODE_MAIN_ARGB888
+	static const uint32_t ui_vi_format = 0x00;	//  0x08: ARGB_8888
+	//const uint32_t ui_vi_format = 0x04;	// 0x04: XRGB_8888
+#elif LCDMODE_MAIN_RGB565
+	static const uint32_t ui_vi_format = 0x0A;	// 0x0A: RGB_565
+#else
+	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
+	static const uint32_t ui_vi_format = 0x0A;
+#endif
 
 static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
@@ -1809,8 +1819,12 @@ static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 
 static inline void t113_de_set_address_vi(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
 {
-//	ASSERT(uich >= 1 && uich <= 3);
 	struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+	write32((uintptr_t)&vi->cfg[0].attr,
+			(vram != 0) |	// enable
+			(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+			(1<<15)
+			);
 	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].top_laddr, vram);
 	write32((uintptr_t) & vi->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
 }
@@ -1819,6 +1833,12 @@ static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uin
 {
 	ASSERT(uich >= 1 && uich <= 3);
 	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+	write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].attr,
+			(vram != 0) |	// enable
+			(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+			(255<<24)|
+			(1<<16)
+			);
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
 	write32((uintptr_t) & ui->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
 }
@@ -1874,20 +1894,19 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
-	write32((uintptr_t) & bld->fcolor_ctl,
-			(1u << 8)	| // pipe0 enable RED - from VI
-			//(1u << 9)	| // pipe1 enable GREEN - from UI1
-			//(1u << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
-			//(1u << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
-			//(0x00000100 << 0) |	// P0_EN P0_FCEN
-			//(0x00000100 << 1) |
-			//(0x00000100 << 2) |
-			0
-			);
+//	write32((uintptr_t) & bld->fcolor_ctl,
+//			(1u << 8)	| // pipe0 enable RED - from VI
+//			//(1u << 9)	| // pipe1 enable GREEN - from UI1
+//			//(1u << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+//			//(1u << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+////			(01u << 0) |	// P0_FCEN
+////			(01u << 1) |	// P1_FCEN
+//			0
+//			);
 
 	// 5.10.9.5 BLD routing control register
 	// BLD_CH_RTCTL
-	// 0x03020100 - default
+	// 0x03020100 - default state
 	write32((uintptr_t) & bld->route,
 			(0u << 0) |	// pipe 0 from ch 0
 			(1u << 4) |	// pipe 1 from ch 1
@@ -1928,42 +1947,41 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t) & bld->attr [i].offset, 0);
 	}
 
-	unsigned DE2_FORMAT_ABGR_8888 = 0x00;
 	{
 		struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
 
 		//CH0 VI ----------------------------------------------------------------------------
 
 		write32((uintptr_t)&vi->cfg[0].attr,
-				(1<<0)|
-				(DE2_FORMAT_ABGR_8888<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+				//(1<<0)|		// enable
+				(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 				(1<<15)
 				);
 		write32((uintptr_t)&vi->cfg[0].size, ovl_ui_mbsize);
 		write32((uintptr_t)&vi->cfg[0].coord, 0);
 		write32((uintptr_t)&vi->cfg[0].pitch[0], uipitch);
-		write32((uintptr_t)&vi->cfg[0].top_laddr[0], pdat->vram [0]);                               //VIDEO_MEMORY0
+		//write32((uintptr_t)&vi->cfg[0].top_laddr[0], pdat->vram [0]);                               //VIDEO_MEMORY0
 		write32((uintptr_t)&vi->ovl_size[0], ovl_ui_mbsize);
 	}
 
 	int uich = 1;
-	for (uich = 1; uich <= 3; ++ uich)
+	for (uich = 1; uich <= 1; ++ uich)
 	{
 		ASSERT(uich >= 1 && uich <= 3);
 		struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 
 		//CH1 UI -----------------------------------------------------------------------------
 
-		write32((uintptr_t)&ui->cfg[0].attr,
-				(1<<0)|
-				(DE2_FORMAT_ABGR_8888<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
-				(0xff<<24)|
+		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].attr,
+				//(1<<0)|		// enable
+				(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+				(0x6f<<24)|
 				(1<<16)
 				);
-		write32((uintptr_t)&ui->cfg[0].size, ovl_ui_mbsize);
-		write32((uintptr_t)&ui->cfg[0].coord, 0);
-		write32((uintptr_t)&ui->cfg[0].pitch, uipitch);
-		write32((uintptr_t)&ui->cfg[0].top_laddr,pdat->vram [1]);                                  //VIDEO_MEMORY1
+		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].size, ovl_ui_mbsize);
+		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].coord, 0);
+		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].pitch, uipitch);
+		//write32((uintptr_t)&ui->cfg[0].top_laddr,pdat->vram [1]);                                  //VIDEO_MEMORY1
 		write32((uintptr_t)&ui->ovl_size, ovl_ui_mbsize);
 	}
 
@@ -1974,7 +1992,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 //
 //		//CH1 UI -----------------------------------------------------------------------------
 //
-//		write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(0xff<<24)|(1<<16)); //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+//		write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(ui_vi_format<<8)|(0xff<<24)|(1<<16)); //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
 //		write32((uintptr_t)&ui->cfg[0].size, ovl_ui_mbsize);
 //		write32((uintptr_t)&ui->cfg[0].coord, 0);
 //		write32((uintptr_t)&ui->cfg[0].pitch, uipitch);
@@ -2174,9 +2192,9 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	//pdat->bits_per_pixel = 18; // panel connection type
 	//pdat->bytes_per_pixel = LCDMODE_PIXELSIZE;
 	//pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
-	pdat->vram [0] = frames [0];
-	pdat->vram [1] = frames [1];
-	pdat->index = 0;
+//	pdat->vram [0] = frames [0];
+//	pdat->vram [1] = frames [1];
+//	pdat->index = 0;
 
     CCU->DE_CLK_REG |= (1u << 31) | (0x03u << 0);	// 300 MHz
 
@@ -2219,10 +2237,6 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	t113_tconlcd_enable(pdat);
 
 	t113_de_set_mode(pdat);
-//	t113_de_set_mode_vi(pdat);
-//	t113_de_set_mode_ui(pdat, 1);
-//	t113_de_set_mode_ui(pdat, 2);
-//	t113_de_set_mode_ui(pdat, 3);
 	t113_de_enable(pdat);
 
 //	t113_de_set_address_ui(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);
@@ -2234,13 +2248,23 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	// Используем слой VI вместо UI1
 	//t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
-	t113_de_set_address_vi(pdat, p);
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	write32((uintptr_t) & bld->fcolor_ctl,
+			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
+//			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
+//			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+//			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+			0
+			);
+	t113_de_set_address_vi(pdat, p1);
 
 	t113_de_enable(pdat);
 }
@@ -2250,6 +2274,7 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 void arm_hardware_ltdc_main_set_no_vsync4(uintptr_t p1, uintptr_t p2, uintptr_t p3, uintptr_t p4)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	// Note: the layer priority is layer3>layer2>layer1>layer0
 	t113_de_set_address_vi(pdat, p1);		// red
@@ -2257,13 +2282,24 @@ void arm_hardware_ltdc_main_set_no_vsync4(uintptr_t p1, uintptr_t p2, uintptr_t 
 	t113_de_set_address_ui(pdat, p3, 2);
 	t113_de_set_address_ui(pdat, p4, 3);
 
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	write32((uintptr_t) & bld->fcolor_ctl,
+			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
+			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
+			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+			0
+			);
+
 	t113_de_enable(pdat);
 }
 
 /* set visible buffer start. Wait VSYNC. */
-void arm_hardware_ltdc_main_set(uintptr_t p)
+void arm_hardware_ltdc_main_set(uintptr_t p1)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	TCON_LCD0->LCD_GINT0_REG |= (1u << 31); 		//Enable the Vertical Blank interrupt
 	TCON_LCD0->LCD_GINT0_REG &= ~ (1u << 15);         //clear LCD_VB_INT_FLAG
@@ -2271,8 +2307,18 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		;
 
 	// Используем слой VI вместо UI1
+	t113_de_set_address_vi(pdat, p1);
+	// Используем слой VI вместо UI1
 	//t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
-	t113_de_set_address_vi(pdat, p);
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	write32((uintptr_t) & bld->fcolor_ctl,
+			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
+			//((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
+			//((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+			//((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+			0
+			);
 
 	t113_de_enable(pdat);
 }

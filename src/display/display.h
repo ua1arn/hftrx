@@ -349,19 +349,17 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 	#define TFTRGB(red, green, blue) \
 		(  (uint_fast32_t) \
 			(	\
-				((uint_fast32_t) (255) << 24)  | /* Alpha value */ \
+				((uint_fast32_t) (255) << 24)  | /* Alpha value - full color */ \
 				(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
 				(((uint_fast32_t) (green) << 8) & 0xFF00) | \
 				(((uint_fast32_t) (blue) >> 0) &  0x00FF) \
 			) \
 		)
-	#define TFTARGB(alpha, red, green, blue) \
+	#define TFTALPHA(alpha, color24) \
 		(  (uint_fast32_t) \
 			(	\
 				((uint_fast32_t) (alpha) << 24)  | /* Alpha value */ \
-				(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
-				(((uint_fast32_t) (green) << 8) & 0xFF00) | \
-				(((uint_fast32_t) (blue) >> 0) &  0x00FF) \
+					(((uint_fast32_t) (color24)) &  0x00FFFFFF) \
 			) \
 		)
 

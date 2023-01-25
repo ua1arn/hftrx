@@ -1003,7 +1003,7 @@ hwacc_fillrect_u32(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
