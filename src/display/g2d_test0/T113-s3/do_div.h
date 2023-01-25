@@ -9,8 +9,6 @@ extern "C" {
 #include <strings.h> //fls, __always_inline
 #include <stdbool.h> //bool
 
-#include "types.h"
-
 #define BITS_PER_LONG 32 /* ����� ��� � long �� 32-������ ���������� */
 
 #define likely(x)       __builtin_expect((x),1)

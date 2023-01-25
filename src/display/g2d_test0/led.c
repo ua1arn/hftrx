@@ -124,8 +124,12 @@ float RAND(float min,float max) //random value [min..max]
  return ((float)((rand()%(MAX-MIN+1))+MIN))*0.001F;
 }
 
+ALIGNX_BEGIN PACKEDCOLORMAIN_T tfb0 [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
+ALIGNX_BEGIN PACKEDCOLORMAIN_T tfb1 [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
+
 void g2d_main0(void)
 {
+	arm_hardware_ltdc_main_set_no_vsync4(VIDEO_MEMORY0, VIDEO_MEMORY1, (uintptr_t) 0, (uintptr_t) 0);
 
  PNG_Load(&png[1],Back1_png);
 

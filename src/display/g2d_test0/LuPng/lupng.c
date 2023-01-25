@@ -63,7 +63,7 @@
 #define PNG_ERROR -1
 
 #define BUF_SIZE 8192
-#define MAX(x, y) (x > y ? x : y)
+#define LUPNGMAX(x, y) (x > y ? x : y)
 
 #if defined(_MSC_VER)
 #define LU_INLINE __inline /* MS-specific inline */
@@ -476,14 +476,14 @@ static LU_INLINE int parseIhdr(PngInfoStruct *info, PngChunk *chunk)
                               info->depth < 16 ? 8 : 16, NULL, info->userCtx);
     info->cimg = info->img;
     info->scanlineBytes =
-        MAX((info->width * info->channels * info->depth) >> 3, 1);
+        LUPNGMAX((info->width * info->channels * info->depth) >> 3, 1);
     info->currentScanline = (uint8_t *)info->userCtx->allocProc(
         info->scanlineBytes, info->userCtx->allocProcUserPtr);
     info->previousScanline = (uint8_t *)info->userCtx->allocProc(
         info->scanlineBytes, info->userCtx->allocProcUserPtr);
     info->currentCol = -1;
     info->interlacePass = info->interlace ? 1 : 0;
-    info->bytesPerPixel = MAX((info->channels * info->depth) >> 3, 1);
+    info->bytesPerPixel = LUPNGMAX((info->channels * info->depth) >> 3, 1);
     if (!info->img || !info->currentScanline || !info->previousScanline) {
         LUPNG_WARN(info, "PNG: memory allocation failed!");
         return PNG_ERROR;

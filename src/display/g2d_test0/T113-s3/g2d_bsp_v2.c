@@ -22,9 +22,7 @@
 #include <stddef.h>
 #include <string.h>
 
-//#include "types2.h"
-
-static uintptr_t base_addr;
+static const uintptr_t base_addr = G2D_TOP_BASE;
 /* byte input */
 #define read_bvalue(offset)		get_bvalue(base_addr + offset)
 /* byte output */
@@ -2418,12 +2416,6 @@ int32_t g2d_get_clk_cnt(uint32_t *clk)
 
 	    /* clear clk cnt */
 	    write_wvalue(G2D_MIXER_CLK, 0);
-	return 0;
-}
-
-uint32_t mixer_set_reg_base(uintptr_t addr)
-{
-	base_addr = addr;
 	return 0;
 }
 

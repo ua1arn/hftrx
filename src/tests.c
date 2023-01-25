@@ -6443,7 +6443,8 @@ void hightests(void)
 		void g2d_main_layers_alpha(void);
 		void g2d_main0(void);
 
-		mixer_set_reg_base(G2D_TOP_BASE);
+		/* Запуск теста */
+
 		g2d_main0();
 		//g2d_main_layers_alpha();
 	}
