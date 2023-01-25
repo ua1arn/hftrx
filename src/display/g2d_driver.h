@@ -544,7 +544,6 @@ struct mixer_para {
 
 void g2d_main_layers_alpha(void);
 void g2d_main0(void);
-uint32_t mixer_set_reg_base(uintptr_t addr);
 
 #endif	/* __G2D_DRIVER_H */
 

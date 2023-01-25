@@ -6442,6 +6442,9 @@ void hightests(void)
 
 		/* Запуск теста одного из */
 
+		void g2d_main_layers_alpha(void);
+		void g2d_main0(void);
+
 		//g2d_main0();
 		g2d_main_layers_alpha();
 	}
