@@ -1875,10 +1875,10 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	write32((uintptr_t) & bld->fcolor_ctl,
-			(1u << 8)	| // pipe0 enable RED
-			//(1u << 9)	| // pipe1 enable GREEN
-			//(1u << 10)	| // pipe2 enable RED
-			//(1u << 11)	| // pipe3 enable RED
+			(1u << 8)	| // pipe0 enable RED - from VI
+			//(1u << 9)	| // pipe1 enable GREEN - from UI1
+			//(1u << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+			//(1u << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
 			//(0x00000100 << 0) |	// P0_EN P0_FCEN
 			//(0x00000100 << 1) |
 			//(0x00000100 << 2) |
@@ -1903,10 +1903,11 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_CTL
+	// в примерах только 0 и 1 индексы
 	for(i = 0; i < 4; i++)
 	{
-		const unsigned bld_mode =
-					 0x03010301;
+	    //unsigned bld_mode = 0x03010301;
+	    unsigned bld_mode = 0x03020302;           //Fs=Ad, Fd=1-As, Qs=Ad, Qd=1-As
 		write32((uintptr_t) & bld->bld_mode [i],
 				bld_mode
 				);
