@@ -68,11 +68,6 @@
 
 #include <stddef.h>
 
-#include "types2.h"
-
-//#include "UART.h"
-//#include "LowLevel.h"
-
 #define EINVAL 22 /* Invalid argument */
 
 #if 0

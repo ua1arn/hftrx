@@ -10,7 +10,6 @@ extern "C" {
 #include <stdbool.h> //bool
 
 #include "types.h"
-#include "types2.h"
 
 #define BITS_PER_LONG 32 /* ����� ��� � long �� 32-������ ���������� */
 

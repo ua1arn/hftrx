@@ -42,38 +42,10 @@ void PNG_Load(LuImage **png,const void *buffer)      //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï
  *png=luPngReadMemory((char*)buffer);
 }
 
-//void xPNG_Draw(uint32_t px,uint32_t py,LuImage *png,u8 layer)   //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PNG ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-//{
-// if(png==NULL)return;
-//
-// uint32_t line=png->width<<2;
-//
-// uint32_t * __restrict__ src=(uint32_t*)png->data;
-// uint32_t * __restrict__ dst=(uint32_t*)(layer?VIDEO_MEMORY1:VIDEO_MEMORY0);
-// uint32_t * __restrict__ dst0=dst;
-//
-// dst+=(LCD_PIXEL_WIDTH*py)+px;
-//
-// for(uint32_t y=0;y<png->height;y++)
-// {
-//  memcpy(dst,src,line);
-//  dst+=LCD_PIXEL_WIDTH;
-//  src+=png->width;
-// }
-// arm_hardware_flush((uintptr_t) dst0, LCD_PIXEL_WIDTH * png->height * BYTE_PER_PIXEL);
-//}
-
 void PNG_Free(LuImage *png)                          //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PNG
 {
  if(png)luImageRelease(png,NULL);
 }
-
-//----------------------------------------------------------------------------------------------------------
-//
-//void ClearVideoMemory(void)
-//{
-// memset((void*)VIDEO_MEMORY,0,LCD_PIXEL_WIDTH*LCD_PIXEL_HEIGHT*BYTE_PER_PIXEL*2); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-//}
 
 static g2d_fillrect   G2D_FILLRECT;
 static g2d_blt        G2D_BLT;
@@ -155,45 +127,14 @@ float RAND(float min,float max) //random value [min..max]
 
 void g2d_main0(void)
 {
-	memset(& G2D_BLT, 0xFF, sizeof G2D_BLT);
-	memset(& G2D_FILLRECT, 0xFF, sizeof G2D_FILLRECT);
-	memset(& G2D_STRETCHBLT, 0xFF, sizeof G2D_STRETCHBLT);
-// CLI();
-//
-// LowLevel_Init();
-// PRINTF("\nT113-s3...\n");
-//
-// ClearVideoMemory();
 
  PNG_Load(&png[1],Back1_png);
 
  PNG_Load(&png[0],dog_png);
 
-/*
- uint32_t *p=(uint32_t*)png[0]->data;
- for(int y=0;y<png[0]->height;y++)
- for(int x=0;x<png[0]->width;x++)
- {
-  if(*p==0xFFA449A3)*p&=0x00000000; // *p=0x010101;
-  p++;
- }
-*/
-
-
-// flush_dcache();
-
- //G2D_Init();
-
-// Rect();
-// local_delay_ms(200);
-
  Again:
 
- PRINTF("1 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
- arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
  PNG_Background(png[1],VIDEO_MEMORY1);
- PRINTF("2 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
- arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
  uint32_t t;
  //t=AVS_CNT0_REG;
  uint32_t d;
@@ -229,10 +170,6 @@ void g2d_main0(void)
  G2D_BLT.color=*(volatile uint32_t*)png[0]->data; //0x00000000; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ RGB
  G2D_BLT.alpha=0xFF;       //ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
- PRINTF("3 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
- arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
- PRINTF("G2D_BLT.color=%08X\n", (unsigned) G2D_BLT.color);
-
  for (t=0; t < 100; ++t)
  {
 //  d=AVS_CNT0_REG-t;
@@ -252,8 +189,6 @@ void g2d_main0(void)
   local_delay_ms(50);
 
  }
- PRINTF("4 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
- arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
 #endif
 
 #if 1
@@ -294,7 +229,7 @@ void g2d_main0(void)
 
  G2D_STRETCHBLT.color=*(volatile uint32_t*)png[0]->data; //0x00000000; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ RGB
  G2D_STRETCHBLT.alpha=0xFF;       //ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- PRINTF("G2D_STRETCHBLT.color=%08X\n", (unsigned) G2D_BLT.color);
+ //PRINTF("G2D_STRETCHBLT.color=%08X\n", (unsigned) G2D_BLT.color);
 
  //PorterDuff=G2D_BLD_SRCOVER;
 
@@ -339,7 +274,7 @@ void g2d_main0(void)
 // DelayMS(300);
 
  }
- PRINTF("5 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
+ //PRINTF("5 src color=%08X\n", (unsigned)*(volatile uint32_t*)png[0]->data);
  arm_hardware_flush_invalidate((uintptr_t) png[0]->data, png[0]->width * png[0]->height * BYTE_PER_PIXEL);
 
 #endif
