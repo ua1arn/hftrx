@@ -6373,11 +6373,14 @@ void hightests(void)
 		static PACKEDCOLORMAIN_T fb1 [GXSIZE(DIM_X, DIM_Y)];
 		static PACKEDCOLORMAIN_T fb2 [GXSIZE(DIM_X, DIM_Y)];
 
+		fb1 [0] = 0xDEADBEEF;
+		fb2 [0] = 0xABBA1980;
+
 		arm_hardware_flush_invalidate((uintptr_t) fb1, sizeof fb1);
 		arm_hardware_flush_invalidate((uintptr_t) fb2, sizeof fb2);
 
-		//colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(255, COLOR_BLACK));	/* opaque color transparent black */
-		//colmain_fillrect(fb2, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLOR_BLACK));	/* transparent black */
+//		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(255, COLOR_BLACK));	/* opaque color transparent black */
+//		colmain_fillrect(fb2, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLOR_BLACK));	/* transparent black */
 
 		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, 200, 200, TFTALPHA(255, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
 		colmain_fillrect(fb2, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(127, COLOR_GREEN));	// GREEN
