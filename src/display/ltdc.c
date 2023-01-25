@@ -1975,7 +1975,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// BLD_FILL_COLOR_CTL
 	write32((uintptr_t) & bld->fcolor_ctl,
 			(1u << 8)	| // pipe0 enable RED
-			(1u << 9)	| // pipe1 enable GREEN
+			//(1u << 9)	| // pipe1 enable GREEN
 			//(1u << 10)	| // pipe2 enable RED
 			//(1u << 11)	| // pipe3 enable RED
 			//(0x00000100 << 0) |	// P0_EN P0_FCEN
@@ -1986,6 +1986,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 	// 5.10.9.5 BLD routing control register
 	// BLD_CH_RTCTL
+	// 0x03020100 - default
 	write32((uintptr_t) & bld->route,
 			(0u << 0) |	// pipe 0 from ch 0
 			(1u << 4) |	// pipe 1 from ch 1
@@ -2031,7 +2032,11 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 		//CH0 VI ----------------------------------------------------------------------------
 
-		write32((uintptr_t)&vi->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(1<<15));            //нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+		write32((uintptr_t)&vi->cfg[0].attr,
+				(1<<0)|
+				(DE2_FORMAT_ABGR_8888<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+				(1<<15)
+				);
 		write32((uintptr_t)&vi->cfg[0].size, ovl_ui_mbsize);
 		write32((uintptr_t)&vi->cfg[0].coord, 0);
 		write32((uintptr_t)&vi->cfg[0].pitch[0], uipitch);
@@ -2039,14 +2044,20 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t)&vi->ovl_size[0], ovl_ui_mbsize);
 	}
 
+	int uich = 1;
+	for (uich = 1; uich <= 3; ++ uich)
 	{
-		int uich = 1;
 		ASSERT(uich >= 1 && uich <= 3);
 		struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 
 		//CH1 UI -----------------------------------------------------------------------------
 
-		write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(0xff<<24)|(1<<16)); //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+		write32((uintptr_t)&ui->cfg[0].attr,
+				(1<<0)|
+				(DE2_FORMAT_ABGR_8888<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+				(0xff<<24)|
+				(1<<16)
+				);
 		write32((uintptr_t)&ui->cfg[0].size, ovl_ui_mbsize);
 		write32((uintptr_t)&ui->cfg[0].coord, 0);
 		write32((uintptr_t)&ui->cfg[0].pitch, uipitch);
@@ -2054,20 +2065,20 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t)&ui->ovl_size, ovl_ui_mbsize);
 	}
 
-	{
-		int uich = 2;
-		ASSERT(uich >= 1 && uich <= 3);
-		struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
-
-		//CH1 UI -----------------------------------------------------------------------------
-
-		write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(0xff<<24)|(1<<16)); //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
-		write32((uintptr_t)&ui->cfg[0].size, ovl_ui_mbsize);
-		write32((uintptr_t)&ui->cfg[0].coord, 0);
-		write32((uintptr_t)&ui->cfg[0].pitch, uipitch);
-		write32((uintptr_t)&ui->cfg[0].top_laddr,pdat->vram [1]);                                  //VIDEO_MEMORY1
-		write32((uintptr_t)&ui->ovl_size, ovl_ui_mbsize);
-	}
+//	{
+//		int uich = 2;
+//		ASSERT(uich >= 1 && uich <= 3);
+//		struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+//
+//		//CH1 UI -----------------------------------------------------------------------------
+//
+//		write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(0xff<<24)|(1<<16)); //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+//		write32((uintptr_t)&ui->cfg[0].size, ovl_ui_mbsize);
+//		write32((uintptr_t)&ui->cfg[0].coord, 0);
+//		write32((uintptr_t)&ui->cfg[0].pitch, uipitch);
+//		write32((uintptr_t)&ui->cfg[0].top_laddr,pdat->vram [1]);                                  //VIDEO_MEMORY1
+//		write32((uintptr_t)&ui->ovl_size, ovl_ui_mbsize);
+//	}
 
 //	write32(DE_BASE + T113_DE_MUX_VSU, 0);
 //	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
@@ -2312,8 +2323,8 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 //	t113_de_set_mode_ui(pdat, 3);
 	t113_de_enable(pdat);
 
-	t113_de_set_address_ui(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);
-	t113_de_enable(pdat);
+//	t113_de_set_address_ui(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);
+//	t113_de_enable(pdat);
 
 	// Set DE MODE if need
 	ltdc_tfcon_cfg(vdmode);
@@ -2354,7 +2365,8 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		;
 
 
-	t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
+	//t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
+	t113_de_set_address_vi(pdat, p);
 	t113_de_enable(pdat);
 }
 
