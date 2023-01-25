@@ -225,7 +225,7 @@ enum {
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102) */
 
 #if WITHCPUTEMPERATURE
-	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
+	#define GET_CPU_TEMPERATURE() (xczu_get_cpu_temperature())
 #endif /* WITHCPUTEMPERATURE */
 
 //#define PREAMP_MIO	35
