@@ -1033,6 +1033,28 @@ hwacc_fillrect_u32(
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
+
+	/* Отключаем все источники */
+	G2D_V0->V0_ATTCTL = 0;
+	G2D_UI0->UI_ATTR = 0;
+	G2D_UI1->UI_ATTR = 0;
+	G2D_UI2->UI_ATTR = 0;
+
+#if 0
+	G2D_UI2->UI_ATTR = awxx_get_ui_attr();
+
+	G2D_UI2->UI_PITCH = stride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
+
+	G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+	G2D_UI2->UI_MBSIZE = sizehw;	// сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
+	G2D_UI2->UI_SIZE = sizehw;
+	ASSERT(G2D_UI2->UI_SIZE == sizehw);
+
+	G2D_UI2->UI_LADD = (uintptr_t) addr;
+	G2D_UI2->UI_HADD = (uintptr_t) addr >> 32;
+
+#elif 0
+
 	G2D_V0->V0_ATTCTL = 1;//0x00000A11; //awxx_get_ui_attr();
 
 	G2D_V0->V0_PITCH0 = stride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
@@ -1051,8 +1073,9 @@ hwacc_fillrect_u32(
 	G2D_V0->V0_LADD0 = (uintptr_t) addr;
 	G2D_V0->V0_LADD2 = (uintptr_t) addr;
 	G2D_V0->V0_HADD = (uintptr_t) addr >> 32;
+#endif
 
-	G2D_BLD->BLD_EN_CTL = 0;
+	G2D_BLD->BLD_EN_CTL = 0;	// BLD_BK_COLOR ?
 	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется */
 
 //	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
@@ -1775,6 +1798,18 @@ void hwaccel_copy(
 	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER
 	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
+#if 1
+	G2D_UI1->UI_ATTR = awxx_get_ui_attr();
+
+	G2D_UI1->UI_PITCH = sstride;
+
+	G2D_UI1->UI_FILLC = TFTRGB(255, 0, 0);	// unused
+	G2D_UI1->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+	G2D_UI1->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+	G2D_UI1->UI_SIZE = ssizehw;		// параметры окна исходного буфера
+	G2D_UI1->UI_LADD = saddr;
+	G2D_UI1->UI_HADD = saddr >> 32;
+#else
 	G2D_V0->V0_ATTCTL = awxx_get_ui_attr();
 
 	G2D_V0->V0_PITCH0 = sstride;
@@ -1794,6 +1829,7 @@ void hwaccel_copy(
 	G2D_V0->V0_LADD1 = 0;
 	G2D_V0->V0_LADD2 = 0;
 	G2D_V0->V0_HADD = ((saddr >> 32) & 0xFF) << 0;
+#endif
 
 	/* Write-back settings */
 	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
