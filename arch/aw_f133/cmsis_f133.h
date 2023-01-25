@@ -1482,15 +1482,9 @@ typedef struct G2D_BLD_Type
 {
 	volatile uint32_t BLD_EN_CTL;                        /*!< Offset 0x000 BLD_EN_CTL          */
 	uint32_t reserved_0x004 [0x0003];
-	volatile uint32_t BLD_FILLC0;                        /*!< Offset 0x010 BLD_FILLC0          */
-	volatile uint32_t BLD_FILLC1;                        /*!< Offset 0x014 BLD_FILLC1          */
-	uint32_t reserved_0x018 [0x0002];
-	volatile uint32_t BLD_CH_ISIZE0;                     /*!< Offset 0x020 BLD_CH_ISIZE0       */
-	volatile uint32_t BLD_CH_ISIZE1;                     /*!< Offset 0x024 BLD_CH_ISIZE1       */
-	uint32_t reserved_0x028 [0x0002];
-	volatile uint32_t BLD_CH_OFFSET0;                    /*!< Offset 0x030 BLD_CH_OFFSET0      */
-	volatile uint32_t BLD_CH_OFFSET1;                    /*!< Offset 0x034 BLD_CH_OFFSET1      */
-	uint32_t reserved_0x038 [0x0002];
+	volatile uint32_t BLD_FILLC [0x004];                 /*!< Offset 0x010 BLD_FILLC  N=0..1  */
+	volatile uint32_t BLD_CH_ISIZE [0x004];              /*!< Offset 0x020 BLD_CH_ISIZE N=0..1   */
+	volatile uint32_t BLD_CH_OFFSET [0x004];             /*!< Offset 0x030 BLD_CH_OFFSET N=0..1 */
 	volatile uint32_t BLD_PREMUL_CTL;                    /*!< Offset 0x040 BLD_PREMUL_CTL      */
 	volatile uint32_t BLD_BK_COLOR;                      /*!< Offset 0x044 BLD_BK_COLOR        */
 	volatile uint32_t BLD_SIZE;                          /*!< Offset 0x048 BLD_SIZE            */
@@ -1502,9 +1496,8 @@ typedef struct G2D_BLD_Type
 	volatile uint32_t BLD_OUT_COLOR;                     /*!< Offset 0x060 BLD_OUT_COLOR       */
 	uint32_t reserved_0x064 [0x0007];
 	volatile uint32_t ROP_CTL;                           /*!< Offset 0x080 ROP_CTL             */
-	volatile uint32_t ROP_INDEX0;                        /*!< Offset 0x084 ROP_INDEX0          */
-	volatile uint32_t ROP_INDEX1;                        /*!< Offset 0x088 ROP_INDEX1          */
-	uint32_t reserved_0x08C [0x001D];
+	volatile uint32_t ROP_INDEX [0x004];                 /*!< Offset 0x084 ROP_INDEX N=0..1      */
+	uint32_t reserved_0x094 [0x001B];
 	volatile uint32_t BLD_CSC_CTL;                       /*!< Offset 0x100 BLD_CSC_CTL         */
 	uint32_t reserved_0x104 [0x0003];
 	volatile uint32_t BLD_CSC0_COEF00;                   /*!< Offset 0x110 BLD_CSC0_COEF00     */
