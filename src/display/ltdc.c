@@ -1924,11 +1924,11 @@ static inline void t113_de_set_mode_vi(struct fb_t113_rgb_pdata_t * pdat)
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 {
-	int uich = 1;
 	struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
 	struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 	struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+	int uich = 1;
 	ASSERT(uich >= 1 && uich <= 3);
 	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 
@@ -1964,13 +1964,13 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	write32((uintptr_t) & glb->dbuff, 1u);		// 1: register value be ready for update (self-cleaning bit)
 	write32((uintptr_t) & glb->size, ovl_ui_mbsize);
 
-	for(i = 0; i < 4; i++)
-	{
-		void * chan = (void *)(T113_DE_BASE + T113_DE_MUX_CHAN + 0x1000 * i);
-
-		// peripherial registers
-		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
-	}
+//	for(i = 0; i < 4; i++)
+//	{
+//		void * chan = (void *)(T113_DE_BASE + T113_DE_MUX_CHAN + 0x1000 * i);
+//
+//		// peripherial registers
+//		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
+//	}
 
 	// peripherial registers
 	//memset(bld, 0, sizeof (struct de_bld_t));
@@ -1978,10 +1978,10 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	write32((uintptr_t) & bld->fcolor_ctl,
-			(1u << 8)	| // pipe0 enable
-			//(1u << 9)	| // pipe1 enable
-			//(1u << 10)	| // pipe2 enable
-			//(1u << 11)	| // pipe3 enable
+			(1u << 8)	| // pipe0 enable GREEN
+			//(1u << 9)	| // pipe1 enable RED
+			//(1u << 10)	| // pipe2 enable RED
+			//(1u << 11)	| // pipe3 enable RED
 			//(0x00000100 << 0) |	// P0_EN P0_FCEN
 			//(0x00000100 << 1) |
 			//(0x00000100 << 2) |
@@ -2285,10 +2285,10 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	t113_tconlcd_enable(pdat);
 
 	t113_de_set_mode(pdat);
-	t113_de_set_mode_vi(pdat);
-	t113_de_set_mode_ui(pdat, 1);
-	t113_de_set_mode_ui(pdat, 2);
-	t113_de_set_mode_ui(pdat, 3);
+//	t113_de_set_mode_vi(pdat);
+//	t113_de_set_mode_ui(pdat, 1);
+//	t113_de_set_mode_ui(pdat, 2);
+//	t113_de_set_mode_ui(pdat, 3);
 	t113_de_enable(pdat);
 
 	t113_de_set_address_ui(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);
