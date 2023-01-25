@@ -1762,7 +1762,7 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 #include "reg-de.h"
 #include "reg-tconlcd.h"
 
-#define UI_CFG_INDEX 1	/* 0..3 используется одна конфигурация */
+#define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 #define DE_MUX_CHAN_INDEX 1	/* 0-vi as source, 1..3 используется одна конфигурация 1, остальные - темно-зеленые */
 
 static uint32_t read32(uintptr_t a)
@@ -1873,17 +1873,71 @@ static inline void t113_de_set_mode_ui(struct fb_t113_rgb_pdata_t * pdat, int ui
 	write32((uintptr_t) & ui->ovl_size, ovl_ui_mbsize);
 }
 
+static inline void t113_de_set_mode_vi(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
+	// 5.10.8.1 OVL_UI attribute control register
+	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
+	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565, 0x08: RGB_888
+#if LCDMODE_MAIN_ARGB888
+	const uint32_t ovl_ui_format = 0x00;	//  0x08: ARGB_8888	G2D_FMT_ARGB_AYUV8888
+	//const uint32_t ovl_ui_format = 0x04;	// 0x04: XRGB_8888	G2D_FMT_XRGB8888
+#elif LCDMODE_MAIN_RGB565
+	const uint32_t ovl_ui_format = 0x0A;	// 0x0A: RGB_565	G2D_FMT_RGB565
+#else
+	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
+	const uint32_t ovl_ui_format = 0x0A;
+#endif
+	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
+	// Note: the layer priority is layer3>layer2>layer1>layer0
+
+	// 5.10.8.1 OVL_UI attribute control register
+	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].attr,
+			(111 << 24) |	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
+			(0u << 23) | 	// TOP_BOTTOM_ADDR_EN
+			(0u << 16) | 	// LAY_PREMUL_CTL
+			(ovl_ui_format << 8) | // 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
+			(0u << 4) |	// LAY_FILLCOLOR_EN
+			0*(0x1u << 1) |	// LAY_ALPHA_MODE: 0 - 0:Ignore Input alpha value = pixels alpha, if no pixel alpha, the alpha value equal 0xf
+			(1u << 0) |		// LAY_EN
+			0
+			);
+	// 5.10.8.2 OVL_UI memory block size register
+	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].size,
+			ovl_ui_mbsize);
+	// 5.10.8.3 OVL_UI memory block coordinate register
+	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].coord,
+			0);
+	// 5.10.8.4 OVL_UI memory pitch register
+	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].pitch,
+			uipitch);	// размер строки в байтах
+	// 5.10.8.5 OVL_UI top field memory block low address register
+	//write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
+	// 5.10.8.6 OVL_UI bottom field memory block low address register
+	// ...
+	// 5.10.8.2 OVL_UI memory block size register
+	// 28..16: LAY_HEIGHT
+	// 12..0: LAY_WIDTH
+	write32((uintptr_t) & vi->ovl_size, ovl_ui_mbsize);
+}
+
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 {
+	int uich = 1;
 	struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
 	struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
+	struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+	ASSERT(uich >= 1 && uich <= 3);
+	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
 	// 5.10.8.2 OVL_UI memory block size register
 	// 28..16: LAY_HEIGHT
 	// 12..0: LAY_WIDTH
 	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
+	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
 
 	uint32_t val;
 
@@ -1975,17 +2029,36 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t) & bld->attr [i].offset, 0);
 	}
 
-	write32(DE_BASE + T113_DE_MUX_VSU, 0);
-	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
-	write32(DE_BASE + T113_DE_MUX_GSU2, 0);
-	write32(DE_BASE + T113_DE_MUX_GSU3, 0);
-	write32(DE_BASE + T113_DE_MUX_FCE, 0);
-	write32(DE_BASE + T113_DE_MUX_BWS, 0);
-	write32(DE_BASE + T113_DE_MUX_LTI, 0);
-	write32(DE_BASE + T113_DE_MUX_PEAK, 0);
-	write32(DE_BASE + T113_DE_MUX_ASE, 0);
-	write32(DE_BASE + T113_DE_MUX_FCC, 0);
-	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
+	unsigned DE2_FORMAT_ABGR_8888 = 0x00;
+	//CH0 VI ----------------------------------------------------------------------------
+
+	write32((uintptr_t)&vi->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(1<<15));            //нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+	write32((uintptr_t)&vi->cfg[0].size, ovl_ui_mbsize);
+	write32((uintptr_t)&vi->cfg[0].coord, 0);
+	write32((uintptr_t)&vi->cfg[0].pitch[0], uipitch);
+	write32((uintptr_t)&vi->cfg[0].top_laddr[0], pdat->vram [0]);                               //VIDEO_MEMORY0
+	write32((uintptr_t)&vi->ovl_size[0], ovl_ui_mbsize);
+
+	//CH1 UI -----------------------------------------------------------------------------
+
+	write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT_ABGR_8888<<8)|(0xff<<24)|(1<<16)); //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+	write32((uintptr_t)&ui->cfg[0].size, ovl_ui_mbsize);
+	write32((uintptr_t)&ui->cfg[0].coord, 0);
+	write32((uintptr_t)&ui->cfg[0].pitch, uipitch);
+	write32((uintptr_t)&ui->cfg[0].top_laddr,pdat->vram [1]);                                  //VIDEO_MEMORY1
+	write32((uintptr_t)&ui->ovl_size, ovl_ui_mbsize);
+
+//	write32(DE_BASE + T113_DE_MUX_VSU, 0);
+//	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
+//	write32(DE_BASE + T113_DE_MUX_GSU2, 0);
+//	write32(DE_BASE + T113_DE_MUX_GSU3, 0);
+//	write32(DE_BASE + T113_DE_MUX_FCE, 0);
+//	write32(DE_BASE + T113_DE_MUX_BWS, 0);
+//	write32(DE_BASE + T113_DE_MUX_LTI, 0);
+//	write32(DE_BASE + T113_DE_MUX_PEAK, 0);
+//	write32(DE_BASE + T113_DE_MUX_ASE, 0);
+//	write32(DE_BASE + T113_DE_MUX_FCC, 0);
+//	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
 
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
@@ -2212,7 +2285,7 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	t113_tconlcd_enable(pdat);
 
 	t113_de_set_mode(pdat);
-	//t113_de_set_mode_ui(pdat, DE_MUX_CHAN_INDEX);
+	t113_de_set_mode_vi(pdat);
 	t113_de_set_mode_ui(pdat, 1);
 	t113_de_set_mode_ui(pdat, 2);
 	t113_de_set_mode_ui(pdat, 3);
