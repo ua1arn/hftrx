@@ -691,12 +691,6 @@ hwacc_fillrect_u16(
 
 	G2D_BLD->BLD_EN_CTL = 0;
 	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется */
-	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = sizehw;
-	G2D_WB->WB_PITCH0 = stride;
-	G2D_WB->WB_LADD0 = addr;
-	G2D_WB->WB_HADD0 = addr >> 32;
 
 //	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
 //	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
@@ -713,6 +707,13 @@ hwacc_fillrect_u16(
 	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 	G2D_BLD->BLD_OUT_COLOR=0*0x00000001; /* 0x00000001 */
 
+	/* Write-back settings */
+	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_SIZE = sizehw;
+	G2D_WB->WB_PITCH0 = stride;
+	G2D_WB->WB_LADD0 = addr;
+	G2D_WB->WB_HADD0 = addr >> 32;
 
 	//debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
@@ -1053,12 +1054,6 @@ hwacc_fillrect_u32(
 
 	G2D_BLD->BLD_EN_CTL = 0;
 	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется */
-	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = sizehw;
-	G2D_WB->WB_PITCH0 = stride;
-	G2D_WB->WB_LADD0 = addr;
-	G2D_WB->WB_HADD0 = addr >> 32;
 
 //	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 or 9 - sel 1 or sel 0
 //	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
@@ -1075,6 +1070,13 @@ hwacc_fillrect_u32(
 	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 	G2D_BLD->BLD_OUT_COLOR=0*0x00000001; /* 0x00000001 */
 
+	/* Write-back settings */
+	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_SIZE = sizehw;
+	G2D_WB->WB_PITCH0 = stride;
+	G2D_WB->WB_LADD0 = addr;
+	G2D_WB->WB_HADD0 = addr >> 32;
 
 	//debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
@@ -1753,18 +1755,6 @@ void hwaccel_copy(
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
-	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = ssizehw;
-	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
-	G2D_WB->WB_LADD0 = taddr;
-	G2D_WB->WB_HADD0 = taddr >> 32;
-//	G2D_WB->WB_PITCH1 = 0;
-//	G2D_WB->WB_LADD1 = 0;
-//	G2D_WB->WB_HADD1 = 0;
-//	G2D_WB->WB_PITCH2 = 0;
-//	G2D_WB->WB_LADD2 = 0;
-//	G2D_WB->WB_HADD2 = 0;
 
 	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8 - sel 0
 	//G2D_BLD->BLD_EN_CTL |= (1u << 9);	// 9 - sel 1 -  need abp process
@@ -1804,6 +1794,20 @@ void hwaccel_copy(
 	G2D_V0->V0_LADD1 = 0;
 	G2D_V0->V0_LADD2 = 0;
 	G2D_V0->V0_HADD = ((saddr >> 32) & 0xFF) << 0;
+
+	/* Write-back settings */
+	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_SIZE = ssizehw;
+	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
+	G2D_WB->WB_LADD0 = taddr;
+	G2D_WB->WB_HADD0 = taddr >> 32;
+//	G2D_WB->WB_PITCH1 = 0;
+//	G2D_WB->WB_LADD1 = 0;
+//	G2D_WB->WB_HADD1 = 0;
+//	G2D_WB->WB_PITCH2 = 0;
+//	G2D_WB->WB_LADD2 = 0;
+//	G2D_WB->WB_HADD2 = 0;
 
 	//debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
