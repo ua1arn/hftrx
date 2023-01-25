@@ -6372,29 +6372,20 @@ void hightests(void)
 		TP();
 		static PACKEDCOLORMAIN_T fb1 [GXSIZE(DIM_X, DIM_Y)];
 		static PACKEDCOLORMAIN_T fb2 [GXSIZE(DIM_X, DIM_Y)];
-		static PACKEDCOLORMAIN_T fb3 [GXSIZE(DIM_X, DIM_Y)];
-		static PACKEDCOLORMAIN_T fb4 [GXSIZE(DIM_X, DIM_Y)];
 
-		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLOR_BLACK));	/* transparent black */
+		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(255, COLOR_BLACK));	/* opaque color transparent black */
 		colmain_fillrect(fb2, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLOR_BLACK));	/* transparent black */
-		colmain_fillrect(fb3, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLOR_BLACK));	/* transparent black */
-		colmain_fillrect(fb4, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLOR_BLACK));	/* transparent black */
 
-		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, 200, 200, TFTALPHA(255, COLOR_RED));	// RED
-		colmain_fillrect(fb2, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(122, COLOR_GREEN));	// GREEN
-		colmain_fillrect(fb3, DIM_X, DIM_Y, 220, 200, 200, 200, TFTALPHA(122, COLOR_BLUE));	// BLUE
-		colmain_fillrect(fb3, DIM_X, DIM_Y, 270, 220, 200, 200, TFTALPHA(122, COLOR_YELLOW)); // YELLOW
+		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, 200, 200, TFTALPHA(255, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
+		colmain_fillrect(fb2, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(127, COLOR_GREEN));	// GREEN
 
 		arm_hardware_flush((uintptr_t) fb1, sizeof fb1);
 		arm_hardware_flush((uintptr_t) fb2, sizeof fb2);
-		arm_hardware_flush((uintptr_t) fb3, sizeof fb3);
-		arm_hardware_flush((uintptr_t) fb4, sizeof fb4);
 
 		printhex32((uintptr_t) fb1, fb1, 64);
 		printhex32((uintptr_t) fb2, fb2, 64);
-		printhex32((uintptr_t) fb3, fb3, 64);
-		printhex32((uintptr_t) fb4, fb4, 64);
-		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) fb1, (uintptr_t) fb2, (uintptr_t) fb3, (uintptr_t) fb4);
+
+		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) fb1, (uintptr_t) fb2, (uintptr_t) 0, (uintptr_t) 0);
 		TP();
 		for (;;)
 			;

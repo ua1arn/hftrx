@@ -1953,7 +1953,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		//CH0 VI ----------------------------------------------------------------------------
 
 		write32((uintptr_t)&vi->cfg[0].attr,
-				//(1<<0)|		// enable
+				//(1<<0)|		// enable - разрешаем при назначении адреса
 				(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 				(1<<15)
 				);
@@ -1965,7 +1965,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	}
 
 	int uich = 1;
-	for (uich = 1; uich <= 1; ++ uich)
+	for (uich = 1; uich <= 3; ++ uich)
 	{
 		ASSERT(uich >= 1 && uich <= 3);
 		struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
@@ -1973,7 +1973,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		//CH1 UI -----------------------------------------------------------------------------
 
 		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].attr,
-				//(1<<0)|		// enable
+				//(1<<0)|		// enable - разрешаем при назначении адреса
 				(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
 				(0x6f<<24)|
 				(1<<16)
