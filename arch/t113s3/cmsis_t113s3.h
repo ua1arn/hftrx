@@ -1449,7 +1449,7 @@ typedef struct G2D_VSU_Type
 /*!< G2D_BLD Controller Interface */
 typedef struct G2D_BLD_Type
 {
-	volatile uint32_t BLD_EN_CTL;                        /*!< Offset 0x000 BLD_EN_CTL          */
+	volatile uint32_t BLD_EN_CTL;                        /*!< Offset 0x000 BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106   */
 	uint32_t reserved_0x004 [0x0003];
 	volatile uint32_t BLD_FILLC [0x004];                 /*!< Offset 0x010 BLD_FILLC  N=0..1  */
 	volatile uint32_t BLD_CH_ISIZE [0x004];              /*!< Offset 0x020 BLD_CH_ISIZE N=0..1   */

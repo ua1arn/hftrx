@@ -1,6 +1,6 @@
 #type G2D_BLD
 #base G2D_BLD 0x05410400
-BLD_EN_CTL        ; 0x000 ; BLD_EN_CTL         
+BLD_EN_CTL        ; 0x000 ; BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106  
 BLD_FILLC        ; 0x010 4 ; BLD_FILLC  N=0..1 
 BLD_CH_ISIZE     ; 0x020 4; BLD_CH_ISIZE N=0..1  
 BLD_CH_OFFSET    ; 0x030 4 ; BLD_CH_OFFSET N=0..1
