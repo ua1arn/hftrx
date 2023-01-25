@@ -1807,7 +1807,15 @@ static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 		;
 }
 
-static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int uich)
+static inline void t113_de_set_address_vi(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
+{
+//	ASSERT(uich >= 1 && uich <= 3);
+	struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].top_laddr, vram);
+	write32((uintptr_t) & vi->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
+}
+
+static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int uich)
 {
 	ASSERT(uich >= 1 && uich <= 3);
 	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
@@ -2210,7 +2218,7 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	t113_de_set_mode_ui(pdat, 3);
 	t113_de_enable(pdat);
 
-	t113_de_set_address(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);
+	t113_de_set_address_ui(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);
 	t113_de_enable(pdat);
 
 	// Set DE MODE if need
@@ -2223,20 +2231,21 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 
-	t113_de_set_address(pdat, p, DE_MUX_CHAN_INDEX);
+	t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
 	t113_de_enable(pdat);
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync3(uintptr_t p1, uintptr_t p2, uintptr_t p3)
+void arm_hardware_ltdc_main_set_no_vsync4(uintptr_t p1, uintptr_t p2, uintptr_t p3, uintptr_t p4)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 
 	// Note: the layer priority is layer3>layer2>layer1>layer0
-	t113_de_set_address(pdat, p1, 1);
-	t113_de_set_address(pdat, p2, 2);
-	t113_de_set_address(pdat, p3, 3);
+	t113_de_set_address_vi(pdat, p1);
+	t113_de_set_address_ui(pdat, p2, 1);
+	t113_de_set_address_ui(pdat, p3, 2);
+	t113_de_set_address_ui(pdat, p4, 3);
 	t113_de_enable(pdat);
 }
 
@@ -2251,7 +2260,7 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		;
 
 
-	t113_de_set_address(pdat, p, DE_MUX_CHAN_INDEX);
+	t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
 	t113_de_enable(pdat);
 }
 
