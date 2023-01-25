@@ -1024,10 +1024,13 @@ hwacc_fillrect_u32(
 		}
 		return;
 	}
-	const unsigned stride = GXADJ(dx) * PIXEL_SIZE;
+	const uintptr_t baddr = (uintptr_t) buffer;
+	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	//const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	const uintptr_t addr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
-	const uint_fast32_t sizehw = ((h - 1) << 16) | ((w - 1) << 0);
+	const uint_fast32_t tsizehwfull = ((dy - 1) << 16) | ((dx - 1) << 0);
+	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
+	const uint_fast32_t tcoord = (col << 16) | (row << 0);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	const uint_fast32_t c24 = color24;
@@ -1050,27 +1053,27 @@ hwacc_fillrect_u32(
 #if 0
 	G2D_UI1->UI_ATTR = awxx_get_ui_attr();
 
-	G2D_UI1->UI_PITCH = stride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
+	G2D_UI1->UI_PITCH = tstride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
 
 	G2D_UI1->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_UI1->UI_MBSIZE = 0 * sizehw;	// сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
-	G2D_UI1->UI_SIZE = 1 * sizehw;
-	//ASSERT(G2D_UI1->UI_SIZE == sizehw);
+	G2D_UI1->UI_MBSIZE = 0 * tsizehw;	// сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
+	G2D_UI1->UI_SIZE = 1 * tsizehw;
+	//ASSERT(G2D_UI1->UI_SIZE == tsizehw);
 
 	G2D_UI1->UI_LADD = (uintptr_t) addr;
 	G2D_UI1->UI_HADD = (uintptr_t) addr >> 32;
 
-	G2D_BLD->BLD_EN_CTL |= (1u << 9);	// 8: source from VI0
+	G2D_BLD->BLD_EN_CTL |= (1u << 10);	// 8: source from VI0
 #endif
 
-#if 1
+#if 0
 
 	G2D_V0->V0_ATTCTL = awxx_get_ui_attr(); //1;//0x00000A11; //awxx_get_ui_attr();
 
-	G2D_V0->V0_PITCH0 = stride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
+	G2D_V0->V0_PITCH0 = tstride; //PIXEL_SIZE;//PIXEL_SIZE;	// Y
 	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_V0->V0_MBSIZE = 0*sizehw;	// сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
-	G2D_V0->V0_SIZE = 1*sizehw;
+	G2D_V0->V0_MBSIZE = 0*tsizehw;	// сколько брать от исходного буфера. При 0 - заполняенся цветом BLD_BK_COLOR
+	G2D_V0->V0_SIZE = 1*tsizehw;
 
 	G2D_V0->V0_LADD0 = (uintptr_t) addr;
 	G2D_V0->V0_HADD = (((uintptr_t) addr >> 32) & 0xFF) << 0;
@@ -1082,22 +1085,22 @@ hwacc_fillrect_u32(
 
 	//	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 
-	G2D_BLD->BLD_SIZE = sizehw;	// may not be zero
-	G2D_BLD->BLD_CH_ISIZE0 = sizehw;
+	G2D_BLD->BLD_SIZE = tsizehw;	// may not be zero
+	G2D_BLD->BLD_CH_ISIZE0 = tsizehw;
 	G2D_BLD->BLD_CH_OFFSET0 = 0;// ((row) << 16) | ((col) << 0);
-	G2D_BLD->ROP_CTL = 0*0xF0;	// Use G2D_V0 as source
-	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-	G2D_BLD->BLD_CTL = 0*0x03010301;	// G2D_BLD_SRCOVER
+	G2D_BLD->ROP_CTL = 1*0xF0;	// Use G2D_V0 as source
+	G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+	//G2D_BLD->BLD_CTL = 1*0x03010301;	// G2D_BLD_SRCOVER
 	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
-	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
-	G2D_BLD->BLD_OUT_COLOR=0*0x00000001; /* 0x00000001 */
+	G2D_BLD->BLD_PREMUL_CTL=1*0x00000001; /* 0x00000001 */
+	G2D_BLD->BLD_OUT_COLOR=1*0x00000001; /* 0x00000001 */
 
 	/* Write-back settings */
 	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = sizehw;
-	G2D_WB->WB_PITCH0 = stride;
+	G2D_WB->WB_SIZE = tsizehw;
+	G2D_WB->WB_PITCH0 = tstride;
 	G2D_WB->WB_LADD0 = addr;
 	G2D_WB->WB_HADD0 = addr >> 32;
 
