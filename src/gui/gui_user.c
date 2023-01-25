@@ -299,9 +299,9 @@ void gui_user_actions_after_close_window(void)
 	gui_update();
 }
 
-static void keyboard_edit_string(char * str, unsigned strlen, unsigned clean)
+static void keyboard_edit_string(uintptr_t s, unsigned strlen, unsigned clean)
 {
-	gui_keyboard.str = str;
+	gui_keyboard.str = (char *) s;
 	gui_keyboard.clean = clean;
 	gui_keyboard.max_len = strlen;
 	gui_keyboard.digits_only = 0;
@@ -1337,7 +1337,6 @@ static void window_memory_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 
 		add_element("lbl_note1", 0, FONT_MEDIUM, COLORMAIN_WHITE, 30);
-		add_element("lbl_note2", 0, FONT_MEDIUM, COLORMAIN_WHITE, 30);
 
 		x = 0;
 		y = 0;
@@ -1385,13 +1384,7 @@ static void window_memory_process(void)
 		lbl_note1->x = 0;
 		lbl_note1->y = bh->y1 + bh->h + get_label_height(lbl_note1);
 		lbl_note1->visible = VISIBLE;
-		local_snprintf_P(lbl_note1->text, ARRAY_SIZE(lbl_note1->text), PSTR("Long press on empty cell - sa"));
-
-		label_t * lbl_note2 = find_gui_element(TYPE_LABEL, win, "lbl_note2");
-		lbl_note2->x = lbl_note1->x + get_label_width(lbl_note1);
-		lbl_note2->y = lbl_note1->y;
-		lbl_note2->visible = VISIBLE;
-		local_snprintf_P(lbl_note2->text, ARRAY_SIZE(lbl_note2->text), PSTR("ve, on saved cell - clean"));
+		local_snprintf_P(lbl_note1->text, ARRAY_SIZE(lbl_note1->text), PSTR("Long press on empty cell - save,on saved cell - clean"));
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -4416,12 +4409,12 @@ static void window_ft8_settings_process(void)
 		btn_callsign->x1 = btn_freq->x1;
 		btn_callsign->y1 = btn_freq->y1 + btn_freq->h + interval * 2;
 		btn_callsign->visible = VISIBLE;
-		btn_callsign->payload = (uintptr_t) gui_nvram.ft8_callsign;
+		btn_callsign->payload = 1;
 
 		btn_qth->x1 = btn_callsign->x1;
 		btn_qth->y1 = btn_callsign->y1 + btn_callsign->h + interval * 2;
 		btn_qth->visible = VISIBLE;
-		btn_qth->payload = (uintptr_t) gui_nvram.ft8_qth;
+		btn_qth->payload = 2;
 
 		lbl_txfreq->x = 0;
 		lbl_txfreq->y = btn_freq->y1 + btn_freq->h / 2 - get_label_height(lbl_txfreq) / 2;
@@ -4461,12 +4454,12 @@ static void window_ft8_settings_process(void)
 			}
 			else if (bh == btn_freq)
 			{
-				keyboard_edit_digits(& (gui_nvram.ft8_txfreq_val));
+				keyboard_edit_digits(& gui_nvram.ft8_txfreq_val);
 			}
-			else
-			{
-				keyboard_edit_string((char *) bh->payload, 10, 0);
-			}
+			else if (bh->payload == 1)
+				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_callsign, 10, 0);
+			else if (bh->payload == 2)
+				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_qth, 10, 0);
 		}
 
 		break;
@@ -5716,7 +5709,7 @@ static void window_kbd_test_process(void)
 			button_t * bh = (button_t *) ptr;
 
 			if (bh == find_gui_element(TYPE_BUTTON, win, "btn_text"))
-				keyboard_edit_string(str_lbl2, 10, 0);					// передается строка длиной 12
+				keyboard_edit_string((uintptr_t) & str_lbl2, 10, 0);					// передается строка длиной 12
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_num"))
 				keyboard_edit_digits(& num_lbl1);
 		}
@@ -5809,7 +5802,7 @@ static void window_ping_process(void)
 			}
 			else if (bh == btn_edit)
 			{
-				keyboard_edit_string(ip_str, 20, 0);
+				keyboard_edit_string((uintptr_t) & ip_str, 20, 0);
 			}
 		}
 		break;

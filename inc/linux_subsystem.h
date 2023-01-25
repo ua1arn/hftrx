@@ -98,6 +98,8 @@ void spi_mosi_set(void);
 void spi_mosi_clear(void);
 uint8_t spi_miso_get(void);
 
+float xczu_get_cpu_temperature(void);
+
 void board_rtc_getdate(
 	uint_fast16_t * year,
 	uint_fast8_t * month,
