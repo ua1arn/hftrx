@@ -1757,7 +1757,7 @@ void hwaccel_copy(
 		G2D_BLT.alpha=0xFF;       //����� ���������
 
 		g2d_blit(&G2D_BLT);
-		return;
+		//return;
 	}
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
@@ -1792,13 +1792,13 @@ void hwaccel_copy(
 #endif
 #if 1
 	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-	G2D_V0->V0_PITCH0 = sstride;
-	G2D_V0->V0_FILLC = TFTRGB(255, 0, 0);	// unused
+	G2D_V0->V0_PITCH0 = sstride; //$$$$$
+	G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
 	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 	G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
 	G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
 	G2D_V0->V0_LADD0 = saddr;
-	G2D_V0->V0_HADD = ((saddr >> 32) & 0xFF) << 0;
+	G2D_V0->V0_HADD = 0;//  //$$$$$((saddr >> 32) & 0xFF) << 0;
 
 	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
 	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
