@@ -1459,14 +1459,16 @@ void colpip_to_main(
 		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
 		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		buffer, dx, dy
+		buffer, dx, dy,
+		0, 0
 		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
 		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
 		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		buffer, dx, dy
+		buffer, dx, dy,
+		0, 0
 		);
 #endif /* LCDMODE_HORFILL */
 }

@@ -51,7 +51,7 @@ static unsigned awxx_get_ui_attr(void)
 	//		ui_attr |= 0x1 << 17;
 	ui_attr |= DstImageFormat << 8;
 	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	ui_attr |= G2D_PIXEL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	ui_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	// ui_attr |= (1u << 4);	/* Use FILLC register
 	ui_attr |= 1;
 	return ui_attr;
@@ -65,20 +65,22 @@ static unsigned awxx_get_vi_attr(void)
 	//		ui_attr |= 0x1 << 17;
 	ui_attr |= DstImageFormat << 8;
 	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	ui_attr |= G2D_PIXEL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	ui_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	// ui_attr |= (1u << 4);	/* Use FILLC register
 	ui_attr |= 1;
 	return ui_attr;
 }
-
+//
+//#include "debug_f133.h"
+//
 //void debug_g2d(const char * place)
 //{
 //	PRINTF("**** %s\n", place);
-//	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
-//	G2D_WB_Type_print(G2D_WB, "G2D_WB");
+//	//G2D_WB_Type_print(G2D_WB, "G2D_WB");
 //	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
+//	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
 //	G2D_UI_Type_print(G2D_UI0, "G2D_UI0");
-//	G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
+//	//G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
 //}
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
@@ -682,7 +684,7 @@ hwacc_fillrect_u16(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	const uint_fast32_t c24 = COLOR24(COLORMAIN_R(color), COLORMAIN_G(color), COLORMAIN_B(color));
+	const COLOR24_T c24 = COLOR24(COLORMAIN_R(color), COLORMAIN_G(color), COLORMAIN_B(color));
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
 	G2D_BLD->BLD_EN_CTL = 0;	// Нет источников
@@ -1039,7 +1041,7 @@ hwacc_fillrect_u32(
 	const uint_fast32_t tcoord = (row << 16) | (col << 0);	// YCOOR, XCOOR
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	const uint_fast32_t c24 = color24;
+	const COLOR24_T c24 = color24;
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
@@ -1058,7 +1060,7 @@ hwacc_fillrect_u32(
 	G2D_BLD->BLD_CH_OFFSET [0] = 0*tcoord;// ((row) << 16) | ((col) << 0);
 	G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-	G2D_BLD->BLD_CTL = 0*0x03010301;	// G2D_BLD_SRCOVER - default value
+	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
 	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
 	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
@@ -1067,6 +1069,8 @@ hwacc_fillrect_u32(
 	/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
 	 */
 	G2D_BLD->BLD_FILLC [0] = c24;
+	//G2D_BLD->BLD_FILLC [1] = c24;
+	//PRINTF("c24=%08X\n", (unsigned) c24);
 	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 0: BLD_FILLC0 ?? BLD_FILL_COLOR_CTL
 	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: source from VI0 ?? BLD_FILL_COLOR_CTL
 
@@ -1593,7 +1597,8 @@ void hwaccel_copy(
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORMAIN_T * __restrict src,
 	uint_fast16_t sdx,	// ширина буфера
-	uint_fast16_t sdy	// высота буфера
+	uint_fast16_t sdy,	// высота буфера
+	unsigned keyflag, COLOR24_T keycolor
 	)
 {
 	if (sdx == 0 || sdy == 0)
@@ -1763,7 +1768,7 @@ void hwaccel_copy(
 
 	G2D_BLD->BLD_EN_CTL = 0;	// Нет источников
 
-#if 1
+#if 0
 	G2D_UI0->UI_ATTR = awxx_get_ui_attr();
 
 	G2D_UI0->UI_PITCH = sstride;
@@ -1780,7 +1785,7 @@ void hwaccel_copy(
 	G2D_BLD->ROP_CTL = 0x55F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 
 #endif
-#if 0
+#if 1
 	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
 	G2D_V0->V0_PITCH0 = sstride;
 	G2D_V0->V0_FILLC = TFTRGB(255, 0, 0);	// unused
@@ -1796,18 +1801,69 @@ void hwaccel_copy(
 #endif
 
 	G2D_BLD->BLD_BK_COLOR = COLOR24(44, 44, 44);	/* всегда RGB888. этим цветом заполняется вне исходного окна */
-	G2D_BLD->BLD_KEY_CTL = 0;
-	G2D_BLD->BLD_KEY_CON = 0;
+	if (keyflag != 0)
+	{
+		/* 5.10.9.10 BLD color key control register */
+		G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
+		/* 5.10.9.11 BLD color key configuration register */
+		//G2D_BLD->BLD_KEY_CON = 0x07;
+		G2D_BLD->BLD_KEY_MAX = COLOR24(111, 111, 111); //keycolor;
+		G2D_BLD->BLD_KEY_MIN = COLOR24(98, 98, 98); //keycolor;
+
+		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+
+		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+		if (1)
+		{
+			G2D_BLD->BLD_EN_CTL=0x00000300; /* 0x00000300 */
+			G2D_BLD->BLD_PREMUL_CTL=0x00000000; /* 0x00000000 */
+			G2D_BLD->BLD_BK_COLOR=0x00000000; /* 0x00000000 */
+			G2D_BLD->BLD_CTL=0x03010301; /* 0x03010301 */
+			G2D_BLD->BLD_KEY_CTL=0x00000003; /* 0x00000003 */
+			G2D_BLD->BLD_KEY_CON=0x00000000; /* 0x00000000 */
+			//G2D_BLD->BLD_KEY_MAX=0x00A54AA4; /* 0x00A54AA4 */
+			//G2D_BLD->BLD_KEY_MIN=0x00A348A2; /* 0x00A348A2 */
+			G2D_BLD->BLD_OUT_COLOR=0x00000000; /* 0x00000000 */
+			G2D_BLD->ROP_CTL=0x000000F0; /* 0x000000F0 */
+			G2D_BLD->BLD_CSC_CTL=0x00000000; /* 0x00000000 */
+
+			G2D_V0->V0_ATTCTL=0xFF000401; /* 0xFF000401 */
+			//G2D_V0->V0_MBSIZE=0x00540069; /* 0x00540069 */
+			//G2D_V0->V0_COOR=0x00000000; /* 0x00000000 */
+			//G2D_V0->V0_PITCH0=0x00000C80; /* 0x00000C80 */
+			G2D_V0->V0_PITCH1=0x00000000; /* 0x00000000 */
+			G2D_V0->V0_PITCH2=0x00000000; /* 0x00000000 */
+			//G2D_V0->V0_LADD0=0x401FA100; /* 0x401FA100 */
+			//G2D_V0->V0_LADD1=0x00000000; /* 0x00000000 */
+			//G2D_V0->V0_LADD2=0x00000000; /* 0x00000000 */
+			//G2D_V0->V0_FILLC=0x00000000; /* 0x00000000 */
+			//G2D_V0->V0_HADD=0x00000000; /* 0x00000000 */
+			//G2D_V0->V0_SIZE=0x00540069; /* 0x00540069 */
+			G2D_V0->V0_HDS_CTL0=0x00000000; /* 0x00000000 */
+			G2D_V0->V0_HDS_CTL1=0x00000000; /* 0x00000000 */
+			G2D_V0->V0_VDS_CTL0=0x00000000; /* 0x00000000 */
+			G2D_V0->V0_VDS_CTL1=0x00000000; /* 0x00000000 */
+
+			PRINTF("src=%08X\n", (unsigned) * src);
+		}
+	}
+	else
+	{
+		G2D_BLD->BLD_KEY_CTL = 0;
+		G2D_BLD->BLD_KEY_CON = 0;
+
+		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+	}
+
 	G2D_BLD->BLD_SIZE = ssizehw;	// ! may not be zero
 
 	G2D_BLD->BLD_CH_ISIZE [0] = ssizehw;	// may be zero
 	G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
 	//G2D_BLD->BLD_FILLC0 = ~ 0;
 	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
-
-	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
-	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 
 	/* Write-back settings */
 	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
@@ -2537,6 +2593,7 @@ uint_fast16_t strwidth(
 
 #endif /* LCDMODE_HORFILL */
 
+
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_plot(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
@@ -2564,14 +2621,58 @@ void colpip_plot(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		src, sdx, sdy
+		src, sdx, sdy,
+		0, 0
 		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		src, sdx, sdy
+		src, sdx, sdy,
+		0, 0
+		);
+#endif /* LCDMODE_HORFILL */
+}
+
+// скоприовать прямоугольник с типом пикселей соответствующим pip
+void colpip_plot_key(
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORPIP_T * dst,	// получатель
+	uint_fast16_t tdx,	// получатель Размеры окна в пикселях
+	uint_fast16_t tdy,	// получатель
+	uint_fast16_t x,	// получатель Позиция
+	uint_fast16_t y,	// получатель
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
+	const PACKEDCOLORPIP_T * src, 	// источник
+	uint_fast16_t sdx,	// источник Размеры окна в пикселях
+	uint_fast16_t sdy,	// источник
+	unsigned keyflag, COLOR24_T keycolor
+	)
+{
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
+	ASSERT(tdx >= sdx);
+	ASSERT(tdy >= sdy);
+
+	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
+#if LCDMODE_HORFILL
+	hwaccel_copy(
+		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
+		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
+		src, sdx, sdy,
+		keyflag, keycolor
+		);
+#else /* LCDMODE_HORFILL */
+	hwaccel_copy(
+		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
+		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
+		src, sdx, sdy,
+		keyflag, keycolor
 		);
 #endif /* LCDMODE_HORFILL */
 }

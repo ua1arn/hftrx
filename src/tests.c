@@ -6367,35 +6367,53 @@ void hightests(void)
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 #if 0
 	{
+		enum { picy = 150, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
-		static PACKEDCOLORMAIN_T fb1 [GXSIZE(DIM_X, DIM_Y)];
-		static PACKEDCOLORMAIN_T fb2 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORMAIN_T layer0 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORMAIN_T layer1 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORMAIN_T fbpic [GXSIZE(picx, picy)];
 
-		arm_hardware_flush_invalidate((uintptr_t) fb1, sizeof fb1);
-		arm_hardware_flush_invalidate((uintptr_t) fb2, sizeof fb2);
+		arm_hardware_flush_invalidate((uintptr_t) layer0, sizeof layer0);
+		arm_hardware_flush_invalidate((uintptr_t) layer1, sizeof layer1);
+		arm_hardware_flush_invalidate((uintptr_t) fbpic, sizeof fbpic);
+
+		/* Тестовое изображение для заполнения с color key */
+		COLOR24_T keycolor = COLOR24(100, 100, 100);
+
+		colmain_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(255, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colmain_fillrect(fbpic, picx, picy, 50, 50, 50, 50, TFTALPHA(255, COLOR_WHITE));
 
 		/* непрозрачный фон */
 		unsigned bgalpha = 255;
-		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
+		colmain_fillrect(layer0, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
-		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, 200, 200, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
+		colmain_fillrect(layer0, DIM_X, DIM_Y, 10, 10, 600, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
 
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
-		colmain_fillrect(fb2, DIM_X, DIM_Y, 50, 50, DIM_X - 100, DIM_Y - 100, TFTALPHA(fgalpha, COLOR_BLUE));	/* transparent black */
+		colmain_fillrect(layer1, DIM_X, DIM_Y, 50, 50, DIM_X - 100, DIM_Y - 100, TFTALPHA(fgalpha, COLOR_BLUE));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
-		colmain_fillrect(fb2, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLOR_GREEN));	// GREEN
+		colmain_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLOR_GREEN));	// GREEN
+
+		/* копируем изображение в верхний слой с цветовым ключем */
+		colpip_plot_key(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y, 220, 220,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				1, keycolor
+				);
 
 		// нужно если программно заполняли
-//		arm_hardware_flush((uintptr_t) fb1, sizeof fb1);
-//		arm_hardware_flush((uintptr_t) fb2, sizeof fb2);
+//		arm_hardware_flush((uintptr_t) layer0, sizeof layer0);
+//		arm_hardware_flush((uintptr_t) layer1, sizeof layer1);
 //
-//		printhex32((uintptr_t) fb1, fb1, 64);
-//		printhex32((uintptr_t) fb2, fb2, 64);
+//		printhex32((uintptr_t) layer0, layer0, 64);
+//		printhex32((uintptr_t) layer1, layer1, 64);
 
-		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) fb1, (uintptr_t) fb2, (uintptr_t) 0, (uintptr_t) 0);
+		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) layer0, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 		TP();
 		for (;;)
 			;

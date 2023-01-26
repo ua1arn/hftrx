@@ -886,6 +886,23 @@ void colpip_plot(
 	uint_fast16_t dx,	// источник Размеры окна в пикселях
 	uint_fast16_t dy	// источник
 	);
+
+// скоприовать прямоугольник с типом пикселей соответствующим pip
+void colpip_plot_key(
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORPIP_T * tbuffer,	// получатель
+	uint_fast16_t tdx,	// получатель
+	uint_fast16_t tdy,	// получатель
+	uint_fast16_t x,	// получатель
+	uint_fast16_t y,	// получатель
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
+	const PACKEDCOLORPIP_T * buffer, 	// источник
+	uint_fast16_t dx,	// источник Размеры окна в пикселях
+	uint_fast16_t dy,	// источник
+	unsigned keyflag, COLOR24_T keycolor
+	);
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 // с поворотом вправо на 90 градусов
 void colpip_plot_ra90(
@@ -1071,7 +1088,8 @@ void hwaccel_copy(
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORMAIN_T * src,
 	uint_fast16_t sdx,	// ширина буфера
-	uint_fast16_t sdy	// высота буфера
+	uint_fast16_t sdy,	// высота буфера
+	unsigned keyflag, COLOR24_T keycolor
 	);
 
 // копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
