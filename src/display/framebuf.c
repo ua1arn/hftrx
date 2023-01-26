@@ -676,8 +676,6 @@ hwacc_fillrect_u16(
 	/* Отключаем все источники */
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
-	G2D_UI1->UI_ATTR = 0;
-	G2D_UI2->UI_ATTR = 0;
 
 	//G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется - но прозрачность не используется */
 
@@ -1036,8 +1034,6 @@ hwacc_fillrect_u32(
 	/* Отключаем все источники */
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
-	G2D_UI1->UI_ATTR = 0;
-	G2D_UI2->UI_ATTR = 0;
 
 	//G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется - но прозрачность не используется */
 
@@ -1750,13 +1746,6 @@ void hwaccel_copy(
 	/* Отключаем все источники */
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
-	G2D_UI1->UI_ATTR = 0;
-	G2D_UI2->UI_ATTR = 0;
-
-//	memset(G2D_V0, 0, sizeof * G2D_V0);
-//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
 
 	G2D_BLD->BLD_EN_CTL = 0;	// Нет источников
 

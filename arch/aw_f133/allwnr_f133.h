@@ -291,17 +291,17 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 //#define DE 			((DE20_TypeDef *) DE_BASE)					/*!< \brief DE Interface register set access pointer */
 //#define DI 			((DI_TypeDef *) DI_BASE)					/*!< \brief DI Interface register set access pointer */
 
-#define G2D_TOP     ((G2D_TOP_TypeDef *) G2D_TOP_BASE)			/*!< \brief G2D_TOP Interface register set access pointer */
-#define G2D_MIXER   ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)		/*!< \brief G2D_MIXER Interface register set access pointer */
-#define G2D_BLD     ((G2D_BLD_TypeDef *) G2D_BLD_BASE)			/*!< \brief G2D_BLD Interface register set access pointer */
-#define G2D_V0      ((G2D_LAY_TypeDef *) G2D_V0_BASE)			/*!< \brief G2D_V0 Interface register set access pointer */
-#define G2D_UI0     ((G2D_UI_TypeDef *) G2D_UI0_BASE)			/*!< \brief G2D_UI0 Interface register set access pointer */
-#define G2D_UI1     ((G2D_UI_TypeDef *) G2D_UI1_BASE)			/*!< \brief G2D_UI1 Interface register set access pointer */
-#define G2D_UI2     ((G2D_UI_TypeDef *) G2D_UI2_BASE)			/*!< \brief G2D_UI2 Interface register set access pointer */
-#define G2D_WB      ((G2D_WB_TypeDef *) G2D_WB_BASE)			/*!< \brief G2D_WB Interface register set access pointer */
-#define G2D_VSU     ((G2D_VSU_TypeDef *) G2D_VSU_BASE)			/*!< \brief G2D_VSU Interface register set access pointer */
-#define G2D_ROT     ((G2D_ROT_TypeDef *) G2D_ROT_BASE)			/*!< \brief G2D_ROT Interface register set access pointer */
-#define G2D_GSU     ((G2D_GSU_TypeDef *) G2D_GSU_BASE)			/*!< \brief G2D_GSU Interface register set access pointer */
+//#define G2D_TOP     ((G2D_TOP_TypeDef *) G2D_TOP_BASE)			/*!< \brief G2D_TOP Interface register set access pointer */
+//#define G2D_MIXER   ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)		/*!< \brief G2D_MIXER Interface register set access pointer */
+//#define G2D_BLD     ((G2D_BLD_TypeDef *) G2D_BLD_BASE)			/*!< \brief G2D_BLD Interface register set access pointer */
+//#define G2D_V0      ((G2D_LAY_TypeDef *) G2D_V0_BASE)			/*!< \brief G2D_V0 Interface register set access pointer */
+//#define G2D_UI0     ((G2D_UI_TypeDef *) G2D_UI0_BASE)			/*!< \brief G2D_UI0 Interface register set access pointer */
+//#define G2D_UI1     ((G2D_UI_TypeDef *) G2D_UI1_BASE)			/*!< \brief G2D_UI1 Interface register set access pointer */
+//#define G2D_UI2     ((G2D_UI_TypeDef *) G2D_UI2_BASE)			/*!< \brief G2D_UI2 Interface register set access pointer */
+//#define G2D_WB      ((G2D_WB_TypeDef *) G2D_WB_BASE)			/*!< \brief G2D_WB Interface register set access pointer */
+//#define G2D_VSU     ((G2D_VSU_TypeDef *) G2D_VSU_BASE)			/*!< \brief G2D_VSU Interface register set access pointer */
+//#define G2D_ROT     ((G2D_ROT_TypeDef *) G2D_ROT_BASE)			/*!< \brief G2D_ROT Interface register set access pointer */
+//#define G2D_GSU     ((G2D_GSU_TypeDef *) G2D_GSU_BASE)			/*!< \brief G2D_GSU Interface register set access pointer */
 
 #define DSI 		((DSI_TypeDef *) DSI_BASE)					/*!< \brief DSI Interface register set access pointer */
 #define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)	/*!< \brief DISPLAY_TOP Interface register set access pointer */

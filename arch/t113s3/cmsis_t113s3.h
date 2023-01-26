@@ -58,8 +58,8 @@
 #define	SPI_DBI_BASE	 ((uintptr_t) 0x04026000)
 #define	USBOTG0_BASE	 ((uintptr_t) 0x04100000)
 #define	EMAC_BASE	 ((uintptr_t) 0x04500000)
-#define	DE_CLK_BASE	 ((uintptr_t) 0x05000000)
 #define	DE_BASE	 ((uintptr_t) 0x05000000)
+#define	DE_CLK_BASE	 ((uintptr_t) 0x05000000)
 #define	DE_GLB_BASE	 ((uintptr_t) 0x05100000)
 #define	DE_BLD_BASE	 ((uintptr_t) 0x05101000)
 #define	DE_VI_BASE	 ((uintptr_t) 0x05102000)
@@ -72,8 +72,6 @@
 #define	G2D_BLD_BASE	 ((uintptr_t) 0x05410400)
 #define	G2D_V0_BASE	 ((uintptr_t) 0x05410800)
 #define	G2D_UI0_BASE	 ((uintptr_t) 0x05411000)
-#define	G2D_UI1_BASE	 ((uintptr_t) 0x05411800)
-#define	G2D_UI2_BASE	 ((uintptr_t) 0x05412000)
 #define	G2D_WB_BASE	 ((uintptr_t) 0x05413000)
 #define	G2D_VSU_BASE	 ((uintptr_t) 0x05418000)
 #define	G2D_ROT_BASE	 ((uintptr_t) 0x05438000)
@@ -2341,8 +2339,6 @@ typedef struct MSGBOX_Type
 #define	G2D_MIXER	((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)	/*!< \brief G2D_MIXER Interface register set access pointer */
 #define	G2D_V0	((G2D_LAY_TypeDef *) G2D_V0_BASE)	/*!< \brief G2D_V0 Interface register set access pointer */
 #define	G2D_UI0	((G2D_UI_TypeDef *) G2D_UI0_BASE)	/*!< \brief G2D_UI0 Interface register set access pointer */
-#define	G2D_UI1	((G2D_UI_TypeDef *) G2D_UI1_BASE)	/*!< \brief G2D_UI1 Interface register set access pointer */
-#define	G2D_UI2	((G2D_UI_TypeDef *) G2D_UI2_BASE)	/*!< \brief G2D_UI2 Interface register set access pointer */
 #define	G2D_VSU	((G2D_VSU_TypeDef *) G2D_VSU_BASE)	/*!< \brief G2D_VSU Interface register set access pointer */
 #define	G2D_BLD	((G2D_BLD_TypeDef *) G2D_BLD_BASE)	/*!< \brief G2D_BLD Interface register set access pointer */
 #define	G2D_WB	((G2D_WB_TypeDef *) G2D_WB_BASE)	/*!< \brief G2D_WB Interface register set access pointer */
