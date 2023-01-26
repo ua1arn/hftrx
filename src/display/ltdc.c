@@ -1763,7 +1763,6 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 #include "reg-tconlcd.h"
 
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
-#define DE_MUX_CHAN_INDEX 1	/* 0-vi as source, 1..3 используется одна конфигурация 1, остальные - темно-зеленые */
 
 static uint32_t read32(uintptr_t a)
 {
@@ -2239,9 +2238,6 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	t113_de_set_mode(pdat);
 	t113_de_enable(pdat);
 
-//	t113_de_set_address_ui(pdat, pdat->vram [pdat->index], DE_MUX_CHAN_INDEX);
-//	t113_de_enable(pdat);
-
 	// Set DE MODE if need
 	ltdc_tfcon_cfg(vdmode);
 }
@@ -2253,18 +2249,28 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
-	// Используем слой VI вместо UI1
-	//t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
-	// 5.10.9.1 BLD fill color control register
-	// BLD_FILL_COLOR_CTL
-	write32((uintptr_t) & bld->fcolor_ctl,
-			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
-//			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
-//			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
-//			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
-			0
-			);
-	t113_de_set_address_vi(pdat, p1);
+	if (p1 == 0)
+	{
+		// 5.10.9.1 BLD fill color control register
+		// BLD_FILL_COLOR_CTL
+		write32((uintptr_t) & bld->fcolor_ctl,
+				0
+				);
+
+	}
+	else
+	{
+		t113_de_set_address_vi(pdat, p1);
+		// 5.10.9.1 BLD fill color control register
+		// BLD_FILL_COLOR_CTL
+		write32((uintptr_t) & bld->fcolor_ctl,
+				((p1 != 0) << 8)	| // pipe0 enable RED - from VI
+	//			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
+	//			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+	//			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+				0
+				);
+	}
 
 	t113_de_enable(pdat);
 }
@@ -2295,30 +2301,45 @@ void arm_hardware_ltdc_main_set_no_vsync4(uintptr_t p1, uintptr_t p2, uintptr_t 
 	t113_de_enable(pdat);
 }
 
+/* ожидаем начало кадра */
+void arm_hardware_ltdc_vsync(void)
+{
+
+	//TCON_LCD0->LCD_GINT0_REG |= (1u << 31); 		//Enable the Vertical Blank interrupt
+	TCON_LCD0->LCD_GINT0_REG &= ~ (1u << 15);         //clear LCD_VB_INT_FLAG
+	while((TCON_LCD0->LCD_GINT0_REG & (1u << 15)) == 0) //wait  LCD_VB_INT_FLAG
+		;
+}
+
 /* set visible buffer start. Wait VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p1)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
-	TCON_LCD0->LCD_GINT0_REG |= (1u << 31); 		//Enable the Vertical Blank interrupt
-	TCON_LCD0->LCD_GINT0_REG &= ~ (1u << 15);         //clear LCD_VB_INT_FLAG
-	while((TCON_LCD0->LCD_GINT0_REG & (1u << 15)) == 0) //wait  LCD_VB_INT_FLAG
-		;
+	arm_hardware_ltdc_vsync();	/* ожидаем начало кадра */
+	if (p1 == 0)
+	{
+		// 5.10.9.1 BLD fill color control register
+		// BLD_FILL_COLOR_CTL
+		write32((uintptr_t) & bld->fcolor_ctl,
+				0
+				);
 
-	// Используем слой VI вместо UI1
-	t113_de_set_address_vi(pdat, p1);
-	// Используем слой VI вместо UI1
-	//t113_de_set_address_ui(pdat, p, DE_MUX_CHAN_INDEX);
-	// 5.10.9.1 BLD fill color control register
-	// BLD_FILL_COLOR_CTL
-	write32((uintptr_t) & bld->fcolor_ctl,
-			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
-			//((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
-			//((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
-			//((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
-			0
-			);
+	}
+	else
+	{
+		t113_de_set_address_vi(pdat, p1);
+		// 5.10.9.1 BLD fill color control register
+		// BLD_FILL_COLOR_CTL
+		write32((uintptr_t) & bld->fcolor_ctl,
+				((p1 != 0) << 8)	| // pipe0 enable RED - from VI
+	//			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
+	//			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+	//			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+				0
+				);
+	}
 
 	t113_de_enable(pdat);
 }
