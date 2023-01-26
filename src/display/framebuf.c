@@ -1713,7 +1713,7 @@ void hwaccel_copy(
 	//const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	const uintptr_t taddr = (uintptr_t) dst;
 	const uintptr_t saddr = (uintptr_t) src;
-	const uint_fast32_t tsizehw = ((tdy - 1) << 16) | ((tdx - 1) << 0);
+	//const uint_fast32_t tsizehw = ((tdy - 1) << 16) | ((tdx - 1) << 0);
 	//const uint_fast32_t tsizehwf = ((tdy) << 16) | ((tdx) << 0);
 	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
 	//const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
@@ -1733,7 +1733,7 @@ void hwaccel_copy(
 		G2D_BLT.src_image.addr[2]=0;//(uintptr_t)png[0]->data;	// was index=0
 		G2D_BLT.src_image.w=sdx;              //�������� ������
 		G2D_BLT.src_image.h=sdy;
-		G2D_BLT.src_image.format=0;//SrcImageFormat;
+		G2D_BLT.src_image.format=SrcImageFormat;
 		G2D_BLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
 
 		G2D_BLT.src_rect.x=0;                           //��������
@@ -1747,7 +1747,7 @@ void hwaccel_copy(
 		G2D_BLT.dst_image.addr[2]=0;//VIDEO_MEMORY1;	// was index=0
 		G2D_BLT.dst_image.w=tdx;
 		G2D_BLT.dst_image.h=tdy;
-		G2D_BLT.dst_image.format=0;//DstImageFormat;
+		G2D_BLT.dst_image.format=DstImageFormat;
 		G2D_BLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
 
 		G2D_BLT.dst_x= 0;                                 //���������� ������
@@ -1757,7 +1757,7 @@ void hwaccel_copy(
 		G2D_BLT.alpha=0xFF;       //����� ���������
 
 		g2d_blit(&G2D_BLT);
-		//return;
+		return;
 	}
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
@@ -1805,7 +1805,7 @@ void hwaccel_copy(
 	G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 #endif
 
-	G2D_BLD->BLD_BK_COLOR = COLOR24(44, 44, 44);	/* всегда RGB888. этим цветом заполняется вне исходного окна */
+	G2D_BLD->BLD_BK_COLOR = 0;// COLOR24(44, 44, 44);	/* всегда RGB888. этим цветом заполняется вне исходного окна */
 	if (keyflag != 0)
 	{
 		/* 5.10.9.10 BLD color key control register */
