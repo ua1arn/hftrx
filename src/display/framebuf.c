@@ -46,7 +46,7 @@
 static unsigned awxx_get_ui_attr(void)
 {
 	unsigned ui_attr = 0;
-	ui_attr = 128 << 24;
+	ui_attr = 255 << 24;
 	//	if (img->bpremul)
 	//		ui_attr |= 0x1 << 17;
 	ui_attr |= DstImageFormat << 8;

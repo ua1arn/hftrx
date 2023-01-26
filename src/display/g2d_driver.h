@@ -529,13 +529,13 @@ struct mixer_para {
 #if 0
 // one buffer
 
-	#define VIDEO_MEMORY1 ((uintptr_t) colmain_fb_draw()) //((uintptr_t) tfb1)
 	#define VIDEO_MEMORY0 ((uintptr_t) colmain_fb_draw()) //((uintptr_t) tfb1)
+	#define VIDEO_MEMORY1 ((uintptr_t) colmain_fb_draw()) //((uintptr_t) tfb1)
 
 #else
 
+	#define VIDEO_MEMORY0 ((uintptr_t) tfb0)
 	#define VIDEO_MEMORY1 ((uintptr_t) tfb1)
-	#define VIDEO_MEMORY0 ((uintptr_t) tfb1)
 
 	extern ALIGNX_BEGIN PACKEDCOLORMAIN_T tfb0 [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
 	extern ALIGNX_BEGIN PACKEDCOLORMAIN_T tfb1 [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
