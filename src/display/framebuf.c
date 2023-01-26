@@ -71,14 +71,14 @@ static unsigned awxx_get_vi_attr(void)
 	return ui_attr;
 }
 
-//#include "debug_f133.h"
+#include "debug_f133.h"
 //
 void debug_g2d(const char * place)
 {
-//	PRINTF("**** %s\n", place);
-//	G2D_WB_Type_print(G2D_WB, "G2D_WB");
-//	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
-//	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
+	PRINTF("**** %s\n", place);
+	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
+	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
+	G2D_WB_Type_print(G2D_WB, "G2D_WB");
 //	G2D_UI_Type_print(G2D_UI0, "G2D_UI0");
 //	//G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
 //	G2D_ROT_Type_print(G2D_ROT, "G2D_ROT");
@@ -1703,57 +1703,6 @@ void hwaccel_copy(
 #elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
 	/* Копирование - использование G2D для формирования изображений */
 
-	enum { PIXEL_SIZE = sizeof * src };
-	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
-	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
-	//const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
-	const uintptr_t taddr = (uintptr_t) dst;
-	const uintptr_t saddr = (uintptr_t) src;
-	const uint_fast32_t tsizehw = ((tdy - 1) << 16) | ((tdx - 1) << 0);
-	//const uint_fast32_t tsizehwf = ((tdy) << 16) | ((tdx) << 0);
-	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
-	//const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
-	//const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
-	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
-
-	g2d_blt        G2D_BLT;
-
-	G2D_BLT.flag=G2D_BLT_NONE | !! keyflag * G2D_BLT_SRC_COLORKEY | 0*G2D_BLT_PIXEL_ALPHA; // G2D_BLT_PIXEL_ALPHA; //��� ������������ �������� - ����� colorkey ��� alpha
-
-	G2D_BLT.src_image.addr[0]= saddr; //(uintptr_t)png[0]->data;    //������, ��� �������� ��������
-	G2D_BLT.src_image.addr[1]=0;//(uintptr_t)png[0]->data;	// was index=0
-	G2D_BLT.src_image.addr[2]=0;//(uintptr_t)png[0]->data;	// was index=0
-	G2D_BLT.src_image.w=sdx;              //�������� ������
-	G2D_BLT.src_image.h=sdy;
-	G2D_BLT.src_image.format=0;//SrcImageFormat;
-	G2D_BLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
-
-	G2D_BLT.src_rect.x=0;                           //��������
-	G2D_BLT.src_rect.y=0;
-
-	G2D_BLT.src_rect.w=sdx;               //������
-	G2D_BLT.src_rect.h=sdy;
-
-	G2D_BLT.dst_image.addr[0]= taddr; //VIDEO_MEMORY1;
-	G2D_BLT.dst_image.addr[1]=0;//VIDEO_MEMORY1;	// was index=0
-	G2D_BLT.dst_image.addr[2]=0;//VIDEO_MEMORY1;	// was index=0
-	G2D_BLT.dst_image.w=tdx;
-	G2D_BLT.dst_image.h=tdy;
-	G2D_BLT.dst_image.format=0;//DstImageFormat;
-	G2D_BLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
-
-	G2D_BLT.dst_x= 0;                                 //���������� ������
-	G2D_BLT.dst_y= 0;
-
-	G2D_BLT.color=keycolor; //*(volatile uint32_t*)png[0]->data; //0x00000000; //�������� ���� RGB
-	G2D_BLT.alpha=0xFF;       //����� ���������
-
-	g2d_blit(&G2D_BLT);
-
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
-	/* Копирование - использование G2D для формирования изображений */
-
 //	PRINTF("hwaccel_copy: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
 //	ASSERT(sdx > 1 && sdy > 1);
 //	ASSERT(sdx > 2 && sdy > 2);
@@ -1770,48 +1719,46 @@ void hwaccel_copy(
 	//const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
 	//const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
-//	const COLORMAIN_T lefftup = TFTRGB(255, 0, 0);
-//	const COLORMAIN_T rightdown = TFTRGB(0, 0, 255);
-//	* colmain_mem_at((void *) src, sdx, sdy, 0, 0) = lefftup;
-//	* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 1) = rightdown;
-//	if (sdx > 2 && sdy > 2)
-//	{
-//		* colmain_mem_at((void *) src, sdx, sdy, 0, 1) = lefftup;
-//		* colmain_mem_at((void *) src, sdx, sdy, 1, 0) = lefftup;
-//		* colmain_mem_at((void *) src, sdx, sdy, 1, 1) = lefftup;
-//
-//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 1) = rightdown;
-//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 1, sdy - 2) = rightdown;
-//		* colmain_mem_at((void *) src, sdx, sdy, sdx - 2, sdy - 2) = rightdown;
-//	}
-
-//	if (1) //(sdx < 2 || sdy < 2 || tdx < 2 || tdy < 2)
-//	{
-//		// программная реализация
-//
-//		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
-//		if (tdx == sdx)
-//		{
-//			const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
-//			// ширина строки одинаковая в получателе и источнике
-//			memcpy(dst, src, len);
-//		}
-//		else
-//		{
-//			const size_t len = sdx * sizeof * src;
-//			while (sdy --)
-//			{
-//				memcpy(dst, src, len);
-//				//arm_hardware_flush((uintptr_t) dst, len);
-//				src += GXADJ(sdx);
-//				dst += GXADJ(tdx);
-//			}
-//		}
-//		return;
-//	}
-
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
+	if (1)
+	{
+
+		g2d_blt        G2D_BLT;
+
+		G2D_BLT.flag=G2D_BLT_NONE | !! keyflag * G2D_BLT_SRC_COLORKEY | 0*G2D_BLT_PIXEL_ALPHA; // G2D_BLT_PIXEL_ALPHA; //��� ������������ �������� - ����� colorkey ��� alpha
+
+		G2D_BLT.src_image.addr[0]= saddr; //(uintptr_t)png[0]->data;    //������, ��� �������� ��������
+		G2D_BLT.src_image.addr[1]=0;//(uintptr_t)png[0]->data;	// was index=0
+		G2D_BLT.src_image.addr[2]=0;//(uintptr_t)png[0]->data;	// was index=0
+		G2D_BLT.src_image.w=sdx;              //�������� ������
+		G2D_BLT.src_image.h=sdy;
+		G2D_BLT.src_image.format=0;//SrcImageFormat;
+		G2D_BLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
+
+		G2D_BLT.src_rect.x=0;                           //��������
+		G2D_BLT.src_rect.y=0;
+
+		G2D_BLT.src_rect.w=sdx;               //������
+		G2D_BLT.src_rect.h=sdy;
+
+		G2D_BLT.dst_image.addr[0]= taddr; //VIDEO_MEMORY1;
+		G2D_BLT.dst_image.addr[1]=0;//VIDEO_MEMORY1;	// was index=0
+		G2D_BLT.dst_image.addr[2]=0;//VIDEO_MEMORY1;	// was index=0
+		G2D_BLT.dst_image.w=tdx;
+		G2D_BLT.dst_image.h=tdy;
+		G2D_BLT.dst_image.format=0;//DstImageFormat;
+		G2D_BLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
+
+		G2D_BLT.dst_x= 0;                                 //���������� ������
+		G2D_BLT.dst_y= 0;
+
+		G2D_BLT.color=keycolor; //*(volatile uint32_t*)png[0]->data; //0x00000000; //�������� ���� RGB
+		G2D_BLT.alpha=0xFF;       //����� ���������
+
+		g2d_blit(&G2D_BLT);
+		return;
+	}
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
@@ -1909,7 +1856,6 @@ void hwaccel_copy(
 
 	/* Write-back settings */
 	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_ATT=0x00000004; /* 0x00000004 */
 	G2D_WB->WB_SIZE = ssizehw;
 	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
 	G2D_WB->WB_LADD0 = taddr;
@@ -1921,7 +1867,7 @@ void hwaccel_copy(
 		PRINTF("hwaccel_copy: timeout tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
 		ASSERT(0);
 	}
-	//debug_g2d("my");
+	debug_g2d("my");
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #else

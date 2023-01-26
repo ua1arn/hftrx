@@ -6379,11 +6379,16 @@ void hightests(void)
 		arm_hardware_flush_invalidate((uintptr_t) layer1, sizeof layer1);
 		arm_hardware_flush_invalidate((uintptr_t) fbpic, sizeof fbpic);
 
-		/* Тестовое изображение для заполнения с color key */
-		COLOR24_T keycolor = COLOR24(100, 100, 100);
+		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) layer0, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
-		colmain_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(255, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colmain_fillrect(fbpic, picx, picy, 50, 50, 50, 50, TFTALPHA(255, COLOR_WHITE));
+		/* Тестовое изображение для заполнения с color key */
+		COLOR24_T keycolor = COLOR24_KEY; //COLOR24(111, 112, 114);
+
+		unsigned picalpha = 255;
+		colmain_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colmain_fillrect(fbpic, picx, picy, 50, 50, 50, 50, TFTALPHA(picalpha, COLOR_WHITE));
+		colmain_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLOR_WHITE), 0);
+		colmain_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLOR_WHITE), 0);
 
 		/* непрозрачный фон */
 		unsigned bgalpha = 255;
@@ -6413,7 +6418,7 @@ void hightests(void)
 //		printhex32((uintptr_t) layer0, layer0, 64);
 //		printhex32((uintptr_t) layer1, layer1, 64);
 
-		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) layer0, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
+
 		TP();
 		for (;;)
 			;

@@ -385,6 +385,8 @@ typedef struct {
 
 } g2d_blt;
 
+int g2d_blit(g2d_blt *para);
+
 typedef struct {
 	g2d_blt_flags_h flag_h;
 	g2d_image_enh src_image_h;
