@@ -71,18 +71,18 @@ static unsigned awxx_get_vi_attr(void)
 	return ui_attr;
 }
 
-#include "debug_f133.h"
+//#include "debug_f133.h"
 //
-void debug_g2d(const char * place, int line)
-{
-	PRINTF("**** %s/%d\n", place, line);
-//	G2D_UI_Type_print(G2D_UI0, "G2D_UI0");
-//	G2D_UI_Type_print(G2D_UI1, "G2D_UI1");
-//	G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
-//	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
-	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
-//	G2D_WB_Type_print(G2D_WB, "G2D_WB");
-}
+//void debug_g2d(const char * place, int line)
+//{
+//	PRINTF("**** %s/%d\n", place, line);
+////	G2D_UI_Type_print(G2D_UI0, "G2D_UI0");
+////	G2D_UI_Type_print(G2D_UI1, "G2D_UI1");
+////	G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
+////	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
+//	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
+////	G2D_WB_Type_print(G2D_WB, "G2D_WB");
+//}
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
@@ -1822,7 +1822,7 @@ void hwaccel_copy(
 		PRINTF("hwaccel_copy: timeout tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
 		ASSERT(0);
 	}
-	debug_g2d(__FILE__, __LINE__);
+	//debug_g2d(__FILE__, __LINE__);
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #else
