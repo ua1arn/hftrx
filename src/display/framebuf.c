@@ -73,16 +73,15 @@ static unsigned awxx_get_vi_attr(void)
 
 #include "debug_f133.h"
 //
-void debug_g2d(const char * place)
+void debug_g2d(const char * place, int line)
 {
-	PRINTF("**** %s\n", place);
-	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
-	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
-	G2D_WB_Type_print(G2D_WB, "G2D_WB");
+	PRINTF("**** %s/%d\n", place, line);
 //	G2D_UI_Type_print(G2D_UI0, "G2D_UI0");
-//	//G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
-//	G2D_ROT_Type_print(G2D_ROT, "G2D_ROT");
-//	G2D_MIXER_Type_print(G2D_MIXER, "G2D_MIXER");
+//	G2D_UI_Type_print(G2D_UI1, "G2D_UI1");
+//	G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
+//	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
+	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
+//	G2D_WB_Type_print(G2D_WB, "G2D_WB");
 }
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
@@ -732,7 +731,7 @@ hwacc_fillrect_u16(
 		PRINTF("hwacc_fillrect_u16: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
 		ASSERT(0);
 	}
-	//debug_g2d("my");
+	//debug_g2d(__FILE__, __LINE__);
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
@@ -1092,7 +1091,7 @@ hwacc_fillrect_u32(
 		PRINTF("hwacc_fillrect_u32: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
 		ASSERT(0);
 	}
-	//debug_g2d("my");
+	//debug_g2d(__FILE__, __LINE__);
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
@@ -1721,121 +1720,77 @@ void hwaccel_copy(
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
-	if (1)
-	{
-
-		g2d_blt        G2D_BLT;
-
-		G2D_BLT.flag=G2D_BLT_NONE | !! keyflag * G2D_BLT_SRC_COLORKEY | 0*G2D_BLT_PIXEL_ALPHA; // G2D_BLT_PIXEL_ALPHA; //��� ������������ �������� - ����� colorkey ��� alpha
-
-		G2D_BLT.src_image.addr[0]= saddr; //(uintptr_t)png[0]->data;    //������, ��� �������� ��������
-		G2D_BLT.src_image.addr[1]=0;//(uintptr_t)png[0]->data;	// was index=0
-		G2D_BLT.src_image.addr[2]=0;//(uintptr_t)png[0]->data;	// was index=0
-		G2D_BLT.src_image.w=sdx;              //�������� ������
-		G2D_BLT.src_image.h=sdy;
-		G2D_BLT.src_image.format=SrcImageFormat;
-		G2D_BLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
-
-		G2D_BLT.src_rect.x=0;                           //��������
-		G2D_BLT.src_rect.y=0;
-
-		G2D_BLT.src_rect.w=sdx;               //������
-		G2D_BLT.src_rect.h=sdy;
-
-		G2D_BLT.dst_image.addr[0]= taddr; //VIDEO_MEMORY1;
-		G2D_BLT.dst_image.addr[1]=0;//VIDEO_MEMORY1;	// was index=0
-		G2D_BLT.dst_image.addr[2]=0;//VIDEO_MEMORY1;	// was index=0
-		G2D_BLT.dst_image.w=tdx;
-		G2D_BLT.dst_image.h=tdy;
-		G2D_BLT.dst_image.format=DstImageFormat;
-		G2D_BLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
-
-		G2D_BLT.dst_x= 0;                                 //���������� ������
-		G2D_BLT.dst_y= 0;
-
-		G2D_BLT.color=keycolor; //*(volatile uint32_t*)png[0]->data; //0x00000000; //�������� ���� RGB
-		G2D_BLT.alpha=0xFF;       //����� ���������
-
-		g2d_blit(&G2D_BLT);
-		return;
-	}
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
-
-//	memset(G2D_WB, 0, sizeof * G2D_WB);
-//	memset(G2D_V0, 0, sizeof * G2D_V0);
-//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
 
 	/* Отключаем все источники */
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
+	G2D_UI1->UI_ATTR = 0;
+	G2D_UI2->UI_ATTR = 0;
 
 	G2D_BLD->BLD_EN_CTL = 0;	// Нет источников
 
-#if 0
-	G2D_UI0->UI_ATTR = awxx_get_ui_attr();
+	G2D_UI2->UI_ATTR = awxx_get_ui_attr();
 
-	G2D_UI0->UI_PITCH = sstride;
+	G2D_UI2->UI_PITCH = sstride;
 
-	G2D_UI0->UI_FILLC = TFTRGB(255, 0, 0);	// unused
-	G2D_UI0->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_UI0->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
-	G2D_UI0->UI_SIZE = ssizehw;		// параметры окна исходного буфера
-	G2D_UI0->UI_LADD = saddr;
-	G2D_UI0->UI_HADD = saddr >> 32;
+	G2D_UI2->UI_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
+	G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+	G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+	G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
+	G2D_UI2->UI_LADD = saddr;
+	G2D_UI2->UI_HADD = saddr >> 32;
 
-	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
-	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
-	G2D_BLD->ROP_CTL = 0x55F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+//	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+//	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
+//	G2D_BLD->ROP_CTL = 0x55F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 
-#endif
-#if 1
 	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-	G2D_V0->V0_PITCH0 = sstride; //$$$$$
+	G2D_V0->V0_PITCH0 = tstride; //$$$$$
 	G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
 	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 	G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
 	G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-	G2D_V0->V0_LADD0 = saddr;
+	G2D_V0->V0_LADD0 = taddr;
 	G2D_V0->V0_HADD = 0;//  //$$$$$((saddr >> 32) & 0xFF) << 0;
 
-	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
-	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
+	//G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+	//G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
 	G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-#endif
 
-	G2D_BLD->BLD_BK_COLOR = 0;// COLOR24(44, 44, 44);	/* всегда RGB888. этим цветом заполняется вне исходного окна */
+
+	G2D_BLD->BLD_BK_COLOR = 0;
 	if (keyflag != 0)
 	{
 		/* 5.10.9.10 BLD color key control register */
 		G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
 		/* 5.10.9.11 BLD color key configuration register */
 		//G2D_BLD->BLD_KEY_CON = 0x07;
-		G2D_BLD->BLD_KEY_MAX = __UQADD8(keycolor, 0x00010101);
-		G2D_BLD->BLD_KEY_MIN = __UQSUB8(keycolor,0x00010101);
+		G2D_BLD->BLD_KEY_MAX = keycolor;
+		G2D_BLD->BLD_KEY_MIN = keycolor;
 
 		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 
 		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
 		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-		if (1)
-		{
-			G2D_BLD->BLD_EN_CTL=0x00000300; /* 0x00000300 */
-			G2D_BLD->BLD_PREMUL_CTL=0x00000000; /* 0x00000000 */
-			G2D_BLD->BLD_BK_COLOR=0x00000000; /* 0x00000000 */
-			G2D_BLD->BLD_CTL=0x03010301; /* 0x03010301 */
-			G2D_BLD->BLD_KEY_CTL=0x00000003; /* 0x00000003 */
-			G2D_BLD->BLD_KEY_CON=0x00000000; /* 0x00000000 */
-			//G2D_BLD->BLD_KEY_MAX=0x00A54AA4; /* 0x00A54AA4 */
-			//G2D_BLD->BLD_KEY_MIN=0x00A348A2; /* 0x00A348A2 */
-			G2D_BLD->BLD_OUT_COLOR=0x00000000; /* 0x00000000 */
-			G2D_BLD->ROP_CTL=0x000000F0; /* 0x000000F0 */
-			G2D_BLD->BLD_CSC_CTL=0x00000000; /* 0x00000000 */
+		G2D_BLD->BLD_EN_CTL=0x00000300; /* 0x00000300 */
+		G2D_BLD->BLD_PREMUL_CTL=0x00000000; /* 0x00000000 */
+		G2D_BLD->BLD_BK_COLOR=0x00000000; /* 0x00000000 */
+		G2D_BLD->BLD_CTL=0x03010301; /* 0x03010301 */
+		G2D_BLD->BLD_KEY_CTL=0x00000003; /* 0x00000003 */
+		G2D_BLD->BLD_KEY_CON=0x00000000; /* 0x00000000 */
+		//G2D_BLD->BLD_KEY_MAX=0x00A54AA4; /* 0x00A54AA4 */
+		//G2D_BLD->BLD_KEY_MIN=0x00A348A2; /* 0x00A348A2 */
+		G2D_BLD->BLD_OUT_COLOR=0x00000000; /* 0x00000000 */
+		G2D_BLD->ROP_CTL=0x000000F0; /* 0x000000F0 */
+		G2D_BLD->BLD_CSC_CTL=0x00000000; /* 0x00000000 */
 
-			G2D_V0->V0_ATTCTL=0xFF000401; /* 0xFF000401 */
-			G2D_V0->V0_ATTCTL = 0xFF000001; //awxx_get_vi_attr();
-		}
+		G2D_V0->V0_ATTCTL=0xFF000401; /* 0xFF000401 */
+		G2D_V0->V0_ATTCTL = 0xFF000001; //awxx_get_vi_attr();
+
+		G2D_BLD->BLD_CH_ISIZE [0] = ssizehw;
+		G2D_BLD->BLD_CH_ISIZE [1] = ssizehw;
 	}
 	else
 	{
@@ -1867,7 +1822,7 @@ void hwaccel_copy(
 		PRINTF("hwaccel_copy: timeout tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
 		ASSERT(0);
 	}
-	debug_g2d("my");
+	debug_g2d(__FILE__, __LINE__);
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #else
