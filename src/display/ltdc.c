@@ -795,16 +795,13 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 		0);
 	(void) vdc->GR3_UPDATE;
 
-	if (LCDMODE_MAIN_PAGES > 1)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		vdc5_wait(& vdc->GR3_UPDATE, "GR3_UPDATE",
-				(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
-				(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
-				(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-				0
-			);
-	}
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	vdc5_wait(& vdc->GR3_UPDATE, "GR3_UPDATE",
+			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
 }
 
 void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
@@ -844,16 +841,9 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 	(void) vdc->GR2_UPDATE;
 }
 
-/* set visible buffer start. Wait VSYNC. */
-/* Set MAIN frame buffer address. Wait for VSYNC. */
-void arm_hardware_ltdc_main_set(uintptr_t p)
+/* ожидаем начало кадра */
+void arm_hardware_ltdc_vsync(void)
 {
-	struct st_vdc5 * const vdc = & VDC50;
-
-	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);		// GR2_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
-	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
-	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
-
 	// GR2_IBUS_VEN in GR2_UPDATE is 1.
 	// GR2_IBUS_VEN and GR2_P_VEN in GR2_UPDATE are 1.
 	// GR2_P_VEN in GR2_UPDATE is 1.
@@ -865,15 +855,25 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		0);
 	(void) vdc->GR2_UPDATE;
 
-	if (LCDMODE_MAIN_PAGES > 1)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		vdc5_wait(& vdc->GR2_UPDATE, "GR2_UPDATE",
-				(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
-				(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
-				(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
-				0);
-	}
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	vdc5_wait(& vdc->GR2_UPDATE, "GR2_UPDATE",
+			(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+			0);
+}
+
+/* set visible buffer start. Wait VSYNC. */
+/* Set MAIN frame buffer address. Wait for VSYNC. */
+void arm_hardware_ltdc_main_set(uintptr_t p)
+{
+	struct st_vdc5 * const vdc = & VDC50;
+
+	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);		// GR2_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
+	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
+	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
+
+	arm_hardware_ltdc_vsync();
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -1602,12 +1602,9 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 		hardware_nonguiyield();
 	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 	(void) LTDC->SRCR;
-	if (LCDMODE_MAIN_PAGES > 1)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-			hardware_nonguiyield();
-	}
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
 }
 
 /* Turn PIP off (main layer only). */
@@ -1645,6 +1642,7 @@ void arm_hardware_ltdc_L8_palette(void)
 #endif /* LCDMODE_PIP_L8 */
 }
 
+
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
@@ -1663,25 +1661,44 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 		hardware_nonguiyield();
 }
 
+/* ожидаем начало кадра */
+void arm_hardware_ltdc_vsync(void)
+{
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
+
+	(void) LAYER_MAIN->CFBAR;
+	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
+	(void) LAYER_MAIN->CR;
+	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
+	(void) LTDC->SRCR;
+
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
+}
+
 /* Set MAIN frame buffer address. Wait for VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
 		hardware_nonguiyield();
+
 	LAYER_MAIN->CFBAR = p;
+
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
 	(void) LAYER_MAIN->CR;
 	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 	(void) LTDC->SRCR;
-	if (LCDMODE_MAIN_PAGES > 1)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-			hardware_nonguiyield();
-	}
+
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
 }
+
 #elif LINUX_SUBSYSTEM
 
 void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
@@ -1708,6 +1725,11 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 	uint32_t size;
 	uint32_t * linux_fb = linux_get_fb(& size);
 	memcpy(linux_fb, (uint32_t *) addr, size);
+}
+
+/* ожидаем начало кадра */
+void arm_hardware_ltdc_vsync(void)
+{
 }
 
 #elif (CPUSTYLE_XC7Z) && 1
@@ -1755,6 +1777,11 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr)
 void arm_hardware_ltdc_main_set(uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
+}
+
+/* ожидаем начало кадра */
+void arm_hardware_ltdc_vsync(void)
+{
 }
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
@@ -2364,6 +2391,11 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 
 /* set visible buffer start. Wait VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
+{
+}
+
+/* ожидаем начало кадра */
+void arm_hardware_ltdc_vsync(void)
 {
 }
 
