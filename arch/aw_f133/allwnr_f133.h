@@ -664,7 +664,7 @@ __STATIC_FORCEINLINE uint8_t __UADD8_Sat(uint8_t op1, uint8_t op2)
 
 __STATIC_FORCEINLINE uint8_t __USUB8_Sat(uint8_t op1, uint8_t op2)
 {
-	  return op1 >= op2 ?  0 : (op1 - op2);
+	  return op1 <= op2 ?  0 : (op1 - op2);
 }
 
 /**
