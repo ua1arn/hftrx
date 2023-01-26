@@ -6377,14 +6377,16 @@ void hightests(void)
 		arm_hardware_flush_invalidate((uintptr_t) fb2, sizeof fb2);
 
 		/* непрозрачный фон */
-		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(255, COLOR_BLACK));	/* opaque color transparent black */
+		unsigned bgalpha = 255;
+		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
-		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, 200, 200, TFTALPHA(255, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
+		colmain_fillrect(fb1, DIM_X, DIM_Y, 0, 0, 200, 200, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
 
 		/* полупрозрачный фон */
-		colmain_fillrect(fb2, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLOR_BLACK));	/* transparent black */
+		unsigned fgalpha = 128;
+		colmain_fillrect(fb2, DIM_X, DIM_Y, 50, 50, DIM_X - 100, DIM_Y - 100, TFTALPHA(fgalpha, COLOR_BLUE));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
-		colmain_fillrect(fb2, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(127, COLOR_GREEN));	// GREEN
+		colmain_fillrect(fb2, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLOR_GREEN));	// GREEN
 
 		// нужно если программно заполняли
 //		arm_hardware_flush((uintptr_t) fb1, sizeof fb1);
