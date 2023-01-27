@@ -1699,7 +1699,7 @@ void hwaccel_copy(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
+#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Копирование - использование G2D для формирования изображений */
 
 //	PRINTF("hwaccel_copy: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
@@ -1714,9 +1714,9 @@ void hwaccel_copy(
 	const uintptr_t saddr = (uintptr_t) src;
 	//const uint_fast32_t tsizehw = ((tdy - 1) << 16) | ((tdx - 1) << 0);
 	//const uint_fast32_t tsizehwf = ((tdy) << 16) | ((tdx) << 0);
-	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
-	//const uint_fast32_t ssizehwf = ((sdy) << 16) | ((sdx) << 0);
-	//const uint_fast32_t ssizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
+	const uint_fast32_t sizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
+	//const uint_fast32_t sizehwf = ((sdy) << 16) | ((sdx) << 0);
+	//const uint_fast32_t sizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
@@ -1735,33 +1735,40 @@ void hwaccel_copy(
 
 	G2D_UI2->UI_PITCH = sstride;
 
-	G2D_UI2->UI_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
-	G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
-	G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
-	G2D_UI2->UI_LADD = saddr;
-	G2D_UI2->UI_HADD = saddr >> 32;
+	if ((keyflag & PLTPARAM_CKEY) != 0)
+	{
+		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
+		G2D_UI2->UI_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
+		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_UI2->UI_MBSIZE = sizehw; // сколько брать от исходного буфера
+		G2D_UI2->UI_SIZE = sizehw;		// параметры окна исходного буфера
+		G2D_UI2->UI_LADD = saddr;
+		G2D_UI2->UI_HADD = saddr >> 32;
+		//	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+		//	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
+		//	G2D_BLD->ROP_CTL = 0x55F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 
-//	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
-//	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
-//	G2D_BLD->ROP_CTL = 0x55F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+		G2D_V0->V0_PITCH0 = tstride; //$$$$$
+		G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
+		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = sizehw; 	// сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = sizehw;		// параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = taddr;
+		G2D_V0->V0_HADD = 0;//  //$$$$$((saddr >> 32) & 0xFF) << 0;
 
-	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-	G2D_V0->V0_PITCH0 = tstride; //$$$$$
-	G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
-	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
-	G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-	G2D_V0->V0_LADD0 = taddr;
-	G2D_V0->V0_HADD = 0;//  //$$$$$((saddr >> 32) & 0xFF) << 0;
+		//G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+		//G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
+		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+	}
+	else
+	{
 
-	//G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
-	//G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
-	G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+	}
 
 
 	G2D_BLD->BLD_BK_COLOR = 0;
-	if (keyflag != 0)
+	if ((keyflag & PLTPARAM_CKEY) != 0)
 	{
 		/* 5.10.9.10 BLD color key control register */
 		G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
@@ -1789,8 +1796,8 @@ void hwaccel_copy(
 		G2D_V0->V0_ATTCTL=0xFF000401; /* 0xFF000401 */
 		G2D_V0->V0_ATTCTL = 0xFF000001; //awxx_get_vi_attr();
 
-		G2D_BLD->BLD_CH_ISIZE [0] = ssizehw;
-		G2D_BLD->BLD_CH_ISIZE [1] = ssizehw;
+		G2D_BLD->BLD_CH_ISIZE [0] = sizehw;
+		G2D_BLD->BLD_CH_ISIZE [1] = sizehw;
 	}
 	else
 	{
@@ -1802,16 +1809,16 @@ void hwaccel_copy(
 		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 	}
 
-	G2D_BLD->BLD_SIZE = ssizehw;	// ! may not be zero
+	G2D_BLD->BLD_SIZE = sizehw;	// ! may not be zero
 
-	G2D_BLD->BLD_CH_ISIZE [0] = ssizehw;	// may be zero
+	G2D_BLD->BLD_CH_ISIZE [0] = sizehw;	// may be zero
 	G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
 	//G2D_BLD->BLD_FILLC0 = ~ 0;
 	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 
 	/* Write-back settings */
 	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = ssizehw;
+	G2D_WB->WB_SIZE = sizehw;
 	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
 	G2D_WB->WB_LADD0 = taddr;
 	G2D_WB->WB_HADD0 = taddr >> 32;
@@ -2566,7 +2573,7 @@ void colpip_plot(
 		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		src, sdx, sdy,
-		0, 0
+		PLTPARAM_NONE, 0
 		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_copy(
@@ -2574,7 +2581,7 @@ void colpip_plot(
 		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		src, sdx, sdy,
-		0, 0
+		PLTPARAM_NONE, 0
 		);
 #endif /* LCDMODE_HORFILL */
 }

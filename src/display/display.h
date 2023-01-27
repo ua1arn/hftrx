@@ -887,6 +887,9 @@ void colpip_plot(
 	uint_fast16_t dy	// источник
 	);
 
+#define PLTPARAM_NONE	0x00
+#define PLTPARAM_CKEY	0x01
+
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_plot_key(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
