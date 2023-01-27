@@ -26,7 +26,7 @@ struct ddd
 	char * fldname;
 	char * typname;
 	unsigned fldsize;	/* 0 - need align to offset (end paddings) */
-	unsigned fldoffs;
+	unsigned fldoffs;	/* offset inside block */
 	char * comment;
 	unsigned fldrept;   // 0 - plain field, 1..n - array
 };
