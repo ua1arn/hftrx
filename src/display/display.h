@@ -29,7 +29,7 @@ typedef uint_fast32_t COLOR24_T;
 		) \
 	)
 
-// Get color componens from COLOR24_T value
+// Get color components from COLOR24_T value
 #define COLOR24_R(v) (((v) >> 16) & 0xFF)
 #define COLOR24_G(v) (((v) >> 8) & 0xFF)
 #define COLOR24_B(v) (((v) >> 0) & 0xFF)
@@ -282,13 +282,12 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 					(((uint_fast32_t) (blue) << 0) & 0xFF) \
 				) \
 			)
+		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
 
-		// Get color componens from framebuffer value
+		// Get color components from framebuffer value
 		#define COLORMAIN_R(v) (((v) & 0xFF0000) >> 16)
 		#define COLORMAIN_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORMAIN_B(v) (((v) & 0xFF) >> 0)
-
-		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
 
 	#elif LCDMODE_MAIN_L8
 
@@ -327,17 +326,24 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define TFTRGB(red, green, blue) \
 			(  (uint_fast32_t) \
 				(	\
+					((uint_fast32_t) (255) << 24)  | /* Alpha channel value - opaque */ \
 					(((uint_fast32_t) ((red) & 0xFF)) << 16)  | \
 					(((uint_fast32_t) ((green) & 0xFF)) << 8)  | \
 					(((uint_fast32_t) ((blue) & 0xFF)) << 0)  | \
 					0 \
 				) \
 			)
+		#define TFTALPHA(alpha, color24) \
+			(  (uint_fast32_t) ( \
+					((uint_fast32_t) (alpha) << 24)  | /* Alpha value, 0: transparent, 255: opaque */ \
+					(((uint_fast32_t) (color24)) & 0x00FFFFFF) \
+				) \
+			)
 
 		// для формирования растра с изображением водопада и спектра
 		#define TFTRGB565 TFTRGB
 
-		// Get color componens from framebuffer value
+		// Get color components from framebuffer value
 		#define COLORMAIN_R(v) (((v) & 0xFF0000) >> 16)
 		#define COLORMAIN_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORMAIN_B(v) (((v) & 0xFF) >> 0)
@@ -350,25 +356,25 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		typedef uint32_t PACKEDCOLORMAIN_T;
 
 		// RRRR.RGGG.GGGB.BBBB
-	#define TFTRGB(red, green, blue) \
-		(  (uint_fast32_t) ( \
-				((uint_fast32_t) (255) << 24)  | /* Alpha channel value - opaque */ \
-				(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
-				(((uint_fast32_t) (green) << 8) & 0xFF00) | \
-				(((uint_fast32_t) (blue) >> 0) &  0x00FF) \
-			) \
-		)
-	#define TFTALPHA(alpha, color24) \
-		(  (uint_fast32_t) ( \
-				((uint_fast32_t) (alpha) << 24)  | /* Alpha value, 0: transparent, 255: opaque */ \
-				(((uint_fast32_t) (color24)) & 0x00FFFFFF) \
-			) \
-		)
+		#define TFTRGB(red, green, blue) \
+			(  (uint_fast32_t) ( \
+					((uint_fast32_t) (255) << 24)  | /* Alpha channel value - opaque */ \
+					(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
+					(((uint_fast32_t) (green) << 8) & 0xFF00) | \
+					(((uint_fast32_t) (blue) >> 0) &  0x00FF) \
+				) \
+			)
+		#define TFTALPHA(alpha, color24) \
+			(  (uint_fast32_t) ( \
+					((uint_fast32_t) (alpha) << 24)  | /* Alpha value, 0: transparent, 255: opaque */ \
+					(((uint_fast32_t) (color24)) & 0x00FFFFFF) \
+				) \
+			)
 
 		// для формирования растра с изображением водопада и спектра
 		#define TFTRGB565 TFTRGB
 
-		// Get color componens from framebuffer value
+		// Get color components from framebuffer value
 		#define COLORMAIN_R(v) (((v) & 0xFF0000) >> 16)
 		#define COLORMAIN_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORMAIN_B(v) (((v) & 0xFF) >> 0)
@@ -387,15 +393,15 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 					(((uint_fast16_t) (blue) >> 3) &  0x001F) \
 				) \
 			)
+		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
 
 		// для формирования растра с изображением водопада и спектра
 		#define TFTRGB565 TFTRGB
 
-		// Get color componens from framebuffer value
+		// Get color components from framebuffer value
 		#define COLORMAIN_R(v) ((((v) & 0xF800) >> 8) | (((v) & 0xE000) >> 13))
 		#define COLORMAIN_G(v) ((((v) & 0x07E0) >> 3) | (((v) & 0x0600) >> 9))
 		#define COLORMAIN_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))
-		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
 
 	#endif /* LCDMODE_MAIN_L8 */
 
