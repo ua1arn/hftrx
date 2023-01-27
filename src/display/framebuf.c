@@ -1024,88 +1024,6 @@ hwacc_fillrect_u32(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && LCDMODE_MAIN_ARGB888
-	/* Использование G2D для формирования изображений */
-
-	if (w == 1)
-	{
-		/* Горизонтальные линии в один пиксель рисовать умеет аппаратура. */
-		/* программная реализация отрисовки вертикальной линии в один пиксель */
-		const unsigned t = GXADJ(dx) - w;
-		//buffer += (GXADJ(dx) * row) + col;
-		volatile uint32_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
-		while (h --)
-		{
-			unsigned n = w;
-			while (n --)
-				* tbuffer ++ = color24;
-			tbuffer += t;
-		}
-		return;
-	}
-	const uintptr_t baddr = (uintptr_t) buffer;
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
-	const uintptr_t taddr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
-	const uint_fast32_t tsizehwfull = ((dy - 1) << 16) | ((dx - 1) << 0);
-	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
-	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
-
-	const COLOR24_T c24 = color24;
-
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
-
-	t113_fillrect(taddr, tstride, tsizehw, c24);
-
-#if 1
-	G2D_BLD->BLD_EN_CTL = 0;	// Нет источников
-	/* Отключаем все источники */
-	G2D_V0->V0_ATTCTL = 0;
-	G2D_UI0->UI_ATTR = 0;
-
-	//G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется - но прозрачность не используется */
-
-	//	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
-
-	G2D_BLD->BLD_SIZE = tsizehw;//tsizehwfull;	// размр выходного буфера
-	G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
-	G2D_BLD->BLD_CH_OFFSET [0] = 0;
-	G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
-	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-
-	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
-	G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
-
-	/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
-	 */
-	G2D_BLD->BLD_FILLC [0] = c24;
-	//G2D_BLD->BLD_FILLC [1] = c24;
-	//PRINTF("c24=%08X\n", (unsigned) c24);
-	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 0: BLD_FILLC0 ?? BLD_FILL_COLOR_CTL
-	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: source from VI0 ?? BLD_FILL_COLOR_CTL
-
-	/* Write-back settings */
-	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	//G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = tsizehw; //tsizehwfull;
-	G2D_WB->WB_PITCH0 = tstride;
-	G2D_WB->WB_LADD0 = taddr;
-	G2D_WB->WB_HADD0 = taddr >> 32;
-#endif
-
-	//PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X\n", G2D_MIXER->G2D_MIXER_CTL);
-
-	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
-	if (hwacc_waitdone() == 0)
-	{
-		PRINTF("hwacc_fillrect_u32: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
-		ASSERT(0);
-	}
-	//debug_g2d(__FILE__, __LINE__);
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
-
-
 #elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Использование G2D для формирования изображений */
 
@@ -1127,20 +1045,16 @@ hwacc_fillrect_u32(
 	}
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	const COLOR24_T c24 = color24;
-
-
 	const uintptr_t taddr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
-
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
-	t113_fillrect(taddr, tstride, tsizehw, c24);
+	t113_fillrect(taddr, tstride, tsizehw, color24);
+	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: source from VI0 ?? BLD_FILL_COLOR_CTL
 
 	//PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X\n", G2D_MIXER->G2D_MIXER_CTL);
-
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
