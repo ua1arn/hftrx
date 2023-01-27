@@ -1763,7 +1763,18 @@ void hwaccel_copy(
 	}
 	else
 	{
+		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+		G2D_V0->V0_PITCH0 = sstride; //$$$$$
+		G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
+		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = sizehw; 	// сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = sizehw;		// параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = saddr;
+		G2D_V0->V0_HADD = 0;//  //$$$$$((saddr >> 32) & 0xFF) << 0;
 
+		G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+		G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
+		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	}
 
 

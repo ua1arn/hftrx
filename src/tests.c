@@ -6417,7 +6417,7 @@ void hightests(void)
 				layer1, DIM_X, DIM_Y, 350, 250,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
-				1*PLTPARAM_CKEY, keycolor
+				0*PLTPARAM_CKEY, keycolor
 				);
 
 		// нужно если программно заполняли
