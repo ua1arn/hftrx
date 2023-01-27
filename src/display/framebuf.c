@@ -104,22 +104,14 @@ static void t113_fillrect(
 	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 	G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
-	// RGB565 mode
-	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. этим цветом заполняется - но прозрачность не используется - при RGB565 нужен */
+	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. */
 
 	//	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 	/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
 	 */
 	G2D_BLD->BLD_FILLC [0] = c24;
 	//G2D_BLD->BLD_FILLC [1] = c24;
-	//PRINTF("c24=%08X\n", (unsigned) c24);
 	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 0: BLD_FILLC0 ?? BLD_FILL_COLOR_CTL
-
-//	G2D_V0->V0_ATTCTL = 1;
-//	G2D_V0->V0_FILLC = 0x5566;
-//	G2D_V0->V0_SIZE = tsizehw;
-	//G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: source from VI0 ?? BLD_FILL_COLOR_CTL
-	//G2D_BLD->BLD_EN_CTL = 0;
 
 	/* Write-back settings */
 	G2D_WB->WB_ATT = WB_DstImageFormat;
