@@ -6368,7 +6368,6 @@ void hightests(void)
 #if 0
 	{
 		enum { picy = 150, picx = 150 };
-		enum { pich = 50, picw = 50 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
@@ -6376,9 +6375,9 @@ void hightests(void)
 		static PACKEDCOLORMAIN_T layer1 [GXSIZE(DIM_X, DIM_Y)];
 		static PACKEDCOLORMAIN_T fbpic [GXSIZE(picx, picy)];
 
-		arm_hardware_flush_invalidate((uintptr_t) layer0, sizeof layer0);
-		arm_hardware_flush_invalidate((uintptr_t) layer1, sizeof layer1);
-		arm_hardware_flush_invalidate((uintptr_t) fbpic, sizeof fbpic);
+//		arm_hardware_flush_invalidate((uintptr_t) layer0, sizeof layer0);
+//		arm_hardware_flush_invalidate((uintptr_t) layer1, sizeof layer1);
+//		arm_hardware_flush_invalidate((uintptr_t) fbpic, sizeof fbpic);
 
 		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) layer0, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 

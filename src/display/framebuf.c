@@ -77,15 +77,15 @@ static void t113_fillrect(
 	COLOR24_T color24
 	)
 {
-	memset(G2D_V0, 0, sizeof * G2D_V0);
-	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-	memset(G2D_WB, 0, sizeof * G2D_WB);
+//	memset(G2D_V0, 0, sizeof * G2D_V0);
+//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+//	memset(G2D_WB, 0, sizeof * G2D_WB);
 
 	/* Отключаем все источники */
-	G2D_BLD->BLD_EN_CTL = 0;
+	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
 	G2D_UI1->UI_ATTR = 0;
@@ -102,30 +102,23 @@ static void t113_fillrect(
 	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 	G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
-	G2D_BLD->BLD_BK_COLOR = color24; // ~ 0u; //c24;	/* всегда RGB888. */
+	//G2D_BLD->BLD_BK_COLOR = /*(alpha << 24) | */(color24 & 0xFFFFFF); // ~ 0u; //c24;	/* всегда RGB888. */
 
 	//	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 	/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
 	 */
-	G2D_BLD->BLD_FILLC [0] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
-//	G2D_BLD->BLD_FILLC [1] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
-//	G2D_BLD->BLD_FILLC [2] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
-//	G2D_BLD->BLD_FILLC [3] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
+	G2D_BLD->BLD_FILL_COLOR [0] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
+	G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 
-	G2D_BLD->BLD_CH_ISIZE [0] = 0 * tsizehw;
-//	G2D_BLD->BLD_CH_ISIZE [1] = 0 * tsizehw;
-//	G2D_BLD->BLD_CH_ISIZE [2] = 0 * tsizehw;
-//	G2D_BLD->BLD_CH_ISIZE [3] = 0 * tsizehw;
+	// BLD_FILL_COLOR_CTL: BLD_FILLC [0] или BLD_BK_COLOR
+	G2D_BLD->BLD_FILL_COLOR_CTL =
+		(1u << 8) |    	// P0_EN: Pipe0 enable
+		(1u << 0) |		// P0_FCEN: Pipe0 fill color enable
+		0;
 
-
-	G2D_V0->V0_ATTCTL = 1;//awxx_get_vi_attr();
-	G2D_V0->V0_FILLC = (alpha << 24) | (color24 & 0xFFFFFF);
-
-	G2D_BLD->BLD_EN_CTL = (1u << 0);	// BLD_FILL_COLOR_CTL: BLD_FILLC [0] или BLD_BK_COLOR
-    G2D_BLD->BLD_EN_CTL |= (1u << 8);    // 8: source from VI0 ?? BLD_FILL_COLOR_CTL
 	/* Write-back settings */
 	G2D_WB->WB_ATT = WB_DstImageFormat;
-	G2D_WB->WB_SIZE = tsizehw; //tsizehwfull;
+	G2D_WB->WB_SIZE = tsizehw;
 	G2D_WB->WB_PITCH0 = tstride;
 	G2D_WB->WB_LADD0 = taddr;
 	G2D_WB->WB_HADD0 = taddr >> 32;
@@ -1713,7 +1706,7 @@ void hwaccel_copy(
 	G2D_UI0->UI_ATTR = 0;
 	G2D_UI1->UI_ATTR = 0;
 	G2D_UI2->UI_ATTR = 0;
-	G2D_BLD->BLD_EN_CTL = 0;	// Нет источников
+	G2D_BLD->BLD_FILL_COLOR_CTL = 0;	// Нет источников
 
 
 	if ((keyflag & PLTPARAM_CKEY) != 0)
@@ -1765,8 +1758,8 @@ void hwaccel_copy(
 		G2D_BLD->BLD_KEY_MAX = keycolor;
 		G2D_BLD->BLD_KEY_MIN = keycolor;
 
-		G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
-		G2D_BLD->BLD_EN_CTL |= (1u << 9);	// 9: P1_EN Pipe1 enable
+		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 9);	// 9: P1_EN Pipe1 enable
 
 
 		G2D_BLD->BLD_CH_ISIZE [0] = sizehw;
@@ -1776,8 +1769,7 @@ void hwaccel_copy(
 	}
 	else
 	{
-		G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
-		G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
+		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
 
 		G2D_BLD->BLD_CH_ISIZE [0] = sizehw;
 		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
