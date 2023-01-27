@@ -78,12 +78,12 @@ static void t113_fillrect(
 	COLOR24_T c24
 	)
 {
-	memset(G2D_V0, 0, sizeof * G2D_V0);
-	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-	memset(G2D_WB, 0, sizeof * G2D_WB);
+//	memset(G2D_V0, 0, sizeof * G2D_V0);
+//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+//	memset(G2D_WB, 0, sizeof * G2D_WB);
 
 	G2D_BLD->BLD_EN_CTL = 0;	// Нет источников
 
@@ -737,15 +737,20 @@ hwacc_fillrect_u16(
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
-	const uint_fast32_t tcoord = (row << 16) | (col << 0);	// YCOOR, XCOOR
+	//const uint_fast32_t tcoord = (row << 16) | (col << 0);	// YCOOR, XCOOR
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-
 	memset(G2D_V0, 0, sizeof * G2D_V0);
+	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+	memset(G2D_UI1, 0, sizeof * G2D_UI1);
 	memset(G2D_UI2, 0, sizeof * G2D_UI2);
 	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 	memset(G2D_WB, 0, sizeof * G2D_WB);
+
+	t113_fillrect(taddr, tstride, tsizehw, c24);
+
+#if 1
 
 //	G2D_V0->V0_ATTCTL = 1;//0x00000A11; //awxx_get_ui_attr();
 //
@@ -790,6 +795,7 @@ hwacc_fillrect_u16(
 	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 	G2D_BLD->BLD_OUT_COLOR=0*0x00000001; /* 0x00000001 */
 
+#endif
 
 	//debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
