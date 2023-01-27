@@ -679,7 +679,6 @@ hwacc_fillrect_u16(
 		return;
 	}
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
-	//const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	const uintptr_t taddr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
 	const uint_fast32_t tcoord = (row << 16) | (col << 0);	// YCOOR, XCOOR
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
@@ -1027,7 +1026,7 @@ hwacc_fillrect_u32(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
+#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
@@ -1050,7 +1049,6 @@ hwacc_fillrect_u32(
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	//const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	const uintptr_t addr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
-	const uint_fast32_t tsizehwfull = ((dy - 1) << 16) | ((dx - 1) << 0);
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 	const uint_fast32_t tcoord = (row << 16) | (col << 0);	// YCOOR, XCOOR
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
@@ -1069,7 +1067,7 @@ hwacc_fillrect_u32(
 
 	//	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 
-	G2D_BLD->BLD_SIZE = tsizehw;//tsizehwfull;	// размр выходного буфера
+	G2D_BLD->BLD_SIZE = tsizehw;	// размр выходного буфера
 	G2D_BLD->BLD_CH_ISIZE [0] = 1 * tsizehw;
 	G2D_BLD->BLD_CH_OFFSET [0] = 0*tcoord;// ((row) << 16) | ((col) << 0);
 	G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
