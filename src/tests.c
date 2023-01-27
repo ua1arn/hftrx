@@ -6365,7 +6365,7 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0 && LCDMODE_MAIN_ARGB888
+#if 0
 	{
 		enum { picy = 150, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
