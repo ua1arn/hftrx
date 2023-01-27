@@ -6408,17 +6408,27 @@ void hightests(void)
 				layer1, DIM_X, DIM_Y, 220, 220,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
-				1*PLTPARAM_CKEY, keycolor
+				PLTPARAM_CKEY, keycolor
 				);
 
-		/* копируем изображение в верхний слой с цветовым ключем */
+		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_plot_key(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
 				layer1, DIM_X, DIM_Y, 350, 250,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
-				0*PLTPARAM_CKEY, keycolor
+				PLTPARAM_NONE, keycolor
 				);
+
+		/* копируем изображение в верхний слой с цветовым ключем */
+		colpip_plot_key(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y, 450, 90,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				PLTPARAM_CKEY, keycolor
+				);
+
 
 		// нужно если программно заполняли
 //		arm_hardware_flush((uintptr_t) layer0, sizeof layer0);

@@ -1709,17 +1709,17 @@ void hwaccel_copy(
 	enum { PIXEL_SIZE = sizeof * src };
 	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
-	//const uintptr_t addr = (uintptr_t) & buffer [row * GXADJ(dx) + col];
 	const uintptr_t taddr = (uintptr_t) dst;
 	const uintptr_t saddr = (uintptr_t) src;
-	//const uint_fast32_t tsizehw = ((tdy - 1) << 16) | ((tdx - 1) << 0);
-	//const uint_fast32_t tsizehwf = ((tdy) << 16) | ((tdx) << 0);
 	const uint_fast32_t sizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
-	//const uint_fast32_t sizehwf = ((sdy) << 16) | ((sdx) << 0);
-	//const uint_fast32_t sizehwf3 = ((sdy) * 2 / 3 << 16) | ((sdx) * 2/ 3 << 0);	// debug
 
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
+
+//	memset(G2D_V0, 0, sizeof * G2D_V0);
+//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+//	memset(G2D_WB, 0, sizeof * G2D_WB);
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
@@ -1728,16 +1728,13 @@ void hwaccel_copy(
 	G2D_UI0->UI_ATTR = 0;
 	G2D_UI1->UI_ATTR = 0;
 	G2D_UI2->UI_ATTR = 0;
-
 	G2D_BLD->BLD_EN_CTL = 0;	// Нет источников
 
-	G2D_UI2->UI_ATTR = awxx_get_ui_attr();
-
-	G2D_UI2->UI_PITCH = sstride;
 
 	if ((keyflag & PLTPARAM_CKEY) != 0)
 	{
 		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
+		G2D_UI2->UI_PITCH = sstride;
 		G2D_UI2->UI_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_UI2->UI_MBSIZE = sizehw; // сколько брать от исходного буфера
@@ -1757,9 +1754,6 @@ void hwaccel_copy(
 		G2D_V0->V0_LADD0 = taddr;
 		G2D_V0->V0_HADD = 0;//  //$$$$$((saddr >> 32) & 0xFF) << 0;
 
-		//G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
-		//G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
-		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	}
 	else
 	{
@@ -1772,60 +1766,54 @@ void hwaccel_copy(
 		G2D_V0->V0_LADD0 = saddr;
 		G2D_V0->V0_HADD = 0;//  //$$$$$((saddr >> 32) & 0xFF) << 0;
 
-		G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
-		G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
-		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	}
 
-
-	G2D_BLD->BLD_BK_COLOR = 0;
 	if ((keyflag & PLTPARAM_CKEY) != 0)
 	{
 		/* 5.10.9.10 BLD color key control register */
 		G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
+
 		/* 5.10.9.11 BLD color key configuration register */
 		//G2D_BLD->BLD_KEY_CON = 0x07;
+		G2D_BLD->BLD_KEY_CON= 0x00;
+
 		G2D_BLD->BLD_KEY_MAX = keycolor;
 		G2D_BLD->BLD_KEY_MIN = keycolor;
 
-		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+		G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+		G2D_BLD->BLD_EN_CTL |= (1u << 9);	// 9: P1_EN Pipe1 enable
 
-		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
-		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-		G2D_BLD->BLD_EN_CTL=0x00000300; /* 0x00000300 */
-		G2D_BLD->BLD_PREMUL_CTL=0x00000000; /* 0x00000000 */
-		G2D_BLD->BLD_BK_COLOR=0x00000000; /* 0x00000000 */
-		G2D_BLD->BLD_CTL=0x03010301; /* 0x03010301 */
-		G2D_BLD->BLD_KEY_CTL=0x00000003; /* 0x00000003 */
-		G2D_BLD->BLD_KEY_CON=0x00000000; /* 0x00000000 */
-		//G2D_BLD->BLD_KEY_MAX=0x00A54AA4; /* 0x00A54AA4 */
-		//G2D_BLD->BLD_KEY_MIN=0x00A348A2; /* 0x00A348A2 */
-		G2D_BLD->BLD_OUT_COLOR=0x00000000; /* 0x00000000 */
-		G2D_BLD->ROP_CTL=0x000000F0; /* 0x000000F0 */
-		G2D_BLD->BLD_CSC_CTL=0x00000000; /* 0x00000000 */
-
-		G2D_V0->V0_ATTCTL=0xFF000401; /* 0xFF000401 */
-		G2D_V0->V0_ATTCTL = 0xFF000001; //awxx_get_vi_attr();
 
 		G2D_BLD->BLD_CH_ISIZE [0] = sizehw;
+		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
 		G2D_BLD->BLD_CH_ISIZE [1] = sizehw;
+		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
 	}
 	else
 	{
+		G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+		G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
+
+		G2D_BLD->BLD_CH_ISIZE [0] = sizehw;
+		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
+
 		G2D_BLD->BLD_KEY_CTL = 0;
 		G2D_BLD->BLD_KEY_CON = 0;
-
-		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
-		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 	}
+
+	G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
 
 	G2D_BLD->BLD_SIZE = sizehw;	// ! may not be zero
 
-	G2D_BLD->BLD_CH_ISIZE [0] = sizehw;	// may be zero
-	G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
 	//G2D_BLD->BLD_FILLC0 = ~ 0;
 	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
+	G2D_BLD->BLD_OUT_COLOR=0x00000000; /* 0x00000000 */
+	G2D_BLD->BLD_CSC_CTL=0x00000000; /* 0x00000000 */
+	G2D_BLD->BLD_BK_COLOR = 0;
+	G2D_BLD->BLD_PREMUL_CTL=0x00000000; /* 0x00000000 */
 
 	/* Write-back settings */
 	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
