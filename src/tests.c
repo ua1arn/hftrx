@@ -6368,6 +6368,7 @@ void hightests(void)
 #if 0
 	{
 		enum { picy = 150, picx = 150 };
+		enum { pich = 50, picw = 50 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
@@ -6381,8 +6382,8 @@ void hightests(void)
 
 		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) layer0, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
-		/* Тестовое изображение для заполнения с color key */
-		COLOR24_T keycolor = COLOR24_KEY; //COLOR24(111, 112, 114);
+		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
+		COLORMAIN_T keycolor = COLOR_KEY;
 
 		unsigned picalpha = 255;
 		colmain_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */

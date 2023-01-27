@@ -34,7 +34,8 @@ typedef uint_fast32_t COLOR24_T;
 #define COLOR24_G(v) (((v) >> 8) & 0xFF)
 #define COLOR24_B(v) (((v) >> 0) & 0xFF)
 
-#define COLOR24_KEY	COLOR24(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
+/* цвет должен корректно преобразовываться в RGB565 и обратно */
+#define COLOR_KEY	TFTRGB(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
 
 
 enum gradient_style

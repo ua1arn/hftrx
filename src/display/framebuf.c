@@ -28,13 +28,11 @@
 	#include "g2d_driver.h"
 
 #if LCDMODE_MAIN_ARGB888
-	#define DstImageFormat G2D_FMT_ARGB_AYUV8888
-	#define SrcImageFormat G2D_FMT_ARGB_AYUV8888
-	#define WB_DstImageFormat G2D_FMT_ARGB_AYUV8888
+	#define DstImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
+	#define WB_DstImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 
 #elif LCDMODE_MAIN_RGB565
 	#define DstImageFormat G2D_FMT_RGB565
-	#define SrcImageFormat G2D_FMT_RGB565
 	#define WB_DstImageFormat 0x0A
 
 #else
@@ -78,14 +76,12 @@ static void t113_fillrect(
 	COLOR24_T c24
 	)
 {
-	memset(G2D_V0, 0, sizeof * G2D_V0);
-	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-	memset(G2D_WB, 0, sizeof * G2D_WB);
-
-	G2D_BLD->BLD_EN_CTL = 0;	// Нет источников
+//	memset(G2D_V0, 0, sizeof * G2D_V0);
+//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+//	memset(G2D_WB, 0, sizeof * G2D_WB);
 
 	/* Отключаем все источники */
 	G2D_V0->V0_ATTCTL = 0;
@@ -111,7 +107,7 @@ static void t113_fillrect(
 	 */
 	G2D_BLD->BLD_FILLC [0] = c24;
 	//G2D_BLD->BLD_FILLC [1] = c24;
-	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 0: BLD_FILLC0 ?? BLD_FILL_COLOR_CTL
+	G2D_BLD->BLD_EN_CTL = (1u << 0);	// 0: BLD_FILLC0 ?? BLD_FILL_COLOR_CTL
 
 	/* Write-back settings */
 	G2D_WB->WB_ATT = WB_DstImageFormat;
@@ -1694,10 +1690,12 @@ void hwaccel_copy(
 	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
 
-//	memset(G2D_V0, 0, sizeof * G2D_V0);
-//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-//	memset(G2D_WB, 0, sizeof * G2D_WB);
+	//	memset(G2D_V0, 0, sizeof * G2D_V0);
+	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+	//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+	//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+	//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+	//	memset(G2D_WB, 0, sizeof * G2D_WB);
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
@@ -1812,22 +1810,46 @@ void hwaccel_copy(
 #else
 	// программная реализация
 
-	// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
-	if (tdx == sdx)
+	if ((keyflag & PLTPARAM_CKEY) != 0)
 	{
-		const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
-		// ширина строки одинаковая в получателе и источнике
-		memcpy(dst, src, len);
+		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
+		// работа с color key
+
+		const unsigned stail = GXADJ(sdx) - sdx;
+		const unsigned dtail = GXADJ(tdx) - sdx;
+		while (sdy --)
+		{
+			unsigned w = sdx;
+			while (w --)
+			{
+				const COLORMAIN_T c = * src ++;
+				if (c != keycolor)
+					* dst = c;
+				dst ++;
+			}
+			src += stail;
+			dst += dtail;
+		}
 	}
 	else
 	{
-		const size_t len = sdx * sizeof * src;
-		while (sdy --)
+		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
+		if (tdx == sdx)
 		{
+			const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
+			// ширина строки одинаковая в получателе и источнике
 			memcpy(dst, src, len);
-			//arm_hardware_flush((uintptr_t) dst, len);
-			src += GXADJ(sdx);
-			dst += GXADJ(tdx);
+		}
+		else
+		{
+			const size_t len = sdx * sizeof * src;
+			while (sdy --)
+			{
+				memcpy(dst, src, len);
+				//arm_hardware_flush((uintptr_t) dst, len);
+				src += GXADJ(sdx);
+				dst += GXADJ(tdx);
+			}
 		}
 	}
 

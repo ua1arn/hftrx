@@ -1319,13 +1319,10 @@ static void LCD_LayerInitMain(
 {
 	// преобразование из упакованного пикселя RGB565 по правилам pfc LTDC
 	// в требующийся RGB888
-	const unsigned long key = COLOR24_KEY;
-	const unsigned long keyr = (key >> 11) & 0x1F;
-	const unsigned long keyg = (key >> 6) & 0x3F;
-	const unsigned long keyb = (key >> 0) & 0x1F;
-	const unsigned long keyrpfc = ((keyr << 3) | (keyr >> 3)) & 0xFF;
-	const unsigned long keygpfc = ((keyg << 2) | (keyg >> 4)) & 0xFF;
-	const unsigned long keybpfc = ((keyb << 3) | (keyb >> 3)) & 0xFF;
+	const COLORMAIN_T key = COLOR_KEY;
+	const unsigned keyr = COLORMAIN_R(key);
+	const unsigned keyg = COLORMAIN_G(key);
+	const unsigned keyb = COLORMAIN_B(key);
 
 	LTDC_Layerx->CKCR = 
 		(keyrpfc << LTDC_LxCKCR_CKRED_Pos) |
