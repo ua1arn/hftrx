@@ -171,6 +171,7 @@ enum { VNAME_MAX = 96 };
 
 struct parsedfile
 {
+	struct parsedfile * next;
     size_t nregs;
     struct ddd * regs;
 	char bname [VNAME_MAX];
@@ -181,6 +182,27 @@ struct parsedfile
 	int irq_array [BASE_MAX];
 	char irq_names [BASE_MAX] [VNAME_MAX];
 };
+
+struct parsedfiles_list
+{
+	struct parsedfile * head;
+	struct parsedfile * * newadd;
+};
+
+struct parsedfiles_list parsedfiles;
+
+void parsedfiles_list_init(struct parsedfiles_list * list)
+{
+	list->head = NULL;
+	list->newadd = & list->head;
+}
+
+void parsedfiles_list_addtail(struct parsedfiles_list * list, struct parsedfile * item)
+{
+	* list->newadd = item;
+	list->newadd = & item->next;
+	item->next = NULL;
+}
 
 struct basemap
 {
@@ -375,7 +397,6 @@ static int loadregs(struct parsedfile * pfl, const char * file)
 
     const size_t maxrows = 256;
     FILE * fp = fopen(file, "rt");
- 
 	TP();
 	strcpy(pfl->bname, "");
 	pfl->base_count = 0;
@@ -487,24 +508,36 @@ static void freeregs(struct parsedfile * pfl)
     free(pfl->regs);
 }
 
-#define MAXPARSEDFILES 96
-
 int main(int argc, char* argv[], char* envp[])
 {
-	struct parsedfile pfls [MAXPARSEDFILES];
+	//struct parsedfile pfls [MAXPARSEDFILES];
 	int i = 1;
-	int nperoiph;
+	//int nperoiph;
 
     if (argc < 2)
         return 1;
 
-	/* Load files */
-	for (nperoiph = 0; nperoiph < MAXPARSEDFILES && i < argc; ++ i, ++ nperoiph)
-	{
-		struct parsedfile * const pfl = & pfls [nperoiph];
+	parsedfiles_list_init(& parsedfiles);
 
-		if (loadregs(pfl, argv [i]))
-			continue;
+	/* Load files */
+	for (;  i < argc;)
+	{
+		struct parsedfile * const pfl = calloc(1, sizeof (struct parsedfile));
+		if (loadregs(pfl, argv [i]) != 0)
+		{
+			free(pfl);
+			break;
+		}
+		parsedfiles_list_addtail(&parsedfiles, pfl);
+		++ i;
+	}
+
+	{
+		struct parsedfile * pfl = parsedfiles.head;
+		for (; pfl != NULL; pfl = pfl->next)
+		{
+			//fprintf(stderr, "$");
+		}
 	}
 
 	fprintf(stdout, "#include <stdint.h>" "\n");
@@ -515,11 +548,13 @@ int main(int argc, char* argv[], char* envp[])
 		/* collect IRQ vectors */
 		int nitems = 0;
 		struct irqmap irqs [1024];
-		for (i = 0; i < nperoiph && nitems < sizeof irqs / sizeof irqs [0]; ++ i)
-		{
-			struct parsedfile * const pfl = & pfls [i];
 
-			nitems += collect_irq(pfl, 1024 - nitems, irqs + nitems);
+		{
+			struct parsedfile * pfl = parsedfiles.head;
+			for (; pfl != NULL; pfl = pfl->next)
+			{
+				nitems += collect_irq(pfl, sizeof irqs / sizeof irqs [0] - nitems, irqs + nitems);
+			}
 		}
 
 		qsort(irqs, nitems, sizeof irqs [0], compare_irq);
@@ -548,10 +583,9 @@ int main(int argc, char* argv[], char* envp[])
 		/* collect base addresses */
 		int nitems = 0;
 		struct basemap maps [256];
-		for (i = 0; i < nperoiph && nitems < sizeof maps / sizeof maps [0]; ++ i)
+		struct parsedfile * pfl = parsedfiles.head;
+		for (i = 0; pfl != NULL && nitems < sizeof maps / sizeof maps [0]; ++ i, pfl = pfl->next)
 		{
-			struct parsedfile * const pfl = & pfls [i];
-
 			nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
 		}
 
@@ -572,23 +606,24 @@ int main(int argc, char* argv[], char* envp[])
 	if (1)
 	{
 		/* structures */
-		for (i = 0; i < nperoiph; ++ i)
-		{
-			struct parsedfile * const pfl = & pfls [i];
+		struct parsedfile * pfl;
 
+		for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
+		{
 			processfile_periphregs(pfl);
 		}
 	}
 
 	if (1)
 	{
+		struct parsedfile * pfl;
+
 		fprintf(stdout, "\n");
 		fprintf(stdout, "/* Access pointers */\n");
 		fprintf(stdout, "\n");
 
-		for (i = 0; i < nperoiph; ++ i)
+		for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
 		{
-			struct parsedfile * const pfl = & pfls [i];
 
 			processfile_access(pfl);
 		}
@@ -596,25 +631,31 @@ int main(int argc, char* argv[], char* envp[])
 
 	if (0)
 	{
+		struct parsedfile * pfl;
+
 		/* print structire debug */
 		/* structures */
 		fprintf(stdout, "#ifdef PRINTF\n");
-		for (i = 0; i < nperoiph; ++ i)
-		{
-			struct parsedfile * const pfl = & pfls [i];
 
+		for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
+		{
 			processfile_periphregsdebug(pfl);
 		}
 		fprintf(stdout, "#endif /* PRINTF */\n");
 	}
 
-	/* release memory */
-	for (i = 0; i < nperoiph; ++ i)
 	{
-		struct parsedfile * const pfl = & pfls [i];
+		struct parsedfile * pfl;
+		struct parsedfile * pflnext;
+		/* release memory */
+		for (pfl = parsedfiles.head; pfl != NULL; pfl = pflnext)
+		{
+			pflnext = pfl->next;
 
-		freeregs(pfl);
+			freeregs(pfl);
+		}
 	}
+
 	return 0;
 }
 
