@@ -285,6 +285,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
 
 		// Get color components from framebuffer value
+		#define COLORMAIN_A(v) (((v) & 0xFF0000FF) >> 24)
 		#define COLORMAIN_R(v) (((v) & 0xFF0000) >> 16)
 		#define COLORMAIN_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORMAIN_B(v) (((v) & 0xFF) >> 0)
@@ -344,6 +345,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define TFTRGB565 TFTRGB
 
 		// Get color components from framebuffer value
+		#define COLORMAIN_A(v) (((v) & 0xFF0000FF) >> 24)
 		#define COLORMAIN_R(v) (((v) & 0xFF0000) >> 16)
 		#define COLORMAIN_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORMAIN_B(v) (((v) & 0xFF) >> 0)
@@ -375,6 +377,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define TFTRGB565 TFTRGB
 
 		// Get color components from framebuffer value
+		#define COLORMAIN_A(v) (((v) & 0xFF0000FF) >> 24)
 		#define COLORMAIN_R(v) (((v) & 0xFF0000) >> 16)
 		#define COLORMAIN_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORMAIN_B(v) (((v) & 0xFF) >> 0)
@@ -399,6 +402,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define TFTRGB565 TFTRGB
 
 		// Get color components from framebuffer value
+		#define COLORMAIN_A(v) (255)
 		#define COLORMAIN_R(v) ((((v) & 0xF800) >> 8) | (((v) & 0xE000) >> 13))
 		#define COLORMAIN_G(v) ((((v) & 0x07E0) >> 3) | (((v) & 0x0600) >> 9))
 		#define COLORMAIN_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))

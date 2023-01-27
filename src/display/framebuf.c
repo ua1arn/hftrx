@@ -50,38 +50,39 @@ static unsigned awxx_get_ui_attr(void)
 	ui_attr |= DstImageFormat << 8;
 	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	ui_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	// ui_attr |= (1u << 4);	/* Use FILLC register
+	//ui_attr |= (1u << 4);	/* Use FILLC register */
 	ui_attr |= 1;
 	return ui_attr;
 }
 
 static unsigned awxx_get_vi_attr(void)
 {
-	unsigned ui_attr = 0;
-	ui_attr = 255 << 24;
+	unsigned vi_attr = 0;
+	vi_attr = 255 << 24;
 	//	if (img->bpremul)
-	//		ui_attr |= 0x1 << 17;
-	ui_attr |= DstImageFormat << 8;
-	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	ui_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	// ui_attr |= (1u << 4);	/* Use FILLC register
-	ui_attr |= 1;
-	return ui_attr;
+	//		vi_attr |= 0x1 << 17;
+	vi_attr |= DstImageFormat << 8;
+	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	vi_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	//vi_attr |= (1u << 4);	/* Use FILLC register */
+	vi_attr |= 1;
+	return vi_attr;
 }
 
 static void t113_fillrect(
 	uintptr_t taddr,
 	uint_fast32_t tstride,
 	uint_fast32_t tsizehw,
-	COLOR24_T c24
+	unsigned alpha,
+	COLOR24_T color24
 	)
 {
-//	memset(G2D_V0, 0, sizeof * G2D_V0);
-//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-//	memset(G2D_WB, 0, sizeof * G2D_WB);
+	memset(G2D_V0, 0, sizeof * G2D_V0);
+	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+	memset(G2D_WB, 0, sizeof * G2D_WB);
 
 	/* Отключаем все источники */
 	G2D_BLD->BLD_EN_CTL = 0;
@@ -101,16 +102,27 @@ static void t113_fillrect(
 	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 	G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
-	G2D_BLD->BLD_BK_COLOR = c24;	/* всегда RGB888. */
+	G2D_BLD->BLD_BK_COLOR = color24; // ~ 0u; //c24;	/* всегда RGB888. */
 
 	//	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 	/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
 	 */
-	G2D_BLD->BLD_FILLC [0] = c24;
-	//G2D_BLD->BLD_FILLC [1] = c24;
-	/* для нормальной работы ARGB8888 - а то заполняется без Alpha */
-	G2D_BLD->BLD_EN_CTL = (1u << 0);	// 0: BLD_FILLC0 ?? BLD_FILL_COLOR_CTL
+	G2D_BLD->BLD_FILLC [0] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
+//	G2D_BLD->BLD_FILLC [1] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
+//	G2D_BLD->BLD_FILLC [2] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
+//	G2D_BLD->BLD_FILLC [3] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
 
+	G2D_BLD->BLD_CH_ISIZE [0] = 0 * tsizehw;
+//	G2D_BLD->BLD_CH_ISIZE [1] = 0 * tsizehw;
+//	G2D_BLD->BLD_CH_ISIZE [2] = 0 * tsizehw;
+//	G2D_BLD->BLD_CH_ISIZE [3] = 0 * tsizehw;
+
+
+	G2D_V0->V0_ATTCTL = 1;//awxx_get_vi_attr();
+	G2D_V0->V0_FILLC = (alpha << 24) | (color24 & 0xFFFFFF);
+
+	G2D_BLD->BLD_EN_CTL = (1u << 0);	// BLD_FILL_COLOR_CTL: BLD_FILLC [0] или BLD_BK_COLOR
+    G2D_BLD->BLD_EN_CTL |= (1u << 8);    // 8: source from VI0 ?? BLD_FILL_COLOR_CTL
 	/* Write-back settings */
 	G2D_WB->WB_ATT = WB_DstImageFormat;
 	G2D_WB->WB_SIZE = tsizehw; //tsizehwfull;
@@ -734,7 +746,7 @@ hwacc_fillrect_u16(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	t113_fillrect(taddr, tstride, tsizehw, c24);
+	t113_fillrect(taddr, tstride, tsizehw, COLORMAIN_A(color), c24);
 
 
 	//debug_g2d("my");
@@ -1053,8 +1065,7 @@ hwacc_fillrect_u32(
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
-	t113_fillrect(taddr, tstride, tsizehw, color24);
-	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: source from VI0 ?? BLD_FILL_COLOR_CTL
+	t113_fillrect(taddr, tstride, tsizehw, COLORMAIN_A(color24), (color24 & 0xFFFFFF));
 
 	//PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X\n", G2D_MIXER->G2D_MIXER_CTL);
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
@@ -1720,7 +1731,7 @@ void hwaccel_copy(
 		//	G2D_BLD->ROP_CTL = 0x55F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 
 		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-		G2D_V0->V0_PITCH0 = tstride; //$$$$$
+		G2D_V0->V0_PITCH0 = tstride;
 		G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = sizehw; 	// сколько брать от исходного буфера
@@ -1732,7 +1743,7 @@ void hwaccel_copy(
 	else
 	{
 		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-		G2D_V0->V0_PITCH0 = sstride; //$$$$$
+		G2D_V0->V0_PITCH0 = sstride;
 		G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = sizehw; 	// сколько брать от исходного буфера
