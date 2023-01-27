@@ -84,6 +84,7 @@ static void t113_fillrect(
 //	memset(G2D_WB, 0, sizeof * G2D_WB);
 
 	/* Отключаем все источники */
+	G2D_BLD->BLD_EN_CTL = 0;
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
 	G2D_UI1->UI_ATTR = 0;
@@ -107,6 +108,7 @@ static void t113_fillrect(
 	 */
 	G2D_BLD->BLD_FILLC [0] = c24;
 	//G2D_BLD->BLD_FILLC [1] = c24;
+	/* для нормальной работы ARGB8888 - а то заполняется без Alpha */
 	G2D_BLD->BLD_EN_CTL = (1u << 0);	// 0: BLD_FILLC0 ?? BLD_FILL_COLOR_CTL
 
 	/* Write-back settings */
