@@ -10,7 +10,7 @@
 
 #include "t113s3_hal.h"
 
-//#define WITHWAWXXUSB	1	// check PFX in usbd_cdc.c
+#define WITHWAWXXUSB	1	// check PFX in usbd_cdc.c
 
 #ifdef __cplusplus
 extern "C" {
