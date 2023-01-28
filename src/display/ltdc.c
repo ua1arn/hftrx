@@ -2341,8 +2341,8 @@ void arm_hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t l
 	write32((uintptr_t) & bld->fcolor_ctl,
 			((layer0 != 0) << 8)	| // pipe0 enable - from VI
 			((layer1 != 0) << 9)	| // pipe1 enable - from UI1
-			((layer2) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
-			((layer3) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+			((layer2 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+			((layer3 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
 			0
 			);
 
