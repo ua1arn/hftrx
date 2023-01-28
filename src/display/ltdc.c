@@ -1845,10 +1845,12 @@ static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 static inline void t113_de_set_address_vi(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
 {
 	struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
-	write32((uintptr_t)&vi->cfg[0].attr,
+
+	write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].attr,
 			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
-			(1<<15)
+			(1<<15)|	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
+			0
 			);
 	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].top_laddr, vram);
 	write32((uintptr_t) & vi->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
@@ -1858,11 +1860,13 @@ static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uin
 {
 	ASSERT(uich >= 1 && uich <= 3);
 	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+
 	write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].attr,
 			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
-			(255<<24)|
-			(1<<16)
+			(255<<24)|	// LAY_GLBALPHA
+			(1<<16)| 	// LAY_PREMUL_CTL
+			0
 			);
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
 	write32((uintptr_t) & ui->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
@@ -2003,8 +2007,8 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].attr,
 				//(1<<0)|		// enable - разрешаем при назначении адреса
 				(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
-				(0x6f<<24)|
-				(1<<16)
+				(0xff<<24)|
+				(1<<16)	// LAY_PREMUL_CTL
 				);
 		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].size, ovl_ui_mbsize);
 		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].coord, 0);
