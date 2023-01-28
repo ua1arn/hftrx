@@ -7,6 +7,9 @@
 #include <ctype.h>
 #include <stdarg.h>
 
+#include "mslist.h"
+#include "getopt_win.h"
+
 /* debug stuff */
 #if 0
 
