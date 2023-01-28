@@ -84,5 +84,17 @@ LINK32=link.exe
 
 SOURCE=.\genregdefs.c
 # End Source File
+# Begin Source File
+
+SOURCE=.\getopt.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\getopt_win.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\mslist.h
+# End Source File
 # End Target
 # End Project

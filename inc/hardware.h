@@ -1309,37 +1309,37 @@ int blinky_main(void);
 typedef struct dram_para_t
 {
 	//normal configuration
-	unsigned int        	dram_clk;
-	unsigned int        	dram_type;	//dram_type DDR2: 2 DDR3: 3 LPDDR2: 6 LPDDR3: 7 DDR3L: 31
-	//unsigned int        	lpddr2_type;	//LPDDR2 type S4:0 S2:1 NVM:2
-	unsigned int        	dram_zq;	//do not need
-	unsigned int		dram_odt_en;
+	uint32_t        	dram_clk;
+	uint32_t        	dram_type;	//dram_type DDR2: 2 DDR3: 3 LPDDR2: 6 LPDDR3: 7 DDR3L: 31
+	//uint32_t        	lpddr2_type;	//LPDDR2 type S4:0 S2:1 NVM:2
+	uint32_t        	dram_zq;	//do not need
+	uint32_t		dram_odt_en;
 
 	//control configuration
-	unsigned int		dram_para1;
-	unsigned int		dram_para2;
+	uint32_t		dram_para1;
+	uint32_t		dram_para2;
 
 	//timing configuration
-	unsigned int		dram_mr0;
-	unsigned int		dram_mr1;
-	unsigned int		dram_mr2;
-	unsigned int		dram_mr3;
-	unsigned int		dram_tpr0;	//DRAMTMG0
-	unsigned int		dram_tpr1;	//DRAMTMG1
-	unsigned int		dram_tpr2;	//DRAMTMG2
-	unsigned int		dram_tpr3;	//DRAMTMG3
-	unsigned int		dram_tpr4;	//DRAMTMG4
-	unsigned int		dram_tpr5;	//DRAMTMG5
-   	unsigned int		dram_tpr6;	//DRAMTMG8
+	uint32_t		dram_mr0;
+	uint32_t		dram_mr1;
+	uint32_t		dram_mr2;
+	uint32_t		dram_mr3;
+	uint32_t		dram_tpr0;	//DRAMTMG0
+	uint32_t		dram_tpr1;	//DRAMTMG1
+	uint32_t		dram_tpr2;	//DRAMTMG2
+	uint32_t		dram_tpr3;	//DRAMTMG3
+	uint32_t		dram_tpr4;	//DRAMTMG4
+	uint32_t		dram_tpr5;	//DRAMTMG5
+   	uint32_t		dram_tpr6;	//DRAMTMG8
 
 	//reserved for future use
-	unsigned int		dram_tpr7;
-	unsigned int		dram_tpr8;
-	unsigned int		dram_tpr9;
-	unsigned int		dram_tpr10;
-	unsigned int		dram_tpr11;
-	unsigned int		dram_tpr12;
-	unsigned int		dram_tpr13;
+	uint32_t		dram_tpr7;
+	uint32_t		dram_tpr8;
+	uint32_t		dram_tpr9;
+	uint32_t		dram_tpr10;
+	uint32_t		dram_tpr11;
+	uint32_t		dram_tpr12;
+	uint32_t		dram_tpr13;
 } dram_para_t;
 
 signed int init_DRAM(int type, dram_para_t *para); // s0

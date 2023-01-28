@@ -1,6 +1,6 @@
 all : genregdefs
 
-genregdefs : genregdefs.o
+genregdefs : genregdefs.o getopt.o
 
 clean :
-	rm genregdefs.o genregdefs
+	rm genregdefs.o getopt.o genregdefs
