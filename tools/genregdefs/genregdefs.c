@@ -5,12 +5,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdarg.h>
 
 /* debug stuff */
 #if 0
 
 	#define TP() do { \
-		fprintf(stdout, "%s/%d\n", __FILE__, __LINE__); \
+		emitline(0, "%s/%d\n", __FILE__, __LINE__); \
 		fflush(stdout); \
 		} while (0)
 
@@ -31,18 +32,46 @@ struct regdfn
 	unsigned fldrept;   // 0 - plain field, 1..n - array
 };
 
+static int emitpos;
+
+void emitline(int pos, const char * format, ...)
+{
+	va_list ap;
+	int n;
+	FILE * fp = stdout;
+
+	if (emitpos < pos)
+	{
+		const int pad = pos - emitpos;
+		n = fprintf(fp, "%*.*s", pad, pad, "");
+		if (n >= 0)
+		{
+			emitpos += pad;
+		}
+	}
+
+	va_start(ap, format);
+	n = vfprintf(fp, format, ap);
+	va_end(ap);
+	if (n >= 0)
+	{
+		emitpos += n;
+	}
+	emitpos = 0;
+}
+
 void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
 {
 	unsigned i;
 	unsigned offs;
 
-	fprintf(stdout, "/*\n");
-	fprintf(stdout, " * @brief %s\n", bname);
-	fprintf(stdout, " */\n");
+	emitline(0, "/*\n");
+	emitline(0, " * @brief %s\n", bname);
+	emitline(0, " */\n");
 
-	fprintf(stdout, "/*!< %s Controller Interface */\n", bname);
-	fprintf(stdout, "typedef struct %s_Type\n", bname);
-	fprintf(stdout, "{\n");
+	emitline(0, "/*!< %s Controller Interface */\n", bname);
+	emitline(0, "typedef struct %s_Type\n", bname);
+	emitline(0, "{\n");
 	offs = 0;
 	for (i = 0; i < szregs; ++ i)
 	{
@@ -79,15 +108,15 @@ void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
 
             if (sz == 4)
             {
-			    fprintf(stdout, "\t" "uint32_t reserved_0x%03X;\n", offs);
+			    emitline(0, "\t" "uint32_t reserved_0x%03X;\n", offs);
             }
             else if ((sz % 4) == 0)
             {
-			    fprintf(stdout, "\t" "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
+			    emitline(0, "\t" "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
             }
             else
             {
-		    	fprintf(stdout, "\t" "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
+		    	emitline(0, "\t" "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
             }
 			offs = p->fldoffs;
 		}
@@ -101,11 +130,11 @@ void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
 					// Array forming
 					if (p->typname != NULL)
 					{
-						fprintf(stdout, "\t" "%s %s [0x%03X];%n", p->typname, p->fldname, p->fldrept, & eolpos);
+						emitline(0, "\t" "%s %s [0x%03X];%n", p->typname, p->fldname, p->fldrept, & eolpos);
 					}
 					else
 					{
-						fprintf(stdout, "\t" "volatile %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
+						emitline(0, "\t" "volatile %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
 					}
 
 					offs += p->fldsize * p->fldrept;
@@ -115,29 +144,29 @@ void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
 					// Plain field
 					if (p->typname != NULL)
 					{
-						fprintf(stdout, "\t" "%s %s;%n", p->typname, p->fldname, & eolpos);
+						emitline(0, "\t" "%s %s;%n", p->typname, p->fldname, & eolpos);
 					}
 					else
 					{
-						fprintf(stdout, "\t" "volatile %s %s;%n", fldtype, p->fldname, & eolpos);
+						emitline(0, "\t" "volatile %s %s;%n", fldtype, p->fldname, & eolpos);
 					}
 					offs += p->fldsize;
 				}
 				if (eolpos < commentspos)
 				{
 					int pad = commentspos - eolpos;
-					fprintf(stdout, "%*.*s", pad, pad, "");
+					emitline(0, "%*.*s", pad, pad, "");
 				}
-				fprintf(stdout, "/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
+				emitline(0, "/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
 			}
 		}
 		else
 		{
-			fprintf(stdout, "#error WRONG offset of field '%s' type '%s' at (0x%03X)\n",  p->fldname, fldtype, p->fldoffs);
+			emitline(0, "#error WRONG offset of field '%s' type '%s' at (0x%03X)\n",  p->fldname, fldtype, p->fldoffs);
 			break;
 		}
 	}
-	fprintf(stdout, "} %s_TypeDef; /* size of structure = 0x%03X */\n", bname, offs);
+	emitline(0, "} %s_TypeDef; /* size of structure = 0x%03X */\n", bname, offs);
 }
 
 
@@ -145,9 +174,9 @@ void genstructprint(const struct regdfn * regs, unsigned szregs, const char * bn
 {
 	unsigned i;
 
-	fprintf(stdout, "/* Print %s */\n", bname);
-	fprintf(stdout, "static void %s_Type_print(const %s_TypeDef * p, const char * base)\n", bname, bname);
-	fprintf(stdout, "{\n");
+	emitline(0, "/* Print %s */\n", bname);
+	emitline(0, "static void %s_Type_print(const %s_TypeDef * p, const char * base)\n", bname, bname);
+	emitline(0, "{\n");
 	for (i = 0; i < szregs; ++ i)
 	{
 		const struct regdfn * p = & regs [i];
@@ -157,12 +186,12 @@ void genstructprint(const struct regdfn * regs, unsigned szregs, const char * bn
 			if (p->fldrept == 0 &&p->typname == NULL)
 			{
 				// Plain field
-				fprintf(stdout, "\t" "PRINTF(\"%%s->%s=0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );", p->fldname, p->fldname, p->fldname);
-				fprintf(stdout, "\t/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
+				emitline(0, "\t" "PRINTF(\"%%s->%s=0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );", p->fldname, p->fldname, p->fldname);
+				emitline(0, "\t/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
 			}
 		}
 	}
-	fprintf(stdout, "}\n");
+	emitline(0, "}\n");
 }
 
 
@@ -251,14 +280,14 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 		f2 = sscanf(s + 1, "regdef; %[*a-zA-Z_0-9]s", dummy);
 		if (f2 == 1)
 		{
-			//fprintf(stdout, "type %s processrd\n", pfl->bname);
+			//emitline(0, "type %s processrd\n", pfl->bname);
 			return s + 7;
 		}
 
 		f2 = sscanf(s + 1, "type; %[*a-zA-Z_0-9]s", pfl->bname);
 		if (f2 == 1)
 		{
-			//fprintf(stdout, "type %s processrd\n", pfl->bname);
+			//emitline(0, "type %s processrd\n", pfl->bname);
 			continue;
 		}
 
@@ -268,7 +297,7 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 			if (f2 == 2)
 			{
 				++ pfl->base_count;
-				//fprintf(stdout, "base %s processrd\n", pfl->bname);
+				//emitline(0, "base %s processrd\n", pfl->bname);
 				continue;
 			}
 		}
@@ -278,7 +307,7 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 			if (f2 == 2)
 			{
 				++ pfl->irq_count;
-				//fprintf(stdout, "irq %s processrd\n", pfl->bname);
+				//emitline(0, "irq %s processrd\n", pfl->bname);
 				continue;
 			}
 		}
@@ -305,7 +334,7 @@ static int parseregister(struct parsedfile * pfl, struct regdfn * regp, FILE * f
     char * const s0z = commentfgets(pfl, b0, sizeof b0 / sizeof b0 [0], fp);
     if (s0z == NULL)
         return 1;
-	//fprintf(stdout, "#R %s", s0z);
+	//emitline(0, "#R %s", s0z);
 	TP();
 	token = strtok(s0z, SEP);
 	if (token == NULL)
@@ -335,7 +364,7 @@ static int parseregister(struct parsedfile * pfl, struct regdfn * regp, FILE * f
     }
     else
     {
-        fprintf(stdout, "#error: wrong format f1=%d, at parse file '%s': '%s'\n", f1, file, s0);
+        emitline(0, "#error: wrong format f1=%d, at parse file '%s': '%s'\n", f1, file, s0);
         exit(1);
     }
     regp->fldsize = fldsize;
@@ -371,7 +400,7 @@ static int parseregister(struct parsedfile * pfl, struct regdfn * regp, FILE * f
         break;
     default:
         if (1 != sscanf(s1, "%i", & regp->fldoffs))
-			fprintf(stdout, "WRONG offset format '%s'\n", regp->fldname);
+			emitline(0, "WRONG offset format '%s'\n", regp->fldname);
         break;
     }
 	TP();
@@ -415,14 +444,14 @@ static int loadregs(struct parsedfile * pfl, const char * file)
 	TP();
 	if (fp == NULL)
     {
-        fprintf(stdout, "#error Can not open file '%s'\n", file);
+        emitline(0, "#error Can not open file '%s'\n", file);
         return 1;
     }
 
     regs = (struct regdfn *) calloc(sizeof (struct regdfn), maxrows);
     if (regs == NULL)
     {
-        fprintf(stdout, "#error Can not allocate memory for file '%s'\n", file);
+        emitline(0, "#error Can not allocate memory for file '%s'\n", file);
         return 1;
     }
 
@@ -485,7 +514,7 @@ static void processfile_access(struct parsedfile * pfl)
 		return;
 	for (i = 0; i < pfl->base_count; ++ i)
 	{
-		fprintf(stdout, "#define\t%s\t((%s_TypeDef *) %s_BASE)\t/*!< \\brief %s Interface register set access pointer */\n", pfl->base_names [i], pfl->bname, pfl->base_names [i], pfl->base_names [i]);
+		emitline(0, "#define\t%s\t((%s_TypeDef *) %s_BASE)\t/*!< \\brief %s Interface register set access pointer */\n", pfl->base_names [i], pfl->bname, pfl->base_names [i], pfl->base_names [i]);
 	}
 }
 
@@ -548,8 +577,8 @@ int main(int argc, char* argv[], char* envp[])
 		}
 	}
 
-	fprintf(stdout, "#include <stdint.h>" "\n");
-	fprintf(stdout, "\n");
+	emitline(0, "#include <stdint.h>" "\n");
+	emitline(0, "\n");
 
 	if (0)
 	{
@@ -567,22 +596,22 @@ int main(int argc, char* argv[], char* envp[])
 
 		qsort(irqs, nitems, sizeof irqs [0], compare_irq);
 
-		fprintf(stdout, "\n");
-		fprintf(stdout, "/* IRQs */\n");
-		fprintf(stdout, "\n");
-		fprintf(stdout, "typedef enum IRQn\n"); 
-		fprintf(stdout, "{\n"); 
+		emitline(0, "\n");
+		emitline(0, "/* IRQs */\n");
+		emitline(0, "\n");
+		emitline(0, "typedef enum IRQn\n");
+		emitline(0, "{\n");
 		for (i = 0; i < nitems; ++ i)
 		{
 			struct irqmap * const p = & irqs [i];
 
-			fprintf(stdout, "\t%s_IRQn\t= %d,\n", p->name, p->irq);
+			emitline(0, "\t%s_IRQn\t= %d,\n", p->name, p->irq);
 		}
-		fprintf(stdout, "\n"); 
-		fprintf(stdout, "\t%MAX_IRQ_n,\n");
-		fprintf(stdout, "\tForce_IRQn_enum_size\t= %d\t/* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n", 1048);
-		fprintf(stdout, "} IRQn_Type;\n"); 
-		fprintf(stdout, "\n"); 
+		emitline(0, "\n");
+		emitline(0, "\t%MAX_IRQ_n,\n");
+		emitline(0, "\tForce_IRQn_enum_size\t= %d\t/* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n", 1048);
+		emitline(0, "} IRQn_Type;\n");
+		emitline(0, "\n");
 	}
 
 	if (1)
@@ -599,15 +628,15 @@ int main(int argc, char* argv[], char* envp[])
 
 		qsort(maps, nitems, sizeof maps [0], compare_base);
 
-		fprintf(stdout, "\n");
-		fprintf(stdout, "/* Peripheral and RAM base address */\n");
-		fprintf(stdout, "\n");
+		emitline(0, "\n");
+		emitline(0, "/* Peripheral and RAM base address */\n");
+		emitline(0, "\n");
 
 		for (i = 0; i < nitems; ++ i)
 		{
 			struct basemap * const p = & maps [i];
 
-			fprintf(stdout, "#define\t%s_BASE\t ((uintptr_t) 0x%08X)\n", p->name, p->base);
+			emitline(0, "#define\t%s_BASE\t ((uintptr_t) 0x%08X)\n", p->name, p->base);
 		}
 	}
 
@@ -626,9 +655,9 @@ int main(int argc, char* argv[], char* envp[])
 	{
 		struct parsedfile * pfl;
 
-		fprintf(stdout, "\n");
-		fprintf(stdout, "/* Access pointers */\n");
-		fprintf(stdout, "\n");
+		emitline(0, "\n");
+		emitline(0, "/* Access pointers */\n");
+		emitline(0, "\n");
 
 		for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
 		{
@@ -643,13 +672,13 @@ int main(int argc, char* argv[], char* envp[])
 
 		/* print structire debug */
 		/* structures */
-		fprintf(stdout, "#ifdef PRINTF\n");
+		emitline(0, "#ifdef PRINTF\n");
 
 		for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
 		{
 			processfile_periphregsdebug(pfl);
 		}
-		fprintf(stdout, "#endif /* PRINTF */\n");
+		emitline(0, "#endif /* PRINTF */\n");
 	}
 
 	{
