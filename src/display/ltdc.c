@@ -1912,28 +1912,22 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		;
 	write32((uintptr_t) & glb->size, ovl_ui_mbsize);
 
-//	for(i = 0; i < 4; i++)
-//	{
-//		void * chan = (void *)(T113_DE_BASE + T113_DE_MUX_CHAN + 0x1000 * i);
-//
-//		// peripherial registers
-//		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
-//	}
+	for(i = 0; i < 4; i++)
+	{
+		void * chan = (void *)(T113_DE_BASE + T113_DE_MUX_CHAN + 0x1000 * i);
+
+		// peripherial registers
+		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
+	}
 
 	// peripherial registers
 	//memset(bld, 0, sizeof (struct de_bld_t));
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
-//	write32((uintptr_t) & bld->fcolor_ctl,
-//			(1u << 8)	| // pipe0 enable RED - from VI
-//			//(1u << 9)	| // pipe1 enable GREEN - from UI1
-//			//(1u << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
-//			//(1u << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
-////			(01u << 0) |	// P0_FCEN
-////			(01u << 1) |	// P1_FCEN
-//			0
-//			);
+	write32((uintptr_t) & bld->fcolor_ctl,
+			0
+			);
 
 	// 5.10.9.5 BLD routing control register
 	// BLD_CH_RTCTL
@@ -1948,22 +1942,21 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	write32((uintptr_t) & bld->premultiply,
 			0);
 	write32((uintptr_t) & bld->bkcolor,
-			0xff000000
+			0*0xff771111
 			);
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_CTL
 	// в примерах только 0 и 1 индексы
-//	for(i = 0; i < 4; i++)
-//	{
-//	    //unsigned bld_mode = 0x03010301;		// default
+	for(i = 0; i < 4; i++)
+	{
+	    unsigned bld_mode = 0x03010301;		// default
 //	    unsigned bld_mode = 0x03020302;           //Fs=Ad, Fd=1-As, Qs=Ad, Qd=1-As
-//		write32((uintptr_t) & bld->bld_mode [i],
-//				bld_mode
-//				);
-//
-//		PRINTF("z%d: %08X\n", i, read32((uintptr_t) & bld->bld_mode [i]));
-//	}
+		write32((uintptr_t) & bld->bld_mode [i],
+				bld_mode
+				);
+		PRINTF("bld->bld_mode [%d]=%08X\n", i, read32((uintptr_t) & bld->bld_mode [i]));
+	}
 
 	write32((uintptr_t) & bld->output_size,
 			ovl_ui_mbsize
@@ -2069,7 +2062,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 {
 
 	struct {
-		int pixel_clock_hz;
+		//int pixel_clock_hz;
 		int h_front_porch;
 		int h_back_porch;
 		int h_sync_len;
@@ -2082,7 +2075,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
 	} timing;
 
-	timing.pixel_clock_hz = display_getdotclock(vdmode);
+	//timing.pixel_clock_hz = display_getdotclock(vdmode);
 	timing.h_front_porch = vdmode->hfp;
 	timing.h_back_porch = vdmode->hbp;
 	timing.h_sync_len =  vdmode->hsync;
@@ -2121,7 +2114,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	// dclk
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
-	val = allwnrt113_get_video0_x2_freq() / timing.pixel_clock_hz;
+	val = allwnrt113_get_video0_x2_freq() / display_getdotclock(vdmode);
 //	write32((uintptr_t) & tcon->dclk,
 //			(0x0Fu << 28) | (val << 0));
 	TCON_LCD0->LCD_DCLK_REG = (
