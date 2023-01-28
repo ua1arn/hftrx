@@ -1,4 +1,4 @@
-#type PWM_CH
+#type; PWM_CH
 PCR; 0x0000; PWM Control Register
 PPR; 0x0004; PWM Period Register
 PCNTR; 0x0008; PWM Count Register

@@ -1,4 +1,4 @@
-#type TVE
+#type; TVE
 TVE_000_REG; 0x0000; TV Encoder Clock Gating Register
 TVE_004_REG; 0x0004; TV Encoder Configuration Register
 TVE_008_REG; 0x0008; TV Encoder DAC Register1

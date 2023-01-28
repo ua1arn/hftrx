@@ -1,7 +1,7 @@
-#type TPADC
-#base TPADC 0x02009C00
-#irq TPADC 94
-#irqrv TPADC 78
+#type; TPADC
+#base; TPADC 0x02009C00
+#irq; TPADC 94
+#irqrv; TPADC 78
 TP_CTRL_REG0; 0x0000; TP Control Register 0
 TP_CTRL_REG1; 0x0004; TP Control Register 1
 TP_CTRL_REG2; 0x0008; TP Control Register 2

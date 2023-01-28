@@ -1,4 +1,4 @@
-#type USBPHYC
+#type; USBPHYC
 USB_CTRL; 0x000; HCI Interface Register (HCI_Interface)
 USBPHY_PHYCTL; 0x004; USBPHY_PHYCTL
 HCI_CTRL3; 0x008; HCI Control 3 Register (bist)

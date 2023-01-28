@@ -1,5 +1,5 @@
-#type CSIC_CCU
-#base CSIC_CCU 0x05800000
+#type; CSIC_CCU
+#base; CSIC_CCU 0x05800000
 CCU_CLK_MODE_REG; 0x0000; CCU Clock Mode Register
 CCU_PARSER_CLK_EN_REG; 0x0004; CCU Parser Clock Enable Register
 CCU_POST0_CLK_EN_REG; 0x000C; CCU Post0 Clock Enable Register

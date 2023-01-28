@@ -1,4 +1,4 @@
-#type PWM
+#type; PWM
 PIER; 0x0000; PWM IRQ Enable Register
 PISR; 0x0004; PWM IRQ Status Register
 CIER; 0x0010; Capture IRQ Enable Register

@@ -1,5 +1,5 @@
-#type RTC
-#base RTC 0x07090000
+#type; RTC
+#base; RTC 0x07090000
 LOSC_CTRL_REG; 0x0000; Low Oscillator Control Register
 LOSC_AUTO_SWT_STA_REG; 0x0004; Low Oscillator Auto Switch Status Register
 INTOSC_CLK_PRESCAL_REG; 0x0008; Internal OSC Clock Pre-scaler Register

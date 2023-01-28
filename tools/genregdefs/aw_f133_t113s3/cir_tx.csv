@@ -1,5 +1,5 @@
-#type CIR_TX
-#base CIR_TX 0x02003000
+#type; CIR_TX
+#base; CIR_TX 0x02003000
 CIR_TGLR; 0x0000; CIR Transmit Global Register
 CIR_TMCR; 0x0004; CIR Transmit Modulation Control Register
 CIR_TCR; 0x0008; CIR Transmit Control Register

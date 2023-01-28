@@ -1,5 +1,5 @@
-#type PLIC
-#base PLIC 0x10000000
+#type; PLIC
+#base; PLIC 0x10000000
 PLIC_PRIO_REGn; 0x0000 1024; (0<n<256) PLIC Priority Register n - Interrupt Source Priority
 PLIC_IP_REGn; 0x1000 32; (0≤n<9) PLIC Interrupt Pending Register n - Interrupt Pending Bits
 PLIC_MIE_REGn; 0x2000 32; (0≤n<9) PLIC Machine Mode Interrupt Enable Register n - Machine Interrupt Enable Bits

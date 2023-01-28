@@ -1,4 +1,4 @@
-#type DMAC_CH
+#type; DMAC_CH
 DMAC_EN_REGN; 0x000; DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040
 DMAC_PAU_REGN; 0x004; DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040
 DMAC_DESC_ADDR_REGN; 0x008; DMAC Channel Start Address Register N (N = 0 to 15) 0x0108 + N*0x0040

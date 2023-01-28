@@ -1,13 +1,13 @@
-#type AUDIO_CODEC
-#base AUDIO_CODEC 0x02030000
-AC_DAC_DPC; 0x0000; DAC Digital Part Control Register
-DAC_VOL_CTRL; 0x0004; DAC Volume Control Register
-AC_DAC_FIFOC; 0x0010; DAC FIFO Control Register
-AC_DAC_FIFOS; 0x0014; DAC FIFO Status Register
-AC_DAC_TXDATA; 0x0020; DAC TX DATA Register
-AC_DAC_CNT; 0x0024; DAC TX FIFO Counter Register
-AC_DAC_DG; 0x0028; DAC Debug Register
-AC_ADC_FIFOC; 0x0030; ADC FIFO Control Register
+#type; AUDIO_CODEC
+#base; AUDIO_CODEC 0x02030000
+#regdef;AC_DAC_DPC; 0x0000; DAC Digital Part Control Register
+#regdef;DAC_VOL_CTRL; 0x0004; DAC Volume Control Register
+#regdef;AC_DAC_FIFOC; 0x0010; DAC FIFO Control Register
+#regdef; AC_DAC_FIFOS; 0x0014; DAC FIFO Status Register
+#regdef;AC_DAC_TXDATA; 0x0020; DAC TX DATA Register
+#regdef;AC_DAC_CNT; 0x0024; DAC TX FIFO Counter Register
+#regdef;AC_DAC_DG; 0x0028; DAC Debug Register
+#regdef; AC_ADC_FIFOC; 0x0030; ADC FIFO Control Register
 ADC_VOL_CTRL1; 0x0034; ADC Volume Control1 Register
 AC_ADC_FIFOS; 0x0038; ADC FIFO Status Register
 AC_ADC_RXDATA; 0x0040; ADC RX Data Register

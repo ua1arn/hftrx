@@ -1,4 +1,4 @@
-#type SPINLOCK
+#type; SPINLOCK
 SPINLOCK_SYSTATUS_REG; 0x0000; Spinlock System Status Register
 SPINLOCK_STATUS_REG; 0x0010; Spinlock Status Register
 SPINLOCK_IRQ_EN_REG; 0x0020; Spinlock Interrupt Enable Register

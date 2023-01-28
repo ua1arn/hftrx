@@ -1,10 +1,10 @@
-#type I2S_PCM
-#base I2S1 0x02033000
-#base I2S2 0x02034000
-#irq I2S_PCM1 59
-#irq I2S_PCM2 60
-#irqrv I2S_PCM1 43
-#irqrv I2S_PCM2 44
+#type; I2S_PCM
+#base; I2S1 0x02033000
+#base; I2S2 0x02034000
+#irq; I2S_PCM1 59
+#irq; I2S_PCM2 60
+#irqrv; I2S_PCM1 43
+#irqrv; I2S_PCM2 44
 I2S/PCM_CTL; 0x0000; I2S/PCM Control Register
 I2S/PCM_FMT0; 0x0004; I2S/PCM Format Register 0
 I2S/PCM_FMT1; 0x0008; I2S/PCM Format Register 1

@@ -21,7 +21,7 @@
 
 #endif
 
-struct ddd
+struct regdfn
 {
 	char * fldname;
 	char * typname;
@@ -31,7 +31,7 @@ struct ddd
 	unsigned fldrept;   // 0 - plain field, 1..n - array
 };
 
-void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
+void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
 {
 	unsigned i;
 	unsigned offs;
@@ -60,7 +60,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
         };
 
 		int commentspos = 54;
-		const struct ddd * p = & regs [i];
+		const struct regdfn * p = & regs [i];
         char fldtype [256];
         if (p->fldsize >= sizeof fldtypes / sizeof fldtypes [0])
         {
@@ -141,7 +141,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 }
 
 
-void genstructprint(const struct ddd * regs, unsigned szregs, const char * bname)
+void genstructprint(const struct regdfn * regs, unsigned szregs, const char * bname)
 {
 	unsigned i;
 
@@ -150,7 +150,7 @@ void genstructprint(const struct ddd * regs, unsigned szregs, const char * bname
 	fprintf(stdout, "{\n");
 	for (i = 0; i < szregs; ++ i)
 	{
-		const struct ddd * p = & regs [i];
+		const struct regdfn * p = & regs [i];
 
 		if (p->fldsize != 0)
 		{
@@ -173,7 +173,7 @@ struct parsedfile
 {
 	struct parsedfile * next;
     size_t nregs;
-    struct ddd * regs;
+    struct regdfn * regs;
 	char bname [VNAME_MAX];
 	int base_count;
 	unsigned base_array [BASE_MAX];
@@ -237,6 +237,7 @@ int compare_irq(const void * v1, const void * v2)
 
 static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE * fp)
 {
+	char dummy [VNAME_MAX];
 	char * s;
 	for (;;)
 	{
@@ -247,7 +248,14 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 		if (s [0] != '#')
 			break;
 
-		f2 = sscanf(s + 1, "type %[*a-zA-Z_0-9]s", pfl->bname);
+		f2 = sscanf(s + 1, "regdef; %[*a-zA-Z_0-9]s", dummy);
+		if (f2 == 1)
+		{
+			//fprintf(stdout, "type %s processrd\n", pfl->bname);
+			return s + 7;
+		}
+
+		f2 = sscanf(s + 1, "type; %[*a-zA-Z_0-9]s", pfl->bname);
 		if (f2 == 1)
 		{
 			//fprintf(stdout, "type %s processrd\n", pfl->bname);
@@ -256,7 +264,7 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 
 		if (pfl->base_count < BASE_MAX)
 		{
-			f2 = sscanf(s + 1, "base %s %x", pfl->base_names [pfl->base_count], & pfl->base_array [pfl->base_count]);
+			f2 = sscanf(s + 1, "base; %s %x", pfl->base_names [pfl->base_count], & pfl->base_array [pfl->base_count]);
 			if (f2 == 2)
 			{
 				++ pfl->base_count;
@@ -266,7 +274,7 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 		}
 		if (pfl->irq_count < BASE_MAX)
 		{
-			f2 = sscanf(s + 1, "irq %s %d", pfl->irq_names [pfl->irq_count], & pfl->irq_array [pfl->irq_count]);
+			f2 = sscanf(s + 1, "irq; %s %d", pfl->irq_names [pfl->irq_count], & pfl->irq_array [pfl->irq_count]);
 			if (f2 == 2)
 			{
 				++ pfl->irq_count;
@@ -280,7 +288,7 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 }
 
 // return 0: 0k
-static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, const char * file)
+static int parseregister(struct parsedfile * pfl, struct regdfn * regp, FILE * fp, const char * file)
 {
     char fldname [VNAME_MAX];
     char typname [VNAME_MAX];
@@ -392,7 +400,7 @@ static int parseregister(struct parsedfile * pfl, struct ddd * regp, FILE * fp, 
 static int loadregs(struct parsedfile * pfl, const char * file)
 {
     size_t nregs;
-    struct ddd * regs;
+    struct regdfn * regs;
 
 
     const size_t maxrows = 256;
@@ -411,7 +419,7 @@ static int loadregs(struct parsedfile * pfl, const char * file)
         return 1;
     }
 
-    regs = (struct ddd *) calloc(sizeof (struct ddd), maxrows);
+    regs = (struct regdfn *) calloc(sizeof (struct regdfn), maxrows);
     if (regs == NULL)
     {
         fprintf(stdout, "#error Can not allocate memory for file '%s'\n", file);
@@ -421,7 +429,7 @@ static int loadregs(struct parsedfile * pfl, const char * file)
 	TP();
     for (nregs = 0; nregs < maxrows; ++ nregs)
     {
-		struct ddd * regp = & regs [nregs];
+		struct regdfn * regp = & regs [nregs];
 		if (parseregister(pfl, regp, fp, file))
 			break;
     }

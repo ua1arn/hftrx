@@ -1,5 +1,5 @@
-#type GPIOBLOCK
-#base GPIOBLOCK 0x02000000
+#type; GPIOBLOCK
+#base; GPIOBLOCK 0x02000000
 GPIO_PINS 0x30 GPIO_TypeDef; 0x0000 7; GPIO pin control
 GPIO_INTS 0x20 GPIOINT_TypeDef; 0x0200 7; GPIO interrupt control
 PIO_POW_MOD_SEL; 0x0340; PIO Group Withstand Voltage Mode Select Register

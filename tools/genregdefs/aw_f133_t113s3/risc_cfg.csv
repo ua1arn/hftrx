@@ -1,5 +1,5 @@
-#type RISC_CFG
-#base RISC_CFG 0x06010000
+#type; RISC_CFG
+#base; RISC_CFG 0x06010000
 RISC_STA_ADD0_REG; 0x0004; RISC Start Address0 Register
 RISC_STA_ADD1_REG; 0x0008; RISC Start Address1 Register
 RF1P_CFG_REG; 0x0010; RF1P Configuration Register

@@ -1,7 +1,7 @@
-#type IOMMU
-#base IOMMU 0x02010000
-#irq IOMMU 96
-#irqrv IOMMU 80
+#type; IOMMU
+#base; IOMMU 0x02010000
+#irq; IOMMU 96
+#irqrv; IOMMU 80
 IOMMU_RESET_REG; 0x0010; IOMMU Reset Register
 IOMMU_ENABLE_REG; 0x0020; IOMMU Enable Register
 IOMMU_BYPASS_REG; 0x0030; IOMMU Bypass Register

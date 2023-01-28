@@ -1,4 +1,4 @@
-#type G2D
+#type; G2D
 G2D_CONTROL_REG
 0x000
 Control register

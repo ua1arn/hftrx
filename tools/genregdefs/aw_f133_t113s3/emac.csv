@@ -1,7 +1,7 @@
-#type EMAC
-#base EMAC 0x04500000
-#irq EMAC 78
-#irqrv EMAC 62
+#type; EMAC
+#base; EMAC 0x04500000
+#irq; EMAC 78
+#irqrv; EMAC 62
 EMAC_BASIC_CTL0; 0x0000; EMAC Basic Control Register0
 EMAC_BASIC_CTL1; 0x0004; EMAC Basic Control Register1
 EMAC_INT_STA; 0x0008; EMAC Interrupt Status Register

@@ -1,5 +1,5 @@
-#type CIR_RX
-#base CIR_RX 0x07040000
+#type; CIR_RX
+#base; CIR_RX 0x07040000
 CIR_CTL; 0x0000; CIR Control Register
 CIR_RXPCFG; 0x0010; CIR Receiver Pulse Configure Register
 CIR_RXFIFO; 0x0020; CIR Receiver FIFO Register

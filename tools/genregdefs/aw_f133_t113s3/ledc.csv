@@ -1,7 +1,7 @@
-#type LEDC
-#base LEDC 0x02008000
-#irq LEDC 52
-#irqrv LEDC 36
+#type; LEDC
+#base; LEDC 0x02008000
+#irq; LEDC 52
+#irqrv; LEDC 36
 LEDC_CTRL_REG; 0x0000; LEDC Control Register
 LED_T01_TIMING_CTRL_REG; 0x0004; LEDC T0 & T1 Timing Control Register
 LEDC_DATA_FINISH_CNT_REG; 0x0008; LEDC Data Finish Counter Register

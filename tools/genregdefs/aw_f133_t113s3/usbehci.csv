@@ -1,4 +1,4 @@
-#type USBEHCI
+#type; USBEHCI
 E_CAPLENGTH 2; 0x0000; EHCI Capability Register Length Register
 E_HCIVERSION 2; 0x0002; EHCI Host Interface Version Number Register
 E_HCSPARAMS; 0x0004; EHCI Host Control Structural Parameter Register

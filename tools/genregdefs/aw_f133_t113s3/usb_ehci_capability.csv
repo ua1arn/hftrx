@@ -1,6 +1,6 @@
-#type USB_EHCI_Capability
-##base USBEHCI0 0x04101000
-##base USBEHCI1 0x04200000
+#type; USB_EHCI_Capability
+##base; USBEHCI0 0x04101000
+##base; USBEHCI1 0x04200000
 HCCAPBASE; 0x0000; EHCI Capability Register (HCIVERSION and CAPLENGTH) register
 HCSPARAMS; 0x0004; EHCI Host Control Structural Parameter Register
 HCCPARAMS; 0x0008; EHCI Host Control Capability Parameter Register

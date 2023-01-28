@@ -1,5 +1,5 @@
-#type CLINT
-#base CLINT 0x14000000 
+#type; CLINT
+#base; CLINT 0x14000000 
 msip 4;	0x00000;	This register generates machine mode software interrupts when set.
 mtimecmplo 4;	0x4000;	This register holds the compare value for the timer.
 mtimecmphi 4;	0x4004;	This register holds the compare value for the timer.

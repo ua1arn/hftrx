@@ -1,5 +1,5 @@
-#type SYS_CFG
-#base SYS_CFG 0x03000000
+#type; SYS_CFG
+#base; SYS_CFG 0x03000000
 DSP_BOOT_RAMMAP_REG; 0x0008; DSP Boot SRAM Remap Control Register
 VER_REG; 0x0024; Version Register
 EMAC_EPHY_CLK_REG0; 0x0030; EMAC-EPHY Clock Register 0

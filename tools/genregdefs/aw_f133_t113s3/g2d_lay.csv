@@ -1,5 +1,5 @@
-#type G2D_LAY
-#base G2D_V0 0x05410800
+#type; G2D_LAY
+#base; G2D_V0 0x05410800
 V0_ATTCTL; 0x00; V0_ATTCTL
 V0_MBSIZE; 0x04; Source rectangle size (may be empty)
 V0_COOR; 0x08; Target window position
