@@ -873,7 +873,7 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
 	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
 
-	arm_hardware_ltdc_vsync();
+	arm_hardware_ltdc_vsync();	/* ожидаем начало кадра */
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -2322,29 +2322,29 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	t113_de_enable(pdat);
 }
 
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
-/* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync4(uintptr_t p1, uintptr_t p2, uintptr_t p3, uintptr_t p4)
+/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void arm_hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	// Note: the layer priority is layer3>layer2>layer1>layer0
-	t113_de_set_address_vi(pdat, p1);		// VI
-	t113_de_set_address_ui(pdat, p2, 1);	// UI1
-	t113_de_set_address_ui(pdat, p3, 2);	// UI2
-	t113_de_set_address_ui(pdat, p4, 3);	// UI3
+	t113_de_set_address_vi(pdat, layer0);		// VI
+	t113_de_set_address_ui(pdat, layer1, 1);	// UI1
+	t113_de_set_address_ui(pdat, layer2, 2);	// UI2
+	t113_de_set_address_ui(pdat, layer3, 3);	// UI3
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	write32((uintptr_t) & bld->fcolor_ctl,
-			((p1 != 0) << 8)	| // pipe0 enable - from VI
-			((p2 != 0) << 9)	| // pipe1 enable - from UI1
-			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
-			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+			((layer0 != 0) << 8)	| // pipe0 enable - from VI
+			((layer1 != 0) << 9)	| // pipe1 enable - from UI1
+			((layer2) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+			((layer3) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
 			0
 			);
 
+	arm_hardware_ltdc_vsync();	/* ожидаем начало кадра */
 	t113_de_enable(pdat);
 }
 

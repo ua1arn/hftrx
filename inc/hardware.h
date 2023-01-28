@@ -896,8 +896,8 @@ unsigned long display_getdotclock(const videomode_t * vdmode);
 
 void arm_hardware_ltdc_vsync(void);	/* ожидаем начало кадра */
 void arm_hardware_ltdc_main_set(uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */
+void arm_hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3);	/* Set MAIN frame buffer address. Waiting for VSYNC. */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr);	/* Set MAIN frame buffer address. No waiting for VSYNC. */
-void arm_hardware_ltdc_main_set_no_vsync4(uintptr_t addr1, uintptr_t addr2, uintptr_t addr3, uintptr_t addr4);	/* Set MAIN frame buffer address. No waiting for VSYNC. */
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
 void arm_hardware_ltdc_L8_palette(void);	// Palette reload

@@ -6380,7 +6380,6 @@ void hightests(void)
 //		arm_hardware_flush_invalidate((uintptr_t) layer1, sizeof layer1);
 //		arm_hardware_flush_invalidate((uintptr_t) fbpic, sizeof fbpic);
 
-		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) layer0_a, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
 		COLORMAIN_T keycolor = COLOR_KEY;
@@ -6396,12 +6395,12 @@ void hightests(void)
 		colmain_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
 		colmain_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
-		colmain_fillrect(layer0_a, DIM_X, DIM_Y, 10, 10, 600, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
-		colmain_fillrect(layer0_b, DIM_X, DIM_Y, 10, 10, 600, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
+		colmain_fillrect(layer0_a, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
+		colmain_fillrect(layer0_b, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
 
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
-		colmain_fillrect(layer1, DIM_X, DIM_Y, 50, 50, DIM_X - 100, DIM_Y - 100, TFTALPHA(fgalpha, COLOR_BLUE));	/* transparent black */
+		colmain_fillrect(layer1, DIM_X, DIM_Y, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLOR_BLUE));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
 		colmain_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLOR_GREEN));	// GREEN
 
@@ -6440,13 +6439,14 @@ void hightests(void)
 //		printhex32((uintptr_t) layer0, layer0, 64);
 //		printhex32((uintptr_t) layer1, layer1, 64);
 
+		arm_hardware_ltdc_main_set4((uintptr_t) layer0_a, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
 		TP();
 		int phase = 0;
 		unsigned c = 0;
 		while(1)
 		{
-			int y = 110;
+			int y = 50;
 			int x0 = 270;
 			int h = 120;
 			int w = 500;
@@ -6460,8 +6460,7 @@ void hightests(void)
 			colmain_line(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, x0 + xpos, y + h - 1, TFTALPHA(bgalpha, COLOR_WHITE), 0);
 			arm_hardware_flush_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
 
-			arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) drawlayer, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
-			arm_hardware_ltdc_vsync();	/* ждем пока освободится старый буфер */
+			arm_hardware_ltdc_main_set4((uintptr_t) drawlayer, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
 			phase = ! phase;
 			c = (c + 1) % 256;
