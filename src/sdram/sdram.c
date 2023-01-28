@@ -4231,12 +4231,48 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 #include "spi.h"
 
+/*
+ * https://lore.kernel.org/u-boot/20230103011755.10756-1-andre.przywara@arm.com/
+ *
+ *
+	If you wonder, the (working!) Kconfig DRAM variables for the T113-s3 are:
+	CONFIG_DRAM_CLK=792
+	CONFIG_DRAM_ZQ=8092667
+	CONFIG_DRAM_SUNXI_ODT_EN=0
+	CONFIG_DRAM_SUNXI_TPR0=0x004a2195
+	CONFIG_DRAM_SUNXI_TPR11=0x340000
+	CONFIG_DRAM_SUNXI_TPR12=0x46
+	CONFIG_DRAM_SUNXI_TPR13=0x34000100
+
+	For the D1 with DDR3 chips (most boards?), it should be those values:
+	CONFIG_DRAM_CLK=792
+	CONFIG_DRAM_SUNXI_ODT_EN=1
+	CONFIG_DRAM_SUNXI_TPR0=0x004a2195
+	CONFIG_DRAM_SUNXI_TPR11=0x870000
+	CONFIG_DRAM_SUNXI_TPR12=0x24
+	CONFIG_DRAM_SUNXI_TPR13=0x34050100
+
+	According to the dump of some MangoPi MQ-1 firmware, the D1s should work with:
+	CONFIG_SUNXI_DRAM_DDR2=y
+	CONFIG_DRAM_CLK=528
+	CONFIG_DRAM_ZQ=8092665
+	CONFIG_DRAM_SUNXI_ODT_EN=0
+	CONFIG_DRAM_SUNXI_TPR0=0x00471992
+	CONFIG_DRAM_SUNXI_TPR11=0x30010
+	CONFIG_DRAM_SUNXI_TPR12=0x35
+	CONFIG_DRAM_SUNXI_TPR13=0x34000000
+
+	Many thanks!
+	Andre
+
+ */
+
 #if CPUSTYLE_T113
 static struct dram_para_t ddrp3 =
 {
 	.dram_clk = 792,
 	.dram_type = 3,
-	.dram_zq = 0x7b7bfb,
+	.dram_zq = 0x7b7bfb,	// 8092667
 	.dram_odt_en = 0x00,
 	.dram_para1 = 0x000010d2,
 	.dram_para2 = 0x0000,
@@ -4271,7 +4307,7 @@ static struct dram_para_t ddrp2 = {
 	.dram_clk = 528,
 	.dram_type = 2,
 	.dram_zq = 0x07b7bf9,
-	.dram_odt_en = 0x00,
+	.dram_odt_en = !0x00,
 	.dram_para1 = 0x000000d2,
 	.dram_para2 = 0x00000000,
 	.dram_mr0 = 0x00000e73,
@@ -4291,7 +4327,7 @@ static struct dram_para_t ddrp2 = {
 	.dram_tpr10 = 0x00000000,
 	.dram_tpr11 = 0x00030010,
 	.dram_tpr12 = 0x00000035,
-	.dram_tpr13 = 0x34000001,	// bit0: 1-skip sdram auto config
+	.dram_tpr13 = 0x34000000,	// bit0: 1-skip sdram auto config
 };
 
 void sys_dram_init(void)
