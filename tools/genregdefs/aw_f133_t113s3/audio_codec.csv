@@ -118,4 +118,9 @@ DAC_REG; 0x0310; DAC Analog Control Register
 MICBIAS_REG; 0x0318; MICBIAS Analog Control Register
 RAMP_REG; 0x031C; BIAS Analog Control Register
 BIAS_REG; 0x0320; BIAS Analog Control Register
+HMIC_CTRL; 0x0328; * HMIC Control Register
+HMIC_STS; 0x032C;  * HMIC Status Register (
 ADC5_REG; 0x0330; ADC5 Analog Control Register
+HP2_REG; 0x0340; * Headphone2 Analog Control Register
+POWER_REG; 0x0348; * POWER Analog Control Register
+ADC_CUR_REG; 0x034C; * ADC Current Analog Control Register

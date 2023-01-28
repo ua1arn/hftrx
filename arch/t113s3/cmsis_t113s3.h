@@ -698,9 +698,16 @@ typedef struct AUDIO_CODEC_Type
     volatile uint32_t MICBIAS_REG;                                              /*!< Offset 0x318 MICBIAS Analog Control Register */
     volatile uint32_t RAMP_REG;                                                 /*!< Offset 0x31C BIAS Analog Control Register */
     volatile uint32_t BIAS_REG;                                                 /*!< Offset 0x320 BIAS Analog Control Register */
-             uint32_t reserved_0x324 [0x0003];
+             uint32_t reserved_0x324;
+    volatile uint32_t HMIC_CTRL;                                                /*!< Offset 0x328 * HMIC Control Register */
+    volatile uint32_t HMIC_STS;                                                 /*!< Offset 0x32C * HMIC Status Register ( */
     volatile uint32_t ADC5_REG;                                                 /*!< Offset 0x330 ADC5 Analog Control Register */
-} AUDIO_CODEC_TypeDef; /* size of structure = 0x334 */
+             uint32_t reserved_0x334 [0x0003];
+    volatile uint32_t HP2_REG;                                                  /*!< Offset 0x340 * Headphone2 Analog Control Register */
+             uint32_t reserved_0x344;
+    volatile uint32_t POWER_REG;                                                /*!< Offset 0x348 * POWER Analog Control Register */
+    volatile uint32_t ADC_CUR_REG;                                              /*!< Offset 0x34C * ADC Current Analog Control Register */
+} AUDIO_CODEC_TypeDef; /* size of structure = 0x350 */
 /*
  * @brief TWI
  */
