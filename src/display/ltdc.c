@@ -1784,9 +1784,9 @@ void arm_hardware_ltdc_vsync(void)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 #include "reg-de.h"
-#include "reg-tconlcd.h"
 
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
+#define VI_CFG_INDEX 0
 
 static uint32_t read32(uintptr_t a)
 {
@@ -1805,8 +1805,8 @@ struct fb_t113_rgb_pdata_t
 
 	//char * clk_de;
 	//char * clk_tconlcd;
-	int rst_de;
-	int rst_tconlcd;
+	//int rst_de;
+	//int rst_tconlcd;
 	int width;
 	int height;
 	//int pwidth;
@@ -1902,6 +1902,8 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	write32((uintptr_t) & glb->ctl, (1u << 0));
 	write32((uintptr_t) & glb->status, 0x00u);
 	write32((uintptr_t) & glb->dbuff, 1u);		// 1: register value be ready for update (self-cleaning bit)
+	while ((read32((uintptr_t) & glb->dbuff) & 1u) != 0)
+		;
 	write32((uintptr_t) & glb->size, ovl_ui_mbsize);
 
 //	for(i = 0; i < 4; i++)
@@ -1931,9 +1933,9 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// BLD_CH_RTCTL
 	// 0x03020100 - default state
 	write32((uintptr_t) & bld->route,
-			(0u << 0) |	// pipe 0 from ch 0
-			(1u << 4) |	// pipe 1 from ch 1
-			(2u << 8) |	// pipe 2 from ch 2
+			(0u << 0) |		// pipe 0 from ch 0
+			(1u << 4) |		// pipe 1 from ch 1
+			(2u << 8) |		// pipe 2 from ch 2
 			(3u << 12) |	// pipe 3 from ch 3
 			0
 			);
@@ -1946,15 +1948,16 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// 5.10.9.1 BLD fill color control register
 	// BLD_CTL
 	// в примерах только 0 и 1 индексы
-	for(i = 0; i < 4; i++)
-	{
-	    //unsigned bld_mode = 0x03010301;
-	    unsigned bld_mode = 0x03020302;           //Fs=Ad, Fd=1-As, Qs=Ad, Qd=1-As
-		write32((uintptr_t) & bld->bld_mode [i],
-				bld_mode
-				);
-
-	}
+//	for(i = 0; i < 4; i++)
+//	{
+//	    //unsigned bld_mode = 0x03010301;		// default
+//	    unsigned bld_mode = 0x03020302;           //Fs=Ad, Fd=1-As, Qs=Ad, Qd=1-As
+//		write32((uintptr_t) & bld->bld_mode [i],
+//				bld_mode
+//				);
+//
+//		PRINTF("z%d: %08X\n", i, read32((uintptr_t) & bld->bld_mode [i]));
+//	}
 
 	write32((uintptr_t) & bld->output_size,
 			ovl_ui_mbsize
@@ -2008,32 +2011,18 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t)&ui->ovl_size, ovl_ui_mbsize);
 	}
 
-//	{
-//		int uich = 2;
-//		ASSERT(uich >= 1 && uich <= 3);
-//		struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
-//
-//		//CH1 UI -----------------------------------------------------------------------------
-//
-//		write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(ui_vi_format<<8)|(0xff<<24)|(1<<16)); //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
-//		write32((uintptr_t)&ui->cfg[0].size, ovl_ui_mbsize);
-//		write32((uintptr_t)&ui->cfg[0].coord, 0);
-//		write32((uintptr_t)&ui->cfg[0].pitch, uipitch);
-//		write32((uintptr_t)&ui->cfg[0].top_laddr,pdat->vram [1]);                                  //VIDEO_MEMORY1
-//		write32((uintptr_t)&ui->ovl_size, ovl_ui_mbsize);
-//	}
 
-//	write32(DE_BASE + T113_DE_MUX_VSU, 0);
-//	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
-//	write32(DE_BASE + T113_DE_MUX_GSU2, 0);
-//	write32(DE_BASE + T113_DE_MUX_GSU3, 0);
-//	write32(DE_BASE + T113_DE_MUX_FCE, 0);
-//	write32(DE_BASE + T113_DE_MUX_BWS, 0);
-//	write32(DE_BASE + T113_DE_MUX_LTI, 0);
-//	write32(DE_BASE + T113_DE_MUX_PEAK, 0);
-//	write32(DE_BASE + T113_DE_MUX_ASE, 0);
-//	write32(DE_BASE + T113_DE_MUX_FCC, 0);
-//	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
+	write32(DE_BASE + T113_DE_MUX_VSU, 0);
+	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
+	write32(DE_BASE + T113_DE_MUX_GSU2, 0);
+	write32(DE_BASE + T113_DE_MUX_GSU3, 0);
+	write32(DE_BASE + T113_DE_MUX_FCE, 0);
+	write32(DE_BASE + T113_DE_MUX_BWS, 0);
+	write32(DE_BASE + T113_DE_MUX_LTI, 0);
+	write32(DE_BASE + T113_DE_MUX_PEAK, 0);
+	write32(DE_BASE + T113_DE_MUX_ASE, 0);
+	write32(DE_BASE + T113_DE_MUX_FCC, 0);
+	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
 
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
@@ -2041,25 +2030,33 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
-	uint32_t val;
-
-	val = read32((uintptr_t) & tcon->gctrl);
-	val |= (1 << 31);
-	write32((uintptr_t) & tcon->gctrl, val);
+//	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
+//	uint32_t val;
+//
+//	val = read32((uintptr_t) & tcon->gctrl);
+//	val |= (1u << 31);
+//	write32((uintptr_t) & tcon->gctrl, val);
+	TCON_LCD0->LCD_GCTL_REG =
+		(1u << 31) |		// LCD_EN
+		0 * (1u << 30) |	// LCD_GAMMA_EN
+		0;
 }
 
 static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
-	uint32_t val;
+//	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
+//	uint32_t val;
+//
+//	val = read32((uintptr_t) & tcon->dclk);
+//	val &= ~(0xf << 28);
+//	write32((uintptr_t) & tcon->dclk, val);
+//
+//	write32((uintptr_t) & tcon->gctrl, 0);
+//	write32((uintptr_t) & tcon->gint0, 0);
 
-	val = read32((uintptr_t) & tcon->dclk);
-	val &= ~(0xf << 28);
-	write32((uintptr_t) & tcon->dclk, val);
-
-	write32((uintptr_t) & tcon->gctrl, 0);
-	write32((uintptr_t) & tcon->gint0, 0);
+	TCON_LCD0->LCD_DCLK_REG &= ~ (0xfu << 28);
+	TCON_LCD0->LCD_GCTL_REG = 0;
+	TCON_LCD0->LCD_GINT0_REG = 0;
 }
 
 static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
@@ -2092,52 +2089,77 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	timing.clk_active = 0;
 
 	//pdat->backlight = NULL;
-	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
+	//struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
 	int vbp, vtotal;
 	int hbp, htotal;
 	uint32_t val;
 
 	// ctrl
 	val = (timing.v_front_porch + timing.v_back_porch + timing.v_sync_len) / 2;
-	write32((uintptr_t) & tcon->ctrl,
-			(1u << 31) |
-			(0x00u << 24) |
-			(0x00u << 23) |
-			((val & 0x1f) << 4) |
-			(0x00u << 0)
-			);
+//	write32((uintptr_t) & tcon->ctrl,
+//			(1u << 31) |
+//			(0x00u << 24) |
+//			(0x00u << 23) |
+//			((val & 0x1f) << 4) |
+//			(0x00u << 0)
+//			);
+	TCON_LCD0->LCD_CTL_REG = (
+		(1u << 31) |		// LCD_EN
+		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
+		(0x00u << 23) |		// LCD_RB_SWAP
+		((val & 0x1f) << 4) |	// LCD_START_DLY
+		(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests
+		0
+		);
 
 	// dclk
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
 	val = allwnrt113_get_video0_x2_freq() / timing.pixel_clock_hz;
-	write32((uintptr_t) & tcon->dclk,
-			(0x0Fu << 28) | (val << 0));
+//	write32((uintptr_t) & tcon->dclk,
+//			(0x0Fu << 28) | (val << 0));
+	TCON_LCD0->LCD_DCLK_REG = (
+			(0x0Fu << 28) |		// LCD_DCLK_EN
+			(val << 0)			// LCD_DCLK_DIV
+			);
 
 	// timing0 (window)
-	write32((uintptr_t) & tcon->timing0,
-			((pdat->width - 1) << 16) | ((pdat->height - 1) << 0)
-			);
+//	write32((uintptr_t) & tcon->timing0,
+//			((pdat->width - 1) << 16) | ((pdat->height - 1) << 0)
+//			);
+	TCON_LCD0->LCD_BASIC0_REG = (
+		((pdat->width - 1) << 16) | ((pdat->height - 1) << 0)
+		);
 
 	// timing1 (horizontal)
 	hbp = timing.h_sync_len + timing.h_back_porch;
 	htotal = pdat->width + timing.h_front_porch + hbp;
-	write32((uintptr_t) & tcon->timing1,
-			((htotal - 1) << 16) | ((hbp - 1) << 0)
-			);
+//	write32((uintptr_t) & tcon->timing1,
+//			((htotal - 1) << 16) | ((hbp - 1) << 0)
+//			);
+	TCON_LCD0->LCD_BASIC1_REG = (
+		((htotal - 1) << 16) | ((hbp - 1) << 0)
+		);
 
 	// timing2 (vertical)
 	vbp = timing.v_sync_len + timing.v_back_porch;
 	vtotal = pdat->height + timing.v_front_porch + vbp;
-	write32((uintptr_t) & tcon->timing2,
-			((vtotal * 2) << 16) | ((vbp - 1) << 0)
-			);
+//	write32((uintptr_t) & tcon->timing2,
+//			((vtotal * 2) << 16) | ((vbp - 1) << 0)
+//			);
+	TCON_LCD0->LCD_BASIC2_REG = (
+		((vtotal * 2) << 16) | ((vbp - 1) << 0)
+		);
 
 	// timing3
-	write32((uintptr_t) & tcon->timing3,
-			((timing.h_sync_len - 1) << 16) |
-			((timing.v_sync_len - 1) << 0)
-			);
+//	write32((uintptr_t) & tcon->timing3,
+//			((timing.h_sync_len - 1) << 16) |
+//			((timing.v_sync_len - 1) << 0)
+//			);
+	TCON_LCD0->LCD_BASIC3_REG = (
+		((timing.h_sync_len - 1) << 16) |
+		((timing.v_sync_len - 1) << 0)
+		);
 
 	// Sochip_VE_S3_Datasheet_V1.0.pdf
 	// 7.2.5.19. TCON0_IO_POL_REG
@@ -2159,6 +2181,19 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	// io_tristate
 	//write32((uintptr_t) & tcon->io_tristate, 0);
 	TCON_LCD0->LCD_IO_TRI_REG = 0;
+
+	// 5.1.6.14 0x0058 LCD HV Panel Interface Register (Default Value: 0x0000_0000)
+	/// LCD_HV_IF_REG
+	TCON_LCD0->LCD_HV_IF_REG = 0;
+	TCON_LCD0->LCD_CPU_IF_REG = 0;
+	TCON_LCD0->LCD_CPU_WR_REG = 0;
+	TCON_LCD0->LCD_LVDS_IF_REG =
+		0 * (1u << 31) |		// LCD_LVDS_EN
+		0 * (1u << 25) |		// LCD_LVDS_DEBUG_EN
+		0 * (1u << 24) |		// LCD_LVDS_DEBUG_MODE
+		1 * (1u << 3) |		// LCD_LVDS_CLK_POL
+		0x0F * (1u << 0) |		// LCD_LVDS_DATA_POL
+		0;
 }
 
 #if 0
@@ -2295,10 +2330,10 @@ void arm_hardware_ltdc_main_set_no_vsync4(uintptr_t p1, uintptr_t p2, uintptr_t 
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	// Note: the layer priority is layer3>layer2>layer1>layer0
-	t113_de_set_address_vi(pdat, p1);		// red
-	t113_de_set_address_ui(pdat, p2, 1);	// green
-	t113_de_set_address_ui(pdat, p3, 2);
-	t113_de_set_address_ui(pdat, p4, 3);
+	t113_de_set_address_vi(pdat, p1);		// VI
+	t113_de_set_address_ui(pdat, p2, 1);	// UI1
+	t113_de_set_address_ui(pdat, p3, 2);	// UI2
+	t113_de_set_address_ui(pdat, p4, 3);	// UI3
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
@@ -2329,7 +2364,6 @@ void arm_hardware_ltdc_main_set(uintptr_t p1)
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
-	arm_hardware_ltdc_vsync();	/* ожидаем начало кадра */
 	t113_de_set_address_vi(pdat, p1);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
@@ -2341,6 +2375,7 @@ void arm_hardware_ltdc_main_set(uintptr_t p1)
 			0
 			);
 
+	arm_hardware_ltdc_vsync();	/* ожидаем начало кадра */
 	t113_de_enable(pdat);
 }
 
