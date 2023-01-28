@@ -6371,7 +6371,8 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
-		static PACKEDCOLORMAIN_T layer0 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORMAIN_T layer0_a [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORMAIN_T layer0_b [GXSIZE(DIM_X, DIM_Y)];
 		static PACKEDCOLORMAIN_T layer1 [GXSIZE(DIM_X, DIM_Y)];
 		static PACKEDCOLORMAIN_T fbpic [GXSIZE(picx, picy)];
 
@@ -6379,7 +6380,7 @@ void hightests(void)
 //		arm_hardware_flush_invalidate((uintptr_t) layer1, sizeof layer1);
 //		arm_hardware_flush_invalidate((uintptr_t) fbpic, sizeof fbpic);
 
-		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) layer0, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
+		arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) layer0_a, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
 		COLORMAIN_T keycolor = COLOR_KEY;
@@ -6392,9 +6393,11 @@ void hightests(void)
 
 		/* непрозрачный фон */
 		unsigned bgalpha = 255;
-		colmain_fillrect(layer0, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
+		colmain_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
+		colmain_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
-		colmain_fillrect(layer0, DIM_X, DIM_Y, 10, 10, 600, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
+		colmain_fillrect(layer0_a, DIM_X, DIM_Y, 10, 10, 600, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
+		colmain_fillrect(layer0_b, DIM_X, DIM_Y, 10, 10, 600, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
 
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
@@ -6439,6 +6442,30 @@ void hightests(void)
 
 
 		TP();
+		int phase = 0;
+		unsigned c = 0;
+		while(1)
+		{
+			int y = 110;
+			int x0 = 270;
+			int h = 120;
+			int w = 500;
+			int xpos = (c * (w - 1)) / 255;	/* позиция маркера */
+
+			PACKEDCOLORMAIN_T * drawlayer = phase ? layer0_a : layer0_b;
+
+			colmain_fillrect(drawlayer, DIM_X, DIM_Y, x0, y, w, h, TFTALPHA(bgalpha, COLOR_BLACK));
+
+			/* линия рисуется прораммно -за ней требуется flush, поскольку потом меняется еще аппаратурой - invalidate */
+			colmain_line(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, x0 + xpos, y + h - 1, TFTALPHA(bgalpha, COLOR_WHITE), 0);
+			arm_hardware_flush_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
+
+			arm_hardware_ltdc_main_set_no_vsync4((uintptr_t) drawlayer, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
+			arm_hardware_ltdc_vsync();	/* ждем пока освободится старый буфер */
+
+			phase = ! phase;
+			c = (c + 1) % 256;
+		}
 		for (;;)
 			;
 	}
