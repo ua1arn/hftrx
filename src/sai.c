@@ -3845,7 +3845,9 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 
 	// количество каналов должно соотыетствовать DMABUFFSTEP16RX
 	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |
-			(0x04 | 0x01) << (1u << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+			(1u << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
+			(1u << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
+			((0x04 | 0x02) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
 			0;
 
 	// ADCx Analog Control Register
@@ -3867,6 +3869,16 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 4);	// DAC_DRQ_EN
 
 	// Установка аналоговых параметрв
+	AUDIO_CODEC->ADC_VOL_CTRL1 = 0x00FFFFFF;
+
+	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable
+	//AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
+
+	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable
+	//AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable
+
+	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
+	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
 
 }
 
@@ -4010,7 +4022,7 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
-//	printhex(addr, (void *) addr, DMABUFFSIZE16RX * sizeof (aubufv_t));
+//	printhex32(addr, (void *) addr, DMABUFFSTEP16RX * sizeof (aubufv_t));
 //	for (;;)
 //		;
 	/* Работа с только что принятыми данными */
