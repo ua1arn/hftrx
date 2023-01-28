@@ -1844,7 +1844,7 @@ static inline void t113_de_set_address_vi(struct fb_t113_rgb_pdata_t * pdat, uin
 {
 	struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
 	write32((uintptr_t)&vi->cfg[0].attr,
-			(vram != 0) |	// enable
+			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 			(1<<15)
 			);
@@ -1857,7 +1857,7 @@ static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uin
 	ASSERT(uich >= 1 && uich <= 3);
 	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 	write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].attr,
-			(vram != 0) |	// enable
+			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
 			(255<<24)|
 			(1<<16)
@@ -2273,28 +2273,16 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
-	if (p1 == 0)
-	{
-		// 5.10.9.1 BLD fill color control register
-		// BLD_FILL_COLOR_CTL
-		write32((uintptr_t) & bld->fcolor_ctl,
-				0
-				);
-
-	}
-	else
-	{
-		t113_de_set_address_vi(pdat, p1);
-		// 5.10.9.1 BLD fill color control register
-		// BLD_FILL_COLOR_CTL
-		write32((uintptr_t) & bld->fcolor_ctl,
-				((p1 != 0) << 8)	| // pipe0 enable RED - from VI
-	//			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
-	//			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
-	//			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
-				0
-				);
-	}
+	t113_de_set_address_vi(pdat, p1);
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	write32((uintptr_t) & bld->fcolor_ctl,
+			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
+//			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
+//			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+//			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+			0
+			);
 
 	t113_de_enable(pdat);
 }
@@ -2315,8 +2303,8 @@ void arm_hardware_ltdc_main_set_no_vsync4(uintptr_t p1, uintptr_t p2, uintptr_t 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	write32((uintptr_t) & bld->fcolor_ctl,
-			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
-			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
+			((p1 != 0) << 8)	| // pipe0 enable - from VI
+			((p2 != 0) << 9)	| // pipe1 enable - from UI1
 			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
 			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
 			0
@@ -2342,28 +2330,16 @@ void arm_hardware_ltdc_main_set(uintptr_t p1)
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	arm_hardware_ltdc_vsync();	/* ожидаем начало кадра */
-	if (p1 == 0)
-	{
-		// 5.10.9.1 BLD fill color control register
-		// BLD_FILL_COLOR_CTL
-		write32((uintptr_t) & bld->fcolor_ctl,
-				0
-				);
-
-	}
-	else
-	{
-		t113_de_set_address_vi(pdat, p1);
-		// 5.10.9.1 BLD fill color control register
-		// BLD_FILL_COLOR_CTL
-		write32((uintptr_t) & bld->fcolor_ctl,
-				((p1 != 0) << 8)	| // pipe0 enable RED - from VI
-	//			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
-	//			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
-	//			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
-				0
-				);
-	}
+	t113_de_set_address_vi(pdat, p1);
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	write32((uintptr_t) & bld->fcolor_ctl,
+			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
+//			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
+//			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+//			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+			0
+			);
 
 	t113_de_enable(pdat);
 }
