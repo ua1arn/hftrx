@@ -2357,7 +2357,7 @@ static void arm_hardware_ltdc_vsync(void)
 	//TCON_LCD0->LCD_GINT0_REG |= (1u << 31); 		//Enable the Vertical Blank interrupt
 	TCON_LCD0->LCD_GINT0_REG &= ~ (1u << 15);         //clear LCD_VB_INT_FLAG
 	while((TCON_LCD0->LCD_GINT0_REG & (1u << 15)) == 0) //wait  LCD_VB_INT_FLAG
-		;
+		hardware_nonguiyield();
 }
 
 /* set visible buffer start. Wait VSYNC. */
