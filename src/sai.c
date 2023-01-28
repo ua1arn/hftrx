@@ -4085,7 +4085,7 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
-	printhex32(addr, (void *) addr, DMABUFFSTEP16RX * sizeof (aubufv_t));
+//	printhex32(addr, (void *) addr, DMABUFFSTEP16RX * sizeof (aubufv_t));
 //	for (;;)
 //		;
 	/* Работа с только что принятыми данными */
