@@ -3816,106 +3816,6 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 		break;
 	}
 	//TP();
-	unsigned value=0;	/* Р Т‘Р ВµР В»Р С‘РЎвЂљР ВµР В»РЎРЉ */
-	const uint_fast8_t prei=calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioCodec_CLK_WIDTH, ALLWNT113_AudioCodec_CLK_TAPS, & value, 1);
-
-	PRINTF("AudioCodec: prei=%u, value=%u, lrckf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
-
-	// audiocode1x_dac_clk
-	// audiocode1x_adc_clk
-	//	Clock Source Select
-	//	00: PLL_AUDIO0(1X)
-	//	01: PLL_AUDIO1(DIV2)
-	//	10: PLL_AUDIO1(DIV5)
-
-	const portholder_t clk_reg =
-		(1u << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
-		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
-		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
-		((uint_fast32_t) value << 0) |	// Factor M (0..31)
-		0;
-
-	CCU->AUDIO_CODEC_ADC_CLK_REG = clk_reg;
-	CCU->AUDIO_CODEC_DAC_CLK_REG = clk_reg;
-
-	CCU->AUDIO_CODEC_BGR_REG |= (1u << 0);	// Gating Clock For AUDIO_CODEC
-	CCU->AUDIO_CODEC_BGR_REG |= (1u << 16);	// AUDIO_CODEC Reset
-
-
-
-	///AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |(0x04 | 0x01) << (1u << 0) |	0;// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
-	AUDIO_CODEC->ADC_DIG_CTRL & ~ (1u << 17)|(1u << 16)|(7 << 0);
-	AUDIO_CODEC->ADC_DIG_CTRL |= (1u << 17)|(1u << 16)|(1 << 0)|(1 << 1)/*|(1 << 2)*/;///LINL,LINR IN
-
-
-	// ADCx Analog Control Register
-	AUDIO_CODEC->ADC1_REG |= (1u << 31);	// LINEINL ADC1 Channel Enable
-	AUDIO_CODEC->ADC2_REG |= (1u << 31);	// LINEINR
-	//AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
-
-	AUDIO_CODEC->ADC1_REG |= (1u << 23);  // LINEINL
-	AUDIO_CODEC->ADC2_REG |= (1u << 23);  // LINEINR
-
-    ///-----LDO-----
-
-    ///-------------
-
-
-	// DAC Analog Control Register
-	AUDIO_CODEC->DAC_REG |= (1u << 15) | (1u << 14);	// DACL_EN, DACR_EN
-
-
-   AUDIO_CODEC->RAMP_REG |= (1u << 15)|(1u << 0);///HP ON !!!
-
-	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
-	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-
-	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 24);	// RX_FIFO_MODE 0: Expanding РІР‚В0РІР‚в„ў at LSB of TX FIFO register
-	///AUDIO_CODEC->AC_ADC_FIFOC|= (1u << 24); //MODE 1
-
-    AUDIO_CODEC->AC_ADC_FIFOC|= (1u << 21)|(1u << 20);///SUNC I2S
-
-
-	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 3);	// ADC_DRQ_EN
-
-	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-
-	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3uL << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
-	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 4);	// DAC_DRQ_EN
-
-}
-
-/* встороенный в процессор кодек */
-static void hardware_hwblock_master_duplex_initialize_codec1_old(void)
-{
-	const unsigned framebits = CODEC1_FRAMEBITS;
-	const unsigned long lrckf = ARMI2SRATE;
-
-	const unsigned long mclkf = lrckf * 512;
-
-	// 0x00 = 48000 (x 512)
-	// 0x01 = ~ 46902 (x 512)
-	// 0x02 = 48000 (x 512)
-	const unsigned long src = 0x00;
-	//	Clock Source Select
-	//	00: PLL_AUDIO0(1X)
-	//	01: PLL_AUDIO1(DIV2)
-	//	10: PLL_AUDIO1(DIV5)
-	unsigned long clk;
-	switch (src)
-	{
-	default:
-	case 0x00:
-		clk = allwnrt113_get_audio0pll1x_freq();
-		break;
-	case 0x01:
-		clk = allwnrt113_get_audio1pll_div2_freq();
-		break;
-	case 0x02:
-		clk = allwnrt113_get_audio1pll_div5_freq();
-		break;
-	}
-	//TP();
 	unsigned value;	/* делитель */
 	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioCodec_CLK_WIDTH, ALLWNT113_AudioCodec_CLK_TAPS, & value, 1);
 
@@ -3940,6 +3840,68 @@ static void hardware_hwblock_master_duplex_initialize_codec1_old(void)
 
 	CCU->AUDIO_CODEC_BGR_REG |= (1u << 0);	// Gating Clock For AUDIO_CODEC
 	CCU->AUDIO_CODEC_BGR_REG |= (1u << 16);	// AUDIO_CODEC Reset
+
+#if 1
+	// anatol
+
+	///AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |(0x04 | 0x01) << (1u << 0) |	0;// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+//	AUDIO_CODEC->ADC_DIG_CTRL & ~ (1u << 17)|(1u << 16)|(15 << 0);
+//	AUDIO_CODEC->ADC_DIG_CTRL |= (1u << 17)|(1u << 16)|(1 << 0)|(1 << 1)/*|(1 << 2)*/;///LINL,LINR IN
+
+	//AUDIO_CODEC->ADC_DIG_CTRL & ~ (1u << 17)|(1u << 16)|(15 << 0);
+	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x0Fu)) |
+			(1u << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
+			(1u << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
+			((0x04 | 0x02) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+			0;
+
+	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
+	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
+	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 3);	// ADC_DRQ_EN
+
+	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
+	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 4);	// DAC_DRQ_EN
+
+	// ADCx Analog Control Register
+	// ADCx Analog Control Register
+	AUDIO_CODEC->ADC1_REG |= (1u << 31);	// FMINL ADC1 Channel Enable
+	AUDIO_CODEC->ADC2_REG |= (1u << 31);	// FMINR
+	AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
+
+	AUDIO_CODEC->ADC1_REG |= (1u << 23);  // LINEINL
+	AUDIO_CODEC->ADC2_REG |= (1u << 23);  // LINEINR
+	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
+
+    ///-----LDO-----
+	PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", AUDIO_CODEC->POWER_REG);
+//	AUDIO_CODEC->POWER_REG |= (1u << 31);	// ALDO_EN
+//	AUDIO_CODEC->POWER_REG |= (1u << 30);	// HPLDO_EN
+	PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", AUDIO_CODEC->POWER_REG);
+    ///-------------
+
+
+	// DAC Analog Control Register
+	AUDIO_CODEC->DAC_REG |= (1u << 15) | (1u << 14);	// DACL_EN, DACR_EN
+
+
+   AUDIO_CODEC->RAMP_REG |=
+		   (1u << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
+		   (1u << 0) | // RD_EN Ramp Digital Enable
+		   0;
+
+
+	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable
+	//AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
+
+	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable
+	//AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable
+
+	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
+	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
+
+#else
 
 	//PRINTF("AC_ADC_FIFOC=%08lX, AC_DAC_FIFOC=%08lX\n", AUDIO_CODEC->AC_ADC_FIFOC, AUDIO_CODEC->AC_DAC_FIFOC);
 
@@ -3980,6 +3942,7 @@ static void hardware_hwblock_master_duplex_initialize_codec1_old(void)
 	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
 	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
 
+#endif
 }
 
 /* встороенный в процессор кодек */
