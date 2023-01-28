@@ -1181,6 +1181,10 @@ static int auto_scan_dram_size(dram_para_t *para)
 
 		PRINTF("rank %d bank = %d\n", rank, (j + 1) << 2); /* 4 or 8 */
 
+//		[AUTO DEBUG] rank 0 row = 13
+//		[AUTO DEBUG] rank 0 bank = 4
+//		[AUTO DEBUG] rank 0 page size = 2 KB
+
 		/* Store banks in para 1 */
 		shft = 12 + offs;
 		rval = para->dram_para1;

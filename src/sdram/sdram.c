@@ -4302,13 +4302,31 @@ void sys_dram_init(void)
 }
 
 #elif CPUSTYLE_F133
-
+/*
+		ZQ value = 0x2e***********
+		get_pmu_exist() = 4294967295
+		ddr_efuse_type: 0xa
+		[AUTO DEBUG] single rank and full DQ!
+		ddr_efuse_type: 0xa
+		[AUTO DEBUG] rank 0 row = 13
+		[AUTO DEBUG] rank 0 bank = 4
+		[AUTO DEBUG] rank 0 page size = 2 KB
+		DRAM BOOT DRIVE INFO: %s
+		DRAM CLK = 528 MHz
+		DRAM Type = 2 (2:DDR2,3:DDR3)
+		DRAMC read ODT  off.
+		DRAM ODT off.
+		ddr_efuse_type: 0xa
+		DRAM SIZE =64 M
+		DRAM simple test OK.
+ *
+ */
 static struct dram_para_t ddrp2 = {
 	.dram_clk = 528,
 	.dram_type = 2,
 	.dram_zq = 0x07b7bf9,
 	.dram_odt_en = !0x00,
-	.dram_para1 = 0x000000d2,
+	.dram_para1 = 0x000000d2,		// banks, row, page size info
 	.dram_para2 = 0x00000000,
 	.dram_mr0 = 0x00000e73,
 	.dram_mr1 = 0x02,
