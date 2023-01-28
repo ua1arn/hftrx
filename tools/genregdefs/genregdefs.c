@@ -32,10 +32,12 @@ struct regdfn
 	unsigned fldrept;   // 0 - plain field, 1..n - array
 };
 
-static int emitpos;
+#define INDENT 4
+#define COMMENTPOS 80
 
 void emitline(int pos, const char * format, ...)
 {
+	static int emitpos;
 	va_list ap;
 	int n;
 	FILE * fp = stdout;
@@ -57,7 +59,8 @@ void emitline(int pos, const char * format, ...)
 	{
 		emitpos += n;
 	}
-	emitpos = 0;
+	if (strchr(format, '\n') != NULL)
+		emitpos = 0;
 }
 
 void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
@@ -108,15 +111,15 @@ void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
 
             if (sz == 4)
             {
-			    emitline(0, "\t" "uint32_t reserved_0x%03X;\n", offs);
+			    emitline(INDENT + 9, "uint32_t reserved_0x%03X;\n", offs);
             }
             else if ((sz % 4) == 0)
             {
-			    emitline(0, "\t" "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
+			    emitline(INDENT + 9, "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
             }
             else
             {
-		    	emitline(0, "\t" "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
+		    	emitline(INDENT + 9, "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
             }
 			offs = p->fldoffs;
 		}
@@ -124,17 +127,16 @@ void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
 		{
 			if (p->fldsize != 0)
 			{
-				int eolpos;
 				if (p->fldrept)
 				{
 					// Array forming
 					if (p->typname != NULL)
 					{
-						emitline(0, "\t" "%s %s [0x%03X];%n", p->typname, p->fldname, p->fldrept, & eolpos);
+						emitline(INDENT, "%s %s [0x%03X];", p->typname, p->fldname, p->fldrept);
 					}
 					else
 					{
-						emitline(0, "\t" "volatile %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
+						emitline(INDENT, "volatile %s %s [0x%03X];", fldtype, p->fldname, p->fldrept);
 					}
 
 					offs += p->fldsize * p->fldrept;
@@ -144,20 +146,15 @@ void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
 					// Plain field
 					if (p->typname != NULL)
 					{
-						emitline(0, "\t" "%s %s;%n", p->typname, p->fldname, & eolpos);
+						emitline(INDENT, "%s %s;", p->typname, p->fldname);
 					}
 					else
 					{
-						emitline(0, "\t" "volatile %s %s;%n", fldtype, p->fldname, & eolpos);
+						emitline(INDENT, "volatile %s %s;", fldtype, p->fldname);
 					}
 					offs += p->fldsize;
 				}
-				if (eolpos < commentspos)
-				{
-					int pad = commentspos - eolpos;
-					emitline(0, "%*.*s", pad, pad, "");
-				}
-				emitline(0, "/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
+				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
 			}
 		}
 		else
@@ -186,8 +183,8 @@ void genstructprint(const struct regdfn * regs, unsigned szregs, const char * bn
 			if (p->fldrept == 0 &&p->typname == NULL)
 			{
 				// Plain field
-				emitline(0, "\t" "PRINTF(\"%%s->%s=0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );", p->fldname, p->fldname, p->fldname);
-				emitline(0, "\t/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
+				emitline(INDENT, "PRINTF(\"%%s->%s=0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );", p->fldname, p->fldname, p->fldname);
+				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
 			}
 		}
 	}
@@ -514,7 +511,8 @@ static void processfile_access(struct parsedfile * pfl)
 		return;
 	for (i = 0; i < pfl->base_count; ++ i)
 	{
-		emitline(0, "#define\t%s\t((%s_TypeDef *) %s_BASE)\t/*!< \\brief %s Interface register set access pointer */\n", pfl->base_names [i], pfl->bname, pfl->base_names [i], pfl->base_names [i]);
+		emitline(0,			"#define %s ((%s_TypeDef *) %s_BASE)", pfl->base_names [i], pfl->bname, pfl->base_names [i]);
+		emitline(COMMENTPOS, "/*!< \\brief %s Interface register set access pointer */\n", pfl->base_names [i]);
 	}
 }
 
