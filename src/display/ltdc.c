@@ -57,6 +57,8 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 	}
 }
 
+static void arm_hardware_ltdc_vsync(void);
+
 #if CPUSTYLE_R7S721
 
 // Записываем и ожидаем пока указанные биты сбросятся в 0
@@ -2349,7 +2351,7 @@ void arm_hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t l
 }
 
 /* ожидаем начало кадра */
-void arm_hardware_ltdc_vsync(void)
+static void arm_hardware_ltdc_vsync(void)
 {
 
 	//TCON_LCD0->LCD_GINT0_REG |= (1u << 31); 		//Enable the Vertical Blank interrupt
