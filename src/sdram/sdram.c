@@ -1147,7 +1147,7 @@ void sdram_test_pattern(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t
 	{
 		r = *(volatile uint16_t*) (addr + 2 * i);
 		if(r !=  pattern)
-			PRINTF("ERROR! %X - fill pattern: %04X, read: %04X\n", addr + 2 * i,  pattern, r);
+			PRINTF("ERROR! %X - fill pattern: %04X, read: %04X\n", (unsigned)  (addr + 2 * i),  (unsigned) pattern, (unsigned) r);
 	}
 
 }
@@ -1162,7 +1162,7 @@ void sdram_test_increment(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16
 	{
 		r = *(volatile uint16_t*) (addr + 2 * i);
 		if(r !=  seed + i)
-			PRINTF("ERROR! %X - fill increment: %04X, read: %04X\n", addr + 2 * i,  seed + i, r);
+			PRINTF("ERROR! %X - fill increment: %04X, read: %04X\n", (unsigned) (addr + 2 * i),  (unsigned)  (seed + i), (unsigned) r);
 	}
 
 }
@@ -1182,7 +1182,7 @@ void sdram_test_random(uintptr_t addr, uint_fast16_t buffer_size)
 	{
 		r = *(volatile uint16_t*) (addr + 2 * i);
 		if(aTxBuffer[i] !=  r)
-			PRINTF("ERROR! %X - fill random: %04X, read: %04X\n", addr + 2 * i, aTxBuffer[i], r);
+			PRINTF("ERROR! %X - fill random: %04X, read: %04X\n", (unsigned) (addr + 2 * i), aTxBuffer[i], r);
 	}
 
 }

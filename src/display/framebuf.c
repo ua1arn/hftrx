@@ -20,11 +20,9 @@
 #include "fontmaps.h"
 #include <string.h>
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW
 	/* Использование G2D для формирования изображений */
 
-//	#include "g2d/T113-s3/Type.h"
-//	#include "g2d/T113-s3/g2d.h"
 	#include "g2d_driver.h"
 
 #if LCDMODE_MAIN_ARGB888

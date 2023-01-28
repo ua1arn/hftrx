@@ -146,7 +146,7 @@ typedef enum IRQn
 //#define CE_KEY_SRAM_BASE    0x03041000	/* 4 KB (only CE access) */
 //#define MSI_MEMC_BASE	    0x03102000	/* 2 MB MSI and MEMC base address */
 //#define DDRPHYC_BASE	 	0x03103000
-//#define MC_MEMC_BASE        0x03202000    /* MC */
+#define MC_MEMC_BASE        0x03202000    /* MC */
 
 // SH2 (SYS domain)
 //#define SMHC0_BASE      	0x04020000
@@ -176,8 +176,8 @@ typedef enum IRQn
 //	The status of the FEL pin is the bit[8] of the system configuration module (register: 0x03000024).
 //	Fast Boot register (0x07090120) in RTC module
 
-//#define CPU_0700_0000_BASE	0x07000000
-//#define CPU_0701_0000_BASE	0x07010000
+#define CPU_0700_0000_BASE	0x07000000
+#define CPU_0701_0000_BASE	0x07010000
 
 // VIDEO_IN_SYS related
 //#define CSI_BASE 			0x05800000

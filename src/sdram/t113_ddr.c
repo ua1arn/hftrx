@@ -1279,14 +1279,14 @@ int dramc_simple_wr_test(unsigned int mem_mb, int len)
 		v2 = patt1 + i;
 		if (v1 != v2) {
 			PRINTF("DRAM simple test FAIL.\n");
-			PRINTF("%x != %x at address %x\n", v1, v2, addr + i);
+			PRINTF("%x != %x at address %p\n", (unsigned) v1, (unsigned) v2, addr + i);
 			return 1;
 		}
 		v1 = read32((virtual_addr_t)(addr + offs + i));
 		v2 = patt2 + i;
 		if (v1 != v2) {
 			PRINTF("DRAM simple test FAIL.\n");
-			PRINTF("%x != %x at address %x\n", v1, v2, addr + offs + i);
+			PRINTF("%x != %x at address %p\n", (unsigned) v1, (unsigned) v2, addr + offs + i);
 			return 1;
 		}
 	}
@@ -1576,7 +1576,7 @@ int init_DRAM(int type, dram_para_t *para) // s0
 		sdelay(10);
 		write32(SYS_CFG_BASE + 0x160, read32(SYS_CFG_BASE + 0x160) | 0x001);
 		sdelay(20);
-		PRINTF("ZQ value = 0x%x\n", read32(SYS_CFG_BASE + 0x16c));
+		PRINTF("ZQ value = 0x%x\n", (unsigned) read32(SYS_CFG_BASE + 0x16c));
 	}
 
 	// Set voltage
