@@ -6406,7 +6406,7 @@ void hightests(void)
 		/* полупрозрачный прямоугольник на фоне */
 		colpip_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLOR_GREEN));	// GREEN
 
-		TP();
+		//TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6417,7 +6417,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
-		TP();
+		//TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6428,7 +6428,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE, keycolor
 				);
 
-		TP();
+		//TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6439,7 +6439,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
-		TP();
+		//TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6450,7 +6450,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
-		TP();
+		//TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6461,7 +6461,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
-		TP();
+		//TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],

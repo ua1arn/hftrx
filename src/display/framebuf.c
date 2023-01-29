@@ -2556,7 +2556,7 @@ void colpip_bitblt(
 	ASSERT(tdx >= w);
 	ASSERT(tdy >= h);
 
-	PRINTF("colpip_bitblt: x/y=%d/%d, w/h=%d/%d, keyflag=%08X\n", x, y, w, h, keyflag);
+	//PRINTF("colpip_bitblt: x/y=%d/%d, w/h=%d/%d, keyflag=%08X\n", x, y, w, h, keyflag);
 
 	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
 #if LCDMODE_HORFILL
@@ -2604,7 +2604,7 @@ void colpip_stretchblt(
 
 	if (w == sdx && h == sdy)
 	{
-		PRINTF("colpip_stretchblt (same): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
+		//PRINTF("colpip_stretchblt (same): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
 		/* размеры совпадают - не используем stretch */
 		hwaccel_bitblt(
 			dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
@@ -2623,8 +2623,9 @@ void colpip_stretchblt(
 //	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 //	memset(G2D_WB, 0, sizeof * G2D_WB);
 
-	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	debug_g2d(__FILE__, __LINE__);
 
 //	PRINTF("============== BEGIN OF STRETCH\n");
 //	if (w > sdx)
@@ -2815,7 +2816,7 @@ void colpip_stretchblt(
 //	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	//debug_g2d(__FILE__, __LINE__);
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
-	PRINTF("============== END OF STRETCH\n");
+//	PRINTF("============== END OF STRETCH\n");
 
 #else
 
