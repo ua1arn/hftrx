@@ -6429,6 +6429,16 @@ void hightests(void)
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
 				layer1, DIM_X, DIM_Y,
+				40, 20, picx, picy,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+				);
+
+		/* копируем изображение в верхний слой БЕЗ цветового ключа */
+		colpip_stretchblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y,
 				450, 250, picx * 3 / 2, picy * 3 / 2,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,

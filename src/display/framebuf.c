@@ -2566,6 +2566,19 @@ void colpip_stretchblt(
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && !1
 	/* Использование G2D для формирования изображений */
 
+	if (w == sdx && h == sdy)
+	{
+		hwaccel_bitblt(
+			dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
+			colpip_mem_at(dst, dx, dy, x, y), dx, dy,
+			srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
+			src, sdx, sdy,
+			keyflag, keycolor
+			);
+		TP();
+		return;
+	}
+
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
 	g2d_stretchblt G2D_STRETCHBLT;
@@ -2614,6 +2627,16 @@ void colpip_stretchblt(
 	G2D_STRETCHBLT.dst_rect.h = h;
 
 	g2d_stretchblit(&G2D_STRETCHBLT);
+
+//
+//	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
+//	if (hwacc_waitdone() == 0)
+//	{
+//		PRINTF("colpip_stretchblt: timeout dx/dy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) dx, (unsigned) dy, (unsigned) sdx, (unsigned) sdy);
+//		ASSERT(0);
+//	}
+//	//debug_g2d(__FILE__, __LINE__);
+//	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 
 #else
