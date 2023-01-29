@@ -2757,21 +2757,6 @@ void colpip_stretchblt(
 		G2D_V0->V0_LADD0 = dstlinear;
 		G2D_V0->V0_HADD = 0;
 
-	}
-	else
-	{
-		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-		G2D_V0->V0_PITCH0 = sstride;
-		G2D_V0->V0_FILLC = 0;
-		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
-		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = srclinear;
-		G2D_V0->V0_HADD = ((srclinear >> 32) & 0xFF) < 0;
-	}
-
-	if (0 && (keyflag & BITBLT_FLAG_CKEY) != 0)
-	{
 		/* 5.10.9.10 BLD color key control register */
 		G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
 
@@ -2790,9 +2775,19 @@ void colpip_stretchblt(
 		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
 		G2D_BLD->BLD_CH_ISIZE [1] = tpichw;
 		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
+
 	}
 	else
 	{
+		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+		G2D_V0->V0_PITCH0 = sstride;
+		G2D_V0->V0_FILLC = 0;
+		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = srclinear;
+		G2D_V0->V0_HADD = ((srclinear >> 32) & 0xFF) < 0;
+
 		G2D_BLD->BLD_CH_ISIZE [0] = tpichw; /* 0x00A400E0 tsize 245 225 */
 		G2D_BLD->BLD_SIZE = tpichw;
 	//	PRINTF("new G2D_BLD->BLD_CH_ISIZE [0]=%08X\n", G2D_BLD->BLD_CH_ISIZE [0]);
