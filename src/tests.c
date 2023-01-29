@@ -6389,6 +6389,7 @@ void hightests(void)
 		colmain_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLOR_WHITE));
 		colmain_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLOR_WHITE), 0);
 		colmain_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLOR_WHITE), 0);
+		colpip_string_tbg(fbpic, picx, picy, 5, 6, "HELLO", TFTALPHA(picalpha, COLOR_WHITE));
 
 		/* непрозрачный фон */
 		unsigned bgalpha = 255;
