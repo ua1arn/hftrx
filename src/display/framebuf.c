@@ -2702,9 +2702,6 @@ void colpip_stretchblt(
 //	debug_g2d(__FILE__, __LINE__);
 
 #if 1
-	/* расчет масштабов */
-	const uint_fast32_t hstep = (((uint_fast32_t) sdx << 19) / w) << 1;
-	const uint_fast32_t vstep = (((uint_fast32_t) sdy << 19) / h) << 1;
 
 	/* Отключаем все источники */
 	G2D_VSU->VS_CTRL = 0;
@@ -2717,22 +2714,27 @@ void colpip_stretchblt(
 //	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
-	G2D_VSU->VS_CTRL = 0x00000001; /* 0x00000001 */
-	G2D_VSU->VS_OUT_SIZE = tpichw; /* 0x00A400E0 */
-	G2D_VSU->VS_GLB_ALPHA = 0x000000FF; /* 0x000000FF */
+	{
+		/* расчет масштабов */
+		const uint_fast32_t hstep = (((uint_fast32_t) sdx << 19) / w) << 1;
+		const uint_fast32_t vstep = (((uint_fast32_t) sdy << 19) / h) << 1;
+		/* Включаем Scaler */
+		G2D_VSU->VS_CTRL = 0x00000001;
+		G2D_VSU->VS_OUT_SIZE = tpichw;
+		G2D_VSU->VS_GLB_ALPHA = 0x000000FF;
 
-	G2D_VSU->VS_Y_SIZE = ssizehw; /* 0x006D0095 */
-	G2D_VSU->VS_Y_HSTEP = hstep; /* 0x000AAAAA */
-	G2D_VSU->VS_Y_VSTEP = vstep; /* 0x000AAAAA */
-	G2D_VSU->VS_Y_HPHASE = 0x00000000; /* 0x00000000 */
-	G2D_VSU->VS_Y_VPHASE0 = 0x00000000; /* 0x00000000 */
+		G2D_VSU->VS_Y_SIZE = ssizehw;
+		G2D_VSU->VS_Y_HSTEP = hstep;
+		G2D_VSU->VS_Y_VSTEP = vstep;
+		G2D_VSU->VS_Y_HPHASE = 0;
+		G2D_VSU->VS_Y_VPHASE0 = 0;
 
-	G2D_VSU->VS_C_SIZE = ssizehw; /* 0x006D0095 */
-	G2D_VSU->VS_C_HSTEP = hstep; /* 0x000AAAAA */
-	G2D_VSU->VS_C_VSTEP = vstep; /* 0x000AAAAA */
-	G2D_VSU->VS_C_HPHASE = 0x00000000; /* 0x00000000 */
-	G2D_VSU->VS_C_VPHASE0 = 0x00000000; /* 0x00000000 */
-
+		G2D_VSU->VS_C_SIZE = ssizehw;
+		G2D_VSU->VS_C_HSTEP = hstep;
+		G2D_VSU->VS_C_VSTEP = vstep;
+		G2D_VSU->VS_C_HPHASE = 0;
+		G2D_VSU->VS_C_VPHASE0 = 0;
+	}
 
 	if (0 && (keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
