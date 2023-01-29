@@ -1788,9 +1788,14 @@ void hwaccel_bitblt(
 		G2D_BLD->BLD_KEY_CON = 0x00;
 
 #if LCDMODE_MAIN_RGB565
-		// 0xA000A0 -> 0x4200A5
+		// TFT: 0xA000A0 -> 0x4200A5
+		// RGB565: 0xA014
 		G2D_BLD->BLD_KEY_MAX = 0x4200A5; //keycolor;
 		G2D_BLD->BLD_KEY_MIN = 0x4200A5; //keycolor;
+		// TFT: 0xFF0000 -> 0x4200A5
+		// RGB565: 0xF800
+//		G2D_BLD->BLD_KEY_MAX = 0xF70000; //keycolor;
+//		G2D_BLD->BLD_KEY_MIN = 0xF70000; //keycolor;
 #else /* LCDMODE_RGB565 */
 		G2D_BLD->BLD_KEY_MAX = keycolor;
 		G2D_BLD->BLD_KEY_MIN = keycolor;
