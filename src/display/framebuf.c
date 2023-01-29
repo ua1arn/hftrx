@@ -2674,14 +2674,15 @@ void colpip_stretchblt(
 //	G2D_WB->WB_PITCH1=0x00000000; /* 0x00000000 */
 //	G2D_WB->WB_PITCH2=0x00000000; /* 0x00000000 */
 //
-//	G2D_BLD->ROP_CTL=0x000000F0; /* 0x000000F0 */
+	G2D_BLD->ROP_CTL=0x000000F0; /* 0x000000F0 */
 //	G2D_BLD->BLD_SIZE = tizehw;
 //	G2D_WB->WB_LADD0 = srcinvalidateaddr;
 	G2D_WB->WB_LADD2 = dstinvalidateaddr;
-//	G2D_WB->WB_PITCH0 = tstride;
+	G2D_WB->WB_PITCH0 = tstride;
 
-	PRINTF("WB_LADD0=%p src=%p\n", G2D_WB->WB_LADD0, srcinvalidateaddr);
+	//PRINTF("WB_LADD0=%p src=%p\n", G2D_WB->WB_LADD0, srcinvalidateaddr);
 	PRINTF("WB_LADD2=%p dst=%p\n", G2D_WB->WB_LADD2, dstinvalidateaddr);
+	//PRINTF("WB_PITCH0=%08X dst=%08X\n", G2D_WB->WB_PITCH0, tstride);
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
