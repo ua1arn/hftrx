@@ -2625,6 +2625,7 @@ void colpip_stretchblt(
 
 //	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_VSU1->VS_CTRL = 0x00000001; /* 0x00000001 */
 //	debug_g2d(__FILE__, __LINE__);
 
 //	PRINTF("============== BEGIN OF STRETCH\n");
@@ -2732,42 +2733,74 @@ void colpip_stretchblt(
 	G2D_VSU->VS_C_HPHASE = 0x00000000; /* 0x00000000 */
 	G2D_VSU->VS_C_VPHASE0 = 0x00000000; /* 0x00000000 */
 
-//
-//	return;
-	//PRINTF("dst=%p, src=%p\n", (void *) dstinvalidateaddr, (void *) srcinvalidateaddr);
-//
-	// expand - только v0 src
-	// shrink - еще UI2 dst
-//
-	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-	G2D_V0->V0_PITCH0 = sstride;
-	G2D_V0->V0_FILLC = 0;
-	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
-	G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-	G2D_V0->V0_LADD0 = srclinear;
-	G2D_V0->V0_HADD = ((srclinear >> 32) & 0xFF) < 0;
 
-//	PRINTF("ssizehw=%08X tsizehw=%08X, tpichw=%08X\n", ssizehw, tsizehw, tpichw);
-//	PRINTF("orig G2D_BLD->BLD_CH_ISIZE [0]=%08X\n", G2D_BLD->BLD_CH_ISIZE [0]);
-//	PRINTF("orig G2D_BLD->BLD_SIZE=%08X\n", G2D_BLD->BLD_SIZE);
-//	if (w > sdx)
-//	{
-//		PRINTF("Expand\n");
-//		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw; /* 0x00A400E0 tsize 245 225 */
-//		G2D_BLD->BLD_SIZE = tsizehw;
-//	}
-//	else
-//	{
-//		PRINTF("Shrink\n");
-//	}
-	G2D_BLD->BLD_CH_ISIZE [0] = tpichw; /* 0x00A400E0 tsize 245 225 */
-	G2D_BLD->BLD_SIZE = tpichw;
-//	PRINTF("new G2D_BLD->BLD_CH_ISIZE [0]=%08X\n", G2D_BLD->BLD_CH_ISIZE [0]);
-//	PRINTF("new G2D_BLD->BLD_SIZE=%08X\n", G2D_BLD->BLD_SIZE);
+	if (0 && (keyflag & BITBLT_FLAG_CKEY) != 0)
+	{
+		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
+		G2D_UI2->UI_PITCH = sstride;
+		G2D_UI2->UI_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
+		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
+		G2D_UI2->UI_LADD = srclinear;
+		G2D_UI2->UI_HADD = ((srclinear >> 32) & 0xFF) < 0;
+		//	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+		//	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
+		//	G2D_BLD->ROP_CTL = 0x55F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 
-	G2D_BLD->BLD_FILL_COLOR_CTL = 0x00000100; /* 0x00000100 */
-	G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
+		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+		G2D_V0->V0_PITCH0 = tstride;
+		G2D_V0->V0_FILLC = 0;
+		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = dstlinear;
+		G2D_V0->V0_HADD = 0;
+
+	}
+	else
+	{
+		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+		G2D_V0->V0_PITCH0 = sstride;
+		G2D_V0->V0_FILLC = 0;
+		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = srclinear;
+		G2D_V0->V0_HADD = ((srclinear >> 32) & 0xFF) < 0;
+	}
+
+	if (0 && (keyflag & BITBLT_FLAG_CKEY) != 0)
+	{
+		/* 5.10.9.10 BLD color key control register */
+		G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
+
+		/* 5.10.9.11 BLD color key configuration register */
+		//G2D_BLD->BLD_KEY_CON = 0x07;
+		G2D_BLD->BLD_KEY_CON= 0x00;
+
+		G2D_BLD->BLD_KEY_MAX = keycolor;
+		G2D_BLD->BLD_KEY_MIN = keycolor;
+
+		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 9);	// 9: P1_EN Pipe1 enable
+
+
+		G2D_BLD->BLD_CH_ISIZE [0] = tpichw;
+		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_CH_ISIZE [1] = tpichw;
+		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
+	}
+	else
+	{
+		G2D_BLD->BLD_CH_ISIZE [0] = tpichw; /* 0x00A400E0 tsize 245 225 */
+		G2D_BLD->BLD_SIZE = tpichw;
+	//	PRINTF("new G2D_BLD->BLD_CH_ISIZE [0]=%08X\n", G2D_BLD->BLD_CH_ISIZE [0]);
+	//	PRINTF("new G2D_BLD->BLD_SIZE=%08X\n", G2D_BLD->BLD_SIZE);
+
+		G2D_BLD->BLD_FILL_COLOR_CTL = 0x00000100; /* 0x00000100 */
+		G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
+	}
 
 //
 //	PRINTF("before G2D_WB->WB_SIZE=%08X tpichw=%08X\n", G2D_WB->WB_SIZE, tpichw);
