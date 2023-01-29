@@ -183,7 +183,18 @@ void genstructprint(const struct regdfn * regs, unsigned szregs, const char * bn
 
 		if (p->fldsize != 0)
 		{
-			if (p->fldrept == 0 &&p->typname == NULL)
+			if (p->fldrept && p->typname == NULL)
+			{
+				// Array forming
+				unsigned i;
+				for (i = 0; i < 4 && i < p->fldrept; ++ i)
+				{
+					emitline(INDENT, "PRINTF(\"%%s->%s[%u]=0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s [%u], (unsigned) p->%s [%u]);",
+							p->fldname, i, p->fldname, i, p->fldname, i);
+					emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs + i * p->fldsize, p->comment);
+				}
+			}
+			else if (p->fldrept == 0 &&p->typname == NULL)
 			{
 				// Plain field
 				emitline(INDENT, "PRINTF(\"%%s->%s=0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );", p->fldname, p->fldname, p->fldname);
@@ -581,94 +592,98 @@ int main(int argc, char* argv[], char* envp[])
 	emitline(0, "#include <stdint.h>" "\n");
 	emitline(0, "\n");
 
-	if (0)
+	if (1)
 	{
-		/* collect IRQ vectors */
-		int nitems = 0;
-		struct irqmap irqs [1024];
-
+		/* CMSIS header forming */
+		if (0)
 		{
-			struct parsedfile * pfl = parsedfiles.head;
-			for (; pfl != NULL; pfl = pfl->next)
+			/* collect IRQ vectors */
+			int nitems = 0;
+			struct irqmap irqs [1024];
+
 			{
-				nitems += collect_irq(pfl, sizeof irqs / sizeof irqs [0] - nitems, irqs + nitems);
+				struct parsedfile * pfl = parsedfiles.head;
+				for (; pfl != NULL; pfl = pfl->next)
+				{
+					nitems += collect_irq(pfl, sizeof irqs / sizeof irqs [0] - nitems, irqs + nitems);
+				}
+			}
+
+			qsort(irqs, nitems, sizeof irqs [0], compare_irq);
+
+			emitline(0, "\n");
+			emitline(0, "/* IRQs */\n");
+			emitline(0, "\n");
+			emitline(0, "typedef enum IRQn\n");
+			emitline(0, "{\n");
+			for (i = 0; i < nitems; ++ i)
+			{
+				struct irqmap * const p = & irqs [i];
+
+				emitline(0, "\t%s_IRQn\t= %d,\n", p->name, p->irq);
+			}
+			emitline(0, "\n");
+			emitline(0, "\t%MAX_IRQ_n,\n");
+			emitline(0, "\tForce_IRQn_enum_size\t= %d\t/* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n", 1048);
+			emitline(0, "} IRQn_Type;\n");
+			emitline(0, "\n");
+		}
+
+		if (1)
+		{
+
+			/* collect base addresses */
+			int nitems = 0;
+			struct basemap maps [256];
+			struct parsedfile * pfl = parsedfiles.head;
+			for (i = 0; pfl != NULL && nitems < sizeof maps / sizeof maps [0]; ++ i, pfl = pfl->next)
+			{
+				nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
+			}
+
+			qsort(maps, nitems, sizeof maps [0], compare_base);
+
+			emitline(0, "\n");
+			emitline(0, "/* Peripheral and RAM base address */\n");
+			emitline(0, "\n");
+
+			for (i = 0; i < nitems; ++ i)
+			{
+				struct basemap * const p = & maps [i];
+
+				emitline(0, "#define\t%s_BASE\t ((uintptr_t) 0x%08X)\n", p->name, p->base);
 			}
 		}
 
-		qsort(irqs, nitems, sizeof irqs [0], compare_irq);
-
-		emitline(0, "\n");
-		emitline(0, "/* IRQs */\n");
-		emitline(0, "\n");
-		emitline(0, "typedef enum IRQn\n");
-		emitline(0, "{\n");
-		for (i = 0; i < nitems; ++ i)
+		if (1)
 		{
-			struct irqmap * const p = & irqs [i];
+			/* structures */
+			struct parsedfile * pfl;
 
-			emitline(0, "\t%s_IRQn\t= %d,\n", p->name, p->irq);
-		}
-		emitline(0, "\n");
-		emitline(0, "\t%MAX_IRQ_n,\n");
-		emitline(0, "\tForce_IRQn_enum_size\t= %d\t/* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n", 1048);
-		emitline(0, "} IRQn_Type;\n");
-		emitline(0, "\n");
-	}
-
-	if (1)
-	{
-
-		/* collect base addresses */
-		int nitems = 0;
-		struct basemap maps [256];
-		struct parsedfile * pfl = parsedfiles.head;
-		for (i = 0; pfl != NULL && nitems < sizeof maps / sizeof maps [0]; ++ i, pfl = pfl->next)
-		{
-			nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
+			for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
+			{
+				processfile_periphregs(pfl);
+			}
 		}
 
-		qsort(maps, nitems, sizeof maps [0], compare_base);
-
-		emitline(0, "\n");
-		emitline(0, "/* Peripheral and RAM base address */\n");
-		emitline(0, "\n");
-
-		for (i = 0; i < nitems; ++ i)
+		if (1)
 		{
-			struct basemap * const p = & maps [i];
+			struct parsedfile * pfl;
 
-			emitline(0, "#define\t%s_BASE\t ((uintptr_t) 0x%08X)\n", p->name, p->base);
+			emitline(0, "\n");
+			emitline(0, "/* Access pointers */\n");
+			emitline(0, "\n");
+
+			for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
+			{
+
+				processfile_access(pfl);
+			}
 		}
 	}
-
-	if (1)
+	else
 	{
-		/* structures */
-		struct parsedfile * pfl;
-
-		for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
-		{
-			processfile_periphregs(pfl);
-		}
-	}
-
-	if (1)
-	{
-		struct parsedfile * pfl;
-
-		emitline(0, "\n");
-		emitline(0, "/* Access pointers */\n");
-		emitline(0, "\n");
-
-		for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
-		{
-
-			processfile_access(pfl);
-		}
-	}
-
-	if (0)
-	{
+		/* Debug header forming */
 		struct parsedfile * pfl;
 
 		/* print structire debug */
