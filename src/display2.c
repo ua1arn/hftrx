@@ -107,7 +107,7 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 
 	if (lbl_bg != NULL && lbl_bg->label_bg != NULL)
 	{
-		colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, xx, yy,
+		colpip_bitblt((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, xx, yy,
 				(uintptr_t) lbl_bg->label_bg, lbl_bg->size, lbl_bg->label_bg, lbl_bg->w, lbl_bg->h);
 	}
 	else
@@ -1017,7 +1017,7 @@ display2_smeter15(
 		if (is_tx)
 		{
 			// TX state
-			colpip_plot(
+			colpip_bitblt(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
@@ -1048,7 +1048,7 @@ display2_smeter15(
 		else
 		{
 			// RX state
-			colpip_plot(
+			colpip_bitblt(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
@@ -1080,7 +1080,7 @@ display2_smeter15(
 
 		if (is_tx)
 		{
-			colpip_plot(
+			colpip_bitblt(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0,
 					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
@@ -1094,7 +1094,7 @@ display2_smeter15(
 		}
 		else
 		{
-			colpip_plot(
+			colpip_bitblt(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0,
 					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
@@ -6202,7 +6202,7 @@ static void display2_waterfall(
 		{
 			/* перенос свежей части растра */
 			ASSERT(atwflj(0, wfrow) != NULL);
-			colpip_plot(
+			colpip_bitblt(
 					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
 					(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
@@ -6213,7 +6213,7 @@ static void display2_waterfall(
 		{
 			ASSERT(atwflj(0, 0) != NULL);
 			/* перенос старой части растра */
-			colpip_plot(
+			colpip_bitblt(
 					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORPIP_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
 					(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean

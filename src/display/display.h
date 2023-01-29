@@ -667,16 +667,6 @@ colpip_string(
 	const char * s
 	);
 
-/* возвращает новую позицию по x */
-uint_fast16_t
-colpip_string(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	// размеры буфера
-	uint_fast16_t dy,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s
-	);
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
@@ -717,7 +707,7 @@ colpip_string_x2ra90_tbg(
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
-colpip_string_count(
+colpip_text(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -729,7 +719,7 @@ colpip_string_count(
 	);
 // Используется при выводе на графический индикатор,
 void
-colpip_string_x2_count(
+colpip_text_x2(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -881,7 +871,7 @@ colmain_fillrect(
 	);
 
 // скоприовать прямоугольник с типом пикселей соответствующим pip
-void colpip_plot(
+void colpip_bitblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * tbuffer,	// получатель
@@ -900,7 +890,7 @@ void colpip_plot(
 #define PLTPARAM_CKEY	0x01
 
 // скоприовать прямоугольник с типом пикселей соответствующим pip
-void colpip_plot_key(
+void colpip_bitblt_key(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * tbuffer,	// получатель
@@ -917,7 +907,7 @@ void colpip_plot_key(
 	);
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 // с поворотом вправо на 90 градусов
-void colpip_plot_ra90(
+void colpip_bitblt_ra90(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * dst,	// получатель

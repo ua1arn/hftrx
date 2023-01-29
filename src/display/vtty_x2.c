@@ -128,7 +128,7 @@ void display_vtty_x2_show(
 	if (1)
 	{
 		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
-		colpip_plot(
+		colpip_bitblt(
 				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy1,
 				(uintptr_t) vt->fb, GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
@@ -138,7 +138,7 @@ void display_vtty_x2_show(
 	if (1 && tgh2 != 0)
 	{
 		// нижняя часть
-		colpip_plot(
+		colpip_bitblt(
 				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy2,
 				(uintptr_t) vt->fb, 1 * GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
@@ -171,7 +171,7 @@ void display_vtty_x2_show_ra90(
 	{
 		// верхняя часть - правее в выхоном растре
 		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
-		colpip_plot_ra90(
+		colpip_bitblt_ra90(
 				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x + tgh2, y,
 				(uintptr_t) vt->fb, GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
@@ -181,7 +181,7 @@ void display_vtty_x2_show_ra90(
 	if (1 && tgh2 != 0)
 	{
 		// нижняя часть - левее в выхоном растре
-		colpip_plot_ra90(
+		colpip_bitblt_ra90(
 				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y,
 				(uintptr_t) vt->fb, 1 * GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
@@ -226,12 +226,12 @@ static void vtput(vtty_x2_t * const vt, unsigned col, unsigned row, char ch, COL
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			VTTYx2_CHARPIX, VTTYx2_ROWSPIX, bg);	// очищаем видеобуфер под выыодимыи символом
 #if DIM_X == 720
-	colpip_string_x2_count(
+	colpip_text_x2(
 			vt->fb, VTTYx2_DX, VTTYx2_DY,
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			fg, & ch, 1);
 #else
-	colpip_string_count(
+	colpip_text(
 			vt->fb, VTTYx2_DX, VTTYx2_DY,
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			fg, & ch, 1);

@@ -131,7 +131,7 @@ static void display_vtty_show(
 	if (1)
 	{
 		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
-		colpip_plot(
+		colpip_bitblt(
 				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy1,
 				(uintptr_t) vt->fb, GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
@@ -141,7 +141,7 @@ static void display_vtty_show(
 	if (1 && tgh2 != 0)
 	{
 		// нижняя часть
-		colpip_plot(
+		colpip_bitblt(
 				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy2,
 				(uintptr_t) vt->fb, 1 * GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
@@ -227,7 +227,7 @@ static void display_vtty_cout(
 
 	default:
 		{
-			colpip_string_count(
+			colpip_text(
 					vt->fb, VTTY_DX, VTTY_DY,
 					vt->col * VTTY_CHARPIX, (vt->row + vt->scroll) % VTTY_ROWS * VTTY_ROWSPIX,
 					VTTY_FG, & ch, 1);
