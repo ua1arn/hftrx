@@ -6405,30 +6405,30 @@ void hightests(void)
 		colmain_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLOR_GREEN));	// GREEN
 
 		/* копируем изображение в верхний слой с цветовым ключем */
-		colpip_bitblt_key(
+		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
 				layer1, DIM_X, DIM_Y, 220, 220,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
-				PLTPARAM_CKEY, keycolor
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
-		colpip_bitblt_key(
+		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
 				layer1, DIM_X, DIM_Y, 350, 250,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
-				PLTPARAM_NONE, keycolor
+				BITBLT_FLAG_NONE, keycolor
 				);
 
 		/* копируем изображение в верхний слой с цветовым ключем */
-		colpip_bitblt_key(
+		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
 				layer1, DIM_X, DIM_Y, 450, 90,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
-				PLTPARAM_CKEY, keycolor
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
 

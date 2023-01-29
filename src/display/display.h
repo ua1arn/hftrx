@@ -870,6 +870,9 @@ colmain_fillrect(
 	COLORPIP_T color
 	);
 
+#define BITBLT_FLAG_NONE	0x00
+#define BITBLT_FLAG_CKEY	0x01
+
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_bitblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
@@ -883,28 +886,29 @@ void colpip_bitblt(
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer, 	// источник
 	uint_fast16_t dx,	// источник Размеры окна в пикселях
-	uint_fast16_t dy	// источник
+	uint_fast16_t dy,	// источник
+	unsigned bitbltmask, COLORPIP_T keycolor
 	);
 
-#define PLTPARAM_NONE	0x00
-#define PLTPARAM_CKEY	0x01
-
 // скоприовать прямоугольник с типом пикселей соответствующим pip
-void colpip_bitblt_key(
+void colpip_stretchblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * tbuffer,	// получатель
 	uint_fast16_t tdx,	// получатель
 	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель
-	uint_fast16_t y,	// получатель
+	uint_fast16_t x,	// позиция получателя
+	uint_fast16_t y,	// позиция получателя
+	uint_fast16_t w,	// ширина окна получателя
+	uint_fast16_t h,	// высотв окна получателя
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer, 	// источник
 	uint_fast16_t dx,	// источник Размеры окна в пикселях
 	uint_fast16_t dy,	// источник
-	unsigned keyflag, COLOR24_T keycolor
+	unsigned keyflag, COLORPIP_T keycolor
 	);
+
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 // с поворотом вправо на 90 градусов
 void colpip_bitblt_ra90(

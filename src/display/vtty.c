@@ -136,7 +136,8 @@ static void display_vtty_show(
 				tfb, DIM_X, DIM_Y, x, y + tgy1,
 				(uintptr_t) vt->fb, GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
 				colpip_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, tgh2),	// начальный адрес источника
-				VTTY_DX, tgh1);	// размеры источника
+				VTTY_DX, tgh1,	// размеры источника
+				BITBLT_FLAG_NONE, 0);
 	}
 	if (1 && tgh2 != 0)
 	{
@@ -146,7 +147,8 @@ static void display_vtty_show(
 				tfb, DIM_X, DIM_Y, x, y + tgy2,
 				(uintptr_t) vt->fb, 1 * GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
 				colpip_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, 0),	// начальный адрес источника
-				VTTY_DX, tgh2);	// размеры источника
+				VTTY_DX, tgh2,	// размеры источника
+				BITBLT_FLAG_NONE, 0);
 	}
 }
 

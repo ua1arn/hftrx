@@ -1707,7 +1707,7 @@ void hwaccel_bitblt(
 	G2D_BLD->BLD_FILL_COLOR_CTL = 0;	// Нет источников
 
 
-	if ((keyflag & PLTPARAM_CKEY) != 0)
+	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
 		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
 		G2D_UI2->UI_PITCH = sstride;
@@ -1744,7 +1744,7 @@ void hwaccel_bitblt(
 
 	}
 
-	if ((keyflag & PLTPARAM_CKEY) != 0)
+	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
 		/* 5.10.9.10 BLD color key control register */
 		G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
@@ -1809,7 +1809,7 @@ void hwaccel_bitblt(
 #else
 	// программная реализация
 
-	if ((keyflag & PLTPARAM_CKEY) != 0)
+	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
 		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
 		// работа с color key
@@ -2556,49 +2556,8 @@ void colpip_bitblt(
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
 	uint_fast16_t sdx,	// источник Размеры окна в пикселях
-	uint_fast16_t sdy	// источник
-	)
-{
-	ASSERT(src != NULL);
-	ASSERT(dst != NULL);
-	ASSERT(tdx >= sdx);
-	ASSERT(tdy >= sdy);
-
-	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
-#if LCDMODE_HORFILL
-	hwaccel_bitblt(
-		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
-		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		src, sdx, sdy,
-		PLTPARAM_NONE, 0
-		);
-#else /* LCDMODE_HORFILL */
-	hwaccel_bitblt(
-		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
-		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		src, sdx, sdy,
-		PLTPARAM_NONE, 0
-		);
-#endif /* LCDMODE_HORFILL */
-}
-
-// скоприовать прямоугольник с типом пикселей соответствующим pip
-void colpip_bitblt_key(
-	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
-	int_fast32_t dstinvalidatesize,
-	PACKEDCOLORPIP_T * dst,	// получатель
-	uint_fast16_t tdx,	// получатель Размеры окна в пикселях
-	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель Позиция
-	uint_fast16_t y,	// получатель
-	uintptr_t srcinvalidateaddr,	// параметры clean источника
-	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t sdx,	// источник Размеры окна в пикселях
 	uint_fast16_t sdy,	// источник
-	unsigned keyflag, COLOR24_T keycolor
+	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
 	ASSERT(src != NULL);
