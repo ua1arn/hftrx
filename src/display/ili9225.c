@@ -178,12 +178,12 @@ static void ili9225_put_char_end(void)
 }
 
 #if WITHSPIEXT16 || LCDMODE_PARALEAL
-	static COLORMAIN_T fgcolor, bkcolor;
+	static COLORPIP_T fgcolor, bkcolor;
 #else
 	static struct { uint_fast8_t first, second; } fgcolor, bkcolor;
 #endif
 
-static void ili9225_setcolor(COLORMAIN_T acolor, COLORMAIN_T abkcolor)
+static void ili9225_setcolor(COLORPIP_T acolor, COLORPIP_T abkcolor)
 {
 #if WITHSPIEXT16 || LCDMODE_PARALEAL
 	fgcolor = acolor;
@@ -266,7 +266,7 @@ static void ili9225_pixel_p3(
 }
 
 static void ili9225_colorpixel_p1(
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 #if LCDMODE_PARALEAL
@@ -280,7 +280,7 @@ static void ili9225_colorpixel_p1(
 }
 
 static void ili9225_colorpixel_p2(
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 #if LCDMODE_PARALEAL
@@ -294,7 +294,7 @@ static void ili9225_colorpixel_p2(
 }
 
 static void ili9225_colorpixel_p3(
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 #if LCDMODE_PARALEAL
@@ -413,7 +413,7 @@ static void ili9225_set_addr_column(uint_fast8_t x)
 	ili9225_cs_deactivate();
 }
 
-static void ili9225_clear(COLORMAIN_T bg)
+static void ili9225_clear(COLORPIP_T bg)
 {
 	unsigned i;
 	
@@ -704,7 +704,7 @@ void display_set_contrast(uint_fast8_t v)
 void 
 display_clear(void)
 {
-	const COLORMAIN_T bg = display_getbgcolor();
+	const COLORPIP_T bg = display_getbgcolor();
 
 	ili9225_clear(bg);
 }
@@ -715,13 +715,13 @@ void display_flush(void)
 }
 
 void
-colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 	ili9225_setcolor(fg, bg);
 }
 
 
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 	colmain_setcolors(fg, bg);
 }
@@ -831,7 +831,7 @@ void display_plotstop(void)
 }
 
 void display_plot(
-	const PACKEDCOLORMAIN_T * buffer, 
+	const PACKEDCOLORPIP_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy,
 	uint_fast16_t xpix,	// начало области рисования

@@ -199,7 +199,7 @@ static void uc1608_set_addr_column(uint_fast8_t col, uint_fast8_t row)
 void 
 display_clear(void)
 {
-	//const COLORMAIN_T bg = display_getbgcolor();
+	//const COLORPIP_T bg = display_getbgcolor();
 	unsigned i;
 	
 	uc1608_gotoxy(0, 0);
@@ -218,13 +218,13 @@ void display_flush(void)
 }
 
 void
-colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 	(void) fg;
 	(void) bg;
 }
 
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 	colmain_setcolors(fg, bg);
 }
@@ -350,7 +350,7 @@ void display_plotstart(
 }
 
 void display_plot(
-	const PACKEDCOLORMAIN_T * buffer, 
+	const PACKEDCOLORPIP_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy,
 	uint_fast16_t xpix,	// начало области рисования

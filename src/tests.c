@@ -5226,7 +5226,7 @@ static void display_solidbar(
 	uint_fast16_t y,
 	uint_fast16_t x2,
 	uint_fast16_t y2,
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 	if (x2 < x)
@@ -5274,7 +5274,7 @@ static void BarTest(void)
 		const int g = local_randomgr(256);
 		const int b = local_randomgr(256);
 
-		const COLORMAIN_T color = TFTRGB(r, g, b);
+		const COLORPIP_T color = TFTRGB(r, g, b);
 
 		int x = local_randomgr(DIM_X);
 		int y = local_randomgr(DIM_Y);
@@ -6371,10 +6371,10 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
-		static PACKEDCOLORMAIN_T layer0_a [GXSIZE(DIM_X, DIM_Y)];
-		static PACKEDCOLORMAIN_T layer0_b [GXSIZE(DIM_X, DIM_Y)];
-		static PACKEDCOLORMAIN_T layer1 [GXSIZE(DIM_X, DIM_Y)];
-		static PACKEDCOLORMAIN_T fbpic [GXSIZE(picx, picy)];
+		static PACKEDCOLORPIP_T layer0_a [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T layer0_b [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T layer1 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T fbpic [GXSIZE(picx, picy)];
 
 //		dcache_clean_invalidate((uintptr_t) layer0, sizeof layer0);
 //		dcache_clean_invalidate((uintptr_t) layer1, sizeof layer1);
@@ -6382,7 +6382,7 @@ void hightests(void)
 
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
-		COLORMAIN_T keycolor = COLOR_KEY;
+		COLORPIP_T keycolor = COLOR_KEY;
 
 		unsigned picalpha = 255;
 		colmain_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
@@ -6452,7 +6452,7 @@ void hightests(void)
 			int w = 500;
 			int xpos = (c * (w - 1)) / 255;	/* позиция маркера */
 
-			PACKEDCOLORMAIN_T * drawlayer = phase ? layer0_a : layer0_b;
+			PACKEDCOLORPIP_T * drawlayer = phase ? layer0_a : layer0_b;
 
 			colmain_fillrect(drawlayer, DIM_X, DIM_Y, x0, y, w, h, TFTALPHA(bgalpha, COLOR_BLACK));
 
@@ -6521,8 +6521,8 @@ void hightests(void)
 #endif
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
-		const COLORMAIN_T bg = display_getbgcolor();
-		PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+		const COLORPIP_T bg = display_getbgcolor();
+		PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
@@ -6537,7 +6537,7 @@ void hightests(void)
 
 		for (int pos = 0; pos < 16; ++ pos)
 		{
-			COLORMAIN_T c = 1u << pos;
+			COLORPIP_T c = 1u << pos;
 			colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, c);
 			PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
 			local_delay_ms(2000);
@@ -7709,7 +7709,7 @@ void hightests(void)
 		static ALIGNX_BEGIN volatile PACKEDCOLOR565_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
 		colpip_fill(scr, dx, dy, COLOR_WHITE);
-		colpip_to_main(scr, dx, dy, 0, GRID2Y(topreserved));
+		colpip_copy_to_draw(scr, dx, dy, 0, GRID2Y(topreserved));
 		//for (;;)
 		//	;
 		int phase = 0;
@@ -7724,7 +7724,7 @@ void hightests(void)
 			for (i = 0; i < bufY; ++ i)
 				colpip_point(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
 
-			colpip_to_main(scr, dx, dy, 0, GRID2Y(topreserved));
+			colpip_copy_to_draw(scr, dx, dy, 0, GRID2Y(topreserved));
 			//local_delay_ms(25);
 			if (++ count > top)
 			{
@@ -8256,9 +8256,9 @@ void hightests(void)
 	uint_fast32_t linesStart = 0;
 	uint_fast32_t pixelIdx = 0;
 
-	PACKEDCOLORMAIN_T * frame = colmain_fb_draw();
+	PACKEDCOLORPIP_T * frame = colmain_fb_draw();
 
-	memset(frame, 0x00, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	memset(frame, 0x00, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
 
 	for(ycoi = 0; ycoi < DIM_Y; ycoi++)
 	{
@@ -8278,7 +8278,7 @@ void hightests(void)
 	{
 		// test: вывод палитры на экран
 		display2_bgreset();
-		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 		int sepx = 3, sepy = 3;
 		int wx = DIM_X / 16;
 		int wy = DIM_Y / 16;
@@ -8313,7 +8313,7 @@ void hightests(void)
 	// разметка для 9-точечной калибровки тачскрина
 	display2_bgreset();
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 
 	uint8_t c = 35;
 
@@ -8330,7 +8330,7 @@ void hightests(void)
 
 	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 9
 
-	dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
 	arm_hardware_ltdc_main_set((uintptr_t) fr);
 
 	for(;;) {}
@@ -8351,7 +8351,7 @@ void hightests(void)
 		PRINTF(PSTR("touch screen test:\n"));
 		for (;;)
 		{
-			PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+			PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 			char msg [64];
 			uint_fast16_t x, y;
 			if (board_tsc_getxy(& x, & y))
@@ -8370,7 +8370,7 @@ void hightests(void)
 			display_at(22, 26, msg);
 			local_delay_ms(10);
 
-			dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+			dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
 			arm_hardware_ltdc_main_set((uintptr_t) fr);
 		}
 	}
@@ -8534,7 +8534,7 @@ void hightests(void)
 
 	/* буфер размером x=64, y=112 точек */
 	enum { bufY = DIM_Y - 8, dx = DIM_X, dy = /*24 */ bufY, DBX_0 = 0, DBY_1 = 1};
-	static FATFSALIGN_BEGIN PACKEDCOLORMAIN_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
+	static FATFSALIGN_BEGIN PACKEDCOLORPIP_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
 
 
 	/* отображение надписей самым маленьким шрифтом (8 точек) */
@@ -8758,7 +8758,7 @@ void hightests(void)
 	{
 		char b [32];
 		int c;
-		// COLORMAIN_T bg
+		// COLORPIP_T bg
 //		for (c = 0; c < 256; ++ c)
 //		{
 //			display_setbgcolor(TFTRGB(c, c, c));
@@ -8829,7 +8829,7 @@ void hightests(void)
 	{
 		char b [32];
 		int c;
-		// COLORMAIN_T bg
+		// COLORPIP_T bg
 		for (c = 0; c < 256; ++ c)
 		{
 			display_setbgcolor(TFTRGB(c, c, c));

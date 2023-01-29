@@ -72,8 +72,8 @@
 #if (S1D_DISPLAY_BPP == 8) || LCDMODE_MAIN_L8
 
 
-	typedef uint_fast8_t COLORMAIN_T;
-	typedef uint8_t PACKEDCOLORMAIN_T;
+	typedef uint_fast8_t COLORPIP_T;
+	typedef uint8_t PACKEDCOLORPIP_T;
 
 	// RRRGGGBB
 
@@ -86,14 +86,14 @@
 			) \
 		)
 
-	typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
-	typedef COLORMAIN_T COLORPIP_T;
+	typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
+	typedef COLORPIP_T COLORPIP_T;
 
 #elif S1D_DISPLAY_BPP == 16 || ! LCDMODE_MAIN_L8
 
 	//#define LCDMODE_RGB565 1
-	typedef uint_fast16_t COLORMAIN_T;
-	typedef uint16_t PACKEDCOLORMAIN_T;
+	typedef uint_fast16_t COLORPIP_T;
+	typedef uint16_t PACKEDCOLORPIP_T;
 
 	// RRRR.RGGG.GGGB.BBBB
 	#define TFTRGB(red, green, blue) \
@@ -107,13 +107,13 @@
 
 	#define TFTRGB565 TFTRGB
 
-	typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
-	typedef COLORMAIN_T COLORPIP_T;
+	typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
+	typedef COLORPIP_T COLORPIP_T;
 
 #elif S1D_DISPLAY_BPP == 24
 
-	typedef uint_fast32_t COLORMAIN_T;
-	typedef uint32_t PACKEDCOLORMAIN_T;
+	typedef uint_fast32_t COLORPIP_T;
+	typedef uint32_t PACKEDCOLORPIP_T;
 
 	// RRRRRRR.GGGGGGGG.BBBBBBBB
 	#define TFTRGB(red, green, blue) \
@@ -125,8 +125,8 @@
 			) \
 		)
 
-	typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
-	typedef COLORMAIN_T COLORPIP_T;
+	typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
+	typedef COLORPIP_T COLORPIP_T;
 
 #endif
 

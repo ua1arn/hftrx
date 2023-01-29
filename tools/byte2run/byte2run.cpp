@@ -7,20 +7,20 @@
 
 static const char * const typenames [2] = 
 {
-    "PACKEDCOLORMAIN_T",
+    "PACKEDCOLORPIP_T",
     "PACKEDCOLORPIP_T",
 };
 
 static const char * const byte2runname [2] = 
 {
-    "byte2runmain",
+    "byte2runpip",
     "byte2runpip",
 };
 
 
 static const char * const prefixes [2] = 
 {
-    "COLORMAIN",
+    "COLORPIP",
     "COLORPIP",
 };
 
@@ -103,8 +103,8 @@ static const char * const array [][2] =
 	{	"YELLOW",   "BLACK"		},
 	{	"BLACK",	"GREEN"		},
 	{	"BLACK",	"RED"		},
-	{	"SPECTRUMBG2",	"BLACK"		},     // цвет частоты дополнительного приемника
-	{	"GRAY",	"BLACK"		},     // цвет частоты дополнительного приемника
+	{	"SPECTRUMBG2",	"BLACK"		},     // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	{	"GRAY",	"BLACK"		},     // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 };
 
 

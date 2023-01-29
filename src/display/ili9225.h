@@ -12,8 +12,8 @@
 #define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
 #define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
 
-typedef uint_fast16_t COLORMAIN_T;
-typedef uint16_t PACKEDCOLORMAIN_T;
+typedef uint_fast16_t COLORPIP_T;
+typedef uint16_t PACKEDCOLORPIP_T;
 
 // RRRR.RGGG.GGGB.BBBB
 #define TFTRGB(red, green, blue) \
@@ -26,8 +26,8 @@ typedef uint16_t PACKEDCOLORMAIN_T;
 	)
 #define TFTRGB565 TFTRGB
 
-typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
-typedef COLORMAIN_T COLORPIP_T;
+typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
+typedef COLORPIP_T COLORPIP_T;
 
 #define LCDMODE_COLORED	1
 

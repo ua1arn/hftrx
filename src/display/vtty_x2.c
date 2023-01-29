@@ -38,9 +38,9 @@ enum { VTTYx2_DX = VTTYx2_COLS * VTTYx2_CHARPIX, VTTYx2_DY = VTTYx2_ROWS * VTTYx
 
 typedef struct vtty_x2_tag
 {
-	ALIGNX_BEGIN PACKEDCOLORMAIN_T fb [GXSIZE(VTTYx2_DX, VTTYx2_DY)] ALIGNX_END;
-	ALIGNX_BEGIN PACKEDCOLORMAIN_T fgshadow [GXSIZE(VTTYx2_ROWS, VTTYx2_COLS)] ALIGNX_END;	// цвета символов
-	ALIGNX_BEGIN PACKEDCOLORMAIN_T bgshadow [GXSIZE(VTTYx2_ROWS, VTTYx2_COLS)] ALIGNX_END;	// цвета фона
+	ALIGNX_BEGIN PACKEDCOLORPIP_T fb [GXSIZE(VTTYx2_DX, VTTYx2_DY)] ALIGNX_END;
+	ALIGNX_BEGIN PACKEDCOLORPIP_T fgshadow [GXSIZE(VTTYx2_ROWS, VTTYx2_COLS)] ALIGNX_END;	// цвета символов
+	ALIGNX_BEGIN PACKEDCOLORPIP_T bgshadow [GXSIZE(VTTYx2_ROWS, VTTYx2_COLS)] ALIGNX_END;	// цвета фона
 	uint8_t shadow [VTTYx2_COLS] [VTTYx2_ROWS];
 	unsigned scroll;	// эта строка отображается верхней в целевом прямоугольнике. 0..VTTYx2_ROWS-1
 	unsigned row;		// 0..VTTYx2_ROWS-1
@@ -60,8 +60,8 @@ static int gwinleft = 1;
 static int gwinright = VTTYx2_COLS;
 static int gwinbottom = VTTYx2_ROWS;
 static unsigned gattr = (0x0F << AFGPOS) | (0x00 << ABGPOS);	// FFFFBBBB
-static COLORMAIN_T gfg = COLORMAIN_WHITE;
-static COLORMAIN_T gbg = COLORMAIN_BLACK;
+static COLORPIP_T gfg = COLORMAIN_WHITE;
+static COLORPIP_T gbg = COLORMAIN_BLACK;
 
 void display_vtty_x2_initialize(void);
 int display_vtty_x2_putchar(char ch);
@@ -111,7 +111,7 @@ void display_vtty_x2_show(
 	uint_fast16_t y
 	)
 {
-	PACKEDCOLORMAIN_T * const tfb = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const tfb = colmain_fb_draw();
 //	colmain_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTYx2_DX, VTTYx2_DY, VTTYx2_BG);	// обозначам место под вывод информации
 //	return;
 	vtty_x2_t * const vt = & vtty_x2_0;
@@ -129,20 +129,20 @@ void display_vtty_x2_show(
 	{
 		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
 		colpip_plot(
-				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy1,
-				(uintptr_t) vt->fb, GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORMAIN_T),	// параметры для clean
-				colmain_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, tgh2),	// начальный адрес источника
+				(uintptr_t) vt->fb, GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
+				colpip_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, tgh2),	// начальный адрес источника
 				VTTYx2_DX, tgh1);	// размеры источника
 	}
 	if (1 && tgh2 != 0)
 	{
 		// нижняя часть
 		colpip_plot(
-				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy2,
-				(uintptr_t) vt->fb, 1 * GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORMAIN_T),	// параметры для clean
-				colmain_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, 0),	// начальный адрес источника
+				(uintptr_t) vt->fb, 1 * GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
+				colpip_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, 0),	// начальный адрес источника
 				VTTYx2_DX, tgh2);	// размеры источника
 	}
 }
@@ -154,7 +154,7 @@ void display_vtty_x2_show_ra90(
 	uint_fast16_t y
 	)
 {
-	PACKEDCOLORMAIN_T * const tfb = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const tfb = colmain_fb_draw();
 //	colmain_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTYx2_DX, VTTYx2_DY, VTTYx2_BG);	// обозначам место под вывод информации
 //	return;
 	vtty_x2_t * const vt = & vtty_x2_0;
@@ -172,20 +172,20 @@ void display_vtty_x2_show_ra90(
 		// верхняя часть - правее в выхоном растре
 		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
 		colpip_plot_ra90(
-				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x + tgh2, y,
-				(uintptr_t) vt->fb, GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORMAIN_T),	// параметры для clean
-				colmain_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, tgh2),	// начальный адрес источника
+				(uintptr_t) vt->fb, GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
+				colpip_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, tgh2),	// начальный адрес источника
 				VTTYx2_DX, tgh1);	// размеры источника
 	}
 	if (1 && tgh2 != 0)
 	{
 		// нижняя часть - левее в выхоном растре
 		colpip_plot_ra90(
-				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y,
-				(uintptr_t) vt->fb, 1 * GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORMAIN_T),	// параметры для clean
-				colmain_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, 0),	// начальный адрес источника
+				(uintptr_t) vt->fb, 1 * GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
+				colpip_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, 0),	// начальный адрес источника
 				VTTYx2_DX, tgh2);	// размеры источника
 	}
 }
@@ -217,7 +217,7 @@ static void display_vtty_x2_scrollup(
 // https://dencode.com/string/hex
 
 // синхронное сохранение символа в буфер и в виде растра
-static void vtput(vtty_x2_t * const vt, unsigned col, unsigned row, char ch, COLORMAIN_T fg, COLORMAIN_T bg)
+static void vtput(vtty_x2_t * const vt, unsigned col, unsigned row, char ch, COLORPIP_T fg, COLORPIP_T bg)
 {
 	const unsigned vpos = (row + vt->scroll) % VTTYx2_ROWS;
 
@@ -355,7 +355,7 @@ void    gettextinfo (struct text_info *r)
 	r->winbottom = gwinbottom;
 }
 
-static uint_fast8_t color2attr(COLORMAIN_T color)
+static uint_fast8_t color2attr(COLORPIP_T color)
 {
 	switch (color)
 	{
@@ -369,7 +369,7 @@ static uint_fast8_t color2attr(COLORMAIN_T color)
 	}
 }
 
-static COLORMAIN_T attr2color(uint_fast8_t v)
+static COLORPIP_T attr2color(uint_fast8_t v)
 {
 	switch (v)
 	{
@@ -399,8 +399,8 @@ void ex_gettext(int left, int top, int right, int bottom, void *destin)
 		{
 			* p ++ = vt->shadow [v] [col];
 			* p ++ =
-					(color2attr(* colmain_mem_at(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, v)) << AFGPOS) +
-					(color2attr(* colmain_mem_at(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, v)) << ABGPOS);
+					(color2attr(* colpip_mem_at(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, v)) << AFGPOS) +
+					(color2attr(* colpip_mem_at(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, v)) << ABGPOS);
 			++ col;
 		}
 		++ row;

@@ -17,7 +17,7 @@
 #include "fatfs/ff.h"
 
 #include "audio.h"
-#include "display/display.h"	// PACKEDCOLORMAIN_T
+#include "display/display.h"	// PACKEDCOLORPIP_T
 
 ///////////////////////////////////////////////////
 
@@ -733,7 +733,7 @@ typedef struct {
 
 // Выполняем запись
 // 1 - неудачно
-static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
 	enum { PIX_BYTES = 3 };
 	const unsigned _bitsperpixel = PIX_BYTES * 8;
@@ -785,16 +785,16 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORMAIN_T * buffer, uint_fa
 		unsigned x;
 		for (x = 0; x < dx; ++ x)
 		{
-			const COLORMAIN_T c = * colmain_mem_at(buffer, dx, dy, x, dy - y - 1);
+			const COLORPIP_T c = * colpip_mem_at(buffer, dx, dy, x, dy - y - 1);
 #if LCDMODE_MAIN_L8
 			const COLOR24_T v24 = xltrgb24 [c];
 			row [x][0] = COLOR24_B(v24);
 			row [x][1] = COLOR24_G(v24);
 			row [x][2] = COLOR24_R(v24);
 #else /* LCDMODE_MAIN_L8 */
-			row [x][0] = COLORMAIN_B(c);
-			row [x][1] = COLORMAIN_G(c);
-			row [x][2] = COLORMAIN_R(c);
+			row [x][0] = COLORPIP_B(c);
+			row [x][1] = COLORPIP_G(c);
+			row [x][2] = COLORPIP_R(c);
 #endif /* LCDMODE_MAIN_L8 */
 		}
 		rc = f_write(& bmp_file, row, sizeof row, & wrCount);
@@ -823,7 +823,7 @@ static uint_fast8_t screenshot_stoprecording(void)
 }
 
 /* запись видимого изображения в файл */
-void display_snapshot_write(PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+void display_snapshot_write(PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
 	if (sdstate == SDSTATE_IDLE)
 	{

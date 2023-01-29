@@ -98,7 +98,7 @@ void add_element(const char * element_name, ...)
 		lh->parent = window_id;
 		lh->is_trackable = va_arg(arg, uint32_t);
 		lh->font_size = va_arg(arg, int);
-		lh->color = va_arg(arg, COLORMAIN_T);
+		lh->color = va_arg(arg, COLORPIP_T);
 
 		strncpy(lh->name, element_name, NAME_ARRAY_SIZE - 1);
 		lh->width = va_arg(arg, uint32_t);
@@ -1110,8 +1110,8 @@ const char * remove_start_line_spaces(const char * str)
 /* Отрисовка кнопки */
 static void draw_button(const button_t * const bh)
 {
-	PACKEDCOLORMAIN_T * bg = NULL;
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * bg = NULL;
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	window_t * win = get_win(bh->parent);
 	uint_fast8_t i = 0;
 	static const char delimeters [] = "|";
@@ -1136,7 +1136,7 @@ static void draw_button(const button_t * const bh)
 	// если не найден заполненный буфер фона по размерам, программная отрисовка
 	if (b1 == NULL || GUI_SOFTWARE_RENDERING)
 	{
-		PACKEDCOLORMAIN_T c1, c2;
+		PACKEDCOLORPIP_T c1, c2;
 		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 #if GUI_OLDBUTTONSTYLE
@@ -1165,27 +1165,27 @@ static void draw_button(const button_t * const bh)
 #if GUI_OLDBUTTONSTYLE
 		colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, y1, (uintptr_t) bg, GXSIZE(bh->w, bh->h), bg, bh->w, bh->h);
 #else
-		PACKEDCOLORMAIN_T * src = NULL, * dst = NULL, * row = NULL;
+		PACKEDCOLORPIP_T * src = NULL, * dst = NULL, * row = NULL;
 		for (uint16_t yy = y1, yb = 0; yy < y1 + bh->h; yy ++, yb ++)
 		{
 			ASSERT(yy < WITHGUIMAXY);
 			ASSERT(yb < WITHGUIMAXY);
-			row = colmain_mem_at(bg, b1->w, b1->h, 0, yb);
+			row = colpip_mem_at(bg, b1->w, b1->h, 0, yb);
 			if (* row == GUI_DEFAULTCOLOR)										// если в первой позиции строки буфера не прозрачный цвет,
 			{																	// скопировать ее целиком, иначе попиксельно с проверкой
 				for (uint16_t xx = x1, xb = 0; xx < x1 + bh->w; xx ++, xb ++)
 				{
-					src = colmain_mem_at(bg, b1->w, b1->h, xb, yb);
+					src = colpip_mem_at(bg, b1->w, b1->h, xb, yb);
 					if (* src == GUI_DEFAULTCOLOR)
 						continue;
-					dst = colmain_mem_at(fr, DIM_X, DIM_Y, xx, yy);
-					memcpy(dst, src, sizeof(PACKEDCOLORMAIN_T));
+					dst = colpip_mem_at(fr, DIM_X, DIM_Y, xx, yy);
+					memcpy(dst, src, sizeof(PACKEDCOLORPIP_T));
 				}
 			}
 			else
 			{
-				dst = colmain_mem_at(fr, DIM_X, DIM_Y, x1, yy);
-				memcpy(dst, row, b1->w * sizeof(PACKEDCOLORMAIN_T));
+				dst = colpip_mem_at(fr, DIM_X, DIM_Y, x1, yy);
+				memcpy(dst, row, b1->w * sizeof(PACKEDCOLORPIP_T));
 //				colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, yy, (uintptr_t) row, GXSIZE(b1->w, 1), row, b1->w, 1);
 			}
 		}
@@ -1238,7 +1238,7 @@ static void draw_button(const button_t * const bh)
 /* Отрисовка слайдера */
 static void draw_slider(slider_t * sl)
 {
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	window_t * win = get_win(sl->parent);
 
 	if (sl->orientation)		// ORIENTATION_HORIZONTAL
@@ -1280,22 +1280,22 @@ static void draw_slider(slider_t * sl)
 /* Заполнение буферов фонов кнопок при инициализации GUI */
 static void fill_button_bg_buf(btn_bg_t * v)
 {
-	PACKEDCOLORMAIN_T * buf;
+	PACKEDCOLORPIP_T * buf;
 	uint_fast8_t w, h;
 
 	w = v->w;
 	h = v->h;
-	size_t s = GXSIZE(w, h) * sizeof (PACKEDCOLORMAIN_T);
+	size_t s = GXSIZE(w, h) * sizeof (PACKEDCOLORPIP_T);
 
-	v->bg_non_pressed = 	(PACKEDCOLORMAIN_T *) malloc(s);
+	v->bg_non_pressed = 	(PACKEDCOLORPIP_T *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_non_pressed);
-	v->bg_pressed = 		(PACKEDCOLORMAIN_T *) malloc(s);
+	v->bg_pressed = 		(PACKEDCOLORPIP_T *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_pressed);
-	v->bg_locked = 			(PACKEDCOLORMAIN_T *) malloc(s);
+	v->bg_locked = 			(PACKEDCOLORPIP_T *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_locked);
-	v->bg_locked_pressed = 	(PACKEDCOLORMAIN_T *) malloc(s);
+	v->bg_locked_pressed = 	(PACKEDCOLORPIP_T *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_locked_pressed);
-	v->bg_disabled = 		(PACKEDCOLORMAIN_T *) malloc(s);
+	v->bg_disabled = 		(PACKEDCOLORPIP_T *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_disabled);
 
 	buf = v->bg_non_pressed;
@@ -1486,7 +1486,7 @@ void textfield_update_size(text_field_t * tf)
 }
 
 /* Добавить строку в текстовое поле */
-void textfield_add_string(text_field_t * tf, const char * str, COLORMAIN_T color)
+void textfield_add_string(text_field_t * tf, const char * str, COLORPIP_T color)
 {
 	ASSERT(tf != NULL);
 
@@ -1770,7 +1770,7 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 	uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 	char buf [TEXT_ARRAY_SIZE];
 	uint_fast8_t str_len = 0;
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 
 	process_gui();
 
@@ -1920,9 +1920,9 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 
 // *************************************
 
-void gui_drawstring(uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORMAIN_T color)
+void gui_drawstring(uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORPIP_T color)
 {
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	window_t * win = get_win(check_for_parent_window());
 
 	const uint_fast16_t x1 = x + win->draw_x1;
@@ -1952,9 +1952,9 @@ uint_fast16_t gui_get_window_draw_height(void)
 }
 
 // Нарисовать линию в границах окна
-void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color)
+void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORPIP_T color)
 {
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	window_t * win = get_win(check_for_parent_window());
 
 	const uint_fast16_t xn = x1 + win->draw_x1;
@@ -1970,9 +1970,9 @@ void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fas
 	colmain_line(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, 1);
 }
 
-void gui_drawrect(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color, uint_fast8_t fill)
+void gui_drawrect(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORPIP_T color, uint_fast8_t fill)
 {
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	window_t * win = get_win(check_for_parent_window());
 
 	const uint_fast16_t xn = x1 + win->draw_x1;
@@ -1988,9 +1988,9 @@ void gui_drawrect(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fas
 	colpip_rect(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, fill);
 }
 
-void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORMAIN_T color)
+void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORPIP_T color)
 {
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	window_t * win = get_win(check_for_parent_window());
 
 	const uint_fast16_t xp = x1 + win->draw_x1;

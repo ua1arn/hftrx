@@ -18,13 +18,13 @@
 
 	// Цветное изображение не поддерживается на этом дисплее (заглушка).
 	#define TFTRGB(r, g, b)	(0)
-	typedef uint_fast8_t COLORMAIN_T;	/* цвета не поддерживаются - заглушка */
-	typedef uint8_t PACKEDCOLORMAIN_T;	/* цвета не поддерживаются - заглушка */
+	typedef uint_fast8_t COLORPIP_T;	/* цвета не поддерживаются - заглушка */
+	typedef uint8_t PACKEDCOLORPIP_T;	/* цвета не поддерживаются - заглушка */
 
 	#define TFTRGB565 TFTRGB
 
-	typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
-	typedef COLORMAIN_T COLORPIP_T;
+	typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
+	typedef COLORPIP_T COLORPIP_T;
 
 #endif /* LCDMODE_UC1608 */
 

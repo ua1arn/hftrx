@@ -41,7 +41,7 @@ enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
 
 typedef struct vtty_tag
 {
-	ALIGNX_BEGIN PACKEDCOLORMAIN_T fb [GXSIZE(VTTY_DX, VTTY_DY)] ALIGNX_END;
+	ALIGNX_BEGIN PACKEDCOLORPIP_T fb [GXSIZE(VTTY_DX, VTTY_DY)] ALIGNX_END;
 	unsigned scroll;	// эта строка отображается верхней в целевом прямоугольнике. 0..VTTY_ROWS-1
 	unsigned row;		// 0..VTTY_ROWS-1
 	unsigned col;		// 0..VTTY_COLS-1
@@ -114,7 +114,7 @@ static void display_vtty_show(
 	uint_fast16_t y
 	)
 {
-	PACKEDCOLORMAIN_T * const tfb = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const tfb = colmain_fb_draw();
 //	colmain_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTY_DX, VTTY_DY, VTTY_BG);	// обозначам место под вывод информации
 //	return;
 	vtty_t * const vt = & vtty0;
@@ -132,20 +132,20 @@ static void display_vtty_show(
 	{
 		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
 		colpip_plot(
-				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy1,
-				(uintptr_t) vt->fb, GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORMAIN_T),	// параметры для clean
-				colmain_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, tgh2),	// начальный адрес источника
+				(uintptr_t) vt->fb, GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
+				colpip_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, tgh2),	// начальный адрес источника
 				VTTY_DX, tgh1);	// размеры источника
 	}
 	if (1 && tgh2 != 0)
 	{
 		// нижняя часть
 		colpip_plot(
-				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy2,
-				(uintptr_t) vt->fb, 1 * GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORMAIN_T),	// параметры для clean
-				colmain_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, 0),	// начальный адрес источника
+				(uintptr_t) vt->fb, 1 * GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
+				colpip_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, 0),	// начальный адрес источника
 				VTTY_DX, tgh2);	// размеры источника
 	}
 }

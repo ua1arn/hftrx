@@ -627,7 +627,7 @@ static void gui_main_process(void)
 {
 	window_t * const win = get_win(WINDOW_MAIN);
 
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	char buf [TEXT_ARRAY_SIZE];
 	const unsigned buflen = ARRAY_SIZE(buf);
 	unsigned update = 0;
@@ -2081,7 +2081,7 @@ static void window_utilites_process(void)
 static void window_swrscan_process(void)
 {
 #if WITHTX
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	uint_fast16_t gr_w = 500, gr_h = 250;												// размеры области графика
 	uint_fast8_t interval = 20;
 	uint_fast16_t x0 = edge_step + interval * 2, y0 = edge_step + gr_h - interval * 2;	// нулевые координаты графика
@@ -3044,7 +3044,7 @@ static void window_ap_reverb_process(void)
 static void window_ap_mic_eq_process(void)
 {
 #if WITHAFCODEC1HAVEPROC
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	window_t * const win = get_win(WINDOW_AP_MIC_EQ);
 
 	label_t * lbl = NULL;
@@ -4259,7 +4259,7 @@ void hamradio_gui_parse_ft8buf(void)
 	memset(cq_call, 0, sizeof(cq_call));
 }
 
-static void parse_ft8_answer(char * str, COLORMAIN_T * color, unsigned * cq_flag)
+static void parse_ft8_answer(char * str, COLORPIP_T * color, unsigned * cq_flag)
 {
 	* color = COLORMAIN_WHITE;
 	* cq_flag = 0;
@@ -4625,7 +4625,7 @@ static void window_ft8_process(void)
 		for (unsigned i = 0; i < ft8.decoded_messages; i ++)
 		{
 			char * msg = ft8.rx_text [i];
-			COLORMAIN_T colorline;
+			COLORPIP_T colorline;
 			unsigned cq_flag = 0;
 			parse_ft8_answer(msg, & colorline, & cq_flag);
 			if (cq_filter)
@@ -6268,7 +6268,7 @@ static void window_lfm_spectre_process(void)
 #if WITHLFM
 	const unsigned xmax = 600, ymax = 200, x1 = (800 / 2) - 100, x2 = (800 / 2) + 100;
 	window_t * const win = get_win(WINDOW_LFM_SPECTRE);
-	static COLORMAIN_T d[600][200];
+	static COLORPIP_T d[600][200];
 	static int shift = 0;
 
 	static unsigned x = 0;
@@ -6303,7 +6303,7 @@ static void window_lfm_spectre_process(void)
 	{
 		for (int i = x1, y = 0; i < x2; i ++, y ++)
 		{
-			COLORMAIN_T v = display2_get_spectrum(i + shift);
+			COLORPIP_T v = display2_get_spectrum(i + shift);
 			gui_drawpoint(x, y, v);
 			d[x][y] = v;
 		}

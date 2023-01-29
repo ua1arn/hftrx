@@ -25,18 +25,18 @@
 
 	#include "display/fontmaps.h"
 
-	static PACKEDCOLORMAIN_T * getscratchwnd(void);
+	static PACKEDCOLORPIP_T * getscratchwnd(void);
 
 #elif WITHSPECTRUMWF
 
-	static PACKEDCOLORMAIN_T * getscratchwnd(void);
+	static PACKEDCOLORPIP_T * getscratchwnd(void);
 
 #endif /* LCDMODE_LTDC */
 
-static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
-static const COLORMAIN_T color_alt_red = COLORMAIN_RED;
+static const COLORPIP_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
+static const COLORPIP_T color_alt_red = COLORMAIN_RED;
 
-void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg);
+void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg);
 
 #if WITHALTERNATIVELAYOUT
 
@@ -44,8 +44,8 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 
 typedef struct {
 	uint_fast8_t chars_W2;
-	const COLORMAIN_T * pcolor;
-	PACKEDCOLORMAIN_T * label_bg;	/* буфер */
+	const COLORPIP_T * pcolor;
+	PACKEDCOLORPIP_T * label_bg;	/* буфер */
 	size_t size;					/* размер для cache flush */
 	uint_fast16_t w;
 	uint_fast16_t h;
@@ -67,17 +67,17 @@ static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		label_bg_t * const lbl = & label_bg [i];
 		lbl->w = lbl->chars_W2 * SMALLCHARW2;
 		lbl->h = SMALLCHARH2 + 6;
-		lbl->size = GXSIZE(lbl->w, lbl->h) * sizeof (PACKEDCOLORMAIN_T);
-		lbl->label_bg = (PACKEDCOLORMAIN_T *) malloc(lbl->size);
+		lbl->size = GXSIZE(lbl->w, lbl->h) * sizeof (PACKEDCOLORPIP_T);
+		lbl->label_bg = (PACKEDCOLORPIP_T *) malloc(lbl->size);
 		ASSERT(lbl->label_bg != NULL);
 		colmain_fillrect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w, lbl->h, COLORMAIN_BLACK);
 		colmain_rounded_rect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w - 1, lbl->h - 1, 5, * lbl->pcolor, 1);
 	} while (++ i < ARRAY_SIZE(label_bg));
 }
 
-void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
+void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg)
 {
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	uint_fast16_t xx = GRID2X(xgrid);
 	uint_fast16_t yy = GRID2Y(ygrid);
 	label_bg_t * lbl_bg = NULL;
@@ -304,7 +304,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
 /* стркутура хранит цвета элементов дизайна. Возможно третье поле - для анталиасингового формирования изображения */
 typedef struct colorpair_tag
 {
-	COLORMAIN_T fg, bg;
+	COLORPIP_T fg, bg;
 } COLORPAIR_T;
 
 // todo: учесть LCDMODE_COLORED
@@ -553,7 +553,7 @@ enum {
 };
 enum { SM_BG_W = GRID2X(15), SM_BG_H = GRID2Y(20) };
 
-typedef ALIGNX_BEGIN PACKEDCOLORMAIN_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
+typedef ALIGNX_BEGIN PACKEDCOLORPIP_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
 static smeter_bg_t smeter_bg [SMETER_TYPE_COUNT][SM_STATE_COUNT];
 
 typedef struct {
@@ -676,11 +676,11 @@ display2_smeter15_layout(
 		smpr->gm + 5 * smpr->step2,
 	};
 
-	const COLORMAIN_T smeter = COLORMAIN_WHITE;
-	const COLORMAIN_T smeterplus = COLORMAIN_DARKRED;
+	const COLORPIP_T smeter = COLORMAIN_WHITE;
+	const COLORPIP_T smeterplus = COLORMAIN_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
-	PACKEDCOLORMAIN_T * bg;
+	PACKEDCOLORPIP_T * bg;
 	uint_fast8_t xb = 120, yb = 120;
 	unsigned p;
 	unsigned i;
@@ -859,7 +859,7 @@ display2_smeter15_init(
 	smprmsinited = 1;
 }
 
-static void smeter_arrow(uint_fast16_t target_pixel_x, uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, COLORMAIN_T color)
+static void smeter_arrow(uint_fast16_t target_pixel_x, uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, COLORPIP_T color)
 {
 	if (target_pixel_x > 220)
 		target_pixel_x = 220;
@@ -868,7 +868,7 @@ static void smeter_arrow(uint_fast16_t target_pixel_x, uint_fast16_t x, uint_fas
 	float32_t x1 = x + target_pixel_x;
 	float32_t y1 = y;
 
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 
 	// length cut
 	const uint32_t max_length = 220;
@@ -947,7 +947,7 @@ display2_smeter15(
 	const int yc = y0 + 120 + dial_shift;
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	static uint_fast8_t first_tx = 0;
 
 	int gp = smpr->gs, gv = smpr->gs, gv_trace = smpr->gs, gswr = smpr->gs;
@@ -1018,9 +1018,9 @@ display2_smeter15(
 		{
 			// TX state
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
-					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
+					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift);
 #if WITHRLEDECOMPRESS
 			smeter_arrow(gp, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
@@ -1028,7 +1028,7 @@ display2_smeter15(
 			if (gswr > smpr->gs)
 			{
 				uint_fast16_t xx, yy;
-				const COLORMAIN_T color = COLORMAIN_YELLOW;
+				const COLORPIP_T color = COLORMAIN_YELLOW;
 
 				display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, gswr, smpr->r2 + 2, 1, color, 0, 1);
 				display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, gswr, smpr->r1 - 2, 1, color, 0, 1);
@@ -1038,7 +1038,7 @@ display2_smeter15(
 				display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORMAIN_BLACK, 1);
 			}
 
-			const COLORMAIN_T color = COLORMAIN_GREEN;
+			const COLORPIP_T color = COLORMAIN_GREEN;
 			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
 			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
 			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
@@ -1049,16 +1049,16 @@ display2_smeter15(
 		{
 			// RX state
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
-					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
+					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift);
 #if WITHRLEDECOMPRESS
 			smeter_arrow(gv, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
 #else
 			{
 				// Рисование peak value (риска)
-				const COLORMAIN_T color = COLORMAIN_YELLOW;
+				const COLORPIP_T color = COLORMAIN_YELLOW;
 				display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
@@ -1066,7 +1066,7 @@ display2_smeter15(
 
 			{
 				// Рисование стрелки
-				const COLORMAIN_T color = COLORMAIN_GREEN;
+				const COLORPIP_T color = COLORMAIN_GREEN;
 				display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
 				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
 				display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
@@ -1081,9 +1081,9 @@ display2_smeter15(
 		if (is_tx)
 		{
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0,
-					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
+					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], SM_BG_W, SM_BG_H);
 
 			if(gp > smpr->gs)
@@ -1095,9 +1095,9 @@ display2_smeter15(
 		else
 		{
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0,
-					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
+					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], SM_BG_W, SM_BG_H
 					);
 
@@ -2396,7 +2396,7 @@ static void display2_mode_lower_a(
 {
 	char labels[5];
 	local_snprintf_P(labels, ARRAY_SIZE(labels), PSTR(" %s"), hamradio_get_mode_a_value_P());
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), labels, colors_1mode [0].fg);
 }
 
@@ -4006,7 +4006,7 @@ typedef struct {
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { WFROWS = WFDY };
 	enum { PALETTESIZE = 256 };
-	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
+	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif (LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)) && LCDMODE_LTDC
@@ -4020,7 +4020,7 @@ typedef struct {
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { WFROWS = WFDY };
 	enum { PALETTESIZE = ARRAY_SIZE(pancolor) };
-	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
+	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW
@@ -4029,7 +4029,7 @@ typedef struct {
 	enum { WFROWS = WFDY };
 	enum { PALETTESIZE = 256 };
 
-	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
+	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
@@ -4091,12 +4091,12 @@ struct ustates
 	FLOAT_t Yold_spe [ALLDX];
 	union
 	{
-		PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFROWS)];	// массив "водопада"
+		PACKEDCOLORPIP_T wfjarray [GXSIZE(ALLDX, WFROWS)];	// массив "водопада"
 #if WITHVIEW_3DSS
 		WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
 #endif /* WITHVIEW_3DSS */
 	} u;
-	PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
+	PACKEDCOLORPIP_T color_scale [SPDY];	/* массив значений для раскраски спектра */
 
 #if WITHAFSPECTRE
 	FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
@@ -4140,7 +4140,7 @@ static RAMBIGDTCM struct ustates gvars;
 #endif /* (CPUSTYLE_R7S721 || 0) */
 
 // Получить цвет запослнен6ия водопада при перестройке
-static COLORMAIN_T display2_bgcolorwfl(void)
+static COLORPIP_T display2_bgcolorwfl(void)
 {
 	return gvars.color_scale [0];
 }
@@ -4268,7 +4268,7 @@ display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		{
 			if (! hamradio_get_tx())
 			{
-				PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+				PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 
 				ASSERT(gvars.afsp.w <= ARRAY_SIZE(gvars.afsp.val_array));
 				for (unsigned x = 0; x < gvars.afsp.w; x ++)
@@ -5302,13 +5302,13 @@ static void wfj3dss_poke(uint_fast16_t x, uint_fast16_t y, WFL3DSS_T val)
 #endif /* WITHVIEW_3DSS */
 
 static
-PACKEDCOLORMAIN_T *
+PACKEDCOLORPIP_T *
 atwflj(uint_fast16_t x, uint_fast16_t y)
 {
 #if WITHVIEW_3DSS
 	ASSERT(glob_view_style != VIEW_3DSS);
 #endif /* WITHVIEW_3DSS */
-	return colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, x, y);
+	return colpip_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, x, y);
 }
 
 // стираем буфер усреднения FFT
@@ -5378,7 +5378,7 @@ static void wflshiftleft(uint_fast16_t pixels)
     		memmove(
     				atwflj(0, y),		// to
     				atwflj(pixels, y),	// from
-    				(ALLDX - pixels) * sizeof (PACKEDCOLORMAIN_T)
+    				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
     		);
     	}
         // заполнение вновь появившегося прямоугольника
@@ -5426,7 +5426,7 @@ static void wflshiftright(uint_fast16_t pixels)
 			memmove(
 					atwflj(pixels, y),	// to
 					atwflj(0, y),		// from
-					(ALLDX - pixels) * sizeof (PACKEDCOLORMAIN_T)
+					(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
 				);
     	}
         // заполнение вновь появившегося прямоугольника
@@ -5446,9 +5446,9 @@ static void wfsetupnew(void)
 }
 
 // отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
-static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORMAIN_T * p)
+static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORPIP_T * p)
 {
-	colpip_to_main(
+	colpip_copy_to_draw(
 			(uintptr_t) p, GXSIZE(ALLDX, 1) * sizeof * p,
 			p, ALLDX, 1, x, y);
 }
@@ -5577,7 +5577,7 @@ isvisibletext(
 static
 void
 display_colorgrid_xor(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
@@ -5629,7 +5629,7 @@ static FLOAT_t db2ratio(FLOAT_t valueDBb)
 static
 void
 display_colorgrid_set(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
@@ -5686,7 +5686,7 @@ display_colorgrid_set(
 static
 void
 display_colorgrid_3dss(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
@@ -5850,7 +5850,7 @@ static void display2_spectrum(
 	colmain_setcolors(COLORPIP_SPECTRUMBG, COLORPIP_SPECTRUMFG);
 
 #else /* */
-	PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
+	PACKEDCOLORPIP_T * const colorpip = getscratchwnd();
 	(void) x0;
 	(void) y0;
 	(void) pctx;
@@ -5889,7 +5889,7 @@ static void display2_spectrum(
 			uint_fast8_t draw_step = calcprev(current_3dss_step, MAX_3DSS_STEP);
 			uint_fast16_t ylast_sp = 0;
 			int i;
-			const COLORMAIN_T bgcolor = display_getbgcolor();
+			const COLORPIP_T bgcolor = display_getbgcolor();
 			for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
 			{
 				uint_fast16_t y0 = spy - 5 - i * Y_STEP;
@@ -5940,7 +5940,7 @@ static void display2_spectrum(
 							{
 								ASSERT(y0 >= h);
 								/* предотвращение отрисовки по ранее закрашенной области*/
-								if (* colmain_mem_at(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h) != bgcolor)
+								if (* colpip_mem_at(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h) != bgcolor)
 									break;
 
 								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h, gvars.color_scale [h]);
@@ -6193,7 +6193,7 @@ static void display2_waterfall(
 	if (glob_view_style != VIEW_3DSS)
 #endif /* WITHVIEW_3DSS */
 	{
-		PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
+		PACKEDCOLORPIP_T * const colorpip = getscratchwnd();
 		const uint_fast16_t p1h = WFDY - wfrow;	// высота верхней части в результируюшем изображении
 		const uint_fast16_t p2h = wfrow;		// высота нижней части в результируюшем изображении
 		const uint_fast16_t p1y = WFY0;
@@ -6203,7 +6203,7 @@ static void display2_waterfall(
 			/* перенос свежей части растра */
 			ASSERT(atwflj(0, wfrow) != NULL);
 			colpip_plot(
-					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORMAIN_T),
+					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
 					(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
 					atwflj(0, wfrow),	// начальный адрес источника
@@ -6214,7 +6214,7 @@ static void display2_waterfall(
 			ASSERT(atwflj(0, 0) != NULL);
 			/* перенос старой части растра */
 			colpip_plot(
-					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORMAIN_T),
+					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORPIP_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
 					(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
 					atwflj(0, 0),	// начальный адрес источника
@@ -6225,7 +6225,7 @@ static void display2_waterfall(
 #else /* */
 
 	// следы спектра ("водопад") на цветных дисплеях
-	PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
+	PACKEDCOLORPIP_T * const colorpip = getscratchwnd();
 	uint_fast16_t y;
 
 	// формирование растра
@@ -6262,8 +6262,8 @@ static void display2_colorbuff(
 	#if (LCDMODE_LTDC)
 
 	#else /* LCDMODE_LTDC */
-	colpip_to_main(
-			(uintptr_t) getscratchwnd(), sizeof (PACKEDCOLORMAIN_T) * GXSIZE(BUFDIM_X, BUFDIM_Y),
+	colpip_copy_to_draw(
+			(uintptr_t) getscratchwnd(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(BUFDIM_X, BUFDIM_Y),
 			getscratchwnd(), BUFDIM_X, BUFDIM_Y, GRID2X(x0), GRID2Y(y0));
 	#endif /* LCDMODE_LTDC */
 
@@ -6271,7 +6271,7 @@ static void display2_colorbuff(
 }
 
 static
-PACKEDCOLORMAIN_T * getscratchwnd(void)
+PACKEDCOLORPIP_T * getscratchwnd(void)
 {
 #if HHWMG
 	// Спектр на монохромных дисплеях
@@ -6285,11 +6285,11 @@ PACKEDCOLORMAIN_T * getscratchwnd(void)
 
 		pipparams_t pip;
 		display2_getpipparams(& pip);
-		return colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y);
+		return colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y);
 
 	#else /* LCDMODE_LTDC */
 
-		static PACKEDCOLORMAIN_T tbuff0 [GXSIZE(BUFDIM_X, BUFDIM_Y)];
+		static PACKEDCOLORPIP_T tbuff0 [GXSIZE(BUFDIM_X, BUFDIM_Y)];
 		return tbuff0;
 
 	#endif /* LCDMODE_LTDC */
@@ -6301,7 +6301,7 @@ PACKEDCOLORMAIN_T * getscratchwnd(void)
 #else /* WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY */
 
 static
-PACKEDCOLORMAIN_T * getscratchwnd(void)
+PACKEDCOLORPIP_T * getscratchwnd(void)
 {
 	return NULL;
 }
@@ -6787,13 +6787,13 @@ static  int icos(unsigned alpha, unsigned r)
 // Рисование радиусов
 void
 display_radius_buf(
-		PACKEDCOLORMAIN_T * buffer,
+		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
 		int xc, int yc,
 		unsigned gs,
 		unsigned r1, unsigned r2,
-		COLORMAIN_T color,
+		COLORPIP_T color,
 		int antialiasing,
 		int style)			// 1 - растягивание по горизонтали
 {
@@ -6826,13 +6826,13 @@ polar_to_dek(
 // нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
 void
 display_segm_buf(
-		PACKEDCOLORMAIN_T * buffer,
+		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
 		int xc, int yc,
 		unsigned gs, unsigned ge,
 		unsigned r, int step,
-		COLORMAIN_T color,
+		COLORPIP_T color,
 		int antialiasing,
 		int style)			// 1 - растягивание по горизонтали
 {
@@ -6891,7 +6891,7 @@ display_segm_buf(
 
 /* Нарисовать прямоугольник со скругленными углами */
 void colmain_rounded_rect(
-		PACKEDCOLORMAIN_T * buffer,
+		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
 		uint_fast16_t x1,
@@ -6899,7 +6899,7 @@ void colmain_rounded_rect(
 		uint_fast16_t x2,
 		uint_fast16_t y2,
 		uint_fast8_t r,		// радиус закругления углов
-		COLORMAIN_T color,
+		COLORPIP_T color,
 		uint_fast8_t fill
 		)
 {
@@ -6924,7 +6924,7 @@ void colmain_rounded_rect(
 
 	if (fill)
 	{
-		PACKEDCOLORMAIN_T * oldColor = colmain_mem_at(buffer, bx, by, x1 + r, y1 + r);
+		PACKEDCOLORPIP_T * oldColor = colpip_mem_at(buffer, bx, by, x1 + r, y1 + r);
 		display_floodfill(buffer, bx, by, x1 + (x2 - x1) / 2, y1 + r, color, * oldColor, 0);
 	}
 }
@@ -7048,7 +7048,7 @@ uint_fast8_t display_getpage0(void)
 	return DPAGE0;
 }
 
-COLORMAIN_T display2_get_spectrum(int x)
+COLORPIP_T display2_get_spectrum(int x)
 {
 	//int v = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 	int v = dsp_mag2y(gvars.spavgarray [x], SPDY - 1, glob_topdb, glob_bottomdb);

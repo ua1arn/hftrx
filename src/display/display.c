@@ -42,7 +42,7 @@ const char * savewhere = "no func";
 //#include "./byte2crun.h"
 //#endif /* ! LCDMODE_LTDC_L24 */
 
-typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
+typedef PACKEDCOLORPIP_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
 
 #if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 	#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
@@ -64,7 +64,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 		return drawframe;
 	}
 
-	PACKEDCOLORMAIN_T *
+	PACKEDCOLORPIP_T *
 	colmain_fb_draw(void)
 	{
 		return fbfX [drawframe];
@@ -97,7 +97,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 		return 0;
 	}
 
-	PACKEDCOLORMAIN_T *
+	PACKEDCOLORPIP_T *
 	colmain_fb_draw(void)
 	{
 		return & framebuff[0][0];
@@ -121,7 +121,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 	}
 
 #else
-	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
 
 	// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
 	uint_fast8_t colmain_fb_next(void)
@@ -129,7 +129,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 		return 0;
 	}
 
-	PACKEDCOLORMAIN_T *
+	PACKEDCOLORPIP_T *
 	colmain_fb_draw(void)
 	{
 		return fbf;
@@ -153,10 +153,10 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 void display_putpixel(
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	colmain_putpixel(buffer, dx, dy, x, y, color);
@@ -168,10 +168,10 @@ void
 display_fillrect(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -184,10 +184,10 @@ void
 display_line(
 	int x1, int y1,
 	int x2, int y2,
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -207,7 +207,7 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -217,12 +217,12 @@ display_scroll_down(
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	/* TODO: В DMA2D нет средств управления направлением пересылки, потому данный код копирует сам на себя данные (размножает) */
 	/* исходный растр */
-	DMA2D->FGMAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, y0 + 0, x0);
+	DMA2D->FGMAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, y0 + 0, x0);
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
 		((DIM_X - w) << DMA2D_FGOR_LO_Pos) |
 		0;
 	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, y0 + n, x0);
+	DMA2D->OMAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, y0 + n, x0);
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((DIM_X - w) << DMA2D_OOR_LO_Pos) |
 		0;
@@ -267,7 +267,7 @@ display_scroll_up(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -276,12 +276,12 @@ display_scroll_up(
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
 	/* исходный растр */
-	DMA2D->FGMAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, y0 + n, x0);
+	DMA2D->FGMAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, y0 + n, x0);
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
 		((DIM_X - w) << DMA2D_FGOR_LO_Pos) |
 		0;
 	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, y0 + 0, x0);
+	DMA2D->OMAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, y0 + 0, x0);
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((DIM_X - w) << DMA2D_OOR_LO_Pos) |
 		0;
@@ -319,14 +319,14 @@ display_scroll_up(
 #include "./byte2crun.h"
 #endif /* ! LCDMODE_LTDC_L24 */
 
-static PACKEDCOLORMAIN_T ltdc_fg = COLORMAIN_WHITE, ltdc_bg = COLORMAIN_BLACK;
+static PACKEDCOLORPIP_T ltdc_fg = COLORMAIN_WHITE, ltdc_bg = COLORMAIN_BLACK;
 
 #if ! LCDMODE_LTDC_L24
-static const FLASHMEM PACKEDCOLORMAIN_T (* byte2runmain) [256][8] = & byte2runmain_COLORMAIN_WHITE_COLORMAIN_BLACK;
+static const FLASHMEM PACKEDCOLORPIP_T (* byte2runmain) [256][8] = & byte2runmain_COLORMAIN_WHITE_COLORMAIN_BLACK;
 //static const FLASHMEM PACKEDCOLORPIP_T (* byte2runpip) [256][8] = & byte2runpip_COLORPIP_WHITE_COLORPIP_BLACK;
 #endif /* ! LCDMODE_LTDC_L24 */
 
-void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 
 #if ! LCDMODE_LTDC_L24
@@ -353,7 +353,7 @@ void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
 
 }
 
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 	colmain_setcolors(fg, bg);
 }
@@ -361,8 +361,8 @@ void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void)
 {
-	const COLORMAIN_T bg = display_getbgcolor();
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const COLORPIP_T bg = display_getbgcolor();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 
 	colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
 }
@@ -393,7 +393,7 @@ void display_bar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	ASSERT(value <= topvalue);
@@ -430,13 +430,13 @@ static void
 ltdc_pix1color(
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	PACKEDCOLORMAIN_T color
+	PACKEDCOLORPIP_T color
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
+	volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y);
 	* tgr = color;
 	//dcache_clean((uintptr_t) tgr, sizeof * tgr);
 }
@@ -480,15 +480,15 @@ ltdc_vertical_pixN(
 	//ltdc_secondoffs ++;
 
 #else /* LCDMODE_LTDC_L24 */
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
+	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y);
 	// размещаем пиксели по горизонтали
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
-	const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [pattern];
+	const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runmain) [pattern];
 	memcpy(tgr, pcl, sizeof (* pcl) * w);
-	//dcache_clean((uintptr_t) tgr, sizeof (PACKEDCOLORMAIN_T) * w);
+	//dcache_clean((uintptr_t) tgr, sizeof (PACKEDCOLORPIP_T) * w);
 #endif /* LCDMODE_LTDC_L24 */
 }
 
@@ -496,7 +496,7 @@ ltdc_vertical_pixN(
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 void RAMFUNC ltdc_horizontal_pixels(
-	PACKEDCOLORMAIN_T * tgr,		// target raster
+	PACKEDCOLORPIP_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	)
@@ -506,12 +506,12 @@ void RAMFUNC ltdc_horizontal_pixels(
 
 	for (col = 0; w >= 8; col += 8, w -= 8)
 	{
-		const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [* raster ++];
+		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runmain) [* raster ++];
 		memcpy(tgr + col, pcl, sizeof (* tgr) * 8);
 	}
 	if (w != 0)
 	{
-		const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [* raster ++];
+		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runmain) [* raster ++];
 		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
 	}
 	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
@@ -525,7 +525,7 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
 	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке символа
-	PACKEDCOLORMAIN_T * const __restrict buffer,
+	PACKEDCOLORPIP_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y,
@@ -535,7 +535,7 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < height; ++ cgrow)
 	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdc_horizontal_pixels(tgr, & fontraster [(c * height + cgrow) * bytesw], width2);
 	}
 	return x + width2;
@@ -547,7 +547,7 @@ static uint_fast16_t
 RAMFUNC_NONILINE
 ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -557,7 +557,7 @@ ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 //	uint_fast8_t cgrow;
 //	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 //	{
-//		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
 //		ltdc_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 //	}
 //	return x + width;
@@ -567,7 +567,7 @@ ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
@@ -576,7 +576,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t
 //	uint_fast8_t cgrow;
 //	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 //	{
-//		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
 //		ltdc_horizontal_pixels(tgr, S1D13781_bigfont_LTDC [c] [cgrow], width);
 //	}
 //	return x + width;
@@ -586,7 +586,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t
 // return new x coordinate
 static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = HALFCHARW;
@@ -595,7 +595,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_half(uint_fast16_
 //	uint_fast8_t cgrow;
 //	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
 //	{
-//		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
 //		ltdc_horizontal_pixels(tgr, S1D13781_halffont_LTDC [c] [cgrow], width);
 //	}
 //	return x + width;
@@ -775,7 +775,7 @@ void display_flush(void)
 //	char s [32];
 //	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) frame);
 //	display_at(0, 0, s);
-	dcache_clean(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	dcache_clean(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
 	arm_hardware_ltdc_main_set_no_vsync(frame);
 }
 
@@ -787,7 +787,7 @@ void display_nextfb(void)
 //	local_snprintf_P(s, 32, "B=%08lX ", (unsigned long) frame);
 //	display_at(0, 0, s);
 	ASSERT((frame % DCACHEROWSIZE) == 0);
-	dcache_clean_invalidate(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	dcache_clean_invalidate(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
 	arm_hardware_ltdc_main_set(frame);
 	const unsigned page = colmain_fb_next();	// возвращает новый индекс страницы отрисовки
 #if WITHOPENVG
@@ -799,7 +799,7 @@ void display_nextfb(void)
 void display_initialize(void)
 {
 #if WITHOPENVG
-	PACKEDCOLORMAIN_T * frames [LCDMODE_MAIN_PAGES];
+	PACKEDCOLORPIP_T * frames [LCDMODE_MAIN_PAGES];
 	unsigned i;
 	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
 	{
@@ -1390,18 +1390,18 @@ void display_value_small_xy(
 }
 
 #if LCDMODE_COLORED
-static COLORMAIN_T bgcolor = COLORMAIN_BLACK;
+static COLORPIP_T bgcolor = COLORMAIN_BLACK;
 #endif /* LCDMODE_COLORED */
 
 void
-display_setbgcolor(COLORMAIN_T c)
+display_setbgcolor(COLORPIP_T c)
 {
 #if LCDMODE_COLORED
 	bgcolor = c;
 #endif /* LCDMODE_COLORED */
 }
 
-COLORMAIN_T
+COLORPIP_T
 display_getbgcolor(void)
 {
 #if LCDMODE_COLORED
@@ -1418,9 +1418,9 @@ display_getbgcolor(void)
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
 // если разный - то заглушка
 
-//#warning colpip_to_main is dummy for this LCDMODE_LTDC combination
+//#warning colpip_copy_to_draw is dummy for this LCDMODE_LTDC combination
 
-void colpip_to_main(
+void colpip_copy_to_draw(
 	const PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -1439,9 +1439,8 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 
 #elif LCDMODE_LTDC
 
-// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
-// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
-void colpip_to_main(
+// Скопировать цветной буфр в drqw buffer
+void colpip_copy_to_draw(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer,	// источник
@@ -1455,17 +1454,17 @@ void colpip_to_main(
 	ASSERT(dy <= DIM_Y);
 	ASSERT(((uintptr_t) buffer % DCACHEROWSIZE) == 0);
 #if LCDMODE_HORFILL
-	hwaccel_copy(
+	hwaccel_bitblt(
 		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
-		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
+		colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		buffer, dx, dy,
 		0, 0
 		);
 #else /* LCDMODE_HORFILL */
-	hwaccel_copy(
+	hwaccel_bitblt(
 		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
-		colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
+		colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		buffer, dx, dy,
 		0, 0
@@ -1482,7 +1481,7 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 
 // Выдать буфер на дисплей. Функции бывают только для не L8 режимов
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
-void colpip_to_main(
+void colpip_copy_to_draw(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer,	// источник
@@ -2029,7 +2028,7 @@ RGB_t hsv2rgb(HSV_t hsv)
 
 #if WITHRLEDECOMPRESS
 
-PACKEDCOLORMAIN_T convert_565_to_a888(uint16_t color)
+PACKEDCOLORPIP_T convert_565_to_a888(uint16_t color)
 {
 	uint8_t b5 = (color & 0x1F) << 3;
 	uint8_t g6 = ((color & 0x7E0) >> 5) << 2;
@@ -2038,12 +2037,12 @@ PACKEDCOLORMAIN_T convert_565_to_a888(uint16_t color)
 	return TFTRGB(r5, g6, b5);
 }
 
-void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORMAIN_T bg_color)
+void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color)
 {
 	uint_fast32_t i = 0;
 	uint_fast16_t x1 = x, y1 = y;
 	uint_fast16_t transparent_color = 0, count = 0;
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 
 	while (y1 < y + picture->height)
 	{
@@ -2053,7 +2052,7 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 			i ++;
 			for (uint_fast16_t p = 0; p < count; p ++)
 			{
-				PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+				PACKEDCOLORPIP_T point = convert_565_to_a888(picture->data [i]);
 				colpip_point(fr, DIM_X, DIM_Y, x1, y1, picture->data [i] == 0 ? bg_color : point);
 
 				x1 ++;
@@ -2070,7 +2069,7 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 			count = ((int16_t)picture->data [i]);
 			i++;
 
-			PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+			PACKEDCOLORPIP_T point = convert_565_to_a888(picture->data [i]);
 			for (uint_fast16_t p = 0; p < count; p ++)
 			{
 				colpip_point(fr, DIM_X, DIM_Y, x1, y1, picture->data [i] == 0 ? bg_color : point);
@@ -2087,7 +2086,7 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 	}
 }
 
-void graw_picture_RLE_buf(PACKEDCOLORMAIN_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORMAIN_T bg_color)
+void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color)
 {
 	uint_fast32_t i = 0;
 	uint_fast16_t x1 = x, y1 = y;
@@ -2101,7 +2100,7 @@ void graw_picture_RLE_buf(PACKEDCOLORMAIN_T * const buf, uint_fast16_t dx, uint_
 			i ++;
 			for (uint_fast16_t p = 0; p < count; p++)
 			{
-				PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+				PACKEDCOLORPIP_T point = convert_565_to_a888(picture->data [i]);
 				colpip_point(buf, dx, dy, x1, y1, picture->data [i] == transparent_color ? bg_color : point);
 
 				x1 ++;
@@ -2118,7 +2117,7 @@ void graw_picture_RLE_buf(PACKEDCOLORMAIN_T * const buf, uint_fast16_t dx, uint_
 			count = ((int16_t)picture->data [i]);
 			i ++;
 
-			PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+			PACKEDCOLORPIP_T point = convert_565_to_a888(picture->data [i]);
 			for (uint_fast16_t p = 0; p < count; p++)
 			{
 				colpip_point(buf, dx, dy, x1, y1, picture->data[i] == transparent_color ? bg_color : point);

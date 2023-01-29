@@ -96,12 +96,12 @@ static void st7735_put_char_begin(void)
 
 
 #if WITHSPIEXT16
-	static COLORMAIN_T fgcolor, bkcolor, halfcolor;
+	static COLORPIP_T fgcolor, bkcolor, halfcolor;
 #else /* WITHSPIEXT16 */
 	static struct { uint_fast8_t first, second; } fgcolor, bkcolor, halfcolor;
 #endif
 
-static void st7735_setcolor(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T transient)
+static void st7735_setcolor(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T transient)
 {
 #if WITHSPIEXT16
 	fgcolor = fg;
@@ -222,7 +222,7 @@ st7735_pixel_p3(
 static void 
 //NOINLINEAT
 st7735_colorpixel_p1(
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 #if WITHSPIEXT16
@@ -240,7 +240,7 @@ st7735_colorpixel_p1(
 static void 
 //NOINLINEAT
 st7735_colorpixel_p2(
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 #if WITHSPIEXT16
@@ -258,7 +258,7 @@ st7735_colorpixel_p2(
 static void 
 //NOINLINEAT
 st7735_colorpixel_p3(
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 #if WITHSPIEXT16
@@ -392,7 +392,7 @@ st7735_pixelsmooth_p3(
 }
 
 static void st7735_colorbuf(
-		const PACKEDCOLORMAIN_T * buffer,
+		const PACKEDCOLORPIP_T * buffer,
 		uint_fast32_t len
 		)
 {
@@ -722,7 +722,7 @@ st7735_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	st7735_set_addr_column(x * CHAR_W);
 }
 
-static void st7735_clear(COLORMAIN_T bg)
+static void st7735_clear(COLORPIP_T bg)
 {
 	unsigned long i;
 	
@@ -739,7 +739,7 @@ static void st7735_clear(COLORMAIN_T bg)
 	}
 	for (i = 0; i < DIM_Y; i += LNBURST)
 	{
-		colpip_to_main(
+		colpip_copy_to_draw(
 				(uintptr_t) colorbuf, sizeof colorbuf,
 				colorbuf, DIM_X, LNBURST, 0, i);
 	#if WITHINTEGRATEDDSP
@@ -761,7 +761,7 @@ static void st7735_clear(COLORMAIN_T bg)
 void
 display_clear(void)
 {
-	const COLORMAIN_T bg = display_getbgcolor();
+	const COLORPIP_T bg = display_getbgcolor();
 
 	st7735_clear(bg);
 }
@@ -772,12 +772,12 @@ void display_flush(void)
 }
 
 void
-colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 	st7735_setcolor(fg, bg, bg);
 }
 
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 	st7735_setcolor(fg, bg, fgbg);
 }
@@ -887,7 +887,7 @@ display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, 
 }
 
 void display_plot(
-	const PACKEDCOLORMAIN_T * buffer,
+	const PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy,
 	uint_fast16_t xpix,	// начало области рисования

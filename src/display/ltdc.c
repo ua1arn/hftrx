@@ -276,7 +276,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORMAIN_T) * GXADJ(DIM_SECOND);	// размер одной строки в байтах
+	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORPIP_T) * GXADJ(DIM_SECOND);	// размер одной строки в байтах
 	// Таблица используемой при отображении палитры
 	COLOR24_T xltrgb24 [256];
 	display2_xltrgb24(xltrgb24);
@@ -1321,10 +1321,10 @@ static void LCD_LayerInitMain(
 {
 	// преобразование из упакованного пикселя RGB565 по правилам pfc LTDC
 	// в требующийся RGB888
-	const COLORMAIN_T key = COLOR_KEY;
-	const unsigned keyr = COLORMAIN_R(key);
-	const unsigned keyg = COLORMAIN_G(key);
-	const unsigned keyb = COLORMAIN_B(key);
+	const COLORPIP_T key = COLOR_KEY;
+	const unsigned keyr = COLORPIP_R(key);
+	const unsigned keyg = COLORPIP_G(key);
+	const unsigned keyb = COLORPIP_B(key);
 
 	LTDC_Layerx->CKCR = 
 		(keyrpfc << LTDC_LxCKCR_CKRED_Pos) |
@@ -1474,20 +1474,20 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	// Bottom layer - LTDC_Layer1
 #if LCDMODE_MAIN_L24
 
-	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLORPIP_T));
 
 #elif LCDMODE_MAIN_L8
 
-	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORPIP_T));
 
 #elif LCDMODE_MAIN_ARGB888
 
 	/* Без палитры */
-	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORPIP_T));
 
 #else
 	/* Без палитры */
-	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORPIP_T));
 
 #endif /* LCDMODE_MAIN_L8 */
 

@@ -105,7 +105,7 @@ void hamradio_gui_set_reqautotune2(uint_fast8_t val);
 uint_fast8_t hamradio_split_toggle(void);
 void hamradio_split_mode_toggle(void);
 void display2_set_page_temp(uint_fast8_t page);
-COLORMAIN_T display2_get_spectrum(int x);
+COLORPIP_T display2_get_spectrum(int x);
 uint_fast8_t display_getpage0(void);
 uint_fast8_t display_getpagegui(void);
 uint_fast8_t hamradio_get_lfmmode(void);

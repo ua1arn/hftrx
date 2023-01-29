@@ -89,16 +89,16 @@ typedef enum {
 typedef struct {
 	uint16_t w;
 	uint16_t h;
-	PACKEDCOLORMAIN_T * bg_non_pressed;
-	PACKEDCOLORMAIN_T * bg_pressed;
-	PACKEDCOLORMAIN_T * bg_locked;
-	PACKEDCOLORMAIN_T * bg_locked_pressed;
-	PACKEDCOLORMAIN_T * bg_disabled;
+	PACKEDCOLORPIP_T * bg_non_pressed;
+	PACKEDCOLORPIP_T * bg_pressed;
+	PACKEDCOLORPIP_T * bg_locked;
+	PACKEDCOLORPIP_T * bg_locked_pressed;
+	PACKEDCOLORPIP_T * bg_disabled;
 } btn_bg_t;
 
 typedef struct {
    char text[TEXT_ARRAY_SIZE];
-   COLORMAIN_T color_line;
+   COLORPIP_T color_line;
 } tf_entry_t;
 
 typedef struct {
@@ -163,7 +163,7 @@ typedef struct {
 	char name [NAME_ARRAY_SIZE];
 	char text [TEXT_ARRAY_SIZE];
 	font_size_t font_size;
-	PACKEDCOLORMAIN_T color;
+	PACKEDCOLORPIP_T color;
 	uint8_t index;
 	uint8_t width;			// ширина в символах
 	uint16_t width_pix;		// ширина в пикселях

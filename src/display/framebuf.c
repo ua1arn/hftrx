@@ -471,7 +471,7 @@ void arm_hardware_mdma_initialize(void)
 #if LCDMODE_PIXELSIZE == 1
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwacc_fillrect_u8(
+hwaccel_rect_u8(
 	uint8_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -498,7 +498,7 @@ hwacc_fillrect_u8(
 	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
 	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	MDMA_CH->CDAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -549,7 +549,7 @@ hwacc_fillrect_u8(
 	// программная реализация
 
 	const unsigned dxadj = GXADJ(dx);
-	uint8_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	uint8_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
 		memset(tbuffer, color, w);
@@ -597,7 +597,7 @@ hwacc_fillrect_u8(
 
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwacc_fillrect_u16(
+hwaccel_rect_u16(
 	uint16_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -624,7 +624,7 @@ hwacc_fillrect_u16(
 	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
 	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	MDMA_CH->CDAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -719,7 +719,7 @@ hwacc_fillrect_u16(
 		/* программная реализация отрисовки вертикальной линии в один пиксель */
 		const unsigned t = GXADJ(dx) - w;
 		//buffer += (GXADJ(dx) * row) + col;
-		volatile uint16_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+		volatile uint16_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 		while (h --)
 		{
 			unsigned n = w;
@@ -729,22 +729,22 @@ hwacc_fillrect_u16(
 		}
 		return;
 	}
-	const COLOR24_T c24 = COLOR24(COLORMAIN_R(color), COLORMAIN_G(color), COLORMAIN_B(color));
+	const COLOR24_T c24 = COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
-	const uintptr_t taddr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
+	const uintptr_t taddr = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row);
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	t113_fillrect(taddr, tstride, tsizehw, COLORMAIN_A(color), c24);
+	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), c24);
 
 
 	//debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
-		PRINTF("hwacc_fillrect_u16: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
+		PRINTF("hwaccel_rect_u16: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
 		ASSERT(0);
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
@@ -753,7 +753,7 @@ hwacc_fillrect_u16(
 	// программная реализация
 	const unsigned t = GXADJ(dx) - w;
 	//buffer += (GXADJ(dx) * row) + col;
-	volatile uint16_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	volatile uint16_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
 		unsigned n = w;
@@ -770,8 +770,8 @@ hwacc_fillrect_u16(
 #if LCDMODE_PIXELSIZE == 3
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwacc_fillrect_u24(
-	PACKEDCOLORMAIN_T * __restrict buffer,
+hwaccel_rect_u24(
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// начальная координата
@@ -791,7 +791,7 @@ hwacc_fillrect_u24(
 #if 0 && WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 	// MDMA implementation
 
-	//static ALIGNX_BEGIN volatile PACKEDCOLORMAIN_T tgcolor [(DCACHEROWSIZE + sizeof (PACKEDCOLORMAIN_T) - 1) / sizeof (PACKEDCOLORMAIN_T)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
+	//static ALIGNX_BEGIN volatile PACKEDCOLORPIP_T tgcolor [(DCACHEROWSIZE + sizeof (PACKEDCOLORPIP_T) - 1) / sizeof (PACKEDCOLORPIP_T)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	//tgcolor [0] = color;
 	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
 	(void) MDMA_DATA;
@@ -800,7 +800,7 @@ hwacc_fillrect_u24(
 	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
 	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	MDMA_CH->CDAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -898,10 +898,10 @@ hwacc_fillrect_u24(
 
 	const unsigned t = GXADJ(dx) - w;
 	//buffer += (GXADJ(dx) * row) + col;
-	volatile PACKEDCOLORMAIN_T * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	volatile PACKEDCOLORPIP_T * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
-		//PACKEDCOLORMAIN_T * const startmem = buffer;
+		//PACKEDCOLORPIP_T * const startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
@@ -917,7 +917,7 @@ hwacc_fillrect_u24(
 #if LCDMODE_PIXELSIZE == 4
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwacc_fillrect_u32(
+hwaccel_rect_u32(
 	uint32_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -944,7 +944,7 @@ hwacc_fillrect_u32(
 	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
 	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	MDMA_CH->CDAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -1038,7 +1038,7 @@ hwacc_fillrect_u32(
 		/* программная реализация отрисовки вертикальной линии в один пиксель */
 		const unsigned t = GXADJ(dx) - w;
 		//buffer += (GXADJ(dx) * row) + col;
-		volatile uint32_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+		volatile uint32_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 		while (h --)
 		{
 			unsigned n = w;
@@ -1050,19 +1050,19 @@ hwacc_fillrect_u32(
 	}
 	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	const uintptr_t taddr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
+	const uintptr_t taddr = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
-	t113_fillrect(taddr, tstride, tsizehw, COLORMAIN_A(color24), (color24 & 0xFFFFFF));
+	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color24), (color24 & 0xFFFFFF));
 
 	//PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X\n", G2D_MIXER->G2D_MIXER_CTL);
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
-		PRINTF("hwacc_fillrect_u32: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
+		PRINTF("hwaccel_rect_u32: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
 		ASSERT(0);
 	}
 	//debug_g2d(__FILE__, __LINE__);
@@ -1072,7 +1072,7 @@ hwacc_fillrect_u32(
 	// программная реализация
 	const unsigned t = GXADJ(dx) - w;
 	//buffer += (GXADJ(dx) * row) + col;
-	volatile uint32_t * tbuffer = colmain_mem_at(buffer, dx, dy, col, row); // dest address
+	volatile uint32_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
 		unsigned n = w;
@@ -1087,9 +1087,9 @@ hwacc_fillrect_u32(
 #endif /* LCDMODE_PIXELSIZE == 4 */
 
 // получить адрес требуемой позиции в буфере
-PACKEDCOLORMAIN_T *
+PACKEDCOLORPIP_T *
 colmain_mem_at_debug(
-	PACKEDCOLORMAIN_T * __restrict buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -1100,7 +1100,7 @@ colmain_mem_at_debug(
 {
 	if (x >= dx || y >= dy || buffer == NULL)
 	{
-		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%d, y=%d, savestring='%s', savewhere='%s'\n", file, line, dx, dy, x, y, savestring, savewhere);
+		PRINTF("colpip_mem_at(%s/%d): dx=%u, dy=%u, x=%d, y=%d, savestring='%s', savewhere='%s'\n", file, line, dx, dy, x, y, savestring, savewhere);
 	}
 	ASSERT(x < dx);
 	ASSERT(y < dy);
@@ -1194,49 +1194,49 @@ void colpip_fillrect(
 #if LCDMODE_HORFILL
 
 	#if LCDMODE_PIP_L8
-		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u8(buffer, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_PIP_RGB565
-		hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u16(buffer, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_PIP_L24
-		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u24(buffer, dx, dy, x, y, w, h, color);
 	#elif LCDMODE_MAIN_L8
-		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u8(buffer, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_MAIN_RGB565
-		hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u16(buffer, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_MAIN_L24
-		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u24(buffer, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_MAIN_ARGB888
-		hwacc_fillrect_u32(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u32(buffer, dx, dy, x, y, w, h, color);
 
 	#endif
 
 #else /* LCDMODE_HORFILL */
 
 	#if LCDMODE_PIP_L8
-		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, color);
+		hwaccel_rect_u8(buffer, dy, dx, y, x, h, w, color);
 
 	#elif LCDMODE_PIP_RGB565
-		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, color);
+		hwaccel_rect_u16(buffer, dy, dx, y, x, h, w, color);
 
 	#elif LCDMODE_PIP_L24
-		hwacc_fillrect_u24((buffer, dy, dx, y, x, h, w, color);
+		hwaccel_rect_u24((buffer, dy, dx, y, x, h, w, color);
 
 	#elif LCDMODE_MAIN_L8
-		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, color);
+		hwaccel_rect_u8(buffer, dy, dx, y, x, h, w, color);
 
 	#elif LCDMODE_MAIN_RGB565
-		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, color);
+		hwaccel_rect_u16(buffer, dy, dx, y, x, h, w, color);
 
 	#elif LCDMODE_MAIN_L24
-		hwacc_fillrect_u24((buffer, dy, dx, y, x, h, w, color);
+		hwaccel_rect_u24((buffer, dy, dx, y, x, h, w, color);
 
 	#elif LCDMODE_MAIN_ARGB888
-		hwacc_fillrect_u32((buffer, dy, dx, y, x, h, w, color);
+		hwaccel_rect_u32((buffer, dy, dx, y, x, h, w, color);
 
 	#endif
 
@@ -1246,17 +1246,17 @@ void colpip_fillrect(
 
 
 void colmain_putpixel(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 	ASSERT(x < dx);
 	ASSERT(y < dy);
-	PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
+	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y);
 	#if LCDMODE_LTDC_L24
 		tgr->r = color >> 16;
 		tgr->g = color >> 8;
@@ -1291,12 +1291,12 @@ void colmain_putpixel(
  */
 
 void colmain_line(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	const uint_fast16_t bx,	// ширина буфера
 	const uint_fast16_t by,	// высота буфера
 	int xn, int yn,
 	int xk, int yk,
-	COLORMAIN_T color,
+	COLORPIP_T color,
 	int antialiasing
 	)
 {
@@ -1306,7 +1306,7 @@ void colmain_line(
 	ASSERT(yn < by);
 	int  dx, dy, s, sx, sy, kl, incr1, incr2;
 	char swap;
-	const COLORMAIN_T sc = getshadedcolor(color, DEFAULT_ALPHA);
+	const COLORPIP_T sc = getshadedcolor(color, DEFAULT_ALPHA);
 
 	/* Вычисление приращений и шагов */
 	if ((dx = xk - xn) < 0)
@@ -1371,10 +1371,10 @@ void colmain_line(
 		{
 			if (((xold == xn - 1) || (xold == xn + 1)) && ((yold == yn - 1) || (yold == yn + 1)))
 			{
-				if (color != * colmain_mem_at(buffer, bx, by, xn, yold))
+				if (color != * colpip_mem_at(buffer, bx, by, xn, yold))
 					colmain_putpixel(buffer, bx, by, xn, yold, sc);
 
-				if (color != * colmain_mem_at(buffer, bx, by, xold, yn))
+				if (color != * colpip_mem_at(buffer, bx, by, xold, yn))
 					colmain_putpixel(buffer, bx, by, xold, yn, sc);
 //				colmain_putpixel(buffer, bx, by, xn, yn, sc);		// нужны дополнительные цвета для этих 2х точек
 //				colmain_putpixel(buffer, bx, by, xold, yold, sc);
@@ -1388,19 +1388,19 @@ void colmain_line(
 
 /* заливка замкнутого контура */
 void display_floodfill(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
-	COLORMAIN_T newColor,
-	COLORMAIN_T oldColor,
+	COLORPIP_T newColor,
+	COLORPIP_T oldColor,
 	uint_fast8_t type	// 0 - быстрая закраска (только выпуклый контур), 1 - медленная закраска любого контура
 	)
 {
 	ASSERT(x < dx);
 	ASSERT(y < dy);
-	PACKEDCOLORMAIN_T * tgr = colmain_mem_at(buffer, dx, dy, x, y);
+	PACKEDCOLORPIP_T * tgr = colpip_mem_at(buffer, dx, dy, x, y);
 
 	if (type) 	// медленная закраска любого контура
 	{
@@ -1420,7 +1420,7 @@ void display_floodfill(
 
 		while(* tgr != newColor)		// поиск первой строки в контуре для закраски
 		{
-			tgr = colmain_mem_at(buffer, dx, dy, x, --y0);
+			tgr = colpip_mem_at(buffer, dx, dy, x, --y0);
 		}
 		y0++;
 
@@ -1432,20 +1432,20 @@ void display_floodfill(
 			// поиск левой границы строки
 			do
 			{
-				tgr = colmain_mem_at(buffer, dx, dy, --x_l, y0);
+				tgr = colpip_mem_at(buffer, dx, dy, --x_l, y0);
 			} while(* tgr != newColor);
 
 			// поиск правой границы строки
 			do
 			{
-				tgr = colmain_mem_at(buffer, dx, dy, ++x_p, y0);
+				tgr = colpip_mem_at(buffer, dx, dy, ++x_p, y0);
 			} while(* tgr != newColor);
 
 			// закраска найденной линии
 			colmain_line(buffer, dx, dy, x_l, y0, x_p, y0, newColor, 0);
 
 			// переход на следующую строку
-			tgr = colmain_mem_at(buffer, dx, dy, x, ++y0);
+			tgr = colpip_mem_at(buffer, dx, dy, x, ++y0);
 		} while(* tgr != newColor);
 	}
 }
@@ -1462,50 +1462,50 @@ void colpip_fill(
 #if LCDMODE_HORFILL
 
 	#if LCDMODE_PIP_L8
-		hwacc_fillrect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
+		hwaccel_rect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
 
 	#elif LCDMODE_PIP_RGB565
-		hwacc_fillrect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
+		hwaccel_rect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
 
 	#elif LCDMODE_PIP_L24
-		hwacc_fillrect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
+		hwaccel_rect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
 
 	#elif LCDMODE_MAIN_L8
-		hwacc_fillrect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
+		hwaccel_rect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
 
 	#elif LCDMODE_MAIN_RGB565
-		hwacc_fillrect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
+		hwaccel_rect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
 
 	#elif LCDMODE_MAIN_L24
-		hwacc_fillrect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
+		hwaccel_rect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
 
 	#elif LCDMODE_MAIN_ARGB888
-		hwacc_fillrect_u32(buffer, dx, dy, 0, 0, dx, dy, color);
+		hwaccel_rect_u32(buffer, dx, dy, 0, 0, dx, dy, color);
 
 	#endif
 
 #else /* LCDMODE_HORFILL */
 
 	#if LCDMODE_PIP_L8
-		hwacc_fillrect_u8(buffer, dy, dx, 0, 0, dy, dx, color);
+		hwaccel_rect_u8(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#elif LCDMODE_PIP_RGB565
-		hwacc_fillrect_u16(buffer, dy, dx, 0, 0, dy, dx, color);
+		hwaccel_rect_u16(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#elif LCDMODE_PIP_L24
-		hwacc_fillrect_u24(buffer, dy, dx, 0, 0, dy, dx, color);
+		hwaccel_rect_u24(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#elif LCDMODE_MAIN_L8
-		hwacc_fillrect_u8(buffer, dy, dx, 0, 0, dy, dx, color);
+		hwaccel_rect_u8(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#elif LCDMODE_MAIN_RGB565
-		hwacc_fillrect_u16(buffer, dy, dx, 0, 0, dy, dx, color);
+		hwaccel_rect_u16(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#elif LCDMODE_MAIN_L24
-		hwacc_fillrect_u24(buffer, dy, dx, 0, 0, dy, dx, color);
+		hwaccel_rect_u24(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#elif LCDMODE_MAIN_ARGB888
-		hwacc_fillrect_u32(buffer, dy, dx, 0, 0, dy, dx, color);
+		hwaccel_rect_u32(buffer, dy, dx, 0, 0, dy, dx, color);
 
 	#endif
 
@@ -1530,7 +1530,7 @@ void colpip_point(
 	COLORPIP_T color
 	)
 {
-	* colmain_mem_at(buffer, dx, dy, col, row) = color;
+	* colpip_mem_at(buffer, dx, dy, col, row) = color;
 }
 
 // поставить цветную точку.
@@ -1541,7 +1541,7 @@ void gtg_point(
 	COLORPIP_T color
 	)
 {
-	* colmain_mem_at(gtg->buffer, gtg->dx, gtg->dy, col, row) = color;
+	* colpip_mem_at(gtg->buffer, gtg->dx, gtg->dy, col, row) = color;
 }
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).
@@ -1554,7 +1554,7 @@ void colpip_point_xor(
 	COLORPIP_T color
 	)
 {
-	* colmain_mem_at(buffer, dx, dy, col, row) ^= color;
+	* colpip_mem_at(buffer, dx, dy, col, row) ^= color;
 }
 
 
@@ -1562,15 +1562,15 @@ void colpip_point_xor(
 // размер пикселя - определяется конфигурацией.
 // MDMA, DMA2D или программа
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-void hwaccel_copy(
+void hwaccel_bitblt(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
-	PACKEDCOLORMAIN_T * __restrict dst,
+	PACKEDCOLORPIP_T * __restrict dst,
 	uint_fast16_t tdx,	// ширина буфера
 	uint_fast16_t tdy,	// высота буфера
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORMAIN_T * __restrict src,
+	const PACKEDCOLORPIP_T * __restrict src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy,	// высота буфера
 	unsigned keyflag, COLOR24_T keycolor
@@ -1587,7 +1587,7 @@ void hwaccel_copy(
 
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
-	const uint_fast32_t tlen = mdma_tlen(sdx * sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T));
+	const uint_fast32_t tlen = mdma_tlen(sdx * sizeof (PACKEDCOLORPIP_T), sizeof (PACKEDCOLORPIP_T));
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
 	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
 	const uint_fast32_t sinc = 0x02; // Source increment mode: 10: address pointer is incremented
@@ -1611,14 +1611,14 @@ void hwaccel_copy(
 		(0x01uL << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		((sizeof (PACKEDCOLORMAIN_T) * (sdx)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		((sizeof (PACKEDCOLORPIP_T) * (sdx)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
 		(0x00uL << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
 		(0x00uL << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
 		((sdy - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
-		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(sdx) - sdx)) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
-		((sizeof (PACKEDCOLORMAIN_T) * (GXADJ(tdx) - sdx)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((sizeof (PACKEDCOLORPIP_T) * (GXADJ(sdx) - sdx)) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
+		((sizeof (PACKEDCOLORPIP_T) * (GXADJ(tdx) - sdx)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -1676,7 +1676,7 @@ void hwaccel_copy(
 #elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Копирование - использование G2D для формирования изображений */
 
-//	PRINTF("hwaccel_copy: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
+//	PRINTF("hwaccel_bitblt: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
 //	ASSERT(sdx > 1 && sdy > 1);
 //	ASSERT(sdx > 2 && sdy > 2);
 
@@ -1800,7 +1800,7 @@ void hwaccel_copy(
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
-		PRINTF("hwaccel_copy: timeout tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
+		PRINTF("hwaccel_bitblt: timeout tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
 		ASSERT(0);
 	}
 	//debug_g2d(__FILE__, __LINE__);
@@ -1821,7 +1821,7 @@ void hwaccel_copy(
 			unsigned w = sdx;
 			while (w --)
 			{
-				const COLORMAIN_T c = * src ++;
+				const COLORPIP_T c = * src ++;
 				if (c != keycolor)
 					* dst = c;
 				dst ++;
@@ -1876,8 +1876,8 @@ void hwaccel_ra90(
 		uint_fast16_t y;	// y получателя
 		for (y = 0; y < sdx; ++ y)
 		{
-			const COLORPIP_T pixel = * colmain_mem_at((PACKEDCOLORMAIN_T *) sbuffer, sdx, sdy, y, sdy - 1 - x);	// выборка из исхолного битмапа
-			* colmain_mem_at(tbuffer, tdx, tdy, tx + x, ty + y) = pixel;
+			const COLORPIP_T pixel = * colpip_mem_at((PACKEDCOLORPIP_T *) sbuffer, sdx, sdy, y, sdy - 1 - x);	// выборка из исхолного битмапа
+			* colpip_mem_at(tbuffer, tdx, tdy, tx + x, ty + y) = pixel;
 		}
 	}
 }
@@ -1999,7 +1999,7 @@ static uint_fast8_t snapshot_req;
 /* запись видимого изображения */
 void
 display_snapshot(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy
 	)
@@ -2022,7 +2022,7 @@ void display_snapshot_req(void)
 /* запись видимого изображения */
 void
 display_snapshot(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy
 	)
@@ -2037,12 +2037,12 @@ void display_snapshot_req(void)
 
 void
 colmain_fillrect(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORMAIN_T fgcolor
+	COLORPIP_T fgcolor
 	)
 {
 	//PRINTF("colmain_fillrect: x/y, w/h: %u/%u, %u/%u, color=%08lX\n", x, y, w, h, fgcolor);
@@ -2050,25 +2050,25 @@ colmain_fillrect(
 #if LCDMODE_HORFILL
 
 	#if LCDMODE_MAIN_L8
-		hwacc_fillrect_u8(buffer, dx, dy, x, y, w, h, fgcolor);
+		hwaccel_rect_u8(buffer, dx, dy, x, y, w, h, fgcolor);
 	#elif LCDMODE_LTDC_L24
-		hwacc_fillrect_u24(buffer, dx, dy, x, y, w, h, fgcolor);
+		hwaccel_rect_u24(buffer, dx, dy, x, y, w, h, fgcolor);
 	#elif LCDMODE_MAIN_ARGB888
-		hwacc_fillrect_u32(buffer, dx, dy, x, y, w, h, fgcolor);
+		hwaccel_rect_u32(buffer, dx, dy, x, y, w, h, fgcolor);
 	#else
-		hwacc_fillrect_u16(buffer, dx, dy, x, y, w, h, fgcolor);
+		hwaccel_rect_u16(buffer, dx, dy, x, y, w, h, fgcolor);
 	#endif
 
 #else /* LCDMODE_HORFILL */
 
 	#if LCDMODE_MAIN_L8
-		hwacc_fillrect_u8(buffer, dy, dx, y, x, h, w, fgcolor);
+		hwaccel_rect_u8(buffer, dy, dx, y, x, h, w, fgcolor);
 	#elif LCDMODE_LTDC_L24
-		hwacc_fillrect_u24(buffer, dy, dx, y, x, h, w, fgcolor);
+		hwaccel_rect_u24(buffer, dy, dx, y, x, h, w, fgcolor);
 	#elif LCDMODE_MAIN_ARGB888
-		hwacc_fillrect_u32(buffer, dy, dx, y, x, h, w, fgcolor);
+		hwaccel_rect_u32(buffer, dy, dx, y, x, h, w, fgcolor);
 	#else
-		hwacc_fillrect_u16(buffer, dy, dx, y, x, h, w, fgcolor);
+		hwaccel_rect_u16(buffer, dy, dx, y, x, h, w, fgcolor);
 	#endif
 
 #endif /* LCDMODE_HORFILL */
@@ -2078,7 +2078,7 @@ colmain_fillrect(
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 #if 0
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-static void RAMFUNC ltdcpip_horizontal_pixels(
+static void RAMFUNC colorpip_pixels(
 	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
 	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
@@ -2105,7 +2105,7 @@ static void RAMFUNC ltdcpip_horizontal_pixels(
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
 static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
-	PACKEDCOLORMAIN_T * __restrict tgr,		// target raster
+	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
 	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
 	COLORPIP_T fg
@@ -2142,7 +2142,7 @@ static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
 // Фон не трогаем
 // удвоенный по ширине растр
 static void RAMFUNC ltdcmain_horizontal_x2_pixels_tbg(
-	PACKEDCOLORMAIN_T * __restrict tgr,		// target raster
+	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
 	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
 	COLORPIP_T fg
@@ -2193,8 +2193,8 @@ ltdcmain_horizontal_put_char_small(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdcpip_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
+		colorpip_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 	}
 	return x + width;
 }
@@ -2204,7 +2204,7 @@ ltdcmain_horizontal_put_char_small(
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
+static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small_tbg(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -2219,7 +2219,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
@@ -2228,7 +2228,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small_tbg(
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_x2_put_char_small_tbg(
+static uint_fast16_t RAMFUNC_NONILINE colorpip_x2_put_char_small_tbg(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -2243,9 +2243,9 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_x2_put_char_small_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		PACKEDCOLORMAIN_T * const tgr0 = colmain_mem_at(buffer, dx, dy, x, y + cgrow * 2 + 0);
+		PACKEDCOLORPIP_T * const tgr0 = colpip_mem_at(buffer, dx, dy, x, y + cgrow * 2 + 0);
 		ltdcmain_horizontal_x2_pixels_tbg(tgr0, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
-		PACKEDCOLORMAIN_T * const tgr1 = colmain_mem_at(buffer, dx, dy, x, y + cgrow * 2 + 1);
+		PACKEDCOLORPIP_T * const tgr1 = colpip_mem_at(buffer, dx, dy, x, y + cgrow * 2 + 1);
 		ltdcmain_horizontal_x2_pixels_tbg(tgr1, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width * 2;
@@ -2253,8 +2253,8 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_x2_put_char_small_tbg(
 
 uint_fast16_t display_put_char_small_xy(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, COLOR565_T fg)
 {
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	return ltdcpip_horizontal_put_char_small_tbg(fr, DIM_X, DIM_Y, x, y, c, fg);
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
+	return colorpip_put_char_small_tbg(fr, DIM_X, DIM_Y, x, y, c, fg);
 }
 #endif /* defined (SMALLCHARW) */
 
@@ -2262,7 +2262,7 @@ uint_fast16_t display_put_char_small_xy(uint_fast16_t x, uint_fast16_t y, uint_f
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
+static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small2_tbg(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -2277,7 +2277,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH2; ++ cgrow)
 	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
@@ -2288,7 +2288,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small2_tbg(
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
+static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small3_tbg(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -2303,7 +2303,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_put_char_small3_tbg(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
 		ltdcmain_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
@@ -2332,7 +2332,7 @@ colpip_string_tbg(
 	ASSERT(s != NULL);
 	while ((c = * s ++) != '\0')
 	{
-		x = ltdcpip_horizontal_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
+		x = colorpip_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 // Используется при выводе на графический индикатор,
@@ -2353,7 +2353,7 @@ colpip_string_x2_tbg(
 	ASSERT(s != NULL);
 	while ((c = * s ++) != '\0')
 	{
-		x = ltdcpip_horizontal_x2_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
+		x = colorpip_x2_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 
@@ -2379,7 +2379,7 @@ colpip_string_x2ra90_tbg(
 	while ((c = * s ++) != '\0')
 	{
 		colpip_fillrect(scratch, TDX, TDY, 0, 0, TDX, TDY, bg);
-		ltdcpip_horizontal_x2_put_char_small_tbg(scratch, TDX, TDY, 0, 0, c, fg);
+		colorpip_x2_put_char_small_tbg(scratch, TDX, TDY, 0, 0, c, fg);
 		hwaccel_ra90(buffer, dx, dy, x, y, scratch, TDX, TDY);
 		y += TDX;
 	}
@@ -2403,7 +2403,7 @@ colpip_string_count(
 	while (len --)
 	{
 		const char c = * s ++;
-		x = ltdcpip_horizontal_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
+		x = colorpip_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 // Используется при выводе на графический индикатор,
@@ -2423,7 +2423,7 @@ colpip_string_x2_count(
 	while (len --)
 	{
 		const char c = * s ++;
-		x = ltdcpip_horizontal_x2_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
+		x = colorpip_x2_put_char_small_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 
@@ -2450,7 +2450,7 @@ colpip_string_x2ra90_count(
 	{
 		const char c = * s ++;
 		colpip_fillrect(scratch, TDX, TDY, 0, 0, TDX, TDY, bg);
-		ltdcpip_horizontal_x2_put_char_small_tbg(scratch, TDX, TDY, 0, 0, c, fg);
+		colorpip_x2_put_char_small_tbg(scratch, TDX, TDY, 0, 0, c, fg);
 		hwaccel_ra90(buffer, dx, dy, x, y, scratch, TDX, TDY);
 		y += TDX;
 	}
@@ -2476,7 +2476,7 @@ colpip_string2_tbg(
 	ASSERT(s != NULL);
 	while ((c = * s ++) != '\0')
 	{
-		x = ltdcpip_horizontal_put_char_small2_tbg(buffer, dx, dy, x, y, c, fg);
+		x = colorpip_put_char_small2_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 
@@ -2510,7 +2510,7 @@ colpip_string3_tbg(
 	ASSERT(s != NULL);
 	while ((c = * s ++) != '\0')
 	{
-		x = ltdcpip_horizontal_put_char_small3_tbg(buffer, dx, dy, x, y, c, fg);
+		x = colorpip_put_char_small3_tbg(buffer, dx, dy, x, y, c, fg);
 	}
 }
 
@@ -2566,17 +2566,17 @@ void colpip_plot(
 
 	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
 #if LCDMODE_HORFILL
-	hwaccel_copy(
+	hwaccel_bitblt(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		src, sdx, sdy,
 		PLTPARAM_NONE, 0
 		);
 #else /* LCDMODE_HORFILL */
-	hwaccel_copy(
+	hwaccel_bitblt(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		src, sdx, sdy,
 		PLTPARAM_NONE, 0
@@ -2608,17 +2608,17 @@ void colpip_plot_key(
 
 	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
 #if LCDMODE_HORFILL
-	hwaccel_copy(
+	hwaccel_bitblt(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		src, sdx, sdy,
 		keyflag, keycolor
 		);
 #else /* LCDMODE_HORFILL */
-	hwaccel_copy(
+	hwaccel_bitblt(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-		colmain_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
+		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		src, sdx, sdy,
 		keyflag, keycolor
@@ -2673,7 +2673,7 @@ void colpip_plot_ra90(
 
 static uint_fast16_t
 RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
-	PACKEDCOLORMAIN_T * const __restrict buffer,
+	PACKEDCOLORPIP_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y,
@@ -2687,7 +2687,7 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 //	uint_fast8_t cgrow;
 //	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 //	{
-//		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
 //		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
 //	}
 //	return x + width;
@@ -2696,7 +2696,7 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 static void
 display_string3(uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t lowhalf)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	char c;
@@ -2707,8 +2707,8 @@ display_string3(uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t l
 }
 
 void
-colmain_string3_at_xy(
-	PACKEDCOLORMAIN_T * const __restrict buffer,
+colpip_string3_at_xy(
+	PACKEDCOLORPIP_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x,
@@ -2724,7 +2724,7 @@ colmain_string3_at_xy(
 }
 
 void
-display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * __restrict s, COLORMAIN_T fg, COLORMAIN_T bg)
+display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * __restrict s, COLORPIP_T fg, COLORPIP_T bg)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	colmain_setcolors(fg, bg);
@@ -2746,7 +2746,7 @@ void display_transparency(
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	)
 {
-	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 #if 1
@@ -2770,7 +2770,7 @@ void display_transparency(
 	{
 		for (uint_fast16_t x = x1; x <= x2; x ++)
 		{
-			PACKEDCOLORMAIN_T * const p = colmain_mem_at(buffer, dx, dy, x, y);
+			PACKEDCOLORPIP_T * const p = colpip_mem_at(buffer, dx, dy, x, y);
 			* p = getshadedcolor(* p, alpha);
 		}
 	}

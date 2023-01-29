@@ -26,7 +26,7 @@ const char * remove_start_line_spaces(const char * str);
 void reset_tracking(void);
 uint_fast8_t check_for_parent_window(void);
 void get_gui_tracking(int_fast16_t * x, int_fast16_t * y);
-void textfield_add_string(text_field_t * tf, const char * str, COLORMAIN_T color);
+void textfield_add_string(text_field_t * tf, const char * str, COLORPIP_T color);
 void textfield_update_size(text_field_t * tf);
 void textfield_clean(text_field_t * tf);
 void window_set_title_align(window_t * win, title_align_t align);
@@ -37,9 +37,9 @@ wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * 
 
 uint_fast16_t gui_get_window_draw_width(void);
 uint_fast16_t gui_get_window_draw_height(void);
-void gui_drawstring(uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORMAIN_T color);
-void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color);
-void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORMAIN_T color);
+void gui_drawstring(uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORPIP_T color);
+void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORPIP_T color);
+void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORPIP_T color);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */
