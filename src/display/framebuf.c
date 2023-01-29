@@ -2514,14 +2514,16 @@ void colpip_bitblt(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры окна в пикселях
+	uint_fast16_t w,	uint_fast16_t h,	// источник Размеры окна в пикселях
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
-	ASSERT(tdx >= sdx);
-	ASSERT(tdy >= sdy);
+	ASSERT(tdx >= w);
+	ASSERT(tdy >= h);
+
+	PRINTF("colpip_bitblt: x/y=%d/%d, w/h=%d/%d\n", x, y, w, h);
 
 	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
 #if LCDMODE_HORFILL
@@ -2529,7 +2531,7 @@ void colpip_bitblt(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		src, sdx, sdy,
+		src, w, h,
 		keyflag, keycolor
 		);
 #else /* LCDMODE_HORFILL */
@@ -2537,7 +2539,7 @@ void colpip_bitblt(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		src, sdx, sdy,
+		src, w, h,
 		keyflag, keycolor
 		);
 #endif /* LCDMODE_HORFILL */
@@ -2565,6 +2567,8 @@ void colpip_stretchblt(
 
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && !1
 	/* Использование G2D для формирования изображений */
+
+	PRINTF("colpip_stretchblt: w/h=%d/%d, sdx=%d/%d\n", w, h, sdx, sdy);
 
 	if (w == sdx && h == sdy)
 	{
