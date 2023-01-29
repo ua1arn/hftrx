@@ -124,18 +124,18 @@ static void t113_fillrect(
 	G2D_WB->WB_HADD0 = taddr >> 32;
 }
 
-//#include "debug_f133.h"
-//
-//void debug_g2d(const char * place, int line)
-//{
-//	PRINTF("**** %s/%d\n", place, line);
-////	G2D_UI_Type_print(G2D_UI0, "G2D_UI0");
-////	G2D_UI_Type_print(G2D_UI1, "G2D_UI1");
-////	G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
-////	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
-//	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
-////	G2D_WB_Type_print(G2D_WB, "G2D_WB");
-//}
+#include "debug_f133.h"
+
+void debug_g2d(const char * place, int line)
+{
+	PRINTF("**** %s/%d\n", place, line);
+	G2D_UI_Type_print(G2D_UI0, "G2D_UI0");
+	G2D_UI_Type_print(G2D_UI1, "G2D_UI1");
+	G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
+	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
+	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
+	G2D_WB_Type_print(G2D_WB, "G2D_WB");
+}
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
@@ -1050,6 +1050,7 @@ hwaccel_rect_u32(
 		}
 		return;
 	}
+
 	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	const uintptr_t taddr = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row);
@@ -2639,6 +2640,48 @@ void colpip_stretchblt(
 	g2d_stretchblit(&G2D_STRETCHBLT);
 //
 //	return;
+	PRINTF("dst=%p, src=%p\n", (void *) dstinvalidateaddr, (void *) srcinvalidateaddr);
+
+	enum { PIXEL_SIZE = sizeof * dst };
+	const uint_fast32_t tizehw = ((dy - 1) << 16) | ((dx - 1) << 0);
+	const uint_fast32_t sizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
+	const uint_fast32_t tcoord = ((y) << 16) | (x << 0);
+	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
+	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	//debug_g2d(__FILE__, __LINE__);
+
+//	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
+//	G2D_V0->V0_ATTCTL = 0;
+//	G2D_UI0->UI_ATTR = 0;
+//	G2D_UI1->UI_ATTR = 0;
+//	G2D_UI2->UI_ATTR = 0;
+//
+//
+//	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+//	G2D_V0->V0_PITCH0 = sstride;
+//	G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
+//	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+//	G2D_V0->V0_MBSIZE = sizehw; 	// сколько брать от исходного буфера
+//	G2D_V0->V0_SIZE = sizehw;		// параметры окна исходного буфера
+//	G2D_V0->V0_LADD0 = srcinvalidateaddr;
+//	G2D_V0->V0_HADD = 0;
+//
+//
+//
+//	G2D_WB->WB_ATT=0x00000000; /* 0x00000000 */
+//	G2D_WB->WB_SIZE=0x00480063; /* 0x00480063 */
+//	G2D_WB->WB_PITCH0=0x00000C80; /* 0x00000C80 */
+//	G2D_WB->WB_PITCH1=0x00000000; /* 0x00000000 */
+//	G2D_WB->WB_PITCH2=0x00000000; /* 0x00000000 */
+//
+//	G2D_BLD->ROP_CTL=0x000000F0; /* 0x000000F0 */
+//	G2D_BLD->BLD_SIZE = tizehw;
+//	G2D_WB->WB_LADD0 = srcinvalidateaddr;
+	G2D_WB->WB_LADD2 = dstinvalidateaddr;
+//	G2D_WB->WB_PITCH0 = tstride;
+
+	PRINTF("WB_LADD0=%p src=%p\n", G2D_WB->WB_LADD0, srcinvalidateaddr);
+	PRINTF("WB_LADD2=%p dst=%p\n", G2D_WB->WB_LADD2, dstinvalidateaddr);
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
