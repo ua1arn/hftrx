@@ -75,13 +75,15 @@ static void t113_fillrect(
 	COLOR24_T color24
 	)
 {
+
+	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 //	memset(G2D_V0, 0, sizeof * G2D_V0);
 //	memset(G2D_UI0, 0, sizeof * G2D_UI0);
 //	memset(G2D_UI1, 0, sizeof * G2D_UI1);
 //	memset(G2D_UI2, 0, sizeof * G2D_UI2);
 //	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 //	memset(G2D_WB, 0, sizeof * G2D_WB);
-
 	/* Отключаем все источники */
 	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 	G2D_V0->V0_ATTCTL = 0;
@@ -451,7 +453,7 @@ void arm_hardware_mdma_initialize(void)
 		0;
 	G2D_TOP->G2D_SCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_HCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
-	G2D_TOP->G2D_AHB_RESET &= ~ (1u << 1) | (1u << 0);	// Assert reset: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	// peri:   allwnrt113_get_g2d_freq()=600000000
@@ -1690,12 +1692,14 @@ void hwaccel_bitblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	//	memset(G2D_V0, 0, sizeof * G2D_V0);
-	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-	//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-	//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-	//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-	//	memset(G2D_WB, 0, sizeof * G2D_WB);
+	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//		memset(G2D_V0, 0, sizeof * G2D_V0);
+//		memset(G2D_UI0, 0, sizeof * G2D_UI0);
+//		memset(G2D_UI1, 0, sizeof * G2D_UI1);
+//		memset(G2D_UI2, 0, sizeof * G2D_UI2);
+//		memset(G2D_BLD, 0, sizeof * G2D_BLD);
+//		memset(G2D_WB, 0, sizeof * G2D_WB);
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
@@ -2523,7 +2527,7 @@ void colpip_bitblt(
 	ASSERT(tdx >= w);
 	ASSERT(tdy >= h);
 
-	PRINTF("colpip_bitblt: x/y=%d/%d, w/h=%d/%d\n", x, y, w, h);
+	PRINTF("colpip_bitblt: x/y=%d/%d, w/h=%d/%d, keyflag=%08X\n", x, y, w, h, keyflag);
 
 	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
 #if LCDMODE_HORFILL
@@ -2565,7 +2569,7 @@ void colpip_stretchblt(
 	ASSERT(dx >= sdx);
 	ASSERT(dy >= sdy);
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && !1
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && 1
 	/* Использование G2D для формирования изображений */
 
 
@@ -2633,8 +2637,8 @@ void colpip_stretchblt(
 	G2D_STRETCHBLT.dst_rect.h = h;
 
 	g2d_stretchblit(&G2D_STRETCHBLT);
-
-	return;
+//
+//	return;
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
@@ -2642,6 +2646,12 @@ void colpip_stretchblt(
 		PRINTF("colpip_stretchblt: timeout dx/dy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) dx, (unsigned) dy, (unsigned) sdx, (unsigned) sdy);
 		ASSERT(0);
 	}
+	//PRINTF("G2D_TOP->G2D_AHB_RESET= @%p\n", & G2D_TOP->G2D_AHB_RESET);
+
+//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	//debug_g2d(__FILE__, __LINE__);
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
