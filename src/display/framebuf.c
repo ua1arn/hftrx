@@ -2801,7 +2801,7 @@ void colpip_stretchblt(
 
 //
 //	PRINTF("before G2D_WB->WB_SIZE=%08X tpichw=%08X\n", G2D_WB->WB_SIZE, tpichw);
-	G2D_WB->WB_ATT = 0;
+	G2D_WB->WB_ATT = WB_DstImageFormat;
 	G2D_WB->WB_LADD0 = dstlinear;
 	G2D_WB->WB_LADD2 = srclinear;
 	G2D_WB->WB_PITCH0 = tstride;
