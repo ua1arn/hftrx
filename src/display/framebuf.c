@@ -2702,25 +2702,8 @@ void colpip_stretchblt(
 
 #if 1
 	/* расчет масштабов */
-	uint_fast32_t hstep = ((uint_fast32_t) sdx << 20) / w;
-	uint_fast32_t vstep = ((uint_fast32_t) sdy << 20) / h;
-
-//	PRINTF("calc: hstep=%08X\n", hstep);
-//	PRINTF("calc: vstep=%08X\n", vstep);
-//	if (w > sdx)
-//	{
-//		// expand
-//		hstep = 0x000AAAAA;
-//		vstep = 0x000AAAAA;
-//	}
-//	else
-//	{
-//		// shrink
-//		hstep = 0x00180000;
-//		vstep = 0x00181C0E;
-//	}
-//	PRINTF("need: hstep=%08X\n", hstep);
-//	PRINTF("need: vstep=%08X\n", vstep);
+	const uint_fast32_t hstep = (((uint_fast32_t) sdx << 19) / w) << 1;
+	const uint_fast32_t vstep = (((uint_fast32_t) sdy << 19) / h) << 1;
 
 	/* Отключаем все источники */
 	G2D_VSU->VS_CTRL = 0;
