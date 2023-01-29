@@ -1745,9 +1745,9 @@ static void arm_hardware_gicsfetch(void)
 		GIC_SetPriority(int_id, gicshadow_prio [int_id]);	// non-atomic operation
 	}
 	SPIN_UNLOCK(& gicdistrib_lock);
-	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
-	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+	//dcache_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//dcache_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	dcache_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 }
 
@@ -1760,9 +1760,9 @@ static void arm_hardware_populate(int int_id)
 	//gicshadow_target [int_id] = targetcpu;
 	//gicshadow_config [int_id] = GIC_GetConfiguration(int_id);
 	gicshadow_prio [int_id] = GIC_GetPriority(int_id);
-	//arm_hardware_flush((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//arm_hardware_flush((uintptr_t) gicshadow_config, sizeof gicshadow_config);
-	arm_hardware_flush((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+	//dcache_clean((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//dcache_clean((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	dcache_clean((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 	GIC_SendSGI(BOARD_SGI_IRQ, target_list, 0x00);	// other CORE, filer=0
 
@@ -1783,13 +1783,13 @@ static void arm_hardware_populate_initialize(void)
 	}
 	//SPINLOCK_INITIALIZE(& gicdistrib_lock);
 	//SPINLOCK_INITIALIZE(& populate_lock);
-	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	//dcache_clean_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//dcache_clean_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 
 	SPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
 	SPIN_UNLOCK(& gicdistrib_lock);
-	arm_hardware_flush_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+	dcache_clean_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, BOARD_SGI_PRIO, 0x01u << 1);
 }
@@ -1803,9 +1803,9 @@ void arm_hardware_populte_second_initialize(void)
 	SPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
 	SPIN_UNLOCK(& gicdistrib_lock);
-	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
-	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+	//dcache_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//dcache_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	dcache_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 }
 
 #endif /* WITHSMPSYSTEM */

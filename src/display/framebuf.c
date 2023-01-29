@@ -495,8 +495,8 @@ hwacc_fillrect_u8(
 	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
 	(void) MDMA_DATA;
 
-	//arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
-	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
+	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
@@ -621,8 +621,8 @@ hwacc_fillrect_u16(
 	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
 	(void) MDMA_DATA;
 
-	//arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
-	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
+	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
@@ -675,7 +675,7 @@ hwacc_fillrect_u16(
 	// to the area located at the address pointed by the DMA2D_OMAR
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
 
-	arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+	dcache_clean_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
@@ -735,7 +735,7 @@ hwacc_fillrect_u16(
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
-	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	t113_fillrect(taddr, tstride, tsizehw, COLORMAIN_A(color), c24);
 
@@ -797,8 +797,8 @@ hwacc_fillrect_u24(
 	(void) MDMA_DATA;
 	#error MDMA implementation need
 
-	//arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
-	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
+	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
@@ -850,7 +850,7 @@ hwacc_fillrect_u24(
 	// to the area located at the address pointed by the DMA2D_OMAR
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
 
-	arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+	dcache_clean_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
@@ -941,8 +941,8 @@ hwacc_fillrect_u32(
 	MDMA_DATA = color24;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
 	(void) MDMA_DATA;
 
-	//arm_hardware_flush((uintptr_t) & tgcolor, sizeof tgcolor);
-	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
+	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	MDMA_CH->CDAR = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row); // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
@@ -994,7 +994,7 @@ hwacc_fillrect_u32(
 	// to the area located at the address pointed by the DMA2D_OMAR
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
 
-	arm_hardware_flush_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+	dcache_clean_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
@@ -1048,7 +1048,7 @@ hwacc_fillrect_u32(
 		}
 		return;
 	}
-	arm_hardware_flush_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
 	const uintptr_t taddr = (uintptr_t) colmain_mem_at(buffer, dx, dy, col, row);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
@@ -1582,8 +1582,8 @@ void hwaccel_copy(
 #if WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 	// MDMA реализация
 
-	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
@@ -1631,8 +1631,8 @@ void hwaccel_copy(
 #elif WITHDMA2DHW
 	// DMA2D реализация
 	// See DMA2D_FGCMAR for L8
-	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) src;
@@ -1687,8 +1687,8 @@ void hwaccel_copy(
 	const uintptr_t saddr = (uintptr_t) src;
 	const uint_fast32_t sizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
 
-	arm_hardware_flush_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	arm_hardware_flush(srcinvalidateaddr, srcinvalidatesize);
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
 	//	memset(G2D_V0, 0, sizeof * G2D_V0);
 	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
@@ -1845,7 +1845,7 @@ void hwaccel_copy(
 			while (sdy --)
 			{
 				memcpy(dst, src, len);
-				//arm_hardware_flush((uintptr_t) dst, len);
+				//dcache_clean((uintptr_t) dst, len);
 				src += GXADJ(sdx);
 				dst += GXADJ(tdx);
 			}
@@ -2098,7 +2098,7 @@ static void RAMFUNC ltdcpip_horizontal_pixels(
 		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
 	}
 	// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-	//arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
+	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 #endif
 
@@ -3050,7 +3050,7 @@ void arm_hardware_dma2d_initialize(void)
 #if 0
 	static ALIGNX_BEGIN uint32_t clut [256] ALIGNX_END;
 	memset(clut, 0xFF, sizeof clut);
-	arm_hardware_flush((uintptr_t) clut, sizeof clut);
+	dcache_clean((uintptr_t) clut, sizeof clut);
 	DMA2D->FGCMAR = (uintptr_t) clut;
 	DMA2D->BGCMAR = (uintptr_t) clut;
 #endif

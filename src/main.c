@@ -21688,7 +21688,7 @@ bootloader_launch_app(uintptr_t ip)
 #if WITHUSBHW
 		board_usb_deinitialize();
 #endif /* WITHUSBHW */
-	arm_hardware_flush_all();
+	dcache_clean_all();
 
 #if (__L2C_PRESENT == 1)
 	L2C_Disable();

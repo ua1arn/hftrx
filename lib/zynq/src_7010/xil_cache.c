@@ -17,17 +17,17 @@ void Xil_DCacheInvalidate(void)
 
 void Xil_DCacheInvalidateRange(uintptr_t adr, uint32_t len)
 {
-	arm_hardware_invalidate(adr, len);
+	dcache_invalidate(adr, len);
 }
 
 void Xil_DCacheFlush(void)
 {
-	arm_hardware_flush_all();
+	dcache_clean_all();
 }
 
 void Xil_DCacheFlushRange(uintptr_t adr, uint32_t len)
 {
-	arm_hardware_flush(adr, len);
+	dcache_clean(adr, len);
 }
 
 void Xil_ICacheEnable(void)
@@ -45,5 +45,5 @@ void Xil_ICacheInvalidate(void)
 }
 void Xil_ICacheInvalidateRange(uintptr_t adr, uint32_t len)
 {
-	arm_hardware_flush_invalidate(adr, len);
+	dcache_clean_invalidate(adr, len);
 }

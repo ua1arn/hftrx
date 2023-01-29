@@ -1890,7 +1890,7 @@ usbd_getpipe(const USB_OTG_EPTypeDef * ep)
 static uintptr_t
 dma_flushxrtstx(uintptr_t addr, unsigned long size)
 {
-	arm_hardware_flush_invalidate(addr, size);
+	dcache_clean_invalidate(addr, size);
 	return addr;
 }
 
@@ -1941,7 +1941,7 @@ void refreshDMA_uacin(void)
 // USB AUDIO
 // DMA по передаче USB0 DMA1 - обработчик прерывания
 // DMA по передаче USB1 DMA1 - обработчик прерывания
-// Use arm_hardware_flush
+// Use dcache_clean
 // Работает на ARM_REALTIME_PRIORITY
 static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 {
@@ -1980,7 +1980,7 @@ static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 
 // audio codec
 // DMA по передаче USB0 DMA1
-// Use arm_hardware_flush
+// Use dcache_clean
 
 static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
 {
@@ -2066,7 +2066,7 @@ static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
 
 // audio codec
 // DMA по передаче USB1 DMA1
-// Use arm_hardware_flush
+// Use dcache_clean
 
 static void r7s721_usb1_dma1_dmatx_initialize(uint_fast8_t pipe)
 {
@@ -2196,12 +2196,12 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	if (b == 0)
 	{
 		uacout_buffer_save_realtime(uacoutbuff0, UACOUT_AUDIO48_DATASIZE, UACOUT_AUDIO48_FMT_CHANNELS, UACOUT_AUDIO48_SAMPLEBITS);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
+		dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
 	}
 	else
 	{
 		uacout_buffer_save_realtime(uacoutbuff1, UACOUT_AUDIO48_DATASIZE, UACOUT_AUDIO48_FMT_CHANNELS, UACOUT_AUDIO48_SAMPLEBITS);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
+		dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
 	}
 }
 
@@ -2212,8 +2212,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
 	USB_OTG_GlobalTypeDef * const USBx = & USB200;
 
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
+	dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
+	dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
@@ -2302,8 +2302,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
 	USB_OTG_GlobalTypeDef * const USBx = & USB201;
 
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
+	dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
+	dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
@@ -5356,7 +5356,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_SETUP, do_ping);
-			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			USBx->BEMPENB &= ~ (0x01uL << pipe);	// пока не запросили - принимать не разрешаем
 			USBx->NRDYENB &= ~ (0x01uL << pipe);	// пока не запросили - принимать не разрешаем
@@ -5407,7 +5407,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
-			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean((uintptr_t) hc->xfer_buff, hc->xfer_len);
 //
      		//USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
     		//ASSERT((USBx->DCPCTR & USB_DCPCTR_SUREQ) == 0);
@@ -5437,7 +5437,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 0);
-			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 //
 //			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
 //			qtd_item2_set_toggle(qtdrequest, 1);
@@ -5471,7 +5471,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
-			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 	  		USBx->DCPCTR |= USB_DCPCTR_PINGE * (do_ping != 0);
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
@@ -5490,7 +5490,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 0);
-			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
 			USBx->BEMPENB &= ~ (0x01uL << pipe);	// Прерывание окончания передачи передающего буфера
@@ -5508,7 +5508,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 			//PRINTF("HAL_HCD_HC_SubmitRequest: max_packet=%u, tt_hub=%d, tt_prt=%d, speed=%d\n", hc->max_packet, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed);
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
-			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 	  		USBx->DCPCTR |= USB_DCPCTR_PINGE * (do_ping != 0);
 			ASSERT(USB_WritePacketNec(USBx, pipe, hc->xfer_buff, hc->xfer_len) == 0);
@@ -5524,7 +5524,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 			//PRINTF("HAL_HCD_HC_SubmitRequest: max_packet=%u, tt_hub=%d, tt_prt=%d, speed=%d\n", hc->max_packet, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed);
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 1);
-			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
 	  		USBx->BRDYENB |= (0x01uL << pipe);		// запросили - принимать разрешаем

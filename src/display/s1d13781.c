@@ -1722,7 +1722,7 @@ void s1d13781_showbuffer(
 			// Обратить внимание, передается растр, где младшицй бит левее.
 			// Передача в индикатор по DMA
 			const uint_fast32_t len = MGSIZE(dx, dy);
-			arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
+			dcache_clean((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
 			hardware_spi_master_send_frame_16b(buffer, len);
 
 		#else /* WITHSPIEXT16 && WITHSPIHWDMA */
@@ -1844,7 +1844,7 @@ void display_plot(
 {
 #if 0//WITHSPIEXT16 && WITHSPIHWDMA
 	// Передача в индикатор по DMA
-	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// количество байтов
+	dcache_clean((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// количество байтов
 #endif /* WITHSPIEXT16 && WITHSPIHWDMA */
 
 	uint_fast32_t shadow_dstaddr = s1d13781_getaddr(xpix, ypix);

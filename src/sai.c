@@ -55,7 +55,7 @@ dma_invalidate16rx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((buffers_dmabuffer16rxcachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_invalidate(addr, buffers_dmabuffer16rxcachesize());
+	dcache_invalidate(addr, buffers_dmabuffer16rxcachesize());
 	return addr;
 }
 
@@ -66,7 +66,7 @@ dma_flush16tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((buffers_dmabuffer16txcachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_flush_invalidate(addr, buffers_dmabuffer16txcachesize());
+	dcache_clean_invalidate(addr, buffers_dmabuffer16txcachesize());
 	return addr;
 }
 
@@ -76,7 +76,7 @@ dma_invalidate192rts(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((buffers_dmabuffer192rtscachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_invalidate(addr,  buffers_dmabuffer192rtscachesize());
+	dcache_invalidate(addr,  buffers_dmabuffer192rtscachesize());
 	return addr;
 }
 
@@ -86,7 +86,7 @@ dma_invalidate32rx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((buffers_dmabuffer32rxcachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_invalidate(addr, buffers_dmabuffer32rxcachesize());
+	dcache_invalidate(addr, buffers_dmabuffer32rxcachesize());
 	return addr;
 }
 
@@ -96,7 +96,7 @@ dma_invalidate32rts(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((buffers_dmabuffer32rxcachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_invalidate(addr, buffers_dmabuffer32rtscachesize());
+	dcache_invalidate(addr, buffers_dmabuffer32rtscachesize());
 	return addr;
 }
 
@@ -106,7 +106,7 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((buffers_dmabuffer32txcachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_flush_invalidate(addr,  buffers_dmabuffer32txcachesize());
+	dcache_clean_invalidate(addr,  buffers_dmabuffer32txcachesize());
 	return addr;
 }
 
@@ -368,7 +368,7 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler_codec1_rx(void)
 }
 
 // Обработчик прерывания DMA по передаче I2S2
-// Use arm_hardware_flush
+// Use dcache_clean
 void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler_codec1_tx(void)
 {
 	if ((DMA1->HISR & DMA_HISR_TCIF4) != 0)
@@ -396,7 +396,7 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler_codec1_tx(void)
 }
 
 // Инициализация DMA по передаче I2S2
-// Use arm_hardware_flush
+// Use dcache_clean
 static void 
 DMA_I2S2_TX_initialize_codec1(void)
 {
@@ -1857,7 +1857,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 
 // DMA по передаче SAI1 - обработчик прерывания
 // TX	SAI1_A	DMA2	Stream 1	Channel 0
-// Use arm_hardware_flush
+// Use dcache_clean
 void DMA2_Stream1_IRQHandler_fpga_tx(void)
 {
 	if ((DMA2->LISR & DMA_LISR_TCIF1) != 0)
@@ -1886,7 +1886,7 @@ void DMA2_Stream1_IRQHandler_fpga_tx(void)
 
 // DMA по передаче SAI1 - инициализация
 // TX	SAI1_A	DMA2	Stream 1	Channel 0
-// Use arm_hardware_flush
+// Use dcache_clean
 static void DMA_SAI1_A_TX_initialize_fpga(void)
 {
 	/* SAI1_A - Stream1, Channel0 */ 
@@ -2564,7 +2564,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_wfm_rx(void)
 }
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
-// Use arm_hardware_flush
+// Use dcache_clean
 void DMA2_Stream4_IRQHandler_codec1_tx(void)
 {
 	// проверка условия может потребоваться при добавлении обработчика ошибки
@@ -2594,7 +2594,7 @@ void DMA2_Stream4_IRQHandler_codec1_tx(void)
 }
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
-// Use arm_hardware_flush
+// Use dcache_clean
 void DMA2_Stream4_IRQHandler_fpga_tx(void)
 {
 	// проверка условия может потребоваться при добавлении обработчика ошибки
@@ -2624,7 +2624,7 @@ void DMA2_Stream4_IRQHandler_fpga_tx(void)
 }
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
-// Use arm_hardware_flush
+// Use dcache_clean
 void DMA2_Stream4_IRQHandler_32txsub(void)
 {
 	// проверка условия может потребоваться при добавлении обработчика ошибки
@@ -2654,7 +2654,7 @@ void DMA2_Stream4_IRQHandler_32txsub(void)
 }
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
-// Use arm_hardware_flush
+// Use dcache_clean
 static void DMA_SAI2_A_TX_initialize_32TXSUB(void)
 {
 
@@ -2718,7 +2718,7 @@ static void DMA_SAI2_A_TX_initialize_32TXSUB(void)
 }
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
-// Use arm_hardware_flush
+// Use dcache_clean
 static void DMA_SAI2_A_TX_initialize_codec1(void)
 {
 #if CPUSTYLE_STM32MP1
@@ -2782,7 +2782,7 @@ static void DMA_SAI2_A_TX_initialize_codec1(void)
 }
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
-// Use arm_hardware_flush
+// Use dcache_clean
 static void DMA_SAI2_A_TX_initialize_fpga(void)
 {
 #if CPUSTYLE_STM32MP1
@@ -4082,7 +4082,7 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = dma_invalidate16rx(allocate_dmabuffer16rx());
-	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 //	printhex32(addr, (void *) addr, DMABUFFSTEP16RX * sizeof (aubufv_t));
@@ -4103,7 +4103,7 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
@@ -4119,7 +4119,7 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
-	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
@@ -4140,7 +4140,7 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
-	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
@@ -4229,7 +4229,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4292,7 +4292,7 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4355,7 +4355,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4418,7 +4418,7 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4481,7 +4481,7 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4544,7 +4544,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4607,7 +4607,7 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4670,7 +4670,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4733,7 +4733,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4796,7 +4796,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4956,7 +4956,7 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma_audiorx(void)
 
 // audio codec
 // DMA по передаче SSIF0 - обработчик прерывания
-// Use arm_hardware_flush
+// Use dcache_clean
 
 static void r7s721_ssif0_txdma_audio(void)
 {
@@ -5050,7 +5050,7 @@ static void r7s721_ssif0_dmarx_initialize_codec1_rx(void)
 
 // audio codec
 // DMA по передаче SSIF0
-// Use arm_hardware_flush
+// Use dcache_clean
 
 static void r7s721_ssif0_dmatx_initialize_codec1_tx(void)
 {
@@ -5204,7 +5204,7 @@ static const codechw_t audiocodec_ssif0_duplex_master =
 
 // FPGA/IF codec
 // DMA по передаче SSIF1 - обработчик прерывания
-// Use arm_hardware_flush
+// Use dcache_clean
 
 static void r7s721_ssif1_txdma_fpgatx(void)
 {
@@ -5331,7 +5331,7 @@ static void r7s721_ssif1_dmarx_initialize_fpga_rx(void)
 
 // FPGA/IF codec
 // DMA по передаче SSIF1
-// Use arm_hardware_flush
+// Use dcache_clean
 
 static void r7s721_ssif1_dmatx_initialize_fpga_tx(void)
 {

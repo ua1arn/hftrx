@@ -897,7 +897,7 @@ void display_plot(
 	const uint_fast16_t adjgx = GXADJ(dx);
 	uint_fast32_t memlen = GXSIZE(dx, dy);	// количество элементов
 	// Передача в индикатор по DMA
-	arm_hardware_flush((uintptr_t) buffer, memlen * sizeof (* buffer));	// количество байтов
+	dcache_clean((uintptr_t) buffer, memlen * sizeof (* buffer));	// количество байтов
 	if (dx != adjgx)
 	{
 		while (dy --)

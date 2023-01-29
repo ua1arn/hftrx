@@ -438,7 +438,7 @@ ltdc_pix1color(
 	const uint_fast16_t dy = DIM_Y;
 	volatile PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y);
 	* tgr = color;
-	//arm_hardware_flush((uintptr_t) tgr, sizeof * tgr);
+	//dcache_clean((uintptr_t) tgr, sizeof * tgr);
 }
 
 
@@ -488,7 +488,7 @@ ltdc_vertical_pixN(
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
 	const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [pattern];
 	memcpy(tgr, pcl, sizeof (* pcl) * w);
-	//arm_hardware_flush((uintptr_t) tgr, sizeof (PACKEDCOLORMAIN_T) * w);
+	//dcache_clean((uintptr_t) tgr, sizeof (PACKEDCOLORMAIN_T) * w);
 #endif /* LCDMODE_LTDC_L24 */
 }
 
@@ -514,7 +514,7 @@ void RAMFUNC ltdc_horizontal_pixels(
 		const FLASHMEM PACKEDCOLORMAIN_T * const pcl = (* byte2runmain) [* raster ++];
 		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
 	}
-	//arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
+	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
 
@@ -775,7 +775,7 @@ void display_flush(void)
 //	char s [32];
 //	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) frame);
 //	display_at(0, 0, s);
-	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	dcache_clean(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set_no_vsync(frame);
 }
 
@@ -787,7 +787,7 @@ void display_nextfb(void)
 //	local_snprintf_P(s, 32, "B=%08lX ", (unsigned long) frame);
 //	display_at(0, 0, s);
 	ASSERT((frame % DCACHEROWSIZE) == 0);
-	arm_hardware_flush_invalidate(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	dcache_clean_invalidate(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set(frame);
 	const unsigned page = colmain_fb_next();	// возвращает новый индекс страницы отрисовки
 #if WITHOPENVG
@@ -946,7 +946,7 @@ void display_showbuffer(
 
 	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
 		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
-		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * MGSIZE(dx, dy));	// количество байтов
+		dcache_clean((uintptr_t) buffer, sizeof (* buffer) * MGSIZE(dx, dy));	// количество байтов
 	#endif
 
 	uint_fast8_t lowhalf = (dy) / 8 - 1;

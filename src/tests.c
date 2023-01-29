@@ -6376,9 +6376,9 @@ void hightests(void)
 		static PACKEDCOLORMAIN_T layer1 [GXSIZE(DIM_X, DIM_Y)];
 		static PACKEDCOLORMAIN_T fbpic [GXSIZE(picx, picy)];
 
-//		arm_hardware_flush_invalidate((uintptr_t) layer0, sizeof layer0);
-//		arm_hardware_flush_invalidate((uintptr_t) layer1, sizeof layer1);
-//		arm_hardware_flush_invalidate((uintptr_t) fbpic, sizeof fbpic);
+//		dcache_clean_invalidate((uintptr_t) layer0, sizeof layer0);
+//		dcache_clean_invalidate((uintptr_t) layer1, sizeof layer1);
+//		dcache_clean_invalidate((uintptr_t) fbpic, sizeof fbpic);
 
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
@@ -6433,8 +6433,8 @@ void hightests(void)
 
 
 		// нужно если программно заполняли
-//		arm_hardware_flush((uintptr_t) layer0, sizeof layer0);
-//		arm_hardware_flush((uintptr_t) layer1, sizeof layer1);
+//		dcache_clean((uintptr_t) layer0, sizeof layer0);
+//		dcache_clean((uintptr_t) layer1, sizeof layer1);
 //
 //		printhex32((uintptr_t) layer0, layer0, 64);
 //		printhex32((uintptr_t) layer1, layer1, 64);
@@ -6458,7 +6458,7 @@ void hightests(void)
 
 			/* линия рисуется прораммно -за ней требуется flush, поскольку потом меняется еще аппаратурой - invalidate */
 			colmain_line(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, x0 + xpos, y + h - 1, TFTALPHA(bgalpha, COLOR_WHITE), 0);
-			arm_hardware_flush_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
+			dcache_clean_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
 
 			arm_hardware_ltdc_main_set4((uintptr_t) drawlayer, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
@@ -8330,7 +8330,7 @@ void hightests(void)
 
 	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 9
 
-	arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set((uintptr_t) fr);
 
 	for(;;) {}
@@ -8370,7 +8370,7 @@ void hightests(void)
 			display_at(22, 26, msg);
 			local_delay_ms(10);
 
-			arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+			dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 			arm_hardware_ltdc_main_set((uintptr_t) fr);
 		}
 	}

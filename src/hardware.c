@@ -2059,7 +2059,7 @@ void Hyp_Handler(void)
 // Сейчас в эту память будем читать по DMA
 // Убрать копию этой области из кэша
 // Используется только в startup
-void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
+void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
 	SCB_InvalidateDCache_by_Addr((void *) base, dsize);	// DCIMVAC register used.
@@ -2067,7 +2067,7 @@ void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 
 // Сейчас эта память будет записываться по DMA куда-то
 // Записать содержимое кэша данных в память
-void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
+void dcache_clean(uintptr_t base, int_fast32_t dsize)
 {
 	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
 	SCB_CleanDCache_by_Addr((void *) base, dsize);	// DCCMVAC register used.
@@ -2075,7 +2075,7 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 
 // Записать содержимое кэша данных в память
 // применяется после начальной инициализации среды выполнния
-void arm_hardware_flush_all(void)
+void dcache_clean_all(void)
 {
 	SCB_CleanDCache();	// DCCMVAC register used.
 }
@@ -2083,7 +2083,7 @@ void arm_hardware_flush_all(void)
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 // Записать содержимое кэша данных в память
 // Убрать копию этой области из кэша
-void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
+void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
 	SCB_CleanInvalidateDCache_by_Addr((void *) base, dsize);	// DCCIMVAC register used.
@@ -2200,7 +2200,7 @@ __STATIC_FORCEINLINE void L2_InvalidateDCache_by_Addr(volatile void *addr, int32
 
 // Записать содержимое кэша данных в память
 // применяется после начальной инициализации среды выполнния
-void FLASHMEMINITFUNC arm_hardware_flush_all(void)
+void FLASHMEMINITFUNC dcache_clean_all(void)
 {
 	L1C_CleanInvalidateDCacheAll();
 #if (__L2C_PRESENT == 1)
@@ -2209,7 +2209,7 @@ void FLASHMEMINITFUNC arm_hardware_flush_all(void)
 }
 
 // Сейчас в эту память будем читать по DMA
-void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
+void dcache_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	L1_InvalidateDCache_by_Addr((void *) addr, dsize);
 #if (__L2C_PRESENT == 1)
@@ -2218,7 +2218,7 @@ void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
+void dcache_clean(uintptr_t addr, int_fast32_t dsize)
 {
 	L1_CleanDCache_by_Addr((void *) addr, dsize);
 #if (__L2C_PRESENT == 1)
@@ -2227,7 +2227,7 @@ void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
+void dcache_clean_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	L1_CleanInvalidateDCache_by_Addr((void *) addr, dsize);
 #if (__L2C_PRESENT == 1)
@@ -2401,7 +2401,7 @@ void cache_inv_range(uintptr_t start, uintptr_t stop)
 //
 
 // Сейчас в эту память будем читать по DMA
-void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
+void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
@@ -2418,7 +2418,7 @@ void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
+void dcache_clean(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
@@ -2435,7 +2435,7 @@ void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
+void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 	if (dsize > 0)
 	{
@@ -2453,7 +2453,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 
 // Записать содержимое кэша данных в память
 // применяется после начальной инициализации среды выполнния
-void arm_hardware_flush_all(void)
+void dcache_clean_all(void)
 {
 	__asm__ __volatile__(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
 }
@@ -2462,23 +2462,23 @@ void arm_hardware_flush_all(void)
 
 // Заглушки
 // Сейчас в эту память будем читать по DMA
-void arm_hardware_invalidate(uintptr_t base, int_fast32_t dsize)
+void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush(uintptr_t base, int_fast32_t dsize)
+void dcache_clean(uintptr_t base, int_fast32_t dsize)
 {
 }
 
 // Записать содержимое кэша данных в память
 // применяется после начальной инициализации среды выполнния
-void arm_hardware_flush_all(void)
+void dcache_clean_all(void)
 {
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
+void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 {
 }
 
@@ -3432,7 +3432,7 @@ sysinit_cache_initialize(void)
 
 	#endif /* __DCACHE_PRESENT */
 
-	//arm_hardware_flush_all();
+	//dcache_clean_all();
 #endif /* (__CORTEX_M != 0) */
 
 #if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
@@ -3621,7 +3621,7 @@ sysinit_cache_L2_cpu0_initialize(void)
 			L2C_InvAllByWay();
 			L2C_Enable();
 		#endif
-	//arm_hardware_flush_all();
+	//dcache_clean_all();
 	#endif
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
@@ -3672,7 +3672,7 @@ sysinit_cache_cpu1_initialize(void)
 #if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
-		//arm_hardware_flush_all();
+		//dcache_clean_all();
 	#endif
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
@@ -3740,7 +3740,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 //	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
 //		;
 
-	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
+	dcache_clean_all();	// startup code should be copyed in to sysram for example.
 
 	/* Generate an IT to core 1 */
 	GIC_SendSGI(SGI8_IRQn, 0x01 << targetcore, 0x00);	// CPU1, filer=0
@@ -3756,7 +3756,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
-	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
+	dcache_clean_all();	// startup code should be copyed in to sysram for example.
 	/* Generate an IT to core 1 */
 	__SEV();
 }
@@ -3786,7 +3786,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	* (volatile uint32_t *) (xXPAR_PSU_APU_S_AXI_BASEADDR + 0x048) = startfunc;	// apu.rvbaraddr1l
-	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
+	dcache_clean_all();	// startup code should be copyed in to sysram for example.
 
 	* (volatile uint32_t *) 0xFFD80220 = 1u << targetcore;
 	* (volatile uint32_t *) 0xFD5C0020 = 0;	//apu.config0
@@ -3821,7 +3821,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	HARDWARE_SOFTENTRY_CPU1_ADDR = startfunc;
-	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
+	dcache_clean_all();	// startup code should be copyed in to sysram for example.
 	C0_CPUX_CFG->C0_RST_CTRL |= (0x01uL << targetcore);
 	(void) C0_CPUX_CFG->C0_RST_CTRL;
 }

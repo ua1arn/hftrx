@@ -494,9 +494,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 	qtd_item2_set_toggle(& hehci->itdsarray [hc->ch_num].cache, 0);
 	//PRINTF("HAL_EHCI_HC_Init: hc->ch_num=%d\n");
 
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
+	dcache_clean_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+	dcache_clean_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
+	dcache_clean_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
 	EHCI_StartAsync(EHCIx);
 
@@ -537,9 +537,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
 
 	hc->ehci_urb_state = URB_IDLE;
 
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
+	dcache_clean_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+	dcache_clean_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
+	dcache_clean_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
 	EHCI_StartAsync(EHCIx);
 
@@ -694,8 +694,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		}
 
  		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
- 		arm_hardware_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);	/* чтобы следующая проверка могла работать */
- 		arm_hardware_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+ 		dcache_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);	/* чтобы следующая проверка могла работать */
+ 		dcache_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 
  		HAL_EHCI_SOF_Callback(hehci);
  	}
@@ -884,9 +884,9 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 		asynclist_item(& hehci->itdsarray[i], EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
 	}
 
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
+	dcache_clean_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+	dcache_clean_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
+	dcache_clean_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 	/*
 	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
 	 * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
@@ -899,7 +899,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	for (i = 0; i < ARRAY_SIZE(hehci->periodiclist); ++i) {
 		hehci->periodiclist[i].link = EHCI_LINK_TERMINATE;// 0 - valid, 1 - invalid
 	}
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
+	dcache_clean_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
 
 	// Setup frame list
 	// Устанавливаем ссылку на фреймлист
@@ -1421,7 +1421,7 @@ static HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdrequest, EHCI_FL_PID_SETUP, do_ping);
-			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
 			qtd_item2_set_toggle(qtdrequest, 0);
@@ -1436,7 +1436,7 @@ static HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
-			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
 			qtd_item2_set_toggle(qtdrequest, 1);
@@ -1450,7 +1450,7 @@ static HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 0);
-			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
 			qtd_item2_set_toggle(qtdrequest, 1);
@@ -1471,7 +1471,7 @@ static HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
-			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
 		}
@@ -1484,7 +1484,7 @@ static HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 0);
-			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
 		}
@@ -1499,7 +1499,7 @@ static HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, tt_prt=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed);
 			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
-			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
 		}
@@ -1510,7 +1510,7 @@ static HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, tt_prt=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed);
 			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 1);
-			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			dcache_clean_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
 		}
@@ -1662,9 +1662,9 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 								 ep_type, token, pbuff, length,
 								 do_ping);
 
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
+	dcache_clean_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
+	dcache_clean_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+	dcache_clean_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
 	EHCI_StartAsync(EHCIx);
 
@@ -1778,8 +1778,8 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num,
 	const  int isintr = 0;//hc->ep_type == EP_TYPE_INTR;
 	volatile struct ehci_transfer_descriptor * const qtdrequest = isintr ? & hehci->qtds [ch_num] : & hehci->asynclisthead [ch_num].cache;
 	qtd_item2_set_toggle(qtdrequest, toggle);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
+	dcache_clean_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+	dcache_clean_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
 
 	EHCI_StartAsync(EHCIx);
 

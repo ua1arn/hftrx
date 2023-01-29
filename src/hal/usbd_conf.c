@@ -1464,7 +1464,7 @@ USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, c
 		if (pbuf != NULL && size != 0)
 		{
 			ASSERT(((uintptr_t) pbuf % DCACHEROWSIZE) == 0);
-			arm_hardware_flush((uintptr_t) pbuf, size);
+			dcache_clean((uintptr_t) pbuf, size);
 		}
   }
   hal_status = HAL_PCD_EP_Transmit(pdev->pData, ep_addr, pbuf, size);
@@ -1490,7 +1490,7 @@ USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev, uint8_t ep_a
 	//if (hpcd_USB_OTG.Init.dma_enable == 1U)
 	{
 		if (pbuf != NULL && size != 0)
-			arm_hardware_flush_invalidate((uintptr_t) pbuf, size);
+			dcache_clean_invalidate((uintptr_t) pbuf, size);
 	}
 	hal_status = HAL_PCD_EP_Receive(pdev->pData, ep_addr, pbuf, size);
 
