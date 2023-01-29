@@ -2509,15 +2509,12 @@ void colpip_bitblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * dst,	// получатель
-	uint_fast16_t tdx,	// получатель Размеры окна в пикселях
-	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель Позиция
-	uint_fast16_t y,	// получатель
+	uint_fast16_t tdx,	uint_fast16_t tdy,	// получатель Размеры окна в пикселях
+	uint_fast16_t x,	uint_fast16_t y,	// получатель Позиция
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t sdx,	// источник Размеры окна в пикселях
-	uint_fast16_t sdy,	// источник
+	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры окна в пикселях
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
@@ -2557,8 +2554,7 @@ void colpip_stretchblt(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t sdx,	// источник Размеры окна в пикселях
-	uint_fast16_t sdy,	// источник
+	uint_fast16_t sdx,	uint_fast16_t sdy,		// источник Размеры окна в пикселях
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
