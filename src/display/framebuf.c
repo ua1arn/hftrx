@@ -2563,9 +2563,56 @@ void colpip_stretchblt(
 	ASSERT(dx >= sdx);
 	ASSERT(dy >= sdy);
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && !1
 	/* Использование G2D для формирования изображений */
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+
+	static g2d_stretchblt G2D_STRETCHBLT;
+
+	 G2D_STRETCHBLT.flag=G2D_BLT_NONE|0*G2D_BLT_PIXEL_ALPHA | 1*G2D_BLT_SRC_COLORKEY;
+
+	 G2D_STRETCHBLT.src_image.addr[0]=srcinvalidateaddr;
+	 G2D_STRETCHBLT.src_image.addr[1]=srcinvalidateaddr;
+	 G2D_STRETCHBLT.src_image.addr[2]=srcinvalidateaddr;
+
+	 G2D_STRETCHBLT.src_image.w=sdx;              //�������� ������
+	 G2D_STRETCHBLT.src_image.h=sdy;
+
+	 G2D_STRETCHBLT.src_image.format=DstImageFormat;
+	 G2D_STRETCHBLT.src_image.pixel_seq=G2D_SEQ_NORMAL;
+
+	 G2D_STRETCHBLT.src_rect.x=0;                           //��������
+	 G2D_STRETCHBLT.src_rect.y=0;
+
+	 G2D_STRETCHBLT.src_rect.w=sdx;               //������
+	 G2D_STRETCHBLT.src_rect.h=sdy;
+
+	 G2D_STRETCHBLT.dst_image.addr[0]=dstinvalidateaddr;        //�������� �� ��������� 1 (UI), ��� ��� ��������� 0 (VI) �� ����� ���������� ����� (����� ��� �� �����)
+	 G2D_STRETCHBLT.dst_image.addr[1]=dstinvalidateaddr;
+	 G2D_STRETCHBLT.dst_image.addr[2]=dstinvalidateaddr;
+
+	 G2D_STRETCHBLT.dst_image.w=dx;
+	 G2D_STRETCHBLT.dst_image.h=dy;
+
+	 G2D_STRETCHBLT.dst_image.format=DstImageFormat;
+	 G2D_STRETCHBLT.dst_image.pixel_seq=G2D_SEQ_NORMAL;
+
+	 G2D_STRETCHBLT.dst_rect.x=0;                           //��������� ������
+	 G2D_STRETCHBLT.dst_rect.y=0;
+
+	 G2D_STRETCHBLT.dst_rect.w=w;             //������
+	 G2D_STRETCHBLT.dst_rect.h=h;
+
+	 G2D_STRETCHBLT.color= COLOR_BLACK;
+	 G2D_STRETCHBLT.alpha=0xFF;       //����� ���������
+	 //PRINTF("G2D_STRETCHBLT.color=%08X\n", (unsigned) G2D_BLT.color);
+
+	 G2D_STRETCHBLT.dst_rect.x=x;
+	 G2D_STRETCHBLT.dst_rect.y=y;
+
+	 G2D_STRETCHBLT.dst_rect.w=w;                     //������
+	 G2D_STRETCHBLT.dst_rect.h=h;
+	 g2d_stretchblit(&G2D_STRETCHBLT);
 
 
 #else
