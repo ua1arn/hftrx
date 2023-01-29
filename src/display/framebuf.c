@@ -2618,7 +2618,16 @@ void colpip_stretchblt(
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
-	g2d_stretchblt G2D_STRETCHBLT;
+	enum { PIXEL_SIZE = sizeof * dst };
+	const uint_fast32_t tssizehw = ((dy - 1) << 16) | ((dx - 1) << 0);
+	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
+	const uint_fast32_t tcoord = ((y) << 16) | (x << 0);
+	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
+	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	//debug_g2d(__FILE__, __LINE__);
+	const uintptr_t srclinear = (uintptr_t) colpip_const_mem_at(src, sdx, sdy, 0, 0);
+
+	g2d_stretchblt G2D_STRETCHBLT = { 0 };
 
 	G2D_STRETCHBLT.flag =
 			G2D_BLT_NONE |
@@ -2626,7 +2635,7 @@ void colpip_stretchblt(
 			1 * G2D_BLT_SRC_COLORKEY |
 			0;
 
-	G2D_STRETCHBLT.src_image.addr[0] = srcinvalidateaddr;
+	G2D_STRETCHBLT.src_image.addr[0] = srclinear;
 
 	G2D_STRETCHBLT.src_image.w = sdx;
 	G2D_STRETCHBLT.src_image.h = sdy;
@@ -2668,15 +2677,6 @@ void colpip_stretchblt(
 //	return;
 	//PRINTF("dst=%p, src=%p\n", (void *) dstinvalidateaddr, (void *) srcinvalidateaddr);
 
-	enum { PIXEL_SIZE = sizeof * dst };
-	const uint_fast32_t tssizehw = ((dy - 1) << 16) | ((dx - 1) << 0);
-	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
-	const uint_fast32_t tcoord = ((y) << 16) | (x << 0);
-	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
-	//debug_g2d(__FILE__, __LINE__);
-	const uintptr_t srclinear = (uintptr_t) colpip_const_mem_at(src, sdx, sdy, 0, 0);
-
 //	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 //	G2D_V0->V0_ATTCTL = 0;
 //	G2D_UI0->UI_ATTR = 0;
@@ -2709,6 +2709,8 @@ void colpip_stretchblt(
 		G2D_BLD->BLD_KEY_CTL = 0;
 
 	}
+	G2D_WB->WB_LADD1=0xFFA000A0; /* 0xFFA000A0 */
+
 //
 	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
 	G2D_V0->V0_PITCH0 = sstride;
