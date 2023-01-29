@@ -6367,7 +6367,7 @@ void hightests(void)
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 #if 0 && LCDMODE_LTDC
 	{
-		enum { picy = 150, picx = 150 };
+		enum { picy = 110, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
@@ -6386,7 +6386,7 @@ void hightests(void)
 
 		unsigned picalpha = 255;
 		colmain_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colmain_fillrect(fbpic, picx, picy, 50, 50, 50, 50, TFTALPHA(picalpha, COLOR_WHITE));
+		colmain_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLOR_WHITE));
 		colmain_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLOR_WHITE), 0);
 		colmain_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLOR_WHITE), 0);
 
@@ -6417,16 +6417,38 @@ void hightests(void)
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y, 350, 250,
+				layer1, DIM_X, DIM_Y,
+				350, 250,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
 				BITBLT_FLAG_NONE, keycolor
 				);
 
+		/* копируем изображение в верхний слой БЕЗ цветового ключа */
+		colpip_stretchblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y,
+				450, 250, picx * 3 / 2, picy * 3 / 2,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+				);
+
+		/* копируем изображение в верхний слой БЕЗ цветового ключа */
+		colpip_stretchblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y,
+				170, 220, picx * 2 / 3, picy * 2 / 3,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+				);
+
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y, 450, 90,
+				layer1, DIM_X, DIM_Y,
+				450, 90,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
