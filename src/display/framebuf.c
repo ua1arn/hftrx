@@ -2623,20 +2623,20 @@ void colpip_stretchblt(
 //	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 //	memset(G2D_WB, 0, sizeof * G2D_WB);
 
-//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
-	PRINTF("============== BEGIN OF STRETCH\n");
-	if (w > sdx)
-	{
-		PRINTF("Expand\n");
-	}
-	else
-	{
-		PRINTF("Shrink\n");
-	}
-
-	PRINTF("colpip_stretchblt (resize): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
+//	PRINTF("============== BEGIN OF STRETCH\n");
+//	if (w > sdx)
+//	{
+//		PRINTF("Expand\n");
+//	}
+//	else
+//	{
+//		PRINTF("Shrink\n");
+//	}
+//
+//	PRINTF("colpip_stretchblt (resize): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
@@ -2700,20 +2700,26 @@ void colpip_stretchblt(
 //	debug_g2d(__FILE__, __LINE__);
 
 #if 1
-	uint_fast32_t hstep = 0x000AAAAA;
-	uint_fast32_t vstep = 0x000AAAAA;
-	if (w > sdx)
-	{
-		// expand
-		hstep = 0x000AAAAA;
-		vstep = 0x000AAAAA;
-	}
-	else
-	{
-		// shrink
-		hstep = 0x00180000;
-		vstep = 0x00181C0E;
-	}
+	/* расчет масштабов */
+	uint_fast32_t hstep = ((uint_fast32_t) sdx << 20) / w;
+	uint_fast32_t vstep = ((uint_fast32_t) sdy << 20) / h;
+
+//	PRINTF("calc: hstep=%08X\n", hstep);
+//	PRINTF("calc: vstep=%08X\n", vstep);
+//	if (w > sdx)
+//	{
+//		// expand
+//		hstep = 0x000AAAAA;
+//		vstep = 0x000AAAAA;
+//	}
+//	else
+//	{
+//		// shrink
+//		hstep = 0x00180000;
+//		vstep = 0x00181C0E;
+//	}
+//	PRINTF("need: hstep=%08X\n", hstep);
+//	PRINTF("need: vstep=%08X\n", vstep);
 
 	/* Отключаем все источники */
 	G2D_VSU->VS_CTRL = 0;
@@ -2729,11 +2735,13 @@ void colpip_stretchblt(
 	G2D_VSU->VS_CTRL = 0x00000001; /* 0x00000001 */
 	G2D_VSU->VS_OUT_SIZE = tpichw; /* 0x00A400E0 */
 	G2D_VSU->VS_GLB_ALPHA = 0x000000FF; /* 0x000000FF */
+
 	G2D_VSU->VS_Y_SIZE = ssizehw; /* 0x006D0095 */
 	G2D_VSU->VS_Y_HSTEP = hstep; /* 0x000AAAAA */
 	G2D_VSU->VS_Y_VSTEP = vstep; /* 0x000AAAAA */
 	G2D_VSU->VS_Y_HPHASE = 0x00000000; /* 0x00000000 */
 	G2D_VSU->VS_Y_VPHASE0 = 0x00000000; /* 0x00000000 */
+
 	G2D_VSU->VS_C_SIZE = ssizehw; /* 0x006D0095 */
 	G2D_VSU->VS_C_HSTEP = hstep; /* 0x000AAAAA */
 	G2D_VSU->VS_C_VSTEP = vstep; /* 0x000AAAAA */
