@@ -2568,10 +2568,10 @@ void colpip_stretchblt(
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && !1
 	/* Использование G2D для формирования изображений */
 
-	PRINTF("colpip_stretchblt: w/h=%d/%d, sdx=%d/%d\n", w, h, sdx, sdy);
 
 	if (w == sdx && h == sdy)
 	{
+		PRINTF("colpip_stretchblt (same): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
 		/* размеры совпадают - не используем stretch */
 		hwaccel_bitblt(
 			dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
@@ -2582,6 +2582,8 @@ void colpip_stretchblt(
 			);
 		return;
 	}
+
+	PRINTF("colpip_stretchblt (resize): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
