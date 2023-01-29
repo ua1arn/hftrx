@@ -2614,12 +2614,22 @@ void colpip_stretchblt(
 		return;
 	}
 
+	if (w > sdx)
+	{
+		PRINTF("Expand\n");
+	}
+	else
+	{
+		PRINTF("Shrink\n");
+	}
+
 	PRINTF("colpip_stretchblt (resize): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
 	enum { PIXEL_SIZE = sizeof * dst };
 	const uint_fast32_t tsizehw = ((dy - 1) << 16) | ((dx - 1) << 0);
+	const uint_fast32_t tpichw = ((h - 1) << 16) | ((w - 1) << 0);
 	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
 	const uint_fast32_t tcoord = ((y) << 16) | (x << 0);
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
@@ -2674,11 +2684,11 @@ void colpip_stretchblt(
 	G2D_STRETCHBLT.dst_rect.h = h;
 
 	g2d_stretchblit(&G2D_STRETCHBLT);
+	//PRINTF("g2d version\n");
 //
 //	return;
 	//PRINTF("dst=%p, src=%p\n", (void *) dstinvalidateaddr, (void *) srcinvalidateaddr);
-	PRINTF("g2d version\n");
-	debug_g2d(__FILE__, __LINE__);
+	//debug_g2d(__FILE__, __LINE__);
 
 //	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 //	G2D_V0->V0_ATTCTL = 0;
@@ -2697,11 +2707,26 @@ void colpip_stretchblt(
 	G2D_V0->V0_LADD0 = srclinear;
 	G2D_V0->V0_HADD = ((srclinear >> 32) & 0xFF) < 0;
 
+//	PRINTF("ssizehw=%08X tsizehw=%08X, tpichw=%08X\n", ssizehw, tsizehw, tpichw);
+//	PRINTF("orig G2D_BLD->BLD_CH_ISIZE [0]=%08X\n", G2D_BLD->BLD_CH_ISIZE [0]);
+//	PRINTF("orig G2D_BLD->BLD_SIZE=%08X\n", G2D_BLD->BLD_SIZE);
+//	if (w > sdx)
+//	{
+//		PRINTF("Expand\n");
+//		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw; /* 0x00A400E0 tsize 245 225 */
+//		G2D_BLD->BLD_SIZE = tsizehw;
+//	}
+//	else
+//	{
+//		PRINTF("Shrink\n");
+//	}
+	G2D_BLD->BLD_CH_ISIZE [0] = tpichw; /* 0x00A400E0 tsize 245 225 */
+	G2D_BLD->BLD_SIZE = tpichw;
+//	PRINTF("new G2D_BLD->BLD_CH_ISIZE [0]=%08X\n", G2D_BLD->BLD_CH_ISIZE [0]);
+//	PRINTF("new G2D_BLD->BLD_SIZE=%08X\n", G2D_BLD->BLD_SIZE);
 
-	G2D_BLD->BLD_CH_ISIZE [0] = tsizehw; /* 0x00A400E0 tsize 245 225 */
 	G2D_BLD->BLD_FILL_COLOR_CTL = 0x00000100; /* 0x00000100 */
 	G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
-	G2D_BLD->BLD_SIZE = tsizehw;
 
 //
 	G2D_WB->WB_ATT = 0;
@@ -2713,7 +2738,7 @@ void colpip_stretchblt(
 	//PRINTF("WB_LADD2=%p dst=%p\n", G2D_WB->WB_LADD2, dstinvalidateaddr);
 	//PRINTF("WB_PITCH0=%08X dst=%08X\n", G2D_WB->WB_PITCH0, tstride);
 	PRINTF("my version\n");
-	debug_g2d(__FILE__, __LINE__);
+	//debug_g2d(__FILE__, __LINE__);
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
