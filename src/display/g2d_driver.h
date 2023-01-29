@@ -547,5 +547,9 @@ struct mixer_para {
 void g2d_main_layers_alpha(void);
 void g2d_main0(void);
 
+int g2d_fill(g2d_fillrect *para);
+int g2d_blit(g2d_blt *para);
+int g2d_stretchblit(g2d_stretchblt *para);
+
 #endif	/* __G2D_DRIVER_H */
 
