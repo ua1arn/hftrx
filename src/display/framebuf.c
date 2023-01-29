@@ -1785,11 +1785,18 @@ void hwaccel_bitblt(
 
 		/* 5.10.9.11 BLD color key configuration register */
 		//G2D_BLD->BLD_KEY_CON = 0x07;
-		G2D_BLD->BLD_KEY_CON= 0x00;
+		G2D_BLD->BLD_KEY_CON = 0x00;
 
+#if LCDMODE_MAIN_RGB565
+		// 0xA000A0 -> 0x4200A5
+		G2D_BLD->BLD_KEY_MAX = 0x4200A5; //keycolor;
+		G2D_BLD->BLD_KEY_MIN = 0x4200A5; //keycolor;
+#else /* LCDMODE_RGB565 */
 		G2D_BLD->BLD_KEY_MAX = keycolor;
 		G2D_BLD->BLD_KEY_MIN = keycolor;
+#endif /* LCDMODE_RGB565 */
 
+		PRINTF("keycolor=%08X\n", keycolor);
 		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
 		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 9);	// 9: P1_EN Pipe1 enable
 
