@@ -126,7 +126,7 @@ static void t113_fillrect(
 	G2D_WB->WB_LADD0 = taddr;
 	G2D_WB->WB_HADD0 = taddr >> 32;
 }
-//
+
 //#include "debug_f133.h"
 //
 //void debug_g2d(const char * place, int line)
@@ -744,7 +744,6 @@ hwaccel_rect_u16(
 	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), c24);
 
 
-	//debug_g2d("my");
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
@@ -1070,7 +1069,6 @@ hwaccel_rect_u32(
 		PRINTF("hwaccel_rect_u32: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
 		ASSERT(0);
 	}
-	//debug_g2d(__FILE__, __LINE__);
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
@@ -1839,7 +1837,6 @@ void hwaccel_bitblt(
 		PRINTF("hwaccel_bitblt: timeout tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
 		ASSERT(0);
 	}
-	//debug_g2d(__FILE__, __LINE__);
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #else
@@ -2650,61 +2647,75 @@ void colpip_stretchblt(
 	const uint_fast32_t tcoord = ((y) << 16) | (x << 0);
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
-	//debug_g2d(__FILE__, __LINE__);
 	const uintptr_t srclinear = (uintptr_t) colpip_const_mem_at(src, sdx, sdy, 0, 0);
 	const uintptr_t dstlinear = (uintptr_t) colpip_mem_at(dst, dx, dy, x, y);
 
-	g2d_stretchblt G2D_STRETCHBLT = { 0 };
-
-	G2D_STRETCHBLT.flag =
-			G2D_BLT_NONE |
-			0 * G2D_BLT_PIXEL_ALPHA |
-			1 * G2D_BLT_SRC_COLORKEY |
-			0;
-
-	G2D_STRETCHBLT.src_image.addr[0] = srclinear;
-
-	G2D_STRETCHBLT.src_image.w = sdx;
-	G2D_STRETCHBLT.src_image.h = sdy;
-
-	G2D_STRETCHBLT.src_image.format = DstImageFormat;
-	G2D_STRETCHBLT.src_image.pixel_seq = G2D_SEQ_NORMAL;
-
-	G2D_STRETCHBLT.src_rect.x = 0;
-	G2D_STRETCHBLT.src_rect.y = 0;
-
-	G2D_STRETCHBLT.src_rect.w = sdx;
-	G2D_STRETCHBLT.src_rect.h = sdy;
-
-	G2D_STRETCHBLT.dst_image.addr[0] = dstinvalidateaddr;
-
-	G2D_STRETCHBLT.dst_image.w = dx;
-	G2D_STRETCHBLT.dst_image.h = dy;
-
-	G2D_STRETCHBLT.dst_image.format = DstImageFormat;
-	G2D_STRETCHBLT.dst_image.pixel_seq = G2D_SEQ_NORMAL;
-
-	G2D_STRETCHBLT.dst_rect.x = 0;
-	G2D_STRETCHBLT.dst_rect.y = 0;
-
-	G2D_STRETCHBLT.dst_rect.w = w;
-	G2D_STRETCHBLT.dst_rect.h = h;
-
-	G2D_STRETCHBLT.color = COLOR_BLACK;
-	G2D_STRETCHBLT.alpha = 0xFF;
-
-	G2D_STRETCHBLT.dst_rect.x = x;
-	G2D_STRETCHBLT.dst_rect.y = y;
-
-	G2D_STRETCHBLT.dst_rect.w = w;
-	G2D_STRETCHBLT.dst_rect.h = h;
+//	g2d_stretchblt G2D_STRETCHBLT = { 0 };
+//
+//	G2D_STRETCHBLT.flag =
+//			G2D_BLT_NONE |
+//			0 * G2D_BLT_PIXEL_ALPHA |
+//			1 * G2D_BLT_SRC_COLORKEY |
+//			0;
+//
+//	G2D_STRETCHBLT.src_image.addr[0] = srclinear;
+//
+//	G2D_STRETCHBLT.src_image.w = sdx;
+//	G2D_STRETCHBLT.src_image.h = sdy;
+//
+//	G2D_STRETCHBLT.src_image.format = DstImageFormat;
+//	G2D_STRETCHBLT.src_image.pixel_seq = G2D_SEQ_NORMAL;
+//
+//	G2D_STRETCHBLT.src_rect.x = 0;
+//	G2D_STRETCHBLT.src_rect.y = 0;
+//
+//	G2D_STRETCHBLT.src_rect.w = sdx;
+//	G2D_STRETCHBLT.src_rect.h = sdy;
+//
+//	G2D_STRETCHBLT.dst_image.addr[0] = dstinvalidateaddr;
+//
+//	G2D_STRETCHBLT.dst_image.w = dx;
+//	G2D_STRETCHBLT.dst_image.h = dy;
+//
+//	G2D_STRETCHBLT.dst_image.format = DstImageFormat;
+//	G2D_STRETCHBLT.dst_image.pixel_seq = G2D_SEQ_NORMAL;
+//
+//	G2D_STRETCHBLT.dst_rect.x = 0;
+//	G2D_STRETCHBLT.dst_rect.y = 0;
+//
+//	G2D_STRETCHBLT.dst_rect.w = w;
+//	G2D_STRETCHBLT.dst_rect.h = h;
+//
+//	G2D_STRETCHBLT.color = COLOR_BLACK;
+//	G2D_STRETCHBLT.alpha = 0xFF;
+//
+//	G2D_STRETCHBLT.dst_rect.x = x;
+//	G2D_STRETCHBLT.dst_rect.y = y;
+//
+//	G2D_STRETCHBLT.dst_rect.w = w;
+//	G2D_STRETCHBLT.dst_rect.h = h;
 
 //	g2d_stretchblit(& G2D_STRETCHBLT);
 //	PRINTF("g2d version\n");
 //	debug_g2d(__FILE__, __LINE__);
 
-	/* Отключаем все источники */
+#if 1
+	uint_fast32_t hstep = 0x000AAAAA;
+	uint_fast32_t vstep = 0x000AAAAA;
+	if (w > sdx)
+	{
+		// expand
+		hstep = 0x000AAAAA;
+		vstep = 0x000AAAAA;
+	}
+	else
+	{
+		// shrink
+		hstep = 0x00180000;
+		vstep = 0x00181C0E;
+	}
 
+	/* Отключаем все источники */
 	G2D_VSU->VS_CTRL = 0;
 	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 	G2D_V0->V0_ATTCTL = 0;
@@ -2715,19 +2726,19 @@ void colpip_stretchblt(
 //	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
-	G2D_VSU->VS_CTRL=0x00000001; /* 0x00000001 */
-	G2D_VSU->VS_OUT_SIZE=tpichw; /* 0x00A400E0 */
-	G2D_VSU->VS_GLB_ALPHA=0x000000FF; /* 0x000000FF */
-	G2D_VSU->VS_Y_SIZE=ssizehw; /* 0x006D0095 */
-	G2D_VSU->VS_Y_HSTEP=0x000AAAAA; /* 0x000AAAAA */
-	G2D_VSU->VS_Y_VSTEP=0x000AAAAA; /* 0x000AAAAA */
-	G2D_VSU->VS_Y_HPHASE=0x00000000; /* 0x00000000 */
-	G2D_VSU->VS_Y_VPHASE0=0x00000000; /* 0x00000000 */
-	G2D_VSU->VS_C_SIZE=ssizehw; /* 0x006D0095 */
-	G2D_VSU->VS_C_HSTEP=0x000AAAAA; /* 0x000AAAAA */
-	G2D_VSU->VS_C_VSTEP=0x000AAAAA; /* 0x000AAAAA */
-	G2D_VSU->VS_C_HPHASE=0x00000000; /* 0x00000000 */
-	G2D_VSU->VS_C_VPHASE0=0x00000000; /* 0x00000000 */
+	G2D_VSU->VS_CTRL = 0x00000001; /* 0x00000001 */
+	G2D_VSU->VS_OUT_SIZE = tpichw; /* 0x00A400E0 */
+	G2D_VSU->VS_GLB_ALPHA = 0x000000FF; /* 0x000000FF */
+	G2D_VSU->VS_Y_SIZE = ssizehw; /* 0x006D0095 */
+	G2D_VSU->VS_Y_HSTEP = hstep; /* 0x000AAAAA */
+	G2D_VSU->VS_Y_VSTEP = vstep; /* 0x000AAAAA */
+	G2D_VSU->VS_Y_HPHASE = 0x00000000; /* 0x00000000 */
+	G2D_VSU->VS_Y_VPHASE0 = 0x00000000; /* 0x00000000 */
+	G2D_VSU->VS_C_SIZE = ssizehw; /* 0x006D0095 */
+	G2D_VSU->VS_C_HSTEP = hstep; /* 0x000AAAAA */
+	G2D_VSU->VS_C_VSTEP = vstep; /* 0x000AAAAA */
+	G2D_VSU->VS_C_HPHASE = 0x00000000; /* 0x00000000 */
+	G2D_VSU->VS_C_VPHASE0 = 0x00000000; /* 0x00000000 */
 
 //
 //	return;
@@ -2781,6 +2792,8 @@ void colpip_stretchblt(
 
 //	PRINTF("my version\n");
 //	debug_g2d(__FILE__, __LINE__);
+
+#endif
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
