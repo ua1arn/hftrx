@@ -2619,13 +2619,14 @@ void colpip_stretchblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
 	enum { PIXEL_SIZE = sizeof * dst };
-	const uint_fast32_t tssizehw = ((dy - 1) << 16) | ((dx - 1) << 0);
+	const uint_fast32_t tsizehw = ((dy - 1) << 16) | ((dx - 1) << 0);
 	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
 	const uint_fast32_t tcoord = ((y) << 16) | (x << 0);
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	//debug_g2d(__FILE__, __LINE__);
 	const uintptr_t srclinear = (uintptr_t) colpip_const_mem_at(src, sdx, sdy, 0, 0);
+	const uintptr_t dstlinear = (uintptr_t) colpip_mem_at(dst, dx, dy, x, y);
 
 	g2d_stretchblt G2D_STRETCHBLT = { 0 };
 
@@ -2676,6 +2677,8 @@ void colpip_stretchblt(
 //
 //	return;
 	//PRINTF("dst=%p, src=%p\n", (void *) dstinvalidateaddr, (void *) srcinvalidateaddr);
+	PRINTF("g2d version\n");
+	debug_g2d(__FILE__, __LINE__);
 
 //	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 //	G2D_V0->V0_ATTCTL = 0;
@@ -2683,33 +2686,6 @@ void colpip_stretchblt(
 //	G2D_UI1->UI_ATTR = 0;
 //	G2D_UI2->UI_ATTR = 0;
 //
-	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
-	{
-		/* 5.10.9.10 BLD color key control register */
-		G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
-
-		/* 5.10.9.11 BLD color key configuration register */
-		//G2D_BLD->BLD_KEY_CON = 0x07;
-		G2D_BLD->BLD_KEY_CON = 0x00;
-
-		G2D_BLD->BLD_KEY_MAX = keycolor;
-		G2D_BLD->BLD_KEY_MIN = keycolor;
-
-		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
-		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 9);	// 9: P1_EN Pipe1 enable
-
-
-		G2D_BLD->BLD_CH_ISIZE [0] = ssizehw;
-		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
-		G2D_BLD->BLD_CH_ISIZE [1] = ssizehw;
-		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
-	}
-	else
-	{
-		G2D_BLD->BLD_KEY_CTL = 0;
-
-	}
-	G2D_WB->WB_LADD1=0xFFA000A0; /* 0xFFA000A0 */
 
 //
 	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
@@ -2722,20 +2698,22 @@ void colpip_stretchblt(
 	G2D_V0->V0_HADD = ((srclinear >> 32) & 0xFF) < 0;
 
 
-	G2D_BLD->BLD_CH_ISIZE [0] = tssizehw; /* 0x00A400E0 tsize 245 225 */
+	G2D_BLD->BLD_CH_ISIZE [0] = tsizehw; /* 0x00A400E0 tsize 245 225 */
+	G2D_BLD->BLD_FILL_COLOR_CTL = 0x00000100; /* 0x00000100 */
+	G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
+	G2D_BLD->BLD_SIZE = tsizehw;
+
 //
-	G2D_WB->WB_ATT=0x00000000; /* 0x00000000 */
-	G2D_BLD->BLD_FILL_COLOR_CTL=0x00000100; /* 0x00000100 */
-	G2D_BLD->ROP_CTL=0x000000F0; /* 0x000000F0 */
-	G2D_BLD->BLD_SIZE = tssizehw;
-	G2D_WB->WB_LADD0 = (uintptr_t) colpip_mem_at(dst, dx, dy, x, y);
+	G2D_WB->WB_ATT = 0;
+	G2D_WB->WB_LADD0 = dstlinear;
 	G2D_WB->WB_LADD2 = srclinear;
 	G2D_WB->WB_PITCH0 = tstride;
 
 	//PRINTF("WB_LADD0=%p src=%p\n", G2D_WB->WB_LADD0, srcinvalidateaddr);
 	//PRINTF("WB_LADD2=%p dst=%p\n", G2D_WB->WB_LADD2, dstinvalidateaddr);
 	//PRINTF("WB_PITCH0=%08X dst=%08X\n", G2D_WB->WB_PITCH0, tstride);
-
+	PRINTF("my version\n");
+	debug_g2d(__FILE__, __LINE__);
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
