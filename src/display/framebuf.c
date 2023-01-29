@@ -1091,7 +1091,7 @@ hwaccel_rect_u32(
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORPIP_T *
-colmain_mem_at_debug(
+colpip_mem_at_debug(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1115,11 +1115,37 @@ colmain_mem_at_debug(
 #endif /* LCDMODE_HORFILL */
 }
 
+// получить адрес требуемой позиции в буфере
+const PACKEDCOLORPIP_T *
+colpip_const_mem_at_debug(
+	const PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * file,
+	int line
+	)
+{
+	if (x >= dx || y >= dy || buffer == NULL)
+	{
+		PRINTF("colpip_const_mem_at_debug(%s/%d): dx=%u, dy=%u, x=%d, y=%d, savestring='%s', savewhere='%s'\n", file, line, dx, dy, x, y, savestring, savewhere);
+	}
+	ASSERT(x < dx);
+	ASSERT(y < dy);
+	ASSERT(buffer != NULL);
+#if LCDMODE_HORFILL
+	return & buffer [y * GXADJ(dx) + x];
+#else /* LCDMODE_HORFILL */
+	return & buffer [y * GXADJ(dx) + x];
+#endif /* LCDMODE_HORFILL */
+}
+
 
 /// Нарисовать вертикальную цветную полосу
 // Формат RGB565
 void
-display_colorbuf_xor_vline(
+colpip_xor_vline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1138,7 +1164,7 @@ display_colorbuf_xor_vline(
 // Нарисовать вертикальную цветную полосу
 // Формат RGB565
 void
-display_colorbuf_set_vline(
+colpip_set_vline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1159,7 +1185,7 @@ display_colorbuf_set_vline(
 // Нарисовать горизонтальную цветную полосу
 // Формат RGB565
 void
-display_colorbuf_set_hline(
+colpip_set_hline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1881,7 +1907,7 @@ void hwaccel_ra90(
 		uint_fast16_t y;	// y получателя
 		for (y = 0; y < sdx; ++ y)
 		{
-			const COLORPIP_T pixel = * colpip_mem_at((PACKEDCOLORPIP_T *) sbuffer, sdx, sdy, y, sdy - 1 - x);	// выборка из исхолного битмапа
+			const COLORPIP_T pixel = * colpip_const_mem_at(sbuffer, sdx, sdy, y, sdy - 1 - x);	// выборка из исхолного битмапа
 			* colpip_mem_at(tbuffer, tdx, tdy, tx + x, ty + y) = pixel;
 		}
 	}
@@ -2643,13 +2669,13 @@ void colpip_stretchblt(
 	//PRINTF("dst=%p, src=%p\n", (void *) dstinvalidateaddr, (void *) srcinvalidateaddr);
 
 	enum { PIXEL_SIZE = sizeof * dst };
-	const uint_fast32_t tsizehw = ((dy - 1) << 16) | ((dx - 1) << 0);
-	const uint_fast32_t sizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
+	const uint_fast32_t tssizehw = ((dy - 1) << 16) | ((dx - 1) << 0);
+	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
 	const uint_fast32_t tcoord = ((y) << 16) | (x << 0);
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	//debug_g2d(__FILE__, __LINE__);
-	const uintptr_t srclinear = (uintptr_t) srcinvalidateaddr;//colpip_mem_at(src, sdx, sdy, 0, 0);
+	const uintptr_t srclinear = (uintptr_t) colpip_const_mem_at(src, sdx, sdy, 0, 0);
 
 //	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 //	G2D_V0->V0_ATTCTL = 0;
@@ -2657,27 +2683,49 @@ void colpip_stretchblt(
 //	G2D_UI1->UI_ATTR = 0;
 //	G2D_UI2->UI_ATTR = 0;
 //
+	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
+	{
+		/* 5.10.9.10 BLD color key control register */
+		G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
+
+		/* 5.10.9.11 BLD color key configuration register */
+		//G2D_BLD->BLD_KEY_CON = 0x07;
+		G2D_BLD->BLD_KEY_CON = 0x00;
+
+		G2D_BLD->BLD_KEY_MAX = keycolor;
+		G2D_BLD->BLD_KEY_MIN = keycolor;
+
+		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
+		G2D_BLD->BLD_FILL_COLOR_CTL |= (1u << 9);	// 9: P1_EN Pipe1 enable
+
+
+		G2D_BLD->BLD_CH_ISIZE [0] = ssizehw;
+		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_CH_ISIZE [1] = ssizehw;
+		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
+	}
+	else
+	{
+		G2D_BLD->BLD_KEY_CTL = 0;
+
+	}
 //
 	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
 	G2D_V0->V0_PITCH0 = sstride;
-	G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
+	G2D_V0->V0_FILLC = 0;
 	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-	G2D_V0->V0_MBSIZE = sizehw; 	// сколько брать от исходного буфера
-	G2D_V0->V0_SIZE = sizehw;		// параметры окна исходного буфера
+	G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
+	G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
 	G2D_V0->V0_LADD0 = srclinear;
-	G2D_V0->V0_HADD = 0;
+	G2D_V0->V0_HADD = ((srclinear >> 32) & 0xFF) < 0;
 
 
-	G2D_BLD->BLD_CH_ISIZE [0] = tsizehw; /* 0x00A400E0 tsize 245 225 */
+	G2D_BLD->BLD_CH_ISIZE [0] = tssizehw; /* 0x00A400E0 tsize 245 225 */
 //
-//	G2D_WB->WB_ATT=0x00000000; /* 0x00000000 */
-//	G2D_WB->WB_SIZE=0x00480063; /* 0x00480063 */
-//	G2D_WB->WB_PITCH0=0x00000C80; /* 0x00000C80 */
-//	G2D_WB->WB_PITCH1=0x00000000; /* 0x00000000 */
-//	G2D_WB->WB_PITCH2=0x00000000; /* 0x00000000 */
-//
+	G2D_WB->WB_ATT=0x00000000; /* 0x00000000 */
+	G2D_BLD->BLD_FILL_COLOR_CTL=0x00000100; /* 0x00000100 */
 	G2D_BLD->ROP_CTL=0x000000F0; /* 0x000000F0 */
-//	G2D_BLD->BLD_SIZE = tizehw;
+	G2D_BLD->BLD_SIZE = tssizehw;
 	G2D_WB->WB_LADD0 = (uintptr_t) colpip_mem_at(dst, dx, dy, x, y);
 	G2D_WB->WB_LADD2 = srclinear;
 	G2D_WB->WB_PITCH0 = tstride;

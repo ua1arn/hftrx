@@ -937,7 +937,7 @@ polar_to_dek(
 		uint_fast8_t style);
 
 void
-display_radius_buf(
+colpip_radius(
 		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
@@ -949,7 +949,7 @@ display_radius_buf(
 		int style);			// 1 - растягивание по горизонтали
 
 void
-display_segm_buf(
+colpip_segm(
 		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
@@ -962,7 +962,7 @@ display_segm_buf(
 
 // Нарисовать вертикальную цветную полосу
 void
-display_colorbuf_xor_vline(
+colpip_xor_vline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -975,7 +975,7 @@ display_colorbuf_xor_vline(
 // Нарисовать вертикальную цветную полосу
 // Формат RGB565
 void
-display_colorbuf_set_vline(
+colpip_set_vline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -988,7 +988,7 @@ display_colorbuf_set_vline(
 // Нарисовать горизонтальную цветную полосу
 // Формат RGB565
 void
-display_colorbuf_set_hline(
+colpip_set_hline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1000,7 +1000,7 @@ display_colorbuf_set_hline(
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORPIP_T *
-colmain_mem_at_debug(
+colpip_mem_at_debug(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1010,7 +1010,20 @@ colmain_mem_at_debug(
 	int line
 	);
 
-#define colpip_mem_at(a,b,c,d,e) (colmain_mem_at_debug((a), (b), (c), (d), (e), __FILE__, __LINE__))
+// получить адрес требуемой позиции в буфере
+const PACKEDCOLORPIP_T *
+colpip_const_mem_at_debug(
+	const PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * file,
+	int line
+	);
+
+#define colpip_mem_at(a,b,c,d,e) (colpip_mem_at_debug((a), (b), (c), (d), (e), __FILE__, __LINE__))
+#define colpip_const_mem_at(a,b,c,d,e) (colpip_const_mem_at_debug((a), (b), (c), (d), (e), __FILE__, __LINE__))
 
 void display_putpixel(
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо

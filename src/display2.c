@@ -705,13 +705,13 @@ display2_smeter15_layout(
 				char buf2 [10];
 				uint_fast16_t xx, yy;
 
-				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 8, smeter, 1, 1);
+				colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 8, smeter, 1, 1);
 				polar_to_dek(xb, yb, markersTX_pwr [i], smpr->r1 + 6, & xx, & yy, 1);
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORMAIN_YELLOW);
 			}
 			else
-				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smeter, 1, 1);
+				colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smeter, 1, 1);
 		}
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
@@ -719,14 +719,14 @@ display2_smeter15_layout(
 			char buf2 [10];
 			uint_fast16_t xx, yy;
 
-			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smpr->r2, smpr->r2 - 8, smeter, 1, 1);
+			colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smpr->r2, smpr->r2 - 8, smeter, 1, 1);
 			polar_to_dek(xb, yb, markersTX_swr [i], smpr->r2 - 16, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2, COLORMAIN_YELLOW);
 		}
-		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
-		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeter, 1, 1);
-		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORMAIN_WHITE, 1, 1);
+		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
+		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeter, 1, 1);
+		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORMAIN_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
 
 		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX];
@@ -741,14 +741,14 @@ display2_smeter15_layout(
 			char buf2 [10];
 			uint_fast16_t xx, yy;
 
-			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smpr->r1, smpr->r1 + 8, smeter, 1, 1);
+			colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smpr->r1, smpr->r1 + 8, smeter, 1, 1);
 			polar_to_dek(xb, yb, markers [i], smpr->r1 + 6, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2, COLORMAIN_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 		{
-			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2 [i], smpr->r1, smpr->r1 + 4, smeter, 1, 1);
+			colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markers2 [i], smpr->r1, smpr->r1 + 4, smeter, 1, 1);
 		}
 
 		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
@@ -756,18 +756,18 @@ display2_smeter15_layout(
 			char buf2 [10];
 			uint_fast16_t xx, yy;
 
-			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smpr->r1, smpr->r1 + 8, smeterplus, 1, 1);
+			colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smpr->r1, smpr->r1 + 8, smeterplus, 1, 1);
 			polar_to_dek(xb, yb, markersR [i], smpr->r1 + 6, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
 			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORMAIN_RED);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 		{
-			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers2R [i], smpr->r1, smpr->r1 + 4, smeterplus, 1, 1);
+			colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markers2R [i], smpr->r1, smpr->r1 + 4, smeterplus, 1, 1);
 		}
-		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
-		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeterplus, 1, 1);
-		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORMAIN_WHITE, 1, 1);
+		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
+		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeterplus, 1, 1);
+		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORMAIN_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
 		break;
 
@@ -1032,18 +1032,18 @@ display2_smeter15(
 				uint_fast16_t xx, yy;
 				const COLORPIP_T color = COLORMAIN_YELLOW;
 
-				display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, gswr, smpr->r2 + 2, 1, color, 0, 1);
-				display_segm_buf(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, gswr, smpr->r1 - 2, 1, color, 0, 1);
-				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
-				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gswr, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
+				colpip_segm(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, gswr, smpr->r2 + 2, 1, color, 0, 1);
+				colpip_segm(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, gswr, smpr->r1 - 2, 1, color, 0, 1);
+				colpip_radius(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
+				colpip_radius(fr, DIM_X, DIM_Y, xc, yc, gswr, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				polar_to_dek(xc, yc, gswr - 1, smpr->r1 - 4, & xx, & yy, 1);
 				display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORMAIN_BLACK, 1);
 			}
 
 			const COLORPIP_T color = COLORMAIN_GREEN;
-			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
-			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
+			colpip_radius(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
+			colpip_radius(fr, DIM_X, DIM_Y, xc, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
+			colpip_radius(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
 #endif /* WITHRLEDECOMPRESS */
 		}
 
@@ -1062,17 +1062,17 @@ display2_smeter15(
 			{
 				// Рисование peak value (риска)
 				const COLORPIP_T color = COLORMAIN_YELLOW;
-				display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
-				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
-				display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
+				colpip_radius(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
+				colpip_radius(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
+				colpip_radius(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 			}
 
 			{
 				// Рисование стрелки
 				const COLORPIP_T color = COLORMAIN_GREEN;
-				display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
-				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
-				display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
+				colpip_radius(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
+				colpip_radius(fr, DIM_X, DIM_Y, xc, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
+				colpip_radius(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
 			}
 #endif /* WITHRLEDECOMPRESS */
 		}
@@ -4284,7 +4284,7 @@ display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 					ASSERT(gvars.afsp.y >= y_norm);
 					if (gvars.afsp.y >= y_norm)
 					{
-						display_colorbuf_set_vline(fr, DIM_X, DIM_Y,
+						colpip_set_vline(fr, DIM_X, DIM_Y,
 								gvars.afsp.x + x, gvars.afsp.y - y_norm, y_norm,
 								AFSPECTRE_COLOR);
 					}
@@ -5613,14 +5613,14 @@ display_colorgrid_xor(
 				if (isvisibletext(BUFDIM_X, xtext, freqw))
 				{
 					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row0, buf2, COLORPIP_YELLOW);
-					display_colorbuf_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
+					colpip_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
-					display_colorbuf_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
+					colpip_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
 			}
 		}
 	}
-	display_colorbuf_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
+	colpip_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
 // Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
@@ -5657,7 +5657,7 @@ display_colorgrid_set(
 		{
 			const int valy = dsp_mag2y(db2ratio(- lvl), h - 1, glob_topdb, glob_bottomdb);
 
-			display_colorbuf_set_hline(buffer, BUFDIM_X, BUFDIM_Y, 0, valy, ALLDX, color);	// Level marker
+			colpip_set_hline(buffer, BUFDIM_X, BUFDIM_Y, 0, valy, ALLDX, color);	// Level marker
 		}
 	}
 
@@ -5677,14 +5677,14 @@ display_colorgrid_set(
 				if (isvisibletext(BUFDIM_X, xtext, freqw))
 				{
 					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row0, buf2, COLORPIP_YELLOW);
-					display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + markerh, h - markerh, color);
+					colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + markerh, h - markerh, color);
 				}
 				else
-					display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
+					colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
 			}
 		}
 	}
-	display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
+	colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
 // отрисовка маркеров частот для 3DSS
@@ -5722,11 +5722,11 @@ display_colorgrid_3dss(
 				if (isvisibletext(BUFDIM_X, xtext, freqw))
 					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row, buf2, COLORPIP_YELLOW);
 
-				display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
+				colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
 			}
 		}
 	}
-	display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
+	colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
 // Спектр на монохромных дисплеях
@@ -6023,7 +6023,7 @@ static void display2_spectrum(
 				}
 				else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
 				{
-					display_colorbuf_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, ynew + SPY0, SPDY - ynew, COLORPIP_SPECTRUMFG);
+					colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, ynew + SPY0, SPDY - ynew, COLORPIP_SPECTRUMFG);
 				}
 
 				if (x)
@@ -6793,7 +6793,7 @@ static  int icos(unsigned alpha, unsigned r)
 
 // Рисование радиусов
 void
-display_radius_buf(
+colpip_radius(
 		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
@@ -6832,7 +6832,7 @@ polar_to_dek(
 // круговой интерполятор
 // нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
 void
-display_segm_buf(
+colpip_segm(
 		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
@@ -6919,10 +6919,10 @@ void colmain_rounded_rect(
 	ASSERT(r << 1 < x2 - x1);
 	ASSERT(r << 1 < y2 - y1);
 
-	display_segm_buf(buffer, bx, by, x1 + r, y1 + r, 180, 270, r, 1, color, 1, 0); // up left
-	display_segm_buf(buffer, bx, by, x2 - r, y1 + r, 270, 360, r, 1, color, 1, 0); // up right
-	display_segm_buf(buffer, bx, by, x2 - r, y2 - r,   0,  90, r, 1, color, 1, 0); // down right
-	display_segm_buf(buffer, bx, by, x1 + r, y2 - r,  90, 180, r, 1, color, 1, 0); // down left
+	colpip_segm(buffer, bx, by, x1 + r, y1 + r, 180, 270, r, 1, color, 1, 0); // up left
+	colpip_segm(buffer, bx, by, x2 - r, y1 + r, 270, 360, r, 1, color, 1, 0); // up right
+	colpip_segm(buffer, bx, by, x2 - r, y2 - r,   0,  90, r, 1, color, 1, 0); // down right
+	colpip_segm(buffer, bx, by, x1 + r, y2 - r,  90, 180, r, 1, color, 1, 0); // down left
 
 	colpip_line(buffer, bx, by, x1 + r, y1, x2 - r, y1, color, 0); // up
 	colpip_line(buffer, bx, by, x1, y1 + r, x1, y2 - r, color, 0); // left
