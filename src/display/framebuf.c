@@ -75,16 +75,19 @@ static void t113_fillrect(
 	COLOR24_T color24
 	)
 {
-
-	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 //	memset(G2D_V0, 0, sizeof * G2D_V0);
 //	memset(G2D_UI0, 0, sizeof * G2D_UI0);
 //	memset(G2D_UI1, 0, sizeof * G2D_UI1);
 //	memset(G2D_UI2, 0, sizeof * G2D_UI2);
 //	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 //	memset(G2D_WB, 0, sizeof * G2D_WB);
+
+//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+
 	/* Отключаем все источники */
+
+	G2D_VSU->VS_CTRL = 0;
 	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
@@ -123,19 +126,18 @@ static void t113_fillrect(
 	G2D_WB->WB_LADD0 = taddr;
 	G2D_WB->WB_HADD0 = taddr >> 32;
 }
-
-#include "debug_f133.h"
-
-void debug_g2d(const char * place, int line)
-{
-	PRINTF("**** %s/%d\n", place, line);
-	G2D_UI_Type_print(G2D_UI0, "G2D_UI0");
-	G2D_UI_Type_print(G2D_UI1, "G2D_UI1");
-	G2D_UI_Type_print(G2D_UI2, "G2D_UI2");
-	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
-	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
-	G2D_WB_Type_print(G2D_WB, "G2D_WB");
-}
+//
+//#include "debug_f133.h"
+//
+//void debug_g2d(const char * place, int line)
+//{
+//	PRINTF("**** %s/%d\n", place, line);
+//	//G2D_MIXER_Type_print(G2D_MIXER, "G2D_MIXER");
+//	G2D_VSU_Type_print(G2D_VSU, "G2D_VSU");
+//	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
+//	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
+//	G2D_WB_Type_print(G2D_WB, "G2D_WB");
+//}
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
@@ -1719,23 +1721,26 @@ void hwaccel_bitblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-//		memset(G2D_V0, 0, sizeof * G2D_V0);
-//		memset(G2D_UI0, 0, sizeof * G2D_UI0);
-//		memset(G2D_UI1, 0, sizeof * G2D_UI1);
-//		memset(G2D_UI2, 0, sizeof * G2D_UI2);
-//		memset(G2D_BLD, 0, sizeof * G2D_BLD);
-//		memset(G2D_WB, 0, sizeof * G2D_WB);
+//	memset(G2D_V0, 0, sizeof * G2D_V0);
+//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+//	memset(G2D_WB, 0, sizeof * G2D_WB);
+
+//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
 	/* Отключаем все источники */
+
+	G2D_VSU->VS_CTRL = 0;
+	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
 	G2D_UI1->UI_ATTR = 0;
 	G2D_UI2->UI_ATTR = 0;
-	G2D_BLD->BLD_FILL_COLOR_CTL = 0;	// Нет источников
 
 
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
@@ -2614,6 +2619,17 @@ void colpip_stretchblt(
 		return;
 	}
 
+//	memset(G2D_V0, 0, sizeof * G2D_V0);
+//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+//	memset(G2D_WB, 0, sizeof * G2D_WB);
+
+//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+
+	PRINTF("============== BEGIN OF STRETCH\n");
 	if (w > sdx)
 	{
 		PRINTF("Expand\n");
@@ -2683,20 +2699,42 @@ void colpip_stretchblt(
 	G2D_STRETCHBLT.dst_rect.w = w;
 	G2D_STRETCHBLT.dst_rect.h = h;
 
-	g2d_stretchblit(&G2D_STRETCHBLT);
-	//PRINTF("g2d version\n");
+//	g2d_stretchblit(& G2D_STRETCHBLT);
+//	PRINTF("g2d version\n");
+//	debug_g2d(__FILE__, __LINE__);
+
+	/* Отключаем все источники */
+
+	G2D_VSU->VS_CTRL = 0;
+	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
+	G2D_V0->V0_ATTCTL = 0;
+	G2D_UI0->UI_ATTR = 0;
+	G2D_UI1->UI_ATTR = 0;
+	G2D_UI2->UI_ATTR = 0;
+
+//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+
+	G2D_VSU->VS_CTRL=0x00000001; /* 0x00000001 */
+	G2D_VSU->VS_OUT_SIZE=tpichw; /* 0x00A400E0 */
+	G2D_VSU->VS_GLB_ALPHA=0x000000FF; /* 0x000000FF */
+	G2D_VSU->VS_Y_SIZE=ssizehw; /* 0x006D0095 */
+	G2D_VSU->VS_Y_HSTEP=0x000AAAAA; /* 0x000AAAAA */
+	G2D_VSU->VS_Y_VSTEP=0x000AAAAA; /* 0x000AAAAA */
+	G2D_VSU->VS_Y_HPHASE=0x00000000; /* 0x00000000 */
+	G2D_VSU->VS_Y_VPHASE0=0x00000000; /* 0x00000000 */
+	G2D_VSU->VS_C_SIZE=ssizehw; /* 0x006D0095 */
+	G2D_VSU->VS_C_HSTEP=0x000AAAAA; /* 0x000AAAAA */
+	G2D_VSU->VS_C_VSTEP=0x000AAAAA; /* 0x000AAAAA */
+	G2D_VSU->VS_C_HPHASE=0x00000000; /* 0x00000000 */
+	G2D_VSU->VS_C_VPHASE0=0x00000000; /* 0x00000000 */
+
 //
 //	return;
 	//PRINTF("dst=%p, src=%p\n", (void *) dstinvalidateaddr, (void *) srcinvalidateaddr);
-	//debug_g2d(__FILE__, __LINE__);
-
-//	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
-//	G2D_V0->V0_ATTCTL = 0;
-//	G2D_UI0->UI_ATTR = 0;
-//	G2D_UI1->UI_ATTR = 0;
-//	G2D_UI2->UI_ATTR = 0;
 //
-
+	// expand - только v0 src
+	// shrink - еще UI2 dst
 //
 	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
 	G2D_V0->V0_PITCH0 = sstride;
@@ -2729,16 +2767,21 @@ void colpip_stretchblt(
 	G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
 
 //
+//	PRINTF("before G2D_WB->WB_SIZE=%08X tpichw=%08X\n", G2D_WB->WB_SIZE, tpichw);
 	G2D_WB->WB_ATT = 0;
 	G2D_WB->WB_LADD0 = dstlinear;
 	G2D_WB->WB_LADD2 = srclinear;
 	G2D_WB->WB_PITCH0 = tstride;
+	G2D_WB->WB_SIZE = tpichw;
+//	PRINTF("after G2D_WB->WB_SIZE=%08X tpichw=%08X\n", G2D_WB->WB_SIZE, tpichw);
 
 	//PRINTF("WB_LADD0=%p src=%p\n", G2D_WB->WB_LADD0, srcinvalidateaddr);
 	//PRINTF("WB_LADD2=%p dst=%p\n", G2D_WB->WB_LADD2, dstinvalidateaddr);
 	//PRINTF("WB_PITCH0=%08X dst=%08X\n", G2D_WB->WB_PITCH0, tstride);
-	PRINTF("my version\n");
-	//debug_g2d(__FILE__, __LINE__);
+
+//	PRINTF("my version\n");
+//	debug_g2d(__FILE__, __LINE__);
+
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
@@ -2749,11 +2792,9 @@ void colpip_stretchblt(
 
 //	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	//debug_g2d(__FILE__, __LINE__);
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
-
+	PRINTF("============== END OF STRETCH\n");
 
 #else
 
