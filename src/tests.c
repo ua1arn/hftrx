@@ -6363,7 +6363,7 @@ static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
-	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
+	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 #if 0 && LCDMODE_LTDC
 	{
@@ -6385,25 +6385,25 @@ void hightests(void)
 		COLORPIP_T keycolor = COLOR_KEY;
 
 		unsigned picalpha = 255;
-		colmain_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colmain_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLOR_WHITE));
-		colmain_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLOR_WHITE), 0);
-		colmain_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLOR_WHITE), 0);
+		colpip_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colpip_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLOR_WHITE));
+		colpip_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLOR_WHITE), 0);
+		colpip_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLOR_WHITE), 0);
 		colpip_string_tbg(fbpic, picx, picy, 5, 6, "HELLO", TFTALPHA(picalpha, COLOR_WHITE));
 
 		/* непрозрачный фон */
 		unsigned bgalpha = 255;
-		colmain_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
-		colmain_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
+		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
+		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
-		colmain_fillrect(layer0_a, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
-		colmain_fillrect(layer0_b, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
+		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
+		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
 
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
-		colmain_fillrect(layer1, DIM_X, DIM_Y, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLOR_BLUE));	/* transparent black */
+		colpip_fillrect(layer1, DIM_X, DIM_Y, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLOR_BLUE));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
-		colmain_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLOR_GREEN));	// GREEN
+		colpip_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLOR_GREEN));	// GREEN
 
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
@@ -6463,7 +6463,7 @@ void hightests(void)
 //		printhex32((uintptr_t) layer0, layer0, 64);
 //		printhex32((uintptr_t) layer1, layer1, 64);
 
-		arm_hardware_ltdc_main_set4((uintptr_t) layer0_a, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
+		hardware_ltdc_main_set4((uintptr_t) layer0_a, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
 		TP();
 		int phase = 0;
@@ -6478,13 +6478,13 @@ void hightests(void)
 
 			PACKEDCOLORPIP_T * drawlayer = phase ? layer0_a : layer0_b;
 
-			colmain_fillrect(drawlayer, DIM_X, DIM_Y, x0, y, w, h, TFTALPHA(bgalpha, COLOR_BLACK));
+			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0, y, w, h, TFTALPHA(bgalpha, COLOR_BLACK));
 
 			/* линия рисуется прораммно -за ней требуется flush, поскольку потом меняется еще аппаратурой - invalidate */
-			colmain_line(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, x0 + xpos, y + h - 1, TFTALPHA(bgalpha, COLOR_WHITE), 0);
+			colpip_line(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, x0 + xpos, y + h - 1, TFTALPHA(bgalpha, COLOR_WHITE), 0);
 			dcache_clean_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
 
-			arm_hardware_ltdc_main_set4((uintptr_t) drawlayer, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
+			hardware_ltdc_main_set4((uintptr_t) drawlayer, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
 			phase = ! phase;
 			c = (c + 1) % 256;
@@ -6551,18 +6551,18 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 //		TP();
-//		colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
+//		colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
 //		TP();
-//		colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
+//		colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
 //		TP();
-//		colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
+//		colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
 //		for (;;)
 //			;
 
 		for (int pos = 0; pos < 16; ++ pos)
 		{
 			COLORPIP_T c = 1u << pos;
-			colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, c);
+			colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, c);
 			PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
 			local_delay_ms(2000);
 		}
@@ -8341,21 +8341,21 @@ void hightests(void)
 
 	uint8_t c = 35;
 
-	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, 0 + c, 3, 3, COLORMAIN_WHITE);			// 1
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, 0 + c, 3, 3, COLORMAIN_WHITE);		// 2
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, 0 + c, 3, 3, COLORMAIN_WHITE);		// 3
+	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, 0 + c, 3, 3, COLORMAIN_WHITE);			// 1
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, 0 + c, 3, 3, COLORMAIN_WHITE);		// 2
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, 0 + c, 3, 3, COLORMAIN_WHITE);		// 3
 
-	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);		// 4
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 5
+	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);		// 4
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 5
 
-	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);		// 6
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 7
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 8
+	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);		// 6
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 7
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 8
 
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 9
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 9
 
 	dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
-	arm_hardware_ltdc_main_set((uintptr_t) fr);
+	hardware_ltdc_main_set((uintptr_t) fr);
 
 	for(;;) {}
 #endif
@@ -8382,20 +8382,20 @@ void hightests(void)
 			{
 				PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), (int) x, (int) y);
 				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("x=%5d, y=%5d"), (int) x, (int) y);
-				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
+				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
 				markerx = x / gridx * gridx;
 				markery = y / gridy * gridy;
-				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_WHITE);
+				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_WHITE);
 			} else {
 				memset(msg, ' ', 63);
 				msg [63] = '\0';
-				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
+				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
 			}
 			display_at(22, 26, msg);
 			local_delay_ms(10);
 
 			dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
-			arm_hardware_ltdc_main_set((uintptr_t) fr);
+			hardware_ltdc_main_set((uintptr_t) fr);
 		}
 	}
 #endif

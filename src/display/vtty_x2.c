@@ -85,9 +85,9 @@ void display_vtty_x2_initialize(void)
 	vt->scroll = 0;
 	vt->row = 0;
 	vt->col = 0;
-	colmain_fillrect(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, 0, VTTYx2_DX, VTTYx2_DY, gbg);	// очищаем видеобуфер
-	colmain_fillrect(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, 0, VTTYx2_COLS, VTTYx2_ROWS, gfg);	// очищаем видеобуфер
-	colmain_fillrect(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, 0, VTTYx2_COLS, VTTYx2_ROWS, gbg);	// очищаем видеобуфер
+	colpip_fillrect(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, 0, VTTYx2_DX, VTTYx2_DY, gbg);	// очищаем видеобуфер
+	colpip_fillrect(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, 0, VTTYx2_COLS, VTTYx2_ROWS, gfg);	// очищаем видеобуфер
+	colpip_fillrect(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, 0, VTTYx2_COLS, VTTYx2_ROWS, gbg);	// очищаем видеобуфер
 	memset(vt->shadow, ' ', sizeof vt->shadow);
 	PRINTF("display_vtty_x2_initialize: rows=%u, cols=%u\n", VTTYx2_ROWS, VTTYx2_COLS);
 }
@@ -112,7 +112,7 @@ void display_vtty_x2_show(
 	)
 {
 	PACKEDCOLORPIP_T * const tfb = colmain_fb_draw();
-//	colmain_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTYx2_DX, VTTYx2_DY, VTTYx2_BG);	// обозначам место под вывод информации
+//	colpip_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTYx2_DX, VTTYx2_DY, VTTYx2_BG);	// обозначам место под вывод информации
 //	return;
 	vtty_x2_t * const vt = & vtty_x2_0;
 	enum { H = VTTYx2_ROWSPIX };
@@ -157,7 +157,7 @@ void display_vtty_x2_show_ra90(
 	)
 {
 	PACKEDCOLORPIP_T * const tfb = colmain_fb_draw();
-//	colmain_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTYx2_DX, VTTYx2_DY, VTTYx2_BG);	// обозначам место под вывод информации
+//	colpip_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTYx2_DX, VTTYx2_DY, VTTYx2_BG);	// обозначам место под вывод информации
 //	return;
 	vtty_x2_t * const vt = & vtty_x2_0;
 	enum { H = VTTYx2_ROWSPIX };
@@ -203,13 +203,13 @@ static void display_vtty_x2_scrollup(
 	vt->scroll = (vt->scroll + nlines) % VTTYx2_ROWS;
 	const unsigned row = (VTTYx2_ROWS - 1 + vt->scroll) % VTTYx2_ROWS;
 	// очищаем видеобуфер
-	colmain_fillrect(
+	colpip_fillrect(
 			vt->fb, VTTYx2_DX, VTTYx2_DY,
 			0, row * H,
 			VTTYx2_DX, nlines * H,
 			gbg);
-	colmain_fillrect(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, row, VTTYx2_COLS, nlines, gfg);	// очищаем видеобуфер
-	colmain_fillrect(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, row, VTTYx2_COLS, nlines, gbg);	// очищаем видеобуфер
+	colpip_fillrect(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, row, VTTYx2_COLS, nlines, gfg);	// очищаем видеобуфер
+	colpip_fillrect(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, row, VTTYx2_COLS, nlines, gbg);	// очищаем видеобуфер
 	memset(vt->shadow [row], ' ', sizeof vt->shadow [0] * nlines);
 	ASSERT(vt->scroll < VTTYx2_ROWS);
 	ASSERT(vt->row < VTTYx2_ROWS);
@@ -223,7 +223,7 @@ static void vtput(vtty_x2_t * const vt, unsigned col, unsigned row, char ch, COL
 {
 	const unsigned vpos = (row + vt->scroll) % VTTYx2_ROWS;
 
-	colmain_fillrect(
+	colpip_fillrect(
 			vt->fb, VTTYx2_DX, VTTYx2_DY,
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			VTTYx2_CHARPIX, VTTYx2_ROWSPIX, bg);	// очищаем видеобуфер под выыодимыи символом
@@ -238,8 +238,8 @@ static void vtput(vtty_x2_t * const vt, unsigned col, unsigned row, char ch, COL
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			fg, & ch, 1);
 #endif
-	colmain_putpixel(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, vpos, fg);	// сохраняем цвет символа
-	colmain_putpixel(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, vpos, bg);	// сохраняем цвет фона
+	colpip_putpixel(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, vpos, fg);	// сохраняем цвет символа
+	colpip_putpixel(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, vpos, bg);	// сохраняем цвет фона
 	vt->shadow [vpos] [col] = ch;
 }
 

@@ -70,7 +70,7 @@ static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		lbl->size = GXSIZE(lbl->w, lbl->h) * sizeof (PACKEDCOLORPIP_T);
 		lbl->label_bg = (PACKEDCOLORPIP_T *) malloc(lbl->size);
 		ASSERT(lbl->label_bg != NULL);
-		colmain_fillrect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w, lbl->h, COLORMAIN_BLACK);
+		colpip_fillrect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w, lbl->h, COLORMAIN_BLACK);
 		colmain_rounded_rect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w - 1, lbl->h - 1, 5, * lbl->pcolor, 1);
 	} while (++ i < ARRAY_SIZE(label_bg));
 }
@@ -398,7 +398,7 @@ display2_testvidget(
 {
 	const uint_fast16_t x = GRID2X(xcell);
 	const uint_fast16_t y = GRID2X(ycell);
-	//colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, x, y, 100, 100, COLORMAIN_GREEN);
+	//colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, x, y, 100, 100, COLORMAIN_GREEN);
 
 	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 0, "Hello", COLORMAIN_WHITE);
 	colpip_string_x2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 20, "Test", COLORMAIN_WHITE);
@@ -780,25 +780,25 @@ display2_smeter15_layout(
 //		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
 //		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
 
-		colmain_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r1, smpr->ge, smpr->r1, COLORMAIN_WHITE, 0);
+		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r1, smpr->ge, smpr->r1, COLORMAIN_WHITE, 0);
 		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
 		{
 			if (i % 2 == 0)
 			{
 				char buf2 [10];
-				colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 10, COLORMAIN_WHITE, 0);
+				colpip_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 10, COLORMAIN_WHITE, 0);
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
 			}
 			else
-				colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 5, COLORMAIN_WHITE, 0);
+				colpip_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 5, COLORMAIN_WHITE, 0);
 		}
 
-		colmain_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r2, smpr->ge, smpr->r2, COLORMAIN_WHITE, 0);
+		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r2, smpr->ge, smpr->r2, COLORMAIN_WHITE, 0);
 		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
 		{
 			char buf2 [10];
-			colmain_line(bg, SM_BG_W, SM_BG_H, markersTX_swr [i], smpr->r2, markersTX_swr [i], smpr->r2 + 10, COLORMAIN_WHITE, 0);
+			colpip_line(bg, SM_BG_W, SM_BG_H, markersTX_swr [i], smpr->r2, markersTX_swr [i], smpr->r2 + 10, COLORMAIN_WHITE, 0);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_swr [i] - strwidth3(buf2) / 2, smpr->r2 + 12, buf2, COLORMAIN_YELLOW);
 		}
@@ -808,33 +808,33 @@ display2_smeter15_layout(
 //		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
 //		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
 
-		colmain_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORMAIN_WHITE, 0);
-		colmain_line(bg, SM_BG_W, SM_BG_H, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORMAIN_RED, 0);
+		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORMAIN_WHITE, 0);
+		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORMAIN_RED, 0);
 		colpip_string2_tbg(bg, SM_BG_W, SM_BG_H, smpr->gs - SMALLCHARW2, smpr->r1 - SMALLCHARH2 - 2, "Sm", COLORMAIN_YELLOW);
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 		{
 			char buf2 [10];
 			uint_fast16_t xx, yy;
-			colmain_line(bg, SM_BG_W, SM_BG_H, markers [i], smpr->r1, markers [i], smpr->r1 - 10, COLORMAIN_WHITE, 0);
+			colpip_line(bg, SM_BG_W, SM_BG_H, markers [i], smpr->r1, markers [i], smpr->r1 - 10, COLORMAIN_WHITE, 0);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markers [i] - SMALLCHARW3 / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 		{
-			colmain_line(bg, SM_BG_W, SM_BG_H, markers2 [i], smpr->r1, markers2 [i], smpr->r1 - 5, COLORMAIN_WHITE, 0);
+			colpip_line(bg, SM_BG_W, SM_BG_H, markers2 [i], smpr->r1, markers2 [i], smpr->r1 - 5, COLORMAIN_WHITE, 0);
 		}
 
 		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
 		{
 			char buf2 [10];
-			colmain_line(bg, SM_BG_W, SM_BG_H, markersR [i], smpr->r1, markersR [i], smpr->r1 - 10, COLORMAIN_RED, 0);
+			colpip_line(bg, SM_BG_W, SM_BG_H, markersR [i], smpr->r1, markersR [i], smpr->r1 - 10, COLORMAIN_RED, 0);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
 			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersR [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 		{
-			colmain_line(bg, SM_BG_W, SM_BG_H, markers2R [i], smpr->r1, markers2R [i], smpr->r1 - 5, COLORMAIN_RED, 0);
+			colpip_line(bg, SM_BG_W, SM_BG_H, markers2R [i], smpr->r1, markers2R [i], smpr->r1 - 5, COLORMAIN_RED, 0);
 		}
 
 		break;
@@ -918,13 +918,13 @@ static void smeter_arrow(uint_fast16_t target_pixel_x, uint_fast16_t x, uint_fas
 	// draw
 	if (x1 < x0)
 	{
-		colmain_line(fr, DIM_X, DIM_Y, x0, y0, x1, y1, color, 1);
-		colmain_line(fr, DIM_X, DIM_Y, x0 + 1, y0, x1 + 1, y1, color, 1);
+		colpip_line(fr, DIM_X, DIM_Y, x0, y0, x1, y1, color, 1);
+		colpip_line(fr, DIM_X, DIM_Y, x0 + 1, y0, x1 + 1, y1, color, 1);
 	}
 	else
 	{
-		colmain_line(fr, DIM_X, DIM_Y, x0, y0, x1, y1, color, 1);
-		colmain_line(fr, DIM_X, DIM_Y, x0 - 1, y0, x1 - 1, y1, color, 1);
+		colpip_line(fr, DIM_X, DIM_Y, x0, y0, x1, y1, color, 1);
+		colpip_line(fr, DIM_X, DIM_Y, x0 - 1, y0, x1 - 1, y1, color, 1);
 	}
 }
 
@@ -1110,7 +1110,7 @@ display2_smeter15(
 				colpip_rect(fr, DIM_X, DIM_Y, x0 + smpr->gs, y0 + smpr->r1 + 5, x0 + gv, y0 + smpr->r1 + 20, COLORMAIN_GREEN, 1);
 
 			if(gv_trace > smpr->gs)
-				colmain_line(fr, DIM_X, DIM_Y, x0 + gv_trace, y0 + smpr->r1 + 5, x0 + gv_trace, y0 + smpr->r1 + 20, COLORMAIN_YELLOW, 0);
+				colpip_line(fr, DIM_X, DIM_Y, x0 + gv_trace, y0 + smpr->r1 + 5, x0 + gv_trace, y0 + smpr->r1 + 20, COLORMAIN_YELLOW, 0);
 		}
 
 		break;
@@ -1129,7 +1129,7 @@ display2_clearbg(
 {
 #if LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
 
-	colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
+	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
 
 #endif /* LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
 }
@@ -5340,7 +5340,7 @@ static void wflclear(void)
 #endif /* WITHVIEW_3DSS */
 
     default:
-    	colmain_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, WFROWS, display2_bgcolorwfl());
+    	colpip_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, WFROWS, display2_bgcolorwfl());
     	break;
     }
 }
@@ -5387,7 +5387,7 @@ static void wflshiftleft(uint_fast16_t pixels)
     		);
     	}
         // заполнение вновь появившегося прямоугольника
-    	colmain_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, ALLDX - pixels, 0, pixels, WFROWS, display2_bgcolorwfl());
+    	colpip_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, ALLDX - pixels, 0, pixels, WFROWS, display2_bgcolorwfl());
      	break;
     }
 }
@@ -5435,7 +5435,7 @@ static void wflshiftright(uint_fast16_t pixels)
 				);
     	}
         // заполнение вновь появившегося прямоугольника
-    	colmain_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, 0, 0, pixels, WFROWS, display2_bgcolorwfl());
+    	colpip_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, 0, 0, pixels, WFROWS, display2_bgcolorwfl());
      	break;
     }
 }
@@ -5919,7 +5919,7 @@ static void display2_spectrum(
 
 						if (x)
 						{
-							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_WHITE, 1);
+							colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_WHITE, 1);
 						}
 
 						gvars.envelope_y [x] = ynew - 2;
@@ -5972,7 +5972,7 @@ static void display2_spectrum(
 					return;
 
 				if (x)
-					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORMAIN_BLACK, 0);
+					colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORMAIN_BLACK, 0);
 
 				ylast_sp = y1;
 			}
@@ -5986,23 +5986,23 @@ static void display2_spectrum(
 			/* стираем старый фон, рисуем прямоугольник полосы пропускания */
 			if (ALLDX / (xrightv - xleft) > 8)
 			{
-				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, ALLDX, SPDY, COLORPIP_SPECTRUMBG);
+				colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, ALLDX, SPDY, COLORPIP_SPECTRUMBG);
 			}
 			else
 			{
 				if (xleft > 0)
 				{
-					colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, xleft, SPDY, COLORPIP_SPECTRUMBG);
+					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, xleft, SPDY, COLORPIP_SPECTRUMBG);
 				}
 				if (xrightv < ALLDX)
 				{
-					colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xrightv, SPY0, ALLDX - xrightv, SPDY, COLORPIP_SPECTRUMBG);
+					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xrightv, SPY0, ALLDX - xrightv, SPDY, COLORPIP_SPECTRUMBG);
 				}
 			}
 			// Изображение "шторки".
 			if (xleft < xrightv)
 			{
-				colmain_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, COLORMAIN_SPECTRUMBG2);
+				colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, COLORMAIN_SPECTRUMBG2);
 			}
 
 			uint_fast16_t ylast = 0;
@@ -6028,7 +6028,7 @@ static void display2_spectrum(
 
 				if (x)
 				{
-					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, 1);
+					colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, 1);
 				}
 				ylast = ynew;
 			}
@@ -6120,11 +6120,11 @@ static void display2_latchwaterfall(
 			// для водопада
 			const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 		#if LCDMODE_MAIN_L8
-			colmain_putpixel(gvars.u.wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
+			colpip_putpixel(gvars.u.wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
 		#else /* LCDMODE_MAIN_L8 */
 			ASSERT(val >= 0);
 			ASSERT(val < ARRAY_SIZE(wfpalette));
-			colmain_putpixel(gvars.u.wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
+			colpip_putpixel(gvars.u.wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
 		#endif /* LCDMODE_MAIN_L8 */
 		}
 	}
@@ -6812,7 +6812,7 @@ display_radius_buf(
 	x2 = xc + icos(gs, style ? r2 << 1 : r2);
 	y2 = yc + isin(gs, r2);
 
-	colmain_line(buffer, bx, by, x, y, x2, y2, color, antialiasing);
+	colpip_line(buffer, bx, by, x, y, x2, y2, color, antialiasing);
 }
 
 void
@@ -6865,7 +6865,7 @@ display_segm_buf(
 		}
 		else
 		{  // рисовать элемент окружности
-			colmain_line(buffer, bx, by, xo, yo, x, y, color, antialiasing);
+			colpip_line(buffer, bx, by, xo, yo, x, y, color, antialiasing);
 			xo = x, yo = y;
 		}
 		if (ge == 360)
@@ -6892,7 +6892,7 @@ display_segm_buf(
 		x = xc + vcos;
 		y = yc + vsin;
 
-		colmain_line(buffer, bx, by, xo, yo, x, y, color, antialiasing); // рисовать линию
+		colpip_line(buffer, bx, by, xo, yo, x, y, color, antialiasing); // рисовать линию
 	}
 }
 
@@ -6924,10 +6924,10 @@ void colmain_rounded_rect(
 	display_segm_buf(buffer, bx, by, x2 - r, y2 - r,   0,  90, r, 1, color, 1, 0); // down right
 	display_segm_buf(buffer, bx, by, x1 + r, y2 - r,  90, 180, r, 1, color, 1, 0); // down left
 
-	colmain_line(buffer, bx, by, x1 + r, y1, x2 - r, y1, color, 0); // up
-	colmain_line(buffer, bx, by, x1, y1 + r, x1, y2 - r, color, 0); // left
-	colmain_line(buffer, bx, by, x1 + r, y2, x2 - r, y2, color, 0); // down
-	colmain_line(buffer, bx, by, x2, y1 + r, x2, y2 - r, color, 0); // right
+	colpip_line(buffer, bx, by, x1 + r, y1, x2 - r, y1, color, 0); // up
+	colpip_line(buffer, bx, by, x1, y1 + r, x1, y2 - r, color, 0); // left
+	colpip_line(buffer, bx, by, x1 + r, y2, x2 - r, y2, color, 0); // down
+	colpip_line(buffer, bx, by, x2, y1 + r, x2, y2 - r, color, 0); // right
 
 	if (fill)
 	{

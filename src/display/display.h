@@ -611,18 +611,6 @@ void colpip_copy_to_draw(
 	uint_fast16_t row	// целевая вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	);
 
-// Нарисовать линию указанным цветом
-void colpip_line(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x0,	
-	uint_fast16_t y0,
-	uint_fast16_t x1,	
-	uint_fast16_t y1,
-	COLORPIP_T color
-	);
-
 // Нарисовать закрашенный или пустой прямоугольник
 void colpip_rect(
 	PACKEDCOLORPIP_T * buffer,
@@ -861,7 +849,7 @@ display_line(
 /* заполнение прямоугольника в буфере произвольным цветом
 */
 void
-colmain_fillrect(
+colpip_fillrect(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -1030,7 +1018,7 @@ void display_putpixel(
 	COLORPIP_T color
 	);
 
-void colmain_putpixel(
+void colpip_putpixel(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1144,7 +1132,7 @@ int_fast32_t display_zoomedbw(void);
 
 void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORPIP_T fg, COLORPIP_T bg);
 
-void colmain_line(
+void colpip_line(
 		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера

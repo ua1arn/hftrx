@@ -1148,7 +1148,7 @@ display_colorbuf_set_vline(
 	ASSERT(row0 < dy);
 	ASSERT((row0 + h) <= dy);
 	/* рисуем прямоугольник шириной в 1 пиксель */
-	//colmain_fillrect(buffer, dx, dy, col, row0, 1, h, color);
+	//colpip_fillrect(buffer, dx, dy, col, row0, 1, h, color);
 	while (h --)
 		colpip_point(buffer, dx, dy, col, row0 ++, color);
 }
@@ -1169,7 +1169,7 @@ display_colorbuf_set_hline(
 	ASSERT(row0 < dy);
 	ASSERT((col0 + w) <= dx);
 	/* рисуем прямоугольник высотой в 1 пиксель */
-	//colmain_fillrect(buffer, dx, dy, col0, row0, w, 1, color);
+	//colpip_fillrect(buffer, dx, dy, col0, row0, w, 1, color);
 	while (w --)
 		colpip_point(buffer, dx, dy, col0 ++, row0, color);
 }
@@ -1245,7 +1245,7 @@ void colpip_fillrect(
 
 
 
-void colmain_putpixel(
+void colpip_putpixel(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -1290,7 +1290,7 @@ void colmain_putpixel(
  * серединой расстояния между ближайшими Y-узлами сетки.
  */
 
-void colmain_line(
+void colpip_line(
 	PACKEDCOLORPIP_T * buffer,
 	const uint_fast16_t bx,	// ширина буфера
 	const uint_fast16_t by,	// высота буфера
@@ -1344,7 +1344,7 @@ void colmain_line(
 	/* s - начальное значение разности */
 	incr2 = 2 * dx;         /* Константа для перевычисления    */
 	/* разности если текущее s >= 0    */
-	colmain_putpixel(buffer, bx, by, xn, yn, color); /* Первый  пиксел вектора       */
+	colpip_putpixel(buffer, bx, by, xn, yn, color); /* Первый  пиксел вектора       */
 
 	/*static */ uint_fast16_t xold, yold;
 	xold = xn;
@@ -1365,19 +1365,19 @@ void colmain_line(
 			xn += sx;
 		s += incr1;
 
-		colmain_putpixel(buffer, bx, by, xn, yn, color); /* Текущая  точка  вектора   */
+		colpip_putpixel(buffer, bx, by, xn, yn, color); /* Текущая  точка  вектора   */
 
 		if (antialiasing)
 		{
 			if (((xold == xn - 1) || (xold == xn + 1)) && ((yold == yn - 1) || (yold == yn + 1)))
 			{
 				if (color != * colpip_mem_at(buffer, bx, by, xn, yold))
-					colmain_putpixel(buffer, bx, by, xn, yold, sc);
+					colpip_putpixel(buffer, bx, by, xn, yold, sc);
 
 				if (color != * colpip_mem_at(buffer, bx, by, xold, yn))
-					colmain_putpixel(buffer, bx, by, xold, yn, sc);
-//				colmain_putpixel(buffer, bx, by, xn, yn, sc);		// нужны дополнительные цвета для этих 2х точек
-//				colmain_putpixel(buffer, bx, by, xold, yold, sc);
+					colpip_putpixel(buffer, bx, by, xold, yn, sc);
+//				colpip_putpixel(buffer, bx, by, xn, yn, sc);		// нужны дополнительные цвета для этих 2х точек
+//				colpip_putpixel(buffer, bx, by, xold, yold, sc);
 			}
 			xold = xn;
 			yold = yn;
@@ -1442,7 +1442,7 @@ void display_floodfill(
 			} while(* tgr != newColor);
 
 			// закраска найденной линии
-			colmain_line(buffer, dx, dy, x_l, y0, x_p, y0, newColor, 0);
+			colpip_line(buffer, dx, dy, x_l, y0, x_p, y0, newColor, 0);
 
 			// переход на следующую строку
 			tgr = colpip_mem_at(buffer, dx, dy, x, ++y0);
@@ -1883,75 +1883,75 @@ void hwaccel_ra90(
 }
 
 
-// Routine to draw a line in the RGB565 color to the LCD.
-// The line is drawn from (xmin,ymin) to (xmax,ymax).
-// The algorithm used to draw the line is "Bresenham's line
-// algorithm".
-#define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
-// Нарисовать линию указанным цветом
-void colpip_line(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	uint_fast16_t x0,
-	uint_fast16_t y0,
-	uint_fast16_t x1,
-	uint_fast16_t y1,
-	COLORPIP_T color
-	)
-{
-	int xmin = x0;
-	int xmax = x1;
-	int ymin = y0;
-	int ymax = y1;
-	int Dx = xmax - xmin;
-	int Dy = ymax - ymin;
-	int steep = (abs(Dy) >= abs(Dx));
-	if (steep) {
-	   SWAP(xmin, ymin);
-	   SWAP(xmax, ymax);
-	   // recompute Dx, Dy after swap
-	   Dx = xmax - xmin;
-	   Dy = ymax - ymin;
-	}
-	int xstep = 1;
-	if (Dx < 0) {
-	   xstep = -1;
-	   Dx = -Dx;
-	}
-	int ystep = 1;
-	if (Dy < 0) {
-	   ystep = -1;
-	   Dy = -Dy;
-	}
-
-   int TwoDy = 2 * Dy;
-   int TwoDyTwoDx = TwoDy - 2 * Dx; // 2*Dy - 2*Dx
-   int E = TwoDy - Dx; //2*Dy - Dx
-   int y = ymin;
-   int xDraw, yDraw;
-   int x;
-   for (x = xmin; x != xmax; x += xstep) {
-       if (steep) {
-           xDraw = y;
-           yDraw = x;
-       } else {
-           xDraw = x;
-           yDraw = y;
-       }
-       // plot
-	   colpip_point(buffer, dx, dy, xDraw, yDraw, color);
-       // next
-       if (E > 0) {
-           E += TwoDyTwoDx; //E += 2*Dy - 2*Dx;
-           y = y + ystep;
-       } else {
-           E += TwoDy; //E += 2*Dy;
-       }
-   }
-}
-
-#undef SWAP
+//// Routine to draw a line in the RGB565 color to the LCD.
+//// The line is drawn from (xmin,ymin) to (xmax,ymax).
+//// The algorithm used to draw the line is "Bresenham's line
+//// algorithm".
+//#define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
+//// Нарисовать линию указанным цветом
+//void colpip_line_no_aa(
+//	PACKEDCOLORPIP_T * buffer,
+//	uint_fast16_t dx,
+//	uint_fast16_t dy,
+//	uint_fast16_t x0,
+//	uint_fast16_t y0,
+//	uint_fast16_t x1,
+//	uint_fast16_t y1,
+//	COLORPIP_T color
+//	)
+//{
+//	int xmin = x0;
+//	int xmax = x1;
+//	int ymin = y0;
+//	int ymax = y1;
+//	int Dx = xmax - xmin;
+//	int Dy = ymax - ymin;
+//	int steep = (abs(Dy) >= abs(Dx));
+//	if (steep) {
+//	   SWAP(xmin, ymin);
+//	   SWAP(xmax, ymax);
+//	   // recompute Dx, Dy after swap
+//	   Dx = xmax - xmin;
+//	   Dy = ymax - ymin;
+//	}
+//	int xstep = 1;
+//	if (Dx < 0) {
+//	   xstep = -1;
+//	   Dx = -Dx;
+//	}
+//	int ystep = 1;
+//	if (Dy < 0) {
+//	   ystep = -1;
+//	   Dy = -Dy;
+//	}
+//
+//   int TwoDy = 2 * Dy;
+//   int TwoDyTwoDx = TwoDy - 2 * Dx; // 2*Dy - 2*Dx
+//   int E = TwoDy - Dx; //2*Dy - Dx
+//   int y = ymin;
+//   int xDraw, yDraw;
+//   int x;
+//   for (x = xmin; x != xmax; x += xstep) {
+//       if (steep) {
+//           xDraw = y;
+//           yDraw = x;
+//       } else {
+//           xDraw = x;
+//           yDraw = y;
+//       }
+//       // plot
+//	   colpip_point(buffer, dx, dy, xDraw, yDraw, color);
+//       // next
+//       if (E > 0) {
+//           E += TwoDyTwoDx; //E += 2*Dy - 2*Dx;
+//           y = y + ystep;
+//       } else {
+//           E += TwoDy; //E += 2*Dy;
+//       }
+//   }
+//}
+//
+//#undef SWAP
 
 // Нарисовать закрашенный или пустой прямоугольник
 void colpip_rect(
@@ -1986,10 +1986,10 @@ void colpip_rect(
 	}
 	else
 	{
-		colpip_line(buffer, dx, dy, x1, y1, x2, y1, color);		// верхняя горизонталь
-		colpip_line(buffer, dx, dy, x1, y2, x2, y2, color);		// нижняя горизонталь
-		colpip_line(buffer, dx, dy, x1, y1, x1, y2, color);		// левая вертикаль
-		colpip_line(buffer, dx, dy, x2, y1, x2, y2, color);		// правая вертикаль
+		colpip_line(buffer, dx, dy, x1, y1, x2, y1, color, 0);		// верхняя горизонталь
+		colpip_line(buffer, dx, dy, x1, y2, x2, y2, color, 0);		// нижняя горизонталь
+		colpip_line(buffer, dx, dy, x1, y1, x1, y2, color, 0);		// левая вертикаль
+		colpip_line(buffer, dx, dy, x2, y1, x2, y2, color, 0);		// правая вертикаль
 	}
 }
 
@@ -2034,45 +2034,6 @@ void display_snapshot_req(void)
 {
 }
 #endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
-
-void
-colmain_fillrect(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
-	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORPIP_T fgcolor
-	)
-{
-	//PRINTF("colmain_fillrect: x/y, w/h: %u/%u, %u/%u, color=%08lX\n", x, y, w, h, fgcolor);
-
-#if LCDMODE_HORFILL
-
-	#if LCDMODE_MAIN_L8
-		hwaccel_rect_u8(buffer, dx, dy, x, y, w, h, fgcolor);
-	#elif LCDMODE_LTDC_L24
-		hwaccel_rect_u24(buffer, dx, dy, x, y, w, h, fgcolor);
-	#elif LCDMODE_MAIN_ARGB888
-		hwaccel_rect_u32(buffer, dx, dy, x, y, w, h, fgcolor);
-	#else
-		hwaccel_rect_u16(buffer, dx, dy, x, y, w, h, fgcolor);
-	#endif
-
-#else /* LCDMODE_HORFILL */
-
-	#if LCDMODE_MAIN_L8
-		hwaccel_rect_u8(buffer, dy, dx, y, x, h, w, fgcolor);
-	#elif LCDMODE_LTDC_L24
-		hwaccel_rect_u24(buffer, dy, dx, y, x, h, w, fgcolor);
-	#elif LCDMODE_MAIN_ARGB888
-		hwaccel_rect_u32(buffer, dy, dx, y, x, h, w, fgcolor);
-	#else
-		hwaccel_rect_u16(buffer, dy, dx, y, x, h, w, fgcolor);
-	#endif
-
-#endif /* LCDMODE_HORFILL */
-}
 
 #if LCDMODE_HORFILL
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
@@ -2606,9 +2567,18 @@ void colpip_stretchblt(
 	ASSERT(dx >= sdx);
 	ASSERT(dy >= sdy);
 
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW
+	/* Использование G2D для формирования изображений */
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+
+
+#else
+
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	colpip_fillrect(dst, dx, dy, x, y, w, h, COLORMAIN_GREEN);
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+
+#endif
 }
 
 // скоприовать прямоугольник с типом пикселей соответствующим pip

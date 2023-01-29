@@ -159,7 +159,7 @@ void display_putpixel(
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	colmain_putpixel(buffer, dx, dy, x, y, color);
+	colpip_putpixel(buffer, dx, dy, x, y, color);
 }
 
 /* заполнение прямоугольника на основном экране произвольным цветом
@@ -175,7 +175,7 @@ display_fillrect(
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-	colmain_fillrect(buffer, dx, dy, x, y, w, h, color);
+	colpip_fillrect(buffer, dx, dy, x, y, w, h, color);
 }
 
 /* рисование линии на основном экране произвольным цветом
@@ -191,7 +191,7 @@ display_line(
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-	colmain_line(buffer, dx, dy, x1, y1, x2, y2, color, 0);
+	colpip_line(buffer, dx, dy, x1, y1, x2, y2, color, 0);
 }
 
 #endif /* LCDMODE_LTDC */
@@ -364,7 +364,7 @@ void display_clear(void)
 	const COLORPIP_T bg = display_getbgcolor();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 
-	colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
+	colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
 }
 
 void display_plotstart(
@@ -404,10 +404,10 @@ void display_bar(
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 	const uint_fast8_t hpattern = 0x33;
 
-	colmain_fillrect(buffer, dx, dy, 	x, y, 			wpart, h, 			ltdc_fg);
-	colmain_fillrect(buffer, dx, dy, 	x + wpart, y, 	wfull - wpart, h, 	ltdc_bg);
+	colpip_fillrect(buffer, dx, dy, 	x, y, 			wpart, h, 			ltdc_fg);
+	colpip_fillrect(buffer, dx, dy, 	x + wpart, y, 	wfull - wpart, h, 	ltdc_bg);
 	if (wmark < wfull && wmark >= wpart)
-		colmain_fillrect(buffer, dx, dy, x + wmark, y, 	1, h, 				ltdc_fg);
+		colpip_fillrect(buffer, dx, dy, x + wmark, y, 	1, h, 				ltdc_fg);
 }
 
 // самый маленький шрифт
@@ -776,7 +776,7 @@ void display_flush(void)
 //	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) frame);
 //	display_at(0, 0, s);
 	dcache_clean(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
-	arm_hardware_ltdc_main_set_no_vsync(frame);
+	hardware_ltdc_main_set_no_vsync(frame);
 }
 
 /* переключаем на следующий фреймбуфер. Модификация этой памяти больше производиться не будет. */
@@ -788,7 +788,7 @@ void display_nextfb(void)
 //	display_at(0, 0, s);
 	ASSERT((frame % DCACHEROWSIZE) == 0);
 	dcache_clean_invalidate(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
-	arm_hardware_ltdc_main_set(frame);
+	hardware_ltdc_main_set(frame);
 	const unsigned page = colmain_fb_next();	// возвращает новый индекс страницы отрисовки
 #if WITHOPENVG
 	openvg_next(page);
@@ -1872,10 +1872,10 @@ void display_hardware_initialize(void)
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
 	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
-	arm_hardware_ltdc_initialize(frames, vdmode);
+	hardware_ltdc_initialize(frames, vdmode);
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
-	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
-	arm_hardware_ltdc_L8_palette();
+	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
+	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 
 #if LCDMODETX_TC358778XBG
@@ -1927,7 +1927,7 @@ void display_wakeup(void)
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
 	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
-    arm_hardware_ltdc_initialize(frames, vdmode);
+    hardware_ltdc_initialize(frames, vdmode);
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
     tc358768_wakeup(vdmode);
@@ -1943,7 +1943,7 @@ void display_wakeup(void)
 void display_palette(void)
 {
 #if WITHLTDCHW
-	arm_hardware_ltdc_L8_palette();
+	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 }
 // https://habr.com/ru/post/166317/

@@ -77,7 +77,7 @@ static void display_vtty_initialize(void)
 	vt->scroll = 0;
 	vt->row = 0;
 	vt->col = 0;
-	colmain_fillrect(vt->fb, VTTY_DX, VTTY_DY, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
+	colpip_fillrect(vt->fb, VTTY_DX, VTTY_DY, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
 	PRINTF("display_vtty_initialize: rows=%u, cols=%u\n", VTTY_ROWS, VTTY_COLS);
 	vtty_inited = 1;
 	display_vtty_printf("display_vtty_initialize: rows=%u, cols=%u\n", VTTY_ROWS, VTTY_COLS);
@@ -91,7 +91,7 @@ void display_vtty_clrscr(void)
 	vt->row = 0;
 	vt->col = 0;
 
-	colmain_fillrect(vt->fb, VTTY_DX, VTTY_DY, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
+	colpip_fillrect(vt->fb, VTTY_DX, VTTY_DY, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
 }
 
 void display_vtty_gotoxy(unsigned x, unsigned y)
@@ -115,7 +115,7 @@ static void display_vtty_show(
 	)
 {
 	PACKEDCOLORPIP_T * const tfb = colmain_fb_draw();
-//	colmain_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTY_DX, VTTY_DY, VTTY_BG);	// обозначам место под вывод информации
+//	colpip_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTY_DX, VTTY_DY, VTTY_BG);	// обозначам место под вывод информации
 //	return;
 	vtty_t * const vt = & vtty0;
 	enum { H = VTTY_ROWSPIX };
@@ -196,7 +196,7 @@ static void display_vtty_scrollup(
 	// перемещаем начало.
 	vt->scroll = (vt->scroll + nlines) % VTTY_ROWS;
 	// очищаем видеобуфер
-	colmain_fillrect(
+	colpip_fillrect(
 			vt->fb, VTTY_DX, VTTY_DY,
 			0, (VTTY_ROWS - 1 + vt->scroll) % VTTY_ROWS * H,
 			VTTY_DX, nlines * H,

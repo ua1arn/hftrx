@@ -57,7 +57,7 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 	}
 }
 
-static void arm_hardware_ltdc_vsync(void);
+static void hardware_ltdc_vsync(void);
 
 #if CPUSTYLE_R7S721
 
@@ -732,10 +732,10 @@ static void vdc5fb_update_all(struct st_vdc5 * const vdc)
 }
 
 void
-arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	struct st_vdc5 * const vdc = & VDC50;
-	//PRINTF(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
+	//PRINTF(PSTR("hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 
 
@@ -756,14 +756,14 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	ltdc_tfcon_cfg(vdmode);
 
 #if LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8
-	arm_hardware_ltdc_pip_off();
+	hardware_ltdc_pip_off();
 #endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
-	//PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
+	//PRINTF(PSTR("hardware_ltdc_initialize done\n"));
 }
 
 void
-arm_hardware_ltdc_deinitialize(void)
+hardware_ltdc_deinitialize(void)
 {
 	/* ---- Stop clock to the video display controller 5  ---- */
 	CPG.STBCR9 |= CPG_STBCR9_MSTP91;	// Module Stop 91 0: The video display controller 5 runs.
@@ -771,14 +771,14 @@ arm_hardware_ltdc_deinitialize(void)
 }
 
 /* Palette reload */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 	vdc5fb_L8_palette(vdc);
 }
 
 /* set top buffer start */
-void arm_hardware_ltdc_pip_set(uintptr_t p)
+void hardware_ltdc_pip_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -806,7 +806,7 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 		);
 }
 
-void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
+void hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -823,7 +823,7 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -844,7 +844,7 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 }
 
 /* ожидаем начало кадра */
-void arm_hardware_ltdc_vsync(void)
+void hardware_ltdc_vsync(void)
 {
 	// GR2_IBUS_VEN in GR2_UPDATE is 1.
 	// GR2_IBUS_VEN and GR2_P_VEN in GR2_UPDATE are 1.
@@ -867,7 +867,7 @@ void arm_hardware_ltdc_vsync(void)
 
 /* set visible buffer start. Wait VSYNC. */
 /* Set MAIN frame buffer address. Wait for VSYNC. */
-void arm_hardware_ltdc_main_set(uintptr_t p)
+void hardware_ltdc_main_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -875,7 +875,7 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
 	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
 
-	arm_hardware_ltdc_vsync();	/* ожидаем начало кадра */
+	hardware_ltdc_vsync();	/* ожидаем начало кадра */
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -1358,7 +1358,7 @@ static void LCDx_LayerInitPIP(
 }
 
 void
-arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -1368,7 +1368,7 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-	//PRINTF(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
+	//PRINTF(PSTR("hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
 	/* Initialize the LCD */
 
@@ -1426,7 +1426,7 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	pipparams_t pipwnd;
 	display2_getpipparams(& pipwnd);
 
-	//PRINTF(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
+	//PRINTF(PSTR("hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
 #endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
 	LTDC_InitStruct.LTDC_HSPolarity = vdmode->hsyncneg ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;
@@ -1547,11 +1547,11 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 		;//hardware_nonguiyield();
 
 	ltdc_tfcon_cfg(vdmode);
-	//PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
+	//PRINTF(PSTR("hardware_ltdc_initialize done\n"));
 }
 
 void
-arm_hardware_ltdc_deinitialize(void)
+hardware_ltdc_deinitialize(void)
 {
 	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN_Msk;
 	(void) LAYER_PIP->CR;
@@ -1591,7 +1591,7 @@ arm_hardware_ltdc_deinitialize(void)
 
 /* set visible buffer start. Wait VSYNC. */
 /* Set PIP frame buffer address. */
-void arm_hardware_ltdc_pip_set(uintptr_t p)
+void hardware_ltdc_pip_set(uintptr_t p)
 {
 	LAYER_PIP->CFBAR = p;
 	(void) LAYER_PIP->CFBAR;
@@ -1607,7 +1607,7 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 }
 
 /* Turn PIP off (main layer only). */
-void arm_hardware_ltdc_pip_off(void)
+void hardware_ltdc_pip_off(void)
 {
 	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN_Msk;
 	(void) LAYER_PIP->CR;
@@ -1616,7 +1616,7 @@ void arm_hardware_ltdc_pip_off(void)
 }
 
 /* Palette reload */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 	// Таблица используемой при отображении палитры
 	COLOR24_T xltrgb24 [256];
@@ -1644,7 +1644,7 @@ void arm_hardware_ltdc_L8_palette(void)
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
@@ -1661,7 +1661,7 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 }
 
 /* ожидаем начало кадра */
-void arm_hardware_ltdc_vsync(void)
+void hardware_ltdc_vsync(void)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
@@ -1679,7 +1679,7 @@ void arm_hardware_ltdc_vsync(void)
 }
 
 /* Set MAIN frame buffer address. Wait for VSYNC. */
-void arm_hardware_ltdc_main_set(uintptr_t p)
+void hardware_ltdc_main_set(uintptr_t p)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
@@ -1700,18 +1700,18 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 
 #elif LINUX_SUBSYSTEM
 
-void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 }
 
 /* Palette reload (dummy fuction) */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
 {
 	uint32_t size;
 	uint32_t * linux_fb = linux_get_fb(& size);
@@ -1719,7 +1719,7 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr)
 }
 
 /* Set MAIN frame buffer address. */
-void arm_hardware_ltdc_main_set(uintptr_t addr)
+void hardware_ltdc_main_set(uintptr_t addr)
 {
 	uint32_t size;
 	uint32_t * linux_fb = linux_get_fb(& size);
@@ -1727,7 +1727,7 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 }
 
 /* ожидаем начало кадра */
-void arm_hardware_ltdc_vsync(void)
+void hardware_ltdc_vsync(void)
 {
 }
 
@@ -1737,7 +1737,7 @@ void arm_hardware_ltdc_vsync(void)
 
 static DisplayCtrl dispCtrl;
 
-void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	int Status;
 	static XAxiVdma AxiVdma;
@@ -1761,25 +1761,25 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 }
 
 /* Palette reload (dummy fuction) */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
 /* Set MAIN frame buffer address. */
-void arm_hardware_ltdc_main_set(uintptr_t addr)
+void hardware_ltdc_main_set(uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
 /* ожидаем начало кадра */
-void arm_hardware_ltdc_vsync(void)
+void hardware_ltdc_vsync(void)
 {
 }
 
@@ -2341,7 +2341,7 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 
 static struct fb_t113_rgb_pdata_t pdat0;
 
-void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	uint32_t val;
@@ -2410,7 +2410,7 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p1)
+void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
@@ -2430,7 +2430,7 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
-void arm_hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
@@ -2451,12 +2451,12 @@ void arm_hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t l
 			0
 			);
 
-	arm_hardware_ltdc_vsync();	/* ожидаем начало кадра */
+	hardware_ltdc_vsync();	/* ожидаем начало кадра */
 	t113_de_enable(pdat);
 }
 
 /* ожидаем начало кадра */
-static void arm_hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(void)
 {
 
 	//TCON_LCD0->LCD_GINT0_REG |= (1u << 31); 		//Enable the Vertical Blank interrupt
@@ -2466,7 +2466,7 @@ static void arm_hardware_ltdc_vsync(void)
 }
 
 /* set visible buffer start. Wait VSYNC. */
-void arm_hardware_ltdc_main_set(uintptr_t p1)
+void hardware_ltdc_main_set(uintptr_t p1)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
@@ -2482,40 +2482,40 @@ void arm_hardware_ltdc_main_set(uintptr_t p1)
 			0
 			);
 
-	arm_hardware_ltdc_vsync();	/* ожидаем начало кадра */
+	hardware_ltdc_vsync();	/* ожидаем начало кадра */
 	t113_de_enable(pdat);
 }
 
 /* Palette reload */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 }
 
 #else
 	//#error Wrong CPUSTYLE_xxxx
 
-void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 }
 
 /* set visible buffer start. Wait VSYNC. */
-void arm_hardware_ltdc_main_set(uintptr_t p)
+void hardware_ltdc_main_set(uintptr_t p)
 {
 }
 
 /* ожидаем начало кадра */
-void arm_hardware_ltdc_vsync(void)
+void hardware_ltdc_vsync(void)
 {
 }
 
 /* Palette reload */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 }
 
