@@ -2640,15 +2640,16 @@ void colpip_stretchblt(
 	g2d_stretchblit(&G2D_STRETCHBLT);
 //
 //	return;
-	PRINTF("dst=%p, src=%p\n", (void *) dstinvalidateaddr, (void *) srcinvalidateaddr);
+	//PRINTF("dst=%p, src=%p\n", (void *) dstinvalidateaddr, (void *) srcinvalidateaddr);
 
 	enum { PIXEL_SIZE = sizeof * dst };
-	const uint_fast32_t tizehw = ((dy - 1) << 16) | ((dx - 1) << 0);
+	const uint_fast32_t tsizehw = ((dy - 1) << 16) | ((dx - 1) << 0);
 	const uint_fast32_t sizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
 	const uint_fast32_t tcoord = ((y) << 16) | (x << 0);
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	//debug_g2d(__FILE__, __LINE__);
+	const uintptr_t srclinear = (uintptr_t) srcinvalidateaddr;//colpip_mem_at(src, sdx, sdy, 0, 0);
 
 //	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 //	G2D_V0->V0_ATTCTL = 0;
@@ -2657,16 +2658,17 @@ void colpip_stretchblt(
 //	G2D_UI2->UI_ATTR = 0;
 //
 //
-//	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-//	G2D_V0->V0_PITCH0 = sstride;
-//	G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
-//	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-//	G2D_V0->V0_MBSIZE = sizehw; 	// сколько брать от исходного буфера
-//	G2D_V0->V0_SIZE = sizehw;		// параметры окна исходного буфера
-//	G2D_V0->V0_LADD0 = srcinvalidateaddr;
-//	G2D_V0->V0_HADD = 0;
-//
-//
+	G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+	G2D_V0->V0_PITCH0 = sstride;
+	G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
+	G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+	G2D_V0->V0_MBSIZE = sizehw; 	// сколько брать от исходного буфера
+	G2D_V0->V0_SIZE = sizehw;		// параметры окна исходного буфера
+	G2D_V0->V0_LADD0 = srclinear;
+	G2D_V0->V0_HADD = 0;
+
+
+	G2D_BLD->BLD_CH_ISIZE [0] = tsizehw; /* 0x00A400E0 tsize 245 225 */
 //
 //	G2D_WB->WB_ATT=0x00000000; /* 0x00000000 */
 //	G2D_WB->WB_SIZE=0x00480063; /* 0x00480063 */
@@ -2676,12 +2678,12 @@ void colpip_stretchblt(
 //
 	G2D_BLD->ROP_CTL=0x000000F0; /* 0x000000F0 */
 //	G2D_BLD->BLD_SIZE = tizehw;
-//	G2D_WB->WB_LADD0 = srcinvalidateaddr;
-	G2D_WB->WB_LADD2 = dstinvalidateaddr;
+	G2D_WB->WB_LADD0 = (uintptr_t) colpip_mem_at(dst, dx, dy, x, y);
+	G2D_WB->WB_LADD2 = srclinear;
 	G2D_WB->WB_PITCH0 = tstride;
 
 	//PRINTF("WB_LADD0=%p src=%p\n", G2D_WB->WB_LADD0, srcinvalidateaddr);
-	PRINTF("WB_LADD2=%p dst=%p\n", G2D_WB->WB_LADD2, dstinvalidateaddr);
+	//PRINTF("WB_LADD2=%p dst=%p\n", G2D_WB->WB_LADD2, dstinvalidateaddr);
 	//PRINTF("WB_PITCH0=%08X dst=%08X\n", G2D_WB->WB_PITCH0, tstride);
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
