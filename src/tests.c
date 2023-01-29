@@ -6384,13 +6384,18 @@ void hightests(void)
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
 		COLORPIP_T keycolor = COLOR_KEY;
+//		PRINTF("test: keycolor=%08X\n", keycolor);
+//		PRINTF("test: a=%08X\n", COLORPIP_A(keycolor));
+//		PRINTF("test: r=%08X\n", COLORPIP_R(keycolor));
+//		PRINTF("test: g=%08X\n", COLORPIP_G(keycolor));
+//		PRINTF("test: b=%08X\n", COLORPIP_B(keycolor));
 
 		unsigned picalpha = 255;
 		colpip_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
 		colpip_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLOR_WHITE));
 		colpip_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLOR_WHITE), 0);
 		colpip_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLOR_WHITE), 0);
-		colpip_string_tbg(fbpic, picx, picy, 5, 6, "HELLO", TFTALPHA(picalpha, COLOR_WHITE));
+		colpip_string_tbg(fbpic, picx, picy, 5, 6, "Hello!", TFTALPHA(picalpha, COLOR_WHITE));
 
 		/* непрозрачный фон */
 		unsigned bgalpha = 255;
@@ -6433,7 +6438,7 @@ void hightests(void)
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
 				layer1, DIM_X, DIM_Y,
-				40, 20, picx, picy,
+				40, 20, picx * 5 / 2, picy,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
