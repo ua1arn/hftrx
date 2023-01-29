@@ -6380,6 +6380,7 @@ void hightests(void)
 //		dcache_clean_invalidate((uintptr_t) layer1, sizeof layer1);
 //		dcache_clean_invalidate((uintptr_t) fbpic, sizeof fbpic);
 
+		hardware_ltdc_main_set4((uintptr_t) layer0_a, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
 		COLORPIP_T keycolor = COLOR_KEY;
@@ -6405,6 +6406,7 @@ void hightests(void)
 		/* полупрозрачный прямоугольник на фоне */
 		colpip_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLOR_GREEN));	// GREEN
 
+		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6415,6 +6417,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
+		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6425,6 +6428,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE, keycolor
 				);
 
+		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6435,6 +6439,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
+		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6445,6 +6450,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
+		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6455,11 +6461,12 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
+		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
 				layer1, DIM_X, DIM_Y,
-				450, 90,
+				90, 90,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -6473,7 +6480,6 @@ void hightests(void)
 //		printhex32((uintptr_t) layer0, layer0, 64);
 //		printhex32((uintptr_t) layer1, layer1, 64);
 
-		hardware_ltdc_main_set4((uintptr_t) layer0_a, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
 		TP();
 		int phase = 0;

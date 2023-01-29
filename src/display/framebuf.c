@@ -2568,6 +2568,7 @@ void colpip_stretchblt(
 
 	if (w == sdx && h == sdy)
 	{
+		/* размеры совпадают - не используем stretch */
 		hwaccel_bitblt(
 			dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 			colpip_mem_at(dst, dx, dy, x, y), dx, dy,
@@ -2575,7 +2576,6 @@ void colpip_stretchblt(
 			src, sdx, sdy,
 			keyflag, keycolor
 			);
-		TP();
 		return;
 	}
 
@@ -2628,15 +2628,16 @@ void colpip_stretchblt(
 
 	g2d_stretchblit(&G2D_STRETCHBLT);
 
-//
-//	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
-//	if (hwacc_waitdone() == 0)
-//	{
-//		PRINTF("colpip_stretchblt: timeout dx/dy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) dx, (unsigned) dy, (unsigned) sdx, (unsigned) sdy);
-//		ASSERT(0);
-//	}
-//	//debug_g2d(__FILE__, __LINE__);
-//	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
+	return;
+
+	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
+	if (hwacc_waitdone() == 0)
+	{
+		PRINTF("colpip_stretchblt: timeout dx/dy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) dx, (unsigned) dy, (unsigned) sdx, (unsigned) sdy);
+		ASSERT(0);
+	}
+	//debug_g2d(__FILE__, __LINE__);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 
 #else
