@@ -6407,7 +6407,8 @@ void hightests(void)
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y, 220, 220,
+				layer1, DIM_X, DIM_Y,
+				220, 220,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor

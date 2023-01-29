@@ -1176,7 +1176,7 @@ display_colorbuf_set_hline(
 
 // заполнение прямоугольной области в видеобуфере
 void colpip_fillrect(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * dst,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// начальная координата
@@ -1194,24 +1194,24 @@ void colpip_fillrect(
 #if LCDMODE_HORFILL
 
 	#if LCDMODE_PIP_L8
-		hwaccel_rect_u8(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u8(dst, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_PIP_RGB565
-		hwaccel_rect_u16(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u16(dst, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_PIP_L24
-		hwaccel_rect_u24(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u24(dst, dx, dy, x, y, w, h, color);
 	#elif LCDMODE_MAIN_L8
-		hwaccel_rect_u8(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u8(dst, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_MAIN_RGB565
-		hwaccel_rect_u16(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u16(dst, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_MAIN_L24
-		hwaccel_rect_u24(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u24(dst, dx, dy, x, y, w, h, color);
 
 	#elif LCDMODE_MAIN_ARGB888
-		hwaccel_rect_u32(buffer, dx, dy, x, y, w, h, color);
+		hwaccel_rect_u32(dst, dx, dy, x, y, w, h, color);
 
 	#endif
 
@@ -2543,7 +2543,7 @@ uint_fast16_t strwidth(
 #endif /* LCDMODE_HORFILL */
 
 
-// скоприовать прямоугольник с типом пикселей соответствующим pip
+// скоприовать прямоугольник без изменения размера
 void colpip_bitblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
@@ -2585,6 +2585,32 @@ void colpip_bitblt(
 #endif /* LCDMODE_HORFILL */
 }
 
+// скоприовать прямоугольник с изменением размера
+void colpip_stretchblt(
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORPIP_T * dst,	// получатель
+	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
+	uint_fast16_t x,	uint_fast16_t y,	// позиция получателя
+	uint_fast16_t w,	uint_fast16_t h,	// Размеры окна получателя
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
+	const PACKEDCOLORPIP_T * src, 	// источник
+	uint_fast16_t sdx,	// источник Размеры окна в пикселях
+	uint_fast16_t sdy,	// источник
+	unsigned keyflag, COLORPIP_T keycolor
+	)
+{
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
+	ASSERT(dx >= sdx);
+	ASSERT(dy >= sdy);
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	colpip_fillrect(dst, dx, dy, x, y, w, h, COLORMAIN_GREEN);
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+}
+
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 // с поворотом вправо на 90 градусов
 void colpip_bitblt_ra90(
@@ -2598,8 +2624,7 @@ void colpip_bitblt_ra90(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t sdx,	// источник Размеры окна в пикселях
-	uint_fast16_t sdy	// источник
+	uint_fast16_t sdx,	uint_fast16_t sdy	// источник Размеры окна в пикселях
 	)
 {
 	ASSERT(src != NULL);
