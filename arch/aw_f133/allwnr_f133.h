@@ -499,9 +499,15 @@ typedef enum
 #include "riscv_csr.h"
 #endif
 
+
 __STATIC_INLINE void __DMB(void)
 {
-  //__asm volatile ("dmb 0xF":::"memory");
+	asm volatile ("FENCE" ::: "memory");
+}
+
+__STATIC_INLINE void __DSB(void)
+{
+	asm volatile ("FENCE" ::: "memory");
 }
 
 __STATIC_INLINE void __WFI(void)

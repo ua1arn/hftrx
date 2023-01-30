@@ -17,7 +17,7 @@
 #include "hardware.h"
 
 #if WITHSDRAMHW
-#if CPUSTYLE_T113 /*|| CPUSTYLE_F133*/
+#if CPUSTYLE_T113 || CPUSTYLE_F133
 
 #include "formats.h"
 #include "clocks.h"
@@ -32,7 +32,7 @@ typedef uintptr_t virtual_addr_t;
 
 static void sdelay(unsigned us)
 {
-	local_delay_us(us * 2);
+	local_delay_us(us);
 }
 
 static uint32_t read32(uintptr_t addr)
@@ -707,7 +707,7 @@ int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 	val |= 0x80000000; // turn clock on
 	write32(CCU_BASE + 0x800, val);
 
-	return n * 24;
+	return n * (WITHCPUXTAL / 1000000);
 }
 
 // Main purpose of sys_init seems to be to initalise the clocks for
@@ -1279,14 +1279,14 @@ int dramc_simple_wr_test(unsigned int mem_mb, int len)
 		v2 = patt1 + i;
 		if (v1 != v2) {
 			PRINTF("DRAM simple test FAIL.\n");
-			PRINTF("%x != %x at address %p\n", (unsigned) v1, (unsigned) v2, addr + i);
+			PRINTF("%x != %x at address %p\n", (unsigned) v1, (unsigned) v2, (void *) (addr + i));
 			return 1;
 		}
 		v1 = read32((virtual_addr_t)(addr + offs + i));
 		v2 = patt2 + i;
 		if (v1 != v2) {
 			PRINTF("DRAM simple test FAIL.\n");
-			PRINTF("%x != %x at address %p\n", (unsigned) v1, (unsigned) v2, addr + offs + i);
+			PRINTF("%x != %x at address %p\n", (unsigned) v1, (unsigned) v2, (void *) (addr + offs + i));
 			return 1;
 		}
 	}
@@ -1358,7 +1358,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 	// write test pattern
 	for (i = 0, ptr = DRAM_SPACE_BASE; i < 64; i++, ptr += 4) {
-		write32(ptr, (i & 1) ? ptr : ~ptr);
+		write32(ptr, (uint32_t) ((i & 1) ? ptr : ~ptr));
 	}
 
 	for (rank = 0; rank < maxrank;) {
@@ -1376,7 +1376,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 			chk = DRAM_SPACE_BASE + (1 << (i + 11));
 			ptr = DRAM_SPACE_BASE;
 			for (j = 0; j < 64; j++) {
-				if (read32(chk) != ((j & 1) ? ptr : ~ptr))
+				if (read32(chk) != (uint32_t) (((j & 1) ? ptr : ~ptr)))
 					goto out1;
 				ptr += 4;
 				chk += 4;
@@ -1415,7 +1415,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 		chk = DRAM_SPACE_BASE + (1 << 22);
 		ptr = DRAM_SPACE_BASE;
 		for (i = 0, j = 0; i < 64; i++) {
-			if (read32(chk) != ((i & 1) ? ptr : ~ptr)) {
+			if (read32(chk) != (uint32_t) (((i & 1) ? ptr : ~ptr))) {
 				j = 1;
 				break;
 			}
@@ -1453,7 +1453,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 			chk = DRAM_SPACE_BASE + (1 << i);
 			ptr = DRAM_SPACE_BASE;
 			for (j = 0; j < 64; j++) {
-				if (read32(chk) != ((j & 1) ? ptr : ~ptr))
+				if (read32(chk) != (uint32_t) (((j & 1) ? ptr : ~ptr)))
 					goto out2;
 				ptr += 4;
 				chk += 4;
@@ -1592,12 +1592,12 @@ int init_DRAM(int type, dram_para_t *para) // s0
 
 	// Print header message (too late)
 	PRINTF("DRAM BOOT DRIVE INFO: %s\n", "V0.24");
-	PRINTF("DRAM CLK = %d MHz\n", para->dram_clk);
-	PRINTF("DRAM Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
+	PRINTF("DRAM CLK = %d MHz\n", (int) para->dram_clk);
+	PRINTF("DRAM Type = %d (2:DDR2,3:DDR3)\n", (int) para->dram_type);
 	if ((para->dram_odt_en & 0x1) == 0) {
 		PRINTF("DRAMC read ODT off.\n");
 	} else {
-		PRINTF("DRAMC ZQ value: 0x%x\n", para->dram_zq);
+		PRINTF("DRAMC ZQ value: 0x%x\n", (unsigned) para->dram_zq);
 	}
 
 	// report ODT

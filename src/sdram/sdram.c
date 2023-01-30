@@ -1147,7 +1147,7 @@ void sdram_test_pattern(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t
 	{
 		r = *(volatile uint16_t*) (addr + 2 * i);
 		if(r !=  pattern)
-			PRINTF("ERROR! %X - fill pattern: %04X, read: %04X\n", (unsigned)  (addr + 2 * i),  (unsigned) pattern, (unsigned) r);
+			PRINTF("ERROR! %X - fill pattern: %04X, read: %04X\n", addr + 2 * i,  pattern, r);
 	}
 
 }
@@ -1162,7 +1162,7 @@ void sdram_test_increment(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16
 	{
 		r = *(volatile uint16_t*) (addr + 2 * i);
 		if(r !=  seed + i)
-			PRINTF("ERROR! %X - fill increment: %04X, read: %04X\n", (unsigned) (addr + 2 * i),  (unsigned)  (seed + i), (unsigned) r);
+			PRINTF("ERROR! %X - fill increment: %04X, read: %04X\n", addr + 2 * i,  seed + i, r);
 	}
 
 }
@@ -1182,7 +1182,7 @@ void sdram_test_random(uintptr_t addr, uint_fast16_t buffer_size)
 	{
 		r = *(volatile uint16_t*) (addr + 2 * i);
 		if(aTxBuffer[i] !=  r)
-			PRINTF("ERROR! %X - fill random: %04X, read: %04X\n", (unsigned) (addr + 2 * i), aTxBuffer[i], r);
+			PRINTF("ERROR! %X - fill random: %04X, read: %04X\n", addr + 2 * i, aTxBuffer[i], r);
 	}
 
 }
@@ -4231,10 +4231,27 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 #include "spi.h"
 
-/*
- * https://lore.kernel.org/u-boot/20230103011755.10756-1-andre.przywara@arm.com/
+/**
  *
- *
+	Hi,
+
+	this is the extracted version of the Allwinner D1/D1s/R528/T113-s DRAM
+	"driver", to be included into mainline U-Boot at some point. With this
+	on top of my previous T113-s3 support series[1], I can boot my MangoPi MQ-R
+	without the help of awboot.
+	The DRAM init code is based on awboot's version, though has been heavily
+	reworked. To show what has been done, I pushed a history branch [2], which
+	takes a verbatim copy of awboot's mctl_hal.c, then converts this over the
+	course of about 80 patches into the version posted here. The series there
+	contains an awboot/U-Boot compat layer, so the file can be used in both
+	repositories. This compat layer is dropped here, but can be put back by
+	reverting the top patch of [2].
+
+	I was wondering if people could have a look at this version here, to give
+	early feedback. I will (re-)post this as part of a proper R528/T113-s
+	support series, but first need to sort out some minor issues and address
+	Samuel's comments on the previous version.
+
 	If you wonder, the (working!) Kconfig DRAM variables for the T113-s3 are:
 	CONFIG_DRAM_CLK=792
 	CONFIG_DRAM_ZQ=8092667
@@ -4265,14 +4282,17 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	Many thanks!
 	Andre
 
- */
+	[1] https://lore.kernel.org/u-boot/20221206004549.29015-1-andre.przywara@arm.com/
+	[2] https://github.com/apritzel/u-boot/commits/d1_dram_history
 
+ *
+ */
 #if CPUSTYLE_T113
 static struct dram_para_t ddrp3 =
 {
 	.dram_clk = 792,
 	.dram_type = 3,
-	.dram_zq = 0x7b7bfb,	// 8092667
+	.dram_zq = 8092667,
 	.dram_odt_en = 0x00,
 	.dram_para1 = 0x000010d2,
 	.dram_para2 = 0x0000,
@@ -4280,7 +4300,7 @@ static struct dram_para_t ddrp3 =
 	.dram_mr1 = 0x042,
 	.dram_mr2 = 0x18,
 	.dram_mr3 = 0x0,
-	.dram_tpr0 = 0x004A2195,
+	.dram_tpr0 = 0x004a2195,
 	.dram_tpr1 = 0x02423190,
 	.dram_tpr2 = 0x0008B061,
 	.dram_tpr3 = 0xB4787896,
@@ -4302,31 +4322,25 @@ void sys_dram_init(void)
 }
 
 #elif CPUSTYLE_F133
+
 /*
-		ZQ value = 0x2e***********
-		get_pmu_exist() = 4294967295
-		ddr_efuse_type: 0xa
-		[AUTO DEBUG] single rank and full DQ!
-		ddr_efuse_type: 0xa
-		[AUTO DEBUG] rank 0 row = 13
-		[AUTO DEBUG] rank 0 bank = 4
-		[AUTO DEBUG] rank 0 page size = 2 KB
-		DRAM BOOT DRIVE INFO: %s
-		DRAM CLK = 528 MHz
-		DRAM Type = 2 (2:DDR2,3:DDR3)
-		DRAMC read ODT  off.
-		DRAM ODT off.
-		ddr_efuse_type: 0xa
-		DRAM SIZE =64 M
-		DRAM simple test OK.
  *
+CONFIG_SUNXI_DRAM_DDR2=y
+CONFIG_DRAM_CLK=528
+CONFIG_DRAM_ZQ=8092665
+CONFIG_DRAM_SUNXI_ODT_EN=0
+CONFIG_DRAM_SUNXI_TPR0=0x00471992
+CONFIG_DRAM_SUNXI_TPR11=0x30010
+CONFIG_DRAM_SUNXI_TPR12=0x35
+CONFIG_DRAM_SUNXI_TPR13=0x34000000
+
  */
 static struct dram_para_t ddrp2 = {
 	.dram_clk = 528,
 	.dram_type = 2,
-	.dram_zq = 0x07b7bf9,
-	.dram_odt_en = !0x00,
-	.dram_para1 = 0x000000d2,		// banks, row, page size info
+	.dram_zq = 8092665,
+	.dram_odt_en = 0x00,
+	.dram_para1 = 0x000000d2,
 	.dram_para2 = 0x00000000,
 	.dram_mr0 = 0x00000e73,
 	.dram_mr1 = 0x02,
@@ -4345,7 +4359,7 @@ static struct dram_para_t ddrp2 = {
 	.dram_tpr10 = 0x00000000,
 	.dram_tpr11 = 0x00030010,
 	.dram_tpr12 = 0x00000035,
-	.dram_tpr13 = 0x34000000,	// bit0: 1-skip sdram auto config
+	.dram_tpr13 = 0x34000000,
 };
 
 void sys_dram_init(void)
