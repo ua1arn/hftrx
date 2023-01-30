@@ -695,16 +695,23 @@ int main(int argc, char* argv[], char* envp[])
 	{
 		/* Debug header forming */
 		struct parsedfile * pfl;
+		char headrname [128];
 
 		/* print structire debug */
-		/* structures */
+
+		_snprintf(headrname, sizeof headrname / sizeof headrname [0], "HEADER_%08X_INCLUDED", (unsigned) time(NULL));
+
+		emitline(0, "#ifndef %s" "\n", headrname);
+		emitline(0, "#define %s" "\n", headrname);
 		emitline(0, "#ifdef PRINTF\n");
 
+		/* structures */
 		for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
 		{
 			processfile_periphregsdebug(pfl);
 		}
 		emitline(0, "#endif /* PRINTF */\n");
+		emitline(0, "#endif /* %s */" "\n", headrname);
 	}
 
 	{
