@@ -81,8 +81,6 @@ static unsigned awxx_get_vi_attr(void)
 
 static void awxx_vsu_load(void)
 {
-	/* set */ * ((volatile uint32_t *) (G2D_VSU_BASE + 0x0000)) = 0x00000101;	// G2D_VSU
-
 	G2D_VSU->VS_CTRL = 0x00000101;
 
 	// G2D_VSU->VS_Y_HCOEF
@@ -229,6 +227,7 @@ static void t113_fillrect(
 	/* Отключаем все источники */
 
 	G2D_VSU->VS_CTRL = 0;
+	G2D_ROT->ROT_CTL = 0;
 	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
@@ -1860,6 +1859,7 @@ void hwaccel_bitblt(
 	/* Отключаем все источники */
 
 	G2D_VSU->VS_CTRL = 0;
+	G2D_ROT->ROT_CTL = 0;
 	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
@@ -2843,7 +2843,9 @@ void colpip_stretchblt(
 #if 1
 
 	/* Отключаем все источники */
+
 	G2D_VSU->VS_CTRL = 0;
+	G2D_ROT->ROT_CTL = 0;
 	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
