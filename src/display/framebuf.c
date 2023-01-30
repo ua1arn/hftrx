@@ -66,6 +66,157 @@ static unsigned awxx_get_vi_attr(void)
 	return vi_attr;
 }
 
+static void awxx_vsu_load(void)
+{
+	/* set */ * ((volatile uint32_t *) 0x5410008) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5410008) = 0x00000003;
+	/* set */ * ((volatile uint32_t *) 0x5410800) = 0xFF000001;
+	/* set */ * ((volatile uint32_t *) 0x5410804) = 0x006D0095;
+	/* set */ * ((volatile uint32_t *) 0x541082c) = 0x006D0095;
+	/* set */ * ((volatile uint32_t *) 0x5410808) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x541080c) = 0x00000258;
+	/* set */ * ((volatile uint32_t *) 0x5410810) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5410814) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5410818) = 0x405FCE18;
+	/* set */ * ((volatile uint32_t *) 0x541081c) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5410820) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5410828) = 0x00000000;
+	//vi layer 0 set
+	/* set */ * ((volatile uint32_t *) 0x5418000) = 0x00000101;	// G2D_VSU
+	/* set */ * ((volatile uint32_t *) 0x5418040) = 0x00480063;
+	/* set */ * ((volatile uint32_t *) 0x5418044) = 0x000000FF;
+	/* set */ * ((volatile uint32_t *) 0x5418080) = 0x006D0095;
+	/* set */ * ((volatile uint32_t *) 0x5418088) = 0x00180000;
+	/* set */ * ((volatile uint32_t *) 0x541808c) = 0x00181C0E;
+	/* set */ * ((volatile uint32_t *) 0x5418200) = 0xFF0C2A0B;
+	/* set */ * ((volatile uint32_t *) 0x5418204) = 0xFF0D2A0A;
+	/* set */ * ((volatile uint32_t *) 0x5418208) = 0xFF0E2A09;
+	/* set */ * ((volatile uint32_t *) 0x541820c) = 0xFF0F2A08;
+	/* set */ * ((volatile uint32_t *) 0x5418210) = 0xFF102A07;
+	/* set */ * ((volatile uint32_t *) 0x5418214) = 0xFF112A06;
+	/* set */ * ((volatile uint32_t *) 0x5418218) = 0xFF132905;
+	/* set */ * ((volatile uint32_t *) 0x541821c) = 0xFF142904;
+	/* set */ * ((volatile uint32_t *) 0x5418220) = 0xFF162803;
+	/* set */ * ((volatile uint32_t *) 0x5418224) = 0xFF172703;
+	/* set */ * ((volatile uint32_t *) 0x5418228) = 0xFF182702;
+	/* set */ * ((volatile uint32_t *) 0x541822c) = 0xFF1A2601;
+	/* set */ * ((volatile uint32_t *) 0x5418230) = 0xFF1B2501;
+	/* set */ * ((volatile uint32_t *) 0x5418234) = 0xFF1C2401;
+	/* set */ * ((volatile uint32_t *) 0x5418238) = 0xFF1E2300;
+	/* set */ * ((volatile uint32_t *) 0x541823c) = 0xFF1F2200;
+	/* set */ * ((volatile uint32_t *) 0x5418240) = 0x00202000;
+	/* set */ * ((volatile uint32_t *) 0x5418244) = 0x00211F00;
+	/* set */ * ((volatile uint32_t *) 0x5418248) = 0x01221D00;
+	/* set */ * ((volatile uint32_t *) 0x541824c) = 0x01231C00;
+	/* set */ * ((volatile uint32_t *) 0x5418250) = 0x01251BFF;
+	/* set */ * ((volatile uint32_t *) 0x5418254) = 0x02251AFF;
+	/* set */ * ((volatile uint32_t *) 0x5418258) = 0x032618FF;
+	/* set */ * ((volatile uint32_t *) 0x541825c) = 0x032717FF;
+	/* set */ * ((volatile uint32_t *) 0x5418260) = 0x042815FF;
+	/* set */ * ((volatile uint32_t *) 0x5418264) = 0x052814FF;
+	/* set */ * ((volatile uint32_t *) 0x5418268) = 0x052913FF;
+	/* set */ * ((volatile uint32_t *) 0x541826c) = 0x06291100;
+	/* set */ * ((volatile uint32_t *) 0x5418270) = 0x072A10FF;
+	/* set */ * ((volatile uint32_t *) 0x5418274) = 0x082A0E00;
+	/* set */ * ((volatile uint32_t *) 0x5418278) = 0x092A0D00;
+	/* set */ * ((volatile uint32_t *) 0x541827c) = 0x0A2A0C00;
+	/* set */ * ((volatile uint32_t *) 0x54180c0) = 0x006D0095;
+	/* set */ * ((volatile uint32_t *) 0x54180c8) = 0x00180000;
+	/* set */ * ((volatile uint32_t *) 0x54180cc) = 0x00181C0E;
+
+	/* set */ * ((volatile uint32_t *) 0x5418400) = 0xFF0C2A0B;
+	/* set */ * ((volatile uint32_t *) 0x5418404) = 0xFF0D2A0A;
+	/* set */ * ((volatile uint32_t *) 0x5418408) = 0xFF0E2A09;
+	/* set */ * ((volatile uint32_t *) 0x541840c) = 0xFF0F2A08;
+	/* set */ * ((volatile uint32_t *) 0x5418410) = 0xFF102A07;
+	/* set */ * ((volatile uint32_t *) 0x5418414) = 0xFF112A06;
+	/* set */ * ((volatile uint32_t *) 0x5418418) = 0xFF132905;
+	/* set */ * ((volatile uint32_t *) 0x541841c) = 0xFF142904;
+	/* set */ * ((volatile uint32_t *) 0x5418420) = 0xFF162803;
+	/* set */ * ((volatile uint32_t *) 0x5418424) = 0xFF172703;
+	/* set */ * ((volatile uint32_t *) 0x5418428) = 0xFF182702;
+	/* set */ * ((volatile uint32_t *) 0x541842c) = 0xFF1A2601;
+	/* set */ * ((volatile uint32_t *) 0x5418430) = 0xFF1B2501;
+	/* set */ * ((volatile uint32_t *) 0x5418434) = 0xFF1C2401;
+	/* set */ * ((volatile uint32_t *) 0x5418438) = 0xFF1E2300;
+	/* set */ * ((volatile uint32_t *) 0x541843c) = 0xFF1F2200;
+	/* set */ * ((volatile uint32_t *) 0x5418440) = 0x00202000;
+	/* set */ * ((volatile uint32_t *) 0x5418444) = 0x00211F00;
+	/* set */ * ((volatile uint32_t *) 0x5418448) = 0x01221D00;
+	/* set */ * ((volatile uint32_t *) 0x541844c) = 0x01231C00;
+	/* set */ * ((volatile uint32_t *) 0x5418450) = 0x01251BFF;
+	/* set */ * ((volatile uint32_t *) 0x5418454) = 0x02251AFF;
+	/* set */ * ((volatile uint32_t *) 0x5418458) = 0x032618FF;
+	/* set */ * ((volatile uint32_t *) 0x541845c) = 0x032717FF;
+	/* set */ * ((volatile uint32_t *) 0x5418460) = 0x042815FF;
+	/* set */ * ((volatile uint32_t *) 0x5418464) = 0x052814FF;
+	/* set */ * ((volatile uint32_t *) 0x5418468) = 0x052913FF;
+	/* set */ * ((volatile uint32_t *) 0x541846c) = 0x06291100;
+	/* set */ * ((volatile uint32_t *) 0x5418470) = 0x072A10FF;
+	/* set */ * ((volatile uint32_t *) 0x5418474) = 0x082A0E00;
+	/* set */ * ((volatile uint32_t *) 0x5418478) = 0x092A0D00;
+	/* set */ * ((volatile uint32_t *) 0x541847c) = 0x0A2A0C00;
+
+	/* set */ * ((volatile uint32_t *) 0x5418300) = 0x00004000;
+	/* set */ * ((volatile uint32_t *) 0x5418304) = 0x00023E00;
+	/* set */ * ((volatile uint32_t *) 0x5418308) = 0x00043C00;
+	/* set */ * ((volatile uint32_t *) 0x541830c) = 0x00063A00;
+	/* set */ * ((volatile uint32_t *) 0x5418310) = 0x00083800;
+	/* set */ * ((volatile uint32_t *) 0x5418314) = 0x000A3600;
+	/* set */ * ((volatile uint32_t *) 0x5418318) = 0x000C3400;
+	/* set */ * ((volatile uint32_t *) 0x541831c) = 0x000E3200;
+	/* set */ * ((volatile uint32_t *) 0x5418320) = 0x00103000;
+	/* set */ * ((volatile uint32_t *) 0x5418324) = 0x00122E00;
+	/* set */ * ((volatile uint32_t *) 0x5418328) = 0x00142C00;
+	/* set */ * ((volatile uint32_t *) 0x541832c) = 0x00162A00;
+	/* set */ * ((volatile uint32_t *) 0x5418330) = 0x00182800;
+	/* set */ * ((volatile uint32_t *) 0x5418334) = 0x001A2600;
+	/* set */ * ((volatile uint32_t *) 0x5418338) = 0x001C2400;
+	/* set */ * ((volatile uint32_t *) 0x541833c) = 0x001E2200;
+	/* set */ * ((volatile uint32_t *) 0x5418340) = 0x00202000;
+	/* set */ * ((volatile uint32_t *) 0x5418344) = 0x00221E00;
+	/* set */ * ((volatile uint32_t *) 0x5418348) = 0x00241C00;
+	/* set */ * ((volatile uint32_t *) 0x541834c) = 0x00261A00;
+	/* set */ * ((volatile uint32_t *) 0x5418350) = 0x00281800;
+	/* set */ * ((volatile uint32_t *) 0x5418354) = 0x002A1600;
+	/* set */ * ((volatile uint32_t *) 0x5418358) = 0x002C1400;
+	/* set */ * ((volatile uint32_t *) 0x541835c) = 0x002E1200;
+	/* set */ * ((volatile uint32_t *) 0x5418360) = 0x00301000;
+	/* set */ * ((volatile uint32_t *) 0x5418364) = 0x00320E00;
+	/* set */ * ((volatile uint32_t *) 0x5418368) = 0x00340C00;
+	/* set */ * ((volatile uint32_t *) 0x541836c) = 0x00360A00;
+	/* set */ * ((volatile uint32_t *) 0x5418370) = 0x00380800;
+	/* set */ * ((volatile uint32_t *) 0x5418374) = 0x003A0600;
+	/* set */ * ((volatile uint32_t *) 0x5418378) = 0x003C0400;
+	/* set */ * ((volatile uint32_t *) 0x541837c) = 0x003E0200;
+
+	/* set */ * ((volatile uint32_t *) 0x5418090) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5418098) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x54180d0) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x54180d8) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5418000) = 0x00000001;
+	//set ROP 0xf0
+	/* set */ * ((volatile uint32_t *) 0x5410480) = 0x000000F0;
+	/* set */ * ((volatile uint32_t *) 0x5410400) = 0x00000100;
+	/* set */ * ((volatile uint32_t *) 0x5410420) = 0x00480063;
+	/* set */ * ((volatile uint32_t *) 0x5410430) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5410460) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5413000) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5413004) = 0x00480063;
+	/* set */ * ((volatile uint32_t *) 0x5410448) = 0x00480063;
+	/* set */ * ((volatile uint32_t *) 0x5410460) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5413008) = 0x00000C80;
+	/* set */ * ((volatile uint32_t *) 0x541300c) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5413010) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5413014) = 0x406B9090;
+	/* set */ * ((volatile uint32_t *) 0x5413018) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x541301c) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5413020) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5413024) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5413028) = 0x00000000;
+	/* set */ * ((volatile uint32_t *) 0x5410100) = 0x00000000;
+}
+
 static void t113_fillrect(
 	uintptr_t taddr,
 	uint_fast32_t tstride,
@@ -2709,10 +2860,12 @@ void colpip_stretchblt(
 //	G2D_STRETCHBLT.dst_rect.h = h;
 
 //	g2d_stretchblit(& G2D_STRETCHBLT);
+//	return;
 //	PRINTF("g2d version\n");
 //	debug_g2d(__FILE__, __LINE__);
 
 #if 1
+	awxx_vsu_load();
 
 	/* Отключаем все источники */
 	G2D_VSU->VS_CTRL = 0;
@@ -2724,6 +2877,7 @@ void colpip_stretchblt(
 
 //	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+
 
 	{
 		/* расчет масштабов */
