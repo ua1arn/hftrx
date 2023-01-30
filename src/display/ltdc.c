@@ -844,8 +844,10 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 }
 
 /* ожидаем начало кадра */
-void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(void)
 {
+	struct st_vdc5 * const vdc = & VDC50;
+
 	// GR2_IBUS_VEN in GR2_UPDATE is 1.
 	// GR2_IBUS_VEN and GR2_P_VEN in GR2_UPDATE are 1.
 	// GR2_P_VEN in GR2_UPDATE is 1.
@@ -876,6 +878,15 @@ void hardware_ltdc_main_set(uintptr_t p)
 	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
+}
+
+/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+{
+	ASSERT(layer2 == 0);
+	ASSERT(layer3 == 0);
+	hardware_ltdc_pip_off();
+	hardware_ltdc_main_set(layer0);
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -1321,15 +1332,15 @@ static void LCD_LayerInitMain(
 {
 	// преобразование из упакованного пикселя RGB565 по правилам pfc LTDC
 	// в требующийся RGB888
-	const COLORPIP_T key = COLOR_KEY;
+	const COLORPIP_T key = COLORPIP_KEY;
 	const unsigned keyr = COLORPIP_R(key);
 	const unsigned keyg = COLORPIP_G(key);
 	const unsigned keyb = COLORPIP_B(key);
 
 	LTDC_Layerx->CKCR = 
-		(keyrpfc << LTDC_LxCKCR_CKRED_Pos) |
-		(keygpfc << LTDC_LxCKCR_CKGREEN_Pos) |
-		(keybpfc << LTDC_LxCKCR_CKBLUE_Pos) |
+		(keyr << LTDC_LxCKCR_CKRED_Pos) |
+		(keyg << LTDC_LxCKCR_CKGREEN_Pos) |
+		(keyb << LTDC_LxCKCR_CKBLUE_Pos) |
 		0;
 
 #if WITHUSELTDCTRANSPARENCY
@@ -1661,7 +1672,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 }
 
 /* ожидаем начало кадра */
-void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(void)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
@@ -1698,6 +1709,15 @@ void hardware_ltdc_main_set(uintptr_t p)
 		hardware_nonguiyield();
 }
 
+/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+{
+	ASSERT(layer2 == 0);
+	ASSERT(layer3 == 0);
+	hardware_ltdc_pip_off();
+	hardware_ltdc_main_set(layer0);
+}
+
 #elif LINUX_SUBSYSTEM
 
 void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
@@ -1727,7 +1747,7 @@ void hardware_ltdc_main_set(uintptr_t addr)
 }
 
 /* ожидаем начало кадра */
-void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(void)
 {
 }
 
@@ -1779,8 +1799,17 @@ void hardware_ltdc_main_set(uintptr_t addr)
 }
 
 /* ожидаем начало кадра */
-void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(void)
 {
+}
+
+/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+{
+	ASSERT(layer2 == 0);
+	ASSERT(layer3 == 0);
+	//hardware_ltdc_pip_off();
+	hardware_ltdc_main_set(layer0);
 }
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
@@ -2509,8 +2538,13 @@ void hardware_ltdc_main_set(uintptr_t p)
 {
 }
 
+/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+{
+}
+
 /* ожидаем начало кадра */
-void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(void)
 {
 }
 

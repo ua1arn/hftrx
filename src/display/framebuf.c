@@ -211,7 +211,7 @@ static void t113_fillrect(
 	uint_fast32_t tstride,
 	uint_fast32_t tsizehw,
 	unsigned alpha,
-	COLOR24_T color24
+	COLOR24_T color
 	)
 {
 //	memset(G2D_V0, 0, sizeof * G2D_V0);
@@ -245,12 +245,12 @@ static void t113_fillrect(
 	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 	G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
-	//G2D_BLD->BLD_BK_COLOR = /*(alpha << 24) | */(color24 & 0xFFFFFF); // ~ 0u; //c24;	/* всегда RGB888. */
+	//G2D_BLD->BLD_BK_COLOR = /*(alpha << 24) | */(color & 0xFFFFFF); // ~ 0u; //c24;	/* всегда RGB888. */
 
 	//	G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
 	/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
 	 */
-	G2D_BLD->BLD_FILL_COLOR [0] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
+	G2D_BLD->BLD_FILL_COLOR [0] = (alpha << 24) | (color & 0xFFFFFF); // цвет и alpha канал
 	G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 
 	// BLD_FILL_COLOR_CTL: BLD_FILLC [0] или BLD_BK_COLOR
@@ -734,7 +734,7 @@ hwaccel_rect_u16(
 	uint_fast16_t row,	// начальная координата
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	uint_fast32_t color	// цвет
+	COLORPIP_T color	// цвет
 	)
 {
 	if (w == 0 || h == 0)
@@ -858,7 +858,6 @@ hwaccel_rect_u16(
 		}
 		return;
 	}
-	const COLOR24_T c24 = COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
@@ -866,7 +865,7 @@ hwaccel_rect_u16(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), c24);
+	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)));
 
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
@@ -1053,7 +1052,7 @@ hwaccel_rect_u32(
 	uint_fast16_t row,	// начальная координата
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	uint_fast32_t color24	// цвет
+	COLORPIP_T color	// цвет
 	)
 {
 	if (w == 0 || h == 0)
@@ -1066,7 +1065,7 @@ hwaccel_rect_u32(
 
 	//static ALIGNX_BEGIN volatile uint32_t tgcolor [(DCACHEROWSIZE + sizeof (uint32_t) - 1) / sizeof (uint32_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	//tgcolor [0] = color;
-	MDMA_DATA = color24;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
+	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
 	(void) MDMA_DATA;
 
 	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
@@ -1136,7 +1135,7 @@ hwaccel_rect_u32(
 		0;
 
 	DMA2D->OCOLR =
-		color24 |
+		color |
 		0;
 
 	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
@@ -1171,7 +1170,7 @@ hwaccel_rect_u32(
 		{
 			unsigned n = w;
 			while (n --)
-				* tbuffer ++ = color24;
+				* tbuffer ++ = color;
 			tbuffer += t;
 		}
 		return;
@@ -1185,7 +1184,7 @@ hwaccel_rect_u32(
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
-	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color24), (color24 & 0xFFFFFF));
+	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF));
 
 	//PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X\n", G2D_MIXER->G2D_MIXER_CTL);
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
@@ -1205,7 +1204,7 @@ hwaccel_rect_u32(
 	{
 		unsigned n = w;
 		while (n --)
-			* tbuffer ++ = color24;
+			* tbuffer ++ = color;
 		tbuffer += t;
 	}
 

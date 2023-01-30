@@ -6383,7 +6383,7 @@ void hightests(void)
 		hardware_ltdc_main_set4((uintptr_t) layer0_a, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
-		COLORPIP_T keycolor = COLOR_KEY;
+		COLORPIP_T keycolor = COLORPIP_KEY;
 //		PRINTF("test: keycolor=%08X\n", keycolor);
 //		PRINTF("test: a=%08X\n", COLORPIP_A(keycolor));
 //		PRINTF("test: r=%08X\n", COLORPIP_R(keycolor));
@@ -6392,24 +6392,24 @@ void hightests(void)
 
 		unsigned picalpha = 255;
 		colpip_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colpip_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLOR_WHITE));
-		colpip_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLOR_WHITE), 0);
-		colpip_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLOR_WHITE), 0);
-		colpip_string_tbg(fbpic, picx, picy, 5, 6, "Hello!", TFTALPHA(picalpha, COLOR_WHITE));
+		colpip_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLORPIP_WHITE));
+		colpip_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
+		colpip_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
+		colpip_string_tbg(fbpic, picx, picy, 5, 6, "Hello!", TFTALPHA(picalpha, COLORPIP_WHITE));
 
 		/* непрозрачный фон */
 		unsigned bgalpha = 255;
-		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
-		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLOR_BLACK));	/* opaque color transparent black */
+		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
+		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
-		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
-		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLOR_RED));	// RED - нижний слой не учитывает прозрачность
+		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
+		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
 
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
-		colpip_fillrect(layer1, DIM_X, DIM_Y, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLOR_BLUE));	/* transparent black */
+		colpip_fillrect(layer1, DIM_X, DIM_Y, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
-		colpip_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLOR_GREEN));	// GREEN
+		colpip_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_GREEN));	// GREEN
 
 		//TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
@@ -6499,10 +6499,10 @@ void hightests(void)
 
 			PACKEDCOLORPIP_T * drawlayer = phase ? layer0_a : layer0_b;
 
-			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0, y, w, h, TFTALPHA(bgalpha, COLOR_BLACK));
+			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0, y, w, h, TFTALPHA(bgalpha, COLORPIP_BLACK));
 
 			/* линия рисуется прораммно -за ней требуется flush, поскольку потом меняется еще аппаратурой - invalidate */
-			colpip_line(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, x0 + xpos, y + h - 1, TFTALPHA(bgalpha, COLOR_WHITE), 0);
+			colpip_line(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, x0 + xpos, y + h - 1, TFTALPHA(bgalpha, COLORPIP_WHITE), 0);
 			dcache_clean_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
 
 			hardware_ltdc_main_set4((uintptr_t) drawlayer, (uintptr_t) layer1, (uintptr_t) 0, (uintptr_t) 0);
