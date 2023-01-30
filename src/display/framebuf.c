@@ -57,7 +57,7 @@ static unsigned awxx_get_vi_attr(void)
 {
 	unsigned vi_attr = 0;
 	vi_attr = 255 << 24;
-	//vi_attr |= (1u << 15);	/* Video_UI_Sel: 1: UI Overlay(using UI Overlay Layer Input data format) */
+	vi_attr |= (1u << 15);	/* Video_UI_Sel: 1: UI Overlay(using UI Overlay Layer Input data format) */
 	vi_attr |= DstImageFormat << 8;
 	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	vi_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
