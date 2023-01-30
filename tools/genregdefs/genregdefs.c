@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "mslist.h"
 #include "getopt_win.h"
@@ -589,12 +590,19 @@ int main(int argc, char* argv[], char* envp[])
 		}
 	}
 
-	emitline(0, "#include <stdint.h>" "\n");
-	emitline(0, "\n");
 
 	if (1)
 	{
 		/* CMSIS header forming */
+		char headrname [128];
+		_snprintf(headrname, sizeof headrname / sizeof headrname [0], "HEADER_%08X_INCLUDED", (unsigned) time(NULL));
+
+		emitline(0, "#ifndef %s" "\n", headrname);
+		emitline(0, "#define %s" "\n", headrname);
+
+		emitline(0, "#include <stdint.h>" "\n");
+		emitline(0, "\n");
+
 		if (0)
 		{
 			/* collect IRQ vectors */
@@ -680,6 +688,8 @@ int main(int argc, char* argv[], char* envp[])
 				processfile_access(pfl);
 			}
 		}
+
+		emitline(0, "#endif /* %s */" "\n", headrname);
 	}
 	else
 	{

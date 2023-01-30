@@ -1,4 +1,6 @@
 /* Generated section start */ 
+#ifndef HEADER_63D78618_INCLUDED
+#define HEADER_63D78618_INCLUDED
 #include <stdint.h>
 
 
@@ -2366,4 +2368,5 @@ typedef struct MSGBOX_Type
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)                                       /*!< \brief DMAC Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)                       /*!< \brief CPUX_MSGBOX Interface register set access pointer */
+#endif /* HEADER_63D78618_INCLUDED */
 /* Generated section end */ 

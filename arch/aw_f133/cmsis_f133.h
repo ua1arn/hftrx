@@ -1,4 +1,6 @@
 /* Generated section start */ 
+#ifndef HEADER_63D78616_INCLUDED
+#define HEADER_63D78616_INCLUDED
 #include <stdint.h>
 
 
@@ -2337,4 +2339,5 @@ typedef struct CLINT_Type
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)                                       /*!< \brief DMAC Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)                                    /*!< \brief CLINT Interface register set access pointer */
+#endif /* HEADER_63D78616_INCLUDED */
 /* Generated section end */ 
