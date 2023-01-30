@@ -1,6 +1,6 @@
 /* Generated section start */ 
-#ifndef HEADER_63D78616_INCLUDED
-#define HEADER_63D78616_INCLUDED
+#ifndef HEADER_63D82817_INCLUDED
+#define HEADER_63D82817_INCLUDED
 #include <stdint.h>
 
 
@@ -19,6 +19,7 @@
 #define	GPIOINTE_BASE	 ((uintptr_t) 0x02000280)
 #define	GPIOINTF_BASE	 ((uintptr_t) 0x020002A0)
 #define	GPIOINTG_BASE	 ((uintptr_t) 0x020002C0)
+#define	PWM_BASE	 ((uintptr_t) 0x02000C00)
 #define	CCU_BASE	 ((uintptr_t) 0x02001000)
 #define	CIR_TX_BASE	 ((uintptr_t) 0x02003000)
 #define	LEDC_BASE	 ((uintptr_t) 0x02008000)
@@ -57,8 +58,8 @@
 #define	SPI_DBI_BASE	 ((uintptr_t) 0x04026000)
 #define	USBOTG0_BASE	 ((uintptr_t) 0x04100000)
 #define	EMAC_BASE	 ((uintptr_t) 0x04500000)
-#define	DE_CLK_BASE	 ((uintptr_t) 0x05000000)
 #define	DE_BASE	 ((uintptr_t) 0x05000000)
+#define	DE_CLK_BASE	 ((uintptr_t) 0x05000000)
 #define	DE_GLB_BASE	 ((uintptr_t) 0x05100000)
 #define	DE_BLD_BASE	 ((uintptr_t) 0x05101000)
 #define	DE_VI_BASE	 ((uintptr_t) 0x05102000)
@@ -2337,7 +2338,8 @@ typedef struct CLINT_Type
 #define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)                           /*!< \brief MSI_MEMC Interface register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                                          /*!< \brief SID Interface register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)                                       /*!< \brief DMAC Interface register set access pointer */
+#define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)                                    /*!< \brief CLINT Interface register set access pointer */
-#endif /* HEADER_63D78616_INCLUDED */
+#endif /* HEADER_63D82817_INCLUDED */
 /* Generated section end */ 

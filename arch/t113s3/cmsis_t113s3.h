@@ -1,6 +1,6 @@
 /* Generated section start */ 
-#ifndef HEADER_63D78618_INCLUDED
-#define HEADER_63D78618_INCLUDED
+#ifndef HEADER_63D82818_INCLUDED
+#define HEADER_63D82818_INCLUDED
 #include <stdint.h>
 
 
@@ -19,6 +19,7 @@
 #define	GPIOINTE_BASE	 ((uintptr_t) 0x02000280)
 #define	GPIOINTF_BASE	 ((uintptr_t) 0x020002A0)
 #define	GPIOINTG_BASE	 ((uintptr_t) 0x020002C0)
+#define	PWM_BASE	 ((uintptr_t) 0x02000C00)
 #define	CCU_BASE	 ((uintptr_t) 0x02001000)
 #define	CIR_TX_BASE	 ((uintptr_t) 0x02003000)
 #define	LEDC_BASE	 ((uintptr_t) 0x02008000)
@@ -2366,7 +2367,8 @@ typedef struct MSGBOX_Type
 #define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)                           /*!< \brief MSI_MEMC Interface register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                                          /*!< \brief SID Interface register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)                                       /*!< \brief DMAC Interface register set access pointer */
+#define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)                       /*!< \brief CPUX_MSGBOX Interface register set access pointer */
-#endif /* HEADER_63D78618_INCLUDED */
+#endif /* HEADER_63D82818_INCLUDED */
 /* Generated section end */ 

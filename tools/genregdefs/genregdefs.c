@@ -190,7 +190,7 @@ void genstructprint(const struct regdfn * regs, unsigned szregs, const char * bn
 				unsigned i;
 				for (i = 0; i < 4 && i < p->fldrept; ++ i)
 				{
-					emitline(INDENT, "PRINTF(\"%%s->%s[%u]=0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s [%u], (unsigned) p->%s [%u]);",
+					emitline(INDENT, "PRINTF(\"%%s->%s [%u] = 0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s [%u], (unsigned) p->%s [%u]);",
 							p->fldname, i, p->fldname, i, p->fldname, i);
 					emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs + i * p->fldsize, p->comment);
 				}
@@ -198,7 +198,7 @@ void genstructprint(const struct regdfn * regs, unsigned szregs, const char * bn
 			else if (p->fldrept == 0 &&p->typname == NULL)
 			{
 				// Plain field
-				emitline(INDENT, "PRINTF(\"%%s->%s=0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );", p->fldname, p->fldname, p->fldname);
+				emitline(INDENT, "PRINTF(\"%%s->%s = 0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );", p->fldname, p->fldname, p->fldname);
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
 			}
 		}
