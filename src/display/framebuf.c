@@ -96,7 +96,13 @@ static unsigned awxx_get_vi_attr(void)
 
 static void awxx_vsu_load(void)
 {
-	G2D_VSU->VS_CTRL = 0x00000101;
+//	if (fmt > G2D_FORMAT_IYUV422_Y1U0Y0V0)
+//		write_wvalue(VS_CTRL, 0x10101);
+//	else
+//		write_wvalue(VS_CTRL, 0x00000101);
+
+	//G2D_VSU->VS_CTRL = 0x00010101;
+	G2D_VSU->VS_CTRL = 0x000000101;
 
 	// G2D_VSU->VS_Y_HCOEF
 	/* set */ * ((volatile uint32_t *) (G2D_VSU_BASE + 0x0200)) = 0xFF0C2A0B;
@@ -218,6 +224,10 @@ static void awxx_vsu_load(void)
 //	G2D_VSU->VS_C_HCOEF[2] = 0x00004000; /* 0x00004000 */
 //	G2D_VSU->VS_C_HCOEF[3] = 0x00004000; /* 0x00004000 */
 
+//	if (fmt >= G2D_FORMAT_IYUV422_Y1U0Y0V0)
+//		write_wvalue(VS_CTRL, 0x10001);
+//	else
+//		write_wvalue(VS_CTRL, 0x00001);
 	G2D_VSU->VS_CTRL = 0x00000000;
 }
 
@@ -605,17 +615,14 @@ void arm_hardware_mdma_initialize(void)
 	(void) G2D_TOP->G2D_AHB_RESET;
 	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_AHB_RESET;
-	//local_delay_us(10);
+
+	local_delay_ms(10);
 
 	// peri:   allwnrt113_get_g2d_freq()=600000000
 	// video0: allwnrt113_get_g2d_freq()=297000000
 	// video1: allwnrt113_get_g2d_freq()=297000000
 	// audio1: allwnrt113_get_g2d_freq()=768000000
 	//PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
-	unsigned v1 = G2D_VSU->VS_CTRL;
-	local_delay_ms(10);
-	unsigned v2 = G2D_VSU->VS_CTRL;
-	//PRINTF("arm_hardware_mdma_initialize: VS_CTRL v1=%08x v2=%08x\n", v1, v2);
 
 	awxx_vsu_load();	/* stretchblt filters load */
 	 //mixer_set_reg_base(G2D_BASE);
