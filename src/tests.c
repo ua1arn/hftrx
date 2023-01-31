@@ -6514,6 +6514,18 @@ void hightests(void)
 			;
 	}
 #endif
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
+	{
+
+		PRINTF("allwnrt113_get_pll_cpu_freq()=%u\n", (unsigned) allwnrt113_get_pll_cpu_freq());
+		PRINTF("allwnrt113_get_pll_ddr_freq()=%u\n", (unsigned) allwnrt113_get_pll_ddr_freq());
+		PRINTF("allwnrt113_get_g2d_freq()=%u\n", (unsigned) allwnrt113_get_g2d_freq());
+		PRINTF("allwnrt113_get_de_freq()=%u\n", (unsigned) allwnrt113_get_de_freq());
+		PRINTF("allwnrt113_get_ce_freq()=%u\n", (unsigned) allwnrt113_get_ce_freq());
+		PRINTF("allwnrt113_get_ve_freq()=%u\n", (unsigned) allwnrt113_get_ve_freq());
+		PRINTF("allwnrt113_get_di_freq()=%u\n", (unsigned) allwnrt113_get_di_freq());
+	}
+#endif
 #if 0 && defined (CLINT) && CPUSTYLE_F133
 	{
 		TP();
