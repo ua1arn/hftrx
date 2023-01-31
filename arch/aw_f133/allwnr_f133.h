@@ -176,8 +176,8 @@ typedef enum IRQn
 //	The status of the FEL pin is the bit[8] of the system configuration module (register: 0x03000024).
 //	Fast Boot register (0x07090120) in RTC module
 
-#define CPU_0700_0000_BASE	0x07000000
-#define CPU_0701_0000_BASE	0x07010000
+#define CPU_0700_0000_BASE	((uintptr_t) 0x07000000)
+#define CPU_0701_0000_BASE	((uintptr_t) 0x07010000)
 
 // VIDEO_IN_SYS related
 //#define CSI_BASE 			0x05800000
@@ -186,7 +186,7 @@ typedef enum IRQn
 //#define TVD0_BASE 			0x05C01000
 
 // RISC_SYS Related (SYS Domain)
-#define RISC_BROM_BASE 			0x06000000	// RISC Core accesses the brom address: 0x00000000---0x0000FFFF
+#define RISC_BROM_BASE 			((uintptr_t) 0x06000000)	// RISC Core accesses the brom address: 0x00000000---0x0000FFFF
 //#define RISC_CFG_BASE 			0x06010000
 //#define RISC_WDG_BASE 			0x06011000
 //#define RISC_TIMESTAMP_BASE 	0x06012000
@@ -209,8 +209,8 @@ typedef enum IRQn
 //#define CLINT_BASE			0x14000000
 
 // DRAM Space (SYS domain)
-#define DRAM_SPACE_BASE 		0x40000000			/*!< (DRAM        ) Base Address - 2GB */
-#define DRAM_SPACE_SIZE			0x04000000			/* 64 MB */
+#define DRAM_SPACE_SIZE			0x04000000u			/* 64 MB */
+#define DRAM_SPACE_BASE 		((uintptr_t) 0x40000000)			/*!< (DRAM        ) Base Address - 2GB */
 
 //#define G2D_TOP_BASE        (G2D_BASE + 0x00000)
 //#define G2D_MIXER_BASE      (G2D_BASE + 0x00100)

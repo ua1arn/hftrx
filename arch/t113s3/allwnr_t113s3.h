@@ -239,8 +239,8 @@ typedef enum IRQn
 //	The status of the FEL pin is the bit[8] of the system configuration module (register: 0x03000024).
 //	Fast Boot register (0x07090120) in RTC module
 
-#define CPU_0700_0000_BASE	0x07000000
-#define CPU_0701_0000_BASE	0x07010000
+#define CPU_0700_0000_BASE	((uintptr_t) 0x07000000)
+#define CPU_0701_0000_BASE	((uintptr_t) 0x07010000)
 
 // VIDEO_IN_SYS related
 //#define CSI_BASE 			0x05800000
@@ -256,16 +256,18 @@ typedef enum IRQn
 
 // CPUX related
 // Address (It is for Cluster CPU)
-//#define CPU_SUBSYS_CTRL_BASE	0x08100000
-#define TimeStamp_STA_BASE		0x08110000
-#define TimeStamp_CTRL_BASE		0x08120000
-#define IDC_BASE				0x08130000
-//#define C0_CPUX_CFG_BASE		0x09010000
-#define C0_CPUX_MBIST_BASE		0x09020000	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
+//#define CPU_SUBSYS_CTRL_BASE	((uintptr_t) 0x08100000)
+#define TimeStamp_STA_BASE		((uintptr_t) 0x08110000)
+#define TimeStamp_CTRL_BASE		((uintptr_t) 0x08120000)
+#define IDC_BASE				((uintptr_t) 0x08130000)
+//#define C0_CPUX_CFG_BASE		((uintptr_t) 0x09010000)
+#define C0_CPUX_MBIST_BASE		((uintptr_t) 0x09020000)	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
 
 // DRAM Space (SYS domain)
-#define DRAM_SPACE_BASE 		0x40000000			/*!< (DRAM        ) Base Address - 2GB */
-#define DRAM_SPACE_SIZE			0x08000000			/* 128 MB */
+#define DRAM_SPACE_SIZE			0x08000000u			/* 128 MB */
+#define DRAM_SPACE_BASE 		((uintptr_t) 0x40000000)			/*!< (DRAM        ) Base Address - 2GB */
+#define DSP0_IRAM_BASE 			((uintptr_t) 0x00028000)			/* 32KB */
+#define DSP0_DRAM_BASE 			((uintptr_t) 0x00030000)			/* 32KB */
 
 //#define G2D_TOP_BASE        (0x00000 + G2D_BASE)
 //#define G2D_MIXER_BASE      (0x00100 + G2D_BASE)

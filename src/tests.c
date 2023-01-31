@@ -6560,10 +6560,8 @@ void hightests(void)
 #endif
 #if 0 && CPUSTYLE_T113
 	{
-//#define DSP0_IRAM_BASE 0x04000000
-//#define DSP0_DRAM_BASE 0x04010000
-#define DSP0_IRAM_BASE 0x00028000
-#define DSP0_DRAM_BASE 0x00030000
+		//	#define DSP0_IRAM_BASE 			((uintptr_t) 0x00028000)			/* 32KB */
+		//	#define DSP0_DRAM_BASE 			((uintptr_t) 0x00030000)			/* 32KB */
 		// При 0 видим память DSP
 		// При 1 видим память что была при загрузке
 		// 0: DSP 128K Local SRAM Remap for DSP_SYS
@@ -6573,14 +6571,15 @@ void hightests(void)
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 1;
 		PRINTF("SYS_CFG->DSP_BOOT_RAMMAP_REG=%08" PRIX32 "\n", SYS_CFG->DSP_BOOT_RAMMAP_REG);
 
-		uint8_t * irambase = (void *) DSP0_IRAM_BASE;
+		uint8_t * const irambase = (void *) DSP0_IRAM_BASE;
 		TP();
 		irambase [0] = 0xDE;
 		irambase [1] = 0xAD;
 		irambase [2] = 0xBE;
 		irambase [3] = 0xEF;
 		printhex(DSP0_IRAM_BASE, irambase, 64);
-		uint8_t * drambase = (void *) DSP0_DRAM_BASE;
+
+		uint8_t * const drambase = (void *) DSP0_DRAM_BASE;
 		TP();
 		drambase [0] = 0xAB;
 		drambase [1] = 0xBA;
@@ -6589,6 +6588,11 @@ void hightests(void)
 		printhex(DSP0_DRAM_BASE, drambase, 64);
 		TP();
 		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
+
+//		CCU->DSP_BGR_REG |= 1u << 18;	// DSP_DBG_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= 1u << 17;	// DSP_CFG_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= 1u << 16;	// DSP_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= 1u << 1;	// DSP_CFG_GATING 1: Pass
 	}
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
