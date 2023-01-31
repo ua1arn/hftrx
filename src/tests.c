@@ -6588,6 +6588,7 @@ void hightests(void)
 		drambase [3] = 0x80;
 		printhex(DSP0_DRAM_BASE, drambase, 64);
 		TP();
+		PRINTF("allwnrt113_get_dsp_freq()=%u\n", allwnrt113_get_dsp_freq());
 	}
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)

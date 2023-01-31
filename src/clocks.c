@@ -2627,6 +2627,34 @@ uint_fast32_t allwnrf133_get_riscv_freq(void)
 	}
 }
 
+#elif CPUSTYLE_T113
+
+//
+uint_fast32_t allwnrt113_get_dsp_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DSP_CLK_REG;
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);	/* M=FACTOR_M+1 */
+	switch ((clkreg >> 24) & 0x07)	/* G2D_CLK_REG */
+	{
+	default:
+	case 0x00:
+		/* 000: HOSC */
+		return allwnrt113_get_hosc_freq() / M;
+	case 0x01:
+		/* 001: CLK32K */
+		return HARDWARE_CLK32K_FREQ / M;
+	case 0x02:
+		/* 010: CLK16M_RC */
+		return HARDWARE_CLK16M_RC_FREQ / M;
+	case 0x03:
+		/* 010: PLL_PERI(2X) */
+		return allwnrt113_get_peripll2x_freq() / M;
+	case 0x04:
+		/*110: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_audio1pll_div2_freq() / M;
+	}
+}
+
 #endif /* CPUSTYLE_F133 */
 
 uint_fast32_t allwnrt113_get_pl1_timer_freq(void)
