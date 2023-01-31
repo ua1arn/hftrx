@@ -488,6 +488,18 @@ void linux_cancel_thread(pthread_t tid)
 
 void linux_subsystem_init(void)
 {
+	extern char ** environ;
+	char spid[6];
+	int pid = getpid();
+	local_snprintf_P(spid, ARRAY_SIZE(spid), "%d", pid);
+	const char * argv [5] = { "/usr/bin/taskset", "-p", "1", spid, NULL, };
+
+	if (0 == (pid = fork()))
+	{
+		if (execve(argv[0], (char **) argv , environ) < 0)
+			perror("taskset");
+	}
+
 	linux_framebuffer_init();
 	linux_xgpio_init();
 	linux_iq_init();
@@ -512,14 +524,14 @@ void linux_user_init(void)
 	usleep(5);
 	xcz_resetn_modem_state(1);
 
-	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
-	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 1);
+	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 1);
+	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
 
 #if WITHFT8
-	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 0);
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 1);
 	linux_create_thread(& ft8_t, ft8_thread, 50, 1);
 #else
-	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 1);
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 0);
 #endif /* WITHFT8 */
 
 	const float FS = powf(2, 32);
