@@ -17,7 +17,7 @@
 #include "hardware.h"
 
 #if WITHSDRAMHW
-#if 0///*CPUSTYLE_T113 || */CPUSTYLE_F133
+#if CPUSTYLE_T113 || CPUSTYLE_F133
 
 #include "formats.h"
 #include "clocks.h"
@@ -40,19 +40,17 @@ typedef uintptr_t virtual_addr_t;
 
 static void udelay(unsigned us)
 {
-	local_delay_us(us * 20);
+	local_delay_us(us * 1);
 }
 
 static uint32_t read32(uintptr_t addr)
 {
-	__DSB();
 	return * (volatile uint32_t *) addr;
 }
 
 static void write32(uintptr_t addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
-	__DSB();
 }
 
 static void write32ptr(void * addr, uint32_t value)
@@ -85,7 +83,7 @@ enum sunxi_dram_type {
 	SUNXI_DRAM_TYPE_LPDDR3 = 7,
 };
 
-#define DIV_ROUND_UP(n, d)	(((n) + (d) - 1) / (d))
+#define DIV_ROUND_UP(n, d)	((((int64_t) (n)) + (d) - 1) / (d))
 
 
 static inline int ns_to_t(int nanoseconds)
@@ -101,15 +99,11 @@ static inline int ns_to_t(int nanoseconds)
 
 #define CONFIG_SYS_SDRAM_BASE 0x40000000
 
-#ifndef SUNXI_SID_BASE
-#define SUNXI_SID_BASE	0x3006200
-#endif
-
 static void sid_read_ldoB_cal(dram_para_t *para)
 {
 	uint32_t reg;
 
-	reg = (read32(SUNXI_SID_BASE + 0x1c) & 0xff00) >> 8;
+	reg = (read32(SID_BASE + 0x21c) & 0xff00) >> 8;
 
 	if (reg == 0)
 		return;
@@ -740,7 +734,7 @@ static void mctl_phy_ac_remapping(dram_para_t *para)
 	    para->dram_type != SUNXI_DRAM_TYPE_DDR3)
 		return;
 
-	fuse = (read32(SUNXI_SID_BASE + 0x28) & 0xf00) >> 8;
+	fuse = (read32(SID_BASE + 0x228) & 0xf00) >> 8;
 	PRINTF("DDR efuse: 0x%x\n", (unsigned) fuse);
 
 	if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
