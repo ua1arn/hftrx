@@ -31,7 +31,7 @@
 	//#define DIRECT_60M0_X1		1	/* Board hardware configuration */
 	//#define DIRECT_125M0_X1		1	/* Board hardware configuration */
 	//#define DIRECT_XXXX_X1	1
-	//#define REFERENCE_FREQ	24000000uL	/* Для Si5351 */
+	//#define REFERENCE_FREQ	24000000u	/* Для Si5351 */
 
 	#define FQMODEL_TRX8M		1	// Первая низкая ПЧ 8 МГц, 6 МГц, 5.5 МГц и другие
 

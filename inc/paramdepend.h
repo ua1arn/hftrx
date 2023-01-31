@@ -672,7 +672,7 @@ extern "C" {
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 24000000uL	/* 2требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 24000000u	/* 2требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
@@ -750,7 +750,7 @@ extern "C" {
 	#define HARDWARE_ADCBITS 12
 
 	#define SPISPEED 		12000000uL	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	24000000uL	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	24000000u	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
@@ -800,7 +800,7 @@ extern "C" {
 	#define HARDWARE_ADCBITS 12
 
 	#define SPISPEED 		12000000uL	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	24000000uL	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	24000000u	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 

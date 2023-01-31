@@ -3383,7 +3383,7 @@ char sd_initialize2(void)
 			case SDIO_STD_CAPACITY_SD_CARD_V2_0:
 			case SDIO_HIGH_CAPACITY_SD_CARD:
 				PRINTF(PSTR("hardware_sdhost_setspeed to 24 MHz\n"));
-				hardware_sdhost_setspeed(24000000uL);
+				hardware_sdhost_setspeed(24000000u);
 				break;
 
 			default:
@@ -4816,7 +4816,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 #if CPUSTYLE_R7S721
 	// Использование автоматического расчёта предделителя
 	//unsigned long ticksfreq = 400000uL;	// 400 kHz -> 260 kHz
-	//unsigned long ticksfreq = 24000000uL;	// 24 MHz -> 16.666 MHz
+	//unsigned long ticksfreq = 24000000u;	// 24 MHz -> 16.666 MHz
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(ticksfreq), 0, (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2), & value, 0);
 	PRINTF(PSTR("hardware_sdhost_setspeed: ticksfreq=%lu, prei=%lu\n"), (unsigned long) ticksfreq, (unsigned long) prei);

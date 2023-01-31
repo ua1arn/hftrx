@@ -297,7 +297,7 @@ uint_fast32_t stm32f7xx_get_hse_freq(void)
 	return WITHCPUXOSC;
 #else
 	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
-	return 24000000uL;
+	return 24000000u;
 #endif
 }
 
@@ -665,7 +665,7 @@ uint_fast32_t stm32h7xx_get_hse_freq(void)
 	return WITHCPUXOSC;
 #else
 	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
-	return 24000000uL;
+	return 24000000u;
 #endif
 }
 //
@@ -1100,7 +1100,7 @@ uint_fast32_t stm32mp1_get_hse_freq(void)
 	return WITHCPUXOSC;
 #else
 	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
-	return 24000000uL;
+	return 24000000u;
 #endif
 }
 
@@ -2164,7 +2164,7 @@ uint_fast32_t allwnrt113_get_hosc_freq(void)
 #elif defined WITHCPUXOSC
 	return WITHCPUXOSC;
 #else
-	return 24000000uL;	/* На процессоре установлен кварц 24.000 МГц */
+	return 24000000u;	/* На процессоре установлен кварц 24.000 МГц */
 #endif
 }
 

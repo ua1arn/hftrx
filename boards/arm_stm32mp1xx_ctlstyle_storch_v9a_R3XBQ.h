@@ -29,8 +29,8 @@
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
 	#define LSEFREQ 32768uL
-	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
-	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
+	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
 	#if 1//WITHISBOOTLOADER
 		// Варианты конфигурации тактирования

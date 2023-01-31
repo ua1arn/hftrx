@@ -28,8 +28,8 @@
 
 	#define LSEFREQ 32768uL
 
-	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
-	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
+	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
 	#if CPUSTYLE_F133
 		//#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz */

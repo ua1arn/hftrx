@@ -1727,7 +1727,7 @@ const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 24000000uL,	// частота пикселей при работе с интерфейсом RGB
+	//.ltdc_dotclk = 24000000u,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per second */
 };
 
