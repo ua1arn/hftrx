@@ -1178,14 +1178,12 @@ hwaccel_rect_u32(
 	{
 		/* Горизонтальные линии в один пиксель рисовать умеет аппаратура. */
 		/* программная реализация отрисовки вертикальной линии в один пиксель */
-		const unsigned t = GXADJ(dx) - w;
+		const unsigned t = GXADJ(dx);
 		//buffer += (GXADJ(dx) * row) + col;
 		volatile uint32_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 		while (h --)
 		{
-			unsigned n = w;
-			while (n --)
-				* tbuffer ++ = color;
+			* tbuffer = color;
 			tbuffer += t;
 		}
 		return;
