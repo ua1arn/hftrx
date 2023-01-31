@@ -6558,6 +6558,38 @@ void hightests(void)
 			;
 	}
 #endif
+#if 0 && CPUSTYLE_T113
+	{
+//#define DSP0_IRAM_BASE 0x04000000
+//#define DSP0_DRAM_BASE 0x04010000
+#define DSP0_IRAM_BASE 0x00028000
+#define DSP0_DRAM_BASE 0x00030000
+		// При 0 видим память DSP
+		// При 1 видим память что была при загрузке
+		// 0: DSP 128K Local SRAM Remap for DSP_SYS
+		// 1: DSP 128K Local SRAM Remap for System Boot
+		// After system boots up, this bit must be set to 0 before using DSP
+		PRINTF("SYS_CFG->DSP_BOOT_RAMMAP_REG=%08" PRIX32 "\n", SYS_CFG->DSP_BOOT_RAMMAP_REG);
+		SYS_CFG->DSP_BOOT_RAMMAP_REG = 1;
+		PRINTF("SYS_CFG->DSP_BOOT_RAMMAP_REG=%08" PRIX32 "\n", SYS_CFG->DSP_BOOT_RAMMAP_REG);
+
+		uint8_t * irambase = (void *) DSP0_IRAM_BASE;
+		TP();
+		irambase [0] = 0xDE;
+		irambase [1] = 0xAD;
+		irambase [2] = 0xBE;
+		irambase [3] = 0xEF;
+		printhex(DSP0_IRAM_BASE, irambase, 64);
+		uint8_t * drambase = (void *) DSP0_DRAM_BASE;
+		TP();
+		drambase [0] = 0xAB;
+		drambase [1] = 0xBA;
+		drambase [2] = 0x19;
+		drambase [3] = 0x80;
+		printhex(DSP0_DRAM_BASE, drambase, 64);
+		TP();
+	}
+#endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 

@@ -3166,6 +3166,17 @@ sysintt_sdram_initialize(void)
 
 	#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
 #endif /* WITHSDRAMHW */
+#if CPUSTYLE_T113
+	// На 0x00028000:
+	// При 0 видим память DSP
+	// При 1 видим память что была при загрузке
+	// 0: DSP 128K Local SRAM Remap for DSP_SYS
+	// 1: DSP 128K Local SRAM Remap for System Boot
+	// After system boots up, this bit must be set to 0 before using DSP
+	//PRINTF("SYS_CFG->DSP_BOOT_RAMMAP_REG=%08" PRIX32 "\n", SYS_CFG->DSP_BOOT_RAMMAP_REG);
+	SYS_CFG->DSP_BOOT_RAMMAP_REG = 0;
+	//PRINTF("SYS_CFG->DSP_BOOT_RAMMAP_REG=%08" PRIX32 "\n", SYS_CFG->DSP_BOOT_RAMMAP_REG);
+#endif /* CPUSTYLE_T113 */
 }
 
 static void FLASHMEMINITFUNC
