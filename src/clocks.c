@@ -2306,7 +2306,7 @@ uint_fast32_t allwnrt113_get_peripll1x_freq(void)
 uint_fast32_t allwnrt113_get_dram_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DRAM_CLK_REG;
-	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
 	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x03);
 	switch ((clkreg >> 24) & 0x03)	/* DRAM_CLK_SEL */
 	{
@@ -2326,7 +2326,7 @@ uint_fast32_t allwnrt113_get_i2s1_freq(void)
 {
 	const uint_fast32_t pgdiv = 1;// 5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->I2S1_CLK_REG;
-	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
 	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);
 	// I2S/PCM1_CLK = Clock Source/M/N
 	switch ((clkreg >> 24) & 0x03)	/* I2S1_CLK_SEL */
@@ -2347,7 +2347,7 @@ uint_fast32_t allwnrt113_get_i2s2_freq(void)
 {
 	const uint_fast32_t pgdiv = 1;//5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->I2S2_CLK_REG;
-	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
 	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);
 	// I2S/PCM2_CLK = Clock Source/M/N
 	switch ((clkreg >> 24) & 0x03)	/* I2S2_CLK_SEL */
@@ -2382,10 +2382,77 @@ uint_fast32_t allwnrt113_get_g2d_freq(void)
 	}
 }
 
+uint_fast32_t allwnrt113_get_de_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);	/* M=FACTOR_M+1 */
+	switch ((clkreg >> 24) & 0x07)	/* G2D_CLK_REG */
+	{
+	default:
+	case 0x00:	/* 000: PLL_PERI(2X) */
+		return allwnrt113_get_peripll2x_freq() / M;
+	case 0x01:	/* 001: PLL_VIDEO0(4X) */
+		return allwnrt113_get_video0pllx4_freq() / M;
+	case 0x02:	/* 001: PLL_VIDEO1(4X) */
+		return allwnrt113_get_video1pllx4_freq() / M;
+	case 0x03: /* 011: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_audio1pll_div2_freq() / M;
+	}
+}
+
+uint_fast32_t allwnrt113_get_di_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DI_CLK_REG;
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);	/* M=FACTOR_M+1 */
+	switch ((clkreg >> 24) & 0x07)	/* G2D_CLK_REG */
+	{
+	default:
+	case 0x00:	/* 000: PLL_PERI(2X) */
+		return allwnrt113_get_peripll2x_freq() / M;
+	case 0x01:	/* 001: PLL_VIDEO0(4X) */
+		return allwnrt113_get_video0pllx4_freq() / M;
+	case 0x02:	/* 001: PLL_VIDEO1(4X) */
+		return allwnrt113_get_video1pllx4_freq() / M;
+	case 0x03: /* 011: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_audio1pll_div2_freq() / M;
+	}
+}
+
+uint_fast32_t allwnrt113_get_ce_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CE_CLK_REG;
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);	/* M=FACTOR_M+1 */
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
+	switch ((clkreg >> 24) & 0x07)	/* G2D_CLK_REG */
+	{
+	default:
+	case 0x00:	/* 000: HOSC */
+		return allwnrt113_get_vepll_freq() / M / N;
+	case 0x01:	/* 001: PLL_PERI(2X) */
+		return allwnrt113_get_peripll2x_freq() / M / N;
+	case 0x02:	/* 010: PLL_PERI(1X) */
+		return allwnrt113_get_peripll1x_freq() / M / N;
+	}
+}
+
+uint_fast32_t allwnrt113_get_ve_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CE_CLK_REG;
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);	/* M=FACTOR_M+1 */
+	switch ((clkreg >> 24) & 0x07)	/* G2D_CLK_REG */
+	{
+	default:
+	case 0x00:	/* 000: PLL_VE */
+		return allwnrt113_get_vepll_freq() / M;
+	case 0x01:	/* 001: PLL_PERI(2X) */
+		return allwnrt113_get_peripll2x_freq() / M;
+	}
+}
+
 uint_fast32_t allwnrt113_get_psi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->PSI_CLK_REG;
-	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
 	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x03);
 	switch ((clkreg >> 24) & 0x03)
 	{
@@ -2408,7 +2475,7 @@ uint_fast32_t allwnrt113_get_psi_freq(void)
 uint_fast32_t allwnrt113_get_apb0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB0_CLK_REG;
-	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
 	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);
 	switch ((clkreg >> 24) & 0x03)
 	{
@@ -2431,7 +2498,7 @@ uint_fast32_t allwnrt113_get_apb0_freq(void)
 uint_fast32_t allwnrt113_get_apb1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB1_CLK_REG;
-	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
 	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);
 	switch ((clkreg >> 24) & 0x03)
 	{
@@ -2470,7 +2537,7 @@ uint_fast32_t allwnrt113_get_spi0_freq(void)
 {
 	const uint_fast32_t pgdiv = 1; //= 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
-//	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+//	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
 //	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x07)
 	{
@@ -2497,7 +2564,7 @@ uint_fast32_t allwnrt113_get_spi1_freq(void)
 {
 	const uint_fast32_t pgdiv = 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
-	const uint_fast32_t N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
 	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x07)
 	{
@@ -6232,18 +6299,18 @@ static void xc7z_arm_pll_initialize(void)
 	SCLR->ARM_PLL_CTRL &= ~ 0x0001uL;	// PLL_RESET
 
 	//	EMIT_MASKPOLL(0XF800010C, 0x00000001U),					// PLL_STATUS
-	while ((SCLR->PLL_STATUS & (0x01uL << 0)) == 0)	// ARM_PLL_LOCK
+	while ((SCLR->PLL_STATUS & (1u << 0)) == 0)	// ARM_PLL_LOCK
 		;
 	//	EMIT_MASKWRITE(0XF8000100, 0x00000010U ,0x00000000U),	// ARM_PLL_CTRL
 	SCLR->ARM_PLL_CTRL &= ~ 0x0010uL;	// PLL_BYPASS_FORCE
 
 	//	////EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),	// ARM_CLK_CTRL
 	SCLR->ARM_CLK_CTRL = (SCLR->ARM_CLK_CTRL & ~ (0x1F003F30U)) |
-			(0x01uL << 28) |	// CPU_PERI_CLKACT
-			(0x01uL << 27) |	// CPU_1XCLKACT
-			(0x01uL << 26) |	// CPU_2XCLKACT
-			(0x01uL << 25) |	// CPU_3OR2XCLKACT
-			(0x01uL << 24) |	// CPU_6OR4XCLKACT
+			(1u << 28) |	// CPU_PERI_CLKACT
+			(1u << 27) |	// CPU_1XCLKACT
+			(1u << 26) |	// CPU_2XCLKACT
+			(1u << 25) |	// CPU_3OR2XCLKACT
+			(1u << 24) |	// CPU_6OR4XCLKACT
 			(arm_pll_div << 8) |	// DIVISOR - Frequency divisor for the CPU clock source.
 			(0x00uL << 4) |	// SRCSEL: 0x: ARM PLL
 			0;
@@ -6274,7 +6341,7 @@ static void xc7z_ddr_pll_initialize(void)
 			0;
 
 	//	EMIT_MASKPOLL(0XF800010C, 0x00000002U),					// PLL_STATUS
-	while ((SCLR->PLL_STATUS & (0x01uL << 1)) == 0)	// DDR_PLL_LOCK
+	while ((SCLR->PLL_STATUS & (1u << 1)) == 0)	// DDR_PLL_LOCK
 		;
 	//	EMIT_MASKWRITE(0XF8000104, 0x00000010U ,0x00000000U),	// DDR_PLL_CTRL
 	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x00000010U)) |
@@ -6284,8 +6351,8 @@ static void xc7z_ddr_pll_initialize(void)
 	SCLR->DDR_CLK_CTRL = (SCLR->DDR_CLK_CTRL & ~ (0xFFF00003U)) |
 			((uint_fast32_t) DDR_2XCLK_DIVISOR << 26) |	// DDR_2XCLK_DIVISOR
 			((uint_fast32_t) DDR_3XCLK_DIVISOR << 20) |	// DDR_3XCLK_DIVISOR (only even)
-			(0x01uL << 1) |	// DDR_2XCLKACT
-			(0x01uL << 0) | // DDR_3XCLKACT
+			(1u << 1) |	// DDR_2XCLKACT
+			(1u << 0) | // DDR_3XCLKACT
 			0;
 }
 
@@ -6314,7 +6381,7 @@ static void xc7z_io_pll_initialize(void)
 			0;
 
 	//	EMIT_MASKPOLL(0XF800010C, 0x00000004U),					// PLL_STATUS
-	while ((SCLR->PLL_STATUS & (0x01uL << 2)) == 0)	// IO_PLL_LOCK
+	while ((SCLR->PLL_STATUS & (1u << 2)) == 0)	// IO_PLL_LOCK
 		;
 	//	EMIT_MASKWRITE(0XF8000108, 0x00000010U ,0x00000000U),	// IO_PLL_CTRL
 	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000010U)) |
@@ -6749,7 +6816,7 @@ sysinit_pll_initialize(void)
 				0x00000001U |
 				0;
 
-		SCLR->APER_CLK_CTRL |= (0x01uL << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
+		SCLR->APER_CLK_CTRL |= (1u << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
 
 	#endif /* WITHISBOOTLOADER */
 
@@ -6758,12 +6825,12 @@ sysinit_pll_initialize(void)
 	/* Off bootloader USB */
 	if (1)
 	{
-		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~  (0x01uL << 24);	// USBOTG0_RST
+		CCU->USB_BGR_REG &= ~ (1u << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (1u << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~  (1u << 24);	// USBOTG0_RST
 
-		CCU->USB0_CLK_REG &= ~  (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
+		CCU->USB0_CLK_REG &= ~  (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~  (1u << 30);	// USBPHY0_RSTN
 	}
 	allwnrt113_pll_initialize();
 
@@ -6772,12 +6839,12 @@ sysinit_pll_initialize(void)
 	/* Off bootloader USB */
 	if (1)
 	{
-		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~  (0x01uL << 24);	// USBOTG0_RST
+		CCU->USB_BGR_REG &= ~ (1u << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (1u << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~  (1u << 24);	// USBOTG0_RST
 
-		CCU->USB0_CLK_REG &= ~  (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
+		CCU->USB0_CLK_REG &= ~  (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~  (1u << 30);	// USBPHY0_RSTN
 	}
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 11);	// RISC_MCLK_EN
