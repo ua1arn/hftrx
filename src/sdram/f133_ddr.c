@@ -22,6 +22,14 @@
 #include "formats.h"
 #include "clocks.h"
 
+#if CPUSTYLE_T113
+	#define CONFIG_SUNXI_DRAM_TYPE SUNXI_DRAM_TYPE_DDR3
+	#define CONFIG_DRAM_CLK 792
+#elif CPUSTYLE_F133
+	#define CONFIG_SUNXI_DRAM_TYPE SUNXI_DRAM_TYPE_DDR2
+	#define CONFIG_DRAM_CLK 528
+#endif
+
 // Sources taker from:
 //	https://raw.githubusercontent.com/szemzoa/awboot/main/arch/arm32/mach-t113s3/mctl_hal.c
 //	https://github.com/szemzoa/awboot/blob/main/arch/arm32/mach-t113s3/mctl_hal.c
@@ -30,26 +38,21 @@ typedef uintptr_t virtual_addr_t;
 
 // SPDX-License-Identifier: GPL-2.0+
 
-static void sdelay(unsigned us)
-{
-	local_delay_us(us * 2);
-}
-
 static void udelay(unsigned us)
 {
-	local_delay_us(us * 2);
+	local_delay_us(us * 20);
 }
 
 static uint32_t read32(uintptr_t addr)
 {
-	//__DSB();
+	__DSB();
 	return * (volatile uint32_t *) addr;
 }
 
 static void write32(uintptr_t addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
-	//__DSB();
+	__DSB();
 }
 
 static void write32ptr(void * addr, uint32_t value)
@@ -61,7 +64,6 @@ static uint32_t read32ptr(void * addr)
 {
 	return read32((uintptr_t) addr);
 }
-
 
 #define clrbits_le32(addr, clear) \
 		write32((addr), read32(addr) & ~(clear))
@@ -83,11 +85,8 @@ enum sunxi_dram_type {
 	SUNXI_DRAM_TYPE_LPDDR3 = 7,
 };
 
-#define CONFIG_SUNXI_DRAM_TYPE SUNXI_DRAM_TYPE_DDR2
-
 #define DIV_ROUND_UP(n, d)	(((n) + (d) - 1) / (d))
 
-#define CONFIG_DRAM_CLK 528
 
 static inline int ns_to_t(int nanoseconds)
 {
