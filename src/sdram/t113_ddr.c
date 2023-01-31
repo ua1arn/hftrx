@@ -32,7 +32,7 @@ typedef uintptr_t virtual_addr_t;
 
 static void sdelay(unsigned us)
 {
-	local_delay_us(us);
+	local_delay_us(us * 10);
 }
 
 static uint32_t read32(uintptr_t addr)

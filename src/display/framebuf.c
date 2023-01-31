@@ -615,7 +615,7 @@ void arm_hardware_mdma_initialize(void)
 	unsigned v1 = G2D_VSU->VS_CTRL;
 	local_delay_ms(10);
 	unsigned v2 = G2D_VSU->VS_CTRL;
-	PRINTF("arm_hardware_mdma_initialize: VS_CTRL v1=%08x v2=%08x\n", v1, v2);
+	//PRINTF("arm_hardware_mdma_initialize: VS_CTRL v1=%08x v2=%08x\n", v1, v2);
 
 	awxx_vsu_load();	/* stretchblt filters load */
 	 //mixer_set_reg_base(G2D_BASE);

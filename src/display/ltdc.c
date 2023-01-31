@@ -1927,6 +1927,21 @@ static void write32(uintptr_t a, uint32_t v)
 	* (volatile uint32_t *) a = v;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+static uint32_t ptr_hi32(uintptr_t v)
+{
+	if (sizeof v == sizeof (uint32_t))
+		return 0;
+	return v >> 32;
+}
+
+static uint32_t ptr_lo32(uintptr_t v)
+{
+	return (uint32_t) v;
+}
+#pragma GCC diagnostic pop
+
 struct fb_t113_rgb_pdata_t
 {
 	//uintptr_t virt_de;	// 0: struct de_vi_t, 1..3: struct de_ui_t
@@ -1979,8 +1994,8 @@ static inline void t113_de_set_address_vi(struct fb_t113_rgb_pdata_t * pdat, uin
 			(1<<15)|	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
 			0
 			);
-	write32((uintptr_t) & vi->cfg [UI_CFG_INDEX].top_laddr, vram);
-	write32((uintptr_t) & vi->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
+	write32((uintptr_t) & vi->cfg [VI_CFG_INDEX].top_laddr, ptr_lo32(vram));
+	write32((uintptr_t) & vi->top_haddr, (0xFF & ptr_hi32(vram)) << (8 * VI_CFG_INDEX));
 }
 
 static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int uich)
@@ -1995,8 +2010,8 @@ static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uin
 			(1<<16)| 	// LAY_PREMUL_CTL
 			0
 			);
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
-	write32((uintptr_t) & ui->top_haddr, (0xFF & (vram >> 32)) << (8 * UI_CFG_INDEX));
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, ptr_lo32(vram));
+	write32((uintptr_t) & ui->top_haddr, (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX));
 }
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
@@ -2114,15 +2129,15 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 		//CH0 VI ----------------------------------------------------------------------------
 
-		write32((uintptr_t)&vi->cfg[0].attr,
+		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].attr,
 				//(1<<0)|		// enable - разрешаем при назначении адреса
 				(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 				(1<<15)
 				);
-		write32((uintptr_t)&vi->cfg[0].size, ovl_ui_mbsize);
-		write32((uintptr_t)&vi->cfg[0].coord, 0);
-		write32((uintptr_t)&vi->cfg[0].pitch[0], uipitch);
-		//write32((uintptr_t)&vi->cfg[0].top_laddr[0], pdat->vram [0]);                               //VIDEO_MEMORY0
+		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].size, ovl_ui_mbsize);
+		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].coord, 0);
+		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].pitch[0], uipitch);
+		//write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].top_laddr[0], pdat->vram [0]);                               //VIDEO_MEMORY0
 		write32((uintptr_t)&vi->ovl_size[0], ovl_ui_mbsize);
 	}
 
@@ -2391,13 +2406,16 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 //	pdat->index = 0;
 
     CCU->DE_CLK_REG |= (1u << 31) | (0x03u << 0);	// 300 MHz
+    local_delay_us(10);
 
     CCU->DE_BGR_REG |= (1u << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (1u << 16);		// Deassert reset
+    local_delay_us(10);
 
     CCU->TCONLCD_CLK_REG |= (1u << 31);
     CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
     CCU->TCONLCD_BGR_REG |= (1u << 16); // Deassert reset
+    local_delay_us(10);
 
 	//PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
 
