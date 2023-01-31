@@ -676,7 +676,7 @@ void auto_set_timing_para(dram_para_t *para) // s5
 int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 {
 	unsigned int val, clk, n;
-	unsigned MHZ = WITHCPUXTAL / 1000000;
+	unsigned MHZ = allwnrt113_get_hosc_freq() / 1000000;
 
 	clk = (para->dram_tpr13 & (1 << 6)) ? para->dram_tpr9 : para->dram_clk;
 

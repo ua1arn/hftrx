@@ -559,7 +559,7 @@ static void mctl_set_timing_params(dram_para_t *para)
 static int ccu_set_pll_ddr_clk(int index, dram_para_t *para)
 {
 	unsigned int val, clk, n;
-	unsigned MHZ = WITHCPUXTAL / 1000000;
+	unsigned MHZ = allwnrt113_get_hosc_freq() / 1000000;
 
 	if (para->dram_tpr13 & BIT_U32(6))
 		clk = para->dram_tpr9;

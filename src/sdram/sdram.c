@@ -4403,7 +4403,9 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	#endif /* WITHDEBUG */
 
 #else
+	PRINTF("default: allwnrt113_get_dram_freq()=%u\n", (unsigned) allwnrt113_get_dram_freq());
 	sys_dram_init();
+	PRINTF("settings: allwnrt113_get_dram_freq()=%u\n", (unsigned) allwnrt113_get_dram_freq());
 
 #endif
 	PRINTF("arm_hardware_sdram_initialize done\n");
