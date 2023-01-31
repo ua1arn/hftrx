@@ -350,6 +350,7 @@ uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, con
 volatile uint32_t *ftw, *ftw_sub, *rts, *modem_ctrl,  *ph_fifo, *iq_count_rx, *iq_count_tx, *iq_fifo_rx, *iq_fifo_tx;
 static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
+int fd_int = 0;
 
 void linux_iq_init(void)
 {
@@ -427,7 +428,7 @@ void linux_iq_interrupt_thread(void)
 	uint32_t uio_key = 1;
 	uint32_t uio_value = 0;
 
-	int fd_int = open("/dev/uio0", O_RDWR);
+	fd_int = open("/dev/uio0", O_RDWR);
     if (fd_int < 0) {
         PRINTF("/dev/uio0 open failed\n");
         return;
@@ -784,6 +785,9 @@ void linux_exit(void)
 	linux_cancel_thread(ft8_t);
 #endif /* WITHFT8 */
 
+	close(fd_int);
+	close(fd_i2c);
+
 	munmap((void *) ftw, sysconf(_SC_PAGESIZE));
 	munmap((void *) ftw_sub, sysconf(_SC_PAGESIZE));
 	munmap((void *) rts, sysconf(_SC_PAGESIZE));
@@ -792,6 +796,8 @@ void linux_exit(void)
 	munmap((void *) iq_count_rx, sysconf(_SC_PAGESIZE));
 	munmap((void *) iq_count_tx, sysconf(_SC_PAGESIZE));
 	munmap((void *) iq_fifo_tx, sysconf(_SC_PAGESIZE));
+	munmap((void *) xgpo, sysconf(_SC_PAGESIZE));
+	munmap((void *) xgpi, sysconf(_SC_PAGESIZE));
 
 #if WITHDSPEXTFIR
 	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
