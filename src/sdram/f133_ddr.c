@@ -559,6 +559,7 @@ static void mctl_set_timing_params(dram_para_t *para)
 static int ccu_set_pll_ddr_clk(int index, dram_para_t *para)
 {
 	unsigned int val, clk, n;
+	unsigned MHZ = WITHCPUXTAL / 1000000;
 
 	if (para->dram_tpr13 & BIT_U32(6))
 		clk = para->dram_tpr9;
@@ -566,7 +567,7 @@ static int ccu_set_pll_ddr_clk(int index, dram_para_t *para)
 		clk = para->dram_clk;
 
 	// set VCO clock divider
-	n = (clk * 2) / 24;
+	n = (clk * 2) / MHZ;
 
 	val = read32(0x2001010);
 	val &= 0xfff800fc; // clear dividers
@@ -593,7 +594,7 @@ static int ccu_set_pll_ddr_clk(int index, dram_para_t *para)
 	val |= 0x80000000; // turn clock on
 	writel(val, 0x2001800);
 
-	return n * 24;
+	return n * MHZ;
 }
 
 // Main purpose of sys_init seems to be to initalise the clocks for
@@ -741,7 +742,7 @@ static void mctl_phy_ac_remapping(dram_para_t *para)
 		return;
 
 	fuse = (read32(SUNXI_SID_BASE + 0x28) & 0xf00) >> 8;
-	PRINTF("DDR efuse: 0x%x\n", fuse);
+	PRINTF("DDR efuse: 0x%x\n", (unsigned) fuse);
 
 	if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
 		if (fuse == 15)
@@ -926,7 +927,7 @@ static unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 	// Check for training error
 	if (read32(0x3103010) & BIT_U32(20)) {
-		printf("ZQ calibration error, check external 240 ohm resistor\n");
+		PRINTF("ZQ calibration error, check external 240 ohm resistor\n");
 		return 0;
 	}
 
@@ -1026,8 +1027,8 @@ static int dqs_gate_detect(dram_para_t *para)
 	if ((para->dram_tpr13 & BIT_U32(29)) == 0)
 		return 0;
 
-	PRINTF("DX0 state: %d\n", dx0);
-	PRINTF("DX1 state: %d\n", dx1);
+	PRINTF("DX0 state: %d\n", (int) dx0);
+	PRINTF("DX1 state: %d\n", (int) dx1);
 
 	return 0;
 }
@@ -1050,15 +1051,15 @@ static int dramc_simple_wr_test(unsigned int mem_mb, int len)
 		v1 = read32((unsigned long)(addr + i));
 		v2 = patt1 + i;
 		if (v1 != v2) {
-			printf("DRAM: simple test FAIL\n");
-			printf("%x != %x at address %p\n", v1, v2, addr + i);
+			PRINTF("DRAM: simple test FAIL\n");
+			PRINTF("%x != %x at address %p\n", v1, v2, addr + i);
 			return 1;
 		}
 		v1 = read32((unsigned long)(addr + offs + i));
 		v2 = patt2 + i;
 		if (v1 != v2) {
-			printf("DRAM: simple test FAIL\n");
-			printf("%x != %x at address %p\n", v1, v2, addr + offs + i);
+			PRINTF("DRAM: simple test FAIL\n");
+			PRINTF("%x != %x at address %p\n", v1, v2, addr + offs + i);
 			return 1;
 		}
 	}
@@ -1119,7 +1120,7 @@ static int auto_scan_dram_size(dram_para_t *para)
 	unsigned long ptr, mc_work_mode, chk;
 
 	if (mctl_core_init(para) == 0) {
-		printf("DRAM initialisation error : 0\n");
+		PRINTF("DRAM initialisation error : 0\n");
 		return 0;
 	}
 
@@ -1295,13 +1296,13 @@ static int auto_scan_dram_config(dram_para_t *para)
 {
 	if (((para->dram_tpr13 & BIT_U32(14)) == 0) &&
 	    (auto_scan_dram_rank_width(para) == 0)) {
-		printf("ERROR: auto scan dram rank & width failed\n");
+		PRINTF("ERROR: auto scan dram rank & width failed\n");
 		return 0;
 	}
 
 	if (((para->dram_tpr13 & BIT_U32(0)) == 0) &&
 	    (auto_scan_dram_size(para) == 0)) {
-		printf("ERROR: auto scan dram size failed\n");
+		PRINTF("ERROR: auto scan dram size failed\n");
 		return 0;
 	}
 
@@ -1316,12 +1317,12 @@ int init_DRAM(int type, dram_para_t *para)
 	uint32_t rc, mem_size_mb;
 
 	PRINTF("DRAM BOOT DRIVE INFO: %s\n", "V0.24");
-	PRINTF("DRAM CLK = %d MHz\n", para->dram_clk);
-	PRINTF("DRAM Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
+	PRINTF("DRAM CLK = %u MHz\n", (unsigned) para->dram_clk);
+	PRINTF("DRAM Type = %d (2:DDR2,3:DDR3)\n", (int) para->dram_type);
 	if ((para->dram_odt_en & 0x1) == 0)
 		PRINTF("DRAMC read ODT off\n");
 	else
-		PRINTF("DRAMC ZQ value: 0x%x\n", para->dram_zq);
+		PRINTF("DRAMC ZQ value: 0x%x\n", (unsigned) para->dram_zq);
 
 	/* Test ZQ status */
 	if (para->dram_tpr13 & BIT_U32(16)) {
@@ -1337,7 +1338,7 @@ int init_DRAM(int type, dram_para_t *para)
 		udelay(10);
 		setbits_le32(0x3000160, BIT_U32(0));
 		udelay(20);
-		PRINTF("ZQ value = 0x%x\n", read32(0x300016c));
+		PRINTF("ZQ value = 0x%x\n", (unsigned) read32(0x300016c));
 	}
 
 	dram_voltage_set(para);
@@ -1345,7 +1346,7 @@ int init_DRAM(int type, dram_para_t *para)
 	/* Set SDRAM controller auto config */
 	if ((para->dram_tpr13 & BIT_U32(0)) == 0) {
 		if (auto_scan_dram_config(para) == 0) {
-			printf("auto_scan_dram_config() FAILED\n");
+			PRINTF("auto_scan_dram_config() FAILED\n");
 			return 0;
 		}
 	}
@@ -1355,11 +1356,11 @@ int init_DRAM(int type, dram_para_t *para)
 	if ((rc & 0x44) == 0)
 		PRINTF("DRAM ODT off\n");
 	else
-		PRINTF("DRAM ODT value: 0x%x\n", rc);
+		PRINTF("DRAM ODT value: 0x%x\n", (unsigned) rc);
 
 	/* Init core, final run */
 	if (mctl_core_init(para) == 0) {
-		printf("DRAM initialisation error: 1\n");
+		PRINTF("DRAM initialisation error: 1\n");
 		return 0;
 	}
 
@@ -1370,7 +1371,7 @@ int init_DRAM(int type, dram_para_t *para)
 		rc = (rc >> 16) & ~BIT_U32(15);
 	} else {
 		rc = DRAMC_get_dram_size();
-		PRINTF("DRAM: size = %dMB\n", rc);
+		PRINTF("DRAM: size = %uMB\n", (unsigned) rc);
 		para->dram_para2 = (para->dram_para2 & 0xffffU) | rc << 16;
 	}
 	mem_size_mb = rc;

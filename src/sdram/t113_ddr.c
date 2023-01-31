@@ -676,11 +676,12 @@ void auto_set_timing_para(dram_para_t *para) // s5
 int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 {
 	unsigned int val, clk, n;
+	unsigned MHZ = WITHCPUXTAL / 1000000;
 
 	clk = (para->dram_tpr13 & (1 << 6)) ? para->dram_tpr9 : para->dram_clk;
 
 	// set VCO clock divider
-	n = (clk * 2) / 24;
+	n = (clk * 2) / MHZ;
 
 	val = read32(CCU_BASE + 0x010);
 	val &= 0xfff800fc; // clear dividers
@@ -707,7 +708,7 @@ int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 	val |= 0x80000000; // turn clock on
 	write32(CCU_BASE + 0x800, val);
 
-	return n * (WITHCPUXTAL / 1000000);
+	return n * MHZ;
 }
 
 // Main purpose of sys_init seems to be to initalise the clocks for
