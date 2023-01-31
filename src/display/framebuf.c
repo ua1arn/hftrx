@@ -20,6 +20,21 @@
 #include "fontmaps.h"
 #include <string.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+static uint32_t ptr_hi32(uintptr_t v)
+{
+	if (sizeof v == sizeof (uint32_t))
+		return 0;
+	return v >> 32;
+}
+
+static uint32_t ptr_lo32(uintptr_t v)
+{
+	return (uint32_t) v;
+}
+#pragma GCC diagnostic pop
+
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW
 	/* Использование G2D для формирования изображений */
 
@@ -263,8 +278,8 @@ static void t113_fillrect(
 	G2D_WB->WB_ATT = WB_DstImageFormat;
 	G2D_WB->WB_SIZE = tsizehw;
 	G2D_WB->WB_PITCH0 = tstride;
-	G2D_WB->WB_LADD0 = taddr;
-	G2D_WB->WB_HADD0 = taddr >> 32;
+	G2D_WB->WB_LADD0 = ptr_lo32(taddr);;
+	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 }
 //
 //#include "debug_f133.h"
@@ -1874,8 +1889,8 @@ void hwaccel_bitblt(
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_UI2->UI_MBSIZE = sizehw; // сколько брать от исходного буфера
 		G2D_UI2->UI_SIZE = sizehw;		// параметры окна исходного буфера
-		G2D_UI2->UI_LADD = saddr;
-		G2D_UI2->UI_HADD = saddr >> 32;
+		G2D_UI2->UI_LADD = ptr_lo32(saddr);
+		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 		//	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
 		//	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
 		//	G2D_BLD->ROP_CTL = 0x55F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -1965,8 +1980,8 @@ void hwaccel_bitblt(
 	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_SIZE = sizehw;
 	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
-	G2D_WB->WB_LADD0 = taddr;
-	G2D_WB->WB_HADD0 = taddr >> 32;
+	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
+	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
@@ -2885,8 +2900,8 @@ void colpip_stretchblt(
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
 		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_UI2->UI_LADD = srclinear;
-		G2D_UI2->UI_HADD = ((srclinear >> 32) & 0xFF) < 0;
+		G2D_UI2->UI_LADD = ptr_lo32(srclinear);
+		G2D_UI2->UI_HADD = (ptr_hi32(srclinear) & 0xFF) < 0;
 		//	G2D_BLD->BLD_EN_CTL |= (1u << 8);	// 8: P0_EN Pipe0 enable
 		//	G2D_BLD->BLD_EN_CTL |= (1u << 0);	// 1: P0_FCEN
 		//	G2D_BLD->ROP_CTL = 0x55F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -2928,8 +2943,8 @@ void colpip_stretchblt(
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = srclinear;
-		G2D_V0->V0_HADD = ((srclinear >> 32) & 0xFF) < 0;
+		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
+		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) < 0;
 
 		G2D_BLD->BLD_CH_ISIZE [0] = tpichw; /* 0x00A400E0 tsize 245 225 */
 		G2D_BLD->BLD_SIZE = tpichw;

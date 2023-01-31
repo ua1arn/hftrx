@@ -2092,7 +2092,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t) & bld->bld_mode [i],
 				bld_mode
 				);
-		PRINTF("bld->bld_mode [%d]=%08X\n", i, (unsigned) read32((uintptr_t) & bld->bld_mode [i]));
+		//PRINTF("bld->bld_mode [%d]=%08X\n", i, (unsigned) read32((uintptr_t) & bld->bld_mode [i]));
 	}
 
 	write32((uintptr_t) & bld->output_size,
