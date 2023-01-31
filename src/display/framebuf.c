@@ -568,15 +568,15 @@ void arm_hardware_mdma_initialize(void)
 {
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
-	unsigned M = 2;	/* M = 1..32 */
-	unsigned divider = 2;
+	unsigned M = 5;	/* M = 1..32 */
+	unsigned divider = 0;
 
 	CCU->MBUS_CLK_REG |= (1u << 30);				// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 10);	// Gating MBUS Clock For G2D
 
 	// User manual say about 250 MHz default.
 	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ ((0x07u << 24) | (0x1Fu << 0))) |
-		0x01 * (1u << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
+		0x00 * (1u << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
 		(M - 1) * (1u << 0) | // FACTOR_M
 		0;
 	CCU->G2D_CLK_REG |= (1u << 31);	// G2D_CLK_GATING
