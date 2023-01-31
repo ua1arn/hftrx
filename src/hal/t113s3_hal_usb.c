@@ -3445,7 +3445,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				  	{
 #if WITHUSBDFU && WITHWAWXXUSB
 				  	case INTERFACE_DFU_CONTROL:
-						PRINTF("usb_dev_ep0xfer_handler: DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
+						PRINTF("usb_dev_ep0xfer_handler: DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
 						printhex(0, buff, ep0_count);
 
 						switch (ep0_setup->bRequest)
@@ -3476,7 +3476,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 							break;
 						default:
 							pusb->ep0_xfer_residue = 0;
-							PRINTF("usb_dev_ep0xfer_handler: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+							PRINTF("usb_dev_ep0xfer_handler: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, (unsigned) ep0_setup->bRequest);
 							break;
 						}
 				  		break;
@@ -3494,7 +3494,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					  		break;
 					  	default:
 					  		// work
-							PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
+							PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
 							//printhex(0, buff, ep0_count);
 					  		break;
 					  	}
@@ -3510,11 +3510,11 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					  	switch (ep0_setup->bRequest)
 					  	{
 					  	case AUDIO_REQUEST_SET_CUR:
-					  		//PRINTF("AUDIO: EP0 OUT (not 8): AUDIO_REQUEST_SET_CUR: ifc=%u, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u, v=%u\n", interfacev, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count, ep0_count == 1 ? buff [0] : USBD_peek_u16(buff));
+					  		//PRINTF("AUDIO: EP0 OUT (not 8): AUDIO_REQUEST_SET_CUR: ifc=%u, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u, v=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count, ep0_count == 1 ? buff [0] : USBD_peek_u16(buff));
 					  		break;
 					  	default:
 					  		// work
-							PRINTF("AUDIO: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
+							PRINTF("AUDIO: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
 							//printhex(0, buff, ep0_count);
 					  		break;
 					  	}
@@ -3523,7 +3523,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 					default:
 #if WITHWAWXXUSB
-						PRINTF("xxx: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength, ep0_count);
+						PRINTF("xxx: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
 #else
 	                    HAL_PCD_SetupStageCallback(hpcd);
 #endif
