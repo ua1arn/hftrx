@@ -601,7 +601,7 @@ void arm_hardware_mdma_initialize(void)
 	// video0: allwnrt113_get_g2d_freq()=297000000
 	// video1: allwnrt113_get_g2d_freq()=297000000
 	// audio1: allwnrt113_get_g2d_freq()=768000000
-	PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
+	//PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
 
 	awxx_vsu_load();	/* stretchblt filters load */
 	 //mixer_set_reg_base(G2D_BASE);

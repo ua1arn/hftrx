@@ -2399,7 +2399,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
     CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
     CCU->TCONLCD_BGR_REG |= (1u << 16); // Deassert reset
 
-	PRINTF("allwnrt113_get_de_freq()=%u\n", (unsigned) allwnrt113_get_de_freq());
+	//PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
 
 #if 0
     // step 2
