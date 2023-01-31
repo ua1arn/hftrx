@@ -262,7 +262,10 @@ int compare_base(const void * v1, const void * v2)
 {
 	const struct basemap * p1 = v1;
 	const struct basemap * p2 = v2;
-
+	if (p1->base == p2->base)
+	{
+		return strcmp(p1->name, p2->name);
+	}
 	return p1->base - p2->base;
 }
 
@@ -272,6 +275,10 @@ int compare_irq(const void * v1, const void * v2)
 	const struct irqmap * p1 = v1;
 	const struct irqmap * p2 = v2;
 
+	if (p1->irq == p2->irq)
+	{
+		return strcmp(p1->name, p2->name);
+	}
 	return p1->irq - p2->irq;
 }
 

@@ -1,5 +1,5 @@
 #type; MSI_MEMC
-#base; MSI_MEMC 0x03202000
+#base; MSI_MEMC 0x03102000
 #irq; MSI 75
 #irqrv; MSI 59
 MEMC_REG_000; 0x000; Reg_000

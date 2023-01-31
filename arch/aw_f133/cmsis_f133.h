@@ -1,6 +1,6 @@
 /* Generated section start */ 
-#ifndef HEADER_63D82817_INCLUDED
-#define HEADER_63D82817_INCLUDED
+#ifndef HEADER_63D85B1D_INCLUDED
+#define HEADER_63D85B1D_INCLUDED
 #include <stdint.h>
 
 
@@ -49,8 +49,8 @@
 #define	SID_BASE	 ((uintptr_t) 0x03006000)
 #define	CE_NS_BASE	 ((uintptr_t) 0x03040000)
 #define	CE_S_BASE	 ((uintptr_t) 0x03040800)
+#define	MSI_MEMC_BASE	 ((uintptr_t) 0x03102000)
 #define	DDRPHYC_BASE	 ((uintptr_t) 0x03103000)
-#define	MSI_MEMC_BASE	 ((uintptr_t) 0x03202000)
 #define	SMHC0_BASE	 ((uintptr_t) 0x04020000)
 #define	SMHC1_BASE	 ((uintptr_t) 0x04021000)
 #define	SMHC2_BASE	 ((uintptr_t) 0x04022000)
@@ -2341,5 +2341,5 @@ typedef struct CLINT_Type
 #define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)                                    /*!< \brief CLINT Interface register set access pointer */
-#endif /* HEADER_63D82817_INCLUDED */
+#endif /* HEADER_63D85B1D_INCLUDED */
 /* Generated section end */ 
