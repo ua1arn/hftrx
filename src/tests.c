@@ -6580,9 +6580,9 @@ void hightests(void)
 //		for (;;)
 //			;
 
-		for (int pos = 0; pos < 16; ++ pos)
+		for (int pos = 0; pos < 24; ++ pos)
 		{
-			COLORPIP_T c = 1u << pos;
+			COLORPIP_T c = TFTALPHA(255, 1u << pos);
 			colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, c);
 			PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
 			local_delay_ms(2000);
