@@ -3177,6 +3177,10 @@ sysintt_sdram_initialize(void)
 	SYS_CFG->DSP_BOOT_RAMMAP_REG = 0;
 	//PRINTF("SYS_CFG->DSP_BOOT_RAMMAP_REG=%08" PRIX32 "\n", SYS_CFG->DSP_BOOT_RAMMAP_REG);
 #endif /* CPUSTYLE_T113 && ! WITHISBOOTLOADER */
+#if CPUSTYLE_F133
+	/* Все 160 килобайт на 0x00020000 доступны процссору */
+	SYS_CFG->DSP_BOOT_RAMMAP_REG = 1;
+#endif /* CPUSTYLE_F133 */
 }
 
 static void FLASHMEMINITFUNC

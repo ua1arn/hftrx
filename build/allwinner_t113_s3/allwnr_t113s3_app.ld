@@ -6,7 +6,7 @@ MEMORY
 {
   RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 128M - 16k - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
   TTB (rwx)  : ORIGIN = 0x40000000 + 128M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
-  SYSRAM (rwx)	: ORIGIN = 0x00020000, 				LENGTH = 64k	/*  */
+  SRAM_A1 (rwx)	: ORIGIN = 0x00020000, 				LENGTH = 32k	/*  */
 }
 
 /* Library configurations */
