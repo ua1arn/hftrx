@@ -573,6 +573,7 @@ void arm_hardware_mdma_initialize(void)
 
 	CCU->MBUS_CLK_REG |= (1u << 30);				// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 10);	// Gating MBUS Clock For G2D
+	//local_delay_us(10);
 
 	// User manual say about 250 MHz default.
 	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ ((0x07u << 24) | (0x1Fu << 0))) |
@@ -580,6 +581,7 @@ void arm_hardware_mdma_initialize(void)
 		(M - 1) * (1u << 0) | // FACTOR_M
 		0;
 	CCU->G2D_CLK_REG |= (1u << 31);	// G2D_CLK_GATING
+	//local_delay_us(10);
 
 	//CCU->G2D_BGR_REG = 0;
 	CCU->G2D_BGR_REG |= (1u << 0);		/* Enable gating clock for G2D 1: Pass */
@@ -592,16 +594,28 @@ void arm_hardware_mdma_initialize(void)
 		divider * (1u << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
 		divider * (1u << 0) |	// MIXER divider (looks like power of 2) CORE0_SCLK_DIV
 		0;
+	(void) G2D_TOP->G2D_SCLK_DIV;
+	//local_delay_us(10);
+
 	G2D_TOP->G2D_SCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_SCLK_GATE;
 	G2D_TOP->G2D_HCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_HCLK_GATE;
 	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_AHB_RESET;
 	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_AHB_RESET;
+	//local_delay_us(10);
 
 	// peri:   allwnrt113_get_g2d_freq()=600000000
 	// video0: allwnrt113_get_g2d_freq()=297000000
 	// video1: allwnrt113_get_g2d_freq()=297000000
 	// audio1: allwnrt113_get_g2d_freq()=768000000
 	//PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
+	unsigned v1 = G2D_VSU->VS_CTRL;
+	local_delay_ms(10);
+	unsigned v2 = G2D_VSU->VS_CTRL;
+	PRINTF("arm_hardware_mdma_initialize: VS_CTRL v1=%08x v2=%08x\n", v1, v2);
 
 	awxx_vsu_load();	/* stretchblt filters load */
 	 //mixer_set_reg_base(G2D_BASE);
