@@ -171,7 +171,7 @@ uint_fast32_t allwnrt113_get_audio1pll1x_freq(void);
 uint_fast32_t allwnrt113_get_audio1pll_div2_freq(void);
 uint_fast32_t allwnrt113_get_audio1pll_div5_freq(void);
 uint_fast64_t allwnrt113_get_pll_cpu_freq(void);
-uint_fast32_t allwnrt113_get_pll_ddr_freq(void);
+uint_fast64_t allwnrt113_get_pll_ddr_freq(void);
 uint_fast32_t allwnrt113_get_dram_freq(void);
 uint_fast64_t allwnrt113_get_pll_peri_freq(void);
 uint_fast32_t allwnrt113_get_peripll2x_freq(void);

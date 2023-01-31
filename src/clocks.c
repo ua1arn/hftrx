@@ -2174,17 +2174,17 @@ uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
 	const uint_fast32_t reg = CCU->PLL_CPU_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM = 1 + ((reg >> 0) & 0x03);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM;
 }
 
-uint_fast32_t allwnrt113_get_pll_ddr_freq(void)
+uint_fast64_t allwnrt113_get_pll_ddr_freq(void)
 {
 	// PLL_DDR = InputFreq*N/M1/M0
 	const uint_fast32_t reg = CCU->PLL_DDR_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM1 = 1 + ((reg >> 1) & 0x01);	// PLL input divider
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);	// PLL outpur divider
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM1 * pllN / pllM0;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM1 / pllM0;
 }
 
 uint_fast64_t allwnrt113_get_pll_peri_freq(void)
@@ -2192,7 +2192,7 @@ uint_fast64_t allwnrt113_get_pll_peri_freq(void)
 	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM;
 }
 
 uint_fast32_t allwnrt113_get_peripll2x_freq(void)
