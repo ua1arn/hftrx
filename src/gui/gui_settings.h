@@ -61,7 +61,7 @@ enum {
 	sliders_width = 8,			// ширина шкалы слайдера
 	sliders_w = 12,				// размеры ползунка слайдера
 	sliders_h = 18,				// от центра (*2)
-	button_round_radius = 5,	// радиус закругления кнопки
+	button_round_radius = 3,	// радиус закругления кнопки
 	window_title_height = 26,	// высота области заголовка окна
 	edge_step = 15,				// отступ от границ окна
 	window_close_button_size = window_title_height,

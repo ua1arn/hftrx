@@ -1139,15 +1139,10 @@ static void draw_button(const button_t * const bh)
 		PACKEDCOLORPIP_T c1, c2;
 		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
-#if GUI_OLDBUTTONSTYLE
-		colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, bh->state == PRESSED ? c2 : c1, 1);
-		colpip_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, COLORMAIN_GRAY, 0);
-		colpip_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, COLORMAIN_BLACK, 0);
-#else
+
 		colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 		colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 		colmain_rounded_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, button_round_radius, COLORMAIN_BLACK, 0);
-#endif /* GUI_OLDBUTTONSTYLE */
 	}
 	else
 	{
@@ -1162,41 +1157,10 @@ static void draw_button(const button_t * const bh)
 		else if (! bh->is_locked && bh->state != PRESSED)
 			bg = b1->bg_non_pressed;
 		ASSERT(bg != NULL);
-#if GUI_OLDBUTTONSTYLE
 		colpip_bitblt((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, y1, (uintptr_t) bg, GXSIZE(bh->w, bh->h), bg, bh->w, bh->h, BITBLT_FLAG_NONE, 0);
-#else
-		PACKEDCOLORPIP_T * src = NULL, * dst = NULL, * row = NULL;
-		for (uint16_t yy = y1, yb = 0; yy < y1 + bh->h; yy ++, yb ++)
-		{
-			ASSERT(yy < WITHGUIMAXY);
-			ASSERT(yb < WITHGUIMAXY);
-			row = colpip_mem_at(bg, b1->w, b1->h, 0, yb);
-			if (* row == GUI_DEFAULTCOLOR)										// если в первой позиции строки буфера не прозрачный цвет,
-			{																	// скопировать ее целиком, иначе попиксельно с проверкой
-				for (uint16_t xx = x1, xb = 0; xx < x1 + bh->w; xx ++, xb ++)
-				{
-					src = colpip_mem_at(bg, b1->w, b1->h, xb, yb);
-					if (* src == GUI_DEFAULTCOLOR)
-						continue;
-					dst = colpip_mem_at(fr, DIM_X, DIM_Y, xx, yy);
-					memcpy(dst, src, sizeof(PACKEDCOLORPIP_T));
-				}
-			}
-			else
-			{
-				dst = colpip_mem_at(fr, DIM_X, DIM_Y, x1, yy);
-				memcpy(dst, row, b1->w * sizeof(PACKEDCOLORPIP_T));
-//				colpip_bitblt((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, yy, (uintptr_t) row, GXSIZE(b1->w, 1), row, b1->w, 1, BITBLT_FLAG_NONE, 0);
-			}
-		}
-#endif /* GUI_OLDBUTTONSTYLE */
 	}
 
-#if GUI_OLDBUTTONSTYLE
 	uint_fast8_t shift = bh->state == PRESSED ? 1 : 0;
-#else
-	uint_fast8_t shift = 0;
-#endif /* GUI_OLDBUTTONSTYLE */
 
 	if (strchr(bh->text, delimeters [0]) == NULL)
 	{
