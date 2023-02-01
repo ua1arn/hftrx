@@ -2903,6 +2903,7 @@ void colpip_stretchblt(
 //	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 
+	if (w != sdx || h != sdy)
 	{
 		/* расчет масштабов */
 		const uint_fast32_t hstep = (((uint_fast32_t) sdx << 19) / w) << 1;
@@ -2923,6 +2924,10 @@ void colpip_stretchblt(
 		G2D_VSU->VS_C_VSTEP = vstep;
 		G2D_VSU->VS_C_HPHASE = 0;
 		G2D_VSU->VS_C_VPHASE0 = 0;
+	}
+	else
+	{
+		G2D_VSU->VS_CTRL = 0;
 	}
 
 	if (0 && (keyflag & BITBLT_FLAG_CKEY) != 0)
@@ -2998,8 +3003,8 @@ void colpip_stretchblt(
 	}
 
 	G2D_WB->WB_ATT = WB_DstImageFormat;
-	G2D_WB->WB_LADD0 = dstlinear;
-	G2D_WB->WB_LADD2 = srclinear; // ??? нужен ли этот параметр
+	G2D_WB->WB_LADD0 = ptr_lo32(dstlinear);
+	G2D_WB->WB_HADD0 = ptr_hi32(dstlinear);
 	G2D_WB->WB_PITCH0 = tstride;
 	G2D_WB->WB_SIZE = tsizehw;
 
