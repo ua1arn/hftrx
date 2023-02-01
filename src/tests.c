@@ -6384,7 +6384,7 @@ void hightests(void)
 //		dcache_clean_invalidate((uintptr_t) layer1, sizeof layer1);
 //		dcache_clean_invalidate((uintptr_t) fbpic, sizeof fbpic);
 
-		hardware_ltdc_main_set4((uintptr_t) layer0_a, (uintptr_t) layer1, (uintptr_t) layer2, (uintptr_t) layer3);
+		hardware_ltdc_main_set4((uintptr_t) layer0_a, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
 		COLORPIP_T keycolor = COLORPIP_KEY;
