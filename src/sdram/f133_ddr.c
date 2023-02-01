@@ -1135,7 +1135,7 @@ static int auto_scan_dram_size(dram_para_t *para)
 			chk = CONFIG_SYS_SDRAM_BASE + (1U << (i + 11));
 			ptr = CONFIG_SYS_SDRAM_BASE;
 			for (j = 0; j < 64; j++) {
-				if (read32(chk) != ((j & 1) ? ptr : ~ptr))
+				if (read32(chk) != (uint32_t) (((j & 1) ? ptr : ~ptr)))
 					break;
 				ptr += 4;
 				chk += 4;
@@ -1165,7 +1165,7 @@ static int auto_scan_dram_size(dram_para_t *para)
 		chk = CONFIG_SYS_SDRAM_BASE + (1U << 22);
 		ptr = CONFIG_SYS_SDRAM_BASE;
 		for (i = 0, j = 0; i < 64; i++) {
-			if (read32(chk) != ((i & 1) ? ptr : ~ptr)) {
+			if (read32(chk) != (uint32_t) (((i & 1) ? ptr : ~ptr))) {
 				j = 1;
 				break;
 			}
@@ -1198,7 +1198,7 @@ static int auto_scan_dram_size(dram_para_t *para)
 			chk = CONFIG_SYS_SDRAM_BASE + (1U << i);
 			ptr = CONFIG_SYS_SDRAM_BASE;
 			for (j = 0; j < 64; j++) {
-				if (read32(chk) != ((j & 1) ? ptr : ~ptr))
+				if (read32(chk) != (uint32_t) (((j & 1) ? ptr : ~ptr)))
 					break;
 				ptr += 4;
 				chk += 4;
