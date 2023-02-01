@@ -921,7 +921,7 @@ hwaccel_rect_u16(
 
 	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)));
 
-
+	/* Запускаем и ждём завершения обработки */
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
@@ -1238,7 +1238,7 @@ hwaccel_rect_u32(
 
 	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF));
 
-	//PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X\n", G2D_MIXER->G2D_MIXER_CTL);
+	/* Запускаем и ждём завершения обработки */
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
@@ -1936,8 +1936,9 @@ void hwaccel_bitblt(
 			0 * (1u << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
 			0;
 
-		G2D_BLD->BLD_KEY_MAX = awxx_key_color_conversion(keycolor);
-		G2D_BLD->BLD_KEY_MIN = awxx_key_color_conversion(keycolor);
+		keycolor = awxx_key_color_conversion(keycolor);
+		G2D_BLD->BLD_KEY_MIN = keycolor;
+		G2D_BLD->BLD_KEY_MAX = keycolor;
 
 		/* установка поверхности - источника (анализируется) */
 		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
@@ -2022,6 +2023,7 @@ void hwaccel_bitblt(
 	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 
+	/* Запускаем и ждём завершения обработки */
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
@@ -2842,57 +2844,6 @@ void colpip_stretchblt(
 	const uintptr_t srclinear = (uintptr_t) colpip_const_mem_at(src, sdx, sdy, 0, 0);
 	const uintptr_t dstlinear = (uintptr_t) colpip_mem_at(dst, dx, dy, x, y);
 
-//	g2d_stretchblt G2D_STRETCHBLT = { 0 };
-//
-//	G2D_STRETCHBLT.flag =
-//			G2D_BLT_NONE |
-//			0 * G2D_BLT_PIXEL_ALPHA |
-//			1 * G2D_BLT_SRC_COLORKEY |
-//			0;
-//
-//	G2D_STRETCHBLT.src_image.addr[0] = srclinear;
-//
-//	G2D_STRETCHBLT.src_image.w = sdx;
-//	G2D_STRETCHBLT.src_image.h = sdy;
-//
-//	G2D_STRETCHBLT.src_image.format = DstImageFormat;
-//	G2D_STRETCHBLT.src_image.pixel_seq = G2D_SEQ_NORMAL;
-//
-//	G2D_STRETCHBLT.src_rect.x = 0;
-//	G2D_STRETCHBLT.src_rect.y = 0;
-//
-//	G2D_STRETCHBLT.src_rect.w = sdx;
-//	G2D_STRETCHBLT.src_rect.h = sdy;
-//
-//	G2D_STRETCHBLT.dst_image.addr[0] = dstinvalidateaddr;
-//
-//	G2D_STRETCHBLT.dst_image.w = dx;
-//	G2D_STRETCHBLT.dst_image.h = dy;
-//
-//	G2D_STRETCHBLT.dst_image.format = DstImageFormat;
-//	G2D_STRETCHBLT.dst_image.pixel_seq = G2D_SEQ_NORMAL;
-//
-//	G2D_STRETCHBLT.dst_rect.x = 0;
-//	G2D_STRETCHBLT.dst_rect.y = 0;
-//
-//	G2D_STRETCHBLT.dst_rect.w = w;
-//	G2D_STRETCHBLT.dst_rect.h = h;
-//
-//	G2D_STRETCHBLT.color = COLOR_BLACK;
-//	G2D_STRETCHBLT.alpha = 0xFF;
-//
-//	G2D_STRETCHBLT.dst_rect.x = x;
-//	G2D_STRETCHBLT.dst_rect.y = y;
-//
-//	G2D_STRETCHBLT.dst_rect.w = w;
-//	G2D_STRETCHBLT.dst_rect.h = h;
-//
-////	g2d_stretchblit(& G2D_STRETCHBLT);
-////	return;
-//	PRINTF("g2d version\n");
-//	debug_g2d(__FILE__, __LINE__);
-
-#if 1
 
 	/* Отключаем все источники */
 
@@ -2951,8 +2902,9 @@ void colpip_stretchblt(
 			0 * (1u << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
 			0;
 
-		G2D_BLD->BLD_KEY_MAX = awxx_key_color_conversion(keycolor);
-		G2D_BLD->BLD_KEY_MIN = awxx_key_color_conversion(keycolor);
+		keycolor = awxx_key_color_conversion(keycolor);
+		G2D_BLD->BLD_KEY_MIN = keycolor;
+		G2D_BLD->BLD_KEY_MAX = keycolor;
 
 		/* Данные для замены совпавших с keycolor */
 		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
@@ -2989,14 +2941,14 @@ void colpip_stretchblt(
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 
-		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+//		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
 //		G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 //		G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-//		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER
+		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER
 //		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER
 //		G2D_BLD->BLD_CTL = 0x00000000; 	// G2D_BLD_CLEAR
 //		G2D_BLD->BLD_CTL = 0x00010001; 	// G2D_BLD_COPY
-//		G2D_BLD->BLD_CTL = 0x01000100; 	// G2D_BLD_DST
+		G2D_BLD->BLD_CTL = 0x01000100; 	// G2D_BLD_DST
 //		G2D_BLD->BLD_CTL = 0x03010301; 	// G2D_BLD_SRCOVER
 //		G2D_BLD->BLD_CTL = 0x01030103; 	// G2D_BLD_DSTOVER
 //		G2D_BLD->BLD_CTL = 0x00020002; 	// G2D_BLD_SRCIN
@@ -3029,17 +2981,14 @@ void colpip_stretchblt(
 		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
 	}
 
+	/* Write-back settings */
 	G2D_WB->WB_ATT = WB_DstImageFormat;
 	G2D_WB->WB_LADD0 = ptr_lo32(dstlinear);
 	G2D_WB->WB_HADD0 = ptr_hi32(dstlinear);
 	G2D_WB->WB_PITCH0 = tstride;
 	G2D_WB->WB_SIZE = tsizehw;
 
-//	PRINTF("my version\n");
-//	debug_g2d(__FILE__, __LINE__);
-
-#endif
-
+	/* Запускаем и ждём завершения обработки */
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
