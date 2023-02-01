@@ -4315,10 +4315,11 @@ static struct dram_para_t ddrp3 =
 	.dram_tpr12 = 0x00000046,
 	.dram_tpr13 = 0x34000100,
 };
-void sys_dram_init(void)
+
+int sys_dram_init(void)
 {
 	set_pll_cpux_axi(PLL_CPU_N);
-	init_DRAM(0, & ddrp3);
+	return init_DRAM(0, & ddrp3) != 0;
 }
 
 #elif CPUSTYLE_F133
@@ -4362,10 +4363,10 @@ static struct dram_para_t ddrp2 = {
 	.dram_tpr13 = 0x34000000,
 };
 
-void sys_dram_init(void)
+int sys_dram_init(void)
 {
 	set_pll_riscv_axi(PLL_CPU_N);
-	init_DRAM(0, & ddrp2);
+	return init_DRAM(0, & ddrp2) != 0;
 }
 
 #endif
@@ -4405,7 +4406,22 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #else
 	PRINTF("default: allwnrt113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_ddr_freq());
 	PRINTF("default: allwnrt113_get_dram_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dram_freq());
-	sys_dram_init();
+	if (sys_dram_init() == 0)
+	{
+		PRINTF("No external memory");
+#ifdef BOARD_BLINK_INITIALIZE
+		BOARD_BLINK_INITIALIZE();
+		for (;;)
+		{
+			BOARD_BLINK_SETSTATE(1);
+			local_delay_ms(100);
+			BOARD_BLINK_SETSTATE(0);
+			local_delay_ms(100);
+		}
+#endif
+		for (;;)
+			;
+	}
 	PRINTF("settings: allwnrt113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_ddr_freq());
 	PRINTF("settings: allwnrt113_get_dram_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dram_freq());
 

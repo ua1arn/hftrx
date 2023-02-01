@@ -1299,7 +1299,7 @@ signed long slmax(signed long a, signed long b);
 #include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 #include "clocks.h"
 uint32_t sys_now(void);
-void sys_dram_init(void);
+int  sys_dram_init(void);	// 0 - error
 
 // RTOS test stuff
 int blinky_main(void);
