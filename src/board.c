@@ -4524,42 +4524,6 @@ prog_ctrlreg(uint_fast8_t plane)
 	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
-#elif CTLREGMODE_V3D
-
-	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-/* RF unit board UA3REO rev.2 */
-
-static void
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	const spitarget_t target = targetbpf;
-	rbtype_t rbbuff [2] = { 0 };
-
-	/* U1 */
-	RBBIT(017, 0);					// not use
-	RBBIT(016, glob_att);			// attenuator
-	RBBIT(015, 0);					// LPF bypass, not use
-	RBBIT(014, 0);					// BPF bypass, not use
-	RBBIT(013, glob_bandf & 0x00);	// 160m
-	RBBIT(012, glob_bandf & 0x01);	// 80m
-	RBBIT(011, glob_bandf & 0x02);	// 40m
-	RBBIT(010, glob_tx);			// tx\rx
-
-	/* U3 */
-	RBBIT(007, 0);					// not use
-	RBBIT(006, 0);					// not use
-	RBBIT(005, 0);					// not use
-	RBBIT(004, glob_bandf & 0x80);	// 10m
-	RBBIT(003, glob_bandf & 0x40);	// 15m
-	RBBIT(002, glob_bandf & 0x20);	// 17m
-	RBBIT(001, glob_bandf & 0x10);	// 20m
-	RBBIT(000, glob_bandf & 0x08);	// 30m
-
-	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-}
-
 #elif CTLREGMODE_XCZU && WITHQRPBOARD_UA3REO
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -4653,9 +4617,32 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-// Перенес в prog_gpioreg
-//	xc7z_gpio_output(PREAMP_MIO);
-//	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
+#if WITHEXTRFBOARDTEST				// UA3REO RF-UNIT rev.2 test
+	const spitarget_t target = targetext;
+	rbtype_t rbbuff [2] = { 0 };
+
+	/* U1 */
+	RBBIT(017, 0);					// not use
+	RBBIT(016, glob_att);			// attenuator
+	RBBIT(015, ! glob_bandf);		// LPF
+	RBBIT(014, 0);					// BPF bypass, not use
+	RBBIT(013, ! glob_bandf);		// 160m
+	RBBIT(012, glob_bandf == 1);	// 80m
+	RBBIT(011, glob_bandf == 2);	// 40m
+	RBBIT(010, glob_tx);			// tx\rx
+
+	/* U3 */
+	RBBIT(007, 0);					// not use
+	RBBIT(006, 0);					// not use
+	RBBIT(005, 0);					// not use
+	RBBIT(004, glob_bandf == 7);	// 10m
+	RBBIT(003, glob_bandf == 6);	// 15m
+	RBBIT(002, glob_bandf == 5);	// 17m
+	RBBIT(001, glob_bandf == 4);	// 20m
+	RBBIT(000, glob_bandf == 3);	// 30m
+
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+#endif /* WITHEXTRFBOARDTEST */
 }
 
 #elif CTLREGMODE_NOCTLREG

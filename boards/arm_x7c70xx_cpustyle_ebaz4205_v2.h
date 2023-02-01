@@ -13,7 +13,7 @@
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -614,9 +614,9 @@
 
 #if WITHSPIHW || WITHSPISW
 
-	#define TARGET_NVRAM_MIO	62	// nvram FM25L256
+	#define TARGET_EXT_MIO	57
 
-	#define targetnvram		TARGET_NVRAM_MIO	// nvram FM25L256
+	#define targetext		TARGET_EXT_MIO
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
@@ -630,19 +630,19 @@
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
-			xc7z_writepin(TARGET_NVRAM_MIO, 1);		\
+			xc7z_writepin(TARGET_EXT_MIO, 1);		\
 		} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			xc7z_gpio_output(TARGET_NVRAM_MIO); \
+			xc7z_gpio_output(TARGET_EXT_MIO); \
 		} while (0)
 
 	// MOSI & SCK port
-	#define	SPI_SCLK_MIO 	59
-	#define	SPI_MOSI_MIO 	60
-	#define	SPI_MISO_MIO 	61
+	#define	SPI_SCLK_MIO 	54
+	#define	SPI_MOSI_MIO 	55
+	#define	SPI_MISO_MIO 	56
 
 	#define SPI_SCLK_C()	do { xc7z_writepin(SPI_SCLK_MIO, 0); __DSB(); } while (0)
 	#define SPI_SCLK_S()	do { xc7z_writepin(SPI_SCLK_MIO, 1); __DSB(); } while (0)
