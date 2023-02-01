@@ -279,7 +279,7 @@ static void t113_fillrect(
 	G2D_UI1->UI_ATTR = 0;
 	G2D_UI2->UI_ATTR = 0;
 
-	G2D_BLD->BLD_SIZE = tsizehw;	// размр выходного буфера
+	G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 	G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 	G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
 	G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -1971,6 +1971,8 @@ void hwaccel_bitblt(
 			(1u << 8) |	// 8: P0_EN Pipe0 enable
 			(1u << 9) |	// 9: P1_EN Pipe1 enable
 			0;
+
+		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	}
 	else
 	{
@@ -1994,14 +1996,15 @@ void hwaccel_bitblt(
 		G2D_BLD->BLD_FILL_COLOR_CTL =
 			(1u << 8) |	// 8: P0_EN Pipe0 enable
 			0;
+
+		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	}
 
-	G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
 	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
 
-	G2D_BLD->BLD_SIZE = ssizehw;	// ! may not be zero
+	G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 
 	//G2D_BLD->BLD_FILLC0 = ~ 0;
 	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
@@ -2996,7 +2999,7 @@ void colpip_stretchblt(
 		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) < 0;
 
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
-		G2D_BLD->BLD_SIZE = tsizehw;
+		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 
 		G2D_BLD->BLD_FILL_COLOR_CTL = 0x00000100; /* 0x00000100 */
 		G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
