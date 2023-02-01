@@ -305,7 +305,7 @@ static void t113_fillrect(
 	G2D_WB->WB_ATT = WB_DstImageFormat;
 	G2D_WB->WB_SIZE = tsizehw;
 	G2D_WB->WB_PITCH0 = tstride;
-	G2D_WB->WB_LADD0 = ptr_lo32(taddr);;
+	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 }
 
@@ -1930,7 +1930,6 @@ void hwaccel_bitblt(
 			0;
 
 		/* 5.10.9.11 BLD color key configuration register */
-		//G2D_BLD->BLD_KEY_CON = 0x07;
 		G2D_BLD->BLD_KEY_CON =
 			0 * (1u << 2) |		// KEY0R_MATCH 0: match color if value inside keys range
 			0 * (1u << 1) |		// KEY0G_MATCH 0: match color if value inside keys range
@@ -1960,7 +1959,7 @@ void hwaccel_bitblt(
 		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
 		G2D_V0->V0_HADD = ptr_hi32(taddr);
 
-		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
+		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера после scaler
 		/* источник когда есть совпадние ??? */
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
@@ -1974,6 +1973,24 @@ void hwaccel_bitblt(
 			0;
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+
+		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+//		G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+//		G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+//		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER
+//		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER
+//		G2D_BLD->BLD_CTL = 0x00000000; 	// G2D_BLD_CLEAR
+//		G2D_BLD->BLD_CTL = 0x00010001; 	// G2D_BLD_COPY
+//		G2D_BLD->BLD_CTL = 0x01000100; 	// G2D_BLD_DST
+//		G2D_BLD->BLD_CTL = 0x03010301; 	// G2D_BLD_SRCOVER
+//		G2D_BLD->BLD_CTL = 0x01030103; 	// G2D_BLD_DSTOVER
+//		G2D_BLD->BLD_CTL = 0x00020002; 	// G2D_BLD_SRCIN
+//		G2D_BLD->BLD_CTL = 0x02000200; 	// G2D_BLD_DSTIN
+//		G2D_BLD->BLD_CTL = 0x00030003; 	// G2D_BLD_SRCOUT
+//		G2D_BLD->BLD_CTL = 0x03000300; 	// G2D_BLD_DSTOUT
+//		G2D_BLD->BLD_CTL = 0x03020302; 	// G2D_BLD_SRCATOP
+//		G2D_BLD->BLD_CTL = 0x02030203; 	// G2D_BLD_DSTATOP
+//		G2D_BLD->BLD_CTL = 0x03030303; 	// G2D_BLD_XOR
 	}
 	else
 	{
@@ -1985,10 +2002,10 @@ void hwaccel_bitblt(
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(saddr);;
+		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
 		G2D_V0->V0_HADD = ptr_hi32(saddr);
 
-		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
+		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера после scaler
 		G2D_BLD->BLD_CH_ISIZE [0] = ssizehw;
 		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
 
@@ -2000,11 +2017,11 @@ void hwaccel_bitblt(
 			0;
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-	}
 
-	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+	}
 
 
 	//G2D_BLD->BLD_FILLC0 = ~ 0;
@@ -2944,7 +2961,6 @@ void colpip_stretchblt(
 			0;
 
 		/* 5.10.9.11 BLD color key configuration register */
-		//G2D_BLD->BLD_KEY_CON = 0x07;
 		G2D_BLD->BLD_KEY_CON =
 			0 * (1u << 2) |		// KEY0R_MATCH 0: match color if value inside keys range
 			0 * (1u << 1) |		// KEY0G_MATCH 0: match color if value inside keys range
