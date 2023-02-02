@@ -673,11 +673,11 @@ void arm_hardware_mdma_initialize(void)
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
 hwaccel_rect_u8(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	uint8_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t col,	// начальная координата
-	uint_fast16_t row,	// начальная координата
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
 	uint_fast8_t color	// цвет
@@ -699,7 +699,7 @@ hwaccel_rect_u8(
 	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
 	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
-	MDMA_CH->CDAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row); // dest address
+	MDMA_CH->CDAR = (uintptr_t) buffer; // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -742,19 +742,14 @@ hwaccel_rect_u8(
 
 	mdma_startandwait();
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
-	/* Использование G2D для формирования изображений */
-	#warning Implement for (CPUSTYLE_T113 || CPUSTYLE_F133)
-
 #else /* WITHMDMAHW */
 	// программная реализация
 
-	const unsigned dxadj = GXADJ(dx);
-	uint8_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
+	const size_t t = GXADJ(dx);
 	while (h --)
 	{
-		memset(tbuffer, color, w);
-		tbuffer += dxadj;
+		memset(buffer, color, w);
+		buffer += t;
 	}
 
 #endif /* WITHMDMAHW */
@@ -799,11 +794,11 @@ hwaccel_rect_u8(
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
 hwaccel_rect_u16(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	uint16_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t col,	// начальная координата
-	uint_fast16_t row,	// начальная координата
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
 	COLORPIP_T color	// цвет
@@ -823,9 +818,9 @@ hwaccel_rect_u16(
 	(void) MDMA_DATA;
 
 	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
-	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
-	MDMA_CH->CDAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row); // dest address
+	MDMA_CH->CDAR = (uintptr_t) buffer; // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -876,10 +871,10 @@ hwaccel_rect_u16(
 	// to the area located at the address pointed by the DMA2D_OMAR
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
 
-	dcache_clean_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
 	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	DMA2D->OMAR = (uintptr_t) buffer;
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((GXADJ(dx) - w) << DMA2D_OOR_LO_Pos) |
 		0;
@@ -918,25 +913,23 @@ hwaccel_rect_u16(
 	{
 		/* Горизонтальные линии в один пиксель рисовать умеет аппаратура. */
 		/* программная реализация отрисовки вертикальной линии в один пиксель */
-		const unsigned t = GXADJ(dx) - w;
-		//buffer += (GXADJ(dx) * row) + col;
-		volatile uint16_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
+		const size_t t = GXADJ(dx) - w;
 		while (h --)
 		{
 			unsigned n = w;
 			while (n --)
-				* tbuffer ++ = color;
-			tbuffer += t;
+				* buffer ++ = color;
+			buffer += t;
 		}
 		return;
 	}
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
-	const uintptr_t taddr = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row);
+	const uintptr_t taddr = (uintptr_t) buffer;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
-	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
 
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)));
 
 	/* Запускаем и ждём завершения обработки */
@@ -951,13 +944,11 @@ hwaccel_rect_u16(
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
 	const unsigned t = GXADJ(dx) - w;
-	//buffer += (GXADJ(dx) * row) + col;
-	volatile uint16_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
 		unsigned n = w;
 		while (n --)
-			* tbuffer ++ = color;
+			* buffer ++ = color;
 		tbuffer += t;
 	}
 
@@ -970,11 +961,11 @@ hwaccel_rect_u16(
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
 hwaccel_rect_u24(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t col,	// начальная координата
-	uint_fast16_t row,	// начальная координата
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
 	uint_fast32_t color	// цвет
@@ -996,10 +987,9 @@ hwaccel_rect_u24(
 	(void) MDMA_DATA;
 	#error MDMA implementation need
 
-	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
-	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
-	MDMA_CH->CDAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row); // dest address
+	MDMA_CH->CDAR = (uintptr_t) buffer; // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -1049,10 +1039,10 @@ hwaccel_rect_u24(
 	// to the area located at the address pointed by the DMA2D_OMAR
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
 
-	dcache_clean_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
 	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	DMA2D->OMAR = (uintptr_t) buffer;
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((GXADJ(dx) - w) << DMA2D_OOR_LO_Pos) |
 		0;
@@ -1097,14 +1087,13 @@ hwaccel_rect_u24(
 
 	const unsigned t = GXADJ(dx) - w;
 	//buffer += (GXADJ(dx) * row) + col;
-	volatile PACKEDCOLORPIP_T * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
 		//PACKEDCOLORPIP_T * const startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
-			* tbuffer ++ = color;
+			* buffer ++ = color;
 		tbuffer += t;
 	}
 
@@ -1117,11 +1106,11 @@ hwaccel_rect_u24(
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
 hwaccel_rect_u32(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	uint32_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t col,	// начальная координата
-	uint_fast16_t row,	// начальная координата
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
 	COLORPIP_T color	// цвет
@@ -1140,10 +1129,9 @@ hwaccel_rect_u32(
 	MDMA_DATA = color;	// регистр выделенного канала MDMA используется для хранения значение цвета. Переиферия не кэшируется.
 	(void) MDMA_DATA;
 
-	//dcache_clean((uintptr_t) & tgcolor, sizeof tgcolor);
-	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
-	MDMA_CH->CDAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row); // dest address
+	MDMA_CH->CDAR = (uintptr_t) buffer; // dest address
 	MDMA_CH->CSAR = (uintptr_t) & MDMA_DATA;
 	const uint_fast32_t tlen = mdma_tlen(w * PIXEL_SIZE, PIXEL_SIZE);
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
@@ -1193,10 +1181,10 @@ hwaccel_rect_u32(
 	// to the area located at the address pointed by the DMA2D_OMAR
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
 
-	dcache_clean_invalidate((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
 	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) & buffer [row * GXADJ(dx) + col];
+	DMA2D->OMAR = (uintptr_t) buffer;
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((GXADJ(dx) - w) << DMA2D_OOR_LO_Pos) |
 		0;
@@ -1233,22 +1221,19 @@ hwaccel_rect_u32(
 
 	if (w == 1)
 	{
-		/* Горизонтальные линии в один пиксель рисовать умеет аппаратура. */
 		/* программная реализация отрисовки вертикальной линии в один пиксель */
 		const unsigned t = GXADJ(dx);
-		//buffer += (GXADJ(dx) * row) + col;
-		volatile uint32_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 		while (h --)
 		{
-			* tbuffer = color;
-			tbuffer += t;
+			* buffer = color;
+			buffer += t;
 		}
 		return;
 	}
 
-	dcache_clean_invalidate((uintptr_t) buffer, PIXEL_SIZE * GXSIZE(dx, dy));
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
-	const uintptr_t taddr = (uintptr_t) colpip_mem_at(buffer, dx, dy, col, row);
+	const uintptr_t taddr = (uintptr_t) buffer;
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
@@ -1260,7 +1245,7 @@ hwaccel_rect_u32(
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
-		PRINTF("hwaccel_rect_u32: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
+		PRINTF("hwaccel_rect_u32: timeout w/h: %u/%u\n", (unsigned) w, (unsigned) h);
 		ASSERT(0);
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
@@ -1268,13 +1253,11 @@ hwaccel_rect_u32(
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
 	const unsigned t = GXADJ(dx) - w;
-	//buffer += (GXADJ(dx) * row) + col;
-	volatile uint32_t * tbuffer = colpip_mem_at(buffer, dx, dy, col, row); // dest address
 	while (h --)
 	{
 		unsigned n = w;
 		while (n --)
-			* tbuffer ++ = color;
+			* buffer ++ = color;
 		tbuffer += t;
 	}
 
@@ -1409,24 +1392,24 @@ void colpip_fillrect(
 	ASSERT((y + h) <= dy);
 
 #if LCDMODE_PIP_L8
-	hwaccel_rect_u8(dst, dx, dy, x, y, w, h, color);
+	hwaccel_rect_u8((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
 #elif LCDMODE_PIP_RGB565
-	hwaccel_rect_u16(dst, dx, dy, x, y, w, h, color);
+	hwaccel_rect_u16((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
 #elif LCDMODE_PIP_L24
-	hwaccel_rect_u24(dst, dx, dy, x, y, w, h, color);
+	hwaccel_rect_u24((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 #elif LCDMODE_MAIN_L8
-	hwaccel_rect_u8(dst, dx, dy, x, y, w, h, color);
+	hwaccel_rect_u8((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
 #elif LCDMODE_MAIN_RGB565
-	hwaccel_rect_u16(dst, dx, dy, x, y, w, h, color);
+	hwaccel_rect_u16((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
 #elif LCDMODE_MAIN_L24
-	hwaccel_rect_u24(dst, dx, dy, x, y, w, h, color);
+	hwaccel_rect_u24((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
 #elif LCDMODE_MAIN_ARGB888
-	hwaccel_rect_u32(dst, dx, dy, x, y, w, h, color);
+	hwaccel_rect_u32((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
 #endif
 }
@@ -1648,25 +1631,25 @@ void colpip_fill(
 	)
 {
 #if LCDMODE_PIP_L8
-	hwaccel_rect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
+	hwaccel_rect_u8((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_PIP_RGB565
-	hwaccel_rect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
+	hwaccel_rect_u16((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_PIP_L24
-	hwaccel_rect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
+	hwaccel_rect_u24((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_MAIN_L8
-	hwaccel_rect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
+	hwaccel_rect_u8((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_MAIN_RGB565
-	hwaccel_rect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
+	hwaccel_rect_u16((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_MAIN_L24
-	hwaccel_rect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
+	hwaccel_rect_u24((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_MAIN_ARGB888
-	hwaccel_rect_u32(buffer, dx, dy, 0, 0, dx, dy, color);
+	hwaccel_rect_u32((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
 #endif
 }

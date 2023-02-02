@@ -281,7 +281,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
 
 		// Get color components from framebuffer value
-		#define COLORPIP_A(v) (((v) & 0xFF000000) >> 24)
+		#define COLORPIP_A(v) (255)
 		#define COLORPIP_R(v) (((v) & 0xFF0000) >> 16)
 		#define COLORPIP_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORPIP_B(v) (((v) & 0xFF) >> 0)
@@ -302,6 +302,11 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 				) \
 			)
 		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
+		// Get color components from framebuffer value
+		#define COLORPIP_A(v) (255)
+		#define COLORPIP_R(v) (((v) & 0xE0) >> 0)
+		#define COLORPIP_G(v) (((v) & 0x1C) << 3)
+		#define COLORPIP_B(v) (((v) & 0x03) << 6)
 
 	#elif LCDMODE_MAIN_ARGB888
 
