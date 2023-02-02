@@ -1923,7 +1923,7 @@ void hwaccel_bitblt(
 		G2D_V0->V0_MBSIZE = tsizehw; 	// сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = tsizehw;		// параметры окна исходного буфера
 		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
-		G2D_V0->V0_HADD = ptr_hi32(taddr);
+		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
 
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера после scaler
 		/* источник когда есть совпадние ??? */
@@ -2170,7 +2170,7 @@ void hwaccel_stretchblt(
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
 		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
-		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) < 0;
+		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
 
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		/* источник когда есть совпадние ??? */
@@ -2214,7 +2214,7 @@ void hwaccel_stretchblt(
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
 		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
-		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) < 0;
+		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
 
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
