@@ -46,8 +46,8 @@ static uint32_t ptr_lo32(uintptr_t v)
 	#define WB_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 
 #elif LCDMODE_MAIN_RGB565
-	#define VI_DstImageFormat 0x10 //G2D_FMT_RGB565 // 0x10
-	#define UI_DstImageFormat 0x10 //G2D_FMT_RGB565 // 0x10
+	#define VI_DstImageFormat 0x0A
+	#define UI_DstImageFormat 0x0A
 	#define WB_ImageFormat 0x0A
 
 #else
@@ -74,8 +74,8 @@ static unsigned awxx_get_vi_attr(void)
 {
 	unsigned vi_attr = 0;
 	vi_attr = 255 << 24;
-	vi_attr |= (1u << 15);	/* Video_UI_Sel: 1: UI Overlay(using UI Overlay Layer Input data format) */
 	vi_attr |= VI_DstImageFormat << 8;
+	vi_attr |= 1u << 15;
 	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	vi_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	//vi_attr |= (1u << 4);	/* Use FILLC register */
@@ -83,26 +83,29 @@ static unsigned awxx_get_vi_attr(void)
 	return vi_attr;
 }
 
-
-static uint_fast32_t awxx_key_color_conversion(uint_fast32_t keycolor)
+/* Получение RGB888, который нужен для работы функций сравынния ключевого цвета.
+ * Должно совпадать с алгоритмом выборки из памяти UIx_ и VI0_
+ * */
+static uint_fast32_t awxx_key_color_conversion(COLORPIP_T color)
 {
+	PRINTF("awxx_key_color_conversion: color=%08" PRIXFAST32 "\n", (uint_fast32_t) color);
 #if LCDMODE_MAIN_RGB565
-		switch (keycolor)
+		switch (color)
 		{
 		case 0xA014:
 			// TFT: 0xA000A0 -> 0x4200A5
 			// RGB565: 0xA014
-			return 0x4200A5;
+			return COLOR24(0xA5, 0x00, 0xA5);
 		case 0xF800:
 			// TFT: 0xFF0000 -> 0xF70000
 			// RGB565: 0xF800
 			return 0xF70000;
 		default:
-			return keycolor;
+			return  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
 		}
 
 #else /* LCDMODE_RGB565 */
-		return keycolor;
+		return  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
 #endif /* LCDMODE_RGB565 */
 }
 
@@ -1743,7 +1746,7 @@ void hwaccel_bitblt(
 	const PACKEDCOLORPIP_T * __restrict src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy,	// высота буфера
-	unsigned keyflag, COLOR24_T keycolor
+	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
 	if (sdx == 0 || sdy == 0)
@@ -1902,8 +1905,10 @@ void hwaccel_bitblt(
 			0;
 
 		keycolor = awxx_key_color_conversion(keycolor);
-		G2D_BLD->BLD_KEY_MIN = keycolor;
+		G2D_BLD->BLD_KEY_MAX = COLOR24(0xA5, 0x00, 0xA5);
+		G2D_BLD->BLD_KEY_MIN = COLOR24(0xA5, 0x00, 0xA5);
 		G2D_BLD->BLD_KEY_MAX = keycolor;
+		G2D_BLD->BLD_KEY_MIN = keycolor;
 
 		/* установка поверхности - источника (анализируется) */
 		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
@@ -1946,24 +1951,36 @@ void hwaccel_bitblt(
 	{
 		/* без keycolor */
 		/* установка поверхности - источника (безусловно) */
-		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-		G2D_V0->V0_PITCH0 = sstride;
-		G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);	// unused
-		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
-		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
-		G2D_V0->V0_HADD = ptr_hi32(saddr);
+//		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
+//		G2D_UI2->UI_PITCH = sstride;
+//		G2D_UI2->UI_FILLC = 0;
+//		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+//		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
+//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
+//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+
+        G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+        G2D_V0->V0_PITCH0 = sstride;
+        G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);    // unused
+        G2D_V0->V0_COOR = 0;            // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+        G2D_V0->V0_MBSIZE = ssizehw;     // сколько брать от исходного буфера
+        G2D_V0->V0_SIZE = ssizehw;        // параметры окна исходного буфера
+        G2D_V0->V0_LADD0 = ptr_lo32(saddr);
+        G2D_V0->V0_HADD = ptr_hi32(saddr);
 
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера после scaler
 		G2D_BLD->BLD_CH_ISIZE [0] = ssizehw;
 		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_CH_ISIZE [1] = ssizehw;
+		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
 
 		G2D_BLD->BLD_KEY_CTL = 0;
 		G2D_BLD->BLD_KEY_CON = 0;
 
 		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(1u << 8) |	// 8: P0_EN Pipe0 enable
+			(1u << 8) |	// 8: P0_EN Pipe0 enable - VI0
+			//(1u << 9) |	// 9: P1_EN Pipe1 enable - UI2
 			0;
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -2149,8 +2166,8 @@ void hwaccel_stretchblt(
 			0;
 
 		keycolor = awxx_key_color_conversion(keycolor);
-		G2D_BLD->BLD_KEY_MIN = keycolor;
 		G2D_BLD->BLD_KEY_MAX = keycolor;
+		G2D_BLD->BLD_KEY_MIN = keycolor;
 
 		/* Данные для замены совпавших с keycolor */
 		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
