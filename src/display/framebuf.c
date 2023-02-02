@@ -41,12 +41,14 @@ static uint32_t ptr_lo32(uintptr_t v)
 	#include "g2d_driver.h"
 
 #if LCDMODE_MAIN_ARGB888
-	#define DstImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
-	#define WB_DstImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
+	#define VI_DstImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
+	#define UI_DstImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
+	#define WB_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 
 #elif LCDMODE_MAIN_RGB565
-	#define DstImageFormat G2D_FMT_RGB565
-	#define WB_DstImageFormat 0x0A
+	#define VI_DstImageFormat 0x10 //G2D_FMT_RGB565 // 0x10
+	#define UI_DstImageFormat 0x10 //G2D_FMT_RGB565 // 0x10
+	#define WB_ImageFormat 0x0A
 
 #else
 	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
@@ -60,7 +62,7 @@ static unsigned awxx_get_ui_attr(void)
 	ui_attr = 255 << 24;
 	//	if (img->bpremul)
 	//		vi_attr |= 0x2 << 16;	/* LAY_PREMUL_CTL */
-	ui_attr |= DstImageFormat << 8;
+	ui_attr |= UI_DstImageFormat << 8;
 	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	ui_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	//ui_attr |= (1u << 4);	/* Use FILLC register */
@@ -73,7 +75,7 @@ static unsigned awxx_get_vi_attr(void)
 	unsigned vi_attr = 0;
 	vi_attr = 255 << 24;
 	vi_attr |= (1u << 15);	/* Video_UI_Sel: 1: UI Overlay(using UI Overlay Layer Input data format) */
-	vi_attr |= DstImageFormat << 8;
+	vi_attr |= VI_DstImageFormat << 8;
 	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	vi_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	//vi_attr |= (1u << 4);	/* Use FILLC register */
@@ -329,7 +331,7 @@ static void t113_fillrect(
 		0;
 
 	/* Write-back settings */
-	G2D_WB->WB_ATT = WB_DstImageFormat;
+	G2D_WB->WB_ATT = WB_ImageFormat;
 	G2D_WB->WB_SIZE = tsizehw;
 	G2D_WB->WB_PITCH0 = tstride;
 	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
@@ -1980,7 +1982,7 @@ void hwaccel_bitblt(
 	G2D_BLD->BLD_PREMUL_CTL=0x00000000; /* 0x00000000 */
 
 	/* Write-back settings */
-	G2D_WB->WB_ATT = WB_DstImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
+	G2D_WB->WB_ATT = WB_ImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
 	G2D_WB->WB_SIZE = tsizehw;
 	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
 	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
@@ -2226,7 +2228,7 @@ void hwaccel_stretchblt(
 	}
 
 	/* Write-back settings */
-	G2D_WB->WB_ATT = WB_DstImageFormat;
+	G2D_WB->WB_ATT = WB_ImageFormat;
 	G2D_WB->WB_LADD0 = ptr_lo32(dstlinear);
 	G2D_WB->WB_HADD0 = ptr_hi32(dstlinear);
 	G2D_WB->WB_PITCH0 = tstride;
