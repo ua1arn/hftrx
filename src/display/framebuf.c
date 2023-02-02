@@ -1284,11 +1284,8 @@ colpip_mem_at_debug(
 	ASSERT(x < dx);
 	ASSERT(y < dy);
 	ASSERT(buffer != NULL);
-#if LCDMODE_HORFILL
+
 	return & buffer [y * GXADJ(dx) + x];
-#else /* LCDMODE_HORFILL */
-	return & buffer [y * GXADJ(dx) + x];
-#endif /* LCDMODE_HORFILL */
 }
 
 // получить адрес требуемой позиции в буфере
@@ -1310,11 +1307,8 @@ colpip_const_mem_at_debug(
 	ASSERT(x < dx);
 	ASSERT(y < dy);
 	ASSERT(buffer != NULL);
-#if LCDMODE_HORFILL
+
 	return & buffer [y * GXADJ(dx) + x];
-#else /* LCDMODE_HORFILL */
-	return & buffer [y * GXADJ(dx) + x];
-#endif /* LCDMODE_HORFILL */
 }
 
 
@@ -1396,56 +1390,27 @@ void colpip_fillrect(
 	ASSERT(y < dy);
 	ASSERT((y + h) <= dy);
 
-#if LCDMODE_HORFILL
+#if LCDMODE_PIP_L8
+	hwaccel_rect_u8(dst, dx, dy, x, y, w, h, color);
 
-	#if LCDMODE_PIP_L8
-		hwaccel_rect_u8(dst, dx, dy, x, y, w, h, color);
+#elif LCDMODE_PIP_RGB565
+	hwaccel_rect_u16(dst, dx, dy, x, y, w, h, color);
 
-	#elif LCDMODE_PIP_RGB565
-		hwaccel_rect_u16(dst, dx, dy, x, y, w, h, color);
+#elif LCDMODE_PIP_L24
+	hwaccel_rect_u24(dst, dx, dy, x, y, w, h, color);
+#elif LCDMODE_MAIN_L8
+	hwaccel_rect_u8(dst, dx, dy, x, y, w, h, color);
 
-	#elif LCDMODE_PIP_L24
-		hwaccel_rect_u24(dst, dx, dy, x, y, w, h, color);
-	#elif LCDMODE_MAIN_L8
-		hwaccel_rect_u8(dst, dx, dy, x, y, w, h, color);
+#elif LCDMODE_MAIN_RGB565
+	hwaccel_rect_u16(dst, dx, dy, x, y, w, h, color);
 
-	#elif LCDMODE_MAIN_RGB565
-		hwaccel_rect_u16(dst, dx, dy, x, y, w, h, color);
+#elif LCDMODE_MAIN_L24
+	hwaccel_rect_u24(dst, dx, dy, x, y, w, h, color);
 
-	#elif LCDMODE_MAIN_L24
-		hwaccel_rect_u24(dst, dx, dy, x, y, w, h, color);
+#elif LCDMODE_MAIN_ARGB888
+	hwaccel_rect_u32(dst, dx, dy, x, y, w, h, color);
 
-	#elif LCDMODE_MAIN_ARGB888
-		hwaccel_rect_u32(dst, dx, dy, x, y, w, h, color);
-
-	#endif
-
-#else /* LCDMODE_HORFILL */
-
-	#if LCDMODE_PIP_L8
-		hwaccel_rect_u8(buffer, dy, dx, y, x, h, w, color);
-
-	#elif LCDMODE_PIP_RGB565
-		hwaccel_rect_u16(buffer, dy, dx, y, x, h, w, color);
-
-	#elif LCDMODE_PIP_L24
-		hwaccel_rect_u24((buffer, dy, dx, y, x, h, w, color);
-
-	#elif LCDMODE_MAIN_L8
-		hwaccel_rect_u8(buffer, dy, dx, y, x, h, w, color);
-
-	#elif LCDMODE_MAIN_RGB565
-		hwaccel_rect_u16(buffer, dy, dx, y, x, h, w, color);
-
-	#elif LCDMODE_MAIN_L24
-		hwaccel_rect_u24((buffer, dy, dx, y, x, h, w, color);
-
-	#elif LCDMODE_MAIN_ARGB888
-		hwaccel_rect_u32((buffer, dy, dx, y, x, h, w, color);
-
-	#endif
-
-#endif /* LCDMODE_HORFILL */
+#endif
 }
 
 
@@ -1664,57 +1629,28 @@ void colpip_fill(
 	COLORPIP_T color
 	)
 {
-#if LCDMODE_HORFILL
+#if LCDMODE_PIP_L8
+	hwaccel_rect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
 
-	#if LCDMODE_PIP_L8
-		hwaccel_rect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
+#elif LCDMODE_PIP_RGB565
+	hwaccel_rect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
 
-	#elif LCDMODE_PIP_RGB565
-		hwaccel_rect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
+#elif LCDMODE_PIP_L24
+	hwaccel_rect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
 
-	#elif LCDMODE_PIP_L24
-		hwaccel_rect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
+#elif LCDMODE_MAIN_L8
+	hwaccel_rect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
 
-	#elif LCDMODE_MAIN_L8
-		hwaccel_rect_u8(buffer, dx, dy, 0, 0, dx, dy, color);
+#elif LCDMODE_MAIN_RGB565
+	hwaccel_rect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
 
-	#elif LCDMODE_MAIN_RGB565
-		hwaccel_rect_u16(buffer, dx, dy, 0, 0, dx, dy, color);
+#elif LCDMODE_MAIN_L24
+	hwaccel_rect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
 
-	#elif LCDMODE_MAIN_L24
-		hwaccel_rect_u24(buffer, dx, dy, 0, 0, dx, dy, color);
+#elif LCDMODE_MAIN_ARGB888
+	hwaccel_rect_u32(buffer, dx, dy, 0, 0, dx, dy, color);
 
-	#elif LCDMODE_MAIN_ARGB888
-		hwaccel_rect_u32(buffer, dx, dy, 0, 0, dx, dy, color);
-
-	#endif
-
-#else /* LCDMODE_HORFILL */
-
-	#if LCDMODE_PIP_L8
-		hwaccel_rect_u8(buffer, dy, dx, 0, 0, dy, dx, color);
-
-	#elif LCDMODE_PIP_RGB565
-		hwaccel_rect_u16(buffer, dy, dx, 0, 0, dy, dx, color);
-
-	#elif LCDMODE_PIP_L24
-		hwaccel_rect_u24(buffer, dy, dx, 0, 0, dy, dx, color);
-
-	#elif LCDMODE_MAIN_L8
-		hwaccel_rect_u8(buffer, dy, dx, 0, 0, dy, dx, color);
-
-	#elif LCDMODE_MAIN_RGB565
-		hwaccel_rect_u16(buffer, dy, dx, 0, 0, dy, dx, color);
-
-	#elif LCDMODE_MAIN_L24
-		hwaccel_rect_u24(buffer, dy, dx, 0, 0, dy, dx, color);
-
-	#elif LCDMODE_MAIN_ARGB888
-		hwaccel_rect_u32(buffer, dy, dx, 0, 0, dy, dx, color);
-
-	#endif
-
-#endif /* LCDMODE_HORFILL */
+#endif
 }
 
 // Заполнение буфера сполшным цветом
@@ -2261,7 +2197,6 @@ void display_snapshot_req(void)
 }
 #endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 
-#if LCDMODE_HORFILL
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 #if 0
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
@@ -2725,11 +2660,6 @@ uint_fast16_t strwidth(
 
 #endif /* defined (SMALLCHARW) && defined (SMALLCHARH) */
 
-#else /* LCDMODE_HORFILL */
-
-#endif /* LCDMODE_HORFILL */
-
-
 // скоприовать прямоугольник без изменения размера
 void colpip_bitblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
@@ -2752,7 +2682,6 @@ void colpip_bitblt(
 	//PRINTF("colpip_bitblt: x/y=%d/%d, w/h=%d/%d, keyflag=%08X\n", x, y, w, h, keyflag);
 
 	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
-#if LCDMODE_HORFILL
 	hwaccel_bitblt(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
@@ -2760,15 +2689,6 @@ void colpip_bitblt(
 		src, w, h,
 		keyflag, keycolor
 		);
-#else /* LCDMODE_HORFILL */
-	hwaccel_bitblt(
-		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
-		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		src, w, h,
-		keyflag, keycolor
-		);
-#endif /* LCDMODE_HORFILL */
 }
 
 // скоприовать прямоугольник с изменением размера
@@ -3034,7 +2954,6 @@ void colpip_bitblt_ra90(
 	ASSERT(tdy >= sdy);
 
 	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
-#if LCDMODE_HORFILL
 	hwaccel_ra90(
 		//dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		dst, tdx, tdy,
@@ -3042,15 +2961,6 @@ void colpip_bitblt_ra90(
 		//srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		src, sdx, sdy
 		);
-#else /* LCDMODE_HORFILL */
-	hwaccel_ra90(
-		//dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-		dst, tdx, tdy,
-		x, y,
-		//srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		src, sdx, sdy
-		);
-#endif /* LCDMODE_HORFILL */
 }
 
 
