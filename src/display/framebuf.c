@@ -119,6 +119,13 @@ static uint_fast32_t awxx_bld_ctl(
 		(pfs << 0) |	// BLEND_PFS Specifies the coefficient that used in source pixel data Qs.
 		0;
 }
+static uint_fast32_t awxx_bld_ctl2(
+	uint_fast32_t fd,	// Specifies the coefficient that used in destination data Qd.
+	uint_fast32_t fs	// Specifies the coefficient that used in source data Qs.
+	)
+{
+	return awxx_bld_ctl(fd, fs, fd, fs);
+}
 
 #define VSU_ZOOM0_SIZE	1
 #define VSU_ZOOM1_SIZE	8
@@ -300,7 +307,7 @@ static void t113_fillrect(
 	G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 	G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 1, 0, 1); //0x00010001;	// G2D_BLD_COPY
-	G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+	G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 	//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 0, 0, 0); //0x00000000;	// G2D_BLD_CLEAR
 
 	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
@@ -1929,7 +1936,7 @@ void hwaccel_bitblt(
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 
-		G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 	}
 	else
 	{
@@ -1959,7 +1966,7 @@ void hwaccel_bitblt(
 
 		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-		G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 	}
 
 
@@ -2126,7 +2133,7 @@ void hwaccel_stretchblt(
 		/* 5.10.9.10 BLD color key control register */
 		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
 		G2D_BLD->BLD_KEY_CTL =
-		/*!!!!*/	//(0x01u << 1) |		// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
+			0 * (0x01u << 1) |		// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
 			(1u << 0) |			// KEY0_EN 1: enable color key in Alpha Blender0.
 			0;
 
@@ -2179,11 +2186,11 @@ void hwaccel_stretchblt(
 //		G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 //		G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 //		G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-		G2D_BLD->BLD_CTL = awxx_bld_ctl(1, 3, 1, 3); //0x01030103;	// G2D_BLD_DSTOVER - проверить это ли
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(1, 3); //awxx_bld_ctl(1, 3, 1, 3); //0x01030103;	// G2D_BLD_DSTOVER - проверить это ли
 //		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER
 //		G2D_BLD->BLD_CTL = 0x00000000; 	// G2D_BLD_CLEAR
 //		G2D_BLD->BLD_CTL = 0x00010001; 	// G2D_BLD_COPY
-		G2D_BLD->BLD_CTL = awxx_bld_ctl(1, 0, 1, 0); //0x01000100; 	// G2D_BLD_DST - проверить это ли
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(1, 0); //awxx_bld_ctl(1, 0, 1, 0); //0x01000100; 	// G2D_BLD_DST - проверить это ли
 //		G2D_BLD->BLD_CTL = 0x03010301; 	// G2D_BLD_SRCOVER
 //		G2D_BLD->BLD_CTL = 0x01030103; 	// G2D_BLD_DSTOVER
 //		G2D_BLD->BLD_CTL = 0x00020002; 	// G2D_BLD_SRCIN
@@ -2213,7 +2220,7 @@ void hwaccel_stretchblt(
 			0;
 
 		G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
-		G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 	}
 
 	/* Write-back settings */
