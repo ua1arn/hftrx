@@ -936,7 +936,7 @@ hwaccel_rect_u16(
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
-		PRINTF("hwaccel_rect_u16: timeout x/y, w/h: %u/%u, %u/%u\n", (unsigned) col, (unsigned) row, (unsigned) w, (unsigned) h);
+		PRINTF("hwaccel_rect_u16: timeout w/h: %u/%u\n", (unsigned) w, (unsigned) h);
 		ASSERT(0);
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
