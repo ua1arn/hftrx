@@ -6409,13 +6409,14 @@ void hightests(void)
 		colpip_line(fbpic2, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
 		colpip_line(fbpic2, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
 		colpip_string_tbg(fbpic2, picx, picy, 5, 6, "LY2", TFTALPHA(pic2alpha, COLORPIP_WHITE));
+		dcache_clean((uintptr_t) fbpic2, GXSIZE(picx, picy) * sizeof fbpic2 [0]);
 
 		unsigned pic3alpha = 33;
 		colpip_fillrect(fbpic3, picx, picy, 0, 0, picx, picy, TFTALPHA(pic3alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colpip_fillrect(fbpic2, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic3alpha, COLORPIP_WHITE));
-		colpip_line(fbpic2, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
-		colpip_line(fbpic2, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
-		colpip_string_tbg(fbpic2, picx, picy, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		colpip_fillrect(fbpic3, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		colpip_line(fbpic3, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
+		colpip_line(fbpic3, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
+		colpip_string_tbg(fbpic3, picx, picy, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
 
 		/* непрозрачный фон */
 		unsigned bgalpha = 255;
