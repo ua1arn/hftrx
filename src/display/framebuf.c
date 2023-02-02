@@ -2017,6 +2017,218 @@ void hwaccel_bitblt(
 #endif
 }
 
+// скоприовать прямоугольник с изменением размера
+void hwaccel_stretchblt(
+	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORPIP_T * dst,	// получатель
+	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
+	uint_fast16_t w,	uint_fast16_t h,	// Размеры окна получателя
+	uintptr_t srcinvalidateaddr,	// параметры clean источника
+	int_fast32_t srcinvalidatesize,
+	const PACKEDCOLORPIP_T * src, 	// источник
+	uint_fast16_t sdx,	uint_fast16_t sdy,		// источник Размеры окна в пикселях
+	unsigned keyflag, COLORPIP_T keycolor
+	)
+{
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
+	ASSERT(dx >= sdx);
+	ASSERT(dy >= sdy);
+
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && 1
+	/* Использование G2D для формирования изображений */
+
+//	memset(G2D_V0, 0, sizeof * G2D_V0);
+//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+//	memset(G2D_WB, 0, sizeof * G2D_WB);
+
+//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+
+//	PRINTF("colpip_stretchblt (resize): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+
+	enum { PIXEL_SIZE = sizeof * dst };
+	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
+	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
+	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
+	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	const uintptr_t srclinear = (uintptr_t) src;
+	const uintptr_t dstlinear = (uintptr_t) dst;
+
+
+	/* Отключаем все источники */
+
+	G2D_VSU->VS_CTRL = 0;
+	G2D_ROT->ROT_CTL = 0;
+	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
+	G2D_V0->V0_ATTCTL = 0;
+	G2D_UI0->UI_ATTR = 0;
+	G2D_UI1->UI_ATTR = 0;
+	G2D_UI2->UI_ATTR = 0;
+
+//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+
+
+	if (w != sdx || h != sdy)
+	{
+		/* расчет масштабов */
+		const uint_fast32_t hstep = (((uint_fast32_t) sdx << 19) / w) << 1;
+		const uint_fast32_t vstep = (((uint_fast32_t) sdy << 19) / h) << 1;
+		/* Включаем Scaler */
+		G2D_VSU->VS_CTRL = 0x00000001;
+		G2D_VSU->VS_OUT_SIZE = tsizehw;
+		G2D_VSU->VS_GLB_ALPHA = 0x000000FF;
+
+		G2D_VSU->VS_Y_SIZE = ssizehw;
+		G2D_VSU->VS_Y_HSTEP = hstep;
+		G2D_VSU->VS_Y_VSTEP = vstep;
+		G2D_VSU->VS_Y_HPHASE = 0;
+		G2D_VSU->VS_Y_VPHASE0 = 0;
+
+		G2D_VSU->VS_C_SIZE = ssizehw;
+		G2D_VSU->VS_C_HSTEP = hstep;
+		G2D_VSU->VS_C_VSTEP = vstep;
+		G2D_VSU->VS_C_HPHASE = 0;
+		G2D_VSU->VS_C_VPHASE0 = 0;
+	}
+	else
+	{
+		G2D_VSU->VS_CTRL = 0;
+	}
+
+	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
+	{
+		/* 5.10.9.10 BLD color key control register */
+		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
+		G2D_BLD->BLD_KEY_CTL =
+		/*!!!!*/	//(0x01u << 1) |		// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
+			(1u << 0) |			// KEY0_EN 1: enable color key in Alpha Blender0.
+			0;
+
+		/* 5.10.9.11 BLD color key configuration register */
+		G2D_BLD->BLD_KEY_CON =
+			0 * (1u << 2) |		// KEY0R_MATCH 0: match color if value inside keys range
+			0 * (1u << 1) |		// KEY0G_MATCH 0: match color if value inside keys range
+			0 * (1u << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
+			0;
+
+		keycolor = awxx_key_color_conversion(keycolor);
+		G2D_BLD->BLD_KEY_MIN = keycolor;
+		G2D_BLD->BLD_KEY_MAX = keycolor;
+
+		/* Данные для замены совпавших с keycolor */
+		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
+		G2D_UI2->UI_PITCH = tstride;
+		G2D_UI2->UI_FILLC = 0;
+		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_UI2->UI_MBSIZE = tsizehw; // сколько брать от исходного буфера
+		G2D_UI2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
+		G2D_UI2->UI_LADD = ptr_lo32(dstlinear);
+		G2D_UI2->UI_HADD = ptr_hi32(dstlinear);
+
+		/* Подача данных на вход VSU */
+		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+		G2D_V0->V0_PITCH0 = sstride;
+		G2D_V0->V0_FILLC = 0;
+		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
+		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) < 0;
+
+		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
+		/* источник когда есть совпадние ??? */
+		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
+		/* источник для анализа ??? */
+		G2D_BLD->BLD_CH_ISIZE [1] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
+
+		G2D_BLD->BLD_FILL_COLOR_CTL =
+			(1u << 8) |	// 8: P0_EN Pipe0 enable
+			(1u << 9) |	// 9: P1_EN Pipe1 enable
+			0;
+
+		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+
+//		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+//		G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+//		G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER - проверить это ли
+//		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER
+//		G2D_BLD->BLD_CTL = 0x00000000; 	// G2D_BLD_CLEAR
+//		G2D_BLD->BLD_CTL = 0x00010001; 	// G2D_BLD_COPY
+		G2D_BLD->BLD_CTL = 0x01000100; 	// G2D_BLD_DST - проверить это ли
+//		G2D_BLD->BLD_CTL = 0x03010301; 	// G2D_BLD_SRCOVER
+//		G2D_BLD->BLD_CTL = 0x01030103; 	// G2D_BLD_DSTOVER
+//		G2D_BLD->BLD_CTL = 0x00020002; 	// G2D_BLD_SRCIN
+//		G2D_BLD->BLD_CTL = 0x02000200; 	// G2D_BLD_DSTIN
+//		G2D_BLD->BLD_CTL = 0x00030003; 	// G2D_BLD_SRCOUT
+//		G2D_BLD->BLD_CTL = 0x03000300; 	// G2D_BLD_DSTOUT
+//		G2D_BLD->BLD_CTL = 0x03020302; 	// G2D_BLD_SRCATOP
+//		G2D_BLD->BLD_CTL = 0x02030203; 	// G2D_BLD_DSTATOP
+//		G2D_BLD->BLD_CTL = 0x03030303; 	// G2D_BLD_XOR
+	}
+	else
+	{
+		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+		G2D_V0->V0_PITCH0 = sstride;
+		G2D_V0->V0_FILLC = 0;
+		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
+		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) < 0;
+
+		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
+		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
+
+		G2D_BLD->BLD_FILL_COLOR_CTL =
+			(1u << 8) |	// 8: P0_EN Pipe0 enable
+			0;
+
+		G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
+		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+	}
+
+	/* Write-back settings */
+	G2D_WB->WB_ATT = WB_DstImageFormat;
+	G2D_WB->WB_LADD0 = ptr_lo32(dstlinear);
+	G2D_WB->WB_HADD0 = ptr_hi32(dstlinear);
+	G2D_WB->WB_PITCH0 = tstride;
+	G2D_WB->WB_SIZE = tsizehw;
+
+	/* Запускаем и ждём завершения обработки */
+	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
+	if (hwacc_waitdone() == 0)
+	{
+		PRINTF("colpip_stretchblt: timeout dx/dy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) dx, (unsigned) dy, (unsigned) sdx, (unsigned) sdy);
+		ASSERT(0);
+	}
+	//PRINTF("G2D_TOP->G2D_AHB_RESET= @%p\n", & G2D_TOP->G2D_AHB_RESET);
+
+//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	//debug_g2d(__FILE__, __LINE__);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
+//	PRINTF("============== END OF STRETCH\n");
+
+#else
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	colpip_fillrect(dst, dx, dy, x, y, w, h, COLORMAIN_GREEN);
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+
+#endif
+}
+
 // копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
 void hwaccel_ra90(
 	PACKEDCOLORPIP_T * __restrict tbuffer,
@@ -2710,11 +2922,6 @@ void colpip_stretchblt(
 	ASSERT(dst != NULL);
 	ASSERT(dx >= sdx);
 	ASSERT(dy >= sdy);
-
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && 1
-	/* Использование G2D для формирования изображений */
-
-
 	if (w == sdx && h == sdy)
 	{
 		//PRINTF("colpip_stretchblt (same): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
@@ -2729,207 +2936,13 @@ void colpip_stretchblt(
 		return;
 	}
 
-//	memset(G2D_V0, 0, sizeof * G2D_V0);
-//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-//	memset(G2D_WB, 0, sizeof * G2D_WB);
+	hwaccel_stretchblt(
+			dstinvalidateaddr, dstinvalidatesize,
+			colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h,
+			srcinvalidateaddr, srcinvalidatesize,
+			src, sdx, sdy,
+			keyflag, keycolor);
 
-//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-//	G2D_VSU1->VS_CTRL = 0x00000001; /* 0x00000001 */
-//	debug_g2d(__FILE__, __LINE__);
-
-//	PRINTF("============== BEGIN OF STRETCH\n");
-//	if (w > sdx)
-//	{
-//		PRINTF("Expand\n");
-//	}
-//	else
-//	{
-//		PRINTF("Shrink\n");
-//	}
-//
-//	PRINTF("colpip_stretchblt (resize): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
-
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-
-	enum { PIXEL_SIZE = sizeof * dst };
-	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
-	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
-	const uint_fast32_t tcoord = ((y) << 16) | (x << 0);
-	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
-	const uintptr_t srclinear = (uintptr_t) colpip_const_mem_at(src, sdx, sdy, 0, 0);
-	const uintptr_t dstlinear = (uintptr_t) colpip_mem_at(dst, dx, dy, x, y);
-
-
-	/* Отключаем все источники */
-
-	G2D_VSU->VS_CTRL = 0;
-	G2D_ROT->ROT_CTL = 0;
-	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
-	G2D_V0->V0_ATTCTL = 0;
-	G2D_UI0->UI_ATTR = 0;
-	G2D_UI1->UI_ATTR = 0;
-	G2D_UI2->UI_ATTR = 0;
-
-//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-
-
-	if (w != sdx || h != sdy)
-	{
-		/* расчет масштабов */
-		const uint_fast32_t hstep = (((uint_fast32_t) sdx << 19) / w) << 1;
-		const uint_fast32_t vstep = (((uint_fast32_t) sdy << 19) / h) << 1;
-		/* Включаем Scaler */
-		G2D_VSU->VS_CTRL = 0x00000001;
-		G2D_VSU->VS_OUT_SIZE = tsizehw;
-		G2D_VSU->VS_GLB_ALPHA = 0x000000FF;
-
-		G2D_VSU->VS_Y_SIZE = ssizehw;
-		G2D_VSU->VS_Y_HSTEP = hstep;
-		G2D_VSU->VS_Y_VSTEP = vstep;
-		G2D_VSU->VS_Y_HPHASE = 0;
-		G2D_VSU->VS_Y_VPHASE0 = 0;
-
-		G2D_VSU->VS_C_SIZE = ssizehw;
-		G2D_VSU->VS_C_HSTEP = hstep;
-		G2D_VSU->VS_C_VSTEP = vstep;
-		G2D_VSU->VS_C_HPHASE = 0;
-		G2D_VSU->VS_C_VPHASE0 = 0;
-	}
-	else
-	{
-		G2D_VSU->VS_CTRL = 0;
-	}
-
-	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
-	{
-		/* 5.10.9.10 BLD color key control register */
-		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
-		G2D_BLD->BLD_KEY_CTL =
-		/*!!!!*/	//(0x01u << 1) |		// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
-			(1u << 0) |			// KEY0_EN 1: enable color key in Alpha Blender0.
-			0;
-
-		/* 5.10.9.11 BLD color key configuration register */
-		G2D_BLD->BLD_KEY_CON =
-			0 * (1u << 2) |		// KEY0R_MATCH 0: match color if value inside keys range
-			0 * (1u << 1) |		// KEY0G_MATCH 0: match color if value inside keys range
-			0 * (1u << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
-			0;
-
-		keycolor = awxx_key_color_conversion(keycolor);
-		G2D_BLD->BLD_KEY_MIN = keycolor;
-		G2D_BLD->BLD_KEY_MAX = keycolor;
-
-		/* Данные для замены совпавших с keycolor */
-		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
-		G2D_UI2->UI_PITCH = tstride;
-		G2D_UI2->UI_FILLC = 0;
-		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_UI2->UI_MBSIZE = tsizehw; // сколько брать от исходного буфера
-		G2D_UI2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
-		G2D_UI2->UI_LADD = ptr_lo32(dstlinear);
-		G2D_UI2->UI_HADD = ptr_hi32(dstlinear);
-
-		/* Подача данных на вход VSU */
-		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-		G2D_V0->V0_PITCH0 = sstride;
-		G2D_V0->V0_FILLC = 0;
-		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
-		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
-		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) < 0;
-
-		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
-		/* источник когда есть совпадние ??? */
-		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
-		/* источник для анализа ??? */
-		G2D_BLD->BLD_CH_ISIZE [1] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
-
-		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(1u << 8) |	// 8: P0_EN Pipe0 enable
-			(1u << 9) |	// 9: P1_EN Pipe1 enable
-			0;
-
-		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-
-//		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
-//		G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-//		G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER
-//		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER
-//		G2D_BLD->BLD_CTL = 0x00000000; 	// G2D_BLD_CLEAR
-//		G2D_BLD->BLD_CTL = 0x00010001; 	// G2D_BLD_COPY
-		G2D_BLD->BLD_CTL = 0x01000100; 	// G2D_BLD_DST
-//		G2D_BLD->BLD_CTL = 0x03010301; 	// G2D_BLD_SRCOVER
-//		G2D_BLD->BLD_CTL = 0x01030103; 	// G2D_BLD_DSTOVER
-//		G2D_BLD->BLD_CTL = 0x00020002; 	// G2D_BLD_SRCIN
-//		G2D_BLD->BLD_CTL = 0x02000200; 	// G2D_BLD_DSTIN
-//		G2D_BLD->BLD_CTL = 0x00030003; 	// G2D_BLD_SRCOUT
-//		G2D_BLD->BLD_CTL = 0x03000300; 	// G2D_BLD_DSTOUT
-//		G2D_BLD->BLD_CTL = 0x03020302; 	// G2D_BLD_SRCATOP
-//		G2D_BLD->BLD_CTL = 0x02030203; 	// G2D_BLD_DSTATOP
-//		G2D_BLD->BLD_CTL = 0x03030303; 	// G2D_BLD_XOR
-	}
-	else
-	{
-		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
-		G2D_V0->V0_PITCH0 = sstride;
-		G2D_V0->V0_FILLC = 0;
-		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
-		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
-		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) < 0;
-
-		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
-		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
-
-		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(1u << 8) |	// 8: P0_EN Pipe0 enable
-			0;
-
-		G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
-		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
-	}
-
-	/* Write-back settings */
-	G2D_WB->WB_ATT = WB_DstImageFormat;
-	G2D_WB->WB_LADD0 = ptr_lo32(dstlinear);
-	G2D_WB->WB_HADD0 = ptr_hi32(dstlinear);
-	G2D_WB->WB_PITCH0 = tstride;
-	G2D_WB->WB_SIZE = tsizehw;
-
-	/* Запускаем и ждём завершения обработки */
-	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
-	if (hwacc_waitdone() == 0)
-	{
-		PRINTF("colpip_stretchblt: timeout dx/dy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) dx, (unsigned) dy, (unsigned) sdx, (unsigned) sdy);
-		ASSERT(0);
-	}
-	//PRINTF("G2D_TOP->G2D_AHB_RESET= @%p\n", & G2D_TOP->G2D_AHB_RESET);
-
-//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-	//debug_g2d(__FILE__, __LINE__);
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
-//	PRINTF("============== END OF STRETCH\n");
-
-#else
-
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	colpip_fillrect(dst, dx, dy, x, y, w, h, COLORMAIN_GREEN);
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-
-#endif
 }
 
 // скоприовать прямоугольник с типом пикселей соответствующим pip
