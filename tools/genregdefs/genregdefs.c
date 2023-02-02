@@ -212,7 +212,7 @@ enum { VNAME_MAX = 96 };
 
 struct parsedfile
 {
-	struct parsedfile * next;
+	LIST_ENTRY item;
     size_t nregs;
     struct regdfn * regs;
 	char bname [VNAME_MAX];
@@ -230,20 +230,7 @@ struct parsedfiles_list
 	struct parsedfile * * newadd;
 };
 
-struct parsedfiles_list parsedfiles;
-
-void parsedfiles_list_init(struct parsedfiles_list * list)
-{
-	list->head = NULL;
-	list->newadd = & list->head;
-}
-
-void parsedfiles_list_addtail(struct parsedfiles_list * list, struct parsedfile * item)
-{
-	* list->newadd = item;
-	list->newadd = & item->next;
-	item->next = NULL;
-}
+LIST_ENTRY parsedfiles;
 
 struct basemap
 {
@@ -574,7 +561,7 @@ int main(int argc, char* argv[], char* envp[])
     if (argc < 2)
         return 1;
 
-	parsedfiles_list_init(& parsedfiles);
+	InitializeListHead(& parsedfiles);
 
 	/* Load files */
 	for (;  i < argc;)
@@ -585,14 +572,15 @@ int main(int argc, char* argv[], char* envp[])
 			free(pfl);
 			break;
 		}
-		parsedfiles_list_addtail(&parsedfiles, pfl);
+		InsertTailList(&parsedfiles, & pfl->item);
 		++ i;
 	}
 
 	{
-		struct parsedfile * pfl = parsedfiles.head;
-		for (; pfl != NULL; pfl = pfl->next)
+		PLIST_ENTRY t;
+		for (t = parsedfiles.Flink; t != & parsedfiles; t = t->Flink)
 		{
+			struct parsedfile * const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 			//fprintf(stderr, "$");
 		}
 	}
@@ -617,9 +605,10 @@ int main(int argc, char* argv[], char* envp[])
 			struct irqmap irqs [1024];
 
 			{
-				struct parsedfile * pfl = parsedfiles.head;
-				for (; pfl != NULL; pfl = pfl->next)
+				PLIST_ENTRY t;
+				for (t = parsedfiles.Flink; t != & parsedfiles; t = t->Flink)
 				{
+					struct parsedfile * const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 					nitems += collect_irq(pfl, sizeof irqs / sizeof irqs [0] - nitems, irqs + nitems);
 				}
 			}
@@ -650,9 +639,11 @@ int main(int argc, char* argv[], char* envp[])
 			/* collect base addresses */
 			int nitems = 0;
 			struct basemap maps [256];
-			struct parsedfile * pfl = parsedfiles.head;
-			for (i = 0; pfl != NULL && nitems < sizeof maps / sizeof maps [0]; ++ i, pfl = pfl->next)
+			PLIST_ENTRY t;
+
+			for (t = parsedfiles.Flink; t != & parsedfiles; t = t->Flink)
 			{
+				struct parsedfile * const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 				nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
 			}
 
@@ -673,25 +664,27 @@ int main(int argc, char* argv[], char* envp[])
 		if (1)
 		{
 			/* structures */
-			struct parsedfile * pfl;
+			PLIST_ENTRY t;
 
-			for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
+			for (t = parsedfiles.Flink; t != & parsedfiles; t = t->Flink)
 			{
+				struct parsedfile * const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 				processfile_periphregs(pfl);
 			}
 		}
 
 		if (1)
 		{
-			struct parsedfile * pfl;
+			PLIST_ENTRY t;
 
 			emitline(0, "\n");
 			emitline(0, "/* Access pointers */\n");
 			emitline(0, "\n");
 
-			for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
-			{
 
+			for (t = parsedfiles.Flink; t != & parsedfiles; t = t->Flink)
+			{
+				struct parsedfile * const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 				processfile_access(pfl);
 			}
 		}
@@ -701,8 +694,8 @@ int main(int argc, char* argv[], char* envp[])
 	else
 	{
 		/* Debug header forming */
-		struct parsedfile * pfl;
 		char headrname [128];
+		PLIST_ENTRY t;
 
 		/* print structire debug */
 
@@ -713,8 +706,10 @@ int main(int argc, char* argv[], char* envp[])
 		emitline(0, "#ifdef PRINTF\n");
 
 		/* structures */
-		for (pfl = parsedfiles.head; pfl != NULL; pfl = pfl->next)
+
+		for (t = parsedfiles.Flink; t != & parsedfiles; t = t->Flink)
 		{
+			struct parsedfile * const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 			processfile_periphregsdebug(pfl);
 		}
 		emitline(0, "#endif /* PRINTF */\n");
@@ -722,12 +717,13 @@ int main(int argc, char* argv[], char* envp[])
 	}
 
 	{
-		struct parsedfile * pfl;
-		struct parsedfile * pflnext;
+		PLIST_ENTRY t;
 		/* release memory */
-		for (pfl = parsedfiles.head; pfl != NULL; pfl = pflnext)
+
+		for (t = parsedfiles.Flink; t != & parsedfiles; )
 		{
-			pflnext = pfl->next;
+			struct parsedfile * const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
+			t = t->Flink;
 
 			freeregs(pfl);
 		}

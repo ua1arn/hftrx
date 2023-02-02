@@ -179,8 +179,8 @@ Return Value:
 //
 
 #define CONTAINING_RECORD(address, type, field) ( (type *)( \
-                                                  (uint8_t *)(address) - \
-                                                  (uintptr_t) offsetof(type, field) ))
+                                                  (unsigned char *)(address) - \
+                                                  (unsigned) offsetof(type, field) ))
 
 /*
  *	functions.
