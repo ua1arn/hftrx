@@ -4526,6 +4526,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Close(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   */
 HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, uint8_t *pBuf, uint32_t len)
 {
+	//PRINTF("HAL_PCD_EP_Receive: ep_addr=%02X, buff=%p, len=%04X\n", (unsigned) ep_addr, pBuf, (unsigned) len);
 #if ! WITHWAWXXUSB
   PCD_EPTypeDef *ep;
 
@@ -4556,8 +4557,6 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 		pusb->ep0_xfer_residue = len;
 
 	   	pusb->ep0_xfer_state = USB_EP0_DATA;
-
-	   	//PRINTF("HAL_PCD_EP_Receive: len=%u\n", len);
   }
   else
   {
