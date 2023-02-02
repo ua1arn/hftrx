@@ -6399,7 +6399,9 @@ void hightests(void)
 		colpip_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLORPIP_WHITE));
 		colpip_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
 		colpip_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
+		colpip_fillrect(fbpic, picx, picy, picx / 4 + 5, picy / 4 + 5, picx / 2 - 10, picy / 2 - 10, TFTALPHA(0 * picalpha, COLORPIP_WHITE));
 		colpip_string_tbg(fbpic, picx, picy, 5, 6, "Hello!", TFTALPHA(picalpha, COLORPIP_WHITE));
+		dcache_clean((uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0]);
 
 		unsigned pic2alpha = 44;
 		colpip_fillrect(fbpic2, picx, picy, 0, 0, picx, picy, TFTALPHA(pic2alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
@@ -6435,7 +6437,7 @@ void hightests(void)
 		unsigned l3alpha = 0;
 		colpip_fillrect(layer3, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_GREEN));	/* opaque color transparent black */
 
-		//TP();
+		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6446,7 +6448,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
-		//TP();
+		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6457,7 +6459,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE, keycolor
 				);
 
-		//TP();
+		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6468,7 +6470,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
-		//TP();
+		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6479,7 +6481,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
-		//TP();
+		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6490,7 +6492,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
-		//TP();
+		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6501,6 +6503,7 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
+		TP();
 		/* копируем изображение в 2-й слой с цветовым ключем */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
@@ -6511,7 +6514,8 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
-		/* копируем изображение в 32-й слой с цветовым ключем */
+		TP();
+		/* копируем изображение в 3-й слой с цветовым ключем */
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
 				layer3, DIM_X, DIM_Y,
@@ -6530,6 +6534,7 @@ void hightests(void)
 
 
 		TP();
+
 		int phase = 0;
 		unsigned c = 0;
 		while(1)
