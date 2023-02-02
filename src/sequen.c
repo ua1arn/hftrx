@@ -387,8 +387,9 @@ seq_spool_ticks(void * ctc)
 {
 	// Поместить в линию задержки данные со стороны источника манипуляции
 	//
+	const uint_fast8_t keyptt = elkey_get_ptt();	// а так же состояния ручной манипуляции, манипуляции от CAT...
 	const uint_fast8_t keydown = elkey_get_output();	// а так же состояния ручной манипуляции, манипуляции от CAT...
-	if (keydown && seq_bkinenable && seq_cwenable)
+	if ((keydown || keyptt) && seq_bkinenable && seq_cwenable)
 	{
 		bkin_count = bkin_delay;
 	}

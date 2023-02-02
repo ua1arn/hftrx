@@ -522,6 +522,7 @@ void elkey_set_format(uint_fast8_t dashratio, uint_fast8_t spaceratio); /* об�
 void elkey_set_mode(uint_fast8_t mode, uint_fast8_t reverse);	/* режим электронного ключа - 0 - asf, 1 - paddle, 2 - keyer */
 void elkey_set_slope(uint_fast8_t slope);	// скорость уменьшения длительности точки и паузы - имитация виброплекса
 uint_fast8_t elkey_get_output(void);
+uint_fast8_t elkey_get_ptt(void);
 uint_fast8_t elkey_getnextcw(void);	// Получение символа для передачи (только верхний регистр)
 
 
