@@ -1833,13 +1833,13 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
 
 // 1.5 Register Description
-struct de_clk_t {
-	uint32_t gate_cfg;		// SCLK_GATE DE SCLK Gating Register
-	uint32_t bus_cfg;		// ? HCLK_GATE ? DE HCLK Gating Register
-	uint32_t rst_cfg;		// AHB_RESET DE AHB Reset register
-	uint32_t div_cfg;		// SCLK_DIV DE SCLK Division register
-	uint32_t sel_cfg;		// ? DE2TCON ? MUX register
-};
+//struct de_clk_t {
+//	uint32_t gate_cfg;		// SCLK_GATE DE SCLK Gating Register
+//	uint32_t bus_cfg;		// ? HCLK_GATE ? DE HCLK Gating Register
+//	uint32_t rst_cfg;		// AHB_RESET DE AHB Reset register
+//	uint32_t div_cfg;		// SCLK_DIV DE SCLK Division register
+//	uint32_t sel_cfg;		// ? DE2TCON ? MUX register
+//};
 
 // Allwinner_DE2.0_Spec_V1.0
 // 5.10.3.4 Blender
@@ -2016,7 +2016,7 @@ static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uin
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
+	//struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
 	//struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
@@ -2027,29 +2027,17 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
 	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
 
-	uint32_t val;
-
 	int i;
 
-//	PRINTF("div_cfg=%08X\n", read32((uintptr_t) & clk->div_cfg));
-//	write32((uintptr_t) & clk->div_cfg, ~ 0);
-//	PRINTF("div_cfg=%08X\n", read32((uintptr_t) & clk->div_cfg));
+	/* Global DE settings */
 
-	val = read32((uintptr_t) & clk->rst_cfg);
-	val |= 1u << 0;
-	write32((uintptr_t) & clk->rst_cfg, val);
+	DE_CLK->RST_CFG &= ~ (1u << 0);
+	DE_CLK->RST_CFG |= 1u << 0;
+	DE_CLK->GATE_CFG |= 1u << 0;
+	DE_CLK->BUS_CFG |= 1u << 0;
+	DE_CLK->SEL_CFG &= ~ (1u << 0);	/* Already zero */
 
-	val = read32((uintptr_t) & clk->gate_cfg);
-	val |= 1u << 0;
-	write32((uintptr_t) & clk->gate_cfg, val);
-
-	val = read32((uintptr_t) & clk->bus_cfg);
-	val |= 1u << 0;
-	write32((uintptr_t) & clk->bus_cfg, val);
-
-	val = read32((uintptr_t) & clk->sel_cfg);
-	val &= ~(1u << 0);
-	write32((uintptr_t) & clk->sel_cfg, val);
+	/* DE submodules */
 
 	DE_GLB->GLB_CTL =
 			(1u << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port

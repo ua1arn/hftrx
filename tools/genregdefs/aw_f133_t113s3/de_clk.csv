@@ -1,0 +1,7 @@
+#type; DE_CLK
+#base; DE_CLK 0x05000000
+#regdef; GATE_CFG;	 	0x000;	SCLK_GATE DE SCLK Gating Register
+#regdef; BUS_CFG;		0x004;	? HCLK_GATE ? DE HCLK Gating Register
+#regdef; RST_CFG;		0x008;	AHB_RESET DE AHB Reset register
+#regdef; DIV_CFG;		0x00C;	SCLK_DIV DE SCLK Division register
+#regdef; SEL_CFG;		0x010;	? DE2TCON ? MUX register

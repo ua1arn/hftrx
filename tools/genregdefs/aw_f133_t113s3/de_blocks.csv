@@ -1,4 +1,3 @@
-#base; DE_BLD 0x5101000
 #base; DE_VI 0x5102000
 #base; DE_UI1 0x5103000
 #base; DE_UI2 0x5104000
