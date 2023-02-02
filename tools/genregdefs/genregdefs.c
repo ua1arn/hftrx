@@ -28,12 +28,32 @@
 
 struct regdfn
 {
+	LIST_ENTRY item;
 	char * fldname;
 	char * typname;
 	unsigned fldsize;	/* 0 - need align to offset (end paddings) */
 	unsigned fldoffs;	/* offset inside block */
 	char * comment;
 	unsigned fldrept;   // 0 - plain field, 1..n - array
+};
+
+
+enum { BASE_MAX = 32 };
+enum { VNAME_MAX = 96 };
+
+struct parsedfile
+{
+	LIST_ENTRY item;
+	LIST_ENTRY regslist;
+ //   size_t nregs;
+ //   struct regdfn * regs;
+	char bname [VNAME_MAX];
+	int base_count;
+	unsigned base_array [BASE_MAX];
+	char base_names [BASE_MAX] [VNAME_MAX];
+	int irq_count;
+	int irq_array [BASE_MAX];
+	char irq_names [BASE_MAX] [VNAME_MAX];
 };
 
 #define INDENT 4
@@ -67,22 +87,24 @@ void emitline(int pos, const char * format, ...)
 		emitpos = 0;
 }
 
-void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
+void genstruct(struct parsedfile * pfl)
 {
-	unsigned i;
 	unsigned offs;
+	PLIST_ENTRY t;
 
 	emitline(0, "/*\n");
-	emitline(0, " * @brief %s\n", bname);
+	emitline(0, " * @brief %s\n", pfl->bname);
 	emitline(0, " */\n");
 
-	emitline(0, "/*!< %s Controller Interface */\n", bname);
-	emitline(0, "typedef struct %s_Type\n", bname);
+	emitline(0, "/*!< %s Controller Interface */\n", pfl->bname);
+	emitline(0, "typedef struct %s_Type\n", pfl->bname);
 	emitline(0, "{\n");
 	offs = 0;
-	for (i = 0; i < szregs; ++ i)
+
+	for (t = pfl->regslist.Flink; t != & pfl->regslist; t = t->Flink)
 	{
-        static const char * fldtypes [] =
+		const struct regdfn * regp = CONTAINING_RECORD(t, struct regdfn, item);
+		static const char * fldtypes [] =
         {
             "uint32_t",
             "uint8_t ",
@@ -96,21 +118,20 @@ void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
         };
 
 		int commentspos = 54;
-		const struct regdfn * p = & regs [i];
         char fldtype [256];
-        if (p->fldsize >= sizeof fldtypes / sizeof fldtypes [0])
+        if (regp->fldsize >= sizeof fldtypes / sizeof fldtypes [0])
         {
-            _snprintf(fldtype, sizeof fldtype / sizeof fldtype [0], "typesize%u", p->fldsize);
+            _snprintf(fldtype, sizeof fldtype / sizeof fldtype [0], "typesize%u", regp->fldsize);
         }
         else
         {
-             _snprintf(fldtype, sizeof fldtype / sizeof fldtype [0], "%s", fldtypes [p->fldsize]);
+             _snprintf(fldtype, sizeof fldtype / sizeof fldtype [0], "%s", fldtypes [regp->fldsize]);
 		}
 
-		if (p->fldoffs > offs || p->fldsize == 0)
+		if (regp->fldoffs > offs || regp->fldsize == 0)
 		{
 			// reserving
-			const unsigned sz = p->fldoffs - offs;
+			const unsigned sz = regp->fldoffs - offs;
 
 
             if (sz == 4)
@@ -125,62 +146,62 @@ void genstruct(const struct regdfn * regs, unsigned szregs, const char * bname)
             {
 		    	emitline(INDENT + 9, "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
             }
-			offs = p->fldoffs;
+			offs = regp->fldoffs;
 		}
-		if (p->fldoffs == offs)
+		if (regp->fldoffs == offs)
 		{
-			if (p->fldsize != 0)
+			if (regp->fldsize != 0)
 			{
-				if (p->fldrept)
+				if (regp->fldrept)
 				{
 					// Array forming
-					if (p->typname != NULL)
+					if (regp->typname != NULL)
 					{
-						emitline(INDENT, "%s %s [0x%03X];", p->typname, p->fldname, p->fldrept);
+						emitline(INDENT, "%s %s [0x%03X];", regp->typname, regp->fldname, regp->fldrept);
 					}
 					else
 					{
-						emitline(INDENT, "volatile %s %s [0x%03X];", fldtype, p->fldname, p->fldrept);
+						emitline(INDENT, "volatile %s %s [0x%03X];", fldtype, regp->fldname, regp->fldrept);
 					}
 
-					offs += p->fldsize * p->fldrept;
+					offs += regp->fldsize * regp->fldrept;
 				}
 				else
 				{
 					// Plain field
-					if (p->typname != NULL)
+					if (regp->typname != NULL)
 					{
-						emitline(INDENT, "%s %s;", p->typname, p->fldname);
+						emitline(INDENT, "%s %s;", regp->typname, regp->fldname);
 					}
 					else
 					{
-						emitline(INDENT, "volatile %s %s;", fldtype, p->fldname);
+						emitline(INDENT, "volatile %s %s;", fldtype, regp->fldname);
 					}
-					offs += p->fldsize;
+					offs += regp->fldsize;
 				}
-				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
+				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", regp->fldoffs, regp->comment);
 			}
 		}
 		else
 		{
-			emitline(0, "#error WRONG offset of field '%s' type '%s' at (0x%03X)\n",  p->fldname, fldtype, p->fldoffs);
+			emitline(0, "#error WRONG offset of field '%s' type '%s' at (0x%03X)\n",  regp->fldname, fldtype, regp->fldoffs);
 			break;
 		}
 	}
-	emitline(0, "} %s_TypeDef; /* size of structure = 0x%03X */\n", bname, offs);
+	emitline(0, "} %s_TypeDef; /* size of structure = 0x%03X */\n", pfl->bname, offs);
 }
 
 
-void genstructprint(const struct regdfn * regs, unsigned szregs, const char * bname)
+void genstructprint(struct parsedfile * pfl)
 {
-	unsigned i;
+	PLIST_ENTRY t;
 
-	emitline(0, "/* Print %s */\n", bname);
-	emitline(0, "static void %s_Type_print(const %s_TypeDef * p, const char * base)\n", bname, bname);
+	emitline(0, "/* Print %s */\n", pfl->bname);
+	emitline(0, "static void %s_Type_print(const %s_TypeDef * p, const char * base)\n", pfl->bname, pfl->bname);
 	emitline(0, "{\n");
-	for (i = 0; i < szregs; ++ i)
+	for (t = pfl->regslist.Flink; t != & pfl->regslist; t = t->Flink)
 	{
-		const struct regdfn * p = & regs [i];
+		const struct regdfn * p = CONTAINING_RECORD(t, struct regdfn, item);
 
 		if (p->fldsize != 0)
 		{
@@ -206,29 +227,6 @@ void genstructprint(const struct regdfn * regs, unsigned szregs, const char * bn
 	emitline(0, "}\n");
 }
 
-
-enum { BASE_MAX = 32 };
-enum { VNAME_MAX = 96 };
-
-struct parsedfile
-{
-	LIST_ENTRY item;
-    size_t nregs;
-    struct regdfn * regs;
-	char bname [VNAME_MAX];
-	int base_count;
-	unsigned base_array [BASE_MAX];
-	char base_names [BASE_MAX] [VNAME_MAX];
-	int irq_count;
-	int irq_array [BASE_MAX];
-	char irq_names [BASE_MAX] [VNAME_MAX];
-};
-
-struct parsedfiles_list
-{
-	struct parsedfile * head;
-	struct parsedfile * * newadd;
-};
 
 LIST_ENTRY parsedfiles;
 
@@ -435,7 +433,6 @@ static int parseregister(struct parsedfile * pfl, struct regdfn * regp, FILE * f
 static int loadregs(struct parsedfile * pfl, const char * file)
 {
     size_t nregs;
-    struct regdfn * regs;
 
 
     const size_t maxrows = 256;
@@ -444,8 +441,10 @@ static int loadregs(struct parsedfile * pfl, const char * file)
 	strcpy(pfl->bname, "");
 	pfl->base_count = 0;
 	pfl->irq_count = 0;
-	pfl->regs = NULL; 
-	pfl->nregs = 0; 
+
+	InitializeListHead(& pfl->regslist);
+	//pfl->regs = NULL; 
+	//pfl->nregs = 0; 
 	
 	TP();
 	if (fp == NULL)
@@ -454,24 +453,21 @@ static int loadregs(struct parsedfile * pfl, const char * file)
         return 1;
     }
 
-    regs = (struct regdfn *) calloc(sizeof (struct regdfn), maxrows);
-    if (regs == NULL)
-    {
-        emitline(0, "#error Can not allocate memory for file '%s'\n", file);
-        return 1;
-    }
-
 	TP();
     for (nregs = 0; nregs < maxrows; ++ nregs)
     {
-		struct regdfn * regp = & regs [nregs];
+		struct regdfn * regp = calloc(1, sizeof (struct regdfn));
 		if (parseregister(pfl, regp, fp, file))
+		{
+			free(regp);
 			break;
+		}
+		InsertTailList(& pfl->regslist, & regp->item);
     }
 	TP();
 
-	pfl->regs = regs; 
-	pfl->nregs = nregs; 
+	//pfl->regs = regs; 
+	//pfl->nregs = nregs; 
 
 	return 0;
 }
@@ -480,18 +476,18 @@ static int loadregs(struct parsedfile * pfl, const char * file)
 static void processfile_periphregs(struct parsedfile * pfl)
 {
 
-	if (pfl->nregs != 0)
+	if (! IsListEmpty(& pfl->regslist))
 	{
-		genstruct(pfl->regs, pfl->nregs, pfl->bname);
+		genstruct(pfl);
 	}
 }
 
 static void processfile_periphregsdebug(struct parsedfile * pfl)
 {
 
-	if (pfl->nregs != 0)
+	if (! IsListEmpty(& pfl->regslist))
 	{
-		genstructprint(pfl->regs, pfl->nregs, pfl->bname);
+		genstructprint(pfl);
 	}
 }
 
@@ -516,7 +512,7 @@ static void processfile_access(struct parsedfile * pfl)
 	/* print acces pointers */
 	int i;
 
-	if (pfl->nregs == 0)
+	if (IsListEmpty(& pfl->regslist))
 		return;
 	for (i = 0; i < pfl->base_count; ++ i)
 	{
@@ -541,15 +537,17 @@ static int collect_irq(struct parsedfile * pfl, int n, struct irqmap * v)
 
 static void freeregs(struct parsedfile * pfl)
 {
-    unsigned i;
+	PLIST_ENTRY t;
 	//fprintf(stderr, "Release memory\n");
-    for (i = 0; i < pfl->nregs; ++ i)
+	for (t = pfl->regslist.Flink; t != & pfl->regslist; )
     {
-        free(pfl->regs [i].fldname);
-        free(pfl->regs [i].typname);
-        free(pfl->regs [i].comment);
+ 		struct regdfn * regp = CONTAINING_RECORD(t, struct regdfn, item);
+		t = t->Flink;
+		free(regp->fldname);
+		free(regp->typname);
+		free(regp->comment);
+		free(regp);
     }
-    free(pfl->regs);
 }
 
 int main(int argc, char* argv[], char* envp[])
