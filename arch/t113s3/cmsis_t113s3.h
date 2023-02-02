@@ -1,6 +1,6 @@
 /* Generated section start */ 
-#ifndef HEADER_63D85B1F_INCLUDED
-#define HEADER_63D85B1F_INCLUDED
+#ifndef HEADER_63DBBBDD_INCLUDED
+#define HEADER_63DBBBDD_INCLUDED
 #include <stdint.h>
 
 
@@ -19,6 +19,7 @@
 #define	GPIOINTE_BASE	 ((uintptr_t) 0x02000280)
 #define	GPIOINTF_BASE	 ((uintptr_t) 0x020002A0)
 #define	GPIOINTG_BASE	 ((uintptr_t) 0x020002C0)
+#define	SPC_BASE	 ((uintptr_t) 0x02000800)
 #define	PWM_BASE	 ((uintptr_t) 0x02000C00)
 #define	CCU_BASE	 ((uintptr_t) 0x02001000)
 #define	CIR_TX_BASE	 ((uintptr_t) 0x02003000)
@@ -48,6 +49,7 @@
 #define	DMAC_BASE	 ((uintptr_t) 0x03002000)
 #define	CPUX_MSGBOX_BASE	 ((uintptr_t) 0x03003000)
 #define	SID_BASE	 ((uintptr_t) 0x03006000)
+#define	SMC_BASE	 ((uintptr_t) 0x03007000)
 #define	GIC_DISTRIBUTOR_BASE	 ((uintptr_t) 0x03021000)
 #define	GIC_INTERFACE_BASE	 ((uintptr_t) 0x03022000)
 #define	CE_NS_BASE	 ((uintptr_t) 0x03040000)
@@ -2370,5 +2372,5 @@ typedef struct MSGBOX_Type
 #define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)                       /*!< \brief CPUX_MSGBOX Interface register set access pointer */
-#endif /* HEADER_63D85B1F_INCLUDED */
+#endif /* HEADER_63DBBBDD_INCLUDED */
 /* Generated section end */ 
