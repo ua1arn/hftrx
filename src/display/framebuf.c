@@ -88,25 +88,11 @@ static unsigned awxx_get_vi_attr(void)
  * */
 static uint_fast32_t awxx_key_color_conversion(COLORPIP_T color)
 {
-	PRINTF("awxx_key_color_conversion: color=%08" PRIXFAST32 "\n", (uint_fast32_t) color);
-#if LCDMODE_MAIN_RGB565
-		switch (color)
-		{
-		case 0xA014:
-			// TFT: 0xA000A0 -> 0x4200A5
-			// RGB565: 0xA014
-			return COLOR24(0xA5, 0x00, 0xA5);
-		case 0xF800:
-			// TFT: 0xFF0000 -> 0xF70000
-			// RGB565: 0xF800
-			return 0xF70000;
-		default:
-			return  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
-		}
-
-#else /* LCDMODE_RGB565 */
-		return  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
-#endif /* LCDMODE_RGB565 */
+//	PRINTF("awxx_key_color_conversion: color=%08" PRIXFAST32 "\n", (uint_fast32_t) color);
+//	PRINTF("awxx_key_color_conversion: r=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_R(color));
+//	PRINTF("awxx_key_color_conversion: g=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_G(color));
+//	PRINTF("awxx_key_color_conversion: b=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_B(color));
+	return  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
 }
 
 /* Создание режима блендера BLD_CTL */
