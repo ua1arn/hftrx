@@ -58,15 +58,15 @@
 
 	//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 	#define DIRECT_61M440_X1	1
-	#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
+	#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..56 MHz */
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_NOCTLREG	1
-	//#define CTLREGMODE_ZYNQ_4205	1
+	//#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_ZYNQ_4205	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -239,6 +239,7 @@
 			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 			#define WITHLFM					1
 			#define WITHNMEA				1
+			#define WITHEXTRFBOARDTEST		1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
