@@ -243,9 +243,8 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 	// для формирования растра с изображением водопада и спектра
 	// RRRR.RGGG.GGGB.BBBB
-	#define TFTRGB565(red, green, blue) 0
-
 	#define TFTRGB(red, green, blue) 0
+	#define TFTALPHA(alpha, color) 0	/* No alpha channel supported in this mode */
 
 #else
 	#error Undefined display type
@@ -302,55 +301,10 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 					(((blue) >> 6) & 0x03) \
 				) \
 			)
-
-		// для формирования растра с изображением водопада и спектра
-		// RRRR.RGGG.GGGB.BBBB
-		#define TFTRGB565(red, green, blue) \
-			(  (uint_fast16_t) \
-				(	\
-					(((uint_fast16_t) (red) << 8) &   0xF800)  | \
-					(((uint_fast16_t) (green) << 3) & 0x07E0) | \
-					(((uint_fast16_t) (blue) >> 3) &  0x001F) \
-				) \
-			)
 		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
-
-	#elif LCDMODE_MAIN_ARGB888 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHTFT_OVER_LVDS
-
-		// RBG named order
-		typedef uint_fast32_t COLORPIP_T;
-		typedef uint32_t PACKEDCOLORPIP_T;
-
-		#define TFTRGB(red, green, blue) \
-			(  (uint_fast32_t) \
-				(	\
-					((uint_fast32_t) (255) << 24)  | /* Alpha channel value - opaque */ \
-					(((uint_fast32_t) ((red) & 0xFF)) << 16)  | \
-					(((uint_fast32_t) ((green) & 0xFF)) << 8)  | \
-					(((uint_fast32_t) ((blue) & 0xFF)) << 0)  | \
-					0 \
-				) \
-			)
-		#define TFTALPHA(alpha, color24) \
-			(  (uint_fast32_t) ( \
-					((uint_fast32_t) (alpha) << 24)  | /* Alpha value, 0: transparent, 255: opaque */ \
-					(((uint_fast32_t) (color24)) & 0x00FFFFFF) \
-				) \
-			)
-
-		// для формирования растра с изображением водопада и спектра
-		#define TFTRGB565 TFTRGB
-
-		// Get color components from framebuffer value
-		#define COLORPIP_A(v) (((v) & 0xFF0000FF) >> 24)
-		#define COLORPIP_R(v) (((v) & 0xFF0000) >> 16)
-		#define COLORPIP_G(v) (((v) & 0xFF00) >> 8)
-		#define COLORPIP_B(v) (((v) & 0xFF) >> 0)
-
 
 	#elif LCDMODE_MAIN_ARGB888
 
-		//#define LCDMODE_RGB565 1
 		typedef uint_fast32_t COLORPIP_T;
 		typedef uint32_t PACKEDCOLORPIP_T;
 
@@ -369,9 +323,6 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 					(((uint_fast32_t) (color24)) & 0x00FFFFFF) \
 				) \
 			)
-
-		// для формирования растра с изображением водопада и спектра
-		#define TFTRGB565 TFTRGB
 
 		// Get color components from framebuffer value
 		#define COLORPIP_A(v) (((v) & 0xFF000000) >> 24)
@@ -394,9 +345,6 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 				) \
 			)
 		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
-
-		// для формирования растра с изображением водопада и спектра
-		#define TFTRGB565 TFTRGB
 
 		// Get color components from framebuffer value
 		#define COLORPIP_A(v) (255)

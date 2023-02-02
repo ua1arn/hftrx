@@ -40,7 +40,6 @@ typedef uint8_t PACKEDCOLORPIP_T;
 			(((blue) >> 6) & 0x03) \
 		) \
 	)
-#define TFTRGB565 TFTRGB
 
 typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
 typedef COLORPIP_T COLORPIP_T;

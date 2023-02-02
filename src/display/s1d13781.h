@@ -105,8 +105,6 @@
 			) \
 		)
 
-	#define TFTRGB565 TFTRGB
-
 	typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
 	typedef COLORPIP_T COLORPIP_T;
 

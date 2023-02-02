@@ -21,8 +21,6 @@
 	typedef uint_fast8_t COLORPIP_T;	/* цвета не поддерживаются - заглушка */
 	typedef uint8_t PACKEDCOLORPIP_T;	/* цвета не поддерживаются - заглушка */
 
-	#define TFTRGB565 TFTRGB
-
 	typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
 	typedef COLORPIP_T COLORPIP_T;
 

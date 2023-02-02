@@ -24,7 +24,6 @@ typedef uint16_t PACKEDCOLORPIP_T;
 			(((uint_fast16_t) (blue) >> 3) &  0x001f) \
 		) \
 	)
-#define TFTRGB565 TFTRGB
 
 typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
 typedef COLORPIP_T COLORPIP_T;
