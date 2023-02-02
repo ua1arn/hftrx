@@ -1,12 +1,12 @@
 #type; CE
 #base; CE_NS 0x03040000
 #base; CE_S 0x03040800
-CE_TDA; 0x0000; Task Descriptor Address
-CE_ICR; 0x0008; Interrupt Control Register
-CE_ISR; 0x000C; Interrupt Status Register
-CE_TLR; 0x0010; Task Load Register
-CE_TSR; 0x0014; Task Status Register
-CE_ESR; 0x0018; Error Status Register
-CE_CSA; 0x0024; DMA Current Source Address
-CE_CDA; 0x0028; DMA Current Destination Address
-CE_TPR; 0x002C; Throughput Register
+#regdef;CE_TDA; 0x0000; Task Descriptor Address
+#regdef;CE_ICR; 0x0008; Interrupt Control Register
+#regdef;CE_ISR; 0x000C; Interrupt Status Register
+#regdef;CE_TLR; 0x0010; Task Load Register
+#regdef;CE_TSR; 0x0014; Task Status Register
+#regdef;CE_ESR; 0x0018; Error Status Register
+#regdef;CE_CSA; 0x0024; DMA Current Source Address
+#regdef;CE_CDA; 0x0028; DMA Current Destination Address
+#regdef;CE_TPR; 0x002C; Throughput Register

@@ -1,6 +1,6 @@
 /* Generated section start */ 
-#ifndef HEADER_63DBBBDD_INCLUDED
-#define HEADER_63DBBBDD_INCLUDED
+#ifndef HEADER_63DC27DD_INCLUDED
+#define HEADER_63DC27DD_INCLUDED
 #include <stdint.h>
 
 
@@ -1364,6 +1364,17 @@ typedef struct DE20_Type
     volatile uint32_t SCLK_DIV;                                                 /*!< Offset 0x00C DE SCLK Division register */
 } DE20_TypeDef; /* size of structure = 0x010 */
 /*
+ * @brief DE_GLB
+ */
+/*!< DE_GLB Controller Interface */
+typedef struct DE_GLB_Type
+{
+    volatile uint32_t GLB_CTL;                                                  /*!< Offset 0x000 Global control register */
+    volatile uint32_t GLB_STS;                                                  /*!< Offset 0x004 Global status register */
+    volatile uint32_t GLB_DBUFFER;                                              /*!< Offset 0x008 Global double buffer control register */
+    volatile uint32_t GLB_SIZE;                                                 /*!< Offset 0x00C Global size register */
+} DE_GLB_TypeDef; /* size of structure = 0x010 */
+/*
  * @brief G2D_TOP
  */
 /*!< G2D_TOP Controller Interface */
@@ -2347,6 +2358,7 @@ typedef struct MSGBOX_Type
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)                               /*!< \brief USBOTG0 Interface register set access pointer */
 #define DE ((DE20_TypeDef *) DE_BASE)                                           /*!< \brief DE Interface register set access pointer */
 #define DE_CLK ((DE20_TypeDef *) DE_CLK_BASE)                                   /*!< \brief DE_CLK Interface register set access pointer */
+#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)                                 /*!< \brief DE_GLB Interface register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)                              /*!< \brief G2D_TOP Interface register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)                        /*!< \brief G2D_MIXER Interface register set access pointer */
 #define G2D_V0 ((G2D_LAY_TypeDef *) G2D_V0_BASE)                                /*!< \brief G2D_V0 Interface register set access pointer */
@@ -2372,5 +2384,5 @@ typedef struct MSGBOX_Type
 #define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)                       /*!< \brief CPUX_MSGBOX Interface register set access pointer */
-#endif /* HEADER_63DBBBDD_INCLUDED */
+#endif /* HEADER_63DC27DD_INCLUDED */
 /* Generated section end */ 

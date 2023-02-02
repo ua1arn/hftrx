@@ -38,7 +38,14 @@ static uint32_t ptr_lo32(uintptr_t v)
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW
 	/* Использование G2D для формирования изображений */
 
-	#include "g2d_driver.h"
+	//#include "g2d_driver.h"
+
+	/* BLD LAYER ALPHA MODE*/
+	typedef enum {
+		xG2D_PIXEL_ALPHA,
+		xG2D_GLOBAL_ALPHA,
+		xG2D_MIXER_ALPHA,
+	} xg2d_alpha_mode_enh;
 
 #if LCDMODE_MAIN_ARGB888
 	#define VI_DstImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
@@ -54,8 +61,6 @@ static uint32_t ptr_lo32(uintptr_t v)
 	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
 #endif
 
-//#include "debug_f133.h"
-
 static unsigned awxx_get_ui_attr(void)
 {
 	unsigned ui_attr = 0;
@@ -64,7 +69,7 @@ static unsigned awxx_get_ui_attr(void)
 	//		vi_attr |= 0x2 << 16;	/* LAY_PREMUL_CTL */
 	ui_attr |= UI_DstImageFormat << 8;
 	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	ui_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	ui_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	//ui_attr |= (1u << 4);	/* Use FILLC register */
 	ui_attr |= 1;
 	return ui_attr;
@@ -77,7 +82,7 @@ static unsigned awxx_get_vi_attr(void)
 	vi_attr |= VI_DstImageFormat << 8;
 	vi_attr |= 1u << 15;
 	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	vi_attr |= G2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	//vi_attr |= (1u << 4);	/* Use FILLC register */
 	vi_attr |= 1;
 	return vi_attr;

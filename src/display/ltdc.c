@@ -1844,12 +1844,12 @@ struct de_clk_t {
 // Allwinner_DE2.0_Spec_V1.0
 // 5.10.3.4 Blender
 // GLB
-struct de_glb_t {
-	uint32_t ctl;		/** Offset 0x000 Global control register */
-	uint32_t status;	/** Offset 0x004 Global status register */
-	uint32_t dbuff;		/** Offset 0x008 Global double buffer control register */
-	uint32_t size;		/** Offset 0x00C Global size register */
-};
+//struct de_glb_t {
+//	uint32_t ctl;		/** Offset 0x000 Global control register */
+//	uint32_t status;	/** Offset 0x004 Global status register */
+//	uint32_t dbuff;		/** Offset 0x008 Global double buffer control register */
+//	uint32_t size;		/** Offset 0x00C Global size register */
+//};
 
 // Allwinner_DE2.0_Spec_V1.0
 // 5.10.3.4 Blender
@@ -1978,9 +1978,9 @@ struct fb_t113_rgb_pdata_t
 
 static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;
-	write32((uintptr_t) & glb->dbuff, 1u);	// 1: register value be ready for update (self-cleaning bit)
-	while ((read32((uintptr_t) & glb->dbuff) & 1u) != 0)
+	//struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;
+	DE_GLB->GLB_DBUFFER = 1u;		// 1: register value be ready for update (self-cleaning bit)
+	while ((DE_GLB->GLB_DBUFFER & 1u) != 0)
 		;
 }
 
@@ -2017,7 +2017,7 @@ static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uin
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 {
 	struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
-	struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
+	//struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
 	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
@@ -2051,18 +2051,17 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	val &= ~(1u << 0);
 	write32((uintptr_t) & clk->sel_cfg, val);
 
-	write32((uintptr_t) & glb->ctl,
+	DE_GLB->GLB_CTL =
 			(1u << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 			(1u << 0) |		// EN RT enable/disable
-			0
-			);
+			0;
 
-	write32((uintptr_t) & glb->status, 0x00u);
+	DE_GLB->GLB_STS = 0x00u;
 
-	write32((uintptr_t) & glb->dbuff, 1u);		// 1: register value be ready for update (self-cleaning bit)
-	while ((read32((uintptr_t) & glb->dbuff) & 1u) != 0)
+	DE_GLB->GLB_DBUFFER = 1u;		// 1: register value be ready for update (self-cleaning bit)
+	while ((DE_GLB->GLB_DBUFFER & 1u) != 0)
 		;
-	write32((uintptr_t) & glb->size, ovl_ui_mbsize);
+	DE_GLB->GLB_SIZE = ovl_ui_mbsize;
 
 //	for(i = 0; i < 4; i++)
 //	{
