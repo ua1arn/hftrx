@@ -3198,7 +3198,7 @@ COLORPIP_T getshadedcolor(
 
 	if (dot == COLORPIP_BLACK)
 	{
-		return TFTRGB565(alpha, alpha, alpha); // back gray
+		return TFTRGB(alpha, alpha, alpha); // back gray
 	}
 	else
 	{
