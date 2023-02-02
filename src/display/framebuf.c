@@ -102,6 +102,24 @@ static uint_fast32_t awxx_key_color_conversion(uint_fast32_t keycolor)
 #endif /* LCDMODE_RGB565 */
 }
 
+/* Создание режима блендера BLD_CTL */
+// 5.10.9.9 BLD control register
+
+static uint_fast32_t awxx_bld_ctl(
+	uint_fast32_t afd,	// Specifies the coefficient that used in destination alpha data Qd.
+	uint_fast32_t afs,	// Specifies the coefficient that used in source alpha data Qs.
+	uint_fast32_t pfd,	// Specifies the coefficient that used in destination pixel data Qs.
+	uint_fast32_t pfs	// Specifies the coefficient that used in source pixel data Qs.
+	)
+{
+	return
+		(afd << 24) |	// BLEND_AFD Specifies the coefficient that used in destination alpha data Qd.
+		(afs << 16) |	// BLEND_AFS Specifies the coefficient that used in source alpha data Qs.
+		(pfd << 8) |	// BLEND_PFD Specifies the coefficient that used in destination pixel data Qs.
+		(pfs << 0) |	// BLEND_PFS Specifies the coefficient that used in source pixel data Qs.
+		0;
+}
+
 #define VSU_ZOOM0_SIZE	1
 #define VSU_ZOOM1_SIZE	8
 #define VSU_ZOOM2_SIZE	4
@@ -281,9 +299,9 @@ static void t113_fillrect(
 
 	G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 	G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-	//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-	G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
-	//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+	//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 1, 0, 1); //0x00010001;	// G2D_BLD_COPY
+	G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+	//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 0, 0, 0); //0x00000000;	// G2D_BLD_CLEAR
 
 	G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 	G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
@@ -1911,7 +1929,7 @@ void hwaccel_bitblt(
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 
-		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+		G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 	}
 	else
 	{
@@ -1941,7 +1959,7 @@ void hwaccel_bitblt(
 
 		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+		G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 	}
 
 
@@ -2158,14 +2176,14 @@ void hwaccel_stretchblt(
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 
-//		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+//		G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 //		G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 //		G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER - проверить это ли
+		G2D_BLD->BLD_CTL = awxx_bld_ctl(1, 3, 1, 3); //0x01030103;	// G2D_BLD_DSTOVER - проверить это ли
 //		G2D_BLD->BLD_CTL = 0x01030103;	// G2D_BLD_DSTOVER
 //		G2D_BLD->BLD_CTL = 0x00000000; 	// G2D_BLD_CLEAR
 //		G2D_BLD->BLD_CTL = 0x00010001; 	// G2D_BLD_COPY
-		G2D_BLD->BLD_CTL = 0x01000100; 	// G2D_BLD_DST - проверить это ли
+		G2D_BLD->BLD_CTL = awxx_bld_ctl(1, 0, 1, 0); //0x01000100; 	// G2D_BLD_DST - проверить это ли
 //		G2D_BLD->BLD_CTL = 0x03010301; 	// G2D_BLD_SRCOVER
 //		G2D_BLD->BLD_CTL = 0x01030103; 	// G2D_BLD_DSTOVER
 //		G2D_BLD->BLD_CTL = 0x00020002; 	// G2D_BLD_SRCIN
@@ -2195,7 +2213,7 @@ void hwaccel_stretchblt(
 			0;
 
 		G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
-		G2D_BLD->BLD_CTL = 0x03010301;	// G2D_BLD_SRCOVER - default value
+		G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 	}
 
 	/* Write-back settings */
@@ -2223,7 +2241,7 @@ void hwaccel_stretchblt(
 #else
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	colpip_fillrect(dst, dx, dy, x, y, w, h, COLORMAIN_GREEN);
+	colpip_fillrect(dst, dx, dy, 0, 0, w, h, COLORMAIN_GREEN);
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
 #endif
