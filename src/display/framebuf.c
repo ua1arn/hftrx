@@ -85,17 +85,19 @@ static unsigned awxx_get_vi_attr(void)
 static uint_fast32_t awxx_key_color_conversion(uint_fast32_t keycolor)
 {
 #if LCDMODE_MAIN_RGB565
-		// TFT: 0xA000A0 -> 0x4200A5
-		// RGB565: 0xA014
-		G2D_BLD->BLD_KEY_MAX = 0x4200A5; //keycolor;
-		G2D_BLD->BLD_KEY_MIN = 0x4200A5; //keycolor;
-		return 0x4200A5;
-
-		// TFT: 0xFF0000 -> 0x4200A5
-		// RGB565: 0xF800
-//		G2D_BLD->BLD_KEY_MAX = 0xF70000; //keycolor;
-//		G2D_BLD->BLD_KEY_MIN = 0xF70000; //keycolor;
-		return 0xF70000;
+		switch (keycolor)
+		{
+		case 0xA014:
+			// TFT: 0xA000A0 -> 0x4200A5
+			// RGB565: 0xA014
+			return 0x4200A5;
+		case 0xF800:
+			// TFT: 0xFF0000 -> 0xF70000
+			// RGB565: 0xF800
+			return 0xF70000;
+		default:
+			return keycolor;
+		}
 
 #else /* LCDMODE_RGB565 */
 		return keycolor;
