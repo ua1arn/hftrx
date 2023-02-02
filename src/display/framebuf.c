@@ -86,7 +86,7 @@ static unsigned awxx_get_vi_attr(void)
 /* Получение RGB888, который нужен для работы функций сравынния ключевого цвета.
  * Должно совпадать с алгоритмом выборки из памяти UIx_ и VI0_
  * */
-static uint_fast32_t awxx_key_color_conversion(COLORPIP_T color)
+static COLOR24_T awxx_key_color_conversion(COLORPIP_T color)
 {
 //	PRINTF("awxx_key_color_conversion: color=%08" PRIXFAST32 "\n", (uint_fast32_t) color);
 //	PRINTF("awxx_key_color_conversion: r=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_R(color));
@@ -1876,6 +1876,7 @@ void hwaccel_bitblt(
 
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
+		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
 		/* 5.10.9.10 BLD color key control register */
 		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
 		G2D_BLD->BLD_KEY_CTL =
@@ -1890,11 +1891,8 @@ void hwaccel_bitblt(
 			0 * (1u << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
 			0;
 
-		keycolor = awxx_key_color_conversion(keycolor);
-		G2D_BLD->BLD_KEY_MAX = COLOR24(0xA5, 0x00, 0xA5);
-		G2D_BLD->BLD_KEY_MIN = COLOR24(0xA5, 0x00, 0xA5);
-		G2D_BLD->BLD_KEY_MAX = keycolor;
-		G2D_BLD->BLD_KEY_MIN = keycolor;
+		G2D_BLD->BLD_KEY_MAX = keycolor24;
+		G2D_BLD->BLD_KEY_MIN = keycolor24;
 
 		/* установка поверхности - источника (анализируется) */
 		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
@@ -2137,6 +2135,7 @@ void hwaccel_stretchblt(
 
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
+		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
 		/* 5.10.9.10 BLD color key control register */
 		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
 		G2D_BLD->BLD_KEY_CTL =
@@ -2151,9 +2150,8 @@ void hwaccel_stretchblt(
 			0 * (1u << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
 			0;
 
-		keycolor = awxx_key_color_conversion(keycolor);
-		G2D_BLD->BLD_KEY_MAX = keycolor;
-		G2D_BLD->BLD_KEY_MIN = keycolor;
+		G2D_BLD->BLD_KEY_MAX = keycolor24;
+		G2D_BLD->BLD_KEY_MIN = keycolor24;
 
 		/* Данные для замены совпавших с keycolor */
 		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
