@@ -48,26 +48,26 @@ static uint32_t ptr_lo32(uintptr_t v)
 	} xg2d_alpha_mode_enh;
 
 #if LCDMODE_MAIN_ARGB888
-	#define VI_DstImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
-	#define UI_DstImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
+	#define VI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
+	#define UI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define WB_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 
 #elif LCDMODE_MAIN_RGB565
-	#define VI_DstImageFormat 0x0A
-	#define UI_DstImageFormat 0x0A
+	#define VI_ImageFormat 0x0A
+	#define UI_ImageFormat 0x0A
 	#define WB_ImageFormat 0x0A
 
 #else
 	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
 #endif
 
-static unsigned awxx_get_ui_attr(void)
+static unsigned awxx_get_ui_attr(unsigned srcFormat)
 {
 	unsigned ui_attr = 0;
 	ui_attr = 255 << 24;
 	//	if (img->bpremul)
 	//		vi_attr |= 0x2 << 16;	/* LAY_PREMUL_CTL */
-	ui_attr |= UI_DstImageFormat << 8;
+	ui_attr |= srcFormat << 8;
 	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	ui_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	//ui_attr |= (1u << 4);	/* Use FILLC register */
@@ -75,11 +75,11 @@ static unsigned awxx_get_ui_attr(void)
 	return ui_attr;
 }
 
-static unsigned awxx_get_vi_attr(void)
+static unsigned awxx_get_vi_attr(unsigned srcFormat)
 {
 	unsigned vi_attr = 0;
 	vi_attr = 255 << 24;
-	vi_attr |= VI_DstImageFormat << 8;
+	vi_attr |= srcFormat << 8;
 	vi_attr |= 1u << 15;
 	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
@@ -98,6 +98,12 @@ static COLOR24_T awxx_key_color_conversion(COLORPIP_T color)
 //	PRINTF("awxx_key_color_conversion: g=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_G(color));
 //	PRINTF("awxx_key_color_conversion: b=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_B(color));
 	return  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
+}
+
+// 0x01: ABGR_8888
+static unsigned awxx_get_srcformat(unsigned keyflag)
+{
+	return (keyflag & BITBLT_FLAG_ARCABGR8888) ? 0x01 : VI_ImageFormat;
 }
 
 /* Создание режима блендера BLD_CTL */
@@ -1826,7 +1832,7 @@ void hwaccel_bitblt(
 //	PRINTF("hwaccel_bitblt: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
 //	ASSERT(sdx > 1 && sdy > 1);
 //	ASSERT(sdx > 2 && sdy > 2);
-
+	const unsigned srcFormat = awxx_get_srcformat(keyflag);
 	enum { PIXEL_SIZE = sizeof * src };
 	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
@@ -1883,7 +1889,7 @@ void hwaccel_bitblt(
 		G2D_BLD->BLD_KEY_MIN = keycolor24;
 
 		/* установка поверхности - источника (анализируется) */
-		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
+		G2D_UI2->UI_ATTR = awxx_get_ui_attr(srcFormat);
 		G2D_UI2->UI_PITCH = sstride;
 		G2D_UI2->UI_FILLC = 0;
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -1893,7 +1899,7 @@ void hwaccel_bitblt(
 		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
-		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+		G2D_V0->V0_ATTCTL = awxx_get_vi_attr(VI_ImageFormat);
 		G2D_V0->V0_PITCH0 = tstride;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -1932,7 +1938,7 @@ void hwaccel_bitblt(
 //		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 //		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 
-        G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+        G2D_V0->V0_ATTCTL = awxx_get_vi_attr(srcFormat);
         G2D_V0->V0_PITCH0 = sstride;
         G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);    // unused
         G2D_V0->V0_COOR = 0;            // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -2071,6 +2077,7 @@ void hwaccel_stretchblt(
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
+	const unsigned srcFormat = awxx_get_srcformat(keyflag);
 	enum { PIXEL_SIZE = sizeof * dst };
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
@@ -2142,7 +2149,7 @@ void hwaccel_stretchblt(
 		G2D_BLD->BLD_KEY_MIN = keycolor24;
 
 		/* Данные для замены совпавших с keycolor */
-		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
+		G2D_UI2->UI_ATTR = awxx_get_ui_attr(VI_ImageFormat);
 		G2D_UI2->UI_PITCH = tstride;
 		G2D_UI2->UI_FILLC = 0;
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -2152,7 +2159,7 @@ void hwaccel_stretchblt(
 		G2D_UI2->UI_HADD = ptr_hi32(dstlinear);
 
 		/* Подача данных на вход VSU */
-		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+		G2D_V0->V0_ATTCTL = awxx_get_vi_attr(srcFormat);
 		G2D_V0->V0_PITCH0 = sstride;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -2196,7 +2203,7 @@ void hwaccel_stretchblt(
 	}
 	else
 	{
-		G2D_V0->V0_ATTCTL = awxx_get_vi_attr();
+		G2D_V0->V0_ATTCTL = awxx_get_vi_attr(srcFormat);
 		G2D_V0->V0_PITCH0 = sstride;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
