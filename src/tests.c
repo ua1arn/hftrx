@@ -6360,11 +6360,88 @@ static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 }
 #endif /* CPUSTYLE_F133 */
 
+#if 0
+
+// PNG files test
+
+#include "lupng.h"
+#include "Cobra.png.h"
+
+static void PNG_Load(LuImage **png,const unsigned char *buffer)
+{
+	 * png = luPngReadMemory((char *) buffer);
+}
+
+static void PNG_Free(LuImage *png)
+{
+	if(png)
+		luImageRelease(png, NULL);
+}
+
+// PNG files test
+static void testpng(void)
+{
+	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+	LuImage * png;
+
+	PNG_Load(& png, Cobra_png);
+
+	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
+	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [1]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+	unsigned picx = png->width;
+	unsigned picy = png->height;
+
+	PRINTF("testpng: data=%p, dataSize=%u, depth=%u, h=%u, h=%u\n", png, (unsigned) png->dataSize,  png->depth, png->width, png->height);
+
+	colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORMAIN_GRAY);
+
+	colpip_stretchblt(
+		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
+		fb, DIM_X, DIM_Y,
+		40, 20, picx * 3 / 2, picy * 3 / 2,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+		fbpic, picx, picy,
+		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_ARCABGR8888, keycolor
+		);
+
+	colpip_stretchblt(
+		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
+		fb, DIM_X, DIM_Y,
+		30, 0, picx / 2, picy / 2,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+		fbpic, picx, picy,
+		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_ARCABGR8888, keycolor
+		);
+
+	colpip_stretchblt(
+		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
+		fb, DIM_X, DIM_Y,
+		300, 100, picx / 1, picy / 1,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+		fbpic, picx, picy,
+		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_ARCABGR8888, keycolor
+		);
+
+	PNG_Free(png);
+	for (;;)
+		;
+}
+
+#endif
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && LCDMODE_LTDC
+	{
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+		testpng();
+	}
+#endif
 #if 0 && LCDMODE_LTDC
 	{
 		enum { picy = 110, picx = 150 };
