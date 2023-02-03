@@ -506,9 +506,9 @@ static int parseregfile(struct parsedfile * pfl, struct regdfn * regp, FILE * fp
     for (;;)
     {
 		memset(comment, 0, sizeof comment);
-		if (2 == sscanf(token0, "#irq; %[a-zA-Z_0-9]s %d\n", irqname, & irq))
+		if (2 == sscanf(token0, "#irq; %s %i\n", irqname, & irq))
 		{
-			fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
+			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
 			if (pfl->irq_count < BASE_MAX)
 			{
 				pfl->irq_array [pfl->irq_count] = irq;
@@ -517,13 +517,10 @@ static int parseregfile(struct parsedfile * pfl, struct regdfn * regp, FILE * fp
 				++ pfl->irq_count;
 			}
 
-			if (nextline(fp) == 0)
-				break;
-			continue;
 		}
-		else if (2 == sscanf(token0, "#irqrv; %[a-zA-Z_0-9]s %d\n", irqname, & irqrv))
+		else if (2 == sscanf(token0, "#irqrv; %s %i\n", irqname, & irqrv))
 		{
-			fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
+			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
 			if (pfl->irqrv_count < BASE_MAX)
 			{
 				pfl->irqrv_array [pfl->irqrv_count] = irq;
@@ -532,53 +529,43 @@ static int parseregfile(struct parsedfile * pfl, struct regdfn * regp, FILE * fp
 				++ pfl->irqrv_count;
 			}
 
-			if (nextline(fp) == 0)
-				break;
-			continue;
 		}
 		else if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]s\n", typname))
 		{
-			fprintf(stderr, "Parsed typname='%s'\n", typname);
+			//fprintf(stderr, "Parsed typname='%s'\n", typname);
+			strcpy(pfl->bname, typname);
 
-			if (nextline(fp) == 0)
-				break;
-			continue;
 		}
 		else if (2 == sscanf(token0, "#base; %s%i\n", typname, & base))
 		{
-			fprintf(stderr, "Parsed base='%s' 0x%08X\n", typname, base);
+			//fprintf(stderr, "Parsed base='%s' 0x%08X\n", typname, base);
+			if (pfl->base_count < BASE_MAX)
+			{
+				pfl->base_array [pfl->base_count] = base;
+				strcpy(pfl->base_names [pfl->base_count], typname);
+				++ pfl->base_count;
+			}
 
-			if (nextline(fp) == 0)
-				break;
-			continue;
 		}
-		else if (1 <= sscanf(token0, "#regdef; %[a-zA-Z_0-9]s;%i;%1023[^\n]c\n", fldname, & fldoffset, comment))
+		else if (1 <= sscanf(token0, "#regdef; %[a-zA-Z_0-9]s%*[;]s%i %1023[^\n]c\n", fldname, & fldoffset, comment))
 		{
 			//	#regdef; RISC_STA_ADD0_REG; 0x0004; RISC Start Address0 Register
 
 			fprintf(stderr, "Parsed regdef='%s' 0x%08X '%s'\n", fldname, fldoffset, comment);
 
-			if (nextline(fp) == 0)
-				break;
-			continue;
 		}
 		else if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment))
 		{
-			fprintf(stderr, "Parsed comment='%s'\n", comment);
+			//fprintf(stderr, "Parsed comment='%s'\n", comment);
 
-			if (nextline(fp) == 0)
-				break;
-			continue;
 		}
 		else
 		{
 			/* unrecognized input = next source line */
  			fprintf(stderr, "unrecognized token0=%s", token0);
-
-			if (nextline(fp) == 0)
-				break;
-			continue;
 		}
+		if (nextline(fp) == 0)
+			break;
 	}
 	return 1;	/* end of file */
 }
