@@ -277,7 +277,7 @@ int compare_irq(const void * v1, const void * v2)
 	return p1->irq - p2->irq;
 }
 
-
+/* Parse line. NULL - unrecognized format */
 static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE * fp)
 {
 	char dummy [VNAME_MAX];
@@ -289,7 +289,10 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 		if (s == NULL)
 			break;
 		if (s [0] != '#')
-			break;
+		{
+			fprintf(stderr, "# # undeined %s", s);
+			return NULL;
+		}
 
 		f2 = sscanf(s + 1, "regdef; %[*a-zA-Z_0-9]s", dummy);
 		if (f2 == 1)
@@ -327,7 +330,7 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 		}
 		fprintf(stderr, "# # f2=%d undeined %s", f2, s);
 	}
-	return s;
+	return NULL;
 }
 
 // return 0: 0k
