@@ -87,21 +87,14 @@ void emitline(int pos, const char * format, ...)
 		emitpos = 0;
 }
 
-void genstruct(struct parsedfile * pfl)
+/* Generate list of registers. Return last offset */
+unsigned genreglist(int indent, const LIST_ENTRY * regslist)
 {
 	unsigned offs;
 	PLIST_ENTRY t;
 
-	emitline(0, "/*\n");
-	emitline(0, " * @brief %s\n", pfl->bname);
-	emitline(0, " */\n");
-
-	emitline(0, "/*!< %s Controller Interface */\n", pfl->bname);
-	emitline(0, "typedef struct %s_Type\n", pfl->bname);
-	emitline(0, "{\n");
 	offs = 0;
-
-	for (t = pfl->regslist.Flink; t != & pfl->regslist; t = t->Flink)
+	for (t = regslist->Flink; t != regslist; t = t->Flink)
 	{
 		const struct regdfn * regp = CONTAINING_RECORD(t, struct regdfn, item);
 		static const char * fldtypes [] =
@@ -136,15 +129,15 @@ void genstruct(struct parsedfile * pfl)
 
             if (sz == 4)
             {
-			    emitline(INDENT + 9, "uint32_t reserved_0x%03X;\n", offs);
+			    emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X;\n", offs);
             }
             else if ((sz % 4) == 0)
             {
-			    emitline(INDENT + 9, "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
+			    emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
             }
             else
             {
-		    	emitline(INDENT + 9, "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
+		    	emitline(indent + INDENT + 9, "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
             }
 			offs = regp->fldoffs;
 		}
@@ -157,11 +150,11 @@ void genstruct(struct parsedfile * pfl)
 					// Array forming
 					if (regp->typname != NULL)
 					{
-						emitline(INDENT, "%s %s [0x%03X];", regp->typname, regp->fldname, regp->fldrept);
+						emitline(indent + INDENT, "%s %s [0x%03X];", regp->typname, regp->fldname, regp->fldrept);
 					}
 					else
 					{
-						emitline(INDENT, "volatile %s %s [0x%03X];", fldtype, regp->fldname, regp->fldrept);
+						emitline(indent + INDENT, "volatile %s %s [0x%03X];", fldtype, regp->fldname, regp->fldrept);
 					}
 
 					offs += regp->fldsize * regp->fldrept;
@@ -171,11 +164,11 @@ void genstruct(struct parsedfile * pfl)
 					// Plain field
 					if (regp->typname != NULL)
 					{
-						emitline(INDENT, "%s %s;", regp->typname, regp->fldname);
+						emitline(indent + INDENT, "%s %s;", regp->typname, regp->fldname);
 					}
 					else
 					{
-						emitline(INDENT, "volatile %s %s;", fldtype, regp->fldname);
+						emitline(indent + INDENT, "volatile %s %s;", fldtype, regp->fldname);
 					}
 					offs += regp->fldsize;
 				}
@@ -188,6 +181,23 @@ void genstruct(struct parsedfile * pfl)
 			break;
 		}
 	}
+	return offs;
+}
+
+void genstruct(struct parsedfile * pfl)
+{
+	unsigned offs;
+
+	emitline(0, "/*\n");
+	emitline(0, " * @brief %s\n", pfl->bname);
+	emitline(0, " */\n");
+
+	emitline(0, "/*!< %s Controller Interface */\n", pfl->bname);
+	emitline(0, "typedef struct %s_Type\n", pfl->bname);
+	emitline(0, "{\n");
+
+	offs = genreglist(0, & pfl->regslist);
+
 	emitline(0, "} %s_TypeDef; /* size of structure = 0x%03X */\n", pfl->bname, offs);
 }
 
