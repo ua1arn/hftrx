@@ -378,10 +378,8 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 #ifndef DCACHEROWSIZE
 	#define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
-#elif (__CORTEX_A != 0) ||  (__CORTEX_M != 0)
-	#define GXALIGN (DCACHEROWSIZE / LCDMODE_PIXELSIZE)	/* количество пикселей в строке видеобуфера кратно этому заначению */
 #else
-	#define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
+	#define GXALIGN (DCACHEROWSIZE / LCDMODE_PIXELSIZE)	/* количество пикселей в строке видеобуфера кратно этому заначению */
 #endif
 
 #define GXADJ(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
