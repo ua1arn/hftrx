@@ -301,6 +301,11 @@ int compare_irqrv(const void * v1, const void * v2)
 	return p1->irqrv - p2->irqrv;
 }
 
+/* source line for parse */
+
+static char token0 [1024];
+#define TKSZ (sizeof token0 / sizeof token0 [0])
+
 /* Parse line. NULL - unrecognized format */
 static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE * fp)
 {
@@ -375,7 +380,6 @@ static int parseregister(struct parsedfile * pfl, struct regdfn * regp, FILE * f
     char fldname [VNAME_MAX];
     char typname [VNAME_MAX];
     int fldsize;
-    char b0 [1024];
 	static const char SEP [] = ";";
     char * token;
     char * s0;
@@ -384,7 +388,7 @@ static int parseregister(struct parsedfile * pfl, struct regdfn * regp, FILE * f
     int nargs;
     char * s2;
 
-    char * const s0z = commentfgets(pfl, b0, sizeof b0 / sizeof b0 [0], fp);
+    char * const s0z = commentfgets(pfl, token0, TKSZ, fp);
     if (s0z == NULL)
         return 1;
 	//emitline(0, "#R %s", s0z);
