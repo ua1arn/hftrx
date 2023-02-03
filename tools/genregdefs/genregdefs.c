@@ -51,9 +51,14 @@ struct parsedfile
 	int base_count;
 	unsigned base_array [BASE_MAX];
 	char base_names [BASE_MAX] [VNAME_MAX];
+
 	int irq_count;
 	int irq_array [BASE_MAX];
 	char irq_names [BASE_MAX] [VNAME_MAX];
+
+	int irqrv_count;
+	int irqrv_array [BASE_MAX];
+	char irqrv_names [BASE_MAX] [VNAME_MAX];
 };
 
 #define INDENT 4
@@ -252,6 +257,12 @@ struct irqmap
 	char name [VNAME_MAX];
 };
 
+struct irqmaprv
+{
+	int irqrv;
+	char name [VNAME_MAX];
+};
+
 /* qsort parameter */
 int compare_base(const void * v1, const void * v2)
 {
@@ -275,6 +286,19 @@ int compare_irq(const void * v1, const void * v2)
 		return strcmp(p1->name, p2->name);
 	}
 	return p1->irq - p2->irq;
+}
+
+/* qsort parameter */
+int compare_irqrv(const void * v1, const void * v2)
+{
+	const struct irqmaprv * p1 = v1;
+	const struct irqmaprv * p2 = v2;
+
+	if (p1->irqrv == p2->irqrv)
+	{
+		return strcmp(p1->name, p2->name);
+	}
+	return p1->irqrv - p2->irqrv;
 }
 
 /* Parse line. NULL - unrecognized format */
@@ -318,12 +342,24 @@ static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE 
 				continue;
 			}
 		}
+
 		if (pfl->irq_count < BASE_MAX)
 		{
 			f2 = sscanf(s + 1, "irq; %s %d", pfl->irq_names [pfl->irq_count], & pfl->irq_array [pfl->irq_count]);
 			if (f2 == 2)
 			{
 				++ pfl->irq_count;
+				//emitline(0, "irq %s processrd\n", pfl->bname);
+				continue;
+			}
+		}
+
+		if (pfl->irqrv_count < BASE_MAX)
+		{
+			f2 = sscanf(s + 1, "irqrv; %s %d", pfl->irqrv_names [pfl->irqrv_count], & pfl->irqrv_array [pfl->irqrv_count]);
+			if (f2 == 2)
+			{
+				++ pfl->irqrv_count;
 				//emitline(0, "irq %s processrd\n", pfl->bname);
 				continue;
 			}
@@ -454,6 +490,7 @@ static int loadregs(struct parsedfile * pfl, const char * file)
 	strcpy(pfl->bname, "");
 	pfl->base_count = 0;
 	pfl->irq_count = 0;
+	pfl->irqrv_count = 0;
 
 	InitializeListHead(& pfl->regslist);
 	//pfl->regs = NULL; 
@@ -548,6 +585,19 @@ static int collect_irq(struct parsedfile * pfl, int n, struct irqmap * v)
 	return score;
 }
 
+static int collect_irqrv(struct parsedfile * pfl, int n, struct irqmaprv * v)
+{
+	/* collect irq vectors */
+	int i;
+	int score = 0;
+	for (i = 0; i < pfl->irqrv_count && n --; ++ i, ++ v, ++ score)
+	{
+		strcpy(v->name, pfl->irqrv_names [i]);
+		v->irqrv = pfl->irqrv_array [i];
+	}
+	return score;
+}
+
 static void freeregs(struct parsedfile * pfl)
 {
 	PLIST_ENTRY t;
@@ -611,13 +661,13 @@ int main(int argc, char* argv[], char* envp[])
 
 		if (0)
 		{
-			/* collect IRQ vectors */
+			/* collect ARM IRQ vectors */
 			int nitems = 0;
 			struct irqmap irqs [1024];
 
 			{
 				PLIST_ENTRY t;
-				for (t = parsedfiles.Flink; t != & parsedfiles; t = t->Flink)
+				for (t = parsedfiles.Flink; t != & parsedfiles && nitems < sizeof irqs / sizeof irqs [0]; t = t->Flink)
 				{
 					struct parsedfile * const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 					nitems += collect_irq(pfl, sizeof irqs / sizeof irqs [0] - nitems, irqs + nitems);
@@ -636,6 +686,41 @@ int main(int argc, char* argv[], char* envp[])
 				struct irqmap * const p = & irqs [i];
 
 				emitline(0, "\t%s_IRQn\t= %d,\n", p->name, p->irq);
+			}
+			emitline(0, "\n");
+			emitline(0, "\t%MAX_IRQ_n,\n");
+			emitline(0, "\tForce_IRQn_enum_size\t= %d\t/* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n", 1048);
+			emitline(0, "} IRQn_Type;\n");
+			emitline(0, "\n");
+		}
+
+		if (0)
+		{
+			/* collect RISC-V IRQ vectors */
+			int nitems = 0;
+			struct irqmaprv irqs [1024];
+
+			{
+				PLIST_ENTRY t;
+				for (t = parsedfiles.Flink; t != & parsedfiles && nitems < sizeof irqs / sizeof irqs [0]; t = t->Flink)
+				{
+					struct parsedfile * const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
+					nitems += collect_irqrv(pfl, sizeof irqs / sizeof irqs [0] - nitems, irqs + nitems);
+				}
+			}
+
+			qsort(irqs, nitems, sizeof irqs [0], compare_irqrv);
+
+			emitline(0, "\n");
+			emitline(0, "/* IRQs */\n");
+			emitline(0, "\n");
+			emitline(0, "typedef enum IRQn\n");
+			emitline(0, "{\n");
+			for (i = 0; i < nitems; ++ i)
+			{
+				struct irqmaprv * const p = & irqs [i];
+
+				emitline(0, "\t%s_IRQn\t= %d,\n", p->name, p->irqrv);
 			}
 			emitline(0, "\n");
 			emitline(0, "\t%MAX_IRQ_n,\n");
