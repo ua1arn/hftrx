@@ -1,6 +1,6 @@
 /* Generated section start */ 
-#ifndef HEADER_63DCB080_INCLUDED
-#define HEADER_63DCB080_INCLUDED
+#ifndef HEADER_63DD7B99_INCLUDED
+#define HEADER_63DD7B99_INCLUDED
 #include <stdint.h>
 
 
@@ -320,7 +320,19 @@ typedef struct CCU_Type
     volatile uint32_t RISC_GATING_REG;                                          /*!< Offset 0xD04 RISC Gating Configuration Register */
              uint32_t reserved_0xD08;
     volatile uint32_t RISC_CFG_BGR_REG;                                         /*!< Offset 0xD0C RISC_CFG Bus Gating Reset Register */
-} CCU_TypeDef; /* size of structure = 0xD10 */
+             uint32_t reserved_0xD10 [0x007D];
+    volatile uint32_t PLL_LOCK_DBG_CTRL_REG;                                    /*!< Offset 0xF04 (null) */
+    volatile uint32_t FRE_DET_CTRL_REG;                                         /*!< Offset 0xF08 Frequency Detect Control Register */
+    volatile uint32_t FRE_UP_LIM_REG;                                           /*!< Offset 0xF0C Frequency Up Limit Register */
+    volatile uint32_t FRE_DOWN_LIM_REG;                                         /*!< Offset 0xF10 Frequency Down Limit Register */
+             uint32_t reserved_0xF14 [0x0003];
+    volatile uint32_t RISC_RST_REG;                                             /*!< Offset 0xF20 RISC LOCK RESET Register */
+             uint32_t reserved_0xF24 [0x0003];
+    volatile uint32_t CCU_FAN_GATE_REG;                                         /*!< Offset 0xF30 CCU FANOUT CLOCK GATE Register */
+    volatile uint32_t CLK27M_FAN_REG;                                           /*!< Offset 0xF34 CLK27M FANOUT Register */
+    volatile uint32_t PCLK_FAN_REG;                                             /*!< Offset 0xF38 PCLK FANOUT Register */
+    volatile uint32_t CCU_FAN_REG;                                              /*!< Offset 0xF3C CCU FANOUT Register */
+} CCU_TypeDef; /* size of structure = 0xF40 */
 /*
  * @brief PLIC
  */
@@ -2353,5 +2365,5 @@ typedef struct CLINT_Type
 #define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)                                    /*!< \brief CLINT Interface register set access pointer */
-#endif /* HEADER_63DCB080_INCLUDED */
+#endif /* HEADER_63DD7B99_INCLUDED */
 /* Generated section end */ 

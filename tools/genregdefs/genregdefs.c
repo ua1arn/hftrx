@@ -115,8 +115,10 @@ unsigned genreglist(int indent, const LIST_ENTRY * regslist)
             "uint64_t",
         };
 
-		int commentspos = 54;
         char fldtype [VNAME_MAX];
+
+		//fprintf(stderr, "$generate field: fldsize=%u fldoffs=%04X fldrept=%u fldname=%s\n", regp->fldsize, regp->fldoffs,regp->fldrept,regp->fldname);
+
         if (regp->fldsize >= sizeof fldtypes / sizeof fldtypes [0])
         {
             _snprintf(fldtype, sizeof fldtype / sizeof fldtype [0], "typesize%u", regp->fldsize);
@@ -136,11 +138,11 @@ unsigned genreglist(int indent, const LIST_ENTRY * regslist)
             {
 			    emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X;\n", offs);
             }
-            else if ((sz % 4) == 0)
+            else if (sz != 0 && (sz % 4) == 0)
             {
 			    emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
             }
-            else
+            else if (sz != 0)
             {
 		    	emitline(indent + INDENT + 9, "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
             }
@@ -308,7 +310,13 @@ static char token0 [1024];
 
 int nextline(FILE * fp)
 {
-	return fgets(token0, TKSZ, fp) != NULL;
+	char * s = fgets(token0, TKSZ, fp);
+	if (s != NULL)
+	{
+		//fprintf(stderr, "#input:  '%s", s);
+	}
+	return s != NULL;
+
 }
 
 /* Parse line. NULL - unrecognized format */
@@ -488,19 +496,114 @@ static int parseregister(struct parsedfile * pfl, struct regdfn * regp, FILE * f
 
 }
 
+void parseregdef(
+   struct regdfn * regp, 
+   char * s0, 
+   char * fldname,
+   unsigned fldsize,
+   char * typname,
+   const char * file
+   )
+{
+	unsigned fldoffset;
+	unsigned fldrept;
+
+	static const char SEP [] = ";";
+	//	#regdef; RISC_STA_ADD0_REG; 0x0004; RISC Start Address0 Register
+
+	//fprintf(stderr, "Parsed regdef='%s' 0x%08X '%s'\n", fldname, fldoffset, comment);
+	char * s = strtok(s0, SEP);
+	char * s2 = strtok(NULL, SEP);
+
+ 	/* trim field name */
+    if (strchr(fldname, '\n') != NULL)
+        * strchr(fldname, '\n') = '\0';
+     if (strchr(fldname, '/') != NULL)
+        * strchr(fldname, '/') = '_';
+     if (strchr(fldname, '/') != NULL)
+        * strchr(fldname, '/') = '_';
+
+	 if (s2 != NULL)
+	 {
+		/* trim comments */
+		while (isspace((unsigned char) * s2))
+			++ s2;
+		if (strchr(s2, '\n') != NULL)
+			* strchr(s2, '\n') = '\0';
+	 }
+
+	 if (typname != NULL)
+	 {
+		/* trim comments */
+		 if (strchr(typname, ';') != NULL)
+			* strchr(typname, ';') = '\0';
+		 if (strlen(typname) == 0)
+		 typname = NULL;
+	 }
+
+	//fprintf(stderr, "parse: '%s' '%s'\n", s, s2);
+
+	if (2 == sscanf(s, "%i %i", & fldoffset, & fldrept))
+	{
+		//fprintf(stderr, "fParsed 2 regdef='%s' offs=0x%08X rept=0x%08X\n", fldname, fldoffset, fldrept);
+		regp->fldname = strdup(fldname);
+		regp->fldoffs = fldoffset;
+		regp->fldrept = fldrept;
+		regp->fldsize = fldsize;
+		regp->typname = typname ? strdup(typname) : NULL;
+		regp->comment = strdup(s2);
+	}
+	else if (1 == sscanf(s, "%i", & fldoffset))
+	{
+		//fprintf(stderr, "fParsed 1 regdef='%s' offs=0x%08X\n", fldname, fldoffset);
+		regp->fldname = strdup(fldname);
+		regp->fldoffs = fldoffset;
+		regp->fldrept = 0;
+		regp->fldsize = fldsize;
+		regp->typname = typname ? strdup(typname) : NULL;
+		regp->comment = strdup(s2);
+
+		/* parsed */
+	}
+	else if (0 && 1 == sscanf(s, "%s", typname))
+	{
+		//fprintf(stderr, "fParsed 4 regdef='%s' offs=0x%08X\n", fldname, fldoffset);
+		regp->fldname = strdup(fldname);
+		regp->fldoffs = fldoffset;
+		regp->fldrept = 0;
+		regp->fldsize = fldsize;
+		regp->typname = typname ? strdup(typname) : NULL;
+		regp->comment = strdup(s2);
+	}
+	else
+	{
+		regp->comment = strdup("no comment");
+
+		fprintf(stderr, "fstrange '%s' token0='%s' regdef='%s'\n", file, token0, s);
+
+		regp->fldname = strdup(fldname);
+		regp->fldoffs = 0;
+		regp->fldrept = 0;
+		regp->fldsize = 4;
+
+		/* parsed */
+	}
+}
+
 // 1 - end of file
 // 0 - register definition ok
-static int parseregfile(struct parsedfile * pfl, struct regdfn * regp, FILE * fp, const char * file)
+static int parseregfile(struct parsedfile * pfl, FILE * fp, const char * file)
 {
 	char comment [TKSZ];
     char fldname [VNAME_MAX];
     char typname [VNAME_MAX];
     char irqname [VNAME_MAX];
+    char fldtype [VNAME_MAX];
     int irq;
     int irqrv;
 	unsigned base;
-	unsigned fldoffset;
-	//int pos;	/* end of parsed field position */
+	unsigned fldsize;
+	int pos;	/* end of parsed field position */
 
 	//fprintf(stderr, "token0=%s", token0);
     for (;;)
@@ -517,6 +620,9 @@ static int parseregfile(struct parsedfile * pfl, struct regdfn * regp, FILE * fp
 				++ pfl->irq_count;
 			}
 
+			/* parsed */
+			if (nextline(fp) == 0)
+				break;
 		}
 		else if (2 == sscanf(token0, "#irqrv; %s %i\n", irqname, & irqrv))
 		{
@@ -529,12 +635,18 @@ static int parseregfile(struct parsedfile * pfl, struct regdfn * regp, FILE * fp
 				++ pfl->irqrv_count;
 			}
 
+			/* parsed */
+			if (nextline(fp) == 0)
+				break;
 		}
 		else if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]s\n", typname))
 		{
 			//fprintf(stderr, "Parsed typname='%s'\n", typname);
 			strcpy(pfl->bname, typname);
 
+			/* parsed */
+			if (nextline(fp) == 0)
+				break;
 		}
 		else if (2 == sscanf(token0, "#base; %s%i\n", typname, & base))
 		{
@@ -546,26 +658,66 @@ static int parseregfile(struct parsedfile * pfl, struct regdfn * regp, FILE * fp
 				++ pfl->base_count;
 			}
 
+			/* parsed */
+			if (nextline(fp) == 0)
+				break;
 		}
-		else if (1 <= sscanf(token0, "#regdef; %[a-zA-Z_0-9]s%*[;]s%i %1023[^\n]c\n", fldname, & fldoffset, comment))
+		else if (3 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %i %s%n", fldname, & fldsize, & fldtype, & pos))
 		{
-			//	#regdef; RISC_STA_ADD0_REG; 0x0004; RISC Start Address0 Register
+			struct regdfn * regp;
 
-			fprintf(stderr, "Parsed regdef='%s' 0x%08X '%s'\n", fldname, fldoffset, comment);
+			//fprintf(stderr, "Parsed 3 regdef fldname='%s' fldszie=%u fldtype='%s'\n", fldname, fldsize, fldtype);
+			regp = calloc(1, sizeof * regp);
+			parseregdef(regp, token0 + pos, fldname, fldsize, fldtype, file);
+
+			/* parsed */
+			InsertTailList(& pfl->regslist, & regp->item);
+			if (nextline(fp) == 0)
+				break;
+		}
+		else if (2 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %i %n", fldname, & fldsize, & pos))
+		{
+			struct regdfn * regp;
+
+			//fprintf(stderr, "Parsed 2 regdef fldname='%s' fldszie=%u\n", fldname, fldsize);
+			regp = calloc(1, sizeof * regp);
+			parseregdef(regp, token0 + pos, fldname, fldsize, NULL, file);
+
+			/* parsed */
+			InsertTailList(& pfl->regslist, & regp->item);
+			if (nextline(fp) == 0)
+				break;
+		}
+		else if (1 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %n", fldname, & pos))
+		{
+			struct regdfn * regp;
+
+			//fprintf(stderr, "Parsed 1 regdef fldname='%s' \n", fldname);
+			regp = calloc(1, sizeof * regp);
+			parseregdef(regp, token0 + pos, fldname, 4, NULL, file);
+
+			/* parsed */
+			InsertTailList(& pfl->regslist, & regp->item);
+			if (nextline(fp) == 0)
+				break;
+
 
 		}
 		else if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment))
 		{
 			//fprintf(stderr, "Parsed comment='%s'\n", comment);
-
+			//regp->comment = strdup(comment);
+			if (nextline(fp) == 0)
+				break;
 		}
 		else
 		{
 			/* unrecognized input = next source line */
  			fprintf(stderr, "unrecognized token0=%s", token0);
+			/* parsed */
+			if (nextline(fp) == 0)
+				break;
 		}
-		if (nextline(fp) == 0)
-			break;
 	}
 	return 1;	/* end of file */
 }
@@ -587,24 +739,16 @@ static int loadregs(struct parsedfile * pfl, const char * file)
 	//TP();
 	if (fp == NULL)
     {
-        emitline(0, "#error Can not open file '%s'\n", file);
+        fprintf(stderr, "#error Can not open file '%s'\n", file);
         return 1;
     }
+    //fprintf(stderr, "#error Opened file '%s'\n", file);
 
-//	if (nextline(fp) == 0)
-//		return 1;
 
-    for (;;)
-    {
-		struct regdfn * regp = calloc(1, sizeof (struct regdfn));
+	if (nextline(fp) == 0)
+		return 1;
 
-		if (parseregister/*parseregfile*/(pfl, regp, fp, file))
-		{
-			free(regp);
-			break;
-		}
-		InsertTailList(& pfl->regslist, & regp->item);
-    }
+	parseregfile(pfl, fp, file);
 
 
 	//pfl->regs = regs; 
@@ -620,6 +764,10 @@ static void processfile_periphregs(struct parsedfile * pfl)
 	if (! IsListEmpty(& pfl->regslist))
 	{
 		genstruct(pfl);
+	}
+	else
+	{
+		//fprintf(stderr, "#error No registers in '%s'\n", pfl->bname);
 	}
 }
 

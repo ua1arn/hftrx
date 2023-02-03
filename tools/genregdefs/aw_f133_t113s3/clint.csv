@@ -6,4 +6,3 @@
 #regdef; mtimelo 4;	0xBFF8;	Provides the current timer value.
 #regdef; mtimehi 4;	0xBFFC;	Provides the current timer value.
 #regdef; padding 0; 0xC000
-
