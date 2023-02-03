@@ -8,119 +8,119 @@
 #regdef;AC_DAC_CNT; 0x0024; DAC TX FIFO Counter Register
 #regdef;AC_DAC_DG; 0x0028; DAC Debug Register
 #regdef; AC_ADC_FIFOC; 0x0030; ADC FIFO Control Register
-ADC_VOL_CTRL1; 0x0034; ADC Volume Control1 Register
-AC_ADC_FIFOS; 0x0038; ADC FIFO Status Register
-AC_ADC_RXDATA; 0x0040; ADC RX Data Register
-AC_ADC_CNT; 0x0044; ADC RX Counter Register
-AC_ADC_DG; 0x004C; ADC Debug Register
-ADC_DIG_CTRL; 0x0050; ADC Digtial Control Register
-VRA1SPEEDUP_DOWN_CTRL; 0x0054; VRA1 Speedup Down Control Register
-AC_DAC_DAP_CTRL; 0x00F0; DAC DAP Control Register
-AC_ADC_DAP_CTR; 0x00F8; ADC DAP Control Register
-AC_DAC_DRC_HHPFC; 0x0100; DAC DRC High HPF Coef Register
-AC_DAC_DRC_LHPFC; 0x0104; DAC DRC Low HPF Coef Register
-AC_DAC_DRC_CTRL; 0x0108; DAC DRC Control Register
-AC_DAC_DRC_LPFHAT; 0x010C; DAC DRC Left Peak Filter High Attack Time Coef Register
-AC_DAC_DRC_LPFLAT; 0x0110; DAC DRC Left Peak Filter Low Attack Time Coef Register
-AC_DAC_DRC_RPFHAT; 0x0114; DAC DRC Right Peak Filter High Attack Time Coef Register
-AC_DAC_DRC_RPFLAT; 0x0118; DAC DRC Peak Filter Low Attack Time Coef Register
-AC_DAC_DRC_LPFHRT; 0x011C; DAC DRC Left Peak Filter High Release Time Coef Register
-AC_DAC_DRC_LPFLRT; 0x0120; DAC DRC Left Peak Filter Low Release Time Coef Register
-AC_DAC_DRC_RPFHRT; 0x0124; DAC DRC Right Peak filter High Release Time Coef Register
-AC_DAC_DRC_RPFLRT; 0x0128; DAC DRC Right Peak filter Low Release Time Coef Register
-AC_DAC_DRC_LRMSHAT; 0x012C; DAC DRC Left RMS Filter High Coef Register
-AC_DAC_DRC_LRMSLAT; 0x0130; DAC DRC Left RMS Filter Low Coef Register
-AC_DAC_DRC_RRMSHAT; 0x0134; DAC DRC Right RMS Filter High Coef Register
-AC_DAC_DRC_RRMSLAT; 0x0138; DAC DRC Right RMS Filter Low Coef Register
-AC_DAC_DRC_HCT; 0x013C; DAC DRC Compressor Threshold High Setting Register
-AC_DAC_DRC_LCT; 0x0140; DAC DRC Compressor Slope High Setting Register
-AC_DAC_DRC_HKC; 0x0144; DAC DRC Compressor Slope High Setting Register
-AC_DAC_DRC_LKC; 0x0148; DAC DRC Compressor Slope Low Setting Register
-AC_DAC_DRC_HOPC; 0x014C; DAC DRC Compresso
-AC_DAC_DRC_LOPC; 0x0150; DAC DRC Compressor Low Output at Compressor Threshold Register
-AC_DAC_DRC_HLT; 0x0154; DAC DRC Limiter Threshold High Setting Register
-AC_DAC_DRC_LLT; 0x0158; DAC DRC Limiter Threshold Low Setting Register
-AC_DAC_DRC_HKl; 0x015C; DAC DRC Limiter Slope High Setting Register
-AC_DAC_DRC_LKl; 0x0160; DAC DRC Limiter Slope Low Setting Register
-AC_DAC_DRC_HOPL; 0x0164; DAC DRC Limiter High Output at Limiter Threshold
-AC_DAC_DRC_LOPL; 0x0168; DAC DRC Limiter Low Output at Limiter Threshold
-AC_DAC_DRC_HET; 0x016C; DAC DRC Expander Threshold High Setting Register
-AC_DAC_DRC_LET; 0x0170; DAC DRC Expander Threshold Low Setting Register
-AC_DAC_DRC_HKE; 0x0174; DAC DRC Expander Slope High Setting Register
-AC_DAC_DRC_LKE; 0x0178; DAC DRC Expander Slope Low Setting Register
-AC_DAC_DRC_HOPE; 0x017C; DAC DRC Expander High Output at Expander Threshold
-AC_DAC_DRC_LOPE; 0x0180; DAC DRC Expander Low Output at Expander Threshold
-AC_DAC_DRC_HKN; 0x0184; DAC DRC Linear Slope High Setting Register
-AC_DAC_DRC_LKN; 0x0188; DAC DRC Linear Slope Low Setting Register
-AC_DAC_DRC_SFHAT; 0x018C; DAC DRC Smooth filter Gain High Attack Time Coef Register
-AC_DAC_DRC_SFLAT; 0x0190; DAC DRC Smooth filter Gain Low Attack Time Coef Register
-AC_DAC_DRC_SFHRT; 0x0194; DAC DRC Smooth filter Gain High Release Time Coef Register
-AC_DAC_DRC_SFLRT; 0x0198; DAC DRC Smooth filter Gain Low Release Time Coef Register
-AC_DAC_DRC_MXGHS; 0x019C; DAC DRC MAX Gain High Setting Register
-AC_DAC_DRC_MXGLS; 0x01A0; DAC DRC MAX Gain Low Setting Register
-AC_DAC_DRC_MNGHS; 0x01A4; DAC DRC MIN Gain High Setting Register
-AC_DAC_DRC_MNGLS; 0x01A8; DAC DRC MIN Gain Low Setting Register
-AC_DAC_DRC_EPSHC; 0x01AC; DAC DRC Expander Smooth Time High Coef Register
-AC_DAC_DRC_EPSLC; 0x01B0; DAC DRC Expander Smooth Time Low Coef Register
-AC_DAC_DRC_HPFHGAIN; 0x01B8; DAC DRC HPF Gain High Coef Register
-AC_DAC_DRC_HPFLGAIN; 0x01BC; DAC DRC HPF Gain Low Coef Register
-AC_ADC_DRC_HHPFC; 0x0200; ADC DRC High HPF Coef Register
-AC_ADC_DRC_LHPFC; 0x0204; ADC DRC Low HPF Coef Register
-AC_ADC_DRC_CTRL; 0x0208; ADC DRC Control Register
-AC_ADC_DRC_LPFHAT; 0x020C; ADC DRC Left Peak Filter High Attack Time Coef Register
-AC_ADC_DRC_LPFLAT; 0x0210; ADC DRC Left Peak Filter Low Attack Time Coef Register
-AC_ADC_DRC_RPFHAT; 0x0214; ADC DRC Right Peak Filter High Attack Time Coef Register
-AC_ADC_DRC_RPFLAT; 0x0218; ADC DRC Right Peak Filter Low Attack Time Coef Register
-AC_ADC_DRC_LPFHRT; 0x021C; ADC DRC Left Peak Filter High Release Time Coef Register
-AC_ADC_DRC_LPFLRT; 0x0220; ADC DRC Left Peak Filter Low Release Time Coef Register
-AC_ADC_DRC_RPFHRT; 0x0224; ADC DRC Right Peak Filter High Release Time Coef Register
-AC_ADC_DRC_RPFLRT; 0x0228; ADC DRC Right Peak Filter Low Release Time Coef Register
-AC_ADC_DRC_LRMSHAT; 0x022C; ADC DRC Left RMS Filter High Coef Register
-AC_ADC_DRC_LRMSLAT; 0x0230; ADC DRC Left RMS Filter Low Coef Register
-AC_ADC_DRC_RRMSHAT; 0x0234; ADC DRC Right RMS Filter High Coef Register
-AC_ADC_DRC_RRMSLAT; 0x0238; ADC DRC Right RMS Filter Low Coef Register
-AC_ADC_DRC_HCT; 0x023C; ADC DRC Compressor Threshold High Setting Register
-AC_ADC_DRC_LCT; 0x0240; ADC DRC Compressor Slope High Setting Register
-AC_ADC_DRC_HKC; 0x0244; ADC DRC Compressor Slope High Setting Register
-AC_ADC_DRC_LKC; 0x0248; ADC DRC Compressor Slope Low Setting Register
-AC_ADC_DRC_HOPC; 0x024C; ADC DRC Compressor High Output at Compressor Threshold Register
-AC_ADC_DRC_LOPC; 0x0250; ADC DRC Compressor Low Output at Compressor Threshold Register
-AC_ADC_DRC_HLT; 0x0254; ADC DRC Limiter Threshold High Setting Register
-AC_ADC_DRC_LLT; 0x0258; ADC DRC Limiter Threshold Low Setting Register
-AC_ADC_DRC_HKl; 0x025C; ADC DRC Limiter Slope High Setting Register
-AC_ADC_DRC_LKl; 0x0260; ADC DRC Limiter Slope Low Setting Register
-AC_ADC_DRC_HOPL; 0x0264; ADC DRC Limiter High Output at Limiter Threshold
-AC_ADC_DRC_LOPL; 0x0268; ADC DRC Limiter Low Output at Limiter Threshold
-AC_ADC_DRC_HET; 0x026C; ADC DRC Expander Threshold High Setting Register
-AC_ADC_DRC_LET; 0x0270; ADC DRC Expander Threshold Low Setting Register
-AC_ADC_DRC_HKE; 0x0274; ADC DRC Expander Slope High Setting Register
-AC_ADC_DRC_LKE; 0x0278; ADC DRC Expander Slope Low Setting Register
-AC_ADC_DRC_HOPE; 0x027C; ADC DRC Expander High Output at Expander Threshold
-AC_ADC_DRC_LOPE; 0x0280; ADC DRC Expander Low Output at Expander Threshold
-AC_ADC_DRC_HKN; 0x0284; ADC DRC Linear Slope High Setting Register
-AC_ADC_DRC_LKN; 0x0288; ADC DRC Linear Slope Low Setting Register
-AC_ADC_DRC_SFHAT; 0x028C; ADC DRC Smooth filter Gain High Attack Time Coef Register
-AC_ADC_DRC_SFLAT; 0x0290; ADC DRC Smooth filter Gain Low Attack Time Coef Register
-AC_ADC_DRC_SFHRT; 0x0294; ADC DRC Smooth filter Gain High Release Time Coef Register
-AC_ADC_DRC_SFLRT; 0x0298; ADC DRC Smooth filter Gain Low Release Time Coef Register
-AC_ADC_DRC_MXGHS; 0x029C; ADC DRC MAX Gain High Setting Register
-AC_ADC_DRC_MXGLS; 0x02A0; ADC DRC MAX Gain Low Setting Register
-AC_ADC_DRC_MNGHS; 0x02A4; ADC DRC MIN Gain High Setting Register
-AC_ADC_DRC_MNGLS; 0x02A8; ADC DRC MIN Gain Low Setting Register
-AC_ADC_DRC_EPSHC; 0x02AC; ADC DRC Expander Smooth Time High Coef Register
-AC_ADC_DRC_EPSLC; 0x02B0; ADC DRC Expander Smooth Time Low Coef Register
-AC_ADC_DRC_HPFHGAIN; 0x02B8; ADC DRC HPF Gain High Coef Register
-AC_ADC_DRC_HPFLGAIN; 0x02BC; ADC DRC HPF Gain Low Coef Register
-ADC1_REG; 0x0300; ADC1 Analog Control Register
-ADC2_REG; 0x0304; ADC2 Analog Control Register
-ADC3_REG; 0x0308; ADC3 Analog Control Register
-DAC_REG; 0x0310; DAC Analog Control Register
-MICBIAS_REG; 0x0318; MICBIAS Analog Control Register
-RAMP_REG; 0x031C; BIAS Analog Control Register
-BIAS_REG; 0x0320; BIAS Analog Control Register
-HMIC_CTRL; 0x0328; * HMIC Control Register
-HMIC_STS; 0x032C;  * HMIC Status Register (
-ADC5_REG; 0x0330; ADC5 Analog Control Register
-HP2_REG; 0x0340; * Headphone2 Analog Control Register
-POWER_REG; 0x0348; * POWER Analog Control Register
-ADC_CUR_REG; 0x034C; * ADC Current Analog Control Register
+#regdef; ADC_VOL_CTRL1; 0x0034; ADC Volume Control1 Register
+#regdef; AC_ADC_FIFOS; 0x0038; ADC FIFO Status Register
+#regdef; AC_ADC_RXDATA; 0x0040; ADC RX Data Register
+#regdef; AC_ADC_CNT; 0x0044; ADC RX Counter Register
+#regdef; AC_ADC_DG; 0x004C; ADC Debug Register
+#regdef; ADC_DIG_CTRL; 0x0050; ADC Digtial Control Register
+#regdef; VRA1SPEEDUP_DOWN_CTRL; 0x0054; VRA1 Speedup Down Control Register
+#regdef; AC_DAC_DAP_CTRL; 0x00F0; DAC DAP Control Register
+#regdef; AC_ADC_DAP_CTR; 0x00F8; ADC DAP Control Register
+#regdef; AC_DAC_DRC_HHPFC; 0x0100; DAC DRC High HPF Coef Register
+#regdef; AC_DAC_DRC_LHPFC; 0x0104; DAC DRC Low HPF Coef Register
+#regdef; AC_DAC_DRC_CTRL; 0x0108; DAC DRC Control Register
+#regdef; AC_DAC_DRC_LPFHAT; 0x010C; DAC DRC Left Peak Filter High Attack Time Coef Register
+#regdef; AC_DAC_DRC_LPFLAT; 0x0110; DAC DRC Left Peak Filter Low Attack Time Coef Register
+#regdef; AC_DAC_DRC_RPFHAT; 0x0114; DAC DRC Right Peak Filter High Attack Time Coef Register
+#regdef; AC_DAC_DRC_RPFLAT; 0x0118; DAC DRC Peak Filter Low Attack Time Coef Register
+#regdef; AC_DAC_DRC_LPFHRT; 0x011C; DAC DRC Left Peak Filter High Release Time Coef Register
+#regdef; AC_DAC_DRC_LPFLRT; 0x0120; DAC DRC Left Peak Filter Low Release Time Coef Register
+#regdef; AC_DAC_DRC_RPFHRT; 0x0124; DAC DRC Right Peak filter High Release Time Coef Register
+#regdef; AC_DAC_DRC_RPFLRT; 0x0128; DAC DRC Right Peak filter Low Release Time Coef Register
+#regdef; AC_DAC_DRC_LRMSHAT; 0x012C; DAC DRC Left RMS Filter High Coef Register
+#regdef; AC_DAC_DRC_LRMSLAT; 0x0130; DAC DRC Left RMS Filter Low Coef Register
+#regdef; AC_DAC_DRC_RRMSHAT; 0x0134; DAC DRC Right RMS Filter High Coef Register
+#regdef; AC_DAC_DRC_RRMSLAT; 0x0138; DAC DRC Right RMS Filter Low Coef Register
+#regdef; AC_DAC_DRC_HCT; 0x013C; DAC DRC Compressor Threshold High Setting Register
+#regdef; AC_DAC_DRC_LCT; 0x0140; DAC DRC Compressor Slope High Setting Register
+#regdef; AC_DAC_DRC_HKC; 0x0144; DAC DRC Compressor Slope High Setting Register
+#regdef; AC_DAC_DRC_LKC; 0x0148; DAC DRC Compressor Slope Low Setting Register
+#regdef; AC_DAC_DRC_HOPC; 0x014C; DAC DRC Compresso
+#regdef; AC_DAC_DRC_LOPC; 0x0150; DAC DRC Compressor Low Output at Compressor Threshold Register
+#regdef; AC_DAC_DRC_HLT; 0x0154; DAC DRC Limiter Threshold High Setting Register
+#regdef; AC_DAC_DRC_LLT; 0x0158; DAC DRC Limiter Threshold Low Setting Register
+#regdef; AC_DAC_DRC_HKl; 0x015C; DAC DRC Limiter Slope High Setting Register
+#regdef; AC_DAC_DRC_LKl; 0x0160; DAC DRC Limiter Slope Low Setting Register
+#regdef; AC_DAC_DRC_HOPL; 0x0164; DAC DRC Limiter High Output at Limiter Threshold
+#regdef; AC_DAC_DRC_LOPL; 0x0168; DAC DRC Limiter Low Output at Limiter Threshold
+#regdef; AC_DAC_DRC_HET; 0x016C; DAC DRC Expander Threshold High Setting Register
+#regdef; AC_DAC_DRC_LET; 0x0170; DAC DRC Expander Threshold Low Setting Register
+#regdef; AC_DAC_DRC_HKE; 0x0174; DAC DRC Expander Slope High Setting Register
+#regdef; AC_DAC_DRC_LKE; 0x0178; DAC DRC Expander Slope Low Setting Register
+#regdef; AC_DAC_DRC_HOPE; 0x017C; DAC DRC Expander High Output at Expander Threshold
+#regdef; AC_DAC_DRC_LOPE; 0x0180; DAC DRC Expander Low Output at Expander Threshold
+#regdef; AC_DAC_DRC_HKN; 0x0184; DAC DRC Linear Slope High Setting Register
+#regdef; AC_DAC_DRC_LKN; 0x0188; DAC DRC Linear Slope Low Setting Register
+#regdef; AC_DAC_DRC_SFHAT; 0x018C; DAC DRC Smooth filter Gain High Attack Time Coef Register
+#regdef; AC_DAC_DRC_SFLAT; 0x0190; DAC DRC Smooth filter Gain Low Attack Time Coef Register
+#regdef; AC_DAC_DRC_SFHRT; 0x0194; DAC DRC Smooth filter Gain High Release Time Coef Register
+#regdef; AC_DAC_DRC_SFLRT; 0x0198; DAC DRC Smooth filter Gain Low Release Time Coef Register
+#regdef; AC_DAC_DRC_MXGHS; 0x019C; DAC DRC MAX Gain High Setting Register
+#regdef; AC_DAC_DRC_MXGLS; 0x01A0; DAC DRC MAX Gain Low Setting Register
+#regdef; AC_DAC_DRC_MNGHS; 0x01A4; DAC DRC MIN Gain High Setting Register
+#regdef; AC_DAC_DRC_MNGLS; 0x01A8; DAC DRC MIN Gain Low Setting Register
+#regdef; AC_DAC_DRC_EPSHC; 0x01AC; DAC DRC Expander Smooth Time High Coef Register
+#regdef; AC_DAC_DRC_EPSLC; 0x01B0; DAC DRC Expander Smooth Time Low Coef Register
+#regdef; AC_DAC_DRC_HPFHGAIN; 0x01B8; DAC DRC HPF Gain High Coef Register
+#regdef; AC_DAC_DRC_HPFLGAIN; 0x01BC; DAC DRC HPF Gain Low Coef Register
+#regdef; AC_ADC_DRC_HHPFC; 0x0200; ADC DRC High HPF Coef Register
+#regdef; AC_ADC_DRC_LHPFC; 0x0204; ADC DRC Low HPF Coef Register
+#regdef; AC_ADC_DRC_CTRL; 0x0208; ADC DRC Control Register
+#regdef; AC_ADC_DRC_LPFHAT; 0x020C; ADC DRC Left Peak Filter High Attack Time Coef Register
+#regdef; AC_ADC_DRC_LPFLAT; 0x0210; ADC DRC Left Peak Filter Low Attack Time Coef Register
+#regdef; AC_ADC_DRC_RPFHAT; 0x0214; ADC DRC Right Peak Filter High Attack Time Coef Register
+#regdef; AC_ADC_DRC_RPFLAT; 0x0218; ADC DRC Right Peak Filter Low Attack Time Coef Register
+#regdef; AC_ADC_DRC_LPFHRT; 0x021C; ADC DRC Left Peak Filter High Release Time Coef Register
+#regdef; AC_ADC_DRC_LPFLRT; 0x0220; ADC DRC Left Peak Filter Low Release Time Coef Register
+#regdef; AC_ADC_DRC_RPFHRT; 0x0224; ADC DRC Right Peak Filter High Release Time Coef Register
+#regdef; AC_ADC_DRC_RPFLRT; 0x0228; ADC DRC Right Peak Filter Low Release Time Coef Register
+#regdef; AC_ADC_DRC_LRMSHAT; 0x022C; ADC DRC Left RMS Filter High Coef Register
+#regdef; AC_ADC_DRC_LRMSLAT; 0x0230; ADC DRC Left RMS Filter Low Coef Register
+#regdef; AC_ADC_DRC_RRMSHAT; 0x0234; ADC DRC Right RMS Filter High Coef Register
+#regdef; AC_ADC_DRC_RRMSLAT; 0x0238; ADC DRC Right RMS Filter Low Coef Register
+#regdef; AC_ADC_DRC_HCT; 0x023C; ADC DRC Compressor Threshold High Setting Register
+#regdef; AC_ADC_DRC_LCT; 0x0240; ADC DRC Compressor Slope High Setting Register
+#regdef; AC_ADC_DRC_HKC; 0x0244; ADC DRC Compressor Slope High Setting Register
+#regdef; AC_ADC_DRC_LKC; 0x0248; ADC DRC Compressor Slope Low Setting Register
+#regdef; AC_ADC_DRC_HOPC; 0x024C; ADC DRC Compressor High Output at Compressor Threshold Register
+#regdef; AC_ADC_DRC_LOPC; 0x0250; ADC DRC Compressor Low Output at Compressor Threshold Register
+#regdef; AC_ADC_DRC_HLT; 0x0254; ADC DRC Limiter Threshold High Setting Register
+#regdef; AC_ADC_DRC_LLT; 0x0258; ADC DRC Limiter Threshold Low Setting Register
+#regdef; AC_ADC_DRC_HKl; 0x025C; ADC DRC Limiter Slope High Setting Register
+#regdef; AC_ADC_DRC_LKl; 0x0260; ADC DRC Limiter Slope Low Setting Register
+#regdef; AC_ADC_DRC_HOPL; 0x0264; ADC DRC Limiter High Output at Limiter Threshold
+#regdef; AC_ADC_DRC_LOPL; 0x0268; ADC DRC Limiter Low Output at Limiter Threshold
+#regdef; AC_ADC_DRC_HET; 0x026C; ADC DRC Expander Threshold High Setting Register
+#regdef; AC_ADC_DRC_LET; 0x0270; ADC DRC Expander Threshold Low Setting Register
+#regdef; AC_ADC_DRC_HKE; 0x0274; ADC DRC Expander Slope High Setting Register
+#regdef; AC_ADC_DRC_LKE; 0x0278; ADC DRC Expander Slope Low Setting Register
+#regdef; AC_ADC_DRC_HOPE; 0x027C; ADC DRC Expander High Output at Expander Threshold
+#regdef; AC_ADC_DRC_LOPE; 0x0280; ADC DRC Expander Low Output at Expander Threshold
+#regdef; AC_ADC_DRC_HKN; 0x0284; ADC DRC Linear Slope High Setting Register
+#regdef; AC_ADC_DRC_LKN; 0x0288; ADC DRC Linear Slope Low Setting Register
+#regdef; AC_ADC_DRC_SFHAT; 0x028C; ADC DRC Smooth filter Gain High Attack Time Coef Register
+#regdef; AC_ADC_DRC_SFLAT; 0x0290; ADC DRC Smooth filter Gain Low Attack Time Coef Register
+#regdef; AC_ADC_DRC_SFHRT; 0x0294; ADC DRC Smooth filter Gain High Release Time Coef Register
+#regdef; AC_ADC_DRC_SFLRT; 0x0298; ADC DRC Smooth filter Gain Low Release Time Coef Register
+#regdef; AC_ADC_DRC_MXGHS; 0x029C; ADC DRC MAX Gain High Setting Register
+#regdef; AC_ADC_DRC_MXGLS; 0x02A0; ADC DRC MAX Gain Low Setting Register
+#regdef; AC_ADC_DRC_MNGHS; 0x02A4; ADC DRC MIN Gain High Setting Register
+#regdef; AC_ADC_DRC_MNGLS; 0x02A8; ADC DRC MIN Gain Low Setting Register
+#regdef; AC_ADC_DRC_EPSHC; 0x02AC; ADC DRC Expander Smooth Time High Coef Register
+#regdef; AC_ADC_DRC_EPSLC; 0x02B0; ADC DRC Expander Smooth Time Low Coef Register
+#regdef; AC_ADC_DRC_HPFHGAIN; 0x02B8; ADC DRC HPF Gain High Coef Register
+#regdef; AC_ADC_DRC_HPFLGAIN; 0x02BC; ADC DRC HPF Gain Low Coef Register
+#regdef; ADC1_REG; 0x0300; ADC1 Analog Control Register
+#regdef; ADC2_REG; 0x0304; ADC2 Analog Control Register
+#regdef; ADC3_REG; 0x0308; ADC3 Analog Control Register
+#regdef; DAC_REG; 0x0310; DAC Analog Control Register
+#regdef; MICBIAS_REG; 0x0318; MICBIAS Analog Control Register
+#regdef; RAMP_REG; 0x031C; BIAS Analog Control Register
+#regdef; BIAS_REG; 0x0320; BIAS Analog Control Register
+#regdef; HMIC_CTRL; 0x0328; * HMIC Control Register
+#regdef; HMIC_STS; 0x032C;  * HMIC Status Register (
+#regdef; ADC5_REG; 0x0330; ADC5 Analog Control Register
+#regdef; HP2_REG; 0x0340; * Headphone2 Analog Control Register
+#regdef; POWER_REG; 0x0348; * POWER Analog Control Register
+#regdef; ADC_CUR_REG; 0x034C; * ADC Current Analog Control Register

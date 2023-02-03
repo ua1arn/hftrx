@@ -1,8 +1,8 @@
 #type; CPU_SUBSYS_CTRL
 #base; CPU_SUBSYS_CTRL 0x08100000
-GENER_CTRL_REG0; 0x0000; General Control Register0
-GIC_JTAG_RST_CTRL; 0x000C; GIC and JTAG Reset Control Register
-C0_INT_EN; 0x0010; Cluster0 Interrupt Enable Control Register
-RQ_FIQ_STATUS; 0x0014; IRQ/FIQ Status Register
-GENER_CTRL_REG2; 0x0018; General Control Register2
-DBG_STATE; 0x001C; Debug State Register
+#regdef; GENER_CTRL_REG0; 0x0000; General Control Register0
+#regdef; GIC_JTAG_RST_CTRL; 0x000C; GIC and JTAG Reset Control Register
+#regdef; C0_INT_EN; 0x0010; Cluster0 Interrupt Enable Control Register
+#regdef; RQ_FIQ_STATUS; 0x0014; IRQ/FIQ Status Register
+#regdef; GENER_CTRL_REG2; 0x0018; General Control Register2
+#regdef; DBG_STATE; 0x001C; Debug State Register

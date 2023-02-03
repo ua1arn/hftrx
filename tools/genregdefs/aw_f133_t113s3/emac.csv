@@ -2,27 +2,27 @@
 #base; EMAC 0x04500000
 #irq; EMAC 78
 #irqrv; EMAC 62
-EMAC_BASIC_CTL0; 0x0000; EMAC Basic Control Register0
-EMAC_BASIC_CTL1; 0x0004; EMAC Basic Control Register1
-EMAC_INT_STA; 0x0008; EMAC Interrupt Status Register
-EMAC_INT_EN; 0x000C; EMAC Interrupt Enable Register
-EMAC_TX_CTL0; 0x0010; EMAC Transmit Control Register0
-EMAC_TX_CTL1; 0x0014; EMAC Transmit Control Register1
-EMAC_TX_FLOW_CTL; 0x001C; EMAC Transmit Flow Control Register
-EMAC_TX_DMA_DESC_LIST; 0x0020; EMAC Transmit Descriptor List Address Register
-EMAC_RX_CTL0; 0x0024; EMAC Receive Control Register0
-EMAC_RX_CTL1; 0x0028; EMAC Receive Control Register1
-EMAC_RX_DMA_DESC_LIST; 0x0034; EMAC Receive Descriptor List Address Register
-EMAC_RX_FRM_FLT; 0x0038; EMAC Receive Frame Filter Register
-EMAC_RX_HASH0; 0x0040; EMAC Hash Table Register0
-EMAC_RX_HASH1; 0x0044; EMAC Hash Table Register1
-EMAC_MII_CMD; 0x0048; EMAC Management Interface Command Register
-EMAC_MII_DATA; 0x004C; EMAC Management Interface Data Register
-EMAC_ADDR 8 EMAC_ADDR_TypeDef; 0x0050 8; EMAC MAC Address N (N=0-7)
-EMAC_TX_DMA_STA; 0x00B0; EMAC Transmit DMA Status Register
-EMAC_TX_CUR_DESC; 0x00B4; EMAC Current Transmit Descriptor Register
-EMAC_TX_CUR_BUF; 0x00B8; EMAC Current Transmit Buffer Address Register
-EMAC_RX_DMA_STA; 0x00C0; EMAC Receive DMA Status Register
-EMAC_RX_CUR_DESC; 0x00C4; EMAC Current Receive Descriptor Register
-EMAC_RX_CUR_BUF; 0x00C8; EMAC Current Receive Buffer Address Register
-EMAC_RGMII_STA; 0x00D0; EMAC RGMII Status Register
+#regdef; EMAC_BASIC_CTL0; 0x0000; EMAC Basic Control Register0
+#regdef; EMAC_BASIC_CTL1; 0x0004; EMAC Basic Control Register1
+#regdef; EMAC_INT_STA; 0x0008; EMAC Interrupt Status Register
+#regdef; EMAC_INT_EN; 0x000C; EMAC Interrupt Enable Register
+#regdef; EMAC_TX_CTL0; 0x0010; EMAC Transmit Control Register0
+#regdef; EMAC_TX_CTL1; 0x0014; EMAC Transmit Control Register1
+#regdef; EMAC_TX_FLOW_CTL; 0x001C; EMAC Transmit Flow Control Register
+#regdef; EMAC_TX_DMA_DESC_LIST; 0x0020; EMAC Transmit Descriptor List Address Register
+#regdef; EMAC_RX_CTL0; 0x0024; EMAC Receive Control Register0
+#regdef; EMAC_RX_CTL1; 0x0028; EMAC Receive Control Register1
+#regdef; EMAC_RX_DMA_DESC_LIST; 0x0034; EMAC Receive Descriptor List Address Register
+#regdef; EMAC_RX_FRM_FLT; 0x0038; EMAC Receive Frame Filter Register
+#regdef; EMAC_RX_HASH0; 0x0040; EMAC Hash Table Register0
+#regdef; EMAC_RX_HASH1; 0x0044; EMAC Hash Table Register1
+#regdef; EMAC_MII_CMD; 0x0048; EMAC Management Interface Command Register
+#regdef; EMAC_MII_DATA; 0x004C; EMAC Management Interface Data Register
+#regdef; EMAC_ADDR 8 EMAC_ADDR_TypeDef; 0x0050 8; EMAC MAC Address N (N=0-7)
+#regdef; EMAC_TX_DMA_STA; 0x00B0; EMAC Transmit DMA Status Register
+#regdef; EMAC_TX_CUR_DESC; 0x00B4; EMAC Current Transmit Descriptor Register
+#regdef; EMAC_TX_CUR_BUF; 0x00B8; EMAC Current Transmit Buffer Address Register
+#regdef; EMAC_RX_DMA_STA; 0x00C0; EMAC Receive DMA Status Register
+#regdef; EMAC_RX_CUR_DESC; 0x00C4; EMAC Current Receive Descriptor Register
+#regdef; EMAC_RX_CUR_BUF; 0x00C8; EMAC Current Receive Buffer Address Register
+#regdef; EMAC_RGMII_STA; 0x00D0; EMAC RGMII Status Register

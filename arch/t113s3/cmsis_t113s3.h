@@ -1,6 +1,6 @@
 /* Generated section start */ 
-#ifndef HEADER_63DC328A_INCLUDED
-#define HEADER_63DC328A_INCLUDED
+#ifndef HEADER_63DCB07D_INCLUDED
+#define HEADER_63DCB07D_INCLUDED
 #include <stdint.h>
 
 
@@ -1683,9 +1683,9 @@ typedef struct TCON_TV_Type
     volatile uint32_t TV_DEBUG_REG;                                             /*!< Offset 0x0FC TV Debug Register */
     volatile uint32_t TV_CEU_CTL_REG;                                           /*!< Offset 0x100 TV CEU Control Register */
              uint32_t reserved_0x104 [0x0003];
-    volatile uint32_t TV_CEU_COEF_MUL_REG [0x00B];                              /*!< Offset 0x110 TV CEU Coefficient Register0 0x0110+N*0x04(N=0�10) */
+    volatile uint32_t TV_CEU_COEF_MUL_REG [0x00B];                              /*!< Offset 0x110 TV CEU Coefficient Register0 0x0110+N*0x04(N=0-10) */
              uint32_t reserved_0x13C;
-    volatile uint32_t TV_CEU_COEF_RANG_REG [0x003];                             /*!< Offset 0x140 TV CEU Coefficient Register2 0x0140+N*0x04(N=0�2) */
+    volatile uint32_t TV_CEU_COEF_RANG_REG [0x003];                             /*!< Offset 0x140 TV CEU Coefficient Register2 0x0140+N*0x04(N=0-2) */
              uint32_t reserved_0x14C [0x0029];
     volatile uint32_t TV_SAFE_PERIOD_REG;                                       /*!< Offset 0x1F0 TV Safe Period Register */
              uint32_t reserved_0x1F4 [0x0043];
@@ -2384,5 +2384,5 @@ typedef struct MSGBOX_Type
 #define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)                       /*!< \brief CPUX_MSGBOX Interface register set access pointer */
-#endif /* HEADER_63DC328A_INCLUDED */
+#endif /* HEADER_63DCB07D_INCLUDED */
 /* Generated section end */ 

@@ -111,7 +111,7 @@ unsigned genreglist(int indent, const LIST_ENTRY * regslist)
         };
 
 		int commentspos = 54;
-        char fldtype [256];
+        char fldtype [VNAME_MAX];
         if (regp->fldsize >= sizeof fldtypes / sizeof fldtypes [0])
         {
             _snprintf(fldtype, sizeof fldtype / sizeof fldtype [0], "typesize%u", regp->fldsize);
