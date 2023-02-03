@@ -2057,8 +2057,8 @@ void hwaccel_stretchblt(
 {
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
-	ASSERT(dx >= sdx);
-	ASSERT(dy >= sdy);
+	ASSERT(dx >= w);
+	ASSERT(dy >= h);
 
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && 1
 	/* Использование G2D для формирования изображений */
@@ -2945,8 +2945,8 @@ void colpip_stretchblt(
 {
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
-	ASSERT(dx >= sdx);
-	ASSERT(dy >= sdy);
+	ASSERT(dx >= (x + w));
+	ASSERT(dy >= (y + h));
 	if (w == sdx && h == sdy)
 	{
 		//PRINTF("colpip_stretchblt (same): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);

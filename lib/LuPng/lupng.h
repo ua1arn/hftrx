@@ -135,7 +135,7 @@ uint8_t *luImageExtractBufAndRelease(LuImage *img,
  */
 LuImage *luPngReadFile(const char *filename);
 
-LuImage *luPngReadMemory(char *buffer);
+LuImage *luPngReadMemory(void *buffer);
 
 /**
  * Decodes a PNG image with the provided read function into a LuImage struct

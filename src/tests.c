@@ -6367,24 +6367,11 @@ static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 #include "lupng.h"
 #include "Cobra.png.h"
 
-static void PNG_Load(LuImage **png,const unsigned char *buffer)
-{
-	 * png = luPngReadMemory((char *) buffer);
-}
-
-static void PNG_Free(LuImage *png)
-{
-	if(png)
-		luImageRelease(png, NULL);
-}
-
 // PNG files test
 static void testpng(void)
 {
 	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
-	LuImage * png;
-
-	PNG_Load(& png, Cobra_png);
+	LuImage * png = luPngReadMemory((char *) Cobra_png);
 
 	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
 	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
@@ -6431,7 +6418,7 @@ static void testpng(void)
 		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
-	PNG_Free(png);
+	luImageRelease(png, NULL);
 	for (;;)
 		;
 }

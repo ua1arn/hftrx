@@ -878,7 +878,7 @@ LuImage *luPngReadFile(const char *filename)
     return img;
 }
 
-LuImage *luPngReadMemory(char *buffer)
+LuImage *luPngReadMemory(void *buffer)
 {
  LuUserContext userCtx;
  LuImage *img;
