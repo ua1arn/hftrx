@@ -15,8 +15,8 @@
 #if 0
 
 	#define TP() do { \
-		emitline(0, "%s/%d\n", __FILE__, __LINE__); \
-		fflush(stdout); \
+		fprintf(stderr, "%s/%d\n", __FILE__, __LINE__); \
+		fflush(stderr); \
 		} while (0)
 
 #else
@@ -306,6 +306,11 @@ int compare_irqrv(const void * v1, const void * v2)
 static char token0 [1024];
 #define TKSZ (sizeof token0 / sizeof token0 [0])
 
+int nextline(FILE * fp)
+{
+	return fgets(token0, TKSZ, fp) != NULL;
+}
+
 /* Parse line. NULL - unrecognized format */
 static char * commentfgets(struct parsedfile * pfl, char * buff, size_t n, FILE * fp)
 {
@@ -483,11 +488,106 @@ static int parseregister(struct parsedfile * pfl, struct regdfn * regp, FILE * f
 
 }
 
+// 1 - end of file
+// 0 - register definition ok
+static int parseregfile(struct parsedfile * pfl, struct regdfn * regp, FILE * fp, const char * file)
+{
+	char comment [TKSZ];
+    char fldname [VNAME_MAX];
+    char typname [VNAME_MAX];
+    char irqname [VNAME_MAX];
+    int irq;
+    int irqrv;
+	unsigned base;
+	unsigned fldoffset;
+	//int pos;	/* end of parsed field position */
+
+	//fprintf(stderr, "token0=%s", token0);
+    for (;;)
+    {
+		memset(comment, 0, sizeof comment);
+		if (2 == sscanf(token0, "#irq; %[a-zA-Z_0-9]s %d\n", irqname, & irq))
+		{
+			fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
+			if (pfl->irq_count < BASE_MAX)
+			{
+				pfl->irq_array [pfl->irq_count] = irq;
+				strcpy(pfl->irq_names [pfl->irq_count], irqname);
+				//
+				++ pfl->irq_count;
+			}
+
+			if (nextline(fp) == 0)
+				break;
+			continue;
+		}
+		else if (2 == sscanf(token0, "#irqrv; %[a-zA-Z_0-9]s %d\n", irqname, & irqrv))
+		{
+			fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
+			if (pfl->irqrv_count < BASE_MAX)
+			{
+				pfl->irqrv_array [pfl->irqrv_count] = irq;
+				strcpy(pfl->irqrv_names [pfl->irqrv_count], irqname);
+				//
+				++ pfl->irqrv_count;
+			}
+
+			if (nextline(fp) == 0)
+				break;
+			continue;
+		}
+		else if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]s\n", typname))
+		{
+			fprintf(stderr, "Parsed typname='%s'\n", typname);
+
+			if (nextline(fp) == 0)
+				break;
+			continue;
+		}
+		else if (2 == sscanf(token0, "#base; %s%i\n", typname, & base))
+		{
+			fprintf(stderr, "Parsed base='%s' 0x%08X\n", typname, base);
+
+			if (nextline(fp) == 0)
+				break;
+			continue;
+		}
+		else if (1 <= sscanf(token0, "#regdef; %[a-zA-Z_0-9]s;%i;%1023[^\n]c\n", fldname, & fldoffset, comment))
+		{
+			//	#regdef; RISC_STA_ADD0_REG; 0x0004; RISC Start Address0 Register
+
+			fprintf(stderr, "Parsed regdef='%s' 0x%08X '%s'\n", fldname, fldoffset, comment);
+
+			if (nextline(fp) == 0)
+				break;
+			continue;
+		}
+		else if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment))
+		{
+			fprintf(stderr, "Parsed comment='%s'\n", comment);
+
+			if (nextline(fp) == 0)
+				break;
+			continue;
+		}
+		else
+		{
+			/* unrecognized input = next source line */
+ 			fprintf(stderr, "unrecognized token0=%s", token0);
+
+			if (nextline(fp) == 0)
+				break;
+			continue;
+		}
+	}
+	return 1;	/* end of file */
+}
+
 static int loadregs(struct parsedfile * pfl, const char * file)
 {
     const size_t maxrows = 256;
     FILE * fp = fopen(file, "rt");
-	TP();
+	//TP();
 	strcpy(pfl->bname, "");
 	pfl->base_count = 0;
 	pfl->irq_count = 0;
@@ -497,29 +597,32 @@ static int loadregs(struct parsedfile * pfl, const char * file)
 	//pfl->regs = NULL; 
 	//pfl->nregs = 0; 
 	
-	TP();
+	//TP();
 	if (fp == NULL)
     {
         emitline(0, "#error Can not open file '%s'\n", file);
         return 1;
     }
 
-	TP();
+//	if (nextline(fp) == 0)
+//		return 1;
+
     for (;;)
     {
 		struct regdfn * regp = calloc(1, sizeof (struct regdfn));
-		if (parseregister(pfl, regp, fp, file))
+
+		if (parseregister/*parseregfile*/(pfl, regp, fp, file))
 		{
 			free(regp);
 			break;
 		}
 		InsertTailList(& pfl->regslist, & regp->item);
     }
-	TP();
+
 
 	//pfl->regs = regs; 
 	//pfl->nregs = nregs; 
-
+	fclose(fp);
 	return 0;
 }
 
