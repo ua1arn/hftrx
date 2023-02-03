@@ -481,9 +481,6 @@ static int parseregister(struct parsedfile * pfl, struct regdfn * regp, FILE * f
 
 static int loadregs(struct parsedfile * pfl, const char * file)
 {
-    size_t nregs;
-
-
     const size_t maxrows = 256;
     FILE * fp = fopen(file, "rt");
 	TP();
@@ -504,7 +501,7 @@ static int loadregs(struct parsedfile * pfl, const char * file)
     }
 
 	TP();
-    for (nregs = 0; nregs < maxrows; ++ nregs)
+    for (;;)
     {
 		struct regdfn * regp = calloc(1, sizeof (struct regdfn));
 		if (parseregister(pfl, regp, fp, file))
