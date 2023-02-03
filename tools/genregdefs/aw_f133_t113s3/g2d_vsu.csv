@@ -2,7 +2,7 @@
 #base; G2D_VSU 0x05418000
 #comment; 5.12.3 Video Scaler Register - List Allwinner_DE2.0_Spec_V1.0.pdf
 #comment; have different layout
-#comment Also see 5.7 DE UIS Specification
+#comment; Also see 5.7 DE UIS Specification
 #regdef; VS_CTRL; 0x000; VS_CTRL
 #regdef; VS_OUT_SIZE; 0x040; VS_OUT_SIZE
 #regdef; VS_GLB_ALPHA; 0x044; VS_GLB_ALPHA

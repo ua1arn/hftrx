@@ -6387,7 +6387,7 @@ static void testpng(void)
 	PNG_Load(& png, Cobra_png);
 
 	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
-	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [1]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
 	unsigned picx = png->width;
 	unsigned picy = png->height;
 
