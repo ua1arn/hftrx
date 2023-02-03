@@ -812,7 +812,7 @@ colpip_fillrect(
 
 #define BITBLT_FLAG_NONE			0x00
 #define BITBLT_FLAG_CKEY			0x01
-#define BITBLT_FLAG_ARCABGR8888		0x02	/* исходный имедж - ABGR8888 (от LuPng) */
+#define BITBLT_FLAG_SRC_ABGR8888		0x02	/* исходный имедж - ABGR8888 (от LuPng) */
 
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_bitblt(

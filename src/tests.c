@@ -6401,7 +6401,7 @@ static void testpng(void)
 		40, 20, picx * 3 / 2, picy * 3 / 2,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 		fbpic, picx, picy,
-		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_ARCABGR8888, keycolor
+		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
 	colpip_stretchblt(
@@ -6410,7 +6410,16 @@ static void testpng(void)
 		30, 0, picx / 2, picy / 2,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 		fbpic, picx, picy,
-		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_ARCABGR8888, keycolor
+		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		);
+
+	colpip_stretchblt(
+		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
+		fb, DIM_X, DIM_Y,
+		30, picy / 2, picx / 2, picy / 2,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+		fbpic, picx, picy,
+		BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
 	colpip_stretchblt(
@@ -6419,7 +6428,7 @@ static void testpng(void)
 		300, 100, picx / 1, picy / 1,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 		fbpic, picx, picy,
-		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_ARCABGR8888, keycolor
+		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
 	PNG_Free(png);

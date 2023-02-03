@@ -103,7 +103,7 @@ static COLOR24_T awxx_key_color_conversion(COLORPIP_T color)
 // 0x01: ABGR_8888
 static unsigned awxx_get_srcformat(unsigned keyflag)
 {
-	return (keyflag & BITBLT_FLAG_ARCABGR8888) ? 0x01 : VI_ImageFormat;
+	return (keyflag & BITBLT_FLAG_SRC_ABGR8888) ? 0x01 : VI_ImageFormat;
 }
 
 /* Создание режима блендера BLD_CTL */
