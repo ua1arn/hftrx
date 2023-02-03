@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 #include "hardware.h"
+#include "display2.h"
 #include "formats.h"
 
 #include <stdarg.h>
@@ -476,7 +477,7 @@ static LU_INLINE int parseIhdr(PngInfoStruct *info, PngChunk *chunk)
                               info->depth < 16 ? 8 : 16, NULL, info->userCtx);
     info->cimg = info->img;
     info->scanlineBytes =
-        LUPNGMAX((info->width * info->channels * info->depth) >> 3, 1);
+        LUPNGMAX((GXADJ(info->width) * info->channels * info->depth) >> 3, 1);
     info->currentScanline = (uint8_t *)info->userCtx->allocProc(
         info->scanlineBytes, info->userCtx->allocProcUserPtr);
     info->previousScanline = (uint8_t *)info->userCtx->allocProc(
@@ -562,7 +563,7 @@ static LU_INLINE int insertByte(PngInfoStruct *info, uint8_t byte)
     const uint8_t scale[] = {0x00, 0xFF, 0x55, 0x00, 0x11, 0x00, 0x00, 0x00};
 
     /* for paletted images currentElem will always be 0 */
-    size_t idx = info->currentRow * info->width * info->channels +
+    size_t idx = info->currentRow * GXADJ(info->width) * info->channels +
                  info->currentCol * info->channels + info->currentElem;
 
     if (info->colorType != PNG_PALETTED) {
@@ -1246,7 +1247,7 @@ LuImage *luImageCreate(size_t width, size_t height, uint8_t channels,
     img->height = (int32_t)height;
     img->channels = channels;
     img->depth = depth;
-    img->dataSize = (size_t)((depth >> 3) * width * height * channels);
+    img->dataSize = (size_t)((depth >> 3) * GXADJ(width) * height * channels);
     if (buffer)
         img->data = buffer;
     else

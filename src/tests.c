@@ -6365,56 +6365,56 @@ static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 // PNG files test
 
 #include "lupng.h"
-#include "Cobra.png.h"
 
 // PNG files test
-static void testpng(void)
+void testpng(const void * pngbuffer)
 {
 	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
-	LuImage * png = luPngReadMemory((char *) Cobra_png);
+	LuImage * png = luPngReadMemory((char *) pngbuffer);
 
 	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
 	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
-	unsigned picx = png->width;
-	unsigned picy = png->height;
+	const unsigned picdx = GXADJ(png->width);
+	const unsigned picw = png->width;
+	const unsigned pich = png->height;
 
-	PRINTF("testpng: data=%p, dataSize=%u, depth=%u, h=%u, h=%u\n", png, (unsigned) png->dataSize,  png->depth, png->width, png->height);
+	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
 
 	colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORMAIN_GRAY);
 
 	colpip_stretchblt(
 		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
 		fb, DIM_X, DIM_Y,
-		40, 20, picx * 3 / 2, picy * 3 / 2,		/* позиция и размеры прямоугольника - получателя */
-		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-		fbpic, picx, picy,
+		0, 0, picw / 4, pich / 4,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
+		fbpic, picdx, pich,
 		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
 	colpip_stretchblt(
 		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
 		fb, DIM_X, DIM_Y,
-		30, 0, picx / 2, picy / 2,		/* позиция и размеры прямоугольника - получателя */
-		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-		fbpic, picx, picy,
+		30, 0, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
+		fbpic, picdx, pich,
 		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
 	colpip_stretchblt(
 		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
 		fb, DIM_X, DIM_Y,
-		30, picy / 2, picx / 2, picy / 2,		/* позиция и размеры прямоугольника - получателя */
-		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-		fbpic, picx, picy,
+		30, pich / 2, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
+		fbpic, picdx, pich,
 		BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
 	colpip_stretchblt(
 		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
 		fb, DIM_X, DIM_Y,
-		300, 100, picx / 1, picy / 1,		/* позиция и размеры прямоугольника - получателя */
-		(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-		fbpic, picx, picy,
+		300, 100, picw / 1, pich / 1,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
+		fbpic, picdx, pich,
 		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
@@ -6435,7 +6435,12 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
-		testpng();
+
+		#include "Cobra.png.h"
+
+		testpng(Cobra_png);
+		for (;;)
+			;
 	}
 #endif
 #if 0 && LCDMODE_LTDC
