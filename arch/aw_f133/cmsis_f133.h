@@ -447,9 +447,23 @@ typedef struct GPIOINT_Type
 /*!< GPIOBLOCK Controller Interface */
 typedef struct GPIOBLOCK_Type
 {
-    GPIO_TypeDef GPIO_PINS [0x007];                                             /*!< Offset 0x000 GPIO pin control */
+    struct
+    {
+        volatile uint32_t CFG [0x004];                                          /*!< Offset 0x000 Configure Register */
+        volatile uint32_t DATA;                                                 /*!< Offset 0x010 Data Register */
+        volatile uint32_t DRV [0x004];                                          /*!< Offset 0x014 Multi_Driving Register */
+        volatile uint32_t PULL [0x002];                                         /*!< Offset 0x024 Pull Register */
+                 uint32_t reserved_0x02C;
+    } GPIO_PINS [0x007];                                                        /*!< Offset 0x000 GPIO pin control */
              uint32_t reserved_0x150 [0x002C];
-    GPIOINT_TypeDef GPIO_INTS [0x007];                                          /*!< Offset 0x200 GPIO interrupt control */
+    struct
+    {
+        volatile uint32_t EINT_CFG [0x004];                                     /*!< Offset 0x200 External Interrupt Configure Registers */
+        volatile uint32_t EINT_CTL;                                             /*!< Offset 0x210 External Interrupt Control Register */
+        volatile uint32_t EINT_STATUS;                                          /*!< Offset 0x214 External Interrupt Status Register */
+        volatile uint32_t EINT_DEB;                                             /*!< Offset 0x218 External Interrupt Debounce Register */
+                 uint32_t reserved_0x01C;
+    } GPIO_INTS [0x007];                                                        /*!< Offset 0x200 GPIO interrupt control */
              uint32_t reserved_0x2E0 [0x0018];
     volatile uint32_t PIO_POW_MOD_SEL;                                          /*!< Offset 0x340 PIO Group Withstand Voltage Mode Select Register */
     volatile uint32_t PIO_POW_MS_CTL;                                           /*!< Offset 0x344 PIO Group Withstand Voltage Mode Select Control Register */
@@ -2223,15 +2237,6 @@ typedef struct PWM_Type
     PWM_CH_TypeDef CH [0x008];                                                  /*!< Offset 0x100 Channels[0..7] */
 } PWM_TypeDef; /* size of structure = 0x200 */
 /*
- * @brief EMAC_ADDR
- */
-/*!< EMAC_ADDR Controller Interface */
-typedef struct EMAC_ADDR_Type
-{
-    volatile uint32_t HIGH;                                                     /*!< Offset 0x000 EMAC MAC Address High Register */
-    volatile uint32_t LOW;                                                      /*!< Offset 0x004 EMAC MAC Address Low Register */
-} EMAC_ADDR_TypeDef; /* size of structure = 0x008 */
-/*
  * @brief EMAC
  */
 /*!< EMAC Controller Interface */
@@ -2256,7 +2261,11 @@ typedef struct EMAC_Type
     volatile uint32_t EMAC_RX_HASH1;                                            /*!< Offset 0x044 EMAC Hash Table Register1 */
     volatile uint32_t EMAC_MII_CMD;                                             /*!< Offset 0x048 EMAC Management Interface Command Register */
     volatile uint32_t EMAC_MII_DATA;                                            /*!< Offset 0x04C EMAC Management Interface Data Register */
-    EMAC_ADDR_TypeDef EMAC_ADDR [0x008];                                        /*!< Offset 0x050 EMAC MAC Address N (N=0-7) */
+    struct
+    {
+        volatile uint32_t HIGH;                                                 /*!< Offset 0x050 EMAC MAC Address High Register */
+        volatile uint32_t LOW;                                                  /*!< Offset 0x054 EMAC MAC Address Low Register */
+    } EMAC_ADDR [0x008];                                                        /*!< Offset 0x050 EMAC MAC Address N (N=0-7) */
              uint32_t reserved_0x090 [0x0008];
     volatile uint32_t EMAC_TX_DMA_STA;                                          /*!< Offset 0x0B0 EMAC Transmit DMA Status Register */
     volatile uint32_t EMAC_TX_CUR_DESC;                                         /*!< Offset 0x0B4 EMAC Current Transmit Descriptor Register */
