@@ -1432,6 +1432,36 @@ typedef struct DE_CLK_Type
     volatile uint32_t SEL_CFG;                                                  /*!< Offset 0x010 ? DE2TCON ? MUX register */
 } DE_CLK_TypeDef; /* size of structure = 0x014 */
 /*
+ * @brief DE_BLD
+ */
+/*!< DE_BLD Controller Interface */
+typedef struct DE_BLD_Type
+{
+    volatile uint32_t fcolor_ctl;                                               /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
+    struct
+    {
+        volatile uint32_t fcolor;                                               /*!< Offset 0x004 BLD fill color register */
+        volatile uint32_t insize;                                               /*!< Offset 0x008 BLD input memory size register */
+        volatile uint32_t offset;                                               /*!< Offset 0x00C BLD input memory offset register */
+                 uint32_t reserved_0x00C;
+    } attr [0x004];                                                             /*!< Offset 0x004 Pipe [0..3] */
+             uint32_t reserved_0x044 [0x000F];
+    volatile uint32_t route;                                                    /*!< Offset 0x080 BLD_CH_RTCTL Offset 0x080 BLD routing control register */
+    volatile uint32_t premultiply;                                              /*!< Offset 0x084 Offset 0x080 BLD pre-multiply control register */
+    volatile uint32_t bkcolor;                                                  /*!< Offset 0x088  */
+    volatile uint32_t output_size;                                              /*!< Offset 0x08C  */
+    volatile uint32_t bld_mode [0x004];                                         /*!< Offset 0x090 BLD_CTL */
+             uint32_t reserved_0x0A0 [0x0004];
+    volatile uint32_t ck_ctl;                                                   /*!< Offset 0x0B0  */
+    volatile uint32_t ck_cfg;                                                   /*!< Offset 0x0B4  */
+             uint32_t reserved_0x0B8 [0x0002];
+    volatile uint32_t ck_max [0x004];                                           /*!< Offset 0x0C0  */
+             uint32_t reserved_0x0D0 [0x0004];
+    volatile uint32_t ck_min [0x004];                                           /*!< Offset 0x0E0  */
+             uint32_t reserved_0x0F0 [0x0003];
+    volatile uint32_t out_ctl;                                                  /*!< Offset 0x0FC  */
+} DE_BLD_TypeDef; /* size of structure = 0x100 */
+/*
  * @brief G2D_TOP
  */
 /*!< G2D_TOP Controller Interface */
@@ -2346,6 +2376,7 @@ typedef struct CLINT_Type
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)                               /*!< \brief USBOTG0 Interface register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)                                 /*!< \brief DE_GLB Interface register set access pointer */
 #define DE_CLK ((DE_CLK_TypeDef *) DE_CLK_BASE)                                 /*!< \brief DE_CLK Interface register set access pointer */
+#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)                                 /*!< \brief DE_BLD Interface register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)                              /*!< \brief G2D_TOP Interface register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)                        /*!< \brief G2D_MIXER Interface register set access pointer */
 #define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)                                 /*!< \brief G2D_V0 Interface register set access pointer */

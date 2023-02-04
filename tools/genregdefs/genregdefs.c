@@ -132,7 +132,15 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 			}
 			offs = regp->fldoffs;
 		}
-		if (regp->fldoffs == offs) {
+
+		if (regp->fldoffs != offs) {
+			emitline(0,
+					"#error Need offset 0x%03X of field '%s' type '%s' at (0x%03X)\n",
+					offs, regp->fldname, fldtype, regp->fldoffs);
+			//regp->fldoffs = offs;
+		}
+
+		if (1 /*regp->fldoffs == offs*/) {
 			if (! IsListEmpty(& regp->aggregate)) {
 				/* Emit aggregate type */
 				emitline(indent + INDENT, "struct\n");
@@ -169,9 +177,9 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 			}
 		} else {
 			emitline(0,
-					"#error WRONG offset of field '%s' type '%s' at (0x%03X)\n",
-					regp->fldname, fldtype, regp->fldoffs);
-			break;
+					"#error Need offset 0x%03X of field '%s' type '%s' at (0x%03X)\n",
+					offs, regp->fldname, fldtype, regp->fldoffs);
+			//break;
 		}
 	}
 	return offs;
