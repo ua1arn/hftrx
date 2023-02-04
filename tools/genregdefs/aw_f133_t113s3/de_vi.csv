@@ -1,1 +1,16 @@
 #type; DE_VI
+#base; DE_VI 0x05102000
+#aggreg; cfg; 0x000 4;
+#regdef; attr; 0x000;
+#regdef; size; 0x004;
+#regdef; coord; 0x008;
+#regdef; pitch; 0x00C 3;
+#regdef; top_laddr; 0x018 3;
+#regdef; bot_laddr; 0x024 3;
+#aggregend;
+#regdef; fcolor; 0x0C0 4;
+#regdef; top_haddr; 0x0D0 3;
+#regdef; bot_haddr; 0x0DC 3;
+#regdef; ovl_size; 0x0E8 2;
+#regdef; hori; 0x0F0 2;
+#regdef; vert; 0x0F8 2;

@@ -1879,40 +1879,40 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 //	uint32_t out_ctl;
 //};
 
-struct de_vi_t {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch[3];
-		uint32_t top_laddr[3];
-		uint32_t bot_laddr[3];
-	} cfg[4];
-	uint32_t fcolor[4];
-	uint32_t top_haddr[3];
-	uint32_t bot_haddr[3];
-	uint32_t ovl_size[2];
-	uint32_t hori[2];
-	uint32_t vert[2];
-};
+//struct de_vi_t {
+//	struct {
+//		uint32_t attr;
+//		uint32_t size;
+//		uint32_t coord;
+//		uint32_t pitch[3];
+//		uint32_t top_laddr[3];
+//		uint32_t bot_laddr[3];
+//	} cfg[4];
+//	uint32_t fcolor[4];
+//	uint32_t top_haddr[3];
+//	uint32_t bot_haddr[3];
+//	uint32_t ovl_size[2];
+//	uint32_t hori[2];
+//	uint32_t vert[2];
+//};
 
 // 5.10.3.4 Blender
 // part
-struct de_ui_t {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch;
-		uint32_t top_laddr;
-		uint32_t bot_laddr;
-		uint32_t fcolor;
-		uint32_t dum;
-	} cfg[4];
-	uint32_t top_haddr;
-	uint32_t bot_haddr;
-	uint32_t ovl_size;
-};
+//struct de_ui_t {
+//	struct {
+//		uint32_t attr;
+//		uint32_t size;
+//		uint32_t coord;
+//		uint32_t pitch;
+//		uint32_t top_laddr;
+//		uint32_t bot_laddr;
+//		uint32_t fcolor;
+//		uint32_t dum;
+//	} cfg[4];
+//	uint32_t top_haddr;
+//	uint32_t bot_haddr;
+//	uint32_t ovl_size;
+//};
 
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 #define VI_CFG_INDEX 0
@@ -1986,32 +1986,30 @@ static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 
 static inline void t113_de_set_address_vi(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
 {
-	struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+	//DE_VI_TypeDef * const vi = (DE_VI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
 
-	write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].attr,
+	DE_VI->cfg[VI_CFG_INDEX].attr =
 			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 			(1<<15)|	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
-			0
-			);
-	write32((uintptr_t) & vi->cfg [VI_CFG_INDEX].top_laddr, ptr_lo32(vram));
-	write32((uintptr_t) & vi->top_haddr, (0xFF & ptr_hi32(vram)) << (8 * VI_CFG_INDEX));
+			0;
+	DE_VI->cfg [VI_CFG_INDEX].top_laddr [0] = ptr_lo32(vram);
+	DE_VI->top_haddr [0] = ptr_hi32(vram);
 }
 
 static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int uich)
 {
 	ASSERT(uich >= 1 && uich <= 3);
-	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+	DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 
-	write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].attr,
+	ui->cfg[UI_CFG_INDEX].attr =
 			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
 			(255<<24)|	// LAY_GLBALPHA
 			(1<<16)| 	// LAY_PREMUL_CTL
-			0
-			);
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, ptr_lo32(vram));
-	write32((uintptr_t) & ui->top_haddr, (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX));
+			0;
+	ui->cfg [UI_CFG_INDEX].top_laddr = ptr_lo32(vram);
+	ui->top_haddr = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
 }
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
@@ -2106,8 +2104,8 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	}
 
 	{
-		struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
-
+		DE_VI_TypeDef * const vi = (DE_VI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+		//PRINTF("#base; DE_VI %p\n", vi);
 		//CH0 VI ----------------------------------------------------------------------------
 
 		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].attr,
@@ -2126,21 +2124,22 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	for (uich = 1; uich <= 3; ++ uich)
 	{
 		ASSERT(uich >= 1 && uich <= 3);
-		struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+		DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+		//PRINTF("#base; DE_UI%d %p\n", uich, ui);
 
 		//CH1 UI -----------------------------------------------------------------------------
 
-		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].attr,
+		ui->cfg[UI_CFG_INDEX].attr =
 				//(1<<0)|		// enable - разрешаем при назначении адреса
 				(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
 				(0xff<<24)|
-				(1<<16)	// LAY_PREMUL_CTL
-				);
-		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].size, ovl_ui_mbsize);
-		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].coord, 0);
-		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].pitch, uipitch);
-		//write32((uintptr_t)&ui->cfg[0].top_laddr,pdat->vram [1]);                                  //VIDEO_MEMORY1
-		write32((uintptr_t)&ui->ovl_size, ovl_ui_mbsize);
+				(1<<16)	|// LAY_PREMUL_CTL
+				0;
+		ui->cfg[UI_CFG_INDEX].size = ovl_ui_mbsize;
+		ui->cfg[UI_CFG_INDEX].coord = 0;
+		ui->cfg[UI_CFG_INDEX].pitch = uipitch;
+		//ui->cfg[0].top_laddr = pdat->vram [1];                                  //VIDEO_MEMORY1
+		ui->ovl_size = ovl_ui_mbsize;
 	}
 
 
