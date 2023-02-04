@@ -136,8 +136,10 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist) {
 			if (! IsListEmpty(& regp->aggregate)) {
 				/* Emit aggregate type */
 				emitline(indent + INDENT, "struct {\n");
-				offs += regp->fldrept * genreglist(indent + INDENT, & regp->aggregate);	/* Emit fields list */
-				emitline(indent + INDENT, "} %s [0x%03X];\n", regp->fldname, regp->fldrept);
+				//offs += regp->fldrept * genreglist(indent + INDENT, & regp->aggregate);	/* Emit fields list */
+				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname, regp->fldrept);
+				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
+						regp->fldoffs, regp->comment);
 			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
@@ -454,7 +456,29 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 						&pos)) {
 
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, NULL, file);
-			//fprintf(stderr, "Parsed 1 regdef fldname='%s' \n", fldname);
+		//	fprintf(stderr, "Parsed 1 regdef fldname='%s' \n", fldname);
+			/* parsed */
+			InsertTailList(&pfl->regslist, &regp->item);
+			if (nextline(fp) == 0)
+				break;
+
+		} else if (1
+				== sscanf(token0, "#agreg; %[a-zA-Z_0-9/] %n", fldname,
+						&pos)) {
+
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, NULL, file);
+			//fprintf(stderr, "Parsed 1 agreg fldname='%s' \n", fldname);
+			{
+				struct regdfn * regp2 = calloc(1, sizeof *regp2);
+
+				regp2->comment = strdup("test field 1");
+				regp2->fldname = strdup("fld1");
+				regp2->fldoffs = 0;
+				regp2->fldrept = 0;
+				regp2->fldsize = 4;
+				InsertTailList(&regp->aggregate, &regp2->item);
+
+			}
 			/* parsed */
 			InsertTailList(&pfl->regslist, &regp->item);
 			if (nextline(fp) == 0)
