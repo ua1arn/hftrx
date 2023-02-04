@@ -1294,20 +1294,6 @@ typedef struct USBEHCI_Type
     volatile uint32_t O_HcRhPortStatus;                                         /*!< Offset 0x454 OHCI Root Hub Port Status Register */
 } USBEHCI_TypeDef; /* size of structure = 0x458 */
 /*
- * @brief USBOTGFIFO
- */
-/*!< USBOTGFIFO Controller Interface */
-typedef struct USBOTGFIFO_Type
-{
-    volatile uint16_t USB_TXFADDR;                                              /*!< Offset 0x000 USB_TXFADDR */
-    volatile uint8_t  USB_TXHADDR;                                              /*!< Offset 0x002 USB_TXHADDR */
-    volatile uint8_t  USB_TXHUBPORT;                                            /*!< Offset 0x003 USB_TXHUBPORT */
-    volatile uint8_t  USB_RXFADDR;                                              /*!< Offset 0x004 USB_RXFADDR */
-             uint8_t reserved_0x005 [0x0001];
-    volatile uint8_t  USB_RXHADDR;                                              /*!< Offset 0x006 USB_RXHADDR */
-    volatile uint8_t  USB_RXHUBPORT;                                            /*!< Offset 0x007 USB_RXHUBPORT */
-} USBOTGFIFO_TypeDef; /* size of structure = 0x008 */
-/*
  * @brief USBOTG
  */
 /*!< USBOTG Controller Interface */
@@ -1345,7 +1331,16 @@ typedef struct USBOTG_Type
     volatile uint16_t USB_TXFIFOADD;                                            /*!< Offset 0x092 USB_TXFIFOADD */
     volatile uint16_t USB_RXFIFOSZ;                                             /*!< Offset 0x094 USB_RXFIFOSZ */
     volatile uint16_t USB_RXFIFOADD;                                            /*!< Offset 0x096 USB_RXFIFOADD */
-    USBOTGFIFO_TypeDef FIFO [0x006];                                            /*!< Offset 0x098 FIFOs [0..5] */
+    struct
+    {
+        volatile uint16_t USB_TXFADDR;                                          /*!< Offset 0x098 USB_TXFADDR */
+        volatile uint8_t  USB_TXHADDR;                                          /*!< Offset 0x09A USB_TXHADDR */
+        volatile uint8_t  USB_TXHUBPORT;                                        /*!< Offset 0x09B USB_TXHUBPORT */
+        volatile uint8_t  USB_RXFADDR;                                          /*!< Offset 0x09C USB_RXFADDR */
+                 uint8_t reserved_0x005 [0x0001];
+        volatile uint8_t  USB_RXHADDR;                                          /*!< Offset 0x09E USB_RXHADDR */
+        volatile uint8_t  USB_RXHUBPORT;                                        /*!< Offset 0x09F USB_RXHUBPORT */
+    } FIFO [0x006];                                                             /*!< Offset 0x098 FIFOs [0..5] */
              uint32_t reserved_0x0C8 [0x00CE];
     volatile uint32_t USB_ISCR;                                                 /*!< Offset 0x400 HCI Interface Register (HCI_Interface) */
     volatile uint32_t USBPHY_PHYCTL;                                            /*!< Offset 0x404 USBPHY_PHYCTL */
