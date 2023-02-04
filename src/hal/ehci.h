@@ -777,7 +777,7 @@ typedef struct
 //  uint8_t   toggle_out;         /*!< OUT transfer current toggle flag
 //                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
-  uint32_t  dma_addr;           /*!< 32 bits aligned transfer buffer address.                                   */
+  uintptr_t  dma_addr;           /*!< 32 bits aligned transfer buffer address.                                   */
 
   uint32_t  ErrCnt;             /*!< Host channel error count.                                                  */
 
@@ -1000,11 +1000,6 @@ HAL_StatusTypeDef HAL_EHCI_UnRegisterHC_NotifyURBChangeCallback(EHCI_HandleTypeD
 /** @addtogroup EHCI_Exported_Functions_Group2 Input and Output operation functions
   * @{
   */
-HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hhcd, uint8_t ch_num,
-                                           uint8_t direction, uint8_t ep_type,
-                                           uint8_t token, uint8_t *pbuff,
-										   uint32_t length, uint8_t do_ping);
-
 /* Non-Blocking mode: Interrupt */
 void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef *hhcd);
 void HAL_EHCI_SOF_Callback(EHCI_HandleTypeDef *hhcd);

@@ -1,0 +1,19 @@
+#type; C0_CPUX_CFG
+#base; C0_CPUX_CFG 0x09010000
+#regdef; C0_RST_CTRL; 0x0000; Cluster 0 Reset Control Register
+#regdef; C0_CTRL_REG0; 0x0010; Cluster 0 Control Register0
+#regdef; C0_CTRL_REG1; 0x0014; Cluster 0 Control Register1
+#regdef; C0_CTRL_REG2; 0x0018; Cluster 0 Control Register2
+#regdef; CACHE_CFG_REG; 0x0024; Cache Configuration Register
+#regdef; C0_CPU_STATUS; 0x0080; Cluster 0 CPU Status Register
+#regdef; L2_STATUS_REG; 0x0084; Cluster 0 L2 Status Register
+#regdef; DBG_REG0; 0x00C0; Cluster 0 Debug Control Register0
+#regdef; DBG_REG1; 0x00C4; Cluster 0 Debug Control Register1
+#regdef; AXI_MNT_CTRL_REG; 0x00D0; AXI Monitor Control Register
+#regdef; AXI_MNT_PRD_REG; 0x00D4; AXI Monitor Period Register
+#regdef; AXI_MNT_RLTCY_REG; 0x00D8; AXI Monitor Read Total Latency Register
+#regdef; AXI_MNT_WLTCY_REG; 0x00DC; AXI Monitor Write Total Latency Register
+#regdef; AXI_MNT_RREQ_REG; 0x00E0; AXI Monitor Read Request Times Register
+#regdef; AXI_MNT_WREQ_REG; 0x00E4; AXI Monitor Write Request Times Register
+#regdef; AXI_MNT_RBD_REG; 0x00E8; AXI Monitor Read Bandwidth Register
+#regdef; AXI_MNT_WBD_REG; 0x00EC; AXI Monitor Write Bandwidth Register

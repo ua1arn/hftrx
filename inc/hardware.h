@@ -450,19 +450,36 @@ extern "C" {
 	#define ARM_FAST_ALLOW_TABLES	1
 
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_F133
 
-	// ST dual core A7 + M4
+	// RISC-V processor Allwinner D1 XuanTie C906
 
-	// STM32MP157Axx
-	// STM32MP157Dxx
-	// STM32MP157AAB3
-	// STM32MP157DAB1
+	#define CPUSTYLE_RISCV		1		/* архитектура процессора RISC-V */
+
+	#include "allwnr_f133.h"
+	//#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 64
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
+
+
+#elif CPUSTYLE_T113
 
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "arch/t113s3/allwnr_t113s3.h"
+	#include "allwnr_t113s3.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
@@ -475,7 +492,7 @@ extern "C" {
 		//#define ARM_MATH_NEON 1
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 	#define ARM_FAST_ALLOW_TABLES	1
 
@@ -491,7 +508,6 @@ extern "C" {
 
 	#include "arch/zynq/zynq7000.h"
 	#include "irq_ctrl.h"
-	#include "xparameters.h"
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -514,8 +530,10 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
+#if ! LINUX_SUBSYSTEM
 	#include "arch/zynqmp/zynquscale.h"
 	#include "irq_ctrl.h"
+#endif /* ! LINUX_SUBSYSTEM */
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -524,9 +542,13 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+
+	#define DISABLEFLOAT16 1
+	//#define ARM_MATH_DSP 1
+	//#define ARM_MATH_NEON 1
+	//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 	#define ARM_FAST_ALLOW_TABLES	1
@@ -535,7 +557,7 @@ extern "C" {
 	defined (__TMS320C28X__) || \
 	0
 
-	#define CPUSTYPE_TMS320F2833X 1
+	#define CPUSTYLE_TMS320F2833X 1
 	#include "tms320f2833x.h"
 
 	//#define CPU_FREQ 150000000uL
@@ -613,6 +635,27 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	void local_delay_us(int timeUS);
 	void local_delay_ms(int timeMS);
 
+#elif CPUSTYLE_RISCV
+
+	/* тип для передачи параметра "адрес устройства на SPI шине" */
+	/* это может быть битовая маска в порту ввода-вывода */
+	typedef uint_fast32_t spitarget_t;
+	/* тип для хранения данных, считанных из порта ввода-вывода или для формируемого значения */
+	typedef uint_fast32_t portholder_t;
+
+	#define FLASHMEM //__flash
+	#define NOINLINEAT // __attribute__((noinline))
+	#define strlen_P(s) strlen(s)
+
+	#define ATTRWEAK __WEAK
+	// Use __attribute__ ((weak, alias("Default_Handler")))
+
+	#define PSTR(s) (s)
+	//#define PSTR(s) (__extension__({static const char __c[] FLASHMEM = (s); &__c[0];}))
+
+	void local_delay_us(int timeUS);
+	void local_delay_ms(int timeMS);
+
 #elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
 	// ATMega, ATXMega target
 
@@ -638,7 +681,7 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 
 	#define ATTRWEAK __attribute__ ((weak))
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 	/* тип для передачи параметра "адрес устройства на SPI шине" */
 	/* это может быть битовая маска в порту ввода-вывода */
 	typedef uint_fast32_t spitarget_t;
@@ -666,7 +709,7 @@ void spool_nmeapps(void);	// Обработчик вызывается при п
 // получить прескалер и значение для программирования таймера
 uint_fast8_t
 hardware_calc_sound_params(
-	uint_least16_t tonefreq,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
+	uint_least16_t tonefreq01,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
 	unsigned * pvalue);
 // установить прескалер и значение для программирования таймера
 // called from interrupt or with disabled interrupts
@@ -735,6 +778,14 @@ void hardware_uart2_enablerx(uint_fast8_t state);	/* вызывается из �
 uint_fast8_t hardware_uart2_putchar(uint_fast8_t c);/* передача символа если готов порт */
 uint_fast8_t hardware_uart2_getchar(char * cp); /* приём символа, если готов порт */
 
+void hardware_uart3_initialize(uint_fast8_t debug);
+void hardware_uart3_set_speed(uint_fast32_t baudrate);
+void hardware_uart3_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
+void hardware_uart3_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+void hardware_uart3_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+uint_fast8_t hardware_uart3_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t hardware_uart3_getchar(char * cp); /* приём символа, если готов порт */
+
 void hardware_uart4_initialize(uint_fast8_t debug);
 void hardware_uart4_set_speed(uint_fast32_t baudrate);
 void hardware_uart4_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
@@ -763,6 +814,9 @@ void usbd_cdc_tx(void * ctx, uint_fast8_t c);			/* передача символ
 void usbd_cdc_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 void usbd_cdc_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 
+void usbd_cdc_send(const void * buff, size_t length);	/* временное решение для передачи */
+uint_fast8_t usbd_cdc_ready(void);	/* временное решение для передачи */
+
 /* отладочная выдача через USB CDC */
 void debugusb_initialize(void);				/* Вызывается из user-mode программы при запрещённых прерываниях. */
 uint_fast8_t debugusb_putchar(uint_fast8_t c);/* передача символа если готов порт */
@@ -771,7 +825,10 @@ void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обраб
 void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
 
 /* TWI (I2C) interface */
-#define I2C_RETRIES 3	/* количество повторов */
+#if ! LINUX_SUBSYSTEM
+	#define I2C_RETRIES 3	/* количество повторов */
+#endif /* ! LINUX_SUBSYSTEM */
+
 void i2c_initialize(void);
 
 void i2c_start(uint_fast8_t address);
@@ -829,19 +886,20 @@ typedef struct videomode_tag
 	unsigned hsyncneg; 		/* negative polarity required for hsync signal */
 	unsigned deneg; 		/* negative de polarity: (normal: de is 0 while sync) */
 	unsigned lq43reset; /* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
-	unsigned fps;	/* frames per secound */
+	unsigned fps;	/* frames per second */
 
 } videomode_t;
 
 extern const videomode_t vdmode0;
-void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
+void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
 unsigned long display_getdotclock(const videomode_t * vdmode);
 
-void arm_hardware_ltdc_main_set(uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr);	/* Set MAIN frame buffer address. No waiting for VSYNC. */
-void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
-void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
-void arm_hardware_ltdc_L8_palette(void);	// Palette reload
+void hardware_ltdc_main_set(uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3);	/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set_no_vsync(uintptr_t addr);	/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
+void hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
+void hardware_ltdc_L8_palette(void);	// Palette reload
 
 uint_fast8_t usbd_cdc1_getrts(void);
 uint_fast8_t usbd_cdc1_getdtr(void);
@@ -944,10 +1002,10 @@ void midtests(void);
 void hightests(void);
 void looptests(void);	// Периодически вызывается в главном цикле
 
-void arm_hardware_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас в эту память будем читать по DMA
-void arm_hardware_flush(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то
-void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void arm_hardware_flush_all(void);
+void dcache_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас в эту память будем читать по DMA
+void dcache_clean(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то
+void dcache_clean_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+void dcache_clean_all(void);
 
 void r7s721_sdhi0_dma_handler(void);
 
@@ -958,7 +1016,7 @@ calcdivround2(
 	);
 
 #define CATPCOUNTSIZE (13)
-#define MSGBUFFERSIZE8 (9 + CATPCOUNTSIZE)
+#define MSGBUFFERSIZE8 64//(9 + CATPCOUNTSIZE) // See struct dpclayout
 
 enum messagetypes
 {
@@ -1136,10 +1194,16 @@ void xcz_if_rx_init(void);
 void xcz_if_tx_init(void);
 void xcz_if_rx_enable(uint_fast8_t state);
 void xcz_if_tx_enable(uint_fast8_t state);
-void xcz_rx_iq_shift(uint32_t val);
-void xcz_rx_cic_shift(uint32_t val);
-void xcz_tx_shift(uint32_t val);
+uint32_t xcz_rx_iq_shift(uint8_t val);
+uint32_t xcz_rx_cic_shift(uint32_t val);
+uint32_t xcz_tx_shift(uint32_t val);
 void xcz_adcrand_set(uint8_t val);
+
+void xcz_dds_ftw(const uint_least64_t * value);	// Установка центральной частоты тракта основного приёмника
+void xcz_dds_ftw_sub(const uint_least64_t * value);// Установка центральной частоты тракта дополнительного приёмника
+void xcz_dds_rts(const uint_least64_t * value);// Установка центральной частоты панорамного индикатора
+
+void nmea_parser_init(void);
 
 #endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
@@ -1211,6 +1275,8 @@ uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b);
 uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b);
 unsigned long ulmin(unsigned long a, unsigned long b);
 unsigned long ulmax(unsigned long a, unsigned long b);
+signed long slmin(signed long a, signed long b);
+signed long slmax(signed long a, signed long b);
 
 #define  HI_32BY(w)  (((w) >> 24) & 0xFF)   /* Extract 31..24 bits from unsigned word */
 #define  HI_24BY(w)  (((w) >> 16) & 0xFF)   /* Extract 23..16 bits from unsigned word */
@@ -1233,10 +1299,55 @@ unsigned long ulmax(unsigned long a, unsigned long b);
 #include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 #include "clocks.h"
 uint32_t sys_now(void);
-void sys_dram_init(void);
+int  sys_dram_init(void);	// 0 - error
 
 // RTOS test stuff
 int blinky_main(void);
 #define GTIM_IRQ_NUM SecurePhysicalTimer_IRQn
+
+typedef struct dram_para_t
+{
+	//normal configuration
+	uint32_t        	dram_clk;
+	uint32_t        	dram_type;	//dram_type DDR2: 2 DDR3: 3 LPDDR2: 6 LPDDR3: 7 DDR3L: 31
+	//uint32_t        	lpddr2_type;	//LPDDR2 type S4:0 S2:1 NVM:2
+	uint32_t        	dram_zq;	//do not need
+	uint32_t		dram_odt_en;
+
+	//control configuration
+	uint32_t		dram_para1;
+	uint32_t		dram_para2;
+
+	//timing configuration
+	uint32_t		dram_mr0;
+	uint32_t		dram_mr1;
+	uint32_t		dram_mr2;
+	uint32_t		dram_mr3;
+	uint32_t		dram_tpr0;	//DRAMTMG0
+	uint32_t		dram_tpr1;	//DRAMTMG1
+	uint32_t		dram_tpr2;	//DRAMTMG2
+	uint32_t		dram_tpr3;	//DRAMTMG3
+	uint32_t		dram_tpr4;	//DRAMTMG4
+	uint32_t		dram_tpr5;	//DRAMTMG5
+   	uint32_t		dram_tpr6;	//DRAMTMG8
+
+	//reserved for future use
+	uint32_t		dram_tpr7;
+	uint32_t		dram_tpr8;
+	uint32_t		dram_tpr9;
+	uint32_t		dram_tpr10;
+	uint32_t		dram_tpr11;
+	uint32_t		dram_tpr12;
+	uint32_t		dram_tpr13;
+} dram_para_t;
+
+signed int init_DRAM(int type, dram_para_t *para); // s0
+
+uintptr_t getRamDiskBase(void);
+size_t getRamDiskSize(void);
+
+#if LINUX_SUBSYSTEM
+	#include "linux_subsystem.h"
+#endif /* LINUX_SUBSYSTEM */
 
 #endif // HARDWARE_H_INCLUDED

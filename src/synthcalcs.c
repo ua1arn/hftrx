@@ -79,123 +79,169 @@ freq2ftw(uint_fast32_t freq, uint_fast16_t divider, uint_fast64_t ddsosc)
 
 #if WITHLFM && LO1MODE_DIRECT
 
+#include "audio.h"
 
-volatile uint_fast8_t spool_lfm_enable;
-volatile uint_fast8_t spool_lfm_flag;
+#define LFMTICKSFREQ ARMSAIRATE
 
-void spool_lfm(void)
-{
-	if (spool_lfm_enable != 0)
-	{
-		prog_pulse_ioupdate();
-		spool_lfm_flag = 1;
-		//return 1;
-	}
-	//return 0;
-}
+static volatile uint_fast8_t rlfm_isrunning;	/* Флаг для рзрешения получения частоты от chirp-генератора */
+static volatile uint_fast64_t rlfm_position;// = 0;
+static volatile uint_fast64_t rlfm_nsteps;
+static volatile uint_fast64_t rlfm_currfreqX;	//текущач частота
+static volatile uint_fast64_t rlfm_freqStepX;	//шаг приращения
+static SPINLOCK_t lfmlock = SPINLOCK_INIT;
 
 // Вызывается из обработчика PPS при совпадении времени начала.
 void lfm_run(void)
 {
-	spool_lfm_enable = 1;
-}
+	global_disableIRQ();
+	SPIN_LOCK(& lfmlock);
 
-static void
-board_waitextsync(void)
-{
-
-	for (;;)
+	if (rlfm_isrunning == 0)
 	{
-		uint_fast8_t f;
-		system_disableIRQ();
-		f = spool_lfm_flag;
-		spool_lfm_flag = 0;
-		system_enableIRQ();
-		if (f != 0)
-			break;	
+		rlfm_isrunning = 1;
 	}
+
+	SPIN_UNLOCK(& lfmlock);
+	global_enableIRQ();
 }
 
-
-static void 
-scanfreq(ftw_t ftw0, ftw_t ftw_last, long int lfm_nsteps)
+void lfm_disable(void)
 {
-	const ftw_t lfm_dy = ftw_last - ftw0; 
-	const ftw_t lfm_SCALE = lfm_nsteps;
-	const ftw_t lfm_SCALEDIV2 = lfm_nsteps / 2;
-	ftw_t lfm_y1_scaled = ftw0 * lfm_SCALE;	// начальное значение
-	long int lfm_position = 0;
+	global_disableIRQ();
+	SPIN_LOCK(& lfmlock);
 
-	// Начальное выставление частоты, соответствующей началу сканируемого диапазона
-	// Потом ждём первого импульса (в момент Tstart+delta), пришедьшего от аппаратуры синхронизации с GPS
+	rlfm_isrunning = 0;
 
-	prog_dds1_ftw(& ftw0);
+	SPIN_UNLOCK(& lfmlock);
+	global_enableIRQ();
+}
 
+int iflfmactive(void)
+{
+	return rlfm_isrunning;
+}
 
-	//board_set_ddsext(1);	// внешнее управление IOUPDATE DDS1
-	//board_update();
+uint_fast32_t getlfmfreq(void)
+{
+	return rlfm_currfreqX / LFMTICKSFREQ;
+}
 
-	spool_lfm_flag = 0;
-	//spool_lfm_enable = 1;
-	hardware_lfm_setupdatefreq(LFMTICKSFREQ);
-
-	//display_freq(position, ftw0); // 
-    do              
-    {         
-		// Подготавливаем параметры для программирования DDS
-		const ftw_t lfm_value = ((lfm_y1_scaled += lfm_dy) + lfm_SCALEDIV2) / lfm_SCALE;
-		// Выдаём FTW в микросхему синтезатора частоты, ждём прохода
-		// очередного синхронизирующего импульса.
-		board_waitextsync();
-		system_disableIRQ();
-		prog_dds1_ftw_noioupdate(& lfm_value);
-		system_enableIRQ();
-		//display_freq(position, value); // но это тоже может боком
-    } while (++ lfm_position < lfm_nsteps);
-	// цикл перестройки частоты завершён
-
-	hardware_lfm_setupdatefreq(20);
-	spool_lfm_enable = 0;
-
-	//board_set_ddsext(0);	// внутреннее управление IOUPDATE DDS1
-	//board_update();
-} 
+// Параметры chirp-генератора
+static ftw_t rlfm_dy;// = ftw_last - ftw0;
+static ftw_t rlfm_SCALE;// = lfm_nsteps;
+static ftw_t rlfm_SCALEDIV2;// = lfm_nsteps / 2;
+static ftw_t rlfm_y1_scaled;// = ftw0 * lfm_SCALE;	// начальное значение
 
 static long int lfm_speed;		// скорость перестройки герц / секунду
 static long int lfm_start;	// начальная частота
 static long int lfm_stop;	// конечная частота
 static long int lfm_lo1div;	// делитель перед подачей на смеситель
 
+/* user mode. вызывается из основного цикла - возможно перестрйока входных фильтров */
 void 
 testlfm(void)
 {
-	enum { fi = 0 };	// номер тракта
-	// LFMTICKSFREQ - количество обновлений частоты за секунду
-
-	//lfm_speed = 100000;		// скорость перестройки герц / секунду
-	//lfm_start = 2000000;	// начальная частота
-	//lfm_stop =  9000000;	// конечная частота
-
-	long int nsteps = (uint_fast64_t) (lfm_stop - lfm_start) * LFMTICKSFREQ / lfm_speed;
-	//PRINTF(PSTR("nsteps = %d\n"), nsteps);
-	scanfreq(freq2ftw(synth_freq2lo1(lfm_start, fi), dds1refdiv * lfm_lo1div, dds1ref), freq2ftw(synth_freq2lo1(lfm_stop, fi), dds1refdiv * lfm_lo1div, dds1ref), nsteps);
+	const uint_fast32_t f = rlfm_currfreqX / LFMTICKSFREQ;
 }
 
 void synth_lfm_setparams(uint_fast32_t astart, uint_fast32_t astop, uint_fast32_t aspeed, uint_fast8_t od)
 {
-	lfm_speed = aspeed;
-	lfm_start = astart;
-	lfm_stop = astop;
-	lfm_lo1div = od;
+	if (rlfm_isrunning == 0)
+	{
+		lfm_speed = aspeed;
+		lfm_start = astart;
+		lfm_stop = astop;
+		lfm_lo1div = od;
+		enum { fi = 0 };	// номер тракта
+
+		// LFMTICKSFREQ - количество обновлений частоты за секунду
+
+		rlfm_currfreqX = lfm_start * LFMTICKSFREQ;
+
+		//lfm_speed = 100000;		// скорость перестройки герц / секунду
+		//lfm_start = 2000000;	// начальная частота
+		//lfm_stop =  9000000;	// конечная частота
+
+		rlfm_currfreqX = (uint_fast64_t) lfm_start * LFMTICKSFREQ;
+		rlfm_freqStepX = (uint_fast64_t) lfm_speed * 1;
+		uint_least64_t nsteps = (uint_fast64_t) (lfm_stop - lfm_start) * LFMTICKSFREQ / lfm_speed;
+		//PRINTF(PSTR("nsteps = %d\n"), nsteps);
+
+		const ftw_t ftw0 = freq2ftw(synth_freq2lo1(lfm_start, fi), dds1refdiv * lfm_lo1div, dds1ref);
+		const ftw_t ftw_last = freq2ftw(synth_freq2lo1(lfm_stop, fi), dds1refdiv * lfm_lo1div, dds1ref);
+
+		rlfm_dy = ftw_last - ftw0;
+		rlfm_nsteps = nsteps;
+		rlfm_SCALE = nsteps;
+		rlfm_SCALEDIV2 = nsteps / 2;
+		rlfm_y1_scaled = ftw0 * rlfm_SCALE;	// начальное значение
+		rlfm_position = 1;
+	}
 } 
 
-#else
+#else /* WITHLFM && LO1MODE_DIRECT */
 
-void spool_lfm(void)
+#endif /* WITHLFM && LO1MODE_DIRECT */
+
+
+volatile phase_t mirror_nco1;
+volatile phase_t mirror_nco2;
+volatile phase_t mirror_nco3;
+volatile phase_t mirror_nco4;
+volatile phase_t mirror_ncorts;
+volatile phase_t mirror_lfm;
+
+
+/* Получение параметров приемника, передаваемых чрез I2S канал в FPGA */
+/* вызывается из прерываний real-time с частотой ARMI2SRATE */
+uint_fast32_t dspfpga_get_nco1(void)
 {
-	//return 0;
+#if WITHLFM && LO1MODE_DIRECT
+	if (rlfm_isrunning)
+	{
+		// Подготавливаем параметры для программирования DDS
+		mirror_lfm = ((rlfm_y1_scaled += rlfm_dy) + rlfm_SCALEDIV2) / rlfm_SCALE;
+		rlfm_isrunning = ++ rlfm_position < rlfm_nsteps;
+		rlfm_currfreqX += rlfm_freqStepX;
+		return mirror_lfm;
+	}
+	return mirror_nco1;
+#else /* WITHLFM && LO1MODE_DIRECT */
+	return mirror_nco1;
+#endif /* WITHLFM && LO1MODE_DIRECT */
 }
-#endif
+
+/* вызывается из прерываний real-time с частотой ARMI2SRATE */
+uint_fast32_t dspfpga_get_nco2(void)
+{
+	return mirror_nco2;
+}
+
+/* вызывается из прерываний real-time с частотой ARMI2SRATE */
+uint_fast32_t dspfpga_get_nco3(void)
+{
+	return mirror_nco3;
+}
+
+/* вызывается из прерываний real-time с частотой ARMI2SRATE */
+uint_fast32_t dspfpga_get_nco4(void)
+{
+	return mirror_nco4;
+}
+
+/* вызывается из прерываний real-time с частотой ARMI2SRATE */
+uint_fast32_t dspfpga_get_ncorts(void)
+{
+#if WITHLFM && LO1MODE_DIRECT
+	if (rlfm_isrunning)
+	{
+		return mirror_lfm;
+	}
+	return mirror_ncorts;
+#else /* WITHLFM && LO1MODE_DIRECT */
+	return mirror_ncorts;
+#endif /* WITHLFM && LO1MODE_DIRECT */
+}
 
 #if LO1MODE_DIRECT && ! defined(DDS1_TYPE)
 

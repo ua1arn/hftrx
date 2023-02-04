@@ -83,8 +83,8 @@ static USBH_StatusTypeDef USBH_HID_MouseDecode(USBH_HandleTypeDef *phost);
   * @{
   */
 HID_MOUSE_Info_TypeDef    mouse_info;
-static RAMNOINIT_D1 __ALIGN4k_BEGIN uint32_t                   mouse_report_data[2] __ALIGN4k_END;
-static RAMNOINIT_D1 __ALIGN4k_BEGIN uint32_t                   mouse_rx_report_buf[2] __ALIGN4k_END;
+static __ALIGN_BEGIN uint32_t                   mouse_report_data[2] __ALIGN_END;
+static __ALIGN_BEGIN uint32_t                   mouse_rx_report_buf[2] __ALIGN_END;
 
 /* Structures defining how to access items in a HID mouse report */
 /* Access button 1 state. */

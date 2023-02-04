@@ -29,8 +29,8 @@
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
 	#define LSEFREQ 32768uL
-	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
-	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
+	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
 	#if 1//WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
@@ -217,9 +217,9 @@
 
 	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
 
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255

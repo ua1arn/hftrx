@@ -265,6 +265,8 @@ extern "C" {
 
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
+			#define WITHCPUNAME "STM32H7xx"
+
 		#elif CPUSTYLE_STM32F7XX
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
@@ -284,6 +286,8 @@ extern "C" {
 
 			#define HSIFREQ 16000000uL
 
+			#define WITHCPUNAME "STM32F7xx"
+
 		#elif CPUSTYLE_STM32F4XX
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
@@ -292,6 +296,8 @@ extern "C" {
 			#define BOARD_SPI_FREQ (stm32f4xx_get_spi1_freq())
 
 			#define HSIFREQ 16000000uL	// 16 MHz
+
+			#define WITHCPUNAME "STM32F4xx"
 
 		#endif
 
@@ -393,6 +399,8 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
+	#define WITHCPUNAME "ATSAM3S"
+
 #elif CPUSTYLE_ATSAM4S
 
 	//#define CPU_FREQ ((18432000uL * 73) / 14 / 2)	// satmod9if_v0 ARM board
@@ -422,6 +430,8 @@ extern "C" {
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#define WITHCPUNAME "ATSAM4S"
 
 #elif CPUSTYLE_AT91SAM9XE
 
@@ -514,7 +524,7 @@ extern "C" {
 	typedef uint_fast8_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	#define TICKS_FREQUENCY	 (200U * 2)	// 400 Hz - use compare/match interrupt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
@@ -576,6 +586,8 @@ extern "C" {
 	// GIC_SetConfiguration parameters
 	#define GIC_CONFIG_EDGE 0x03
 	#define GIC_CONFIG_LEVEL 0x01
+
+	#define WITHCPUNAME "R7S721"
 
 #elif CPUSTYLE_STM32MP1
 
@@ -660,7 +672,7 @@ extern "C" {
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 24000000uL	/* 2требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 24000000u	/* 2требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
@@ -713,7 +725,7 @@ extern "C" {
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
@@ -738,7 +750,7 @@ extern "C" {
 	#define HARDWARE_ADCBITS 12
 
 	#define SPISPEED 		12000000uL	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	24000000uL	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	24000000u	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
@@ -758,8 +770,58 @@ extern "C" {
 		GPIO_CFG_AF11 = 0x0B,
 		GPIO_CFG_AF12 = 0x0C,
 		GPIO_CFG_AF13 = 0x0D,
-		GPIO_CFG_AF14 = 0x0E,
-		GPIO_CFG_AF15 = 0x0F,
+		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
+		GPIO_CFG_IODISABLE = 0x0F,
+	} GPIOMode_TypeDef;
+
+
+#elif CPUSTYLE_F133
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define HARDWARE_CLK32K_FREQ 32000uL
+	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
+
+	#define CPU_FREQ	(allwnrf133_get_riscv_freq())
+	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
+	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		12000000uL	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	24000000u	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+
+	typedef enum {
+		GPIO_CFG_IN  = 0x00,
+		GPIO_CFG_OUT = 0x01,
+		GPIO_CFG_AF2 = 0x02,
+		GPIO_CFG_AF3 = 0x03,
+		GPIO_CFG_AF4 = 0x04,
+		GPIO_CFG_AF5 = 0x05,
+		GPIO_CFG_AF6 = 0x06,
+		GPIO_CFG_AF7 = 0x07,
+		GPIO_CFG_AF8 = 0x08,
+		GPIO_CFG_AF9 = 0x09,
+		GPIO_CFG_AF10 = 0x0A,
+		GPIO_CFG_AF11 = 0x0B,
+		GPIO_CFG_AF12 = 0x0C,
+		GPIO_CFG_AF13 = 0x0D,
+		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
+		GPIO_CFG_IODISABLE = 0x0F,
 	} GPIOMode_TypeDef;
 
 #elif CPUSTYLE_XCZU
@@ -777,7 +839,7 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	#define CPU_FREQ	(xc7z_get_arm_freq())
+	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
 	#define BOARD_SPI_FREQ (xc7z_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
@@ -911,31 +973,40 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-		// разрешены все
-		#define system_enableIRQ() do { \
-				/*ASSERT(RUNNING_PRI == 0x1F); */\
-				GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED); \
-			} while (0)
-		// разрешены только realtime
-		#define system_disableIRQ() do { \
-				/*ASSERT(RUNNING_PRI == 0x1F); */\
-				GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \
-			} while (0)
-		// разрешены все
-		#define system_enableIRQxxx() do { \
-				__enable_irq(); \
-			} while (0)
-		// разрешены только realtime
-		#define system_disableIRQxxx() do { \
-				__disable_irq(); \
+		#if defined(__aarch64__)
+
+			// разрешены все
+			#define system_enableIRQ() do { \
+				} while (0)
+			// разрешены только realtime
+			#define system_disableIRQ() do { \
+				} while (0)
+
+			#define global_enableIRQ() do { \
+				} while (0)
+			#define global_disableIRQ() do { \
 			} while (0)
 
-		#define global_enableIRQ() do { \
-			__enable_irq(); \
+		#else /* defined(__aarch64__) */
+
+			// разрешены все
+			#define system_enableIRQ() do { \
+					/*ASSERT(RUNNING_PRI == 0x1F); */\
+					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED); \
+				} while (0)
+			// разрешены только realtime
+			#define system_disableIRQ() do { \
+					/*ASSERT(RUNNING_PRI == 0x1F); */\
+					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \
+				} while (0)
+
+			#define global_enableIRQ() do { \
+				__enable_irq(); \
+				} while (0)
+			#define global_disableIRQ() do { \
+				__disable_irq(); \
 			} while (0)
-		#define global_disableIRQ() do { \
-			__disable_irq(); \
-		} while (0)
+		#endif /* defined(__aarch64__) */
 
 	#else /* WITHNESTEDINTERRUPTS */
 
@@ -956,6 +1027,36 @@ extern "C" {
 		#define global_disableIRQ() do { \
 			__disable_irq(); \
 		} while (0)
+
+	#endif /* WITHNESTEDINTERRUPTS */
+
+#elif CPUSTYLE_RISCV
+
+	#if WITHNESTEDINTERRUPTS
+
+		#define ARM_OVERREALTIME_PRIORITY	3	/* валкодер */
+		#define ARM_REALTIME_PRIORITY		2	/* звук */
+		#define ARM_SYSTEM_PRIORITY			1	/* таймеры, USB */
+		#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+
+		#define system_enableIRQ() do { PLIC->PLIC_MTH_REG = ARM_USER_PRIORITY; } while (0)
+		#define system_disableIRQ() do { PLIC->PLIC_MTH_REG = ARM_SYSTEM_PRIORITY; } while (0)
+
+		#define global_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
+		#define global_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK); } while (0)
+
+	#else /* WITHNESTEDINTERRUPTS */
+
+		#define ARM_OVERREALTIME_PRIORITY	1
+		#define ARM_REALTIME_PRIORITY		1
+		#define ARM_SYSTEM_PRIORITY			1
+		#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+
+		#define system_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
+		#define system_disableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
+
+		#define global_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
+		#define global_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK); } while (0)
 
 	#endif /* WITHNESTEDINTERRUPTS */
 
@@ -1018,9 +1119,9 @@ extern "C" {
 #define DDS_TYPE_AD9851		5	// AD9850 and AD9851 supported
 #define DDS_TYPE_AD9835		6	// AD9832 and AD9835 supported
 #define DDS_TYPE_FPGAV1		7	// NCO, DDC/DUC
-#define DDS_TYPE_FPGAV2		8	// NCO, DDC/DUC
-#define DDS_TYPE_ATTINY2313	9	// experemental: nco=/7, dds=/9
-#define DDS_TYPE_ZYNQ_PL 	10
+#define DDS_TYPE_ATTINY2313	8	// experemental: nco=/7, dds=/9
+#define DDS_TYPE_ZYNQ_PL 	9
+#define DDS_TYPE_GW2A_V0 	10
 
 #define	ADC_TYPE_AD9246		15
 
@@ -1054,7 +1155,7 @@ extern "C" {
 #define RTC_TYPE_STM32F4xx	53	/* STM32F4xx internal RTC peripherial */
 #define RTC_TYPE_STM32F0xx	54	/* STM32F0xx internal RTC peripherial */
 #define RTC_TYPE_STM32L0xx	55	/* STM32L0xx internal RTC peripherial */
-#define RTC_TYPE_ZYNQ_MP	56	/* Xilinx ZYNQ Ultrascale+ internal RTC peripherial */
+#define RTC_TYPE_LINUX		56	/* Linux local time */
 
 #define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046
 #define TSC_TYPE_STMPE811	61	// Resistive touch screen controller ST STMPE811
@@ -1063,6 +1164,7 @@ extern "C" {
 #define TSC_TYPE_FT5336 	64	// Capacitive touch screen controller FocalTech FT5336
 #define TSC_TYPE_XPT2046 	65	// Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO., LTD http://www.xptek.com.cn
 #define TSC_TYPE_ILI2102	66	// Capacitive touch screen controller Ilitek ILI2102
+#define TSC_TYPE_AWTPADC	67	// Allwinner F133/t113-s3 resistive touch screen controller
 
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.
@@ -1364,31 +1466,31 @@ extern "C" {
  */
 #if DIM_X == 480 && DIM_Y == 272
 	#define DSTYLE_G_X480_Y272	1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 800 && DIM_Y == 480
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 1024 && DIM_Y == 600
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 1024 && DIM_Y == 768
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define DSTYLE_G_X1024_Y768	1	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1396,15 +1498,15 @@ extern "C" {
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
 	//#define DSTYLE_G_X1280_Y720	1	/* xxxxx panel (1280*720) - 7" display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 720 && DIM_Y == 1280
 	#define DSTYLE_G_X480_Y272	1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1413,8 +1515,8 @@ extern "C" {
 	#define CHAR_W	8
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 		
@@ -1423,8 +1525,8 @@ extern "C" {
 	#define CHAR_W	8
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 2)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 2)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1433,8 +1535,8 @@ extern "C" {
 	#define CHAR_W	8
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1443,8 +1545,8 @@ extern "C" {
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1454,8 +1556,8 @@ extern "C" {
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1467,8 +1569,8 @@ extern "C" {
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1477,8 +1579,8 @@ extern "C" {
 	#define CHAR_W	8
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1487,8 +1589,8 @@ extern "C" {
 	#define CHAR_W	10
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1497,8 +1599,8 @@ extern "C" {
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1508,8 +1610,8 @@ extern "C" {
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1544,8 +1646,8 @@ extern "C" {
 	#define CHAR_W 6
 	#define CHAR_H 8
 
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1568,9 +1670,8 @@ extern "C" {
 #if CTLREGSTYLE_SW2012_MINI
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
+	#define BOARDPOWERMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1595,9 +1696,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2012C
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
+	#define BOARDPOWERMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1627,9 +1727,8 @@ extern "C" {
 	// управляющие регистры SW2016MINI
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	4	// Значение для работы автотюнера
+	#define BOARDPOWERMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1657,9 +1756,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2012CN_RN3ZOB
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
+	#define BOARDPOWERMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1687,9 +1785,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2013SF
 
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
-	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
-	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
-	//#define WITHPOWERTRIMATU	0	// Значение для работы автотюнера
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки
+	#define BOARDPOWERMAX	1	// Верхний предел регулировки
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1714,9 +1811,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2013SF_V1		// for UT4UA
 
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
-	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
-	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
-	//#define WITHPOWERTRIMATU	0	// Значение для работы автотюнера
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки
+	#define BOARDPOWERMAX	1	// Верхний предел регулировки
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
@@ -1746,8 +1842,8 @@ extern "C" {
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
-	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
-	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки
+	#define BOARDPOWERMAX	1	// Верхний предел регулировки
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1775,8 +1871,8 @@ extern "C" {
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
-	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
-	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки
+	#define BOARDPOWERMAX	1	// Верхний предел регулировки
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1801,8 +1897,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2014NFM
 
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
-	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
-	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки
+	#define BOARDPOWERMAX	1	// Верхний предел регулировки
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1830,8 +1926,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2016VHF
 
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
-	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
-	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки
+	#define BOARDPOWERMAX	1	// Верхний предел регулировки
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -1858,9 +1954,8 @@ extern "C" {
 #elif CTLREGSTYLE_SW2013RDX_UY5UM	/* с регулировкой мощности R-2R на сигналах выбора диапазонного фильтра */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	16	// Верхний предел регулировки (показываемый на дисплее)
-	//#define WITHPOWERTRIMATU	4	// Значение для работы автотюнера
+	#define BOARDPOWERMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	16	// Верхний предел регулировки (показываемый на дисплее)
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
@@ -1891,8 +1986,8 @@ extern "C" {
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
-	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
-	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки
+	#define BOARDPOWERMAX	1	// Верхний предел регулировки
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -2275,20 +2370,6 @@ extern "C" {
 
 	#define WITHFASTWATERFLOW 1
 
-#elif LCDMODE_V1B
-	#error Use LCDMODE_V2 instedd of LCDMODE_V1B
-	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
-	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана */
-	#define LCDMODE_MAIN_PAGES	1
-	#define LCDMODE_PIXELSIZE 1
-
-	#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
-	#define LCDMODE_PIP_PAGES	3
-	#define COLORPIP_SHADED 128
-
-	#define WITHFASTWATERFLOW 1
-
 #elif LCDMODE_V2
 	/* только главный экран с двумя видеобуферами L8, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
@@ -2476,15 +2557,37 @@ extern "C" {
 
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
-#if WITHTOUCHGUI
-	#warning Touch GUI support has been removed to a separate project https://github.com/RA4ASN/hftrx_gui
-	#undef WITHTOUCHGUI
-#endif /* WITHTOUCHGUI */
 
-#if WITHFT8
-	#warning FT8 support has been removed to a separate project https://github.com/RA4ASN/hftrx_gui
-	#undef WITHFT8
-#endif /* WITHFT8 */
+#if WITHTOUCHGUI
+
+#if ! defined TSC1_TYPE
+	#warning WITHTOUCHGUI without TSC1_TYPE can not compile
+	#undef WITHTOUCHGUI									// Компиляция GUI без тачскрина бессмысленна
+#endif /* TSC1_TYPE */
+
+#if (DIM_X != 800 || DIM_Y != 480)						// не соблюдены требования к разрешению экрана
+	#warning WITHTOUCHGUI and (DIM_X != 800 || DIM_Y != 480)
+	#undef WITHTOUCHGUI									// для функционирования touch GUI
+#endif
+
+#if (__CORTEX_M == 0)
+	#define FORMATFROMLIBRARY 		1
+#endif
+
+#if ! defined WITHUSEMALLOC								// необходима поддержка динамического управления памятью
+	#define WITHUSEMALLOC		1
+#endif /* ! defined WITHUSEMALLOC */
+
+#if ! WITHMENU
+	#error WITHMENU must be defined for WITHTOUCHGUI
+#endif
+
+#if ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL)
+	#undef WITHGUIHEAP
+	#define WITHGUIHEAP 		(80 * 1024uL)			// требуемый размер кучи для touch GUI
+#endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
+
+#endif /* WITHTOUCHGUI */
 
 #if WITHKEEPNVRAM && defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25XXXX)
 	#error WITHKEEPNVRAM and NVRAM_TYPE_FM25XXXX can not be used together
@@ -2503,6 +2606,13 @@ extern "C" {
 #if (WIHSPIDFSW || WIHSPIDFHW) && WIHSPIDFOVERSPI
 	#error WIHSPIDFOVERSPI and ( WIHSPIDFSW or WIHSPIDFHW ) can not be used together
 #endif /* (WIHSPIDFSW || WIHSPIDFHW) && WIHSPIDFOVERSPI */
+
+
+#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+
+#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
+#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
 
 #ifdef __cplusplus
 }

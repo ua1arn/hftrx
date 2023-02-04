@@ -9,7 +9,41 @@
 #include "board.h"
 #include "src/display/display.h"
 #include "formats.h"
+#include "touch.h"
 #include "gpio.h"
+
+
+static uint_fast16_t
+tcsnormalize(
+		uint_fast16_t raw,
+		uint_fast16_t rawmin,
+		uint_fast16_t rawmax,
+		uint_fast16_t range
+		)
+{
+	if (rawmin < rawmax)
+	{
+		// Normal direction
+		const uint_fast16_t distance = rawmax - rawmin;
+		if (raw < rawmin)
+			return 0;
+		raw = raw - rawmin;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
+	}
+	else
+	{
+		// reverse direction
+		const uint_fast16_t distance = rawmin - rawmax;
+		if (raw >= rawmin)
+			return 0;
+		raw = rawmin - raw;
+		if (raw > distance)
+			return range;
+		return (uint_fast32_t) raw * range / distance;
+	}
+}
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
@@ -19,9 +53,29 @@ uint_fast8_t board_tsc_is_pressed(void) /* Return 1 if touch detection */
 	return stmpe811_is_pressed();
 }
 
+
+/* top left raw data values */
+static uint_fast16_t xrawmin = 70;
+static uint_fast16_t yrawmin = 3890;
+/* bottom right raw data values */
+static uint_fast16_t xrawmax = 3990;
+static uint_fast16_t yrawmax = 150;
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
+}
+
 // On AT070TN90 with touch screen attached Y coordinate increments from bottom to top, X from left to right
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	static uint_fast16_t x = 0, y = 0;
 	uint_fast8_t z;
@@ -47,8 +101,30 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 #include "gt911.h"
 
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+#if BOARD_TSC1_XMIRROR
+	return DIM_X - 1 - x;
+#else /* BOARD_TSC1_XMIRROR */
+	return x;
+#endif /* BOARD_TSC1_XMIRROR */
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+#if BOARD_TSC1_YMIRROR
+	return DIM_Y - 1 - y;
+#else /* BOARD_TSC1_XMIRROR */
+	return y;
+#endif /* BOARD_TSC1_XMIRROR */
+}
+
+/* получение ненормальзованных координат нажатия */
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	static uint_fast16_t x = 0, y = 0;
 
@@ -76,8 +152,21 @@ tsc_interrupt_handler(void)
 	TP();
 }
 
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return x;
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return y;
+}
+
+/* получение ненормальзованных координат нажатия */
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	static uint_fast16_t x = 0, y = 0;
 
@@ -100,8 +189,54 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 #include "xpt2046.h"
 
+#if 1
+	static uint_fast16_t xrawmin = 180;//330;
+	static uint_fast16_t xrawmid = 2100;//330;
+	static uint_fast16_t xrawmax = 3850;//3610;
+
+	static uint_fast16_t yrawmin = 380;//510;
+	static uint_fast16_t yrawmid = 2000;//510;
+	static uint_fast16_t yrawmax = 3750;//3640;
+
+#else
+	/* top left raw data values */
+	static uint_fast16_t xrawmin = 850;//330;
+	static uint_fast16_t yrawmin = 420;//510;
+
+	/* bottom right raw data values */
+	static uint_fast16_t xrawmax = 3990;//3610;
+	static uint_fast16_t yrawmax = 3890;//3640;
+#endif
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+
+#if BOARD_TSC1_XMIRROR
+	return tcsnormalize(x, xrawmax, xrawmin, DIM_X - 1);
+#else /* BOARD_TSC1_XMIRROR */
+	if (x < xrawmid)
+		return tcsnormalize(x, xrawmin, xrawmid - 1, DIM_X / 2 - 1);
+	else
+		return tcsnormalize(x, xrawmid, xrawmax, DIM_X / 2 - 1) + DIM_X / 2;
+#endif /* BOARD_TSC1_XMIRROR */
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+#if BOARD_TSC1_YMIRROR
+	return tcsnormalize(y, yrawmax, yrawmin, DIM_Y - 1);
+#else /* BOARD_TSC1_YMIRROR */
+	if (y < yrawmid)
+		return tcsnormalize(y, yrawmin, yrawmid - 1, DIM_Y / 2 - 1);
+	else
+		return tcsnormalize(y, yrawmid, yrawmax, DIM_Y / 2 - 1) + DIM_Y / 2;
+#endif /* BOARD_TSC1_YMIRROR */
+}
+
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	return xpt2046_getxy(xr, yr);
 }
@@ -148,8 +283,20 @@ int s3402_get_id(void)
 	return v0;
 }
 
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return x;
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return y;
+}
+
 uint_fast8_t
-board_tsc_getxy(uint_fast16_t * px, uint_fast16_t * py)
+board_tsc_getraw(uint_fast16_t * px, uint_fast16_t * py)
 {
 	const unsigned i2caddr = TSC_I2C_ADDR;
 
@@ -191,17 +338,26 @@ board_tsc_getxy(uint_fast16_t * px, uint_fast16_t * py)
 
 static uint8_t tsc_ili2102_present = 0;
 
-uint_fast8_t
-board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
 {
-	static uint_fast16_t x = 0, y = 0;
+	return x;
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return y;
+}
+
+uint_fast8_t
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
+{
 	uint8_t command = REG_TOUCHDATA;
 	uint8_t read_buf[9];
 
 	if (! tsc_ili2102_present)
 	{
-		* xr = 0;
-		* yr = 0;
 		return 0;
 	}
 
@@ -214,9 +370,6 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 		* yr = read_buf[3] | read_buf[4] << 8;
 		return 1;
 	}
-
-	* xr = x;
-	* yr = y;
 	return 0;
 }
 
@@ -249,8 +402,51 @@ void ili2102_initialize(void)
 
 #endif /*defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102) */
 
+#if TSC1_TYPE == TSC_TYPE_AWTPADC
+
+void awgpadc_initialize(void)
+{
+	CCU->TPADC_BGR_REG = 0;
+	CCU->TPADC_BGR_REG |= (1u << 0);	// Gating clock to TPADC
+	CCU->TPADC_BGR_REG |= (1u << 16);	// De-assert TPADC RESET
+
+	TPADC->TP_CTRL_REG1 =
+		(0u << 0) |
+		0;
+}
+
+uint_fast8_t
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	if ((TPADC->TP_INT_FIFO_STAT_REG & (1u << 16)) != 0)
+	{
+		const uint_fast32_t v = TPADC->TP_DATA_REG & 0xFFF;
+		TPADC->TP_INT_FIFO_STAT_REG = (1u << 16); // Clear FIFO data pending flag
+		* xr = 0;
+		* yr = 0;
+		return 0 * 1;
+	}
+	return 0;
+}
+
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return x;
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return y;
+}
+
+#endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
+
 #if defined (TSC1_TYPE)
 
+/* вызывается при разрешённых прерываниях. */
 void board_tsc_initialize(void)
 {
 #if TSC1_TYPE == TSC_TYPE_GT911
@@ -285,6 +481,40 @@ void board_tsc_initialize(void)
 #if TSC1_TYPE == TSC_TYPE_ILI2102
 	ili2102_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_ILI2102 */
+
+#if TSC1_TYPE == TSC_TYPE_AWTPADC
+	awgpadc_initialize();
+#endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
+
+	/* Тест - печать ненормализованных значений */
+#if WITHDEBUG && 0
+	for (;;)
+	{
+		uint_fast16_t x, y;
+		if (board_tsc_getraw(& x, & y))
+		{
+			uint_fast16_t xc = board_tsc_normalize_x(x, y, NULL);
+			uint_fast16_t yc = board_tsc_normalize_y(x, y, NULL);
+			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u xc=%-5u, yc=%-5u\n", x, y, xc, yc);
+		}
+	}
+#endif
+
+}
+
+uint_fast8_t
+board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	uint_fast16_t x, y;
+	if (board_tsc_getraw(& x, & y))
+	{
+		* xr = board_tsc_normalize_x(x, y, NULL);
+		* yr = board_tsc_normalize_y(x, y, NULL);
+		return 1;
+	}
+	* xr = 0;	/* зачем ? */
+	* yr = 0;	/* зачем ? */
+	return 0;
 }
 
 #endif /* defined (TSC1_TYPE) */

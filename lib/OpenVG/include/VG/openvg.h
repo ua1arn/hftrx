@@ -56,7 +56,9 @@ extern "C" {
 #define VG_MAX_ENUM 0x7FFFFFFF
 #endif
 
-typedef VGuint VGHandle;
+//typedef VGuint VGHandle;
+#include <stdint.h>
+typedef uintptr_t VGHandle;
 
 typedef VGHandle VGPath;
 typedef VGHandle VGImage;

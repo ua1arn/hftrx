@@ -41,7 +41,7 @@ static void hd44780_delay(void)
 /* Можно только в случае использования SPI MODE3 */
 #define OLED_SPIMODE SPIC_MODE3
 
-#elif CPUSTYLE_ARM
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 // ARM subroutinue
 // sent four bits from d3..d0 of argument v
@@ -213,7 +213,7 @@ hd44780_io_initialize(void)
 
 #else // CPUSTYLE_ATMEGA
  	#error Undefined CPUSTYLE_XXX
-#endif // CPUSTYLE_ARM
+#endif // CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 
 // architecture-independet function
@@ -679,13 +679,13 @@ void display_flush(void)
 
 void
 //NOINLINEAT
-colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 	(void) fg;
 	(void) bg;
 }
 
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 	colmain_setcolors(fg, bg);
 }
@@ -816,7 +816,7 @@ void display_plotstart(
 }
 
 void display_plot(
-	const PACKEDCOLORMAIN_T * buffer, 
+	const PACKEDCOLORPIP_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy,
 	uint_fast16_t xpix,	// начало области рисования

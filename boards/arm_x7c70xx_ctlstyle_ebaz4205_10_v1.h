@@ -68,9 +68,9 @@
 	//#define CTLREGMODE_NOCTLREG	1
 	#define CTLREGMODE_ZYNQ_4205	1
 
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -175,7 +175,7 @@
 	//#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define CODEC1_FRAMEBITS 32		// Полный размер фрейма для двух каналов - канал кодека
+	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
@@ -226,9 +226,12 @@
 		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 0
+		#if 1
+			#define WITHTOUCHGUI			1
+			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA				24
+			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
 			#define WITHAFGAINDEFAULT		200
 			#define WITHCPUTEMPERATURE		1
@@ -236,7 +239,10 @@
 //			#define WITHAFEQUALIZER			1
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
-		#endif
+			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
+			#define WITHLFM					1
+			#define WITHNMEA				1
+#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
@@ -289,7 +295,7 @@
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 0
+	#if 1
 		#define WITHLWIP 1
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */

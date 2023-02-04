@@ -116,45 +116,6 @@ void stmpe811_IO_DisableAF(uint_fast8_t DeviceAddr, uint_fast16_t IO_Pin)
 
 }
 
-/* top left raw data values */
-static uint_fast16_t xrawmin = 70;
-static uint_fast16_t yrawmin = 3890;
-/* bottom right raw data values */
-static uint_fast16_t xrawmax = 3990;
-static uint_fast16_t yrawmax = 150;
-
-static uint_fast16_t
-tcsnormalize(
-		uint_fast16_t raw,
-		uint_fast16_t rawmin,
-		uint_fast16_t rawmax,
-		uint_fast16_t range
-		)
-{
-	if (rawmin < rawmax)
-	{
-		// Normal direction
-		const uint_fast16_t distance = rawmax - rawmin;
-		if (raw < rawmin)
-			return 0;
-		raw = raw - rawmin;
-		if (raw > distance)
-			return range;
-		return (uint_fast32_t) raw * range / distance;
-	}
-	else
-	{
-		// reverse direction
-		const uint_fast16_t distance = rawmin - rawmax;
-		if (raw >= rawmin)
-			return 0;
-		raw = rawmin - raw;
-		if (raw > distance)
-			return range;
-		return (uint_fast32_t) raw * range / distance;
-	}
-}
-
 uint_fast8_t stmpe811_TS_GetXYZ(
 	uint_fast16_t * X,
 	uint_fast16_t * Y,
@@ -189,8 +150,8 @@ uint_fast8_t stmpe811_TS_GetXYZ(
 	xx = (vdataXY >> 12) & 0x00000FFF;
 	yy = (vdataXY >> 0) & 0x00000FFF;
 
-	* X = tcsnormalize(xx, xrawmin, xrawmax, DIM_X - 1);
-	* Y = tcsnormalize(yy, yrawmin, yrawmax, DIM_Y - 1);
+	* X = xx;// tcsnormalize(xx, xrawmin, xrawmax, DIM_X - 1);
+	* Y = yy;//tcsnormalize(yy, yrawmin, yrawmax, DIM_Y - 1);
 	* Z = dataXYZ [3];
 #if 1
 	/* Reset FIFO */

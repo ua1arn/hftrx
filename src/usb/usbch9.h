@@ -23,12 +23,8 @@
 	#define HARDWARE_USBD_PIPE_ISOC_OUT	1	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
 	#define HARDWARE_USBD_PIPE_ISOC_IN	2	// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
 
-#if WITHUSBCDCACMINTSHARING
-	#define HARDWARE_USBD_PIPE_CDC_INTSHARED	6	// CDC ACM shared interrupt endpoint
-#else /* WITHUSBCDCACMINTSHARING */
 	#define HARDWARE_USBD_PIPE_CDC_INT	6	//
 	#define HARDWARE_USBD_PIPE_CDC_INTb	7	//
-#endif /* WITHUSBCDCACMINTSHARING */
 
 	#define HARDWARE_USBD_PIPE_CDC_OUT	3	// CDC OUT Данные ком-порта от компьютера в TRX
 	#define HARDWARE_USBD_PIPE_CDC_IN	4	// CDC IN Данные ком-порта в компьютер из TRX
@@ -67,20 +63,9 @@ enum
 #endif /* WITHUSBUACIN */
 
 #if WITHUSBCDCACM
-
-	#if WITHUSBCDCACMINTSHARING
-		/* Использование общей notification endpoint на всех CDC ACM устрйоствах */
 		USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
-		USBD_EP_CDCACM_INlast = USBD_EP_CDCACM_IN + WITHUSBCDCACM_N - 1,
-		USBD_EP_CDCACM_INTSHARED,	// Shared EP: CDC INT События ком-порта в компьютер из TRX
-
-	#else /* WITHUSBCDCACMINTSHARING */
-
-		USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
-		USBD_EP_CDCACM_INT,		// CDC IN Данные ком-порта в компьютер из TRX
+		USBD_EP_CDCACM_INT,		// CDC INT состояние ком-порта в компьютер из TRX
 		USBD_EP_CDCACM_INlast = USBD_EP_CDCACM_IN + WITHUSBCDCACM_N * 2 - 1,
-
-	#endif /* WITHUSBCDCACMINTSHARING */
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM
@@ -94,11 +79,21 @@ enum
 
 #if WITHUSBHID
 	//USBD_EP_HIDMOUSE_INT,	// HID INT События манипулятора в компьютер из TRX
+	USBD_EP_HIDKEYBOARD_INT,	// HID INT События манипулятора в компьютер из TRX
 #endif /* WITHUSBHID */
 
 #if WITHUSBDFU
 		/* no endpoints need */
 #endif /* WITHUSBDFU */
+
+#if WITHUSBDMTP
+	USBD_EP_MTP_INT,	// MTP INT События в компьютер из TRX
+	USBD_EP_MTP_IN,		// MTP IN Данные в компьютер из TRX
+#endif /* WITHUSBDMTP */
+
+#if WITHUSBDMSC
+	USBD_EP_MSC_IN,
+#endif /* WITHUSBDMSC */
 	//
 	epincount
 };
@@ -107,7 +102,9 @@ enum
 enum
 {
 	ep0outxxx = 0x00,
+#if ! (CPUSTYLE_T113 || CPUSTYLE_F133)
 	epoutbase = (epincount - 1) & 0x7F,
+#endif /* ! (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
 #if WITHUSBRNDIS
 	USBD_EP_RNDIS_OUT,
@@ -119,7 +116,7 @@ enum
 
 #if WITHUSBCDCACM
 	USBD_EP_CDCACM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
-	USBD_EP_CDCACM_OUTlast = USBD_EP_CDCACM_OUT + WITHUSBCDCACM_N - 1,
+	USBD_EP_CDCACM_OUTlast = USBD_EP_CDCACM_OUT + (WITHUSBCDCACM_N * 1) - 1,
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM
@@ -136,9 +133,23 @@ enum
 #if WITHUSBDFU
 		/* no endpoints need */
 #endif /* WITHUSBDFU */
+
+#if WITHUSBDMTP
+	USBD_EP_MTP_OUT,	// MTP OUT Данные от компьютера в TRX
+#endif /* WITHUSBDMTP */
+
+#if WITHUSBDMSC
+	USBD_EP_MSC_OUT,
+#endif /* WITHUSBDMSC */
 	//
 	epoutcount
 };
+
+
+#if WITHUSBDMSC
+	#define MSC_DATA_MAX_PACKET_SIZE_HS 512
+	#define MSC_DATA_MAX_PACKET_SIZE_FS 64
+#endif /* WITHUSBDMSC */
 
 #if WITHUSBCDCACM
 	#define VIRTUAL_COM_PORT_INT_SIZE 			10
@@ -151,8 +162,17 @@ enum
 	#endif /* WITHUSBDEV_HSDESC */
 #endif /* WITHUSBCDCACM */
 
+#if WITHUSBDMTP
+	#define MTP_HS_BINTERVAL 0x10U
+	#define MTP_FS_BINTERVAL 0x10U
+	#define MTP_DATA_MAX_PACKET_SIZE                                 64U         /* Endpoint IN & OUT Packet size */
+	#define MTP_CMD_PACKET_SIZE                                         8U          /* Control Endpoint Packet size */
+#endif /* WITHUSBDMTP */
+
 #if WITHUSBHID
-	#define HIDMOUSE_INT_DATA_SIZE 4
+	/* наличие одного из определений выбирает нужный тип HID DEVICE */
+	//#define HIDMOUSE_INT_DATA_SIZE 4
+	#define HIDKEYBOARD_INT_DATA_SIZE 64
 #endif /* WITHUSBHID */
 
 #if WITHUSBCDCEEM
@@ -241,15 +261,16 @@ enum
 /* Последовательность функций в данном enum должна соответствовать порядку использования в fill_Configuration_main_group */
 enum interfaces_tag
 {
-#if WITHUSBDFU && WITHMOVEDFU
+#if WITHUSBDFU
+	/* Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10 */
 	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
 #endif /* WITHUSBDFU */
 
 #if WITHUSBCDCACM
 	// функция виртуального последовательного порта
 	INTERFACE_CDC_base,
-	INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
-	INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
+	INTERFACE_CDC_CONTROL = INTERFACE_CDC_base,	/* CDC ACM control Interface */
+	INTERFACE_CDC_DATA,		/* CDC ACM data Interface */
 	INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBCDCACM_N * 2 - 1,
 #endif /* WITHUSBCDCACM */
 
@@ -311,10 +332,13 @@ enum interfaces_tag
 	INTERFACE_HID_CONTROL,	/* HID control Interface */
 #endif /* WITHUSBHID */
 
-#if WITHUSBDFU && ! WITHMOVEDFU
-	// функция DFU
-	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
-#endif /* WITHUSBDFU */
+#if WITHUSBDMTP
+	INTERFACE_MTP_CONTROL,	/* MTP control Interface */
+#endif /* WITHUSBDMTP */
+
+#if WITHUSBDMSC
+	INTERFACE_MSC_CONTROL,
+#endif /* WITHUSBDMSC */
 	// 
 	INTERFACE_count				/* Значение для configuration descriptor */
 };
@@ -325,22 +349,18 @@ enum interfaces_tag
 #define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
 #define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
 #define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
+#define INTERFACE_MTP_count 1	/* количество интерфейсов в одном MTP */
+#define INTERFACE_MSC_count 1	/* количество интерфейсов в одном MSC */
 
 //#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_SPK)
 
+#define USBD_CDCACM_INT_EP(base, offset) ((base) + (offset) * 2)
+#define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 2)
+#define USBD_CDCACM_OUT_EP(base, offset) ((base) + (offset) * 1)
+#define USBD_CDCACM_OFFSET_BY_OUT_EP(ep, base) (((ep) - (base)) / 1)
+#define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 2)
+#define USBD_CDCACM_OFFSET_BY_INT_EP(ep, base) (((ep) - (base)) / 2)
 
-
-#if WITHUSBCDCACMINTSHARING
-
-	#define USBD_CDCACM_EP(base, offset) ((base) + (offset))
-	#define USBD_CDCACM_OFFSET_BY_EP(ep, base) ((ep) - (base))
-
-#else /* WITHUSBCDCACMINTSHARING */
-
-	#define USBD_CDCACM_EP(base, offset) ((base) + (offset) * 2)
-	#define USBD_CDCACM_OFFSET_BY_EP(ep, base) (((ep) - (base)) / 2)
-
-#endif /* WITHUSBCDCACMINTSHARING */
 #define USBD_CDCACM_IFC(base, offset) ((base) + (offset) * INTERFACE_CDCACM_count)
 
 #else /* WITHPLAINDESCROPTOR */
@@ -404,8 +424,8 @@ enum interfaces_tag
 		{
 
 			INTERFACE_CDC_base,
-			INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
-			INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
+			INTERFACE_CDC_CONTROL = INTERFACE_CDC_base,	/* CDC ACM control Interface */
+			INTERFACE_CDC_DATA,		/* CDC ACM data Interface */
 			INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBCDCACM_N * 2 - 1,
 		};
 	#endif /* WITHUSBCDCACM */
@@ -429,6 +449,21 @@ enum interfaces_tag
 			//
 		};
 	#endif /* WITHUSBHID */
+	#if WITHUSBDMTP
+		enum
+		{
+			INTERFACE_MTP_CONTROL	/* MTP control Interface */
+			//
+		};
+	#endif /* WITHUSBDMTP */
+
+	#if WITHUSBDMSC
+		enum
+		{
+			INTERFACE_MSC_CONTROL	/* MSC control Interface */
+			//
+		};
+	#endif /* WITHUSBDMSC */
 
 	#if WITHUSBDFU
 		enum
@@ -444,6 +479,7 @@ enum interfaces_tag
 	#define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
 	#define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
 	#define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
+	#define INTERFACE_MTP_count 1	/* количество интерфейсов в одном MTP */
 
 	enum
 	{

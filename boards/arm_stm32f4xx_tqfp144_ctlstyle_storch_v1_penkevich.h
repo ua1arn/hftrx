@@ -120,9 +120,9 @@
 	#define CTLREGMODE_STORCH_V1	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
@@ -337,9 +337,9 @@
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 

@@ -21,20 +21,21 @@ typedef uint16_t PACKEDCOLOR565_T;
 // RRRRRRR.GGGGGGGG.BBBBBBBB
 typedef uint_fast32_t COLOR24_T;
 #define COLOR24(red, green, blue) \
-	(  (unsigned long) \
+	(  (uint_fast32_t) \
 		(	\
-			(((unsigned long) (red) << 16) & 0xFF0000ul)  | \
-			(((unsigned long) (green) << 8) & 0xFF00ul) | \
-			(((unsigned long) (blue) << 0) & 0xFFul) \
+			(((uint_fast32_t) (red) << 16) & 0xFF0000u)  | \
+			(((uint_fast32_t) (green) << 8) & 0xFF00u) | \
+			(((uint_fast32_t) (blue) << 0) & 0xFFu) \
 		) \
 	)
 
-// Get color componens from COLOR24_T value
+// Get color components from COLOR24_T value
 #define COLOR24_R(v) (((v) >> 16) & 0xFF)
 #define COLOR24_G(v) (((v) >> 8) & 0xFF)
 #define COLOR24_B(v) (((v) >> 0) & 0xFF)
 
-#define COLOR24_KEY	COLOR24(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
+/* цвет должен корректно преобразовываться в RGB565 и обратно */
+#define COLORPIP_KEY	(TFTRGB(0xA0, 0, 0xA0))	// Цвет для прозрачных пикселей
 
 enum gradient_style
 {
@@ -237,16 +238,13 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 #elif LCDMODE_DUMMY
 	/* При использовании frame buffer цвета восьмибитные */
-	typedef uint_fast8_t COLORMAIN_T;
-	typedef uint8_t PACKEDCOLORMAIN_T;
 	typedef uint_fast8_t COLORPIP_T;
 	typedef uint8_t PACKEDCOLORPIP_T;
 
 	// для формирования растра с изображением водопада и спектра
 	// RRRR.RGGG.GGGB.BBBB
-	#define TFTRGB565(red, green, blue) 0
-
 	#define TFTRGB(red, green, blue) 0
+	#define TFTALPHA(alpha, color) 0	/* No alpha channel supported in this mode */
 
 #else
 	#error Undefined display type
@@ -263,29 +261,36 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 	#if LCDMODE_LTDC_L24
 
-		typedef uint_fast32_t COLORMAIN_T;
+		typedef uint_fast32_t COLORPIP_T;
 		struct rgb_24b
 		{
 			uint8_t r, g, b;
 		} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре.
 
-		typedef struct rgb_24b PACKEDCOLORMAIN_T;	// 3 байта для последовательной выдачи как RGB для LCDMODE_ILI8961
+		typedef struct rgb_24b PACKEDCOLORPIP_T;	// 3 байта для последовательной выдачи как RGB для LCDMODE_ILI8961
 
 		// RRRRRRR.GGGGGGGG.BBBBBBBB
 		#define TFTRGB(red, green, blue) \
-			(  (unsigned long) \
+			(  (uint32_t) \
 				(	\
-					(((unsigned long) (red) << 16) & 0xFF0000ul)  | \
-					(((unsigned long) (green) << 8) & 0xFF00ul) | \
-					(((unsigned long) (blue) << 0) & 0xFFul) \
+					(((uint_fast32_t) (red) << 16) & 0xFF0000)  | \
+					(((uint_fast32_t) (green) << 8) & 0xFF00) | \
+					(((uint_fast32_t) (blue) << 0) & 0xFF) \
 				) \
 			)
+		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
+
+		// Get color components from framebuffer value
+		#define COLORPIP_A(v) (255)
+		#define COLORPIP_R(v) (((v) & 0xFF0000) >> 16)
+		#define COLORPIP_G(v) (((v) & 0xFF00) >> 8)
+		#define COLORPIP_B(v) (((v) & 0xFF) >> 0)
 
 	#elif LCDMODE_MAIN_L8
 
 		/* При использовании frame buffer цвета восьмибитные */
-		typedef uint_fast8_t COLORMAIN_T;
-		typedef uint8_t PACKEDCOLORMAIN_T;
+		typedef uint_fast8_t COLORPIP_T;
+		typedef uint8_t PACKEDCOLORPIP_T;
 
 		// RRRGGGBB
 		#define TFTRGB(red, green, blue) \
@@ -296,76 +301,61 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 					(((blue) >> 6) & 0x03) \
 				) \
 			)
-
-		// для формирования растра с изображением водопада и спектра
-		// RRRR.RGGG.GGGB.BBBB
-		#define TFTRGB565(red, green, blue) \
-			(  (uint_fast16_t) \
-				(	\
-					(((uint_fast16_t) (red) << 8) &   0xF800)  | \
-					(((uint_fast16_t) (green) << 3) & 0x07E0) | \
-					(((uint_fast16_t) (blue) >> 3) &  0x001F) \
-				) \
-			)
-
-	#elif LCDMODE_MAIN_ARGB888 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHTFT_OVER_LVDS
-
-		// RBG named order
-		typedef uint_fast32_t COLORMAIN_T;
-		typedef uint32_t PACKEDCOLORMAIN_T;
-
-		#define TFTRGB(red, green, blue) \
-			(  (uint_fast32_t) \
-				(	\
-					(((uint_fast32_t) ((red) & 0xFF)) << 16)  | \
-					(((uint_fast32_t) ((green) & 0xFF)) << 8)  | \
-					(((uint_fast32_t) ((blue) & 0xFF)) << 0)  | \
-					0 \
-				) \
-			)
-
-		// для формирования растра с изображением водопада и спектра
-		#define TFTRGB565 TFTRGB
-
+		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
+		// Get color components from framebuffer value
+		#define COLORPIP_A(v) (255)
+		#define COLORPIP_R(v) (((v) & 0xE0) >> 0)
+		#define COLORPIP_G(v) (((v) & 0x1C) << 3)
+		#define COLORPIP_B(v) (((v) & 0x03) << 6)
 
 	#elif LCDMODE_MAIN_ARGB888
 
-		//#define LCDMODE_RGB565 1
-		typedef uint_fast32_t COLORMAIN_T;
-		typedef uint32_t PACKEDCOLORMAIN_T;
+		typedef uint_fast32_t COLORPIP_T;
+		typedef uint32_t PACKEDCOLORPIP_T;
 
 		// RRRR.RGGG.GGGB.BBBB
 		#define TFTRGB(red, green, blue) \
-			(  (uint_fast32_t) \
-				(	\
-					((uint_fast32_t) (255) << 24)  | /* Alpha value */ \
+			(  (uint_fast32_t) ( \
+					((uint_fast32_t) (255) << 24)  | /* Alpha channel value - opaque */ \
 					(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
 					(((uint_fast32_t) (green) << 8) & 0xFF00) | \
 					(((uint_fast32_t) (blue) >> 0) &  0x00FF) \
 				) \
 			)
+		#define TFTALPHA(alpha, color24) \
+			(  (uint_fast32_t) ( \
+					((uint_fast32_t) (alpha) << 24)  | /* Alpha value, 0: transparent, 255: opaque */ \
+					(((uint_fast32_t) (color24)) & 0x00FFFFFF) \
+				) \
+			)
 
-		// для формирования растра с изображением водопада и спектра
-		#define TFTRGB565 TFTRGB
+		// Get color components from framebuffer value
+		#define COLORPIP_A(v) (((v) & 0xFF000000) >> 24)
+		#define COLORPIP_R(v) (((v) & 0xFF0000) >> 16)
+		#define COLORPIP_G(v) (((v) & 0xFF00) >> 8)
+		#define COLORPIP_B(v) (((v) & 0xFF) >> 0)
 
 	#else /* LCDMODE_MAIN_L8 */
 
 		//#define LCDMODE_RGB565 1
-		typedef uint_fast16_t COLORMAIN_T;
-		typedef uint16_t PACKEDCOLORMAIN_T;
+		typedef uint_fast16_t COLORPIP_T;
+		typedef uint16_t PACKEDCOLORPIP_T;
 
 		// RRRR.RGGG.GGGB.BBBB
-		#define TFTRGB(red, green, blue) \
-			(  (uint_fast16_t) \
-				(	\
-					(((uint_fast16_t) (red) << 8) &   0xf800)  | \
-					(((uint_fast16_t) (green) << 3) & 0x07e0) | \
-					(((uint_fast16_t) (blue) >> 3) &  0x001f) \
+		#define TFTRGB(red, green, blue) ( \
+				(uint_fast16_t) (	\
+					(((uint_fast16_t) (red) << 8) &   0xF800)  | \
+					(((uint_fast16_t) (green) << 3) & 0x07E0) | \
+					(((uint_fast16_t) (blue) >> 3) &  0x001F) \
 				) \
 			)
+		#define TFTALPHA(alpha, color) (color)	/* No alpha channel supported in this mode */
 
-		// для формирования растра с изображением водопада и спектра
-		#define TFTRGB565 TFTRGB
+		// Get color components from framebuffer value
+		#define COLORPIP_A(v) (255)
+		#define COLORPIP_R(v) ((((v) & 0xF800) >> 8) | (((v) & 0xE000) >> 13))
+		#define COLORPIP_G(v) ((((v) & 0x07E0) >> 3) | (((v) & 0x0600) >> 9))
+		#define COLORPIP_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))
 
 	#endif /* LCDMODE_MAIN_L8 */
 
@@ -379,20 +369,17 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 	#else /* LCDMODE_PIP_RGB565 */
 		/* если только MAIN - тип PIP соответствует */
-		typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
-		typedef COLORMAIN_T COLORPIP_T;
+		typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
+		typedef COLORPIP_T COLORPIP_T;
 
 	#endif /* LCDMODE_PIP_L8 */
-
 
 #endif /* LCDMODE_LTDC */
 
 #ifndef DCACHEROWSIZE
 	#define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
-#elif (__CORTEX_A != 0) ||  (__CORTEX_M != 0)
-	#define GXALIGN (DCACHEROWSIZE / LCDMODE_PIXELSIZE)	/* количество пикселей в строке видеобуфера кратно этому заначению */
 #else
-	#define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
+	#define GXALIGN (DCACHEROWSIZE / LCDMODE_PIXELSIZE)	/* количество пикселей в строке видеобуфера кратно этому заначению */
 #endif
 
 #define GXADJ(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
@@ -419,13 +406,13 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 // Хранение описания буфера для функций построения изображений
 typedef struct gtg_tag
 {
-	PACKEDCOLORMAIN_T * buffer;	// Буфер в памяти
+	PACKEDCOLORPIP_T * buffer;	// Буфер в памяти
 	uint16_t dx;	// ширина буфера
 	uint16_t dy;	// высота буфера
 } GTG_t;
 
-COLORMAIN_T display_getbgcolor(void);
-void display_setbgcolor(COLORMAIN_T c);
+COLORPIP_T display_getbgcolor(void);
+void display_setbgcolor(COLORPIP_T c);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */
@@ -453,13 +440,13 @@ void panel_deinitialize(void);
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
 void display_flush(void);	// для framebufer дисплеев - вытолкнуть кэш память
-void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
+void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 
 /* работа с цветным буфером */
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y);	// Координаты в пикселях
 void display_plotstart(uint_fast16_t dy);	// Высота окна источника в пикселях
-void display_plot(const PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t xpix, uint_fast16_t ypix);	// Размеры окна в пикселях и начальная точка рисования
+void display_plot(const PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t xpix, uint_fast16_t ypix);	// Размеры окна в пикселях и начальная точка рисования
 void display_plotstop(void);
 
 // самый маленький шрифт
@@ -562,9 +549,9 @@ void gtg_point(
 	COLORPIP_T color
 	);
 
-// Выдать цветной буфер на дисплей
+// Скопировать цветной буфр в drqw buffer
 // В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
-void colpip_to_main(
+void colpip_copy_to_draw(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * buffer,	// источник
@@ -572,18 +559,6 @@ void colpip_to_main(
 	uint_fast16_t dy,	// высота буфера источника
 	uint_fast16_t col,	// целевая горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
 	uint_fast16_t row	// целевая вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-	);
-
-// Нарисовать линию указанным цветом
-void colpip_line(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x0,	
-	uint_fast16_t y0,
-	uint_fast16_t x1,	
-	uint_fast16_t y1,
-	COLORPIP_T color
 	);
 
 // Нарисовать закрашенный или пустой прямоугольник
@@ -630,16 +605,6 @@ colpip_string(
 	const char * s
 	);
 
-/* возвращает новую позицию по x */
-uint_fast16_t
-colmain_string(
-	PACKEDCOLORMAIN_T * buffer,
-	uint_fast16_t dx,	// размеры буфера
-	uint_fast16_t dy,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s
-	);
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
@@ -680,7 +645,7 @@ colpip_string_x2ra90_tbg(
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
-colpip_string_count(
+colpip_text(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -692,7 +657,7 @@ colpip_string_count(
 	);
 // Используется при выводе на графический индикатор,
 void
-colpip_string_x2_count(
+colpip_text_x2(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -820,7 +785,7 @@ void
 display_fillrect(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORMAIN_T color
+	COLORPIP_T color
 	);
 /* рисование линии на основном экране произвольным цветом
 */
@@ -828,60 +793,71 @@ void
 display_line(
 	int x1, int y1,
 	int x2, int y2,
-	COLORMAIN_T color
+	COLORPIP_T color
 	);
 
 /* заполнение прямоугольника в буфере произвольным цветом
 */
 void
-colmain_fillrect(
-	PACKEDCOLORMAIN_T * buffer,
+colpip_fillrect(
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORMAIN_T color
+	COLORPIP_T color
+	);
+
+#define BITBLT_FLAG_NONE			0x00
+#define BITBLT_FLAG_CKEY			0x01
+#define BITBLT_FLAG_SRC_ABGR8888		0x02	/* исходный имедж - ABGR8888 (от LuPng) */
+
+// скоприовать прямоугольник с типом пикселей соответствующим pip
+void colpip_bitblt(
+	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
+	PACKEDCOLORPIP_T * tbuffer,	// получатель
+	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
+	uint_fast16_t x,	uint_fast16_t y,	// позиция получателя
+	uintptr_t srcinvalidateaddr,	int_fast32_t srcinvalidatesize,	// параметры clean источника
+	const PACKEDCOLORPIP_T * buffer, 	// источник
+	uint_fast16_t sdx,	// источник Размеры окна в пикселях
+	uint_fast16_t sdy,	// источник
+	unsigned bitbltmask, COLORPIP_T keycolor
 	);
 
 // скоприовать прямоугольник с типом пикселей соответствующим pip
-void colpip_plot(
-	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
-	int_fast32_t dstinvalidatesize,
+void colpip_stretchblt(
+	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
 	PACKEDCOLORPIP_T * tbuffer,	// получатель
-	uint_fast16_t tdx,	// получатель
-	uint_fast16_t tdy,	// получатель
-	uint_fast16_t x,	// получатель
-	uint_fast16_t y,	// получатель
-	uintptr_t srcinvalidateaddr,	// параметры clean источника
-	int_fast32_t srcinvalidatesize,
+	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
+	uint_fast16_t x,	uint_fast16_t y,	// позиция получателя
+	uint_fast16_t w,	uint_fast16_t h,	// Размеры окна получателя
+	uintptr_t srcinvalidateaddr,	int_fast32_t srcinvalidatesize,	// параметры clean источника
 	const PACKEDCOLORPIP_T * buffer, 	// источник
-	uint_fast16_t dx,	// источник Размеры окна в пикселях
-	uint_fast16_t dy	// источник
+	uint_fast16_t sdx,	uint_fast16_t sdy,// источник Размеры окна в пикселях
+	unsigned keyflag, COLORPIP_T keycolor
 	);
+
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 // с поворотом вправо на 90 градусов
-void colpip_plot_ra90(
+void colpip_bitblt_ra90(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * dst,	// получатель
-	uint_fast16_t tdx,	// получатель Размеры окна в пикселях
-	uint_fast16_t tdy,	// получатель
+	uint_fast16_t tdx,	uint_fast16_t tdy,	// получатель
 	uint_fast16_t x,	// получатель Позиция
 	uint_fast16_t y,	// получатель
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t sdx,	// источник Размеры окна в пикселях
-	uint_fast16_t sdy	// источник
+	uint_fast16_t sdx,	uint_fast16_t sdy	// источник Размеры окна в пикселях
 	);
 
 void
-colmain_string3_at_xy(
-	PACKEDCOLORMAIN_T * buffer,
-	const uint_fast16_t dx,
-	const uint_fast16_t dy,
-	uint_fast16_t x,
-	uint_fast16_t y,
+colpip_string3_at_xy(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
+	uint_fast16_t x,	uint_fast16_t y,	// позиция получателя
 	const char * s
 	);
 
@@ -889,7 +865,7 @@ colmain_string3_at_xy(
 /* Нарисовать прямоугольник со скругленными углами */
 void
 colmain_rounded_rect(
-		PACKEDCOLORMAIN_T * buffer,
+		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
 		uint_fast16_t x1,
@@ -897,7 +873,7 @@ colmain_rounded_rect(
 		uint_fast16_t x2,
 		uint_fast16_t y2,
 		uint_fast8_t r,		// радиус закругления углов
-		COLORMAIN_T color,
+		COLORPIP_T color,
 		uint_fast8_t fill
 		);
 
@@ -912,32 +888,32 @@ polar_to_dek(
 		uint_fast8_t style);
 
 void
-display_radius_buf(
-		PACKEDCOLORMAIN_T * buffer,
+colpip_radius(
+		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
 		int xc, int yc,
 		unsigned gs,
 		unsigned r1, unsigned r2,
-		COLORMAIN_T color,
+		COLORPIP_T color,
 		int antialiasing,
 		int style);			// 1 - растягивание по горизонтали
 
 void
-display_segm_buf(
-		PACKEDCOLORMAIN_T * buffer,
+colpip_segm(
+		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
 		int xc, int yc,
 		unsigned gs, unsigned ge,
 		unsigned r, int step,
-		COLORMAIN_T color,
+		COLORPIP_T color,
 		int antialiasing,
 		int style);			// 1 - растягивание по горизонтали;
 
 // Нарисовать вертикальную цветную полосу
 void
-display_colorbuf_xor_vline(
+colpip_xor_vline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -950,7 +926,7 @@ display_colorbuf_xor_vline(
 // Нарисовать вертикальную цветную полосу
 // Формат RGB565
 void
-display_colorbuf_set_vline(
+colpip_set_vline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -963,7 +939,7 @@ display_colorbuf_set_vline(
 // Нарисовать горизонтальную цветную полосу
 // Формат RGB565
 void
-display_colorbuf_set_hline(
+colpip_set_hline(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -974,9 +950,9 @@ display_colorbuf_set_hline(
 	);
 
 // получить адрес требуемой позиции в буфере
-PACKEDCOLORMAIN_T *
-colmain_mem_at_debug(
-	PACKEDCOLORMAIN_T * buffer,
+PACKEDCOLORPIP_T *
+colpip_mem_at_debug(
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -985,24 +961,40 @@ colmain_mem_at_debug(
 	int line
 	);
 
-#define colmain_mem_at(a,b,c,d,e) (colmain_mem_at_debug((a), (b), (c), (d), (e), __FILE__, __LINE__))
-
-void display_putpixel(
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORMAIN_T color
-	);
-
-void colmain_putpixel(
-	PACKEDCOLORMAIN_T * buffer,
+// получить адрес требуемой позиции в буфере
+const PACKEDCOLORPIP_T *
+colpip_const_mem_at_debug(
+	const PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORMAIN_T color
+	const char * file,
+	int line
 	);
 
-void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);
+#define colpip_mem_at(a,b,c,d,e) (colpip_mem_at_debug((a), (b), (c), (d), (e), __FILE__, __LINE__))
+#define colpip_const_mem_at(a,b,c,d,e) (colpip_const_mem_at_debug((a), (b), (c), (d), (e), __FILE__, __LINE__))
+
+void display_putpixel(
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T color
+	);
+
+void colpip_putpixel(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T color
+	);
+
+void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);	/* вывод строки */
+void display_snapshot(PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения */
+void display_snapshot_write(PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения в файл */
+void display_snapshot_req(void);
 
 void board_set_topdb(int_fast16_t v);			/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);		/* нижний предел FFT */
@@ -1011,13 +1003,13 @@ void board_set_bottomdbwf(int_fast16_t v);		/* нижний предел FFT */
 void board_set_zoomxpow2(uint_fast8_t v);		/* уменьшение отображаемого участка спектра */
 void board_set_wflevelsep(uint_fast8_t v); 		/* чувствительность водопада регулируется отдельной парой параметров */
 void board_set_view_style(uint_fast8_t v);		/* стиль отображения спектра и панорамы */
-void board_set_view3dss_mark(int_fast16_t v);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+void board_set_view3dss_mark(uint_fast8_t v);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 void board_set_showdbm(uint_fast8_t v);			// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 void board_set_afspeclow(int_fast16_t v);		// нижняя частота отображения спектроанализатора
 void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
 void board_set_lvlgridstep(uint_fast8_t v);		/* Шаг сетки уровней в децибелах */
 
-PACKEDCOLORMAIN_T * colmain_fb_draw(void);		// буфер для построения изображения
+PACKEDCOLORPIP_T * colmain_fb_draw(void);		// буфер для построения изображения
 uint_fast8_t colmain_fb_next(void);				// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
 void colmain_fb_initialize(void);
 uint_fast8_t colmain_getindexbyaddr(uintptr_t addr);
@@ -1030,17 +1022,18 @@ uint_fast8_t colmain_getindexbyaddr(uintptr_t addr);
 
 void display2_xltrgb24(COLOR24_T * xtable);
 
-void hwaccel_copy(
+void hwaccel_bitblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
-	PACKEDCOLORMAIN_T * dst,
+	PACKEDCOLORPIP_T * dst,
 	uint_fast16_t ddx,	// ширина буфера
 	uint_fast16_t ddy,	// высота буфера
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORMAIN_T * src,
+	const PACKEDCOLORPIP_T * src,
 	uint_fast16_t sdx,	// ширина буфера
-	uint_fast16_t sdy	// высота буфера
+	uint_fast16_t sdy,	// высота буфера
+	unsigned keyflag, COLOR24_T keycolor
 	);
 
 // копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
@@ -1057,7 +1050,7 @@ void hwaccel_ra90(
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 void ltdc_horizontal_pixels(
-	PACKEDCOLORMAIN_T * tgr,		// target raster
+	PACKEDCOLORPIP_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	);
@@ -1070,7 +1063,7 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
 	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке символа
-	PACKEDCOLORMAIN_T * const __restrict buffer,
+	PACKEDCOLORPIP_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y,
@@ -1101,15 +1094,15 @@ uint_fast8_t bigfont_decode(uint_fast8_t c);
 
 int_fast32_t display_zoomedbw(void);
 
-void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORMAIN_T fg, COLORMAIN_T bg);
+void display_string3_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s, COLORPIP_T fg, COLORPIP_T bg);
 
-void colmain_line(
-		PACKEDCOLORMAIN_T * buffer,
+void colpip_line(
+		PACKEDCOLORPIP_T * buffer,
 		uint_fast16_t bx,	// ширина буфера
 		uint_fast16_t by,	// высота буфера
 		int xn, int yn,
 		int xk, int yk,
-		COLORMAIN_T color,
+		COLORPIP_T color,
 		int antialiasing);
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
@@ -1158,13 +1151,13 @@ void display_value_small_xy(
 	);
 
 void display_floodfill(
-	PACKEDCOLORMAIN_T * buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
-	COLORMAIN_T newColor,
-	COLORMAIN_T oldColor,
+	COLORPIP_T newColor,
+	COLORPIP_T oldColor,
 	uint_fast8_t type	// 0 - быстрая закраска (только выпуклый контур), 1 - более медленная закраска любого контура
 	);
 
@@ -1205,7 +1198,7 @@ int display_vtty_x2_maxx(void);
 int display_vtty_x2_maxy(void);
 void display_vtty_x2_gotoxy(unsigned x, unsigned y);
 
-void openvg_init(PACKEDCOLORMAIN_T * const * frames);
+void openvg_init(PACKEDCOLORPIP_T * const * frames);
 void openvg_deinit(void);
 void openvg_next(unsigned page);		// текущий буфер отрисовки становится отображаемым, OpenVG переключается на следующий буфер
 
@@ -1222,9 +1215,9 @@ typedef struct
 	const uint16_t * data;
 } picRLE_t;
 
-PACKEDCOLORMAIN_T convert_565_to_a888(uint16_t color);
-void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORMAIN_T bg_color);
-void graw_picture_RLE_buf(PACKEDCOLORMAIN_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORMAIN_T bg_color);
+PACKEDCOLORPIP_T convert_565_to_a888(uint16_t color);
+void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color);
+void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color);
 
 #endif /* WITHRLEDECOMPRESS */
 

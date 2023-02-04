@@ -1,0 +1,4 @@
+#type; TV_FILL
+#regdef; TV_FILL_BEGIN_REG;0x000;TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2)
+#regdef; TV_FILL_END_REG;0x004;TV Fill Data End Register 0x0308+N*0x0C(N=0–2)
+#regdef; TV_FILL_DATA_REG;0x008;TV Fill Data Value Register 0x030C+N*0x0C(N=0–2)

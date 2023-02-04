@@ -51,6 +51,7 @@ namespace OpenVGRI
 
 RI_INLINE int		RI_ISNAN(float a)
 {
+	return __isnanf(a);
 	RIfloatInt p;
 	p.f = a;
 	unsigned int exponent = (p.i>>23) & 0xff;

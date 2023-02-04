@@ -98,12 +98,12 @@ l2f50_writeCmd(uint_fast8_t b)
 
 
 #if WITHSPIEXT16
-	static COLORMAIN_T fgcolor, bkcolor;
+	static COLORPIP_T fgcolor, bkcolor;
 #else /* WITHSPIEXT16 */
 	static struct { uint_fast8_t first, second; } fgcolor, bkcolor;
 #endif
 
-static void l2f50_setcolor(COLORMAIN_T acolor, COLORMAIN_T abkcolor)
+static void l2f50_setcolor(COLORPIP_T acolor, COLORPIP_T abkcolor)
 {
 #if WITHSPIEXT16
 	fgcolor = acolor;
@@ -197,7 +197,7 @@ static void l2f50_put_char_end(void)
 #endif /* WITHSPIEXT16 */
 }
 
-static void l2f50_clear(COLORMAIN_T bg)
+static void l2f50_clear(COLORPIP_T bg)
 {
 	unsigned i;
 
@@ -494,7 +494,7 @@ void display_set_contrast(uint_fast8_t v)
 void 
 display_clear(void)
 {
-	const COLORMAIN_T bg = display_getbgcolor();
+	const COLORPIP_T bg = display_getbgcolor();
 
 	l2f50_clear(bg);
 }
@@ -506,12 +506,12 @@ void display_flush(void)
 
 void
 //NOINLINEAT
-colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 	l2f50_setcolor(fg, bg);
 }
 
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 	colmain_setcolors(fg, bg);
 }
@@ -632,7 +632,7 @@ void display_plotstop(void)
 }
 
 void display_plot(
-	const PACKEDCOLORMAIN_T * buffer, 
+	const PACKEDCOLORPIP_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy,
 	uint_fast16_t xpix,	// начало области рисования

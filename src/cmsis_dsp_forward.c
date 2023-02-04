@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if WITHINTEGRATEDDSP
+#if WITHINTEGRATEDDSP && ! LINUX_SUBSYSTEM
 
 	#include "BasicMathFunctions/BasicMathFunctions.c"
 	//#include "BayesFunctions/BayesFunctions.c"
@@ -18,6 +18,7 @@
 	//#include "DistanceFunctions/DistanceFunctions.c"
 	#include "FastMathFunctions/FastMathFunctions.c"
 	#include "FilteringFunctions/FilteringFunctions.c"
+	#include "WindowFunctions/WindowFunctions.c"
 	//#include "InterpolationFunctions/InterpolationFunctions.c"
 	//#include "MatrixFunctions/MatrixFunctions.c"
 

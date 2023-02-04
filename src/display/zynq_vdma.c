@@ -6,7 +6,8 @@
 #include <limits.h>
 #include "formats.h"	// for debug prints
 
-#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+
 #include <xdebug.h>
 #include <xil_io.h>
 #include "zynq_vdma.h"
@@ -347,7 +348,7 @@ int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynCl
 	}
 
 	XVtc_IntrEnable(&(dispPtr->vtc), XVTC_IXR_G_VBLANK_MASK);
-	arm_hardware_set_handler_system(XPAR_FABRIC_V_TC_0_IRQ_INTR, vtc_inthandler);
+	arm_hardware_set_handler_system(XPAR_FABRIC_VIDEO_V_TC_0_IRQ_INTR, vtc_inthandler);
 	vtc = dispPtr->vtc;
 
 	dispPtr->vdma = vdma;
@@ -503,4 +504,4 @@ int Vdma_Start(XAxiVdma *InstancePtr)
 	return XST_SUCCESS;
 }
 
-#endif /* (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) */
+#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */

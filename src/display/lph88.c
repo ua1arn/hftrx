@@ -96,7 +96,7 @@ static void lph88_put_char_end(void)
 
 static struct { uint_fast8_t first, second; } fgcolor, bkcolor;
 
-static void lph88_setcolor(COLORMAIN_T acolor, COLORMAIN_T abkcolor)
+static void lph88_setcolor(COLORPIP_T acolor, COLORPIP_T abkcolor)
 {
 	fgcolor.first = acolor >> 8;
 	fgcolor.second = acolor >> 0;
@@ -229,7 +229,7 @@ static void lph88_set_windowh(uint_fast8_t height)
 #endif /* LCDMODE_LPH88_TOPDOWN */
 }
 
-static void lph88_clear(COLORMAIN_T bg)
+static void lph88_clear(COLORPIP_T bg)
 {
 	uint_fast16_t i;
 	const uint_fast16_t n = ((unsigned long) DIM_Y * DIM_X / 8 / 4);
@@ -298,7 +298,7 @@ void display_set_contrast(uint_fast8_t v)
 void 
 display_clear(void)
 {
-	const COLORMAIN_T bg = display_getbgcolor();
+	const COLORPIP_T bg = display_getbgcolor();
 
 	lph88_clear(bg);
 }
@@ -310,12 +310,12 @@ void display_flush(void)
 
 void
 //NOINLINEAT
-colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 	lph88_setcolor(fg, bg);
 }
 
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 	colmain_setcolors(fg, bg);
 }
@@ -441,7 +441,7 @@ void display_plotstop(void)
 }
 
 void display_plot(
-	const PACKEDCOLORMAIN_T * buffer, 
+	const PACKEDCOLORPIP_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy,
 	uint_fast16_t xpix,	// начало области рисования

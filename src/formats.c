@@ -7,6 +7,7 @@
 
 #include "hardware.h"
 #include "formats.h"
+#include "gui/gui.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -229,7 +230,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 			}
 			break;
 		case 'p':	/* Pointer print.	*/
-			cp = uconvert((unsigned) u.pval, 16, s + TMP_S_SIZE, ucase);
+			cp = uconvert((uintptr_t) u.pval, 16, s + TMP_S_SIZE, ucase);
 			fillc = '0';
 			width = (sizeof (void *)) * 2;
 			break;
@@ -330,7 +331,12 @@ uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, co
 	int n;
 
 #if FORMATFROMLIBRARY
+#if LINUX_SUBSYSTEM
 	n = vsnprintf(buffer, count, format, ap);
+#else
+	struct _reent treent = { 0 };
+	n = _vsnprintf_r(& treent, buffer, count, format, ap);
+#endif /* LINUX_SUBSYSTEM */
 #else /* FORMATFROMLIBRARY */
 
 	struct fmt_param pr;
@@ -416,10 +422,10 @@ toprintc(int c)
 }
 
 void
-printhex(unsigned long voffs, const void * vbuff, unsigned length)
+printhex(uintptr_t voffs, const void * vbuff, unsigned length)
 {
 	const uint8_t * buff = (const uint8_t *) vbuff;
-	enum { ROWSIZE = 16 };
+	enum { ROWSIZE = 16 };	/* elements in one row */
 	unsigned i, j;
 	unsigned rows = (length + ROWSIZE - 1) / ROWSIZE;
 
@@ -427,9 +433,9 @@ printhex(unsigned long voffs, const void * vbuff, unsigned length)
 	{
 		const int remaining = length - i * ROWSIZE;
 		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
-		debug_printf_P(PSTR("%08lX "), voffs + i * ROWSIZE);
+		debug_printf_P(PSTR("%08" PRIX32 " "), (uint32_t) (voffs + i * ROWSIZE));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %02X"), buff [i * ROWSIZE + j]);
+			debug_printf_P(PSTR(" %02X"), (unsigned) buff [i * ROWSIZE + j]);
 
 		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
 
@@ -442,10 +448,10 @@ printhex(unsigned long voffs, const void * vbuff, unsigned length)
 }
 
 void
-printhex32(unsigned long voffs, const void * vbuff, unsigned length)
+printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 {
 	const uint32_t * buff = (const uint32_t *) vbuff;
-	enum { ROWSIZE = 8 };
+	enum { ROWSIZE = 8 };	/* elements in one row */
 	unsigned i, j;
 	unsigned rows = ((length + 3) / 4 + ROWSIZE - 1) / ROWSIZE;
 
@@ -453,9 +459,29 @@ printhex32(unsigned long voffs, const void * vbuff, unsigned length)
 	{
 		const int remaining = (length + 3) / 4 - i * ROWSIZE;
 		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
-		debug_printf_P(PSTR("%08lX "), voffs + i * ROWSIZE * 4);
+		debug_printf_P(PSTR("%08" PRIX32 " "), (uint32_t) (voffs + i * ROWSIZE * 4));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %08X"), buff [i * ROWSIZE + j]);
+			debug_printf_P(PSTR(" %08" PRIX32), buff [i * ROWSIZE + j]);
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
+void
+printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
+{
+	const uint64_t * buff = (const uint64_t *) vbuff;
+	enum { ROWSIZE = 4 };	/* elements in one row */
+	unsigned i, j;
+	unsigned rows = ((length + 7) / 8 + ROWSIZE - 1) / ROWSIZE;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int remaining = (length + 7) / 8 - i * ROWSIZE;
+		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
+		debug_printf_P(PSTR("%08" PRIX32 " "), (uint32_t) (voffs + i * ROWSIZE * 8));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %08" PRIX32 "%08" PRIX32), (uint32_t) (buff [i * ROWSIZE + j] >> 32), (uint32_t) (buff [i * ROWSIZE + j] >> 0));
 
 		debug_printf_P(PSTR("\n"));
 	}
@@ -469,12 +495,12 @@ void debug_printf_P(const FLASHMEM char *format, ... )
 }
 
 void
-printhex(unsigned long voffs, const void * buff, unsigned length)
+printhex(uintptr_t voffs, const void * buff, unsigned length)
 {
 }
 
 void
-printhex32(unsigned long voffs, const void * buff, unsigned length)
+printhex32(uintptr_t voffs, const void * buff, unsigned length)
 {
 }
 
@@ -547,6 +573,9 @@ int dbg_puts_impl(const char * s)
 	while ((c = * s ++) != '\0')
 	{
 		dbg_putchar(c);
+#if WITHTOUCHGUI && WITHGUIDEBUG
+		gui_add_debug(c);
+#endif /* WITHTOUCHGUI && WITHGUIDEBUG*/
 	}
 	return 0;
 }
@@ -576,7 +605,7 @@ int dbg_puts_impl(const char * s)
 #endif /* WITHDEBUG */
 
 
-#if CPUSTYLE_ARM
+#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 
 void ATTRNORETURN __attribute__ ((used)) (__assert) (const char * file, int line, const char * msg)
 {
@@ -590,5 +619,5 @@ void ATTRNORETURN __attribute__ ((used)) (__assert_func) (const char * file, int
 		;
 }
 
-#endif /* CPUSTYLE_ARM */
+#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 

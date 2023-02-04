@@ -3,8 +3,8 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x20000100, LENGTH = 0x2FBF00
-  TTB (rwx)  : ORIGIN = 0x202FC000, LENGTH = 16k
+  RAM (rwx)  : ORIGIN = 0x20000000 + 256,	LENGTH = 3072k - 16k - 256
+  TTB (rwx)  : ORIGIN = 0x20000000 + 3072k - 16k, 	LENGTH = 16k
 }
 
 /* Library configurations */
@@ -43,7 +43,7 @@ SECTIONS
 	.text :
 	{
 		. = ALIGN(32);
-		KEEP(*(.vectors))
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		
@@ -129,8 +129,7 @@ SECTIONS
 		KEEP(*(.eh_frame*))
 
 		KEEP(*(vtable))
-		KEEP(*(.data*))
-	   . = ALIGN(4);	/* one line added by ua1arn */
+		*(.data*)
 
 		. = ALIGN(4);
 		/* preinit data */
@@ -145,7 +144,6 @@ SECTIONS
 		KEEP(*(.init_array))
 		PROVIDE_HIDDEN (__init_array_end = .);
 
-
 		. = ALIGN(4);
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
@@ -154,7 +152,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(32);
+		. = ALIGN(64);
 		/* All data end */
 		__data_end__ = .;
 
@@ -162,20 +160,20 @@ SECTIONS
 
 	.bss (NOLOAD):
 	{
-		. = ALIGN(32);
 		__bss_start__ = .;
+		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(32);
+		. = ALIGN(64);
 		__bss_end__ = .;
 	} > RAM
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
-		KEEP(*(.noinit*))
+		*(.noinit*)
 		. = ALIGN(64);
-		KEEP(*(.framebuff*))
+		*(.framebuff*)
 		. = ALIGN(64);
 	} > RAM
 

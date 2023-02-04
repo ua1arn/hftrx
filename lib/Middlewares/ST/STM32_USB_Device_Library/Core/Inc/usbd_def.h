@@ -121,6 +121,7 @@ extern "C" {
 #define  USB_DESC_TYPE_DEVICE_QUALIFIER                 0x06U
 #define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION        0x07U
 #define  USB_DESC_TYPE_IAD                              0x0BU
+#define  USB_DESC_TYPE_OTG                              0x09U
 #define  USB_DESC_TYPE_BOS                              0x0FU
 
 #define USB_CONFIG_REMOTE_WAKEUP                        0x02U
@@ -278,7 +279,7 @@ typedef struct
 typedef __ALIGN_BEGIN struct
 {
   //uint32_t status;
-  __ALIGN_BEGIN uint8_t	epstatus [32] __ALIGN_END;	// used 2 elements
+  __ALIGN_BEGIN uint8_t	epstatus [64] __ALIGN_END;	// used 2 elements
   uint32_t total_length;
   uint32_t rem_length;
   uint32_t maxpacket;
@@ -292,8 +293,8 @@ typedef __ALIGN_BEGIN struct
 typedef __ALIGN_BEGIN struct _USBD_HandleTypeDef
 {
   USBD_SpeedTypeDef       dev_speed;
-  USBD_EndpointTypeDef    ep_in[16];
-  USBD_EndpointTypeDef    ep_out[16];
+  __ALIGN_BEGIN USBD_EndpointTypeDef    ep_in[16] __ALIGN_END;
+  __ALIGN_BEGIN USBD_EndpointTypeDef    ep_out[16] __ALIGN_END;
   __IO uint32_t           ep0_state;
   uint32_t                ep0_data_len;
   __IO uint8_t            dev_state;
@@ -303,9 +304,9 @@ typedef __ALIGN_BEGIN struct _USBD_HandleTypeDef
   uint8_t                 dev_test_mode;
   uint32_t                dev_remote_wakeup;
   uint8_t                 ConfIdx;
-  __ALIGN_BEGIN uint8_t  dev_config [32] __ALIGN_END; // used 1 byte
-  __ALIGN_BEGIN uint8_t  dev_default_config [32] __ALIGN_END;	// used 1 byte
-  __ALIGN_BEGIN uint8_t  dev_config_status [32] __ALIGN_END;	// used two bytes
+  __ALIGN_BEGIN uint8_t  dev_config [64] __ALIGN_END; // used 1 byte
+  __ALIGN_BEGIN uint8_t  dev_default_config [64] __ALIGN_END;	// used 1 byte
+  __ALIGN_BEGIN uint8_t  dev_config_status [64] __ALIGN_END;	// used two bytes
 
 
   USBD_SetupReqTypedef    request;
@@ -428,6 +429,7 @@ extern struct descholder BinaryDeviceObjectStoreTbl [1];
 extern struct descholder HIDReportDescrTbl [1];
 uint_fast8_t usbd_get_stringsdesc_count(void);
 extern struct descholder ExtOsPropDescTbl [32];
+extern struct descholder OtgDescTbl [1];
 
 /**
   * @}

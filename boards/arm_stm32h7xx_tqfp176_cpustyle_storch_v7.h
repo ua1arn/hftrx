@@ -9,8 +9,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре
 // rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED
-#define ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED 1
+#ifndef ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V7_H_INCLUDED
+#define ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V7_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -67,7 +67,7 @@
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-#if WITHINTEGRATEDDSP
+#if WITHINTEGRATEDDSP && WITHUSBHW
 
 	//#define WITHUAC2		1	/* UAC2 support */
 	#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
@@ -88,14 +88,12 @@
 //#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 //#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-#define LS020_RS_INITIALIZE() \
-	do { \
+#define LS020_RS_INITIALIZE() do { \
 		arm_hardware_piof_outputs2m(LS020_RS, LS020_RS);	/* PF4 */ \
 		arm_hardware_piof_outputs((1U << 1), 0 * (1U << 1));		/* PF1 - enable backlight */ \
 	} while (0)
 
-#define LS020_RESET_INITIALIZE() \
-	do { \
+#define LS020_RESET_INITIALIZE() do { \
 		arm_hardware_piof_outputs2m(LS020_RESET, LS020_RESET);	/* PF5 */ \
 		arm_hardware_piof_outputs((1U << 1), 0 * (1U << 1));		/* PF1 - enable backlight */ \
 	} while (0)
@@ -158,8 +156,7 @@
 	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
 	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
-	#define ENCODER_INITIALIZE() \
-		do { \
+	#define ENCODER_INITIALIZE() do { \
 			arm_hardware_pioh_inputs(ENCODER_BITS); \
 			arm_hardware_pioh_updown(ENCODER_BITS, 0); \
 			arm_hardware_pioh_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
@@ -237,13 +234,11 @@
 	//#define FROMCAT_BIT_DTR				(1u << 12)	/* PA12 сигнал DTR от FT232RL	*/
 
 	/* манипуляция от порта RS-232 */
-	#define FROMCAT_DTR_INITIALIZE() \
-		do { \
+	#define FROMCAT_DTR_INITIALIZE() do { \
 		} while (0)
 
 	/* переход на передачу от порта RS-232 */
-	#define FROMCAT_RTS_INITIALIZE() \
-		do { \
+	#define FROMCAT_RTS_INITIALIZE() do { \
 		} while (0)
 
 #endif /* (WITHCAT && WITHCAT_USART2) */
@@ -262,20 +257,18 @@
 	//#define FROMCAT_BIT_DTR				(1u << 12)	/* сигнал DTR от FT232RL	*/
 
 	/* манипуляция от виртуального CDC порта */
-	#define FROMCAT_DTR_INITIALIZE() \
-		do { \
+	#define FROMCAT_DTR_INITIALIZE() do { \
 		} while (0)
 
 	/* переход на передачу от виртуального CDC порта*/
-	#define FROMCAT_RTS_INITIALIZE() \
-		do { \
+	#define FROMCAT_RTS_INITIALIZE() do { \
 		} while (0)
 
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
 #if WITHSDHCHW
 	#if WITHSDHCHW4BIT
-		#define HARDWARE_SDIO_INITIALIZE()	do { \
+		#define HARDWARE_SDIO_INITIALIZE() do { \
 			arm_hardware_piod_altfn50(1uL << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
 			arm_hardware_pioc_altfn50(1uL << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
 			arm_hardware_pioc_altfn50(1uL << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
@@ -299,7 +292,7 @@
 			arm_hardware_pioc_updown(0, 1uL << 11);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 	#else /* WITHSDHCHW4BIT */
-		#define HARDWARE_SDIO_INITIALIZE()	do { \
+		#define HARDWARE_SDIO_INITIALIZE() do { \
 			arm_hardware_piod_altfn50(1uL << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
 			arm_hardware_pioc_altfn50(1uL << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
 			arm_hardware_pioc_altfn50(1uL << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
@@ -336,7 +329,7 @@
 		arm_hardware_pioc_outputs2m(HARDWARE_SDIOPOWER_BIT, HARDWARE_SDIOPOWER_BIT); /* питание выключено */ \
 		} while (0)
 	/* parameter on not zero for powering SD CARD */
-	#define HARDWARE_SDIOPOWER_SET(on)	do { \
+	#define HARDWARE_SDIOPOWER_SET(on) do { \
 		if ((on) != 0) \
 			HARDWARE_SDIOPOWER_C(HARDWARE_SDIOPOWER_BIT); \
 		else \
@@ -358,8 +351,7 @@
 	#define TXGFV_TX_AM		(1u << 2)
 	#define TXGFV_TX_NFM	(1u << 3)
 
-	#define TXPATH_INITIALIZE() \
-		do { \
+	#define TXPATH_INITIALIZE() do { \
 		} while (0)
 
 
@@ -369,8 +361,7 @@
 	#define TXDISABLE_BIT_TXDISABLE				(1U << 10)		// PD10 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
 	#define HARDWARE_GET_TXDISABLE() ((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
-	#define TXDISABLE_INITIALIZE() \
-		do { \
+	#define TXDISABLE_INITIALIZE() do { \
 			arm_hardware_piod_inputs(TXDISABLE_BIT_TXDISABLE); \
 			arm_hardware_piod_updown(0, TXDISABLE_BIT_TXDISABLE); \
 		} while (0)
@@ -385,8 +376,7 @@
 	#define PTT2_BIT_PTT				(1uL << 8)		// PD8 - PTT2
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
-	#define PTT_INITIALIZE() \
-		do { \
+	#define PTT_INITIALIZE() do { \
 			arm_hardware_piod_inputs(PTT_BIT_PTT); \
 			arm_hardware_piod_updown(PTT_BIT_PTT, 0); \
 			arm_hardware_piod_inputs(PTT2_BIT_PTT); \
@@ -397,22 +387,18 @@
 	#define TUNE_TARGET_PIN				(GPIOD->IDR)
 	#define TUNE_BIT_TUNE					(1U << 9)		// PD9
 	#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
-	#define TUNE_INITIALIZE() \
-		do { \
+	#define TUNE_INITIALIZE() do { \
 			arm_hardware_piod_inputs(TUNE_BIT_TUNE); \
 			arm_hardware_piod_updown(TUNE_BIT_TUNE, 0); \
 		} while (0)
 
 #else /* WITHTX */
 
-	#define TXDISABLE_INITIALIZE() \
-		do { \
+	#define TXDISABLE_INITIALIZE() do { \
 		} while (0)
-	#define PTT_INITIALIZE() \
-		do { \
+	#define PTT_INITIALIZE() do { \
 		} while (0)
-	#define TUNE_INITIALIZE() \
-		do { \
+	#define TUNE_INITIALIZE() do { \
 		} while (0)
 #endif /* WITHTX */
 
@@ -426,8 +412,7 @@
 	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
 
 
-	#define ELKEY_INITIALIZE() \
-		do { \
+	#define ELKEY_INITIALIZE() do { \
 			arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
 			arm_hardware_piod_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
@@ -475,8 +460,7 @@
 	//#define SPI_NAEN_BIT (1u << 7)		// * PE7 used
 
 	/* инициализация лиий выбора периферийных микросхем */
-	#define SPI_ALLCS_INITIALIZE() \
-		do { \
+	#define SPI_ALLCS_INITIALIZE() do { \
 			arm_hardware_piog_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
 		} while (0)
 
@@ -835,4 +819,4 @@
 
 	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7h_2ch.h"
 
-#endif /* ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED */
+#endif /* ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V7_H_INCLUDED */

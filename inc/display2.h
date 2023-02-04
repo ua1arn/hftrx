@@ -210,14 +210,6 @@ void display2_popup(
 	dctx_t * pctx
 	);
 
-// Вызывается из display2.c (версия для CTLSTYLE_RA4YBO_AM0)
-void
-display2_bars_amv0(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
-
 dctx_t * display2_getcontext(void);
 
 // Параметры отображения многострочного меню для больших экранов
@@ -242,24 +234,6 @@ void display_smeter(
 	uint_fast8_t level9,	// s9 level
 	uint_fast8_t delta1,	// s9 - s0 delta
 	uint_fast8_t delta2		// s9+50 - s9 delta
-	);
-
-void display_smeter_amv0(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	uint_fast8_t value,
-	uint_fast8_t tracemax,
-	uint_fast8_t level9,	// s9 level
-	uint_fast8_t delta1,	// s9 - s0 delta
-	uint_fast8_t delta2		// s9+50 - s9 delta
-	);
-
-// Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
-void display_modulationmeter_amv0(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	uint_fast8_t value,
-	uint_fast8_t maxvalue
 	);
 
 void display_pwrmeter(
@@ -380,11 +354,11 @@ void display_1fmenu(
 	#define COLORPIP_RED         (COLORPIP_BASE + 8) // TFTRGB(0xFF, 0x00, 0x00)
 
 	#define COLORMAIN_LOCKED  	 	(COLORPIP_BASE + 9) // TFTRGB(0x3C, 0x3C, 0x00)
-	#define COLORPIP_GRIDCOLOR		(COLORPIP_BASE + 10) // TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
-	#define COLORPIP_GRIDCOLOR2		(COLORPIP_BASE + 11) // TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
-	#define COLORPIP_SPECTRUMBG		(COLORPIP_BASE + 12) // TFTRGB565(0, 64, 24)			//
-	#define COLORMAIN_SPECTRUMBG2	(COLORPIP_BASE + 13) // TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
-	#define COLORPIP_SPECTRUMFG		(COLORPIP_BASE + 14) // TFTRGB565(0, 255, 0)		//COLOR_GREEN
+	#define COLORPIP_GRIDCOLOR		(COLORPIP_BASE + 10) // TFTRGB(128, 0, 0)		//COLOR_GRAY - center marker
+	#define COLORPIP_GRIDCOLOR2		(COLORPIP_BASE + 11) // TFTRGB(96, 96, 96)		//COLOR_DARKRED - other markers
+	#define COLORPIP_SPECTRUMBG		(COLORPIP_BASE + 12) // TFTRGB(0, 64, 24)			//
+	#define COLORMAIN_SPECTRUMBG2	(COLORPIP_BASE + 13) // TFTRGB(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
+	#define COLORPIP_SPECTRUMFG		(COLORPIP_BASE + 14) // TFTRGB(0, 255, 0)		//COLOR_GREEN
 
 	#define COLORPIP_DARKGRAY   (COLORPIP_BASE + 15) // TFTRGB(0x00, 0x64, 0x00)
 
@@ -464,37 +438,37 @@ void display_1fmenu(
 
 	// Заполнение палитры производится в display2_xltrgb24()
 
-	#define COLORPIP_YELLOW      TFTRGB565(0xFF, 0xFF, 0x00)
-	#define COLORPIP_ORANGE      TFTRGB565(0xFF, 0xA5, 0x00)
-	#define COLORPIP_BLACK       TFTRGB565(0x00, 0x00, 0x00)
-	#define COLORPIP_WHITE       TFTRGB565(0xFF, 0xFF, 0xFF)
-	#define COLORPIP_GRAY        TFTRGB565(0x80, 0x80, 0x80)
-	#define COLORPIP_DARKGRAY    TFTRGB565(0x70, 0x70, 0x70)
-	#define COLORPIP_DARKGREEN   TFTRGB565(0x00, 0x40, 0x00)
-	#define COLORPIP_BLUE        TFTRGB565(0x00, 0x00, 0xFF)
-	#define COLORPIP_GREEN       TFTRGB565(0x00, 0xFF, 0x00)
-	#define COLORPIP_RED         TFTRGB565(0xFF, 0x00, 0x00)
+	#define COLORPIP_YELLOW      TFTRGB(0xFF, 0xFF, 0x00)
+	#define COLORPIP_ORANGE      TFTRGB(0xFF, 0xA5, 0x00)
+	#define COLORPIP_BLACK       TFTRGB(0x00, 0x00, 0x00)
+	#define COLORPIP_WHITE       TFTRGB(0xFF, 0xFF, 0xFF)
+	#define COLORPIP_GRAY        TFTRGB(0x80, 0x80, 0x80)
+	#define COLORPIP_DARKGRAY    TFTRGB(0x70, 0x70, 0x70)
+	#define COLORPIP_DARKGREEN   TFTRGB(0x00, 0x40, 0x00)
+	#define COLORPIP_BLUE        TFTRGB(0x00, 0x00, 0xFF)
+	#define COLORPIP_GREEN       TFTRGB(0x00, 0xFF, 0x00)
+	#define COLORPIP_RED         TFTRGB(0xFF, 0x00, 0x00)
 
-	#define COLORMAIN_LOCKED  	 TFTRGB565(0x3C, 0x3C, 0x00)
+	#define COLORMAIN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
 
 	#if COLORSTYLE_ATS52
 		// new (for ats52).
-		#define COLORPIP_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
-		#define COLORPIP_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
-		#define COLORPIP_SPECTRUMBG		TFTRGB565(0, 64, 24)			//
-		#define COLORMAIN_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
-		#define COLORPIP_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
-		#define DESIGNCOLOR_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
+		#define COLORPIP_GRIDCOLOR		TFTRGB(128, 0, 0)		//COLOR_GRAY - center marker
+		#define COLORPIP_GRIDCOLOR2		TFTRGB(96, 96, 96)		//COLOR_DARKRED - other markers
+		#define COLORPIP_SPECTRUMBG		TFTRGB(0, 64, 24)			//
+		#define COLORMAIN_SPECTRUMBG2	TFTRGB(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
+		#define COLORPIP_SPECTRUMFG		TFTRGB(0, 255, 0)		//COLOR_GREEN
+		#define DESIGNCOLOR_SPECTRUMFENCE	TFTRGB(255, 255, 255)	//COLOR_WHITE
 		#define COLORPIP_SPECTRUMLINE	COLORPIP_YELLOW
 
 	#else
 		// old
-		#define COLORPIP_GRIDCOLOR      TFTRGB565(128, 128, 0)        //COLOR_GRAY - center marker
-		#define COLORPIP_GRIDCOLOR2     TFTRGB565(128, 0, 0x00)        //COLOR_DARKRED - other markers
-		#define COLORPIP_SPECTRUMBG     TFTRGB565(0, 0, 0)            //COLOR_BLACK
-		#define COLORMAIN_SPECTRUMBG2    TFTRGB565(0, 128, 128)        //COLOR_CYAN - полоса пропускания приемника
-		#define COLORPIP_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
-		#define DESIGNCOLOR_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
+		#define COLORPIP_GRIDCOLOR      TFTRGB(128, 128, 0)        //COLOR_GRAY - center marker
+		#define COLORPIP_GRIDCOLOR2     TFTRGB(128, 0, 0x00)        //COLOR_DARKRED - other markers
+		#define COLORPIP_SPECTRUMBG     TFTRGB(0, 0, 0)            //COLOR_BLACK
+		#define COLORMAIN_SPECTRUMBG2    TFTRGB(0, 128, 128)        //COLOR_CYAN - полоса пропускания приемника
+		#define COLORPIP_SPECTRUMFG		TFTRGB(0, 255, 0)		//COLOR_GREEN
+		#define DESIGNCOLOR_SPECTRUMFENCE	TFTRGB(255, 255, 255)	//COLOR_WHITE
 		//#define COLORPIP_SPECTRUMLINE	COLORPIP_GREEN
 		#define COLORPIP_SPECTRUMLINE	COLORPIP_YELLOW
 

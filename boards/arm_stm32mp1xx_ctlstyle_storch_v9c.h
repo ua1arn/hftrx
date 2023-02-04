@@ -16,6 +16,8 @@
 		#error Wrong CPU selected. STM32MP157Axx expected
 	#endif /* ! defined(STM32MP157Axx) */
 
+	#define WITHBRANDSTR "Falcon"
+
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
@@ -31,8 +33,8 @@
 
 	#define LSEFREQ 32768uL
 
-	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
-	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
+	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
 	#if 1//WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
@@ -181,6 +183,8 @@
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
 		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
+		#define TUNE_BOTTOM	 	10000L		/* 10 kHz нижняя частота настройки */
+		#define TUNE_TOP 		56000000L		/* верхняя частота настройки */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
@@ -190,9 +194,8 @@
 
 	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
 
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	30	// Значение для работы автотюнера
+	
+	
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -235,6 +238,7 @@
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
 	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB888, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
@@ -360,7 +364,7 @@
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
@@ -396,6 +400,7 @@
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
+	//#define WITHOVFHIDE 1	/* отключить показ индикатора перегрузки */
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
@@ -411,7 +416,7 @@
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
-	#define WITHCOMPRESSOR 1	// компрессор
+	//#define WITHCOMPRESSOR 1	// компрессор
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
@@ -424,6 +429,7 @@
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
+	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
@@ -515,9 +521,9 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#if 1
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define WITHAUTOTUNER_UA1CEI_V2 1
+		#define WITHAUTOTUNER_UA1CEI_V2 1	/* Есть функция автотюнера */
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
@@ -528,6 +534,8 @@
 		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET7	1
+	#else
+		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
@@ -568,6 +576,7 @@
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
 	//#define WITHLFM		1	/* LFM MODE */
+	//#define LFMTICKSFREQ ARMI2SRATE
 	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
 	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
@@ -621,7 +630,7 @@
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
 	//#define WITH_GT911_INTERRUPTS	1
-	#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
+	//#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	//#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
@@ -680,6 +689,7 @@
 	//#define WITHALTERNATIVEFONTS    1
 
 	#if WITHAUTOTUNER_UA1CEI_V2
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
@@ -690,8 +700,8 @@
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 
-		//#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 

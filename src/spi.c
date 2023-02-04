@@ -13,7 +13,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYPE_T113)	/* доступ к SPI разделяет DFU устройство и user mode программа */
+#if ! LINUX_SUBSYSTEM
+	#include <machine/endian.h>
+#endif /* ! LINUX_SUNSYSTEM */
+
+#define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_T113 || CPUSTYLE_F133)	/* доступ к SPI разделяет DFU устройство и user mode программа */
 
 // битовые маски, соответствующие биту в байте по его номеру.
 const uint_fast8_t rbvalues [8] =
@@ -29,7 +33,7 @@ const uint_fast8_t rbvalues [8] =
 static void 
 spi_select255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 		UC1608_CSP_PORT_S(UC1608_CSP);
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT |= UC1608_CSP;
@@ -43,7 +47,7 @@ spi_select255(void)
 static void 
 spi_unselect255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 		UC1608_CSP_PORT_C(UC1608_CSP);
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT &= ~ UC1608_CSP;
@@ -56,7 +60,7 @@ spi_unselect255(void)
 static void 
 spi_hwinit255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 		UC1608_CSP_INITIALIZE();
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT &= ~ UC1608_CSP;	/* неактивное состояние */
@@ -75,7 +79,7 @@ spi_allcs_disable(void)
 
 	SPI_ALLCS_DISABLE();
 
-#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 
 	#if WITHSPISPLIT	
 		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
@@ -165,7 +169,7 @@ spi_cs_enable(
 
 	SPI_CS_ASSERT(target);
 
-#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 
 	#if WITHSPISPLIT
 		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
@@ -262,7 +266,7 @@ spi_setaddress(
 #if WITHSPICSEMIO
 	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
 
-#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 
 	#if defined (SPI_NAEN_BIT)
 		if ((target & SPI_ALLCS_BITS) == 0)
@@ -304,7 +308,7 @@ prog_pulse_ioupdate(void)
 {
 	// SPI_IOUPDATE_PORT was SPI_TARGET_PORT
 #if defined (SPI_IOUPDATE_BIT)
-	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
 
 		SPI_IOUPDATE_PORT_C(SPI_IOUPDATE_BIT);
 		hardware_spi_io_delay();
@@ -1140,7 +1144,7 @@ const FLASHMEM unsigned char revbittable [256] =
 		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_XC7Z
 		static portholder_t spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-	#elif CPUSTYPE_T113
+	#elif CPUSTYLE_T113 || CPUSTYLE_F133
 		static portholder_t ccu_spi_clk_reg_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_tcr_reg_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];
 	#endif /* CPUSTYLE_STM32F1XX */
@@ -1310,7 +1314,7 @@ static void DMA2_SPI1_TX_initialize(void)
 
 #endif /* WITHSPIHWDMA */
 
-#if CPUSTYPE_T113
+#if CPUSTYLE_T113 || CPUSTYLE_F133
 static void sys_spinor_exit(void)
 {
 	//uintptr_t addr = 0x04025000;
@@ -1321,7 +1325,7 @@ static void sys_spinor_exit(void)
 	val &= ~ ((1 << 1) | (1 << 0));
 	SPI0->SPI_GCR = val;
 }
-#endif /* CPUSTYPE_T113 */
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
 
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
    на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается
@@ -1648,7 +1652,7 @@ void hardware_spi_master_initialize(void)
 
 	SPIIO_INITIALIZE();
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	unsigned ix = 0;	// SPI0
 
 	/* Open the clock gate for SPI0 */
@@ -1683,17 +1687,6 @@ void hardware_spi_master_initialize(void)
 
 	// De-assert hardware CS
 	//SPI0->SPI_TCR |= (1u << 7);
-
-
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
-		;
-
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
-		;
 
 	SPIIO_INITIALIZE();
 
@@ -2008,7 +2001,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
 	spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	enum
 	{
@@ -2036,9 +2029,9 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 		0;
 
 	const portholder_t tcr =
-			(0x00uL << 12) |	// FBS: 0: MSB first
-			(0x01uL << 6) |		// SS_OWNER: 1: Software
-			(0x01uL << 7) |		// SS_LEVEL: 1: Set SS to high
+			(0u << 12) |	// FBS: 0: MSB first
+			(1u << 6) |		// SS_OWNER: 1: Software
+			(1u << 7) |		// SS_LEVEL: 1: Set SS to high
 			0;
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
@@ -2198,11 +2191,17 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-
+	{
+		unsigned val = SPI0->SPI_TCR;
+		val &= ~((0x3 << 4) | (0x1 << 7));
+		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+		SPI0->SPI_TCR = val;
+		(void) SPI0->SPI_TCR;
+	}
  	HARDWARE_SPI_CONNECT();
 
 #else
@@ -2234,7 +2233,7 @@ void hardware_spi_disconnect(void)
 #elif CPUSTYLE_STM32H7XX
 
 	SPI1->CR1 |= SPI_CR1_CSUSP;
-	while ((SPI1->CR1 & SPI_CR1_CSTART) != 0)
+	while ((SPI1->CR1 & SPI_CR1_CSUSP) != 0)
 		;
 	SPI1->CR1 &= ~ SPI_CR1_SPE;
 	// connect back to GPIO
@@ -2269,7 +2268,7 @@ void hardware_spi_disconnect(void)
 	//#warning Insert code for CPUSTYLE_STM32MP1
 
 	SPI1->CR1 |= SPI_CR1_CSUSP;
-	while ((SPI1->CR1 & SPI_CR1_CSTART) != 0)
+	while ((SPI1->CR1 & SPI_CR1_CSUSP) != 0)
 		;
 	SPI1->CR1 &= ~ SPI_CR1_SPE;
 	// connect back to GPIO
@@ -2280,7 +2279,15 @@ void hardware_spi_disconnect(void)
 	SPI0->ER = 0x0000;	// 0: disable the SPI
 	HARDWARE_SPI_DISCONNECT();
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	{
+		unsigned val = SPI0->SPI_TCR;
+		val &= ~((0x3 << 4) | (0x1 << 7));
+		val |= ((0 & 0x3) << 4) | (0x1 << 7);	// SS=1
+		SPI0->SPI_TCR = val;
+		(void) SPI0->SPI_TCR;
+	}
 
 	HARDWARE_SPI_DISCONNECT();
 
@@ -2359,22 +2366,17 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 		;
 	return SPI0->RXD & 0xFF;
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+	const portholder_t v = * (volatile uint8_t *) & SPI0->SPI_RXD;
 
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
-		;
-
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+	// TXFIFO and RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
+	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
 		;
 
 	return v;
@@ -3322,10 +3324,17 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	{
+		unsigned val = SPI0->SPI_TCR;
+		val &= ~((0x3 << 4) | (0x1 << 7));
+		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+		SPI0->SPI_TCR = val;
+		(void) SPI0->SPI_TCR;
+	}
 
  	HARDWARE_SPI_CONNECT();
 
@@ -3375,23 +3384,19 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 		;
 	return HW_SPIUSED->SPDR.UINT16 [R_IO_L]; // L=0
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	unsigned v = __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
+	const portholder_t v = __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
 
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+	// TXFIFO and RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
+	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
 		;
 
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
-		;
 	return v & 0xFFFF;
 
 #else
@@ -3431,7 +3436,7 @@ void RAMFUNC hardware_spi_b16_p1(
 
 	HW_SPIUSED->SPDR.UINT16 [R_IO_L] = v; // L=0
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	SPI0->SPI_MBC = 2;	// Master Burst Counter
 	SPI0->SPI_MTC = 2;	// 23..0: Number of bursts
@@ -3509,10 +3514,17 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	SPI1->CR1 |= SPI_CR1_SPE;
 	SPI1->CR1 |= SPI_CR1_CSTART;
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	{
+		unsigned val = SPI0->SPI_TCR;
+		val &= ~((0x3 << 4) | (0x1 << 7));
+		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+		SPI0->SPI_TCR = val;
+		(void) SPI0->SPI_TCR;
+	}
 
  	HARDWARE_SPI_CONNECT();
 
@@ -3539,26 +3551,20 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 		;
 	return HW_SPIUSED->SPDR.UINT32;
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	unsigned v = __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
+	const portholder_t v = __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
 
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
-		;
-
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+	// TXFIFO and RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
+	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
 		;
 
 	return v;
-
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3581,7 +3587,7 @@ void hardware_spi_b32_p1(
 
 	HW_SPIUSED->SPDR.UINT32 = v;
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	SPI0->SPI_MBC = 4;	// Master Burst Counter
 	SPI0->SPI_MTC = 4;	// 23..0: Number of bursts
@@ -3668,7 +3674,7 @@ void hardware_spi_b8_p1(
 	while ((SPI0->SR & (1uL << 2)) == 0)	// TX FIFO not full
 		;
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	SPI0->SPI_MBC = 1;	// Master Burst Counter
 	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
@@ -4283,9 +4289,9 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t r
 		spidf_progval8(* buff ++);
 }
 
-#elif WIHSPIDFHW && CPUSTYPE_T113
+#elif WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
+static void spidf_spi_write_txbuf(const volatile uint8_t * buf, int len)
 {
 
     if (buf != NULL)
@@ -4309,9 +4315,9 @@ static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
 static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fast8_t readnb)
 {
 	int count = len;
-	const uint8_t * tx = txbuf;
-	uint8_t * rx = rxbuf;
-	const int MAXCHUNK = 64;
+	const volatile uint8_t * tx = txbuf;
+	volatile uint8_t * rx = rxbuf;
+	enum { MAXCHUNK = 64 };
 
 
 	while (count > 0)
@@ -4325,18 +4331,18 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		default:
 		case SPDFIO_1WIRE:
 			spidf_spi_write_txbuf(tx, chunk);
-		    SPI0->SPI_MTC = chunk & 0xFFFFFFuL;	// MWTC - Master Write Transmit Counter - bursts before dummy
+		    SPI0->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-			SPI0->SPI_BCC = chunk & 0xFFFFFFuL;
+			SPI0->SPI_BCC = chunk & 0xFFFFFF;
 			break;
 
 		case SPDFIO_4WIRE:
-			SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
-			if (tx != 0)
+			SPI0->SPI_BCC = (0x01u << 29);	/* Quad_EN */
+			if (tx != NULL)
 			{
 				// 4-wire write
 				spidf_spi_write_txbuf(tx, chunk);
-			    SPI0->SPI_MTC = chunk & 0xFFFFFFuL;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			    SPI0->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			else
 			{
@@ -4344,18 +4350,20 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			    SPI0->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			break;
+		case SPDFIO_2WIRE:
+			ASSERT(0);
+			break;
 		}
 
-		SPI0->SPI_TCR |= (1 << 31);	// XCH
+		SPI0->SPI_TCR |= (1u << 31);	// XCH
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-		while ((SPI0->SPI_TCR & (1 << 31)) != 0)	// XCH
+		while ((SPI0->SPI_TCR & (1u << 31)) != 0)	// XCH
 			;
-		SPI0->SPI_BCC &= ~ (0x01uL << 29);	/* Quad_EN */
+		SPI0->SPI_BCC &= ~ (0x01u << 29);	/* Quad_EN */
 
 		for (i = 0; i < chunk; i ++)
 		{
 			const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
-			//PRINTF("RX: %02X\chunk", v);
 			if (rx != NULL)
 				* rx++ = v;
 		}
@@ -4364,7 +4372,6 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			tx += chunk;
 		count -= chunk;
 	}
-
 
 	return len;
 }
@@ -4380,7 +4387,7 @@ void spidf_initialize(void)
 {
 	hardware_spi_master_initialize();
 	prog_select_init();		// spi CS initialize
-	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
+	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 }
 
 static void spidf_unselect(void)
@@ -4446,7 +4453,7 @@ static void spidf_iostart(
 
 	spi_operate_lock();
 
-	hardware_spi_connect(SPIC_SPEEDFAST, SPIC_MODE0);
+	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE0);
 
 	// assert CS
 	prog_select(targetdataflash);
@@ -5616,8 +5623,7 @@ int largetimed_dataflash_read_status(void)
 
 #if CPUSTYLE_XC7Z && WIHSPIDFHW
 
-#include "lib\zynq\src_7020\qspips_v3_9\xqspips_hw.h" // конфликт с одним из дефайнов в clock
-#include "lib\zynq\src_7020\qspips_v3_9\xqspips.h"
+#include "xc7z_inc.h"
 
 /************************** Constant Definitions *****************************/
 

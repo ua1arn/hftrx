@@ -3541,7 +3541,7 @@ static void printtextfile(const char * filename)
 		}
 	}
 
-	PRINTF(PSTR("read complete: %u bytes\n"), filepos);
+	PRINTF(PSTR("read complete: %lu bytes\n"), filepos);
 
 	if (rc) 
 	{
@@ -4190,14 +4190,14 @@ static void fatfs_filesystest(int speedtest)
 				{
 					uint_fast16_t year;
 					uint_fast8_t month, day;
-					uint_fast8_t hour, minute, secounds;
-					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+					uint_fast8_t hour, minute, seconds;
+					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 					static unsigned ser;
 					local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
-						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
+						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08X_%u.txt"),
 						year, month, day,
-						hour, minute, secounds,
-						hardware_get_random(),
+						hour, minute, seconds,
+						(unsigned) hardware_get_random(),
 						++ ser
 						);
 					PRINTF(PSTR("FAT FS test - write file '%s'.\n"), testlog);
@@ -4212,13 +4212,13 @@ static void fatfs_filesystest(int speedtest)
 				{
 					uint_fast16_t year;
 					uint_fast8_t month, day;
-					uint_fast8_t hour, minute, secounds;
-					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+					uint_fast8_t hour, minute, seconds;
+					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 					static unsigned ser;
 					local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
 						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
 						year, month, day,
-						hour, minute, secounds,
+						hour, minute, seconds,
 						hardware_get_random(),
 						++ ser
 						);
@@ -4237,8 +4237,8 @@ static int fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
 	uint_fast8_t month, day;
-	uint_fast8_t hour, minute, secounds;
-	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	uint_fast8_t hour, minute, seconds;
+	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 	static unsigned ser;
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
@@ -4247,10 +4247,10 @@ static int fatfs_filesyspeedstest(void)
 
 	mmcInitialize();
 	local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
-		PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
+		PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08X_%u.txt"),
 		year, month, day,
-		hour, minute, secounds,
-		hardware_get_random(),
+		hour, minute, seconds,
+		(unsigned) hardware_get_random(),
 		++ ser
 		);
 	return dosaveblocks(testlog);
@@ -5226,7 +5226,7 @@ static void display_solidbar(
 	uint_fast16_t y,
 	uint_fast16_t x2,
 	uint_fast16_t y2,
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 	if (x2 < x)
@@ -5274,18 +5274,16 @@ static void BarTest(void)
 		const int g = local_randomgr(256);
 		const int b = local_randomgr(256);
 
-		const COLORMAIN_T color = TFTRGB(r, g, b);
+		const COLORPIP_T color = TFTRGB(r, g, b);
 
 		int x = local_randomgr(DIM_X);
 		int y = local_randomgr(DIM_Y);
 		int x2 = local_randomgr(DIM_X);
 		int y2 = local_randomgr(DIM_Y);
 
-		display_solidbar(x, y, x2, y2, color);
-		// MDMA работает минуя кеш-память
-#if ! defined (WITHMDMAHW) && ! defined (WITHDMA2DHW)
+		display_solidbar(x, y, x2, y2, color);	// MDMA работает минуя кеш-память
+
 		display_flush();
-#endif /* ! defined (WITHMDMAHW) && ! defined (WITHDMA2DHW) */
 		//local_delay_ms(5);
 	}
 
@@ -5533,7 +5531,7 @@ static void disableAllIRQs(void)
 #endif
 
 
-#if WITHOPENVG && 1
+//#if WITHOPENVG && 1
 
 #include "tiger.h"
 
@@ -5809,7 +5807,7 @@ static void rendertiger(PS* const tiger, int w, int h)
 
 }
 
-#endif /* WITHOPENVG */
+//#endif /* WITHOPENVG */
 /*--------------------------------------------------------------*/
 
 // See https://github.com/Ajou-Khronies/OpenVG_tutorital_examples/blob/14d30f9a26cb5ed70ccb136bef7b229c8a51c444/samples/Chapter13/Sample_13_03/Sample_13_03.c
@@ -6310,20 +6308,494 @@ static uint_fast32_t adis161xx_read32(unsigned page, unsigned addr)
 
 #endif
 
+#if CPUSTYLE_F133
+
+// https://github.com/bluespec/CLINT/blob/main/src/CLINT_AXI4.bsv
+
+//#define RISCV_MSIP0 (CLINT_BASE  + 0x0000)
+#define RISCV_MTIMECMP_ADDR (CLINT_BASE  + 0x4000)
+
+// На Allwinner F133-A доступ к регистрам таймера только 32-х битный
+static uint64_t mtimer_get_raw_time_cmp(void) {
+#if 0//( __riscv_xlen == 64)
+    // Directly read 64 bit value
+    volatile uint64_t *mtime = (volatile uint64_t *)(RISCV_MTIMECMP_ADDR);
+    return *mtime;
+#elif 1//( __riscv_xlen == 32)
+    volatile uint32_t * mtimel = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
+    volatile uint32_t * mtimeh = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
+    uint32_t mtimeh_val;
+    uint32_t mtimel_val;
+    do {
+        // There is a small risk the mtimeh will tick over after reading mtimel
+        mtimeh_val = *mtimeh;
+        mtimel_val = *mtimel;
+        // Poll mtimeh to ensure it's consistent after reading mtimel
+        // The frequency of mtimeh ticking over is low
+    } while (mtimeh_val != *mtimeh);
+    return (uint64_t) ( ( ((uint64_t)mtimeh_val)<<32) | mtimel_val);
+#else
+    return 888;
+#endif
+}
+
+// На Allwinner F133-A доступ к регистрам таймера только 32-х битный
+static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
+#if 0//(__riscv_xlen == 64)
+    // Single bus access
+    volatile uint64_t *mtimecmp = (volatile uint64_t*)(RISCV_MTIMECMP_ADDR);
+    *mtimecmp = new_mtimecmp;
+#elif 1//( __riscv_xlen == 32)
+    volatile uint32_t *mtimecmpl = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR);
+    volatile uint32_t *mtimecmph = (volatile uint32_t *)(RISCV_MTIMECMP_ADDR+4);
+    // AS we are doing 32 bit writes, an intermediate mtimecmp value may cause spurious interrupts.
+    // Prevent that by first setting the dummy MSB to an unacheivable value
+    *mtimecmph = 0xFFFFFFFF;  // cppcheck-suppress redundantAssignment
+    // set the LSB
+    *mtimecmpl = (uint32_t)(new_mtimecmp & 0x0FFFFFFFFUL);
+    // Set the correct MSB
+    *mtimecmph = (uint32_t)(new_mtimecmp >> 32); // cppcheck-suppress redundantAssignment
+#else
+#endif
+}
+#endif /* CPUSTYLE_F133 */
+
+#if 0
+
+// PNG files test
+
+#include "lupng.h"
+
+// PNG files test
+void testpng(const void * pngbuffer)
+{
+	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+	LuImage * png = luPngReadMemory((char *) pngbuffer);
+
+	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
+	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+	const unsigned picdx = GXADJ(png->width);
+	const unsigned picw = png->width;
+	const unsigned pich = png->height;
+
+	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
+
+	colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORMAIN_GRAY);
+
+	colpip_stretchblt(
+		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
+		fb, DIM_X, DIM_Y,
+		0, 0, picw / 4, pich / 4,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
+		fbpic, picdx, pich,
+		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		);
+
+	colpip_stretchblt(
+		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
+		fb, DIM_X, DIM_Y,
+		30, 0, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
+		fbpic, picdx, pich,
+		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		);
+
+	colpip_stretchblt(
+		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
+		fb, DIM_X, DIM_Y,
+		30, pich / 2, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
+		fbpic, picdx, pich,
+		BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		);
+
+	colpip_stretchblt(
+		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
+		fb, DIM_X, DIM_Y,
+		300, 100, picw / 1, pich / 1,		/* позиция и размеры прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
+		fbpic, picdx, pich,
+		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		);
+
+	luImageRelease(png, NULL);
+	for (;;)
+		;
+}
+
+#endif
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
-	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
+	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0 && WITHDEBUG && CPUSTYPE_T113
+#if 0 && LCDMODE_LTDC
 	{
-		// Allwinner t113-s3 boot node display
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
 
-		CCU->CE_CLK_REG |= (1uL << 31);	// CE_CLK_GATING
-		CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 2);	// CE_MCLK_EN
+		#include "Cobra.png.h"
+
+		testpng(Cobra_png);
+		for (;;)
+			;
+	}
+#endif
+#if 0 && LCDMODE_LTDC
+	{
+		enum { picy = 110, picx = 150 };
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+		static PACKEDCOLORPIP_T layer0_a [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T layer0_b [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T layer1 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T layer2 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T layer3 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T fbpic [GXSIZE(picx, picy)];
+		static PACKEDCOLORPIP_T fbpic2 [GXSIZE(picx, picy)];
+		static PACKEDCOLORPIP_T fbpic3 [GXSIZE(picx, picy)];
+
+//		dcache_clean_invalidate((uintptr_t) layer0, sizeof layer0);
+//		dcache_clean_invalidate((uintptr_t) layer1, sizeof layer1);
+//		dcache_clean_invalidate((uintptr_t) fbpic, sizeof fbpic);
+
+		hardware_ltdc_main_set4((uintptr_t) layer0_a, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+
+		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
+		COLORPIP_T keycolor = COLORPIP_KEY;
+//		PRINTF("test: keycolor=%08X\n", keycolor);
+//		PRINTF("test: a=%08X\n", COLORPIP_A(keycolor));
+//		PRINTF("test: r=%08X\n", COLORPIP_R(keycolor));
+//		PRINTF("test: g=%08X\n", COLORPIP_G(keycolor));
+//		PRINTF("test: b=%08X\n", COLORPIP_B(keycolor));
+
+		unsigned picalpha = 255;
+		colpip_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colpip_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLORPIP_WHITE));
+		colpip_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
+		colpip_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
+		colpip_fillrect(fbpic, picx, picy, picx / 4 + 5, picy / 4 + 5, picx / 2 - 10, picy / 2 - 10, TFTALPHA(0 * picalpha, COLORPIP_WHITE));
+		colpip_string_tbg(fbpic, picx, picy, 5, 6, "Hello!", TFTALPHA(picalpha, COLORPIP_WHITE));
+		dcache_clean((uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0]);
+
+		unsigned pic2alpha = 44;
+		colpip_fillrect(fbpic2, picx, picy, 0, 0, picx, picy, TFTALPHA(pic2alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colpip_fillrect(fbpic2, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic2alpha, COLORPIP_WHITE));
+		colpip_line(fbpic2, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
+		colpip_line(fbpic2, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
+		colpip_string_tbg(fbpic2, picx, picy, 5, 6, "LY2", TFTALPHA(pic2alpha, COLORPIP_WHITE));
+		dcache_clean((uintptr_t) fbpic2, GXSIZE(picx, picy) * sizeof fbpic2 [0]);
+
+		unsigned pic3alpha = 33;
+		colpip_fillrect(fbpic3, picx, picy, 0, 0, picx, picy, TFTALPHA(pic3alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colpip_fillrect(fbpic3, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		colpip_line(fbpic3, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
+		colpip_line(fbpic3, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
+		colpip_string_tbg(fbpic3, picx, picy, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
+
+		/* непрозрачный фон */
+		unsigned bgalpha = 255;
+		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
+		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
+		/* непрозрачный прямоугольник на фоне */
+		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
+		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
+
+		/* полупрозрачный фон */
+		unsigned fgalpha = 128;
+		colpip_fillrect(layer1, DIM_X, DIM_Y, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* transparent black */
+		/* полупрозрачный прямоугольник на фоне */
+		colpip_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_GREEN));	// GREEN
+		/* прозрачный слой */
+		unsigned l2alpha = 0;
+		colpip_fillrect(layer2, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_RED));	/* opaque color transparent black */
+		/* прозрачный слой */
+		unsigned l3alpha = 0;
+		colpip_fillrect(layer3, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_GREEN));	/* opaque color transparent black */
+
+		TP();
+		/* копируем изображение в верхний слой с цветовым ключем */
+		colpip_bitblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y,
+				220, 220,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+				);
+
+		TP();
+		/* копируем изображение в верхний слой БЕЗ цветового ключа */
+		colpip_bitblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y,
+				350, 250,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				BITBLT_FLAG_NONE, keycolor
+				);
+
+		TP();
+		/* копируем изображение в верхний слой БЕЗ цветового ключа */
+		colpip_stretchblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y,
+				40, 20, picx * 5 / 2, picy,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+				);
+
+		TP();
+		/* копируем изображение в верхний слой БЕЗ цветового ключа */
+		colpip_stretchblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y,
+				450, 250, picx * 3 / 2, picy * 3 / 2,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+				);
+
+		TP();
+		/* копируем изображение в верхний слой БЕЗ цветового ключа */
+		colpip_stretchblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y,
+				170, 220, picx * 2 / 3, picy * 2 / 3,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+				);
+
+		TP();
+		/* копируем изображение в верхний слой с цветовым ключем */
+		colpip_bitblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer1, DIM_X, DIM_Y,
+				90, 90,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic, picx, picy,
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+				);
+
+		TP();
+		/* копируем изображение в 2-й слой с цветовым ключем */
+		colpip_bitblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer2, DIM_X, DIM_Y,
+				30, 30,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic2, picx, picy,
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+				);
+
+		TP();
+		/* копируем изображение в 3-й слой с цветовым ключем */
+		colpip_bitblt(
+				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
+				layer3, DIM_X, DIM_Y,
+				370, 20,
+				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
+				fbpic3, picx, picy,
+				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+				);
+
+		// нужно если программно заполняли
+//		dcache_clean((uintptr_t) layer0, sizeof layer0);
+//		dcache_clean((uintptr_t) layer1, sizeof layer1);
+//
+//		printhex32((uintptr_t) layer0, layer0, 64);
+//		printhex32((uintptr_t) layer1, layer1, 64);
+
+
+		TP();
+
+		int phase = 0;
+		unsigned c = 0;
+		while(1)
+		{
+			int y = 50;
+			int x0 = 270;
+			int h = 120;
+			int w = 500;
+			int xpos = (c * (w - 1)) / 255;	/* позиция маркера */
+
+			PACKEDCOLORPIP_T * const drawlayer = phase ? layer0_a : layer0_b;
+
+			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0, y, w, h, TFTALPHA(bgalpha, COLORPIP_BLACK));
+			/* линия в один пиксель рисуется прораммно - за ней требуется flush,
+			 * поскольку потом меняется еще аппаратурой - invalidate
+			 * */
+			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, 1, h, TFTALPHA(bgalpha, COLORPIP_WHITE));
+			dcache_clean_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
+
+			hardware_ltdc_main_set4((uintptr_t) drawlayer, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+
+			phase = ! phase;
+			c = (c + 1) % 256;
+		}
+		for (;;)
+			;
+	}
+#endif
+#if 0 && CPUSTYLE_T113
+	{
+		//	#define DSP0_IRAM_BASE 			((uintptr_t) 0x00028000)			/* 32KB */
+		//	#define DSP0_DRAM_BASE 			((uintptr_t) 0x00030000)			/* 32KB */
+		// При 0 видим память DSP
+		// При 1 видим память что была при загрузке
+		// 0: DSP 128K Local SRAM Remap for DSP_SYS
+		// 1: DSP 128K Local SRAM Remap for System Boot
+		// After system boots up, this bit must be set to 0 before using DSP
+		PRINTF("SYS_CFG->DSP_BOOT_RAMMAP_REG=%08" PRIX32 "\n", SYS_CFG->DSP_BOOT_RAMMAP_REG);
+		SYS_CFG->DSP_BOOT_RAMMAP_REG = 1;
+		PRINTF("SYS_CFG->DSP_BOOT_RAMMAP_REG=%08" PRIX32 "\n", SYS_CFG->DSP_BOOT_RAMMAP_REG);
+
+		uint8_t * const irambase = (void *) DSP0_IRAM_BASE;
+		TP();
+		irambase [0] = 0xDE;
+		irambase [1] = 0xAD;
+		irambase [2] = 0xBE;
+		irambase [3] = 0xEF;
+		printhex(DSP0_IRAM_BASE, irambase, 64);
+
+		uint8_t * const drambase = (void *) DSP0_DRAM_BASE;
+		TP();
+		drambase [0] = 0xAB;
+		drambase [1] = 0xBA;
+		drambase [2] = 0x19;
+		drambase [3] = 0x80;
+		printhex(DSP0_DRAM_BASE, drambase, 64);
+		TP();
+		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
+
+//		CCU->DSP_BGR_REG |= 1u << 18;	// DSP_DBG_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= 1u << 17;	// DSP_CFG_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= 1u << 16;	// DSP_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= 1u << 1;	// DSP_CFG_GATING 1: Pass
+	}
+#endif
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
+	{
+		PRINTF("allwnrt113_get_pll_cpu_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_cpu_freq());
+		PRINTF("allwnrt113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_ddr_freq());
+		PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
+		PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
+		PRINTF("allwnrt113_get_ce_freq()=%" PRIuFAST32 "\n", allwnrt113_get_ce_freq());
+		PRINTF("allwnrt113_get_ve_freq()=%" PRIuFAST32 "\n", allwnrt113_get_ve_freq());
+		PRINTF("allwnrt113_get_di_freq()=%" PRIuFAST32 "\n", allwnrt113_get_di_freq());
+	}
+#endif
+#if 0 && defined (CLINT) && CPUSTYLE_F133
+	{
+		TP();
+		//csr_set_bits_mcounteren(MCOUNTEREN_CY_BIT_MASK | MCOUNTEREN_TM_BIT_MASK | MCOUNTEREN_IR_BIT_MASK);
+
+		PRINTF("mtimer_get_raw_time_cmp = 0x%" PRIX64 "\n", mtimer_get_raw_time_cmp());
+		PRINTF("mtimer_get_raw_time_cmp = %" PRIu64 "\n", mtimer_get_raw_time_cmp());
+
+		mtimer_set_raw_time_cmp(1000);
+	    //mtimer_set_raw_time_cmp(mtimer_get_raw_time() + 24000000);
+		PRINTF("mtimer_get_raw_time_cmp = 0x%" PRIX64 "\n", mtimer_get_raw_time_cmp());
+		PRINTF("mtimer_get_raw_time_cmp = %" PRIu64 "\n", mtimer_get_raw_time_cmp());
+
+		mtimer_set_raw_time_cmp(0x12345678DEADBEEF);
+		PRINTF("mtimer_get_raw_time_cmp = 0x%" PRIX64 "\n", mtimer_get_raw_time_cmp());
+		PRINTF("mtimer_get_raw_time_cmp = %" PRIu64 "\n", mtimer_get_raw_time_cmp());
+
+		// https://chromitem-soc.readthedocs.io/en/latest/clint.html
+		PRINTF("mtimecmp=0x%08" PRIX32 "%08" PRIX32"\n",  CLINT->mtimecmphi,  CLINT->mtimecmplo);
+
+	    mtimer_set_raw_time_cmp(csr_read_mcycle() + 20ll * CPU_FREQ);
+		PRINTF("mtimer_get_raw_time_cmp = 0x%" PRIX64 "\n", mtimer_get_raw_time_cmp());
+		PRINTF("mtimer_get_raw_time_cmp = %" PRIu64 "\n", mtimer_get_raw_time_cmp());
+		TP();
+		const uintptr_t a = CLINT_BASE + 0xB000;
+		PRINTF("mtimecmp=0x%08" PRIX32 "%08" PRIX32"\n",  CLINT->mtimecmphi,  CLINT->mtimecmplo);
+		//printhex32(a, (void *) a, 0x10000);
+		// https://chromitem-soc.readthedocs.io/en/latest/clint.html
+		PRINTF("mtimecmp=0x%08" PRIX32 "%08" PRIX32"\n",  CLINT->mtimecmphi,  CLINT->mtimecmplo);
+		//PRINTF("mtime=0x%08" PRIX32 "%08" PRIX32 "\n",  CLINT->mtimehi,  CLINT->mtimelo);
+	}
+#endif
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
+	{
+		/* Allwinner G2D tests */
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+
+		display2_bgreset();
+
+		/* Запуск теста одного из */
+
+		void g2d_main_layers_alpha(void);
+		void g2d_main0(void);
+
+		//g2d_main0();
+		g2d_main_layers_alpha();
+	}
+#endif
+#if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
+	{
+		const COLORPIP_T bg = display_getbgcolor();
+		PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+//		TP();
+//		colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
+//		TP();
+//		colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
+//		TP();
+//		colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, 0xFF00);
+//		for (;;)
+//			;
+
+		for (int pos = 0; pos < 24; ++ pos)
+		{
+			COLORPIP_T c = TFTALPHA(255, 1u << pos);
+			colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, c);
+			PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
+			local_delay_ms(2000);
+		}
+		for (;;)
+			;
+
+	}
+#endif
+#if 0 && WITHDEBUG
+	{
+		PTT_INITIALIZE();
+		for (;;)
+		{
+			unsigned ptt = (PTT_TARGET_PIN & PTT_BIT_PTT) == 0;
+			unsigned ptt2 = (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0;
+			unsigned ptt3 = (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0;
+			PRINTF("ptt=%u ptt2=%u, ptt3=%u\n", ptt, ptt2, ptt3);
+		}
+	}
+#endif
+#if 1 && WITHDEBUG && (CPUSTYLE_T113 || CPUSTYLE_F133)
+	{
+		// Allwinner t113-s3 boot mode display
+
+//		CCU->CE_CLK_REG |= (1uL << 31);	// CE_CLK_GATING
+//		CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 2);	// CE_MCLK_EN
 		// bits 27:16: eFUSE boot select status,
 		// bit 0: 0: GPIO boot select, 1: eFuse boot select
-		PRINTF("SID->BOOT_MODE=%08lX\n", SID->BOOT_MODE);
+		// The status of the GPIO boot select pin can be read by the bit[12:11] of the system configuration module (register: 0x03000024).
+		//PRINTF("SID->BOOT_MODE=0x%08lX, SYS_CFG->VER_REG=0x%08lX\n", SID->BOOT_MODE, SYS_CFG->VER_REG);
+		PRINTF("BOOT_MODE=%u, Pin_Boot_Select=0x%02X\n", (unsigned) (SID->BOOT_MODE >> 0) & 0x01, (unsigned) (SYS_CFG->VER_REG >> 11) & 0x03);
+	}
+#endif
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
+	{
+		RTC->FBOOT_INFO_REG0 = (1u << 28);	// Try process: SMHC0->SPI NOR->SPI NAND->EMMC2_USER->EMMC2_BOOT.
 	}
 #endif
 #if 0 && (WIHSPIDFSW || WIHSPIDFHW || WIHSPIDFOVERSPI)
@@ -6830,7 +7302,7 @@ void hightests(void)
 		PRINTF("zynq pin & bank calculations test passed.\n");
 	}
 #endif
-#if 0 && WITHOPENVG
+#if 1 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
@@ -7458,7 +7930,7 @@ void hightests(void)
 		static ALIGNX_BEGIN volatile PACKEDCOLOR565_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
 		colpip_fill(scr, dx, dy, COLOR_WHITE);
-		colpip_to_main(scr, dx, dy, 0, GRID2Y(topreserved));
+		colpip_copy_to_draw(scr, dx, dy, 0, GRID2Y(topreserved));
 		//for (;;)
 		//	;
 		int phase = 0;
@@ -7473,7 +7945,7 @@ void hightests(void)
 			for (i = 0; i < bufY; ++ i)
 				colpip_point(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
 
-			colpip_to_main(scr, dx, dy, 0, GRID2Y(topreserved));
+			colpip_copy_to_draw(scr, dx, dy, 0, GRID2Y(topreserved));
 			//local_delay_ms(25);
 			if (++ count > top)
 			{
@@ -7985,7 +8457,7 @@ void hightests(void)
 			//GridTest();
 			BarTest();
 			const time_t tend = time(NULL);
-			PRINTF("BarTest: %u, %ds, pixelsize=%d @%lu MHz\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE, CPU_FREQ / 1000000);
+			PRINTF("BarTest: %u, %ds, pixelsize=%d @%u MHz\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE, (unsigned) (CPU_FREQ / 1000000));
 		}
 		// Divide result by 10
 		// 800x480, Renesas RZ/A1L, @360 MHz, L8, software (w cache: 5.6s..5.7s)
@@ -7995,6 +8467,8 @@ void hightests(void)
 		// 800x480, STM32MP157, @650 MHz, RGB565, hardware MDMA: (no cache - 1.4s)
 		// 800x480, STM32MP157, @650 MHz, ARGB8888, hardware MDMA: (no cache - 2.5s)
 		// 800x480, Allwinner t113-s3, @1200 MHz, RGB565, software 0.6s
+		// 800x480, Allwinner F133-A, @1200 MHz, RGB565, hardware G2D 0.7s
+		// 800x480, Allwinner F133-A, @1200 MHz, XRGB8888, hardware G2D 0.9s
 	}
 #endif
 #if 0
@@ -8003,9 +8477,9 @@ void hightests(void)
 	uint_fast32_t linesStart = 0;
 	uint_fast32_t pixelIdx = 0;
 
-	PACKEDCOLORMAIN_T * frame = colmain_fb_draw();
+	PACKEDCOLORPIP_T * frame = colmain_fb_draw();
 
-	memset(frame, 0x00, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	memset(frame, 0x00, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
 
 	for(ycoi = 0; ycoi < DIM_Y; ycoi++)
 	{
@@ -8025,7 +8499,7 @@ void hightests(void)
 	{
 		// test: вывод палитры на экран
 		display2_bgreset();
-		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+		PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 		int sepx = 3, sepy = 3;
 		int wx = DIM_X / 16;
 		int wy = DIM_Y / 16;
@@ -8060,25 +8534,25 @@ void hightests(void)
 	// разметка для 9-точечной калибровки тачскрина
 	display2_bgreset();
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 
 	uint8_t c = 35;
 
-	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, 0 + c, 3, 3, COLORMAIN_WHITE);			// 1
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, 0 + c, 3, 3, COLORMAIN_WHITE);		// 2
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, 0 + c, 3, 3, COLORMAIN_WHITE);		// 3
+	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, 0 + c, 3, 3, COLORMAIN_WHITE);			// 1
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, 0 + c, 3, 3, COLORMAIN_WHITE);		// 2
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, 0 + c, 3, 3, COLORMAIN_WHITE);		// 3
 
-	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);		// 4
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 5
+	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);		// 4
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 5
 
-	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);		// 6
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 7
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 8
+	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);		// 6
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 7
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 8
 
-	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 9
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 9
 
-	arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-	arm_hardware_ltdc_main_set((uintptr_t) fr);
+	dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
+	hardware_ltdc_main_set((uintptr_t) fr);
 
 	for(;;) {}
 #endif
@@ -8098,27 +8572,27 @@ void hightests(void)
 		PRINTF(PSTR("touch screen test:\n"));
 		for (;;)
 		{
-			PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+			PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 			char msg [64];
 			uint_fast16_t x, y;
 			if (board_tsc_getxy(& x, & y))
 			{
 				PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), (int) x, (int) y);
 				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("x=%5d, y=%5d"), (int) x, (int) y);
-				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
+				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
 				markerx = x / gridx * gridx;
 				markery = y / gridy * gridy;
-				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_WHITE);
+				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_WHITE);
 			} else {
 				memset(msg, ' ', 63);
 				msg [63] = '\0';
-				colmain_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
+				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
 			}
 			display_at(22, 26, msg);
 			local_delay_ms(10);
 
-			arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-			arm_hardware_ltdc_main_set((uintptr_t) fr);
+			dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
+			hardware_ltdc_main_set((uintptr_t) fr);
 		}
 	}
 #endif
@@ -8166,7 +8640,7 @@ void hightests(void)
 		{
 			char buff [32];
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d:%02d:%02d,ky=%d"), 
-				th.hours, th.minutes, th.secounds, 
+				th.hours, th.minutes, th.seconds, 
 				HARDWARE_NMEA_GET_KEYDOWN());
 
 			uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -8213,18 +8687,18 @@ void hightests(void)
 		{
 			uint_fast16_t year;
 			uint_fast8_t month, day;
-			uint_fast8_t hour, minute, secounds;
+			uint_fast8_t hour, minute, seconds;
 
 			//board_rtc_getdate(& year, & month, & day);
-			//board_rtc_gettime(& hour, & minute, & secounds);
+			//board_rtc_gettime(& hour, & minute, & seconds);
 
 			//PRINTF(PSTR("%04d-%02d-%02d "), year, month, day);
-			//PRINTF(PSTR("%02d:%02d:%02d "), hour, minute, secounds);
+			//PRINTF(PSTR("%02d:%02d:%02d "), hour, minute, seconds);
 
-			board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+			board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 
 			PRINTF(PSTR("%04d-%02d-%02d "), year, month, day);
-			PRINTF(PSTR("%02d:%02d:%02d\n"), hour, minute, secounds);
+			PRINTF(PSTR("%02d:%02d:%02d\n"), hour, minute, seconds);
 
 			local_delay_ms(1250);
 			
@@ -8281,7 +8755,7 @@ void hightests(void)
 
 	/* буфер размером x=64, y=112 точек */
 	enum { bufY = DIM_Y - 8, dx = DIM_X, dy = /*24 */ bufY, DBX_0 = 0, DBY_1 = 1};
-	static FATFSALIGN_BEGIN PACKEDCOLORMAIN_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
+	static FATFSALIGN_BEGIN PACKEDCOLORPIP_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
 
 
 	/* отображение надписей самым маленьким шрифтом (8 точек) */
@@ -8370,22 +8844,23 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHDEBUG
+	TP();
 	// Трансивер с DSPIF4 "Вороненок-DSP"
 	// Отображение значений с дополнительных входов АЦП
 	for (;;)
 	{
-		if (! display_refreshenabled_wpm())
-			continue;
+//		if (! display_refreshenabled_wpm())
+//			continue;
 		// подтверждаем, что обновление выполнено
-		display_refreshperformed_wpm();
+//		display_refreshperformed_wpm();
 
 		//const unsigned potrf = board_getadc_filtered_u8(POTIFGAIN, 0, UINT8_MAX);
 		const unsigned potrft = board_getadc_unfiltered_truevalue(POTIFGAIN);
-		const unsigned potrf = board_getpot_filtered_truevalue(POTIFGAIN);
+		const unsigned potrf = board_getadc_unfiltered_truevalue(POTIFGAIN);
 
 		//const unsigned potaf = board_getadc_smoothed_u8(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX);
 		const unsigned potaft = board_getadc_unfiltered_truevalue(POTAFGAIN);
-		const unsigned potaf = board_getpot_filtered_truevalue(POTAFGAIN);
+		const unsigned potaf = board_getadc_unfiltered_truevalue(POTAFGAIN);
 
 		//const unsigned aux1 = board_getadc_filtered_u8(POTAUX1, 0, UINT8_MAX);
 		//const unsigned aux2 = board_getadc_filtered_u8(POTAUX2, 0, UINT8_MAX);
@@ -8394,86 +8869,79 @@ void hightests(void)
 		const unsigned wpm = board_getpot_filtered_u8(POTWPM, 0, UINT8_MAX);
 #endif /* WITHPOTWPM */
 
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			char buff [22];
+		PRINTF("potrft=%u potaft=%u\n", potrf, potaft);
+		continue;
+		char buff [22];
 
 #if 1
-			// сокращённый вариант отображения
-			// AF gain
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("af= %4d"), potaf
-				 );
-			display_gotoxy(0, 0 * HALFCOUNT_SMALL + lowhalf);
-			display_at(buff, lowhalf);
-			// AF gain raw
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("aft=%4d"), potaft
-				 );
-			display_gotoxy(0, 1 * HALFCOUNT_SMALL + lowhalf);
-			display_at(buff, lowhalf);
-			continue;
+		// сокращённый вариант отображения
+		// AF gain
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("af= %4d"), potaf
+			 );
+		display_at(0, 0 * HALFCOUNT_SMALL, buff);
+		// AF gain raw
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("aft=%4d"), potaft
+			 );
+		display_at(0, 1 * HALFCOUNT_SMALL, buff);
+		continue;
 #else
-			// IF gain
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("rf= %4d"), potrf
-				 );
-			display_gotoxy(0, 0 + lowhalf);
-			display_at(buff, lowhalf);
-			// AF gain
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("af= %4d"), potaf
-				 );
-			display_gotoxy(7, 0 + lowhalf);
-			display_at(buff, lowhalf);
+		// IF gain
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("rf= %4d"), potrf
+			 );
+		display_at(0, 0 * HALFCOUNT_SMALL, buff);
+		// AF gain
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("af= %4d"), potaf
+			 );
+		display_at(0, 1 * HALFCOUNT_SMALL, buff);
 
-			// AUX1
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("A1= %4d"), aux1
-				 );
-			display_gotoxy(14, 0 + lowhalf);
-			display_at(buff, lowhalf);
+		// AUX1
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("A1= %4d"), aux1
+			 );
+		display_gotoxy(14, 0 + lowhalf);
+		display_at(buff, lowhalf);
 
-			// AUX2
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("A2= %4d"), aux2
-				 );
-			display_gotoxy(0, 1 + lowhalf);
-			display_at(buff, lowhalf);
+		// AUX2
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("A2= %4d"), aux2
+			 );
+		display_gotoxy(0, 1 + lowhalf);
+		display_at(buff, lowhalf);
 
-			// AUX3
-			/*
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("A3=%3d"), aux3
-				 );
-			display_gotoxy(7, 1 + lowhalf);
-			display_at(buff, lowhalf);
-			*/
+		// AUX3
+		/*
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("A3=%3d"), aux3
+			 );
+		display_gotoxy(7, 1 + lowhalf);
+		display_at(buff, lowhalf);
+		*/
 #if WITHPOTWPM
-			// WPM
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("cw=%3d"), wpm
-				 );
-			display_gotoxy(14, 1 + lowhalf);
-			display_at(buff, lowhalf);
+		// WPM
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("cw=%3d"), wpm
+			 );
+		display_gotoxy(14, 1 + lowhalf);
+		display_at(buff, lowhalf);
 #endif /* WITHPOTWPM */
 
-			// IF gain raw
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("rft=%4d"), potrft
-				 );
-			display_gotoxy(0, 2 + lowhalf);
-			display_at(buff, lowhalf);
-			// AF gain raw
-			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-				PSTR("aft=%4d"), potaft
-				 );
-			display_gotoxy(10, 2 + lowhalf);
-			display_at(buff, lowhalf);
+		// IF gain raw
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("rft=%4d"), potrft
+			 );
+		display_gotoxy(0, 2 + lowhalf);
+		display_at(buff, lowhalf);
+		// AF gain raw
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+			PSTR("aft=%4d"), potaft
+			 );
+		display_gotoxy(10, 2 + lowhalf);
+		display_at(buff, lowhalf);
 #endif
-
-		} while (lowhalf --);
 
 
 	}
@@ -8503,6 +8971,77 @@ void hightests(void)
 		}
 	}
 #endif
+#if 0 && LCDMODE_MAIN_RGB565
+	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+	board_update();
+	// тест интерфейса дисплея - цветов RGB565
+	for (;;)
+	{
+		char b [32];
+		int c;
+		// COLORPIP_T bg
+//		for (c = 0; c < 256; ++ c)
+//		{
+//			display_setbgcolor(TFTRGB(c, c, c));
+//			display2_bgreset();
+//			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
+//			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+//			display_at(0, 0, b);
+//			display_nextfb();
+//			local_delay_ms(50);
+//		}
+		//for (; c -- > 0; )
+		//{
+		//	display_setbgcolor(TFTRGB(c, c, c));
+		//	display2_bgreset();
+		//}
+		for (c = 0; c < 5; ++ c)
+		{
+			display_setbgcolor(TFTRGB(1u << (c + 3), 0, 0));
+			display2_bgreset();
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), 1u << (c + 3));
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+			display_at(0, 0, b);
+			display_nextfb();
+			local_delay_ms(2000);
+		}
+		//for (; c -- > 0; )
+		//{
+		//	display_setbgcolor(TFTRGB(c, 0, 0));
+		//	display2_bgreset();
+		//}
+		for (c = 0; c < 6; ++ c)
+		{
+			display_setbgcolor(TFTRGB(0, 1u << (c + 2), 0));
+			display2_bgreset();
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), 1u << (c + 2));
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+			display_at(0, 0, b);
+			display_nextfb();
+			local_delay_ms(2000);
+		}
+		//for (; c -- > 0; )
+		//{
+		//	display_setbgcolor(TFTRGB(0, c, 0));
+		//	display2_bgreset();
+		//}
+		for (c = 0; c < 5; ++ c)
+		{
+			display_setbgcolor(TFTRGB(0, 0, 1u << (c + 3)));
+			display2_bgreset();
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), 1u << (c + 3));
+			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+			display_at(0, 0, b);
+			display_nextfb();
+			local_delay_ms(2000);
+		}
+		//for (; c -- > 0; )
+		//{
+		//	display_setbgcolor(TFTRGB(0, 0, c));
+		//	display2_bgreset();
+		//}
+	}
+#endif
 #if 0
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
@@ -8511,7 +9050,7 @@ void hightests(void)
 	{
 		char b [32];
 		int c;
-		// COLORMAIN_T bg
+		// COLORPIP_T bg
 		for (c = 0; c < 256; ++ c)
 		{
 			display_setbgcolor(TFTRGB(c, c, c));
@@ -9487,14 +10026,14 @@ static void r7s721_ostm0_interrupt_test(void)
 	LOCK(& locklist8);
 	auto int marker;
 	global_disableIRQ();
-	PRINTF(PSTR("  Sy:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("  Sy:@%p INTCICCRPR=%02x cpsr=%08x!\n"), & marker, (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(5);
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	PRINTF(PSTR("  Sy: INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("  Sy: INTCICCRPR=%02x cpsr=%08x.\n"), (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 	UNLOCK(& locklist8);
 }
@@ -9506,7 +10045,7 @@ static void r7s721_ostm1_interrupt_test(void)
 
 	auto int marker;
 	global_disableIRQ();
-	PRINTF(PSTR("    Rt:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    Rt:@%p INTCICCRPR=%02x cpsr=%08x!\n"), & marker, (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(5);
@@ -9514,7 +10053,7 @@ static void r7s721_ostm1_interrupt_test(void)
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	PRINTF(PSTR("    rt: INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    rt: INTCICCRPR=%02x cpsr=%08x.\n"), (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 
 	UNLOCK(& locklist16);
@@ -9527,14 +10066,14 @@ static void spool_encinterruptR(void)
 
 	auto int marker;
 	global_disableIRQ();
-	PRINTF(PSTR("    E:@%p INTCICCRPR=%02x cpsr=%08lx!\n"), & marker, INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    E:@%p INTCICCRPR=%02x cpsr=%08x!\n"), & marker, (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 
 	local_delay_ms(25);
 	local_delay_ms(5);
 
 	global_disableIRQ();
-	PRINTF(PSTR("    e:INTCICCRPR=%02x cpsr=%08lx.\n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("    e:INTCICCRPR=%02x cpsr=%08x.\n"), (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	global_enableIRQ();
 
 	UNLOCK(& locklist16);
@@ -9548,7 +10087,7 @@ void xSWIHandler(void)
 	for (;;)
 	{
 		global_disableIRQ();
-		PRINTF(PSTR("B: INTCICCRPR=%02x cpsr=%08lx*\n"), INTCICCRPR, __get_CPSR());
+		PRINTF(PSTR("B: INTCICCRPR=%02x cpsr=%08x*\n"), (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 		global_enableIRQ();
 
 		local_delay_ms(20);
@@ -9572,7 +10111,7 @@ nestedirqtest(void)
 	//for (;;)
 	//	dbg_putchar(0xff);
 	// тестирование приёма и передачи символов
-	PRINTF(PSTR("INTCICCPMR=%02X\n"), INTCICCPMR);
+	PRINTF(PSTR("INTCICCPMR=%02X\n"), (unsigned) INTCICCPMR);
 	PRINTF(PSTR("ECHO test. Press ESC for done.\n"));
 	for (;1;)
 	{
@@ -9600,7 +10139,7 @@ nestedirqtest(void)
 		} while (0);
 	#endif
 #endif /* defined (ENCODER_BITS) */
-	PRINTF(PSTR("INTCICCRPR=%02x cpsr=%08lx* \n"), INTCICCRPR, __get_CPSR());
+	PRINTF(PSTR("INTCICCRPR=%02x cpsr=%08x* \n"), (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 	//hw_swi();
 	global_enableIRQ();
 
@@ -9613,7 +10152,7 @@ nestedirqtest(void)
 		system_enableIRQ();
 
 		global_disableIRQ();
-		PRINTF(PSTR("iccrpr0=%02x, iccrpr1=%02x, INTCICCRPR=%02x cpsr=%08lx*\n"), iccrpr0, iccrpr1, INTCICCRPR, __get_CPSR());
+		PRINTF(PSTR("iccrpr0=%02x, iccrpr1=%02x, INTCICCRPR=%02x cpsr=%08x*\n"), (unsigned) iccrpr0, (unsigned) iccrpr1, (unsigned) INTCICCRPR, (unsigned) __get_CPSR());
 		global_enableIRQ();
 
 		local_delay_ms(20);
@@ -9637,6 +10176,110 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
+#if 0 && __riscv && defined(__riscv_zicsr)
+	{
+		unsigned vm = (csr_read_mstatus() >> 24) & 0x1F;
+		unsigned sxl = (csr_read_mstatus() >> 34) & 0x03;
+		unsigned uxl = (csr_read_mstatus() >> 32) & 0x03;
+		unsigned xs = (csr_read_mstatus() >> 15) & 0x03;
+		PRINTF("1 mstatus=%08lX, vm=%u, sxl=%u, uxl=%u, xs=%u\n", csr_read_mstatus(), vm, sxl, uxl, xs);
+	}
+#endif
+#if 0 && __riscv && defined(__riscv_zicsr)
+	{
+		PRINTF("misa=0x%016lX\n", (unsigned long) csr_read_misa());
+		PRINTF("mvendorid=0x%08X\n", csr_read_mvendorid());
+		PRINTF("marchid=0x%08X\n", csr_read_marchid());
+		PRINTF("mimpid=0x%08X\n", csr_read_mimpid());
+		PRINTF("mhartid=0x%08X\n", csr_read_mhartid());
+	}
+#endif
+#if 0 && __riscv && defined(__riscv_zicsr)
+	{
+		// see https://github.com/five-embeddev/riscv-csr-access/blob/master/include/riscv-csr.h
+
+		//	0 A Atomic extension
+		//	1 B Reserved
+		//	2 C Compressed extension
+		//	3 D Double-precision floating-point extension
+		//	4 E RV32E base ISA
+		//	5 F Single-precision floating-point extension
+		//	6 G Reserved
+		//	7 H Hypervisor extension
+		//	8 I RV32I/64I/128I base ISA
+		//	9 J Reserved
+		//	10 K Reserved
+		//	11 L Reserved
+		//	12 M Integer Multiply/Divide extension
+		//	13 N Tentatively reserved for User-Level Interrupts extension
+		//	14 O Reserved
+		//	15 P Tentatively reserved for Packed-SIMD extension
+		//	16 Q Quad-precision floating-point extension
+		//	17 R Reserved
+		//	18 S Supervisor mode implemented
+		//	19 T Reserved
+		//	20 U User mode implemented
+		//	21 V “V” Vector extension implemented
+		//	22 W Reserved
+		//	23 X Non-standard extensions present
+		//	24 Y Reserved
+		//	25 Z Reserved
+
+		// Allwinner F133-A
+		//	READ_CSR(misa)=00B4112D: --X-VU-S-----M---I--F-DC-A
+		const unsigned misa_val = csr_read_misa();
+		unsigned i;
+		PRINTF("misa=%08X: ", misa_val);
+		for (i = 0; i < 26; ++ i)
+		{
+			const int pos = 25 - i;
+			const unsigned mask = 1u << pos;
+			PRINTF("%c", (misa_val & mask) ? 'A' + pos : '-');
+		}
+		PRINTF("\n");
+
+	}
+#endif
+#if 0 && WITHDEBUG && __riscv
+	{
+		PRINTF("sqrtf=%d\n", (int) (sqrtf(2) * 10000));
+		PRINTF("sqrt=%d\n", (int) (sqrt(2) * 10000));
+		PRINTF("sqrtf=%g\n", sqrtf(2));
+		PRINTF("sqrt=%g\n", sqrt(2));
+
+	}
+#endif
+#if 0 && defined (BOARD_BLINK_INITIALIZE)
+	{
+		// LED blink test
+		uint_fast8_t state = 0;
+		BOARD_BLINK_INITIALIZE();
+		for (;;)
+		{
+			if (state)
+			{
+				state = 0;
+				BOARD_BLINK_SETSTATE(0);
+			}
+			else
+			{
+				state = 1;
+				BOARD_BLINK_SETSTATE(1);
+			}
+			local_delay_ms(250);
+		}
+	}
+#endif
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+	{
+		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected arm: 0x0000190E, risc-v: 0x00002F0F)\n", (unsigned) SYS_CFG->SYS_LDO_CTRL_REG);
+	}
+#endif
+#if (CPUSTYLE_T113)
+	{
+		PRINTF("C0_CPUX_CFG->C0_CTRL_REG0=0x%08X (expected 0x80000000)\n", (unsigned) C0_CPUX_CFG->C0_CTRL_REG0);
+	}
+#endif
 #if 0
 	{
 		// CMSIS RTOS2 test
@@ -9724,8 +10367,8 @@ void lowtests(void)
 		volatile unsigned v9;
 		volatile unsigned v10 = 10;
 
-		PRINTF(PSTR("Unititilalized SRAM=%08lX @%p\n"), v1, & v1);
-		PRINTF(PSTR("Ititilalized SRAM=%08lX @%p\n"), v2, & v2);
+		PRINTF(PSTR("Unititilalized static=%08lX @%p\n"), v1, & v1);
+		PRINTF(PSTR("Ititilalized static=%08lX @%p\n"), v2, & v2);
 		PRINTF(PSTR("Unititilalized RAMDTCM=%08lX @%p\n"), v3, & v3);
 		PRINTF(PSTR("Ititilalized RAMDTCM=%08lX @%p\n"), v4, & v4);
 		PRINTF(PSTR("Unititilalized RAMBIGDTCM=%08lX @%p\n"), v5, & v5);

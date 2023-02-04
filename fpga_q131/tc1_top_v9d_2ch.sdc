@@ -36,7 +36,8 @@ create_clock -name "ref122880" -period 125MHz [get_ports {refclk_in}]
 
 create_clock -name "sclk_clock" -period 25MHz [get_ports {cpu_sclk}]
 create_clock -name "fpga_ctl_cs_clock" -period 25MHz [get_ports {fpga_ctl_cs}]
-#create_clock -name "fpga_fir_cs_clock" -period 25MHz [get_ports {fpga_fir_cs}]
+create_clock -name "fpga_fir_cs_clock" -period 25MHz [get_ports {fpga_fir_cs}]
+create_clock -name "i2smslk_clock" -period 25MHz [get_ports {i2smslk}]
 
 #create_clock -name "sai1_sck_a_clock" -period 13MHz [get_ports {sai1_sck_a}]
 #create_generated_clock -name "sai1_sck_a_clock" -source [get_ports {refclk_in}] -divide_by 10 -duty_cycle 40.0 [get_ports {sai1_sck_a}]
@@ -50,10 +51,10 @@ set_clock_groups -exclusive \
 	
 #	-group { [get_clocks {fpga_fir_cs_clock}] }
 
-set_false_path -from [get_clocks { ref122880    }] -to [get_ports {adc_dith adc_rand adc_shdn adc_pga dac_sleep}]
+#set_false_path -from [get_clocks { ref122880    }] -to [get_ports {adc_dith adc_rand adc_shdn adc_pga dac_sleep}]
 set_false_path -from [get_clocks { ref122880    }] -to [get_ports {led0 led1 led2 led3 fpga_ovf}]
 set_false_path -from [get_clocks { ref122880    }] -to [get_ports {sai1_sd_b}]
-set_false_path -from [get_clocks { ref122880    }] -to [get_ports {i2s2_mck}]
+#set_false_path -from [get_clocks { ref122880    }] -to [get_ports {i2s2_mck}]
 set_false_path -from [get_clocks { ref122880    }] -to [get_ports {sai1_sck_a}]
 set_false_path -from [get_clocks { ref122880    }] -to [get_ports {refclk_out}]
 

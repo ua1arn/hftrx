@@ -18,7 +18,7 @@
 	#define BANDDIVPOWER	16	/* ~65.5 kHz granulation */
 	typedef uint_fast16_t fseltype_t;
 
-#elif CPUSTYLE_ARM
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 	#define BANDDIVPOWER	0	/* 1 Hz granulation */
 	typedef uint_fast32_t fseltype_t;
@@ -35,17 +35,17 @@
 
 	static const fseltype_t board_bandfs [] =
 	{
-		(fseltype_t) (1000000UL >> BANDDIVPOWER),	
-		(fseltype_t) (2000000UL >> BANDDIVPOWER),
-		(fseltype_t) (4000000UL >> BANDDIVPOWER),
-		(fseltype_t) (8000000UL >> BANDDIVPOWER),
-		(fseltype_t) (15000000UL >> BANDDIVPOWER),
-		(fseltype_t) (16100000UL >> BANDDIVPOWER),
-		(fseltype_t) (19530000UL >> BANDDIVPOWER),
-		(fseltype_t) (23100000UL >> BANDDIVPOWER),
-		(fseltype_t) (26450000UL >> BANDDIVPOWER),
+		(fseltype_t) (1000000u >> BANDDIVPOWER),
+		(fseltype_t) (2000000u >> BANDDIVPOWER),
+		(fseltype_t) (4000000u >> BANDDIVPOWER),
+		(fseltype_t) (8000000u >> BANDDIVPOWER),
+		(fseltype_t) (15000000u >> BANDDIVPOWER),
+		(fseltype_t) (16100000u >> BANDDIVPOWER),
+		(fseltype_t) (19530000u >> BANDDIVPOWER),
+		(fseltype_t) (23100000u >> BANDDIVPOWER),
+		(fseltype_t) (26450000u >> BANDDIVPOWER),
 	};
-	#define BANDCALCS (sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif CTLREGMODE16_NIKOLAI
 
@@ -53,21 +53,11 @@
 
 	static const fseltype_t board_bandfs [] =
 	{
-		(fseltype_t) (1600000UL >> BANDDIVPOWER),	
-		(fseltype_t) (5500000UL >> BANDDIVPOWER),
-		(fseltype_t) (15000000UL >> BANDDIVPOWER),
+		(fseltype_t) (1600000u >> BANDDIVPOWER),
+		(fseltype_t) (5500000u >> BANDDIVPOWER),
+		(fseltype_t) (15000000u >> BANDDIVPOWER),
 	};
-	#define BANDCALCS (sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
-
-#elif \
-	BANDSELSTYLERE_RA4YBO_AM0 || \
-	0
-	// 2.2 MHz
-	static const fseltype_t board_bandfs [] =
-	{
-		(fseltype_t) (2200000UL >> BANDDIVPOWER),
-	};
-	#define BANDCALCS (sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif BANDSELSTYLERE_R3PAV 
 
@@ -75,21 +65,21 @@
 
 	static const fseltype_t board_bandfs [] =
 	{
-		(fseltype_t) (  1600000UL >> BANDDIVPOWER), 
-		(fseltype_t) (  2100000UL >> BANDDIVPOWER), // 0 001  1.6 -  2.1
-		(fseltype_t) (  3800000UL >> BANDDIVPOWER), // 0 010  2.1 -  3.8
-		(fseltype_t) (  8100000UL >> BANDDIVPOWER), // 0 011  3.8 -  8.1
-		(fseltype_t) ( 10300000UL >> BANDDIVPOWER), // 0 100  8.1 - 10.3
-		(fseltype_t) ( 16000000UL >> BANDDIVPOWER), // 0 101 10.3 - 16.0
-		(fseltype_t) ( 18400000UL >> BANDDIVPOWER), // 0 110 16.0 - 18.4
-		(fseltype_t) ( 21400000UL >> BANDDIVPOWER), // 0 111 18.4 - 21.4
-		(fseltype_t) ( 29900000UL >> BANDDIVPOWER), // 1 000 21.4 - 29.9
-		(fseltype_t) ( 45000000UL >> BANDDIVPOWER), 
-		(fseltype_t) (100000000UL >> BANDDIVPOWER), 
-		(fseltype_t) (250000000UL >> BANDDIVPOWER), 
+		(fseltype_t) (  1600000u >> BANDDIVPOWER),
+		(fseltype_t) (  2100000u >> BANDDIVPOWER), // 0 001  1.6 -  2.1
+		(fseltype_t) (  3800000u >> BANDDIVPOWER), // 0 010  2.1 -  3.8
+		(fseltype_t) (  8100000u >> BANDDIVPOWER), // 0 011  3.8 -  8.1
+		(fseltype_t) ( 10300000u >> BANDDIVPOWER), // 0 100  8.1 - 10.3
+		(fseltype_t) ( 16000000u >> BANDDIVPOWER), // 0 101 10.3 - 16.0
+		(fseltype_t) ( 18400000u >> BANDDIVPOWER), // 0 110 16.0 - 18.4
+		(fseltype_t) ( 21400000u >> BANDDIVPOWER), // 0 111 18.4 - 21.4
+		(fseltype_t) ( 29900000u >> BANDDIVPOWER), // 1 000 21.4 - 29.9
+		(fseltype_t) ( 45000000u >> BANDDIVPOWER),
+		(fseltype_t) (100000000u >> BANDDIVPOWER),
+		(fseltype_t) (250000000u >> BANDDIVPOWER),
 
 	};
-	#define BANDCALCS (sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif REQUEST_FOR_RN4NAB
 
@@ -97,16 +87,16 @@
 
 	static const fseltype_t board_bandfs [] =
 	{
-		(fseltype_t) (2500000UL >> BANDDIVPOWER),
-		(fseltype_t) (4000000UL >> BANDDIVPOWER),
-		(fseltype_t) (6000000UL >> BANDDIVPOWER),
-		(fseltype_t) (7300000UL >> BANDDIVPOWER),
-		(fseltype_t) (12000000UL >> BANDDIVPOWER),
-		(fseltype_t) (14500000UL >> BANDDIVPOWER),
-		(fseltype_t) (21500000UL >> BANDDIVPOWER),
-		(fseltype_t) (30000000UL >> BANDDIVPOWER),
+		(fseltype_t) (2500000u >> BANDDIVPOWER),
+		(fseltype_t) (4000000u >> BANDDIVPOWER),
+		(fseltype_t) (6000000u >> BANDDIVPOWER),
+		(fseltype_t) (7300000u >> BANDDIVPOWER),
+		(fseltype_t) (12000000u >> BANDDIVPOWER),
+		(fseltype_t) (14500000u >> BANDDIVPOWER),
+		(fseltype_t) (21500000u >> BANDDIVPOWER),
+		(fseltype_t) (30000000u >> BANDDIVPOWER),
 	};
-	#define BANDCALCS (sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif STYLE_TS850_V1
 
@@ -114,53 +104,20 @@
 
 	static const fseltype_t board_bandfs [] =
 	{
-		(fseltype_t) (500000UL >> BANDDIVPOWER),	
-		(fseltype_t) (1620000UL >> BANDDIVPOWER),
-		(fseltype_t) (2500000UL >> BANDDIVPOWER),
-		(fseltype_t) (4000000UL >> BANDDIVPOWER),
-		(fseltype_t) (7000000UL >> BANDDIVPOWER),
-		(fseltype_t) (7500000UL >> BANDDIVPOWER),
-		(fseltype_t) (10500000UL >> BANDDIVPOWER),
-		(fseltype_t) (14000000UL >> BANDDIVPOWER),
-		(fseltype_t) (14500000UL >> BANDDIVPOWER),
-		(fseltype_t) (21000000UL >> BANDDIVPOWER),
-		(fseltype_t) (22000000UL >> BANDDIVPOWER),
-		(fseltype_t) (30000000UL >> BANDDIVPOWER),
+		(fseltype_t) (500000u >> BANDDIVPOWER),
+		(fseltype_t) (1620000u >> BANDDIVPOWER),
+		(fseltype_t) (2500000u >> BANDDIVPOWER),
+		(fseltype_t) (4000000u >> BANDDIVPOWER),
+		(fseltype_t) (7000000u >> BANDDIVPOWER),
+		(fseltype_t) (7500000u >> BANDDIVPOWER),
+		(fseltype_t) (10500000u >> BANDDIVPOWER),
+		(fseltype_t) (14000000u >> BANDDIVPOWER),
+		(fseltype_t) (14500000u >> BANDDIVPOWER),
+		(fseltype_t) (21000000u >> BANDDIVPOWER),
+		(fseltype_t) (22000000u >> BANDDIVPOWER),
+		(fseltype_t) (30000000u >> BANDDIVPOWER),
 	};
-	#define BANDCALCS (sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
-
-#elif \
-	CTLSTYLE_RA4YBO || \
-	0
-
-	/* up-conversion RX */
-	/* for version 0...1.6, 1.6...56.0 MHz - 8 bands. */
-
-	#define BANDF_FREQMIN 1600000UL
-	#define BANDF_FREQ_SCALE 1661809UL
-	#define BANDF_FREQ_DENOM 1000000UL
-
-	#define BANDCALCS	12	//	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
-	#define BANDF_USE_BANDINIT 1	/* необходимость функции инициализации. */
-
-	static fseltype_t board_bandfs [BANDCALCS];
-
-#elif \
-	CTLSTYLE_RA4YBO_V1 || \
-	CTLSTYLE_RA4YBO_V2 || \
-	CTLSTYLE_RA4YBO_V3 || \
-	0
-
-	/* up-conversion RX */
-
-	#define BANDF_FREQMIN 1600000UL
-	#define BANDF_FREQ_SCALE 1661809UL
-	#define BANDF_FREQ_DENOM 1000000UL
-
-	#define BANDCALCS	13	//	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
-	#define BANDF_USE_BANDINIT 1	/* необходимость функции инициализации. */
-
-	static fseltype_t board_bandfs [BANDCALCS];
+	#define BANDCALCS ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	BANDSELSTYLERE_SW20XX || \
@@ -177,20 +134,20 @@
 
 	static const fseltype_t board_bandfs [] =
 	{
-		(fseltype_t) (1600000UL >> BANDDIVPOWER),
-		(fseltype_t) (2645751UL >> BANDDIVPOWER),
-		(fseltype_t) (5157518UL >> BANDDIVPOWER),
-		(fseltype_t) (8527602UL >> BANDDIVPOWER),
-		(fseltype_t) (11920570UL >> BANDDIVPOWER),
-		(fseltype_t) (16102043UL >> BANDDIVPOWER),
-		(fseltype_t) (19532741UL >> BANDDIVPOWER),
-		(fseltype_t) (23106070UL >> BANDDIVPOWER),
-		(fseltype_t) (26452221UL >> BANDDIVPOWER),
-		(fseltype_t) (45000000UL >> BANDDIVPOWER),
-		(fseltype_t) (100000000UL >> BANDDIVPOWER),
-		(fseltype_t) (250000000UL >> BANDDIVPOWER),
+		(fseltype_t) (1600000u >> BANDDIVPOWER),
+		(fseltype_t) (2645751u >> BANDDIVPOWER),
+		(fseltype_t) (5157518u >> BANDDIVPOWER),
+		(fseltype_t) (8527602u >> BANDDIVPOWER),
+		(fseltype_t) (11920570u >> BANDDIVPOWER),
+		(fseltype_t) (16102043u >> BANDDIVPOWER),
+		(fseltype_t) (19532741u >> BANDDIVPOWER),
+		(fseltype_t) (23106070u >> BANDDIVPOWER),
+		(fseltype_t) (26452221u >> BANDDIVPOWER),
+		(fseltype_t) (45000000u >> BANDDIVPOWER),
+		(fseltype_t) (100000000u >> BANDDIVPOWER),
+		(fseltype_t) (250000000u >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS	ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	BANDSELSTYLERE_LOCONV15M_NLB || \
@@ -203,34 +160,34 @@
 
 	static const fseltype_t board_bandfs [] =
 	{
-		(fseltype_t) (2645751UL >> BANDDIVPOWER),
-		(fseltype_t) (5157518UL >> BANDDIVPOWER),
-		(fseltype_t) (8527602UL >> BANDDIVPOWER),
-		(fseltype_t) (11920570UL >> BANDDIVPOWER),
-		(fseltype_t) (16102043UL >> BANDDIVPOWER),
-		(fseltype_t) (19532741UL >> BANDDIVPOWER),
-		(fseltype_t) (23106070UL >> BANDDIVPOWER),
-		(fseltype_t) (26452221UL >> BANDDIVPOWER),
-		(fseltype_t) (45000000UL >> BANDDIVPOWER),
-		(fseltype_t) (100000000UL >> BANDDIVPOWER),
-		(fseltype_t) (250000000UL >> BANDDIVPOWER),
+		(fseltype_t) (2645751u >> BANDDIVPOWER),
+		(fseltype_t) (5157518u >> BANDDIVPOWER),
+		(fseltype_t) (8527602u >> BANDDIVPOWER),
+		(fseltype_t) (11920570u >> BANDDIVPOWER),
+		(fseltype_t) (16102043u >> BANDDIVPOWER),
+		(fseltype_t) (19532741u >> BANDDIVPOWER),
+		(fseltype_t) (23106070u >> BANDDIVPOWER),
+		(fseltype_t) (26452221u >> BANDDIVPOWER),
+		(fseltype_t) (45000000u >> BANDDIVPOWER),
+		(fseltype_t) (100000000u >> BANDDIVPOWER),
+		(fseltype_t) (250000000u >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS	ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif CTLREGMODE_V3D
 
 	static const fseltype_t board_bandfs [] =
 	{
-		(fseltype_t) (2800000UL >> BANDDIVPOWER),
-		(fseltype_t) (3900000UL >> BANDDIVPOWER),
-		(fseltype_t) (7200000UL >> BANDDIVPOWER),
-		(fseltype_t) (10200000UL >> BANDDIVPOWER),
-		(fseltype_t) (14500000UL >> BANDDIVPOWER),
-		(fseltype_t) (18300000UL >> BANDDIVPOWER),
-		(fseltype_t) (21500000UL >> BANDDIVPOWER),
-		(fseltype_t) (29000000UL >> BANDDIVPOWER),
+		(fseltype_t) (2800000u >> BANDDIVPOWER),
+		(fseltype_t) (3900000u >> BANDDIVPOWER),
+		(fseltype_t) (7200000u >> BANDDIVPOWER),
+		(fseltype_t) (10200000u >> BANDDIVPOWER),
+		(fseltype_t) (14500000u >> BANDDIVPOWER),
+		(fseltype_t) (18300000u >> BANDDIVPOWER),
+		(fseltype_t) (21500000u >> BANDDIVPOWER),
+		(fseltype_t) (29000000u >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS	ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 
 #elif \
@@ -241,9 +198,9 @@
 
 	/* up-conversion RX */
 	/* for version 0...1.6, 1.6...56.0 MHz - 8 bands. */
-	#define BANDF_FREQMIN 1600000UL
-	#define BANDF_FREQ_SCALE 1661809UL
-	#define BANDF_FREQ_DENOM 1000000UL
+	#define BANDF_FREQMIN 1600000u
+	#define BANDF_FREQ_SCALE 1661809u
+	#define BANDF_FREQ_DENOM 1000000u
 	#define BANDF_FREQ_TOP NOXVRTUNE_TOP		/* после этой частоты переходим к трансвертору */
 
 	#define BANDCALCS	8	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
@@ -257,19 +214,19 @@
 
 	static const fseltype_t board_bandfs [] =
 	{
-		(fseltype_t) (  500000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 1600000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 2300000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 3300000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 5000000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 6700000uL >> BANDDIVPOWER),
-		(fseltype_t) (10700000uL >> BANDDIVPOWER),
-		(fseltype_t) (15500000uL >> BANDDIVPOWER),
-		(fseltype_t) (20300000uL >> BANDDIVPOWER),
-		(fseltype_t) (32000000uL >> BANDDIVPOWER),
-		(fseltype_t) (50000000uL >> BANDDIVPOWER),
+		(fseltype_t) (  500000u >> BANDDIVPOWER),
+		(fseltype_t) ( 1600000u >> BANDDIVPOWER),
+		(fseltype_t) ( 2300000u >> BANDDIVPOWER),
+		(fseltype_t) ( 3300000u >> BANDDIVPOWER),
+		(fseltype_t) ( 5000000u >> BANDDIVPOWER),
+		(fseltype_t) ( 6700000u >> BANDDIVPOWER),
+		(fseltype_t) (10700000u >> BANDDIVPOWER),
+		(fseltype_t) (15500000u >> BANDDIVPOWER),
+		(fseltype_t) (20300000u >> BANDDIVPOWER),
+		(fseltype_t) (32000000u >> BANDDIVPOWER),
+		(fseltype_t) (50000000u >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS	ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	BANDSELSTYLE_OLEG4Z_V2 || \
@@ -277,26 +234,26 @@
 
 	static const fseltype_t board_bandfs [] =
 	{
-		(fseltype_t) (  500000uL >> BANDDIVPOWER),	// #1 BPF_ON_2		500 kHz-1600 kHz
-		(fseltype_t) (  1600000uL >> BANDDIVPOWER),	// #2 BPF_ON_3		1,6 MHz-2,3 MHz
-		(fseltype_t) (  2300000uL >> BANDDIVPOWER),	// #3 BPF_ON_4		2,3 MHz-3,3 MHz
-		(fseltype_t) (  3300000uL >> BANDDIVPOWER),	// #4 BPF_ON_5		3,3 MHz-5 MHz
-		(fseltype_t) (  5000000uL >> BANDDIVPOWER),	// #5 BPF_ON_6		5 MHz-6,7 MHz
-		(fseltype_t) (  6700000uL >> BANDDIVPOWER),	// #6 BPF_ON_7		6,7 MHz-10,7 MHz
-		(fseltype_t) ( 10700000uL >> BANDDIVPOWER),	// #7 BPF_ON_8		10,7 MHz-15,5 MHz
-		(fseltype_t) ( 15500000uL >> BANDDIVPOWER),	// #8 BPF_ON_9		15,5 MHz-20,3 MHz
-		(fseltype_t) ( 20300000uL >> BANDDIVPOWER),	// #9 BPF_ON_10	20,3 MHz-32 MHz
-		(fseltype_t) ( 32000000uL >> BANDDIVPOWER),	// #10 BPF_ON_11	32 MHz-50 MHz
-		(fseltype_t) ( 50000000uL >> BANDDIVPOWER),	// #11 BPF_ON_12	50 MHz-120 MHz
-		(fseltype_t) (120000000uL >> BANDDIVPOWER),	// #12 BPF_ON_13	120 MHz-265 MHz
-		(fseltype_t) (260000000uL >> BANDDIVPOWER),	// #13 BPF_ON_14	260 MHz-390 MHz
-		(fseltype_t) (350000000uL >> BANDDIVPOWER),	// #14 0	350-520 MHz
-		(fseltype_t) (390000000uL >> BANDDIVPOWER),	// #15 1	520-700 MHz
-		(fseltype_t) (700000000uL >> BANDDIVPOWER),	// #16 2	700-900 MHz
-		(fseltype_t) (900000000uL >> BANDDIVPOWER),	// #17 3	900-1200 MHz
-		(fseltype_t) (1200000000uL >> BANDDIVPOWER),// #18 4	1200-1700 MHz
+		(fseltype_t) (  500000u >> BANDDIVPOWER),	// #1 BPF_ON_2		500 kHz-1600 kHz
+		(fseltype_t) (  1600000u >> BANDDIVPOWER),	// #2 BPF_ON_3		1,6 MHz-2,3 MHz
+		(fseltype_t) (  2300000u >> BANDDIVPOWER),	// #3 BPF_ON_4		2,3 MHz-3,3 MHz
+		(fseltype_t) (  3300000u >> BANDDIVPOWER),	// #4 BPF_ON_5		3,3 MHz-5 MHz
+		(fseltype_t) (  5000000u >> BANDDIVPOWER),	// #5 BPF_ON_6		5 MHz-6,7 MHz
+		(fseltype_t) (  6700000u >> BANDDIVPOWER),	// #6 BPF_ON_7		6,7 MHz-10,7 MHz
+		(fseltype_t) ( 10700000u >> BANDDIVPOWER),	// #7 BPF_ON_8		10,7 MHz-15,5 MHz
+		(fseltype_t) ( 15500000u >> BANDDIVPOWER),	// #8 BPF_ON_9		15,5 MHz-20,3 MHz
+		(fseltype_t) ( 20300000u >> BANDDIVPOWER),	// #9 BPF_ON_10	20,3 MHz-32 MHz
+		(fseltype_t) ( 32000000u >> BANDDIVPOWER),	// #10 BPF_ON_11	32 MHz-50 MHz
+		(fseltype_t) ( 50000000u >> BANDDIVPOWER),	// #11 BPF_ON_12	50 MHz-120 MHz
+		(fseltype_t) (120000000u >> BANDDIVPOWER),	// #12 BPF_ON_13	120 MHz-265 MHz
+		(fseltype_t) (260000000u >> BANDDIVPOWER),	// #13 BPF_ON_14	260 MHz-390 MHz
+		(fseltype_t) (350000000u >> BANDDIVPOWER),	// #14 0	350-520 MHz
+		(fseltype_t) (390000000u >> BANDDIVPOWER),	// #15 1	520-700 MHz
+		(fseltype_t) (700000000u >> BANDDIVPOWER),	// #16 2	700-900 MHz
+		(fseltype_t) (900000000u >> BANDDIVPOWER),	// #17 3	900-1200 MHz
+		(fseltype_t) (1200000000u >> BANDDIVPOWER),// #18 4	1200-1700 MHz
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS	ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	BANDSELSTYLE_LADVABEST || \
@@ -307,21 +264,21 @@
 	static const fseltype_t board_bandfs [] =
 	{
 		//(fseltype_t) (1600000 >> BANDDIVPOWER), // 2.645751 #0 1 выв.
-		(fseltype_t) (2645751 >> BANDDIVPOWER), // 5.157518 #1 2 выв.
-		(fseltype_t) (5157518 >> BANDDIVPOWER), // 8.527602 #2 3 выв.
-		(fseltype_t) (8527602 >> BANDDIVPOWER), // 11.920570 #3 4 выв.
-		(fseltype_t) (11920570 >> BANDDIVPOWER), // 16.102043 #4 5 выв.
-		(fseltype_t) (16102043 >> BANDDIVPOWER), // 19.532741 #5 6 выв.
-		(fseltype_t) (19532741 >> BANDDIVPOWER), // 23.106070 #6 7 выв.
-		(fseltype_t) (23106070 >> BANDDIVPOWER), // 26.452221 #7 8 выв.
-		(fseltype_t) (26452221 >> BANDDIVPOWER), // 27.980000 #8 9 выв.
-		(fseltype_t) (27980000 >> BANDDIVPOWER), // 28.690000 #9 10 выв.
-		(fseltype_t) (28690000 >> BANDDIVPOWER), // 35.000000 #10 11 выв.
-		(fseltype_t) (35000000 >> BANDDIVPOWER), // 48.000000 #11 13 выв.
-		(fseltype_t) (48000000 >> BANDDIVPOWER), // 100.000000 #12 14 выв.
-		(fseltype_t) (100000000 >> BANDDIVPOWER), // 250.000000 #13 15 выв.
+		(fseltype_t) (2645751u >> BANDDIVPOWER), // 5.157518 #1 2 выв.
+		(fseltype_t) (5157518u >> BANDDIVPOWER), // 8.527602 #2 3 выв.
+		(fseltype_t) (8527602u >> BANDDIVPOWER), // 11.920570 #3 4 выв.
+		(fseltype_t) (11920570u >> BANDDIVPOWER), // 16.102043 #4 5 выв.
+		(fseltype_t) (16102043u >> BANDDIVPOWER), // 19.532741 #5 6 выв.
+		(fseltype_t) (19532741u >> BANDDIVPOWER), // 23.106070 #6 7 выв.
+		(fseltype_t) (23106070u >> BANDDIVPOWER), // 26.452221 #7 8 выв.
+		(fseltype_t) (26452221u >> BANDDIVPOWER), // 27.980000 #8 9 выв.
+		(fseltype_t) (27980000u >> BANDDIVPOWER), // 28.690000 #9 10 выв.
+		(fseltype_t) (28690000u >> BANDDIVPOWER), // 35.000000 #10 11 выв.
+		(fseltype_t) (35000000u >> BANDDIVPOWER), // 48.000000 #11 13 выв.
+		(fseltype_t) (48000000u >> BANDDIVPOWER), // 100.000000 #12 14 выв.
+		(fseltype_t) (100000000u >> BANDDIVPOWER), // 250.000000 #13 15 выв.
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDCALCS	ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 	#define TUNE_BOTTOM 1600000L			/* нижняя частота настройки */
 
@@ -338,10 +295,6 @@
 		FQMODEL_FMRADIO || \
 		0
 	// В этих аппаратах не требовалось выбирать диапазонные фильтры
-#elif \
-	BANDSELSTYLERE_RA4YBO_AM0 || \
-	0
-	// Вычисления производятся в bandf_calc
 #else
 	#error No band selection hardware supported
 #endif
@@ -372,21 +325,6 @@ void bandf_calc_initialize(void)
 		board_bandfs [BANDCALCS - 1] = (fseltype_t) (BANDF_FREQ_TOP >> BANDDIVPOWER);
 	#endif /* BANDF_FREQ_TOP */
 
-	#if CTLSTYLE_RA4YBO
-			board_bandfs [7] = (fseltype_t) (56000000UL >> BANDDIVPOWER);
-			board_bandfs [8] = (fseltype_t) (80000000UL >> BANDDIVPOWER);
-			board_bandfs [9] = (fseltype_t) (100000000UL >> BANDDIVPOWER);
-			board_bandfs [10] = (fseltype_t) (120000000UL >> BANDDIVPOWER);
-			board_bandfs [11] = (fseltype_t) (140000000UL >> BANDDIVPOWER);
-	#endif /* CTLSTYLE_RA4YBO */
-	#if CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2
-			board_bandfs [7] = (fseltype_t) (60000000UL >> BANDDIVPOWER);
-			board_bandfs [8] = (fseltype_t) (90000000UL >> BANDDIVPOWER);
-			board_bandfs [9] = (fseltype_t) (111000000UL >> BANDDIVPOWER);
-			board_bandfs [10] = (fseltype_t) (120000000UL >> BANDDIVPOWER);
-			board_bandfs [11] = (fseltype_t) (140000000UL >> BANDDIVPOWER);
-			board_bandfs [12] = (fseltype_t) (160000000UL >> BANDDIVPOWER);
-	#endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 */
 #endif /* BANDF_USE_BANDINIT */
 
 	if (0)
@@ -412,14 +350,14 @@ void bandf_calc_initialize(void)
 
 	static const fseltype_t board_band2fs [] =
 	{
-		(fseltype_t) ( 2400000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 3900000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 7400000uL >> BANDDIVPOWER),
-		(fseltype_t) (14800000uL >> BANDDIVPOWER),
-		(fseltype_t) (22000000uL >> BANDDIVPOWER),
-		(fseltype_t) (30000000uL >> BANDDIVPOWER),
+		(fseltype_t) ( 2400000u >> BANDDIVPOWER),
+		(fseltype_t) ( 3900000u >> BANDDIVPOWER),
+		(fseltype_t) ( 7400000u >> BANDDIVPOWER),
+		(fseltype_t) (14800000u >> BANDDIVPOWER),
+		(fseltype_t) (22000000u >> BANDDIVPOWER),
+		(fseltype_t) (30000000u >> BANDDIVPOWER),
 	};
-	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BAND2CALCS	ARRAY_SIZE(board_band2fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	CTLREGSTYLE_SW2013SF_V2 || \
@@ -428,11 +366,11 @@ void bandf_calc_initialize(void)
 
 	static const fseltype_t board_band2fs [] =
 	{
-		(fseltype_t) (3000000uL >> BANDDIVPOWER),
-		(fseltype_t) (5000000uL >> BANDDIVPOWER),
-		(fseltype_t) (9000000uL >> BANDDIVPOWER),
+		(fseltype_t) (3000000u >> BANDDIVPOWER),
+		(fseltype_t) (5000000u >> BANDDIVPOWER),
+		(fseltype_t) (9000000u >> BANDDIVPOWER),
 	};
-	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BAND2CALCS	ARRAY_SIZE(board_band2fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	WITH_R1YQ_2XRD70_POWERAMP || \
@@ -443,14 +381,14 @@ void bandf_calc_initialize(void)
 
 	static const fseltype_t board_band2fs [] =
 	{
-		(fseltype_t) ( 2400000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 3900000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 7400000uL >> BANDDIVPOWER),
-		(fseltype_t) (12800000uL >> BANDDIVPOWER),
-		(fseltype_t) (20000000uL >> BANDDIVPOWER),
-		(fseltype_t) (30000000uL >> BANDDIVPOWER),
+		(fseltype_t) ( 2400000u >> BANDDIVPOWER),
+		(fseltype_t) ( 3900000u >> BANDDIVPOWER),
+		(fseltype_t) ( 7400000u >> BANDDIVPOWER),
+		(fseltype_t) (12800000u >> BANDDIVPOWER),
+		(fseltype_t) (20000000u >> BANDDIVPOWER),
+		(fseltype_t) (30000000u >> BANDDIVPOWER),
 	};
-	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BAND2CALCS	ARRAY_SIZE(board_band2fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	WITHAUTOTUNER_AVBELNN || \
@@ -462,29 +400,50 @@ void bandf_calc_initialize(void)
 
 	static const fseltype_t board_band2fs [] =
 	{
-		(fseltype_t) ( 2400000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 3900000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 7400000uL >> BANDDIVPOWER),
-		(fseltype_t) (14800000uL >> BANDDIVPOWER),
-		(fseltype_t) (22000000uL >> BANDDIVPOWER),
-		(fseltype_t) (30000000uL >> BANDDIVPOWER),
+		(fseltype_t) ( 2400000u >> BANDDIVPOWER),
+		(fseltype_t) ( 3900000u >> BANDDIVPOWER),
+		(fseltype_t) ( 7400000u >> BANDDIVPOWER),
+		(fseltype_t) (14800000u >> BANDDIVPOWER),
+		(fseltype_t) (22000000u >> BANDDIVPOWER),
+		(fseltype_t) (30000000u >> BANDDIVPOWER),
 	};
-	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BAND2CALCS	ARRAY_SIZE(board_band2fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	WITHAUTOTUNER_UA1CEI_V2 || \
 	0
+	//	 2.000
+	//	 3.850
+	//	 7.200
+	//	14.500
+	//	21.500
+	//	30.000
 
 	static const fseltype_t board_band2fs [] =
 	{
-		(fseltype_t) ( 2000000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 3850000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 7200000uL >> BANDDIVPOWER),
-		(fseltype_t) (14500000uL >> BANDDIVPOWER),
-		(fseltype_t) (21500000uL >> BANDDIVPOWER),
-		(fseltype_t) (30000000uL >> BANDDIVPOWER),
+		(fseltype_t) ( 2000000u >> BANDDIVPOWER),
+		(fseltype_t) ( 3850000u >> BANDDIVPOWER),
+		(fseltype_t) ( 7200000u >> BANDDIVPOWER),
+		(fseltype_t) (14500000u >> BANDDIVPOWER),
+		(fseltype_t) (21500000u >> BANDDIVPOWER),
+		(fseltype_t) (30000000u >> BANDDIVPOWER),
 	};
-	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BAND2CALCS	ARRAY_SIZE(board_band2fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+
+#elif \
+		WITH_PALPF_ICM710 || \
+		0
+
+	static const fseltype_t board_band2fs [] =
+	{
+		(fseltype_t) ( 2000000u >> BANDDIVPOWER),
+		(fseltype_t) ( 3000000u >> BANDDIVPOWER),
+		(fseltype_t) ( 5000000u >> BANDDIVPOWER),
+		(fseltype_t) ( 7000000u >> BANDDIVPOWER),
+		(fseltype_t) (14000000u >> BANDDIVPOWER),
+		(fseltype_t) (20000000u >> BANDDIVPOWER),
+	};
+	#define BAND2CALCS	ARRAY_SIZE(board_band2fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	CTLREGMODE_STORCH_V1 || \
@@ -499,14 +458,14 @@ void bandf_calc_initialize(void)
 
 	static const fseltype_t board_band2fs [] =
 	{
-		(fseltype_t) ( 2400000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 3900000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 7400000uL >> BANDDIVPOWER),
-		(fseltype_t) (14800000uL >> BANDDIVPOWER),
-		(fseltype_t) (22000000uL >> BANDDIVPOWER),
-		(fseltype_t) (30000000uL >> BANDDIVPOWER),
+		(fseltype_t) ( 2400000u >> BANDDIVPOWER),
+		(fseltype_t) ( 3900000u >> BANDDIVPOWER),
+		(fseltype_t) ( 7400000u >> BANDDIVPOWER),
+		(fseltype_t) (14800000u >> BANDDIVPOWER),
+		(fseltype_t) (22000000u >> BANDDIVPOWER),
+		(fseltype_t) (30000000u >> BANDDIVPOWER),
 	};
-	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BAND2CALCS	ARRAY_SIZE(board_band2fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	CTLREGMODE_RAVENDSP_V1 || /* Трансивер Вороненок с IF DSP трактом */ \
@@ -524,14 +483,14 @@ void bandf_calc_initialize(void)
 
 	static const fseltype_t board_band2fs [] =
 	{
-		(fseltype_t) ( 3000000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 5000000uL >> BANDDIVPOWER),
-		(fseltype_t) ( 9000000uL >> BANDDIVPOWER),
-		(fseltype_t) (16000000uL >> BANDDIVPOWER),
-		(fseltype_t) (22000000uL >> BANDDIVPOWER),
-		(fseltype_t) (35000000uL >> BANDDIVPOWER),
+		(fseltype_t) ( 3000000u >> BANDDIVPOWER),
+		(fseltype_t) ( 5000000u >> BANDDIVPOWER),
+		(fseltype_t) ( 9000000u >> BANDDIVPOWER),
+		(fseltype_t) (16000000u >> BANDDIVPOWER),
+		(fseltype_t) (22000000u >> BANDDIVPOWER),
+		(fseltype_t) (35000000u >> BANDDIVPOWER),
 	};
-	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BAND2CALCS	ARRAY_SIZE(board_band2fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #endif
 
@@ -542,19 +501,19 @@ void bandf_calc_initialize(void)
 	/* FT-891 style */
 	static const fseltype_t board_band3fs [] =
 	{
-		(fseltype_t) (  1700000UL >> BANDDIVPOWER),
-		(fseltype_t) (  2500000UL >> BANDDIVPOWER),
-		(fseltype_t) (  4100000UL >> BANDDIVPOWER),
-		(fseltype_t) (  7500000UL >> BANDDIVPOWER),
-		(fseltype_t) ( 11500000UL >> BANDDIVPOWER),
-		(fseltype_t) ( 14500000UL >> BANDDIVPOWER),
-		(fseltype_t) ( 20900000UL >> BANDDIVPOWER),
-		(fseltype_t) ( 21500000UL >> BANDDIVPOWER),
-		(fseltype_t) ( 25500000UL >> BANDDIVPOWER),
-		(fseltype_t) ( 29900000UL >> BANDDIVPOWER),	// was: 41.5
-		(fseltype_t) ( 56000000UL >> BANDDIVPOWER),
+		(fseltype_t) (  1700000u >> BANDDIVPOWER),
+		(fseltype_t) (  2500000u >> BANDDIVPOWER),
+		(fseltype_t) (  4100000u >> BANDDIVPOWER),
+		(fseltype_t) (  7500000u >> BANDDIVPOWER),
+		(fseltype_t) ( 11500000u >> BANDDIVPOWER),
+		(fseltype_t) ( 14500000u >> BANDDIVPOWER),
+		(fseltype_t) ( 20900000u >> BANDDIVPOWER),
+		(fseltype_t) ( 21500000u >> BANDDIVPOWER),
+		(fseltype_t) ( 25500000u >> BANDDIVPOWER),
+		(fseltype_t) ( 29900000u >> BANDDIVPOWER),	// was: 41.5
+		(fseltype_t) ( 56000000u >> BANDDIVPOWER),
 	};
-	#define BAND3CALCS	(sizeof board_band3fs / sizeof board_band3fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BAND3CALCS	ARRAY_SIZE(board_band3fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 #else
 
 #endif

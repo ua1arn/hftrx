@@ -17,8 +17,7 @@ extern "C" {
 #define XDEBUG_WARNING
 #warning DEBUG is enabled
 #endif
-
-int printf(const char *format, ...);
+#include "formats.h"
 
 #define XDBG_DEBUG_ERROR             0x00000001U    /* error  condition messages */
 #define XDBG_DEBUG_GENERAL           0x00000002U    /* general debug  messages */
@@ -48,10 +47,14 @@ int printf(const char *format, ...);
 /* In VxWorks, if _WRS_GNU_VAR_MACROS is defined, special syntax is needed for
  * macros that accept variable number of arguments
  */
+#define xil_printf	debug_printf_P
+
+
 #if defined(XENV_VXWORKS) && defined(_WRS_GNU_VAR_MACROS)
-#define xdbg_printf(type, args...) (((type) & xdbg_current_types) ? printf (## args) : 0)
+#define xdbg_printf(type, args...) (((type) & xdbg_current_types) ? debug_printf_P (## args) : 0)
 #else /* ANSI Syntax */
-#define xdbg_printf(type, ...) (((type) & xdbg_current_types) ? printf (__VA_ARGS__) : 0)
+
+#define xdbg_printf(type, ...) (((type) & xdbg_current_types) ? debug_printf_P (__VA_ARGS__) : 0)
 #endif
 
 #else /* defined(DEBUG) && !defined(NDEBUG) */

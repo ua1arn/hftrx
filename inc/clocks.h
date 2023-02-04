@@ -9,126 +9,127 @@
 #ifndef INC_CLOCKS_H_
 #define INC_CLOCKS_H_
 
-unsigned long stm32f4xx_get_hse_freq(void);
-unsigned long stm32f4xx_get_hsi_freq(void);
-unsigned long stm32f4xx_get_pllreference_freq(void);
-unsigned long stm32f4xx_get_pll_freq(void);
-unsigned long stm32f4xx_get_pll_p_freq(void);
-unsigned long stm32f4xx_get_pll_q_freq(void);
-unsigned long stm32f4xx_get_plli2s_freq(void);
-unsigned long stm32f4xx_get_plli2s_q_freq(void);
-unsigned long stm32f4xx_get_plli2s_r_freq(void);
-unsigned long stm32f4xx_get_pllsai_freq(void);
-unsigned long stm32f4xx_get_pllsai_q_freq(void);
-unsigned long stm32f4xx_get_pllsai_r_freq(void);
-unsigned long stm32f4xx_get_sysclk_freq(void);
-unsigned long stm32f4xx_get_ahb_freq(void);
-unsigned long stm32f4xx_get_hclk_freq(void);
-unsigned long stm32f4xx_get_apb2_freq(void);
-unsigned long stm32f4xx_get_apb1_freq(void);
-unsigned long stm32f4xx_get_apb2timer_freq(void);
-unsigned long stm32f4xx_get_apb1timer_freq(void);
-unsigned long stm32f4xx_get_spi1_freq(void);
-unsigned long stm32f4xx_get_tim3_freq(void);
+uint_fast32_t stm32f4xx_get_hse_freq(void);
+uint_fast32_t stm32f4xx_get_hsi_freq(void);
+uint_fast32_t stm32f4xx_get_pllreference_freq(void);
+uint_fast32_t stm32f4xx_get_pll_freq(void);
+uint_fast32_t stm32f4xx_get_pll_p_freq(void);
+uint_fast32_t stm32f4xx_get_pll_q_freq(void);
+uint_fast32_t stm32f4xx_get_plli2s_freq(void);
+uint_fast32_t stm32f4xx_get_plli2s_q_freq(void);
+uint_fast32_t stm32f4xx_get_plli2s_r_freq(void);
+uint_fast32_t stm32f4xx_get_pllsai_freq(void);
+uint_fast32_t stm32f4xx_get_pllsai_q_freq(void);
+uint_fast32_t stm32f4xx_get_pllsai_r_freq(void);
+uint_fast32_t stm32f4xx_get_sysclk_freq(void);
+uint_fast32_t stm32f4xx_get_ahb_freq(void);
+uint_fast32_t stm32f4xx_get_hclk_freq(void);
+uint_fast32_t stm32f4xx_get_apb2_freq(void);
+uint_fast32_t stm32f4xx_get_apb1_freq(void);
+uint_fast32_t stm32f4xx_get_apb2timer_freq(void);
+uint_fast32_t stm32f4xx_get_apb1timer_freq(void);
+uint_fast32_t stm32f4xx_get_spi1_freq(void);
+uint_fast32_t stm32f4xx_get_tim3_freq(void);
 
-unsigned long stm32f7xx_get_hse_freq(void);
-unsigned long stm32f7xx_get_pll_freq(void);
-unsigned long stm32f7xx_get_pllsai_freq(void);
-unsigned long stm32f7xx_get_plli2s_freq(void);
-unsigned long stm32f7xx_get_pll_p_freq(void);
-unsigned long stm32f7xx_get_sys_freq(void);
-unsigned long stm32f7xx_get_ahb_freq(void);
-unsigned long stm32f7xx_get_pclk1_freq(void);
-unsigned long stm32f7xx_get_pclk2_freq(void);
-unsigned long stm32f7xx_get_usart1_freq(void);
-unsigned long stm32f7xx_get_usart2_freq(void);
-unsigned long stm32f7xx_get_usart3_freq(void);
-unsigned long stm32f7xx_get_uart4_freq(void);
-unsigned long stm32f7xx_get_uart5_freq(void);
-unsigned long stm32f7xx_get_usart6_freq(void);
-unsigned long stm32f7xx_get_uart7_freq(void);
-unsigned long stm32f7xx_get_uart8_freq(void);
+uint_fast32_t stm32f7xx_get_hse_freq(void);
+uint_fast32_t stm32f7xx_get_pll_freq(void);
+uint_fast32_t stm32f7xx_get_pllsai_freq(void);
+uint_fast32_t stm32f7xx_get_plli2s_freq(void);
+uint_fast32_t stm32f7xx_get_pll_p_freq(void);
+uint_fast32_t stm32f7xx_get_sys_freq(void);
+uint_fast32_t stm32f7xx_get_ahb_freq(void);
+uint_fast32_t stm32f7xx_get_pclk1_freq(void);
+uint_fast32_t stm32f7xx_get_pclk2_freq(void);
+uint_fast32_t stm32f7xx_get_usart1_freq(void);
+uint_fast32_t stm32f7xx_get_usart2_freq(void);
+uint_fast32_t stm32f7xx_get_usart3_freq(void);
+uint_fast32_t stm32f7xx_get_uart4_freq(void);
+uint_fast32_t stm32f7xx_get_uart5_freq(void);
+uint_fast32_t stm32f7xx_get_usart6_freq(void);
+uint_fast32_t stm32f7xx_get_uart7_freq(void);
+uint_fast32_t stm32f7xx_get_uart8_freq(void);
+uint_fast32_t stm32f7xx_get_apb1_freq(void);
 
-unsigned long stm32h7xx_get_hse_freq(void);
-unsigned long stm32h7xx_get_pll1_freq(void);
-unsigned long stm32h7xx_get_pll1_p_freq(void);
-unsigned long stm32h7xx_get_pll1_q_freq(void);
-unsigned long stm32h7xx_get_pll2_freq(void);
-unsigned long stm32h7xx_get_pll2_p_freq(void);
-unsigned long stm32h7xx_get_pll2_q_freq(void);
-unsigned long stm32h7xx_get_pll3_freq(void);
-unsigned long stm32h7xx_get_pll3_p_freq(void);
-unsigned long stm32h7xx_get_pll3_q_freq(void);
-unsigned long stm32h7xx_get_pll3_r_freq(void);
-unsigned long stm32h7xx_get_sys_freq(void);
-unsigned long stm32h7xx_get_stm32h7xx_get_d1cpre_freq(void);
-unsigned long stm32h7xx_get_hclk3_freq(void);
-unsigned long stm32h7xx_get_aclk_freq(void);
-unsigned long stm32h7xx_get_hclk1_freq(void);
-unsigned long stm32h7xx_get_hclk2_freq(void);
-unsigned long stm32h7xx_get_apb1_freq(void);
-unsigned long stm32h7xx_get_apb2_freq(void);
-unsigned long stm32h7xx_get_timx_freq(void);
-unsigned long stm32h7xx_get_pclk1_freq(void);
-unsigned long stm32h7xx_get_timy_freq(void);
-unsigned long stm32h7xx_get_pclk2_freq(void);
-unsigned long stm32h7xx_get_per_freq(void);
-unsigned long stm32h7xx_get_pclk3_freq(void);
-unsigned long stm32h7xx_get_usart1_6_freq(void);
-unsigned long stm32h7xx_get_usart2_to_8_freq(void);
-unsigned long stm32h7xx_get_spi1_2_3_freq(void);
-unsigned long stm32h7xx_get_spi4_5_freq(void);
-unsigned long stm32h7xx_get_adc_freq(void);
+uint_fast32_t stm32h7xx_get_hse_freq(void);
+uint_fast32_t stm32h7xx_get_pll1_freq(void);
+uint_fast32_t stm32h7xx_get_pll1_p_freq(void);
+uint_fast32_t stm32h7xx_get_pll1_q_freq(void);
+uint_fast32_t stm32h7xx_get_pll2_freq(void);
+uint_fast32_t stm32h7xx_get_pll2_p_freq(void);
+uint_fast32_t stm32h7xx_get_pll2_q_freq(void);
+uint_fast32_t stm32h7xx_get_pll3_freq(void);
+uint_fast32_t stm32h7xx_get_pll3_p_freq(void);
+uint_fast32_t stm32h7xx_get_pll3_q_freq(void);
+uint_fast32_t stm32h7xx_get_pll3_r_freq(void);
+uint_fast32_t stm32h7xx_get_sys_freq(void);
+uint_fast32_t stm32h7xx_get_stm32h7xx_get_d1cpre_freq(void);
+uint_fast32_t stm32h7xx_get_hclk3_freq(void);
+uint_fast32_t stm32h7xx_get_aclk_freq(void);
+uint_fast32_t stm32h7xx_get_hclk1_freq(void);
+uint_fast32_t stm32h7xx_get_hclk2_freq(void);
+uint_fast32_t stm32h7xx_get_apb1_freq(void);
+uint_fast32_t stm32h7xx_get_apb2_freq(void);
+uint_fast32_t stm32h7xx_get_timx_freq(void);
+uint_fast32_t stm32h7xx_get_pclk1_freq(void);
+uint_fast32_t stm32h7xx_get_timy_freq(void);
+uint_fast32_t stm32h7xx_get_pclk2_freq(void);
+uint_fast32_t stm32h7xx_get_per_freq(void);
+uint_fast32_t stm32h7xx_get_pclk3_freq(void);
+uint_fast32_t stm32h7xx_get_usart1_6_freq(void);
+uint_fast32_t stm32h7xx_get_usart2_to_8_freq(void);
+uint_fast32_t stm32h7xx_get_spi1_2_3_freq(void);
+uint_fast32_t stm32h7xx_get_spi4_5_freq(void);
+uint_fast32_t stm32h7xx_get_adc_freq(void);
 uint_fast32_t stm32f7xx_pllq_initialize(void); // Настроить выход PLLQ на 48 МГц
 
 void stm32mp1_pll_initialize(void);
 void stm32mp1_usb_clocks_initialize(void);
 void stm32mp1_audio_clocks_initialize(void);
-unsigned long stm32mp1_get_hse_freq(void);
-unsigned long stm32mp1_get_hsi_freq(void);
-unsigned long stm32mp1_get_pll1_2_ref_freq(void);
-unsigned long stm32mp1_get_pll3_ref_freq(void);
-unsigned long stm32mp1_get_pll4_ref_freq(void);
-unsigned long stm32mp1_get_pll1_freq(void);
-unsigned long stm32mp1_get_pll1_p_freq(void);
-unsigned long stm32mp1_get_mpuss_freq(void);
-unsigned long stm32mp1_get_pll2_freq(void);
-unsigned long stm32mp1_get_pll2_p_freq(void);
-unsigned long stm32mp1_get_pll2_r_freq(void);
-unsigned long stm32mp1_get_pll3_freq(void);
-unsigned long stm32mp1_get_pll3_p_freq(void);
-unsigned long stm32mp1_get_pll3_q_freq(void);
-unsigned long stm32mp1_get_pll3_r_freq(void);
-unsigned long stm32mp1_get_pll4_freq(void);
-unsigned long stm32mp1_get_pll4_q_freq(void);
-unsigned long stm32mp1_get_pll4_p_freq(void);
-unsigned long stm32mp1_get_pll4_r_freq(void);
-unsigned long stm32mp1_get_eth_freq(void);
-unsigned long stm32mp1_get_ethptp_freq(void);
-unsigned long stm32mp1_get_axiss_freq(void);
-unsigned long stm32mp1_get_per_freq(void);
-unsigned long stm32mp1_get_mcuss_freq(void);
-unsigned long stm32mp1_get_aclk_freq(void);
-unsigned long stm32mp1_get_hclk5_freq(void);
-unsigned long stm32mp1_get_hclk6_freq(void);
-unsigned long stm32mp1_get_mlhclk_freq(void);
-unsigned long stm32mp1_get_pclk1_freq(void);
-unsigned long stm32mp1_get_pclk2_freq(void);
-unsigned long stm32mp1_get_pclk3_freq(void);
-unsigned long stm32mp1_get_pclk4_freq(void);
-unsigned long stm32mp1_get_pclk5_freq(void);
-unsigned long stm32mp1_get_usbphy_freq(void);
-unsigned long stm32mp1_get_usbotg_freq(void);
-unsigned long stm32mp1_uart1_get_freq(void);
-unsigned long stm32mp1_uart2_4_get_freq(void);
-unsigned long stm32mp1_uart3_5_get_freq(void);
-unsigned long stm32mp1_uart7_8_get_freq(void);
-unsigned long stm32mp1_sdmmc1_2_get_freq(void);
-unsigned long stm32mp1_get_timg1_freq(void);
-unsigned long stm32mp1_get_timg2_freq(void);
-unsigned long stm32mp1_get_spi1_freq(void);
-unsigned long stm32mp1_get_adc_freq(void);
-unsigned long stm32mp1_get_qspi_freq(void);
+uint_fast32_t stm32mp1_get_hse_freq(void);
+uint_fast32_t stm32mp1_get_hsi_freq(void);
+uint_fast32_t stm32mp1_get_pll1_2_ref_freq(void);
+uint_fast32_t stm32mp1_get_pll3_ref_freq(void);
+uint_fast32_t stm32mp1_get_pll4_ref_freq(void);
+uint_fast32_t stm32mp1_get_pll1_freq(void);
+uint_fast32_t stm32mp1_get_pll1_p_freq(void);
+uint_fast32_t stm32mp1_get_mpuss_freq(void);
+uint_fast32_t stm32mp1_get_pll2_freq(void);
+uint_fast32_t stm32mp1_get_pll2_p_freq(void);
+uint_fast32_t stm32mp1_get_pll2_r_freq(void);
+uint_fast32_t stm32mp1_get_pll3_freq(void);
+uint_fast32_t stm32mp1_get_pll3_p_freq(void);
+uint_fast32_t stm32mp1_get_pll3_q_freq(void);
+uint_fast32_t stm32mp1_get_pll3_r_freq(void);
+uint_fast32_t stm32mp1_get_pll4_freq(void);
+uint_fast32_t stm32mp1_get_pll4_q_freq(void);
+uint_fast32_t stm32mp1_get_pll4_p_freq(void);
+uint_fast32_t stm32mp1_get_pll4_r_freq(void);
+uint_fast32_t stm32mp1_get_eth_freq(void);
+uint_fast32_t stm32mp1_get_ethptp_freq(void);
+uint_fast32_t stm32mp1_get_axiss_freq(void);
+uint_fast32_t stm32mp1_get_per_freq(void);
+uint_fast32_t stm32mp1_get_mcuss_freq(void);
+uint_fast32_t stm32mp1_get_aclk_freq(void);
+uint_fast32_t stm32mp1_get_hclk5_freq(void);
+uint_fast32_t stm32mp1_get_hclk6_freq(void);
+uint_fast32_t stm32mp1_get_mlhclk_freq(void);
+uint_fast32_t stm32mp1_get_pclk1_freq(void);
+uint_fast32_t stm32mp1_get_pclk2_freq(void);
+uint_fast32_t stm32mp1_get_pclk3_freq(void);
+uint_fast32_t stm32mp1_get_pclk4_freq(void);
+uint_fast32_t stm32mp1_get_pclk5_freq(void);
+uint_fast32_t stm32mp1_get_usbphy_freq(void);
+uint_fast32_t stm32mp1_get_usbotg_freq(void);
+uint_fast32_t stm32mp1_uart1_get_freq(void);
+uint_fast32_t stm32mp1_uart2_4_get_freq(void);
+uint_fast32_t stm32mp1_uart3_5_get_freq(void);
+uint_fast32_t stm32mp1_uart7_8_get_freq(void);
+uint_fast32_t stm32mp1_sdmmc1_2_get_freq(void);
+uint_fast32_t stm32mp1_get_timg1_freq(void);
+uint_fast32_t stm32mp1_get_timg2_freq(void);
+uint_fast32_t stm32mp1_get_spi1_freq(void);
+uint_fast32_t stm32mp1_get_adc_freq(void);
+uint_fast32_t stm32mp1_get_qspi_freq(void);
 
 //unsigned long xc7z_get_pllsreference_freq(void);
 //uint_fast64_t xc7z_get_arm_pll_freq(void);
@@ -150,31 +151,39 @@ unsigned long hardware_get_apb2_freq(void);
 unsigned long hardware_get_apb2_tim_freq(void);
 
 // Allwinner t113-s3
-unsigned long allwnrt113_get_usart_freq(void);
-unsigned long allwnrt113_get_spi0_freq(void);
-unsigned long allwnrt113_get_spi1_freq(void);
-unsigned long allwnrt113_get_arm_freq(void);
-unsigned long allwnrt113_get_pl1_timer_freq(void);
-unsigned long allwnrt113_get_video0_x4_freq(void);
-unsigned long allwnrt113_get_video0_x2_freq(void);
-unsigned long allwnrt113_get_video0_x1_freq(void);
-unsigned long allwnrt113_get_video1_x4_freq(void);
-unsigned long allwnrt113_get_video1_x2_freq(void);
-unsigned long allwnrt113_get_video1_x1_freq(void);
-unsigned long allwnrt113_get_ve_freq(void);
-unsigned long allwnrt113_get_audio0pll4x_freq(void);
-unsigned long allwnrt113_get_audio0pll1x_freq(void);
-unsigned long allwnrt113_get_audio1pll1x_freq(void);
-unsigned long allwnrt113_get_audio1pll_div2_freq(void);
-unsigned long allwnrt113_get_audio1pll_div5_freq(void);
+uint_fast32_t allwnrt113_get_hosc_freq(void);
+uint_fast32_t allwnrt113_get_usart_freq(void);
+uint_fast32_t allwnrt113_get_spi0_freq(void);
+uint_fast32_t allwnrt113_get_spi1_freq(void);
+uint_fast32_t allwnrt113_get_arm_freq(void);
+uint_fast32_t allwnrf133_get_riscv_freq(void);
+uint_fast32_t allwnrt113_get_pl1_timer_freq(void);
+uint_fast32_t allwnrt113_get_video0pllx4_freq(void);
+uint_fast32_t allwnrt113_get_video0_x2_freq(void);
+uint_fast32_t allwnrt113_get_video0_x1_freq(void);
+uint_fast32_t allwnrt113_get_video1pllx4_freq(void);
+uint_fast32_t allwnrt113_get_video1_x2_freq(void);
+uint_fast32_t allwnrt113_get_video1_x1_freq(void);
+uint_fast32_t allwnrt113_get_vepll_freq(void);
+uint_fast32_t allwnrt113_get_audio0pll4x_freq(void);
+uint_fast32_t allwnrt113_get_audio0pll1x_freq(void);
+uint_fast32_t allwnrt113_get_audio1pll1x_freq(void);
+uint_fast32_t allwnrt113_get_audio1pll_div2_freq(void);
+uint_fast32_t allwnrt113_get_audio1pll_div5_freq(void);
 uint_fast64_t allwnrt113_get_pll_cpu_freq(void);
-unsigned long allwnrt113_get_pll_ddr_freq(void);
-unsigned long allwnrt113_get_dram_freq(void);
+uint_fast64_t allwnrt113_get_pll_ddr_freq(void);
+uint_fast32_t allwnrt113_get_dram_freq(void);
 uint_fast64_t allwnrt113_get_pll_peri_freq(void);
-unsigned long allwnrt113_get_peripll2x_freq(void);
-unsigned long allwnrt113_get_pll_peri_800M_freq(void);
-unsigned long allwnrt113_get_i2s1_freq(void);
-unsigned long allwnrt113_get_i2s2_freq(void);
+uint_fast32_t allwnrt113_get_peripll2x_freq(void);
+uint_fast32_t allwnrt113_get_pll_peri_800M_freq(void);
+uint_fast32_t allwnrt113_get_i2s1_freq(void);
+uint_fast32_t allwnrt113_get_i2s2_freq(void);
+uint_fast32_t allwnrt113_get_g2d_freq(void);
+uint_fast32_t allwnrt113_get_de_freq(void);
+uint_fast32_t allwnrt113_get_di_freq(void);
+uint_fast32_t allwnrt113_get_ce_freq(void);
+uint_fast32_t allwnrt113_get_ve_freq(void);
+uint_fast32_t allwnrt113_get_dsp_freq(void);
 
 /* PLL initialization functions. Take care on glitches. */
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n);
@@ -188,6 +197,7 @@ void allwnrt113_set_pll_audio1(unsigned m, unsigned n);
 
 void allwnrt113_pll_initialize(void);
 void set_pll_cpux_axi(unsigned n);
+void set_pll_riscv_axi(unsigned n);
 
 uint_fast8_t
 calcdivider(
@@ -354,31 +364,10 @@ calcdivider(
 		R7S721_RSPI_SPBR_WIDTH = 8,		R7S721_RSPI_SPBR_TAPS = (16 | 8 | 4 | 2),
 	};
 
-	// scemr:
-	// b0=1: 1: Base clock frequency is 8 times the bit rate,
-	// b0=0: 0: Base clock frequency is 16 times the bit rate
-	// scmsr:
-	// b1..b0: 0: /1, 1: /4, 2: /16, 3: /64
-	enum
-	{
-		SCEMR_x16 = 0x00,	// ABCS=0
-		SCEMR_x8 = 0x01,	// ABCS=1
-		SCSMR_DIV1 = 0x00,
-		SCSMR_DIV4 = 0x01,
-		SCSMR_DIV16 = 0x02,
-		SCSMR_DIV64 = 0x03,
-	};
-	static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_scsmr [] =
-	{
-		{ SCEMR_x8, 	SCSMR_DIV1, },		/* /8 = 8 * 1 */
-		{ SCEMR_x16, 	SCSMR_DIV1, }, 		/* /16 = 16 * 1 */
-		{ SCEMR_x8, 	SCSMR_DIV4, },		/* /32 = 8 * 4 */
-		{ SCEMR_x16, 	SCSMR_DIV4, },		/* /64 = 16 * 4 */
-		{ SCEMR_x8, 	SCSMR_DIV16, }, 	/* /128 = 8 * 16 */
-		{ SCEMR_x16, 	SCSMR_DIV16, }, 	/* /256 = 16 * 16 */
-		{ SCEMR_x8, 	SCSMR_DIV64, },  	/* /512 = 8 * 64 */
-		{ SCEMR_x16, 	SCSMR_DIV64, }, 	/* /1024 = 16 * 64 */
-	};
+	uint_fast32_t
+	calcdivround_p1clock(
+		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		);
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
@@ -395,11 +384,15 @@ calcdivider(
 		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1)	// FPGA0_CLK_CTRL
 	};
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	enum
 	{
 		ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1),
-		ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2)
+		ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2),
+		ALLWNT113_I2Sx_CLK_WIDTH = 5, ALLWNT113_I2Sx_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+		ALLWNT113_AudioCodec_CLK_WIDTH = 5, ALLWNT113_AudioCodec_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+		//
+		ALLWNT113_pad
 	};
 
 #else

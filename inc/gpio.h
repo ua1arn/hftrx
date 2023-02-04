@@ -136,7 +136,7 @@ extern "C" {
 	#define R7S721_INPUT_PORT(p) ((uint16_t) GPIO.PPR ## p)
 	#define R7S721_INPUT_JPORT(p) ((uint16_t) GPIO.JPPR ## p)
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! LINUX_SUBSYSTEM
 
 	#define ZYNQ_IORW32(addr) (* (volatile uint32_t *) (addr))
 
@@ -576,7 +576,7 @@ void arm_hardware_pio11_onchangeinterrupt(unsigned long ipins, int edge, uint32_
 
 void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority, void (* vector)(void));
 
-#if CPUSTYPE_T113
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/*!< Atomic port state change */
 	void gpioX_setstate(
 		GPIO_TypeDef * gpio,
@@ -592,7 +592,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			uint_fast8_t targetcpu,
 			void (* handler)(void)
 			);
-#endif /* CPUSTYPE_T113 */
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
 
 portholder_t power2(uint_fast8_t v);	// Перенос каждого бита в байте в позицию с увеличенным в 2 раза номером.

@@ -7,11 +7,11 @@
 
 #include "hardware.h"
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) && CPUSTYLE_ARM
 
 	// Закомментировать #include CMSIS_device_header
 	// Please, comment out string #include CMSIS_device_header
 
 	#include "irq_ctrl_gic.c"
 
-#endif /* (__CORTEX_A != 0) */
+#endif /* (__CORTEX_A != 0)&& ! defined(__aarch64__) */

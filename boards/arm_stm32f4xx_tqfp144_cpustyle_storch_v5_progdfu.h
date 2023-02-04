@@ -74,7 +74,7 @@
 //#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 //#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 #define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+
 #define WITHUSBWCID	1	// автоустановка драйвера
 
 //#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */

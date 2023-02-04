@@ -46,9 +46,9 @@
 
 	#define SHORTSET7 1
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
-	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
-	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
-	//#define WITHPOWERTRIMATU	0	// Значение для работы автотюнера
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки
+	#define BOARDPOWERMAX	1	// Верхний предел регулировки
+
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	//#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ - "по кругу". */
 	#define WITHATT1PRE1		1	// Управление УВЧ и одиночным аттенюатором

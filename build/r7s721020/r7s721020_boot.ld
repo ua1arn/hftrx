@@ -4,7 +4,7 @@
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x18000000, LENGTH = 128k
-  RAM (rwx)  : ORIGIN = 0x20200000, LENGTH = 1008k
+  RAM (rwx)  : ORIGIN = 0x20200000, LENGTH = 1024k - 16k
   TTB (rwx)  : ORIGIN = 0x202FC000, LENGTH = 16k
 }
 
@@ -103,7 +103,7 @@ SECTIONS
 	{
 		__data_start__ = .;
 		. = ALIGN(32);
-		KEEP(*(.vectors))
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 
@@ -172,9 +172,9 @@ SECTIONS
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
-		KEEP(*(.noinit*))
+		*(.noinit*)
 		. = ALIGN(64);
-		KEEP(*(.framebuff*))
+		*(.framebuff*)
 		. = ALIGN(64);
 	} > RAM
 

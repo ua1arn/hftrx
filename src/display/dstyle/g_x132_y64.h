@@ -74,7 +74,7 @@
 
 			{	0,	5,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// HP/LP
 			{	3,	5,	display2_voltlevelV5,REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
-		#if WITHANTSELECTRX
+		#if WITHANTSELECTRX || WITHANTSELECT1RX
 			{	9,	5,	display2_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ANTENNA
 		#elif WITHANTSELECT
 			{	9,	5,	display2_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ANTENNA

@@ -5,18 +5,10 @@
 
 #include "usb_device.h"
 #include "usbd_core.h"
-#include "usbd_desc.h"
 #include "usbd_def.h"
 #include "usbd_core.h"
 #include "usb200.h"
 #include "usbch9.h"
-
-//#define USBD_EP_HIDMOUSE_INT                              0x81U
-//#define HIDMOUSE_INT_DATA_SIZE                              0x04U
-
-//#define USB_HID_CONFIG_DESC_SIZ                    34U
-//#define USB_HID_DESC_SIZ                           9U
-//#define HID_MOUSE_REPORT_DESC_SIZE                 74U
 
 //#define HID_DESCRIPTOR_TYPE                        0x21U
 //#define HID_REPORT_DESC                            0x22U
@@ -127,17 +119,17 @@ static USBD_StatusTypeDef USBD_HID_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	}
 
 	//pdev->pClassData = (void*) hhid;
-//
-//	if (pdev->dev_speed == USBD_SPEED_HIGH) {
-//		pdev->ep_in [USBD_EP_HIDMOUSE_INT & 0xFU].bInterval = HID_HS_BINTERVAL;
-//	} else /* LOW and FULL-speed endpoints */
-//	{
-//		pdev->ep_in [USBD_EP_HIDMOUSE_INT & 0xFU].bInterval = HID_FS_BINTERVAL;
-//	}
-//
-//	/* Open EP IN */
-//	(void) USBD_LL_OpenEP(pdev, USBD_EP_HIDMOUSE_INT, USBD_EP_TYPE_INTR, HIDMOUSE_INT_DATA_SIZE);
-//	pdev->ep_in [USBD_EP_HIDMOUSE_INT & 0xFU].is_used = 1U;
+
+	if (pdev->dev_speed == USBD_SPEED_HIGH) {
+		pdev->ep_in [USBD_EP_HIDKEYBOARD_INT & 0xFU].bInterval = HID_HS_BINTERVAL;
+	} else /* LOW and FULL-speed endpoints */
+	{
+		pdev->ep_in [USBD_EP_HIDKEYBOARD_INT & 0xFU].bInterval = HID_FS_BINTERVAL;
+	}
+
+	/* Open EP IN */
+	(void) USBD_LL_OpenEP(pdev, USBD_EP_HIDKEYBOARD_INT, USBD_EP_TYPE_INTR, HIDKEYBOARD_INT_DATA_SIZE);
+	pdev->ep_in [USBD_EP_HIDKEYBOARD_INT & 0xFU].is_used = 1U;
 
 	hhid->state = HID_IDLE;
 
@@ -149,9 +141,9 @@ static USBD_StatusTypeDef USBD_HID_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	UNUSED(cfgidx);
 
 	/* Close HID EPs */
-//	(void) USBD_LL_CloseEP(pdev, USBD_EP_HIDMOUSE_INT);
-//	pdev->ep_in[USBD_EP_HIDMOUSE_INT & 0xFU].is_used = 0U;
-//	pdev->ep_in[USBD_EP_HIDMOUSE_INT & 0xFU].bInterval = 0U;
+	(void) USBD_LL_CloseEP(pdev, USBD_EP_HIDKEYBOARD_INT);
+	pdev->ep_in[USBD_EP_HIDKEYBOARD_INT & 0xFU].is_used = 0U;
+	pdev->ep_in[USBD_EP_HIDKEYBOARD_INT & 0xFU].bInterval = 0U;
 
 	/* Free allocated memory */
 //	if (pdev->pClassData != NULL) {
@@ -278,7 +270,7 @@ static USBD_StatusTypeDef USBD_HID_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		break;
 	}
 
-	return USBD_OK;
+	return ret;
 }
 
 static USBD_StatusTypeDef USBD_HID_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)

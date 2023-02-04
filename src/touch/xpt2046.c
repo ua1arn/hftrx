@@ -46,7 +46,7 @@ enum XPTCoordinate
 	XPT2046_TEMP_2 = 7 * XPT2046_A0 | XPT2046_SER_MODE		// Термодачик (The second mode)
 };
 
-#define XPT2046_Z1_THRESHOLD 10
+#define XPT2046_Z1_THRESHOLD 400
 
 // See https://github.com/ikeji/Ender3Firmware/blob/ef1f9d25eb2cd084ce929e1ad4163ef0a3e88142/Marlin/src/feature/touch/xpt2046.cpp
 // https://github.com/Bodmer/TFT_Touch/blob/master/TFT_Touch.cpp
@@ -131,63 +131,20 @@ xpt2046_read(
 }
 #endif /* WITHSPIHW || WITHSPISW */
 
-static uint_fast16_t
-tcsnormalize(
-		uint_fast16_t raw,
-		uint_fast16_t rawmin,
-		uint_fast16_t rawmax,
-		uint_fast16_t range
-		)
-{
-	if (rawmin < rawmax)
-	{
-		// Normal direction
-		const uint_fast16_t distance = rawmax - rawmin;
-		if (raw < rawmin)
-			return 0;
-		raw = raw - rawmin;
-		if (raw > distance)
-			return range;
-		return (uint_fast32_t) raw * range / distance;
-	}
-	else
-	{
-		// reverse direction
-		const uint_fast16_t distance = rawmin - rawmax;
-		if (raw >= rawmin)
-			return 0;
-		raw = rawmin - raw;
-		if (raw > distance)
-			return range;
-		return (uint_fast32_t) raw * range / distance;
-	}
-}
-
+/* получение ненормальзованных координат нажатия */
 uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	const spitarget_t target = targettsc1;
-	/* top left raw data values */
-	static uint_fast16_t xrawmin = 850;//330;
-	static uint_fast16_t yrawmin = 420;//510;
 
-	/* bottom right raw data values */
-	static uint_fast16_t xrawmax = 3990;//3610;
-	static uint_fast16_t yrawmax = 3890;//3640;
-
+	uint_fast16_t x0 = xpt2046_read(target, XPT2046_X);
 	uint_fast16_t x = xpt2046_read(target, XPT2046_X);
+	uint_fast16_t y0 = xpt2046_read(target, XPT2046_Y);
 	uint_fast16_t y = xpt2046_read(target, XPT2046_Y);
+	uint_fast16_t z10 = xpt2046_read(target, XPT2046_Z1);
 	uint_fast16_t z1 = xpt2046_read(target, XPT2046_Z1);
 
-#if BOARD_TSC1_XMIRROR
-	* xr = tcsnormalize(x, xrawmax, xrawmin, DIM_X - 1);
-#else /* BOARD_TSC1_XMIRROR */
-	* xr = tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
-#endif /* BOARD_TSC1_XMIRROR */
-#if BOARD_TSC1_YMIRROR
-	* yr = tcsnormalize(y, yrawmax, yrawmin, DIM_Y - 1);
-#else /* BOARD_TSC1_YMIRROR */
-	* yr = tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
-#endif /* BOARD_TSC1_YMIRROR */
+	* xr = x;
+	* yr = y;
 
 	return z1 > XPT2046_Z1_THRESHOLD;
 }
@@ -206,7 +163,7 @@ void xpt2046_initialize(void)
 		const unsigned z1 = xpt2046_read(target, XPT2046_Z1);
 		//unsigned z2 = xpt2046_read(target, XPT2046_Z2);
 		const int st = z1 > XPT2046_Z1_THRESHOLD;
-		PRINTF("xpt2046_initialize: t=%u, x=%u, y=%u z1=%u, st=%d\n", t, x, y, z1, st);
+		PRINTF("xpt2046_initialize: t=%-5u, x=%-5u, y=%-5u z1=%-5u, st=%d\n", t, x, y, z1, st);
 	}
 #endif
 	//PRINTF("xpt2046_initialize done.\n");

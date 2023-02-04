@@ -120,30 +120,6 @@ typedef enum IRQn
 #define DDRC_CTRL                       0xF8006000L
 #define DDRC_MODE_STATUS                0xF8006054L
 
-/* GPIO registers are not indexed in a particularly convenient manner, but can be calculated
- * via the GPIO bank */
-
-#define GPIO_MASK_DATA_BASE         (GPIO_BASE + 0x0)
-#define GPIO_MASK_DATA_LSW(bank)    (GPIO_MASK_DATA_BASE + (8 * (bank)))
-#define GPIO_MASK_DATA_MSW(bank)    (GPIO_MASK_DATA_BASE + 4 + (8 * (bank)))
-
-#define GPIO_DATA_BASE              (GPIO_BASE + 0x40)
-#define GPIO_DATA(bank)             (GPIO_DATA_BASE + (4 * (bank)))
-
-#define GPIO_DATA_RO_BASE           (GPIO_BASE + 0x60)
-#define GPIO_DATA_RO(bank)          (GPIO_DATA_RO_BASE + (4 * (bank)))
-
-#define GPIO_REGS(bank)             (GPIO_BASE + 0x204 + (0x40 * (bank)))
-#define GPIO_DIRM(bank)             (GPIO_REGS(bank) + 0x0)
-#define GPIO_OEN(bank)              (GPIO_REGS(bank) + 0x4)
-#define GPIO_INT_MASK(bank)         (GPIO_REGS(bank) + 0x8)
-#define GPIO_INT_EN(bank)           (GPIO_REGS(bank) + 0xC)
-#define GPIO_INT_DIS(bank)          (GPIO_REGS(bank) + 0x10)
-#define GPIO_INT_STAT(bank)         (GPIO_REGS(bank) + 0x14)
-#define GPIO_INT_TYPE(bank)         (GPIO_REGS(bank) + 0x18)
-#define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
-#define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
-
 /* memory addresses */
 /* assumes sram is mapped at 0 the first MB of sdram is covered by it */
 #define SDRAM_BASE          (0x00100000)
@@ -220,7 +196,11 @@ typedef enum IRQn
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
-#include "core_ca.h"
+//#include "core_ca.h"
+
+#include <stdint.h>
+#define __IO volatile
+
 #include "system_zynqultrascale.h"
 
 // See
@@ -418,6 +398,31 @@ typedef struct slcr_regs {
 } SLCR_Registers;
 
 #define ZYNQ_MIO_CNT    54
+
+
+/* GPIO registers are not indexed in a particularly convenient manner, but can be calculated
+ * via the GPIO bank */
+
+#define GPIO_MASK_DATA_BASE         (GPIO_BASE + 0x0)
+#define GPIO_MASK_DATA_LSW(bank)    (GPIO_MASK_DATA_BASE + (8 * (bank)))
+#define GPIO_MASK_DATA_MSW(bank)    (GPIO_MASK_DATA_BASE + 4 + (8 * (bank)))
+
+#define GPIO_DATA_BASE              (GPIO_BASE + 0x40)
+#define GPIO_DATA(bank)             (GPIO_DATA_BASE + (4 * (bank)))
+
+#define GPIO_DATA_RO_BASE           (GPIO_BASE + 0x60)
+#define GPIO_DATA_RO(bank)          (GPIO_DATA_RO_BASE + (4 * (bank)))
+
+#define GPIO_REGS(bank)             (GPIO_BASE + 0x204 + (0x40 * (bank)))
+#define GPIO_DIRM(bank)             (GPIO_REGS(bank) + 0x0)
+#define GPIO_OEN(bank)              (GPIO_REGS(bank) + 0x4)
+#define GPIO_INT_MASK(bank)         (GPIO_REGS(bank) + 0x8)
+#define GPIO_INT_EN(bank)           (GPIO_REGS(bank) + 0xC)
+#define GPIO_INT_DIS(bank)          (GPIO_REGS(bank) + 0x10)
+#define GPIO_INT_STAT(bank)         (GPIO_REGS(bank) + 0x14)
+#define GPIO_INT_TYPE(bank)         (GPIO_REGS(bank) + 0x18)
+#define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
+#define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
 
 #define SLCR_A9_CPU_CLKSTOP	0x10
 #define SLCR_A9_CPU_RST		0x01
@@ -721,6 +726,96 @@ typedef enum
  #include "zynquscale_hal.h"
 #endif /* USE_HAL_DRIVER */
 
+/**
+  \brief   Signed Saturate
+  \details Saturates a signed value.
+  \param [in]  value  Value to be saturated
+  \param [in]    sat  Bit position to saturate to (1..32)
+  \return             Saturated value
+ */
+__attribute__((always_inline)) static inline int32_t __SSAT(int32_t val, uint32_t sat)
+{
+  if ((sat >= 1U) && (sat <= 32U))
+  {
+    const int32_t max = (int32_t)((1U << (sat - 1U)) - 1U);
+    const int32_t min = -1 - max ;
+    if (val > max)
+    {
+      return max;
+    }
+    else if (val < min)
+    {
+      return min;
+    }
+  }
+  return val;
+}
+
+/**
+  \brief   Unsigned Saturate
+  \details Saturates an unsigned value.
+  \param [in]  value  Value to be saturated
+  \param [in]    sat  Bit position to saturate to (0..31)
+  \return             Saturated value
+ */
+__attribute__((always_inline)) static inline uint32_t __USAT(int32_t val, uint32_t sat)
+{
+  if (sat <= 31U)
+  {
+    const uint32_t max = ((1U << sat) - 1U);
+    if (val > (int32_t)max)
+    {
+      return max;
+    }
+    else if (val < 0)
+    {
+      return 0U;
+    }
+  }
+  return (uint32_t)val;
+}
+
+/**
+  \brief   Count leading zeros
+  \details Counts the number of leading zeros of a data value.
+  \param [in]  value  Value to count the leading zeros
+  \return             number of leading zeros in value
+ */
+__attribute__((always_inline)) static inline uint8_t __CLZ(uint32_t value)
+{
+  /* Even though __builtin_clz produces a CLZ instruction on ARM, formally
+     __builtin_clz(0) is undefined behaviour, so handle this case specially.
+     This guarantees ARM-compatible results if happening to compile on a non-ARM
+     target, and ensures the compiler doesn't decide to activate any
+     optimisations using the logic "value was passed to __builtin_clz, so it
+     is non-zero".
+     ARM Compiler 6.10 and possibly earlier will optimise this test away, leaving a
+     single CLZ instruction.
+   */
+  if (value == 0U)
+  {
+    return 32U;
+  }
+  return __builtin_clz(value);
+}
+
+
+/**
+  \brief   Rotate Right in unsigned value (32 bit)
+  \details Rotate Right (immediate) provides the value of the contents of a register rotated by a variable number of bits.
+  \param [in]    op1  Value to rotate
+  \param [in]    op2  Number of Bits to rotate
+  \return               Rotated value
+ */
+__attribute__((always_inline)) static inline uint32_t __ROR(uint32_t op1, uint32_t op2)
+{
+  op2 %= 32U;
+  if (op2 == 0U)
+  {
+    return op1;
+  }
+  return (op1 >> op2) | (op1 << (32U - op2));
+}
 
 #ifdef __cplusplus
 }

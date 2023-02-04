@@ -30,8 +30,8 @@
 
 	#define LSEFREQ 32768uL
 
-	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
-	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
+	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
 	#if 1//WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
@@ -208,9 +208,9 @@
 
 	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
 
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -538,7 +538,7 @@
 	#if 0
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_UA1CEI_V2 1
-	#elif 1
+	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -548,6 +548,7 @@
 		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET7	1
+	#else
 	#endif
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 

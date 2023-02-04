@@ -498,13 +498,20 @@ static void USBH_ProcessDelay(
   */
 USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 {
-  __IO USBH_StatusTypeDef status = USBH_FAIL;
+  USBH_StatusTypeDef status = USBH_FAIL;
   uint8_t idx = 0U;
 
   /* check for Host pending port disconnect event */
   if (phost->device.is_disconnected == 1U)
   {
-    phost->gState = HOST_DEV_DISCONNECTED;
+	if (phost->gState == HOST_DELAY || phost->gState == HOST_DEV_BUS_RESET_OFF)
+	{
+		/* if bus reset command active - should be complete. Tnx MAN Alex [mantech@yandex.ru] */
+	}
+	else
+	{
+		phost->gState = HOST_DEV_DISCONNECTED;
+	}
   }
 
   switch (phost->gState)

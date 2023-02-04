@@ -4,10 +4,9 @@
 
 MEMORY
 {
-  RAM (rwx)	: ORIGIN = 0x00020100, LENGTH = 0x000FF00		/*  */
-  RAM2 (rwx): ORIGIN = 0x00030000, LENGTH = 16k		/*  */
-  TTB (rwx) : ORIGIN = 0x00034000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
-  DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 128M	/*  */
+  RAM (rwx)	 : ORIGIN = 0x00020000 + 256, 			LENGTH = 160k - 256		/*  */
+  TTB (rwx)  : ORIGIN = 0x40000000 + 128M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
+  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 128M - 16k		/*  */
 }
 
 /* Library configurations */
@@ -45,21 +44,40 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(32);
-		KEEP(*(.vectors))
+		. = ALIGN(64);
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		
-		. = ALIGN(32);
+		. = ALIGN(64);
 		KEEP(*(.startup0))
-		KEEP(*(.init))
-		KEEP(*(.initfunc*))
-		KEEP(*(.initdata*))
-		KEEP(*(.fini))
+		*(.initfunc*)
+		*(.initdata*)
 
-		KEEP(*(.text*))
-		KEEP(*(.itcm*))
-		. = ALIGN(4);
+		*(.text*)
+		KEEP(*(.init))
+		KEEP(*(.fini))
+		
+		/* .ctors */
+		*crtbegin.o(.ctors)
+		*crtbegin?.o(.ctors)
+		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+		*(SORT(.ctors.*))
+		*(.ctors)
+
+		/* .dtors */
+ 		*crtbegin.o(.dtors)
+ 		*crtbegin?.o(.dtors)
+ 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+ 		*(SORT(.dtors.*))
+ 		*(.dtors)
+
+		*(.rodata*)
+
+		KEEP(*(.eh_frame*))
+		
+		*(.itcm*)
+		
 	} > RAM
 
 	.ARM.extab :
@@ -113,30 +131,11 @@ SECTIONS
 	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
-		. = ALIGN(32);
-		KEEP(*(.dtcm*))
 
-		. = ALIGN(32);
-		/* .ctors */
-		*crtbegin.o(.ctors)
-		*crtbegin?.o(.ctors)
-		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-		*(SORT(.ctors.*))
-		*(.ctors)
+		. = ALIGN(64);
 
-		/* .dtors */
- 		*crtbegin.o(.dtors)
- 		*crtbegin?.o(.dtors)
- 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
- 		*(SORT(.dtors.*))
- 		*(.dtors)
-
-		*(.rodata*)
-
-		KEEP(*(.eh_frame*))
-
-		KEEP(*(.data*))
-	   . = ALIGN(4);	/* one line added by ua1arn */
+		*(.data*)
+		*(.dtcm*)
 
 		. = ALIGN(4);
 		/* preinit data */
@@ -160,7 +159,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(32);
+
 		/* All data end */
 		__data_end__ = .;
 
@@ -169,25 +168,25 @@ SECTIONS
 	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
-		. = ALIGN(32);
-		KEEP(*(.bss*))
-		KEEP(*(COMMON))
-		. = ALIGN(32);
+		. = ALIGN(64);
+		*(.bss*)
+		*(COMMON)
+
 		__bss_end__ = .;
-	} > RAM2
+	} > RAM
 
 	.noinit (NOLOAD):
 	{
-		. = ALIGN(32);
-		KEEP(*(.noinit*))
-		. = ALIGN(32);
-	} > RAM2
+		. = ALIGN(64);
+		*(.noinit*)
+
+	} > RAM
 
 	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
-		KEEP(*(.framebuff*))
-		. = ALIGN(64);
+		*(.framebuff*)
+
 	} > DDR3
 
 	.heap (NOLOAD):
@@ -197,7 +196,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > RAM2
+	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign

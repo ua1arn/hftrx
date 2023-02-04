@@ -30,7 +30,7 @@ XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z010.elf
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
-AR   = $(TRGT)ar rcs --plugin ../lib/gcc/$(TRGT2)/10.3.1/liblto_plugin-0.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
@@ -82,6 +82,7 @@ USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 RTOSXDIR = $(CMSISDIR)/RTOS2
+LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -137,6 +138,12 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
+
+ifeq (1, 1)
+# LuPng
+SRCDIRS += $(LUPNGDIR)
+DINCDIR += $(LUPNGDIR)
+endif
 
 # Define project name here
 PROJECT = tc1_xc7z010
@@ -249,7 +256,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 .PHONY: all bootloader flash clean lib
 
 all: bitstreams $(PROJECT)_app_xyl32.bin
-	-cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin
+	-sh -c "cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin"
 
 bitstreams: bitstream_4205_10.h bitstream_ant_10.h
 
@@ -283,10 +290,10 @@ flash2: $(PROJECT)_app_xyl32.bin
 	program_flash -f $(PROJECT)_app_xyl32.bin -offset 0x80000 $(XILINX_JTAGOPTS)
 
 $(PROJECT)_app_xyl32.bin: $(PROJECT)_app.bin
-	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -l 0x00104100 -e 0x00104100 -s $(PROJECT)_app.bin -d $@
 		
 BOOT2: version boot.bin
-	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
+	-sh -c "cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin"
 	
 BOOT3: version boot.bin
 	program_flash -f BOOT.bin -verify -offset 0x00000 $(XILINX_JTAGOPTS)
@@ -323,7 +330,7 @@ $(OBJSA_APP) $(ZOBJSA):
 #	-$(RM) -R $(OBJDIR)
 
 clean: version
-	-$(RM) $(OBJS)
+	-$(RM) $(OBJS) $(addsuffix .d, $(OBJS))
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) bitstream_ant_10.h bitstream_ant_20.h

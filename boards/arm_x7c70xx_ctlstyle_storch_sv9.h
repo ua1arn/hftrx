@@ -91,9 +91,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -292,7 +291,7 @@
 	//#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
@@ -300,11 +299,11 @@
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
-	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
@@ -319,9 +318,11 @@
 		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 0
+		#if 1
 			#define WITHDISPLAY_FPS			30
 			#define WITHDISPLAYSWR_FPS		30
+			#define WITHTOUCHGUI			1
+			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
@@ -329,9 +330,10 @@
 			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 			//#define WITHAFEQUALIZER		1
-			#define WITHALTERNATIVELAYOUT	1	// Использовать не рекоменуется, оптимизировано для GUI
+			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
 			#define WITHDEFAULTVIEW			VIEW_3DSS
+			#define WITHFT8					1
 			#define REALREFERENCE_FREQ 		122879000L
 			#define WITHSWRPROT				0	/* защита от превышения КСВ */
 		#else
@@ -436,7 +438,7 @@
 	////#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
-	#define WITHANTSELECT2	1	// Управление переключением антенн
+	//#define WITHANTSELECT2	1	// Управление переключением антенн
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
@@ -464,7 +466,7 @@
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	//#define WITHFANPWM		1	/* есть управление скоростью вентилятора */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
-	#define WITHCPUFANPWM	1	/* Вентилятор процессора с управлением PWM */
+	//#define WITHCPUFANPWM	1	/* Вентилятор процессора с управлением PWM */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика

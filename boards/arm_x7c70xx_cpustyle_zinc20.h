@@ -102,10 +102,10 @@
 
 	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
-    //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
+
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	
 	#define WITHUSBWCID	1
 
 	//#define WITHLWIP 1
@@ -166,7 +166,7 @@
 
 	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
-    //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
+
 	#if WITHLWIP
 		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
@@ -175,7 +175,7 @@
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
 //	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-//	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+//	
 //	#define WITHUSBWCID	1
 
 #endif /* WITHISBOOTLOADER */
@@ -962,9 +962,9 @@
 	/* установка яркости и включение/выключение преобразователя подсветки */
 
 	#define HARDWARE_BL_SET(en, level) do { \
-		gpio_writepin(TARGET_LCD_BL_ENABLE_EMIO, en); \
-		emio_drive(TARGET_LCD_BL_ADJ0_EMIO, (level & 0x01) != 0); \
-		emio_drive(TARGET_LCD_BL_ADJ1_EMIO, (level & 0x02) != 0); \
+		gpio_writepin(TARGET_LCD_BL_ENABLE_EMIO, (en)); \
+		emio_drive(TARGET_LCD_BL_ADJ0_EMIO, ((level) & 0x01) != 0); \
+		emio_drive(TARGET_LCD_BL_ADJ1_EMIO, ((level) & 0x02) != 0); \
 	} while (0)
 
 #endif

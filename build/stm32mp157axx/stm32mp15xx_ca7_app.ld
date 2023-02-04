@@ -14,9 +14,9 @@
 */
 MEMORY
 {
-  RAM (rwx) 	: ORIGIN = 0xC0000100, LENGTH = 0x0FFFBF00 	/* DDR3 256 MM - 16 kB - 256 B*/
-  TTB (rwx)  	: ORIGIN = 0xCFFFC000, LENGTH = 16k			/* last 16 kB DDR3 RAM for TTB */
-  SYSRAM (rwx)	: ORIGIN = 0x2FFC2500, LENGTH = 0x0003DB00	/* SYSRAM - 256 k - 9 k - 256 B */
+  RAM (rwx) 	: ORIGIN = 0xC0000000 + 0x100, LENGTH = 256M - 16k - 0x100 	/* DDR3 256 MM - 16 kB - 256 B*/
+  TTB (rwx)  	: ORIGIN = 0xC0000000 + 256M - 16k, LENGTH = 16k			/* last 16 kB DDR3 RAM for TTB */
+  SYSRAM (rwx)	: ORIGIN = 0x2FFC0000 + 9k + 256, LENGTH = 256k - 9k - 0x100	/* SYSRAM - 256 k - 9 k - 256 B */
 }
 
 /* Library configurations */
@@ -172,13 +172,13 @@ SECTIONS
 	{
 		__data2_start__ = .;
 		. = ALIGN(32);
-		KEEP(*(.vectors))
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		. = ALIGN(64);
-		KEEP(*(.itcm*))
+		*(.itcm*)
 		. = ALIGN(64);
-		KEEP(*(.dtcm*))
+		*(.dtcm*)
 		. = ALIGN(32);
 		__data2_end__ = .;
 	} > SYSRAM
@@ -199,9 +199,9 @@ SECTIONS
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
-		KEEP(*(.noinit*))
+		*(.noinit*)
 		. = ALIGN(64);
-		KEEP(*(.framebuff*))
+		*(.framebuff*)
 		. = ALIGN(64);
 	} > RAM
 

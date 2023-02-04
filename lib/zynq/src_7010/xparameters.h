@@ -213,6 +213,11 @@
 /******************************************************************/
 
 
+/* Peripheral Definitions for peripheral AXI_I2S_ADI_0 */
+#define XPAR_AXI_I2S_ADI_0_BASEADDR 0x43C20000
+#define XPAR_AXI_I2S_ADI_0_HIGHADDR 0x43C2FFFF
+
+
 /* Peripheral Definitions for peripheral PS7_AFI_0 */
 #define XPAR_PS7_AFI_0_S_AXI_BASEADDR 0xF8008000
 #define XPAR_PS7_AFI_0_S_AXI_HIGHADDR 0xF8008FFF
@@ -344,6 +349,8 @@
 
 
 
+
+
 /******************************************************************/
 
 /* Definitions for driver GPIOPS */
@@ -432,6 +439,7 @@
 #define XPAR_FABRIC_AXI_FIFO_IQ_RX_INTERRUPT_INTR 61U
 #define XPAR_FABRIC_V_TC_0_IRQ_INTR 62U
 #define XPAR_FABRIC_AXI_FIFO_PHONES_INTERRUPT_INTR 63U
+#define XPAR_FABRIC_AXI_VDMA_0_MM2S_INTROUT_INTR 64U
 
 /******************************************************************/
 
@@ -439,6 +447,7 @@
 #define XPAR_FABRIC_LLFIFO_0_VEC_ID XPAR_FABRIC_AXI_FIFO_IQ_RX_INTERRUPT_INTR
 #define XPAR_FABRIC_VTC_0_VEC_ID XPAR_FABRIC_V_TC_0_IRQ_INTR
 #define XPAR_FABRIC_LLFIFO_1_VEC_ID XPAR_FABRIC_AXI_FIFO_PHONES_INTERRUPT_INTR
+#define XPAR_FABRIC_AXIVDMA_0_VEC_ID XPAR_FABRIC_AXI_VDMA_0_MM2S_INTROUT_INTR
 
 /******************************************************************/
 

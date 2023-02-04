@@ -1137,7 +1137,7 @@ int toshiba_ddr_power_init(void)
 
 #include "sdram.h"
 
-void sdram_test_pattern(uint_fast32_t addr, uint_fast16_t buffer_size, uint_fast16_t pattern)
+void sdram_test_pattern(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t pattern)
 {
 	for (uint32_t i = 0; i < buffer_size; i++)
 		*(volatile uint16_t*) (addr + 2 * i) = pattern;
@@ -1147,12 +1147,12 @@ void sdram_test_pattern(uint_fast32_t addr, uint_fast16_t buffer_size, uint_fast
 	{
 		r = *(volatile uint16_t*) (addr + 2 * i);
 		if(r !=  pattern)
-			PRINTF("ERROR! %X - fill pattern: %04X, read: %04X\n", addr + 2 * i,  pattern, r);
+			PRINTF("ERROR! %p - fill pattern: %04X, read: %04X\n", (void *) (addr + 2 * i),  (unsigned) pattern, (unsigned) r);
 	}
 
 }
 
-void sdram_test_increment(uint_fast32_t addr, uint_fast16_t buffer_size, uint_fast16_t seed)
+void sdram_test_increment(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t seed)
 {
 	for (uint32_t i = 0; i < buffer_size; i++)
 		*(volatile uint16_t*) (addr + 2 * i) = seed + i;
@@ -1162,12 +1162,12 @@ void sdram_test_increment(uint_fast32_t addr, uint_fast16_t buffer_size, uint_fa
 	{
 		r = *(volatile uint16_t*) (addr + 2 * i);
 		if(r !=  seed + i)
-			PRINTF("ERROR! %X - fill increment: %04X, read: %04X\n", addr + 2 * i,  seed + i, r);
+			PRINTF("ERROR! %p - fill increment: %04X, read: %04X\n", (void *) (addr + 2 * i),  (unsigned) (seed + i), (unsigned) r);
 	}
 
 }
 
-void sdram_test_random(uint_fast32_t addr, uint_fast16_t buffer_size)
+void sdram_test_random(uintptr_t addr, uint_fast16_t buffer_size)
 {
 	volatile uint16_t aTxBuffer[buffer_size];
 	volatile uint16_t r;
@@ -1182,7 +1182,7 @@ void sdram_test_random(uint_fast32_t addr, uint_fast16_t buffer_size)
 	{
 		r = *(volatile uint16_t*) (addr + 2 * i);
 		if(aTxBuffer[i] !=  r)
-			PRINTF("ERROR! %X - fill random: %04X, read: %04X\n", addr + 2 * i, aTxBuffer[i], r);
+			PRINTF("ERROR! %p - fill random: %04X, read: %04X\n", (void *) (addr + 2 * i), (unsigned) aTxBuffer[i], (unsigned) r);
 	}
 
 }
@@ -2065,10 +2065,10 @@ mmio_clrsetbits_32(uintptr_t addr, uint32_t cmask, uint32_t smask)
 
 
 // DDR clock in Hz
-unsigned long stm32mp_ddr_clk_get_rate(unsigned long id)
+uint_fast32_t stm32mp_ddr_clk_get_rate(unsigned long id)
 {
 	return stm32mp1_get_pll2_r_freq();
-	return DDR_FREQ;
+	//return DDR_FREQ;
 /*
 	int p = stm32mp1_clk_get_parent(id);
 
@@ -4227,79 +4227,207 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #endif	//  CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 
-#if CPUSTYPE_T113
+#if CPUSTYLE_T113 || CPUSTYLE_F133
 
 #include "spi.h"
 
-struct ddr3_param_t {
-	uint32_t dram_clk;
-	uint32_t dram_type;
-	uint32_t dram_zq;
-	uint32_t dram_odt_en;
-	uint32_t dram_para1;
-	uint32_t dram_para2;
-	uint32_t dram_mr0;
-	uint32_t dram_mr1;
-	uint32_t dram_mr2;
-	uint32_t dram_mr3;
-	uint32_t dram_tpr0;
-	uint32_t dram_tpr1;
-	uint32_t dram_tpr2;
-	uint32_t dram_tpr3;
-	uint32_t dram_tpr4;
-	uint32_t dram_tpr5;
-	uint32_t dram_tpr6;
-	uint32_t dram_tpr7;
-	uint32_t dram_tpr8;
-	uint32_t dram_tpr9;
-	uint32_t dram_tpr10;
-	uint32_t dram_tpr11;
-	uint32_t dram_tpr12;
-	uint32_t dram_tpr13;
-	uint32_t reserve[8];
+/**
+ *
+	Hi,
+
+	this is the extracted version of the Allwinner D1/D1s/R528/T113-s DRAM
+	"driver", to be included into mainline U-Boot at some point. With this
+	on top of my previous T113-s3 support series[1], I can boot my MangoPi MQ-R
+	without the help of awboot.
+	The DRAM init code is based on awboot's version, though has been heavily
+	reworked. To show what has been done, I pushed a history branch [2], which
+	takes a verbatim copy of awboot's mctl_hal.c, then converts this over the
+	course of about 80 patches into the version posted here. The series there
+	contains an awboot/U-Boot compat layer, so the file can be used in both
+	repositories. This compat layer is dropped here, but can be put back by
+	reverting the top patch of [2].
+
+	I was wondering if people could have a look at this version here, to give
+	early feedback. I will (re-)post this as part of a proper R528/T113-s
+	support series, but first need to sort out some minor issues and address
+	Samuel's comments on the previous version.
+
+	If you wonder, the (working!) Kconfig DRAM variables for the T113-s3 are:
+	CONFIG_DRAM_CLK=792
+	CONFIG_DRAM_ZQ=8092667
+	CONFIG_DRAM_SUNXI_ODT_EN=0
+	CONFIG_DRAM_SUNXI_TPR0=0x004a2195
+	CONFIG_DRAM_SUNXI_TPR11=0x340000
+	CONFIG_DRAM_SUNXI_TPR12=0x46
+	CONFIG_DRAM_SUNXI_TPR13=0x34000100
+
+	For the D1 with DDR3 chips (most boards?), it should be those values:
+	CONFIG_DRAM_CLK=792
+	CONFIG_DRAM_SUNXI_ODT_EN=1
+	CONFIG_DRAM_SUNXI_TPR0=0x004a2195
+	CONFIG_DRAM_SUNXI_TPR11=0x870000
+	CONFIG_DRAM_SUNXI_TPR12=0x24
+	CONFIG_DRAM_SUNXI_TPR13=0x34050100
+
+	According to the dump of some MangoPi MQ-1 firmware, the D1s should work with:
+	CONFIG_SUNXI_DRAM_DDR2=y
+	CONFIG_DRAM_CLK=528
+	CONFIG_DRAM_ZQ=8092665
+	CONFIG_DRAM_SUNXI_ODT_EN=0
+	CONFIG_DRAM_SUNXI_TPR0=0x00471992
+	CONFIG_DRAM_SUNXI_TPR11=0x30010
+	CONFIG_DRAM_SUNXI_TPR12=0x35
+	CONFIG_DRAM_SUNXI_TPR13=0x34000000
+
+	Many thanks!
+	Andre
+
+	[1] https://lore.kernel.org/u-boot/20221206004549.29015-1-andre.przywara@arm.com/
+	[2] https://github.com/apritzel/u-boot/commits/d1_dram_history
+
+ *
+ */
+#if CPUSTYLE_T113
+static struct dram_para_t ddrp3 =
+{
+	.dram_clk = 792,
+	.dram_type = 3,
+	.dram_zq = 8092667,
+	.dram_odt_en = 0x00,
+	.dram_para1 = 0x000010d2,
+	.dram_para2 = 0x0000,
+	.dram_mr0 = 0x1c70,
+	.dram_mr1 = 0x042,
+	.dram_mr2 = 0x18,
+	.dram_mr3 = 0x0,
+	.dram_tpr0 = 0x004a2195,
+	.dram_tpr1 = 0x02423190,
+	.dram_tpr2 = 0x0008B061,
+	.dram_tpr3 = 0xB4787896,
+	.dram_tpr4 = 0x0,
+	.dram_tpr5 = 0x48484848,
+	.dram_tpr6 = 0x00000048,
+	.dram_tpr7 = 0x1620121e,
+	.dram_tpr8 = 0x0,
+	.dram_tpr9 = 0x0,
+	.dram_tpr10 = 0x0,
+	.dram_tpr11 = 0x00340000,
+	.dram_tpr12 = 0x00000046,
+	.dram_tpr13 = 0x34000100,
 };
+
+int sys_dram_init(void)
+{
+	set_pll_cpux_axi(PLL_CPU_N);
+	return init_DRAM(0, & ddrp3) != 0;
+}
+
+#elif CPUSTYLE_F133
+
+/*
+ *
+CONFIG_SUNXI_DRAM_DDR2=y
+CONFIG_DRAM_CLK=528
+CONFIG_DRAM_ZQ=8092665
+CONFIG_DRAM_SUNXI_ODT_EN=0
+CONFIG_DRAM_SUNXI_TPR0=0x00471992
+CONFIG_DRAM_SUNXI_TPR11=0x30010
+CONFIG_DRAM_SUNXI_TPR12=0x35
+CONFIG_DRAM_SUNXI_TPR13=0x34000000
+
+ */
+static struct dram_para_t ddrp2 = {
+	.dram_clk = 528,
+	.dram_type = 2,
+	.dram_zq = 8092665,
+	.dram_odt_en = 0x00,
+	.dram_para1 = 0x000000d2,
+	.dram_para2 = 0x00000000,
+	.dram_mr0 = 0x00000e73,
+	.dram_mr1 = 0x02,
+	.dram_mr2 = 0x0,
+	.dram_mr3 = 0x0,
+	.dram_tpr0 = 0x00471992,
+	.dram_tpr1 = 0x0131a10c,
+	.dram_tpr2 = 0x00057041,
+	.dram_tpr3 = 0xb4787896,
+	.dram_tpr4 = 0x0,
+	.dram_tpr5 = 0x48484848,
+	.dram_tpr6 = 0x48,
+	.dram_tpr7 = 0x1621121e,
+	.dram_tpr8 = 0x0,
+	.dram_tpr9 = 0x0,
+	.dram_tpr10 = 0x00000000,
+	.dram_tpr11 = 0x00030010,
+	.dram_tpr12 = 0x00000035,
+	.dram_tpr13 = 0x34000000,
+};
+
+int sys_dram_init(void)
+{
+	set_pll_riscv_axi(PLL_CPU_N);
+	return init_DRAM(0, & ddrp2) != 0;
+}
+
+#endif
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
-	//PRINTF("arm_hardware_sdram_initialize start\n");
-	static const struct ddr3_param_t ddr3 = {
-		.dram_clk = 792,
-		.dram_type = 3,
-		.dram_zq = 0x7b7bfb,
-		.dram_odt_en = 0x00,
-		.dram_para1 = 0x000010d2,
-		.dram_para2 = 0x0000,
-		.dram_mr0 = 0x1c70,
-		.dram_mr1 = 0x042,
-		.dram_mr2 = 0x18,
-		.dram_mr3 = 0x0,
-		.dram_tpr0 = 0x004A2195,
-		.dram_tpr1 = 0x02423190,
-		.dram_tpr2 = 0x0008B061,
-		.dram_tpr3 = 0xB4787896,
-		.dram_tpr4 = 0x0,
-		.dram_tpr5 = 0x48484848,
-		.dram_tpr6 = 0x00000048,
-		.dram_tpr7 = 0x1620121e,
-		.dram_tpr8 = 0x0,
-		.dram_tpr9 = 0x0,
-		.dram_tpr10 = 0x0,
-		.dram_tpr11 = 0x00340000,
-		.dram_tpr12 = 0x00000046,
-		.dram_tpr13 = 0x34000100,
-	};
+	PRINTF("arm_hardware_sdram_initialize start\n");
+#if 0 && CPUSTYLE_T113
+	const uintptr_t ddr3init_base = 0x00028000;
+	/* вызывается до разрешения MMU */
+	bootloader_readimage(0x00040000, (void *) ddr3init_base, 0x8000);
+	memcpy((void *) (ddr3init_base + 0x0038), & ddrp, sizeof ddrp);
+	((void(*)(void))(ddr3init_base))();
+	set_pll_cpux_axi(PLL_CPU_N);
+	#if WITHDEBUG && 1
+		//HARDWARE_DEBUG_INITIALIZE();
+		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+	#endif /* WITHDEBUG */
 
-	//bootloader_readimage(0x00040000, (void *) 0x00028000, 32768);
-	//memcpy((void *) 0x00028038, & ddr3, sizeof ddr3);
-	//arm_hardware_flush(0x00028000, 32768);
-	//((void(*)(void))((void *) 0x00028000))();
-	sys_dram_init();
-	//PRINTF("arm_hardware_sdram_initialize done\n");
+#elif 0 && CPUSTYLE_F133
+	const uintptr_t ddr3init_base = 0x00020000;
+	/* вызывается до разрешения MMU */
+	TP();
+	bootloader_readimage(0x00040000, (void *) ddr3init_base, 20 * 1024);
+	printhex(ddr3init_base, (void *) ddr3init_base, 256);
+	TP();
+	memcpy((void *) (ddr3init_base + 0x0018), & ddrp2, sizeof ddrp2);
+	TP();
+	((void(*)(void))(ddr3init_base))();
+	TP();
+	set_pll_riscv_axi(PLL_CPU_N);
+	#if WITHDEBUG && 1
+		//HARDWARE_DEBUG_INITIALIZE();
+		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+	#endif /* WITHDEBUG */
+
+#else
+	PRINTF("default: allwnrt113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_ddr_freq());
+	PRINTF("default: allwnrt113_get_dram_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dram_freq());
+	if (sys_dram_init() == 0)
+	{
+		PRINTF("No external memory");
+#ifdef BOARD_BLINK_INITIALIZE
+		BOARD_BLINK_INITIALIZE();
+		for (;;)
+		{
+			BOARD_BLINK_SETSTATE(1);
+			local_delay_ms(100);
+			BOARD_BLINK_SETSTATE(0);
+			local_delay_ms(100);
+		}
+#endif
+		for (;;)
+			;
+	}
+	PRINTF("settings: allwnrt113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_ddr_freq());
+	PRINTF("settings: allwnrt113_get_dram_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dram_freq());
+
+#endif
+	PRINTF("arm_hardware_sdram_initialize done\n");
 	//local_delay_ms(1000);
-#if WITHDEBUG && 0
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-#endif /* WITHDEBUG */
 }
-#endif /* CPUSTYPE_T113 */
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
 #endif /* WITHSDRAMHW */

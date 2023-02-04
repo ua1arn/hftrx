@@ -9,8 +9,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре
 // rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_X7C7XX_BGAXXX_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED
-#define ARM_X7C7XX_BGAXXX_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED 1
+#ifndef ARM_X7C7XX_BGA400_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED
+#define ARM_X7C7XX_BGA400_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -100,10 +100,10 @@
 
 	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
-    //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
+
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	
 	#define WITHUSBWCID	1
 
 	//#define WITHLWIP 1
@@ -163,7 +163,7 @@
 
 	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
-    //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
+
 	#if WITHLWIP
 		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
@@ -172,7 +172,7 @@
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
 //	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-//	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+//	
 //	#define WITHUSBWCID	1
 
 #endif /* WITHISBOOTLOADER */
@@ -880,7 +880,7 @@
 	/* установка яркости и включение/выключение преобразователя подсветки */
 
 	#define HARDWARE_BL_SET(en, level) do { \
-		xc7z_writepin(TARGET_BL_ENABLE_MIO, en); \
+		xc7z_writepin(TARGET_BL_ENABLE_MIO, (en)); \
 	} while (0)
 #endif
 
@@ -1166,6 +1166,10 @@
 		local_delay_ms(10); \
 	} while (0)
 
+#else /* WITHETHHW */
+
+	#define ETHERNET_INITIALIZE() do { } while (0)
+
 #endif /* WITHETHHW */
 
 #if 1
@@ -1209,4 +1213,4 @@
 		/*USBD_FS_INITIALIZE(); */\
 	} while (0)
 
-#endif /* ARM_X7C7XX_BGAXXX_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED */
+#endif /* ARM_X7C7XX_BGA400_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED */

@@ -135,9 +135,9 @@
 	#define CTLREGMODE_RAVENDSP_V7	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)

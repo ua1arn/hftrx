@@ -18,16 +18,17 @@
 extern "C" {
 #endif /* __cplusplus */
 
-uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, ... );
-uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, va_list ap );
+uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, ... ) __attribute__ ((__format__ (__printf__, 3, 4)));
+uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, va_list ap ) __attribute__ ((__format__ (__printf__, 3, 0)));
 // Отладочная печать
-void debug_printf_P(const FLASHMEM char * __restrict format, ... );
+void debug_printf_P(const FLASHMEM char * __restrict format, ... ) __attribute__ ((__format__ (__printf__, 1, 2)));
 
 char * safestrcpy(char * dst, size_t blen, const char * src);
 void strtrim(char * s);
 
-void printhex(unsigned long voffs, const void * buff, unsigned length);
-void printhex32(unsigned long voffs, const void * vbuff, unsigned length);
+void printhex(uintptr_t offs, const void * buff, unsigned length);
+void printhex32(uintptr_t voffs, const void * vbuff, unsigned length);
+void printhex64(uintptr_t voffs, const void * vbuff, unsigned length);
 
 // spool-based functions for debug
 int dbg_puts_impl_P(const FLASHMEM char * s);
@@ -46,7 +47,11 @@ int dbg_getchar(char * r);
 #endif /* WITHDEBUG */
 
 #if WITHDEBUG
+#if LINUX_SUBSYSTEM
+	#define PRINTF printf
+#else
 	#define PRINTF	debug_printf_P
+#endif /* LINUX_SUBSYSTEM */
 #else /* WITHDEBUG */
 	#define PRINTF(...)	do {} while (0)
 #endif /* WITHDEBUG */
@@ -193,6 +198,44 @@ int dbg_getchar(char * r);
 	#define HARDWARE_UART2_ONTXDONE(ctx) do { \
 			(void) ctx; \
 			hardware_uart2_enabletx(0); \
+		} while (0)
+
+#endif /* WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2 */
+
+#if WITHDEBUG && WITHUART3HW && WITHDEBUG_USART3
+	// Отладочные функции работают через USART3
+	// Вызывается из user-mode программы при запрещённых прерываниях.
+	#define HARDWARE_DEBUG_INITIALIZE() do { \
+			hardware_uart3_initialize(1); \
+		} while (0)
+	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
+			hardware_uart3_set_speed(baudrate); \
+		} while (0)
+	#define HARDWARE_DEBUG_PUTCHAR(c) \
+		(hardware_uart3_putchar(c))
+	#define HARDWARE_DEBUG_GETCHAR(pc) \
+		(hardware_uart3_getchar(pc))
+
+	// вызывается из обработчика прерываний USART2
+	// с принятым символом
+	#define HARDWARE_UART3_ONRXCHAR(c) do { \
+			(void) (c); \
+			hardware_uart3_enablerx(1); \
+		} while (0)
+	// вызывается из обработчика прерываний USART2
+	#define HARDWARE_UART3_ONOVERFLOW() do { \
+		} while (0)
+	// вызывается из обработчика прерываний USART2
+	// по готовности передатчика
+	#define HARDWARE_UART3_ONTXCHAR(ctx) do { \
+			(void) ctx; \
+			hardware_uart3_enabletx(0); \
+		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART3_ONTXDONE(ctx) do { \
+			(void) ctx; \
+			hardware_uart3_enabletx(0); \
 		} while (0)
 
 #endif /* WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2 */
@@ -736,34 +779,6 @@ int dbg_getchar(char * r);
 
 #endif /* WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC */
 
-#if WITHUART1HW
-	// Заглушки, если есть последовательный порт #1, но нигде не используется.
-	#if ! defined (HARDWARE_UART1_ONRXCHAR)
-		// вызывается из обработчика прерываний CDC
-		// с принятым символом
-		#define HARDWARE_UART1_ONRXCHAR(c) do { \
-				(void) (c); \
-				hardware_uart1_enablerx(1); \
-			} while (0)
-	#endif /* ! defined (HARDWARE_UART1_ONRXCHAR) */
-
-	#if ! defined (HARDWARE_UART1_ONOVERFLOW)
-		// вызывается из обработчика прерываний UART1
-		#define HARDWARE_UART1_ONOVERFLOW() do { \
-				hardware_uart1_enablerx(1); \
-			} while (0)
-	#endif /* ! defined (HARDWARE_UART1_ONOVERFLOW) */
-
-	#if ! defined (HARDWARE_UART1_ONTXCHAR)
-		// вызывается из обработчика прерываний UART1
-		// по готовности передатчика
-		#define HARDWARE_UART1_ONTXCHAR(ctx) do { \
-				hardware_uart1_enabletx(0); \
-			} while (0)
-	#endif /* ! defined (HARDWARE_UART1_ONTXCHAR) */
-
-#endif /* WITHUART1HW */
-
 #if WITHNMEA && WITHUART1HW && WITHNMEA_USART1
 	// Модемные функции работают через USART1
 	// Вызывается из user-mode программы
@@ -849,6 +864,77 @@ int dbg_getchar(char * r);
 		} while (0)
 
 #endif /* WITHNMEA && WITHUART2HW && WITHMODEM_USART2 */
+
+#if WITHNMEA && WITHUART4HW && WITHNMEA_USART4
+	// Модемные функции работают через USART4
+	// Вызывается из user-mode программы
+	#define HARDWARE_NMEA_INITIALIZE() do { \
+			hardware_uart4_initialize(0); \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_NMEA_SET_SPEED(baudrate) do { \
+			hardware_uart4_set_speed(baudrate); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_NMEA_ENABLETX(v) do { \
+			hardware_uart4_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_NMEA_ENABLERX(v) do { \
+			hardware_uart4_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_NMEA_TX(ctx, c) do { \
+			hardware_uart4_tx((ctx), (c)); \
+		} while (0)
+
+	// вызывается из обработчика прерываний UART2
+	// с принятым символом
+	#define HARDWARE_UART4_ONRXCHAR(c) do { \
+			nmea_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний UART2
+	#define HARDWARE_UART4_ONOVERFLOW() do { \
+			nmea_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний UART2
+	// по готовности передатчика
+	#define HARDWARE_UART4_ONTXCHAR(ctx) do { \
+			nmea_sendchar(ctx); \
+		} while (0)
+
+#endif /* WITHNMEA && WITHUART2HW && WITHMODEM_USART4 */
+
+#if WITHUART1HW
+	// Заглушки, если есть последовательный порт #1, но нигде не используется.
+	#if ! defined (HARDWARE_UART1_ONRXCHAR)
+		// вызывается из обработчика прерываний CDC
+		// с принятым символом
+		#define HARDWARE_UART1_ONRXCHAR(c) do { \
+				(void) (c); \
+				hardware_uart1_enablerx(1); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART1_ONRXCHAR) */
+
+	#if ! defined (HARDWARE_UART1_ONOVERFLOW)
+		// вызывается из обработчика прерываний UART1
+		#define HARDWARE_UART1_ONOVERFLOW() do { \
+				hardware_uart1_enablerx(1); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART1_ONOVERFLOW) */
+
+	#if ! defined (HARDWARE_UART1_ONTXCHAR)
+		// вызывается из обработчика прерываний UART1
+		// по готовности передатчика
+		#define HARDWARE_UART1_ONTXCHAR(ctx) do { \
+				hardware_uart1_enabletx(0); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART1_ONTXCHAR) */
+
+#endif /* WITHUART1HW */
 
 #if WITHUART2HW
 	// Заглушки, если есть последовательный порт #2, но нигде не используется.

@@ -22,32 +22,59 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
+#if WITHPOWERTRIM
+	#if WITHLOWPOWEREXTTUNE
+		{
+			QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+			ITEM_VALUE,
+			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+			offsetof(struct nvmap, gtunepower),
+			nvramoffs0,
+			NULL,
+			& gtunepower,
+			getzerobase,
+		},
+	#endif /* WITHLOWPOWEREXTTUNE */
+#elif WITHPOWERLPHP
+	#if WITHLOWPOWEREXTTUNE
+	{
+		QLABEL("ATU PWR "), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		ITEM_VALUE,
+		0, PWRMODE_COUNT - 1,
+		offsetof(struct nvmap, gtunepower),
+		nvramoffs0,
+		NULL,
+		& gtunepower,
+		getzerobase,
+	},
+	#endif /* WITHLOWPOWEREXTTUNE */
+#endif /* WITHPOWERTRIM */
 	{
 		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		LMIN, LMAX, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
-		nvramoffs0,
+		ITEM_VALUE,
+		LMIN, LMAX,
+		offsetof(struct nvmap, bandgroups [0].oants [0].tunerind),
+		nvramoffs_bandgroupant,
 		& tunerind,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("TUNER C "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		CMIN, CMAX, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunercap),
-		nvramoffs0,
+		ITEM_VALUE,
+		CMIN, CMAX,
+		offsetof(struct nvmap, bandgroups [0].oants [0].tunercap),
+		nvramoffs_bandgroupant,
 		& tunercap,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("TUNER TY"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE, 
-		0, KSCH_COUNT - 1, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunertype),
-		nvramoffs0,
+		ITEM_VALUE,
+		0, KSCH_COUNT - 1,
+		offsetof(struct nvmap, bandgroups [0].oants [0].tunertype),
+		nvramoffs_bandgroupant,
 		NULL,
 		& tunertype,
 		getzerobase, /* складывается со смещением и отображается */
@@ -225,22 +252,22 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
+		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, bands [0].gtopdbspe),
-		nvramoffs_band_a,
+		offsetof(struct nvmap, bandgroups [0].gtopdbspe),
+		nvramoffs_bandgroup,
 		NULL,
-		& gtopdbspe [0],
+		& gtopdbspe,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
+		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands [0].gbottomdbspe),
-		nvramoffs_band_a,
+		offsetof(struct nvmap, bandgroups [0].gbottomdbspe),
+		nvramoffs_bandgroup,
 		NULL,
-		& gbottomdbspe [0],
+		& gbottomdbspe,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -255,22 +282,22 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
+		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, bands [0].gtopdbwfl),
-		nvramoffs_band_a,
+		offsetof(struct nvmap, bandgroups [0].gtopdbwfl),
+		nvramoffs_bandgroup,
 		NULL,
-		& gtopdbwfl [0],
+		& gtopdbwfl,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
+		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands [0].gbottomdbwfl),
-		nvramoffs_band_a,
+		offsetof(struct nvmap, bandgroups [0].gbottomdbwfl),
+		nvramoffs_bandgroup,
 		NULL,
-		& gbottomdbwfl [0],
+		& gbottomdbwfl,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -286,12 +313,12 @@ static const FLASHMEM struct menudef menutable [] =
 #if BOARD_FFTZOOM_POW2MAX > 0
 	{
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
-		ITEM_VALUE | ITEM_ARRAY_BI,
+		ITEM_VALUE,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
-		offsetof(struct nvmap, bands [0].gzoomxpow2),
-		nvramoffs_band_a,
+		offsetof(struct nvmap, bandgroups [0].gzoomxpow2),
+		nvramoffs_bandgroup,
 		NULL,
-		& gzoomxpow2 [0],
+		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
@@ -424,17 +451,6 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
-	// разрешено не только в случае наличия электронного ключа - требуется при переключении режимов CW/SSB
-	{
-		QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP10,
-		ITEM_VALUE,
-		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 100 Hz steps */
-		offsetof(struct nvmap, gcwpitch10),
-		nvramoffs0,
-		NULL,
-		& gcwpitch10,
-		getzerobase, 
-	},
 #if WITHIF4DSP
 	{
 		QLABEL("NR LEVEL"), 7, 0, 0,	ISTEP1,
@@ -684,100 +700,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHIFSHIFT && ! WITHPOTIFSHIFT */
 
-#if CTLSTYLE_RA4YBO_V3
-/*
-filter_t fi_0p5 =
-filter_t fi_3p1 =
-filter_t fi_3p0_455 =
-filter_t fi_10p0_455 =
-filter_t fi_6p0_455 =
-filter_t fi_2p0_455 =	// strFlash2p0
-*/
-	{
-		QLABEL("3.1 USB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe3p1),
-		nvramoffs0,
-		& fi_3p1.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("3.1 LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe3p1),
-		nvramoffs0,
-		& fi_3p1.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("2.4 USB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERU | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe3p0),
-		nvramoffs0,
-		& fi_3p0_455.high,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("2.4 LSB "), 7, 2, 1,	ISTEP10,
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe3p0),
-		nvramoffs0,
-		& fi_3p0_455.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	{
-		QLABEL("CNTR 0.5"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
-		ITEM_FILTERL | ITEM_VALUE,
-		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, carr0p5),
-		nvramoffs0,
-		& fi_0p5.low_or_center,
-		NULL,
-		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
-	},
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("2K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq2k),
-		nvramoffs0,
-		& fi_2p0_455.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("6K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq6k),
-		nvramoffs0,
-		& fi_6p0_455.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-	{
-		QLABEL("10K OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
-		ITEM_VALUE,
-		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq10k),
-		nvramoffs0,
-		& fi_10p0_455.ceoffset,
-		NULL,
-		getcefreqshiftbase, 
-	},
-
-#elif WITHDUALFLTR	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
+#if WITHDUALFLTR	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
 	{
 		QLABEL("BFO FREQ"), 7, 2, 1,	ISTEP10,
 		ITEM_VALUE,
@@ -831,7 +754,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 
-#elif CTLSTYLE_RA4YBO_V1 || (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
+#elif (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
 	/* Обычная схема - выбор ПЧ делается перестановкой последнего гетеродина */
 
 #if ! CTLSTYLE_SW2011ALL
@@ -1309,6 +1232,17 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
+	// разрешено не только в случае наличия электронного ключа - требуется при переключении режимов CW/SSB
+	{
+		QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP1,
+		ITEM_VALUE,
+		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
+		offsetof(struct nvmap, gcwpitch10),
+		nvramoffs0,
+		NULL,
+		& gcwpitch10,
+		getzerobase,
+	},
   #if ! WITHPOTWPM
 	{
 		QLABEL("CW SPEED"), 7, 0, 0,	ISTEP1,
@@ -1332,18 +1266,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& elkeyslope,
 		getzerobase, 
 	},
-    #if ELKEY328
-	{
-		QLABEL("VIBROENB"), 8, 3, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
-		ITEM_VALUE,
-		0, 1,		// minimal 0 - без эффекта Виброплекса
-		offsetof(struct nvmap, elkeyslopeenable),
-		nvramoffs0,
-		NULL,
-		& elkeyslopeenable,
-		getzerobase, 
-	},
-    #endif /* ELKEY328 */
   #endif /* WITHVIBROPLEX */
 	{
 		QLABEL("KEYER   "), 6, 0, RJ_ELKEYMODE,	ISTEP1,
@@ -1356,7 +1278,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		QLABEL("KEY REVE"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("KEY REV "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
 		offsetof(struct nvmap, elkeyreverse),
@@ -1419,6 +1341,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP */
+#if WITHTX && WITHIF4DSP
+	{
+		QLABEL("SSB TXCW"), 8, 3, RJ_ON,	ISTEP1,		/*  */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gcwssbtx),	/* разрешение передачи телеграфа как тона в режиме SSB */
+		nvramoffs0,
+		NULL,
+		& gcwssbtx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHTX && WITHIF4DSP */
 #endif /* WITHELKEY */
 #if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
 #if ! WITHFLATMENU
@@ -1503,7 +1437,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("VOXDELAY"), 7, 2, 0,	ISTEP5,	/* 50 mS step of changing value */
 		ITEM_VALUE,
-		WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 secounds delay */
+		WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 seconds delay */
 		offsetof(struct nvmap, voxdelay),
 		nvramoffs0,
 		NULL,
@@ -1733,7 +1667,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("MONI EN "), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output level.. */
+		QLABEL("MONI EN "), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output enable */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
@@ -1791,7 +1725,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	{
-		QLABEL("MIKE SSB"), 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIC SSB "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_SSB),
@@ -1801,7 +1735,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("MIKE DIG"), 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIC DIG "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_DIGI),
@@ -1811,7 +1745,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("MIKE AM "), 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIC AM  "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_AM),
@@ -1821,7 +1755,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("MIKE FM "), 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIC FM  "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_NFM),
@@ -1831,7 +1765,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("MIKE AGC"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL("MIC AGC "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		offsetof(struct nvmap, gmikeagc),
@@ -1841,7 +1775,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("MK AGCGN"), 7, 0, 0,	ISTEP1,
+		QLABEL("MICAGCGN"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,	
 		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
 		offsetof(struct nvmap, gmikeagcgain),
@@ -2556,6 +2490,16 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getzerobase,
 	},
+    {
+        QLABEL("LFM OFFS"), 5 + WSIGNFLAG, 0, 0,     ISTEP1,
+        ITEM_VALUE,
+        0, 2 * LFMFREQBIAS,            /*  */
+        offsetof(struct nvmap, lfmfreqbias),
+        nvramoffs0,
+        & lfmfreqbias,
+        NULL,
+        getlfmbias,
+    },
 #endif /* WITHLFM */
 
 #if WITHTX
@@ -2588,178 +2532,355 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [0],
+		& gbandf2adj [0].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 160m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 160m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [1],
+		& gbandf2adj [1].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 80m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 80m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [2],
+		& gbandf2adj [2].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 40m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 40m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [3],
+		& gbandf2adj [3].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 30m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 30m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [4],
+		& gbandf2adj [4].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 20m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 20m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [5],
+		& gbandf2adj [5].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 17m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 17m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [6],
+		& gbandf2adj [6].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 15m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 15m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [7],
+		& gbandf2adj [7].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 12m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 12m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [8],
+		& gbandf2adj [8].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 10m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 10m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [9],
+		& gbandf2adj [9].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 6m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 6m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [10],
+		& gbandf2adj [10].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 2m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 2m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [11],
+		& gbandf2adj [11].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX 0.7m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 0.7m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [12],
+		& gbandf2adj [12].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [13],
+		& gbandf2adj [13].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [14],
+		& gbandf2adj [14].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		offsetof(struct nvmap, gbandf2adj_b [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
-		& gbandf2adj [15],
+		& gbandf2adj [15].adj_b,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [0].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 160m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [1].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 80m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [2].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 40m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [3].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 30m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [4].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 20m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [5].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 17m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [6].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 15m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [7].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 12m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [8].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 10m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [9].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 6m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [10].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 2m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [11].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP 0.7m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [12].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [13].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [14].adj_a,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("LP ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj_a [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [15].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 
@@ -2833,7 +2954,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
 	{
-		QLABEL("TX POWER"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
+		QLABEL("TX POWER"), 7, 0, 0,	ISTEP5,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
@@ -2842,42 +2963,30 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gnormalpower.value,
 		getzerobase,
 	},
-#if WITHPACLASSA
-	/* усилитель мощности поддерживает переключение в класс А */
-	{
-		QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gclassamode),
-		nvramoffs0,
-		NULL,
-		& gclassamode,
-		getzerobase,
-	},
-	{
-		QLABEL2("CLASSA P", "Class A Pwr"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gclassapower),
-		nvramoffs0,
-		NULL,
-		& gclassapower,
-		getzerobase,
-	},
-#endif /* WITHPACLASSA */
+	#if WITHPACLASSA
+		/* усилитель мощности поддерживает переключение в класс А */
+		{
+			QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
+			ITEM_VALUE,
+			0, 1,
+			offsetof(struct nvmap, gclassamode),
+			nvramoffs0,
+			NULL,
+			& gclassamode,
+			getzerobase,
+		},
+		{
+			QLABEL2("CLASSA P", "Class A Pwr"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
+			ITEM_VALUE,
+			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+			offsetof(struct nvmap, gclassapower),
+			nvramoffs0,
+			NULL,
+			& gclassapower,
+			getzerobase,
+		},
+	#endif /* WITHPACLASSA */
   #endif /* ! WITHPOTPOWER */
-  #if WITHLOWPOWEREXTTUNE
-	{
-		QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gtunepower),
-		nvramoffs0,
-		NULL,
-		& gtunepower,
-		getzerobase,
-	},
-  #endif /* WITHLOWPOWEREXTTUNE */
 #elif WITHPOWERLPHP
 	#if ! CTLSTYLE_SW2011ALL
 	{
@@ -2891,18 +3000,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 	#endif /* ! CTLSTYLE_SW2011ALL */
-  	#if WITHLOWPOWEREXTTUNE
-	{
-		QLABEL("ATU PWR "), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
-		0, PWRMODE_COUNT - 1,
-		offsetof(struct nvmap, gtunepower),
-		nvramoffs0,
-		NULL,
-		& gtunepower,
-		getzerobase, 
-	},
-  #endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
 
 #if ! CTLSTYLE_SW2011ALL
@@ -3052,6 +3149,26 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 #endif /* WITHIF4DSP */
+//	{
+//		QLABEL("REPT HF "), 5 + WSIGNFLAG, 0, 0, 	ISTEP1,
+//		ITEM_VALUE,
+//		RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
+//		offsetof(struct nvmap, rptroffshf1k),
+//		nvramoffs0,
+//		& rptroffshf1k,
+//		NULL,
+//		getrptoffsbase,
+//	},
+//	{
+//		QLABEL("REPT UHF"), 5 + WSIGNFLAG, 0, 0, 	ISTEP1,
+//		ITEM_VALUE,
+//		RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
+//		offsetof(struct nvmap, rptroffsuhf1k),
+//		nvramoffs0,
+//		& rptroffsuhf1k,
+//		NULL,
+//		getrptoffsbase,
+//	},
 #endif /* WITHTX */
 
 #if defined(REFERENCE_FREQ)
@@ -3472,101 +3589,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* TUNE_2MBAND */
 #endif /* CTLSTYLE_SW2011ALL */
 
-#if CTLREGMODE_RA4YBO || CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A
-#if ! WITHFLATMENU
-	{
-		QLABEL("TXPARAMS"), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrptxparams),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		QLABEL("TXPW SSB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_SSB),
-		nvramoffs0,
-		& gtxpower [MODE_SSB],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW CW "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_CW),
-		nvramoffs0,
-		& gtxpower [MODE_CW],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW FM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_NFM),
-		nvramoffs0,
-		& gtxpower [MODE_NFM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW AM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_AM),
-		nvramoffs0,
-		& gtxpower [MODE_AM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXPW TUN"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_TUNE),
-		nvramoffs0,
-		& gtxpower [MODE_TUNE],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXCP SSB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_SSB),
-		nvramoffs0,
-		& gtxcompr [MODE_SSB],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXCP AM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_AM),
-		nvramoffs0,
-		& gtxcompr [MODE_AM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-	{
-		QLABEL("TXCP FM "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,
-		0, 255, 		/*  */
-		RMT_TXPOWER_BASE(MODE_NFM),
-		nvramoffs0,
-		& gtxcompr [MODE_NFM],	// 16 bit in nvram
-		NULL,
-		getzerobase, 
-	},
-
-#endif /* CTLREGMODE_RA4YBO || CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A */
 #if ! WITHFLATMENU
 	{
 		QLABEL2("ABOUT   ", "About"), 0, 0, 0, 0,
@@ -3600,7 +3622,17 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getcpufreqbase,
 	},
 	{
-		QLABEL("COMPILED"), 7, 0, RJ_COMPILED, 	ISTEP1,	// тип процессора
+		QLABEL("VERSION "), 7, 0, RJ_COMPILED, 	ISTEP1,	// тип процессора
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 0,
+		MENUNONVRAM,
+		nvramoffs0,
+		& gzero,
+		NULL,
+		getzerobase,
+	},
+	{
+		QLABEL("S/N     "), 7, 0, RJ_SERIALNR, 	ISTEP1,	// Индивидуальный номер изделия
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,

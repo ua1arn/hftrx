@@ -171,7 +171,7 @@ static void ili9320_put_char_end(void)
 
 static void
 ili9320_put_pixel_p1(	
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 	spi_progval8_p1(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
@@ -179,7 +179,7 @@ ili9320_put_pixel_p1(
 }
 static void
 ili9320_put_pixel_p2(	
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 	spi_progval8_p2(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
@@ -187,7 +187,7 @@ ili9320_put_pixel_p2(
 }
 static void
 ili9320_put_pixel_p3(	
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 	spi_progval8_p2(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
@@ -196,9 +196,9 @@ ili9320_put_pixel_p3(
 }
 
 
-static COLORMAIN_T color, bkcolor;
+static COLORPIP_T color, bkcolor;
 
-static void ili9320_setcolor(COLORMAIN_T acolor, COLORMAIN_T abkcolor)
+static void ili9320_setcolor(COLORPIP_T acolor, COLORPIP_T abkcolor)
 {
 	color = acolor;
 	bkcolor = abkcolor;
@@ -208,7 +208,7 @@ static void ili9320_pixel_p1(
 	uint_fast8_t fg
 	)
 {
-	const COLORMAIN_T cl = fg ? color : bkcolor;
+	const COLORPIP_T cl = fg ? color : bkcolor;
 	ili9320_put_pixel_p1(cl);
 }
 
@@ -216,7 +216,7 @@ static void ili9320_pixel_p2(
 	uint_fast8_t fg
 	)
 {
-	const COLORMAIN_T cl = fg ? color : bkcolor;
+	const COLORPIP_T cl = fg ? color : bkcolor;
 	ili9320_put_pixel_p2(cl);
 }
 
@@ -224,7 +224,7 @@ static void ili9320_pixel_p3(
 	uint_fast8_t fg
 	)
 {
-	const COLORMAIN_T cl = fg ? color : bkcolor;
+	const COLORPIP_T cl = fg ? color : bkcolor;
 	ili9320_put_pixel_p3(cl);
 }
 
@@ -334,7 +334,7 @@ static void ili9320_set_graddr(uint_fast16_t x)
 }
 
 
-static void ili9320_clear(COLORMAIN_T bg)
+static void ili9320_clear(COLORPIP_T bg)
 {
 	unsigned long i;
 
@@ -536,7 +536,7 @@ void display_set_contrast(uint_fast8_t v)
 void 
 display_clear(void)
 {
-	const COLORMAIN_T bg = display_getbgcolor();
+	const COLORPIP_T bg = display_getbgcolor();
 
 	ili9320_clear(bg);
 }
@@ -548,12 +548,12 @@ void display_flush(void)
 
 void
 //NOINLINEAT
-colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 	ili9320_setcolor(fg, bg);
 }
 
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 	colmain_setcolors(fg, bg);
 }
@@ -672,7 +672,7 @@ void display_plotstop(void)
 }
 
 void display_plot(
-	const PACKEDCOLORMAIN_T * buffer, 
+	const PACKEDCOLORPIP_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy,
 	uint_fast16_t xpix,	// начало области рисования

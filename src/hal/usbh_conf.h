@@ -53,9 +53,9 @@ extern "C" {
 
 	#include "zynq7000_hal.h"
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	#include "allwnr_t113s3_hal.h"
+	#include "t113s3_hal.h"
 
 #endif
 
@@ -83,7 +83,7 @@ extern "C" {
 #define USBH_MAX_NUM_SUPPORTED_CLASS          16U
 #define USBH_MAX_SIZE_CONFIGURATION           0x200U
 #define USBH_MAX_DATA_BUFFER                  0x200U
-#define USBH_DEBUG_LEVEL                      0U
+#define USBH_DEBUG_LEVEL                      3U
 #define USBH_USE_OS                           0U
 
 /** @defgroup USBH_Exported_Macros

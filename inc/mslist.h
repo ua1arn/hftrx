@@ -16,12 +16,12 @@
 #define IN_param
 #define OUT_param
 
-typedef unsigned long ULONG, * PULONG;
-typedef signed long LONG, * PLONG;
+typedef uint32_t ULONG, * PULONG;
+typedef int32_t LONG, * PLONG;
 typedef void VOID, * PVOID;
 
-typedef signed long long LONGLONG;
-typedef unsigned long long ULONGLONG;
+typedef int64_t LONGLONG;
+typedef uint64_t ULONGLONG;
 
 #define RESTRICTED_POINTER /* */
 #define IN_param /* */

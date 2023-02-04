@@ -2667,7 +2667,7 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
    }
 
    PRINTF(PSTR(" WR1:%x "), SDMMC1->RESP1);
- 	arm_hardware_flush_invalidate((uintptr_t) buffer, 512 * size);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
+ 	dcache_clean_invalidate((uintptr_t) buffer, 512 * size);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
   //SCB_CleanDCache_by_Addr(buffer, size*512);
 
    //Program data length register
@@ -2775,7 +2775,7 @@ DRESULT SD_disk_write(
 		}
 	}
 
-	arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
+	dcache_clean_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 
 	if (count < 2)
 	{
@@ -2950,7 +2950,7 @@ DRESULT SD_disk_read(
 	}
 
 
-	arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
+	dcache_clean_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 
 	if (count < 2)
 	{
@@ -3153,7 +3153,7 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 	//PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
 
 	sdhost_dpsm_prepare((uintptr_t) buff, txmode, size, lenpower);		// подготовка к обмену data path state machine - при чтенииперед выдачей команды
-	arm_hardware_flush_invalidate((uintptr_t) buff, sizeofarray);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
+	dcache_clean_invalidate((uintptr_t) buff, sizeofarray);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 	DMA_SDIO_setparams((uintptr_t) buff, size, 1, txmode);
 
 	// read block
@@ -3383,7 +3383,7 @@ char sd_initialize2(void)
 			case SDIO_STD_CAPACITY_SD_CARD_V2_0:
 			case SDIO_HIGH_CAPACITY_SD_CARD:
 				PRINTF(PSTR("hardware_sdhost_setspeed to 24 MHz\n"));
-				hardware_sdhost_setspeed(24000000uL);
+				hardware_sdhost_setspeed(24000000u);
 				break;
 
 			default:
@@ -4429,7 +4429,7 @@ static char mmcWriteSectors(
 			spi_complete(targetsdcard);
 
 			// clock the actual data transfer and transmitt the bytes
-			arm_hardware_flush((uintptr_t) buff, MMC_SECTORSIZE);
+			dcache_clean((uintptr_t) buff, MMC_SECTORSIZE);
 			spi_send_frame(targetsdcard, buff, MMC_SECTORSIZE);
 
 			// put CRC bytes (not really needed by us, but required by MMC)
@@ -4514,7 +4514,7 @@ static char mmcWriteSectors(
 
 
 				// clock the actual data transfer and transmitt the bytes
-				arm_hardware_flush((uintptr_t) buff, MMC_SECTORSIZE);
+				dcache_clean((uintptr_t) buff, MMC_SECTORSIZE);
 				spi_send_frame(targetsdcard, buff, MMC_SECTORSIZE);
 
 				// put CRC bytes (not really needed by us, but required by MMC)
@@ -4816,7 +4816,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 #if CPUSTYLE_R7S721
 	// Использование автоматического расчёта предделителя
 	//unsigned long ticksfreq = 400000uL;	// 400 kHz -> 260 kHz
-	//unsigned long ticksfreq = 24000000uL;	// 24 MHz -> 16.666 MHz
+	//unsigned long ticksfreq = 24000000u;	// 24 MHz -> 16.666 MHz
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(ticksfreq), 0, (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2), & value, 0);
 	PRINTF(PSTR("hardware_sdhost_setspeed: ticksfreq=%lu, prei=%lu\n"), (unsigned long) ticksfreq, (unsigned long) prei);

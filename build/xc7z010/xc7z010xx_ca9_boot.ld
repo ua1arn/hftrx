@@ -4,8 +4,7 @@
 
 MEMORY
 {
-  FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
-  OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
+  OCM (rwx)	: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
   TTB (rwx)  	: ORIGIN = 0xFFFF0000, LENGTH = 16k		/* last 16 kB OCM3 for TTB */
   OCM3 (rwx)	: ORIGIN = 0xFFFF4000, LENGTH = 0x00BE00		/* OCM3 - on-chip memory 64k - 16k - 512 for TTB */
   DDR3 (rwx) 	: ORIGIN = 0x01100000, LENGTH = 16M 	/* lower 16MB reserved for image */
@@ -47,7 +46,7 @@ SECTIONS
 	.text :
 	{
 		. = ALIGN(32);
-		KEEP(*(.vectors))
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		
@@ -58,8 +57,8 @@ SECTIONS
 		KEEP(*(.initdata*))
 		KEEP(*(.fini))
 
-		KEEP(*(.text*))
-		KEEP(*(.itcm*))
+		*(.text*)
+		*(.itcm*)
 	} > OCM
 
 	.ARM.extab :
@@ -114,7 +113,7 @@ SECTIONS
 	{
 		__data_start__ = .;
 		. = ALIGN(32);
-		KEEP(*(.dtcm*))
+		*(.dtcm*)
 
 		. = ALIGN(32);
 		/* .ctors */
@@ -135,7 +134,7 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 
-		KEEP(*(.data*))
+		*(.data*)
 	   . = ALIGN(4);	/* one line added by ua1arn */
 
 		. = ALIGN(4);
@@ -170,8 +169,8 @@ SECTIONS
 	{
 		__bss_start__ = .;
 		. = ALIGN(32);
-		KEEP(*(.bss*))
-		KEEP(*(COMMON))
+		*(.bss*)
+		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
 	} > OCM3
@@ -179,14 +178,14 @@ SECTIONS
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(32);
-		KEEP(*(.noinit*))
+		*(.noinit*)
 		. = ALIGN(32);
 	} > OCM3
 
 	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
-		KEEP(*(.framebuff*))
+		*(.framebuff*)
 		. = ALIGN(64);
 	} > DDR3
 

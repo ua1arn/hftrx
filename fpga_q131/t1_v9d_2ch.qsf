@@ -177,11 +177,9 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_mosi -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_sclk -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_ovfl -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_pga -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_rand -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_shdn -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_dith -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_d -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_nco_cs -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to refclk_in -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to sai1_fs_a -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to sai1_sck_a -disable
@@ -199,18 +197,13 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led0 -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led1 -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to i2s2_ws -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to i2s2_ck -disable
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to pps_in -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_clk_alt -disable
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to pps_in
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led2 -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led3 -disable
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to dac_d* -disable
 set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC_FOR_AREA ON
 set_global_assignment -name ENABLE_INIT_DONE_OUTPUT ON
 set_location_assignment PIN_23 -to fpga_fir_cs
-set_location_assignment PIN_83 -to pll_out
-set_location_assignment PIN_76 -to sai2_sd_b
-set_location_assignment PIN_77 -to sai2_fs_a
-set_location_assignment PIN_80 -to sai2_sck_a
 set_location_assignment PIN_143 -to i2s_ckin
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
@@ -219,9 +212,9 @@ set_instance_assignment -name FAST_INPUT_REGISTER ON -to adc_ovfl
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to dac_d
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_pga
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_shdn
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "10 MHz" -to cpu_miso
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "20 MHz" -to cpu_miso
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to dac_sleep
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "5 MHz" -to sai1_sd_b
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "7 MHz" -to sai1_sd_b
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to i2s2_mck
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to i2s2_ck
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to sai1_sck_a

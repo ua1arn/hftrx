@@ -259,7 +259,7 @@ ls020_gotoxy(uint_fast8_t xcell, uint_fast8_t ycell)
 #endif /* LCDMODE_LS020_TOPDOWN */
 }
 
-static void ls020_clear(COLORMAIN_T bg)
+static void ls020_clear(COLORPIP_T bg)
 {
 	unsigned i;
 
@@ -440,7 +440,7 @@ void display_initialize(void)
 void 
 display_clear(void)
 {
-	const COLORMAIN_T bg = display_getbgcolor();
+	const COLORPIP_T bg = display_getbgcolor();
 
 	ls020_clear(bg);
 }
@@ -452,12 +452,12 @@ void display_flush(void)
 
 void
 //NOINLINEAT
-colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 	ls020_setcolor(fg, bg);
 }
 
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 	colmain_setcolors(fg, bg);
 }
@@ -568,7 +568,7 @@ void display_plotstop(void)
 }
 
 void display_plot(
-	const PACKEDCOLORMAIN_T * buffer, 
+	const PACKEDCOLORPIP_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy,
 	uint_fast16_t xpix,	// начало области рисования

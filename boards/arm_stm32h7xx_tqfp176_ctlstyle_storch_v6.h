@@ -128,9 +128,9 @@
 	#define CTLREGMODE_STORCH_V6	1	/* TFT 4.3" "Воронёнок" с DSP и FPGA, SD-CARD, dual watch - mini RX */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 	#define WITHPOWERTRIMCLASSA 20	// Значение для работы в классе A
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
 	#define WITHPABIASMIN		0
@@ -268,8 +268,8 @@
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	#define WITHUSEDUALWATCH	1	// Второй приемник
-	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4

@@ -47,25 +47,29 @@ enum {
 	ELKEY_STATE_MAX		// неиспользуемое число
 };
 
+#define EKOUT_RX 0x00
+#define EKOUT_TX 0x01
+#define EKOUT_PTT 0x02
+
 static const FLASHMEM uint_fast8_t elkeyout [ELKEY_STATE_MAX] =
 {
-	0, // ELKEY_STATE_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
-	1, // ELKEY_STATE_ACTIVE_DIT,	// сейчас передаётся элемент знака
-	1, // ELKEY_STATE_ACTIVE_DASH,	// сейчас передаётся элемент знака
-	1, // ELKEY_STATE_ACTIVE_WITH_PENDING_DIT,	// появилось нажатие точки в процессе передачи элемента
-	1, // ELKEY_STATE_ACTIVE_WITH_PENDING_DASH,	// появилось нажатие тире в процессе передачи элемента
-	0, // ELKEY_STATE_SPACE_WITH_PENDING_DIT,	// появилось нажатие точки в процессе ожидания за знаком (или было ранее).
-	0, // ELKEY_STATE_SPACE_WITH_PENDING_DASH,	// появилось нажатие тире в процессе ожидания за знаком (или было ранее).
-	0, // ELKEY_STATE_SPACE,	// сейчас отсчитывается время после передачи элемента знака
-	0, // ELKEY_STATE_SPACE2,		// сейчас отсчитывается время после ОДИНОЧНОЙ паузы
+	EKOUT_RX, 	// ELKEY_STATE_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
+	EKOUT_TX, 	// ELKEY_STATE_ACTIVE_DIT,	// сейчас передаётся элемент знака
+	EKOUT_TX, 	// ELKEY_STATE_ACTIVE_DASH,	// сейчас передаётся элемент знака
+	EKOUT_TX, 	// ELKEY_STATE_ACTIVE_WITH_PENDING_DIT,	// появилось нажатие точки в процессе передачи элемента
+	EKOUT_TX, 	// ELKEY_STATE_ACTIVE_WITH_PENDING_DASH,	// появилось нажатие тире в процессе передачи элемента
+	EKOUT_PTT, 	// ELKEY_STATE_SPACE_WITH_PENDING_DIT,	// появилось нажатие точки в процессе ожидания за знаком (или было ранее).
+	EKOUT_PTT, 	// ELKEY_STATE_SPACE_WITH_PENDING_DASH,	// появилось нажатие тире в процессе ожидания за знаком (или было ранее).
+	EKOUT_RX, 	// ELKEY_STATE_SPACE,	// сейчас отсчитывается время после передачи элемента знака
+	EKOUT_RX, 	// ELKEY_STATE_SPACE2,		// сейчас отсчитывается время после ОДИНОЧНОЙ паузы
 #if WITHCAT && WITHCATEXT
 	//
-	0, // ELKEY_STATE_AUTO_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
-	1, // ELKEY_STATE_AUTO_ELEMENT_DIT,
-	1, // ELKEY_STATE_AUTO_ELEMENT_DASH,
-	0, // ELKEY_STATE_AUTO_SPACE,
-	0, // ELKEY_STATE_AUTO_SPACE2,
-	0, // ELKEY_STATE_AUTO_NEXT,
+	EKOUT_RX, 	// ELKEY_STATE_AUTO_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
+	EKOUT_TX, 	// ELKEY_STATE_AUTO_ELEMENT_DIT,
+	EKOUT_TX, 	// ELKEY_STATE_AUTO_ELEMENT_DASH,
+	EKOUT_PTT, 	// ELKEY_STATE_AUTO_SPACE,
+	EKOUT_PTT, 	// ELKEY_STATE_AUTO_SPACE2,
+	EKOUT_PTT, 	// ELKEY_STATE_AUTO_NEXT,
 #endif /* WITHCAT && WITHCATEXT */
 };
 
@@ -929,11 +933,33 @@ elkey_get_output(void)
 {
 #if WITHELKEY	
 	const uint_fast8_t r = 
-		elkeyout [elkey0.state] != 0 || 
+		(elkeyout [elkey0.state] & EKOUT_TX) != 0 ||
 		elkey_manual() ||
   #if WITHCAT	
 	#if WITHCATEXT
-		elkeyout [elkey1.state] != 0 ||
+		(elkeyout [elkey1.state] & EKOUT_TX) != 0 ||
+	#endif	/* WITHCATEXT */
+		cat_get_keydown() ||
+  #endif	/* WITHCAT */
+		0;
+
+	return r;
+#else /* WITHELKEY */
+	return 0;
+#endif /* WITHELKEY */
+}
+
+// вызывается из обработчика прерываний.
+uint_fast8_t
+elkey_get_ptt(void)
+{
+#if WITHELKEY
+	const uint_fast8_t r =
+		(elkeyout [elkey0.state] & (EKOUT_PTT | EKOUT_TX)) != 0 ||
+		elkey_manual() ||
+  #if WITHCAT
+	#if WITHCATEXT
+		(elkeyout [elkey1.state] & (EKOUT_PTT | EKOUT_TX)) != 0 ||
 	#endif	/* WITHCATEXT */
 		cat_get_keydown() ||
   #endif	/* WITHCAT */

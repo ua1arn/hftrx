@@ -354,11 +354,12 @@ seqhastxrequest(void)
 	return 0;
 }
 
+// вызывается из SYSTEM обработчика прерываний
 static void
-seq_txpath_set(portholder_t txpathstate)
+seq_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
 {
 #if WITHINTEGRATEDDSP
-	dsp_txpath_set(txpathstate);
+	dsp_txpath_set(txpathstate, keydown);
 #endif
 	hardware_txpath_set(txpathstate);
 }
@@ -378,7 +379,7 @@ seq_txpath_set(portholder_t txpathstate)
 //
 
 
-// вызывается из обработчика прерываний. Желательно вызывать самым первым для уменьшения
+// вызывается из SYSTEM обработчика прерываний. Желательно вызывать самым первым для уменьшения
 // паразитного дрейфа по времени
 
 static void 
@@ -386,8 +387,9 @@ seq_spool_ticks(void * ctc)
 {
 	// Поместить в линию задержки данные со стороны источника манипуляции
 	//
+	const uint_fast8_t keyptt = elkey_get_ptt();	// а так же состояния ручной манипуляции, манипуляции от CAT...
 	const uint_fast8_t keydown = elkey_get_output();	// а так же состояния ручной манипуляции, манипуляции от CAT...
-	if (keydown && seq_bkinenable && seq_cwenable)
+	if ((keydown || keyptt) && seq_bkinenable && seq_cwenable)
 	{
 		bkin_count = bkin_delay;
 	}
@@ -417,7 +419,7 @@ seq_spool_ticks(void * ctc)
 	switch (seqstate)
 	{
 	case SEQST_INITIALIZE:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]]);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
 		// начальное состояние - проверяются источники запросов на переход в режим передачи
 		if (seqhastxrequest() != 0)
 		{
@@ -437,7 +439,7 @@ seq_spool_ticks(void * ctc)
 		break;
 
 	case SEQST_PUSHED_SWITCHTORX:	
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]]);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
 		// ждем перехода на на приём от пользовательской программы
 		// обработка ожиданий времени при переходах между состояниями.
 		if (-- seqpushtime == 0)
@@ -448,7 +450,7 @@ seq_spool_ticks(void * ctc)
 
 
 	case SEQST_PUSHED_HOLDTX:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]]);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		// обработка ожиданий времени при переходах между состояниями.
 		// ждём, когда переключится антенное реле на передачу
 		if (-- seqpushtime == 0)
@@ -459,7 +461,7 @@ seq_spool_ticks(void * ctc)
 
 	// перед переходом на приём, после отпускания тангенты - формирование звукового сигнала (roger beep)
 	case SEQST_RGBEEP:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [keydowndly]]);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [keydowndly]], 0);	// - аппаратное управление выдачей несущей
 		if (-- seqpushtime != 0)
 		{
 		}
@@ -481,7 +483,7 @@ seq_spool_ticks(void * ctc)
 	break;
 
 	case SEQST_PUSHED_WAIT_ACK_TX:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]]);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
 		// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
 		if (-- seqpushtime == 0)
 		{
@@ -493,7 +495,7 @@ seq_spool_ticks(void * ctc)
 	// до перехода в режим приёма, комбинация условий режима работы проверяется
 	// на каждом "тике" таймера.
 	case SEQST_HOLDTX:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [keydowndly]]);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [keydowndly]], keydown);	// - аппаратное управление выдачей несущей
 		if (seqhastxrequest() == 0)
 		{
 			// Если запрос на передачу исчез - выполняем всю последовательность действий до перехода на приём.
@@ -536,7 +538,7 @@ seq_spool_ticks(void * ctc)
 		break;
 
 	case SEQST_SWITCHTORX:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]]);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
 		// ожидание перепрограммирования переиферии на приём - пока переключаем SPI регистры
 	// ожидание перепрограммирования переиферии на приём - пока переключаем SPI регистры
 	// ждём перехода user mode программы на приём
@@ -597,7 +599,7 @@ void seq_initialize(void)
 
 	hardware_txpath_initialize();
 	//seq_set_txgate_P(txgfva0, sdtnva0);	// Сделано статической инициализацией
-	seq_txpath_set(TXGFV_RX);	// - аппаратное управление выдачей несущей - в состояние приём
+	seq_txpath_set(TXGFV_RX, 0);	// - аппаратное управление выдачей несущей - в состояние приём
 	board_sidetone_enable(0); // - остановить выдачу сигнала самоконтроля
 
 

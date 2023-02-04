@@ -1,0 +1,22 @@
+#type; DMAC
+#base; DMAC 0x03002000
+#regdef; DMAC_IRQ_EN_REG0; 0x0000; DMAC IRQ Enable Register 0
+#regdef; DMAC_IRQ_EN_REG1; 0x0004; DMAC IRQ Enable Register 1
+#regdef; DMAC_IRQ_PEND_REG0; 0x0010; DMAC IRQ Pending Register 0
+#regdef; DMAC_IRQ_PEND_REG1; 0x0014; DMAC IRQ Pending Register 1
+#regdef; DMAC_AUTO_GATE_REG; 0x0028; DMAC Auto Gating Register
+#regdef; DMAC_STA_REG; 0x0030; DMAC Status Register
+#aggreg; CH; 0x100 16; Channel [0..15]
+#regdef; DMAC_EN_REGN; 0x000; DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040
+#regdef; DMAC_PAU_REGN; 0x004; DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040
+#regdef; DMAC_DESC_ADDR_REGN; 0x008; DMAC Channel Start Address Register N (N = 0 to 15) 0x0108 + N*0x0040
+#regdef; DMAC_CFG_REGN; 0x00C; DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040
+#regdef; DMAC_CUR_SRC_REGN; 0x010; DMAC Channel Current Source Register N (N = 0 to 15) 0x0110 + N*0x0040
+#regdef; DMAC_CUR_DEST_REGN; 0x014; DMAC Channel Current Destination Register N (N = 0 to 15) 0x0114 + N*0x0040
+#regdef; DMAC_BCNT_LEFT_REGN; 0x018; DMAC Channel Byte Counter Left Register N (N = 0 to 15) 0x0118 + N*0x0040
+#regdef; DMAC_PARA_REGN; 0x01C; DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040
+#regdef; DMAC_MODE_REGN; 0x028; DMAC Mode Register N (N = 0 to 15) 0x0128 + N*0x0040
+#regdef; DMAC_FDESC_ADDR_REGN; 0x02C; DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040
+#regdef; DMAC_PKG_NUM_REGN; 0x030; DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040
+#regdef; padding 0; 0x40; Placeholder for 0x40 alignment
+#aggregend;

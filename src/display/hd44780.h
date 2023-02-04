@@ -36,13 +36,12 @@
 
 // Цветное изображение не поддерживается на этом дисплее (заглушка).
 #define TFTRGB(r, g, b)	(0)
-#define TFTRGB565 TFTRGB
-typedef uint_fast8_t COLORMAIN_T;	/* цвета не поддерживаются - заглушка */
-typedef uint8_t PACKEDCOLORMAIN_T;
+typedef uint_fast8_t COLORPIP_T;	/* цвета не поддерживаются - заглушка */
+typedef uint8_t PACKEDCOLORPIP_T;
 
 
-typedef PACKEDCOLORMAIN_T PACKEDCOLORPIP_T;
-typedef COLORMAIN_T COLORPIP_T;
+typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
+typedef COLORPIP_T COLORPIP_T;
 
 // начальные коды символов для отображения псевдографики
 #define PATTERN_BAR_FULL 4	/* в случае двух градаций может быть 3 - и будет место ещё для двух специсмволов */

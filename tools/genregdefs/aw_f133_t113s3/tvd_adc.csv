@@ -1,0 +1,5 @@
+#type; TVD_ADC
+#regdef; TVD_TOP_CTL; 0x04; TVD TOP CONTROL Register
+#regdef; TVD_ADC_CTL; 0x08; TVD ADC CONTROL Register
+#regdef; TVD_ADC_CFG; 0x0c; TVD ADC CONFIGURATION Register
+#regdef; padding 0; 0x020; Need for address arithmetics

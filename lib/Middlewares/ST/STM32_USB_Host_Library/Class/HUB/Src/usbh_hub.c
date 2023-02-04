@@ -346,7 +346,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 	else
 	{
 		  // check USBH_free
-		static RAMNOINIT_D1 HUB_HandleTypeDef staticHUB_Handle;
+		static HUB_HandleTypeDef staticHUB_Handle;
 		phost->pActiveClass->pData = & staticHUB_Handle;
 		//phost->hubDatas [phost->hubInstances] = (HUB_HandleTypeDef *) USBH_malloc(sizeof (HUB_HandleTypeDef));
 

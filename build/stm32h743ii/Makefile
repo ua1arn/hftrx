@@ -67,6 +67,7 @@ MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32H7xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
+LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -146,6 +147,12 @@ SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 
+ifeq (1, 0)
+# LuPng
+SRCDIRS += $(LUPNGDIR)
+DINCDIR += $(LUPNGDIR)
+endif
+
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
@@ -181,8 +188,8 @@ ASFLAGS = $(MCFLAGS) $(OPT) -g -gdwarf-2 $(ADEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
 # see also -Xlinker --print-gc-sections
-LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
-LDFLAGS_APP = $(MCFLAGS) $(OPT) -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
+LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
+LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d

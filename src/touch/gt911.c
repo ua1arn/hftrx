@@ -192,8 +192,8 @@ void gt911_fwResolution(uint_fast16_t maxX, uint_fast16_t maxY)
 	}
 }
 
-uint_fast32_t gt911_productID(void) {
-	uint_fast8_t res;
+uint32_t gt911_productID(void) {
+	uint32_t res;
 	uint8_t buf [4];
 
 	gt911_read(GOODIX_REG_ID, buf, 4);
@@ -201,6 +201,7 @@ uint_fast32_t gt911_productID(void) {
 	return res;
 }
 
+/* получение ненормальзованных координат нажатия */
 uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 {
 	if (! tscpresetnt || ! gt911_interrupt_get())
@@ -213,16 +214,9 @@ uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 	if (contacts == 0)
 		return 0;
 
-#if BOARD_TSC1_XMIRROR
-	* xt = DIM_X - 1 - points [0].x;
-#else /* BOARD_TSC1_XMIRROR */
 	* xt = points [0].x;
-#endif /* BOARD_TSC1_XMIRROR */
-#if BOARD_TSC1_YMIRROR
-	* yt = DIM_Y - 1 - points [0].y;
-#else /* BOARD_TSC1_XMIRROR */
 	* yt = points [0].y;
-#endif /* BOARD_TSC1_XMIRROR */
+
 	return 1;
 }
 
@@ -232,7 +226,7 @@ uint_fast8_t gt911_initialize(void)
 
 	gt911_addr = GOODIX_I2C_ADDR_BA;
 	tscpresetnt = 0;
-	uint_fast32_t id = gt911_productID();
+	uint32_t id = gt911_productID();
 	if (id != GT911_ID)
 		return 0;
 

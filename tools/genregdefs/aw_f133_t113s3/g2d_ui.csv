@@ -1,0 +1,12 @@
+#type; G2D_UI
+#base; G2D_UI0 0x05411000
+#base; G2D_UI1 0x05411800
+#base; G2D_UI2 0x05412000
+#regdef; UI_ATTR; 0x00; UIx_ATTR
+#regdef; UI_MBSIZE; 0x04; UIx_MBSIZE
+#regdef; UI_COOR; 0x08; UIx_COOR
+#regdef; UI_PITCH; 0x0C; UIx_PITCH
+#regdef; UI_LADD; 0x10; UIx_LADD
+#regdef; UI_FILLC; 0x14; UIx_FILLC
+#regdef; UI_HADD; 0x18; UIx_HADD
+#regdef; UI_SIZE; 0x1C; UIx_SIZE

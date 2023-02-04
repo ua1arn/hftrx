@@ -38,10 +38,6 @@ void prog_dds3_ftw(const ftw_t * value);
 void prog_rts1_ftw(const ftw_t * value);	// Установка центральной частоты панорамного индикатора
 void prog_xvtr_freq(uint_fast32_t f,uint_fast8_t enable);	// Установка частоты конвертора
 
-void xcz_dds_ftw(const ftw_t * value);	// Установка центральной частоты тракта основного приёмника
-void xcz_dds_ftw_sub(const ftw_t * value);// Установка центральной частоты тракта дополнительного приёмника
-void xcz_dds_rts(const ftw_t * value);// Установка центральной частоты панорамного индикатора
-
 typedef uint_fast32_t pllhint_t;
 
 void si570_initialize(void);
@@ -75,7 +71,7 @@ void board_set_lctl1(uint_fast8_t v); // управление внешним с�
 
 void board_set_tx(uint_fast8_t v);	/* включение на передачу */
 void board_set_tx_loopback(uint_fast8_t v);	/* включение спектроанализатора сигнала передачи */
-void board_set_opowerlevel(uint_fast8_t n);	/* установить выходную мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+void board_set_txlevel(uint_fast8_t n);	/* установить выходную мощность BOARDPOWERMIN..BOARDPOWERMAX */
 
 void board_set_att(uint_fast8_t v);
 void board_set_antenna(uint_fast8_t v);
@@ -188,10 +184,6 @@ void board_rgrbeep_enable(uint_fast8_t state);	/* roger beep (вызываетс
 void board_testsound_enable(uint_fast8_t state);
 void board_subtone_setfreq(uint_least16_t tonefreq01);	/* tonefreq - частота в десятых долях герца. */
 void board_subtone_enable_user(uint_fast8_t state);
-
-/* загрузка коэффициентов FIR фильтра в FPGA */
-void board_fpga_fir_initialize(void);
-void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth); /* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
 /* управление полосовыми фильтрами - bandpass.c */
 void bandf_calc_initialize(void);
 void bandf2_calc_initialize(void);
@@ -209,7 +201,7 @@ void board_rtc_getdate(
 void board_rtc_gettime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	);
 void board_rtc_getdatetime(
 	uint_fast16_t * year,
@@ -217,7 +209,7 @@ void board_rtc_getdatetime(
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	);
 void board_rtc_getdatetime_low(
 	volatile uint_fast16_t * year,
@@ -225,7 +217,7 @@ void board_rtc_getdatetime_low(
 	volatile uint_fast8_t * dayofmonth,
 	volatile uint_fast8_t * hour,
 	volatile uint_fast8_t * minute,
-	volatile uint_fast8_t * secounds
+	volatile uint_fast8_t * seconds
 	);
 
 // функции без задержек на чтение из аппаратного RTC
@@ -237,7 +229,7 @@ void board_rtc_cached_getdate(
 void board_rtc_cached_gettime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	);
 void board_rtc_cached_getdatetime(
 	uint_fast16_t * year,
@@ -245,7 +237,7 @@ void board_rtc_cached_getdatetime(
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	);
 
 void board_rtc_setdate(
@@ -256,7 +248,7 @@ void board_rtc_setdate(
 void board_rtc_settime(
 	uint_fast8_t hour,
 	uint_fast8_t minute,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	);
 void board_rtc_setdatetime(
 	uint_fast16_t year,
@@ -264,9 +256,19 @@ void board_rtc_setdatetime(
 	uint_fast8_t dayofmonth,
 	uint_fast8_t hour,
 	uint_fast8_t minute,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	);
 uint_fast8_t board_rtc_chip_initialize(void);
+void board_get_compile_datetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * dayofmonth,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * seconds
+	);
+
+void board_get_serialnr(unsigned * sn);
 
 #if defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 

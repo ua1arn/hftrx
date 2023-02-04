@@ -101,138 +101,6 @@
 
 #define DEVICE_ADDRESS_MASK      0x7F
 
-/* USB defined request codes */
-/* see chapter 9 of the USB 2.0 specifcation for more information. */
-/* These are the correct values based on the USB 2.0 specification */
-//#define USB_REQUEST_GET_STATUS                    0x00
-//#define USB_REQUEST_CLEAR_FEATURE                 0x01
-//#define USB_REQUEST_SET_FEATURE                   0x03
-//#define USB_REQUEST_SET_ADDRESS                   0x05
-//#define USB_REQUEST_GET_DESCRIPTOR                0x06
-//#define USB_REQUEST_SET_DESCRIPTOR                0x07
-//#define USB_REQUEST_GET_CONFIGURATION             0x08
-//#define USB_REQUEST_SET_CONFIGURATION             0x09
-//#define USB_REQUEST_GET_INTERFACE                 0x0A
-//#define USB_REQUEST_SET_INTERFACE                 0x0B
-//#define USB_REQUEST_SYNC_FRAME                    0x0C
-
-/* defined USB device classes */
-/*
-#define USB_DEVICE_CLASS_RESERVED           0x00
-#define USB_DEVICE_CLASS_AUDIO              0x01
-#define USB_DEVICE_CLASS_COMMUNICATIONS     0x02
-#define USB_DEVICE_CLASS_HUMAN_INTERFACE    0x03
-#define USB_DEVICE_CLASS_MONITOR            0x04
-#define USB_DEVICE_CLASS_PHYSICAL_INTERFACE 0x05
-#define USB_DEVICE_CLASS_POWER              0x06
-#define USB_DEVICE_CLASS_PRINTER            0x07
-#define USB_DEVICE_CLASS_STORAGE            0x08
-#define USB_DEVICE_CLASS_HUB                0x09
-#define USB_DEVICE_CLASS_TMC                0xFE
-#define USB_DEVICE_CLASS_VENDOR_SPECIFIC    0xFF
-
-*/
-//
-//#define  USB_REQ_TYPE_STANDARD                          0x00
-//#define  USB_REQ_TYPE_CLASS                             0x20
-//#define  USB_REQ_TYPE_VENDOR                            0x40
-//#define  USB_REQ_TYPE_MASK                              0x60
-//#define  USB_REQ_TYPE_DIR                               0x80	// IN for non-zero
-//
-//#define  USB_REQ_RECIPIENT_DEVICE                       0x00
-//#define  USB_REQ_RECIPIENT_INTERFACE                    0x01
-//#define  USB_REQ_RECIPIENT_ENDPOINT                     0x02
-//#define  USB_REQ_RECIPIENT_MASK                         0x03
-
-//#define  USB_REQ_GET_STATUS                             0x00
-//#define  USB_REQ_CLEAR_FEATURE                          0x01
-//#define  USB_REQ_SET_FEATURE                            0x03
-//#define  USB_REQ_SET_ADDRESS                            0x05
-//#define  USB_REQ_GET_DESCRIPTOR                         0x06
-//#define  USB_REQ_SET_DESCRIPTOR                         0x07
-//#define  USB_REQ_GET_CONFIGURATION                      0x08
-//#define  USB_REQ_SET_CONFIGURATION                      0x09
-//#define  USB_REQ_GET_INTERFACE                          0x0A
-//#define  USB_REQ_SET_INTERFACE                          0x0B
-//#define  USB_REQ_SYNCH_FRAME                            0x0C
-
-//
-///** @defgroup USBH_CTLREQ_Exported_Defines
-//  * @{
-//  */
-///*Standard Feature Selector for clear feature command*/
-//#define FEATURE_SELECTOR_ENDPOINT         0x00
-//#define FEATURE_SELECTOR_DEVICE           0x01
-//
-//
-//#define INTERFACE_DESC_TYPE               0x04
-//#define ENDPOINT_DESC_TYPE                0x05
-//#define INTERFACE_DESC_SIZE               0x09
-//
-//#define  USB_LEN_DESC_HDR                               0x02
-//#define  USB_LEN_DEV_DESC                               0x12
-//#define  USB_LEN_CFG_DESC                               0x09
-//#define  USB_LEN_IF_DESC                                0x09
-//#define  USB_LEN_EP_DESC                                0x07
-//#define  USB_LEN_OTG_DESC                               0x03
-//#define  USB_LEN_SETUP_PKT                              0x08
-//
-///* bmRequestType :D7 Data Phase Transfer Direction  */
-//#define  USB_REQ_DIR_MASK                               0x80
-//#define  USB_H2D                                        0x00
-//#define  USB_D2H                                        0x80
-//
-/* bmRequestType D6..5 Type */
-//#define  USB_REQ_TYPE_STANDARD                          0x00
-//#define  USB_REQ_TYPE_CLASS                             0x20
-//#define  USB_REQ_TYPE_VENDOR                            0x40
-//#define  USB_REQ_TYPE_RESERVED                          0x60
-
-/* bmRequestType D4..0 Recipient */
-//#define  USB_REQ_RECIPIENT_DEVICE                       0x00
-//#define  USB_REQ_RECIPIENT_INTERFACE                    0x01
-//#define  USB_REQ_RECIPIENT_ENDPOINT                     0x02
-//#define  USB_REQ_RECIPIENT_OTHER                        0x03
-
-/* Table 9-4. Standard Request Codes  */
-/* bRequest , Value */
-//#define  USB_REQ_GET_STATUS                             0x00
-//#define  USB_REQ_CLEAR_FEATURE                          0x01
-//#define  USB_REQ_SET_FEATURE                            0x03
-//#define  USB_REQ_SET_ADDRESS                            0x05
-//#define  USB_REQ_GET_DESCRIPTOR                         0x06
-//#define  USB_REQ_SET_DESCRIPTOR                         0x07
-//#define  USB_REQ_GET_CONFIGURATION                      0x08
-//#define  USB_REQ_SET_CONFIGURATION                      0x09
-//#define  USB_REQ_GET_INTERFACE                          0x0A
-//#define  USB_REQ_SET_INTERFACE                          0x0B
-//#define  USB_REQ_SYNCH_FRAME                            0x0C
-//
-///* Table 9-5. Descriptor Types of USB Specifications */
-//#define  USB_DESC_TYPE_DEVICE                              1
-//#define  USB_DESC_TYPE_CONFIGURATION                       2
-//#define  USB_DESC_TYPE_STRING                              3
-//#define  USB_DESC_TYPE_INTERFACE                           4
-//#define  USB_DESC_TYPE_ENDPOINT                            5
-//#define  USB_DESC_TYPE_DEVICE_QUALIFIER                    6
-//#define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION           7
-//#define  USB_DESC_TYPE_INTERFACE_POWER                     8
-//#define  USB_DESC_TYPE_HID                                 0x21
-//#define  USB_DESC_TYPE_HID_REPORT                          0x22
-//
-//
-//#define  USB_DESC_TYPE_DEVICE                              1
-//#define  USB_DESC_TYPE_CONFIGURATION                       2
-//#define  USB_DESC_TYPE_STRING                              3
-//#define  USB_DESC_TYPE_INTERFACE                           4
-//#define  USB_DESC_TYPE_ENDPOINT                            5
-//#define  USB_DESC_TYPE_DEVICE_QUALIFIER                    6
-//#define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION           7
-//#define  USB_DESC_TYPE_BOS                                 0x0F
-//
-//#define USB_CONFIG_REMOTE_WAKEUP                           0x02
-//#define USB_CONFIG_SELF_POWERED                            0x01
-
 #define CS_INTERFACE                 0x24
 
 #define CDC_INTERFACE_DESCRIPTOR_TYPE                 0x24
@@ -666,5 +534,11 @@
 // DFU
 
 #define DFU_DESCRIPTOR_TYPE            0x21
+
+// MTP
+
+#define USB_MTP_INTRERFACE_CLASS                                    0x06U
+#define USB_MTP_INTRERFACE_SUB_CLASS                                0x01U
+#define USB_MTP_INTRERFACE_PROTOCOL                                 0x01U
 
 #endif   /* USB200_H_INCLUDED */

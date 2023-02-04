@@ -1,24 +1,12 @@
 /* $Id$ */
 /* XILINX XC7Z010/XC7Z015/XC7Z020 memory layout */
 /* Linker script to configure memory regions. */
-
-/* Note: due to ROM code RAM needs, FSBL payload is limited to 247 KB.  */
-/* The ROM code loads the image into SYSRAM internal memory at address 0x2ffc2400.  */
-/*
-	https://community.st.com/s/question/0D50X0000BiDo0fSQC/stm32mp157aab-failed-to-boot-from-nor-qspi-baremetal?t=1575552683743
-	
-	Load address is ALWAYS 0x2FFC2400 for FSBL, whatever you put in the header (it is ignored for FSBL).
-	Entry point in the header could be anywhere after the header (i.e. 0x2FFC2500) and the end of the SYSRAM
-	I recommend to compile your FSBL SW to fit with a region starting from 0x2FFC2500 (with a size of max 247KB minus 256 for header).
-	Entry point will depend on your SW startup.s construction, it is not always at the very first address.
-*/
 MEMORY
 {
-  FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
-  TTB (rwx)  	: ORIGIN = 0x00100000, LENGTH = 1M		/* last 16 kB OCM3 for TTB */
-  RAM (rwx) 	: ORIGIN = 0x00200100, LENGTH = 0x0FDFFF00  	/* DDR3 255 MB - 1 MB - 256 B */
+  TTB (rwx)  	: ORIGIN = 0x00100000, LENGTH = 16k		/* first 16 kB DDR3 for TTB */
+  RAM (rwx) 	: ORIGIN = 0x00104100, LENGTH = 0x0FEFBF00  	/* DDR3 255 MB - 16 kB - 256 B */
   OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
-  OCM3 (rwx)	: ORIGIN = 0xFFFF4000, LENGTH = 0x00BE00		/* OCM3 - on-chip memory 64k - 16k - 512 for TTB */
+  FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
 }
 
 /* Library configurations */
@@ -91,11 +79,6 @@ SECTIONS
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
 	*/
-	/*
-		LONG (__etext2)
-		LONG (__data2_start__)
-		LONG (__data2_end__ - __data2_start__)
-	*/
 		__copy_table_end__ = .;
 	} > RAM
 
@@ -136,21 +119,22 @@ SECTIONS
  		*(SORT(.dtors.*))
  		*(.dtors)
 
+		. = ALIGN(64);
 		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
 
-		*(.data*)
-		. = ALIGN(4);
-		
 		. = ALIGN(32);
-		KEEP(*(.vectors))
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
+
 		. = ALIGN(64);
-		KEEP(*(.itcm*))
+		*(.data*)
 		. = ALIGN(64);
-		KEEP(*(.dtcm*))
+		*(.itcm*)
+		. = ALIGN(64);
+		*(.dtcm*)
 		. = ALIGN(32);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -178,43 +162,23 @@ SECTIONS
 		__data_end__ = .;
 
 	} > RAM
-/*
-	__etext2 = .;
 
-	.sysram : AT (__etext2)
-	{
-		__data2_start__ = .;
-		. = ALIGN(32);
-		KEEP(*(.vectors))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-		. = ALIGN(64);
-		KEEP(*(.itcm*))
-		. = ALIGN(64);
-		KEEP(*(.dtcm*))
-		. = ALIGN(32);
-		__data2_end__ = .;
-	} > SYSRAM
-
-	. = __etext2 + __data2_end__ - __data2_start__;
-
-*/
 	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
-		. = ALIGN(32);
+		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(32);
+		. = ALIGN(64);
 		__bss_end__ = .;
 	} > RAM
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
-		KEEP(*(.noinit*))
+		*(.noinit*)
 		. = ALIGN(64);
-		KEEP(*(.framebuff*))
+		*(.framebuff*)
 		. = ALIGN(64);
 	} > RAM
 

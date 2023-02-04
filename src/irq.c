@@ -13,6 +13,24 @@
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
+#if WITHFT8
+
+#include "ft8.h"
+
+void xcz_ipi_sendmsg_c0(uint8_t msg)
+{
+	ft8.int_core0 = msg;
+	GIC_SendSGI(ft8_interrupt_core0, TARGETCPU_CPU0, 0x00);
+}
+
+void xcz_ipi_sendmsg_c1(uint8_t msg)
+{
+	ft8.int_core1 = msg;
+	GIC_SendSGI(ft8_interrupt_core1, TARGETCPU_CPU1, 0x00);
+}
+
+#endif
+
 #if 0
 
 static const char * mode_trig(uint32_t mode)
@@ -923,7 +941,7 @@ uint32_t gARM_BASEPRI_ALL_ENABLED;
 /* Initialize segments */
 void Default_Handler(void)
 {
-	PRINTF(PSTR("Default_Handler trapped, ICSR=%08lX (IRQn=%u).\n"), SCB->ICSR, (SCB->ICSR & 0xFF) - 16);
+	PRINTF(PSTR("Default_Handler trapped, ICSR=%08X (IRQn=%u).\n"), (unsigned) SCB->ICSR, (unsigned) ((SCB->ICSR & 0xFF) - 16));
 	for (;;)
 		;
 }
@@ -1121,9 +1139,7 @@ void Reset_Handler(void)
  *------------------------------------------------------------------------------*/
 
 
-const
-__VECTOR_TABLE_ATTRIBUTE
-IntFunc __Vectors [NVIC_USER_IRQ_OFFSET] = {
+const IntFunc __VECTOR_TABLE [NVIC_USER_IRQ_OFFSET] __VECTOR_TABLE_ATTRIBUTE = {
 
     /* Configure Initial Stack Pointer, using linker-generated symbols */
     (IntFunc)(& __stack),
@@ -1153,7 +1169,7 @@ static void vectors_relocate(void)
 	unsigned i;
 
 	//PRINTF(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
-	memcpy((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4);
+	memcpy((void *) ramVectors, __VECTOR_TABLE, NVIC_USER_IRQ_OFFSET * 4);
 	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
 	{
 		ramVectors [i] = Default_Handler;
@@ -1264,9 +1280,7 @@ void Reset_Handler(void)
  *------------------------------------------------------------------------------*/
 
 
-const
-__VECTOR_TABLE_ATTRIBUTE
-IntFunc __Vectors [512] = {
+const IntFunc __Vectors [512] __VECTOR_TABLE_ATTRIBUTE = {
 
     /* Configure Initial Stack Pointer, using linker-generated symbols */
     (IntFunc)(& __stack),
@@ -1314,11 +1328,223 @@ static void vectors_relocate(void)
 
 #endif /* ( __ARM_ARCH == 8) */
 
-#if CPUSTYLE_ARM && WITHSMPSYSTEM
+
+#if CPUSTYLE_RISCV
+
+// See:
+// https://codebrowser.dev/glibc/glibc/sysdeps/riscv/start.S.html
+// https://twilco.github.io/riscv-from-scratch/2019/03/10/riscv-from-scratch-1.html
+// https://twilco.github.io/riscv-from-scratch/2019/04/27/riscv-from-scratch-2.html
+//
+// https://www.shincbm.com/embedded/2021/04/30/riscv-and-modern-c++-part1-1.html
+// https://www.shincbm.com/embedded/2021/06/24/riscv-and-modern-c++-part1-7.html
+
+void EMPTY_Handler(void)
+{
+	PRINTF("EMPTY_Handler\n");
+	const uint_fast16_t mcause = csr_read_mcause();
+	PRINTF("EMPTY_Handler: mcause=%u\n", (unsigned) mcause);
+	for (;;)
+		;
+}
+
+void SYNCTRAP_Handler(void)
+{
+	PRINTF("SYNCTRAP_Handler\n");
+	PRINTF("mepc=%p, mtval=%p\n", (void *) csr_read_mepc(), (void *) csr_read_mtval());
+	const uint_xlen_t mcause = csr_read_mcause();
+	switch (mcause & 0xFFF)
+	{
+	case 0: 	PRINTF("Instruction address misaligned\n"); break;
+	case 1:		PRINTF("Instruction access fault\n"); break;
+	case 2:		PRINTF("Illegal instruction\n"); break;
+	case 3:		PRINTF("Breakpoint\n"); break;
+	case 4:		PRINTF("Load address misaligned\n"); break;
+	case 5:		PRINTF("Load access fault\n"); break;
+	case 6:		PRINTF("Store/AMO address misaligned\n"); break;
+	case 7:		PRINTF("Store/AMO access fault\n"); break;
+	case 8:		PRINTF("Environment call from U-mode\n"); break;
+	case 9:		PRINTF("Environment call from S-mode\n"); break;
+	case 11:	PRINTF("Environment call from M-mode\n"); break;
+	case 12:	PRINTF("Instruction page fault\n"); break;
+	case 13:	PRINTF("Load page fault\n"); break;
+	case 15:	PRINTF("Store/AMO page fault\n"); break;
+	default:	PRINTF("mcause=%u\n", (unsigned) mcause); break;
+	}
+	for (;;)
+		;
+}
+
+void VMSI_Handler(void)
+{
+	PRINTF("VMSI_Handler\n");
+	const uint_fast16_t mcause = csr_read_mcause();
+	PRINTF("VMSI_Handler: mcause=%u, mepc=%p\n", (unsigned) mcause, (void *) csr_read_mepc());
+	for (;;)
+		;
+}
+
+void VMTI_Handler(void)
+{
+	PRINTF("VMTI_Handler\n");
+	const uint_fast16_t mcause = csr_read_mcause();
+	PRINTF("VMTI_Handler: mcause=%u\n", (unsigned) mcause);
+	for (;;)
+		;
+}
+
+static void (* volatile plic_vectors [MAX_IRQ_n])(void);
+
+// See https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
+
+void VMEI_Handler(void)
+{
+	const uint_fast16_t int_id = PLIC->PLIC_MCLAIM_REG;		// bits 9..0
+	//PRINTF(/* "VMEI_Handler enter: int_" */ "ID=%u\n", int_id);
+	if (int_id != 0)
+	{
+	#if WITHNESTEDINTERRUPTS
+		const uint_fast8_t priority = PLIC->PLIC_MTH_REG;	/* текущий уровень приоритета (bits 4..0) */
+		PLIC->PLIC_MTH_REG = PLIC->PLIC_PRIO_REGn [int_id];	/* обрабатываемый уровень приоритета */
+		const uint_xlen_t mepc = csr_read_mepc();
+		const uint_xlen_t mcause = csr_read_mcause();
+		const uint_xlen_t mstatus = csr_read_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); /* раразршение прерываний */
+		ASSERT((mstatus & MSTATUS_MIE_BIT_MASK) == 0);	/* прерывания были запрещены при входе в обработчик */
+		//ASSERT(PLIC->PLIC_MTH_REG > priority);		/* прервать может только более высокий уровень */
+	#endif /* WITHNESTEDINTERRUPTS */
+		__FPU_Enable();
+		ASSERT(int_id < MAX_IRQ_n);
+		(plic_vectors [int_id])();
+	#if WITHNESTEDINTERRUPTS
+		csr_write_mstatus(mstatus);		/* прерывания запрещаются здесь - до mret */
+		csr_write_mcause(mcause);
+		csr_write_mepc(mepc);
+		PLIC->PLIC_MTH_REG = priority;	/* восстанавливаем обрабатываемый уровень приоритета */
+	#endif /* WITHNESTEDINTERRUPTS */
+		PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
+	}
+	//PRINTF(/* "VMEI_Handler  exit: int_" */ "id=%u\n", int_id);
+}
+
+void IRQ0_Handler(void)
+{
+	PRINTF("IRQ0_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ1_Handler(void)
+{
+	PRINTF("IRQ1_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ2_Handler(void)
+{
+	PRINTF("IRQ2_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ3_Handler(void)
+{
+	PRINTF("IRQ3_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ4_Handler(void)
+{
+	PRINTF("IRQ4_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ5_Handler(void)
+{
+	PRINTF("IRQ5_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ6_Handler(void)
+{
+	PRINTF("IRQ6_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ7_Handler(void)
+{
+	PRINTF("IRQ7_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ8_Handler(void)
+{
+	PRINTF("IRQ8_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ9_Handler(void)
+{
+	PRINTF("IRQ9_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ10_Handler(void)
+{
+	PRINTF("IRQ10_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ11_Handler(void)
+{
+	PRINTF("IRQ11_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ12_Handler(void)
+{
+	PRINTF("IRQ12_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ13_Handler(void)
+{
+	PRINTF("IRQ13_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ14_Handler(void)
+{
+	PRINTF("IRQ14_Handler\n");
+	for (;;)
+		;
+}
+
+void IRQ15_Handler(void)
+{
+	PRINTF("IRQ15_Handler\n");
+	for (;;)
+		;
+}
+
+#endif /* CPUSTYLE_RISCV */
+
+#if CPUSTYLE_ARM && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
-void spin_lock(volatile spinlock_t * p, const char * file, int line)
+void spin_lock(spinlock_t * __restrict p, const char * file, int line)
 {
 #if WITHDEBUG
 	unsigned v = 0xFFFFFFFF;
@@ -1327,7 +1553,7 @@ void spin_lock(volatile spinlock_t * p, const char * file, int line)
 	int status;
 	do
 	{
-		while (__LDREXW(& p->lock) != 0)// Wait until
+		while (__LDREXB(& p->lock) != 0)// Wait until
 		{
 			__NOP();	// !!!! strange, but unstable work without this line...
 #if WITHDEBUG
@@ -1340,7 +1566,7 @@ void spin_lock(volatile spinlock_t * p, const char * file, int line)
 #endif /* WITHDEBUG */
 		}
 		// Lock_Variable is free
-		status = __STREXW(1, & p->lock); // Try to set
+		status = __STREXB(1, & p->lock); // Try to set
 	// Lock_Variable
 	} while (status != 0); //retry until lock successfully
 	__DMB();		// Do not start any other memory access
@@ -1385,7 +1611,7 @@ void spin_lock2(volatile spinlock_t * p, const char * file, int line)
 }
 */
 
-void spin_unlock(volatile spinlock_t *p)
+void spin_unlock(spinlock_t * __restrict p)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	__DMB(); // Ensure memory operations completed before
@@ -1453,7 +1679,7 @@ static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const 
 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
-#if CPUSTYLE_ARM
+#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
@@ -1464,12 +1690,7 @@ uint_fast8_t arm_hardware_clustersize(void)
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// Cortex-A computers
 
-#if WITHSMPSYSTEM
-	// Cortex-A53: check L2CTLR, [24:25]
-	return 2; //(__get_MPIDR() >> 8) & 0xFF;
-#else /* WITHSMPSYSTEM */
-	return 1;
-#endif /* WITHSMPSYSTEM */
+	return ((GIC_DistributorInfo() >> 5) & 0x07) + 1;	// CPUNumber Indicates the number of implemented processors:
 
 #else /* CPUSTYLE_STM32MP1 */
 
@@ -1485,10 +1706,14 @@ uint_fast8_t arm_hardware_cpuid(void)
 
 	return 0;
 
-#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#elif (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
 	// Cortex-A computers
 
 	return __get_MPIDR() & 0x03;
+
+#elif CPUSTYLE_RISCV
+
+	return csr_read_mhartid();
 
 #else /* CPUSTYLE_STM32MP1 */
 
@@ -1497,7 +1722,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
-static RAMDTCM SPINLOCK_t gicpriority_lock = SPINLOCK_INIT;
+static RAMDTCM SPINLOCK_t gicdistrib_lock = SPINLOCK_INIT;
 
 #if WITHSMPSYSTEM
 
@@ -1514,30 +1739,30 @@ static void arm_hardware_gicsfetch(void)
 	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
 	unsigned int_id;
 
-	SPIN_LOCK(& gicpriority_lock);
+	SPIN_LOCK(& gicdistrib_lock);
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
 		GIC_SetPriority(int_id, gicshadow_prio [int_id]);	// non-atomic operation
 	}
-	SPIN_UNLOCK(& gicpriority_lock);
-	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
-	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+	SPIN_UNLOCK(& gicdistrib_lock);
+	//dcache_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//dcache_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	dcache_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 }
 
 /* вызывается на любом ядре */
 static void arm_hardware_populate(int int_id)
 {
-	const uint32_t target_list = 0xFF & ~ (0x01uL << arm_hardware_cpuid());	// получателями будут остальные ядра
+	const uint32_t target_list = 0xFF & ~ (0x01u << arm_hardware_cpuid());	// получателями будут остальные ядра
 	SPIN_LOCK(& populate_lock);
 	//PRINTF("arm_hardware_populate: int_id=%d\n", int_id);
 	//gicshadow_target [int_id] = targetcpu;
 	//gicshadow_config [int_id] = GIC_GetConfiguration(int_id);
 	gicshadow_prio [int_id] = GIC_GetPriority(int_id);
-	//arm_hardware_flush((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//arm_hardware_flush((uintptr_t) gicshadow_config, sizeof gicshadow_config);
-	arm_hardware_flush((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+	//dcache_clean((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//dcache_clean((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	dcache_clean((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 	GIC_SendSGI(BOARD_SGI_IRQ, target_list, 0x00);	// other CORE, filer=0
 
@@ -1556,15 +1781,15 @@ static void arm_hardware_populate_initialize(void)
 	{
 		gicshadow_prio [int_id] = GIC_GetPriority(int_id);
 	}
-	//SPINLOCK_INITIALIZE(& gicpriority_lock);
+	//SPINLOCK_INITIALIZE(& gicdistrib_lock);
 	//SPINLOCK_INITIALIZE(& populate_lock);
-	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	//dcache_clean_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//dcache_clean_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 
-	SPIN_LOCK(& gicpriority_lock);
+	SPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
-	SPIN_UNLOCK(& gicpriority_lock);
-	arm_hardware_flush_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+	SPIN_UNLOCK(& gicdistrib_lock);
+	dcache_clean_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, BOARD_SGI_PRIO, 0x01u << 1);
 }
@@ -1575,12 +1800,12 @@ void arm_hardware_populte_second_initialize(void)
 	ASSERT(arm_hardware_cpuid() != 0);
 	//PRINTF("arm_hardware_populte_second_initialize\n");
 
-	SPIN_LOCK(& gicpriority_lock);
+	SPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
-	SPIN_UNLOCK(& gicpriority_lock);
-	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
-	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+	SPIN_UNLOCK(& gicdistrib_lock);
+	//dcache_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//dcache_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	dcache_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 }
 
 #endif /* WITHSMPSYSTEM */
@@ -1588,6 +1813,7 @@ void arm_hardware_populte_second_initialize(void)
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
+	//PRINTF("arm_hardware_set_handler: int_id=%u\n", (unsigned) int_id);
 #if CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
@@ -1609,27 +1835,51 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_Disable(int_id) == 0);
 
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
-	SPIN_LOCK(& gicpriority_lock);
+
+	SPIN_LOCK(& gicdistrib_lock);
+
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);	// non-atomic operation
-	SPIN_UNLOCK(& gicpriority_lock);
-	GIC_SetTarget(int_id, targetcpu);
+	GIC_SetTarget(int_id, targetcpu);	// non-atomic operation
 
+	// peripherial (hardware) interrupts using the GIC 1-N model.
+	uint_fast32_t cfg = GIC_GetConfiguration(int_id) & 0x03u;
+	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
+	cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
+	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
 
-	#if CPUSTYLE_STM32MP1 || CPUSTYPE_T113
-		// peripheral (hardware) interrupts using the GIC 1-N model.
-		uint_fast32_t cfg = GIC_GetConfiguration(int_id);
-		cfg &= ~ 0x02;	/* Set level sensitive configuration */
-		cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
-		GIC_SetConfiguration(int_id, cfg);// non-atomic operation
-	#endif /* CPUSTYLE_STM32MP1 */
-
+	SPIN_UNLOCK(& gicdistrib_lock);
 
 	#if WITHSMPSYSTEM
-
 		arm_hardware_populate(int_id);	// populate for other CPUs
 	#endif /* WITHSMPSYSTEM */
 
 	VERIFY(IRQ_Enable(int_id) == 0);
+
+#elif CPUSTYLE_RISCV
+
+	/* Set interrupt handler */
+	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
+	// https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic.adoc
+
+	ASSERT(int_id < MAX_IRQ_n);
+
+	const div_t d = div(int_id, 32);
+	const unsigned mask = (1u << d.rem);
+
+	PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
+	PLIC->PLIC_SIE_REGn [d.quot] &= ~ mask;		// Supervisor mode disable
+	plic_vectors [int_id] = handler;
+	PLIC->PLIC_PRIO_REGn [int_id] = priority;
+	PLIC->PLIC_MIE_REGn [d.quot] |= mask;
+
+	// 1: The machine mode can access to all registers in PLIC.
+	// The super-user mode can access all registers except PLL_CTRL in PLIC.
+	// The normal-user mode can not access any registers in PLIC.
+	//PLIC->PLIC_CTRL_REG |= (1u << 0);
+
+	//csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+	//csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
+	//csr_set_bits_mie(MIE_MTI_BIT_MASK);	// MTI - timer
 
 #else /* CPUSTYLE_STM32MP1 */
 
@@ -1644,6 +1894,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 // Disable interrupt vector
 void arm_hardware_disable_handler(uint_fast16_t int_id)
 {
+	//PRINTF("arm_hardware_disable_handler: int_id=%u\n", (unsigned) int_id);
 	ASSERT(arm_hardware_cpuid() == 0);
 
 #if CPUSTYLE_AT91SAM7S
@@ -1660,6 +1911,15 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 	#if WITHSMPSYSTEM
 		arm_hardware_populate(int_id);
 	#endif /* WITHSMPSYSTEM */
+
+#elif CPUSTYLE_RISCV
+
+	/* Disable interrupt handler */
+		const div_t d = div(int_id, 32);
+		ASSERT(d.quot < 10);
+
+		const unsigned mask = (1u << d.rem);
+		PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
 
 #else /* CPUSTYLE_STM32MP1 */
 
@@ -1686,7 +1946,7 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);
 }
 
-#endif /* CPUSTYLE_ARM */
+#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 
 // Вызывается из main
 void cpu_initialize(void)
@@ -1738,6 +1998,10 @@ void cpu_initialize(void)
 
 	cpu_atxmega_switchto32MHz();
 
+#elif CPUSTYLE_RISCV
+
+	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html
+
 #endif
 
 #if CPUSTYLE_R7S721
@@ -1781,7 +2045,7 @@ void cpu_initialize(void)
 	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module halts.
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 	EALLOW;
 	WDCR = 0x0068;

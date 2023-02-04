@@ -135,7 +135,6 @@
 
 	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
 	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=RGB565 */
-	//#define LCDMODE_V1B	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
 	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
 	//#define LCDMODE_V2	1	/* только главный экран, без PIP */
 	//#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
@@ -438,9 +437,9 @@
 
 #endif /* WITHISBOOTLOADER */
 
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -487,8 +486,6 @@
 	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
-
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	// Назначения входов АЦП процессора.
 	enum 
@@ -558,6 +555,7 @@
 	#else /* WITHAUTOTUNER_AVBELNN */
 		// QRP вариант - только 5 ватт на плате
 
+		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */

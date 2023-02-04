@@ -45,7 +45,7 @@ static int isBigEndian(void) { return 0; }
 static int isBigEndian(void) { return 1; }
 #endif
 
-void openvg_init(PACKEDCOLORMAIN_T * const * frames)
+void openvg_init(PACKEDCOLORPIP_T * const * frames)
 {
 
 #if LCDMODE_MAIN_RGB565
@@ -77,7 +77,7 @@ void openvg_init(PACKEDCOLORMAIN_T * const * frames)
 		for (unsigned i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
 		{
 			int maskBits = 0;
-			OpenVGRI::Drawable * d = RI_NEW(OpenVGRI::Drawable, (cds, DIM_X, DIM_Y, GXADJ(DIM_X) * sizeof (PACKEDCOLORMAIN_T), (OpenVGRI::RIuint8 *) frames [i], maskBits));	//throws bad_alloc
+			OpenVGRI::Drawable * d = RI_NEW(OpenVGRI::Drawable, (cds, DIM_X, DIM_Y, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), (OpenVGRI::RIuint8 *) frames [i], maskBits));	//throws bad_alloc
 			RI_ASSERT(d);
 			d->addReference();
 			OpenVGRI::d0 [i] = d;
@@ -106,7 +106,7 @@ void openvg_next(unsigned page)
 }
 #else /* WITHOPENVG */
 
-void openvg_init(PACKEDCOLORMAIN_T * const * frames)
+void openvg_init(PACKEDCOLORPIP_T * const * frames)
 {
 }
 

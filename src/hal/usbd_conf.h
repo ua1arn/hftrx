@@ -59,9 +59,9 @@
 
 	#include "zynq7000_hal.h"
 
-#elif CPUSTYPE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	#include "allwnr_t113s3_hal.h"
+	#include "t113s3_hal.h"
 
 #endif
 
@@ -104,7 +104,7 @@
 /*---------- -----------*/
 #define USBD_LPM_ENABLED     0U
 /*---------- -----------*/
-#define USBD_SELF_POWERED     0U
+#define USBD_SELF_POWERED     1U
 
 /****************************************/
 /* #define for FS and HS identification */
@@ -200,6 +200,7 @@ void USBD_static_free(void *p);
 /**
   * @}
   */
+
 
 #ifdef __cplusplus
 }

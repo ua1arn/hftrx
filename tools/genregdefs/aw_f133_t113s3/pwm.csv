@@ -1,0 +1,13 @@
+#type; PWM
+#base; PWM 0x02000C00
+#regdef; PIER; 0x0000; PWM IRQ Enable Register
+#regdef; PISR; 0x0004; PWM IRQ Status Register
+#regdef; CIER; 0x0010; Capture IRQ Enable Register
+#regdef; CISR; 0x0014; Capture IRQ Status Register
+#regdef; PCCR; 0x0020 4; PWM01, PWM23, PWM45, PWM67 Clock Configuration Register
+#regdef; PCGR; 0x0040; PWM Clock Gating Register
+#regdef; PDZCR; 0x0060 4; PWM01, PWM23, PWM45, PWM67 Dead Zone Control Register
+#regdef; PER; 0x0080; PWM Enable Register
+#regdef; PGR0; 0x0090 4; PWM Group0, Group1, Group2, Group3 Register
+#regdef; CER; 0x00C0; Capture Enable Register
+#regdef; CH 0x0020 PWM_CH_TypeDef; 0x0100 8; Channels[0..7]

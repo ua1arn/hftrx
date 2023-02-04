@@ -130,9 +130,9 @@ SECTIONS
 		__data_start__ = .;
 		KEEP(*(vtable))
 		. = ALIGN(4);
-		KEEP(*(.data*))
+		*(.data*)
 		. = ALIGN(4);
-		KEEP(*(.dtcm*))
+		*(.dtcm*)
 	   . = ALIGN(4);	/* two lines added by ua1arn */
 		*(.ramfunc)
 
@@ -177,7 +177,7 @@ SECTIONS
 	.noinit :
 	{
 		. = ALIGN(32);
-		KEEP(*(.noinit))
+		*(.noinit)
 		. = ALIGN(32);
 	} > RAM
 

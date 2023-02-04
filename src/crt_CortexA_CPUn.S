@@ -77,6 +77,7 @@
     .func   Reset_CPU1_Handler
     /* invoked at ARM_MODE_SVC */
 Reset_CPU1_Handler:
+	cpsid 	fi
    /*
     * Reset SCTLR Settings
     */
@@ -127,9 +128,9 @@ Reset_CPU1_Handler:
 	mov		lr, pc
 	bx		r2     /* And jump... */
 
-Reset_CPU1_HandlerSleep:
+1:
 	wfi
-	b     Reset_CPU1_HandlerSleep
+	b     1b
 
 		.endfunc
    .ltorg
@@ -162,6 +163,7 @@ __stack_cpu1_svc_end = .
     .func   Reset_CPU2_Handler
     /* invoked at ARM_MODE_SVC */
 Reset_CPU2_Handler:
+	cpsid 	fi
    /*
     * Reset SCTLR Settings
     */
@@ -212,9 +214,9 @@ Reset_CPU2_Handler:
 	mov		lr, pc
 	bx		r2     /* And jump... */
 
-Reset_CPU2_HandlerSleep:
+2:
 	wfi
-	b     Reset_CPU2_HandlerSleep
+	b     2b
 
 		.endfunc
    .ltorg
@@ -247,6 +249,7 @@ __stack_cpu2_svc_end = .
     .func   Reset_CPU3_Handler
     /* invoked at ARM_MODE_SVC */
 Reset_CPU3_Handler:
+	cpsid 	fi
    /*
     * Reset SCTLR Settings
     */
@@ -297,9 +300,9 @@ Reset_CPU3_Handler:
 	mov		lr, pc
 	bx		r2     /* And jump... */
 
-Reset_CPU3_HandlerSleep:
+3:
 	wfi
-	b     Reset_CPU3_HandlerSleep
+	b     3b
 
 		.endfunc
    .ltorg

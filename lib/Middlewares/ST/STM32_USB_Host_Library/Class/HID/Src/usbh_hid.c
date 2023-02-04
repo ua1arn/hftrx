@@ -138,6 +138,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
 {
   USBH_StatusTypeDef status;
   HID_HandleTypeDef *phhid;
+  uint16_t ep_mps;
   uint8_t max_ep;
   uint8_t num = 0U;
   uint8_t interface;
@@ -158,7 +159,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
   }
 
   // check USBH_free
-  static RAMNOINIT_D1 HID_HandleTypeDef staticHID_Handle;
+  static HID_HandleTypeDef staticHID_Handle;
   phost->pActiveClass->pData = & staticHID_Handle;
   //phost->pActiveClass->pData = (HID_HandleTypeDef *)USBH_malloc(sizeof(HID_HandleTypeDef));
   phhid = (HID_HandleTypeDef *) phost->pActiveClass->pData;
@@ -174,7 +175,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
 
   (void)USBH_memcpy(& phhid->target, target, sizeof phhid->target);
 
-  phhid->state = HID_ERROR;
+  phhid->state = USBH_HID_ERROR;
 
   /*Decode Bootclass Protocol: Mouse or Keyboard*/
   if (phost->device.CfgDesc.Itf_Desc[interface].bInterfaceProtocol == HID_KEYBRD_BOOT_CODE)
@@ -199,7 +200,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
   }
   //USBH_UsrLog("Target: tt_hub=%d tt_port=%d, speed=%d", phhid->target.tt_hubaddr, phhid->target.tt_prtaddr, phhid->target.speed);
 
-  phhid->state     = HID_INIT;
+  phhid->state     = USBH_HID_INIT;
   phhid->ctl_state = HID_REQ_INIT;
   phhid->ep_addr   = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress;
   phhid->length    = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].wMaxPacketSize;
@@ -224,10 +225,11 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
     {
       phhid->InEp = (phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[num].bEndpointAddress);
       phhid->InPipe = USBH_AllocPipe(phost, phhid->InEp);
+      ep_mps = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[num].wMaxPacketSize;
 
       /* Open pipe for IN endpoint */
       (void)USBH_OpenPipe(phost, phhid->InPipe, phhid->InEp,
-    		  & phhid->target, USB_EP_TYPE_INTR, phhid->length);
+    		  & phhid->target, USB_EP_TYPE_INTR, ep_mps);
 
       (void)USBH_LL_SetToggle(phost, phhid->InPipe, 0U);
     }
@@ -235,10 +237,11 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
     {
       phhid->OutEp = (phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[num].bEndpointAddress);
       phhid->OutPipe  = USBH_AllocPipe(phost, phhid->OutEp);
+      ep_mps = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[num].wMaxPacketSize;
 
       /* Open pipe for OUT endpoint */
       (void)USBH_OpenPipe(phost, phhid->OutPipe, phhid->OutEp,
-    		  & phhid->target, USB_EP_TYPE_INTR, phhid->length);
+    		  & phhid->target, USB_EP_TYPE_INTR, ep_mps);
 
       (void)USBH_LL_SetToggle(phost, phhid->OutPipe, 0U);
     }
@@ -393,9 +396,19 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 	uint32_t XferSize;
 
 	switch (phhid->state) {
-	case HID_INIT:
-		phhid->Init(phost);
-		phhid->state = HID_IDLE;
+	case USBH_HID_INIT:
+	      status = phhid->Init(phost);
+
+	      if (status == USBH_OK)
+	      {
+	        phhid->state = USBH_HID_IDLE;
+	      }
+	      else
+	      {
+	        USBH_ErrLog("HID Class Init failed");
+	        phhid->state = USBH_HID_ERROR;
+	        status = USBH_FAIL;
+	      }
 
 #if (USBH_USE_OS == 1U)
       phost->os_msg = (uint32_t)USBH_URB_EVENT;
@@ -407,19 +420,19 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 #endif
 		break;
 
-	case HID_IDLE:
+	case USBH_HID_IDLE:
 		status = USBH_HID_GetReport(phost, 0x01U, 0U, phhid->pHidReportData,
 				(uint8_t) phhid->length);
 		if (status == USBH_OK) {
-			phhid->state = HID_SYNC;
+			phhid->state = USBH_HID_SYNC;
 		} else if (status == USBH_BUSY) {
-			phhid->state = HID_IDLE;
+			phhid->state = USBH_HID_IDLE;
 			status = USBH_OK;
 		} else if (status == USBH_NOT_SUPPORTED) {
-			phhid->state = HID_SYNC;
+			phhid->state = USBH_HID_SYNC;
 			status = USBH_OK;
 		} else {
-			phhid->state = HID_ERROR;
+			phhid->state = USBH_HID_ERROR;
 			status = USBH_FAIL;
 		}
 
@@ -433,10 +446,10 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 #endif
 		break;
 
-	case HID_SYNC:
+	case USBH_HID_SYNC:
 		/* Sync with start of Even Frame */
 		if ((phost->Timer & 1U) != 0U) {
-			phhid->state = HID_GET_DATA;
+			phhid->state = USBH_HID_GET_DATA;
 		}
 
 #if (USBH_USE_OS == 1U)
@@ -449,26 +462,26 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 #endif
 		break;
 
-	case HID_GET_DATA:
+	case USBH_HID_GET_DATA:
 		(void) USBH_InterruptReceiveData(phost, phhid->pHidReportData, phhid->length, phhid->InPipe);
 
-		phhid->state = HID_POLL;
+		phhid->state = USBH_HID_POLL;
 		phhid->timer = phost->Timer;
 		phhid->DataReady = 0U;
 		break;
 
-	case HID_POLL:
+	case USBH_HID_POLL:
 		statusURB = USBH_LL_GetURBState(phost, phhid->InPipe);
 		if (statusURB == USBH_URB_DONE) {
 			XferSize = USBH_LL_GetLastXferSize(phost, phhid->InPipe);
 
-			if ((phhid->DataReady == 0U) && (XferSize != 0U)) {
+	        if ((phhid->DataReady == 0U) && (XferSize != 0U) && (phhid->fifo.buf != NULL)) {
 				(void) USBH_HID_FifoWrite(&phhid->fifo, phhid->pHidReportData,
 						phhid->length);
 				phhid->DataReady = 1U;
 				USBH_HID_EventCallback(phost);
 #if defined (WITHUSBHW_EHCI)
-				phhid->state = HID_GET_DATA;		// EHCI specific
+				phhid->state = USBH_HID_GET_DATA;		// EHCI specific
 #endif /* defined (WITHUSBHW_EHCI) */
 
 #if (USBH_USE_OS == 1U)
@@ -485,7 +498,7 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 			/* Issue Clear Feature on interrupt IN endpoint */
 			if (USBH_ClrFeature(phost, phhid->ep_addr) == USBH_OK) {
 				/* Change state to issue next IN token */
-				phhid->state = HID_GET_DATA;
+				phhid->state = USBH_HID_GET_DATA;
 			} else {
 
 			}
@@ -512,11 +525,11 @@ static USBH_StatusTypeDef USBH_HID_SOFProcess(USBH_HandleTypeDef *phost)
 {
   HID_HandleTypeDef *phhid = (HID_HandleTypeDef *) phost->pActiveClass->pData;
 
-  if (phhid->state == HID_POLL)
+  if (phhid->state == USBH_HID_POLL)
   {
     if ((phost->Timer - phhid->timer) >= phhid->poll)
     {
-      phhid->state = HID_GET_DATA;
+      phhid->state = USBH_HID_GET_DATA;
 
 #if (USBH_USE_OS == 1U)
       phost->os_msg = (uint32_t)USBH_URB_EVENT;

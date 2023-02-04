@@ -1,7 +1,6 @@
 obj
 *.alw32
-tc1_alwnrt113s3_boot.*
-tc1_alwnrt113s3_app.*
+tc1_t113s3*.*
 
 
 

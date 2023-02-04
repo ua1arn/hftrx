@@ -110,7 +110,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 
 	// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
 
-	const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
+	const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000;	// 1.44 GHz
 	const uint_fast32_t usbphyref = LL_RCC_GetUSBPHYClockFreq(LL_RCC_USBPHY_CLKSOURCE);
 	//uint_fast32_t usbphyref = stm32mp1_get_usbphy_freq();
 	//ASSERT(usbphyref >= 19200000uL && usbphyref <= 38400000uL);
@@ -147,8 +147,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		((PLLFRACCTL_VAL * (FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
 		(PLLFRACCTL_VAL * USBPHYC_PLL_PLLFRACCTL_Msk) |
 		(1 * USBPHYC_PLL_PLLSTRBYP_Msk) |
-		USBPHYC_PLL_PLLDITHEN0_Msk |
-		USBPHYC_PLL_PLLDITHEN1_Msk |
+		USBPHYC_PLL_PLLDITHEN0_Msk |	// 1: Disables the triangular PDF dither input to SDM of PLL
+		USBPHYC_PLL_PLLDITHEN1_Msk |	// 1: Disables the rectangular PDF dither input to SDM of PLL
 		0;
 
 	if ((newPLLvalue & validmask) != (USBPHYC->PLL & validmask) || (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
@@ -178,7 +178,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		// TUNE base: 5A00610C 5A00620C
 		//PRINTF("TUNE base: %p %p\n", & USBPHYC_PHY1->TUNE, & USBPHYC_PHY2->TUNE);
 
-		if (0)
+		if (1)
 		{
 			// USBH_HS_DP1, USBH_HS_DM1
 			//PRINTF("USBPHYC_PHY1->TUNE=%08lX\n", USBPHYC_PHY1->TUNE);
@@ -188,9 +188,19 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 	//			(0x00 << ssss) |
 	//			0;
 			USBPHYC->TUNE1 = 0x04070004;
+
+//			USBPHYC->TUNE1 |= (1u << 22);	// 1: Enable the gain equalizer
+//			USBPHYC->TUNE1 |= (1u << 6);	// 1: Enables the HSDRVDCLEV feature
+//			USBPHYC->TUNE1 &= ~ (1u << 4);	// 0: Keeps the normal HS driver DC level
+//			USBPHYC->TUNE1 &= ~ (1u << 3);	// 0: Keeps the normal slew rate
+//			//USBPHYC->TUNE1 |= (1u << 1);	// 1: Provides a current boosting of 2mA if INCURREN = '1'
+//			//USBPHYC->TUNE1 |= (1u << 0);	// 1: Enables the current boosting
+//			USBPHYC->TUNE1 |= (3u << 0);	// 1: Enables the current boosting
+//			USBPHYC->TUNE1 |= (3u << 13);	// 0x3: Reduce the impedance by 6 Ω
+
 			(void) USBPHYC->TUNE1;
 		}
-		if (0)
+		if (1)
 		{
 			// USBH_HS_DP2, USBH_HS_DM2
 			//PRINTF("USBPHYC_PHY2->TUNE=%08lX\n", USBPHYC_PHY2->TUNE);
@@ -200,6 +210,16 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 	//			(0x00 << ssss) |
 	//			0;
 			USBPHYC->TUNE2 = 0x04070004;
+
+//			USBPHYC->TUNE2 |= (1u << 22);	// 1: Enable the gain equalizer
+//			USBPHYC->TUNE2 |= (1u << 6);	// 1: Enables the HSDRVDCLEV feature
+//			USBPHYC->TUNE2 &= ~ (1u << 4);	// 0: Keeps the normal HS driver DC level
+//			USBPHYC->TUNE2 &= ~ (1u << 3);	// 0: Keeps the normal slew rate
+//			//USBPHYC->TUNE2 |= (1u << 1);	// 1: Provides a current boosting of 2mA if INCURREN = '1'
+//			//USBPHYC->TUNE2 |= (1u << 0);	// 1: Enables the current boosting
+//			USBPHYC->TUNE2 |= (3u << 0);	// 1: Enables the current boosting
+//			USBPHYC->TUNE2 |= (3u << 13);	// 0x3: Reduce the impedance by 6 Ω
+
 			(void) USBPHYC->TUNE2;
 		}
 	}

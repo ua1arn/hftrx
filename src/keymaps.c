@@ -663,35 +663,6 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
-#elif ELKEY328
-// 328 
-const struct qmkey qmdefs [NQMKEYS] =
-{
-	// ADC7 (ki2)
-	{ KIF_NONE, KBD_CODE_VIBROCTL, 	KBD_CODE_VIBROCTL,  },		
-	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },	
-	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },	
-	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },	
-	// ADC6 (ki1)
-	{ KIF_SLOW, KBD_CODE_CWSPEEDUP, 	KBD_CODE_CWSPEEDUP,		 },
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX,	 },
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX,	 },
-	// ADC5 (ki0)
-	{ KIF_SLOW, KBD_CODE_CWSPEEDDOWN,	KBD_CODE_CWSPEEDDOWN, },	
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
-	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
-	// encoder2 & power buttons
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
-};
-
-uint_fast8_t getexitkey(void)
-{
-	return KBD_CODE_MAX;
-}
-
 #elif KEYB_VERTICAL
 
 // повернутое на 90 градусов - 4 строки по 3 кнопки
@@ -975,8 +946,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
-	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
-	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_NR, 			' ', },		// BW/NR
+	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NR, 			' ', },		// NOTCH
+	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_12, 			' ', },		// BW/NR
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	' ', },		// DUAL
 
 	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
@@ -1951,69 +1922,6 @@ uint_fast8_t getexitkey(void)
 		return KBD_CODE_DISPMODE;
 	}
 
-#elif KEYBOARD_XXXXX
-/*
-
-	Геннадий привет! Вот набросал как я хотел бы распределить
-	назначение кнопок,если это конечно возможно:
-
-	17--	увеличение  скорости ТЛГ-ключа
-	16--	уменьшение ск-сти ТЛГ-ключа
-	15--	VOX  ВКЛ/Выкл
-	14--	MODE                                                                                      
-	13--	SPLIT                                                                                                 
-	12--	TX  передача
-                                                                                          
-	11--	Меню
-	10--	Запись  ТЛГ ключа в память
-	9---	Воспроиз-е ТЛГ ключа из памяти
-	8---	Полоса 0,7  ,2,7
-	7---	UP  диап-ны
-	6---	DOWN  диапазоны
-                                                                   
-	5---	перестрйка  по диапазону в верх
-	4---	блокировка
-	3---	перест-ка в низ
-	2---	TUNE                                                                                            
-	1---	УВЧ   вкл/выкл
-	0---	АТТ
-
-*/
-
-/* расположение кнопок для 18-ти клавишной клавиатуры */
-const struct qmkey qmdefs [NQMKEYS] =
-{
-	//ki2-правый ряд
-	{ KIF_NONE,	KBD_CODE_ATT,	KBD_CODE_MAX, },
-	{ KIF_NONE,	KBD_CODE_PAMP,	KBD_CODE_MAX, },
-	{ KIF_NONE,	KBD_CODE_TXTUNE,	KBD_CODE_MAX, },
-	{ KIF_FAST,	ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, },
-	{ KIF_FAST, ENC_CODE_STEP_UP, 	ENC_CODE_STEP_UP, },
-	{ KIF_NONE, KBD_CODE_LOCK, 	KBD_CODE_MAX, },
-	//ki1-центральный ряд
-	{ KIF_SLOW,	KBD_CODE_BAND_DOWN,	KBD_CODE_BAND_DOWN, },
-	{ KIF_SLOW,	KBD_CODE_BAND_UP,	KBD_CODE_BAND_UP, },
-	{ KIF_NONE,	KBD_CODE_BW,	KBD_CODE_MAX, },
-	{ KIF_NONE,	KBD_CODE_MAX,	KBD_CODE_MAX, },
-	{ KIF_NONE, KBD_CODE_MAX, 	KBD_CODE_MAX, },
-	{ KIF_EXTMENU, KBD_CODE_DISPMODE, KBD_CODE_MENU,  },
-	//ki0-левый ряд
-	{ KIF_NONE,	KBD_CODE_MOX,	KBD_CODE_MAX, },
-	{ KIF_ERASE,KBD_CODE_SPLIT,KBD_CODE_SPLIT_HOLDED, },
-	{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD,  },
-	{ KIF_NONE,	KBD_CODE_VOXTOGGLE,	KBD_CODE_MAX, },
-	{ KIF_SLOW, KBD_CODE_CWSPEEDDOWN, 	KBD_CODE_CWSPEEDDOWN, },
-	{ KIF_SLOW, KBD_CODE_CWSPEEDUP, 	KBD_CODE_CWSPEEDUP, },
-	// encoder2 & power buttons
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-};
-
-uint_fast8_t getexitkey(void)
-{
-	return KBD_CODE_DISPMODE;
-}
-
 #elif REQUEST_BA
 
 const struct qmkey qmdefs [NQMKEYS] =
@@ -2033,177 +1941,6 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '6', },
 	{ KIF_SLOW, KBD_CODE_BAND_UP, KBD_CODE_BAND_UP, '9', },
 	{ KIF_FAST, ENC_CODE_STEP_UP, ENC_CODE_STEP_UP, '#', },
-	// encoder2 & power buttons
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-};
-
-uint_fast8_t getexitkey(void)
-{
-	return KBD_CODE_DISPMODE;
-}
-
-#elif KEYBSTYLE_RA4YBO_AM0
-
-const struct qmkey qmdefs [NQMKEYS] =
-{
-	{ KIF_NONE,		KBD_CODE_ATT, KBD_CODE_MAX, },
-	{ KIF_NONE,		KBD_CODE_BAND_UP, KBD_CODE_MAX, },
-	{ KIF_NONE,		KBD_CODE_BW, KBD_CODE_MENU, },		// полоса
-	{ KIF_NONE,		KBD_CODE_USER2, KBD_CODE_MAX, },		// ревербератор
-	{ KIF_NONE,		KBD_CODE_USER1, KBD_CODE_MAX, },		// эквалайзер
-	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
-	// encoder2 & power buttons
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-};
-
-uint_fast8_t getexitkey(void)
-{
-	return KBD_CODE_BW;
-}
-
-
-#elif KEYB_RA4YBO
-
-/*
-	3-  0-  F_AP
-	6-  1-  F_DW
-	9-  2-  ?  \ IF_FIL_0,3_0,6_1,0_2,4_3,1_7,8_17 кГц
-	#-  3-    F___(прямой ввод частоты) \ ?
-	2-  4-  PRE_10db_20db_30db \  ?
-	5-  5-  LOCK \ AGC_T0,T1,T2,T3
-	8-  6-  TUNE
-	0-  7-  MENU  \  AF_FIL_ON
-	1-  8-  BAND_AP
-	4-  9-  BAND_DW
-	7-  10-  MODE (LSB,USB,CW,AM,FM,WFM) \ ?
-	*-  11-  SPLIT
-
-*/
-const struct qmkey qmdefs [NQMKEYS] =
-{
-	{ KIF_FAST, ENC_CODE_STEP_UP, ENC_CODE_STEP_UP, '3' },
-	{ KIF_FAST, ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN, '6' },
-	{ KIF_NONE, KBD_CODE_BW, KBD_CODE_MAX, '9' },
-	{ KIF_NONE, KBD_CODE_ENTERFREQ, KBD_CODE_ENTERFREQDONE, '#'},
-
-	{ KIF_NONE, KBD_CODE_ATT, KBD_CODE_PAMP, '2' },
-	{ KIF_NONE, KBD_CODE_LOCK, KBD_CODE_AGC, '5' },
-	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '8' },
-	{ KIF_EXTMENU, KBD_CODE_AFNARROW, KBD_CODE_MENU, '0' },
-
-	{ KIF_SLOW, KBD_CODE_BAND_UP, KBD_CODE_BAND_UP, '1' },
-	{ KIF_SLOW, KBD_CODE_BAND_DOWN, KBD_CODE_BAND_DOWN, '4' },
-	{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD, '7' },
-	{ KIF_ERASE, KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, '*' },
-	// encoder2 & power buttons
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-};
-
-uint_fast8_t getexitkey(void)
-{
-	return KBD_CODE_MAX;
-}
-
-#elif KEYB_RA4YBO_V1
-
-const struct qmkey qmdefs [NQMKEYS] =
-{
-	{ KIF_FAST, ENC_CODE_STEP_UP, ENC_CODE_STEP_UP, '3' },
-	{ KIF_FAST, ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN, '6' },
-	{ KIF_NONE, KBD_CODE_BW, KBD_CODE_AGC, '9' },
-	{ KIF_NONE, KBD_CODE_ENTERFREQ, KBD_CODE_ENTERFREQDONE, '#'},
-
-	{ KIF_NONE, KBD_CODE_ATT, KBD_CODE_PAMP, '2' },
-	{ KIF_NONE, KBD_CODE_LOCK, KBD_CODE_MAX, '5' },
-	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '8' },
-	{ KIF_EXTMENU, KBD_CODE_MAX, KBD_CODE_MENU, '0' },
-
-	{ KIF_SLOW, KBD_CODE_BAND_UP, KBD_CODE_BAND_UP, '1' },
-	{ KIF_SLOW, KBD_CODE_BAND_DOWN, KBD_CODE_BAND_DOWN, '4' },
-	{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD, '7' },
-	{ KIF_ERASE, KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, '*' },
-
-	{ KIF_NONE,	KBD_CODE_USER1,	KBD_CODE_MAX, ' ' },
-	{ KIF_NONE,	KBD_CODE_USER2,	KBD_CODE_MAX, ' ' },
-	{ KIF_NONE,	KBD_CODE_ATUBYPASS,	KBD_CODE_ATUSTART, },		// BYP/ATU
-	{ KIF_NONE,	KBD_CODE_IFSHIFT,	KBD_CODE_MAX, ' ' },
-	// encoder2 & power buttons
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-};
-
-uint_fast8_t getexitkey(void)
-{
-	return KBD_CODE_MAX;
-}
-
-#elif KEYB_RA4YBO_V2
-
-const struct qmkey qmdefs [NQMKEYS] =
-{
-	{ KIF_FAST, ENC_CODE_STEP_UP, ENC_CODE_STEP_UP, '3' },
-	{ KIF_FAST, ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN, '6' },
-	{ KIF_NONE, KBD_CODE_BW, KBD_CODE_AGC, '9' },
-	{ KIF_NONE, KBD_CODE_ENTERFREQ, KBD_CODE_ENTERFREQDONE, '#'},
-
-	{ KIF_NONE, KBD_CODE_ATT, KBD_CODE_PAMP, '2' },
-	{ KIF_NONE, KBD_CODE_LOCK, KBD_CODE_MAX, '5' },
-	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '8' },
-	{ KIF_EXTMENU, KBD_CODE_MAX, KBD_CODE_MENU, '0' },
-
-	{ KIF_SLOW, KBD_CODE_BAND_UP, KBD_CODE_BAND_UP, '1' },
-	{ KIF_SLOW, KBD_CODE_BAND_DOWN, KBD_CODE_BAND_DOWN, '4' },
-	{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD, '7' },
-	{ KIF_ERASE, KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, '*' },
-
-	{ KIF_NONE,	KBD_CODE_USER1,	KBD_CODE_MAX, ' ' },
-	{ KIF_NONE,	KBD_CODE_USER2,	KBD_CODE_MAX, ' ' },
-	{ KIF_NONE,	KBD_CODE_USER3,	KBD_CODE_MAX, ' ' },
-	{ KIF_NONE,	KBD_CODE_USER4,	KBD_CODE_MAX, ' ' },
-	// encoder2 & power buttons
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
-};
-
-uint_fast8_t getexitkey(void)
-{
-	return KBD_CODE_MAX;
-}
-
-#elif KEYB_RA4YBO_V3
-
-const struct qmkey qmdefs [NQMKEYS] =
-{
-	{ KIF_NONE,	KBD_CODE_ATUBYPASS,	KBD_CODE_ATUSTART, },		// BYP/ATU
-	{ KIF_NONE,	KBD_CODE_ANTENNA,	KBD_CODE_ANTENNA_HOLDED, ' ' },		// yagi
-	{ KIF_USER2,	KBD_CODE_MAX,	KBD_CODE_MAX, ' ' },			// REC
-	{ KIF_USER3,	KBD_CODE_MAX,	KBD_CODE_MAX, ' ' },			// play
-	{ KIF_NONE,	KBD_CODE_USER4,	KBD_CODE_MAX, ' ' },			// equal
-	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX, ' '  },				// клавиша отсутствует
-
-	{ KIF_FAST, ENC_CODE_STEP_UP, ENC_CODE_STEP_UP, '3' },
-	{ KIF_FAST, ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN, '6' },
-	{ KIF_NONE, KBD_CODE_BW, KBD_CODE_AGC, '9' },
-	{ KIF_NONE, KBD_CODE_ENTERFREQ, KBD_CODE_ENTERFREQDONE, '#'},
-	{ KIF_NONE, KBD_CODE_LDSPTGL, KBD_CODE_MAX, ' '  },		// speaker
-	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX, ' '  },		// клавиша отсутствует
-
-	{ KIF_NONE, KBD_CODE_ATT, KBD_CODE_PAMP, '2' },
-	{ KIF_NONE, KBD_CODE_AFNARROW, KBD_CODE_LOCK, '5' },
-	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '8' },
-	{ KIF_EXTMENU, KBD_CODE_DISPMODE, KBD_CODE_MENU, '0' },
-	{ KIF_NONE, KBD_CODE_IFSHIFT, KBD_CODE_MENU_CWSPEED, },		// IF SH / WPM
-	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX, ' '  },		// клавиша отсутствует
-
-	{ KIF_SLOW, KBD_CODE_BAND_UP, KBD_CODE_BAND_UP, '1' },
-	{ KIF_SLOW, KBD_CODE_BAND_DOWN, KBD_CODE_BAND_DOWN, '4' },
-	{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD, '7' },
-	{ KIF_ERASE, KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, '*' },
-	{ KIF_NONE,	KBD_CODE_USER5,	KBD_CODE_MAX, ' ' },	// reverb
-	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX, ' '  },		// клавиша отсутствует
 	// encoder2 & power buttons
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },

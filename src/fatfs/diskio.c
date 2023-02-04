@@ -23,6 +23,16 @@ static ALIGNX_BEGIN
 	uint8_t ramdiskbuff [(uint_fast64_t) WITHUSERAMDISKSIZEKB * 1024 / FF_MAX_SS][FF_MAX_SS]
 	ALIGNX_END;
 
+uintptr_t getRamDiskBase(void)
+{
+	return (uintptr_t) ramdiskbuff;
+}
+
+size_t getRamDiskSize(void)
+{
+	return sizeof ramdiskbuff;
+}
+
 // for _USE_MKFS
 static
 DRESULT RAMDISK_Get_Block_Size (
@@ -236,16 +246,16 @@ DWORD get_fattime (void)
 {
 	uint_fast16_t year;
 	uint_fast8_t month, day;
-	uint_fast8_t hour, minute, secounds;
+	uint_fast8_t hour, minute, seconds;
 
-	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 
 	return	  ((DWORD)(year - 1980) << 25)	/* Year = 2012 */
 			| ((DWORD)month << 21)				/* Month = 1 */
 			| ((DWORD)day << 16)				/* Day_m = 1*/
 			| ((DWORD)hour << 11)				/* Hour = 0 */
 			| ((DWORD)minute << 5)				/* Min = 0 */
-			| ((DWORD)secounds >> 1);				/* Sec = 0 */
+			| ((DWORD)seconds >> 1);				/* Sec = 0 */
 }
 
 #endif /* WITHUSEAUDIOREC */

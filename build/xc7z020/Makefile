@@ -30,7 +30,7 @@ XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z020.elf
 CC   = $(TRGT)gcc
 GPP  = $(TRGT)g++
 CP   = $(TRGT)objcopy
-AR   = $(TRGT)ar rcs --plugin ../lib/gcc/$(TRGT2)/10.3.1/liblto_plugin-0.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
@@ -65,8 +65,9 @@ DADEFS = -D__ASSEMBLY__=1
 
 ARCHDIR = $(PRJROOT)/arch/zynq
 
-ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020
-ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
+#ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_myir
+ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
+#ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
 # full qualified name
 ZYNQLIB = zynq7020.a
@@ -82,6 +83,7 @@ USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 RTOSXDIR = $(CMSISDIR)/RTOS2
+LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -140,6 +142,12 @@ SRCDIRS += $(MDLWHOSTDIR)
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
+
+ifeq (1, 1)
+# LuPng
+SRCDIRS += $(LUPNGDIR)
+DINCDIR += $(LUPNGDIR)
+endif
 
 # Define project name here
 PROJECT = tc1_xc7z020
@@ -252,20 +260,26 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 .PHONY: all bootloader flash clean lib
 
 all: bitstreams $(PROJECT)_app_xyl32.bin
-	-cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin
+	-sh -c "cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin"
 
-bitstreams: bitstream_ant_20.h bitstream_myir7020.h 
+bitstreams: bitstream_ant_20.h bitstream_myir7020.h bitstream_ebaz7020.h   
 
 bitstream_ant_20.h: bitstream_ant_20.bit
 	./bit2c bitstream_ant_20.bit bitstream_ant_20.h
 
 bitstream_myir7020.h: bitstream_myir7020.bit
-	./bit2c  bitstream_myir7020.bit bitstream_myir7020.h
+	./bit2c  bitstream_myir7020.bit bitstream_myir7020.h 
+  
+bitstream_ebaz7020.h: bitstream_ebaz7020.bit
+	./bit2c  bitstream_ebaz7020.bit bitstream_ebaz7020.h
 	
 bootloader: bitstreams BOOT2
   
-app_run: $(PROJECT)_app.elf bitstream_myir7020.bit app_run_myir7020.tcl
-	xsct.bat app_run_myir7020.tcl 
+#app_run: $(PROJECT)_app.elf bitstream_myir7020.bit app_run_myir7020.tcl
+#	xsct.bat app_run_myir7020.tcl 
+  
+app_run: $(PROJECT)_app.elf bitstream_ebaz7020.bit app_run_ebaz7020.tcl
+	xsct.bat app_run_ebaz7020.tcl
 
 lib: $(ZYNQLIB)
 
@@ -280,10 +294,10 @@ flash: bitstreams $(PROJECT)_app_xyl32.bin
 	program_flash -f $(PROJECT)_app_xyl32.bin -offset 0x80000 $(XILINX_JTAGOPTS)
 
 $(PROJECT)_app_xyl32.bin: $(PROJECT)_app.bin
-	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -l 0x00104100 -e 0x00104100 -s $(PROJECT)_app.bin -d $@
 		
 BOOT2: version boot.bin
-	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
+	-sh -c "cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin"
 	
 BOOT3: version boot.bin
 	program_flash -f boot.bin -verify -offset 0x00000 $(XILINX_JTAGOPTS)
@@ -321,7 +335,7 @@ $(OBJSA_APP) $(ZOBJSA):
 #	-$(RM) -R $(OBJDIR)
 
 clean: version
-	-$(RM) $(OBJS)
+	-$(RM) $(OBJS) $(addsuffix .d, $(OBJS))
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) bitstream_ant_20.h

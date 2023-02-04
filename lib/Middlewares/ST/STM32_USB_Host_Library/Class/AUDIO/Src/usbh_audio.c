@@ -209,7 +209,7 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost, co
   }
 
   // check USBH_free
-  static RAMNOINIT_D1 AUDIO_HandleTypeDef staticAUDIO_Handle;
+  static AUDIO_HandleTypeDef staticAUDIO_Handle;
   phost->pActiveClass->pData = & staticAUDIO_Handle;
   //phost->pActiveClass->pData = (AUDIO_HandleTypeDef *)USBH_malloc(sizeof(AUDIO_HandleTypeDef));
   AUDIO_Handle = (AUDIO_HandleTypeDef *) phost->pActiveClass->pData;
@@ -365,10 +365,10 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceDeInit(USBH_HandleTypeDef *phost)
     AUDIO_Handle->control.Pipe = 0U;     /* Reset the pipe as Free */
   }
 
-  if ((phost->pActiveClass->pData) != 0U)
+  if ((phost->pActiveClass->pData) != NULL)
   {
     //USBH_free(phost->pActiveClass->pData);
-    phost->pActiveClass->pData = 0U;
+    phost->pActiveClass->pData = NULL;
   }
   return USBH_OK ;
 }

@@ -11,8 +11,8 @@
 // 2xUSB
 // Rmainunit_v5em.pcb
 
-#ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_H_INCLUDED
-#define ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_H_INCLUDED 1
+#ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_OLEG4Z_V1_H_INCLUDED
+#define ARM_STM32F4XX_TQFP144_CTLSTYLE_OLEG4Z_V1_H_INCLUDED 1
 
 	#if ! defined(STM32H743xx)
 		//#error Wrong CPU selected. STM32H743xx expected
@@ -107,9 +107,9 @@
 	// --- вариации прошивки, специфические для разных частот
 
 	//#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
@@ -420,4 +420,4 @@
 	#endif /* WITHTEMPSENSOR */
 	};
 
-#endif /* ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_H_INCLUDED */
+#endif /* ARM_STM32F4XX_TQFP144_CTLSTYLE_OLEG4Z_V1_H_INCLUDED */

@@ -148,9 +148,9 @@ static uint_fast16_t uacinsize = 0;
 static uintptr_t uacinrtsaddr = 0;
 static uint_fast16_t uacinrtssize = 0;
 
-static __ALIGN4k_BEGIN uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE] __ALIGN4k_END;
+static __ALIGN_BEGIN uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE] __ALIGN_END;
 
-static __ALIGN4k_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN4k_END;
+static __ALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
 
 
 static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
@@ -201,6 +201,14 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 	uint8_t * buff
 	)
 {
+	/* значения для немодифицируемых управляющих элементов громкости */
+	enum
+	{
+		VolMin = 0,
+		VolMax = 256,
+		VolRes = 4,
+		VolCur = VolMax
+	};
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t CS = HI_BYTE(req->wValue);	// The Control Selector indicates which type of Control this request is manipulating. (Volume, Mute, etc.)
@@ -229,7 +237,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 		{
 		case AUDIO_REQUEST_GET_CUR:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d\n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 0), req->wLength);
+			return ulmin16(USBD_poke_u16(buff, VolCur), req->wLength);
 
 		case AUDIO_REQUEST_SET_CUR:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val16);
@@ -238,15 +246,15 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 
 		case AUDIO_REQUEST_GET_MIN:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 0), req->wLength);
+			return ulmin16(USBD_poke_u16(buff, VolMin), req->wLength);
 
 		case AUDIO_REQUEST_GET_MAX:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 0 * 100), req->wLength);
+			return ulmin16(USBD_poke_u16(buff, VolMax), req->wLength);
 
 		case AUDIO_REQUEST_GET_RES:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_RES: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 1), req->wLength);
+			return ulmin16(USBD_poke_u16(buff, VolRes), req->wLength);
 		}
 	}
 	else
@@ -481,7 +489,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 
 static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-	static ALIGNX_BEGIN uint8_t buff [32] ALIGNX_END;	// was: 7
+	static __ALIGN_BEGIN uint8_t buff [32] __ALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 #if WITHUSBWCID

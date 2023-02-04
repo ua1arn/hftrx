@@ -47,12 +47,12 @@ void Error_Handler(void);
 
 #if defined (WITHUSBHW_DEVICE)
 	/* USB Device Core handle declaration. */
-	__ALIGN4k_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN4k_END;
+	__ALIGN_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN_END;
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 #if defined (WITHUSBHW_HOST)
 	/* USB Host Core handle declaration. */
-	__ALIGN4k_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN4k_END;
+	__ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
 
 	// MORI
 //	USBH_HandleTypeDef hUSBHost[5];
@@ -161,6 +161,12 @@ void MX_USB_DEVICE_Init(void)
 #if WITHUSBHID
 	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_HID);
 #endif /* WITHUSBHID */
+#if WITHUSBDMTP
+	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_MTP);
+#endif /* WITHUSBDMTP */
+#if WITHUSBDMSC
+	//USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_MSC);
+#endif /* WITHUSBDMSC */
 
  /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
   
@@ -227,6 +233,9 @@ void MX_USB_HOST_Process(void)
 /* User-mode function */
 void MX_USB_DEVICE_Process(void)
 {
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+    usb_device_function0(&hUsbDeviceHS);
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 }
 #endif /* defined (WITHUSBHW_DEVICE) */
 
@@ -475,5 +484,16 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 	}
 }
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+/* так как инициализация USB может происходить при запрещённых
+ * прерываниях, работа с systick пока невозможна
+ */
+void HAL_Delay(uint32_t Delay)
+{
+	local_delay_ms(Delay);
+}
+
+#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

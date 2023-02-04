@@ -15,6 +15,7 @@
 #include "keyboard.h"
 #include "touch/touch.h"
 #include "display/display.h"
+#include "gui/gui.h"
 
 #include <string.h>
 #include <math.h>
@@ -58,7 +59,7 @@ static uint_fast8_t dds3_profile;		/* информация о последнем
 
 static uint_fast8_t 	glob_boardagc;
 static uint_fast8_t		glob_loudspeaker_off;
-static uint_fast8_t 	glob_opowerlevel = WITHPOWERTRIMMAX;	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+static uint_fast8_t 	glob_opowerlevel = BOARDPOWERMAX;	/* BOARDPOWERMIN..BOARDPOWERMAX */
 
 static uint_fast8_t 	glob_tx;			// находимся в режиме передачи
 static uint_fast8_t 	glob_sleep;			// находимся в режиме минимального потребления
@@ -150,6 +151,7 @@ static uint_fast8_t 	glob_user3;
 static uint_fast8_t 	glob_user4;
 static uint_fast8_t 	glob_user5;
 static uint_fast8_t		glob_attvalue;	// RF signal gen attenuator value
+static uint_fast8_t		glob_tsc_reset = 1;
 
 static void prog_rfadc_update(void);
 
@@ -243,8 +245,6 @@ board_ctlregs_spi_send_frame(
 		#include "chip/ad9835.h"
 	#elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 		#include "chip/fpga_v1.h"
-	#elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
-		#include "chip/fpga_v2.h"
 	#endif
 #endif /* defined(DDS1_TYPE) */
 
@@ -293,6 +293,14 @@ board_ctlregs_spi_send_frame(
 	#endif /* (RTC1_TYPE == RTC_TYPE_M41T81) */
 #endif /* defined(RTC1_TYPE) */
 
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
+static void
+prog_fpga_ctrlreg(
+	spitarget_t target		/* addressing to chip */
+	)
+{
+}
+#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0) */
 #if defined (RTC1_TYPE) && RTC1_TYPE == RTC_TYPE_ZYNQ_MP
 
 #include "xrtcpsu.h"
@@ -318,7 +326,7 @@ void board_rtc_getdatetime(
 	uint_fast8_t * day,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	XRtcPsu_DT dt;
@@ -330,7 +338,7 @@ void board_rtc_getdatetime(
 	* day = dt.Day;
 	* hour = dt.Hour;
 	* minute = dt.Min;
-	* secounds = dt.Sec;
+	* seconds = dt.Sec;
 }
 
 void board_rtc_setdatetime(
@@ -339,7 +347,7 @@ void board_rtc_setdatetime(
 	uint_fast8_t dayofmonth,
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
-	uint_fast8_t secounds
+	uint_fast8_t seconds
 	)
 {
 	XRtcPsu_DT dt;
@@ -348,7 +356,7 @@ void board_rtc_setdatetime(
 	dt.Day = dayofmonth;
 	dt.Hour = hours;
 	dt.Min = minutes;
-	dt.Sec = secounds;
+	dt.Sec = seconds;
 	XRtcPsu_SetTime(& xczu_rtc, XRtcPsu_DateTimeToSec(& dt));
 	board_rtc_chip_initialize();
 }
@@ -524,17 +532,18 @@ void nmea_parsechar(uint_fast8_t c)
 		{
 			if (strcmp(nmeaparser_get_buff(NMF_CODE), "ANSW") == 0)
 			{
+				struct _reent treent = { 0 };
 				//
 				const adcvalholder_t EXTFS = 0x0FFF;	// в тюнере стоит 12-бит АЦП
 				// board_adc_store_data
 				const adcvalholder_t FS = board_getadc_fsval(FWD);
 
-				board_adc_store_data(FWD, strtoul(nmeaparser_get_buff(NMF_FWD), NULL, 10) * FS / EXTFS);
-				board_adc_store_data(REF, strtoul(nmeaparser_get_buff(NMF_REF), NULL, 10) * FS / EXTFS);
+				board_adc_store_data(FWD, _strtoul_r(& treent, nmeaparser_get_buff(NMF_FWD), NULL, 10) * FS / EXTFS);
+				board_adc_store_data(REF, _strtoul_r(& treent, nmeaparser_get_buff(NMF_REF), NULL, 10) * FS / EXTFS);
 				// для WITHTDIRECTDATA -  значения параметров напрямую получаются от контроллера усилителя мощности
-				board_adc_store_data(PASENSEIX, strtol(nmeaparser_get_buff(NMF_C_SENS), NULL, 10));
-				board_adc_store_data(XTHERMOIX, strtol(nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
-				board_adc_store_data(VOLTSOURCE, strtol(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
+				board_adc_store_data(PASENSEIX, _strtol_r(& treent, nmeaparser_get_buff(NMF_C_SENS), NULL, 10));
+				board_adc_store_data(XTHERMOIX, _strtol_r(& treent, nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
+				board_adc_store_data(VOLTSOURCE, _strtol_r(& treent, nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
 
 				static dpclock_t dpc_ua1ceituner;
 				VERIFY(board_dpc(& dpc_ua1ceituner, ua1ceituner_send, NULL));
@@ -741,12 +750,12 @@ prog_gpioreg(void)
 //#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
 	// ALC
 	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
-	//HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
-	HARDWARE_DAC_ALC((WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
+	//HARDWARE_DAC_ALC((glob_opowerlevel - BOARDPOWERMIN) * dac_dacfs_coderange / (BOARDPOWERMAX - BOARDPOWERMIN) + dac_dacfs_lowcode);
+	HARDWARE_DAC_ALC((BOARDPOWERMAX - BOARDPOWERMIN) * dac_dacfs_coderange / (BOARDPOWERMAX - BOARDPOWERMIN) + dac_dacfs_lowcode);
 //#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
 #endif /* defined (HARDWARE_DAC_ALC) */
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	xcz_rxtx_state(glob_tx);
 #if defined (TARGET_RFADC_PGA_EMIO)
 	xc7z_gpio_output(TARGET_RFADC_PGA_EMIO);
@@ -756,9 +765,8 @@ prog_gpioreg(void)
 	xc7z_gpio_output(TARGET_DAC_SLEEP_EMIO);
 	xc7z_writepin(TARGET_DAC_SLEEP_EMIO, ! glob_tx);
 #endif /* defined (TARGET_DAC_SLEEP_EMIO) */
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM*/
 }
-
 
 /* 
 	сигналы управления индикатором, требующим кроме SPI ещё двух сигналов - RS (register select) и RST (reset).
@@ -832,7 +840,7 @@ board_gpio_init(void)
 		#define VFODIVPOWER2	16	/* ~65 kHz granulation */
 		typedef uint_fast16_t fseltype_t;
 
-	#elif CPUSTYLE_ARM
+	#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 		#define VFODIVPOWER2	0	/* 1 Hz granulation */
 		typedef uint_fast32_t fseltype_t;
@@ -1092,7 +1100,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(010, glob_lcdreset);			/* pin 15: d0: lctl0 */
 
 	/* регистр управления (74HC595), расположенный на плате синтезатора */
-	RBVAL(006, WITHPOWERTRIMMAX - glob_opowerlevel, 2);								/* d6..d7: spare or power level */
+	RBVAL(006, BOARDPOWERMAX - glob_opowerlevel, 2);								/* d6..d7: spare or power level */
 	RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
 	RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
 	RBBIT(003, glob_att);				/* pin 03: d3: ATT */
@@ -1142,7 +1150,7 @@ prog_ctrlreg(uint_fast8_t plane)
 				/* --- Управление согласующим устройством */
 			#endif
 				/* регистр управления (74HC595), расположенный на плате синтезатора */
-				RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
+				RBVAL(006, glob_opowerlevel - BOARDPOWERMIN, 2);								/* d6..d7: spare or power level */
 				RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
 				RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
 				RBBIT(003, glob_att);				/* pin 03: d3: ATT */
@@ -1173,7 +1181,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			//RBBIT(010, glob_lcdreset);			/* pin 15: d0: lctl0 */
 
 			/* регистр управления (74HC595), расположенный на плате синтезатора */
-			RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
+			RBVAL(006, glob_opowerlevel - BOARDPOWERMIN, 2);								/* d6..d7: spare or power level */
 			RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
 			RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
 			RBBIT(003, glob_att);				/* pin 03: d3: ATT */
@@ -1184,28 +1192,6 @@ prog_ctrlreg(uint_fast8_t plane)
 			board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 		}
 #endif /* WITHAUTOTUNER */
-
-#elif CTLREGSTYLE_RA4YBO_AM0
-
-	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-	static void 
-	prog_ctrlreg(uint_fast8_t plane)
-	{
-		const spitarget_t target = targetctl1;
-		rbtype_t rbbuff [3] = { 0 };
-		
-		RBBIT(007, glob_filter);				// полоса
-		RBBIT(006, glob_user2);				// ревербератор
-		RBBIT(005, glob_user1);				// эквалайзер
-
-		RBBIT(004, glob_bandf);		// 0: меньше 2 МГц, 1 - выше
-		RBVAL(002, glob_att, 2);				/* ATT */
-		RBBIT(001, glob_tx);
-		RBBIT(000, glob_mikemute);
-
-		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	}
 
 #elif CTLREGSTYLE_SW2012CN_RN3ZOB
 // с автотюнером
@@ -1233,7 +1219,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		/* --- Управление согласующим устройством */
 
 		/* регистр управления (74HC595), расположенный на плате синтезатора */
-		RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
+		RBVAL(006, glob_opowerlevel - BOARDPOWERMIN, 2);								/* d6..d7: spare or power level */
 		RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
 		RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
 		RBBIT(003, glob_att);				/* pin 03: d3: ATT */
@@ -1277,7 +1263,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		/* --- Управление согласующим устройством */
 
 		/* регистр управления (74HC595), расположенный на плате синтезатора */
-		//RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
+		//RBVAL(006, glob_opowerlevel - BOARDPOWERMIN, 2);								/* d6..d7: spare or power level */
 		RBBIT(007, glob_antenna);			/* pin 07: antenna select */
 		RBBIT(006, 1);						/* pin 06: FAN */
 		RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
@@ -1319,7 +1305,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления IC5 (74HC595), расположенный на плате синтезатора */
 	RBVAL(004, glob_bandf, 4);			/* pin 04..pin 07 - band selection d0..d7 */
@@ -1360,7 +1346,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления IC5 (74HC595), расположенный на плате синтезатора */
 	RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1404,7 +1390,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления IC5 (74HC595), расположенный на плате синтезатора */
 	//RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1448,7 +1434,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления IC5 (74HC595), расположенный на плате синтезатора */
 	//RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1501,7 +1487,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (IC5 74HC595), расположенный на плате синтезатора */
 	RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1551,7 +1537,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_notch);				/* pin 02: d2: NOTCH ON */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (IC5 74HC595), расположенный на плате синтезатора */
 	RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1604,7 +1590,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_bandf >= glob_bandfonuhf);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (74HC595), расположенный ближе к процессору */
 	RBVAL(004, glob_bandf, 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1659,7 +1645,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_bandf >= glob_bandfonuhf);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (74HC595), расположенный ближе к процессору */
 	RBVAL(004, glob_bandf, 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -1700,10 +1686,10 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	//RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	//RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (74HC595), расположенный на плате синтезатора */
-	RBVAL(004, (glob_opowerlevel - WITHPOWERTRIMMIN), 4);		/* pin 04..pin 07 - power level d0..d7 */
+	RBVAL(004, (glob_opowerlevel - BOARDPOWERMIN), 4);		/* pin 04..pin 07 - power level d0..d7 */
 	RBVAL(002, (glob_bglight - WITHLCDBACKLIGHTMIN), 2);	/* зшт 02, pin 03 - lcd backlight */
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: in control register - ad9951 RESET */
@@ -1739,7 +1725,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(013, glob_filter);			/* pin 03: d3: NAR - включение узкополосного фильтра по НЧ */
 	RBBIT(012, glob_lo1scale != 1);				/* pin 02: d2: UKV */
 	RBBIT(011, glob_mikemute);		/* pin 01: d1: MUTE */
-	RBBIT(010, WITHPOWERTRIMMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
+	RBBIT(010, BOARDPOWERMAX - glob_opowerlevel);			/* pin 15: "1" - low power */
 
 	/* регистр управления (74HC595), расположенный на плате синтезатора */
 	RBVAL(004, (glob_bandf - 0), 4);	/* pin 04..pin 07 - band selection d0..d7 */
@@ -2209,356 +2195,6 @@ prog_ctrlreg(uint_fast8_t plane)
 
 	RBVAL(001, 0xff, 7);	// spare
 	RBBIT(000, 0x01);		// DAC reset	
-
-	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-}
-
-#elif CTLREGMODE_RA4YBO
-
-#define BOARD_NPLANES	2	/* в данной конфигурации присутствует цифровой потенциометр со "слоями" */
-
-// 24-bit control register + DAC for RA4YBO
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	const spitarget_t target = targetctl1;
-	const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
-	const uint_fast8_t wfm = glob_af_input == BOARD_DETECTOR_WFM;	// WFM mode activated
-	const uint_fast8_t ssb = glob_af_input == BOARD_DETECTOR_SSB;	// SSB mode activated
-	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
-
-	rbtype_t rbbuff [5] = { 0 };
-
-	/* IC17 AD5262 */
-	RBNULL(041, 7);					/* для выравнивания */
-	RBBIT(040, plane);			/* DAC target */
-
-	RBVAL(030, glob_dac1value [plane], 8);		/* DAC value */
-
-	/* IC15 74HC595 */
-	/* учет диапазона - на 0-м диапазоне обход УВЧ включается принудительно */
-	RBVAL(024, glob_bandf, 4);			// D4..D7: pin 4 5 6 7 band select код выбора диапазонного фильтра
-	RBVAL(022, glob_att, 2);			/* D3:D2: pin 3,2 20,10 dB ATTENUATOR RELAYS POWER */
-	RBBIT(021, glob_preamp && (glob_bandf != 0));	/* D1: pin 01: RF amplifier */
-	RBBIT(020, glob_tx);							/* D0: pin 15: TX mode: 1 - TX режим передачи */
-
-	/* IC14 74HC595 */
-	RBVAL(016, glob_boardagc, 2);	/* D7..D6:  AGC code (delay) */
-	RBBIT(015, glob_affilter);	/* D5 */
-	RBVAL(013, glob_af_input, 2);	/* D4..D3	*/
-	RBVAL(010, glob_filter, 3);	/* D2..D0 - IF filters code	*/
-
-	/* IC13 74HC595 */
-	RBBIT(007, glob_mikemute);		/* D7 */
-	RBBIT(006, 0x00);		/* D6 - und3*/
-	RBBIT(005, wfm);		/* D5 */
-	RBBIT(004, fm);		/* D4 */
-	RBBIT(003, am);		/* D3 */
-	RBBIT(002, ssb);		/* D2 */
-	RBBIT(001, 0x00);		/* D1 - und2 */
-	RBBIT(000, 0x00);		/* D0 - und1 */
-
-	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-}
-
-#elif CTLREGMODE_RA4YBO_V1
-
-#define BOARD_NPLANES	2	/* в данной конфигурации присутствует цифровой потенциометр со "слоями" */
-
-// 24-bit control register + DAC + 8 bit tuner for RA4YBO
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	const spitarget_t target = targetctl1;
-	const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
-	const uint_fast8_t wfm = glob_af_input == BOARD_DETECTOR_WFM;	// WFM mode activated
-	const uint_fast8_t ssb = glob_af_input == BOARD_DETECTOR_SSB;	// SSB mode activated
-	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
-
-	const uint_fast8_t Cx = glob_tuner_bypass ? 0 : glob_tuner_C;
-	const uint_fast8_t Lx = glob_tuner_bypass ? 0 : glob_tuner_L;
-
-	const uint_fast8_t c1500p = (Cx & 0x80) != 0;
-	const uint_fast8_t c700p = (Cx & 0x40) != 0;
-	const uint_fast8_t c360p = (Cx & 0x20) != 0;
-	const uint_fast8_t c180p = (Cx & 0x10) != 0;
-	const uint_fast8_t c82p = (Cx & 0x08) != 0;
-	const uint_fast8_t c39p = (Cx & 0x04) != 0;
-	const uint_fast8_t c20p = (Cx & 0x02) != 0;
-	const uint_fast8_t c10p = (Cx & 0x01) != 0;
-
-	const uint_fast8_t L10uH = (Lx & 0x80) != 0;
-	const uint_fast8_t L5uH = (Lx & 0x40) != 0;
-	const uint_fast8_t L2p5uH = (Lx & 0x20) != 0;
-	const uint_fast8_t L1p25uH = (Lx & 0x10) != 0;
-	const uint_fast8_t L0p65uH = (Lx & 0x08) != 0;
-	const uint_fast8_t L0p3uH = (Lx & 0x04) != 0;
-	const uint_fast8_t L0p15uH = (Lx & 0x02) != 0;
-	const uint_fast8_t L0p08H = (Lx & 0x01) != 0;
-
-	rbtype_t rbbuff [9] = { 0 };
-
-	
-	/* +++ Управление согласующим устройством */
-
-	RBBIT(070, 0);		// IC3 pin 7: nc
-	RBBIT(067, 0);		// IC3 pin 6: nc
-	RBBIT(066, 0);		// IC3 pin 5: nc
-	RBBIT(065, 0);		// IC3 pin 4: nc
-	RBBIT(064, c1500p);		// IC3 pin 3: nc
-	RBBIT(063, c700p);		// IC3 pin 2: nc
-	RBBIT(062, c360p);		// IC3 pin 1: nc
-	//RBBIT(061, 0);		// IC3 pin 15: nc
-
-	RBBIT(060, c180p);		// IC2 pin 7: nc
-	RBBIT(057, c82p);		// IC2 pin 6: nc
-	RBBIT(056, c39p);		// IC2 pin 5: nc
-	RBBIT(055, c20p);		// IC2 pin 4: nc
-	RBBIT(054, c10p);		// IC2 pin 3: nc
-	RBBIT(053, glob_tuner_bypass ? 0 : glob_tuner_type);		// IC2 pin 2: nc
-	RBBIT(052, L10uH);		// IC2 pin 1: nc
-	//RBBIT(051, 0);			// IC2 pin 15: nc
-
-	RBBIT(050, L5uH);		// IC1 pin 7: nc
-	RBBIT(047, L2p5uH);		// IC1 pin 6: nc
-	RBBIT(046, L1p25uH);	// IC1 pin 5: nc
-	RBBIT(045, L0p65uH);	// IC1 pin 4: nc
-	RBBIT(044, L0p3uH);		// IC1 pin 3: nc
-	RBBIT(043, L0p15uH);	// IC1 pin 2: nc
-	RBBIT(042, L0p08H);		// IC1 pin 1: nc
-	//RBBIT(041, 0);			// IC1 pin 15: nc
-	/* --- Управление согласующим устройством */
-
-	/* IC7 AD5262 */
-	RBBIT(040, plane);			/* DAC target */
-
-	RBVAL(030, glob_dac1value [plane], 8);		/* DAC value */
-
-	/* IC6 74HC595 */
-	RBBIT(027, am);					/* D7 */
-	RBBIT(026, fm);					/* D6 */
-	RBBIT(025, ssb);				/* D5 */
-	RBVAL(023, glob_boardagc, 2);		/* D7..D6: AGC code (delay) */
-	RBBIT(022, glob_tx);		/* D2 AF mute */
-	RBVAL(020, glob_af_input, 2);	/* D0 D1: AF input	*/
-
-	/* IC5 74HC595 */
-	RBVAL(016, glob_filter, 2);		/* D6-D7: if filter code */
-	RBVAL(012, glob_bandf, 4);		// D2..D5: pin 02 03 04 05 band select код выбора диапазонного фильтра
-	RBVAL(010, glob_tx ? 0 : glob_att, 2);		/* D1:D0: pin 01,15 20,10 dB ATTENUATOR RELAYS POWER */
-
-	/* IC4 74HC595 */
-	RBBIT(007, glob_tx ? 0 : glob_preamp);	/* D7: pin 07: RF amplifier */
-	RBBIT(006, ! wfm);			/* D6: pin 06: wfm */
-	RBBIT(005, glob_tx);		/* D5: pin 05: tx mode */
-	RBBIT(004, glob_bandf >= glob_bandfonuhf);	/* D4: pin 04: частота больше 111 МГц */
-	RBBIT(003, glob_user4);		/* D3: pin 03: und4 */
-	RBBIT(002, glob_user3);		/* D2: pin 02: und3 */
-	RBBIT(001, glob_user2);		/* D1: pin 01: und2 */
-	RBBIT(000, glob_user1);		/* D0: pin 15: und1 */
-
-	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-}
-
-
-#elif CTLREGMODE_RA4YBO_V2
-
-#define BOARD_NPLANES	2	/* в данной конфигурации присутствует цифровой потенциометр со "слоями" */
-
-// 24-bit control register + DAC for RA4YBO
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	const spitarget_t target = targetctl1;
-	const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
-	const uint_fast8_t wfm = glob_af_input == BOARD_DETECTOR_WFM;	// WFM mode activated
-	const uint_fast8_t ssb = glob_af_input == BOARD_DETECTOR_SSB;	// SSB mode activated
-	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
-
-	rbtype_t rbbuff [5] = { 0 };
-
-	/* IC7 AD5262 */
-	RBNULL(041, 7);					/* для выравнивания */
-	RBBIT(040, plane);			/* DAC target */
-
-	RBVAL(030, glob_dac1value [plane], 8);		/* DAC value */
-
-	/* IC6 74HC595 */
-	RBBIT(027, am);					/* D7 */
-	RBBIT(026, fm);					/* D6 */
-	RBBIT(025, ssb);				/* D5 */
-	RBVAL(023, glob_boardagc, 2);		/* D7..D6: AGC code (delay) */
-	RBBIT(022, glob_af_input == BOARD_DETECTOR_MUTE);		/* D2 */
-	RBVAL(020, glob_af_input, 2);	/* D0 D1: AF input	*/
-
-	/* IC5 74HC595 */
-	RBVAL(016, glob_filter, 2);		/* D6-D7: if filter code */
-	RBVAL(012, glob_bandf, 4);		// D2..D5: pin 02 03 04 05 band select код выбора диапазонного фильтра
-	RBVAL(010, glob_tx ? 0 : glob_att, 2);		/* D1:D0: pin 01,15 20,10 dB ATTENUATOR RELAYS POWER */
-
-	/* IC4 74HC595 */
-	RBBIT(007, glob_tx ? 0 : glob_preamp);	/* D7: pin 07: RF amplifier */
-	RBBIT(006, ! wfm);			/* D6: pin 06: wfm */
-	RBBIT(005, glob_tx);		/* D5: pin 05: tx mode */
-	RBBIT(004, glob_bandf >= glob_bandfonuhf);	/* D4: pin 04: частота больше 111 МГц */
-	RBBIT(003, glob_user4);		/* D3: pin 03: und4 */
-	RBBIT(002, glob_user3);		/* D2: pin 02: und3 */
-	RBBIT(001, glob_user2);		/* D1: pin 01: und2 */
-	RBBIT(000, glob_user1);		/* D0: pin 15: und1 */
-
-	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-}
-
-#elif CTLREGMODE_RA4YBO_V3
-
-#define BOARD_NPLANES	2	/* в данной конфигурации присутствует цифровой потенциометр со "слоями" */
-
-// 24-bit control register + DAC for RA4YBO
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	const spitarget_t target = targetctl1;
-	const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
-	const uint_fast8_t wfm = glob_af_input == BOARD_DETECTOR_WFM;	// WFM mode activated
-	const uint_fast8_t ssb = glob_af_input == BOARD_DETECTOR_SSB;	// SSB mode activated
-	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
-
-	rbtype_t rbbuff [5] = { 0 };
-
-	/* IC7 AD5262 */
-	RBNULL(041, 7);					/* для выравнивания */
-	RBBIT(040, plane);			/* DAC target */
-
-	RBVAL(030, glob_dac1value [plane], 8);		/* DAC value */
-
-	/* IC6 74HC595 */
-	RBBIT(027, am);					/* D7 */
-	RBBIT(026, fm);					/* D6 */
-	RBBIT(025, ssb);				/* D5 */
-	RBVAL(023, glob_boardagc, 2);		/* D7..D6: AGC code (delay) */
-	RBBIT(022, glob_af_input == BOARD_DETECTOR_MUTE);		/* D2 */
-	RBVAL(020, glob_af_input, 2);	/* D0 D1: AF input	*/
-
-	/* IC5 74HC595 */
-	RBVAL(016, glob_filter, 2);		/* D6-D7: if filter code */
-	RBVAL(012, glob_bandf, 4);		// D2..D5: pin 02 03 04 05 band select код выбора диапазонного фильтра
-	RBVAL(010, glob_tx ? 0 : glob_att, 2);		/* D1:D0: pin 01,15 20,10 dB ATTENUATOR RELAYS POWER */
-
-	/* IC4 74HC595 */
-	RBBIT(007, glob_tx ? 0 : glob_preamp);	/* D7: pin 07: RF amplifier */
-	RBBIT(006, ! wfm);			/* D6: pin 06: wfm */
-	RBBIT(005, glob_tx);		/* D5: pin 05: tx mode */
-	RBBIT(004, glob_bandf >= glob_bandfonuhf);	/* D4: pin 04: частота больше 111 МГц */
-	RBBIT(003, glob_user4);		/* D3: pin 03: und4 */
-	RBBIT(002, glob_user3);		/* D2: pin 02: und3 */
-	RBBIT(001, glob_user2);		/* D1: pin 01: und2 */
-	RBBIT(000, glob_user1);		/* D0: pin 15: und1 */
-
-	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-}
-
-#elif CTLREGMODE_RA4YBO_V3A
-// Новый вариант - без HMC830 с двумя ADG714
-
-#define BOARD_NPLANES	2	/* в данной конфигурации присутствует цифровой потенциометр со "слоями" */
-
-// 24-bit control register + DAC for RA4YBO
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	const spitarget_t target = targetctl1;
-	const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
-	const uint_fast8_t wfm = glob_af_input == BOARD_DETECTOR_WFM;	// WFM mode activated
-	const uint_fast8_t ssb = glob_af_input == BOARD_DETECTOR_SSB;	// SSB mode activated
-	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
-
-	const uint_fast8_t filtercodein = 0xFF & (glob_filter / 256);
-	const uint_fast8_t filtercodeout = 0xFF & glob_filter;
-
-	const uint_fast8_t L10uH = ! glob_tuner_bypass && (glob_tuner_L & 0x80) != 0;
-	const uint_fast8_t L5uH = ! glob_tuner_bypass && (glob_tuner_L & 0x40) != 0;
-	const uint_fast8_t L2p5uH = ! glob_tuner_bypass && (glob_tuner_L & 0x20) != 0;
-	const uint_fast8_t L1p25uH = ! glob_tuner_bypass && (glob_tuner_L & 0x10) != 0;
-	const uint_fast8_t L650nH = ! glob_tuner_bypass && (glob_tuner_L & 0x08) != 0;
-	const uint_fast8_t L300nH = ! glob_tuner_bypass && (glob_tuner_L & 0x04) != 0;
-	const uint_fast8_t L150nH = ! glob_tuner_bypass && (glob_tuner_L & 0x02) != 0;
-	const uint_fast8_t L80nH = ! glob_tuner_bypass && (glob_tuner_L & 0x01) != 0;
-
-	const uint_fast8_t cap7 = revbits8(glob_tuner_C >> 1) >> 1;
-
-	rbtype_t rbbuff [10] = { 0 };
-
-	// +++ tuner registers
-
-	RBBIT(0116, L10uH);			// IC3 pin 03
-	RBBIT(0115, L5uH);			// IC3 pin 02
-	RBBIT(0114, L2p5uH);		// IC3 pin 02
-	RBBIT(0113, L1p25uH);		// IC3 pin 01
-	//RBBIT(0112, 0);			// IC3 pin 15
-
-	RBBIT(0111, L650nH);				// IC2 pin 07
-	RBBIT(0110, L300nH);				// IC2 pin 06
-	RBBIT(0107, L150nH);				// IC2 pin 05
-	RBBIT(0106, L80nH);					// IC2 pin 04
-	RBBIT(0105, glob_antenna);			// IC2 pin 03 yag
-	RBBIT(0104, ! glob_tuner_bypass && glob_tuner_type);		// IC2 pin 02 typ
-	RBBIT(0103, ! glob_tuner_bypass && (glob_tuner_C & 0x01) != 0);	// IC2 pin 01 5pF
-	//RBBIT(0102, 0);			// IC2 pin 15
-
-	RBVAL(0073, ! glob_tuner_bypass ? cap7 : 0, 7);	// IC1 D1..D7: capacitors
-	//RBBIT(0072, 0);			// IC1 pin 15
-
-	// -- tuner registers
-
-	// IC2 ADG714 - outputs of IF filters selection
-	RBVAL(0062, filtercodeout, 8);		// D0..D7: band select бит выбора фильтра ПЧ
-	// IC1 ADG714 - inputs of IF filters selection
-	RBVAL(0052, filtercodein, 8);		// D0..D7: band select бит выбора фильтра ПЧ
-
-	/* AD5262 */
-	RBBIT(0050, plane);			/* DAC target */
-
-	RBVAL(0040, glob_dac1value [plane], 8);		/* DAC value */
-
-	/* IC7 74HC595 */
-	RBBIT(0037, 0);							/* D7 UND */
-	RBVAL(0035, glob_af_input, 2);					/* D5,,D6 */
-	RBBIT(0034, glob_af_input == BOARD_DETECTOR_MUTE);					/* D4: pin 04: AF_MUTE */
-	RBVAL(0032, glob_boardagc, 2);			/* D2..D3: AGC code (delay) */
-	RBBIT(0011, 0);						// D1: pin 01: IF FIL2
-	RBBIT(0030, 0);						// D0: pin 15: IF FIL1
-
-	/* IC6 74HC595 */
-	RBVAL(0025, glob_bandf, 3);			// D0..D2: pin 15 01 02 band select код выбора диапазонного фильтра
-	RBBIT(0024, ssb);					/* D6 SSB */
-	RBBIT(0023, 0x00);					/* D5 CW */
-	RBBIT(0022, am);						/* D4 AM*/
-	RBBIT(0021, fm);						/* D3 NFM */
-	RBBIT(0020, 0);						// D0: pin 15: IF FIL0
-
-	/* IC16 74HC595 */
-	RBBIT(0017, glob_affilter);							/* D7: pin 07: AF FIL ON */
-	RBBIT(0016, glob_bandf >= glob_bandfonuhf);	/* D4: pin 04: частота больше 111 МГц */
-	RBVAL(0014, glob_att, 2);	/* D1:D0: pin 01,15 20,10 dB ATTENUATOR RELAYS POWER */
-	RBBIT(0013, glob_tx ? 0 : glob_preamp);			/* D3: pin 03: RF_AMP_ON */
-	RBBIT(0012, glob_tx);				/* D2: pin 02: TX */
-	RBBIT(0011, wfm);					/* D1: pin 01: ~WFM_ON */
-	RBBIT(0010, (glob_bandf & 0x08));	/* D0: pin 15: BANDF_3 */
-
-	/* IC15 74HC595 */
-	RBBIT(0007, glob_loudspeaker_off);	/* D7: pin 06: speaker */
-	RBBIT(0006, 0);						/* D6: pin 05: shift */
-	RBBIT(0005, glob_user5);				/* D5: pin 04: rever */
-	RBBIT(0004, glob_user4);				/* D4: pin 03: equal */
-	RBBIT(0003, glob_user3);				/* D3: pin 03: play */
-	RBBIT(0002, glob_user2);				/* D2: pin 02: rec */
-	RBBIT(0001, glob_antenna);			/* D1: pin 01: YAGI */
-	RBBIT(0000, glob_tuner_bypass);		/* D0: pin 15: byp tun */
 
 	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
@@ -4145,7 +3781,15 @@ prog_ctrlreg(uint_fast8_t plane)
 		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
 		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
-#if WITHAUTOTUNER
+#if WITH_PALPF_ICM710
+		/* ask from 84748588@qq.com */
+
+		RBVAL(0060, 1U << glob_bandf2, 8);		// D0..D7: band select бит выбора диапазонного фильтра передатчика
+
+		RBBIT(0051, 0x00);	// REF
+		RBBIT(0050, 0x00);	// FOR
+
+#elif WITHAUTOTUNER
 	#if WITHAUTOTUNER_UA1CEI_V2
 
 		#if ! SHORTSET_7L8C && ! FULLSET_7L8C
@@ -4163,7 +3807,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0063, ! glob_tuner_bypass);	// Energized - tuner on
 		RBBIT(0062, ! glob_classamode);	// hi power out
 		RBBIT(0061, txgated);	//
-		RBBIT(0060, glob_fanflag);	// fan
+		RBBIT(0060, glob_fanflag || txgated);	// fan
 
 		RBBIT(0057, glob_antenna);	// Ant A/B
 		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
@@ -4180,7 +3824,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0104, glob_antenna);	// REZ1_OC -> antenna switch
 		RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, txgated && ! xvrtr);
-		RBBIT(0101, glob_fanflag && ! xvrtr);	// FAN
+		RBBIT(0101, (glob_fanflag || txgated) && ! xvrtr);	// FAN
 		// 0100 is a bpf7
 		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0071, glob_tuner_type);		// TY
@@ -4214,7 +3858,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0037, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE
 		RBBIT(0036, xvrtr && glob_tx);		// D6 - XVR_TXMODE
 		RBBIT(0035, 0);			// D5: CTLSPARE2
-		RBBIT(0034, 0);			// D4: CTLSPARE1
+		RBBIT(0034, glob_rxantenna);			// D4: CTLSPARE1 - RX ANT
 		RBBIT(0033, 0);			// D3: not used
 		RBBIT(0032, ! glob_bglightoff);			// D2: LCD_BL_ENABLE
 		RBBIT(0031, ((glob_bglight - WITHLCDBACKLIGHTMIN) & 0x02));	// LCD_BL1
@@ -4227,7 +3871,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0016, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
 		RBVAL(0014, ~ ((! xvrtr && txgated) ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-		RBBIT(0013, xvrtr && glob_fanflag);			/* D3: XVRTR PA FAN */
+		RBBIT(0013, xvrtr && (glob_fanflag || txgated));			/* D3: XVRTR PA FAN */
 		RBBIT(0012, xvrtr || (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
 		RBBIT(0011, ! xvrtr && glob_tx);				// D1: TX ANT relay
 		RBBIT(0010, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
@@ -4880,40 +4524,89 @@ prog_ctrlreg(uint_fast8_t plane)
 	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
-#elif CTLREGMODE_V3D
+#elif CTLREGMODE_XCZU && WITHQRPBOARD_UA3REO
 
-	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
-/* RF unit board UA3REO rev.2 */
+const uint_fast8_t bpf_xlat [6] = { 1, 3, 0, 2, 1, 3 };
 
 static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-	const spitarget_t target = targetbpf;
-	rbtype_t rbbuff [2] = { 0 };
+	enum
+	{
+		HARDWARE_OPA2674I_FULLPOWER = 0x03,
+		HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
+		HARDWARE_OPA2674I_IDLEPOWER = 0x01,
+		HARDWARE_OPA2674I_SHUTDOWN = 0x00
+	};
+	static const FLASHMEM uint_fast8_t powerxlat [] =
+	{
+		HARDWARE_OPA2674I_IDLEPOWER,
+		HARDWARE_OPA2674I_POWERCUTBACK,
+		HARDWARE_OPA2674I_FULLPOWER,
+	};
+	const uint_fast8_t txgated = glob_tx && glob_txgate;
 
-	/* U1 */
-	RBBIT(017, 0);					// not use
-	RBBIT(016, glob_att);			// attenuator
-	RBBIT(015, 0);					// LPF bypass, not use
-	RBBIT(014, 0);					// BPF bypass, not use
-	RBBIT(013, glob_bandf & 0x00);	// 160m
-	RBBIT(012, glob_bandf & 0x01);	// 80m
-	RBBIT(011, glob_bandf & 0x02);	// 40m
-	RBBIT(010, glob_tx);			// tx\rx
+	{
+		spitarget_t target = targetextctl;
+		rbtype_t rbbuff [3] = { 0 };
+		const uint_fast8_t att_db = revbits8(hamradio_get_att_db()) >> 3;
+		const uint_fast8_t bpf1 = glob_bandf == 5 || glob_bandf == 6;
+		const uint_fast8_t bpf2 = glob_bandf >= 1 || glob_bandf <= 4;
 
-	/* U3 */
-	RBBIT(007, 0);					// not use
-	RBBIT(006, 0);					// not use
-	RBBIT(005, 0);					// not use
-	RBBIT(004, glob_bandf & 0x80);	// 10m
-	RBBIT(003, glob_bandf & 0x40);	// 15m
-	RBBIT(002, glob_bandf & 0x20);	// 17m
-	RBBIT(001, glob_bandf & 0x10);	// 20m
-	RBBIT(000, glob_bandf & 0x08);	// 30m
+		/* U7 */
+		RBBIT(027, ! glob_bandf);	// LPF_ON
+		RBBIT(026, glob_preamp);	// LNA_ON
+		RBBIT(025, 0);	// ATT_ON_0.5
+		RBVAL(020, att_db, 5);
 
-	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		/* U1 */
+		RBBIT(017, 0);	// not use
+		RBVAL(015, bpf2 ? revbits8(bpf_xlat [glob_bandf - 1]) >> 6 : 0 , 2);
+		RBBIT(014, ! bpf2);
+		RBVAL(012, bpf1 ? revbits8(bpf_xlat [glob_bandf - 1]) >> 6 : 0 , 2);
+		RBBIT(011, ! bpf1);
+		RBBIT(010, bpf1 || bpf2);
+
+		/* U3 */
+		RBBIT(007, 0);	// not use
+		RBBIT(006, glob_tx);	// tx amp
+		RBBIT(005, 0);	// not use
+		RBBIT(004, 0);	// not use
+		RBBIT(003, 0);	// not use
+		RBBIT(002, 0);	// not use
+		RBBIT(001, 0);	// not use
+		RBBIT(000, glob_tx);	// tx & ant 1-2
+
+		spi_select(target, CTLREG_SPIMODE);
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		spi_unselect(target);
+	}
+
+	{
+		spitarget_t target = targetctl1;
+		spi_select(target, CTLREG_SPIMODE);
+		rbtype_t rbbuff [1] = { 0 };
+
+		RBBIT(007, 1);
+		RBBIT(006, glob_tsc_reset);
+		RBBIT(005, 0);	// glob_adcrand
+		RBBIT(004, 0);	// adc pga
+		RBBIT(003, glob_dither);	// adc dith
+		RBBIT(002, 0);	// ltc6401 always on
+		RBVAL(000, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
+//		RBBIT(001, 0);
+//		RBBIT(000, 0);
+
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+
+		spi_unselect(target);
+	}
+
+	//xcz_rxtx_state(glob_tx);
+	//xcz_adcrand_set(glob_adcrand);
 }
 
 #elif CTLREGMODE_ZYNQ_4205
@@ -4924,9 +4617,32 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-// Перенес в prog_gpioreg
-//	xc7z_gpio_output(PREAMP_MIO);
-//	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
+#if WITHEXTRFBOARDTEST				// UA3REO RF-UNIT rev.2 test
+	const spitarget_t target = targetext;
+	rbtype_t rbbuff [2] = { 0 };
+
+	/* U1 */
+	RBBIT(017, 0);					// not use
+	RBBIT(016, glob_att);			// attenuator
+	RBBIT(015, ! glob_bandf);		// LPF
+	RBBIT(014, 0);					// BPF bypass, not use
+	RBBIT(013, ! glob_bandf);		// 160m
+	RBBIT(012, glob_bandf == 1);	// 80m
+	RBBIT(011, glob_bandf == 2);	// 40m
+	RBBIT(010, glob_tx);			// tx\rx
+
+	/* U3 */
+	RBBIT(007, 0);					// not use
+	RBBIT(006, 0);					// not use
+	RBBIT(005, 0);					// not use
+	RBBIT(004, glob_bandf == 7);	// 10m
+	RBBIT(003, glob_bandf == 6);	// 15m
+	RBBIT(002, glob_bandf == 5);	// 17m
+	RBBIT(001, glob_bandf == 4);	// 20m
+	RBBIT(000, glob_bandf == 3);	// 30m
+
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+#endif /* WITHEXTRFBOARDTEST */
 }
 
 #elif CTLREGMODE_NOCTLREG
@@ -5210,9 +4926,9 @@ board_set_boardagc(uint_fast8_t n)
 }
 
 
-/* установить выходную мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+/* установить выходную мощность BOARDPOWERMIN..BOARDPOWERMAX */
 void 
-board_set_opowerlevel(uint_fast8_t n)
+board_set_txlevel(uint_fast8_t n)
 {
 	if (glob_opowerlevel != n)
 	{
@@ -5936,7 +5652,11 @@ board_set_attvalue(uint_fast8_t v)
 	}
 }
 
-
+void board_tsc_reset_state(uint_fast8_t v)
+{
+	glob_tsc_reset = v;
+	board_ctlreg1changed();
+}
 
 /////////////////////////////////////////////
 // --- Набор функций требования установки сигналов на управляющих выходах.
@@ -5998,7 +5718,6 @@ prog_dds1_ftw_sub(const ftw_t * value)
 	xcz_dds_ftw_sub(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq2(targetfpga1, value);
-	prog_pulse_ioupdate();
 #endif
 }
 
@@ -6008,7 +5727,6 @@ prog_dds1_ftw_sub3(const ftw_t * value)
 {
 #if (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq3(targetfpga1, value);
-	prog_pulse_ioupdate();
 #endif
 }
 
@@ -6018,7 +5736,6 @@ prog_dds1_ftw_sub4(const ftw_t * value)
 {
 #if (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq4(targetfpga1, value);
-	prog_pulse_ioupdate();
 #endif
 }
 
@@ -6040,8 +5757,6 @@ prog_dds1_ftw(const ftw_t * value)
 		prog_ad9852_freq1(targetdds1, value);
 		prog_pulse_ioupdate();
 	#elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
-		prog_fpga_freq1(targetfpga1, value);
-	#elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
 		prog_fpga_freq1(targetfpga1, value);
 	#elif (DDS1_TYPE == DDS_TYPE_AD9857)
 		prog_ad9857_freq(targetdds1, 0x00, value);
@@ -6077,8 +5792,6 @@ prog_rts1_ftw(const ftw_t * value)
 	xcz_dds_rts(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1_rts(targetfpga1, value);
-#elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
-	prog_fpga_freq1_rts(targetfpga1, value);
 #endif
 }
 
@@ -6113,8 +5826,6 @@ prog_dds1_ftw_noioupdate(const ftw_t * value)
 	prog_ad9852_freq1(targetdds1, value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1(targetfpga1, value);
-#elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
-	prog_fpga_freq1(targetfpga1, value);
 #elif (DDS1_TYPE == DDS_TYPE_AD9857)
 	prog_ad9857_freq(targetdds1, 0x00, value);
 #elif (DDS1_TYPE == DDS_TYPE_AD9951)
@@ -6146,8 +5857,6 @@ prog_dds1_initialize(void)
 #if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_AD9852)
 	prog_ad9852_init(targetdds1, 0, DDS1_CLK_MUL);
 #elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
-	prog_fpga_initialize(targetfpga1);
-#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV2)
 	prog_fpga_initialize(targetfpga1);
 #elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_AD9857)
 	prog_ad9857_init(targetdds1, 0, DDS1_CLK_MUL);
@@ -6181,7 +5890,6 @@ void prog_dds2_ftw(const ftw_t * value)
 	prog_pulse_ioupdate();
 #elif (DDS2_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1(targetfpga1, value);
-	prog_pulse_ioupdate();
 #elif (DDS2_TYPE == DDS_TYPE_AD9857)
 	prog_ad9857_freq(targetdds2, 0x00, value);
 	prog_pulse_ioupdate();
@@ -7085,8 +6793,6 @@ static void board_fpga_loader_wait_AS(void)
 }
 #endif
 
-#endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
-
 /* работоспособность функции под вопросом, были случаи незагрузки аппарата (с новыми версиями EP4CE22) */
 void board_fpga_reset(void)
 {
@@ -7123,62 +6829,72 @@ restart:
 #endif
 }
 
+#endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
+
 #if WITHDSPEXTFIR
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+static adapter_t plfircoefsout;
+static adapter_t plfircoefsout32;
+
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 #include "xc7z_inc.h"
-XAxiDma xcz_dma_fir_coeffs;
 
 void board_fpga_fir_initialize(void)
 {
-	XAxiDma_Config * config = XAxiDma_LookupConfig(XPAR_AXI_DMA_FIR_RELOAD_DEVICE_ID);
-	int Status = XAxiDma_CfgInitialize(& xcz_dma_fir_coeffs, config);
+	/* FPGA FIR коэффициенты */
+	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "plfircoefsout");
 
-	if (Status != XST_SUCCESS) {
-		PRINTF("xcz_dma_fir_coeffs Initialization failed %d\r\n", Status);
-		ASSERT(0);
-	}
-
-	if(XAxiDma_HasSg(& xcz_dma_fir_coeffs))
-	{
-		PRINTF("xcz_dma_fir_coeffs Device configured as SG mode \r\n");
-		ASSERT(0);
-	}
 }
 
-void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
-	int_fast32_t firbuf[Ntap_trxi_IQ];
-
 	const int iHalfLen = (Ntap - 1) / 2;
-	int i, j = 0;
+	int i = 0, m = 0, bits = 0;
 
-	if (xcz_dma_fir_coeffs.Initialized)
+	// Приведение разрядности значений коэффициентов к CWidth
+	for (; i <= iHalfLen; ++ i)
 	{
-		for (i = 0; i <= iHalfLen; ++ i)
-			firbuf[j ++] = k [i];
+		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+		m = coeff > m ? coeff : m;
+	}
 
-		i -= 1;
-		for (; -- i >= 0;)
-			firbuf[j ++] = k [i];
+	while(m > 0)
+	{
+		m  = m >> 1;
+		bits ++;
+	}
 
-		size_t len = Ntap * sizeof(int_fast32_t);
-		arm_hardware_flush((uintptr_t) firbuf, len);
-		int Status = XAxiDma_SimpleTransfer(& xcz_dma_fir_coeffs, (uintptr_t) firbuf, len, XAXIDMA_DMA_TO_DEVICE);
-		if (Status != XST_SUCCESS)
-		{
-			PRINTF("board_reload_fir transmit error %d\n", Status);
-			ASSERT(0);
-		}
-		while(XAxiDma_Busy(& xcz_dma_fir_coeffs, XAXIDMA_DMA_TO_DEVICE));
+	bits = CWidth - bits - 1;
+
+	for (i = 0; i <= iHalfLen; ++ i)
+	{
+		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff << bits);
+#if ! WITHDSPLOCALTXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff << bits);
+#endif /* ! WITHDSPLOCALTXFIR */
+	}
+
+	i -= 1;
+	for (; -- i >= 0;)
+	{
+		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff << bits);
+#if ! WITHDSPLOCALTXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff << bits);
+#endif /* ! WITHDSPLOCALTXFIR */
 	}
 }
-#else
+#elif ! LINUX_SUBSYSTEM
 
 void board_fpga_fir_initialize(void)
 {
 	//PRINTF(PSTR("board_fpga_fir_initialize start\n"));
+
+	/* FPGA FIR коэффициенты */
+	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "plfircoefsout");
+	adpt_initialize(& plfircoefsout32, 32, 0, "plfircoefsout32");
 
 	TARGET_FPGA_FIR_INITIALIZE();
 
@@ -7349,7 +7065,7 @@ static void sendbatch(uint_fast8_t ifir)
 // two banks, symmetrical 961:
 // coef_seq.exe fir_normalized_coeff961_lpf_1550.txt fir_normalized_coeff961_lpf_1550_reseq_b.txt MCV M4K MSYM 128 2 SGL 1 32
 //
-static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length, int coef_bit_width)
+static void single_rate_out_write_mcv(const FLOAT_t * kf, int coef_length, int coef_bit_width)
 {
 
 	enum coef_store_type { LC, M512, M4K, DUMMY, AUTO };
@@ -7417,14 +7133,14 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 			zeros_insert = (int) floorf((float) (mcv_coef_length - coef_length));
 		}
 
-		int_fast32_t tmp_coef [mcv_coef_length];
-		int_fast32_t wrk_coef [mcv_coef_length];
+		int32_t tmp_coef [mcv_coef_length];
+		int32_t wrk_coef [mcv_coef_length];
 
 		// сперва "0", потом значения
 		for (i=0; i < zeros_insert; ++ i)
 			tmp_coef [i] = 0;
 		for (i=0; i < coef_length; ++ i)
-			tmp_coef [i + zeros_insert] = coef [i];
+			tmp_coef [i + zeros_insert] = adpt_output(& plfircoefsout, kf [i]);
 
 		//assert(mcv_coef_length == (coef_length + zeros_insert));
 
@@ -7508,10 +7224,10 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 static void 
 board_fpga_fir_send(
 	const uint_fast8_t ifir,	// номер FIR фильтра в FPGA
-	const int_fast32_t * const k, unsigned Ntap, unsigned CWidth
+	const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth
 	)
 {
-	ASSERT(CWidth <= 24);
+	//ASSERT(CWidth <= 24);
 	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
 	board_fpga_fir_connect();
 
@@ -7535,8 +7251,8 @@ board_fpga_fir_send(
 	board_fpga_fir_coef_p1(0x00000000);	// 1-st dummy
 	board_fpga_fir_coef_p2(0x00000000);	// 2-nd dummy
 
-	//single_rate_out_write_ser(k, Ntap / 2 + 1); // NtapCoeffs(Ntap);
-	single_rate_out_write_mcv(k, Ntap, CWidth); // NtapCoeffs(Ntap);
+	//single_rate_out_write_ser(kf, Ntap / 2 + 1); // NtapCoeffs(Ntap);
+	single_rate_out_write_mcv(kf, Ntap, CWidth); // NtapCoeffs(Ntap);
 	//sendbatch();
 
 	board_fpga_fir_complete();
@@ -7580,7 +7296,7 @@ static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
 #endif /* WITHDEBUG */
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
-void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 #if 0 && WITHDEBUG
 	int_fast64_t sum = 0;
@@ -7589,7 +7305,7 @@ void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned 
 		sum += expandsign(k [i], CWidth);
 	PRINTF(PSTR("board_reload_fir: ifir=%u, Ntap=%u, sum=%08lX%08lX, CWidth=%u\n"), ifir, Ntap, (unsigned long) (sum >> 32), (unsigned long) (sum >> 0), CWidth);
 #endif /* WITHDEBUG */
-	board_fpga_fir_send(ifir, k, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
+	board_fpga_fir_send(ifir, kf, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
 }
 
@@ -7601,7 +7317,9 @@ void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned 
 /* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_fpga_adcoverflow(void)
 {
-#if defined (TARGET_FPGA_OVF_GET)
+#if WITHOVFHIDE
+	return 0;
+#elif defined (TARGET_FPGA_OVF_GET)
 	return TARGET_FPGA_OVF_GET;
 #else /* defined (TARGET_FPGA_OVF_GET) */
 	return 0;
@@ -7669,6 +7387,10 @@ void board_initialize(void)
 	board_fpga_loader_PS();
 #endif /* WITHFPGALOAD_PS */
 
+#if WITHDSPEXTFIR
+	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
+#endif /* WITHDSPEXTFIR */
+
 	board_update_initial();		// Обнуление теневых переменных, синхронизация регистров с теневыми переменными.
 	board_reset();			/* формирование импульса на reset_n */
 
@@ -7682,11 +7404,6 @@ void board_initialize(void)
 	hardware_dac_initialize();	/* инициализация DAC на STM32F4xx */
 #endif /* WITHCPUDACHW */
 
-#if WITHDSPEXTFIR
-	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
-#endif /* WITHDSPEXTFIR */
-
-	adcdones_initialize(); // регистрируются обработчики конца преобразвания АЦП
 	adcfilters_initialize();	// раотают даже если нет аппаратного АЦП в процссоре
 
 	board_adc_initialize();
@@ -7714,13 +7431,13 @@ void board_initialize(void)
 	static volatile uint_fast8_t board_rtc_cached_dayofmonth = 1;
 	static volatile uint_fast8_t board_rtc_cached_hour;
 	static volatile uint_fast8_t board_rtc_cached_minute;
-	static volatile uint_fast8_t board_rtc_cached_secounds;
+	static volatile uint_fast8_t board_rtc_cached_seconds;
 
 static void board_rtc_cache_update(void * ctx)
 {
 	board_rtc_getdatetime_low(
 			& board_rtc_cached_year, & board_rtc_cached_month, & board_rtc_cached_dayofmonth,
-			& board_rtc_cached_hour, & board_rtc_cached_minute, & board_rtc_cached_secounds
+			& board_rtc_cached_hour, & board_rtc_cached_minute, & board_rtc_cached_seconds
 			);
 }
 
@@ -7736,14 +7453,14 @@ static void board_rtc_initialize(void)
 		/* проверка значений в RTC на допустимость */
 		uint_fast16_t year;
 		uint_fast8_t month, day;
-		uint_fast8_t hour, minute, secounds;
-		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+		uint_fast8_t hour, minute, seconds;
+		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 		
-		PRINTF(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, secounds);
+		PRINTF(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, seconds);
 
 		if (month < 1 || month > 12 ||
 			day < 1 || day > 31 ||
-			hour > 23 || minute > 59 || secounds > 59)
+			hour > 23 || minute > 59 || seconds > 59)
 		{
 			loadreq = 1;
 		}
@@ -7751,31 +7468,12 @@ static void board_rtc_initialize(void)
 
 	if (loadreq != 0)
 	{
-		// Алгоритм найден тут: https://electronix.ru/forum/index.php?showtopic=141655&view=findpost&p=1495868
-		static const char ds [] = __DATE__;
-		static const char ts [] = __TIME__;
-
-		#define COMPILE_HOUR   (((ts [0]-'0')*10) + (ts [1]-'0'))
-		#define COMPILE_MINUTE (((ts [3]-'0')*10) + (ts [4]-'0'))
-		#define COMPILE_SECOND (((ts [6]-'0')*10) + (ts [7]-'0'))
-
-		#define COMPILE_YEAR  ((((ds [7]-'0')*10+(ds [8]-'0'))*10+(ds [9]-'0'))*10+(ds [10]-'0'))
-
-		#define COMPILE_MONTH   ((ds [2] == 'n' ? (ds [1] == 'a'? 0 : 5) \
-								: ds [2] == 'b' ? 1 \
-								: ds [2] == 'r' ? (ds [0] == 'M'? 2 : 3) \
-								: ds [2] == 'y' ? 4 \
-								: ds [2] == 'l' ? 6 \
-								: ds [2] == 'g' ? 7 \
-								: ds [2] == 'p' ? 8 \
-								: ds [2] == 't' ? 9 \
-								: ds [2] == 'v' ? 10 : 11)+1)
-
-		#define COMPILE_DAY  ((ds [4]==' ' ? 0 : ds [4]-'0')*10+(ds [5]-'0'))	
+		uint_fast16_t year;
+		uint_fast8_t month, day;
+		uint_fast8_t hour, minute, seconds;
 		
-		board_rtc_setdatetime(COMPILE_YEAR, COMPILE_MONTH, COMPILE_DAY, COMPILE_HOUR, COMPILE_MINUTE, COMPILE_SECOND);
-
-		//board_rtc_setdate(2016, 3, 1);
+		board_get_compile_datetime(& year, & month, & day, & hour, & minute, & seconds);
+		board_rtc_setdatetime(year, month, day, hour, minute, seconds);
 	}
 #if WITHRTCCACHED
 
@@ -7800,7 +7498,7 @@ void board_rtc_getdatetime(
 	uint_fast8_t * day,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 	// Алгоритм найден тут: https://electronix.ru/forum/index.php?showtopic=141655&view=findpost&p=1495868
@@ -7830,7 +7528,7 @@ void board_rtc_getdatetime(
 	* day = COMPILE_DAY;
 	* hour = COMPILE_HOUR;
 	* minute = COMPILE_MINUTE;
-	* secounds = COMPILE_SECOND;
+	* seconds = COMPILE_SECOND;
 }
 
 #endif /* defined (RTC1_TYPE) */
@@ -7860,7 +7558,7 @@ void board_rtc_cached_getdate(
 void board_rtc_cached_gettime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 #if WITHRTCCACHED
@@ -7869,12 +7567,12 @@ void board_rtc_cached_gettime(
 
 	* hour = board_rtc_cached_hour;
 	* minute = board_rtc_cached_minute;
-	* secounds = board_rtc_cached_secounds;
+	* seconds = board_rtc_cached_seconds;
 
 	system_enableIRQ();
 
 #else /* WITHRTCCACHED */
-	board_rtc_gettime(hour, minute, secounds);
+	board_rtc_gettime(hour, minute, seconds);
 #endif /* WITHRTCCACHED */
 }
 
@@ -7884,7 +7582,7 @@ void board_rtc_cached_getdatetime(
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
-	uint_fast8_t * secounds
+	uint_fast8_t * seconds
 	)
 {
 #if WITHRTCCACHED
@@ -7896,13 +7594,40 @@ void board_rtc_cached_getdatetime(
 	* dayofmonth = board_rtc_cached_dayofmonth;
 	* hour = board_rtc_cached_hour;
 	* minute = board_rtc_cached_minute;
-	* secounds = board_rtc_cached_secounds;
+	* seconds = board_rtc_cached_seconds;
 
 	system_enableIRQ();
 
 #else /* WITHRTCCACHED */
-	board_rtc_getdatetime(year, month, dayofmonth, hour, minute, secounds);
+	board_rtc_getdatetime(year, month, dayofmonth, hour, minute, seconds);
 #endif /* WITHRTCCACHED */
+}
+
+void board_get_compile_datetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * dayofmonth,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * seconds
+	)
+{
+	// Алгоритм найден тут: https://electronix.ru/forum/index.php?showtopic=141655&view=findpost&p=1495868
+	static FLASHMEM const char ds [] = __DATE__;
+	static FLASHMEM const char ts [] = __TIME__;
+
+	* hour = (((ts [0] - '0') * 10) + (ts [1] - '0'));
+	* minute = (((ts [3] - '0') * 10) + (ts [4] - '0'));
+	* seconds = (((ts [6] - '0') * 10) + (ts [7] - '0'));
+
+	* year = ((((ds [7] - '0') * 10 + (ds [8] - '0')) * 10 + (ds [9] - '0')) * 10 + (ds [10] - '0'));
+
+	* month = ((ds [2] == 'n' ? (ds [1] == 'a' ? 0 : 5) : ds [2] == 'b' ? 1 : ds [2] == 'r' ? (ds [0] == 'M' ? 2 : 3) :
+				ds [2] == 'y' ? 4 : ds [2] == 'l' ? 6 : ds [2] == 'g' ? 7 : ds [2] == 'p' ? 8 : ds [2] == 't' ? 9 :
+				ds [2] == 'v' ? 10 : 11) + 1);
+
+	* dayofmonth = ((ds [4] == ' ' ? 0 : ds [4] - '0') * 10 + (ds [5] - '0'));
+
 }
 
 
@@ -8132,8 +7857,6 @@ hardware_get_ptt(void)
 {
 #if WITHBBOX && defined (WITHBBOXTX)
 	return WITHBBOXTX;	// автоматический переход на передачу
-#elif ELKEY328
-	return 1;	// todo: 328
 #elif defined (HARDWARE_GET_PTT)
 	return HARDWARE_GET_PTT();
 #else /*  */
@@ -8178,7 +7901,7 @@ hardware_ptt_port_initialize(void)
 #endif /* WITHCAT */
 }
 
-/* функция вызывается из обработчиков прерывания или при запрещённых прерываниях. */
+/* функция вызывается из SYSTEM обработчиков прерывания или при запрещённых прерываниях. */
 void hardware_txpath_set(
 	portholder_t txpathstate
 	)
@@ -8210,7 +7933,7 @@ void hardware_txpath_set(
 
 	#endif
 
-#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA || CPUSTYLE_RISCV
 	// если у процессора есть возможность ставить/сбрасывать биты в регистрах состояния вывода по отдельности,
 	// кроме этого - порт пограммируется на работу в режиме "открытый сток".
 	#if defined (TXPATH_BIT_GATE)
@@ -8264,7 +7987,7 @@ hardware_txpath_initialize(void)
 
 	TXPATH_INITIALIZE();
 
-#elif CPUSTYLE_ARM
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 	TXPATH_INITIALIZE();
 
@@ -8547,14 +8270,18 @@ void
 board_sidetone_setfreq(
 	uint_least16_t tonefreq)	/* tonefreq - частота в герцах. Минимум - 400 герц (определено набором команд CAT). */
 {
+	const uint_least16_t tonefreq01 = tonefreq * 10;
 	enum { sndi = SNDI_SIDETONE };
-	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
+	if (board_calcs_setfreq(sndi, tonefreq01) != 0)	/* если частота изменилась - перепрограммируем */
 	{
 		system_disableIRQ();
 		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		SPIN_UNLOCK(& gpreilock);
 		system_enableIRQ();
+#if WITHIF4DSP
+		dsp_sidetone_setfreq(tonefreq01);
+#endif /* WITHIF4DSP */
 	}
 }
 
@@ -9886,7 +9613,9 @@ mcp3208_read_low(
 #if defined(RTC1_TYPE)
 
 #include <time.h>
+	#if ! LINUX_SUBSYSTEM
 #include <sys/_timeval.h>
+#endif /* ! LINUX_SUBSYSTEM */
 
 /* поддержка получения времени */
 int _gettimeofday(struct timeval *p, void *tz)
@@ -9898,9 +9627,9 @@ int _gettimeofday(struct timeval *p, void *tz)
 		// получаем локальное время в секундах из компонент
 		uint_fast16_t year;
 		uint_fast8_t month, dayofmonth;
-		uint_fast8_t hour, minute, secounds;
+		uint_fast8_t hour, minute, seconds;
 
-		board_rtc_getdatetime( & year, & month, & dayofmonth, & hour, & minute, & secounds);
+		board_rtc_getdatetime( & year, & month, & dayofmonth, & hour, & minute, & seconds);
 
 		static const unsigned int years [2] [13] =
 		{
@@ -9950,13 +9679,13 @@ int _gettimeofday(struct timeval *p, void *tz)
 		if (leap != 0)
 		{
 			p->tv_sec = XSEC_PER_DAY * (((year) - 1980) * 365 + ((year) - 1980) / 4 + years [leap] [(month) - 1] + ((dayofmonth) - 1))
-					+ 3600 * (hour) + 60 * (minute) + (secounds);
+					+ 3600 * (hour) + 60 * (minute) + (seconds);
 		}
 		else
 		{
 			p->tv_sec = XSEC_PER_DAY
 					* (((year) - 1980) * 365 + ((year) - 1980) / 4 + 1 + years [leap] [(month) - 1] + ((dayofmonth) - 1))
-					+ 3600 * (hour) + 60 * (minute) + (secounds);
+					+ 3600 * (hour) + 60 * (minute) + (seconds);
 		}
 		p->tv_usec = 0;
 	}
@@ -9964,7 +9693,7 @@ int _gettimeofday(struct timeval *p, void *tz)
 	return 0;
 }
 
-#else
+#elif ! LINUX_SUBSYSTEM
 
 #include <time.h>
 #include <sys/_timeval.h>
@@ -9986,3 +9715,41 @@ int _gettimeofday(struct timeval *p, void *tz)
 #endif /* ! CPUSTYLE_ATMEGA */
 
 
+// CRC-CCITT calculations:
+// http://www.barrgroup.com/Embedded-Systems/How-To/CRC-Calculation-C-Code
+
+static const uint_fast32_t MODEM_CRC_POLYNOM = 0x04C11DB7; // CRC-32
+static const uint_fast32_t MODEM_CRC_INITVAL = 0xFFFFFFFF;
+static const uint_fast32_t MODEM_CRC_MASK = 0xFFFFFFFF;
+static const uint_fast32_t MODEM_CRC_BITS = 32;
+
+// Обновление CRC для очередного бита
+static uint_fast32_t crcupdate(
+	uint_fast32_t crc,
+	uint_fast8_t v		// очередной бит
+	)
+{
+	const uint_fast32_t MODEM_CRC_LASTBIT = (uint_fast32_t) 1 << (MODEM_CRC_BITS - 1);
+	if (((MODEM_CRC_LASTBIT & crc) != 0) != (v != 0))
+		return (crc * 2) ^ MODEM_CRC_POLYNOM;
+	else
+		return (crc * 2);
+}
+
+void board_get_serialnr(unsigned * sn)
+{
+#if CPUSTYLE_STM32MP1
+	uint_fast32_t crc = MODEM_CRC_INITVAL;
+	unsigned i;
+
+	for (i = 0; i < 3; ++ i)
+	{
+		const uint32_t v = ((const volatile uint32_t *) UID_BASE) [i];
+		for (unsigned i = 0; i < 32; ++ i)
+			crc = crcupdate(crc, (v >> i) & 0x01);
+	}
+	* sn = crc & MODEM_CRC_MASK;
+#else
+	* sn = 0;
+#endif
+}

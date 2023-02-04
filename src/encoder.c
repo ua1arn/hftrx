@@ -444,7 +444,7 @@ static void spool_encinterrupt2_local(void * ctx)
 	spool_encinterrupt2();
 }
 
-/* вызывается при запрещенных прерываниях */
+/* вызывается при запрещённых прерываниях */
 void encoder_initialize(void)
 {
 	//rotate = backup_rotate = 0;

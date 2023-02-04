@@ -17,7 +17,7 @@
 
 //uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
 
-__weak void HAL_Delay(uint32_t Delay)
+void HAL_Delay(uint32_t Delay)
 {
 	local_delay_ms(Delay);
 

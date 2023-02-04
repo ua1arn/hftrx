@@ -8,8 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре
 // rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_INCLUDED
-#define ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_INCLUDED 1
+#ifndef ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_H_INCLUDED
+#define ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_H_INCLUDED 1
 
 	#if ! defined(STM32H743xx)
 		#error Wrong CPU selected. STM32H743xx expected
@@ -125,9 +125,6 @@
 	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
 
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
@@ -298,6 +295,7 @@
 	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
 	#if 0
 		#define WITHWAVPLAYER 1	/* трансивер работает проигрывателем файлов с USB/SD накопителя */
@@ -577,4 +575,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_INCLUDED */
+#endif /* ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V7_H_INCLUDED */

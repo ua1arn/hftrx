@@ -16,8 +16,9 @@
 ##############################################################################################
 # Start of default section
 #
-TRGT = arm-none-eabi-
-#TRGT = C:\user\klen\bin\arm-kgp-eabi-
+TRGT2 = arm-none-eabi
+#TRGT2 = C:\user\klen\bin\arm-kgp-eabi
+TRGT = $(TRGT2)-
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -43,6 +44,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
@@ -55,20 +57,20 @@ CORE += -mfpu=vfpv4
 # Define optimisation level here
 # olny -Og for app
 # Application
-OPT = -Og
-#OPT = -Ofast -flto
+#OPT = -Og
+#OPT = -Os
+OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
-DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
+LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -82,7 +84,6 @@ DINCDIR = \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
-	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
 	$(RTOSXDIR)/Include \
 	$(RTOSXDIR)/RTX/Include \
@@ -90,15 +91,8 @@ DINCDIR = \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDIR)/Core_A/Source \
 	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude \
-	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/apps/http \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
-
+	$(CMSISDSPDIR)/PrivateInclude
+		
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
 
@@ -142,9 +136,33 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
-#SRCDIRS += $(DSP3DDIR)/src
-#SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
-#SRCDIRS += $(OPENVGDIR)/src
+
+ifeq (1, 1)
+# LuPng
+SRCDIRS += $(LUPNGDIR)
+DINCDIR += $(LUPNGDIR)
+endif
+
+ifeq (1, 0)
+# LwIP
+SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+DINCDIR += \
+	$(LWIPDIR)/src/include \
+	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/src/apps/http
+endif
+
+ifeq (1, 0)
+# OpenVG
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+SRCDIRS += $(OPENVGDIR)/src
+DINCDIR += \
+	$(OPENVGDIR)/include/VG \
+	$(OPENVGDIR)/include \
+	$(OPENVGDIR)/include/EGL \
+	$(OPENVGDIR)/src
+endif
+
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 

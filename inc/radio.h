@@ -30,8 +30,6 @@ extern "C" {
 typedef uint_least64_t ftw_t;	/* тип, подходящий по размерам для хранения промежуточных результатов вычислений */
 typedef uint_least64_t phase_t;
 
-#define CWPITCHSCALE 10
-
 #if WITHBBOX && defined (WITHBBOXFREQ)
 	#define DEFAULTDIALFREQ	WITHBBOXFREQ
 #elif ! defined (DEFAULTDIALFREQ)
@@ -91,7 +89,7 @@ typedef uint_least64_t phase_t;
 #define WITHREVERBDELAYMAX 100	/* максимальная задержка ревербератора % */
 
 #define WITHREVERBLOSSMIN 0		/* минимальное ослабление на возврате ревербератора db */
-#define WITHREVERBLOSSMAX 25	/* максимальная ослабление на возврате ревербератора (dB) */
+#define WITHREVERBLOSSMAX 30	/* максимальная ослабление на возврате ревербератора (dB) */
 
 #define WITHCOMPATTACKMIN 1		/* минимальное время атаки компрессора (мс) */
 #define WITHCOMPATTACKMAX 100	/* максимальная время атаки компрессора (мс) */
@@ -130,10 +128,12 @@ typedef uint_least64_t phase_t;
 	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 #endif /* WITHIF4DSP */
 
-#define CWPITCHMIN10	(100 / 10) // (400 / 10) kenwood min value 400 Hz
-#define CWPITCHMAX10	(1900 / 10)
+#define CWPITCHSCALE 	10
+#define CWPITCHMIN10	(100 / CWPITCHSCALE) // (400 / 10) kenwood min value 400 Hz
+#define CWPITCHMAX10	(1900 / CWPITCHSCALE)
 
 #if LO3_SIDE == LOCODE_INVALID
 	//#error PBT can be used only with triple conversion schemes
@@ -326,7 +326,7 @@ getif3byedge(
 	uint_fast8_t mode,			/* код семейства режима работы */
 	uint_fast8_t mix4lsb,		/* формируем гетеродин для указанной боковой полосы */
 	uint_fast8_t tx,			/* для режима передачи - врежиме CW - смещения частоты не требуется. */
-	uint_fast8_t gcwpitch10
+	uint_fast8_t cwpitch10
 	);
 
 int_fast32_t
@@ -399,9 +399,9 @@ enum
 #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	BOARD_TXAUDIO_LINE,	// "LINE ",
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
-#if WITHUSBUACOUT
+#if WITHUSBHW && WITHUSBUACOUT
 	BOARD_TXAUDIO_USB,	// "USB AUDIO",
-#endif /* WITHUSBUACOUT */
+#endif /* WITHUSBHW && WITHUSBUACOUT */
 	BOARD_TXAUDIO_2TONE,	// "2TONE",
 	BOARD_TXAUDIO_NOISE,	// "NOISE",
 	BOARD_TXAUDIO_1TONE,	// "1TONE",
@@ -432,10 +432,11 @@ enum
 	//
 	BOARD_RXMAINSUB_count
 };
-void spool_lfm(void);	// возврат не-0, если включён режим LFM
+
 void lfm_run(void);
-void hardware_lfm_setupdatefreq(unsigned ticksfreq);
-void hardware_lfm_timer_initialize(void);
+void lfm_disable(void);
+int iflfmactive(void);
+uint_fast32_t getlfmfreq(void);
 
 /* подготовка работы задержек переключения приём-передача */
 void vox_initialize(void);
@@ -521,6 +522,7 @@ void elkey_set_format(uint_fast8_t dashratio, uint_fast8_t spaceratio); /* об�
 void elkey_set_mode(uint_fast8_t mode, uint_fast8_t reverse);	/* режим электронного ключа - 0 - asf, 1 - paddle, 2 - keyer */
 void elkey_set_slope(uint_fast8_t slope);	// скорость уменьшения длительности точки и паузы - имитация виброплекса
 uint_fast8_t elkey_get_output(void);
+uint_fast8_t elkey_get_ptt(void);
 uint_fast8_t elkey_getnextcw(void);	// Получение символа для передачи (только верхний регистр)
 
 
@@ -569,7 +571,8 @@ uint_fast8_t hardware_get_txdisable(void);
 
 void hardware_txpath_initialize(void);
 void hardware_txpath_set(portholder_t txpathstate);
-void dsp_txpath_set(portholder_t txpathstate);
+void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t keydown);	// вызывается из SYSTEM обработчика прерываний
+void dsp_sidetone_setfreq(uint_least16_t tonefreq01);	/* tonefreq01 - частота в десятых долях герца. . */
 
 /* сиквенсор приём-передача - и по таймерным и по 1/ELKEY_DISCRETE точки */
 void elkey_spool_dots(void);	/* электронный ключ - вызывается с периодом 1/ELKEY_DISCRETE от длительности точки. */
@@ -1037,7 +1040,8 @@ void spool_0p128(void);	// OPERA support
 	#define LO4_POWER2 0
 	#define IF3_MODEL IF3_TYPE_BYPASS
 
-	#if BANDSELSTYLERE_UPCONV56M && XVTR_NYQ1
+	#if defined (TUNE_BOTTOM) && (TUNE_TOP)
+	#elif BANDSELSTYLERE_UPCONV56M && XVTR_NYQ1
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP (DUCDDC_FREQ * 1 + 56000000L)		/* верхняя частота настройки */
 		//#define TUNE_TOP 56000000L		/* верхняя частота настройки */
@@ -1943,11 +1947,6 @@ void spool_0p128(void);	// OPERA support
 	#elif BANDSELSTYLE_LADVABEST
 		#define TUNE_BOTTOM 1600000L			/* нижняя частота настройки */
 		#define TUNE_TOP 56000000L
-	#elif BANDSELSTYLERE_RA4YBO_AM0
-		#define TUNE_BOTTOM 150000L			/* 150 kHz нижняя частота настройки */
-		#define TUNE_TOP 4000000L			/* 4 MHz - верх */
-		#define BANDMIDDLE	2200000L
-		#define UPPER_DEF	2200000L
 	#else
 		#error Strange BANDSELSTYLExxx
 	#endif
@@ -3049,6 +3048,14 @@ void spool_0p128(void);	// OPERA support
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_61M440_X5 */
 
+#if DIRECT_61M440_X1
+	#define LO1MODE_DIRECT	1
+	#define REFERENCE_FREQ	61440000L	/* LO2 = 61440 kHz - for 70455.5 kHz filter */
+	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
+	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
+	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
+#endif	/* DIRECT_61M440_X1 */
+
 // FQMODEL_70455 should be defined
 #if HYBRID_70M000_10M7
 	/* в качестве подчисточного фильтра за DDS используется пъезофильтр 10.7 MHz */
@@ -3487,13 +3494,8 @@ const char * get_band_label3(unsigned b); /* получение человеко
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 #endif /* WITHPOTGAIN */
 
-#if ELKEY328
-	#define CWWPMMIN	12 //328 10
-	#define CWWPMMAX	30 //328 60
-#else
-	#define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
-	#define CWWPMMAX	60
-#endif
+#define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
+#define CWWPMMAX	60
 
 
 #ifdef __cplusplus

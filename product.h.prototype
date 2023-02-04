@@ -1,4 +1,3 @@
-/* $Id$ */
 /* template for product.h */
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
@@ -22,11 +21,11 @@
 #ifndef NIGHTBUILD
 
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
-//#define DEBUGSPEED 500000L
-#define DEBUGSPEED 115200L
-//#define DEFAULTDIALFREQ	12798340L
-//#define DEFAULTDIALFREQ	225000L
-//#define DEFAULTDIALFREQ	14021000L
+//#define DEBUGSPEED 500000
+#define DEBUGSPEED 115200
+//#define DEFAULTDIALFREQ	12798340
+//#define DEFAULTDIALFREQ	225000
+//#define DEFAULTDIALFREQ	14021000
 //#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собираем bootloader */
 
 // Современные конфигурации:
@@ -43,9 +42,7 @@
 
 // Дисплей с фреймбуфером:
 //#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N
-#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
-//#define CTLSTYLE_STORCH_V8	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
-//#define CTLSTYLE_STORCH_V9	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
+#define CTLSTYLE_STORCH_V7	1
 //#define CTLSTYLE_V3D	1	// Плата STM32F746G-DISCO с процессором STM32F746NGH6
 
 //
@@ -86,11 +83,6 @@
 // "Персональные" конфигурации:
 //#define CTLSTYLE_V1A 1		// ATMega: DU VENT SI570+AD9834 (66MHz), LS020, ATMega32 - без внешнего дешифратора адресов - atmega_cpustyle_v1a.h, atmega_ctlstyle_v1a.h - похожа на sw2011
 //#define STYLE_TS850_V1 	1	// ARM: Vorobey board for (rd3pq@rambler.ru - Si570), new call: R2PM
-//#define CTLSTYLE_RA4YBO	1	// "Стационарный c Павлином" ATMega1284, up-conversion to 73050 для RA4YBO
-//#define CTLSTYLE_RA4YBO_V1	1	// "Портативный с LS020 с тюнерм без часов" ATMega644 @8MHz, up-conversion to 64455 для RA4YBO
-//#define CTLSTYLE_RA4YBO_V2	1	// "Стационарный с LS020" ATMega644 @8MHz, up-conversion to 64455 для RA4YBO
-//#define CTLSTYLE_RA4YBO_V3	1	// "Стационарный с Павлином" STM32F101RB, Si570+LMX2306+AD9834, up-conversion to 64455 для RA4YBO
-//#define CTLSTYLE_RA4YBO_AM0	1	// WH1602, IF=10.7 MHz, Si5351A
 //#define CTLSTYLE_IGOR		1		// Версия для Игоря (45 МГц -> 128 kГц с фиксированными гетеродинами)
 //#define CTLSTYLE_4Z5KY_V1	1		// Новая прошивка для синтезатора 4Z5KY с двухстрочником http://ur5yfv.ucoz.ua/forum/28-19-2
 //#define CTLSTYLE_4Z5KY_V2	1		// Синтезатор 4Z5KY с двухстрочником http://www.cqham.ru/trx92_19.htm AD9951+AD9834
@@ -116,7 +108,6 @@
 //#define CTLSTYLE_V1E	1	// Плата с процессором STM32F030F4P (TSSOP-20)
 //#define CTLSTYLE_V1F	1	// Плата с процессором STM32F051C6T (TQFP-48)
 //#define CTLSTYLE_V1G	1	// Плата с процессором STM32L051K6T (TQFP-32)
-//#define CTLSTYLE_V1H	1	// Плата с процессором ATMega328 (DIP-28) - тестирование Hittite HMC830
 //#define CTLSTYLE_V1X	1	// Плата с процессором ATXMega128A4U
 //#define CTLSTYLE_V1M	1	// Плата с процессором ATmega64 (RA1AGO)
 
@@ -211,15 +202,15 @@
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_RA1AGO.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32h7xx_tqfp176_cpustyle_storch_v6.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-#elif 0 && CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V7	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V7 && 0	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32h7xx_tqfp100_ctlstyle_storch_v7z_vt.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32h7xx_tqfp100_cpustyle_storch_v7z_vt.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-#elif 0 && CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V7	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V7 && 0	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7z_no_radio.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32h7xx_tqfp176_cpustyle_storch_v7z.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-#elif 1 && CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V7	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V7 && 1	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7_ua1cei.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7_oldcase.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
@@ -227,28 +218,33 @@
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v7_no_radio.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32h7xx_tqfp176_cpustyle_storch_v7.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-#elif CPUSTYLE_R7S721 && CTLSTYLE_STORCH_V8	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
+#elif CPUSTYLE_R7S721 && CTLSTYLE_STORCH_V7 && 1		// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ua6ljx.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_us4ijr.h"	// us4ijr@gmail.com rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ua3reo.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_r7s72_tqfp176_cpustyle_storch_v8.h"	// rmainunit_v5km2.pcb (mini USBx2, wide display interface) - mini RX
-#elif CPUSTYLE_R7S721 && CTLSTYLE_STORCH_V9	// rmainunit_v5km5.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
+#elif CPUSTYLE_R7S721 && CTLSTYLE_STORCH_V7 && 0		// rmainunit_v5km5.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v9.h"	// rmainunit_v5km5.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v9_us4ijr.h"	// us4ijr@gmail.com rmainunit_v5km5.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_r7s72_tqfp176_cpustyle_storch_v9.h"	// rmainunit_v5km5.pcb (mini USBx2, wide display interface) - mini RX
-#elif 0 && CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7	// // https://www.st.com/en/evaluation-tools/stm32mp157c-dk2.html STM32MP157C-DK2 & 1024x600 HDMI
+#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 0	// // https://www.st.com/en/evaluation-tools/stm32mp157c-dk2.html STM32MP157C-DK2 & 1024x600 HDMI
 	#include "boards/arm_stm32mp1xx_ctlstyle_dk2.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_dk2.h"
-#elif 0 && CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7	// PanGu board, STM32MP157AAC, USB device, USB HOST+HUB, Ethernet
+#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 0	// PanGu board, STM32MP157AAC, USB device, USB HOST+HUB, Ethernet
 	#include "boards/arm_stm32mp1xx_ctlstyle_PanGuBoard_v1p2.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_PanGuBoard_v1p2.h"
-#elif 1 && CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c.h"
+#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 1	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c.h"
+	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_falcon.h"
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_lfm.h"
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_qrp.h"
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_ua1cei_qrp.h"
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_r1ab.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9c.h"	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 #elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7	// rmainunit_v5km2.pcb STM32MP153DAB, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
@@ -256,18 +252,22 @@
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_r1yq.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_china_84748588.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_R3XBQ.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_R1AB.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_RK1AQ.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB
-#elif CPUSTYPE_T113 && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwt128s3_ctlstyle_storch_v9a.h"	// rmainunit_sv9e.pcb Allwinner t113-s2, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
+	#include <boards/arm_allwt113s3_ctlstyle_storch_v9a.h>	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt128s3_cpustyle_storch_v9a.h"	// rmainunit_sv9e.pcb Allwinner t113-s2, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
-#elif CPUSTYPE_T113 && CTLSTYLE_STORCH_V7
-	#include "boards/arm_allwt128s3_ctlstyle_mango_pi.h"
+	#include <boards/arm_allwt113s3_cpustyle_storch_v9a.h>	// rmainunit_sv9f.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+	//#include <boards/arm_allwt113s3_cpustyle_storch_v9a_bad.h>	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
+	#include <boards/arm_allwt113s3_ctlstyle_mango_pi.h>
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt128s3_cpustyle_mango_pi.h"
+	#include <boards/arm_allwt113s3_cpustyle_mango_pi.h>
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
+	#include <boards/arm_allwt113s3_ctlstyle_mango_pi_gw2a.h>
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include <boards/arm_allwt113s3_cpustyle_mango_pi_gw2a.h>
 #elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7
 	#include "boards/arm_xczu2_ctlstyle_alinx_axu2cga.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -277,7 +277,7 @@
 	//#include "boards/arm_x7c70xx_ctlstyle_antminer_10_v1p1.h"	// 7020
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_antminer_v1p1.h"
-#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 1
+#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_x7c70xx_ctlstyle_zinc20.h"	// 7020 Плата Цник20 от НПК ООО "АТРИ" http://www.a3.spb.ru/
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_zinc20.h"	// 7020 Плата Цник20 от НПК ООО "АТРИ" http://www.a3.spb.ru/
@@ -285,10 +285,14 @@
 	#include "boards/arm_x7c70xx_ctlstyle_storch_sv9.h"	// 7020
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_storch_sv9.h"
-#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7
+#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_x7c70xx_ctlstyle_ebaz4205_10_v1.h"	// плата EBAZ4205
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_ebaz4205_v1.h"	// плата EBAZ4205
+#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7
+	#include "boards/arm_x7c70xx_ctlstyle_ebaz4205_v2.h"	// плата EBAZ4205 с xc7z020 и 512 Мб DDR3
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_x7c70xx_cpustyle_ebaz4205_v2.h"	// плата EBAZ4205 с xc7z020 и 512 Мб DDR3
 #elif CPUSTYLE_STM32F && CTLSTYLE_OLEG4Z_V1	// 2xUSB, STM32F767ZIT6, FPGA EP4CE22E22I7N & R820T2
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_oleg4z_v1.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -331,10 +335,6 @@
 	#include "boards/atmega328_ctlstyle_v1.h"	// Синтезатор "Колибри"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega328_cpustyle_v1.h"
-#elif CPUSTYLE_ATMEGA328 && CTLSTYLE_V1H
-	#include "boards/atmega328_ctlstyle_v1h.h"	// Плата с процессором ATMega328 (DIP-28) - тестирование Hittite HMC830
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega328_cpustyle_v1h.h"
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_FMPLL_V1
 	#include "boards/atmega_fmradio_v1.h"	// Синтезатор "Воробей-2"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
@@ -467,26 +467,6 @@
 	#include "boards/atmega_ctlstyle_rx24.h"	// Down-conversion аппараты с ПЧ 4.0..10.7 МГц, 24/16  бита в управляющем регистре
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v8a.h"	// новая плата Explorer, текущая версия для 40/44 ногих процессоров ATMega
-#elif CPUSTYLE_ATMEGA32 && CTLSTYLE_RA4YBO
-	#include "boards/atmega_ctlstyle_ra4ybo.h"	// ATMega1284, up-conversion to 73050->0.5 MHz, Si570, LMX2306, AD9834
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega_cpustyle_v8a.h"	// новая плата Explorer, текущая версия для 40/44 ногих процессоров ATMega
-#elif CPUSTYLE_ATMEGA32 && CTLSTYLE_RA4YBO_V1
-	#include "boards/atmega_ctlstyle_ra4ybo_v1.h"	// ATMega644, up-conversion to 64455->0.5 MHz, Si570, LMX2306, AD9834
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega_cpustyle_v8a.h"	// новая плата Explorer, текущая версия для 40/44 ногих процессоров ATMega
-#elif CPUSTYLE_ATMEGA32 && CTLSTYLE_RA4YBO_V2
-	#include "boards/atmega_ctlstyle_ra4ybo_v2.h"	// ATMega644, up-conversion to 73050->0.5 MHz, Si570, LMX2306, AD9834
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega_cpustyle_v8a.h"	// новая плата Explorer, текущая версия для 40/44 ногих процессоров ATMega
-#elif CPUSTYLE_STM32F && CTLSTYLE_RA4YBO_V3
-	#include "boards/atmega_ctlstyle_ra4ybo_v3.h"	// "Стационарный с Павлином" STM32F103C8T6, 2*HMC830, up-conversion to 64455 для RA4YBO
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32fxxx_tqfp48_cpustyle_ra4ybo_v3.h"	/* STM32F103C8T6	*/
-#elif CPUSTYLE_ATMEGA32 && CTLSTYLE_RA4YBO_AM0
-	#include "boards/atmega_ctlstyle_RA4YBO_AM0.h"	// WH1602, IF=10.7 MHz
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega_cpustyle_RA4YBO_AM0.h"	// WH1602, IF=10.7 MHz
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2011
 	#include "boards/atmega_ctlstyle_v9.h"	// SW-2011-RDX
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */

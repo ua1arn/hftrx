@@ -429,7 +429,7 @@ static void s1d13781_wrcmd32_pair(uint_fast8_t reg, uint_fast16_t high, uint_fas
 	s1d13781_unselect();
 }
 
-static void s1d13781_wrcmdcolor(uint_fast8_t reg, COLORMAIN_T val)
+static void s1d13781_wrcmdcolor(uint_fast8_t reg, COLORPIP_T val)
 {
 #if S1D_DISPLAY_BPP == 24
 	s1d13781_wrcmd32(reg, val);
@@ -562,7 +562,7 @@ void
 display_fillrect(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 	// дождаться выполнения предидущей команды BitBlt engine.
@@ -588,9 +588,9 @@ display_fillrect(
 
 }
 
-static COLORMAIN_T stored_fgcolor, stored_bgcolor;
+static COLORPIP_T stored_fgcolor, stored_bgcolor;
 
-static void s1d13781_setcolor(COLORMAIN_T fgcolor, COLORMAIN_T bgcolor)
+static void s1d13781_setcolor(COLORPIP_T fgcolor, COLORPIP_T bgcolor)
 {
 	stored_fgcolor = fgcolor;
 	stored_bgcolor = bgcolor;
@@ -667,7 +667,7 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	const COLORMAIN_T fillnewcolor = COLORMAIN_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
+	const COLORPIP_T fillnewcolor = COLORMAIN_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
 	enum { WC = (S1D_DISPLAY_BPP / 8) };		// количество байтов на пиксель
 	const int_fast16_t adjw = hshift < 0 ?
 				w + hshift 	// сдвиг окна влево
@@ -739,7 +739,7 @@ display_scroll_up(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	const COLORMAIN_T fillnewcolor = COLORMAIN_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
+	const COLORPIP_T fillnewcolor = COLORMAIN_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
 	enum { WC = (S1D_DISPLAY_BPP / 8) };		// количество байтов на пиксель
 	const int_fast16_t adjw = hshift < 0 ?
 				w + hshift 	// сдвиг окна влево
@@ -1240,8 +1240,8 @@ static void rectangle(
 	uint_fast16_t y,
 	uint_fast16_t w,
 	uint_fast16_t h,
-	COLORMAIN_T color1,
-	COLORMAIN_T color2
+	COLORPIP_T color1,
+	COLORPIP_T color2
 	)
 {
 	enum { thickness = 1 };
@@ -1259,8 +1259,8 @@ static void rectangle3d(
 	uint_fast16_t y,
 	uint_fast16_t w,
 	uint_fast16_t h,
-	COLORMAIN_T color1,
-	COLORMAIN_T color2
+	COLORPIP_T color1,
+	COLORPIP_T color2
 	)
 {
 	enum { thickness = 2 };
@@ -1291,7 +1291,7 @@ static void rectangle3d(
 void display_putpixel(
 	uint_fast16_t x,
 	uint_fast16_t y,
-	COLORMAIN_T color
+	COLORPIP_T color
 	)
 {
 	// вычисление начального адреса в видеопамяти
@@ -1336,7 +1336,7 @@ void display_putpixel(
 }
 
 static void display_putpixel_1(
-	PACKEDCOLORMAIN_T color
+	PACKEDCOLORPIP_T color
 	)
 {
 #if S1D_DISPLAY_BPP == 24
@@ -1367,7 +1367,7 @@ static void display_putpixel_1(
 }
 
 static void display_putpixel_2(
-	PACKEDCOLORMAIN_T color
+	PACKEDCOLORPIP_T color
 	)
 {
 #if S1D_DISPLAY_BPP == 24
@@ -1424,7 +1424,7 @@ static void display_putpixel_complete(void)
 
 
 
-static void s1d13781_clear(COLORMAIN_T bg)
+static void s1d13781_clear(COLORPIP_T bg)
 {
 	display_fillrect(0, 0, S1D_DISPLAY_WIDTH, S1D_DISPLAY_HEIGHT, bg);
 	s1d13781_setcolor(COLORMAIN_WHITE, bg);
@@ -1600,7 +1600,7 @@ void display_set_contrast(uint_fast8_t v)
 void 
 display_clear(void)
 {
-	const COLORMAIN_T bg = display_getbgcolor();
+	const COLORPIP_T bg = display_getbgcolor();
 
 	s1d13781_clear(bg);
 }
@@ -1612,12 +1612,12 @@ void display_flush(void)
 
 void
 //NOINLINEAT
-colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg)
+colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 	s1d13781_setcolor(fg, bg);
 }
 
-void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T fgbg)
+void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 	colmain_setcolors(fg, bg);
 }
@@ -1722,7 +1722,7 @@ void s1d13781_showbuffer(
 			// Обратить внимание, передается растр, где младшицй бит левее.
 			// Передача в индикатор по DMA
 			const uint_fast32_t len = MGSIZE(dx, dy);
-			arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
+			dcache_clean((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
 			hardware_spi_master_send_frame_16b(buffer, len);
 
 		#else /* WITHSPIEXT16 && WITHSPIHWDMA */
@@ -1835,7 +1835,7 @@ void display_plotstart(
 }
 
 void display_plot(
-	const PACKEDCOLORMAIN_T * buffer, 
+	const PACKEDCOLORPIP_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy,
 	uint_fast16_t xpix,	// начало области рисования
@@ -1844,7 +1844,7 @@ void display_plot(
 {
 #if 0//WITHSPIEXT16 && WITHSPIHWDMA
 	// Передача в индикатор по DMA
-	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// количество байтов
+	dcache_clean((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// количество байтов
 #endif /* WITHSPIEXT16 && WITHSPIHWDMA */
 
 	uint_fast32_t shadow_dstaddr = s1d13781_getaddr(xpix, ypix);

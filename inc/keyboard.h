@@ -83,10 +83,6 @@ enum
 
 	KBD_CODE_RECORDTOGGLE,		// SD CARD audio recording
 	KBD_CODE_RECORD_HOLDED,
-
-	KBD_CODE_VIBROCTL,		// 328
-	KBD_CODE_CWSPEEDUP,
-	KBD_CODE_CWSPEEDDOWN,
 	//
 	ENC_CODE_STEP_UP,		// относится только к енкодеру - обрабатывается его функциями
 	ENC_CODE_STEP_DOWN,		// относится только к енкодеру - обрабатывается его функциями

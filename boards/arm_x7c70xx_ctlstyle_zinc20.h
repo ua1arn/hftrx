@@ -12,9 +12,9 @@
 #ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_ZINC20_H_INCLUDED
 #define ARM_X7C7XX_BGAXXX_CTLSTYLE_ZINC20_H_INCLUDED 1
 
-	#if ! defined(XC7Z010)
-		#error Wrong CPU selected. XC7Z010 expected
-	#endif /* ! defined(STM32MP153Dxx) */
+	#if ! defined(XC7Z020)
+		#error Wrong CPU selected. XC7Z020 expected
+	#endif /* ! defined(XC7Z020) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -92,9 +92,9 @@
 	// --- вариации прошивки, специфические для разных частот
 	#define CTLREGMODE_NOCTLREG	1
 
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255

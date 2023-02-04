@@ -43,7 +43,10 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 	}
 	else
 	{
-#if defined (HARDWARE_LTDC_INITIALIZE)
+#if defined (HARDWARE_LVDS_INITIALIZE) && 0
+		/* Configure the LCD Control pins */
+		HARDWARE_LVDS_INITIALIZE();
+#elif defined (HARDWARE_LTDC_INITIALIZE)
 		/* Configure the LCD Control pins */
 #if WITHLCDDEMODE
 		HARDWARE_LTDC_INITIALIZE(1);	// подключение к выводам процессора сигналов периферийного контроллера
@@ -53,6 +56,8 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 #endif /* defined (HARDWARE_LTDC_INITIALIZE) */
 	}
 }
+
+static void hardware_ltdc_vsync(void);
 
 #if CPUSTYLE_R7S721
 
@@ -71,7 +76,7 @@ static void vdc5_update(
 		local_delay_ms(1);
 		if (-- count == 0)
 		{
-			PRINTF(PSTR("vdc5_update: wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			PRINTF(PSTR("vdc5_update: wait reg=%p %s mask=%08X, stay=%08X\n"), reg, label, (unsigned) mask, (unsigned) (* reg & mask));
 			return;
 		}
 	}
@@ -90,7 +95,7 @@ static void vdc5_wait(
 		local_delay_ms(1);
 		if (-- count == 0)
 		{
-			PRINTF(PSTR("vdc5_wait: wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			PRINTF(PSTR("vdc5_wait: wait reg=%p %s mask=%08X, stay=%08X\n"), reg, label, (unsigned) mask, (unsigned) (* reg & mask));
 			return;
 		}
 	}
@@ -104,7 +109,7 @@ static void vdc5_wait(
 	const uint_fast8_t pos = (ipos); \
 	uint_fast32_t mask = 0; \
 	while (width --) \
-		mask = (mask << 1) | 1uL; \
+		mask = (mask << 1) | 1u; \
 	mask <<= (pos); \
 	val <<= (pos); \
 	ASSERT((val & mask) == val); \
@@ -124,7 +129,7 @@ static void vdc5_wait(
 	const uint_fast8_t pos = (ipos); \
 	uint_fast32_t mask = 0; \
 	while (width --) \
-		mask = (mask << 1) | 1uL; \
+		mask = (mask << 1) | 1u; \
 	mask <<= (pos); \
 	val <<= (pos); \
 	ASSERT((val & mask) == val); \
@@ -271,7 +276,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORMAIN_T) * GXADJ(DIM_SECOND);	// размер одной строки в байтах
+	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORPIP_T) * GXADJ(DIM_SECOND);	// размер одной строки в байтах
 	// Таблица используемой при отображении палитры
 	COLOR24_T xltrgb24 [256];
 	display2_xltrgb24(xltrgb24);
@@ -349,7 +354,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
 	VDC5_fillLUT_L8(& VDC5_CH0_GR2_CLUT_TBL, xltrgb24);
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
-	//vdc->GR2_CLUT ^= (1uL << 16);	// GR2_CLT_SEL Switch to filled table
+	//vdc->GR2_CLUT ^= (1u << 16);	// GR2_CLT_SEL Switch to filled table
 //#endif /* LCDMODE_MAIN_L8 */
 
 //#if LCDMODE_PIP_L8
@@ -727,10 +732,10 @@ static void vdc5fb_update_all(struct st_vdc5 * const vdc)
 }
 
 void
-arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	struct st_vdc5 * const vdc = & VDC50;
-	//PRINTF(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
+	//PRINTF(PSTR("hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 
 
@@ -751,14 +756,14 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	ltdc_tfcon_cfg(vdmode);
 
 #if LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8
-	arm_hardware_ltdc_pip_off();
+	hardware_ltdc_pip_off();
 #endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
-	//PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
+	//PRINTF(PSTR("hardware_ltdc_initialize done\n"));
 }
 
 void
-arm_hardware_ltdc_deinitialize(void)
+hardware_ltdc_deinitialize(void)
 {
 	/* ---- Stop clock to the video display controller 5  ---- */
 	CPG.STBCR9 |= CPG_STBCR9_MSTP91;	// Module Stop 91 0: The video display controller 5 runs.
@@ -766,14 +771,14 @@ arm_hardware_ltdc_deinitialize(void)
 }
 
 /* Palette reload */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 	vdc5fb_L8_palette(vdc);
 }
 
 /* set top buffer start */
-void arm_hardware_ltdc_pip_set(uintptr_t p)
+void hardware_ltdc_pip_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -792,19 +797,16 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 		0);
 	(void) vdc->GR3_UPDATE;
 
-	if (LCDMODE_MAIN_PAGES > 1)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		vdc5_wait(& vdc->GR3_UPDATE, "GR3_UPDATE",
-				(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
-				(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
-				(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-				0
-			);
-	}
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	vdc5_wait(& vdc->GR3_UPDATE, "GR3_UPDATE",
+			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
 }
 
-void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
+void hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -821,7 +823,7 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -841,15 +843,10 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 	(void) vdc->GR2_UPDATE;
 }
 
-/* set visible buffer start. Wait VSYNC. */
-/* Set MAIN frame buffer address. Wait for VSYNC. */
-void arm_hardware_ltdc_main_set(uintptr_t p)
+/* ожидаем начало кадра */
+static void hardware_ltdc_vsync(void)
 {
 	struct st_vdc5 * const vdc = & VDC50;
-
-	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);		// GR2_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
-	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
-	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
 
 	// GR2_IBUS_VEN in GR2_UPDATE is 1.
 	// GR2_IBUS_VEN and GR2_P_VEN in GR2_UPDATE are 1.
@@ -862,15 +859,34 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		0);
 	(void) vdc->GR2_UPDATE;
 
-	if (LCDMODE_MAIN_PAGES > 1)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		vdc5_wait(& vdc->GR2_UPDATE, "GR2_UPDATE",
-				(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
-				(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
-				(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
-				0);
-	}
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	vdc5_wait(& vdc->GR2_UPDATE, "GR2_UPDATE",
+			(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+			0);
+}
+
+/* set visible buffer start. Wait VSYNC. */
+/* Set MAIN frame buffer address. Wait for VSYNC. */
+void hardware_ltdc_main_set(uintptr_t p)
+{
+	struct st_vdc5 * const vdc = & VDC50;
+
+	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);		// GR2_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
+	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
+	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
+
+	hardware_ltdc_vsync();	/* ожидаем начало кадра */
+}
+
+/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+{
+	ASSERT(layer2 == 0);
+	ASSERT(layer3 == 0);
+	hardware_ltdc_pip_off();
+	hardware_ltdc_main_set(layer0);
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -1316,18 +1332,15 @@ static void LCD_LayerInitMain(
 {
 	// преобразование из упакованного пикселя RGB565 по правилам pfc LTDC
 	// в требующийся RGB888
-	const unsigned long key = COLOR24_KEY;
-	const unsigned long keyr = (key >> 11) & 0x1F;
-	const unsigned long keyg = (key >> 6) & 0x3F;
-	const unsigned long keyb = (key >> 0) & 0x1F;
-	const unsigned long keyrpfc = ((keyr << 3) | (keyr >> 3)) & 0xFF;
-	const unsigned long keygpfc = ((keyg << 2) | (keyg >> 4)) & 0xFF;
-	const unsigned long keybpfc = ((keyb << 3) | (keyb >> 3)) & 0xFF;
+	const COLORPIP_T key = COLORPIP_KEY;
+	const unsigned keyr = COLORPIP_R(key);
+	const unsigned keyg = COLORPIP_G(key);
+	const unsigned keyb = COLORPIP_B(key);
 
 	LTDC_Layerx->CKCR = 
-		(keyrpfc << LTDC_LxCKCR_CKRED_Pos) |
-		(keygpfc << LTDC_LxCKCR_CKGREEN_Pos) |
-		(keybpfc << LTDC_LxCKCR_CKBLUE_Pos) |
+		(keyr << LTDC_LxCKCR_CKRED_Pos) |
+		(keyg << LTDC_LxCKCR_CKGREEN_Pos) |
+		(keyb << LTDC_LxCKCR_CKBLUE_Pos) |
 		0;
 
 #if WITHUSELTDCTRANSPARENCY
@@ -1356,7 +1369,7 @@ static void LCDx_LayerInitPIP(
 }
 
 void
-arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -1366,7 +1379,7 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-	//PRINTF(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
+	//PRINTF(PSTR("hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
 	/* Initialize the LCD */
 
@@ -1424,7 +1437,7 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	pipparams_t pipwnd;
 	display2_getpipparams(& pipwnd);
 
-	//PRINTF(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
+	//PRINTF(PSTR("hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
 #endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
 	LTDC_InitStruct.LTDC_HSPolarity = vdmode->hsyncneg ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;
@@ -1472,20 +1485,20 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	// Bottom layer - LTDC_Layer1
 #if LCDMODE_MAIN_L24
 
-	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLORPIP_T));
 
 #elif LCDMODE_MAIN_L8
 
-	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORPIP_T));
 
 #elif LCDMODE_MAIN_ARGB888
 
 	/* Без палитры */
-	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORPIP_T));
 
 #else
 	/* Без палитры */
-	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORPIP_T));
 
 #endif /* LCDMODE_MAIN_L8 */
 
@@ -1545,11 +1558,11 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 		;//hardware_nonguiyield();
 
 	ltdc_tfcon_cfg(vdmode);
-	//PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
+	//PRINTF(PSTR("hardware_ltdc_initialize done\n"));
 }
 
 void
-arm_hardware_ltdc_deinitialize(void)
+hardware_ltdc_deinitialize(void)
 {
 	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN_Msk;
 	(void) LAYER_PIP->CR;
@@ -1589,7 +1602,7 @@ arm_hardware_ltdc_deinitialize(void)
 
 /* set visible buffer start. Wait VSYNC. */
 /* Set PIP frame buffer address. */
-void arm_hardware_ltdc_pip_set(uintptr_t p)
+void hardware_ltdc_pip_set(uintptr_t p)
 {
 	LAYER_PIP->CFBAR = p;
 	(void) LAYER_PIP->CFBAR;
@@ -1599,16 +1612,13 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 		hardware_nonguiyield();
 	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 	(void) LTDC->SRCR;
-	if (LCDMODE_MAIN_PAGES > 1)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-			hardware_nonguiyield();
-	}
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
 }
 
 /* Turn PIP off (main layer only). */
-void arm_hardware_ltdc_pip_off(void)
+void hardware_ltdc_pip_off(void)
 {
 	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN_Msk;
 	(void) LAYER_PIP->CR;
@@ -1617,7 +1627,7 @@ void arm_hardware_ltdc_pip_off(void)
 }
 
 /* Palette reload */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 	// Таблица используемой при отображении палитры
 	COLOR24_T xltrgb24 [256];
@@ -1642,9 +1652,10 @@ void arm_hardware_ltdc_L8_palette(void)
 #endif /* LCDMODE_PIP_L8 */
 }
 
+
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
@@ -1660,32 +1671,93 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 		hardware_nonguiyield();
 }
 
-/* Set MAIN frame buffer address. Wait for VSYNC. */
-void arm_hardware_ltdc_main_set(uintptr_t p)
+/* ожидаем начало кадра */
+static void hardware_ltdc_vsync(void)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
 		hardware_nonguiyield();
-	LAYER_MAIN->CFBAR = p;
+
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
 	(void) LAYER_MAIN->CR;
 	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 	(void) LTDC->SRCR;
-	if (LCDMODE_MAIN_PAGES > 1)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-			hardware_nonguiyield();
-	}
+
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
 }
 
-#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && 1
+/* Set MAIN frame buffer address. Wait for VSYNC. */
+void hardware_ltdc_main_set(uintptr_t p)
+{
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
+
+	LAYER_MAIN->CFBAR = p;
+
+	(void) LAYER_MAIN->CFBAR;
+	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
+	(void) LAYER_MAIN->CR;
+	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
+	(void) LTDC->SRCR;
+
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
+}
+
+/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+{
+	ASSERT(layer2 == 0);
+	ASSERT(layer3 == 0);
+	hardware_ltdc_pip_off();
+	hardware_ltdc_main_set(layer0);
+}
+
+#elif LINUX_SUBSYSTEM
+
+void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+{
+}
+
+/* Palette reload (dummy fuction) */
+void hardware_ltdc_L8_palette(void)
+{
+}
+
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
+void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+{
+	uint32_t size;
+	uint32_t * linux_fb = linux_get_fb(& size);
+	memcpy(linux_fb, (uint32_t *) addr, size);
+}
+
+/* Set MAIN frame buffer address. */
+void hardware_ltdc_main_set(uintptr_t addr)
+{
+	uint32_t size;
+	uint32_t * linux_fb = linux_get_fb(& size);
+	memcpy(linux_fb, (uint32_t *) addr, size);
+}
+
+/* ожидаем начало кадра */
+static void hardware_ltdc_vsync(void)
+{
+}
+
+#elif (CPUSTYLE_XC7Z) && 1
+
 #include "zynq_vdma.h"
 
 static DisplayCtrl dispCtrl;
 
-void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	int Status;
 	static XAxiVdma AxiVdma;
@@ -1709,30 +1781,141 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 }
 
 /* Palette reload (dummy fuction) */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
 /* Set MAIN frame buffer address. */
-void arm_hardware_ltdc_main_set(uintptr_t addr)
+void hardware_ltdc_main_set(uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
-#elif CPUSTYPE_T113
+/* ожидаем начало кадра */
+static void hardware_ltdc_vsync(void)
+{
+}
 
-#include "reg-ccu.h"
-#include "reg-de.h"
-#include "reg-tconlcd.h"
+/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+{
+	ASSERT(layer2 == 0);
+	ASSERT(layer3 == 0);
+	//hardware_ltdc_pip_off();
+	hardware_ltdc_main_set(layer0);
+}
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+
+
+#define T113_DE_BASE		DE_BASE
+//
+//#define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
+//#define T113_DE_MUX_BLD		(0x00100000 + 0x01000)	/* 5.10.3.4 Blender */
+#define T113_DE_MUX_CHAN	(0x00100000 + 0x02000)
+#define T113_DE_MUX_VSU		(0x00100000 + 0x20000)
+#define T113_DE_MUX_GSU1	(0x00100000 + 0x30000)
+#define T113_DE_MUX_GSU2	(0x00100000 + 0x40000)
+#define T113_DE_MUX_GSU3	(0x00100000 + 0x50000)
+#define T113_DE_MUX_FCE		(0x00100000 + 0xa0000)
+#define T113_DE_MUX_BWS		(0x00100000 + 0xa2000)
+#define T113_DE_MUX_LTI		(0x00100000 + 0xa4000)
+#define T113_DE_MUX_PEAK	(0x00100000 + 0xa6000)
+#define T113_DE_MUX_ASE		(0x00100000 + 0xa8000)
+#define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
+#define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
+
+// 1.5 Register Description
+//struct de_clk_t {
+//	uint32_t gate_cfg;		// SCLK_GATE DE SCLK Gating Register
+//	uint32_t bus_cfg;		// ? HCLK_GATE ? DE HCLK Gating Register
+//	uint32_t rst_cfg;		// AHB_RESET DE AHB Reset register
+//	uint32_t div_cfg;		// SCLK_DIV DE SCLK Division register
+//	uint32_t sel_cfg;		// ? DE2TCON ? MUX register
+//};
+
+// Allwinner_DE2.0_Spec_V1.0
+// 5.10.3.4 Blender
+// GLB
+//struct de_glb_t {
+//	uint32_t ctl;		/** Offset 0x000 Global control register */
+//	uint32_t status;	/** Offset 0x004 Global status register */
+//	uint32_t dbuff;		/** Offset 0x008 Global double buffer control register */
+//	uint32_t size;		/** Offset 0x00C Global size register */
+//};
+
+// Allwinner_DE2.0_Spec_V1.0
+// 5.10.3.4 Blender
+// BLD
+//struct de_bld_t {
+//	uint32_t fcolor_ctl;	/** BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
+//	struct {
+//		uint32_t fcolor;	/**  BLD fill color register */
+//		uint32_t insize;	/**  BLD input memory size register */
+//		uint32_t offset;	/**  BLD input memory offset register */
+//		uint32_t dum;		/**  filler */
+//	} attr[4];
+//	uint32_t dum0[15];
+//	uint32_t route;			/** BLD_CH_RTCTL Offset 0x080 BLD routing control register */
+//	uint32_t premultiply;	/** Offset 0x080 BLD pre-multiply control register */
+//	uint32_t bkcolor;
+//	uint32_t output_size;
+//	uint32_t bld_mode[4];	/* BLD_CTL */
+//	uint32_t dum1[4];
+//	uint32_t ck_ctl;
+//	uint32_t ck_cfg;
+//	uint32_t dum2[2];
+//	uint32_t ck_max[4];
+//	uint32_t dum3[4];
+//	uint32_t ck_min[4];
+//	uint32_t dum4[3];
+//	uint32_t out_ctl;
+//};
+
+//struct de_vi_t {
+//	struct {
+//		uint32_t attr;
+//		uint32_t size;
+//		uint32_t coord;
+//		uint32_t pitch[3];
+//		uint32_t top_laddr[3];
+//		uint32_t bot_laddr[3];
+//	} cfg[4];
+//	uint32_t fcolor[4];
+//	uint32_t top_haddr[3];
+//	uint32_t bot_haddr[3];
+//	uint32_t ovl_size[2];
+//	uint32_t hori[2];
+//	uint32_t vert[2];
+//};
+
+// 5.10.3.4 Blender
+// part
+//struct de_ui_t {
+//	struct {
+//		uint32_t attr;
+//		uint32_t size;
+//		uint32_t coord;
+//		uint32_t pitch;
+//		uint32_t top_laddr;
+//		uint32_t bot_laddr;
+//		uint32_t fcolor;
+//		uint32_t dum;
+//	} cfg[4];
+//	uint32_t top_haddr;
+//	uint32_t bot_haddr;
+//	uint32_t ovl_size;
+//};
 
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
+#define VI_CFG_INDEX 0
 
 static uint32_t read32(uintptr_t a)
 {
@@ -1744,15 +1927,30 @@ static void write32(uintptr_t a, uint32_t v)
 	* (volatile uint32_t *) a = v;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+static uint32_t ptr_hi32(uintptr_t v)
+{
+	if (sizeof v == sizeof (uint32_t))
+		return 0;
+	return v >> 32;
+}
+
+static uint32_t ptr_lo32(uintptr_t v)
+{
+	return (uint32_t) v;
+}
+#pragma GCC diagnostic pop
+
 struct fb_t113_rgb_pdata_t
 {
-	uintptr_t virt_de;	// 0: struct de_vi_t, 1..3: struct de_ui_t
-	uintptr_t virt_tconlcd;
+	//uintptr_t virt_de;	// 0: struct de_vi_t, 1..3: struct de_ui_t
+	//uintptr_t virt_tconlcd;
 
 	//char * clk_de;
 	//char * clk_tconlcd;
-	int rst_de;
-	int rst_tconlcd;
+	//int rst_de;
+	//int rst_tconlcd;
 	int width;
 	int height;
 	//int pwidth;
@@ -1760,12 +1958,243 @@ struct fb_t113_rgb_pdata_t
 	//int bits_per_pixel;
 	//int bytes_per_pixel;
 	//int pixlen;
-	int index;
-	uintptr_t vram [2];
+	//int index;
+	//uintptr_t vram [2];
 	//struct region_list_t * nrl, * orl;
 
+//	struct led_t * backlight;
+//	int brightness;
+};
+
+#if LCDMODE_MAIN_ARGB888
+	static const uint32_t ui_vi_format = 0x00;	//  0x08: ARGB_8888
+	//const uint32_t ui_vi_format = 0x04;	// 0x04: XRGB_8888
+#elif LCDMODE_MAIN_RGB565
+	static const uint32_t ui_vi_format = 0x0A;	// 0x0A: RGB_565
+#else
+	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
+	static const uint32_t ui_vi_format = 0x0A;
+#endif
+
+static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
+{
+	//struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;
+	DE_GLB->GLB_DBUFFER = 1u;		// 1: register value be ready for update (self-cleaning bit)
+	while ((DE_GLB->GLB_DBUFFER & 1u) != 0)
+		;
+}
+
+static inline void t113_de_set_address_vi(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
+{
+	//DE_VI_TypeDef * const vi = (DE_VI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+
+	DE_VI->cfg[VI_CFG_INDEX].attr =
+			((vram != 0) << 0) |	// enable
+			(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+			(1<<15)|	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
+			0;
+	DE_VI->cfg [VI_CFG_INDEX].top_laddr [0] = ptr_lo32(vram);
+	DE_VI->top_haddr [0] = ptr_hi32(vram);
+}
+
+static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int uich)
+{
+	ASSERT(uich >= 1 && uich <= 3);
+	DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+
+	ui->cfg[UI_CFG_INDEX].attr =
+			((vram != 0) << 0) |	// enable
+			(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+			(255<<24)|	// LAY_GLBALPHA
+			(1<<16)| 	// LAY_PREMUL_CTL
+			0;
+	ui->cfg [UI_CFG_INDEX].top_laddr = ptr_lo32(vram);
+	ui->top_haddr = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
+}
+
+static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
+{
+	//struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
+	//struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
+	//struct de_bld_t * const DE_BLD = (struct de_bld_t *) DE_BLD_BASE;
+
+	// Allwinner_DE2.0_Spec_V1.0.pdf
+	// 5.10.8.2 OVL_UI memory block size register
+	// 28..16: LAY_HEIGHT
+	// 12..0: LAY_WIDTH
+	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
+	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
+
+	int i;
+
+	/* Global DE settings */
+
+	DE_CLK->RST_CFG &= ~ (1u << 0);
+	DE_CLK->RST_CFG |= 1u << 0;
+	DE_CLK->GATE_CFG |= 1u << 0;
+	DE_CLK->BUS_CFG |= 1u << 0;
+	DE_CLK->SEL_CFG &= ~ (1u << 0);	/* Already zero */
+
+	/* DE submodules */
+
+	DE_GLB->GLB_CTL =
+			(1u << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+			(1u << 0) |		// EN RT enable/disable
+			0;
+
+	DE_GLB->GLB_STS = 0x00u;
+
+	DE_GLB->GLB_DBUFFER = 1u;		// 1: register value be ready for update (self-cleaning bit)
+	while ((DE_GLB->GLB_DBUFFER & 1u) != 0)
+		;
+	DE_GLB->GLB_SIZE = ovl_ui_mbsize;
+
+//	for(i = 0; i < 4; i++)
+//	{
+//		void * chan = (void *)(T113_DE_BASE + T113_DE_MUX_CHAN + 0x1000 * i);
+//
+//		// peripherial registers
+//		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
+//	}
+
+	// peripherial registers
+	//memset(DE_BLD, 0, sizeof (struct de_bld_t));
+
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	write32((uintptr_t) & DE_BLD->fcolor_ctl,
+			0
+			);
+
+	// 5.10.9.5 BLD routing control register
+	// BLD_CH_RTCTL
+	// 0x03020100 - default state
+	write32((uintptr_t) & DE_BLD->route,
+			(0u << 0) |		// pipe 0 from ch 0
+			(1u << 4) |		// pipe 1 from ch 1
+			(2u << 8) |		// pipe 2 from ch 2
+			(3u << 12) |	// pipe 3 from ch 3
+			0
+			);
+	write32((uintptr_t) & DE_BLD->premultiply,
+			0);
+	write32((uintptr_t) & DE_BLD->bkcolor,
+			0*0xff771111
+			);
+
+	// 5.10.9.1 BLD fill color control register
+	// BLD_CTL
+	// в примерах только 0 и 1 индексы
+	for(i = 0; i < 4; i++)
+	{
+	    unsigned bld_mode = 0x03010301;		// default
+//	    unsigned bld_mode = 0x03020302;           //Fs=Ad, Fd=1-As, Qs=Ad, Qd=1-As
+		DE_BLD->bld_mode [i] = bld_mode;
+		//PRINTF("DE_BLD->bld_mode [%d]=%08X\n", i, (unsigned) read32((uintptr_t) & DE_BLD->bld_mode [i]));
+	}
+
+	DE_BLD->output_size = ovl_ui_mbsize;
+	DE_BLD->out_ctl = 0;
+	DE_BLD->ck_ctl = 0;
+	for(i = 0; i < 4; i++)
+	{
+		DE_BLD->attr [i].fcolor = 0*0xff000000;
+		DE_BLD->attr [i].insize = ovl_ui_mbsize;
+		DE_BLD->attr [i].offset = 0;
+	}
+
+	{
+		DE_VI_TypeDef * const vi = (DE_VI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+		//PRINTF("#base; DE_VI %p\n", vi);
+		//CH0 VI ----------------------------------------------------------------------------
+
+		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].attr,
+				//(1<<0)|		// enable - разрешаем при назначении адреса
+				(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+				(1<<15)
+				);
+		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].size, ovl_ui_mbsize);
+		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].coord, 0);
+		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].pitch[0], uipitch);
+		//write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].top_laddr[0], pdat->vram [0]);                               //VIDEO_MEMORY0
+		write32((uintptr_t)&vi->ovl_size[0], ovl_ui_mbsize);
+	}
+
+	int uich = 1;
+	for (uich = 1; uich <= 3; ++ uich)
+	{
+		ASSERT(uich >= 1 && uich <= 3);
+		DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+		//PRINTF("#base; DE_UI%d %p\n", uich, ui);
+
+		//CH1 UI -----------------------------------------------------------------------------
+
+		ui->cfg[UI_CFG_INDEX].attr =
+				//(1<<0)|		// enable - разрешаем при назначении адреса
+				(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+				(0xff<<24)|
+				(1<<16)	|// LAY_PREMUL_CTL
+				0;
+		ui->cfg[UI_CFG_INDEX].size = ovl_ui_mbsize;
+		ui->cfg[UI_CFG_INDEX].coord = 0;
+		ui->cfg[UI_CFG_INDEX].pitch = uipitch;
+		//ui->cfg[0].top_laddr = pdat->vram [1];                                  //VIDEO_MEMORY1
+		ui->ovl_size = ovl_ui_mbsize;
+	}
+
+
+	write32(DE_BASE + T113_DE_MUX_VSU, 0);
+	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
+	write32(DE_BASE + T113_DE_MUX_GSU2, 0);
+	write32(DE_BASE + T113_DE_MUX_GSU3, 0);
+	write32(DE_BASE + T113_DE_MUX_FCE, 0);
+	write32(DE_BASE + T113_DE_MUX_BWS, 0);
+	write32(DE_BASE + T113_DE_MUX_LTI, 0);
+	write32(DE_BASE + T113_DE_MUX_PEAK, 0);
+	write32(DE_BASE + T113_DE_MUX_ASE, 0);
+	write32(DE_BASE + T113_DE_MUX_FCC, 0);
+	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
+
+
+	// Allwinner_DE2.0_Spec_V1.0.pdf
+}
+
+static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
+{
+//	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
+//	uint32_t val;
+//
+//	val = read32((uintptr_t) & tcon->gctrl);
+//	val |= (1u << 31);
+//	write32((uintptr_t) & tcon->gctrl, val);
+	TCON_LCD0->LCD_GCTL_REG =
+		(1u << 31) |		// LCD_EN
+		0 * (1u << 30) |	// LCD_GAMMA_EN
+		0;
+}
+
+static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
+{
+//	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
+//	uint32_t val;
+//
+//	val = read32((uintptr_t) & tcon->dclk);
+//	val &= ~(0xf << 28);
+//	write32((uintptr_t) & tcon->dclk, val);
+//
+//	write32((uintptr_t) & tcon->gctrl, 0);
+//	write32((uintptr_t) & tcon->gint0, 0);
+
+	TCON_LCD0->LCD_DCLK_REG &= ~ (0xfu << 28);
+	TCON_LCD0->LCD_GCTL_REG = 0;
+	TCON_LCD0->LCD_GINT0_REG = 0;
+}
+
+static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
+{
+
 	struct {
-		int pixel_clock_hz;
+		//int pixel_clock_hz;
 		int h_front_porch;
 		int h_back_porch;
 		int h_sync_len;
@@ -1778,218 +2207,131 @@ struct fb_t113_rgb_pdata_t
 		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
 	} timing;
 
-//	struct led_t * backlight;
-//	int brightness;
-};
+	//timing.pixel_clock_hz = display_getdotclock(vdmode);
+	timing.h_front_porch = vdmode->hfp;
+	timing.h_back_porch = vdmode->hbp;
+	timing.h_sync_len =  vdmode->hsync;
+	timing.v_front_porch = vdmode->vfp;
+	timing.v_back_porch = vdmode->vbp;
+	timing.v_sync_len = vdmode->vsync;
+	timing.h_sync_active = vdmode->vsyncneg;
+	timing.v_sync_active = vdmode->hsyncneg;
+	timing.den_active = ! vdmode->deneg;
+	timing.clk_active = 0;
 
-static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);
-	write32((uintptr_t) & glb->dbuff, 0x01uL);	// 1: register value be ready for update (self-cleaning bit)
-	while ((read32((uintptr_t) & glb->dbuff) & 0x01uL) != 0)
-		;
-}
-
-static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
-{
-	struct de_ui_t * const ui = (struct de_ui_t *) (pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
-}
-
-static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct de_clk_t * const clk = (struct de_clk_t *) (pdat->virt_de);
-	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);		// Global control register
-	struct de_bld_t * const bld = (struct de_bld_t *) (pdat->virt_de + T113_DE_MUX_BLD);
-	struct de_ui_t * const ui = (struct de_ui_t *) (pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
-
-	// Allwinner_DE2.0_Spec_V1.0.pdf
-	// 5.10.8.2 OVL_UI memory block size register
-	// 28..16: LAY_HEIGHT
-	// 12..0: LAY_WIDTH
-	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
-	// 5.10.8.1 OVL_UI attribute control register
-	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
-	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565, 0x08: RGB_888
-#if LCDMODE_MAIN_ARGB888
-	const uint32_t ovl_ui_format = 0x00;	//  0x08: ARGB_8888
-	//const uint32_t ovl_ui_format = 0x04;	// 0x04: XRGB_8888
-#elif LCDMODE_MAIN_RGB565
-	const uint32_t ovl_ui_format = 0x0A;	// 0x0A: RGB_565
-#else
-	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
-	const uint32_t ovl_ui_format = 0x0A;
-#endif
-
-	uint32_t val;
-
-	int i;
-
-	val = read32((uintptr_t) & clk->rst_cfg);
-	val |= 1 << 0;
-	write32((uintptr_t) & clk->rst_cfg, val);
-
-	val = read32((uintptr_t) & clk->gate_cfg);
-	val |= 1 << 0;
-	write32((uintptr_t) & clk->gate_cfg, val);
-
-	val = read32((uintptr_t) & clk->bus_cfg);
-	val |= 1 << 0;
-	write32((uintptr_t) & clk->bus_cfg, val);
-
-	val = read32((uintptr_t) & clk->sel_cfg);
-	val &= ~(1 << 0);
-	write32((uintptr_t) & clk->sel_cfg, val);
-
-	write32((uintptr_t) & glb->ctl, (0x01uL << 0));
-	write32((uintptr_t) & glb->status, 0x00uL);
-	write32((uintptr_t) & glb->dbuff, 0x01uL);		// 1: register value be ready for update (self-cleaning bit)
-	write32((uintptr_t) & glb->size, ovl_ui_mbsize);
-
-	for(i = 0; i < 4; i++)
-	{
-		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
-
-		// peripherial registers
-		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
-	}
-
-	// peripherial registers
-	memset(bld, 0, sizeof (struct de_bld_t));
-
-	write32((uintptr_t) & bld->fcolor_ctl, 0x00000101);
-	write32((uintptr_t) & bld->route, 1);
-	write32((uintptr_t) & bld->premultiply, 0);
-	write32((uintptr_t) & bld->bkcolor, 0xff000000);
-	write32((uintptr_t) & bld->bld_mode [0], 0x03010301);
-	write32((uintptr_t) & bld->bld_mode [1], 0x03010301);
-	write32((uintptr_t) & bld->output_size, ovl_ui_mbsize);
-	write32((uintptr_t) & bld->out_ctl, 0);
-	write32((uintptr_t) & bld->ck_ctl, 0);
-	for(i = 0; i < 4; i++)
-	{
-		write32((uintptr_t) & bld->attr [i].fcolor, 0xff000000);
-		write32((uintptr_t) & bld->attr [i].insize, ovl_ui_mbsize);
-	}
-
-	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU1, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU2, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU3, 0);
-	write32(pdat->virt_de + T113_DE_MUX_FCE, 0);
-	write32(pdat->virt_de + T113_DE_MUX_BWS, 0);
-	write32(pdat->virt_de + T113_DE_MUX_LTI, 0);
-	write32(pdat->virt_de + T113_DE_MUX_PEAK, 0);
-	write32(pdat->virt_de + T113_DE_MUX_ASE, 0);
-	write32(pdat->virt_de + T113_DE_MUX_FCC, 0);
-	write32(pdat->virt_de + T113_DE_MUX_DCSC, 0);
-
-
-	// Allwinner_DE2.0_Spec_V1.0.pdf
-
-	// Note: the layer priority is layer3>layer2>layer1>layer0
-
-	// 5.10.8.1 OVL_UI attribute control register
-	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
-	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].attr, (1 << 0) | (ovl_ui_format << 8) | (1 << 1) | (0xff << 24));
-	// 5.10.8.2 OVL_UI memory block size register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].size, ovl_ui_mbsize);
-	// 5.10.8.3 OVL_UI memory block coordinate register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].coord, 0);
-	// 5.10.8.4 OVL_UI memory pitch register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch, LCDMODE_PIXELSIZE * GXADJ(DIM_X));	// размер строки в байтах
-	// 5.10.8.5 OVL_UI top field memory block low address register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
-	// 5.10.8.6 OVL_UI bottom field memory block low address register
-	// ...
-	// 5.10.8.2 OVL_UI memory block size register
-	// 28..16: LAY_HEIGHT
-	// 12..0: LAY_WIDTH
-	write32((uintptr_t) & ui->ovl_size, ovl_ui_mbsize);
-}
-
-static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
-	uint32_t val;
-
-	val = read32((uintptr_t) & tcon->gctrl);
-	val |= (1 << 31);
-	write32((uintptr_t) & tcon->gctrl, val);
-}
-
-static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
-	uint32_t val;
-
-	val = read32((uintptr_t) & tcon->dclk);
-	val &= ~(0xf << 28);
-	write32((uintptr_t) & tcon->dclk, val);
-
-	write32((uintptr_t) & tcon->gctrl, 0);
-	write32((uintptr_t) & tcon->gint0, 0);
-}
-
-static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
-{
-	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
+	//pdat->backlight = NULL;
+	//struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
 	int vbp, vtotal;
 	int hbp, htotal;
 	uint32_t val;
 
 	// ctrl
-	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
-	write32((uintptr_t) & tcon->ctrl, (0x01uL << 31) | (0x00uL << 24) | (0x00uL << 23) | ((val & 0x1f) << 4) | (0x00uL << 0));
+	val = (timing.v_front_porch + timing.v_back_porch + timing.v_sync_len) / 2;
+//	write32((uintptr_t) & tcon->ctrl,
+//			(1u << 31) |
+//			(0x00u << 24) |
+//			(0x00u << 23) |
+//			((val & 0x1f) << 4) |
+//			(0x00u << 0)
+//			);
+	TCON_LCD0->LCD_CTL_REG = (
+		(1u << 31) |		// LCD_EN
+		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
+		(0x00u << 23) |		// LCD_RB_SWAP
+		((val & 0x1f) << 4) |	// LCD_START_DLY
+		(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests
+		0
+		);
 
 	// dclk
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
-	val = allwnrt113_get_video0_x2_freq() / pdat->timing.pixel_clock_hz;
-	write32((uintptr_t) & tcon->dclk, (0x0FuL << 28) | (val << 0));
+	val = allwnrt113_get_video0_x2_freq() / display_getdotclock(vdmode);
+//	write32((uintptr_t) & tcon->dclk,
+//			(0x0Fu << 28) | (val << 0));
+	TCON_LCD0->LCD_DCLK_REG = (
+			(0x0Fu << 28) |		// LCD_DCLK_EN
+			(val << 0)			// LCD_DCLK_DIV
+			);
 
 	// timing0 (window)
-	write32((uintptr_t) & tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
+//	write32((uintptr_t) & tcon->timing0,
+//			((pdat->width - 1) << 16) | ((pdat->height - 1) << 0)
+//			);
+	TCON_LCD0->LCD_BASIC0_REG = (
+		((pdat->width - 1) << 16) | ((pdat->height - 1) << 0)
+		);
 
 	// timing1 (horizontal)
-	hbp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
-	htotal = pdat->width + pdat->timing.h_front_porch + hbp;
-	write32((uintptr_t) & tcon->timing1, ((htotal - 1) << 16) | ((hbp - 1) << 0));
+	hbp = timing.h_sync_len + timing.h_back_porch;
+	htotal = pdat->width + timing.h_front_porch + hbp;
+//	write32((uintptr_t) & tcon->timing1,
+//			((htotal - 1) << 16) | ((hbp - 1) << 0)
+//			);
+	TCON_LCD0->LCD_BASIC1_REG = (
+		((htotal - 1) << 16) | ((hbp - 1) << 0)
+		);
 
 	// timing2 (vertical)
-	vbp = pdat->timing.v_sync_len + pdat->timing.v_back_porch;
-	vtotal = pdat->height + pdat->timing.v_front_porch + vbp;
-	write32((uintptr_t) & tcon->timing2, ((vtotal * 2) << 16) | ((vbp - 1) << 0));
+	vbp = timing.v_sync_len + timing.v_back_porch;
+	vtotal = pdat->height + timing.v_front_porch + vbp;
+//	write32((uintptr_t) & tcon->timing2,
+//			((vtotal * 2) << 16) | ((vbp - 1) << 0)
+//			);
+	TCON_LCD0->LCD_BASIC2_REG = (
+		((vtotal * 2) << 16) | ((vbp - 1) << 0)
+		);
 
 	// timing3
-	write32((uintptr_t) & tcon->timing3, ((pdat->timing.h_sync_len - 1) << 16) | ((pdat->timing.v_sync_len - 1) << 0));
+//	write32((uintptr_t) & tcon->timing3,
+//			((timing.h_sync_len - 1) << 16) |
+//			((timing.v_sync_len - 1) << 0)
+//			);
+	TCON_LCD0->LCD_BASIC3_REG = (
+		((timing.h_sync_len - 1) << 16) |
+		((timing.v_sync_len - 1) << 0)
+		);
 
 	// Sochip_VE_S3_Datasheet_V1.0.pdf
 	// 7.2.5.19. TCON0_IO_POL_REG
 	// io_polarity
-	val = (0x00uL << 31) | 	// IO_Output_Sel: 0: nirmal, 1: sync to dclk
-			(0x01uL << 28);	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
+	val = (0x00u << 31) | 	// IO_Output_Sel: 0: nirmal, 1: sync to dclk
+			(1u << 28);	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
 
-	if(!pdat->timing.h_sync_active)
-		val |= (0x01uL << 25);	// IO1_Inv
-	if(!pdat->timing.v_sync_active)
-		val |= (0x01uL << 24);	// IO0_Inv
-	if(!pdat->timing.den_active)
-		val |= (0x01uL << 27);	// IO3_Inv
-	if(!pdat->timing.clk_active)
-		val |= (0x01uL << 26);	// IO2_Inv
-	write32((uintptr_t) & tcon->io_polarity, val);
+	if(!timing.h_sync_active)
+		val |= (1u << 25);	// IO1_Inv
+	if(!timing.v_sync_active)
+		val |= (1u << 24);	// IO0_Inv
+	if(!timing.den_active)
+		val |= (1u << 27);	// IO3_Inv
+	if(!timing.clk_active)
+		val |= (1u << 26);	// IO2_Inv
+	//write32((uintptr_t) & tcon->io_polarity, val);
+	TCON_LCD0->LCD_IO_POL_REG = val;
 
 	// io_tristate
-	write32((uintptr_t) & tcon->io_tristate, 0);
+	//write32((uintptr_t) & tcon->io_tristate, 0);
+	TCON_LCD0->LCD_IO_TRI_REG = 0;
+
+	// 5.1.6.14 0x0058 LCD HV Panel Interface Register (Default Value: 0x0000_0000)
+	/// LCD_HV_IF_REG
+	TCON_LCD0->LCD_HV_IF_REG = 0;
+	TCON_LCD0->LCD_CPU_IF_REG = 0;
+	TCON_LCD0->LCD_CPU_WR_REG = 0;
+	TCON_LCD0->LCD_LVDS_IF_REG =
+		0 * (1u << 31) |		// LCD_LVDS_EN
+		0 * (1u << 25) |		// LCD_LVDS_DEBUG_EN
+		0 * (1u << 24) |		// LCD_LVDS_DEBUG_MODE
+		1 * (1u << 3) |		// LCD_LVDS_CLK_POL
+		0x0F * (1u << 0) |		// LCD_LVDS_DATA_POL
+		0;
 }
 
 #if 0
 
 static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)TCON_LCD0_BASE;
 
 	if((pdat->bits_per_pixel == 16) || (pdat->bits_per_pixel == 18))
 	{
@@ -2012,9 +2354,9 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
 		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
 		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
-		write32((uintptr_t) & tcon->frm_ctrl, (1 << 31) | TCON_FRM_MODE_VAL);
+		write32((uintptr_t) & tcon->frm_ctrl, TCON_FRM_MODE_VAL);
 		/* режим и формат выхода */
-		TCON_LCD0->LCD_FRM_CTL_REG = (1 << 31) | TCON_FRM_MODE_VAL;
+		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 	}
 }
 
@@ -2023,13 +2365,13 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 
 static struct fb_t113_rgb_pdata_t pdat0;
 
-void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	uint32_t val;
 
-	pdat->virt_tconlcd = T113_TCONLCD_BASE;
-    pdat->virt_de = T113_DE_BASE;
+//	pdat->virt_tconlcd = T113_TCONLCD_BASE;
+//    pdat->virt_de = T113_DE_BASE;
 	//pdat->clk_tconlcd = (void *) allwnrt113_get_video0_x2_freq();
     //pdat->clk_de = (void *) 396000000;
 	pdat->width = vdmode->width;
@@ -2039,41 +2381,56 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	//pdat->bits_per_pixel = 18; // panel connection type
 	//pdat->bytes_per_pixel = LCDMODE_PIXELSIZE;
 	//pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
-	pdat->vram [0] = frames [0];
-	pdat->vram [1] = frames [1];
+//	pdat->vram [0] = frames [0];
+//	pdat->vram [1] = frames [1];
+//	pdat->index = 0;
 
-	pdat->timing.pixel_clock_hz = display_getdotclock(vdmode);
-	pdat->timing.h_front_porch = vdmode->hfp;
-	pdat->timing.h_back_porch = vdmode->hbp;
-	pdat->timing.h_sync_len =  vdmode->hsync;
-	pdat->timing.v_front_porch = vdmode->vfp;
-	pdat->timing.v_back_porch = vdmode->vbp;
-	pdat->timing.v_sync_len = vdmode->vsync;
-	pdat->timing.h_sync_active = vdmode->vsyncneg;
-	pdat->timing.v_sync_active = vdmode->hsyncneg;
-	pdat->timing.den_active = ! vdmode->deneg;
-	pdat->timing.clk_active = 0;
-	//pdat->backlight = NULL;
+    CCU->DE_CLK_REG |= (1u << 31) | (0x03u << 0);	// 300 MHz
+    local_delay_us(10);
 
-    CCU->DE_CLK_REG |= (0x01uL << 31) | (0x03uL << 0);	// 300 MHz
+    CCU->DE_BGR_REG |= (1u << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (1u << 16);		// Deassert reset
+    local_delay_us(10);
 
-    CCU->DE_BGR_REG |= (0x01uL << 0);		// Open the clock gate
-    CCU->DE_BGR_REG |= (0x01uL << 16);		// Deassert reset
+    CCU->TCONLCD_CLK_REG |= (1u << 31);
+    CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
+    CCU->TCONLCD_BGR_REG |= (1u << 16); // Deassert reset
+    local_delay_us(10);
 
-    CCU->TCONLCD_CLK_REG |= (0x01uL << 31);
-    CCU->TCONLCD_BGR_REG |= (0x01uL << 0);	// Open the clock gate
-    CCU->TCONLCD_BGR_REG |= (0x01uL << 16); // Deassert reset
+	//PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
 
+#if 0
+    // step 2
+    CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: Deassert reset
+
+    // step 5
+    TCON_LCD0->LCD_LVDS_IF_REG =
+		0;
+    TCON_LCD0->LCD_DCLK_REG =
+		(1u << 28) |	// LCD_DCLK_EN
+		(0x07u << 0) |	// LCD_DCLK_DIV
+		0;
+#endif
 
 	t113_tconlcd_disable(pdat);
 	t113_tconlcd_set_timing(pdat, vdmode);
 	//t113_tconlcd_set_dither(pdat);
+	{
+		// Sochip_VE_S3_Datasheet_V1.0.pdf
+		// TCON0_TRM_CTL_REG offset 0x0010
+		// User manual:
+		// LCD FRM Control Register (Default Value: 0x0000_0000)
+		// 31: TCON_FRM_EN: 0: disable, 1: enable
+		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
+		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
+		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
+		/* режим и формат выхода */
+		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
+
+	}
 	t113_tconlcd_enable(pdat);
 
 	t113_de_set_mode(pdat);
-	t113_de_enable(pdat);
-
-	t113_de_set_address(pdat, pdat->vram [pdat->index]);
 	t113_de_enable(pdat);
 
 	// Set DE MODE if need
@@ -2082,54 +2439,115 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
-	t113_de_set_address(pdat, p);
+	t113_de_set_address_vi(pdat, p1);
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	DE_BLD->fcolor_ctl =
+			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
+//			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
+//			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+//			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+			0;
+
 	t113_de_enable(pdat);
 }
 
-/* set visible buffer start. Wait VSYNC. */
-void arm_hardware_ltdc_main_set(uintptr_t p)
+/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
-	TCON_LCD0->LCD_GINT0_REG |= (1uL << 31); 		//Enable the Vertical Blank interrupt
-	TCON_LCD0->LCD_GINT0_REG &= ~ (1uL << 15);         //clear LCD_VB_INT_FLAG
-	while((TCON_LCD0->LCD_GINT0_REG & (1uL << 15)) == 0) //wait  LCD_VB_INT_FLAG
-		;
+	// Note: the layer priority is layer3>layer2>layer1>layer0
+	t113_de_set_address_vi(pdat, layer0);		// VI
+	t113_de_set_address_ui(pdat, layer1, 1);	// UI1
+	t113_de_set_address_ui(pdat, layer2, 2);	// UI2
+	t113_de_set_address_ui(pdat, layer3, 3);	// UI3
 
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	DE_BLD->fcolor_ctl =
+			((layer0 != 0) << 8)	| // pipe0 enable - from VI
+			((layer1 != 0) << 9)	| // pipe1 enable - from UI1
+			((layer2 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+			((layer3 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+			0;
 
-	t113_de_set_address(pdat, p);
+	hardware_ltdc_vsync();	/* ожидаем начало кадра */
+	t113_de_enable(pdat);
+}
+
+/* ожидаем начало кадра */
+static void hardware_ltdc_vsync(void)
+{
+
+	//TCON_LCD0->LCD_GINT0_REG |= (1u << 31); 		//Enable the Vertical Blank interrupt
+	TCON_LCD0->LCD_GINT0_REG &= ~ (1u << 15);         //clear LCD_VB_INT_FLAG
+	while((TCON_LCD0->LCD_GINT0_REG & (1u << 15)) == 0) //wait  LCD_VB_INT_FLAG
+		hardware_nonguiyield();
+}
+
+/* set visible buffer start. Wait VSYNC. */
+void hardware_ltdc_main_set(uintptr_t p1)
+{
+	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
+
+	t113_de_set_address_vi(pdat, p1);
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	write32((uintptr_t) & DE_BLD->fcolor_ctl,
+			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
+//			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
+//			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
+//			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
+			0
+			);
+
+	hardware_ltdc_vsync();	/* ожидаем начало кадра */
 	t113_de_enable(pdat);
 }
 
 /* Palette reload */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 }
 
 #else
 	//#error Wrong CPUSTYLE_xxxx
 
-void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
-void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 }
 
 /* set visible buffer start. Wait VSYNC. */
-void arm_hardware_ltdc_main_set(uintptr_t p)
+void hardware_ltdc_main_set(uintptr_t p)
+{
+}
+
+/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+{
+}
+
+/* ожидаем начало кадра */
+static void hardware_ltdc_vsync(void)
 {
 }
 
 /* Palette reload */
-void arm_hardware_ltdc_L8_palette(void)
+void hardware_ltdc_L8_palette(void)
 {
 }
 

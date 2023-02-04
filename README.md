@@ -6,9 +6,12 @@
 ## Микроконтроллер:
 
 1. Настраиваем окружение (компилятор и утилиты для сборки проекта) <br>
-1.1 **ARM:** GNU ARM Toolchain https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads (последняя проверенная сборка 10.3.1 20210824 (release)) <br>
+1.1 **ARM:** ARM GNU Toolchain https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads (последняя проверенная сборка (Arm GNU Toolchain 11.3.Rel1) 11.3.1 20220712) <br>
 1.2 **ATMEGA/ATXMEGA:** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers или https://blog.zakkemble.net/wp-content/uploads/downloads/2021/04/avr-gcc-11.1.0-x64-windows.zip (распаковываем, прописываем путь к папке BIN в переменную окружения PATH)<br>
-1.3 Утилиты для сборки отсюда: tools/gnu-mcu-eclipse-build-tools-2.11-20180428-1604-win64.zip (разархивировать, обновляем переменную PATH в системе, указав путь к подпапке bin, например C:\user\hftrx\tools\gnu-mcu-eclipse-build-tools-2.11-20180428-1604-win64\GNU MCU Eclipse\Build Tools\2.11-20180428-1604\bin) <br>
+1.3 **RISC-V:** riscv-none-elf-gcc.exe (xPack GNU RISC-V Embedded GCC x86_64) 12.2.0 https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/
+https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v12.2.0-1/xpack-riscv-none-elf-gcc-12.2.0-1-win32-x64.zip
+
+1.4 Утилиты для сборки отсюда: tools/gnu-mcu-eclipse-build-tools-2.11-20180428-1604-win64.zip (разархивировать, обновляем переменную PATH в системе, указав путь к подпапке bin, например C:\user\hftrx\tools\gnu-mcu-eclipse-build-tools-2.11-20180428-1604-win64\GNU MCU Eclipse\Build Tools\2.11-20180428-1604\bin) <br>
 1.4 Утилиты для работы с GIT репозиториями https://git-scm.com/downloads <br>
 
 2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта. <br>

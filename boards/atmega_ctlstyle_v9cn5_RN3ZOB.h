@@ -210,9 +210,9 @@ enum
 	#define WITHANTSELECT	1
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
+	#define BOARDPOWERMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	4	// Верхний предел регулировки (показываемый на дисплее)
+
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 

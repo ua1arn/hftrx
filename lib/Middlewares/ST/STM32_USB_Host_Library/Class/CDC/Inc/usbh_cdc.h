@@ -159,7 +159,7 @@ CDC_StateTypeDef;
 /*Line coding structure*/
 typedef union _CDC_LineCodingStructure
 {
-	__ALIGN4k_BEGIN uint8_t Array[LINE_CODING_STRUCTURE_SIZE] __ALIGN4k_END;
+	__ALIGN_BEGIN uint8_t Array[LINE_CODING_STRUCTURE_SIZE] __ALIGN_END;
 
   struct
   {

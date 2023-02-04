@@ -16,9 +16,9 @@
 ##############################################################################################
 # Start of default section
 #
-TRGT2 = arm-none-eabi
+#TRGT2 = arm-none-eabi
+TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
-#TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
 PRJROOT := ../..
 OBJDIR = obj
@@ -29,7 +29,7 @@ ZINQ_BOOT_DIR := E:
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
-AR   = $(TRGT)ar rcs --plugin ../lib/gcc/$(TRGT2)/10.3.1/liblto_plugin-0.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
@@ -40,11 +40,11 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 # The Cortex-A53 processor is a mid-range, low-power processor that implements the Armv8-A architecture
 
-CORE = -mcpu=cortex-a53 
-CORE += -mfloat-abi=hard 
+CORE = -mcpu=cortex-a53 -march=armv8-a
+#CORE += -mfloat-abi=hard 
 #CORE += -mfpu=vfpv4
 #CORE += -mfpu=neon
-CORE += -mfpu=neon-vfpv4
+#CORE += -mfpu=neon-vfpv4
 #CORE += -mlong-calls
 
 # Define optimisation level here
@@ -66,7 +66,7 @@ ARCHDIR = $(PRJROOT)/arch/zynqmp
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src
 
 # full qualified name
-ZYNQLIB = zynq7000.a
+#ZYNQLIB = zynq7000.a
 
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
@@ -79,6 +79,7 @@ USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
+LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -187,7 +188,7 @@ find_S = $(wildcard $(dir)*.S)
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 # List ASM source files here
-ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
+#ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
 
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
@@ -240,7 +241,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 .PHONY: all bootloader flash clean lib
 
 all: bitstream_alinx_axu2cga.h $(PROJECT)_app.xyl32
-	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
+	-sh -c "cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32"
 
 bitstream_alinx_axu2cga.h: bitstream_alinx_axu2cga.bit
 	./bit2c bitstream_alinx_axu2cga.bit bitstream_alinx_axu2cga.h
@@ -265,7 +266,7 @@ $(PROJECT)_app.xyl32: $(PROJECT)_app.bin
 	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
 		
 BOOT2: version boot.bin
-	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
+	-sh -c "cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin"
 
 boot.bin: boot_alinx_axu2cga.bif $(PROJECT)_boot.elf
 	bootgen -arch zynqmp -image boot_alinx_axu2cga.bif -w on -o $@

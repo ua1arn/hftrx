@@ -568,7 +568,7 @@ static uint_fast8_t nmeaparser_state = NMEAST_INITIALIZED;
 static uint_fast8_t nmeaparser_checksum;
 static uint_fast8_t nmeaparser_chsval;
 static uint_fast8_t nmeaparser_param;		// номер принимаемого параметра в строке
-static uint_fast8_t nmeaparser_chars;		// количество символов, помещённых в буфер
+static uint_fast16_t nmeaparser_chars;		// количество символов, помещённых в буфер
 
 #define NMEA_PARAMS			5
 #define NMEA_CHARSSMALL		16
@@ -609,6 +609,23 @@ static uint_fast8_t calcxorv(
 	while (len --)
 		r ^= (unsigned char) * s ++;
 	return r & 0xff;
+}
+
+/* Передача строки без '$' в начале и с завершающим  '*'
+ * Ведущий символ '$' и контрольный код формируются тут.
+ */
+static void nmea_send(const char * body, size_t len)
+{
+	static const char hex [] = "0123456789ABCDEF";
+	unsigned xorv = calcxorv(body, len);
+
+	qput(0xff);
+	qput('$');
+	qputs(body, len);
+	qput(hex [(xorv >> 4) & 0x0F]);
+	qput(hex [(xorv >> 0) & 0x0F]);
+	qput('\r');
+	qput('\n');
 }
 
 static uint_fast8_t hex2int(uint_fast8_t c)
@@ -714,7 +731,7 @@ static void modem_spool_1S(void * ctx)
 	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 	const int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер, может быть отрицательным
 	const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0],
-		PSTR("$GPMDR,"
+		PSTR("GPMDR,"
 		"%ld,"	// type of information
 		"%ld,"	// freq
 		"%ld,"	// baudrate * 100
@@ -739,7 +756,7 @@ static void modem_spool_1S(void * ctx)
 #else /* CTLREGMODE_STORCH_V4 */
 	// ADACTA version
 	const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0],
-		PSTR("$GPMDR,%ld,%ld,%u,%u,%d,%d*"),
+		PSTR("GPMDR,%ld,%ld,%d,%d,%d,%d*"),
 		2L,
 		(long) hamradio_get_freq_rx(),
 		(int) seq ++,
@@ -748,10 +765,7 @@ static void modem_spool_1S(void * ctx)
 		(int) modem_rx_state
 		);
 #endif /* CTLREGMODE_STORCH_V4 */
-	unsigned xorv = calcxorv(buff + 1, len - 1);
-	const size_t len2 = local_snprintf_P(buff + len, sizeof buff / sizeof buff [0] - len, PSTR("%02X\r\n"), xorv);
-	qput(0xff);
-	qputs(buff, len + len2);
+	nmea_send(buff, len);
 }
 
 static void modem_spool(void * ctx)
@@ -832,6 +846,7 @@ uint_fast8_t processmodem(void)
 // принятый символ с последовательного порта
 void modem_parsechar(uint_fast8_t c)
 {
+	c &= 0xFF;
 	switch (nmeaparser_state)
 	{
 	case NMEAST_INITIALIZED:
@@ -883,10 +898,10 @@ void modem_parsechar(uint_fast8_t c)
 		{
 			if (nmeaparser_param >= 2 && strcmp(nmeaparser_get_buff(0), "GPMDS") == 0)
 			{
-				const unsigned code = strtoul(nmeaparser_get_buff(1) , NULL, 10);
+				const unsigned code = _strtoul_r(& treent, nmeaparser_get_buff(1) , NULL, 10);
 				if (nmeaparser_param >= 4)
 				{
-					const unsigned page = strtoul(nmeaparser_get_buff(2) , NULL, 10);
+					const unsigned page = _strtoul_r(& treent, nmeaparser_get_buff(2) , NULL, 10);
 					switch (code)
 					{
 					case 1:
@@ -936,7 +951,7 @@ void modem_parsechar(uint_fast8_t c)
 				}
 				else if (nmeaparser_param >= 3)
 				{
-					const unsigned p2 = strtoul(nmeaparser_get_buff(2) , NULL, 10);
+					const unsigned p2 = _strtoul_r(& treent, nmeaparser_get_buff(2) , NULL, 10);
 					switch (code)
 					{
 					case 2:

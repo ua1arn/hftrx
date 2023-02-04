@@ -12,7 +12,7 @@
 #include <string.h>
 #include <math.h>
 
-#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYPE_T113
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || (CPUSTYLE_T113 || CPUSTYLE_F133)
 // Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.
 portholder_t
 power4(uint_fast8_t v)
@@ -111,7 +111,7 @@ power8(uint_fast8_t v)
 	return r;
 }
 
-#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYPE_T113 */
+#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
 #if CPUSTYLE_R7S721
 
@@ -615,6 +615,19 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 	}
 }
 
+#elif CPUSTYLE_XCZU
+
+void xc7z_gpio_input(uint8_t pin)
+{
+}
+
+void xc7z_gpio_output(uint8_t pin)
+{
+}
+
+void sysinit_gpio_initialize(void)
+{
+}
 
 #elif CPUSTYLE_XC7Z
 
@@ -747,7 +760,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
 }
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 // DRV: 0x00 = level0, 0x01 = level1, 0x02 - level2, 0x03 - level3
 // PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
@@ -810,20 +823,35 @@ void sysinit_gpio_initialize(void)
 	}
 }
 
-static uint32_t gpioX_lock(GPIO_TypeDef * gpio)
+#if __riscv_xlen
+typedef uint_xlen_t irqstatus_t;
+#else
+typedef uint32_t irqstatus_t;
+#endif
+
+
+static irqstatus_t gpioX_lock(GPIO_TypeDef * gpio)
 {
-	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
-	const uint32_t cpsr = __get_CPSR();
+	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
+#if CPUSTYLE_T113
+	const irqstatus_t cpsr = __get_CPSR();
 	__disable_irq();
+#elif CPUSTYLE_F133
+	const irqstatus_t cpsr = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
+#endif
 	SPIN_LOCK(lck);
 	return cpsr;
 }
 
-static void gpioX_unlock(GPIO_TypeDef * gpio, uint32_t cpsr)
+static void gpioX_unlock(GPIO_TypeDef * gpio, irqstatus_t cpsr)
 {
-	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
+	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 	SPIN_UNLOCK(lck);
+#if CPUSTYLE_T113
 	__set_CPSR(cpsr);
+#elif CPUSTYLE_F133
+	csr_write_mie(cpsr);
+#endif
 }
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */
 /*!< Atomic port state change */
@@ -833,9 +861,10 @@ void gpioX_setstate(
 	portholder_t state
 	)
 {
-	const uint32_t cpsr = gpioX_lock(gpio);
+	const irqstatus_t cpsr = gpioX_lock(gpio);
 
 	gpio->DATA = (gpio->DATA & ~ mask) | (state & mask);
+	(void) gpio->DATA;
 
 	gpioX_unlock(gpio, cpsr);
 }
@@ -915,7 +944,7 @@ static void gpioX_updownoff(
 	gpioX_unlock(gpio, cpsr);
 }
 
-static void (* gpiohandlers [8][32])(void);
+//static void (* gpiohandlers [8][32])(void);
 
 static void ALLW_GPIO_IRQ_Handler_GPIOA(void)
 {
@@ -952,6 +981,14 @@ static void ALLW_GPIO_IRQ_Handler_GPIOE(void)
 	if ((status & ENCODER_BITS) != 0)
 		spool_encinterrupt();
 #endif /* ENCODER_BITS */
+#if BOARD_GT911_INT_PIN
+//	if ((status & ENCODER_BITS) != 0)
+//		xspool_encinterrupt();
+#endif /* BOARD_GT911_INT_PIN */
+#if BOARD_STMPE811_INT_PIN
+//	if ((status & ENCODER_BITS) != 0)
+//		xspool_encinterrupt();
+#endif /* BOARD_STMPE811_INT_PIN */
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOF(void)
@@ -973,6 +1010,11 @@ static void ALLW_GPIO_IRQ_Handler_GPIOH(void)
 	ASSERT(0);
 }
 
+void ALLW_GPIO_IRQ_Handler(void)	// Allwinner specific
+{
+
+}
+
 /* разрешение прерывания по изменению состояния указанных групп выводов */
 void
 gpioX_onchangeinterrupt(
@@ -981,11 +1023,11 @@ gpioX_onchangeinterrupt(
 		portholder_t raise, portholder_t fall,
 		uint32_t priority,
 		uint_fast8_t targetcpu,
-		void (* handler)(void)
+		void (* handler_unused)(void)
 		)
 {
-	const unsigned gpioix = (gpio - GPIOBLOCK->GPIO_PINS);
-	GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
+	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOB_BASE + 1;
+	//GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
 	unsigned pos;
 	//	0x0: Positive Edge
 	//	0x1: Negative Edge
@@ -1019,21 +1061,21 @@ gpioX_onchangeinterrupt(
 	const portholder_t cfg1 = power4(ipins >> 8);		/* EINT_CFG1 bits */
 	const portholder_t cfg2 = power4(ipins >> 16);		/* EINT_CFG2 bits */
 	const portholder_t cfg3 = power4(ipins >> 24);		/* EINT_CFG3 bits */
-	ints->EINT_CFG [0] = (ints->EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
-	ints->EINT_CFG [1] = (ints->EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
-	ints->EINT_CFG [2] = (ints->EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
-	ints->EINT_CFG [3] = (ints->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
+	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [0] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
+	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [1] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
+	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [2] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
+	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [3] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
 
 	for (pos = 0; pos < 32; ++ pos)
 	{
 		const portholder_t mask = (portholder_t) 0x01L << pos;
 		if ((ipins & mask) == 0)
 			continue;
-		gpiohandlers [gpioix] [pos] = handler;
+		//gpiohandlers [gpioix] [pos] = handler;
 		arm_hardware_set_handler(GPIOB_NS_IRQn + gpioix * 2 - 2, handlers [gpioix], priority, targetcpu);	/* GPIOx_NS */
 	}
 
-	ints->EINT_CTL |= ipins;
+	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CTL |= ipins;
 	// todo: EINT_STATUS = ipins; // for clear
 }
 
@@ -1048,7 +1090,7 @@ void sysinit_gpio_initialize(void)
 
 #endif
 
-#if CPUSTYLE_ARM
+#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 	/* Установка начального состояния битов  в GPIO STM32F4X */
 	#define arm_stm32f4xx_hardware_pio_setstate(gpio, opins, initialstate) \
@@ -1314,8 +1356,7 @@ void sysinit_gpio_initialize(void)
 		// speed: 0:low speed, 1:maximum speed, 2:fast speed, 3:high speed
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
 		// type: 0: Output push-pull, 1: output open-drain,
-		#define stm32f30x_pioX_prog(gpio, iomask0, moder, speed, pupdr, typer) \
-		  do { \
+		#define stm32f30x_pioX_prog(gpio, iomask0, moder, speed, pupdr, typer) do { \
 			const portholder_t iomask = (iomask0);	\
 			const portholder_t mask3 = power2(iomask);	\
 			(gpio)->MODER = ((gpio)->MODER & ~ (mask3 * GPIO_MODER_MODE0)) | mask3 * (moder) * GPIO_MODER_MODE0_0; \
@@ -1324,8 +1365,7 @@ void sysinit_gpio_initialize(void)
 			(gpio)->OTYPER = ((gpio)->OTYPER & ~ ((iomask) * GPIO_OTYPER_OT0)) | (iomask) * (typer); \
 		  } while (0)
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define tm32f30x_pioX_pupdr(gpio, up, down) \
-		  do { \
+		#define tm32f30x_pioX_pupdr(gpio, up, down) do { \
 			const portholder_t up3 = power2(up); \
 			const portholder_t down3 = power2(down); \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ ((up3 | down3) * GPIO_PUPDR_PUPD0)) | \
@@ -1335,14 +1375,12 @@ void sysinit_gpio_initialize(void)
 		  } while (0)
 		// отключение встроенной подтяжки на входе (так как программирование на ввод в данной библиотеке всегда включает подтяжку
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) \
-		  do { \
+		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) do { \
 			const portholder_t ipins3 = power2(ipins);	\
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPD0)) | ipins3 * (0) * GPIO_PUPDR_PUPD0_0; \
 		  } while (0)
 
-		#define stm32f30x_pioX_altfn(gpio, opins, afn) \
-			{ \
+		#define stm32f30x_pioX_altfn(gpio, opins, afn) do { \
 				const portholder_t op = (opins); \
 				const portholder_t lo = power4((op) >> 0); \
 				const portholder_t hi = power4((op) >> 8); \
@@ -1451,8 +1489,7 @@ void sysinit_gpio_initialize(void)
 		// speed: 0:low speed, 1:maximum speed, 2:fast speed, 3:high speed
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
 		// type: 0: Output push-pull, 1: output open-drain,
-		#define stm32f30x_pioX_prog(gpio, iomask0, moder, speed, pupdr, typer) \
-		  do { \
+		#define stm32f30x_pioX_prog(gpio, iomask0, moder, speed, pupdr, typer) do { \
 			const portholder_t iomask = (iomask0);	\
 			const portholder_t mask3 = power2(iomask);	\
 			(gpio)->MODER = ((gpio)->MODER & ~ (mask3 * GPIO_MODER_MODER0)) | mask3 * (moder) * GPIO_MODER_MODER0_0; \
@@ -1461,8 +1498,7 @@ void sysinit_gpio_initialize(void)
 			(gpio)->OTYPER = ((gpio)->OTYPER & ~ ((iomask) * GPIO_OTYPER_OT_0)) | (iomask) * (typer); \
 		  } while (0)
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define tm32f30x_pioX_pupdr(gpio, up, down) \
-		  do { \
+		#define tm32f30x_pioX_pupdr(gpio, up, down) do { \
 			const portholder_t up3 = power2(up); \
 			const portholder_t down3 = power2(down); \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ ((up3 | down3) * GPIO_PUPDR_PUPDR0)) | \
@@ -1472,14 +1508,12 @@ void sysinit_gpio_initialize(void)
 		  } while (0)
 		// отключение встроенной подтяжки на входе (так как программирование на ввод в данной библиотеке всегда включает подтяжку
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) \
-		  do { \
+		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) do { \
 			const portholder_t ipins3 = power2(ipins);	\
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPDR0)) | ipins3 * (0) * GPIO_PUPDR_PUPDR0_0; \
 		  } while (0)
 
-		#define stm32f30x_pioX_altfn(gpio, opins, afn) \
-			{ \
+		#define stm32f30x_pioX_altfn(gpio, opins, afn) do { \
 				const portholder_t op = (opins); \
 				const portholder_t lo = power4((op) >> 0); \
 				const portholder_t hi = power4((op) >> 8); \
@@ -1744,7 +1778,7 @@ arm_hardware_pioa_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_prog(GPIOA, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -1812,7 +1846,7 @@ arm_hardware_piob_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -1880,7 +1914,7 @@ arm_hardware_pioc_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -1940,7 +1974,7 @@ arm_hardware_piod_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -1993,7 +2027,7 @@ arm_hardware_pioe_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -2046,7 +2080,7 @@ arm_hardware_piof_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOF, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -2099,7 +2133,7 @@ arm_hardware_piog_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -2160,7 +2194,7 @@ arm_hardware_pioa_analoginput(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -2217,7 +2251,7 @@ arm_hardware_piob_analoginput(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -2274,7 +2308,7 @@ arm_hardware_pioc_analoginput(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -2365,7 +2399,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_setstate(GPIOA, opins, initialstate);
@@ -2459,7 +2493,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_setstate(GPIOA, opins, initialstate);
@@ -2554,7 +2588,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_setstate(GPIOA, opins, initialstate);
@@ -2638,7 +2672,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOB, opins, initialstate);
@@ -2733,7 +2767,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOB, opins, initialstate);
@@ -2829,7 +2863,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_setstate(GPIOC, opins, initialstate);
@@ -2926,7 +2960,7 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_setstate(GPIOD, opins, initialstate);
@@ -3023,7 +3057,7 @@ arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOE);
 	gpioX_setstate(GPIOE, opins, initialstate);
@@ -3109,7 +3143,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_setstate(GPIOC, opins, initialstate);
@@ -3183,7 +3217,7 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_setstate(GPIOA, opins, initialstate);
@@ -3257,7 +3291,7 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOB, opins, initialstate);
@@ -3331,7 +3365,7 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_setstate(GPIOC, opins, initialstate);
@@ -3405,7 +3439,7 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_setstate(GPIOD, opins, initialstate);
@@ -3470,7 +3504,7 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_setstate(GPIOD, opins, initialstate);
@@ -3535,7 +3569,7 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOE);
 	gpioX_setstate(GPIOE, opins, initialstate);
@@ -3600,7 +3634,7 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOE);
 	gpioX_setstate(GPIOE, opins, initialstate);
@@ -3666,7 +3700,7 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOF);
 	gpioX_setstate(GPIOF, opins, initialstate);
@@ -3730,7 +3764,7 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOF);
 	gpioX_setstate(GPIOF, opins, initialstate);
@@ -3799,7 +3833,7 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_setstate(GPIOG, opins, initialstate);
@@ -3863,7 +3897,7 @@ arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_setstate(GPIOG, opins, initialstate);
@@ -3926,7 +3960,7 @@ arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_setstate(GPIOG, opins, initialstate);
@@ -4341,7 +4375,7 @@ arm_hardware_pioz_inputs(unsigned long ipins)
 
 	//GPIOZ->SECCFGR &= ~ (ipins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка режима выводов
-	stm32mp1_pioX_prog(GPIOZ, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	stm32mp1_pioX_prog(GPIOZ, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4726,7 +4760,7 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_setstate(GPIOA, opins, initialstate);
@@ -4799,7 +4833,7 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOB, opins, initialstate);
@@ -4873,7 +4907,7 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_setstate(GPIOC, opins, initialstate);
@@ -4946,7 +4980,7 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_setstate(GPIOD, opins, initialstate);
@@ -5010,7 +5044,7 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOE);
 	gpioX_setstate(GPIOE, opins, initialstate);
@@ -5074,7 +5108,7 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOF);
 	gpioX_setstate(GPIOF, opins, initialstate);
@@ -5137,7 +5171,7 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_setstate(GPIOG, opins, initialstate);
@@ -5423,7 +5457,7 @@ arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -5490,7 +5524,7 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -5549,7 +5583,7 @@ arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -5609,7 +5643,7 @@ arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -5669,7 +5703,7 @@ arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -5737,7 +5771,7 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -5805,7 +5839,7 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -5873,7 +5907,7 @@ arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -5941,7 +5975,7 @@ arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -6009,7 +6043,7 @@ arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -6077,7 +6111,7 @@ arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -6137,7 +6171,7 @@ arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -6197,7 +6231,7 @@ arm_hardware_pioe_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -6255,7 +6289,7 @@ arm_hardware_pioe_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -6313,7 +6347,7 @@ arm_hardware_pioe_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -6376,7 +6410,7 @@ arm_hardware_piof_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -6434,7 +6468,7 @@ arm_hardware_piof_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -6492,7 +6526,7 @@ arm_hardware_piof_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -6554,7 +6588,7 @@ arm_hardware_piog_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -6612,7 +6646,7 @@ arm_hardware_piog_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -6670,7 +6704,7 @@ arm_hardware_piog_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -7139,7 +7173,7 @@ arm_hardware_pioj_inputs(unsigned long ipins)
 	RCC->MP_AHB4ENSETR = RCC_MP_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
 	(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
-	stm32mp1_pioX_prog(GPIOJ, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	stm32mp1_pioX_prog(GPIOJ, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7568,7 +7602,7 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -7634,7 +7668,7 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -7701,7 +7735,7 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -7768,7 +7802,7 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -7827,7 +7861,7 @@ void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -7886,7 +7920,7 @@ void arm_hardware_piof_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -7941,7 +7975,7 @@ void arm_hardware_piog_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -7968,7 +8002,7 @@ arm_hardware_pioa_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	gpioX_updown(GPIOA, up, down);
 
@@ -7993,7 +8027,7 @@ arm_hardware_piob_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updown(GPIOB, up, down);
 
@@ -8018,7 +8052,7 @@ arm_hardware_pioc_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updown(GPIOC, up, down);
 
@@ -8043,7 +8077,7 @@ arm_hardware_piod_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updown(GPIOD, up, down);
 
@@ -8068,7 +8102,7 @@ arm_hardware_pioe_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updown(GPIOE, up, down);
 
@@ -8093,7 +8127,7 @@ arm_hardware_piof_updown(unsigned long up, unsigned long down)
 
 	tm32mp1_pioX_pupdr(GPIOF, up, down);
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updown(GPIOF, up, down);
 
@@ -8119,7 +8153,7 @@ arm_hardware_piog_updown(unsigned long up, unsigned long down)
 
 	tm32mp1_pioX_pupdr(GPIOG, up, down);
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updown(GPIOG, up, down);
 
@@ -8255,7 +8289,7 @@ arm_hardware_pioa_updownoff(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	gpioX_updownoff(GPIOA, ipins);
 
@@ -8280,7 +8314,7 @@ arm_hardware_piob_updownoff(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updownoff(GPIOB, ipins);
 
@@ -8305,7 +8339,7 @@ arm_hardware_pioc_updownoff(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updownoff(GPIOC, ipins);
 
@@ -8330,7 +8364,7 @@ arm_hardware_piod_updownoff(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updownoff(GPIOD, ipins);
 
@@ -8355,7 +8389,7 @@ arm_hardware_pioe_updownoff(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updownoff(GPIOE, ipins);
 
@@ -8380,7 +8414,7 @@ arm_hardware_piof_updownoff(unsigned long ipins)
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOF, ipins);
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updownoff(GPIOF, ipins);
 
@@ -8406,7 +8440,7 @@ arm_hardware_piog_updownoff(unsigned long ipins)
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOG, ipins);
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_updownoff(GPIOG, ipins);
 
@@ -8570,7 +8604,7 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority, tgcpu);	// PORT A
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	gpioX_onchangeinterrupt(GPIOA, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT A
 
@@ -8608,7 +8642,7 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_onchangeinterrupt(GPIOB, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT B
 
@@ -8647,7 +8681,7 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_onchangeinterrupt(GPIOC, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT C
 
@@ -8684,7 +8718,7 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority, tgcpu);	// PORTD
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_onchangeinterrupt(GPIOD, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT D
 
@@ -8722,7 +8756,7 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority, tgcpu);	// PORT E
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_onchangeinterrupt(GPIOE, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT E
 
@@ -8760,7 +8794,7 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority, tgcpu);	// PORT F
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_onchangeinterrupt(GPIOF, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT F
 
@@ -8797,7 +8831,7 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority, tgcpu);	// PORT G
 
-#elif CPUSTYPE_T113
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_onchangeinterrupt(GPIOG, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT G
 
@@ -8835,7 +8869,7 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #endif /* defined (GPIOH) */
 
-#elif CPUSTYPE_TMS320F2833X
+#elif CPUSTYLE_TMS320F2833X
 
 /* Установка начального состояния битов  в GPIOA TMS320F2833X */
 #define tms320f2833x_hardware_pioa_setstate(opins, initialstate) \
@@ -8963,4 +8997,4 @@ tms320_hardware_pioс_inputs(unsigned long ipins)
 	tms320f2833x_hardware_pioc_prog(ipins, 0, 0, 0);	/* На ввод, с pull-up */
 }
 
-#endif /* CPUSTYLE_ARM */
+#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */

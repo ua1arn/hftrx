@@ -98,31 +98,17 @@
 	#define TXPATH_TARGET_PORT PORTD	// выходы процессора - управление трактом ппередачи и манипуляцией
 	#define TXPATH_TARGET_DDR DDRD		// переключение на вывод - управление трактом передачи и манипуляцией
 
-	#if ! ELKEY328
-		// Управление передатчиком - сигналы TXPATH_ENABLE (PA11) и TXPATH_ENABLE_CW (PA10) - активны при нуле на выходе.
-		#define TXPATH_BIT_ENABLE_SSB		(1U << PD5)
-		#define TXPATH_BIT_ENABLE_CW	(1U << PD7)
-		#define TXPATH_BITS_ENABLE	(TXPATH_BIT_ENABLE_SSB | TXPATH_BIT_ENABLE_CW)
-		// Подготовленные управляющие слова
-		#define TXGFV_RX		0
-		#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-		#define TXGFV_TX_SSB	TXPATH_BIT_ENABLE_SSB
-		#define TXGFV_TX_CW		TXPATH_BIT_ENABLE_CW
-		#define TXGFV_TX_AM		TXPATH_BIT_ENABLE_CW
-		#define TXGFV_TX_NFM	TXPATH_BIT_ENABLE_CW
-	#else
-		// Управление передатчиком - единственный сигнал разрешения тракта
-		#define TXPATH_BIT_GATE (1U << PD5)	// выходной сигнал из процессора - управление передатчиком.
-		//#define TXPATH_BIT_GATE_RX TXPATH_BIT_GATE	// сигнал tx2 - управление передатчиком. При приёме активен
-		#define TXPATH_BIT_GATE_RX 0	// сигнал tx2 - управление передатчиком. При приёме не активен
-		// Подготовленные управляющие слова
-		#define TXGFV_RX		TXPATH_BIT_GATE_RX
-		#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-		#define TXGFV_TX_SSB	TXPATH_BIT_GATE
-		#define TXGFV_TX_CW		TXPATH_BIT_GATE
-		#define TXGFV_TX_AM		TXPATH_BIT_GATE
-		#define TXGFV_TX_NFM	TXPATH_BIT_GATE
-	#endif
+	// Управление передатчиком - сигналы TXPATH_ENABLE (PA11) и TXPATH_ENABLE_CW (PA10) - активны при нуле на выходе.
+	#define TXPATH_BIT_ENABLE_SSB		(1U << PD5)
+	#define TXPATH_BIT_ENABLE_CW	(1U << PD7)
+	#define TXPATH_BITS_ENABLE	(TXPATH_BIT_ENABLE_SSB | TXPATH_BIT_ENABLE_CW)
+	// Подготовленные управляющие слова
+	#define TXGFV_RX		0
+	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
+	#define TXGFV_TX_SSB	TXPATH_BIT_ENABLE_SSB
+	#define TXGFV_TX_CW		TXPATH_BIT_ENABLE_CW
+	#define TXGFV_TX_AM		TXPATH_BIT_ENABLE_CW
+	#define TXGFV_TX_NFM	TXPATH_BIT_ENABLE_CW
 #else
 	// Подготовленные управляющие слова (заглушки)
 	#define TXGFV_RX		0

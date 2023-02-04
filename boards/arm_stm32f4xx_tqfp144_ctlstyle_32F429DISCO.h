@@ -182,9 +182,9 @@
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 
-	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	
+	
+	
 
 	//#define DSTYLE_UR3LMZMOD	1	// Тестирование - расположение элементов экрана в трансиверах UR3LMZ
 	//#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
@@ -354,8 +354,7 @@
 	/* Board hardware configuration */
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	//#define DDS1_TYPE DDS_TYPE_FPGAV1
-	#define DDS1_TYPE DDS_TYPE_FPGAV2
+	#define DDS1_TYPE DDS_TYPE_FPGAV1
 	//#define PLL1_TYPE PLL_TYPE_SI570
 	//#define PLL1_FRACTIONAL_LENGTH	28	/* Si570: lower 28 bits is a fractional part */
 	//#define DDS1_TYPE DDS_TYPE_AD9951

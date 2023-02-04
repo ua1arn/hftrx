@@ -16,10 +16,10 @@
 ##############################################################################################
 # Start of default section
 #
-TRGT = arm-none-eabi-
-#TRGT = C:\user\klen\bin\arm-kgp-eabi-
+TRGT2 = arm-none-eabi
+TRGT = $(TRGT2)-
 
-XFEL = ./xfel-windows-v1.2.9/xfel
+XFEL = ../../tools/xfel-windows-v1.2.9/xfel
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -35,7 +35,7 @@ LDSCRIPT_APP = ./allwnr_t113s3_app.ld
 ARCHDIR = $(PRJROOT)/arch/t113s3
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYPE_T113"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_T113"=1
 #UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
@@ -45,33 +45,33 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
+
+# For details of A7 CPUX signals, refer to the technical reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
 CORE = -mcpu=cortex-a7
 CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
-#CORE += -mfpu=neon-vfpv4
-CORE += -mfpu=vfpv4
+CORE += -mfpu=neon-vfpv4
+#CORE += -mfpu=vfpv4
 
 # Define optimisation level here
-# olny -Og for app
-# Application
 #OPT = -Og
-#OPT = -Ofast -flto
-OPT = -Os -flto
+OPT = -Ofast -flto
+#OPT = -Os -flto
+#OPT = -Os
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
-LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 #HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
+LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -92,14 +92,7 @@ DINCDIR = \
 	$(CMSISDSPDIR)/Include \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude \
-	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/apps/http \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
+	$(CMSISDSPDIR)/PrivateInclude
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -145,10 +138,37 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 #SRCDIRS += $(DSP3DDIR)/src
-#SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
-#SRCDIRS += $(OPENVGDIR)/src
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
+
+ifeq (1, 1)
+# LuPng
+SRCDIRS += $(LUPNGDIR)
+DINCDIR += $(LUPNGDIR)
+endif
+
+ifeq (1, 0)
+# OpenVG
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+OPENVGDIR = $(PRJROOT)/lib/OpenVG
+DINCDIR += \
+	$(OPENVGDIR)/include/VG \
+	$(OPENVGDIR)/include \
+	$(OPENVGDIR)/include/EGL \
+	$(OPENVGDIR)/src
+SRCDIRS += $(OPENVGDIR)/src
+UDEFS += -D"EGL_STATIC_LIBRARY"=1
+endif
+
+ifeq (1, 0)
+# LWIP
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
+DINCDIR += \
+	$(LWIPDIR)/src/include \
+	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/src/apps/http
+SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+endif
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
@@ -238,14 +258,17 @@ flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
 	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
 
+flash+old:
+	$(XFEL) spinor write 0x00000000 fsbl.alw32
+	$(XFEL) spinor write 0x00040000 ddr3init.bin
+	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
+
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.alw32: $(PROJECT)_boot.bin
-	cp boottemplate.bin fsbl.alw32.tmp
-	./wtitefsbl.exe fsbl.alw32.tmp 0x00100 $(PROJECT)_boot.bin -w
-	./checksum.exe fsbl.alw32.tmp fsbl.alw32
+	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
@@ -262,11 +285,11 @@ $(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS) $(OBJSA_BOOT)
+%_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS) $(OBJSA_APP)
+%_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 

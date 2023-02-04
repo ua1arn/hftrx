@@ -438,7 +438,7 @@ nvram_write(nvramaddress_t addr, const uint8_t * data, uint_fast8_t len)
 	{
 		ASSERT(0);
 	}
-	//arm_hardware_flush((uintptr_t) BKPSRAM_BASE, 4096);
+	//dcache_clean((uintptr_t) BKPSRAM_BASE, 4096);
 	stm32f4xx_bddisable();
 
 #elif (NVRAM_TYPE == NVRAM_TYPE_CPUEEPROM)

@@ -12,11 +12,7 @@ extern const phase_t phase_0;
 
 #define FPGA_DECODE_CTLREG	(1u << 0)
 #define FPGA_DECODE_NCO1	(1u << 1)
-#define FPGA_DECODE_NCO2	(1u << 2)
-#define FPGA_DECODE_NCORTS	(1u << 3)
 #define FPGA_DECODE_FQMETER	(0)
-#define FPGA_DECODE_NCO3	(1u << 4)
-#define FPGA_DECODE_NCO4	(1u << 5)
 #define FPGA_DECODE_NBLVL	(1u << 6)
 
 
@@ -69,7 +65,11 @@ static void prog_fpga_freq1(
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-	prog_fpga_freqX(target, val, FPGA_DECODE_NCO1);
+#if (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2)
+    prog_fpga_freqX(target, val, FPGA_DECODE_NCO1);
+#else /* (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
+    mirror_nco1 = * val;
+#endif /* (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
 }
 
 static void prog_fpga_freq2(
@@ -77,7 +77,7 @@ static void prog_fpga_freq2(
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-	prog_fpga_freqX(target, val, FPGA_DECODE_NCO2);
+	mirror_nco2 = * val;
 }
 
 static void prog_fpga_freq3(
@@ -85,7 +85,7 @@ static void prog_fpga_freq3(
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-	prog_fpga_freqX(target, val, FPGA_DECODE_NCO3);
+	mirror_nco3 = * val;
 }
 
 static void prog_fpga_freq4(
@@ -93,7 +93,7 @@ static void prog_fpga_freq4(
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-	prog_fpga_freqX(target, val, FPGA_DECODE_NCO4);
+	mirror_nco4 = * val;
 }
 
 static void prog_fpga_freq1_rts(
@@ -101,7 +101,7 @@ static void prog_fpga_freq1_rts(
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-	prog_fpga_freqX(target, val, FPGA_DECODE_NCORTS);
+	mirror_ncorts = * val;
 }
 
 static void prog_fpga_nblevel(
