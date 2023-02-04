@@ -375,49 +375,78 @@ struct regdfn * parseregdef(char *s0, char *fldname, unsigned fldsize,
 	return regp;
 }
 
-// 1 - end of file
-// 0 - register definition ok
-static int parsereglist(struct parsedfile *pfl, FILE *fp, const char *file, PLIST_ENTRY listhead) {
-	char comment[TKSZ];
+// 0 - end of file
+// 1 - register definition ok
+static int parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 	char fldname[VNAME_MAX];
-	char typname[VNAME_MAX];
-	char irqname[VNAME_MAX];
 	char fldtype[VNAME_MAX];
-	int irq;
-	int irqrv;
-	unsigned base;
 	unsigned fldsize;
 	int pos; /* end of parsed field position */
 
-	{
-		struct regdfn * regp2;
+	for (;;) {
+		//fprintf(stderr, "token0=%s\n", token0);
+		if (3
+				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %i %s%n", fldname,
+						&fldsize, &fldtype, &pos)) {
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, fldtype, file);
+			//fprintf(stderr, "Parsed 3 regdef fldname='%s' fldszie=%u fldtype='%s'\n", fldname, fldsize, fldtype);
+			/* parsed */
+			InsertTailList(listhead, &regp->item);
+			if (nextline(fp) == 0)
+				break;
+		} else if (2
+				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %i %n", fldname,
+						&fldsize, &pos)) {
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, NULL, file);
+			//fprintf(stderr, "Parsed 2 regdef fldname='%s' fldszie=%u\n", fldname, fldsize);
+			/* parsed */
+			InsertTailList(listhead, &regp->item);
+			if (nextline(fp) == 0)
+				break;
+		} else if (1
+				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %n", fldname,
+						&pos)) {
 
-		regp2 = calloc(1, sizeof *regp2);
-		InitializeListHead(& regp2->aggregate);
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, NULL, file);
+		//	fprintf(stderr, "Parsed 1 regdef fldname='%s' \n", fldname);
+			/* parsed */
+			InsertTailList(listhead, &regp->item);
+			if (nextline(fp) == 0)
+				break;
 
-		regp2->comment = strdup("test field 1");
-		regp2->fldname = strdup("fld1");
-		regp2->fldoffs = 0;
-		regp2->fldrept = 0;
-		regp2->fldsize = 4;
-		InsertTailList(listhead, &regp2->item);
+		} else if (1
+				== sscanf(token0, "#aggreg; %[a-zA-Z_0-9/] %n", fldname,
+						&pos)) {
 
-		regp2 = calloc(1, sizeof *regp2);
-		InitializeListHead(& regp2->aggregate);
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, NULL, file);
+			//fprintf(stderr, "x Parsed 1 aggreg fldname='%s' \n", fldname);
+			/* parsed */
+			InsertTailList(listhead, &regp->item);
 
-		regp2->comment = strdup("test field 2");
-		regp2->fldname = strdup("fld2");
-		regp2->fldoffs = 16;
-		regp2->fldrept = 6;
-		regp2->fldsize = 4;
-		InsertTailList(listhead, &regp2->item);
+			/* parse other fields for this aggregate */
+			if (nextline(fp) == 0)
+				break;
+			parsereglist(fp, file, & regp->aggregate);
 
+		} else if (strcmp(token0, "#aggregend;") == 0 || strcmp(token0, "#aggregend;\n") == 0) {
+			/* parsed */
+			//fprintf(stderr, "#aggregend: token0=%s", token0);
+			return nextline(fp);
+
+		} else {
+			/* unrecognized input = next source line */
+			fprintf(stderr, "2 unrecognized token0=%s", token0);
+			return 1;
+			/* parsed */
+			if (nextline(fp) == 0)
+				break;
+		}
 	}
-	return 0;
+	return 0; /* end of file */
 }
 
-// 1 - end of file
-// 0 - register definition ok
+// 0 - end of file
+// 1 - register definition ok
 static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	char comment[TKSZ];
 	char fldname[VNAME_MAX];
@@ -430,8 +459,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	unsigned fldsize;
 	int pos; /* end of parsed field position */
 
-	//fprintf(stderr, "token0=%s", token0);
 	for (;;) {
+		//fprintf(stderr, "0 token0=%s\n", token0);
 		memset(comment, 0, sizeof comment);
 		if (2 == sscanf(token0, "#irq; %s %i\n", irqname, &irq)) {
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
@@ -505,17 +534,18 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 				break;
 
 		} else if (1
-				== sscanf(token0, "#agreg; %[a-zA-Z_0-9/] %n", fldname,
+				== sscanf(token0, "#aggreg; %[a-zA-Z_0-9/] %n", fldname,
 						&pos)) {
 
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, NULL, file);
-			//fprintf(stderr, "Parsed 1 agreg fldname='%s' \n", fldname);
+			//fprintf(stderr, "Parsed 1 aggreg fldname='%s' \n", fldname);
 			/* parsed */
 			InsertTailList(&pfl->regslist, &regp->item);
+			if (nextline(fp) == 0)
+				break;
 
 			/* parse other fields for this aggregate */
-			parsereglist(pfl, fp, file, & regp->aggregate);
-			if (nextline(fp) == 0)
+			if (parsereglist(fp, file, & regp->aggregate) == 0)
 				break;
 
 		} else if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment)) {
@@ -525,13 +555,13 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 				break;
 		} else {
 			/* unrecognized input = next source line */
-			fprintf(stderr, "unrecognized token0=%s", token0);
+			fprintf(stderr, "base: unrecognized token0=%s", token0);
 			/* parsed */
 			if (nextline(fp) == 0)
 				break;
 		}
 	}
-	return 1; /* end of file */
+	return 0; /* end of file */
 }
 
 static int loadregs(struct parsedfile *pfl, const char *file) {

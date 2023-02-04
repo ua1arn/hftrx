@@ -6,7 +6,7 @@
 #regdef; DMAC_IRQ_PEND_REG1; 0x0014; DMAC IRQ Pending Register 1
 #regdef; DMAC_AUTO_GATE_REG; 0x0028; DMAC Auto Gating Register
 #regdef; DMAC_STA_REG; 0x0030; DMAC Status Register
-#agreg; CH; 0x100 16; Channel [0..15]
+#aggreg; CH; 0x100 16; Channel [0..15]
 #regdef; DMAC_EN_REGN; 0x000; DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040
 #regdef; DMAC_PAU_REGN; 0x004; DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040
 #regdef; DMAC_DESC_ADDR_REGN; 0x008; DMAC Channel Start Address Register N (N = 0 to 15) 0x0108 + N*0x0040
@@ -19,4 +19,4 @@
 #regdef; DMAC_FDESC_ADDR_REGN; 0x02C; DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040
 #regdef; DMAC_PKG_NUM_REGN; 0x030; DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040
 #regdef; padding 0; 0x40; Placeholder for 0x40 alignment
-#agregend;
+#aggregend;
