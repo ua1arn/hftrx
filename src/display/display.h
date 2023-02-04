@@ -308,7 +308,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORPIP_G(v) (((v) & 0x1C) << 3)
 		#define COLORPIP_B(v) (((v) & 0x03) << 6)
 
-	#elif LCDMODE_MAIN_ARGB888
+	#elif LCDMODE_MAIN_ARGB8888
 
 		typedef uint_fast32_t COLORPIP_T;
 		typedef uint32_t PACKEDCOLORPIP_T;

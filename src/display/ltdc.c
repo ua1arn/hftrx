@@ -284,7 +284,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 #if LCDMODE_MAIN_L8
 	const unsigned grx_format_MAIN = 0x05;	// GRx_FORMAT 5: CLUT8
 	const unsigned grx_rdswa_MAIN = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
-#elif LCDMODE_MAIN_ARGB888
+#elif LCDMODE_MAIN_ARGB8888
 	const unsigned grx_format_MAIN = 0x04;	// GRx_FORMAT 4: ARGB8888, 1: RGB888
 	const unsigned grx_rdswa_MAIN = 0x04;	// GRx_RDSWA 100: (5) (6) (7) (8) (1) (2) (3) (4) [Swapped in 32-bit units]
 #else /* LCDMODE_MAIN_L8 */
@@ -1491,7 +1491,7 @@ hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 
 	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORPIP_T));
 
-#elif LCDMODE_MAIN_ARGB888
+#elif LCDMODE_MAIN_ARGB8888
 
 	/* Без палитры */
 	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORPIP_T));
@@ -1966,7 +1966,7 @@ struct fb_t113_rgb_pdata_t
 //	int brightness;
 };
 
-#if LCDMODE_MAIN_ARGB888
+#if LCDMODE_MAIN_ARGB8888
 	static const uint32_t ui_vi_format = 0x00;	//  0x08: ARGB_8888
 	//const uint32_t ui_vi_format = 0x04;	// 0x04: XRGB_8888
 #elif LCDMODE_MAIN_RGB565

@@ -47,7 +47,7 @@ static uint32_t ptr_lo32(uintptr_t v)
 		xG2D_MIXER_ALPHA,
 	} xg2d_alpha_mode_enh;
 
-#if LCDMODE_MAIN_ARGB888
+#if LCDMODE_MAIN_ARGB8888
 	#define VI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define UI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define WB_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
@@ -380,8 +380,8 @@ static void t113_fillrect(
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 
-#elif LCDMODE_MAIN_ARGB888
-	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(0 * DMA2D_FGPFCCR_CM_0)	/* 0000: ARGB888 */
+#elif LCDMODE_MAIN_ARGB8888
+	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(0 * DMA2D_FGPFCCR_CM_0)	/* 0000: ARGB8888 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x02	// 10: Word (32-bit)
 	#define DMA2D_OPFCCR_CM_VALUE_MAIN		(0 * DMA2D_OPFCCR_CM_0)	/* 0: 000: ARGB8888 */
 
@@ -1419,7 +1419,7 @@ void colpip_fillrect(
 #elif LCDMODE_MAIN_L24
 	hwaccel_rect_u24((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
-#elif LCDMODE_MAIN_ARGB888
+#elif LCDMODE_MAIN_ARGB8888
 	hwaccel_rect_u32((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
 #endif
@@ -1659,7 +1659,7 @@ void colpip_fill(
 #elif LCDMODE_MAIN_L24
 	hwaccel_rect_u24((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
-#elif LCDMODE_MAIN_ARGB888
+#elif LCDMODE_MAIN_ARGB8888
 	hwaccel_rect_u32((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
 #endif
@@ -3174,7 +3174,7 @@ COLORPIP_T getshadedcolor(
 		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
-#elif LCDMODE_MAIN_ARGB888 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHTFT_OVER_LVDS
+#elif LCDMODE_MAIN_ARGB8888 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHTFT_OVER_LVDS
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -3192,7 +3192,7 @@ COLORPIP_T getshadedcolor(
 	}
 
 
-#elif LCDMODE_MAIN_ARGB888
+#elif LCDMODE_MAIN_ARGB8888
 
 	if (dot == COLORPIP_BLACK)
 	{
