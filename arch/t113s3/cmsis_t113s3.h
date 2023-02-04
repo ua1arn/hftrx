@@ -63,6 +63,12 @@
 #define	SPI0_BASE	 ((uintptr_t) 0x04025000)
 #define	SPI_DBI_BASE	 ((uintptr_t) 0x04026000)
 #define	USBOTG0_BASE	 ((uintptr_t) 0x04100000)
+#define	USBPHY0_BASE	 ((uintptr_t) 0x04100400)
+#define	USBEHCI0_BASE	 ((uintptr_t) 0x04101000)
+#define	USBOHCI0_BASE	 ((uintptr_t) 0x04101400)
+#define	USBEHCI1_BASE	 ((uintptr_t) 0x04200000)
+#define	USBOHCI1_BASE	 ((uintptr_t) 0x04200400)
+#define	USBPHY1_BASE	 ((uintptr_t) 0x04200800)
 #define	EMAC_BASE	 ((uintptr_t) 0x04500000)
 #define	DE_BASE	 ((uintptr_t) 0x05000000)
 #define	DE_CLK_BASE	 ((uintptr_t) 0x05000000)
@@ -2430,6 +2436,8 @@ typedef struct MSGBOX_Type
 #define CAN0 ((CAN_TypeDef *) CAN0_BASE)                                        /*!< \brief CAN0 Interface register set access pointer */
 #define CAN1 ((CAN_TypeDef *) CAN1_BASE)                                        /*!< \brief CAN1 Interface register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)                               /*!< \brief USBOTG0 Interface register set access pointer */
+#define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)                              /*!< \brief USBPHY0 Interface register set access pointer */
+#define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)                              /*!< \brief USBPHY1 Interface register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)                                 /*!< \brief DE_GLB Interface register set access pointer */
 #define DE_CLK ((DE_CLK_TypeDef *) DE_CLK_BASE)                                 /*!< \brief DE_CLK Interface register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)                                 /*!< \brief DE_BLD Interface register set access pointer */
@@ -2458,6 +2466,8 @@ typedef struct MSGBOX_Type
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)                              /*!< \brief DDRPHYC Interface register set access pointer */
 #define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)                           /*!< \brief MSI_MEMC Interface register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                                          /*!< \brief SID Interface register set access pointer */
+#define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)                /*!< \brief USBEHCI0 Interface register set access pointer */
+#define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)                /*!< \brief USBEHCI1 Interface register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)                                       /*!< \brief DMAC Interface register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */

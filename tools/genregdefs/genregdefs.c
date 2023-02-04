@@ -237,7 +237,7 @@ void genstructprint(struct parsedfile *pfl) {
 	emitline(0, "}\n");
 }
 
-LIST_ENTRY parsedfiles;
+static LIST_ENTRY parsedfiles;
 
 struct basemap {
 	unsigned base;
@@ -255,7 +255,7 @@ struct irqmaprv {
 };
 
 /* qsort parameter */
-int compare_base(const void *v1, const void *v2) {
+static int compare_base(const void *v1, const void *v2) {
 	const struct basemap *p1 = v1;
 	const struct basemap *p2 = v2;
 	if (p1->base == p2->base) {
@@ -265,7 +265,7 @@ int compare_base(const void *v1, const void *v2) {
 }
 
 /* qsort parameter */
-int compare_irq(const void *v1, const void *v2) {
+static int compare_irq(const void *v1, const void *v2) {
 	const struct irqmap *p1 = v1;
 	const struct irqmap *p2 = v2;
 
@@ -276,7 +276,7 @@ int compare_irq(const void *v1, const void *v2) {
 }
 
 /* qsort parameter */
-int compare_irqrv(const void *v1, const void *v2) {
+static int compare_irqrv(const void *v1, const void *v2) {
 	const struct irqmaprv *p1 = v1;
 	const struct irqmaprv *p2 = v2;
 
@@ -291,7 +291,7 @@ int compare_irqrv(const void *v1, const void *v2) {
 static char token0[1024];
 #define TKSZ (sizeof token0 / sizeof token0 [0])
 
-int nextline(FILE *fp) {
+static int nextline(FILE *fp) {
 	char *s = fgets(token0, TKSZ, fp);
 	if (s != NULL) {
 		//fprintf(stderr, "#input:  '%s", s);
@@ -300,7 +300,7 @@ int nextline(FILE *fp) {
 
 }
 
-struct regdfn * parseregdef(char *s0, char *fldname, unsigned fldsize,
+static struct regdfn * parseregdef(char *s0, char *fldname, unsigned fldsize,
 		char *typname, const char *file) {
 	unsigned fldoffset;
 	unsigned fldrept;
@@ -443,8 +443,7 @@ static int parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 
 		} else {
 			/* unrecognized input = next source line */
-			fprintf(stderr, "2 unrecognized token0=%s", token0);
-			return 1;
+			fprintf(stderr, "#2 unrecognized token0=%s", token0);
 			/* parsed */
 			if (nextline(fp) == 0)
 				break;
@@ -457,20 +456,21 @@ static int parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 // 1 - register definition ok
 static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	char comment[TKSZ];
-	char fldname[VNAME_MAX];
 	char typname[VNAME_MAX];
 	char irqname[VNAME_MAX];
-	char fldtype[VNAME_MAX];
 	int irq;
 	int irqrv;
 	unsigned base;
-	unsigned fldsize;
-	int pos; /* end of parsed field position */
 
 	for (;;) {
 		//fprintf(stderr, "0 token0=%s\n", token0);
 		memset(comment, 0, sizeof comment);
-		if (2 == sscanf(token0, "#irq; %s %i\n", irqname, &irq)) {
+		if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment)) {
+			//fprintf(stderr, "Parsed comment='%s'\n", comment);
+			//regp->comment = strdup(comment);
+			if (nextline(fp) == 0)
+				break;
+		} else if (2 == sscanf(token0, "#irq; %s %i\n", irqname, &irq)) {
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
 			if (pfl->irq_count < BASE_MAX) {
 				pfl->irq_array[pfl->irq_count] = irq;
@@ -512,61 +512,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			/* parsed */
 			if (nextline(fp) == 0)
 				break;
-		} else if (3
-				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %i %s%n", fldname,
-						&fldsize, &fldtype, &pos)) {
-			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, fldtype, file);
-			//fprintf(stderr, "Parsed 3 regdef fldname='%s' fldszie=%u fldtype='%s'\n", fldname, fldsize, fldtype);
-			/* parsed */
-			InsertTailList(&pfl->regslist, &regp->item);
-			if (nextline(fp) == 0)
-				break;
-		} else if (2
-				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %i %n", fldname,
-						&fldsize, &pos)) {
-			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, NULL, file);
-			//fprintf(stderr, "Parsed 2 regdef fldname='%s' fldszie=%u\n", fldname, fldsize);
-			/* parsed */
-			InsertTailList(&pfl->regslist, &regp->item);
-			if (nextline(fp) == 0)
-				break;
-		} else if (1
-				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %n", fldname,
-						&pos)) {
-
-			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, NULL, file);
-		//	fprintf(stderr, "Parsed 1 regdef fldname='%s' \n", fldname);
-			/* parsed */
-			InsertTailList(&pfl->regslist, &regp->item);
-			if (nextline(fp) == 0)
-				break;
-
-		} else if (1
-				== sscanf(token0, "#aggreg; %[a-zA-Z_0-9/] %n", fldname,
-						&pos)) {
-
-			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, NULL, file);
-			//fprintf(stderr, "Parsed 1 aggreg fldname='%s' \n", fldname);
-			/* parsed */
-			InsertTailList(&pfl->regslist, &regp->item);
-			if (nextline(fp) == 0)
-				break;
-
-			/* parse other fields for this aggregate */
-			if (parsereglist(fp, file, & regp->aggregate) == 0)
-				break;
-
-		} else if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment)) {
-			//fprintf(stderr, "Parsed comment='%s'\n", comment);
-			//regp->comment = strdup(comment);
-			if (nextline(fp) == 0)
-				break;
 		} else {
-			/* unrecognized input = next source line */
-			fprintf(stderr, "base: unrecognized token0=%s", token0);
-			/* parsed */
-			if (nextline(fp) == 0)
-				break;
+			return parsereglist(fp, file, & pfl->regslist);
 		}
 	}
 	return 0; /* end of file */
