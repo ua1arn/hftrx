@@ -2076,6 +2076,7 @@ void hwaccel_stretchblt(
 //	PRINTF("colpip_stretchblt (resize): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
 	const unsigned srcFormat = awxx_get_srcformat(keyflag);
 	enum { PIXEL_SIZE = sizeof * dst };
