@@ -1,4 +1,4 @@
-#type; G2D_LAY
+#type; G2D_VI
 #base; G2D_V0 0x05410800
 #regdef; V0_ATTCTL; 0x00; V0_ATTCTL
 #regdef; V0_MBSIZE; 0x04; Source rectangle size (may be empty)
