@@ -469,8 +469,14 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, NULL, file);
 			//fprintf(stderr, "Parsed 1 agreg fldname='%s' \n", fldname);
+			/* parsed */
+			InsertTailList(&pfl->regslist, &regp->item);
+
+			/* parse other fields for this agregate */
 			{
-				struct regdfn * regp2 = calloc(1, sizeof *regp2);
+				struct regdfn * regp2;
+
+				regp2 = calloc(1, sizeof *regp2);
 				InitializeListHead(& regp2->aggregate);
 
 				regp2->comment = strdup("test field 1");
@@ -480,9 +486,17 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 				regp2->fldsize = 4;
 				InsertTailList(&regp->aggregate, &regp2->item);
 
+				regp2 = calloc(1, sizeof *regp2);
+				InitializeListHead(& regp2->aggregate);
+
+				regp2->comment = strdup("test field 2");
+				regp2->fldname = strdup("fld2");
+				regp2->fldoffs = 16;
+				regp2->fldrept = 6;
+				regp2->fldsize = 4;
+				InsertTailList(&regp->aggregate, &regp2->item);
+
 			}
-			/* parsed */
-			InsertTailList(&pfl->regslist, &regp->item);
 			if (nextline(fp) == 0)
 				break;
 
