@@ -135,6 +135,9 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist) {
 		if (regp->fldoffs == offs) {
 			if (! IsListEmpty(& regp->aggregate)) {
 				/* Emit aggregate type */
+				emitline(indent + INDENT, "struct {\n");
+				offs += regp->fldrept * genreglist(indent + INDENT, & regp->aggregate);	/* Emit fields list */
+				emitline(indent + INDENT, "} %s [0x%03X];\n", regp->fldname, regp->fldrept);
 			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
