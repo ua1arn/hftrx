@@ -2908,14 +2908,14 @@ void colpip_bitblt(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t w,	uint_fast16_t h,	// источник Размеры окна в пикселях
+	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры окна в пикселях
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
-	ASSERT(tdx >= w);
-	ASSERT(tdy >= h);
+	ASSERT(tdx >= sdx);
+	ASSERT(tdy >= sdy);
 
 	//PRINTF("colpip_bitblt: x/y=%d/%d, w/h=%d/%d, keyflag=%08X\n", x, y, w, h, keyflag);
 
@@ -2924,7 +2924,7 @@ void colpip_bitblt(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		src, w, h,
+		colpip_const_mem_at(src, sdx, sdy, 0, 0), sdx, sdy,
 		keyflag, keycolor
 		);
 }
@@ -2933,13 +2933,13 @@ void colpip_bitblt(
 void colpip_stretchblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
-	PACKEDCOLORPIP_T * dst,	// получатель
+	PACKEDCOLORPIP_T * __restrict dst,	// получатель
 	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
 	uint_fast16_t x,	uint_fast16_t y,	// позиция получателя
 	uint_fast16_t w,	uint_fast16_t h,	// Размеры окна получателя
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORPIP_T * src, 	// источник
+	const PACKEDCOLORPIP_T * __restrict src, 	// источник
 	uint_fast16_t sdx,	uint_fast16_t sdy,		// источник Размеры окна в пикселях
 	unsigned keyflag, COLORPIP_T keycolor
 	)
@@ -2948,25 +2948,26 @@ void colpip_stretchblt(
 	ASSERT(dst != NULL);
 	ASSERT(dx >= (x + w));
 	ASSERT(dy >= (y + h));
-	if (w == sdx && h == sdy)
-	{
-		//PRINTF("colpip_stretchblt (same): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
-		/* размеры совпадают - не используем stretch */
-		hwaccel_bitblt(
-			dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-			colpip_mem_at(dst, dx, dy, x, y), dx, dy,
-			srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-			src, sdx, sdy,
-			keyflag, keycolor
-			);
-		return;
-	}
+
+//	if (w == sdx && h == sdy)
+//	{
+//		//PRINTF("colpip_stretchblt (same): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
+//		/* размеры совпадают - не используем stretch */
+//		hwaccel_bitblt(
+//			dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
+//			colpip_mem_at(dst, dx, dy, x, y), dx, dy,
+//			srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
+//			colpip_const_mem_at(src, sdx, sdy, 0, 0), sdx, sdy,
+//			keyflag, keycolor
+//			);
+//		return;
+//	}
 
 	hwaccel_stretchblt(
 			dstinvalidateaddr, dstinvalidatesize,
 			colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h,
 			srcinvalidateaddr, srcinvalidatesize,
-			src, sdx, sdy,
+			colpip_const_mem_at(src, sdx, sdy, 0, 0), sdx, sdy,
 			keyflag, keycolor);
 
 }
