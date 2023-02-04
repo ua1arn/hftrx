@@ -377,6 +377,47 @@ struct regdfn * parseregdef(char *s0, char *fldname, unsigned fldsize,
 
 // 1 - end of file
 // 0 - register definition ok
+static int parsereglist(struct parsedfile *pfl, FILE *fp, const char *file, PLIST_ENTRY listhead) {
+	char comment[TKSZ];
+	char fldname[VNAME_MAX];
+	char typname[VNAME_MAX];
+	char irqname[VNAME_MAX];
+	char fldtype[VNAME_MAX];
+	int irq;
+	int irqrv;
+	unsigned base;
+	unsigned fldsize;
+	int pos; /* end of parsed field position */
+
+	{
+		struct regdfn * regp2;
+
+		regp2 = calloc(1, sizeof *regp2);
+		InitializeListHead(& regp2->aggregate);
+
+		regp2->comment = strdup("test field 1");
+		regp2->fldname = strdup("fld1");
+		regp2->fldoffs = 0;
+		regp2->fldrept = 0;
+		regp2->fldsize = 4;
+		InsertTailList(listhead, &regp2->item);
+
+		regp2 = calloc(1, sizeof *regp2);
+		InitializeListHead(& regp2->aggregate);
+
+		regp2->comment = strdup("test field 2");
+		regp2->fldname = strdup("fld2");
+		regp2->fldoffs = 16;
+		regp2->fldrept = 6;
+		regp2->fldsize = 4;
+		InsertTailList(listhead, &regp2->item);
+
+	}
+	return 0;
+}
+
+// 1 - end of file
+// 0 - register definition ok
 static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	char comment[TKSZ];
 	char fldname[VNAME_MAX];
@@ -472,31 +513,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			/* parsed */
 			InsertTailList(&pfl->regslist, &regp->item);
 
-			/* parse other fields for this agregate */
-			{
-				struct regdfn * regp2;
-
-				regp2 = calloc(1, sizeof *regp2);
-				InitializeListHead(& regp2->aggregate);
-
-				regp2->comment = strdup("test field 1");
-				regp2->fldname = strdup("fld1");
-				regp2->fldoffs = 0;
-				regp2->fldrept = 0;
-				regp2->fldsize = 4;
-				InsertTailList(&regp->aggregate, &regp2->item);
-
-				regp2 = calloc(1, sizeof *regp2);
-				InitializeListHead(& regp2->aggregate);
-
-				regp2->comment = strdup("test field 2");
-				regp2->fldname = strdup("fld2");
-				regp2->fldoffs = 16;
-				regp2->fldrept = 6;
-				regp2->fldsize = 4;
-				InsertTailList(&regp->aggregate, &regp2->item);
-
-			}
+			/* parse other fields for this aggregate */
+			parsereglist(pfl, fp, file, & regp->aggregate);
 			if (nextline(fp) == 0)
 				break;
 
