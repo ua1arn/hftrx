@@ -1,6 +1,7 @@
 /* Generated section start */ 
-#ifndef HEADER_63DDF6BC_INCLUDED
-#define HEADER_63DDF6BC_INCLUDED
+#pragma once
+#ifndef HEADER_00003039_INCLUDED
+#define HEADER_00003039_INCLUDED
 #include <stdint.h>
 
 
@@ -2384,5 +2385,6 @@ typedef struct MSGBOX_Type
 #define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)                       /*!< \brief CPUX_MSGBOX Interface register set access pointer */
-#endif /* HEADER_63DDF6BC_INCLUDED */
+
+#endif /* HEADER_00003039_INCLUDED */
 /* Generated section end */ 

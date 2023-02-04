@@ -612,8 +612,9 @@ int main(int argc, char *argv[], char *envp[]) {
 		/* CMSIS header forming */
 		char headrname[128];
 		_snprintf(headrname, sizeof headrname / sizeof headrname[0],
-				"HEADER_%08X_INCLUDED", (unsigned) time(NULL));
+				"HEADER_%08X_INCLUDED", (unsigned) 12345 /*time(NULL) */);
 
+		emitline(0, "#pragma once" "\n");
 		emitline(0, "#ifndef %s" "\n", headrname);
 		emitline(0, "#define %s" "\n", headrname);
 
@@ -752,6 +753,7 @@ int main(int argc, char *argv[], char *envp[]) {
 			}
 		}
 
+		emitline(0, "\n");
 		emitline(0, "#endif /* %s */" "\n", headrname);
 	} else {
 		/* Debug header forming */

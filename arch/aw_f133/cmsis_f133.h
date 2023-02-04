@@ -1,6 +1,7 @@
 /* Generated section start */ 
-#ifndef HEADER_63DDF6B9_INCLUDED
-#define HEADER_63DDF6B9_INCLUDED
+#pragma once
+#ifndef HEADER_00003039_INCLUDED
+#define HEADER_00003039_INCLUDED
 #include <stdint.h>
 
 
@@ -2365,5 +2366,6 @@ typedef struct CLINT_Type
 #define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)                                    /*!< \brief CLINT Interface register set access pointer */
-#endif /* HEADER_63DDF6B9_INCLUDED */
+
+#endif /* HEADER_00003039_INCLUDED */
 /* Generated section end */ 
