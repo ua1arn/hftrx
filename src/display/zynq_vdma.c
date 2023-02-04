@@ -443,6 +443,12 @@ int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex)
 			PRINTF("ZYNQ VDMA: Cannot change frame, unable to start parking %d\n", Status);
 			return XST_FAILURE;
 		}
+
+		// Ожидание смены фреймбуфера
+		u32 new_frameIndex;
+		do {
+			new_frameIndex = XAxiVdma_CurrFrameStore(dispPtr->vdma, XAXIVDMA_READ);
+		} while (new_frameIndex != frameIndex);
 	}
 
 	return XST_SUCCESS;
