@@ -288,37 +288,6 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define IOMMU		((IOMMU_TypeDef *) IOMMU_BASE)		/*!< \brief IOMMU Interface register set access pointer */
 #define CCU			((CCU_TypeDef *) CCU_BASE)			/*!< \brief CCU Interface register set access pointer */
 
-//#define DE 			((DE20_TypeDef *) DE_BASE)					/*!< \brief DE Interface register set access pointer */
-//#define DI 			((DI_TypeDef *) DI_BASE)					/*!< \brief DI Interface register set access pointer */
-
-//#define G2D_TOP     ((G2D_TOP_TypeDef *) G2D_TOP_BASE)			/*!< \brief G2D_TOP Interface register set access pointer */
-//#define G2D_MIXER   ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)		/*!< \brief G2D_MIXER Interface register set access pointer */
-//#define G2D_BLD     ((G2D_BLD_TypeDef *) G2D_BLD_BASE)			/*!< \brief G2D_BLD Interface register set access pointer */
-//#define G2D_V0      ((G2D_LAY_TypeDef *) G2D_V0_BASE)			/*!< \brief G2D_V0 Interface register set access pointer */
-//#define G2D_UI0     ((G2D_UI_TypeDef *) G2D_UI0_BASE)			/*!< \brief G2D_UI0 Interface register set access pointer */
-//#define G2D_UI1     ((G2D_UI_TypeDef *) G2D_UI1_BASE)			/*!< \brief G2D_UI1 Interface register set access pointer */
-//#define G2D_UI2     ((G2D_UI_TypeDef *) G2D_UI2_BASE)			/*!< \brief G2D_UI2 Interface register set access pointer */
-//#define G2D_WB      ((G2D_WB_TypeDef *) G2D_WB_BASE)			/*!< \brief G2D_WB Interface register set access pointer */
-//#define G2D_VSU     ((G2D_VSU_TypeDef *) G2D_VSU_BASE)			/*!< \brief G2D_VSU Interface register set access pointer */
-//#define G2D_ROT     ((G2D_ROT_TypeDef *) G2D_ROT_BASE)			/*!< \brief G2D_ROT Interface register set access pointer */
-//#define G2D_GSU     ((G2D_GSU_TypeDef *) G2D_GSU_BASE)			/*!< \brief G2D_GSU Interface register set access pointer */
-
-#define DSI 		((DSI_TypeDef *) DSI_BASE)					/*!< \brief DSI Interface register set access pointer */
-#define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)	/*!< \brief DISPLAY_TOP Interface register set access pointer */
-#define TCON_LCD0 	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)		/*!< \brief TCON_LCD0 Interface register set access pointer */
-#define TCON_TV0 	((TCON_TV_TypeDef *) TCON_TV0_BASE)			/*!< \brief TCON_TV0 Interface register set access pointer */
-#define TVE_TOP 	((TVE_TOP_TypeDef *) TVE_TOP_BASE)				/*!< \brief TVE_TOP Interface register set access pointer */
-#define TV_Encoder 	((TVE_TypeDef *) TV_Encoder_BASE)			/*!< \brief TV_Encoder Interface register set access pointer */
-
-#define CSIC_CCU		((CSIC_CCU_TypeDef *) CSIC_CCU_BASE)		/*!< \brief CSIC_CCU Interface register set access pointer */
-#define CSIC_TOP		((CSIC_TOP_TypeDef *) CSIC_TOP_BASE)		/*!< \brief CSIC_TOP Interface register set access pointer */
-#define CSIC_PARSER0	((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)	/*!< \brief CSIC_PARSER0 Interface register set access pointer */
-#define SIC_DMA0		((CSIC_DMA_TypeDef *) SIC_DMA0_BASE)		/*!< \brief SIC_DMA0 Interface register set access pointer */
-#define SIC_DMA1		((CSIC_DMA_TypeDef *) SIC_DMA1_BASE)		/*!< \brief SIC_DMA1 Interface register set access pointer */
-
-#define TVD_TOP			((TVD_TOP_TypeDef *) TVD_TOP_BASE)			/*!< \brief TVD_TOP Interface register set access pointer */
-#define TVD0			((TVD_TypeDef *) TVD0_BASE)					/*!< \brief TVD0 Interface register set access pointer */
-
 #define RTC				((RTC_TypeDef *) RTC_BASE)					/*!< \brief RTC Interface register set access pointer */
 
 //#define TimeStamp_STA	((TimeStamp_STA_TypeDef *) TimeStamp_STA_BASE)
