@@ -91,7 +91,7 @@ void emitline(int pos, const char *format, ...) {
 }
 
 /* Generate list of registers. Return last offset */
-unsigned genreglist(int indent, const LIST_ENTRY *regslist) {
+unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset) {
 	unsigned offs;
 	PLIST_ENTRY t;
 
@@ -135,11 +135,12 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist) {
 		if (regp->fldoffs == offs) {
 			if (! IsListEmpty(& regp->aggregate)) {
 				/* Emit aggregate type */
-				emitline(indent + INDENT, "struct {\n");
-				//offs += regp->fldrept * genreglist(indent + INDENT, & regp->aggregate);	/* Emit fields list */
+				emitline(indent + INDENT, "struct\n");
+				emitline(indent + INDENT, "{\n");
+				offs += regp->fldrept * genreglist(indent + INDENT, & regp->aggregate, offs);	/* Emit fields list */
 				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname, regp->fldrept);
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-						regp->fldoffs, regp->comment);
+						regp->fldoffs + baseoffset, regp->comment);
 			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
@@ -164,7 +165,7 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist) {
 					offs += regp->fldsize;
 				}
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-						regp->fldoffs, regp->comment);
+						regp->fldoffs + baseoffset, regp->comment);
 			}
 		} else {
 			emitline(0,
@@ -187,7 +188,7 @@ void genstruct(struct parsedfile *pfl) {
 	emitline(0, "typedef struct %s_Type\n", pfl->bname);
 	emitline(0, "{\n");
 
-	offs = genreglist(0, &pfl->regslist);
+	offs = genreglist(0, &pfl->regslist, 0);
 
 	emitline(0, "} %s_TypeDef; /* size of structure = 0x%03X */\n", pfl->bname,
 			offs);
@@ -470,6 +471,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed 1 agreg fldname='%s' \n", fldname);
 			{
 				struct regdfn * regp2 = calloc(1, sizeof *regp2);
+				InitializeListHead(& regp2->aggregate);
 
 				regp2->comment = strdup("test field 1");
 				regp2->fldname = strdup("fld1");
