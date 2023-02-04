@@ -1462,6 +1462,49 @@ typedef struct DE_BLD_Type
     volatile uint32_t out_ctl;                                                  /*!< Offset 0x0FC  */
 } DE_BLD_TypeDef; /* size of structure = 0x100 */
 /*
+ * @brief DE_VI
+ */
+/*!< DE_VI Controller Interface */
+typedef struct DE_VI_Type
+{
+    struct
+    {
+        volatile uint32_t attr;                                                 /*!< Offset 0x000  */
+        volatile uint32_t size;                                                 /*!< Offset 0x004  */
+        volatile uint32_t coord;                                                /*!< Offset 0x008  */
+        volatile uint32_t pitch [0x003];                                        /*!< Offset 0x00C  */
+        volatile uint32_t top_laddr [0x003];                                    /*!< Offset 0x018  */
+        volatile uint32_t bot_laddr [0x003];                                    /*!< Offset 0x024  */
+    } cfg [0x004];                                                              /*!< Offset 0x000  */
+    volatile uint32_t fcolor [0x004];                                           /*!< Offset 0x0C0  */
+    volatile uint32_t top_haddr [0x003];                                        /*!< Offset 0x0D0  */
+    volatile uint32_t bot_haddr [0x003];                                        /*!< Offset 0x0DC  */
+    volatile uint32_t ovl_size [0x002];                                         /*!< Offset 0x0E8  */
+    volatile uint32_t hori [0x002];                                             /*!< Offset 0x0F0  */
+    volatile uint32_t vert [0x002];                                             /*!< Offset 0x0F8  */
+} DE_VI_TypeDef; /* size of structure = 0x100 */
+/*
+ * @brief DE_UI
+ */
+/*!< DE_UI Controller Interface */
+typedef struct DE_UI_Type
+{
+    struct
+    {
+        volatile uint32_t attr;                                                 /*!< Offset 0x000  */
+        volatile uint32_t size;                                                 /*!< Offset 0x004  */
+        volatile uint32_t coord;                                                /*!< Offset 0x008  */
+        volatile uint32_t pitch;                                                /*!< Offset 0x00C  */
+        volatile uint32_t top_laddr;                                            /*!< Offset 0x010  */
+        volatile uint32_t bot_laddr;                                            /*!< Offset 0x014  */
+        volatile uint32_t fcolor;                                               /*!< Offset 0x018  */
+                 uint32_t reserved_0x01C;
+    } cfg [0x004];                                                              /*!< Offset 0x000  */
+    volatile uint32_t top_haddr;                                                /*!< Offset 0x080  */
+    volatile uint32_t bot_haddr;                                                /*!< Offset 0x084  */
+    volatile uint32_t ovl_size;                                                 /*!< Offset 0x088  */
+} DE_UI_TypeDef; /* size of structure = 0x08C */
+/*
  * @brief G2D_TOP
  */
 /*!< G2D_TOP Controller Interface */
@@ -2377,6 +2420,10 @@ typedef struct CLINT_Type
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)                                 /*!< \brief DE_GLB Interface register set access pointer */
 #define DE_CLK ((DE_CLK_TypeDef *) DE_CLK_BASE)                                 /*!< \brief DE_CLK Interface register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)                                 /*!< \brief DE_BLD Interface register set access pointer */
+#define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)                                    /*!< \brief DE_VI Interface register set access pointer */
+#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)                                  /*!< \brief DE_UI1 Interface register set access pointer */
+#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)                                  /*!< \brief DE_UI2 Interface register set access pointer */
+#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)                                  /*!< \brief DE_UI3 Interface register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)                              /*!< \brief G2D_TOP Interface register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)                        /*!< \brief G2D_MIXER Interface register set access pointer */
 #define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)                                 /*!< \brief G2D_V0 Interface register set access pointer */
