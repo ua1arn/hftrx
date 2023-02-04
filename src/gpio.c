@@ -1026,8 +1026,8 @@ gpioX_onchangeinterrupt(
 		void (* handler_unused)(void)
 		)
 {
-	const unsigned gpioix = (gpio - GPIOBLOCK->GPIO_PINS);
-	GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
+	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOB_BASE + 1;
+	//GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
 	unsigned pos;
 	//	0x0: Positive Edge
 	//	0x1: Negative Edge
@@ -1061,10 +1061,10 @@ gpioX_onchangeinterrupt(
 	const portholder_t cfg1 = power4(ipins >> 8);		/* EINT_CFG1 bits */
 	const portholder_t cfg2 = power4(ipins >> 16);		/* EINT_CFG2 bits */
 	const portholder_t cfg3 = power4(ipins >> 24);		/* EINT_CFG3 bits */
-	ints->EINT_CFG [0] = (ints->EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
-	ints->EINT_CFG [1] = (ints->EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
-	ints->EINT_CFG [2] = (ints->EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
-	ints->EINT_CFG [3] = (ints->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
+	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [0] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
+	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [1] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
+	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [2] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
+	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [3] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
 
 	for (pos = 0; pos < 32; ++ pos)
 	{
@@ -1075,7 +1075,7 @@ gpioX_onchangeinterrupt(
 		arm_hardware_set_handler(GPIOB_NS_IRQn + gpioix * 2 - 2, handlers [gpioix], priority, targetcpu);	/* GPIOx_NS */
 	}
 
-	ints->EINT_CTL |= ipins;
+	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CTL |= ipins;
 	// todo: EINT_STATUS = ipins; // for clear
 }
 

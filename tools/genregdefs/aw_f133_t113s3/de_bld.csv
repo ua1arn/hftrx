@@ -1,2 +1,19 @@
 #type; DE_BLD
 #base; DE_BLD 0x5101000
+#regdef; fcolor_ctl;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
+#aggreg; attr; 0x004 4; Pipe [0..3]
+#regdef; fcolor;	0x000; BLD fill color register
+#regdef; insize;	0x004; BLD input memory size register
+#regdef; offset;	0x008; BLD input memory offset register
+#regdef; padding 0; 0x010; Need for address arithmetics
+#aggregend;
+#regdef; route;			0x080; 		BLD_CH_RTCTL Offset 0x080 BLD routing control register
+#regdef; premultiply; 	0x084; Offset 0x080 BLD pre-multiply control register
+#regdef; bkcolor; 0x088;
+#regdef; output_size; 0x08C;
+#regdef; bld_mode; 0x090 4; BLD_CTL
+#regdef; ck_ctl; 0x0B0;
+#regdef; ck_cfg; 0x0B4;
+#regdef; ck_max; 0x0C0 4;
+#regdef; ck_min; 0x0E0 4;
+#regdef; out_ctl; 0x0FC;

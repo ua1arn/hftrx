@@ -1854,65 +1854,65 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 // Allwinner_DE2.0_Spec_V1.0
 // 5.10.3.4 Blender
 // BLD
-struct de_bld_t {
-	uint32_t fcolor_ctl;	/** BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
-	struct {
-		uint32_t fcolor;	/**  BLD fill color register */
-		uint32_t insize;	/**  BLD input memory size register */
-		uint32_t offset;	/**  BLD input memory offset register */
-		uint32_t dum;		/**  filler */
-	} attr[4];
-	uint32_t dum0[15];
-	uint32_t route;			/** BLD_CH_RTCTL Offset 0x080 BLD routing control register */
-	uint32_t premultiply;	/** Offset 0x080 BLD pre-multiply control register */
-	uint32_t bkcolor;
-	uint32_t output_size;
-	uint32_t bld_mode[4];	/* BLD_CTL */
-	uint32_t dum1[4];
-	uint32_t ck_ctl;
-	uint32_t ck_cfg;
-	uint32_t dum2[2];
-	uint32_t ck_max[4];
-	uint32_t dum3[4];
-	uint32_t ck_min[4];
-	uint32_t dum4[3];
-	uint32_t out_ctl;
-};
+//struct de_bld_t {
+//	uint32_t fcolor_ctl;	/** BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
+//	struct {
+//		uint32_t fcolor;	/**  BLD fill color register */
+//		uint32_t insize;	/**  BLD input memory size register */
+//		uint32_t offset;	/**  BLD input memory offset register */
+//		uint32_t dum;		/**  filler */
+//	} attr[4];
+//	uint32_t dum0[15];
+//	uint32_t route;			/** BLD_CH_RTCTL Offset 0x080 BLD routing control register */
+//	uint32_t premultiply;	/** Offset 0x080 BLD pre-multiply control register */
+//	uint32_t bkcolor;
+//	uint32_t output_size;
+//	uint32_t bld_mode[4];	/* BLD_CTL */
+//	uint32_t dum1[4];
+//	uint32_t ck_ctl;
+//	uint32_t ck_cfg;
+//	uint32_t dum2[2];
+//	uint32_t ck_max[4];
+//	uint32_t dum3[4];
+//	uint32_t ck_min[4];
+//	uint32_t dum4[3];
+//	uint32_t out_ctl;
+//};
 
-struct de_vi_t {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch[3];
-		uint32_t top_laddr[3];
-		uint32_t bot_laddr[3];
-	} cfg[4];
-	uint32_t fcolor[4];
-	uint32_t top_haddr[3];
-	uint32_t bot_haddr[3];
-	uint32_t ovl_size[2];
-	uint32_t hori[2];
-	uint32_t vert[2];
-};
+//struct de_vi_t {
+//	struct {
+//		uint32_t attr;
+//		uint32_t size;
+//		uint32_t coord;
+//		uint32_t pitch[3];
+//		uint32_t top_laddr[3];
+//		uint32_t bot_laddr[3];
+//	} cfg[4];
+//	uint32_t fcolor[4];
+//	uint32_t top_haddr[3];
+//	uint32_t bot_haddr[3];
+//	uint32_t ovl_size[2];
+//	uint32_t hori[2];
+//	uint32_t vert[2];
+//};
 
 // 5.10.3.4 Blender
 // part
-struct de_ui_t {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch;
-		uint32_t top_laddr;
-		uint32_t bot_laddr;
-		uint32_t fcolor;
-		uint32_t dum;
-	} cfg[4];
-	uint32_t top_haddr;
-	uint32_t bot_haddr;
-	uint32_t ovl_size;
-};
+//struct de_ui_t {
+//	struct {
+//		uint32_t attr;
+//		uint32_t size;
+//		uint32_t coord;
+//		uint32_t pitch;
+//		uint32_t top_laddr;
+//		uint32_t bot_laddr;
+//		uint32_t fcolor;
+//		uint32_t dum;
+//	} cfg[4];
+//	uint32_t top_haddr;
+//	uint32_t bot_haddr;
+//	uint32_t ovl_size;
+//};
 
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 #define VI_CFG_INDEX 0
@@ -1986,39 +1986,37 @@ static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 
 static inline void t113_de_set_address_vi(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
 {
-	struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+	//DE_VI_TypeDef * const vi = (DE_VI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
 
-	write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].attr,
+	DE_VI->cfg[VI_CFG_INDEX].attr =
 			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 			(1<<15)|	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
-			0
-			);
-	write32((uintptr_t) & vi->cfg [VI_CFG_INDEX].top_laddr, ptr_lo32(vram));
-	write32((uintptr_t) & vi->top_haddr, (0xFF & ptr_hi32(vram)) << (8 * VI_CFG_INDEX));
+			0;
+	DE_VI->cfg [VI_CFG_INDEX].top_laddr [0] = ptr_lo32(vram);
+	DE_VI->top_haddr [0] = ptr_hi32(vram);
 }
 
 static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int uich)
 {
 	ASSERT(uich >= 1 && uich <= 3);
-	struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+	DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 
-	write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].attr,
+	ui->cfg[UI_CFG_INDEX].attr =
 			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
 			(255<<24)|	// LAY_GLBALPHA
 			(1<<16)| 	// LAY_PREMUL_CTL
-			0
-			);
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, ptr_lo32(vram));
-	write32((uintptr_t) & ui->top_haddr, (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX));
+			0;
+	ui->cfg [UI_CFG_INDEX].top_laddr = ptr_lo32(vram);
+	ui->top_haddr = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
 }
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 {
 	//struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
 	//struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
-	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
+	//struct de_bld_t * const DE_BLD = (struct de_bld_t *) DE_BLD_BASE;
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
 	// 5.10.8.2 OVL_UI memory block size register
@@ -2060,27 +2058,27 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 //	}
 
 	// peripherial registers
-	//memset(bld, 0, sizeof (struct de_bld_t));
+	//memset(DE_BLD, 0, sizeof (struct de_bld_t));
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
-	write32((uintptr_t) & bld->fcolor_ctl,
+	write32((uintptr_t) & DE_BLD->fcolor_ctl,
 			0
 			);
 
 	// 5.10.9.5 BLD routing control register
 	// BLD_CH_RTCTL
 	// 0x03020100 - default state
-	write32((uintptr_t) & bld->route,
+	write32((uintptr_t) & DE_BLD->route,
 			(0u << 0) |		// pipe 0 from ch 0
 			(1u << 4) |		// pipe 1 from ch 1
 			(2u << 8) |		// pipe 2 from ch 2
 			(3u << 12) |	// pipe 3 from ch 3
 			0
 			);
-	write32((uintptr_t) & bld->premultiply,
+	write32((uintptr_t) & DE_BLD->premultiply,
 			0);
-	write32((uintptr_t) & bld->bkcolor,
+	write32((uintptr_t) & DE_BLD->bkcolor,
 			0*0xff771111
 			);
 
@@ -2091,29 +2089,23 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	{
 	    unsigned bld_mode = 0x03010301;		// default
 //	    unsigned bld_mode = 0x03020302;           //Fs=Ad, Fd=1-As, Qs=Ad, Qd=1-As
-		write32((uintptr_t) & bld->bld_mode [i],
-				bld_mode
-				);
-		//PRINTF("bld->bld_mode [%d]=%08X\n", i, (unsigned) read32((uintptr_t) & bld->bld_mode [i]));
+		DE_BLD->bld_mode [i] = bld_mode;
+		//PRINTF("DE_BLD->bld_mode [%d]=%08X\n", i, (unsigned) read32((uintptr_t) & DE_BLD->bld_mode [i]));
 	}
 
-	write32((uintptr_t) & bld->output_size,
-			ovl_ui_mbsize
-			);
-	write32((uintptr_t) & bld->out_ctl,
-			0);
-	write32((uintptr_t) & bld->ck_ctl,
-			0);
+	DE_BLD->output_size = ovl_ui_mbsize;
+	DE_BLD->out_ctl = 0;
+	DE_BLD->ck_ctl = 0;
 	for(i = 0; i < 4; i++)
 	{
-		write32((uintptr_t) & bld->attr [i].fcolor, 0*0xff000000);
-		write32((uintptr_t) & bld->attr [i].insize, ovl_ui_mbsize);
-		write32((uintptr_t) & bld->attr [i].offset, 0);
+		DE_BLD->attr [i].fcolor = 0*0xff000000;
+		DE_BLD->attr [i].insize = ovl_ui_mbsize;
+		DE_BLD->attr [i].offset = 0;
 	}
 
 	{
-		struct de_vi_t * const vi = (struct de_vi_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
-
+		DE_VI_TypeDef * const vi = (DE_VI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
+		//PRINTF("#base; DE_VI %p\n", vi);
 		//CH0 VI ----------------------------------------------------------------------------
 
 		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].attr,
@@ -2132,21 +2124,22 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	for (uich = 1; uich <= 3; ++ uich)
 	{
 		ASSERT(uich >= 1 && uich <= 3);
-		struct de_ui_t * const ui = (struct de_ui_t *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+		DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
+		//PRINTF("#base; DE_UI%d %p\n", uich, ui);
 
 		//CH1 UI -----------------------------------------------------------------------------
 
-		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].attr,
+		ui->cfg[UI_CFG_INDEX].attr =
 				//(1<<0)|		// enable - разрешаем при назначении адреса
 				(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
 				(0xff<<24)|
-				(1<<16)	// LAY_PREMUL_CTL
-				);
-		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].size, ovl_ui_mbsize);
-		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].coord, 0);
-		write32((uintptr_t)&ui->cfg[UI_CFG_INDEX].pitch, uipitch);
-		//write32((uintptr_t)&ui->cfg[0].top_laddr,pdat->vram [1]);                                  //VIDEO_MEMORY1
-		write32((uintptr_t)&ui->ovl_size, ovl_ui_mbsize);
+				(1<<16)	|// LAY_PREMUL_CTL
+				0;
+		ui->cfg[UI_CFG_INDEX].size = ovl_ui_mbsize;
+		ui->cfg[UI_CFG_INDEX].coord = 0;
+		ui->cfg[UI_CFG_INDEX].pitch = uipitch;
+		//ui->cfg[0].top_laddr = pdat->vram [1];                                  //VIDEO_MEMORY1
+		ui->ovl_size = ovl_ui_mbsize;
 	}
 
 
@@ -2449,18 +2442,17 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
-	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
+	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	t113_de_set_address_vi(pdat, p1);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
-	write32((uintptr_t) & bld->fcolor_ctl,
+	DE_BLD->fcolor_ctl =
 			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
 //			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
 //			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
 //			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
-			0
-			);
+			0;
 
 	t113_de_enable(pdat);
 }
@@ -2469,7 +2461,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
-	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
+	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	// Note: the layer priority is layer3>layer2>layer1>layer0
 	t113_de_set_address_vi(pdat, layer0);		// VI
@@ -2479,13 +2471,12 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
-	write32((uintptr_t) & bld->fcolor_ctl,
+	DE_BLD->fcolor_ctl =
 			((layer0 != 0) << 8)	| // pipe0 enable - from VI
 			((layer1 != 0) << 9)	| // pipe1 enable - from UI1
 			((layer2 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
 			((layer3 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
-			0
-			);
+			0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
 	t113_de_enable(pdat);
@@ -2505,12 +2496,12 @@ static void hardware_ltdc_vsync(void)
 void hardware_ltdc_main_set(uintptr_t p1)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
-	struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
+	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	t113_de_set_address_vi(pdat, p1);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
-	write32((uintptr_t) & bld->fcolor_ctl,
+	write32((uintptr_t) & DE_BLD->fcolor_ctl,
 			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
 //			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
 //			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
