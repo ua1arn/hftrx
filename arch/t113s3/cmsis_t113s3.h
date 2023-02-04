@@ -2279,21 +2279,6 @@ typedef struct DMAC_Type
     } CH [0x010];                                                               /*!< Offset 0x100 Channel [0..15] */
 } DMAC_TypeDef; /* size of structure = 0x500 */
 /*
- * @brief PWM_CH
- */
-/*!< PWM_CH Controller Interface */
-typedef struct PWM_CH_Type
-{
-    volatile uint32_t PCR;                                                      /*!< Offset 0x000 PWM Control Register */
-    volatile uint32_t PPR;                                                      /*!< Offset 0x004 PWM Period Register */
-    volatile uint32_t PCNTR;                                                    /*!< Offset 0x008 PWM Count Register */
-    volatile uint32_t PPCNTR;                                                   /*!< Offset 0x00C PWM Pulse Count Register */
-    volatile uint32_t CCR;                                                      /*!< Offset 0x010 Capture Control Register */
-    volatile uint32_t CRLR;                                                     /*!< Offset 0x014 Capture Rise Lock Register */
-    volatile uint32_t CFLR;                                                     /*!< Offset 0x018 Capture Fall Lock Register */
-             uint32_t reserved_0x01C;
-} PWM_CH_TypeDef; /* size of structure = 0x020 */
-/*
  * @brief PWM
  */
 /*!< PWM Controller Interface */
@@ -2317,7 +2302,17 @@ typedef struct PWM_Type
              uint32_t reserved_0x0A0 [0x0008];
     volatile uint32_t CER;                                                      /*!< Offset 0x0C0 Capture Enable Register */
              uint32_t reserved_0x0C4 [0x000F];
-    PWM_CH_TypeDef CH [0x008];                                                  /*!< Offset 0x100 Channels[0..7] */
+    struct
+    {
+        volatile uint32_t PCR;                                                  /*!< Offset 0x100 PWM Control Register */
+        volatile uint32_t PPR;                                                  /*!< Offset 0x104 PWM Period Register */
+        volatile uint32_t PCNTR;                                                /*!< Offset 0x108 PWM Count Register */
+        volatile uint32_t PPCNTR;                                               /*!< Offset 0x10C PWM Pulse Count Register */
+        volatile uint32_t CCR;                                                  /*!< Offset 0x110 Capture Control Register */
+        volatile uint32_t CRLR;                                                 /*!< Offset 0x114 Capture Rise Lock Register */
+        volatile uint32_t CFLR;                                                 /*!< Offset 0x118 Capture Fall Lock Register */
+                 uint32_t reserved_0x01C;
+    } CH [0x008];                                                               /*!< Offset 0x100 Channels[0..7] */
 } PWM_TypeDef; /* size of structure = 0x200 */
 /*
  * @brief EMAC
