@@ -28,7 +28,7 @@
 
 struct regdfn {
 	LIST_ENTRY item;
-	LIST_ENTRY agregate;
+	LIST_ENTRY aggregate;
 	char *fldname;
 	char *typname;
 	unsigned fldsize; /* 0 - need align to offset (end paddings) */
@@ -106,7 +106,9 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist) {
 
 		//fprintf(stderr, "$generate field: fldsize=%u fldoffs=%04X fldrept=%u fldname=%s\n", regp->fldsize, regp->fldoffs,regp->fldrept,regp->fldname);
 
-		if (regp->fldsize >= sizeof fldtypes / sizeof fldtypes[0]) {
+		if (! IsListEmpty(& regp->aggregate)) {
+			fldtype [0] = '\0';
+		} else if (regp->fldsize >= sizeof fldtypes / sizeof fldtypes[0]) {
 			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "typesize%u",
 					regp->fldsize);
 		} else {
@@ -131,7 +133,9 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist) {
 			offs = regp->fldoffs;
 		}
 		if (regp->fldoffs == offs) {
-			if (regp->fldsize != 0) {
+			if (! IsListEmpty(& regp->aggregate)) {
+				/* Emit aggregate type */
+			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
 					if (regp->typname != NULL) {
@@ -295,7 +299,7 @@ struct regdfn * parseregdef(char *s0, char *fldname, unsigned fldsize,
 	char *s = strtok(s0, SEP);
 	char *s2 = strtok(NULL, SEP);
 
-	InitializeListHead(& regp->agregate);
+	InitializeListHead(& regp->aggregate);
 
 	/* trim field name */
 	if (strchr(fldname, '\n') != NULL)
