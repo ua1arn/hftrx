@@ -28,6 +28,7 @@
 
 struct regdfn {
 	LIST_ENTRY item;
+	LIST_ENTRY agregate;
 	char *fldname;
 	char *typname;
 	unsigned fldsize; /* 0 - need align to offset (end paddings) */
@@ -281,10 +282,11 @@ int nextline(FILE *fp) {
 
 }
 
-void parseregdef(struct regdfn *regp, char *s0, char *fldname, unsigned fldsize,
+struct regdfn * parseregdef(char *s0, char *fldname, unsigned fldsize,
 		char *typname, const char *file) {
 	unsigned fldoffset;
 	unsigned fldrept;
+	struct regdfn * regp = calloc(1, sizeof *regp);
 
 	static const char SEP[] = ";";
 	//	#regdef; RISC_STA_ADD0_REG; 0x0004; RISC Start Address0 Register
@@ -292,6 +294,8 @@ void parseregdef(struct regdfn *regp, char *s0, char *fldname, unsigned fldsize,
 	//fprintf(stderr, "Parsed regdef='%s' 0x%08X '%s'\n", fldname, fldoffset, comment);
 	char *s = strtok(s0, SEP);
 	char *s2 = strtok(NULL, SEP);
+
+	InitializeListHead(& regp->agregate);
 
 	/* trim field name */
 	if (strchr(fldname, '\n') != NULL)
@@ -310,7 +314,7 @@ void parseregdef(struct regdfn *regp, char *s0, char *fldname, unsigned fldsize,
 	}
 
 	if (typname != NULL) {
-		/* trim comments */
+		/* trim typname */
 		if (strchr(typname, ';') != NULL)
 			*strchr(typname, ';') = '\0';
 		if (strlen(typname) == 0)
@@ -358,6 +362,7 @@ void parseregdef(struct regdfn *regp, char *s0, char *fldname, unsigned fldsize,
 
 		/* parsed */
 	}
+	return regp;
 }
 
 // 1 - end of file
@@ -422,12 +427,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 		} else if (3
 				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %i %s%n", fldname,
 						&fldsize, &fldtype, &pos)) {
-			struct regdfn *regp;
-
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, fldtype, file);
 			//fprintf(stderr, "Parsed 3 regdef fldname='%s' fldszie=%u fldtype='%s'\n", fldname, fldsize, fldtype);
-			regp = calloc(1, sizeof *regp);
-			parseregdef(regp, token0 + pos, fldname, fldsize, fldtype, file);
-
 			/* parsed */
 			InsertTailList(&pfl->regslist, &regp->item);
 			if (nextline(fp) == 0)
@@ -435,12 +436,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 		} else if (2
 				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %i %n", fldname,
 						&fldsize, &pos)) {
-			struct regdfn *regp;
-
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, NULL, file);
 			//fprintf(stderr, "Parsed 2 regdef fldname='%s' fldszie=%u\n", fldname, fldsize);
-			regp = calloc(1, sizeof *regp);
-			parseregdef(regp, token0 + pos, fldname, fldsize, NULL, file);
-
 			/* parsed */
 			InsertTailList(&pfl->regslist, &regp->item);
 			if (nextline(fp) == 0)
@@ -448,12 +445,9 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 		} else if (1
 				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %n", fldname,
 						&pos)) {
-			struct regdfn *regp;
 
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, NULL, file);
 			//fprintf(stderr, "Parsed 1 regdef fldname='%s' \n", fldname);
-			regp = calloc(1, sizeof *regp);
-			parseregdef(regp, token0 + pos, fldname, 4, NULL, file);
-
 			/* parsed */
 			InsertTailList(&pfl->regslist, &regp->item);
 			if (nextline(fp) == 0)
