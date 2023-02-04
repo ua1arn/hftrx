@@ -1269,7 +1269,7 @@ hwaccel_rect_u32(
 		unsigned n = w;
 		while (n --)
 			* buffer ++ = color;
-		tbuffer += t;
+		buffer += t;
 	}
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
