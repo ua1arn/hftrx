@@ -6374,7 +6374,7 @@ void testpng(const void * pngbuffer)
 
 	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
 	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
-	const unsigned picdx = GXADJ(png->width);
+	const unsigned picdx = png->width;//GXADJ(png->width);
 	const unsigned picw = png->width;
 	const unsigned pich = png->height;
 
