@@ -3788,8 +3788,8 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 
 	usb_clear_bus_interrupt_enable(pusb, 0xff);
 	usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-	usb_set_eptx_interrupt_enable(pusb, 0x003f);
-	usb_set_eprx_interrupt_enable(pusb, 0x003e);
+	usb_set_eptx_interrupt_enable(pusb, 0xffff);	// 0x003f
+	usb_set_eprx_interrupt_enable(pusb, 0xfffe);	// 0x003e
 
 	pusb->otg_dev = USB_OTG_B_DEVICE;
 
@@ -3973,8 +3973,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		//Bus Reset may disable all interrupt enable, re-enable the interrupts need
 		usb_clear_bus_interrupt_enable(pusb, 0xff);
 		usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-		usb_set_eptx_interrupt_enable(pusb, 0x003f);
-		usb_set_eprx_interrupt_enable(pusb, 0x003e);
+		usb_set_eptx_interrupt_enable(pusb, 0xffff);	// 0x003f
+		usb_set_eprx_interrupt_enable(pusb, 0xfffe);	// 0x003e
 
 		awxx_setup_fifo(pusb);
 

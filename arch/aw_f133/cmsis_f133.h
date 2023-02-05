@@ -1332,7 +1332,7 @@ typedef struct USBEHCI_Type
     volatile uint32_t O_HcRhDescriptorA;                                        /*!< Offset 0x448 OHCI Root Hub Descriptor Register A */
     volatile uint32_t O_HcRhDesriptorB;                                         /*!< Offset 0x44C OHCI Root Hub Descriptor Register B */
     volatile uint32_t O_HcRhStatus;                                             /*!< Offset 0x450 OHCI Root Hub Status Register */
-    volatile uint32_t O_HcRhPortStatus;                                         /*!< Offset 0x454 OHCI Root Hub Port Status Register */
+    volatile uint32_t O_HcRhPortStatus [0x001];                                 /*!< Offset 0x454 OHCI Root Hub Port Status Register */
 } USBEHCI_TypeDef; /* size of structure = 0x458 */
 /*
  * @brief USBOTG
@@ -1340,8 +1340,7 @@ typedef struct USBEHCI_Type
 /*!< USBOTG Controller Interface */
 typedef struct USBOTG_Type
 {
-    volatile uint32_t USB_EPFIFO [0x006];                                       /*!< Offset 0x000 USB_EPFIFO [0..5] */
-             uint32_t reserved_0x018 [0x000A];
+    volatile uint32_t USB_EPFIFO [0x010];                                       /*!< Offset 0x000 USB_EPFIFO [0..5] */
     volatile uint8_t  USB_POWER;                                                /*!< Offset 0x040 USB_POWER */
     volatile uint8_t  USB_DEVCTL;                                               /*!< Offset 0x041 USB_DEVCTL */
     volatile uint8_t  USB_EPINDEX;                                              /*!< Offset 0x042 USB_EPINDEX */
@@ -1381,8 +1380,8 @@ typedef struct USBOTG_Type
                  uint8_t reserved_0x005 [0x0001];
         volatile uint8_t  USB_RXHADDR;                                          /*!< Offset 0x09E USB_RXHADDR */
         volatile uint8_t  USB_RXHUBPORT;                                        /*!< Offset 0x09F USB_RXHUBPORT */
-    } FIFO [0x006];                                                             /*!< Offset 0x098 FIFOs [0..5] */
-             uint32_t reserved_0x0C8 [0x00CE];
+    } FIFO [0x010];                                                             /*!< Offset 0x098 FIFOs [0..5] */
+             uint32_t reserved_0x118 [0x00BA];
     volatile uint32_t USB_ISCR;                                                 /*!< Offset 0x400 HCI Interface Register (HCI_Interface) */
     volatile uint32_t USBPHY_PHYCTL;                                            /*!< Offset 0x404 USBPHY_PHYCTL */
     volatile uint32_t HCI_CTRL3;                                                /*!< Offset 0x408 HCI Control 3 Register (bist) */
@@ -2237,6 +2236,35 @@ typedef struct USB_EHCI_Capability_Type
     volatile uint32_t ASYNCLISTADDR;                                            /*!< Offset 0x028 EHCI Next Asynchronous List Address Register */
 } USB_EHCI_Capability_TypeDef; /* size of structure = 0x02C */
 /*
+ * @brief USB_OHCI_Capability
+ */
+/*!< USB_OHCI_Capability Controller Interface */
+typedef struct USB_OHCI_Capability_Type
+{
+    volatile uint32_t O_HcRevision;                                             /*!< Offset 0x000 OHCI Revision Register (not documented) */
+    volatile uint32_t O_HcControl;                                              /*!< Offset 0x004 OHCI Control Register */
+    volatile uint32_t O_HcCommandStatus;                                        /*!< Offset 0x008 OHCI Command Status Register */
+    volatile uint32_t O_HcInterruptStatus;                                      /*!< Offset 0x00C OHCI Interrupt Status Register */
+    volatile uint32_t O_HcInterruptEnable;                                      /*!< Offset 0x010 OHCI Interrupt Enable Register */
+    volatile uint32_t O_HcInterruptDisable;                                     /*!< Offset 0x014 OHCI Interrupt Disable Register */
+    volatile uint32_t O_HcHCCA;                                                 /*!< Offset 0x018 OHCI HCCA Base */
+    volatile uint32_t O_HcPeriodCurrentED;                                      /*!< Offset 0x01C OHCI Period Current ED Base */
+    volatile uint32_t O_HcControlHeadED;                                        /*!< Offset 0x020 OHCI Control Head ED Base */
+    volatile uint32_t O_HcControlCurrentED;                                     /*!< Offset 0x024 OHCI Control Current ED Base */
+    volatile uint32_t O_HcBulkHeadED;                                           /*!< Offset 0x028 OHCI Bulk Head ED Base */
+    volatile uint32_t O_HcBulkCurrentED;                                        /*!< Offset 0x02C OHCI Bulk Current ED Base */
+    volatile uint32_t O_HcDoneHead;                                             /*!< Offset 0x030 OHCI Done Head Base */
+    volatile uint32_t O_HcFmInterval;                                           /*!< Offset 0x034 OHCI Frame Interval Register */
+    volatile uint32_t O_HcFmRemaining;                                          /*!< Offset 0x038 OHCI Frame Remaining Register */
+    volatile uint32_t O_HcFmNumber;                                             /*!< Offset 0x03C OHCI Frame Number Register */
+    volatile uint32_t O_HcPerioddicStart;                                       /*!< Offset 0x040 OHCI Periodic Start Register */
+    volatile uint32_t O_HcLSThreshold;                                          /*!< Offset 0x044 OHCI LS Threshold Register */
+    volatile uint32_t O_HcRhDescriptorA;                                        /*!< Offset 0x048 OHCI Root Hub Descriptor Register A */
+    volatile uint32_t O_HcRhDesriptorB;                                         /*!< Offset 0x04C OHCI Root Hub Descriptor Register B */
+    volatile uint32_t O_HcRhStatus;                                             /*!< Offset 0x050 OHCI Root Hub Status Register */
+    volatile uint32_t O_HcRhPortStatus [0x001];                                 /*!< Offset 0x054 OHCI Root Hub Port Status Register */
+} USB_OHCI_Capability_TypeDef; /* size of structure = 0x058 */
+/*
  * @brief DMAC
  */
 /*!< DMAC Controller Interface */
@@ -2444,6 +2472,8 @@ typedef struct CLINT_Type
 #define SID ((SID_TypeDef *) SID_BASE)                                          /*!< \brief SID Interface register set access pointer */
 #define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)                /*!< \brief USBEHCI0 Interface register set access pointer */
 #define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)                /*!< \brief USBEHCI1 Interface register set access pointer */
+#define USBOHCI0 ((USB_OHCI_Capability_TypeDef *) USBOHCI0_BASE)                /*!< \brief USBOHCI0 Interface register set access pointer */
+#define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)                /*!< \brief USBOHCI1 Interface register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)                                       /*!< \brief DMAC Interface register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                                          /*!< \brief PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)                                       /*!< \brief EMAC Interface register set access pointer */

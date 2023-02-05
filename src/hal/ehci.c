@@ -951,7 +951,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 	if (hehci->ohci != NULL)
 	{
-		PRINTF("OHCI Init\n");
+		PRINTF("OHCI Init, hehci->ohci=%p\n", hehci->ohci);
 		hehci->ohci->HcCommandStatus |= cpu_to_le32(1u << 0);	// HCR HostControllerReset - issue a software reset
 		(void) hehci->ohci->HcCommandStatus;
 		while ((le32_to_cpu(hehci->ohci->HcCommandStatus) & (1u << 0)) != 0)
@@ -960,6 +960,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 		hehci->ohci->HcCommandStatus = cpu_to_le32(1u << 3);	// OwnershipChangeRequest
 
 		unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
+		PRINTF("OHCI: PowerOnToPowerGoodTime=%u\n", PowerOnToPowerGoodTime);
 
 //		PRINTF("OHCI: HcCommandStatus=%08X\n", le32_to_cpu(hehci->ohci->HcCommandStatus));
 //		PRINTF("OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
@@ -967,13 +968,19 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		PRINTF("OHCI: HcFmInterval=%08X\n", le32_to_cpu(hehci->ohci->HcFmInterval));
 //		PRINTF("OHCI: HcRhDescriptorA=%08X\n", le32_to_cpu(hehci->ohci->HcRhDescriptorA));
 //		PRINTF("OHCI: HcRhDescriptorB=%08X\n", le32_to_cpu(hehci->ohci->HcRhDescriptorB));
-
 //		PRINTF("OHCI: HcRhPortStatus[0]=%08X\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
 //		PRINTF("OHCI: HcRhPortStatus[1]=%08X\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
 
-
 		hehci->ohci->HcRhPortStatus[0] = cpu_to_le32(1u << 8); // PortPowerStatus
 		hehci->ohci->HcRhPortStatus[1] = cpu_to_le32(1u << 8); // PortPowerStatus
+//		OHCI: HcCommandStatus=00000000
+//		OHCI: HcRevision=00000010
+//		OHCI: HcControl=000000C0
+//		OHCI: HcFmInterval=00002EDF
+//		OHCI: HcRhDescriptorA=02001201
+//		OHCI: HcRhDescriptorB=00000000
+//		OHCI: HcRhPortStatus[0]=00000100
+//		OHCI: HcRhPortStatus[1]=00000000
 
 		local_delay_ms(PowerOnToPowerGoodTime);
 //		hehci->ohci->HcRhPortStatus[0] = cpu_to_le32(1u << 0); // PortEnableStatus
@@ -2076,7 +2083,7 @@ USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 	hehci_USB.Instance = WITHUSBHW_EHCI;
 #if defined (WITHUSBHW_OHCI)
-	hehci_USB.ohci = WITHUSBHW_OHCI;
+	hehci_USB.ohci = (struct ohci_registers *) WITHUSBHW_OHCI;
 #else /* defined (WITHUSBHW_OHCI) */
 	hehci_USB.ohci = NULL;
 #endif /* defined (WITHUSBHW_OHCI) */
