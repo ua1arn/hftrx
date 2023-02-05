@@ -168,7 +168,7 @@ typedef struct TU_ATTR_ALIGNED(256)
   ohci_ed_t ed_pool[ED_MAX];
   ohci_gtd_t gtd_pool[GTD_MAX];
 
-  volatile uint16_t frame_number_hi;
+  //volatile uint16_t frame_number_hi;
 
 } ohci_data_t;
 
