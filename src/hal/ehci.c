@@ -1174,6 +1174,10 @@ void USBH_EHCI_IRQHandler(void)
 	HAL_EHCI_IRQHandler(& hehci_USB);
 }
 
+void ohci_disconnect_handler(void)
+{
+	HAL_EHCI_Disconnect_Callback(& hehci_USB);
+}
 
 #if WITHUSBHOST_HIGHSPEEDULPI
 #if CPUSTYLE_XC7Z && defined (WITHUSBHW_EHCI)
