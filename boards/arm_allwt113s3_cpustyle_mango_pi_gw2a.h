@@ -74,6 +74,7 @@
 	////#define WITHEHCIHW	1	/* USB_EHCI controller */
 	////#define WITHUSBHW_EHCI		USB1_EHCI
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
+	#define WITHOHCIHW_OHCIPORT 0
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -133,6 +134,7 @@
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
+	#define WITHOHCIHW_OHCIPORT 0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1

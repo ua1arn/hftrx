@@ -19,6 +19,14 @@
 
 #if defined (WITHUSBHW_EHCI)
 
+#ifndef WITHEHCIHW_EHCIPORT
+	#define WITHEHCIHW_EHCIPORT 0
+#endif /* WITHEHCIHW_EHCIPORT */
+
+#ifndef WITHOHCIHW_OHCIPORT
+	#define WITHOHCIHW_OHCIPORT 0
+#endif /* WITHOHCIHW_OHCIPORT */
+
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
 /* USB Host Core handle declaration. */
@@ -968,11 +976,10 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		PRINTF("OHCI: HcFmInterval=%08X\n", le32_to_cpu(hehci->ohci->HcFmInterval));
 //		PRINTF("OHCI: HcRhDescriptorA=%08X\n", le32_to_cpu(hehci->ohci->HcRhDescriptorA));
 //		PRINTF("OHCI: HcRhDescriptorB=%08X\n", le32_to_cpu(hehci->ohci->HcRhDescriptorB));
-//		PRINTF("OHCI: HcRhPortStatus[0]=%08X\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
-//		PRINTF("OHCI: HcRhPortStatus[1]=%08X\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
+//		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 
-		hehci->ohci->HcRhPortStatus[0] = cpu_to_le32(1u << 8); // PortPowerStatus
-		hehci->ohci->HcRhPortStatus[1] = cpu_to_le32(1u << 8); // PortPowerStatus
+		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(1u << 8); // PortPowerStatus
+		local_delay_ms(PowerOnToPowerGoodTime);
 //		OHCI: HcCommandStatus=00000000
 //		OHCI: HcRevision=00000010
 //		OHCI: HcControl=000000C0
@@ -982,12 +989,9 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		OHCI: HcRhPortStatus[0]=00000100
 //		OHCI: HcRhPortStatus[1]=00000000
 
-		local_delay_ms(PowerOnToPowerGoodTime);
-//		hehci->ohci->HcRhPortStatus[0] = cpu_to_le32(1u << 0); // PortEnableStatus
-//		hehci->ohci->HcRhPortStatus[1] = cpu_to_le32(1u << 0); // PortEnableStatus
+//		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(1u << 0); // PortEnableStatus
 
-//		PRINTF("OHCI: HcRhPortStatus[0]=%08X\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
-//		PRINTF("OHCI: HcRhPortStatus[1]=%08X\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
+//		PRINTF("init OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 	}
 
 	return HAL_OK;
@@ -1903,7 +1907,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		PRINTF("speed=USB_SPEED_FULL, portsc=%08X\n", portsc);
 	}
 
-	if (0 && speed != USBH_SPEED_HIGH)
+	if (speed != USBH_SPEED_HIGH && hehci->ohci != 0)
 	{
 		ASSERT(hehci->ohci != NULL);
 		// передать управление портом к companion controller (OHCI)
@@ -1912,11 +1916,16 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
 		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
 
+		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
+		unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
 		hehci->ohci->HcCommandStatus = cpu_to_le32(1u << 3);	// OwnershipChangeRequest
 
-		local_delay_ms(1000);
-		PRINTF("OHCI: HcRhPortStatus[0]=%08X\n", (unsigned) le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
-		PRINTF("OHCI: HcRhPortStatus[1]=%08X\n", (unsigned) le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
+		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
+		local_delay_ms(PowerOnToPowerGoodTime);
+		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(1u << 0); // PortEnableStatus
+		local_delay_ms(PowerOnToPowerGoodTime);
+
+		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 	}
 #endif /* CPUSTYLE_XC7Z */
 	//PRINTF("USBH_LL_GetSpeed: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
