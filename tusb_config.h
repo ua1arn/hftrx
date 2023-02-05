@@ -15,6 +15,30 @@
 #include "hardware.h"
 #include "formats.h"
 
+
+#define CFG_TUSB_MCU 9999999 //OPT_MCU_F1C100S
+
+// Enable Device stack
+//#define CFG_TUD_ENABLED       1
+#define CFG_TUH_ENABLED 1
+#define TUP_DCD_ENDPOINT_MAX    16
+#define CFG_TUD_ENDPPOINT_MAX 	5
+#define CFG_TUH_ENDPOINT_MAX 	16
+#define CFG_TUH_ENDPPOINT_MAX 	16
+#define TUP_USBIP_OHCI
+#define CFG_TUSB_RHPORT0_MODE OPT_MODE_HOST
+//#define BOARD_TUD_MAX_SPEED OPT_MODE_HIGH_SPEED
+//#define BOARD_TUH_MAX_SPEED OPT_MODE_HIGH_SPEED
+#define CFG_TUH_HUB 1
+#define CFG_TUH_MSC	1
+#define CFG_TUH_HID	1
+#define CFG_TUH_CDC	1
+#define BOARD_TUH_RHPORT 1
+#define CFG_TUSB_DEBUG 3
+
+#define CFG_TUH_DEVICE_MAX	4
+#define CFG_TUH_ENUMERATION_BUFSIZE	2048
+
 //--------------------------------------------------------------------+
 // Board Specific Configuration
 //--------------------------------------------------------------------+
@@ -32,23 +56,6 @@
 //--------------------------------------------------------------------
 // COMMON CONFIGURATION
 //--------------------------------------------------------------------
-
-#define CFG_TUSB_MCU 9999999 //OPT_MCU_F1C100S
-
-// Enable Device stack
-//#define CFG_TUD_ENABLED       1
-#define CFG_TUH_ENABLED 1
-#define TUP_DCD_ENDPOINT_MAX    16
-#define CFG_TUD_ENDPPOINT_MAX 	5
-#define CFG_TUH_ENDPOINT_MAX 	16
-#define CFG_TUH_ENDPPOINT_MAX 	16
-#define TUP_USBIP_OHCI
-#define  CFG_TUSB_RHPORT0_MODE OPT_MODE_HOST
-#define CFG_TUH_HUB 1
-#define CFG_TUH_MSC	1
-#define CFG_TUH_CDC	1
-#define BOARD_TUH_RHPORT 1
-#define CFG_TUSB_DEBUG 3
 
 // defined by compiler flags for flexibility
 #ifndef CFG_TUSB_MCU

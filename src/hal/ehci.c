@@ -27,13 +27,12 @@
 #endif /* WITHOHCIHW_OHCIPORT */
 
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
-//#define WITHTINYUSB 1
+#define WITHTINYUSB 1
 
 
 #if WITHTINYUSB
 
 #include "host/usbh.h"
-#include "class/cdc/cdc.h"
 
 // Enable USB interrupt
 void hcd_int_enable(uint8_t rhport)
@@ -46,6 +45,11 @@ void hcd_int_disable(uint8_t rhport)
 {
 
 }
+
+#if CFG_TUH_CDC
+
+#include "class/cdc/cdc.h"
+#include "class/cdc/cdc_host.h"
 
 static uint8_t serial_in_buffer [128];
 // invoked ISR context
@@ -60,8 +64,78 @@ void tuh_cdc_xfer_isr(uint8_t dev_addr, xfer_result_t event, cdc_pipeid_t pipe_i
 
   tuh_cdc_receive(dev_addr, serial_in_buffer, sizeof(serial_in_buffer), true); // waiting for next data
 }
+#endif /* CFG_TUH_CDC */
 
-#endif
+#if CFG_TUH_HID
+
+#include "class/hid/hid.h"
+#include "class/hid/hid_host.h"
+
+// Invoked when device with hid interface is mounted
+// Report descriptor is also available for use. tuh_hid_parse_report_descriptor()
+// can be used to parse common/simple enough descriptor.
+// Note: if report descriptor length > CFG_TUH_ENUMERATION_BUFSIZE, it will be skipped
+// therefore report_desc = NULL, desc_len = 0
+void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_report, uint16_t desc_len)
+{
+  (void)desc_report;
+  (void)desc_len;
+  uint16_t vid, pid;
+  tuh_vid_pid_get(dev_addr, &vid, &pid);
+
+  printf("HID device address = %d, instance = %d is mounted\r\n", dev_addr, instance);
+  printf("VID = %04x, PID = %04x\r\n", vid, pid);
+
+  // Sony DualShock 4 [CUH-ZCT2x]
+//  if ( is_sony_ds4(dev_addr) )
+//  {
+//    // request to receive report
+//    // tuh_hid_report_received_cb() will be invoked when report is available
+//    if ( !tuh_hid_receive_report(dev_addr, instance) )
+//    {
+//      printf("Error: cannot request to receive report\r\n");
+//    }
+//  }
+}
+// Invoked when received report from device via interrupt endpoint
+void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* report, uint16_t len)
+{
+  uint8_t const itf_protocol = tuh_hid_interface_protocol(dev_addr, instance);
+
+//  switch (itf_protocol)
+//  {
+//    case HID_ITF_PROTOCOL_KEYBOARD:
+//      TU_LOG2("HID receive boot keyboard report\r\n");
+//      process_kbd_report( (hid_keyboard_report_t const*) report );
+//    break;
+//
+//    case HID_ITF_PROTOCOL_MOUSE:
+//      TU_LOG2("HID receive boot mouse report\r\n");
+//      process_mouse_report( (hid_mouse_report_t const*) report );
+//    break;
+//
+//    default:
+//      // Generic report requires matching ReportID and contents with previous parsed report info
+//      process_generic_report(dev_addr, instance, report, len);
+//    break;
+//  }
+
+  // continue to request to receive report
+  if ( !tuh_hid_receive_report(dev_addr, instance) )
+  {
+    printf("Error: cannot request to receive report\r\n");
+  }
+}
+
+// Invoked when device with hid interface is un-mounted
+void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance)
+{
+  printf("HID device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
+
+}
+
+#endif /* CFG_TUH_HID */
+#endif /* WITHTINYUSB */
 
 /* USB Host Core handle declaration. */
 USBH_HandleTypeDef hUsbHostHS;
