@@ -16,7 +16,6 @@
 #include "usbh_core.h"
 #include "ehci.h"
 
-
 #if defined (WITHUSBHW_EHCI)
 
 #ifndef WITHEHCIHW_EHCIPORT
@@ -28,6 +27,41 @@
 #endif /* WITHOHCIHW_OHCIPORT */
 
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
+//#define WITHTINYUSB 1
+
+
+#if WITHTINYUSB
+
+#include "host/usbh.h"
+#include "class/cdc/cdc.h"
+
+// Enable USB interrupt
+void hcd_int_enable(uint8_t rhport)
+{
+
+}
+
+// Disable USB interrupt
+void hcd_int_disable(uint8_t rhport)
+{
+
+}
+
+static uint8_t serial_in_buffer [128];
+// invoked ISR context
+void tuh_cdc_xfer_isr(uint8_t dev_addr, xfer_result_t event, cdc_pipeid_t pipe_id, uint32_t xferred_bytes)
+{
+  (void) event;
+  (void) pipe_id;
+  (void) xferred_bytes;
+
+  //printf(serial_in_buffer);
+  //tu_memclr(serial_in_buffer, sizeof(serial_in_buffer));
+
+  tuh_cdc_receive(dev_addr, serial_in_buffer, sizeof(serial_in_buffer), true); // waiting for next data
+}
+
+#endif
 
 /* USB Host Core handle declaration. */
 USBH_HandleTypeDef hUsbHostHS;
@@ -103,44 +137,44 @@ static inline uint32_t ehci_link_qh ( struct ehci_queue_head *queue ) {
 
 #if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 
-static uint32_t le32_to_cpu(uint32_t v)
+static unsigned le32_to_cpu(uint32_t v)
 {
 	return v;
 }
 
-static uint32_t cpu_to_le32(uint32_t v)
+static uint32_t cpu_to_le32(unsigned v)
 {
 	return v;
 }
 
-static unsigned short le16_to_cpu(uint16_t v)
+static unsigned le16_to_cpu(uint16_t v)
 {
 	return v;
 }
 
-static uint16_t cpu_to_le16(uint32_t v)
+static uint16_t cpu_to_le16(unsigned v)
 {
 	return v;
 }
 
 #else
 
-static uint32_t le32_to_cpu(uint32_t v)
+static unsigned le32_to_cpu(uint32_t v)
 {
 	return __REV(v);
 }
 
-static uint32_t cpu_to_le32(uint32_t v)
+static uint32_t cpu_to_le32(unsigned v)
 {
 	return __REV(v);
 }
 
-static unsigned short le16_to_cpu(uint16_t v)
+static unsigned le16_to_cpu(uint16_t v)
 {
 	return __REV16(v);
 }
 
-static uint16_t cpu_to_le16(uint32_t v)
+static uint16_t cpu_to_le16(unsigned v)
 {
 	return __REV16(v);
 }
@@ -781,6 +815,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
+#if WITHTINYUSB
+	hcd_int_handler(BOARD_TUH_RHPORT);
+	return;
+#endif /* WITHTINYUSB */
+
 	//ASSERT(0);
 	const unsigned HcInterruptStatus = le32_to_cpu(hehci->ohci->HcInterruptStatus);
 	if ((HcInterruptStatus & (1u << 6)) != 0)
@@ -1281,6 +1320,10 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 	__HAL_EHCI_ENABLE(hehci);
 	(void) EHCI_DriveVbus(hehci->Instance, 1U);
 	__HAL_UNLOCK(hehci);
+
+#if WITHTINYUSB
+	tuh_init(BOARD_TUH_RHPORT);
+#endif /* WITHTINYUSB */
 
 	return HAL_OK;
 }
@@ -2250,6 +2293,9 @@ void MX_USB_HOST_Process(void)
 	HAL_OHCI_IRQHandler(& hehci_USB);
 	SPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
+#if WITHTINYUSB
+    tuh_task();
+#endif /* WITHTINYUSB */
 }
 
 #endif /* defined (WITHUSBHW_EHCI) */
