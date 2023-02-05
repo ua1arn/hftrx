@@ -778,11 +778,43 @@ void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
 	//ASSERT(0);
 	const unsigned HcInterruptStatus = le32_to_cpu(hehci->ohci->HcInterruptStatus);
-	if ((HcInterruptStatus & (1u << 0)) != 0)
+	if ((HcInterruptStatus & (1u << 6)) != 0)
 	{
-		PRINTF("HAL_OHCI_IRQHandler: HcInterruptStatus=%08X\n", HcInterruptStatus);
+		PRINTF("HAL_OHCI_IRQHandler: RootHubStatusChange HcInterruptStatus=%08X\n", HcInterruptStatus);
 
 	}
+	if ((HcInterruptStatus & (1u << 5)) != 0)
+	{
+		//PRINTF("HAL_OHCI_IRQHandler: FrameNumberOverflow HcInterruptStatus=%08X\n", HcInterruptStatus);
+
+	}
+	if ((HcInterruptStatus & (1u << 4)) != 0)
+	{
+		PRINTF("HAL_OHCI_IRQHandler: UnrecoverableError HcInterruptStatus=%08X\n", HcInterruptStatus);
+
+	}
+	if ((HcInterruptStatus & (1u << 3)) != 0)
+	{
+		PRINTF("HAL_OHCI_IRQHandler: ResumeDetected HcInterruptStatus=%08X\n", HcInterruptStatus);
+
+	}
+	if ((HcInterruptStatus & (1u << 2)) != 0)
+	{
+		//PRINTF("HAL_OHCI_IRQHandler: StartofFrame HcInterruptStatus=%08X\n", HcInterruptStatus);
+
+	}
+	if ((HcInterruptStatus & (1u << 1)) != 0)
+	{
+		PRINTF("HAL_OHCI_IRQHandler: WritebackDoneHead HcInterruptStatus=%08X\n", HcInterruptStatus);
+
+	}
+	if ((HcInterruptStatus & (1u << 0)) != 0)
+	{
+		PRINTF("HAL_OHCI_IRQHandler: SchedulingOverrun HcInterruptStatus=%08X\n", HcInterruptStatus);
+
+	}
+
+	hehci->ohci->HcInterruptStatus = cpu_to_le32(HcInterruptStatus);	/* reset interrupt */
 }
 
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
@@ -976,7 +1008,8 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		PRINTF("OHCI: HcFmInterval=%08X\n", le32_to_cpu(hehci->ohci->HcFmInterval));
 //		PRINTF("OHCI: HcRhDescriptorA=%08X\n", le32_to_cpu(hehci->ohci->HcRhDescriptorA));
 //		PRINTF("OHCI: HcRhDescriptorB=%08X\n", le32_to_cpu(hehci->ohci->HcRhDescriptorB));
-//		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
+		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
+		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 
 		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(1u << 8); // PortPowerStatus
 		local_delay_ms(PowerOnToPowerGoodTime);
@@ -991,7 +1024,14 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 //		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(1u << 0); // PortEnableStatus
 
-//		PRINTF("init OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
+		PRINTF("init OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
+		PRINTF("init OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
+
+		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
+		hehci->ohci->HcRevision |= cpu_to_le32(1u << 5);	// BulkListEnable
+		hehci->ohci->HcRevision |= cpu_to_le32(1u << 4);	// ControlListEnable
+		//hehci->ohci->HcRevision |= cpu_to_le32(1u << 2);	// PeriodicListEnable
+		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
 	}
 
 	return HAL_OK;
@@ -1916,15 +1956,18 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
 		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
 
+		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
 		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 		unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
 		hehci->ohci->HcCommandStatus = cpu_to_le32(1u << 3);	// OwnershipChangeRequest
 
+		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
 		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 		local_delay_ms(PowerOnToPowerGoodTime);
 		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(1u << 0); // PortEnableStatus
 		local_delay_ms(PowerOnToPowerGoodTime);
 
+		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
 		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 	}
 #endif /* CPUSTYLE_XC7Z */
