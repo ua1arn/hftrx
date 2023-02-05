@@ -1736,16 +1736,6 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_GAMMA_TABLE_REG [0x100];                              /*!< Offset 0x400 LCD Gamma Table Register */
 } TCON_LCD_TypeDef; /* size of structure = 0x800 */
 /*
- * @brief TV_FILL
- */
-/*!< TV_FILL Controller Interface */
-typedef struct TV_FILL_Type
-{
-    volatile uint32_t TV_FILL_BEGIN_REG;                                        /*!< Offset 0x000 TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2) */
-    volatile uint32_t TV_FILL_END_REG;                                          /*!< Offset 0x004 TV Fill Data End Register 0x0308+N*0x0C(N=0–2) */
-    volatile uint32_t TV_FILL_DATA_REG;                                         /*!< Offset 0x008 TV Fill Data Value Register 0x030C+N*0x0C(N=0–2) */
-} TV_FILL_TypeDef; /* size of structure = 0x00C */
-/*
  * @brief TCON_TV
  */
 /*!< TCON_TV Controller Interface */
@@ -1778,8 +1768,13 @@ typedef struct TCON_TV_Type
     volatile uint32_t TV_SAFE_PERIOD_REG;                                       /*!< Offset 0x1F0 TV Safe Period Register */
              uint32_t reserved_0x1F4 [0x0043];
     volatile uint32_t TV_FILL_CTL_REG;                                          /*!< Offset 0x300 TV Fill Data Control Register */
-             uint32_t reserved_0x304 [0x0002];
-    TV_FILL_TypeDef TV_FILL [0x003];                                            /*!< Offset 0x30C TV Fill Channel [0..2] */
+    struct
+    {
+        volatile uint32_t TV_FILL_BEGIN_REG;                                    /*!< Offset 0x304 TV Fill Data Begin Register 0x0304+N*0x0C(N=0–2) */
+        volatile uint32_t TV_FILL_END_REG;                                      /*!< Offset 0x308 TV Fill Data End Register 0x0308+N*0x0C(N=0–2) */
+        volatile uint32_t TV_FILL_DATA_REG;                                     /*!< Offset 0x30C TV Fill Data Value Register 0x030C+N*0x0C(N=0–2) */
+    } TV_FILL [0x003];                                                          /*!< Offset 0x304 TV Fill Channel [0..2] */
+             uint32_t reserved_0x328 [0x0002];
     volatile uint32_t TV_DATA_IO_POL0_REG;                                      /*!< Offset 0x330 TCON Data IO Polarity Control0 */
     volatile uint32_t TV_DATA_IO_POL1_REG;                                      /*!< Offset 0x334 TCON Data IO Polarity Control1 */
     volatile uint32_t TV_DATA_IO_TRI0_REG;                                      /*!< Offset 0x338 TCON Data IO Enable Control0 */
@@ -1996,18 +1991,6 @@ typedef struct CSIC_DMA_Type
     volatile uint32_t CSIC_FEATURE_REG;                                         /*!< Offset 0x1F4 CSIC DMA Feature List Register */
 } CSIC_DMA_TypeDef; /* size of structure = 0x1F8 */
 /*
- * @brief TVD_ADC
- */
-/*!< TVD_ADC Controller Interface */
-typedef struct TVD_ADC_Type
-{
-             uint32_t reserved_0x000;
-    volatile uint32_t TVD_TOP_CTL;                                              /*!< Offset 0x004 TVD TOP CONTROL Register */
-    volatile uint32_t TVD_ADC_CTL;                                              /*!< Offset 0x008 TVD ADC CONTROL Register */
-    volatile uint32_t TVD_ADC_CFG;                                              /*!< Offset 0x00C TVD ADC CONFIGURATION Register */
-             uint32_t reserved_0x010 [0x0004];
-} TVD_ADC_TypeDef; /* size of structure = 0x020 */
-/*
  * @brief TVD_TOP
  */
 /*!< TVD_TOP Controller Interface */
@@ -2021,7 +2004,14 @@ typedef struct TVD_TOP_Type
     volatile uint32_t TVD_3D_CTL4;                                              /*!< Offset 0x014 TVD 3D DMA CONTROL Register4 */
     volatile uint32_t TVD_3D_CTL5;                                              /*!< Offset 0x018 TVD 3D DMA CONTROL Register5 */
              uint32_t reserved_0x01C;
-    TVD_ADC_TypeDef TVD_ADC [0x004];                                            /*!< Offset 0x020 TVD ADC Registers N (N = 0 to 3) */
+    struct
+    {
+                 uint32_t reserved_0x000;
+        volatile uint32_t TVD_TOP_CTL;                                          /*!< Offset 0x024 TVD TOP CONTROL Register */
+        volatile uint32_t TVD_ADC_CTL;                                          /*!< Offset 0x028 TVD ADC CONTROL Register */
+        volatile uint32_t TVD_ADC_CFG;                                          /*!< Offset 0x02C TVD ADC CONFIGURATION Register */
+                 uint32_t reserved_0x010 [0x0004];
+    } TVD_ADC [0x004];                                                          /*!< Offset 0x020 TVD ADC Registers N (N = 0 to 3) */
 } TVD_TOP_TypeDef; /* size of structure = 0x0A0 */
 /*
  * @brief TVD
