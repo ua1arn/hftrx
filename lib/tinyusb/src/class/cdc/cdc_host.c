@@ -167,7 +167,7 @@ bool cdch_open(uint8_t rhport, uint8_t dev_addr, tusb_desc_interface_t const *it
   // Only support ACM subclass
   // Protocol 0xFF can be RNDIS device for windows XP
   TU_VERIFY( TUSB_CLASS_CDC                           == itf_desc->bInterfaceClass &&
-             CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL == itf_desc->bInterfaceSubClass &&
+             (CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL == itf_desc->bInterfaceSubClass || 0*CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL == itf_desc->bInterfaceSubClass ) &&
              0xFF                                     != itf_desc->bInterfaceProtocol);
 
   cdch_data_t * p_cdc = get_itf(dev_addr);
