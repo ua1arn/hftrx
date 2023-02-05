@@ -744,6 +744,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			HAL_EHCI_PortEnabled_Callback(hehci);
  			HAL_EHCI_Connect_Callback(hehci);
  		}
+ 		else if ((portsc & EHCI_PORTSC_OWNER) != 0)
+		{
+			// OHCI connected
+ 			PRINTF("Device Disonnect handler, OHCI ownership portsc=%08X\n", portsc);
+		}
  		else
  		{
 // 			PRINTF("Device Disconnect handler, portsc=%08X\n", portsc);
