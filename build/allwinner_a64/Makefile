@@ -182,8 +182,8 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
-ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
-ASRC_BOOT += $(PRJROOT)/src/crt_CortexA.S
+ASRC_APP += $(PRJROOT)/src/crt_CortexA53_CPUn.S
+ASRC_BOOT += $(PRJROOT)/src/crt_CortexA53.S
 ASRC_APP += $(ASRC_BOOT)
 
 VPATH = $(PRJROOT)
@@ -251,7 +251,11 @@ allZ:
 
 bootloader: BOOT2 fsbl.alw32
   
-app_run: $(PROJECT)_app.alw32
+app_run: fsbl.alw32
+	$(XFEL) write 0x00044000 fsbl.alw32
+	$(XFEL) exec  0x00044100 
+  
+Zapp_run: $(PROJECT)_app.alw32
 	$(XFEL) ddr t113-s3
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 

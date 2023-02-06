@@ -4006,7 +4006,7 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_T113=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.994338581" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -4025,6 +4025,7 @@
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_T113=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.535680558" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
@@ -4047,6 +4048,7 @@
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_T113=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1716955617" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -4258,6 +4260,9 @@
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1840083264;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1840083264.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.123235796;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1525494260">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1231476640.571928855;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1231476640.571928855.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.885955490;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1557691267">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1370923348.634599155;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1370923348.634599155.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.36153798;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1315581851">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
@@ -4283,6 +4288,9 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.124063364;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.124063364.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.38025698;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.857976906">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1231476640.571928855;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1231476640.571928855.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1044358057;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1184106895">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1113033611;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1113033611.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.981394394;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1574613372">
