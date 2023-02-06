@@ -3648,9 +3648,9 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
-#if 0 && defined BOARD_BLINK_INITIALIZE
+#if CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
 	{
-		CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING
+		CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING - not need - already set
 		/* low-level board test */
 		BOARD_BLINK_INITIALIZE();
 		for (;;)

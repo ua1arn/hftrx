@@ -9,7 +9,13 @@
 
 #include "hardware.h"
 
-#if CPUSTYLE_T113 || CPUSTYLE_F133
+#if CPUSTYLE_A64
+
+#include "board.h"
+#include "formats.h"
+#include "t113s3_hal.h"
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 #include "board.h"
 #include "formats.h"

@@ -1,5 +1,5 @@
 #type; THS
-#base 0x01C25000
+#base; THS 0x01C25000
 #regdef; THS_CTRL; 0x0000; THS Control Register
 #regdef; THS_EN; 0x0004; THS Enable Register
 #regdef; THS_PER; 0x0008; THS Period Control Register
