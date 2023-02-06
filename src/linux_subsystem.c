@@ -510,13 +510,13 @@ pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8_t;
 #if WITHCPUTEMPERATURE
 #include "../sysmon/xsysmonpsu.h"
 static XSysMonPsu xczu_sysmon;
-#endif /* WITHCPUTEMPERATURE */
 
 float xczu_get_cpu_temperature(void)
 {
 	u32 TempRawData = XSysMonPsu_GetAdcData(& xczu_sysmon, XSM_CH_TEMP, XSYSMON_PS);
 	return XSysMonPsu_RawToTemperature_OnChip(TempRawData);
 }
+#endif /* WITHCPUTEMPERATURE */
 
 void linux_user_init(void)
 {
@@ -536,10 +536,10 @@ void linux_user_init(void)
 
 	const float FS = powf(2, 32);
 	uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
-	reg_write(0x80048000 + 0, fan_pwm_period);
+	reg_write(AXI_DCDC_PWM_ADDR + 0, fan_pwm_period);
 
 	uint32_t fan_pwm_duty = FS * (1.0f - 0.7f) - 1;
-	reg_write(0x80048000 + 4, fan_pwm_duty);
+	reg_write(AXI_DCDC_PWM_ADDR + 4, fan_pwm_duty);
 
 #if WITHCPUTEMPERATURE
 	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);
@@ -550,7 +550,7 @@ void linux_user_init(void)
 		ASSERT(0);
 	}
 	XSysMonPsu_SetSequencerMode(& xczu_sysmon, XSM_SEQ_MODE_SAFE, XSYSMON_PS);
-	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_16_SAMPLES, XSYSMON_PS);
+	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_256_SAMPLES, XSYSMON_PS);
 #endif /* WITHCPUTEMPERATURE */
 }
 
