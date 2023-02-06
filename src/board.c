@@ -4624,22 +4624,22 @@ prog_ctrlreg(uint_fast8_t plane)
 	/* U1 */
 	RBBIT(017, 0);					// not use
 	RBBIT(016, glob_att);			// attenuator
-	RBBIT(015, ! glob_bandf);		// LPF
+	RBBIT(015, ! glob_bandf);		// LPF, < 1600000
 	RBBIT(014, 0);					// BPF bypass, not use
-	RBBIT(013, ! glob_bandf);		// 160m
-	RBBIT(012, glob_bandf == 1);	// 80m
-	RBBIT(011, glob_bandf == 2);	// 40m
+	RBBIT(013, glob_bandf == 1);	// 1600000 ... 2658894
+	RBBIT(012, glob_bandf == 2);	// 2658894 ... 4418573
+	RBBIT(011, glob_bandf == 3);	// 4418573 ... 7342824
 	RBBIT(010, glob_tx);			// tx\rx
 
 	/* U3 */
 	RBBIT(007, 0);					// not use
 	RBBIT(006, 0);					// not use
 	RBBIT(005, 0);					// not use
-	RBBIT(004, glob_bandf == 7);	// 10m
-	RBBIT(003, glob_bandf == 6);	// 15m
-	RBBIT(002, glob_bandf == 5);	// 17m
-	RBBIT(001, glob_bandf == 4);	// 20m
-	RBBIT(000, glob_bandf == 3);	// 30m
+	RBBIT(004, 0);					// not use
+	RBBIT(003, 0);					// not use
+	RBBIT(002, glob_bandf == 6);	// 20278009 ... 33698177
+	RBBIT(001, glob_bandf == 5);	// 12202371 ... 20278009
+	RBBIT(000, glob_bandf == 4);	// 7342824 ... 12202371
 
 	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 #endif /* WITHEXTRFBOARDTEST */
