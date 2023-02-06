@@ -75,6 +75,13 @@
 /* Table B1-3 The vector tables */
 /****************************************************************************/
 __Vectors:
+ 	bx    lr     /* And jump... */
+	ldr		r1, =0x00044000
+	ldr  	r2, =0xDEADBEEF
+	str		r2, [r1, #0]
+	str		sp, [r1, #8]
+  	bx    lr     /* And jump... */
+
    ldr pc, ResetAddr    /* Reset                 */
    ldr pc, UndefAddr    /* Undefined instruction */
    ldr pc, SWIAddr      /* Software interrupt    */

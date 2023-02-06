@@ -1850,7 +1850,7 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 
 #endif /* CPUSTYLE_STM32H7XX */
 
-#if (__CORTEX_A != 0) && (! defined(__aarch64__))
+#if (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__))
 
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR

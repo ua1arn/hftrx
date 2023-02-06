@@ -1105,6 +1105,19 @@ extern "C" {
 
 	#endif /* WITHNESTEDINTERRUPTS */
 
+#elif CPUSTYLE_CA53
+
+		#define ARM_OVERREALTIME_PRIORITY	1
+		#define ARM_REALTIME_PRIORITY		1
+		#define ARM_SYSTEM_PRIORITY			1
+		#define ARM_USER_PRIORITY			0
+
+		void (system_disableIRQ)(void);
+		void (system_enableIRQ)(void);
+
+		#define global_enableIRQ() do { (system_enableIRQ)(); } while (0)
+		#define global_disableIRQ() do { (system_disableIRQ)(); } while (0)
+
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
 	// For CPUSTYLE_ARM7TDMI

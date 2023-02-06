@@ -288,18 +288,91 @@ typedef enum IRQn
 #define __CORTEX_A                    8U      /*!< Cortex-A# Core                              */
 #define __CA_REV                 0x0005U      /*!< Core revision r0p0                          */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
-#define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
+//#define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 //#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
 #include "cmsis_a64.h"
 
-//#define __IO volatile
-//#ifndef   __STATIC_INLINE
-//  #define __STATIC_INLINE                        static inline
-//#endif
+#define __IO volatile
 
-#include "core_ca.h"
+/* CMSIS compiler specific defines */
+#ifndef   __ASM
+  #define __ASM                                  __asm
+#endif
+#ifndef   __INLINE
+  #define __INLINE                               inline
+#endif
+#ifndef   __FORCEINLINE
+  #define __FORCEINLINE                          __attribute__((always_inline))
+#endif
+#ifndef   __STATIC_INLINE
+  #define __STATIC_INLINE                        static inline
+#endif
+#ifndef   __STATIC_FORCEINLINE
+  #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+#endif
+#ifndef   __NO_RETURN
+  #define __NO_RETURN                            __attribute__((__noreturn__))
+#endif
+#ifndef   CMSIS_DEPRECATED
+  #define CMSIS_DEPRECATED                       __attribute__((deprecated))
+#endif
+#ifndef   __USED
+  #define __USED                                 __attribute__((used))
+#endif
+#ifndef   __WEAK
+  #define __WEAK                                 __attribute__((weak))
+#endif
+#ifndef   __PACKED
+  #define __PACKED                               __attribute__((packed, aligned(1)))
+#endif
+#ifndef   __PACKED_STRUCT
+  #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+#endif
+#ifndef   __UNALIGNED_UINT16_WRITE
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))->v) = (val))
+#endif
+#ifndef   __UNALIGNED_UINT16_READ
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(addr))->v)
+#endif
+#ifndef   __UNALIGNED_UINT32_WRITE
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))->v) = (val))
+#endif
+#ifndef   __UNALIGNED_UINT32_READ
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(addr))->v)
+#endif
+#ifndef   __ALIGNED
+  #define __ALIGNED(x)                           __attribute__((aligned(x)))
+#endif
+#ifndef   __RESTRICT
+  #define __RESTRICT                             __restrict
+#endif
+#ifndef   __COMPILER_BARRIER
+  #define __COMPILER_BARRIER()                   __ASM volatile("":::"memory")
+#endif
+
+//#include "core_ca.h"
 #include "system_allwnr_a64.h"
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */

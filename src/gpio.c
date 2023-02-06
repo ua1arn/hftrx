@@ -833,7 +833,9 @@ typedef uint32_t irqstatus_t;
 static irqstatus_t gpioX_lock(GPIO_TypeDef * gpio)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
-#if CPUSTYLE_T113
+#if CPUSTYLE_A64
+	const irqstatus_t cpsr = 0;
+#elif CPUSTYLE_T113
 	const irqstatus_t cpsr = __get_CPSR();
 	__disable_irq();
 #elif CPUSTYLE_F133
@@ -847,7 +849,9 @@ static void gpioX_unlock(GPIO_TypeDef * gpio, irqstatus_t cpsr)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 	SPIN_UNLOCK(lck);
-#if CPUSTYLE_T113
+#if CPUSTYLE_A64
+
+#elif CPUSTYLE_T113
 	__set_CPSR(cpsr);
 #elif CPUSTYLE_F133
 	csr_write_mie(cpsr);

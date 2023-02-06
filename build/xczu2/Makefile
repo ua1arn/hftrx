@@ -77,7 +77,6 @@ OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
-HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
 
@@ -89,7 +88,6 @@ DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
 	$(ARCHDIR) \
-	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
@@ -142,7 +140,7 @@ LDSCRIPT_APP = ./xczuxx_ca53_app.ld
 # 	XCZU2..XCZU9, XCZU11
 #
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_XCZU"=1 -D"XCZU2"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_CA53"=1 -D"CPUSTYLE_XCZU"=1 -D"XCZU2"=1 -D"EGL_STATIC_LIBRARY"=1
 
 # Define ASM defines here
 UADEFS += 

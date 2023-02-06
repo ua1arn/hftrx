@@ -21711,15 +21711,15 @@ bootloader_launch_app(uintptr_t ip)
 	}
 #endif
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__))
 
 	MMU_Disable();
 	MMU_InvalidateTLB();
 	__ISB();
 	__DSB();
+#endif
 	(* (void (*)(void)) ip)();
 
-#endif
 
 	for (;;)
 		;
