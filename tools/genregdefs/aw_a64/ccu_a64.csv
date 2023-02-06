@@ -14,6 +14,15 @@
 #regdef; PLL_HSIC_CTRL_REG; 0x0044; PLL_HSIC Control Register 
 #regdef; PLL_DE_CTRL_REG; 0x0048; PLL_DE Control Register
 #regdef; PLL_DDR1_CTRL_REG; 0x004C; PLL_DDR1 Control Register
+#regdef; CPU_AXI_CFG_REG; 0x0050 CPUX/AXI Configuration Register 
+#regdef; AHB1_APB1_CFG_REG; 0x0054 AHB1/APB1 Configuration Register
+#regdef; APB2_CFG_REG; 0x0058; APB2 Configuration Register
+#regdef; AHB2_CFG_REG; 0x005C; AHB2 Configuration Register
+#regdef; BUS_CLK_GATING_REG0; 0x0060; Bus Clock Gating Register 0
+#regdef; BUS_CLK_GATING_REG1; 0x0064; Bus Clock Gating Register 1
+#regdef; BUS_CLK_GATING_REG2; 0x0068; Bus Clock Gating Register 2
+#regdef; BUS_CLK_GATING_REG3; 0x006C; Bus Clock Gating Register 3
+#regdef; BUS_CLK_GATING_REG4; 0x0070; Bus Clock Gating Register 4
 #regdef; THS_CLK_REG; 0x0074; THS Clock Register
 #regdef; NAND_CLK_REG; 0x0080; NAND Clock Register
 #regdef; SDMMC0_CLK_REG; 0x0088; SDMMC0 Clock Register

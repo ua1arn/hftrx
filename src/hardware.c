@@ -3650,6 +3650,7 @@ SystemInit(void)
 {
 #if 0 && defined BOARD_BLINK_INITIALIZE
 	{
+		CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING
 		/* low-level board test */
 		BOARD_BLINK_INITIALIZE();
 		for (;;)

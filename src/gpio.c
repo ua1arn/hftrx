@@ -877,6 +877,30 @@ static void gpioX_prog(
 	unsigned pull
 	)
 {
+#if CPUSTYLE_A64
+	const portholder_t cfg0 = power4(iopins >> 0);	/* CFG0 bits */
+	const portholder_t cfg1 = power4(iopins >> 8);	/* CFG1 bits */
+	const portholder_t cfg2 = power4(iopins >> 16);	/* CFG2 bits */
+	const portholder_t cfg3 = power4(iopins >> 24);	/* CFG3 bits */
+
+	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 and DRV0 bits */
+	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 and DRV1 bits */
+
+	const uint32_t cpsr = gpioX_lock(gpio);
+
+	gpio->CFG [0] = (gpio->CFG [0] & ~ (cfg0 * 0x0F)) | (cfg * cfg0);
+	gpio->CFG [1] = (gpio->CFG [1] & ~ (cfg1 * 0x0F)) | (cfg * cfg1);
+	gpio->CFG [2] = (gpio->CFG [2] & ~ (cfg2 * 0x0F)) | (cfg * cfg2);
+	gpio->CFG [3] = (gpio->CFG [3] & ~ (cfg3 * 0x0F)) | (cfg * cfg3);
+
+	gpio->DRV [0] = (gpio->DRV [0] & ~ (pull0 * 0x03)) | (drv * pull0);
+	gpio->DRV [1] = (gpio->DRV [1] & ~ (pull1 * 0x03)) | (drv * pull1);
+
+	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+	gpio->PULL [0] = (gpio->PULL [0] & ~ (pull0 * 0x03)) | (pull * pull0);
+	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
+	gpioX_unlock(gpio, cpsr);
+#else
 	const portholder_t mask0 = power4(iopins >> 0);		/* CFG0 and DRV0 bits */
 	const portholder_t mask1 = power4(iopins >> 8);		/* CFG1 and DRV1 bits */
 	const portholder_t mask2 = power4(iopins >> 16);	/* CFG2 and DRV2 bits */
@@ -900,8 +924,8 @@ static void gpioX_prog(
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	gpio->PULL [0] = (gpio->PULL [0] & ~ (pull0 * 0x03)) | (pull * pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
-
 	gpioX_unlock(gpio, cpsr);
+#endif
 }
 
 static void gpioX_updown(
