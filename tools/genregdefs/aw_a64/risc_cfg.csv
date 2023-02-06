@@ -1,0 +1,31 @@
+#type; RISC_CFG
+#base; RISC_CFG 0x06010000
+#comment; RISC-V core configuration register
+#regdef; RISC_STA_ADD0_REG; 0x0004; RISC Start Address0 Register
+#regdef; RISC_STA_ADD1_REG; 0x0008; RISC Start Address1 Register
+#regdef; RF1P_CFG_REG; 0x0010; RF1P Configuration Register
+#regdef; ROM_CFG_REG; 0x001C; ROM Configuration Register
+#regdef; WAKEUP_EN_REG; 0x0020; Wakeup Enable Register
+#regdef; WAKEUP_MASK0_REG; 0x0024; Wakeup Mask0 Register
+#regdef; WAKEUP_MASK1_REG; 0x0028; Wakeup Mask1 Register
+#regdef; WAKEUP_MASK2_REG; 0x002C; Wakeup Mask2 Register
+#regdef; WAKEUP_MASK3_REG; 0x0030; Wakeup Mask3 Register
+#regdef; WAKEUP_MASK4_REG; 0x0034; Wakeup Mask4 Register
+#regdef; TS_TMODE_SEL_REG; 0x0040; Timestamp Test Mode Select Register
+#regdef; SRAM_ADDR_TWIST_REG; 0x0044; SRAM Address Twist Register
+#regdef; WORK_MODE_REG; 0x0048; Work Mode Register
+#regdef; RETITE_PC0_REG; 0x0050; Retire PC0 Register
+#regdef; RETITE_PC1_REG; 0x0054; Retire PC1 Register
+#regdef; IRQ_MODE0_REG; 0x0060; IRQ Mode0 Register
+#regdef; IRQ_MODE1_REG; 0x0064; IRQ Mode1 Register
+#regdef; IRQ_MODE2_REG; 0x0068; IRQ Mode2 Register
+#regdef; IRQ_MODE3_REG; 0x006C; IRQ Mode3 Register
+#regdef; IRQ_MODE4_REG; 0x0070; IRQ Mode4 Register
+#regdef; RISC_AXI_PMU_CTRL; 0x0104; RISC AXI PMU Control Register
+#regdef; RISC_AXI_PMU_PRD; 0x0108; RISC AXI PMU Period Register
+#regdef; RISC_AXI_PMU_LAT_RD; 0x010C; RISC AXI PMU Read Latency Register
+#regdef; RISC_AXI_PMU_LAT_WR; 0x0110; RISC AXI PMU Write Latency Register
+#regdef; RISC_AXI_PMU_REQ_RD; 0x0114; RISC AXI PMU Read Request Register
+#regdef; RISC_AXI_PMU_REQ_WR; 0x0118; RISC AXI PMU Write Request Register
+#regdef; RISC_AXI_PMU_BW_RD; 0x011C; RISC AXI PMU Read Bandwidth Register
+#regdef; RISC_AXI_PMU_BW_WR; 0x0120; RISC AXI PMU Write Bandwidth Register

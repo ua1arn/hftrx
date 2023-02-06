@@ -1,0 +1,21 @@
+#type; G2D_VSU
+#base; G2D_VSU 0x05418000
+#comment; 5.12.3 Video Scaler Register - List Allwinner_DE2.0_Spec_V1.0.pdf
+#comment; have different layout
+#comment; Also see 5.7 DE UIS Specification
+#regdef; VS_CTRL; 0x000; VS_CTRL
+#regdef; VS_OUT_SIZE; 0x040; VS_OUT_SIZE
+#regdef; VS_GLB_ALPHA; 0x044; VS_GLB_ALPHA
+#regdef; VS_Y_SIZE; 0x080; VS_Y_SIZE
+#regdef; VS_Y_HSTEP; 0x088; VS_Y_HSTEP
+#regdef; VS_Y_VSTEP; 0x08C; VS_Y_VSTEP
+#regdef; VS_Y_HPHASE; 0x090; VS_Y_HPHASE
+#regdef; VS_Y_VPHASE0; 0x098; VS_Y_VPHASE0
+#regdef; VS_C_SIZE; 0x0C0; VS_C_SIZE
+#regdef; VS_C_HSTEP; 0x0C8; VS_C_HSTEP
+#regdef; VS_C_VSTEP; 0x0CC; VS_C_VSTEP
+#regdef; VS_C_HPHASE; 0x0D0; VS_C_HPHASE
+#regdef; VS_C_VPHASE0; 0x0D8; VS_C_VPHASE0
+#regdef; VS_Y_HCOEF; 0x200 64; VS_Y_HCOEF[N]. N=0..31
+#regdef; VS_Y_VCOEF; 0x300 64; VS_Y_VCOEF[N]. N=0..31
+#regdef; VS_C_HCOEF; 0x400 64; VS_C_HCOEF[N]. N=0..31

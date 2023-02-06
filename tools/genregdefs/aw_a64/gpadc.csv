@@ -1,0 +1,19 @@
+#type; GPADC
+#base; GPADC 0x02009000
+#irq; GPADC 89
+#irqrv; GPADC 73
+#regdef; GP_SR_CON; 0x0000; GPADC Sample Rate Configure Register
+#regdef; GP_CTRL; 0x0004; GPADC Control Register
+#regdef; GP_CS_EN; 0x0008; GPADC Compare and Select Enable Register
+#regdef; GP_FIFO_INTC; 0x000C; GPADC FIFO Interrupt Control Register
+#regdef; GP_FIFO_INTS; 0x0010; GPADC FIFO Interrupt Status Register
+#regdef; GP_FIFO_DATA; 0x0014; GPADC FIFO Data Register
+#regdef; GP_CDATA; 0x0018; GPADC Calibration Data Register
+#regdef; GP_DATAL_INTC; 0x0020; GPADC Data Low Interrupt Configure Register
+#regdef; GP_DATAH_INTC; 0x0024; GPADC Data High Interrupt Configure Register
+#regdef; GP_DATA_INTC; 0x0028; GPADC Data Interrupt Configure Register
+#regdef; GP_DATAL_INTS; 0x0030; GPADC Data Low Interrupt Status Register
+#regdef; GP_DATAH_INTS; 0x0034; GPADC Data High Interrupt Status Register
+#regdef; GP_DATA_INTS; 0x0038; GPADC Data Interrupt Status Register
+#regdef; GP_CH0_CMP_DATA; 0x0040; GPADC CH0 Compare Data Register
+#regdef; GP_CH0_DATA; 0x0080; GPADC CH0 Data Register

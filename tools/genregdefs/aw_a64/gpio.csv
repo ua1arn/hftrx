@@ -1,0 +1,12 @@
+#type; GPIO
+#base; GPIOB 0x02000030
+#base; GPIOC 0x02000060
+#base; GPIOD 0x02000090
+#base; GPIOE 0x020000C0
+#base; GPIOF 0x020000F0
+#base; GPIOG 0x02000120
+#regdef; CFG; 0x000 4; Configure Register
+#regdef; DATA; 0x0010; Data Register
+#regdef; DRV; 0x014 4; Multi_Driving Register
+#regdef; PULL; 0x024 2; Pull Register
+#regdef; padding 0; 0x030; Need for address arithmetics

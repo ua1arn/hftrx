@@ -1,0 +1,13 @@
+#type; TVD_TOP
+#regdef; TVD_TOP_MAP; 0x0000; TVD TOP MAP Register
+#regdef; TVD_3D_CTL1; 0x0008; TVD 3D DMA CONTROL Register1
+#regdef; TVD_3D_CTL2; 0x000C; TVD 3D DMA CONTROL Register2
+#regdef; TVD_3D_CTL3; 0x0010; TVD 3D DMA CONTROL Register3
+#regdef; TVD_3D_CTL4; 0x0014; TVD 3D DMA CONTROL Register4
+#regdef; TVD_3D_CTL5; 0x0018; TVD 3D DMA CONTROL Register5
+#aggreg; TVD_ADC; 0x0020 4; TVD ADC Registers N (N = 0 to 3)
+#regdef; TVD_TOP_CTL; 0x04; TVD TOP CONTROL Register
+#regdef; TVD_ADC_CTL; 0x08; TVD ADC CONTROL Register
+#regdef; TVD_ADC_CFG; 0x0c; TVD ADC CONFIGURATION Register
+#regdef; padding 0; 0x020; Need for address arithmetics
+#aggregend;

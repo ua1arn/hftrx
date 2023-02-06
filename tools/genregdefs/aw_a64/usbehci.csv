@@ -1,0 +1,37 @@
+#type; USBEHCI
+#regdef; E_CAPLENGTH 2; 0x0000; EHCI Capability Register Length Register
+#regdef; E_HCIVERSION 2; 0x0002; EHCI Host Interface Version Number Register
+#regdef; E_HCSPARAMS; 0x0004; EHCI Host Control Structural Parameter Register
+#regdef; E_HCCPARAMS; 0x0008; EHCI Host Control Capability Parameter Register
+#regdef; E_HCSPPORTROUTE; 0x000C; EHCI Companion Port Route Description
+#regdef; E_USBCMD; 0x0010; EHCI USB Command Register
+#regdef; E_USBSTS; 0x0014; EHCI USB Status Register
+#regdef; E_USBINTR; 0x0018; EHCI USB Interrupt Enable Register
+#regdef; E_FRINDEX; 0x001C; EHCI USB Frame Index Register
+#regdef; E_CTRLDSSEGMENT; 0x0020; EHCI 4G Segment Selector Register
+#regdef; E_PERIODICLISTBASE; 0x0024; EHCI Frame List Base Address Register
+#regdef; E_ASYNCLISTADDR; 0x0028; EHCI Next Asynchronous List Address Register
+#regdef; E_CONFIGFLAG; 0x0050; EHCI Configured Flag Register
+#regdef; E_PORTSC; 0x0054; EHCI Port Status/Control Register
+#regdef; O_HcRevision; 0x0400; OHCI Revision Register (not documented)
+#regdef; O_HcControl; 0x0404; OHCI Control Register
+#regdef; O_HcCommandStatus; 0x0408; OHCI Command Status Register
+#regdef; O_HcInterruptStatus; 0x040C; OHCI Interrupt Status Register
+#regdef; O_HcInterruptEnable; 0x0410; OHCI Interrupt Enable Register
+#regdef; O_HcInterruptDisable; 0x0414; OHCI Interrupt Disable Register
+#regdef; O_HcHCCA; 0x0418; OHCI HCCA Base
+#regdef; O_HcPeriodCurrentED; 0x041C; OHCI Period Current ED Base
+#regdef; O_HcControlHeadED; 0x0420; OHCI Control Head ED Base
+#regdef; O_HcControlCurrentED; 0x0424; OHCI Control Current ED Base
+#regdef; O_HcBulkHeadED; 0x0428; OHCI Bulk Head ED Base
+#regdef; O_HcBulkCurrentED; 0x042C; OHCI Bulk Current ED Base
+#regdef; O_HcDoneHead; 0x0430; OHCI Done Head Base
+#regdef; O_HcFmInterval; 0x0434; OHCI Frame Interval Register
+#regdef; O_HcFmRemaining; 0x0438; OHCI Frame Remaining Register
+#regdef; O_HcFmNumber; 0x043C; OHCI Frame Number Register
+#regdef; O_HcPerioddicStart; 0x0440; OHCI Periodic Start Register
+#regdef; O_HcLSThreshold; 0x0444; OHCI LS Threshold Register
+#regdef; O_HcRhDescriptorA; 0x0448; OHCI Root Hub Descriptor Register A
+#regdef; O_HcRhDesriptorB; 0x044C; OHCI Root Hub Descriptor Register B
+#regdef; O_HcRhStatus; 0x0450; OHCI Root Hub Status Register
+#regdef; O_HcRhPortStatus; 0x0454 1; OHCI Root Hub Port Status Register

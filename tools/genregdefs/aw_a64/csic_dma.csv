@@ -1,0 +1,35 @@
+#type; CSIC_DMA
+#base; CSIC_DMA0 0x05809000
+#base; CSIC_DMA1 0x05809200
+#regdef; CSIC_DMA_EN_REG; 0x0000; CSIC DMA Enable Register
+#regdef; CSIC_DMA_CFG_REG; 0x0004; CSIC DMA Configuration Register
+#regdef; CSIC_DMA_HSIZE_REG; 0x0010; CSIC DMA Horizontal Size Register
+#regdef; CSIC_DMA_VSIZE_REG; 0x0014; CSIC DMA Vertical Size Register
+#regdef; CSIC_DMA_F0_BUFA_REG; 0x0020; CSIC DMA FIFO 0 Output Buffer-A Address Register
+#regdef; CSIC_DMA_F0_BUFA_RESULT_REG; 0x0024; CSIC DMA FIFO 0 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_F1_BUFA_REG; 0x0028; CSIC DMA FIFO 1 Output Buffer-A Address Register
+#regdef; CSIC_DMA_F1_BUFA_RESULT_REG; 0x002C; CSIC DMA FIFO 1 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_F2_BUFA_REG; 0x0030; CSIC DMA FIFO 2 Output Buffer-A Address Register
+#regdef; CSIC_DMA_F2_BUFA_RESULT_REG; 0x0034; CSIC DMA FIFO 2 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_BUF_LEN_REG; 0x0038; CSIC DMA Buffer Length Register
+#regdef; CSIC_DMA_FLIP_SIZE_REG; 0x003C; CSIC DMA Flip Size Register
+#regdef; CSIC_DMA_VI_TO_TH0_REG; 0x0040; CSIC DMA Video Input Timeout Threshold0 Register
+#regdef; CSIC_DMA_VI_TO_TH1_REG; 0x0044; CSIC DMA Video Input Timeout Threshold1 Register
+#regdef; CSIC_DMA_VI_TO_CNT_VAL_REG; 0x0048; CSIC DMA Video Input Timeout Counter Value Register
+#regdef; CSIC_DMA_CAP_STA_REG; 0x004C; CSIC DMA Capture Status Register
+#regdef; CSIC_DMA_INT_EN_REG; 0x0050; CSIC DMA Interrupt Enable Register
+#regdef; CSIC_DMA_INT_STA_REG; 0x0054; CSIC DMA Interrupt Status Register
+#regdef; CSIC_DMA_LINE_CNT_REG; 0x0058; CSIC DMA LINE Counter Register
+#regdef; CSIC_DMA_FRM_CNT_REG; 0x005C; CSIC DMA Frame Counter Register
+#regdef; CSIC_DMA_FRM_CLK_CNT_REG; 0x0060; CSIC DMA Frame Clock Counter Register
+#regdef; CSIC_DMA_ACC_ITNL_CLK_CNT_REG; 0x0064; CSIC DMA Accumulated And Internal Clock Counter Register
+#regdef; CSIC_DMA_FIFO_STAT_REG; 0x0068; CSIC DMA FIFO Statistic Register
+#regdef; CSIC_DMA_FIFO_THRS_REG; 0x006C; CSIC DMA FIFO Threshold Register
+#regdef; CSIC_DMA_PCLK_STAT_REG; 0x0070; CSIC DMA PCLK Statistic Register
+#regdef; CSIC_DMA_BUF_ADDR_FIFO0_ENTRY_REG; 0x0080; CSIC DMA BUF Address FIFO0 Entry Register
+#regdef; CSIC_DMA_BUF_ADDR_FIFO1_ENTRY_REG; 0x0084; CSIC DMA BUF Address FIFO1 Entry Register
+#regdef; CSIC_DMA_BUF_ADDR_FIFO2_ENTRY_REG; 0x0088; CSIC DMA BUF Address FIFO2 Entry Register
+#regdef; CSIC_DMA_BUF_TH_REG; 0x008C; CSIC DMA BUF Threshold Register
+#regdef; CSIC_DMA_BUF_ADDR_FIFO_CON_REG; 0x0090; CSIC DMA BUF Address FIFO Content Register
+#regdef; CSIC_DMA_STORED_FRM_CNT_REG; 0x0094; CSIC DMA Stored Frame Counter Register
+#regdef; CSIC_FEATURE_REG; 0x01F4; CSIC DMA Feature List Register

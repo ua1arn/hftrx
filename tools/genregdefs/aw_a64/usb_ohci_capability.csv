@@ -1,0 +1,25 @@
+#type; USB_OHCI_Capability
+#base; USBOHCI0 0x04101400
+#base; USBOHCI1 0x04200400
+#regdef; O_HcRevision; 0x0000; OHCI Revision Register (not documented)
+#regdef; O_HcControl; 0x0004; OHCI Control Register
+#regdef; O_HcCommandStatus; 0x0008; OHCI Command Status Register
+#regdef; O_HcInterruptStatus; 0x000C; OHCI Interrupt Status Register
+#regdef; O_HcInterruptEnable; 0x0010; OHCI Interrupt Enable Register
+#regdef; O_HcInterruptDisable; 0x0014; OHCI Interrupt Disable Register
+#regdef; O_HcHCCA; 0x0018; OHCI HCCA Base
+#regdef; O_HcPeriodCurrentED; 0x001C; OHCI Period Current ED Base
+#regdef; O_HcControlHeadED; 0x0020; OHCI Control Head ED Base
+#regdef; O_HcControlCurrentED; 0x0024; OHCI Control Current ED Base
+#regdef; O_HcBulkHeadED; 0x0028; OHCI Bulk Head ED Base
+#regdef; O_HcBulkCurrentED; 0x002C; OHCI Bulk Current ED Base
+#regdef; O_HcDoneHead; 0x0030; OHCI Done Head Base
+#regdef; O_HcFmInterval; 0x0034; OHCI Frame Interval Register
+#regdef; O_HcFmRemaining; 0x0038; OHCI Frame Remaining Register
+#regdef; O_HcFmNumber; 0x003C; OHCI Frame Number Register
+#regdef; O_HcPerioddicStart; 0x0040; OHCI Periodic Start Register
+#regdef; O_HcLSThreshold; 0x0044; OHCI LS Threshold Register
+#regdef; O_HcRhDescriptorA; 0x0048; OHCI Root Hub Descriptor Register A
+#regdef; O_HcRhDesriptorB; 0x004C; OHCI Root Hub Descriptor Register B
+#regdef; O_HcRhStatus; 0x0050; OHCI Root Hub Status Register
+#regdef; O_HcRhPortStatus; 0x0054 1; OHCI Root Hub Port Status Register
