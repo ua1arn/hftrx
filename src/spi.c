@@ -1652,6 +1652,10 @@ void hardware_spi_master_initialize(void)
 
 	SPIIO_INITIALIZE();
 
+#elif CPUSTYLE_A64
+
+	#warning Implement for CPUSTYLE_A64
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	unsigned ix = 0;	// SPI0
 

@@ -185,6 +185,11 @@ uint_fast32_t allwnrt113_get_ce_freq(void);
 uint_fast32_t allwnrt113_get_ve_freq(void);
 uint_fast32_t allwnrt113_get_dsp_freq(void);
 
+// Allwinner A64
+uint_fast32_t allwnr_a64_get_hosc_freq(void);
+uint_fast32_t allwnr_a64_get_arm_freq(void);
+
+
 /* PLL initialization functions. Take care on glitches. */
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n);
 void allwnrt113_set_pll_ddr(unsigned m, unsigned n);

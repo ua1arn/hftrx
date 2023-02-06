@@ -3648,6 +3648,20 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+#if 0 && defined BOARD_BLINK_INITIALIZE
+	{
+		/* low-level board test */
+		BOARD_BLINK_INITIALIZE();
+		for (;;)
+		{
+			/* blinking */
+			BOARD_BLINK_SETSTATE(1);
+			local_delay_ms(500);
+			BOARD_BLINK_SETSTATE(0);
+			local_delay_ms(500);
+		}
+	}
+#endif
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_gpio_initialize();

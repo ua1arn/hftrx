@@ -1407,6 +1407,10 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
+#elif CPUSTYLE_A64
+
+	#warning Implement for CPUSTYLE_A64
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 0;
 

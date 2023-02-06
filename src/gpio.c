@@ -760,7 +760,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
 }
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) || CPUSTYLE_A64
 
 // DRV: 0x00 = level0, 0x01 = level1, 0x02 - level2, 0x03 - level3
 // PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
@@ -4028,6 +4028,9 @@ arm_hardware_pioh_outputs(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -4084,6 +4087,9 @@ arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5234,6 +5240,9 @@ arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6759,6 +6768,9 @@ arm_hardware_pioh_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -6811,6 +6823,10 @@ arm_hardware_pioh_altfn2(unsigned long opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOH, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_A64
+
+	#warning Implement for CPUSTYLE_A64
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6865,6 +6881,9 @@ arm_hardware_pioh_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -6917,6 +6936,9 @@ arm_hardware_pioh_altfn50(unsigned long opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOH, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8179,6 +8201,10 @@ arm_hardware_pioh_updown(unsigned long up, unsigned long down)
 
 	tm32mp1_pioX_pupdr(GPIOH, up, down);
 
+#elif CPUSTYLE_A64
+
+	gpioX_updown(GPIOH, up, down);
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -8466,6 +8492,10 @@ arm_hardware_pioh_updownoff(unsigned long ipins)
 #elif CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOH, ipins);
+
+#elif CPUSTYLE_A64
+
+    gpioX_updownoff(GPIOH, ipins);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8861,6 +8891,8 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PH, priority, tgcpu);	// PORT H
 
+#elif CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
 #else
 	#error Undefined CPUSTYLE_XXX
 

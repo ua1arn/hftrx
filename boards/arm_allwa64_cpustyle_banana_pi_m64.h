@@ -36,7 +36,7 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 #if WITHDEBUG
-	#define WITHUART1HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #1 UART0 */
+	#define WITHUART1HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #1 UART0 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
@@ -102,8 +102,8 @@
 	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
 	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -580,12 +580,13 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART1HW
+// tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #1 UART0 */
 #define HARDWARE_UART1_INITIALIZE() do { \
-		const portholder_t TXMASK = (1u << 2); /* PE2 UART0-TX */ \
-		const portholder_t RXMASK = (1u << 3); /* PE3 UART0-RX - pull-up RX data */  \
-		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF6); \
-		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF6); \
-		arm_hardware_pioe_updown(RXMASK, 0); \
+		const portholder_t TXMASK = (1u << 8); /* PB8 UART0-TX */ \
+		const portholder_t RXMASK = (1u << 9); /* PB9 UART0-RX - pull-up RX data */  \
+		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF6); \
+		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF6); \
+		arm_hardware_piob_updown(RXMASK, 0); \
 	} while (0)
 
 
@@ -989,17 +990,32 @@
 
 	#endif
 
-	#define BOARD_BLINK_BIT (1u << 22)	// PD22 (PWM7) - led on mq-r board (from VCC33
+	#define BOARD_BLINK_BIT0 (1u << 22)	// PD24 - Banana Pi M64 led0 RED - active "1" (default has pull-up)
+	#define BOARD_BLINK_BIT1 (1u << 22)	// (1u << 14)	// PE14 - Banana Pi M64 led1 GREEN - active "1"
+	#define BOARD_BLINK_BIT2 (1u << 22)	// (1u << 15)	// PE15 - Banana Pi M64 led2 BLUE - active "1"
 
 #if 1
 	#define BOARD_BLINK_INITIALIZE() do { \
-			arm_hardware_piod_outputs(BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
+		arm_hardware_piob_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+		arm_hardware_pioc_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+		arm_hardware_piod_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+		arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
+		arm_hardware_pioe_outputs(BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-			if (state) \
-				gpioX_setstate(GPIOD, BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
-			else \
-				gpioX_setstate(GPIOD, BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
+			if (state) { \
+				gpioX_setstate(GPIOB, BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+				gpioX_setstate(GPIOC, BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+				gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+				gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
+				gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
+			} else {\
+				gpioX_setstate(GPIOB, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
+				gpioX_setstate(GPIOC, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
+				gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
+				gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, 0 * BOARD_BLINK_BIT1); \
+				gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, 0 * BOARD_BLINK_BIT2); \
+			} \
 		} while (0)
 #endif
 

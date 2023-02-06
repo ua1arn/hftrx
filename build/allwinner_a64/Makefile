@@ -51,7 +51,7 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
-CORE = -mcpu=cortex-a7
+CORE = -mcpu=cortex-a53
 CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
 CORE += -mfpu=neon-vfpv4
@@ -148,7 +148,7 @@ SRCDIRS += $(TINYUSBDIR)/src
 DINCDIR += $(TINYUSBDIR)/src
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # LuPng
 SRCDIRS += $(LUPNGDIR)
 DINCDIR += $(LUPNGDIR)
@@ -239,7 +239,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-.PHONY: all bootloader flash clean
+.PHONY: all bootloader flash clean app_run
 
 all: APP2 $(PROJECT)_app.alw32
 
@@ -265,7 +265,7 @@ flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
 	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
 
-flash+old:
+flash_old:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
 	$(XFEL) spinor write 0x00040000 ddr3init.bin
 	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32

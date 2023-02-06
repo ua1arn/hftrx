@@ -1789,6 +1789,33 @@ unsigned long hardware_get_spi_freq(void)
 #define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
 
+#elif CPUSTYLE_A64
+
+void allwnr_a64_pll_initialize(void)
+{
+}
+
+uint_fast32_t allwnr_a64_get_hosc_freq(void)
+{
+#if defined WITHCPUXTAL
+	return WITHCPUXTAL;
+#elif defined WITHCPUXOSC
+	return WITHCPUXOSC;
+#else
+	return 24000000u;	/* На процессоре установлен кварц 24.000 МГц */
+#endif
+}
+
+uint_fast32_t allwnr_a64_get_arm_freq(void)
+{
+	return 240000000;
+}
+
+uint_fast32_t allwnrt113_get_spi0_freq(void)
+{
+	return 24000000;
+}
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 #if CPUSTYLE_F133
@@ -2135,26 +2162,6 @@ void allwnrt113_set_pll_audio1(unsigned m, unsigned n)
 {
 	uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
 
-}
-
-void allwnrt113_pll_initialize(void)
-{
-#if CPUSTYLE_T113
-	set_pll_cpux_axi(PLL_CPU_N);	// see sdram.c
-#elif CPUSTYLE_F133
-	set_pll_riscv_axi(PLL_CPU_N);	// see sdram.c
-#endif
-	//set_pll_periph0();
-	//set_ahb();
-	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
-	//set_dma();
-	//set_mbus();
-	set_module(& CCU->PLL_PERI_CTRL_REG);
-	set_module(& CCU->PLL_VIDEO0_CTRL_REG);
-	set_module(& CCU->PLL_VIDEO1_CTRL_REG);
-	set_module(& CCU->PLL_VE_CTRL_REG);
-	set_module(& CCU->PLL_AUDIO0_CTRL_REG);
-	set_module(& CCU->PLL_AUDIO1_CTRL_REG);
 }
 
 uint_fast32_t allwnrt113_get_hosc_freq(void)
@@ -2660,6 +2667,27 @@ uint_fast32_t allwnrt113_get_dsp_freq(void)
 uint_fast32_t allwnrt113_get_pl1_timer_freq(void)
 {
 	return allwnrt113_get_ahb_freq();
+}
+
+
+void allwnrt113_pll_initialize(void)
+{
+#if CPUSTYLE_T113
+	set_pll_cpux_axi(PLL_CPU_N);	// see sdram.c
+#elif CPUSTYLE_F133
+	set_pll_riscv_axi(PLL_CPU_N);	// see sdram.c
+#endif
+	//set_pll_periph0();
+	//set_ahb();
+	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
+	//set_dma();
+	//set_mbus();
+	set_module(& CCU->PLL_PERI_CTRL_REG);
+	set_module(& CCU->PLL_VIDEO0_CTRL_REG);
+	set_module(& CCU->PLL_VIDEO1_CTRL_REG);
+	set_module(& CCU->PLL_VE_CTRL_REG);
+	set_module(& CCU->PLL_AUDIO0_CTRL_REG);
+	set_module(& CCU->PLL_AUDIO1_CTRL_REG);
 }
 
 #endif /* CPUSTYLE_STM32MP1 */
@@ -3325,6 +3353,10 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	// Enable timer control
 	PL1_SetControl(1);
+
+#elif CPUSTYLE_A64
+
+#warning Implement for CPUSTYLE_A64
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -6847,6 +6879,10 @@ sysinit_pll_initialize(void)
 		SCLR->APER_CLK_CTRL |= (1u << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
 
 	#endif /* WITHISBOOTLOADER */
+
+#elif CPUSTYLE_A64
+
+	allwnr_a64_pll_initialize();
 
 #elif CPUSTYLE_T113
 
