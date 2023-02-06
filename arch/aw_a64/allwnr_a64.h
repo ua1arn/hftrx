@@ -289,10 +289,15 @@ typedef enum IRQn
 #define __CA_REV                 0x0005U      /*!< Core revision r0p0                          */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
-#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
+//#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
 #include "cmsis_a64.h"
+
+//#define __IO volatile
+//#ifndef   __STATIC_INLINE
+//  #define __STATIC_INLINE                        static inline
+//#endif
 
 #include "core_ca.h"
 #include "system_allwnr_a64.h"
@@ -472,6 +477,7 @@ typedef enum
  #include "t113s3_hal.h"
 #endif /* USE_HAL_DRIVER */
 
+#if 0
 
 __STATIC_FORCEINLINE uint32_t __UQADD8(uint32_t op1, uint32_t op2)
 {
@@ -489,5 +495,7 @@ __STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
   __ASM ("uqsub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
   return(result);
 }
+
+#endif
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
