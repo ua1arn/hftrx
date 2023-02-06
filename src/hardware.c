@@ -1702,6 +1702,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_TMS320F2833X	&& 0	// FLASH code
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_A64
+	// калибровано для 1200 МГц процессора
+	const unsigned long top = 1;//120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
 	// калибровано для 1200 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
@@ -3650,10 +3653,13 @@ SystemInit(void)
 {
 #if CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
 	{
+		* ((volatile uint32_t *) 0x0044000) = 0xDEADBEEF;
+		* ((volatile uint32_t *) 0x0044004) = 0xABBA1980;
 		CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING - not need - already set
 		/* low-level board test */
 		BOARD_BLINK_INITIALIZE();
-		for (;;)
+		int i;
+		for (i = 0; i < 10; ++ i)
 		{
 			/* blinking */
 			BOARD_BLINK_SETSTATE(1);
@@ -3661,6 +3667,7 @@ SystemInit(void)
 			BOARD_BLINK_SETSTATE(0);
 			local_delay_ms(500);
 		}
+		return;
 	}
 #endif
 	sysinit_fpu_initialize();

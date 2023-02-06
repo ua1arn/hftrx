@@ -16,8 +16,8 @@
 ##############################################################################################
 # Start of default section
 #
-#TRGT2 = arm-none-eabi
-TRGT2 = aarch64-none-elf
+TRGT2 = arm-none-eabi
+#TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
 XFEL = ../../tools/xfel-windows-v1.2.9/xfel
@@ -53,9 +53,9 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
 CORE = -mcpu=cortex-a53
-###CORE += -mfloat-abi=hard
+CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
-###CORE += -mfpu=neon-vfpv4
+CORE += -mfpu=neon-vfpv4
 #CORE += -mfpu=vfpv4
 
 # Define optimisation level here
@@ -258,7 +258,6 @@ bootloader: BOOT2 fsbl.alw32 app_run
 app_run: BOOT2 fsbl.alw32
 	$(XFEL) write 0x00044000 fsbl.alw32
 	$(XFEL) hexdump 0x00044000  16
-	$(XFEL) hexdump 0x00044100  128
 	$(XFEL) exec 0x00044100 
 	$(XFEL) hexdump 0x00044000  16
   
@@ -286,7 +285,7 @@ BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.alw32: $(PROJECT)_boot.bin
-	./egontool -aarch64 $(PROJECT)_boot.bin fsbl.alw32
+	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
