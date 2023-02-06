@@ -315,7 +315,8 @@ typedef struct GPIO_Type
 {
     volatile uint32_t CFG [0x004];                                              /*!< Offset 0x000 Configure Register */
     volatile uint32_t DATA;                                                     /*!< Offset 0x010 Data Register */
-    volatile uint32_t DRV [0x004];                                              /*!< Offset 0x014 Multi_Driving Register */
+    volatile uint32_t DRV [0x002];                                              /*!< Offset 0x014 Multi_Driving Register */
+             uint32_t reserved_0x01C [0x0002];
     volatile uint32_t PULL [0x002];                                             /*!< Offset 0x024 Pull Register */
 } GPIO_TypeDef; /* size of structure = 0x02C */
 /*

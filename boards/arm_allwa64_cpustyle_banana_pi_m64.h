@@ -584,8 +584,8 @@
 #define HARDWARE_UART1_INITIALIZE() do { \
 		const portholder_t TXMASK = (1u << 8); /* PB8 UART0-TX */ \
 		const portholder_t RXMASK = (1u << 9); /* PB9 UART0-RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF6); \
-		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF6); \
+		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF4); \
+		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF4); \
 		arm_hardware_piob_updown(RXMASK, 0); \
 	} while (0)
 
@@ -990,28 +990,22 @@
 
 	#endif
 
-	#define BOARD_BLINK_BIT0 (1u << 22)	// PD24 - Banana Pi M64 led0 RED - active "1" (default has pull-up)
-	#define BOARD_BLINK_BIT1 (1u << 22)	// (1u << 14)	// PE14 - Banana Pi M64 led1 GREEN - active "1"
-	#define BOARD_BLINK_BIT2 (1u << 22)	// (1u << 15)	// PE15 - Banana Pi M64 led2 BLUE - active "1"
+	#define BOARD_BLINK_BIT0 (1u << 24)	// PD24 - Banana Pi M64 led0 RED - active "1" (default has pull-up)
+	#define BOARD_BLINK_BIT1 (1u << 14)	// PE14 - Banana Pi M64 led1 GREEN - active "1"
+	#define BOARD_BLINK_BIT2 (1u << 15)	// PE15 - Banana Pi M64 led2 BLUE - active "1"
 
 #if 1
 	#define BOARD_BLINK_INITIALIZE() do { \
-		arm_hardware_piob_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-		arm_hardware_pioc_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 		arm_hardware_piod_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 		arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
 		arm_hardware_pioe_outputs(BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) { \
-				gpioX_setstate(GPIOB, BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-				gpioX_setstate(GPIOC, BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 				gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 				gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
 				gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
 			} else {\
-				gpioX_setstate(GPIOB, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
-				gpioX_setstate(GPIOC, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
 				gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
 				gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, 0 * BOARD_BLINK_BIT1); \
 				gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, 0 * BOARD_BLINK_BIT2); \
