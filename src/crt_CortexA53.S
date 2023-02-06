@@ -68,20 +68,37 @@
   
 	.global __Vectors
 	.section .isr_vector, "ax"
-	.code 32
+	/*.code 32 */
         
 /****************************************************************************/
 /*               Vector table and reset entry                               */
 /* Table B1-3 The vector tables */
 /****************************************************************************/
 __Vectors:
- 	bx    lr     /* And jump... */
-	ldr		r1, =0x00044000
-	ldr  	r2, =0xDEADBEEF
-	str		r2, [r1, #0]
-	str		sp, [r1, #8]
-  	bx    lr     /* And jump... */
+/*	mov	x1, lr
+	 BLR	lr
+	 .ascii "hello"
+	 */
 
+#if 1
+	mov		x1, XZR
+ 	LDR		W1, =0x00044000
+	LDR  	w2, =0xDEADBEEF
+	STR		x2, [x1]
+	LDR		w1, =0x00044008
+	mov		x2, sp
+	STR		x2, [x1]
+#endif
+infloop:
+	b infloop
+
+  	ADR X1, __stack
+  	MOV SP, X1
+	ret
+ 	LDR		x1, =SystemInit
+	br		x1
+
+#if 0
    ldr pc, ResetAddr    /* Reset                 */
    ldr pc, UndefAddr    /* Undefined instruction */
    ldr pc, SWIAddr      /* Software interrupt    */
@@ -105,7 +122,7 @@ FIQAddr:       .word FIQ_Handler
 
 
    .section .startup0, "ax"
-   .code 32
+   /* .code 32 */
    
    .extern _start
    /*.extern __libc_init_array*/
@@ -343,7 +360,7 @@ ExitFunction:
 /*                         Default interrupt handler                        */
 /****************************************************************************/
 	.section .text
-   .code 32
+   /* .code 32 */
 
 	.align 4, 0
 
@@ -442,6 +459,9 @@ IRQ_Handler:
 	LDMIA   SP!, {PC}^
 
 	.endfunc
+
+#endif
+
    .ltorg
 
 	.section .noinit

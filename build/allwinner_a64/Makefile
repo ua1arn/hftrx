@@ -244,7 +244,8 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean app_run
 
-all: APP2 $(PROJECT)_app.alw32
+allXXX: APP2 $(PROJECT)_app.alw32
+all: app_run
 
 allZ:
 	@echo Src
@@ -252,11 +253,14 @@ allZ:
 	@echo Obj at $(OBJDIR)
 	@echo $(abspath $(OBJS))
 
-bootloader: BOOT2 fsbl.alw32
+bootloader: BOOT2 fsbl.alw32 app_run
   
-app_run: fsbl.alw32
+app_run: BOOT2 fsbl.alw32
 	$(XFEL) write 0x00044000 fsbl.alw32
-	$(XFEL) exec  0x00044100 
+	$(XFEL) hexdump 0x00044000  16
+	$(XFEL) hexdump 0x00044100  128
+	$(XFEL) exec 0x00044100 
+	$(XFEL) hexdump 0x00044000  16
   
 Zapp_run: $(PROJECT)_app.alw32
 	$(XFEL) ddr t113-s3

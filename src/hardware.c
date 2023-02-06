@@ -3277,7 +3277,7 @@ __STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 */
 
 #if defined(__aarch64__)
-uint32_t __Vectors [32];
+//uint32_t __Vectors [32];
 void __attribute__((used)) Reset_Handler(void)
 {
 	SystemInit();
@@ -4549,7 +4549,7 @@ void _stack_init(void)
 
 }
 
-#if CPUSTYLE_RISCV
+#if CPUSTYLE_RISCV || defined(__aarch64__)
 
 /**
   \brief   Initializes data and bss sections
@@ -4592,7 +4592,7 @@ __NO_RETURN void __riscv_start(void)
 
   _start();
 }
-#endif /* CPUSTYLE_RISCV */
+#endif /* CPUSTYLE_RISCV || defined(__aarch64__) */
 
 #if ! LINUX_SUBSYSTEM && 1//(__CORTEX_M == 0) && 0
 

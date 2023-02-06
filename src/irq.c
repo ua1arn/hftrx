@@ -1880,7 +1880,8 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	//csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
 	//csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
 	//csr_set_bits_mie(MIE_MTI_BIT_MASK);	// MTI - timer
-
+#elif CPUSTYLE_CA53
+	#warning implement for CPUSTYLE_CA53
 #else /* CPUSTYLE_STM32MP1 */
 
 	NVIC_DisableIRQ(int_id);
@@ -1921,6 +1922,8 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 		const unsigned mask = (1u << d.rem);
 		PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
 
+#elif CPUSTYLE_CA53
+	#warning implement for CPUSTYLE_CA53
 #else /* CPUSTYLE_STM32MP1 */
 
 	NVIC_DisableIRQ(int_id);

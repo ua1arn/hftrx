@@ -5444,7 +5444,7 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 #endif
 
-#if (__CORTEX_A != 0)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 static void disableAllIRQs(void)
 {
@@ -5475,7 +5475,8 @@ static void disableAllIRQs(void)
 	PRINTF("disableAllIRQs: n=%u\n", n);
 
 }
-#endif /* (__CORTEX_A != 0) */
+
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if WITHOPENVG
 /*------------------------------------------------------------------------
