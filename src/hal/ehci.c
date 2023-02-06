@@ -27,7 +27,7 @@
 #endif /* WITHOHCIHW_OHCIPORT */
 
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
-#define WITHTINYUSB 1
+//#define WITHTINYUSB 1
 
 
 #if WITHTINYUSB
