@@ -1,5 +1,5 @@
 #type; PWM
-#base; PWM 0x02000C00
+#base; PWM 0x01C21400
 #regdef; PIER; 0x0000; PWM IRQ Enable Register
 #regdef; PISR; 0x0004; PWM IRQ Status Register
 #regdef; CIER; 0x0010; Capture IRQ Enable Register

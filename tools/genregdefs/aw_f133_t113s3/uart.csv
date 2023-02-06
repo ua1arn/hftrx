@@ -10,7 +10,7 @@
 #irq; UART2 36
 #irq; UART3 37
 #irq; UART4 38
-#irq; UART6 39
+#irq; UART5 39
 #regdef; DATA; 0x0000; UART Receive Buffer Register/Transmit Holding Register
 #regdef; DLH_IER; 0x0004; UART Divisor Latch High Register/UART Interrupt Enable Register
 #regdef; IIR_FCR; 0x0008; UART Interrupt Identity Register/UART FIFO Control Register
