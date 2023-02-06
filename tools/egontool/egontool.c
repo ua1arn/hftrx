@@ -109,7 +109,7 @@ static void process(
 	if (targetRV)
 		place_uint32_le(& head.jump_instruction, 0x6F | (execoffset << 20));	/// Jump to $ + 0x0100
 	else if (targetAARCH64)
-		place_uint32_le(& head.jump_instruction, 0x14000040);	/// Jump to $ + 0x0100
+		place_uint32_le(& head.jump_instruction, 0x14000000 | ((execoffset / 4)));	/// Jump to $ + 0x0100
 	else
 		place_uint32_le(& head.jump_instruction, 0xEA000000 | (execoffset - 8) / 4);	/// Jump to $ + 0x0100
 
