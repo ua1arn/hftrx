@@ -309,12 +309,18 @@ static struct regdfn* parseregdef(char *s0, char *fldname, unsigned fldsize,
 	InitializeListHead(&regp->aggregate);
 
 	/* trim field name */
-	if (strchr(fldname, '\n') != NULL)
-		*strchr(fldname, '\n') = '\0';
-	if (strchr(fldname, '/') != NULL)
-		*strchr(fldname, '/') = '_';
-	if (strchr(fldname, '/') != NULL)
-		*strchr(fldname, '/') = '_';
+	{
+		if (strchr(fldname, '\n') != NULL)
+			*strchr(fldname, '\n') = '\0';
+		if (strchr(fldname, '/') != NULL)
+			*strchr(fldname, '/') = '_';
+		if (strchr(fldname, '/') != NULL)
+			*strchr(fldname, '/') = '_';
+		if (strchr(fldname, '-') != NULL)
+			*strchr(fldname, '-') = '_';
+		if (strchr(fldname, '-') != NULL)
+			*strchr(fldname, '-') = '_';
+	}
 
 	if (s2 != NULL) {
 		/* trim comments */
@@ -368,7 +374,7 @@ static int parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 	for (;;) {
 		//fprintf(stderr, "token0=%s\n", token0);
 		if (2
-				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %i %n", fldname,
+				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname,
 						&fldsize, &pos)) {
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize,
 					file);
@@ -378,7 +384,7 @@ static int parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 			if (nextline(fp) == 0)
 				break;
 		} else if (1
-				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/] %n", fldname,
+				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %n", fldname,
 						&pos)) {
 
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, file);
@@ -389,7 +395,7 @@ static int parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 				break;
 
 		} else if (1
-				== sscanf(token0, "#aggreg; %[a-zA-Z_0-9/] %n", fldname,
+				== sscanf(token0, "#aggreg; %[a-zA-Z_0-9/-] %n", fldname,
 						&pos)) {
 
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, file);
