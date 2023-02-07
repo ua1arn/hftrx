@@ -21985,11 +21985,26 @@ int
 //__attribute__ ((used))
 main(void)
 {
+#if LINUX_SUBSYSTEM
+	linux_subsystem_init();
+#endif /* LINUX_SUBSYSTEM */
+#if CPUSTYLE_ARM || CPUSTYLE_RISCV
+	sysinit_gpio_initialize();
+	sysinit_pmic_initialize();
+#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
+#if WITHDEBUG && (! CPUSTYLE_ARM /* || WITHISBOOTLOADER */)
+
+	HARDWARE_DEBUG_INITIALIZE();
+	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+
+#endif /* WITHDEBUG && ! CPUSTYLE_ARM */
+
 #if 1 && CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
     {
+    	TP();
         CCU->BUS_CLK_GATING_REG2 |= (1u << 5);    // PIO_GATING - not need - already set
 
-        axp803_initialize();
+        //axp803_initialize();
 
         /* low-level board test */
         BOARD_BLINK_INITIALIZE();
@@ -22015,18 +22030,7 @@ main(void)
         dcache_clean(0x0044000, 256);
     }
 #endif
-#if LINUX_SUBSYSTEM
-	linux_subsystem_init();
-#endif /* LINUX_SUBSYSTEM */
-#if CPUSTYLE_ARM || CPUSTYLE_RISCV
-	sysinit_gpio_initialize();
-#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
-#if WITHDEBUG && (! CPUSTYLE_ARM /* || WITHISBOOTLOADER */)
 
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-
-#endif /* WITHDEBUG && ! CPUSTYLE_ARM */
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
 	global_disableIRQ();

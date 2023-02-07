@@ -1013,6 +1013,14 @@
 		} while (0)
 #endif
 
+	int axp803_initialize(void);
+
+	/* Контроллер питания AXP803 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		axp803_initialize(); \
+	} while (0)
+
+
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_USERBOOT_BIT	(1u << 1)	/* PB1: ~USER_BOOT */
 	#define BOARD_IS_USERBOOT() 0//(((GPIOB->DATA) & BOARD_USERBOOT_BIT) == 0 || ((GPIOE->DATA) & TARGET_ENC2BTN_BIT) == 0)

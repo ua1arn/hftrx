@@ -3650,6 +3650,15 @@ sysinit_cache_L2_cpu0_initialize(void)
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
 
+
+// инициализация контроллера питания (не только DDR память. бывает и GPIO)
+void sysinit_pmic_initialize(void)
+{
+#if defined (BOARD_PMIC_INITIALIZE)
+	BOARD_PMIC_INITIALIZE();
+#endif /* BOARD_PMIC_INITIALIZE */
+}
+
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
@@ -3661,6 +3670,7 @@ SystemInit(void)
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
+	//sysinit_pmic_initialize();
 	sysinit_perfmeter_initialize();
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
