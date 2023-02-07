@@ -6431,6 +6431,21 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
+
+		C0_CPUX_CFG->GENER_CTRL_REG0 &= ~ (1u << 4);	// GICCDISABLE
+		C0_CPUX_CFG->C_CPU_STATUS |= (0x0Fu << 24);		// SMP
+		C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << 24);		// AA64nAA32 1: AArch64
+
+		PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
+	}
+#endif
 #if 0 && LCDMODE_LTDC
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -6781,7 +6796,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 1 && WITHDEBUG && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if 0 && WITHDEBUG && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		// Allwinner t113-s3 boot mode display
 

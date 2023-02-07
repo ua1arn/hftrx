@@ -3834,6 +3834,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
+	//C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << (24 + targetcore));		// AA64nAA32 1: AArch64
 	switch (targetcore)
 	{
 	case 0:

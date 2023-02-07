@@ -21972,6 +21972,22 @@ static void bootloader_mainloop(void)
 	{
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
+		{
+			/* здесь можно добавить обработку каких-либо команд с debug порта */
+			char c;
+			if (dbg_getchar(& c))
+			{
+				switch (c)
+				{
+				case 0x00:
+					break;
+				default:
+					PRINTF("key=%02X\n", (unsigned char) c);
+					break;
+
+				}
+			}
+		}
 	}
 }
 #endif /* WITHISBOOTLOADERFATFS */
