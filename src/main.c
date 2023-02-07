@@ -21990,7 +21990,6 @@ main(void)
 #endif /* LINUX_SUBSYSTEM */
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV
 	sysinit_gpio_initialize();
-	sysinit_pmic_initialize();
 #endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 #if WITHDEBUG && (! CPUSTYLE_ARM /* || WITHISBOOTLOADER */)
 
