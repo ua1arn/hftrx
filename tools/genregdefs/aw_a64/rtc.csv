@@ -1,23 +1,25 @@
 #type; RTC
 #base; RTC 0x01F00000
-#regdef; LOSC_CTRL_REG; 0x0000; Low Oscillator Control Register
-#regdef; LOSC_AUTO_SWT_STA_REG; 0x0004; Low Oscillator Auto Switch Status Register
-#regdef; INTOSC_CLK_PRESCAL_REG; 0x0008; Internal OSC Clock Pre-scaler Register
-#regdef; RTC_DAY_REG; 0x0010; RTC Year-Month-Day Register
-#regdef; RTC_HH_MM_SS_REG; 0x0014; RTC Hour-Minute-Second Register
-#regdef; ALARM0_DAY_SET_REG; 0x0020; Alarm 0 Day Setting Register
-#regdef; ALARM0_CUR_VLU_REG; 0x0024; Alarm 0 Counter Current Value Register
-#regdef; ALARM0_ENABLE_REG; 0x0028; Alarm 0 Enable Register
-#regdef; ALARM0_IRQ_EN; 0x002C; Alarm 0 IRQ Enable Register
+#regdef; LOSC_CTRL_REG;  0x0000; Low Oscillator Control Register
+#regdef; LOSC_AUTO_SWT_STA_REG;  0x0004; LOSC Auto Switch Status Register
+#regdef; INTOSC_CLK_PRESCAL_REG;  0x0008; Internal OSC Clock Prescalar Register
+#regdef; RTC_YY_MM_DD_REG;  0x0010; RTC Year-Month-Day Register
+#regdef; RTC_HH_MM_SS_REG;  0x0014; RTC Hour-Minute-Second Register
+#regdef; ALARM0_COUNTER_REG;  0x0020; Alarm 0 Counter Register 
+#regdef; ALARM0_CUR_VLU_REG;  0x0024; Alarm 0 Counter Current Value Register
+#regdef; ALARM0_ENABLE_REG;  0x0028; Alarm 0 Enable Register
+#regdef; ALARM0_IRQ_EN;  0x002C; Alarm 0 IRQ Enable Register
 #regdef; ALARM0_IRQ_STA_REG; 0x0030; Alarm 0 IRQ Status Register
-#regdef; ALARM_CONFIG_REG; 0x0050; Alarm Configuration Register
-#regdef; F32K_FOUT_CTRL_GATING_REG; 0x0060; 32K Fanout Control Gating Register
-#regdef; GP_DATA_REG; 0x0100 8; General Purpose Register (N=0 to 7)
-#regdef; FBOOT_INFO_REG0; 0x0120; Fast Boot Information Register0
-#regdef; FBOOT_INFO_REG1; 0x0124; Fast Boot Information Register1
-#regdef; DCXO_CTRL_REG; 0x0160; DCXO Control Register
-#regdef; RTC_VIO_REG; 0x0190; RTC_VIO Regulation Register
-#regdef; IC_CHARA_REG; 0x01F0; IC Characteristic Register
-#regdef; VDD_OFF_GATING_CTRL_REG; 0x01F4; VDD Off Gating Control Register
-#regdef; EFUSE_HV_PWRSWT_CTRL_REG; 0x0204; Efuse High Voltage Power Switch Control Register
-#regdef; RTC_SPI_CLK_CTRL_REG; 0x0310; RTC SPI Clock Control Register
+#regdef; ALARM1_WK_HH_MM_SS; 0x040; Alarm 1 Week HMS Register 
+#regdef; ALARM1_ENABLE_REG; 0x044; Alarm 1 Enable Register
+#regdef; ALARM1_IRQ_EN; 0x0048; Alarm 1 IRQ Enable Register
+#regdef; ALARM1_IRQ_STA_REG;  0x004C Alarm 1 IRQ Status Register
+#regdef; ALARM_CONFIG_REG;  0x0050; Alarm Config Register
+#regdef; LOSC_OUT_GATING_REG;  0x060; LOSC output gating register
+#regdef; GP_DATA_REG;  0x0100 4; General Purpose Register (N=0~3)
+#regdef; GPL_HOLD_OUTPUT_REG;  0x0180; GPL Hold Output Register
+#regdef; VDD_RTC_REG;  0x0190; VDD RTC Regulate Register
+#regdef; IC_CHARA_REG;  0x01F0; IC Characteristic Register
+#regdef; CRY_CONFIG_REG;  0x0210; Crypt Configuration Register
+#regdef; CRY_KEY_REG;  0x0214; Crypt Key Register
+#regdef; CRY_ENABLE_REG;  0x0218; Crypt Enable Register

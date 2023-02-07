@@ -889,37 +889,38 @@ typedef struct CE_Type
 typedef struct RTC_Type
 {
     volatile uint32_t LOSC_CTRL_REG;                                            /*!< Offset 0x000 Low Oscillator Control Register */
-    volatile uint32_t LOSC_AUTO_SWT_STA_REG;                                    /*!< Offset 0x004 Low Oscillator Auto Switch Status Register */
-    volatile uint32_t INTOSC_CLK_PRESCAL_REG;                                   /*!< Offset 0x008 Internal OSC Clock Pre-scaler Register */
+    volatile uint32_t LOSC_AUTO_SWT_STA_REG;                                    /*!< Offset 0x004 LOSC Auto Switch Status Register */
+    volatile uint32_t INTOSC_CLK_PRESCAL_REG;                                   /*!< Offset 0x008 Internal OSC Clock Prescalar Register */
              uint32_t reserved_0x00C;
-    volatile uint32_t RTC_DAY_REG;                                              /*!< Offset 0x010 RTC Year-Month-Day Register */
+    volatile uint32_t RTC_YY_MM_DD_REG;                                         /*!< Offset 0x010 RTC Year-Month-Day Register */
     volatile uint32_t RTC_HH_MM_SS_REG;                                         /*!< Offset 0x014 RTC Hour-Minute-Second Register */
              uint32_t reserved_0x018 [0x0002];
-    volatile uint32_t ALARM0_DAY_SET_REG;                                       /*!< Offset 0x020 Alarm 0 Day Setting Register */
+    volatile uint32_t ALARM0_COUNTER_REG;                                       /*!< Offset 0x020 Alarm 0 Counter Register  */
     volatile uint32_t ALARM0_CUR_VLU_REG;                                       /*!< Offset 0x024 Alarm 0 Counter Current Value Register */
     volatile uint32_t ALARM0_ENABLE_REG;                                        /*!< Offset 0x028 Alarm 0 Enable Register */
     volatile uint32_t ALARM0_IRQ_EN;                                            /*!< Offset 0x02C Alarm 0 IRQ Enable Register */
     volatile uint32_t ALARM0_IRQ_STA_REG;                                       /*!< Offset 0x030 Alarm 0 IRQ Status Register */
-             uint32_t reserved_0x034 [0x0007];
-    volatile uint32_t ALARM_CONFIG_REG;                                         /*!< Offset 0x050 Alarm Configuration Register */
+             uint32_t reserved_0x034 [0x0003];
+    volatile uint32_t ALARM1_WK_HH_MM_SS;                                       /*!< Offset 0x040 Alarm 1 Week HMS Register  */
+    volatile uint32_t ALARM1_ENABLE_REG;                                        /*!< Offset 0x044 Alarm 1 Enable Register */
+    volatile uint32_t ALARM1_IRQ_EN;                                            /*!< Offset 0x048 Alarm 1 IRQ Enable Register */
+    volatile uint32_t ALARM1_IRQ_STA_REG;                                       /*!< Offset 0x04C (null) */
+    volatile uint32_t ALARM_CONFIG_REG;                                         /*!< Offset 0x050 Alarm Config Register */
              uint32_t reserved_0x054 [0x0003];
-    volatile uint32_t F32K_FOUT_CTRL_GATING_REG;                                /*!< Offset 0x060 32K Fanout Control Gating Register */
+    volatile uint32_t LOSC_OUT_GATING_REG;                                      /*!< Offset 0x060 LOSC output gating register */
              uint32_t reserved_0x064 [0x0027];
-    volatile uint32_t GP_DATA_REG [0x008];                                      /*!< Offset 0x100 General Purpose Register (N=0 to 7) */
-    volatile uint32_t FBOOT_INFO_REG0;                                          /*!< Offset 0x120 Fast Boot Information Register0 */
-    volatile uint32_t FBOOT_INFO_REG1;                                          /*!< Offset 0x124 Fast Boot Information Register1 */
-             uint32_t reserved_0x128 [0x000E];
-    volatile uint32_t DCXO_CTRL_REG;                                            /*!< Offset 0x160 DCXO Control Register */
-             uint32_t reserved_0x164 [0x000B];
-    volatile uint32_t RTC_VIO_REG;                                              /*!< Offset 0x190 RTC_VIO Regulation Register */
+    volatile uint32_t GP_DATA_REG [0x004];                                      /*!< Offset 0x100 General Purpose Register (N=0~3) */
+             uint32_t reserved_0x110 [0x001C];
+    volatile uint32_t GPL_HOLD_OUTPUT_REG;                                      /*!< Offset 0x180 GPL Hold Output Register */
+             uint32_t reserved_0x184 [0x0003];
+    volatile uint32_t VDD_RTC_REG;                                              /*!< Offset 0x190 VDD RTC Regulate Register */
              uint32_t reserved_0x194 [0x0017];
     volatile uint32_t IC_CHARA_REG;                                             /*!< Offset 0x1F0 IC Characteristic Register */
-    volatile uint32_t VDD_OFF_GATING_CTRL_REG;                                  /*!< Offset 0x1F4 VDD Off Gating Control Register */
-             uint32_t reserved_0x1F8 [0x0003];
-    volatile uint32_t EFUSE_HV_PWRSWT_CTRL_REG;                                 /*!< Offset 0x204 Efuse High Voltage Power Switch Control Register */
-             uint32_t reserved_0x208 [0x0042];
-    volatile uint32_t RTC_SPI_CLK_CTRL_REG;                                     /*!< Offset 0x310 RTC SPI Clock Control Register */
-} RTC_TypeDef; /* size of structure = 0x314 */
+             uint32_t reserved_0x1F4 [0x0007];
+    volatile uint32_t CRY_CONFIG_REG;                                           /*!< Offset 0x210 Crypt Configuration Register */
+    volatile uint32_t CRY_KEY_REG;                                              /*!< Offset 0x214 Crypt Key Register */
+    volatile uint32_t CRY_ENABLE_REG;                                           /*!< Offset 0x218 Crypt Enable Register */
+} RTC_TypeDef; /* size of structure = 0x21C */
 /*
  * @brief IOMMU
  */
