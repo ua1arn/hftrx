@@ -3653,11 +3653,25 @@ SystemInit(void)
 {
 #if CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
 	{
-		* ((volatile uint32_t *) 0x0044000) = 0xDEADBEEF;
-		* ((volatile uint32_t *) 0x0044004) = 0xABBA1980;
 		CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING - not need - already set
 		/* low-level board test */
 		BOARD_BLINK_INITIALIZE();
+		BOARD_BLINK_SETSTATE(0);
+		* ((volatile uint32_t *) 0x0044000) = GPIOD->CFG [0];
+		* ((volatile uint32_t *) 0x0044004) = GPIOD->CFG [1];
+		* ((volatile uint32_t *) 0x0044008) = GPIOD->CFG [2];
+		* ((volatile uint32_t *) 0x004400C) = GPIOD->CFG [3];
+
+		* ((volatile uint32_t *) 0x0044010) = GPIOE->CFG [0];
+		* ((volatile uint32_t *) 0x0044014) = GPIOE->CFG [1];
+		* ((volatile uint32_t *) 0x0044018) = GPIOE->CFG [2];
+		* ((volatile uint32_t *) 0x004401C) = GPIOE->CFG [3];
+		GPIOE->DATA = ~ 0;
+		* ((volatile uint32_t *) 0x0044020) = GPIOE->DATA;
+
+
+		//* ((volatile uint32_t *) 0x0044010) = GPIOD->DATA;
+		return;
 		int i;
 		for (i = 0; i < 10; ++ i)
 		{
