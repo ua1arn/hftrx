@@ -22006,7 +22006,7 @@ main(void)
             BOARD_BLINK_SETSTATE(0);
 
            local_delay_ms(500);
-            PRINTF("test %d\n", i);
+            //PRINTF("test %d\n", i);
         }
 
         //* ((volatile uint32_t *) 0x0044010) = GPIOD->DATA;

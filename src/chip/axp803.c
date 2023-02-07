@@ -41,18 +41,18 @@
 int pmic_bus_init(void)
 {
 	TWISOFT_INITIALIZE();
-
-
-	uint8_t v;
-	unsigned addrw = PMIC_I2C_W;
-	unsigned addrr = PMIC_I2C_R;
-	////%%TP();
-	i2c_start(addrw);
-	i2c_write_withrestart(0x1B);
-	i2c_start(addrr);
-	i2c_read(& v, I2C_READ_ACK_NACK);
-	////%%TP();
-	PRINTF("I2C 0x%02X: test=0x%02X\n", addrw, v);
+//
+//
+//	uint8_t v;
+//	unsigned addrw = PMIC_I2C_W;
+//	unsigned addrr = PMIC_I2C_R;
+//	////%%TP();
+//	i2c_start(addrw);
+//	i2c_write_withrestart(0x1B);
+//	i2c_start(addrr);
+//	i2c_read(& v, I2C_READ_ACK_NACK);
+//	////%%TP();
+//	PRINTF("I2C 0x%02X: test=0x%02X\n", addrw, v);
 
 	return 0;
 }
@@ -437,6 +437,7 @@ int axp803_initialize(void)
 //	else
 //		return ret;
 
+	axp803_set_aldo1(3300);	// VCC-PE
 	axp803_set_aldo2(3300);	// VCC-PL
 	axp803_set_aldo3(3000);	// AVCC, VCC-PLL
 
@@ -460,6 +461,8 @@ int axp803_initialize(void)
 
 	axp803_set_fldo(1, 1200);
 	axp803_set_fldo(2, 1100);
+
+	axp803_set_sw(1);	// reg 12h, bit 7
 
 	return 0;
 }
