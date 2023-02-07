@@ -21988,9 +21988,6 @@ static void writel(uint32_t value, uintptr_t addr)
 	* (volatile uint32_t *) addr = value;
 }
 
-#define PMIC_I2C_W 0x68
-#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
-
 /* Главная функция программы */
 int 
 //__attribute__ ((used))
@@ -22011,34 +22008,7 @@ main(void)
 			reg_val |= 1;
 			writel(reg_val, R_PRCM_BASE+0x28);
 		}
-		TWISOFT_INITIALIZE();
-		{
-			uint8_t v;
-			unsigned addrw = PMIC_I2C_W;
-			unsigned addrr = PMIC_I2C_R;
-			////%%TP();
-			i2c_start(addrw);
-			i2c_write_withrestart(0x1B);
-			i2c_start(addrr);
-			i2c_read(& v, I2C_READ_ACK_NACK);
-			////%%TP();
-			PRINTF("I2C 0x%02X: test=0x%02X\n", addrw, v);
-		}
-
-		unsigned i;
-		for (i = 1; i < 127; ++ i)
-		{
-			uint8_t v;
-			unsigned addrw = i * 2;
-			unsigned addrr = addrw + 1;
-			////%%TP();
-			i2c_start(addrw);
-			i2c_write_withrestart(0x1B);
-			i2c_start(addrr);
-			i2c_read(& v, I2C_READ_ACK_NACK);
-			////%%TP();
-			PRINTF("I2C addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
-		}
+		axp803_initialize();
 	}
 #endif
 #if 1 && CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
