@@ -63,7 +63,8 @@ struct parsedfile {
 };
 
 #define INDENT 4
-#define COMMENTPOS 80
+#define COMMENTPOS 54
+#define COMMENTNEAR 54
 
 void emitline(int pos, const char *format, ...) {
 	static int emitpos;
@@ -235,16 +236,19 @@ static LIST_ENTRY parsedfiles;
 struct basemap {
 	unsigned base;
 	char name[VNAME_MAX];
+	struct parsedfile * pfl;
 };
 
 struct irqmap {
 	int irq;
 	char name[VNAME_MAX];
+	struct parsedfile * pfl;
 };
 
 struct irqmaprv {
 	int irqrv;
 	char name[VNAME_MAX];
+	struct parsedfile * pfl;
 };
 
 /* qsort parameter */
@@ -553,6 +557,7 @@ static int collect_base(struct parsedfile *pfl, int n, struct basemap *v) {
 	for (i = 0; i < pfl->base_count && n--; ++i, ++v, ++score) {
 		strcpy(v->name, pfl->base_names[i]);
 		v->base = pfl->base_array[i];
+		v->pfl = pfl;
 	}
 	return score;
 }
@@ -567,8 +572,8 @@ static void processfile_access(struct parsedfile *pfl) {
 	for (i = 0; i < pfl->base_count; ++i) {
 		emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", pfl->base_names[i],
 				pfl->bname, pfl->base_names[i]);
-		emitline(COMMENTPOS,
-				"/*!< \\brief %s Interface register set access pointer */\n",
+		emitline(COMMENTNEAR,
+				"/*!< %s Interface register set access pointer */\n",
 				pfl->base_names[i]);
 	}
 }
@@ -580,6 +585,7 @@ static int collect_irq(struct parsedfile *pfl, int n, struct irqmap *v) {
 	for (i = 0; i < pfl->irq_count && n--; ++i, ++v, ++score) {
 		strcpy(v->name, pfl->irq_names[i]);
 		v->irq = pfl->irq_array[i];
+		v->pfl = pfl;
 	}
 	return score;
 }
@@ -591,6 +597,7 @@ static int collect_irqrv(struct parsedfile *pfl, int n, struct irqmaprv *v) {
 	for (i = 0; i < pfl->irqrv_count && n--; ++i, ++v, ++score) {
 		strcpy(v->name, pfl->irqrv_names[i]);
 		v->irqrv = pfl->irqrv_array[i];
+		v->pfl = pfl;
 	}
 	return score;
 }
@@ -654,7 +661,7 @@ int main(int argc, char *argv[], char *envp[]) {
 		emitline(0, "#include <stdint.h>" "\n");
 		emitline(0, "\n");
 
-		if (0) {
+		if (1) {
 			/* collect ARM IRQ vectors */
 			int nitems = 0;
 			struct irqmap irqs[1024];
@@ -683,12 +690,13 @@ int main(int argc, char *argv[], char *envp[]) {
 			for (i = 0; i < nitems; ++i) {
 				struct irqmap *const p = &irqs[i];
 
-				emitline(0, "\t%s_IRQn\t= %d,\n", p->name, p->irq);
+				emitline(INDENT, "%s_IRQn = %d,", p->name, p->irq);
+				emitline(COMMENTNEAR, "/*!< %s Interrupt */\n", p->pfl->bname);
 			}
 			emitline(0, "\n");
-			emitline(0, "\t%MAX_IRQ_n,\n");
-			emitline(0,
-					"\tForce_IRQn_enum_size\t= %d\t/* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
+			emitline(INDENT, "MAX_IRQ_n,\n");
+			emitline(INDENT,
+					"Force_IRQn_enum_size = %d /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
 					1048);
 			emitline(0, "} IRQn_Type;\n");
 			emitline(0, "\n");
@@ -723,12 +731,13 @@ int main(int argc, char *argv[], char *envp[]) {
 			for (i = 0; i < nitems; ++i) {
 				struct irqmaprv *const p = &irqs[i];
 
-				emitline(0, "\t%s_IRQn\t= %d,\n", p->name, p->irqrv);
+				emitline(INDENT, "%s_IRQn = %d,", p->name, p->irqrv);
+				emitline(COMMENTNEAR, "/*!< %s Interrupt */\n", p->pfl->bname);
 			}
 			emitline(0, "\n");
-			emitline(0, "\t%MAX_IRQ_n,\n");
-			emitline(0,
-					"\tForce_IRQn_enum_size\t= %d\t/* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
+			emitline(INDENT, "MAX_IRQ_n,\n");
+			emitline(INDENT,
+					"Force_IRQn_enum_size = %d /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
 					1048);
 			emitline(0, "} IRQn_Type;\n");
 			emitline(0, "\n");
@@ -756,9 +765,11 @@ int main(int argc, char *argv[], char *envp[]) {
 			for (i = 0; i < nitems; ++i) {
 				struct basemap *const p = &maps[i];
 
-				emitline(0, "#define\t%s_BASE\t ((uintptr_t) 0x%08X)\n",
+				emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)",
 						p->name, p->base);
+				emitline(COMMENTNEAR, "/*!< %s Base */\n", p->pfl->bname);
 			}
+			emitline(0, "\n");
 		}
 
 		if (1) {
@@ -770,6 +781,7 @@ int main(int argc, char *argv[], char *envp[]) {
 						struct parsedfile, item);
 				processfile_periphregs(pfl);
 			}
+			emitline(0, "\n");
 		}
 
 		if (1) {
@@ -784,6 +796,7 @@ int main(int argc, char *argv[], char *envp[]) {
 						struct parsedfile, item);
 				processfile_access(pfl);
 			}
+			emitline(0, "\n");
 		}
 
 		emitline(0, "\n");
