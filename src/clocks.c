@@ -1867,7 +1867,7 @@ void allwnr_a64_pll_initialize(void)
 	set_a64_pll_cpux_axi(PLL_CPU_N, PLL_CPU_K, PLL_CPU_M, PLL_CPU_P);	// see sdram.c
 }
 
-uint_fast32_t allwnr_a64_get_hosc_freq(void)
+uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
 #if defined WITHCPUXTAL
 	return WITHCPUXTAL;
@@ -3434,7 +3434,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif CPUSTYLE_A64
+#elif 0//CPUSTYLE_A64
 
 #warning Implement for CPUSTYLE_A64
 

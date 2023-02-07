@@ -1125,20 +1125,18 @@ typedef struct TIMER_Type
     volatile uint32_t TMR1_CTRL_REG;                                            /*!< Offset 0x020 Timer1 Control Register */
     volatile uint32_t TMR1_INTV_VALUE_REG;                                      /*!< Offset 0x024 Timer1 Interval Value Register */
     volatile uint32_t TMR1_CUR_VALUE_REG;                                       /*!< Offset 0x028 Timer1 Current Value Register */
-             uint32_t reserved_0x02C [0x001D];
+             uint32_t reserved_0x02C [0x0015];
+    volatile uint32_t AVS_CNT_CTL_REG;                                          /*!< Offset 0x080 AVS Control Register */
+    volatile uint32_t AVS_CNT0_REG;                                             /*!< Offset 0x084 AVS Counter 0 Register */
+    volatile uint32_t AVS_CNT1_REG;                                             /*!< Offset 0x088 AVS Counter 1 Register */
+             uint32_t reserved_0x08C [0x0005];
     volatile uint32_t WDOG_IRQ_EN_REG;                                          /*!< Offset 0x0A0 Watchdog IRQ Enable Register */
     volatile uint32_t WDOG_IRQ_STA_REG;                                         /*!< Offset 0x0A4 Watchdog Status Register */
-    volatile uint32_t WDOG_SOFT_RST_REG;                                        /*!< Offset 0x0A8 Watchdog Software Reset Register */
-             uint32_t reserved_0x0AC;
+             uint32_t reserved_0x0A8 [0x0002];
     volatile uint32_t WDOG_CTRL_REG;                                            /*!< Offset 0x0B0 Watchdog Control Register */
     volatile uint32_t WDOG_CFG_REG;                                             /*!< Offset 0x0B4 Watchdog Configuration Register */
     volatile uint32_t WDOG_MODE_REG;                                            /*!< Offset 0x0B8 Watchdog Mode Register */
-    volatile uint32_t WDOG_OUTPUT_CFG_REG;                                      /*!< Offset 0x0BC Watchdog Output Configuration Register */
-    volatile uint32_t AVS_CNT_CTL_REG;                                          /*!< Offset 0x0C0 AVS Control Register */
-    volatile uint32_t AVS_CNT0_REG;                                             /*!< Offset 0x0C4 AVS Counter 0 Register */
-    volatile uint32_t AVS_CNT1_REG;                                             /*!< Offset 0x0C8 AVS Counter 1 Register */
-    volatile uint32_t AVS_CNT_DIV_REG;                                          /*!< Offset 0x0CC AVS Divisor Register */
-} TIMER_TypeDef; /* size of structure = 0x0D0 */
+} TIMER_TypeDef; /* size of structure = 0x0BC */
 /*
  * @brief HSTIMER
  */

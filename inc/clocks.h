@@ -186,7 +186,6 @@ uint_fast32_t allwnrt113_get_ve_freq(void);
 uint_fast32_t allwnrt113_get_dsp_freq(void);
 
 // Allwinner A64
-uint_fast32_t allwnr_a64_get_hosc_freq(void);
 uint_fast32_t allwnr_a64_get_arm_freq(void);
 
 
