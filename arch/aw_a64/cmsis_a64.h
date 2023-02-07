@@ -142,8 +142,8 @@ typedef struct CCU_Type
     volatile uint32_t PLL_HSIC_CTRL_REG;                                        /*!< Offset 0x044 PLL_HSIC Control Register  */
     volatile uint32_t PLL_DE_CTRL_REG;                                          /*!< Offset 0x048 PLL_DE Control Register */
     volatile uint32_t PLL_DDR1_CTRL_REG;                                        /*!< Offset 0x04C PLL_DDR1 Control Register */
-    volatile uint32_t CPU_AXI_CFG_REG;                                          /*!< Offset 0x050 (null) */
-    volatile uint32_t AHB1_APB1_CFG_REG;                                        /*!< Offset 0x054 (null) */
+    volatile uint32_t CPU_AXI_CFG_REG;                                          /*!< Offset 0x050 CPUX/AXI Configuration Register  */
+    volatile uint32_t AHB1_APB1_CFG_REG;                                        /*!< Offset 0x054 AHB1/APB1 Configuration Register */
     volatile uint32_t APB2_CFG_REG;                                             /*!< Offset 0x058 APB2 Configuration Register */
     volatile uint32_t AHB2_CFG_REG;                                             /*!< Offset 0x05C AHB2 Configuration Register */
     volatile uint32_t BUS_CLK_GATING_REG0;                                      /*!< Offset 0x060 Bus Clock Gating Register 0 */

@@ -21983,6 +21983,31 @@ int
 //__attribute__ ((used))
 main(void)
 {
+#if 1 && CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
+    {
+        CCU->BUS_CLK_GATING_REG2 |= (1u << 5);    // PIO_GATING - not need - already set
+
+        /* low-level board test */
+        BOARD_BLINK_INITIALIZE();
+        BOARD_BLINK_SETSTATE(1);
+
+        int i;
+        for (i = 0; i < 10; ++ i)
+        {
+            /* blinking */
+            BOARD_BLINK_SETSTATE(1);
+            local_delay_ms(500);
+            BOARD_BLINK_SETSTATE(0);
+            local_delay_ms(500);
+            TP();
+        }
+
+        //* ((volatile uint32_t *) 0x0044010) = GPIOD->DATA;
+        * ((volatile uint32_t *) 0x0044000) = 0xDEADBEEF; //GPIOD->CFG [0];
+        * ((volatile uint32_t *) 0x0044004) = 0xDEADBEEF; //GPIOD->CFG [0];
+        dcache_clean(0x0044000, 256);
+    }
+#endif
 #if LINUX_SUBSYSTEM
 	linux_subsystem_init();
 #endif /* LINUX_SUBSYSTEM */
