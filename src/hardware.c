@@ -1704,7 +1704,7 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_A64
 	// калибровано для 1200 МГц процессора
-	const unsigned long top = 150uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
 	// калибровано для 1200 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
