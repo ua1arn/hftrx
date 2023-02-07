@@ -31,15 +31,11 @@
 	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
-	#if CPUSTYLE_F133
-		//#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz */
-		#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
-		//#define PLL_CPU_N 33	/* 24 MHz * 33 = 792 MHz */
-	#elif CPUSTYLE_T113
-		#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz https://linux-sunxi.org/T113-s3 say about 1.2 GHz */
-		//#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
-		//#define PLL_CPU_N 33	/* 24 MHz * 33 = 792 MHz */
-	#endif
+	//  (24MHz*N*K)/(M*P)
+	#define PLL_CPU_N 	24
+	#define PLL_CPU_K	2
+	#define PLL_CPU_M	1
+	#define PLL_CPU_P	1
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -238,7 +234,7 @@
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
