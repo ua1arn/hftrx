@@ -105,11 +105,11 @@
 	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
-	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
+	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 

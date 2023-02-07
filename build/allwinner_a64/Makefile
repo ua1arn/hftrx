@@ -49,7 +49,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 
 
-CORE = -mcpu=cortex-a53
+CORE = -mcpu=cortex-a7
 CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
 #CORE += -mfpu=neon-vfpv4

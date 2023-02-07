@@ -1137,6 +1137,8 @@ static void writel(uint32_t value, uintptr_t addr)
 	* (volatile uint32_t *) addr = value;
 }
 
+#if CPUSTYLE_A64
+
 #define	R_PRCM_BASE	 ((uintptr_t) 0x01F01400)
 
 static void awxx_a64_gpiol_enable(void)
@@ -1157,6 +1159,8 @@ static void awxx_a64_gpiol_enable(void)
 	gpioX_unlock(GPIOL, cpsr);
 
 }
+
+#endif /* CPUSTYLE_A64 */
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 

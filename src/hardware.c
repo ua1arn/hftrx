@@ -3137,7 +3137,7 @@ sysinit_fpu_initialize(void)
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
 
-#elif (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#elif (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U)
 
 	// FPU
 	__FPU_Enable();

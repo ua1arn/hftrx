@@ -417,6 +417,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
 	}
+
+#elif CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	//	Allwinner USB DRD support (musb_otg)
 	//
@@ -557,6 +561,10 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 			arm_hardware_disable_handler(OTG_FS_IRQn);
 		  }
 	#endif /* defined (USB_OTG_FS) */
+
+#elif CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
+
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 

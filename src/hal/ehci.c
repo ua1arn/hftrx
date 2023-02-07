@@ -2390,7 +2390,10 @@ void MX_USB_HOST_Process(void)
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
 
@@ -2589,7 +2592,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
 	{
