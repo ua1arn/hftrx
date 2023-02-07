@@ -3484,11 +3484,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif 0//CPUSTYLE_A64
-
-#warning Implement for CPUSTYLE_A64
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	// timebase timer
 	TIMER->TMR1_CTRL_REG = 0;
