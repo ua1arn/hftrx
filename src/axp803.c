@@ -57,7 +57,7 @@ int pmic_bus_init(void)
 	return 0;
 }
 
-int pmic_bus_read(unsigned reg, uint8_t * data)
+int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
 	unsigned addrw = PMIC_I2C_W;
 	unsigned addrr = PMIC_I2C_R;
@@ -70,7 +70,7 @@ int pmic_bus_read(unsigned reg, uint8_t * data)
 	return 0;
 }
 
-int pmic_bus_write(unsigned reg, uint8_t data)
+int pmic_bus_write(uint8_t reg, uint8_t data)
 {
 	unsigned addrw = PMIC_I2C_W;
 	unsigned addrr = PMIC_I2C_R;
@@ -78,30 +78,41 @@ int pmic_bus_write(unsigned reg, uint8_t data)
 	i2c_start(addrw);
 	i2c_write(reg);
 	i2c_write(data);
+	i2c_stop();
 
 	return 0;
 }
 
-int pmic_bus_clrbits(unsigned reg, unsigned mask)
+int pmic_bus_setbits(uint8_t reg, uint8_t bits)
 {
-	uint8_t data;
+	int ret;
+	uint8_t val;
 
-	pmic_bus_read(reg, & data);
-	data &= ~ mask;
-	pmic_bus_write(reg, data);
+	ret = pmic_bus_read(reg, &val);
+	if (ret)
+		return ret;
 
-	return 0;
+	if ((val & bits) == bits)
+		return 0;
+
+	val |= bits;
+	return pmic_bus_write(reg, val);
 }
 
-int pmic_bus_setbits(unsigned reg, unsigned mask)
+int pmic_bus_clrbits(uint8_t reg, uint8_t bits)
 {
-	uint8_t data;
+	int ret;
+	uint8_t val;
 
-	pmic_bus_read(reg, & data);
-	data |= mask;
-	pmic_bus_write(reg, data);
+	ret = pmic_bus_read(reg, &val);
+	if (ret)
+		return ret;
 
-	return 0;
+	if (!(val & bits))
+		return 0;
+
+	val &= ~bits;
+	return pmic_bus_write(reg, val);
 }
 
 static uint8_t axp803_mvolt_to_cfg(int mvolt, int min, int max, int div)
@@ -343,7 +354,7 @@ int axp803_set_sw(int on)
 		regulator-name = "vdd-cpux";
 	};
 
-	/* DCDC3 is polyphased with DCDC2 */
+	/ * DCDC3 is polyphased with DCDC2 * /
 
 	&reg_dcdc5 {
 		regulator-always-on;
@@ -389,11 +400,11 @@ int axp803_set_sw(int on)
 		regulator-name = "vcc-1v2-hsic";
 	};
 
-	/*
+	/ *
 	 * The A64 chip cannot work without this regulator off, although
 	 * it seems to be only driving the AR100 core.
 	 * Maybe we don't still know well about CPUs domain.
-	 */
+	 * /
 	&reg_fldo2 {
 		regulator-always-on;
 		regulator-min-microvolt = <1100000>;
@@ -425,6 +436,30 @@ int axp803_initialize(void)
 //		return -ENODEV;
 //	else
 //		return ret;
+
+	axp803_set_aldo2(3300);	// VCC-PL
+	axp803_set_aldo3(3000);	// AVCC, VCC-PLL
+
+//	&reg_dc1sw {
+//		regulator-name = "vcc-phy";
+//	};
+
+	ASSERT(0 == axp803_set_dcdc1(3300));	// VCC-CARD, VCC-PC, ...
+
+	// plyphased
+	axp803_set_dcdc2(1100);	// VDD-CPUX
+	axp803_set_dcdc3(1100);	// VDD-CPUX
+
+	//axp803_set_dcdc6(1100);	// VDD-SYS
+
+	axp803_set_dldo(1, 3300);
+	axp803_set_dldo(2, 3300);
+	axp803_set_dldo(4, 3300);
+
+	axp803_set_eldo(1, 1800);
+
+	axp803_set_fldo(1, 1200);
+	axp803_set_fldo(2, 1100);
 
 	return 0;
 }
