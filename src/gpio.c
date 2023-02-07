@@ -5,7 +5,7 @@
 // UA1ARN
 //
 
-#include "hardware.h"	/* зависящие от процarm_hardware_piol_outputsессора функции работы с портами */
+#include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"
 #include "gpio.h"
 
@@ -856,6 +856,7 @@ static void gpioX_unlock(GPIO_TypeDef * gpio, irqstatus_t cpsr)
 	csr_write_mie(cpsr);
 #endif
 }
+
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */
 /*!< Atomic port state change */
 void gpioX_setstate(
@@ -7664,7 +7665,7 @@ arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
 
-	//gpioX_poweron(GPIOB);
+	//gpioX_poweron(GPIOL);
 	gpioX_setstate(GPIOL, opins, initialstate);
 	gpioX_prog(GPIOL, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
