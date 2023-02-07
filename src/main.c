@@ -21983,23 +21983,60 @@ int
 //__attribute__ ((used))
 main(void)
 {
+#if 1 && CPUSTYLE_A64 && (WITHTWIHW || WITHTWISW)
+	{
+		// i2c bus test i2c test twi bus test twi test
+		PRINTF("l-cfg0: %08X\n", (unsigned) GPIOL->CFG [0]);
+		PRINTF("l-cfg1: %08X\n", (unsigned) GPIOL->CFG [1]);
+		PRINTF("l-cfg2: %08X\n", (unsigned) GPIOL->CFG [2]);
+		PRINTF("l-cfg3: %08X\n", (unsigned) GPIOL->CFG [3]);
+		TWISOFT_INITIALIZE();
+		GPIOL->CFG [0] = 0x11111111;
+		PRINTF("l-cfg0: %08X\n", (unsigned) GPIOL->CFG [0]);
+		PRINTF("l-cfg1: %08X\n", (unsigned) GPIOL->CFG [1]);
+		PRINTF("l-cfg2: %08X\n", (unsigned) GPIOL->CFG [2]);
+		PRINTF("l-cfg3: %08X\n", (unsigned) GPIOL->CFG [3]);
+		arm_hardware_piol_outputs(TARGET_TWI_TWCK, TARGET_TWI_TWCK);
+		arm_hardware_piol_outputs(TARGET_TWI_TWD, TARGET_TWI_TWD);
+		PRINTF("l-data: %08X\n", (unsigned) GPIOL->DATA);
+		for (;;)
+			;
+		unsigned i;
+		for (i = 1; i < 127; ++ i)
+		{
+			uint8_t v;
+			unsigned addrw = i * 2;
+			unsigned addrr = addrw + 1;
+			////%%TP();
+			i2c_start(addrw);
+			i2c_write_withrestart(0x1B);
+			i2c_start(addrr);
+			i2c_read(& v, I2C_READ_ACK_NACK);
+			////%%TP();
+			PRINTF("I2C addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
+		}
+	}
+#endif
 #if 1 && CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
     {
         CCU->BUS_CLK_GATING_REG2 |= (1u << 5);    // PIO_GATING - not need - already set
 
         /* low-level board test */
         BOARD_BLINK_INITIALIZE();
-        BOARD_BLINK_SETSTATE(1);
+		BOARD_BLINK_SETSTATE(1);
 
         int i;
-        for (i = 0; i < 10; ++ i)
+        for (i = 0; ; ++ i)
         {
             /* blinking */
             BOARD_BLINK_SETSTATE(1);
+
             local_delay_ms(500);
+
             BOARD_BLINK_SETSTATE(0);
-            local_delay_ms(500);
-            TP();
+
+           local_delay_ms(500);
+            PRINTF("test %d\n", i);
         }
 
         //* ((volatile uint32_t *) 0x0044010) = GPIOD->DATA;
