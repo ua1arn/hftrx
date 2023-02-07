@@ -1409,13 +1409,12 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 #elif CPUSTYLE_A64
 
-	#warning Implement for CPUSTYLE_A64
 	const unsigned ix = 0;
 
 	/* Open the clock gate for uart0 */
 	CCU->BUS_CLK_GATING_REG3 |= (0x01uL << (ix + 16));	// UART0_GATING
 
-	/* Deassert uart0 reset */
+	/* De-assert uart0 reset */
 	CCU-> BUS_SOFT_RST_REG4 |= (0x01uL << (ix + 16));	//  UART0_RST
 
 	/* Config uart0 to 115200-8-1-0 */
@@ -1447,7 +1446,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	/* Open the clock gate for uart0 */
 	CCU->UART_BGR_REG |= (0x01uL << (ix + 0));
 
-	/* Deassert uart0 reset */
+	/* De-assert uart0 reset */
 	CCU->UART_BGR_REG |= (0x01uL << (ix + 16));
 
 	/* Config uart0 to 115200-8-1-0 */

@@ -402,6 +402,12 @@ void arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate
 void arm_hardware_piok_outputs50m(unsigned long opins, unsigned long initialstate);
 void arm_hardware_piok_opendrain(unsigned long opins, unsigned long initialstate);
 
+void arm_hardware_piol_inputs(unsigned long ipins);
+void arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piol_outputs2m(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piol_outputs50m(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piol_opendrain(unsigned long opins, unsigned long initialstate);
+
 void arm_hardware_pioz_inputs(unsigned long ipins);
 void arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate);
 void arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate);

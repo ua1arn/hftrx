@@ -623,32 +623,32 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
-	// TWI3-SCK PB6 SCL (P3 pin 16) TX3 - wire to pin 7 hseda 24bit vga+audio board
-	// TWI3-SDA PB7 SDA (P3 pin 15) RX3 - wire to pin 6
-	#define TARGET_TWI_TWCK		(1u << 6)		// TWI3-SCK PB6 SCL
-	#define TARGET_TWI_TWCK_PIN		(GPIOB->DATA)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piob_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piob_inputs(v); } while (0)
+	// PL0 - SCK
+	// PL1 - SDA
+	#define TARGET_TWI_TWCK		(1u << 0)
+	#define TARGET_TWI_TWCK_PIN		(GPIOL->DATA)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
 
-	#define TARGET_TWI_TWD		(1u << 7)		// TWI3-SDA PB7 SDA
-	#define TARGET_TWI_TWD_PIN		(GPIOB->DATA)
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piob_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piob_inputs(v); } while (0)
+	#define TARGET_TWI_TWD		(1u << 1)
+	#define TARGET_TWI_TWD_PIN		(GPIOL->DATA)
+	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piob_inputs(TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);  	/* SDA */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWCK); /* SCL */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWD);  	/* SDA */ \
 		} while (0) 
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piob_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);	/* SDA */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWD);	/* SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piob_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI3-SCK PB6 SCL */ \
-		arm_hardware_piob_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI3-SDA PB7 SDA */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF2x);	/* AF2 or AF3 */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3x);		/* AF2 or AF3 */ \
 		} while (0) 
 
 

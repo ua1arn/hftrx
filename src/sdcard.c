@@ -360,7 +360,7 @@ static void SDCARD_CS_LOW(void)
 	spi_select2(targetsdcard, SPIC_MODE3, SPIC_SPEEDSDCARD);	// MODE0/MODE3 - смотри комментарий выше
 }
 
-/* Deassert the CS signal (CS=1) */
+/* De-assert the CS signal (CS=1) */
 static void SDCARD_CS_HIGH(void)
 {
 	spi_unselect(targetsdcard);
@@ -3683,7 +3683,7 @@ static void SDCARD_CS_LOW(void)
 	spi_select2(targetsdcard, SPIC_MODE0, SPIC_SPEEDSDCARD);	// MODE0/MODE3 - смотри комментарий выше
 }
 
-/* Deassert the CS signal (CS=1) */
+/* De-assert the CS signal (CS=1) */
 static void SDCARD_CS_HIGH(void)
 {
 	spi_unselect(targetsdcard);

@@ -42,6 +42,7 @@
 #define	GIC_DISTRIBUTOR_BASE	 ((uintptr_t) 0x01C81000)
 #define	GIC_INTERFACE_BASE	 ((uintptr_t) 0x01C82000)
 #define	RTC_BASE	 ((uintptr_t) 0x01F00000)
+#define	GPIOL_BASE	 ((uintptr_t) 0x01F02C00)
 #define	GPIOBLOCK_BASE	 ((uintptr_t) 0x02000000)
 #define	SPC_BASE	 ((uintptr_t) 0x02000800)
 #define	CIR_TX_BASE	 ((uintptr_t) 0x02003000)
@@ -2337,6 +2338,7 @@ typedef struct MSGBOX_Type
 #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)                                     /*!< \brief GPIOF Interface register set access pointer */
 #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)                                     /*!< \brief GPIOG Interface register set access pointer */
 #define GPIOH ((GPIO_TypeDef *) GPIOH_BASE)                                     /*!< \brief GPIOH Interface register set access pointer */
+#define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)                                     /*!< \brief GPIOL Interface register set access pointer */
 #define GPIOINTB ((GPIOINT_TypeDef *) GPIOINTB_BASE)                            /*!< \brief GPIOINTB Interface register set access pointer */
 #define GPIOINTC ((GPIOINT_TypeDef *) GPIOINTC_BASE)                            /*!< \brief GPIOINTC Interface register set access pointer */
 #define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)                            /*!< \brief GPIOINTD Interface register set access pointer */

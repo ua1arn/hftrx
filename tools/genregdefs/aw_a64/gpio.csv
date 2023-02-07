@@ -6,6 +6,7 @@
 #base; GPIOF 0x01C208B4
 #base; GPIOG 0x01C208D8
 #base; GPIOH 0x01C208FC
+#base; GPIOL 0x01F02C00
 #regdef; CFG; 0x000 4; Configure Register
 #regdef; DATA; 0x0010; Data Register
 #regdef; DRV; 0x014 2; Multi_Driving Register

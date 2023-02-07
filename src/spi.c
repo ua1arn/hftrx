@@ -1662,7 +1662,7 @@ void hardware_spi_master_initialize(void)
 	/* Open the clock gate for SPI0 */
 	CCU->SPI_BGR_REG |= (0x01uL << (ix + 0));
 
-	/* Deassert SPI0 reset */
+	/* De-assert SPI0 reset */
 	CCU->SPI_BGR_REG |= (0x01uL << (ix + 16));
 
 	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
@@ -1674,7 +1674,7 @@ void hardware_spi_master_initialize(void)
 		(0x00uL < 1) |	// MODE: 1: Master mode
 		0;
 
-	/* Deassert spi0 reset */
+	/* De-assert spi0 reset */
 	CCU->SPI_BGR_REG |= (1 << (ix + 16));
 	/* Open the spi0 gate */
 	CCU->SPI0_CLK_REG |= (1 << 31);

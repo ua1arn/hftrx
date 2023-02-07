@@ -2389,19 +2389,19 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
     local_delay_us(10);
 
     CCU->DE_BGR_REG |= (1u << 0);		// Open the clock gate
-    CCU->DE_BGR_REG |= (1u << 16);		// Deassert reset
+    CCU->DE_BGR_REG |= (1u << 16);		// De-assert reset
     local_delay_us(10);
 
     CCU->TCONLCD_CLK_REG |= (1u << 31);
     CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
-    CCU->TCONLCD_BGR_REG |= (1u << 16); // Deassert reset
+    CCU->TCONLCD_BGR_REG |= (1u << 16); // De-assert reset
     local_delay_us(10);
 
 	//PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
 
 #if 0
     // step 2
-    CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: Deassert reset
+    CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
 
     // step 5
     TCON_LCD0->LCD_LVDS_IF_REG =
