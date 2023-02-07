@@ -1813,25 +1813,13 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 
 	/* Set default clk to 1008mhz */
 	val = CCU->PLL_CPUX_CTRL_REG;
-	val &= ~ ((0x3 << 16) | (0x1f << 8) | (0x3 << 0));
+	val &= ~ ((0x3 << 16) | (0x1f << 8) | (0x3 << 4) | (0x3 << 0));
+	val |= ((p - 1) << 16);	// PLL_FACTOR_P PLL_OUT_EXT_DIVP
 	val |= ((n - 1) << 8);	// PLL_FACTOR_N
-	CCU->PLL_CPUX_CTRL_REG = val;
-
-	//
-	val = CCU->PLL_CPUX_CTRL_REG;
-	val &= ~ (0x3 << 4);
 	val |= ((k - 1) << 4);	// PLL_FACTOR_K
-	CCU->PLL_CPUX_CTRL_REG = val;
-	//
-	val = CCU->PLL_CPUX_CTRL_REG;
-	val &= ~ (0x3 << 0);
 	val |= ((m - 1) << 0);	// PLL_FACTOR_M
 	CCU->PLL_CPUX_CTRL_REG = val;
-	//
-	val = CCU->PLL_CPUX_CTRL_REG;
-	val &= ~ (0x3 << 16);
-	val |= ((p - 1) << 16);	// PLL_FACTOR_P PLL_OUT_EXT_DIVP
-	CCU->PLL_CPUX_CTRL_REG = val;
+
 
 	val = CCU->PLL_CPUX_CTRL_REG;
 	val &= ~(1 << 29);	// PLL Lock Enable
@@ -1892,7 +1880,8 @@ uint_fast32_t allwnr_a64_get_hosc_freq(void)
 
 uint_fast32_t allwnr_a64_get_arm_freq(void)
 {
-	return WITHCPUXTAL * PLL_CPU_N;
+	//  (24MHz*N*K)/(M*P)
+	return WITHCPUXTAL * PLL_CPU_N * PLL_CPU_K / (PLL_CPU_M * PLL_CPU_P);
 }
 
 uint_fast32_t allwnrt113_get_spi0_freq(void)
