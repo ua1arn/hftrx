@@ -21999,38 +21999,6 @@ main(void)
 
 #endif /* WITHDEBUG && ! CPUSTYLE_ARM */
 
-#if 1 && CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
-    {
-    	TP();
-        CCU->BUS_CLK_GATING_REG2 |= (1u << 5);    // PIO_GATING - not need - already set
-
-        //axp803_initialize();
-
-        /* low-level board test */
-        BOARD_BLINK_INITIALIZE();
-		BOARD_BLINK_SETSTATE(1);
-
-        int i;
-        for (i = 0; ; ++ i)
-        {
-            /* blinking */
-            BOARD_BLINK_SETSTATE(1);
-
-            local_delay_ms(500);
-
-            BOARD_BLINK_SETSTATE(0);
-
-           local_delay_ms(500);
-            //PRINTF("test %d\n", i);
-        }
-
-        //* ((volatile uint32_t *) 0x0044010) = GPIOD->DATA;
-        * ((volatile uint32_t *) 0x0044000) = 0xDEADBEEF; //GPIOD->CFG [0];
-        * ((volatile uint32_t *) 0x0044004) = 0xDEADBEEF; //GPIOD->CFG [0];
-        dcache_clean(0x0044000, 256);
-    }
-#endif
-
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
 	global_disableIRQ();

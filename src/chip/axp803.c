@@ -431,7 +431,7 @@ int axp803_initialize(void)
 	if (ret)
 		return ret;
 
-	PRINTF("axp803_chip_id=0x%02X (expected 0x51)\n", axp803_chip_id);
+	//PRINTF("axp803_chip_id=0x%02X (expected 0x51)\n", axp803_chip_id);
 //	if (!(axp803_chip_id == 0x51))
 //		return -ENODEV;
 //	else
