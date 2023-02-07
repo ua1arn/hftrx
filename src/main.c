@@ -21983,7 +21983,7 @@ int
 //__attribute__ ((used))
 main(void)
 {
-#if CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
+#if 0 && CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
 	{
 		CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING - not need - already set
 

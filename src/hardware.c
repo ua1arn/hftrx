@@ -3665,7 +3665,7 @@ SystemInit(void)
 }
 
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
 static void cortexa_cpuinfo(void)
 {

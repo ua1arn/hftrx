@@ -10271,12 +10271,12 @@ void lowtests(void)
 		}
 	}
 #endif
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected arm: 0x0000190E, risc-v: 0x00002F0F)\n", (unsigned) SYS_CFG->SYS_LDO_CTRL_REG);
 	}
 #endif
-#if (CPUSTYLE_T113)
+#if 0 && (CPUSTYLE_T113)
 	{
 		PRINTF("C0_CPUX_CFG->C0_CTRL_REG0=0x%08X (expected 0x80000000)\n", (unsigned) C0_CPUX_CFG->C0_CTRL_REG0);
 	}

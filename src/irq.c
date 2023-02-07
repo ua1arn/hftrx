@@ -1968,7 +1968,7 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || (__CORTEX_A == 8U)
 
 	cpump_initialize();
 

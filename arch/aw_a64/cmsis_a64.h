@@ -7,6 +7,8 @@
 
 /* Peripheral and RAM base address */
 
+#define	C0_CPUX_CFG_BASE	 ((uintptr_t) 0x01700000)
+#define	SYS_CFG_BASE	 ((uintptr_t) 0x01C00000)
 #define	CCU_BASE	 ((uintptr_t) 0x01C20000)
 #define	GPIOB_BASE	 ((uintptr_t) 0x01C20824)
 #define	GPIOC_BASE	 ((uintptr_t) 0x01C20848)
@@ -37,6 +39,8 @@
 #define	TWI1_BASE	 ((uintptr_t) 0x01C2B000)
 #define	TWI2_BASE	 ((uintptr_t) 0x01C2B400)
 #define	EMAC_BASE	 ((uintptr_t) 0x01C30000)
+#define	GIC_DISTRIBUTOR_BASE	 ((uintptr_t) 0x01C81000)
+#define	GIC_INTERFACE_BASE	 ((uintptr_t) 0x01C82000)
 #define	RTC_BASE	 ((uintptr_t) 0x01F00000)
 #define	GPIOBLOCK_BASE	 ((uintptr_t) 0x02000000)
 #define	SPC_BASE	 ((uintptr_t) 0x02000800)
@@ -50,13 +54,10 @@
 #define	OWA_BASE	 ((uintptr_t) 0x02036000)
 #define	CAN0_BASE	 ((uintptr_t) 0x02504000)
 #define	CAN1_BASE	 ((uintptr_t) 0x02504400)
-#define	SYS_CFG_BASE	 ((uintptr_t) 0x03000000)
 #define	DMAC_BASE	 ((uintptr_t) 0x03002000)
 #define	CPUX_MSGBOX_BASE	 ((uintptr_t) 0x03003000)
 #define	SID_BASE	 ((uintptr_t) 0x03006000)
 #define	SMC_BASE	 ((uintptr_t) 0x03007000)
-#define	GIC_DISTRIBUTOR_BASE	 ((uintptr_t) 0x03021000)
-#define	GIC_INTERFACE_BASE	 ((uintptr_t) 0x03022000)
 #define	CE_NS_BASE	 ((uintptr_t) 0x03040000)
 #define	CE_S_BASE	 ((uintptr_t) 0x03040800)
 #define	MSI_MEMC_BASE	 ((uintptr_t) 0x03102000)
@@ -101,7 +102,6 @@
 #define	CSIC_DMA1_BASE	 ((uintptr_t) 0x05809200)
 #define	CIR_RX_BASE	 ((uintptr_t) 0x07040000)
 #define	CPU_SUBSYS_CTRL_BASE	 ((uintptr_t) 0x08100000)
-#define	C0_CPUX_CFG_BASE	 ((uintptr_t) 0x09010000)
 /*
  * @brief CPU_SUBSYS_CTRL
  */
@@ -257,20 +257,11 @@ typedef struct CCU_Type
 /*!< SYS_CFG Controller Interface */
 typedef struct SYS_CFG_Type
 {
-             uint32_t reserved_0x000 [0x0002];
-    volatile uint32_t DSP_BOOT_RAMMAP_REG;                                      /*!< Offset 0x008 DSP Boot SRAM Remap Control Register */
-             uint32_t reserved_0x00C [0x0006];
+             uint32_t reserved_0x000 [0x0009];
     volatile uint32_t VER_REG;                                                  /*!< Offset 0x024 Version Register */
              uint32_t reserved_0x028 [0x0002];
     volatile uint32_t EMAC_EPHY_CLK_REG0;                                       /*!< Offset 0x030 EMAC-EPHY Clock Register 0 */
-             uint32_t reserved_0x034 [0x0047];
-    volatile uint32_t SYS_LDO_CTRL_REG;                                         /*!< Offset 0x150 System LDO Control Register */
-             uint32_t reserved_0x154 [0x0003];
-    volatile uint32_t RESCAL_CTRL_REG;                                          /*!< Offset 0x160 Resistor Calibration Control Register */
-             uint32_t reserved_0x164;
-    volatile uint32_t RES240_CTRL_REG;                                          /*!< Offset 0x168 240ohms Resistor Manual Control Register */
-    volatile uint32_t RESCAL_STATUS_REG;                                        /*!< Offset 0x16C Resistor Calibration Status Register */
-} SYS_CFG_TypeDef; /* size of structure = 0x170 */
+} SYS_CFG_TypeDef; /* size of structure = 0x034 */
 /*
  * @brief UART
  */
@@ -1997,29 +1988,28 @@ typedef struct TVD_Type
 /*!< C0_CPUX_CFG Controller Interface */
 typedef struct C0_CPUX_CFG_Type
 {
-    volatile uint32_t C0_RST_CTRL;                                              /*!< Offset 0x000 Cluster 0 Reset Control Register */
-             uint32_t reserved_0x004 [0x0003];
-    volatile uint32_t C0_CTRL_REG0;                                             /*!< Offset 0x010 Cluster 0 Control Register0 */
-    volatile uint32_t C0_CTRL_REG1;                                             /*!< Offset 0x014 Cluster 0 Control Register1 */
-    volatile uint32_t C0_CTRL_REG2;                                             /*!< Offset 0x018 Cluster 0 Control Register2 */
-             uint32_t reserved_0x01C [0x0002];
-    volatile uint32_t CACHE_CFG_REG;                                            /*!< Offset 0x024 Cache Configuration Register */
-             uint32_t reserved_0x028 [0x0016];
-    volatile uint32_t C0_CPU_STATUS;                                            /*!< Offset 0x080 Cluster 0 CPU Status Register */
-    volatile uint32_t L2_STATUS_REG;                                            /*!< Offset 0x084 Cluster 0 L2 Status Register */
-             uint32_t reserved_0x088 [0x000E];
-    volatile uint32_t DBG_REG0;                                                 /*!< Offset 0x0C0 Cluster 0 Debug Control Register0 */
-    volatile uint32_t DBG_REG1;                                                 /*!< Offset 0x0C4 Cluster 0 Debug Control Register1 */
-             uint32_t reserved_0x0C8 [0x0002];
-    volatile uint32_t AXI_MNT_CTRL_REG;                                         /*!< Offset 0x0D0 AXI Monitor Control Register */
-    volatile uint32_t AXI_MNT_PRD_REG;                                          /*!< Offset 0x0D4 AXI Monitor Period Register */
-    volatile uint32_t AXI_MNT_RLTCY_REG;                                        /*!< Offset 0x0D8 AXI Monitor Read Total Latency Register */
-    volatile uint32_t AXI_MNT_WLTCY_REG;                                        /*!< Offset 0x0DC AXI Monitor Write Total Latency Register */
-    volatile uint32_t AXI_MNT_RREQ_REG;                                         /*!< Offset 0x0E0 AXI Monitor Read Request Times Register */
-    volatile uint32_t AXI_MNT_WREQ_REG;                                         /*!< Offset 0x0E4 AXI Monitor Write Request Times Register */
-    volatile uint32_t AXI_MNT_RBD_REG;                                          /*!< Offset 0x0E8 AXI Monitor Read Bandwidth Register */
-    volatile uint32_t AXI_MNT_WBD_REG;                                          /*!< Offset 0x0EC AXI Monitor Write Bandwidth Register */
-} C0_CPUX_CFG_TypeDef; /* size of structure = 0x0F0 */
+    volatile uint32_t C_CTRL_REG0;                                              /*!< Offset 0x000 Cluster Control Register0 */
+    volatile uint32_t C_CTRL_REG1;                                              /*!< Offset 0x004 Cluster Control Register1 */
+    volatile uint32_t CACHE_CFG_REG0;                                           /*!< Offset 0x008 Cache parameters configuration register0 */
+    volatile uint32_t CACHE_CFG_REG1;                                           /*!< Offset 0x00C Cache parameters configuration register1 */
+             uint32_t reserved_0x010 [0x0006];
+    volatile uint32_t GENER_CTRL_REG0;                                          /*!< Offset 0x028 General Control Register0 */
+             uint32_t reserved_0x02C;
+    volatile uint32_t C_CPU_STATUS;                                             /*!< Offset 0x030 Cluster CPU Status Register */
+             uint32_t reserved_0x034 [0x0002];
+    volatile uint32_t L2_STATUS_REG;                                            /*!< Offset 0x03C L2 Status Register */
+             uint32_t reserved_0x040 [0x0010];
+    volatile uint32_t C_RST_CTRL;                                               /*!< Offset 0x080 Cluster Reset Control Register */
+             uint32_t reserved_0x084 [0x0007];
+    volatile uint32_t RVBARADDR0_L;                                             /*!< Offset 0x0A0 Reset Vector Base Address Register0_L */
+    volatile uint32_t RVBARADDR0_H;                                             /*!< Offset 0x0A4 Reset Vector Base Address Register0_H */
+    volatile uint32_t RVBARADDR1_L;                                             /*!< Offset 0x0A8 Reset Vector Base Address Register1_L */
+    volatile uint32_t RVBARADDR1_H;                                             /*!< Offset 0x0AC Reset Vector Base Address Register1_H */
+    volatile uint32_t RVBARADDR2_L;                                             /*!< Offset 0x0B0 Reset Vector Base Address Register2_L */
+    volatile uint32_t RVBARADDR2_H;                                             /*!< Offset 0x0B4 Reset Vector Base Address Register2_H */
+    volatile uint32_t RVBARADDR3_L;                                             /*!< Offset 0x0B8 Reset Vector Base Address Register3_L */
+    volatile uint32_t RVBARADDR3_H;                                             /*!< Offset 0x0BC Reset Vector Base Address Register3_H */
+} C0_CPUX_CFG_TypeDef; /* size of structure = 0x0C0 */
 /*
  * @brief DDRPHYC
  */
