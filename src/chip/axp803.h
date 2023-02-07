@@ -76,3 +76,6 @@
 #define AXP_GPIO_CTRL_INPUT		0x02 /* Input */
 #define AXP_GPIO_STATE			0x94
 #define AXP_GPIO_STATE_OFFSET		0
+
+
+int axp803_initialize(void);

@@ -21978,42 +21978,18 @@ static void bootloader_mainloop(void)
 
 #endif /* WITHISBOOTLOADER */
 
-static uint32_t readl(uintptr_t addr)
-{
-	return * (volatile uint32_t *) addr;
-}
-
-static void writel(uint32_t value, uintptr_t addr)
-{
-	* (volatile uint32_t *) addr = value;
-}
+#include "src/chip/axp803.h"
 
 /* Главная функция программы */
 int 
 //__attribute__ ((used))
 main(void)
 {
-#define	R_PRCM_BASE	 ((uintptr_t) 0x01F01400)
-#if 1 && CPUSTYLE_A64 && (WITHTWIHW || WITHTWISW)
-	{
-		{
-			uint32_t reg_val;
-			// R_GPIO reset deassert
-			reg_val = readl(R_PRCM_BASE+0xb0);
-			reg_val |= 1;
-			writel(reg_val, R_PRCM_BASE+0xb0);
-
-			// R_GPIO GATING open
-			reg_val = readl(R_PRCM_BASE+0x28);
-			reg_val |= 1;
-			writel(reg_val, R_PRCM_BASE+0x28);
-		}
-		axp803_initialize();
-	}
-#endif
 #if 1 && CPUSTYLE_A64 && defined BOARD_BLINK_INITIALIZE
     {
         CCU->BUS_CLK_GATING_REG2 |= (1u << 5);    // PIO_GATING - not need - already set
+
+        axp803_initialize();
 
         /* low-level board test */
         BOARD_BLINK_INITIALIZE();
