@@ -1816,6 +1816,13 @@ uint_fast32_t allwnrt113_get_spi0_freq(void)
 	return WITHCPUXTAL;
 }
 
+uint_fast32_t allwnrt113_get_usart_freq(void)
+{
+	return WITHCPUXTAL;
+}
+
+
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 #if CPUSTYLE_F133
