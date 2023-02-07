@@ -75,9 +75,9 @@ int pmic_bus_write(unsigned reg, uint8_t data)
 	unsigned addrw = PMIC_I2C_W;
 	unsigned addrr = PMIC_I2C_R;
 
-//	i2c_start(addrw);
-//	i2c_write(reg);
-//	i2c_write(data);
+	i2c_start(addrw);
+	i2c_write(reg);
+	i2c_write(data);
 
 	return 0;
 }
@@ -309,6 +309,104 @@ int axp803_set_sw(int on)
 				AXP803_OUTPUT_CTRL2_SW_EN);
 }
 
+/**
+ *
+	&reg_aldo2 {
+		regulator-always-on;
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-name = "vcc-pl";
+	};
+
+	&reg_aldo3 {
+		regulator-always-on;
+		regulator-min-microvolt = <3000000>;
+		regulator-max-microvolt = <3000000>;
+		regulator-name = "vcc-pll-avcc";
+	};
+
+	&reg_dc1sw {
+		regulator-name = "vcc-phy";
+	};
+
+	&reg_dcdc1 {
+		regulator-always-on;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-name = "vcc-3v3";
+	};
+
+	&reg_dcdc2 {
+		regulator-always-on;
+		regulator-min-microvolt = <1040000>;
+		regulator-max-microvolt = <1300000>;
+		regulator-name = "vdd-cpux";
+	};
+
+	/* DCDC3 is polyphased with DCDC2 */
+
+	&reg_dcdc5 {
+		regulator-always-on;
+		regulator-min-microvolt = <1500000>;
+		regulator-max-microvolt = <1500000>;
+		regulator-name = "vcc-dram";
+	};
+
+	&reg_dcdc6 {
+		regulator-always-on;
+		regulator-min-microvolt = <1100000>;
+		regulator-max-microvolt = <1100000>;
+		regulator-name = "vdd-sys";
+	};
+
+	&reg_dldo1 {
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-name = "vcc-hdmi-dsi";
+	};
+
+	&reg_dldo2 {
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-name = "vcc-wifi";
+	};
+
+	&reg_dldo4 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-name = "vcc-wifi-io";
+	};
+
+	&reg_eldo1 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-name = "cpvdd";
+	};
+
+	&reg_fldo1 {
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+		regulator-name = "vcc-1v2-hsic";
+	};
+
+	/*
+	 * The A64 chip cannot work without this regulator off, although
+	 * it seems to be only driving the AR100 core.
+	 * Maybe we don't still know well about CPUs domain.
+	 */
+	&reg_fldo2 {
+		regulator-always-on;
+		regulator-min-microvolt = <1100000>;
+		regulator-max-microvolt = <1100000>;
+		regulator-name = "vdd-cpus";
+	};
+
+	&reg_rtc_ldo {
+		regulator-name = "vcc-rtc";
+	};
+ *
+ * @return
+ */
 int axp803_initialize(void)
 {
 	uint8_t axp803_chip_id;
