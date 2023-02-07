@@ -1106,6 +1106,7 @@ extern "C" {
 	#endif /* WITHNESTEDINTERRUPTS */
 
 #elif CPUSTYLE_CA53
+		// aarch64 mode - no GIC
 
 		#define ARM_OVERREALTIME_PRIORITY	1
 		#define ARM_REALTIME_PRIORITY		1

@@ -6889,6 +6889,16 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_A64
 
+
+		/* Off bootloader USB */
+		if (1)
+		{
+			CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST
+			CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
+			CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST
+			CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
+			CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
+		}
 	allwnr_a64_pll_initialize();
 
 #elif CPUSTYLE_T113
@@ -6898,10 +6908,10 @@ sysinit_pll_initialize(void)
 	{
 		CCU->USB_BGR_REG &= ~ (1u << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG &= ~ (1u << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~  (1u << 24);	// USBOTG0_RST
+		CCU->USB_BGR_REG &= ~ (1u << 24);	// USBOTG0_RST
 
-		CCU->USB0_CLK_REG &= ~  (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~  (1u << 30);	// USBPHY0_RSTN
+		CCU->USB0_CLK_REG &= ~ (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~ (1u << 30);	// USBPHY0_RSTN
 	}
 	allwnrt113_pll_initialize();
 
