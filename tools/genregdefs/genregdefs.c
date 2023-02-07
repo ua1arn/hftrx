@@ -293,6 +293,21 @@ static int nextline(FILE *fp) {
 
 }
 
+/* trim field name */
+static void trimname(char * s)
+{
+	if (strchr(s, '\n') != NULL)
+		*strchr(s, '\n') = '\0';
+	if (strchr(s, '/') != NULL)
+		*strchr(s, '/') = '_';
+	if (strchr(s, '/') != NULL)
+		*strchr(s, '/') = '_';
+	if (strchr(s, '-') != NULL)
+		*strchr(s, '-') = '_';
+	if (strchr(s, '-') != NULL)
+		*strchr(s, '-') = '_';
+}
+
 static struct regdfn* parseregdef(char *s0, char *fldname, unsigned fldsize,
 		const char *file) {
 	unsigned fldoffset;
@@ -308,19 +323,7 @@ static struct regdfn* parseregdef(char *s0, char *fldname, unsigned fldsize,
 
 	InitializeListHead(&regp->aggregate);
 
-	/* trim field name */
-	{
-		if (strchr(fldname, '\n') != NULL)
-			*strchr(fldname, '\n') = '\0';
-		if (strchr(fldname, '/') != NULL)
-			*strchr(fldname, '/') = '_';
-		if (strchr(fldname, '/') != NULL)
-			*strchr(fldname, '/') = '_';
-		if (strchr(fldname, '-') != NULL)
-			*strchr(fldname, '-') = '_';
-		if (strchr(fldname, '-') != NULL)
-			*strchr(fldname, '-') = '_';
-	}
+	trimname(fldname);
 
 	if (s2 != NULL) {
 		/* trim comments */
@@ -447,6 +450,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
 			if (pfl->irq_count < BASE_MAX) {
 				pfl->irq_array[pfl->irq_count] = irq;
+				trimname(irqname);
 				strcpy(pfl->irq_names[pfl->irq_count], irqname);
 				//
 				++pfl->irq_count;
@@ -459,6 +463,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
 			if (pfl->irqrv_count < BASE_MAX) {
 				pfl->irqrv_array[pfl->irqrv_count] = irq;
+				trimname(irqname);
 				strcpy(pfl->irqrv_names[pfl->irqrv_count], irqname);
 				//
 				++pfl->irqrv_count;
@@ -469,6 +474,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 				break;
 		} else if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]s\n", typname)) {
 			//fprintf(stderr, "Parsed typname='%s'\n", typname);
+			trimname(typname);
 			strcpy(pfl->bname, typname);
 
 			/* parsed */
@@ -478,6 +484,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed base='%s' 0x%08X\n", typname, base);
 			if (pfl->base_count < BASE_MAX) {
 				pfl->base_array[pfl->base_count] = base;
+				trimname(typname);
 				strcpy(pfl->base_names[pfl->base_count], typname);
 				++pfl->base_count;
 			}

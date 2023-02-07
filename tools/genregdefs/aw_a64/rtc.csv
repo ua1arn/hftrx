@@ -1,5 +1,17 @@
 #type; RTC
 #base; RTC 0x01F00000
+#base; R_TIMER 0x01F00800
+#base; R_INTC 0x01F00C00
+#base; R_WDOG 0x01F01000
+#base; R_PRCM 0x01F01400
+#base; R_TWD 0x01F01800
+#base; R_CPUCFG 0x01F01C00
+#base; R_CIR-RX 0x01F02000
+#base; R_TWI 0x01F02400
+#base; R_UART 0x01F02800
+#base; R_PIO 0x01F02C00
+#base; R_RSB 0x01F03400
+#base; R_PWM 0x01F03800
 #regdef; LOSC_CTRL_REG;  0x0000; Low Oscillator Control Register
 #regdef; LOSC_AUTO_SWT_STA_REG;  0x0004; LOSC Auto Switch Status Register
 #regdef; INTOSC_CLK_PRESCAL_REG;  0x0008; Internal OSC Clock Prescalar Register

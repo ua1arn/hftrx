@@ -42,7 +42,19 @@
 #define	GIC_DISTRIBUTOR_BASE	 ((uintptr_t) 0x01C81000)
 #define	GIC_INTERFACE_BASE	 ((uintptr_t) 0x01C82000)
 #define	RTC_BASE	 ((uintptr_t) 0x01F00000)
+#define	R_TIMER_BASE	 ((uintptr_t) 0x01F00800)
+#define	R_INTC_BASE	 ((uintptr_t) 0x01F00C00)
+#define	R_WDOG_BASE	 ((uintptr_t) 0x01F01000)
+#define	R_PRCM_BASE	 ((uintptr_t) 0x01F01400)
+#define	R_TWD_BASE	 ((uintptr_t) 0x01F01800)
+#define	R_CPUCFG_BASE	 ((uintptr_t) 0x01F01C00)
+#define	R_CIR_RX_BASE	 ((uintptr_t) 0x01F02000)
+#define	R_TWI_BASE	 ((uintptr_t) 0x01F02400)
+#define	R_UART_BASE	 ((uintptr_t) 0x01F02800)
 #define	GPIOL_BASE	 ((uintptr_t) 0x01F02C00)
+#define	R_PIO_BASE	 ((uintptr_t) 0x01F02C00)
+#define	R_RSB_BASE	 ((uintptr_t) 0x01F03400)
+#define	R_PWM_BASE	 ((uintptr_t) 0x01F03800)
 #define	GPIOBLOCK_BASE	 ((uintptr_t) 0x02000000)
 #define	SPC_BASE	 ((uintptr_t) 0x02000800)
 #define	CIR_TX_BASE	 ((uintptr_t) 0x02003000)
@@ -2370,6 +2382,18 @@ typedef struct MSGBOX_Type
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)                                       /*!< \brief CE_NS Interface register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)                                         /*!< \brief CE_S Interface register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                                          /*!< \brief RTC Interface register set access pointer */
+#define R_TIMER ((RTC_TypeDef *) R_TIMER_BASE)                                  /*!< \brief R_TIMER Interface register set access pointer */
+#define R_INTC ((RTC_TypeDef *) R_INTC_BASE)                                    /*!< \brief R_INTC Interface register set access pointer */
+#define R_WDOG ((RTC_TypeDef *) R_WDOG_BASE)                                    /*!< \brief R_WDOG Interface register set access pointer */
+#define R_PRCM ((RTC_TypeDef *) R_PRCM_BASE)                                    /*!< \brief R_PRCM Interface register set access pointer */
+#define R_TWD ((RTC_TypeDef *) R_TWD_BASE)                                      /*!< \brief R_TWD Interface register set access pointer */
+#define R_CPUCFG ((RTC_TypeDef *) R_CPUCFG_BASE)                                /*!< \brief R_CPUCFG Interface register set access pointer */
+#define R_CIR_RX ((RTC_TypeDef *) R_CIR_RX_BASE)                                /*!< \brief R_CIR_RX Interface register set access pointer */
+#define R_TWI ((RTC_TypeDef *) R_TWI_BASE)                                      /*!< \brief R_TWI Interface register set access pointer */
+#define R_UART ((RTC_TypeDef *) R_UART_BASE)                                    /*!< \brief R_UART Interface register set access pointer */
+#define R_PIO ((RTC_TypeDef *) R_PIO_BASE)                                      /*!< \brief R_PIO Interface register set access pointer */
+#define R_RSB ((RTC_TypeDef *) R_RSB_BASE)                                      /*!< \brief R_RSB Interface register set access pointer */
+#define R_PWM ((RTC_TypeDef *) R_PWM_BASE)                                      /*!< \brief R_PWM Interface register set access pointer */
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)                                    /*!< \brief IOMMU Interface register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                                          /*!< \brief THS Interface register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)                                    /*!< \brief TIMER Interface register set access pointer */

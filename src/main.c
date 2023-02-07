@@ -21978,29 +21978,53 @@ static void bootloader_mainloop(void)
 
 #endif /* WITHISBOOTLOADER */
 
+static uint32_t readl(uintptr_t addr)
+{
+	return * (volatile uint32_t *) addr;
+}
+
+static void writel(uint32_t value, uintptr_t addr)
+{
+	* (volatile uint32_t *) addr = value;
+}
+
+#define PMIC_I2C_W 0x68
+#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+
 /* Главная функция программы */
 int 
 //__attribute__ ((used))
 main(void)
 {
+#define	R_PRCM_BASE	 ((uintptr_t) 0x01F01400)
 #if 1 && CPUSTYLE_A64 && (WITHTWIHW || WITHTWISW)
 	{
-		// i2c bus test i2c test twi bus test twi test
-		PRINTF("l-cfg0: %08X\n", (unsigned) GPIOL->CFG [0]);
-		PRINTF("l-cfg1: %08X\n", (unsigned) GPIOL->CFG [1]);
-		PRINTF("l-cfg2: %08X\n", (unsigned) GPIOL->CFG [2]);
-		PRINTF("l-cfg3: %08X\n", (unsigned) GPIOL->CFG [3]);
+		{
+			uint32_t reg_val;
+			// R_GPIO reset deassert
+			reg_val = readl(R_PRCM_BASE+0xb0);
+			reg_val |= 1;
+			writel(reg_val, R_PRCM_BASE+0xb0);
+
+			// R_GPIO GATING open
+			reg_val = readl(R_PRCM_BASE+0x28);
+			reg_val |= 1;
+			writel(reg_val, R_PRCM_BASE+0x28);
+		}
 		TWISOFT_INITIALIZE();
-		GPIOL->CFG [0] = 0x11111111;
-		PRINTF("l-cfg0: %08X\n", (unsigned) GPIOL->CFG [0]);
-		PRINTF("l-cfg1: %08X\n", (unsigned) GPIOL->CFG [1]);
-		PRINTF("l-cfg2: %08X\n", (unsigned) GPIOL->CFG [2]);
-		PRINTF("l-cfg3: %08X\n", (unsigned) GPIOL->CFG [3]);
-		arm_hardware_piol_outputs(TARGET_TWI_TWCK, TARGET_TWI_TWCK);
-		arm_hardware_piol_outputs(TARGET_TWI_TWD, TARGET_TWI_TWD);
-		PRINTF("l-data: %08X\n", (unsigned) GPIOL->DATA);
-		for (;;)
-			;
+		{
+			uint8_t v;
+			unsigned addrw = PMIC_I2C_W;
+			unsigned addrr = PMIC_I2C_R;
+			////%%TP();
+			i2c_start(addrw);
+			i2c_write_withrestart(0x1B);
+			i2c_start(addrr);
+			i2c_read(& v, I2C_READ_ACK_NACK);
+			////%%TP();
+			PRINTF("I2C 0x%02X: test=0x%02X\n", addrw, v);
+		}
+
 		unsigned i;
 		for (i = 1; i < 127; ++ i)
 		{
