@@ -900,23 +900,12 @@ static void gpioX_prog(
 	gpio->CFG [2] = (gpio->CFG [2] & ~ (cfg2 * 0x0F)) | (cfg * cfg2);
 	gpio->CFG [3] = (gpio->CFG [3] & ~ (cfg3 * 0x0F)) | (cfg * cfg3);
 
-	(void) gpio->CFG [0];
-	(void) gpio->CFG [1];
-	(void) gpio->CFG [2];
-	(void) gpio->CFG [3];
-
 	gpio->DRV [0] = (gpio->DRV [0] & ~ (pull0 * 0x03)) | (drv * pull0);
 	gpio->DRV [1] = (gpio->DRV [1] & ~ (pull1 * 0x03)) | (drv * pull1);
-
-	(void) gpio->DRV [0];
-	(void) gpio->DRV [1];
 
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	gpio->PULL [0] = (gpio->PULL [0] & ~ (pull0 * 0x03)) | (pull * pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
-
-	(void) gpio->PULL [0];
-	(void) gpio->PULL [1];
 
 	gpioX_unlock(gpio, cpsr);
 
