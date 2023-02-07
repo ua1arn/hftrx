@@ -1800,7 +1800,7 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
     //PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 
 	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
-	CCU->CPU_AXI_CFG_REG =
+	CCU->CPUX_AXI_CFG_REG =
 			(1 << 16) | // CPUX_CLK_SRC_SEL 01: OSC24M
 			(3 << 8) |	// old 0x03 old CPU_DIV2=4, new same
 			(1 << 0) |	// old 0x01 old CPU_DIV1, new same
@@ -1847,14 +1847,14 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 	//local_delay_ms(1);
 
 	/* Set and change cpu clk src */
-	val = CCU->CPU_AXI_CFG_REG;
+	val = CCU->CPUX_AXI_CFG_REG;
 	val &= ~ ((0x3 << 16 ) | ( 0x3 << 8 ) | ( 0xf << 0));
 	val |=
 		(0x2 << 16) |	// CPUX_CLK_SRC_SEL 1X: PLL_CPUX
 		(0x3 << 8) |	// CPU_APB_CLK_DIV
 		(0x1 << 0) |	// AXI_CLK_DIV_RATIO
 		0;
-	CCU->CPU_AXI_CFG_REG = val;
+	CCU->CPUX_AXI_CFG_REG = val;
 
 	//local_delay_ms(1);
 	//sys_uart_puts("set_pll_cpux_axi Ok \n");
@@ -1878,10 +1878,59 @@ uint_fast32_t allwnrt113_get_hosc_freq(void)
 #endif
 }
 
-uint_fast32_t allwnr_a64_get_arm_freq(void)
+uint_fast32_t allwnrt113_get_losc_freq(void)
 {
+	return LSEFREQ;
+}
+
+//val = CCU->PLL_CPUX_CTRL_REG;
+//val &= ~ ((0x3 << 16) | (0x1f << 8) | (0x3 << 4) | (0x3 << 0));
+//val |= ((p - 1) << 16);	// PLL_FACTOR_P PLL_OUT_EXT_DIVP
+//val |= ((n - 1) << 8);	// PLL_FACTOR_N
+//val |= ((k - 1) << 4);	// PLL_FACTOR_K
+//val |= ((m - 1) << 0);	// PLL_FACTOR_M
+//CCU->PLL_CPUX_CTRL_REG = val;
+
+uint_fast64_t allwnr_a64_get_pll_cpux_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_CPUX_CTRL_REG;
+	const uint_fast32_t pllP = 1 + ((reg >> 16) & 0x03);
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0x1F);
+	const uint_fast32_t pllK = 1 + ((reg >> 4) & 0x03);
+	const uint_fast32_t pllM = 1 + ((reg >> 0) & 0x03);
 	//  (24MHz*N*K)/(M*P)
-	return WITHCPUXTAL * PLL_CPU_N * PLL_CPU_K / (PLL_CPU_M * PLL_CPU_P);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN * pllK / (pllM * pllP);
+}
+
+uint_fast32_t allwnr_a64_get_cpux_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	switch ((clkreg >> 16) & 0x03)	/* CPUX_CLK_SRC_SEL */
+	{
+	case 0x00:
+		// 00: LOSC
+		return allwnrt113_get_losc_freq();
+	case 0x01:
+		// 01: OSC24M
+		return allwnrt113_get_hosc_freq();
+	default:
+		// 1X: PLL_CPUX
+		return allwnr_a64_get_pll_cpux_freq();
+	}
+}
+
+uint_fast32_t allwnr_a64_get_axi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	const uint_fast32_t clkdiv = 1u << ((clkreg >> 0) & 0x03);	// AXI_CLK_DIV_RATIO
+	return allwnr_a64_get_cpux_freq() / clkdiv;
+}
+
+uint_fast32_t allwnr_a64_get_apb_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	const uint_fast32_t clkdiv = 1u << ((clkreg >> 8) & 0x03);	// CPU_APB_CLK_DIV
+	return allwnr_a64_get_cpux_freq() / clkdiv;
 }
 
 uint_fast32_t allwnrt113_get_spi0_freq(void)
@@ -2982,9 +3031,24 @@ void hardware_spi_io_delay(void)
 #elif _WIN32
 #elif ! LINUX_SUBSYSTEM
 	// Cortex A7, Cortex A9
-	local_delay_us(5);
+	//local_delay_us(5);
 #endif
 }
+
+//We use a small delay routine between SDA and SCL changes to give a clear
+// sequence on the I2C bus. This is nothing more than a subroutine call and return.
+/* задержка обепечивает скорость обмена по I2C при программной реализации протокола - 1/2 периода 400 кГц */
+void i2c_dly(void)
+{
+	local_delay_us(5);
+#if LCDMODEX_SII9022A
+	local_delay_us(25);
+#endif /* LCDMODEX_SII9022A */
+#if PCF8576C
+	local_delay_us(15);
+#endif /* PCF8576C */
+}
+
 
 #if CPUSTYLE_STM32MP1
 

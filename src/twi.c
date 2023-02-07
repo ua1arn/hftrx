@@ -1546,19 +1546,6 @@ void i2c_initialize(void)
 //#define SCL_IN  RB4    //
 //#define SDA_IN  RB1    //
 
-//We use a small delay routine between SDA and SCL changes to give a clear 
-// sequence on the I2C bus. This is nothing more than a subroutine call and return.
-static void i2c_dly(void)
-{
-	local_delay_us(5);
-#if LCDMODEX_SII9022A
-	local_delay_us(25);
-#endif /* LCDMODEX_SII9022A */
-#if PCF8576C
-	local_delay_us(15);
-#endif /* PCF8576C */
-}
-
 //To initialize the ports set the output resisters to 0 and the tristate registers to 1 
 // which disables the outputs and allows them to be pulled high by the resistors.
 //SDA = SCL = 1;

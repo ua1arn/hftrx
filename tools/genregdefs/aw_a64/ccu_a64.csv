@@ -14,7 +14,7 @@
 #regdef; PLL_HSIC_CTRL_REG; 0x0044; PLL_HSIC Control Register 
 #regdef; PLL_DE_CTRL_REG; 0x0048; PLL_DE Control Register
 #regdef; PLL_DDR1_CTRL_REG; 0x004C; PLL_DDR1 Control Register
-#regdef; CPU_AXI_CFG_REG; 0x0050; CPUX/AXI Configuration Register 
+#regdef; CPUX_AXI_CFG_REG; 0x0050; CPUX/AXI Configuration Register 
 #regdef; AHB1_APB1_CFG_REG; 0x0054; AHB1/APB1 Configuration Register
 #regdef; APB2_CFG_REG; 0x0058; APB2 Configuration Register
 #regdef; AHB2_CFG_REG; 0x005C; AHB2 Configuration Register
