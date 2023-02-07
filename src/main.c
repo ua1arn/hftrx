@@ -21990,36 +21990,22 @@ main(void)
 		/* low-level board test */
 		BOARD_BLINK_INITIALIZE();
 		BOARD_BLINK_SETSTATE(1);
-		* ((volatile uint32_t *) 0x0044000) = 0xDEADBEEF; //GPIOD->CFG [0];
-		* ((volatile uint32_t *) 0x0044004) = GPIOD->CFG [1];
-		* ((volatile uint32_t *) 0x0044008) = GPIOD->CFG [2];
-		* ((volatile uint32_t *) 0x004400C) = GPIOD->CFG [3];
 
-		* ((volatile uint32_t *) 0x0044010) = GPIOE->CFG [0];
-		* ((volatile uint32_t *) 0x0044014) = GPIOE->CFG [1];
-		* ((volatile uint32_t *) 0x0044018) = GPIOE->CFG [2];
-		* ((volatile uint32_t *) 0x004401C) = GPIOE->CFG [3];
-
-		* ((volatile uint32_t *) 0x0044020) = GPIOE->DATA;
-		* ((volatile uint32_t *) 0x0044024) = CCU->BUS_CLK_GATING_REG0;
-		* ((volatile uint32_t *) 0x0044028) = CCU->BUS_CLK_GATING_REG1;
-		* ((volatile uint32_t *) 0x004402C) = CCU->BUS_CLK_GATING_REG2;
-		* ((volatile uint32_t *) 0x0044030) = CCU->BUS_CLK_GATING_REG3;
-		* ((volatile uint32_t *) 0x0044034) = CCU->BUS_CLK_GATING_REG4;
-
-
-		//* ((volatile uint32_t *) 0x0044010) = GPIOD->DATA;
-		return;
 		int i;
 		for (i = 0; i < 10; ++ i)
 		{
 			/* blinking */
 			BOARD_BLINK_SETSTATE(1);
-			local_delay_ms(500);
+			local_delay_ms(100);
 			BOARD_BLINK_SETSTATE(0);
-			local_delay_ms(500);
+			local_delay_ms(100);
 		}
-		return;
+
+		//* ((volatile uint32_t *) 0x0044010) = GPIOD->DATA;
+		* ((volatile uint32_t *) 0x0044000) = 0xDEADBEEF; //GPIOD->CFG [0];
+		* ((volatile uint32_t *) 0x0044004) = 0xDEADBEEF; //GPIOD->CFG [0];
+		dcache_clean(0x0044000, 256);
+		return 0;
 	}
 #endif
 #if LINUX_SUBSYSTEM

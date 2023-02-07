@@ -1808,12 +1808,12 @@ uint_fast32_t allwnr_a64_get_hosc_freq(void)
 
 uint_fast32_t allwnr_a64_get_arm_freq(void)
 {
-	return 240000000;
+	return WITHCPUXTAL;
 }
 
 uint_fast32_t allwnrt113_get_spi0_freq(void)
 {
-	return 24000000;
+	return WITHCPUXTAL;
 }
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
