@@ -2755,7 +2755,7 @@ void IRQ_Handler_GIC(void)
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
 uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 
@@ -3352,7 +3352,7 @@ sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
 #if 0 && WITHDEBUG
@@ -3454,7 +3454,7 @@ sysinit_cache_initialize(void)
 	//dcache_clean_all();
 #endif /* (__CORTEX_M != 0) */
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
@@ -3467,6 +3467,12 @@ sysinit_cache_initialize(void)
 			// not set the ACTLR.SMP
 			// 0x02: L2 Prefetch hint enable
 			__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
+			__ISB();
+			__DSB();
+		#elif (__CORTEX_A == 8U)
+			//todo: see documents
+			// set the ACTLR.SMP
+			__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
 			__ISB();
 			__DSB();
 		#elif (__CORTEX_A == 7U)
