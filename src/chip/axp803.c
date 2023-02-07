@@ -444,7 +444,7 @@ int axp803_initialize(void)
 //		regulator-name = "vcc-phy";
 //	};
 
-	ASSERT(0 == axp803_set_dcdc1(3300));	// VCC-CARD, VCC-PC, ...
+	axp803_set_dcdc1(3300);	// VCC-CARD, VCC-PC, ...
 
 	// plyphased
 	axp803_set_dcdc2(1100);	// VDD-CPUX
