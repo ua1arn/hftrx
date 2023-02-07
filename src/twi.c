@@ -15,19 +15,34 @@
 // Обслуживание I2C без использования аппаратных контроллеров процессора
 // программное "ногодрыгание" выводами.
 
+
+//We use a small delay routine between SDA and SCL changes to give a clear
+// sequence on the I2C bus. This is nothing more than a subroutine call and return.
+/* задержка обепечивает скорость обмена по I2C при программной реализации протокола - 1/2 периода частоты 400 кГц */
+static void i2c_delay(void)
+{
+	local_delay_us(1);
+#if LCDMODEX_SII9022A
+	local_delay_us(25);
+#endif /* LCDMODEX_SII9022A */
+#if PCF8576C
+	local_delay_us(15);
+#endif /* PCF8576C */
+}
+
 #if CPUSTYLE_ATMEGA
-	#define SET_TWCK() do { TARGET_TWI_TWCK_DDR &= ~ TARGET_TWI_TWCK; hardware_spi_io_delay(); } while (0)	// SCL = 1
-	#define CLR_TWCK() do { TARGET_TWI_TWCK_DDR |= TARGET_TWI_TWCK; hardware_spi_io_delay(); } while (0)	// SCL = 0
-	#define SET_TWD() do { TARGET_TWI_TWD_DDR &= ~ TARGET_TWI_TWD;  hardware_spi_io_delay(); } while (0)	// SDA = 1
-	#define CLR_TWD() do { TARGET_TWI_TWD_DDR |= TARGET_TWI_TWD; hardware_spi_io_delay(); } while (0)	// SDA = 0
+	#define SET_TWCK() do { TARGET_TWI_TWCK_DDR &= ~ TARGET_TWI_TWCK; } while (0)	// SCL = 1
+	#define CLR_TWCK() do { TARGET_TWI_TWCK_DDR |= TARGET_TWI_TWCK; } while (0)	// SCL = 0
+	#define SET_TWD() do { TARGET_TWI_TWD_DDR &= ~ TARGET_TWI_TWD;  } while (0)	// SDA = 1
+	#define CLR_TWD() do { TARGET_TWI_TWD_DDR |= TARGET_TWI_TWD; } while (0)	// SDA = 0
 
 	#define GET_TWCK() ((TARGET_TWI_TWCK_PIN & TARGET_TWI_TWCK) != 0)
 	#define GET_TWD() ((TARGET_TWI_TWD_PIN & TARGET_TWI_TWD) != 0)
 
-	#define SET2_TWCK() do { TARGET_TWI2_TWCK_DDR &= ~ TARGET_TWI2_TWCK; hardware_spi_io_delay(); } while (0)	// SCL = 1
-	#define CLR2_TWCK() do { TARGET_TWI2_TWCK_DDR |= TARGET_TWI2_TWCK; hardware_spi_io_delay(); } while (0)	// SCL = 0
-	#define SET2_TWD() do { TARGET_TWI2_TWD_DDR &= ~ TARGET_TWI2_TWD;  hardware_spi_io_delay(); } while (0)	// SDA = 1
-	#define CLR2_TWD() do { TARGET_TWI2_TWD_DDR |= TARGET_TWI2_TWD; hardware_spi_io_delay(); } while (0)	// SDA = 0
+	#define SET2_TWCK() do { TARGET_TWI2_TWCK_DDR &= ~ TARGET_TWI2_TWCK; } while (0)	// SCL = 1
+	#define CLR2_TWCK() do { TARGET_TWI2_TWCK_DDR |= TARGET_TWI2_TWCK; } while (0)	// SCL = 0
+	#define SET2_TWD() do { TARGET_TWI2_TWD_DDR &= ~ TARGET_TWI2_TWD; } while (0)	// SDA = 1
+	#define CLR2_TWD() do { TARGET_TWI2_TWD_DDR |= TARGET_TWI2_TWD; } while (0)	// SDA = 0
 
 	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
 	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
@@ -38,13 +53,13 @@
 
 	#define TWISOFT_INITIALIZE() do { } while(0)
 
-	#define SET_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while(0)
+	#define SET_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); } while(0)
 
-	#define CLR_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
+	#define CLR_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 0); } while(0)
 
-	#define SET_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while(0)
+	#define SET_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 1); } while(0)
 
-	#define CLR_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
+	#define CLR_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 0); } while (0)
 
 	uint8_t GET_TWCK(void)
 	{
@@ -62,19 +77,19 @@
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA || CPUSTYLE_RISCV
 
-	#define SET_TWCK() do { TARGET_TWI_TWCK_PORT_S(TARGET_TWI_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 1
-	#define CLR_TWCK() do { TARGET_TWI_TWCK_PORT_C(TARGET_TWI_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 0
-	#define SET_TWD() do { TARGET_TWI_TWD_PORT_S(TARGET_TWI_TWD); hardware_spi_io_delay(); } while (0)	// SDA = 1
-	#define CLR_TWD() do { TARGET_TWI_TWD_PORT_C(TARGET_TWI_TWD); hardware_spi_io_delay(); } while (0)	// SDA = 0
+	#define SET_TWCK() do { TARGET_TWI_TWCK_PORT_S(TARGET_TWI_TWCK); } while (0)	// SCL = 1
+	#define CLR_TWCK() do { TARGET_TWI_TWCK_PORT_C(TARGET_TWI_TWCK); } while (0)	// SCL = 0
+	#define SET_TWD() do { TARGET_TWI_TWD_PORT_S(TARGET_TWI_TWD);  } while (0)	// SDA = 1
+	#define CLR_TWD() do { TARGET_TWI_TWD_PORT_C(TARGET_TWI_TWD);  } while (0)	// SDA = 0
 
 	#define GET_TWCK() ((TARGET_TWI_TWCK_PIN & TARGET_TWI_TWCK) != 0)
 	#define GET_TWD() ((TARGET_TWI_TWD_PIN & TARGET_TWI_TWD) != 0)
 
 	/* второй канал I2C */
-	#define SET2_TWCK() do { TARGET_TWI2_TWCK_PORT_S(TARGET_TWI2_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 1
-	#define CLR2_TWCK() do { TARGET_TWI2_TWCK_PORT_C(TARGET_TWI2_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 0
-	#define SET2_TWD() do { TARGET_TWI2_TWD_PORT_S(TARGET_TWI2_TWD); hardware_spi_io_delay(); } while (0)	// SDA = 1
-	#define CLR2_TWD() do { TARGET_TWI2_TWD_PORT_C(TARGET_TWI2_TWD); hardware_spi_io_delay(); } while (0)	// SDA = 0
+	#define SET2_TWCK() do { TARGET_TWI2_TWCK_PORT_S(TARGET_TWI2_TWCK); } while (0)	// SCL = 1
+	#define CLR2_TWCK() do { TARGET_TWI2_TWCK_PORT_C(TARGET_TWI2_TWCK); } while (0)	// SCL = 0
+	#define SET2_TWD() do { TARGET_TWI2_TWD_PORT_S(TARGET_TWI2_TWD); } while (0)	// SDA = 1
+	#define CLR2_TWD() do { TARGET_TWI2_TWD_PORT_C(TARGET_TWI2_TWD); } while (0)	// SDA = 0
 
 	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
 	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
@@ -1502,18 +1517,18 @@ void i2c_initialize(void)
 #endif
 
 	SET_TWD();
-	i2c_dly();
+	i2c_delay();
 	SET_TWCK();
-	i2c_dly();
+	i2c_delay();
 
 #ifdef TWISOFT2_INITIALIZE
 
 	TWISOFT2_INITIALIZE();
 
 	SET2_TWD();
-	i2c_dly();
+	i2c_delay();
 	SET2_TWCK();
-	i2c_dly();
+	i2c_delay();
 #endif
 
 #endif
@@ -1562,30 +1577,34 @@ void i2c_initialize(void)
 	for (i = 0; i < 24; ++ i)
 	{
 		CLR_TWCK();
+		i2c_delay();
 		SET_TWCK();
+		i2c_delay();
 	}
 	SET_TWD();
 	for (i = 0; i < 24; ++ i)
 	{
 		CLR_TWCK();
+		i2c_delay();
 		SET_TWCK();
+		i2c_delay();
 	}
 
 #endif
 
 	SET_TWD();
-	i2c_dly();
+	i2c_delay();
 	SET_TWCK();
-	i2c_dly();
+	i2c_delay();
 
 #ifdef TWISOFT2_INITIALIZE
 
 	TWISOFT2_INITIALIZE();
 
 	SET2_TWD();
-	i2c_dly();
+	i2c_delay();
 	SET2_TWCK();
-	i2c_dly();
+	i2c_delay();
 #endif
 
 #if WITHTWIHW
@@ -1604,13 +1623,13 @@ void i2c_start(uint_fast8_t address)
 {
 	             
 	SET_TWD();	//SDA = 1;
-	i2c_dly();
+	i2c_delay();
 	SET_TWCK();	//SCL = 1;
-	i2c_dly();
+	i2c_delay();
 	CLR_TWD();	//SDA = 0;// negative edge on SCL
-	i2c_dly();
+	i2c_delay();
 	CLR_TWCK();	//SCL = 0;
-	i2c_dly();
+	i2c_delay();
 
 	i2c_write(address);
 	//return 0;
@@ -1626,11 +1645,11 @@ void i2c_waitsend(void)
 void i2c_stop(void)
 {
 	CLR_TWD();//SDA = 0;  
-	i2c_dly();
+	i2c_delay();
 	SET_TWCK();//SCL = 1;
-	i2c_dly();
+	i2c_delay();
 	SET_TWD();//SDA = 1;
-	i2c_dly();
+	i2c_delay();
 
 }
 
@@ -1638,19 +1657,19 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 { 
 	char x, d=0;
 	SET_TWD(); 
-	i2c_dly();
+	i2c_delay();
 	for (x = 0; x < 8; x ++)
 	{
 		int n;
 		n = 1000;
 		do {
 			SET_TWCK();
-			i2c_dly();
+			i2c_delay();
 		} while (n -- && GET_TWCK() == 0);    // wait for any SCL clock stretching
-		i2c_dly();
+		i2c_delay();
 		d = d * 2 + (GET_TWD() != 0);
 		CLR_TWCK();
-		i2c_dly();
+		i2c_delay();
 	} 
 
 	switch (ack_type)
@@ -1658,20 +1677,20 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 	case I2C_READ_ACK_1:
 	case I2C_READ_ACK:
 		CLR_TWD();
-		i2c_dly();
+		i2c_delay();
 		break;
 	case I2C_READ_NACK:
 	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
 		SET_TWD();
-		i2c_dly();
+		i2c_delay();
 		break;
 	}
 
 	SET_TWCK();
-	i2c_dly();             // send (N)ACK bit
+	i2c_delay();             // send (N)ACK bit
 	CLR_TWCK();
 	SET_TWD();
-	i2c_dly();
+	i2c_delay();
 	* data = d;
 	//return 0;
 }
@@ -1693,26 +1712,26 @@ void i2c_write(uint_fast8_t d)
 			CLR_TWD();
 		}
 		/* Формирование импульса на SCL */
-		i2c_dly();
+		i2c_delay();
 		//SCL = 1;
 		SET_TWCK();
 		//SCL = 0;
-		i2c_dly();
+		i2c_delay();
 		CLR_TWCK();
-		i2c_dly();
+		i2c_delay();
 	}
 	
 	//SDA = 1;
 	SET_TWD();
-    i2c_dly();
+    i2c_delay();
 	//SCL = 1;
 	SET_TWCK();
-	i2c_dly();
+	i2c_delay();
 	//b = SDA_IN;          // possible ACK bit
 	//b = 0;
 	//SCL = 0;
 	CLR_TWCK();
-	i2c_dly();
+	i2c_delay();
 	//return b;
 }
 
@@ -1735,13 +1754,13 @@ void i2c2_start(uint_fast8_t address)
 {
 
 	SET2_TWD();	//SDA = 1;
-	i2c_dly();
+	i2c_delay();
 	SET2_TWCK();	//SCL = 1;
-	i2c_dly();
+	i2c_delay();
 	CLR2_TWD();	//SDA = 0;// negative edge on SCL
-	i2c_dly();
+	i2c_delay();
 	CLR2_TWCK();	//SCL = 0;
-	i2c_dly();
+	i2c_delay();
 
 	i2c2_write(address);
 	//return 0;
@@ -1757,11 +1776,11 @@ void i2c2_waitsend(void)
 void i2c2_stop(void)
 {
 	CLR2_TWD();//SDA = 0;
-	i2c_dly();
+	i2c_delay();
 	SET2_TWCK();//SCL = 1;
-	i2c_dly();
+	i2c_delay();
 	SET2_TWD();//SDA = 1;
-	i2c_dly();
+	i2c_delay();
 
 }
 
@@ -1769,19 +1788,19 @@ void i2c2_read(uint8_t *data, uint_fast8_t ack_type)
 {
 	char x, d=0;
 	SET2_TWD();
-	i2c_dly();
+	i2c_delay();
 	for (x = 0; x < 8; x ++)
 	{
 		int n;
 		n = 1000;
 		do {
 			SET2_TWCK();
-			i2c_dly();
+			i2c_delay();
 		} while (n -- && GET2_TWCK() == 0);    // wait for any SCL clock stretching
-		i2c_dly();
+		i2c_delay();
 		d = d * 2 + (GET2_TWD() != 0);
 		CLR2_TWCK();
-		i2c_dly();
+		i2c_delay();
 	}
 
 	switch (ack_type)
@@ -1789,20 +1808,20 @@ void i2c2_read(uint8_t *data, uint_fast8_t ack_type)
 	case I2C_READ_ACK_1:
 	case I2C_READ_ACK:
 		CLR2_TWD();
-		i2c_dly();
+		i2c_delay();
 		break;
 	case I2C_READ_NACK:
 	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
 		SET2_TWD();
-		i2c_dly();
+		i2c_delay();
 		break;
 	}
 
 	SET2_TWCK();
-	i2c_dly();             // send (N)ACK bit
+	i2c_delay();             // send (N)ACK bit
 	CLR2_TWCK();
 	SET2_TWD();
-	i2c_dly();
+	i2c_delay();
 	* data = d;
 	//return 0;
 }
@@ -1824,26 +1843,26 @@ void i2c2_write(uint_fast8_t d)
 			CLR2_TWD();
 		}
 		/* Формирование импульса на SCL */
-		i2c_dly();
+		i2c_delay();
 		//SCL = 1;
 		SET2_TWCK();
 		//SCL = 0;
-		i2c_dly();
+		i2c_delay();
 		CLR2_TWCK();
-		i2c_dly();
+		i2c_delay();
 	}
 
 	//SDA = 1;
 	SET2_TWD();
-    i2c_dly();
+    i2c_delay();
 	//SCL = 1;
 	SET2_TWCK();
-	i2c_dly();
+	i2c_delay();
 	//b = SDA_IN;          // possible ACK bit
 	//b = 0;
 	//SCL = 0;
 	CLR2_TWCK();
-	i2c_dly();
+	i2c_delay();
 	//return b;
 }
 

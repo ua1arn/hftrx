@@ -755,7 +755,6 @@ void hardware_dac_ch2_setvalue(uint_fast16_t v);	// вывод 12-битного
 
 
 void hardware_spi_io_delay(void);	/* распространение сигналов до slave */
-void i2c_dly(void);	/* задержка обепечивает скорость обмена по I2C при программной реализации протокола - 1/2 периода 400 кГц */
 
 void cat2_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
 void cat2_rxoverflow(void);							/* вызывается из обработчика прерываний */
