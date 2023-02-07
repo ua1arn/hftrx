@@ -821,6 +821,9 @@ void sysinit_gpio_initialize(void)
 		SPINLOCK_t * const lck = & gpiodata_locks [i];
 		SPINLOCK_INITIALIZE(lck);
 	}
+#if CPUSTYLE_A64
+	CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING - not need - already set
+#endif /* CPUSTYLE_A64 */
 }
 
 #if __riscv_xlen
