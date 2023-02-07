@@ -4008,7 +4008,6 @@
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
-									<listOptionValue builtIn="false" value="__aarch64__=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.994338581" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -4029,7 +4028,6 @@
 									<listOptionValue builtIn="false" value="CPUSTYLE_T113=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
-									<listOptionValue builtIn="false" value="__aarch64__=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.535680558" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
@@ -4054,7 +4052,6 @@
 									<listOptionValue builtIn="false" value="CPUSTYLE_T113=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
-									<listOptionValue builtIn="false" value="__aarch64__=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1716955617" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>

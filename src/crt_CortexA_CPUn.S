@@ -64,8 +64,7 @@
 	 STACKSIZESYS = 64
 	 STACKSIZEIRQ = 512
 
-	 STACKSIZESVCBOOT = 2048
-	 STACKSIZESVCCPU1 = 16777216
+	 STACKSIZESVCCPUn = 1024
 
 	.section .text
 	.code 32
@@ -152,7 +151,7 @@ __stack_cpu1_mon_end = .
 //__stack_cpu1_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu1_sys_end = .
-	.space	STACKSIZESVCCPU1
+	.space	STACKSIZESVCCPUn
 __stack_cpu1_svc_end = .
 
 	.word 0		/* fix non-zero size of this section */
@@ -238,7 +237,7 @@ __stack_cpu2_mon_end = .
 //__stack_cpu2_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu2_sys_end = .
-	.space	STACKSIZESVCCPU1
+	.space	STACKSIZESVCCPUn
 __stack_cpu2_svc_end = .
 
 	.word 0		/* fix non-zero size of this section */
@@ -324,7 +323,7 @@ __stack_cpu3_mon_end = .
 //__stack_cpu3_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu3_sys_end = .
-	.space	STACKSIZESVCCPU1
+	.space	STACKSIZESVCCPUn
 __stack_cpu3_svc_end = .
 
 	.word 0		/* fix non-zero size of this section */
