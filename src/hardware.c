@@ -3813,6 +3813,36 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ ((xACPU0_RESET_MASK << targetcore) | (xACPU0_PWRON_RESET_MASK << targetcore));
 }
 
+#elif CPUSTYLE_A64
+
+#define HARDWARE_NCORES 4
+
+static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
+{
+	switch (targetcore)
+	{
+	case 0:
+		C0_CPUX_CFG->RVBARADDR0_L = startfunc;
+		C0_CPUX_CFG->RVBARADDR0_H = startfunc >> 64;
+		break;
+	case 1:
+		C0_CPUX_CFG->RVBARADDR1_L = startfunc;
+		C0_CPUX_CFG->RVBARADDR1_H = startfunc >> 64;
+		break;
+	case 2:
+		C0_CPUX_CFG->RVBARADDR2_L = startfunc;
+		C0_CPUX_CFG->RVBARADDR2_H = startfunc >> 64;
+		break;
+	case 3:
+		C0_CPUX_CFG->RVBARADDR3_L = startfunc;
+		C0_CPUX_CFG->RVBARADDR3_H = startfunc >> 64;
+		break;
+	}
+	dcache_clean_all();	// startup code should be copyed in to sysram for example.
+	C0_CPUX_CFG->C_RST_CTRL |= (0x01uL << targetcore);
+	(void) C0_CPUX_CFG->C_RST_CTRL;
+}
+
 #elif CPUSTYLE_T113
 
 //	3.4.2.4 CPU0 Hotplug Process
