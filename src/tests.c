@@ -5444,7 +5444,7 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 #endif
 
-#if (__CORTEX_A != 0)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 static void disableAllIRQs(void)
 {
@@ -5475,7 +5475,8 @@ static void disableAllIRQs(void)
 	PRINTF("disableAllIRQs: n=%u\n", n);
 
 }
-#endif /* (__CORTEX_A != 0) */
+
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if WITHOPENVG
 /*------------------------------------------------------------------------
@@ -6430,6 +6431,21 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
+
+		C0_CPUX_CFG->GENER_CTRL_REG0 &= ~ (1u << 4);	// GICCDISABLE
+		C0_CPUX_CFG->C_CPU_STATUS |= (0x0Fu << 24);		// SMP
+		C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << 24);		// AA64nAA32 1: AArch64
+
+		PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
+	}
+#endif
 #if 0 && LCDMODE_LTDC
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -6780,7 +6796,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 1 && WITHDEBUG && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if 0 && WITHDEBUG && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		// Allwinner t113-s3 boot mode display
 
@@ -10270,12 +10286,12 @@ void lowtests(void)
 		}
 	}
 #endif
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected arm: 0x0000190E, risc-v: 0x00002F0F)\n", (unsigned) SYS_CFG->SYS_LDO_CTRL_REG);
 	}
 #endif
-#if (CPUSTYLE_T113)
+#if 0 && (CPUSTYLE_T113)
 	{
 		PRINTF("C0_CPUX_CFG->C0_CTRL_REG0=0x%08X (expected 0x80000000)\n", (unsigned) C0_CPUX_CFG->C0_CTRL_REG0);
 	}

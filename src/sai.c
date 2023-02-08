@@ -3633,6 +3633,10 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
 	//PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", ix, prei, value, mclkf, clk);
 
+#if CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
+
+#else
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
 	// 01: PLL_AUDIO0(4X)
@@ -3649,6 +3653,8 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 
 	CCU->I2S_BGR_REG |= (1u << (0 + ix));	// Gating Clock for I2S/PCMx
 	CCU->I2S_BGR_REG |= (1u << (16 + ix));	// I2S/PCMx Reset
+
+#endif
 
 	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
 
@@ -3834,12 +3840,16 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
 		((uint_fast32_t) value << 0) |	// Factor M (0..31)
 		0;
+#if CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
 
+#else
 	CCU->AUDIO_CODEC_ADC_CLK_REG = clk_reg;
 	CCU->AUDIO_CODEC_DAC_CLK_REG = clk_reg;
 
 	CCU->AUDIO_CODEC_BGR_REG |= (1u << 0);	// Gating Clock For AUDIO_CODEC
 	CCU->AUDIO_CODEC_BGR_REG |= (1u << 16);	// AUDIO_CODEC Reset
+#endif
 
 #if 1
 	// anatol
@@ -4163,10 +4173,16 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 
 static void DMAC_clock_initialize(void)
 {
+#if CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
+
+#else /* CPUSTYLE_A64 */
 	CCU->MBUS_CLK_REG |= (1u << 30);		// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 0);	// Gating MBUS Clock For DMA
 	CCU->DMA_BGR_REG |= (1u << 16);		// DMA_RST 1: De-assert reset
 	CCU->DMA_BGR_REG |= (1u << 0);			// DMA_GATING 1: Pass clock
+#endif /* CPUSTYLE_A64 */
+
 	DMAC->DMAC_AUTO_GATE_REG |= (1u << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
 	DMAC->DMAC_AUTO_GATE_REG |= 0x07;
 }

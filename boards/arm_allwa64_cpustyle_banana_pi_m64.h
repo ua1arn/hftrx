@@ -11,17 +11,17 @@
 #ifndef ARM_ALLW_F1333_CPUSTYLE_MANGO_PI_H_INCLUDED
 #define ARM_ALLW_F1333_CPUSTYLE_MANGO_PI_H_INCLUDED 1
 
-#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
-#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
@@ -105,11 +105,11 @@
 	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
-	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
+	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
@@ -584,8 +584,8 @@
 #define HARDWARE_UART1_INITIALIZE() do { \
 		const portholder_t TXMASK = (1u << 8); /* PB8 UART0-TX */ \
 		const portholder_t RXMASK = (1u << 9); /* PB9 UART0-RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF6); \
-		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF6); \
+		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF4); \
+		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF4); \
 		arm_hardware_piob_updown(RXMASK, 0); \
 	} while (0)
 
@@ -623,32 +623,32 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
-	// TWI3-SCK PB6 SCL (P3 pin 16) TX3 - wire to pin 7 hseda 24bit vga+audio board
-	// TWI3-SDA PB7 SDA (P3 pin 15) RX3 - wire to pin 6
-	#define TARGET_TWI_TWCK		(1u << 6)		// TWI3-SCK PB6 SCL
-	#define TARGET_TWI_TWCK_PIN		(GPIOB->DATA)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piob_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piob_inputs(v); } while (0)
+	// PL0 - SCK
+	// PL1 - SDA
+	#define TARGET_TWI_TWCK		(1u << 0)
+	#define TARGET_TWI_TWCK_PIN		(GPIOL->DATA)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
 
-	#define TARGET_TWI_TWD		(1u << 7)		// TWI3-SDA PB7 SDA
-	#define TARGET_TWI_TWD_PIN		(GPIOB->DATA)
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piob_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piob_inputs(v); } while (0)
+	#define TARGET_TWI_TWD		(1u << 1)
+	#define TARGET_TWI_TWD_PIN		(GPIOL->DATA)
+	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piob_inputs(TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);  	/* SDA */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWCK); /* SCL */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWD);  	/* SDA */ \
 		} while (0) 
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piob_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);	/* SDA */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWD);	/* SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piob_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI3-SCK PB6 SCL */ \
-		arm_hardware_piob_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI3-SDA PB7 SDA */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF2x);	/* AF2 or AF3 */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3x);		/* AF2 or AF3 */ \
 		} while (0) 
 
 
@@ -990,34 +990,36 @@
 
 	#endif
 
-	#define BOARD_BLINK_BIT0 (1u << 22)	// PD24 - Banana Pi M64 led0 RED - active "1" (default has pull-up)
-	#define BOARD_BLINK_BIT1 (1u << 22)	// (1u << 14)	// PE14 - Banana Pi M64 led1 GREEN - active "1"
-	#define BOARD_BLINK_BIT2 (1u << 22)	// (1u << 15)	// PE15 - Banana Pi M64 led2 BLUE - active "1"
+	#define BOARD_BLINK_BIT0 (1u << 24)	// PD24 - Banana Pi M64 led0 RED - active "1" (default has pull-up)
+	#define BOARD_BLINK_BIT1 (1u << 14)	// PE14 - Banana Pi M64 led1 GREEN - active "1"
+	#define BOARD_BLINK_BIT2 (1u << 15)	// PE15 - Banana Pi M64 led2 BLUE - active "1"
 
 #if 1
 	#define BOARD_BLINK_INITIALIZE() do { \
-		arm_hardware_piob_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-		arm_hardware_pioc_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 		arm_hardware_piod_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 		arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
 		arm_hardware_pioe_outputs(BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) { \
-				gpioX_setstate(GPIOB, BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-				gpioX_setstate(GPIOC, BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 				gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 				gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
 				gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
 			} else {\
-				gpioX_setstate(GPIOB, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
-				gpioX_setstate(GPIOC, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
 				gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
 				gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, 0 * BOARD_BLINK_BIT1); \
 				gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, 0 * BOARD_BLINK_BIT2); \
 			} \
 		} while (0)
 #endif
+
+	int axp803_initialize(void);
+
+	/* Контроллер питания AXP803 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		axp803_initialize(); \
+	} while (0)
+
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_USERBOOT_BIT	(1u << 1)	/* PB1: ~USER_BOOT */

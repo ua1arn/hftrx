@@ -47,7 +47,7 @@
    ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
    ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
    ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
-   ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
+   //CA53 not have ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
    ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
    ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
    ARM_MODE_MASK  = 0x1F
@@ -154,9 +154,9 @@ gotosleep:
    ldr   sp, =__stack_cpu0_mon_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-   ldr   sp, =__stack_cpu0_hyp_end
-   mov   lr, #0
+//   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
+//  ldr   sp, =__stack_cpu0_hyp_end
+//   mov   lr, #0
 
    msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
    ldr   sp, =__stack_cpu0_sys_end
@@ -450,8 +450,8 @@ __stack_cpu0_fiq_end = .
 __stack_cpu0_svc_end = .
 	.space	STACKSIZEMON
 __stack_cpu0_mon_end = .
-	.space	STACKSIZEHYP
-__stack_cpu0_hyp_end = .
+//	.space	STACKSIZEHYP
+//__stack_cpu0_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu0_sys_end = .
 

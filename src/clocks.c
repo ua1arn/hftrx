@@ -1791,11 +1791,83 @@ unsigned long hardware_get_spi_freq(void)
 
 #elif CPUSTYLE_A64
 
-void allwnr_a64_pll_initialize(void)
+void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 {
+	uint32_t val;
+
+	// The PLL Output= (24MHz*N*K)/(M*P)
+	//TP();
+    //PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
+
+	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
+	CCU->CPUX_AXI_CFG_REG =
+			(1 << 16) | // CPUX_CLK_SRC_SEL 01: OSC24M
+			(3 << 8) |	// old 0x03 old CPU_DIV2=4, new same
+			(1 << 0) |	// old 0x01 old CPU_DIV1, new same
+			0;
+
+	/* Disable pll */
+	val = CCU->PLL_CPUX_CTRL_REG;
+	val &= ~(1 << 31);			// PLL_ENABLE
+	CCU->PLL_CPUX_CTRL_REG = val;
+
+	/* Set default clk to 1008mhz */
+	val = CCU->PLL_CPUX_CTRL_REG;
+	val &= ~ ((0x3 << 16) | (0x1f << 8) | (0x3 << 4) | (0x3 << 0));
+	val |= ((p - 1) << 16);	// PLL_FACTOR_P PLL_OUT_EXT_DIVP
+	val |= ((n - 1) << 8);	// PLL_FACTOR_N
+	val |= ((k - 1) << 4);	// PLL_FACTOR_K
+	val |= ((m - 1) << 0);	// PLL_FACTOR_M
+	CCU->PLL_CPUX_CTRL_REG = val;
+
+
+	val = CCU->PLL_CPUX_CTRL_REG;
+	val &= ~(1 << 29);	// PLL Lock Enable
+	CCU->PLL_CPUX_CTRL_REG = val;
+	/* Lock enable */
+	val = CCU->PLL_CPUX_CTRL_REG;
+	val |= (1 << 29);
+	CCU->PLL_CPUX_CTRL_REG = val;
+
+	/* Enable pll */
+	val = CCU->PLL_CPUX_CTRL_REG;
+	val |= (1 << 31);	// PLL_ENABLE
+	CCU->PLL_CPUX_CTRL_REG = val;
+
+	//TP();
+	/* Wait pll stable */
+	while((CCU->PLL_CPUX_CTRL_REG & (0x1 << 31)) == 0)
+		;
+	//TP();
+
+	/* Lock disable */
+//	val = CCU->PLL_CPU_CTRL_REG;
+//	val &= ~(1 << 29);
+//	CCU->PLL_CPU_CTRL_REG = val;
+	//local_delay_ms(1);
+
+	/* Set and change cpu clk src */
+	val = CCU->CPUX_AXI_CFG_REG;
+	val &= ~ ((0x3 << 16 ) | ( 0x3 << 8 ) | ( 0xf << 0));
+	val |=
+		(0x2 << 16) |	// CPUX_CLK_SRC_SEL 1X: PLL_CPUX
+		(0x3 << 8) |	// CPU_APB_CLK_DIV
+		(0x1 << 0) |	// AXI_CLK_DIV_RATIO
+		0;
+	CCU->CPUX_AXI_CFG_REG = val;
+
+	//local_delay_ms(1);
+	//sys_uart_puts("set_pll_cpux_axi Ok \n");
+//	TP();
+//    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 }
 
-uint_fast32_t allwnr_a64_get_hosc_freq(void)
+void allwnr_a64_pll_initialize(void)
+{
+	set_a64_pll_cpux_axi(PLL_CPU_N, PLL_CPU_K, PLL_CPU_M, PLL_CPU_P);	// see sdram.c
+}
+
+uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
 #if defined WITHCPUXTAL
 	return WITHCPUXTAL;
@@ -1806,15 +1878,72 @@ uint_fast32_t allwnr_a64_get_hosc_freq(void)
 #endif
 }
 
-uint_fast32_t allwnr_a64_get_arm_freq(void)
+uint_fast32_t allwnrt113_get_losc_freq(void)
 {
-	return 240000000;
+	return LSEFREQ;
+}
+
+//val = CCU->PLL_CPUX_CTRL_REG;
+//val &= ~ ((0x3 << 16) | (0x1f << 8) | (0x3 << 4) | (0x3 << 0));
+//val |= ((p - 1) << 16);	// PLL_FACTOR_P PLL_OUT_EXT_DIVP
+//val |= ((n - 1) << 8);	// PLL_FACTOR_N
+//val |= ((k - 1) << 4);	// PLL_FACTOR_K
+//val |= ((m - 1) << 0);	// PLL_FACTOR_M
+//CCU->PLL_CPUX_CTRL_REG = val;
+
+uint_fast64_t allwnr_a64_get_pll_cpux_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_CPUX_CTRL_REG;
+	const uint_fast32_t pllP = 1 + ((reg >> 16) & 0x03);
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0x1F);
+	const uint_fast32_t pllK = 1 + ((reg >> 4) & 0x03);
+	const uint_fast32_t pllM = 1 + ((reg >> 0) & 0x03);
+	//  (24MHz*N*K)/(M*P)
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN * pllK / (pllM * pllP);
+}
+
+uint_fast32_t allwnr_a64_get_cpux_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	switch ((clkreg >> 16) & 0x03)	/* CPUX_CLK_SRC_SEL */
+	{
+	case 0x00:
+		// 00: LOSC
+		return allwnrt113_get_losc_freq();
+	case 0x01:
+		// 01: OSC24M
+		return allwnrt113_get_hosc_freq();
+	default:
+		// 1X: PLL_CPUX
+		return allwnr_a64_get_pll_cpux_freq();
+	}
+}
+
+uint_fast32_t allwnr_a64_get_axi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	const uint_fast32_t clkdiv = 1u << ((clkreg >> 0) & 0x03);	// AXI_CLK_DIV_RATIO
+	return allwnr_a64_get_cpux_freq() / clkdiv;
+}
+
+uint_fast32_t allwnr_a64_get_apb_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	const uint_fast32_t clkdiv = 1u << ((clkreg >> 8) & 0x03);	// CPU_APB_CLK_DIV
+	return allwnr_a64_get_cpux_freq() / clkdiv;
 }
 
 uint_fast32_t allwnrt113_get_spi0_freq(void)
 {
-	return 24000000;
+	return WITHCPUXTAL;
 }
+
+uint_fast32_t allwnrt113_get_usart_freq(void)
+{
+	return WITHCPUXTAL;
+}
+
+
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -2906,6 +3035,7 @@ void hardware_spi_io_delay(void)
 #endif
 }
 
+
 #if CPUSTYLE_STM32MP1
 
 	#if WITHELKEY
@@ -3354,11 +3484,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif CPUSTYLE_A64
-
-#warning Implement for CPUSTYLE_A64
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	// timebase timer
 	TIMER->TMR1_CTRL_REG = 0;
@@ -6882,6 +7008,16 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_A64
 
+
+	/* Off bootloader USB */
+	if (1)
+	{
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
+	}
 	allwnr_a64_pll_initialize();
 
 #elif CPUSTYLE_T113
@@ -6891,10 +7027,10 @@ sysinit_pll_initialize(void)
 	{
 		CCU->USB_BGR_REG &= ~ (1u << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG &= ~ (1u << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~  (1u << 24);	// USBOTG0_RST
+		CCU->USB_BGR_REG &= ~ (1u << 24);	// USBOTG0_RST
 
-		CCU->USB0_CLK_REG &= ~  (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~  (1u << 30);	// USBPHY0_RSTN
+		CCU->USB0_CLK_REG &= ~ (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~ (1u << 30);	// USBPHY0_RSTN
 	}
 	allwnrt113_pll_initialize();
 

@@ -1,16 +1,14 @@
 #type; UART
-#base; UART0 0x02500000
-#base; UART1 0x02500400
-#base; UART2 0x02500800
-#base; UART3 0x02500C00
-#base; UART4 0x02501000
-#base; UART5 0x02501400
-#irq; UART0 34
-#irq; UART1 35
-#irq; UART2 36
-#irq; UART3 37
-#irq; UART4 38
-#irq; UART6 39
+#base; UART0 0x01C28000
+#base; UART1 0x01C28400
+#base; UART2 0x01C28800
+#base; UART3 0x01C28C00
+#base; UART4 0x01C29000
+#irq; UART0 32
+#irq; UART1 33
+#irq; UART2 34
+#irq; UART3 35
+#irq; UART4 36
 #regdef; DATA; 0x0000; UART Receive Buffer Register/Transmit Holding Register
 #regdef; DLH_IER; 0x0004; UART Divisor Latch High Register/UART Interrupt Enable Register
 #regdef; IIR_FCR; 0x0008; UART Interrupt Identity Register/UART FIFO Control Register

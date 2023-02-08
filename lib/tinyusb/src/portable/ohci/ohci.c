@@ -158,6 +158,7 @@ static void ed_list_remove_by_addr(ohci_ed_t * p_head, uint8_t dev_addr);
 static void ohci_data_clean_invalidate(void)
 {
 	dcache_clean_invalidate((uintptr_t) & ohci_data, sizeof ohci_data);
+	dcache_clean_invalidate((uintptr_t) & p_ed_head, sizeof p_ed_head);
 }
 //--------------------------------------------------------------------+
 // USBH-HCD API
@@ -528,7 +529,6 @@ bool hcd_edpt_clear_stall(uint8_t dev_addr, uint8_t ep_addr)
   const tusb_xfer_type_t type = ed_get_xfer_type(p_ed);
   ohci_data_clean_invalidate();
  if ( TUSB_XFER_BULK == type ) OHCI_REG->command_status_bit.bulk_list_filled = 1;
- ohci_data_clean_invalidate();
 
   return true;
 }

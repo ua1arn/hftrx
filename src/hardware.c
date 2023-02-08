@@ -1702,6 +1702,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_TMS320F2833X	&& 0	// FLASH code
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_A64
+	// калибровано для 1200 МГц процессора
+	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
 	// калибровано для 1200 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
@@ -1850,7 +1853,7 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 
 #endif /* CPUSTYLE_STM32H7XX */
 
-#if (__CORTEX_A != 0) && (! defined(__aarch64__))
+#if (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__))
 
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
@@ -2751,7 +2754,7 @@ void IRQ_Handler_GIC(void)
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
 uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 
@@ -3134,7 +3137,7 @@ sysinit_fpu_initialize(void)
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
 
-#elif (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#elif (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U)
 
 	// FPU
 	__FPU_Enable();
@@ -3277,7 +3280,7 @@ __STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 */
 
 #if defined(__aarch64__)
-uint32_t __Vectors [32];
+//uint32_t __Vectors [32];
 void __attribute__((used)) Reset_Handler(void)
 {
 	SystemInit();
@@ -3348,7 +3351,7 @@ sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
 #if 0 && WITHDEBUG
@@ -3450,7 +3453,7 @@ sysinit_cache_initialize(void)
 	//dcache_clean_all();
 #endif /* (__CORTEX_M != 0) */
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
@@ -3463,6 +3466,12 @@ sysinit_cache_initialize(void)
 			// not set the ACTLR.SMP
 			// 0x02: L2 Prefetch hint enable
 			__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
+			__ISB();
+			__DSB();
+		#elif (__CORTEX_A == 8U)
+			//todo: see documents
+			// set the ACTLR.SMP
+			__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
 			__ISB();
 			__DSB();
 		#elif (__CORTEX_A == 7U)
@@ -3641,6 +3650,15 @@ sysinit_cache_L2_cpu0_initialize(void)
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
 
+
+// инициализация контроллера питания (не только DDR память. бывает и GPIO)
+void sysinit_pmic_initialize(void)
+{
+#if defined (BOARD_PMIC_INITIALIZE)
+	BOARD_PMIC_INITIALIZE();
+#endif /* BOARD_PMIC_INITIALIZE */
+}
+
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
@@ -3648,24 +3666,11 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
-#if 0 && defined BOARD_BLINK_INITIALIZE
-	{
-		/* low-level board test */
-		BOARD_BLINK_INITIALIZE();
-		for (;;)
-		{
-			/* blinking */
-			BOARD_BLINK_SETSTATE(1);
-			local_delay_ms(500);
-			BOARD_BLINK_SETSTATE(0);
-			local_delay_ms(500);
-		}
-	}
-#endif
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
+	sysinit_pmic_initialize();
 	sysinit_perfmeter_initialize();
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
@@ -3675,7 +3680,7 @@ SystemInit(void)
 }
 
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
 static void cortexa_cpuinfo(void)
 {
@@ -3821,6 +3826,37 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 	* (volatile uint32_t *) 0xFD5C0020 = 0;	//apu.config0
 
 	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ ((xACPU0_RESET_MASK << targetcore) | (xACPU0_PWRON_RESET_MASK << targetcore));
+}
+
+#elif CPUSTYLE_A64
+
+#define HARDWARE_NCORES 4
+
+static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
+{
+	//C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << (24 + targetcore));		// AA64nAA32 1: AArch64
+	switch (targetcore)
+	{
+	case 0:
+		C0_CPUX_CFG->RVBARADDR0_L = startfunc;
+		C0_CPUX_CFG->RVBARADDR0_H = startfunc >> 64;
+		break;
+	case 1:
+		C0_CPUX_CFG->RVBARADDR1_L = startfunc;
+		C0_CPUX_CFG->RVBARADDR1_H = startfunc >> 64;
+		break;
+	case 2:
+		C0_CPUX_CFG->RVBARADDR2_L = startfunc;
+		C0_CPUX_CFG->RVBARADDR2_H = startfunc >> 64;
+		break;
+	case 3:
+		C0_CPUX_CFG->RVBARADDR3_L = startfunc;
+		C0_CPUX_CFG->RVBARADDR3_H = startfunc >> 64;
+		break;
+	}
+	dcache_clean_all();	// startup code should be copyed in to sysram for example.
+	C0_CPUX_CFG->C_RST_CTRL |= (0x01uL << targetcore);
+	(void) C0_CPUX_CFG->C_RST_CTRL;
 }
 
 #elif CPUSTYLE_T113
@@ -4548,7 +4584,7 @@ void _stack_init(void)
 
 }
 
-#if CPUSTYLE_RISCV
+#if CPUSTYLE_RISCV || defined(__aarch64__)
 
 /**
   \brief   Initializes data and bss sections
@@ -4591,7 +4627,7 @@ __NO_RETURN void __riscv_start(void)
 
   _start();
 }
-#endif /* CPUSTYLE_RISCV */
+#endif /* CPUSTYLE_RISCV || defined(__aarch64__) */
 
 #if ! LINUX_SUBSYSTEM && 1//(__CORTEX_M == 0) && 0
 

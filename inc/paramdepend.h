@@ -741,7 +741,7 @@ extern "C" {
 	#define HARDWARE_CLK32K_FREQ 32000uL
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
-	#define CPU_FREQ	(allwnr_a64_get_arm_freq())
+	#define CPU_FREQ	(allwnr_a64_get_cpux_freq())
 	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
 	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
 
@@ -1104,6 +1104,20 @@ extern "C" {
 		#define global_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK); } while (0)
 
 	#endif /* WITHNESTEDINTERRUPTS */
+
+#elif CPUSTYLE_CA53
+		// aarch64 mode - no GIC
+
+		#define ARM_OVERREALTIME_PRIORITY	1
+		#define ARM_REALTIME_PRIORITY		1
+		#define ARM_SYSTEM_PRIORITY			1
+		#define ARM_USER_PRIORITY			0
+
+		void (system_disableIRQ)(void);
+		void (system_enableIRQ)(void);
+
+		#define global_enableIRQ() do { (system_enableIRQ)(); } while (0)
+		#define global_disableIRQ() do { (system_disableIRQ)(); } while (0)
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 

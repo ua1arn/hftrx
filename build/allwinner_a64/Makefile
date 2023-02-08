@@ -17,6 +17,7 @@
 # Start of default section
 #
 TRGT2 = arm-none-eabi
+#TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
 XFEL = ../../tools/xfel-windows-v1.2.9/xfel
@@ -35,7 +36,7 @@ LDSCRIPT_APP = ./allwnr_a64_app.ld
 ARCHDIR = $(PRJROOT)/arch/aw_a64
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_T113"=1 -D"CPUSTYLE_A64"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_T113"=1 -D"CPUSTYLE_A64"=1 -D"CPUSTYLE_CA53"=1
 #UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
@@ -47,15 +48,12 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 
-# For details of A7 CPUX signals, refer to the technical reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
 
-# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
-# debug architecture ARMv7.1.
-CORE = -mcpu=cortex-a53
+CORE = -mcpu=cortex-a7
 CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
-CORE += -mfpu=neon-vfpv4
-#CORE += -mfpu=vfpv4
+#CORE += -mfpu=neon-vfpv4
+CORE += -mfpu=vfpv4
 
 # Define optimisation level here
 #OPT = -Og
@@ -69,7 +67,6 @@ DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
-#HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
 TINYUSBDIR = $(PRJROOT)/lib/tinyusb
@@ -82,8 +79,6 @@ DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
 	$(ARCHDIR) \
-	$(MDLWUSBDIR)/Core/Inc \
-	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
@@ -140,7 +135,12 @@ SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 #SRCDIRS += $(DSP3DDIR)/src
 SRCDIRS += $(ARCHDIR)
-SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
+
+ifeq (1, 0)
+# ST USB
+DINCDIR += $(MDLWUSBDIR)/Core/Inc $(MDLWHOSTDIR)/Core/Inc
+SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
+endif
 
 ifeq (1, 0)
 # tinyusb
@@ -182,9 +182,8 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
-ASRC_APP += $(PRJROOT)/src/crt_CortexA53_CPUn.S
-ASRC_BOOT += $(PRJROOT)/src/crt_CortexA53.S
-ASRC_APP += $(ASRC_BOOT)
+ASRC_APP = $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S 
+ASRC_BOOT = $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S 
 
 VPATH = $(PRJROOT)
 
@@ -241,7 +240,8 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean app_run
 
-all: APP2 $(PROJECT)_app.alw32
+allXXX: APP2 $(PROJECT)_app.alw32
+all: app_run
 
 allZ:
 	@echo Src
@@ -249,11 +249,13 @@ allZ:
 	@echo Obj at $(OBJDIR)
 	@echo $(abspath $(OBJS))
 
-bootloader: BOOT2 fsbl.alw32
+bootloader: BOOT2 fsbl.alw32 app_run
   
-app_run: fsbl.alw32
+app_run: BOOT2 fsbl.alw32
 	$(XFEL) write 0x00044000 fsbl.alw32
-	$(XFEL) exec  0x00044100 
+	$(XFEL) exec 0x00044100 
+
+#	$(XFEL) hexdump 0x00044000  48
   
 Zapp_run: $(PROJECT)_app.alw32
 	$(XFEL) ddr t113-s3

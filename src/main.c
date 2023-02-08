@@ -21711,15 +21711,15 @@ bootloader_launch_app(uintptr_t ip)
 	}
 #endif
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__))
 
 	MMU_Disable();
 	MMU_InvalidateTLB();
 	__ISB();
 	__DSB();
+#endif
 	(* (void (*)(void)) ip)();
 
-#endif
 
 	for (;;)
 		;
@@ -21972,11 +21972,29 @@ static void bootloader_mainloop(void)
 	{
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
+		{
+			/* здесь можно добавить обработку каких-либо команд с debug порта */
+			char c;
+			if (dbg_getchar(& c))
+			{
+				switch (c)
+				{
+				case 0x00:
+					break;
+				default:
+					PRINTF("key=%02X\n", (unsigned char) c);
+					break;
+
+				}
+			}
+		}
 	}
 }
 #endif /* WITHISBOOTLOADERFATFS */
 
 #endif /* WITHISBOOTLOADER */
+
+#include "src/chip/axp803.h"
 
 /* Главная функция программы */
 int 
@@ -21995,6 +22013,7 @@ main(void)
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
 #endif /* WITHDEBUG && ! CPUSTYLE_ARM */
+
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
 	global_disableIRQ();

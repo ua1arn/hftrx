@@ -1409,7 +1409,36 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 #elif CPUSTYLE_A64
 
-	#warning Implement for CPUSTYLE_A64
+	const unsigned ix = 0;
+
+	/* Open the clock gate for uart0 */
+	CCU->BUS_CLK_GATING_REG3 |= (0x01uL << (ix + 16));	// UART0_GATING
+
+	/* De-assert uart0 reset */
+	CCU-> BUS_SOFT_RST_REG4 |= (0x01uL << (ix + 16));	//  UART0_RST
+
+	/* Config uart0 to 115200-8-1-0 */
+	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
+
+	UART0->DLH_IER = 0;
+	UART0->IIR_FCR = 0xf7;
+	UART0->UART_MCR = 0x00;
+
+	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
+	UART0->DATA = divisor & 0xff;
+	UART0->DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
+	//
+	UART0->UART_LCR &= ~ 0x1f;
+	UART0->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
+
+	HARDWARE_UART1_INITIALIZE();
+
+	if (debug == 0)
+	{
+	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
+	}
+
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 0;
@@ -1417,7 +1446,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	/* Open the clock gate for uart0 */
 	CCU->UART_BGR_REG |= (0x01uL << (ix + 0));
 
-	/* Deassert uart0 reset */
+	/* De-assert uart0 reset */
 	CCU->UART_BGR_REG |= (0x01uL << (ix + 16));
 
 	/* Config uart0 to 115200-8-1-0 */

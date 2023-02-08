@@ -1,6 +1,10 @@
 #type; USB_OHCI_Capability
 #base; USBOHCI0 0x04101400
 #base; USBOHCI1 0x04200400
+#irq; USB0_OHCI 63
+#irq; USB1_OHCI 66
+#irqrv; USB0_OHCI 47
+#irqrv; USB1_OHCI 50
 #regdef; O_HcRevision; 0x0000; OHCI Revision Register (not documented)
 #regdef; O_HcControl; 0x0004; OHCI Control Register
 #regdef; O_HcCommandStatus; 0x0008; OHCI Command Status Register

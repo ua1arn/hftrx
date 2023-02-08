@@ -1,5 +1,8 @@
 #type; DMAC
 #base; DMAC 0x03002000
+#irq; DMAC_NS 82
+#irq; DMAC_S 83
+#irqrv; DMAC_NS 66
 #regdef; DMAC_IRQ_EN_REG0; 0x0000; DMAC IRQ Enable Register 0
 #regdef; DMAC_IRQ_EN_REG1; 0x0004; DMAC IRQ Enable Register 1
 #regdef; DMAC_IRQ_PEND_REG0; 0x0010; DMAC IRQ Pending Register 0

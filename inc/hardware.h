@@ -616,6 +616,7 @@ void spool_systimerbundle2(void);
 void spool_elkeybundle(void);
 void sysinit_pll_initialize(void);	// PLL initialize
 void sysinit_gpio_initialize(void);	// временная подготовка к работе с gpio.
+void sysinit_pmic_initialize(void);	// инициализация контроллера питания (не только DDR память. бывает и GPIO)
 void hardware_adc_startonescan(void);
 void stm32mp1_pll1_slow(uint_fast8_t slow);
 
@@ -753,7 +754,7 @@ void hardware_dac_ch1_setvalue(uint_fast16_t v);	// вывод 12-битного
 void hardware_dac_ch2_setvalue(uint_fast16_t v);	// вывод 12-битного значения на ЦАП - канал 2
 
 
-void hardware_spi_io_delay(void);
+void hardware_spi_io_delay(void);	/* распространение сигналов до slave */
 
 void cat2_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
 void cat2_rxoverflow(void);							/* вызывается из обработчика прерываний */
