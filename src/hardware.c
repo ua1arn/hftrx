@@ -3291,7 +3291,7 @@ void __attribute__((used)) Reset_Handler(void)
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
 	extern unsigned long __Vectors;
 
@@ -3631,7 +3631,7 @@ sysinit_cache_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_cache_L2_cpu0_initialize(void)
 {
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
 
@@ -3703,7 +3703,7 @@ static void cortexa_cpuinfo(void)
 static void FLASHMEMINITFUNC
 sysinit_cache_cpu1_initialize(void)
 {
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U)
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
 		//dcache_clean_all();
@@ -3906,6 +3906,11 @@ void Reset_CPUn_Handler(void)
 	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
 	__ISB();
 	__DSB();
+#elif (__CORTEX_A == 8U)
+	// set the ACTLR.SMP
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	__ISB();
+	__DSB();
 #elif (__CORTEX_A == 7U)
 	// set the ACTLR.SMP
 	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
@@ -3974,6 +3979,12 @@ void cpump_initialize(void)
 	// set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable
 	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
+	__ISB();
+	__DSB();
+#elif (__CORTEX_A == 8U)
+	// set the ACTLR.SMP
+	// STM32MP1: already set
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 7U)
