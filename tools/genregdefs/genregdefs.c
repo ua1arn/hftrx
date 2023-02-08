@@ -439,7 +439,6 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	char typname[VNAME_MAX];
 	char irqname[VNAME_MAX];
 	int irq;
-	int irqrv;
 	unsigned base;
 
 	for (;;) {
@@ -451,10 +450,10 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			if (nextline(fp) == 0)
 				break;
 		} else if (2 == sscanf(token0, "#irq; %s %i\n", irqname, &irq)) {
+			trimname(irqname); 
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
 			if (pfl->irq_count < BASE_MAX) {
 				pfl->irq_array[pfl->irq_count] = irq;
-				trimname(irqname);
 				strcpy(pfl->irq_names[pfl->irq_count], irqname);
 				//
 				++pfl->irq_count;
@@ -463,11 +462,11 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			/* parsed */
 			if (nextline(fp) == 0)
 				break;
-		} else if (2 == sscanf(token0, "#irqrv; %s %i\n", irqname, &irqrv)) {
+		} else if (2 == sscanf(token0, "#irqrv; %s %i\n", irqname, &irq)) {
+			trimname(irqname);
 			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
 			if (pfl->irqrv_count < BASE_MAX) {
 				pfl->irqrv_array[pfl->irqrv_count] = irq;
-				trimname(irqname);
 				strcpy(pfl->irqrv_names[pfl->irqrv_count], irqname);
 				//
 				++pfl->irqrv_count;
@@ -618,11 +617,18 @@ static void freeregs(struct parsedfile *pfl) {
 	freeregdfn(&pfl->regslist);
 }
 
+static int flag_riscv = 0;
+
 int main(int argc, char *argv[], char *envp[]) {
 	//struct parsedfile pfls [MAXPARSEDFILES];
 	int i = 1;
 	//int nperoiph;
-
+	if (argc > 1 && strcmp(argv [1], "--riscv") == 0)
+	{
+		flag_riscv = 1;
+		-- argc;
+		++ argv;
+	}
 	if (argc < 2)
 		return 1;
 
@@ -661,7 +667,7 @@ int main(int argc, char *argv[], char *envp[]) {
 		emitline(0, "#include <stdint.h>" "\n");
 		emitline(0, "\n");
 
-		if (1) {
+		if (! flag_riscv) {
 			/* collect ARM IRQ vectors */
 			int nitems = 0;
 			struct irqmap irqs[1024];
@@ -702,7 +708,7 @@ int main(int argc, char *argv[], char *envp[]) {
 			emitline(0, "\n");
 		}
 
-		if (0) {
+		if (flag_riscv) {
 			/* collect RISC-V IRQ vectors */
 			int nitems = 0;
 			struct irqmaprv irqs[1024];
