@@ -369,12 +369,19 @@ IRQ_Handler:
 	VMRS	R0, FPEXC
     ldr     LR, =(1 << 31) //check FPEXC.EX
 	TST		R0, LR		// check FPEXC.EX
-	//BEQ skipPUSH
+	BEQ skipPUSH
+/**
+ ** DDI0502G_cortex_a53_fpu_trm.pdf
+ **
+ ** The Floating-Point Instruction Registers, FPINST and FPINST2 are not implemented, and any
+ ** attempt to access them is UNPREDICTABLE
+ */
+
 	VMRSNE	LR, FPINST
 	PUSHNE	{LR}
 	VMRSNE	LR, FPINST2
 	PUSHNE	{LR}
-//skipPUSH:
+skipPUSH:
    // Initialise FPSCR to a known state
     // Loaded in to R2
 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
@@ -412,12 +419,12 @@ IRQ_Handler:
 
 	POP 	{R0}	// FPEXC
 	TST		R0, LR	// check FPEXC.EX
-	//BEQ skipPOP
+	BEQ skipPOP
 	POPNE 	{LR}
 	VMSRNE	FPINST2, LR
 	POPNE 	{LR}
 	VMSRNE 	FPINST, LR
-//skipPOP:
+skipPOP:
 	// restore VFP/Neon FPEXC register
 	VMSR	FPEXC, R0
 	// restore VFP/Neon FPSCR register
