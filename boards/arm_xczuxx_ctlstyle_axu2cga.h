@@ -10,9 +10,9 @@
 #ifndef ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED
 #define ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED 1
 
-	#if ! defined(XCZU2CG)
+	#if ! defined(XCZU2)
 		#error Wrong CPU selected. XCZU2CG expected
-	#endif /* ! defined(XCZU2CG) */
+	#endif /* ! defined(XCZU2) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE

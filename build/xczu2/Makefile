@@ -16,8 +16,8 @@
 ##############################################################################################
 # Start of default section
 #
-#TRGT2 = arm-none-eabi
-TRGT2 = aarch64-none-elf
+TRGT2 = arm-none-eabi
+#TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
 PRJROOT := ../..
@@ -40,7 +40,8 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 # The Cortex-A53 processor is a mid-range, low-power processor that implements the Armv8-A architecture
 
-CORE = -mcpu=cortex-a53 -march=armv8-a
+#CORE = -mcpu=cortex-a53 -march=armv8-a
+CORE = -mcpu=cortex-a53
 #CORE += -mfloat-abi=hard 
 #CORE += -mfpu=vfpv4
 #CORE += -mfpu=neon
@@ -51,7 +52,8 @@ CORE = -mcpu=cortex-a53 -march=armv8-a
 # only -Og for app
 # Application
 #OPT = -Og
-OPT = -Ofast -flto
+#OPT = -Ofast -flto
+OPT = -Os
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 

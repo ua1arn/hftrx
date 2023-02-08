@@ -273,9 +273,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include <boards/arm_allwt113s3_cpustyle_mango_pi_gw2a.h>
 #elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7
-	#include "boards/arm_xczu2_ctlstyle_alinx_axu2cga.h"
+	#include "boards/arm_xczuxx_ctlstyle_axu2cga.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_xczu2_cpustyle_alinx_axu2cga.h"
+	#include "boards/arm_xczuxx_cpustyle_axu2cga.h"
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_x7c70xx_ctlstyle_antminer_20_v1p1.h"	// 7020
 	//#include "boards/arm_x7c70xx_ctlstyle_antminer_10_v1p1.h"	// 7020
