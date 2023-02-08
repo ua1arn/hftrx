@@ -1853,7 +1853,7 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 
 #endif /* CPUSTYLE_STM32H7XX */
 
-#if (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__))
+#if (__CORTEX_A != 0) && (! defined(__aarch64__))
 
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
@@ -2754,11 +2754,11 @@ void IRQ_Handler_GIC(void)
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
 uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 
-#if __CORTEX_A
+#if (__CORTEX_A != 0)
 
 // Short-descriptor format memory region attributes, without TEX remap
 // When using the Short-descriptor translation table formats, TEX remap is disabled when SCTLR.TRE is set to 0.
@@ -3137,7 +3137,7 @@ sysinit_fpu_initialize(void)
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
 
-#elif (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U)
+#elif (__CORTEX_A != 0)
 
 	// FPU
 	__FPU_Enable();
@@ -3291,7 +3291,7 @@ void __attribute__((used)) Reset_Handler(void)
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 	extern unsigned long __Vectors;
 
@@ -3351,7 +3351,7 @@ sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
 #if 0 && WITHDEBUG
@@ -3453,7 +3453,7 @@ sysinit_cache_initialize(void)
 	//dcache_clean_all();
 #endif /* (__CORTEX_M != 0) */
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
@@ -3631,7 +3631,7 @@ sysinit_cache_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_cache_L2_cpu0_initialize(void)
 {
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
 
@@ -3647,7 +3647,7 @@ sysinit_cache_L2_cpu0_initialize(void)
 		#endif
 	//dcache_clean_all();
 	#endif
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+#endif /* (__CORTEX_A != 0) */
 }
 
 
@@ -3680,7 +3680,7 @@ SystemInit(void)
 }
 
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 static void cortexa_cpuinfo(void)
 {
@@ -3703,12 +3703,12 @@ static void cortexa_cpuinfo(void)
 static void FLASHMEMINITFUNC
 sysinit_cache_cpu1_initialize(void)
 {
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 8U) || (__CORTEX_A == 9U)
+#if (__CORTEX_A != 0)
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
 		//dcache_clean_all();
 	#endif
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+#endif /* (__CORTEX_A != 0) */
 }
 
 #if CPUSTYLE_STM32MP1
@@ -4016,7 +4016,7 @@ void cpump_initialize(void)
 		SPIN_UNLOCK(& cpu1init);
 	}
 
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+#endif /* (__CORTEX_A != 0) */
 
 }
 
