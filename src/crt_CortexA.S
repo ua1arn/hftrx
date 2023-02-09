@@ -360,15 +360,12 @@ IRQ_Handler:
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
 	VMRS	LR, FPSID
 	VMSR	FPSID, LR
-	PUSH	{LR}
 
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
 	// save VFP/Neon FPSCR register
-	VMRS	R2, FPSCR	// R2 used below
-	PUSH	{R2}
-	// save VFP/Neon FPEXC register
+	VMRS	R2, FPSCR
 	VMRS	R0, FPEXC
-	PUSH 	{R0}	// FPEXC
+	PUSH 	{R0, R2, LR}	// FPEXC, FPSCR, pad
     // Initialise FPSCR to a known state
     // Loaded in to R2
 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
@@ -403,13 +400,10 @@ IRQ_Handler:
 //#endif /* __ARM_NEON == 1 */
 
 	// restore VFP/Neon FPEXC register
-	POP 	{R0}	// FPEXC
+	POP 	{R0, R2, LR}	// FPEXC, FPSCR, pad
 	VMSR	FPEXC, R0
-	// restore VFP/Neon FPSCR register
-	POP		{R1}
-	VMSR	FPSCR, R1
+	VMSR	FPSCR, R2
 
-	POP		{R2}
 	VMRS	LR, FPSID
 	VMSR	FPSID, LR
 
@@ -418,7 +412,7 @@ IRQ_Handler:
 
 	LDMIA   SP!, {R0, LR}
 	MSR     SPSR_cxsf, LR
-	ISB
+//	ISB
 	LDMIA   SP!, {PC}^
 
 	.endfunc
