@@ -62,9 +62,9 @@
 	 STACKSIZEHYP = 64
 	 STACKSIZEMON = 64
 	 STACKSIZESYS = 64
-	 STACKSIZEIRQ = 512
+	 STACKSIZEIRQ = 1024
 
-	 STACKSIZESVCBOOT = 2048
+	 STACKSIZESVCBOOT = 64	/* + STACKSIZEIRQ = stack for SystemInit running */
   
 	.global __Vectors
 	.section .isr_vector, "ax"
@@ -363,9 +363,9 @@ IRQ_Handler:
 
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
 	// save VFP/Neon FPSCR register
-	VMRS	R2, FPSCR
+	VMRS	R1, FPSCR
 	VMRS	R0, FPEXC
-	PUSH 	{R0, R2, LR}	// FPEXC, FPSCR, pad
+	PUSH 	{R0, R1, R2}	// FPEXC, FPSCR, pad
     // Initialise FPSCR to a known state
     // Loaded in to R2
 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
@@ -400,9 +400,9 @@ IRQ_Handler:
 //#endif /* __ARM_NEON == 1 */
 
 	// restore VFP/Neon FPEXC register
-	POP 	{R0, R2, LR}	// FPEXC, FPSCR, pad
+	POP 	{R0, R1, R2}	// FPEXC, FPSCR, pad
 	VMSR	FPEXC, R0
-	VMSR	FPSCR, R2
+	VMSR	FPSCR, R1
 
 	VMRS	LR, FPSID
 	VMSR	FPSID, LR
@@ -427,8 +427,6 @@ __stack_cpu0_und_end = .
 __stack_cpu0_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu0_fiq_end = .
-	.space	STACKSIZESVCBOOT
-__stack_cpu0_svc_end = .
 	.space	STACKSIZEMON
 __stack_cpu0_mon_end = .
 //	.space	STACKSIZEHYP
@@ -438,6 +436,8 @@ __stack_cpu0_sys_end = .
 
 	.space	STACKSIZEIRQ
 __stack_cpu0_irq_end = .
+	.space	STACKSIZESVCBOOT
+__stack_cpu0_svc_end = .
 
 	.word 0		/* fix non-zero size of this section */
 
