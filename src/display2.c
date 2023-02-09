@@ -2137,9 +2137,15 @@ static void display2_rxbw3(
 	dctx_t * pctx
 	)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_value_P(), };
+#if 1 && WITHIF4DSP
+	const char * const labels [1] = { hamradio_get_rxbw_value3_P(), };
+	ASSERT(strlen(labels [0]) == 3);
+	display2_text(x, y, labels, colors_1state, 0);
+#else
+	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_label3_P(), };
 	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1state, 0);
+#endif
 }
 
 
