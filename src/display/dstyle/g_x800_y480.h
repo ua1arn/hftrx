@@ -82,7 +82,7 @@
 
 		{	0,	0, 	display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
 		//{	0,	0, 	display2_smeors5, 	REDRM_BARS, PGALL, },	// уровень сигнала в баллах S или dBm
-		{	8, 	0,	display2_rxbwval3,	REDRM_MODE, PGALL, },	// RX BW value
+		{	10,	0,	display2_rxbwval4,	REDRM_MODE, PGALL, },	// RX BW value
 		{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	18, 0,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	22, 0,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
@@ -99,7 +99,7 @@
 		{	0,	4,	display2_af_spectre15,		REDRM_BARS, PGSPE, },
 	#endif /* WITHAFSPECTRE */
 
-		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		//{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
 		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 		{	41,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
@@ -110,7 +110,7 @@
 
 		{	37, 15,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 		{	41, 15,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{	45, 15,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	45, 15,	display2_notch5,	REDRM_MODE, PGALL, },	// NOTCH on/off
 
 		{	15, 20,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		{	20,	20,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPL

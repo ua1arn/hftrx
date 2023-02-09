@@ -2143,14 +2143,14 @@ static void display_pbt(
 }
 
 // RX path bandwidth
-static void display2_rxbwval3(
+static void display2_rxbwval4(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
-	const char * const labels [1] = { hamradio_get_rxbw_value3_P(), };
-	ASSERT(strlen(labels [0]) == 3);
+	const char * const labels [1] = { hamradio_get_rxbw_value4_P(), };
+	ASSERT(strlen(labels [0]) == 4);
 	display2_text(x, y, labels, colors_1state, 0);
 }
 

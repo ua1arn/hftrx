@@ -13053,26 +13053,28 @@ uint_fast8_t hamradio_get_tx(void)
 // RX bandwidth
 #if WITHIF4DSP
 
+// Four-character wide printed current RX/TX bandwidth namw
 const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
 {
 	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
 	return bwsetsc [bwseti].labels [bwsetpos[bwseti]];
 }
 
-const FLASHMEM char * hamradio_get_rxbw_value3_P(void)
+// Four-character wide printed current RX/TX bandwidth value
+const FLASHMEM char * hamradio_get_rxbw_value4_P(void)
 {
 	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
-	static char s [4];
+	static char s [5];
 	int width = bwseti_getwidth(bwseti);
-	if (width >= 100000)
-		width = (100000 - 1);
+	if (width >= 1000000)
+		width = (1000000 - 1);
 	int_fast16_t w100 = (width + 50) / 100;
 	if (w100 < 10)	// до 1 кГц
-		local_snprintf_P(s, ARRAY_SIZE(s), ".%02d", w100 * 10);
+		local_snprintf_P(s, ARRAY_SIZE(s), ".%02d ", w100 * 10);
 	else if (w100 < 100)	// 1 кГц..9 кГц
-		local_snprintf_P(s, ARRAY_SIZE(s), "%1d.%1d", w100 / 10, w100 % 10);
+		local_snprintf_P(s, ARRAY_SIZE(s), "%1d.%1dk", w100 / 10, w100 % 10);
 	else	// 10 и более кГц
-		local_snprintf_P(s, ARRAY_SIZE(s), "%2dk", w100 / 10);
+		local_snprintf_P(s, ARRAY_SIZE(s), "%3dk", w100 / 10);
 
 	return s;
 }
