@@ -12,6 +12,8 @@
 
 #include "gt911.h"
 
+static i2cp_t tp_i2cp;	/* параметры для обмена по I2C. */
+
 static uint_fast8_t gt911_addr = 0;
 static uint_fast8_t tscpresetnt = 0;
 
@@ -222,6 +224,7 @@ uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 
 uint_fast8_t gt911_initialize(void)
 {
+	i2cp_intiialize(& tp_i2cp, I2CP_I2C1, 400000);
 	gt911_io_initialize();
 
 	gt911_addr = GOODIX_I2C_ADDR_BA;
