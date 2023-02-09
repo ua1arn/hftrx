@@ -87,6 +87,7 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define DSP_MSGBOX_BASE ((uintptr_t) 0x01701000)      /*!< MSGBOX Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO Base */
 #define GPIOC_BASE ((uintptr_t) 0x02000060)           /*!< GPIO Base */
@@ -2462,22 +2463,23 @@ typedef struct EMAC_Type
 typedef struct MSGBOX_Type
 {
              uint32_t reserved_0x000 [0x0008];
-    volatile uint32_t MSGBOX_RD_IRQ_EN_REG;           /*!< Offset 0x020 MSGBOX Read IRQ Enable Register */
-    volatile uint32_t MSGBOX_RD_IRQ_STATUS_REG;       /*!< Offset 0x024 MSGBOX Read IRQ Status Register */
-             uint32_t reserved_0x028 [0x0002];
-    volatile uint32_t MSGBOX_WR_IRQ_EN_REG;           /*!< Offset 0x030 MSGBOX Write IRQ Enable Register */
-    volatile uint32_t MSGBOX_WR_IRQ_STATUS_REG;       /*!< Offset 0x034 MSGBOX Write IRQ Status Register */
-             uint32_t reserved_0x038 [0x0002];
-    volatile uint32_t MSGBOX_DEBUG_REG;               /*!< Offset 0x040 MSGBOX Debug Register */
-             uint32_t reserved_0x044 [0x0003];
-    volatile uint32_t MSGBOX_FIFO_STATUS_REG;         /*!< Offset 0x050 MSGBOX FIFO Status Register */
-             uint32_t reserved_0x054 [0x0003];
-    volatile uint32_t MSGBOX_MSG_STATUS_REG;          /*!< Offset 0x060 MSGBOX Message Status Register */
-             uint32_t reserved_0x064 [0x0003];
-    volatile uint32_t MSGBOX_MSG_REG;                 /*!< Offset 0x070 MSGBOX Message Queue Register */
-             uint32_t reserved_0x074 [0x0003];
-    volatile uint32_t MSGBOX_WR_INT_THRESHOLD_REG;    /*!< Offset 0x080 MSGBOX Write IRQ Threshold Register */
-} MSGBOX_TypeDef; /* size of structure = 0x084 */
+    struct
+    {
+        volatile uint32_t MSGBOX_RD_IRQ_EN_REG;       /*!< Offset 0x020 0x0020+N*0x0100 (N=0-1) MSGBOX Read IRQ Enable Register */
+        volatile uint32_t MSGBOX_RD_IRQ_STATUS_REG;   /*!< Offset 0x024 0x0024+N*0x0100 (N=0-1) MSGBOX Read IRQ Status Register */
+                 uint32_t reserved_0x008 [0x0002];
+        volatile uint32_t MSGBOX_WR_IRQ_EN_REG;       /*!< Offset 0x030 0x0030+N*0x0100 (N=0-1) MSGBOX Write IRQ Enable Register */
+        volatile uint32_t MSGBOX_WR_IRQ_STATUS_REG;   /*!< Offset 0x034 0x0034+N*0x0100 (N=0-1) MSGBOX Write IRQ Status Register */
+                 uint32_t reserved_0x018 [0x0002];
+        volatile uint32_t MSGBOX_DEBUG_REG;           /*!< Offset 0x040 0x0040+N*0x0100 (N=0-1) MSGBOX Debug Register */
+                 uint32_t reserved_0x024 [0x0003];
+        volatile uint32_t MSGBOX_FIFO_STATUS_REG [0x004];/*!< Offset 0x050 0x0050+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX FIFO Status Register */
+        volatile uint32_t MSGBOX_MSG_STATUS_REG [0x004];/*!< Offset 0x060 0x0060+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Status Register */
+        volatile uint32_t MSGBOX_MSG_REG [0x004];     /*!< Offset 0x070 0x0070+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Queue Register */
+        volatile uint32_t MSGBOX_WR_INT_THRESHOLD_REG [0x004];/*!< Offset 0x080 0x0080+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Write IRQ Threshold Register */
+                 uint32_t reserved_0x070 [0x0024];
+    } B [0x002];                                      /*!< Offset 0x020 MSGBOX (N=0-1) */
+} MSGBOX_TypeDef; /* size of structure = 0x220 */
 
 
 /* Access pointers */
@@ -2569,6 +2571,7 @@ typedef struct MSGBOX_Type
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC Interface register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX Interface register set access pointer */
+#define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)/*!< DSP_MSGBOX Interface register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

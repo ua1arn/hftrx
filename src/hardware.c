@@ -3835,25 +3835,8 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	//C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << (24 + targetcore));		// AA64nAA32 1: AArch64
-	switch (targetcore)
-	{
-	case 0:
-		C0_CPUX_CFG->RVBARADDR0_L = startfunc;
-		C0_CPUX_CFG->RVBARADDR0_H = startfunc >> 64;
-		break;
-	case 1:
-		C0_CPUX_CFG->RVBARADDR1_L = startfunc;
-		C0_CPUX_CFG->RVBARADDR1_H = startfunc >> 64;
-		break;
-	case 2:
-		C0_CPUX_CFG->RVBARADDR2_L = startfunc;
-		C0_CPUX_CFG->RVBARADDR2_H = startfunc >> 64;
-		break;
-	case 3:
-		C0_CPUX_CFG->RVBARADDR3_L = startfunc;
-		C0_CPUX_CFG->RVBARADDR3_H = startfunc >> 64;
-		break;
-	}
+	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
+	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 64;
 	dcache_clean_all();	// startup code should be copyed in to sysram for example.
 	C0_CPUX_CFG->C_RST_CTRL |= (0x01uL << targetcore);
 	(void) C0_CPUX_CFG->C_RST_CTRL;
