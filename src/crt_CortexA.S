@@ -355,6 +355,7 @@ IRQ_Handler:
 
     MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
 	STMFD   SP!, {R1-R12, LR}
+
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
 	VMRS	LR, FPSID
@@ -367,25 +368,10 @@ IRQ_Handler:
 	PUSH	{R2}
 	// save VFP/Neon FPEXC register
 	VMRS	R0, FPEXC
-    ldr     LR, =(1 << 31) //check FPEXC.EX
-	TST		R0, LR		// check FPEXC.EX
-	BEQ skipPUSH
-/**
- ** DDI0502G_cortex_a53_fpu_trm.pdf
- **
- ** The Floating-Point Instruction Registers, FPINST and FPINST2 are not implemented, and any
- ** attempt to access them is UNPREDICTABLE
- */
-
-	VMRSNE	LR, FPINST
-	PUSHNE	{LR}
-	VMRSNE	LR, FPINST2
-	PUSHNE	{LR}
-skipPUSH:
-   // Initialise FPSCR to a known state
+	PUSH 	{R0}	// FPEXC
+    // Initialise FPSCR to a known state
     // Loaded in to R2
 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	PUSH {R0}	// FPEXC
 	AND     R2,R2,R3
 
 //#if __ARM_NEON == 1
@@ -411,26 +397,20 @@ skipPUSH:
 	// restore vfp data registers
 	VPOP.F32   {D0-D15}
 	// restore VFP/Neon FPEXC register
-    ldr     LR, =(1 << 31) //check FPEXC.EX
 //#if __ARM_NEON == 1
 	// restore vfp/neon data registers
 	VPOP.F32	{D16-D31}
 //#endif /* __ARM_NEON == 1 */
 
-	POP 	{R0}	// FPEXC
-	TST		R0, LR	// check FPEXC.EX
-	BEQ skipPOP
-	POPNE 	{LR}
-	VMSRNE	FPINST2, LR
-	POPNE 	{LR}
-	VMSRNE 	FPINST, LR
-skipPOP:
 	// restore VFP/Neon FPEXC register
+	POP 	{R0}	// FPEXC
 	VMSR	FPEXC, R0
 	// restore VFP/Neon FPSCR register
-	POP		{LR}
-	VMSR	FPSCR, LR
-	POP		{LR}
+	POP		{R1}
+	VMSR	FPSCR, R1
+
+	POP		{R2}
+	VMRS	LR, FPSID
 	VMSR	FPSID, LR
 
 	LDMIA   SP!, {R1-R12, LR}
