@@ -62,9 +62,9 @@
 	 STACKSIZEHYP = 64
 	 STACKSIZEMON = 64
 	 STACKSIZESYS = 64
-	 STACKSIZEIRQ = 512
+	 STACKSIZEIRQ = 1024
 
-	 STACKSIZESVCBOOT = 2048
+	 STACKSIZESVCBOOT = 64	/* + STACKSIZEIRQ = stack for SystemInit running */
   
 	.global __Vectors
 	.section .isr_vector, "ax"
@@ -355,30 +355,20 @@ IRQ_Handler:
 
     MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
 	STMFD   SP!, {R1-R12, LR}
+
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
 	VMRS	LR, FPSID
 	VMSR	FPSID, LR
-	PUSH	{LR}
 
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
 	// save VFP/Neon FPSCR register
-	VMRS	R2, FPSCR	// R2 used below
-	PUSH	{R2}
-	// save VFP/Neon FPEXC register
+	VMRS	R1, FPSCR
 	VMRS	R0, FPEXC
-    ldr     LR, =(1 << 31) //check FPEXC.EX
-	TST		R0, LR		// check FPEXC.EX
-	//BEQ skipPUSH
-	VMRSNE	LR, FPINST
-	PUSHNE	{LR}
-	VMRSNE	LR, FPINST2
-	PUSHNE	{LR}
-//skipPUSH:
-   // Initialise FPSCR to a known state
+	PUSH 	{R0, R1, R2}	// FPEXC, FPSCR, pad
+    // Initialise FPSCR to a known state
     // Loaded in to R2
 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	PUSH {R0}	// FPEXC
 	AND     R2,R2,R3
 
 //#if __ARM_NEON == 1
@@ -404,26 +394,17 @@ IRQ_Handler:
 	// restore vfp data registers
 	VPOP.F32   {D0-D15}
 	// restore VFP/Neon FPEXC register
-    ldr     LR, =(1 << 31) //check FPEXC.EX
 //#if __ARM_NEON == 1
 	// restore vfp/neon data registers
 	VPOP.F32	{D16-D31}
 //#endif /* __ARM_NEON == 1 */
 
-	POP 	{R0}	// FPEXC
-	TST		R0, LR	// check FPEXC.EX
-	//BEQ skipPOP
-	POPNE 	{LR}
-	VMSRNE	FPINST2, LR
-	POPNE 	{LR}
-	VMSRNE 	FPINST, LR
-//skipPOP:
 	// restore VFP/Neon FPEXC register
+	POP 	{R0, R1, R2}	// FPEXC, FPSCR, pad
 	VMSR	FPEXC, R0
-	// restore VFP/Neon FPSCR register
-	POP		{LR}
-	VMSR	FPSCR, LR
-	POP		{LR}
+	VMSR	FPSCR, R1
+
+	VMRS	LR, FPSID
 	VMSR	FPSID, LR
 
 	LDMIA   SP!, {R1-R12, LR}
@@ -431,7 +412,7 @@ IRQ_Handler:
 
 	LDMIA   SP!, {R0, LR}
 	MSR     SPSR_cxsf, LR
-	ISB
+//	ISB
 	LDMIA   SP!, {PC}^
 
 	.endfunc
@@ -446,8 +427,6 @@ __stack_cpu0_und_end = .
 __stack_cpu0_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu0_fiq_end = .
-	.space	STACKSIZESVCBOOT
-__stack_cpu0_svc_end = .
 	.space	STACKSIZEMON
 __stack_cpu0_mon_end = .
 //	.space	STACKSIZEHYP
@@ -457,6 +436,8 @@ __stack_cpu0_sys_end = .
 
 	.space	STACKSIZEIRQ
 __stack_cpu0_irq_end = .
+	.space	STACKSIZESVCBOOT
+__stack_cpu0_svc_end = .
 
 	.word 0		/* fix non-zero size of this section */
 

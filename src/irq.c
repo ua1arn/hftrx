@@ -1706,7 +1706,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 
 	return 0;
 
-#elif (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#elif (__CORTEX_A != 0)
 	// Cortex-A computers
 
 	return __get_MPIDR() & 0x03;
@@ -1968,7 +1968,7 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || (__CORTEX_A == 8U)
+#if (__CORTEX_A != 0)
 
 	cpump_initialize();
 

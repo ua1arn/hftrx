@@ -2131,17 +2131,29 @@ static void display_pbt(
 }
 
 // RX path bandwidth
+static void display2_rxbwval3(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const char * const labels [1] = { hamradio_get_rxbw_value3_P(), };
+	ASSERT(strlen(labels [0]) == 3);
+	display2_text(x, y, labels, colors_1state, 0);
+}
+
+
+// RX path bandwidth name
 static void display2_rxbw3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
 	)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_value_P(), };
+	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_label3_P(), };
 	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
-
 
 // текущее состояние DUAL WATCH
 static void display2_mainsub3(

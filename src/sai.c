@@ -3418,11 +3418,17 @@ static void DMAC_NS_IRQHandler(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	const unsigned flag = 0x07;
 	unsigned dmach;
+#if CPUSTYLE_A64
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG & DMAC->DMAC_IRQ_EN_REG;
+
+	DMAC->DMAC_IRQ_PEND_REG = reg0;	// Write 1 to clear the pending status.
+#else /* CPUSTYLE_A64 */
 	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
 	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
 
 	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
 	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
+#endif /* CPUSTYLE_A64 */
 
 	for (dmach = 0; dmach < 8; ++ dmach)
 	{
@@ -3432,6 +3438,7 @@ static void DMAC_NS_IRQHandler(void)
 			dmac_handlers [dmach](dmach);
 		}
 	}
+#if ! CPUSTYLE_A64
 	for (dmach = 8; dmach < 16; ++ dmach)
 	{
 		const portholder_t maskreg1 = DMAC_REG1_MASK(dmach) * flag;
@@ -3440,6 +3447,7 @@ static void DMAC_NS_IRQHandler(void)
 			dmac_handlers [dmach](dmach);
 		}
 	}
+#endif /* ! CPUSTYLE_A64 */
 }
 
 
@@ -4165,10 +4173,16 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 {
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
 	dmac_handlers [dmach] = handler;
+#if CPUSTYLE_A64
+	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
+
+	DMAC->DMAC_IRQ_EN_REG = (DMAC->DMAC_IRQ_EN_REG & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+#else /* CPUSTYLE_A64 */
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
 	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
 	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
+#endif /* CPUSTYLE_A64 */
 }
 
 static void DMAC_clock_initialize(void)
