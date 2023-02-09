@@ -5246,7 +5246,7 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 			left = 0;
 			right = 0;
 		}
-		if (0 && tx)
+		if (1 && tx)
 		{
 			recordsampleSD(moniL, moniR);	// Запись самоконтроля и самопрослушки
 			recordsampleUAC(moniL, moniR);	// Запись самоконтроля и самопрослушки
