@@ -178,48 +178,28 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		// TUNE base: 5A00610C 5A00620C
 		//PRINTF("TUNE base: %p %p\n", & USBPHYC_PHY1->TUNE, & USBPHYC_PHY2->TUNE);
 
+		uint32_t tune = 0;
+//		tune |= (1u << 22);	// 1: Enable the gain equalizer
+//		tune |= (1u << 6);	// 1: Enables the HSDRVDCLEV feature
+//		tune &= ~ (1u << 4);	// 0: Keeps the normal HS driver DC level
+//		tune &= ~ (1u << 3);	// 0: Keeps the normal slew rate
+//		tune |= (1u << 1);	// 1: Provides a current boosting of 2mA if INCURREN = '1'
+//		tune |= (1u << 0);	// 1: Enables the current boosting
+//		tune |= (3u << 0);	// 1: Enables the current boosting
+//		tune |= (3u << 13);	// 0x3: Reduce the impedance by 6 Ω
+
+		tune = 0x04070004;	// default
+
 		if (1)
 		{
 			// USBH_HS_DP1, USBH_HS_DM1
-			//PRINTF("USBPHYC_PHY1->TUNE=%08lX\n", USBPHYC_PHY1->TUNE);
-	//		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
-	//			(0x00 << ssss) |
-	//			(0x00 << ssss) |
-	//			(0x00 << ssss) |
-	//			0;
-			USBPHYC->TUNE1 = 0x04070004;
-
-//			USBPHYC->TUNE1 |= (1u << 22);	// 1: Enable the gain equalizer
-//			USBPHYC->TUNE1 |= (1u << 6);	// 1: Enables the HSDRVDCLEV feature
-//			USBPHYC->TUNE1 &= ~ (1u << 4);	// 0: Keeps the normal HS driver DC level
-//			USBPHYC->TUNE1 &= ~ (1u << 3);	// 0: Keeps the normal slew rate
-//			//USBPHYC->TUNE1 |= (1u << 1);	// 1: Provides a current boosting of 2mA if INCURREN = '1'
-//			//USBPHYC->TUNE1 |= (1u << 0);	// 1: Enables the current boosting
-//			USBPHYC->TUNE1 |= (3u << 0);	// 1: Enables the current boosting
-//			USBPHYC->TUNE1 |= (3u << 13);	// 0x3: Reduce the impedance by 6 Ω
-
+			USBPHYC->TUNE1 = tune;
 			(void) USBPHYC->TUNE1;
 		}
 		if (1)
 		{
 			// USBH_HS_DP2, USBH_HS_DM2
-			//PRINTF("USBPHYC_PHY2->TUNE=%08lX\n", USBPHYC_PHY2->TUNE);
-	//		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
-	//			(0x00 << ssss) |
-	//			(0x00 << ssss) |
-	//			(0x00 << ssss) |
-	//			0;
-			USBPHYC->TUNE2 = 0x04070004;
-
-//			USBPHYC->TUNE2 |= (1u << 22);	// 1: Enable the gain equalizer
-//			USBPHYC->TUNE2 |= (1u << 6);	// 1: Enables the HSDRVDCLEV feature
-//			USBPHYC->TUNE2 &= ~ (1u << 4);	// 0: Keeps the normal HS driver DC level
-//			USBPHYC->TUNE2 &= ~ (1u << 3);	// 0: Keeps the normal slew rate
-//			//USBPHYC->TUNE2 |= (1u << 1);	// 1: Provides a current boosting of 2mA if INCURREN = '1'
-//			//USBPHYC->TUNE2 |= (1u << 0);	// 1: Enables the current boosting
-//			USBPHYC->TUNE2 |= (3u << 0);	// 1: Enables the current boosting
-//			USBPHYC->TUNE2 |= (3u << 13);	// 0x3: Reduce the impedance by 6 Ω
-
+			USBPHYC->TUNE2 = tune;
 			(void) USBPHYC->TUNE2;
 		}
 	}

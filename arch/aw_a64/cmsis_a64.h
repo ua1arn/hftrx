@@ -32,7 +32,6 @@ typedef enum IRQn
     SecurePhysicalTimer_IRQn = 29,                    /*!<  Interrupt */
     NonSecurePhysicalTimer_IRQn = 30,                 /*!<  Interrupt */
     Legacy_nIRQ_IRQn = 31,                            /*!<  Interrupt */
-    CPUX_MSGBOX_R_IRQn = 32,                          /*!< MSGBOX Interrupt */
     UART0_IRQn = 32,                                  /*!< UART Interrupt */
     UART1_IRQn = 33,                                  /*!< UART Interrupt */
     UART2_IRQn = 34,                                  /*!< UART Interrupt */
@@ -56,6 +55,8 @@ typedef enum IRQn
     SMC_IRQn = 76,                                    /*!< SMC Interrupt */
     EMAC_IRQn = 78,                                   /*!< EMAC Interrupt */
     CCU_FERR_IRQn = 80,                               /*!< CCU Interrupt */
+    MSGBOX_IRQn = 81,                                 /*!< MSGBOX Interrupt */
+    DMAC_IRQn = 82,                                   /*!< DMAC Interrupt */
     GPADC_IRQn = 89,                                  /*!< GPADC Interrupt */
     TPADC_IRQn = 94,                                  /*!< TPADC Interrupt */
     IOMMU_IRQn = 96,                                  /*!< IOMMU Interrupt */
@@ -80,6 +81,8 @@ typedef enum IRQn
 
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x01700000)     /*!< C0_CPUX_CFG Base */
 #define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG Base */
+#define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC Base */
+#define MSGBOX_BASE ((uintptr_t) 0x01C17000)          /*!< MSGBOX Base */
 #define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU Base */
 #define GPIOB_BASE ((uintptr_t) 0x01C20824)           /*!< GPIO Base */
 #define GPIOC_BASE ((uintptr_t) 0x01C20848)           /*!< GPIO Base */
@@ -138,8 +141,6 @@ typedef enum IRQn
 #define OWA_BASE ((uintptr_t) 0x02036000)             /*!< OWA Base */
 #define CAN0_BASE ((uintptr_t) 0x02504000)            /*!< CAN Base */
 #define CAN1_BASE ((uintptr_t) 0x02504400)            /*!< CAN Base */
-#define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC Base */
-#define CPUX_MSGBOX_BASE ((uintptr_t) 0x03003000)     /*!< MSGBOX Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
@@ -2085,14 +2086,11 @@ typedef struct C0_CPUX_CFG_Type
              uint32_t reserved_0x040 [0x0010];
     volatile uint32_t C_RST_CTRL;                     /*!< Offset 0x080 Cluster Reset Control Register */
              uint32_t reserved_0x084 [0x0007];
-    volatile uint32_t RVBARADDR0_L;                   /*!< Offset 0x0A0 Reset Vector Base Address Register0_L */
-    volatile uint32_t RVBARADDR0_H;                   /*!< Offset 0x0A4 Reset Vector Base Address Register0_H */
-    volatile uint32_t RVBARADDR1_L;                   /*!< Offset 0x0A8 Reset Vector Base Address Register1_L */
-    volatile uint32_t RVBARADDR1_H;                   /*!< Offset 0x0AC Reset Vector Base Address Register1_H */
-    volatile uint32_t RVBARADDR2_L;                   /*!< Offset 0x0B0 Reset Vector Base Address Register2_L */
-    volatile uint32_t RVBARADDR2_H;                   /*!< Offset 0x0B4 Reset Vector Base Address Register2_H */
-    volatile uint32_t RVBARADDR3_L;                   /*!< Offset 0x0B8 Reset Vector Base Address Register3_L */
-    volatile uint32_t RVBARADDR3_H;                   /*!< Offset 0x0BC Reset Vector Base Address Register3_H */
+    struct
+    {
+        volatile uint32_t LOW;                        /*!< Offset 0x0A0 Reset Vector Base Address Registerx_L */
+        volatile uint32_t HIGH;                       /*!< Offset 0x0A4 Reset Vector Base Address Registerx_H */
+    } RVBARADDR [0x004];                              /*!< Offset 0x0A0 Reset Vector Base Address Register for core [0..3] */
 } C0_CPUX_CFG_TypeDef; /* size of structure = 0x0C0 */
 /*
  * @brief DDRPHYC
@@ -2276,12 +2274,12 @@ typedef struct SPINLOCK_Type
 /*!< DMAC Controller Interface */
 typedef struct DMAC_Type
 {
-    volatile uint32_t DMAC_IRQ_EN_REG0;               /*!< Offset 0x000 DMAC IRQ Enable Register 0 */
-    volatile uint32_t DMAC_IRQ_EN_REG1;               /*!< Offset 0x004 DMAC IRQ Enable Register 1 */
-             uint32_t reserved_0x008 [0x0002];
-    volatile uint32_t DMAC_IRQ_PEND_REG0;             /*!< Offset 0x010 DMAC IRQ Pending Register 0 */
-    volatile uint32_t DMAC_IRQ_PEND_REG1;             /*!< Offset 0x014 DMAC IRQ Pending Register 1 */
-             uint32_t reserved_0x018 [0x0004];
+    volatile uint32_t DMAC_IRQ_EN_REG;                /*!< Offset 0x000 DMAC IRQ Enable Register */
+             uint32_t reserved_0x004 [0x0003];
+    volatile uint32_t DMAC_IRQ_PEND_REG;              /*!< Offset 0x010 DMAC IRQ Pending Register */
+             uint32_t reserved_0x014 [0x0003];
+    volatile uint32_t DMA_SEC_REG;                    /*!< Offset 0x020 DMA Security Register */
+             uint32_t reserved_0x024;
     volatile uint32_t DMAC_AUTO_GATE_REG;             /*!< Offset 0x028 DMAC Auto Gating Register */
              uint32_t reserved_0x02C;
     volatile uint32_t DMAC_STA_REG;                   /*!< Offset 0x030 DMAC Status Register */
@@ -2386,23 +2384,22 @@ typedef struct EMAC_Type
 /*!< MSGBOX Controller Interface */
 typedef struct MSGBOX_Type
 {
-             uint32_t reserved_0x000 [0x0008];
-    volatile uint32_t MSGBOX_RD_IRQ_EN_REG;           /*!< Offset 0x020 MSGBOX Read IRQ Enable Register */
-    volatile uint32_t MSGBOX_RD_IRQ_STATUS_REG;       /*!< Offset 0x024 MSGBOX Read IRQ Status Register */
-             uint32_t reserved_0x028 [0x0002];
-    volatile uint32_t MSGBOX_WR_IRQ_EN_REG;           /*!< Offset 0x030 MSGBOX Write IRQ Enable Register */
-    volatile uint32_t MSGBOX_WR_IRQ_STATUS_REG;       /*!< Offset 0x034 MSGBOX Write IRQ Status Register */
-             uint32_t reserved_0x038 [0x0002];
-    volatile uint32_t MSGBOX_DEBUG_REG;               /*!< Offset 0x040 MSGBOX Debug Register */
-             uint32_t reserved_0x044 [0x0003];
-    volatile uint32_t MSGBOX_FIFO_STATUS_REG;         /*!< Offset 0x050 MSGBOX FIFO Status Register */
-             uint32_t reserved_0x054 [0x0003];
-    volatile uint32_t MSGBOX_MSG_STATUS_REG;          /*!< Offset 0x060 MSGBOX Message Status Register */
-             uint32_t reserved_0x064 [0x0003];
-    volatile uint32_t MSGBOX_MSG_REG;                 /*!< Offset 0x070 MSGBOX Message Queue Register */
-             uint32_t reserved_0x074 [0x0003];
-    volatile uint32_t MSGBOX_WR_INT_THRESHOLD_REG;    /*!< Offset 0x080 MSGBOX Write IRQ Threshold Register */
-} MSGBOX_TypeDef; /* size of structure = 0x084 */
+    volatile uint32_t MSGBOX_CTRL_REG0;               /*!< Offset 0x000 Message Queue Attribute Control Register 0 */
+    volatile uint32_t MSGBOX_CTRL_REG1;               /*!< Offset 0x004 Message Queue Attribute Control Register 1 */
+             uint32_t reserved_0x008 [0x000E];
+    struct
+    {
+        volatile uint32_t MSGBOXU_IRQ_EN_REG;         /*!< Offset 0x040 IRQ Enable For User N(N=0,1) */
+                 uint32_t reserved_0x004 [0x0003];
+        volatile uint32_t MSGBOXU_IRQ_STATUS_REG;     /*!< Offset 0x050 IRQ Status For User N(N=0,1) */
+    } USER [0x002];                                   /*!< Offset 0x040 User [0..1] */
+             uint32_t reserved_0x068 [0x0026];
+    volatile uint32_t MSGBOXM_FIFO_STATUS_REG [0x008];/*!< Offset 0x100 FIFO Status For Message Queue N(N = 0~7) */
+             uint32_t reserved_0x120 [0x0008];
+    volatile uint32_t MSGBOXM_MSG_STATUS_REG [0x008]; /*!< Offset 0x140 Message Status For Message Queue N(N=0~7) */
+             uint32_t reserved_0x160 [0x0008];
+    volatile uint32_t MSGBOXM_MSG_REG [0x008];        /*!< Offset 0x180 Message Register For Message Queue N(N=0~7) */
+} MSGBOX_TypeDef; /* size of structure = 0x1A0 */
 
 
 /* Access pointers */
@@ -2508,7 +2505,7 @@ typedef struct MSGBOX_Type
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC Interface register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Interface register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC Interface register set access pointer */
-#define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX Interface register set access pointer */
+#define MSGBOX ((MSGBOX_TypeDef *) MSGBOX_BASE)       /*!< MSGBOX Interface register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

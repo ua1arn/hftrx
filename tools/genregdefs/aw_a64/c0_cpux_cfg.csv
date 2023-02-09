@@ -8,11 +8,7 @@
 #regdef; C_CPU_STATUS; 0x0030; Cluster CPU Status Register
 #regdef; L2_STATUS_REG; 0x003C; L2 Status Register
 #regdef; C_RST_CTRL; 0x0080; Cluster Reset Control Register
-#regdef; RVBARADDR0_L; 0x00A0; Reset Vector Base Address Register0_L
-#regdef; RVBARADDR0_H; 0x00A4; Reset Vector Base Address Register0_H
-#regdef; RVBARADDR1_L; 0x00A8; Reset Vector Base Address Register1_L
-#regdef; RVBARADDR1_H; 0x00AC; Reset Vector Base Address Register1_H
-#regdef; RVBARADDR2_L; 0x00B0; Reset Vector Base Address Register2_L
-#regdef; RVBARADDR2_H; 0x00B4; Reset Vector Base Address Register2_H
-#regdef; RVBARADDR3_L; 0x00B8; Reset Vector Base Address Register3_L
-#regdef; RVBARADDR3_H; 0x00BC; Reset Vector Base Address Register3_H
+#aggreg; RVBARADDR; 0x00A0 4; Reset Vector Base Address Register for core [0..3]
+#regdef; LOW; 0x000; Reset Vector Base Address Registerx_L
+#regdef; HIGH; 0x004; Reset Vector Base Address Registerx_H
+#aggregend;

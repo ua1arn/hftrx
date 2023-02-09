@@ -1541,7 +1541,7 @@ hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 	LTDC->GCR |= LTDC_GCR_LTDCEN;
 
 #if LCDMODE_MAIN_L24
-	fillLUT_L24(LAYER_MAIN);	// прямая трансляция всех ьайтов из памяти на выход. загрузка палитры - имеет смысл до Reload
+	fillLUT_L24(LAYER_MAIN);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
 #elif LCDMODE_MAIN_L8
 	fillLUT_L8(LAYER_MAIN, xltrgb24);	// загрузка палитры - имеет смысл до Reload
 #endif /* LCDMODE_MAIN_L8 */
@@ -1678,9 +1678,6 @@ static void hardware_ltdc_vsync(void)
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
 		hardware_nonguiyield();
 
-	(void) LAYER_MAIN->CFBAR;
-	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
-	(void) LAYER_MAIN->CR;
 	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 	(void) LTDC->SRCR;
 
@@ -1692,21 +1689,13 @@ static void hardware_ltdc_vsync(void)
 /* Set MAIN frame buffer address. Wait for VSYNC. */
 void hardware_ltdc_main_set(uintptr_t p)
 {
-	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-		hardware_nonguiyield();
-
 	LAYER_MAIN->CFBAR = p;
 
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
 	(void) LAYER_MAIN->CR;
-	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
-	(void) LTDC->SRCR;
 
-	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-		hardware_nonguiyield();
+	hardware_ltdc_vsync();
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
