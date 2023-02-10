@@ -3832,7 +3832,23 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 
 #define HARDWARE_NCORES 4
 
-static uint32_t exe64 [] =
+/*
+	#include <stdint.h>
+
+	void _start(void)
+	{
+		volatile uint32_t * const base = (volatile uint32_t *) 0x00044000;
+		base [0] = 0xDEADBEEF;
+		for (;;)
+			;
+	}
+*/
+
+// aarch64-none-elf-gcc.exe -mcpu=cortex-A53 -Os -c tt.c
+// aarch64-none-elf-ld -o tt.elf tt.c
+// aarch64-none-elf-objdump.exe -d tt.elf
+
+static uint32_t exe64 [16] =
 {
 		0xd2880000,        //mov     x0, #0x4000                     // #16384
 		0xf2a00080,        //movk    x0, #0x4, lsl #16
@@ -3844,28 +3860,33 @@ static uint32_t exe64 [] =
 
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
+	dcache_invalidate(0x44000, 64);
+	dcache_clean((uintptr_t) exe64, sizeof exe64);
 	startfunc = (uintptr_t) exe64;
+
 	PRINTF("C0_CPUX_CFG->C_RST_CTRL=%08X\n", C0_CPUX_CFG->C_RST_CTRL);
 	PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", C0_CPUX_CFG->C_CTRL_REG0);
 	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
-	C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << (24));		// AA64nAA32 1: AArch64
 	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));	// AA64nAA32 0: AArch32
 	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + 0));	// AA64nAA32 0: AArch32
 	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + 0));		// AA64nAA32 1: AArch64
+
 	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
 	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = 0;//startfunc >> 64;
+
 	dcache_clean_all();	// startup code should be copyed in to sysram for example.
 	dcache_clean_invalidate(0x44000, 64 * 1024);
-	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
-	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
+
+//	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
+//	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
 	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0)
 	(void) C0_CPUX_CFG->C_RST_CTRL;
+
 	PRINTF("C0_CPUX_CFG->C_RST_CTRL=%08X\n", C0_CPUX_CFG->C_RST_CTRL);
 	PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", C0_CPUX_CFG->C_CTRL_REG0);
-
+	local_delay_ms(250);
 	printhex32((uintptr_t) exe64, exe64, sizeof exe64);
 	printhex32(C0_CPUX_CFG_BASE, C0_CPUX_CFG, sizeof * C0_CPUX_CFG);
-	dcache_invalidate(0x44000, 64);
 	printhex32(0x44000, (void *) 0x44000, 64);
 }
 
