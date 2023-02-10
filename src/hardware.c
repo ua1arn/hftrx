@@ -3744,7 +3744,7 @@ sysinit_cache_cpu1_initialize(void)
 
 #define HARDWARE_NCORES 2
 
-static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
+static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
 	(void) PWR->CR1;
@@ -3774,7 +3774,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 //	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
 //		;
 
-	dcache_clean_all();	// startup code should be copyed in to sysram for example.
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	/* Generate an IT to core 1 */
 	GIC_SendSGI(SGI8_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
@@ -3787,10 +3787,10 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 
 #define HARDWARE_NCORES 2
 
-static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
+static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
-	dcache_clean_all();	// startup code should be copyed in to sysram for example.
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	/* Generate an IT to core 1 */
 	__SEV();
 }
@@ -3817,10 +3817,10 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 #define HARDWARE_NCORES 2
 
 // Invoke at SVC context
-static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
+static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	* (volatile uint32_t *) (xXPAR_PSU_APU_S_AXI_BASEADDR + 0x048) = startfunc;	// apu.rvbaraddr1l
-	dcache_clean_all();	// startup code should be copyed in to sysram for example.
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	* (volatile uint32_t *) 0xFFD80220 = 1u << targetcore;
 	* (volatile uint32_t *) 0xFD5C0020 = 0;	//apu.config0
@@ -3831,6 +3831,21 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 #elif CPUSTYLE_A64
 
 #define HARDWARE_NCORES 4
+
+
+static void restart_core0_aarch64(void)
+{
+	 uint32_t result;
+	  __get_CP(15, 0, result, 12, 0, 2);
+	  result |= 0x03;
+	  __set_CP(15, 0, result, 12, 0, 2);
+
+	  __ISB();
+	  __WFI();
+	  for (;;)
+		  ;
+
+}
 
 /*
 	#include <stdint.h>
@@ -3845,7 +3860,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 */
 
 // aarch64-none-elf-gcc.exe -mcpu=cortex-A53 -Os -c tt.c
-// aarch64-none-elf-ld -o tt.elf tt.c
+// aarch64-none-elf-ld -o tt.elf tt.o
 // aarch64-none-elf-objdump.exe -d tt.elf
 
 static uint32_t exe64 [16] =
@@ -3858,25 +3873,35 @@ static uint32_t exe64 [16] =
 		0x14000000,        //b       400014 <_start+0x14>
 };
 
-static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
+static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	targetcore = 0;
+	PRINTF("cortexa_mp_cpuN_start targetcore=%u (%p)\n", targetcore, (void *) startfunc);
+	{
+		TP();
+		volatile uint32_t * const base = (volatile uint32_t *) 0x0;
+		//memcpy(base, exe64, sizeof exe64);
+		base [1] = 0xDEADBEEF;
+		TP();
+		dcache_clean_invalidate((uintptr_t) base, 512);
+		TP();
+		printhex32(0x00000, (void *) 0x00000, 128);
+		TP();
+	}
+	//targetcore = 0;
 	dcache_invalidate(0x44000, 64);
 	dcache_clean((uintptr_t) exe64, sizeof exe64);
 	startfunc = (uintptr_t) exe64;
 
-	PRINTF("C0_CPUX_CFG->C_CPU_STATUS=%08X\n", C0_CPUX_CFG->C_CPU_STATUS);
-	PRINTF("C0_CPUX_CFG->C_RST_CTRL=%08X\n", C0_CPUX_CFG->C_RST_CTRL);
-	PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", C0_CPUX_CFG->C_CTRL_REG0);
+	PRINTF("  C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
+	PRINTF("  C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
+	PRINTF("  C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
+
 	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
-	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));	// AA64nAA32 0: AArch32
-	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + 0));	// AA64nAA32 0: AArch32
-	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + 0));		// AA64nAA32 1: AArch64
 
 	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
 	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = 0;//startfunc >> 64;
 
-	dcache_clean_all();	// startup code should be copyed in to sysram for example.
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	dcache_clean_invalidate(0x44000, 64 * 1024);
 
 //	GIC_SendSGI(SGI0_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
@@ -3895,6 +3920,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 //	GIC_SendSGI(SGI13_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 //	GIC_SendSGI(SGI14_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 //	GIC_SendSGI(SGI15_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	TP();
 
 // https://stackoverflow.com/questions/50120446/allwinner-a64-switch-from-aarch32-to-aarch64-by-warm-reset
 
@@ -3913,21 +3939,15 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 //	  2c:   017000a0        .word   0x017000a0
 //	  30:   40008000        .word   0x40008000
 
-	 uint32_t result;
-	  __get_CP(15, 0, result, 12, 0, 2);
-	  result |= 0x03;
-	  __set_CP(15, 0, result, 12, 0, 2);
-
-	  __ISB();
-	  __WFI();
-	  for (;;)
-		  ;
+	//restart_core0_aarch64();
 
 //	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
 //	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
-//	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (0 + targetcore));	// CORE_RESET (3..0)
-//	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0)
-//	(void) C0_CPUX_CFG->C_RST_CTRL;
+
+	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (0 + targetcore));	// CORE_RESET (3..0) assert
+	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0) de-assert
+	(void) C0_CPUX_CFG->C_RST_CTRL;
+
 //	GIC_SendSGI(SGI0_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 //	GIC_SendSGI(SGI1_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 //	GIC_SendSGI(SGI2_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
@@ -3945,12 +3965,20 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 //	GIC_SendSGI(SGI14_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 //	GIC_SendSGI(SGI15_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 
-	PRINTF("C0_CPUX_CFG->C_RST_CTRL=%08X\n", C0_CPUX_CFG->C_RST_CTRL);
-	PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", C0_CPUX_CFG->C_CTRL_REG0);
+	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
+	(void) C0_CPUX_CFG->C_RST_CTRL;
+
+	PRINTF("2 C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
+	PRINTF("2 C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
+	PRINTF("2 C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
 	local_delay_ms(250);
-	printhex32((uintptr_t) exe64, exe64, sizeof exe64);
+	//printhex32((uintptr_t) exe64, exe64, sizeof exe64);
 	printhex32(C0_CPUX_CFG_BASE, C0_CPUX_CFG, sizeof * C0_CPUX_CFG);
 	printhex32(0x44000, (void *) 0x44000, 64);
+
+	for (;;)
+		;
+
 }
 
 #elif CPUSTYLE_T113
@@ -3967,20 +3995,22 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 
 #define HARDWARE_HOTPLUG_FLAG 0xFA50392F	// CPU Hotplug Flag value
 
-#define SUNXI_HOTPLUG_MAGIC		0xFA50392F
-#define SUNXI_STANDBY_MAGIC		0x0000EFE8
+//#define SUNXI_HOTPLUG_MAGIC		0xFA50392F
+//#define SUNXI_STANDBY_MAGIC		0x0000EFE8
+//
+//#define HARDWARE_HOTPLUG_REG 	(* (volatile uint32_t *) 0x070005C0)
+//
+//#define HARDWARE_SOFTENTRY_CPU0_ADDR (* (volatile uint32_t *) 0x070005C4)
+//#define HARDWARE_SOFTENTRY_CPU1_ADDR (* (volatile uint32_t *) 0x070005C8)
 
-#define HARDWARE_HOTPLUG_REG 	(* (volatile uint32_t *) 0x070005C0)
-
-#define HARDWARE_SOFTENTRY_CPU0_ADDR (* (volatile uint32_t *) 0x070005C4)
-#define HARDWARE_SOFTENTRY_CPU1_ADDR (* (volatile uint32_t *) 0x070005C8)
+// In Allwinner h133 this i/o block named R_CPUCFG
 
 #define HARDWARE_NCORES 2
 
-static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
+static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	HARDWARE_SOFTENTRY_CPU1_ADDR = startfunc;
-	dcache_clean_all();	// startup code should be copyed in to sysram for example.
+	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	C0_CPUX_CFG->C0_RST_CTRL |= (1u << targetcore);
 	(void) C0_CPUX_CFG->C0_RST_CTRL;
 }
@@ -4105,7 +4135,7 @@ void cpump_initialize(void)
 		SPINLOCK_INITIALIZE(& cpu1userstart [core]);
 		SPIN_LOCK(& cpu1userstart [core]);
 		SPIN_LOCK(& cpu1init);
-		cortexa_mp_cpu1_start(fns [core], core);
+		cortexa_mp_cpuN_start(fns [core], core);
 		SPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
 		SPIN_UNLOCK(& cpu1init);
 	}

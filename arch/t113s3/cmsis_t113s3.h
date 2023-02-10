@@ -177,11 +177,22 @@ typedef enum IRQn
 #define CSIC_PARSER0_BASE ((uintptr_t) 0x05801000)    /*!< CSIC_PARSER Base */
 #define CSIC_DMA0_BASE ((uintptr_t) 0x05809000)       /*!< CSIC_DMA Base */
 #define CSIC_DMA1_BASE ((uintptr_t) 0x05809200)       /*!< CSIC_DMA Base */
+#define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX Base */
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG Base */
 
+/*
+ * @brief R_CPUCFG
+ */
+/*!< R_CPUCFG Controller Interface */
+typedef struct R_CPUCFG_Type
+{
+             uint32_t reserved_0x000 [0x0070];
+    volatile uint32_t HOTPLUGFLAG;                    /*!< Offset 0x1C0 The Hotplug Flag Register is 0x070005C0. */
+    volatile uint32_t SOFTENTRY [0x002];              /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) */
+} R_CPUCFG_TypeDef; /* size of structure = 0x1CC */
 /*
  * @brief CPU_SUBSYS_CTRL
  */
@@ -2478,12 +2489,13 @@ typedef struct MSGBOX_Type
         volatile uint32_t MSGBOX_MSG_REG [0x004];     /*!< Offset 0x070 0x0070+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Queue Register */
         volatile uint32_t MSGBOX_WR_INT_THRESHOLD_REG [0x004];/*!< Offset 0x080 0x0080+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Write IRQ Threshold Register */
                  uint32_t reserved_0x070 [0x0024];
-    } B [0x002];                                      /*!< Offset 0x020 MSGBOX (N=0-1) */
+    } N [0x002];                                      /*!< Offset 0x020 MSGBOX (N=0-1) */
 } MSGBOX_TypeDef; /* size of structure = 0x220 */
 
 
 /* Access pointers */
 
+#define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG Interface register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL Interface register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Interface register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG Interface register set access pointer */
