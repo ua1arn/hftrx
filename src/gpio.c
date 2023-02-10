@@ -810,7 +810,7 @@ static SPINLOCK_t gpiodata_locks [8] =
 	SPINLOCK_INIT,	// GPIOH
 };
 
-static SPINLOCK_t gpiodata_lockl = SPINLOCK_INIT;
+static SPINLOCK_t gpiodata_L_lock = SPINLOCK_INIT;
 
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
@@ -824,6 +824,7 @@ void sysinit_gpio_initialize(void)
 		SPINLOCK_INITIALIZE(lck);
 	}
 #if CPUSTYLE_A64
+	SPINLOCK_INITIALIZE(& gpiodata_L_lock);
 	CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING - not need - already set
 #endif /* CPUSTYLE_A64 */
 }
@@ -843,7 +844,7 @@ static irqstatus_t gpioX_lock(GPIO_TypeDef * gpio)
 	__disable_irq();
 	if (gpio == GPIOL)
 	{
-		lck = & gpiodata_lockl;
+		lck = & gpiodata_L_lock;
 	}
 #elif CPUSTYLE_T113 || CPUSTYLE_A64
 	const irqstatus_t cpsr = __get_CPSR();
@@ -861,7 +862,7 @@ static void gpioX_unlock(GPIO_TypeDef * gpio, irqstatus_t cpsr)
 #if CPUSTYLE_A64
 	if (gpio == GPIOL)
 	{
-		lck = & gpiodata_lockl;
+		lck = & gpiodata_L_lock;
 	}
 	SPIN_UNLOCK(lck);
 	__set_CPSR(cpsr);
