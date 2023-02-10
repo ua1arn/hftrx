@@ -3852,6 +3852,11 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 void halt32(void)
 {
+	volatile uint32_t * const base = (volatile uint32_t *) 0x00044000;
+	base [0] = 0xDEADBEEF;
+	base [1] = __get_MPIDR() & 0x03; //0xABBA1980;
+	for (;;)
+		;
 	ASSERT(0);
 }
 
@@ -3886,6 +3891,7 @@ static void restart_core0_aarch64(void)
 
 }
 
+
 /*
 	#include <stdint.h>
 
@@ -3902,7 +3908,7 @@ static void restart_core0_aarch64(void)
 // aarch64-none-elf-ld -o tt.elf tt.o
 // aarch64-none-elf-objdump.exe -d tt.elf
 
-static uint32_t exe64 [16] =
+static uint32_t halt64 [16] =
 {
 		0xd2880000,        //mov     x0, #0x4000                     // #16384
 		0xf2a00080,        //movk    x0, #0x4, lsl #16
@@ -3912,88 +3918,63 @@ static uint32_t exe64 [16] =
 		0x14000000,        //b       400014 <_start+0x14>
 };
 
+// H3: R_CPUCFG @ 0x01F01C00
+
+
+/*
+ *
+ * Read 0x01F01C00+0x1A4 register Get soft_entry_address
+ */
+
+#define BOOTP0 ( (volatile uint32_t *) (0x01F01C00+0x1A0))
+//#define BOOTP0 (* (volatile uint32_t *) (0x01F01C00+0x1A4))
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	PRINTF("cortexa_mp_cpuN_start targetcore=%u (%p)\n", targetcore, (void *) startfunc);
-	targetcore = 0;
-	//startfunc = (uintptr_t) Reset_CPU1_Handler; //halt32;
-	startfunc = (uintptr_t) exe64;
-	//startfunc = (uintptr_t) halt32;
+	//PRINTF("cortexa_mp_cpuN_start BOOTP0 (%p)\n", (void *) BOOTP0);
+	//printhex32((0x01F01C00+0x1A4), BOOTP0, 256);
+	//printhex32((0x01F01C00+0x1A0), (void *) (0x01F01C00+0x1A0), 256);
+	//targetcore = 0;
+	//startfunc = (uintptr_t) halt64;
+	startfunc = (uintptr_t) halt32;
 
 	dcache_invalidate(0x44000, 64);
-	dcache_clean((uintptr_t) exe64, sizeof exe64);
+	dcache_clean((uintptr_t) halt64, sizeof halt64);
 
-	PRINTF("  C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
-	PRINTF("  C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
-	PRINTF("  C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
+//	PRINTF("  C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
+//	PRINTF("  C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
+//	PRINTF("  C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
 
-	//C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
-	C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
+	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
+	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
 
+	BOOTP0 [targetcore] = startfunc;
 	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
-	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = 0;//startfunc >> 64;
+	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 64;
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	dcache_clean_invalidate(0x44000, 64 * 1024);
-	restart_core0_aarch64();
-
-//	GIC_SendSGI(SGI0_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI1_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI2_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI3_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI4_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI5_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI6_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI7_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI8_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI9_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI10_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI11_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI12_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI13_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI14_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI15_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	TP();
-
 	//restart_core0_aarch64();
 
 //	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
 //	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
 
 	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (0 + targetcore));	// CORE_RESET (3..0) assert
+	(void) C0_CPUX_CFG->C_RST_CTRL;
 	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0) de-assert
 	(void) C0_CPUX_CFG->C_RST_CTRL;
 
-//	GIC_SendSGI(SGI0_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI1_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI2_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI3_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI4_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI5_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI6_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI7_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI8_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI9_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI10_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI11_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI12_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI13_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI14_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	GIC_SendSGI(SGI15_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-
-	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
-	(void) C0_CPUX_CFG->C_RST_CTRL;
-
-	PRINTF("2 C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
-	PRINTF("2 C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
-	PRINTF("2 C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
+//	PRINTF("2 C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
+//	PRINTF("2 C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
+//	PRINTF("2 C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
 	local_delay_ms(250);
-	//printhex32((uintptr_t) exe64, exe64, sizeof exe64);
-	printhex32(C0_CPUX_CFG_BASE, C0_CPUX_CFG, sizeof * C0_CPUX_CFG);
-	printhex32(0x44000, (void *) 0x44000, 64);
+	//printhex32((uintptr_t) halt64, halt64, sizeof halt64);
+	//printhex32(C0_CPUX_CFG_BASE, C0_CPUX_CFG, sizeof * C0_CPUX_CFG);
+	PRINTF("Check for modification: targetcore=%u\n", targetcore);
+	printhex32(0x44000, (void *) 0x44000, 32);
 
-	for (;;)
-		;
+//	for (;;)
+//		;
 
 }
 
