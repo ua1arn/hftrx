@@ -350,7 +350,7 @@ IRQ_Handler:
 	/* save interrupt context on the stack to allow nesting */
 	SUB		LR, LR, #4
 	STMFD   SP!, {LR}
-	MRS     LR, SPSR
+	MRS     LR, SPSR	/* Read SP to LR */
 	STMFD   SP!, {R0, LR}
 
     MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
@@ -411,7 +411,7 @@ IRQ_Handler:
     MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
 
 	LDMIA   SP!, {R0, LR}
-	MSR     SPSR_cxsf, LR
+	MSR     SPSR_cxsf, LR	/* Write LR to SP */
 //	ISB
 	LDMIA   SP!, {PC}^
 
