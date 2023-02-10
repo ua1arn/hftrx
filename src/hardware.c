@@ -3833,17 +3833,56 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 #define HARDWARE_NCORES 4
 
 
+// https://stackoverflow.com/questions/50120446/allwinner-a64-switch-from-aarch32-to-aarch64-by-warm-reset
+
+//	00000000 <_reset>:
+//	   0:   e59f0024        ldr     r0, [pc, #36]   ; 2c <_reset+0x2c>
+//	   4:   e59f1024        ldr     r1, [pc, #36]   ; 30 <_reset+0x30>
+//	   8:   e5801000        str     r1, [r0]
+//	   c:   f57ff04f        dsb     sy
+//	  10:   f57ff06f        isb     sy
+//	  14:   ee1c0f50        mrc     15, 0, r0, cr12, cr0, {2}
+//	  18:   e3800003        orr     r0, r0, #3
+//	  1c:   ee0c0f50        mcr     15, 0, r0, cr12, cr0, {2}
+//	  20:   f57ff06f        isb     sy
+//	  24:   e320f003        wfi
+//	  28:   eafffffe        b       28 <_reset+0x28>
+//	  2c:   017000a0        .word   0x017000a0
+//	  30:   40008000        .word   0x40008000
+
+void halt32(void)
+{
+	ASSERT(0);
+}
+
+// От состяния бита AA64nAA32 в C_CTRL_REG0 не зависит
 static void restart_core0_aarch64(void)
 {
-	 uint32_t result;
-	  __get_CP(15, 0, result, 12, 0, 2);
-	  result |= 0x03;
-	  __set_CP(15, 0, result, 12, 0, 2);
+	// RMR - Reset Management Register
+	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
 
-	  __ISB();
-	  __WFI();
-	  for (;;)
-		  ;
+	uint32_t result;
+	// HRMR
+	// Table D16-2 Instruction encodings for non-debug System register access
+	// RMR_EL1
+	// cp, op1, Rt, CRn, CRm, op2
+	// cp=15, op1=0, Rt, CRn=12, CRm=0, op2=2	: RMR_EL1
+	// cp=15, op1=0, Rt, CRn=12, CRm=0, op2=2	: RMR_EL1
+//	__get_CP(15, 0, result, 12, 0, 2);
+//	PRINTF("RMR=%08X\n", result);
+	//result |= 0x03;	// 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+	//result |= 0x02;	// 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+	result = 0x03;	// 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+	//__set_CP(15, 0, result, 12, 0, 2);
+	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
+	__set_CP(15, 0, result, 12, 0, 2);	// RMR_EL1 - work okay
+	//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
+	//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
+
+	__ISB();
+	__WFI();
+	for (;;)
+	;
 
 }
 
@@ -3876,33 +3915,27 @@ static uint32_t exe64 [16] =
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	PRINTF("cortexa_mp_cpuN_start targetcore=%u (%p)\n", targetcore, (void *) startfunc);
-	{
-		TP();
-		volatile uint32_t * const base = (volatile uint32_t *) 0x0;
-		//memcpy(base, exe64, sizeof exe64);
-		base [1] = 0xDEADBEEF;
-		TP();
-		dcache_clean_invalidate((uintptr_t) base, 512);
-		TP();
-		printhex32(0x00000, (void *) 0x00000, 128);
-		TP();
-	}
-	//targetcore = 0;
+	targetcore = 0;
+	//startfunc = (uintptr_t) Reset_CPU1_Handler; //halt32;
+	startfunc = (uintptr_t) exe64;
+	//startfunc = (uintptr_t) halt32;
+
 	dcache_invalidate(0x44000, 64);
 	dcache_clean((uintptr_t) exe64, sizeof exe64);
-	startfunc = (uintptr_t) exe64;
 
 	PRINTF("  C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
 	PRINTF("  C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
 	PRINTF("  C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
 
-	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
+	//C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
+	C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
 
 	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
 	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = 0;//startfunc >> 64;
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	dcache_clean_invalidate(0x44000, 64 * 1024);
+	restart_core0_aarch64();
 
 //	GIC_SendSGI(SGI0_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 //	GIC_SendSGI(SGI1_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
@@ -3921,23 +3954,6 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //	GIC_SendSGI(SGI14_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 //	GIC_SendSGI(SGI15_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 //	TP();
-
-// https://stackoverflow.com/questions/50120446/allwinner-a64-switch-from-aarch32-to-aarch64-by-warm-reset
-
-//	00000000 <_reset>:
-//	   0:   e59f0024        ldr     r0, [pc, #36]   ; 2c <_reset+0x2c>
-//	   4:   e59f1024        ldr     r1, [pc, #36]   ; 30 <_reset+0x30>
-//	   8:   e5801000        str     r1, [r0]
-//	   c:   f57ff04f        dsb     sy
-//	  10:   f57ff06f        isb     sy
-//	  14:   ee1c0f50        mrc     15, 0, r0, cr12, cr0, {2}
-//	  18:   e3800003        orr     r0, r0, #3
-//	  1c:   ee0c0f50        mcr     15, 0, r0, cr12, cr0, {2}
-//	  20:   f57ff06f        isb     sy
-//	  24:   e320f003        wfi
-//	  28:   eafffffe        b       28 <_reset+0x28>
-//	  2c:   017000a0        .word   0x017000a0
-//	  30:   40008000        .word   0x40008000
 
 	//restart_core0_aarch64();
 
