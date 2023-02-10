@@ -399,7 +399,7 @@ IRQ_Handler:
 //#endif /* __ARM_NEON == 1 */
 
 	// restore VFP/Neon FPEXC register
-	POP 	{R0, R1}	// FPEXC, FPSCR, pad
+	POP 	{R0, R1}	// FPEXC, FPSCR
 	VMSR	FPEXC, R0
 	VMSR	FPSCR, R1
 
