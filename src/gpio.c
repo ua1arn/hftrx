@@ -814,8 +814,10 @@ static SPINLOCK_t gpiodata_L_lock = SPINLOCK_INIT;
 
 static SPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
 {
+#if CPUSTYLE_A64
 	if (gpio == GPIOL)
 		return & gpiodata_L_lock;
+#endif /* CPUSTYLE_A64 */
 
 	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 }

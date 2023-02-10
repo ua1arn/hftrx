@@ -4019,9 +4019,9 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 #endif /* CPU types */
 
 static RAMDTCM SPINLOCK_t cpu1init = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t cpu1userstart [4];
+static RAMDTCM SPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 
-// Инициализация второго ппрцессора
+// Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
 void Reset_CPUn_Handler(void)
 {
 #if (__CORTEX_A == 9U)
