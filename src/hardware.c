@@ -3860,10 +3860,12 @@ static uint32_t exe64 [16] =
 
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
+	targetcore = 0;
 	dcache_invalidate(0x44000, 64);
 	dcache_clean((uintptr_t) exe64, sizeof exe64);
 	startfunc = (uintptr_t) exe64;
 
+	PRINTF("C0_CPUX_CFG->C_CPU_STATUS=%08X\n", C0_CPUX_CFG->C_CPU_STATUS);
 	PRINTF("C0_CPUX_CFG->C_RST_CTRL=%08X\n", C0_CPUX_CFG->C_RST_CTRL);
 	PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", C0_CPUX_CFG->C_CTRL_REG0);
 	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
@@ -3877,10 +3879,71 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 	dcache_clean_all();	// startup code should be copyed in to sysram for example.
 	dcache_clean_invalidate(0x44000, 64 * 1024);
 
+//	GIC_SendSGI(SGI0_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI1_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI2_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI3_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI4_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI5_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI6_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI7_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI8_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI9_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI10_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI11_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI12_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI13_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI14_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI15_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+
+// https://stackoverflow.com/questions/50120446/allwinner-a64-switch-from-aarch32-to-aarch64-by-warm-reset
+
+//	00000000 <_reset>:
+//	   0:   e59f0024        ldr     r0, [pc, #36]   ; 2c <_reset+0x2c>
+//	   4:   e59f1024        ldr     r1, [pc, #36]   ; 30 <_reset+0x30>
+//	   8:   e5801000        str     r1, [r0]
+//	   c:   f57ff04f        dsb     sy
+//	  10:   f57ff06f        isb     sy
+//	  14:   ee1c0f50        mrc     15, 0, r0, cr12, cr0, {2}
+//	  18:   e3800003        orr     r0, r0, #3
+//	  1c:   ee0c0f50        mcr     15, 0, r0, cr12, cr0, {2}
+//	  20:   f57ff06f        isb     sy
+//	  24:   e320f003        wfi
+//	  28:   eafffffe        b       28 <_reset+0x28>
+//	  2c:   017000a0        .word   0x017000a0
+//	  30:   40008000        .word   0x40008000
+
+	 uint32_t result;
+	  __get_CP(15, 0, result, 12, 0, 2);
+	  result |= 0x03;
+	  __set_CP(15, 0, result, 12, 0, 2);
+
+	  __ISB();
+	  __WFI();
+	  for (;;)
+		  ;
+
 //	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
 //	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
-	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0)
-	(void) C0_CPUX_CFG->C_RST_CTRL;
+//	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (0 + targetcore));	// CORE_RESET (3..0)
+//	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0)
+//	(void) C0_CPUX_CFG->C_RST_CTRL;
+//	GIC_SendSGI(SGI0_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI1_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI2_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI3_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI4_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI5_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI6_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI7_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI8_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI9_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI10_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI11_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI12_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI13_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI14_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+//	GIC_SendSGI(SGI15_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 
 	PRINTF("C0_CPUX_CFG->C_RST_CTRL=%08X\n", C0_CPUX_CFG->C_RST_CTRL);
 	PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", C0_CPUX_CFG->C_CTRL_REG0);
