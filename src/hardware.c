@@ -3926,17 +3926,11 @@ static uint32_t halt64 [16] =
  * Read 0x01F01C00+0x1A4 register Get soft_entry_address
  */
 
-#define BOOTP0 ( (volatile uint32_t *) (0x01F01C00+0x1A0))
-//#define BOOTP0 (* (volatile uint32_t *) (0x01F01C00+0x1A4))
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	PRINTF("cortexa_mp_cpuN_start targetcore=%u (%p)\n", targetcore, (void *) startfunc);
-	//PRINTF("cortexa_mp_cpuN_start BOOTP0 (%p)\n", (void *) BOOTP0);
-	//printhex32((0x01F01C00+0x1A4), BOOTP0, 256);
-	//printhex32((0x01F01C00+0x1A0), (void *) (0x01F01C00+0x1A0), 256);
-	//targetcore = 0;
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf
 	//startfunc = (uintptr_t) halt64;
-	startfunc = (uintptr_t) halt32;
+	//startfunc = (uintptr_t) halt32;
 
 	dcache_invalidate(0x44000, 64);
 	dcache_clean((uintptr_t) halt64, sizeof halt64);
@@ -3945,12 +3939,12 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //	PRINTF("  C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
 //	PRINTF("  C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
 
-	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
+	//C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
 	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
 
-	BOOTP0 [targetcore] = startfunc;
-	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
-	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 64;
+	* rvaddr = startfunc;
+//	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
+//	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 64;
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	dcache_clean_invalidate(0x44000, 64 * 1024);
@@ -3970,8 +3964,8 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	local_delay_ms(250);
 	//printhex32((uintptr_t) halt64, halt64, sizeof halt64);
 	//printhex32(C0_CPUX_CFG_BASE, C0_CPUX_CFG, sizeof * C0_CPUX_CFG);
-	PRINTF("Check for modification: targetcore=%u\n", targetcore);
-	printhex32(0x44000, (void *) 0x44000, 32);
+//	PRINTF("Check for modification: targetcore=%u\n", targetcore);
+//	printhex32(0x44000, (void *) 0x44000, 32);
 
 //	for (;;)
 //		;
