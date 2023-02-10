@@ -64,7 +64,7 @@
 	 STACKSIZESYS = 64
 	 STACKSIZEIRQ = 1024
 
-	 STACKSIZESVCBOOT = 64	/* + STACKSIZEIRQ = stack for SystemInit running */
+	 STACKSIZESVCBOOT = 1024	/* + STACKSIZEIRQ = stack for SystemInit running */
   
 	.global __Vectors
 	.section .isr_vector, "ax"
@@ -349,12 +349,11 @@ IRQ_Handler:
 
 	/* save interrupt context on the stack to allow nesting */
 	SUB		LR, LR, #4
-	STMFD   SP!, {LR}
+	STMFD   SP!, {R0, LR}	/* SP -= 8 */
 	MRS     LR, SPSR	/* Read SP to LR */
-	STMFD   SP!, {R0, LR}
 
     MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-	STMFD   SP!, {R1-R12, LR}
+	STMFD   SP!, {R0-R12, LR}
 
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
@@ -365,7 +364,7 @@ IRQ_Handler:
 	// save VFP/Neon FPSCR register
 	VMRS	R1, FPSCR
 	VMRS	R0, FPEXC
-	PUSH 	{R0, R1, R2}	// FPEXC, FPSCR, pad
+	PUSH 	{R0, R1}	// FPEXC, FPSCR
     // Initialise FPSCR to a known state
     // Loaded in to R2
 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
@@ -400,20 +399,19 @@ IRQ_Handler:
 //#endif /* __ARM_NEON == 1 */
 
 	// restore VFP/Neon FPEXC register
-	POP 	{R0, R1, R2}	// FPEXC, FPSCR, pad
+	POP 	{R0, R1}	// FPEXC, FPSCR, pad
 	VMSR	FPEXC, R0
 	VMSR	FPSCR, R1
 
 	VMRS	LR, FPSID
 	VMSR	FPSID, LR
 
-	LDMIA   SP!, {R1-R12, LR}
+	LDMIA   SP!, {R0-R12, LR}
     MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
 
-	LDMIA   SP!, {R0, LR}
 	MSR     SPSR_cxsf, LR	/* Write LR to SP */
 //	ISB
-	LDMIA   SP!, {PC}^
+	LDMIA   SP!, {R0, PC}^
 
 	.endfunc
    .ltorg
