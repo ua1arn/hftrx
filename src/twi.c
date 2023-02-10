@@ -1662,7 +1662,7 @@ void i2c_startX(const i2cp_t * p, uint_fast8_t address)
 	CLR_TWCK();	//SCL = 0;
 	i2c_delay(p);
 
-	i2c_write(address);
+	i2c_writeX(p, address);
 	//return 0;
 }
 
@@ -1697,7 +1697,7 @@ void i2c_readX(const i2cp_t * p, uint8_t *data, uint_fast8_t ack_type)
 			SET_TWCK();
 			i2c_delay(p);
 		} while (n -- && GET_TWCK() == 0);    // wait for any SCL clock stretching
-		i2c_delay(p);
+		//i2c_delay(p);
 		d = d * 2 + (GET_TWD() != 0);
 		CLR_TWCK();
 		i2c_delay(p);
@@ -2232,6 +2232,9 @@ void i2cp_stop(const i2cp_t * p)
 	}
 }
 
+
+#if 1
+
 /* wrappers for old functions */
 void i2c_start(uint_fast8_t address)
 {
@@ -2294,5 +2297,7 @@ void i2c2_stop(void)
 {
 	i2cp_stop(& i2cp_2);
 }
+
+#endif
 
 #endif /* WITHTWIHW || WITHTWISW */
