@@ -3942,7 +3942,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	//C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
 	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
 
-	* rvaddr = startfunc;
+	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
 //	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
 //	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 64;
 
@@ -3961,7 +3961,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //	PRINTF("2 C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
 //	PRINTF("2 C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
 //	PRINTF("2 C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
-	local_delay_ms(250);
+//	local_delay_ms(250);
 	//printhex32((uintptr_t) halt64, halt64, sizeof halt64);
 	//printhex32(C0_CPUX_CFG_BASE, C0_CPUX_CFG, sizeof * C0_CPUX_CFG);
 //	PRINTF("Check for modification: targetcore=%u\n", targetcore);
