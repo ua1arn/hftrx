@@ -3777,7 +3777,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 	dcache_clean_all();	// startup code should be copyed in to sysram for example.
 
 	/* Generate an IT to core 1 */
-	GIC_SendSGI(SGI8_IRQn, 0x01 << targetcore, 0x00);	// CPU1, filer=0
+	GIC_SendSGI(SGI8_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
 }
 
 #elif CPUSTYLE_XC7Z
@@ -3832,14 +3832,41 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 
 #define HARDWARE_NCORES 4
 
+static uint32_t exe64 [] =
+{
+		0xd2880000,        //mov     x0, #0x4000                     // #16384
+		0xf2a00080,        //movk    x0, #0x4, lsl #16
+		0x5297dde1,        //mov     w1, #0xbeef                     // #48879
+		0x72bbd5a1,        //movk    w1, #0xdead, lsl #16
+		0xb9000001,        //str     w1, [x0]
+		0x14000000,        //b       400014 <_start+0x14>
+};
+
 static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
-	//C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << (24 + targetcore));		// AA64nAA32 1: AArch64
+	startfunc = (uintptr_t) exe64;
+	PRINTF("C0_CPUX_CFG->C_RST_CTRL=%08X\n", C0_CPUX_CFG->C_RST_CTRL);
+	PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", C0_CPUX_CFG->C_CTRL_REG0);
+	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
+	C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << (24));		// AA64nAA32 1: AArch64
+	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));	// AA64nAA32 0: AArch32
+	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + 0));	// AA64nAA32 0: AArch32
+	C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + 0));		// AA64nAA32 1: AArch64
 	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
-	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 64;
+	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = 0;//startfunc >> 64;
 	dcache_clean_all();	// startup code should be copyed in to sysram for example.
-	C0_CPUX_CFG->C_RST_CTRL |= (0x01uL << targetcore);
+	dcache_clean_invalidate(0x44000, 64 * 1024);
+	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
+	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
+	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0)
 	(void) C0_CPUX_CFG->C_RST_CTRL;
+	PRINTF("C0_CPUX_CFG->C_RST_CTRL=%08X\n", C0_CPUX_CFG->C_RST_CTRL);
+	PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", C0_CPUX_CFG->C_CTRL_REG0);
+
+	printhex32((uintptr_t) exe64, exe64, sizeof exe64);
+	printhex32(C0_CPUX_CFG_BASE, C0_CPUX_CFG, sizeof * C0_CPUX_CFG);
+	dcache_invalidate(0x44000, 64);
+	printhex32(0x44000, (void *) 0x44000, 64);
 }
 
 #elif CPUSTYLE_T113
@@ -3870,7 +3897,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc, unsigned targetcore)
 {
 	HARDWARE_SOFTENTRY_CPU1_ADDR = startfunc;
 	dcache_clean_all();	// startup code should be copyed in to sysram for example.
-	C0_CPUX_CFG->C0_RST_CTRL |= (0x01uL << targetcore);
+	C0_CPUX_CFG->C0_RST_CTRL |= (1u << targetcore);
 	(void) C0_CPUX_CFG->C0_RST_CTRL;
 }
 
@@ -4017,6 +4044,7 @@ void cpump_runuser(void)
 
 void Reset_CPUn_Handler(void)
 {
+	ASSERT(0);
 	for (;;)
 		;
 }
