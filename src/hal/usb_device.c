@@ -485,7 +485,6 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 }
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 
-#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 /* так как инициализация USB может происходить при запрещённых
  * прерываниях, работа с systick пока невозможна
  */
@@ -493,7 +492,5 @@ void HAL_Delay(uint32_t Delay)
 {
 	local_delay_ms(Delay);
 }
-
-#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

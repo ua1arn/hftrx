@@ -82,6 +82,7 @@
 
 		{	0,	0, 	display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
 		//{	0,	0, 	display2_smeors5, 	REDRM_BARS, PGALL, },	// уровень сигнала в баллах S или dBm
+		{	8, 	0,	display2_rxbwval3,	REDRM_MODE, PGALL, },	// RX BW value
 		{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	18, 0,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	22, 0,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)

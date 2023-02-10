@@ -3296,7 +3296,8 @@ const FLASHMEM char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
 const FLASHMEM char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
 const FLASHMEM char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
-const FLASHMEM char * hamradio_get_rxbw_value_P(void);	// RX bandwidth
+const FLASHMEM char * hamradio_get_rxbw_label3_P(void);	// RX bandwidth - name
+const char * hamradio_get_rxbw_value3_P(void);	// RX bandwidth - value
 const FLASHMEM char * hamradio_get_pre_value_P(void);	// RX preamplifier
 const FLASHMEM char * hamradio_get_att_value_P(void);	// RX attenuator
 const FLASHMEM char * hamradio_get_agc3_value_P(void);	// RX agc time - 3-х буквенные абревиатуры

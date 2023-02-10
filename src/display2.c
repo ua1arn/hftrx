@@ -333,6 +333,13 @@ static const COLORPAIR_T colors_2state [2] =
 	{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
 };
 
+// Параметры отображения состояний из двух вариантов (активный - на красном фонк)
+static const COLORPAIR_T colors_2state_rec [2] =
+{
+	{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
+	{	COLORMAIN_RED,	COLORMAIN_BLACK,	},
+};
+
 // Параметры отображения текстов без вариантов
 static const COLORPAIR_T colors_1state [1] =
 {
@@ -1501,11 +1508,16 @@ static void display2_rec3(
 #if WITHUSEAUDIOREC
 
 	const uint_fast8_t state = hamradio_get_rec_value();
+	uint_fast8_t hour, minute, seconds;
+
+	board_rtc_cached_gettime(& hour, & minute, & seconds);
 
 	static const FLASHMEM char text_pau [] = "PAU";
 	static const FLASHMEM char text_rec [] = "REC";
 	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
-	display2_text_P(x, y, labels, colors_2state, state);
+
+	/* формирование мигающей надписи REC */
+	display2_text_P(x, y, labels, ((seconds & 0x01) && state) ? colors_2state_rec : colors_2state, state);
 
 #endif /* WITHUSEAUDIOREC */
 }
@@ -2131,17 +2143,29 @@ static void display_pbt(
 }
 
 // RX path bandwidth
+static void display2_rxbwval3(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const char * const labels [1] = { hamradio_get_rxbw_value3_P(), };
+	ASSERT(strlen(labels [0]) == 3);
+	display2_text(x, y, labels, colors_1state, 0);
+}
+
+
+// RX path bandwidth name
 static void display2_rxbw3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
 	)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_value_P(), };
+	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_label3_P(), };
 	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
-
 
 // текущее состояние DUAL WATCH
 static void display2_mainsub3(

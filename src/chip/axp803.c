@@ -37,9 +37,11 @@
 #define PMIC_I2C_W 0x68
 #define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
+static i2cp_t pmic_i2cp;	/* параметры для обмена по I2C. Поскольку работаем до инициализации кеша-памяти, надо учитывать медленную работу процессора */
 
 int pmic_bus_init(void)
 {
+	i2cp_intiialize(& pmic_i2cp, I2CP_I2C1, 100000000);
 	TWISOFT_INITIALIZE();
 //
 //
@@ -62,10 +64,10 @@ int pmic_bus_read(uint8_t reg, uint8_t * data)
 	unsigned addrw = PMIC_I2C_W;
 	unsigned addrr = PMIC_I2C_R;
 
-	i2c_start(addrw);
-	i2c_write_withrestart(reg);
-	i2c_start(addrr);
-	i2c_read(data, I2C_READ_ACK_NACK);
+	i2cp_start(& pmic_i2cp, addrw);
+	i2cp_write_withrestart(& pmic_i2cp, reg);
+	i2cp_start(& pmic_i2cp, addrr);
+	i2cp_read(& pmic_i2cp, data, I2C_READ_ACK_NACK);
 
 	return 0;
 }
@@ -75,10 +77,11 @@ int pmic_bus_write(uint8_t reg, uint8_t data)
 	unsigned addrw = PMIC_I2C_W;
 	unsigned addrr = PMIC_I2C_R;
 
-	i2c_start(addrw);
-	i2c_write(reg);
-	i2c_write(data);
-	i2c_stop();
+	i2cp_start(& pmic_i2cp, addrw);
+	i2cp_write(& pmic_i2cp, reg);
+	i2cp_write(& pmic_i2cp, data);
+	i2cp_waitsend(& pmic_i2cp);
+	i2cp_stop(& pmic_i2cp);
 
 	return 0;
 }
