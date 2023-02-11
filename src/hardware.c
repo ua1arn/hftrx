@@ -2961,7 +2961,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	if (a < 0x00400000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR3 - 2 GB
+	if (a >= 0x40000000)			//  DDR3 - 2 GB
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
 //		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -4009,6 +4009,66 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #endif /* CPU types */
 
+#define CPUECTLR_SMPEN_Msk (1u << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.
+
+//	MRS <Xt>, S3_1_C15_C2_0 ; Read EL1 CPU Auxiliary Control Register
+//	MSR S3_1_C15_C2_0, <Xt> ; Write EL1 CPU Auxiliary Control Register
+// cp, op1, Rt, CRn, CRm, op2
+// cp=15, op1=0, Rt, CRn=12, CRm=0, op2=2	: RMR_EL1
+// cp=15, op1=0, Rt, CRn=12, CRm=0, op2=2	: RMR_EL1
+
+//
+//static inline uint64_t get_cpuectlr(void)
+//{
+//	uint64_t value;
+//	asm volatile("mrs %0, s3_1_c15_c2_1" : "=r"(value) :: "memory");
+//	return value;
+//}
+
+#define CPUECTLR_EL1_WRITE(x)       __ASM volatile("msr s3_1_c15_c2_1, %0"::"r"(x));
+#define CPUECTLR_EL1_READ(x)        __ASM volatile("mrs %0, s3_1_c15_c2_1":"=r"(x));
+
+/** \brief  Get CPUECTLR
+    \return               CPU Extended Control Register, EL1
+ */
+__STATIC_FORCEINLINE uint32_t __get_CPUECTLR(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 1, 0, 1);
+//  CPUECTLR_EL1_READ(result);
+  return(result);
+}
+
+/** \brief  Set CPUECTLR
+    \param [in]    cpuectlr  CPU Extended Control Register, EL1
+ */
+__STATIC_FORCEINLINE void __set_CPUECTLR(uint32_t cpuectlr)
+{
+  __set_CP(15, 0, cpuectlr, 1, 0, 1);
+//  CPUECTLR_EL1_WRITE(cpuectlr);
+}
+
+//MRS_ASM(CPUACTLR, s3_1_c15_c2_0)
+//MRS_ASM(CPUECTLR, s3_1_c15_c2_1)
+//
+///** \brief  Get ACTLR
+//    \return               Auxiliary Control register value
+// */
+//__STATIC_FORCEINLINE uint32_t __get_ACTLR(void)
+//{
+//  uint32_t result;
+//  __get_CP(15, 0, result, 1, 0, 1);
+//  return(result);
+//}
+//
+///** \brief  Set ACTLR
+//    \param [in]    actlr  Auxiliary Control value to set
+// */
+//__STATIC_FORCEINLINE void __set_ACTLR(uint32_t actlr)
+//{
+//  __set_CP(15, 0, actlr, 1, 0, 1);
+//}
+
 static RAMDTCM SPINLOCK_t cpu1init = SPINLOCK_INIT;
 static RAMDTCM SPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 
@@ -4022,8 +4082,8 @@ void Reset_CPUn_Handler(void)
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 8U)
-	// set the ACTLR.SMP
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	// set the CPUECTLR.SMPEN
+	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 7U)
@@ -4097,9 +4157,8 @@ void cpump_initialize(void)
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 8U)
-	// set the ACTLR.SMP
-	// STM32MP1: already set
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	// set the CPUECTLR.SMPEN
+	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 7U)
