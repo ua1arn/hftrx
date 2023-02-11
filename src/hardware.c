@@ -4013,47 +4013,25 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #define CPUECTLR_SMPEN_Msk (1u << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.
 
-//	MRS <Xt>, S3_1_C15_C2_0 ; Read EL1 CPU Auxiliary Control Register
-//	MSR S3_1_C15_C2_0, <Xt> ; Write EL1 CPU Auxiliary Control Register
-// cp, op1, Rt, CRn, CRm, op2
-// cp=15, op1=0, Rt, CRn=12, CRm=0, op2=2	: RMR_EL1
-// cp=15, op1=0, Rt, CRn=12, CRm=0, op2=2	: RMR_EL1
-
-//
-//static inline uint64_t get_cpuectlr(void)
-//{
-//	uint64_t value;
-//	asm volatile("mrs %0, s3_1_c15_c2_1" : "=r"(value) :: "memory");
-//	return value;
-//}
-
-#define CPUECTLR_EL1_WRITE(x)       __ASM volatile("msr s3_1_c15_c2_1, %0"::"r"(x));
-#define CPUECTLR_EL1_READ(x)        __ASM volatile("mrs %0, s3_1_c15_c2_1":"=r"(x));
+// 4.5.77 CPU Extended Control Register
 
 /** \brief  Get CPUECTLR
     \return               CPU Extended Control Register, EL1
  */
-__STATIC_FORCEINLINE uint32_t __get_CPUECTLR(void)
+__STATIC_FORCEINLINE uint64_t __get_CPUECTLR(void)
 {
-  uint32_t result;
-  __get_CP(15, 0, result, 1, 0, 1);
-//  CPUECTLR_EL1_READ(result);
-  result = 0;
+	uint64_t result;
+  __get_CP64(15, 1, result, 15);
   return(result);
 }
-//MRS_ASM(CPUACTLR, s3_1_c15_c2_0)	// CPUACTLR_EL1
-//MRS_ASM(CPUECTLR, s3_1_c15_c2_1)
 
 /** \brief  Set CPUECTLR
     \param [in]    cpuectlr  CPU Extended Control Register, EL1
  */
-__STATIC_FORCEINLINE void __set_CPUECTLR(uint32_t cpuectlr)
+__STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 {
-//  __set_CP(15, 0, cpuectlr, 1, 0, 1);
-//  CPUECTLR_EL1_WRITE(cpuectlr);
+	__set_CP64(15, 1, cpuectlr, 15);
 }
-//MRS_ASM(CPUACTLR, s3_1_c15_c2_0)	// CPUACTLR_EL1
-//MRS_ASM(CPUECTLR, s3_1_c15_c2_1)
 
 
 //
@@ -4066,7 +4044,8 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint32_t cpuectlr)
 //  __get_CP(15, 0, result, 1, 0, 1);
 //  return(result);
 //}
-//
+//	MRC p15, 0, <Rt>, c1, c0, 1 ; Read ACTLR into Rt
+//	MCR p15, 0, <Rt>, c1, c0, 1 ; Write Rt to ACTLR//
 ///** \brief  Set ACTLR
 //    \param [in]    actlr  Auxiliary Control value to set
 // */
@@ -4074,6 +4053,8 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint32_t cpuectlr)
 //{
 //  __set_CP(15, 0, actlr, 1, 0, 1);
 //}
+//	MRC p15, 0, <Rt>, c1, c0, 1 ; Read ACTLR into Rt
+//	MCR p15, 0, <Rt>, c1, c0, 1 ; Write Rt to ACTLR
 
 #endif /* (__CORTEX_A == 8U)  */
 
