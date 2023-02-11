@@ -3693,16 +3693,16 @@ FLASHMEMINITFUNC
 SystemInit(void)
 {
 	sysinit_fpu_initialize();
+	sysinit_perfmeter_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_gpio_initialize();
-	sysinit_debug_initialize();
-	sysinit_pmic_initialize();
-	sysinit_perfmeter_initialize();
-	sysintt_sdram_initialize();
-	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_cache_L2_cpu0_initialize();	// L2 cache, SCU initialize
+	sysinit_vbar_initialize();		// interrupt vectors relocate
+	sysinit_debug_initialize();	/* Cortex-A53: mmu & cache required */
+	sysinit_pmic_initialize();
+	sysintt_sdram_initialize();
 }
 
 
