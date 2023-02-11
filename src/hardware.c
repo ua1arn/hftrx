@@ -4009,6 +4009,8 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #endif /* CPU types */
 
+#if (__CORTEX_A == 8U)
+
 #define CPUECTLR_SMPEN_Msk (1u << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.
 
 //	MRS <Xt>, S3_1_C15_C2_0 ; Read EL1 CPU Auxiliary Control Register
@@ -4036,20 +4038,24 @@ __STATIC_FORCEINLINE uint32_t __get_CPUECTLR(void)
   uint32_t result;
   __get_CP(15, 0, result, 1, 0, 1);
 //  CPUECTLR_EL1_READ(result);
+  result = 0;
   return(result);
 }
+//MRS_ASM(CPUACTLR, s3_1_c15_c2_0)	// CPUACTLR_EL1
+//MRS_ASM(CPUECTLR, s3_1_c15_c2_1)
 
 /** \brief  Set CPUECTLR
     \param [in]    cpuectlr  CPU Extended Control Register, EL1
  */
 __STATIC_FORCEINLINE void __set_CPUECTLR(uint32_t cpuectlr)
 {
-  __set_CP(15, 0, cpuectlr, 1, 0, 1);
+//  __set_CP(15, 0, cpuectlr, 1, 0, 1);
 //  CPUECTLR_EL1_WRITE(cpuectlr);
 }
-
-//MRS_ASM(CPUACTLR, s3_1_c15_c2_0)
+//MRS_ASM(CPUACTLR, s3_1_c15_c2_0)	// CPUACTLR_EL1
 //MRS_ASM(CPUECTLR, s3_1_c15_c2_1)
+
+
 //
 ///** \brief  Get ACTLR
 //    \return               Auxiliary Control register value
@@ -4069,6 +4075,8 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint32_t cpuectlr)
 //  __set_CP(15, 0, actlr, 1, 0, 1);
 //}
 
+#endif /* (__CORTEX_A == 8U)  */
+
 static RAMDTCM SPINLOCK_t cpu1init = SPINLOCK_INIT;
 static RAMDTCM SPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 
@@ -4082,6 +4090,7 @@ void Reset_CPUn_Handler(void)
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 8U)
+	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
 	__ISB();
@@ -4157,6 +4166,7 @@ void cpump_initialize(void)
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 8U)
+	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
 	__ISB();
