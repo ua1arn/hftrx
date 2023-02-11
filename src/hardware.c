@@ -2761,7 +2761,7 @@ void IRQ_Handler_GIC(void)
 // 4.5.77 CPU Extended Control Register
 
 /** \brief  Get CPUECTLR
-    \return               CPU Extended Control Register, EL1
+    \return               CPU Extended Control Register
  */
 __STATIC_FORCEINLINE uint64_t __get_CPUECTLR(void)
 {
@@ -2771,7 +2771,7 @@ __STATIC_FORCEINLINE uint64_t __get_CPUECTLR(void)
 }
 
 /** \brief  Set CPUECTLR
-    \param [in]    cpuectlr  CPU Extended Control Register, EL1
+    \param [in]    cpuectlr  CPU Extended Control Register
  */
 __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 {
