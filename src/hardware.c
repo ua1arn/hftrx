@@ -3768,7 +3768,7 @@ sysinit_cache_cpu1_initialize(void)
  * call by core 0 to activate core 1
  ******************************************************************************/
 
-#define HARDWARE_NCORES 2
+//#define HARDWARE_NCORES 2
 
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
@@ -3811,7 +3811,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 // See also:
 //	https://stackoverflow.com/questions/60873390/zynq-7000-minimum-asm-code-to-init-cpu1-from-cpu0
 
-#define HARDWARE_NCORES 2
+//#define HARDWARE_NCORES 2
 
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
@@ -3840,7 +3840,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #define xXPAR_PSU_APU_S_AXI_BASEADDR 0xFD5C0000u
 
-#define HARDWARE_NCORES 2
+//#define HARDWARE_NCORES 2
 
 // Invoke at SVC context
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
@@ -4022,7 +4022,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 // In Allwinner h133 this i/o block named R_CPUCFG
 
-#define HARDWARE_NCORES 2
+//#define HARDWARE_NCORES 2
 
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {

@@ -638,9 +638,9 @@ extern "C" {
 	} GPIO_AFLH_t;
 
 	/* Частоты встроенных RC генераторов процессора */
-	#define HSI64FREQ 64000000uL
-	#define CSI_VALUE 4000000U
-	#define LSIFREQ 32000uL
+	#define HSI64FREQ 64000000u
+	#define CSI_VALUE 4000000u
+	#define LSIFREQ 32000u
 
 	//
 	#if WITHCPUXOSC
@@ -669,12 +669,12 @@ extern "C" {
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
 	// ADC clock frequency: 1..20 MHz
-	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 24000000u	/* 2требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define SPISPEEDUFAST 24000000			/* 2требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000u			/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u		/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -699,6 +699,8 @@ extern "C" {
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 
+	#define HARDWARE_NCORES 2
+
 #elif CPUSTYLE_XC7Z
 
 	typedef uint_fast16_t adcvalholder_t;
@@ -719,11 +721,12 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define SPISPEED (12000000u)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000u		//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000u			/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u		/* 100 kHz для низкоскоростных микросхем */
 
+	#define HARDWARE_NCORES 2
 
 #elif CPUSTYLE_A64
 
@@ -738,8 +741,8 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	#define HARDWARE_CLK32K_FREQ 32000uL
-	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
+	#define HARDWARE_CLK32K_FREQ 32000u
+	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_a64_get_cpux_freq())
 	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
@@ -767,8 +770,7 @@ extern "C" {
 		GPIO_CFG_IODISABLE = 0x07,
 	} GPIOMode_TypeDef;
 
-
-
+	#define HARDWARE_NCORES 4
 
 #elif CPUSTYLE_T113
 
@@ -819,6 +821,7 @@ extern "C" {
 		GPIO_CFG_IODISABLE = 0x0F,
 	} GPIOMode_TypeDef;
 
+	#define HARDWARE_NCORES 2
 
 #elif CPUSTYLE_F133
 
@@ -895,6 +898,8 @@ extern "C" {
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+	#define HARDWARE_NCORES 4
 
 #elif defined(_WIN32)
 
