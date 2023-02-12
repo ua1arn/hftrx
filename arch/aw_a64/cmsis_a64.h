@@ -152,8 +152,6 @@ typedef enum IRQn
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC Base */
 #define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC Base */
 #define OWA_BASE ((uintptr_t) 0x02036000)             /*!< OWA Base */
-#define CAN0_BASE ((uintptr_t) 0x02504000)            /*!< CAN Base */
-#define CAN1_BASE ((uintptr_t) 0x02504400)            /*!< CAN Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
@@ -1235,31 +1233,6 @@ typedef struct HSTIMER_Type
     volatile uint32_t HS_TMR1_CURNT_HI_REG;           /*!< Offset 0x050 HS Timer1 Current Value High Register */
 } HSTIMER_TypeDef; /* size of structure = 0x054 */
 /*
- * @brief CAN
- */
-/*!< CAN  */
-typedef struct CAN_Type
-{
-    volatile uint32_t CAN_MSEL;                       /*!< Offset 0x000 CAN mode select register */
-    volatile uint32_t CAN_CMD;                        /*!< Offset 0x004 CAN command register */
-    volatile uint32_t CAN_STA;                        /*!< Offset 0x008 CAN status register */
-    volatile uint32_t CAN_INT;                        /*!< Offset 0x00C CAN interrupt register */
-    volatile uint32_t CAN_INTEN;                      /*!< Offset 0x010 CAN interrupt enable register */
-    volatile uint32_t CAN_BUSTIME;                    /*!< Offset 0x014 CAN bus timing register */
-    volatile uint32_t CAN_TEWL;                       /*!< Offset 0x018 CAN TX error warning limit register */
-    volatile uint32_t CAN_ERRC;                       /*!< Offset 0x01C CAN error counter register */
-    volatile uint32_t CAN_RMCNT;                      /*!< Offset 0x020 CAN receive message counter register */
-    volatile uint32_t CAN_RBUF_SADDR;                 /*!< Offset 0x024 CAN receive buffer start address register */
-    volatile uint32_t CAN_ACPC;                       /*!< Offset 0x028 CAN acceptance code 0 register(reset mode) */
-    volatile uint32_t CAN_ACPM;                       /*!< Offset 0x02C CAN acceptance mask 0 register(reset mode) */
-             uint32_t reserved_0x030 [0x0004];
-    volatile uint32_t CAN_TRBUF [0x00D];              /*!< Offset 0x040 CAN TX/RX message buffer N (n=0..12) register */
-             uint32_t reserved_0x074 [0x0043];
-    volatile uint32_t CAN_RBUF_RBACK [0x030];         /*!< Offset 0x180 CAN transmit buffer for read back register (0x0180 ~0x1b0) */
-             uint32_t reserved_0x240 [0x0030];
-    volatile uint32_t CAN_VERSION;                    /*!< Offset 0x300 CAN Version Register */
-} CAN_TypeDef; /* size of structure = 0x304 */
-/*
  * @brief USBEHCI
  */
 /*!< USBEHCI  */
@@ -2261,8 +2234,6 @@ typedef struct MSGBOX_Type
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
-#define CAN0 ((CAN_TypeDef *) CAN0_BASE)              /*!< CAN0  register set access pointer */
-#define CAN1 ((CAN_TypeDef *) CAN1_BASE)              /*!< CAN1  register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0  register set access pointer */
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */

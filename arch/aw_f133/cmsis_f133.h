@@ -22,6 +22,8 @@ typedef enum IRQn
     SPI0_IRQn = 31,                                   /*!< SPI Serial Peripheral Interface Interrupt */
     SPI1_IRQn = 32,                                   /*!< SPI_DBI Serial Peripheral Interface Interrupt */
     LEDC_IRQn = 36,                                   /*!< LEDC  Interrupt */
+    CAN0_IRQn = 37,                                   /*!< CAN  Interrupt */
+    CAN1_IRQn = 38,                                   /*!< CAN  Interrupt */
     OWA_IRQn = 39,                                    /*!< OWA  Interrupt */
     I2S_PCM1_IRQn = 43,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 44,                               /*!< I2S_PCM  Interrupt */
