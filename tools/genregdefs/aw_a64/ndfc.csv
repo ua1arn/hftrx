@@ -1,4 +1,4 @@
-#comment; NAND Flash Controller
+#comment; NAND Flash Controller Interface
 #type;  NDFC
 #base;  NDFC 0x01C03000
 #irq; NDFC 102 

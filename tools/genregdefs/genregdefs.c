@@ -187,7 +187,7 @@ void genstruct(struct parsedfile *pfl) {
 	emitline(0, " * @brief %s\n", pfl->bname);
 	emitline(0, " */\n");
 
-	emitline(0, "/*!< %s Controller Interface */\n", pfl->bname);
+	emitline(0, "/*!< %s %s */\n", pfl->bname, pfl->comment ? pfl->comment : "");
 	emitline(0, "typedef struct %s_Type\n", pfl->bname);
 	emitline(0, "{\n");
 
@@ -425,7 +425,7 @@ static int parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 
 		} else {
 			/* unrecognized input = next source line */
-			fprintf(stderr, "#2 unrecognized token0=%s", token0);
+			fprintf(stderr, "#2 %s: unrecognized token0=%s", file, token0);
 			/* parsed */
 			if (nextline(fp) == 0)
 				break;
@@ -576,7 +576,7 @@ static void processfile_access(struct parsedfile *pfl) {
 				pfl->bname, pfl->base_names[i]);
 		emitline(COMMENTNEAR,
 				"/*!< %s %s register set access pointer */\n",
-				pfl->base_names[i], pfl->comment ? pfl->comment : "Interface");
+				pfl->base_names[i], pfl->comment ? pfl->comment : "");
 	}
 }
 
@@ -701,7 +701,7 @@ int main(int argc, char *argv[], char *envp[]) {
 				struct irqmap *const p = &irqs[i];
 
 				emitline(INDENT, "%s_IRQn = %d,", p->name, p->irq);
-				emitline(COMMENTNEAR, "/*!< %s Interrupt */\n", p->pfl->bname);
+				emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
 			}
 			emitline(0, "\n");
 			emitline(INDENT, "MAX_IRQ_n,\n");
@@ -742,7 +742,7 @@ int main(int argc, char *argv[], char *envp[]) {
 				struct irqmaprv *const p = &irqs[i];
 
 				emitline(INDENT, "%s_IRQn = %d,", p->name, p->irqrv);
-				emitline(COMMENTNEAR, "/*!< %s Interrupt */\n", p->pfl->bname);
+				emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
 			}
 			emitline(0, "\n");
 			emitline(INDENT, "MAX_IRQ_n,\n");
