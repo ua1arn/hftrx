@@ -49,6 +49,7 @@ typedef enum IRQn
     CAN0_IRQn = 53,                                   /*!< CAN  Interrupt */
     CAN1_IRQn = 54,                                   /*!< CAN  Interrupt */
     OWA_IRQn = 55,                                    /*!< OWA  Interrupt */
+    AUDIO_CODEC_IRQn = 57,                            /*!< AUDIO_CODEC  Interrupt */
     I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  Interrupt */
     USB0_DEVICE_IRQn = 61,                            /*!< USBOTG  Interrupt */
@@ -65,6 +66,8 @@ typedef enum IRQn
     CCU_FERR_IRQn = 80,                               /*!< CCU  Interrupt */
     DMAC_NS_IRQn = 82,                                /*!< DMAC  Interrupt */
     DMAC_S_IRQn = 83,                                 /*!< DMAC  Interrupt */
+    CE_NS_IRQn = 84,                                  /*!< CE  Interrupt */
+    CE_S_IRQn = 85,                                   /*!< CE  Interrupt */
     GPADC_IRQn = 89,                                  /*!< GPADC  Interrupt */
     TIMER0_IRQn = 91,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 92,                                 /*!< TIMER  Interrupt */
