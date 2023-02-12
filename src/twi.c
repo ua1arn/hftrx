@@ -1478,6 +1478,8 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 	}
 }
 
+#elif LINUX_SUBSYSTEM
+
 #elif (CPUSTYLE_XC7Z) && WITHTWIHW
 
 #include "xc7z_inc.h"
@@ -1571,8 +1573,6 @@ void i2c_initialize(void)
 	hardware_twi_master_configure();	// clocks - pass XPAR_XIICPS_0_DEVICE_ID
 	hardware_iicps_configure();			// Peripheral
 }
-
-#elif LINUX_SUBSYSTEM
 
 #else
 	#error I2C hardware implementation for CPUSTYLE_xxx is not avaliable
@@ -2101,13 +2101,13 @@ void hardware_twi_master_configure(void)
 	// Enable the I2Cx peripheral
 	I2C1->CR1 |= I2C_CR1_PE;
 
+#elif LINUX_SUBSYSTEM
+
 #elif CPUSTYLE_XC7Z
 
 	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
-
-#elif LINUX_SUBSYSTEM
 
 #else
 	#warning Undefined CPUSTYLE_XXX
@@ -2116,7 +2116,7 @@ void hardware_twi_master_configure(void)
 
 #endif /* WITHTWIHW */
 
-#if WITHTWIHW || WITHTWISW
+#if (WITHTWIHW || WITHTWISW) && ! LINUX_SUBSYSTEM
 
 /* скорость обмена */
 void i2cp_intiialize(i2cp_t * p, unsigned ch, unsigned freq)

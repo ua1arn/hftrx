@@ -3671,6 +3671,7 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+#if ! LINUX_SUBSYSTEM
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_gpio_initialize();
@@ -3682,7 +3683,8 @@ SystemInit(void)
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_cache_L2_cpu0_initialize();	// L2 cache, SCU initialize
- }
+#endif /* ! LINUX_SUBSYSTEM */
+}
 
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
@@ -4717,7 +4719,7 @@ void _stack_init(void)
 
 }
 
-#if CPUSTYLE_RISCV || defined(__aarch64__)
+#if (CPUSTYLE_RISCV || defined(__aarch64__)) && ! LINUX_SUBSYSTEM
 
 /**
   \brief   Initializes data and bss sections

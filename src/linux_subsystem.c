@@ -161,18 +161,27 @@ volatile uint32_t * xgpo, * xgpi;
 
 void linux_xgpio_init(void)
 {
+#if CPUSTYLE_XCZU
 	xgpo = get_highmem_ptr(AXI_XGPO_ADDR);
 	xgpi = get_highmem_ptr(AXI_XGPI_ADDR);
+#elif CPUSTYLE_XC7Z
+
+#endif
 }
 
 uint8_t linux_xgpi_read_pin(uint8_t pin)
 {
+#if CPUSTYLE_XCZU
 	uint32_t v = * xgpi;
 	return (v >> pin) & 1;
+#elif CPUSTYLE_XC7Z
+	return 0;
+#endif
 }
 
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 {
+#if CPUSTYLE_XCZU
 	uint32_t mask = 1 << pin;
 	uint32_t rw = * xgpo;
 
@@ -182,6 +191,9 @@ void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 		rw &= ~mask;
 
 	* xgpo = rw;
+#elif CPUSTYLE_XC7Z
+
+#endif
 }
 
 void xc7z_writepin(uint8_t pin, uint8_t val)
@@ -192,6 +204,16 @@ void xc7z_writepin(uint8_t pin, uint8_t val)
 uint_fast8_t xc7z_readpin(uint8_t pin)
 {
 	return linux_xgpi_read_pin(pin);
+}
+
+void xc7z_gpio_input(uint8_t pin)
+{
+
+}
+
+void xc7z_gpio_output(uint8_t pin)
+{
+
 }
 
 void gpio_writepin(uint8_t pin, uint8_t val)
@@ -534,12 +556,14 @@ void linux_user_init(void)
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 0);
 #endif /* WITHFT8 */
 
+#if WITHDCDCFREQCTL
 	const float FS = powf(2, 32);
 	uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
 	reg_write(AXI_DCDC_PWM_ADDR + 0, fan_pwm_period);
 
 	uint32_t fan_pwm_duty = FS * (1.0f - 0.7f) - 1;
 	reg_write(AXI_DCDC_PWM_ADDR + 4, fan_pwm_duty);
+#endif /* WITHDCDCFREQCTL */
 
 #if WITHCPUTEMPERATURE
 	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);
@@ -818,5 +842,12 @@ void linux_exit(void)
 	framebuffer_close();
 	exit(EXIT_SUCCESS);
 }
+
+#if CPUSTYLE_XC7Z
+unsigned long xc7z_get_arm_freq(void)
+{
+	return 766000000uL;
+}
+#endif
 
 #endif /* LINUX_SUBSYSTEM */

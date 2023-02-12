@@ -7353,7 +7353,7 @@ static void adcfilters_initialize(void);
 */
 void board_initialize(void)
 {
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 	xc7z_hardware_initialize();
 #endif /* CPUSTYLE_XC7Z */
 #if WITHFPGALOAD_DCFG
