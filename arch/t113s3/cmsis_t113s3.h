@@ -32,7 +32,7 @@ typedef enum IRQn
     SecurePhysicalTimer_IRQn = 29,                    /*!<   Interrupt */
     NonSecurePhysicalTimer_IRQn = 30,                 /*!<   Interrupt */
     Legacy_nIRQ_IRQn = 31,                            /*!<   Interrupt */
-    CPUX_MSGBOX_R_IRQn = 32,                          /*!< MSGBOX  Interrupt */
+    CPUX_MSGBOX_R_IRQn = 32,                          /*!< MSGBOX Message Box Interrupt */
     UART0_IRQn = 34,                                  /*!< UART  Interrupt */
     UART1_IRQn = 35,                                  /*!< UART  Interrupt */
     UART2_IRQn = 36,                                  /*!< UART  Interrupt */
@@ -68,6 +68,8 @@ typedef enum IRQn
     DMAC_S_IRQn = 83,                                 /*!< DMAC  Interrupt */
     CE_NS_IRQn = 84,                                  /*!< CE  Interrupt */
     CE_S_IRQn = 85,                                   /*!< CE  Interrupt */
+    HSTIMER0_IRQn = 87,                               /*!< HSTIMER High Speed Timer Interrupt */
+    HSTIMER1_IRQn = 88,                               /*!< HSTIMER High Speed Timer Interrupt */
     GPADC_IRQn = 89,                                  /*!< GPADC  Interrupt */
     TIMER0_IRQn = 91,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 92,                                 /*!< TIMER  Interrupt */
@@ -1059,7 +1061,7 @@ typedef struct CE_Type
 /*
  * @brief RTC
  */
-/*!< RTC  */
+/*!< RTC Real Time Clock */
 typedef struct RTC_Type
 {
     volatile uint32_t LOSC_CTRL_REG;                  /*!< Offset 0x000 Low Oscillator Control Register */
@@ -1245,7 +1247,7 @@ typedef struct IOMMU_Type
 /*
  * @brief THS
  */
-/*!< THS  */
+/*!< THS Thermal Sensor */
 typedef struct THS_Type
 {
     volatile uint32_t THS_CTRL;                       /*!< Offset 0x000 THS Control Register */
@@ -1303,7 +1305,7 @@ typedef struct TIMER_Type
 /*
  * @brief HSTIMER
  */
-/*!< HSTIMER  */
+/*!< HSTIMER High Speed Timer */
 typedef struct HSTIMER_Type
 {
     volatile uint32_t HS_TMR_IRQ_EN_REG;              /*!< Offset 0x000 HS Timer IRQ Enable Register */
@@ -2285,7 +2287,7 @@ typedef struct MSI_MEMC_Type
 /*
  * @brief SID
  */
-/*!< SID  */
+/*!< SID Security ID */
 typedef struct SID_Type
 {
              uint32_t reserved_0x000 [0x0005];
@@ -2343,7 +2345,7 @@ typedef struct USB_OHCI_Capability_Type
 /*
  * @brief SPINLOCK
  */
-/*!< SPINLOCK  */
+/*!< SPINLOCK Spin Lock module */
 typedef struct SPINLOCK_Type
 {
     volatile uint32_t SPINLOCK_SYSTATUS_REG;          /*!< Offset 0x000 Spinlock System Status Register */
@@ -2398,7 +2400,7 @@ typedef struct DMAC_Type
 /*
  * @brief PWM
  */
-/*!< PWM  */
+/*!< PWM Pulse Width Modulation module */
 typedef struct PWM_Type
 {
     volatile uint32_t PIER;                           /*!< Offset 0x000 PWM IRQ Enable Register */
@@ -2475,7 +2477,7 @@ typedef struct EMAC_Type
 /*
  * @brief MSGBOX
  */
-/*!< MSGBOX  */
+/*!< MSGBOX Message Box */
 typedef struct MSGBOX_Type
 {
              uint32_t reserved_0x000 [0x0008];
@@ -2544,7 +2546,7 @@ typedef struct MSGBOX_Type
 #define SPI_DBI ((SPI_DBI_TypeDef *) SPI_DBI_BASE)    /*!< SPI_DBI Serial Peripheral Interface register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
-#define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */
+#define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define CAN0 ((CAN_TypeDef *) CAN0_BASE)              /*!< CAN0  register set access pointer */
@@ -2579,16 +2581,16 @@ typedef struct MSGBOX_Type
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
 #define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
-#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
+#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)/*!< USBEHCI0  register set access pointer */
 #define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)/*!< USBEHCI1  register set access pointer */
 #define USBOHCI0 ((USB_OHCI_Capability_TypeDef *) USBOHCI0_BASE)/*!< USBOHCI0  register set access pointer */
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
-#define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM  register set access pointer */
+#define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
-#define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX  register set access pointer */
-#define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)/*!< DSP_MSGBOX  register set access pointer */
+#define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX Message Box register set access pointer */
+#define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)/*!< DSP_MSGBOX Message Box register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

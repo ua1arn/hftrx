@@ -1,3 +1,4 @@
+#comment; Message Box
 #type; MSGBOX
 #base; CPUX_MSGBOX 0x03003000
 #base; DSP_MSGBOX 0x01701000

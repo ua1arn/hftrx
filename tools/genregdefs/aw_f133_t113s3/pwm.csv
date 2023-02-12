@@ -1,3 +1,4 @@
+#comment; Pulse Width Modulation module
 #type; PWM
 #base; PWM 0x02000C00
 #regdef; PIER; 0x0000; PWM IRQ Enable Register

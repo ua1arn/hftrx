@@ -1,3 +1,4 @@
+#comment; Thermal Sensor
 #type; THS
 #regdef; THS_CTRL; 0x0000; THS Control Register
 #regdef; THS_EN; 0x0004; THS Enable Register

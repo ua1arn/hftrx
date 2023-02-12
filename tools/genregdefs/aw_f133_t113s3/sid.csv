@@ -1,3 +1,4 @@
+#comment; Security ID
 #type; SID
 #base; SID 0x03006000
 #regdef; SID_THS; 0x014; [27:16]: The calibration value of the T-sensor.
