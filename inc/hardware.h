@@ -1390,11 +1390,33 @@ size_t getRamDiskSize(void);
 	#include "linux_subsystem.h"
 #endif /* LINUX_SUBSYSTEM */
 
-#if (__CORTEX_A == 8U)
+#if (__CORTEX_A == 8U) && CPUSTYLE_CA53
 
-#define CPUECTLR_SMPEN_Msk (1u << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.
+// DDI0500J_cortex_a53_r0p4_trm.pdf
+
+// 4.5.76 CPU Auxiliary Control Register
+
+/** \brief  Get CPUACTLR
+    \return                CPU Auxiliary Control Register
+ */
+__STATIC_FORCEINLINE uint64_t __get_CPUACTLR(void)
+{
+	uint64_t result;
+  __get_CP64(15, 0, result, 15);
+  return(result);
+}
+
+/** \brief  Set CPUACTLR
+    \param [in]    cpuactlr   CPU Auxiliary Control Register
+ */
+__STATIC_FORCEINLINE void __set_CPUACTLR(uint64_t cpuactlr)
+{
+	__set_CP64(15, 0, cpuactlr, 15);
+}
 
 // 4.5.77 CPU Extended Control Register
+
+#define CPUECTLR_SMPEN_Msk (1u << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.
 
 /** \brief  Get CPUECTLR
     \return               CPU Extended Control Register
@@ -1414,6 +1436,6 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 	__set_CP64(15, 1, cpuectlr, 15);
 }
 
-#endif /* (__CORTEX_A == 8U)  */
+#endif /* (__CORTEX_A == 8U) && CPUSTYLE_CA53 */
 
 #endif // HARDWARE_H_INCLUDED

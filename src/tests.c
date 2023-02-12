@@ -6426,11 +6426,51 @@ void testpng(const void * pngbuffer)
 
 #endif
 
+#if (__CORTEX_A == 8U) && CPUSTYLE_CA53
+
+// 4.5.80 Configuration Base Address Register
+/** \brief  Get CBAR
+    \return               Configuration Base Address Register
+ */
+__STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
+{
+	uint64_t result;
+  __get_CP(15, 1, result, 15, 3, 0);
+  return(result);
+}
+
+#endif /* (__CORTEX_A == 8U) && CPUSTYLE_CA53 */
+
+// p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
+// p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && CPUSTYLE_CA53
+	{
+		const uint_fast32_t cbar = __get_CA53_CBAR();
+		const uintptr_t periphbase = (uintptr_t) (cbar & 0xFFFC00000u) | (uintptr_t) (cbar & 0xFF) << 32;
+
+		PRINTF("__get_CPUACTLR()=%08X\n", (unsigned) __get_CPUACTLR());
+		PRINTF("__get_CPUECTLR()=%08X\n", (unsigned) __get_CPUECTLR());
+		PRINTF("__get_CA53_CBAR()=%08X\n", (unsigned) periphbase);			/* SYS_CFG_BASE */
+
+		PRINTF("GIC_DISTRIBUTOR_BASE=%08X\n", (unsigned) GIC_DISTRIBUTOR_BASE);
+		PRINTF("GIC_INTERFACE_BASE=%08X\n", (unsigned) GIC_INTERFACE_BASE);
+
+		ASSERT(GIC_DISTRIBUTOR_BASE == (periphbase + 0x81000));
+		ASSERT(GIC_INTERFACE_BASE == (periphbase + 0x82000));
+	}
+#endif
+#if 0 && (__CORTEX_A == 7U)
+	{
+		const uint_fast32_t cbar = __get_CBAR();
+		PRINTF("__get_CBAR()=%08X\n", (unsigned) __get_CBAR());
+
+	}
+#endif
 #if 0
 	{
 		PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);

@@ -3457,11 +3457,6 @@ sysinit_cache_initialize(void)
 
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
-		L1C_InvalidateDCacheAll();
-		L1C_InvalidateICacheAll();
-		L1C_InvalidateBTAC();
-		L1C_EnableCaches();
-		L1C_EnableBTAC();
 		#if (__CORTEX_A == 9U)
 			// not set the ACTLR.SMP
 			// 0x02: L2 Prefetch hint enable
@@ -3469,6 +3464,10 @@ sysinit_cache_initialize(void)
 			__ISB();
 			__DSB();
 		#elif (__CORTEX_A == 8U)
+			/**
+			 * DDI0500J_cortex_a53_r0p4_trm.pdf
+			 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
+			 */
 			__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
 			// set the CPUECTLR.SMPEN
 			__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
@@ -3480,6 +3479,11 @@ sysinit_cache_initialize(void)
 			__ISB();
 			__DSB();
 		#endif /* (__CORTEX_A == 9U) */
+		L1C_InvalidateDCacheAll();
+		L1C_InvalidateICacheAll();
+		L1C_InvalidateBTAC();
+		L1C_EnableCaches();
+		L1C_EnableBTAC();
 	#endif
 
 #elif CPUSTYLE_F133
@@ -3628,6 +3632,7 @@ sysinit_cache_initialize(void)
 #endif /* CPUSTYLE_RISCV */
 }
 
+/* инициадихации кеш-памяти, спцифические для CORE0 */
 static void FLASHMEMINITFUNC
 sysinit_cache_L2_cpu0_initialize(void)
 {
