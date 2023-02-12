@@ -1,4 +1,5 @@
-	// WO240128A
+#if 1
+// WO240128A
 	#define CHAR_W	8
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
@@ -550,3 +551,5 @@
 			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
+#endif
+

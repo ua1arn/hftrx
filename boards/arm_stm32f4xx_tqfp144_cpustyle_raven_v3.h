@@ -203,7 +203,7 @@
 #endif
 
 #if WITHI2S2HW
-	#define I2S2HW_INITIALIZE() \
+	#define I2S2HW_I2S2EXTHW_MASTER_INITIALIZE() \
 		do { \
 			enum { \
 				I2S2_MCK = (1U << 6),		/* PC6	*/ \
@@ -494,6 +494,11 @@
 				arm_hardware_piog_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 				arm_hardware_piof_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
 			} while (0)
+
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_BIT (0 * 1U << 10)	/* PF10 - fir WE - CPU pin 22 */
+
 #endif /* WITHDSPEXTFIR */
 
 /* получение состояния переполнения АЦП */

@@ -231,7 +231,7 @@
 		} while (0)
 	#else /* defined (STM32F446xx) */
 		// Инициализируются I2S2 и I2S2_EXT
-		#define I2S2HW_INITIALIZE() do { \
+		#define I2S2HW_I2S2EXTHW_MASTER_INITIALIZE() do { \
 			enum { \
 				I2S2_MCK = (1U << 6),		/* PC6	*/ \
 				I2S2ext_SD = (1U << 14),	/* PB14	- приём */ \

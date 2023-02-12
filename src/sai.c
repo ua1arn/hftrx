@@ -1729,6 +1729,8 @@ static void hardware_sai1_a_tx_b_rx_slave_initialize_codec1(void)		/* иници
 	SAI1HW_INITIALIZE();
 }
 
+#if WITHSAI2HW
+
 static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* инициализация SAI2 на STM32F4xx */
 {
 #if CPUSTYLE_STM32MP1
@@ -1815,6 +1817,8 @@ static void hardware_sai2_b_enable_codec1(uint_fast8_t state)		/* разреше
 		SAI2_Block_B->CR1 &= ~ SAI_xCR1_SAIEN;
 	}
 }
+
+#endif /* WITHSAI2HW */
 
 #endif /* WITHSAI1HW || WITHSAI2HW || WITHSAI3HW || WITHSAI4HW */
 

@@ -196,10 +196,8 @@
 
 	/* Board hardware configuration */
 	#define	CODEC1_TYPE	CODEC_TYPE_TLV320AIC23B
-	#define CODEC2_TYPE CODEC_TYPE_CS4272
+	#define CODEC1_FRAMEBITS 32			// Полный размер фрейма
 
-	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
-	#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 	#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1	// codecboard v2.0
 
 	#if defined (STM32F446xx) || CPUSTYLE_STM32F7XX
@@ -211,6 +209,9 @@
 		#define WITHI2SI2S2EXTFULLDUPLEXHW 1
 	#endif /* defined (STM32F446xx) */
 
+	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
+	#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
+	#define CODEC2_TYPE CODEC_TYPE_CS4272
 	//#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define WITHFPGAIF_FRAMEBITS	64	// Полный размер фрейма
 	#define WITHSAICLOCKFROMI2S	1	/* Блок SAI1 тактируется от PLL I2S */
