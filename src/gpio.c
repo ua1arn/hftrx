@@ -1135,11 +1135,13 @@ static void writel(uint32_t value, uintptr_t addr)
 
 #if CPUSTYLE_A64
 
-#define	R_PRCM_BASE	 ((uintptr_t) 0x01F01400)
+//#define	R_PRCM_BASE	 ((uintptr_t) 0x01F01400)
 
 static void awxx_a64_gpiol_enable(void)
 {
 	const irqstatus_t cpsr = gpioX_lock(GPIOL);
+
+	RTC->GPL_HOLD_OUTPUT_REG = 0;
 
 	uint32_t reg_val;
 	// R_GPIO reset deassert
