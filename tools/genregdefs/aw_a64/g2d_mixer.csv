@@ -1,5 +1,0 @@
-#type; G2D_MIXER
-#base; G2D_MIXER 0x05410100
-#regdef; G2D_MIXER_CTL; 0x00; G2D mixer control
-#regdef; G2D_MIXER_INT; 0x04; G2D mixer interrupt
-#regdef; G2D_MIXER_CLK; 0x08; G2D mixer clock

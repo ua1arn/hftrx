@@ -1,0 +1,9 @@
+#type; GPU
+#base; GPU 0x01C40000
+#irq; GPU-GP 129
+#irq; GPU-GPMMU 130
+#irq; GPU-PP0 131
+#irq; GPU-PP0MMU 132
+#irq; GPU-PMU 133
+#irq; GPU-PP1 134
+#irq; GPU-PPMMU1 135

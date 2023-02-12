@@ -73,6 +73,13 @@ typedef enum IRQn
     GPIOF_NS_IRQn = 109,                              /*!< GPIOINT  Interrupt */
     GPIOF_S_IRQn = 110,                               /*!< GPIOINT  Interrupt */
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
+    GPU_GP_IRQn = 129,                                /*!< GPU  Interrupt */
+    GPU_GPMMU_IRQn = 130,                             /*!< GPU  Interrupt */
+    GPU_PP0_IRQn = 131,                               /*!< GPU  Interrupt */
+    GPU_PP0MMU_IRQn = 132,                            /*!< GPU  Interrupt */
+    GPU_PMU_IRQn = 133,                               /*!< GPU  Interrupt */
+    GPU_PP1_IRQn = 134,                               /*!< GPU  Interrupt */
+    GPU_PPMMU1_IRQn = 135,                            /*!< GPU  Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -116,6 +123,7 @@ typedef enum IRQn
 #define TWI1_BASE ((uintptr_t) 0x01C2B000)            /*!< TWI Base */
 #define TWI2_BASE ((uintptr_t) 0x01C2B400)            /*!< TWI Base */
 #define EMAC_BASE ((uintptr_t) 0x01C30000)            /*!< EMAC Base */
+#define GPU_BASE ((uintptr_t) 0x01C40000)             /*!< GPU Base */
 #define SPI0_BASE ((uintptr_t) 0x01C68000)            /*!< SPI Base */
 #define SPI1_BASE ((uintptr_t) 0x01C69000)            /*!< SPI Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!<  Base */
@@ -171,16 +179,6 @@ typedef enum IRQn
 #define DE_UI2_BASE ((uintptr_t) 0x05104000)          /*!< DE_UI Base */
 #define DE_UI3_BASE ((uintptr_t) 0x05105000)          /*!< DE_UI Base */
 #define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI Base */
-#define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Base */
-#define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Base */
-#define G2D_BLD_BASE ((uintptr_t) 0x05410400)         /*!< G2D_BLD Base */
-#define G2D_V0_BASE ((uintptr_t) 0x05410800)          /*!< G2D_VI Base */
-#define G2D_UI0_BASE ((uintptr_t) 0x05411000)         /*!< G2D_UI Base */
-#define G2D_UI1_BASE ((uintptr_t) 0x05411800)         /*!< G2D_UI Base */
-#define G2D_UI2_BASE ((uintptr_t) 0x05412000)         /*!< G2D_UI Base */
-#define G2D_WB_BASE ((uintptr_t) 0x05413000)          /*!< G2D_WB Base */
-#define G2D_VSU_BASE ((uintptr_t) 0x05418000)         /*!< G2D_VSU Base */
-#define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV Base */
 #define CSIC_CCU_BASE ((uintptr_t) 0x05800000)        /*!< CSIC_CCU Base */
@@ -1477,214 +1475,6 @@ typedef struct DE_UI_Type
     volatile uint32_t ovl_size;                       /*!< Offset 0x088  */
 } DE_UI_TypeDef; /* size of structure = 0x08C */
 /*
- * @brief G2D_TOP
- */
-/*!< G2D_TOP  */
-typedef struct G2D_TOP_Type
-{
-    volatile uint32_t G2D_SCLK_GATE;                  /*!< Offset 0x000 G2D SCLK gate   */
-    volatile uint32_t G2D_HCLK_GATE;                  /*!< Offset 0x004 g2d HCLK gate   */
-    volatile uint32_t G2D_AHB_RESET;                  /*!< Offset 0x008 G2D AHB reset   */
-    volatile uint32_t G2D_SCLK_DIV;                   /*!< Offset 0x00C G2D SCLK div    */
-} G2D_TOP_TypeDef; /* size of structure = 0x010 */
-/*
- * @brief G2D_MIXER
- */
-/*!< G2D_MIXER  */
-typedef struct G2D_MIXER_Type
-{
-    volatile uint32_t G2D_MIXER_CTL;                  /*!< Offset 0x000 G2D mixer control */
-    volatile uint32_t G2D_MIXER_INT;                  /*!< Offset 0x004 G2D mixer interrupt */
-    volatile uint32_t G2D_MIXER_CLK;                  /*!< Offset 0x008 G2D mixer clock */
-} G2D_MIXER_TypeDef; /* size of structure = 0x00C */
-/*
- * @brief G2D_VI
- */
-/*!< G2D_VI  */
-typedef struct G2D_VI_Type
-{
-    volatile uint32_t V0_ATTCTL;                      /*!< Offset 0x000 V0_ATTCTL */
-    volatile uint32_t V0_MBSIZE;                      /*!< Offset 0x004 Source rectangle size (may be empty) */
-    volatile uint32_t V0_COOR;                        /*!< Offset 0x008 Target window position */
-    volatile uint32_t V0_PITCH0;                      /*!< Offset 0x00C V0_PITCH0 */
-    volatile uint32_t V0_PITCH1;                      /*!< Offset 0x010 V0_PITCH1 */
-    volatile uint32_t V0_PITCH2;                      /*!< Offset 0x014 V0_PITCH2 */
-    volatile uint32_t V0_LADD0;                       /*!< Offset 0x018 V0_LADD0 */
-    volatile uint32_t V0_LADD1;                       /*!< Offset 0x01C V0_LADD1 */
-    volatile uint32_t V0_LADD2;                       /*!< Offset 0x020 V0_LADD2 */
-    volatile uint32_t V0_FILLC;                       /*!< Offset 0x024 V0_FILLC */
-    volatile uint32_t V0_HADD;                        /*!< Offset 0x028 [31:24]: 0, [23:16]: LADD2 bits 40..32, [15:8]: LADD1 bits 40..32, [7:0]: LADD0 bits 40..32 */
-    volatile uint32_t V0_SIZE;                        /*!< Offset 0x02C Source window size (may not be empty) */
-    volatile uint32_t V0_HDS_CTL0;                    /*!< Offset 0x030 V0_HDS_CTL0 */
-    volatile uint32_t V0_HDS_CTL1;                    /*!< Offset 0x034 V0_HDS_CTL1 */
-    volatile uint32_t V0_VDS_CTL0;                    /*!< Offset 0x038 V0_VDS_CTL0 */
-    volatile uint32_t V0_VDS_CTL1;                    /*!< Offset 0x03C V0_VDS_CTL1 */
-} G2D_VI_TypeDef; /* size of structure = 0x040 */
-/*
- * @brief G2D_UI
- */
-/*!< G2D_UI  */
-typedef struct G2D_UI_Type
-{
-    volatile uint32_t UI_ATTR;                        /*!< Offset 0x000 UIx_ATTR */
-    volatile uint32_t UI_MBSIZE;                      /*!< Offset 0x004 UIx_MBSIZE */
-    volatile uint32_t UI_COOR;                        /*!< Offset 0x008 UIx_COOR */
-    volatile uint32_t UI_PITCH;                       /*!< Offset 0x00C UIx_PITCH */
-    volatile uint32_t UI_LADD;                        /*!< Offset 0x010 UIx_LADD */
-    volatile uint32_t UI_FILLC;                       /*!< Offset 0x014 UIx_FILLC */
-    volatile uint32_t UI_HADD;                        /*!< Offset 0x018 UIx_HADD */
-    volatile uint32_t UI_SIZE;                        /*!< Offset 0x01C UIx_SIZE */
-} G2D_UI_TypeDef; /* size of structure = 0x020 */
-/*
- * @brief G2D_VSU
- */
-/*!< G2D_VSU G2D Video Scaler Register */
-typedef struct G2D_VSU_Type
-{
-    volatile uint32_t VS_CTRL;                        /*!< Offset 0x000 VS_CTRL */
-             uint32_t reserved_0x004 [0x000F];
-    volatile uint32_t VS_OUT_SIZE;                    /*!< Offset 0x040 VS_OUT_SIZE */
-    volatile uint32_t VS_GLB_ALPHA;                   /*!< Offset 0x044 VS_GLB_ALPHA */
-             uint32_t reserved_0x048 [0x000E];
-    volatile uint32_t VS_Y_SIZE;                      /*!< Offset 0x080 VS_Y_SIZE */
-             uint32_t reserved_0x084;
-    volatile uint32_t VS_Y_HSTEP;                     /*!< Offset 0x088 VS_Y_HSTEP */
-    volatile uint32_t VS_Y_VSTEP;                     /*!< Offset 0x08C VS_Y_VSTEP */
-    volatile uint32_t VS_Y_HPHASE;                    /*!< Offset 0x090 VS_Y_HPHASE */
-             uint32_t reserved_0x094;
-    volatile uint32_t VS_Y_VPHASE0;                   /*!< Offset 0x098 VS_Y_VPHASE0 */
-             uint32_t reserved_0x09C [0x0009];
-    volatile uint32_t VS_C_SIZE;                      /*!< Offset 0x0C0 VS_C_SIZE */
-             uint32_t reserved_0x0C4;
-    volatile uint32_t VS_C_HSTEP;                     /*!< Offset 0x0C8 VS_C_HSTEP */
-    volatile uint32_t VS_C_VSTEP;                     /*!< Offset 0x0CC VS_C_VSTEP */
-    volatile uint32_t VS_C_HPHASE;                    /*!< Offset 0x0D0 VS_C_HPHASE */
-             uint32_t reserved_0x0D4;
-    volatile uint32_t VS_C_VPHASE0;                   /*!< Offset 0x0D8 VS_C_VPHASE0 */
-             uint32_t reserved_0x0DC [0x0049];
-    volatile uint32_t VS_Y_HCOEF [0x040];             /*!< Offset 0x200 VS_Y_HCOEF[N]. N=0..31 */
-    volatile uint32_t VS_Y_VCOEF [0x040];             /*!< Offset 0x300 VS_Y_VCOEF[N]. N=0..31 */
-    volatile uint32_t VS_C_HCOEF [0x040];             /*!< Offset 0x400 VS_C_HCOEF[N]. N=0..31 */
-} G2D_VSU_TypeDef; /* size of structure = 0x500 */
-/*
- * @brief G2D_BLD
- */
-/*!< G2D_BLD Blender */
-typedef struct G2D_BLD_Type
-{
-    volatile uint32_t BLD_FILL_COLOR_CTL;             /*!< Offset 0x000 BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106   */
-             uint32_t reserved_0x004 [0x0003];
-    volatile uint32_t BLD_FILL_COLOR [0x004];         /*!< Offset 0x010 BLD_FILLC  N=0..1  */
-    volatile uint32_t BLD_CH_ISIZE [0x004];           /*!< Offset 0x020 BLD_CH_ISIZE N=0..1   */
-    volatile uint32_t BLD_CH_OFFSET [0x004];          /*!< Offset 0x030 BLD_CH_OFFSET N=0..1 */
-    volatile uint32_t BLD_PREMUL_CTL;                 /*!< Offset 0x040 BLD_PREMUL_CTL      */
-    volatile uint32_t BLD_BK_COLOR;                   /*!< Offset 0x044 BLD_BK_COLOR        */
-    volatile uint32_t BLD_SIZE;                       /*!< Offset 0x048 BLD_SIZE            */
-    volatile uint32_t BLD_CTL;                        /*!< Offset 0x04C BLD_CTL             */
-    volatile uint32_t BLD_KEY_CTL;                    /*!< Offset 0x050 BLD_KEY_CTL         */
-    volatile uint32_t BLD_KEY_CON;                    /*!< Offset 0x054 BLD_KEY_CON         */
-    volatile uint32_t BLD_KEY_MAX;                    /*!< Offset 0x058 BLD_KEY_MAX         */
-    volatile uint32_t BLD_KEY_MIN;                    /*!< Offset 0x05C BLD_KEY_MIN         */
-    volatile uint32_t BLD_OUT_COLOR;                  /*!< Offset 0x060 BLD_OUT_COLOR       */
-             uint32_t reserved_0x064 [0x0007];
-    volatile uint32_t ROP_CTL;                        /*!< Offset 0x080 ROP_CTL             */
-    volatile uint32_t ROP_INDEX [0x004];              /*!< Offset 0x084 ROP_INDEX N=0..1      */
-             uint32_t reserved_0x094 [0x001B];
-    volatile uint32_t BLD_CSC_CTL;                    /*!< Offset 0x100 BLD_CSC_CTL         */
-             uint32_t reserved_0x104 [0x0003];
-    volatile uint32_t BLD_CSC0_COEF00;                /*!< Offset 0x110 BLD_CSC0_COEF00     */
-    volatile uint32_t BLD_CSC0_COEF01;                /*!< Offset 0x114 BLD_CSC0_COEF01     */
-    volatile uint32_t BLD_CSC0_COEF02;                /*!< Offset 0x118 BLD_CSC0_COEF02     */
-    volatile uint32_t BLD_CSC0_CONST0;                /*!< Offset 0x11C BLD_CSC0_CONST0     */
-    volatile uint32_t BLD_CSC0_COEF10;                /*!< Offset 0x120 BLD_CSC0_COEF10     */
-    volatile uint32_t BLD_CSC0_COEF11;                /*!< Offset 0x124 BLD_CSC0_COEF11     */
-    volatile uint32_t BLD_CSC0_COEF12;                /*!< Offset 0x128 BLD_CSC0_COEF12     */
-    volatile uint32_t BLD_CSC0_CONST1;                /*!< Offset 0x12C BLD_CSC0_CONST1     */
-    volatile uint32_t BLD_CSC0_COEF20;                /*!< Offset 0x130 BLD_CSC0_COEF20     */
-    volatile uint32_t BLD_CSC0_COEF21;                /*!< Offset 0x134 BLD_CSC0_COEF21     */
-    volatile uint32_t BLD_CSC0_COEF22;                /*!< Offset 0x138 BLD_CSC0_COEF22     */
-    volatile uint32_t BLD_CSC0_CONST2;                /*!< Offset 0x13C BLD_CSC0_CONST2     */
-    volatile uint32_t BLD_CSC1_COEF00;                /*!< Offset 0x140 BLD_CSC1_COEF00     */
-    volatile uint32_t BLD_CSC1_COEF01;                /*!< Offset 0x144 BLD_CSC1_COEF01     */
-    volatile uint32_t BLD_CSC1_COEF02;                /*!< Offset 0x148 BLD_CSC1_COEF02     */
-    volatile uint32_t BLD_CSC1_CONST0;                /*!< Offset 0x14C BLD_CSC1_CONST0     */
-    volatile uint32_t BLD_CSC1_COEF10;                /*!< Offset 0x150 BLD_CSC1_COEF10     */
-    volatile uint32_t BLD_CSC1_COEF11;                /*!< Offset 0x154 BLD_CSC1_COEF11     */
-    volatile uint32_t BLD_CSC1_COEF12;                /*!< Offset 0x158 BLD_CSC1_COEF12     */
-    volatile uint32_t BLD_CSC1_CONST1;                /*!< Offset 0x15C BLD_CSC1_CONST1     */
-    volatile uint32_t BLD_CSC1_COEF20;                /*!< Offset 0x160 BLD_CSC1_COEF20     */
-    volatile uint32_t BLD_CSC1_COEF21;                /*!< Offset 0x164 BLD_CSC1_COEF21     */
-    volatile uint32_t BLD_CSC1_COEF22;                /*!< Offset 0x168 BLD_CSC1_COEF22     */
-    volatile uint32_t BLD_CSC1_CONST2;                /*!< Offset 0x16C BLD_CSC1_CONST2     */
-    volatile uint32_t BLD_CSC2_COEF00;                /*!< Offset 0x170 BLD_CSC2_COEF00     */
-    volatile uint32_t BLD_CSC2_COEF01;                /*!< Offset 0x174 BLD_CSC2_COEF01     */
-    volatile uint32_t BLD_CSC2_COEF02;                /*!< Offset 0x178 BLD_CSC2_COEF02     */
-    volatile uint32_t BLD_CSC2_CONST0;                /*!< Offset 0x17C BLD_CSC2_CONST0     */
-    volatile uint32_t BLD_CSC2_COEF10;                /*!< Offset 0x180 BLD_CSC2_COEF10     */
-    volatile uint32_t BLD_CSC2_COEF11;                /*!< Offset 0x184 BLD_CSC2_COEF11     */
-    volatile uint32_t BLD_CSC2_COEF12;                /*!< Offset 0x188 BLD_CSC2_COEF12     */
-    volatile uint32_t BLD_CSC2_CONST1;                /*!< Offset 0x18C BLD_CSC2_CONST1     */
-    volatile uint32_t BLD_CSC2_COEF20;                /*!< Offset 0x190 BLD_CSC2_COEF20     */
-    volatile uint32_t BLD_CSC2_COEF21;                /*!< Offset 0x194 BLD_CSC2_COEF21     */
-    volatile uint32_t BLD_CSC2_COEF22;                /*!< Offset 0x198 BLD_CSC2_COEF22     */
-    volatile uint32_t BLD_CSC2_CONST2;                /*!< Offset 0x19C BLD_CSC2_CONST2     */
-} G2D_BLD_TypeDef; /* size of structure = 0x1A0 */
-/*
- * @brief G2D_WB
- */
-/*!< G2D_WB  */
-typedef struct G2D_WB_Type
-{
-    volatile uint32_t WB_ATT;                         /*!< Offset 0x000 WB_ATT */
-    volatile uint32_t WB_SIZE;                        /*!< Offset 0x004 WB_SIZE */
-    volatile uint32_t WB_PITCH0;                      /*!< Offset 0x008 WB_PITCH0 */
-    volatile uint32_t WB_PITCH1;                      /*!< Offset 0x00C WB_PITCH1 */
-    volatile uint32_t WB_PITCH2;                      /*!< Offset 0x010 WB_PITCH2 */
-    volatile uint32_t WB_LADD0;                       /*!< Offset 0x014 WB_LADD0 */
-    volatile uint32_t WB_HADD0;                       /*!< Offset 0x018 WB_HADD0 */
-    volatile uint32_t WB_LADD1;                       /*!< Offset 0x01C WB_LADD1 */
-    volatile uint32_t WB_HADD1;                       /*!< Offset 0x020 WB_HADD1 */
-    volatile uint32_t WB_LADD2;                       /*!< Offset 0x024 WB_LADD2 */
-    volatile uint32_t WB_HADD2;                       /*!< Offset 0x028 WB_HADD2 */
-} G2D_WB_TypeDef; /* size of structure = 0x02C */
-/*
- * @brief G2D_ROT
- */
-/*!< G2D_ROT  */
-typedef struct G2D_ROT_Type
-{
-    volatile uint32_t ROT_CTL;                        /*!< Offset 0x000 ROT_CTL */
-    volatile uint32_t ROT_INT;                        /*!< Offset 0x004 ROT_INT */
-    volatile uint32_t ROT_TIMEOUT;                    /*!< Offset 0x008 ROT_TIMEOUT */
-             uint32_t reserved_0x00C [0x0005];
-    volatile uint32_t ROT_IFMT;                       /*!< Offset 0x020 ROT_IFMT */
-    volatile uint32_t ROT_ISIZE;                      /*!< Offset 0x024 ROT_ISIZE */
-             uint32_t reserved_0x028 [0x0002];
-    volatile uint32_t ROT_IPITCH0;                    /*!< Offset 0x030 ROT_IPITCH0 */
-    volatile uint32_t ROT_IPITCH1;                    /*!< Offset 0x034 ROT_IPITCH1 */
-    volatile uint32_t ROT_IPITCH2;                    /*!< Offset 0x038 ROT_IPITCH2 */
-             uint32_t reserved_0x03C;
-    volatile uint32_t ROT_ILADD0;                     /*!< Offset 0x040 ROT_ILADD0 */
-    volatile uint32_t ROT_IHADD0;                     /*!< Offset 0x044 ROT_IHADD0 */
-    volatile uint32_t ROT_ILADD1;                     /*!< Offset 0x048 ROT_ILADD1 */
-    volatile uint32_t ROT_IHADD1;                     /*!< Offset 0x04C ROT_IHADD1 */
-    volatile uint32_t ROT_ILADD2;                     /*!< Offset 0x050 ROT_ILADD2 */
-    volatile uint32_t ROT_IHADD2;                     /*!< Offset 0x054 ROT_IHADD2 */
-             uint32_t reserved_0x058 [0x000B];
-    volatile uint32_t ROT_OSIZE;                      /*!< Offset 0x084 ROT_OSIZE */
-             uint32_t reserved_0x088 [0x0002];
-    volatile uint32_t ROT_OPITCH0;                    /*!< Offset 0x090 ROT_OPITCH0 */
-    volatile uint32_t ROT_OPITCH1;                    /*!< Offset 0x094 ROT_OPITCH1 */
-    volatile uint32_t ROT_OPITCH2;                    /*!< Offset 0x098 ROT_OPITCH2 */
-             uint32_t reserved_0x09C;
-    volatile uint32_t ROT_OLADD0;                     /*!< Offset 0x0A0 ROT_OLADD0 */
-    volatile uint32_t ROT_OHADD0;                     /*!< Offset 0x0A4 ROT_OHADD0 */
-    volatile uint32_t ROT_OLADD1;                     /*!< Offset 0x0A8 ROT_OLADD1 */
-    volatile uint32_t ROT_OHADD1;                     /*!< Offset 0x0AC ROT_OHADD1 */
-    volatile uint32_t ROT_OLADD2;                     /*!< Offset 0x0B0 ROT_OLADD2 */
-    volatile uint32_t ROT_OHADD2;                     /*!< Offset 0x0B4 ROT_OHADD2 */
-} G2D_ROT_TypeDef; /* size of structure = 0x0B8 */
-/*
  * @brief TCON_LCD
  */
 /*!< TCON_LCD  */
@@ -2483,16 +2273,6 @@ typedef struct MSGBOX_Type
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
 #define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2  register set access pointer */
 #define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3  register set access pointer */
-#define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP  register set access pointer */
-#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER  register set access pointer */
-#define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)       /*!< G2D_V0  register set access pointer */
-#define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0  register set access pointer */
-#define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1  register set access pointer */
-#define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2  register set access pointer */
-#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU G2D Video Scaler Register register set access pointer */
-#define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Blender register set access pointer */
-#define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB  register set access pointer */
-#define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
 #define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE) /*!< CSIC_CCU  register set access pointer */

@@ -643,9 +643,9 @@ int main(int argc, char *argv[], char *envp[]) {
 		struct parsedfile *const pfl = calloc(1, sizeof(struct parsedfile));
 		if (loadregs(pfl, argv[i]) != 0) {
 			free(pfl);
-			break;
+		} else {
+			InsertTailList(&parsedfiles, &pfl->item);
 		}
-		InsertTailList(&parsedfiles, &pfl->item);
 		++i;
 	}
 
