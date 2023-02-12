@@ -1,7 +1,9 @@
+#comment; Serial Peripheral Interface
 #type; SPI
-#base; SPI0 0x04025000
-#irqrv; SPI0 31
-#irq; SPI0 47
+#base; SPI0 0x01C68000
+#base; SPI1 0x01C69000
+#irq; SPI0 97
+#irq; SPI1 98
 #regdef; SPI_GCR; 0x0004; SPI Global Control Register
 #regdef; SPI_TCR; 0x0008; SPI Transfer Control Register
 #regdef; SPI_IER; 0x0010; SPI Interrupt Control Register
@@ -20,3 +22,5 @@
 #regdef; SPI_NDMA_MODE_CTL; 0x0088; SPI Normal DMA Mode Control Register
 #regdef; SPI_TXD; 0x0200; SPI TX Data Register
 #regdef; SPI_RXD; 0x0300; SPI RX Data Register
+#regdef; dummy 0; 0x1000; Alignment
+

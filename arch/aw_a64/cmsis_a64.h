@@ -40,8 +40,6 @@ typedef enum IRQn
     TWI0_IRQn = 38,                                   /*!< TWI Interrupt */
     TWI1_IRQn = 39,                                   /*!< TWI Interrupt */
     TWI2_IRQn = 40,                                   /*!< TWI Interrupt */
-    SPI0_IRQn = 47,                                   /*!< SPI Interrupt */
-    SPI1_IRQn = 48,                                   /*!< SPI_DBI Interrupt */
     TIMER0_IRQn = 50,                                 /*!< TIMER Interrupt */
     TIMER1_IRQn = 51,                                 /*!< TIMER Interrupt */
     LEDC_IRQn = 52,                                   /*!< LEDC Interrupt */
@@ -60,6 +58,8 @@ typedef enum IRQn
     GPADC_IRQn = 89,                                  /*!< GPADC Interrupt */
     TPADC_IRQn = 94,                                  /*!< TPADC Interrupt */
     IOMMU_IRQn = 96,                                  /*!< IOMMU Interrupt */
+    SPI0_IRQn = 97,                                   /*!< SPI Interrupt */
+    SPI1_IRQn = 98,                                   /*!< SPI Interrupt */
     GPIOB_NS_IRQn = 101,                              /*!< GPIOINT Interrupt */
     GPIOB_S_IRQn = 102,                               /*!< GPIOINT Interrupt */
     NAND_IRQn = 102,                                  /*!< NDFC Interrupt */
@@ -116,6 +116,8 @@ typedef enum IRQn
 #define TWI1_BASE ((uintptr_t) 0x01C2B000)            /*!< TWI Base */
 #define TWI2_BASE ((uintptr_t) 0x01C2B400)            /*!< TWI Base */
 #define EMAC_BASE ((uintptr_t) 0x01C30000)            /*!< EMAC Base */
+#define SPI0_BASE ((uintptr_t) 0x01C68000)            /*!< SPI Base */
+#define SPI1_BASE ((uintptr_t) 0x01C69000)            /*!< SPI Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!<  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!<  Base */
 #define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC Base */
@@ -153,8 +155,6 @@ typedef enum IRQn
 #define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC Base */
 #define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC Base */
 #define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC Base */
-#define SPI0_BASE ((uintptr_t) 0x04025000)            /*!< SPI Base */
-#define SPI_DBI_BASE ((uintptr_t) 0x04026000)         /*!< SPI_DBI Base */
 #define USBOTG0_BASE ((uintptr_t) 0x04100000)         /*!< USBOTG Base */
 #define USBPHY0_BASE ((uintptr_t) 0x04100400)         /*!< USBPHYC Base */
 #define USBEHCI0_BASE ((uintptr_t) 0x04101000)        /*!< USB_EHCI_Capability Base */
@@ -850,7 +850,8 @@ typedef struct SPI_Type
     volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data Register */
              uint32_t reserved_0x204 [0x003F];
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
-} SPI_TypeDef; /* size of structure = 0x304 */
+             uint32_t reserved_0x304 [0x033F];
+} SPI_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief CIR_RX
  */
@@ -953,49 +954,6 @@ typedef struct GPADC_Type
              uint32_t reserved_0x044 [0x000F];
     volatile uint32_t GP_CH0_DATA;                    /*!< Offset 0x080 GPADC CH0 Data Register */
 } GPADC_TypeDef; /* size of structure = 0x084 */
-/*
- * @brief SPI_DBI
- */
-/*!< SPI_DBI Controller Interface */
-typedef struct SPI_DBI_Type
-{
-             uint32_t reserved_0x000;
-    volatile uint32_t SPI_GCR;                        /*!< Offset 0x004 SPI Global Control Register */
-    volatile uint32_t SPI_TCR;                        /*!< Offset 0x008 SPI Transfer Control Register */
-             uint32_t reserved_0x00C;
-    volatile uint32_t SPI_IER;                        /*!< Offset 0x010 SPI Interrupt Control Register */
-    volatile uint32_t SPI_ISR;                        /*!< Offset 0x014 SPI Interrupt Status Register */
-    volatile uint32_t SPI_FCR;                        /*!< Offset 0x018 SPI FIFO Control Register */
-    volatile uint32_t SPI_FSR;                        /*!< Offset 0x01C SPI FIFO Status Register */
-    volatile uint32_t SPI_WCR;                        /*!< Offset 0x020 SPI Wait Clock Register */
-             uint32_t reserved_0x024;
-    volatile uint32_t SPI_SAMP_DL;                    /*!< Offset 0x028 SPI Sample Delay Control Register */
-             uint32_t reserved_0x02C;
-    volatile uint32_t SPI_MBC;                        /*!< Offset 0x030 SPI Master Burst Counter Register */
-    volatile uint32_t SPI_MTC;                        /*!< Offset 0x034 SPI Master Transmit Counter Register */
-    volatile uint32_t SPI_BCC;                        /*!< Offset 0x038 SPI Master Burst Control Register */
-             uint32_t reserved_0x03C;
-    volatile uint32_t SPI_BATCR;                      /*!< Offset 0x040 SPI Bit-Aligned Transfer Configure Register */
-    volatile uint32_t SPI_BA_CCR;                     /*!< Offset 0x044 SPI Bit-Aligned Clock Configuration Register */
-    volatile uint32_t SPI_TBR;                        /*!< Offset 0x048 SPI TX Bit Register */
-    volatile uint32_t SPI_RBR;                        /*!< Offset 0x04C SPI RX Bit Register */
-             uint32_t reserved_0x050 [0x000E];
-    volatile uint32_t SPI_NDMA_MODE_CTL;              /*!< Offset 0x088 SPI Normal DMA Mode Control Register */
-             uint32_t reserved_0x08C [0x001D];
-    volatile uint32_t DBI_CTL_0;                      /*!< Offset 0x100 DBI Control Register 0 */
-    volatile uint32_t DBI_CTL_1;                      /*!< Offset 0x104 DBI Control Register 1 */
-    volatile uint32_t DBI_CTL_2;                      /*!< Offset 0x108 DBI Control Register 2 */
-    volatile uint32_t DBI_TIMER;                      /*!< Offset 0x10C DBI Timer Control Register */
-    volatile uint32_t DBI_VIDEO_SZIE;                 /*!< Offset 0x110 DBI Video Size Configuration Register */
-             uint32_t reserved_0x114 [0x0003];
-    volatile uint32_t DBI_INT;                        /*!< Offset 0x120 DBI Interrupt Register */
-    volatile uint32_t DBI_DEBUG_0;                    /*!< Offset 0x124 DBI BEBUG 0 Register */
-    volatile uint32_t DBI_DEBUG_1;                    /*!< Offset 0x128 DBI BEBUG 1 Register */
-             uint32_t reserved_0x12C [0x0035];
-    volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data register */
-             uint32_t reserved_0x204 [0x003F];
-    volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data register */
-} SPI_DBI_TypeDef; /* size of structure = 0x304 */
 /*
  * @brief CE
  */
@@ -2454,7 +2412,7 @@ typedef struct MSGBOX_Type
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL Interface register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Interface register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG Interface register set access pointer */
-#define NDFC ((NDFC_TypeDef *) NDFC_BASE)             /*!< NDFC Interface register set access pointer */
+#define NDFC ((NDFC_TypeDef *) NDFC_BASE)             /*!< NDFC NAND Flash Controller register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0 Interface register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1 Interface register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2 Interface register set access pointer */
@@ -2488,13 +2446,13 @@ typedef struct MSGBOX_Type
 #define TWI0 ((TWI_TypeDef *) TWI0_BASE)              /*!< TWI0 Interface register set access pointer */
 #define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1 Interface register set access pointer */
 #define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2 Interface register set access pointer */
-#define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Interface register set access pointer */
+#define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
+#define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX Interface register set access pointer */
 #define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX Interface register set access pointer */
 #define LEDC ((LEDC_TypeDef *) LEDC_BASE)             /*!< LEDC Interface register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC Interface register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC Interface register set access pointer */
-#define SPI_DBI ((SPI_DBI_TypeDef *) SPI_DBI_BASE)    /*!< SPI_DBI Interface register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS Interface register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S Interface register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Interface register set access pointer */
@@ -2531,8 +2489,8 @@ typedef struct MSGBOX_Type
 #define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0 Interface register set access pointer */
 #define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1 Interface register set access pointer */
 #define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2 Interface register set access pointer */
-#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Interface register set access pointer */
-#define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Interface register set access pointer */
+#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU G2D Video Scaler Register register set access pointer */
+#define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Blender register set access pointer */
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Interface register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Interface register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Interface register set access pointer */

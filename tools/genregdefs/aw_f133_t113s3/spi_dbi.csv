@@ -1,3 +1,4 @@
+#comment; Serial Peripheral Interface
 #type; SPI_DBI
 #base; SPI_DBI 0x04026000
 #irqrv; SPI1 32

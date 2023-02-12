@@ -2530,13 +2530,13 @@ typedef struct MSGBOX_Type
 #define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1 Interface register set access pointer */
 #define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2 Interface register set access pointer */
 #define TWI3 ((TWI_TypeDef *) TWI3_BASE)              /*!< TWI3 Interface register set access pointer */
-#define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Interface register set access pointer */
+#define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX Interface register set access pointer */
 #define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX Interface register set access pointer */
 #define LEDC ((LEDC_TypeDef *) LEDC_BASE)             /*!< LEDC Interface register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC Interface register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC Interface register set access pointer */
-#define SPI_DBI ((SPI_DBI_TypeDef *) SPI_DBI_BASE)    /*!< SPI_DBI Interface register set access pointer */
+#define SPI_DBI ((SPI_DBI_TypeDef *) SPI_DBI_BASE)    /*!< SPI_DBI Serial Peripheral Interface register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS Interface register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S Interface register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Interface register set access pointer */
@@ -2560,8 +2560,8 @@ typedef struct MSGBOX_Type
 #define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0 Interface register set access pointer */
 #define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1 Interface register set access pointer */
 #define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2 Interface register set access pointer */
-#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Interface register set access pointer */
-#define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Interface register set access pointer */
+#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Also see 5.7 DE UIS Specification register set access pointer */
+#define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Blender register set access pointer */
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Interface register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Interface register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Interface register set access pointer */

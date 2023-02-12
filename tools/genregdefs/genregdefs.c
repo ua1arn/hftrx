@@ -60,6 +60,8 @@ struct parsedfile {
 	int irqrv_count;
 	int irqrv_array[BASE_MAX];
 	char irqrv_names[BASE_MAX][VNAME_MAX];
+
+	char * comment;
 };
 
 #define INDENT 4
@@ -446,7 +448,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 		memset(comment, 0, sizeof comment);
 		if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment)) {
 			//fprintf(stderr, "Parsed comment='%s'\n", comment);
-			//regp->comment = strdup(comment);
+			pfl->comment = strdup(comment);
 			if (nextline(fp) == 0)
 				break;
 		} else if (2 == sscanf(token0, "#irq; %s %i\n", irqname, &irq)) {
@@ -514,6 +516,7 @@ static int loadregs(struct parsedfile *pfl, const char *file) {
 	InitializeListHead(&pfl->regslist);
 	//pfl->regs = NULL; 
 	//pfl->nregs = 0; 
+	pfl->comment = NULL;
 
 	//TP();
 	if (fp == NULL) {
@@ -572,8 +575,8 @@ static void processfile_access(struct parsedfile *pfl) {
 		emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", pfl->base_names[i],
 				pfl->bname, pfl->base_names[i]);
 		emitline(COMMENTNEAR,
-				"/*!< %s Interface register set access pointer */\n",
-				pfl->base_names[i]);
+				"/*!< %s %s register set access pointer */\n",
+				pfl->base_names[i], pfl->comment ? pfl->comment : "Interface");
 	}
 }
 
@@ -615,6 +618,7 @@ static void freeregdfn(PLIST_ENTRY p) {
 
 static void freeregs(struct parsedfile *pfl) {
 	freeregdfn(&pfl->regslist);
+	free(pfl->comment);
 }
 
 static int flag_riscv = 0;
