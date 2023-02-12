@@ -2754,32 +2754,6 @@ void IRQ_Handler_GIC(void)
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 
-#if (__CORTEX_A == 8U)
-
-#define CPUECTLR_SMPEN_Msk (1u << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.
-
-// 4.5.77 CPU Extended Control Register
-
-/** \brief  Get CPUECTLR
-    \return               CPU Extended Control Register
- */
-__STATIC_FORCEINLINE uint64_t __get_CPUECTLR(void)
-{
-	uint64_t result;
-  __get_CP64(15, 1, result, 15);
-  return(result);
-}
-
-/** \brief  Set CPUECTLR
-    \param [in]    cpuectlr  CPU Extended Control Register
- */
-__STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
-{
-	__set_CP64(15, 1, cpuectlr, 15);
-}
-
-#endif /* (__CORTEX_A == 8U)  */
-
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
 uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
