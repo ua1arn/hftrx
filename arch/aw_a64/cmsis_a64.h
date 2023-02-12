@@ -62,6 +62,8 @@ typedef enum IRQn
     IOMMU_IRQn = 96,                                  /*!< IOMMU Interrupt */
     GPIOB_NS_IRQn = 101,                              /*!< GPIOINT Interrupt */
     GPIOB_S_IRQn = 102,                               /*!< GPIOINT Interrupt */
+    NAND_IRQn = 102,                                  /*!< NDFC Interrupt */
+    NDFC_IRQn = 102,                                  /*!< NDFC Interrupt */
     GPIOC_NS_IRQn = 103,                              /*!< GPIOINT Interrupt */
     GPIOC_S_IRQn = 104,                               /*!< GPIOINT Interrupt */
     GPIOD_NS_IRQn = 105,                              /*!< GPIOINT Interrupt */
@@ -82,6 +84,7 @@ typedef enum IRQn
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x01700000)     /*!< C0_CPUX_CFG Base */
 #define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG Base */
 #define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC Base */
+#define NDFC_BASE ((uintptr_t) 0x01C03000)            /*!< NDFC Base */
 #define MSGBOX_BASE ((uintptr_t) 0x01C17000)          /*!< MSGBOX Base */
 #define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU Base */
 #define GPIOB_BASE ((uintptr_t) 0x01C20824)           /*!< GPIO Base */
@@ -348,6 +351,50 @@ typedef struct SYS_CFG_Type
              uint32_t reserved_0x028 [0x0002];
     volatile uint32_t EMAC_EPHY_CLK_REG0;             /*!< Offset 0x030 EMAC-EPHY Clock Register 0 */
 } SYS_CFG_TypeDef; /* size of structure = 0x034 */
+/*
+ * @brief NDFC
+ */
+/*!< NDFC Controller Interface */
+typedef struct NDFC_Type
+{
+    volatile uint32_t NDFC_CTL;                       /*!< Offset 0x000 NDFC Configure and Control Register */
+    volatile uint32_t NDFC_ST;                        /*!< Offset 0x004 NDFC Status Information Register */
+    volatile uint32_t NDFC_INT;                       /*!< Offset 0x008 NDFC Interrupt Control Register */
+    volatile uint32_t NDFC_TIMING_CTL;                /*!< Offset 0x00C NDFC Timing Control Register */
+    volatile uint32_t NDFC_TIMING_CFG;                /*!< Offset 0x010 NDFC Timing Configure Register */
+    volatile uint32_t NDFC_ADDR_LOW;                  /*!< Offset 0x014 NDFC Low Word Address Register */
+    volatile uint32_t NDFC_ADDR_HIGH;                 /*!< Offset 0x018 NDFC High Word Address Register */
+    volatile uint32_t NDFC_BLOCK_NUM;                 /*!< Offset 0x01C NDFC Data Block Number Register */
+    volatile uint32_t NDFC_CNT;                       /*!< Offset 0x020 NDFC Data Counter for data transfer Register */
+    volatile uint32_t NDFC_CMD;                       /*!< Offset 0x024 Set up NDFC commands Register */
+    volatile uint32_t NDFC_RCMD_SET;                  /*!< Offset 0x028 Read Command Set Register for vendor’s NAND memory */
+    volatile uint32_t NDFC_WCMD_SET;                  /*!< Offset 0x02C Write Command Set Register for vendor’s NAND memory */
+             uint32_t reserved_0x030;
+    volatile uint32_t NDFC_ECC_CTL;                   /*!< Offset 0x034 ECC Configure and Control Register */
+    volatile uint32_t NDFC_ECC_ST;                    /*!< Offset 0x038 ECC Status and Operation information Register */
+    volatile uint32_t NDFC_EFR;                       /*!< Offset 0x03C Enhanced Feature Register */
+    volatile uint32_t NDFC_ERR_CNT0;                  /*!< Offset 0x040 Corrected Error Bit Counter Register 0 */
+    volatile uint32_t NDFC_ERR_CNT1;                  /*!< Offset 0x044 Corrected Error Bit Counter Register 1 */
+             uint32_t reserved_0x048 [0x0002];
+    volatile uint32_t NDFC_USER_DATA [0x010];         /*!< Offset 0x050 User Data Field Register n (n from 0 to 15) */
+    volatile uint32_t NDFC_EFNAND_STA;                /*!< Offset 0x090 EFNAND Status Register */
+             uint32_t reserved_0x094 [0x0003];
+    volatile uint32_t NDFC_SPARE_AREA;                /*!< Offset 0x0A0 Spare Area Configure Register */
+    volatile uint32_t NDFC_PAT_ID;                    /*!< Offset 0x0A4 Pattern ID Register */
+    volatile uint32_t NDFC_RDATA_STA_CTL;             /*!< Offset 0x0A8 Read Data Status Control Register */
+    volatile uint32_t NDFC_RDATA_STA_0;               /*!< Offset 0x0AC Read Data Status Register 0 */
+    volatile uint32_t NDFC_RDATA_STA_1;               /*!< Offset 0x0B0 Read Data Status Register 1 */
+             uint32_t reserved_0x0B4 [0x0003];
+    volatile uint32_t NDFC_MDMA_ADDR;                 /*!< Offset 0x0C0 MBUS DMA Address Register */
+    volatile uint32_t NDFC_MDMA_CNT;                  /*!< Offset 0x0C4 MBUS DMA Data Counter Register */
+             uint32_t reserved_0x0C8 [0x0002];
+    volatile uint32_t NDFC_NDMA_MODE_CTL;             /*!< Offset 0x0D0 DFC Normal DMA Mode Control Register */
+             uint32_t reserved_0x0D4 [0x008B];
+    volatile uint32_t NDFC_IO_DATA;                   /*!< Offset 0x300 Data Input/ Output Port Address Register */
+             uint32_t reserved_0x304 [0x003F];
+    volatile uint8_t  RAM0_BASE [0x400];              /*!< Offset 0x400 1024 Bytes RAM0 base */
+    volatile uint8_t  RAM1_BASE [0x400];              /*!< Offset 0x800 1024 Bytes RAM1 base */
+} NDFC_TypeDef; /* size of structure = 0xC00 */
 /*
  * @brief UART
  */
@@ -2407,6 +2454,7 @@ typedef struct MSGBOX_Type
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL Interface register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Interface register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG Interface register set access pointer */
+#define NDFC ((NDFC_TypeDef *) NDFC_BASE)             /*!< NDFC Interface register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0 Interface register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1 Interface register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2 Interface register set access pointer */
