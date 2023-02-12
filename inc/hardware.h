@@ -528,8 +528,10 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
+#if ! LINUX_SUBSYSTEM
 	#include "arch/zynq/zynq7000.h"
 	#include "irq_ctrl.h"
+#endif /* ! LINUX_SUBSYSTEM */
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32

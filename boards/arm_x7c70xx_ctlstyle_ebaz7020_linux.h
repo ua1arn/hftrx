@@ -7,12 +7,12 @@
 //
 // Трансивер с DSP обработкой "Аист" на процессоре ZYNQ 7000
 
-#ifndef ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED
-#define ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED 1
+#ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_EBAZ4205_V2_H_INCLUDED
+#define ARM_X7C7XX_BGAXXX_CTLSTYLE_EBAZ4205_V2_H_INCLUDED 1
 
-	#if ! defined(XCZU2CG)
-		#error Wrong CPU selected. XCZU2CG expected
-	#endif /* ! defined(XCZU2) */
+	#if ! defined(XC7Z020)
+		#error Wrong CPU selected. XC7Z020 expected
+	#endif /* ! defined(XC7Z020) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -58,7 +58,7 @@
 
 	//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 	#define DIRECT_61M440_X1	1
-	#define BANDSELSTYLERE_UPCONV32M	1	/* Up-conversion with working band .030..32 MHz */
+	#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..56 MHz */
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
@@ -66,8 +66,7 @@
 	// --- вариации прошивки, специфические для разных частот
 
 	//#define CTLREGMODE_NOCTLREG	1
-	#define CTLREGMODE_XCZU	1
-	#define WITHQRPBOARD_UA3REO	1
+	#define CTLREGMODE_ZYNQ_4205	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -176,7 +175,7 @@
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
@@ -185,7 +184,7 @@
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
-	#define WITHDSPLOCALTXFIR 1
+	#define WITHDSPLOCALTXFIR	1
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -200,7 +199,7 @@
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
@@ -224,21 +223,23 @@
 		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#define WITHRLEDECOMPRESS		1
 		#if 1
 			#define WITHTOUCHGUI			1
-//			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
+			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT		120
-			#define WITHCPUTEMPERATURE		1
+			#define WITHAFGAINDEFAULT		220
+//			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
-			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
+//			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
+//			#define WITHLFM					1
+//			#define WITHNMEA				1
+//			#define WITHEXTRFBOARDTEST		1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
@@ -310,14 +311,14 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L16
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L64
-	#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
 	//#define NVRAM_TYPE NVRAM_TYPE_CPUEEPROM
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
 	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	//#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
-	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	#define RTC1_TYPE RTC_TYPE_LINUX
 
@@ -329,7 +330,6 @@
 	#define DDS1_TYPE DDS_TYPE_ZYNQ_PL
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	#define TSC1_TYPE TSC_TYPE_GT911
-	#define TSC_RESET_BY_REG		1
 	//#define TSC1_TYPE TSC_TYPE_ILI2102
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
@@ -462,4 +462,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED */
+#endif /* ARM_X7C7XX_BGAXXX_CTLSTYLE_EBAZ4205_V2_H_INCLUDED */

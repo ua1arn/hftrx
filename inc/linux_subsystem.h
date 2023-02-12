@@ -69,10 +69,8 @@ uint_fast8_t dummy_getchar(char * cp);
 
 #define HARDWARE_DEBUG_INITIALIZE() 		do { } while (0)
 #define HARDWARE_DEBUG_SET_SPEED(baudrate) 	do { } while (0)
-#define HARDWARE_DEBUG_PUTCHAR(c) \
-	(dummy_putchar(c))
-#define HARDWARE_DEBUG_GETCHAR(pc) \
-	(dummy_getchar(pc))
+#define HARDWARE_DEBUG_PUTCHAR(c)			(dummy_putchar(c))
+#define HARDWARE_DEBUG_GETCHAR(pc) 			(dummy_getchar(pc))
 
 typedef pthread_mutex_t spinlock_t;
 

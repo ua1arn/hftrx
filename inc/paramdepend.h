@@ -723,7 +723,7 @@ extern "C" {
 
 	#define SPISPEED (12000000u)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000u		//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000u			/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED400k	400000u			/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000u		/* 100 kHz для низкоскоростных микросхем */
 
 	#define HARDWARE_NCORES 2
