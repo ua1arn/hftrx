@@ -631,33 +631,27 @@ static void freeregs(struct parsedfile *pfl) {
 	free(pfl->file);
 }
 
-static void emitstring(int indent, const char * name, const char * value)
-{
+static void emitstring(int indent, const char *name, const char *value) {
 	emitline(indent, "<%s>%s</%s>" "\n", name, value, name);
 }
 
-static void emithex32(int indent, const char * name, unsigned value)
-{
+static void emithex32(int indent, const char *name, unsigned value) {
 	emitline(indent, "<%s>0x%08X</%s>" "\n", name, value, name);
 }
 
-static void emithex03(int indent, const char * name, unsigned value)
-{
+static void emithex03(int indent, const char *name, unsigned value) {
 	emitline(indent, "<%s>0x%03X</%s>" "\n", name, value, name);
 }
 
-static void emithex02(int indent, const char * name, unsigned value)
-{
+static void emithex02(int indent, const char *name, unsigned value) {
 	emitline(indent, "<%s>0x%02X</%s>" "\n", name, value, name);
 }
 
-static void emitdecimal(int indent, const char * name, unsigned value)
-{
+static void emitdecimal(int indent, const char *name, unsigned value) {
 	emitline(indent, "<%s>%u</%s>" "\n", name, value, name);
 }
 
-static void emitcomment(int indent, const char * s)
-{
+static void emitcomment(int indent, const char *s) {
 	emitline(indent, "<!-- %s -->\n", s);
 }
 
@@ -673,14 +667,13 @@ static void emitcpu(void) {
 
 }
 
-static unsigned emitregister000(int indent, const struct regdfn *const regp, unsigned baseoffset) {
+static unsigned emitregister000(int indent, const struct regdfn *const regp,
+		unsigned baseoffset) {
 	unsigned offs;
 	unsigned regsizebits = regp->fldsize * 8;
 
-
 	offs = 0;
-	if (regp->fldsize == 0)
-	{
+	if (regp->fldsize == 0) {
 		/* set to required size */
 	} else {
 
@@ -691,7 +684,7 @@ static unsigned emitregister000(int indent, const struct regdfn *const regp, uns
 		emitstring(indent + 1, "description", regp->comment);
 		emithex03(indent + 1, "addressOffset", regp->fldoffs - baseoffset);
 		emithex02(indent + 1, "size", regsizebits);
-		emitstring(indent + 1, "access","read-write");
+		emitstring(indent + 1, "access", "read-write");
 		emithex32(indent + 1, "resetValue", regp->resetvalue);
 
 		emitline(indent + 0, "</register>" "\n");
@@ -702,13 +695,12 @@ static unsigned emitregister000(int indent, const struct regdfn *const regp, uns
 	return offs;
 }
 
-
 unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
 		unsigned baseoffset);
 
 /* return total size of emitted registers */
-unsigned emitregister(int indent, const struct regdfn *const regp, unsigned baseoffset)
-{
+unsigned emitregister(int indent, const struct regdfn *const regp,
+		unsigned baseoffset) {
 	unsigned offs = 0;
 
 //	char buff [128];
@@ -722,7 +714,8 @@ unsigned emitregister(int indent, const struct regdfn *const regp, unsigned base
 			emitline(indent, "<cluster>" "\n");
 			emitdecimal(indent + 1, "dim", regp->fldrept);
 			emithex32(indent + 1, "addressOffset", regp->fldoffs);
-			offs += emitregisters(indent + 1, &regp->aggregate, 0) * regp->fldrept;
+			offs += emitregisters(indent + 1, &regp->aggregate, 0)
+					* regp->fldrept;
 			emitline(indent, "</cluster>" "\n");
 		} else {
 			offs += emitregisters(indent, &regp->aggregate, 0);
@@ -736,7 +729,8 @@ unsigned emitregister(int indent, const struct regdfn *const regp, unsigned base
 			emitline(indent, "<cluster>" "\n");
 			emitdecimal(indent + 1, "dim", regp->fldrept);
 			emithex32(indent + 1, "addressOffset", regp->fldoffs);
-			offs += emitregister000(indent + 1, regp, regp->fldoffs) * regp->fldrept;
+			offs += emitregister000(indent + 1, regp, regp->fldoffs)
+					* regp->fldrept;
 			emitline(indent, "</cluster>" "\n");
 
 		} else {
@@ -758,7 +752,8 @@ unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
 
 	offs = 0;
 	for (t = regslist->Flink; t != regslist; t = t->Flink) {
-		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn, item);
+		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn,
+				item);
 		unsigned regsizebits = regp->fldsize * 8;
 
 		offs += emitregister(indent + 1, regp, offs);
@@ -792,9 +787,8 @@ static void emitperipherial(const struct parsedfile *pfl) {
 
 		emitline(indent, "<peripheral derivedFrom=\"%s\">" "\n",
 				pfl->base_names[0]);
-		emitline(indent, "<name>%s</name>" "\n", pfl->base_names[i]);
-		emitline(indent, "<baseAddress>0x%08X</baseAddress>" "\n",
-				pfl->base_address[i]);
+		emitstring(indent, "name", pfl->base_names[i]);
+		emithex32(indent, "baseAddress", pfl->base_address[i]);
 		emitline(indent, "</peripheral>" "\n");
 	}
 
