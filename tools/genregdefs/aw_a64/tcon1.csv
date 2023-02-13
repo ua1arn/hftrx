@@ -1,0 +1,32 @@
+#comment; TCON HDMI Interface
+#type; TCON1
+#base; TCON1 0x01C0D000
+#regdef; TCON_GCTL_REG; 0x000; TCON global control register
+#regdef; TCON_GINT0_REG; 0x004; TCON global interrupt register0
+#regdef; TCON_GINT1_REG; 0x008; TCON global interrupt register1
+#regdef; TCON1_CTL_REG; 0x090; TCON1 control register
+#regdef; TCON1_BASIC0_REG; 0x094; TCON1 basic timing register0
+#regdef; TCON1_BASIC1_REG; 0x098; TCON1 basic timing register1
+#regdef; TCON1_BASIC2_REG; 0x09C; TCON1 basic timing register2
+#regdef; TCON1_BASIC3_REG; 0x0A0; TCON1 basic timing register3
+#regdef; TCON1_BASIC4_REG; 0x0A4; TCON1 basic timing register4
+#regdef; TCON1_BASIC5_REG; 0x0A8; TCON1 basic timing register5
+#regdef; TCON1_PS_SYNC_REG; 0x0B0; TCON1 sync register
+#regdef; TCON1_IO_POL_REG; 0x0F0; TCON1 IO polarity register
+#regdef; TCON1_IO_TRI_REG; 0x0F4; TCON1 IO trigger register
+#regdef; TCON_CEU_CTL_REG; 0x100; TCON CEU control register
+#regdef; TCON_CEU_COEF_MUL_REG; 0x110 11; TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10)
+##aggreg; TCON_CEU_COEF; 0x11C 3; TCON CEU coefficient (N=0,1,2)
+##regdef; TCON_CEU_COEF_ADD_REG; 0x00; 0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2)
+##regdef; pad 0; 0x10
+##aggregend;
+#regdef; TCON_CEU_COEF_RANG_REG; 0x160 3; TCON CEU coefficient register2 (N=0,1,2)
+#regdef; TCON_SAFE_PERIOD_REG; 0x1F0; TCON safe period register
+#regdef; TCON1_FILL_CTL_REG; 0x300; TCON1 fill data control register
+#aggreg; TCON1_FILL; 0x304 3; TCON1 fill data (N=0,1,2)
+#regdef; TCON1_FILL_BEGIN_REG; 0x000; TCON1 fill data begin register (N=0,1,2)
+#regdef; TCON1_FILL_END_REG; 0x004; TCON1 fill data end register (N=0,1,2)
+#regdef; TCON1_FILL_DATA0_REG; 0x008; TCON1 fill data value register (N=0,1,2)
+#aggregend;
+#regdef; TCON1_GAMMA_TABLE_REG; 0x400 256; Gamma Table 0x400-0x7FF
+#regdef; TCON_ECC_FIFO_BIST_REG; 0xFFC;

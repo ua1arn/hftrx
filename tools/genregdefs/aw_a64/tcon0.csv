@@ -1,0 +1,47 @@
+#comment; TCON LCD Interface
+#type; TCON0
+#base; TCON0 0x01C0C000
+#regdef; TCON_GCTL_REG; 0x000; TCON global control register
+#regdef; TCON_GINT0_REG; 0x004; TCON global interrupt register0
+#regdef; TCON_GINT1_REG; 0x008; TCON global interrupt register1
+#regdef; TCON0_FRM_CTL_REG; 0x010; TCON FRM control register
+#regdef; TCON0_FRM_SEED_REG; 0x014 6; TCON FRM seed register (N=0,1,2,3,4,5)
+#regdef; TCON0_FRM_TAB_REG; 0x02C 4; TCON FRM table register (N=0,1,2,3)
+#regdef; TCON0_3D_FIFO_REG; 0x03C; TCON0 3D fifo register
+#regdef; TCON0_CTL_REG; 0x040; TCON0 control register
+#regdef; TCON0_DCLK_REG; 0x044; TCON0 data clock register
+#regdef; TCON0_BASIC0_REG; 0x048; TCON0 basic timing register0
+#regdef; TCON0_BASIC1_REG; 0x04C; TCON0 basic timing register
+#regdef; TCON0_BASIC2_REG; 0x050; TCON0 basic timing register2
+#regdef; TCON0_BASIC3_REG; 0x054; TCON0 basic timing register3
+#regdef; TCON0_HV_IF_REG; 0x058; TCON0 hv panel interface register
+#regdef; TCON0_CPU_IF_REG; 0x060; TCON0 cpu panel interface register
+#regdef; TCON0_CPU_WR_REG; 0x064; TCON0 cpu panel write data register
+#regdef; TCON0_CPU_RD0_REG; 0x068; TCON0 cpu panel read data register0
+#regdef; TCON0_CPU_RD1_REG; 0x06C; TCON0 cpu panel read data register1
+#regdef; TCON0_LVDS_IF_REG; 0x084; TCON0 lvds panel interface register
+#regdef; TCON0_IO_POL_REG; 0x088; TCON0 IO polarity register
+#regdef; TCON0_IO_TRI_REG; 0x08C; TCON0 IO trigger register
+#regdef; TCON_CEU_CTL_REG; 0x100; TCON CEU control register
+#regdef; TCON_CEU_COEF_MUL_REG; 0x110 11; TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10)
+#aggreg; TCON_CEU_COEF; 0x13C 3; TCON CEU coefficient register1 (N=0,1,2)
+#regdef; TCON_CEU_COEF_ADD_REG; 0x00c;  0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2)
+#regdef; pad 0; 0x010
+#aggregend;
+##regdef; TCON_CEU_COEF_RANG_REG; 0x140 3; TCON CEU coefficient register2 (N=0,1,2)
+##regdef; TCON0_CPU_TRI0_REG; 0x160; TCON0 cpu panel trigger register0
+##regdef; TCON0_CPU_TRI1_REG; 0x164; TCON0 cpu panel trigger register1
+##regdef; TCON0_CPU_TRI2_REG; 0x168; TCON0 cpu panel trigger register2
+##regdef; TCON0_CPU_TRI3_REG; 0x16C; TCON0 cpu panel trigger register3
+##regdef; TCON0_CPU_TRI4_REG; 0x170; TCON0 cpu panel trigger register4
+##regdef; TCON0_CPU_TRI5_REG; 0x174; TCON0 cpu panel trigger register5
+##regdef; TCON_CMAP_CTL_REG; 0x180; TCON color map control register
+##regdef; TCON_CMAP_ODD0_REG; 0x190; TCON color map odd line register0
+##regdef; TCON_CMAP_ODD1_REG; 0x194; TCON color map odd line register1
+##regdef; TCON_CMAP_EVEN0_REG; 0x198; TCON color map even line register0
+##regdef; TCON_CMAP_EVEN1_REG; 0x19C; TCON color map even line register1
+#regdef; TCON_SAFE_PERIOD_REG; 0x1F0; TCON safe period register
+#regdef; TCON0_LVDS_ANA0_REG; 0x220; TCON LVDS analog register0
+#regdef; TCON0_GAMMA_TABLE_REG; 0x400 256; Gamma Table 0x400-0x7FF
+#regdef; TCON0_3D_FIFO_BIST_REG; 0xFF4;
+#regdef; TCON_TRI_FIFO_BIST_REG; 0xFF8;
