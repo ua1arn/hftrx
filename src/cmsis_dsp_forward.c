@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if WITHINTEGRATEDDSP && ! LINUX_SUBSYSTEM
+#if WITHINTEGRATEDDSP
 
 	#include "BasicMathFunctions/BasicMathFunctions.c"
 	//#include "BayesFunctions/BayesFunctions.c"

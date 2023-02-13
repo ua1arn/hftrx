@@ -528,10 +528,8 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-#if ! LINUX_SUBSYSTEM
 	#include "arch/zynq/zynq7000.h"
 	#include "irq_ctrl.h"
-#endif /* ! LINUX_SUBSYSTEM */
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -554,10 +552,8 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-#if ! LINUX_SUBSYSTEM
 	#include "arch/zynqmp/zynquscale.h"
 	#include "irq_ctrl.h"
-#endif /* ! LINUX_SUBSYSTEM */
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -850,9 +846,7 @@ void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обраб
 void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
 
 /* TWI (I2C) interface */
-#if ! LINUX_SUBSYSTEM
-	#define I2C_RETRIES 3	/* количество повторов */
-#endif /* ! LINUX_SUBSYSTEM */
+#define I2C_RETRIES 3	/* количество повторов */
 
 /* target device speed */
 typedef struct i2c_parameters
@@ -1387,10 +1381,6 @@ signed int init_DRAM(int type, dram_para_t *para); // s0
 
 uintptr_t getRamDiskBase(void);
 size_t getRamDiskSize(void);
-
-#if LINUX_SUBSYSTEM
-	#include "linux_subsystem.h"
-#endif /* LINUX_SUBSYSTEM */
 
 #if (__CORTEX_A == 8U) && CPUSTYLE_CA53
 

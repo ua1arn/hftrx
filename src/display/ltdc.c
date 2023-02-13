@@ -1707,39 +1707,6 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	hardware_ltdc_main_set(layer0);
 }
 
-#elif LINUX_SUBSYSTEM
-
-void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
-{
-}
-
-/* Palette reload (dummy fuction) */
-void hardware_ltdc_L8_palette(void)
-{
-}
-
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
-/* Вызывается из display_flush, используется только в тестах */
-void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
-{
-	uint32_t size;
-	uint32_t * linux_fb = linux_get_fb(& size);
-	memcpy(linux_fb, (uint32_t *) addr, size);
-}
-
-/* Set MAIN frame buffer address. */
-void hardware_ltdc_main_set(uintptr_t addr)
-{
-	uint32_t size;
-	uint32_t * linux_fb = linux_get_fb(& size);
-	memcpy(linux_fb, (uint32_t *) addr, size);
-}
-
-/* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
-{
-}
-
 #elif (CPUSTYLE_XC7Z) && 1
 
 #include "zynq_vdma.h"

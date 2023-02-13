@@ -615,7 +615,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 	}
 }
 
-#elif CPUSTYLE_XCZU && ! LINUX_SUBSYSTEM
+#elif CPUSTYLE_XCZU
 
 void xc7z_gpio_input(uint8_t pin)
 {
@@ -629,7 +629,7 @@ void sysinit_gpio_initialize(void)
 {
 }
 
-#elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#elif CPUSTYLE_XC7Z
 
 static SPINLOCK_t gpiodata_locks [8] =
 {
