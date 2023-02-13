@@ -126,6 +126,9 @@ typedef enum IRQn
 #define TWI2_BASE ((uintptr_t) 0x01C2B400)            /*!< TWI Base */
 #define EMAC_BASE ((uintptr_t) 0x01C30000)            /*!< EMAC Base */
 #define GPU_BASE ((uintptr_t) 0x01C40000)             /*!< GPU Base */
+#define DRAMCOM_BASE ((uintptr_t) 0x01C62000)         /*!< DRAMCOM Base */
+#define DRAMCTL0_BASE ((uintptr_t) 0x01C63000)        /*!< DRAMCTL0 Base */
+#define DRAMPHY0_BASE ((uintptr_t) 0x01C65000)        /*!< DRAMPHY0 Base */
 #define SPI0_BASE ((uintptr_t) 0x01C68000)            /*!< SPI Base */
 #define SPI1_BASE ((uintptr_t) 0x01C69000)            /*!< SPI Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!<  Base */
