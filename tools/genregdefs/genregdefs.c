@@ -631,16 +631,122 @@ static void freeregs(struct parsedfile *pfl) {
 	free(pfl->file);
 }
 
-static void emitcpu(void) {
-	emitline(1, "<name>XXXX</name>" "\n");
-	emitline(1, "<version>1.00</version>" "\n");
-	emitline(1, "<description>for test</description>" "\n");
-	emitline(1, "<addressUnitBits>8</addressUnitBits>" "\n");
-	emitline(1, "<width>32</width>" "\n");
-	emitline(1, "<size>32</size>" "\n");
-	emitline(1, "<resetValue>0x0</resetValue>" "\n");
-	emitline(1, "<resetMask>0xFFFFFFFF</resetMask>" "\n");
+static void emitstring(int indent, const char * name, const char * value)
+{
+	emitline(indent, "<%s>%s</%s>" "\n", name, value, name);
+}
 
+static void emithex32(int indent, const char * name, unsigned value)
+{
+	emitline(indent, "<%s>0x%08X</%s>" "\n", name, value, name);
+}
+
+static void emithex03(int indent, const char * name, unsigned value)
+{
+	emitline(indent, "<%s>0x%03X</%s>" "\n", name, value, name);
+}
+
+static void emithex02(int indent, const char * name, unsigned value)
+{
+	emitline(indent, "<%s>0x%02X</%s>" "\n", name, value, name);
+}
+
+static void emitdecimal(int indent, const char * name, unsigned value)
+{
+	emitline(indent, "<%s>%u</%s>" "\n", name, value, name);
+}
+
+static void emitcomment(int indent, const char * s)
+{
+	emitline(indent, "<!-- %s -->\n", s);
+}
+
+static void emitcpu(void) {
+	emitstring(1, "name", "XXXX");
+	emitstring(1, "version", "1.00");
+	emitstring(1, "description", "for test");
+	emitdecimal(1, "addressUnitBits", 8);
+	emitdecimal(1, "width", 32);
+	emitdecimal(1, "size", 32);
+	emithex32(1, "resetValue", 0x0000000);
+	emithex32(1, "resetMask", 0xFFFFFFFF);
+
+}
+
+static unsigned emitregister000(int indent, const struct regdfn *const regp, unsigned baseoffset) {
+	unsigned offs;
+	unsigned regsizebits = regp->fldsize * 8;
+
+
+	offs = 0;
+	if (regp->fldsize == 0)
+	{
+		/* set to required size */
+	} else {
+
+		emitline(indent + 0, "<register>" "\n");
+
+		emitstring(indent + 1, "name", regp->fldname);
+		emitstring(indent + 1, "displayName", regp->fldname);
+		emitstring(indent + 1, "description", regp->comment);
+		emithex03(indent + 1, "addressOffset", regp->fldoffs - baseoffset);
+		emithex02(indent + 1, "size", regsizebits);
+		emitstring(indent + 1, "access","read-write");
+		emithex32(indent + 1, "resetValue", regp->resetvalue);
+
+		emitline(indent + 0, "</register>" "\n");
+
+		offs += regp->fldsize;
+	}
+
+	return offs;
+}
+
+
+unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
+		unsigned baseoffset);
+
+/* return total size of emitted registers */
+unsigned emitregister(int indent, const struct regdfn *const regp, unsigned baseoffset)
+{
+	unsigned offs = 0;
+
+//	char buff [128];
+//
+//	_snprintf(buff, sizeof buff / sizeof buff [0], "%s: fldsize=%u, fldrept=%u, fldoffs=0x%03X", regp->fldname, regp->fldsize, regp->fldrept, regp->fldoffs);
+//	emitcomment(indent, buff);
+
+	if (!IsListEmpty(&regp->aggregate)) {
+		/* Emit aggregate type */
+		if (regp->fldrept) {
+			emitline(indent, "<cluster>" "\n");
+			emitdecimal(indent + 1, "dim", regp->fldrept);
+			emithex32(indent + 1, "addressOffset", regp->fldoffs);
+			offs += emitregisters(indent + 1, &regp->aggregate, 0) * regp->fldrept;
+			emitline(indent, "</cluster>" "\n");
+		} else {
+			offs += emitregisters(indent, &regp->aggregate, 0);
+		}
+
+	} else if (regp->fldsize != 0) {
+		if (regp->fldrept) {
+			// Array forming
+			//emitline(indent + INDENT, "volatile %s %s [0x%03X];",
+			//		fldtype, regp->fldname, regp->fldrept);
+			emitline(indent, "<cluster>" "\n");
+			emitdecimal(indent + 1, "dim", regp->fldrept);
+			emithex32(indent + 1, "addressOffset", regp->fldoffs);
+			offs += emitregister000(indent + 1, regp, regp->fldoffs) * regp->fldrept;
+			emitline(indent, "</cluster>" "\n");
+
+		} else {
+			// Plain field
+			//emitline(indent + INDENT, "volatile %s %s;", fldtype,
+			//		regp->fldname);
+			offs += emitregister000(indent, regp, 0);
+		}
+	}
+	return offs;
 }
 
 unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
@@ -655,59 +761,7 @@ unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
 		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn, item);
 		unsigned regsizebits = regp->fldsize * 8;
 
-
-		offs = regp->fldoffs;
-
-		if (1 /*regp->fldoffs == offs*/) {
-			if (0 && !IsListEmpty(&regp->aggregate)) {
-				/* Emit aggregate type */
-//				emitline(indent + INDENT, "struct\n");
-//				emitline(indent + INDENT, "{\n");
-//				offs += regp->fldrept
-//						* genreglist(indent + INDENT, &regp->aggregate, offs); /* Emit fields list */
-//				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname,
-//						regp->fldrept);
-//				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-//						regp->fldoffs + baseoffset, regp->comment);
-			} else if (regp->fldsize != 0) {
-				if (regp->fldrept) {
-					// Array forming
-					//emitline(indent + INDENT, "volatile %s %s [0x%03X];",
-					//		fldtype, regp->fldname, regp->fldrept);
-					emitline(indent, "<cluster>" "\n");
-					emitline(indent + 1, "<dim>%u</dim>" "\n", regp->fldrept);
-					emitline(indent + 1, "<register>" "\n");
-					emitline(indent + 2, "<name>%s</name>" "\n", regp->fldname);
-					emitline(indent + 2, "<displayName>%s</displayName>" "\n", regp->fldname);
-					emitline(indent + 2, "<description>%s</description>" "\n", regp->comment);
-					emitline(indent + 2, "<addressOffset>0x%03X</addressOffset>" "\n", offs + baseoffset);
-					emitline(indent + 2, "<size>0x%02X</size>" "\n", regsizebits);
-					emitline(indent + 2, "<access>read-write</access>" "\n");
-					emitline(indent + 2, "<resetValue>0x%08X</resetValue>" "\n", regp->resetvalue);
-					emitline(indent + 1, "</register>" "\n");
-					emitline(indent, "</cluster>" "\n");
-
-					offs += regp->fldsize * regp->fldrept;
-				} else {
-					// Plain field
-					//emitline(indent + INDENT, "volatile %s %s;", fldtype,
-					//		regp->fldname);
-					emitline(indent, "<register>" "\n");
-					emitline(indent + 1, "<name>%s</name>" "\n", regp->fldname);
-					emitline(indent + 1, "<displayName>%s</displayName>" "\n", regp->fldname);
-					emitline(indent + 1, "<description>%s</description>" "\n", regp->comment);
-					emitline(indent + 1, "<addressOffset>0x%03X</addressOffset>" "\n", offs + baseoffset);
-					emitline(indent + 1, "<size>0x%02X</size>" "\n", regsizebits);
-					emitline(indent + 1, "<access>read-write</access>" "\n");
-					emitline(indent + 1, "<resetValue>0x%08X</resetValue>" "\n", regp->resetvalue);
-					emitline(indent, "</register>" "\n");
-
-					offs += regp->fldsize;
-				}
-			}
-		} else {
-			//break;
-		}
+		offs += emitregister(indent + 1, regp, offs);
 	}
 	emitline(indent, "</registers>" "\n");
 	return offs;
