@@ -1,0 +1,2 @@
+#type; MIPI_DSI_PHY
+#base; MIPI_DSI_PHY 0x01CA1000

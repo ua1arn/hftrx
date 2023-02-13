@@ -130,7 +130,10 @@ typedef enum IRQn
 #define SPI1_BASE ((uintptr_t) 0x01C69000)            /*!< SPI Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!<  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!<  Base */
+#define MIPI_DSI_BASE ((uintptr_t) 0x01CA0000)        /*!< MIPI_DSI Base */
+#define MIPI_DSI_PHY_BASE ((uintptr_t) 0x01CA1000)    /*!< MIPI_DSI_PHY Base */
 #define DI_BASE ((uintptr_t) 0x01E00000)              /*!< DI Base */
+#define HDMI_BASE ((uintptr_t) 0x01EE0000)            /*!< HDMI Base */
 #define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC Base */
 #define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< RTC Base */
 #define R_INTC_BASE ((uintptr_t) 0x01F00C00)          /*!< RTC Base */
