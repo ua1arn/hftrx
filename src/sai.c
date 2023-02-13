@@ -5838,6 +5838,12 @@ static const codechw_t * const channels [] =
 		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
 	#endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
 
+#elif LINUX_SUBSYSTEM
+
+		& audiocodechw_dummy,		// Интерфейс к НЧ кодеку
+		& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
+		& fpgaspectrumhw_dummy,		// Интерфейс к FPGA - широкополосный канал (WFM)
+
 #elif WITHINTEGRATEDDSP
 
 	#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU

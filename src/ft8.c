@@ -447,6 +447,7 @@ void ft8_encode_buf(float * signal, char * message, float frequency)
 
 // ********************************************************************************
 
+#if ! LINUX_SUBSYSTEM
 void ft8_irqhandler_core0(void)
 {
 	uint8_t msg = ft8.int_core0;
@@ -506,6 +507,7 @@ void ft8_irqhandler_core1(void)
 		xcz_ipi_sendmsg_c0(FT8_MSG_START_FILL);
 	}
 }
+#endif /* ! LINUX_SUBSYSTEM */
 
 void ft8_walkthrough_core0(uint_fast8_t rtc_seconds)
 {
@@ -625,13 +627,97 @@ uint8_t get_ft8_state(void)
 
 void ft8_initialize(void)
 {
+#if ! LINUX_SUBSYSTEM
 	arm_hardware_set_handler(ft8_interrupt_core0, ft8_irqhandler_core0, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU0);
 	arm_hardware_set_handler(ft8_interrupt_core1, ft8_irqhandler_core1, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);
+#endif /* ! LINUX_SUBSYSTEM */
 
 	ft8.int_core0 = 0;
 	ft8.int_core1 = 0;
 
 	subscribefloat_user(& speexoutfloat, & ft8_outregister, NULL, ft8fill);
 }
+
+#if LINUX_SUBSYSTEM
+void xcz_ipi_sendmsg_c0(uint8_t msg)
+{
+	ft8.int_core0 = msg;
+}
+
+void xcz_ipi_sendmsg_c1(uint8_t msg)
+{
+	ft8.int_core1 = msg;
+}
+
+void ft8_thread(void)
+{
+	while(1)
+	{
+		uint8_t msg0 = ft8.int_core0;
+
+		if (msg0)
+		{
+			if (msg0 == FT8_MSG_START_FILL)
+			{
+				ft8_start_fill();
+			}
+			else if (msg0 == FT8_MSG_DECODE_DONE)
+			{
+				hamradio_gui_parse_ft8buf();
+			}
+			else if (msg0 == FT8_MSG_ENCODE_DONE)
+			{
+				PRINTF("transmit message...\n");
+				ft8_tx_enable();
+			}
+
+			ft8.int_core0 = 0;
+		}
+
+		uint8_t msg1 = ft8.int_core1;
+
+		if (msg1)
+		{
+			if (msg1 == FT8_MSG_DECODE_1) // start decode
+			{
+				board_rtc_cached_gettime(& ts1.hour, & ts1.minute, & ts1.second);
+				ft8_decode_buf(ft8.rx_buf1, ts1);
+			}
+			else if (msg1 == FT8_MSG_DECODE_2) // start decode
+			{
+				board_rtc_cached_gettime(& ts2.hour, & ts2.minute, & ts2.second);
+				ft8_decode_buf(ft8.rx_buf1, ts2);
+			}
+			else if (msg1 == FT8_MSG_ENCODE)  // transmit message
+			{
+				ft8_stop_fill();
+				ft8_encode_req = 1;
+				memset(ft8.tx_buf, 0, sizeof(float) * ft8_sample_rate * ft8_length);
+				ft8_encode_buf(ft8.tx_buf, ft8.tx_text, ft8.tx_freq);
+				xcz_ipi_sendmsg_c0(FT8_MSG_ENCODE_DONE);
+			}
+			else if (msg1 == FT8_MSG_ENABLE)	// enable ft8
+			{
+				ft8_enable = 1;
+				PRINTF("ft8 enabled\n");
+			}
+			else if (msg1 == FT8_MSG_DISABLE)  // disable ft8
+			{
+				ft8_enable = 0;
+				ft8_stop_fill();
+				PRINTF("ft8 disabled\n");
+			}
+			else if (msg1 == FT8_MSG_TX_DONE)
+			{
+				ft8_encode_req = 0;
+				xcz_ipi_sendmsg_c0(FT8_MSG_START_FILL);
+			}
+
+			ft8.int_core1 = 0;
+		}
+		usleep(100);
+	}
+}
+#endif /* LINUX_SUBSYSTEM */
 
 #endif /* WITHFT8 */

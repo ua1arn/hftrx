@@ -22,7 +22,7 @@
 	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
 #endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 extern uint8_t bd_space[];
 
@@ -211,7 +211,7 @@ void xc7z_gpio_output(uint8_t pin)
 			XGPIOPS_OUTEN_OFFSET, OpEnableReg);
 }
 
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 
 /* 
 	Машинно-независимый обработчик прерываний.
@@ -1722,6 +1722,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 // TODO: перекалибровать для FLASH контроллеров.
 void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 {
+#if LINUX_SUBSYSTEM
+	usleep(timeUS);
+#else
 	// Частота процессора приволится к мегагерцам.
 	const unsigned long top = local_delay_uscycles(timeUS, CPU_FREQ / 1000000uL);
 	//
@@ -1729,11 +1732,15 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 	for (t = 0; t < top; ++ t)
 	{
 	}
+#endif /* LINUX_SUBSYSTEM */
 }
 // exactly as required
 //
 void local_delay_ms(int timeMS)
 {
+#if LINUX_SUBSYSTEM
+	usleep(timeMS * 1000);
+#else
 	// Частота процессора приволится к мегагерцам.
 	const unsigned long top = local_delay_uscycles(1000, CPU_FREQ / 1000000uL);
 	int n;
@@ -1744,6 +1751,7 @@ void local_delay_ms(int timeMS)
 		{
 		}
 	}
+#endif /* LINUX_SUBSYSTEM */
 }
 
 #endif /* CPUSTYLE_ARM || CPUSTYLE_TMS320F2833X */
@@ -3181,7 +3189,7 @@ sysintt_sdram_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_debug_initialize(void)
 {
-#if WITHDEBUG
+#if WITHDEBUG && ! LINUX_SUBSYSTEM
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */
@@ -3663,6 +3671,7 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+#if ! LINUX_SUBSYSTEM
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_gpio_initialize();
@@ -3674,6 +3683,7 @@ SystemInit(void)
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_cache_L2_cpu0_initialize();	// L2 cache, SCU initialize
+#endif /* ! LINUX_SUBSYSTEM */
 }
 
 
@@ -4709,7 +4719,7 @@ void _stack_init(void)
 
 }
 
-#if (CPUSTYLE_RISCV || defined(__aarch64__))
+#if (CPUSTYLE_RISCV || defined(__aarch64__)) && ! LINUX_SUBSYSTEM
 
 /**
   \brief   Initializes data and bss sections
@@ -4754,7 +4764,7 @@ __NO_RETURN void __riscv_start(void)
 }
 #endif /* CPUSTYLE_RISCV || defined(__aarch64__) */
 
-#if 1//(__CORTEX_M == 0) && 0
+#if ! LINUX_SUBSYSTEM && 1//(__CORTEX_M == 0) && 0
 
 // Используется в случае наличия ключа ld -nostartfiles
 // Так же смотреть вокруг software_init_hook
@@ -4793,7 +4803,7 @@ void _fini(void)
 }
 #endif /* __cplusplus */
 
-#if 1//WITHUSEMALLOC
+#if ! LINUX_SUBSYSTEM && 1//WITHUSEMALLOC
 
 /*
  *
