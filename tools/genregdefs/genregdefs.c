@@ -631,10 +631,6 @@ static void freeregs(struct parsedfile *pfl) {
 	free(pfl->file);
 }
 
-static void emitxmlhead(void) {
-	emitline(0, "<?xml version=\"1.0\" encoding=\"utf-8\"?>" "\n");
-}
-
 static void emitcpu(void) {
 	emitline(1, "<name>XXXX</name>" "\n");
 	emitline(1, "<version>1.00</version>" "\n");
@@ -769,16 +765,11 @@ static void emitdevice(void) {
 	emitline(0, "</device >" "\n");
 }
 
-static void emitxmltail(void) {
-
-}
-
 // See https://github.com/Open-CMSIS-Pack/devtools/SVDConv
 
 static void generate_svd(void) {
-	emitxmlhead();
+	emitline(0, "<?xml version=\"1.0\" encoding=\"utf-8\"?>" "\n");
 	emitdevice();
-	emitxmltail();
 }
 
 static void generate_debug(void) {
