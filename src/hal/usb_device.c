@@ -271,14 +271,6 @@ void board_usb_initialize(void)
 #if WITHUSBHW
 	//PRINTF("board_usb_initialize\n");
 
-#if WITHUSBDEV_HSDESC
-	usbd_descriptors_initialize(1);
-
-#else /* WITHUSBDEV_HSDESC */
-	usbd_descriptors_initialize(0);
-
-#endif /* WITHUSBDEV_HSDESC */
-
 #if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_Init();
 #endif /* defined (WITHUSBHW_DEVICE) */
@@ -307,6 +299,13 @@ void board_usb_deinitialize(void)
 /* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
+#if WITHUSBDEV_HSDESC
+	usbd_descriptors_initialize(1);
+
+#else /* WITHUSBDEV_HSDESC */
+	usbd_descriptors_initialize(0);
+
+#endif /* WITHUSBDEV_HSDESC */
 	//PRINTF("board_usb_activate\n");
 #if defined (WITHUSBHW_DEVICE)
 	if (USBD_Start(& hUsbDeviceHS) != USBD_OK)

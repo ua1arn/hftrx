@@ -1108,6 +1108,7 @@ void board_set_compressor(uint_fast8_t attack, uint_fast8_t release, uint_fast8_
 
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_datavox(uint_fast8_t v);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+void board_set_usb_ft8cn(uint_fast8_t v);	/* совместимость VID/PID для работы с программой FT8CN */
 
 void dsp_initialize(void);
 

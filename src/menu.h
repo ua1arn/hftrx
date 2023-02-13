@@ -2138,6 +2138,16 @@ static const FLASHMEM struct menudef menutable [] =
 		& gswapiq,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	{
+		QLABEL("FT8CN   "), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1, 					/* совместимость VID/PID для работы с программой FT8CN */
+		offsetof(struct nvmap, gusb_ft8cn),
+		nvramoffs0,
+		NULL,
+		& gusb_ft8cn,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 #endif /* WITHUSBUAC */
 #endif /* WITHIF4DSP */

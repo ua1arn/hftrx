@@ -3125,6 +3125,7 @@ struct nvmap
 		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 			uint8_t gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+		uint8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 	#endif /* WITHUSBUAC */
 	#if WITHAFCODEC1HAVEPROC
 		uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
@@ -4004,6 +4005,7 @@ enum
 		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 			static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+		static uint_fast8_t	gusb_ft8cn =  1;	/* совместимость VID/PID для работы с программой FT8CN */
 	#else /* WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };
@@ -11667,6 +11669,7 @@ updateboardZZZ(
 			#if WITHTX
 				board_set_datavox(gdatavox);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 			#endif /* WITHTX */
+			board_set_usb_ft8cn(gusb_ft8cn);	/* совместимость VID/PID для работы с программой FT8CN */
 		#endif /* WITHUSBUAC */
 		board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
 		board_set_lineamp(glineamp);	/* усиление с линейного входа */
