@@ -115,9 +115,9 @@ static unsigned long array_get_bit(const uint8_t * data, unsigned total, unsigne
 }
 
 // Функция получения значения битового поля из массива
-static unsigned long array_get_bits(const uint8_t * data, unsigned total, unsigned leftbit, unsigned width)
+static unsigned array_get_bits(const uint8_t * data, unsigned total, unsigned leftbit, unsigned width)
 {
-	unsigned long v = 0;
+	unsigned v = 0;
 	while (width --)
 		v = v * 2 + array_get_bit(data, total, leftbit --);
 	return v;
@@ -452,38 +452,38 @@ static int zynq_wait_for_transfer(uint_fast8_t txmode)
 		const uint_fast32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint_fast32_t psts = SD0->PRESENT_STATE;
 		const uint_fast32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
-		//PRINTF("zynq_wait_for_transfer: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
-		if ((status & (1uL << 7)) != 0) // Card_Removal
+		//PRINTF("zynq_wait_for_transfer: status=%08X, psts=%08X, hgapctl=%08X\n", status, psts, hgapctl);
+		if ((status & (1u << 7)) != 0) // Card_Removal
 		{
-			SD0->INT_STATUS = (1uL << 7); // Card_Removal
+			SD0->INT_STATUS = (1u << 7); // Card_Removal
 			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
-		if ((status & (1uL << 6)) != 0) // Card_Insertion
+		if ((status & (1u << 6)) != 0) // Card_Insertion
 		{
-			SD0->INT_STATUS = (1uL << 6); // Card_Insertion
+			SD0->INT_STATUS = (1u << 6); // Card_Insertion
 			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
-		if ((status & (1uL << 15)) != 0)
+		if ((status & (1u << 15)) != 0)
 		{
-			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
+			SD0->INT_STATUS = (1u << 15); // Error_Interrupt
 			return 1;
 		}
-//		if ((status & (1uL << 16)) != 0)
+//		if ((status & (1u << 16)) != 0)
 //		{
-//			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
+//			SD0->INT_STATUS = (1u << 16); // Command_Timeout_Error
 //			return 1;
 //		}
-		if ((status & (1uL << 3)) != 0)
+		if ((status & (1u << 3)) != 0)
 		{
-			SD0->INT_STATUS = (1uL << 3); // DMA_Interrupt
+			SD0->INT_STATUS = (1u << 3); // DMA_Interrupt
 			SD0->SYS_DMA_ADDR = SD0->SYS_DMA_ADDR;
 			//return 0;
 		}
-		if ((status & (1uL << 1)) != 0)
+		if ((status & (1u << 1)) != 0)
 		{
-			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
+			SD0->INT_STATUS = (1u << 1); // Transfer_Complete
 			return 0;
 		}
 	}
@@ -495,61 +495,61 @@ static int zynq_wait_for_transfer(uint_fast8_t txmode)
 		const uint_fast32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint_fast32_t psts = SD0->PRESENT_STATE;
 		const uint_fast32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
-		//PRINTF("zynq_wait_for_transfer: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
-		if ((status & (1uL << 7)) != 0) // Card_Removal
+		//PRINTF("zynq_wait_for_transfer: status=%08X, psts=%08X, hgapctl=%08X\n", status, psts, hgapctl);
+		if ((status & (1u << 7)) != 0) // Card_Removal
 		{
-			SD0->INT_STATUS = (1uL << 7); // Card_Removal
+			SD0->INT_STATUS = (1u << 7); // Card_Removal
 			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
-		if ((status & (1uL << 6)) != 0) // Card_Insertion
+		if ((status & (1u << 6)) != 0) // Card_Insertion
 		{
-			SD0->INT_STATUS = (1uL << 6); // Card_Insertion
+			SD0->INT_STATUS = (1u << 6); // Card_Insertion
 			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
-		if ((status & (1uL << 15)) != 0)
+		if ((status & (1u << 15)) != 0)
 		{
-			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
+			SD0->INT_STATUS = (1u << 15); // Error_Interrupt
 			return 1;
 		}
-//		if ((status & (1uL << 16)) != 0)
+//		if ((status & (1u << 16)) != 0)
 //		{
-//			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
+//			SD0->INT_STATUS = (1u << 16); // Command_Timeout_Error
 //			return 1;
 //		}
 		if (txmode)
 		{
-			if ((status & (1uL << 3)) != 0)
+			if ((status & (1u << 3)) != 0)
 			{
-				SD0->INT_STATUS = (1uL << 3); // DMA_Interrupt
+				SD0->INT_STATUS = (1u << 3); // DMA_Interrupt
 				SD0->SYS_DMA_ADDR = SD0->SYS_DMA_ADDR;
 				//return 0;
-				if ((status & (1uL << 1)) != 0)
+				if ((status & (1u << 1)) != 0)
 				{
-					SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
+					SD0->INT_STATUS = (1u << 1); // Transfer_Complete
 					return 0;
 				}
 			}
-			if ((SD0->HOST_CTRL_BLOCK_GAP_CTRL & (1uL << 16)) != 0)	// Stop_At_Block_Gap_Request
+			if ((SD0->HOST_CTRL_BLOCK_GAP_CTRL & (1u << 16)) != 0)	// Stop_At_Block_Gap_Request
 			{
-				SD0->HOST_CTRL_BLOCK_GAP_CTRL &= ~ (1uL << 16);	// Stop_At_Block_Gap_Request
-				SD0->HOST_CTRL_BLOCK_GAP_CTRL |= (1uL << 17);	// Continue_Request
+				SD0->HOST_CTRL_BLOCK_GAP_CTRL &= ~ (1u << 16);	// Stop_At_Block_Gap_Request
+				SD0->HOST_CTRL_BLOCK_GAP_CTRL |= (1u << 17);	// Continue_Request
 
 			}
 		}
 		else
 		{
-			if ((status & (1uL << 3)) != 0)
+			if ((status & (1u << 3)) != 0)
 			{
-				SD0->INT_STATUS = (1uL << 3); // DMA_Interrupt
+				SD0->INT_STATUS = (1u << 3); // DMA_Interrupt
 				SD0->SYS_DMA_ADDR = SD0->SYS_DMA_ADDR;
 				//return 0;
 			}
 		}
-		if ((status & (1uL << 1)) != 0)
+		if ((status & (1u << 1)) != 0)
 		{
-			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
+			SD0->INT_STATUS = (1u << 1); // Transfer_Complete
 			return 0;
 		}
 	}
@@ -563,40 +563,40 @@ static int zynq_wait_for_command(void)
 		const uint_fast32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint_fast32_t psts = SD0->PRESENT_STATE;
 		const uint_fast32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
-		//PRINTF("zynq_wait_for_command: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
-		if ((status & (1uL << 7)) != 0) // Card_Removal
+		//PRINTF("zynq_wait_for_command: status=%08X, psts=%08X, hgapctl=%08X\n", status, psts, hgapctl);
+		if ((status & (1u << 7)) != 0) // Card_Removal
 		{
-			SD0->INT_STATUS = (1uL << 7); // Card_Removal
+			SD0->INT_STATUS = (1u << 7); // Card_Removal
 			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
-		if ((status & (1uL << 6)) != 0) // Card_Insertion
+		if ((status & (1u << 6)) != 0) // Card_Insertion
 		{
-			SD0->INT_STATUS = (1uL << 6); // Card_Insertion
+			SD0->INT_STATUS = (1u << 6); // Card_Insertion
 			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
 //		if ((psts & (3uL << 0)) != 0)	// Command_Inhibit_DAT | Command_Inhibit_CMD
 //			continue;
-		//PRINTF("sdhost_get_none_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
-		if ((status & (1uL << 15)) != 0)
+		//PRINTF("sdhost_get_none_resp: SD0->INT_STATUS=%08X\n", SD0->INT_STATUS);
+		if ((status & (1u << 15)) != 0)
 		{
-			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
+			SD0->INT_STATUS = (1u << 15); // Error_Interrupt
 			return 1;
 		}
-		if ((status & (1uL << 16)) != 0)
+		if ((status & (1u << 16)) != 0)
 		{
-			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
+			SD0->INT_STATUS = (1u << 16); // Command_Timeout_Error
 			return 1;
 		}
-//		if ((status & (1uL << 1)) != 0)
+//		if ((status & (1u << 1)) != 0)
 //		{
-//			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
+//			SD0->INT_STATUS = (1u << 1); // Transfer_Complete
 //			return 0;
 //		}
-		if ((status & (1uL << 0)) != 0)
+		if ((status & (1u << 0)) != 0)
 		{
-			SD0->INT_STATUS = (1uL << 0); // Command_Complete
+			SD0->INT_STATUS = (1u << 0); // Command_Complete
 			return 0;
 		}
 	}
@@ -732,30 +732,30 @@ static void DMA_SDIO_setparams(
 
 	if (count > 1)
 	{
-		while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
+		while ((SDHI0.SD_INFO2 & (1u << 13)) == 0)	// SCLKDIVEN
 			;
 		SDHI0.SD_SIZE = length0;
 
-		while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
+		while ((SDHI0.SD_INFO2 & (1u << 13)) == 0)	// SCLKDIVEN
 			;
 		SDHI0.SD_STOP = 1 * (1U << 8);	// SEC 1: Enables SD_SECCNT
 
-		while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
+		while ((SDHI0.SD_INFO2 & (1u << 13)) == 0)	// SCLKDIVEN
 			;
 		SDHI0.SD_SECCNT = count;
 	}
 	else
 	{
-		while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
+		while ((SDHI0.SD_INFO2 & (1u << 13)) == 0)	// SCLKDIVEN
 			;
 		SDHI0.SD_SIZE = length0;
 
-		while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
+		while ((SDHI0.SD_INFO2 & (1u << 13)) == 0)	// SCLKDIVEN
 			;
 		SDHI0.SD_STOP = 0 * (1U << 8);	// SEC 0: Disables SD_SECCNT
 	}
 
-	SDHI0.CC_EXT_MODE |= (1uL << 1);	// DMASDRW
+	SDHI0.CC_EXT_MODE |= (1u << 1);	// DMASDRW
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
@@ -881,9 +881,9 @@ static uint_fast8_t DMA_sdio_waitdone(uint_fast8_t txmode)
 	while ((DMAC14.CHSTAT_n & (1U << 5)) == 0)	// END
 		;
 
-	while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
+	while ((SDHI0.SD_INFO2 & (1u << 13)) == 0)	// SCLKDIVEN
 		;
-	SDHI0.CC_EXT_MODE &= ~ (1uL << 1);	// DMASDRW
+	SDHI0.CC_EXT_MODE &= ~ (1u << 1);	// DMASDRW
 	//__DMB();
 	return 0;
 
@@ -936,9 +936,9 @@ static void DMA_sdio_cancel(void)
 
 #elif CPUSTYLE_R7S721
 
-	while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
+	while ((SDHI0.SD_INFO2 & (1u << 13)) == 0)	// SCLKDIVEN
 		;
-	SDHI0.CC_EXT_MODE &= ~ (1uL << 1);	// DMASDRW
+	SDHI0.CC_EXT_MODE &= ~ (1u << 1);	// DMASDRW
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
@@ -1012,7 +1012,7 @@ static uint_fast8_t sdhost_dpsm_wait(uintptr_t addr, uint_fast8_t txmode, uint_f
 		if ((sta & SDMMC_STA_DBCKEND) != 0)
 			return 0;
 	}
-	PRINTF(PSTR("sdhost_dpsm_wait error, STA=%08lX, w=%u\n"), SDMMC1->STA, w);
+	PRINTF(PSTR("sdhost_dpsm_wait error, STA=%08X, w=%u\n"), SDMMC1->STA, w);
 	//SDMMC1->ICR = SDMMC1->STA & errmask;
 	return 1;
 
@@ -1026,7 +1026,7 @@ static uint_fast8_t sdhost_dpsm_wait(uintptr_t addr, uint_fast8_t txmode, uint_f
 		if ((sta & SDIO_STA_DBCKEND) != 0)
 			return 0;
 	}
-	PRINTF(PSTR("sdhost_dpsm_wait error, STA=%08lX\n"), SDIO->STA);
+	PRINTF(PSTR("sdhost_dpsm_wait error, STA=%08X\n"), SDIO->STA);
 	return 1;
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
@@ -1043,7 +1043,7 @@ static uint_fast8_t sdhost_dpsm_wait(uintptr_t addr, uint_fast8_t txmode, uint_f
 
 			for (; len4 --; p += 4)
 			{
-				while ((SD0->PRESENT_STATE & (1uL << 10)) == 0)	// 10 - Buffer_Write_Enable
+				while ((SD0->PRESENT_STATE & (1u << 10)) == 0)	// 10 - Buffer_Write_Enable
 					;
 				const uint_fast32_t v =
 					((uint_fast32_t) p [0] << 0) |
@@ -1061,7 +1061,7 @@ static uint_fast8_t sdhost_dpsm_wait(uintptr_t addr, uint_fast8_t txmode, uint_f
 
 			for (; len4 --; p += 4)
 			{
-				while ((SD0->PRESENT_STATE & (1uL << 11)) == 0)	// 11 - Buffer_Read_Enable
+				while ((SD0->PRESENT_STATE & (1u << 11)) == 0)	// 11 - Buffer_Read_Enable
 					;
 				const uint_fast32_t v = SD0->BUFFER_DATA_PORT;
 				p [0] = v >> 0;
@@ -1188,7 +1188,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 		0;
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
-	//PRINTF("sdhost_dpsm_prepare: tx=%d, status=%08lX, psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
+	//PRINTF("sdhost_dpsm_prepare: tx=%d, status=%08X, psts=%08X\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1630,7 +1630,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 
 #elif CPUSTYLE_R7S721
 
-	while ((SDHI0.SD_INFO2 & (1uL << 14)) != 0)	// CBSY
+	while ((SDHI0.SD_INFO2 & (1u << 14)) != 0)	// CBSY
 		; //PRINTF(PSTR("sdhost_no_resp: CBSY\n"));
 
 	SDHI0.SD_INFO1_MASK = 0xFFFE;
@@ -1704,7 +1704,7 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 
 #elif CPUSTYLE_R7S721
 
-	while ((SDHI0.SD_INFO2 & (1uL << 14)) != 0)	// CBSY
+	while ((SDHI0.SD_INFO2 & (1u << 14)) != 0)	// CBSY
 		; //PRINTF(PSTR("sdhost_short_resp: CBSY\n"));
 
 	SDHI0.SD_INFO1_MASK = 0xFFFE;
@@ -1777,7 +1777,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 
 #elif CPUSTYLE_R7S721
 
-	while ((SDHI0.SD_INFO2 & (1uL << 14)) != 0)	// CBSY
+	while ((SDHI0.SD_INFO2 & (1u << 14)) != 0)	// CBSY
 		; //PRINTF(PSTR("sdhost_long_resp: CBSY\n"));
 
 	SDHI0.SD_INFO1_MASK = 0xFFFE;
@@ -1837,7 +1837,7 @@ static uint_fast8_t sdhost_verify_resp(uint_fast8_t cmd)
 
 	if ((SDMMC1->RESPCMD & SDMMC_RESPCMD_RESPCMD) != (cmd & SDMMC_CMD_CMDINDEX))
 	{
-		PRINTF(PSTR("sdhost_verify_resp error, RESPCMD=%02lX, expeted %02lX\n"), SDMMC1->RESPCMD & SDMMC_RESPCMD_RESPCMD, cmd & SDMMC_CMD_CMDINDEX);
+		PRINTF(PSTR("sdhost_verify_resp error, RESPCMD=%02X, expeted %02X\n"), SDMMC1->RESPCMD & SDMMC_RESPCMD_RESPCMD, cmd & SDMMC_CMD_CMDINDEX);
 		return 1;
 	}
 	return 0;
@@ -1846,7 +1846,7 @@ static uint_fast8_t sdhost_verify_resp(uint_fast8_t cmd)
 
 	if ((SDMMC1->RESPCMD & SDMMC_RESPCMD_RESPCMD) != (cmd & SDMMC_CMD_CMDINDEX))
 	{
-		PRINTF(PSTR("sdhost_verify_resp error, RESPCMD=%02lX, expeted %02lX\n"), SDMMC1->RESPCMD & SDMMC_RESPCMD_RESPCMD, cmd & SDMMC_CMD_CMDINDEX);
+		PRINTF(PSTR("sdhost_verify_resp error, RESPCMD=%02X, expeted %02X\n"), SDMMC1->RESPCMD & SDMMC_RESPCMD_RESPCMD, cmd & SDMMC_CMD_CMDINDEX);
 		return 1;
 	}
 	return 0;
@@ -1855,7 +1855,7 @@ static uint_fast8_t sdhost_verify_resp(uint_fast8_t cmd)
 
 	if ((SDIO->RESPCMD & SDIO_RESPCMD_RESPCMD) != (cmd & SDIO_CMD_CMDINDEX))
 	{
-		PRINTF(PSTR("sdhost_verify_resp error, RESPCMD=%02lX, expeted %02lX\n"), SDIO->RESPCMD & SDIO_RESPCMD_RESPCMD, cmd & SDIO_CMD_CMDINDEX);
+		PRINTF(PSTR("sdhost_verify_resp error, RESPCMD=%02X, expeted %02X\n"), SDIO->RESPCMD & SDIO_RESPCMD_RESPCMD, cmd & SDIO_CMD_CMDINDEX);
 		return 1;
 	}
 	return 0;
@@ -2027,7 +2027,7 @@ static uint_fast8_t sdhost_get_resp(void)
 	}
 	if (ec != 0)
 	{
-		PRINTF(PSTR("sdhost_get_resp error, STA=%08lX, DCOUNT=%08lX\n"), SDMMC1->STA, SDMMC1->DCOUNT & SDMMC_DCOUNT_DATACOUNT);
+		PRINTF(PSTR("sdhost_get_resp error, STA=%08X, DCOUNT=%08X\n"), SDMMC1->STA, SDMMC1->DCOUNT & SDMMC_DCOUNT_DATACOUNT);
 	}
 	SDMMC1->ICR = SDMMC_ICR_CMDRENDC;
 	// Если была ошибка CRC при приёме ответа - сбросить её
@@ -2059,7 +2059,7 @@ static uint_fast8_t sdhost_get_resp(void)
 	}
 	if (ec != 0)
 	{
-			//PRINTF(PSTR("sdhost_get_resp error, STA=%08lX\n"), SDIO->STA);
+			//PRINTF(PSTR("sdhost_get_resp error, STA=%08X\n"), SDIO->STA);
 	}
 
 	SDIO->ICR = SDIO_ICR_CMDRENDC;
@@ -2490,7 +2490,7 @@ static uint_fast8_t sdhost_sdcard_waitstatus(void)
 		{
 		case 4:	// Transfer
 		case 1:	// Ready
-			//PRINTF(PSTR("sdhost_sdcard_waitstatus OK, resp=%08lX, cardstate=%u\n"), (unsigned long) resp, (unsigned) cardstate);
+			//PRINTF(PSTR("sdhost_sdcard_waitstatus OK, resp=%08X, cardstate=%u\n"), (unsigned long) resp, (unsigned) cardstate);
 			return 0;
 
 		case 7:	// Programming
@@ -2500,7 +2500,7 @@ static uint_fast8_t sdhost_sdcard_waitstatus(void)
 		//	continue;	// потребовалось при использовании блочной записи
 
 		default:
-			PRINTF(PSTR("sdhost_sdcard_waitstatus, resp=%08lX, cardstate=%u\n"), (unsigned long) resp, (unsigned) cardstate);
+			PRINTF(PSTR("sdhost_sdcard_waitstatus, resp=%08X, cardstate=%u\n"), (unsigned) resp, (unsigned) cardstate);
 			return 1;
 		}
 	}
@@ -2936,7 +2936,7 @@ DRESULT SD_disk_read(
 	}
 	
 	
-	//PRINTF(PSTR("SD_disk_read: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
+	//PRINTF(PSTR("SD_disk_read: sdhost_CardType=%08X, sdhost_SDType=%08X\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
 
 	if ((sdhost_SDType & SD_HIGH_CAPACITY) == 0)	//CCS (Card Capacity Status)
 	{
@@ -3068,7 +3068,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 		{
 			sdhost_SDType = SD_HIGH_CAPACITY;
 			sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V2_0; /*!< SD Card 2.0 */
-			PRINTF(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
+			PRINTF(PSTR("SD CARD is V2, R1 resp: stuff=%08X\n"), resp);
 			return 0;
 		}
 	}
@@ -3084,7 +3084,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 		PRINTF(PSTR("sdhost_sdcard_checkversion failure\n"));
 		return 1;
 	}
-	PRINTF(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
+	PRINTF(PSTR("SD CARD is V1, R1 resp: stuff=%08X\n"), resp);
 	return 0;
 }
 
@@ -3121,10 +3121,10 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 			return 1;
 		}
 #endif /* WITHSDHCHW */
- 		PRINTF(PSTR("voltage send waiting: R3 resp: respOCR=%08lX\n"), respOCR);
+ 		PRINTF(PSTR("voltage send waiting: R3 resp: respOCR=%08X\n"), respOCR);
 		if ((respOCR & (1UL << 31)) == 0)	// check for voltage range is okay
 			continue;
-		PRINTF(PSTR("voltage send okay: R3 resp: respOCR=%08lX\n"), respOCR);
+		PRINTF(PSTR("voltage send okay: R3 resp: respOCR=%08X\n"), respOCR);
 		if ((respOCR & SD_HIGH_CAPACITY) != 0)
 		{
 			// set by Card Capacity Status (CCS)
@@ -3150,7 +3150,7 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 		return 1;
 	}
 	
-	//PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
+	//PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_CardType=%08X, sdhost_SDType=%08X\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
 
 	sdhost_dpsm_prepare((uintptr_t) buff, txmode, size, lenpower);		// подготовка к обмену data path state machine - при чтенииперед выдачей команды
 	dcache_clean_invalidate((uintptr_t) buff, sizeofarray);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
@@ -3160,7 +3160,7 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 	if (sdhost_short_acmd_resp_R1(acmd, 0, & resp, getTransferMode(txmode, 1)) != 0)	// ACMD51
 	{
 		DMA_sdio_cancel();
-		PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_get_R1 (acmd=0x%02lX) error\n"), acmd);
+		PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_get_R1 (acmd=0x%02X) error\n"), acmd);
 		return 1;
 	}
 	if (sdhost_dpsm_wait((uintptr_t) buff, txmode, size) != 0)
@@ -3206,7 +3206,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	else
 	{
 		sdhost_sdcard_RCA = 0xFFFF & (resp >> 16);
-		//PRINTF(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
+		//PRINTF(PSTR("RCA=%08X\n"), sdhost_sdcard_RCA);
 	}
 #endif /* WITHSDHCHW */
 
@@ -3265,13 +3265,13 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		// sdhost_sdcard_SCR [5]: 23..16
 		// sdhost_sdcard_SCR [6]: 15..8
 		// sdhost_sdcard_SCR [7]: 7..0
-		PRINTF(PSTR("SCR Structure=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 63, 4));			// [63:60]
-		PRINTF(PSTR("SD Memory Card - Spec. Version=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 63, 4));	// [59:56]
-		PRINTF(PSTR("SD Memory Card - Spec3. Version=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 47, 1));	// [47]
-		PRINTF(PSTR("SD Memory Card - ext security=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 46, 4));	// [46:43]
-		PRINTF(PSTR("DAT Bus widths supported=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 51, 4));	// [51:48]
-		PRINTF(PSTR("CPRM Security Support=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 54, 3));			// [54:52]
-		PRINTF(PSTR("CMD Support=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 33, 2));			// [33:32]
+		PRINTF(PSTR("SCR Structure=0x%02X\n"), array_get_bits(sdhost_sdcard_SCR, 64, 63, 4));			// [63:60]
+		PRINTF(PSTR("SD Memory Card - Spec. Version=0x%02X\n"), array_get_bits(sdhost_sdcard_SCR, 64, 63, 4));	// [59:56]
+		PRINTF(PSTR("SD Memory Card - Spec3. Version=0x%02X\n"), array_get_bits(sdhost_sdcard_SCR, 64, 47, 1));	// [47]
+		PRINTF(PSTR("SD Memory Card - ext security=0x%02X\n"), array_get_bits(sdhost_sdcard_SCR, 64, 46, 4));	// [46:43]
+		PRINTF(PSTR("DAT Bus widths supported=0x%02X\n"), array_get_bits(sdhost_sdcard_SCR, 64, 51, 4));	// [51:48]
+		PRINTF(PSTR("CPRM Security Support=0x%02X\n"), array_get_bits(sdhost_sdcard_SCR, 64, 54, 3));			// [54:52]
+		PRINTF(PSTR("CMD Support=0x%02X\n"), array_get_bits(sdhost_sdcard_SCR, 64, 33, 2));			// [33:32]
 
 		bussupport1b = array_get_bits(sdhost_sdcard_SCR, 64, 48, 1); //(sdhost_sdcard_SCR [1] & 0x01) != 0;
 		bussupport4b = array_get_bits(sdhost_sdcard_SCR, 64, 50, 1); //(sdhost_sdcard_SCR [1] & 0x04) != 0;
@@ -3342,15 +3342,15 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
 	{
 
-		PRINTF(PSTR("SECURED_MODE=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 509, 1));
-		PRINTF(PSTR("DAT_BUS_WIDTH=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 511, 2));
-		PRINTF(PSTR("SD_CARD_TYPE=%04lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 495, 16));
+		PRINTF(PSTR("SECURED_MODE=%02x\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 509, 1));
+		PRINTF(PSTR("DAT_BUS_WIDTH=%02x\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 511, 2));
+		PRINTF(PSTR("SD_CARD_TYPE=%04x\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 495, 16));
 
-		PRINTF(PSTR("SIZE_OF_PROTECTED_AREA=%08lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 479, 32));
+		PRINTF(PSTR("SIZE_OF_PROTECTED_AREA=%08x\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 479, 32));
 
-		PRINTF(PSTR("SPEED_CLASS=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 447, 8));
-		PRINTF(PSTR("PERFORMANCE_MOVE=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 439, 8));
-		PRINTF(PSTR("AU_SIZE=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 431, 4));
+		PRINTF(PSTR("SPEED_CLASS=%02x\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 447, 8));
+		PRINTF(PSTR("PERFORMANCE_MOVE=%02x\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 439, 8));
+		PRINTF(PSTR("AU_SIZE=%02x\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 431, 4));
 		PRINTF(PSTR("ERASE_SIZE=%04x\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 423, 16));
 
 	}
@@ -4821,14 +4821,14 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(ticksfreq), 0, (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2), & value, 0);
 	PRINTF(PSTR("hardware_sdhost_setspeed: ticksfreq=%lu, prei=%lu\n"), (unsigned long) ticksfreq, (unsigned long) prei);
 
-	while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
+	while ((SDHI0.SD_INFO2 & (1u << 13)) == 0)	// SCLKDIVEN
 	{
-		//PRINTF(PSTR("hardware_sdhost_setspeed: SCLKDIVEN set clock prohibited, SD_INFO2=%08lX\n"), SDHI0.SD_INFO2);
+		//PRINTF(PSTR("hardware_sdhost_setspeed: SCLKDIVEN set clock prohibited, SD_INFO2=%08X\n"), SDHI0.SD_INFO2);
 		TP();
 	}
-	while ((SDHI0.SD_INFO2 & (1uL << 14)) != 0)	// CBSY
+	while ((SDHI0.SD_INFO2 & (1u << 14)) != 0)	// CBSY
 	{
-		//PRINTF(PSTR("hardware_sdhost_setspeed: CBSY set clock prohibited, SD_INFO2=%08lX\n"), SDHI0.SD_INFO2);
+		//PRINTF(PSTR("hardware_sdhost_setspeed: CBSY set clock prohibited, SD_INFO2=%08X\n"), SDHI0.SD_INFO2);
 		TP();
 	}
 
@@ -5154,7 +5154,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-//	PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+//	PRINTF("SD0->CAPABILITIES=%08X\n", SD0->CAPABILITIES);
 //	PRINTF("SD0->CAPABILITIES.SDMA_Support=%d\n", (SD0->CAPABILITIES >> 22) & 0x01);
 //	PRINTF("SD0->CAPABILITIES.Voltage_Support_3_3_V=%d\n", (SD0->CAPABILITIES >> 24) & 0x01);
 
@@ -5195,12 +5195,12 @@ void hardware_sdhost_detect(uint_fast8_t Card_Inserted)
 			0 * (0x01uL << 8) |	// 0 - Power off
 			0;
 
-	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= (1uL << 24);	// Software_Reset_for_All
-		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
-		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
-		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
-		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
-	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL &= ~ (1uL << 24);	// Software_Reset_for_All
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= (1u << 24);	// Software_Reset_for_All
+		PRINTF("SD0->CAPABILITIES=%08X\n", (unsigned) SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08X\n", (unsigned) SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08X\n", (unsigned) SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08X\n", (unsigned) SD0->CAPABILITIES);
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL &= ~ (1u << 24);	// Software_Reset_for_All
 
 	// SD_Bus_Voltage_Select
 	SD0->HOST_CTRL_BLOCK_GAP_CTRL =

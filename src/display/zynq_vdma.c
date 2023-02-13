@@ -1,5 +1,7 @@
 #include "hardware.h"
 
+#if WITHLTDCHW
+
 #include "display.h"
 #include <stdint.h>
 #include <string.h>
@@ -511,3 +513,5 @@ int Vdma_Start(XAxiVdma *InstancePtr)
 }
 
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
+
+#endif /* WITHLTDCHW */
