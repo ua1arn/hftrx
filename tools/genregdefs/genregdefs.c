@@ -38,6 +38,7 @@ struct regdfn {
 	unsigned fldoffs; /* offset inside block */
 	char *comment;
 	unsigned fldrept;   // 0 - plain field, 1..n - array
+	unsigned resetvalue;
 };
 
 enum {
@@ -353,6 +354,7 @@ static struct regdfn* parseregdef(char *s0, char *fldname, unsigned fldsize,
 		regp->fldrept = fldrept;
 		regp->fldsize = fldsize;
 		regp->comment = strdup(s2);
+		regp->resetvalue = 0;
 	} else if (1 == sscanf(s, "%i", &fldoffset)) {
 		//fprintf(stderr, "fParsed 1 regdef='%s' offs=0x%08X\n", fldname, fldoffset);
 		regp->fldname = strdup(fldname);
@@ -360,6 +362,7 @@ static struct regdfn* parseregdef(char *s0, char *fldname, unsigned fldsize,
 		regp->fldrept = 0;
 		regp->fldsize = fldsize;
 		regp->comment = strdup(s2);
+		regp->resetvalue = 0;
 
 		/* parsed */
 	} else {
@@ -372,6 +375,7 @@ static struct regdfn* parseregdef(char *s0, char *fldname, unsigned fldsize,
 		regp->fldoffs = 0;
 		regp->fldrept = 0;
 		regp->fldsize = 4;
+		regp->resetvalue = 0;
 
 		/* parsed */
 	}
@@ -648,56 +652,18 @@ unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
 	unsigned offs;
 	PLIST_ENTRY t;
 
-	return baseoffset;
+	emitline(indent, "<registers>" "\n");
 
 	offs = 0;
 	for (t = regslist->Flink; t != regslist; t = t->Flink) {
-		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn,
-				item);
-		static const char *fldtypes[] = { "uint32_t", "uint8_t ", "uint16_t",
-				"uint24_t", "uint32_t", "uint40_t", "uint48_t", "uint56_t",
-				"uint64_t", };
+		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn, item);
+		unsigned regsizebits = regp->fldsize * 8;
 
-		char fldtype[VNAME_MAX];
 
-		//fprintf(stderr, "$generate field: fldsize=%u fldoffs=%04X fldrept=%u fldname=%s\n", regp->fldsize, regp->fldoffs,regp->fldrept,regp->fldname);
-
-		if (!IsListEmpty(&regp->aggregate)) {
-			fldtype[0] = '\0';
-		} else if (regp->fldsize >= sizeof fldtypes / sizeof fldtypes[0]) {
-			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "typesize%u",
-					regp->fldsize);
-		} else {
-			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "%s",
-					fldtypes[regp->fldsize]);
-		}
-
-		if (regp->fldoffs > offs || regp->fldsize == 0) {
-			// reserving
-			const unsigned sz = regp->fldoffs - offs;
-
-			if (sz == 4) {
-				emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X;\n",
-						offs);
-			} else if (sz != 0 && (sz % 4) == 0) {
-				emitline(indent + INDENT + 9,
-						"uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
-			} else if (sz != 0) {
-				emitline(indent + INDENT + 9,
-						"uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
-			}
-			offs = regp->fldoffs;
-		}
-
-		if (regp->fldoffs != offs) {
-			emitline(0,
-					"#error Need offset 0x%03X of field '%s' type '%s' at (0x%03X)\n",
-					offs, regp->fldname, fldtype, regp->fldoffs);
-			//regp->fldoffs = offs;
-		}
+		offs = regp->fldoffs;
 
 		if (1 /*regp->fldoffs == offs*/) {
-			if (!IsListEmpty(&regp->aggregate)) {
+			if (0 && !IsListEmpty(&regp->aggregate)) {
 				/* Emit aggregate type */
 				emitline(indent + INDENT, "struct\n");
 				emitline(indent + INDENT, "{\n");
@@ -710,26 +676,32 @@ unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
 			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
-					emitline(indent + INDENT, "volatile %s %s [0x%03X];",
-							fldtype, regp->fldname, regp->fldrept);
+					//emitline(indent + INDENT, "volatile %s %s [0x%03X];",
+					//		fldtype, regp->fldname, regp->fldrept);
 
 					offs += regp->fldsize * regp->fldrept;
 				} else {
 					// Plain field
-					emitline(indent + INDENT, "volatile %s %s;", fldtype,
-							regp->fldname);
+					//emitline(indent + INDENT, "volatile %s %s;", fldtype,
+					//		regp->fldname);
+					emitline(indent, "<register>" "\n");
+					emitline(indent + 1, "<name>%s</name>" "\n", regp->fldname);
+					emitline(indent + 1, "<displayName>%s</displayName>" "\n", regp->fldname);
+					emitline(indent + 1, "<description>%s</description>" "\n", regp->comment);
+					emitline(indent + 1, "<addressOffset>0x%03X</addressOffset>" "\n", offs + baseoffset);
+					emitline(indent + 1, "<size>0x%02X</size>" "\n", regsizebits);
+					emitline(indent + 1, "<access>read-write</access>" "\n");
+					emitline(indent + 1, "<resetValue>0x%08X</resetValue>" "\n", regp->resetvalue);
+					emitline(indent, "</register>" "\n");
+
 					offs += regp->fldsize;
 				}
-				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-						regp->fldoffs + baseoffset, regp->comment);
 			}
 		} else {
-			emitline(0,
-					"#error Need offset 0x%03X of field '%s' type '%s' at (0x%03X)\n",
-					offs, regp->fldname, fldtype, regp->fldoffs);
 			//break;
 		}
 	}
+	emitline(indent, "</registers>" "\n");
 	return offs;
 }
 
@@ -740,9 +712,6 @@ static void emitperipherial(const struct parsedfile *pfl) {
 	if (IsListEmpty(&pfl->regslist)) {
 		return;
 	}
-	emitline(2, "<peripheral>" "\n");
-	emitline(2, "</peripheral>" "\n");
-
 	if (strlen(pfl->bname) == 0)
 		fprintf(stderr, "Not named object in file '%s'\n", pfl->file);
 
@@ -753,8 +722,8 @@ static void emitperipherial(const struct parsedfile *pfl) {
 		//emitline(indent, "<groupName>%s</groupName>" "\n", pfl->base_names [0]);
 		emitline(indent, "<baseAddress>0x%08X</baseAddress>" "\n",
 				pfl->base_address[0]);
-		emitline(indent, "</peripheral>" "\n");
 		emitregisters(indent, &pfl->regslist, 0);
+		emitline(indent, "</peripheral>" "\n");
 	}
 
 	for (i = 1; i < pfl->base_count; ++i) {
@@ -803,6 +772,8 @@ static void emitdevice(void) {
 static void emitxmltail(void) {
 
 }
+
+// See https://github.com/Open-CMSIS-Pack/devtools/SVDConv
 
 static void generate_svd(void) {
 	emitxmlhead();
