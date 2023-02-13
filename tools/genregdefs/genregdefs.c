@@ -661,19 +661,28 @@ unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
 		if (1 /*regp->fldoffs == offs*/) {
 			if (0 && !IsListEmpty(&regp->aggregate)) {
 				/* Emit aggregate type */
-				emitline(indent + INDENT, "struct\n");
-				emitline(indent + INDENT, "{\n");
-				offs += regp->fldrept
-						* genreglist(indent + INDENT, &regp->aggregate, offs); /* Emit fields list */
-				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname,
-						regp->fldrept);
-				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-						regp->fldoffs + baseoffset, regp->comment);
+//				emitline(indent + INDENT, "struct\n");
+//				emitline(indent + INDENT, "{\n");
+//				offs += regp->fldrept
+//						* genreglist(indent + INDENT, &regp->aggregate, offs); /* Emit fields list */
+//				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname,
+//						regp->fldrept);
+//				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
+//						regp->fldoffs + baseoffset, regp->comment);
 			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
 					//emitline(indent + INDENT, "volatile %s %s [0x%03X];",
 					//		fldtype, regp->fldname, regp->fldrept);
+					emitline(indent, "<cluster>" "\n");
+					emitline(indent + 1, "<dim>%u</dim>" "\n", regp->fldrept);
+					emitline(indent + 1, "<name>%s</name>" "\n", regp->fldname);
+					emitline(indent + 1, "<description>%s</description>" "\n", regp->comment);
+					emitline(indent + 1, "<addressOffset>0x%03X</addressOffset>" "\n", offs + baseoffset);
+					emitline(indent + 1, "<size>0x%02X</size>" "\n", regsizebits);
+					emitline(indent + 1, "<access>read-write</access>" "\n");
+					emitline(indent + 1, "<resetValue>0x%08X</resetValue>" "\n", regp->resetvalue);
+					emitline(indent, "</cluster>" "\n");
 
 					offs += regp->fldsize * regp->fldrept;
 				} else {
