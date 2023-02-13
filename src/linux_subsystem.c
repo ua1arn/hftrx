@@ -510,6 +510,7 @@ void linux_cancel_thread(pthread_t tid)
 
 void linux_subsystem_init(void)
 {
+#if CPUSTYLE_XCZU
 	extern char ** environ;
 	char spid[6];
 	int pid = getpid();
@@ -521,6 +522,7 @@ void linux_subsystem_init(void)
 		if (execve(argv[0], (char **) argv , environ) < 0)
 			perror("taskset");
 	}
+#endif /* CPUSTYLE_XCZU */
 
 	linux_framebuffer_init();
 	linux_xgpio_init();
