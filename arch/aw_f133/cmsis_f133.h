@@ -21,7 +21,7 @@ typedef enum IRQn
     TWI3_IRQn = 28,                                   /*!< TWI  Interrupt */
     SPI0_IRQn = 31,                                   /*!< SPI Serial Peripheral Interface Interrupt */
     SPI1_IRQn = 32,                                   /*!< SPI_DBI Serial Peripheral Interface Interrupt */
-    LEDC_IRQn = 36,                                   /*!< LEDC  Interrupt */
+    LEDC_IRQn = 36,                                   /*!< LEDC LED Lamp Controller Interrupt */
     CAN0_IRQn = 37,                                   /*!< CAN  Interrupt */
     CAN1_IRQn = 38,                                   /*!< CAN  Interrupt */
     OWA_IRQn = 39,                                    /*!< OWA  Interrupt */
@@ -931,7 +931,7 @@ typedef struct CIR_TX_Type
 /*
  * @brief LEDC
  */
-/*!< LEDC  */
+/*!< LEDC LED Lamp Controller */
 typedef struct LEDC_Type
 {
     volatile uint32_t LEDC_CTRL_REG;                  /*!< Offset 0x000 LEDC Control Register */
@@ -1571,7 +1571,7 @@ typedef struct G2D_TOP_Type
 /*
  * @brief G2D_MIXER
  */
-/*!< G2D_MIXER  */
+/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler */
 typedef struct G2D_MIXER_Type
 {
     volatile uint32_t G2D_MIXER_CTL;                  /*!< Offset 0x000 G2D mixer control */
@@ -1713,7 +1713,7 @@ typedef struct G2D_BLD_Type
 /*
  * @brief G2D_WB
  */
-/*!< G2D_WB  */
+/*!< G2D_WB Graphic 2D (G2D) Engine Write Back */
 typedef struct G2D_WB_Type
 {
     volatile uint32_t WB_ATT;                         /*!< Offset 0x000 WB_ATT */
@@ -2473,7 +2473,7 @@ typedef struct CLINT_Type
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX  register set access pointer */
-#define LEDC ((LEDC_TypeDef *) LEDC_BASE)             /*!< LEDC  register set access pointer */
+#define LEDC ((LEDC_TypeDef *) LEDC_BASE)             /*!< LEDC LED Lamp Controller register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define SPI_DBI ((SPI_DBI_TypeDef *) SPI_DBI_BASE)    /*!< SPI_DBI Serial Peripheral Interface register set access pointer */
@@ -2495,14 +2495,14 @@ typedef struct CLINT_Type
 #define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2  register set access pointer */
 #define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3  register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP  register set access pointer */
-#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER  register set access pointer */
+#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler register set access pointer */
 #define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)       /*!< G2D_V0  register set access pointer */
 #define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0  register set access pointer */
 #define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1  register set access pointer */
 #define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2  register set access pointer */
 #define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Also see 5.7 DE UIS Specification register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Blender register set access pointer */
-#define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB  register set access pointer */
+#define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */

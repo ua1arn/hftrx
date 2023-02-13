@@ -1,3 +1,4 @@
+#comment; LED Lamp Controller
 #type; LEDC
 #base; LEDC 0x02008000
 #irq; LEDC 52

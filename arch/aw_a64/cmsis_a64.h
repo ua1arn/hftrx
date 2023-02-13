@@ -42,7 +42,6 @@ typedef enum IRQn
     TWI2_IRQn = 40,                                   /*!< TWI  Interrupt */
     TIMER0_IRQn = 50,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 51,                                 /*!< TIMER  Interrupt */
-    LEDC_IRQn = 52,                                   /*!< LEDC  Interrupt */
     OWA_IRQn = 55,                                    /*!< OWA  Interrupt */
     I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  Interrupt */
@@ -145,7 +144,6 @@ typedef enum IRQn
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK Base */
 #define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC Base */
 #define CIR_TX_BASE ((uintptr_t) 0x02003000)          /*!< CIR_TX Base */
-#define LEDC_BASE ((uintptr_t) 0x02008000)            /*!< LEDC Base */
 #define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
 #define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC Base */
 #define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU Base */
@@ -887,26 +885,6 @@ typedef struct CIR_TX_Type
              uint32_t reserved_0x038 [0x0012];
     volatile uint32_t CIR_TXFIFO;                     /*!< Offset 0x080 CIR Transmit FIFO Data Register */
 } CIR_TX_TypeDef; /* size of structure = 0x084 */
-/*
- * @brief LEDC
- */
-/*!< LEDC  */
-typedef struct LEDC_Type
-{
-    volatile uint32_t LEDC_CTRL_REG;                  /*!< Offset 0x000 LEDC Control Register */
-    volatile uint32_t LED_T01_TIMING_CTRL_REG;        /*!< Offset 0x004 LEDC T0 & T1 Timing Control Register */
-    volatile uint32_t LEDC_DATA_FINISH_CNT_REG;       /*!< Offset 0x008 LEDC Data Finish Counter Register */
-    volatile uint32_t LED_RESET_TIMING_CTRL_REG;      /*!< Offset 0x00C LEDC Reset Timing Control Register */
-    volatile uint32_t LEDC_WAIT_TIME0_CTRL_REG;       /*!< Offset 0x010 LEDC Wait Time0 Control Register */
-    volatile uint32_t LEDC_DATA_REG;                  /*!< Offset 0x014 LEDC Data Register */
-    volatile uint32_t LEDC_DMA_CTRL_REG;              /*!< Offset 0x018 LEDC DMA Control Register */
-    volatile uint32_t LEDC_INT_CTRL_REG;              /*!< Offset 0x01C LEDC Interrupt Control Register */
-    volatile uint32_t LEDC_INT_STS_REG;               /*!< Offset 0x020 LEDC Interrupt Status Register */
-             uint32_t reserved_0x024;
-    volatile uint32_t LEDC_WAIT_TIME1_CTRL_REG;       /*!< Offset 0x028 LEDC Wait Time1 Control Register */
-             uint32_t reserved_0x02C;
-    volatile uint32_t LEDC_FIFO_DATA_REG [0x020];     /*!< Offset 0x030 LEDC FIFO Data Registers array */
-} LEDC_TypeDef; /* size of structure = 0x0B0 */
 /*
  * @brief TPADC
  */
@@ -2213,7 +2191,6 @@ typedef struct MSGBOX_Type
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX  register set access pointer */
-#define LEDC ((LEDC_TypeDef *) LEDC_BASE)             /*!< LEDC  register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */

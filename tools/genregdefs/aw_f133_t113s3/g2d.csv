@@ -1,3 +1,4 @@
+#comment; Graphic 2D (G2D) Engine
 #type; G2D
 #regdef; G2D_CONTROL_REG; 0x000; Control register
 #regdef; G2D_STATUS_REG; 0x004; Status register
