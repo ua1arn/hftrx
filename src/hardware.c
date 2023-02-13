@@ -3915,15 +3915,15 @@ static void restart_core0_aarch64(void)
 // aarch64-none-elf-ld -o tt.elf tt.o
 // aarch64-none-elf-objdump.exe -d tt.elf
 
-static uint32_t halt64 [16] =
-{
-		0xd2880000,        //mov     x0, #0x4000                     // #16384
-		0xf2a00080,        //movk    x0, #0x4, lsl #16
-		0x5297dde1,        //mov     w1, #0xbeef                     // #48879
-		0x72bbd5a1,        //movk    w1, #0xdead, lsl #16
-		0xb9000001,        //str     w1, [x0]
-		0x14000000,        //b       400014 <_start+0x14>
-};
+//static uint32_t halt64 [16] =
+//{
+//		0xd2880000,        //mov     x0, #0x4000                     // #16384
+//		0xf2a00080,        //movk    x0, #0x4, lsl #16
+//		0x5297dde1,        //mov     w1, #0xbeef                     // #48879
+//		0x72bbd5a1,        //movk    w1, #0xdead, lsl #16
+//		0xb9000001,        //str     w1, [x0]
+//		0x14000000,        //b       400014 <_start+0x14>
+//};
 
 // H3: R_CPUCFG @ 0x01F01C00
 
@@ -3939,8 +3939,8 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	//startfunc = (uintptr_t) halt64;
 	//startfunc = (uintptr_t) halt32;
 
-	dcache_invalidate(0x44000, 64);
-	dcache_clean((uintptr_t) halt64, sizeof halt64);
+//	dcache_invalidate(0x44000, 64);
+//	dcache_clean((uintptr_t) halt64, sizeof halt64);
 
 //	PRINTF("  C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
 //	PRINTF("  C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);

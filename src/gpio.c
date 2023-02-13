@@ -821,6 +821,20 @@ static SPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
 
 	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 }
+
+
+static uint32_t readl(uintptr_t addr)
+{
+	return * (volatile uint32_t *) addr;
+}
+
+static void writel(uint32_t value, uintptr_t addr)
+{
+	* (volatile uint32_t *) addr = value;
+}
+
+//#define	R_PRCM_BASE	 ((uintptr_t) 0x01F01400)
+
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
 void sysinit_gpio_initialize(void)
@@ -832,9 +846,27 @@ void sysinit_gpio_initialize(void)
 		SPINLOCK_t * const lck = & gpiodata_locks [i];
 		SPINLOCK_INITIALIZE(lck);
 	}
+
 #if CPUSTYLE_A64
+
 	SPINLOCK_INITIALIZE(& gpiodata_L_lock);
 	CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING - not need - already set
+	RTC->GPL_HOLD_OUTPUT_REG = 0;
+
+	uint32_t reg_val;
+	// R_GPIO reset deassert
+	reg_val = readl(R_PRCM_BASE+0xb0);
+	reg_val |= (1u << 0);
+	writel(reg_val, R_PRCM_BASE+0xb0);
+
+	// R_GPIO GATING open
+	// Valid bit 7..0
+	// bit 0 = GPIO(L) gating
+	// bit 6 = TWI gating
+	reg_val = readl(R_PRCM_BASE+0x28);
+	reg_val |= (1u << 0);
+	writel(reg_val, R_PRCM_BASE+0x28);
+
 #endif /* CPUSTYLE_A64 */
 }
 
@@ -1121,44 +1153,6 @@ gpioX_onchangeinterrupt(
 	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CTL |= ipins;
 	// todo: EINT_STATUS = ipins; // for clear
 }
-
-
-static uint32_t readl(uintptr_t addr)
-{
-	return * (volatile uint32_t *) addr;
-}
-
-static void writel(uint32_t value, uintptr_t addr)
-{
-	* (volatile uint32_t *) addr = value;
-}
-
-#if CPUSTYLE_A64
-
-//#define	R_PRCM_BASE	 ((uintptr_t) 0x01F01400)
-
-static void awxx_a64_gpiol_enable(void)
-{
-	const irqstatus_t cpsr = gpioX_lock(GPIOL);
-
-	RTC->GPL_HOLD_OUTPUT_REG = 0;
-
-	uint32_t reg_val;
-	// R_GPIO reset deassert
-	reg_val = readl(R_PRCM_BASE+0xb0);
-	reg_val |= 1;
-	writel(reg_val, R_PRCM_BASE+0xb0);
-
-	// R_GPIO GATING open
-	reg_val = readl(R_PRCM_BASE+0x28);
-	reg_val |= 1;
-	writel(reg_val, R_PRCM_BASE+0x28);
-
-	gpioX_unlock(GPIOL, cpsr);
-
-}
-
-#endif /* CPUSTYLE_A64 */
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
@@ -7717,7 +7711,6 @@ arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
 
 	//gpioX_poweron(GPIOL);
-	awxx_a64_gpiol_enable();
 	gpioX_setstate(GPIOL, opins, initialstate);
 	gpioX_prog(GPIOL, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
@@ -7769,8 +7762,7 @@ arm_hardware_piol_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_A64
 
-	//gpioX_poweron(GPIOH);
-	awxx_a64_gpiol_enable();
+	//gpioX_poweron(GPIOL);
 	gpioX_prog(GPIOL, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #else
@@ -7828,8 +7820,7 @@ arm_hardware_piol_altfn2(unsigned long opins, unsigned af)
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_poweron(GPIOF);
-	awxx_a64_gpiol_enable();
+	//gpioX_poweron(GPIOL);
 	gpioX_prog(GPIOL, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #else
@@ -7887,8 +7878,7 @@ arm_hardware_piol_altfn20(unsigned long opins, unsigned af)
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_poweron(GPIOF);
-	awxx_a64_gpiol_enable();
+	//gpioX_poweron(GPIOL);
 	gpioX_prog(GPIOL, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #else
@@ -7946,8 +7936,7 @@ arm_hardware_piol_altfn50(unsigned long opins, unsigned af)
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_poweron(GPIOF);
-	awxx_a64_gpiol_enable();
+	//gpioX_poweron(GPIOL);
 	gpioX_prog(GPIOL, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else

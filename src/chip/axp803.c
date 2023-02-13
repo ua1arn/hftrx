@@ -29,6 +29,9 @@
 
 
 #include "hardware.h"
+
+#if CPUSTYLE_A64
+
 #include "gpio.h"
 #include "formats.h"
 
@@ -42,19 +45,22 @@ static i2cp_t pmic_i2cp;	/* параметры для обмена по I2C. П�
 int pmic_bus_init(void)
 {
 	i2cp_intiialize(& pmic_i2cp, I2CP_I2C1, 100000000);
+
+
 	TWISOFT_INITIALIZE();
-//
-//
-//	uint8_t v;
-//	unsigned addrw = PMIC_I2C_W;
-//	unsigned addrr = PMIC_I2C_R;
-//	////%%TP();
-//	i2c_start(addrw);
-//	i2c_write_withrestart(0x1B);
-//	i2c_start(addrr);
-//	i2c_read(& v, I2C_READ_ACK_NACK);
-//	////%%TP();
-//	PRINTF("I2C 0x%02X: test=0x%02X\n", addrw, v);
+
+//	unsigned addr;
+//	for (addr = 1; addr < 127; ++ addr)
+//	{
+//		uint8_t v;
+//		unsigned addrw = addr * 2;
+//		unsigned addrr = addrw | 0x01;
+//		i2c_start(addrw);
+//		i2c_write_withrestart(0x1B);
+//		i2c_start(addrr);
+//		i2c_read(& v, I2C_READ_ACK_NACK);
+//		PRINTF("I2C 0x%02X: test=0x%02X\n", addrw, v);
+//	}
 
 	return 0;
 }
@@ -434,7 +440,18 @@ int axp803_initialize(void)
 	if (ret)
 		return ret;
 
-	//PRINTF("axp803_chip_id=0x%02X (expected 0x51)\n", axp803_chip_id);
+	if (0)
+	{
+		unsigned reg;
+		for (reg = 0; reg <= 0xED; ++ reg)
+		{
+			uint8_t v;
+			pmic_bus_read(reg, & v);
+			PRINTF("axp803 reg%02X=0x%02X\n", reg, v);
+		}
+	}
+
+//	PRINTF("axp803_chip_id=0x%02X (expected 0x51)\n", axp803_chip_id);
 //	if (!(axp803_chip_id == 0x51))
 //		return -ENODEV;
 //	else
@@ -480,3 +497,5 @@ int axp803_initialize(void)
 //	/* not reached */
 //	return 0;
 //}
+
+#endif /* CPUSTYLE_A64 */
