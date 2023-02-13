@@ -765,7 +765,7 @@ prog_gpioreg(void)
 	xc7z_gpio_output(TARGET_DAC_SLEEP_EMIO);
 	xc7z_writepin(TARGET_DAC_SLEEP_EMIO, ! glob_tx);
 #endif /* defined (TARGET_DAC_SLEEP_EMIO) */
-#endif /* CPUSTYLE_XC7Z*/
+#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM*/
 }
 
 /* 
@@ -6836,7 +6836,7 @@ restart:
 static adapter_t plfircoefsout;
 static adapter_t plfircoefsout32;
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 #include "xc7z_inc.h"
 
@@ -6886,8 +6886,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 #endif /* ! WITHDSPLOCALTXFIR */
 	}
 }
-
-#else
+#elif ! LINUX_SUBSYSTEM
 
 void board_fpga_fir_initialize(void)
 {
@@ -7354,7 +7353,7 @@ static void adcfilters_initialize(void);
 */
 void board_initialize(void)
 {
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 	xc7z_hardware_initialize();
 #endif /* CPUSTYLE_XC7Z */
 #if WITHFPGALOAD_DCFG
@@ -9614,7 +9613,9 @@ mcp3208_read_low(
 #if defined(RTC1_TYPE)
 
 #include <time.h>
+	#if ! LINUX_SUBSYSTEM
 #include <sys/_timeval.h>
+#endif /* ! LINUX_SUBSYSTEM */
 
 /* поддержка получения времени */
 int _gettimeofday(struct timeval *p, void *tz)
@@ -9692,21 +9693,23 @@ int _gettimeofday(struct timeval *p, void *tz)
 	return 0;
 }
 
-//#include <time.h>
-//#include <sys/_timeval.h>
-//
-//
-//int _gettimeofday(struct timeval *p, void *tz)
-//{
-//	if (p != NULL)
-//	{
-//		const ldiv_t v = ldiv(sys_now(), 1000);
-//		//memset(p, 0, sizeof * p);
-//		p->tv_usec = v.rem * 1000;
-//		p->tv_sec = v.quot;
-//	}
-//	return 0;
-//}
+#elif ! LINUX_SUBSYSTEM
+
+#include <time.h>
+#include <sys/_timeval.h>
+
+
+int _gettimeofday(struct timeval *p, void *tz)
+{
+	if (p != NULL)
+	{
+		const ldiv_t v = ldiv(sys_now(), 1000);
+		//memset(p, 0, sizeof * p);
+		p->tv_usec = v.rem * 1000;
+		p->tv_sec = v.quot;
+	}
+	return 0;
+}
 
 #endif
 #endif /* ! CPUSTYLE_ATMEGA */

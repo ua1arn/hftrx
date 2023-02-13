@@ -5494,7 +5494,9 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLOR
 			p, ALLDX, 1, x, y);
 }
 
-#include "dsp/window_functions.h"
+#if ! LINUX_SUBSYSTEM
+	#include "dsp/window_functions.h"
+#endif /* ! LINUX_SUBSYSTEM */
 
 static void
 display2_wfl_init(

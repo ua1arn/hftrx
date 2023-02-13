@@ -1478,6 +1478,8 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 	}
 }
 
+#elif LINUX_SUBSYSTEM
+
 #elif (CPUSTYLE_XC7Z) && WITHTWIHW
 
 #include "xc7z_inc.h"
@@ -2099,6 +2101,8 @@ void hardware_twi_master_configure(void)
 	// Enable the I2Cx peripheral
 	I2C1->CR1 |= I2C_CR1_PE;
 
+#elif LINUX_SUBSYSTEM
+
 #elif CPUSTYLE_XC7Z
 
 	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
@@ -2112,7 +2116,7 @@ void hardware_twi_master_configure(void)
 
 #endif /* WITHTWIHW */
 
-#if (WITHTWIHW || WITHTWISW)
+#if (WITHTWIHW || WITHTWISW) && ! LINUX_SUBSYSTEM
 
 /* скорость обмена */
 void i2cp_intiialize(i2cp_t * p, unsigned ch, unsigned freq)

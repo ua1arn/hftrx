@@ -1609,9 +1609,12 @@ static void window_options_process(void)
 		add_element("btn_Display", 100, 44, 0, 0, "Display|settings");
 		add_element("btn_gui", 	   100, 44, 0, 0, "GUI|settings");
 		add_element("btn_Utils",   100, 44, 0, 0, "Utils");
-#if defined (RTC1_TYPE)
+#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 		add_element("btn_Time",    100, 44, 0, 0, "Set time|& date");
-#endif /* defined (RTC1_TYPE)  */
+#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
+#if LINUX_SUBSYSTEM
+		add_element("btn_exit",		100, 44, 0, 0, "Terminate|program");
+#endif /* LINUX_SUBSYSTEM */
 
 		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -1651,7 +1654,7 @@ static void window_options_process(void)
 			button_t * btn_AUDsett = find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
 			button_t * btn_SysMenu = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
 			button_t * btn_Display = find_gui_element(TYPE_BUTTON, win, "btn_Display");
-#if defined (RTC1_TYPE)
+#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 			button_t * btn_Time = find_gui_element(TYPE_BUTTON, win, "btn_Time");
 			if (bh == btn_Time)
 			{
@@ -1659,7 +1662,7 @@ static void window_options_process(void)
 				open_window(win);
 			}
 			else
-#endif /* defined (RTC1_TYPE) */
+#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
 			if (bh == btn_Utils)
 			{
 				window_t * const win = get_win(WINDOW_UTILS);
@@ -1693,6 +1696,12 @@ static void window_options_process(void)
 				open_window(win);
 			}
 #endif /* WITHSPECTRUMWF && WITHMENU */
+#if LINUX_SUBSYSTEM
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_exit"))
+			{
+				linux_exit();		// Terminate all
+			}
+#endif /* LINUX_SUBSYSTEM */
 		}
 		break;
 
@@ -5280,7 +5289,7 @@ static void window_freq_process (void)
 
 static void window_time_process(void)
 {
-#if defined (RTC1_TYPE)
+#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 	window_t * const win = get_win(WINDOW_TIME);
 	static unsigned year, month, day, hour, minute, second, update;
 
@@ -5440,7 +5449,7 @@ static void window_time_process(void)
 		lh =  find_gui_element(TYPE_LABEL, win, "lbl_second");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", second);
 	}
-#endif /* defined (RTC1_TYPE) */
+#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
 }
 
 static void window_kbd_process(void)

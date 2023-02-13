@@ -1263,7 +1263,9 @@ void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
 
 #define MAXFLOAT	3.40282347e+38F
 
-#define M_LN2		_M_LN2
+#if ! LINUX_SUBSYSTEM
+	#define M_LN2		_M_LN2
+#endif
 
 #define M_E		2.7182818284590452354
 #define M_LOG2E		1.4426950408889634074
