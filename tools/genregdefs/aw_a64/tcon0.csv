@@ -1,4 +1,4 @@
-#comment; TCON LCD Interface
+#comment; TCON0 LVDS/RGB/MIPI-DSI Interface
 #type; TCON0
 #base; TCON0 0x01C0C000
 #regdef; TCON_GCTL_REG; 0x000; TCON global control register

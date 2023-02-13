@@ -1428,7 +1428,7 @@ typedef struct DE_UI_Type
 /*
  * @brief TCON0
  */
-/*!< TCON0 TCON LCD Interface */
+/*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface */
 typedef struct TCON0_Type
 {
     volatile uint32_t TCON_GCTL_REG;                  /*!< Offset 0x000 TCON global control register */
@@ -1477,7 +1477,7 @@ typedef struct TCON0_Type
 /*
  * @brief TCON1
  */
-/*!< TCON1 TCON HDMI Interface */
+/*!< TCON1 TCON1 HDMI Interface */
 typedef struct TCON1_Type
 {
     volatile uint32_t TCON_GCTL_REG;                  /*!< Offset 0x000 TCON global control register */
@@ -2203,8 +2203,8 @@ typedef struct MSGBOX_Type
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
 #define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2  register set access pointer */
 #define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3  register set access pointer */
-#define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON LCD Interface register set access pointer */
-#define TCON1 ((TCON1_TypeDef *) TCON1_BASE)          /*!< TCON1 TCON HDMI Interface register set access pointer */
+#define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface register set access pointer */
+#define TCON1 ((TCON1_TypeDef *) TCON1_BASE)          /*!< TCON1 TCON1 HDMI Interface register set access pointer */
 #define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE) /*!< CSIC_CCU  register set access pointer */
 #define CSIC_TOP ((CSIC_TOP_TypeDef *) CSIC_TOP_BASE) /*!< CSIC_TOP  register set access pointer */
 #define CSIC_PARSER0 ((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)/*!< CSIC_PARSER0  register set access pointer */
