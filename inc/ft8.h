@@ -25,10 +25,8 @@ enum {
 	ft8_length = 15,
 	ft8_text_length = 40,
 	ft8_text_records = 50,
-#if ! LINUX_SUBSYSTEM
 	ft8_interrupt_core0 = SGI10_IRQn,
 	ft8_interrupt_core1 = SGI11_IRQn,
-#endif /* ! LINUX_SUBSYSTEM */
 };
 
 typedef struct {

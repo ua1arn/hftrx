@@ -47,11 +47,7 @@ int dbg_getchar(char * r);
 #endif /* WITHDEBUG */
 
 #if WITHDEBUG
-#if LINUX_SUBSYSTEM
-	#define PRINTF printf
-#else
 	#define PRINTF	debug_printf_P
-#endif /* LINUX_SUBSYSTEM */
 #else /* WITHDEBUG */
 	#define PRINTF(...)	do {} while (0)
 #endif /* WITHDEBUG */

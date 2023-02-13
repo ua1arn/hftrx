@@ -21479,9 +21479,6 @@ hamradio_mainloop(void)
 	for (;;)
 	{
 		hamradio_main_step();
-#if LINUX_SUBSYSTEM
-		usleep(100);
-#endif /* LINUX_SUBSYSTEM */
 	}
 }
 
@@ -22025,12 +22022,9 @@ int
 //__attribute__ ((used))
 main(void)
 {
-#if LINUX_SUBSYSTEM
-	linux_subsystem_init();
-#endif /* LINUX_SUBSYSTEM */
-#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+#if (CPUSTYLE_ARM || CPUSTYLE_RISCV)
 	sysinit_gpio_initialize();
-#endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM */
+#endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV) */
 #if WITHDEBUG && (! CPUSTYLE_ARM /* || WITHISBOOTLOADER */)
 
 	HARDWARE_DEBUG_INITIALIZE();
@@ -22057,10 +22051,6 @@ main(void)
 #endif /* WITHLWIP */
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
-
-#if LINUX_SUBSYSTEM
-	linux_user_init();
-#endif /* LINUX_SUBSYSTEM */
 #if WITHNMEA && CPUSTYLE_XC7Z
 	HARDWARE_NMEA_INITIALIZE();
 	HARDWARE_NMEA_SET_SPEED(115200L);
