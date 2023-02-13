@@ -676,12 +676,15 @@ unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
 					//		fldtype, regp->fldname, regp->fldrept);
 					emitline(indent, "<cluster>" "\n");
 					emitline(indent + 1, "<dim>%u</dim>" "\n", regp->fldrept);
-					emitline(indent + 1, "<name>%s</name>" "\n", regp->fldname);
-					emitline(indent + 1, "<description>%s</description>" "\n", regp->comment);
-					emitline(indent + 1, "<addressOffset>0x%03X</addressOffset>" "\n", offs + baseoffset);
-					emitline(indent + 1, "<size>0x%02X</size>" "\n", regsizebits);
-					emitline(indent + 1, "<access>read-write</access>" "\n");
-					emitline(indent + 1, "<resetValue>0x%08X</resetValue>" "\n", regp->resetvalue);
+					emitline(indent + 1, "<register>" "\n");
+					emitline(indent + 2, "<name>%s</name>" "\n", regp->fldname);
+					emitline(indent + 2, "<displayName>%s</displayName>" "\n", regp->fldname);
+					emitline(indent + 2, "<description>%s</description>" "\n", regp->comment);
+					emitline(indent + 2, "<addressOffset>0x%03X</addressOffset>" "\n", offs + baseoffset);
+					emitline(indent + 2, "<size>0x%02X</size>" "\n", regsizebits);
+					emitline(indent + 2, "<access>read-write</access>" "\n");
+					emitline(indent + 2, "<resetValue>0x%08X</resetValue>" "\n", regp->resetvalue);
+					emitline(indent + 1, "</register>" "\n");
 					emitline(indent, "</cluster>" "\n");
 
 					offs += regp->fldsize * regp->fldrept;
