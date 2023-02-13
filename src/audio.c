@@ -193,7 +193,11 @@ static volatile uint_fast8_t datavox;	/* автоматический перех
 
 static uint_fast8_t istxreplaced(void)
 {
+#if WITHUSBHW && WITHUSBUACOUT
 	return (datavox != 0 && buffers_get_uacoutalt() != 0);
+#else /* WITHUSBHW && WITHUSBUACOUT */
+	return 0;
+#endif /* WITHUSBHW && WITHUSBUACOUT */
 }
 
 #define NPROF 2	/* количество профилей параметров DSP фильтров. */
@@ -3986,8 +3990,10 @@ static RAMFUNC FLOAT_t mikeinmux(
 		case BOARD_TXAUDIO_LINE:
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
 		case BOARD_TXAUDIO_MIKE:
+#if WITHUSBHW && WITHUSBUACOUT
 			if (istxreplaced())
 				goto txfromusb;
+#endif /* WITHUSBHW && WITHUSBUACOUT */
 			//vi0f = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
 			// источник - микрофон
 			vi0f = txmikeagc(vi0f * txlevelXXX);	// АРУ
