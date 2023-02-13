@@ -299,6 +299,7 @@ void board_usb_deinitialize(void)
 /* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
+#if defined (WITHUSBHW_DEVICE)
 #if WITHUSBDEV_HSDESC
 	usbd_descriptors_initialize(1);
 
@@ -307,7 +308,6 @@ void board_usb_activate(void)
 
 #endif /* WITHUSBDEV_HSDESC */
 	//PRINTF("board_usb_activate\n");
-#if defined (WITHUSBHW_DEVICE)
 	if (USBD_Start(& hUsbDeviceHS) != USBD_OK)
 	{
 		Error_Handler();
