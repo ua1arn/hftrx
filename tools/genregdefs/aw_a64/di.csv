@@ -1,2 +1,3 @@
+#comment; De-interlaced
 #type; DI
-#base; DI 0x05400000
+#base; DI 0x01E00000
