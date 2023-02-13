@@ -2268,6 +2268,8 @@ void i2c_stop(void)
 	i2cp_stop(& i2cp_1);
 }
 
+#if defined (TWISOFT2_INITIALIZE)
+
 // Работа со вторым каналом I2C
 /* wrappers for old functions */
 void i2c2_start(uint_fast8_t address)
@@ -2299,6 +2301,7 @@ void i2c2_stop(void)
 {
 	i2cp_stop(& i2cp_2);
 }
+#endif /* defined (TWISOFT2_INITIALIZE) */
 
 #endif
 
