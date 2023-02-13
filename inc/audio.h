@@ -1189,6 +1189,7 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
 void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
 void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
+uint_fast8_t buffers_get_uacoutalt(void);
 
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.

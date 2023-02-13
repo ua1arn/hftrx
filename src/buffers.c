@@ -2827,6 +2827,11 @@ buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативно
 	uacinrtsalt = v;
 }
 
+uint_fast8_t buffers_get_uacoutalt(void)
+{
+	return uacoutalt;
+}
+
 void 
 buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC OUT interface */
 {

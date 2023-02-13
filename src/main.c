@@ -3996,8 +3996,9 @@ enum
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 
 		#if WITHTX
-		static uint_fast8_t gdatavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+		static uint_fast8_t gdatavox = 0;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 		#endif /* WITHTX */
+		static uint_fast8_t	gusb_ft8cn = 0;	/* совместимость VID/PID для работы с программой FT8CN */
 		#if WITHUSBHEADSET
 			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#else /* WITHUSBHEADSET */
@@ -4006,7 +4007,6 @@ enum
 		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 			static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
-		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 	#else /* WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };

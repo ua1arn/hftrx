@@ -188,7 +188,13 @@ static uint_fast8_t		glob_dsploudspeaker_off;
 static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 static volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 
+
 #if WITHINTEGRATEDDSP
+
+static uint_fast8_t istxreplaced(void)
+{
+	return (datavox != 0 && buffers_get_uacoutalt() != 0);
+}
 
 #define NPROF 2	/* количество профилей параметров DSP фильтров. */
 
@@ -1649,7 +1655,7 @@ static RAMDTCM FLOAT_t DVOXCHARGE = 0;
 // Возвращает значения 0..255
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
 {
-	unsigned v = FMAXF(mikeinlevel, datavox == 0 ? 0 : dvoxlevel) * fullscale;	// масшабирование к 0..255
+	unsigned v = FMAXF(mikeinlevel, 0 /* datavox == 0 ? 0 : dvoxlevel */ ) * fullscale;	// масшабирование к 0..255
 	return v > fullscale ? fullscale : v;
 }
 
@@ -3924,7 +3930,7 @@ static void monimux(
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
 #if WITHUSBHW && WITHUSBUACOUT
-		if (glob_txaudio != BOARD_TXAUDIO_USB)
+		if (glob_txaudio != BOARD_TXAUDIO_USB && ! istxreplaced())
 		{
 			moni->IV = * ssbtx;
 			moni->QV = * ssbtx;
@@ -3946,7 +3952,7 @@ static RAMFUNC FLOAT_t mikeinmux(
 	)
 {
 	const uint_fast8_t digitx = dspmode == DSPCTL_MODE_TX_DIGI;
-	const FLOAT_t txlevelXXX = digitx ? txlevelfenceDIGI : txlevelfenceSSB;
+	const FLOAT_t txlevelXXX = digitx || istxreplaced() ? txlevelfenceDIGI : txlevelfenceSSB;
 	const FLOAT32P_t vi0p = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 	const FLOAT32P_t viusb0f = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
 	FLOAT_t vi0f = vi0p.IV;
@@ -3980,6 +3986,8 @@ static RAMFUNC FLOAT_t mikeinmux(
 		case BOARD_TXAUDIO_LINE:
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
 		case BOARD_TXAUDIO_MIKE:
+			if (istxreplaced())
+				goto txfromusb;
 			//vi0f = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
 			// источник - микрофон
 			vi0f = txmikeagc(vi0f * txlevelXXX);	// АРУ
@@ -3996,6 +4004,7 @@ static RAMFUNC FLOAT_t mikeinmux(
 
 #if WITHUSBHW && WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
+			txfromusb:
 			// источник - USB
 			moni->IV = viusb0f.IV;
 			moni->QV = viusb0f.QV;
