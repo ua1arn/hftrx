@@ -67,6 +67,7 @@ struct parsedfile {
 	char irqrv_names[BASE_MAX][VNAME_MAX];
 
 	char * comment;
+	char * file;
 };
 
 #define INDENT 4
@@ -522,6 +523,7 @@ static int loadregs(struct parsedfile *pfl, const char *file) {
 	//pfl->regs = NULL; 
 	//pfl->nregs = 0; 
 	pfl->comment = NULL;
+	pfl->file = strdup(file);
 
 	//TP();
 	if (fp == NULL) {
@@ -624,12 +626,72 @@ static void freeregdfn(PLIST_ENTRY p) {
 static void freeregs(struct parsedfile *pfl) {
 	freeregdfn(&pfl->regslist);
 	free(pfl->comment);
+	free(pfl->file);
 }
 
 
 static void emitxmlhead(void)
 {
+	emitline(0, "<?xml version=\"1.0\" encoding=\"utf-8\"?>" "\n");
+}
 
+
+static void emitcpu(void)
+{
+	emitline(1, "<name>XXXX</name>" "\n");
+	emitline(1, "<version>1.00</version>" "\n");
+	emitline(1, "<description>for test</description>" "\n");
+	emitline(1, "<addressUnitBits>8</addressUnitBits>" "\n");
+	emitline(1, "<width>32</width>" "\n");
+	emitline(1, "<size>32</size>" "\n");
+	emitline(1, "<resetValue>0x0</resetValue>" "\n");
+	emitline(1, "<resetMask>0xFFFFFFFF</resetMask>" "\n");
+
+}
+
+static void emitperipherial(const struct parsedfile * pfl)
+{
+	if (IsListEmpty(&pfl->regslist)) {
+		return;
+	}
+	if (strlen(pfl->bname) == 0)
+		fprintf(stderr, "Not named object in file '%s'\n", pfl->file);
+	emitline(2, "<peripheral>" "\n");
+	emitline(2, "<name>%s</name>" "\n", pfl->bname);
+	emitline(2, "</peripheral>" "\n");
+}
+
+static void emitperipherials(void)
+{
+	PLIST_ENTRY t;
+
+	emitline(1, "<peripherals>" "\n");
+
+	/* structures */
+
+	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+		struct parsedfile *const pfl = CONTAINING_RECORD(t,
+				struct parsedfile, item);
+		emitperipherial(pfl);
+	}
+
+	emitline(1, "</peripherals>" "\n");
+}
+
+static void emitvendorext(void)
+{
+
+}
+
+static void emitdevice(void)
+{
+	emitline(0, "<device schemaVersion=\"1.1\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema-instance\" xs:noNamespaceSchemaLocation=\"CMSIS-SVD_Schema_1_1.xsd\" >" "\n");
+
+	emitcpu();
+	emitperipherials();
+	emitvendorext();
+
+	emitline(0, "</device >" "\n");
 }
 
 static void emitxmltail(void)
@@ -640,6 +702,7 @@ static void emitxmltail(void)
 static void generate_svd(void)
 {
 	emitxmlhead();
+	emitdevice();
 	emitxmltail();
 }
 
