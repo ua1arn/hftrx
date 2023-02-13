@@ -4005,7 +4005,7 @@ enum
 		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 			static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
-		static uint_fast8_t	gusb_ft8cn =  1;	/* совместимость VID/PID для работы с программой FT8CN */
+		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 	#else /* WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };
