@@ -11,6 +11,11 @@
 #include "mslist.h"
 #include "getopt_win.h"
 
+
+static int flag_riscv = 0;
+static int flag_svd = 0;
+static int flag_debug = 0;
+
 /* debug stuff */
 #if 0
 
@@ -621,18 +626,235 @@ static void freeregs(struct parsedfile *pfl) {
 	free(pfl->comment);
 }
 
-static int flag_riscv = 0;
+
+static void emitxmlhead(void)
+{
+
+}
+
+static void emitxmltail(void)
+{
+
+}
+
+static void generate_svd(void)
+{
+	emitxmlhead();
+	emitxmltail();
+}
+
+static void generate_debug(void)
+{
+
+	/* Debug header forming */
+	char headrname[128];
+	PLIST_ENTRY t;
+
+	/* print structire debug */
+
+	_snprintf(headrname, sizeof headrname / sizeof headrname[0],
+			"HEADER_%08X_INCLUDED", (unsigned) time(NULL));
+
+	emitline(0, "#ifndef %s" "\n", headrname);
+	emitline(0, "#define %s" "\n", headrname);
+	emitline(0, "#ifdef PRINTF\n");
+
+	/* structures */
+
+	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+		struct parsedfile *const pfl = CONTAINING_RECORD(t,
+				struct parsedfile, item);
+		processfile_periphregsdebug(pfl);
+	}
+	emitline(0, "#endif /* PRINTF */\n");
+	emitline(0, "#endif /* %s */" "\n", headrname);
+
+}
+
+static void generate_cmsis(void)
+{
+
+	/* CMSIS header forming */
+	char headrname[128];
+	_snprintf(headrname, sizeof headrname / sizeof headrname[0],
+			"HEADER_%08X_INCLUDED", (unsigned) 12345 /*time(NULL) */);
+
+	emitline(0, "#pragma once" "\n");
+	emitline(0, "#ifndef %s" "\n", headrname);
+	emitline(0, "#define %s" "\n", headrname);
+
+	emitline(0, "#include <stdint.h>" "\n");
+	emitline(0, "\n");
+
+	if (! flag_riscv) {
+		/* collect ARM IRQ vectors */
+		int nitems = 0;
+		int i;
+		struct irqmap irqs[1024];
+
+		{
+			PLIST_ENTRY t;
+			for (t = parsedfiles.Flink;
+					t != &parsedfiles
+							&& nitems < sizeof irqs / sizeof irqs[0];
+					t = t->Flink) {
+				struct parsedfile *const pfl = CONTAINING_RECORD(t,
+						struct parsedfile, item);
+				nitems += collect_irq(pfl,
+						sizeof irqs / sizeof irqs[0] - nitems,
+						irqs + nitems);
+			}
+		}
+
+		qsort(irqs, nitems, sizeof irqs[0], compare_irq);
+
+		emitline(0, "\n");
+		emitline(0, "/* IRQs */\n");
+		emitline(0, "\n");
+		emitline(0, "typedef enum IRQn\n");
+		emitline(0, "{\n");
+		for (i = 0; i < nitems; ++i) {
+			struct irqmap *const p = &irqs[i];
+
+			emitline(INDENT, "%s_IRQn = %d,", p->name, p->irq);
+			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
+		}
+		emitline(0, "\n");
+		emitline(INDENT, "MAX_IRQ_n,\n");
+		emitline(INDENT,
+				"Force_IRQn_enum_size = %d /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
+				1048);
+		emitline(0, "} IRQn_Type;\n");
+		emitline(0, "\n");
+	}
+
+	if (flag_riscv) {
+		/* collect RISC-V IRQ vectors */
+		int nitems = 0;
+		int i;
+		struct irqmaprv irqs[1024];
+
+		{
+			PLIST_ENTRY t;
+			for (t = parsedfiles.Flink;
+					t != &parsedfiles
+							&& nitems < sizeof irqs / sizeof irqs[0];
+					t = t->Flink) {
+				struct parsedfile *const pfl = CONTAINING_RECORD(t,
+						struct parsedfile, item);
+				nitems += collect_irqrv(pfl,
+						sizeof irqs / sizeof irqs[0] - nitems,
+						irqs + nitems);
+			}
+		}
+
+		qsort(irqs, nitems, sizeof irqs[0], compare_irqrv);
+
+		emitline(0, "\n");
+		emitline(0, "/* IRQs */\n");
+		emitline(0, "\n");
+		emitline(0, "typedef enum IRQn\n");
+		emitline(0, "{\n");
+		for (i = 0; i < nitems; ++i) {
+			struct irqmaprv *const p = &irqs[i];
+
+			emitline(INDENT, "%s_IRQn = %d,", p->name, p->irqrv);
+			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
+		}
+		emitline(0, "\n");
+		emitline(INDENT, "MAX_IRQ_n,\n");
+		emitline(INDENT,
+				"Force_IRQn_enum_size = %d /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
+				1048);
+		emitline(0, "} IRQn_Type;\n");
+		emitline(0, "\n");
+	}
+
+	if (1) {
+
+		/* collect base addresses */
+		int nitems = 0;
+		int i;
+		struct basemap maps[256];
+		PLIST_ENTRY t;
+
+		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+			struct parsedfile *const pfl = CONTAINING_RECORD(t,
+					struct parsedfile, item);
+			nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
+		}
+
+		qsort(maps, nitems, sizeof maps[0], compare_base);
+
+		emitline(0, "\n");
+		emitline(0, "/* Peripheral and RAM base address */\n");
+		emitline(0, "\n");
+
+		for (i = 0; i < nitems; ++i) {
+			struct basemap *const p = &maps[i];
+
+			emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)",
+					p->name, p->base);
+			emitline(COMMENTNEAR, "/*!< %s Base */\n", p->pfl->bname);
+		}
+		emitline(0, "\n");
+	}
+
+	if (1) {
+		/* structures */
+		PLIST_ENTRY t;
+
+		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+			struct parsedfile *const pfl = CONTAINING_RECORD(t,
+					struct parsedfile, item);
+			processfile_periphregs(pfl);
+		}
+		emitline(0, "\n");
+	}
+
+	if (1) {
+		PLIST_ENTRY t;
+
+		emitline(0, "\n");
+		emitline(0, "/* Access pointers */\n");
+		emitline(0, "\n");
+
+		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+			struct parsedfile *const pfl = CONTAINING_RECORD(t,
+					struct parsedfile, item);
+			processfile_access(pfl);
+		}
+		emitline(0, "\n");
+	}
+
+	emitline(0, "\n");
+	emitline(0, "#endif /* %s */" "\n", headrname);
+
+}
 
 int main(int argc, char *argv[], char *envp[]) {
 	//struct parsedfile pfls [MAXPARSEDFILES];
 	int i = 1;
-	//int nperoiph;
+
 	if (argc > 1 && strcmp(argv [1], "--riscv") == 0)
 	{
 		flag_riscv = 1;
 		-- argc;
 		++ argv;
 	}
+	if (argc > 1 && strcmp(argv [1], "--svd") == 0)
+	{
+		flag_svd = 1;
+		-- argc;
+		++ argv;
+	}
+	if (argc > 1 && strcmp(argv [1], "--debug") == 0)
+	{
+		flag_debug = 1;
+		-- argc;
+		++ argv;
+	}
+
 	if (argc < 2)
 		return 1;
 
@@ -658,183 +880,15 @@ int main(int argc, char *argv[], char *envp[]) {
 		}
 	}
 
-	if (1) {
-		/* CMSIS header forming */
-		char headrname[128];
-		_snprintf(headrname, sizeof headrname / sizeof headrname[0],
-				"HEADER_%08X_INCLUDED", (unsigned) 12345 /*time(NULL) */);
-
-		emitline(0, "#pragma once" "\n");
-		emitline(0, "#ifndef %s" "\n", headrname);
-		emitline(0, "#define %s" "\n", headrname);
-
-		emitline(0, "#include <stdint.h>" "\n");
-		emitline(0, "\n");
-
-		if (! flag_riscv) {
-			/* collect ARM IRQ vectors */
-			int nitems = 0;
-			struct irqmap irqs[1024];
-
-			{
-				PLIST_ENTRY t;
-				for (t = parsedfiles.Flink;
-						t != &parsedfiles
-								&& nitems < sizeof irqs / sizeof irqs[0];
-						t = t->Flink) {
-					struct parsedfile *const pfl = CONTAINING_RECORD(t,
-							struct parsedfile, item);
-					nitems += collect_irq(pfl,
-							sizeof irqs / sizeof irqs[0] - nitems,
-							irqs + nitems);
-				}
-			}
-
-			qsort(irqs, nitems, sizeof irqs[0], compare_irq);
-
-			emitline(0, "\n");
-			emitline(0, "/* IRQs */\n");
-			emitline(0, "\n");
-			emitline(0, "typedef enum IRQn\n");
-			emitline(0, "{\n");
-			for (i = 0; i < nitems; ++i) {
-				struct irqmap *const p = &irqs[i];
-
-				emitline(INDENT, "%s_IRQn = %d,", p->name, p->irq);
-				emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
-			}
-			emitline(0, "\n");
-			emitline(INDENT, "MAX_IRQ_n,\n");
-			emitline(INDENT,
-					"Force_IRQn_enum_size = %d /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
-					1048);
-			emitline(0, "} IRQn_Type;\n");
-			emitline(0, "\n");
-		}
-
-		if (flag_riscv) {
-			/* collect RISC-V IRQ vectors */
-			int nitems = 0;
-			struct irqmaprv irqs[1024];
-
-			{
-				PLIST_ENTRY t;
-				for (t = parsedfiles.Flink;
-						t != &parsedfiles
-								&& nitems < sizeof irqs / sizeof irqs[0];
-						t = t->Flink) {
-					struct parsedfile *const pfl = CONTAINING_RECORD(t,
-							struct parsedfile, item);
-					nitems += collect_irqrv(pfl,
-							sizeof irqs / sizeof irqs[0] - nitems,
-							irqs + nitems);
-				}
-			}
-
-			qsort(irqs, nitems, sizeof irqs[0], compare_irqrv);
-
-			emitline(0, "\n");
-			emitline(0, "/* IRQs */\n");
-			emitline(0, "\n");
-			emitline(0, "typedef enum IRQn\n");
-			emitline(0, "{\n");
-			for (i = 0; i < nitems; ++i) {
-				struct irqmaprv *const p = &irqs[i];
-
-				emitline(INDENT, "%s_IRQn = %d,", p->name, p->irqrv);
-				emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
-			}
-			emitline(0, "\n");
-			emitline(INDENT, "MAX_IRQ_n,\n");
-			emitline(INDENT,
-					"Force_IRQn_enum_size = %d /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
-					1048);
-			emitline(0, "} IRQn_Type;\n");
-			emitline(0, "\n");
-		}
-
-		if (1) {
-
-			/* collect base addresses */
-			int nitems = 0;
-			struct basemap maps[256];
-			PLIST_ENTRY t;
-
-			for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-				struct parsedfile *const pfl = CONTAINING_RECORD(t,
-						struct parsedfile, item);
-				nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
-			}
-
-			qsort(maps, nitems, sizeof maps[0], compare_base);
-
-			emitline(0, "\n");
-			emitline(0, "/* Peripheral and RAM base address */\n");
-			emitline(0, "\n");
-
-			for (i = 0; i < nitems; ++i) {
-				struct basemap *const p = &maps[i];
-
-				emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)",
-						p->name, p->base);
-				emitline(COMMENTNEAR, "/*!< %s Base */\n", p->pfl->bname);
-			}
-			emitline(0, "\n");
-		}
-
-		if (1) {
-			/* structures */
-			PLIST_ENTRY t;
-
-			for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-				struct parsedfile *const pfl = CONTAINING_RECORD(t,
-						struct parsedfile, item);
-				processfile_periphregs(pfl);
-			}
-			emitline(0, "\n");
-		}
-
-		if (1) {
-			PLIST_ENTRY t;
-
-			emitline(0, "\n");
-			emitline(0, "/* Access pointers */\n");
-			emitline(0, "\n");
-
-			for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-				struct parsedfile *const pfl = CONTAINING_RECORD(t,
-						struct parsedfile, item);
-				processfile_access(pfl);
-			}
-			emitline(0, "\n");
-		}
-
-		emitline(0, "\n");
-		emitline(0, "#endif /* %s */" "\n", headrname);
+	/* Generate one of required output files */
+	if (flag_svd) {
+		generate_svd();
+	} else if (flag_debug) {
+		generate_debug();
 	} else {
-		/* Debug header forming */
-		char headrname[128];
-		PLIST_ENTRY t;
-
-		/* print structire debug */
-
-		_snprintf(headrname, sizeof headrname / sizeof headrname[0],
-				"HEADER_%08X_INCLUDED", (unsigned) time(NULL));
-
-		emitline(0, "#ifndef %s" "\n", headrname);
-		emitline(0, "#define %s" "\n", headrname);
-		emitline(0, "#ifdef PRINTF\n");
-
-		/* structures */
-
-		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-			struct parsedfile *const pfl = CONTAINING_RECORD(t,
-					struct parsedfile, item);
-			processfile_periphregsdebug(pfl);
-		}
-		emitline(0, "#endif /* PRINTF */\n");
-		emitline(0, "#endif /* %s */" "\n", headrname);
+		generate_cmsis();
 	}
+
 
 	{
 		PLIST_ENTRY t;

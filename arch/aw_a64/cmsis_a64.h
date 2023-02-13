@@ -1,4 +1,3 @@
-/* Generated section start */ 
 #pragma once
 #ifndef HEADER_00003039_INCLUDED
 #define HEADER_00003039_INCLUDED
@@ -2231,4 +2230,3 @@ typedef struct MSGBOX_Type
 
 
 #endif /* HEADER_00003039_INCLUDED */
-/* Generated section end */ 
