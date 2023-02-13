@@ -2135,6 +2135,7 @@ void i2cp_start(const i2cp_t * p, uint_fast8_t address)
 		i2c_startX(p, address);
 		break;
 #if defined (TWISOFT2_INITIALIZE)
+	case I2CP_I2C2:
 		i2c2_startX(p, address);
 		break;
 #endif /* defined (TWISOFT2_INITIALIZE) */
@@ -2153,6 +2154,7 @@ void i2cp_read(const i2cp_t * p, uint8_t * pdata, uint_fast8_t acknak)
 		i2c_readX(p, pdata, acknak);
 		break;
 #if defined (TWISOFT2_INITIALIZE)
+	case I2CP_I2C2:
 		i2c2_readX(p, pdata, acknak);
 		break;
 #endif /* defined (TWISOFT2_INITIALIZE) */
@@ -2171,6 +2173,7 @@ void i2cp_write(const i2cp_t * p, uint_fast8_t data)
 		i2c_writeX(p, data);
 		break;
 #if defined (TWISOFT2_INITIALIZE)
+	case I2CP_I2C2:
 		i2c2_writeX(p, data);
 		break;
 #endif /* defined (TWISOFT2_INITIALIZE) */
@@ -2189,6 +2192,7 @@ void i2cp_write_withrestart(const i2cp_t * p, uint_fast8_t data)	// запись
 		i2c_write_withrestartX(p, data);
 		break;
 #if defined (TWISOFT2_INITIALIZE)
+	case I2CP_I2C2:
 		i2c2_write_withrestartX(p, data);
 		break;
 #endif /* defined (TWISOFT2_INITIALIZE) */
@@ -2207,6 +2211,7 @@ void i2cp_waitsend(const i2cp_t * p)	// Вызвать после последн
 		i2c_waitsendX(p);
 		break;
 #if defined (TWISOFT2_INITIALIZE)
+	case I2CP_I2C2:
 		i2c2_waitsendX(p);
 		break;
 #endif /* defined (TWISOFT2_INITIALIZE) */
@@ -2225,6 +2230,7 @@ void i2cp_stop(const i2cp_t * p)
 		i2c_stopX(p);
 		break;
 #if defined (TWISOFT2_INITIALIZE)
+	case I2CP_I2C2:
 		i2c2_stopX(p);
 		break;
 #endif /* defined (TWISOFT2_INITIALIZE) */
