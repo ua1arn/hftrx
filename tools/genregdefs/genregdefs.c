@@ -11,7 +11,6 @@
 #include "mslist.h"
 #include "getopt_win.h"
 
-
 static int flag_riscv = 0;
 static int flag_svd = 0;
 static int flag_debug = 0;
@@ -55,7 +54,7 @@ struct parsedfile {
 	//   struct regdfn * regs;
 	char bname[VNAME_MAX];
 	int base_count;
-	unsigned base_array[BASE_MAX];
+	unsigned base_address[BASE_MAX];
 	char base_names[BASE_MAX][VNAME_MAX];
 
 	int irq_count;
@@ -66,8 +65,8 @@ struct parsedfile {
 	int irqrv_array[BASE_MAX];
 	char irqrv_names[BASE_MAX][VNAME_MAX];
 
-	char * comment;
-	char * file;
+	char *comment;
+	char *file;
 };
 
 #define INDENT 4
@@ -193,7 +192,8 @@ void genstruct(struct parsedfile *pfl) {
 	emitline(0, " * @brief %s\n", pfl->bname);
 	emitline(0, " */\n");
 
-	emitline(0, "/*!< %s %s */\n", pfl->bname, pfl->comment ? pfl->comment : "");
+	emitline(0, "/*!< %s %s */\n", pfl->bname,
+			pfl->comment ? pfl->comment : "");
 	emitline(0, "typedef struct %s_Type\n", pfl->bname);
 	emitline(0, "{\n");
 
@@ -244,19 +244,19 @@ static LIST_ENTRY parsedfiles;
 struct basemap {
 	unsigned base;
 	char name[VNAME_MAX];
-	struct parsedfile * pfl;
+	struct parsedfile *pfl;
 };
 
 struct irqmap {
 	int irq;
 	char name[VNAME_MAX];
-	struct parsedfile * pfl;
+	struct parsedfile *pfl;
 };
 
 struct irqmaprv {
 	int irqrv;
 	char name[VNAME_MAX];
-	struct parsedfile * pfl;
+	struct parsedfile *pfl;
 };
 
 /* qsort parameter */
@@ -306,8 +306,7 @@ static int nextline(FILE *fp) {
 }
 
 /* trim field name */
-static void trimname(char * s)
-{
+static void trimname(char *s) {
 	if (strchr(s, '\n') != NULL)
 		*strchr(s, '\n') = '\0';
 	if (strchr(s, '/') != NULL)
@@ -458,7 +457,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			if (nextline(fp) == 0)
 				break;
 		} else if (2 == sscanf(token0, "#irq; %s %i\n", irqname, &irq)) {
-			trimname(irqname); 
+			trimname(irqname);
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
 			if (pfl->irq_count < BASE_MAX) {
 				pfl->irq_array[pfl->irq_count] = irq;
@@ -494,7 +493,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 		} else if (2 == sscanf(token0, "#base; %s%i\n", typname, &base)) {
 			//fprintf(stderr, "Parsed base='%s' 0x%08X\n", typname, base);
 			if (pfl->base_count < BASE_MAX) {
-				pfl->base_array[pfl->base_count] = base;
+				pfl->base_address[pfl->base_count] = base;
 				trimname(typname);
 				strcpy(pfl->base_names[pfl->base_count], typname);
 				++pfl->base_count;
@@ -565,7 +564,7 @@ static int collect_base(struct parsedfile *pfl, int n, struct basemap *v) {
 	int score = 0;
 	for (i = 0; i < pfl->base_count && n--; ++i, ++v, ++score) {
 		strcpy(v->name, pfl->base_names[i]);
-		v->base = pfl->base_array[i];
+		v->base = pfl->base_address[i];
 		v->pfl = pfl;
 	}
 	return score;
@@ -581,8 +580,7 @@ static void processfile_access(struct parsedfile *pfl) {
 	for (i = 0; i < pfl->base_count; ++i) {
 		emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", pfl->base_names[i],
 				pfl->bname, pfl->base_names[i]);
-		emitline(COMMENTNEAR,
-				"/*!< %s %s register set access pointer */\n",
+		emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n",
 				pfl->base_names[i], pfl->comment ? pfl->comment : "");
 	}
 }
@@ -629,15 +627,11 @@ static void freeregs(struct parsedfile *pfl) {
 	free(pfl->file);
 }
 
-
-static void emitxmlhead(void)
-{
+static void emitxmlhead(void) {
 	emitline(0, "<?xml version=\"1.0\" encoding=\"utf-8\"?>" "\n");
 }
 
-
-static void emitcpu(void)
-{
+static void emitcpu(void) {
 	emitline(1, "<name>XXXX</name>" "\n");
 	emitline(1, "<version>1.00</version>" "\n");
 	emitline(1, "<description>for test</description>" "\n");
@@ -649,20 +643,133 @@ static void emitcpu(void)
 
 }
 
-static void emitperipherial(const struct parsedfile * pfl)
-{
+unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
+		unsigned baseoffset) {
+	unsigned offs;
+	PLIST_ENTRY t;
+
+	return baseoffset;
+
+	offs = 0;
+	for (t = regslist->Flink; t != regslist; t = t->Flink) {
+		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn,
+				item);
+		static const char *fldtypes[] = { "uint32_t", "uint8_t ", "uint16_t",
+				"uint24_t", "uint32_t", "uint40_t", "uint48_t", "uint56_t",
+				"uint64_t", };
+
+		char fldtype[VNAME_MAX];
+
+		//fprintf(stderr, "$generate field: fldsize=%u fldoffs=%04X fldrept=%u fldname=%s\n", regp->fldsize, regp->fldoffs,regp->fldrept,regp->fldname);
+
+		if (!IsListEmpty(&regp->aggregate)) {
+			fldtype[0] = '\0';
+		} else if (regp->fldsize >= sizeof fldtypes / sizeof fldtypes[0]) {
+			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "typesize%u",
+					regp->fldsize);
+		} else {
+			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "%s",
+					fldtypes[regp->fldsize]);
+		}
+
+		if (regp->fldoffs > offs || regp->fldsize == 0) {
+			// reserving
+			const unsigned sz = regp->fldoffs - offs;
+
+			if (sz == 4) {
+				emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X;\n",
+						offs);
+			} else if (sz != 0 && (sz % 4) == 0) {
+				emitline(indent + INDENT + 9,
+						"uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
+			} else if (sz != 0) {
+				emitline(indent + INDENT + 9,
+						"uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
+			}
+			offs = regp->fldoffs;
+		}
+
+		if (regp->fldoffs != offs) {
+			emitline(0,
+					"#error Need offset 0x%03X of field '%s' type '%s' at (0x%03X)\n",
+					offs, regp->fldname, fldtype, regp->fldoffs);
+			//regp->fldoffs = offs;
+		}
+
+		if (1 /*regp->fldoffs == offs*/) {
+			if (!IsListEmpty(&regp->aggregate)) {
+				/* Emit aggregate type */
+				emitline(indent + INDENT, "struct\n");
+				emitline(indent + INDENT, "{\n");
+				offs += regp->fldrept
+						* genreglist(indent + INDENT, &regp->aggregate, offs); /* Emit fields list */
+				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname,
+						regp->fldrept);
+				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
+						regp->fldoffs + baseoffset, regp->comment);
+			} else if (regp->fldsize != 0) {
+				if (regp->fldrept) {
+					// Array forming
+					emitline(indent + INDENT, "volatile %s %s [0x%03X];",
+							fldtype, regp->fldname, regp->fldrept);
+
+					offs += regp->fldsize * regp->fldrept;
+				} else {
+					// Plain field
+					emitline(indent + INDENT, "volatile %s %s;", fldtype,
+							regp->fldname);
+					offs += regp->fldsize;
+				}
+				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
+						regp->fldoffs + baseoffset, regp->comment);
+			}
+		} else {
+			emitline(0,
+					"#error Need offset 0x%03X of field '%s' type '%s' at (0x%03X)\n",
+					offs, regp->fldname, fldtype, regp->fldoffs);
+			//break;
+		}
+	}
+	return offs;
+}
+
+static void emitperipherial(const struct parsedfile *pfl) {
+	int indent = 2;
+	int i;
+
 	if (IsListEmpty(&pfl->regslist)) {
 		return;
 	}
+	emitline(2, "<peripheral>" "\n");
+	emitline(2, "</peripheral>" "\n");
+
 	if (strlen(pfl->bname) == 0)
 		fprintf(stderr, "Not named object in file '%s'\n", pfl->file);
-	emitline(2, "<peripheral>" "\n");
-	emitline(2, "<name>%s</name>" "\n", pfl->bname);
-	emitline(2, "</peripheral>" "\n");
+
+	if (pfl->base_count >= 1) {
+		emitline(indent, "<peripheral>" "\n");
+		emitline(indent, "<name>%s</name>" "\n", pfl->base_names[0]);
+		emitline(indent, "<description>%s</description>" "\n", pfl->comment);
+		//emitline(indent, "<groupName>%s</groupName>" "\n", pfl->base_names [0]);
+		emitline(indent, "<baseAddress>0x%08X</baseAddress>" "\n",
+				pfl->base_address[0]);
+		emitline(indent, "</peripheral>" "\n");
+		emitregisters(indent, &pfl->regslist, 0);
+	}
+
+	for (i = 1; i < pfl->base_count; ++i) {
+
+		emitline(indent, "<peripheral derivedFrom=\"%s\">" "\n",
+				pfl->base_names[0]);
+		emitline(indent, "<name>%s</name>" "\n", pfl->base_names[i]);
+		emitline(indent, "<baseAddress>0x%08X</baseAddress>" "\n",
+				pfl->base_address[i]);
+		emitline(indent, "</peripheral>" "\n");
+	}
+
 }
 
-static void emitperipherials(void)
-{
+static void emitperipherials(void) {
 	PLIST_ENTRY t;
 
 	emitline(1, "<peripherals>" "\n");
@@ -670,22 +777,21 @@ static void emitperipherials(void)
 	/* structures */
 
 	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-		struct parsedfile *const pfl = CONTAINING_RECORD(t,
-				struct parsedfile, item);
+		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile,
+				item);
 		emitperipherial(pfl);
 	}
 
 	emitline(1, "</peripherals>" "\n");
 }
 
-static void emitvendorext(void)
-{
+static void emitvendorext(void) {
 
 }
 
-static void emitdevice(void)
-{
-	emitline(0, "<device schemaVersion=\"1.1\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema-instance\" xs:noNamespaceSchemaLocation=\"CMSIS-SVD_Schema_1_1.xsd\" >" "\n");
+static void emitdevice(void) {
+	emitline(0,
+			"<device schemaVersion=\"1.1\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema-instance\" xs:noNamespaceSchemaLocation=\"CMSIS-SVD_Schema_1_1.xsd\" >" "\n");
 
 	emitcpu();
 	emitperipherials();
@@ -694,20 +800,17 @@ static void emitdevice(void)
 	emitline(0, "</device >" "\n");
 }
 
-static void emitxmltail(void)
-{
+static void emitxmltail(void) {
 
 }
 
-static void generate_svd(void)
-{
+static void generate_svd(void) {
 	emitxmlhead();
 	emitdevice();
 	emitxmltail();
 }
 
-static void generate_debug(void)
-{
+static void generate_debug(void) {
 
 	/* Debug header forming */
 	char headrname[128];
@@ -725,8 +828,8 @@ static void generate_debug(void)
 	/* structures */
 
 	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-		struct parsedfile *const pfl = CONTAINING_RECORD(t,
-				struct parsedfile, item);
+		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile,
+				item);
 		processfile_periphregsdebug(pfl);
 	}
 	emitline(0, "#endif /* PRINTF */\n");
@@ -734,8 +837,7 @@ static void generate_debug(void)
 
 }
 
-static void generate_cmsis(void)
-{
+static void generate_cmsis(void) {
 
 	/* CMSIS header forming */
 	char headrname[128];
@@ -749,7 +851,7 @@ static void generate_cmsis(void)
 	emitline(0, "#include <stdint.h>" "\n");
 	emitline(0, "\n");
 
-	if (! flag_riscv) {
+	if (!flag_riscv) {
 		/* collect ARM IRQ vectors */
 		int nitems = 0;
 		int i;
@@ -758,14 +860,12 @@ static void generate_cmsis(void)
 		{
 			PLIST_ENTRY t;
 			for (t = parsedfiles.Flink;
-					t != &parsedfiles
-							&& nitems < sizeof irqs / sizeof irqs[0];
+					t != &parsedfiles && nitems < sizeof irqs / sizeof irqs[0];
 					t = t->Flink) {
 				struct parsedfile *const pfl = CONTAINING_RECORD(t,
 						struct parsedfile, item);
 				nitems += collect_irq(pfl,
-						sizeof irqs / sizeof irqs[0] - nitems,
-						irqs + nitems);
+						sizeof irqs / sizeof irqs[0] - nitems, irqs + nitems);
 			}
 		}
 
@@ -780,7 +880,8 @@ static void generate_cmsis(void)
 			struct irqmap *const p = &irqs[i];
 
 			emitline(INDENT, "%s_IRQn = %d,", p->name, p->irq);
-			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
+			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname,
+					p->pfl->comment ? p->pfl->comment : "");
 		}
 		emitline(0, "\n");
 		emitline(INDENT, "MAX_IRQ_n,\n");
@@ -800,14 +901,12 @@ static void generate_cmsis(void)
 		{
 			PLIST_ENTRY t;
 			for (t = parsedfiles.Flink;
-					t != &parsedfiles
-							&& nitems < sizeof irqs / sizeof irqs[0];
+					t != &parsedfiles && nitems < sizeof irqs / sizeof irqs[0];
 					t = t->Flink) {
 				struct parsedfile *const pfl = CONTAINING_RECORD(t,
 						struct parsedfile, item);
 				nitems += collect_irqrv(pfl,
-						sizeof irqs / sizeof irqs[0] - nitems,
-						irqs + nitems);
+						sizeof irqs / sizeof irqs[0] - nitems, irqs + nitems);
 			}
 		}
 
@@ -822,7 +921,8 @@ static void generate_cmsis(void)
 			struct irqmaprv *const p = &irqs[i];
 
 			emitline(INDENT, "%s_IRQn = %d,", p->name, p->irqrv);
-			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
+			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname,
+					p->pfl->comment ? p->pfl->comment : "");
 		}
 		emitline(0, "\n");
 		emitline(INDENT, "MAX_IRQ_n,\n");
@@ -856,8 +956,8 @@ static void generate_cmsis(void)
 		for (i = 0; i < nitems; ++i) {
 			struct basemap *const p = &maps[i];
 
-			emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)",
-					p->name, p->base);
+			emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)", p->name,
+					p->base);
 			emitline(COMMENTNEAR, "/*!< %s Base */\n", p->pfl->bname);
 		}
 		emitline(0, "\n");
@@ -899,23 +999,20 @@ int main(int argc, char *argv[], char *envp[]) {
 	//struct parsedfile pfls [MAXPARSEDFILES];
 	int i = 1;
 
-	if (argc > 1 && strcmp(argv [1], "--riscv") == 0)
-	{
+	if (argc > 1 && strcmp(argv[1], "--riscv") == 0) {
 		flag_riscv = 1;
-		-- argc;
-		++ argv;
+		--argc;
+		++argv;
 	}
-	if (argc > 1 && strcmp(argv [1], "--svd") == 0)
-	{
+	if (argc > 1 && strcmp(argv[1], "--svd") == 0) {
 		flag_svd = 1;
-		-- argc;
-		++ argv;
+		--argc;
+		++argv;
 	}
-	if (argc > 1 && strcmp(argv [1], "--debug") == 0)
-	{
+	if (argc > 1 && strcmp(argv[1], "--debug") == 0) {
 		flag_debug = 1;
-		-- argc;
-		++ argv;
+		--argc;
+		++argv;
 	}
 
 	if (argc < 2)
@@ -951,7 +1048,6 @@ int main(int argc, char *argv[], char *envp[]) {
 	} else {
 		generate_cmsis();
 	}
-
 
 	{
 		PLIST_ENTRY t;
