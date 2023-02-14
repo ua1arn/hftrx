@@ -21,7 +21,7 @@
 	#include "linux_subsystem.h"
 #endif /* LINUX_SUBSYSTEM */
 
-#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
 
 typedef enum
 {

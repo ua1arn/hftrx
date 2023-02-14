@@ -639,7 +639,7 @@ extern "C" {
 
 	/* Частоты встроенных RC генераторов процессора */
 	#define HSI64FREQ 64000000u
-	#define CSI_VALUE 4000000u
+	#define CSI_VALUE 4000000U
 	#define LSIFREQ 32000u
 
 	//
@@ -672,7 +672,7 @@ extern "C" {
 	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 24000000			/* 2требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 24000000u			/* 2требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000u			/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000u		/* 100 kHz для низкоскоростных микросхем */
 
