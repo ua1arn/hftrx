@@ -806,11 +806,10 @@ static void emitperipherial(int indent, const struct parsedfile *pfl) {
 	/* name */
 	if (pfl->base_count >= 1) {
 		emitline(indent, "<peripheral>" "\n");
-		emitline(indent, "<name>%s</name>" "\n", pfl->base_names[0]);
-		emitline(indent, "<description>%s</description>" "\n", pfl->comment);
-		//emitline(indent, "<groupName>%s</groupName>" "\n", pfl->base_names [0]);
-		emitline(indent, "<baseAddress>0x%08X</baseAddress>" "\n",
-				pfl->base_address[0]);
+		emitstring(indent, "name", pfl->base_names[0]);
+		emitstring(indent, "description", pfl->comment);
+		//emitstring(indent, "<groupName>%s</groupName>" "\n", pfl->base_names [0]);
+		emithex32(indent, "baseAddress", pfl->base_address[0]);
 		emitinterrupts(indent, pfl);
 		emitregisters(indent, &pfl->regslist, 0);
 		emitline(indent, "</peripheral>" "\n");

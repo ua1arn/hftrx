@@ -12,7 +12,7 @@
   <peripheral>
   <name>RISC_CFG</name>
   <description>RISC-V core configuration register</description>
-  <baseAddress>0x06010000</baseAddress>
+  <baseAddress>0x6010000</baseAddress>
   <registers>
    <register>
     <name>RISC_STA_ADD0_REG</name>
@@ -270,8 +270,8 @@
   </peripheral>
   <peripheral>
   <name>CCU</name>
-  <description>(null)</description>
-  <baseAddress>0x02001000</baseAddress>
+  <description></description>
+  <baseAddress>0x2001000</baseAddress>
   <interrupt>
    <name>CCU_FERR</name>
    <value>64</value>
@@ -1326,7 +1326,7 @@
   </peripheral>
   <peripheral>
   <name>PLIC</name>
-  <description>(null)</description>
+  <description></description>
   <baseAddress>0x10000000</baseAddress>
   <registers>
    <cluster>
@@ -1430,8 +1430,8 @@
   </peripheral>
   <peripheral>
   <name>SYS_CFG</name>
-  <description>(null)</description>
-  <baseAddress>0x03000000</baseAddress>
+  <description></description>
+  <baseAddress>0x3000000</baseAddress>
   <registers>
    <register>
     <name>DSP_BOOT_RAMMAP_REG</name>
@@ -1500,8 +1500,8 @@
   </peripheral>
   <peripheral>
   <name>UART0</name>
-  <description>(null)</description>
-  <baseAddress>0x02500000</baseAddress>
+  <description></description>
+  <baseAddress>0x2500000</baseAddress>
   <interrupt>
    <name>UART0</name>
    <value>18</value>
@@ -1986,8 +1986,8 @@
   </peripheral>
   <peripheral>
   <name>GPIOB</name>
-  <description>(null)</description>
-  <baseAddress>0x02000030</baseAddress>
+  <description></description>
+  <baseAddress>0x2000030</baseAddress>
   <registers>
    <cluster>
     <dim>4</dim>
@@ -2061,8 +2061,8 @@
   </peripheral>
   <peripheral>
   <name>GPIOINTB</name>
-  <description>(null)</description>
-  <baseAddress>0x02000220</baseAddress>
+  <description></description>
+  <baseAddress>0x2000220</baseAddress>
   <interrupt>
    <name>GPIOB_NS</name>
    <value>85</value>
@@ -2308,8 +2308,8 @@
   </peripheral>
   <peripheral>
   <name>GPIOBLOCK</name>
-  <description>(null)</description>
-  <baseAddress>0x02000000</baseAddress>
+  <description></description>
+  <baseAddress>0x2000000</baseAddress>
   <registers>
    <cluster>
     <dim>7</dim>
@@ -2442,8 +2442,8 @@
   </peripheral>
   <peripheral>
   <name>SMHC0</name>
-  <description>(null)</description>
-  <baseAddress>0x04020000</baseAddress>
+  <description></description>
+  <baseAddress>0x4020000</baseAddress>
   <registers>
    <register>
     <name>SMHC_CTRL</name>
@@ -2817,8 +2817,8 @@
   </peripheral>
   <peripheral>
   <name>I2S1</name>
-  <description>(null)</description>
-  <baseAddress>0x02033000</baseAddress>
+  <description></description>
+  <baseAddress>0x2033000</baseAddress>
   <interrupt>
    <name>I2S_PCM1</name>
    <value>43</value>
@@ -3199,8 +3199,8 @@
   </peripheral>
   <peripheral>
   <name>DMIC</name>
-  <description>(null)</description>
-  <baseAddress>0x02031000</baseAddress>
+  <description></description>
+  <baseAddress>0x2031000</baseAddress>
   <registers>
    <register>
     <name>DMIC_EN</name>
@@ -3350,8 +3350,8 @@
   </peripheral>
   <peripheral>
   <name>OWA</name>
-  <description>(null)</description>
-  <baseAddress>0x02036000</baseAddress>
+  <description></description>
+  <baseAddress>0x2036000</baseAddress>
   <interrupt>
    <name>OWA</name>
    <value>39</value>
@@ -3551,8 +3551,8 @@
   </peripheral>
   <peripheral>
   <name>AUDIO_CODEC</name>
-  <description>(null)</description>
-  <baseAddress>0x02030000</baseAddress>
+  <description></description>
+  <baseAddress>0x2030000</baseAddress>
   <interrupt>
    <name>AUDIO_CODEC</name>
    <value>41</value>
@@ -4679,8 +4679,8 @@
   </peripheral>
   <peripheral>
   <name>TWI0</name>
-  <description>(null)</description>
-  <baseAddress>0x02502000</baseAddress>
+  <description></description>
+  <baseAddress>0x2502000</baseAddress>
   <interrupt>
    <name>TWI0</name>
    <value>25</value>
@@ -4950,7 +4950,7 @@
   <peripheral>
   <name>SPI0</name>
   <description>Serial Peripheral Interface</description>
-  <baseAddress>0x04025000</baseAddress>
+  <baseAddress>0x4025000</baseAddress>
   <interrupt>
    <name>SPI0</name>
    <value>31</value>
@@ -5123,8 +5123,8 @@
   </peripheral>
   <peripheral>
   <name>CIR_RX</name>
-  <description>(null)</description>
-  <baseAddress>0x07040000</baseAddress>
+  <description></description>
+  <baseAddress>0x7040000</baseAddress>
   <registers>
    <register>
     <name>CIR_CTL</name>
@@ -5184,8 +5184,8 @@
   </peripheral>
   <peripheral>
   <name>CIR_TX</name>
-  <description>(null)</description>
-  <baseAddress>0x02003000</baseAddress>
+  <description></description>
+  <baseAddress>0x2003000</baseAddress>
   <registers>
    <register>
     <name>CIR_TGLR</name>
@@ -5318,7 +5318,7 @@
   <peripheral>
   <name>LEDC</name>
   <description>LED Lamp Controller</description>
-  <baseAddress>0x02008000</baseAddress>
+  <baseAddress>0x2008000</baseAddress>
   <interrupt>
    <name>LEDC</name>
    <value>36</value>
@@ -5432,8 +5432,8 @@
   </peripheral>
   <peripheral>
   <name>TPADC</name>
-  <description>(null)</description>
-  <baseAddress>0x02009C00</baseAddress>
+  <description></description>
+  <baseAddress>0x2009C00</baseAddress>
   <interrupt>
    <name>TPADC</name>
    <value>78</value>
@@ -5516,8 +5516,8 @@
   </peripheral>
   <peripheral>
   <name>GPADC</name>
-  <description>(null)</description>
-  <baseAddress>0x02009000</baseAddress>
+  <description></description>
+  <baseAddress>0x2009000</baseAddress>
   <interrupt>
    <name>GPADC</name>
    <value>73</value>
@@ -5664,7 +5664,7 @@
   <peripheral>
   <name>SPI_DBI</name>
   <description>Serial Peripheral Interface</description>
-  <baseAddress>0x04026000</baseAddress>
+  <baseAddress>0x4026000</baseAddress>
   <interrupt>
    <name>SPI1</name>
    <value>32</value>
@@ -5909,8 +5909,8 @@
   </peripheral>
   <peripheral>
   <name>CE_NS</name>
-  <description>(null)</description>
-  <baseAddress>0x03040000</baseAddress>
+  <description></description>
+  <baseAddress>0x3040000</baseAddress>
   <interrupt>
    <name>CE_NS</name>
    <value>68</value>
@@ -6012,7 +6012,7 @@
   <peripheral>
   <name>RTC</name>
   <description>Real Time Clock</description>
-  <baseAddress>0x07090000</baseAddress>
+  <baseAddress>0x7090000</baseAddress>
   <registers>
    <register>
     <name>LOSC_CTRL_REG</name>
@@ -6211,8 +6211,8 @@
   </peripheral>
   <peripheral>
   <name>IOMMU</name>
-  <description>(null)</description>
-  <baseAddress>0x02010000</baseAddress>
+  <description></description>
+  <baseAddress>0x2010000</baseAddress>
   <interrupt>
    <name>IOMMU</name>
    <value>80</value>
@@ -7267,8 +7267,8 @@
   </peripheral>
   <peripheral>
   <name>TIMER</name>
-  <description>(null)</description>
-  <baseAddress>0x02050000</baseAddress>
+  <description></description>
+  <baseAddress>0x2050000</baseAddress>
   <interrupt>
    <name>TIMER0</name>
    <value>75</value>
@@ -7455,8 +7455,8 @@
   </peripheral>
   <peripheral>
   <name>CAN0</name>
-  <description>(null)</description>
-  <baseAddress>0x02504000</baseAddress>
+  <description></description>
+  <baseAddress>0x2504000</baseAddress>
   <interrupt>
    <name>CAN0</name>
    <value>37</value>
@@ -7629,8 +7629,8 @@
   </peripheral>
   <peripheral>
   <name>USBOTG0</name>
-  <description>(null)</description>
-  <baseAddress>0x04100000</baseAddress>
+  <description></description>
+  <baseAddress>0x4100000</baseAddress>
   <interrupt>
    <name>USB0_DEVICE</name>
    <value>45</value>
@@ -8020,8 +8020,8 @@
   </peripheral>
   <peripheral>
   <name>USBPHY0</name>
-  <description>(null)</description>
-  <baseAddress>0x04100400</baseAddress>
+  <description></description>
+  <baseAddress>0x4100400</baseAddress>
   <registers>
    <register>
     <name>USB_CTRL</name>
@@ -8094,8 +8094,8 @@
   </peripheral>
   <peripheral>
   <name>DE_GLB</name>
-  <description>(null)</description>
-  <baseAddress>0x05100000</baseAddress>
+  <description></description>
+  <baseAddress>0x5100000</baseAddress>
   <registers>
    <register>
     <name>GLB_CTL</name>
@@ -8137,8 +8137,8 @@
   </peripheral>
   <peripheral>
   <name>DE_CLK</name>
-  <description>(null)</description>
-  <baseAddress>0x05000000</baseAddress>
+  <description></description>
+  <baseAddress>0x5000000</baseAddress>
   <registers>
    <register>
     <name>GATE_CFG</name>
@@ -8189,8 +8189,8 @@
   </peripheral>
   <peripheral>
   <name>DE_BLD</name>
-  <description>(null)</description>
-  <baseAddress>0x05101000</baseAddress>
+  <description></description>
+  <baseAddress>0x5101000</baseAddress>
   <registers>
    <register>
     <name>fcolor_ctl</name>
@@ -8340,8 +8340,8 @@
   </peripheral>
   <peripheral>
   <name>DE_VI</name>
-  <description>(null)</description>
-  <baseAddress>0x05102000</baseAddress>
+  <description></description>
+  <baseAddress>0x5102000</baseAddress>
   <registers>
    <cluster>
     <dim>4</dim>
@@ -8497,8 +8497,8 @@
   </peripheral>
   <peripheral>
   <name>DE_UI1</name>
-  <description>(null)</description>
-  <baseAddress>0x05103000</baseAddress>
+  <description></description>
+  <baseAddress>0x5103000</baseAddress>
   <registers>
    <cluster>
     <dim>4</dim>
@@ -8608,8 +8608,8 @@
   </peripheral>
   <peripheral>
   <name>G2D_TOP</name>
-  <description>(null)</description>
-  <baseAddress>0x05410000</baseAddress>
+  <description></description>
+  <baseAddress>0x5410000</baseAddress>
   <registers>
    <register>
     <name>G2D_SCLK_GATE</name>
@@ -8652,7 +8652,7 @@
   <peripheral>
   <name>G2D_MIXER</name>
   <description>Graphic 2D (G2D) Engine Video Scaler</description>
-  <baseAddress>0x05410100</baseAddress>
+  <baseAddress>0x5410100</baseAddress>
   <registers>
    <register>
     <name>G2D_MIXER_CTL</name>
@@ -8685,8 +8685,8 @@
   </peripheral>
   <peripheral>
   <name>G2D_V0</name>
-  <description>(null)</description>
-  <baseAddress>0x05410800</baseAddress>
+  <description></description>
+  <baseAddress>0x5410800</baseAddress>
   <registers>
    <register>
     <name>V0_ATTCTL</name>
@@ -8836,8 +8836,8 @@
   </peripheral>
   <peripheral>
   <name>G2D_UI0</name>
-  <description>(null)</description>
-  <baseAddress>0x05411000</baseAddress>
+  <description></description>
+  <baseAddress>0x5411000</baseAddress>
   <registers>
    <register>
     <name>UI_ATTR</name>
@@ -8924,7 +8924,7 @@
   <peripheral>
   <name>G2D_VSU</name>
   <description>Also see 5.7 DE UIS Specification</description>
-  <baseAddress>0x05418000</baseAddress>
+  <baseAddress>0x5418000</baseAddress>
   <registers>
    <register>
     <name>VS_CTRL</name>
@@ -9087,7 +9087,7 @@
   <peripheral>
   <name>G2D_BLD</name>
   <description>Blender</description>
-  <baseAddress>0x05410400</baseAddress>
+  <baseAddress>0x5410400</baseAddress>
   <registers>
    <register>
     <name>BLD_FILL_COLOR_CTL</name>
@@ -9578,7 +9578,7 @@
   <peripheral>
   <name>G2D_WB</name>
   <description>Graphic 2D (G2D) Engine Write Back</description>
-  <baseAddress>0x05413000</baseAddress>
+  <baseAddress>0x5413000</baseAddress>
   <registers>
    <register>
     <name>WB_ATT</name>
@@ -9683,8 +9683,8 @@
   </peripheral>
   <peripheral>
   <name>G2D_ROT</name>
-  <description>(null)</description>
-  <baseAddress>0x05438000</baseAddress>
+  <description></description>
+  <baseAddress>0x5438000</baseAddress>
   <registers>
    <register>
     <name>ROT_CTL</name>
@@ -9906,8 +9906,8 @@
   </peripheral>
   <peripheral>
   <name>TCON_LCD0</name>
-  <description>(null)</description>
-  <baseAddress>0x05461000</baseAddress>
+  <description></description>
+  <baseAddress>0x5461000</baseAddress>
   <registers>
    <register>
     <name>LCD_GCTL_REG</name>
@@ -10333,8 +10333,8 @@
   </peripheral>
   <peripheral>
   <name>TCON_TV0</name>
-  <description>(null)</description>
-  <baseAddress>0x05470000</baseAddress>
+  <description></description>
+  <baseAddress>0x5470000</baseAddress>
   <registers>
    <register>
     <name>TV_GCTL_REG</name>
@@ -10597,8 +10597,8 @@
   </peripheral>
   <peripheral>
   <name>CSIC_CCU</name>
-  <description>(null)</description>
-  <baseAddress>0x05800000</baseAddress>
+  <description></description>
+  <baseAddress>0x5800000</baseAddress>
   <registers>
    <register>
     <name>CCU_CLK_MODE_REG</name>
@@ -10631,8 +10631,8 @@
   </peripheral>
   <peripheral>
   <name>CSIC_TOP</name>
-  <description>(null)</description>
-  <baseAddress>0x05800800</baseAddress>
+  <description></description>
+  <baseAddress>0x5800800</baseAddress>
   <registers>
    <register>
     <name>CSIC_TOP_EN_REG</name>
@@ -10782,8 +10782,8 @@
   </peripheral>
   <peripheral>
   <name>CSIC_PARSER0</name>
-  <description>(null)</description>
-  <baseAddress>0x05801000</baseAddress>
+  <description></description>
+  <baseAddress>0x5801000</baseAddress>
   <registers>
    <register>
     <name>PRS_EN_REG</name>
@@ -11221,8 +11221,8 @@
   </peripheral>
   <peripheral>
   <name>CSIC_DMA0</name>
-  <description>(null)</description>
-  <baseAddress>0x05809000</baseAddress>
+  <description></description>
+  <baseAddress>0x5809000</baseAddress>
   <registers>
    <register>
     <name>CSIC_DMA_EN_REG</name>
@@ -11520,8 +11520,8 @@
   </peripheral>
   <peripheral>
   <name>DDRPHYC</name>
-  <description>(null)</description>
-  <baseAddress>0x03103000</baseAddress>
+  <description></description>
+  <baseAddress>0x3103000</baseAddress>
   <registers>
    <register>
     <name>PHYC_REG_000</name>
@@ -12038,8 +12038,8 @@
   </peripheral>
   <peripheral>
   <name>MSI_MEMC</name>
-  <description>(null)</description>
-  <baseAddress>0x03102000</baseAddress>
+  <description></description>
+  <baseAddress>0x3102000</baseAddress>
   <interrupt>
    <name>MSI</name>
    <value>59</value>
@@ -12114,7 +12114,7 @@
   <peripheral>
   <name>SID</name>
   <description>Security ID</description>
-  <baseAddress>0x03006000</baseAddress>
+  <baseAddress>0x3006000</baseAddress>
   <registers>
    <register>
     <name>SID_THS</name>
@@ -12138,8 +12138,8 @@
   </peripheral>
   <peripheral>
   <name>USBEHCI0</name>
-  <description>(null)</description>
-  <baseAddress>0x04101000</baseAddress>
+  <description></description>
+  <baseAddress>0x4101000</baseAddress>
   <interrupt>
    <name>USB0_EHCI</name>
    <value>46</value>
@@ -12268,8 +12268,8 @@
   </peripheral>
   <peripheral>
   <name>USBOHCI0</name>
-  <description>(null)</description>
-  <baseAddress>0x04101400</baseAddress>
+  <description></description>
+  <baseAddress>0x4101400</baseAddress>
   <interrupt>
    <name>USB0_OHCI</name>
    <value>47</value>
@@ -12501,8 +12501,8 @@
   </peripheral>
   <peripheral>
   <name>DMAC</name>
-  <description>(null)</description>
-  <baseAddress>0x03002000</baseAddress>
+  <description></description>
+  <baseAddress>0x3002000</baseAddress>
   <interrupt>
    <name>DMAC_NS</name>
    <value>66</value>
@@ -12673,7 +12673,7 @@
   <peripheral>
   <name>PWM</name>
   <description>Pulse Width Modulation module</description>
-  <baseAddress>0x02000C00</baseAddress>
+  <baseAddress>0x2000C00</baseAddress>
   <registers>
    <register>
     <name>PIER</name>
@@ -12850,8 +12850,8 @@
   </peripheral>
   <peripheral>
   <name>EMAC</name>
-  <description>(null)</description>
-  <baseAddress>0x04500000</baseAddress>
+  <description></description>
+  <baseAddress>0x4500000</baseAddress>
   <interrupt>
    <name>EMAC</name>
    <value>62</value>
@@ -13093,7 +13093,7 @@
   </peripheral>
   <peripheral>
   <name>CLINT</name>
-  <description>(null)</description>
+  <description></description>
   <baseAddress>0x14000000</baseAddress>
   <registers>
    <register>
