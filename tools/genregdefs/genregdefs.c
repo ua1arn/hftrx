@@ -647,8 +647,12 @@ static void emithex02(int indent, const char *name, unsigned value) {
 	emitline(indent, "<%s>0x%02X</%s>" "\n", name, value, name);
 }
 
-static void emitdecimal(int indent, const char *name, unsigned value) {
+static void emitudecimal(int indent, const char *name, unsigned value) {
 	emitline(indent, "<%s>%u</%s>" "\n", name, value, name);
+}
+
+static void emitdecimal(int indent, const char *name, unsigned value) {
+	emitline(indent, "<%s>%d</%s>" "\n", name, value, name);
 }
 
 static void emitcomment(int indent, const char *s) {
@@ -659,9 +663,9 @@ static void emitcpu(int indent) {
 	emitstring(indent, "name", "XXXX");
 	emitstring(indent, "version", "1.00");
 	emitstring(indent, "description", "for test");
-	emitdecimal(indent, "addressUnitBits", 8);
-	emitdecimal(indent, "width", 32);
-	emitdecimal(indent, "size", 32);
+	emitudecimal(indent, "addressUnitBits", 8);
+	emitudecimal(indent, "width", 32);
+	emitudecimal(indent, "size", 32);
 	emithex32(indent, "resetValue", 0x0000000);
 	emithex32(indent, "resetMask", 0xFFFFFFFF);
 
@@ -712,7 +716,7 @@ unsigned emitregister(int indent, const struct regdfn *const regp,
 		/* Emit aggregate type */
 		if (regp->fldrept) {
 			emitline(indent, "<cluster>" "\n");
-			emitdecimal(indent + 1, "dim", regp->fldrept);
+			emitudecimal(indent + 1, "dim", regp->fldrept);
 			emithex32(indent + 1, "addressOffset", regp->fldoffs);
 			offs += emitregisters(indent + 1, &regp->aggregate, 0)
 					* regp->fldrept;
@@ -727,7 +731,7 @@ unsigned emitregister(int indent, const struct regdfn *const regp,
 			//emitline(indent + INDENT, "volatile %s %s [0x%03X];",
 			//		fldtype, regp->fldname, regp->fldrept);
 			emitline(indent, "<cluster>" "\n");
-			emitdecimal(indent + 1, "dim", regp->fldrept);
+			emitudecimal(indent + 1, "dim", regp->fldrept);
 			emithex32(indent + 1, "addressOffset", regp->fldoffs);
 			offs += emitregister000(indent + 1, regp, regp->fldoffs)
 					* regp->fldrept;
