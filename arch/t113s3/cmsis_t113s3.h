@@ -70,6 +70,7 @@ typedef enum IRQn
     HSTIMER0_IRQn = 87,                               /*!< HSTIMER High Speed Timer Interrupt */
     HSTIMER1_IRQn = 88,                               /*!< HSTIMER High Speed Timer Interrupt */
     GPADC_IRQn = 89,                                  /*!< GPADC  Interrupt */
+    THS_IRQn = 90,                                    /*!< THS Thermal Sensor Interrupt */
     TIMER0_IRQn = 91,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 92,                                 /*!< TIMER  Interrupt */
     TPADC_IRQn = 94,                                  /*!< TPADC  Interrupt */
@@ -113,6 +114,7 @@ typedef enum IRQn
 #define CIR_TX_BASE ((uintptr_t) 0x02003000)          /*!< CIR_TX Base */
 #define LEDC_BASE ((uintptr_t) 0x02008000)            /*!< LEDC Base */
 #define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
+#define THS_BASE ((uintptr_t) 0x02009400)             /*!< THS Base */
 #define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC Base */
 #define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU Base */
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC Base */
@@ -2547,6 +2549,7 @@ typedef struct MSGBOX_Type
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU  register set access pointer */
+#define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define CAN0 ((CAN_TypeDef *) CAN0_BASE)              /*!< CAN0  register set access pointer */
 #define CAN1 ((CAN_TypeDef *) CAN1_BASE)              /*!< CAN1  register set access pointer */

@@ -106,15 +106,15 @@ static void emitstring(int indent, const char *name, const char *value) {
 }
 
 static void emithex32(int indent, const char *name, unsigned value) {
-	emitline(indent, "<%s>0x%X</%s>" "\n", name, value, name);
+	emitline(indent, "<%s>0x%08X</%s>" "\n", name, value, name);
 }
 
 static void emithex03(int indent, const char *name, unsigned value) {
-	emitline(indent, "<%s>0x%X</%s>" "\n", name, value, name);
+	emitline(indent, "<%s>0x%03X</%s>" "\n", name, value, name);
 }
 
 static void emithex02(int indent, const char *name, unsigned value) {
-	emitline(indent, "<%s>0x%X</%s>" "\n", name, value, name);
+	emitline(indent, "<%s>0x%02X</%s>" "\n", name, value, name);
 }
 
 static void emitudecimal(int indent, const char *name, unsigned value) {
