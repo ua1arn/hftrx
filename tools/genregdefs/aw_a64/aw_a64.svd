@@ -74,6 +74,11 @@
   <name>CCU</name>
   <description>(null)</description>
   <baseAddress>0x01C20000</baseAddress>
+  <interrupt>
+   <name>CCU_FERR</name>
+   <value>80</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>PLL_CPUX_CTRL_REG</name>
@@ -952,6 +957,16 @@
   <name>NDFC</name>
   <description>NAND Flash Controller Interface</description>
   <baseAddress>0x01C03000</baseAddress>
+  <interrupt>
+   <name>NDFC</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>NAND</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>NDFC_CTL</name>
@@ -1241,6 +1256,31 @@
   <name>UART0</name>
   <description>(null)</description>
   <baseAddress>0x01C28000</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>33</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>34</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>35</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART4</name>
+   <value>36</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>DATA</name>
@@ -1526,18 +1566,118 @@
   <peripheral derivedFrom="UART0">
   <name>UART1</name>
   <baseAddress>0x01C28400</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>33</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>34</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>35</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART4</name>
+   <value>36</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="UART0">
   <name>UART2</name>
   <baseAddress>0x01C28800</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>33</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>34</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>35</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART4</name>
+   <value>36</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="UART0">
   <name>UART3</name>
   <baseAddress>0x01C28C00</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>33</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>34</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>35</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART4</name>
+   <value>36</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="UART0">
   <name>UART4</name>
   <baseAddress>0x01C29000</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>33</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>34</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>35</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART4</name>
+   <value>36</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>GPIOB</name>
@@ -1626,6 +1766,61 @@
   <name>GPIOINTB</name>
   <description>(null)</description>
   <baseAddress>0x01C20A00</baseAddress>
+  <interrupt>
+   <name>GPIOB_NS</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOB_S</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_NS</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_S</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_NS</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_S</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_NS</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_S</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_NS</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_S</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG_NS</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
   <registers>
    <cluster>
     <dim>4</dim>
@@ -1672,26 +1867,356 @@
   <peripheral derivedFrom="GPIOINTB">
   <name>GPIOINTC</name>
   <baseAddress>0x01C20A20</baseAddress>
+  <interrupt>
+   <name>GPIOB_NS</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOB_S</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_NS</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_S</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_NS</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_S</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_NS</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_S</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_NS</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_S</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG_NS</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="GPIOINTB">
   <name>GPIOINTD</name>
   <baseAddress>0x01C20A40</baseAddress>
+  <interrupt>
+   <name>GPIOB_NS</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOB_S</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_NS</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_S</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_NS</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_S</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_NS</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_S</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_NS</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_S</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG_NS</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="GPIOINTB">
   <name>GPIOINTE</name>
   <baseAddress>0x01C20A60</baseAddress>
+  <interrupt>
+   <name>GPIOB_NS</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOB_S</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_NS</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_S</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_NS</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_S</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_NS</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_S</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_NS</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_S</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG_NS</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="GPIOINTB">
   <name>GPIOINTF</name>
   <baseAddress>0x01C20A80</baseAddress>
+  <interrupt>
+   <name>GPIOB_NS</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOB_S</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_NS</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_S</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_NS</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_S</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_NS</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_S</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_NS</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_S</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG_NS</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="GPIOINTB">
   <name>GPIOINTG</name>
   <baseAddress>0x01C20AA0</baseAddress>
+  <interrupt>
+   <name>GPIOB_NS</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOB_S</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_NS</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_S</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_NS</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_S</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_NS</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_S</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_NS</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_S</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG_NS</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="GPIOINTB">
   <name>GPIOINTH</name>
   <baseAddress>0x01C20AC0</baseAddress>
+  <interrupt>
+   <name>GPIOB_NS</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOB_S</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_NS</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC_S</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_NS</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD_S</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_NS</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE_S</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_NS</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF_S</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG_NS</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>GPIOBLOCK</name>
@@ -1831,6 +2356,21 @@
   <name>SMHC0</name>
   <description>(null)</description>
   <baseAddress>0x04020000</baseAddress>
+  <interrupt>
+   <name>SMHC0</name>
+   <value>72</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC1</name>
+   <value>73</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC2</name>
+   <value>74</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>SMHC_CTRL</name>
@@ -2197,15 +2737,55 @@
   <peripheral derivedFrom="SMHC0">
   <name>SMHC1</name>
   <baseAddress>0x04021000</baseAddress>
+  <interrupt>
+   <name>SMHC0</name>
+   <value>72</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC1</name>
+   <value>73</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC2</name>
+   <value>74</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="SMHC0">
   <name>SMHC2</name>
   <baseAddress>0x04022000</baseAddress>
+  <interrupt>
+   <name>SMHC0</name>
+   <value>72</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC1</name>
+   <value>73</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC2</name>
+   <value>74</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>I2S0</name>
   <description>(null)</description>
   <baseAddress>0x01C22000</baseAddress>
+  <interrupt>
+   <name>I2S_PCM1</name>
+   <value>59</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>I2S_PCM2</name>
+   <value>60</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>I2S_PCM_CTL</name>
@@ -2563,10 +3143,30 @@
   <peripheral derivedFrom="I2S0">
   <name>I2S1</name>
   <baseAddress>0x01C22400</baseAddress>
+  <interrupt>
+   <name>I2S_PCM1</name>
+   <value>59</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>I2S_PCM2</name>
+   <value>60</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="I2S0">
   <name>I2S2</name>
   <baseAddress>0x01C22800</baseAddress>
+  <interrupt>
+   <name>I2S_PCM1</name>
+   <value>59</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>I2S_PCM2</name>
+   <value>60</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>DMIC</name>
@@ -2723,6 +3323,11 @@
   <name>OWA</name>
   <description>(null)</description>
   <baseAddress>0x02036000</baseAddress>
+  <interrupt>
+   <name>OWA</name>
+   <value>55</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>OWA_GEN_CTL</name>
@@ -4042,6 +4647,21 @@
   <name>TWI0</name>
   <description>(null)</description>
   <baseAddress>0x01C2AC00</baseAddress>
+  <interrupt>
+   <name>TWI0</name>
+   <value>38</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI1</name>
+   <value>39</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI2</name>
+   <value>40</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TWI_ADDR</name>
@@ -4219,15 +4839,55 @@
   <peripheral derivedFrom="TWI0">
   <name>TWI1</name>
   <baseAddress>0x01C2B000</baseAddress>
+  <interrupt>
+   <name>TWI0</name>
+   <value>38</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI1</name>
+   <value>39</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI2</name>
+   <value>40</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="TWI0">
   <name>TWI2</name>
   <baseAddress>0x01C2B400</baseAddress>
+  <interrupt>
+   <name>TWI0</name>
+   <value>38</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI1</name>
+   <value>39</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI2</name>
+   <value>40</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>SPI0</name>
   <description>Serial Peripheral Interface</description>
   <baseAddress>0x01C68000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>97</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>98</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>SPI_GCR</name>
@@ -4396,6 +5056,16 @@
   <peripheral derivedFrom="SPI0">
   <name>SPI1</name>
   <baseAddress>0x01C69000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>97</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>98</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>CIR_RX</name>
@@ -4595,6 +5265,11 @@
   <name>TPADC</name>
   <description>(null)</description>
   <baseAddress>0x02009C00</baseAddress>
+  <interrupt>
+   <name>TPADC</name>
+   <value>94</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TP_CTRL_REG0</name>
@@ -4674,6 +5349,11 @@
   <name>GPADC</name>
   <description>(null)</description>
   <baseAddress>0x02009000</baseAddress>
+  <interrupt>
+   <name>GPADC</name>
+   <value>89</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>GP_SR_CON</name>
@@ -5174,6 +5854,11 @@
   <name>IOMMU</name>
   <description>(null)</description>
   <baseAddress>0x02010000</baseAddress>
+  <interrupt>
+   <name>IOMMU</name>
+   <value>96</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>IOMMU_RESET_REG</name>
@@ -6367,6 +7052,16 @@
   <name>TIMER</name>
   <description>(null)</description>
   <baseAddress>0x01C20C00</baseAddress>
+  <interrupt>
+   <name>TIMER0</name>
+   <value>50</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1</name>
+   <value>51</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TMR_IRQ_EN_REG</name>
@@ -9558,6 +10253,11 @@
   <name>MSI_MEMC</name>
   <description>(null)</description>
   <baseAddress>0x03102000</baseAddress>
+  <interrupt>
+   <name>MSI</name>
+   <value>75</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>MEMC_REG_000</name>
@@ -9976,6 +10676,11 @@
   <name>DMAC</name>
   <description>(null)</description>
   <baseAddress>0x01C02000</baseAddress>
+  <interrupt>
+   <name>DMAC</name>
+   <value>82</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>DMAC_IRQ_EN_REG</name>
@@ -10311,6 +11016,11 @@
   <name>EMAC</name>
   <description>(null)</description>
   <baseAddress>0x01C30000</baseAddress>
+  <interrupt>
+   <name>EMAC</name>
+   <value>78</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>EMAC_BASIC_CTL0</name>
@@ -10549,6 +11259,11 @@
   <name>MSGBOX</name>
   <description>(null)</description>
   <baseAddress>0x01C17000</baseAddress>
+  <interrupt>
+   <name>MSGBOX</name>
+   <value>81</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>MSGBOX_CTRL_REG0</name>
@@ -10634,4 +11349,6 @@
   </registers>
   </peripheral>
  </peripherals>
+ <vendor>
+ </vendor>
 </device >

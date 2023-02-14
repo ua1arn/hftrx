@@ -655,15 +655,15 @@ static void emitcomment(int indent, const char *s) {
 	emitline(indent, "<!-- %s -->\n", s);
 }
 
-static void emitcpu(void) {
-	emitstring(1, "name", "XXXX");
-	emitstring(1, "version", "1.00");
-	emitstring(1, "description", "for test");
-	emitdecimal(1, "addressUnitBits", 8);
-	emitdecimal(1, "width", 32);
-	emitdecimal(1, "size", 32);
-	emithex32(1, "resetValue", 0x0000000);
-	emithex32(1, "resetMask", 0xFFFFFFFF);
+static void emitcpu(int indent) {
+	emitstring(indent, "name", "XXXX");
+	emitstring(indent, "version", "1.00");
+	emitstring(indent, "description", "for test");
+	emitdecimal(indent, "addressUnitBits", 8);
+	emitdecimal(indent, "width", 32);
+	emitdecimal(indent, "size", 32);
+	emithex32(indent, "resetValue", 0x0000000);
+	emithex32(indent, "resetMask", 0xFFFFFFFF);
 
 }
 
@@ -762,8 +762,34 @@ unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
 	return offs;
 }
 
-static void emitperipherial(const struct parsedfile *pfl) {
-	int indent = 2;
+static void emitinterrupt(int indent, const char * name, int value)
+{
+	emitline(indent, "<interrupt>" "\n");
+	emitstring(indent + 1, "name", name);
+	emitdecimal(indent + 1, "value", value);
+	emitstring(indent + 1, "description", "");
+	emitline(indent, "</interrupt>" "\n");
+}
+
+static void emitinterrupts(int indent, const struct parsedfile *pfl)
+{
+	/* interrupts */
+	if (!flag_riscv) {
+		/* collect ARM IRQ vectors */
+		int i;
+		for (i = 0; i < pfl->irq_count; ++ i) {
+			emitinterrupt(indent, pfl->irq_names [i], pfl->irq_array [i]);
+		}
+	} else {
+		/* collect RISC-V IRQ vectors */
+		int i;
+		for (i = 0; i < pfl->irqrv_count; ++ i) {
+			emitinterrupt(indent, pfl->irqrv_names [i], pfl->irqrv_array [i]);
+		}
+	}
+}
+
+static void emitperipherial(int indent, const struct parsedfile *pfl) {
 	int i;
 
 	if (IsListEmpty(&pfl->regslist)) {
@@ -772,6 +798,7 @@ static void emitperipherial(const struct parsedfile *pfl) {
 	if (strlen(pfl->bname) == 0)
 		fprintf(stderr, "Not named object in file '%s'\n", pfl->file);
 
+	/* name */
 	if (pfl->base_count >= 1) {
 		emitline(indent, "<peripheral>" "\n");
 		emitline(indent, "<name>%s</name>" "\n", pfl->base_names[0]);
@@ -779,57 +806,60 @@ static void emitperipherial(const struct parsedfile *pfl) {
 		//emitline(indent, "<groupName>%s</groupName>" "\n", pfl->base_names [0]);
 		emitline(indent, "<baseAddress>0x%08X</baseAddress>" "\n",
 				pfl->base_address[0]);
+		emitinterrupts(indent, pfl);
 		emitregisters(indent, &pfl->regslist, 0);
 		emitline(indent, "</peripheral>" "\n");
 	}
-
+	/* base address */
 	for (i = 1; i < pfl->base_count; ++i) {
 
 		emitline(indent, "<peripheral derivedFrom=\"%s\">" "\n",
 				pfl->base_names[0]);
 		emitstring(indent, "name", pfl->base_names[i]);
 		emithex32(indent, "baseAddress", pfl->base_address[i]);
+		emitinterrupts(indent, pfl);
 		emitline(indent, "</peripheral>" "\n");
 	}
-
 }
 
-static void emitperipherials(void) {
+static void emitperipherials(int indent) {
 	PLIST_ENTRY t;
 
-	emitline(1, "<peripherals>" "\n");
+	emitline(indent, "<peripherals>" "\n");
 
 	/* structures */
 
 	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile,
 				item);
-		emitperipherial(pfl);
+		emitperipherial(indent + 1, pfl);
 	}
 
-	emitline(1, "</peripherals>" "\n");
+	emitline(indent, "</peripherals>" "\n");
 }
 
-static void emitvendorext(void) {
+static void emitvendorext(int indent) {
+	emitline(indent, "<vendor>" "\n");
+	emitline(indent, "</vendor>" "\n");
 
 }
 
-static void emitdevice(void) {
-	emitline(0,
+static void emitdevice(int indent) {
+	emitline(indent,
 			"<device schemaVersion=\"1.1\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema-instance\" xs:noNamespaceSchemaLocation=\"CMSIS-SVD_Schema_1_1.xsd\" >" "\n");
 
-	emitcpu();
-	emitperipherials();
-	emitvendorext();
+	emitcpu(indent + 1);
+	emitperipherials(indent + 1);
+	emitvendorext(indent + 1);
 
-	emitline(0, "</device >" "\n");
+	emitline(indent, "</device >" "\n");
 }
 
 // See https://github.com/Open-CMSIS-Pack/devtools/SVDConv
 
 static void generate_svd(void) {
 	emitline(0, "<?xml version=\"1.0\" encoding=\"utf-8\"?>" "\n");
-	emitdevice();
+	emitdevice(0);
 }
 
 static void generate_debug(void) {
