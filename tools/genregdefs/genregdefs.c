@@ -98,6 +98,37 @@ void emitline(int pos, const char *format, ...) {
 		emitpos = 0;
 }
 
+/* xml - file elements */
+
+static void emitstring(int indent, const char *name, const char *value) {
+	emitline(indent, "<%s>%s</%s>" "\n", name, value == NULL ? "" : value,
+			name);
+}
+
+static void emithex32(int indent, const char *name, unsigned value) {
+	emitline(indent, "<%s>0x%X</%s>" "\n", name, value, name);
+}
+
+static void emithex03(int indent, const char *name, unsigned value) {
+	emitline(indent, "<%s>0x%X</%s>" "\n", name, value, name);
+}
+
+static void emithex02(int indent, const char *name, unsigned value) {
+	emitline(indent, "<%s>0x%X</%s>" "\n", name, value, name);
+}
+
+static void emitudecimal(int indent, const char *name, unsigned value) {
+	emitline(indent, "<%s>%u</%s>" "\n", name, value, name);
+}
+
+static void emitdecimal(int indent, const char *name, unsigned value) {
+	emitline(indent, "<%s>%d</%s>" "\n", name, value, name);
+}
+
+static void emitcomment(int indent, const char *s) {
+	emitline(indent, "<!-- %s -->\n", s);
+}
+
 /* Generate list of registers. Return last offset */
 unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset) {
 	unsigned offs;
@@ -631,34 +662,6 @@ static void freeregs(struct parsedfile *pfl) {
 	free(pfl->file);
 }
 
-static void emitstring(int indent, const char *name, const char *value) {
-	emitline(indent, "<%s>%s</%s>" "\n", name, value, name);
-}
-
-static void emithex32(int indent, const char *name, unsigned value) {
-	emitline(indent, "<%s>0x%08X</%s>" "\n", name, value, name);
-}
-
-static void emithex03(int indent, const char *name, unsigned value) {
-	emitline(indent, "<%s>0x%03X</%s>" "\n", name, value, name);
-}
-
-static void emithex02(int indent, const char *name, unsigned value) {
-	emitline(indent, "<%s>0x%02X</%s>" "\n", name, value, name);
-}
-
-static void emitudecimal(int indent, const char *name, unsigned value) {
-	emitline(indent, "<%s>%u</%s>" "\n", name, value, name);
-}
-
-static void emitdecimal(int indent, const char *name, unsigned value) {
-	emitline(indent, "<%s>%d</%s>" "\n", name, value, name);
-}
-
-static void emitcomment(int indent, const char *s) {
-	emitline(indent, "<!-- %s -->\n", s);
-}
-
 static void emitcpu(int indent) {
 	emitstring(indent, "name", "XXXX");
 	emitstring(indent, "version", "1.00");
@@ -766,8 +769,7 @@ unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
 	return offs;
 }
 
-static void emitinterrupt(int indent, const char * name, int value)
-{
+static void emitinterrupt(int indent, const char *name, int value) {
 	emitline(indent, "<interrupt>" "\n");
 	emitstring(indent + 1, "name", name);
 	emitdecimal(indent + 1, "value", value);
@@ -775,20 +777,19 @@ static void emitinterrupt(int indent, const char * name, int value)
 	emitline(indent, "</interrupt>" "\n");
 }
 
-static void emitinterrupts(int indent, const struct parsedfile *pfl)
-{
+static void emitinterrupts(int indent, const struct parsedfile *pfl) {
 	/* interrupts */
 	if (!flag_riscv) {
 		/* collect ARM IRQ vectors */
 		int i;
-		for (i = 0; i < pfl->irq_count; ++ i) {
-			emitinterrupt(indent, pfl->irq_names [i], pfl->irq_array [i]);
+		for (i = 0; i < pfl->irq_count; ++i) {
+			emitinterrupt(indent, pfl->irq_names[i], pfl->irq_array[i]);
 		}
 	} else {
 		/* collect RISC-V IRQ vectors */
 		int i;
-		for (i = 0; i < pfl->irqrv_count; ++ i) {
-			emitinterrupt(indent, pfl->irqrv_names [i], pfl->irqrv_array [i]);
+		for (i = 0; i < pfl->irqrv_count; ++i) {
+			emitinterrupt(indent, pfl->irqrv_names[i], pfl->irqrv_array[i]);
 		}
 	}
 }
