@@ -1,5 +1,5 @@
 #type; DE_GLB
-#base; DE_GLB 0x5100000
+#base; DE_GLB 0x1100000
 #regdef; GLB_CTL;	 	0x000;	Global control register
 #regdef; GLB_STS;		0x004;	Global status register
 #regdef; GLB_DBUFFER;	0x008;	Global double buffer control register

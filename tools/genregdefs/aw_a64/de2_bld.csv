@@ -1,5 +1,5 @@
 #type; DE_BLD
-#base; DE_BLD 0x5101000
+#base; DE_BLD 0x1101000
 #regdef; fcolor_ctl;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
 #aggreg; attr; 0x004 4; Pipe [0..3]
 #regdef; fcolor;	0x000; BLD fill color register

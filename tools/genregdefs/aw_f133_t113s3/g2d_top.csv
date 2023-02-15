@@ -1,3 +1,4 @@
+#comment; Graphic 2D
 #type; G2D_TOP
 #base; G2D_TOP 0x05410000
 #regdef; G2D_SCLK_GATE  ; 0x00 ; G2D SCLK gate  

@@ -8495,7 +8495,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_TOP</name>
-  <description></description>
+  <description>Graphic 2D</description>
   <baseAddress>0x05410000</baseAddress>
   <registers>
    <register>

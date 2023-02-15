@@ -1,7 +1,7 @@
 #type; DE_UI
-#base; DE_UI1 0x05103000
-#base; DE_UI2 0x05104000
-#base; DE_UI3 0x05105000
+#base; DE_UI1 0x01103000
+#base; DE_UI2 0x01104000
+#base; DE_UI3 0x01105000
 #aggreg; cfg; 0x000 4;
 #regdef;  attr; 0x000; 
 #regdef;  size; 0x004; 
