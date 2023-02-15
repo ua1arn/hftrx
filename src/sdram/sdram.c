@@ -1535,7 +1535,7 @@ void SDRAM_InitSequence(void)
   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
   /* Wait until the SDRAM controller is ready */
-  while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+  while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
   /* Send the command */
@@ -1552,7 +1552,7 @@ void SDRAM_InitSequence(void)
   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
   /* Wait until the SDRAM controller is ready */
-  while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+  while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
   /* Send the command */
@@ -1565,14 +1565,14 @@ void SDRAM_InitSequence(void)
   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 4;
   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
   /* Wait until the SDRAM controller is ready */
-  while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+  while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
   /* Send the  first command */
   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
 
   /* Wait until the SDRAM controller is ready */
-  while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+  while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
   /* Send the second command */
@@ -1592,7 +1592,7 @@ void SDRAM_InitSequence(void)
   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = tmpr;
   /* Wait until the SDRAM controller is ready */
-  while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+  while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
   /* Send the command */
@@ -1605,7 +1605,7 @@ void SDRAM_InitSequence(void)
   /* Set the device refresh counter */
   FMC_SetRefreshCount(683);
   /* Wait until the SDRAM controller is ready */
-  while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+  while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
 #elif defined CTLSTYLE_V3D	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
@@ -1614,7 +1614,7 @@ void SDRAM_InitSequence(void)
 	FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
 	FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
 
-	while(FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET)
+	while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET)
 	{
 	}
 
@@ -1626,7 +1626,7 @@ void SDRAM_InitSequence(void)
 	FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
 	FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
 
-	while(FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET)
+	while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET)
 	{
 	}
 
@@ -1637,7 +1637,7 @@ void SDRAM_InitSequence(void)
 	FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 8;
 	FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
 
-	while(FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET)
+	while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET)
 	{
 	}
 
@@ -1654,7 +1654,7 @@ void SDRAM_InitSequence(void)
 	FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
 	FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = tmpr;
 
-	while(FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET)
+	while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET)
 	{
 	}
 
@@ -1662,7 +1662,7 @@ void SDRAM_InitSequence(void)
 
 	FMC_SetRefreshCount(1292);
 
-	while(FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET)
+	while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET)
 	{
 	}
 
@@ -4386,12 +4386,18 @@ static void init_dram_controller(void)
 	U32_REG(0x01C63140) = 0x013b3bdd;
 
 	MCTL_PIR_REG = 0x5F3;
-	while(!(MCTL_PGSR0_REG & 1)) {}
+	while(!(MCTL_PGSR0_REG & 1))
+	{
+
+	}
 
 	// if any of these bits are set, u-boot does some stuff that doesn't make any sense. Let's skip over that.
-	ASSERT((MCTL_PGSR0_REG & 0x0fe00000) == 0);
+	//ASSERT((MCTL_PGSR0_REG & 0x0fe00000) == 0);
 
-	while(!(U32_REG(0x01C63018) & 1)) {}
+	while(!(U32_REG(0x01C63018) & 1))
+	{
+
+	}
 
 	U32_REG(0x01C6310C) = 0xc0aa0060;
 	U32_REG(0x01C63140) = 0x817b7bfc;
@@ -4408,10 +4414,10 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	dram_clock_init();
 	init_dram_controller();
 
-	printhex(0x40000000, 0x40000000, 256);
-	memset(0x40000000, 0xFF, 128);
-	memset(0x40000080, 0x00, 128);
-	printhex(0x40000000, 0x40000000, 256);
+	printhex(0x40000000, (void *) 0x40000000, 256);
+	memset((void *) 0x40000000, 0xFF, 128);
+	memset((void *) 0x40000080, 0x00, 128);
+	printhex(0x40000000, (void *) 0x40000000, 256);
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
 

@@ -471,6 +471,8 @@ int axp803_initialize(void)
 	axp803_set_dcdc2(1100);	// VDD-CPUX
 	axp803_set_dcdc3(1100);	// VDD-CPUX
 
+	axp803_set_dcdc5(1500);	// VCC-DRAM
+
 	//axp803_set_dcdc6(1100);	// VDD-SYS
 
 	axp803_set_dldo(1, 3300);
