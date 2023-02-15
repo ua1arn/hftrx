@@ -7670,94 +7670,65 @@
   <baseAddress>0x04200800</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE_GLB</name>
-  <description></description>
-  <baseAddress>0x05100000</baseAddress>
+  <name>DE2_TOP</name>
+  <description>Display Engine Top</description>
+  <baseAddress>0x01000000</baseAddress>
+  <interrupt>
+   <name>DE</name>
+   <value>127</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
-    <name>GLB_CTL</name>
-    <displayName>GLB_CTL</displayName>
-    <description>Global control register</description>
+    <name>SCLK_GATE</name>
+    <displayName>SCLK_GATE</displayName>
+    <description>DE SCLK Gating Register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>GLB_STS</name>
-    <displayName>GLB_STS</displayName>
-    <description>Global status register</description>
+    <name>HCLK_GATE</name>
+    <displayName>HCLK_GATE</displayName>
+    <description>DE HCLK Gating Register</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>GLB_DBUFFER</name>
-    <displayName>GLB_DBUFFER</displayName>
-    <description>Global double buffer control register</description>
+    <name>AHB_RESET</name>
+    <displayName>AHB_RESET</displayName>
+    <description>DE AHB Reset register</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>GLB_SIZE</name>
-    <displayName>GLB_SIZE</displayName>
-    <description>Global size register</description>
-    <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>DE_CLK</name>
-  <description></description>
-  <baseAddress>0x05000000</baseAddress>
-  <registers>
-   <register>
-    <name>GATE_CFG</name>
-    <displayName>GATE_CFG</displayName>
-    <description>SCLK_GATE DE SCLK Gating Register</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>BUS_CFG</name>
-    <displayName>BUS_CFG</displayName>
-    <description>? HCLK_GATE ? DE HCLK Gating Register</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RST_CFG</name>
-    <displayName>RST_CFG</displayName>
-    <description>AHB_RESET DE AHB Reset register</description>
-    <addressOffset>0x008</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DIV_CFG</name>
-    <displayName>DIV_CFG</displayName>
-    <description>SCLK_DIV DE SCLK Division register</description>
+    <name>SCLK_DIV</name>
+    <displayName>SCLK_DIV</displayName>
+    <description>DE SCLK Division register</description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SEL_CFG</name>
-    <displayName>SEL_CFG</displayName>
-    <description>? DE2TCON ? MUX register</description>
+    <name>DE2TCON_MUX</name>
+    <displayName>DE2TCON_MUX</displayName>
+    <description>MUX register</description>
     <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CMD_CTL</name>
+    <displayName>CMD_CTL</displayName>
+    <description></description>
+    <addressOffset>0x014</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -7916,6 +7887,160 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>DE_GLB</name>
+  <description></description>
+  <baseAddress>0x05100000</baseAddress>
+  <registers>
+   <register>
+    <name>GLB_CTL</name>
+    <displayName>GLB_CTL</displayName>
+    <description>Global control register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GLB_STS</name>
+    <displayName>GLB_STS</displayName>
+    <description>Global status register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GLB_DBUFFER</name>
+    <displayName>GLB_DBUFFER</displayName>
+    <description>Global double buffer control register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GLB_SIZE</name>
+    <displayName>GLB_SIZE</displayName>
+    <description>Global size register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>DE_UI1</name>
+  <description></description>
+  <baseAddress>0x05103000</baseAddress>
+  <registers>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <registers>
+     <register>
+      <name>attr</name>
+      <displayName>attr</displayName>
+      <description></description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>size</name>
+      <displayName>size</displayName>
+      <description></description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>coord</name>
+      <displayName>coord</displayName>
+      <description></description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>pitch</name>
+      <displayName>pitch</displayName>
+      <description></description>
+      <addressOffset>0x00C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>top_laddr</name>
+      <displayName>top_laddr</displayName>
+      <description></description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>bot_laddr</name>
+      <displayName>bot_laddr</displayName>
+      <description></description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>fcolor</name>
+      <displayName>fcolor</displayName>
+      <description></description>
+      <addressOffset>0x018</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+   </cluster>
+   <register>
+    <name>top_haddr</name>
+    <displayName>top_haddr</displayName>
+    <description></description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>bot_haddr</name>
+    <displayName>bot_haddr</displayName>
+    <description></description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ovl_size</name>
+    <displayName>ovl_size</displayName>
+    <description></description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_UI1">
+  <name>DE_UI2</name>
+  <baseAddress>0x05104000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_UI1">
+  <name>DE_UI3</name>
+  <baseAddress>0x05105000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>DE_VI</name>
   <description></description>
   <baseAddress>0x05102000</baseAddress>
@@ -8071,117 +8196,6 @@
     </register>
    </cluster>
   </registers>
-  </peripheral>
-  <peripheral>
-  <name>DE_UI1</name>
-  <description></description>
-  <baseAddress>0x05103000</baseAddress>
-  <registers>
-   <cluster>
-    <dim>4</dim>
-    <addressOffset>0x00000000</addressOffset>
-    <registers>
-     <register>
-      <name>attr</name>
-      <displayName>attr</displayName>
-      <description></description>
-      <addressOffset>0x000</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>size</name>
-      <displayName>size</displayName>
-      <description></description>
-      <addressOffset>0x004</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>coord</name>
-      <displayName>coord</displayName>
-      <description></description>
-      <addressOffset>0x008</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>pitch</name>
-      <displayName>pitch</displayName>
-      <description></description>
-      <addressOffset>0x00C</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>top_laddr</name>
-      <displayName>top_laddr</displayName>
-      <description></description>
-      <addressOffset>0x010</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>bot_laddr</name>
-      <displayName>bot_laddr</displayName>
-      <description></description>
-      <addressOffset>0x014</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>fcolor</name>
-      <displayName>fcolor</displayName>
-      <description></description>
-      <addressOffset>0x018</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-    </registers>
-   </cluster>
-   <register>
-    <name>top_haddr</name>
-    <displayName>top_haddr</displayName>
-    <description></description>
-    <addressOffset>0x080</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>bot_haddr</name>
-    <displayName>bot_haddr</displayName>
-    <description></description>
-    <addressOffset>0x084</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ovl_size</name>
-    <displayName>ovl_size</displayName>
-    <description></description>
-    <addressOffset>0x088</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral derivedFrom="DE_UI1">
-  <name>DE_UI2</name>
-  <baseAddress>0x05104000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="DE_UI1">
-  <name>DE_UI3</name>
-  <baseAddress>0x05105000</baseAddress>
   </peripheral>
   <peripheral>
   <name>TCON0</name>
