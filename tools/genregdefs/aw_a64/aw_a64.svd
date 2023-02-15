@@ -10439,6 +10439,364 @@
    </cluster>
   </registers>
   </peripheral>
+  <peripheral>
+  <name>DRAMC</name>
+  <description></description>
+  <baseAddress>0x01C01000</baseAddress>
+  <registers>
+   <register>
+    <name>ccr</name>
+    <displayName>ccr</displayName>
+    <description>controller configuration register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dcr</name>
+    <displayName>dcr</displayName>
+    <description>dram configuration register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>iocr</name>
+    <displayName>iocr</displayName>
+    <description>i/o configuration register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>csr</name>
+    <displayName>csr</displayName>
+    <description>controller status register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>drr</name>
+    <displayName>drr</displayName>
+    <description>dram refresh register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>tpr0</name>
+    <displayName>tpr0</displayName>
+    <description>dram timing parameters register 0</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>tpr1</name>
+    <displayName>tpr1</displayName>
+    <description>dram timing parameters register 1</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>tpr2</name>
+    <displayName>tpr2</displayName>
+    <description>dram timing parameters register 2</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gdllcr</name>
+    <displayName>gdllcr</displayName>
+    <description>global dll control register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>rslr0</name>
+    <displayName>rslr0</displayName>
+    <description>rank system latency register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>rslr1</name>
+    <displayName>rslr1</displayName>
+    <description>rank system latency register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>rdgr0</name>
+    <displayName>rdgr0</displayName>
+    <description>rank dqs gating register</description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>rdgr1</name>
+    <displayName>rdgr1</displayName>
+    <description>rank dqs gating register</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>odtcr</name>
+    <displayName>odtcr</displayName>
+    <description>odt configuration register</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dtr0</name>
+    <displayName>dtr0</displayName>
+    <description>data training register 0</description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dtr1</name>
+    <displayName>dtr1</displayName>
+    <description>data training register 1</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dtar</name>
+    <displayName>dtar</displayName>
+    <description>data training address register</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>zqcr0</name>
+    <displayName>zqcr0</displayName>
+    <description>zq control register 0</description>
+    <addressOffset>0x0A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>zqcr1</name>
+    <displayName>zqcr1</displayName>
+    <description>zq control register 1</description>
+    <addressOffset>0x0AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>zqsr</name>
+    <displayName>zqsr</displayName>
+    <description>zq status register</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>idcr</name>
+    <displayName>idcr</displayName>
+    <description>initializaton delay configure reg</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>mr</name>
+    <displayName>mr</displayName>
+    <description>mode register</description>
+    <addressOffset>0x1F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>emr</name>
+    <displayName>emr</displayName>
+    <description>extended mode register</description>
+    <addressOffset>0x1F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>emr2</name>
+    <displayName>emr2</displayName>
+    <description></description>
+    <addressOffset>0x1F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>emr3</name>
+    <displayName>emr3</displayName>
+    <description>extended mode register</description>
+    <addressOffset>0x1FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dllctr</name>
+    <displayName>dllctr</displayName>
+    <description>dll control register</description>
+    <addressOffset>0x200</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dllcr</name>
+    <displayName>dllcr</displayName>
+    <description>dll control register 0(byte 0)..4(byte 4)</description>
+    <addressOffset>0x204</addressOffset>
+    <size>0x28</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dqtr0</name>
+    <displayName>dqtr0</displayName>
+    <description>dq timing register</description>
+    <addressOffset>0x218</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dqtr1</name>
+    <displayName>dqtr1</displayName>
+    <description>dq timing register</description>
+    <addressOffset>0x21C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dqtr2</name>
+    <displayName>dqtr2</displayName>
+    <description>dq timing register</description>
+    <addressOffset>0x220</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dqtr3</name>
+    <displayName>dqtr3</displayName>
+    <description>dq timing register</description>
+    <addressOffset>0x224</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dqstr</name>
+    <displayName>dqstr</displayName>
+    <description>dqs timing register</description>
+    <addressOffset>0x228</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dqsbtr</name>
+    <displayName>dqsbtr</displayName>
+    <description>dqsb timing register</description>
+    <addressOffset>0x22C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>mcr</name>
+    <displayName>mcr</displayName>
+    <description>mode configure register</description>
+    <addressOffset>0x230</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ppwrsctl</name>
+    <displayName>ppwrsctl</displayName>
+    <description>pad power save control</description>
+    <addressOffset>0x23C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>apr</name>
+    <displayName>apr</displayName>
+    <description>arbiter period register</description>
+    <addressOffset>0x240</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>pldtr</name>
+    <displayName>pldtr</displayName>
+    <description>priority level data threshold reg</description>
+    <addressOffset>0x244</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>hpcr</name>
+    <displayName>hpcr</displayName>
+    <description>host port configure register</description>
+    <addressOffset>0x250</addressOffset>
+    <size>0x100</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>csel</name>
+    <displayName>csel</displayName>
+    <description>controller select register</description>
+    <addressOffset>0x2E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
  </peripherals>
  <vendor>
  </vendor>

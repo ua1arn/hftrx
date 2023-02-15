@@ -71,14 +71,15 @@ typedef enum IRQn
     GPIOF_NS_IRQn = 109,                              /*!< GPIOINT  Interrupt */
     GPIOF_S_IRQn = 110,                               /*!< GPIOINT  Interrupt */
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
+    TSC_IRQn = 113,                                   /*!< TSC Transport Stream Controller Interrupt */
     DE_IRQn = 127,                                    /*!< DE2_TOP Display Engine Top Interrupt */
-    GPU_GP_IRQn = 129,                                /*!< GPU  Interrupt */
-    GPU_GPMMU_IRQn = 130,                             /*!< GPU  Interrupt */
-    GPU_PP0_IRQn = 131,                               /*!< GPU  Interrupt */
-    GPU_PP0MMU_IRQn = 132,                            /*!< GPU  Interrupt */
-    GPU_PMU_IRQn = 133,                               /*!< GPU  Interrupt */
-    GPU_PP1_IRQn = 134,                               /*!< GPU  Interrupt */
-    GPU_PPMMU1_IRQn = 135,                            /*!< GPU  Interrupt */
+    GPU_GP_IRQn = 129,                                /*!< GPU Mali-400MP2 Interrupt */
+    GPU_GPMMU_IRQn = 130,                             /*!< GPU Mali-400MP2 Interrupt */
+    GPU_PP0_IRQn = 131,                               /*!< GPU Mali-400MP2 Interrupt */
+    GPU_PP0MMU_IRQn = 132,                            /*!< GPU Mali-400MP2 Interrupt */
+    GPU_PMU_IRQn = 133,                               /*!< GPU Mali-400MP2 Interrupt */
+    GPU_PP1_IRQn = 134,                               /*!< GPU Mali-400MP2 Interrupt */
+    GPU_PPMMU1_IRQn = 135,                            /*!< GPU Mali-400MP2 Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -95,9 +96,12 @@ typedef enum IRQn
 #define DE_UI2_BASE ((uintptr_t) 0x01104000)          /*!< DE_UI Base */
 #define DE_UI3_BASE ((uintptr_t) 0x01105000)          /*!< DE_UI Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x01700000)     /*!< C0_CPUX_CFG Base */
+#define SRAMC_BASE ((uintptr_t) 0x01C00000)           /*!< SRAMC Base */
 #define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG Base */
+#define DRAMC_BASE ((uintptr_t) 0x01C01000)           /*!< DRAMC Base */
 #define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC Base */
 #define NDFC_BASE ((uintptr_t) 0x01C03000)            /*!< NDFC Base */
+#define TSC_BASE ((uintptr_t) 0x01C06000)             /*!< TSC Base */
 #define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON0 Base */
 #define TCON1_BASE ((uintptr_t) 0x01C0D000)           /*!< TCON1 Base */
 #define MSGBOX_BASE ((uintptr_t) 0x01C17000)          /*!< MSGBOX Base */
@@ -1986,6 +1990,59 @@ typedef struct MSGBOX_Type
              uint32_t reserved_0x160 [0x0008];
     volatile uint32_t MSGBOXM_MSG_REG [0x008];        /*!< Offset 0x180 Message Register For Message Queue N(N=0~7) */
 } MSGBOX_TypeDef; /* size of structure = 0x1A0 */
+/*
+ * @brief DRAMC
+ */
+/*!< DRAMC  */
+typedef struct DRAMC_Type
+{
+    volatile uint32_t ccr;                            /*!< Offset 0x000 controller configuration register */
+    volatile uint32_t dcr;                            /*!< Offset 0x004 dram configuration register */
+    volatile uint32_t iocr;                           /*!< Offset 0x008 i/o configuration register */
+    volatile uint32_t csr;                            /*!< Offset 0x00C controller status register */
+    volatile uint32_t drr;                            /*!< Offset 0x010 dram refresh register */
+    volatile uint32_t tpr0;                           /*!< Offset 0x014 dram timing parameters register 0 */
+    volatile uint32_t tpr1;                           /*!< Offset 0x018 dram timing parameters register 1 */
+    volatile uint32_t tpr2;                           /*!< Offset 0x01C dram timing parameters register 2 */
+    volatile uint32_t gdllcr;                         /*!< Offset 0x020 global dll control register */
+             uint32_t reserved_0x024 [0x000A];
+    volatile uint32_t rslr0;                          /*!< Offset 0x04C rank system latency register */
+    volatile uint32_t rslr1;                          /*!< Offset 0x050 rank system latency register */
+             uint32_t reserved_0x054 [0x0002];
+    volatile uint32_t rdgr0;                          /*!< Offset 0x05C rank dqs gating register */
+    volatile uint32_t rdgr1;                          /*!< Offset 0x060 rank dqs gating register */
+             uint32_t reserved_0x064 [0x000D];
+    volatile uint32_t odtcr;                          /*!< Offset 0x098 odt configuration register */
+    volatile uint32_t dtr0;                           /*!< Offset 0x09C data training register 0 */
+    volatile uint32_t dtr1;                           /*!< Offset 0x0A0 data training register 1 */
+    volatile uint32_t dtar;                           /*!< Offset 0x0A4 data training address register */
+    volatile uint32_t zqcr0;                          /*!< Offset 0x0A8 zq control register 0 */
+    volatile uint32_t zqcr1;                          /*!< Offset 0x0AC zq control register 1 */
+    volatile uint32_t zqsr;                           /*!< Offset 0x0B0 zq status register */
+    volatile uint32_t idcr;                           /*!< Offset 0x0B4 initializaton delay configure reg */
+             uint32_t reserved_0x0B8 [0x004E];
+    volatile uint32_t mr;                             /*!< Offset 0x1F0 mode register */
+    volatile uint32_t emr;                            /*!< Offset 0x1F4 extended mode register */
+    volatile uint32_t emr2;                           /*!< Offset 0x1F8 (null) */
+    volatile uint32_t emr3;                           /*!< Offset 0x1FC extended mode register */
+    volatile uint32_t dllctr;                         /*!< Offset 0x200 dll control register */
+    volatile uint32_t dllcr [0x005];                  /*!< Offset 0x204 dll control register 0(byte 0)..4(byte 4) */
+    volatile uint32_t dqtr0;                          /*!< Offset 0x218 dq timing register */
+    volatile uint32_t dqtr1;                          /*!< Offset 0x21C dq timing register */
+    volatile uint32_t dqtr2;                          /*!< Offset 0x220 dq timing register */
+    volatile uint32_t dqtr3;                          /*!< Offset 0x224 dq timing register */
+    volatile uint32_t dqstr;                          /*!< Offset 0x228 dqs timing register */
+    volatile uint32_t dqsbtr;                         /*!< Offset 0x22C dqsb timing register */
+    volatile uint32_t mcr;                            /*!< Offset 0x230 mode configure register */
+             uint32_t reserved_0x234 [0x0002];
+    volatile uint32_t ppwrsctl;                       /*!< Offset 0x23C pad power save control */
+    volatile uint32_t apr;                            /*!< Offset 0x240 arbiter period register */
+    volatile uint32_t pldtr;                          /*!< Offset 0x244 priority level data threshold reg */
+             uint32_t reserved_0x248 [0x0002];
+    volatile uint32_t hpcr [0x020];                   /*!< Offset 0x250 host port configure register */
+             uint32_t reserved_0x2D0 [0x0004];
+    volatile uint32_t csel;                           /*!< Offset 0x2E0 controller select register */
+} DRAMC_TypeDef; /* size of structure = 0x2E4 */
 
 
 /* Access pointers */
@@ -2075,6 +2132,7 @@ typedef struct MSGBOX_Type
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM  register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
 #define MSGBOX ((MSGBOX_TypeDef *) MSGBOX_BASE)       /*!< MSGBOX  register set access pointer */
+#define DRAMC ((DRAMC_TypeDef *) DRAMC_BASE)          /*!< DRAMC  register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

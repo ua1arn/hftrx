@@ -11,11 +11,11 @@
 
 #include "formats.h"
 
-#define PHYS_SDRAM_0 0x40000000
+//#define PHYS_SDRAM_0 0x40000000
 #define PHYS_SDRAM_0_SIZE (2u * 1024 * 1024 * 1024)
 
 //#define SUNXI_SRAMC_BASE		0x01c00000
-#define SUNXI_DRAMC_BASE		0x01c01000
+#define SUNXI_DRAMC_BASE	DRAMC_BASE//	0x01c01000
 //#define SUNXI_DMA_BASE			0x01c02000
 //#define SUNXI_NFC_BASE			0x01c03000
 
