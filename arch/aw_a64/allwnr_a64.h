@@ -12,8 +12,7 @@
 #define ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
 
 /**
- * @brief Allwinner T128-S3 Interrupt Number Definition, according to the selected device
- *        in @ref Library_configuration_section
+ * @brief ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
  */
 
 /******************************************************************************/

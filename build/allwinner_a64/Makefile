@@ -48,6 +48,7 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 
+# ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
 
 CORE = -mcpu=cortex-a53
 CORE += -mfloat-abi=hard
