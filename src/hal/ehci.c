@@ -2104,6 +2104,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 //		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(1u << 4);	// port reset
 //		while ((hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] & cpu_to_le32(1u << 4)) != 0)
 //			;
+		PRINTF("OHCI: %s Speed device attached\n", (le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]) & (1u << 9)) ? "Low" : "Full");
 	}
 #endif /* CPUSTYLE_XC7Z */
 	//PRINTF("USBH_LL_GetSpeed: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
