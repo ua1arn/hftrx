@@ -71,6 +71,7 @@ typedef enum IRQn
     GPIOF_NS_IRQn = 109,                              /*!< GPIOINT  Interrupt */
     GPIOF_S_IRQn = 110,                               /*!< GPIOINT  Interrupt */
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
+    DE_IRQn = 127,                                    /*!< DE2_TOP Display Engine Top Interrupt */
     GPU_GP_IRQn = 129,                                /*!< GPU  Interrupt */
     GPU_GPMMU_IRQn = 130,                             /*!< GPU  Interrupt */
     GPU_PP0_IRQn = 131,                               /*!< GPU  Interrupt */
@@ -86,7 +87,7 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE20 Base */
+#define DE2_TOP_BASE ((uintptr_t) 0x01000000)         /*!< DE2_TOP Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x01700000)     /*!< C0_CPUX_CFG Base */
 #define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG Base */
 #define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC Base */
@@ -175,7 +176,6 @@ typedef enum IRQn
 #define USBEHCI1_BASE ((uintptr_t) 0x04200000)        /*!< USB_EHCI_Capability Base */
 #define USBOHCI1_BASE ((uintptr_t) 0x04200400)        /*!< USB_OHCI_Capability Base */
 #define USBPHY1_BASE ((uintptr_t) 0x04200800)         /*!< USBPHYC Base */
-#define DE_CLK_BASE ((uintptr_t) 0x05000000)          /*!< DE_CLK Base */
 #define DE_GLB_BASE ((uintptr_t) 0x05100000)          /*!< DE_GLB Base */
 #define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Base */
 #define DE_VI_BASE ((uintptr_t) 0x05102000)           /*!< DE_VI Base */
@@ -1335,28 +1335,18 @@ typedef struct USBPHYC_Type
     volatile uint32_t USB_SPDCR;                      /*!< Offset 0x028 HCI SIE Port Disable Control Register */
 } USBPHYC_TypeDef; /* size of structure = 0x02C */
 /*
- * @brief DE_GLB
+ * @brief DE2_TOP
  */
-/*!< DE_GLB  */
-typedef struct DE_GLB_Type
+/*!< DE2_TOP Display Engine Top */
+typedef struct DE2_TOP_Type
 {
-    volatile uint32_t GLB_CTL;                        /*!< Offset 0x000 Global control register */
-    volatile uint32_t GLB_STS;                        /*!< Offset 0x004 Global status register */
-    volatile uint32_t GLB_DBUFFER;                    /*!< Offset 0x008 Global double buffer control register */
-    volatile uint32_t GLB_SIZE;                       /*!< Offset 0x00C Global size register */
-} DE_GLB_TypeDef; /* size of structure = 0x010 */
-/*
- * @brief DE_CLK
- */
-/*!< DE_CLK  */
-typedef struct DE_CLK_Type
-{
-    volatile uint32_t GATE_CFG;                       /*!< Offset 0x000 SCLK_GATE DE SCLK Gating Register */
-    volatile uint32_t BUS_CFG;                        /*!< Offset 0x004 ? HCLK_GATE ? DE HCLK Gating Register */
-    volatile uint32_t RST_CFG;                        /*!< Offset 0x008 AHB_RESET DE AHB Reset register */
-    volatile uint32_t DIV_CFG;                        /*!< Offset 0x00C SCLK_DIV DE SCLK Division register */
-    volatile uint32_t SEL_CFG;                        /*!< Offset 0x010 ? DE2TCON ? MUX register */
-} DE_CLK_TypeDef; /* size of structure = 0x014 */
+    volatile uint32_t SCLK_GATE;                      /*!< Offset 0x000 DE SCLK Gating Register */
+    volatile uint32_t HCLK_GATE;                      /*!< Offset 0x004 DE HCLK Gating Register */
+    volatile uint32_t AHB_RESET;                      /*!< Offset 0x008 DE AHB Reset register */
+    volatile uint32_t SCLK_DIV;                       /*!< Offset 0x00C DE SCLK Division register */
+    volatile uint32_t DE2TCON_MUX;                    /*!< Offset 0x010 MUX register */
+    volatile uint32_t CMD_CTL;                        /*!< Offset 0x014  */
+} DE2_TOP_TypeDef; /* size of structure = 0x018 */
 /*
  * @brief DE_BLD
  */
@@ -1388,27 +1378,16 @@ typedef struct DE_BLD_Type
     volatile uint32_t out_ctl;                        /*!< Offset 0x0FC  */
 } DE_BLD_TypeDef; /* size of structure = 0x100 */
 /*
- * @brief DE_VI
+ * @brief DE_GLB
  */
-/*!< DE_VI  */
-typedef struct DE_VI_Type
+/*!< DE_GLB  */
+typedef struct DE_GLB_Type
 {
-    struct
-    {
-        volatile uint32_t attr;                       /*!< Offset 0x000  */
-        volatile uint32_t size;                       /*!< Offset 0x004  */
-        volatile uint32_t coord;                      /*!< Offset 0x008  */
-        volatile uint32_t pitch [0x003];              /*!< Offset 0x00C  */
-        volatile uint32_t top_laddr [0x003];          /*!< Offset 0x018  */
-        volatile uint32_t bot_laddr [0x003];          /*!< Offset 0x024  */
-    } cfg [0x004];                                    /*!< Offset 0x000  */
-    volatile uint32_t fcolor [0x004];                 /*!< Offset 0x0C0  */
-    volatile uint32_t top_haddr [0x003];              /*!< Offset 0x0D0  */
-    volatile uint32_t bot_haddr [0x003];              /*!< Offset 0x0DC  */
-    volatile uint32_t ovl_size [0x002];               /*!< Offset 0x0E8  */
-    volatile uint32_t hori [0x002];                   /*!< Offset 0x0F0  */
-    volatile uint32_t vert [0x002];                   /*!< Offset 0x0F8  */
-} DE_VI_TypeDef; /* size of structure = 0x100 */
+    volatile uint32_t GLB_CTL;                        /*!< Offset 0x000 Global control register */
+    volatile uint32_t GLB_STS;                        /*!< Offset 0x004 Global status register */
+    volatile uint32_t GLB_DBUFFER;                    /*!< Offset 0x008 Global double buffer control register */
+    volatile uint32_t GLB_SIZE;                       /*!< Offset 0x00C Global size register */
+} DE_GLB_TypeDef; /* size of structure = 0x010 */
 /*
  * @brief DE_UI
  */
@@ -1430,6 +1409,28 @@ typedef struct DE_UI_Type
     volatile uint32_t bot_haddr;                      /*!< Offset 0x084  */
     volatile uint32_t ovl_size;                       /*!< Offset 0x088  */
 } DE_UI_TypeDef; /* size of structure = 0x08C */
+/*
+ * @brief DE_VI
+ */
+/*!< DE_VI  */
+typedef struct DE_VI_Type
+{
+    struct
+    {
+        volatile uint32_t attr;                       /*!< Offset 0x000  */
+        volatile uint32_t size;                       /*!< Offset 0x004  */
+        volatile uint32_t coord;                      /*!< Offset 0x008  */
+        volatile uint32_t pitch [0x003];              /*!< Offset 0x00C  */
+        volatile uint32_t top_laddr [0x003];          /*!< Offset 0x018  */
+        volatile uint32_t bot_laddr [0x003];          /*!< Offset 0x024  */
+    } cfg [0x004];                                    /*!< Offset 0x000  */
+    volatile uint32_t fcolor [0x004];                 /*!< Offset 0x0C0  */
+    volatile uint32_t top_haddr [0x003];              /*!< Offset 0x0D0  */
+    volatile uint32_t bot_haddr [0x003];              /*!< Offset 0x0DC  */
+    volatile uint32_t ovl_size [0x002];               /*!< Offset 0x0E8  */
+    volatile uint32_t hori [0x002];                   /*!< Offset 0x0F0  */
+    volatile uint32_t vert [0x002];                   /*!< Offset 0x0F8  */
+} DE_VI_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief TCON0
  */
@@ -2201,13 +2202,13 @@ typedef struct MSGBOX_Type
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0  register set access pointer */
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
-#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
-#define DE_CLK ((DE_CLK_TypeDef *) DE_CLK_BASE)       /*!< DE_CLK  register set access pointer */
+#define DE2_TOP ((DE2_TOP_TypeDef *) DE2_TOP_BASE)    /*!< DE2_TOP Display Engine Top register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
-#define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
+#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
 #define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2  register set access pointer */
 #define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3  register set access pointer */
+#define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
 #define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface register set access pointer */
 #define TCON1 ((TCON1_TypeDef *) TCON1_BASE)          /*!< TCON1 TCON1 HDMI Interface register set access pointer */
 #define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE) /*!< CSIC_CCU  register set access pointer */

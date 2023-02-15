@@ -8023,7 +8023,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_CLK</name>
+  <name>DE_TOP</name>
   <description></description>
   <baseAddress>0x05000000</baseAddress>
   <registers>

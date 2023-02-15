@@ -2018,11 +2018,11 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 	/* Global DE settings */
 
-	DE_CLK->RST_CFG &= ~ (1u << 0);
-	DE_CLK->RST_CFG |= 1u << 0;
-	DE_CLK->GATE_CFG |= 1u << 0;
-	DE_CLK->BUS_CFG |= 1u << 0;
-	DE_CLK->SEL_CFG &= ~ (1u << 0);	/* Already zero */
+	DE_TOP->RST_CFG &= ~ (1u << 0);
+	DE_TOP->RST_CFG |= 1u << 0;
+	DE_TOP->GATE_CFG |= 1u << 0;
+	DE_TOP->BUS_CFG |= 1u << 0;
+	DE_TOP->SEL_CFG &= ~ (1u << 0);	/* Already zero */
 
 	/* DE submodules */
 

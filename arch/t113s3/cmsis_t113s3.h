@@ -159,8 +159,8 @@ typedef enum IRQn
 #define USBOHCI1_BASE ((uintptr_t) 0x04200400)        /*!< USB_OHCI_Capability Base */
 #define USBPHY1_BASE ((uintptr_t) 0x04200800)         /*!< USBPHYC Base */
 #define EMAC_BASE ((uintptr_t) 0x04500000)            /*!< EMAC Base */
-#define DE_BASE ((uintptr_t) 0x05000000)              /*!< DE20 Base */
-#define DE_CLK_BASE ((uintptr_t) 0x05000000)          /*!< DE_CLK Base */
+#define DE_BASE ((uintptr_t) 0x05000000)              /*!< DE Base */
+#define DE_TOP_BASE ((uintptr_t) 0x05000000)          /*!< DE_TOP Base */
 #define DE_GLB_BASE ((uintptr_t) 0x05100000)          /*!< DE_GLB Base */
 #define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Base */
 #define DE_VI_BASE ((uintptr_t) 0x05102000)           /*!< DE_VI Base */
@@ -1480,17 +1480,17 @@ typedef struct DE_GLB_Type
     volatile uint32_t GLB_SIZE;                       /*!< Offset 0x00C Global size register */
 } DE_GLB_TypeDef; /* size of structure = 0x010 */
 /*
- * @brief DE_CLK
+ * @brief DE_TOP
  */
-/*!< DE_CLK  */
-typedef struct DE_CLK_Type
+/*!< DE_TOP  */
+typedef struct DE_TOP_Type
 {
     volatile uint32_t GATE_CFG;                       /*!< Offset 0x000 SCLK_GATE DE SCLK Gating Register */
     volatile uint32_t BUS_CFG;                        /*!< Offset 0x004 ? HCLK_GATE ? DE HCLK Gating Register */
     volatile uint32_t RST_CFG;                        /*!< Offset 0x008 AHB_RESET DE AHB Reset register */
     volatile uint32_t DIV_CFG;                        /*!< Offset 0x00C SCLK_DIV DE SCLK Division register */
     volatile uint32_t SEL_CFG;                        /*!< Offset 0x010 ? DE2TCON ? MUX register */
-} DE_CLK_TypeDef; /* size of structure = 0x014 */
+} DE_TOP_TypeDef; /* size of structure = 0x014 */
 /*
  * @brief DE_BLD
  */
@@ -2557,7 +2557,7 @@ typedef struct MSGBOX_Type
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
-#define DE_CLK ((DE_CLK_TypeDef *) DE_CLK_BASE)       /*!< DE_CLK  register set access pointer */
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP  register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
