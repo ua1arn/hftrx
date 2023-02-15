@@ -17,7 +17,7 @@
 #include "hardware.h"
 
 #if WITHSDRAMHW
-#if CPUSTYLE_T113 || CPUSTYLE_F133
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && ! CPUSTYLE_A64
 
 #include "formats.h"
 #include "clocks.h"
@@ -73,7 +73,7 @@ static uint32_t read32ptr(void * addr)
 		write32((addr), (read32(addr) & ~(clear)) | (set))
 
 #define writel(data, addr) do { write32((addr), (data)); } while (0)
-#define readl(ddr) (read32(addr))
+#define readl(addr) (read32(addr))
 #define BIT_U32(pos) ((uint32_t) 1 << (pos))
 
 enum sunxi_dram_type {

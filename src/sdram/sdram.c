@@ -4407,12 +4407,17 @@ static void init_dram_controller(void)
 	U32_REG(0x01C620D0) = 0x80103040; // if you forget this, accessing DRAM will hang.
 }
 
+
+
+
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 
-	dram_clock_init();
-	init_dram_controller();
+//	dram_clock_init();
+//	init_dram_controller();
+
+	ddrinit();
 
 	printhex(0x40000000, (void *) 0x40000000, 256);
 	memset((void *) 0x40000000, 0xFF, 128);
