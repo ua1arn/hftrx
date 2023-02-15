@@ -26,7 +26,7 @@
 #regdef; emr2;		0x1f8 extended mode register
 #regdef; emr3;		0x1fc; extended mode register
 #regdef; dllctr;	0x200; dll control register
-#regdef; dllcr 5;	0x204; dll control register 0(byte 0)..4(byte 4)
+#regdef; dllcr;		0x204 5; dll control register 0(byte 0)..4(byte 4)
 #regdef; dqtr0;		0x218; dq timing register
 #regdef; dqtr1;		0x21c; dq timing register
 #regdef; dqtr2;		0x220; dq timing register
@@ -37,5 +37,5 @@
 #regdef; ppwrsctl;	0x23c; pad power save control
 #regdef; apr;		0x240; arbiter period register
 #regdef; pldtr;		0x244; priority level data threshold reg
-#regdef; hpcr 32;	0x250; host port configure register
+#regdef; hpcr;		0x250 32; host port configure register
 #regdef; csel;		0x2e0; controller select register

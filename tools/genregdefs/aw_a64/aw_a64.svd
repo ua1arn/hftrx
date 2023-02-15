@@ -10678,15 +10678,19 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>dllcr</name>
-    <displayName>dllcr</displayName>
-    <description>dll control register 0(byte 0)..4(byte 4)</description>
-    <addressOffset>0x204</addressOffset>
-    <size>0x28</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>5</dim>
+    <addressOffset>0x00000204</addressOffset>
+    <register>
+     <name>dllcr</name>
+     <displayName>dllcr</displayName>
+     <description>dll control register 0(byte 0)..4(byte 4)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+   </cluster>
    <register>
     <name>dqtr0</name>
     <displayName>dqtr0</displayName>
@@ -10777,15 +10781,19 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>hpcr</name>
-    <displayName>hpcr</displayName>
-    <description>host port configure register</description>
-    <addressOffset>0x250</addressOffset>
-    <size>0x100</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000250</addressOffset>
+    <register>
+     <name>hpcr</name>
+     <displayName>hpcr</displayName>
+     <description>host port configure register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+   </cluster>
    <register>
     <name>csel</name>
     <displayName>csel</displayName>

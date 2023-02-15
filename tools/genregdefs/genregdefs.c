@@ -605,21 +605,6 @@ static int collect_base(struct parsedfile *pfl, int n, struct basemap *v) {
 	return score;
 }
 
-static void processfile_access(struct parsedfile *pfl) {
-
-	/* print acces pointers */
-	int i;
-
-	if (IsListEmpty(&pfl->regslist))
-		return;
-	for (i = 0; i < pfl->base_count; ++i) {
-		emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", pfl->base_names[i],
-				pfl->bname, pfl->base_names[i]);
-		emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n",
-				pfl->base_names[i], pfl->comment ? pfl->comment : "");
-	}
-}
-
 static int collect_irq(struct parsedfile *pfl, int n, struct irqmap *v) {
 	/* collect irq vectors */
 	int i;
@@ -1032,6 +1017,9 @@ static void generate_cmsis(void) {
 	}
 
 	if (1) {
+		int nitems = 0;
+		int i;
+		struct basemap maps[256];
 		PLIST_ENTRY t;
 
 		emitline(0, "\n");
@@ -1041,7 +1029,17 @@ static void generate_cmsis(void) {
 		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 			struct parsedfile *const pfl = CONTAINING_RECORD(t,
 					struct parsedfile, item);
-			processfile_access(pfl);
+			nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
+		}
+
+		qsort(maps, nitems, sizeof maps[0], compare_base);
+
+		for (i = 0; i < nitems; ++i) {
+			struct parsedfile *const pfl = maps[i].pfl;
+			emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", maps[i].name,
+					maps[i].pfl->bname, maps[i].name);
+			emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n",
+					maps[i].name, pfl->comment ? pfl->comment : "");
 		}
 		emitline(0, "\n");
 	}

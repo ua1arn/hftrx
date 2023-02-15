@@ -2047,15 +2047,24 @@ typedef struct DRAMC_Type
 
 /* Access pointers */
 
-#define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
-#define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
+#define DE2_TOP ((DE2_TOP_TypeDef *) DE2_TOP_BASE)    /*!< DE2_TOP Display Engine Top register set access pointer */
+#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
+#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
+#define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
+#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
+#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2  register set access pointer */
+#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3  register set access pointer */
+#define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
+#define SRAMC ((SRAMC_TypeDef *) SRAMC_BASE)          /*!< SRAMC  register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
+#define DRAMC ((DRAMC_TypeDef *) DRAMC_BASE)          /*!< DRAMC  register set access pointer */
+#define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define NDFC ((NDFC_TypeDef *) NDFC_BASE)             /*!< NDFC NAND Flash Controller Interface register set access pointer */
-#define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
-#define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
-#define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
-#define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3  register set access pointer */
-#define UART4 ((UART_TypeDef *) UART4_BASE)           /*!< UART4  register set access pointer */
+#define TSC ((TSC_TypeDef *) TSC_BASE)                /*!< TSC Transport Stream Controller register set access pointer */
+#define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface register set access pointer */
+#define TCON1 ((TCON1_TypeDef *) TCON1_BASE)          /*!< TCON1 TCON1 HDMI Interface register set access pointer */
+#define MSGBOX ((MSGBOX_TypeDef *) MSGBOX_BASE)       /*!< MSGBOX  register set access pointer */
+#define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */
 #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD  register set access pointer */
@@ -2063,7 +2072,6 @@ typedef struct DRAMC_Type
 #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)           /*!< GPIOF  register set access pointer */
 #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)           /*!< GPIOG  register set access pointer */
 #define GPIOH ((GPIO_TypeDef *) GPIOH_BASE)           /*!< GPIOH  register set access pointer */
-#define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define GPIOINTB ((GPIOINT_TypeDef *) GPIOINTB_BASE)  /*!< GPIOINTB  register set access pointer */
 #define GPIOINTC ((GPIOINT_TypeDef *) GPIOINTC_BASE)  /*!< GPIOINTC  register set access pointer */
 #define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)  /*!< GPIOINTD  register set access pointer */
@@ -2071,27 +2079,33 @@ typedef struct DRAMC_Type
 #define GPIOINTF ((GPIOINT_TypeDef *) GPIOINTF_BASE)  /*!< GPIOINTF  register set access pointer */
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define GPIOINTH ((GPIOINT_TypeDef *) GPIOINTH_BASE)  /*!< GPIOINTH  register set access pointer */
-#define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
-#define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0  register set access pointer */
-#define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1  register set access pointer */
-#define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2  register set access pointer */
+#define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
+#define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM  register set access pointer */
 #define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
 #define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
-#define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
-#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA  register set access pointer */
-#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC  register set access pointer */
+#define THS ((THS_TypeDef *) THS_BASE)                /*!< THS  register set access pointer */
+#define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
+#define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
+#define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
+#define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3  register set access pointer */
+#define UART4 ((UART_TypeDef *) UART4_BASE)           /*!< UART4  register set access pointer */
 #define TWI0 ((TWI_TypeDef *) TWI0_BASE)              /*!< TWI0  register set access pointer */
 #define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1  register set access pointer */
 #define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2  register set access pointer */
+#define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
+#define GPU ((GPU_TypeDef *) GPU_BASE)                /*!< GPU Mali-400MP2 register set access pointer */
+#define DRAMCOM ((DRAMCOM_TypeDef *) DRAMCOM_BASE)    /*!< DRAMCOM  register set access pointer */
+#define DRAMCTL0 ((DRAMCTL0_TypeDef *) DRAMCTL0_BASE) /*!< DRAMCTL0  register set access pointer */
+#define DRAMPHY0 ((DRAMPHY0_TypeDef *) DRAMPHY0_BASE) /*!< DRAMPHY0  register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
-#define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
-#define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX  register set access pointer */
-#define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */
-#define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
-#define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
-#define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
+#define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
+#define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
+#define MIPI_DSI ((MIPI_DSI_TypeDef *) MIPI_DSI_BASE) /*!< MIPI_DSI  register set access pointer */
+#define MIPI_DSI_PHY ((MIPI_DSI_PHY_TypeDef *) MIPI_DSI_PHY_BASE)/*!< MIPI_DSI_PHY  register set access pointer */
+#define DI ((DI_TypeDef *) DI_BASE)                   /*!< DI De-interlaced register set access pointer */
+#define HDMI ((HDMI_TypeDef *) HDMI_BASE)             /*!< HDMI  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */
 #define R_TIMER ((RTC_TypeDef *) R_TIMER_BASE)        /*!< R_TIMER  register set access pointer */
 #define R_INTC ((RTC_TypeDef *) R_INTC_BASE)          /*!< R_INTC  register set access pointer */
@@ -2102,37 +2116,37 @@ typedef struct DRAMC_Type
 #define R_CIR_RX ((RTC_TypeDef *) R_CIR_RX_BASE)      /*!< R_CIR_RX  register set access pointer */
 #define R_TWI ((RTC_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define R_UART ((RTC_TypeDef *) R_UART_BASE)          /*!< R_UART  register set access pointer */
+#define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define R_PIO ((RTC_TypeDef *) R_PIO_BASE)            /*!< R_PIO  register set access pointer */
 #define R_RSB ((RTC_TypeDef *) R_RSB_BASE)            /*!< R_RSB  register set access pointer */
 #define R_PWM ((RTC_TypeDef *) R_PWM_BASE)            /*!< R_PWM  register set access pointer */
+#define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
+#define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
+#define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX  register set access pointer */
+#define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
+#define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU  register set access pointer */
-#define THS ((THS_TypeDef *) THS_BASE)                /*!< THS  register set access pointer */
-#define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
+#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC  register set access pointer */
+#define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
+#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA  register set access pointer */
+#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
+#define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC  register set access pointer */
+#define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
+#define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
+#define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
+#define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
+#define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0  register set access pointer */
+#define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1  register set access pointer */
+#define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2  register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0  register set access pointer */
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
-#define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
-#define DE2_TOP ((DE2_TOP_TypeDef *) DE2_TOP_BASE)    /*!< DE2_TOP Display Engine Top register set access pointer */
-#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
-#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
-#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
-#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2  register set access pointer */
-#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3  register set access pointer */
-#define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
-#define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface register set access pointer */
-#define TCON1 ((TCON1_TypeDef *) TCON1_BASE)          /*!< TCON1 TCON1 HDMI Interface register set access pointer */
-#define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
-#define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
-#define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
-#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
 #define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)/*!< USBEHCI0  register set access pointer */
-#define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)/*!< USBEHCI1  register set access pointer */
 #define USBOHCI0 ((USB_OHCI_Capability_TypeDef *) USBOHCI0_BASE)/*!< USBOHCI0  register set access pointer */
+#define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)/*!< USBEHCI1  register set access pointer */
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
-#define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
-#define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM  register set access pointer */
-#define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
-#define MSGBOX ((MSGBOX_TypeDef *) MSGBOX_BASE)       /*!< MSGBOX  register set access pointer */
-#define DRAMC ((DRAMC_TypeDef *) DRAMC_BASE)          /*!< DRAMC  register set access pointer */
+#define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
+#define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
+#define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */
