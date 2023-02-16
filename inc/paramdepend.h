@@ -660,8 +660,8 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	(stm32mp1_get_mpuss_freq())
-	//#define AXISS_FREQ	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVP))
-	#define DDR_FREQ 	(REF2INFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
+	#define DDR_FREQ	(stm32mp1_get_pll2_r_freq())
+	#define AXISS_FREQ	(stm32mp1_get_axiss_freq())
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())

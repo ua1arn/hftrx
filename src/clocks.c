@@ -1375,13 +1375,13 @@ uint_fast32_t stm32mp1_get_aclk_freq(void)
 	}
 }
 
-// Internal AHB5 clock frequency
+// Internal AHB5 clock frequency (up to 266 MHz)
 uint_fast32_t stm32mp1_get_hclk5_freq(void)
 {
 	return stm32mp1_get_aclk_freq();
 }
 
-// Internal AHB6 clock frequency
+// Internal AHB6 clock frequency (up to 266 MHz)
 uint_fast32_t stm32mp1_get_hclk6_freq(void)
 {
 	return stm32mp1_get_aclk_freq();
@@ -3831,7 +3831,7 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CR;
 #endif // pll2
 
-	// AXI, AHB5 and AHB6 clock divisor
+	// AXI, AHB5 and AHB6 clock divisor (up to 266 MHz)
 	//	0x0: axiss_ck (default after reset)
 	//	0x1: axiss_ck / 2
 	//	0x2: axiss_ck / 3

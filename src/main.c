@@ -4496,8 +4496,24 @@ static int_fast32_t getzerobase(void)
 /* поддержка ABOUT: частота процессора */
 static int_fast32_t getcpufreqbase(void)
 {
-	return CPU_FREQ / 1000000L;
+	return CPU_FREQ / 1000000;
 }
+
+#ifdef DDR_FREQ
+/* поддержка ABOUT: частота памяти */
+static int_fast32_t getddrfreqbase(void)
+{
+	return DDR_FREQ / 1000000;
+}
+#endif /* DDR_FREQ */
+
+#ifdef AXISS_FREQ
+/* поддержка ABOUT: частота шины */
+static int_fast32_t getaxissfreqbase(void)
+{
+	return AXISS_FREQ / 1000000;
+}
+#endif /* AXISS_FREQ */
 
 #if WITHLFM
 
@@ -7345,6 +7361,7 @@ static void micproc_load(void)
 // шаг изменения значения параметра
 enum
 {
+	ISTEP_RO = 0,
 	ISTEP1 = 1,
 	ISTEP2 = 2,
 	ISTEP3 = 3,

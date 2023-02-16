@@ -3626,7 +3626,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("CPU TYPE"), 7, 0, RJ_CPUTYPE, 	ISTEP1,	// тип процессора
+		QLABEL("VERSION "), 7, 0, RJ_COMPILED, 	ISTEP_RO,	// тип процессора
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
@@ -3636,7 +3636,27 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase,
 	},
 	{
-		QLABEL("CPU FREQ"), 7, 0, 0, 	ISTEP1,	// частота процессора
+		QLABEL("S/N     "), 7, 0, RJ_SERIALNR, 	ISTEP_RO,	// Индивидуальный номер изделия
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 0,
+		MENUNONVRAM,
+		nvramoffs0,
+		& gzero,
+		NULL,
+		getzerobase,
+	},
+	{
+		QLABEL("CPU TYPE"), 7, 0, RJ_CPUTYPE, 	ISTEP_RO,	// тип процессора
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 0,
+		MENUNONVRAM,
+		nvramoffs0,
+		& gzero,
+		NULL,
+		getzerobase,
+	},
+	{
+		QLABEL("CPU FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота процессора
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
@@ -3645,24 +3665,26 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		getcpufreqbase,
 	},
+#if CPUSTYLE_STM32MP1
 	{
-		QLABEL("VERSION "), 7, 0, RJ_COMPILED, 	ISTEP1,	// тип процессора
+		QLABEL("DDR FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота памяти
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
 		nvramoffs0,
 		& gzero,
 		NULL,
-		getzerobase,
+		getddrfreqbase,
 	},
 	{
-		QLABEL("S/N     "), 7, 0, RJ_SERIALNR, 	ISTEP1,	// Индивидуальный номер изделия
+		QLABEL("BUS FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота шины
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
 		nvramoffs0,
 		& gzero,
 		NULL,
-		getzerobase,
+		getaxissfreqbase,
 	},
+#endif
 };
