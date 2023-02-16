@@ -71,6 +71,7 @@ MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
+TINYUSBDIR = $(PRJROOT)/lib/tinyusb
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -136,6 +137,12 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
+
+ifeq (1, 0)
+# tinyusb
+SRCDIRS += $(TINYUSBDIR)/src
+DINCDIR += $(TINYUSBDIR)/src
+endif
 
 ifeq (1, 0)
 # LuPng
