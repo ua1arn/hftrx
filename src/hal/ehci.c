@@ -2079,9 +2079,9 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		ASSERT(hehci->ohci != NULL);
 		// передать управление портом к companion controller (OHCI)
 		uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
-		portsc |= EHCI_PORTSC_OWNER;
-		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
-		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
+//		portsc |= EHCI_PORTSC_OWNER;
+//		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
+//		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
 
 		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
 		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
