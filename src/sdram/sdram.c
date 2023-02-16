@@ -2856,7 +2856,7 @@ static void stm32mp1_ddrphy_idone_wait(struct stm32mp1_ddrphy *phy)
 	do {
 		pgsr = mmio_read_32((uintptr_t)&phy->pgsr);
 
-		VERBOSE("  > [0x%p] pgsr = 0x%x &",
+		VERBOSE("  > [%p] pgsr = 0x%x &",
 			(void*)&phy->pgsr, (unsigned) pgsr);
 
 //		if (timeout_elapsed(timeout)) {
@@ -2888,7 +2888,7 @@ static void stm32mp1_ddrphy_idone_wait(struct stm32mp1_ddrphy *phy)
 			error++;
 		}
 	} while (((pgsr & DDRPHYC_PGSR_IDONE) == 0U) && (error == 0));
-	VERBOSE("\n[0x%p] pgsr = 0x%x\n",
+	VERBOSE("\n[%p] pgsr = 0x%x\n",
 		(void*)&phy->pgsr, (unsigned) pgsr);
 }
 
@@ -2897,9 +2897,9 @@ static void stm32mp1_ddrphy_init(struct stm32mp1_ddrphy *phy, uint32_t pir)
 	uint32_t pir_init = pir | DDRPHYC_PIR_INIT;
 
 	mmio_write_32((uintptr_t)&phy->pir, pir_init);
-	VERBOSE("[0x%p] pir = 0x%x -> 0x%x\n",
+	VERBOSE("[%p] pir = 0x%x -> 0x%x\n",
 		(void*)&phy->pir, (unsigned) pir_init,
-		mmio_read_32((uintptr_t)&phy->pir));
+		(unsigned) mmio_read_32((uintptr_t)&phy->pir));
 
 	/* Need to wait 10 configuration clock before start polling */
 	local_delay_us(10 * 5);
@@ -2912,7 +2912,7 @@ static void stm32mp1_ddrphy_init(struct stm32mp1_ddrphy *phy, uint32_t pir)
 static void stm32mp1_start_sw_done(struct stm32mp1_ddrctl *ctl)
 {
 	mmio_clrbits_32((uintptr_t)&ctl->swctl, DDRCTRL_SWCTL_SW_DONE);
-	VERBOSE("[0x%p] swctl = 0x%x\n",
+	VERBOSE("[%p] swctl = 0x%x\n",
 		(void*)&ctl->swctl, (unsigned)  mmio_read_32((uintptr_t)&ctl->swctl));
 }
 
@@ -2923,21 +2923,21 @@ static void stm32mp1_wait_sw_done_ack(struct stm32mp1_ddrctl *ctl)
 	uint32_t swstat;
 
 	mmio_setbits_32((uintptr_t)&ctl->swctl, DDRCTRL_SWCTL_SW_DONE);
-	VERBOSE("[0x%lx] swctl = 0x%x\n",
-		(uintptr_t)&ctl->swctl, mmio_read_32((uintptr_t)&ctl->swctl));
+	VERBOSE("[%p] swctl = 0x%x\n",
+		&ctl->swctl, (unsigned) mmio_read_32((uintptr_t)&ctl->swctl));
 
 //	timeout = timeout_init_us(TIMEOUT_US_1S);
 	do {
 		swstat = mmio_read_32((uintptr_t)&ctl->swstat);
-		VERBOSE("1 [0x%lx] swstat = 0x%x ",
-			(uintptr_t)&ctl->swstat, swstat);
+		VERBOSE("1 [%p] swstat = 0x%x ",
+			&ctl->swstat, (unsigned) swstat);
 //		if (timeout_elapsed(timeout)) {
 //			panic();
 //		}
 	} while ((swstat & DDRCTRL_SWSTAT_SW_DONE_ACK) == 0U);
 
-	VERBOSE("2 [0x%lx] swstat = 0x%x\n",
-		(uintptr_t)&ctl->swstat, swstat);
+	VERBOSE("2 [%p] swstat = 0x%x\n",
+		&ctl->swstat, (unsigned) swstat);
 }
 
 /* Wait quasi dynamic register update */
@@ -2955,8 +2955,8 @@ static void stm32mp1_wait_operating_mode(struct ddr_info *priv, uint32_t mode)
 		stat = mmio_read_32((uintptr_t)&priv->ctl->stat);
 		operating_mode = stat & DDRCTRL_STAT_OPERATING_MODE_MASK;
 		selref_type = stat & DDRCTRL_STAT_SELFREF_TYPE_MASK;
-		VERBOSE("1 [0x%lx] stat = 0x%x\n",
-			(uintptr_t)&priv->ctl->stat, stat);
+		VERBOSE("1 [%p] stat = 0x%x\n",
+			&priv->ctl->stat, (unsigned) stat);
 //		if (timeout_elapsed(timeout)) {
 //			panic();
 //		}
@@ -2985,8 +2985,8 @@ static void stm32mp1_wait_operating_mode(struct ddr_info *priv, uint32_t mode)
 		}
 	}
 
-	VERBOSE("2 [0x%lx] stat = 0x%x\n",
-		(uintptr_t)&priv->ctl->stat, stat);
+	VERBOSE("2 [%p] stat = 0x%x\n",
+		&priv->ctl->stat, (unsigned) stat);
 }
 
 /* Mode Register Writes (MRW or MRS) */
@@ -2995,7 +2995,7 @@ static void stm32mp1_mode_register_write(struct ddr_info *priv, uint8_t addr,
 {
 	uint32_t mrctrl0;
 
-	VERBOSE("MRS: %d = %x\n", addr, data);
+	VERBOSE("MRS: %u = %x\n", (unsigned) addr, (unsigned) data);
 
 	/*
 	 * 1. Poll MRSTAT.mr_wr_busy until it is '0'.
@@ -3017,13 +3017,13 @@ static void stm32mp1_mode_register_write(struct ddr_info *priv, uint8_t addr,
 		  (((uint32_t)addr << DDRCTRL_MRCTRL0_MR_ADDR_SHIFT) &
 		   DDRCTRL_MRCTRL0_MR_ADDR_MASK);
 	mmio_write_32((uintptr_t)&priv->ctl->mrctrl0, mrctrl0);
-	VERBOSE("[0x%lx] mrctrl0 = 0x%x (0x%x)\n",
-		(uintptr_t)&priv->ctl->mrctrl0,
-		mmio_read_32((uintptr_t)&priv->ctl->mrctrl0), mrctrl0);
+	VERBOSE("[%p] mrctrl0 = 0x%x (0x%x)\n",
+		&priv->ctl->mrctrl0,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->mrctrl0), (unsigned) mrctrl0);
 	mmio_write_32((uintptr_t)&priv->ctl->mrctrl1, data);
-	VERBOSE("[0x%lx] mrctrl1 = 0x%x\n",
-		(uintptr_t)&priv->ctl->mrctrl1,
-		mmio_read_32((uintptr_t)&priv->ctl->mrctrl1));
+	VERBOSE("[%p] mrctrl1 = 0x%x\n",
+		&priv->ctl->mrctrl1,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->mrctrl1));
 
 	/*
 	 * 3. In a separate APB transaction, write the MRCTRL0.mr_wr to 1. This
@@ -3040,8 +3040,8 @@ static void stm32mp1_mode_register_write(struct ddr_info *priv, uint8_t addr,
 		;
 	}
 
-	VERBOSE("[0x%lx] mrctrl0 = 0x%x\n",
-		(uintptr_t)&priv->ctl->mrctrl0, mrctrl0);
+	VERBOSE("[%p] mrctrl0 = 0x%x\n",
+		&priv->ctl->mrctrl0, (unsigned) mrctrl0);
 }
 
 /* Switch DDR3 from DLL-on to DLL-off */
@@ -3051,17 +3051,17 @@ static void stm32mp1_ddr3_dll_off(struct ddr_info *priv)
 	uint32_t mr2 = mmio_read_32((uintptr_t)&priv->phy->mr2);
 	uint32_t dbgcam;
 
-	VERBOSE("mr1: 0x%x\n", mr1);
-	VERBOSE("mr2: 0x%x\n", mr2);
+	VERBOSE("mr1: 0x%x\n", (unsigned) mr1);
+	VERBOSE("mr2: 0x%x\n", (unsigned) mr2);
 
 	/*
 	 * 1. Set the DBG1.dis_hif = 1.
 	 *    This prevents further reads/writes being received on the HIF.
 	 */
 	mmio_setbits_32((uintptr_t)&priv->ctl->dbg1, DDRCTRL_DBG1_DIS_HIF);
-	VERBOSE("[0x%lx] dbg1 = 0x%x\n",
-		(uintptr_t)&priv->ctl->dbg1,
-		mmio_read_32((uintptr_t)&priv->ctl->dbg1));
+	VERBOSE("[%p] dbg1 = 0x%x\n",
+		&priv->ctl->dbg1,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->dbg1));
 
 	/*
 	 * 2. Ensure all commands have been flushed from the uMCTL2 by polling
@@ -3073,8 +3073,8 @@ static void stm32mp1_ddr3_dll_off(struct ddr_info *priv)
 	 */
 	do {
 		dbgcam = mmio_read_32((uintptr_t)&priv->ctl->dbgcam);
-		VERBOSE("[0x%lx] dbgcam = 0x%x\n",
-			(uintptr_t)&priv->ctl->dbgcam, dbgcam);
+		VERBOSE("[%p] dbgcam = 0x%x\n",
+			&priv->ctl->dbgcam, (unsigned) dbgcam);
 	} while ((((dbgcam & DDRCTRL_DBGCAM_DATA_PIPELINE_EMPTY) ==
 		   DDRCTRL_DBGCAM_DATA_PIPELINE_EMPTY)) &&
 		 ((dbgcam & DDRCTRL_DBGCAM_DBG_Q_DEPTH) == 0U));
@@ -3120,9 +3120,9 @@ static void stm32mp1_ddr3_dll_off(struct ddr_info *priv)
 	 */
 	mmio_setbits_32((uintptr_t)&priv->ctl->pwrctl,
 			DDRCTRL_PWRCTL_SELFREF_SW);
-	VERBOSE("[0x%lx] pwrctl = 0x%x\n",
-		(uintptr_t)&priv->ctl->pwrctl,
-		mmio_read_32((uintptr_t)&priv->ctl->pwrctl));
+	VERBOSE("[%p] pwrctl = 0x%x\n",
+		&priv->ctl->pwrctl,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->pwrctl));
 
 	/*
 	 * 8. Wait until STAT.operating_mode[1:0]==11 indicating that the
@@ -3139,9 +3139,9 @@ static void stm32mp1_ddr3_dll_off(struct ddr_info *priv)
 	stm32mp1_start_sw_done(priv->ctl);
 
 	mmio_setbits_32((uintptr_t)&priv->ctl->mstr, DDRCTRL_MSTR_DLL_OFF_MODE);
-	VERBOSE("[0x%lx] mstr = 0x%x\n",
-		(uintptr_t)&priv->ctl->mstr,
-		mmio_read_32((uintptr_t)&priv->ctl->mstr));
+	VERBOSE("[%p] mstr = 0x%x\n",
+		&priv->ctl->mstr,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->mstr));
 
 	stm32mp1_wait_sw_done_ack(priv->ctl);
 
@@ -3191,9 +3191,9 @@ static void stm32mp1_ddr3_dll_off(struct ddr_info *priv)
 
 	/* 15. Write DBG1.dis_hif = 0 to re-enable reads and writes. */
 	mmio_clrbits_32((uintptr_t)&priv->ctl->dbg1, DDRCTRL_DBG1_DIS_HIF);
-	VERBOSE("[0x%lx] dbg1 = 0x%x\n",
-		(uintptr_t)&priv->ctl->dbg1,
-		mmio_read_32((uintptr_t)&priv->ctl->dbg1));
+	VERBOSE("[%p] dbg1 = 0x%x\n",
+		&priv->ctl->dbg1,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->dbg1));
 }
 
 static void stm32mp1_refresh_disable(struct stm32mp1_ddrctl *ctl)
@@ -3406,8 +3406,8 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 #endif /* WITHSDRAM_PMC1 */
 
 	VERBOSE("name = %s\n", config->info.name);
-	VERBOSE("speed = %d kHz\n", config->info.speed);
-	VERBOSE("size  = 0x%x\n", config->info.size);
+	VERBOSE("speed = %u kHz\n", (unsigned) config->info.speed);
+	VERBOSE("size  = 0x%x\n", (unsigned) config->info.size);
 
 	/* DDR INIT SEQUENCE */
 	/*
@@ -3445,9 +3445,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	/* Stop uMCTL2 before PHY is ready */
 	mmio_clrbits_32((uintptr_t)&priv->ctl->dfimisc,
 			DDRCTRL_DFIMISC_DFI_INIT_COMPLETE_EN);
-	VERBOSE("[0x%lx] dfimisc = 0x%x\n",
-		(uintptr_t)&priv->ctl->dfimisc,
-		mmio_read_32((uintptr_t)&priv->ctl->dfimisc));
+	VERBOSE("[%p] dfimisc = 0x%x\n",
+		&priv->ctl->dfimisc,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->dfimisc));
 
 	set_reg(priv, REG_REG, &config->c_reg);
 
@@ -3458,9 +3458,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 		VERBOSE("deactivate DLL OFF in mstr\n");
 		mmio_clrbits_32((uintptr_t)&priv->ctl->mstr,
 				DDRCTRL_MSTR_DLL_OFF_MODE);
-		VERBOSE("[0x%lx] mstr = 0x%x\n",
-			(uintptr_t)&priv->ctl->mstr,
-			mmio_read_32((uintptr_t)&priv->ctl->mstr));
+		VERBOSE("[%p] mstr = 0x%x\n",
+			&priv->ctl->mstr,
+			(unsigned) mmio_read_32((uintptr_t)&priv->ctl->mstr));
 	}
 
 	set_reg(priv, REG_TIMING, &config->c_timing);
@@ -3470,9 +3470,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	mmio_clrsetbits_32((uintptr_t)&priv->ctl->init0,
 			   DDRCTRL_INIT0_SKIP_DRAM_INIT_MASK,
 			   DDRCTRL_INIT0_SKIP_DRAM_INIT_NORMAL);
-	VERBOSE("[0x%lx] init0 = 0x%x\n",
-		(uintptr_t)&priv->ctl->init0,
-		mmio_read_32((uintptr_t)&priv->ctl->init0));
+	VERBOSE("[%p] init0 = 0x%x\n",
+		&priv->ctl->init0,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->init0));
 
 	set_reg(priv, REG_PERF, &config->c_perf);
 
@@ -3495,9 +3495,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	    == (DDRCTRL_MSTR_DDR3 | DDRCTRL_MSTR_DLL_OFF_MODE)) {
 		VERBOSE("deactivate DLL OFF in mr1\n");
 		mmio_clrbits_32((uintptr_t)&priv->phy->mr1, BIT(0));
-		VERBOSE("[0x%lx] mr1 = 0x%x\n",
-			(uintptr_t)&priv->phy->mr1,
-			mmio_read_32((uintptr_t)&priv->phy->mr1));
+		VERBOSE("[%p] mr1 = 0x%x\n",
+			&priv->phy->mr1,
+			(unsigned) mmio_read_32((uintptr_t)&priv->phy->mr1));
 	}
 
 	/*
@@ -3529,9 +3529,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 
 	mmio_setbits_32((uintptr_t)&priv->ctl->dfimisc,
 			DDRCTRL_DFIMISC_DFI_INIT_COMPLETE_EN);
-	VERBOSE("[0x%lx] dfimisc = 0x%x\n",
-		(uintptr_t)&priv->ctl->dfimisc,
-		mmio_read_32((uintptr_t)&priv->ctl->dfimisc));
+	VERBOSE("[%p] dfimisc = 0x%x\n",
+		&priv->ctl->dfimisc,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->dfimisc));
 
 	stm32mp1_wait_sw_done_ack(priv->ctl);
 
@@ -3583,16 +3583,16 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	/* Enable uMCTL2 AXI port 0 */
 	mmio_setbits_32((uintptr_t)&priv->ctl->pctrl_0,
 			DDRCTRL_PCTRL_N_PORT_EN);
-	VERBOSE("[0x%lx] pctrl_0 = 0x%x\n",
-		(uintptr_t)&priv->ctl->pctrl_0,
-		mmio_read_32((uintptr_t)&priv->ctl->pctrl_0));
+	VERBOSE("[%p] pctrl_0 = 0x%x\n",
+		&priv->ctl->pctrl_0,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->pctrl_0));
 
 	/* Enable uMCTL2 AXI port 1 */
 	mmio_setbits_32((uintptr_t)&priv->ctl->pctrl_1,
 			DDRCTRL_PCTRL_N_PORT_EN);
-	VERBOSE("[0x%lx] pctrl_1 = 0x%x\n",
-		(uintptr_t)&priv->ctl->pctrl_1,
-		mmio_read_32((uintptr_t)&priv->ctl->pctrl_1));
+	VERBOSE("[%p] pctrl_1 = 0x%x\n",
+		&priv->ctl->pctrl_1,
+		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->pctrl_1));
 
 
 	// Check DQS Gating System Latency (R0DGSL) and DQS Gating Phase Select (R0DGPS)
@@ -3991,7 +3991,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	int ret;
 	struct stm32mp1_ddr_config config;
 	int node, len;
-	uint32_t uret, idx;
+	unsigned uret;
 	void *fdt;
 
 #define PARAM(x, y)							\
@@ -4059,7 +4059,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	uret = ddr_check_size();
 	if (uret < config.info.size) {
 		ERROR("DDR size: 0x%x does not match DT config: 0x%x\n",
-		      uret, config.info.size);
+		      uret, (unsigned) config.info.size);
 		//panic();
 	}
 	INFO("Memory size = 0x%x (%u MB)\n", (unsigned) uret, (unsigned) (uret / (1024U * 1024U)));
