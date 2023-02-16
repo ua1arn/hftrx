@@ -78,6 +78,69 @@ void linux_encoder_spool(void)
 	}
 }
 
+/******************************************************************/
+
+#if WITHPS7BOARD_EBAZ_7020
+
+#define MIO_CNT					54
+#define MIO_BASE				0xE000A000
+
+#define XGPIOPS_REG_MASK_OFFSET	0x00000040U 	/**< Registers offset */
+#define XGPIOPS_DATA_MASK_OFFSET 0x00000008U  /**< Data/Mask Registers offset */
+
+#define XGPIOPS_DIRM_OFFSET		0x00000204U  	/**< Direction Mode Register, RW */
+#define XGPIOPS_OUTEN_OFFSET	 0x00000208U  /**< Output Enable Register, RW */
+#define XGPIOPS_DATA_BANK_OFFSET 0x00000004U  /**< Data Registers offset */
+#define XGPIOPS_DATA_RO_OFFSET	 0x00000060U  /**< Data Register - Input, RO */
+#define XGPIOPS_DATA_LSW_OFFSET  0x00000000U  /**< Mask and Data Register LSW, WO */
+#define XGPIOPS_DATA_MSW_OFFSET  0x00000004U  /**< Mask and Data Register MSW, WO */
+
+#define GPIO_BANK_DEFINE(pin, Bank, PinNumber)	do { 								\
+		Bank = ((((pin) < MIO_CNT) ? (pin) : ((pin) + (64 - MIO_CNT))) / 32);    	\
+		PinNumber = ((((pin) < MIO_CNT) ? (pin) : ((pin) + (64 - MIO_CNT))) % 32); 	\
+	} while(0)
+
+typedef struct {
+	uint32_t * dirm;
+	uint32_t * outen;
+	uint32_t * ro;
+	uint32_t * wr;
+	uint8_t bank;
+	uint8_t num;
+	uint8_t num_wr;
+	uint8_t is_inited;
+} gpiodirect_tag;
+
+static gpiodirect_tag xc7z_gpiod [MIO_CNT];
+
+void setup_mio(uint8_t pin)
+{
+	uint32_t v;
+	GPIO_BANK_DEFINE(pin, xc7z_gpiod[pin].bank, xc7z_gpiod[pin].num);
+
+	v = MIO_BASE + (xc7z_gpiod[pin].bank * XGPIOPS_REG_MASK_OFFSET) + XGPIOPS_DIRM_OFFSET;
+	xc7z_gpiod[pin].dirm = get_highmem_ptr(v);
+	//printf("pin %d dirm %x\n", pin, v);
+
+	v = MIO_BASE + (xc7z_gpiod[pin].bank * XGPIOPS_REG_MASK_OFFSET) + XGPIOPS_OUTEN_OFFSET;
+	xc7z_gpiod[pin].outen = get_highmem_ptr(v);
+	//printf("pin %d outen %x\n", pin, v);
+
+	v = MIO_BASE + (xc7z_gpiod[pin].bank * XGPIOPS_DATA_BANK_OFFSET) + XGPIOPS_DATA_RO_OFFSET;
+	xc7z_gpiod[pin].ro =  get_highmem_ptr(v);
+	//printf("pin %d ro %x\n", pin, v);
+
+	uint32_t reg_offset = xc7z_gpiod[pin].num > 15 ? XGPIOPS_DATA_MSW_OFFSET : XGPIOPS_DATA_LSW_OFFSET;
+	v = MIO_BASE + (xc7z_gpiod[pin].bank * XGPIOPS_DATA_MASK_OFFSET) + reg_offset;
+	xc7z_gpiod[pin].wr = get_highmem_ptr(v);
+	xc7z_gpiod[pin].num_wr = xc7z_gpiod[pin].num > 15 ? (xc7z_gpiod[pin].num - 16) : xc7z_gpiod[pin].num;
+	//printf("pin %d wr %x num %d\n", pin, v, xc7z_gpiod[pin].num_wr);
+
+	xc7z_gpiod[pin].is_inited = 1;
+}
+
+#endif /* WITHPS7BOARD_EBAZ_7020 */
+
 /************************ Framebuffer *****************************/
 
 static struct fb_var_screeninfo vinfo;
@@ -87,12 +150,16 @@ static uint32_t screensize = 0;
 
 uint32_t * linux_get_fb(uint32_t * size)
 {
+	ASSERT(fbp != NULL);
+
 	* size = screensize;
-	return (uint32_t *)fbp;
+	return (uint32_t *) fbp;
 }
 
 uint32_t * fbmem_at(uint_fast16_t x, uint_fast16_t y)
 {
+	ASSERT(fbp != NULL);
+
 	uint32_t location = (x + vinfo.xoffset) * (vinfo.bits_per_pixel / 32) +
 	                   (y + vinfo.yoffset) * finfo.line_length / 4;
 	return (uint32_t *) (fbp + location);
@@ -140,7 +207,7 @@ int linux_framebuffer_init(void)
 		exit(4);
 	}
 
-	PRINTF("linux drm fb: %dx%d, %dbpp, %d bytes\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel, screensize);
+	PRINTF("linux drm fb: %dx%d, %dbpp, %d bytes %p\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel, screensize, fbp);
 
 	close(fbfd);
 	close(ttyd);
@@ -165,6 +232,19 @@ void linux_xgpio_init(void)
 	xgpo = get_highmem_ptr(AXI_XGPO_ADDR);
 	xgpi = get_highmem_ptr(AXI_XGPI_ADDR);
 #elif CPUSTYLE_XC7Z
+	//memset(& xc7z_gpiod, 0, sizeof(gpiodirect_tag) * MIO_CNT);
+
+	for (int i = 0; i < MIO_CNT; i ++)
+	{
+		xc7z_gpiod[i].dirm = 0;
+		xc7z_gpiod[i].outen = 0;
+		xc7z_gpiod[i].ro = 0;
+		xc7z_gpiod[i].wr = 0;
+		xc7z_gpiod[i].bank = 0;
+		xc7z_gpiod[i].num = 0;
+		xc7z_gpiod[i].num_wr = 0;
+		xc7z_gpiod[i].is_inited = 0;
+	}
 
 #endif
 }
@@ -175,7 +255,12 @@ uint8_t linux_xgpi_read_pin(uint8_t pin)
 	uint32_t v = * xgpi;
 	return (v >> pin) & 1;
 #elif CPUSTYLE_XC7Z
-	return 0;
+	if (xc7z_gpiod[pin].is_inited == 0)
+	{
+		setup_mio(pin);
+		xc7z_gpio_input(pin);
+	}
+	return * (xc7z_gpiod[pin].ro) >> xc7z_gpiod[pin].num & 1;
 #endif
 }
 
@@ -192,7 +277,13 @@ void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 
 	* xgpo = rw;
 #elif CPUSTYLE_XC7Z
-
+	if (xc7z_gpiod[pin].is_inited == 0)
+	{
+		setup_mio(pin);
+		xc7z_gpio_output(pin);
+	}
+	uint32_t v = ~((uint32_t)1 << (xc7z_gpiod[pin].num_wr + 16U)) & ((!! val << xc7z_gpiod[pin].num_wr) | 0xFFFF0000U);
+	* (xc7z_gpiod[pin].wr) = v;
 #endif
 }
 
@@ -208,12 +299,23 @@ uint_fast8_t xc7z_readpin(uint8_t pin)
 
 void xc7z_gpio_input(uint8_t pin)
 {
+#if CPUSTYLE_XC7Z
+	if (xc7z_gpiod[pin].is_inited == 0)
+		setup_mio(pin);
 
+	* (xc7z_gpiod[pin].dirm) &= ~ (1 << xc7z_gpiod[pin].num);
+#endif
 }
 
 void xc7z_gpio_output(uint8_t pin)
 {
+#if CPUSTYLE_XC7Z
+	if (xc7z_gpiod[pin].is_inited == 0)
+		setup_mio(pin);
 
+	* (xc7z_gpiod[pin].dirm) |= (1 << xc7z_gpiod[pin].num);
+	* (xc7z_gpiod[pin].outen) |= (1 << xc7z_gpiod[pin].num);
+#endif
 }
 
 void gpio_writepin(uint8_t pin, uint8_t val)
@@ -524,7 +626,6 @@ void linux_subsystem_init(void)
 	}
 #endif /* CPUSTYLE_XCZU */
 
-	linux_framebuffer_init();
 	linux_xgpio_init();
 	linux_iq_init();
 }
@@ -558,14 +659,14 @@ void linux_user_init(void)
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 0);
 #endif /* WITHFT8 */
 
-#if WITHDCDCFREQCTL
+#if defined AXI_DCDC_PWM_ADDR
 	const float FS = powf(2, 32);
 	uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
 	reg_write(AXI_DCDC_PWM_ADDR + 0, fan_pwm_period);
 
 	uint32_t fan_pwm_duty = FS * (1.0f - 0.7f) - 1;
 	reg_write(AXI_DCDC_PWM_ADDR + 4, fan_pwm_duty);
-#endif /* WITHDCDCFREQCTL */
+#endif /* defined AXI_DCDC_PWM_ADDR */
 
 #if WITHCPUTEMPERATURE
 	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);

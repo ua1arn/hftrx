@@ -1711,6 +1711,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 
 void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
+	linux_framebuffer_init();
 }
 
 /* Palette reload (dummy fuction) */
