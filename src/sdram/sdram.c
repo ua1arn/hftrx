@@ -2540,8 +2540,8 @@ int stm32mp1_ddr_clk_enable(struct ddr_info *priv, uint32_t mem_speed)
 		ddr_clk = mem_speed_hz - ddrphy_clk;
 	}
 	if (ddr_clk > (mem_speed_hz / 10)) {
-		ERROR("DDR expected freq %d kHz, current is %ld kHz\n",
-		      mem_speed, ddrphy_clk / 1000U);
+		ERROR("DDR expected freq %d kHz, current is %d kHz\n",
+		      (int) mem_speed, (int) (ddrphy_clk / 1000U));
 		//return -1;
 	}
 	return 0;
@@ -2856,8 +2856,8 @@ static void stm32mp1_ddrphy_idone_wait(struct stm32mp1_ddrphy *phy)
 	do {
 		pgsr = mmio_read_32((uintptr_t)&phy->pgsr);
 
-		VERBOSE("  > [0x%lx] pgsr = 0x%x &",
-			(uintptr_t)&phy->pgsr, pgsr);
+		VERBOSE("  > [0x%p] pgsr = 0x%x &",
+			(void*)&phy->pgsr, (unsigned) pgsr);
 
 //		if (timeout_elapsed(timeout)) {
 //			panic();
@@ -2888,8 +2888,8 @@ static void stm32mp1_ddrphy_idone_wait(struct stm32mp1_ddrphy *phy)
 			error++;
 		}
 	} while (((pgsr & DDRPHYC_PGSR_IDONE) == 0U) && (error == 0));
-	VERBOSE("\n[0x%lx] pgsr = 0x%x\n",
-		(uintptr_t)&phy->pgsr, pgsr);
+	VERBOSE("\n[0x%p] pgsr = 0x%x\n",
+		(void*)&phy->pgsr, (unsigned) pgsr);
 }
 
 static void stm32mp1_ddrphy_init(struct stm32mp1_ddrphy *phy, uint32_t pir)
@@ -2897,8 +2897,8 @@ static void stm32mp1_ddrphy_init(struct stm32mp1_ddrphy *phy, uint32_t pir)
 	uint32_t pir_init = pir | DDRPHYC_PIR_INIT;
 
 	mmio_write_32((uintptr_t)&phy->pir, pir_init);
-	VERBOSE("[0x%lx] pir = 0x%x -> 0x%x\n",
-		(uintptr_t)&phy->pir, pir_init,
+	VERBOSE("[0x%p] pir = 0x%x -> 0x%x\n",
+		(void*)&phy->pir, (unsigned) pir_init,
 		mmio_read_32((uintptr_t)&phy->pir));
 
 	/* Need to wait 10 configuration clock before start polling */
@@ -2912,8 +2912,8 @@ static void stm32mp1_ddrphy_init(struct stm32mp1_ddrphy *phy, uint32_t pir)
 static void stm32mp1_start_sw_done(struct stm32mp1_ddrctl *ctl)
 {
 	mmio_clrbits_32((uintptr_t)&ctl->swctl, DDRCTRL_SWCTL_SW_DONE);
-	VERBOSE("[0x%lx] swctl = 0x%x\n",
-		(uintptr_t)&ctl->swctl,  mmio_read_32((uintptr_t)&ctl->swctl));
+	VERBOSE("[0x%p] swctl = 0x%x\n",
+		(void*)&ctl->swctl, (unsigned)  mmio_read_32((uintptr_t)&ctl->swctl));
 }
 
 /* Wait quasi dynamic register update */
@@ -4062,7 +4062,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		      uret, config.info.size);
 		//panic();
 	}
-	INFO("Memory size = 0x%x (%d MB)\n", uret, uret / (1024U * 1024U));
+	INFO("Memory size = 0x%x (%u MB)\n", (unsigned) uret, (unsigned) (uret / (1024U * 1024U)));
 
 #if 0
 	// Бесконечный тест памяти.
@@ -4109,7 +4109,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	//__set_SCTLR(__get_SCTLR() | SCTLR_C_Msk);
 	//PRINTF("TZC->INT_STATUS=%08lX\n", TZC->INT_STATUS);
 
-#if WITHDEBUG
+#if WITHDEBUG && 0
 	{
 		unsigned size4 = config.info.size / 4;
 		volatile uint32_t * base4 = (volatile uint32_t *) STM32MP_DDR_BASE;
