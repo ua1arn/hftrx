@@ -2411,6 +2411,16 @@ void MX_USB_HOST_Process(void)
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYLE_A64
+
+	// xfel boot
+	//	USBPHY_CFG_REG: 00000101
+	//	BUS_CLK_GATING_REG0: 00800000
+	//	BUS_SOFT_RST_REG0: 00800000
+
+	PRINTF("USBPHY_CFG_REG: %08X\n", (unsigned) CCU->USBPHY_CFG_REG);
+	PRINTF("BUS_CLK_GATING_REG0: %08X\n", (unsigned) CCU->BUS_CLK_GATING_REG0);
+	PRINTF("BUS_SOFT_RST_REG0: %08X\n", (unsigned) CCU->BUS_SOFT_RST_REG0);
+
 	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
 	{
 		PRINTF("Enable USBEHCI1 clocks\n");
@@ -2423,21 +2433,21 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 					(1u << 11) |
 					(1u << 10) |
 					(1u << 9) |
-					(1u << 8) |
+					//(1u << 8) |
 					(1u << 2) |
 					(1u << 1) |
-					(1u << 0) |
+					//(1u << 0) |
 					0)) |
-				(1u << 22) |	// OHCI1_12M_SRC_SEL.
-				(1u << 20) |	// OHCI0_12M_SRC_SEL.
+				(1u << 22) |	// OHCI1_12M_SRC_SEL
+				(1u << 20) |	// OHCI0_12M_SRC_SEL
 				(3u << 16) |	// SCLK_GATING_OHCI
 				(1u << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
 				(1u << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
-				(1u << 9) |	// SCLK_GATING_USBPHY1.
-				(1u << 8) |	// SCLK_GATING_USBPHY0
+				(1u << 9) |	// SCLK_GATING_USBPHY1
+				//(1u << 8) |	// SCLK_GATING_USBPHY0 - xfel boot setup
 				(1u << 2) |	// USBHSIC_RST
 				(1u << 1) |	// USBPHY1_RST
-				(1u << 0) |	// USBPHY0_RST
+				//(1u << 0) |	// USBPHY0_RST - xfel boot setup
 				0;
 
 		// USBEHCI1, USBOHCI1 - 0x01C1B000
@@ -2452,38 +2462,37 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	{
 		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI0);	/* host and usb-otg port */
 
-
 		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
 					(3u << 22) |
 					(3u << 20) |
 					(3u << 16) |
 					(1u << 11) |
 					(1u << 10) |
-					(1u << 9) |
+					//(1u << 9) |
 					(1u << 8) |
 					(1u << 2) |
-					(1u << 1) |
+					//(1u << 1) |
 					(1u << 0) |
 					0)) |
-				(1u << 22) |	// OHCI1_12M_SRC_SEL.
-				(1u << 20) |	// OHCI0_12M_SRC_SEL.
+				(1u << 22) |	// OHCI1_12M_SRC_SEL
+				(1u << 20) |	// OHCI0_12M_SRC_SEL
 				(3u << 16) |	// SCLK_GATING_OHCI
 				(1u << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
 				(1u << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
-				(1u << 9) |	// SCLK_GATING_USBPHY1.
-				(1u << 8) |	// SCLK_GATING_USBPHY0
+				//(1u << 9) |	// SCLK_GATING_USBPHY1
+				(1u << 8) |	// SCLK_GATING_USBPHY0 - xfel boot setup
 				(1u << 2) |	// USBHSIC_RST
-				(1u << 1) |	// USBPHY1_RST
-				(1u << 0) |	// USBPHY0_RST
+				//(1u << 1) |	// USBPHY1_RST
+				(1u << 0) |	// USBPHY0_RST - xfel boot setup
 				0;
 
 		CCU->BUS_CLK_GATING_REG0 |= (1u << 28);	// USB-OTG-OHCI_GATING.
 		CCU->BUS_CLK_GATING_REG0 |= (1u << 24);	// USB-OTG-EHCI_GATING.
-		CCU->BUS_CLK_GATING_REG0 |= (1u << 23);	// USB-OTG-Device_GATING.
+		CCU->BUS_CLK_GATING_REG0 |= (1u << 23);	// USB-OTG-Device_GATING.	- xfel boot setup
 
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 28);	// USB-OTG-OHCI_RST.
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 24);	// USB-OTG-EHCI_RST
-		CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.
+		CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.	- xfel boot setup
 
 	}
 
