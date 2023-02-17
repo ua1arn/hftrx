@@ -2413,6 +2413,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 #if CPUSTYLE_A64
 	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
 	{
+		PRINTF("Enable USBEHCI1 clocks\n");
 		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI1);	/* host-only port */
 
 		// USBEHCI1, USBOHCI1 - 0x01C1B000
@@ -2421,6 +2422,30 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 29);	// USB-OHCI0_RST.
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 25);	// USB-EHCI0_RST.
+
+		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
+					(3u << 22) |
+					(3u << 20) |
+					(3u << 16) |
+					(1u << 11) |
+					(1u << 10) |
+					(1u << 9) |
+					(1u << 8) |
+					(1u << 2) |
+					(1u << 1) |
+					(1u << 0) |
+					0)) |
+				(1u << 22) |	// OHCI1_12M_SRC_SEL.
+				(1u << 20) |	// OHCI0_12M_SRC_SEL.
+				(3u << 16) |	// SCLK_GATING_OHCI
+				(1u << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
+				(1u << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
+				(1u << 9) |	// SCLK_GATING_USBPHY1.
+				(1u << 8) |	// SCLK_GATING_USBPHY0
+				(1u << 2) |	// USBHSIC_RST
+				(1u << 1) |	// USBPHY1_RST
+				(1u << 0) |	// USBPHY0_RST
+				0;
 
 	}
 	else
@@ -2436,7 +2461,30 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 24);	// USB-OTG-EHCI_RST
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.
 
-		//CCU->USBPHY_CFG_REG
+		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
+					(3u << 22) |
+					(3u << 20) |
+					(3u << 16) |
+					(1u << 11) |
+					(1u << 10) |
+					(1u << 9) |
+					(1u << 8) |
+					(1u << 2) |
+					(1u << 1) |
+					(1u << 0) |
+					0)) |
+				(1u << 22) |	// OHCI1_12M_SRC_SEL.
+				(1u << 20) |	// OHCI0_12M_SRC_SEL.
+				(3u << 16) |	// SCLK_GATING_OHCI
+				(1u << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
+				(1u << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
+				(1u << 9) |	// SCLK_GATING_USBPHY1.
+				(1u << 8) |	// SCLK_GATING_USBPHY0
+				(1u << 2) |	// USBHSIC_RST
+				(1u << 1) |	// USBPHY1_RST
+				(1u << 0) |	// USBPHY0_RST
+				0;
+
 	}
 
 

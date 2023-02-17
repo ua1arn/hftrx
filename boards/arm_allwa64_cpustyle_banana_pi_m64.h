@@ -71,10 +71,11 @@
 
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		USBEHCI1	/* host only port ? 0x01C1B000  */
-	//#define WITHUSBHW_OHCI		USBOHCI1	/* host-only port */
+	#define WITHUSBHW_OHCI		USBOHCI1	/* host-only port */
 
-	//#define WITHUSBHW_EHCI		USBEHCI0	/* host and usb-otg port */
-	//#define WITHUSBHW_OHCI		USBOHCI0	/* host and usb-otg port */
+//	#define WITHUSBHW_EHCI		USBEHCI0	/* host and usb-otg port */
+//	#define WITHUSBHW_OHCI		USBOHCI0	/* host and usb-otg port */
+
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
 	#define WITHOHCIHW_OHCIPORT 0
 
