@@ -343,7 +343,10 @@ ExitFunction:
 /* ================================================================== */
 /* Entry point for the IRQ handler */
 /* ================================================================== */
-
+/*
+	• 13 general-purpose 32-bit registers, R0 to R12.
+	• Three 32-bit registers with special uses, SP, LR, and PC, that can be described as R13 to R15.
+*/
     .func   IRQ_Handler
 IRQ_Handler:
 
@@ -357,23 +360,21 @@ IRQ_Handler:
 	STMFD   SP!, {R1-R12, LR}
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
-	VMRS	LR, FPSID
-	VMSR	FPSID, LR
-	PUSH	{LR}
+	VMRS	R1, FPSID
+	VMSR	FPSID, R1
 
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
 	// save VFP/Neon FPSCR register
 	VMRS	R2, FPSCR	// R2 used below
-	PUSH	{R2}
+	PUSH	{R1, R2}
 	// save VFP/Neon FPEXC register
 	VMRS	R0, FPEXC
     ldr     LR, =(1 << 31) //check FPEXC.EX
 	TST		R0, LR		// check FPEXC.EX
 BEQ skipPUSH
-	VMRSNE	LR, FPINST
-	PUSHNE	{LR}
-	VMRSNE	LR, FPINST2
-	PUSHNE	{LR}
+	VMRS	R1, FPINST
+	VMRS	R2, FPINST2
+	PUSH	{R1, R2}
 skipPUSH:
    // Initialise FPSCR to a known state
     // Loaded in to R2
@@ -387,19 +388,19 @@ skipPUSH:
 //#endif /* __ARM_NEON == 1 */
  	VMSR    FPSCR,R2	// Initialise FPSCR to a known state
 
-	LDR		R2, =IRQ_Handler_GIC
 	// save vfp/neon data registers
 	VPUSH.F32	{D0-D15}
 
+	LDR		R2, =IRQ_Handler_GIC
 	MOV		LR, PC
 	BX		R2     /* and jump... */
 
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
-	VMRS	LR, FPSID
-	VMSR	FPSID, LR
+	VMRS	R1, FPSID
+	VMSR	FPSID, R1
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
-	VMRS	LR, FPSCR
+	VMRS	R1, FPSCR
 
 	// restore vfp data registers
 	VPOP.F32   {D0-D15}
@@ -413,18 +414,16 @@ skipPUSH:
 	POP 	{R0}	// FPEXC
 	TST		R0, LR	// check FPEXC.EX
 	BEQ skipPOP
-	POPNE 	{LR}
-	VMSRNE	FPINST2, LR
-	POPNE 	{LR}
-	VMSRNE 	FPINST, LR
+	POP 	{R1, R2}
+	VMSR	FPINST2, R2
+	VMSR 	FPINST, R1
 skipPOP:
 	// restore VFP/Neon FPEXC register
 	VMSR	FPEXC, R0
 	// restore VFP/Neon FPSCR register
-	POP		{LR}
-	VMSR	FPSCR, LR
-	POP		{LR}
-	VMSR	FPSID, LR
+	POP 	{R1, R2}
+	VMSR	FPSCR, R2
+	VMSR	FPSID, R1
 
 	LDMIA   SP!, {R1-R12, LR}
     MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
