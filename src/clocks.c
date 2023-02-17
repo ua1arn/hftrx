@@ -2205,7 +2205,7 @@ static void set_mbus(void)
 	uint32_t val;
 
 	/* Reset mbus domain */
-	CCU->MBUS_CLK_REG |= (1 << 30);
+	CCU->MBUS_CLK_REG |= (1u << 30);  // MBUS Reset 1: De-assert reset
 	local_delay_ms(1);
 	/* Enable mbus master clock gating */
 	CCU->MBUS_MAT_CLK_GATING_REG = 0x00000d87;
@@ -2218,13 +2218,13 @@ static void set_module(volatile uint32_t * reg)
 	if(!(* reg & (1 << 31)))
 	{
 		uint32_t val;
-		* reg |= (1 << 31) | (1 << 30);
+		* reg |= (1u << 31) | (1u << 30);
 
 		/* Lock enable */
-		* reg |= (1 << 29);
+		* reg |= (1u << 29);
 
 		/* Wait pll stable */
-		while(!(* reg & (0x1 << 28)))
+		while(!(* reg & (0x1u << 28)))
 			;
 		local_delay_ms(20);
 
@@ -2243,7 +2243,7 @@ void allwnrt113_set_pll_cpux(unsigned m, unsigned n)
 
 	/* Set default clk to 1008mhz */
 	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~ ((0xff << 8) | (0x3 << 0));
+	val &= ~ ((0xffu << 8) | (0x3u << 0));
 	val |= ((n - 1) << 8);		//was: PLL_CPU_N
 	val |= ((m - 1) << 0);
 
@@ -7010,22 +7010,25 @@ sysinit_pll_initialize(void)
 #elif CPUSTYLE_A64
 
 	/* Off bootloader USB */
-//	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST.
-//	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.
-//
-//	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
-//	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
-//	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
-//
-//	/* Off host-only USB */
-//	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 29);	// USBOHCI0_GATING.
-//	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 25);	// USBEHCI0_GATING.
-//
-//	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_GATING.
-//	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_GATING.
-//	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
-//
-//	CCU->USBPHY_CFG_REG = 0;
+	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST.
+	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.
+
+	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
+	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
+	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
+
+	/* Off host-only USB */
+	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 29);	// USBOHCI0_GATING.
+	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 25);	// USBEHCI0_GATING.
+
+	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_GATING.
+	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_GATING.
+	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
+
+	CCU->USBPHY_CFG_REG = 0;
+
+	USBPHY0->HCI_ICR = 0;
+	USBPHY1->HCI_ICR = 0;
 
 	allwnr_a64_pll_initialize();
 

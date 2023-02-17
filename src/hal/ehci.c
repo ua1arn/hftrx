@@ -534,7 +534,9 @@ static void EHCI_StartAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
 	(void) EHCIx->USBCMD;
 	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
-		;
+	{
+		ASSERT((EHCIx->USBSTS & EHCI_USBSTS_HCH) == 0);
+	}
 }
 
 /**
@@ -623,7 +625,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 	dcache_clean_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
 	EHCI_StartAsync(EHCIx);
-
 	__HAL_UNLOCK(hehci);
 
 	return status;
@@ -1091,8 +1092,10 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 	//PRINTF("1 HAL_EHCI_Init: PORTSC=%08X @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	/* Route all ports to EHCI controller */
-	*hehci->configFlag = EHCI_CONFIGFLAG_CF;
-	(void) *hehci->configFlag;
+	//PRINTF("1 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
+	* hehci->configFlag = EHCI_CONFIGFLAG_CF;
+	(void) * hehci->configFlag;
+	//PRINTF("2 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
 	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08X\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
 
 	/* Enable power to all ports */
@@ -2225,12 +2228,8 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num,
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
-	EHCI_StopAsync(EHCIx);
-
   hal_status = HAL_EHCI_HC_Init(phost->pData, pipe_num, epnum,
 		  dev_target->dev_address, dev_target->speed, ep_type, mps, dev_target->tt_hubaddr, dev_target->tt_prtaddr);
-
-	EHCI_StartAsync(EHCIx);
 
   ////hal_status =  ehci_endpoint_open(& usbdev0->control) == 0 ? HAL_OK : HAL_ERROR;
   usb_status = USBH_Get_USB_Status(hal_status);
@@ -2412,6 +2411,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYLE_A64
 
+	CCU->MBUS_RST_REG |= (1u << 0);	// MBUS_RESET 1: De-assert.
+	CCU->MBUS_CLK_REG |= (1u << 31);	// MBUS_SCLK_GATING. 1: Clock is ON.
 	// xfel boot
 	//	USBPHY_CFG_REG: 00000101
 	//	BUS_CLK_GATING_REG0: 00800000
@@ -2430,33 +2431,32 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	PRINTF("USBPHY0->HCI_ICR: %08X\n", (unsigned) USBPHY0->HCI_ICR);
 	PRINTF("USBPHY1->HCI_ICR: %08X\n", (unsigned) USBPHY1->HCI_ICR);
 
+	CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
+				(3u << 16) |	// SCLK_GATING_OHCI - 11:OTG-OHCI and OHCI0 Clock is ON
+				(1u << 11) |
+				(1u << 10) |
+				(1u << 2) |
+			0)) |
+			(3u << 16) |	// SCLK_GATING_OHCI - 11:OTG-OHCI and OHCI0 Clock is ON
+			(1u << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
+			(1u << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
+			(1u << 2) |	// USBHSIC_RST
+			0;
+
+	const unsigned OHCIx_12M_SRC_SEL = 0u;	// 00: 12M divided from 48M, 01: 12M divided from 24M, 10: LOSC
 	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
 	{
 		PRINTF("Enable USBEHCI1 clocks\n");
 		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI1);	/* host-only port */
 
 		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
-					(3u << 22) |
-					(3u << 20) |
-					(3u << 16) |
-					(1u << 11) |
-					(1u << 10) |
+					(3u << 22) |	// OHCI1_12M_SRC_SEL
 					(1u << 9) |
-					//(1u << 8) |
-					(1u << 2) |
 					(1u << 1) |
-					//(1u << 0) |
 					0)) |
-				(0*1u << 22) |	// OHCI1_12M_SRC_SEL
-				(0*1u << 20) |	// OHCI0_12M_SRC_SEL
-				(3u << 16) |	// SCLK_GATING_OHCI - 11:OTG-OHCI and OHCI0 Clock is ON
-				(1u << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
-				(1u << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
+				(OHCIx_12M_SRC_SEL << 22) |	// OHCI1_12M_SRC_SEL
 				(1u << 9) |	// SCLK_GATING_USBPHY1
-				//(1u << 8) |	// SCLK_GATING_USBPHY0 - xfel boot setup
-				(1u << 2) |	// USBHSIC_RST
 				(1u << 1) |	// USBPHY1_RST
-				//(1u << 0) |	// USBPHY0_RST - xfel boot setup
 				0;
 
 		// USBEHCI1, USBOHCI1 - 0x01C1B000
@@ -2472,36 +2472,22 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI0);	/* host and usb-otg port */
 
 		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
-					(3u << 22) |
-					(3u << 20) |
-					(3u << 16) |
-					(1u << 11) |
-					(1u << 10) |
-					//(1u << 9) |
-					(1u << 8) |
-					(1u << 2) |
-					//(1u << 1) |
-					(1u << 0) |
+					(3u << 20) |	// OHCI0_12M_SRC_SEL
+					(1u << 8) |	// SCLK_GATING_USBPHY0 - xfel boot setup
+					(1u << 0) |	// USBPHY0_RST
 					0)) |
-				(1u << 22) |	// OHCI1_12M_SRC_SEL
-				(1u << 20) |	// OHCI0_12M_SRC_SEL
-				(3u << 16) |	// SCLK_GATING_OHCI
-				(1u << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
-				(1u << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
-				//(1u << 9) |	// SCLK_GATING_USBPHY1
+				(OHCIx_12M_SRC_SEL << 20) |	// OHCI0_12M_SRC_SEL
 				(1u << 8) |	// SCLK_GATING_USBPHY0 - xfel boot setup
-				(1u << 2) |	// USBHSIC_RST
-				//(1u << 1) |	// USBPHY1_RST
 				(1u << 0) |	// USBPHY0_RST - xfel boot setup
 				0;
 
 		CCU->BUS_CLK_GATING_REG0 |= (1u << 28);	// USB-OTG-OHCI_GATING.
 		CCU->BUS_CLK_GATING_REG0 |= (1u << 24);	// USB-OTG-EHCI_GATING.
-		CCU->BUS_CLK_GATING_REG0 |= (1u << 23);	// USB-OTG-Device_GATING.	- xfel boot setup
+		//CCU->BUS_CLK_GATING_REG0 |= (1u << 23);	// USB-OTG-Device_GATING.	- xfel boot setup
 
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 28);	// USB-OTG-OHCI_RST.
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 24);	// USB-OTG-EHCI_RST
-		CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.	- xfel boot setup
+		//CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.	- xfel boot setup
 
 	}
 
@@ -2512,6 +2498,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 //	USBPHY1->HCI_ICR |= (1u << 1);
 //	USBPHY0->HCI_ICR |= (1u << 17);
 //	USBPHY1->HCI_ICR |= (1u << 17);
+
 	USBPHY0->HCI_ICR |= (1u << 20);		// EHCI HS force
 	USBPHY1->HCI_ICR |= (1u << 20);		// EHCI HS force
 
