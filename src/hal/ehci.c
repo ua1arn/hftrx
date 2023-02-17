@@ -156,6 +156,14 @@ XUSBPS_Registers * EHCIxToUSBx(void * p)
     return USBx;
 }
 
+#elif (CPUSTYLE_A64)
+
+//USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
+//{
+//	USBPHYC_TypeDef * const PHYCx = (WITHUSBHW_EHCI == USBEHCI1) ? USBPHY1 : USBPHY0;
+//    return PHYCx;
+//}
+
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
@@ -971,7 +979,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	hehci->portsc = (__IO uint32_t*) (opregspacebase + 0x0044);
 	hehci->configFlag = (__IO uint32_t*) (opregspacebase + 0x0040);
 
-	//PRINTF("HAL_EHCI_Init: NPORTS=%u\n", hehci->nports);
+	 PRINTF("HAL_EHCI_Init: NPORTS=%u\n", (unsigned) hehci->nports);
 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
 	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
 	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
@@ -1110,6 +1118,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	if (hehci->ohci != NULL)
 	{
 		PRINTF("OHCI Init, hehci->ohci=%p\n", hehci->ohci);
+		PRINTF("OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
 		hehci->ohci->HcCommandStatus |= cpu_to_le32(1u << 0);	// HCR HostControllerReset - issue a software reset
 		(void) hehci->ohci->HcCommandStatus;
 		while ((le32_to_cpu(hehci->ohci->HcCommandStatus) & (1u << 0)) != 0)
@@ -2402,7 +2411,34 @@ void MX_USB_HOST_Process(void)
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYLE_A64
-	#warning Implement for CPUSTYLE_A64
+	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
+	{
+		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI1);	/* host-only port */
+
+		// USBEHCI1, USBOHCI1 - 0x01C1B000
+		CCU->BUS_CLK_GATING_REG0 |= (1u << 29);	// USBOHCI0_GATING.
+		CCU->BUS_CLK_GATING_REG0 |= (1u << 25);	// USBEHCI0_GATING.
+
+		CCU->BUS_SOFT_RST_REG0 |= (1u << 29);	// USB-OHCI0_RST.
+		CCU->BUS_SOFT_RST_REG0 |= (1u << 25);	// USB-EHCI0_RST.
+
+	}
+	else
+	{
+		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI0);	/* host and usb-otg port */
+
+
+		CCU->BUS_CLK_GATING_REG0 |= (1u << 28);	// USB-OTG-OHCI_GATING.
+		CCU->BUS_CLK_GATING_REG0 |= (1u << 24);	// USB-OTG-EHCI_GATING.
+		CCU->BUS_CLK_GATING_REG0 |= (1u << 23);	// USB-OTG-Device_GATING.
+
+		CCU->BUS_SOFT_RST_REG0 |= (1u << 28);	// USB-OTG-OHCI_RST.
+		CCU->BUS_SOFT_RST_REG0 |= (1u << 24);	// USB-OTG-EHCI_RST
+		CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.
+
+		//CCU->USBPHY_CFG_REG
+	}
+
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
@@ -2604,7 +2640,30 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYLE_A64
-	#warning Implement for CPUSTYLE_A64
+
+	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
+	{
+		// USBEHCI1, USBOHCI1
+		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 29);	// USBOHCI0_GATING.
+		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 25);	// USBEHCI0_GATING.
+
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST.
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.
+
+	}
+	else
+	{
+		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_GATING.
+		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_GATING.
+		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
+
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
+
+		//CCU->USBPHY_CFG_REG
+
+	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 

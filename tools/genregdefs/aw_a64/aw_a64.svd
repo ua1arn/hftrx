@@ -7211,8 +7211,8 @@
   </peripheral>
   <peripheral>
   <name>USBOTG0</name>
-  <description></description>
-  <baseAddress>0x04100000</baseAddress>
+  <description>USB OTG Dual-Role Device controller</description>
+  <baseAddress>0x01C19000</baseAddress>
   <registers>
    <cluster>
     <dim>16</dim>
@@ -7594,80 +7594,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
-  </peripheral>
-  <peripheral>
-  <name>USBPHY0</name>
-  <description></description>
-  <baseAddress>0x04100400</baseAddress>
-  <registers>
-   <register>
-    <name>USB_CTRL</name>
-    <displayName>USB_CTRL</displayName>
-    <description>HCI Interface Register (HCI_Interface)</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USBPHY_PHYCTL</name>
-    <displayName>USBPHY_PHYCTL</displayName>
-    <description>USBPHY_PHYCTL</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>HCI_CTRL3</name>
-    <displayName>HCI_CTRL3</displayName>
-    <description>HCI Control 3 Register (bist)</description>
-    <addressOffset>0x008</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PHY_CTRL</name>
-    <displayName>PHY_CTRL</displayName>
-    <description>PHY Control Register (PHY_Control)</description>
-    <addressOffset>0x010</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PHY_OTGCTL</name>
-    <displayName>PHY_OTGCTL</displayName>
-    <description>Control PHY routing to EHCI or OTG</description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PHY_STATUS</name>
-    <displayName>PHY_STATUS</displayName>
-    <description>PHY Status Register</description>
-    <addressOffset>0x024</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_SPDCR</name>
-    <displayName>USB_SPDCR</displayName>
-    <description>HCI SIE Port Disable Control Register</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral derivedFrom="USBPHY0">
-  <name>USBPHY1</name>
-  <baseAddress>0x04200800</baseAddress>
   </peripheral>
   <peripheral>
   <name>DE2_TOP</name>
@@ -9443,7 +9369,7 @@
   <peripheral>
   <name>USBEHCI0</name>
   <description></description>
-  <baseAddress>0x04101000</baseAddress>
+  <baseAddress>0x01C1A000</baseAddress>
   <registers>
    <register>
     <name>HCCAPBASE</name>
@@ -9548,12 +9474,12 @@
   </peripheral>
   <peripheral derivedFrom="USBEHCI0">
   <name>USBEHCI1</name>
-  <baseAddress>0x04200000</baseAddress>
+  <baseAddress>0x01C1B000</baseAddress>
   </peripheral>
   <peripheral>
   <name>USBOHCI0</name>
   <description></description>
-  <baseAddress>0x04101400</baseAddress>
+  <baseAddress>0x01C1A400</baseAddress>
   <registers>
    <register>
     <name>O_HcRevision</name>
@@ -9761,7 +9687,7 @@
   </peripheral>
   <peripheral derivedFrom="USBOHCI0">
   <name>USBOHCI1</name>
-  <baseAddress>0x04200400</baseAddress>
+  <baseAddress>0x01C1B400</baseAddress>
   </peripheral>
   <peripheral>
   <name>DMAC</name>

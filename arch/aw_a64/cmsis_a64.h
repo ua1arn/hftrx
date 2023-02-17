@@ -105,6 +105,11 @@ typedef enum IRQn
 #define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON0 Base */
 #define TCON1_BASE ((uintptr_t) 0x01C0D000)           /*!< TCON1 Base */
 #define MSGBOX_BASE ((uintptr_t) 0x01C17000)          /*!< MSGBOX Base */
+#define USBOTG0_BASE ((uintptr_t) 0x01C19000)         /*!< USBOTG Base */
+#define USBEHCI0_BASE ((uintptr_t) 0x01C1A000)        /*!< USB_EHCI_Capability Base */
+#define USBOHCI0_BASE ((uintptr_t) 0x01C1A400)        /*!< USB_OHCI_Capability Base */
+#define USBEHCI1_BASE ((uintptr_t) 0x01C1B000)        /*!< USB_EHCI_Capability Base */
+#define USBOHCI1_BASE ((uintptr_t) 0x01C1B400)        /*!< USB_OHCI_Capability Base */
 #define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU Base */
 #define GPIOB_BASE ((uintptr_t) 0x01C20824)           /*!< GPIO Base */
 #define GPIOC_BASE ((uintptr_t) 0x01C20848)           /*!< GPIO Base */
@@ -179,13 +184,6 @@ typedef enum IRQn
 #define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC Base */
 #define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC Base */
 #define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC Base */
-#define USBOTG0_BASE ((uintptr_t) 0x04100000)         /*!< USBOTG Base */
-#define USBPHY0_BASE ((uintptr_t) 0x04100400)         /*!< USBPHYC Base */
-#define USBEHCI0_BASE ((uintptr_t) 0x04101000)        /*!< USB_EHCI_Capability Base */
-#define USBOHCI0_BASE ((uintptr_t) 0x04101400)        /*!< USB_OHCI_Capability Base */
-#define USBEHCI1_BASE ((uintptr_t) 0x04200000)        /*!< USB_EHCI_Capability Base */
-#define USBOHCI1_BASE ((uintptr_t) 0x04200400)        /*!< USB_OHCI_Capability Base */
-#define USBPHY1_BASE ((uintptr_t) 0x04200800)         /*!< USBPHYC Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL Base */
 
@@ -1262,7 +1260,7 @@ typedef struct USBEHCI_Type
 /*
  * @brief USBOTG
  */
-/*!< USBOTG  */
+/*!< USBOTG USB OTG Dual-Role Device controller */
 typedef struct USBOTG_Type
 {
     volatile uint32_t USB_EPFIFO [0x010];             /*!< Offset 0x000 USB_EPFIFO [0..5] */
@@ -1317,22 +1315,6 @@ typedef struct USBOTG_Type
     volatile uint32_t PHY_STATUS;                     /*!< Offset 0x424 PHY Status Register */
     volatile uint32_t USB_SPDCR;                      /*!< Offset 0x428 HCI SIE Port Disable Control Register */
 } USBOTG_TypeDef; /* size of structure = 0x42C */
-/*
- * @brief USBPHYC
- */
-/*!< USBPHYC  */
-typedef struct USBPHYC_Type
-{
-    volatile uint32_t USB_CTRL;                       /*!< Offset 0x000 HCI Interface Register (HCI_Interface) */
-    volatile uint32_t USBPHY_PHYCTL;                  /*!< Offset 0x004 USBPHY_PHYCTL */
-    volatile uint32_t HCI_CTRL3;                      /*!< Offset 0x008 HCI Control 3 Register (bist) */
-             uint32_t reserved_0x00C;
-    volatile uint32_t PHY_CTRL;                       /*!< Offset 0x010 PHY Control Register (PHY_Control) */
-             uint32_t reserved_0x014 [0x0003];
-    volatile uint32_t PHY_OTGCTL;                     /*!< Offset 0x020 Control PHY routing to EHCI or OTG */
-    volatile uint32_t PHY_STATUS;                     /*!< Offset 0x024 PHY Status Register */
-    volatile uint32_t USB_SPDCR;                      /*!< Offset 0x028 HCI SIE Port Disable Control Register */
-} USBPHYC_TypeDef; /* size of structure = 0x02C */
 /*
  * @brief DE2_TOP
  */
@@ -2064,6 +2046,11 @@ typedef struct DRAMC_Type
 #define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface register set access pointer */
 #define TCON1 ((TCON1_TypeDef *) TCON1_BASE)          /*!< TCON1 TCON1 HDMI Interface register set access pointer */
 #define MSGBOX ((MSGBOX_TypeDef *) MSGBOX_BASE)       /*!< MSGBOX  register set access pointer */
+#define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0 USB OTG Dual-Role Device controller register set access pointer */
+#define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)/*!< USBEHCI0  register set access pointer */
+#define USBOHCI0 ((USB_OHCI_Capability_TypeDef *) USBOHCI0_BASE)/*!< USBOHCI0  register set access pointer */
+#define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)/*!< USBEHCI1  register set access pointer */
+#define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */
@@ -2138,13 +2125,6 @@ typedef struct DRAMC_Type
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0  register set access pointer */
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1  register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2  register set access pointer */
-#define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0  register set access pointer */
-#define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
-#define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)/*!< USBEHCI0  register set access pointer */
-#define USBOHCI0 ((USB_OHCI_Capability_TypeDef *) USBOHCI0_BASE)/*!< USBOHCI0  register set access pointer */
-#define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)/*!< USBEHCI1  register set access pointer */
-#define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
-#define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
 

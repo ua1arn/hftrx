@@ -22035,8 +22035,6 @@ static void bootloader_mainloop(void)
 
 #endif /* WITHISBOOTLOADER */
 
-#include "src/chip/axp803.h"
-
 /* Главная функция программы */
 int 
 //__attribute__ ((used))
