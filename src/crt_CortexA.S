@@ -358,14 +358,22 @@ ExitFunction:
     .func   IRQ_Handler
 IRQ_Handler:
 
+	/* Already saved state:
+		SP_svc, LR_svc and SPSR_svc
+	*/
+
 	/* save interrupt context on the stack to allow nesting */
 	SUB		LR, LR, #4
 	PUSH 	{LR}		/* return address */
 	MRS     LR, SPSR	/* execution state to LR */
 	PUSH	{R0, R1, LR}	/* R0, R1, execution state */
 
-    MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT	/* switch to svc mode stack */
-	PUSH	{R2-R12, LR}
+	MRS		R0, SP_svc	/* state at trap */
+	MRS		R1, LR_svc	/* state at trap */
+
+   	MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT	/* switch to Supervisor mode stack */
+
+	PUSH	{R0, R1, R2-R12, LR}	/*  R0: SP_svc, R1: LR_svc  - save to supervisor stack */
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
 	VMRS	R1, FPSID
@@ -433,12 +441,15 @@ skipPOP:
 	VMSR	FPSCR, R2
 	VMSR	FPSID, R1
 
-	POP		{R2-R12, LR}
+	POP		{R0, R1, R2-R12, LR}	/* R0: SP_svc, R1: LR_svc */
+ 	MSR		SP_svc, R0
+	MSR		LR_svc, R1
+
     MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT	/* switch to irq mode stack */
 
 	POP		{R0, R1, LR}	/* R0, R1, execution state */
 
-	/* restore execution state */
+	/* restore execution state (SPSR - supervisor state register) */
 	//MSR     SPSR_cxsf, LR
 	MSR     SPSR, LR
 
