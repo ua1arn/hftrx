@@ -4,7 +4,7 @@
 #include "formats.h"
 #include <math.h>
 
-#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM && WITHINTEGRATEDDSP && 0
+#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM && WITHINTEGRATEDDSP
 
 #include "xc7z_inc.h"
 

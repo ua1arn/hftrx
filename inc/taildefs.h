@@ -18,7 +18,7 @@
 #endif
 
 #if LINUX_SUBSYSTEM
-	#include "linux_subsystem.h"
+	#include <src/linux/linux_subsystem.h>
 #endif /* LINUX_SUBSYSTEM */
 
 #define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */

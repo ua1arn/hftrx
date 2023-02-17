@@ -1389,7 +1389,7 @@ uintptr_t getRamDiskBase(void);
 size_t getRamDiskSize(void);
 
 #if LINUX_SUBSYSTEM
-	#include "linux_subsystem.h"
+	#include <src/linux/linux_subsystem.h>
 #endif /* LINUX_SUBSYSTEM */
 
 #if (__CORTEX_A == 53U)
