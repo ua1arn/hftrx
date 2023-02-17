@@ -17775,7 +17775,11 @@ modifysettings(
 			uint_fast16_t * const pv16 = mp->qpval16;
 			uint_fast8_t * const pv8 = mp->qpval8;
 
-			if (nrotate < 0)
+			if (step == ISTEP_RO)
+			{
+
+			}
+			else if (nrotate < 0)
 			{
 				// negative change value
 				const uint_fast32_t bottom = mp->qbottom;
@@ -20908,7 +20912,11 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 		uint_fast16_t * const pv16 = mp->qpval16;
 		uint_fast8_t * const pv8 = mp->qpval8;
 
-		if (rotate < 0)
+		if (step == ISTEP_RO)
+		{
+
+		}
+		else if (rotate < 0)
 		{
 			// negative change value
 			const uint_fast32_t bottom = mp->qbottom;
