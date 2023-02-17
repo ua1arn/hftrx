@@ -7032,6 +7032,17 @@ sysinit_pll_initialize(void)
 
 	allwnr_a64_pll_initialize();
 
+	CCU->MBUS_RST_REG &= ~ (1u << 0);	// MBUS_RESET 0: Assert.
+	(void) CCU->MBUS_RST_REG;
+	CCU->MBUS_RST_REG |= (1u << 0);		// MBUS_RESET 1: De-assert.
+	(void) CCU->MBUS_RST_REG;
+
+	CCU->MBUS_CLK_REG = 0;
+	CCU->MBUS_CLK_REG |= ((4u - 1) << 0);	// MBUS_SCLK_RATIO_M
+	CCU->MBUS_CLK_REG |= (0x01 << 24);	// 01: PLL_PERIPH0(2X)
+	CCU->MBUS_CLK_REG |= (1u << 31);	// MBUS_SCLK_GATING. 1: Clock is ON.
+
+
 #elif CPUSTYLE_T113
 
 	/* Off bootloader USB */

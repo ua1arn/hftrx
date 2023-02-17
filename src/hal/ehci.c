@@ -525,7 +525,9 @@ static void EHCI_StopAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
 	(void) EHCIx->USBCMD;
 	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
-		;
+	{
+		ASSERT((EHCIx->USBSTS & EHCI_USBSTS_HCH) == 0);
+	}
 }
 
 static void EHCI_StartAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
@@ -1021,7 +1023,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 	// wait for the halted bit to become set
 	// Ждем пока бит Halted не будет выставлен
-	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
+	while ((EHCIx->USBSTS & EHCI_USBSTS_HCH) == 0)
 		;
 	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
 	// Замечу, что все мои дескрипторы и элементы очереди выровнены на границу 128 байт
@@ -1391,8 +1393,10 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
      EHCIx->USBCMD |= EHCI_USBCMD_RUN;	// 1=Run, 0-stop
  	(void) EHCIx->USBCMD;
 
-  	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
+  	while ((EHCIx->USBSTS & EHCI_USBSTS_HCH) != 0)
  		;
+
+	ASSERT((EHCIx->USBSTS & EHCI_USBSTS_HCH) == 0);
 
 #if ! WITHEHCIHWSOFTSPOLL
  	EHCIx->USBINTR |=
@@ -2411,8 +2415,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYLE_A64
 
-	CCU->MBUS_RST_REG |= (1u << 0);	// MBUS_RESET 1: De-assert.
-	CCU->MBUS_CLK_REG |= (1u << 31);	// MBUS_SCLK_GATING. 1: Clock is ON.
 	// xfel boot
 	//	USBPHY_CFG_REG: 00000101
 	//	BUS_CLK_GATING_REG0: 00800000
