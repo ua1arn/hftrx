@@ -1392,7 +1392,7 @@ size_t getRamDiskSize(void);
 	#include "linux_subsystem.h"
 #endif /* LINUX_SUBSYSTEM */
 
-#if (__CORTEX_A == 8U) && CPUSTYLE_CA53
+#if (__CORTEX_A == 53U)
 
 // DDI0500J_cortex_a53_r0p4_trm.pdf
 
@@ -1438,6 +1438,6 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 	__set_CP64(15, 1, cpuectlr, 15);
 }
 
-#endif /* (__CORTEX_A == 8U) && CPUSTYLE_CA53 */
+#endif /* (__CORTEX_A == 53U) */
 
 #endif // HARDWARE_H_INCLUDED

@@ -6426,7 +6426,7 @@ void testpng(const void * pngbuffer)
 
 #endif
 
-#if (__CORTEX_A == 8U) && CPUSTYLE_CA53
+#if (__CORTEX_A == 53U) && CPUSTYLE_CA53
 
 // 4.5.80 Configuration Base Address Register
 /** \brief  Get CBAR
@@ -6439,7 +6439,7 @@ __STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
   return(result);
 }
 
-#endif /* (__CORTEX_A == 8U) && CPUSTYLE_CA53 */
+#endif /* (__CORTEX_A == 53U) && CPUSTYLE_CA53 */
 
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);

@@ -3463,7 +3463,7 @@ sysinit_cache_initialize(void)
 			__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
 			__ISB();
 			__DSB();
-		#elif (__CORTEX_A == 8U)
+		#elif (__CORTEX_A == 53U)
 			/**
 			 * DDI0500J_cortex_a53_r0p4_trm.pdf
 			 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
@@ -4028,7 +4028,7 @@ void Reset_CPUn_Handler(void)
 	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
 	__ISB();
 	__DSB();
-#elif (__CORTEX_A == 8U)
+#elif (__CORTEX_A == 53U)
 	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
@@ -4104,7 +4104,7 @@ void cpump_initialize(void)
 	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
 	__ISB();
 	__DSB();
-#elif (__CORTEX_A == 8U)
+#elif (__CORTEX_A == 53U)
 //	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
 //	// set the CPUECTLR.SMPEN
 //	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
