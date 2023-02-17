@@ -4,8 +4,9 @@
 
 MEMORY
 {
-  RAM (rwx)	 : ORIGIN = 0x00044000 + 256, 	LENGTH = 64k - 256		/*  */
-  TTB (rwx)  : ORIGIN = 0x00018000, 		LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
+  RAM (rwx)	 : ORIGIN = 0x00018000 + 256, 	LENGTH = 96k - 256		/*  */
+  TTB (rwx)  : ORIGIN = 0x00044000, 		LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
+  STACK (rwx): ORIGIN = 0x00044000 + 16k,	LENGTH = 64k - 16k
   DDR3 (rwx) : ORIGIN = 0x40000000, 		LENGTH = 128M - 16k		/*  */
 }
 
@@ -204,11 +205,11 @@ SECTIONS
 	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
-	} > RAM
+	} > STACK
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
+	__StackTop = ORIGIN(STACK) + LENGTH(STACK);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 

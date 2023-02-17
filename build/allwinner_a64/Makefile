@@ -253,8 +253,8 @@ allZ:
 bootloader: BOOT2 fsbl.alw32 app_run
   
 app_run: BOOT2 fsbl.alw32
-	$(XFEL) write 0x00044000 fsbl.alw32
-	$(XFEL) exec 0x00044100 
+	$(XFEL) write 0x00018000 fsbl.alw32
+	$(XFEL) exec 0x00018100 
 
 #	$(XFEL) hexdump 0x00044000  48
   
