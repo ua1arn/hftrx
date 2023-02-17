@@ -52,7 +52,7 @@
 			//#define PLL1DIVN	66	// 12*66 = 792 MHz
 			//#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
 
-			#if 0
+			#if 1
 				// PLL2_1600
 				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
 				#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
