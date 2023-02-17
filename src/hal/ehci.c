@@ -2507,7 +2507,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 	USBPHY0->HCI_ICR |= (1u << 0);
 	USBPHY1->HCI_ICR |= (1u << 0);
-	//USBPHY1->HCI_ICR |= (1u << 1);	// перестал OHCШ сигналить
 
 //	USBPHY0->HCI_ICR |= (1u << 1);
 //	USBPHY1->HCI_ICR |= (1u << 1);
