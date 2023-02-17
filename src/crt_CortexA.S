@@ -346,6 +346,8 @@ ExitFunction:
 /*
 	• 13 general-purpose 32-bit registers, R0 to R12.
 	• Three 32-bit registers with special uses, SP, LR, and PC, that can be described as R13 to R15.
+
+	Figure B1-2 ARM core registers, PSRs, and ELR_hyp, showing register banking
 */
 /*
 	11.66 MSR (general-purpose register to PSR)
@@ -365,7 +367,7 @@ IRQ_Handler:
 	/* save interrupt context on the stack to allow nesting */
 	SUB		LR, LR, #4
 	PUSH 	{LR}		/* return address */
-	MRS     LR, SPSR	/* execution state to LR */
+	MRS     LR, SPSR_svc	/* execution state to LR */
 	PUSH	{R0, R1, LR}	/* R0, R1, execution state */
 
 	MRS		R0, SP_svc	/* state at trap */
@@ -451,13 +453,14 @@ skipPOP:
 
 	/* restore execution state (SPSR - supervisor state register) */
 	//MSR     SPSR_cxsf, LR
-	MSR     SPSR, LR
+	MSR     SPSR_svc, LR
 
 	ISB
+	/* LDMIA: Load Multiple Increment After */
 	LDMIA   SP!, {PC}^	/* ^ means: Data is transferred into or out of the User mode registers instead of the current mode registers. */
 
 	.endfunc
-   .ltorg
+   	.ltorg
 
 	.section .noinit
 	.align 8
