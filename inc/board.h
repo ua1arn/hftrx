@@ -132,6 +132,7 @@ void board_set_tuner_L(uint_fast8_t n);	/* установка значение �
 void board_set_tuner_type(uint_fast8_t v);	/* вариант повышающего/понижающего согласования */
 void board_set_tuner_bypass(uint_fast8_t v);	/* обход согласующего устройства */
 void board_set_autotune(uint_fast8_t v);	/* Находимся в режиме настройки согласующего устройства */
+void board_set_showovf(uint_fast8_t v);		/* Показ индикатора переполнения АЦП */
 
 void board_set_user1(uint_fast8_t v);
 void board_set_user2(uint_fast8_t v);
