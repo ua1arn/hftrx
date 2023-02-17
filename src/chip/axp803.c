@@ -479,10 +479,12 @@ int axp803_initialize(void)
 	axp803_set_dldo(2, 3300);
 	axp803_set_dldo(4, 3300);
 
-	axp803_set_eldo(1, 1800);
+	axp803_set_eldo(1, 1800);	// CPVDD (analog power of CPU)
+	//axp803_set_eldo(2, 1800);	// not uised in banana pi M64
+	axp803_set_eldo(3, 1800);	// CSI
 
-	axp803_set_fldo(1, 1200);
-	axp803_set_fldo(2, 1100);
+	axp803_set_fldo(1, 1200);	// VCC1V2-HSIC
+	axp803_set_fldo(2, 1100);	// VDD-CPUX
 
 	axp803_set_sw(1);	// reg 12h, bit 7
 

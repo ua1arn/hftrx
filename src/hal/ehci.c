@@ -2421,6 +2421,15 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	PRINTF("BUS_CLK_GATING_REG0: %08X\n", (unsigned) CCU->BUS_CLK_GATING_REG0);
 	PRINTF("BUS_SOFT_RST_REG0: %08X\n", (unsigned) CCU->BUS_SOFT_RST_REG0);
 
+	PRINTF("USBPHY0->HCI_ICR: %08X\n", (unsigned) USBPHY0->HCI_ICR);
+	PRINTF("USBPHY1->HCI_ICR: %08X\n", (unsigned) USBPHY1->HCI_ICR);
+
+	USBPHY0->HCI_ICR |= 0x01;
+	USBPHY1->HCI_ICR |= 0x01;
+
+	PRINTF("USBPHY0->HCI_ICR: %08X\n", (unsigned) USBPHY0->HCI_ICR);
+	PRINTF("USBPHY1->HCI_ICR: %08X\n", (unsigned) USBPHY1->HCI_ICR);
+
 	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
 	{
 		PRINTF("Enable USBEHCI1 clocks\n");
@@ -2438,9 +2447,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 					(1u << 1) |
 					//(1u << 0) |
 					0)) |
-				(1u << 22) |	// OHCI1_12M_SRC_SEL
-				(1u << 20) |	// OHCI0_12M_SRC_SEL
-				(3u << 16) |	// SCLK_GATING_OHCI
+				(0*1u << 22) |	// OHCI1_12M_SRC_SEL
+				(0*1u << 20) |	// OHCI0_12M_SRC_SEL
+				(3u << 16) |	// SCLK_GATING_OHCI - 11:OTG-OHCI and OHCI0 Clock is ON
 				(1u << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
 				(1u << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
 				(1u << 9) |	// SCLK_GATING_USBPHY1
@@ -2495,6 +2504,23 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.	- xfel boot setup
 
 	}
+
+	USBPHY0->HCI_ICR |= (1u << 0);
+	USBPHY1->HCI_ICR |= (1u << 0);
+	//USBPHY1->HCI_ICR |= (1u << 1);	// перестал OHCШ сигналить
+
+//	USBPHY0->HCI_ICR |= (1u << 1);
+//	USBPHY1->HCI_ICR |= (1u << 1);
+//	USBPHY0->HCI_ICR |= (1u << 17);
+//	USBPHY1->HCI_ICR |= (1u << 17);
+	USBPHY0->HCI_ICR |= (1u << 20);		// EHCI HS force
+	USBPHY1->HCI_ICR |= (1u << 20);		// EHCI HS force
+
+	USBPHY0->HCI_ICR |= (0x0Fu << 8);	//
+	USBPHY1->HCI_ICR |= (0x0Fu << 8);	//
+
+	PRINTF("USBPHY0->HCI_ICR: %08X\n", (unsigned) USBPHY0->HCI_ICR);
+	PRINTF("USBPHY1->HCI_ICR: %08X\n", (unsigned) USBPHY1->HCI_ICR);
 
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)

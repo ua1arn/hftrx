@@ -7010,22 +7010,22 @@ sysinit_pll_initialize(void)
 #elif CPUSTYLE_A64
 
 	/* Off bootloader USB */
-	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST.
-	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.
-
-	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
-	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
-	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
-
-	/* Off host-only USB */
-	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 29);	// USBOHCI0_GATING.
-	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 25);	// USBEHCI0_GATING.
-
-	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_GATING.
-	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_GATING.
-	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
-
-	CCU->USBPHY_CFG_REG = 0;
+//	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST.
+//	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.
+//
+//	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
+//	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
+//	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
+//
+//	/* Off host-only USB */
+//	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 29);	// USBOHCI0_GATING.
+//	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 25);	// USBEHCI0_GATING.
+//
+//	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_GATING.
+//	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_GATING.
+//	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
+//
+//	CCU->USBPHY_CFG_REG = 0;
 
 	allwnr_a64_pll_initialize();
 
