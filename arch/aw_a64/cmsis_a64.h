@@ -108,8 +108,10 @@ typedef enum IRQn
 #define USBOTG0_BASE ((uintptr_t) 0x01C19000)         /*!< USBOTG Base */
 #define USBEHCI0_BASE ((uintptr_t) 0x01C1A000)        /*!< USB_EHCI_Capability Base */
 #define USBOHCI0_BASE ((uintptr_t) 0x01C1A400)        /*!< USB_OHCI_Capability Base */
+#define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC Base */
 #define USBEHCI1_BASE ((uintptr_t) 0x01C1B000)        /*!< USB_EHCI_Capability Base */
 #define USBOHCI1_BASE ((uintptr_t) 0x01C1B400)        /*!< USB_OHCI_Capability Base */
+#define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC Base */
 #define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU Base */
 #define GPIOB_BASE ((uintptr_t) 0x01C20824)           /*!< GPIO Base */
 #define GPIOC_BASE ((uintptr_t) 0x01C20848)           /*!< GPIO Base */
@@ -1316,6 +1318,15 @@ typedef struct USBOTG_Type
     volatile uint32_t USB_SPDCR;                      /*!< Offset 0x428 HCI SIE Port Disable Control Register */
 } USBOTG_TypeDef; /* size of structure = 0x42C */
 /*
+ * @brief USBPHYC
+ */
+/*!< USBPHYC  */
+typedef struct USBPHYC_Type
+{
+    volatile uint32_t HCI_ICR;                        /*!< Offset 0x000 HCI Interface Control Register */
+    volatile uint32_t HSIC_STATUS;                    /*!< Offset 0x004 HSIC status Register This register is valid on HCI1. */
+} USBPHYC_TypeDef; /* size of structure = 0x008 */
+/*
  * @brief DE2_TOP
  */
 /*!< DE2_TOP Display Engine Top */
@@ -2049,8 +2060,10 @@ typedef struct DRAMC_Type
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0 USB OTG Dual-Role Device controller register set access pointer */
 #define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)/*!< USBEHCI0  register set access pointer */
 #define USBOHCI0 ((USB_OHCI_Capability_TypeDef *) USBOHCI0_BASE)/*!< USBOHCI0  register set access pointer */
+#define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)/*!< USBEHCI1  register set access pointer */
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
+#define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */

@@ -7596,6 +7596,35 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>USBPHY0</name>
+  <description></description>
+  <baseAddress>0x01C1A800</baseAddress>
+  <registers>
+   <register>
+    <name>HCI_ICR</name>
+    <displayName>HCI_ICR</displayName>
+    <description>HCI Interface Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HSIC_STATUS</name>
+    <displayName>HSIC_STATUS</displayName>
+    <description>HSIC status Register This register is valid on HCI1.</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="USBPHY0">
+  <name>USBPHY1</name>
+  <baseAddress>0x01C1B800</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>DE2_TOP</name>
   <description>Display Engine Top</description>
   <baseAddress>0x01000000</baseAddress>
