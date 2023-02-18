@@ -1064,6 +1064,9 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	0
 		#define ARM_SYSTEM_PRIORITY		0
 
+		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерываниедля синхронизации приоритетов GIC на остальных процессорах  */
+		#define BOARD_SGI_PRIO	0
+
 		#define system_enableIRQ() do { \
 			__enable_irq(); \
 			} while (0)

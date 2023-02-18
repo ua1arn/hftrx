@@ -56,15 +56,15 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 64
-	 STACKSIZEABT = 64
-	 STACKSIZEFIQ = 64
-	 //STACKSIZEHYP = 64
-	 STACKSIZEMON = 64
-	 STACKSIZESYS = 64
-	 STACKSIZEIRQ = 1024
+	 STACKSIZEUND = 4 * 1024
+	 STACKSIZEABT = 4 * 1024
+	 STACKSIZEFIQ = 4 * 1024
+	 //STACKSIZEHYP = 4 * 1024
+	 STACKSIZEMON = 4 * 1024
+	 STACKSIZESYS = 4 * 1024
+	 STACKSIZEIRQ = 4 * 1024
 
-	 STACKSIZESVCBOOT = 1024	/* + STACKSIZEIRQ = stack for SystemInit running */
+	 STACKSIZESVCBOOT = 4 * 1024	/* + STACKSIZEIRQ = stack for SystemInit running */
   
 	.global __Vectors
 	.section .isr_vector, "ax"
@@ -359,6 +359,146 @@ ExitFunction:
 */
     .func   IRQ_Handler
 IRQ_Handler:
+
+	sub     lr, lr, #4                  // Pre-adjust LR
+	srsfd   sp!, #ARM_MODE_SVC              // Save LR_irq and SPSR_irq on to the SVC stack
+	cps     #ARM_MODE_SVC                   // Change to SVC mode
+	push    {r0-r3, r12, lr}            // Save APCS corruptible registers
+
+	mov     r3, sp                      // Move SP into R3
+	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
+	sub     sp, sp, r3                  // Adjust stack
+	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
+
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+
+	VMRS	R1, FPSCR
+	VMRS	R2, FPEXC
+ 	PUSH 	{R1, R2}
+
+	VPUSH.F32	{D0-D15}
+	VPUSH.F32	{D16-D31}
+
+ 	LDR		R0, =IRQ_Handler_GIC
+	MOV		LR, PC
+	BX		R0     /* and jump... */
+
+	VPOP.F32	{D16-D31}
+ 	VPOP.F32	{D0-D15}
+	POP 	{R1, R2}
+	VMSR	FPSCR, R1
+	VMSR	FPEXC, R2
+
+
+
+	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
+	add     sp, sp, r3                  // Unadjust stack
+
+
+	clrex                               // Clear exclusive monitor for interrupted code
+	pop     {r0-r3, r12, lr}            // Restore stacked APCS registers
+	rfefd   sp!                         // Return from IRQ handler
+
+
+	/* Already saved state:
+		SP_svc, LR_svc and SPSR_svc
+	*/
+
+	/* save interrupt context on the stack to allow nesting */
+	SUB		LR, LR, #4
+	PUSH 	{LR}		/* return address */
+	MRS     LR, SPSR_svc	/* execution state to LR */
+	PUSH	{R0, R1, R2, LR}	/* R0, R1, execution state */
+
+	MRS		R0, SP_svc	/* state at trap */
+	MRS		R1, LR_svc	/* state at trap */
+
+   	//MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT	/* switch to Supervisor mode stack */
+
+	PUSH	{R0, R1, R2-R12, LR}	/*  R0: SP_svc, R1: LR_svc  - save to supervisor stack */
+	// Although FPSID is a read-only register, software
+	// can perform a VMSR to the FPSID to force Floating-point serialization,
+	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+
+	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
+	// save VFP/Neon FPSCR register
+	VMRS	R2, FPSCR	// R2 used below
+	PUSH	{R1, R2}
+	// save VFP/Neon FPEXC register
+	VMRS	R0, FPEXC
+    ldr     LR, =(1 << 31) //check FPEXC.EX
+	TST		R0, LR		// check FPEXC.EX
+BEQ skipPUSHnn
+	VMRS	R1, FPINST
+	VMRS	R2, FPINST2
+	PUSH	{R1, R2}
+skipPUSHnn:
+   // Initialise FPSCR to a known state
+    // Loaded in to R2
+	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+	PUSH 	{R0, R1}	// FPEXC, dummy
+	AND     R2,R2,R3
+
+//#if __ARM_NEON == 1
+	// save neon data registers
+	VPUSH.F32	{D16-D31}
+//#endif /* __ARM_NEON == 1 */
+ 	VMSR    FPSCR,R2	// Initialise FPSCR to a known state
+
+	// save vfp/neon data registers
+	VPUSH.F32	{D0-D15}
+
+	LDR		R2, =IRQ_Handler_GIC
+	MOV		LR, PC
+	BX		R2     /* and jump... */
+
+	// Although FPSID is a read-only register, software
+	// can perform a VMSR to the FPSID to force Floating-point serialization,
+	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
+	VMRS	R1, FPSCR
+
+	// restore vfp data registers
+	VPOP.F32   {D0-D15}
+	// restore VFP/Neon FPEXC register
+    ldr     LR, =(1 << 31) //check FPEXC.EX
+//#if __ARM_NEON == 1
+	// restore vfp/neon data registers
+	VPOP.F32	{D16-D31}
+//#endif /* __ARM_NEON == 1 */
+
+	POP 	{R0, R2}	// FPEXC, dummy
+	TST		R0, LR	// check FPEXC.EX
+	BEQ skipPOPnn
+	POP 	{R1, R2}
+	VMSR	FPINST2, R2
+	VMSR 	FPINST, R1
+skipPOPnn:
+	// restore VFP/Neon FPEXC register
+	VMSR	FPEXC, R0
+	// restore VFP/Neon FPSCR register
+	POP 	{R1, R2}
+	VMSR	FPSCR, R2
+	VMSR	FPSID, R1
+
+	POP		{R0, R1, R2-R12, LR}	/* R0: SP_svc, R1: LR_svc */
+ 	MSR		SP_svc, R0
+	MSR		LR_svc, R1
+
+    //MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT	/* switch to irq mode stack */
+
+	POP		{R0, R1, R2, LR}	/* R0, R1, execution state */
+
+	/* restore execution state (SPSR - supervisor state register) */
+	//MSR     SPSR_cxsf, LR
+	MSR     SPSR_svc, LR
+
+	ISB
+	/* LDMIA: Load Multiple Increment After */
+	LDMIA   SP!, {PC}^	/* ^ means: Data is transferred into or out of the User mode registers instead of the current mode registers. */
 
 	/* Already saved state:
 		SP_svc, LR_svc and SPSR_svc

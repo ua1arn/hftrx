@@ -56,15 +56,15 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 64
-	 STACKSIZEABT = 64
-	 STACKSIZEFIQ = 64
-	 STACKSIZEHYP = 64
-	 STACKSIZEMON = 64
-	 STACKSIZESYS = 64
+	 STACKSIZEUND = 256
+	 STACKSIZEABT = 256
+	 STACKSIZEFIQ = 256
+	 STACKSIZEHYP = 256
+	 STACKSIZEMON = 256
+	 STACKSIZESYS = 256
 	 STACKSIZEIRQ = 1024
 
-	 STACKSIZESVCCPUn = 1 * 1024 * 1024	/* 1MB */
+	 STACKSIZESVCCPUn = 16 * 1024 * 1024	/* 1MB */
 
 	.section .text
 	.code 32
