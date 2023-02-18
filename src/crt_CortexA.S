@@ -59,7 +59,7 @@
 	 STACKSIZEUND = 64
 	 STACKSIZEABT = 64
 	 STACKSIZEFIQ = 64
-	 STACKSIZEHYP = 64
+	 //STACKSIZEHYP = 64
 	 STACKSIZEMON = 64
 	 STACKSIZESYS = 64
 	 STACKSIZEIRQ = 1024
@@ -343,42 +343,61 @@ ExitFunction:
 /* ================================================================== */
 /* Entry point for the IRQ handler */
 /* ================================================================== */
+/*
+	• 13 general-purpose 32-bit registers, R0 to R12.
+	• Three 32-bit registers with special uses, SP, LR, and PC, that can be described as R13 to R15.
 
+	Figure B1-2 ARM core registers, PSRs, and ELR_hyp, showing register banking
+*/
+/*
+	11.66 MSR (general-purpose register to PSR)
+	fields mnemonics:
+	c	control field mask byte, PSR[7:0] (privileged software execution)
+	x	extension field mask byte, PSR[15:8] (privileged software execution)
+	s	status field mask byte, PSR[23:16] (privileged software execution)
+	f	flags field mask byte, PSR[31:24] (privileged software execution).
+*/
     .func   IRQ_Handler
 IRQ_Handler:
 
+	/* Already saved state:
+		SP_svc, LR_svc and SPSR_svc
+	*/
+
 	/* save interrupt context on the stack to allow nesting */
 	SUB		LR, LR, #4
-	STMFD   SP!, {LR}
-	MRS     LR, SPSR
-	STMFD   SP!, {R0, LR}
+	PUSH 	{LR}		/* return address */
+	MRS     LR, SPSR_svc	/* execution state to LR */
+	PUSH	{R0, R1, LR}	/* R0, R1, execution state */
 
-    MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-	STMFD   SP!, {R1-R12, LR}
+	MRS		R0, SP_svc	/* state at trap */
+	MRS		R1, LR_svc	/* state at trap */
+
+   	MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT	/* switch to Supervisor mode stack */
+
+	PUSH	{R0, R1, R2-R12, LR}	/*  R0: SP_svc, R1: LR_svc  - save to supervisor stack */
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
-	VMRS	LR, FPSID
-	VMSR	FPSID, LR
-	PUSH	{LR}
+	VMRS	R1, FPSID
+	VMSR	FPSID, R1
 
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
 	// save VFP/Neon FPSCR register
 	VMRS	R2, FPSCR	// R2 used below
-	PUSH	{R2}
+	PUSH	{R1, R2}
 	// save VFP/Neon FPEXC register
 	VMRS	R0, FPEXC
     ldr     LR, =(1 << 31) //check FPEXC.EX
 	TST		R0, LR		// check FPEXC.EX
 BEQ skipPUSH
-	VMRSNE	LR, FPINST
-	PUSHNE	{LR}
-	VMRSNE	LR, FPINST2
-	PUSHNE	{LR}
+	VMRS	R1, FPINST
+	VMRS	R2, FPINST2
+	PUSH	{R1, R2}
 skipPUSH:
    // Initialise FPSCR to a known state
     // Loaded in to R2
 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	PUSH {R0}	// FPEXC
+	PUSH 	{R0, R1}	// FPEXC, dummy
 	AND     R2,R2,R3
 
 //#if __ARM_NEON == 1
@@ -387,19 +406,19 @@ skipPUSH:
 //#endif /* __ARM_NEON == 1 */
  	VMSR    FPSCR,R2	// Initialise FPSCR to a known state
 
-	LDR		R2, =IRQ_Handler_GIC
 	// save vfp/neon data registers
 	VPUSH.F32	{D0-D15}
 
+	LDR		R2, =IRQ_Handler_GIC
 	MOV		LR, PC
 	BX		R2     /* and jump... */
 
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
-	VMRS	LR, FPSID
-	VMSR	FPSID, LR
+	VMRS	R1, FPSID
+	VMSR	FPSID, R1
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
-	VMRS	LR, FPSCR
+	VMRS	R1, FPSCR
 
 	// restore vfp data registers
 	VPOP.F32   {D0-D15}
@@ -410,32 +429,38 @@ skipPUSH:
 	VPOP.F32	{D16-D31}
 //#endif /* __ARM_NEON == 1 */
 
-	POP 	{R0}	// FPEXC
+	POP 	{R0, R2}	// FPEXC, dummy
 	TST		R0, LR	// check FPEXC.EX
 	BEQ skipPOP
-	POPNE 	{LR}
-	VMSRNE	FPINST2, LR
-	POPNE 	{LR}
-	VMSRNE 	FPINST, LR
+	POP 	{R1, R2}
+	VMSR	FPINST2, R2
+	VMSR 	FPINST, R1
 skipPOP:
 	// restore VFP/Neon FPEXC register
 	VMSR	FPEXC, R0
 	// restore VFP/Neon FPSCR register
-	POP		{LR}
-	VMSR	FPSCR, LR
-	POP		{LR}
-	VMSR	FPSID, LR
+	POP 	{R1, R2}
+	VMSR	FPSCR, R2
+	VMSR	FPSID, R1
 
-	LDMIA   SP!, {R1-R12, LR}
-    MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
+	POP		{R0, R1, R2-R12, LR}	/* R0: SP_svc, R1: LR_svc */
+ 	MSR		SP_svc, R0
+	MSR		LR_svc, R1
 
-	LDMIA   SP!, {R0, LR}
-	MSR     SPSR_cxsf, LR
+    MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT	/* switch to irq mode stack */
+
+	POP		{R0, R1, LR}	/* R0, R1, execution state */
+
+	/* restore execution state (SPSR - supervisor state register) */
+	//MSR     SPSR_cxsf, LR
+	MSR     SPSR_svc, LR
+
 	ISB
-	LDMIA   SP!, {PC}^
+	/* LDMIA: Load Multiple Increment After */
+	LDMIA   SP!, {PC}^	/* ^ means: Data is transferred into or out of the User mode registers instead of the current mode registers. */
 
 	.endfunc
-   .ltorg
+   	.ltorg
 
 	.section .noinit
 	.align 8

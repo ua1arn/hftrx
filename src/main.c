@@ -3014,6 +3014,7 @@ struct nvmap
 	uint8_t userfsg;
 #endif /* WITHRFSG */
 
+	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 	uint8_t gdisplayfreqsfps;		/* скорость обновления индикатора частоты */
 	uint8_t gdisplaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
@@ -3768,6 +3769,11 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
+#if WITHOVFHIDE
+	static uint_fast8_t gshowovf = 0;		/* Показ индикатора переполнения АЦП */
+#else /* WITHOVFHIDE */
+	static uint_fast8_t gshowovf = 1;		/* Показ индикатора переполнения АЦП */
+#endif /* WITHOVFHIDE */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
 	static uint_fast8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
@@ -11623,6 +11629,7 @@ updateboardZZZ(
 			board_set_adcrand(gadcrand);	/* управление интерфейсом в LTC2208 */
 			board_set_adcfifo(gadcfifo);
 			board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
+			board_set_showovf(gshowovf);	/* Показ индикатора переполнения АЦП */
 		#endif /* WITHDSPEXTDDC */
 		} /* (gtx == 0) */
 	#if WITHIF4DSP
