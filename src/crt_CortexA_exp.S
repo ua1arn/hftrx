@@ -56,17 +56,18 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 4 * 1024
-	 STACKSIZEABT = 4 * 1024
-	 STACKSIZEFIQ = 4 * 1024
-	 //STACKSIZEHYP = 4 * 1024
-	 STACKSIZEMON = 4 * 1024
+	 STACKSIZEUND = 256
+	 STACKSIZEABT = 256
+	 STACKSIZEFIQ = 256
+	 //STACKSIZEHYP = 256
+	 STACKSIZEMON = 256
 	 STACKSIZESYS = 4 * 1024
 	 STACKSIZEIRQ = 4 * 1024
 
 	 STACKSIZESVCBOOT = 4 * 1024	/* + STACKSIZEIRQ = stack for SystemInit running */
   
 	.global __Vectors
+	.global __Vectors_nested
 	.section .isr_vector, "ax"
 	.code 32
         
@@ -74,6 +75,7 @@
 /*               Vector table and reset entry                               */
 /* Table B1-3 The vector tables */
 /****************************************************************************/
+	.align 6
 __Vectors:
    ldr pc, ResetAddr    /* Reset                 */
    ldr pc, UndefAddr    /* Undefined instruction */
@@ -84,7 +86,6 @@ __Vectors:
    ldr pc, IRQAddr      /* IRQ interrupt         */
    ldr pc, FIQAddr      /* FIQ interrupt         */
 
-
 ResetAddr:     .word Reset_Handler
 UndefAddr:     .word Undef_Handler
 SWIAddr:       .word SWI_Handler
@@ -93,6 +94,33 @@ DAbortAddr:    .word DAbort_Handler
 HypAddr:  	   .word Hyp_Handler
 IRQAddr:       .word IRQ_Handler
 FIQAddr:       .word FIQ_Handler
+
+	/*
+		Vectors with support nesting.
+	*/
+/****************************************************************************/
+/*               Vector table and reset entry                               */
+/* Table B1-3 The vector tables */
+/****************************************************************************/
+	.align 6
+__Vectors_nested:
+   ldr pc, ResetAddr_n    /* Reset                 */
+   ldr pc, UndefAddr_n    /* Undefined instruction */
+   ldr pc, SWIAddr_n      /* Software interrupt    */
+   ldr pc, PAbortAddr_n   /* Prefetch abort        */
+   ldr pc, DAbortAddr_n   /* Data abort            */
+   ldr pc, HypAddr_n 		/* Entry to Hyp mode	 */
+   ldr pc, IRQAddr_n      /* IRQ interrupt         */
+   ldr pc, FIQAddr_n      /* FIQ interrupt         */
+
+ResetAddr_n:     .word Reset_Handler
+UndefAddr_n:     .word Undef_Handler
+SWIAddr_n:       .word SWI_Handler
+PAbortAddr_n:    .word PAbort_Handler
+DAbortAddr_n:    .word DAbort_Handler
+HypAddr_n:  	 .word Hyp_Handler
+IRQAddr_n:       .word IRQ_Handler_nested
+FIQAddr_n:       .word FIQ_Handler
 
    .ltorg
 
@@ -338,7 +366,6 @@ ExitFunction:
 	.section .text
    .code 32
 
-	.align 4, 0
 
 /* ================================================================== */
 /* Entry point for the IRQ handler */
@@ -357,6 +384,7 @@ ExitFunction:
 	s	status field mask byte, PSR[23:16] (privileged software execution)
 	f	flags field mask byte, PSR[31:24] (privileged software execution).
 */
+ 	.align 	4, 0
     .func   IRQ_Handler
 IRQ_Handler:
 
@@ -383,6 +411,8 @@ IRQ_Handler:
  	LDR		R0, =IRQ_Handler_GIC
 	MOV		LR, PC
 	BX		R0     /* and jump... */
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
 
 	VPOP.F32	{D16-D31}
  	VPOP.F32	{D0-D15}
@@ -400,7 +430,12 @@ IRQ_Handler:
 	pop     {r0-r3, r12, lr}            // Restore stacked APCS registers
 	rfefd   sp!                         // Return from IRQ handler
 
+	.endfunc
+   	.ltorg
 
+ 	.align 	4, 0
+	.func IRQ_Handler_nested
+IRQ_Handler_nested:
 	/* Already saved state:
 		SP_svc, LR_svc and SPSR_svc
 	*/

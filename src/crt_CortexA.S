@@ -67,6 +67,7 @@
 	 STACKSIZESVCBOOT = 1024	/* + STACKSIZEIRQ = stack for SystemInit running */
   
 	.global __Vectors
+	.global __Vectors_nested
 	.section .isr_vector, "ax"
 	.code 32
         
@@ -74,6 +75,7 @@
 /*               Vector table and reset entry                               */
 /* Table B1-3 The vector tables */
 /****************************************************************************/
+	.align 6
 __Vectors:
    ldr pc, ResetAddr    /* Reset                 */
    ldr pc, UndefAddr    /* Undefined instruction */
@@ -84,7 +86,6 @@ __Vectors:
    ldr pc, IRQAddr      /* IRQ interrupt         */
    ldr pc, FIQAddr      /* FIQ interrupt         */
 
-
 ResetAddr:     .word Reset_Handler
 UndefAddr:     .word Undef_Handler
 SWIAddr:       .word SWI_Handler
@@ -94,8 +95,34 @@ HypAddr:  	   .word Hyp_Handler
 IRQAddr:       .word IRQ_Handler
 FIQAddr:       .word FIQ_Handler
 
-   .ltorg
+	/*
+		Vectors with support nesting.
+	*/
+/****************************************************************************/
+/*               Vector table and reset entry                               */
+/* Table B1-3 The vector tables */
+/****************************************************************************/
+	.align 6
+__Vectors_nested:
+   ldr pc, ResetAddr_n    /* Reset                 */
+   ldr pc, UndefAddr_n    /* Undefined instruction */
+   ldr pc, SWIAddr_n      /* Software interrupt    */
+   ldr pc, PAbortAddr_n   /* Prefetch abort        */
+   ldr pc, DAbortAddr_n   /* Data abort            */
+   ldr pc, HypAddr_n 		/* Entry to Hyp mode	 */
+   ldr pc, IRQAddr_n      /* IRQ interrupt         */
+   ldr pc, FIQAddr_n      /* FIQ interrupt         */
 
+ResetAddr_n:     .word Reset_Handler
+UndefAddr_n:     .word Undef_Handler
+SWIAddr_n:       .word SWI_Handler
+PAbortAddr_n:    .word PAbort_Handler
+DAbortAddr_n:    .word DAbort_Handler
+HypAddr_n:  	 .word Hyp_Handler
+IRQAddr_n:       .word IRQ_Handler_nested
+FIQAddr_n:       .word FIQ_Handler
+
+	.ltorg
 
    .section .startup0, "ax"
    .code 32
@@ -340,9 +367,6 @@ ExitFunction:
 
 	.align 4, 0
 
-/* ================================================================== */
-/* Entry point for the IRQ handler */
-/* ================================================================== */
 /*
 	• 13 general-purpose 32-bit registers, R0 to R12.
 	• Three 32-bit registers with special uses, SP, LR, and PC, that can be described as R13 to R15.
@@ -357,8 +381,58 @@ ExitFunction:
 	s	status field mask byte, PSR[23:16] (privileged software execution)
 	f	flags field mask byte, PSR[31:24] (privileged software execution).
 */
+ 	.align 	4, 0
     .func   IRQ_Handler
 IRQ_Handler:
+
+	sub     lr, lr, #4                  // Pre-adjust LR
+	srsfd   sp!, #ARM_MODE_SVC              // Save LR_irq and SPSR_irq on to the SVC stack
+	cps     #ARM_MODE_SVC                   // Change to SVC mode
+	push    {r0-r3, r12, lr}            // Save APCS corruptible registers
+
+	mov     r3, sp                      // Move SP into R3
+	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
+	sub     sp, sp, r3                  // Adjust stack
+	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
+
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+
+	VMRS	R1, FPSCR
+	VMRS	R2, FPEXC
+ 	PUSH 	{R1, R2}
+
+	VPUSH.F32	{D0-D15}
+	VPUSH.F32	{D16-D31}
+
+ 	LDR		R0, =IRQ_Handler_GIC
+	MOV		LR, PC
+	BX		R0     /* and jump... */
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+
+	VPOP.F32	{D16-D31}
+ 	VPOP.F32	{D0-D15}
+	POP 	{R1, R2}
+	VMSR	FPSCR, R1
+	VMSR	FPEXC, R2
+
+
+
+	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
+	add     sp, sp, r3                  // Unadjust stack
+
+
+	clrex                               // Clear exclusive monitor for interrupted code
+	pop     {r0-r3, r12, lr}            // Restore stacked APCS registers
+	rfefd   sp!                         // Return from IRQ handler
+
+	.endfunc
+   	.ltorg
+
+ 	.align 	4, 0
+	.func IRQ_Handler_nested
+IRQ_Handler_nested:
 
 	/* Already saved state:
 		SP_svc, LR_svc and SPSR_svc

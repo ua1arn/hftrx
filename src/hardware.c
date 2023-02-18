@@ -3293,9 +3293,13 @@ sysinit_vbar_initialize(void)
 {
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
+#if WITHNESTEDINTERRUPTS
+	extern unsigned long __Vectors_nested;
+	const uintptr_t vbase = (uintptr_t) & __Vectors_nested;
+#else /* WITHNESTEDINTERRUPTS */
 	extern unsigned long __Vectors;
-
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
+#endif /* WITHNESTEDINTERRUPTS */
 
 	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
 	__set_MVBAR(vbase);	 // Set Monitor Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
