@@ -16513,7 +16513,7 @@ uint_fast8_t hamradio_get_txdisable(void)
 	if (gheatprot != 0 && hamradio_get_temperature_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 		return 1;
 #endif /* WITHTHERMOLEVEL */
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
+#if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
 	//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr(40));
 	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr(40) >= 20)	// SWR >= 3.0
 		return 1;

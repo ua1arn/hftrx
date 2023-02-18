@@ -913,6 +913,18 @@ extern "C" {
 	#define TICKS_FREQUENCY 200
 
 
+#elif CPUSTYLE_UBLAZE
+
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+
+	#define DACVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define TICKS_FREQUENCY 200
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -1126,6 +1138,14 @@ extern "C" {
 
 		#define global_enableIRQ() do { (system_enableIRQ)(); } while (0)
 		#define global_disableIRQ() do { (system_disableIRQ)(); } while (0)
+
+#elif CPUSTYLE_UBLAZE
+
+	#define system_enableIRQ() do { } while (0)
+	#define system_disableIRQ() do { } while (0)
+
+	#define global_enableIRQ() do { } while (0)
+	#define global_disableIRQ() do { } while (0)
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
