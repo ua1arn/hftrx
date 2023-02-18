@@ -152,6 +152,7 @@ static uint_fast8_t 	glob_user4;
 static uint_fast8_t 	glob_user5;
 static uint_fast8_t		glob_attvalue;	// RF signal gen attenuator value
 static uint_fast8_t		glob_tsc_reset = 1;
+static uint_fast8_t		glob_showovf = 1;	/* Показ индикатора переполнения АЦП */
 
 static void prog_rfadc_update(void);
 
@@ -5652,10 +5653,20 @@ board_set_attvalue(uint_fast8_t v)
 	}
 }
 
-void board_tsc_reset_state(uint_fast8_t v)
+void
+board_tsc_reset_state(uint_fast8_t v)
 {
 	glob_tsc_reset = v;
 	board_ctlreg1changed();
+}
+
+
+/* Показ индикатора переполнения АЦП */
+void
+board_set_showovf(uint_fast8_t v)
+{
+	const uint_fast8_t n = v != 0;
+	glob_showovf = n;
 }
 
 /////////////////////////////////////////////
@@ -7317,10 +7328,8 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 /* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_fpga_adcoverflow(void)
 {
-#if WITHOVFHIDE
-	return 0;
-#elif defined (TARGET_FPGA_OVF_GET)
-	return TARGET_FPGA_OVF_GET;
+#if defined (TARGET_FPGA_OVF_GET)
+	return glob_showovf ? TARGET_FPGA_OVF_GET : 0;
 #else /* defined (TARGET_FPGA_OVF_GET) */
 	return 0;
 #endif /* defined (TARGET_FPGA_OVF_GET) */
