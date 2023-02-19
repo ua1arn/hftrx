@@ -62,7 +62,7 @@
 	 STACKSIZEHYP = 64
 	 STACKSIZEMON = 64
 	 STACKSIZESYS = 64
-	 STACKSIZEIRQ = 512
+	 STACKSIZEIRQ = 2048
 
 	 STACKSIZESVCBOOT = 2048
   
@@ -77,7 +77,6 @@
 /****************************************************************************/
 	.align 6
 __Vectors:
-__Vectors_nested:
    ldr pc, ResetAddr    /* Reset                 */
    ldr pc, UndefAddr    /* Undefined instruction */
    ldr pc, SWIAddr      /* Software interrupt    */
@@ -94,9 +93,30 @@ SWIAddr:       .word SWI_Handler
 PAbortAddr:    .word PAbort_Handler
 DAbortAddr:    .word DAbort_Handler
 HypAddr:  	   .word Hyp_Handler
-IRQAddr:       .word IRQ_Handler
+IRQAddr:       .word IRQ_Handler_n
 FIQAddr:       .word FIQ_Handler
+   .ltorg
 
+	.align 6
+__Vectors_nested:
+   ldr pc, ResetAddr_n    /* Reset                 */
+   ldr pc, UndefAddr_n    /* Undefined instruction */
+   ldr pc, SWIAddr_n      /* Software interrupt    */
+   ldr pc, PAbortAddr_n   /* Prefetch abort        */
+   ldr pc, DAbortAddr_n   /* Data abort            */
+   ldr pc, HypAddr_n 		/* Entry to Hyp mode	 */
+   ldr pc, IRQAddr_n      /* IRQ interrupt         */
+   ldr pc, FIQAddr_n      /* FIQ interrupt         */
+
+
+ResetAddr_n:     .word Reset_Handler
+UndefAddr_n:     .word Undef_Handler
+SWIAddr_n:       .word SWI_Handler
+PAbortAddr_n:    .word PAbort_Handler
+DAbortAddr_n:    .word DAbort_Handler
+HypAddr_n:  	   .word Hyp_Handler
+IRQAddr_n:       .word IRQ_Handler_n
+FIQAddr_n:       .word FIQ_Handler
    .ltorg
 
 
@@ -346,8 +366,8 @@ ExitFunction:
 /* Entry point for the IRQ handler */
 /* ================================================================== */
 
-    .func   IRQ_Handler
-IRQ_Handler:
+    .func   IRQ_Handler_n
+IRQ_Handler_n:
 
 	/* save interrupt context on the stack to allow nesting */
 	SUB		LR, LR, #4
