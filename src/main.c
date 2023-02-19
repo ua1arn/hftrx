@@ -4088,7 +4088,7 @@ enum
 	static uint_fast16_t tunerind;// = (LMAX - LMIN) / 2 + LMIN;
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
-	static uint_fast8_t tunerdelay = 40;
+	static uint_fast8_t tunerdelay = 20;
 
 #endif /* WITHAUTOTUNER */
 
@@ -5506,6 +5506,7 @@ static uint_fast8_t scanminCk(tus_t * tus)
 	return 0;
 }
 
+// Выбираем наилучший результат согласования
 static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 {
 	uint_fast8_t i;
