@@ -25,7 +25,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if WITHPOWERTRIM
 	#if WITHLOWPOWEREXTTUNE
 		{
-			QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+			QLABEL("ATU PWR "), 7, 0, 0,	ISTEP5,		/* мощность при работе автоматического согласующего устройства */
 			ITEM_VALUE,
 			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 			offsetof(struct nvmap, gtunepower),

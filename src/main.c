@@ -5442,11 +5442,11 @@ static uint_fast8_t tuneabort(void)
 
 // Перебор значений L в поиске минимума SWR
 // Если прервана настройка - возврат не-0
-static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
+static uint_fast8_t scanminLk(tus_t * tus)
 {
 	uint_fast8_t bestswrvalid = 0;
-	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
+	PRINTF("scanminLk start ****************\n");
 	for (tunerind = LMIN; tunerind <= LMAX; ++ tunerind)
 	{
 		if (tuneabort())
@@ -5459,34 +5459,27 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
-			// Измерений ещё небыло
+			// Измерений ещё небыло или это полоэение обеспечивает лучше КСВ
 			tus->swr = swr;
 			tus->tunerind = tunerind;
 			tus->r = r;
 			tus->f = f;
 			bestswrvalid = 1;
-			a = addsteps;
 			PRINTF("scanminLk: best ty=%u, L=%u, C=%u\n", tunertype, tunerind, tunercap);
-		}
-		else
-		{
-			if (tus->swr < swr && a -- == 0)
-			{
-				break;
-			}
 		}
 	}
 	tunerind = tus->tunerind;	// лучшее запомненное
+	PRINTF("scanminLk done ****************\n");
 	return 0;
 }
 
 // Перебор значений C в поиске минимума SWR
 // Если прервана настройка - возврат не-0
-static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
+static uint_fast8_t scanminCk(tus_t * tus)
 {
 	uint_fast8_t bestswrvalid = 0;
-	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
+	PRINTF("scanminCk start ****************\n");
 	for (tunercap = CMIN; tunercap <= CMAX; ++ tunercap)
 	{
 		if (tuneabort())
@@ -5499,24 +5492,17 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
-			// Измерений ещё небыло
+			// Измерений ещё небыло или это полоэение обеспечивает лучше КСВ
 			tus->swr = swr;
 			tus->tunercap = tunercap;
 			tus->r = r;
 			tus->f = f;
 			bestswrvalid = 1;
-			a = addsteps;
 			PRINTF("scanminCk: best ty=%u, L=%u, C=%u\n", tunertype, tunerind, tunercap);
-		}
-		else
-		{
-			if (tus->swr < swr && a -- == 0)
-			{
-				break;
-			}
 		}
 	}
 	tunercap = tus->tunercap;	// лучшее запомненное
+	PRINTF("scanminCk done ****************\n");
 	return 0;
 }
 
@@ -5561,14 +5547,6 @@ static void auto_tune(void)
 	const uint_fast8_t bg = getfreqbandgroup(freq);
 	const uint_fast8_t ant = geteffantenna(freq);
 
-#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
-	const uint_fast8_t addstepsLk = 3;
-	const uint_fast8_t addstepsCk = 3;
-#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
-	const uint_fast8_t addstepsLk = 15;
-	const uint_fast8_t addstepsCk = 15;
-#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
-
 	PRINTF(PSTR("auto_tune start\n"));
 	for (ndummies = 5; ndummies --; )
 	{
@@ -5588,7 +5566,7 @@ static void auto_tune(void)
 		if (tunertype == 0)
 		{
 			PRINTF("tuner: ty=%u, scan capacitors\n", (unsigned) tunertype);
-			if (scanminCk(& statuses [tunertype], addstepsCk) != 0)
+			if (scanminCk(& statuses [tunertype]) != 0)
 				goto aborted;
 			PRINTF("scanminCk finish: C=%u\n", tunercap);
 			updateboard_tuner();
@@ -5604,7 +5582,7 @@ static void auto_tune(void)
 		////	goto NoMoreTune;
 
 		PRINTF("tuner: ty=%u, scan inductors\n", (unsigned) tunertype);
-		if (scanminLk(& statuses [tunertype], addstepsLk) != 0)
+		if (scanminLk(& statuses [tunertype]) != 0)
 			goto aborted;
 		PRINTF("scanminLk finish: L=%u\n", tunerind);
 		updateboard_tuner();
@@ -5620,7 +5598,7 @@ static void auto_tune(void)
 	tunertype = statuses [cshindex].tunertype;
 	tunerind = statuses [cshindex].tunerind;
 	tunercap = statuses [cshindex].tunercap;
-	if (scanminCk(& statuses [cshindex], addstepsCk) != 0)
+	if (scanminCk(& statuses [cshindex]) != 0)
 		goto aborted;
 	printtunerstate("Selected 2", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
 	// Устанавливаем аппаратуру в состояние при лучшем результате
