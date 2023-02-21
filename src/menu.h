@@ -25,7 +25,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if WITHPOWERTRIM
 	#if WITHLOWPOWEREXTTUNE
 		{
-			QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+			QLABEL("ATU PWR "), 7, 0, 0,	ISTEP5,		/* мощность при работе автоматического согласующего устройства */
 			ITEM_VALUE,
 			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 			offsetof(struct nvmap, gtunepower),
@@ -354,7 +354,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	{
-		QLABEL2("SMETER ", "S-meter Type"), 7, 3, RJ_SMETER,	ISTEP1,
+		QLABEL2("SMETER  ", "S-meter Type"), 7, 3, RJ_SMETER,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
 		offsetof(struct nvmap, gsmetertype),
@@ -365,6 +365,18 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHSPECTRUMWF */
+#if WITHDSPEXTDDC
+	{
+		QLABEL2("SHOW OVF", "ADC OVF Show"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* разрешение или запрет раскраски спектра */
+		offsetof(struct nvmap, gshowovf),
+		nvramoffs0,
+		NULL,
+		& gshowovf,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHDSPEXTDDC */
 #if defined (RTC1_TYPE)
 #if ! WITHFLATMENU
 	{

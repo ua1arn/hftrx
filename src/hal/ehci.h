@@ -161,7 +161,7 @@ extern "C" {
 #define EHCI_USBSTS_ASYNC 0x00008000UL
 
 /** Host controller halted */
-#define EHCI_USBSTS_HCH 0x00001000UL
+#define EHCI_USBSTS_HCH 0x00001000UL //STS_HCHALTED
 
 /** USB status change mask */
 #define EHCI_USBSTS_CHANGE                                              \
@@ -527,7 +527,7 @@ typedef struct EhciCapRegs
 #define STS_FLR                         (1uL << 3)    // Frame List Rollover
 #define STS_HSE                         (1uL << 4)    // Host System Error
 #define STS_IOAA                        (1uL << 5)    // Interrupt on Async Advance
-#define STS_HCHALTED                    (1uL << 12)   // Host Controller Halted
+//#define STS_HCHALTED                    (1uL << 12)   // Host Controller Halted EHCI_USBSTS_HCH
 #define STS_RECLAMATION                 (1uL << 13)   // Reclamation
 #define STS_PSS                         (1uL << 14)   // Periodic Schedule Status
 #define STS_ASS                         (1uL << 15)   // Asynchronous Schedule Status

@@ -18,7 +18,7 @@
 	#define BANDDIVPOWER	16	/* ~65.5 kHz granulation */
 	typedef uint_fast16_t fseltype_t;
 
-#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_UBLAZE
 
 	#define BANDDIVPOWER	0	/* 1 Hz granulation */
 	typedef uint_fast32_t fseltype_t;

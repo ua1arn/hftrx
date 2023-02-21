@@ -1795,7 +1795,8 @@ static void arm_hardware_populate_initialize(void)
 	SPIN_UNLOCK(& gicdistrib_lock);
 	dcache_clean_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
-	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, BOARD_SGI_PRIO, 0x01u << 1);
+	/* Установить на все процессоры кроме текущего */
+	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, BOARD_SGI_PRIO, 0x0F & ~ (1u << arm_hardware_cpuid()));
 }
 
 /* вызывается на дополнительном ядре */

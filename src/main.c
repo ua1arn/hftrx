@@ -3014,6 +3014,7 @@ struct nvmap
 	uint8_t userfsg;
 #endif /* WITHRFSG */
 
+	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 	uint8_t gdisplayfreqsfps;		/* скорость обновления индикатора частоты */
 	uint8_t gdisplaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
@@ -3768,6 +3769,11 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
+#if WITHOVFHIDE
+	static uint_fast8_t gshowovf = 0;		/* Показ индикатора переполнения АЦП */
+#else /* WITHOVFHIDE */
+	static uint_fast8_t gshowovf = 1;		/* Показ индикатора переполнения АЦП */
+#endif /* WITHOVFHIDE */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
 	static uint_fast8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
@@ -4082,7 +4088,7 @@ enum
 	static uint_fast16_t tunerind;// = (LMAX - LMIN) / 2 + LMIN;
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
-	static uint_fast8_t tunerdelay = 40;
+	static uint_fast8_t tunerdelay = 20;
 
 #endif /* WITHAUTOTUNER */
 
@@ -5436,11 +5442,11 @@ static uint_fast8_t tuneabort(void)
 
 // Перебор значений L в поиске минимума SWR
 // Если прервана настройка - возврат не-0
-static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
+static uint_fast8_t scanminLk(tus_t * tus)
 {
 	uint_fast8_t bestswrvalid = 0;
-	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
+	PRINTF("scanminLk start ****************\n");
 	for (tunerind = LMIN; tunerind <= LMAX; ++ tunerind)
 	{
 		if (tuneabort())
@@ -5453,34 +5459,27 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
-			// Измерений ещё небыло
+			// Измерений ещё небыло или это полоэение обеспечивает лучше КСВ
 			tus->swr = swr;
 			tus->tunerind = tunerind;
 			tus->r = r;
 			tus->f = f;
 			bestswrvalid = 1;
-			a = addsteps;
 			PRINTF("scanminLk: best ty=%u, L=%u, C=%u\n", tunertype, tunerind, tunercap);
-		}
-		else
-		{
-			if (tus->swr < swr && a -- == 0)
-			{
-				break;
-			}
 		}
 	}
 	tunerind = tus->tunerind;	// лучшее запомненное
+	PRINTF("scanminLk done ****************\n");
 	return 0;
 }
 
 // Перебор значений C в поиске минимума SWR
 // Если прервана настройка - возврат не-0
-static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
+static uint_fast8_t scanminCk(tus_t * tus)
 {
 	uint_fast8_t bestswrvalid = 0;
-	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
+	PRINTF("scanminCk start ****************\n");
 	for (tunercap = CMIN; tunercap <= CMAX; ++ tunercap)
 	{
 		if (tuneabort())
@@ -5493,27 +5492,21 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
-			// Измерений ещё небыло
+			// Измерений ещё небыло или это полоэение обеспечивает лучше КСВ
 			tus->swr = swr;
 			tus->tunercap = tunercap;
 			tus->r = r;
 			tus->f = f;
 			bestswrvalid = 1;
-			a = addsteps;
 			PRINTF("scanminCk: best ty=%u, L=%u, C=%u\n", tunertype, tunerind, tunercap);
-		}
-		else
-		{
-			if (tus->swr < swr && a -- == 0)
-			{
-				break;
-			}
 		}
 	}
 	tunercap = tus->tunercap;	// лучшее запомненное
+	PRINTF("scanminCk done ****************\n");
 	return 0;
 }
 
+// Выбираем наилучший результат согласования
 static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 {
 	uint_fast8_t i;
@@ -5555,14 +5548,6 @@ static void auto_tune(void)
 	const uint_fast8_t bg = getfreqbandgroup(freq);
 	const uint_fast8_t ant = geteffantenna(freq);
 
-#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
-	const uint_fast8_t addstepsLk = 3;
-	const uint_fast8_t addstepsCk = 3;
-#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
-	const uint_fast8_t addstepsLk = 15;
-	const uint_fast8_t addstepsCk = 15;
-#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
-
 	PRINTF(PSTR("auto_tune start\n"));
 	for (ndummies = 5; ndummies --; )
 	{
@@ -5582,7 +5567,7 @@ static void auto_tune(void)
 		if (tunertype == 0)
 		{
 			PRINTF("tuner: ty=%u, scan capacitors\n", (unsigned) tunertype);
-			if (scanminCk(& statuses [tunertype], addstepsCk) != 0)
+			if (scanminCk(& statuses [tunertype]) != 0)
 				goto aborted;
 			PRINTF("scanminCk finish: C=%u\n", tunercap);
 			updateboard_tuner();
@@ -5598,7 +5583,7 @@ static void auto_tune(void)
 		////	goto NoMoreTune;
 
 		PRINTF("tuner: ty=%u, scan inductors\n", (unsigned) tunertype);
-		if (scanminLk(& statuses [tunertype], addstepsLk) != 0)
+		if (scanminLk(& statuses [tunertype]) != 0)
 			goto aborted;
 		PRINTF("scanminLk finish: L=%u\n", tunerind);
 		updateboard_tuner();
@@ -5614,7 +5599,7 @@ static void auto_tune(void)
 	tunertype = statuses [cshindex].tunertype;
 	tunerind = statuses [cshindex].tunerind;
 	tunercap = statuses [cshindex].tunercap;
-	if (scanminCk(& statuses [cshindex], addstepsCk) != 0)
+	if (scanminCk(& statuses [cshindex]) != 0)
 		goto aborted;
 	printtunerstate("Selected 2", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
 	// Устанавливаем аппаратуру в состояние при лучшем результате
@@ -11623,6 +11608,7 @@ updateboardZZZ(
 			board_set_adcrand(gadcrand);	/* управление интерфейсом в LTC2208 */
 			board_set_adcfifo(gadcfifo);
 			board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
+			board_set_showovf(gshowovf);	/* Показ индикатора переполнения АЦП */
 		#endif /* WITHDSPEXTDDC */
 		} /* (gtx == 0) */
 	#if WITHIF4DSP
@@ -16506,7 +16492,7 @@ uint_fast8_t hamradio_get_txdisable(void)
 	if (gheatprot != 0 && hamradio_get_temperature_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 		return 1;
 #endif /* WITHTHERMOLEVEL */
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
+#if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
 	//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr(40));
 	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr(40) >= 20)	// SWR >= 3.0
 		return 1;
@@ -17775,7 +17761,11 @@ modifysettings(
 			uint_fast16_t * const pv16 = mp->qpval16;
 			uint_fast8_t * const pv8 = mp->qpval8;
 
-			if (nrotate < 0)
+			if (step == ISTEP_RO)
+			{
+
+			}
+			else if (nrotate < 0)
 			{
 				// negative change value
 				const uint_fast32_t bottom = mp->qbottom;
@@ -20908,7 +20898,11 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 		uint_fast16_t * const pv16 = mp->qpval16;
 		uint_fast8_t * const pv8 = mp->qpval8;
 
-		if (rotate < 0)
+		if (step == ISTEP_RO)
+		{
+
+		}
+		else if (rotate < 0)
 		{
 			// negative change value
 			const uint_fast32_t bottom = mp->qbottom;

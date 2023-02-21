@@ -16,9 +16,11 @@
 ##############################################################################################
 # Start of default section
 #
-TRGT2 = arm-none-eabi
-#TRGT2 = C:\user\klen\bin\arm-kgp-eabi
+TRGT2 = riscv-none-elf
 TRGT = $(TRGT2)-
+#TRGT = C:\user\klen\bin\arm-kgp-eabi-
+
+XFEL = ../../tools/xfel-windows-v1.2.9/xfel
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -26,16 +28,16 @@ PRJROOT := ../..
 OBJDIR = obj
 
 # Define project name here
-PROJECT = tc1_stm32mp157axx
+PROJECT = tc1_u_blaze
 
 # Define linker script file here
-LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
-LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
-ARCHDIR = $(PRJROOT)/arch/stm32mp1xx
+LDSCRIPT_BOOT = ./u_blaze_boot.ld
+LDSCRIPT_APP = ./u_blaze_app.ld
+ARCHDIR = $(PRJROOT)/arch/u_blaze
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"EGL_STATIC_LIBRARY"=1
-UDEFS += -D"STM32MP157Axx"=1 -D"STM32MP1"=1 -D"CORE_CA7"=1 -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_UBLAZE"=1 -D"EGL_STATIC_LIBRARY"=1
+#UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
@@ -46,27 +48,28 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
 
-# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
-# debug architecture ARMv7.1.
-CORE = -mcpu=cortex-a7
-CORE += -mfloat-abi=hard
-#CORE += -mfpu=neon
-#CORE += -mfpu=neon-vfpv4
-CORE += -mfpu=vfpv4
+# The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
+
+# misa --X-VU-S-----M---I--F-DC-A
+
+#CORE = -march=rv64imafdc_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector
+CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector
 
 # Define optimisation level here
 #OPT = -Og
-#OPT = -Os
-OPT = -Ofast -flto
+#OPT = -Ofast -flto
+#OPT = -Os -flto
+OPT = -Os
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
+DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
-HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
 TINYUSBDIR = $(PRJROOT)/lib/tinyusb
@@ -78,20 +81,22 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
-	$(ARCHDIR) \
-	$(HALDIR)/Inc \
-	$(MDLWUSBDIR)/Core/Inc \
-	$(MDLWHOSTDIR)/Core/Inc \
+	$(ARCHDIR)
+	
+DINCDIR += \
 	$(USBXDIR) \
+	$(DSP3DDIR)
+	
+DINCDIR += \
 	$(CMSISDIR)/Core_A/Include \
-	$(RTOSXDIR)/Include \
-	$(RTOSXDIR)/RTX/Include \
+	$(CMSISDIR)/Core_A/Source
+	
+DINCDIR += \
 	$(CMSISDSPDIR)/Include \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDIR)/Core_A/Source \
 	$(CMSISDSPDIR)/Source \
 	$(CMSISDSPDIR)/PrivateInclude
-		
+
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
 
@@ -129,12 +134,15 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-# taken from
-# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
-rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
-
 SRCDIRS += $(PRJROOT)/src
-#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
+SRCDIRS += $(ARCHDIR)
+#SRCDIRS += $(DSP3DDIR)/src
+
+ifeq (1, 0)
+# ST USB
+DINCDIR += $(MDLWUSBDIR)/Core/Inc $(MDLWHOSTDIR)/Core/Inc
+SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
+endif
 
 ifeq (1, 0)
 # tinyusb
@@ -149,7 +157,7 @@ DINCDIR += $(LUPNGDIR)
 endif
 
 ifeq (1, 0)
-# LwIP
+# LWIP
 SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 DINCDIR += \
 	$(LWIPDIR)/src/include \
@@ -157,27 +165,32 @@ DINCDIR += \
 	$(LWIPDIR)/src/apps/http
 endif
 
-ifeq (1, 0)
-# OpenVG
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-SRCDIRS += $(OPENVGDIR)/src
+ifeq (1, 1)
+# RTOS
+#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 DINCDIR += \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
+	$(RTOSXDIR)/Include \
+	$(RTOSXDIR)/RTX/Include
 endif
 
-SRCDIRS += $(ARCHDIR)
-SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
+ifeq (1, 0)
+# OPENVG
+SRCDIRS += $(OPENVGDIR)/src
+DINCDIR += $(OPENVGDIR)/include/VG $(OPENVGDIR)/include $(OPENVGDIR)/include/EGL $(OPENVGDIR)/src
+endif
+
+
+# taken from
+# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
+rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
-ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
-ASRC_BOOT += $(PRJROOT)/src/crt_CortexA.S
+#ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
+ASRC_BOOT += $(PRJROOT)/src/crt_RV64IFDV.S
 ASRC_APP += $(ASRC_BOOT)
 
 VPATH = $(PRJROOT)
@@ -235,7 +248,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean
 
-all: APP2 $(PROJECT)_app.stm32 app.hex
+all: APP2 $(PROJECT)_app.f133
 
 allZ:
 	@echo Src
@@ -243,30 +256,26 @@ allZ:
 	@echo Obj at $(OBJDIR)
 	@echo $(abspath $(OBJS))
 
-bootloader: BOOT2 fsbl.stm32 boot.hex
+bootloader: BOOT2 fsbl.f133
   
-app_run: $(PROJECT)_app.stm32
-	./dfu-util --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download "tc1_stm32mp157axx_app.stm32"
-	./dfu-util --alt 2 --detach
+app_run: $(PROJECT)_app.f133
+	$(XFEL) ddr f133
+	$(XFEL) write 0x40000000 $(PROJECT)_app.f133
+	$(XFEL) exec 0x40000100 
 
-flash: $(PROJECT)_app.stm32
-	./dfu-util --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
+flash:
+	$(XFEL) spinor write 0x00000000 fsbl.f133
+	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.f133
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
-fsbl.stm32: $(PROJECT)_boot.bin
-	./stm32image -l 0x2FFC2500 -e 0x2FFC2500 -s $(PROJECT)_boot.bin -d $@
+fsbl.f133: $(PROJECT)_boot.bin
+	./egontool -rv $(PROJECT)_boot.bin fsbl.f133
 	
-boot.hex: fsbl.stm32
-	./bin2ihex -l 0x00000000 -s fsbl.stm32 >$@
-	
-$(PROJECT)_app.stm32: $(PROJECT)_app.bin
-	./stm32image -l 0xC0000100 -e 0xC0000100 -s $(PROJECT)_app.bin -d $@
-	
-app.hex: $(PROJECT)_app.stm32
-	./bin2ihex -l 0x00080000 -s $(PROJECT)_app.stm32 >$@
+$(PROJECT)_app.f133: $(PROJECT)_app.bin
+	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
 
 $(OBJSC):
 	@mkdir -p $(@D)
@@ -280,11 +289,11 @@ $(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS) $(OBJSA_BOOT)
+%_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS) $(OBJSA_APP)
+%_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 

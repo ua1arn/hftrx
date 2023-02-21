@@ -544,13 +544,13 @@ extern "C" {
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
 	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
-	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+	#define ADC_FREQ	2000000u	/* тактовая частота SAR преобразователя АЦП. */
+	#define SCL_CLOCK	400000u		/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED 8000000uL	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 8000000u	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST (P1CLOCK_FREQ / 3)	// 20 MHz
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000u				/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u			/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
@@ -913,6 +913,18 @@ extern "C" {
 	#define TICKS_FREQUENCY 200
 
 
+#elif CPUSTYLE_UBLAZE
+
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+
+	#define DACVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define TICKS_FREQUENCY 200
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -1064,6 +1076,9 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	0
 		#define ARM_SYSTEM_PRIORITY		0
 
+		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерываниедля синхронизации приоритетов GIC на остальных процессорах  */
+		#define BOARD_SGI_PRIO	0
+
 		#define system_enableIRQ() do { \
 			__enable_irq(); \
 			} while (0)
@@ -1123,6 +1138,14 @@ extern "C" {
 
 		#define global_enableIRQ() do { (system_enableIRQ)(); } while (0)
 		#define global_disableIRQ() do { (system_disableIRQ)(); } while (0)
+
+#elif CPUSTYLE_UBLAZE
+
+	#define system_enableIRQ() do { } while (0)
+	#define system_disableIRQ() do { } while (0)
+
+	#define global_enableIRQ() do { } while (0)
+	#define global_disableIRQ() do { } while (0)
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
