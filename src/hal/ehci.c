@@ -164,6 +164,21 @@ XUSBPS_Registers * EHCIxToUSBx(void * p)
 //    return PHYCx;
 //}
 
+static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
+{
+	phy->HCI_ICR |= (1u << 0);
+
+//	phy->HCI_ICR |= (1u << 1);
+//	phy->HCI_ICR |= (1u << 17);
+
+	phy->HCI_ICR |= (1u << 20);		// EHCI HS force
+
+	phy->HCI_ICR |= (0x0Fu << 8);	//
+
+	PRINTF("phy->HCI_ICR: %08X\n", (unsigned) phy->HCI_ICR);
+}
+
+
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
@@ -2468,6 +2483,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 29);	// USB-OHCI0_RST.
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 25);	// USB-EHCI0_RST.
 
+		SetupUsbPhyc(USBPHY1);
 	}
 	else
 	{
@@ -2491,25 +2507,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->BUS_SOFT_RST_REG0 |= (1u << 24);	// USB-OTG-EHCI_RST
 		//CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.	- xfel boot setup
 
+		SetupUsbPhyc(USBPHY0);
+
 	}
-
-	USBPHY0->HCI_ICR |= (1u << 0);
-	USBPHY1->HCI_ICR |= (1u << 0);
-
-//	USBPHY0->HCI_ICR |= (1u << 1);
-//	USBPHY1->HCI_ICR |= (1u << 1);
-//	USBPHY0->HCI_ICR |= (1u << 17);
-//	USBPHY1->HCI_ICR |= (1u << 17);
-
-	USBPHY0->HCI_ICR |= (1u << 20);		// EHCI HS force
-	USBPHY1->HCI_ICR |= (1u << 20);		// EHCI HS force
-
-	USBPHY0->HCI_ICR |= (0x0Fu << 8);	//
-	USBPHY1->HCI_ICR |= (0x0Fu << 8);	//
-
-	PRINTF("USBPHY0->HCI_ICR: %08X\n", (unsigned) USBPHY0->HCI_ICR);
-	PRINTF("USBPHY1->HCI_ICR: %08X\n", (unsigned) USBPHY1->HCI_ICR);
-
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
