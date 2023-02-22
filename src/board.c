@@ -6993,11 +6993,11 @@ board_fpga_fir_complete(void)
 #endif /* WITHSPI32BIT */
 }
 
-static void
+static IRQL_t
 board_fpga_fir_connect(void)
 {
 #if WITHSPILOWSUPPORTT
-	system_disableIRQ();
+	const IRQL_t irql = irq_disable();
 	spi_operate_lock();
 #endif /* WITHSPILOWSUPPORTT */
 #if WITHSPI32BIT
@@ -7032,10 +7032,11 @@ board_fpga_fir_connect(void)
 	prog_select(targetfir1);	/* start sending data to target chip */
 
 #endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
+	return irql;
 }
 
 static void
-board_fpga_fir_disconnect(void)
+board_fpga_fir_disconnect(IRQL_t irql)
 {
 #if defined (TARGET_FPGA_FIR_CS_BIT)
 	TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT); /* Disable SPI */
@@ -7051,7 +7052,7 @@ board_fpga_fir_disconnect(void)
 #endif
 #if WITHSPILOWSUPPORTT
 	spi_operate_unlock();
-	system_enableIRQ();
+	irq_restore(irql);
 #endif /* WITHSPILOWSUPPORTT */
 }
 
@@ -7240,7 +7241,7 @@ board_fpga_fir_send(
 {
 	//ASSERT(CWidth <= 24);
 	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
-	board_fpga_fir_connect();
+	const IRQL_t irql = board_fpga_fir_connect();
 
 	// strobe
 	board_fpga_fir_coef_p1(0x00000000);	// one strobe before, without WE required
@@ -7284,7 +7285,7 @@ board_fpga_fir_send(
 	board_fpga_fir_coef_p1(0x00000000);	// one strobe after, without WE required
 	board_fpga_fir_complete();
 
-	board_fpga_fir_disconnect();
+	board_fpga_fir_disconnect(irql);
 }
 
 /* поменять местами значение загружаемого профиля FIR фильтра в FPGA */

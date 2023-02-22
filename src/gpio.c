@@ -656,20 +656,20 @@ void sysinit_gpio_initialize(void)
 	}
 }
 
-static uint32_t gpio_lock(unsigned bank)
+
+static IRQL_t gpio_lock(unsigned bank)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [bank];
-	const uint32_t cpsr = __get_CPSR();
-	__disable_irq();
+	const uint32_t cpsr = irq_disable();
 	SPIN_LOCK(lck);
 	return cpsr;
 }
 
-static void gpioX_unlock(unsigned bank, uint32_t cpsr)
+static void gpioX_unlock(unsigned bank, IRQL_t cpsr)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [bank];
 	SPIN_UNLOCK(lck);
-	__set_CPSR(cpsr);
+	irq_restore(cpsr);
 }
 
 
@@ -810,6 +810,18 @@ static SPINLOCK_t gpiodata_locks [8] =
 	SPINLOCK_INIT,	// GPIOH
 };
 
+IRQL_t irq_disable(void)
+{
+	const IRQL_t irql = __get_CPSR();
+	__disable_irq();
+	return irql;
+}
+
+void irq_restore(IRQL_t irql)
+{
+	__set_CPSR(irql);
+}
+
 static SPINLOCK_t gpiodata_L_lock = SPINLOCK_INIT;
 
 static SPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
@@ -877,12 +889,11 @@ typedef uint32_t irqstatus_t;
 #endif
 
 
-static irqstatus_t gpioX_lock(GPIO_TypeDef * gpio)
+static IRQL_t gpioX_lock(GPIO_TypeDef * gpio)
 {
 	SPINLOCK_t * const lck = gpioX_get_lock(gpio);
 #if CPUSTYLE_T113 || CPUSTYLE_A64
-	const irqstatus_t cpsr = __get_CPSR();
-	__disable_irq();
+	const IRQL_t cpsr = irq_disable();
 #elif CPUSTYLE_F133
 	const irqstatus_t cpsr = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
 #endif
@@ -890,12 +901,12 @@ static irqstatus_t gpioX_lock(GPIO_TypeDef * gpio)
 	return cpsr;
 }
 
-static void gpioX_unlock(GPIO_TypeDef * gpio, irqstatus_t cpsr)
+static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 {
 	SPINLOCK_t * const lck = gpioX_get_lock(gpio);
 #if CPUSTYLE_T113 || CPUSTYLE_A64
 	SPIN_UNLOCK(lck);
-	__set_CPSR(cpsr);
+	irq_restore(irql);
 #elif CPUSTYLE_F133
 	SPIN_UNLOCK(lck);
 	csr_write_mie(cpsr);
@@ -910,7 +921,7 @@ void gpioX_setstate(
 	portholder_t state
 	)
 {
-	const irqstatus_t cpsr = gpioX_lock(gpio);
+	const IRQL_t cpsr = gpioX_lock(gpio);
 
 	gpio->DATA = (gpio->DATA & ~ mask) | (state & mask);
 	(void) gpio->DATA;

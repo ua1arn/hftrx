@@ -511,6 +511,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 	const spitarget_t target = iospi->target;
 	unsigned i;
 
+	const IRQL_t irql = irq_disable();
 	spi_operate_lock();
 
 	switch (iospi->spiiosize)
@@ -705,6 +706,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 	}
 	local_delay_us(iospi->csdelayUS);
 	spi_operate_unlock();
+	irq_restore(irql);
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
