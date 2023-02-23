@@ -2226,7 +2226,7 @@ static void set_module(volatile uint32_t * reg)
 		/* Wait pll stable */
 		while(!(* reg & (0x1u << 28)))
 			;
-		local_delay_ms(20);
+		//local_delay_ms(20);
 
 		/* Lock disable */
 //		val = * reg;
