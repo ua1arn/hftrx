@@ -1632,12 +1632,15 @@ void spin_unlock(spinlock_t * __restrict p)
 void RiseIrql(IRQL_t newIRQL, IRQL_t * oldIrql)
 {
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	ASSERT(GIC_GetInterfacePriorityMask() >= newIRQL);	/* Не понижаем приоритет */
 	* oldIrql = GIC_GetInterfacePriorityMask();
 	GIC_SetInterfacePriorityMask(newIRQL);
 #elif (__CORTEX_M != 0)
+	ASSERT(__get_BASEPRI() >= newIRQL);	/* Не понижаем приоритет */
 	* oldIrql = __get_BASEPRI();
 	__set_BASEPRI(newIRQL);
 #elif CPUSTYLE_RISCV
+	ASSERT(PLIC->PLIC_MTH_REG <= newIRQL);	/* Не понижаем приоритет */
 	//oldIrql * = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
 	* oldIrql = PLIC->PLIC_MTH_REG;
 	PLIC->PLIC_MTH_REG = newIRQL;
