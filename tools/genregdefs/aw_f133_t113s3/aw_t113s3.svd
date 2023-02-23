@@ -12172,6 +12172,19 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <register>
+     <name>SID_DATA</name>
+     <displayName>SID_DATA</displayName>
+     <description>SID data (xfel display as 'sid' replay)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+   </cluster>
    <register>
     <name>BOOT_MODE</name>
     <displayName>BOOT_MODE</displayName>
@@ -12181,6 +12194,19 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <cluster>
+    <dim>507</dim>
+    <addressOffset>0x00000214</addressOffset>
+    <register>
+     <name>SID_UNDOC</name>
+     <displayName>SID_UNDOC</displayName>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral>
