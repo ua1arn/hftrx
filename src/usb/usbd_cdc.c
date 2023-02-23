@@ -18,7 +18,17 @@
 
 #include <string.h>
 
-#define PFX //static	/* для отладки совместно с Allwinner */
+#if WITHWAWXXUSB
+	#define usbd_cdc1_getrts	usbd_cdc1_getrts_unused
+	#define usbd_cdc1_getdtr	usbd_cdc1_getdtr_unused
+	#define usbd_cdc2_getrts	usbd_cdc2_getrts_unused
+	#define usbd_cdc2_getdtr	usbd_cdc2_getdtr_unused
+	#define usbd_cdc_send		usbd_cdc_send_unused
+	#define usbd_cdc_ready		usbd_cdc_ready_unused
+	#define usbd_cdc_enablerx	usbd_cdc_enablerx_unused
+	#define usbd_cdc_enabletx	usbd_cdc_enabletx_unused
+	#define usbd_cdc_tx			usbd_cdc_tx_unused
+#endif /* WITHWAWXXUSB */
 
 // CDC class-specific request codes
 // (usbcdc11.pdf, 6.2, Table 46)
@@ -191,7 +201,7 @@ static SPINLOCK_t catlock = SPINLOCK_INIT;
 
 // Обычно используется для переключения на передачу (PTT)
 // вызывается в конексте system interrupt
-uint_fast8_t PFX usbd_cdc1_getrts(void)
+uint_fast8_t usbd_cdc1_getrts(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
@@ -204,7 +214,7 @@ uint_fast8_t PFX usbd_cdc1_getrts(void)
 
 // Обычно используется для телеграфной манипуляции (KEYDOWN)
 // вызывается в конексте system interrupt
-uint_fast8_t PFX usbd_cdc1_getdtr(void)
+uint_fast8_t usbd_cdc1_getdtr(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
@@ -217,7 +227,7 @@ uint_fast8_t PFX usbd_cdc1_getdtr(void)
 
 // Обычно используется для переключения на передачу (PTT)
 // вызывается в конексте system interrupt
-uint_fast8_t PFX usbd_cdc2_getrts(void)
+uint_fast8_t usbd_cdc2_getrts(void)
 {
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
@@ -234,7 +244,7 @@ uint_fast8_t PFX usbd_cdc2_getrts(void)
 
 // Обычно используется для телеграфной манипуляции (KEYDOWN)
 // вызывается в конексте system interrupt
-uint_fast8_t PFX usbd_cdc2_getdtr(void)
+uint_fast8_t usbd_cdc2_getdtr(void)
 {
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
@@ -254,7 +264,7 @@ static USBD_HandleTypeDef * volatile gpdev = NULL;
 static volatile uint8_t usbd_cdc_txstate [WITHUSBCDCACM_N];	/* склько осталось повторов ожидания конца передачи */
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
-void PFX usbd_cdc_send(const void * buff, size_t length)
+void usbd_cdc_send(const void * buff, size_t length)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpdev != NULL && usbd_cdc_txstate [offset] == 0)
@@ -274,7 +284,7 @@ void PFX usbd_cdc_send(const void * buff, size_t length)
 	}
 }
 
-uint_fast8_t PFX usbd_cdc_ready(void)	/* временное решение для передачи */
+uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
 {
 	const uint32_t waittm = 50;
 	const unsigned offset = MAIN_CDC_OFFSET;
@@ -288,7 +298,7 @@ uint_fast8_t PFX usbd_cdc_ready(void)	/* временное решение дл�
 }
 
 /* Разрешение/запрещение прерывания по передаче символа */
-void PFX usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
@@ -298,7 +308,7 @@ void PFX usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из об
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /* Разрешение/запрещение прерываний про приёму символа */
-void PFX usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	SPIN_LOCK(& catlock);
@@ -307,7 +317,7 @@ void PFX usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из об
 }
 
 /* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
-void PFX usbd_cdc_tx(void * ctx, uint_fast8_t c)
+void usbd_cdc_tx(void * ctx, uint_fast8_t c)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	USBD_HandleTypeDef * const pdev = ctx;
