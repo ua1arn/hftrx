@@ -5497,7 +5497,7 @@ void spidf_hangoff(void)
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 }
 
-static void spidf_iostart(
+static IRQL_t spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-CPU, 1: CPU-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -5554,6 +5554,7 @@ static void spidf_iostart(
 		0;
 
 	// при передаче формируется только команла и адрес при необходимости
+    return 0;	// dummy value - ignored in spidf_unselect
 }
 
 #endif /* WIHSPIDFHW */
