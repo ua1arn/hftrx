@@ -665,7 +665,7 @@ static IRQL_t gpio_lock(unsigned bank)
 	return cpsr;
 }
 
-static void gpioX_unlock(unsigned bank, IRQL_t cpsr)
+static void gpioX_unlock(unsigned bank, IRQL_t oldIrql)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [bank];
 	SPIN_UNLOCK(lck);
@@ -810,18 +810,6 @@ static SPINLOCK_t gpiodata_locks [8] =
 	SPINLOCK_INIT,	// GPIOH
 };
 
-IRQL_t irq_disable(void)
-{
-	const IRQL_t irql = __get_CPSR();
-	__disable_irq();
-	return irql;
-}
-
-void irq_restore(IRQL_t irql)
-{
-	__set_CPSR(irql);
-}
-
 static SPINLOCK_t gpiodata_L_lock = SPINLOCK_INIT;
 
 static SPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
@@ -889,28 +877,18 @@ typedef uint32_t irqstatus_t;
 #endif
 
 
-static IRQL_t gpioX_lock(GPIO_TypeDef * gpio)
+static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
 	SPINLOCK_t * const lck = gpioX_get_lock(gpio);
-#if CPUSTYLE_T113 || CPUSTYLE_A64
-	const IRQL_t cpsr = irq_disable();
-#elif CPUSTYLE_F133
-	const irqstatus_t cpsr = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
-#endif
+	RiseIrql(gARM_BASEPRI_ONLY_REALTIME, oldIrql);
 	SPIN_LOCK(lck);
-	return cpsr;
 }
 
 static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 {
 	SPINLOCK_t * const lck = gpioX_get_lock(gpio);
-#if CPUSTYLE_T113 || CPUSTYLE_A64
 	SPIN_UNLOCK(lck);
-	irq_restore(irql);
-#elif CPUSTYLE_F133
-	SPIN_UNLOCK(lck);
-	csr_write_mie(cpsr);
-#endif
+	LowerIrql(irql);
 }
 
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */
@@ -921,12 +899,13 @@ void gpioX_setstate(
 	portholder_t state
 	)
 {
-	const IRQL_t cpsr = gpioX_lock(gpio);
+	IRQL_t oldIrql;
+	gpioX_lock(gpio, & oldIrql);
 
 	gpio->DATA = (gpio->DATA & ~ mask) | (state & mask);
 	(void) gpio->DATA;
 
-	gpioX_unlock(gpio, cpsr);
+	gpioX_unlock(gpio, oldIrql);
 }
 
 static void gpioX_prog(
@@ -946,7 +925,8 @@ static void gpioX_prog(
 	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 and DRV0 bits */
 	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 and DRV1 bits */
 
-	const uint32_t cpsr = gpioX_lock(gpio);
+	IRQL_t oldIrql;
+	gpioX_lock(gpio, & oldIrql);
 
 	gpio->CFG [0] = (gpio->CFG [0] & ~ (cfg0 * 0x0F)) | (cfg * cfg0);
 	gpio->CFG [1] = (gpio->CFG [1] & ~ (cfg1 * 0x0F)) | (cfg * cfg1);
@@ -960,7 +940,7 @@ static void gpioX_prog(
 	gpio->PULL [0] = (gpio->PULL [0] & ~ (pull0 * 0x03)) | (pull * pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
 
-	gpioX_unlock(gpio, cpsr);
+	gpioX_unlock(gpio, oldIrql);
 
 #else
 	const portholder_t mask0 = power4(iopins >> 0);		/* CFG0 and DRV0 bits */
@@ -971,7 +951,8 @@ static void gpioX_prog(
 	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 bits */
 	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 bits */
 
-	const uint32_t cpsr = gpioX_lock(gpio);
+	IRQL_t oldIrql;
+	gpioX_lock(gpio, & oldIrql);
 
 	gpio->CFG [0] = (gpio->CFG [0] & ~ (mask0 * 0x0F)) | (cfg * mask0);
 	gpio->CFG [1] = (gpio->CFG [1] & ~ (mask1 * 0x0F)) | (cfg * mask1);
@@ -986,7 +967,7 @@ static void gpioX_prog(
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	gpio->PULL [0] = (gpio->PULL [0] & ~ (pull0 * 0x03)) | (pull * pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
-	gpioX_unlock(gpio, cpsr);
+	gpioX_unlock(gpio, oldIrql);
 #endif
 }
 
@@ -1004,13 +985,14 @@ static void gpioX_updown(
 	const portholder_t pull1up = power2(ioup >> 16);
 	const portholder_t pull1down = power2(iodown >> 16);
 
-	const uint32_t cpsr = gpioX_lock(gpio);
+	IRQL_t oldIrql;
+	gpioX_lock(gpio, & oldIrql);
 
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0) | (0x01 * pull0up) | (0x02 * pull0down);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1) | (0x01 * pull1up) | (0x02 * pull1down);
 
-	gpioX_unlock(gpio, cpsr);
+	gpioX_unlock(gpio, oldIrql);
 }
 
 static void gpioX_updownoff(
@@ -1022,12 +1004,13 @@ static void gpioX_updownoff(
 	const portholder_t pull0 = power2(iopins >> 0) * 0x03;		/* PULL0 bits */
 	const portholder_t pull1 = power2(iopins >> 16) * 0x03;		/* PULL1 bits */
 
-	const uint32_t cpsr = gpioX_lock(gpio);
+	IRQL_t oldIrql;
+	gpioX_lock(gpio, & oldIrql);
 
 	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1);
 
-	gpioX_unlock(gpio, cpsr);
+	gpioX_unlock(gpio, oldIrql);
 }
 
 //static void (* gpiohandlers [8][32])(void);

@@ -142,9 +142,9 @@ typedef struct spinlock_tag {
 
 #endif /* ! LINUX_SUBSYSTEM */
 
-typedef uint32_t IRQL_t;
-IRQL_t irq_disable(void);
-void irq_restore(IRQL_t state);
+void RiseIrql(IRQL_t newIRQL, IRQL_t * oldIrql);
+void LowerIrql(IRQL_t newIRQL);
+IRQL_t GetCurrentIrql(void);
 
 #if WITHSMPSYSTEM
 	/* Пока привязка процессора обрабатывающего прерывание по приоритету. */

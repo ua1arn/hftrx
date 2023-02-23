@@ -496,23 +496,25 @@ typedef struct lowspiio_tag
 
 static SPINLOCK_t spilock = SPINLOCK_INIT;
 
-void spi_operate_lock(void)
+void spi_operate_lock(IRQL_t * oldIrql)
 {
+	RiseIrql(gARM_BASEPRI_ONLY_REALTIME, oldIrql);
 	SPIN_LOCK(& spilock);
 }
 
-void spi_operate_unlock(void)
+void spi_operate_unlock(IRQL_t irql)
 {
 	SPIN_UNLOCK(& spilock);
+	LowerIrql(irql);
 }
 
 static void spi_operate_low(lowspiio_t * iospi)
 {
 	const spitarget_t target = iospi->target;
 	unsigned i;
+	IRQL_t oldIrql;
 
-	const IRQL_t irql = irq_disable();
-	spi_operate_lock();
+	spi_operate_lock(& oldIrql);
 
 	switch (iospi->spiiosize)
 	{
@@ -705,8 +707,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 		break;
 	}
 	local_delay_us(iospi->csdelayUS);
-	spi_operate_unlock();
-	irq_restore(irql);
+	spi_operate_unlock(oldIrql);
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
@@ -4239,7 +4240,7 @@ static uint_fast8_t spidf_readval8(void)
 #endif /* WIHSPIDFOVERSPI */
 }
 
-static void spidf_iostart(
+static IRQL_t spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -4404,8 +4405,7 @@ static void spidf_unselect(IRQL_t irql)
 	// Disconnect I/O pins
 	hardware_spi_disconnect();
 
-	spi_operate_unlock();
-	irq_restore(irql);
+	spi_operate_unlock(irql);
 }
 
 void spidf_uninitialize(void)
@@ -4458,8 +4458,8 @@ static IRQL_t spidf_iostart(
 		b [i ++] = 0x00;	// dummy byte
 
 
-	const IRQL_t irql = irq_disable();
-	spi_operate_lock();
+	IRQL_t irql;
+	spi_operate_lock(& irql);
 
 	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE0);
 
@@ -4956,7 +4956,7 @@ void spidf_uninitialize(void)
 	SPIDF_HANGOFF();
 }
 
-static void spidf_unselect(void)
+static void spidf_unselect(IRQL_t irql)
 {
 ////	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 ////		;
@@ -5014,7 +5014,7 @@ static uint_fast8_t spidf_progval8(uint_fast8_t v)
 	return v8;
 }
 
-static void spidf_iostart(
+static IRQL_t spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -5176,7 +5176,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_
 	return err;
 }
 
-static void spidf_unselect(void)
+static void spidf_unselect(IRQL_t irql)
 {
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
@@ -5185,7 +5185,7 @@ static void spidf_unselect(void)
 }
 
 // readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
-static void spidf_iostart(
+static IRQL_t spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -5255,6 +5255,8 @@ static void spidf_iostart(
 		//PRINTF("spidf_iostart QUADSPI->AR=%08lX, QUADSPI->SR=%08lX\n", QUADSPI->AR, QUADSPI->SR);
 		(void) QUADSPI->AR;
 	}
+
+	return 0;	// dummy value - unused in spidf_unselect
 }
 
 void spidf_initialize(void)
@@ -5410,7 +5412,7 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 	}
 }
 
-static void spidf_unselect(void)
+static void spidf_unselect(IRQL_t irql)
 {
 //	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 //		;

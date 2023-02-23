@@ -350,8 +350,8 @@ void prog_spi_exchange32_low(
 	unsigned int size
 	);
 
-void spi_operate_lock(void);
-void spi_operate_unlock(void);
+void spi_operate_lock(IRQL_t * oldIrql);
+void spi_operate_unlock(IRQL_t irql);
 
 #if SPI_BIDIRECTIONAL
 

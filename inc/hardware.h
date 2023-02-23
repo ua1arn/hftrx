@@ -456,7 +456,7 @@ extern "C" {
 
 	#define CPUSTYLE_RISCV		1		/* архитектура процессора RISC-V */
 
-	#include "u_blaze.h"
+	#include "allwnr_f133.h"
 	//#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64

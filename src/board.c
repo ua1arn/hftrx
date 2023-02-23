@@ -6993,12 +6993,11 @@ board_fpga_fir_complete(void)
 #endif /* WITHSPI32BIT */
 }
 
-static IRQL_t
-board_fpga_fir_connect(void)
+static void
+board_fpga_fir_connect(IRQL_t * oldIrql)
 {
 #if WITHSPILOWSUPPORTT
-	const IRQL_t irql = irq_disable();
-	spi_operate_lock();
+	spi_operate_lock(oldIrql);
 #endif /* WITHSPILOWSUPPORTT */
 #if WITHSPI32BIT
 	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
@@ -7032,7 +7031,6 @@ board_fpga_fir_connect(void)
 	prog_select(targetfir1);	/* start sending data to target chip */
 
 #endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
-	return irql;
 }
 
 static void
@@ -7051,8 +7049,7 @@ board_fpga_fir_disconnect(IRQL_t irql)
 #else /* WITHSPIHW */
 #endif
 #if WITHSPILOWSUPPORTT
-	spi_operate_unlock();
-	irq_restore(irql);
+	spi_operate_unlock(irql);
 #endif /* WITHSPILOWSUPPORTT */
 }
 
@@ -7241,7 +7238,8 @@ board_fpga_fir_send(
 {
 	//ASSERT(CWidth <= 24);
 	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
-	const IRQL_t irql = board_fpga_fir_connect();
+	IRQL_t irql;
+	board_fpga_fir_connect(& irql);
 
 	// strobe
 	board_fpga_fir_coef_p1(0x00000000);	// one strobe before, without WE required
