@@ -574,7 +574,7 @@ static uint_fast8_t i2c_waitforevent(uint_fast32_t event)
 		if ((sr2 & (I2C_SR1_BERR | I2C_SR1_ARLO | I2C_SR1_AF | I2C_SR1_OVR | I2C_SR1_PECERR | I2C_SR1_TIMEOUT)) != 0)
 			break;
 	}
-	PRINTF(PSTR("i2c_waitforevent timeout (event=%" PRIxFAST32 ")\n"), event);
+	//PRINTF(PSTR("i2c_waitforevent timeout (event=%" PRIxFAST32 ")\n"), event);
 	//for (;;)
 	//	;
 	return 1;
@@ -919,13 +919,13 @@ static uint_fast8_t i2c_waittxready(void)
 			break;
 		if ((isr & I2C_ISR_TIMEOUT) != 0)
 		{
-			PRINTF(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
+			//PRINTF(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
 			I2C1->ICR = I2C_ICR_TIMOUTCF;
 			return 1;
 		}
 		if ((isr & I2C_ISR_NACKF) != 0)
 		{
-			PRINTF(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_NACKF\n"));
+			//PRINTF(PSTR("i2c_waittxready: bus error ISR: I2C_ISR_NACKF\n"));
 			I2C1->ICR = I2C_ICR_NACKCF;
 			return 1;
 		}
@@ -943,17 +943,17 @@ static uint_fast8_t i2c_waitrxready(void)
 			break;
 		if ((isr & I2C_ISR_TIMEOUT) != 0)
 		{
-			PRINTF(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
+			//PRINTF(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_TIMEOUT\n"));
 			I2C1->ICR = I2C_ICR_TIMOUTCF;
 			return 1;
 		}
 		if ((isr & I2C_ISR_NACKF) != 0)
 		{
-			PRINTF(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_NACKF\n"));
+			//PRINTF(PSTR("i2c_waitrxready: bus error ISR: I2C_ISR_NACKF\n"));
 			I2C1->ICR = I2C_ICR_NACKCF;
 			return 1;
 		}
-		PRINTF(PSTR("i2c_waitrxready: waiting: ISR=%08lX\n"), isr);
+		//PRINTF(PSTR("i2c_waitrxready: waiting: ISR=%08lX\n"), isr);
 	}
 	return 0;
 }
@@ -1002,7 +1002,7 @@ void i2c_start(
 
 	if ((I2C1->ISR & (I2C_ISR_NACKF | I2C_ISR_TIMEOUT)) != 0)
 	{
-		PRINTF(PSTR("i2c_start: bus error ISR: %08lx\n"), I2C1->ISR);
+		//PRINTF(PSTR("i2c_start: bus error ISR: %08lx\n"), I2C1->ISR);
 		I2C1->ICR = (I2C_ICR_NACKCF | I2C_ICR_TIMOUTCF);
 	}
 	i2c_sended = 0;
@@ -1493,7 +1493,7 @@ void hardware_iicps_configure(void)
 	int Status = XIicPs_SelfTest(& xc7z_iicps);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF("iicps init error %d\n", Status);
+		//PRINTF("iicps init error %d\n", Status);
 		ASSERT(0);
 	}
 	XIicPs_SetSClk(& xc7z_iicps, 100000);
@@ -1507,7 +1507,7 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 
 	int Status = XIicPs_MasterRecvPolled(& xc7z_iicps, buf, size, slave_address >> 1);
 	if (Status != XST_SUCCESS)
-		PRINTF("iicps receive error %d from address %x\n", Status, slave_address);
+		//PRINTF("iicps receive error %d from address %x\n", Status, slave_address);
 
 	return Status;
 }
@@ -1518,7 +1518,7 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 
 	int Status = XIicPs_MasterSendPolled(& xc7z_iicps, (uint8_t *) buf, size, slave_address >> 1);
 	if (Status != XST_SUCCESS)
-		PRINTF("iicps write error %d to address %x\n", Status, slave_address);
+		//PRINTF("iicps write error %d to address %x\n", Status, slave_address);
 
 	return Status;
 }
@@ -1576,11 +1576,388 @@ void i2c_initialize(void)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
 
-#include "i2c.h"
+
+
+enum {
+	I2C_M_TEN			= 0x0010,
+	I2C_M_RD			= 0x0001,
+	I2C_M_STOP			= 0x8000,
+	I2C_M_NOSTART		= 0x4000,
+	I2C_M_REV_DIR_ADDR	= 0x2000,
+	I2C_M_IGNORE_NAK	= 0x1000,
+	I2C_M_NO_RD_ACK		= 0x0800,
+	I2C_M_RECV_LEN		= 0x0400,
+};
+
+enum {
+	TWI_ADDR			= 0x000,
+	TWI_XADDR			= 0x004,
+	TWI_DATA 			= 0x008,
+	TWI_CNTR			= 0x00c,
+	TWI_STAT			= 0x010,
+	TWI_CCR				= 0x014,
+	TWI_SRST			= 0x018,
+	TWI_EFR				= 0x01c,
+	TWI_LCR				= 0x020,
+};
+
+enum {
+	I2C_STAT_BUS_ERROR	= 0x00,
+	I2C_STAT_TX_START	= 0x08,
+	I2C_STAT_TX_RSTART	= 0x10,
+	I2C_STAT_TX_AW_ACK	= 0x18,
+	I2C_STAT_TX_AW_NAK	= 0x20,
+	I2C_STAT_TXD_ACK	= 0x28,
+	I2C_STAT_TXD_NAK	= 0x30,
+	I2C_STAT_LOST_ARB	= 0x38,
+	I2C_STAT_TX_AR_ACK	= 0x40,
+	I2C_STAT_TX_AR_NAK	= 0x48,
+	I2C_STAT_RXD_ACK	= 0x50,
+	I2C_STAT_RXD_NAK	= 0x58,
+	I2C_STAT_IDLE		= 0xf8,
+};
+
+typedef struct i2c_t113_pdata_t {
+	uintptr_t virt;
+	char * clk;
+	int reset;
+	int sda;
+	int sdacfg;
+	int scl;
+	int sclcfg;
+}i2c_t113_pdata_t;
+
+struct i2c_msg_t {
+	int addr;
+	int len;
+	void * buf;
+};
+
+static i2c_t113_pdata_t pdat_i2c;
+static int I2C_ERROR_COUNT;
+
+static uint32_t read32(uintptr_t a)
+{
+	return * (volatile uint32_t *) a;
+}
+
+static void write32(uintptr_t a, uint32_t v)
+{
+	* (volatile uint32_t *) a = v;
+}
+static void t113_i2c_set_rate(struct i2c_t113_pdata_t * pdat, uint64_t rate){
+	uint64_t pclk = 100000000;	//clk_get_rate(pdat->clk);
+	uint_fast64_t freq, delta, best = 0x7fffffffffffffffLL;
+	int tm = 5, tn = 0;
+	int m, n;
+
+	for(n = 0; n <= 7; n++)
+	{
+		for(m = 0; m <= 15; m++)
+		{
+			freq = pclk / (10 * (m + 1) * (1 << n));
+			delta = rate - freq;
+			if(delta >= 0 && delta < best)
+			{
+				tm = m;
+				tn = n;
+				best = delta;
+			}
+			if(best == 0)
+				break;
+		}
+	}
+	write32(pdat->virt + TWI_CCR, ((tm & 0xf) << 3) | ((tn & 0x7) << 0));
+}
+extern __IO uint32_t uwTick;
+
+volatile unsigned int timeout1;
+
+static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
+	local_delay_ms(40);															//TODO: Допилить - убрать задержку!!!
+	volatile unsigned int timeout = uwTick+5*10;	//uwTick+5мс
+	do {
+		if((TWI1->TWI_CNTR & (1 << 3))){
+			unsigned int stat = read32(pdat->virt + TWI_STAT);
+			////PRINTF("t113_i2c_wait_status = 0x%X \n", stat);
+			return stat;
+		}
+	} while(uwTick>timeout);
+
+	I2C_ERROR_COUNT++;
+	 //PRINTF("t113_i2c_wait_status = I2C_STAT_BUS_ERROR \n");
+	return I2C_STAT_BUS_ERROR;
+}
+
+static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
+	uint32_t val;
+	 //PRINTF("I2C start \n");
+	val = TWI1->TWI_CNTR;
+	val |= (1 << 5) | (1 << 3);
+	TWI1->TWI_CNTR = val;
+	volatile unsigned int timeout = uwTick+5*100;	//uwTick+5мс
+	do {
+		if(!(TWI1->TWI_CNTR & (1 << 5)))
+			break;
+	} while(uwTick>timeout);
+	////PRINTF("I2C start out\n");
+	return t113_i2c_wait_status(pdat);
+}
+
+static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
+	uint32_t val;
+
+	val = TWI1->TWI_CNTR;
+	val |= (1 << 4) | (1 << 3);
+	TWI1->TWI_CNTR = val;
+	volatile unsigned int timeout = uwTick+5*10;
+	do {
+		if(!(TWI1->TWI_CNTR & (1 << 4)))
+			break;
+	} while(uwTick>timeout);
+	return 1;
+}
+
+static int t113_i2c_send_data(struct i2c_t113_pdata_t * pdat, uint8_t dat)
+{
+	TWI1->TWI_DATA = dat;
+	TWI1->TWI_CNTR |= (1 << 3);
+
+	return t113_i2c_wait_status(pdat);
+}
+
+static int t113_i2c_read(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg){
+	uint8_t * p = msg->buf;
+	int len = msg->len;
+
+	if(t113_i2c_send_data(pdat, (uint8_t)(msg->addr << 1 | 1)) != I2C_STAT_TX_AR_ACK)
+		return -1;
+
+	write32(pdat->virt + TWI_CNTR, TWI1->TWI_CNTR | (1 << 2));
+	while(len > 0){
+		if(len == 1){
+			write32(pdat->virt + TWI_CNTR, (TWI1->TWI_CNTR & ~(1 << 2)) | (1 << 3));
+			if(t113_i2c_wait_status(pdat) != I2C_STAT_RXD_NAK)
+				return -1;
+		}else{
+			write32(pdat->virt + TWI_CNTR, TWI1->TWI_CNTR | (1 << 3));
+			if(t113_i2c_wait_status(pdat) != I2C_STAT_RXD_ACK)
+				return -1;
+		}
+		*p++ = read32(pdat->virt + TWI_DATA);
+		len--;
+	}
+	return 0;
+}
+
+static int t113_i2c_write(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg)
+{
+	uint8_t * p = msg->buf;
+	int len = msg->len;
+
+	if(t113_i2c_send_data(pdat, (uint8_t)(msg->addr << 1)) != I2C_STAT_TX_AW_ACK){
+		return -1;
+	}
+	while(len > 0)
+	{
+		if(t113_i2c_send_data(pdat, *p++) != I2C_STAT_TXD_ACK)
+			return -1;
+		len--;
+	}
+	return 0;
+}
+
+unsigned char I2C_WriteByte(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char WriteAddr){
+	//записываем адрес который хотим прочитать
+	unsigned char wr_buf[2];
+	int res;
+
+	wr_buf[0] = WriteAddr;
+	wr_buf[1] = pBuffer[0];
+
+	struct i2c_msg_t  msgs;
+	msgs.addr = slaveAddr;
+	msgs.len = 2;
+	msgs.buf = wr_buf;
+	//генереруем старт
+	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_START){
+		 //PRINTF("I2C start error\n");
+		return 0;
+	}
+	 //PRINTF("I2C start ok\n");
+
+	res = t113_i2c_write(&pdat_i2c, &msgs);
+	if(res!=0){
+		 //PRINTF("I2C write err \n");
+		return 0;
+	}else{
+		 //PRINTF("I2C write ok \n");
+	}
+	 //PRINTF("I2C t113_i2c_stop in\n");
+	t113_i2c_stop(&pdat_i2c);
+	 //PRINTF	("I2C t113_i2c_stop ok\n");
+
+	return 1;
+}
+
+
+// возвращает 1 если все хорошо и 0 если что-то не так
+unsigned char I2C_ReadBuffer(unsigned char slaveAddr, unsigned char* pBuffer, unsigned char ReadAddr, unsigned short NumByteToRead){
+	int res;
+	//PRINTF("!!!!!=====I2C_ReadBuffer=====!!!!!\n");
+	//записываем адрес который хотим прочитать
+	struct i2c_msg_t  msgs;
+	msgs.addr = slaveAddr;
+	msgs.len = 1;
+	msgs.buf = &ReadAddr;
+
+	//генереруем старт
+
+	res = t113_i2c_start(&pdat_i2c);
+	if(res != I2C_STAT_TX_START){
+		//PRINTF("I2C start error\n");
+		t113_i2c_stop(&pdat_i2c);
+		return 0;
+	}
+	//PRINTF("I2C start ok\n");
+
+	res = t113_i2c_write(&pdat_i2c, &msgs);
+	if(res!=0){
+		//PRINTF("I2C write err \n");
+		return 0;
+	}
+	//PRINTF("I2C write ok \n");
+
+	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_RSTART){	//генерируем рестарт
+		//PRINTF("I2C restart error\n");
+		return 0;
+	}
+	//PRINTF("I2C restart Ok\n");
+	//читаем регистр
+	msgs.addr = slaveAddr;
+	msgs.len = NumByteToRead;
+	msgs.buf = pBuffer;
+
+	res = t113_i2c_read(&pdat_i2c, &msgs);
+	if(res!=0){
+		//PRINTF("I2C read err \n");
+		//I2C_ERROR = 0x04;
+		return 0;
+	}
+	//PRINTF("I2C read ok \n");
+/**/
+	//PRINTF("I2C t113_i2c_stop in\n");
+	t113_i2c_stop(&pdat_i2c);
+	//PRINTF("I2C t113_i2c_stop ok\n");
+
+	return 1;
+}
+
+// возвращает 1 если все хорошо и 0 если что-то не так
+unsigned char I2C_WriteBuffer(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char ReadAddr, unsigned short NumByteToWrite){
+	int res;
+	//PRINTF("!!!!!=====I2C_WriteBuffer=====!!!!!\n");
+	//записываем адрес который хотим прочитать
+	struct i2c_msg_t  msgs;
+	msgs.addr = slaveAddr;
+	msgs.len = 1;
+	msgs.buf = &ReadAddr;
+
+	//генереруем старт
+
+	res = t113_i2c_start(&pdat_i2c);
+	if(res != I2C_STAT_TX_START){
+		//PRINTF("I2C start error\n");
+		t113_i2c_stop(&pdat_i2c);
+		return 0;
+	}
+	//PRINTF("I2C start ok\n");
+
+	res = t113_i2c_write(&pdat_i2c, &msgs);
+	if(res!=0){
+		//PRINTF("I2C write err \n");
+		return 0;
+	}
+	//PRINTF("I2C write ok \n");
+
+	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_RSTART){	//генерируем рестарт
+		//PRINTF("I2C restart error\n");
+		return 0;
+	}
+	//PRINTF("I2C restart Ok\n");
+	//читаем регистр
+	msgs.addr = slaveAddr;
+	msgs.len = NumByteToWrite;
+	msgs.buf = (void *) pBuffer;
+
+	res = t113_i2c_write(&pdat_i2c, &msgs);
+	if(res!=0){
+		//PRINTF("I2C write err \n");
+		//I2C_ERROR = 0x04;
+		return 0;
+	}
+	//PRINTF("I2C write ok \n");
+/**/
+	//PRINTF("I2C t113_i2c_stop in\n");
+	t113_i2c_stop(&pdat_i2c);
+	//PRINTF("I2C t113_i2c_stop ok\n");
+
+	return 1;
+}
+
+uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
+{
+	return 0;
+}
+
+uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
+{
+	return 0;
+}
+
+uint16_t i2chw_read2(uint16_t slave_address, uint16_t reg_address, uint8_t * buf, uint32_t size)
+{
+	I2C_ReadBuffer(slave_address >> 1, buf, reg_address, size);
+	return 0;
+}
+
+uint16_t i2chw_write2(uint16_t slave_address, uint16_t reg_address, const uint8_t * buf, uint32_t size)
+{
+	I2C_WriteBuffer(slave_address >> 1, buf, reg_address, size);
+	return 0;
+}
 
 void i2c_initialize(void)
 {
-	i2c_init(1);
+	int TWIx = 1;
+	TWIHARD_INITIALIZE();
+
+
+
+	CCU->TWI_BGR_REG |= 1u << (16 + TWIx);	// De-assert reset
+	CCU->TWI_BGR_REG |= 1u << (0 + TWIx);	// Open the clock gate
+
+
+	    switch (TWIx){
+		case 0:
+			pdat_i2c.virt = TWI0_BASE;
+		break;
+		case 1:
+			pdat_i2c.virt = TWI1_BASE;
+		break;
+		case 2:
+			pdat_i2c.virt = TWI2_BASE;
+		break;
+		case 3:
+			pdat_i2c.virt = TWI3_BASE;
+		break;
+		}
+
+	t113_i2c_set_rate(&pdat_i2c, 400000);
+	TWI1->TWI_CNTR =  1u << 6;
+	TWI1->TWI_SRST =  1u << 0;
+	t113_i2c_stop(&pdat_i2c);
+
 }
 
 #else
