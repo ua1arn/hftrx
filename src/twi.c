@@ -1768,144 +1768,144 @@ static int t113_i2c_write(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg
 	}
 	return 0;
 }
+//
+//unsigned char I2C_WriteByte(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char WriteAddr){
+//	//записываем адрес который хотим прочитать
+//	unsigned char wr_buf[2];
+//	int res;
+//
+//	wr_buf[0] = WriteAddr;
+//	wr_buf[1] = pBuffer[0];
+//
+//	struct i2c_msg_t  msgs;
+//	msgs.addr = slaveAddr;
+//	msgs.len = 2;
+//	msgs.buf = wr_buf;
+//	//генереруем старт
+//	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_START){
+//		 //PRINTF("I2C start error\n");
+//		return 0;
+//	}
+//	 //PRINTF("I2C start ok\n");
+//
+//	res = t113_i2c_write(&pdat_i2c, &msgs);
+//	if(res!=0){
+//		 //PRINTF("I2C write err\n");
+//		return 0;
+//	}else{
+//		 //PRINTF("I2C write ok\n");
+//	}
+//	 //PRINTF("I2C t113_i2c_stop in\n");
+//	t113_i2c_stop(&pdat_i2c);
+//	 //PRINTF	("I2C t113_i2c_stop ok\n");
+//
+//	return 1;
+//}
 
-unsigned char I2C_WriteByte(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char WriteAddr){
-	//записываем адрес который хотим прочитать
-	unsigned char wr_buf[2];
-	int res;
 
-	wr_buf[0] = WriteAddr;
-	wr_buf[1] = pBuffer[0];
-
-	struct i2c_msg_t  msgs;
-	msgs.addr = slaveAddr;
-	msgs.len = 2;
-	msgs.buf = wr_buf;
-	//генереруем старт
-	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_START){
-		 //PRINTF("I2C start error\n");
-		return 0;
-	}
-	 //PRINTF("I2C start ok\n");
-
-	res = t113_i2c_write(&pdat_i2c, &msgs);
-	if(res!=0){
-		 //PRINTF("I2C write err\n");
-		return 0;
-	}else{
-		 //PRINTF("I2C write ok\n");
-	}
-	 //PRINTF("I2C t113_i2c_stop in\n");
-	t113_i2c_stop(&pdat_i2c);
-	 //PRINTF	("I2C t113_i2c_stop ok\n");
-
-	return 1;
-}
-
-
-// возвращает 1 если все хорошо и 0 если что-то не так
-unsigned char I2C_ReadBuffer(unsigned char slaveAddr, unsigned char* pBuffer, unsigned char ReadAddr, unsigned short NumByteToRead){
-	int res;
-	//PRINTF("!!!!!=====I2C_ReadBuffer=====!!!!!\n");
-	//записываем адрес который хотим прочитать
-	struct i2c_msg_t  msgs;
-	msgs.addr = slaveAddr;
-	msgs.len = 1;
-	msgs.buf = &ReadAddr;
-
-	//генереруем старт
-
-	res = t113_i2c_start(&pdat_i2c);
-	if(res != I2C_STAT_TX_START){
-		//PRINTF("I2C start error\n");
-		t113_i2c_stop(&pdat_i2c);
-		return 0;
-	}
-	//PRINTF("I2C start ok\n");
-
-	res = t113_i2c_write(&pdat_i2c, &msgs);
-	if(res!=0){
-		//PRINTF("I2C write err\n");
-		return 0;
-	}
-	//PRINTF("I2C write ok\n");
-
-	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_RSTART){	//генерируем рестарт
-		//PRINTF("I2C restart error\n");
-		return 0;
-	}
-	//PRINTF("I2C restart Ok\n");
-	//читаем регистр
-	msgs.addr = slaveAddr;
-	msgs.len = NumByteToRead;
-	msgs.buf = pBuffer;
-
-	res = t113_i2c_read(&pdat_i2c, &msgs);
-	if(res!=0){
-		//PRINTF("I2C read err\n");
-		//I2C_ERROR = 0x04;
-		return 0;
-	}
-	//PRINTF("I2C read ok\n");
-/**/
-	//PRINTF("I2C t113_i2c_stop in\n");
-	t113_i2c_stop(&pdat_i2c);
-	//PRINTF("I2C t113_i2c_stop ok\n");
-
-	return 1;
-}
-
-// возвращает 1 если все хорошо и 0 если что-то не так
-unsigned char I2C_WriteBuffer(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char ReadAddr, unsigned short NumByteToWrite){
-	int res;
-	//PRINTF("!!!!!=====I2C_WriteBuffer=====!!!!!\n");
-	//записываем адрес который хотим прочитать
-	struct i2c_msg_t  msgs;
-	msgs.addr = slaveAddr;
-	msgs.len = 1;
-	msgs.buf = &ReadAddr;
-
-	//генереруем старт
-
-	res = t113_i2c_start(&pdat_i2c);
-	if(res != I2C_STAT_TX_START){
-		//PRINTF("I2C start error\n");
-		t113_i2c_stop(&pdat_i2c);
-		return 0;
-	}
-	//PRINTF("I2C start ok\n");
-
-	res = t113_i2c_write(&pdat_i2c, &msgs);
-	if(res!=0){
-		//PRINTF("I2C write err\n");
-		return 0;
-	}
-	//PRINTF("I2C write ok\n");
-
-	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_RSTART){	//генерируем рестарт
-		//PRINTF("I2C restart error\n");
-		return 0;
-	}
-	//PRINTF("I2C restart Ok\n");
-	//читаем регистр
-	msgs.addr = slaveAddr;
-	msgs.len = NumByteToWrite;
-	msgs.buf = (void *) pBuffer;
-
-	res = t113_i2c_write(&pdat_i2c, &msgs);
-	if(res!=0){
-		//PRINTF("I2C write err\n");
-		//I2C_ERROR = 0x04;
-		return 0;
-	}
-	//PRINTF("I2C write ok\n");
-/**/
-	//PRINTF("I2C t113_i2c_stop in\n");
-	t113_i2c_stop(&pdat_i2c);
-	//PRINTF("I2C t113_i2c_stop ok\n");
-
-	return 1;
-}
+//// возвращает 1 если все хорошо и 0 если что-то не так
+//unsigned char I2C_ReadBuffer(unsigned char slaveAddr, unsigned char* pBuffer, unsigned char ReadAddr, unsigned short NumByteToRead){
+//	int res;
+//	//PRINTF("!!!!!=====I2C_ReadBuffer=====!!!!!\n");
+//	//записываем адрес который хотим прочитать
+//	struct i2c_msg_t  msgs;
+//	msgs.addr = slaveAddr;
+//	msgs.len = 1;
+//	msgs.buf = &ReadAddr;
+//
+//	//генереруем старт
+//
+//	res = t113_i2c_start(&pdat_i2c);
+//	if(res != I2C_STAT_TX_START){
+//		//PRINTF("I2C start error\n");
+//		t113_i2c_stop(&pdat_i2c);
+//		return 0;
+//	}
+//	//PRINTF("I2C start ok\n");
+//
+//	res = t113_i2c_write(&pdat_i2c, &msgs);
+//	if(res!=0){
+//		//PRINTF("I2C write err\n");
+//		return 0;
+//	}
+//	//PRINTF("I2C write ok\n");
+//
+//	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_RSTART){	//генерируем рестарт
+//		//PRINTF("I2C restart error\n");
+//		return 0;
+//	}
+//	//PRINTF("I2C restart Ok\n");
+//	//читаем регистр
+//	msgs.addr = slaveAddr;
+//	msgs.len = NumByteToRead;
+//	msgs.buf = pBuffer;
+//
+//	res = t113_i2c_read(&pdat_i2c, &msgs);
+//	if(res!=0){
+//		//PRINTF("I2C read err\n");
+//		//I2C_ERROR = 0x04;
+//		return 0;
+//	}
+//	//PRINTF("I2C read ok\n");
+///**/
+//	//PRINTF("I2C t113_i2c_stop in\n");
+//	t113_i2c_stop(&pdat_i2c);
+//	//PRINTF("I2C t113_i2c_stop ok\n");
+//
+//	return 1;
+//}
+//
+//// возвращает 1 если все хорошо и 0 если что-то не так
+//unsigned char I2C_WriteBuffer(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char ReadAddr, unsigned short NumByteToWrite){
+//	int res;
+//	//PRINTF("!!!!!=====I2C_WriteBuffer=====!!!!!\n");
+//	//записываем адрес который хотим прочитать
+//	struct i2c_msg_t  msgs;
+//	msgs.addr = slaveAddr;
+//	msgs.len = 1;
+//	msgs.buf = &ReadAddr;
+//
+//	//генереруем старт
+//
+//	res = t113_i2c_start(&pdat_i2c);
+//	if(res != I2C_STAT_TX_START){
+//		//PRINTF("I2C start error\n");
+//		t113_i2c_stop(&pdat_i2c);
+//		return 0;
+//	}
+//	//PRINTF("I2C start ok\n");
+//
+//	res = t113_i2c_write(&pdat_i2c, &msgs);
+//	if(res!=0){
+//		//PRINTF("I2C write err\n");
+//		return 0;
+//	}
+//	//PRINTF("I2C write ok\n");
+//
+//	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_RSTART){	//генерируем рестарт
+//		//PRINTF("I2C restart error\n");
+//		return 0;
+//	}
+//	//PRINTF("I2C restart Ok\n");
+//	//читаем регистр
+//	msgs.addr = slaveAddr;
+//	msgs.len = NumByteToWrite;
+//	msgs.buf = (void *) pBuffer;
+//
+//	res = t113_i2c_write(&pdat_i2c, &msgs);
+//	if(res!=0){
+//		//PRINTF("I2C write err\n");
+//		//I2C_ERROR = 0x04;
+//		return 0;
+//	}
+//	//PRINTF("I2C write ok\n");
+///**/
+//	//PRINTF("I2C t113_i2c_stop in\n");
+//	t113_i2c_stop(&pdat_i2c);
+//	//PRINTF("I2C t113_i2c_stop ok\n");
+//
+//	return 1;
+//}
 
 uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 {
@@ -1962,18 +1962,18 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 	t113_i2c_stop(&pdat_i2c);
 	return 0;
 }
-
-uint16_t i2chw_read2(uint16_t slave_address, uint16_t reg_address, uint8_t * buf, uint32_t size)
-{
-	I2C_ReadBuffer(slave_address >> 1, buf, reg_address, size);
-	return 0;
-}
-
-uint16_t i2chw_write2(uint16_t slave_address, uint16_t reg_address, const uint8_t * buf, uint32_t size)
-{
-	I2C_WriteBuffer(slave_address >> 1, buf, reg_address, size);
-	return 0;
-}
+//
+//uint16_t i2chw_read2(uint16_t slave_address, uint16_t reg_address, uint8_t * buf, uint32_t size)
+//{
+//	I2C_ReadBuffer(slave_address >> 1, buf, reg_address, size);
+//	return 0;
+//}
+//
+//uint16_t i2chw_write2(uint16_t slave_address, uint16_t reg_address, const uint8_t * buf, uint32_t size)
+//{
+//	I2C_WriteBuffer(slave_address >> 1, buf, reg_address, size);
+//	return 0;
+//}
 
 void i2c_initialize(void)
 {
