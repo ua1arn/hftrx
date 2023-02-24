@@ -139,6 +139,8 @@ extern "C" {
 #elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! LINUX_SUBSYSTEM
 
 	#define ZYNQ_IORW32(addr) (* (volatile uint32_t *) (addr))
+	void gpiobank_lock(unsigned bank, IRQL_t * oldIrql);
+	void gpiobank_unlock(unsigned bank, IRQL_t oldIrql);
 
 	// ug585-Zynq-7000-TRM.pdf v1.12.2, page 1631
 

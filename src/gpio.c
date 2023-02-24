@@ -656,18 +656,18 @@ void sysinit_gpio_initialize(void)
 	}
 }
 
-static void gpioX_lock(unsigned bank, IRQL_t * oldIrql)
+void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [bank];
 	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
 	SPIN_LOCK(lck);
 }
 
-static void gpioX_unlock(unsigned bank, IRQL_t oldIrql)
+void gpiobank_unlock(unsigned bank, IRQL_t oldIrql)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [bank];
 	SPIN_UNLOCK(lck);
-	LowerIrql(irql);
+	LowerIrql(oldIrql);
 }
 
 

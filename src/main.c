@@ -3014,7 +3014,6 @@ struct nvmap
 	uint8_t userfsg;
 #endif /* WITHRFSG */
 
-	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 	uint8_t gdisplayfreqsfps;		/* скорость обновления индикатора частоты */
 	uint8_t gdisplaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
@@ -3152,6 +3151,7 @@ struct nvmap
 	uint8_t gadcfifo;
 	uint16_t gadcoffset;
 	uint8_t gdactest;
+	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 #endif /* WITHDSPEXTDDC */
 
 #if WITHMODEM
@@ -3658,6 +3658,12 @@ static uint_fast8_t gagcmode;
 	static const uint_fast8_t genc2div = 1;
 #endif
 
+#if WITHOVFHIDE
+	static uint_fast8_t gshowovf = 0;		/* Показ индикатора переполнения АЦП */
+#else /* WITHOVFHIDE */
+	static uint_fast8_t gshowovf = 1;		/* Показ индикатора переполнения АЦП */
+#endif /* WITHOVFHIDE */
+
 static uint_fast8_t lockmode;
 #if WITHLCDBACKLIGHTOFF
 	// Имеется управление включением/выключением подсветки дисплея
@@ -3769,11 +3775,6 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
-#if WITHOVFHIDE
-	static uint_fast8_t gshowovf = 0;		/* Показ индикатора переполнения АЦП */
-#else /* WITHOVFHIDE */
-	static uint_fast8_t gshowovf = 1;		/* Показ индикатора переполнения АЦП */
-#endif /* WITHOVFHIDE */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
 	static uint_fast8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
