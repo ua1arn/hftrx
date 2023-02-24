@@ -48,9 +48,10 @@ static void ds1307_writebuff(
 	)
 {
 #if WITHTWIHW
-	uint8_t bufw = r;
-	i2chw_write(DS1307_ADDRESS_W, & bufw, 1);
-	i2chw_write(DS1307_ADDRESS_W, b, n);
+	uint8_t buff [n + 1];
+	buff [0] = r;
+	memcpy(buff + 1, b, n);
+	i2chw_write(DS1307_ADDRESS_W, buff, n + 1);
 #elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(r);	// register address
