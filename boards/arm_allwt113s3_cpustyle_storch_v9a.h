@@ -584,7 +584,7 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW
+#if WITHTWISW || WITHTWIHW
 	// TWI1-SCK PE0
 	// TWI1-SDA PE1
 	#define TARGET_TWI_TWCK		(1u << 0)		// TWI1-SCK PE0
@@ -614,7 +614,7 @@
 		} while (0) 
 
 
-#endif // WITHTWISW
+#endif // WITHTWISW || WITHTWIHW
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
