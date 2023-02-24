@@ -1924,6 +1924,10 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 	if(res!=0){
 		PRINTF("i2chw_read read err\n");
 		//I2C_ERROR = 0x04;
+//		TWI1->TWI_CNTR &= ~ (1u << 4);
+		TWI1->TWI_SRST |= 1u << 0;
+		while ((TWI1->TWI_SRST & (1u << 0)) != 0)
+			;
 		return 0;
 	}
 	t113_i2c_stop(&pdat_i2c);
@@ -1948,6 +1952,10 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 	if(res!=0){
 		PRINTF("i2chw_write write err\n");
 		//I2C_ERROR = 0x04;
+//		TWI1->TWI_CNTR &= ~ (1u << 4);
+		TWI1->TWI_SRST |= 1u << 0;
+		while ((TWI1->TWI_SRST & (1u << 0)) != 0)
+			;
 		return 0;
 	}
 	t113_i2c_stop(&pdat_i2c);
@@ -2010,10 +2018,14 @@ void i2c_initialize(void)
 		}
 
 	t113_i2c_set_rate(&pdat_i2c, 400000);
-	TWI1->TWI_CNTR =  1u << 6;
-	TWI1->TWI_SRST =  1u << 0;
-	t113_i2c_stop(&pdat_i2c);
 
+	TWI1->TWI_CNTR =  1u << 6;
+
+	TWI1->TWI_SRST |= 1u << 0;
+	while ((TWI1->TWI_SRST & (1u << 0)) != 0)
+		;
+
+	t113_i2c_stop(&pdat_i2c);
 }
 
 #else

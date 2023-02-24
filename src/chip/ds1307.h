@@ -11,13 +11,6 @@
 #define DS1307_ADDRESS_W	0xD0
 #define DS1307_ADDRESS_R	0xD1
 
-#if WITHTWIHW
-static void ds1307_set_reg(uint8_t reg)
-{
-	i2chw_write(DS1307_ADDRESS_W, & reg, 1);
-}
-#endif /* WITHTWIHW */
-
 static void ds1307_readbuff(
 	uint8_t * b,
 	uint_fast8_t n,
@@ -25,7 +18,8 @@ static void ds1307_readbuff(
 	)
 {
 #if WITHTWIHW
-	ds1307_set_reg(r);
+	uint8_t bufw = r;
+	i2chw_write(DS1307_ADDRESS_W, & bufw, 1);
 	i2chw_read(DS1307_ADDRESS_W, b, n);
 #elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
@@ -54,7 +48,8 @@ static void ds1307_writebuff(
 	)
 {
 #if WITHTWIHW
-	ds1307_set_reg(r);
+	uint8_t bufw = r;
+	i2chw_write(DS1307_ADDRESS_W, & bufw, 1);
 	i2chw_write(DS1307_ADDRESS_W, b, n);
 #elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
