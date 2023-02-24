@@ -1512,11 +1512,11 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 	return Status;
 }
 
-uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
+uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 {
 	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
 
-	int Status = XIicPs_MasterSendPolled(& xc7z_iicps, buf, size, slave_address >> 1);
+	int Status = XIicPs_MasterSendPolled(& xc7z_iicps, (uint8_t *) buf, size, slave_address >> 1);
 	if (Status != XST_SUCCESS)
 		PRINTF("iicps write error %d to address %x\n", Status, slave_address);
 
