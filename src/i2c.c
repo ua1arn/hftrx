@@ -116,7 +116,7 @@ static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
 	local_delay_ms(40);															//TODO: Допилить - убрать задержку!!!
 	volatile unsigned int timeout = uwTick+5*10;	//uwTick+5мс
 	do {
-		if((read32(pdat->virt + TWI_CNTR) & (1 << 3))){
+		if((TWI1->TWI_CNTR & (1 << 3))){
 			unsigned int stat = read32(pdat->virt + TWI_STAT);
 			////PRINTF("t113_i2c_wait_status = 0x%X \n", stat);
 			return stat;
@@ -131,12 +131,12 @@ static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
 static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
 	uint32_t val;
 	 //PRINTF("I2C start \n");
-	val = read32(pdat->virt + TWI_CNTR);
+	val = TWI1->TWI_CNTR;
 	val |= (1 << 5) | (1 << 3);
 	write32(pdat->virt + TWI_CNTR, val);
 	volatile unsigned int timeout = uwTick+5*100;	//uwTick+5мс
 	do {
-		if(!(read32(pdat->virt + TWI_CNTR) & (1 << 5)))
+		if(!(TWI1->TWI_CNTR & (1 << 5)))
 			break;
 	} while(uwTick>timeout);
 	////PRINTF("I2C start out\n");
@@ -146,12 +146,12 @@ static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
 static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
 	uint32_t val;
 
-	val = read32(pdat->virt + TWI_CNTR);
+	val = TWI1->TWI_CNTR;
 	val |= (1 << 4) | (1 << 3);
 	write32(pdat->virt + TWI_CNTR, val);
 	volatile unsigned int timeout = uwTick+5*10;
 	do {
-		if(!(read32(pdat->virt + TWI_CNTR) & (1 << 4)))
+		if(!(TWI1->TWI_CNTR & (1 << 4)))
 			break;
 	} while(uwTick>timeout);
 	return 1;
@@ -159,8 +159,9 @@ static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
 
 static int t113_i2c_send_data(struct i2c_t113_pdata_t * pdat, uint8_t dat)
 {
-	write32(pdat->virt + TWI_DATA, dat);
-	write32(pdat->virt + TWI_CNTR, read32(pdat->virt + TWI_CNTR) | (1 << 3));
+	TWI1->TWI_DATA = dat;
+	TWI1->TWI_CNTR |= (1 << 3);
+
 	return t113_i2c_wait_status(pdat);
 }
 
@@ -171,14 +172,14 @@ static int t113_i2c_read(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg)
 	if(t113_i2c_send_data(pdat, (uint8_t)(msg->addr << 1 | 1)) != I2C_STAT_TX_AR_ACK)
 		return -1;
 
-	write32(pdat->virt + TWI_CNTR, read32(pdat->virt + TWI_CNTR) | (1 << 2));
+	write32(pdat->virt + TWI_CNTR, TWI1->TWI_CNTR | (1 << 2));
 	while(len > 0){
 		if(len == 1){
-			write32(pdat->virt + TWI_CNTR, (read32(pdat->virt + TWI_CNTR) & ~(1 << 2)) | (1 << 3));
+			write32(pdat->virt + TWI_CNTR, (TWI1->TWI_CNTR & ~(1 << 2)) | (1 << 3));
 			if(t113_i2c_wait_status(pdat) != I2C_STAT_RXD_NAK)
 				return -1;
 		}else{
-			write32(pdat->virt + TWI_CNTR, read32(pdat->virt + TWI_CNTR) | (1 << 3));
+			write32(pdat->virt + TWI_CNTR, TWI1->TWI_CNTR | (1 << 3));
 			if(t113_i2c_wait_status(pdat) != I2C_STAT_RXD_ACK)
 				return -1;
 		}
@@ -219,19 +220,9 @@ void i2c_init(uint8_t TWIx){
 	}
 
 	// Open the clock gate
-	volatile uintptr_t addr;
-	unsigned int val;
-
 	// Deassert reset
-	addr = 0x0200191c;
-	val = read32(addr);
-	val |= 1 << (16 + TWIx);
-	write32(addr, val);
-
-	addr = 0x0200191c;
-	val = read32(addr);
-	val |= 1 << (0 + TWIx);
-	write32(addr, val);
+	CCU->TWI_BGR_REG |= 1u << (16 + TWIx);
+	CCU->TWI_BGR_REG |= 1u << (0 + TWIx);
 
 
 	    switch (TWIx){
@@ -250,27 +241,27 @@ void i2c_init(uint8_t TWIx){
 		}
 
 	t113_i2c_set_rate(&pdat_i2c, 400000);
-	write32(pdat_i2c.virt + TWI_CNTR, 1 << 6);
-	write32(pdat_i2c.virt + TWI_SRST, 1 << 0);
+	TWI1->TWI_CNTR =  1u << 6;
+	TWI1->TWI_SRST =  1u << 0;
 
 
 	 //PRINTF("I2C init ok \n");
 //Инициализация устройства на шине
 	/*if(Dash_main_str.ACC==ACC_LSM6DS3HTR){
 		unsigned char am_i_reg;
-		//PRINTF("Read am_i_reg\n");
+		PRINTF("Read am_i_reg\n");
 		if(I2C_ReadBuffer(AccAdr, &am_i_reg, LSM6DS3_ACC_GYRO_WHO_AM_I_REG, 1)){
-			////PRINTF("Read am_i_reg= %x\n", am_i_reg);
-			////PRINTF("\n");
+			//PRINTF("Read am_i_reg= %x\n", am_i_reg);
+			//PRINTF("\n");
 			if(am_i_reg==0x69){
-				//PRINTF("am_i_reg OK\n");
+				PRINTF("am_i_reg OK\n");
 				AccInit();
-				//PRINTF("AccInit() OK\n");
+				PRINTF("AccInit() OK\n");
 				ACC_Ok=1;
 			}
 		}else{
-			////PRINTF("Read am_i_reg= %x\n", am_i_reg);
-			////PRINTF("ACC no init\n");
+			//PRINTF("Read am_i_reg= %x\n", am_i_reg);
+			//PRINTF("ACC no init\n");
 		}
 	}*/
 	t113_i2c_stop(&pdat_i2c);
