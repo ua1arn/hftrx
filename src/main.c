@@ -17902,7 +17902,7 @@ static void menu_print(void)
         	continue;
         const FLASHMEM struct menudef * const mpgroup = mp ++;	/* группа */
     	PRINTF("%s,,\n", mpgroup->qlabel);
-        for (; ismenukind(mp, ITEM_VALUE); ++ mp)
+        for (; mp < (menutable + MENUROW_COUNT) && ismenukind(mp, ITEM_VALUE); ++ mp)
         {
         	int x = 0;
         	int y = 0;
@@ -18212,6 +18212,7 @@ static void menu_print(void)
 
         	}
         }
+        /* not an ITEM_VALUE */
         menupos = mp - menutable - 1;
 	}
 
