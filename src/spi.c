@@ -498,7 +498,7 @@ static SPINLOCK_t spilock = SPINLOCK_INIT;
 
 void spi_operate_lock(IRQL_t * oldIrql)
 {
-	RiseIrql(gARM_BASEPRI_ONLY_REALTIME, oldIrql);
+	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
 	SPIN_LOCK(& spilock);
 }
 

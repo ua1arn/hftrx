@@ -954,6 +954,9 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
+		#define IRQL_ONLY_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+		#define IRQL_ONLY_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+
 		#define system_enableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); } while (0)	// разрешены все
 		#define system_disableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); } while (0) // разрешены только realtime
 		
@@ -1008,6 +1011,9 @@ extern "C" {
 		extern uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 		#define ARM_CA9_ENCODE_PRIORITY(v) ((v) << (GIC_GetBinaryPoint() + 1))
+
+		#define IRQL_ONLY_REALTIME ARM_CA9_ENCODE_PRIORITY(PRI_SYS)	// value for GIC_SetInterfacePriorityMask
+		#define IRQL_ONLY_OVERREALTIME ARM_CA9_ENCODE_PRIORITY(PRI_RT)	// value for GIC_SetInterfacePriorityMask
 		/*
 			GICC_PMR == INTC.ICCPMR
 

@@ -142,7 +142,8 @@ typedef struct spinlock_tag {
 
 #endif /* ! LINUX_SUBSYSTEM */
 
-void RiseIrql(IRQL_t newIRQL, IRQL_t * oldIrql);
+void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line);
+#define RiseIrql(newIRQL, oldIrql) RiseIrql_DEBUG((newIRQL), (oldIrql), __FILE__, __LINE__)
 void LowerIrql(IRQL_t newIRQL);
 IRQL_t GetCurrentIrql(void);
 

@@ -1629,8 +1629,13 @@ void spin_unlock(spinlock_t * __restrict p)
 
 #if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 
-void RiseIrql(IRQL_t newIRQL, IRQL_t * oldIrql)
+void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
 {
+//#if WITHISBOOTLOADER
+//	PRINTF("boot: old=%02X new=%02X (%s/%d)\n", (unsigned) GetCurrentIrql(), (unsigned) newIRQL, file, line);
+//#else
+//	PRINTF("app: old=%02X new=%02X (%s/%d)\n", (unsigned) GetCurrentIrql(), (unsigned) newIRQL, file, line);
+//#endif
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	ASSERT(GIC_GetInterfacePriorityMask() >= newIRQL);	/* Не понижаем приоритет */
 	* oldIrql = GIC_GetInterfacePriorityMask();

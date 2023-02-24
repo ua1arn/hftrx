@@ -3157,6 +3157,17 @@ sysinit_fpu_initialize(void)
 #if (__CORTEX_M != 0) && CTLSTYLE_V3D
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
 #endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
+
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+	{
+		GIC_Enable();
+	#if WITHNESTEDINTERRUPTS
+		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+	#endif /* WITHNESTEDINTERRUPTS */
+	}
+
+#endif
 }
 
 static void FLASHMEMINITFUNC

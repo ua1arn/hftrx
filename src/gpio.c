@@ -880,7 +880,7 @@ typedef uint32_t irqstatus_t;
 static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
 	SPINLOCK_t * const lck = gpioX_get_lock(gpio);
-	RiseIrql(gARM_BASEPRI_ONLY_REALTIME, oldIrql);
+	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
 	SPIN_LOCK(lck);
 }
 
