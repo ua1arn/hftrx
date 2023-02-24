@@ -614,6 +614,8 @@
 		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI1-SCK PE0 */ \
 		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI1-SDA PE1 */ \
 		} while (0) 
+	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
 
 
 #endif // WITHTWISW || WITHTWIHW
