@@ -66,13 +66,13 @@ static void i2c_delay(const i2cp_t * p)
 
 	#if WITHTWISW && ! defined (TWISOFT_INITIALIZE)
 
-	#define TWISOFT_INITIALIZE() do { } while(0)
+	#define TWISOFT_INITIALIZE() do { } while (0)
 
-	#define SET_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); } while(0)
+	#define SET_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); } while (0)
 
-	#define CLR_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 0); } while(0)
+	#define CLR_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 0); } while (0)
 
-	#define SET_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 1); } while(0)
+	#define SET_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 1); } while (0)
 
 	#define CLR_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 0); } while (0)
 
@@ -1142,7 +1142,7 @@ void i2c_stop(void)
 	I2C1->TXDR = (I2C1->TXDR & ~ I2C_TXDR_TXDATA) | (address & I2C_TXDR_TXDATA); // передаю адрес ведомого
 	unsigned w;
 	w = WDELAYCONST;
-	while(w -- && (I2C1->SR1 & I2C_SR1_ADDR) == 0)	 // жду окончания передачи адреса
+	while (w -- && (I2C1->SR1 & I2C_SR1_ADDR) == 0)	 // жду окончания передачи адреса
 		local_delay_us(1);
 	(void) I2C1->SR2;	// reset I2C_SR1_ADDR flag
 
@@ -1671,18 +1671,21 @@ static void t113_i2c_set_rate(struct i2c_t113_pdata_t * pdat, uint64_t rate){
 }
 extern __IO uint32_t uwTick;
 
-volatile unsigned int timeout1;
+//volatile unsigned int timeout1;
 
 static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
-	local_delay_ms(40);															//TODO: Допилить - убрать задержку!!!
+	//PRINTF("1 TWI1->TWI_CNTR=%08lX\n", TWI1->TWI_CNTR);
+	//(void) TWI1->TWI_CNTR;
+	local_delay_ms(1);															//TODO: Допилить - убрать задержку!!!
+	//PRINTF("2 TWI1->TWI_CNTR=%08lX\n", TWI1->TWI_CNTR);
 	volatile unsigned int timeout = uwTick+5*10;	//uwTick+5мс
 	do {
 		if((TWI1->TWI_CNTR & (1 << 3))){
-			unsigned int stat = read32(pdat->virt + TWI_STAT);
+			unsigned int stat = TWI1-> TWI_STAT;
 			////PRINTF("t113_i2c_wait_status = 0x%X \n", stat);
 			return stat;
 		}
-	} while(uwTick>timeout);
+	} while (uwTick>timeout);
 
 	I2C_ERROR_COUNT++;
 	 //PRINTF("t113_i2c_wait_status = I2C_STAT_BUS_ERROR \n");
@@ -1699,7 +1702,7 @@ static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
 	do {
 		if(!(TWI1->TWI_CNTR & (1 << 5)))
 			break;
-	} while(uwTick>timeout);
+	} while (uwTick>timeout);
 	////PRINTF("I2C start out\n");
 	return t113_i2c_wait_status(pdat);
 }
@@ -1714,7 +1717,7 @@ static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
 	do {
 		if(!(TWI1->TWI_CNTR & (1 << 4)))
 			break;
-	} while(uwTick>timeout);
+	} while (uwTick>timeout);
 	return 1;
 }
 
@@ -1734,7 +1737,7 @@ static int t113_i2c_read(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg)
 		return -1;
 
 	write32(pdat->virt + TWI_CNTR, TWI1->TWI_CNTR | (1 << 2));
-	while(len > 0){
+	while (len > 0){
 		if(len == 1){
 			write32(pdat->virt + TWI_CNTR, (TWI1->TWI_CNTR & ~(1 << 2)) | (1 << 3));
 			if(t113_i2c_wait_status(pdat) != I2C_STAT_RXD_NAK)
@@ -1758,7 +1761,7 @@ static int t113_i2c_write(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg
 	if(t113_i2c_send_data(pdat, (uint8_t)(msg->addr << 1)) != I2C_STAT_TX_AW_ACK){
 		return -1;
 	}
-	while(len > 0)
+	while (len > 0)
 	{
 		if(t113_i2c_send_data(pdat, *p++) != I2C_STAT_TXD_ACK)
 			return -1;
@@ -1930,6 +1933,23 @@ uint16_t i2chw_write2(uint16_t slave_address, uint16_t reg_address, const uint8_
 void i2c_initialize(void)
 {
 	int TWIx = 1;
+	TWISOFT_INITIALIZE();
+
+	uint_fast8_t i;
+	// release I2C bus
+	CLR_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR_TWCK();
+		SET_TWCK();
+	}
+	SET_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR_TWCK();
+		SET_TWCK();
+	}
+
 	TWIHARD_INITIALIZE();
 
 
