@@ -15,7 +15,6 @@
 #include "formats.h"
 #include <string.h>
 #include <stdlib.h>
-extern int timer1_tic;
 
 
 enum {
@@ -28,27 +27,6 @@ enum {
 	I2C_M_NO_RD_ACK		= 0x0800,
 	I2C_M_RECV_LEN		= 0x0400,
 };
-
-
-
-    // TWI2-SCK PE12 SCL (P3 pin 16) TX3 - wire to pin 7 hseda 24bit vga+audio board
-	// TWI2-SDA PE13 SDA (P3 pin 15) RX3 - wire to pin 6
-	#define TARGET_TWI2_TWCK		(1u << 12)		// TWI2-SCK PE12 SCL
-	#define TARGET_TW2I_TWCK_PIN		(GPIOE->DATA)
-	#define TARGET_TWI2_TWCK_PORT_C(v) do { arm_hardware_piob_outputs((v), 0); } while (0)
-	#define TARGET_TWI2_TWCK_PORT_S(v) do { arm_hardware_piob_inputs(v); } while (0)
-
-	#define TARGET_TWI2_TWD		(1u << 13)		// TWI2-SDA PE13 SDA
-	#define TARGET_TWI2_TWD_PIN		(GPIOE->DATA)
-	#define TARGET_TWI2_TWD_PORT_C(v) do { arm_hardware_piob_outputs((v), 0); } while (0)
-	#define TARGET_TWI2_TWD_PORT_S(v) do { arm_hardware_piob_inputs(v); } while (0)
-
-	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
-	// присоединение выводов к периферийному устройству
-	#define	TWI2HARD_INITIALIZE() do { \
-		arm_hardware_piob_altfn2(TARGET_TWI2_TWCK, /*GPIO_CFG_AF4*/GPIO_CFG_AF3);	 \
-		arm_hardware_piob_altfn2(TARGET_TWI2_TWD, /*GPIO_CFG_AF4*/GPIO_CFG_AF3);	 \
-	} while (0)
 
 enum {
 	I2C_ADDR			= 0x000,
@@ -129,19 +107,20 @@ static void t113_i2c_set_rate(struct i2c_t113_pdata_t * pdat, uint64_t rate){
 	}
 	write32(pdat->virt + I2C_CCR, ((tm & 0xf) << 3) | ((tn & 0x7) << 0));
 }
+extern __IO uint32_t uwTick;
 
 volatile unsigned int timeout1;
 
 static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
 	local_delay_ms(40);															//TODO: Допилить - убрать задержку!!!
-	volatile unsigned int timeout = timer1_tic+5*10;	//timer1_tic+5мс
+	volatile unsigned int timeout = uwTick+5*10;	//uwTick+5мс
 	do {
 		if((read32(pdat->virt + I2C_CNTR) & (1 << 3))){
 			unsigned int stat = read32(pdat->virt + I2C_STAT);
 			//PRINTF("t113_i2c_wait_status = 0x%X \n", stat);
 			return stat;
 		}
-	} while(timer1_tic>timeout);
+	} while(uwTick>timeout);
 
 	I2C_ERROR_COUNT++;
 	 PRINTF("t113_i2c_wait_status = I2C_STAT_BUS_ERROR \n");
@@ -154,11 +133,11 @@ static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
 	val = read32(pdat->virt + I2C_CNTR);
 	val |= (1 << 5) | (1 << 3);
 	write32(pdat->virt + I2C_CNTR, val);
-	volatile unsigned int timeout = timer1_tic+5*100;	//timer1_tic+5мс
+	volatile unsigned int timeout = uwTick+5*100;	//uwTick+5мс
 	do {
 		if(!(read32(pdat->virt + I2C_CNTR) & (1 << 5)))
 			break;
-	} while(timer1_tic>timeout);
+	} while(uwTick>timeout);
 	//PRINTF("I2C start out\n");
 	return t113_i2c_wait_status(pdat);
 }
@@ -169,11 +148,11 @@ static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
 	val = read32(pdat->virt + I2C_CNTR);
 	val |= (1 << 4) | (1 << 3);
 	write32(pdat->virt + I2C_CNTR, val);
-	volatile unsigned int timeout = timer1_tic+5*10;
+	volatile unsigned int timeout = uwTick+5*10;
 	do {
 		if(!(read32(pdat->virt + I2C_CNTR) & (1 << 4)))
 			break;
-	} while(timer1_tic>timeout);
+	} while(uwTick>timeout);
 	return 1;
 }
 
@@ -225,12 +204,16 @@ static int t113_i2c_write(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg
 	return 0;
 }
 
+// TWI0...n
 //TWI2	0x02502800
 void i2c_init(uint8_t TWIx){
 	switch (TWIx){
-	case 2:
-	TWI2HARD_INITIALIZE();
-	break;
+	case 1:
+		TWIHARD_INITIALIZE();
+		break;
+//	case 2:
+//		TWI2HARD_INITIALIZE();
+//		break;
 
 	}
 
@@ -241,12 +224,12 @@ void i2c_init(uint8_t TWIx){
 	// Deassert reset
 	addr = 0x0200191c;
 	val = read32(addr);
-	val |= 1 << 18;
+	val |= 1 << (16 + TWIx);
 	write32(addr, val);
 
 	addr = 0x0200191c;
 	val = read32(addr);
-	val |= 1 << 2;
+	val |= 1 << (0 + TWIx);
 	write32(addr, val);
 
 
@@ -378,6 +361,16 @@ unsigned char I2C_ReadBuffer(unsigned char slaveAddr, unsigned char* pBuffer, un
 	PRINTF("I2C t113_i2c_stop ok\n");
 
 	return 1;
+}
+
+uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
+{
+	return 0;
+}
+
+uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
+{
+	return 0;
 }
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */

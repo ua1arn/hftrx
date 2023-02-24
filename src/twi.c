@@ -1574,6 +1574,15 @@ void i2c_initialize(void)
 	hardware_iicps_configure();			// Peripheral
 }
 
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
+
+#include "i2c.h"
+
+void i2c_initialize(void)
+{
+	i2c_init(1);
+}
+
 #else
 	#error I2C hardware implementation for CPUSTYLE_xxx is not avaliable
 
