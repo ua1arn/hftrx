@@ -1674,10 +1674,6 @@ extern __IO uint32_t uwTick;
 //volatile unsigned int timeout1;
 
 static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
-	//PRINTF("1 TWI1->TWI_CNTR=%08lX\n", TWI1->TWI_CNTR);
-	//(void) TWI1->TWI_CNTR;
-	local_delay_ms(1);															//TODO: Допилить - убрать задержку!!!
-	//PRINTF("2 TWI1->TWI_CNTR=%08lX\n", TWI1->TWI_CNTR);
 	volatile unsigned int timeout = uwTick+5*10;	//uwTick+5мс
 	do {
 		if((TWI1->TWI_CNTR & (1 << 3))){
@@ -1685,7 +1681,7 @@ static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
 			////PRINTF("t113_i2c_wait_status = 0x%X \n", stat);
 			return stat;
 		}
-	} while (uwTick>timeout);
+	} while (uwTick<timeout);
 
 	I2C_ERROR_COUNT++;
 	 //PRINTF("t113_i2c_wait_status = I2C_STAT_BUS_ERROR \n");
@@ -1700,10 +1696,12 @@ static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
 	TWI1->TWI_CNTR = val;
 	volatile unsigned int timeout = uwTick+5*100;	//uwTick+5мс
 	do {
-		if(!(TWI1->TWI_CNTR & (1 << 5)))
-			break;
-	} while (uwTick>timeout);
-	////PRINTF("I2C start out\n");
+		if(!(TWI1->TWI_CNTR & (1 << 5)))	// M_STA
+		{
+			return t113_i2c_wait_status(pdat);
+		}
+	} while (uwTick<timeout);
+	//PRINTF("I2C start out\n");
 	return t113_i2c_wait_status(pdat);
 }
 
@@ -1717,7 +1715,7 @@ static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
 	do {
 		if(!(TWI1->TWI_CNTR & (1 << 4)))
 			break;
-	} while (uwTick>timeout);
+	} while (uwTick<timeout);
 	return 1;
 }
 
@@ -1747,7 +1745,7 @@ static int t113_i2c_read(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg)
 			if(t113_i2c_wait_status(pdat) != I2C_STAT_RXD_ACK)
 				return -1;
 		}
-		*p++ = read32(pdat->virt + TWI_DATA);
+		*p++ = TWI1->TWI_DATA;
 		len--;
 	}
 	return 0;
