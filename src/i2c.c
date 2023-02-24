@@ -312,7 +312,7 @@ unsigned char I2C_WriteByte(unsigned char slaveAddr, const unsigned char* pBuffe
 // возвращает 1 если все хорошо и 0 если что-то не так
 unsigned char I2C_ReadBuffer(unsigned char slaveAddr, unsigned char* pBuffer, unsigned char ReadAddr, unsigned short NumByteToRead){
 	int res;
-	PRINTF("!!!!!=====I2C_ReadBuffer=====!!!!!\n");
+	PRINTF("!!!!!=====I2C_ReadBuffer=====%02X r=%02X n=%u!!!!!\n", slaveAddr, ReadAddr, NumByteToRead);
 	//записываем адрес который хотим прочитать
 	struct i2c_msg_t  msgs;
 	msgs.addr = slaveAddr;
@@ -365,7 +365,7 @@ unsigned char I2C_ReadBuffer(unsigned char slaveAddr, unsigned char* pBuffer, un
 // возвращает 1 если все хорошо и 0 если что-то не так
 unsigned char I2C_WriteBuffer(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char WriteAddr, unsigned short NumByteToWrite){
 	int res;
-	PRINTF("!!!!!=====I2C_WriteBuffer=====!!!!!\n");
+	PRINTF("!!!!!=====I2C_WriteBuffer=====%02X r=%02X n=%u!!!!!\n", slaveAddr, WriteAddr, NumByteToWrite);
 	//записываем адрес который хотим записать
 	struct i2c_msg_t  msgs;
 	msgs.addr = slaveAddr;
@@ -426,13 +426,13 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 
 uint16_t i2chw_read2(uint16_t slave_address, uint16_t reg_address, uint8_t * buf, uint32_t size)
 {
-	I2C_ReadBuffer(slave_address, buf, reg_address, size);
+	I2C_ReadBuffer(slave_address >> 1, buf, reg_address, size);
 	return 0;
 }
 
 uint16_t i2chw_write2(uint16_t slave_address, uint16_t reg_address, const uint8_t * buf, uint32_t size)
 {
-	I2C_WriteBuffer(slave_address, buf, reg_address, size);
+	I2C_WriteBuffer(slave_address >> 1, buf, reg_address, size);
 	return 0;
 }
 
