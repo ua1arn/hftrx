@@ -73,6 +73,7 @@ struct i2c_msg_t {
 };
 
 static i2c_t113_pdata_t pdat_i2c;
+static int I2C_ERROR_COUNT;
 
 static uint32_t read32(uintptr_t a)
 {
@@ -277,7 +278,7 @@ void i2c_init(uint8_t TWIx){
 }
 
 
-unsigned char I2C_WriteByte(unsigned char slaveAddr, unsigned char* pBuffer, unsigned char WriteAddr){
+unsigned char I2C_WriteByte(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char WriteAddr){
 	//записываем адрес который хотим прочитать
 	unsigned char wr_buf[2];
 	int res;
@@ -368,7 +369,18 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 	return 0;
 }
 
-uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
+uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
+{
+	return 0;
+}
+
+uint16_t i2chw_read2(uint16_t slave_address, uint16_t reg_address, uint8_t * buf, uint32_t size)
+{
+	I2C_ReadBuffer(slave_address, buf, reg_address, size);
+	return 0;
+}
+
+uint16_t i2chw_write2(uint16_t slave_address, uint16_t reg_address, const uint8_t * buf, uint32_t size)
 {
 	return 0;
 }

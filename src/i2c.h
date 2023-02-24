@@ -18,11 +18,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 unsigned char I2C_ReadBuffer(unsigned char slaveAddr, unsigned char* pBuffer, unsigned char ReadAddr, unsigned short NumByteToRead);
-unsigned char I2C_WriteByte(unsigned char slaveAddr, unsigned char* pBuffer, unsigned char WriteAddr);
+unsigned char I2C_WriteByte(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char WriteAddr);
 void i2c_init(uint8_t TWIx);
 
-extern unsigned int I2C_ERROR_CODE;
-extern unsigned int I2C_ERROR_COUNT;
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
