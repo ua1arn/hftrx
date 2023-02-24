@@ -13,6 +13,13 @@
 #define M41T81_ADDRESS_W	0xD0	
 #define M41T81_ADDRESS_R	(M41T81_ADDRESS_W | 0x01)
 
+#if WITHTWIHW
+static void m41t81_set_reg(uint8_t reg)
+{
+	i2chw_write(M41T81_ADDRESS_W, & reg, 1);
+}
+#endif /* WITHTWIHW */
+
 static void m41t81_readbuff(
 	uint8_t * b,
 	uint_fast8_t n,
@@ -20,7 +27,8 @@ static void m41t81_readbuff(
 	)
 {
 #if WITHTWIHW
-	i2chw_read2(M41T81_ADDRESS_R, r, b, n);
+	m41t81_set_reg(r);
+	i2chw_read(M41T81_ADDRESS_R, b, n);
 #elif WITHTWISW
 	i2c_start(M41T81_ADDRESS_W);
 	i2c_write_withrestart(r);	// register address
@@ -47,7 +55,8 @@ static void m41t81_writebuff(
 	)
 {
 #if WITHTWIHW
-	i2chw_write2(M41T81_ADDRESS_W, r, b, n);
+	m41t81_set_reg(r);
+	i2chw_write(M41T81_ADDRESS_W, b, n);
 #elif WITHTWISW
 	i2c_start(M41T81_ADDRESS_W);
 	i2c_write(r);	// register address

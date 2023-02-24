@@ -1678,19 +1678,19 @@ static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
 	do {
 		if((TWI1->TWI_CNTR & (1 << 3))){
 			unsigned int stat = TWI1-> TWI_STAT;
-			////PRINTF("t113_i2c_wait_status = 0x%X \n", stat);
+			////PRINTF("t113_i2c_wait_status = 0x%X\n", stat);
 			return stat;
 		}
 	} while (uwTick<timeout);
 
 	I2C_ERROR_COUNT++;
-	 //PRINTF("t113_i2c_wait_status = I2C_STAT_BUS_ERROR \n");
+	 //PRINTF("t113_i2c_wait_status = I2C_STAT_BUS_ERROR\n");
 	return I2C_STAT_BUS_ERROR;
 }
 
 static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
 	uint32_t val;
-	 //PRINTF("I2C start \n");
+	 //PRINTF("I2C start\n");
 	val = TWI1->TWI_CNTR;
 	val |= (1 << 5) | (1 << 3);
 	TWI1->TWI_CNTR = val;
@@ -1701,7 +1701,7 @@ static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
 			return t113_i2c_wait_status(pdat);
 		}
 	} while (uwTick<timeout);
-	//PRINTF("I2C start out\n");
+	PRINTF("I2C start out\n");
 	return t113_i2c_wait_status(pdat);
 }
 
@@ -1789,10 +1789,10 @@ unsigned char I2C_WriteByte(unsigned char slaveAddr, const unsigned char* pBuffe
 
 	res = t113_i2c_write(&pdat_i2c, &msgs);
 	if(res!=0){
-		 //PRINTF("I2C write err \n");
+		 //PRINTF("I2C write err\n");
 		return 0;
 	}else{
-		 //PRINTF("I2C write ok \n");
+		 //PRINTF("I2C write ok\n");
 	}
 	 //PRINTF("I2C t113_i2c_stop in\n");
 	t113_i2c_stop(&pdat_i2c);
@@ -1824,10 +1824,10 @@ unsigned char I2C_ReadBuffer(unsigned char slaveAddr, unsigned char* pBuffer, un
 
 	res = t113_i2c_write(&pdat_i2c, &msgs);
 	if(res!=0){
-		//PRINTF("I2C write err \n");
+		//PRINTF("I2C write err\n");
 		return 0;
 	}
-	//PRINTF("I2C write ok \n");
+	//PRINTF("I2C write ok\n");
 
 	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_RSTART){	//генерируем рестарт
 		//PRINTF("I2C restart error\n");
@@ -1841,11 +1841,11 @@ unsigned char I2C_ReadBuffer(unsigned char slaveAddr, unsigned char* pBuffer, un
 
 	res = t113_i2c_read(&pdat_i2c, &msgs);
 	if(res!=0){
-		//PRINTF("I2C read err \n");
+		//PRINTF("I2C read err\n");
 		//I2C_ERROR = 0x04;
 		return 0;
 	}
-	//PRINTF("I2C read ok \n");
+	//PRINTF("I2C read ok\n");
 /**/
 	//PRINTF("I2C t113_i2c_stop in\n");
 	t113_i2c_stop(&pdat_i2c);
@@ -1876,10 +1876,10 @@ unsigned char I2C_WriteBuffer(unsigned char slaveAddr, const unsigned char* pBuf
 
 	res = t113_i2c_write(&pdat_i2c, &msgs);
 	if(res!=0){
-		//PRINTF("I2C write err \n");
+		//PRINTF("I2C write err\n");
 		return 0;
 	}
-	//PRINTF("I2C write ok \n");
+	//PRINTF("I2C write ok\n");
 
 	if(t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_RSTART){	//генерируем рестарт
 		//PRINTF("I2C restart error\n");
@@ -1893,11 +1893,11 @@ unsigned char I2C_WriteBuffer(unsigned char slaveAddr, const unsigned char* pBuf
 
 	res = t113_i2c_write(&pdat_i2c, &msgs);
 	if(res!=0){
-		//PRINTF("I2C write err \n");
+		//PRINTF("I2C write err\n");
 		//I2C_ERROR = 0x04;
 		return 0;
 	}
-	//PRINTF("I2C write ok \n");
+	//PRINTF("I2C write ok\n");
 /**/
 	//PRINTF("I2C t113_i2c_stop in\n");
 	t113_i2c_stop(&pdat_i2c);
@@ -1908,11 +1908,49 @@ unsigned char I2C_WriteBuffer(unsigned char slaveAddr, const unsigned char* pBuf
 
 uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 {
+	int res;
+	struct i2c_msg_t  msgs;
+	msgs.addr = slave_address >> 1;
+	msgs.len = size;
+	msgs.buf = (void *) buf;
+
+	res = t113_i2c_start(&pdat_i2c);
+	if(res != I2C_STAT_TX_START){
+		//PRINTF("I2C start error\n");
+		t113_i2c_stop(&pdat_i2c);
+		return 0;
+	}
+	res = t113_i2c_read(&pdat_i2c, &msgs);
+	if(res!=0){
+		PRINTF("i2chw_read read err\n");
+		//I2C_ERROR = 0x04;
+		return 0;
+	}
+	t113_i2c_stop(&pdat_i2c);
 	return 0;
 }
 
 uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 {
+	int res;
+	struct i2c_msg_t  msgs;
+	msgs.addr = slave_address >> 1;
+	msgs.len = size;
+	msgs.buf = (void *) buf;
+
+	res = t113_i2c_start(&pdat_i2c);
+	if(res != I2C_STAT_TX_START){
+		//PRINTF("I2C start error\n");
+		t113_i2c_stop(&pdat_i2c);
+		return 0;
+	}
+	res = t113_i2c_write(&pdat_i2c, &msgs);
+	if(res!=0){
+		PRINTF("i2chw_write write err\n");
+		//I2C_ERROR = 0x04;
+		return 0;
+	}
+	t113_i2c_stop(&pdat_i2c);
 	return 0;
 }
 
