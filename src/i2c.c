@@ -133,7 +133,7 @@ static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
 	 //PRINTF("I2C start \n");
 	val = TWI1->TWI_CNTR;
 	val |= (1 << 5) | (1 << 3);
-	write32(pdat->virt + TWI_CNTR, val);
+	TWI1->TWI_CNTR = val;
 	volatile unsigned int timeout = uwTick+5*100;	//uwTick+5мс
 	do {
 		if(!(TWI1->TWI_CNTR & (1 << 5)))
@@ -148,7 +148,7 @@ static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
 
 	val = TWI1->TWI_CNTR;
 	val |= (1 << 4) | (1 << 3);
-	write32(pdat->virt + TWI_CNTR, val);
+	TWI1->TWI_CNTR = val;
 	volatile unsigned int timeout = uwTick+5*10;
 	do {
 		if(!(TWI1->TWI_CNTR & (1 << 4)))
