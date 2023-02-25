@@ -6845,8 +6845,8 @@ void hightests(void)
 		// bits 27:16: eFUSE boot select status,
 		// bit 0: 0: GPIO boot select, 1: eFuse boot select
 		// The status of the GPIO boot select pin can be read by the bit[12:11] of the system configuration module (register: 0x03000024).
-		//PRINTF("SID->BOOT_MODE=0x%08lX, SYS_CFG->VER_REG=0x%08lX\n", SID->BOOT_MODE, SYS_CFG->VER_REG);
-		PRINTF("BOOT_MODE=%u, Pin_Boot_Select=0x%02X\n", (unsigned) (SID->BOOT_MODE >> 0) & 0x01, (unsigned) (SYS_CFG->VER_REG >> 11) & 0x03);
+		PRINTF("SID->BOOT_MODE=0x%08lX, SYS_CFG->VER_REG=0x%08lX\n", SID->BOOT_MODE, SYS_CFG->VER_REG);
+		PRINTF("BOOT_MODE=%u, BOOT_SEL_PAD_STA=0%u FEL_SEL_PAD_STA=%u\n", (unsigned) (SID->BOOT_MODE >> 0) & 0x01, (unsigned) (SYS_CFG->VER_REG >> 11) & 0x03, (unsigned) (SYS_CFG->VER_REG >> 8) & 0x01);
 	}
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)

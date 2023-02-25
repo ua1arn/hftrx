@@ -6994,11 +6994,10 @@ board_fpga_fir_complete(void)
 }
 
 static void
-board_fpga_fir_connect(void)
+board_fpga_fir_connect(IRQL_t * oldIrql)
 {
 #if WITHSPILOWSUPPORTT
-	system_disableIRQ();
-	spi_operate_lock();
+	spi_operate_lock(oldIrql);
 #endif /* WITHSPILOWSUPPORTT */
 #if WITHSPI32BIT
 	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
@@ -7035,7 +7034,7 @@ board_fpga_fir_connect(void)
 }
 
 static void
-board_fpga_fir_disconnect(void)
+board_fpga_fir_disconnect(IRQL_t irql)
 {
 #if defined (TARGET_FPGA_FIR_CS_BIT)
 	TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT); /* Disable SPI */
@@ -7050,8 +7049,7 @@ board_fpga_fir_disconnect(void)
 #else /* WITHSPIHW */
 #endif
 #if WITHSPILOWSUPPORTT
-	spi_operate_unlock();
-	system_enableIRQ();
+	spi_operate_unlock(irql);
 #endif /* WITHSPILOWSUPPORTT */
 }
 
@@ -7240,7 +7238,8 @@ board_fpga_fir_send(
 {
 	//ASSERT(CWidth <= 24);
 	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
-	board_fpga_fir_connect();
+	IRQL_t irql;
+	board_fpga_fir_connect(& irql);
 
 	// strobe
 	board_fpga_fir_coef_p1(0x00000000);	// one strobe before, without WE required
@@ -7284,7 +7283,7 @@ board_fpga_fir_send(
 	board_fpga_fir_coef_p1(0x00000000);	// one strobe after, without WE required
 	board_fpga_fir_complete();
 
-	board_fpga_fir_disconnect();
+	board_fpga_fir_disconnect(irql);
 }
 
 /* поменять местами значение загружаемого профиля FIR фильтра в FPGA */
@@ -7467,7 +7466,7 @@ static void board_rtc_initialize(void)
 		
 		PRINTF(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, seconds);
 
-		if (month < 1 || month > 12 ||
+		if (year == 2099 || month < 1 || month > 12 ||
 			day < 1 || day > 31 ||
 			hour > 23 || minute > 59 || seconds > 59)
 		{

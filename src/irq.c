@@ -1624,66 +1624,64 @@ void spin_unlock(spinlock_t * __restrict p)
 	return;
 }
 
-#if 0
-
-
-#define LOCK(p) do { lock_impl((p), __LINE__, __FILE__, # p); } while (0)
-#define UNLOCK(p) do { unlock_impl((p), __LINE__, __FILE__, # p); } while (0)
-
-
-typedef struct
-{
-	volatile uint8_t lock;
-	int line;
-	const char * file;
-} LOCK_T;
-
-static void lock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
-{
-
-	uint8_t r;
-	do
-		r = __LDREXB(& p->lock);
-	while (__STREXB(1, & p->lock));
-	if (r != 0)
-	{
-		PRINTF(PSTR("LOCK @%p %s already locked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
-		for (;;)
-			;
-	}
-	else
-	{
-		p->file = file;
-		p->line = line;
-	}
-
-}
-
-static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
-{
-
-	uint8_t r;
-	do
-		r = __LDREXB(& p->lock);
-	while (__STREXB(0, & p->lock));
-	if (r == 0)
-	{
-		PRINTF(PSTR("LOCK @%p %s already unlocked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
-		for (;;)
-			;
-	}
-	else
-	{
-		p->file = file;
-		p->line = line;
-	}
-
-}
-#endif
 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
 #if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+
+void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
+{
+//#if WITHISBOOTLOADER
+//	PRINTF("boot: old=%02X new=%02X (%s/%d)\n", (unsigned) GetCurrentIrql(), (unsigned) newIRQL, file, line);
+//#else
+//	PRINTF("app: old=%02X new=%02X (%s/%d)\n", (unsigned) GetCurrentIrql(), (unsigned) newIRQL, file, line);
+//#endif
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	ASSERT(GIC_GetInterfacePriorityMask() >= newIRQL);	/* Не понижаем приоритет */
+	* oldIrql = GIC_GetInterfacePriorityMask();
+	GIC_SetInterfacePriorityMask(newIRQL);
+#elif (__CORTEX_M != 0)
+	ASSERT(__get_BASEPRI() >= newIRQL);	/* Не понижаем приоритет */
+	* oldIrql = __get_BASEPRI();
+	__set_BASEPRI(newIRQL);
+#elif CPUSTYLE_RISCV
+	ASSERT(PLIC->PLIC_MTH_REG <= newIRQL);	/* Не понижаем приоритет */
+	//oldIrql * = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
+	* oldIrql = PLIC->PLIC_MTH_REG;
+	PLIC->PLIC_MTH_REG = newIRQL;
+#else
+	#warning Implement RiseIrql
+#endif
+}
+
+void LowerIrql(IRQL_t newIRQL)
+{
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	GIC_SetInterfacePriorityMask(newIRQL);
+#elif (__CORTEX_M != 0)
+	__set_BASEPRI(newIRQL);
+#elif CPUSTYLE_RISCV
+	//	csr_write_mie(irql);
+	PLIC->PLIC_MTH_REG = newIRQL;
+#else
+	#warning Implement LowerIrql
+#endif
+}
+
+IRQL_t GetCurrentIrql(void)
+{
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	return GIC_GetInterfacePriorityMask();
+#elif (__CORTEX_M != 0)
+	return __get_BASEPRI();
+#elif CPUSTYLE_RISCV
+	//oldIrql * = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
+	return PLIC->PLIC_MTH_REG;
+#else
+	#warning Implement GetCurrentIrql
+	return 0;
+#endif
+}
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
@@ -1885,14 +1883,16 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	//csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
 	//csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
 	//csr_set_bits_mie(MIE_MTI_BIT_MASK);	// MTI - timer
-#elif CPUSTYLE_CA53
-	#warning implement for CPUSTYLE_CA53
-#else /* CPUSTYLE_STM32MP1 */
+#elif (__CORTEX_M != 0)
 
 	NVIC_DisableIRQ(int_id);
 	NVIC_SetVector(int_id, (uintptr_t) handler);
 	NVIC_SetPriority(int_id, priority);
 	NVIC_EnableIRQ(int_id);
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	#warning arm_hardware_set_handler should be implemented
 
 #endif /* CPUSTYLE_STM32MP1 */
 }
@@ -1929,9 +1929,14 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 
 #elif CPUSTYLE_CA53
 	#warning implement for CPUSTYLE_CA53
-#else /* CPUSTYLE_STM32MP1 */
+
+#elif (__CORTEX_M != 0)
 
 	NVIC_DisableIRQ(int_id);
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	#warning Implement arm_hardware_disable_handler
 
 #endif /* CPUSTYLE_STM32MP1 */
 }

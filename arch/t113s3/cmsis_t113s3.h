@@ -2293,9 +2293,11 @@ typedef struct SID_Type
 {
              uint32_t reserved_0x000 [0x0005];
     volatile uint32_t SID_THS;                        /*!< Offset 0x014 [27:16]: The calibration value of the T-sensor. */
-             uint32_t reserved_0x018 [0x007E];
+             uint32_t reserved_0x018 [0x007A];
+    volatile uint32_t SID_DATA [0x004];               /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
     volatile uint32_t BOOT_MODE;                      /*!< Offset 0x210 [27:16]: eFUSE boot select status, [0]: 0: GPIO boot select, 1: eFuse boot select */
-} SID_TypeDef; /* size of structure = 0x214 */
+    volatile uint32_t SID_UNDOC [0x1FB];              /*!< Offset 0x214  */
+} SID_TypeDef; /* size of structure = 0xA00 */
 /*
  * @brief USB_EHCI_Capability
  */

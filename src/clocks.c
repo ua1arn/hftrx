@@ -2212,7 +2212,7 @@ static void set_mbus(void)
 }
 #endif
 
-static void set_module(volatile uint32_t * reg)
+static void allwnrt113_module_pll_enable(volatile uint32_t * reg)
 {
 
 	if(!(* reg & (1 << 31)))
@@ -2226,7 +2226,7 @@ static void set_module(volatile uint32_t * reg)
 		/* Wait pll stable */
 		while(!(* reg & (0x1u << 28)))
 			;
-		local_delay_ms(20);
+		//local_delay_ms(20);
 
 		/* Lock disable */
 //		val = * reg;
@@ -2811,12 +2811,12 @@ void allwnrt113_pll_initialize(void)
 	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
 	//set_dma();
 	//set_mbus();
-	set_module(& CCU->PLL_PERI_CTRL_REG);
-	set_module(& CCU->PLL_VIDEO0_CTRL_REG);
-	set_module(& CCU->PLL_VIDEO1_CTRL_REG);
-	set_module(& CCU->PLL_VE_CTRL_REG);
-	set_module(& CCU->PLL_AUDIO0_CTRL_REG);
-	set_module(& CCU->PLL_AUDIO1_CTRL_REG);
+	allwnrt113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
+	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
+	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+	allwnrt113_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
+	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO0_CTRL_REG);
+	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
 }
 
 #endif /* CPUSTYLE_STM32MP1 */

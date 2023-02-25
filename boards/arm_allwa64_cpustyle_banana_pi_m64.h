@@ -654,6 +654,8 @@
 		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF2x);	/* AF2 or AF3 */ \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3x);		/* AF2 or AF3 */ \
 		} while (0) 
+	#define	TWIHARD_IX x3	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR xTWI3	/* 0 - TWI0, 1: TWI1... */
 
 
 #endif // WITHTWISW

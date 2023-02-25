@@ -26,8 +26,8 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
@@ -586,7 +586,7 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW
+#if WITHTWISW || WITHTWIHW
 	// TWI1-SCK PE0
 	// TWI1-SDA PE1
 	#define TARGET_TWI_TWCK		(1u << 0)		// TWI1-SCK PE0
@@ -614,9 +614,11 @@
 		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI1-SCK PE0 */ \
 		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI1-SDA PE1 */ \
 		} while (0) 
+	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
 
 
-#endif // WITHTWISW
+#endif // WITHTWISW || WITHTWIHW
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 

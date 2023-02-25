@@ -338,7 +338,7 @@ void i2c_initialize(void)
 		PRINTF("linux i2c started\n");
 }
 
-uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
+uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 {
 	int rc;
 

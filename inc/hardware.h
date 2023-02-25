@@ -456,7 +456,7 @@ extern "C" {
 
 	#define CPUSTYLE_RISCV		1		/* архитектура процессора RISC-V */
 
-	#include "u_blaze.h"
+	#include "allwnr_f133.h"
 	//#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
@@ -926,8 +926,9 @@ void i2cp_stop(const i2cp_t * p);
 
 void hardware_twi_master_configure(void);
 
+/* return non-zero then error */
 uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size);
-uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size);
+uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size);
 
 uint32_t hardware_get_random(void);
 

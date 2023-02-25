@@ -19,6 +19,11 @@ static void m41t81_readbuff(
 	uint_fast8_t r
 	)
 {
+#if WITHTWIHW
+	uint8_t bufw = r;
+	i2chw_write(M41T81_ADDRESS_W, & bufw, 1);
+	i2chw_read(M41T81_ADDRESS_R, b, n);
+#elif WITHTWISW
 	i2c_start(M41T81_ADDRESS_W);
 	i2c_write_withrestart(r);	// register address
 	i2c_start(M41T81_ADDRESS_R);
@@ -34,6 +39,7 @@ static void m41t81_readbuff(
 			i2c_read(b ++, I2C_READ_ACK);
 		i2c_read(b ++, I2C_READ_NACK);
 	}
+#endif
 }
 
 static void m41t81_writebuff(
@@ -42,12 +48,19 @@ static void m41t81_writebuff(
 	uint_fast8_t r		// Addr
 	)
 {
+#if WITHTWIHW
+	uint8_t buff [n + 1];
+	buff [0] = r;
+	memcpy(buff + 1, b, n);
+	i2chw_write(M41T81_ADDRESS_W, buff, n + 1);
+#elif WITHTWISW
 	i2c_start(M41T81_ADDRESS_W);
 	i2c_write(r);	// register address
 	while (n --)
 		i2c_write(* b ++);
 	i2c_waitsend();
 	i2c_stop();
+#endif
 }
 
 
