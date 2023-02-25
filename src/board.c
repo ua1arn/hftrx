@@ -7466,7 +7466,7 @@ static void board_rtc_initialize(void)
 		
 		PRINTF(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, seconds);
 
-		if (month < 1 || month > 12 ||
+		if (year == 2099 || month < 1 || month > 12 ||
 			day < 1 || day > 31 ||
 			hour > 23 || minute > 59 || seconds > 59)
 		{
