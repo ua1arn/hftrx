@@ -7,11 +7,11 @@
 #include "stmpe811.h"
 
 static uint_fast8_t tscpresent;
-volatile uint_fast8_t tsc_int = 0;
+static volatile uint_fast8_t tsc_int = 0;
 
 static i2cp_t tp_i2cp;	/* параметры для обмена по I2C. */
 
-int32_t i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte, uint8_t * r_buffer)
+static int i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte, uint8_t * r_buffer)
 {
 	const i2cp_t * const p1 = & tp_i2cp;
 #if WITHTWISW
@@ -52,7 +52,7 @@ int32_t i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte,
 #endif
 }
 
-void i2cperiph_write8(uint_fast8_t DeviceAddr, uint_fast8_t reg, uint_fast8_t val)
+static void i2cperiph_write8(uint_fast8_t DeviceAddr, uint_fast8_t reg, uint_fast8_t val)
 {
 	const i2cp_t * const p1 = & tp_i2cp;
 #if WITHTWISW
@@ -67,10 +67,10 @@ void i2cperiph_write8(uint_fast8_t DeviceAddr, uint_fast8_t reg, uint_fast8_t va
 #endif
 }
 
-uint_fast16_t i2cperiph_read8(uint_fast8_t DeviceAddr, uint_fast8_t reg)
+static uint_fast16_t i2cperiph_read8(uint_fast8_t DeviceAddr, uint_fast8_t reg)
 {
 	const i2cp_t * const p1 = & tp_i2cp;
-	uint8_t v;
+	uint8_t v = 0xFF;
 #if WITHTWISW
 	i2cp_start(p1, DeviceAddr);
 	i2cp_write_withrestart(p1, reg);		// Register 135
@@ -82,10 +82,10 @@ uint_fast16_t i2cperiph_read8(uint_fast8_t DeviceAddr, uint_fast8_t reg)
 	return v;
 }
 
-uint_fast16_t i2cperiph_read16(uint_fast8_t DeviceAddr, uint_fast8_t reg)
+static uint_fast16_t i2cperiph_read16(uint_fast8_t DeviceAddr, uint_fast8_t reg)
 {
 	const i2cp_t * const p1 = & tp_i2cp;
-uint8_t v [2];
+	uint8_t v [2] = { 0xFF, 0xFF };
 #if WITHTWISW
 	i2cp_start(p1, DeviceAddr);
 	i2cp_write_withrestart(p1, reg);		// Register 135
@@ -107,7 +107,7 @@ uint8_t v [2];
   *   @arg  STMPE811_PIN_x: Where x can be from 0 to 7.
   * @retval None
   */
-void stmpe811_IO_DisableAF(uint_fast8_t DeviceAddr, uint_fast16_t IO_Pin)
+static void stmpe811_IO_DisableAF(uint_fast8_t DeviceAddr, uint_fast16_t IO_Pin)
 {
   uint8_t tmp = 0;
 
