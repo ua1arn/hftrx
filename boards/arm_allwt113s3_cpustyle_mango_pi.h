@@ -25,8 +25,8 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
@@ -621,39 +621,40 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW
-	// TWI3-SCK PB6 SCL (P3 pin 16) TX3 - wire to pin 7 hseda 24bit vga+audio board
-	// TWI3-SDA PB7 SDA (P3 pin 15) RX3 - wire to pin 6
-	#define TARGET_TWI_TWCK		(1u << 6)		// TWI3-SCK PB6 SCL
-	#define TARGET_TWI_TWCK_PIN		(GPIOB->DATA)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piob_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piob_inputs(v); } while (0)
+#if WITHTWISW || WITHTWIHW
 
-	#define TARGET_TWI_TWD		(1u << 7)		// TWI3-SDA PB7 SDA
-	#define TARGET_TWI_TWD_PIN		(GPIOB->DATA)
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piob_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piob_inputs(v); } while (0)
+	// TWI2-SCK PE12 SCL
+	// TWI2-SDA PE13 SDA
+	#define TARGET_TWI_TWCK		(1u << 12)		// TWI2-SCK PE12 SCL
+	#define TARGET_TWI_TWCK_PIN		(GPIOE->DATA)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
+
+	#define TARGET_TWI_TWD		(1u << 13)		// TWI2-SDA PE13 SDA
+	#define TARGET_TWI_TWD_PIN		(GPIOE->DATA)
+	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piob_inputs(TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);  	/* SDA */ \
+			arm_hardware_pioe_inputs(TARGET_TWI_TWCK); /* TWI2-SCK PE12 SCL */ \
+			arm_hardware_pioe_inputs(TARGET_TWI_TWD);  	/* TWI2-SDA PE13 SDA */ \
 		} while (0) 
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piob_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);	/* SDA */ \
+			arm_hardware_pioe_inputs(TARGET_TWI_TWCK); 	/* TWI2-SCK PE12 SCL */ \
+			arm_hardware_pioe_inputs(TARGET_TWI_TWD);	/* TWI2-SDA PE13 SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piob_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI3-SCK PB6 SCL */ \
-		arm_hardware_piob_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI3-SDA PB7 SDA */ \
+		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF2);	/* TWI2-SCK PE12 SCL */ \
+		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF2);		/* TWI2-SDA PE13 SDA */ \
 		} while (0) 
-	#define	TWIHARD_IX 3	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_PTR TWI3	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
 
 
-#endif // WITHTWISW
+#endif /* WITHTWISW || WITHTWIHW */
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
