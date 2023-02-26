@@ -1844,11 +1844,13 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);	// non-atomic operation
 	GIC_SetTarget(int_id, targetcpu);	// non-atomic operation
 
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_A64
 	// peripherial (hardware) interrupts using the GIC 1-N model.
 	uint_fast32_t cfg = GIC_GetConfiguration(int_id) & 0x03u;
 	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
 	cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_T113 */
 
 	SPIN_UNLOCK(& gicdistrib_lock);
 
