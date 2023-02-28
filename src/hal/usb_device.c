@@ -442,7 +442,7 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 	    case USB_HID_CLASS:
 			//Appli_state = APPLICATION_HID;
 			TP();
-			PRINTF("MSC device active.\n");
+			PRINTF("HID device active.\n");
 			break;
 		case USB_HUB_CLASS:
 			//Appli_state = APPLICATION_HUB;
