@@ -80,8 +80,6 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(HALDIR)/Inc \
-	$(MDLWUSBDIR)/Core/Inc \
-	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
 	$(CMSISDIR)/Core_A/Include \
 	$(RTOSXDIR)/Include \
@@ -136,6 +134,18 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 
+ifeq (1, 1)
+# lvgl
+SRCDIRS += $(PRJROOT)/lvgl/src
+DINCDIR += $(PRJROOT)/lvgl/src
+endif
+
+ifeq (1, 1)
+# ST USB
+DINCDIR += $(MDLWUSBDIR)/Core/Inc $(MDLWHOSTDIR)/Core/Inc
+SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
+endif
+
 ifeq (1, 0)
 # tinyusb
 SRCDIRS += $(TINYUSBDIR)/src
@@ -169,7 +179,7 @@ DINCDIR += \
 endif
 
 SRCDIRS += $(ARCHDIR)
-SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
+SRCDIRS += $(HALDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

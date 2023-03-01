@@ -70,8 +70,6 @@ USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 RTOSXDIR = $(CMSISDIR)/RTOS2
-LUPNGDIR = $(PRJROOT)/lib/LuPng
-TINYUSBDIR = $(PRJROOT)/lib/tinyusb
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -81,8 +79,6 @@ DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
 	$(ARCHDIR) \
-	$(MDLWUSBDIR)/Core/Inc \
-	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
@@ -139,18 +135,29 @@ SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 #SRCDIRS += $(DSP3DDIR)/src
 SRCDIRS += $(ARCHDIR)
+
+ifeq (1, 1)
+# lvgl
+SRCDIRS += $(PRJROOT)/lvgl/src
+DINCDIR += $(PRJROOT)/lvgl/src
+endif
+
+ifeq (1, 1)
+# ST USB
+DINCDIR += $(MDLWUSBDIR)/Core/Inc $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
+endif
 
 ifeq (1, 0)
 # tinyusb
-SRCDIRS += $(TINYUSBDIR)/src
-DINCDIR += $(TINYUSBDIR)/src
+SRCDIRS += $(PRJROOT)/lib/tinyusb/src
+DINCDIR += $(PRJROOT)/lib/tinyusb/src
 endif
 
 ifeq (1, 1)
 # LuPng
-SRCDIRS += $(LUPNGDIR)
-DINCDIR += $(LUPNGDIR)
+SRCDIRS += $(PRJROOT)/lib/LuPng
+DINCDIR += $(PRJROOT)/lib/LuPng
 endif
 
 ifeq (1, 0)

@@ -28,7 +28,7 @@ https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v1
 4.2 Перходим в каталог hftrx "cd hftrx"<br>
 4.3 Скачиваем субмодули "git submodule update --init --recursive" <br>
 4.4 Открываем проект через File -> Open projects from File System
-4.5 Копируем файл product.h.prototype в product.h <br>
+4.5 Копируем файл product_template.h в product.h <br>
 
 4.4 Раскомментируем нужные нам константы с выбранной конфигурацией <br>
 4.5 В меню Eclipse, Project -> Build configurations -> Set active выбираем необходимый процессор (или через выпадающее меню с молотком в ToolBox). Build target выбираем default.
