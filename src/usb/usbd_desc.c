@@ -5508,16 +5508,20 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 /* совместимость VID/PID для работы с программой FT8CN */
 void board_set_usb_ft8cn(uint_fast8_t v)
 {
-	system_disableIRQ();
-	usb_ft8cn = v;
-#if WITHUSBDEV_HSDESC
-	usbd_descriptors_initialize(1);
+	uint_fast8_t n = v != 0;
+	if (usb_ft8cn != n)
+	{
+		usb_ft8cn = n;
+		system_disableIRQ();
+	#if WITHUSBDEV_HSDESC
+		usbd_descriptors_initialize(1);
 
-#else /* WITHUSBDEV_HSDESC */
-	usbd_descriptors_initialize(0);
+	#else /* WITHUSBDEV_HSDESC */
+		usbd_descriptors_initialize(0);
 
-#endif /* WITHUSBDEV_HSDESC */
-	system_enableIRQ();
+	#endif /* WITHUSBDEV_HSDESC */
+		system_enableIRQ();
+	}
 }
 
 #endif /* WITHUSBHW */

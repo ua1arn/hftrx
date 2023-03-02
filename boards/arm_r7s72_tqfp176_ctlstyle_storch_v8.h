@@ -211,7 +211,7 @@
 	//#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
 
-	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
