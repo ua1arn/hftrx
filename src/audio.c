@@ -186,7 +186,7 @@ static uint_fast8_t 	glob_dspagc;
 static uint_fast8_t		glob_dsploudspeaker_off;
 
 static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-static volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+static volatile uint_fast8_t datavox;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 
 
 #if WITHINTEGRATEDDSP
@@ -6732,8 +6732,8 @@ void board_set_uacplayer(uint_fast8_t v)
 #endif /* WITHUSBUAC */
 }
 
-/* автоматический переход на передачу при появлении звука со стороны компьютера */
-void board_set_datavox(uint_fast8_t v)
+/* автоматическое изменение источника при появлении звука со стороны компьютера */
+void board_set_datatx(uint_fast8_t v)
 {
 #if WITHUSBUAC && WITHTX
 	datavox = v;
