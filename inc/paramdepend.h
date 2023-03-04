@@ -2383,7 +2383,7 @@ extern "C" {
 #define HARDWARE_DELAY_US(t) do { local_delay_us(t); } while (0)
 #define HARDWARE_GETTICK_MS() ((uint32_t) 0) // HAL_GetTick()
 
-#define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780)
+#define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY)
 
 /* Сброс мощности при запросе TUNE от автотюнера или извне */
 #define WITHLOWPOWEREXTTUNE	(defined (HARDWARE_GET_TUNE) || WITHAUTOTUNER)
