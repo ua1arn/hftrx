@@ -1844,11 +1844,12 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);	// non-atomic operation
 	GIC_SetTarget(int_id, targetcpu);	// non-atomic operation
 
-#if ! CPUSTYLE_R7S721
 	// peripherial (hardware) interrupts using the GIC 1-N model.
 	uint_fast32_t cfg = GIC_GetConfiguration(int_id) & 0x03u;
 	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
 	cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
+#if ! CPUSTYLE_R7S721
+	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
 #endif /* ! CPUSTYLE_R7S721 */
 
