@@ -6599,7 +6599,7 @@ static void board_fpga_loader_initialize(void)
 
 #if WITHFPGALOAD_PS
 
-#if ! (CPUSTYLE_R7S721 || 0)
+#if ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY
 /* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
 static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
 {
