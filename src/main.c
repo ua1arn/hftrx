@@ -3120,7 +3120,7 @@ struct nvmap
 		uint8_t greverbloss;		/* ревербератор - ослабление на возврате */
 	#endif /* WITHREVERB */
 	#if WITHUSBUAC
-		uint8_t gdatavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+		uint8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
@@ -4003,7 +4003,7 @@ enum
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 
 		#if WITHTX
-		static uint_fast8_t gdatavox = 0;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+		static uint_fast8_t gdatatx = 0;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		#endif /* WITHTX */
 		static uint_fast8_t	gusb_ft8cn = 0;	/* совместимость VID/PID для работы с программой FT8CN */
 		#if WITHUSBHEADSET
@@ -11672,7 +11672,7 @@ updateboardZZZ(
 				board_set_swaprts(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 			#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 			#if WITHTX
-				board_set_datavox(gdatavox);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+				board_set_datatx(gdatatx);	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 			#endif /* WITHTX */
 			board_set_usb_ft8cn(gusb_ft8cn);	/* совместимость VID/PID для работы с программой FT8CN */
 		#endif /* WITHUSBUAC */

@@ -2132,13 +2132,13 @@ static const FLASHMEM struct menudef menutable [] =
 #if WITHUSBUAC
 #if WITHTX
 	{
-		QLABEL("DATA VOX"), 8, 3, RJ_ON,	ISTEP1,		/* автоматический переход на передачу при появлении звука со стороны компьютера */
+		QLABEL("USB DATA"), 8, 3, RJ_ON,	ISTEP1,		/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gdatavox),
+		offsetof(struct nvmap, gdatatx),
 		nvramoffs0,
 		NULL,
-		& gdatavox,
+		& gdatatx,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHTX */
