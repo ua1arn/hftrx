@@ -5468,8 +5468,8 @@ RAMFUNC void dsp_processtx(void)
 	unsigned i;
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	/* обработка передачи */
-	FLOAT_t txfirbuff [tx_MIKE_blockSize];
-	FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
+	static FLOAT_t txfirbuff [tx_MIKE_blockSize];
+	static FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
 	/* заполнение буфера сэмплами от микрофона или USB */
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{

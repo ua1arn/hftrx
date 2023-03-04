@@ -62,9 +62,9 @@
 	 STACKSIZEHYP = 64
 	 STACKSIZEMON = 64
 	 STACKSIZESYS = 64
-	 STACKSIZEIRQ = 2048
+	 STACKSIZEIRQ = 512
 
-	 STACKSIZESVCBOOT = 2048
+	 STACKSIZESVCBOOT = 512
   
 	.global __Vectors
 	.global __Vectors_nested
@@ -468,14 +468,15 @@ __stack_cpu0_und_end = .
 __stack_cpu0_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu0_fiq_end = .
-	.space	STACKSIZESVCBOOT
-__stack_cpu0_svc_end = .
 	.space	STACKSIZEMON
 __stack_cpu0_mon_end = .
 //	.space	STACKSIZEHYP
 //__stack_cpu0_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu0_sys_end = .
+
+	.space	STACKSIZESVCBOOT
+__stack_cpu0_svc_end = .
 
 	.space	STACKSIZEIRQ
 __stack_cpu0_irq_end = .
