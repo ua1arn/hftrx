@@ -136,7 +136,7 @@ SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(DSP3DDIR)/src
 SRCDIRS += $(ARCHDIR)
 
-ifeq (1, 1)
+ifeq (1, 0)
 # lvgl
 SRCDIRS += $(PRJROOT)/lvgl/src
 DINCDIR += $(PRJROOT)/lvgl/src

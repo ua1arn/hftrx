@@ -143,6 +143,12 @@ SRCDIRS += $(MDLWHOSTDIR)
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
 
+ifeq (1, 0)
+# lvgl
+SRCDIRS += $(PRJROOT)/lvgl/src
+DINCDIR += $(PRJROOT)/lvgl/src
+endif
+
 ifeq (1, 1)
 # LuPng
 SRCDIRS += $(LUPNGDIR)

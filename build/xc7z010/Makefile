@@ -139,6 +139,12 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(OPENVGDIR)/src
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
+ifeq (1, 0)
+# lvgl
+SRCDIRS += $(PRJROOT)/lvgl/src
+DINCDIR += $(PRJROOT)/lvgl/src
+endif
+
 ifeq (1, 1)
 # LuPng
 SRCDIRS += $(LUPNGDIR)
