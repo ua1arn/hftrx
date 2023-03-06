@@ -61,10 +61,10 @@
 	 STACKSIZEFIQ = 256
 	 STACKSIZEHYP = 256
 	 STACKSIZEMON = 256
-	 STACKSIZESYS = 256
+	 STACKSIZESVC = 256
 	 STACKSIZEIRQ = 1024
 
-	 STACKSIZESVCCPUn = 16 * 1024 * 1024	/* 1MB */
+	 STACKSIZESYSCPUn = 16 * 1024 * 1024	/* 1MB */
 
 	.section .text
 	.code 32
@@ -115,13 +115,13 @@ Reset_CPU1_Handler:
 //   ldr   sp, =__stack_cpu1_hyp_end
 //   mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu1_sys_end
-   mov   lr, #0
-
 	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
 	ldr   sp, =__stack_cpu1_svc_end
 	mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack_cpu1_sys_end
+   mov   lr, #0
 
 	ldr		r2, =Reset_CPUn_Handler
 	mov		lr, pc
@@ -149,10 +149,10 @@ __stack_cpu1_fiq_end = .
 __stack_cpu1_mon_end = .
 //	.space	STACKSIZEHYP
 //__stack_cpu1_hyp_end = .
-	.space	STACKSIZESYS
-__stack_cpu1_sys_end = .
-	.space	STACKSIZESVCCPUn
+	.space	STACKSIZESVC
 __stack_cpu1_svc_end = .
+	.space	STACKSIZESYSCPUn
+__stack_cpu1_sys_end = .
 
 	.word 0		/* fix non-zero size of this section */
 
@@ -201,13 +201,13 @@ Reset_CPU2_Handler:
 //  ldr   sp, =__stack_cpu2_hyp_end
 //   mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu2_sys_end
-   mov   lr, #0
-
 	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
 	ldr   sp, =__stack_cpu2_svc_end
 	mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack_cpu2_sys_end
+   mov   lr, #0
 
 	ldr		r2, =Reset_CPUn_Handler
 	mov		lr, pc
@@ -235,10 +235,10 @@ __stack_cpu2_fiq_end = .
 __stack_cpu2_mon_end = .
 //	.space	STACKSIZEHYP
 //__stack_cpu2_hyp_end = .
-	.space	STACKSIZESYS
-__stack_cpu2_sys_end = .
-	.space	STACKSIZESVCCPUn
+	.space	STACKSIZESVC
 __stack_cpu2_svc_end = .
+	.space	STACKSIZESYSCPUn
+__stack_cpu2_sys_end = .
 
 	.word 0		/* fix non-zero size of this section */
 
@@ -287,13 +287,13 @@ Reset_CPU3_Handler:
 //   ldr   sp, =__stack_cpu3_hyp_end
 //   mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu3_sys_end
-   mov   lr, #0
-
 	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
 	ldr   sp, =__stack_cpu3_svc_end
 	mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack_cpu3_sys_end
+   mov   lr, #0
 
 	ldr		r2, =Reset_CPUn_Handler
 	mov		lr, pc
@@ -321,10 +321,10 @@ __stack_cpu3_fiq_end = .
 __stack_cpu3_mon_end = .
 //	.space	STACKSIZEHYP
 //__stack_cpu3_hyp_end = .
-	.space	STACKSIZESYS
-__stack_cpu3_sys_end = .
-	.space	STACKSIZESVCCPUn
+	.space	STACKSIZESVC
 __stack_cpu3_svc_end = .
+	.space	STACKSIZESYSCPUn
+__stack_cpu3_sys_end = .
 
 	.word 0		/* fix non-zero size of this section */
 

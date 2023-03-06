@@ -61,10 +61,10 @@
 	 STACKSIZEFIQ = 64
 	 STACKSIZEHYP = 64
 	 STACKSIZEMON = 64
-	 STACKSIZESYS = 64
+	 STACKSIZESVC = 64
 	 STACKSIZEIRQ = 512
 
-	 STACKSIZESVCBOOT = 512
+	 STACKSIZESYSBOOT = 512
   
 	.global __Vectors
 	.global __Vectors_nested
@@ -93,7 +93,7 @@ SWIAddr:       .word SWI_Handler
 PAbortAddr:    .word PAbort_Handler
 DAbortAddr:    .word DAbort_Handler
 HypAddr:  	   .word Hyp_Handler
-IRQAddr:       .word IRQ_Handler_n
+IRQAddr:       .word IRQ_Handler
 FIQAddr:       .word FIQ_Handler
    .ltorg
 
@@ -114,7 +114,7 @@ UndefAddr_n:     .word Undef_Handler
 SWIAddr_n:       .word SWI_Handler
 PAbortAddr_n:    .word PAbort_Handler
 DAbortAddr_n:    .word DAbort_Handler
-HypAddr_n:  	   .word Hyp_Handler
+HypAddr_n:  	 .word Hyp_Handler
 IRQAddr_n:       .word IRQ_Handler_n
 FIQAddr_n:       .word FIQ_Handler
    .ltorg
@@ -180,12 +180,12 @@ gotosleep:
 //   ldr   sp, =__stack_cpu0_hyp_end
 //  mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu0_sys_end
-   mov   lr, #0
-
    msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
    ldr   sp, = __stack_cpu0_svc_end
+   mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack_cpu0_sys_end
    mov   lr, #0
 
 #if 0
@@ -211,7 +211,7 @@ line_loop:
    mov   lr, pc
    bx    r2     /* And jump... */
 
-   msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* System Running in Priviledged Operating Mode */
    ldr   sp, =__stack
     mov   lr, #0
 
@@ -359,6 +359,71 @@ ExitFunction:
 /****************************************************************************/
 	.section .text
    .code 32
+/* ================================================================== */
+/* Entry point for the IRQ handler */
+/* ================================================================== */
+/*
+	• 13 general-purpose 32-bit registers, R0 to R12.
+	• Three 32-bit registers with special uses, SP, LR, and PC, that can be described as R13 to R15.
+
+	Figure B1-2 ARM core registers, PSRs, and ELR_hyp, showing register banking
+*/
+/*
+	11.66 MSR (general-purpose register to PSR)
+	fields mnemonics:
+	c	control field mask byte, PSR[7:0] (privileged software execution)
+	x	extension field mask byte, PSR[15:8] (privileged software execution)
+	s	status field mask byte, PSR[23:16] (privileged software execution)
+	f	flags field mask byte, PSR[31:24] (privileged software execution).
+*/
+ 	.align 	4, 0
+    .func   IRQ_Handler
+IRQ_Handler:
+
+	sub     lr, lr, #4                  // Pre-adjust LR
+	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack
+	cps     #ARM_MODE_SYS                   // Change to SYS mode
+	push    {r0-r3, r12, lr}            // Save APCS corruptible registers
+
+	mov     r3, sp                      // Move SP into R3
+	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
+	sub     sp, sp, r3                  // Adjust stack
+	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
+
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+
+	VMRS	R1, FPSCR
+	VMRS	R2, FPEXC
+ 	PUSH 	{R1, R2}
+
+	VPUSH.F32	{D0-D15}
+	VPUSH.F32	{D16-D31}
+
+ 	LDR		R0, =IRQ_Handler_GIC
+	MOV		LR, PC
+	BX		R0     /* and jump... */
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+
+	VPOP.F32	{D16-D31}
+ 	VPOP.F32	{D0-D15}
+	POP 	{R1, R2}
+	VMSR	FPSCR, R1
+	VMSR	FPEXC, R2
+
+
+
+	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
+	add     sp, sp, r3                  // Unadjust stack
+
+
+	//clrex                               // Clear exclusive monitor for interrupted code
+	pop     {r0-r3, r12, lr}            // Restore stacked APCS registers
+	rfefd   sp!                         // Return from IRQ handler - RFEIA instruction
+
+	.endfunc
+   	.ltorg
 
 	.align 4, 0
 
@@ -375,7 +440,7 @@ IRQ_Handler_n:
 	MRS     LR, SPSR
 	STMFD   SP!, {R0, LR}
 
-    MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+    MSR     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
 	STMFD   SP!, {R1-R12, LR}
 	// Although FPSID is a read-only register, software
 	// can perform a VMSR to the FPSID to force Floating-point serialization,
@@ -455,6 +520,7 @@ skipPOP:
 	MSR     SPSR_cxsf, LR
 	ISB
 	LDMIA   SP!, {PC}^
+	//rfefd   sp!                         // Return from IRQ handler - RFEIA instruction (RFE IA sp!)
 
 	.endfunc
    .ltorg
@@ -472,11 +538,11 @@ __stack_cpu0_fiq_end = .
 __stack_cpu0_mon_end = .
 //	.space	STACKSIZEHYP
 //__stack_cpu0_hyp_end = .
-	.space	STACKSIZESYS
-__stack_cpu0_sys_end = .
-
-	.space	STACKSIZESVCBOOT
+	.space	STACKSIZESVC
 __stack_cpu0_svc_end = .
+
+	.space	STACKSIZESYSBOOT
+__stack_cpu0_sys_end = .
 
 	.space	STACKSIZEIRQ
 __stack_cpu0_irq_end = .
