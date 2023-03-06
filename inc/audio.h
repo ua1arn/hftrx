@@ -676,19 +676,9 @@ typedef struct
 
 	#else /* CPUSTYLE_STM32MP1 */
 		#define	Ntap_rx_AUDIO	NtapValidate(511)
-		#define Ntap_tx_MIKE	NtapValidate(241)
+		#define Ntap_tx_MIKE	NtapValidate(511)
 
 	#endif /* CPUSTYLE_STM32MP1 */
-	#if WITHNOSPEEX
-		////#define	Ntap_rx_AUDIO	NtapValidate(511)
-		////#define Ntap_tx_MIKE	NtapValidate(241)
-
-	#else /* WITHNOSPEEX */
-		////#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
-		////#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
-
-	#endif /* ! WITHDSPLOCALFIR */
-
 
 #endif /* WITHDSPLOCALFIR */
 

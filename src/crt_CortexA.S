@@ -451,33 +451,25 @@ IRQ_Handler_n:
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
 	// save VFP/Neon FPSCR register
 	VMRS	R2, FPSCR	// R2 used below
-	PUSH	{R2}
 	// save VFP/Neon FPEXC register
 	VMRS	R0, FPEXC
-    ldr     LR, =(1 << 31) //check FPEXC.EX
-	TST		R0, LR		// check FPEXC.EX
-	BEQ skipPUSH
-	VMRS	LR, FPINST
-	PUSH	{LR}
-	VMRS	LR, FPINST2
-	PUSH	{LR}
-skipPUSH:
-   // Initialise FPSCR to a known state
-    // Loaded in to R2
-	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	PUSH {R0}	// FPEXC
-	AND     R2,R2,R3
+ 	PUSH 	{R0, R2}	// FPEXC, FPSCR
 
 //#if __ARM_NEON == 1
 	// save neon data registers
 	VPUSH.F32	{D16-D31}
-//#endif /* __ARM_NEON == 1 */
- 	VMSR    FPSCR,R2	// Initialise FPSCR to a known state
-
-	LDR		R2, =IRQ_Handler_GIC
 	// save vfp/neon data registers
 	VPUSH.F32	{D0-D15}
+//#endif /* __ARM_NEON == 1 */
 
+   	// Initialise FPSCR to a known state
+    // Loaded in to R2
+ 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+	AND     R2,R2,R3
+	VMSR    FPSCR,R2	// Initialise FPSCR to a known state
+
+
+	LDR		R2, =IRQ_Handler_GIC
 	MOV		LR, PC
 	BX		R2     /* and jump... */
 
@@ -490,26 +482,17 @@ skipPUSH:
 
 	// restore vfp data registers
 	VPOP.F32   {D0-D15}
-	// restore VFP/Neon FPEXC register
-    ldr     LR, =(1 << 31) //check FPEXC.EX
 //#if __ARM_NEON == 1
 	// restore vfp/neon data registers
 	VPOP.F32	{D16-D31}
 //#endif /* __ARM_NEON == 1 */
 
-	POP 	{R0}	// FPEXC
-	TST		R0, LR	// check FPEXC.EX
-	BEQ skipPOP
-	POP 	{LR}
-	VMSR	FPINST2, LR
-	POP 	{LR}
-	VMSR 	FPINST, LR
-skipPOP:
+ 	POP 	{R0, R2}	// FPEXC, FPSCR
 	// restore VFP/Neon FPEXC register
 	VMSR	FPEXC, R0
 	// restore VFP/Neon FPSCR register
-	POP		{LR}
-	VMSR	FPSCR, LR
+	VMSR	FPSCR, R2
+
 	POP		{LR}
 	VMSR	FPSID, LR
 
@@ -518,7 +501,7 @@ skipPOP:
 
 	LDMIA   SP!, {R0, LR}
 	MSR     SPSR_cxsf, LR
-	ISB
+	//ISB
 	LDMIA   SP!, {PC}^
 	//rfefd   sp!                         // Return from IRQ handler - RFEIA instruction (RFE IA sp!)
 
