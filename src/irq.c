@@ -914,6 +914,244 @@ arm_cpu_CMx_initialize_NVIC(void)
 
 #endif /* (__CORTEX_M != 0) */
 
+
+
+#if 0
+
+typedef struct irqlog_tag
+{
+	IRQn_ID_t irqn;
+	int pos;	// in/out
+} irqlog_t;
+enum { IRQLOG_LEN = 1024 };
+
+static volatile unsigned irqlog_enabled;
+static volatile unsigned irqlog_count;
+static irqlog_t irqlogs [IRQLOG_LEN];
+
+void irqlog_start(void)
+{
+	irqlog_enabled = 0;
+	irqlog_count = 0;
+	irqlog_enabled = 1;
+}
+
+void irqlog_stop(void)
+{
+	irqlog_enabled = 0;
+}
+
+void irqlog_record(int pos, IRQn_ID_t irqn)
+{
+	if (irqlog_enabled == 0)
+		return;
+
+	if (irqlog_count >= IRQLOG_LEN)
+		return;
+
+	irqlog_t * const p = & irqlogs [irqlog_count ++];
+	p->pos = pos;
+	p->irqn = irqn;
+}
+
+void irqlog_print(void)
+{
+	PRINTF("irqlog_count=%u\n", irqlog_count);
+	unsigned i;
+	for (i = 0; i < irqlog_count; ++ i)
+	{
+		const irqlog_t * const p = & irqlogs [i];
+		PRINTF(" pos=%d, IRQ=%3u (0x%03X)\n", (int) p->pos, (unsigned) p->irqn, (unsigned) p->irqn);
+	}
+}
+#endif
+
+//#define INTC_LEVEL_SENSITIVE    (0)     /* Level sense  */
+//#define INTC_EDGE_TRIGGER       (1)     /* Edge trigger */
+
+/* ==== Interrupt detection ==== */
+
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+#if 0//CPUSTYLE_R7S721
+
+/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
+void IRQ_Handler_GIC(void)
+{
+	//dbg_putchar('/');
+	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
+	//irqlog_record(1, irqn);
+	//static const char hex [16] = "0123456789ABCDEF";
+	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
+	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
+	//dbg_putchar(hex [(irqn >> 0) & 0x0F]);
+	////ASSERT(irqn != 0x3FC && irqn != 0x3FD);
+	IRQHandler_t const handler = IRQ_GetHandler(irqn);
+
+#if 0
+	switch (irqn)
+	{
+	//case PL310ERR_IRQn:
+	//	break;
+	default:
+		PRINTF(PSTR("IRQ_Handler_GICv1: irq=%d, handler=%p\n"), (int) irqn, (void *) handler);
+		break;
+	}
+#endif
+	if (handler != NULL)
+	{
+#if WITHNESTEDINTERRUPTS
+
+		__enable_irq();						/* modify I bit in CPSR */
+		(* handler)();	    /* Call interrupt handler */
+		__disable_irq();					/* modify I bit in CPSR */
+
+#else /* WITHNESTEDINTERRUPTS */
+
+		(* handler)();	    /* Call interrupt handler */
+
+#endif /* WITHNESTEDINTERRUPTS */
+	}
+	//irqlog_record(2, irqn);
+	//dbg_putchar('\\');
+	IRQ_EndOfInterrupt(irqn);
+}
+
+#elif 1//CPUSTYLE_R7S721
+
+#define INT_ID_MASK		0x3ffuL
+/* Interrupt IDs reported by the HPPIR and IAR registers */
+#define PENDING_G1_INTID	1022uL
+/* Constant to indicate a spurious interrupt in all GIC versions */
+#define GIC_SPURIOUS_INTERRUPT		1023uL
+/*
+ * Constant passed to the interrupt handler in the 'id' field when the
+ * framework does not read the gic registers to determine the interrupt id.
+ */
+#define INTR_ID_UNAVAILABLE		0xFFFFFFFFuL
+
+/*******************************************************************************
+ * This function returns the id of the highest priority pending interrupt at
+ * the GIC cpu interface. GIC_SPURIOUS_INTERRUPT is returned when there is no
+ * interrupt pending.
+ ******************************************************************************/
+//unsigned int gicv2_get_pending_interrupt_id(void)
+//{
+//	unsigned int id;
+//
+//	id = GIC_GetHighPendingIRQ() & INT_ID_MASK;	// HIPPR
+//
+//	/*
+//	 * Find out which non-secure interrupt it is under the assumption that
+//	 * the GICC_CTLR.AckCtl bit is 0.
+//	 */
+//	if (id == PENDING_G1_INTID)
+//		id = GICInterface->AHPPIR & INT_ID_MASK;
+//
+//	return id;
+//}
+
+//static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
+
+/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
+// See ARM IHI 0048B.b document
+void IRQ_Handler_GIC(void)
+{
+	// per-cpu:
+	// GICC_AHPPIR
+	// GICC_HPPIR
+	// GICC_IAR
+	// GICC_EOIR
+	// GICC_BPR
+	// GICC_PMR
+	//
+	// global:
+	// GICD_IPRIORITYR
+
+//	const unsigned int gicver = (GIC_GetInterfaceId() >> 16) & 0x0F;
+
+
+//	switch (gicver)
+//	{
+//	case 0x01:	// GICv1
+//		/* Dummy read to avoid GIC 390 errata 801120 */
+//		(void) GICInterface->HPPIR;
+//		break;
+//	default:
+//		break;
+//	}
+	//(void) GICInterface->HPPIR;
+	(void) GIC_GetHighPendingIRQ();
+
+	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+
+	const IRQn_ID_t int_id = gicc_iar & 0x3ffuL;
+
+	// IHI0048B_b_gic_architecture_specification.pdf
+	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
+
+	if (int_id == 1022)
+	{
+	}
+
+	if (int_id >= 1020)
+	{
+		//dbg_putchar('2');
+		//SPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority(0, GIC_GetPriority(0));
+		//SPIN_UNLOCK(& giclock);
+
+	}
+	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
+	{
+		const IRQHandler_t f = IRQ_GetHandler(int_id);
+
+	#if WITHNESTEDINTERRUPTS
+
+		if (f != (IRQHandler_t) 0)
+		{
+//			static const char hex [16] = "0123456789ABCDEF";
+//			if ((int_id >> 8) & 0x0F)
+//				dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+			__enable_irq();						/* modify I bit in CPSR */
+			(* f)();	    /* Call interrupt handler */
+			__disable_irq();					/* modify I bit in CPSR */
+			//dbg_putchar('_');
+		}
+
+	#else /* WITHNESTEDINTERRUPTS */
+
+		if (f != (IRQHandler_t) 0)
+		{
+			(* f)();	    /* Call interrupt handler */
+		}
+
+	#endif /* WITHNESTEDINTERRUPTS */
+
+		//dbg_putchar('5');
+	}
+	else
+	{
+		//dbg_putchar('3');
+		//SPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority(0, GIC_GetPriority(0));
+		//SPIN_UNLOCK(& giclock);
+	}
+	//dbg_putchar(' ');
+
+	GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
+	//GICInterface->EOIR = gicc_iar;
+}
+#endif
+
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
+
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 /*
 	ARM IHI 0048B.b (IHI0048B_b_gic_architecture_specification.pdf).
