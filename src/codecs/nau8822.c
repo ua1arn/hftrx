@@ -378,18 +378,17 @@ static void nau8822_initialize_fullduplex(void)
 	nau8822_setreg(NAU8822_RIGHT_DAC_DIGITAL_VOLUME, 255 | 0x100);
 
 	nau8822_setreg(NAU8822_DAC_DITHER, 0x000);	// dither off
+	nau8822_setreg(NAU8822_DAC_CONTROL, 0x008);	// was: 0x00c - removed automute
+	nau8822_setreg(NAU8822_RIGHT_SPK_SUBMIXER, 0x10);	// use RMIX as BTL channel
 
 //{0xb , 0x1ff},
 //{0xc , 0x1ff},
 
 	//[AA_AUXIN_HP/Audio Control] 
-	nau8822_setreg(NAU8822_DAC_CONTROL, 0x008);	// was: 0x00c - removed automute
-	nau8822_setreg(NAU8822_ADC_CONTROL, 0x108);	// HP filter enable, 128x oversampling for better SNR
 //Noise gate
 //{0x23,0x18);
 
 //[AA_AUXIN_HP/Input Output Mixer] 
-	nau8822_setreg(NAU8822_RIGHT_SPK_SUBMIXER, 0x10);	// use RMIX as BTL channel
 
 	//nau8822_setreg(NAU8822_OUTPUT_CONTROL, 0x063 | 0x01c); // AUXOUT1, AUXOUT2, LSPKOUT and RSPKOUT x1.5 gain
 	//nau8822_setreg(NAU8822_OUTPUT_CONTROL, 0x01e); // AUXOUT1, AUXOUT2, LSPKOUT and RSPKOUT x1.5 gain
@@ -416,15 +415,16 @@ static void nau8822_initialize_fullduplex(void)
 	nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, adcdigvol | 0);
 	nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, adcdigvol | 0x100);
 
+	nau8822_setreg(NAU8822_ADC_CONTROL, 0x108);	// HP filter enable, 128x oversampling for better SNR
+
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex done\n"));
 }
 
 static void nau8822_stop(void)
 {
-#if CODEC_TYPE_NAU8822_MASTER
-	// после RESET кодек при подаче MCLK формирует WS и BCLK... конфликт с выходами FPGA, если тактирование от неё.
 	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
-#endif /* CODEC_TYPE_NAU8822_MASTER */
+	nau8822_setreg(NAU8822_GPIO_CONTROL, 0x08);	// RESET off (write value ignored)
+	nau8822_setreg(NAU8822_GPIO_CONTROL, 0x00);	// RESET off (write value ignored)
 }
 
 /* требуется ли подача тактирования для инициадизации кодека */
