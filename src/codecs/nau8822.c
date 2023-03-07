@@ -84,17 +84,18 @@ void nau8822_setreg(
 
 #else /* CODEC_TYPE_NAU8822_USE_SPI */
 
-#if WITHTWIHW
-	uint8_t buff [2] = { fulldata >> 8, fulldata >> 0, };
-	i2chw_write(NAU8822_ADDRESS_W, buff, ARRAY_SIZE(buff));
-#elif WITHTWISW
-	// кодек управляется по I2C
-	i2c_start(NAU8822_ADDRESS_W);
-	i2c_write(fulldata >> 8);
-	i2c_write(fulldata >> 0);
-	i2c_waitsend();
-	i2c_stop();
-#endif
+	#if WITHTWIHW
+		uint8_t buff [] = { fulldata >> 8, fulldata >> 0, };
+		i2chw_write(NAU8822_ADDRESS_W, buff, ARRAY_SIZE(buff));
+	#elif WITHTWISW
+		// кодек управляется по I2C
+		i2c_start(NAU8822_ADDRESS_W);
+		i2c_write(fulldata >> 8);
+		i2c_write(fulldata >> 0);
+		i2c_waitsend();
+		i2c_stop();
+	#endif
+
 #endif /* CODEC_TYPE_NAU8822_USE_SPI */
 }
 
@@ -376,6 +377,8 @@ static void nau8822_initialize_fullduplex(void)
 	nau8822_setreg(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 255 | 0);
 	nau8822_setreg(NAU8822_RIGHT_DAC_DIGITAL_VOLUME, 255 | 0x100);
 
+	nau8822_setreg(NAU8822_DAC_DITHER, 0x000);	// dither off
+
 //{0xb , 0x1ff},
 //{0xc , 0x1ff},
 
@@ -408,12 +411,10 @@ static void nau8822_initialize_fullduplex(void)
 	nau8822_setreg(NAU8822_INPUT_CONTROL, 0x003);
 
 	// Установка чувствительность АЦП не требуется - стоит максимальная после сброса
-	// но на всякий слуяай для понятности програмируем.
+	// но на всякий случай для понятности програмируем.
 	const uint_fast8_t adcdigvol = 255;
 	nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, adcdigvol | 0);
 	nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, adcdigvol | 0x100);
-
-	nau8822_setreg(NAU8822_DAC_DITHER, 0x000);	// dither off
 
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex done\n"));
 }
