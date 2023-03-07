@@ -43,7 +43,7 @@
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 // OHCI at USB1HSFSP2_BASE
-#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
+//#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
 #if WITHISBOOTLOADER
 

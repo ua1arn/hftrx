@@ -34,7 +34,7 @@
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 
 // OHCI at USB1HSFSP2_BASE
-#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
+//#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
 #if WITHDEBUG
 	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
