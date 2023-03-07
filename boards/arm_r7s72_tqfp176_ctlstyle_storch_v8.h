@@ -89,7 +89,8 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
@@ -256,7 +257,7 @@
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
@@ -373,8 +374,8 @@
 		//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
+//		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+//		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
 		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -393,8 +394,8 @@
 		//#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
-	#define WITHVIEW_3DSS		1
-	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+	//#define WITHVIEW_3DSS		1
+	//#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1
@@ -433,7 +434,7 @@
 	#define RTC1_TYPE RTC_TYPE_DS1305	/* MAXIM DS1305EN RTC clock chip with SPI interface */
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
-	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
