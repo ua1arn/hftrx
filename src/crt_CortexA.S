@@ -50,7 +50,6 @@
    ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
    ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
    ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
-   ARM_MODE_MASK  = 0x1F
    
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
@@ -62,7 +61,7 @@
 	 STACKSIZEHYP = 64
 	 STACKSIZEMON = 64
 	 STACKSIZESVC = 64
-	 STACKSIZEIRQ = 512
+	 STACKSIZEIRQ = 64
 
 	 STACKSIZESYSBOOT = 512
   
@@ -432,7 +431,7 @@ IRQ_Handler:
    	.ltorg
 
 	.section .noinit
-	.align 8
+	.align 3
 
 	.space	STACKSIZEUND
 __stack_cpu0_und_end = .
