@@ -45,7 +45,7 @@
  and 9-bits of control register data.
 */
 void nau8822_setreg(
-	uint_fast8_t regv,			/* 7 bit value */
+	uint_fast8_t regv,			/* 7 bit register address */
 	uint_fast16_t datav			/* 9 bit value */
 	)
 {
@@ -83,13 +83,17 @@ void nau8822_setreg(
 
 #else /* CODEC_TYPE_NAU8822_USE_SPI */
 
+#if WITHTWIHW
+	uint8_t buff [2] = { fulldata >> 8, fulldata >> 0, };
+	i2chw_write(NAU8822_ADDRESS_W, buff, 2);
+#elif WITHTWISW
 	// кодек управляется по I2C
 	i2c_start(NAU8822_ADDRESS_W);
 	i2c_write(fulldata >> 8);
 	i2c_write(fulldata >> 0);
 	i2c_waitsend();
 	i2c_stop();
-
+#endif
 #endif /* CODEC_TYPE_NAU8822_USE_SPI */
 }
 
@@ -273,7 +277,7 @@ static void nau8822_setprocparams(
 // возврат степени 2 от числа (не являющиеся 1 2 4 8... округляются до ближайшего меньшего).
 static uint_fast8_t
 nau8822_ilog2(
-	unsigned long v		// число на анализ
+	uint_fast32_t v		// число на анализ
 	)
 {
 	uint_fast8_t n;
@@ -288,8 +292,8 @@ nau8822_ilog2(
 static void nau8822_initialize_fullduplex(void)
 {
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex start\n"));
-	unsigned long NAU8822_AUDIO_INTERFACE_WLEN_val;
-	unsigned long NAU8822_MISC_8B_val;	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
+	uint_fast32_t NAU8822_AUDIO_INTERFACE_WLEN_val;
+	uint_fast32_t NAU8822_MISC_8B_val;	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
 	switch (WITHADAPTERCODEC1WIDTH)
 	{
 	default:
@@ -306,18 +310,18 @@ static void nau8822_initialize_fullduplex(void)
 	const uint_fast8_t master = 0;
 #endif /* CODEC_TYPE_NAU8822_MASTER */
 #if CODEC_TYPE_NAU8822_USE_8KS
-	const unsigned long NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x05uL * (1 << 2); // SMPLR=0x05 (8 kHz)
-	const unsigned long NAU8822_CLOCKING_MCLKSEL_val = 0x05uL * (1 << 5);	// 0x05: divide by 6 MCLKSEL master clock prescaler
-	const unsigned long ws = 8000;
+	const uint_fast32_t NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x05u * (1u << 2); // SMPLR=0x05 (8 kHz)
+	const uint_fast32_t NAU8822_CLOCKING_MCLKSEL_val = 0x05u * (1u << 5);	// 0x05: divide by 6 MCLKSEL master clock prescaler
+	const uint_fast32_t ws = 8000;
 #else /* CODEC_TYPE_NAU8822_USE_8KS */
-	const unsigned long NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x00uL * (1 << 2); // SMPLR=0x00 (48kHz)
-	const unsigned long NAU8822_CLOCKING_MCLKSEL_val = 0x00uL * (1 << 5);	// Scaling of master clock source for internal 256fs rate divide by 1
-	const unsigned long ws = 48000;
+	const uint_fast32_t NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x00u * (1u << 2); // SMPLR=0x00 (48kHz)
+	const uint_fast32_t NAU8822_CLOCKING_MCLKSEL_val = 0x00u * (1u << 5);	// Scaling of master clock source for internal 256fs rate divide by 1
+	const uint_fast32_t ws = 48000;
 #endif /* CODEC_TYPE_NAU8822_USE_8KS */
 
-	const unsigned long mclk = 12288000;
-	const unsigned long framebits = CODEC1_FRAMEBITS;
-	const unsigned long bclk = ws * framebits;
+	const uint_fast32_t mclk = 12288000;
+	const uint_fast32_t framebits = CODEC1_FRAMEBITS;
+	const uint_fast32_t bclk = ws * framebits;
 	const unsigned divider = mclk / bclk;
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, nau8822_ilog2=%u\n"), mclk, bclk, divider, nau8822_ilog2(divider));
 
@@ -361,8 +365,8 @@ static void nau8822_initialize_fullduplex(void)
 
 	nau8822_setreg(NAU8822_CLOCKING,	// reg 0x06
 		NAU8822_CLOCKING_MCLKSEL_val |	// Scaling of master clock source for internal 256fs rate divide by 1
-		nau8822_ilog2(divider) * (0x01uL << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
-		master * (0x01uL << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
+		nau8822_ilog2(divider) * (1u << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
+		master * (1u << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
 		0);
 
 	// Установка параметров умножителя за ЦАП не требуется - всегда максимальный уровень.
