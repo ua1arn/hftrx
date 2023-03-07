@@ -2924,7 +2924,10 @@ void allwnrt113_pll_initialize(void)
 
 	    /* PLL(x30), I:G:B:P1:P0 = 30:20:10:5:5/2 */
 	    //CPG.FRQCR  = 0x1035u;
-	    CPG.FRQCR  = 0x3035u;	// CKIO pin = hi-z
+	    CPG.FRQCR =
+	    	CPG_FRQCR_CKOEN |	/* CKIO pin: Output off (Hi-Z) */
+	    	0x35 |	/* reserved bits state */
+			0;
 		(void) CPG.FRQCR;
 
 	    /* CKIO:Output at time usually output     *
