@@ -20,10 +20,11 @@
 #include "audio.h"
 #include "nau8822.h"
 
-// Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
-#define NAU8822_SPIMODE		SPIC_MODE3
-#define NAU8822_SPISPEED SPIC_SPEEDFAST
-#define NAU8822_ADDRESS_W	0x34	// I2C address: 0x34
+// Clock period, SCLK no less then 80 nS (частота не выше 12.5 МГц)
+#define NAU8822_SPIMODE			SPIC_MODE3
+#define NAU8822_SPISPEED 		SPIC_SPEED10M
+#define NAU8822_SPICSDELAYUS	0
+#define NAU8822_ADDRESS_W		0x34	// I2C address: 0x34
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
@@ -60,7 +61,7 @@ void nau8822_setreg(
 		uint8_t txbuf [2];
 
 		USBD_poke_u16_BE(txbuf, fulldata);
-		prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+		prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, NAU8822_SPICSDELAYUS, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 
 	#elif WITHSPIEXT16
 
@@ -85,7 +86,7 @@ void nau8822_setreg(
 
 #if WITHTWIHW
 	uint8_t buff [2] = { fulldata >> 8, fulldata >> 0, };
-	i2chw_write(NAU8822_ADDRESS_W, buff, 2);
+	i2chw_write(NAU8822_ADDRESS_W, buff, ARRAY_SIZE(buff));
 #elif WITHTWISW
 	// кодек управляется по I2C
 	i2c_start(NAU8822_ADDRESS_W);
@@ -326,15 +327,8 @@ static void nau8822_initialize_fullduplex(void)
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, nau8822_ilog2=%u\n"), mclk, bclk, divider, nau8822_ilog2(divider));
 
 	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
-
-	const uint_fast8_t level = 0;	// До инициализации тишина
-	// Установка уровня вывода на наушники
-	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, level | 0);
-	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, level | 0x100);
-
-	// Установка уровня вывода на динамик
-	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, level | 0);
-	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, level | 0x100);
+	nau8822_setreg(NAU8822_GPIO_CONTROL, 0x08);	// RESET off (write value ignored)
+	nau8822_setreg(NAU8822_GPIO_CONTROL, 0x00);	// RESET off (write value ignored)
 
 	// R1 Bit 8, DCBUFEN, set to logic = 1 if setting up for greater than 3.60V operation
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_1, 0x1cd); // was: 0x1cd - pll off, input to internal bias buffer in high-Z floating condition
@@ -368,6 +362,15 @@ static void nau8822_initialize_fullduplex(void)
 		nau8822_ilog2(divider) * (1u << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
 		master * (1u << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
 		0);
+
+	const uint_fast8_t level = 0;	// До инициализации тишина
+	// Установка уровня вывода на наушники
+	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, level | 0);
+	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, level | 0x100);
+
+	// Установка уровня вывода на динамик
+	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, level | 0);
+	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, level | 0x100);
 
 	// Установка параметров умножителя за ЦАП не требуется - всегда максимальный уровень.
 	nau8822_setreg(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 255 | 0);
