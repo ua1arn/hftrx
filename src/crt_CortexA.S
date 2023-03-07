@@ -50,7 +50,6 @@
    ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
    ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
    ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
-   ARM_MODE_MASK  = 0x1F
    
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
@@ -62,7 +61,7 @@
 	 STACKSIZEHYP = 64
 	 STACKSIZEMON = 64
 	 STACKSIZESVC = 64
-	 STACKSIZEIRQ = 512
+	 STACKSIZEIRQ = 64
 
 	 STACKSIZESYSBOOT = 512
   
@@ -378,12 +377,14 @@ ExitFunction:
 */
  	.align 	4, 0
     .func   IRQ_Handler
+IRQ_Handler_n:
 IRQ_Handler:
 
 	sub     lr, lr, #4                  // Pre-adjust LR
 	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack
-	cps     #ARM_MODE_SYS                   // Change to SYS mode
-	push    {r0-r3, r12, lr}            // Save APCS corruptible registers
+	//cps		#ARM_MODE_SYS                   // Change to SYS mode
+	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
+	push    {r0-r3, r4-r11, r12, lr}            // Save APCS corruptible registers
 
 	mov     r3, sp                      // Move SP into R3
 	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
@@ -400,9 +401,16 @@ IRQ_Handler:
 	VPUSH.F32	{D0-D15}
 	VPUSH.F32	{D16-D31}
 
+    // Initialise FPSCR to a known state
+    // FPSCR Loaded in to R1
+ 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+	AND     R1,R1,R3
+	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
+
  	LDR		R0, =IRQ_Handler_GIC
 	MOV		LR, PC
 	BX		R0     /* and jump... */
+
  	VMRS	R1, FPSID
 	VMSR	FPSID, R1
 
@@ -412,121 +420,19 @@ IRQ_Handler:
 	VMSR	FPSCR, R1
 	VMSR	FPEXC, R2
 
-
-
 	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
 	add     sp, sp, r3                  // Unadjust stack
 
 
 	//clrex                               // Clear exclusive monitor for interrupted code
-	pop     {r0-r3, r12, lr}            // Restore stacked APCS registers
+	pop     {r0-r3, r4-r11, r12, lr}            // Restore stacked APCS registers
 	rfefd   sp!                         // Return from IRQ handler - RFEIA instruction
 
 	.endfunc
    	.ltorg
 
-	.align 4, 0
-
-/* ================================================================== */
-/* Entry point for the IRQ handler */
-/* ================================================================== */
-
-    .func   IRQ_Handler_n
-IRQ_Handler_n:
-
-	/* save interrupt context on the stack to allow nesting */
-	SUB		LR, LR, #4
-	STMFD   SP!, {LR}
-	MRS     LR, SPSR
-	STMFD   SP!, {R0, LR}
-
-    MSR     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
-	STMFD   SP!, {R1-R12, LR}
-	// Although FPSID is a read-only register, software
-	// can perform a VMSR to the FPSID to force Floating-point serialization,
-	VMRS	LR, FPSID
-	VMSR	FPSID, LR
-	PUSH	{LR}
-
-	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
-	// save VFP/Neon FPSCR register
-	VMRS	R2, FPSCR	// R2 used below
-	PUSH	{R2}
-	// save VFP/Neon FPEXC register
-	VMRS	R0, FPEXC
-    ldr     LR, =(1 << 31) //check FPEXC.EX
-	TST		R0, LR		// check FPEXC.EX
-	BEQ skipPUSH
-	VMRS	LR, FPINST
-	PUSH	{LR}
-	VMRS	LR, FPINST2
-	PUSH	{LR}
-skipPUSH:
-   // Initialise FPSCR to a known state
-    // Loaded in to R2
-	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	PUSH {R0}	// FPEXC
-	AND     R2,R2,R3
-
-//#if __ARM_NEON == 1
-	// save neon data registers
-	VPUSH.F32	{D16-D31}
-//#endif /* __ARM_NEON == 1 */
- 	VMSR    FPSCR,R2	// Initialise FPSCR to a known state
-
-	LDR		R2, =IRQ_Handler_GIC
-	// save vfp/neon data registers
-	VPUSH.F32	{D0-D15}
-
-	MOV		LR, PC
-	BX		R2     /* and jump... */
-
-	// Although FPSID is a read-only register, software
-	// can perform a VMSR to the FPSID to force Floating-point serialization,
-	VMRS	LR, FPSID
-	VMSR	FPSID, LR
-	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
-	VMRS	LR, FPSCR
-
-	// restore vfp data registers
-	VPOP.F32   {D0-D15}
-	// restore VFP/Neon FPEXC register
-    ldr     LR, =(1 << 31) //check FPEXC.EX
-//#if __ARM_NEON == 1
-	// restore vfp/neon data registers
-	VPOP.F32	{D16-D31}
-//#endif /* __ARM_NEON == 1 */
-
-	POP 	{R0}	// FPEXC
-	TST		R0, LR	// check FPEXC.EX
-	BEQ skipPOP
-	POP 	{LR}
-	VMSR	FPINST2, LR
-	POP 	{LR}
-	VMSR 	FPINST, LR
-skipPOP:
-	// restore VFP/Neon FPEXC register
-	VMSR	FPEXC, R0
-	// restore VFP/Neon FPSCR register
-	POP		{LR}
-	VMSR	FPSCR, LR
-	POP		{LR}
-	VMSR	FPSID, LR
-
-	LDMIA   SP!, {R1-R12, LR}
-    MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
-
-	LDMIA   SP!, {R0, LR}
-	MSR     SPSR_cxsf, LR
-	ISB
-	LDMIA   SP!, {PC}^
-	//rfefd   sp!                         // Return from IRQ handler - RFEIA instruction (RFE IA sp!)
-
-	.endfunc
-   .ltorg
-
 	.section .noinit
-	.align 8
+	.align 3
 
 	.space	STACKSIZEUND
 __stack_cpu0_und_end = .

@@ -50,19 +50,18 @@
    //CA53 not have ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
    ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
    ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
-   ARM_MODE_MASK  = 0x1F
    
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 256
-	 STACKSIZEABT = 256
-	 STACKSIZEFIQ = 256
-	 STACKSIZEHYP = 256
-	 STACKSIZEMON = 256
-	 STACKSIZESVC = 256
-	 STACKSIZEIRQ = 1024
+	 STACKSIZEUND = 64
+	 STACKSIZEABT = 64
+	 STACKSIZEFIQ = 64
+	 STACKSIZEHYP = 64
+	 STACKSIZEMON = 64
+	 STACKSIZESVC = 64
+	 STACKSIZEIRQ = 64
 
 	 STACKSIZESYSCPUn = 16 * 1024 * 1024	/* 1MB */
 
@@ -135,7 +134,7 @@ Reset_CPU1_Handler:
    .ltorg
 
 	.section .bss
-	.align 8
+	.align 3
 
 	.space	STACKSIZEIRQ
 __stack_cpu1_irq_end = .
@@ -221,7 +220,7 @@ Reset_CPU2_Handler:
    .ltorg
 
 	.section .bss
-	.align 8
+	.align 3
 
 	.space	STACKSIZEIRQ
 __stack_cpu2_irq_end = .
@@ -307,7 +306,7 @@ Reset_CPU3_Handler:
    .ltorg
 
 	.section .bss
-	.align 8
+	.align 3
 
 	.space	STACKSIZEIRQ
 __stack_cpu3_irq_end = .
