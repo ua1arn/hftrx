@@ -382,7 +382,8 @@ IRQ_Handler:
 
 	sub     lr, lr, #4                  // Pre-adjust LR
 	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack
-	cps     #ARM_MODE_SYS                   // Change to SYS mode
+	//cps		#ARM_MODE_SYS                   // Change to SYS mode
+	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
 	push    {r0-r3, r4-r11, r12, lr}            // Save APCS corruptible registers
 
 	mov     r3, sp                      // Move SP into R3
