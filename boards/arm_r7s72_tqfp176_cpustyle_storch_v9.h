@@ -230,15 +230,32 @@
 		arm_hardware_pio6_alternative(1U << 10, R7S721_PIOALT_3); /* P6_10 SSITxD0 */ \
 		arm_hardware_pio6_alternative(1U << 11, R7S721_PIOALT_3); /* P6_11 SSIRxD0 */ \
 	} while (0)
+
+	#define HARDWARE_CODEC1_IO_CONTROL(on) do { \
+		if (on) { \
+			arm_hardware_pio6_alternative(1U << 8, R7S721_PIOALT_3); /* P6_8 SSISCK0 */ \
+			arm_hardware_pio6_alternative(1U << 9, R7S721_PIOALT_3); /* P6_9 SSIWS0 */ \
+			arm_hardware_pio6_alternative(1U << 10, R7S721_PIOALT_3); /* P6_10 SSITxD0 */ \
+			arm_hardware_pio6_alternative(1U << 11, R7S721_PIOALT_3); /* P6_11 SSIRxD0 */ \
+		} else { \
+			arm_hardware_pio6_inputs(1U << 8); /* P6_8 SSISCK0 */ \
+			arm_hardware_pio6_inputs(1U << 9); /* P6_9 SSIWS0 */ \
+			arm_hardware_pio6_inputs(1U << 10); /* P6_10 SSITxD0 */ \
+			arm_hardware_pio6_inputs(1U << 11); /* P6_11 SSIRxD0 */ \
+		} \
+	} while (0)
+
 #endif /* WITHI2S2HW */
 
 #if WITHSAI1HW
+
 	#define HARDWARE_SSIF1_INITIALIZE() do { \
 		arm_hardware_pio5_alternative(1U << 4, R7S721_PIOALT_3); /* P5_4 SSISCK1 */ \
 		arm_hardware_pio5_alternative(1U << 5, R7S721_PIOALT_3); /* P5_5 SSIWS1 */ \
 		arm_hardware_pio5_alternative(1U << 6, R7S721_PIOALT_3); /* P5_6 SSITxD1 */ \
 		arm_hardware_pio5_alternative(1U << 7, R7S721_PIOALT_3); /* P5_7 SSIRxD1 */ \
 	} while (0)
+
 #endif /* WITHSAI1HW */
 
 #if WITHSAI2HW

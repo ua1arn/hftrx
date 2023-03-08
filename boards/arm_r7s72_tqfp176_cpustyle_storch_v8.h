@@ -207,6 +207,21 @@
 		arm_hardware_pio6_alternative(1U << 10, R7S721_PIOALT_3); /* P6_10 SSITxD0 */ \
 		arm_hardware_pio6_alternative(1U << 11, R7S721_PIOALT_3); /* P6_11 SSIRxD0 */ \
 	} while (0)
+
+	#define HARDWARE_CODEC1_IO_CONTROL(on) do { \
+		if (on) { \
+			arm_hardware_pio6_alternative(1U << 8, R7S721_PIOALT_3); /* P6_8 SSISCK0 */ \
+			arm_hardware_pio6_alternative(1U << 9, R7S721_PIOALT_3); /* P6_9 SSIWS0 */ \
+			arm_hardware_pio6_alternative(1U << 10, R7S721_PIOALT_3); /* P6_10 SSITxD0 */ \
+			arm_hardware_pio6_alternative(1U << 11, R7S721_PIOALT_3); /* P6_11 SSIRxD0 */ \
+		} else { \
+			arm_hardware_pio6_inputs(1U << 8); /* P6_8 SSISCK0 */ \
+			arm_hardware_pio6_inputs(1U << 9); /* P6_9 SSIWS0 */ \
+			arm_hardware_pio6_inputs(1U << 10); /* P6_10 SSITxD0 */ \
+			arm_hardware_pio6_inputs(1U << 11); /* P6_11 SSIRxD0 */ \
+		} \
+	} while (0)
+
 #endif /* WITHI2S2HW */
 
 #if WITHSAI1HW

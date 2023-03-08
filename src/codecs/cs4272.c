@@ -146,7 +146,7 @@ static uint_fast8_t cs4272_getreg(
 #endif
 
 // MCLK должен уже подаваться в момент инициализации
-static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg)
+static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg, , uint_fast8_t master)
 {
 	board_codec2_nreset(1);	// Выставить сигнал сброса
 	board_update();
@@ -223,9 +223,9 @@ static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg)
 
 
 // MCLK должен уже подаваться в момент инициализации
-static void cs4272_initialize_fullduplex(void)
+static void cs4272_initialize_fullduplex(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
 {
-	cs4272_initialize_fullduplex_addr(0);
+	cs4272_initialize_fullduplex_addr(0, master);
 }
 
 /* требуется ли подача тактирования для инициадизации кодека */
@@ -238,7 +238,7 @@ const codec2if_t * board_getfpgacodecif(void)
 {
 	static const char codecname [] = "CS4272";
 
-	/* Интерфейс цправления кодеком */
+	/* Интерфейс управления кодеком */
 	static const codec2if_t ifc =
 	{
 		cs4272_clocksneed

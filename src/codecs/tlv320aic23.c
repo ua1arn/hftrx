@@ -94,14 +94,9 @@ static void tlv320aic23_stop(void)
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
 }
 
-static void tlv320aic23_initialize_fullduplex(void)
+static void tlv320aic23_initialize_fullduplex(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
 {
 	PRINTF("tlv320aic23_initialize_fullduplex\n");
-#if CODEC_TYPE_TLV320AIC23B_MASTER
-	const uint_fast8_t master = 1;	// кодек формирует I2S синхронизацию
-#else /* CODEC_TYPE_TLV320AIC23B_MASTER */
-	const uint_fast8_t master = 0;
-#endif /* CODEC_TYPE_TLV320AIC23B_MASTER */
 	const unsigned long framebits = CODEC1_FRAMEBITS;
 
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
@@ -262,12 +257,12 @@ board_getaudiocodecif(void)
 
 	static const char codecname [] = "TLV320AIC23";
 
-	/* Интерфейс цправления кодеком */
+	/* Интерфейс управления кодеком */
 	static const codec1if_t ifc =
 	{
 		tlv320aic23_clocksneed,
 		tlv320aic23_stop,
-		tlv320aic23_initialize_fullduplex,	/* master или slave в зависимости от определения CODEC_TYPE_TLV320AIC23B_MASTER */
+		tlv320aic23_initialize_fullduplex,
 		tlv320aic23_setvolume,	/* Установка громкости на наушники */
 		tlv320aic23_lineinput,	/* Выбор LINE IN как источника для АЦП вместо микрофона */
 		tlv320aic23_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
