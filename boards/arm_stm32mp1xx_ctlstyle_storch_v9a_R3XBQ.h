@@ -403,7 +403,7 @@
 	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
-	#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
+	#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
 
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */

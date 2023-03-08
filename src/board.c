@@ -6403,7 +6403,7 @@ prog_dac1_b_value(uint_fast8_t v)
 #if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_FPGAV1)
 
 /* dummy function */
-static void fpga_initialize_fullduplex(void (* io_control)(uint_fast8_t on))
+static void fpga_initialize_fullduplex(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
 {
 }
 
@@ -6419,7 +6419,7 @@ const codec2if_t * board_getfpgacodecif(void)
 {
 	static const char codecname [] = "FPGA_V1";
 
-	/* Интерфейс цправления кодеком */
+	/* Интерфейс управления кодеком */
 	static const codec2if_t ifc =
 	{
 		fpga_clocksneed,
@@ -7803,11 +7803,16 @@ void board_init_chips2(void)
 {
 #if defined(CODEC1_TYPE)
 	{
+	#if CODEC1_IFC_MASTER
+		const uint_fast8_t master = 1;	// кодек формирует I2S синхронизацию
+	#else /* CODEC1_IFC_MASTER */
+		const uint_fast8_t master = 0;
+	#endif /* CODEC1_IFC_MASTER */
 		const codec1if_t * const ifc1 = board_getaudiocodecif();
 
 		PRINTF(PSTR("af codec type = '%s'\n"), ifc1->label);
 
-		ifc1->initialize(board_codec1_io_control);
+		ifc1->initialize(board_codec1_io_control, master);
 		prog_codec1reg();
 	}
 
@@ -7820,7 +7825,7 @@ void board_init_chips2(void)
 
 	PRINTF(PSTR("if codec type = '%s'\n"), ifc2->label);
 	// MCLK должен уже подаваться в момент инициализации
-	ifc2->initialize(board_codec2_io_control);
+	ifc2->initialize(board_codec2_io_control, 0);
 #endif /* defined(CODEC2_TYPE) */
 }
 

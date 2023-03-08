@@ -293,9 +293,9 @@ static void wm8994_stop(void)
 	wm8994_setreg(WM8994_SOFTWARE_RESET, 0x0000);	// RESET
 }
 
-static void wm8994_initialize_slave_fullduplex(void)
+static void wm8994_initialize_fullduplex(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
 {
-	debug_printf_P(PSTR("wm8994_initialize_slave_fullduplex start\n"));
+	debug_printf_P(PSTR("wm8994_initialize_fullduplex start\n"));
 
 	wm8994_setreg(WM8994_SOFTWARE_RESET, 0x0000);	// RESET
 
@@ -626,7 +626,7 @@ static void wm8994_initialize_slave_fullduplex(void)
 	}
 	/* Return communication control value */
 
-	debug_printf_P(PSTR("wm8994_initialize_slave_fullduplex done\n"));
+	debug_printf_P(PSTR("wm8994_initialize_fullduplex done\n"));
 
 
 }
@@ -644,12 +644,12 @@ board_getaudiocodecif(void)
 
 	static const char codecname [] = "WM8994";
 
-	/* Интерфейс цправления кодеком */
+	/* Интерфейс управления кодеком */
 	static const codec1if_t ifc =
 	{
 		wm8994_clocksneed,
 		wm8994_stop,
-		wm8994_initialize_slave_fullduplex,
+		wm8994_initialize_fullduplex,
 		wm8994_setvolume,		/* Установка громкости на наушники */
 		wm8994_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */
 		wm8994_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
