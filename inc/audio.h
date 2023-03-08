@@ -1150,7 +1150,7 @@ typedef struct codec1if_tag
 {
 	uint_fast8_t (* clocksneed)(void);	/* требуется ли подача тактирования для инициадизации кодека */
 	void (* stop) (void);
-	void (* initialize) (void);
+	void (* initialize) (void (* io_control)(uint_fast8_t on));
 	void (* setvolume) (uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk);	/* Установка громкости на наушники */
 	void (* setlineinput) (uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Выбор LINE IN как источника для АЦП вместо микрофона */
 	void (* setprocparams) (uint_fast8_t procenable, const uint_fast8_t * gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
@@ -1163,7 +1163,7 @@ const codec1if_t * board_getaudiocodecif(void);		// получить интер�
 typedef struct codec2if_tag
 {
 	uint_fast8_t (* clocksneed)(void);	/* требуется ли подача тактирования для инициадизации кодека */
-	void (* initialize)(void);
+	void (* initialize) (void (* io_control)(uint_fast8_t on));
 	const char * label;
 } codec2if_t;
 

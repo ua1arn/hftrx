@@ -291,11 +291,11 @@ nau8822_ilog2(
 	return n;
 }
 
-static void nau8822_initialize_fullduplex(void)
+static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on))
 {
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex start\n"));
-	uint_fast32_t NAU8822_AUDIO_INTERFACE_WLEN_val;
-	uint_fast32_t NAU8822_MISC_8B_val;	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
+	uint_fast16_t NAU8822_AUDIO_INTERFACE_WLEN_val;
+	uint_fast16_t NAU8822_MISC_8B_val;	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
 	switch (WITHADAPTERCODEC1WIDTH)
 	{
 	default:
@@ -312,12 +312,12 @@ static void nau8822_initialize_fullduplex(void)
 	const uint_fast8_t master = 0;
 #endif /* CODEC_TYPE_NAU8822_MASTER */
 #if CODEC_TYPE_NAU8822_USE_8KS
-	const uint_fast32_t NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x05u * (1u << 2); // SMPLR=0x05 (8 kHz)
-	const uint_fast32_t NAU8822_CLOCKING_MCLKSEL_val = 0x05u * (1u << 5);	// 0x05: divide by 6 MCLKSEL master clock prescaler
+	const uint_fast16_t NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x05u * (1u << 2); // SMPLR=0x05 (8 kHz)
+	const uint_fast16_t NAU8822_CLOCKING_MCLKSEL_val = 0x05u * (1u << 5);	// 0x05: divide by 6 MCLKSEL master clock prescaler
 	const uint_fast32_t ws = 8000;
 #else /* CODEC_TYPE_NAU8822_USE_8KS */
-	const uint_fast32_t NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x00u * (1u << 2); // SMPLR=0x00 (48kHz)
-	const uint_fast32_t NAU8822_CLOCKING_MCLKSEL_val = 0x00u * (1u << 5);	// Scaling of master clock source for internal 256fs rate divide by 1
+	const uint_fast16_t NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x00u * (1u << 2); // SMPLR=0x00 (48kHz)
+	const uint_fast16_t NAU8822_CLOCKING_MCLKSEL_val = 0x00u * (1u << 5);	// Scaling of master clock source for internal 256fs rate divide by 1
 	const uint_fast32_t ws = 48000;
 #endif /* CODEC_TYPE_NAU8822_USE_8KS */
 
@@ -327,6 +327,8 @@ static void nau8822_initialize_fullduplex(void)
 	const unsigned divider = mclk / bclk;
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, nau8822_ilog2=%u\n"), mclk, bclk, divider, nau8822_ilog2(divider));
 
+	io_control(0);
+
 	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
 	nau8822_setreg(NAU8822_GPIO_CONTROL, 0x08);	// RESET off (write value ignored)
 	nau8822_setreg(NAU8822_GPIO_CONTROL, 0x00);	// RESET off (write value ignored)
@@ -335,6 +337,12 @@ static void nau8822_initialize_fullduplex(void)
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_1, 0x1cd); // was: 0x1cd - pll off, input to internal bias buffer in high-Z floating condition
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_2, 0x1bf); // was: 0x1bf - right pga off - 0x1b7
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_3, 0x1ef); // was: 0x1ff - reserved=0
+
+	nau8822_setreg(NAU8822_CLOCKING,	// reg 0x06
+		NAU8822_CLOCKING_MCLKSEL_val |	// Scaling of master clock source for internal 256fs rate divide by 1
+		nau8822_ilog2(divider) * (1u << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
+		master * (1u << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
+		0);
 
 #if CODEC1_FORMATI2S_PHILIPS
 	// I2S mode
@@ -348,7 +356,8 @@ static void nau8822_initialize_fullduplex(void)
 
 #endif /* CODEC1_FORMATI2S_PHILIPS */
 
-	//nau8822_setreg(NAU8822_COMPANDING_CONTROL, 0x000);	// reg 0x05 = 0 reset state
+	nau8822_setreg(NAU8822_COMPANDING_CONTROL, 0x000);	// reg 0x05 = 0 reset state
+
 	nau8822_setreg(NAU8822_MISC, 	// reg 0x3C,
 		0x20 |
 		NAU8822_MISC_8B_val |			// 8-bit word length enable
@@ -358,11 +367,7 @@ static void nau8822_initialize_fullduplex(void)
 		NAU8822_ADDITIONAL_CONTROL_SMPLR_val |			// SMPLR=0x05 (8 kHz)
 		0);
 
-	nau8822_setreg(NAU8822_CLOCKING,	// reg 0x06
-		NAU8822_CLOCKING_MCLKSEL_val |	// Scaling of master clock source for internal 256fs rate divide by 1
-		nau8822_ilog2(divider) * (1u << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
-		master * (1u << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
-		0);
+	io_control(1);
 
 	const uint_fast8_t level = 0;	// До инициализации тишина
 	// Установка уровня вывода на наушники

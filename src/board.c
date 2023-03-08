@@ -6403,7 +6403,7 @@ prog_dac1_b_value(uint_fast8_t v)
 #if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_FPGAV1)
 
 /* dummy function */
-static void fpga_initialize_fullduplex(void)
+static void fpga_initialize_fullduplex(void (* io_control)(uint_fast8_t on))
 {
 }
 
@@ -7784,6 +7784,19 @@ void board_init_chips(void)
 #endif /* defined(CODEC1_TYPE) */
 }
 
+/* Отключение сигналов на входе кодека во время инициализации */
+static void board_codec1_io_control(uint_fast8_t on)
+{
+#if defined (HARDWARE_CODEC1_IO_CONTROL)
+	HARDWARE_CODEC1_IO_CONTROL(on);
+#endif /* defined (HARDWARE_CODEC1_IO_CONTROL) */
+}
+
+/* Отключение сигналов на входе кодека во время инициализации */
+static void board_codec2_io_control(uint_fast8_t on)
+{
+}
+
 /* Initialize chips. All coeffecienters should be already calculated before. */
 /* вызывается при разрешённых прерываниях. */
 void board_init_chips2(void)
@@ -7794,7 +7807,7 @@ void board_init_chips2(void)
 
 		PRINTF(PSTR("af codec type = '%s'\n"), ifc1->label);
 
-		ifc1->initialize();
+		ifc1->initialize(board_codec1_io_control);
 		prog_codec1reg();
 	}
 
@@ -7807,7 +7820,7 @@ void board_init_chips2(void)
 
 	PRINTF(PSTR("if codec type = '%s'\n"), ifc2->label);
 	// MCLK должен уже подаваться в момент инициализации
-	ifc2->initialize();	
+	ifc2->initialize(board_codec2_io_control);
 #endif /* defined(CODEC2_TYPE) */
 }
 

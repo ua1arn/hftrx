@@ -315,7 +315,7 @@
 
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
-	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
+	#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма для двух квадратур - канал трансивера
