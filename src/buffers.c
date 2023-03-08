@@ -2059,6 +2059,18 @@ void RAMFUNC release_dmabuffer16tx(uintptr_t addr)
 	buffers_tonull16tx(p);
 }
 
+static void debaudio(int v)
+{
+	static const char hex [16] = "0123456789ABCDEF";
+
+	dbg_putchar(hex [(v >> 12) & 0x0F]);
+	dbg_putchar(hex [(v >> 8) & 0x0F]);
+	dbg_putchar(hex [(v >> 4) & 0x0F]);
+	dbg_putchar(hex [(v >> 0) & 0x0F]);
+	dbg_putchar(' ');
+
+}
+
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки AF ADC
 void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
@@ -2074,6 +2086,8 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_mikeadc += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
+
+	//debaudio(p->buff [0]);
 
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
