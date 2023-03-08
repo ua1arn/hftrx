@@ -5,10 +5,10 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Аист" на процессоре ZYNQ 7000
+// Трансивер с DSP обработкой "Аист" на плате Alinx AXU2CGA + AD9640 board, Petalinux, by RA4ASN
 
-#ifndef ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED
-#define ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED 1
+#ifndef ARM_XCZUXX_CTLSTYLE_AXU2CGA_AD9640_H_INCLUDED
+#define ARM_XCZUXX_CTLSTYLE_AXU2CGA_AD9640_H_INCLUDED 1
 
 	#if ! defined(XCZU2CG)
 		#error Wrong CPU selected. XCZU2CG expected
@@ -65,9 +65,9 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	//#define CTLREGMODE_NOCTLREG	1
-	#define CTLREGMODE_XCZU	1
-	#define WITHQRPBOARD_UA3REO	1
+//	#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_XCZU_V2	1
+//	#define WITHQRPBOARD_UA3REO	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -232,7 +232,7 @@
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT		120
+			#define WITHAFGAINDEFAULT		180
 			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1
@@ -462,4 +462,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED */
+#endif /* ARM_XCZUXX_CTLSTYLE_AXU2CGA_AD9640_H_INCLUDED */

@@ -5,13 +5,12 @@
  * автор Гена Завидовский mgs2001@mail.ru
  * UA1ARN
  *
- * Среда выполнения для ZYNQ Ultrascale+ - Linux
- * Alinx AXU2CGA, LTC2209, DAC904E
+ * Трансивер с DSP обработкой "Аист" на плате Alinx AXU2CGA + AD9640 board, Petalinux, by RA4ASN
  *
  */
 
-#ifndef ARM_XCZUXX_CPUSTYLE_AXU2CGA_H_INCLUDED
-#define ARM_XCZUXX_CPUSTYLE_AXU2CGA_H_INCLUDED 1
+#ifndef ARM_XCZUXX_CPUSTYLE_AXU2CGA_AD9640_H_INCLUDED
+#define ARM_XCZUXX_CPUSTYLE_AXU2CGA_AD9640_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -33,13 +32,13 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 #define USERFIRSTSBLOCK 0
-//#define WITHPS7BOARD_EBAZ4205 1
 
 enum {
 	XGPI0,	// C13 encoder2 bit A
 	XGPI1,	// B10 encoder2 bit B
 	XGPI2,	// C14 encoder2 button
 	XGPI3,	// B8 spi_miso
+//	XGPI4,	// C8 ptt_in
 };
 
 enum {
@@ -63,8 +62,8 @@ enum {
 #define AXI_FIR_RELOAD_ADDR		0x8004b000
 #define AXI_DCDC_PWM_ADDR		0x80048000
 
-#define CALIBRATION_IQ_FIR_RX_SHIFT		50
-#define CALIBRATION_IQ_CIC_RX_SHIFT		62
+#define CALIBRATION_IQ_FIR_RX_SHIFT		51
+#define CALIBRATION_IQ_CIC_RX_SHIFT		59
 #define CALIBRATION_TX_SHIFT			25
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
@@ -601,9 +600,9 @@ enum {
 
 #if WITHSPIHW || WITHSPISW
 
-	#define targetnvram		XGPO3	// nvram FM25L256
+//	#define targetnvram		XGPO3	// nvram FM25L256
 	#define targetctl1		XGPO0
-	#define targetextctl	XGPO5
+//	#define targetextctl	XGPO5
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
@@ -617,8 +616,7 @@ enum {
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
-			gpio_writepin(targetnvram, 1);		\
-			gpio_writepin(targetextctl, 1);		\
+			gpio_writepin(targetctl1, 1);		\
 		} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
@@ -1031,4 +1029,4 @@ enum {
 			/*USBD_FS_INITIALIZE(); */\
 		} while (0)
 
-#endif /* ARM_XCZUXX_CPUSTYLE_AXU2CGA_H_INCLUDED */
+#endif /* ARM_XCZUXX_CPUSTYLE_AXU2CGA_AD9640_H_INCLUDED */
