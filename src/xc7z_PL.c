@@ -188,7 +188,7 @@ void xcz_fifo_mic_inthandler(void)
 	uint32_t * r = (uint32_t *) addr;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE16RX; i ++)
-		r[i] = Xil_In32(XPAR_AUDIO_AXI_FIFO_MIC_BASEADDR);
+		r[i] = Xil_In32(XPAR_AUDIO_FIFO_MIC_BASEADDR);
 
 	processing_dmabuffer16rx(addr);
 #endif /* WITHTX */
@@ -214,7 +214,7 @@ void xcz_fifo_phones_inthandler(void)
 	uint32_t * r = (uint32_t *) addr;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE16TX; i ++)
-		Xil_Out32(XPAR_AUDIO_AXI_FIFO_PHONES_BASEADDR, r[i]);
+		Xil_Out32(XPAR_AUDIO_FIFO_PHONES_BASEADDR, r[i]);
 
 	release_dmabuffer16tx(addr);
 }
