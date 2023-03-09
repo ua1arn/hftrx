@@ -498,14 +498,18 @@ static SPINLOCK_t spilock = SPINLOCK_INIT;
 
 void spi_operate_lock(IRQL_t * oldIrql)
 {
+#if ! LINUX_SUBSYSTEM
 	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
+#endif /* ! LINUX_SUBSYSTEM */
 	SPIN_LOCK(& spilock);
 }
 
 void spi_operate_unlock(IRQL_t irql)
 {
 	SPIN_UNLOCK(& spilock);
+#if ! LINUX_SUBSYSTEM
 	LowerIrql(irql);
+#endif /* ! LINUX_SUBSYSTEM */
 }
 
 static void spi_operate_low(lowspiio_t * iospi)
@@ -519,7 +523,11 @@ static void spi_operate_low(lowspiio_t * iospi)
 	switch (iospi->spiiosize)
 	{
 	case SPIIOSIZE_U8:
+#if CS_BY_REG
+		set_cs_reg(target);
+#else
 		spi_select2(target, iospi->spimode, iospi->spispeedindex);
+#endif /* CS_BY_REG */
 		break;
 #if WITHSPI16BIT
 	case SPIIOSIZE_U16:
@@ -684,11 +692,14 @@ static void spi_operate_low(lowspiio_t * iospi)
 		}
 	}
 
-
 	switch (iospi->spiiosize)
 	{
 	case SPIIOSIZE_U8:
+#if CS_BY_REG
+		set_cs_reg(0);
+#else
 		spi_unselect(target);
+#endif /* CS_BY_REG */
 		break;
 #if WITHSPI16BIT
 	case SPIIOSIZE_U16:

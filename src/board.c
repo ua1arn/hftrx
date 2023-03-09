@@ -4610,7 +4610,34 @@ prog_ctrlreg(uint_fast8_t plane)
 	//xcz_adcrand_set(glob_adcrand);
 }
 
-#elif CTLREGMODE_XCZU_V2
+#elif CTLREGMODE_XCZU_V2 && CS_BY_REG
+
+static void board_ctlreg1changed(void);
+
+static uint_fast8_t cs_ext1 = 1;
+static uint_fast8_t cs_ext2 = 1;
+static uint_fast8_t cs_nvram = 1;
+
+//todo Переделать
+void set_cs_reg(spitarget_t target)
+{
+	if (! (target >> 8)) 				// deassert CS's
+	{
+		cs_ext1 = 1;
+		cs_ext2 = 1;
+		cs_nvram = 1;
+		board_ctlreg1changed();
+	}
+	else
+	{
+		cs_ext1 = target == targetext1 ? 0 : 1;
+		cs_ext2 = target == targetext2 ? 0 : 1;
+		cs_nvram = target == targetnvram ? 0 : 1;
+		board_ctlreg1changed();
+	}
+
+	//PRINTF("%d %d %d\n", cs_ext1, cs_ext2, cs_nvram);
+}
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
@@ -4678,9 +4705,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		rbtype_t rbbuff [1] = { 0 };
 
 		RBBIT(007, 0);
-		RBBIT(006, 0); // cs_fram
-		RBBIT(005, 0); // cs_ext2
-		RBBIT(004, 0); // cs_ext1
+		RBBIT(006, cs_nvram);
+		RBBIT(005, cs_ext2);
+		RBBIT(004, cs_ext1);
 		RBBIT(003, ! glob_preamp);
 		RBBIT(002, ! glob_preamp);
 		RBBIT(001, ! glob_tx);

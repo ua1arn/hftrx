@@ -600,9 +600,13 @@ enum {
 
 #if WITHSPIHW || WITHSPISW
 
-//	#define targetnvram		XGPO3	// nvram FM25L256
 	#define targetctl1		XGPO0
-//	#define targetextctl	XGPO5
+
+	#define CS_BY_REG		1
+
+	#define targetext1		1 << 8
+	#define targetext2		2 << 8
+	#define targetnvram		3 << 8
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
