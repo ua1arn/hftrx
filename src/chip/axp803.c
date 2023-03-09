@@ -44,10 +44,15 @@ static i2cp_t pmic_i2cp;	/* параметры для обмена по I2C. П�
 
 int pmic_bus_init(void)
 {
+#if WITHTWISW
 	i2cp_intiialize(& pmic_i2cp, I2CP_I2C1, 100000000);
 
 
 	TWISOFT_INITIALIZE();
+#elif WITHTWIHW
+	i2c_initialize();
+
+#endif /* WITHTWISW */
 
 //	unsigned addr;
 //	for (addr = 1; addr < 127; ++ addr)
@@ -68,7 +73,7 @@ int pmic_bus_init(void)
 int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
 #if WITHTWIHW
-	uint8_t bufw = r;
+	uint8_t bufw = reg;
 	i2chw_write(PMIC_I2C_W, & bufw, 1);
 	i2chw_read(PMIC_I2C_R, data, 1);
 #elif WITHTWISW
@@ -87,7 +92,7 @@ int pmic_bus_write(uint8_t reg, uint8_t data)
 {
 #if WITHTWIHW
 	uint8_t bufw [] = { reg, data };
-	i2chw_write(PMIC_I2C_W, & bufw, ARRAY_SIZE(bufw));
+	i2chw_write(PMIC_I2C_W, bufw, ARRAY_SIZE(bufw));
 #elif WITHTWISW
 	unsigned addrw = PMIC_I2C_W;
 	unsigned addrr = PMIC_I2C_R;
@@ -460,11 +465,9 @@ int axp803_initialize(void)
 		}
 	}
 
-//	PRINTF("axp803_chip_id=0x%02X (expected 0x51)\n", axp803_chip_id);
-//	if (!(axp803_chip_id == 0x51))
-//		return -ENODEV;
-//	else
-//		return ret;
+	PRINTF("axp803_chip_id=0x%02X (expected 0x51)\n", axp803_chip_id);
+	if (!(axp803_chip_id == 0x51))
+		return -1;
 
 	axp803_set_aldo1(3300);	// VCC-PE
 	axp803_set_aldo2(3300);	// VCC-PL

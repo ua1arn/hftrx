@@ -452,6 +452,7 @@ void arm_hardware_pioh_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioi_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioj_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_piok_altfn2(unsigned long opins, unsigned af);
+void arm_hardware_piol_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioz_altfn2(unsigned long opins, unsigned af);
 
 void arm_hardware_pioa_altfn20(unsigned long opins, unsigned af);
@@ -465,6 +466,7 @@ void arm_hardware_pioh_altfn20(unsigned long opins, unsigned af);
 void arm_hardware_pioi_altfn20(unsigned long opins, unsigned af);
 void arm_hardware_pioj_altfn20(unsigned long opins, unsigned af);
 void arm_hardware_piok_altfn20(unsigned long opins, unsigned af);
+void arm_hardware_piol_altfn20(unsigned long opins, unsigned af);
 void arm_hardware_pioz_altfn20(unsigned long opins, unsigned af);
 
 void arm_hardware_pioa_altfn50(unsigned long opins, unsigned af);
@@ -478,6 +480,7 @@ void arm_hardware_pioh_altfn50(unsigned long opins, unsigned af);
 void arm_hardware_pioi_altfn50(unsigned long opins, unsigned af);
 void arm_hardware_pioj_altfn50(unsigned long opins, unsigned af);
 void arm_hardware_piok_altfn50(unsigned long opins, unsigned af);
+void arm_hardware_piol_altfn50(unsigned long opins, unsigned af);
 void arm_hardware_pioz_altfn50(unsigned long opins, unsigned af);
 
 // включить подтяжку вверх или вниз
@@ -492,6 +495,7 @@ void arm_hardware_pioh_updown(unsigned long up, unsigned long down);
 void arm_hardware_pioi_updown(unsigned long up, unsigned long down);
 void arm_hardware_pioj_updown(unsigned long up, unsigned long down);
 void arm_hardware_piok_updown(unsigned long up, unsigned long down);
+void arm_hardware_piol_updown(unsigned long up, unsigned long down);
 void arm_hardware_pioz_updown(unsigned long up, unsigned long down);
 
 // отключить подтяжку вверх или вниз
@@ -506,6 +510,7 @@ void arm_hardware_pioh_updownoff(unsigned long ipins);
 void arm_hardware_pioi_updownoff(unsigned long ipins);
 void arm_hardware_pioj_updownoff(unsigned long ipins);
 void arm_hardware_piok_updownoff(unsigned long ipins);
+void arm_hardware_piol_updownoff(unsigned long ipins);
 void arm_hardware_pioz_updownoff(unsigned long ipins);
 
 void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af);
@@ -519,6 +524,7 @@ void arm_hardware_pioh_periphopendrain_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioi_periphopendrain_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioj_periphopendrain_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_piok_periphopendrain_altfn2(unsigned long opins, unsigned af);
+void arm_hardware_piol_periphopendrain_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioz_periphopendrain_altfn2(unsigned long opins, unsigned af);
 
 void arm_hardware_pioa_analoginput(unsigned long ipins);

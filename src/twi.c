@@ -1671,19 +1671,18 @@ static void t113_i2c_set_rate(struct i2c_t113_pdata_t * pdat, uint64_t rate){
 	}
 	write32(pdat->virt + TWI_CCR, ((tm & 0xf) << 3) | ((tn & 0x7) << 0));
 }
-extern __IO uint32_t uwTick;
 
-//volatile unsigned int timeout1;
+//const uint32_t timeout1;
 
 static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
-	volatile unsigned int timeout = uwTick+5*10;	//uwTick+5мс
+	const uint32_t timeout = sys_now()+5*10;	//sys_now()+5мс
 	do {
 		if ((pdat_i2c.io->TWI_CNTR & (1 << 3))){
 			unsigned int stat = TWI1-> TWI_STAT;
 			////PRINTF("t113_i2c_wait_status = 0x%X\n", stat);
 			return stat;
 		}
-	} while (uwTick<timeout);
+	} while (sys_now()<timeout);
 
 	//I2C_ERROR_COUNT++;
 	 //PRINTF("t113_i2c_wait_status = I2C_STAT_BUS_ERROR\n");
@@ -1693,14 +1692,14 @@ static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
 static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
 	 //PRINTF("I2C start\n");
 	pdat_i2c.io->TWI_CNTR |= (1u << 5) | (1u << 3);
-	volatile unsigned int timeout = uwTick+5*100;	//uwTick+5мс
+	const uint32_t timeout = sys_now()+5*100;	//sys_now()+5мс
 	do {
 		if (!(pdat_i2c.io->TWI_CNTR & (1 << 5)))	// M_STA
 		{
 			//PRINTF("I2C start ok\n");
 			return t113_i2c_wait_status(pdat);
 		}
-	} while (uwTick<timeout);
+	} while (sys_now()<timeout);
 	//PRINTF("I2C start out\n");
 	return t113_i2c_wait_status(pdat);
 }
@@ -1711,11 +1710,11 @@ static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
 	val = pdat_i2c.io->TWI_CNTR;
 	val |= (1 << 4) | (1 << 3);
 	pdat_i2c.io->TWI_CNTR = val;
-	volatile unsigned int timeout = uwTick+5*10;
+	const uint32_t timeout = sys_now()+5*10;
 	do {
 		if (!(pdat_i2c.io->TWI_CNTR & (1 << 4)))
 			break;
-	} while (uwTick<timeout);
+	} while (sys_now()<timeout);
 	return 1;
 }
 
@@ -2533,6 +2532,10 @@ void hardware_twi_master_configure(void)
 	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
+
+#elif CPUSTYLE_A64
+
+	#warning Should be implemented for CPUSTYLE_A64
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
