@@ -78,6 +78,20 @@ void linux_encoder_spool(void)
 	}
 }
 
+void linux_nmea_spool(void)
+{
+	// need to execute: stty -F /dev/ttyPS1 115200
+	int fid = open("/dev/ttyPS1", O_RDONLY);
+	char buf[128];
+
+	while(1)
+	{
+		usleep(500);
+		read(fid, buf, 128);
+		printf("%s", buf);
+	}
+}
+
 /******************************************************************/
 
 static struct fb_var_screeninfo vinfo;
@@ -554,7 +568,7 @@ void linux_subsystem_init(void)
 	linux_iq_init();
 }
 
-pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8_t;
+pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8_t, nmea_t;
 
 #if WITHCPUTEMPERATURE
 #include "../sysmon/xsysmonpsu.h"
@@ -575,6 +589,7 @@ void linux_user_init(void)
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 1);
 	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
+	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
 
 #if WITHFT8
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 1);
@@ -844,6 +859,7 @@ void linux_exit(void)
 	linux_cancel_thread(timer_spool_t);
 	linux_cancel_thread(encoder_spool_t);
 	linux_cancel_thread(iq_interrupt_t);
+	linux_cancel_thread(nmea_t);
 #if WITHFT8
 	linux_cancel_thread(ft8_t);
 #endif /* WITHFT8 */
