@@ -626,9 +626,9 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW
-	// PL0 - SCK
-	// PL1 - SDA
+#if WITHTWISW || WITHTWIHW
+	// PL0 - S_TWI_SCK
+	// PL1 - S_TWI_SDA
 	#define TARGET_TWI_TWCK		(1u << 0)
 	#define TARGET_TWI_TWCK_PIN		(GPIOL->DATA)
 	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
@@ -651,14 +651,14 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF2x);	/* AF2 or AF3 */ \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3x);		/* AF2 or AF3 */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI_SCK AF3 */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI_SDA AF3 */ \
 		} while (0) 
 	#define	TWIHARD_IX x3	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR xTWI3	/* 0 - TWI0, 1: TWI1... */
 
 
-#endif // WITHTWISW
+#endif /* WITHTWISW || WITHTWIHW */
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
