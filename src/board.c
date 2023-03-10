@@ -4618,27 +4618,6 @@ static uint_fast8_t cs_ext1 = 1;
 static uint_fast8_t cs_ext2 = 1;
 static uint_fast8_t cs_nvram = 1;
 
-//todo Переделать
-void set_cs_reg(spitarget_t target)
-{
-	if (! (target >> 8)) 				// deassert CS's
-	{
-		cs_ext1 = 1;
-		cs_ext2 = 1;
-		cs_nvram = 1;
-		board_ctlreg1changed();
-	}
-	else
-	{
-		cs_ext1 = target == targetext1 ? 0 : 1;
-		cs_ext2 = target == targetext2 ? 0 : 1;
-		cs_nvram = target == targetnvram ? 0 : 1;
-		board_ctlreg1changed();
-	}
-
-	//PRINTF("%d %d %d\n", cs_ext1, cs_ext2, cs_nvram);
-}
-
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
@@ -4716,6 +4695,25 @@ prog_ctrlreg(uint_fast8_t plane)
 		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 
 		spi_unselect(target);
+	}
+}
+
+//todo Переделать
+void set_cs_reg(spitarget_t target)
+{
+	if (target < 256) 				// deassert CS's
+	{
+		cs_ext1 = 1;
+		cs_ext2 = 1;
+		cs_nvram = 1;
+		prog_ctrlreg(0);
+	}
+	else
+	{
+		cs_ext1 = target == targetext1 ? 0 : 1;
+		cs_ext2 = target == targetext2 ? 0 : 1;
+		cs_nvram = target == targetnvram ? 0 : 1;
+		prog_ctrlreg(0);
 	}
 }
 
