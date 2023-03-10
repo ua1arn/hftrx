@@ -74,6 +74,11 @@ enum {
 //#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
+#define LINUX_NMEA_FILE		"/dev/ttyPS1"
+#define LINUX_IQ_INT_FILE	"/dev/uio0"
+#define LINUX_I2C_FILE		"/dev/i2c-0"
+#define LINUX_FB_FILE		"/dev/fb0"
+#define LINUX_TTY_FILE		"/dev/tty0"
 
 #if WITHISBOOTLOADER
 

@@ -20,8 +20,10 @@
 #include <linux/kd.h>
 #include <linux/gpio.h>
 #include <sys/stat.h>
+#include <termios.h>
 
 void xcz_resetn_modem_state(uint8_t val);
+void linux_run_shell_cmd(uint8_t argc, const char * argv []);
 void ft8_thread(void);
 
 enum {
@@ -80,14 +82,19 @@ void linux_encoder_spool(void)
 
 void linux_nmea_spool(void)
 {
-	// need to execute: stty -F /dev/ttyPS1 115200
-	int fid = open("/dev/ttyPS1", O_RDONLY);
-	char buf[128];
+	const char * argv [5] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
+	linux_run_shell_cmd(5, argv);
+
+	int fid = open(LINUX_NMEA_FILE, O_RDONLY);
+	tcflush(fid, TCIFLUSH);
+	const int bufsize = 128;
+	char buf[bufsize];
 
 	while(1)
 	{
-		usleep(500);
-		read(fid, buf, 128);
+		usleep(5000);
+		memset(buf, 0, bufsize);
+		read(fid, buf, bufsize);
 		printf("%s", buf);
 	}
 }
@@ -121,13 +128,13 @@ int linux_framebuffer_init(void)
 	int fbfd, ttyd;
 
 	// Open the file for reading and writing
-	fbfd = open("/dev/fb0", O_RDWR);
+	fbfd = open(LINUX_FB_FILE, O_RDWR);
 	if (fbfd == -1) {
 		PRINTF("Error: cannot open framebuffer device");
 		exit(1);
 	}
 
-	ttyd = open("/dev/tty0", O_RDWR);
+	ttyd = open(LINUX_TTY_FILE, O_RDWR);
 	if (ttyd)
 		ioctl(ttyd, KDSETMODE, KD_GRAPHICS);
 	else
@@ -167,7 +174,7 @@ int linux_framebuffer_init(void)
 
 void framebuffer_close(void)
 {
-	int ttyd = open("/dev/tty0", O_RDWR);
+	int ttyd = open(LINUX_TTY_FILE, O_RDWR);
     ioctl(ttyd, KDSETMODE, KD_TEXT);
     munmap((uint32_t *) fbp, screensize);
     close(ttyd);
@@ -343,11 +350,10 @@ static int fd_i2c = 0;
 
 void i2c_initialize(void)
 {
-	const char *path = "/dev/i2c-0";
+	fd_i2c = open(LINUX_I2C_FILE, O_RDWR);
 
-	fd_i2c = open(path, O_RDWR);
 	if (fd_i2c < 0)
-		PRINTF("%s open failed: %d\n", path, fd_i2c);
+		PRINTF("%s open failed: %d\n", LINUX_I2C_FILE, fd_i2c);
 	else
 		PRINTF("linux i2c started\n");
 }
@@ -409,7 +415,7 @@ uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, con
 
 /*************************************************************/
 
-volatile uint32_t *ftw, *ftw_sub, *rts, *modem_ctrl,  *ph_fifo, *iq_count_rx, *iq_count_tx, *iq_fifo_rx, *iq_fifo_tx;
+volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl,  * ph_fifo, * iq_count_rx, * iq_count_tx, * iq_fifo_rx, * iq_fifo_tx;
 static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
 int fd_int = 0;
@@ -490,9 +496,9 @@ void linux_iq_interrupt_thread(void)
 	uint32_t uio_key = 1;
 	uint32_t uio_value = 0;
 
-	fd_int = open("/dev/uio0", O_RDWR);
+	fd_int = open(LINUX_IQ_INT_FILE, O_RDWR);
     if (fd_int < 0) {
-        PRINTF("/dev/uio0 open failed\n");
+        PRINTF("%s open failed\n", LINUX_IQ_INT_FILE);
         return;
     }
 
@@ -515,6 +521,18 @@ void linux_iq_interrupt_thread(void)
 }
 
 /*************************************************************/
+
+void linux_run_shell_cmd(uint8_t argc, const char * argv [])
+{
+	extern char ** environ;
+	int pid = getpid();
+
+	if (0 == (pid = fork()))
+	{
+		if (execve(argv[0], (char **) argv, environ) < 0)
+			perror(argv[0]);
+	}
+}
 
 void linux_create_thread(pthread_t * tid, void * process, int priority, int cpuid)
 {
@@ -551,17 +569,10 @@ void linux_cancel_thread(pthread_t tid)
 void linux_subsystem_init(void)
 {
 #if CPUSTYLE_XCZU
-	extern char ** environ;
 	char spid[6];
-	int pid = getpid();
-	local_snprintf_P(spid, ARRAY_SIZE(spid), "%d", pid);
+	local_snprintf_P(spid, ARRAY_SIZE(spid), "%d", getpid());
 	const char * argv [5] = { "/usr/bin/taskset", "-p", "1", spid, NULL, };
-
-	if (0 == (pid = fork()))
-	{
-		if (execve(argv[0], (char **) argv , environ) < 0)
-			perror("taskset");
-	}
+	linux_run_shell_cmd(5, argv);
 #endif /* CPUSTYLE_XCZU */
 
 	linux_xgpio_init();
