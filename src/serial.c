@@ -59,7 +59,7 @@ static void serial_set_handler(uint_fast16_t int_id, void (* handler)(void))
 }
 
 
-#if WITHNMEA
+#if WITHNMEA && ! LINUX_SUBSYSTEM
 
 static void UART0_IRQHandler(void);
 
@@ -175,7 +175,7 @@ void nmea_parser_init(void)
 #endif /* WITHUART1HW */
 }
 
-#endif /* WITHNMEA */
+#endif /* WITHNMEA && ! LINUX_SUBSYSTEM */
 
 #if CPUSTYLE_R7S721
 

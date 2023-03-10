@@ -80,24 +80,31 @@ void linux_encoder_spool(void)
 	}
 }
 
+#if WITHNMEA
 void linux_nmea_spool(void)
 {
 	const char * argv [5] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
 	linux_run_shell_cmd(5, argv);
 
+	int num_read;
 	int fid = open(LINUX_NMEA_FILE, O_RDONLY);
 	tcflush(fid, TCIFLUSH);
-	const int bufsize = 128;
+	const int bufsize = 256;
 	char buf[bufsize];
 
 	while(1)
 	{
 		usleep(5000);
 		memset(buf, 0, bufsize);
-		read(fid, buf, bufsize);
-		printf("%s", buf);
+		num_read = read(fid, buf, bufsize);
+		if (num_read > 1)
+		{
+			for (int i = 0; i < num_read; i ++)
+				nmea_parsechar(buf[i]);
+		}
 	}
 }
+#endif /* WITHNMEA */
 
 /******************************************************************/
 
@@ -600,8 +607,10 @@ void linux_user_init(void)
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 1);
 	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
-	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
 
+#if WITHNMEA
+	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
+#endif /* WITHNMEA */
 #if WITHFT8
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 1);
 	linux_create_thread(& ft8_t, ft8_thread, 50, 1);
@@ -870,7 +879,9 @@ void linux_exit(void)
 	linux_cancel_thread(timer_spool_t);
 	linux_cancel_thread(encoder_spool_t);
 	linux_cancel_thread(iq_interrupt_t);
+#if WITHNMEA
 	linux_cancel_thread(nmea_t);
+#endif /* WITHNMEA */
 #if WITHFT8
 	linux_cancel_thread(ft8_t);
 #endif /* WITHFT8 */
