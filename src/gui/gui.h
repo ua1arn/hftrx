@@ -114,7 +114,7 @@ uint_fast16_t hamradio_get_lfmstop100k(void);
 void hamradio_set_lfmstop100k(uint_fast16_t v);
 uint_fast16_t hamradio_get_lfmtoffset(void);
 void hamradio_set_lfmtoffset(uint_fast16_t v);
-uint_fast8_t hamradio_get_lfmtinterval(void);
+uint_fast16_t hamradio_get_lfmtinterval(void);
 void hamradio_set_lfmtinterval(uint_fast8_t v);
 void hamradio_lfm_disable(void);
 void gui_get_nmea_time(char * p);

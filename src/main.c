@@ -286,7 +286,7 @@ islfmstart(unsigned now)
 	return 0;
 }
 
-uint_fast8_t hamradio_get_lfmtinterval(void)
+uint_fast16_t hamradio_get_lfmtinterval(void)
 {
 	return lfmtinterval;
 }
@@ -13383,9 +13383,6 @@ RAMFUNC_NONILINE
 spool_nmeapps(void)
 {
 	th = nmea_time;
-#if WITHTOUCHGUI
-	local_snprintf_P(nmea_time_str, ARRAY_SIZE(nmea_time_str), "%02d:%02d:%02d", nmea_time.hours, nmea_time.minutes, nmea_time.seconds);
-#endif /* WITHTOUCHGUI */
 #if WITHLFM
 	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.seconds))
 	{
@@ -16108,6 +16105,9 @@ static void dpc_1stimer(void * arg)
 
 #if WITHTOUCHGUI
 	gui_update();
+#if WITHNMEA && WITHLFM
+	local_snprintf_P(nmea_time_str, ARRAY_SIZE(nmea_time_str), "%02d:%02d:%02d", nmea_time.hours, nmea_time.minutes, nmea_time.seconds);
+#endif /* WITHNMEA && WITHLFM */
 #endif /*WITHTOUCHGUI */
 
 #if WITHCPUTEMPERATURE && ! WITHTOUCHGUI && 0

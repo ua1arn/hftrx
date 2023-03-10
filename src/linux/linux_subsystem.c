@@ -80,7 +80,7 @@ void linux_encoder_spool(void)
 	}
 }
 
-#if WITHNMEA
+#if WITHNMEA && WITHLFM
 void linux_nmea_spool(void)
 {
 	const char * argv [5] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
@@ -104,7 +104,7 @@ void linux_nmea_spool(void)
 		}
 	}
 }
-#endif /* WITHNMEA */
+#endif /* WITHNMEA && WITHLFM */
 
 /******************************************************************/
 
@@ -608,9 +608,6 @@ void linux_user_init(void)
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 1);
 	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
 
-#if WITHNMEA
-	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
-#endif /* WITHNMEA */
 #if WITHFT8
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 1);
 	linux_create_thread(& ft8_t, ft8_thread, 50, 1);
@@ -638,6 +635,10 @@ void linux_user_init(void)
 	XSysMonPsu_SetSequencerMode(& xczu_sysmon, XSM_SEQ_MODE_SAFE, XSYSMON_PS);
 	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_256_SAMPLES, XSYSMON_PS);
 #endif /* WITHCPUTEMPERATURE */
+
+#if WITHNMEA && WITHLFM
+	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
+#endif /* WITHNMEA && WITHLFM */
 }
 
 /****************************************************************/

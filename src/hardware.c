@@ -3053,14 +3053,14 @@ __STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
 }
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 */
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 //uint32_t __Vectors [32];
 void __attribute__((used)) Reset_Handler(void)
 {
 	SystemInit();
 	main();
 }
-#endif /* defined(__aarch64__) */
+#endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
 
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
