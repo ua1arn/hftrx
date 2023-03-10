@@ -13299,6 +13299,18 @@ static unsigned char hex2int(uint_fast8_t c)
 	return 0;
 }
 
+void update_rtc_by_nmea_time(void)
+{
+#if defined (RTC1_TYPE)
+	if (! rtc_nmea_updated && nmea_time.valid)
+	{
+		rtc_nmea_updated = 1;
+		// todo: добавить в меню выбор часового пояса
+		board_rtc_setdatetime(nmea_time.year, nmea_time.month, nmea_time.day, nmea_time.hours + 3, nmea_time.minutes, nmea_time.seconds);
+	}
+#endif /* defined (RTC1_TYPE) */
+}
+
 void nmea_parsechar(uint_fast8_t c)
 {
 	//dbg_putchar(c);
@@ -13369,6 +13381,7 @@ void nmea_parsechar(uint_fast8_t c)
 #endif /* defined (RTC1_TYPE) */
 				nmea_time.valid = 1;
 				time_next(& nmea_time);	// какое время надо будет поставить для установки в следующий PPS
+				update_rtc_by_nmea_time();
 			}
 		}
 		break;
@@ -13389,14 +13402,6 @@ spool_nmeapps(void)
 		lfm_run();
 	}
 #endif /* WITHLFM */
-#if defined (RTC1_TYPE)
-	if (! rtc_nmea_updated && nmea_time.valid)
-	{
-		rtc_nmea_updated = 1;
-		// todo: добавить в меню выбор часового пояса
-		board_rtc_setdatetime(nmea_time.year, nmea_time.month, nmea_time.day, nmea_time.hours + 3, nmea_time.minutes, nmea_time.seconds);
-	}
-#endif /* defined (RTC1_TYPE) */
 }
 
 #endif /* WITHNMEA */

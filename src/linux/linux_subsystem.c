@@ -605,7 +605,7 @@ void linux_user_init(void)
 	usleep(5);
 	xcz_resetn_modem_state(1);
 
-	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 1);
+	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
 	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
 
 #if WITHFT8
@@ -851,7 +851,21 @@ void board_rtc_setdatetime(
 	uint_fast8_t seconds
 	)
 {
+	struct tm tm;
+	struct timeval tv;
 
+	tm.tm_sec = seconds;
+	tm.tm_min = minutes;
+	tm.tm_hour = hours;
+	tm.tm_mday = dayofmonth;
+	tm.tm_mon = month - 1;
+	tm.tm_year = year + 2000 - 1900;
+
+	tv.tv_sec = mktime(& tm);;
+	tv.tv_usec = 0;
+
+	if (settimeofday(& tv, NULL) == -1)
+		perror("settimeofday");
 }
 
 uint_fast8_t board_rtc_chip_initialize(void)
