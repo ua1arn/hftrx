@@ -919,7 +919,8 @@ void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 	hcd_int_handler(BOARD_TUH_RHPORT);
 	return;
 #endif /* WITHTINYUSB */
-
+	if (hehci->ohci == NULL)
+		return;
 	//ASSERT(0);
 	const unsigned HcInterruptStatus = le32_to_cpu(hehci->ohci->HcInterruptStatus);
 	if ((HcInterruptStatus & (1u << 6)) != 0)
