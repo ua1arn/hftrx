@@ -616,17 +616,17 @@ enum {
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
-		gpio_writepin((target), 0); \
+		cs_i2c_assert(target); \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
-		gpio_writepin((target), 1); \
+		cs_i2c_deassert(target); \
 	} while (0)
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
-			gpio_writepin(targetctl1, 1);		\
+			cs_i2c_disable();		\
 		} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */

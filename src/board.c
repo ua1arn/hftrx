@@ -4672,9 +4672,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(001, 0);	// not use
 		RBBIT(000, glob_tx);	// tx & ant 1-2
 
-		cs_i2c_assert(target);
+		spi_select(target, CTLREG_SPIMODE);
 		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		cs_i2c_deassert(target);
+		spi_unselect(target);
 	}
 #endif /* WITHQRPBOARD_UA3REO */
 

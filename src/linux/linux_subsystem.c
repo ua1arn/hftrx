@@ -936,22 +936,8 @@ static uint8_t cs_nvram = 1;
 static uint8_t cs_ext1 = 1;
 static uint8_t cs_ext2 = 1;
 
-void cs_i2c_assert(spitarget_t target)
+void pcf8575_write_pins(uint8_t buf[2])
 {
-	if (target < 256)
-	{
-		SPI_CS_ASSERT(target);
-	}
-	else
-	{
-		uint8_t buf[2] = { 0 };
-
-		cs_nvram = target == targetnvram ? 0 : 1;
-		cs_ext1 = target == targetext1 ? 0 : 1;
-		cs_ext2 = target == targetext2 ? 0 : 1;
-
-		buf[1] = (cs_nvram << 0) | (cs_ext1 << 1) | (cs_ext1 << 2);
-
 #if WITHTWIHW
 		i2chw_write(PCF8575CTS_ADDR, buf, 2);
 #elif WITHTWISW
@@ -959,6 +945,24 @@ void cs_i2c_assert(spitarget_t target)
 		i2c_write(buf[0]);
 		i2c_write(buf[1]);
 #endif /* WITHTWIHW */
+}
+
+void cs_i2c_assert(spitarget_t target)
+{
+	if (target < 256)
+	{
+		gpio_writepin((target), 1);
+	}
+	else
+	{
+		uint8_t buf[2] = { 0, 0, };
+
+		cs_nvram = target == targetnvram ? 0 : 1;
+		cs_ext1 = target == targetext1 ? 0 : 1;
+		cs_ext2 = target == targetext2 ? 0 : 1;
+
+		buf[1] = (cs_nvram << 0) | (cs_ext1 << 1) | (cs_ext1 << 2);
+		pcf8575_write_pins(buf);
 	}
 }
 
@@ -966,25 +970,31 @@ void cs_i2c_deassert(spitarget_t target)
 {
 	if (target < 256)
 	{
-		SPI_CS_DEASSERT(target);
+		gpio_writepin(targetctl1, 1);
 	}
 	else
 	{
-		uint8_t buf[2] = { 0 };
+		uint8_t buf[2] = { 0, 0, };
 		cs_nvram = 1;
 		cs_ext1 = 1;
 		cs_ext2 = 1;
 
 		buf[1] = (cs_nvram << 0) | (cs_ext1 << 1) | (cs_ext1 << 2);
-
-#if WITHTWIHW
-		i2chw_write(PCF8575CTS_ADDR, buf, 2);
-#elif WITHTWISW
-		i2c_start(PCF8575CTS_ADDR);
-		i2c_write(buf[0]);
-		i2c_write(buf[1]);
-#endif /* WITHTWIHW */
+		pcf8575_write_pins(buf);
 	}
+}
+
+void cs_i2c_disable(void)
+{
+	gpio_writepin(targetctl1, 1);
+
+	uint8_t buf[2] = { 0, 0, };
+	cs_nvram = 1;
+	cs_ext1 = 1;
+	cs_ext2 = 1;
+
+	buf[1] = (cs_nvram << 0) | (cs_ext1 << 1) | (cs_ext1 << 2);
+	pcf8575_write_pins(buf);
 }
 
 #endif /* CS_BY_I2C */

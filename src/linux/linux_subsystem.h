@@ -97,6 +97,7 @@ void spi_mosi_clear(void);
 uint8_t spi_miso_get(void);
 void cs_i2c_assert(spitarget_t target);
 void cs_i2c_deassert(spitarget_t target);
+void cs_i2c_disable(void);
 
 float xczu_get_cpu_temperature(void);
 
