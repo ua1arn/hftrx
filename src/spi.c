@@ -523,8 +523,8 @@ static void spi_operate_low(lowspiio_t * iospi)
 	switch (iospi->spiiosize)
 	{
 	case SPIIOSIZE_U8:
-#if CS_BY_REG
-		set_cs_reg(target);
+#if CS_BY_I2C
+		cs_i2c_assert(target);
 #else
 		spi_select2(target, iospi->spimode, iospi->spispeedindex);
 #endif /* CS_BY_REG */
@@ -695,8 +695,8 @@ static void spi_operate_low(lowspiio_t * iospi)
 	switch (iospi->spiiosize)
 	{
 	case SPIIOSIZE_U8:
-#if CS_BY_REG
-		set_cs_reg(0);
+#if CS_BY_I2C
+		cs_i2c_deassert(target);
 #else
 		spi_unselect(target);
 #endif /* CS_BY_REG */

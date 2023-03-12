@@ -620,7 +620,7 @@ void linux_user_init(void)
 	uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
 	reg_write(AXI_DCDC_PWM_ADDR + 0, fan_pwm_period);
 
-	uint32_t fan_pwm_duty = FS * (1.0f - 0.7f) - 1;
+	uint32_t fan_pwm_duty = FS * (1.0f - 0.8f) - 1;
 	reg_write(AXI_DCDC_PWM_ADDR + 4, fan_pwm_duty);
 #endif /* defined AXI_DCDC_PWM_ADDR */
 
@@ -929,5 +929,64 @@ unsigned long xc7z_get_arm_freq(void)
 	return 766000000uL;
 }
 #endif
+
+#if CS_BY_I2C
+
+static uint8_t cs_nvram = 1;
+static uint8_t cs_ext1 = 1;
+static uint8_t cs_ext2 = 1;
+
+void cs_i2c_assert(spitarget_t target)
+{
+	if (target < 256)
+	{
+		SPI_CS_ASSERT(target);
+	}
+	else
+	{
+		uint8_t buf[2] = { 0 };
+
+		cs_nvram = target == targetnvram ? 0 : 1;
+		cs_ext1 = target == targetext1 ? 0 : 1;
+		cs_ext2 = target == targetext2 ? 0 : 1;
+
+		buf[1] = (cs_nvram << 0) | (cs_ext1 << 1) | (cs_ext1 << 2);
+
+#if WITHTWIHW
+		i2chw_write(PCF8575CTS_ADDR, buf, 2);
+#elif WITHTWISW
+		i2c_start(PCF8575CTS_ADDR);
+		i2c_write(buf[0]);
+		i2c_write(buf[1]);
+#endif /* WITHTWIHW */
+	}
+}
+
+void cs_i2c_deassert(spitarget_t target)
+{
+	if (target < 256)
+	{
+		SPI_CS_DEASSERT(target);
+	}
+	else
+	{
+		uint8_t buf[2] = { 0 };
+		cs_nvram = 1;
+		cs_ext1 = 1;
+		cs_ext2 = 1;
+
+		buf[1] = (cs_nvram << 0) | (cs_ext1 << 1) | (cs_ext1 << 2);
+
+#if WITHTWIHW
+		i2chw_write(PCF8575CTS_ADDR, buf, 2);
+#elif WITHTWISW
+		i2c_start(PCF8575CTS_ADDR);
+		i2c_write(buf[0]);
+		i2c_write(buf[1]);
+#endif /* WITHTWIHW */
+	}
+}
+
+#endif /* CS_BY_I2C */
 
 #endif /* LINUX_SUBSYSTEM */

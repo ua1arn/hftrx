@@ -607,11 +607,12 @@ enum {
 
 	#define targetctl1		XGPO0
 
-	#define CS_BY_REG		1
+	#define CS_BY_I2C		1
+	#define PCF8575CTS_ADDR	0x40	// A0=0, A1=0, A2=0
 
-	#define targetext1		1 << 8
-	#define targetext2		2 << 8
-	#define targetnvram		3 << 8
+	#define targetext1		(1 << 8)
+	#define targetext2		(2 << 8)
+	#define targetnvram		(3 << 8)
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \

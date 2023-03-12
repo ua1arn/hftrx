@@ -67,7 +67,7 @@
 
 //	#define CTLREGMODE_NOCTLREG	1
 	#define CTLREGMODE_XCZU_V2	1
-//	#define WITHQRPBOARD_UA3REO	1
+	#define WITHQRPBOARD_UA3REO	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -312,14 +312,14 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L16
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L64
-	//#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
+	#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
 	//#define NVRAM_TYPE NVRAM_TYPE_CPUEEPROM
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
 	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
-	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	//#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	#define RTC1_TYPE RTC_TYPE_LINUX
 

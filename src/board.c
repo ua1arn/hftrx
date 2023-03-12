@@ -4610,13 +4610,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	//xcz_adcrand_set(glob_adcrand);
 }
 
-#elif CTLREGMODE_XCZU_V2 && CS_BY_REG
-
-static void board_ctlreg1changed(void);
-
-static uint_fast8_t cs_ext1 = 1;
-static uint_fast8_t cs_ext2 = 1;
-static uint_fast8_t cs_nvram = 1;
+#elif CTLREGMODE_XCZU_V2
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
@@ -4624,25 +4618,31 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+	spitarget_t target = targetctl1;
+
+	rbtype_t rbbuff [1] = { 0 };
+
+	RBBIT(007, 0);
+	RBBIT(006, 0);
+	RBBIT(005, 0);
+	RBBIT(004, 0);
+	RBBIT(003, 1);
+	RBBIT(002, 1);
+	RBBIT(001, ! glob_tx);
+	RBBIT(000, glob_tsc_reset);
+
+	spi_select(target, CTLREG_SPIMODE);
+	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	spi_unselect(target);
+
 #if WITHQRPBOARD_UA3REO
-	enum
-	{
-		HARDWARE_OPA2674I_FULLPOWER = 0x03,
-		HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
-		HARDWARE_OPA2674I_IDLEPOWER = 0x01,
-		HARDWARE_OPA2674I_SHUTDOWN = 0x00
-	};
-	static const FLASHMEM uint_fast8_t powerxlat [] =
-	{
-		HARDWARE_OPA2674I_IDLEPOWER,
-		HARDWARE_OPA2674I_POWERCUTBACK,
-		HARDWARE_OPA2674I_FULLPOWER,
-	};
+
 	const uint_fast8_t txgated = glob_tx && glob_txgate;
 	const uint_fast8_t bpf_xlat [6] = { 1, 3, 0, 2, 1, 3 };
 
 	{
-		spitarget_t target = targetextctl;
+		spitarget_t target = targetext1;
+
 		rbtype_t rbbuff [3] = { 0 };
 		const uint_fast8_t att_db = revbits8(hamradio_get_att_db()) >> 3;
 		const uint_fast8_t bpf1 = glob_bandf == 5 || glob_bandf == 6;
@@ -4672,49 +4672,13 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(001, 0);	// not use
 		RBBIT(000, glob_tx);	// tx & ant 1-2
 
-		spi_select(target, CTLREG_SPIMODE);
+		cs_i2c_assert(target);
 		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		cs_i2c_deassert(target);
 	}
 #endif /* WITHQRPBOARD_UA3REO */
 
-	{
-		spitarget_t target = targetctl1;
-		spi_select(target, CTLREG_SPIMODE);
-		rbtype_t rbbuff [1] = { 0 };
 
-		RBBIT(007, 0);
-		RBBIT(006, cs_nvram);
-		RBBIT(005, cs_ext2);
-		RBBIT(004, cs_ext1);
-		RBBIT(003, ! glob_preamp);
-		RBBIT(002, ! glob_preamp);
-		RBBIT(001, ! glob_tx);
-		RBBIT(000, glob_tsc_reset);
-
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-
-		spi_unselect(target);
-	}
-}
-
-//todo Переделать
-void set_cs_reg(spitarget_t target)
-{
-	if (target < 256) 				// deassert CS's
-	{
-		cs_ext1 = 1;
-		cs_ext2 = 1;
-		cs_nvram = 1;
-		prog_ctrlreg(0);
-	}
-	else
-	{
-		cs_ext1 = target == targetext1 ? 0 : 1;
-		cs_ext2 = target == targetext2 ? 0 : 1;
-		cs_nvram = target == targetnvram ? 0 : 1;
-		prog_ctrlreg(0);
-	}
 }
 
 #elif CTLREGMODE_ZYNQ_4205
@@ -5764,7 +5728,7 @@ void
 board_tsc_reset_state(uint_fast8_t v)
 {
 	glob_tsc_reset = v;
-	board_ctlreg1changed();
+	prog_ctrlreg(0);
 }
 
 
