@@ -440,7 +440,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	// Turn on USBOTG0
     CCU->USBPHY_CFG_REG |= (1u << 8);	// SCLK_GATING_USBPHY0
     CCU->USBPHY_CFG_REG |= (1u << 0);	// USBPHY0_RST
-    CCU->USBPHY_CFG_REG |= (1u << 2);	// USBHSIC_RST ???
+//    CCU->USBPHY_CFG_REG |= (1u << 2);	// USBHSIC_RST ???
+
+	CCU->BUS_CLK_GATING_REG0 |= (1u << 23);	// USB-OTG-Device_GATING.
+	CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.
 
 //	CCU->USB_BGR_REG &= ~ (1uL << 16);	// USBOHCI0_RST
 //	CCU->USB_BGR_REG &= ~ (1uL << 20);	// USBEHCI0_RST
@@ -484,7 +487,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 //	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
 //	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
 //	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
-    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
+//    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	//	Allwinner USB DRD support (musb_otg)
@@ -631,6 +634,8 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	#warning Implement for CPUSTYLE_A64
 
 	arm_hardware_disable_handler(USBOTG0_IRQn);
+	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
+	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
     CCU->USBPHY_CFG_REG &= ~ (1u << 0);	// USBPHY0_RST
     CCU->USBPHY_CFG_REG &= ~ (1u << 8);	// SCLK_GATING_USBPHY0
 
