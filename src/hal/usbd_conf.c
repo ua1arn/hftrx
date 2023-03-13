@@ -419,7 +419,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	}
 
 #elif CPUSTYLE_A64
-	#warning Implement for CPUSTYLE_A64
+
 	//	Allwinner USB DRD support (musb_otg)
 	//
 	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
@@ -433,7 +433,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 //    arm_hardware_disable_handler(USB0_EHCI_IRQn);
 //    arm_hardware_disable_handler(USB0_OHCI_IRQn);
 
-    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
+//    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
 
     CCU->USBPHY_CFG_REG &= ~ (1u << 8);	// SCLK_GATING_USBPHY0
     CCU->USBPHY_CFG_REG &= ~ (1u << 0);	// USBPHY0_RST
@@ -631,9 +631,9 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	#endif /* defined (USB_OTG_FS) */
 
 #elif CPUSTYLE_A64
-	#warning Implement for CPUSTYLE_A64
 
 	arm_hardware_disable_handler(USBOTG0_IRQn);
+
 	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
 	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
     CCU->USBPHY_CFG_REG &= ~ (1u << 0);	// USBPHY0_RST
