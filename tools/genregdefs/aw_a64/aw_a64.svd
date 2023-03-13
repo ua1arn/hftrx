@@ -7213,6 +7213,11 @@
   <name>USBOTG0</name>
   <description>USB OTG Dual-Role Device controller</description>
   <baseAddress>0x01C19000</baseAddress>
+  <interrupt>
+   <name>USBOTG0</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
   <registers>
    <cluster>
     <dim>16</dim>

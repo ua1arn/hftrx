@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHUSBHW
+#if (CPUSTYLE_A64 || PUSTYLE_T113 || CPUSTYLE_F133) && WITHUSBHW
 
 #include "board.h"
 #include "audio.h"

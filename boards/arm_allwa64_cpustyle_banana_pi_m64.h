@@ -58,7 +58,7 @@
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
-	////#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
@@ -69,8 +69,8 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBHOST_DMAENABLE 1
 
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
-	#define WITHUSBHW_EHCI		USBEHCI1	/* host only port ? 0x01C1B000  */
+//	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//	#define WITHUSBHW_EHCI		USBEHCI1	/* host only port ? 0x01C1B000  */
 	//#define WITHUSBHW_OHCI		USBOHCI1	/* host-only port */
 
 //	#define WITHUSBHW_EHCI		USBEHCI0	/* host and usb-otg port */

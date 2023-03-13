@@ -420,6 +420,71 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 #elif CPUSTYLE_A64
 	#warning Implement for CPUSTYLE_A64
+	//	Allwinner USB DRD support (musb_otg)
+	//
+	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
+	//	different register layout and a few missing registers.
+	// Turn off EHCI0
+//	PRINTF("1 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
+
+    arm_hardware_disable_handler(USBOTG0_IRQn);
+//    arm_hardware_disable_handler(USB0_EHCI_IRQn);
+//    arm_hardware_disable_handler(USB0_OHCI_IRQn);
+
+    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
+
+    CCU->USBPHY_CFG_REG &= ~ (1u << 8);	// SCLK_GATING_USBPHY0
+    CCU->USBPHY_CFG_REG &= ~ (1u << 0);	// USBPHY0_RST
+	// Turn on USBOTG0
+    CCU->USBPHY_CFG_REG |= (1u << 8);	// SCLK_GATING_USBPHY0
+    CCU->USBPHY_CFG_REG |= (1u << 0);	// USBPHY0_RST
+    CCU->USBPHY_CFG_REG |= (1u << 2);	// USBHSIC_RST ???
+
+//	CCU->USB_BGR_REG &= ~ (1uL << 16);	// USBOHCI0_RST
+//	CCU->USB_BGR_REG &= ~ (1uL << 20);	// USBEHCI0_RST
+//	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST
+//
+//	CCU->USB_BGR_REG &= ~ (1uL << 0);	// USBOHCI0_GATING
+//	CCU->USB_BGR_REG &= ~ (1uL << 4);	// USBEHCI0_GATING
+//	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN
+
+	//PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled. Enable for process.\n");
+	//return;
+
+//
+//	// Enable
+//	CCU->USB0_CLK_REG |= (1uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+//	CCU->USB0_CLK_REG |= (1uL << 30);	// USBPHY0_RSTN
+//
+//	// OHCI0 12M Source Select
+//	CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
+//		(0x00 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+//		(1uL << 31) |	// USB0_CLKEN - Gating Special Clock For OHCI0
+//		(1uL << 30) |	// USBPHY0_RSTN
+//		0;
+
+
+	arm_hardware_set_handler_system(USBOTG0_IRQn, device_OTG_HS_IRQHandler);
+
+	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
+	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
+
+	// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
+	//	/* A83T specific control bits for PHY0 */
+	//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
+	//	#define PHY_CTL_SIDDQ			BIT(3)
+	//	#define PHY_CTL_H3_SIDDQ		BIT(1)
+
+//	USBOTG0->PHY_OTGCTL |= (1uL << 0); 	// Device mode. Route phy0 to OTG0
+//
+//	USBOTG0->USB_ISCR = 0;//0x4300FC00;	// после запуска из QSPI было 0x40000000
+//	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
+//	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
+//	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
+//	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
+    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	//	Allwinner USB DRD support (musb_otg)
@@ -565,6 +630,9 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 #elif CPUSTYLE_A64
 	#warning Implement for CPUSTYLE_A64
 
+	arm_hardware_disable_handler(USBOTG0_IRQn);
+    CCU->USBPHY_CFG_REG &= ~ (1u << 0);	// USBPHY0_RST
+    CCU->USBPHY_CFG_REG &= ~ (1u << 8);	// SCLK_GATING_USBPHY0
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 

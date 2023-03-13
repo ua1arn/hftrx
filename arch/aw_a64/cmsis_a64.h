@@ -63,6 +63,7 @@ typedef enum IRQn
     NAND_IRQn = 102,                                  /*!< NDFC NAND Flash Controller Interface Interrupt */
     NDFC_IRQn = 102,                                  /*!< NDFC NAND Flash Controller Interface Interrupt */
     GPIOC_NS_IRQn = 103,                              /*!< GPIOINT  Interrupt */
+    USBOTG0_IRQn = 103,                               /*!< USBOTG USB OTG Dual-Role Device controller Interrupt */
     GPIOC_S_IRQn = 104,                               /*!< GPIOINT  Interrupt */
     GPIOD_NS_IRQn = 105,                              /*!< GPIOINT  Interrupt */
     GPIOD_S_IRQn = 106,                               /*!< GPIOINT  Interrupt */
