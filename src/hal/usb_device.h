@@ -61,6 +61,10 @@
 
 	#include "t113s3_hal.h"
 
+#elif CPUSTYLE_A64
+
+	#include "t113s3_hal.h"
+
 #endif
 
 #include "usbd_def.h"

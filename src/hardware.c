@@ -2731,6 +2731,18 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
+#elif CPUSTYLE_A64
+
+	if (a < 0x00400000)
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	if (a >= 0x40000000)			//  DDR3 - 2 GB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+//	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
+//		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
 #elif CPUSTYLE_F133
 
 	if (a < 0x00400000)

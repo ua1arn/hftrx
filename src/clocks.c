@@ -3089,7 +3089,7 @@ void hardware_spi_io_delay(void)
 	}
 
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	// Таймер электронного ключа
 	void TIMER0_IRQHandler(void)

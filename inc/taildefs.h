@@ -522,7 +522,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 #endif /* CPUSTYLE_XC7Z */
 
-#if CPUSTYLE_T113 || CPUSTYLE_F133
+#if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 	// Bootloader parameters
 	#if WITHSDRAMHW
 		#define BOOTLOADER_RAMAREA DRAM_SPACE_BASE	/* адрес ОЗУ, куда перемещать application */
@@ -544,6 +544,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "W25Q128JV"
-#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 */
 
 #endif /* TAILDEFS_H_INCLUDED */

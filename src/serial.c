@@ -372,7 +372,7 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 		}
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 	{
@@ -573,7 +573,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 //		 UART0->CR &= ~ SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
 //
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
 		 UART0->DLH_IER |= (0x01uL << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -702,7 +702,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 	UART0->IER = mask;
 	UART0->IDR = ~ mask;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
 		 UART0->DLH_IER |= (0x01uL << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -777,7 +777,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 	UART0->FIFO = c;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	UART0->DATA = c;
 
@@ -887,7 +887,7 @@ hardware_uart1_getchar(char * cp)
 		return 0;
 	* cp = UART0->FIFO;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if ((UART0->UART_USR & (0x1uL << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -994,7 +994,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 		return 0;
 	UART0->FIFO = c;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if ((UART0->UART_USR & (0x1uL << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -7094,7 +7094,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART0->CR = r;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
