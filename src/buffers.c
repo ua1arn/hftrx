@@ -2333,7 +2333,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 	prepareout32tx->buff [level32tx + DMABUF32TX_NCORTS] = dspfpga_get_ncorts();
 #endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
 
-#if CPUSTYLE_XC7Z && WITHLFM
+#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && WITHLFM
 	if (iflfmactive())
 	{
 		ftw_t v = dspfpga_get_nco1();

@@ -6217,21 +6217,21 @@ static void window_lfm_process(void)
 		{
 			win->lh_ptr [2].color = COLORMAIN_YELLOW;
 			win->lh_ptr [3].color = COLORMAIN_YELLOW;
-			unsigned v = hamradio_get_lfmtoffset();
+			uint_fast16_t v = hamradio_get_lfmtoffset();
 			hamradio_set_lfmtoffset(v + enc.change);
 		}
 		else if (enc.select == 4 || enc.select == 5)
 		{
 			win->lh_ptr [4].color = COLORMAIN_YELLOW;
 			win->lh_ptr [5].color = COLORMAIN_YELLOW;
-			unsigned v = hamradio_get_lfmstop100k();
+			uint_fast16_t v = hamradio_get_lfmstop100k();
 			hamradio_set_lfmstop100k(v + enc.change * 10);
 		}
 		else if (enc.select == 6 || enc.select == 7)
 		{
 			win->lh_ptr [6].color = COLORMAIN_YELLOW;
 			win->lh_ptr [7].color = COLORMAIN_YELLOW;
-			unsigned v = hamradio_get_lfmtinterval();
+			uint_fast16_t v = hamradio_get_lfmtinterval();
 			hamradio_set_lfmtinterval(v + enc.change);
 		}
 
@@ -6245,7 +6245,7 @@ static void window_lfm_process(void)
 		button_t * btn_state = find_gui_element(TYPE_BUTTON, win, "btn_state");
 		btn_state->is_locked = iflfmactive() != 0;
 		const char states[3][9] = { "Disabled", "Standby", "Scan..." };
-		unsigned s = hamradio_get_lfmmode() == 0 ? 0 : btn_state->is_locked ? 2 : 1;
+		uint_fast16_t s = hamradio_get_lfmmode() == 0 ? 0 : btn_state->is_locked ? 2 : 1;
 		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[s]);
 
 		label_t * lbl_nmeatime_val = find_gui_element(TYPE_LABEL, win, "lbl_nmeatime_val");

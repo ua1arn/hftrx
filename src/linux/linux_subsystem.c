@@ -81,6 +81,7 @@ void linux_encoder_spool(void)
 }
 
 #if WITHNMEA && WITHLFM
+
 void linux_nmea_spool(void)
 {
 	const char * argv [5] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
@@ -104,6 +105,36 @@ void linux_nmea_spool(void)
 		}
 	}
 }
+
+void linux_pps_thread(void)
+{
+	uint32_t uio_key = 1;
+	uint32_t uio_value = 0;
+
+	int fd_pps = open(LINUX_PPS_INT_FILE, O_RDWR);
+    if (fd_pps < 0) {
+        PRINTF("%s open failed\n", LINUX_PPS_INT_FILE);
+        return;
+    }
+
+    while(1)
+    {
+        //Acknowledge IRQ
+        if (write(fd_pps, &uio_key, sizeof(uio_key)) < 0) {
+            PRINTF("Failed to acknowledge IRQ: %s\n", strerror(errno));
+            return;
+        }
+
+        //Wait for next IRQ
+        if (read(fd_pps, &uio_value, sizeof(uio_value)) < 0) {
+            PRINTF("Failed to wait for IRQ: %s\n", strerror(errno));
+            return;
+        }
+
+        spool_nmeapps();
+    }
+}
+
 #endif /* WITHNMEA && WITHLFM */
 
 /******************************************************************/
@@ -638,6 +669,7 @@ void linux_user_init(void)
 
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
+	linux_create_thread(& nmea_t, linux_pps_thread, 20, 0);
 #endif /* WITHNMEA && WITHLFM */
 }
 
@@ -691,12 +723,14 @@ void xcz_dds_ftw(const uint_least64_t * val)
 {
 	uint32_t v = * val;
     * ftw = v;
+    mirror_nco1 = v;
 }
 
 void xcz_dds_rts(const uint_least64_t * val)
 {
 	uint32_t v = * val;
     * rts = v;
+    mirror_ncorts = v;
 }
 
 uint32_t xcz_rx_iq_shift(uint8_t val) // 52
@@ -713,7 +747,8 @@ uint32_t xcz_rx_iq_shift(uint8_t val) // 52
 
 void xcz_dds_ftw_sub(const uint_least64_t * val)
 {
-
+	uint32_t v = * val;
+	mirror_nco2 = v;
 }
 
 uint32_t xcz_rx_cic_shift(uint32_t val)

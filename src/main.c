@@ -291,7 +291,7 @@ uint_fast16_t hamradio_get_lfmtinterval(void)
 	return lfmtinterval;
 }
 
-void hamradio_set_lfmtinterval(uint_fast8_t v)
+void hamradio_set_lfmtinterval(uint_fast16_t v)
 {
 	if (lfmtinterval < 60 * 60)
 		lfmtinterval = v;
