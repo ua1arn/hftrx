@@ -102,7 +102,7 @@ enum
 enum
 {
 	ep0outxxx = 0x00,
-#if ! (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if ! (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
 	epoutbase = (epincount - 1) & 0x7F,
 #endif /* ! (CPUSTYLE_T113 || CPUSTYLE_F133) */
 

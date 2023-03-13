@@ -606,7 +606,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			uint_fast8_t targetcpu,
 			void (* handler)(void)
 			);
-#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
 
 
 portholder_t power2(uint_fast8_t v);	// Перенос каждого бита в байте в позицию с увеличенным в 2 раза номером.

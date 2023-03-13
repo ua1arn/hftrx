@@ -15,7 +15,7 @@
 #include "formats.h"
 #include "t113s3_hal.h"
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 #include "board.h"
 #include "formats.h"
@@ -46,4 +46,4 @@ HAL_StatusTypeDef HAL_Init(void)
 	  return HAL_OK;
 }
 
-#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 */
