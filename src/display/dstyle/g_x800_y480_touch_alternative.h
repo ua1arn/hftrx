@@ -84,6 +84,7 @@
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP | PGGUI, },
+		//{	10,	0,	display2_rxbwval6alt,	REDRM_MODE, PGALL, },	// RX BW value
 		{	17,	0,	display_txrxstate5alt, REDRM_MODE, PGALL, },
 		{	21,	0,	display2_ant7alt,		REDRM_MODE, PGALL, },
 		{	26,	0,	display2_att5alt,		REDRM_MODE, PGALL, },
