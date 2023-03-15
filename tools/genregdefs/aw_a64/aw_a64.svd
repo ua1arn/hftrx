@@ -5070,7 +5070,7 @@
   <peripheral>
   <name>CIR_RX</name>
   <description></description>
-  <baseAddress>0x07040000</baseAddress>
+  <baseAddress>0x01F02000</baseAddress>
   <registers>
    <register>
     <name>CIR_CTL</name>
@@ -5122,139 +5122,6 @@
     <displayName>CIR_RXCFG</displayName>
     <description>CIR Receiver Configure Register</description>
     <addressOffset>0x034</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>CIR_TX</name>
-  <description></description>
-  <baseAddress>0x02003000</baseAddress>
-  <registers>
-   <register>
-    <name>CIR_TGLR</name>
-    <displayName>CIR_TGLR</displayName>
-    <description>CIR Transmit Global Register</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_TMCR</name>
-    <displayName>CIR_TMCR</displayName>
-    <description>CIR Transmit Modulation Control Register</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_TCR</name>
-    <displayName>CIR_TCR</displayName>
-    <description>CIR Transmit Control Register</description>
-    <addressOffset>0x008</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_IDC_H</name>
-    <displayName>CIR_IDC_H</displayName>
-    <description>CIR Transmit Idle Duration Threshold High Bit Register</description>
-    <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_IDC_L</name>
-    <displayName>CIR_IDC_L</displayName>
-    <description>CIR Transmit Idle Duration Threshold Low Bit Register</description>
-    <addressOffset>0x010</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_TICR_H</name>
-    <displayName>CIR_TICR_H</displayName>
-    <description>CIR Transmit Idle Counter High Bit Register</description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_TICR_L</name>
-    <displayName>CIR_TICR_L</displayName>
-    <description>CIR Transmit Idle Counter Low Bit Register</description>
-    <addressOffset>0x018</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_TEL</name>
-    <displayName>CIR_TEL</displayName>
-    <description>CIR TX FIFO Empty Level Register</description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_TXINT</name>
-    <displayName>CIR_TXINT</displayName>
-    <description>CIR Transmit Interrupt Control Register</description>
-    <addressOffset>0x024</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_TAC</name>
-    <displayName>CIR_TAC</displayName>
-    <description>CIR Transmit FIFO Available Counter Register</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_TXSTA</name>
-    <displayName>CIR_TXSTA</displayName>
-    <description>CIR Transmit Status Register</description>
-    <addressOffset>0x02C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_TXT</name>
-    <displayName>CIR_TXT</displayName>
-    <description>CIR Transmit Threshold Register</description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_DMA</name>
-    <displayName>CIR_DMA</displayName>
-    <description>CIR DMA Control Register</description>
-    <addressOffset>0x034</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CIR_TXFIFO</name>
-    <displayName>CIR_TXFIFO</displayName>
-    <description>CIR Transmit FIFO Data Register</description>
-    <addressOffset>0x080</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -8155,6 +8022,220 @@
      <resetValue>0x00000000</resetValue>
     </register>
    </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>DE2_CSR</name>
+  <description></description>
+  <baseAddress>0x01020000</baseAddress>
+  <registers>
+   <register>
+    <name>CSR_CTL</name>
+    <displayName>CSR_CTL</displayName>
+    <description></description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INT</name>
+    <displayName>INT</displayName>
+    <description>Interrupt register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IFMT</name>
+    <displayName>IFMT</displayName>
+    <description>Input data attribute register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IDATA_SIZE</name>
+    <displayName>IDATA_SIZE</displayName>
+    <description>Input data size register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IDATA_MEN_PITCH0</name>
+    <displayName>IDATA_MEN_PITCH0</displayName>
+    <description>Input Y/RGB/ARGB memory pitch register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IDATA_MEN_PITCH1</name>
+    <displayName>IDATA_MEN_PITCH1</displayName>
+    <description>Input U/UV memory pitch register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IDATA_MEN_PITCH2</name>
+    <displayName>IDATA_MEN_PITCH2</displayName>
+    <description>Input V memory pitch register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMEN_LADD0</name>
+    <displayName>IMEN_LADD0</displayName>
+    <description>Input Y/RGB/ARGB memory address register0</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMEN_HADD0</name>
+    <displayName>IMEN_HADD0</displayName>
+    <description>Input Y/RGB/ARGB memory address register1</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMEN_LADD1</name>
+    <displayName>IMEN_LADD1</displayName>
+    <description>Input U/UV memory address register0</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMEN_HADD1</name>
+    <displayName>IMEN_HADD1</displayName>
+    <description>Input U/UV memory address register1</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMEN_LADD2</name>
+    <displayName>IMEN_LADD2</displayName>
+    <description>Input V memory address register0</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMEN_HADD2</name>
+    <displayName>IMEN_HADD2</displayName>
+    <description>Input V memory address register1</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ODATA_SIZE</name>
+    <displayName>ODATA_SIZE</displayName>
+    <description>Output data size register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ODATA_MEN_PITCH0</name>
+    <displayName>ODATA_MEN_PITCH0</displayName>
+    <description></description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ODATA_MEN_PITCH1</name>
+    <displayName>ODATA_MEN_PITCH1</displayName>
+    <description></description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ODATA_MEN_PITCH2</name>
+    <displayName>ODATA_MEN_PITCH2</displayName>
+    <description></description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OMEN_LADD0</name>
+    <displayName>OMEN_LADD0</displayName>
+    <description>Output Y/RGB/ARGB memory address register0</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OMEN_HADD0</name>
+    <displayName>OMEN_HADD0</displayName>
+    <description>Output Y/RGB/ARGB memory address register1</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OMEN_LADD1</name>
+    <displayName>OMEN_LADD1</displayName>
+    <description>Output U/UV memory address register0</description>
+    <addressOffset>0x0A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OMEN_HADD1</name>
+    <displayName>OMEN_HADD1</displayName>
+    <description>Output U/UV memory address register1</description>
+    <addressOffset>0x0AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OMEN_LADD2</name>
+    <displayName>OMEN_LADD2</displayName>
+    <description>Output V memory address register0</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OMEN_HADD2</name>
+    <displayName>OMEN_HADD2</displayName>
+    <description>Output V memory address register1</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>

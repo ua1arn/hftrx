@@ -1741,36 +1741,36 @@ typedef struct G2D_WB_Type
 /*!< G2D_ROT  */
 typedef struct G2D_ROT_Type
 {
-    volatile uint32_t ROT_CTL;                        /*!< Offset 0x000 ROT_CTL */
-    volatile uint32_t ROT_INT;                        /*!< Offset 0x004 ROT_INT */
+    volatile uint32_t ROT_CTL;                        /*!< Offset 0x000 ROT_CTL						 */
+    volatile uint32_t ROT_INT;                        /*!< Offset 0x004 ROT_INT				 */
     volatile uint32_t ROT_TIMEOUT;                    /*!< Offset 0x008 ROT_TIMEOUT */
              uint32_t reserved_0x00C [0x0005];
-    volatile uint32_t ROT_IFMT;                       /*!< Offset 0x020 ROT_IFMT */
-    volatile uint32_t ROT_ISIZE;                      /*!< Offset 0x024 ROT_ISIZE */
+    volatile uint32_t ROT_IFMT;                       /*!< Offset 0x020 Input data attribute register */
+    volatile uint32_t ROT_ISIZE;                      /*!< Offset 0x024 Input data size register */
              uint32_t reserved_0x028 [0x0002];
-    volatile uint32_t ROT_IPITCH0;                    /*!< Offset 0x030 ROT_IPITCH0 */
-    volatile uint32_t ROT_IPITCH1;                    /*!< Offset 0x034 ROT_IPITCH1 */
-    volatile uint32_t ROT_IPITCH2;                    /*!< Offset 0x038 ROT_IPITCH2 */
+    volatile uint32_t ROT_IPITCH0;                    /*!< Offset 0x030 Input Y/RGB/ARGB memory pitch register */
+    volatile uint32_t ROT_IPITCH1;                    /*!< Offset 0x034 Input U/UV memory pitch register */
+    volatile uint32_t ROT_IPITCH2;                    /*!< Offset 0x038 Input V memory pitch register */
              uint32_t reserved_0x03C;
-    volatile uint32_t ROT_ILADD0;                     /*!< Offset 0x040 ROT_ILADD0 */
-    volatile uint32_t ROT_IHADD0;                     /*!< Offset 0x044 ROT_IHADD0 */
-    volatile uint32_t ROT_ILADD1;                     /*!< Offset 0x048 ROT_ILADD1 */
-    volatile uint32_t ROT_IHADD1;                     /*!< Offset 0x04C ROT_IHADD1 */
-    volatile uint32_t ROT_ILADD2;                     /*!< Offset 0x050 ROT_ILADD2 */
-    volatile uint32_t ROT_IHADD2;                     /*!< Offset 0x054 ROT_IHADD2 */
+    volatile uint32_t ROT_ILADD0;                     /*!< Offset 0x040 Input Y/RGB/ARGB memory address register0 */
+    volatile uint32_t ROT_IHADD0;                     /*!< Offset 0x044 Input Y/RGB/ARGB memory address register1 */
+    volatile uint32_t ROT_ILADD1;                     /*!< Offset 0x048 Input U/UV memory address register0 */
+    volatile uint32_t ROT_IHADD1;                     /*!< Offset 0x04C Input U/UV memory address register1 */
+    volatile uint32_t ROT_ILADD2;                     /*!< Offset 0x050 Input V memory address register0 */
+    volatile uint32_t ROT_IHADD2;                     /*!< Offset 0x054 Input V memory address register1 */
              uint32_t reserved_0x058 [0x000B];
-    volatile uint32_t ROT_OSIZE;                      /*!< Offset 0x084 ROT_OSIZE */
+    volatile uint32_t ROT_OSIZE;                      /*!< Offset 0x084 Output data size register */
              uint32_t reserved_0x088 [0x0002];
-    volatile uint32_t ROT_OPITCH0;                    /*!< Offset 0x090 ROT_OPITCH0 */
-    volatile uint32_t ROT_OPITCH1;                    /*!< Offset 0x094 ROT_OPITCH1 */
-    volatile uint32_t ROT_OPITCH2;                    /*!< Offset 0x098 ROT_OPITCH2 */
+    volatile uint32_t ROT_OPITCH0;                    /*!< Offset 0x090 Output Y/RGB/ARGB memory pitch register */
+    volatile uint32_t ROT_OPITCH1;                    /*!< Offset 0x094 Output U/UV memory pitch register */
+    volatile uint32_t ROT_OPITCH2;                    /*!< Offset 0x098 Output V memory pitch register */
              uint32_t reserved_0x09C;
-    volatile uint32_t ROT_OLADD0;                     /*!< Offset 0x0A0 ROT_OLADD0 */
-    volatile uint32_t ROT_OHADD0;                     /*!< Offset 0x0A4 ROT_OHADD0 */
-    volatile uint32_t ROT_OLADD1;                     /*!< Offset 0x0A8 ROT_OLADD1 */
-    volatile uint32_t ROT_OHADD1;                     /*!< Offset 0x0AC ROT_OHADD1 */
-    volatile uint32_t ROT_OLADD2;                     /*!< Offset 0x0B0 ROT_OLADD2 */
-    volatile uint32_t ROT_OHADD2;                     /*!< Offset 0x0B4 ROT_OHADD2 */
+    volatile uint32_t ROT_OLADD0;                     /*!< Offset 0x0A0 Output Y/RGB/ARGB memory address register0 */
+    volatile uint32_t ROT_OHADD0;                     /*!< Offset 0x0A4 Output Y/RGB/ARGB memory address register1 */
+    volatile uint32_t ROT_OLADD1;                     /*!< Offset 0x0A8 Output U/UV memory address register0 */
+    volatile uint32_t ROT_OHADD1;                     /*!< Offset 0x0AC Output U/UV memory address register1 */
+    volatile uint32_t ROT_OLADD2;                     /*!< Offset 0x0B0 Output V memory address register0 */
+    volatile uint32_t ROT_OHADD2;                     /*!< Offset 0x0B4 Output V memory address register1 */
 } G2D_ROT_TypeDef; /* size of structure = 0x0B8 */
 /*
  * @brief TCON_LCD

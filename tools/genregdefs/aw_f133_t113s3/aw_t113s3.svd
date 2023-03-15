@@ -9576,7 +9576,7 @@
    <register>
     <name>ROT_CTL</name>
     <displayName>ROT_CTL</displayName>
-    <description>ROT_CTL</description>
+    <description>ROT_CTL						</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9585,7 +9585,7 @@
    <register>
     <name>ROT_INT</name>
     <displayName>ROT_INT</displayName>
-    <description>ROT_INT</description>
+    <description>ROT_INT				</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9603,7 +9603,7 @@
    <register>
     <name>ROT_IFMT</name>
     <displayName>ROT_IFMT</displayName>
-    <description>ROT_IFMT</description>
+    <description>Input data attribute register</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9612,7 +9612,7 @@
    <register>
     <name>ROT_ISIZE</name>
     <displayName>ROT_ISIZE</displayName>
-    <description>ROT_ISIZE</description>
+    <description>Input data size register</description>
     <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9621,7 +9621,7 @@
    <register>
     <name>ROT_IPITCH0</name>
     <displayName>ROT_IPITCH0</displayName>
-    <description>ROT_IPITCH0</description>
+    <description>Input Y/RGB/ARGB memory pitch register</description>
     <addressOffset>0x030</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9630,7 +9630,7 @@
    <register>
     <name>ROT_IPITCH1</name>
     <displayName>ROT_IPITCH1</displayName>
-    <description>ROT_IPITCH1</description>
+    <description>Input U/UV memory pitch register</description>
     <addressOffset>0x034</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9639,7 +9639,7 @@
    <register>
     <name>ROT_IPITCH2</name>
     <displayName>ROT_IPITCH2</displayName>
-    <description>ROT_IPITCH2</description>
+    <description>Input V memory pitch register</description>
     <addressOffset>0x038</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9648,7 +9648,7 @@
    <register>
     <name>ROT_ILADD0</name>
     <displayName>ROT_ILADD0</displayName>
-    <description>ROT_ILADD0</description>
+    <description>Input Y/RGB/ARGB memory address register0</description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9657,7 +9657,7 @@
    <register>
     <name>ROT_IHADD0</name>
     <displayName>ROT_IHADD0</displayName>
-    <description>ROT_IHADD0</description>
+    <description>Input Y/RGB/ARGB memory address register1</description>
     <addressOffset>0x044</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9666,7 +9666,7 @@
    <register>
     <name>ROT_ILADD1</name>
     <displayName>ROT_ILADD1</displayName>
-    <description>ROT_ILADD1</description>
+    <description>Input U/UV memory address register0</description>
     <addressOffset>0x048</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9675,7 +9675,7 @@
    <register>
     <name>ROT_IHADD1</name>
     <displayName>ROT_IHADD1</displayName>
-    <description>ROT_IHADD1</description>
+    <description>Input U/UV memory address register1</description>
     <addressOffset>0x04C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9684,7 +9684,7 @@
    <register>
     <name>ROT_ILADD2</name>
     <displayName>ROT_ILADD2</displayName>
-    <description>ROT_ILADD2</description>
+    <description>Input V memory address register0</description>
     <addressOffset>0x050</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9693,7 +9693,7 @@
    <register>
     <name>ROT_IHADD2</name>
     <displayName>ROT_IHADD2</displayName>
-    <description>ROT_IHADD2</description>
+    <description>Input V memory address register1</description>
     <addressOffset>0x054</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9702,7 +9702,7 @@
    <register>
     <name>ROT_OSIZE</name>
     <displayName>ROT_OSIZE</displayName>
-    <description>ROT_OSIZE</description>
+    <description>Output data size register</description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9711,7 +9711,7 @@
    <register>
     <name>ROT_OPITCH0</name>
     <displayName>ROT_OPITCH0</displayName>
-    <description>ROT_OPITCH0</description>
+    <description>Output Y/RGB/ARGB memory pitch register</description>
     <addressOffset>0x090</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9720,7 +9720,7 @@
    <register>
     <name>ROT_OPITCH1</name>
     <displayName>ROT_OPITCH1</displayName>
-    <description>ROT_OPITCH1</description>
+    <description>Output U/UV memory pitch register</description>
     <addressOffset>0x094</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9729,7 +9729,7 @@
    <register>
     <name>ROT_OPITCH2</name>
     <displayName>ROT_OPITCH2</displayName>
-    <description>ROT_OPITCH2</description>
+    <description>Output V memory pitch register</description>
     <addressOffset>0x098</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9738,7 +9738,7 @@
    <register>
     <name>ROT_OLADD0</name>
     <displayName>ROT_OLADD0</displayName>
-    <description>ROT_OLADD0</description>
+    <description>Output Y/RGB/ARGB memory address register0</description>
     <addressOffset>0x0A0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9747,7 +9747,7 @@
    <register>
     <name>ROT_OHADD0</name>
     <displayName>ROT_OHADD0</displayName>
-    <description>ROT_OHADD0</description>
+    <description>Output Y/RGB/ARGB memory address register1</description>
     <addressOffset>0x0A4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9756,7 +9756,7 @@
    <register>
     <name>ROT_OLADD1</name>
     <displayName>ROT_OLADD1</displayName>
-    <description>ROT_OLADD1</description>
+    <description>Output U/UV memory address register0</description>
     <addressOffset>0x0A8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9765,7 +9765,7 @@
    <register>
     <name>ROT_OHADD1</name>
     <displayName>ROT_OHADD1</displayName>
-    <description>ROT_OHADD1</description>
+    <description>Output U/UV memory address register1</description>
     <addressOffset>0x0AC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9774,7 +9774,7 @@
    <register>
     <name>ROT_OLADD2</name>
     <displayName>ROT_OLADD2</displayName>
-    <description>ROT_OLADD2</description>
+    <description>Output V memory address register0</description>
     <addressOffset>0x0B0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9783,7 +9783,7 @@
    <register>
     <name>ROT_OHADD2</name>
     <displayName>ROT_OHADD2</displayName>
-    <description>ROT_OHADD2</description>
+    <description>Output V memory address register1</description>
     <addressOffset>0x0B4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

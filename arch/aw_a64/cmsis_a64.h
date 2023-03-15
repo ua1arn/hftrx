@@ -90,6 +90,7 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define DE2_TOP_BASE ((uintptr_t) 0x01000000)         /*!< DE2_TOP Base */
+#define DE2_CSR_BASE ((uintptr_t) 0x01020000)         /*!< DE2_CSR Base */
 #define DE_GLB_BASE ((uintptr_t) 0x01100000)          /*!< DE_GLB Base */
 #define DE_BLD_BASE ((uintptr_t) 0x01101000)          /*!< DE_BLD Base */
 #define DE_VI_BASE ((uintptr_t) 0x01102000)           /*!< DE_VI Base */
@@ -162,6 +163,7 @@ typedef enum IRQn
 #define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< RTC Base */
 #define R_TWD_BASE ((uintptr_t) 0x01F01800)           /*!< RTC Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x01F01C00)        /*!< RTC Base */
+#define CIR_RX_BASE ((uintptr_t) 0x01F02000)          /*!< CIR_RX Base */
 #define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< RTC Base */
 #define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< RTC Base */
 #define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< RTC Base */
@@ -171,7 +173,6 @@ typedef enum IRQn
 #define R_PWM_BASE ((uintptr_t) 0x01F03800)           /*!< RTC Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK Base */
 #define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC Base */
-#define CIR_TX_BASE ((uintptr_t) 0x02003000)          /*!< CIR_TX Base */
 #define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
 #define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC Base */
 #define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU Base */
@@ -187,7 +188,6 @@ typedef enum IRQn
 #define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC Base */
 #define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC Base */
 #define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC Base */
-#define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL Base */
 
 /*
@@ -868,29 +868,6 @@ typedef struct CIR_RX_Type
     volatile uint32_t CIR_RXCFG;                      /*!< Offset 0x034 CIR Receiver Configure Register */
 } CIR_RX_TypeDef; /* size of structure = 0x038 */
 /*
- * @brief CIR_TX
- */
-/*!< CIR_TX  */
-typedef struct CIR_TX_Type
-{
-    volatile uint32_t CIR_TGLR;                       /*!< Offset 0x000 CIR Transmit Global Register */
-    volatile uint32_t CIR_TMCR;                       /*!< Offset 0x004 CIR Transmit Modulation Control Register */
-    volatile uint32_t CIR_TCR;                        /*!< Offset 0x008 CIR Transmit Control Register */
-    volatile uint32_t CIR_IDC_H;                      /*!< Offset 0x00C CIR Transmit Idle Duration Threshold High Bit Register */
-    volatile uint32_t CIR_IDC_L;                      /*!< Offset 0x010 CIR Transmit Idle Duration Threshold Low Bit Register */
-    volatile uint32_t CIR_TICR_H;                     /*!< Offset 0x014 CIR Transmit Idle Counter High Bit Register */
-    volatile uint32_t CIR_TICR_L;                     /*!< Offset 0x018 CIR Transmit Idle Counter Low Bit Register */
-             uint32_t reserved_0x01C;
-    volatile uint32_t CIR_TEL;                        /*!< Offset 0x020 CIR TX FIFO Empty Level Register */
-    volatile uint32_t CIR_TXINT;                      /*!< Offset 0x024 CIR Transmit Interrupt Control Register */
-    volatile uint32_t CIR_TAC;                        /*!< Offset 0x028 CIR Transmit FIFO Available Counter Register */
-    volatile uint32_t CIR_TXSTA;                      /*!< Offset 0x02C CIR Transmit Status Register */
-    volatile uint32_t CIR_TXT;                        /*!< Offset 0x030 CIR Transmit Threshold Register */
-    volatile uint32_t CIR_DMA;                        /*!< Offset 0x034 CIR DMA Control Register */
-             uint32_t reserved_0x038 [0x0012];
-    volatile uint32_t CIR_TXFIFO;                     /*!< Offset 0x080 CIR Transmit FIFO Data Register */
-} CIR_TX_TypeDef; /* size of structure = 0x084 */
-/*
  * @brief TPADC
  */
 /*!< TPADC  */
@@ -1424,6 +1401,42 @@ typedef struct DE_VI_Type
     volatile uint32_t hori [0x002];                   /*!< Offset 0x0F0  */
     volatile uint32_t vert [0x002];                   /*!< Offset 0x0F8  */
 } DE_VI_TypeDef; /* size of structure = 0x100 */
+/*
+ * @brief DE2_CSR
+ */
+/*!< DE2_CSR  */
+typedef struct DE2_CSR_Type
+{
+    volatile uint32_t CSR_CTL;                        /*!< Offset 0x000 (null) */
+    volatile uint32_t INT;                            /*!< Offset 0x004 Interrupt register */
+             uint32_t reserved_0x008 [0x0006];
+    volatile uint32_t IFMT;                           /*!< Offset 0x020 Input data attribute register */
+    volatile uint32_t IDATA_SIZE;                     /*!< Offset 0x024 Input data size register */
+             uint32_t reserved_0x028 [0x0002];
+    volatile uint32_t IDATA_MEN_PITCH0;               /*!< Offset 0x030 Input Y/RGB/ARGB memory pitch register */
+    volatile uint32_t IDATA_MEN_PITCH1;               /*!< Offset 0x034 Input U/UV memory pitch register */
+    volatile uint32_t IDATA_MEN_PITCH2;               /*!< Offset 0x038 Input V memory pitch register */
+             uint32_t reserved_0x03C;
+    volatile uint32_t IMEN_LADD0;                     /*!< Offset 0x040 Input Y/RGB/ARGB memory address register0 */
+    volatile uint32_t IMEN_HADD0;                     /*!< Offset 0x044 Input Y/RGB/ARGB memory address register1 */
+    volatile uint32_t IMEN_LADD1;                     /*!< Offset 0x048 Input U/UV memory address register0 */
+    volatile uint32_t IMEN_HADD1;                     /*!< Offset 0x04C Input U/UV memory address register1 */
+    volatile uint32_t IMEN_LADD2;                     /*!< Offset 0x050 Input V memory address register0 */
+    volatile uint32_t IMEN_HADD2;                     /*!< Offset 0x054 Input V memory address register1 */
+             uint32_t reserved_0x058 [0x000B];
+    volatile uint32_t ODATA_SIZE;                     /*!< Offset 0x084 Output data size register */
+             uint32_t reserved_0x088 [0x0002];
+    volatile uint32_t ODATA_MEN_PITCH0;               /*!< Offset 0x090 (null) */
+    volatile uint32_t ODATA_MEN_PITCH1;               /*!< Offset 0x094 (null) */
+    volatile uint32_t ODATA_MEN_PITCH2;               /*!< Offset 0x098 (null) */
+             uint32_t reserved_0x09C;
+    volatile uint32_t OMEN_LADD0;                     /*!< Offset 0x0A0 Output Y/RGB/ARGB memory address register0 */
+    volatile uint32_t OMEN_HADD0;                     /*!< Offset 0x0A4 Output Y/RGB/ARGB memory address register1 */
+    volatile uint32_t OMEN_LADD1;                     /*!< Offset 0x0A8 Output U/UV memory address register0 */
+    volatile uint32_t OMEN_HADD1;                     /*!< Offset 0x0AC Output U/UV memory address register1 */
+    volatile uint32_t OMEN_LADD2;                     /*!< Offset 0x0B0 Output V memory address register0 */
+    volatile uint32_t OMEN_HADD2;                     /*!< Offset 0x0B4 Output V memory address register1 */
+} DE2_CSR_TypeDef; /* size of structure = 0x0B8 */
 /*
  * @brief TCON0
  */
@@ -2042,6 +2055,7 @@ typedef struct DRAMC_Type
 /* Access pointers */
 
 #define DE2_TOP ((DE2_TOP_TypeDef *) DE2_TOP_BASE)    /*!< DE2_TOP Display Engine Top register set access pointer */
+#define DE2_CSR ((DE2_CSR_TypeDef *) DE2_CSR_BASE)    /*!< DE2_CSR  register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
@@ -2114,6 +2128,7 @@ typedef struct DRAMC_Type
 #define R_PRCM ((RTC_TypeDef *) R_PRCM_BASE)          /*!< R_PRCM  register set access pointer */
 #define R_TWD ((RTC_TypeDef *) R_TWD_BASE)            /*!< R_TWD  register set access pointer */
 #define R_CPUCFG ((RTC_TypeDef *) R_CPUCFG_BASE)      /*!< R_CPUCFG  register set access pointer */
+#define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define R_CIR_RX ((RTC_TypeDef *) R_CIR_RX_BASE)      /*!< R_CIR_RX  register set access pointer */
 #define R_TWI ((RTC_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define R_UART ((RTC_TypeDef *) R_UART_BASE)          /*!< R_UART  register set access pointer */
@@ -2123,7 +2138,6 @@ typedef struct DRAMC_Type
 #define R_PWM ((RTC_TypeDef *) R_PWM_BASE)            /*!< R_PWM  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
-#define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX  register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU  register set access pointer */
@@ -2139,7 +2153,6 @@ typedef struct DRAMC_Type
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0  register set access pointer */
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1  register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2  register set access pointer */
-#define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
 
 
