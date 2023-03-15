@@ -265,7 +265,7 @@
 		arm_hardware_pioi_altfn2(1u << 3,	AF_SPI2); /* PI3 I2S2_SDO - приём от кодека */ \
 		arm_hardware_pioi_altfn2(1u << 2,	AF_SPI2); /* PI2 I2S2_SDI, - передача */ \
 		arm_hardware_pioc_altfn2(1u << 6,	AF_SPI2); /* PC6 I2S2_MCK - WS * 256 */ \
-		arm_hardware_pioi_altfn20(1u << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
+		arm_hardware_pioi_altfn20(1u << 11, AF_SPI1);  /* PI11 I2S_CKIN AF_5 */ \
 	} while (0)
 
 		// Инициализируются I2S2 в дуплексном режиме.
@@ -275,10 +275,10 @@
 		arm_hardware_pioi_altfn2(1u << 3,	AF_SPI2); /* PI3 I2S2_SDO - приём от кодека */ \
 		arm_hardware_pioi_altfn2(1u << 2,	AF_SPI2); /* PI2 I2S2_SDI, - передача */ \
 		arm_hardware_pioc_altfn2(1u << 6,	AF_SPI2); /* PC6 I2S2_MCK - WS * 256 */ \
-		arm_hardware_pioi_altfn20(1u << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
+		arm_hardware_pioi_altfn20(1u << 11, AF_SPI1); /* PI11 I2S_CKIN AF_5 */ \
 	} while (0)
 
-	#define I2S3HW_SLAVE_INITIALIZE() do { \
+	#define I2S3HW_SLAVE_RX_INITIALIZE() do { \
 	} while (0)
 
 #endif /* WITHI2S2HW */

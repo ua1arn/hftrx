@@ -322,7 +322,7 @@
 		} while (0)
 
 // Stub
-#define I2S3HW_SLAVE_INITIALIZE() do { \
+#define I2S3HW_SLAVE_RX_INITIALIZE() do { \
 		} while (0)
 
 // Stub

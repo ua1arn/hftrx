@@ -504,7 +504,7 @@ Free:
 #define I2S2HW_MASTER_INITIALIZE() do { \
 	} while (0)
 
-#define I2S3HW_SLAVE_INITIALIZE() do { \
+#define I2S3HW_SLAVE_RX_INITIALIZE() do { \
 	} while (0)
 
 #define I2S3HW_MASTER_INITIALIZE() do { \

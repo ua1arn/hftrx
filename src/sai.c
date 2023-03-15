@@ -808,7 +808,7 @@ hardware_i2s3_slave_rx_initialize_codec1(void)		/* инициализация I2
 #endif /* CPUSTYLE_STM32H7XX */
 
 	// Подключить I2S к выводам процессора
-	I2S3HW_SLAVE_INITIALIZE();	// hardware_i2s3_slave_rx_initialize_codec1
+	I2S3HW_SLAVE_RX_INITIALIZE();	// hardware_i2s3_slave_rx_initialize_codec1
 
 	//PRINTF(PSTR("hardware_i2s3_slave_rx_initialize_codec1 done\n"));
 }

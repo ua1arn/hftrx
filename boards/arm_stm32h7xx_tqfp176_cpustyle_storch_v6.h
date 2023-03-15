@@ -282,7 +282,7 @@
 
 #if WITHI2S3HW
 	// Инициализируются I2S3
-	#define I2S3HW_SLAVE_INITIALIZE() do { \
+	#define I2S3HW_SLAVE_RX_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2(1uL << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
 		arm_hardware_pioa_updown(0, 1uL << 15); \
 		arm_hardware_piob_altfn2(1uL << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \

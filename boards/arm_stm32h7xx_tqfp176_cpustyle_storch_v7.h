@@ -182,7 +182,7 @@
 		arm_hardware_piob_updown(0, 1uL << 3); \
 		arm_hardware_piob_altfn2(1uL << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
 	} while (0)
-	#define I2S3HW_SLAVE_INITIALIZE() do { \
+	#define I2S3HW_SLAVE_RX_INITIALIZE() do { \
 	} while (0)
 #endif /* WITHI2S2HW */
 
