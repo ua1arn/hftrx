@@ -303,7 +303,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("STEP DB "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		0, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
+		3, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
 		offsetof(struct nvmap, glvlgridstep),
 		nvramoffs0,
 		NULL,
