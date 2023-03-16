@@ -4944,10 +4944,10 @@ enum
 };
 
 #if CODEC1_IFC_MASTER
-	#define R7S721_SSIF0_MASTER 0	// AUDIO CODEC I2S INTERFACE - see CODEC1_IFC_MASTER
-#else
-	#define R7S721_SSIF0_MASTER 1	// AUDIO CODEC I2S INTERFACE - see CODEC1_IFC_MASTER
-#endif
+	#define R7S721_SSIF0_MASTER 0	// AUDIO CODEC I2S INTERFACE
+#else /* CODEC1_IFC_MASTER */
+	#define R7S721_SSIF0_MASTER 1	// AUDIO CODEC I2S INTERFACE
+#endif /* CODEC1_IFC_MASTER */
 
 #define R7S721_SSIF1_MASTER 1	// FGA I2S INTERFACE #1
 #define R7S721_SSIF2_MASTER 1	// FGA I2S INTERFACE #2 (spectrum)
@@ -5874,8 +5874,8 @@ static const codechw_t * const channels [] =
 	#if WITHCODEC1_I2S2_DUPLEX_SLAVE		// (stm32mp157 9a)
 		& audiocodechw_i2s2_duplex_slave,	// Интерфейс к НЧ кодеку
 	#endif /* WITHCODEC1_I2S2_DUPLEX_SLAVE */
-	#if WITHFPGAIF_I2S1_DUPLEX_SLAVE		// (stm32mp157 9a)
-		& fpgacodechw_i2s1_duplex_slave,	// Интерфейс к НЧ кодеку
+	#if WITHFPGAIF_I2S1_DUPLEX_SLAVE
+		& fpgacodechw_i2s1_duplex_slave,	// Интерфейс к FPGA
 	#endif /* WITHFPGAIF_I2S1_DUPLEX_SLAVE */
 	#if WITHCODEC1_I2S2_DUPLEX_MASTER	// (stm32mp157 9c)
 		& audiocodechw_i2s2_duplex_master,	// Интерфейс к НЧ кодеку
