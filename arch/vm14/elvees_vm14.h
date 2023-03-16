@@ -192,13 +192,13 @@ typedef enum IRQn
 
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
-#define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
-#define PL310_DATA_RAM_LATENCY ((1uL << 8) | (2uL << 4) | (1uL << 0))
+#define PL310_TAG_RAM_LATENCY ((1u << 8) | (1u << 4) | (1u << 0))
+#define PL310_DATA_RAM_LATENCY ((1u << 8) | (2u << 4) | (1u << 0))
 
-#define GIC_DISTRIBUTOR_BASE         0x39001000                        /*!< (GIC DIST  ) Base Address */
-#define GIC_INTERFACE_BASE           0x39000100                        /*!< (GIC CPU IF) Base Address */
-#define L2C_310_BASE                 L2CACHE_BASE                        /*!< (PL310     ) Base Address */
-#define TIMER_BASE				PRIV_TIMER_BASE
+#define GIC_DISTRIBUTOR_BASE  	((uintptr_t) 0x39001000)                        /*!< (GIC DIST  ) Base Address */
+#define GIC_INTERFACE_BASE    	((uintptr_t) 0x39000100)                        /*!< (GIC CPU IF) Base Address */
+#define L2C_310_BASE          	((uintptr_t) 0x39004000)                        /*!< (PL310     ) Base Address */
+#define TIMER_BASE				((uintptr_t) 0x39000600)
 
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
@@ -207,12 +207,58 @@ typedef enum IRQn
 #define __CORTEX_A                    9U      /*!< Cortex-A# Core */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present */
-#define __TIM_PRESENT                 0U//1U      /*!< Set to 1 if TIM is present */
-#define __L2C_PRESENT                 0U//1U      /*!< Set to 1 if L2C is present */
+#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present */
+#define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present */
 
 #include "core_ca.h"
 #include <arch/vm14/system_vm14.h>
 
+
+
+/* Peripheral and RAM base address */
+
+#define UART0_BASE ((uintptr_t) 0x38028000)           /*!< UART Base */
+#define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Base */
+#define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Base */
+#define UART3_BASE ((uintptr_t) 0x3802B000)           /*!< UART Base */
+
+/*
+ * @brief UART
+ */
+/*!< UART  */
+typedef struct UART_Type
+{
+    volatile uint32_t DATA;                           /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
+    volatile uint32_t UART_DLH;                       /*!< Offset 0x004  */
+    volatile uint32_t UART_IIR;                       /*!< Offset 0x008 UART Interrupt Identity Register/UART FIFO Control Register */
+    volatile uint32_t UART_LCR;                       /*!< Offset 0x00C UART Line Control Register */
+    volatile uint32_t UART_MCR;                       /*!< Offset 0x010 UART Modem Control Register */
+    volatile uint32_t UART_LSR;                       /*!< Offset 0x014 UART Line Status Register */
+    volatile uint32_t UART_MSR;                       /*!< Offset 0x018 UART Modem Status Register */
+    volatile uint32_t UART_SCR;                       /*!< Offset 0x01C UART Scratch Register */
+             uint32_t reserved_0x020 [0x0004];
+    volatile uint32_t UART_SRBR_STHR;                 /*!< Offset 0x030  */
+             uint32_t reserved_0x034 [0x0012];
+    volatile uint32_t UART_USR;                       /*!< Offset 0x07C  */
+    volatile uint32_t UART_TFL;                       /*!< Offset 0x080  */
+    volatile uint32_t UART_RFL;                       /*!< Offset 0x084  */
+    volatile uint32_t UART_SRR;                       /*!< Offset 0x088  */
+    volatile uint32_t UART_SRTS;                      /*!< Offset 0x08C  */
+    volatile uint32_t UART_SBCR;                      /*!< Offset 0x090 check address (was: 0x80)  */
+             uint32_t reserved_0x094;
+    volatile uint32_t UART_SFE;                       /*!< Offset 0x098  */
+    volatile uint32_t UART_SRT;                       /*!< Offset 0x09C  */
+    volatile uint32_t UART_STET;                      /*!< Offset 0x0A0  */
+    volatile uint32_t UART_HTX;                       /*!< Offset 0x0A4  */
+} UART_TypeDef; /* size of structure = 0x0A8 */
+
+
+/* Access pointers */
+
+#define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
+#define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
+#define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
+#define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3  register set access pointer */
 
 
 
