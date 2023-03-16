@@ -1154,6 +1154,15 @@ void sysinit_gpio_initialize(void)
 {
 }
 
+#elif CPUSTYLE_VM14
+
+// 1892ВМ14Я ELVEES multicore.ru
+
+// временная подготовка к работе с gpio.
+// Вызывается из SystemInit() - после работы память будет затерта
+void sysinit_gpio_initialize(void)
+{
+}
 
 #endif
 

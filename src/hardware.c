@@ -1711,6 +1711,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_F133
 	// калибровано для 1200 МГц процессора
 	const unsigned long top = 165uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_VM14
+	// калибровано для 1200 МГц процессора
+	const unsigned long top = 165uL * cpufreq_MHz * timeUS / 1000;
 #else
 	#error TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
@@ -2752,6 +2755,18 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
 //		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
+#elif CPUSTYLE_VM14
+
+	// 1892ВМ14Я ELVEES multicore.ru
+
+	if (a >= 0x20000000 && a < 0x20100000)			//  SRAM - 64K
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR - 2 GB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	return addrbase | TTB_PARA_DEVICE;
 

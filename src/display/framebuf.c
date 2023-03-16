@@ -430,7 +430,7 @@ mdma_getbus(uintptr_t addr)
 	addr &= 0xFF000000uL;
 	return (addr == 0x00000000uL || addr == 0x20000000uL);
 
-#elif CPUSTYLE_STM32MP1 && CORE_CA7
+#elif CPUSTYLE_STM32MP1
 	// SYSMEM
 	// DDRCTRL
 	/*

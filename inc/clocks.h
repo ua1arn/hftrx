@@ -203,6 +203,8 @@ void allwnrt113_pll_initialize(void);
 void set_pll_cpux_axi(unsigned n);
 void set_pll_riscv_axi(unsigned n);
 
+uint_fast32_t elveesvm14_get_arm_freq(void);
+
 uint_fast8_t
 calcdivider(
 	uint_fast32_t divisor, // ожидаемый коэффициент деления всей системы

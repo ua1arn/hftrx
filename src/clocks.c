@@ -2822,7 +2822,16 @@ void allwnrt113_pll_initialize(void)
 #endif /* CPUSTYLE_STM32MP1 */
 
 
+#if CPUSTYLE_VM14
 
+// 1892ВМ14Я ELVEES multicore.ru
+
+uint_fast32_t elveesvm14_get_arm_freq(void)
+{
+	return 24000000;
+}
+
+#endif /* CPUSTYLE_VM14 */
 
 // ATMega32 timers:
 // 8 bit timer0 - system ticks

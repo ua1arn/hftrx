@@ -825,6 +825,39 @@ extern "C" {
 	#define HARDWARE_NCORES 2
 	#define WITHCPUNAME "Allw t113-s3"
 
+#elif CPUSTYLE_VM14
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define HARDWARE_CLK32K_FREQ 32000uL
+	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
+
+	#define CPU_FREQ	(elveesvm14_get_arm_freq())
+	#define BOARD_SPI_FREQ (elveesvm14_get_spi_freq())
+	#define BOARD_USART_FREQ (elveesvm14_get_usart_freq())
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		12000000u	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	24000000u	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u	/* 100 kHz для низкоскоростных микросхем */
+
+
+	#define HARDWARE_NCORES 2
+	#define WITHCPUNAME "Elvees VM14"
+
 #elif CPUSTYLE_F133
 
 	typedef uint_fast16_t adcvalholder_t;

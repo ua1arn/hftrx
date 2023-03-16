@@ -476,7 +476,6 @@ extern "C" {
 
 #elif CPUSTYLE_A64
 
-	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "allwnr_a64.h"
@@ -498,10 +497,32 @@ extern "C" {
 
 #elif CPUSTYLE_T113
 
-	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "allwnr_t113s3.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
+
+
+#elif CPUSTYLE_VM14
+
+	// 1892ВМ14Я ELVEES multicore.ru
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "elvees_vm14.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
