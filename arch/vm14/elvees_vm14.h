@@ -8,39 +8,13 @@
 #ifndef ARCH_VM14_ELVEES_VM14_H_
 #define ARCH_VM14_ELVEES_VM14_H_
 
-typedef enum IRQn
+typedef enum xIRQn
 {
-/******  SGI Interrupts Numbers                 ****************************************/
-  SGI0_IRQn           =  0,                                       //!< SGI0_IRQn
-  SGI1_IRQn           =  1,                                       //!< SGI1_IRQn
-  SGI2_IRQn           =  2,                                       //!< SGI2_IRQn
-  SGI3_IRQn           =  3,                                       //!< SGI3_IRQn
-  SGI4_IRQn           =  4,                                       //!< SGI4_IRQn
-  SGI5_IRQn           =  5,                                       //!< SGI5_IRQn
-  SGI6_IRQn           =  6,                                       //!< SGI6_IRQn
-  SGI7_IRQn           =  7,                                       //!< SGI7_IRQn
-  SGI8_IRQn           =  8,                                       //!< SGI8_IRQn
-  SGI9_IRQn           =  9,                                       //!< SGI9_IRQn
-  SGI10_IRQn          = 10,                                       //!< SGI10_IRQn
-  SGI11_IRQn          = 11,                                       //!< SGI11_IRQn
-  SGI12_IRQn          = 12,                                       //!< SGI12_IRQn
-  SGI13_IRQn          = 13,                                       //!< SGI13_IRQn
-  SGI14_IRQn          = 14,                                       //!< SGI14_IRQn
-  SGI15_IRQn          = 15,                                       //!< SGI15_IRQn
-
-  /* Private Peripheral Interrupts */
-  //VirtualMaintenanceInterrupt_IRQn = 25,     /*!< Virtual Maintenance Interrupt */
- // HypervisorTimer_IRQn             = 26,     /*!< Hypervisor Timer Interrupt */
-  GlobalTimer_IRQn                 = 27,     /*!< Global Timer Interrupt */
-  Legacy_nFIQ_IRQn                 = 28,     /*!< Legacy nFIQ Interrupt */
-  PrivTimer_IRQn        	   	   = 29,     /*!< Private Timer Interrupt */
-  AwdtTimer_IRQn      			   = 30,     /*!< Private watchdog timer for each CPU Interrupt */
-  Legacy_nIRQ_IRQn                 = 31,     /*!< Legacy nIRQ Interrupt */
 
   /******  VM14  specific Interrupt Numbers ****************************************************************************/
 
 	/* interrupts */
-  MPU_L2CCINTR,   // Прерывание контроллера кэша второго уровня MPU
+  MPU_L2CCINTR = 32,   // Прерывание контроллера кэша второго уровня MPU
   DSP_INT_DSP,    // Прерывание от DSP
   GPU_IRQPPMMU0,  // Прерывание от MMU пиксельного процессора GPU
   GPU_IRQPP0,     // Прерывание от пиксельного процессора GPU
@@ -185,9 +159,11 @@ typedef enum IRQn
   DLOCK_IRQ,     //Прерывание от коммутатора микросхемы
   WDT_IRQ,       //Прерывание от сторожевого таймера
 
-	Force_IRQn_enum_size             = 1048    /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
+} xIRQn_Type;
 
-} IRQn_Type;
+
+/* auto-generated header */
+#include "elvees_vm14_2.h"
 
 
 /* configuration for the PL310 L2 cache controller */
@@ -195,11 +171,10 @@ typedef enum IRQn
 #define PL310_TAG_RAM_LATENCY ((1u << 8) | (1u << 4) | (1u << 0))
 #define PL310_DATA_RAM_LATENCY ((1u << 8) | (2u << 4) | (1u << 0))
 
-#define GIC_DISTRIBUTOR_BASE  	((uintptr_t) 0x39001000)                        /*!< (GIC DIST  ) Base Address */
-#define GIC_INTERFACE_BASE    	((uintptr_t) 0x39000100)                        /*!< (GIC CPU IF) Base Address */
+//#define GIC_DISTRIBUTOR_BASE  	((uintptr_t) 0x39001000)                        /*!< (GIC DIST  ) Base Address */
+//#define GIC_INTERFACE_BASE    	((uintptr_t) 0x39000100)                        /*!< (GIC CPU IF) Base Address */
 #define L2C_310_BASE          	((uintptr_t) 0x39004000)                        /*!< (PL310     ) Base Address */
 #define TIMER_BASE				((uintptr_t) 0x39000600)
-
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
 #define __CA_REV         		    0x0000    /*!< Core revision r0p0 */
@@ -211,55 +186,7 @@ typedef enum IRQn
 #define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present */
 
 #include "core_ca.h"
+
 #include <arch/vm14/system_vm14.h>
-
-
-
-/* Peripheral and RAM base address */
-
-#define UART0_BASE ((uintptr_t) 0x38028000)           /*!< UART Base */
-#define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Base */
-#define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Base */
-#define UART3_BASE ((uintptr_t) 0x3802B000)           /*!< UART Base */
-
-/*
- * @brief UART
- */
-/*!< UART  */
-typedef struct UART_Type
-{
-    volatile uint32_t DATA;                           /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
-    volatile uint32_t UART_DLH;                       /*!< Offset 0x004  */
-    volatile uint32_t UART_IIR;                       /*!< Offset 0x008 UART Interrupt Identity Register/UART FIFO Control Register */
-    volatile uint32_t UART_LCR;                       /*!< Offset 0x00C UART Line Control Register */
-    volatile uint32_t UART_MCR;                       /*!< Offset 0x010 UART Modem Control Register */
-    volatile uint32_t UART_LSR;                       /*!< Offset 0x014 UART Line Status Register */
-    volatile uint32_t UART_MSR;                       /*!< Offset 0x018 UART Modem Status Register */
-    volatile uint32_t UART_SCR;                       /*!< Offset 0x01C UART Scratch Register */
-             uint32_t reserved_0x020 [0x0004];
-    volatile uint32_t UART_SRBR_STHR;                 /*!< Offset 0x030  */
-             uint32_t reserved_0x034 [0x0012];
-    volatile uint32_t UART_USR;                       /*!< Offset 0x07C  */
-    volatile uint32_t UART_TFL;                       /*!< Offset 0x080  */
-    volatile uint32_t UART_RFL;                       /*!< Offset 0x084  */
-    volatile uint32_t UART_SRR;                       /*!< Offset 0x088  */
-    volatile uint32_t UART_SRTS;                      /*!< Offset 0x08C  */
-    volatile uint32_t UART_SBCR;                      /*!< Offset 0x090 check address (was: 0x80)  */
-             uint32_t reserved_0x094;
-    volatile uint32_t UART_SFE;                       /*!< Offset 0x098  */
-    volatile uint32_t UART_SRT;                       /*!< Offset 0x09C  */
-    volatile uint32_t UART_STET;                      /*!< Offset 0x0A0  */
-    volatile uint32_t UART_HTX;                       /*!< Offset 0x0A4  */
-} UART_TypeDef; /* size of structure = 0x0A8 */
-
-
-/* Access pointers */
-
-#define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
-#define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
-#define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
-#define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3  register set access pointer */
-
-
 
 #endif /* ARCH_VM14_ELVEES_VM14_H_ */

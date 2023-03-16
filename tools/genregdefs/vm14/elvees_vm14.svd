@@ -11,7 +11,7 @@
  <peripherals>
   <peripheral>
   <name>UART0</name>
-  <description></description>
+  <description>Universal Asynchronous Receiver-Transmitter</description>
   <baseAddress>0x38028000</baseAddress>
   <interrupt>
    <name>UART0</name>
@@ -35,8 +35,8 @@
   </interrupt>
   <registers>
    <register>
-    <name>DATA</name>
-    <displayName>DATA</displayName>
+    <name>UART_RBR_THR_DLL</name>
+    <displayName>UART_RBR_THR_DLL</displayName>
     <description>UART Receive Buffer Register/Transmit Holding Register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -44,8 +44,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UART_DLH</name>
-    <displayName>UART_DLH</displayName>
+    <name>UART_DLH_IER</name>
+    <displayName>UART_DLH_IER</displayName>
     <description></description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
@@ -53,8 +53,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UART_IIR</name>
-    <displayName>UART_IIR</displayName>
+    <name>UART_IIR_FCR</name>
+    <displayName>UART_IIR_FCR</displayName>
     <description>UART Interrupt Identity Register/UART FIFO Control Register</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
@@ -106,15 +106,19 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>UART_SRBR_STHR</name>
-    <displayName>UART_SRBR_STHR</displayName>
-    <description></description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000030</addressOffset>
+    <register>
+     <name>UART_SRBR_STHR</name>
+     <displayName>UART_SRBR_STHR</displayName>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+   </cluster>
    <register>
     <name>UART_USR</name>
     <displayName>UART_USR</displayName>
