@@ -279,7 +279,7 @@
 		arm_hardware_pioi_altfn2(1u << 1,	AF_SPI2); /* PI1 I2S2_CK	*/ \
 		arm_hardware_pioi_altfn2(1u << 3,	AF_SPI2); /* PI3 I2S2_SDO - приём от кодека */ \
 		arm_hardware_pioi_altfn2(1u << 2,	AF_SPI2); /* PI2 I2S2_SDI, - передача */ \
-		arm_hardware_pioc_inputs(1u << 6);  		  	/* PC6 I2S2_MCK - WS * 256 - disconnect */ \
+		arm_hardware_pioc_altfn2(1u << 6,	AF_SPI2); /* PC6 I2S2_MCK - WS * 256 */ \
 		arm_hardware_pioi_altfn20(1u << 11, AF_SPI1); /* PI11 I2S_CKIN AF_5 */ \
 	} while (0)
 

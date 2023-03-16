@@ -813,72 +813,8 @@ hardware_i2s3_slave_rx_initialize_codec1(void)		/* инициализация I2
 	//PRINTF(PSTR("hardware_i2s3_slave_rx_initialize_codec1 done\n"));
 }
 
-
-// Интерфейс к НЧ кодеку
-/* инициализация I2S2 STM32MP1 (и возможно STM32H7xx) */
-static void
-hardware_i2s2_slave_duplex_initialize_codec1(void)
+static void i2c2mclkout(void)
 {
-	//PRINTF(PSTR("hardware_i2s2_slave_duplex_initialize_codec1\n"));
-
-#if CPUSTYLE_STM32MP1
-	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN_Msk; // Подать тактирование
-	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN_Msk; // Подать тактирование
-	(void) RCC->MP_APB1LPENSETR;
-
-#elif CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN_Msk; // Подать тактирование
-	(void) RCC->APB1LENR;
-
-#else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN_Msk; // Подать тактирование
-	(void) RCC->APB1ENR;
-
-#endif /* CPUSTYLE_STM32H7XX */
-
-	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
-
- 	SPI2->I2SCFGR = i2scfgr |
- 			(4u << SPI_I2SCFGR_I2SCFG_Pos) |	// 100: slave - full duplex
-			0;
-
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
-#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
-
-	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
-
-	// Подключить I2S к выводам процессора
-	I2S2HW_SLAVE_INITIALIZE();	// hardware_i2s2_slave_duplex_initialize_codec1
-
-	//PRINTF(PSTR("hardware_i2s2_slave_duplex_initialize_codec1 done\n"));
-}
-
-
-// Интерфейс к НЧ кодеку
-/* инициализация I2S2 STM32MP1 (и возможно STM32H7xx) */
-static void
-hardware_i2s2_master_duplex_initialize_codec1(void)
-{
-	//PRINTF(PSTR("hardware_i2s2_master_duplex_initialize_codec1\n"));
-
-#if CPUSTYLE_STM32MP1
-	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN_Msk; // Подать тактирование
-	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN_Msk; // Подать тактирование
-	(void) RCC->MP_APB1LPENSETR;
-
-#elif CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN_Msk; // Подать тактирование
-	(void) RCC->APB1LENR;
-
-#else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN_Msk; // Подать тактирование
-	(void) RCC->APB1ENR;
-
-#endif /* CPUSTYLE_STM32H7XX */
-
 #if WITHI2SCLOCKFROMPIN
 	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 	#if defined (STM32F446xx)
@@ -959,6 +895,74 @@ hardware_i2s2_master_duplex_initialize_codec1(void)
 	#endif /* defined (STM32F446xx) */
 
 #endif /* WITHI2SCLOCKFROMPIN */
+}
+
+// Интерфейс к НЧ кодеку
+/* инициализация I2S2 STM32MP1 (и возможно STM32H7xx) */
+static void
+hardware_i2s2_slave_duplex_initialize_codec1(void)
+{
+	//PRINTF(PSTR("hardware_i2s2_slave_duplex_initialize_codec1\n"));
+
+#if CPUSTYLE_STM32MP1
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN_Msk; // Подать тактирование
+	(void) RCC->MP_APB1ENSETR;
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN_Msk; // Подать тактирование
+	(void) RCC->MP_APB1LPENSETR;
+
+#elif CPUSTYLE_STM32H7XX
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN_Msk; // Подать тактирование
+	(void) RCC->APB1LENR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN_Msk; // Подать тактирование
+	(void) RCC->APB1ENR;
+
+#endif /* CPUSTYLE_STM32H7XX */
+
+	i2c2mclkout();
+
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
+
+ 	SPI2->I2SCFGR = i2scfgr |
+ 			(4u << SPI_I2SCFGR_I2SCFG_Pos) |	// 100: slave - full duplex
+			0;
+
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
+
+	// Подключить I2S к выводам процессора
+	I2S2HW_SLAVE_INITIALIZE();	// hardware_i2s2_slave_duplex_initialize_codec1
+
+	//PRINTF(PSTR("hardware_i2s2_slave_duplex_initialize_codec1 done\n"));
+}
+
+
+// Интерфейс к НЧ кодеку
+/* инициализация I2S2 STM32MP1 (и возможно STM32H7xx) */
+static void
+hardware_i2s2_master_duplex_initialize_codec1(void)
+{
+	//PRINTF(PSTR("hardware_i2s2_master_duplex_initialize_codec1\n"));
+
+#if CPUSTYLE_STM32MP1
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN_Msk; // Подать тактирование
+	(void) RCC->MP_APB1ENSETR;
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN_Msk; // Подать тактирование
+	(void) RCC->MP_APB1LPENSETR;
+
+#elif CPUSTYLE_STM32H7XX
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN_Msk; // Подать тактирование
+	(void) RCC->APB1LENR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN_Msk; // Подать тактирование
+	(void) RCC->APB1ENR;
+
+#endif /* CPUSTYLE_STM32H7XX */
+
+	i2c2mclkout();
 
 	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
@@ -969,8 +973,6 @@ hardware_i2s2_master_duplex_initialize_codec1(void)
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
 #endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
-
-	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
 
 	// Подключить I2S к выводам процессора
 	I2S2HW_MASTER_INITIALIZE();	// hardware_i2s2_master_duplex_initialize_codec1
