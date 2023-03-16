@@ -5871,13 +5871,13 @@ static const codechw_t * const channels [] =
 	#if WITHCODEC1_I2S3_RX_SLAVE
 		& audiocodechw_i2s3_rx_slave,					// Интерфейс к НЧ кодеку
 	#endif /* WITHCODEC1_I2S3_RX_SLAVE */
-	#if WITHCODEC1_I2S2_DUPLEX_SLAVE		// (stm32mp157 9a)
-		& audiocodechw_i2s2_duplex_slave,	// Интерфейс к НЧ кодеку
-	#endif /* WITHCODEC1_I2S2_DUPLEX_SLAVE */
 	#if WITHFPGAIF_I2S1_DUPLEX_SLAVE
 		& fpgacodechw_i2s1_duplex_slave,	// Интерфейс к FPGA
 	#endif /* WITHFPGAIF_I2S1_DUPLEX_SLAVE */
-	#if WITHCODEC1_I2S2_DUPLEX_MASTER	// (stm32mp157 9c)
+	#if WITHCODEC1_I2S2_DUPLEX_SLAVE
+		& audiocodechw_i2s2_duplex_slave,	// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_I2S2_DUPLEX_SLAVE */
+	#if WITHCODEC1_I2S2_DUPLEX_MASTER
 		& audiocodechw_i2s2_duplex_master,	// Интерфейс к НЧ кодеку
 	#endif /* WITHCODEC1_I2S2_DUPLEX_MASTER */
 	#if WITHCODEC1_SAI2_A_TX_B_RX_MASTER
