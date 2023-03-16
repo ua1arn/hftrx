@@ -3775,7 +3775,11 @@ void spi_initialize(void)
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
+#elif defined SPISPEEDUFAST
+	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR */
+
+	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 
 	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 
@@ -4347,7 +4351,7 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			break;
 
 		case SPDFIO_4WIRE:
-			SPI0->SPI_BCC = (0x01u << 29);	/* Quad_EN */
+			SPI0->SPI_BCC = (1u << 29);	/* Quad_EN */
 			if (tx != NULL)
 			{
 				// 4-wire write
@@ -4369,7 +4373,7 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 		while ((SPI0->SPI_TCR & (1u << 31)) != 0)	// XCH
 			;
-		SPI0->SPI_BCC &= ~ (0x01u << 29);	/* Quad_EN */
+		SPI0->SPI_BCC &= ~ (1u << 29);	/* Quad_EN */
 
 		for (i = 0; i < chunk; i ++)
 		{
