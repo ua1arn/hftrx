@@ -963,7 +963,7 @@ hwaccel_rect_u16(
 		unsigned n = w;
 		while (n --)
 			* buffer ++ = color;
-		tbuffer += t;
+		buffer += t;
 	}
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
@@ -1108,7 +1108,7 @@ hwaccel_rect_u24(
 		unsigned n = w;
 		while (n --)
 			* buffer ++ = color;
-		tbuffer += t;
+		buffer += t;
 	}
 
 #endif
