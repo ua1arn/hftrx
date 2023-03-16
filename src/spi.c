@@ -1328,7 +1328,7 @@ static void sys_spinor_exit(void)
 
 	/* Disable the spi0 controller */
 	val = SPI0->SPI_GCR;
-	val &= ~ ((1 << 1) | (1 << 0));
+	val &= ~ ((1u << 1) | (1u << 0));
 	SPI0->SPI_GCR = val;
 }
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
@@ -1677,22 +1677,22 @@ void hardware_spi_master_initialize(void)
 //	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
 //		;
 	SPI0->SPI_GCR |=
-		(0x00uL < 1) |	// MODE: 1: Master mode
+		(0u < 1) |	// MODE: 1: Master mode
 		0;
 
 	/* De-assert spi0 reset */
-	CCU->SPI_BGR_REG |= (1 << (ix + 16));
+	CCU->SPI_BGR_REG |= (1u << (ix + 16));
 	/* Open the spi0 gate */
-	CCU->SPI0_CLK_REG |= (1 << 31);
+	CCU->SPI0_CLK_REG |= (1u << 31);
 	/* Open the spi0 bus gate */
-	CCU->SPI_BGR_REG |= (1 << (ix + 0));
+	CCU->SPI_BGR_REG |= (1u << (ix + 0));
 
 
 	/* Enable spi0 */
-	SPI0->SPI_GCR |= (1 << 7) | (1 << 1) | (1 << 0);
+	SPI0->SPI_GCR |= (1u << 7) | (1u << 1) | (1u << 0);
 	/* Do a soft reset */
-//	SPI0->SPI_GCR |= (1 << 31);
-//	while((SPI0->SPI_GCR & (1 << 31)) != 0)
+//	SPI0->SPI_GCR |= (1u << 31);
+//	while((SPI0->SPI_GCR & (1u << 31)) != 0)
 //		;
 
 	// De-assert hardware CS
@@ -2046,7 +2046,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
-	spi_tcr_reg_val [spispeedindex][SPIC_MODE0] = tcr | (0x00uL << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE0] = tcr | (0u << 0);
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE1] = tcr | (0x01uL << 0);
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (0x02uL << 0);
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (0x03uL << 0);
@@ -2379,14 +2379,14 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+	while ((SPI0->SPI_TCR & (1u << 31)) != 0)
 		;
 
 	const portholder_t v = * (volatile uint8_t *) & SPI0->SPI_RXD;
 
 	// TXFIFO and RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
-	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
+	SPI0->SPI_FCR |= (1u << 31) | (1u << 15);
+	while ((SPI0->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
 		;
 
 	return v;
@@ -3397,14 +3397,14 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+	while ((SPI0->SPI_TCR & (1u << 31)) != 0)
 		;
 
 	const portholder_t v = __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
 
 	// TXFIFO and RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
-	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
+	SPI0->SPI_FCR |= (1u << 31) | (1u << 15);
+	while ((SPI0->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
 		;
 
 	return v & 0xFFFF;
@@ -3457,7 +3457,7 @@ void RAMFUNC hardware_spi_b16_p1(
 
 	* (volatile uint16_t *) & SPI0->SPI_TXD = __bswap16(v);
 
-	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
+	SPI0->SPI_TCR |= (1u << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3564,14 +3564,14 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+	while ((SPI0->SPI_TCR & (1u << 31)) != 0)
 		;
 
 	const portholder_t v = __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
 
 	// TXFIFO and RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
-	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
+	SPI0->SPI_FCR |= (1u << 31) | (1u << 15);
+	while ((SPI0->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
 		;
 
 	return v;
@@ -3608,7 +3608,7 @@ void hardware_spi_b32_p1(
 
 	SPI0->SPI_TXD = __bswap32(v);	/* 32bit access */
 
-	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
+	SPI0->SPI_TCR |= (1u << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3695,7 +3695,7 @@ void hardware_spi_b8_p1(
 
 	* (volatile uint8_t *) & SPI0->SPI_TXD = v;
 
-	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
+	SPI0->SPI_TCR |= (1u << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -4505,35 +4505,35 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_
 
 
 #define QSPI_CONFIG             0xE000D000
-#define  CFG_IFMODE             (1 << 31) // Inteligent Flash Mode
+#define  CFG_IFMODE             (1u << 31) // Inteligent Flash Mode
 #define  CFG_LITTLE_ENDIAN      (0 << 26)
-#define  CFG_BIG_ENDIAN         (1 << 26)
-#define  CFG_HOLDB_DR           (1 << 19) // set to 1 for dual/quad spi mode
-#define  CFG_NO_MODIFY_MASK     (1 << 17) // do not modify this bit
-#define  CFG_MANUAL_START       (1 << 16) // start transaction
-#define  CFG_MANUAL_START_EN    (1 << 15) // enable manual start mode
-#define  CFG_MANUAL_CS_EN       (1 << 14) // enable manual CS control
-#define  CFG_MANUAL_CS          (1 << 10) // directly drives n_ss_out if MANUAL_CS_EN==1
+#define  CFG_BIG_ENDIAN         (1u << 26)
+#define  CFG_HOLDB_DR           (1u << 19) // set to 1 for dual/quad spi mode
+#define  CFG_NO_MODIFY_MASK     (1u << 17) // do not modify this bit
+#define  CFG_MANUAL_START       (1u << 16) // start transaction
+#define  CFG_MANUAL_START_EN    (1u << 15) // enable manual start mode
+#define  CFG_MANUAL_CS_EN       (1u << 14) // enable manual CS control
+#define  CFG_MANUAL_CS          (1u << 10) // directly drives n_ss_out if MANUAL_CS_EN==1
 #define  CFG_FIFO_WIDTH_32      (3 << 6)  // only valid setting
 #define  CFG_BAUD_MASK          (7 << 3)
 #define  CFG_BAUD_DIV_2         (0 << 3)
-#define  CFG_BAUD_DIV_4         (1 << 3)
+#define  CFG_BAUD_DIV_4         (1u << 3)
 #define  CFG_BAUD_DIV_8         (2 << 3)
 #define  CFG_BAUD_DIV_16        (3 << 3)
-#define  CFG_CPHA               (1 << 2) // clock phase
-#define  CFG_CPOL               (1 << 1) // clock polarity
-#define  CFG_MASTER_MODE        (1 << 0) // only valid setting
+#define  CFG_CPHA               (1u << 2) // clock phase
+#define  CFG_CPOL               (1u << 1) // clock polarity
+#define  CFG_MASTER_MODE        (1u << 0) // only valid setting
 
 #define QSPI_IRQ_STATUS         0xE000D004 // ro status (write UNDERFLOW/OVERFLOW to clear)
 #define QSPI_IRQ_ENABLE         0xE000D008 // write 1s to set mask bits
 #define QSPI_IRQ_DISABLE        0xE000D00C // write 1s to clear mask bits
 #define QSPI_IRQ_MASK           0xE000D010 // ro mask value (1 = irq enabled)
-#define  TX_UNDERFLOW           (1 << 6)
-#define  RX_FIFO_FULL           (1 << 5)
-#define  RX_FIFO_NOT_EMPTY      (1 << 4)
-#define  TX_FIFO_FULL           (1 << 3)
-#define  TX_FIFO_NOT_FULL       (1 << 2)
-#define  RX_OVERFLOW            (1 << 0)
+#define  TX_UNDERFLOW           (1u << 6)
+#define  RX_FIFO_FULL           (1u << 5)
+#define  RX_FIFO_NOT_EMPTY      (1u << 4)
+#define  TX_FIFO_FULL           (1u << 3)
+#define  TX_FIFO_NOT_FULL       (1u << 2)
+#define  RX_OVERFLOW            (1u << 0)
 
 #define QSPI_ENABLE             0xE000D014 // write 1 to enable
 
@@ -4550,12 +4550,12 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_
 #define QSPI_TXD3               0xE000D088
 
 #define QSPI_LINEAR_CONFIG      0xE000D0A0
-#define  LCFG_ENABLE            (1 << 31) // enable linear quad spi mode
-#define  LCFG_TWO_MEM           (1 << 30)
-#define  LCFG_SEP_BUS           (1 << 29) // 0=shared 1=separate
-#define  LCFG_U_PAGE            (1 << 28)
-#define  LCFG_MODE_EN           (1 << 25) // send mode bits (required for dual/quad io)
-#define  LCFG_MODE_ON           (1 << 24) // only send instruction code for first read
+#define  LCFG_ENABLE            (1u << 31) // enable linear quad spi mode
+#define  LCFG_TWO_MEM           (1u << 30)
+#define  LCFG_SEP_BUS           (1u << 29) // 0=shared 1=separate
+#define  LCFG_U_PAGE            (1u << 28)
+#define  LCFG_MODE_EN           (1u << 25) // send mode bits (required for dual/quad io)
+#define  LCFG_MODE_ON           (1u << 24) // only send instruction code for first read
 #define  LCFG_MODE_BITS(n)      (((n) & 0xFF) << 16)
 #define  LCFG_DUMMY_BYTES(n)    (((n) & 7) << 8)
 #define  LCFG_INST_CODE(n)      ((n) & 0xFF)
@@ -5242,7 +5242,7 @@ static IRQL_t spidf_iostart(
 		//(0 << QUADSPI_CCR_DHHC_Pos) |	// 0: Delay the data output using analog delay
 		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
 		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
-		((direction ? 0x00uL : 0x01uL) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
+		((direction ? 0u : 0x01uL) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
 		(size != 0) * (bw << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
 		((ml * ndummy) << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (1..31).
 		//0 * (bw << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
@@ -5299,14 +5299,14 @@ void spidf_initialize(void)
 
 	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
-		(7 << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
+		(7u << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
 		//(0 << QUADSPI_DCR_CKMODE_Pos) |	// 0: CLK must stay low while nCS is high (chip select released). This is referred to as mode 0.
-		(1 << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
+		(1u << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
 		0;
 	(void) QUADSPI->DCR;
 
 	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk | QUADSPI_CR_EN_Msk))) |
-		(0x00uL << QUADSPI_CR_FTHRES_Pos) | // FIFO threshold level - one byte
+		(0u << QUADSPI_CR_FTHRES_Pos) | // FIFO threshold level - one byte
 		(((unsigned long) qspipre - 1) << QUADSPI_CR_PRESCALER_Pos) |
 		0;
 	(void) QUADSPI->CR;
@@ -5534,14 +5534,14 @@ static IRQL_t spidf_iostart(
 	*/
 	// 17.4.13 SPI Mode Enable Setting Register (SMENR)
 	SPIBSC0.SMENR =
-		(0x00uL << SPIBSC_SMENR_CDB_SHIFT) | /* 1 data bit */
-		(0x00uL << SPIBSC_SMENR_OCDB_SHIFT) | /* 1 optional command bit */
-		(0x00uL << SPIBSC_SMENR_ADB_SHIFT) | /* 1 address bit */
-		(0x00uL << SPIBSC_SMENR_OPDB_SHIFT) | /* 1 optional data bit */
-		(0x00uL << SPIBSC_SMENR_SPIDB_SHIFT) | /* Transfer Data Bit Size */
+		(0u << SPIBSC_SMENR_CDB_SHIFT) | /* 1 data bit */
+		(0u << SPIBSC_SMENR_OCDB_SHIFT) | /* 1 optional command bit */
+		(0u << SPIBSC_SMENR_ADB_SHIFT) | /* 1 address bit */
+		(0u << SPIBSC_SMENR_OPDB_SHIFT) | /* 1 optional data bit */
+		(0u << SPIBSC_SMENR_SPIDB_SHIFT) | /* Transfer Data Bit Size */
 		(0x01uL << SPIBSC_SMENR_CDE_SHIFT) | /* 1: Command output enabled */
-		(0x00uL << SPIBSC_SMENR_OCDE_SHIFT) | /* 0: Optional command output disabled */
-		(0x00uL << SPIBSC_SMENR_OPDE_SHIFT) | /* Option Data Enable 0000: Output disabled */
+		(0u << SPIBSC_SMENR_OCDE_SHIFT) | /* 0: Optional command output disabled */
+		(0u << SPIBSC_SMENR_OPDE_SHIFT) | /* Option Data Enable 0000: Output disabled */
 		((hasaddress ? 0x07 : 0x00) << SPIBSC_SMENR_ADE_SHIFT) | /* No address send or 0111: ADR[23:0] */
 		((ndummy != 0) << SPIBSC_SMENR_DME_SHIFT) |
 		((size && ! direction ? 0x08uL : 0) << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
@@ -5549,7 +5549,7 @@ static IRQL_t spidf_iostart(
 	// 17.4.10 SPI Mode Command Setting Register (SMCMR)
 	SPIBSC0.SMCMR =
 		(cmd << SPIBSC_SMCMR_CMD_SHIFT) | /* command byte */
-		(0x00uL << SPIBSC_SMCMR_OCMD_SHIFT) | /* optional command */
+		(0u << SPIBSC_SMCMR_OCMD_SHIFT) | /* optional command */
 		0;
 
 	SPIBSC0.SMADR = address;
