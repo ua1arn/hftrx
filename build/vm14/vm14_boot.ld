@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Allwinner t113-s3 layout */
+/* 1892ВМ14Я ELVEES multicore.ru layout */
 /* Linker script to configure memory regions. */
 
 MEMORY
