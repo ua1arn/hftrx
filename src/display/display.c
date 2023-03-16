@@ -492,6 +492,23 @@ ltdc_vertical_pixN(
 #endif /* LCDMODE_LTDC_L24 */
 }
 
+/* использование альманахов отображаемых шрифтов */
+static void colmain_fontbuff_draw(
+	PACKEDCOLORPIP_T * const __restrict buffer,
+	const uint_fast16_t dx, const uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y,	/* координаты в буфере */
+	uint_fast8_t c	/* отображаемый символ */
+	)
+{
+
+}
+
+/* предварительное посторение альманахов отображаемых шрифтов */
+static void colmain_fontbuff_initialize(void)
+{
+
+}
+
 #if LCDMODE_HORFILL
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
@@ -1459,7 +1476,8 @@ void colpip_copy_to_draw(
 		colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		buffer, dx, dy,
-		0, 0
+		0, 0,
+		dx, dy
 		);
 #else /* LCDMODE_HORFILL */
 	hwaccel_bitblt(
@@ -1467,7 +1485,8 @@ void colpip_copy_to_draw(
 		colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		buffer, dx, dy,
-		0, 0
+		0, 0,
+		dx, dy,
 		);
 #endif /* LCDMODE_HORFILL */
 }
@@ -1874,6 +1893,7 @@ void display_hardware_initialize(void)
 	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
 	hardware_ltdc_initialize(frames, vdmode);
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
+	colmain_fontbuff_initialize();
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */

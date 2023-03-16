@@ -822,8 +822,9 @@ void colpip_bitblt(
 	uint_fast16_t x,	uint_fast16_t y,	// позиция получателя
 	uintptr_t srcinvalidateaddr,	int_fast32_t srcinvalidatesize,	// параметры clean источника
 	const PACKEDCOLORPIP_T * __restrict buffer, 	// источник
-	uint_fast16_t sdx,	// источник Размеры окна в пикселях
-	uint_fast16_t sdy,	// источник
+	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры буфера в пикселях
+	uint_fast16_t sx,	uint_fast16_t sy,	// источник Позиция окна
+	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
 	unsigned bitbltmask, COLORPIP_T keycolor
 	);
 
@@ -836,7 +837,9 @@ void colpip_stretchblt(
 	uint_fast16_t w,	uint_fast16_t h,	// Размеры окна получателя
 	uintptr_t srcinvalidateaddr,	int_fast32_t srcinvalidatesize,	// параметры clean источника
 	const PACKEDCOLORPIP_T * __restrict buffer, 	// источник
-	uint_fast16_t sdx,	uint_fast16_t sdy,// источник Размеры окна в пикселях
+	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры буфера в пикселях
+	uint_fast16_t sx,	uint_fast16_t sy,	// источник Позиция (размеры совпадают с получателем)
+	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
 	unsigned keyflag, COLORPIP_T keycolor
 	);
 
@@ -1035,6 +1038,7 @@ void hwaccel_bitblt(
 	const PACKEDCOLORPIP_T * src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy,	// высота буфера
+	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
 	unsigned keyflag, COLOR24_T keycolor
 	);
 

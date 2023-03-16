@@ -6389,6 +6389,7 @@ void testpng(const void * pngbuffer)
 		0, 0, picw / 4, pich / 4,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
 		fbpic, picdx, pich,
+		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
@@ -6398,6 +6399,7 @@ void testpng(const void * pngbuffer)
 		30, 0, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
 		fbpic, picdx, pich,
+		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
@@ -6407,6 +6409,7 @@ void testpng(const void * pngbuffer)
 		30, pich / 2, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
 		fbpic, picdx, pich,
+		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
@@ -6416,6 +6419,7 @@ void testpng(const void * pngbuffer)
 		300, 100, picw / 1, pich / 1,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
 		fbpic, picdx, pich,
+		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
@@ -6580,6 +6584,8 @@ void hightests(void)
 				220, 220,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6591,6 +6597,8 @@ void hightests(void)
 				350, 250,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE, keycolor
 				);
 
@@ -6602,6 +6610,8 @@ void hightests(void)
 				40, 20, picx * 5 / 2, picy,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	// координаты источника
+				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6613,6 +6623,8 @@ void hightests(void)
 				450, 250, picx * 3 / 2, picy * 3 / 2,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	/* координаты источника */
+				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6624,6 +6636,8 @@ void hightests(void)
 				170, 220, picx * 2 / 3, picy * 2 / 3,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	/* координаты источника */
+				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6635,6 +6649,8 @@ void hightests(void)
 				90, 90,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6646,6 +6662,8 @@ void hightests(void)
 				30, 30,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic2, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6657,6 +6675,8 @@ void hightests(void)
 				370, 20,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic3, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
