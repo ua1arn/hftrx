@@ -2019,8 +2019,8 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	};
 
-	const portholder_t clk_src = 0x01;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
-	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
+	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03u << 24)) |
 		(clk_src << 24) |	/* CLK_SRC_SEL */
 		0;
 
@@ -2028,20 +2028,20 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	// SCLK = Clock Source/M/N.
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
-	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());
+	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, allwnrt113_get_spi0_freq());
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
 	ccu_spi_clk_reg_val [spispeedindex] =
 		(clk_src << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 		(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 		(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
-		(0x01uL << 31) |	// 1: Clock is ON
+		(1u << 31) |	// 1: Clock is ON
 		0;
 
 	const portholder_t tcr =
 			(0u << 12) |	// FBS: 0: MSB first
 			(1u << 6) |		// SS_OWNER: 1: Software
-			(1u << 7) |		// SS_LEVEL: 1: Set SS to high
+			//(1u << 7) |		// SS_LEVEL: 1: Set SS to high
 			0;
 
 //	tcr &= ~((0x3 << 4) | (0x1 << 7));
@@ -2050,9 +2050,9 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE0] = tcr | (0u << 0);
-	spi_tcr_reg_val [spispeedindex][SPIC_MODE1] = tcr | (0x01uL << 0);
-	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (0x02uL << 0);
-	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (0x03uL << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE1] = tcr | (1u << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (2u << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (3u << 0);
 
 #else
 	#error Wrong CPUSTYLE macro
