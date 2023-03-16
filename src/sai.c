@@ -3339,7 +3339,6 @@ static const codechw_t audiocodechw_sai2_a_tx_b_rx_master =
 };
 #endif /* WITHCODEC1_SAI2_A_TX_B_RX_MASTER */
 
-#if 1//WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE
 static const codechw_t fpgacodechw_sai2_a_tx_b_rx_slave =
 {
 	hardware_sai2_a_tx_b_rx_slave_initialize_fpga,
@@ -3350,9 +3349,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_slave =
 	hardware_sai2_a_enable_fpga,
 	"fpgacodechw-sai2-slave"
 };
-#endif /* WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE */
 
-#if 1//WITHFPGAIF_SAI2_A_TX_B_RX_MASTER
 static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 {
 	hardware_sai2_a_tx_b_rx_master_initialize_fpga,
@@ -3363,7 +3360,6 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 	hardware_sai2_a_enable_fpga,
 	"fpgacodechw-sai2-master"
 };
-#endif /* WITHFPGAIF_SAI2_A_TX_B_RX_MASTER */
 
 #if WITHFPGARTS_FRAMEBITS
 	// other CPUs
