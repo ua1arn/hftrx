@@ -54,7 +54,7 @@ typedef enum {
     GIC_PL390_PPI30, // Private WDT
     GIC_PL390_PPI31,
 
-    MPU_L2CCINTR,   // Прерывание контроллера кэша второго уровня MPU
+    MPU_L2CCINTR,   // Прерывание контроллера кэша второго уровня MPU - 32
     DSP_INT_DSP,    // Прерывание от DSP
     GPU_IRQPPMMU0,  // Прерывание от MMU пиксельного процессора GPU
     GPU_IRQPP0,     // Прерывание от пиксельного процессора GPU

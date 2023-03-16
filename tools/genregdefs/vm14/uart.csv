@@ -4,10 +4,10 @@
 #base; UART1 0x38029000
 #base; UART2 0x3802a000
 #base; UART3 0x3802b000
-#irq; UART0 32
-#irq; UART1 33
-#irq; UART2 34
-#irq; UART3 35
+#irq; UART0 96
+#irq; UART1 97
+#irq; UART2 98
+#irq; UART3 99
 #regdef; UART_RBR_THR_DLL;   0x0000; UART Receive Buffer Register/Transmit Holding Register
 #regdef; UART_DLH_IER;   0x0004; ; UART Divisor Latch High Register/UART Interrupt Enable Register
 #regdef; UART_IIR_FCR;   0x0008; UART Interrupt Identity Register/UART FIFO Control Register

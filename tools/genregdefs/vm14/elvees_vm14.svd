@@ -15,22 +15,22 @@
   <baseAddress>0x38028000</baseAddress>
   <interrupt>
    <name>UART0</name>
-   <value>32</value>
+   <value>96</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART1</name>
-   <value>33</value>
+   <value>97</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART2</name>
-   <value>34</value>
+   <value>98</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART3</name>
-   <value>35</value>
+   <value>99</value>
    <description></description>
   </interrupt>
   <registers>
@@ -216,22 +216,22 @@
   <baseAddress>0x38029000</baseAddress>
   <interrupt>
    <name>UART0</name>
-   <value>32</value>
+   <value>96</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART1</name>
-   <value>33</value>
+   <value>97</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART2</name>
-   <value>34</value>
+   <value>98</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART3</name>
-   <value>35</value>
+   <value>99</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -240,22 +240,22 @@
   <baseAddress>0x3802A000</baseAddress>
   <interrupt>
    <name>UART0</name>
-   <value>32</value>
+   <value>96</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART1</name>
-   <value>33</value>
+   <value>97</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART2</name>
-   <value>34</value>
+   <value>98</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART3</name>
-   <value>35</value>
+   <value>99</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -264,22 +264,22 @@
   <baseAddress>0x3802B000</baseAddress>
   <interrupt>
    <name>UART0</name>
-   <value>32</value>
+   <value>96</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART1</name>
-   <value>33</value>
+   <value>97</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART2</name>
-   <value>34</value>
+   <value>98</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART3</name>
-   <value>35</value>
+   <value>99</value>
    <description></description>
   </interrupt>
   </peripheral>

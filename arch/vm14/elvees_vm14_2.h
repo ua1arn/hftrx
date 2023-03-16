@@ -31,10 +31,10 @@ typedef enum IRQn
     SecurePhysicalTimer_IRQn = 29,                    /*!<   Interrupt */
     NonSecurePhysicalTimer_IRQn = 30,                 /*!<   Interrupt */
     Legacy_nIRQ_IRQn = 31,                            /*!<   Interrupt */
-    UART0_IRQn = 32,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
-    UART1_IRQn = 33,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
-    UART2_IRQn = 34,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
-    UART3_IRQn = 35,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
+    UART0_IRQn = 96,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
+    UART1_IRQn = 97,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
+    UART2_IRQn = 98,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
+    UART3_IRQn = 99,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */

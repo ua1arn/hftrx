@@ -22,7 +22,7 @@ typedef enum xIRQn
   GPU_IRQGPMMU,   // Прерывание от MMU геометрического процессора GPU
   GPU_IRQGP,      // Прерывание от геометрического процессора GPU
   VPU_INT,        // Прерывание от VPU
-  SDMA_IRQ0,      // Прерывание 0 от SDMA
+  SDMA_IRQ0,      // Прерывание 0 от SDMA - 40
   SDMA_IRQ1,      // Прерывание 1 от SDMA
   SDMA_IRQ2,      // Прерывание 2 от SDMA
   SDMA_IRQ3,      // Прерывание 3 от SDMA
@@ -38,39 +38,39 @@ typedef enum xIRQn
   SDMA_IRQ13,     // Прерывание 13 от SDMA
   SDMA_IRQ14,     // Прерывание 14 от SDMA
   SDMA_IRQ15,     // Прерывание 15 от SDMA
-  PDMA_INT_FLAG0, //
+  PDMA_INT_FLAG0, // 56
   PDMA_INT_FLAG1, //
   PDMA_INT_FLAG2, //
   PDMA_INT_FLAG3, //
   PDMA_INT_FLAG4, //
-  RTC_TICK_INT,   //
+  RTC_TICK_INT,   // 61
   RTC_PMWKP_INT,  //
   RTC_ALARM_INT,  //
-  USBIC_INT,      //
+  USBIC_INT,      // 64
   USBIC_ENDP_INT, //
   VPIN_VIOINT,    //
   VPIN_STR0INT,   //
   VPIN_STR1INT,   //
   VPOUT_LCDINT,   //
-  VPOUT_DSIINT,   //
+  VPOUT_DSIINT,   // 70
   NFC_MPORTINT,   //
-  MFBSP0_DMAIRQ0, //Прерывание от канала DMA порта МFBSP0 при передаче данных
+  MFBSP0_DMAIRQ0, // Прерывание от канала DMA порта МFBSP0 при передаче данных 72
   MFBSP0_DMAIRQ1, //Прерывание от канала DMA порта МFBSP0 при приеме данных
   MFBSP1_DMAIRQ0, //Прерывание от канала DMA порта МFBSP1 при передаче данных
   MFBSP1_DMAIRQ1, //Прерывание от канала DMA порта МFBSP1 при приеме данных
-  MPU_IRQS44,     //Резерв
-  MPU_IRQS45,     //Резерв
+  MPU_IRQS44,     //Резерв 76
+  MPU_IRQS45,     //Резерв 77
   CPU0_PMUIRQ,    //Прерывание от монитора производительности CPU0
   CPU1_PMUIRQ,    //Прерывание от монитора производительности CPU1
-  SWIC0DMA_IRQ0,  //
+  SWIC0DMA_IRQ0,  // 80
   SWIC0DMA_IRQ1,  //
   SWIC0DMA_IRQ2,  //
   SWIC0DMA_IRQ3,  //
-  SWIC1DMA_IRQ0,  //
+  SWIC1DMA_IRQ0,  // 84
   SWIC1DMA_IRQ1,  //
   SWIC1DMA_IRQ2,  //
   SWIC1DMA_IRQ3,  //
-  SWIC0_INT,      //
+  SWIC0_INT,      // 88
   SWIC1_INT,      //
   MFBSP0_RXIRQ,   //Формируется, если порт включен на прием данных (в одном из
                 //режимов), а число 64-х разрядных слов в буфере приёма больше
@@ -94,11 +94,11 @@ typedef enum xIRQn
   MFBSP1_SRQ,   //Запрос обслуживания от порта MFBSP0. Формируется, если порт
                 //выключен (LEN=0, SPI_I2S_EN=0), а на выводах LACK или LCLK
                 //присутствует сигнал высокого уровня
-  UART0_INTR,   //Прерывание от UART0
+  UART0_INTR,   //Прерывание от UART0 96
   UART1_INTR,   //Прерывание от UART1
   UART2_INTR,   //Прерывание от UART2
   UART3_INTR,   //Прерывание от UART3
-  I2C0_IC_INTR, //Прерывание от I2C0
+  I2C0_IC_INTR, //Прерывание от I2C0 100
   I2C1_IC_INTR, //Прерывание от I2C1
   I2C2_IC_INTR, //Прерывание от I2C2
   MCC_INT,      //
