@@ -1157,7 +1157,7 @@ static void draw_button(const button_t * const bh)
 		else if (! bh->is_locked && bh->state != PRESSED)
 			bg = b1->bg_non_pressed;
 		ASSERT(bg != NULL);
-		colpip_bitblt((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, y1, (uintptr_t) bg, GXSIZE(bh->w, bh->h), bg, bh->w, bh->h, BITBLT_FLAG_NONE, 0);
+		colpip_bitblt((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, y1, (uintptr_t) bg, GXSIZE(bh->w, bh->h), bg, bh->w, bh->h, 0, 0, bh->w, bh->h, BITBLT_FLAG_NONE, 0);
 	}
 
 	uint_fast8_t shift = bh->state == PRESSED ? 1 : 0;

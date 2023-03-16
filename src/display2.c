@@ -109,6 +109,8 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 	{
 		colpip_bitblt((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, xx, yy,
 				(uintptr_t) lbl_bg->label_bg, lbl_bg->size, lbl_bg->label_bg, lbl_bg->w, lbl_bg->h,
+				0, 0,	// координаты окна источника
+				lbl_bg->w, lbl_bg->h, //размер окна источника
 				BITBLT_FLAG_NONE, 0);
 	}
 	else
@@ -1030,6 +1032,8 @@ display2_smeter15(
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift,
+					0, 0,	// координаты окна источника
+					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
 #if WITHRLEDECOMPRESS
 			smeter_arrow(gp, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
@@ -1062,6 +1066,8 @@ display2_smeter15(
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift,
+					0, 0,	// координаты окна источника
+					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
 #if WITHRLEDECOMPRESS
 			smeter_arrow(gv, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
@@ -1095,6 +1101,8 @@ display2_smeter15(
 					fr, DIM_X, DIM_Y, x0, y0,
 					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], SM_BG_W, SM_BG_H,
+					0, 0,	// координаты окна источника
+					SM_BG_W, SM_BG_H, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
 
 			if(gp > smpr->gs)
@@ -1110,6 +1118,8 @@ display2_smeter15(
 					fr, DIM_X, DIM_Y, x0, y0,
 					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], SM_BG_W, SM_BG_H,
+					0, 0,	// координаты окна источника
+					SM_BG_W, SM_BG_H,	// размер окна источника
 					BITBLT_FLAG_NONE, 0
 					);
 
@@ -6262,6 +6272,8 @@ static void display2_waterfall(
 					(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
 					atwflj(0, wfrow),	// начальный адрес источника
 					ALLDX, p1h, 	// размеры источника
+					0, 0,	// координаты окна источника
+					ALLDX, p1h, 	// размеры окна источника
 					BITBLT_FLAG_NONE, 0);
 		}
 		if (p2h != 0)
@@ -6274,6 +6286,8 @@ static void display2_waterfall(
 					(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
 					atwflj(0, 0),	// начальный адрес источника
 					ALLDX, p2h, 	// размеры источника
+					0, 0,	// координаты окна источника
+					ALLDX, p2h, 	// размеры окна источника
 					BITBLT_FLAG_NONE, 0);
 		}
 	}
