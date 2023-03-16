@@ -2019,7 +2019,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	};
 
-	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+	const portholder_t clk_src = 0x01;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
 		(clk_src << 24) |	/* CLK_SRC_SEL */
 		0;
@@ -2043,6 +2043,9 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 			(1u << 6) |		// SS_OWNER: 1: Software
 			(1u << 7) |		// SS_LEVEL: 1: Set SS to high
 			0;
+
+//	tcr &= ~((0x3 << 4) | (0x1 << 7));
+//	tcr |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
@@ -2205,13 +2208,13 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	{
-		unsigned val = SPI0->SPI_TCR;
-		val &= ~((0x3 << 4) | (0x1 << 7));
-		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
-		SPI0->SPI_TCR = val;
-		(void) SPI0->SPI_TCR;
-	}
+//	{
+//		unsigned val = SPI0->SPI_TCR;
+//		val &= ~((0x3 << 4) | (0x1 << 7));
+//		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+//		SPI0->SPI_TCR = val;
+//		(void) SPI0->SPI_TCR;
+//	}
  	HARDWARE_SPI_CONNECT();
 
 #else
@@ -3338,14 +3341,13 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	{
-		unsigned val = SPI0->SPI_TCR;
-		val &= ~((0x3 << 4) | (0x1 << 7));
-		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
-		SPI0->SPI_TCR = val;
-		(void) SPI0->SPI_TCR;
-	}
-
+//	{
+//		unsigned val = SPI0->SPI_TCR;
+//		val &= ~((0x3 << 4) | (0x1 << 7));
+//		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+//		SPI0->SPI_TCR = val;
+//		(void) SPI0->SPI_TCR;
+//	}
  	HARDWARE_SPI_CONNECT();
 
 #else
@@ -3528,14 +3530,13 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	{
-		unsigned val = SPI0->SPI_TCR;
-		val &= ~((0x3 << 4) | (0x1 << 7));
-		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
-		SPI0->SPI_TCR = val;
-		(void) SPI0->SPI_TCR;
-	}
-
+//	{
+//		unsigned val = SPI0->SPI_TCR;
+//		val &= ~((0x3 << 4) | (0x1 << 7));
+//		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+//		SPI0->SPI_TCR = val;
+//		(void) SPI0->SPI_TCR;
+//	}
  	HARDWARE_SPI_CONNECT();
 
 #else
