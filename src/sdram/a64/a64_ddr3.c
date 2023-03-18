@@ -299,9 +299,9 @@ static void clock_set_pll_ddr(uint32_t clk)
 		}
 	}
 
-	val = (0x1 << 31);
+	val = (0x1u << 31);
 	val |= (0x0 << 24);
-	val |= (0x1 << 20);
+	val |= (0x1u << 20);
 	val |= ((((clk / (24000000 * k / m)) - 1) & 0x1f) << 8);
 	val |= (((k - 1) & 0x3) << 4);
 	val |= (((m - 1) & 0x3) << 0);
@@ -342,7 +342,7 @@ static void mctl_set_bit_delays(struct h3_dram_para_t * para)
 	int i, j;
 	uint32_t val;
 
-	clrbits_le32(&ctl->pgcr[0], 1 << 26);
+	clrbits_le32(&ctl->pgcr[0], 0x1u << 26);
 	for(i = 0; i < 4; i++)
 	{
 		for(j = 0; j < 11; j++)
@@ -358,7 +358,7 @@ static void mctl_set_bit_delays(struct h3_dram_para_t * para)
 		write32((virtual_addr_t)&ctl->acbdlr[i], val);
 	}
 
-	setbits_le32(&ctl->pgcr[0], 1 << 26);
+	setbits_le32(&ctl->pgcr[0], 0x1u << 26);
 	sdelay(1);
 }
 
@@ -399,8 +399,8 @@ static inline void mbus_configure_port(uint8_t port,
 {
 	struct h3_dram_com_reg_t * com = (struct h3_dram_com_reg_t *)H3_DRAM_COM_BASE;
 
-	uint32_t cfg0 = ( (bwlimit ? (1 << 0) : 0)
-			   | (priority ? (1 << 1) : 0)
+	uint32_t cfg0 = ( (bwlimit ? (0x1u << 0) : 0)
+			   | (priority ? (0x1u << 1) : 0)
 			   | ((qos & 0x3) << 2)
 			   | ((waittime & 0xf) << 4)
 			   | ((acs & 0xff) << 8)
@@ -419,7 +419,7 @@ static void mctl_set_master_priority(void)
 {
 	struct h3_dram_com_reg_t * com = (struct h3_dram_com_reg_t *)H3_DRAM_COM_BASE;
 
-	write32((virtual_addr_t)&com->bwcr, (1 << 16) | (400 << 0));
+	write32((virtual_addr_t)&com->bwcr, (0x1u << 16) | (400 << 0));
 	write32((virtual_addr_t)&com->mapr, 0x00000001);
 
 	MBUS_CONF(   CPU,  1, HIGHEST, 0,  512,  256,  128);
@@ -489,7 +489,7 @@ static void mctl_set_timing_params(struct h3_dram_para_t * para)
 	clrsetbits_le32(&ctl->dramtmg[8], (0xff << 8) | (0xff << 0), (0x66 << 8) | (0x10 << 0));
 
 	/* Set PHY interface timing, write latency and read latency configure */
-	write32((virtual_addr_t)&ctl->pitmg[0], (0x2 << 24) | (t_rdata_en << 16) | (0x1 << 8) | (wr_latency << 0));
+	write32((virtual_addr_t)&ctl->pitmg[0], (0x2 << 24) | (t_rdata_en << 16) | (0x1u << 8) | (wr_latency << 0));
 
 	/* Set PHY timing, PTR0-2 use default */
 	write32((virtual_addr_t)&ctl->ptr[3], PTR3_TDINIT0(tdinit0) | PTR3_TDINIT1(tdinit1));
@@ -573,28 +573,28 @@ static void mctl_sys_init(struct h3_dram_para_t * para)
 	uint32_t val;
 
 	val = read32(H3_CCU_BASE + CCU_MBUS_CLK);
-	val &= ~(0x1 << 31);
+	val &= ~(0x1u << 31);
 	write32(H3_CCU_BASE + CCU_MBUS_CLK, val);
 
 	val = read32(H3_CCU_BASE + CCU_MBUS_RST);
-	val &= ~(0x1 << 31);
+	val &= ~(0x1u << 31);
 	write32(H3_CCU_BASE + CCU_MBUS_RST, val);
 
 	val = read32(H3_CCU_BASE + CCU_BUS_CLK_GATE0);
-	val &= ~(0x1 << 14);
+	val &= ~(0x1u << 14);
 	write32(H3_CCU_BASE + CCU_BUS_CLK_GATE0, val);
 
 	val = read32(H3_CCU_BASE + CCU_BUS_SOFT_RST0);
-	val &= ~(0x1 << 14);
+	val &= ~(0x1u << 14);
 	write32(H3_CCU_BASE + CCU_BUS_SOFT_RST0, val);
 
 	val = read32(H3_CCU_BASE + CCU_PLL_DDR_CTRL);
-	val &= ~(0x1 << 31);
+	val &= ~(0x1u << 31);
 	write32(H3_CCU_BASE + CCU_PLL_DDR_CTRL, val);
 	sdelay(10);
 
 	val = read32(H3_CCU_BASE + CCU_DRAM_CFG);
-	val &= ~(0x1 << 31);
+	val &= ~(0x1u << 31);
 	write32(H3_CCU_BASE + CCU_DRAM_CFG, val);
 	sdelay(1000);
 
@@ -602,31 +602,31 @@ static void mctl_sys_init(struct h3_dram_para_t * para)
 
 	val = read32(H3_CCU_BASE + CCU_DRAM_CFG);
 	val &= ~(0xf << 0);
-	val &= ~(0x3 << 20);
+	val &= ~(0x3u << 20);
 	val |= ((1 - 1) << 0);
 	val |= (0x0 << 20);
-	val |= (0x1 << 16);
+	val |= (0x1u << 16);
 	write32(H3_CCU_BASE + CCU_DRAM_CFG, val);
-	mctl_await_completion((uint32_t *)(H3_CCU_BASE + CCU_DRAM_CFG), 0x1 << 16, 0);
+	mctl_await_completion((uint32_t *)(H3_CCU_BASE + CCU_DRAM_CFG), 0x1u << 16, 0);
 
 	val = read32(H3_CCU_BASE + CCU_BUS_SOFT_RST0);
-	val |= (0x1 << 14);
+	val |= (0x1u << 14);
 	write32(H3_CCU_BASE + CCU_BUS_SOFT_RST0, val);
 
 	val = read32(H3_CCU_BASE + CCU_BUS_CLK_GATE0);
-	val |= (0x1 << 14);
+	val |= (0x1u << 14);
 	write32(H3_CCU_BASE + CCU_BUS_CLK_GATE0, val);
 
 	val = read32(H3_CCU_BASE + CCU_MBUS_RST);
-	val |= (0x1 << 31);
+	val |= (0x1u << 31);
 	write32(H3_CCU_BASE + CCU_MBUS_RST, val);
 
 	val = read32(H3_CCU_BASE + CCU_MBUS_CLK);
-	val |= (0x1 << 31);
+	val |= (0x1u << 31);
 	write32(H3_CCU_BASE + CCU_MBUS_CLK, val);
 
 	val = read32(H3_CCU_BASE + CCU_DRAM_CFG);
-	val |= (0x1 << 31);
+	val |= (0x1u << 31);
 	write32(H3_CCU_BASE + CCU_DRAM_CFG, val);
 	sdelay(10);
 
@@ -644,8 +644,8 @@ static int mctl_channel_init(struct h3_dram_para_t * para)
 	mctl_set_timing_params(para);
 	mctl_set_master_priority();
 
-	clrbits_le32(&ctl->pgcr[0], (1 << 30) | 0x3f);
-	clrsetbits_le32(&ctl->pgcr[1], 1 << 24, 1 << 26);
+	clrbits_le32(&ctl->pgcr[0], (0x1u << 30) | 0x3f);
+	clrsetbits_le32(&ctl->pgcr[1], 0x1u << 24, 0x1u << 26);
 
 	write32((virtual_addr_t)&com->protect, 0x94be6fa3);
 	sdelay(100);
@@ -654,12 +654,12 @@ static int mctl_channel_init(struct h3_dram_para_t * para)
 	sdelay(100);
 
 	for(i = 0; i < 4; i++)
-		clrsetbits_le32(&ctl->dx[i].gcr, (0x3 << 4) | (0x1 << 1) | (0x3 << 2) | (0x3 << 12) | (0x3 << 14), (0x0 << 4));
+		clrsetbits_le32(&ctl->dx[i].gcr, (0x3u << 4) | (0x1u << 1) | (0x3u << 2) | (0x3u << 12) | (0x3u << 14), (0x0 << 4));
 
-	clrsetbits_le32(&ctl->aciocr, 0, 0x1 << 1);
-	setbits_le32(&ctl->pgcr[2], 0x3 << 6);
-	clrbits_le32(&ctl->pgcr[0], (0x3 << 14) | (0x3 << 12));
-	clrsetbits_le32(&ctl->pgcr[2], (0x3 << 10) | (0x3 << 8), (0x1 << 10) | (0x2 << 8));
+	clrsetbits_le32(&ctl->aciocr, 0, 0x1u << 1);
+	setbits_le32(&ctl->pgcr[2], 0x3u << 6);
+	clrbits_le32(&ctl->pgcr[0], (0x3u << 14) | (0x3u << 12));
+	clrsetbits_le32(&ctl->pgcr[2], (0x3u << 10) | (0x3u << 8), (0x1u << 10) | (0x2 << 8));
 
 	if(!para->bus_full_width)
 	{
@@ -679,7 +679,7 @@ static int mctl_channel_init(struct h3_dram_para_t * para)
 		if(((read32((virtual_addr_t)&ctl->dx[0].gsr[0]) >> 24) & 0x2) ||
 			((read32((virtual_addr_t)&ctl->dx[1].gsr[0]) >> 24) & 0x2))
 		{
-			clrsetbits_le32(&ctl->dtcr, 0xf << 24, 0x1 << 24);
+			clrsetbits_le32(&ctl->dtcr, 0xf << 24, 0x1u << 24);
 			para->dual_rank = 0;
 		}
 
@@ -700,9 +700,9 @@ static int mctl_channel_init(struct h3_dram_para_t * para)
 	}
 	mctl_await_completion(&ctl->statr, 0x1, 0x1);
 
-	setbits_le32(&ctl->rfshctl0, 0x1 << 31);
+	setbits_le32(&ctl->rfshctl0, 0x1u << 31);
 	sdelay(10);
-	clrbits_le32(&ctl->rfshctl0, 0x1 << 31);
+	clrbits_le32(&ctl->rfshctl0, 0x1u << 31);
 	sdelay(10);
 
 	write32((virtual_addr_t)&ctl->pgcr[3], 0x00aa0060);
@@ -720,7 +720,7 @@ static void mctl_auto_detect_dram_size(struct h3_dram_para_t * para)
 	mctl_set_cr(para);
 	for(para->row_bits = 11; para->row_bits < 16; para->row_bits++)
 	{
-		if(mctl_mem_matches((1 << (para->row_bits + para->bank_bits)) * para->page_size))
+		if(mctl_mem_matches((0x1u << (para->row_bits + para->bank_bits)) * para->page_size))
 			break;
 	}
 
@@ -728,7 +728,7 @@ static void mctl_auto_detect_dram_size(struct h3_dram_para_t * para)
 	mctl_set_cr(para);
 	for(para->bank_bits = 2; para->bank_bits < 3; para->bank_bits++)
 	{
-		if(mctl_mem_matches((1 << para->bank_bits) * para->page_size))
+		if(mctl_mem_matches((0x1u << para->bank_bits) * para->page_size))
 			break;
 	}
 
@@ -789,7 +789,7 @@ int sys_dram_init(void)
 	sdelay(1);
 	write32((virtual_addr_t)&ctl->odtcfg, 0x0c000400);
 
-	setbits_le32(&com->cccr, 1 << 31);
+	setbits_le32(&com->cccr, 0x1u << 31);
 	sdelay(10);
 	mctl_auto_detect_dram_size(&para);
 	mctl_set_cr(&para);
