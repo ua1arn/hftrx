@@ -37,6 +37,12 @@ static void write32(uintptr_t addr, uint32_t value)
 	__DSB();
 }
 
+static void write32ptr(volatile void * addr, uint32_t value)
+{
+	* (volatile uint32_t *) addr = value;
+	__DSB();
+}
+
 #define clrbits_le32(addr, clear) \
 	write32(((virtual_addr_t)(addr)), read32(((virtual_addr_t)(addr))) & ~(clear))
 
@@ -280,32 +286,33 @@ static int mgray_to_bin(uint32_t val)
 	return table[val & 0x1f];
 }
 
-static void clock_set_pll_ddr(uint32_t clk)
+static void clock_set_pll_ddr0(uint32_t clk)
 {
 	int n = 32;
 	int k = 1;
 	int m = 2;
 	uint32_t val;
 
-	clrsetbits_le32(H3_CCU_BASE + CCU_PLL_DDR_TUN, (0x7 << 24) | (0x7f << 16), ((2 & 0x7) << 24) | ((16 & 0x7f) << 16));
+	clrsetbits_le32(& CCU->PLL_DDR0_TUN_REG, (0x7 << 24) | (0x7f << 16), ((2 & 0x7) << 24) | ((16 & 0x7f) << 16));
 
 	/* ddr pll rate = 24000000 * n * k / m */
-	if(clk > 24000000 * k * n / m)
+	if(clk > allwnrt113_get_hosc_freq() * k * n / m)
 	{
 		m = 1;
-		if(clk > 24000000 * k * n / m)
+		if(clk > allwnrt113_get_hosc_freq() * k * n / m)
 		{
 			k = 2;
 		}
 	}
 
 	val = (0x1u << 31);
-	val |= (0x0 << 24);
+	val |= (0x0u << 24);
 	val |= (0x1u << 20);
-	val |= ((((clk / (24000000 * k / m)) - 1) & 0x1f) << 8);
+	val |= ((((clk / (allwnrt113_get_hosc_freq() * k / m)) - 1) & 0x1f) << 8);
 	val |= (((k - 1) & 0x3) << 4);
 	val |= (((m - 1) & 0x3) << 0);
-	write32(H3_CCU_BASE + CCU_PLL_DDR_CTRL, val);
+
+	CCU->PLL_DDR0_CTRL_REG = val;
 	sdelay(5500);
 }
 
@@ -324,7 +331,7 @@ static int mctl_mem_matches(uint32_t offset)
 {
 	write32(CONFIG_DRAM_BASE, 0);
 	write32(CONFIG_DRAM_BASE + offset, 0xaa55aa55);
-	__asm__ __volatile__ ("dsb" : : : "memory");
+	__DSB();
 	return (read32(CONFIG_DRAM_BASE) == read32(CONFIG_DRAM_BASE + offset)) ? 1 : 0;
 }
 
@@ -598,7 +605,7 @@ static void mctl_sys_init(struct h3_dram_para_t * para)
 	write32(H3_CCU_BASE + CCU_DRAM_CFG, val);
 	sdelay(1000);
 
-	clock_set_pll_ddr(CONFIG_DRAM_CLK * 2 * 1000000);
+	clock_set_pll_ddr0(CONFIG_DRAM_CLK * 2 * 1000000);
 
 	val = read32(H3_CCU_BASE + CCU_DRAM_CFG);
 	val &= ~(0xf << 0);
