@@ -4230,186 +4230,6 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 #if CPUSTYLE_A64
 
-/***
- * https://wiki.osdev.org/PinePhone/DRAM_initialization
- */
-
-#define U32_REG(addr) (*(volatile uint32_t*)(addr))
-
-#define PLL_DDR0_CTRL_REG U32_REG(0x01C20020)
-#define PLL_DDR0_ENABLE_FLAG 0x80000000
-
-#define PLL_DDR1_CTRL_REG U32_REG(0x01C2004C)
-#define PLL_DDR1_ENABLE_FLAG 0x80000000
-#define PLL_DDR1_UPDATE_FLAG 0x40000000
-#define PLL_DDR1_FACTOR_N(n) ((((n) - 1) << 8) & 0x3F00)
-
-#define MBUS_RST_REG U32_REG(0x01C200FC)
-#define MBUS_RST_RELEASE 0x80000000 // zero value means reset, this flag means not reset
-
-#define MBUS_CLK_REG U32_REG(0x01C2015C)
-#define MBUS_CLK_CLOCK_ENABLE 0x80000000
-
-#define BUS_CLK_GATING_REG0 U32_REG(0x01C20060)
-#define BUS_CLK_RESET_RELEASE_REG0 U32_REG(0x01C202C0) // same bitfields
-#define BUS_CLK_REG0_DRAM_GATING 0x00004000
-
-#define DRAM_CFG_REG U32_REG(0x01C200F4)
-#define DRAM_CFG_RESET_RELEASE 0x80000000
-#define DRAM_CFG_SRC_PLL_DDR1 0x00100000
-#define DRAM_CFG_UPDATE_FLAG 0x00010000
-
-//static void dsb(void) {
-//	// wait for all outstanding memory accesses to complete before continuing.
-//	// Probably not actually the right thing to do in most cases!
-//	__asm__ __volatile__("dsb" ::: "memory");
-//}
-//static void delay0(void) {
-//	for(volatile int i = 0; i < 0x1000; i++) {}
-//}
-//
-//static void delay1(void) {
-//	int n = 0x1000;
-//	while(n--) {
-//		__asm__ __volatile__("" : "=r"(n) : "0"(n) : "memory");
-//	}
-//}
-
-void dram_clock_init(void)
-{
-	// A64 User Manual 3.3.6.4. says we should always release reset before releasing clock gate. So logically we should do the reverse order when disabling a clock.
-	MBUS_CLK_REG &= ~ MBUS_CLK_CLOCK_ENABLE; // disable MBUS clock
-	BUS_CLK_GATING_REG0 &= ~ BUS_CLK_REG0_DRAM_GATING; // disable DRAM clock
-	PLL_DDR0_CTRL_REG &= ~ PLL_DDR0_ENABLE_FLAG; // disable DRAM clock (maybe)
-	PLL_DDR1_CTRL_REG &= ~ PLL_DDR1_ENABLE_FLAG; // disable DRAM clock (maybe)
-	MBUS_RST_REG &= ~ MBUS_RST_RELEASE; // ASSERT MBUS reset
-	BUS_CLK_RESET_RELEASE_REG0 &= ~ BUS_CLK_REG0_DRAM_GATING; // ASSERT DRAM reset
-	// shouldn't we disable the DRAM controller clock?
-	DRAM_CFG_REG &= ~ DRAM_CFG_RESET_RELEASE; // ASSERT DRAM controller reset
-	__DSB();
-
-	// N factor calculation:
-	// 553MHz DDR clock; *2 because the DRAM controller internal clock apparently runs at DDR (not surprising I guess)
-	// divided by the 24MHz base clock which is apparently the input to the PLL
-	// gives 553*2/24 = 46.083, rounded to 46 (which gives 552MHz)
-	// note the value in register is this -1 (see the macro) so it's 45 to give an actual divisor of 46
-	// note the DDR register values are also calculated based on the 553MHz clock speed
-	PLL_DDR1_CTRL_REG = PLL_DDR1_ENABLE_FLAG | PLL_DDR1_UPDATE_FLAG | PLL_DDR1_FACTOR_N(46);
-
-	// Then wait for the PLL change to be processed by the hardware. (Does this wait for the PLL to actually lock? Not clear)
-	while (PLL_DDR1_CTRL_REG & PLL_DDR1_UPDATE_FLAG)
-	{
-
-	}
-
-	// there's also a clock divisor in this register; default (zero value) is divide-by-1
-	DRAM_CFG_REG = DRAM_CFG_SRC_PLL_DDR1 | DRAM_CFG_UPDATE_FLAG;
-	while(DRAM_CFG_REG & DRAM_CFG_UPDATE_FLAG)
-	{
-
-	}
-
-	// as mentioned, A64 User Manual 3.3.6.4. says we should always release reset before releasing clock gate.
-	MBUS_RST_REG |= MBUS_RST_RELEASE; // release MBUS reset
-	MBUS_CLK_REG |= MBUS_CLK_CLOCK_ENABLE; // enable MBUS clock
-	BUS_CLK_RESET_RELEASE_REG0 |= BUS_CLK_REG0_DRAM_GATING; // release DRAM reset
-	BUS_CLK_GATING_REG0 |= BUS_CLK_REG0_DRAM_GATING; // enable DRAM clock
-
-	// apparently that rule does not apply to this one. Perhaps because the clock enable is inside the block (next register)
-	DRAM_CFG_REG |= DRAM_CFG_RESET_RELEASE; // release DRAM controller reset
-
-	U32_REG(0x01C6300C) = 0x0000c00e; // enable DRAM controller clock via undocumented register
-	// Some kind of readiness check. If we don't wait for this, MCTL_PGSR0_REG&1 never becomes true. u-boot uses a fixed delay, not this register
-	while(U32_REG(0x01C63018) == 0)
-	{
-
-	}
-}
-
-// All identifiers and comments in this code were written for the wiki page or based on the A64 manual.
-// It is the author's opinion that this code no longer contains any copyrightable material from u-boot.
-
-//#define U32_REG(addr) (*(volatile uint32_t*)(addr))
-#define MCTL_CR0_REG U32_REG(0x01C62000)
-#define MCTL_CR1_REG U32_REG(0x01C62004)
-#define MCTL_PIR_REG U32_REG(0x01C63000)
-#define MCTL_PGSR0_REG U32_REG(0x01C63010)
-
-static const unsigned char AC_DELAYS[] =
-	{5, 5, 13, 10, 2, 5, 3, 3, 0, 3, 3, 3, 1, 0, 0, 0, 3, 4, 0, 3, 4, 1, 4, 0, 1, 1, 0, 1, 13, 5, 4};
-
-static const unsigned short READ_AND_WRITE_DELAYS[4][11] =
-	{{0x0010, 0x0010, 0x0010, 0x0010, 0x0011, 0x0010, 0x0010, 0x0011, 0x0010, 0x0f01, 0x0f00},
-	 {0x0011, 0x0011, 0x0011, 0x0011, 0x0111, 0x0111, 0x0111, 0x0111, 0x0011, 0x0a01, 0x0a00},
-	 {0x0110, 0x0011, 0x0111, 0x0110, 0x0110, 0x0110, 0x0110, 0x0110, 0x0010, 0x0b00, 0x0b00},
-	 {0x0111, 0x0011, 0x0011, 0x0111, 0x0111, 0x0111, 0x0111, 0x0111, 0x0011, 0x0c01, 0x0c00}};
-
-static void memcpy32(uint32_t dst_, const uint32_t *src, size_t nregs)
-{
-	volatile uint32_t *dst = (volatile uint32_t*)dst_;
-	while(nregs--) {
-		*dst++ = *src++;
-	}
-}
-
-static void init_dram_controller(void)
-{
-	MCTL_CR1_REG = MCTL_CR0_REG = 0x004f19f4;
-
-	memcpy32(0x01C63034, (const uint32_t[]){0xc3, 0xa, 0x2}, 3);
-	memcpy32(0x01C63050, (const uint32_t[]){0x0381b009, 0x22a017c4, 0x0d0e180c, 0x00030314, 0x03060d0b, 0x0005500c, 0x07020308, 0x0505050c}, 8);
-	U32_REG(0x01C63078) = 0x90006610;
-	U32_REG(0x01C63080) = 0x02050102;
-	U32_REG(0x01C63090) = 0x0021003a;
-
-	U32_REG(0x01C63100) = 0x04005400;
-	U32_REG(0x016C3104) = 0x4680c620;
-
-	U32_REG(0x01C63208) = 0x0000034A;
-	U32_REG(0x01C63108) = 0x000008C0;
-
-	U32_REG(0x01C63100) = 0x00005400; // unlock access to bit delay registers?
-
-	// bytewise bit delay line timing. Low byte delay when reading, high byte delay when writing
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 11; j++) // DQ0-7, then DM, DQS, DQSN
-			U32_REG(0x01C63310 + (i* 128) + (j * 4)) = READ_AND_WRITE_DELAYS[i][j];
-
-	// command/address bit delay line timing
-	for (int i = 0; i < 31; i++)
-		*(volatile uint32_t*)(0x01C63210 + (i * 4)) = AC_DELAYS[i] << 8;
-
-	//__asm__ __volatile__("dsb" ::: "memory"); // not sure if necessary. Isn't cache disabled at this point?
-	__DSB();
-	U32_REG(0x01C63100) = 0x04005400; // re-lock access to bit delay registers?
-
-	U32_REG(0x01C63140) = 0x013b3bdd;
-
-	MCTL_PIR_REG = 0x5F3;
-	while(!(MCTL_PGSR0_REG & 1))
-	{
-
-	}
-
-	// if any of these bits are set, u-boot does some stuff that doesn't make any sense. Let's skip over that.
-	//ASSERT((MCTL_PGSR0_REG & 0x0fe00000) == 0);
-
-	while(!(U32_REG(0x01C63018) & 1))
-	{
-
-	}
-
-	U32_REG(0x01C6310C) = 0xc0aa0060;
-	U32_REG(0x01C63140) = 0x817b7bfc;
-
-	U32_REG(0x01C63120) = 0x00000303;
-	U32_REG(0x01C630B8) = 0x0000021f;
-	U32_REG(0x01C620D0) = 0x80103040; // if you forget this, accessing DRAM will hang.
-}
-
-
-
-
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
@@ -4417,12 +4237,16 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 //	dram_clock_init();
 //	init_dram_controller();
 
-	ddrinit();
-
-	printhex(0x40000000, (void *) 0x40000000, 256);
+	sys_dram_init();
+//	TP();
+//
+//	printhex(0x40000000, (void *) 0x40000000, 256);
 	memset((void *) 0x40000000, 0xFF, 128);
 	memset((void *) 0x40000080, 0x00, 128);
 	printhex(0x40000000, (void *) 0x40000000, 256);
+	memset((void *) 0x70000000, 0xFF, 128);
+	memset((void *) 0x70000080, 0x00, 128);
+	printhex(0x70000000, (void *) 0x70000000, 256);
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
 
