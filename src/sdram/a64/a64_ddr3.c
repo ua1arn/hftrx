@@ -161,7 +161,7 @@ struct h3_dram_para_t {
 	uint8_t res[3];
 };
 
-/*static inline*/ void sdelay(int loops)
+static /*static inline*/ void sdelay(int loops)
 {
 //	__asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"
 //		"bne 1b":"=r" (loops):"0"(loops));
