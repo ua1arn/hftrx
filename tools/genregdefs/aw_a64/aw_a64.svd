@@ -2224,7 +2224,7 @@
   <baseAddress>0x01C20800</baseAddress>
   <registers>
    <cluster>
-    <dim>7</dim>
+    <dim>8</dim>
     <addressOffset>0x00000000</addressOffset>
     <registers>
      <cluster>
@@ -2278,7 +2278,7 @@
     </registers>
    </cluster>
    <cluster>
-    <dim>7</dim>
+    <dim>8</dim>
     <addressOffset>0x00000200</addressOffset>
     <registers>
      <cluster>
@@ -2324,6 +2324,10 @@
     </registers>
    </cluster>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="GPIOBLOCK">
+  <name>GPIOBLOCK_L</name>
+  <baseAddress>0x01F02C00</baseAddress>
   </peripheral>
   <peripheral>
   <name>SMHC0</name>

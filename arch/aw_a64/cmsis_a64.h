@@ -168,6 +168,7 @@ typedef enum IRQn
 #define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< RTC Base */
 #define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< RTC Base */
 #define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< RTC Base */
+#define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO Base */
 #define R_PIO_BASE ((uintptr_t) 0x01F02C00)           /*!< RTC Base */
 #define R_RSB_BASE ((uintptr_t) 0x01F03400)           /*!< RTC Base */
@@ -473,8 +474,8 @@ typedef struct GPIOBLOCK_Type
         volatile uint32_t DATA;                       /*!< Offset 0x010 Data Register */
         volatile uint32_t DRV [0x002];                /*!< Offset 0x014 Multi_Driving Register */
         volatile uint32_t PULL [0x002];               /*!< Offset 0x01C Pull Register */
-    } GPIO_PINS [0x007];                              /*!< Offset 0x000 GPIO pin control */
-             uint32_t reserved_0x0FC [0x0041];
+    } GPIO_PINS [0x008];                              /*!< Offset 0x000 GPIO pin control */
+             uint32_t reserved_0x120 [0x0038];
     struct
     {
         volatile uint32_t EINT_CFG [0x004];           /*!< Offset 0x200 External Interrupt Configure Registers */
@@ -482,8 +483,8 @@ typedef struct GPIOBLOCK_Type
         volatile uint32_t EINT_STATUS;                /*!< Offset 0x214 External Interrupt Status Register */
         volatile uint32_t EINT_DEB;                   /*!< Offset 0x218 External Interrupt Debounce Register */
                  uint32_t reserved_0x01C;
-    } GPIO_INTS [0x007];                              /*!< Offset 0x200 GPIO interrupt control */
-} GPIOBLOCK_TypeDef; /* size of structure = 0x2E0 */
+    } GPIO_INTS [0x008];                              /*!< Offset 0x200 GPIO interrupt control */
+} GPIOBLOCK_TypeDef; /* size of structure = 0x300 */
 /*
  * @brief SMHC
  */
@@ -2128,6 +2129,7 @@ typedef struct DRAMC_Type
 #define R_CIR_RX ((RTC_TypeDef *) R_CIR_RX_BASE)      /*!< R_CIR_RX  register set access pointer */
 #define R_TWI ((RTC_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define R_UART ((RTC_TypeDef *) R_UART_BASE)          /*!< R_UART  register set access pointer */
+#define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define R_PIO ((RTC_TypeDef *) R_PIO_BASE)            /*!< R_PIO  register set access pointer */
 #define R_RSB ((RTC_TypeDef *) R_RSB_BASE)            /*!< R_RSB  register set access pointer */
