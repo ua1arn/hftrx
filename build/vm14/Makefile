@@ -49,13 +49,12 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
 
 # For details of A7 CPUX signals, refer to the technical reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
 
-# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
-# debug architecture ARMv7.1.
-CORE = -mcpu=cortex-a7
-CORE += -mfloat-abi=hard
+CORE = -mcpu=cortex-a9 
+CORE += -mfloat-abi=hard 
+#CORE += -mfpu=vfpv3
 #CORE += -mfpu=neon
-CORE += -mfpu=neon-vfpv4
-#CORE += -mfpu=vfpv4
+CORE += -mfpu=neon-vfpv3
+#CORE += -mlong-calls
 
 # Define optimisation level here
 #OPT = -Og
