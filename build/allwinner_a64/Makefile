@@ -60,7 +60,7 @@ CORE += -mfpu=vfpv4
 #OPT = -Og
 #OPT = -Ofast -flto
 #OPT = -Os -flto
-OPT = -Os
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP

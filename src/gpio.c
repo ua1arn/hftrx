@@ -1093,8 +1093,14 @@ gpioX_onchangeinterrupt(
 		void (* handler_unused)(void)
 		)
 {
-	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOB_BASE + 1;
+#if CPUSTYLE_A64
+	const unsigned gpioix = gpio == GPIOL ? 0 : (gpio - (GPIO_TypeDef *) GPIOB_BASE + 1);
 	//GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
+	GPIOBLOCK_TypeDef * const blk = gpio == GPIOL ? GPIOBLOCK_L : GPIOBLOCK;
+#else /* CPUSTYLE_A64 */
+	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOB_BASE + 1;
+	GPIOBLOCK_TypeDef * const blk = GPIOBLOCK;
+#endif /* CPUSTYLE_A64 */
 	unsigned pos;
 	//	0x0: Positive Edge
 	//	0x1: Negative Edge
@@ -1128,10 +1134,14 @@ gpioX_onchangeinterrupt(
 	const portholder_t cfg1 = power4(ipins >> 8);		/* EINT_CFG1 bits */
 	const portholder_t cfg2 = power4(ipins >> 16);		/* EINT_CFG2 bits */
 	const portholder_t cfg3 = power4(ipins >> 24);		/* EINT_CFG3 bits */
-	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [0] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
-	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [1] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
-	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [2] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
-	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [3] = (GPIOBLOCK->GPIO_INTS [gpioix].EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
+
+	IRQL_t oldIrql;
+	gpioX_lock(gpio, & oldIrql);
+
+	blk->GPIO_INTS [gpioix].EINT_CFG [0] = (blk->GPIO_INTS [gpioix].EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
+	blk->GPIO_INTS [gpioix].EINT_CFG [1] = (blk->GPIO_INTS [gpioix].EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
+	blk->GPIO_INTS [gpioix].EINT_CFG [2] = (blk->GPIO_INTS [gpioix].EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
+	blk->GPIO_INTS [gpioix].EINT_CFG [3] = (blk->GPIO_INTS [gpioix].EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
 
 	for (pos = 0; pos < 32; ++ pos)
 	{
@@ -1142,8 +1152,9 @@ gpioX_onchangeinterrupt(
 		arm_hardware_set_handler(GPIOB_NS_IRQn + gpioix * 2 - 2, handlers [gpioix], priority, targetcpu);	/* GPIOx_NS */
 	}
 
-	GPIOBLOCK->GPIO_INTS [gpioix].EINT_CTL |= ipins;
+	blk->GPIO_INTS [gpioix].EINT_CTL |= ipins;
 	// todo: EINT_STATUS = ipins; // for clear
+	gpioX_unlock(gpio, oldIrql);
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
