@@ -1,0 +1,16 @@
+#type; MCTL_COM
+#base; MCTL_COM 0x03102000
+##irq; MCTL 75
+##irqrv; MCTL 59
+#regdef; MCTL_COM_WORK_MODE0; 0x000; Reg_000
+#regdef; MCTL_COM_WORK_MODE1; 0x004; Reg_004
+#regdef; MCTL_COM_DBGCR; 0x008; Reg_008
+#regdef; MCTL_COM_TMR; 0x00C; Reg_00C
+#regdef; MCTL_COM_CCCR; 0x014; Reg_014
+#regdef; MCTL_COM_MAER0; 0x020; Reg_020
+#regdef; MCTL_COM_MAER1; 0x024; Reg_024
+#regdef; MCTL_COM_MAER2; 0x028; Reg_028
+#regdef; MCTL_COM_REMAP0; 0x500; REMAP0
+#regdef; MCTL_COM_REMAP1; 0x504; REMAP1
+#regdef; MCTL_COM_REMAP2; 0x508; REMAP2
+#regdef; MCTL_COM_REMAP3; 0x50C; REMAP3

@@ -6,6 +6,7 @@
 #regdef; MEMC_REG_004; 0x004; Reg_004
 #regdef; MEMC_REG_008; 0x008; Reg_008
 #regdef; MEMC_REG_00C; 0x00C; Reg_00C
+#regdef; MEMC_CCCR; 0x014; Reg_014
 #regdef; MEMC_REG_020; 0x020; Reg_020
 #regdef; MEMC_REG_024; 0x024; Reg_024
 #regdef; MEMC_REG_028; 0x028; Reg_028
