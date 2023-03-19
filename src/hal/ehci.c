@@ -2514,7 +2514,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-//	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
+	//PRINTF("From boot: allwnrt113_get_peripll2x_freq=%" PRIuFAST32 "\n", allwnrt113_get_peripll2x_freq());
+
+	// DCXO24M -> PLL_PERI
 	// 0, 1 - work. 2 - not work
 	const unsigned ohci_src = 0x01u; 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
 	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
@@ -2575,20 +2577,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 
-	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY1)
-	{
-		// USBPHY1
-		USBPHY1->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
-		USBPHY1->USB_CTRL |=
-				(1uL << 11) |	// 1: Use INCR16 when appropriate
-				(1uL << 10) |	// 1: Use INCR8 when appropriate
-				(1uL << 9) |	// 1: Use INCR4 when appropriate
-				(1uL << 8) |	// 1: Start INCRx burst only on burst x-align address Note: This bit must enable if any bit of bit[11:9] is enabled
-				0;
-
-		USBPHY1->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
-	}
-	else
+	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
 	{
 		// USBPHY0
 
@@ -2601,10 +2590,28 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		USBPHY0->USB_CTRL = 0x4300FC00;	// после запуска из QSPI было 0x40000000
 		// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
 		//USB0_PHY->PHY_CTRL = 0x20;			// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
-		USBPHY0->PHY_CTRL &= ~ (1uL << 3);		// PHY_CTL_SIDDQ
-		USBPHY0->PHY_CTRL |= (1uL << 5);		// PHY_CTL_VBUSVLDEXT
-		USBPHY0->USB_CTRL |= (1uL << 0);		// 1: Enable UTMI interface, disable ULPI interface
+		USBPHY0->PHY_CTRL &= ~ (1u << 3);		// PHY_CTL_SIDDQ
+		USBPHY0->PHY_CTRL |= (1u << 5);		// PHY_CTL_VBUSVLDEXT
+		USBPHY0->USB_CTRL |= (1u << 0);		// 1: Enable UTMI interface, disable ULPI interface
 
+	}
+	else
+	{
+		// "правильный" канал
+		// USBPHY1
+
+		USBPHY1->USB_CTRL |= (1u << 0);	// 1: Enable UTMI interface, disable ULPI interface
+		USBPHY1->USB_CTRL |=
+				(1uL << 11) |	// 1: Use INCR16 when appropriate
+				(1uL << 10) |	// 1: Use INCR8 when appropriate
+				(1uL << 9) |	// 1: Use INCR4 when appropriate
+				(1uL << 8) |	// 1: Start INCRx burst only on burst x-align address Note: This bit must enable if any bit of bit[11:9] is enabled
+				0;
+
+		USBPHY1->PHY_CTRL &= ~ (1u << 3); 	// SIDDQ 0: Write 0 to enable phy
+//		USBPHY1->USB_SPDCR = (USBPHY1->USB_SPDCR & ~ ((0x03u << 0) | 0) |
+//			(0x02u << 0) |
+//			0;
 	}
 
 #elif CPUSTYLE_STM32MP1
