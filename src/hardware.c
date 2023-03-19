@@ -3066,20 +3066,6 @@ sysinit_perfmeter_initialize(void)
 #endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
 }
 
-#if ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
-/** \brief  Set HVBAR
-
-    This function assigns the given value to the Hyp Vector Base Address Register.
-
-    \param [in]    hvbar  Hyp Vector Base Address Register value to set
- */
-__STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
-{
-	// cp, op1, Rt, CRn, CRm, op2
-  __set_CP(15, 4, hvbar, 12, 0, 0);
-}
-#endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 */
-
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 //uint32_t __Vectors [32];
 void __attribute__((used)) Reset_Handler(void)
@@ -3103,13 +3089,9 @@ sysinit_vbar_initialize(void)
 #endif /* WITHNESTEDINTERRUPTS */
 
 	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
-	__set_MVBAR(vbase);	 // Set Monitor Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
-	//__set_HVBAR(vbase);	 // Set Hyp Vector Base Address Register
 
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
-
-	//PRINTF("vbar=%08lX, mvbar=%08lX\n", __get_VBAR(), __get_MVBAR());
 
 #endif /* (__CORTEX_A != 0) */
 #if CPUSTYLE_RISCV
@@ -3672,6 +3654,23 @@ void halt32(void)
 	ASSERT(0);
 }
 
+
+// MRC{<c>}{<q>} <coproc>, {#}<opc1>, <Rt>, <CRn>, <CRm>{, {#}<opc2>}
+// coproc: 0b1111 opc1: 0b000 CRn: 0b1100 CRm: 0b0000 opc2: 0b001
+// Table G7-3 AArch32 VMSA (coproc==0b1111) register summary, in MCR/MRC parameter order
+
+__STATIC_FORCEINLINE uint32_t __get_RVBAR(void)
+{
+	  uint32_t result;
+	  __get_CP(15, 0, result, 12, 0, 1);
+	  return(result);
+}
+
+__STATIC_FORCEINLINE void __set_RVBAR(uint32_t rvbar)
+{
+	  __set_CP(15, 0, rvbar, 12, 0, 1);
+}
+
 // От состяния бита AA64nAA32 в C_CTRL_REG0 не зависит
 static void restart_core0_aarch64(void)
 {
@@ -3681,6 +3680,7 @@ static void restart_core0_aarch64(void)
 	uint32_t result;
 	// HRMR
 	// Table D16-2 Instruction encodings for non-debug System register access
+	// Table G7-3 AArch32 VMSA (coproc==0b1111) register summary, in MCR/MRC parameter order
 	// RMR_EL1
 	// cp, op1, Rt, CRn, CRm, op2
 	// cp=15, op1=0, Rt, CRn=12, CRm=0, op2=2	: RMR_EL1
@@ -3720,18 +3720,17 @@ static void restart_core0_aarch64(void)
 // aarch64-none-elf-ld -o tt.elf tt.o
 // aarch64-none-elf-objdump.exe -d tt.elf
 
-//static uint32_t halt64 [16] =
-//{
-//		0xd2880000,        //mov     x0, #0x4000                     // #16384
-//		0xf2a00080,        //movk    x0, #0x4, lsl #16
-//		0x5297dde1,        //mov     w1, #0xbeef                     // #48879
-//		0x72bbd5a1,        //movk    w1, #0xdead, lsl #16
-//		0xb9000001,        //str     w1, [x0]
-//		0x14000000,        //b       400014 <_start+0x14>
-//};
+static const uint32_t halt64 [16] =
+{
+		0xd2880000,        //mov     x0, #0x4000                     // #16384
+		0xf2a00080,        //movk    x0, #0x4, lsl #16
+		0x5297dde1,        //mov     w1, #0xbeef                     // #48879
+		0x72bbd5a1,        //movk    w1, #0xdead, lsl #16
+		0xb9000001,        //str     w1, [x0]
+		0x14000000,        //b       400014 <_start+0x14>
+};
 
 // H3: R_CPUCFG @ 0x01F01C00
-
 
 /*
  *
@@ -3740,6 +3739,8 @@ static void restart_core0_aarch64(void)
 
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	uint64_t rva = __get_RVBAR();
+	PRINTF("RVBAR=%08X startfunc=%p\n", (unsigned) __get_RVBAR(), (void *) startfunc);
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf
 	//startfunc = (uintptr_t) halt64;
 	//startfunc = (uintptr_t) halt32;
@@ -3759,7 +3760,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 64;
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	dcache_clean_invalidate(0x44000, 64 * 1024);
+	//dcache_clean_invalidate(0x44000, 64 * 1024);
 	//restart_core0_aarch64();
 
 //	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
