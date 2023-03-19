@@ -431,6 +431,7 @@
 		#define SHORTSET7	1
 	#elif 1
 		/* QRP LPF BOARD UA1CEI */
+		#define WITH_LPFBOARD_UA1CEI 1
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 		#define WITHANTSELECT1RX	1	/* Управление переключением антенн - только приемной антенны */
 

@@ -147,7 +147,7 @@
 		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 		{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PG0, },	// USB host status
-		{	32, DLE1,	display2_classa7,		REDRM_BARS, PGALL, },	// USB host status
+		{	32, DLE1,	display2_classa7,		REDRM_BARS, PGALL, },	// Class-A power amplifier
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU

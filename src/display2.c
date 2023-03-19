@@ -2662,6 +2662,7 @@ static void display2_currlevel5(
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 }
 
+// Class-A power amplifier
 static void display2_classa7(
 	uint_fast8_t x,
 	uint_fast8_t y,

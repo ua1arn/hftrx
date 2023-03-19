@@ -130,10 +130,17 @@
 		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 
+#if WITH_LPFBOARD_UA1CEI
+		/* плата без тюнера - можем использовать это место */
+		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
+		{	6, 	51,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	10, 51,	display2_usbsts3,                                                                      	REDRM_BARS, PGALL, },	// USB host status
+#else /* WITH_LPFBOARD_UA1CEI */
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
 		{	6, 	51,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	10, 51,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+#endif /* WITH_LPFBOARD_UA1CEI */
 		{	14, 51,	display2_thermo5,	REDRM_VOLT, PGALL, },	// thermo sensor 20.7C
 		{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	25, 51,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
