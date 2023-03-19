@@ -2550,19 +2550,24 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	}
 	else
 	{
-		CCU->USB1_CLK_REG |= (1u << 31);	// USB1_CLKEN
+		// "правильный" канал
+
+		CCU->USB1_CLK_REG |= (1u << 31);	// USB1_CLKEN Gating Special Clock For OHCI1
 		CCU->USB1_CLK_REG |= (1u << 30);	// USBPHY1_RSTN
 
-		CCU->USB_BGR_REG |= (1u << 17);	// USBOHCI1_RST
-		CCU->USB_BGR_REG |= (1u << 21);	// USBEHCI1_RST
+		// OHCI0 12M Source Select
+		CCU->USB1_CLK_REG = (CCU->USB1_CLK_REG & ~ (0x03 << 24)) |
+			(ohci_src << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+			0;
+
+		CCU->USB_BGR_REG &= ~ (1u << 17);	// USBOHCI1_RST
+		CCU->USB_BGR_REG &= ~ (1u << 21);	// USBEHCI1_RST
 
 		CCU->USB_BGR_REG |= (1u << 1);	// USBOHCI1_GATING
 		CCU->USB_BGR_REG |= (1u << 5);	// USBEHCI1_GATING
 
-		// OHCI0 12M Source Select
-		CCU->USB1_CLK_REG = (CCU->USB1_CLK_REG & ~ (0x03 << 24)) |
-			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
-			0;
+		CCU->USB_BGR_REG |= (1u << 17);	// USBOHCI1_RST
+		CCU->USB_BGR_REG |= (1u << 21);	// USBEHCI1_RST
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
