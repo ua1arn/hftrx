@@ -3659,6 +3659,7 @@ void halt32(void)
 // coproc: 0b1111 opc1: 0b000 CRn: 0b1100 CRm: 0b0000 opc2: 0b001
 // Table G7-3 AArch32 VMSA (coproc==0b1111) register summary, in MCR/MRC parameter order
 
+// Address that execution starts from after reset when executing in 32-bit state.
 __STATIC_FORCEINLINE uint32_t __get_RVBAR(void)
 {
 	  uint32_t result;
@@ -3666,6 +3667,7 @@ __STATIC_FORCEINLINE uint32_t __get_RVBAR(void)
 	  return(result);
 }
 
+// Address that execution starts from after reset when executing in 32-bit state.
 __STATIC_FORCEINLINE void __set_RVBAR(uint32_t rvbar)
 {
 	  __set_CP(15, 0, rvbar, 12, 0, 1);
@@ -3678,20 +3680,10 @@ static void restart_core0_aarch64(void)
 	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
 
 	uint32_t result;
-	// HRMR
-	// Table D16-2 Instruction encodings for non-debug System register access
-	// Table G7-3 AArch32 VMSA (coproc==0b1111) register summary, in MCR/MRC parameter order
-	// RMR_EL1
-	// cp, op1, Rt, CRn, CRm, op2
-	// cp=15, op1=0, Rt, CRn=12, CRm=0, op2=2	: RMR_EL1
-	// cp=15, op1=0, Rt, CRn=12, CRm=0, op2=2	: RMR_EL1
-//	__get_CP(15, 0, result, 12, 0, 2);
-//	PRINTF("RMR=%08X\n", result);
-	//result |= 0x03;	// 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-	//result |= 0x02;	// 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-	result = 0x03;	// 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+	result = 0x03;	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
 	//__set_CP(15, 0, result, 12, 0, 2);
 	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
+	// G8.2.123 RMR, Reset Management Register
 	__set_CP(15, 0, result, 12, 0, 2);	// RMR_EL1 - work okay
 	//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
 	//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
@@ -3739,8 +3731,6 @@ static const uint32_t halt64 [16] =
 
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	uint64_t rva = __get_RVBAR();
-	PRINTF("RVBAR=%08X startfunc=%p\n", (unsigned) __get_RVBAR(), (void *) startfunc);
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf
 	//startfunc = (uintptr_t) halt64;
 	//startfunc = (uintptr_t) halt32;
@@ -3761,6 +3751,8 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	//dcache_clean_invalidate(0x44000, 64 * 1024);
+	//__set_RVBAR(halt32);
+//	PRINTF("RVBAR=%08X startfunc=%p\n", (unsigned) __get_RVBAR(), (void *) startfunc);
 	//restart_core0_aarch64();
 
 //	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
