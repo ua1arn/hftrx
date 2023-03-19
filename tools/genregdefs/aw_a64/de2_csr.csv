@@ -1,0 +1,25 @@
+#type; DE2_CSR
+#base; DE2_CSR 0x01020000
+#regdef; CSR_CTL; 0x000 Global control register
+#regdef; INT; 0x004; Interrupt register
+#regdef; IFMT; 0x020; Input data attribute register
+#regdef; IDATA_SIZE; 0x024; Input data size register
+#regdef; IDATA_MEN_PITCH0; 0x030; Input Y/RGB/ARGB memory pitch register
+#regdef; IDATA_MEN_PITCH1; 0x034; Input U/UV memory pitch register
+#regdef; IDATA_MEN_PITCH2; 0x038; Input V memory pitch register
+#regdef; IMEN_LADD0; 0x040; Input Y/RGB/ARGB memory address register0
+#regdef; IMEN_HADD0; 0x044; Input Y/RGB/ARGB memory address register1
+#regdef; IMEN_LADD1; 0x048; Input U/UV memory address register0
+#regdef; IMEN_HADD1; 0x04C; Input U/UV memory address register1
+#regdef; IMEN_LADD2; 0x050; Input V memory address register0
+#regdef; IMEN_HADD2; 0x054; Input V memory address register1
+#regdef; ODATA_SIZE; 0x084; Output data size register
+#regdef; ODATA_MEN_PITCH0; 0x090 Output Y/RGB/ARGB memory pitch register
+#regdef; ODATA_MEN_PITCH1; 0x094 Output U/UV memory pitch register
+#regdef; ODATA_MEN_PITCH2; 0x098 Output V memory pitch register
+#regdef; OMEN_LADD0; 0x0A0; Output Y/RGB/ARGB memory address register0
+#regdef; OMEN_HADD0; 0x0A4; Output Y/RGB/ARGB memory address register1
+#regdef; OMEN_LADD1; 0x0A8; Output U/UV memory address register0
+#regdef; OMEN_HADD1; 0x0AC; Output U/UV memory address register1
+#regdef; OMEN_LADD2; 0x0B0; Output V memory address register0
+#regdef; OMEN_HADD2; 0x0B4; Output V memory address register1
