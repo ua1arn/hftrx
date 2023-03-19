@@ -1,0 +1,51 @@
+From d23ffb91d8a20392aaee3caab2a938ef632dc482 Mon Sep 17 00:00:00 2001
+From: ua1arn <mgs2001@mail.ru>
+Date: Wed, 15 Mar 2023 18:02:26 +0300
+Subject: [PATCH] fix link error
+
+---
+ CMSIS/Core_A/Include/cmsis_gcc.h | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/CMSIS/Core_A/Include/cmsis_gcc.h b/CMSIS/Core_A/Include/cmsis_gcc.h
+index ef5145b62..f468844c9 100644
+--- a/CMSIS/Core_A/Include/cmsis_gcc.h
++++ b/CMSIS/Core_A/Include/cmsis_gcc.h
+@@ -898,15 +898,19 @@ __STATIC_INLINE void __FPU_Enable(void)
+   __ASM volatile(
+     //Permit access to VFP/NEON, registers by modifying CPACR
+     "        MRC     p15,0,R1,c1,c0,2  \n"
+-    "        ORR     R1,R1,#0x00F00000 \n"
+-    "        MCR     p15,0,R1,c1,c0,2  \n"
++	"        MOVW    R2, #:lower16:0x00F00000   \n"
++	"        MOVT    R2, #:upper16:0x00F00000   \n"
++	"        ORR     R1,R1,R2 \n"
++	"        MCR     p15,0,R1,c1,c0,2  \n"
+ 
+     //Ensure that subsequent instructions occur in the context of VFP/NEON access permitted
+     "        ISB                       \n"
+ 
+     //Enable VFP/NEON
+     "        VMRS    R1,FPEXC          \n"
+-    "        ORR     R1,R1,#0x40000000 \n"
++	"        MOVW    R2, #:lower16:0x40000000   \n"
++	"        MOVT    R2, #:upper16:0x40000000   \n"
++	"        ORR     R1,R1,R2 \n"
+     "        VMSR    FPEXC,R1          \n"
+ 
+     //Initialise VFP/NEON registers to 0
+@@ -952,8 +956,9 @@ __STATIC_INLINE void __FPU_Enable(void)
+ 
+     //Initialise FPSCR to a known state
+     "        VMRS    R1,FPSCR          \n"
+-    "        LDR     R2,=0x00086060    \n" //Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+-    "        AND     R1,R1,R2          \n"
++	"        MOVW    R2, #:lower16:0x00086060   \n"
++	"        MOVT    R2, #:upper16:0x00086060   \n"
++	"        AND     R1,R1,R2          \n" //Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+     "        VMSR    FPSCR,R1            "
+     : : : "cc", "r1", "r2"
+   );
+-- 
+2.32.0.windows.2
+
