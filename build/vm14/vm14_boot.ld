@@ -38,7 +38,7 @@ MEMORY
  *   __StackTop
  *   __stack
  */
-	 ENTRY(Reset_Handler)
+	 ENTRY(__Vectors)
 
 SECTIONS
 {

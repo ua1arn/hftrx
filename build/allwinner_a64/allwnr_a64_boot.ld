@@ -4,10 +4,10 @@
 
 MEMORY
 {
-  RAM (rwx)	 : ORIGIN = 0x00018000 + 256, 	LENGTH = 96k - 256		/*  */
-  TTB (rwx)  : ORIGIN = 0x00044000, 		LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
-  STACK (rwx): ORIGIN = 0x00044000 + 16k,	LENGTH = 64k - 16k
-  DDR3 (rwx) : ORIGIN = 0x40000000, 		LENGTH = 128M - 16k		/*  */
+  RAM (rwx)	 : ORIGIN = 0x00018000 + 256, 			LENGTH = 96k - 256		/*  */
+  STACK (rwx): ORIGIN = 0x00044000,					LENGTH = 64k
+  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 2048M - 16k		/*  */
+  TTB (rwx)  : ORIGIN = 0x40000000 + 2048M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
 }
 
 /* Library configurations */

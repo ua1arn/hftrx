@@ -49,13 +49,12 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
 
 # For details of A7 CPUX signals, refer to the technical reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
 
-# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
-# debug architecture ARMv7.1.
-CORE = -mcpu=cortex-a7
-CORE += -mfloat-abi=hard
+CORE = -mcpu=cortex-a9 
+CORE += -mfloat-abi=hard 
+#CORE += -mfpu=vfpv3
 #CORE += -mfpu=neon
-CORE += -mfpu=neon-vfpv4
-#CORE += -mfpu=vfpv4
+CORE += -mfpu=neon-vfpv3
+#CORE += -mlong-calls
 
 # Define optimisation level here
 #OPT = -Og
@@ -247,7 +246,9 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean
 
-all: APP2 $(PROJECT)_app.alw32
+all:BOOT2
+
+allX: APP2 $(PROJECT)_app.alw32
 
 allZ:
 	@echo Src
@@ -255,33 +256,11 @@ allZ:
 	@echo Obj at $(OBJDIR)
 	@echo $(abspath $(OBJS))
 
-bootloader: BOOT2 fsbl.alw32
-  
-app_run: $(PROJECT)_app.alw32
-	$(XFEL) ddr t113-s3
-	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
-	$(XFEL) exec 0x40000100 
-
-app_runXBOOT: xboot_t113_800.bin
-	$(XFEL) ddr t113-s3
-	$(XFEL) write 0x40000000 xboot_t113_800.bin
-	$(XFEL) exec 0x40000000 
-
-flash:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
-
-flash_old:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00040000 ddr3init.bin
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
+bootloader: BOOT2
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
-
-fsbl.alw32: $(PROJECT)_boot.bin
-	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@

@@ -2221,10 +2221,10 @@
   <peripheral>
   <name>GPIOBLOCK</name>
   <description></description>
-  <baseAddress>0x02000000</baseAddress>
+  <baseAddress>0x01C20800</baseAddress>
   <registers>
    <cluster>
-    <dim>7</dim>
+    <dim>8</dim>
     <addressOffset>0x00000000</addressOffset>
     <registers>
      <cluster>
@@ -2250,7 +2250,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <cluster>
-      <dim>4</dim>
+      <dim>2</dim>
       <addressOffset>0x00000014</addressOffset>
       <register>
        <name>DRV</name>
@@ -2264,7 +2264,7 @@
      </cluster>
      <cluster>
       <dim>2</dim>
-      <addressOffset>0x00000024</addressOffset>
+      <addressOffset>0x0000001C</addressOffset>
       <register>
        <name>PULL</name>
        <displayName>PULL</displayName>
@@ -2278,7 +2278,7 @@
     </registers>
    </cluster>
    <cluster>
-    <dim>7</dim>
+    <dim>8</dim>
     <addressOffset>0x00000200</addressOffset>
     <registers>
      <cluster>
@@ -2323,34 +2323,11 @@
      </register>
     </registers>
    </cluster>
-   <register>
-    <name>PIO_POW_MOD_SEL</name>
-    <displayName>PIO_POW_MOD_SEL</displayName>
-    <description>PIO Group Withstand Voltage Mode Select Register</description>
-    <addressOffset>0x340</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PIO_POW_MS_CTL</name>
-    <displayName>PIO_POW_MS_CTL</displayName>
-    <description>PIO Group Withstand Voltage Mode Select Control Register</description>
-    <addressOffset>0x344</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PIO_POW_VAL</name>
-    <displayName>PIO_POW_VAL</displayName>
-    <description>PIO Group Power Value Register</description>
-    <addressOffset>0x348</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="GPIOBLOCK">
+  <name>GPIOBLOCK_L</name>
+  <baseAddress>0x01F02C00</baseAddress>
   </peripheral>
   <peripheral>
   <name>SMHC0</name>
@@ -8022,220 +7999,6 @@
      <resetValue>0x00000000</resetValue>
     </register>
    </cluster>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>DE2_CSR</name>
-  <description></description>
-  <baseAddress>0x01020000</baseAddress>
-  <registers>
-   <register>
-    <name>CSR_CTL</name>
-    <displayName>CSR_CTL</displayName>
-    <description></description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>INT</name>
-    <displayName>INT</displayName>
-    <description>Interrupt register</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IFMT</name>
-    <displayName>IFMT</displayName>
-    <description>Input data attribute register</description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IDATA_SIZE</name>
-    <displayName>IDATA_SIZE</displayName>
-    <description>Input data size register</description>
-    <addressOffset>0x024</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IDATA_MEN_PITCH0</name>
-    <displayName>IDATA_MEN_PITCH0</displayName>
-    <description>Input Y/RGB/ARGB memory pitch register</description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IDATA_MEN_PITCH1</name>
-    <displayName>IDATA_MEN_PITCH1</displayName>
-    <description>Input U/UV memory pitch register</description>
-    <addressOffset>0x034</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IDATA_MEN_PITCH2</name>
-    <displayName>IDATA_MEN_PITCH2</displayName>
-    <description>Input V memory pitch register</description>
-    <addressOffset>0x038</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IMEN_LADD0</name>
-    <displayName>IMEN_LADD0</displayName>
-    <description>Input Y/RGB/ARGB memory address register0</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IMEN_HADD0</name>
-    <displayName>IMEN_HADD0</displayName>
-    <description>Input Y/RGB/ARGB memory address register1</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IMEN_LADD1</name>
-    <displayName>IMEN_LADD1</displayName>
-    <description>Input U/UV memory address register0</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IMEN_HADD1</name>
-    <displayName>IMEN_HADD1</displayName>
-    <description>Input U/UV memory address register1</description>
-    <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IMEN_LADD2</name>
-    <displayName>IMEN_LADD2</displayName>
-    <description>Input V memory address register0</description>
-    <addressOffset>0x050</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IMEN_HADD2</name>
-    <displayName>IMEN_HADD2</displayName>
-    <description>Input V memory address register1</description>
-    <addressOffset>0x054</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ODATA_SIZE</name>
-    <displayName>ODATA_SIZE</displayName>
-    <description>Output data size register</description>
-    <addressOffset>0x084</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ODATA_MEN_PITCH0</name>
-    <displayName>ODATA_MEN_PITCH0</displayName>
-    <description></description>
-    <addressOffset>0x090</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ODATA_MEN_PITCH1</name>
-    <displayName>ODATA_MEN_PITCH1</displayName>
-    <description></description>
-    <addressOffset>0x094</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ODATA_MEN_PITCH2</name>
-    <displayName>ODATA_MEN_PITCH2</displayName>
-    <description></description>
-    <addressOffset>0x098</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OMEN_LADD0</name>
-    <displayName>OMEN_LADD0</displayName>
-    <description>Output Y/RGB/ARGB memory address register0</description>
-    <addressOffset>0x0A0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OMEN_HADD0</name>
-    <displayName>OMEN_HADD0</displayName>
-    <description>Output Y/RGB/ARGB memory address register1</description>
-    <addressOffset>0x0A4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OMEN_LADD1</name>
-    <displayName>OMEN_LADD1</displayName>
-    <description>Output U/UV memory address register0</description>
-    <addressOffset>0x0A8</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OMEN_HADD1</name>
-    <displayName>OMEN_HADD1</displayName>
-    <description>Output U/UV memory address register1</description>
-    <addressOffset>0x0AC</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OMEN_LADD2</name>
-    <displayName>OMEN_LADD2</displayName>
-    <description>Output V memory address register0</description>
-    <addressOffset>0x0B0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OMEN_HADD2</name>
-    <displayName>OMEN_HADD2</displayName>
-    <description>Output V memory address register1</description>
-    <addressOffset>0x0B4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
   </registers>
   </peripheral>
   <peripheral>

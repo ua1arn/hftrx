@@ -144,8 +144,10 @@ typedef enum IRQn
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!<  Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
 #define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Base */
+#define MCTL_COM_BASE ((uintptr_t) 0x03102000)        /*!< MCTL_COM Base */
 #define MSI_MEMC_BASE ((uintptr_t) 0x03102000)        /*!< MSI_MEMC Base */
 #define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC Base */
+#define MCTL_PHY_BASE ((uintptr_t) 0x03103000)        /*!< MCTL_PHY Base */
 #define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC Base */
 #define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC Base */
 #define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC Base */
@@ -2280,7 +2282,9 @@ typedef struct MSI_MEMC_Type
     volatile uint32_t MEMC_REG_004;                   /*!< Offset 0x004 Reg_004 */
     volatile uint32_t MEMC_REG_008;                   /*!< Offset 0x008 Reg_008 */
     volatile uint32_t MEMC_REG_00C;                   /*!< Offset 0x00C Reg_00C */
-             uint32_t reserved_0x010 [0x0004];
+             uint32_t reserved_0x010;
+    volatile uint32_t MEMC_CCCR;                      /*!< Offset 0x014 Reg_014 */
+             uint32_t reserved_0x018 [0x0002];
     volatile uint32_t MEMC_REG_020;                   /*!< Offset 0x020 Reg_020 */
     volatile uint32_t MEMC_REG_024;                   /*!< Offset 0x024 Reg_024 */
     volatile uint32_t MEMC_REG_028;                   /*!< Offset 0x028 Reg_028 */
@@ -2501,6 +2505,110 @@ typedef struct MSGBOX_Type
                  uint32_t reserved_0x070 [0x0024];
     } N [0x002];                                      /*!< Offset 0x020 MSGBOX (N=0-1) */
 } MSGBOX_TypeDef; /* size of structure = 0x220 */
+/*
+ * @brief MCTL_COM
+ */
+/*!< MCTL_COM  */
+typedef struct MCTL_COM_Type
+{
+    volatile uint32_t MCTL_COM_WORK_MODE0;            /*!< Offset 0x000 Reg_000 */
+    volatile uint32_t MCTL_COM_WORK_MODE1;            /*!< Offset 0x004 Reg_004 */
+    volatile uint32_t MCTL_COM_DBGCR;                 /*!< Offset 0x008 Reg_008 */
+    volatile uint32_t MCTL_COM_TMR;                   /*!< Offset 0x00C Reg_00C */
+             uint32_t reserved_0x010;
+    volatile uint32_t MCTL_COM_CCCR;                  /*!< Offset 0x014 Reg_014 */
+             uint32_t reserved_0x018 [0x0002];
+    volatile uint32_t MCTL_COM_MAER0;                 /*!< Offset 0x020 Reg_020 */
+    volatile uint32_t MCTL_COM_MAER1;                 /*!< Offset 0x024 Reg_024 */
+    volatile uint32_t MCTL_COM_MAER2;                 /*!< Offset 0x028 Reg_028 */
+             uint32_t reserved_0x02C [0x0135];
+    volatile uint32_t MCTL_COM_REMAP0;                /*!< Offset 0x500 REMAP0 */
+    volatile uint32_t MCTL_COM_REMAP1;                /*!< Offset 0x504 REMAP1 */
+    volatile uint32_t MCTL_COM_REMAP2;                /*!< Offset 0x508 REMAP2 */
+    volatile uint32_t MCTL_COM_REMAP3;                /*!< Offset 0x50C REMAP3 */
+} MCTL_COM_TypeDef; /* size of structure = 0x510 */
+/*
+ * @brief MCTL_PHY
+ */
+/*!< MCTL_PHY  */
+typedef struct MCTL_PHY_Type
+{
+    volatile uint32_t MCTL_PHY_PIR;                   /*!< Offset 0x000  */
+    volatile uint32_t MCTL_PHY_PWRCTL;                /*!< Offset 0x004  */
+    volatile uint32_t MCTL_PHY_MRCTRL0;               /*!< Offset 0x008  */
+    volatile uint32_t MCTL_PHY_CLKEN;                 /*!< Offset 0x00C  */
+    volatile uint32_t MCTL_PHY_PGSR0;                 /*!< Offset 0x010  */
+    volatile uint32_t MCTL_PHY_PGSR1;                 /*!< Offset 0x014  */
+    volatile uint32_t MCTL_PHY_STATR;                 /*!< Offset 0x018  */
+             uint32_t reserved_0x01C [0x0004];
+    volatile uint32_t MCTL_PHY_LP3MR11;               /*!< Offset 0x02C  */
+    volatile uint32_t MCTL_PHY_DRAM_MR0;              /*!< Offset 0x030  */
+    volatile uint32_t MCTL_PHY_DRAM_MR1;              /*!< Offset 0x034  */
+    volatile uint32_t MCTL_PHY_DRAM_MR2;              /*!< Offset 0x038  */
+    volatile uint32_t MCTL_PHY_DRAM_MR3;              /*!< Offset 0x03C  */
+             uint32_t reserved_0x040;
+    volatile uint32_t MCTL_PHY_PTR0;                  /*!< Offset 0x044  */
+             uint32_t reserved_0x048;
+    volatile uint32_t MCTL_PHY_PTR2;                  /*!< Offset 0x04C  */
+    volatile uint32_t MCTL_PHY_PTR3;                  /*!< Offset 0x050  */
+    volatile uint32_t MCTL_PHY_PTR4;                  /*!< Offset 0x054  */
+    volatile uint32_t MCTL_PHY_DRAMTMG0;              /*!< Offset 0x058  */
+    volatile uint32_t MCTL_PHY_DRAMTMG1;              /*!< Offset 0x05C  */
+    volatile uint32_t MCTL_PHY_DRAMTMG2;              /*!< Offset 0x060  */
+    volatile uint32_t MCTL_PHY_DRAMTMG3;              /*!< Offset 0x064  */
+    volatile uint32_t MCTL_PHY_DRAMTMG4;              /*!< Offset 0x068  */
+    volatile uint32_t MCTL_PHY_DRAMTMG5;              /*!< Offset 0x06C  */
+    volatile uint32_t MCTL_PHY_DRAMTMG6;              /*!< Offset 0x070  */
+    volatile uint32_t MCTL_PHY_DRAMTMG7;              /*!< Offset 0x074  */
+    volatile uint32_t MCTL_PHY_DRAMTMG8;              /*!< Offset 0x078  */
+    volatile uint32_t MCTL_PHY_ODTCFG;                /*!< Offset 0x07C  */
+    volatile uint32_t MCTL_PHY_PITMG0;                /*!< Offset 0x080  */
+    volatile uint32_t MCTL_PHY_PITMG1;                /*!< Offset 0x084  */
+    volatile uint32_t MCTL_PHY_LPTPR;                 /*!< Offset 0x088  */
+    volatile uint32_t MCTL_PHY_RFSHCTL0;              /*!< Offset 0x08C  */
+    volatile uint32_t MCTL_PHY_RFSHTMG;               /*!< Offset 0x090  */
+    volatile uint32_t MCTL_PHY_RFSHCTL1;              /*!< Offset 0x094  */
+    volatile uint32_t MCTL_PHY_PWRTMG;                /*!< Offset 0x098  */
+    volatile uint32_t MCTL_PHY_ASRC;                  /*!< Offset 0x09C  */
+    volatile uint32_t MCTL_PHY_ASRTC;                 /*!< Offset 0x0A0  */
+             uint32_t reserved_0x0A4 [0x0005];
+    volatile uint32_t MCTL_PHY_VTFCR;                 /*!< Offset 0x0B8  */
+    volatile uint32_t MCTL_PHY_DQSGMR;                /*!< Offset 0x0BC  */
+    volatile uint32_t MCTL_PHY_DTCR;                  /*!< Offset 0x0C0  */
+    volatile uint32_t MCTL_PHY_DTAR0;                 /*!< Offset 0x0C4  */
+             uint32_t reserved_0x0C8 [0x000E];
+    volatile uint32_t MCTL_PHY_PGCR0;                 /*!< Offset 0x100  */
+    volatile uint32_t MCTL_PHY_PGCR1;                 /*!< Offset 0x104  */
+    volatile uint32_t MCTL_PHY_PGCR2;                 /*!< Offset 0x108  */
+    volatile uint32_t MCTL_PHY_PGCR3;                 /*!< Offset 0x10C  */
+    volatile uint32_t MCTL_PHY_IOVCR0;                /*!< Offset 0x110  */
+    volatile uint32_t MCTL_PHY_IOVCR1;                /*!< Offset 0x114  */
+             uint32_t reserved_0x118;
+    volatile uint32_t MCTL_PHY_DXCCR;                 /*!< Offset 0x11C  */
+    volatile uint32_t MCTL_PHY_ODTMAP;                /*!< Offset 0x120  */
+    volatile uint32_t MCTL_PHY_ZQCTL0;                /*!< Offset 0x124  */
+    volatile uint32_t MCTL_PHY_ZQCTL1;                /*!< Offset 0x128  */
+             uint32_t reserved_0x12C [0x0005];
+    volatile uint32_t MCTL_PHY_ZQCR;                  /*!< Offset 0x140  */
+    volatile uint32_t MCTL_PHY_ZQSR;                  /*!< Offset 0x144  */
+    volatile uint32_t MCTL_PHY_ZQDR0;                 /*!< Offset 0x148  */
+    volatile uint32_t MCTL_PHY_ZQDR1;                 /*!< Offset 0x14C  */
+    volatile uint32_t MCTL_PHY_ZQDR2;                 /*!< Offset 0x150  */
+             uint32_t reserved_0x154 [0x001B];
+    volatile uint32_t MCTL_PHY_SCHED;                 /*!< Offset 0x1C0  */
+    volatile uint32_t MCTL_PHY_PERFHPR0;              /*!< Offset 0x1C4  */
+    volatile uint32_t MCTL_PHY_PERFHPR1;              /*!< Offset 0x1C8  */
+    volatile uint32_t MCTL_PHY_PERFLPR0;              /*!< Offset 0x1CC  */
+    volatile uint32_t MCTL_PHY_PERFLPR1;              /*!< Offset 0x1D0  */
+    volatile uint32_t MCTL_PHY_PERFWR0;               /*!< Offset 0x1D4  */
+    volatile uint32_t MCTL_PHY_PERFWR1;               /*!< Offset 0x1D8  */
+             uint32_t reserved_0x1DC [0x0009];
+    volatile uint32_t MCTL_PHY_ACMDLR;                /*!< Offset 0x200  */
+    volatile uint32_t MCTL_PHY_ACLDLR;                /*!< Offset 0x204  */
+    volatile uint32_t MCTL_PHY_ACIOCR0;               /*!< Offset 0x208  */
+             uint32_t reserved_0x20C;
+    volatile uint32_t MCTL_PHY_ACIOCR1 [0x010];       /*!< Offset 0x210 0x210 + 0x4 * x */
+} MCTL_PHY_TypeDef; /* size of structure = 0x250 */
 
 
 /* Access pointers */
@@ -2555,8 +2663,10 @@ typedef struct MSGBOX_Type
 #define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
+#define MCTL_COM ((MCTL_COM_TypeDef *) MCTL_COM_BASE) /*!< MCTL_COM  register set access pointer */
 #define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
+#define MCTL_PHY ((MCTL_PHY_TypeDef *) MCTL_PHY_BASE) /*!< MCTL_PHY  register set access pointer */
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0  register set access pointer */
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1  register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2  register set access pointer */

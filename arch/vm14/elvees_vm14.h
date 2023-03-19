@@ -8,39 +8,13 @@
 #ifndef ARCH_VM14_ELVEES_VM14_H_
 #define ARCH_VM14_ELVEES_VM14_H_
 
-typedef enum IRQn
+typedef enum xIRQn
 {
-/******  SGI Interrupts Numbers                 ****************************************/
-  SGI0_IRQn           =  0,                                       //!< SGI0_IRQn
-  SGI1_IRQn           =  1,                                       //!< SGI1_IRQn
-  SGI2_IRQn           =  2,                                       //!< SGI2_IRQn
-  SGI3_IRQn           =  3,                                       //!< SGI3_IRQn
-  SGI4_IRQn           =  4,                                       //!< SGI4_IRQn
-  SGI5_IRQn           =  5,                                       //!< SGI5_IRQn
-  SGI6_IRQn           =  6,                                       //!< SGI6_IRQn
-  SGI7_IRQn           =  7,                                       //!< SGI7_IRQn
-  SGI8_IRQn           =  8,                                       //!< SGI8_IRQn
-  SGI9_IRQn           =  9,                                       //!< SGI9_IRQn
-  SGI10_IRQn          = 10,                                       //!< SGI10_IRQn
-  SGI11_IRQn          = 11,                                       //!< SGI11_IRQn
-  SGI12_IRQn          = 12,                                       //!< SGI12_IRQn
-  SGI13_IRQn          = 13,                                       //!< SGI13_IRQn
-  SGI14_IRQn          = 14,                                       //!< SGI14_IRQn
-  SGI15_IRQn          = 15,                                       //!< SGI15_IRQn
-
-  /* Private Peripheral Interrupts */
-  //VirtualMaintenanceInterrupt_IRQn = 25,     /*!< Virtual Maintenance Interrupt */
- // HypervisorTimer_IRQn             = 26,     /*!< Hypervisor Timer Interrupt */
-  GlobalTimer_IRQn                 = 27,     /*!< Global Timer Interrupt */
-  Legacy_nFIQ_IRQn                 = 28,     /*!< Legacy nFIQ Interrupt */
-  PrivTimer_IRQn        	   	   = 29,     /*!< Private Timer Interrupt */
-  AwdtTimer_IRQn      			   = 30,     /*!< Private watchdog timer for each CPU Interrupt */
-  Legacy_nIRQ_IRQn                 = 31,     /*!< Legacy nIRQ Interrupt */
 
   /******  VM14  specific Interrupt Numbers ****************************************************************************/
 
 	/* interrupts */
-  MPU_L2CCINTR,   // Прерывание контроллера кэша второго уровня MPU
+  MPU_L2CCINTR = 32,   // Прерывание контроллера кэша второго уровня MPU
   DSP_INT_DSP,    // Прерывание от DSP
   GPU_IRQPPMMU0,  // Прерывание от MMU пиксельного процессора GPU
   GPU_IRQPP0,     // Прерывание от пиксельного процессора GPU
@@ -48,7 +22,7 @@ typedef enum IRQn
   GPU_IRQGPMMU,   // Прерывание от MMU геометрического процессора GPU
   GPU_IRQGP,      // Прерывание от геометрического процессора GPU
   VPU_INT,        // Прерывание от VPU
-  SDMA_IRQ0,      // Прерывание 0 от SDMA
+  SDMA_IRQ0,      // Прерывание 0 от SDMA - 40
   SDMA_IRQ1,      // Прерывание 1 от SDMA
   SDMA_IRQ2,      // Прерывание 2 от SDMA
   SDMA_IRQ3,      // Прерывание 3 от SDMA
@@ -64,39 +38,39 @@ typedef enum IRQn
   SDMA_IRQ13,     // Прерывание 13 от SDMA
   SDMA_IRQ14,     // Прерывание 14 от SDMA
   SDMA_IRQ15,     // Прерывание 15 от SDMA
-  PDMA_INT_FLAG0, //
+  PDMA_INT_FLAG0, // 56
   PDMA_INT_FLAG1, //
   PDMA_INT_FLAG2, //
   PDMA_INT_FLAG3, //
   PDMA_INT_FLAG4, //
-  RTC_TICK_INT,   //
+  RTC_TICK_INT,   // 61
   RTC_PMWKP_INT,  //
   RTC_ALARM_INT,  //
-  USBIC_INT,      //
+  USBIC_INT,      // 64
   USBIC_ENDP_INT, //
   VPIN_VIOINT,    //
   VPIN_STR0INT,   //
   VPIN_STR1INT,   //
   VPOUT_LCDINT,   //
-  VPOUT_DSIINT,   //
+  VPOUT_DSIINT,   // 70
   NFC_MPORTINT,   //
-  MFBSP0_DMAIRQ0, //Прерывание от канала DMA порта МFBSP0 при передаче данных
+  MFBSP0_DMAIRQ0, // Прерывание от канала DMA порта МFBSP0 при передаче данных 72
   MFBSP0_DMAIRQ1, //Прерывание от канала DMA порта МFBSP0 при приеме данных
   MFBSP1_DMAIRQ0, //Прерывание от канала DMA порта МFBSP1 при передаче данных
   MFBSP1_DMAIRQ1, //Прерывание от канала DMA порта МFBSP1 при приеме данных
-  MPU_IRQS44,     //Резерв
-  MPU_IRQS45,     //Резерв
+  MPU_IRQS44,     //Резерв 76
+  MPU_IRQS45,     //Резерв 77
   CPU0_PMUIRQ,    //Прерывание от монитора производительности CPU0
   CPU1_PMUIRQ,    //Прерывание от монитора производительности CPU1
-  SWIC0DMA_IRQ0,  //
+  SWIC0DMA_IRQ0,  // 80
   SWIC0DMA_IRQ1,  //
   SWIC0DMA_IRQ2,  //
   SWIC0DMA_IRQ3,  //
-  SWIC1DMA_IRQ0,  //
+  SWIC1DMA_IRQ0,  // 84
   SWIC1DMA_IRQ1,  //
   SWIC1DMA_IRQ2,  //
   SWIC1DMA_IRQ3,  //
-  SWIC0_INT,      //
+  SWIC0_INT,      // 88
   SWIC1_INT,      //
   MFBSP0_RXIRQ,   //Формируется, если порт включен на прием данных (в одном из
                 //режимов), а число 64-х разрядных слов в буфере приёма больше
@@ -120,11 +94,11 @@ typedef enum IRQn
   MFBSP1_SRQ,   //Запрос обслуживания от порта MFBSP0. Формируется, если порт
                 //выключен (LEN=0, SPI_I2S_EN=0), а на выводах LACK или LCLK
                 //присутствует сигнал высокого уровня
-  UART0_INTR,   //Прерывание от UART0
+  UART0_INTR,   //Прерывание от UART0 96
   UART1_INTR,   //Прерывание от UART1
   UART2_INTR,   //Прерывание от UART2
   UART3_INTR,   //Прерывание от UART3
-  I2C0_IC_INTR, //Прерывание от I2C0
+  I2C0_IC_INTR, //Прерывание от I2C0 100
   I2C1_IC_INTR, //Прерывание от I2C1
   I2C2_IC_INTR, //Прерывание от I2C2
   MCC_INT,      //
@@ -185,21 +159,22 @@ typedef enum IRQn
   DLOCK_IRQ,     //Прерывание от коммутатора микросхемы
   WDT_IRQ,       //Прерывание от сторожевого таймера
 
-	Force_IRQn_enum_size             = 1048    /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
+} xIRQn_Type;
 
-} IRQn_Type;
+
+/* auto-generated header */
+#include "elvees_vm14_2.h"
 
 
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
-#define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
-#define PL310_DATA_RAM_LATENCY ((1uL << 8) | (2uL << 4) | (1uL << 0))
+//#define PL310_TAG_RAM_LATENCY ((1u << 8) | (1u << 4) | (1u << 0))
+//#define PL310_DATA_RAM_LATENCY ((1u << 8) | (2u << 4) | (1u << 0))
 
-#define GIC_DISTRIBUTOR_BASE         0x39001000                        /*!< (GIC DIST  ) Base Address */
-#define GIC_INTERFACE_BASE           0x39000100                        /*!< (GIC CPU IF) Base Address */
-#define L2C_310_BASE                 L2CACHE_BASE                        /*!< (PL310     ) Base Address */
-#define TIMER_BASE				PRIV_TIMER_BASE
-
+//#define GIC_DISTRIBUTOR_BASE  	((uintptr_t) 0x39001000)                        /*!< (GIC DIST  ) Base Address */
+//#define GIC_INTERFACE_BASE    	((uintptr_t) 0x39000100)                        /*!< (GIC CPU IF) Base Address */
+#define L2C_310_BASE          	((uintptr_t) 0x39004000)                        /*!< (PL310     ) Base Address */
+#define TIMER_BASE				((uintptr_t) 0x39000600)
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
 #define __CA_REV         		    0x0000    /*!< Core revision r0p0 */
@@ -207,13 +182,11 @@ typedef enum IRQn
 #define __CORTEX_A                    9U      /*!< Cortex-A# Core */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present */
-#define __TIM_PRESENT                 0U//1U      /*!< Set to 1 if TIM is present */
-#define __L2C_PRESENT                 0U//1U      /*!< Set to 1 if L2C is present */
+#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present */
+#define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present */
 
 #include "core_ca.h"
+
 #include <arch/vm14/system_vm14.h>
-
-
-
 
 #endif /* ARCH_VM14_ELVEES_VM14_H_ */

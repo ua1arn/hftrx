@@ -115,6 +115,7 @@ typedef enum IRQn
 #define USBOHCI1_BASE ((uintptr_t) 0x01C1B400)        /*!< USB_OHCI_Capability Base */
 #define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC Base */
 #define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU Base */
+#define GPIOBLOCK_BASE ((uintptr_t) 0x01C20800)       /*!< GPIOBLOCK Base */
 #define GPIOB_BASE ((uintptr_t) 0x01C20824)           /*!< GPIO Base */
 #define GPIOC_BASE ((uintptr_t) 0x01C20848)           /*!< GPIO Base */
 #define GPIOD_BASE ((uintptr_t) 0x01C2086C)           /*!< GPIO Base */
@@ -167,11 +168,11 @@ typedef enum IRQn
 #define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< RTC Base */
 #define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< RTC Base */
 #define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< RTC Base */
+#define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO Base */
 #define R_PIO_BASE ((uintptr_t) 0x01F02C00)           /*!< RTC Base */
 #define R_RSB_BASE ((uintptr_t) 0x01F03400)           /*!< RTC Base */
 #define R_PWM_BASE ((uintptr_t) 0x01F03800)           /*!< RTC Base */
-#define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK Base */
 #define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC Base */
 #define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
 #define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC Base */
@@ -471,11 +472,10 @@ typedef struct GPIOBLOCK_Type
     {
         volatile uint32_t CFG [0x004];                /*!< Offset 0x000 Configure Register */
         volatile uint32_t DATA;                       /*!< Offset 0x010 Data Register */
-        volatile uint32_t DRV [0x004];                /*!< Offset 0x014 Multi_Driving Register */
-        volatile uint32_t PULL [0x002];               /*!< Offset 0x024 Pull Register */
-                 uint32_t reserved_0x02C;
-    } GPIO_PINS [0x007];                              /*!< Offset 0x000 GPIO pin control */
-             uint32_t reserved_0x150 [0x002C];
+        volatile uint32_t DRV [0x002];                /*!< Offset 0x014 Multi_Driving Register */
+        volatile uint32_t PULL [0x002];               /*!< Offset 0x01C Pull Register */
+    } GPIO_PINS [0x008];                              /*!< Offset 0x000 GPIO pin control */
+             uint32_t reserved_0x120 [0x0038];
     struct
     {
         volatile uint32_t EINT_CFG [0x004];           /*!< Offset 0x200 External Interrupt Configure Registers */
@@ -483,12 +483,8 @@ typedef struct GPIOBLOCK_Type
         volatile uint32_t EINT_STATUS;                /*!< Offset 0x214 External Interrupt Status Register */
         volatile uint32_t EINT_DEB;                   /*!< Offset 0x218 External Interrupt Debounce Register */
                  uint32_t reserved_0x01C;
-    } GPIO_INTS [0x007];                              /*!< Offset 0x200 GPIO interrupt control */
-             uint32_t reserved_0x2E0 [0x0018];
-    volatile uint32_t PIO_POW_MOD_SEL;                /*!< Offset 0x340 PIO Group Withstand Voltage Mode Select Register */
-    volatile uint32_t PIO_POW_MS_CTL;                 /*!< Offset 0x344 PIO Group Withstand Voltage Mode Select Control Register */
-    volatile uint32_t PIO_POW_VAL;                    /*!< Offset 0x348 PIO Group Power Value Register */
-} GPIOBLOCK_TypeDef; /* size of structure = 0x34C */
+    } GPIO_INTS [0x008];                              /*!< Offset 0x200 GPIO interrupt control */
+} GPIOBLOCK_TypeDef; /* size of structure = 0x300 */
 /*
  * @brief SMHC
  */
@@ -2080,6 +2076,7 @@ typedef struct DRAMC_Type
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
+#define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */
 #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD  register set access pointer */
@@ -2132,11 +2129,11 @@ typedef struct DRAMC_Type
 #define R_CIR_RX ((RTC_TypeDef *) R_CIR_RX_BASE)      /*!< R_CIR_RX  register set access pointer */
 #define R_TWI ((RTC_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define R_UART ((RTC_TypeDef *) R_UART_BASE)          /*!< R_UART  register set access pointer */
+#define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define R_PIO ((RTC_TypeDef *) R_PIO_BASE)            /*!< R_PIO  register set access pointer */
 #define R_RSB ((RTC_TypeDef *) R_RSB_BASE)            /*!< R_RSB  register set access pointer */
 #define R_PWM ((RTC_TypeDef *) R_PWM_BASE)            /*!< R_PWM  register set access pointer */
-#define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */
