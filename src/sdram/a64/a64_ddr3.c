@@ -43,6 +43,16 @@ static void write32ptr(volatile void * addr, uint32_t value)
 	__DSB();
 }
 
+static /*static inline*/ void sdelay(int loops)
+{
+//	__asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"
+//		"bne 1b":"=r" (loops):"0"(loops));
+	//local_delay_us(1 * loops);
+	while (loops --)
+		__NOP();
+
+}
+
 #define clrbits_le32(addr, clear) \
 	write32(((virtual_addr_t)(addr)), read32(((virtual_addr_t)(addr))) & ~(clear))
 
@@ -160,13 +170,6 @@ struct h3_dram_para_t {
 	uint8_t ac_delays[31];
 	uint8_t res[3];
 };
-
-static /*static inline*/ void sdelay(int loops)
-{
-//	__asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"
-//		"bne 1b":"=r" (loops):"0"(loops));
-	local_delay_us(1 * loops);
-}
 
 static inline int gfls(int x)
 {
