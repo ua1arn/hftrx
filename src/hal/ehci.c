@@ -2515,7 +2515,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 //	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
-
+	// 0, 1 - work. 2 - not work
+	const unsigned ohci_src = 0x01u; 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
 	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
 	{
 		// Turn off USBOTG0
@@ -2526,17 +2527,19 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB0_CLK_REG |= (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG |= (1u << 30);	// USBPHY0_RSTN
 
-		CCU->USB_BGR_REG |= (1u << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG |= (1u << 20);	// USBEHCI0_RST
+		// OHCI0 12M Source Select
+		CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03u << 24)) |
+			(ohci_src << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+			0;
+
+		CCU->USB_BGR_REG &= ~ (1u << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (1u << 20);	// USBEHCI0_RST
 
 		CCU->USB_BGR_REG |= (1u << 0);	// USBOHCI0_GATING
 		CCU->USB_BGR_REG |= (1u << 4);	// USBEHCI0_GATING
 
-
-		// OHCI0 12M Source Select
-		CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
-			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
-			0;
+		CCU->USB_BGR_REG |= (1u << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG |= (1u << 20);	// USBEHCI0_RST
 
 		USBOTG0->PHY_OTGCTL &= ~ (1uL << 0); 	// Host mode. Route phy0 to EHCI/OHCI
 
