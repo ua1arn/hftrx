@@ -1,3 +1,14 @@
 #type; R_RSB
 #base; R_RSB 0x01F03400
 #irq; R_RSB 71
+#regdef; RSB_CTRL; 0x0000; RSB Control Register
+#regdef; RSB_CCR; 0x0004; RSB Clock Control Register
+#regdef; RSB_INTE; 0x0008; RSB Interrupt Enable Register
+#regdef; RSB_STAT; 0x000c; RSB Status Register
+#regdef; RSB_DADDR0; 0x0010; RSB Data Acess Address Register0
+#regdef; RSB_DLEN; 0x0018; RSB Data Length Register
+#regdef; RSB_DATA0; 0x001c; RSB Data Buffer0 Register
+#regdef; RSB_LCR; 0x0024; RSB Line Control register
+#regdef; RSB_PMCR; 0x0028; RSB PMU Mode Control register
+#regdef; RSB_CMD; 0x002C; RSB Command Register
+#regdef; RSB_SADDR; 0x0030; RSB Slave address Register

@@ -11135,6 +11135,117 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral>
+  <name>R_RSB</name>
+  <description></description>
+  <baseAddress>0x01F03400</baseAddress>
+  <interrupt>
+   <name>R_RSB</name>
+   <value>71</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>RSB_CTRL</name>
+    <displayName>RSB_CTRL</displayName>
+    <description>RSB Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_CCR</name>
+    <displayName>RSB_CCR</displayName>
+    <description>RSB Clock Control Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_INTE</name>
+    <displayName>RSB_INTE</displayName>
+    <description>RSB Interrupt Enable Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_STAT</name>
+    <displayName>RSB_STAT</displayName>
+    <description>RSB Status Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_DADDR0</name>
+    <displayName>RSB_DADDR0</displayName>
+    <description>RSB Data Acess Address Register0</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_DLEN</name>
+    <displayName>RSB_DLEN</displayName>
+    <description>RSB Data Length Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_DATA0</name>
+    <displayName>RSB_DATA0</displayName>
+    <description>RSB Data Buffer0 Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_LCR</name>
+    <displayName>RSB_LCR</displayName>
+    <description>RSB Line Control register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_PMCR</name>
+    <displayName>RSB_PMCR</displayName>
+    <description>RSB PMU Mode Control register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_CMD</name>
+    <displayName>RSB_CMD</displayName>
+    <description>RSB Command Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_SADDR</name>
+    <displayName>RSB_SADDR</displayName>
+    <description>RSB Slave address Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
  </peripherals>
  <vendor>
  </vendor>

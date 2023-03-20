@@ -59,7 +59,7 @@ typedef enum IRQn
     R_TWI_IRQn = 76,                                  /*!< TWI  Interrupt */
     SMC_IRQn = 76,                                    /*!< SMC  Interrupt */
     EMAC_IRQn = 78,                                   /*!< EMAC  Interrupt */
-    R_TWD_IRQn = 78,                                  /*!< R_TWD  Interrupt */
+    R_TWD_IRQn = 78,                                  /*!< R_TWD R_Trusted Watchdog Timer Interrupt */
     CCU_FERR_IRQn = 80,                               /*!< CCU  Interrupt */
     MSGBOX_IRQn = 81,                                 /*!< MSGBOX  Interrupt */
     DMAC_IRQn = 82,                                   /*!< DMAC  Interrupt */
@@ -2113,6 +2113,26 @@ typedef struct R_PRCM_Type
     volatile uint32_t RPIO_HOLD_CTRL_REG;             /*!< Offset 0x1F0 R_PIO Hold Control Register */
     volatile uint32_t OSC24M_CTRL_REG;                /*!< Offset 0x1F4 OSC24M Control Register */
 } R_PRCM_TypeDef; /* size of structure = 0x1F8 */
+/*
+ * @brief R_RSB
+ */
+/*!< R_RSB  */
+typedef struct R_RSB_Type
+{
+    volatile uint32_t RSB_CTRL;                       /*!< Offset 0x000 RSB Control Register */
+    volatile uint32_t RSB_CCR;                        /*!< Offset 0x004 RSB Clock Control Register */
+    volatile uint32_t RSB_INTE;                       /*!< Offset 0x008 RSB Interrupt Enable Register */
+    volatile uint32_t RSB_STAT;                       /*!< Offset 0x00C RSB Status Register */
+    volatile uint32_t RSB_DADDR0;                     /*!< Offset 0x010 RSB Data Acess Address Register0 */
+             uint32_t reserved_0x014;
+    volatile uint32_t RSB_DLEN;                       /*!< Offset 0x018 RSB Data Length Register */
+    volatile uint32_t RSB_DATA0;                      /*!< Offset 0x01C RSB Data Buffer0 Register */
+             uint32_t reserved_0x020;
+    volatile uint32_t RSB_LCR;                        /*!< Offset 0x024 RSB Line Control register */
+    volatile uint32_t RSB_PMCR;                       /*!< Offset 0x028 RSB PMU Mode Control register */
+    volatile uint32_t RSB_CMD;                        /*!< Offset 0x02C RSB Command Register */
+    volatile uint32_t RSB_SADDR;                      /*!< Offset 0x030 RSB Slave address Register */
+} R_RSB_TypeDef; /* size of structure = 0x034 */
 
 
 /* Access pointers */
@@ -2190,7 +2210,7 @@ typedef struct R_PRCM_Type
 #define R_INTC ((R_INTC_TypeDef *) R_INTC_BASE)       /*!< R_INTC  register set access pointer */
 #define R_WDOG ((R_WDOG_TypeDef *) R_WDOG_BASE)       /*!< R_WDOG  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
-#define R_TWD ((R_TWD_TypeDef *) R_TWD_BASE)          /*!< R_TWD  register set access pointer */
+#define R_TWD ((R_TWD_TypeDef *) R_TWD_BASE)          /*!< R_TWD R_Trusted Watchdog Timer register set access pointer */
 #define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define R_CIR_RX ((R_CIR_RX_TypeDef *) R_CIR_RX_BASE) /*!< R_CIR_RX  register set access pointer */

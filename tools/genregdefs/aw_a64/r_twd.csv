@@ -1,6 +1,7 @@
 #type; R_TWD
 #base; R_TWD 0x01F01800
 #irq; R_TWD 78
+#comment; R_Trusted Watchdog Timer
 R_TWD_STA_REG; 0x0; R_TWD Status Register
 R_TWD_CTRL_REG; 0x10; R_TWD Control Register
 R_TWD_RESTA_REG; 0x14; R_TWD Restart Register
