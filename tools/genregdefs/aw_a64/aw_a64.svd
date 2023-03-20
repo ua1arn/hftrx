@@ -11137,7 +11137,7 @@
   </peripheral>
   <peripheral>
   <name>R_RSB</name>
-  <description></description>
+  <description>Reduced Serial Bus Host Controller</description>
   <baseAddress>0x01F03400</baseAddress>
   <interrupt>
    <name>R_RSB</name>

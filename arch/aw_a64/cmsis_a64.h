@@ -49,7 +49,7 @@ typedef enum IRQn
     R_WDOG_IRQn = 68,                                 /*!< R_WDOG  Interrupt */
     R_CIR_RX_IRQn = 69,                               /*!< R_CIR_RX  Interrupt */
     R_UART_IRQn = 70,                                 /*!< UART  Interrupt */
-    R_RSB_IRQn = 71,                                  /*!< R_RSB  Interrupt */
+    R_RSB_IRQn = 71,                                  /*!< R_RSB Reduced Serial Bus Host Controller Interrupt */
     SMHC0_IRQn = 72,                                  /*!< SMHC  Interrupt */
     SMHC1_IRQn = 73,                                  /*!< SMHC  Interrupt */
     R_TIMER2_IRQn = 74,                               /*!< R_TIMER  Interrupt */
@@ -2116,7 +2116,7 @@ typedef struct R_PRCM_Type
 /*
  * @brief R_RSB
  */
-/*!< R_RSB  */
+/*!< R_RSB Reduced Serial Bus Host Controller */
 typedef struct R_RSB_Type
 {
     volatile uint32_t RSB_CTRL;                       /*!< Offset 0x000 RSB Control Register */
@@ -2219,7 +2219,7 @@ typedef struct R_RSB_Type
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define R_PIO ((R_PIO_TypeDef *) R_PIO_BASE)          /*!< R_PIO  register set access pointer */
-#define R_RSB ((R_RSB_TypeDef *) R_RSB_BASE)          /*!< R_RSB  register set access pointer */
+#define R_RSB ((R_RSB_TypeDef *) R_RSB_BASE)          /*!< R_RSB Reduced Serial Bus Host Controller register set access pointer */
 #define R_PWM ((R_PWM_TypeDef *) R_PWM_BASE)          /*!< R_PWM  register set access pointer */
 #define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
