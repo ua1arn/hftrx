@@ -44,12 +44,22 @@ typedef enum IRQn
     OWA_IRQn = 55,                                    /*!< OWA  Interrupt */
     I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  Interrupt */
+    R_TIMER0_IRQn = 65,                               /*!< R_TIMER  Interrupt */
+    R_TIMER1_IRQn = 66,                               /*!< R_TIMER  Interrupt */
+    R_WDOG_IRQn = 68,                                 /*!< R_WDOG  Interrupt */
+    R_CIR_RX_IRQn = 69,                               /*!< R_CIR_RX  Interrupt */
+    R_UART_IRQn = 70,                                 /*!< R_UART  Interrupt */
+    R_RSB_IRQn = 71,                                  /*!< R_RSB  Interrupt */
     SMHC0_IRQn = 72,                                  /*!< SMHC  Interrupt */
     SMHC1_IRQn = 73,                                  /*!< SMHC  Interrupt */
+    R_TIMER2_IRQn = 74,                               /*!< R_TIMER  Interrupt */
     SMHC2_IRQn = 74,                                  /*!< SMHC  Interrupt */
     MSI_IRQn = 75,                                    /*!< MSI_MEMC  Interrupt */
+    R_TIMER3_IRQn = 75,                               /*!< R_TIMER  Interrupt */
+    R_TWI_IRQn = 76,                                  /*!< TWI  Interrupt */
     SMC_IRQn = 76,                                    /*!< SMC  Interrupt */
     EMAC_IRQn = 78,                                   /*!< EMAC  Interrupt */
+    R_TWD_IRQn = 78,                                  /*!< R_TWD  Interrupt */
     CCU_FERR_IRQn = 80,                               /*!< CCU  Interrupt */
     MSGBOX_IRQn = 81,                                 /*!< MSGBOX  Interrupt */
     DMAC_IRQn = 82,                                   /*!< DMAC  Interrupt */
@@ -166,7 +176,7 @@ typedef enum IRQn
 #define R_CPUCFG_BASE ((uintptr_t) 0x01F01C00)        /*!< R_CPUCFG Base */
 #define CIR_RX_BASE ((uintptr_t) 0x01F02000)          /*!< CIR_RX Base */
 #define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< R_CIR_RX Base */
-#define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< R_TWI Base */
+#define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< TWI Base */
 #define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< R_UART Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO Base */
@@ -800,19 +810,7 @@ typedef struct TWI_Type
     volatile uint32_t TWI_SRST;                       /*!< Offset 0x018 TWI Software Reset Register */
     volatile uint32_t TWI_EFR;                        /*!< Offset 0x01C TWI Enhance Feature Register */
     volatile uint32_t TWI_LCR;                        /*!< Offset 0x020 TWI Line Control Register */
-             uint32_t reserved_0x024 [0x0077];
-    volatile uint32_t TWI_DRV_CTRL;                   /*!< Offset 0x200 TWI_DRV Control Register */
-    volatile uint32_t TWI_DRV_CFG;                    /*!< Offset 0x204 TWI_DRV Transmission Configuration Register */
-    volatile uint32_t TWI_DRV_SLV;                    /*!< Offset 0x208 TWI_DRV Slave ID Register */
-    volatile uint32_t TWI_DRV_FMT;                    /*!< Offset 0x20C TWI_DRV Packet Format Register */
-    volatile uint32_t TWI_DRV_BUS_CTRL;               /*!< Offset 0x210 TWI_DRV Bus Control Register */
-    volatile uint32_t TWI_DRV_INT_CTRL;               /*!< Offset 0x214 TWI_DRV Interrupt Control Register */
-    volatile uint32_t TWI_DRV_DMA_CFG;                /*!< Offset 0x218 TWI_DRV DMA Configure Register */
-    volatile uint32_t TWI_DRV_FIFO_CON;               /*!< Offset 0x21C TWI_DRV FIFO Content Register */
-             uint32_t reserved_0x220 [0x0038];
-    volatile uint32_t TWI_DRV_SEND_FIFO_ACC;          /*!< Offset 0x300 TWI_DRV Send Data FIFO Access Register */
-    volatile uint32_t TWI_DRV_RECV_FIFO_ACC;          /*!< Offset 0x304 TWI_DRV Receive Data FIFO Access Register */
-} TWI_TypeDef; /* size of structure = 0x308 */
+} TWI_TypeDef; /* size of structure = 0x024 */
 /*
  * @brief SPI
  */
@@ -2196,7 +2194,7 @@ typedef struct R_PRCM_Type
 #define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define R_CIR_RX ((R_CIR_RX_TypeDef *) R_CIR_RX_BASE) /*!< R_CIR_RX  register set access pointer */
-#define R_TWI ((R_TWI_TypeDef *) R_TWI_BASE)          /*!< R_TWI  register set access pointer */
+#define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define R_UART ((R_UART_TypeDef *) R_UART_BASE)       /*!< R_UART  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */

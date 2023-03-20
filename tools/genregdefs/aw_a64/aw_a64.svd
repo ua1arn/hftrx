@@ -4621,9 +4621,14 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>TWI0</name>
+  <name>R_TWI</name>
   <description></description>
-  <baseAddress>0x01C2AC00</baseAddress>
+  <baseAddress>0x01F02400</baseAddress>
+  <interrupt>
+   <name>R_TWI</name>
+   <value>76</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>TWI0</name>
    <value>38</value>
@@ -4721,101 +4726,16 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>TWI_DRV_CTRL</name>
-    <displayName>TWI_DRV_CTRL</displayName>
-    <description>TWI_DRV Control Register</description>
-    <addressOffset>0x200</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_CFG</name>
-    <displayName>TWI_DRV_CFG</displayName>
-    <description>TWI_DRV Transmission Configuration Register</description>
-    <addressOffset>0x204</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_SLV</name>
-    <displayName>TWI_DRV_SLV</displayName>
-    <description>TWI_DRV Slave ID Register</description>
-    <addressOffset>0x208</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_FMT</name>
-    <displayName>TWI_DRV_FMT</displayName>
-    <description>TWI_DRV Packet Format Register</description>
-    <addressOffset>0x20C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_BUS_CTRL</name>
-    <displayName>TWI_DRV_BUS_CTRL</displayName>
-    <description>TWI_DRV Bus Control Register</description>
-    <addressOffset>0x210</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_INT_CTRL</name>
-    <displayName>TWI_DRV_INT_CTRL</displayName>
-    <description>TWI_DRV Interrupt Control Register</description>
-    <addressOffset>0x214</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_DMA_CFG</name>
-    <displayName>TWI_DRV_DMA_CFG</displayName>
-    <description>TWI_DRV DMA Configure Register</description>
-    <addressOffset>0x218</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_FIFO_CON</name>
-    <displayName>TWI_DRV_FIFO_CON</displayName>
-    <description>TWI_DRV FIFO Content Register</description>
-    <addressOffset>0x21C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_SEND_FIFO_ACC</name>
-    <displayName>TWI_DRV_SEND_FIFO_ACC</displayName>
-    <description>TWI_DRV Send Data FIFO Access Register</description>
-    <addressOffset>0x300</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_RECV_FIFO_ACC</name>
-    <displayName>TWI_DRV_RECV_FIFO_ACC</displayName>
-    <description>TWI_DRV Receive Data FIFO Access Register</description>
-    <addressOffset>0x304</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="TWI0">
-  <name>TWI1</name>
-  <baseAddress>0x01C2B000</baseAddress>
+  <peripheral derivedFrom="R_TWI">
+  <name>TWI0</name>
+  <baseAddress>0x01C2AC00</baseAddress>
+  <interrupt>
+   <name>R_TWI</name>
+   <value>76</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>TWI0</name>
    <value>38</value>
@@ -4832,9 +4752,38 @@
    <description></description>
   </interrupt>
   </peripheral>
-  <peripheral derivedFrom="TWI0">
+  <peripheral derivedFrom="R_TWI">
+  <name>TWI1</name>
+  <baseAddress>0x01C2B000</baseAddress>
+  <interrupt>
+   <name>R_TWI</name>
+   <value>76</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI0</name>
+   <value>38</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI1</name>
+   <value>39</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI2</name>
+   <value>40</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="R_TWI">
   <name>TWI2</name>
   <baseAddress>0x01C2B400</baseAddress>
+  <interrupt>
+   <name>R_TWI</name>
+   <value>76</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>TWI0</name>
    <value>38</value>
@@ -10779,6 +10728,26 @@
   <name>R_TIMER</name>
   <description></description>
   <baseAddress>0x01F00800</baseAddress>
+  <interrupt>
+   <name>R_TIMER0</name>
+   <value>65</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER1</name>
+   <value>66</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER2</name>
+   <value>74</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER3</name>
+   <value>75</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>RTMR_IRQ_EN_REG</name>
@@ -10858,6 +10827,11 @@
   <name>R_WDOG</name>
   <description></description>
   <baseAddress>0x01F01000</baseAddress>
+  <interrupt>
+   <name>R_WDOG</name>
+   <value>68</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>RWDOG_IRQ_EN_REG</name>
