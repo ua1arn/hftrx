@@ -1,0 +1,3 @@
+#type; R_UART
+#base; R_UART 0x01F02800
+##irq; R_UART 50

@@ -10776,6 +10776,137 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>R_TIMER</name>
+  <description></description>
+  <baseAddress>0x01F00800</baseAddress>
+  <registers>
+   <register>
+    <name>RTMR_IRQ_EN_REG</name>
+    <displayName>RTMR_IRQ_EN_REG</displayName>
+    <description>R_timer IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR_IRQ_STA_REG</name>
+    <displayName>RTMR_IRQ_STA_REG</displayName>
+    <description>R_timer IRQ Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR0_CTRL_REG</name>
+    <displayName>RTMR0_CTRL_REG</displayName>
+    <description>R_timer 0 Control Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR0_INTV_VALUE_REG</name>
+    <displayName>RTMR0_INTV_VALUE_REG</displayName>
+    <description>R_timer 0 Interval Value Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR0_CUR_VALUE_REG</name>
+    <displayName>RTMR0_CUR_VALUE_REG</displayName>
+    <description>R_timer 0 Current Value Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR1_CTRL_REG</name>
+    <displayName>RTMR1_CTRL_REG</displayName>
+    <description>R_timer 1 Control Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR1_INTV_VALUE_REG</name>
+    <displayName>RTMR1_INTV_VALUE_REG</displayName>
+    <description>R_timer 1 Interval Value Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR1_CUR_VALUE_REG</name>
+    <displayName>RTMR1_CUR_VALUE_REG</displayName>
+    <description>R_timer 1 Current Value Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>R_WDOG</name>
+  <description></description>
+  <baseAddress>0x01F01000</baseAddress>
+  <registers>
+   <register>
+    <name>RWDOG_IRQ_EN_REG</name>
+    <displayName>RWDOG_IRQ_EN_REG</displayName>
+    <description>R_watchdog IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RWDOG_IRQ_STA_REG</name>
+    <displayName>RWDOG_IRQ_STA_REG</displayName>
+    <description>R_watchdog Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RWDOG_CTRL_REG</name>
+    <displayName>RWDOG_CTRL_REG</displayName>
+    <description>R_watchdog Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RWDOG_CFG_REG</name>
+    <displayName>RWDOG_CFG_REG</displayName>
+    <description>R_watchdog Configuration Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RWDOG_MODE_REG</name>
+    <displayName>RWDOG_MODE_REG</displayName>
+    <description>R_watchdog Mode Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>R_PRCM</name>
   <description></description>
   <baseAddress>0x01F01400</baseAddress>
@@ -10965,137 +11096,6 @@
     <displayName>OSC24M_CTRL_REG</displayName>
     <description>OSC24M Control Register</description>
     <addressOffset>0x1F4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>R_TIMER</name>
-  <description></description>
-  <baseAddress>0x01F00800</baseAddress>
-  <registers>
-   <register>
-    <name>RTMR_IRQ_EN_REG</name>
-    <displayName>RTMR_IRQ_EN_REG</displayName>
-    <description>R_timer IRQ Enable Register</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RTMR_IRQ_STA_REG</name>
-    <displayName>RTMR_IRQ_STA_REG</displayName>
-    <description>R_timer IRQ Status Register</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RTMR0_CTRL_REG</name>
-    <displayName>RTMR0_CTRL_REG</displayName>
-    <description>R_timer 0 Control Register</description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RTMR0_INTV_VALUE_REG</name>
-    <displayName>RTMR0_INTV_VALUE_REG</displayName>
-    <description>R_timer 0 Interval Value Register</description>
-    <addressOffset>0x024</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RTMR0_CUR_VALUE_REG</name>
-    <displayName>RTMR0_CUR_VALUE_REG</displayName>
-    <description>R_timer 0 Current Value Register</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RTMR1_CTRL_REG</name>
-    <displayName>RTMR1_CTRL_REG</displayName>
-    <description>R_timer 1 Control Register</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RTMR1_INTV_VALUE_REG</name>
-    <displayName>RTMR1_INTV_VALUE_REG</displayName>
-    <description>R_timer 1 Interval Value Register</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RTMR1_CUR_VALUE_REG</name>
-    <displayName>RTMR1_CUR_VALUE_REG</displayName>
-    <description>R_timer 1 Current Value Register</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>R_WATCHDOG</name>
-  <description></description>
-  <baseAddress>0x01F01000</baseAddress>
-  <registers>
-   <register>
-    <name>RWDOG_IRQ_EN_REG</name>
-    <displayName>RWDOG_IRQ_EN_REG</displayName>
-    <description>R_watchdog IRQ Enable Register</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RWDOG_IRQ_STA_REG</name>
-    <displayName>RWDOG_IRQ_STA_REG</displayName>
-    <description>R_watchdog Status Register</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RWDOG_CTRL_REG</name>
-    <displayName>RWDOG_CTRL_REG</displayName>
-    <description>R_watchdog Control Register</description>
-    <addressOffset>0x010</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RWDOG_CFG_REG</name>
-    <displayName>RWDOG_CFG_REG</displayName>
-    <description>R_watchdog Configuration Register</description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>RWDOG_MODE_REG</name>
-    <displayName>RWDOG_MODE_REG</displayName>
-    <description>R_watchdog Mode Register</description>
-    <addressOffset>0x018</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

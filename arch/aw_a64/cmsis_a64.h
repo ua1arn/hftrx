@@ -159,12 +159,20 @@ typedef enum IRQn
 #define HDMI_BASE ((uintptr_t) 0x01EE0000)            /*!< HDMI Base */
 #define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC Base */
 #define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< R_TIMER Base */
-#define R_WATCHDOG_BASE ((uintptr_t) 0x01F01000)      /*!< R_WATCHDOG Base */
+#define R_INTC_BASE ((uintptr_t) 0x01F00C00)          /*!< R_INTC Base */
+#define R_WDOG_BASE ((uintptr_t) 0x01F01000)          /*!< R_WDOG Base */
 #define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< R_PRCM Base */
+#define R_TWD_BASE ((uintptr_t) 0x01F01800)           /*!< R_TWD Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x01F01C00)        /*!< R_CPUCFG Base */
 #define CIR_RX_BASE ((uintptr_t) 0x01F02000)          /*!< CIR_RX Base */
+#define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< R_CIR_RX Base */
+#define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< R_TWI Base */
+#define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< R_UART Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO Base */
+#define R_PIO_BASE ((uintptr_t) 0x01F02C00)           /*!< R_PIO Base */
+#define R_RSB_BASE ((uintptr_t) 0x01F03400)           /*!< R_RSB Base */
+#define R_PWM_BASE ((uintptr_t) 0x01F03800)           /*!< R_PWM Base */
 #define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC Base */
 #define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
 #define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC Base */
@@ -2039,6 +2047,36 @@ typedef struct DRAMC_Type
     volatile uint32_t csel;                           /*!< Offset 0x2E0 controller select register */
 } DRAMC_TypeDef; /* size of structure = 0x2E4 */
 /*
+ * @brief R_TIMER
+ */
+/*!< R_TIMER  */
+typedef struct R_TIMER_Type
+{
+    volatile uint32_t RTMR_IRQ_EN_REG;                /*!< Offset 0x000 R_timer IRQ Enable Register */
+    volatile uint32_t RTMR_IRQ_STA_REG;               /*!< Offset 0x004 R_timer IRQ Status Register */
+             uint32_t reserved_0x008 [0x0006];
+    volatile uint32_t RTMR0_CTRL_REG;                 /*!< Offset 0x020 R_timer 0 Control Register */
+    volatile uint32_t RTMR0_INTV_VALUE_REG;           /*!< Offset 0x024 R_timer 0 Interval Value Register */
+    volatile uint32_t RTMR0_CUR_VALUE_REG;            /*!< Offset 0x028 R_timer 0 Current Value Register */
+             uint32_t reserved_0x02C [0x0005];
+    volatile uint32_t RTMR1_CTRL_REG;                 /*!< Offset 0x040 R_timer 1 Control Register */
+    volatile uint32_t RTMR1_INTV_VALUE_REG;           /*!< Offset 0x044 R_timer 1 Interval Value Register */
+    volatile uint32_t RTMR1_CUR_VALUE_REG;            /*!< Offset 0x048 R_timer 1 Current Value Register */
+} R_TIMER_TypeDef; /* size of structure = 0x04C */
+/*
+ * @brief R_WDOG
+ */
+/*!< R_WDOG  */
+typedef struct R_WDOG_Type
+{
+    volatile uint32_t RWDOG_IRQ_EN_REG;               /*!< Offset 0x000 R_watchdog IRQ Enable Register */
+    volatile uint32_t RWDOG_IRQ_STA_REG;              /*!< Offset 0x004 R_watchdog Status Register */
+             uint32_t reserved_0x008 [0x0002];
+    volatile uint32_t RWDOG_CTRL_REG;                 /*!< Offset 0x010 R_watchdog Control Register */
+    volatile uint32_t RWDOG_CFG_REG;                  /*!< Offset 0x014 R_watchdog Configuration Register */
+    volatile uint32_t RWDOG_MODE_REG;                 /*!< Offset 0x018 R_watchdog Mode Register */
+} R_WDOG_TypeDef; /* size of structure = 0x01C */
+/*
  * @brief R_PRCM
  */
 /*!< R_PRCM  */
@@ -2077,36 +2115,6 @@ typedef struct R_PRCM_Type
     volatile uint32_t RPIO_HOLD_CTRL_REG;             /*!< Offset 0x1F0 R_PIO Hold Control Register */
     volatile uint32_t OSC24M_CTRL_REG;                /*!< Offset 0x1F4 OSC24M Control Register */
 } R_PRCM_TypeDef; /* size of structure = 0x1F8 */
-/*
- * @brief R_TIMER
- */
-/*!< R_TIMER  */
-typedef struct R_TIMER_Type
-{
-    volatile uint32_t RTMR_IRQ_EN_REG;                /*!< Offset 0x000 R_timer IRQ Enable Register */
-    volatile uint32_t RTMR_IRQ_STA_REG;               /*!< Offset 0x004 R_timer IRQ Status Register */
-             uint32_t reserved_0x008 [0x0006];
-    volatile uint32_t RTMR0_CTRL_REG;                 /*!< Offset 0x020 R_timer 0 Control Register */
-    volatile uint32_t RTMR0_INTV_VALUE_REG;           /*!< Offset 0x024 R_timer 0 Interval Value Register */
-    volatile uint32_t RTMR0_CUR_VALUE_REG;            /*!< Offset 0x028 R_timer 0 Current Value Register */
-             uint32_t reserved_0x02C [0x0005];
-    volatile uint32_t RTMR1_CTRL_REG;                 /*!< Offset 0x040 R_timer 1 Control Register */
-    volatile uint32_t RTMR1_INTV_VALUE_REG;           /*!< Offset 0x044 R_timer 1 Interval Value Register */
-    volatile uint32_t RTMR1_CUR_VALUE_REG;            /*!< Offset 0x048 R_timer 1 Current Value Register */
-} R_TIMER_TypeDef; /* size of structure = 0x04C */
-/*
- * @brief R_WATCHDOG
- */
-/*!< R_WATCHDOG  */
-typedef struct R_WATCHDOG_Type
-{
-    volatile uint32_t RWDOG_IRQ_EN_REG;               /*!< Offset 0x000 R_watchdog IRQ Enable Register */
-    volatile uint32_t RWDOG_IRQ_STA_REG;              /*!< Offset 0x004 R_watchdog Status Register */
-             uint32_t reserved_0x008 [0x0002];
-    volatile uint32_t RWDOG_CTRL_REG;                 /*!< Offset 0x010 R_watchdog Control Register */
-    volatile uint32_t RWDOG_CFG_REG;                  /*!< Offset 0x014 R_watchdog Configuration Register */
-    volatile uint32_t RWDOG_MODE_REG;                 /*!< Offset 0x018 R_watchdog Mode Register */
-} R_WATCHDOG_TypeDef; /* size of structure = 0x01C */
 
 
 /* Access pointers */
@@ -2181,12 +2189,20 @@ typedef struct R_WATCHDOG_Type
 #define HDMI ((HDMI_TypeDef *) HDMI_BASE)             /*!< HDMI  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */
 #define R_TIMER ((R_TIMER_TypeDef *) R_TIMER_BASE)    /*!< R_TIMER  register set access pointer */
-#define R_WATCHDOG ((R_WATCHDOG_TypeDef *) R_WATCHDOG_BASE)/*!< R_WATCHDOG  register set access pointer */
+#define R_INTC ((R_INTC_TypeDef *) R_INTC_BASE)       /*!< R_INTC  register set access pointer */
+#define R_WDOG ((R_WDOG_TypeDef *) R_WDOG_BASE)       /*!< R_WDOG  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
+#define R_TWD ((R_TWD_TypeDef *) R_TWD_BASE)          /*!< R_TWD  register set access pointer */
 #define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
+#define R_CIR_RX ((R_CIR_RX_TypeDef *) R_CIR_RX_BASE) /*!< R_CIR_RX  register set access pointer */
+#define R_TWI ((R_TWI_TypeDef *) R_TWI_BASE)          /*!< R_TWI  register set access pointer */
+#define R_UART ((R_UART_TypeDef *) R_UART_BASE)       /*!< R_UART  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
+#define R_PIO ((R_PIO_TypeDef *) R_PIO_BASE)          /*!< R_PIO  register set access pointer */
+#define R_RSB ((R_RSB_TypeDef *) R_RSB_BASE)          /*!< R_RSB  register set access pointer */
+#define R_PWM ((R_PWM_TypeDef *) R_PWM_BASE)          /*!< R_PWM  register set access pointer */
 #define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */

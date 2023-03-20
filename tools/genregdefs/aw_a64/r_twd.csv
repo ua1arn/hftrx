@@ -1,0 +1,3 @@
+#type; R_TWD
+#base; R_TWD 0x01F01800
+##irq; R_TWD 50
