@@ -1475,6 +1475,8 @@ r7s721_adi_irq_handler(void)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// ADC IRQ handler
 	//#warning Unhandled CPUSTYLE_T113
+#elif CPUSTYLE_A64
+// ADC IRQ handler
 
 #else
 	#error No CPUSTYLE_XXXXX defined
@@ -1583,6 +1585,7 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	//#warning Unhandled CPUSTYLE_T113
+#elif CPUSTYLE_A64
 
 #else
 

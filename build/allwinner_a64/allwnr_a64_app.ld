@@ -1,12 +1,11 @@
 /* $Id$ */
-/* Allwinner t113-s3 layout */
+/* Allwinner A64-H (Banana Pi BPI-M64) layout */
 /* Linker script to configure memory regions. */
 
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 128M - 16k - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
-  TTB (rwx)  : ORIGIN = 0x40000000 + 128M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
-  SRAM_A1 (rwx)	: ORIGIN = 0x00020000, 				LENGTH = 32k	/*  */
+  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 2048M - 16k - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
+  TTB (rwx)  : ORIGIN = 0x40000000 + 2048M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
 }
 
 /* Library configurations */

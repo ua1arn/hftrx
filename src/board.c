@@ -9703,6 +9703,19 @@ mcp3208_read_low(
 
 #endif /* WITHSPILOWSUPPORTT */
 
+#else
+
+// Read ADC MCP3204/MCP3208
+uint_fast16_t
+mcp3208_read(
+	spitarget_t target,
+	uint_fast8_t diff,
+	uint_fast8_t adci,
+	uint_fast8_t * valid
+	)
+{
+	return 0;
+}
 #endif /* WITHSPIHW || WITHSPISW */
 
 #if ! CPUSTYLE_ATMEGA

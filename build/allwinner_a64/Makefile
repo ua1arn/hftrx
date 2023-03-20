@@ -69,8 +69,6 @@ USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 RTOSXDIR = $(CMSISDIR)/RTOS2
-LUPNGDIR = $(PRJROOT)/lib/LuPng
-TINYUSBDIR = $(PRJROOT)/lib/tinyusb
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -137,6 +135,12 @@ SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(DSP3DDIR)/src
 SRCDIRS += $(ARCHDIR)
 
+ifeq (1, 0)
+# lvgl
+SRCDIRS += $(PRJROOT)/lvgl/src
+DINCDIR += $(PRJROOT)/lvgl/src
+endif
+
 ifeq (1, 1)
 # ST USB
 DINCDIR += $(MDLWUSBDIR)/Core/Inc $(MDLWHOSTDIR)/Core/Inc
@@ -145,14 +149,14 @@ endif
 
 ifeq (1, 0)
 # tinyusb
-SRCDIRS += $(TINYUSBDIR)/src
-DINCDIR += $(TINYUSBDIR)/src
+SRCDIRS += $(PRJROOT)/lib/tinyusb/src
+DINCDIR += $(PRJROOT)/lib/tinyusb/src
 endif
 
 ifeq (1, 0)
 # LuPng
-SRCDIRS += $(LUPNGDIR)
-DINCDIR += $(LUPNGDIR)
+SRCDIRS += $(PRJROOT)/lib/LuPng
+DINCDIR += $(PRJROOT)/lib/LuPng
 endif
 
 ifeq (1, 0)
@@ -183,8 +187,9 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
-ASRC_APP = $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S 
-ASRC_BOOT = $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S 
+ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
+ASRC_BOOT += $(PRJROOT)/src/crt_CortexA.S
+ASRC_APP += $(ASRC_BOOT)
 
 VPATH = $(PRJROOT)
 
@@ -239,10 +244,9 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-.PHONY: all bootloader flash clean app_run
+.PHONY: all bootloader flash clean
 
-allXXX: APP2 $(PROJECT)_app.alw32
-all: app_run
+all: APP2 $(PROJECT)_app.alw32
 
 allZ:
 	@echo Src
@@ -250,23 +254,16 @@ allZ:
 	@echo Obj at $(OBJDIR)
 	@echo $(abspath $(OBJS))
 
-bootloader: BOOT2 fsbl.alw32 app_run
-  
-app_run: BOOT2 fsbl.alw32
-	$(XFEL) write 0x00018000 fsbl.alw32
-	$(XFEL) exec 0x00018100 
+bootloader: BOOT2
+	./egontool $(PROJECT)_boot.bin fsbl.alw32
 
-#	$(XFEL) hexdump 0x00044000  48
-  
-Zapp_run: $(PROJECT)_app.alw32
-	$(XFEL) ddr t113-s3
+boot_run: fsbl.alw32
+	$(XFEL) write 0x00018000 fsbl.alw32
+	$(XFEL) exec 0x00018100
+
+app_run: $(PROJECT)_app.alw32 boot_run
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
-
-app_runXBOOT: xboot_t113_800.bin
-	$(XFEL) ddr t113-s3
-	$(XFEL) write 0x40000000 xboot_t113_800.bin
-	$(XFEL) exec 0x40000000 
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
@@ -277,12 +274,9 @@ flash_old:
 	$(XFEL) spinor write 0x00040000 ddr3init.bin
 	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
 
-BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
-APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
-
-fsbl.alw32: $(PROJECT)_boot.bin
-	./egontool $(PROJECT)_boot.bin fsbl.alw32
+APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@

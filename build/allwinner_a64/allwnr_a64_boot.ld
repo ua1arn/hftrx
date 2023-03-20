@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Allwinner t113-s3 layout */
+/* Allwinner A64-H (Banana Pi BPI-M64) layout */
 /* Linker script to configure memory regions. */
 
 MEMORY
