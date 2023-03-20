@@ -2950,17 +2950,6 @@ sysinit_fpu_initialize(void)
 #if (__CORTEX_M != 0) && CTLSTYLE_V3D
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
 #endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
-
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-
-	{
-		GIC_Enable();
-	#if WITHNESTEDINTERRUPTS
-		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
-	#endif /* WITHNESTEDINTERRUPTS */
-	}
-
-#endif
 }
 
 static void FLASHMEMINITFUNC
@@ -3081,6 +3070,17 @@ void __attribute__((used)) Reset_Handler(void)
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
+
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+	{
+		GIC_Enable();
+	#if WITHNESTEDINTERRUPTS
+		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+	#endif /* WITHNESTEDINTERRUPTS */
+	}
+
+#endif
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 #if WITHNESTEDINTERRUPTS
@@ -3469,10 +3469,12 @@ SystemInit(void)
 	sysinit_pmic_initialize();
 	sysinit_perfmeter_initialize();
 	sysintt_sdram_initialize();
+#if ! (WITHISBOOTLOADER && CPUSTYLE_A64)
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_cache_L2_cpu0_initialize();	// L2 cache, SCU initialize
+#endif
 #endif /* ! LINUX_SUBSYSTEM */
 }
 
