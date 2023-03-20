@@ -5646,54 +5646,6 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_TIMER</name>
-  <baseAddress>0x01F00800</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_INTC</name>
-  <baseAddress>0x01F00C00</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_WDOG</name>
-  <baseAddress>0x01F01000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_PRCM</name>
-  <baseAddress>0x01F01400</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_TWD</name>
-  <baseAddress>0x01F01800</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_CPUCFG</name>
-  <baseAddress>0x01F01C00</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_CIR_RX</name>
-  <baseAddress>0x01F02000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_TWI</name>
-  <baseAddress>0x01F02400</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_UART</name>
-  <baseAddress>0x01F02800</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_PIO</name>
-  <baseAddress>0x01F02C00</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_RSB</name>
-  <baseAddress>0x01F03400</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_PWM</name>
-  <baseAddress>0x01F03800</baseAddress>
-  </peripheral>
   <peripheral>
   <name>IOMMU</name>
   <description></description>
@@ -11020,7 +10972,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>TIMER</name>
+  <name>R_TIMER</name>
   <description></description>
   <baseAddress>0x01F00800</baseAddress>
   <registers>

@@ -158,24 +158,12 @@ typedef enum IRQn
 #define DI_BASE ((uintptr_t) 0x01E00000)              /*!< DI Base */
 #define HDMI_BASE ((uintptr_t) 0x01EE0000)            /*!< HDMI Base */
 #define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC Base */
-#define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< RTC Base */
-#define TIMER_BASE ((uintptr_t) 0x01F00800)           /*!< R_TIMER Base */
-#define R_INTC_BASE ((uintptr_t) 0x01F00C00)          /*!< RTC Base */
+#define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< R_TIMER Base */
 #define R_WATCHDOG_BASE ((uintptr_t) 0x01F01000)      /*!< R_WATCHDOG Base */
-#define R_WDOG_BASE ((uintptr_t) 0x01F01000)          /*!< RTC Base */
-#define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< RTC Base */
 #define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< R_PRCM Base */
-#define R_TWD_BASE ((uintptr_t) 0x01F01800)           /*!< RTC Base */
-#define R_CPUCFG_BASE ((uintptr_t) 0x01F01C00)        /*!< RTC Base */
 #define CIR_RX_BASE ((uintptr_t) 0x01F02000)          /*!< CIR_RX Base */
-#define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< RTC Base */
-#define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< RTC Base */
-#define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< RTC Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO Base */
-#define R_PIO_BASE ((uintptr_t) 0x01F02C00)           /*!< RTC Base */
-#define R_RSB_BASE ((uintptr_t) 0x01F03400)           /*!< RTC Base */
-#define R_PWM_BASE ((uintptr_t) 0x01F03800)           /*!< RTC Base */
 #define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC Base */
 #define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
 #define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC Base */
@@ -2191,24 +2179,12 @@ typedef struct R_WATCHDOG_Type
 #define DI ((DI_TypeDef *) DI_BASE)                   /*!< DI De-interlaced register set access pointer */
 #define HDMI ((HDMI_TypeDef *) HDMI_BASE)             /*!< HDMI  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */
-#define R_TIMER ((RTC_TypeDef *) R_TIMER_BASE)        /*!< R_TIMER  register set access pointer */
-#define TIMER ((R_TIMER_TypeDef *) TIMER_BASE)        /*!< TIMER  register set access pointer */
-#define R_INTC ((RTC_TypeDef *) R_INTC_BASE)          /*!< R_INTC  register set access pointer */
+#define R_TIMER ((R_TIMER_TypeDef *) R_TIMER_BASE)    /*!< R_TIMER  register set access pointer */
 #define R_WATCHDOG ((R_WATCHDOG_TypeDef *) R_WATCHDOG_BASE)/*!< R_WATCHDOG  register set access pointer */
-#define R_WDOG ((RTC_TypeDef *) R_WDOG_BASE)          /*!< R_WDOG  register set access pointer */
-#define R_PRCM ((RTC_TypeDef *) R_PRCM_BASE)          /*!< R_PRCM  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
-#define R_TWD ((RTC_TypeDef *) R_TWD_BASE)            /*!< R_TWD  register set access pointer */
-#define R_CPUCFG ((RTC_TypeDef *) R_CPUCFG_BASE)      /*!< R_CPUCFG  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
-#define R_CIR_RX ((RTC_TypeDef *) R_CIR_RX_BASE)      /*!< R_CIR_RX  register set access pointer */
-#define R_TWI ((RTC_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
-#define R_UART ((RTC_TypeDef *) R_UART_BASE)          /*!< R_UART  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
-#define R_PIO ((RTC_TypeDef *) R_PIO_BASE)            /*!< R_PIO  register set access pointer */
-#define R_RSB ((RTC_TypeDef *) R_RSB_BASE)            /*!< R_RSB  register set access pointer */
-#define R_PWM ((RTC_TypeDef *) R_PWM_BASE)            /*!< R_PWM  register set access pointer */
 #define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */
