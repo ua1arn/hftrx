@@ -27,6 +27,7 @@
 //#define DEFAULTDIALFREQ	225000
 //#define DEFAULTDIALFREQ	14021000
 //#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собираем bootloader */
+//#define WITHISBOOTLOADER_DDR	1	/* Allwinner A64-H (Banana Pi BPI-M64) - инициализатор DDR памяти на плате */
 
 // Современные конфигурации:
 //#define CTLSTYLE_RAVENDSP_V1	1	// Трансивер Вороненок с 12 кГц IF DSP трактом

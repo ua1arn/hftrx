@@ -2951,7 +2951,7 @@ sysinit_fpu_initialize(void)
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
 #endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
 
-#if ! (WITHISBOOTLOADER && CPUSTYLE_A64)
+#if ! WITHISBOOTLOADER_DDR
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	{
@@ -3471,7 +3471,7 @@ SystemInit(void)
 	sysinit_pmic_initialize();
 	sysinit_perfmeter_initialize();
 	sysintt_sdram_initialize();
-#if ! (WITHISBOOTLOADER && CPUSTYLE_A64)
+#if ! WITHISBOOTLOADER_DDR
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
