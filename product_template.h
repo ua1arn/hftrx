@@ -27,7 +27,6 @@
 //#define DEFAULTDIALFREQ	225000
 //#define DEFAULTDIALFREQ	14021000
 //#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собираем bootloader */
-//#define WITHISBOOTLOADER_DDR	1	/* Allwinner A64-H (Banana Pi BPI-M64) - инициализатор DDR памяти на плате */
 
 // Современные конфигурации:
 //#define CTLSTYLE_RAVENDSP_V1	1	// Трансивер Вороненок с 12 кГц IF DSP трактом
@@ -261,6 +260,7 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/u_blaze_cpustyle_v0.h"
 #elif (CPUSTYLE_A64) && CTLSTYLE_STORCH_V7 && 1
+	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* Allwinner A64-H (Banana Pi BPI-M64) - инициализатор DDR памяти на плате */
 	#include "boards/arm_allwa64_ctlstyle_banana_pi_m64.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa64_cpustyle_banana_pi_m64.h"
