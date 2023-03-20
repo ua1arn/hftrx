@@ -2950,6 +2950,19 @@ sysinit_fpu_initialize(void)
 #if (__CORTEX_M != 0) && CTLSTYLE_V3D
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
 #endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
+
+#if ! (WITHISBOOTLOADER && CPUSTYLE_A64)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+	{
+		GIC_Enable();
+	#if WITHNESTEDINTERRUPTS
+		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+	#endif /* WITHNESTEDINTERRUPTS */
+	}
+
+#endif
+#endif
 }
 
 static void FLASHMEMINITFUNC
@@ -3070,17 +3083,6 @@ void __attribute__((used)) Reset_Handler(void)
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
-
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-
-	{
-		GIC_Enable();
-	#if WITHNESTEDINTERRUPTS
-		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
-	#endif /* WITHNESTEDINTERRUPTS */
-	}
-
-#endif
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 #if WITHNESTEDINTERRUPTS
