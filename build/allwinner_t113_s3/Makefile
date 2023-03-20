@@ -276,9 +276,9 @@ flash_old:
 	$(XFEL) spinor write 0x00040000 ddr3init.bin
 	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
 
-BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
-APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.alw32: $(PROJECT)_boot.bin
 	./egontool $(PROJECT)_boot.bin fsbl.alw32
