@@ -84,7 +84,7 @@ static void process(
 	binsize = ftell(infile);
 	silesizealigned = alignup(binsize + execoffset, 16 * 1024);
 
-	//fprintf(stderr, "Okay open files... %ld %ld\n", binsize, silesizealigned);
+	fprintf(stderr, "Okay open file: original:%ld aligned:%ld\n", binsize, silesizealigned);
 
 	{
 		long i;
