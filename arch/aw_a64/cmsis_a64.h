@@ -161,6 +161,7 @@ typedef enum IRQn
 #define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< R_TIMER Base */
 #define R_WATCHDOG_BASE ((uintptr_t) 0x01F01000)      /*!< R_WATCHDOG Base */
 #define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< R_PRCM Base */
+#define R_CPUCFG_BASE ((uintptr_t) 0x01F01C00)        /*!< R_CPUCFG Base */
 #define CIR_RX_BASE ((uintptr_t) 0x01F02000)          /*!< CIR_RX Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO Base */
@@ -2182,6 +2183,7 @@ typedef struct R_WATCHDOG_Type
 #define R_TIMER ((R_TIMER_TypeDef *) R_TIMER_BASE)    /*!< R_TIMER  register set access pointer */
 #define R_WATCHDOG ((R_WATCHDOG_TypeDef *) R_WATCHDOG_BASE)/*!< R_WATCHDOG  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
+#define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
