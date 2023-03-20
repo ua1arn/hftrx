@@ -1,0 +1,24 @@
+#type; R_PRCM
+#base; R_PRCM 0x01F01400
+##irq; R_PRCM 50
+#regdef; CPUS_CLK_REG; 0x0000; CPUS Clock Register
+#regdef; APB0_CFG_REG; 0x000C; APB0 Configuration Register
+#regdef; APB0_CLK_GATING_REG; 0x0028; APB0 Clock Gating Register
+#regdef; PLL_CTRL_REG1; 0x0044; PLL Control Register 1
+#regdef; R_CIR_RX_CLK_REG; 0x0054; R_CIR_RX Clock Register
+#regdef; APB0_SOFT_RST_REG; 0x00B0; APB0 Software Reset Register
+#regdef; C0CPUX_PWROFF_GATING_REG; 0x0100; Cluster0 CPUX Power Off Gating Register
+#regdef; C1CPUX_PWROFF_GATING_REG; 0x0104; Cluster1 CPUX Power Off Gating Register
+#regdef; VDD_SYS_PWROFF_GATING_REG; 0x0110; VDD_SYS Power Off Gating Register
+#regdef; GPU_PWROFF_GATING_REG; 0x0118; GPU Power Off Gating Register
+#regdef; VDD_SYS_PWROFF_RST_REG; 0x0120; VDD_SYS Power Domain Reset Register
+#regdef; C0_CPU0_PWR_SWITCH_CTRL; 0x0140; C0_CPU0 Power Switch Control Register
+#regdef; C0_CPU1_PWR_SWITCH_CTRL; 0x0144; C0_CPU1 Power Switch Control Register
+#regdef; C0_CPU2_PWR_SWITCH_CTRL; 0x0148; C0_CPU2 Power Switch Control Register
+#regdef; C0_CPU3_PWR_SWITCH_CTRL; 0x014C; C0_CPU3 Power Switch Control Register
+#regdef; C1_CPU0_PWR_SWITCH_CTRL; 0x0150; C1_CPU0 Power Switch Control Register
+#regdef; C1_CPU1_PWR_SWITCH_CTRL; 0x0154; C1_CPU1 Power Switch Control Register
+#regdef; C1_CPU2_PWR_SWITCH_CTRL; 0x0158; C1_CPU2 Power Switch Control Register
+#regdef; C1_CPU3_PWR_SWITCH_CTRL; 0x015C; C1_CPU3 Power Switch Control Register
+#regdef; RPIO_HOLD_CTRL_REG; 0x01F0; R_PIO Hold Control Register
+#regdef; OSC24M_CTRL_REG; 0x01F4; OSC24M Control Register

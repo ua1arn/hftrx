@@ -159,9 +159,12 @@ typedef enum IRQn
 #define HDMI_BASE ((uintptr_t) 0x01EE0000)            /*!< HDMI Base */
 #define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC Base */
 #define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< RTC Base */
+#define TIMER_BASE ((uintptr_t) 0x01F00800)           /*!< R_TIMER Base */
 #define R_INTC_BASE ((uintptr_t) 0x01F00C00)          /*!< RTC Base */
+#define R_WATCHDOG_BASE ((uintptr_t) 0x01F01000)      /*!< R_WATCHDOG Base */
 #define R_WDOG_BASE ((uintptr_t) 0x01F01000)          /*!< RTC Base */
 #define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< RTC Base */
+#define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< R_PRCM Base */
 #define R_TWD_BASE ((uintptr_t) 0x01F01800)           /*!< RTC Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x01F01C00)        /*!< RTC Base */
 #define CIR_RX_BASE ((uintptr_t) 0x01F02000)          /*!< CIR_RX Base */
@@ -2046,6 +2049,75 @@ typedef struct DRAMC_Type
              uint32_t reserved_0x2D0 [0x0004];
     volatile uint32_t csel;                           /*!< Offset 0x2E0 controller select register */
 } DRAMC_TypeDef; /* size of structure = 0x2E4 */
+/*
+ * @brief R_PRCM
+ */
+/*!< R_PRCM  */
+typedef struct R_PRCM_Type
+{
+    volatile uint32_t CPUS_CLK_REG;                   /*!< Offset 0x000 CPUS Clock Register */
+             uint32_t reserved_0x004 [0x0002];
+    volatile uint32_t APB0_CFG_REG;                   /*!< Offset 0x00C APB0 Configuration Register */
+             uint32_t reserved_0x010 [0x0006];
+    volatile uint32_t APB0_CLK_GATING_REG;            /*!< Offset 0x028 APB0 Clock Gating Register */
+             uint32_t reserved_0x02C [0x0006];
+    volatile uint32_t PLL_CTRL_REG1;                  /*!< Offset 0x044 PLL Control Register 1 */
+             uint32_t reserved_0x048 [0x0003];
+    volatile uint32_t R_CIR_RX_CLK_REG;               /*!< Offset 0x054 R_CIR_RX Clock Register */
+             uint32_t reserved_0x058 [0x0016];
+    volatile uint32_t APB0_SOFT_RST_REG;              /*!< Offset 0x0B0 APB0 Software Reset Register */
+             uint32_t reserved_0x0B4 [0x0013];
+    volatile uint32_t C0CPUX_PWROFF_GATING_REG;       /*!< Offset 0x100 Cluster0 CPUX Power Off Gating Register */
+    volatile uint32_t C1CPUX_PWROFF_GATING_REG;       /*!< Offset 0x104 Cluster1 CPUX Power Off Gating Register */
+             uint32_t reserved_0x108 [0x0002];
+    volatile uint32_t VDD_SYS_PWROFF_GATING_REG;      /*!< Offset 0x110 VDD_SYS Power Off Gating Register */
+             uint32_t reserved_0x114;
+    volatile uint32_t GPU_PWROFF_GATING_REG;          /*!< Offset 0x118 GPU Power Off Gating Register */
+             uint32_t reserved_0x11C;
+    volatile uint32_t VDD_SYS_PWROFF_RST_REG;         /*!< Offset 0x120 VDD_SYS Power Domain Reset Register */
+             uint32_t reserved_0x124 [0x0007];
+    volatile uint32_t C0_CPU0_PWR_SWITCH_CTRL;        /*!< Offset 0x140 C0_CPU0 Power Switch Control Register */
+    volatile uint32_t C0_CPU1_PWR_SWITCH_CTRL;        /*!< Offset 0x144 C0_CPU1 Power Switch Control Register */
+    volatile uint32_t C0_CPU2_PWR_SWITCH_CTRL;        /*!< Offset 0x148 C0_CPU2 Power Switch Control Register */
+    volatile uint32_t C0_CPU3_PWR_SWITCH_CTRL;        /*!< Offset 0x14C C0_CPU3 Power Switch Control Register */
+    volatile uint32_t C1_CPU0_PWR_SWITCH_CTRL;        /*!< Offset 0x150 C1_CPU0 Power Switch Control Register */
+    volatile uint32_t C1_CPU1_PWR_SWITCH_CTRL;        /*!< Offset 0x154 C1_CPU1 Power Switch Control Register */
+    volatile uint32_t C1_CPU2_PWR_SWITCH_CTRL;        /*!< Offset 0x158 C1_CPU2 Power Switch Control Register */
+    volatile uint32_t C1_CPU3_PWR_SWITCH_CTRL;        /*!< Offset 0x15C C1_CPU3 Power Switch Control Register */
+             uint32_t reserved_0x160 [0x0024];
+    volatile uint32_t RPIO_HOLD_CTRL_REG;             /*!< Offset 0x1F0 R_PIO Hold Control Register */
+    volatile uint32_t OSC24M_CTRL_REG;                /*!< Offset 0x1F4 OSC24M Control Register */
+} R_PRCM_TypeDef; /* size of structure = 0x1F8 */
+/*
+ * @brief R_TIMER
+ */
+/*!< R_TIMER  */
+typedef struct R_TIMER_Type
+{
+    volatile uint32_t RTMR_IRQ_EN_REG;                /*!< Offset 0x000 R_timer IRQ Enable Register */
+    volatile uint32_t RTMR_IRQ_STA_REG;               /*!< Offset 0x004 R_timer IRQ Status Register */
+             uint32_t reserved_0x008 [0x0006];
+    volatile uint32_t RTMR0_CTRL_REG;                 /*!< Offset 0x020 R_timer 0 Control Register */
+    volatile uint32_t RTMR0_INTV_VALUE_REG;           /*!< Offset 0x024 R_timer 0 Interval Value Register */
+    volatile uint32_t RTMR0_CUR_VALUE_REG;            /*!< Offset 0x028 R_timer 0 Current Value Register */
+             uint32_t reserved_0x02C [0x0005];
+    volatile uint32_t RTMR1_CTRL_REG;                 /*!< Offset 0x040 R_timer 1 Control Register */
+    volatile uint32_t RTMR1_INTV_VALUE_REG;           /*!< Offset 0x044 R_timer 1 Interval Value Register */
+    volatile uint32_t RTMR1_CUR_VALUE_REG;            /*!< Offset 0x048 R_timer 1 Current Value Register */
+} R_TIMER_TypeDef; /* size of structure = 0x04C */
+/*
+ * @brief R_WATCHDOG
+ */
+/*!< R_WATCHDOG  */
+typedef struct R_WATCHDOG_Type
+{
+    volatile uint32_t RWDOG_IRQ_EN_REG;               /*!< Offset 0x000 R_watchdog IRQ Enable Register */
+    volatile uint32_t RWDOG_IRQ_STA_REG;              /*!< Offset 0x004 R_watchdog Status Register */
+             uint32_t reserved_0x008 [0x0002];
+    volatile uint32_t RWDOG_CTRL_REG;                 /*!< Offset 0x010 R_watchdog Control Register */
+    volatile uint32_t RWDOG_CFG_REG;                  /*!< Offset 0x014 R_watchdog Configuration Register */
+    volatile uint32_t RWDOG_MODE_REG;                 /*!< Offset 0x018 R_watchdog Mode Register */
+} R_WATCHDOG_TypeDef; /* size of structure = 0x01C */
 
 
 /* Access pointers */
@@ -2120,9 +2192,12 @@ typedef struct DRAMC_Type
 #define HDMI ((HDMI_TypeDef *) HDMI_BASE)             /*!< HDMI  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */
 #define R_TIMER ((RTC_TypeDef *) R_TIMER_BASE)        /*!< R_TIMER  register set access pointer */
+#define TIMER ((R_TIMER_TypeDef *) TIMER_BASE)        /*!< TIMER  register set access pointer */
 #define R_INTC ((RTC_TypeDef *) R_INTC_BASE)          /*!< R_INTC  register set access pointer */
+#define R_WATCHDOG ((R_WATCHDOG_TypeDef *) R_WATCHDOG_BASE)/*!< R_WATCHDOG  register set access pointer */
 #define R_WDOG ((RTC_TypeDef *) R_WDOG_BASE)          /*!< R_WDOG  register set access pointer */
 #define R_PRCM ((RTC_TypeDef *) R_PRCM_BASE)          /*!< R_PRCM  register set access pointer */
+#define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define R_TWD ((RTC_TypeDef *) R_TWD_BASE)            /*!< R_TWD  register set access pointer */
 #define R_CPUCFG ((RTC_TypeDef *) R_CPUCFG_BASE)      /*!< R_CPUCFG  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */

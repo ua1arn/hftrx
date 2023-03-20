@@ -1,0 +1,11 @@
+#type; R_TIMER
+#base; TIMER 0x01F00800
+##irq; R_TIMER 50
+#regdef; RTMR_IRQ_EN_REG;  0x0; R_timer IRQ Enable Register
+#regdef; RTMR_IRQ_STA_REG; 0x4; R_timer IRQ Status Register
+#regdef; RTMR0_CTRL_REG; 0x20; R_timer 0 Control Register
+#regdef; RTMR0_INTV_VALUE_REG; 0x24; R_timer 0 Interval Value Register
+#regdef; RTMR0_CUR_VALUE_REG; 0x28; R_timer 0 Current Value Register
+#regdef; RTMR1_CTRL_REG; 0x40; R_timer 1 Control Register
+#regdef; RTMR1_INTV_VALUE_REG; 0x44; R_timer 1 Interval Value Register
+#regdef; RTMR1_CUR_VALUE_REG; 0x48; R_timer 1 Current Value Register
