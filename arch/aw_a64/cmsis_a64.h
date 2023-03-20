@@ -39,9 +39,9 @@ typedef enum IRQn
     TWI0_IRQn = 38,                                   /*!< TWI  Interrupt */
     TWI1_IRQn = 39,                                   /*!< TWI  Interrupt */
     TWI2_IRQn = 40,                                   /*!< TWI  Interrupt */
+    OWA_IRQn = 44,                                    /*!< OWA One Wire Audio Interrupt */
     TIMER0_IRQn = 50,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 51,                                 /*!< TIMER  Interrupt */
-    OWA_IRQn = 55,                                    /*!< OWA  Interrupt */
     I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  Interrupt */
     R_TIMER0_IRQn = 65,                               /*!< R_TIMER  Interrupt */
@@ -112,6 +112,7 @@ typedef enum IRQn
 #define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG Base */
 #define DRAMC_BASE ((uintptr_t) 0x01C01000)           /*!< DRAMC Base */
 #define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC Base */
+#define OWA_BASE ((uintptr_t) 0x01C02000)             /*!< OWA Base */
 #define NDFC_BASE ((uintptr_t) 0x01C03000)            /*!< NDFC Base */
 #define TSC_BASE ((uintptr_t) 0x01C06000)             /*!< TSC Base */
 #define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON0 Base */
@@ -189,7 +190,6 @@ typedef enum IRQn
 #define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU Base */
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC Base */
 #define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC Base */
-#define OWA_BASE ((uintptr_t) 0x02036000)             /*!< OWA Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
@@ -621,7 +621,7 @@ typedef struct DMIC_Type
 /*
  * @brief OWA
  */
-/*!< OWA  */
+/*!< OWA One Wire Audio */
 typedef struct OWA_Type
 {
     volatile uint32_t OWA_GEN_CTL;                    /*!< Offset 0x000 OWA General Control Register */
@@ -2142,6 +2142,7 @@ typedef struct R_RSB_Type
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DRAMC ((DRAMC_TypeDef *) DRAMC_BASE)          /*!< DRAMC  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
+#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio register set access pointer */
 #define NDFC ((NDFC_TypeDef *) NDFC_BASE)             /*!< NDFC NAND Flash Controller Interface register set access pointer */
 #define TSC ((TSC_TypeDef *) TSC_BASE)                /*!< TSC Transport Stream Controller register set access pointer */
 #define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface register set access pointer */
@@ -2219,7 +2220,6 @@ typedef struct R_RSB_Type
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU  register set access pointer */
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC  register set access pointer */
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
-#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA  register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */

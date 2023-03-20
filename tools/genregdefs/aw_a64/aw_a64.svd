@@ -3357,11 +3357,11 @@
   </peripheral>
   <peripheral>
   <name>OWA</name>
-  <description></description>
-  <baseAddress>0x02036000</baseAddress>
+  <description>One Wire Audio</description>
+  <baseAddress>0x01C02000</baseAddress>
   <interrupt>
    <name>OWA</name>
-   <value>55</value>
+   <value>44</value>
    <description></description>
   </interrupt>
   <registers>

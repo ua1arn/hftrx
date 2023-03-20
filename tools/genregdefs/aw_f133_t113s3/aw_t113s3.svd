@@ -3090,7 +3090,7 @@
   </peripheral>
   <peripheral>
   <name>OWA</name>
-  <description></description>
+  <description>One Wire Audio</description>
   <baseAddress>0x02036000</baseAddress>
   <interrupt>
    <name>OWA</name>
