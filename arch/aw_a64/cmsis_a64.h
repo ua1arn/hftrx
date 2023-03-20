@@ -826,20 +826,12 @@ typedef struct SPI_Type
     volatile uint32_t SPI_FCR;                        /*!< Offset 0x018 SPI FIFO Control Register */
     volatile uint32_t SPI_FSR;                        /*!< Offset 0x01C SPI FIFO Status Register */
     volatile uint32_t SPI_WCR;                        /*!< Offset 0x020 SPI Wait Clock Register */
-             uint32_t reserved_0x024;
-    volatile uint32_t SPI_SAMP_DL;                    /*!< Offset 0x028 SPI Sample Delay Control Register */
-             uint32_t reserved_0x02C;
+    volatile uint32_t SPI_CCR;                        /*!< Offset 0x024 SPI Clock Rate Control register */
+             uint32_t reserved_0x028 [0x0002];
     volatile uint32_t SPI_MBC;                        /*!< Offset 0x030 SPI Master Burst Counter Register */
     volatile uint32_t SPI_MTC;                        /*!< Offset 0x034 SPI Master Transmit Counter Register */
     volatile uint32_t SPI_BCC;                        /*!< Offset 0x038 SPI Master Burst Control Register */
-             uint32_t reserved_0x03C;
-    volatile uint32_t SPI_BATCR;                      /*!< Offset 0x040 SPI Bit-Aligned Transfer Configure Register */
-    volatile uint32_t SPI_BA_CCR;                     /*!< Offset 0x044 SPI Bit-Aligned Clock Configuration Register */
-    volatile uint32_t SPI_TBR;                        /*!< Offset 0x048 SPI TX Bit Register */
-    volatile uint32_t SPI_RBR;                        /*!< Offset 0x04C SPI RX Bit Register */
-             uint32_t reserved_0x050 [0x000E];
-    volatile uint32_t SPI_NDMA_MODE_CTL;              /*!< Offset 0x088 SPI Normal DMA Mode Control Register */
-             uint32_t reserved_0x08C [0x005D];
+             uint32_t reserved_0x03C [0x0071];
     volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data Register */
              uint32_t reserved_0x204 [0x003F];
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */

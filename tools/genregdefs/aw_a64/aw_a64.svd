@@ -4938,10 +4938,10 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SPI_SAMP_DL</name>
-    <displayName>SPI_SAMP_DL</displayName>
-    <description>SPI Sample Delay Control Register</description>
-    <addressOffset>0x028</addressOffset>
+    <name>SPI_CCR</name>
+    <displayName>SPI_CCR</displayName>
+    <description>SPI Clock Rate Control register</description>
+    <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -4969,51 +4969,6 @@
     <displayName>SPI_BCC</displayName>
     <description>SPI Master Burst Control Register</description>
     <addressOffset>0x038</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_BATCR</name>
-    <displayName>SPI_BATCR</displayName>
-    <description>SPI Bit-Aligned Transfer Configure Register</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_BA_CCR</name>
-    <displayName>SPI_BA_CCR</displayName>
-    <description>SPI Bit-Aligned Clock Configuration Register</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_TBR</name>
-    <displayName>SPI_TBR</displayName>
-    <description>SPI TX Bit Register</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_RBR</name>
-    <displayName>SPI_RBR</displayName>
-    <description>SPI RX Bit Register</description>
-    <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_NDMA_MODE_CTL</name>
-    <displayName>SPI_NDMA_MODE_CTL</displayName>
-    <description>SPI Normal DMA Mode Control Register</description>
-    <addressOffset>0x088</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
