@@ -9716,6 +9716,18 @@ mcp3208_read(
 {
 	return 0;
 }
+
+uint_fast16_t
+mcp3208_read_low(
+	spitarget_t target,
+	uint_fast8_t diff,
+	uint_fast8_t adci,
+	uint_fast8_t * valid
+	)
+{
+	return 0;
+}
+
 #endif /* WITHSPIHW || WITHSPISW */
 
 #if ! CPUSTYLE_ATMEGA
