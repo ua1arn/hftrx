@@ -1281,6 +1281,11 @@
    <value>36</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>DATA</name>
@@ -1591,6 +1596,11 @@
    <value>36</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="UART0">
   <name>UART2</name>
@@ -1618,6 +1628,11 @@
   <interrupt>
    <name>UART4</name>
    <value>36</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -1649,6 +1664,11 @@
    <value>36</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="UART0">
   <name>UART4</name>
@@ -1676,6 +1696,45 @@
   <interrupt>
    <name>UART4</name>
    <value>36</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="UART0">
+  <name>R_UART</name>
+  <baseAddress>0x01F02800</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>33</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>34</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>35</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART4</name>
+   <value>36</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
    <description></description>
   </interrupt>
   </peripheral>

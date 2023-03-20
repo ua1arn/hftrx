@@ -48,7 +48,7 @@ typedef enum IRQn
     R_TIMER1_IRQn = 66,                               /*!< R_TIMER  Interrupt */
     R_WDOG_IRQn = 68,                                 /*!< R_WDOG  Interrupt */
     R_CIR_RX_IRQn = 69,                               /*!< R_CIR_RX  Interrupt */
-    R_UART_IRQn = 70,                                 /*!< R_UART  Interrupt */
+    R_UART_IRQn = 70,                                 /*!< UART  Interrupt */
     R_RSB_IRQn = 71,                                  /*!< R_RSB  Interrupt */
     SMHC0_IRQn = 72,                                  /*!< SMHC  Interrupt */
     SMHC1_IRQn = 73,                                  /*!< SMHC  Interrupt */
@@ -177,7 +177,7 @@ typedef enum IRQn
 #define CIR_RX_BASE ((uintptr_t) 0x01F02000)          /*!< CIR_RX Base */
 #define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< R_CIR_RX Base */
 #define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< TWI Base */
-#define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< R_UART Base */
+#define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< UART Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO Base */
 #define R_PIO_BASE ((uintptr_t) 0x01F02C00)           /*!< R_PIO Base */
@@ -2195,7 +2195,7 @@ typedef struct R_PRCM_Type
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define R_CIR_RX ((R_CIR_RX_TypeDef *) R_CIR_RX_BASE) /*!< R_CIR_RX  register set access pointer */
 #define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
-#define R_UART ((R_UART_TypeDef *) R_UART_BASE)       /*!< R_UART  register set access pointer */
+#define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define R_PIO ((R_PIO_TypeDef *) R_PIO_BASE)          /*!< R_PIO  register set access pointer */
