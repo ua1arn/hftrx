@@ -1,3 +1,2 @@
 #type; R_PWM
 #base; R_PWM 0x01F03800
-##irq; R_PWM 50

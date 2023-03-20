@@ -1,3 +1,0 @@
-#type; R_TWI
-#base; R_TWI 0x01F02400
-##irq; R_TWI 50

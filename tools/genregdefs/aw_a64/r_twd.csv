@@ -1,3 +1,16 @@
 #type; R_TWD
 #base; R_TWD 0x01F01800
-##irq; R_TWD 50
+#irq; R_TWD 78
+R_TWD_STA_REG; 0x0; R_TWD Status Register
+R_TWD_CTRL_REG; 0x10; R_TWD Control Register
+R_TWD_RESTA_REG; 0x14; R_TWD Restart Register
+R_TWD_LOW_COUNTER_REG; 0x20; R_TWD Low Counter Register
+R_TWD_HI_COUNTER_REG; 0x24; R_TWD High Counter Register
+R_TWD_INTV_VAL_REG; 0x30; R_TWD Interval Value Register
+R_TWD_LOW_CMP_REG; 0x40; R_TWD Low Counter Compare Register
+R_TWD_HI_CMP_REG; 0x44; R_TWD High Counter Compare Register
+SST_NV_COUNTER_REG; 0x100; Secure Storage NV-Counter Register
+SYN_DATA_COUNTER_REG0; 0x110; Synchronize Data Counter Register 0
+SYN_DATA_COUNTER_REG1; 0x114; Synchronize Data Counter Register 1
+SYN_DATA_COUNTER_REG2; 0x118; Synchronize Data Counter Register 2
+SYN_DATA_COUNTER_REG3; 0x11c; Synchronize Data Counter Register 3

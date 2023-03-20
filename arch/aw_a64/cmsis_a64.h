@@ -73,7 +73,7 @@ typedef enum IRQn
     GPIOF_S_IRQn = 110,                               /*!< GPIOINT  Interrupt */
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
     TSC_IRQn = 113,                                   /*!< TSC Transport Stream Controller Interrupt */
-    DE_IRQn = 127,                                    /*!< DE2_TOP Display Engine Top Interrupt */
+    DE_IRQn = 127,                                    /*!< DE_TOP Display Engine Top Interrupt */
     GPU_GP_IRQn = 129,                                /*!< GPU Mali-400MP2 Interrupt */
     GPU_GPMMU_IRQn = 130,                             /*!< GPU Mali-400MP2 Interrupt */
     GPU_PP0_IRQn = 131,                               /*!< GPU Mali-400MP2 Interrupt */
@@ -89,8 +89,8 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define DE2_TOP_BASE ((uintptr_t) 0x01000000)         /*!< DE2_TOP Base */
-#define DE2_CSR_BASE ((uintptr_t) 0x01020000)         /*!< DE2_CSR Base */
+#define DE_TOP_BASE ((uintptr_t) 0x01000000)          /*!< DE_TOP Base */
+#define DE_CSR_BASE ((uintptr_t) 0x01020000)          /*!< DE_CSR Base */
 #define DE_GLB_BASE ((uintptr_t) 0x01100000)          /*!< DE_GLB Base */
 #define DE_BLD_BASE ((uintptr_t) 0x01101000)          /*!< DE_BLD Base */
 #define DE_VI_BASE ((uintptr_t) 0x01102000)           /*!< DE_VI Base */
@@ -1301,10 +1301,10 @@ typedef struct USBPHYC_Type
     volatile uint32_t HSIC_STATUS;                    /*!< Offset 0x004 HSIC status Register This register is valid on HCI1. */
 } USBPHYC_TypeDef; /* size of structure = 0x008 */
 /*
- * @brief DE2_TOP
+ * @brief DE_TOP
  */
-/*!< DE2_TOP Display Engine Top */
-typedef struct DE2_TOP_Type
+/*!< DE_TOP Display Engine Top */
+typedef struct DE_TOP_Type
 {
     volatile uint32_t SCLK_GATE;                      /*!< Offset 0x000 DE SCLK Gating Register */
     volatile uint32_t HCLK_GATE;                      /*!< Offset 0x004 DE HCLK Gating Register */
@@ -1312,7 +1312,7 @@ typedef struct DE2_TOP_Type
     volatile uint32_t SCLK_DIV;                       /*!< Offset 0x00C DE SCLK Division register */
     volatile uint32_t DE2TCON_MUX;                    /*!< Offset 0x010 MUX register */
     volatile uint32_t CMD_CTL;                        /*!< Offset 0x014  */
-} DE2_TOP_TypeDef; /* size of structure = 0x018 */
+} DE_TOP_TypeDef; /* size of structure = 0x018 */
 /*
  * @brief DE_BLD
  */
@@ -1398,10 +1398,10 @@ typedef struct DE_VI_Type
     volatile uint32_t vert [0x002];                   /*!< Offset 0x0F8  */
 } DE_VI_TypeDef; /* size of structure = 0x100 */
 /*
- * @brief DE2_CSR
+ * @brief DE_CSR
  */
-/*!< DE2_CSR  */
-typedef struct DE2_CSR_Type
+/*!< DE_CSR  */
+typedef struct DE_CSR_Type
 {
     volatile uint32_t CSR_CTL;                        /*!< Offset 0x000 (null) */
     volatile uint32_t INT;                            /*!< Offset 0x004 Interrupt register */
@@ -1432,7 +1432,7 @@ typedef struct DE2_CSR_Type
     volatile uint32_t OMEN_HADD1;                     /*!< Offset 0x0AC Output U/UV memory address register1 */
     volatile uint32_t OMEN_LADD2;                     /*!< Offset 0x0B0 Output V memory address register0 */
     volatile uint32_t OMEN_HADD2;                     /*!< Offset 0x0B4 Output V memory address register1 */
-} DE2_CSR_TypeDef; /* size of structure = 0x0B8 */
+} DE_CSR_TypeDef; /* size of structure = 0x0B8 */
 /*
  * @brief TCON0
  */
@@ -2119,8 +2119,8 @@ typedef struct R_PRCM_Type
 
 /* Access pointers */
 
-#define DE2_TOP ((DE2_TOP_TypeDef *) DE2_TOP_BASE)    /*!< DE2_TOP Display Engine Top register set access pointer */
-#define DE2_CSR ((DE2_CSR_TypeDef *) DE2_CSR_BASE)    /*!< DE2_CSR  register set access pointer */
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine Top register set access pointer */
+#define DE_CSR ((DE_CSR_TypeDef *) DE_CSR_BASE)       /*!< DE_CSR  register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */

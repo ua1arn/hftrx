@@ -1,5 +1,5 @@
-#type; DE2_CSR
-#base; DE2_CSR 0x01020000
+#type; DE_CSR
+#base; DE_CSR 0x01020000
 #regdef; CSR_CTL; 0x000 Global control register
 #regdef; INT; 0x004; Interrupt register
 #regdef; IFMT; 0x020; Input data attribute register

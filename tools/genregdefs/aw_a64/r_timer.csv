@@ -1,6 +1,9 @@
 #type; R_TIMER
 #base; R_TIMER 0x01F00800
-##irq; R_TIMER 50
+#irq; R_TIMER0 65
+#irq; R_TIMER1 66
+#irq; R_TIMER2 74
+#irq; R_TIMER3 75
 #regdef; RTMR_IRQ_EN_REG;  0x0; R_timer IRQ Enable Register
 #regdef; RTMR_IRQ_STA_REG; 0x4; R_timer IRQ Status Register
 #regdef; RTMR0_CTRL_REG; 0x20; R_timer 0 Control Register

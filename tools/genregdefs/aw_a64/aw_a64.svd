@@ -7426,7 +7426,7 @@
   <baseAddress>0x01C1B800</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE2_TOP</name>
+  <name>DE_TOP</name>
   <description>Display Engine Top</description>
   <baseAddress>0x01000000</baseAddress>
   <interrupt>
@@ -7954,7 +7954,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE2_CSR</name>
+  <name>DE_CSR</name>
   <description></description>
   <baseAddress>0x01020000</baseAddress>
   <registers>
