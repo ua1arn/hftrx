@@ -9431,6 +9431,16 @@
   <name>USBEHCI0</name>
   <description></description>
   <baseAddress>0x01C1A000</baseAddress>
+  <interrupt>
+   <name>USBEHCI0</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USBEHCI1</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>HCCAPBASE</name>
@@ -9536,11 +9546,31 @@
   <peripheral derivedFrom="USBEHCI0">
   <name>USBEHCI1</name>
   <baseAddress>0x01C1B000</baseAddress>
+  <interrupt>
+   <name>USBEHCI0</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USBEHCI1</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>USBOHCI0</name>
   <description></description>
   <baseAddress>0x01C1A400</baseAddress>
+  <interrupt>
+   <name>USBOHCI0</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USBOHCI1</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>O_HcRevision</name>
@@ -9749,6 +9779,16 @@
   <peripheral derivedFrom="USBOHCI0">
   <name>USBOHCI1</name>
   <baseAddress>0x01C1B400</baseAddress>
+  <interrupt>
+   <name>USBOHCI0</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USBOHCI1</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>DMAC</name>

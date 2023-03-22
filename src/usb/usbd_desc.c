@@ -4270,6 +4270,7 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	ialt += 1;
 #endif /* WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE */
 
+	ASSERT(ialt != 0);	/* If no DFU valid options enabled. */
 	return n;
 }
 

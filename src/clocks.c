@@ -1867,6 +1867,30 @@ void allwnr_a64_pll_initialize(void)
 	set_a64_pll_cpux_axi(PLL_CPU_N, PLL_CPU_K, PLL_CPU_M, PLL_CPU_P);	// see sdram.c
 }
 
+
+static void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
+{
+
+	if(!(* reg & (1 << 31)))
+	{
+		uint32_t val;
+		* reg |= (1u << 31) | (1u << 30);
+
+		/* Lock enable */
+		* reg |= (1u << 29);
+
+		/* Wait pll stable */
+		while(!(* reg & (0x1u << 28)))
+			;
+		//local_delay_ms(20);
+
+		/* Lock disable */
+//		val = * reg;
+//		val &= ~(1 << 29);
+//		* reg = val;
+	}
+}
+
 uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
 #if defined WITHCPUXTAL
@@ -7043,6 +7067,12 @@ sysinit_pll_initialize(void)
 	USBPHY1->HCI_ICR = 0;
 
 	allwnr_a64_pll_initialize();
+	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH0_CTRL_REG);
+	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH1_CTRL_REG);
+	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
+	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+	allwnr_a64_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
+	//allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
 	CCU->MBUS_RST_REG &= ~ (1u << 0);	// MBUS_RESET 0: Assert.
 	(void) CCU->MBUS_RST_REG;

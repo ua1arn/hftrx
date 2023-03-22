@@ -75,9 +75,13 @@ typedef enum IRQn
     GPIOC_NS_IRQn = 103,                              /*!< GPIOINT  Interrupt */
     USBOTG0_IRQn = 103,                               /*!< USBOTG USB OTG Dual-Role Device controller Interrupt */
     GPIOC_S_IRQn = 104,                               /*!< GPIOINT  Interrupt */
+    USBEHCI0_IRQn = 104,                              /*!< USB_EHCI_Capability  Interrupt */
     GPIOD_NS_IRQn = 105,                              /*!< GPIOINT  Interrupt */
+    USBOHCI0_IRQn = 105,                              /*!< USB_OHCI_Capability  Interrupt */
     GPIOD_S_IRQn = 106,                               /*!< GPIOINT  Interrupt */
+    USBEHCI1_IRQn = 106,                              /*!< USB_EHCI_Capability  Interrupt */
     GPIOE_NS_IRQn = 107,                              /*!< GPIOINT  Interrupt */
+    USBOHCI1_IRQn = 107,                              /*!< USB_OHCI_Capability  Interrupt */
     GPIOE_S_IRQn = 108,                               /*!< GPIOINT  Interrupt */
     GPIOF_NS_IRQn = 109,                              /*!< GPIOINT  Interrupt */
     GPIOF_S_IRQn = 110,                               /*!< GPIOINT  Interrupt */

@@ -429,9 +429,11 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 //	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
 //	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
 
+	PRINTF("HAL_PCD_MspInit: USBPHY_CFG_REG: %08X (clk_src=%u)\n", (unsigned) CCU->USBPHY_CFG_REG, (unsigned) (CCU->USBPHY_CFG_REG >> 22) & 0x03);
+
     arm_hardware_disable_handler(USBOTG0_IRQn);
-//    arm_hardware_disable_handler(USB0_EHCI_IRQn);
-//    arm_hardware_disable_handler(USB0_OHCI_IRQn);
+    arm_hardware_disable_handler(USBEHCI0_IRQn);
+    arm_hardware_disable_handler(USBOHCI0_IRQn);
 
 //    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
 
@@ -440,33 +442,17 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	// Turn on USBOTG0
     CCU->USBPHY_CFG_REG |= (1u << 8);	// SCLK_GATING_USBPHY0
     CCU->USBPHY_CFG_REG |= (1u << 0);	// USBPHY0_RST
-//    CCU->USBPHY_CFG_REG |= (1u << 2);	// USBHSIC_RST ???
+
+    //CCU->USBPHY_CFG_REG |= (1u << 2);	// USBHSIC_RST ???
+
+	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST.
+	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.
+
+	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 29);	// USBOHCI0_GATING.
+	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 25);	// USBEHCI0_GATING.
 
 	CCU->BUS_CLK_GATING_REG0 |= (1u << 23);	// USB-OTG-Device_GATING.
 	CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.
-
-//	CCU->USB_BGR_REG &= ~ (1uL << 16);	// USBOHCI0_RST
-//	CCU->USB_BGR_REG &= ~ (1uL << 20);	// USBEHCI0_RST
-//	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST
-//
-//	CCU->USB_BGR_REG &= ~ (1uL << 0);	// USBOHCI0_GATING
-//	CCU->USB_BGR_REG &= ~ (1uL << 4);	// USBEHCI0_GATING
-//	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN
-
-	//PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled. Enable for process.\n");
-	//return;
-
-//
-//	// Enable
-//	CCU->USB0_CLK_REG |= (1uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-//	CCU->USB0_CLK_REG |= (1uL << 30);	// USBPHY0_RSTN
-//
-//	// OHCI0 12M Source Select
-//	CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
-//		(0x00 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
-//		(1uL << 31) |	// USB0_CLKEN - Gating Special Clock For OHCI0
-//		(1uL << 30) |	// USBPHY0_RSTN
-//		0;
 
 
 	arm_hardware_set_handler_system(USBOTG0_IRQn, device_OTG_HS_IRQHandler);

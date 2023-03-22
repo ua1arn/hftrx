@@ -260,7 +260,7 @@ bootloader: BOOT2
 # Invoke SystemInit 
 boot_run: fsbl_frz.alw32
 	$(XFEL) write 0x00018000 fsbl_frz.alw32
-	$(XFEL) exec 0x00022e54
+	$(XFEL) exec 0x00021580
 
 app_run: $(PROJECT)_app.alw32 boot_run
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
