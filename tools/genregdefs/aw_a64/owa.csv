@@ -1,7 +1,7 @@
 #type; OWA
-#base; OWA 0x02036000
-#irq; OWA 55
-#irqrv; OWA 39
+#base; OWA 0x01C02000
+#irq; OWA 44
+#comment; One Wire Audio
 #regdef; OWA_GEN_CTL; 0x0000; OWA General Control Register
 #regdef; OWA_TX_CFIG; 0x0004; OWA TX Configuration Register
 #regdef; OWA_RX_CFIG; 0x0008; OWA RX Configuration Register

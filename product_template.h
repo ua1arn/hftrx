@@ -260,6 +260,7 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/u_blaze_cpustyle_v0.h"
 #elif (CPUSTYLE_A64) && CTLSTYLE_STORCH_V7 && 1
+	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* Allwinner A64-H (Banana Pi BPI-M64) - инициализатор DDR памяти на плате */
 	#include "boards/arm_allwa64_ctlstyle_banana_pi_m64.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa64_cpustyle_banana_pi_m64.h"

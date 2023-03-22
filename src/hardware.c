@@ -2739,13 +2739,11 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYLE_A64
 
-	if (a < 0x00400000)
+	if (a < 0x01000000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
 		return addrbase | TTB_PARA_CACHED(ro, 0);
-//	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	return addrbase | TTB_PARA_DEVICE;
 
@@ -2951,6 +2949,7 @@ sysinit_fpu_initialize(void)
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
 #endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
 
+#if ! WITHISBOOTLOADER_DDR
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	{
@@ -2960,6 +2959,7 @@ sysinit_fpu_initialize(void)
 	#endif /* WITHNESTEDINTERRUPTS */
 	}
 
+#endif
 #endif
 }
 
@@ -3469,10 +3469,12 @@ SystemInit(void)
 	sysinit_pmic_initialize();
 	sysinit_perfmeter_initialize();
 	sysintt_sdram_initialize();
+#if ! WITHISBOOTLOADER_DDR
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_cache_L2_cpu0_initialize();	// L2 cache, SCU initialize
+#endif
 #endif /* ! LINUX_SUBSYSTEM */
 }
 

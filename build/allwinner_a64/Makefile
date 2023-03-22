@@ -257,9 +257,10 @@ allZ:
 bootloader: BOOT2
 	./egontool $(PROJECT)_boot.bin fsbl.alw32
 
-boot_run: fsbl.alw32
-	$(XFEL) write 0x00018000 fsbl.alw32
-	$(XFEL) exec 0x00018100
+# Invoke SystemInit 
+boot_run: fsbl_frz.alw32
+	$(XFEL) write 0x00018000 fsbl_frz.alw32
+	$(XFEL) exec 0x00022e54
 
 app_run: $(PROJECT)_app.alw32 boot_run
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32

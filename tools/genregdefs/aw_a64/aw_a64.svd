@@ -1281,6 +1281,11 @@
    <value>36</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>DATA</name>
@@ -1591,6 +1596,11 @@
    <value>36</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="UART0">
   <name>UART2</name>
@@ -1618,6 +1628,11 @@
   <interrupt>
    <name>UART4</name>
    <value>36</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -1649,6 +1664,11 @@
    <value>36</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="UART0">
   <name>UART4</name>
@@ -1676,6 +1696,45 @@
   <interrupt>
    <name>UART4</name>
    <value>36</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="UART0">
+  <name>R_UART</name>
+  <baseAddress>0x01F02800</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>33</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>34</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>35</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART4</name>
+   <value>36</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>70</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -3298,11 +3357,11 @@
   </peripheral>
   <peripheral>
   <name>OWA</name>
-  <description></description>
-  <baseAddress>0x02036000</baseAddress>
+  <description>One Wire Audio</description>
+  <baseAddress>0x01C02000</baseAddress>
   <interrupt>
    <name>OWA</name>
-   <value>55</value>
+   <value>44</value>
    <description></description>
   </interrupt>
   <registers>
@@ -4621,9 +4680,14 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>TWI0</name>
+  <name>R_TWI</name>
   <description></description>
-  <baseAddress>0x01C2AC00</baseAddress>
+  <baseAddress>0x01F02400</baseAddress>
+  <interrupt>
+   <name>R_TWI</name>
+   <value>76</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>TWI0</name>
    <value>38</value>
@@ -4721,101 +4785,16 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>TWI_DRV_CTRL</name>
-    <displayName>TWI_DRV_CTRL</displayName>
-    <description>TWI_DRV Control Register</description>
-    <addressOffset>0x200</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_CFG</name>
-    <displayName>TWI_DRV_CFG</displayName>
-    <description>TWI_DRV Transmission Configuration Register</description>
-    <addressOffset>0x204</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_SLV</name>
-    <displayName>TWI_DRV_SLV</displayName>
-    <description>TWI_DRV Slave ID Register</description>
-    <addressOffset>0x208</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_FMT</name>
-    <displayName>TWI_DRV_FMT</displayName>
-    <description>TWI_DRV Packet Format Register</description>
-    <addressOffset>0x20C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_BUS_CTRL</name>
-    <displayName>TWI_DRV_BUS_CTRL</displayName>
-    <description>TWI_DRV Bus Control Register</description>
-    <addressOffset>0x210</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_INT_CTRL</name>
-    <displayName>TWI_DRV_INT_CTRL</displayName>
-    <description>TWI_DRV Interrupt Control Register</description>
-    <addressOffset>0x214</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_DMA_CFG</name>
-    <displayName>TWI_DRV_DMA_CFG</displayName>
-    <description>TWI_DRV DMA Configure Register</description>
-    <addressOffset>0x218</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_FIFO_CON</name>
-    <displayName>TWI_DRV_FIFO_CON</displayName>
-    <description>TWI_DRV FIFO Content Register</description>
-    <addressOffset>0x21C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_SEND_FIFO_ACC</name>
-    <displayName>TWI_DRV_SEND_FIFO_ACC</displayName>
-    <description>TWI_DRV Send Data FIFO Access Register</description>
-    <addressOffset>0x300</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TWI_DRV_RECV_FIFO_ACC</name>
-    <displayName>TWI_DRV_RECV_FIFO_ACC</displayName>
-    <description>TWI_DRV Receive Data FIFO Access Register</description>
-    <addressOffset>0x304</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="TWI0">
-  <name>TWI1</name>
-  <baseAddress>0x01C2B000</baseAddress>
+  <peripheral derivedFrom="R_TWI">
+  <name>TWI0</name>
+  <baseAddress>0x01C2AC00</baseAddress>
+  <interrupt>
+   <name>R_TWI</name>
+   <value>76</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>TWI0</name>
    <value>38</value>
@@ -4832,9 +4811,38 @@
    <description></description>
   </interrupt>
   </peripheral>
-  <peripheral derivedFrom="TWI0">
+  <peripheral derivedFrom="R_TWI">
+  <name>TWI1</name>
+  <baseAddress>0x01C2B000</baseAddress>
+  <interrupt>
+   <name>R_TWI</name>
+   <value>76</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI0</name>
+   <value>38</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI1</name>
+   <value>39</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI2</name>
+   <value>40</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="R_TWI">
   <name>TWI2</name>
   <baseAddress>0x01C2B400</baseAddress>
+  <interrupt>
+   <name>R_TWI</name>
+   <value>76</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>TWI0</name>
    <value>38</value>
@@ -4930,10 +4938,10 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SPI_SAMP_DL</name>
-    <displayName>SPI_SAMP_DL</displayName>
-    <description>SPI Sample Delay Control Register</description>
-    <addressOffset>0x028</addressOffset>
+    <name>SPI_CCR</name>
+    <displayName>SPI_CCR</displayName>
+    <description>SPI Clock Rate Control register</description>
+    <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -4961,51 +4969,6 @@
     <displayName>SPI_BCC</displayName>
     <description>SPI Master Burst Control Register</description>
     <addressOffset>0x038</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_BATCR</name>
-    <displayName>SPI_BATCR</displayName>
-    <description>SPI Bit-Aligned Transfer Configure Register</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_BA_CCR</name>
-    <displayName>SPI_BA_CCR</displayName>
-    <description>SPI Bit-Aligned Clock Configuration Register</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_TBR</name>
-    <displayName>SPI_TBR</displayName>
-    <description>SPI TX Bit Register</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_RBR</name>
-    <displayName>SPI_RBR</displayName>
-    <description>SPI RX Bit Register</description>
-    <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_NDMA_MODE_CTL</name>
-    <displayName>SPI_NDMA_MODE_CTL</displayName>
-    <description>SPI Normal DMA Mode Control Register</description>
-    <addressOffset>0x088</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -5645,54 +5608,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_TIMER</name>
-  <baseAddress>0x01F00800</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_INTC</name>
-  <baseAddress>0x01F00C00</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_WDOG</name>
-  <baseAddress>0x01F01000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_PRCM</name>
-  <baseAddress>0x01F01400</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_TWD</name>
-  <baseAddress>0x01F01800</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_CPUCFG</name>
-  <baseAddress>0x01F01C00</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_CIR_RX</name>
-  <baseAddress>0x01F02000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_TWI</name>
-  <baseAddress>0x01F02400</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_UART</name>
-  <baseAddress>0x01F02800</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_PIO</name>
-  <baseAddress>0x01F02C00</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_RSB</name>
-  <baseAddress>0x01F03400</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="RTC">
-  <name>R_PWM</name>
-  <baseAddress>0x01F03800</baseAddress>
   </peripheral>
   <peripheral>
   <name>IOMMU</name>
@@ -7474,7 +7389,7 @@
   <baseAddress>0x01C1B800</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE2_TOP</name>
+  <name>DE_TOP</name>
   <description>Display Engine Top</description>
   <baseAddress>0x01000000</baseAddress>
   <interrupt>
@@ -8002,7 +7917,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE2_CSR</name>
+  <name>DE_CSR</name>
   <description></description>
   <baseAddress>0x01020000</baseAddress>
   <registers>
@@ -10817,6 +10732,469 @@
     <displayName>csel</displayName>
     <description>controller select register</description>
     <addressOffset>0x2E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>R_TIMER</name>
+  <description></description>
+  <baseAddress>0x01F00800</baseAddress>
+  <interrupt>
+   <name>R_TIMER0</name>
+   <value>65</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER1</name>
+   <value>66</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER2</name>
+   <value>74</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER3</name>
+   <value>75</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>RTMR_IRQ_EN_REG</name>
+    <displayName>RTMR_IRQ_EN_REG</displayName>
+    <description>R_timer IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR_IRQ_STA_REG</name>
+    <displayName>RTMR_IRQ_STA_REG</displayName>
+    <description>R_timer IRQ Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR0_CTRL_REG</name>
+    <displayName>RTMR0_CTRL_REG</displayName>
+    <description>R_timer 0 Control Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR0_INTV_VALUE_REG</name>
+    <displayName>RTMR0_INTV_VALUE_REG</displayName>
+    <description>R_timer 0 Interval Value Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR0_CUR_VALUE_REG</name>
+    <displayName>RTMR0_CUR_VALUE_REG</displayName>
+    <description>R_timer 0 Current Value Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR1_CTRL_REG</name>
+    <displayName>RTMR1_CTRL_REG</displayName>
+    <description>R_timer 1 Control Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR1_INTV_VALUE_REG</name>
+    <displayName>RTMR1_INTV_VALUE_REG</displayName>
+    <description>R_timer 1 Interval Value Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTMR1_CUR_VALUE_REG</name>
+    <displayName>RTMR1_CUR_VALUE_REG</displayName>
+    <description>R_timer 1 Current Value Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>R_WDOG</name>
+  <description></description>
+  <baseAddress>0x01F01000</baseAddress>
+  <interrupt>
+   <name>R_WDOG</name>
+   <value>68</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>RWDOG_IRQ_EN_REG</name>
+    <displayName>RWDOG_IRQ_EN_REG</displayName>
+    <description>R_watchdog IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RWDOG_IRQ_STA_REG</name>
+    <displayName>RWDOG_IRQ_STA_REG</displayName>
+    <description>R_watchdog Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RWDOG_CTRL_REG</name>
+    <displayName>RWDOG_CTRL_REG</displayName>
+    <description>R_watchdog Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RWDOG_CFG_REG</name>
+    <displayName>RWDOG_CFG_REG</displayName>
+    <description>R_watchdog Configuration Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RWDOG_MODE_REG</name>
+    <displayName>RWDOG_MODE_REG</displayName>
+    <description>R_watchdog Mode Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>R_PRCM</name>
+  <description></description>
+  <baseAddress>0x01F01400</baseAddress>
+  <registers>
+   <register>
+    <name>CPUS_CLK_REG</name>
+    <displayName>CPUS_CLK_REG</displayName>
+    <description>CPUS Clock Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>APB0_CFG_REG</name>
+    <displayName>APB0_CFG_REG</displayName>
+    <description>APB0 Configuration Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>APB0_CLK_GATING_REG</name>
+    <displayName>APB0_CLK_GATING_REG</displayName>
+    <description>APB0 Clock Gating Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_CTRL_REG1</name>
+    <displayName>PLL_CTRL_REG1</displayName>
+    <description>PLL Control Register 1</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>R_CIR_RX_CLK_REG</name>
+    <displayName>R_CIR_RX_CLK_REG</displayName>
+    <description>R_CIR_RX Clock Register</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>APB0_SOFT_RST_REG</name>
+    <displayName>APB0_SOFT_RST_REG</displayName>
+    <description>APB0 Software Reset Register</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0CPUX_PWROFF_GATING_REG</name>
+    <displayName>C0CPUX_PWROFF_GATING_REG</displayName>
+    <description>Cluster0 CPUX Power Off Gating Register</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C1CPUX_PWROFF_GATING_REG</name>
+    <displayName>C1CPUX_PWROFF_GATING_REG</displayName>
+    <description>Cluster1 CPUX Power Off Gating Register</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VDD_SYS_PWROFF_GATING_REG</name>
+    <displayName>VDD_SYS_PWROFF_GATING_REG</displayName>
+    <description>VDD_SYS Power Off Gating Register</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_PWROFF_GATING_REG</name>
+    <displayName>GPU_PWROFF_GATING_REG</displayName>
+    <description>GPU Power Off Gating Register</description>
+    <addressOffset>0x118</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VDD_SYS_PWROFF_RST_REG</name>
+    <displayName>VDD_SYS_PWROFF_RST_REG</displayName>
+    <description>VDD_SYS Power Domain Reset Register</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CPU0_PWR_SWITCH_CTRL</name>
+    <displayName>C0_CPU0_PWR_SWITCH_CTRL</displayName>
+    <description>C0_CPU0 Power Switch Control Register</description>
+    <addressOffset>0x140</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CPU1_PWR_SWITCH_CTRL</name>
+    <displayName>C0_CPU1_PWR_SWITCH_CTRL</displayName>
+    <description>C0_CPU1 Power Switch Control Register</description>
+    <addressOffset>0x144</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CPU2_PWR_SWITCH_CTRL</name>
+    <displayName>C0_CPU2_PWR_SWITCH_CTRL</displayName>
+    <description>C0_CPU2 Power Switch Control Register</description>
+    <addressOffset>0x148</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CPU3_PWR_SWITCH_CTRL</name>
+    <displayName>C0_CPU3_PWR_SWITCH_CTRL</displayName>
+    <description>C0_CPU3 Power Switch Control Register</description>
+    <addressOffset>0x14C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C1_CPU0_PWR_SWITCH_CTRL</name>
+    <displayName>C1_CPU0_PWR_SWITCH_CTRL</displayName>
+    <description>C1_CPU0 Power Switch Control Register</description>
+    <addressOffset>0x150</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C1_CPU1_PWR_SWITCH_CTRL</name>
+    <displayName>C1_CPU1_PWR_SWITCH_CTRL</displayName>
+    <description>C1_CPU1 Power Switch Control Register</description>
+    <addressOffset>0x154</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C1_CPU2_PWR_SWITCH_CTRL</name>
+    <displayName>C1_CPU2_PWR_SWITCH_CTRL</displayName>
+    <description>C1_CPU2 Power Switch Control Register</description>
+    <addressOffset>0x158</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C1_CPU3_PWR_SWITCH_CTRL</name>
+    <displayName>C1_CPU3_PWR_SWITCH_CTRL</displayName>
+    <description>C1_CPU3 Power Switch Control Register</description>
+    <addressOffset>0x15C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RPIO_HOLD_CTRL_REG</name>
+    <displayName>RPIO_HOLD_CTRL_REG</displayName>
+    <description>R_PIO Hold Control Register</description>
+    <addressOffset>0x1F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OSC24M_CTRL_REG</name>
+    <displayName>OSC24M_CTRL_REG</displayName>
+    <description>OSC24M Control Register</description>
+    <addressOffset>0x1F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>R_RSB</name>
+  <description>Reduced Serial Bus Host Controller</description>
+  <baseAddress>0x01F03400</baseAddress>
+  <interrupt>
+   <name>R_RSB</name>
+   <value>71</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>RSB_CTRL</name>
+    <displayName>RSB_CTRL</displayName>
+    <description>RSB Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_CCR</name>
+    <displayName>RSB_CCR</displayName>
+    <description>RSB Clock Control Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_INTE</name>
+    <displayName>RSB_INTE</displayName>
+    <description>RSB Interrupt Enable Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_STAT</name>
+    <displayName>RSB_STAT</displayName>
+    <description>RSB Status Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_DADDR0</name>
+    <displayName>RSB_DADDR0</displayName>
+    <description>RSB Data Acess Address Register0</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_DLEN</name>
+    <displayName>RSB_DLEN</displayName>
+    <description>RSB Data Length Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_DATA0</name>
+    <displayName>RSB_DATA0</displayName>
+    <description>RSB Data Buffer0 Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_LCR</name>
+    <displayName>RSB_LCR</displayName>
+    <description>RSB Line Control register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_PMCR</name>
+    <displayName>RSB_PMCR</displayName>
+    <description>RSB PMU Mode Control register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_CMD</name>
+    <displayName>RSB_CMD</displayName>
+    <description>RSB Command Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSB_SADDR</name>
+    <displayName>RSB_SADDR</displayName>
+    <description>RSB Slave address Register</description>
+    <addressOffset>0x030</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

@@ -1,6 +1,6 @@
 #comment; Display Engine Top
-#type; DE2_TOP
-#base; DE2_TOP 0x01000000
+#type; DE_TOP
+#base; DE_TOP 0x01000000
 #irq; DE 127
 #regdef; SCLK_GATE;	 	0x000;	DE SCLK Gating Register
 #regdef; HCLK_GATE;		0x004;	DE HCLK Gating Register

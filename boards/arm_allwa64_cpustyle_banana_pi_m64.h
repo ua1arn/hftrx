@@ -113,7 +113,7 @@
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
@@ -879,64 +879,14 @@
 
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
-		const portholder_t VSmask = (1U << 21); 	/* PD21 LCD_VSYNC */ \
-		const portholder_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
-		const portholder_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
-		/* synchro signals - sync mode */ \
-		arm_hardware_piod_outputs((demode == 0) * DEmask, 0 * DEmask); /* PD19 LCD_DE */ \
-		arm_hardware_piod_altfn50((demode == 0) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_altfn50((demode == 0) * HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
-		/* synchro signals - DE mode */ \
-		arm_hardware_piod_altfn50((demode != 0) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
-		arm_hardware_piod_outputs((demode != 0) * VSmask, 1 * VSmask); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_outputs((demode != 0) * HSmask, 1 * HSmask); /* PD20 LCD_HSYNC */ \
-		/* pixel clock */ \
-		arm_hardware_piod_altfn50(1u << 18, GPIO_CFG_AF2); /* PD18 LCD_CLK */ \
-		/* RED */ \
-		arm_hardware_piod_altfn50(1u << 12, GPIO_CFG_AF2); /* R2 PD12 LCD_D18 */ \
-		arm_hardware_piod_altfn50(1u << 13, GPIO_CFG_AF2); /* R3 PD13 LCD_D19 */ \
-		arm_hardware_piod_altfn50(1u << 14, GPIO_CFG_AF2); /* R4 PD14 LCD_D20 */ \
-		arm_hardware_piod_altfn50(1u << 15, GPIO_CFG_AF2); /* R5 PD15 LCD_D21 */ \
-		arm_hardware_piod_altfn50(1u << 16, GPIO_CFG_AF2); /* R6 PD16 LCD_D22 */ \
-		arm_hardware_piod_altfn50(1u << 17, GPIO_CFG_AF2); /* R7 PD17 LCD_D23 */ \
-		/* GREEN */ \
-		arm_hardware_piod_altfn50(1u << 6, GPIO_CFG_AF2); 	/* G2 PD6 LCD_D10 */ \
-		arm_hardware_piod_altfn50(1u << 7, GPIO_CFG_AF2); 	/* G3 PD7 LCD_D11 */ \
-		arm_hardware_piod_altfn50(1u << 8, GPIO_CFG_AF2); 	/* G4 PD8 LCD_D12 */ \
-		arm_hardware_piod_altfn50(1u << 9, GPIO_CFG_AF2); 	/* G5 PD9 LCD_D13 */ \
-		arm_hardware_piod_altfn50(1u << 10, GPIO_CFG_AF2); /* G6 PD10 LCD_D14 */ \
-		arm_hardware_piod_altfn50(1u << 11, GPIO_CFG_AF2); /* G7 PD11 LCD_D15 */ \
-		/* BLUE  */ \
-		arm_hardware_piod_altfn50(1u << 0, GPIO_CFG_AF2); 	/* B2 PD0 LCD_D2 */ \
-		arm_hardware_piod_altfn50(1u << 1, GPIO_CFG_AF2); 	/* B3 PD1 LCD_D3 */ \
-		arm_hardware_piod_altfn50(1u << 2, GPIO_CFG_AF2); 	/* B4 PD2 LCD_D4 */ \
-		arm_hardware_piod_altfn50(1u << 3, GPIO_CFG_AF2); 	/* B5 PD3 LCD_D5 */ \
-		arm_hardware_piod_altfn50(1u << 4, GPIO_CFG_AF2); 	/* B6 PD4 LCD_D6 */ \
-		arm_hardware_piod_altfn50(1u << 5, GPIO_CFG_AF2); 	/* B7 PD5 LCD_D7 */ \
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
-		const portholder_t VSmask = (1U << 21); 	/* PD21 LCD_VSYNCC */ \
-		const portholder_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
-		const portholder_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
-		/* while ((GPIOA->DATA & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
-		/* while ((GPIOA->DATA & VSmask) == 0) ; */ /* дождаться 1 */ \
-		arm_hardware_piod_outputs(0*DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 
 	#define HARDWARE_LVDS_INITIALIZE() do { \
-		arm_hardware_piod_altfn50(1u << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
-		arm_hardware_piod_altfn50(1u << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
-		arm_hardware_piod_altfn50(1u << 2, GPIO_CFG_AF3); 	/* PD2 LVDS0_V1P */ \
-		arm_hardware_piod_altfn50(1u << 3, GPIO_CFG_AF3); 	/* PD3 LVDS0_V1N */ \
-		arm_hardware_piod_altfn50(1u << 4, GPIO_CFG_AF3); 	/* PD4 LVDS0_V2P */ \
-		arm_hardware_piod_altfn50(1u << 5, GPIO_CFG_AF3); 	/* PD5 LVDS0_V2N */ \
-		arm_hardware_piod_altfn50(1u << 6, GPIO_CFG_AF3); 	/* PD6 LVDS0_CKP */ \
-		arm_hardware_piod_altfn50(1u << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
-		arm_hardware_piod_altfn50(1u << 8, GPIO_CFG_AF3); 	/* PD8 LVDS0_V3P */ \
-		arm_hardware_piod_altfn50(1u << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
 

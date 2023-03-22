@@ -1,0 +1,8 @@
+#type; R_WDOG
+#base; R_WDOG 0x01F01000
+#irq; R_WDOG 68
+#regdef; RWDOG_IRQ_EN_REG; 0x0; R_watchdog IRQ Enable Register
+#regdef; RWDOG_IRQ_STA_REG; 0x4; R_watchdog Status Register
+#regdef; RWDOG_CTRL_REG; 0x10; R_watchdog Control Register
+#regdef; RWDOG_CFG_REG; 0x14; R_watchdog Configuration Register
+#regdef; RWDOG_MODE_REG; 0x18; R_watchdog Mode Register

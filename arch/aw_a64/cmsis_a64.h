@@ -39,17 +39,27 @@ typedef enum IRQn
     TWI0_IRQn = 38,                                   /*!< TWI  Interrupt */
     TWI1_IRQn = 39,                                   /*!< TWI  Interrupt */
     TWI2_IRQn = 40,                                   /*!< TWI  Interrupt */
+    OWA_IRQn = 44,                                    /*!< OWA One Wire Audio Interrupt */
     TIMER0_IRQn = 50,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 51,                                 /*!< TIMER  Interrupt */
-    OWA_IRQn = 55,                                    /*!< OWA  Interrupt */
     I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  Interrupt */
+    R_TIMER0_IRQn = 65,                               /*!< R_TIMER  Interrupt */
+    R_TIMER1_IRQn = 66,                               /*!< R_TIMER  Interrupt */
+    R_WDOG_IRQn = 68,                                 /*!< R_WDOG  Interrupt */
+    R_CIR_RX_IRQn = 69,                               /*!< R_CIR_RX  Interrupt */
+    R_UART_IRQn = 70,                                 /*!< UART  Interrupt */
+    R_RSB_IRQn = 71,                                  /*!< R_RSB Reduced Serial Bus Host Controller Interrupt */
     SMHC0_IRQn = 72,                                  /*!< SMHC  Interrupt */
     SMHC1_IRQn = 73,                                  /*!< SMHC  Interrupt */
+    R_TIMER2_IRQn = 74,                               /*!< R_TIMER  Interrupt */
     SMHC2_IRQn = 74,                                  /*!< SMHC  Interrupt */
     MSI_IRQn = 75,                                    /*!< MSI_MEMC  Interrupt */
+    R_TIMER3_IRQn = 75,                               /*!< R_TIMER  Interrupt */
+    R_TWI_IRQn = 76,                                  /*!< TWI  Interrupt */
     SMC_IRQn = 76,                                    /*!< SMC  Interrupt */
     EMAC_IRQn = 78,                                   /*!< EMAC  Interrupt */
+    R_TWD_IRQn = 78,                                  /*!< R_TWD R_Trusted Watchdog Timer Interrupt */
     CCU_FERR_IRQn = 80,                               /*!< CCU  Interrupt */
     MSGBOX_IRQn = 81,                                 /*!< MSGBOX  Interrupt */
     DMAC_IRQn = 82,                                   /*!< DMAC  Interrupt */
@@ -73,7 +83,7 @@ typedef enum IRQn
     GPIOF_S_IRQn = 110,                               /*!< GPIOINT  Interrupt */
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
     TSC_IRQn = 113,                                   /*!< TSC Transport Stream Controller Interrupt */
-    DE_IRQn = 127,                                    /*!< DE2_TOP Display Engine Top Interrupt */
+    DE_IRQn = 127,                                    /*!< DE_TOP Display Engine Top Interrupt */
     GPU_GP_IRQn = 129,                                /*!< GPU Mali-400MP2 Interrupt */
     GPU_GPMMU_IRQn = 130,                             /*!< GPU Mali-400MP2 Interrupt */
     GPU_PP0_IRQn = 131,                               /*!< GPU Mali-400MP2 Interrupt */
@@ -89,8 +99,8 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define DE2_TOP_BASE ((uintptr_t) 0x01000000)         /*!< DE2_TOP Base */
-#define DE2_CSR_BASE ((uintptr_t) 0x01020000)         /*!< DE2_CSR Base */
+#define DE_TOP_BASE ((uintptr_t) 0x01000000)          /*!< DE_TOP Base */
+#define DE_CSR_BASE ((uintptr_t) 0x01020000)          /*!< DE_CSR Base */
 #define DE_GLB_BASE ((uintptr_t) 0x01100000)          /*!< DE_GLB Base */
 #define DE_BLD_BASE ((uintptr_t) 0x01101000)          /*!< DE_BLD Base */
 #define DE_VI_BASE ((uintptr_t) 0x01102000)           /*!< DE_VI Base */
@@ -102,6 +112,7 @@ typedef enum IRQn
 #define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG Base */
 #define DRAMC_BASE ((uintptr_t) 0x01C01000)           /*!< DRAMC Base */
 #define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC Base */
+#define OWA_BASE ((uintptr_t) 0x01C02000)             /*!< OWA Base */
 #define NDFC_BASE ((uintptr_t) 0x01C03000)            /*!< NDFC Base */
 #define TSC_BASE ((uintptr_t) 0x01C06000)             /*!< TSC Base */
 #define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON0 Base */
@@ -158,28 +169,27 @@ typedef enum IRQn
 #define DI_BASE ((uintptr_t) 0x01E00000)              /*!< DI Base */
 #define HDMI_BASE ((uintptr_t) 0x01EE0000)            /*!< HDMI Base */
 #define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC Base */
-#define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< RTC Base */
-#define R_INTC_BASE ((uintptr_t) 0x01F00C00)          /*!< RTC Base */
-#define R_WDOG_BASE ((uintptr_t) 0x01F01000)          /*!< RTC Base */
-#define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< RTC Base */
-#define R_TWD_BASE ((uintptr_t) 0x01F01800)           /*!< RTC Base */
-#define R_CPUCFG_BASE ((uintptr_t) 0x01F01C00)        /*!< RTC Base */
+#define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< R_TIMER Base */
+#define R_INTC_BASE ((uintptr_t) 0x01F00C00)          /*!< R_INTC Base */
+#define R_WDOG_BASE ((uintptr_t) 0x01F01000)          /*!< R_WDOG Base */
+#define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< R_PRCM Base */
+#define R_TWD_BASE ((uintptr_t) 0x01F01800)           /*!< R_TWD Base */
+#define R_CPUCFG_BASE ((uintptr_t) 0x01F01C00)        /*!< R_CPUCFG Base */
 #define CIR_RX_BASE ((uintptr_t) 0x01F02000)          /*!< CIR_RX Base */
-#define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< RTC Base */
-#define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< RTC Base */
-#define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< RTC Base */
+#define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< R_CIR_RX Base */
+#define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< TWI Base */
+#define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< UART Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO Base */
-#define R_PIO_BASE ((uintptr_t) 0x01F02C00)           /*!< RTC Base */
-#define R_RSB_BASE ((uintptr_t) 0x01F03400)           /*!< RTC Base */
-#define R_PWM_BASE ((uintptr_t) 0x01F03800)           /*!< RTC Base */
+#define R_PIO_BASE ((uintptr_t) 0x01F02C00)           /*!< R_PIO Base */
+#define R_RSB_BASE ((uintptr_t) 0x01F03400)           /*!< R_RSB Base */
+#define R_PWM_BASE ((uintptr_t) 0x01F03800)           /*!< R_PWM Base */
 #define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC Base */
 #define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
 #define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC Base */
 #define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU Base */
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC Base */
 #define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC Base */
-#define OWA_BASE ((uintptr_t) 0x02036000)             /*!< OWA Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
@@ -611,7 +621,7 @@ typedef struct DMIC_Type
 /*
  * @brief OWA
  */
-/*!< OWA  */
+/*!< OWA One Wire Audio */
 typedef struct OWA_Type
 {
     volatile uint32_t OWA_GEN_CTL;                    /*!< Offset 0x000 OWA General Control Register */
@@ -800,19 +810,7 @@ typedef struct TWI_Type
     volatile uint32_t TWI_SRST;                       /*!< Offset 0x018 TWI Software Reset Register */
     volatile uint32_t TWI_EFR;                        /*!< Offset 0x01C TWI Enhance Feature Register */
     volatile uint32_t TWI_LCR;                        /*!< Offset 0x020 TWI Line Control Register */
-             uint32_t reserved_0x024 [0x0077];
-    volatile uint32_t TWI_DRV_CTRL;                   /*!< Offset 0x200 TWI_DRV Control Register */
-    volatile uint32_t TWI_DRV_CFG;                    /*!< Offset 0x204 TWI_DRV Transmission Configuration Register */
-    volatile uint32_t TWI_DRV_SLV;                    /*!< Offset 0x208 TWI_DRV Slave ID Register */
-    volatile uint32_t TWI_DRV_FMT;                    /*!< Offset 0x20C TWI_DRV Packet Format Register */
-    volatile uint32_t TWI_DRV_BUS_CTRL;               /*!< Offset 0x210 TWI_DRV Bus Control Register */
-    volatile uint32_t TWI_DRV_INT_CTRL;               /*!< Offset 0x214 TWI_DRV Interrupt Control Register */
-    volatile uint32_t TWI_DRV_DMA_CFG;                /*!< Offset 0x218 TWI_DRV DMA Configure Register */
-    volatile uint32_t TWI_DRV_FIFO_CON;               /*!< Offset 0x21C TWI_DRV FIFO Content Register */
-             uint32_t reserved_0x220 [0x0038];
-    volatile uint32_t TWI_DRV_SEND_FIFO_ACC;          /*!< Offset 0x300 TWI_DRV Send Data FIFO Access Register */
-    volatile uint32_t TWI_DRV_RECV_FIFO_ACC;          /*!< Offset 0x304 TWI_DRV Receive Data FIFO Access Register */
-} TWI_TypeDef; /* size of structure = 0x308 */
+} TWI_TypeDef; /* size of structure = 0x024 */
 /*
  * @brief SPI
  */
@@ -828,20 +826,12 @@ typedef struct SPI_Type
     volatile uint32_t SPI_FCR;                        /*!< Offset 0x018 SPI FIFO Control Register */
     volatile uint32_t SPI_FSR;                        /*!< Offset 0x01C SPI FIFO Status Register */
     volatile uint32_t SPI_WCR;                        /*!< Offset 0x020 SPI Wait Clock Register */
-             uint32_t reserved_0x024;
-    volatile uint32_t SPI_SAMP_DL;                    /*!< Offset 0x028 SPI Sample Delay Control Register */
-             uint32_t reserved_0x02C;
+    volatile uint32_t SPI_CCR;                        /*!< Offset 0x024 SPI Clock Rate Control register */
+             uint32_t reserved_0x028 [0x0002];
     volatile uint32_t SPI_MBC;                        /*!< Offset 0x030 SPI Master Burst Counter Register */
     volatile uint32_t SPI_MTC;                        /*!< Offset 0x034 SPI Master Transmit Counter Register */
     volatile uint32_t SPI_BCC;                        /*!< Offset 0x038 SPI Master Burst Control Register */
-             uint32_t reserved_0x03C;
-    volatile uint32_t SPI_BATCR;                      /*!< Offset 0x040 SPI Bit-Aligned Transfer Configure Register */
-    volatile uint32_t SPI_BA_CCR;                     /*!< Offset 0x044 SPI Bit-Aligned Clock Configuration Register */
-    volatile uint32_t SPI_TBR;                        /*!< Offset 0x048 SPI TX Bit Register */
-    volatile uint32_t SPI_RBR;                        /*!< Offset 0x04C SPI RX Bit Register */
-             uint32_t reserved_0x050 [0x000E];
-    volatile uint32_t SPI_NDMA_MODE_CTL;              /*!< Offset 0x088 SPI Normal DMA Mode Control Register */
-             uint32_t reserved_0x08C [0x005D];
+             uint32_t reserved_0x03C [0x0071];
     volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data Register */
              uint32_t reserved_0x204 [0x003F];
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
@@ -1301,10 +1291,10 @@ typedef struct USBPHYC_Type
     volatile uint32_t HSIC_STATUS;                    /*!< Offset 0x004 HSIC status Register This register is valid on HCI1. */
 } USBPHYC_TypeDef; /* size of structure = 0x008 */
 /*
- * @brief DE2_TOP
+ * @brief DE_TOP
  */
-/*!< DE2_TOP Display Engine Top */
-typedef struct DE2_TOP_Type
+/*!< DE_TOP Display Engine Top */
+typedef struct DE_TOP_Type
 {
     volatile uint32_t SCLK_GATE;                      /*!< Offset 0x000 DE SCLK Gating Register */
     volatile uint32_t HCLK_GATE;                      /*!< Offset 0x004 DE HCLK Gating Register */
@@ -1312,7 +1302,7 @@ typedef struct DE2_TOP_Type
     volatile uint32_t SCLK_DIV;                       /*!< Offset 0x00C DE SCLK Division register */
     volatile uint32_t DE2TCON_MUX;                    /*!< Offset 0x010 MUX register */
     volatile uint32_t CMD_CTL;                        /*!< Offset 0x014  */
-} DE2_TOP_TypeDef; /* size of structure = 0x018 */
+} DE_TOP_TypeDef; /* size of structure = 0x018 */
 /*
  * @brief DE_BLD
  */
@@ -1398,10 +1388,10 @@ typedef struct DE_VI_Type
     volatile uint32_t vert [0x002];                   /*!< Offset 0x0F8  */
 } DE_VI_TypeDef; /* size of structure = 0x100 */
 /*
- * @brief DE2_CSR
+ * @brief DE_CSR
  */
-/*!< DE2_CSR  */
-typedef struct DE2_CSR_Type
+/*!< DE_CSR  */
+typedef struct DE_CSR_Type
 {
     volatile uint32_t CSR_CTL;                        /*!< Offset 0x000 (null) */
     volatile uint32_t INT;                            /*!< Offset 0x004 Interrupt register */
@@ -1432,7 +1422,7 @@ typedef struct DE2_CSR_Type
     volatile uint32_t OMEN_HADD1;                     /*!< Offset 0x0AC Output U/UV memory address register1 */
     volatile uint32_t OMEN_LADD2;                     /*!< Offset 0x0B0 Output V memory address register0 */
     volatile uint32_t OMEN_HADD2;                     /*!< Offset 0x0B4 Output V memory address register1 */
-} DE2_CSR_TypeDef; /* size of structure = 0x0B8 */
+} DE_CSR_TypeDef; /* size of structure = 0x0B8 */
 /*
  * @brief TCON0
  */
@@ -2046,12 +2036,101 @@ typedef struct DRAMC_Type
              uint32_t reserved_0x2D0 [0x0004];
     volatile uint32_t csel;                           /*!< Offset 0x2E0 controller select register */
 } DRAMC_TypeDef; /* size of structure = 0x2E4 */
+/*
+ * @brief R_TIMER
+ */
+/*!< R_TIMER  */
+typedef struct R_TIMER_Type
+{
+    volatile uint32_t RTMR_IRQ_EN_REG;                /*!< Offset 0x000 R_timer IRQ Enable Register */
+    volatile uint32_t RTMR_IRQ_STA_REG;               /*!< Offset 0x004 R_timer IRQ Status Register */
+             uint32_t reserved_0x008 [0x0006];
+    volatile uint32_t RTMR0_CTRL_REG;                 /*!< Offset 0x020 R_timer 0 Control Register */
+    volatile uint32_t RTMR0_INTV_VALUE_REG;           /*!< Offset 0x024 R_timer 0 Interval Value Register */
+    volatile uint32_t RTMR0_CUR_VALUE_REG;            /*!< Offset 0x028 R_timer 0 Current Value Register */
+             uint32_t reserved_0x02C [0x0005];
+    volatile uint32_t RTMR1_CTRL_REG;                 /*!< Offset 0x040 R_timer 1 Control Register */
+    volatile uint32_t RTMR1_INTV_VALUE_REG;           /*!< Offset 0x044 R_timer 1 Interval Value Register */
+    volatile uint32_t RTMR1_CUR_VALUE_REG;            /*!< Offset 0x048 R_timer 1 Current Value Register */
+} R_TIMER_TypeDef; /* size of structure = 0x04C */
+/*
+ * @brief R_WDOG
+ */
+/*!< R_WDOG  */
+typedef struct R_WDOG_Type
+{
+    volatile uint32_t RWDOG_IRQ_EN_REG;               /*!< Offset 0x000 R_watchdog IRQ Enable Register */
+    volatile uint32_t RWDOG_IRQ_STA_REG;              /*!< Offset 0x004 R_watchdog Status Register */
+             uint32_t reserved_0x008 [0x0002];
+    volatile uint32_t RWDOG_CTRL_REG;                 /*!< Offset 0x010 R_watchdog Control Register */
+    volatile uint32_t RWDOG_CFG_REG;                  /*!< Offset 0x014 R_watchdog Configuration Register */
+    volatile uint32_t RWDOG_MODE_REG;                 /*!< Offset 0x018 R_watchdog Mode Register */
+} R_WDOG_TypeDef; /* size of structure = 0x01C */
+/*
+ * @brief R_PRCM
+ */
+/*!< R_PRCM  */
+typedef struct R_PRCM_Type
+{
+    volatile uint32_t CPUS_CLK_REG;                   /*!< Offset 0x000 CPUS Clock Register */
+             uint32_t reserved_0x004 [0x0002];
+    volatile uint32_t APB0_CFG_REG;                   /*!< Offset 0x00C APB0 Configuration Register */
+             uint32_t reserved_0x010 [0x0006];
+    volatile uint32_t APB0_CLK_GATING_REG;            /*!< Offset 0x028 APB0 Clock Gating Register */
+             uint32_t reserved_0x02C [0x0006];
+    volatile uint32_t PLL_CTRL_REG1;                  /*!< Offset 0x044 PLL Control Register 1 */
+             uint32_t reserved_0x048 [0x0003];
+    volatile uint32_t R_CIR_RX_CLK_REG;               /*!< Offset 0x054 R_CIR_RX Clock Register */
+             uint32_t reserved_0x058 [0x0016];
+    volatile uint32_t APB0_SOFT_RST_REG;              /*!< Offset 0x0B0 APB0 Software Reset Register */
+             uint32_t reserved_0x0B4 [0x0013];
+    volatile uint32_t C0CPUX_PWROFF_GATING_REG;       /*!< Offset 0x100 Cluster0 CPUX Power Off Gating Register */
+    volatile uint32_t C1CPUX_PWROFF_GATING_REG;       /*!< Offset 0x104 Cluster1 CPUX Power Off Gating Register */
+             uint32_t reserved_0x108 [0x0002];
+    volatile uint32_t VDD_SYS_PWROFF_GATING_REG;      /*!< Offset 0x110 VDD_SYS Power Off Gating Register */
+             uint32_t reserved_0x114;
+    volatile uint32_t GPU_PWROFF_GATING_REG;          /*!< Offset 0x118 GPU Power Off Gating Register */
+             uint32_t reserved_0x11C;
+    volatile uint32_t VDD_SYS_PWROFF_RST_REG;         /*!< Offset 0x120 VDD_SYS Power Domain Reset Register */
+             uint32_t reserved_0x124 [0x0007];
+    volatile uint32_t C0_CPU0_PWR_SWITCH_CTRL;        /*!< Offset 0x140 C0_CPU0 Power Switch Control Register */
+    volatile uint32_t C0_CPU1_PWR_SWITCH_CTRL;        /*!< Offset 0x144 C0_CPU1 Power Switch Control Register */
+    volatile uint32_t C0_CPU2_PWR_SWITCH_CTRL;        /*!< Offset 0x148 C0_CPU2 Power Switch Control Register */
+    volatile uint32_t C0_CPU3_PWR_SWITCH_CTRL;        /*!< Offset 0x14C C0_CPU3 Power Switch Control Register */
+    volatile uint32_t C1_CPU0_PWR_SWITCH_CTRL;        /*!< Offset 0x150 C1_CPU0 Power Switch Control Register */
+    volatile uint32_t C1_CPU1_PWR_SWITCH_CTRL;        /*!< Offset 0x154 C1_CPU1 Power Switch Control Register */
+    volatile uint32_t C1_CPU2_PWR_SWITCH_CTRL;        /*!< Offset 0x158 C1_CPU2 Power Switch Control Register */
+    volatile uint32_t C1_CPU3_PWR_SWITCH_CTRL;        /*!< Offset 0x15C C1_CPU3 Power Switch Control Register */
+             uint32_t reserved_0x160 [0x0024];
+    volatile uint32_t RPIO_HOLD_CTRL_REG;             /*!< Offset 0x1F0 R_PIO Hold Control Register */
+    volatile uint32_t OSC24M_CTRL_REG;                /*!< Offset 0x1F4 OSC24M Control Register */
+} R_PRCM_TypeDef; /* size of structure = 0x1F8 */
+/*
+ * @brief R_RSB
+ */
+/*!< R_RSB Reduced Serial Bus Host Controller */
+typedef struct R_RSB_Type
+{
+    volatile uint32_t RSB_CTRL;                       /*!< Offset 0x000 RSB Control Register */
+    volatile uint32_t RSB_CCR;                        /*!< Offset 0x004 RSB Clock Control Register */
+    volatile uint32_t RSB_INTE;                       /*!< Offset 0x008 RSB Interrupt Enable Register */
+    volatile uint32_t RSB_STAT;                       /*!< Offset 0x00C RSB Status Register */
+    volatile uint32_t RSB_DADDR0;                     /*!< Offset 0x010 RSB Data Acess Address Register0 */
+             uint32_t reserved_0x014;
+    volatile uint32_t RSB_DLEN;                       /*!< Offset 0x018 RSB Data Length Register */
+    volatile uint32_t RSB_DATA0;                      /*!< Offset 0x01C RSB Data Buffer0 Register */
+             uint32_t reserved_0x020;
+    volatile uint32_t RSB_LCR;                        /*!< Offset 0x024 RSB Line Control register */
+    volatile uint32_t RSB_PMCR;                       /*!< Offset 0x028 RSB PMU Mode Control register */
+    volatile uint32_t RSB_CMD;                        /*!< Offset 0x02C RSB Command Register */
+    volatile uint32_t RSB_SADDR;                      /*!< Offset 0x030 RSB Slave address Register */
+} R_RSB_TypeDef; /* size of structure = 0x034 */
 
 
 /* Access pointers */
 
-#define DE2_TOP ((DE2_TOP_TypeDef *) DE2_TOP_BASE)    /*!< DE2_TOP Display Engine Top register set access pointer */
-#define DE2_CSR ((DE2_CSR_TypeDef *) DE2_CSR_BASE)    /*!< DE2_CSR  register set access pointer */
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine Top register set access pointer */
+#define DE_CSR ((DE_CSR_TypeDef *) DE_CSR_BASE)       /*!< DE_CSR  register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
@@ -2063,6 +2142,7 @@ typedef struct DRAMC_Type
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DRAMC ((DRAMC_TypeDef *) DRAMC_BASE)          /*!< DRAMC  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
+#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio register set access pointer */
 #define NDFC ((NDFC_TypeDef *) NDFC_BASE)             /*!< NDFC NAND Flash Controller Interface register set access pointer */
 #define TSC ((TSC_TypeDef *) TSC_BASE)                /*!< TSC Transport Stream Controller register set access pointer */
 #define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface register set access pointer */
@@ -2119,28 +2199,27 @@ typedef struct DRAMC_Type
 #define DI ((DI_TypeDef *) DI_BASE)                   /*!< DI De-interlaced register set access pointer */
 #define HDMI ((HDMI_TypeDef *) HDMI_BASE)             /*!< HDMI  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */
-#define R_TIMER ((RTC_TypeDef *) R_TIMER_BASE)        /*!< R_TIMER  register set access pointer */
-#define R_INTC ((RTC_TypeDef *) R_INTC_BASE)          /*!< R_INTC  register set access pointer */
-#define R_WDOG ((RTC_TypeDef *) R_WDOG_BASE)          /*!< R_WDOG  register set access pointer */
-#define R_PRCM ((RTC_TypeDef *) R_PRCM_BASE)          /*!< R_PRCM  register set access pointer */
-#define R_TWD ((RTC_TypeDef *) R_TWD_BASE)            /*!< R_TWD  register set access pointer */
-#define R_CPUCFG ((RTC_TypeDef *) R_CPUCFG_BASE)      /*!< R_CPUCFG  register set access pointer */
+#define R_TIMER ((R_TIMER_TypeDef *) R_TIMER_BASE)    /*!< R_TIMER  register set access pointer */
+#define R_INTC ((R_INTC_TypeDef *) R_INTC_BASE)       /*!< R_INTC  register set access pointer */
+#define R_WDOG ((R_WDOG_TypeDef *) R_WDOG_BASE)       /*!< R_WDOG  register set access pointer */
+#define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
+#define R_TWD ((R_TWD_TypeDef *) R_TWD_BASE)          /*!< R_TWD R_Trusted Watchdog Timer register set access pointer */
+#define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
-#define R_CIR_RX ((RTC_TypeDef *) R_CIR_RX_BASE)      /*!< R_CIR_RX  register set access pointer */
-#define R_TWI ((RTC_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
-#define R_UART ((RTC_TypeDef *) R_UART_BASE)          /*!< R_UART  register set access pointer */
+#define R_CIR_RX ((R_CIR_RX_TypeDef *) R_CIR_RX_BASE) /*!< R_CIR_RX  register set access pointer */
+#define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
+#define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
-#define R_PIO ((RTC_TypeDef *) R_PIO_BASE)            /*!< R_PIO  register set access pointer */
-#define R_RSB ((RTC_TypeDef *) R_RSB_BASE)            /*!< R_RSB  register set access pointer */
-#define R_PWM ((RTC_TypeDef *) R_PWM_BASE)            /*!< R_PWM  register set access pointer */
+#define R_PIO ((R_PIO_TypeDef *) R_PIO_BASE)          /*!< R_PIO  register set access pointer */
+#define R_RSB ((R_RSB_TypeDef *) R_RSB_BASE)          /*!< R_RSB Reduced Serial Bus Host Controller register set access pointer */
+#define R_PWM ((R_PWM_TypeDef *) R_PWM_BASE)          /*!< R_PWM  register set access pointer */
 #define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU  register set access pointer */
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC  register set access pointer */
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
-#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA  register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */

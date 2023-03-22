@@ -7019,7 +7019,7 @@ sysinit_pll_initialize(void)
 
 	#endif /* WITHISBOOTLOADER */
 
-#elif CPUSTYLE_A64
+#elif CPUSTYLE_A64 && ! WITHISBOOTLOADER_DDR
 
 	/* Off bootloader USB */
 	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST.

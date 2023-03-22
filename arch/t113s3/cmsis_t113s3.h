@@ -47,7 +47,7 @@ typedef enum IRQn
     LEDC_IRQn = 52,                                   /*!< LEDC LED Lamp Controller Interrupt */
     CAN0_IRQn = 53,                                   /*!< CAN  Interrupt */
     CAN1_IRQn = 54,                                   /*!< CAN  Interrupt */
-    OWA_IRQn = 55,                                    /*!< OWA  Interrupt */
+    OWA_IRQn = 55,                                    /*!< OWA One Wire Audio Interrupt */
     AUDIO_CODEC_IRQn = 57,                            /*!< AUDIO_CODEC  Interrupt */
     I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  Interrupt */
@@ -663,7 +663,7 @@ typedef struct DMIC_Type
 /*
  * @brief OWA
  */
-/*!< OWA  */
+/*!< OWA One Wire Audio */
 typedef struct OWA_Type
 {
     volatile uint32_t OWA_GEN_CTL;                    /*!< Offset 0x000 OWA General Control Register */
@@ -2640,7 +2640,7 @@ typedef struct MCTL_PHY_Type
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
 #define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
-#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA  register set access pointer */
+#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
