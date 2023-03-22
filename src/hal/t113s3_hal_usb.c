@@ -402,7 +402,7 @@ static void usb_clear_bus_interrupt_enable(pusb_struct pusb, uint32_t bm)
 
 static uint32_t usb_get_frame_number(pusb_struct pusb)
 {
-	return USBOTG0->USB_FRAME & 0x7FF;
+	return USBOTG0->USB_FNUM & 0x7FF;	// 10:0
 	//return get_hvalue(USBOTG0_BASE + USB_hFRAME_OFF) & 0x7FF;
 }
 

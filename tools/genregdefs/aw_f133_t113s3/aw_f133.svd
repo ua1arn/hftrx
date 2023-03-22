@@ -7790,7 +7790,7 @@
     <register>
      <name>USB_EPFIFO</name>
      <displayName>USB_EPFIFO</displayName>
-     <description>USB_EPFIFO [0..5]</description>
+     <description>USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -7888,11 +7888,11 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_FRAME</name>
-    <displayName>USB_FRAME</displayName>
-    <description>USB_FRAME USB_FNUM</description>
+    <name>USB_FNUM</name>
+    <displayName>USB_FNUM</displayName>
+    <description>USB Frame Number Register</description>
     <addressOffset>0x054</addressOffset>
-    <size>0x10</size>
+    <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>

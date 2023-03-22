@@ -1402,7 +1402,7 @@ typedef struct USBEHCI_Type
 /*!< USBOTG  */
 typedef struct USBOTG_Type
 {
-    volatile uint32_t USB_EPFIFO [0x010];             /*!< Offset 0x000 USB_EPFIFO [0..5] */
+    volatile uint32_t USB_EPFIFO [0x010];             /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
     volatile uint8_t  USB_POWER;                      /*!< Offset 0x040 USB_POWER USB_GCS */
     volatile uint8_t  USB_DEVCTL;                     /*!< Offset 0x041 USB_DEVCTL USB_GCS */
     volatile uint8_t  USB_EPINDEX;                    /*!< Offset 0x042 USB_EPINDEX USB_GCS */
@@ -1413,8 +1413,8 @@ typedef struct USBOTG_Type
     volatile uint16_t USB_INTRXE;                     /*!< Offset 0x04A USB_INTRXE USB_EPINTE */
     volatile uint32_t USB_INTUSB;                     /*!< Offset 0x04C USB_INTUSB USB_BUSINTF */
     volatile uint32_t USB_INTUSBE;                    /*!< Offset 0x050 USB_INTUSBE USB_BUSINTE */
-    volatile uint16_t USB_FRAME;                      /*!< Offset 0x054 USB_FRAME USB_FNUM */
-             uint8_t reserved_0x056 [0x0026];
+    volatile uint32_t USB_FNUM;                       /*!< Offset 0x054 USB Frame Number Register */
+             uint32_t reserved_0x058 [0x0009];
     volatile uint8_t  USB_TESTMODE;                   /*!< Offset 0x07C USB_TESTMODE USB_TESTC */
              uint8_t reserved_0x07D [0x0001];
     volatile uint8_t  USB_FSM;                        /*!< Offset 0x07E USB_FSM USB_TESTC */
