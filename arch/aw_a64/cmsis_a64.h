@@ -50,10 +50,7 @@ typedef enum IRQn
     R_CIR_RX_IRQn = 69,                               /*!< R_CIR_RX  Interrupt */
     R_UART_IRQn = 70,                                 /*!< UART  Interrupt */
     R_RSB_IRQn = 71,                                  /*!< R_RSB Reduced Serial Bus Host Controller Interrupt */
-    SMHC0_IRQn = 72,                                  /*!< SMHC  Interrupt */
-    SMHC1_IRQn = 73,                                  /*!< SMHC  Interrupt */
     R_TIMER2_IRQn = 74,                               /*!< R_TIMER  Interrupt */
-    SMHC2_IRQn = 74,                                  /*!< SMHC  Interrupt */
     MSI_IRQn = 75,                                    /*!< MSI_MEMC  Interrupt */
     R_TIMER3_IRQn = 75,                               /*!< R_TIMER  Interrupt */
     R_TWI_IRQn = 76,                                  /*!< TWI  Interrupt */
@@ -64,6 +61,9 @@ typedef enum IRQn
     MSGBOX_IRQn = 81,                                 /*!< MSGBOX  Interrupt */
     DMAC_IRQn = 82,                                   /*!< DMAC  Interrupt */
     GPADC_IRQn = 89,                                  /*!< GPADC  Interrupt */
+    SMHC0_IRQn = 92,                                  /*!< SMHC SD-MMC Host Controller Interrupt */
+    SMHC1_IRQn = 93,                                  /*!< SMHC SD-MMC Host Controller Interrupt */
+    SMHC2_IRQn = 94,                                  /*!< SMHC SD-MMC Host Controller Interrupt */
     TPADC_IRQn = 94,                                  /*!< TPADC  Interrupt */
     IOMMU_IRQn = 96,                                  /*!< IOMMU  Interrupt */
     SPI0_IRQn = 97,                                   /*!< SPI Serial Peripheral Interface Interrupt */
@@ -117,6 +117,10 @@ typedef enum IRQn
 #define TSC_BASE ((uintptr_t) 0x01C06000)             /*!< TSC Base */
 #define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON0 Base */
 #define TCON1_BASE ((uintptr_t) 0x01C0D000)           /*!< TCON1 Base */
+#define SMHC0_BASE ((uintptr_t) 0x01C0F000)           /*!< SMHC Base */
+#define SMHC1_BASE ((uintptr_t) 0x01C10000)           /*!< SMHC Base */
+#define SMHC2_BASE ((uintptr_t) 0x01C11000)           /*!< SMHC Base */
+#define SID_BASE ((uintptr_t) 0x01C14000)             /*!< SID Base */
 #define MSGBOX_BASE ((uintptr_t) 0x01C17000)          /*!< MSGBOX Base */
 #define USBOTG0_BASE ((uintptr_t) 0x01C19000)         /*!< USBOTG Base */
 #define USBEHCI0_BASE ((uintptr_t) 0x01C1A000)        /*!< USB_EHCI_Capability Base */
@@ -190,15 +194,11 @@ typedef enum IRQn
 #define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU Base */
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC Base */
 #define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC Base */
-#define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
 #define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Base */
 #define MSI_MEMC_BASE ((uintptr_t) 0x03102000)        /*!< MSI_MEMC Base */
 #define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC Base */
-#define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC Base */
-#define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC Base */
-#define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL Base */
 
 /*
@@ -498,7 +498,7 @@ typedef struct GPIOBLOCK_Type
 /*
  * @brief SMHC
  */
-/*!< SMHC  */
+/*!< SMHC SD-MMC Host Controller */
 typedef struct SMHC_Type
 {
     volatile uint32_t SMHC_CTRL;                      /*!< Offset 0x000 Control Register */
@@ -1777,11 +1777,11 @@ typedef struct MSI_MEMC_Type
 /*!< SID  */
 typedef struct SID_Type
 {
-             uint32_t reserved_0x000 [0x0005];
-    volatile uint32_t SID_THS;                        /*!< Offset 0x014 [27:16]: The calibration value of the T-sensor. */
-             uint32_t reserved_0x018 [0x007E];
-    volatile uint32_t BOOT_MODE;                      /*!< Offset 0x210 [27:16]: eFUSE boot select status, [0]: 0: GPIO boot select, 1: eFuse boot select */
-} SID_TypeDef; /* size of structure = 0x214 */
+    volatile uint32_t SID_RKEY0;                      /*!< Offset 0x000 Securiy root key[31:0] */
+    volatile uint32_t SID_RKEY1;                      /*!< Offset 0x004 Securiy root key[63:32] */
+    volatile uint32_t SID_RKEY2;                      /*!< Offset 0x008 Securiy root key[95:64] */
+    volatile uint32_t SID_RKEY3;                      /*!< Offset 0x00C Securiy root key[127:96] */
+} SID_TypeDef; /* size of structure = 0x010 */
 /*
  * @brief USB_EHCI_Capability
  */
@@ -2147,6 +2147,10 @@ typedef struct R_RSB_Type
 #define TSC ((TSC_TypeDef *) TSC_BASE)                /*!< TSC Transport Stream Controller register set access pointer */
 #define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface register set access pointer */
 #define TCON1 ((TCON1_TypeDef *) TCON1_BASE)          /*!< TCON1 TCON1 HDMI Interface register set access pointer */
+#define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */
+#define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
+#define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */
+#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
 #define MSGBOX ((MSGBOX_TypeDef *) MSGBOX_BASE)       /*!< MSGBOX  register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0 USB OTG Dual-Role Device controller register set access pointer */
 #define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)/*!< USBEHCI0  register set access pointer */
@@ -2220,15 +2224,11 @@ typedef struct R_RSB_Type
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU  register set access pointer */
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC  register set access pointer */
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
-#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
 #define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
-#define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0  register set access pointer */
-#define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1  register set access pointer */
-#define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2  register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
 
 
