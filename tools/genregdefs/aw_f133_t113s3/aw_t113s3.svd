@@ -7540,7 +7540,7 @@
    <register>
     <name>USB_POWER</name>
     <displayName>USB_POWER</displayName>
-    <description>USB_POWER</description>
+    <description>USB_POWER USB_GCS</description>
     <addressOffset>0x040</addressOffset>
     <size>0x08</size>
     <access>read-write</access>
@@ -7549,7 +7549,7 @@
    <register>
     <name>USB_DEVCTL</name>
     <displayName>USB_DEVCTL</displayName>
-    <description>USB_DEVCTL</description>
+    <description>USB_DEVCTL USB_GCS</description>
     <addressOffset>0x041</addressOffset>
     <size>0x08</size>
     <access>read-write</access>
@@ -7558,7 +7558,7 @@
    <register>
     <name>USB_EPINDEX</name>
     <displayName>USB_EPINDEX</displayName>
-    <description>USB_EPINDEX</description>
+    <description>USB_EPINDEX USB_GCS</description>
     <addressOffset>0x042</addressOffset>
     <size>0x08</size>
     <access>read-write</access>
@@ -7567,7 +7567,7 @@
    <register>
     <name>USB_DMACTL</name>
     <displayName>USB_DMACTL</displayName>
-    <description>USB_DMACTL</description>
+    <description>USB_DMACTL USB_GCS</description>
     <addressOffset>0x043</addressOffset>
     <size>0x08</size>
     <access>read-write</access>
@@ -7576,7 +7576,7 @@
    <register>
     <name>USB_INTTX</name>
     <displayName>USB_INTTX</displayName>
-    <description>USB_INTTX</description>
+    <description>USB_INTTX USB_EPINTF</description>
     <addressOffset>0x044</addressOffset>
     <size>0x10</size>
     <access>read-write</access>
@@ -7585,7 +7585,7 @@
    <register>
     <name>USB_INTRX</name>
     <displayName>USB_INTRX</displayName>
-    <description>USB_INTRX</description>
+    <description>USB_INTRX USB_EPINTF</description>
     <addressOffset>0x046</addressOffset>
     <size>0x10</size>
     <access>read-write</access>
@@ -7594,7 +7594,7 @@
    <register>
     <name>USB_INTTXE</name>
     <displayName>USB_INTTXE</displayName>
-    <description>USB_INTTXE</description>
+    <description>USB_INTTXE USB_EPINTE</description>
     <addressOffset>0x048</addressOffset>
     <size>0x10</size>
     <access>read-write</access>
@@ -7603,7 +7603,7 @@
    <register>
     <name>USB_INTRXE</name>
     <displayName>USB_INTRXE</displayName>
-    <description>USB_INTRXE</description>
+    <description>USB_INTRXE USB_EPINTE</description>
     <addressOffset>0x04A</addressOffset>
     <size>0x10</size>
     <access>read-write</access>
@@ -7612,7 +7612,7 @@
    <register>
     <name>USB_INTUSB</name>
     <displayName>USB_INTUSB</displayName>
-    <description>USB_INTUSB</description>
+    <description>USB_INTUSB USB_BUSINTF</description>
     <addressOffset>0x04C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -7621,7 +7621,7 @@
    <register>
     <name>USB_INTUSBE</name>
     <displayName>USB_INTUSBE</displayName>
-    <description>USB_INTUSBE</description>
+    <description>USB_INTUSBE USB_BUSINTE</description>
     <addressOffset>0x050</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -7630,7 +7630,7 @@
    <register>
     <name>USB_FRAME</name>
     <displayName>USB_FRAME</displayName>
-    <description>USB_FRAME</description>
+    <description>USB_FRAME USB_FNUM</description>
     <addressOffset>0x054</addressOffset>
     <size>0x10</size>
     <access>read-write</access>
@@ -7639,7 +7639,7 @@
    <register>
     <name>USB_TESTMODE</name>
     <displayName>USB_TESTMODE</displayName>
-    <description>USB_TESTMODE</description>
+    <description>USB_TESTMODE USB_TESTC</description>
     <addressOffset>0x07C</addressOffset>
     <size>0x08</size>
     <access>read-write</access>
@@ -7648,7 +7648,7 @@
    <register>
     <name>USB_FSM</name>
     <displayName>USB_FSM</displayName>
-    <description>USB_FSM</description>
+    <description>USB_FSM USB_TESTC</description>
     <addressOffset>0x07E</addressOffset>
     <size>0x08</size>
     <access>read-write</access>
@@ -7903,6 +7903,39 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000540</addressOffset>
+    <registers>
+     <register>
+      <name>CHAN_CFG</name>
+      <displayName>CHAN_CFG</displayName>
+      <description>USB DMA Channel Configuration Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>SDRAM_ADD</name>
+      <displayName>SDRAM_ADD</displayName>
+      <description>USB DMA Channel Configuration Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>BC</name>
+      <displayName>BC</displayName>
+      <description>USB DMA Byte Counter Register/USB DMA RESIDUAL Byte Counter Register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral>

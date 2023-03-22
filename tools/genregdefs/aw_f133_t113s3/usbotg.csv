@@ -3,19 +3,19 @@
 #irq; USB0_DEVICE 61
 #irqrv; USB0_DEVICE 45
 #regdef; USB_EPFIFO; 0x0000 16; USB_EPFIFO [0..5]
-#regdef; USB_POWER 1; 0x0040; USB_POWER
-#regdef; USB_DEVCTL 1; 0x0041; USB_DEVCTL
-#regdef; USB_EPINDEX 1; 0x0042; USB_EPINDEX
-#regdef; USB_DMACTL 1; 0x0043; USB_DMACTL
-#regdef; USB_INTTX 2; 0x0044; USB_INTTX
-#regdef; USB_INTRX 2; 0x0046; USB_INTRX
-#regdef; USB_INTTXE 2; 0x0048; USB_INTTXE
-#regdef; USB_INTRXE 2; 0x004a; USB_INTRXE
-#regdef; USB_INTUSB; 0x004c; USB_INTUSB
-#regdef; USB_INTUSBE; 0x0050; USB_INTUSBE
-#regdef; USB_FRAME 2; 0x0054; USB_FRAME
-#regdef; USB_TESTMODE 1; 0x007c; USB_TESTMODE
-#regdef; USB_FSM 1; 0x007e; USB_FSM
+#regdef; USB_POWER 1; 0x0040; USB_POWER USB_GCS
+#regdef; USB_DEVCTL 1; 0x0041; USB_DEVCTL USB_GCS
+#regdef; USB_EPINDEX 1; 0x0042; USB_EPINDEX USB_GCS
+#regdef; USB_DMACTL 1; 0x0043; USB_DMACTL USB_GCS
+#regdef; USB_INTTX 2; 0x0044; USB_INTTX USB_EPINTF
+#regdef; USB_INTRX 2; 0x0046; USB_INTRX USB_EPINTF
+#regdef; USB_INTTXE 2; 0x0048; USB_INTTXE USB_EPINTE
+#regdef; USB_INTRXE 2; 0x004a; USB_INTRXE USB_EPINTE
+#regdef; USB_INTUSB; 0x004c; USB_INTUSB USB_BUSINTF
+#regdef; USB_INTUSBE; 0x0050; USB_INTUSBE USB_BUSINTE
+#regdef; USB_FRAME 2; 0x0054; USB_FRAME USB_FNUM
+#regdef; USB_TESTMODE 1; 0x007c; USB_TESTMODE USB_TESTC
+#regdef; USB_FSM 1; 0x007e; USB_FSM USB_TESTC
 #regdef; USB_TXMAXP 2; 0x0080; USB_TXMAXP
 #regdef; USB_CSR0 2; 0x0082; [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL
 #regdef; USB_RXMAXP 2; 0x0084; USB_RXMAXP
@@ -45,3 +45,12 @@
 #regdef; PHY_OTGCTL; 0x420; Control PHY routing to EHCI or OTG
 #regdef; PHY_STATUS; 0x424; PHY Status Register
 #regdef; USB_SPDCR; 0x428; HCI SIE Port Disable Control Register
+USB_DMA_INTE; 0x0500; USB DMA Interrupt Enable Register
+USB_DMA_INTS; 0x0504; USB DMA Interrupt Status Register
+#aggreg; USB_DMA; 0x0540 8; 
+#regdef; CHAN_CFG; 0x00; USB DMA Channel Configuration Register
+#regdef; SDRAM_ADD; 0x04; USB DMA Channel Configuration Register
+#regdef; BC; 0x08; USB DMA Byte Counter Register/USB DMA RESIDUAL Byte Counter Register
+#regdef; dummy 0; 0x10;
+#aggregend;
+
