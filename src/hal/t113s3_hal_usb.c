@@ -202,7 +202,7 @@ static void usb_high_speed_enable(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = USBOTG0->USB_POWER;
-	reg_val |= (0x1u << 5);
+	reg_val |= (0x1u << 5);	// HSEN
 	USBOTG0->USB_POWER = reg_val;
 }
 
@@ -211,13 +211,13 @@ static void usb_high_speed_disable(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = USBOTG0->USB_POWER;
-	reg_val &= ~ (0x1u << 5);
+	reg_val &= ~ (0x1u << 5);	// HSEN
 	USBOTG0->USB_POWER = reg_val;
 }
 
 static uint32_t usb_is_high_speed(pusb_struct pusb)
 {
-	return (USBOTG0->USB_POWER >> 4) & 0x1;
+	return (USBOTG0->USB_POWER >> 4) & 0x1;	// HSFLAG
 }
 
 static void usb_set_reset(pusb_struct pusb)
