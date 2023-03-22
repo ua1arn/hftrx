@@ -502,50 +502,56 @@ typedef struct GPIOBLOCK_Type
 typedef struct SMHC_Type
 {
     volatile uint32_t SMHC_CTRL;                      /*!< Offset 0x000 Control Register */
-    volatile uint32_t SMHC_CLKDIV;                    /*!< Offset 0x004 Clock Control Register */
-    volatile uint32_t SMHC_TMOUT;                     /*!< Offset 0x008 Time Out Register */
-    volatile uint32_t SMHC_CTYPE;                     /*!< Offset 0x00C Bus Width Register */
-    volatile uint32_t SMHC_BLKSIZ;                    /*!< Offset 0x010 Block Size Register */
-    volatile uint32_t SMHC_BYTCNT;                    /*!< Offset 0x014 Byte Count Register */
+    volatile uint32_t SMHC_CLKDIV;                    /*!< Offset 0x004 Clock control Register */
+    volatile uint32_t SMHC_TMOUT;                     /*!< Offset 0x008 Time out Register */
+    volatile uint32_t SMHC_CTYPE;                     /*!< Offset 0x00C Bus width Register */
+    volatile uint32_t SMHC_BLKSIZ;                    /*!< Offset 0x010 Block size Register */
+    volatile uint32_t SMHC_BYTCNT;                    /*!< Offset 0x014 Byte count Register */
     volatile uint32_t SMHC_CMD;                       /*!< Offset 0x018 Command Register */
-    volatile uint32_t SMHC_CMDARG;                    /*!< Offset 0x01C Command Argument Register */
+    volatile uint32_t SMHC_CMDARG;                    /*!< Offset 0x01C Command argument Register */
     volatile uint32_t SMHC_RESP0;                     /*!< Offset 0x020 Response 0 Register */
     volatile uint32_t SMHC_RESP1;                     /*!< Offset 0x024 Response 1 Register */
     volatile uint32_t SMHC_RESP2;                     /*!< Offset 0x028 Response 2 Register */
     volatile uint32_t SMHC_RESP3;                     /*!< Offset 0x02C Response 3 Register */
-    volatile uint32_t SMHC_INTMASK;                   /*!< Offset 0x030 Interrupt Mask Register */
-    volatile uint32_t SMHC_MINTSTS;                   /*!< Offset 0x034 Masked Interrupt Status Register */
-    volatile uint32_t SMHC_RINTSTS;                   /*!< Offset 0x038 Raw Interrupt Status Register */
+    volatile uint32_t SMHC_INTMASK;                   /*!< Offset 0x030 Interrupt mask Register */
+    volatile uint32_t SMHC_MINTSTS;                   /*!< Offset 0x034 Masked interrupt status Register */
+    volatile uint32_t SMHC_RINTSTS;                   /*!< Offset 0x038 Raw interrupt status Register */
     volatile uint32_t SMHC_STATUS;                    /*!< Offset 0x03C Status Register */
-    volatile uint32_t SMHC_FIFOTH;                    /*!< Offset 0x040 FIFO Water Level Register */
-    volatile uint32_t SMHC_FUNS;                      /*!< Offset 0x044 FIFO Function Select Register */
-    volatile uint32_t SMHC_TCBCNT;                    /*!< Offset 0x048 Transferred Byte Count between Controller and Card */
-    volatile uint32_t SMHC_TBBCNT;                    /*!< Offset 0x04C Transferred Byte Count between Host Memory and Internal FIFO */
-    volatile uint32_t SMHC_DBGC;                      /*!< Offset 0x050 Current Debug Control Register */
-    volatile uint32_t SMHC_CSDC;                      /*!< Offset 0x054 CRC Status Detect Control Registers */
-    volatile uint32_t SMHC_A12A;                      /*!< Offset 0x058 Auto Command 12 Argument Register */
-    volatile uint32_t SMHC_NTSR;                      /*!< Offset 0x05C SD New Timing Set Register */
+    volatile uint32_t SMHC_FIFOTH;                    /*!< Offset 0x040 FIFO water level Register */
+    volatile uint32_t SMHC_FUNS;                      /*!< Offset 0x044 FIFO function select Register */
+    volatile uint32_t SMHC_TBC0;                      /*!< Offset 0x048 Transferred byte count0 between controller and card */
+    volatile uint32_t SMHC_TBC1;                      /*!< Offset 0x04C Transferred byte count1 between host memory and internal FIFO */
+             uint32_t reserved_0x050;
+    volatile uint32_t SMHC_CSDC;                      /*!< Offset 0x054 CRC status detect control Register(only for SMHC2) */
+    volatile uint32_t SMHC_A12A;                      /*!< Offset 0x058 Auto command 12 argument Register */
+    volatile uint32_t SMHC_NTSR;                      /*!< Offset 0x05C SD new timing set Register(only for SMHC0&1) */
              uint32_t reserved_0x060 [0x0006];
-    volatile uint32_t SMHC_HWRST;                     /*!< Offset 0x078 Hardware Reset Register */
+    volatile uint32_t SMHC_HWRST;                     /*!< Offset 0x078 Hardware reset Register */
              uint32_t reserved_0x07C;
-    volatile uint32_t SMHC_IDMAC;                     /*!< Offset 0x080 IDMAC Control Register */
-    volatile uint32_t SMHC_DLBA;                      /*!< Offset 0x084 Descriptor List Base Address Register */
-    volatile uint32_t SMHC_IDST;                      /*!< Offset 0x088 IDMAC Status Register */
-    volatile uint32_t SMHC_IDIE;                      /*!< Offset 0x08C IDMAC Interrupt Enable Register */
+    volatile uint32_t SMHC_DMAC;                      /*!< Offset 0x080 DMA control Register */
+    volatile uint32_t SMHC_DLBA;                      /*!< Offset 0x084 Descriptor list base address Register */
+    volatile uint32_t SMHC_IDST;                      /*!< Offset 0x088 DMAC status Register */
+    volatile uint32_t SMHC_IDIE;                      /*!< Offset 0x08C DMAC interrupt enable Register */
              uint32_t reserved_0x090 [0x001C];
-    volatile uint32_t SMHC_THLD;                      /*!< Offset 0x100 Card Threshold Control Register */
-    volatile uint32_t SMHC_SFC;                       /*!< Offset 0x104 Sample FIFO Control Register */
-    volatile uint32_t SMHC_A23A;                      /*!< Offset 0x108 Auto Command 23 Argument Register */
-    volatile uint32_t EMMC_DDR_SBIT_DET;              /*!< Offset 0x10C eMMC4.5 DDR Start Bit Detection Control Register */
-             uint32_t reserved_0x110 [0x000A];
-    volatile uint32_t SMHC_EXT_CMD;                   /*!< Offset 0x138 Extended Command Register */
-    volatile uint32_t SMHC_EXT_RESP;                  /*!< Offset 0x13C Extended Response Register */
-    volatile uint32_t SMHC_DRV_DL;                    /*!< Offset 0x140 Drive Delay Control Register */
-    volatile uint32_t SMHC_SMAP_DL;                   /*!< Offset 0x144 Sample Delay Control Register */
-    volatile uint32_t SMHC_DS_DL;                     /*!< Offset 0x148 Data Strobe Delay Control Register */
-    volatile uint32_t SMHC_HS400_DL;                  /*!< Offset 0x14C HS400 Delay Control Register */
-             uint32_t reserved_0x150 [0x002C];
-    volatile uint32_t SMHC_FIFO;                      /*!< Offset 0x200 Read/Write FIFO */
+    volatile uint32_t SMHC_THLD;                      /*!< Offset 0x100 Card threshold control Register */
+             uint32_t reserved_0x104 [0x0002];
+    volatile uint32_t SMHC_EDSD;                      /*!< Offset 0x10C eMMC4.5 DDR start bit detection control Register */
+    volatile uint32_t SMHC_RES_CRC;                   /*!< Offset 0x110 Response CRC from device(only for SMHC0&1) */
+    volatile uint32_t SMHC_D7_CRC;                    /*!< Offset 0x114 CRC in data7 form device(only for SMHC0&1) */
+    volatile uint32_t SMHC_D6_CRC;                    /*!< Offset 0x118 CRC in data6 form device(only for SMHC0&1) */
+    volatile uint32_t SMHC_D5_CRC;                    /*!< Offset 0x11C CRC in data5 form device(only for SMHC0&1) */
+    volatile uint32_t SMHC_D4_CRC;                    /*!< Offset 0x120 CRC in data4 form device(only for SMHC0&1) */
+    volatile uint32_t SMHC_D3_CRC;                    /*!< Offset 0x124 CRC in data3 form device(only for SMHC0&1) */
+    volatile uint32_t SMHC_D2_CRC;                    /*!< Offset 0x128 CRC in data2 form device(only for SMHC0&1) */
+    volatile uint32_t SMHC_D1_CRC;                    /*!< Offset 0x12C CRC in data1 form device(only for SMHC0&1) */
+    volatile uint32_t SMHC_D0_CRC;                    /*!< Offset 0x130 CRC in data0 form device(only for SMHC0&1) */
+    volatile uint32_t SMHC_CRC_STA;                   /*!< Offset 0x134 CRC status from device in write operation(only for SMHC0&1) */
+             uint32_t reserved_0x138 [0x0002];
+    volatile uint32_t SMHC_DRV_DL;                    /*!< Offset 0x140 Drive delay control Register */
+    volatile uint32_t SMHC_SMAP_DL;                   /*!< Offset 0x144 Sample delay control Register */
+    volatile uint32_t SMHC_DS_DL;                     /*!< Offset 0x148 Data strobe delay control Register */
+             uint32_t reserved_0x14C [0x002D];
+    volatile uint32_t SMHC_FIFO;                      /*!< Offset 0x200 Read/ Write FIFO */
 } SMHC_TypeDef; /* size of structure = 0x204 */
 /*
  * @brief I2S_PCM

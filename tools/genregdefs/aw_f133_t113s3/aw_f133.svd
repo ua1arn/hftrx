@@ -2442,7 +2442,7 @@
   </peripheral>
   <peripheral>
   <name>SMHC0</name>
-  <description></description>
+  <description>SD-MMC Host Controller</description>
   <baseAddress>0x04020000</baseAddress>
   <registers>
    <register>
@@ -12272,6 +12272,42 @@
   <description>Security ID</description>
   <baseAddress>0x03006000</baseAddress>
   <registers>
+   <register>
+    <name>SID_RKEY0</name>
+    <displayName>SID_RKEY0</displayName>
+    <description>Securiy root key[31:0]</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SID_RKEY1</name>
+    <displayName>SID_RKEY1</displayName>
+    <description>Securiy root key[63:32]</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SID_RKEY2</name>
+    <displayName>SID_RKEY2</displayName>
+    <description>Securiy root key[95:64]</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SID_RKEY3</name>
+    <displayName>SID_RKEY3</displayName>
+    <description>Securiy root key[127:96]</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
    <register>
     <name>SID_THS</name>
     <displayName>SID_THS</displayName>

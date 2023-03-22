@@ -2420,7 +2420,7 @@
    <register>
     <name>SMHC_CLKDIV</name>
     <displayName>SMHC_CLKDIV</displayName>
-    <description>Clock Control Register</description>
+    <description>Clock control Register</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2429,7 +2429,7 @@
    <register>
     <name>SMHC_TMOUT</name>
     <displayName>SMHC_TMOUT</displayName>
-    <description>Time Out Register</description>
+    <description>Time out Register</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2438,7 +2438,7 @@
    <register>
     <name>SMHC_CTYPE</name>
     <displayName>SMHC_CTYPE</displayName>
-    <description>Bus Width Register</description>
+    <description>Bus width Register</description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2447,7 +2447,7 @@
    <register>
     <name>SMHC_BLKSIZ</name>
     <displayName>SMHC_BLKSIZ</displayName>
-    <description>Block Size Register</description>
+    <description>Block size Register</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2456,7 +2456,7 @@
    <register>
     <name>SMHC_BYTCNT</name>
     <displayName>SMHC_BYTCNT</displayName>
-    <description>Byte Count Register</description>
+    <description>Byte count Register</description>
     <addressOffset>0x014</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2474,7 +2474,7 @@
    <register>
     <name>SMHC_CMDARG</name>
     <displayName>SMHC_CMDARG</displayName>
-    <description>Command Argument Register</description>
+    <description>Command argument Register</description>
     <addressOffset>0x01C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2519,7 +2519,7 @@
    <register>
     <name>SMHC_INTMASK</name>
     <displayName>SMHC_INTMASK</displayName>
-    <description>Interrupt Mask Register</description>
+    <description>Interrupt mask Register</description>
     <addressOffset>0x030</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2528,7 +2528,7 @@
    <register>
     <name>SMHC_MINTSTS</name>
     <displayName>SMHC_MINTSTS</displayName>
-    <description>Masked Interrupt Status Register</description>
+    <description>Masked interrupt status Register</description>
     <addressOffset>0x034</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2537,7 +2537,7 @@
    <register>
     <name>SMHC_RINTSTS</name>
     <displayName>SMHC_RINTSTS</displayName>
-    <description>Raw Interrupt Status Register</description>
+    <description>Raw interrupt status Register</description>
     <addressOffset>0x038</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2555,7 +2555,7 @@
    <register>
     <name>SMHC_FIFOTH</name>
     <displayName>SMHC_FIFOTH</displayName>
-    <description>FIFO Water Level Register</description>
+    <description>FIFO water level Register</description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2564,35 +2564,26 @@
    <register>
     <name>SMHC_FUNS</name>
     <displayName>SMHC_FUNS</displayName>
-    <description>FIFO Function Select Register</description>
+    <description>FIFO function select Register</description>
     <addressOffset>0x044</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMHC_TCBCNT</name>
-    <displayName>SMHC_TCBCNT</displayName>
-    <description>Transferred Byte Count between Controller and Card</description>
+    <name>SMHC_TBC0</name>
+    <displayName>SMHC_TBC0</displayName>
+    <description>Transferred byte count0 between controller and card</description>
     <addressOffset>0x048</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMHC_TBBCNT</name>
-    <displayName>SMHC_TBBCNT</displayName>
-    <description>Transferred Byte Count between Host Memory and Internal FIFO</description>
+    <name>SMHC_TBC1</name>
+    <displayName>SMHC_TBC1</displayName>
+    <description>Transferred byte count1 between host memory and internal FIFO</description>
     <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMHC_DBGC</name>
-    <displayName>SMHC_DBGC</displayName>
-    <description>Current Debug Control Register</description>
-    <addressOffset>0x050</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -2600,7 +2591,7 @@
    <register>
     <name>SMHC_CSDC</name>
     <displayName>SMHC_CSDC</displayName>
-    <description>CRC Status Detect Control Registers</description>
+    <description>CRC status detect control Register(only for SMHC2)</description>
     <addressOffset>0x054</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2609,7 +2600,7 @@
    <register>
     <name>SMHC_A12A</name>
     <displayName>SMHC_A12A</displayName>
-    <description>Auto Command 12 Argument Register</description>
+    <description>Auto command 12 argument Register</description>
     <addressOffset>0x058</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2618,7 +2609,7 @@
    <register>
     <name>SMHC_NTSR</name>
     <displayName>SMHC_NTSR</displayName>
-    <description>SD New Timing Set Register</description>
+    <description>SD new timing set Register(only for SMHC0&1)</description>
     <addressOffset>0x05C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2627,16 +2618,16 @@
    <register>
     <name>SMHC_HWRST</name>
     <displayName>SMHC_HWRST</displayName>
-    <description>Hardware Reset Register</description>
+    <description>Hardware reset Register</description>
     <addressOffset>0x078</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMHC_IDMAC</name>
-    <displayName>SMHC_IDMAC</displayName>
-    <description>IDMAC Control Register</description>
+    <name>SMHC_DMAC</name>
+    <displayName>SMHC_DMAC</displayName>
+    <description>DMA control Register</description>
     <addressOffset>0x080</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2645,7 +2636,7 @@
    <register>
     <name>SMHC_DLBA</name>
     <displayName>SMHC_DLBA</displayName>
-    <description>Descriptor List Base Address Register</description>
+    <description>Descriptor list base address Register</description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2654,7 +2645,7 @@
    <register>
     <name>SMHC_IDST</name>
     <displayName>SMHC_IDST</displayName>
-    <description>IDMAC Status Register</description>
+    <description>DMAC status Register</description>
     <addressOffset>0x088</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2663,7 +2654,7 @@
    <register>
     <name>SMHC_IDIE</name>
     <displayName>SMHC_IDIE</displayName>
-    <description>IDMAC Interrupt Enable Register</description>
+    <description>DMAC interrupt enable Register</description>
     <addressOffset>0x08C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2672,53 +2663,107 @@
    <register>
     <name>SMHC_THLD</name>
     <displayName>SMHC_THLD</displayName>
-    <description>Card Threshold Control Register</description>
+    <description>Card threshold control Register</description>
     <addressOffset>0x100</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMHC_SFC</name>
-    <displayName>SMHC_SFC</displayName>
-    <description>Sample FIFO Control Register</description>
-    <addressOffset>0x104</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMHC_A23A</name>
-    <displayName>SMHC_A23A</displayName>
-    <description>Auto Command 23 Argument Register</description>
-    <addressOffset>0x108</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>EMMC_DDR_SBIT_DET</name>
-    <displayName>EMMC_DDR_SBIT_DET</displayName>
-    <description>eMMC4.5 DDR Start Bit Detection Control Register</description>
+    <name>SMHC_EDSD</name>
+    <displayName>SMHC_EDSD</displayName>
+    <description>eMMC4.5 DDR start bit detection control Register</description>
     <addressOffset>0x10C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMHC_EXT_CMD</name>
-    <displayName>SMHC_EXT_CMD</displayName>
-    <description>Extended Command Register</description>
-    <addressOffset>0x138</addressOffset>
+    <name>SMHC_RES_CRC</name>
+    <displayName>SMHC_RES_CRC</displayName>
+    <description>Response CRC from device(only for SMHC0&1)</description>
+    <addressOffset>0x110</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMHC_EXT_RESP</name>
-    <displayName>SMHC_EXT_RESP</displayName>
-    <description>Extended Response Register</description>
-    <addressOffset>0x13C</addressOffset>
+    <name>SMHC_D7_CRC</name>
+    <displayName>SMHC_D7_CRC</displayName>
+    <description>CRC in data7 form device(only for SMHC0&1)</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMHC_D6_CRC</name>
+    <displayName>SMHC_D6_CRC</displayName>
+    <description>CRC in data6 form device(only for SMHC0&1)</description>
+    <addressOffset>0x118</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMHC_D5_CRC</name>
+    <displayName>SMHC_D5_CRC</displayName>
+    <description>CRC in data5 form device(only for SMHC0&1)</description>
+    <addressOffset>0x11C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMHC_D4_CRC</name>
+    <displayName>SMHC_D4_CRC</displayName>
+    <description>CRC in data4 form device(only for SMHC0&1)</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMHC_D3_CRC</name>
+    <displayName>SMHC_D3_CRC</displayName>
+    <description>CRC in data3 form device(only for SMHC0&1)</description>
+    <addressOffset>0x124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMHC_D2_CRC</name>
+    <displayName>SMHC_D2_CRC</displayName>
+    <description>CRC in data2 form device(only for SMHC0&1)</description>
+    <addressOffset>0x128</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMHC_D1_CRC</name>
+    <displayName>SMHC_D1_CRC</displayName>
+    <description>CRC in data1 form device(only for SMHC0&1)</description>
+    <addressOffset>0x12C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMHC_D0_CRC</name>
+    <displayName>SMHC_D0_CRC</displayName>
+    <description>CRC in data0 form device(only for SMHC0&1)</description>
+    <addressOffset>0x130</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMHC_CRC_STA</name>
+    <displayName>SMHC_CRC_STA</displayName>
+    <description>CRC status from device in write operation(only for SMHC0&1)</description>
+    <addressOffset>0x134</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -2726,7 +2771,7 @@
    <register>
     <name>SMHC_DRV_DL</name>
     <displayName>SMHC_DRV_DL</displayName>
-    <description>Drive Delay Control Register</description>
+    <description>Drive delay control Register</description>
     <addressOffset>0x140</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2735,7 +2780,7 @@
    <register>
     <name>SMHC_SMAP_DL</name>
     <displayName>SMHC_SMAP_DL</displayName>
-    <description>Sample Delay Control Register</description>
+    <description>Sample delay control Register</description>
     <addressOffset>0x144</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2744,17 +2789,8 @@
    <register>
     <name>SMHC_DS_DL</name>
     <displayName>SMHC_DS_DL</displayName>
-    <description>Data Strobe Delay Control Register</description>
+    <description>Data strobe delay control Register</description>
     <addressOffset>0x148</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMHC_HS400_DL</name>
-    <displayName>SMHC_HS400_DL</displayName>
-    <description>HS400 Delay Control Register</description>
-    <addressOffset>0x14C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -2762,7 +2798,7 @@
    <register>
     <name>SMHC_FIFO</name>
     <displayName>SMHC_FIFO</displayName>
-    <description>Read/Write FIFO</description>
+    <description>Read/ Write FIFO</description>
     <addressOffset>0x200</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

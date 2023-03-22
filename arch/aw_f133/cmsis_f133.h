@@ -534,7 +534,7 @@ typedef struct GPIOBLOCK_Type
 /*
  * @brief SMHC
  */
-/*!< SMHC  */
+/*!< SMHC SD-MMC Host Controller */
 typedef struct SMHC_Type
 {
     volatile uint32_t SMHC_CTRL;                      /*!< Offset 0x000 Control Register */
@@ -2260,7 +2260,11 @@ typedef struct MSI_MEMC_Type
 /*!< SID Security ID */
 typedef struct SID_Type
 {
-             uint32_t reserved_0x000 [0x0005];
+    volatile uint32_t SID_RKEY0;                      /*!< Offset 0x000 Securiy root key[31:0] */
+    volatile uint32_t SID_RKEY1;                      /*!< Offset 0x004 Securiy root key[63:32] */
+    volatile uint32_t SID_RKEY2;                      /*!< Offset 0x008 Securiy root key[95:64] */
+    volatile uint32_t SID_RKEY3;                      /*!< Offset 0x00C Securiy root key[127:96] */
+             uint32_t reserved_0x010;
     volatile uint32_t SID_THS;                        /*!< Offset 0x014 [27:16]: The calibration value of the T-sensor. */
              uint32_t reserved_0x018 [0x007A];
     volatile uint32_t SID_DATA [0x004];               /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
@@ -2594,9 +2598,9 @@ typedef struct MCTL_PHY_Type
 #define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
 #define MCTL_PHY ((MCTL_PHY_TypeDef *) MCTL_PHY_BASE) /*!< MCTL_PHY  register set access pointer */
-#define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0  register set access pointer */
-#define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1  register set access pointer */
-#define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2  register set access pointer */
+#define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */
+#define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
+#define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI_DBI ((SPI_DBI_TypeDef *) SPI_DBI_BASE)    /*!< SPI_DBI Serial Peripheral Interface register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0  register set access pointer */
