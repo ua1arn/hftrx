@@ -443,7 +443,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
     CCU->USBPHY_CFG_REG |= (1u << 8);	// SCLK_GATING_USBPHY0
     CCU->USBPHY_CFG_REG |= (1u << 0);	// USBPHY0_RST
 
-    CCU->USBPHY_CFG_REG |= (1u << 2);	// USBHSIC_RST ???
+    //CCU->USBPHY_CFG_REG |= (1u << 2);	// USBHSIC_RST ???
 
 	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST.
 	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.

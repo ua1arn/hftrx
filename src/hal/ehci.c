@@ -2453,9 +2453,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 				(1u << 2) |
 			0)) |
 			(3u << 16) |	// SCLK_GATING_OHCI - 11:OTG-OHCI and OHCI0 Clock is ON
-			(1u << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
-			(1u << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
-			(1u << 2) |	// USBHSIC_RST
+			//(1u << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
+			//(1u << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
+			//(1u << 2) |	// USBHSIC_RST
 			0;
 
 	const unsigned OHCIx_12M_SRC_SEL = 0u;	// 00: 12M divided from 48M, 01: 12M divided from 24M, 10: LOSC
