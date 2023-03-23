@@ -3872,8 +3872,9 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x0Fu)) |
 			(1u << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
 			(1u << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
-			((0x04 | 0x02) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+			((0x04 | 0x02 | 0x01) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
 			0;
+	ASSERT(DMABUFFSTEP16RX == 3);
 
 	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
 	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits

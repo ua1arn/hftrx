@@ -3970,8 +3970,7 @@ static RAMFUNC FLOAT_t mikeinmux(
 	FLOAT_t vi0f = vi0p.IV;
 
 #if WITHUSBMIKET113
-	return get_lout();
-	return vi0p.IV;
+	return vi0f;
 
 #endif
 #if WITHFT8
