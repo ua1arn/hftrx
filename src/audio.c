@@ -3875,9 +3875,13 @@ static FLOAT_t mainvolumetx = 1; //1 - subtonevolume;
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
+#if WITHUSBMIKET113
+	return v;
+#else /* WITHUSBMIKET113 */
 	if (uacoutplayer)
 		return sdtn;
 	return v * mainvolumerx + sdtn * sidetonevolume;
+#endif /* WITHUSBMIKET113 */
 }
 
 // Здесь значение выборки в диапазоне, допустимом для кодека
@@ -3912,9 +3916,13 @@ static RAMFUNC FLOAT_t get_noisefloat(void)
 // shape: 0..1: 0 - monitor, 1 - sidetone
 static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 {
+#if WITHUSBMIKET113
+	return moni;
+#else /* WITHUSBMIKET113 */
 	if (uacoutplayer)
 		return moni;
 	return sdtn * shape + moni * glob_moniflag * (1 - shape);
+#endif /* WITHUSBMIKET113 */
 }
 
 /* При необходимости добавить в самопрослушивание пердаваемый SSB сигнал */
@@ -3961,6 +3969,11 @@ static RAMFUNC FLOAT_t mikeinmux(
 	const FLOAT32P_t viusb0f = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
 	FLOAT_t vi0f = vi0p.IV;
 
+#if WITHUSBMIKET113
+	return get_lout();
+	return vi0p.IV;
+
+#endif
 #if WITHFT8
 	ft8_txfill(& vi0f);
 #endif /* WITHFT8 */
@@ -5243,7 +5256,7 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 				right = dual.QV;
 			}
 		}
-#elif WITHUSBHEADSET || WITHLFM
+#elif WITHUSBHEADSET || WITHLFM || WITHUSBMIKET113
 		// Обеспечиваем прослушивание стерео
 #else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
@@ -5274,7 +5287,7 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 			recordsampleUAC(recleft, recright);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
-#if WITHUSBHEADSET || WITHLFM
+#if WITHUSBHEADSET || WITHLFM || WITHUSBMIKET113
 		b [L] = adpt_outputexact(& afcodectx, left);
 		b [R] = adpt_outputexact(& afcodectx, right);
 #else /* WITHUSBHEADSET */
@@ -5477,6 +5490,13 @@ RAMFUNC void dsp_processtx(void)
 		monitorbuff [i].QV = 0;
 		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);
 	}
+#if WITHUSBMIKET113
+	for (i = 0; i < tx_MIKE_blockSize; ++ i)
+	{
+		savesampleout32stereo(0, 0);	// Запись в поток к передатчику I/Q значений.
+		save16demod(txfirbuff [i], txfirbuff [i]);
+	}
+#else /* WITHUSBMIKET113 */
 	/* формирование АЧХ перед модулятором */
 	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);
 
@@ -5523,6 +5543,7 @@ RAMFUNC void dsp_processtx(void)
 #endif /* WITHDSPEXTDDC */
 
 	}
+#endif /* WITHUSBMIKET113 */
 #endif /* ! WITHTRANSPARENTIQ */
 }
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
@@ -5626,9 +5647,11 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		save16demod(dual.IV, dual.QV);
 
 #elif WITHDSPEXTDDC
+
+	#if WITHUSBMIKET113
 	// Режимы трансиверов с внешним DDC
 
-	#if WITHUSEDUALWATCH
+	#elif WITHUSEDUALWATCH
 
 		//
 		// Двухканальный приёмник

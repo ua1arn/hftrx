@@ -10873,8 +10873,10 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
+#if WITHUSBMIKET113
+	return p;
 
-#if WITHNOSPEEX
+#elif WITHNOSPEEX
 	if (denoise)
 	{
 		// Filtering and denoise.
