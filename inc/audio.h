@@ -280,7 +280,12 @@ extern "C" {
 		#define DMABUF32RXWFM3Q	7		// WFM
 
 		#define DMABUFFSTEP16RX		3		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_MIKE 	1		/* индекс сэмпла левого канала */
+
+	//	ix = 0: R5 & R11 (lineinL - pin 96 & fminL pin 94)
+	//	ix = 1: R6 & R10 (lineinR - pin 95 & fminR pin 93)
+	//	ix = 2: micin3N & micin3P
+
+		#define DMABUFF16RX_MIKE 	2		/* индекс сэмпла левого канала */
 
 		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */

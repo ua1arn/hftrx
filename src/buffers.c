@@ -1177,11 +1177,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-#if WITHUSBMIKET113
-	const FLOAT_t sample = get_lout();
-#else /* WITHUSBMIKET113 */
 	const FLOAT_t sample = adpt_input(& afcodecrx, p->buff [pos * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
-#endif /* WITHUSBMIKET113 */
 
 	// Использование данных.
 	v->ivqv [L] = sample;
