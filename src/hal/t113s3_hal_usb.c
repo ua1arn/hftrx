@@ -2565,6 +2565,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	const uint32_t ep_save = usb_get_active_ep(pusb);
 
+#if WITHUSBUACOUT
 	do
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -2608,7 +2609,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
  		}
 	} while (0);
 
-	usb_select_ep(pusb, ep_save);
+#endif /* WITHUSBUACOUT */
 
 #if WITHUSBUACIN
 	{
@@ -2648,6 +2649,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
+	usb_select_ep(pusb, ep_save);
 }
 
 
@@ -3242,15 +3244,15 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
     		switch (interfacev)
     		{
 #if WITHUSBUACOUT
-       		case INTERFACE_AUDIO_MIKE:
-    	       	//PRINTF("usb_device: in48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
-				buffers_set_uacinalt(LO_BYTE(ep0_setup->wValue));
+       		case INTERFACE_AUDIO_SPK:
+    	       	//PRINTF("usb_device: out48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+				buffers_set_uacoutalt(LO_BYTE(ep0_setup->wValue));
 				break;
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
-      		case INTERFACE_AUDIO_SPK:
-    	       	//PRINTF("usb_device: out48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
-				buffers_set_uacoutalt(LO_BYTE(ep0_setup->wValue));
+      		case INTERFACE_AUDIO_MIKE:
+    	       	//PRINTF("usb_device: in48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+				buffers_set_uacinalt(LO_BYTE(ep0_setup->wValue));
 				break;
 #if WITHUSBUACIN2
       		case INTERFACE_AUDIO_RTS:
