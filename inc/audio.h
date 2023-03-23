@@ -743,7 +743,17 @@ typedef struct
 
 #endif /* WITHDSPLOCALFIR */
 
-#if CODEC1_FRAMEBITS == 64
+#if WITHUSBMIKET113 && WITHCODEC1_WHBLOCK_DUPLEX_MASTER
+
+	/* работа со встроенным кодеком Allwinner t113-s3 */
+	/* параметры входного/выходного адаптеров */
+	#define WITHADAPTERCODEC1WIDTH	20		// 1 бит знак и 19 бит значащих
+	#define WITHADAPTERCODEC1SHIFT	12		// количество незанятых битов справа.
+	typedef int32_t aubufv_t;
+	typedef int_fast32_t aufastbufv_t;
+	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
+
+#elif CODEC1_FRAMEBITS == 64
 
 	/* параметры входного/выходного адаптеров */
 	#define WITHADAPTERCODEC1WIDTH	24		// 1 бит знак и 23 бит значащих

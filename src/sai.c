@@ -3907,20 +3907,37 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->DAC_REG |= (1u << 15) | (1u << 14);	// DACL_EN, DACR_EN
 
 
-   AUDIO_CODEC->RAMP_REG |=
-		   (1u << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
-		   (1u << 0) | // RD_EN Ramp Digital Enable
-		   0;
+	AUDIO_CODEC->RAMP_REG |=
+	   (1u << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
+	   (1u << 0) | // RD_EN Ramp Digital Enable
+	   0;
 
+#if 1
+	/* LINEIN use */
 
-	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable
-	//AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
+	// Left audio
+	AUDIO_CODEC->ADC1_REG &= ~ (1u << 27);	// FMINLEN FMINL Disable - R11 - fminL pin 94
+	AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
 
-	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable
-	//AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable
+	// Right audio
+	AUDIO_CODEC->ADC2_REG &= ~ (1u << 27);	// FMINREN FMINR Disable - R10 - fminR pin 93
+	AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable - R6 - lineinR - pin 95
+#else
+	/* FMIN use */
 
+	// Left audio
+	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable - R11 - fminL pin 94
+	AUDIO_CODEC->ADC1_REG &= ~ (1u << 23);	// LINEINLEN LINEINL Disable
+
+	// Right audio
+	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable - R10 - fminR pin 93
+	AUDIO_CODEC->ADC2_REG &= ~ (1u << 23);	// LINEINREN LINEINR Disable - R6 - lineinR - pin 95
+#endif
+
+	// MIC3
 	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
 	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
+	AUDIO_CODEC->ADC3_REG = (AUDIO_CODEC->ADC3_REG & ~ (0x0Fu << 8)) | (0x0Fu << 8);	// ADC3_PGA_GAIN_CTRL: 36 dB
 
 #else
 
