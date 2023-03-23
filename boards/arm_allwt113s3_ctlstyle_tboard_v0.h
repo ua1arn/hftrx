@@ -383,7 +383,7 @@
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
 	#if 0

@@ -26,7 +26,7 @@
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
@@ -41,8 +41,8 @@
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART1		1
-#define WITHDEBUG_USART1	1
-#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
+#define WITHDEBUG_USART2	1
+#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -143,11 +143,11 @@
 	#if WITHINTEGRATEDDSP
 
 		//#define WITHUAC2		1	/* UAC2 support */
-		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
-		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+		//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
+		//#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+		#define WITHUSBUACIN	1
 		#if WITHRTS96 || WITHRTS192
-			#define WITHUSBUACIN	1
-			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+			//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 		#else /* WITHRTS96 || WITHRTS192 */
 			#define WITHUSBUACIN	1
 		#endif /* WITHRTS96 || WITHRTS192 */
@@ -585,14 +585,16 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-// WITHUART1HW
+// WITHUART2HW
+// PG6 UART1-TX
+// PG7 UART1-RX
 // tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #1 UART0 */
-#define HARDWARE_UART1_INITIALIZE() do { \
-		const portholder_t TXMASK = (1u << 8); /* PB8 UART0-TX */ \
-		const portholder_t RXMASK = (1u << 9); /* PB9 UART0-RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF4); \
-		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF4); \
-		arm_hardware_piob_updown(RXMASK, 0); \
+#define HARDWARE_UART2_INITIALIZE() do { \
+		const portholder_t TXMASK = (1u << 6); /* PG6 UART1-TX */ \
+		const portholder_t RXMASK = (1u << 7); /* PG7 UART1-RX - pull-up RX data */  \
+		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_updown(RXMASK, 0); \
 	} while (0)
 
 
