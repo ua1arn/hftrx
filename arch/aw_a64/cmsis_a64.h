@@ -1252,10 +1252,7 @@ typedef struct USBOTG_Type
     volatile uint32_t USB_INTUSBE;                    /*!< Offset 0x050 USB_INTUSBE USB_BUSINTE */
     volatile uint32_t USB_FNUM;                       /*!< Offset 0x054 USB Frame Number Register */
              uint32_t reserved_0x058 [0x0009];
-    volatile uint8_t  USB_TESTMODE;                   /*!< Offset 0x07C USB_TESTMODE USB_TESTC */
-             uint8_t reserved_0x07D [0x0001];
-    volatile uint8_t  USB_FSM;                        /*!< Offset 0x07E USB_FSM USB_TESTC */
-             uint8_t reserved_0x07F [0x0001];
+    volatile uint32_t USB_TESTC;                      /*!< Offset 0x07C USB_TESTC */
     volatile uint16_t USB_TXMAXP;                     /*!< Offset 0x080 USB_TXMAXP */
     volatile uint16_t USB_CSR0;                       /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
     volatile uint16_t USB_RXMAXP;                     /*!< Offset 0x084 USB_RXMAXP */

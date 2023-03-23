@@ -7897,20 +7897,11 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_TESTMODE</name>
-    <displayName>USB_TESTMODE</displayName>
-    <description>USB_TESTMODE USB_TESTC</description>
+    <name>USB_TESTC</name>
+    <displayName>USB_TESTC</displayName>
+    <description>USB_TESTC</description>
     <addressOffset>0x07C</addressOffset>
-    <size>0x08</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_FSM</name>
-    <displayName>USB_FSM</displayName>
-    <description>USB_FSM USB_TESTC</description>
-    <addressOffset>0x07E</addressOffset>
-    <size>0x08</size>
+    <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>

@@ -423,7 +423,7 @@ static uint32_t usb_get_active_ep(pusb_struct pusb)
 
 static void usb_set_test_mode(pusb_struct pusb, uint32_t bm)
 {
-	USBOTG0->USB_TESTMODE = bm;
+	USBOTG0->USB_TESTC = (USBOTG0->USB_TESTC & ~ 0x7FF) | (bm & 0x7FF);
 	//put_bvalue(USBOTG0_BASE + USB_bTESTMODE_OFF, bm & 0xFF);
 }
 
@@ -819,7 +819,7 @@ static void usb_set_fifo_access_config(pusb_struct pusb, uint8_t config)
 
 static uint32_t usb_get_fsm(pusb_struct pusb)
 {
-	return USBOTG0->USB_FSM;
+	return (USBOTG0->USB_TESTC >> 16) & 0xFF;
 	//return get_bvalue(USBOTG0_BASE + USB_FSM_OFF);
 }
 
