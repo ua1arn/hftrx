@@ -1239,22 +1239,22 @@ typedef struct USBEHCI_Type
 /*!< USBOTG USB OTG Dual-Role Device controller */
 typedef struct USBOTG_Type
 {
-    volatile uint32_t USB_EPFIFO [0x010];             /*!< Offset 0x000 USB_EPFIFO [0..5] */
-    volatile uint8_t  USB_POWER;                      /*!< Offset 0x040 USB_POWER */
-    volatile uint8_t  USB_DEVCTL;                     /*!< Offset 0x041 USB_DEVCTL */
-    volatile uint8_t  USB_EPINDEX;                    /*!< Offset 0x042 USB_EPINDEX */
-    volatile uint8_t  USB_DMACTL;                     /*!< Offset 0x043 USB_DMACTL */
-    volatile uint16_t USB_INTTX;                      /*!< Offset 0x044 USB_INTTX */
-    volatile uint16_t USB_INTRX;                      /*!< Offset 0x046 USB_INTRX */
-    volatile uint16_t USB_INTTXE;                     /*!< Offset 0x048 USB_INTTXE */
-    volatile uint16_t USB_INTRXE;                     /*!< Offset 0x04A USB_INTRXE */
-    volatile uint32_t USB_INTUSB;                     /*!< Offset 0x04C USB_INTUSB */
-    volatile uint32_t USB_INTUSBE;                    /*!< Offset 0x050 USB_INTUSBE */
-    volatile uint16_t USB_FRAME;                      /*!< Offset 0x054 USB_FRAME */
-             uint8_t reserved_0x056 [0x0026];
-    volatile uint8_t  USB_TESTMODE;                   /*!< Offset 0x07C USB_TESTMODE */
+    volatile uint32_t USB_EPFIFO [0x010];             /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
+    volatile uint8_t  USB_POWER;                      /*!< Offset 0x040 USB_POWER USB_GCS */
+    volatile uint8_t  USB_DEVCTL;                     /*!< Offset 0x041 USB_DEVCTL USB_GCS */
+    volatile uint8_t  USB_EPINDEX;                    /*!< Offset 0x042 USB_EPINDEX USB_GCS */
+    volatile uint8_t  USB_DMACTL;                     /*!< Offset 0x043 USB_DMACTL USB_GCS */
+    volatile uint16_t USB_INTTX;                      /*!< Offset 0x044 USB_INTTX USB_EPINTF */
+    volatile uint16_t USB_INTRX;                      /*!< Offset 0x046 USB_INTRX USB_EPINTF */
+    volatile uint16_t USB_INTTXE;                     /*!< Offset 0x048 USB_INTTXE USB_EPINTE */
+    volatile uint16_t USB_INTRXE;                     /*!< Offset 0x04A USB_INTRXE USB_EPINTE */
+    volatile uint32_t USB_INTUSB;                     /*!< Offset 0x04C USB_INTUSB USB_BUSINTF */
+    volatile uint32_t USB_INTUSBE;                    /*!< Offset 0x050 USB_INTUSBE USB_BUSINTE */
+    volatile uint32_t USB_FNUM;                       /*!< Offset 0x054 USB Frame Number Register */
+             uint32_t reserved_0x058 [0x0009];
+    volatile uint8_t  USB_TESTMODE;                   /*!< Offset 0x07C USB_TESTMODE USB_TESTC */
              uint8_t reserved_0x07D [0x0001];
-    volatile uint8_t  USB_FSM;                        /*!< Offset 0x07E USB_FSM */
+    volatile uint8_t  USB_FSM;                        /*!< Offset 0x07E USB_FSM USB_TESTC */
              uint8_t reserved_0x07F [0x0001];
     volatile uint16_t USB_TXMAXP;                     /*!< Offset 0x080 USB_TXMAXP */
     volatile uint16_t USB_CSR0;                       /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
@@ -1290,7 +1290,18 @@ typedef struct USBOTG_Type
     volatile uint32_t PHY_OTGCTL;                     /*!< Offset 0x420 Control PHY routing to EHCI or OTG */
     volatile uint32_t PHY_STATUS;                     /*!< Offset 0x424 PHY Status Register */
     volatile uint32_t USB_SPDCR;                      /*!< Offset 0x428 HCI SIE Port Disable Control Register */
-} USBOTG_TypeDef; /* size of structure = 0x42C */
+             uint32_t reserved_0x42C [0x0035];
+    volatile uint32_t USB_DMA_INTE;                   /*!< Offset 0x500 USB DMA Interrupt Enable Register */
+    volatile uint32_t USB_DMA_INTS;                   /*!< Offset 0x504 USB DMA Interrupt Status Register */
+             uint32_t reserved_0x508 [0x000E];
+    struct
+    {
+        volatile uint32_t CHAN_CFG;                   /*!< Offset 0x540 USB DMA Channel Configuration Register */
+        volatile uint32_t SDRAM_ADD;                  /*!< Offset 0x544 USB DMA Channel Configuration Register */
+        volatile uint32_t BC;                         /*!< Offset 0x548 USB DMA Byte Counter Register/USB DMA RESIDUAL Byte Counter Register */
+                 uint32_t reserved_0x00C;
+    } USB_DMA [0x008];                                /*!< Offset 0x540  */
+} USBOTG_TypeDef; /* size of structure = 0x5C0 */
 /*
  * @brief USBPHYC
  */

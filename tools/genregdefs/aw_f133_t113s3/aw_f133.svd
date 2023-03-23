@@ -8163,6 +8163,24 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <register>
+    <name>USB_DMA_INTE</name>
+    <displayName>USB_DMA_INTE</displayName>
+    <description>USB DMA Interrupt Enable Register</description>
+    <addressOffset>0x500</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_DMA_INTS</name>
+    <displayName>USB_DMA_INTS</displayName>
+    <description>USB DMA Interrupt Status Register</description>
+    <addressOffset>0x504</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
    <cluster>
     <dim>8</dim>
     <addressOffset>0x00000540</addressOffset>

@@ -1453,7 +1453,10 @@ typedef struct USBOTG_Type
     volatile uint32_t PHY_OTGCTL;                     /*!< Offset 0x420 Control PHY routing to EHCI or OTG */
     volatile uint32_t PHY_STATUS;                     /*!< Offset 0x424 PHY Status Register */
     volatile uint32_t USB_SPDCR;                      /*!< Offset 0x428 HCI SIE Port Disable Control Register */
-             uint32_t reserved_0x42C [0x0045];
+             uint32_t reserved_0x42C [0x0035];
+    volatile uint32_t USB_DMA_INTE;                   /*!< Offset 0x500 USB DMA Interrupt Enable Register */
+    volatile uint32_t USB_DMA_INTS;                   /*!< Offset 0x504 USB DMA Interrupt Status Register */
+             uint32_t reserved_0x508 [0x000E];
     struct
     {
         volatile uint32_t CHAN_CFG;                   /*!< Offset 0x540 USB DMA Channel Configuration Register */

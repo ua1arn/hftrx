@@ -45,12 +45,11 @@
 #regdef; PHY_OTGCTL; 0x420; Control PHY routing to EHCI or OTG
 #regdef; PHY_STATUS; 0x424; PHY Status Register
 #regdef; USB_SPDCR; 0x428; HCI SIE Port Disable Control Register
-USB_DMA_INTE; 0x0500; USB DMA Interrupt Enable Register
-USB_DMA_INTS; 0x0504; USB DMA Interrupt Status Register
+#regdef; USB_DMA_INTE; 0x0500; USB DMA Interrupt Enable Register
+#regdef; USB_DMA_INTS; 0x0504; USB DMA Interrupt Status Register
 #aggreg; USB_DMA; 0x0540 8; 
 #regdef; CHAN_CFG; 0x00; USB DMA Channel Configuration Register
 #regdef; SDRAM_ADD; 0x04; USB DMA Channel Configuration Register
 #regdef; BC; 0x08; USB DMA Byte Counter Register/USB DMA RESIDUAL Byte Counter Register
 #regdef; dummy 0; 0x10;
 #aggregend;
-
