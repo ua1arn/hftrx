@@ -165,7 +165,6 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 		uacinaddr = 0;
 	}
 	altinterfaces [INTERFACE_AUDIO_MIKE] = 0;
-	altinterfaces [INTERFACE_AUDIO_SPK] = 0;
 	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
 
 #if WITHUSBUACIN2
@@ -183,7 +182,9 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
+
 #if WITHUSBUACOUT
+	altinterfaces [INTERFACE_AUDIO_SPK] = 0;
 	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_OUT);
 	//terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);

@@ -36,7 +36,8 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 #if WITHDEBUG
-	#define WITHUART1HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #1 UART0 */
+	//#define WITHUART1HW	1	// tx: PG6 rx: PG7 Используется периферийный контроллер последовательного порта #2 UART1 */
+	#define WITHUART2HW	1	// tx: PG6 rx: PG7 Используется периферийный контроллер последовательного порта #2 UART1 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
@@ -50,7 +51,7 @@
 #if WITHISBOOTLOADER
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	#define WITHSDRAM_AXP308	1	/* power management chip */
+	//#define WITHSDRAM_AXP308	1	/* power management chip */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -113,7 +114,7 @@
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
@@ -128,10 +129,10 @@
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
-
-	#define WITHUSBHW_EHCI		USBEHCI1
-	#define WITHUSBHW_OHCI		USBOHCI1
+//	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//
+//	#define WITHUSBHW_EHCI		USBEHCI1
+//	#define WITHUSBHW_OHCI		USBOHCI1
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
@@ -585,10 +586,22 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
+
+// WITHUART1HW
+// PE2 UART0-TX
+// PE3 UART0-RX
+#define HARDWARE_UART1_INITIALIZE() do { \
+		const portholder_t TXMASK = (1u << 2); /* PE2 UART0-TX */ \
+		const portholder_t RXMASK = (1u << 3); /* PE3 UART0-RX - pull-up RX data */  \
+		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF6); \
+		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF6); \
+		arm_hardware_pioe_updown(RXMASK, 0); \
+	} while (0)
+
 // WITHUART2HW
 // PG6 UART1-TX
 // PG7 UART1-RX
-// tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #1 UART0 */
+// tx: PG6 rx: PG7 Используется периферийный контроллер последовательного порта #2 UART1 */
 #define HARDWARE_UART2_INITIALIZE() do { \
 		const portholder_t TXMASK = (1u << 6); /* PG6 UART1-TX */ \
 		const portholder_t RXMASK = (1u << 7); /* PG7 UART1-RX - pull-up RX data */  \
@@ -972,13 +985,6 @@
 			} \
 		} while (0)
 #endif
-
-	int axp803_initialize(void);
-
-	/* Контроллер питания AXP803 */
-	#define BOARD_PMIC_INITIALIZE() do { \
-		axp803_initialize(); \
-	} while (0)
 
 
 	/* запрос на вход в режим загрузчика */
