@@ -3885,11 +3885,6 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
 	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 4);	// DAC_DRQ_EN
 
-	// ADCx Analog Control Register
-	// ADCx Analog Control Register
-	AUDIO_CODEC->ADC1_REG |= (1u << 31);	// FMINL ADC1 Channel Enable
-	AUDIO_CODEC->ADC2_REG |= (1u << 31);	// FMINR
-	AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
 
 //	AUDIO_CODEC->ADC1_REG |= (1u << 23);  // LINEINL
 //	AUDIO_CODEC->ADC2_REG |= (1u << 23);  // LINEINR
@@ -3912,19 +3907,27 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	   (1u << 0) | // RD_EN Ramp Digital Enable
 	   0;
 
-#if 1
+#if 0
 	/* LINEIN use */
 
+	// ADCx Analog Control Register
+	//AUDIO_CODEC->ADC1_REG |= (1u << 31);	// LEft ADC1 Channel Enable
+	//AUDIO_CODEC->ADC2_REG |= (1u << 31);	// Right ADC1 Channel Enable
 	// Left audio
 	AUDIO_CODEC->ADC1_REG &= ~ (1u << 27);	// FMINLEN FMINL Disable - R11 - fminL pin 94
 	AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
 
+	// ADCx Analog Control Register
 	// Right audio
 	AUDIO_CODEC->ADC2_REG &= ~ (1u << 27);	// FMINREN FMINR Disable - R10 - fminR pin 93
 	AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable - R6 - lineinR - pin 95
-#else
+
+#elif 0
 	/* FMIN use */
 
+	// ADCx Analog Control Register
+	//AUDIO_CODEC->ADC1_REG |= (1u << 31);	// LEft ADC1 Channel Enable
+	//AUDIO_CODEC->ADC2_REG |= (1u << 31);	// Right ADC1 Channel Enable
 	// Left audio
 	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable - R11 - fminL pin 94
 	AUDIO_CODEC->ADC1_REG &= ~ (1u << 23);	// LINEINLEN LINEINL Disable
@@ -3932,13 +3935,30 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	// Right audio
 	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable - R10 - fminR pin 93
 	AUDIO_CODEC->ADC2_REG &= ~ (1u << 23);	// LINEINREN LINEINR Disable - R6 - lineinR - pin 95
+
+#else
+
+	/* Do not use FM/LINE inputs */
+
+	// ADCx Analog Control Register
+	AUDIO_CODEC->ADC1_REG &= ~ (1u << 31);	// LEft ADC1 Channel Disable
+	AUDIO_CODEC->ADC2_REG &= ~ (1u << 31);	// Right ADC1 Channel Disable
+
 #endif
 
+	// ADC3 Analog Control Register
+	AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
 	// MIC3
 	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
 	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
 	AUDIO_CODEC->ADC3_REG = (AUDIO_CODEC->ADC3_REG & ~ (0x0Fu << 8)) | (0x0Fu << 8);	// ADC3_PGA_GAIN_CTRL: 36 dB
 
+	// Установка усиления
+	AUDIO_CODEC->ADC_VOL_CTRL1 =
+		0 * (0xA0u << 0) |	/* ADC1_VOL 0xA0 - middle point */
+		0 * (0xA0u << 8) |	/* ADC2_VOL 0xA0 - middle point */
+		(0xA0u << 16) |	/* ADC3_VOL 0xA0 - middle point */
+		0;
 #else
 
 	//PRINTF("AC_ADC_FIFOC=%08lX, AC_DAC_FIFOC=%08lX\n", AUDIO_CODEC->AC_ADC_FIFOC, AUDIO_CODEC->AC_DAC_FIFOC);
