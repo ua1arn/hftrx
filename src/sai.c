@@ -3891,9 +3891,9 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->ADC2_REG |= (1u << 31);	// FMINR
 	AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
 
-	AUDIO_CODEC->ADC1_REG |= (1u << 23);  // LINEINL
-	AUDIO_CODEC->ADC2_REG |= (1u << 23);  // LINEINR
-	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
+//	AUDIO_CODEC->ADC1_REG |= (1u << 23);  // LINEINL
+//	AUDIO_CODEC->ADC2_REG |= (1u << 23);  // LINEINR
+//	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
 
     ///-----LDO-----
 	PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
