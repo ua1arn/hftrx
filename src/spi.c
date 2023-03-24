@@ -5999,7 +5999,7 @@ int testchipDATAFLASH(void)
 
 	static const uint8_t signature [] = { 0x53, 0x46, 0x44, 0x50, };	// SFDP
 
-	//PRINTF(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
+	//PRINTF(PSTR("SFDP: lastparam=0x%02X\n"), buff8 [6]);
 	if (memcmp(& buff8 [0], signature, 4) == 0)
 	{
 		// Serial Flash Discoverable Parameters (SFDP), for Serial NOR Flash
@@ -6034,14 +6034,14 @@ int testchipDATAFLASH(void)
 		{
 			const unsigned Kbi = (dword2 >> 10) + 1;
 			const unsigned MB = (dword2 >> 23) + 1;
-			//PRINTF("SFDP: density=%08lX (%u Kbi, %u MB)\n", dword2, Kbi, MB);
+			//PRINTF("SFDP: density=%08X (%u Kbi, %u MB)\n", (unsigned) dword2, Kbi, MB);
 			chipSize = (dword2 >> 3) + 1uL;
 		}
 		else
 		{
 			const unsigned Mbi = 1u << ((dword2 & 0x7FFFFFFF) - 10);
 			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
-			//PRINTF("SFDP: density=%08lX (%u Mbi, %u MB)\n", dword2, Mbi, MB);
+			//PRINTF("SFDP: density=%08X (%u Mbi, %u MB)\n", (unsigned) dword2, Mbi, MB);
 			chipSize = 1uL << ((dword2 & 0x7FFFFFFF) - 3);
 		}
 		///////////////////////////////////
@@ -6053,7 +6053,7 @@ int testchipDATAFLASH(void)
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
 		//PRINTF("SFDP: Sector Erase opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
-		//PRINTF("SFDP: Sector Erase size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		//PRINTF("SFDP: Sector Erase size1..4: %u, %u, %u, %u\n", 1u << (sct [0] & 0xFF), 1u << (sct [1] & 0xFF), 1u << (sct [2] & 0xFF), 1u << (sct [3] & 0xFF));
 		unsigned i;
 		unsigned sctRESULT = 0;
 		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
@@ -6068,10 +6068,10 @@ int testchipDATAFLASH(void)
 		{
 			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
 			sectorSize = 1uL << (sctRESULT & 0xFF);
-			//PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
+			//PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%u\n", (unsigned) sectorEraseCmd, (unsigned) sectorSize);
 		}
 		///////////////////////////////////
-		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
+		//PRINTF("SFDP: Sector Type 1 Size=%08X, Sector Type 1 Opcode=%02X\n", 1u << ((dword8 >> 0) & 0xFF), (unsigned) (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
@@ -6107,7 +6107,7 @@ int prepareDATAFLASH(void)
 			return 1;
 		}
 
-		PRINTF(PSTR("prepareDATAFLASH: Clear write protect bits\n"));
+		//PRINTF(PSTR("prepareDATAFLASH: Clear write protect bits\n"));
 		writeEnableDATAFLASH();		/* write enable */
 
 		uint8_t v = 0x00;	/* status register data */
@@ -6115,6 +6115,12 @@ int prepareDATAFLASH(void)
 		const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
 		spidf_write(& v, 1, SPDFIO_1WIRE);
 		spidf_unselect(irql);	/* done sending data to target chip */
+
+		PRINTF("prepareDATAFLASH: r/o clear\n");
+	}
+	else
+	{
+		PRINTF("prepareDATAFLASH: r/o already clear\n");
 	}
 
 	return timed_dataflash_read_status();
