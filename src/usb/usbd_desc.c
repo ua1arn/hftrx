@@ -1224,7 +1224,7 @@ static unsigned UAC2_FormatTypeDesc_OUT48(uint_fast8_t fill, uint8_t * buff, uns
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (UACOUT_AUDIO48_SAMPLEBITS + 7) / 8;	//bSubslotSize
+		* buff ++ = UACOUT_AUDIO48_SAMPLEBYTES;	//bSubslotSize
 		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
 		/* 6 byte*/
 	}
@@ -1295,7 +1295,7 @@ static unsigned UAC2_FormatTypeDescroptor_IN48(uint_fast8_t fill, uint8_t * buff
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (UACIN_AUDIO48_SAMPLEBITS + 7) / 8;	//bSubslotSize
+		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES;	//bSubslotSize
 		* buff ++ = UACIN_AUDIO48_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
 		/* 6 byte*/
 	}
@@ -1464,7 +1464,7 @@ static unsigned UAC1_FormatTypeDesc_IN48(uint_fast8_t fill, uint8_t * buff, unsi
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACIN_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
-		* buff ++ = (UACIN_AUDIO48_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
+		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = UACIN_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
@@ -2333,8 +2333,8 @@ static unsigned UAC1_FormatTypeDesc_OUT48(uint_fast8_t fill, uint8_t * buff, uns
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = UACOUT_AUDIO48_FMT_CHANNELS;		/* bNrChannels */
-		* buff ++ = (UACOUT_AUDIO48_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
+		* buff ++ = UACOUT_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
+		* buff ++ = UACOUT_AUDIO48_SAMPLEBYTES; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
