@@ -249,12 +249,12 @@ flash: IMAGE
 
 IMAGE: $(PROJECT)_app.nec32
 
-BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 boot.hex: $(PROJECT)_boot.bin
 	./bin2ihex -l 0x00000000 -s $(PROJECT)_boot.bin >$@
 	
-APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 $(PROJECT)_app.nec32: $(PROJECT)_app.bin
 	./stm32image -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
