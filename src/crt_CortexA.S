@@ -271,7 +271,9 @@ gotosleep:
 	b	.L_loop2
 .L_loop2_done:
 
-	bl	_start
+	ldr   r2, =_start
+	mov   lr, pc
+	bx    r2     /* And jump... */
                        
 ExitFunction:
    nop
