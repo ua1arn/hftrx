@@ -3891,10 +3891,10 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 //	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
 
     ///-----LDO-----
-	PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
+	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
 //	AUDIO_CODEC->POWER_REG |= (1u << 31);	// ALDO_EN
 //	AUDIO_CODEC->POWER_REG |= (1u << 30);	// HPLDO_EN
-	PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
+	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
     ///-------------
 
 
