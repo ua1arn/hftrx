@@ -41,15 +41,15 @@
 /*
  * Some defines for the program status registers
  */
-   ARM_MODE_USER  = 0x10      /* Normal User Mode                             */ 
-   ARM_MODE_FIQ   = 0x11      /* FIQ Fast Interrupts Mode                     */
-   ARM_MODE_IRQ   = 0x12      /* IRQ Standard Interrupts Mode                 */
-   ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
-   ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
-   ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
-   ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
-   ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
-   ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
+	ARM_MODE_USER  = 0x10      /* Normal User Mode                             */
+	ARM_MODE_FIQ   = 0x11      /* FIQ Fast Interrupts Mode                     */
+	ARM_MODE_IRQ   = 0x12      /* IRQ Standard Interrupts Mode                 */
+	ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
+	ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
+	ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
+	ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
+	ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
+	ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
    
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
@@ -76,14 +76,14 @@
 /****************************************************************************/
 	.align 6
 __Vectors:
-   ldr pc, ResetAddr    /* Reset                 */
-   ldr pc, UndefAddr    /* Undefined instruction */
-   ldr pc, SWIAddr      /* Software interrupt    */
-   ldr pc, PAbortAddr   /* Prefetch abort        */
-   ldr pc, DAbortAddr   /* Data abort            */
-   ldr pc, HypAddr 		/* Entry to Hyp mode	 */
-   ldr pc, IRQAddr      /* IRQ interrupt         */
-   ldr pc, FIQAddr      /* FIQ interrupt         */
+	ldr pc, ResetAddr    /* Reset                 */
+	ldr pc, UndefAddr    /* Undefined instruction */
+	ldr pc, SWIAddr      /* Software interrupt    */
+	ldr pc, PAbortAddr   /* Prefetch abort        */
+	ldr pc, DAbortAddr   /* Data abort            */
+	ldr pc, HypAddr 		/* Entry to Hyp mode	 */
+	ldr pc, IRQAddr      /* IRQ interrupt         */
+	ldr pc, FIQAddr      /* FIQ interrupt         */
 
 
 ResetAddr:     .word Reset_Handler
@@ -94,18 +94,18 @@ DAbortAddr:    .word DAbort_Handler
 HypAddr:  	   .word Hyp_Handler
 IRQAddr:       .word IRQ_Handler
 FIQAddr:       .word FIQ_Handler
-   .ltorg
+	.ltorg
 
 	.align 6
 __Vectors_nested:
-   ldr pc, ResetAddr_n    /* Reset                 */
-   ldr pc, UndefAddr_n    /* Undefined instruction */
-   ldr pc, SWIAddr_n      /* Software interrupt    */
-   ldr pc, PAbortAddr_n   /* Prefetch abort        */
-   ldr pc, DAbortAddr_n   /* Data abort            */
-   ldr pc, HypAddr_n 		/* Entry to Hyp mode	 */
-   ldr pc, IRQAddr_n      /* IRQ interrupt         */
-   ldr pc, FIQAddr_n      /* FIQ interrupt         */
+	ldr pc, ResetAddr_n    /* Reset                 */
+	ldr pc, UndefAddr_n    /* Undefined instruction */
+	ldr pc, SWIAddr_n      /* Software interrupt    */
+	ldr pc, PAbortAddr_n   /* Prefetch abort        */
+	ldr pc, DAbortAddr_n   /* Data abort            */
+	ldr pc, HypAddr_n 		/* Entry to Hyp mode	 */
+	ldr pc, IRQAddr_n      /* IRQ interrupt         */
+	ldr pc, FIQAddr_n      /* FIQ interrupt         */
 
 
 ResetAddr_n:     .word Reset_Handler
@@ -187,32 +187,13 @@ gotosleep:
    ldr   sp, =__stack_cpu0_sys_end
    mov   lr, #0
 
-#if 0
-	/* Clean Data Cache  */
-    /* code is specific to Cortex-A5 processors with 32KB caches */
-    MOV R0, #(0 << 5)
-way_loop:
-    MOV R1, #(0 << 30)
-line_loop:
-    ORR R2,R1,R0
-    MCR p15,0,R2,c7,c10,2
-    ADD R1,R1,#(1 << 30)
-    CMP R1,#0
-    BNE line_loop
-    ADD R0,R0,#(1 << 5)
-    CMP R0,#(1 << 13)
-    BNE way_loop
-#endif
+	/* low-level CPU peripherials init */
 
-/* low-level CPU peripherials init */
+	ldr   r2, =SystemInit
+	mov   lr, pc
+	bx    r2     /* And jump... */
 
-   ldr   r2, =SystemInit
-   mov   lr, pc
-   bx    r2     /* And jump... */
-
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* System Running in Priviledged Operating Mode */
-   ldr   sp, =__stack
-    mov   lr, #0
+	ldr   sp, =__stack	/* New stack may be placed in DDR RAM */
 
 /*  Firstly it copies data from read only memory to RAM. There are two schemes
  *  to copy. One can copy more than one sections. Another can only copy
@@ -220,7 +201,6 @@ line_loop:
  *  data to implement than the latter.
  *  Macro __STARTUP_COPY_MULTIPLE is used to choose between two schemes.  */
 
-#if 1 //def __STARTUP_COPY_MULTIPLE
 /*  Multiple sections scheme.
  *
  *  Between symbol address __copy_table_start__ and __copy_table_end__,
@@ -252,27 +232,6 @@ line_loop:
 	b	.L_loop0
 
 .L_loop0_done:
-#else
-/*  Single section scheme.
- *
- *  The ranges of copy from/to are specified by following symbols
- *    __etext: LMA of start of the section to copy from. Usually end of text
- *    __data_start__: VMA of start of the section to copy to
- *    __data_end__: VMA of end of the section to copy to
- *
- *  All addresses must be aligned to 4 bytes boundary.
- */
-	ldr	r1, =__etext
-	ldr	r2, =__data_start__
-	ldr	r3, =__data_end__
-
-.L_loop1:
-	cmp	r2, r3
-	ittt	lt
-	ldrlt	r0, [r1], #4
-	strlt	r0, [r2], #4
-	blt	.L_loop1
-#endif /*__STARTUP_COPY_MULTIPLE */
 
 /*  This part of work usually is done in C library startup code. Otherwise,
  *  define this macro to enable it in this startup.
@@ -284,7 +243,6 @@ line_loop:
  *  Define macro __STARTUP_CLEAR_BSS_MULTIPLE to choose the former.
  *  Otherwise efine macro __STARTUP_CLEAR_BSS to choose the later.
  */
-#if 1 //def __STARTUP_CLEAR_BSS_MULTIPLE
 /*  Multiple sections scheme.
  *
  *  Between symbol address __copy_table_start__ and __copy_table_end__,
@@ -312,34 +270,8 @@ line_loop:
 	adds	r3, #8
 	b	.L_loop2
 .L_loop2_done:
-#elif defined (__STARTUP_CLEAR_BSS)
-/*  Single BSS section scheme.
- *
- *  The BSS section is specified by following symbols
- *    __bss_start__: start of the BSS section.
- *    __bss_end__: end of the BSS section.
- *
- *  Both addresses must be aligned to 4 bytes boundary.
- */
-	ldr	r1, =__bss_start__
-	ldr	r2, =__bss_end__
-	ldr r0, =0
-	//movs	r0, 0
-.L_loop3:
-	cmp	r1, r2
-	itt	lt
-	strlt	r0, [r1], #4
-	blt	.L_loop3
-#endif /* __STARTUP_CLEAR_BSS_MULTIPLE || __STARTUP_CLEAR_BSS */
 
-#ifndef __NO_SYSTEM_INIT
-	/* bl	SystemInit */
-#endif
-
-#ifndef __START
-#define __START _start
-#endif
-	bl	__START
+	bl	_start
                        
 ExitFunction:
    nop
