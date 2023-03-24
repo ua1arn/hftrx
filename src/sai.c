@@ -3405,7 +3405,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #endif /* WITHSAI1HW */
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0u : (1u << ((ch) * 4)))
