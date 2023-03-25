@@ -353,7 +353,7 @@ static void window_infobar_menu_process(void)
 #if WITHUSEDUALWATCH
 		case INFOBAR_SPLIT:
 		{
-			for (unsigned i = 0; i < 2; i ++)
+			for (unsigned i = 0; i < 3; i ++)
 			{
 				char btn_name [6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
@@ -373,6 +373,10 @@ static void window_infobar_menu_process(void)
 				else if (i == 1)
 				{
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "A<->B");
+				}
+				else if (i == 2)
+				{
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), hamradio_get_mainsubrxmode3_value_P());
 				}
 				yy = yy + interval + bh->h;
 			}
@@ -528,6 +532,11 @@ static void window_infobar_menu_process(void)
 				else if (bh->payload == 2) // SPLIT swap
 				{
 					hamradio_split_vfo_swap();
+				}
+				else if (bh->payload == 3) // SPLIT mode
+				{
+					hamradio_split_mode_toggle();
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), hamradio_get_mainsubrxmode3_value_P());
 				}
 			}
 				break;

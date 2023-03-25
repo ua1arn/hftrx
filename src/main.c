@@ -21481,6 +21481,11 @@ uint_fast8_t hamradio_split_toggle(void)
 	return gsplitmode != 0;
 }
 
+void hamradio_split_mode_toggle(void)
+{
+	uif_key_mainsubrx();
+}
+
 void hamradio_split_vfo_swap(void)
 {
 	uif_key_click_a_ex_b();

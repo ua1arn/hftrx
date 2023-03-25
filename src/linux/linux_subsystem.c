@@ -749,6 +749,7 @@ uint32_t xcz_rx_iq_shift(uint8_t val) // 52
 void xcz_dds_ftw_sub(const uint_least64_t * val)
 {
 	uint32_t v = * val;
+	* ftw_sub = v;
 	mirror_nco2 = v;
 }
 
