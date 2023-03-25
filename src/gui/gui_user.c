@@ -61,18 +61,20 @@ static uint_fast8_t tmpstr_index = 0;
 
 #if GUI_SHOW_INFOBAR
 
+//todo: перенести раскладку инфобара в конфиг
 static uint8_t infobar_selected = 0;
 const uint8_t infobar_places [infobar_num_places] = {
 		INFOBAR_AF,
 		INFOBAR_AF_VOLUME,
 		INFOBAR_ATT,
 		INFOBAR_DNR,
-#if WITHPS7BOARD_EBAZ4205 || WITHPS7BOARD_EBAZ_7020
-		INFOBAR_EMPTY,
-		INFOBAR_EMPTY,
-#else
 		INFOBAR_TX_POWER,
+#if WITHPS7BOARD_EBAZ4205 || WITHPS7BOARD_EBAZ_7020
 		INFOBAR_VOLTAGE | INFOBAR_NOACTION,
+#elif WITHUSEDUALWATCH
+		INFOBAR_SPLIT,
+#else
+		INFOBAR_EMPTY,
 #endif /* WITHPS7BOARD_EBAZ4205 */
 		INFOBAR_CPU_TEMP | INFOBAR_NOACTION,
 		INFOBAR_2ND_ENC_MENU
@@ -370,7 +372,7 @@ static void window_infobar_menu_process(void)
 				}
 				else if (i == 1)
 				{
-					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), hamradio_get_mainsubrxmode3_value_P());
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "A<->B");
 				}
 				yy = yy + interval + bh->h;
 			}
@@ -523,10 +525,9 @@ static void window_infobar_menu_process(void)
 				{
 					bh->is_locked = hamradio_split_toggle();
 				}
-				else if (bh->payload == 2) // SPLIT mode
+				else if (bh->payload == 2) // SPLIT swap
 				{
-					hamradio_split_mode_toggle();
-					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), hamradio_get_mainsubrxmode3_value_P());
+					hamradio_split_vfo_swap();
 				}
 			}
 				break;
