@@ -618,7 +618,7 @@ void linux_subsystem_init(void)
 	linux_iq_init();
 }
 
-pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8_t, nmea_t;
+pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8_t, nmea_t, pps_t;
 
 #if WITHCPUTEMPERATURE && CPUSTYLE_XCZU
 #include "../sysmon/xsysmonpsu.h"
@@ -634,7 +634,7 @@ float xczu_get_cpu_temperature(void)
 void linux_user_init(void)
 {
 	xcz_resetn_modem_state(0);
-	usleep(5);
+	local_delay_us(5);
 	xcz_resetn_modem_state(1);
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
@@ -670,7 +670,7 @@ void linux_user_init(void)
 
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
-	linux_create_thread(& nmea_t, linux_pps_thread, 20, 0);
+	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
 #endif /* WITHNMEA && WITHLFM */
 }
 
@@ -943,6 +943,7 @@ void linux_exit(void)
 	linux_cancel_thread(iq_interrupt_t);
 #if WITHNMEA
 	linux_cancel_thread(nmea_t);
+	linux_cancel_thread(pps_t);
 #endif /* WITHNMEA */
 #if WITHFT8
 	linux_cancel_thread(ft8_t);
@@ -998,7 +999,7 @@ void cs_i2c_assert(spitarget_t target)
 {
 	if (target < 256)
 	{
-		gpio_writepin((target), 1);
+		gpio_writepin((target), 0);
 	}
 	else
 	{
