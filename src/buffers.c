@@ -2419,6 +2419,8 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 	switch (usbsz)
 	{
 	default:
+		ASSERT(0);
+		break;
 	case 1:
 		p [0] = (uint8_t) (value >> 0);
 		break;
@@ -2555,6 +2557,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
 		void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 		{
+			enum { UACIN_RTS96_SAMPLEBYTES = (UACIN_RTS96_SAMPLEBITS + 7) / 8 };
 			// если есть инициализированный канал для выдачи звука
 			static voice96rts_t * p = NULL;
 			static unsigned n;
@@ -2578,15 +2581,10 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 				return;
 			}
 
-			ch0 = transform_do32(& if2rts96out, ch0);
-			ch1 = transform_do32(& if2rts96out, ch1);
-
-			p->u.buff [n ++] = ch0 >> 0;	// sample value
-			p->u.buff [n ++] = ch0 >> 8;	// sample value
-			p->u.buff [n ++] = ch0 >> 16;	// sample value
-			p->u.buff [n ++] = ch1 >> 0;	// sample value
-			p->u.buff [n ++] = ch1 >> 8;	// sample value
-			p->u.buff [n ++] = ch1 >> 16;	// sample value
+			place_le(p->u.buff + n, transform_do32(& if2rts96out, ch0), UACIN_RTS96_SAMPLEBYTES);	// sample value
+			n += UACIN_RTS96_SAMPLEBYTES;
+			place_le(p->u.buff + n, transform_do32(& if2rts96out, ch1), UACIN_RTS96_SAMPLEBYTES);	// sample value
+			n += UACIN_RTS96_SAMPLEBYTES;
 
 			if (n >= DMABUFFSIZE96RTS)
 			{
