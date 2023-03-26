@@ -492,9 +492,13 @@ extern "C" {
 #define DMABUFFSTEP_UACOUT	(UACOUT_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
 
 /* Разрядности сэмплов в каналах USB AUDIO устрйоств. UACIN - в компьютер, UACOUT - из компьютера */
+#if ! defined (UACOUT_AUDIO48_SAMPLEBITS)
+	#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+#endif /* ! defined (UACOUT_AUDIO48_SAMPLEBITS) */
 
-#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
-#define UACIN_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+#if ! defined (UACIN_AUDIO48_SAMPLEBITS)
+	#define UACIN_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+#endif /* ! defined (UACIN_AUDIO48_SAMPLEBITS) */
 
 #define UACIN_AUDIO48_SAMPLEBYTES ((UACIN_AUDIO48_SAMPLEBITS + 7) / 8)
 #define UACOUT_AUDIO48_SAMPLEBYTES ((UACOUT_AUDIO48_SAMPLEBITS + 7) / 8)
