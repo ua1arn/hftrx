@@ -11,7 +11,7 @@
 #ifndef ARM_ALLWT128S3_CTLSTYLE_TBOARD_V0_H_INCLUDED
 #define ARM_ALLWT128S3_CTLSTYLE_TBOARD_V0_H_INCLUDED 1
 
-	#define WITHBRANDSTR "Falcon"
+	#define WITHBRANDSTR "Owl"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE

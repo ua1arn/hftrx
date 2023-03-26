@@ -5201,7 +5201,7 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 static RAMFUNC void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 {
 #if WITHUSBUACIN
-	savesamplerecord16uacin(adpt_output(& uac48in, left), adpt_output(& uac48in, right));	// Запись демодулированного сигнала без озвучки клавиш в USB
+	savesampleuacin48(adpt_output(& uac48in, left), adpt_output(& uac48in, right));	// Запись демодулированного сигнала без озвучки клавиш в USB
 #endif /* WITHUSBUACIN */
 }
 
@@ -5209,7 +5209,7 @@ static RAMFUNC void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 {
 #if WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV)
-	savesamplerecord16SD(adpt_output(& sdcardio, left), adpt_output(& sdcardio, right));	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
+	savesamplewav48(adpt_output(& sdcardio, left), adpt_output(& sdcardio, right));	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
