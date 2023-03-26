@@ -59,11 +59,12 @@ enum {
 #define AXI_IQ_TX_COUNT_ADDR	0x8004d000
 #define AXI_ADI_ADDR			0x80040000
 #define AXI_FIFO_PHONES_ADDR	0x80043000
+#define AXI_FIFO_MIC_ADDR		0x8004e000
 #define AXI_FIR_RELOAD_ADDR		0x8004b000
 #define AXI_DCDC_PWM_ADDR		0x80048000
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		51
-#define CALIBRATION_IQ_CIC_RX_SHIFT		59
+#define CALIBRATION_IQ_CIC_RX_SHIFT		58
 #define CALIBRATION_TX_SHIFT			25
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */

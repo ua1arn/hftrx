@@ -32,6 +32,7 @@ enum {
 	rx_cic_shift_pos 	= 16,
 	tx_state_pos 		= 24,
 	resetn_modem_pos 	= 25,
+	hw_vfo_sel_pos		= 26,
 };
 
 void * get_highmem_ptr (uint32_t addr)
@@ -454,7 +455,7 @@ uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, con
 /*************************************************************/
 
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl,  * ph_fifo, * iq_count_rx, * iq_count_tx, * iq_fifo_rx, * iq_fifo_tx;
-static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1;
+static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
 int fd_int = 0;
 
@@ -619,7 +620,7 @@ void linux_subsystem_init(void)
 
 pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8_t, nmea_t;
 
-#if WITHCPUTEMPERATURE
+#if WITHCPUTEMPERATURE && CPUSTYLE_XCZU
 #include "../sysmon/xsysmonpsu.h"
 static XSysMonPsu xczu_sysmon;
 
@@ -628,7 +629,7 @@ float xczu_get_cpu_temperature(void)
 	u32 TempRawData = XSysMonPsu_GetAdcData(& xczu_sysmon, XSM_CH_TEMP, XSYSMON_PS);
 	return XSysMonPsu_RawToTemperature_OnChip(TempRawData);
 }
-#endif /* WITHCPUTEMPERATURE */
+#endif /* WITHCPUTEMPERATURE && CPUSTYLE_XCZU */
 
 void linux_user_init(void)
 {
@@ -655,7 +656,7 @@ void linux_user_init(void)
 	reg_write(AXI_DCDC_PWM_ADDR + 4, fan_pwm_duty);
 #endif /* defined AXI_DCDC_PWM_ADDR */
 
-#if WITHCPUTEMPERATURE
+#if WITHCPUTEMPERATURE && CPUSTYLE_XCZU
 	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);
 	XSysMonPsu_CfgInitialize(& xczu_sysmon, ConfigPtr, ConfigPtr->BaseAddress);
 	int Status = XSysMonPsu_SelfTest(& xczu_sysmon);
@@ -665,7 +666,7 @@ void linux_user_init(void)
 	}
 	XSysMonPsu_SetSequencerMode(& xczu_sysmon, XSM_SEQ_MODE_SAFE, XSYSMON_PS);
 	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_256_SAMPLES, XSYSMON_PS);
-#endif /* WITHCPUTEMPERATURE */
+#endif /* WITHCPUTEMPERATURE && CPUSTYLE_XCZU */
 
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
@@ -702,7 +703,7 @@ void update_modem_ctrl(void)
 {
 	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) | ((tx_shift & 0xFF) << tx_shift_pos)
 			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) | (!!tx_state << tx_state_pos)
-			| (!!resetn_modem << resetn_modem_pos);
+			| (!!resetn_modem << resetn_modem_pos) | (!!hw_vfo_sel << hw_vfo_sel_pos);
 
 	* modem_ctrl = v;
 }
@@ -748,6 +749,7 @@ uint32_t xcz_rx_iq_shift(uint8_t val) // 52
 void xcz_dds_ftw_sub(const uint_least64_t * val)
 {
 	uint32_t v = * val;
+	* ftw_sub = v;
 	mirror_nco2 = v;
 }
 
@@ -774,6 +776,16 @@ uint32_t xcz_tx_shift(uint32_t val)
 	}
 	return tx_shift;
 }
+
+#if WITHHWDUALVFO
+
+void hamradio_set_hw_vfo(uint_fast8_t v)
+{
+	hw_vfo_sel = v != 0;
+	update_modem_ctrl();
+}
+
+#endif /* WITHHWDUALVFO */
 
 #if WITHDSPEXTFIR
 volatile uint32_t * fir_reload = NULL;

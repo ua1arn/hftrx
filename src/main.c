@@ -21485,6 +21485,14 @@ void hamradio_split_mode_toggle(void)
 {
 	uif_key_mainsubrx();
 }
+
+void hamradio_split_vfo_swap(void)
+{
+	uif_key_click_a_ex_b();
+#if WITHHWDUALVFO
+	hamradio_set_hw_vfo(gvfoab);
+#endif /* WITHHWDUALVFO */
+}
 #endif /* WITHUSEDUALWATCH */
 
 // основной цикл программы при работе в режиме любительского премника

@@ -61,18 +61,20 @@ static uint_fast8_t tmpstr_index = 0;
 
 #if GUI_SHOW_INFOBAR
 
+//todo: перенести раскладку инфобара в конфиг
 static uint8_t infobar_selected = 0;
 const uint8_t infobar_places [infobar_num_places] = {
 		INFOBAR_AF,
 		INFOBAR_AF_VOLUME,
 		INFOBAR_ATT,
 		INFOBAR_DNR,
-#if WITHPS7BOARD_EBAZ4205 || WITHPS7BOARD_EBAZ_7020
-		INFOBAR_EMPTY,
-		INFOBAR_EMPTY,
-#else
 		INFOBAR_TX_POWER,
+#if WITHPS7BOARD_EBAZ4205 || WITHPS7BOARD_EBAZ_7020
 		INFOBAR_VOLTAGE | INFOBAR_NOACTION,
+#elif WITHUSEDUALWATCH
+		INFOBAR_SPLIT,
+#else
+		INFOBAR_EMPTY,
 #endif /* WITHPS7BOARD_EBAZ4205 */
 		INFOBAR_CPU_TEMP | INFOBAR_NOACTION,
 		INFOBAR_2ND_ENC_MENU
@@ -351,7 +353,7 @@ static void window_infobar_menu_process(void)
 #if WITHUSEDUALWATCH
 		case INFOBAR_SPLIT:
 		{
-			for (unsigned i = 0; i < 2; i ++)
+			for (unsigned i = 0; i < 3; i ++)
 			{
 				char btn_name [6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
@@ -369,6 +371,10 @@ static void window_infobar_menu_process(void)
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "SPLIT");
 				}
 				else if (i == 1)
+				{
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "A<->B");
+				}
+				else if (i == 2)
 				{
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), hamradio_get_mainsubrxmode3_value_P());
 				}
@@ -523,7 +529,11 @@ static void window_infobar_menu_process(void)
 				{
 					bh->is_locked = hamradio_split_toggle();
 				}
-				else if (bh->payload == 2) // SPLIT mode
+				else if (bh->payload == 2) // SPLIT swap
+				{
+					hamradio_split_vfo_swap();
+				}
+				else if (bh->payload == 3) // SPLIT mode
 				{
 					hamradio_split_mode_toggle();
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), hamradio_get_mainsubrxmode3_value_P());
