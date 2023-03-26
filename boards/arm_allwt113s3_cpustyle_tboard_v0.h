@@ -16,12 +16,12 @@
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. */
-
-//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-//#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
-#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
-//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+//
+////#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+////#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
+//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+////#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
