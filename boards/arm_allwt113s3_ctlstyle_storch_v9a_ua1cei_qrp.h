@@ -687,7 +687,7 @@
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCX1IN(6),		// Exernal thermo sensor ST LM235Z
+			XTHERMOIX = BOARD_ADCX1IN(0),		// Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR
