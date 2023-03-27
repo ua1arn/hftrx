@@ -1042,6 +1042,7 @@ static void gui_main_process(void)
 			{
 			case INFOBAR_DUAL_RX:
 			{
+#if WITHUSEDUALWATCH
 				static uint_fast8_t val = 0;
 				unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
 
@@ -1052,6 +1053,7 @@ static void gui_main_process(void)
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
 				local_snprintf_P(buf, buflen, "VFO %s", hamradio_get_gvfoab() ? "2" : "1");
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
+#endif /* WITHUSEDUALWATCH */
 			}
 				break;
 
