@@ -106,8 +106,8 @@
 	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+	#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -258,21 +258,12 @@
 	// Инициализируются I2S1 в дуплексном режиме.
 	// аудиокодек
 	#define I2S1HW_INITIALIZE(master) do { \
-		arm_hardware_piog_altfn20(!! (master) * 1u << 11, GPIO_CFG_AF2); /* TEST PG11 I2S1-MCLK	pin P2-7  - wire to pin 8 hseda 24bit vga+audio board */ \
-		arm_hardware_piog_altfn20(1u << 12, GPIO_CFG_AF2); /* PG12 I2S1-LRCK	WL_REG_ON, pin P2-6 - wire to pin 9 */ \
-		arm_hardware_piog_altfn20(1u << 13, GPIO_CFG_AF2); /* PG13 I2S1-BCLK	AP_WAKE_BT, pin P2-5 - wire to pin 11 */ \
-		arm_hardware_piog_altfn20(1u << 14, GPIO_CFG_AF2); /* PG14 I2S1-DIN0 from codec, BT_WAKE_AP, pin P2-4 - wire to pin 4 */ \
-		arm_hardware_piog_altfn20(1u << 15, GPIO_CFG_AF2); /* PG15 I2S1-DOUT0 co codec, BT_EN, pin P2-3 - wire to pin 10 */ \
 	} while (0)
 	#define HARDWARE_I2S1HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S1HW_DOUT 0	/* DOUT0 used */
 	// Инициализируются I2S2 в дуплексном режиме.
 	// FPGA или IF codec
 	#define I2S2HW_INITIALIZE(master) do { \
-		arm_hardware_piob_altfn20(0 * 1u << 6,	GPIO_CFG_AF3); /* PB6 I2S2-LRCK	*/ \
-		arm_hardware_piob_altfn20(0 * 1u << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
-		arm_hardware_piob_altfn20(0 * 1u << 4,	GPIO_CFG_AF3); /* PB4 I2S2-DOUT0 to FPGA */ \
-		arm_hardware_piob_altfn20(0 * 1u << 3,	GPIO_CFG_AF5); /* PB3 I2S2-DIN0 from FPGA */ \
 	} while (0)
 	#define HARDWARE_I2S2HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S2HW_DOUT 0	/* DOUT0 used */
