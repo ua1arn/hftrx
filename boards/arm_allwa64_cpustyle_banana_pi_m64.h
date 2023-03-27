@@ -142,8 +142,8 @@
 
 	#if WITHINTEGRATEDDSP
 
-		#define UACOUT_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
-		#define UACIN_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
+		#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+		#define UACIN_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
 		#define WITHUSBUACIN	1
 		#define WITHUSBUACOUT	1
 
@@ -967,13 +967,14 @@
 		} while (0)
 #endif
 
-	int axp803_initialize(void);
+	#if WITHISBOOTLOADER
+		int axp803_initialize(void);
 
-	/* Контроллер питания AXP803 */
-	#define BOARD_PMIC_INITIALIZE() do { \
-		axp803_initialize(); \
-	} while (0)
-
+		/* Контроллер питания AXP803 */
+		#define BOARD_PMIC_INITIALIZE() do { \
+			axp803_initialize(); \
+		} while (0)
+	#endif /* WITHISBOOTLOADER */
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_USERBOOT_BIT	(1u << 1)	/* PB1: ~USER_BOOT */
