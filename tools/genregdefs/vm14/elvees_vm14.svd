@@ -10,6 +10,255 @@
  <resetMask>0xFFFFFFFF</resetMask>
  <peripherals>
   <peripheral>
+  <name>PMCTR</name>
+  <description>Контроллер управления питанием</description>
+  <baseAddress>0x38095000</baseAddress>
+  <registers>
+   <register>
+    <name>SYS_PWR_STATUS</name>
+    <displayName>SYS_PWR_STATUS</displayName>
+    <description>Регистр статуса доменов</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_IMASK</name>
+    <displayName>SYS_PWR_IMASK</displayName>
+    <description>Регистр маски прерывания SYS_PWR_INT</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_IRSTAT</name>
+    <displayName>SYS_PWR_IRSTAT</displayName>
+    <description>Регистр наличного статуса прерывания SYS_PWR_ISTAT</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_INT</name>
+    <displayName>SYS_PWR_INT</displayName>
+    <description>Регистр статуса прерывания SYS_PWR_INT</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_ICLR</name>
+    <displayName>SYS_PWR_ICLR</displayName>
+    <description>Регистр очистки статуса прерывания SYS_PWR_INT</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_DELAY</name>
+    <displayName>SYS_PWR_DELAY</displayName>
+    <description>Регистр задания задержек автоматов</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DDR_PIN_RET</name>
+    <displayName>DDR_PIN_RET</displayName>
+    <description>Регистр перевода выводов DDR в режим хранения состояния</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DDR_INIT_END</name>
+    <displayName>DDR_INIT_END</displayName>
+    <description>Регистр вывода контроллеров DDRMC0, DDRMC1 из режима инициализации</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WARM_RST_EN</name>
+    <displayName>WARM_RST_EN</displayName>
+    <description>Регистр разрешения «теплого» сброса</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SW_RST</name>
+    <displayName>SW_RST</displayName>
+    <description>Регистр программного «теплого» сброса</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WARM_RST_STATUS</name>
+    <displayName>WARM_RST_STATUS</displayName>
+    <description>Регистр статуса последнего сброса</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PDM_RST_STATUS</name>
+    <displayName>PDM_RST_STATUS</displayName>
+    <description>Регистр статуса сброса доменов питания</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NVMODE</name>
+    <displayName>NVMODE</displayName>
+    <description>Регистр управления сигналами NVMODE</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000050</addressOffset>
+    <register>
+     <name>CPU0_WKP_MASK</name>
+     <displayName>CPU0_WKP_MASK</displayName>
+     <description>Регистр маски включения домена CPU0 по прерываниям</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+   </cluster>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000060</addressOffset>
+    <register>
+     <name>CPU1_WKP_MASK</name>
+     <displayName>CPU1_WKP_MASK</displayName>
+     <description>Регистр маски включения домена CPU1 по прерываниям</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+   </cluster>
+   <register>
+    <name>ALWAYS_MISC0</name>
+    <displayName>ALWAYS_MISC0</displayName>
+    <description>Регистр общего назначения, не сбрасываемый при «теплом» сбросе</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALWAYS_MISC1</name>
+    <displayName>ALWAYS_MISC1</displayName>
+    <description>Регистр общего назначения, не сбрасываемый при «теплом» сбросе</description>
+    <addressOffset>0x074</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WARM_BOOT_OVRD</name>
+    <displayName>WARM_BOOT_OVRD</displayName>
+    <description>Регистр управления загрузкой при «теплом» сбросе</description>
+    <addressOffset>0x078</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_UP</name>
+    <displayName>CORE_PWR_UP</displayName>
+    <description>Регистр включения доменов</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_DOWN</name>
+    <displayName>CORE_PWR_DOWN</displayName>
+    <description>Регистр выключения доменов</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_STATUS</name>
+    <displayName>CORE_PWR_STATUS</displayName>
+    <description>Регистр статуса доменов</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_IMASK</name>
+    <displayName>CORE_PWR_IMASK</displayName>
+    <description>Регистр маски прерывания CORE_PWR_INT</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_IRSTAT</name>
+    <displayName>CORE_PWR_IRSTAT</displayName>
+    <description>Регистр наличного статуса прерывания CORE_PWR_INT</description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_ISTAT</name>
+    <displayName>CORE_PWR_ISTAT</displayName>
+    <description>Регистр статуса прерывания CORE_PWR_INT</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_ICLR</name>
+    <displayName>CORE_PWR_ICLR</displayName>
+    <description>Регистр очистки статуса прерывания CORE_PWR_INT</description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_DELAY</name>
+    <displayName>CORE_PWR_DELAY</displayName>
+    <description>Регистр задания задержек автоматов доменов</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>UART0</name>
   <description>Universal Asynchronous Receiver-Transmitter</description>
   <baseAddress>0x38028000</baseAddress>

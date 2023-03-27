@@ -1,0 +1,29 @@
+#type; PMCTR
+#comment; Контроллер управления питанием
+#base; PMCTR 0x38095000
+#regdef; SYS_PWR_STATUS; 0x00c; Регистр статуса доменов
+#regdef; SYS_PWR_IMASK; 0x010; Регистр маски прерывания SYS_PWR_INT
+#regdef; SYS_PWR_IRSTAT; 0x014; Регистр наличного статуса прерывания SYS_PWR_ISTAT
+#regdef; SYS_PWR_INT; 0x018;  Регистр статуса прерывания SYS_PWR_INT
+#regdef; SYS_PWR_ICLR; 0x01c; Регистр очистки статуса прерывания SYS_PWR_INT
+#regdef; SYS_PWR_DELAY; 0x020; Регистр задания задержек автоматов
+#regdef; DDR_PIN_RET; 0x024; Регистр перевода выводов DDR в режим хранения состояния
+#regdef; DDR_INIT_END; 0x028; Регистр вывода контроллеров DDRMC0, DDRMC1 из режима инициализации
+#regdef; WARM_RST_EN; 0x2c; Регистр разрешения «теплого» сброса
+#regdef; SW_RST; 0x40; Регистр программного «теплого» сброса
+#regdef; WARM_RST_STATUS; 0x44; Регистр статуса последнего сброса
+#regdef; PDM_RST_STATUS; 0x48; Регистр статуса сброса доменов питания
+#regdef; NVMODE; 0x4c; Регистр управления сигналами NVMODE
+#regdef; CPU0_WKP_MASK; 0x50 4; Регистр маски включения домена CPU0 по прерываниям
+#regdef; CPU1_WKP_MASK; 0x60 4; Регистр маски включения домена CPU1 по прерываниям
+#regdef; ALWAYS_MISC0; 0x70; Регистр общего назначения, не сбрасываемый при «теплом» сбросе
+#regdef; ALWAYS_MISC1; 0x74; Регистр общего назначения, не сбрасываемый при «теплом» сбросе
+#regdef; WARM_BOOT_OVRD; 0x78; Регистр управления загрузкой при «теплом» сбросе
+#regdef; CORE_PWR_UP; 0x080; Регистр включения доменов
+#regdef; CORE_PWR_DOWN; 0x084; Регистр выключения доменов
+#regdef; CORE_PWR_STATUS; 0x08c; Регистр статуса доменов
+#regdef; CORE_PWR_IMASK; 0x090; Регистр маски прерывания CORE_PWR_INT
+#regdef; CORE_PWR_IRSTAT; 0x094; Регистр наличного статуса прерывания CORE_PWR_INT
+#regdef; CORE_PWR_ISTAT; 0x098; Регистр статуса прерывания CORE_PWR_INT
+#regdef; CORE_PWR_ICLR; 0x09c; Регистр очистки статуса прерывания CORE_PWR_INT
+#regdef; CORE_PWR_DELAY; 0x0a0; Регистр задания задержек автоматов доменов

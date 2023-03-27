@@ -3816,6 +3816,19 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	(void) C0_CPUX_CFG->C0_RST_CTRL;
 }
 
+#elif CPUSTYLE_VM14
+
+// Страницы 74..78 документа Manual_1892VM14YA.pdf
+
+static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	PMCTR->ALWAYS_MISC0 = startfunc;
+	PMCTR->ALWAYS_MISC1 = startfunc;	/* надо ли? */
+
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	/* Generate an IT to core 1 */
+	__SEV();
+}
 
 #endif /* CPU types */
 
