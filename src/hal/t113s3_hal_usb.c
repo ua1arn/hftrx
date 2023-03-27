@@ -165,95 +165,95 @@ static void usb_iso_update_enable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 7);	// MUSB2_MASK_ISOUPD
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_iso_update_disable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 7);	// MUSB2_MASK_ISOUPD
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_soft_connect(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 6);	// MUSB2_MASK_SOFTC
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_soft_disconnect(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 6);	// MUSB2_MASK_SOFTC
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_high_speed_enable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 5);	// HSEN
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_high_speed_disable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 5);	// HSEN
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static uint32_t usb_is_high_speed(pusb_struct pusb)
 {
-	return (USBOTG0->USB_POWER >> 4) & 0x1;	// HSFLAG
+	return (USBOTG0->USB_GCS >> 4) & 0x1;	// HSFLAG
 }
 
 static void usb_set_reset(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 3);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_clear_reset(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 3);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_set_resume(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 2);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_clear_resume(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 2);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 
@@ -261,42 +261,42 @@ static void usb_set_suspend(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 1);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_clear_suspend(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 1);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 
 static uint32_t usb_check_suspend(pusb_struct pusb)
 {
-	return (USBOTG0->USB_POWER >> 1) & 0x01;
+	return (USBOTG0->USB_GCS >> 1) & 0x01;
 }
 
 static void usb_suspendm_enable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 0);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_suspendm_disable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 0);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static uint32_t usb_get_ep0_interrupt_status(pusb_struct pusb)
@@ -411,13 +411,13 @@ static void usb_select_ep(pusb_struct pusb, uint32_t ep_no)
 	ASSERT(ep_no <= USB_MAX_EP_NO);
 	if (ep_no > USB_MAX_EP_NO)
 		return;
-	USBOTG0->USB_EPINDEX = ep_no;
+	USBOTG0->USB_GCS = (USBOTG0->USB_GCS & ~ (0x0F << 16)) | ((0x0F & ep_no) << 16); // EPIND
 	//put_bvalue(USBOTG0_BASE + USB_bINDEX_OFF, ep_no);
 }
 
 static uint32_t usb_get_active_ep(pusb_struct pusb)
 {
-	return USBOTG0->USB_EPINDEX & 0x0F;
+	return (USBOTG0->USB_GCS >> 16) & 0x0F; // EPIND
 	//return get_bvalue(USBOTG0_BASE + USB_bINDEX_OFF) & 0xf;
 }
 
@@ -670,68 +670,62 @@ static void usb_set_eprx_interval(pusb_struct pusb, uint32_t interval)
 /* host ? */
 static uint32_t usb_is_b_device(pusb_struct pusb)
 {
-	return (USBOTG0->USB_DEVCTL >> 7) & 0x1;
+	return (USBOTG0->USB_GCS >> 15) & 0x1;	// BDev
 }
 
-/* host ? */
-static uint32_t usb_device_connected_is_fs(pusb_struct pusb)
-{
-	return (USBOTG0->USB_DEVCTL >> 6) & 0x1;
-}
-
-/* host ? */
-static uint32_t usb_device_connected_is_ls(pusb_struct pusb)
-{
-	return (USBOTG0->USB_DEVCTL >> 5) & 0x1;
-}
+///* host ? */
+//static uint32_t usb_device_connected_is_fs(pusb_struct pusb)
+//{
+//	return (USBOTG0->USB_GCS >> 14) & 0x1;
+//}
+//
+///* host ? */
+//static uint32_t usb_device_connected_is_ls(pusb_struct pusb)
+//{
+//	return (USBOTG0->USB_GCS >> 13) & 0x1;
+//}
 
 // USB_VBUS_VBUSVLD
 static uint32_t usb_get_vbus_level(pusb_struct pusb)
 {
-	return (USBOTG0->USB_DEVCTL >> 3) & 0x3;
+	return (USBOTG0->USB_GCS >> 11) & 0x3;	// VBus
 }
 
 static uint32_t usb_is_host(pusb_struct pusb)
 {
-	return (USBOTG0->USB_DEVCTL >> 2) & 0x1;
+	return (USBOTG0->USB_GCS >> 10) & 0x1;	// HostMode
 }
 
-static void usb_set_hnp_request(pusb_struct pusb)
-{
-	uint8_t reg_val;
+///* host ? */
+//static void usb_set_hnp_request(pusb_struct pusb)
+//{
+//	uint32_t reg_val;
+//
+//	reg_val = USBOTG0->USB_GCS;
+//	reg_val |= 0x1u << 9;
+//	USBOTG0->USB_GCS = reg_val;
+//}
+//
+///* host ? */
+//static uint32_t usb_hnp_in_porcess(pusb_struct pusb)
+//{
+//	return (USBOTG0->USB_GCS >> 9) & 0x1;
+//}
 
-	reg_val = USBOTG0->USB_DEVCTL;
-	reg_val |= 0x1u << 1;
-	USBOTG0->USB_DEVCTL = reg_val;
-}
-
-static uint32_t usb_hnp_in_porcess(pusb_struct pusb)
-{
-	return (USBOTG0->USB_DEVCTL >> 1) & 0x1;
-}
-
-/* host ? */
 static void usb_start_session(pusb_struct pusb)
 {
-	uint8_t reg_val;
-
-	reg_val = 0x1;
-	USBOTG0->USB_DEVCTL = reg_val;
+	USBOTG0->USB_GCS |= (1u << 8);	// Session
 }
 
-/* host ? */
 static void usb_end_session(pusb_struct pusb)
 {
-	uint8_t reg_val;
-
-	reg_val = 0x0;
-	USBOTG0->USB_DEVCTL = reg_val;
+	USBOTG0->USB_GCS &= ~ (1u << 8);	// Session
 }
 
 /* host ? */
 static uint32_t usb_check_session(pusb_struct pusb)
 {
-	return USBOTG0->USB_DEVCTL & 0x1;
+	return (USBOTG0->USB_GCS >> 8) & 0x1;
 }
 
 static uint32_t aw_log2(uint32_t x)
@@ -784,37 +778,38 @@ static void usb_set_eprx_fifo_addr(pusb_struct pusb, uint32_t addr)
 
 static void usb_fifo_accessed_by_cpu(pusb_struct pusb)
 {
-	USBOTG0->USB_DMACTL &= ~ (0x1u << 0);
-	while ((USBOTG0->USB_DMACTL & (0x1u << 0)) != 0)
+	USBOTG0->USB_GCS &= ~ (0x1u << 24);	// FIFO_BUS_SEL
+	while ((USBOTG0->USB_GCS & (0x1u << 24)) != 0)	// FIFO_BUS_SEL
 		;
 }
 
 static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t is_tx)
 {
-	uint8_t reg_val;
+	uint32_t reg_val;
 
 	ASSERT(ep_no < USB_MAX_EP_NO);
 	if (ep_no>USB_MAX_EP_NO)
 		return;
-	reg_val = 0x1;
-	if (!is_tx) reg_val |= 0x1u << 1;
+	reg_val = 0x1;	// FIFO_BUS_SEL
+	if (!is_tx) reg_val |= 0x1u << 1;	// RX endpoint flag
 	reg_val |= (ep_no-1) << 2;
-	USBOTG0->USB_DMACTL = reg_val;
+
+	USBOTG0->USB_GCS = (USBOTG0->USB_GCS & ~ (0xFFu << 24)) | (reg_val << 24);
 }
 
 static uint8_t usb_get_fifo_access_config(pusb_struct pusb)
 {
-	return USBOTG0->USB_DMACTL;
+	return (USBOTG0->USB_GCS >> 24) & 0xFF;
 }
 
 static uint32_t usb_get_dma_ep_no(pusb_struct pusb)
 {
-	return ((USBOTG0->USB_DMACTL & 0x1f) >> 2)+1;
+	return ((USBOTG0->USB_GCS & 0x1f000000) >> 26) + 1;
 }
 
 static void usb_set_fifo_access_config(pusb_struct pusb, uint8_t config)
 {
-	USBOTG0->USB_DMACTL = config;
+	USBOTG0->USB_GCS = (USBOTG0->USB_GCS & ~ (0xFFu << 24)) | (config << 24);
 }
 
 static uint32_t usb_get_fsm(pusb_struct pusb)
@@ -4070,7 +4065,7 @@ HAL_StatusTypeDef  USB_DevConnect(USBOTG_TypeDef *USBx)
 	//PRINTF("USB_DevConnect\n");
 
     /* Enable pullup on D+ */
-	USBx->USB_POWER |= MUSB2_MASK_SOFTC;
+	USBx->USB_GCS |= MUSB2_MASK_SOFTC;
 
     return HAL_OK;
 }
@@ -4085,7 +4080,7 @@ HAL_StatusTypeDef  USB_DevDisconnect(USBOTG_TypeDef *USBx)
 	//PRINTF("USB_DevDisconnect\n");
 
 	/* Disable pullup on D+ */
-	USBx->USB_POWER &= ~ MUSB2_MASK_SOFTC;
+	USBx->USB_GCS &= ~ MUSB2_MASK_SOFTC;
 
 	return HAL_OK;
 }

@@ -1403,10 +1403,7 @@ typedef struct USBEHCI_Type
 typedef struct USBOTG_Type
 {
     volatile uint32_t USB_EPFIFO [0x010];             /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
-    volatile uint8_t  USB_POWER;                      /*!< Offset 0x040 USB_POWER USB_GCS */
-    volatile uint8_t  USB_DEVCTL;                     /*!< Offset 0x041 USB_DEVCTL USB_GCS */
-    volatile uint8_t  USB_EPINDEX;                    /*!< Offset 0x042 USB_EPINDEX USB_GCS */
-    volatile uint8_t  USB_DMACTL;                     /*!< Offset 0x043 USB_DMACTL USB_GCS */
+    volatile uint32_t USB_GCS;                        /*!< Offset 0x040 USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL */
     volatile uint16_t USB_INTTX;                      /*!< Offset 0x044 USB_INTTX USB_EPINTF */
     volatile uint16_t USB_INTRX;                      /*!< Offset 0x046 USB_INTRX USB_EPINTF */
     volatile uint16_t USB_INTTXE;                     /*!< Offset 0x048 USB_INTTXE USB_EPINTE */
