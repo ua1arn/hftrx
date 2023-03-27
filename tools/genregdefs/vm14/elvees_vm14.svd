@@ -11,7 +11,7 @@
  <peripherals>
   <peripheral>
   <name>PMCTR</name>
-  <description>Контроллер управления питанием</description>
+  <description>Контроллер управления энергопотреблением</description>
   <baseAddress>0x38095000</baseAddress>
   <registers>
    <register>
@@ -252,6 +252,362 @@
     <displayName>CORE_PWR_DELAY</displayName>
     <description>Регистр задания задержек автоматов доменов</description>
     <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>SMCTR</name>
+  <description>общиме системные настройки микросхемы</description>
+  <baseAddress>0x38096000</baseAddress>
+  <registers>
+   <register>
+    <name>BOOT</name>
+    <displayName>BOOT</displayName>
+    <description>Регистр отображения сигналов BOOT[1:0] микросхемы</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BOOT_REMAP</name>
+    <displayName>BOOT_REMAP</displayName>
+    <description>Регистр управления картой памяти при начальной загрузке</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPU_CFGNMFI</name>
+    <displayName>MPU_CFGNMFI</displayName>
+    <description>Регистр разрешения немаскируемого FIQ в MPU</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DDR_REMAP</name>
+    <displayName>DDR_REMAP</displayName>
+    <description>Регистр управления картой памяти для DDR</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MIPI_MUX</name>
+    <displayName>MIPI_MUX</displayName>
+    <description>Регистр мультиплексирования MIPI DSI</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CHIP_ID</name>
+    <displayName>CHIP_ID</displayName>
+    <description>ID микросхемы</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CHIP_CONFIG</name>
+    <displayName>CHIP_CONFIG</displayName>
+    <description>Регистр конфигурации микросхемы</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMA_ARM</name>
+    <displayName>EMA_ARM</displayName>
+    <description>Регистр подстройки памятей в ARM MPU</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMA_L2</name>
+    <displayName>EMA_L2</displayName>
+    <description>Регистр подстройки памятей в L2CACHE</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMA_DSP</name>
+    <displayName>EMA_DSP</displayName>
+    <description>Регистр подстройки памятей в DSP и VPU</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMA_CORE</name>
+    <displayName>EMA_CORE</displayName>
+    <description>Регистр подстройки памятей в CORE</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOPULL_CTR</name>
+    <displayName>IOPULL_CTR</displayName>
+    <description>Регистры управления подтягивающими резисторами контактных площадок микросхемы</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMM_DLOCK</name>
+    <displayName>COMM_DLOCK</displayName>
+    <description>Регистр индикации зависания коммутатора микросхемы</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>CMCTR</name>
+  <description>Контроллер управления синхронизацией</description>
+  <baseAddress>0x38094000</baseAddress>
+  <registers>
+   <register>
+    <name>DIV_MPU_CTR</name>
+    <displayName>DIV_MPU_CTR</displayName>
+    <description>Регистр делителя частоты MPUCLK</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIV_ATB_CTR</name>
+    <displayName>DIV_ATB_CTR</displayName>
+    <description>Регистр делителя частоты ATCLK</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIV_APB_CTR</name>
+    <displayName>DIV_APB_CTR</displayName>
+    <description>Регистр делителя частоты APCLK</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CHIP_REVISION</name>
+    <displayName>CHIP_REVISION</displayName>
+    <description>Регистр ревизии микросхемы</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GATE_MPU_CTR</name>
+    <displayName>GATE_MPU_CTR</displayName>
+    <description>Регистр по управлению отключением частот в CMCTR_MPU</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIV_GPU_CTR</name>
+    <displayName>DIV_GPU_CTR</displayName>
+    <description>Регистр делителя частоты GPU_ACLK</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIV_DDR0_CTR</name>
+    <displayName>DIV_DDR0_CTR</displayName>
+    <description>Регистр делителя частоты DDR0_SCLK</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIV_DDR1_CTR</name>
+    <displayName>DIV_DDR1_CTR</displayName>
+    <description>Регистр делителя частоты DDR1_SCLK</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIV_NFC_CTR</name>
+    <displayName>DIV_NFC_CTR</displayName>
+    <description>Регистр делителя частоты NFC_SCLK</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIV_NOR_CTR</name>
+    <displayName>DIV_NOR_CTR</displayName>
+    <description>Регистр делителя частоты NOR_SCLK</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIV_SYS0_CTR</name>
+    <displayName>DIV_SYS0_CTR</displayName>
+    <description>Регистр делителя частоты L1_HCLK и связанных с ней частот</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIV_SYS1_CTR</name>
+    <displayName>DIV_SYS1_CTR</displayName>
+    <description>Регистр делителя частоты L3_PCLK и связанных с ней частот</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GATE_CORE_CTR</name>
+    <displayName>GATE_CORE_CTR</displayName>
+    <description>Регистр по управлению отключением частот в CMCTR_CORE</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GATE_SYS_CTR</name>
+    <displayName>GATE_SYS_CTR</displayName>
+    <description>Регистр по управлению отключением частот в CMCTR_SYS</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GATE_DSP_CTR</name>
+    <displayName>GATE_DSP_CTR</displayName>
+    <description>Регистр по управлению отключением частот в CMCTR_DSP</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MUX_CLKOUT</name>
+    <displayName>MUX_CLKOUT</displayName>
+    <description>Регистр выбора частоты для вывода CLKOUT</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIV_CLKOUT</name>
+    <displayName>DIV_CLKOUT</displayName>
+    <description>Регистр делителя частоты для вывода CLKOUT</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GATE_CLKOUT</name>
+    <displayName>GATE_CLKOUT</displayName>
+    <description>Регистр управления отключением частоты для вывода CLKOUT</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LS_ENABLE</name>
+    <displayName>LS_ENABLE</displayName>
+    <description>Регистр контроля функции LightSleep памятей микросхемы</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SEL_APLL</name>
+    <displayName>SEL_APLL</displayName>
+    <description>Регистр контроля APLL</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SEL_CPLL</name>
+    <displayName>SEL_CPLL</displayName>
+    <description>Регистр контроля CPLL</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SEL_DPLL</name>
+    <displayName>SEL_DPLL</displayName>
+    <description>Регистр контроля DPLL</description>
+    <addressOffset>0x108</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SEL_SPLL</name>
+    <displayName>SEL_SPLL</displayName>
+    <description>Регистр контроля SPLL</description>
+    <addressOffset>0x10C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SEL_VPLL</name>
+    <displayName>SEL_VPLL</displayName>
+    <description>Регистр контроля VPLL</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SEL_UPLL</name>
+    <displayName>SEL_UPLL</displayName>
+    <description>Регистр контроля UPLL</description>
+    <addressOffset>0x114</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

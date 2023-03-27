@@ -1,5 +1,5 @@
 #type; PMCTR
-#comment; Контроллер управления питанием
+#comment; Контроллер управления энергопотреблением
 #base; PMCTR 0x38095000
 #regdef; SYS_PWR_STATUS; 0x00c; Регистр статуса доменов
 #regdef; SYS_PWR_IMASK; 0x010; Регистр маски прерывания SYS_PWR_INT

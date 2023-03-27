@@ -47,14 +47,16 @@ typedef enum IRQn
 #define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Base */
 #define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Base */
 #define UART3_BASE ((uintptr_t) 0x3802B000)           /*!< UART Base */
+#define CMCTR_BASE ((uintptr_t) 0x38094000)           /*!< CMCTR Base */
 #define PMCTR_BASE ((uintptr_t) 0x38095000)           /*!< PMCTR Base */
+#define SMCTR_BASE ((uintptr_t) 0x38096000)           /*!< SMCTR Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x39000100)   /*!<  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x39001000) /*!<  Base */
 
 /*
  * @brief PMCTR
  */
-/*!< PMCTR Контроллер управления питанием */
+/*!< PMCTR Контроллер управления энергопотреблением */
 typedef struct PMCTR_Type
 {
              uint32_t reserved_0x000 [0x0003];
@@ -88,6 +90,65 @@ typedef struct PMCTR_Type
     volatile uint32_t CORE_PWR_ICLR;                  /*!< Offset 0x09C Регистр очистки статуса прерывания CORE_PWR_INT */
     volatile uint32_t CORE_PWR_DELAY;                 /*!< Offset 0x0A0 Регистр задания задержек автоматов доменов */
 } PMCTR_TypeDef; /* size of structure = 0x0A4 */
+/*
+ * @brief SMCTR
+ */
+/*!< SMCTR общиме системные настройки микросхемы */
+typedef struct SMCTR_Type
+{
+    volatile uint32_t BOOT;                           /*!< Offset 0x000 Регистр отображения сигналов BOOT[1:0] микросхемы */
+    volatile uint32_t BOOT_REMAP;                     /*!< Offset 0x004 Регистр управления картой памяти при начальной загрузке */
+    volatile uint32_t MPU_CFGNMFI;                    /*!< Offset 0x008 Регистр разрешения немаскируемого FIQ в MPU */
+    volatile uint32_t DDR_REMAP;                      /*!< Offset 0x00C Регистр управления картой памяти для DDR */
+             uint32_t reserved_0x010 [0x0005];
+    volatile uint32_t MIPI_MUX;                       /*!< Offset 0x024 Регистр мультиплексирования MIPI DSI */
+    volatile uint32_t CHIP_ID;                        /*!< Offset 0x028 ID микросхемы */
+    volatile uint32_t CHIP_CONFIG;                    /*!< Offset 0x02C Регистр конфигурации микросхемы */
+    volatile uint32_t EMA_ARM;                        /*!< Offset 0x030 Регистр подстройки памятей в ARM MPU */
+    volatile uint32_t EMA_L2;                         /*!< Offset 0x034 Регистр подстройки памятей в L2CACHE */
+    volatile uint32_t EMA_DSP;                        /*!< Offset 0x038 Регистр подстройки памятей в DSP и VPU */
+    volatile uint32_t EMA_CORE;                       /*!< Offset 0x03C Регистр подстройки памятей в CORE */
+    volatile uint32_t IOPULL_CTR;                     /*!< Offset 0x040 Регистры управления подтягивающими резисторами контактных площадок микросхемы */
+    volatile uint32_t COMM_DLOCK;                     /*!< Offset 0x044 Регистр индикации зависания коммутатора микросхемы */
+} SMCTR_TypeDef; /* size of structure = 0x048 */
+/*
+ * @brief CMCTR
+ */
+/*!< CMCTR Контроллер управления синхронизацией */
+typedef struct CMCTR_Type
+{
+             uint32_t reserved_0x000;
+    volatile uint32_t DIV_MPU_CTR;                    /*!< Offset 0x004 Регистр делителя частоты MPUCLK */
+    volatile uint32_t DIV_ATB_CTR;                    /*!< Offset 0x008 Регистр делителя частоты ATCLK */
+    volatile uint32_t DIV_APB_CTR;                    /*!< Offset 0x00C Регистр делителя частоты APCLK */
+    volatile uint32_t CHIP_REVISION;                  /*!< Offset 0x010 Регистр ревизии микросхемы */
+    volatile uint32_t GATE_MPU_CTR;                   /*!< Offset 0x014 Регистр по управлению отключением частот в CMCTR_MPU */
+             uint32_t reserved_0x018 [0x0005];
+    volatile uint32_t DIV_GPU_CTR;                    /*!< Offset 0x02C Регистр делителя частоты GPU_ACLK */
+    volatile uint32_t DIV_DDR0_CTR;                   /*!< Offset 0x030 Регистр делителя частоты DDR0_SCLK */
+    volatile uint32_t DIV_DDR1_CTR;                   /*!< Offset 0x034 Регистр делителя частоты DDR1_SCLK */
+    volatile uint32_t DIV_NFC_CTR;                    /*!< Offset 0x038 Регистр делителя частоты NFC_SCLK */
+    volatile uint32_t DIV_NOR_CTR;                    /*!< Offset 0x03C Регистр делителя частоты NOR_SCLK */
+    volatile uint32_t DIV_SYS0_CTR;                   /*!< Offset 0x040 Регистр делителя частоты L1_HCLK и связанных с ней частот */
+    volatile uint32_t DIV_SYS1_CTR;                   /*!< Offset 0x044 Регистр делителя частоты L3_PCLK и связанных с ней частот */
+    volatile uint32_t GATE_CORE_CTR;                  /*!< Offset 0x048 Регистр по управлению отключением частот в CMCTR_CORE */
+    volatile uint32_t GATE_SYS_CTR;                   /*!< Offset 0x04C Регистр по управлению отключением частот в CMCTR_SYS */
+             uint32_t reserved_0x050 [0x0006];
+    volatile uint32_t GATE_DSP_CTR;                   /*!< Offset 0x068 Регистр по управлению отключением частот в CMCTR_DSP */
+             uint32_t reserved_0x06C [0x0005];
+    volatile uint32_t MUX_CLKOUT;                     /*!< Offset 0x080 Регистр выбора частоты для вывода CLKOUT */
+    volatile uint32_t DIV_CLKOUT;                     /*!< Offset 0x084 Регистр делителя частоты для вывода CLKOUT */
+    volatile uint32_t GATE_CLKOUT;                    /*!< Offset 0x088 Регистр управления отключением частоты для вывода CLKOUT */
+             uint32_t reserved_0x08C;
+    volatile uint32_t LS_ENABLE;                      /*!< Offset 0x090 Регистр контроля функции LightSleep памятей микросхемы */
+             uint32_t reserved_0x094 [0x001B];
+    volatile uint32_t SEL_APLL;                       /*!< Offset 0x100 Регистр контроля APLL */
+    volatile uint32_t SEL_CPLL;                       /*!< Offset 0x104 Регистр контроля CPLL */
+    volatile uint32_t SEL_DPLL;                       /*!< Offset 0x108 Регистр контроля DPLL */
+    volatile uint32_t SEL_SPLL;                       /*!< Offset 0x10C Регистр контроля SPLL */
+    volatile uint32_t SEL_VPLL;                       /*!< Offset 0x110 Регистр контроля VPLL */
+    volatile uint32_t SEL_UPLL;                       /*!< Offset 0x114 Регистр контроля UPLL */
+} CMCTR_TypeDef; /* size of structure = 0x118 */
 /*
  * @brief UART
  */
@@ -125,7 +186,9 @@ typedef struct UART_Type
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3 Universal Asynchronous Receiver-Transmitter register set access pointer */
-#define PMCTR ((PMCTR_TypeDef *) PMCTR_BASE)          /*!< PMCTR Контроллер управления питанием register set access pointer */
+#define CMCTR ((CMCTR_TypeDef *) CMCTR_BASE)          /*!< CMCTR Контроллер управления синхронизацией register set access pointer */
+#define PMCTR ((PMCTR_TypeDef *) PMCTR_BASE)          /*!< PMCTR Контроллер управления энергопотреблением register set access pointer */
+#define SMCTR ((SMCTR_TypeDef *) SMCTR_BASE)          /*!< SMCTR общиме системные настройки микросхемы register set access pointer */
 #define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
 #define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
 

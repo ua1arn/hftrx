@@ -1,0 +1,29 @@
+#type; CMCTR
+#type; CMCTR
+#comment; Контроллер управления синхронизацией
+#base; CMCTR 0x38094000
+#regdef; DIV_MPU_CTR; 0x004; Регистр делителя частоты MPUCLK
+#regdef; DIV_ATB_CTR; 0x008; Регистр делителя частоты ATCLK
+#regdef; DIV_APB_CTR; 0x00c; Регистр делителя частоты APCLK
+#regdef; CHIP_REVISION; 0x010; Регистр ревизии микросхемы
+#regdef; GATE_MPU_CTR; 0x014; Регистр по управлению отключением частот в CMCTR_MPU
+#regdef; DIV_GPU_CTR; 0x02c; Регистр делителя частоты GPU_ACLK
+#regdef; DIV_DDR0_CTR; 0x030; Регистр делителя частоты DDR0_SCLK
+#regdef; DIV_DDR1_CTR; 0x034; Регистр делителя частоты DDR1_SCLK
+#regdef; DIV_NFC_CTR; 0x038; Регистр делителя частоты NFC_SCLK
+#regdef; DIV_NOR_CTR; 0x03c; Регистр делителя частоты NOR_SCLK
+#regdef; DIV_SYS0_CTR; 0x040; Регистр делителя частоты L1_HCLK и связанных с ней частот
+#regdef; DIV_SYS1_CTR; 0x044; Регистр делителя частоты L3_PCLK и связанных с ней частот
+#regdef; GATE_CORE_CTR; 0x048; Регистр по управлению отключением частот в CMCTR_CORE
+#regdef; GATE_SYS_CTR; 0x04c; Регистр по управлению отключением частот в CMCTR_SYS
+#regdef; GATE_DSP_CTR; 0x068; Регистр по управлению отключением частот в CMCTR_DSP
+#regdef; MUX_CLKOUT; 0x080; Регистр выбора частоты для вывода CLKOUT
+#regdef; DIV_CLKOUT; 0x084; Регистр делителя частоты для вывода CLKOUT
+#regdef; GATE_CLKOUT;0x088;  Регистр управления отключением частоты для вывода CLKOUT
+#regdef; LS_ENABLE; 0x090; Регистр контроля функции LightSleep памятей микросхемы
+#regdef; SEL_APLL; 0x100; Регистр контроля APLL
+#regdef; SEL_CPLL; 0x104; Регистр контроля CPLL
+#regdef; SEL_DPLL; 0x108; Регистр контроля DPLL
+#regdef; SEL_SPLL; 0x10c; Регистр контроля SPLL
+#regdef; SEL_VPLL; 0x110; Регистр контроля VPLL
+#regdef; SEL_UPLL; 0x114; Регистр контроля UPLL
