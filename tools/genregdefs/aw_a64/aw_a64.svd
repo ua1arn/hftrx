@@ -2849,13 +2849,18 @@
   <description></description>
   <baseAddress>0x01C22000</baseAddress>
   <interrupt>
+   <name>I2S_PCM0</name>
+   <value>45</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
    <name>I2S_PCM1</name>
-   <value>59</value>
+   <value>46</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>I2S_PCM2</name>
-   <value>60</value>
+   <value>47</value>
    <description></description>
   </interrupt>
   <registers>
@@ -2898,7 +2903,7 @@
    <register>
     <name>I2S_PCM_RXFIFO</name>
     <displayName>I2S_PCM_RXFIFO</displayName>
-    <description>I2S/PCM RXFIFO Register</description>
+    <description>I2S/PCM RX FIFO Register</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2934,7 +2939,7 @@
    <register>
     <name>I2S_PCM_TXFIFO</name>
     <displayName>I2S_PCM_TXFIFO</displayName>
-    <description>I2S/PCM TXFIFO Register</description>
+    <description>I2S/PCM TX FIFO Register</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2970,16 +2975,16 @@
    <register>
     <name>I2S_PCM_CHCFG</name>
     <displayName>I2S_PCM_CHCFG</displayName>
-    <description>I2S/PCM Channel Configuration Register</description>
+    <description>I2S/PCM Channel Configuration register</description>
     <addressOffset>0x030</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_TX0CHSEL</name>
-    <displayName>I2S_PCM_TX0CHSEL</displayName>
-    <description>I2S/PCM TX0 Channel Select Register</description>
+    <name>I2S_PCM_TX0CHCFG</name>
+    <displayName>I2S_PCM_TX0CHCFG</displayName>
+    <description>I2S/PCM TX0 Channel Configuration register</description>
     <addressOffset>0x034</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3013,73 +3018,37 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_TX0CHMAP0</name>
-    <displayName>I2S_PCM_TX0CHMAP0</displayName>
-    <description>I2S/PCM TX0 Channel Mapping Register0</description>
+    <name>I2S_PCM_TX0CHMAP</name>
+    <displayName>I2S_PCM_TX0CHMAP</displayName>
+    <description>I2S/PCM TX0 Channel Mapping Register</description>
     <addressOffset>0x044</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_TX0CHMAP1</name>
-    <displayName>I2S_PCM_TX0CHMAP1</displayName>
-    <description>I2S/PCM TX0 Channel Mapping Register1</description>
+    <name>I2S_PCM_TX1CHMAP</name>
+    <displayName>I2S_PCM_TX1CHMAP</displayName>
+    <description>I2S/PCM TX1 Channel Mapping Register</description>
     <addressOffset>0x048</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_TX1CHMAP0</name>
-    <displayName>I2S_PCM_TX1CHMAP0</displayName>
-    <description>I2S/PCM TX1 Channel Mapping Register0</description>
+    <name>I2S_PCM_TX2CHMAP</name>
+    <displayName>I2S_PCM_TX2CHMAP</displayName>
+    <description>I2S/PCM TX2 Channel Mapping Register</description>
     <addressOffset>0x04C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_TX1CHMAP1</name>
-    <displayName>I2S_PCM_TX1CHMAP1</displayName>
-    <description>I2S/PCM TX1 Channel Mapping Register1</description>
+    <name>I2S_PCM_TX3CHMAP</name>
+    <displayName>I2S_PCM_TX3CHMAP</displayName>
+    <description>I2S/PCM TX3 Channel Mapping Register</description>
     <addressOffset>0x050</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_TX2CHMAP0</name>
-    <displayName>I2S_PCM_TX2CHMAP0</displayName>
-    <description>I2S/PCM TX2 Channel Mapping Register0</description>
-    <addressOffset>0x054</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_TX2CHMAP1</name>
-    <displayName>I2S_PCM_TX2CHMAP1</displayName>
-    <description>I2S/PCM TX2 Channel Mapping Register1</description>
-    <addressOffset>0x058</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_TX3CHMAP0</name>
-    <displayName>I2S_PCM_TX3CHMAP0</displayName>
-    <description>I2S/PCM TX3 Channel Mapping Register0</description>
-    <addressOffset>0x05C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_TX3CHMAP1</name>
-    <displayName>I2S_PCM_TX3CHMAP1</displayName>
-    <description>I2S/PCM TX3 Channel Mapping Register1</description>
-    <addressOffset>0x060</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -3087,125 +3056,17 @@
    <register>
     <name>I2S_PCM_RXCHSEL</name>
     <displayName>I2S_PCM_RXCHSEL</displayName>
-    <description>I2S/PCM RX Channel Select Register</description>
-    <addressOffset>0x064</addressOffset>
+    <description>I2S/PCM RX Channel Select register</description>
+    <addressOffset>0x054</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_RXCHMAP0</name>
-    <displayName>I2S_PCM_RXCHMAP0</displayName>
-    <description>I2S/PCM RX Channel Mapping Register0</description>
-    <addressOffset>0x068</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP1</name>
-    <displayName>I2S_PCM_RXCHMAP1</displayName>
-    <description>I2S/PCM RX Channel Mapping Register1</description>
-    <addressOffset>0x06C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP2</name>
-    <displayName>I2S_PCM_RXCHMAP2</displayName>
-    <description>I2S/PCM RX Channel Mapping Register2</description>
-    <addressOffset>0x070</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP3</name>
-    <displayName>I2S_PCM_RXCHMAP3</displayName>
-    <description>I2S/PCM RX Channel Mapping Register3</description>
-    <addressOffset>0x074</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCLKCFG</name>
-    <displayName>MCLKCFG</displayName>
-    <description>ASRC MCLK Configuration Register</description>
-    <addressOffset>0x080</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>FsoutCFG</name>
-    <displayName>FsoutCFG</displayName>
-    <description>ASRC Out Sample Rate Configuration Register</description>
-    <addressOffset>0x084</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>FsinEXTCFG</name>
-    <displayName>FsinEXTCFG</displayName>
-    <description>ASRC Input Sample Pulse Extend Configuration Register</description>
-    <addressOffset>0x088</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ASRCCFG</name>
-    <displayName>ASRCCFG</displayName>
-    <description>ASRC Enable Register</description>
-    <addressOffset>0x08C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ASRCMANCFG</name>
-    <displayName>ASRCMANCFG</displayName>
-    <description>ASRC Manual Ratio Configuration Register</description>
-    <addressOffset>0x090</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ASRCRATIOSTAT</name>
-    <displayName>ASRCRATIOSTAT</displayName>
-    <description>ASRC Status Register</description>
-    <addressOffset>0x094</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ASRCFIFOSTAT</name>
-    <displayName>ASRCFIFOSTAT</displayName>
-    <description>ASRC FIFO Level Status Register</description>
-    <addressOffset>0x098</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ASRCMBISTCFG</name>
-    <displayName>ASRCMBISTCFG</displayName>
-    <description>ASRC MBIST Test Configuration Register</description>
-    <addressOffset>0x09C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ASRCMBISTSTAT</name>
-    <displayName>ASRCMBISTSTAT</displayName>
-    <description>ASRC MBIST Test Status Register</description>
-    <addressOffset>0x0A0</addressOffset>
+    <name>I2S_PCM_RXCHMAP</name>
+    <displayName>I2S_PCM_RXCHMAP</displayName>
+    <description>I2S/PCM RX Channel Mapping Register</description>
+    <addressOffset>0x058</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -3216,13 +3077,18 @@
   <name>I2S1</name>
   <baseAddress>0x01C22400</baseAddress>
   <interrupt>
+   <name>I2S_PCM0</name>
+   <value>45</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
    <name>I2S_PCM1</name>
-   <value>59</value>
+   <value>46</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>I2S_PCM2</name>
-   <value>60</value>
+   <value>47</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -3230,13 +3096,18 @@
   <name>I2S2</name>
   <baseAddress>0x01C22800</baseAddress>
   <interrupt>
+   <name>I2S_PCM0</name>
+   <value>45</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
    <name>I2S_PCM1</name>
-   <value>59</value>
+   <value>46</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>I2S_PCM2</name>
-   <value>60</value>
+   <value>47</value>
    <description></description>
   </interrupt>
   </peripheral>

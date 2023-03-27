@@ -40,10 +40,11 @@ typedef enum IRQn
     TWI1_IRQn = 39,                                   /*!< TWI  Interrupt */
     TWI2_IRQn = 40,                                   /*!< TWI  Interrupt */
     OWA_IRQn = 44,                                    /*!< OWA One Wire Audio Interrupt */
+    I2S_PCM0_IRQn = 45,                               /*!< I2S_PCM  Interrupt */
+    I2S_PCM1_IRQn = 46,                               /*!< I2S_PCM  Interrupt */
+    I2S_PCM2_IRQn = 47,                               /*!< I2S_PCM  Interrupt */
     TIMER0_IRQn = 50,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 51,                                 /*!< TIMER  Interrupt */
-    I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  Interrupt */
-    I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  Interrupt */
     R_TIMER0_IRQn = 65,                               /*!< R_TIMER  Interrupt */
     R_TIMER1_IRQn = 66,                               /*!< R_TIMER  Interrupt */
     R_WDOG_IRQn = 68,                                 /*!< R_WDOG  Interrupt */
@@ -567,43 +568,26 @@ typedef struct I2S_PCM_Type
     volatile uint32_t I2S_PCM_FMT0;                   /*!< Offset 0x004 I2S/PCM Format Register 0 */
     volatile uint32_t I2S_PCM_FMT1;                   /*!< Offset 0x008 I2S/PCM Format Register 1 */
     volatile uint32_t I2S_PCM_ISTA;                   /*!< Offset 0x00C I2S/PCM Interrupt Status Register */
-    volatile uint32_t I2S_PCM_RXFIFO;                 /*!< Offset 0x010 I2S/PCM RXFIFO Register */
+    volatile uint32_t I2S_PCM_RXFIFO;                 /*!< Offset 0x010 I2S/PCM RX FIFO Register */
     volatile uint32_t I2S_PCM_FCTL;                   /*!< Offset 0x014 I2S/PCM FIFO Control Register */
     volatile uint32_t I2S_PCM_FSTA;                   /*!< Offset 0x018 I2S/PCM FIFO Status Register */
     volatile uint32_t I2S_PCM_INT;                    /*!< Offset 0x01C I2S/PCM DMA & Interrupt Control Register */
-    volatile uint32_t I2S_PCM_TXFIFO;                 /*!< Offset 0x020 I2S/PCM TXFIFO Register */
+    volatile uint32_t I2S_PCM_TXFIFO;                 /*!< Offset 0x020 I2S/PCM TX FIFO Register */
     volatile uint32_t I2S_PCM_CLKD;                   /*!< Offset 0x024 I2S/PCM Clock Divide Register */
     volatile uint32_t I2S_PCM_TXCNT;                  /*!< Offset 0x028 I2S/PCM TX Sample Counter Register */
     volatile uint32_t I2S_PCM_RXCNT;                  /*!< Offset 0x02C I2S/PCM RX Sample Counter Register */
-    volatile uint32_t I2S_PCM_CHCFG;                  /*!< Offset 0x030 I2S/PCM Channel Configuration Register */
-    volatile uint32_t I2S_PCM_TX0CHSEL;               /*!< Offset 0x034 I2S/PCM TX0 Channel Select Register */
+    volatile uint32_t I2S_PCM_CHCFG;                  /*!< Offset 0x030 I2S/PCM Channel Configuration register */
+    volatile uint32_t I2S_PCM_TX0CHCFG;               /*!< Offset 0x034 I2S/PCM TX0 Channel Configuration register */
     volatile uint32_t I2S_PCM_TX1CHSEL;               /*!< Offset 0x038 I2S/PCM TX1 Channel Select Register */
     volatile uint32_t I2S_PCM_TX2CHSEL;               /*!< Offset 0x03C I2S/PCM TX2 Channel Select Register */
     volatile uint32_t I2S_PCM_TX3CHSEL;               /*!< Offset 0x040 I2S/PCM TX3 Channel Select Register */
-    volatile uint32_t I2S_PCM_TX0CHMAP0;              /*!< Offset 0x044 I2S/PCM TX0 Channel Mapping Register0 */
-    volatile uint32_t I2S_PCM_TX0CHMAP1;              /*!< Offset 0x048 I2S/PCM TX0 Channel Mapping Register1 */
-    volatile uint32_t I2S_PCM_TX1CHMAP0;              /*!< Offset 0x04C I2S/PCM TX1 Channel Mapping Register0 */
-    volatile uint32_t I2S_PCM_TX1CHMAP1;              /*!< Offset 0x050 I2S/PCM TX1 Channel Mapping Register1 */
-    volatile uint32_t I2S_PCM_TX2CHMAP0;              /*!< Offset 0x054 I2S/PCM TX2 Channel Mapping Register0 */
-    volatile uint32_t I2S_PCM_TX2CHMAP1;              /*!< Offset 0x058 I2S/PCM TX2 Channel Mapping Register1 */
-    volatile uint32_t I2S_PCM_TX3CHMAP0;              /*!< Offset 0x05C I2S/PCM TX3 Channel Mapping Register0 */
-    volatile uint32_t I2S_PCM_TX3CHMAP1;              /*!< Offset 0x060 I2S/PCM TX3 Channel Mapping Register1 */
-    volatile uint32_t I2S_PCM_RXCHSEL;                /*!< Offset 0x064 I2S/PCM RX Channel Select Register */
-    volatile uint32_t I2S_PCM_RXCHMAP0;               /*!< Offset 0x068 I2S/PCM RX Channel Mapping Register0 */
-    volatile uint32_t I2S_PCM_RXCHMAP1;               /*!< Offset 0x06C I2S/PCM RX Channel Mapping Register1 */
-    volatile uint32_t I2S_PCM_RXCHMAP2;               /*!< Offset 0x070 I2S/PCM RX Channel Mapping Register2 */
-    volatile uint32_t I2S_PCM_RXCHMAP3;               /*!< Offset 0x074 I2S/PCM RX Channel Mapping Register3 */
-             uint32_t reserved_0x078 [0x0002];
-    volatile uint32_t MCLKCFG;                        /*!< Offset 0x080 ASRC MCLK Configuration Register */
-    volatile uint32_t FsoutCFG;                       /*!< Offset 0x084 ASRC Out Sample Rate Configuration Register */
-    volatile uint32_t FsinEXTCFG;                     /*!< Offset 0x088 ASRC Input Sample Pulse Extend Configuration Register */
-    volatile uint32_t ASRCCFG;                        /*!< Offset 0x08C ASRC Enable Register */
-    volatile uint32_t ASRCMANCFG;                     /*!< Offset 0x090 ASRC Manual Ratio Configuration Register */
-    volatile uint32_t ASRCRATIOSTAT;                  /*!< Offset 0x094 ASRC Status Register */
-    volatile uint32_t ASRCFIFOSTAT;                   /*!< Offset 0x098 ASRC FIFO Level Status Register */
-    volatile uint32_t ASRCMBISTCFG;                   /*!< Offset 0x09C ASRC MBIST Test Configuration Register */
-    volatile uint32_t ASRCMBISTSTAT;                  /*!< Offset 0x0A0 ASRC MBIST Test Status Register */
-} I2S_PCM_TypeDef; /* size of structure = 0x0A4 */
+    volatile uint32_t I2S_PCM_TX0CHMAP;               /*!< Offset 0x044 I2S/PCM TX0 Channel Mapping Register */
+    volatile uint32_t I2S_PCM_TX1CHMAP;               /*!< Offset 0x048 I2S/PCM TX1 Channel Mapping Register */
+    volatile uint32_t I2S_PCM_TX2CHMAP;               /*!< Offset 0x04C I2S/PCM TX2 Channel Mapping Register */
+    volatile uint32_t I2S_PCM_TX3CHMAP;               /*!< Offset 0x050 I2S/PCM TX3 Channel Mapping Register */
+    volatile uint32_t I2S_PCM_RXCHSEL;                /*!< Offset 0x054 I2S/PCM RX Channel Select register */
+    volatile uint32_t I2S_PCM_RXCHMAP;                /*!< Offset 0x058 I2S/PCM RX Channel Mapping Register */
+} I2S_PCM_TypeDef; /* size of structure = 0x05C */
 /*
  * @brief DMIC
  */
