@@ -106,8 +106,8 @@
 	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+//	#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+//	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -144,16 +144,19 @@
 
 		#define UACOUT_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
 		#define UACIN_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
-		//#define WITHUAC2		1	/* UAC2 support */
-		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
-		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
-		#if WITHRTS96 || WITHRTS192
-			#define WITHUSBUACIN	1
-			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-		#else /* WITHRTS96 || WITHRTS192 */
-			#define WITHUSBUACIN	1
-		#endif /* WITHRTS96 || WITHRTS192 */
-		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+		#define WITHUSBUACIN	1
+		#define WITHUSBUACOUT	1
+
+//		//#define WITHUAC2		1	/* UAC2 support */
+//		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
+//		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+//		#if WITHRTS96 || WITHRTS192
+//			#define WITHUSBUACIN	1
+//			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+//		#else /* WITHRTS96 || WITHRTS192 */
+//			#define WITHUSBUACIN	1
+//		#endif /* WITHRTS96 || WITHRTS192 */
+//		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 	#endif /* WITHINTEGRATEDDSP */
 
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */

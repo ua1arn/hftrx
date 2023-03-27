@@ -241,6 +241,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WITHUSBMIKET113	1	/* Функциональность USB микрофона */
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define FORMATFROMLIBRARY 	1
 
