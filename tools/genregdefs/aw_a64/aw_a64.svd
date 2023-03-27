@@ -2982,9 +2982,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_TX0CHCFG</name>
-    <displayName>I2S_PCM_TX0CHCFG</displayName>
-    <description>I2S/PCM TX0 Channel Configuration register</description>
+    <name>I2S_PCM_TX0CHSEL</name>
+    <displayName>I2S_PCM_TX0CHSEL</displayName>
+    <description>I2S/PCM TX0 Channel Configuration register I2S/PCM_TXnCHSEL</description>
     <addressOffset>0x034</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2993,7 +2993,7 @@
    <register>
     <name>I2S_PCM_TX1CHSEL</name>
     <displayName>I2S_PCM_TX1CHSEL</displayName>
-    <description>I2S/PCM TX1 Channel Select Register</description>
+    <description>I2S/PCM TX1 Channel Select Register I2S/PCM_TXnCHSEL</description>
     <addressOffset>0x038</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3002,7 +3002,7 @@
    <register>
     <name>I2S_PCM_TX2CHSEL</name>
     <displayName>I2S_PCM_TX2CHSEL</displayName>
-    <description>I2S/PCM TX2 Channel Select Register</description>
+    <description>I2S/PCM TX2 Channel Select Register I2S/PCM_TXnCHSEL</description>
     <addressOffset>0x03C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3011,7 +3011,7 @@
    <register>
     <name>I2S_PCM_TX3CHSEL</name>
     <displayName>I2S_PCM_TX3CHSEL</displayName>
-    <description>I2S/PCM TX3 Channel Select Register</description>
+    <description>I2S/PCM TX3 Channel Select Register I2S/PCM_TXnCHSEL</description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3020,7 +3020,7 @@
    <register>
     <name>I2S_PCM_TX0CHMAP</name>
     <displayName>I2S_PCM_TX0CHMAP</displayName>
-    <description>I2S/PCM TX0 Channel Mapping Register</description>
+    <description>I2S/PCM TX0 Channel Mapping Register I2S/PCM_TXnCHMAP</description>
     <addressOffset>0x044</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3029,7 +3029,7 @@
    <register>
     <name>I2S_PCM_TX1CHMAP</name>
     <displayName>I2S_PCM_TX1CHMAP</displayName>
-    <description>I2S/PCM TX1 Channel Mapping Register</description>
+    <description>I2S/PCM TX1 Channel Mapping Register I2S/PCM_TXnCHMAP</description>
     <addressOffset>0x048</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3038,7 +3038,7 @@
    <register>
     <name>I2S_PCM_TX2CHMAP</name>
     <displayName>I2S_PCM_TX2CHMAP</displayName>
-    <description>I2S/PCM TX2 Channel Mapping Register</description>
+    <description>I2S/PCM TX2 Channel Mapping Register I2S/PCM_TXnCHMAP</description>
     <addressOffset>0x04C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3047,7 +3047,7 @@
    <register>
     <name>I2S_PCM_TX3CHMAP</name>
     <displayName>I2S_PCM_TX3CHMAP</displayName>
-    <description>I2S/PCM TX3 Channel Mapping Register</description>
+    <description>I2S/PCM TX3 Channel Mapping Register I2S/PCM_TXnCHMAP</description>
     <addressOffset>0x050</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

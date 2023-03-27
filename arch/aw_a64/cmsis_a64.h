@@ -577,14 +577,14 @@ typedef struct I2S_PCM_Type
     volatile uint32_t I2S_PCM_TXCNT;                  /*!< Offset 0x028 I2S/PCM TX Sample Counter Register */
     volatile uint32_t I2S_PCM_RXCNT;                  /*!< Offset 0x02C I2S/PCM RX Sample Counter Register */
     volatile uint32_t I2S_PCM_CHCFG;                  /*!< Offset 0x030 I2S/PCM Channel Configuration register */
-    volatile uint32_t I2S_PCM_TX0CHCFG;               /*!< Offset 0x034 I2S/PCM TX0 Channel Configuration register */
-    volatile uint32_t I2S_PCM_TX1CHSEL;               /*!< Offset 0x038 I2S/PCM TX1 Channel Select Register */
-    volatile uint32_t I2S_PCM_TX2CHSEL;               /*!< Offset 0x03C I2S/PCM TX2 Channel Select Register */
-    volatile uint32_t I2S_PCM_TX3CHSEL;               /*!< Offset 0x040 I2S/PCM TX3 Channel Select Register */
-    volatile uint32_t I2S_PCM_TX0CHMAP;               /*!< Offset 0x044 I2S/PCM TX0 Channel Mapping Register */
-    volatile uint32_t I2S_PCM_TX1CHMAP;               /*!< Offset 0x048 I2S/PCM TX1 Channel Mapping Register */
-    volatile uint32_t I2S_PCM_TX2CHMAP;               /*!< Offset 0x04C I2S/PCM TX2 Channel Mapping Register */
-    volatile uint32_t I2S_PCM_TX3CHMAP;               /*!< Offset 0x050 I2S/PCM TX3 Channel Mapping Register */
+    volatile uint32_t I2S_PCM_TX0CHSEL;               /*!< Offset 0x034 I2S/PCM TX0 Channel Configuration register I2S/PCM_TXnCHSEL */
+    volatile uint32_t I2S_PCM_TX1CHSEL;               /*!< Offset 0x038 I2S/PCM TX1 Channel Select Register I2S/PCM_TXnCHSEL */
+    volatile uint32_t I2S_PCM_TX2CHSEL;               /*!< Offset 0x03C I2S/PCM TX2 Channel Select Register I2S/PCM_TXnCHSEL */
+    volatile uint32_t I2S_PCM_TX3CHSEL;               /*!< Offset 0x040 I2S/PCM TX3 Channel Select Register I2S/PCM_TXnCHSEL */
+    volatile uint32_t I2S_PCM_TX0CHMAP;               /*!< Offset 0x044 I2S/PCM TX0 Channel Mapping Register I2S/PCM_TXnCHMAP */
+    volatile uint32_t I2S_PCM_TX1CHMAP;               /*!< Offset 0x048 I2S/PCM TX1 Channel Mapping Register I2S/PCM_TXnCHMAP */
+    volatile uint32_t I2S_PCM_TX2CHMAP;               /*!< Offset 0x04C I2S/PCM TX2 Channel Mapping Register I2S/PCM_TXnCHMAP */
+    volatile uint32_t I2S_PCM_TX3CHMAP;               /*!< Offset 0x050 I2S/PCM TX3 Channel Mapping Register I2S/PCM_TXnCHMAP */
     volatile uint32_t I2S_PCM_RXCHSEL;                /*!< Offset 0x054 I2S/PCM RX Channel Select register */
     volatile uint32_t I2S_PCM_RXCHMAP;                /*!< Offset 0x058 I2S/PCM RX Channel Mapping Register */
 } I2S_PCM_TypeDef; /* size of structure = 0x05C */
