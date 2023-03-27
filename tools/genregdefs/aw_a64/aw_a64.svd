@@ -8120,198 +8120,198 @@
   </interrupt>
   <registers>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_VSCL_START_ADDR</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_VSCL_START_ADDR</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_VSCL_START_ADDR</name>
+    <displayName>MALIGP2_MGMT_VSCL_START_ADDR</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_VSCL_START_ADDR           </description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_VSCL_END_ADDR</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_VSCL_END_ADDR</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_VSCL_END_ADDR</name>
+    <displayName>MALIGP2_MGMT_VSCL_END_ADDR</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_VSCL_END_ADDR             </description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PLBUCL_START_ADDR</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PLBUCL_START_ADDR</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PLBUCL_START_ADDR</name>
+    <displayName>MALIGP2_MGMT_PLBUCL_START_ADDR</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PLBUCL_START_ADDR         </description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PLBUCL_END_ADDR</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PLBUCL_END_ADDR</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PLBUCL_END_ADDR</name>
+    <displayName>MALIGP2_MGMT_PLBUCL_END_ADDR</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PLBUCL_END_ADDR           </description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PLBU_ALLOC_START_ADDR</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PLBU_ALLOC_START_ADDR</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PLBU_ALLOC_START_ADDR</name>
+    <displayName>MALIGP2_MGMT_PLBU_ALLOC_START_ADDR</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PLBU_ALLOC_START_ADDR     </description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PLBU_ALLOC_END_ADDR</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PLBU_ALLOC_END_ADDR</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PLBU_ALLOC_END_ADDR</name>
+    <displayName>MALIGP2_MGMT_PLBU_ALLOC_END_ADDR</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PLBU_ALLOC_END_ADDR       </description>
     <addressOffset>0x014</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_CMD</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_CMD</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_CMD</name>
+    <displayName>MALIGP2_MGMT_CMD</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_CMD                       </description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_INT_RAWSTAT</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_INT_RAWSTAT</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_INT_RAWSTAT</name>
+    <displayName>MALIGP2_MGMT_INT_RAWSTAT</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_INT_RAWSTAT               </description>
     <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_INT_CLEAR</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_INT_CLEAR</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_INT_CLEAR</name>
+    <displayName>MALIGP2_MGMT_INT_CLEAR</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_INT_CLEAR                 </description>
     <addressOffset>0x028</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_INT_MASK</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_INT_MASK</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_INT_MASK</name>
+    <displayName>MALIGP2_MGMT_INT_MASK</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_INT_MASK                  </description>
     <addressOffset>0x02C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_INT_STAT</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_INT_STAT</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_INT_STAT</name>
+    <displayName>MALIGP2_MGMT_INT_STAT</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_INT_STAT                  </description>
     <addressOffset>0x030</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_ENABLE</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_ENABLE</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PERF_CNT_0_ENABLE</name>
+    <displayName>MALIGP2_MGMT_PERF_CNT_0_ENABLE</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_ENABLE         </description>
     <addressOffset>0x03C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_ENABLE</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_ENABLE</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PERF_CNT_1_ENABLE</name>
+    <displayName>MALIGP2_MGMT_PERF_CNT_1_ENABLE</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_ENABLE         </description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_SRC</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_SRC</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PERF_CNT_0_SRC</name>
+    <displayName>MALIGP2_MGMT_PERF_CNT_0_SRC</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_SRC            </description>
     <addressOffset>0x044</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_SRC</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_SRC</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PERF_CNT_1_SRC</name>
+    <displayName>MALIGP2_MGMT_PERF_CNT_1_SRC</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_SRC            </description>
     <addressOffset>0x048</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_VALUE</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_VALUE</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PERF_CNT_0_VALUE</name>
+    <displayName>MALIGP2_MGMT_PERF_CNT_0_VALUE</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_VALUE          </description>
     <addressOffset>0x04C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_VALUE</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_VALUE</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PERF_CNT_1_VALUE</name>
+    <displayName>MALIGP2_MGMT_PERF_CNT_1_VALUE</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_VALUE          </description>
     <addressOffset>0x050</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_LIMIT</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_LIMIT</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PERF_CNT_0_LIMIT</name>
+    <displayName>MALIGP2_MGMT_PERF_CNT_0_LIMIT</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_LIMIT          </description>
     <addressOffset>0x054</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_STATUS</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_STATUS</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_STATUS</name>
+    <displayName>MALIGP2_MGMT_STATUS</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_STATUS                    </description>
     <addressOffset>0x068</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_VERSION</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_VERSION</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_VERSION</name>
+    <displayName>MALIGP2_MGMT_VERSION</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_VERSION                   </description>
     <addressOffset>0x06C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_VSCL_START_ADDR_READ</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_VSCL_START_ADDR_READ</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_VSCL_START_ADDR_READ</name>
+    <displayName>MALIGP2_MGMT_VSCL_START_ADDR_READ</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_VSCL_START_ADDR_READ      </description>
     <addressOffset>0x080</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALIGP2_REG_ADDR_MGMT_PLBCL_START_ADDR_READ</name>
-    <displayName>MALIGP2_REG_ADDR_MGMT_PLBCL_START_ADDR_READ</displayName>
-    <description></description>
+    <name>MALIGP2_MGMT_PLBCL_START_ADDR_READ</name>
+    <displayName>MALIGP2_MGMT_PLBCL_START_ADDR_READ</displayName>
+    <description>MALIGP2_REG_ADDR_MGMT_PLBCL_START_ADDR_READ     </description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8320,7 +8320,7 @@
    <register>
     <name>MALIGP2_CONTR_AXI_BUS_ERROR_STAT</name>
     <displayName>MALIGP2_CONTR_AXI_BUS_ERROR_STAT</displayName>
-    <description></description>
+    <description>MALIGP2_CONTR_AXI_BUS_ERROR_STAT                </description>
     <addressOffset>0x094</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8329,178 +8329,182 @@
    <register>
     <name>MALIGP2_REGISTER_ADDRESS_SPACE_SIZE</name>
     <displayName>MALIGP2_REGISTER_ADDRESS_SPACE_SIZE</displayName>
-    <description></description>
+    <description>MALIGP2_REGISTER_ADDRESS_SPACE_SIZE             </description>
     <addressOffset>0x098</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_VERSION</name>
-    <displayName>MALI200_REG_ADDR_MGMT_VERSION</displayName>
-    <description></description>
+    <name>MALI200_MGMT_VERSION</name>
+    <displayName>MALI200_MGMT_VERSION</displayName>
+    <description>MALI200_REG_ADDR_MGMT_VERSION                   </description>
     <addressOffset>0x1000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_CURRENT_REND_LIST_ADDR</name>
-    <displayName>MALI200_REG_ADDR_MGMT_CURRENT_REND_LIST_ADDR</displayName>
-    <description></description>
+    <name>MALI200_MGMT_CURRENT_REND_LIST_ADDR</name>
+    <displayName>MALI200_MGMT_CURRENT_REND_LIST_ADDR</displayName>
+    <description>MALI200_REG_ADDR_MGMT_CURRENT_REND_LIST_ADDR    </description>
     <addressOffset>0x1004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_STATUS</name>
-    <displayName>MALI200_REG_ADDR_MGMT_STATUS</displayName>
-    <description></description>
+    <name>MALI200_MGMT_STATUS</name>
+    <displayName>MALI200_MGMT_STATUS</displayName>
+    <description>MALI200_REG_ADDR_MGMT_STATUS                    </description>
     <addressOffset>0x1008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_CTRL_MGMT</name>
-    <displayName>MALI200_REG_ADDR_MGMT_CTRL_MGMT</displayName>
-    <description></description>
+    <name>MALI200_MGMT_CTRL_MGMT</name>
+    <displayName>MALI200_MGMT_CTRL_MGMT</displayName>
+    <description>MALI200_REG_ADDR_MGMT_CTRL_MGMT                 </description>
     <addressOffset>0x100C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_INT_RAWSTAT</name>
-    <displayName>MALI200_REG_ADDR_MGMT_INT_RAWSTAT</displayName>
-    <description></description>
+    <name>MALI200_MGMT_INT_RAWSTAT</name>
+    <displayName>MALI200_MGMT_INT_RAWSTAT</displayName>
+    <description>MALI200_REG_ADDR_MGMT_INT_RAWSTAT               </description>
     <addressOffset>0x1020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_INT_CLEAR</name>
-    <displayName>MALI200_REG_ADDR_MGMT_INT_CLEAR</displayName>
-    <description></description>
+    <name>MALI200_MGMT_INT_CLEAR</name>
+    <displayName>MALI200_MGMT_INT_CLEAR</displayName>
+    <description>MALI200_REG_ADDR_MGMT_INT_CLEAR                 </description>
     <addressOffset>0x1024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_INT_MASK</name>
-    <displayName>MALI200_REG_ADDR_MGMT_INT_MASK</displayName>
-    <description></description>
+    <name>MALI200_MGMT_INT_MASK</name>
+    <displayName>MALI200_MGMT_INT_MASK</displayName>
+    <description>MALI200_REG_ADDR_MGMT_INT_MASK                  </description>
     <addressOffset>0x1028</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_INT_STATUS</name>
-    <displayName>MALI200_REG_ADDR_MGMT_INT_STATUS</displayName>
-    <description></description>
+    <name>MALI200_MGMT_INT_STATUS</name>
+    <displayName>MALI200_MGMT_INT_STATUS</displayName>
+    <description>MALI200_REG_ADDR_MGMT_INT_STATUS                </description>
     <addressOffset>0x102C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_BUS_ERROR_STATUS</name>
-    <displayName>MALI200_REG_ADDR_MGMT_BUS_ERROR_STATUS</displayName>
-    <description></description>
+    <name>MALI200_MGMT_BUS_ERROR_STATUS</name>
+    <displayName>MALI200_MGMT_BUS_ERROR_STATUS</displayName>
+    <description>MALI200_REG_ADDR_MGMT_BUS_ERROR_STATUS          </description>
     <addressOffset>0x1050</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_PERF_CNT_0_ENABLE</name>
-    <displayName>MALI200_REG_ADDR_MGMT_PERF_CNT_0_ENABLE</displayName>
-    <description></description>
+    <name>MALI200_MGMT_PERF_CNT_0_ENABLE</name>
+    <displayName>MALI200_MGMT_PERF_CNT_0_ENABLE</displayName>
+    <description>MALI200_REG_ADDR_MGMT_PERF_CNT_0_ENABLE         </description>
     <addressOffset>0x1080</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_PERF_CNT_0_SRC</name>
-    <displayName>MALI200_REG_ADDR_MGMT_PERF_CNT_0_SRC</displayName>
-    <description></description>
+    <name>MALI200_MGMT_PERF_CNT_0_SRC</name>
+    <displayName>MALI200_MGMT_PERF_CNT_0_SRC</displayName>
+    <description>MALI200_REG_ADDR_MGMT_PERF_CNT_0_SRC            </description>
     <addressOffset>0x1084</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_PERF_CNT_0_LIMIT</name>
-    <displayName>MALI200_REG_ADDR_MGMT_PERF_CNT_0_LIMIT</displayName>
-    <description></description>
+    <name>MALI200_MGMT_PERF_CNT_0_LIMIT</name>
+    <displayName>MALI200_MGMT_PERF_CNT_0_LIMIT</displayName>
+    <description>MALI200_REG_ADDR_MGMT_PERF_CNT_0_LIMIT          </description>
     <addressOffset>0x1088</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_PERF_CNT_0_VALUE</name>
-    <displayName>MALI200_REG_ADDR_MGMT_PERF_CNT_0_VALUE</displayName>
-    <description></description>
+    <name>MALI200_MGMT_PERF_CNT_0_VALUE</name>
+    <displayName>MALI200_MGMT_PERF_CNT_0_VALUE</displayName>
+    <description>MALI200_REG_ADDR_MGMT_PERF_CNT_0_VALUE          </description>
     <addressOffset>0x108C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_PERF_CNT_1_ENABLE</name>
-    <displayName>MALI200_REG_ADDR_MGMT_PERF_CNT_1_ENABLE</displayName>
-    <description></description>
+    <name>MALI200_MGMT_PERF_CNT_1_ENABLE</name>
+    <displayName>MALI200_MGMT_PERF_CNT_1_ENABLE</displayName>
+    <description>MALI200_REG_ADDR_MGMT_PERF_CNT_1_ENABLE         </description>
     <addressOffset>0x10A0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_PERF_CNT_1_SRC</name>
-    <displayName>MALI200_REG_ADDR_MGMT_PERF_CNT_1_SRC</displayName>
-    <description></description>
+    <name>MALI200_MGMT_PERF_CNT_1_SRC</name>
+    <displayName>MALI200_MGMT_PERF_CNT_1_SRC</displayName>
+    <description>MALI200_REG_ADDR_MGMT_PERF_CNT_1_SRC            </description>
     <addressOffset>0x10A4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_PERF_CNT_1_VALUE</name>
-    <displayName>MALI200_REG_ADDR_MGMT_PERF_CNT_1_VALUE</displayName>
-    <description></description>
+    <name>MALI200_MGMT_PERF_CNT_1_VALUE</name>
+    <displayName>MALI200_MGMT_PERF_CNT_1_VALUE</displayName>
+    <description>MALI200_REG_ADDR_MGMT_PERF_CNT_1_VALUE          </description>
     <addressOffset>0x10AC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MALI200_REG_ADDR_MGMT_PERFMON_CONTR</name>
-    <displayName>MALI200_REG_ADDR_MGMT_PERFMON_CONTR</displayName>
-    <description></description>
+    <name>MALI200_MGMT_PERFMON_CONTR</name>
+    <displayName>MALI200_MGMT_PERFMON_CONTR</displayName>
+    <description>MALI200_REG_ADDR_MGMT_PERFMON_CONTR             </description>
     <addressOffset>0x10B0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>MALI200_REG_ADDR_MGMT_PERFMON_BASE</name>
-    <displayName>MALI200_REG_ADDR_MGMT_PERFMON_BASE</displayName>
-    <description></description>
-    <addressOffset>0x10B4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>15</dim>
+    <addressOffset>0x000010B4</addressOffset>
+    <register>
+     <name>MALI200_MGMT_PERFMON_BASE</name>
+     <displayName>MALI200_MGMT_PERFMON_BASE</displayName>
+     <description>MALI200_REG_ADDR_MGMT_PERFMON_BASE              </description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+   </cluster>
    <register>
     <name>MALI200_REG_SIZEOF_REGISTER_BANK</name>
     <displayName>MALI200_REG_SIZEOF_REGISTER_BANK</displayName>
-    <description></description>
+    <description>MALI200_REG_SIZEOF_REGISTER_BANK                </description>
     <addressOffset>0x10F0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

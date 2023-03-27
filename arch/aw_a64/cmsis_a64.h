@@ -1431,61 +1431,60 @@ typedef struct DE_CSR_Type
 /*!< GPU Mali-400MP2 */
 typedef struct GPU_Type
 {
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_VSCL_START_ADDR;/*!< Offset 0x000  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_VSCL_END_ADDR;/*!< Offset 0x004  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PLBUCL_START_ADDR;/*!< Offset 0x008  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PLBUCL_END_ADDR;/*!< Offset 0x00C  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PLBU_ALLOC_START_ADDR;/*!< Offset 0x010  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PLBU_ALLOC_END_ADDR;/*!< Offset 0x014  */
+    volatile uint32_t MALIGP2_MGMT_VSCL_START_ADDR;   /*!< Offset 0x000 MALIGP2_REG_ADDR_MGMT_VSCL_START_ADDR            */
+    volatile uint32_t MALIGP2_MGMT_VSCL_END_ADDR;     /*!< Offset 0x004 MALIGP2_REG_ADDR_MGMT_VSCL_END_ADDR              */
+    volatile uint32_t MALIGP2_MGMT_PLBUCL_START_ADDR; /*!< Offset 0x008 MALIGP2_REG_ADDR_MGMT_PLBUCL_START_ADDR          */
+    volatile uint32_t MALIGP2_MGMT_PLBUCL_END_ADDR;   /*!< Offset 0x00C MALIGP2_REG_ADDR_MGMT_PLBUCL_END_ADDR            */
+    volatile uint32_t MALIGP2_MGMT_PLBU_ALLOC_START_ADDR;/*!< Offset 0x010 MALIGP2_REG_ADDR_MGMT_PLBU_ALLOC_START_ADDR      */
+    volatile uint32_t MALIGP2_MGMT_PLBU_ALLOC_END_ADDR;/*!< Offset 0x014 MALIGP2_REG_ADDR_MGMT_PLBU_ALLOC_END_ADDR        */
              uint32_t reserved_0x018 [0x0002];
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_CMD;      /*!< Offset 0x020  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_INT_RAWSTAT;/*!< Offset 0x024  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_INT_CLEAR;/*!< Offset 0x028  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_INT_MASK; /*!< Offset 0x02C  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_INT_STAT; /*!< Offset 0x030  */
+    volatile uint32_t MALIGP2_MGMT_CMD;               /*!< Offset 0x020 MALIGP2_REG_ADDR_MGMT_CMD                        */
+    volatile uint32_t MALIGP2_MGMT_INT_RAWSTAT;       /*!< Offset 0x024 MALIGP2_REG_ADDR_MGMT_INT_RAWSTAT                */
+    volatile uint32_t MALIGP2_MGMT_INT_CLEAR;         /*!< Offset 0x028 MALIGP2_REG_ADDR_MGMT_INT_CLEAR                  */
+    volatile uint32_t MALIGP2_MGMT_INT_MASK;          /*!< Offset 0x02C MALIGP2_REG_ADDR_MGMT_INT_MASK                   */
+    volatile uint32_t MALIGP2_MGMT_INT_STAT;          /*!< Offset 0x030 MALIGP2_REG_ADDR_MGMT_INT_STAT                   */
              uint32_t reserved_0x034 [0x0002];
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_ENABLE;/*!< Offset 0x03C  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_ENABLE;/*!< Offset 0x040  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_SRC;/*!< Offset 0x044  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_SRC;/*!< Offset 0x048  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_VALUE;/*!< Offset 0x04C  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_VALUE;/*!< Offset 0x050  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_LIMIT;/*!< Offset 0x054  */
+    volatile uint32_t MALIGP2_MGMT_PERF_CNT_0_ENABLE; /*!< Offset 0x03C MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_ENABLE          */
+    volatile uint32_t MALIGP2_MGMT_PERF_CNT_1_ENABLE; /*!< Offset 0x040 MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_ENABLE          */
+    volatile uint32_t MALIGP2_MGMT_PERF_CNT_0_SRC;    /*!< Offset 0x044 MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_SRC             */
+    volatile uint32_t MALIGP2_MGMT_PERF_CNT_1_SRC;    /*!< Offset 0x048 MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_SRC             */
+    volatile uint32_t MALIGP2_MGMT_PERF_CNT_0_VALUE;  /*!< Offset 0x04C MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_VALUE           */
+    volatile uint32_t MALIGP2_MGMT_PERF_CNT_1_VALUE;  /*!< Offset 0x050 MALIGP2_REG_ADDR_MGMT_PERF_CNT_1_VALUE           */
+    volatile uint32_t MALIGP2_MGMT_PERF_CNT_0_LIMIT;  /*!< Offset 0x054 MALIGP2_REG_ADDR_MGMT_PERF_CNT_0_LIMIT           */
              uint32_t reserved_0x058 [0x0004];
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_STATUS;   /*!< Offset 0x068  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_VERSION;  /*!< Offset 0x06C  */
+    volatile uint32_t MALIGP2_MGMT_STATUS;            /*!< Offset 0x068 MALIGP2_REG_ADDR_MGMT_STATUS                     */
+    volatile uint32_t MALIGP2_MGMT_VERSION;           /*!< Offset 0x06C MALIGP2_REG_ADDR_MGMT_VERSION                    */
              uint32_t reserved_0x070 [0x0004];
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_VSCL_START_ADDR_READ;/*!< Offset 0x080  */
-    volatile uint32_t MALIGP2_REG_ADDR_MGMT_PLBCL_START_ADDR_READ;/*!< Offset 0x084  */
+    volatile uint32_t MALIGP2_MGMT_VSCL_START_ADDR_READ;/*!< Offset 0x080 MALIGP2_REG_ADDR_MGMT_VSCL_START_ADDR_READ       */
+    volatile uint32_t MALIGP2_MGMT_PLBCL_START_ADDR_READ;/*!< Offset 0x084 MALIGP2_REG_ADDR_MGMT_PLBCL_START_ADDR_READ      */
              uint32_t reserved_0x088 [0x0003];
-    volatile uint32_t MALIGP2_CONTR_AXI_BUS_ERROR_STAT;/*!< Offset 0x094  */
-    volatile uint32_t MALIGP2_REGISTER_ADDRESS_SPACE_SIZE;/*!< Offset 0x098  */
+    volatile uint32_t MALIGP2_CONTR_AXI_BUS_ERROR_STAT;/*!< Offset 0x094 MALIGP2_CONTR_AXI_BUS_ERROR_STAT                 */
+    volatile uint32_t MALIGP2_REGISTER_ADDRESS_SPACE_SIZE;/*!< Offset 0x098 MALIGP2_REGISTER_ADDRESS_SPACE_SIZE              */
              uint32_t reserved_0x09C [0x03D9];
-    volatile uint32_t MALI200_REG_ADDR_MGMT_VERSION;  /*!< Offset 0x1000  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_CURRENT_REND_LIST_ADDR;/*!< Offset 0x1004  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_STATUS;   /*!< Offset 0x1008  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_CTRL_MGMT;/*!< Offset 0x100C  */
+    volatile uint32_t MALI200_MGMT_VERSION;           /*!< Offset 0x1000 MALI200_REG_ADDR_MGMT_VERSION                    */
+    volatile uint32_t MALI200_MGMT_CURRENT_REND_LIST_ADDR;/*!< Offset 0x1004 MALI200_REG_ADDR_MGMT_CURRENT_REND_LIST_ADDR     */
+    volatile uint32_t MALI200_MGMT_STATUS;            /*!< Offset 0x1008 MALI200_REG_ADDR_MGMT_STATUS                     */
+    volatile uint32_t MALI200_MGMT_CTRL_MGMT;         /*!< Offset 0x100C MALI200_REG_ADDR_MGMT_CTRL_MGMT                  */
              uint32_t reserved_0x1010 [0x0004];
-    volatile uint32_t MALI200_REG_ADDR_MGMT_INT_RAWSTAT;/*!< Offset 0x1020  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_INT_CLEAR;/*!< Offset 0x1024  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_INT_MASK; /*!< Offset 0x1028  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_INT_STATUS;/*!< Offset 0x102C  */
+    volatile uint32_t MALI200_MGMT_INT_RAWSTAT;       /*!< Offset 0x1020 MALI200_REG_ADDR_MGMT_INT_RAWSTAT                */
+    volatile uint32_t MALI200_MGMT_INT_CLEAR;         /*!< Offset 0x1024 MALI200_REG_ADDR_MGMT_INT_CLEAR                  */
+    volatile uint32_t MALI200_MGMT_INT_MASK;          /*!< Offset 0x1028 MALI200_REG_ADDR_MGMT_INT_MASK                   */
+    volatile uint32_t MALI200_MGMT_INT_STATUS;        /*!< Offset 0x102C MALI200_REG_ADDR_MGMT_INT_STATUS                 */
              uint32_t reserved_0x1030 [0x0008];
-    volatile uint32_t MALI200_REG_ADDR_MGMT_BUS_ERROR_STATUS;/*!< Offset 0x1050  */
+    volatile uint32_t MALI200_MGMT_BUS_ERROR_STATUS;  /*!< Offset 0x1050 MALI200_REG_ADDR_MGMT_BUS_ERROR_STATUS           */
              uint32_t reserved_0x1054 [0x000B];
-    volatile uint32_t MALI200_REG_ADDR_MGMT_PERF_CNT_0_ENABLE;/*!< Offset 0x1080  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_PERF_CNT_0_SRC;/*!< Offset 0x1084  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_PERF_CNT_0_LIMIT;/*!< Offset 0x1088  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_PERF_CNT_0_VALUE;/*!< Offset 0x108C  */
+    volatile uint32_t MALI200_MGMT_PERF_CNT_0_ENABLE; /*!< Offset 0x1080 MALI200_REG_ADDR_MGMT_PERF_CNT_0_ENABLE          */
+    volatile uint32_t MALI200_MGMT_PERF_CNT_0_SRC;    /*!< Offset 0x1084 MALI200_REG_ADDR_MGMT_PERF_CNT_0_SRC             */
+    volatile uint32_t MALI200_MGMT_PERF_CNT_0_LIMIT;  /*!< Offset 0x1088 MALI200_REG_ADDR_MGMT_PERF_CNT_0_LIMIT           */
+    volatile uint32_t MALI200_MGMT_PERF_CNT_0_VALUE;  /*!< Offset 0x108C MALI200_REG_ADDR_MGMT_PERF_CNT_0_VALUE           */
              uint32_t reserved_0x1090 [0x0004];
-    volatile uint32_t MALI200_REG_ADDR_MGMT_PERF_CNT_1_ENABLE;/*!< Offset 0x10A0  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_PERF_CNT_1_SRC;/*!< Offset 0x10A4  */
+    volatile uint32_t MALI200_MGMT_PERF_CNT_1_ENABLE; /*!< Offset 0x10A0 MALI200_REG_ADDR_MGMT_PERF_CNT_1_ENABLE          */
+    volatile uint32_t MALI200_MGMT_PERF_CNT_1_SRC;    /*!< Offset 0x10A4 MALI200_REG_ADDR_MGMT_PERF_CNT_1_SRC             */
              uint32_t reserved_0x10A8;
-    volatile uint32_t MALI200_REG_ADDR_MGMT_PERF_CNT_1_VALUE;/*!< Offset 0x10AC  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_PERFMON_CONTR;/*!< Offset 0x10B0  */
-    volatile uint32_t MALI200_REG_ADDR_MGMT_PERFMON_BASE;/*!< Offset 0x10B4  */
-             uint32_t reserved_0x10B8 [0x000E];
-    volatile uint32_t MALI200_REG_SIZEOF_REGISTER_BANK;/*!< Offset 0x10F0  */
+    volatile uint32_t MALI200_MGMT_PERF_CNT_1_VALUE;  /*!< Offset 0x10AC MALI200_REG_ADDR_MGMT_PERF_CNT_1_VALUE           */
+    volatile uint32_t MALI200_MGMT_PERFMON_CONTR;     /*!< Offset 0x10B0 MALI200_REG_ADDR_MGMT_PERFMON_CONTR              */
+    volatile uint32_t MALI200_MGMT_PERFMON_BASE [0x00F];/*!< Offset 0x10B4 MALI200_REG_ADDR_MGMT_PERFMON_BASE               */
+    volatile uint32_t MALI200_REG_SIZEOF_REGISTER_BANK;/*!< Offset 0x10F0 MALI200_REG_SIZEOF_REGISTER_BANK                 */
 } GPU_TypeDef; /* size of structure = 0x10F4 */
 /*
  * @brief TCON0
