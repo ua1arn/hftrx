@@ -72,7 +72,7 @@ const uint8_t infobar_places [infobar_num_places] = {
 #if WITHPS7BOARD_EBAZ4205 || WITHPS7BOARD_EBAZ_7020
 		INFOBAR_VOLTAGE | INFOBAR_NOACTION,
 #elif WITHUSEDUALWATCH
-		INFOBAR_SPLIT,
+		INFOBAR_DUAL_RX,
 #else
 		INFOBAR_EMPTY,
 #endif /* WITHPS7BOARD_EBAZ4205 */
@@ -351,7 +351,7 @@ static void window_infobar_menu_process(void)
 		switch (infobar)
 		{
 #if WITHUSEDUALWATCH
-		case INFOBAR_SPLIT:
+		case INFOBAR_DUAL_RX:
 		{
 			for (unsigned i = 0; i < 3; i ++)
 			{
@@ -523,7 +523,7 @@ static void window_infobar_menu_process(void)
 			switch (infobar)
 			{
 #if WITHUSEDUALWATCH
-			case INFOBAR_SPLIT:
+			case INFOBAR_DUAL_RX:
 			{
 				if (bh->payload == 1) // SPLIT on/off
 				{
@@ -1040,7 +1040,7 @@ static void gui_main_process(void)
 			uint_fast8_t infobar = infobar_places [current_place] & INFOBAR_VALID_MASK;
 			switch (infobar)
 			{
-			case INFOBAR_SPLIT:
+			case INFOBAR_DUAL_RX:
 			{
 				static uint_fast8_t val = 0;
 				unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
@@ -1048,8 +1048,10 @@ static void gui_main_process(void)
 				if (update)
 					hamradio_get_vfomode3_value(& val);
 
-				local_snprintf_P(buf, buflen, PSTR("SPLIT"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y_mid, buf, val ? COLORMAIN_WHITE : COLORMAIN_GRAY);
+				local_snprintf_P(buf, buflen, "Dual RX");
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+				local_snprintf_P(buf, buflen, "VFO %s", hamradio_get_gvfoab() ? "2" : "1");
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
 			}
 				break;
 

@@ -21493,6 +21493,11 @@ void hamradio_split_vfo_swap(void)
 	hamradio_set_hw_vfo(gvfoab);
 #endif /* WITHHWDUALVFO */
 }
+
+uint_fast8_t hamradio_get_gvfoab(void)
+{
+	return gvfoab;
+}
 #endif /* WITHUSEDUALWATCH */
 
 // основной цикл программы при работе в режиме любительского премника
