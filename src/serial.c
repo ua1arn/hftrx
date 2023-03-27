@@ -1808,7 +1808,7 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
-	#error Undefined CPUSTYLE_XC7Z
+	#warning Undefined CPUSTYLE_XC7Z
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 

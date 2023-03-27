@@ -3984,7 +3984,7 @@ static void window_shift_process(void)
 #if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
 	window_t * const win = get_win(WINDOW_SHIFT);
 
-	static unsigned update = 0;
+	static unsigned update = 0, cic_test = 0;
 	static enc_var_t enc;
 
 	if (win->first_call)
@@ -4002,6 +4002,8 @@ static void window_shift_process(void)
 		add_element("lbl_rx_fir_shift_val", 0, FONT_MEDIUM, COLORMAIN_WHITE, 3);
 		add_element("lbl_tx_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
 		add_element("lbl_tx_shift_val", 0, FONT_MEDIUM, COLORMAIN_WHITE, 3);
+
+		add_element("btn_test", 50, 50, 0, 0, "CIC|test");
 
 		label_t * lbl_rx_cic_shift = find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift");
 		local_snprintf_P(lbl_rx_cic_shift->text, ARRAY_SIZE(lbl_rx_cic_shift->text), "RX CIC shift");
@@ -4032,6 +4034,12 @@ static void window_shift_process(void)
 			y += get_label_height(lh1) + interval * 4;
 		}
 
+		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_test");
+		bh->x1 = lbl_rx_cic_shift->x + get_label_width(lbl_rx_cic_shift) + interval * 2;
+		bh->y1 = lbl_rx_cic_shift->y;
+		bh->is_locked = cic_test;
+		bh->visible = VISIBLE;
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
@@ -4044,6 +4052,16 @@ static void window_shift_process(void)
 			enc.select = lh->index;
 			enc.change = 0;
 			enc.updated = 1;
+		}
+		else if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			if (bh == find_gui_element(TYPE_BUTTON, win, "btn_test"))
+			{
+				cic_test = ! cic_test;
+				xcz_cic_test(cic_test);
+				bh->is_locked = cic_test;
+			}
 		}
 		break;
 
@@ -4107,6 +4125,11 @@ static void window_shift_process(void)
 		local_snprintf_P(lbl_rx_fir_shift_val->text, ARRAY_SIZE(lbl_rx_fir_shift_val->text), "%d", (int) xcz_rx_iq_shift(0));
 		label_t * lbl_tx_shift_val = find_gui_element(TYPE_LABEL, win, "lbl_tx_shift_val");
 		local_snprintf_P(lbl_tx_shift_val->text, ARRAY_SIZE(lbl_tx_shift_val->text), "%d", (int) xcz_tx_shift(0));
+
+		if (cic_test)
+		{
+			PRINTF("max: 0x%08lx\n", xcz_cic_test_process());
+		}
 	}
 
 #endif /* XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR */
