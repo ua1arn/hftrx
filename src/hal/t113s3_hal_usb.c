@@ -2586,6 +2586,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   			break;
   		}
   		rx_count = usb_get_eprx_count(pusb);
+  		PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count);
   		ASSERT(UACOUT_AUDIO48_DATASIZE == rx_count || 0 == rx_count);
   		do
   		{
@@ -3006,7 +3007,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 			}
 			break;
 #endif /* WITHUSBDMSC */
-#if WITHUSBUAC
+#if WITHUSBUACIN
 		case INTERFACE_AUDIO_CONTROL_MIKE:
 			{
 				static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
@@ -3027,7 +3028,18 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 			}
 			break;
 #endif /* WITHUSBUACIN2 */
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
+		case INTERFACE_AUDIO_CONTROL_SPK:
+			{
+				static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
+
+				//PRINTF("ep0_in_handler_dev: INTERFACE_AUDIO_CONTROL_RTS Class-Specific Request ifc=%u, bRequest=0x%02X, wLength=0x%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wLength);
+				pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
+				pusb->ep0_xfer_residue = min(ARRAY_SIZE(buff), ep0_setup->wLength);
+			}
+			break;
+#endif /* WITHUSBUACOUT */
 #if WITHUSBDFU
 			case INTERFACE_DFU_CONTROL:
 			{
