@@ -783,7 +783,6 @@ void buffers_initialize(void)
 		}
 		SPINLOCK_INITIALIZE(& locklistuacin48);
 
-		PRINTF("ep size: %u buffer=%u\n", sizeof uacin48array [0].u.buff, sizeof uacin48array [0].u.filler);
 	}
 
 	//ASSERT((DMABUFFSIZE_UACIN % HARDWARE_RTSDMABYTES) == 0);

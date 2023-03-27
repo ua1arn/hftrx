@@ -175,7 +175,7 @@ static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 
 	phy->HCI_ICR |= (0x0Fu << 8);	//
 
-	PRINTF("phy->HCI_ICR: %08X\n", (unsigned) phy->HCI_ICR);
+	//PRINTF("phy->HCI_ICR: %08X\n", (unsigned) phy->HCI_ICR);
 }
 
 
@@ -1139,7 +1139,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	if (hehci->ohci != NULL)
 	{
 		PRINTF("OHCI Init, hehci->ohci=%p\n", hehci->ohci);
-		PRINTF("OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
+//		PRINTF("OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
 		hehci->ohci->HcCommandStatus |= cpu_to_le32(1u << 0);	// HCR HostControllerReset - issue a software reset
 		(void) hehci->ohci->HcCommandStatus;
 		while ((le32_to_cpu(hehci->ohci->HcCommandStatus) & (1u << 0)) != 0)
@@ -1148,7 +1148,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 		hehci->ohci->HcCommandStatus = cpu_to_le32(1u << 3);	// OwnershipChangeRequest
 
 		unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
-		PRINTF("OHCI: PowerOnToPowerGoodTime=%u\n", PowerOnToPowerGoodTime);
+//		PRINTF("OHCI: PowerOnToPowerGoodTime=%u\n", PowerOnToPowerGoodTime);
 
 //		PRINTF("OHCI: HcCommandStatus=%08X\n", le32_to_cpu(hehci->ohci->HcCommandStatus));
 //		PRINTF("OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
@@ -1156,8 +1156,8 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		PRINTF("OHCI: HcFmInterval=%08X\n", le32_to_cpu(hehci->ohci->HcFmInterval));
 //		PRINTF("OHCI: HcRhDescriptorA=%08X\n", le32_to_cpu(hehci->ohci->HcRhDescriptorA));
 //		PRINTF("OHCI: HcRhDescriptorB=%08X\n", le32_to_cpu(hehci->ohci->HcRhDescriptorB));
-		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
-		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
+//		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
+//		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 
 		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(1u << 8); // PortPowerStatus
 		local_delay_ms(PowerOnToPowerGoodTime);
@@ -1172,14 +1172,14 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 //		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(1u << 0); // PortEnableStatus
 
-		PRINTF("init OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
-		PRINTF("init OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
+//		PRINTF("init OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
+//		PRINTF("init OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 
-		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
+//		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
 		hehci->ohci->HcRevision |= cpu_to_le32(1u << 5);	// BulkListEnable
 		hehci->ohci->HcRevision |= cpu_to_le32(1u << 4);	// ControlListEnable
 		//hehci->ohci->HcRevision |= cpu_to_le32(1u << 2);	// PeriodicListEnable
-		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
+//		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
 	}
 
 	return HAL_OK;
@@ -2436,16 +2436,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	//	BUS_CLK_GATING_REG0: 00800000
 	//	BUS_SOFT_RST_REG0: 00800000
 
-	PRINTF("HAL_EHCI_MspInit: USBPHY_CFG_REG: %08X (clk_src=%u)\n", (unsigned) CCU->USBPHY_CFG_REG, (unsigned) (CCU->USBPHY_CFG_REG >> 22) & 0x03);
-//	PRINTF("BUS_CLK_GATING_REG0: %08X\n", (unsigned) CCU->BUS_CLK_GATING_REG0);
-//	PRINTF("BUS_SOFT_RST_REG0: %08X\n", (unsigned) CCU->BUS_SOFT_RST_REG0);
-//
-//	PRINTF("USBPHY0->HCI_ICR: %08X\n", (unsigned) USBPHY0->HCI_ICR);
-//	PRINTF("USBPHY1->HCI_ICR: %08X\n", (unsigned) USBPHY1->HCI_ICR);
-//
-//	PRINTF("USBPHY0->HCI_ICR: %08X\n", (unsigned) USBPHY0->HCI_ICR);
-//	PRINTF("USBPHY1->HCI_ICR: %08X\n", (unsigned) USBPHY1->HCI_ICR);
-
 	CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
 				(3u << 16) |	// SCLK_GATING_OHCI - 11:OTG-OHCI and OHCI0 Clock is ON
 				(1u << 11) |
@@ -2461,7 +2451,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	const unsigned OHCIx_12M_SRC_SEL = 0u;	// 00: 12M divided from 48M, 01: 12M divided from 24M, 10: LOSC
 	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
 	{
-		PRINTF("Enable USBEHCI1 clocks\n");
+		//PRINTF("Enable USBEHCI1 clocks\n");
 		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI1);	/* host-only port */
 
 		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
@@ -2484,7 +2474,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	}
 	else
 	{
-		PRINTF("Enable USBEHCI0 clocks\n");
+		//PRINTF("Enable USBEHCI0 clocks\n");
 		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI0);	/* host and usb-otg port */
 
 		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (

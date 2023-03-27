@@ -429,8 +429,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 //	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
 //	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
 
-	PRINTF("HAL_PCD_MspInit: USBPHY_CFG_REG: %08X (clk_src=%u)\n", (unsigned) CCU->USBPHY_CFG_REG, (unsigned) (CCU->USBPHY_CFG_REG >> 22) & 0x03);
-
     arm_hardware_disable_handler(USBOTG0_IRQn);
     arm_hardware_disable_handler(USBEHCI0_IRQn);
     arm_hardware_disable_handler(USBOHCI0_IRQn);
