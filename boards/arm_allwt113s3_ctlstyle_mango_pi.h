@@ -336,6 +336,7 @@
 	#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	#define FORMATFROMLIBRARY 	1
+	#define WITHUSBMIKET113	1
 
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
