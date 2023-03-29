@@ -534,7 +534,7 @@
 	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
-	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
@@ -672,6 +672,38 @@
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
+	#elif 1
+		/* QRP LPF BOARD UA1CEI */
+		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
+		#define WITHANTSELECT1RX	1	/* Управление переключением антенн - только приемной антенны */
+
+		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
+
+		#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
+		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
+		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
+
+		#if WITHCURRLEVEL
+			PASENSEIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
+
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = BOARD_ADCX1IN(0),		// Exernal thermo sensor ST LM235Z
+		#endif /* WITHTHERMOLEVEL */
+
+		#if WITHSWRMTR
+			FWD = BOARD_ADCX1IN(5), REF = BOARD_ADCX1IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
+			PWRI = FWD,
+		#endif /* WITHSWRMTR */
+
 	#else
 		// толькло основная плата - 5W усилитель
 

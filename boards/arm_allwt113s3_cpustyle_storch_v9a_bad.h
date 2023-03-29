@@ -138,7 +138,7 @@
 	#if WITHINTEGRATEDDSP
 
 		#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
-		#define UACIN_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+		#define UACIN_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
 		//#define WITHUAC2		1	/* UAC2 support */
 		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
@@ -161,9 +161,11 @@
 	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	
-	#define WITHUSBWCID	1
+	#if WIHSPIDFHW || WIHSPIDFSW
+		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+		#define WITHUSBWCID	1
+	#endif /* WIHSPIDFHW || WIHSPIDFSW */
+
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
