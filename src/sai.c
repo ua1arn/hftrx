@@ -3869,229 +3869,6 @@ static void hardware_i2s2_slave_duplex_initialize_fpga(void)
 	I2S2HW_INITIALIZE(0);
 }
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
-
-/* встороенный в процессор кодек */
-static void hardware_hwblock_master_duplex_initialize_codec1(void)
-{
-	const unsigned framebits = CODEC1_FRAMEBITS;
-	const unsigned lrckf = ARMI2SRATE;
-
-	const unsigned mclkf = lrckf * 512;
-
-#if CPUSTYLE_A64
-	#warning Implement for CPUSTYLE_A64
-
-#else
-
-	// 0x00 = 48000 (x 512)
-	// 0x01 = ~ 46902 (x 512)
-	// 0x02 = 48000 (x 512)
-	const unsigned long src = 0x00;
-	//	Clock Source Select
-	//	00: PLL_AUDIO0(1X)
-	//	01: PLL_AUDIO1(DIV2)
-	//	10: PLL_AUDIO1(DIV5)
-	unsigned long clk;
-	switch (src)
-	{
-	default:
-	case 0x00:
-		clk = allwnrt113_get_audio0pll1x_freq();
-		break;
-	case 0x01:
-		clk = allwnrt113_get_audio1pll_div2_freq();
-		break;
-	case 0x02:
-		clk = allwnrt113_get_audio1pll_div5_freq();
-		break;
-	}
-	//TP();
-	unsigned value;	/* делитель */
-	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioCodec_CLK_WIDTH, ALLWNT113_AudioCodec_CLK_TAPS, & value, 1);
-
-	//PRINTF("AudioCodec: prei=%u, value=%u, lrckf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
-
-	// audiocode1x_dac_clk
-	// audiocode1x_adc_clk
-	//	Clock Source Select
-	//	00: PLL_AUDIO0(1X)
-	//	01: PLL_AUDIO1(DIV2)
-	//	10: PLL_AUDIO1(DIV5)
-
-	const portholder_t clk_reg =
-		(1u << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
-		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
-		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
-		((uint_fast32_t) value << 0) |	// Factor M (0..31)
-		0;
-
-	CCU->AUDIO_CODEC_ADC_CLK_REG = clk_reg;
-	CCU->AUDIO_CODEC_DAC_CLK_REG = clk_reg;
-
-	CCU->AUDIO_CODEC_BGR_REG |= (1u << 0);	// Gating Clock For AUDIO_CODEC
-	CCU->AUDIO_CODEC_BGR_REG |= (1u << 16);	// AUDIO_CODEC Reset
-#endif
-
-#if 1
-	// anatol
-
-	///AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |(0x04 | 0x01) << (1u << 0) |	0;// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
-//	AUDIO_CODEC->ADC_DIG_CTRL & ~ (1u << 17)|(1u << 16)|(15 << 0);
-//	AUDIO_CODEC->ADC_DIG_CTRL |= (1u << 17)|(1u << 16)|(1 << 0)|(1 << 1)/*|(1 << 2)*/;///LINL,LINR IN
-
-	//AUDIO_CODEC->ADC_DIG_CTRL & ~ (1u << 17)|(1u << 16)|(15 << 0);
-	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x0Fu)) |
-			(1u << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
-			(1u << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
-			((0x04 | 0x02 | 0x01) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
-			0;
-	ASSERT(DMABUFFSTEP16RX == 3);
-
-	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
-	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
-	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 3);	// ADC_DRQ_EN
-
-	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
-	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 4);	// DAC_DRQ_EN
-
-
-//	AUDIO_CODEC->ADC1_REG |= (1u << 23);  // LINEINL
-//	AUDIO_CODEC->ADC2_REG |= (1u << 23);  // LINEINR
-//	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
-
-    ///-----LDO-----
-	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
-//	AUDIO_CODEC->POWER_REG |= (1u << 31);	// ALDO_EN
-//	AUDIO_CODEC->POWER_REG |= (1u << 30);	// HPLDO_EN
-	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
-    ///-------------
-
-
-	// DAC Analog Control Register
-	AUDIO_CODEC->DAC_REG |= (1u << 15) | (1u << 14);	// DACL_EN, DACR_EN
-
-
-	AUDIO_CODEC->RAMP_REG |=
-	   (1u << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
-	   (1u << 0) | // RD_EN Ramp Digital Enable
-	   0;
-
-#if 0
-	/* LINEIN use */
-
-	// ADCx Analog Control Register
-	//AUDIO_CODEC->ADC1_REG |= (1u << 31);	// LEft ADC1 Channel Enable
-	//AUDIO_CODEC->ADC2_REG |= (1u << 31);	// Right ADC1 Channel Enable
-	// Left audio
-	AUDIO_CODEC->ADC1_REG &= ~ (1u << 27);	// FMINLEN FMINL Disable - R11 - fminL pin 94
-	AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
-
-	// ADCx Analog Control Register
-	// Right audio
-	AUDIO_CODEC->ADC2_REG &= ~ (1u << 27);	// FMINREN FMINR Disable - R10 - fminR pin 93
-	AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable - R6 - lineinR - pin 95
-
-#elif 0
-	/* FMIN use */
-
-	// ADCx Analog Control Register
-	//AUDIO_CODEC->ADC1_REG |= (1u << 31);	// LEft ADC1 Channel Enable
-	//AUDIO_CODEC->ADC2_REG |= (1u << 31);	// Right ADC1 Channel Enable
-	// Left audio
-	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable - R11 - fminL pin 94
-	AUDIO_CODEC->ADC1_REG &= ~ (1u << 23);	// LINEINLEN LINEINL Disable
-
-	// Right audio
-	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable - R10 - fminR pin 93
-	AUDIO_CODEC->ADC2_REG &= ~ (1u << 23);	// LINEINREN LINEINR Disable - R6 - lineinR - pin 95
-
-#else
-
-	/* Do not use FM/LINE inputs */
-
-	// ADCx Analog Control Register
-	AUDIO_CODEC->ADC1_REG &= ~ (1u << 31);	// LEft ADC1 Channel Disable
-	AUDIO_CODEC->ADC2_REG &= ~ (1u << 31);	// Right ADC1 Channel Disable
-
-#endif
-
-	// ADC3 Analog Control Register
-	AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
-	// MIC3
-	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
-	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
-	AUDIO_CODEC->ADC3_REG = (AUDIO_CODEC->ADC3_REG & ~ (0x0Fu << 8)) | (0x0Fu << 8);	// ADC3_PGA_GAIN_CTRL: 36 dB
-
-	// Установка усиления
-	AUDIO_CODEC->ADC_VOL_CTRL1 =
-		0 * (0xA0u << 0) |	/* ADC1_VOL 0xA0 - middle point */
-		0 * (0xA0u << 8) |	/* ADC2_VOL 0xA0 - middle point */
-		(0xA0u << 16) |	/* ADC3_VOL 0xA0 - middle point */
-		0;
-#else
-
-	//PRINTF("AC_ADC_FIFOC=%08lX, AC_DAC_FIFOC=%08lX\n", AUDIO_CODEC->AC_ADC_FIFOC, AUDIO_CODEC->AC_DAC_FIFOC);
-
-	// количество каналов должно соотыетствовать DMABUFFSTEP16RX
-	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |
-			(1u << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
-			(1u << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
-			((0x04 | 0x02) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
-			0;
-
-	// ADCx Analog Control Register
-	AUDIO_CODEC->ADC1_REG |= (1u << 31);	// FMINL ADC1 Channel Enable
-	AUDIO_CODEC->ADC2_REG |= (1u << 31);	// FMINR
-	AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
-
-	// DAC Analog Control Register
-	// количество каналов должно соотыетствовать DMABUFFSTEP16TX
-	AUDIO_CODEC->DAC_REG |= (1u << 15) | (1u << 14);	// DACL_EN, DACR_EN
-
-	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
-	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
-	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 3);	// ADC_DRQ_EN
-
-	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
-	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 4);	// DAC_DRQ_EN
-
-	// Установка аналоговых параметрв
-	AUDIO_CODEC->ADC_VOL_CTRL1 = 0x00FFFFFF;
-
-	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable
-	//AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
-
-	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable
-	//AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable
-
-	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
-	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
-
-#endif
-}
-
-/* встороенный в процессор кодек */
-static void hardware_hwblock_enable_codec1(uint_fast8_t state)
-{
-	if (state)
-	{
-		AUDIO_CODEC->AC_DAC_DPC |= (1u << 31);		// DAC Digital Part Enable
-		AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 28);	// ADC Digital Part Enable
-	}
-	else
-	{
-		AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 28);	// ADC Digital Part Enable
-		AUDIO_CODEC->AC_DAC_DPC &= ~ (1u << 31);	// DAC Digital Part Enable
-	}
-}
-
-#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
-
 static void hardware_i2s1_enable_codec1(uint_fast8_t state)
 {
 	I2S_PCM_TypeDef * const i2s = I2S1;
@@ -4851,6 +4628,239 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
+static const codechw_t audiocodechw_i2s1_duplex_master =
+{
+	hardware_i2s1_master_duplex_initialize_codec1,
+	hardware_dummy_initialize,
+	DMAC_I2S1_RX_initialize_codec1,
+	DMAC_I2S1_TX_initialize_codec1,
+	hardware_i2s1_enable_codec1,
+	hardware_dummy_enable,
+	"audiocodechw-i2s1-duplex-master"
+};
+
+
+#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
+
+/* встороенный в процессор кодек */
+static void hardware_hwblock_master_duplex_initialize_codec1(void)
+{
+	const unsigned framebits = CODEC1_FRAMEBITS;
+	const unsigned lrckf = ARMI2SRATE;
+
+	const unsigned mclkf = lrckf * 512;
+
+#if CPUSTYLE_A64
+	#warning Implement for CPUSTYLE_A64
+
+#else
+
+	// 0x00 = 48000 (x 512)
+	// 0x01 = ~ 46902 (x 512)
+	// 0x02 = 48000 (x 512)
+	const unsigned long src = 0x00;
+	//	Clock Source Select
+	//	00: PLL_AUDIO0(1X)
+	//	01: PLL_AUDIO1(DIV2)
+	//	10: PLL_AUDIO1(DIV5)
+	unsigned long clk;
+	switch (src)
+	{
+	default:
+	case 0x00:
+		clk = allwnrt113_get_audio0pll1x_freq();
+		break;
+	case 0x01:
+		clk = allwnrt113_get_audio1pll_div2_freq();
+		break;
+	case 0x02:
+		clk = allwnrt113_get_audio1pll_div5_freq();
+		break;
+	}
+	//TP();
+	unsigned value;	/* делитель */
+	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioCodec_CLK_WIDTH, ALLWNT113_AudioCodec_CLK_TAPS, & value, 1);
+
+	//PRINTF("AudioCodec: prei=%u, value=%u, lrckf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
+
+	// audiocode1x_dac_clk
+	// audiocode1x_adc_clk
+	//	Clock Source Select
+	//	00: PLL_AUDIO0(1X)
+	//	01: PLL_AUDIO1(DIV2)
+	//	10: PLL_AUDIO1(DIV5)
+
+	const portholder_t clk_reg =
+		(1u << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
+		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
+		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
+		((uint_fast32_t) value << 0) |	// Factor M (0..31)
+		0;
+
+	CCU->AUDIO_CODEC_ADC_CLK_REG = clk_reg;
+	CCU->AUDIO_CODEC_DAC_CLK_REG = clk_reg;
+
+	CCU->AUDIO_CODEC_BGR_REG |= (1u << 0);	// Gating Clock For AUDIO_CODEC
+	CCU->AUDIO_CODEC_BGR_REG |= (1u << 16);	// AUDIO_CODEC Reset
+#endif
+
+#if 1
+	// anatol
+
+	///AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |(0x04 | 0x01) << (1u << 0) |	0;// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+//	AUDIO_CODEC->ADC_DIG_CTRL & ~ (1u << 17)|(1u << 16)|(15 << 0);
+//	AUDIO_CODEC->ADC_DIG_CTRL |= (1u << 17)|(1u << 16)|(1 << 0)|(1 << 1)/*|(1 << 2)*/;///LINL,LINR IN
+
+	//AUDIO_CODEC->ADC_DIG_CTRL & ~ (1u << 17)|(1u << 16)|(15 << 0);
+	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x0Fu)) |
+			(1u << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
+			(1u << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
+			((0x04 | 0x02 | 0x01) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+			0;
+	ASSERT(DMABUFFSTEP16RX == 3);
+
+	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
+	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
+	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 3);	// ADC_DRQ_EN
+
+	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
+	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 4);	// DAC_DRQ_EN
+
+
+//	AUDIO_CODEC->ADC1_REG |= (1u << 23);  // LINEINL
+//	AUDIO_CODEC->ADC2_REG |= (1u << 23);  // LINEINR
+//	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
+
+    ///-----LDO-----
+	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
+//	AUDIO_CODEC->POWER_REG |= (1u << 31);	// ALDO_EN
+//	AUDIO_CODEC->POWER_REG |= (1u << 30);	// HPLDO_EN
+	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
+    ///-------------
+
+
+	// DAC Analog Control Register
+	AUDIO_CODEC->DAC_REG |= (1u << 15) | (1u << 14);	// DACL_EN, DACR_EN
+
+
+	AUDIO_CODEC->RAMP_REG |=
+	   (1u << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
+	   (1u << 0) | // RD_EN Ramp Digital Enable
+	   0;
+
+#if 0
+	/* LINEIN use */
+
+	// ADCx Analog Control Register
+	//AUDIO_CODEC->ADC1_REG |= (1u << 31);	// LEft ADC1 Channel Enable
+	//AUDIO_CODEC->ADC2_REG |= (1u << 31);	// Right ADC1 Channel Enable
+	// Left audio
+	AUDIO_CODEC->ADC1_REG &= ~ (1u << 27);	// FMINLEN FMINL Disable - R11 - fminL pin 94
+	AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
+
+	// ADCx Analog Control Register
+	// Right audio
+	AUDIO_CODEC->ADC2_REG &= ~ (1u << 27);	// FMINREN FMINR Disable - R10 - fminR pin 93
+	AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable - R6 - lineinR - pin 95
+
+#elif 0
+	/* FMIN use */
+
+	// ADCx Analog Control Register
+	//AUDIO_CODEC->ADC1_REG |= (1u << 31);	// LEft ADC1 Channel Enable
+	//AUDIO_CODEC->ADC2_REG |= (1u << 31);	// Right ADC1 Channel Enable
+	// Left audio
+	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable - R11 - fminL pin 94
+	AUDIO_CODEC->ADC1_REG &= ~ (1u << 23);	// LINEINLEN LINEINL Disable
+
+	// Right audio
+	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable - R10 - fminR pin 93
+	AUDIO_CODEC->ADC2_REG &= ~ (1u << 23);	// LINEINREN LINEINR Disable - R6 - lineinR - pin 95
+
+#else
+
+	/* Do not use FM/LINE inputs */
+
+	// ADCx Analog Control Register
+	AUDIO_CODEC->ADC1_REG &= ~ (1u << 31);	// LEft ADC1 Channel Disable
+	AUDIO_CODEC->ADC2_REG &= ~ (1u << 31);	// Right ADC1 Channel Disable
+
+#endif
+
+	// ADC3 Analog Control Register
+	AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
+	// MIC3
+	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
+	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
+	AUDIO_CODEC->ADC3_REG = (AUDIO_CODEC->ADC3_REG & ~ (0x0Fu << 8)) | (0x0Fu << 8);	// ADC3_PGA_GAIN_CTRL: 36 dB
+
+	// Установка усиления
+	AUDIO_CODEC->ADC_VOL_CTRL1 =
+		0 * (0xA0u << 0) |	/* ADC1_VOL 0xA0 - middle point */
+		0 * (0xA0u << 8) |	/* ADC2_VOL 0xA0 - middle point */
+		(0xA0u << 16) |	/* ADC3_VOL 0xA0 - middle point */
+		0;
+#else
+
+	//PRINTF("AC_ADC_FIFOC=%08lX, AC_DAC_FIFOC=%08lX\n", AUDIO_CODEC->AC_ADC_FIFOC, AUDIO_CODEC->AC_DAC_FIFOC);
+
+	// количество каналов должно соотыетствовать DMABUFFSTEP16RX
+	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |
+			(1u << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
+			(1u << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
+			((0x04 | 0x02) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+			0;
+
+	// ADCx Analog Control Register
+	AUDIO_CODEC->ADC1_REG |= (1u << 31);	// FMINL ADC1 Channel Enable
+	AUDIO_CODEC->ADC2_REG |= (1u << 31);	// FMINR
+	AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
+
+	// DAC Analog Control Register
+	// количество каналов должно соотыетствовать DMABUFFSTEP16TX
+	AUDIO_CODEC->DAC_REG |= (1u << 15) | (1u << 14);	// DACL_EN, DACR_EN
+
+	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
+	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
+	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 3);	// ADC_DRQ_EN
+
+	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
+	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 4);	// DAC_DRQ_EN
+
+	// Установка аналоговых параметрв
+	AUDIO_CODEC->ADC_VOL_CTRL1 = 0x00FFFFFF;
+
+	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable
+	//AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
+
+	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable
+	//AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable
+
+	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
+	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
+
+#endif
+}
+
+/* встороенный в процессор кодек */
+static void hardware_hwblock_enable_codec1(uint_fast8_t state)
+{
+	if (state)
+	{
+		AUDIO_CODEC->AC_DAC_DPC |= (1u << 31);		// DAC Digital Part Enable
+		AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 28);	// ADC Digital Part Enable
+	}
+	else
+	{
+		AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 28);	// ADC Digital Part Enable
+		AUDIO_CODEC->AC_DAC_DPC &= ~ (1u << 31);	// DAC Digital Part Enable
+	}
+}
+
 static void DMAC_AudioCodec_RX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
@@ -4977,17 +4987,6 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
-static const codechw_t audiocodechw_i2s1_duplex_master =
-{
-	hardware_i2s1_master_duplex_initialize_codec1,
-	hardware_dummy_initialize,
-	DMAC_I2S1_RX_initialize_codec1,
-	DMAC_I2S1_TX_initialize_codec1,
-	hardware_i2s1_enable_codec1,
-	hardware_dummy_enable,
-	"audiocodechw-i2s1-duplex-master"
-};
-
 static const codechw_t audiocodechw_hwblock_duplex_master =
 {
 	hardware_hwblock_master_duplex_initialize_codec1,
@@ -4998,6 +4997,8 @@ static const codechw_t audiocodechw_hwblock_duplex_master =
 	hardware_dummy_enable,
 	"audiocodechw-hwblock-duplex-master"
 };
+
+#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
 
 static const codechw_t audiocodechw_i2s1_duplex_slave =
 {
