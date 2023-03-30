@@ -1875,9 +1875,11 @@ static void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
 	{
 		uint32_t val;
 		* reg |= (1u << 31) | (1u << 30);
+		(void) * reg;
 
 		/* Lock enable */
 		* reg |= (1u << 29);
+		(void) * reg;
 
 		/* Wait pll stable */
 		while(!(* reg & (0x1u << 28)))
@@ -1912,26 +1914,33 @@ static void allwnr_a64_module_pllaudio_enable(volatile uint32_t * reg)
 
 	// (24MHz*N)/P must be in the range of 72MHz~504MHz.
 	* reg &= ~ (1u << 31);
+	(void) * reg;
 	//local_delay_ms(10);
+	// 307.2 MHz
 	* reg =
 		((10u - 1) << 16) | // P The range is from 1 to 16.	- pre-divider
 		((128u - 1) << 8) | // N 1..128
 		((25u - 1) << 0) | // M 1..32
 		0;
+	(void) * reg;
+	// 307.2
 	* reg =
-	((5u - 1) << 16) | // P The range is from 1 to 16.	- pre-divider
-	((64u - 1) << 8) | // N 1..128
-	((25u - 1) << 0) | // M 1..32
+		((5u - 1) << 16) | // P The range is from 1 to 16.	- pre-divider
+		((64u - 1) << 8) | // N 1..128
+		((25u - 1) << 0) | // M 1..32
 		0;
+	(void) * reg;
 
 
 	if(!(* reg & (1 << 31)))
 	{
 		uint32_t val;
 		* reg |= (1u << 31) | (1u << 30);
+		(void) * reg;
 
 		/* Lock enable */
 		* reg |= (1u << 29);
+		(void) * reg;
 		//local_delay_ms(10);
 
 		/* Wait pll stable */
