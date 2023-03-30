@@ -1914,15 +1914,15 @@ static void allwnr_a64_module_pllaudio_enable(volatile uint32_t * reg)
 	* reg &= ~ (1u << 31);
 	//local_delay_ms(10);
 	* reg =
-		((10u - 1) << 16) | // P The range is from 1 to 16.
+		((10u - 1) << 16) | // P The range is from 1 to 16.	- pre-divider
 		((128u - 1) << 8) | // N 1..128
 		((25u - 1) << 0) | // M 1..32
 		0;
-//	* reg =
-//		((5u - 1) << 16) | // P The range is from 1 to 16.
-//		((64u - 1) << 8) | // N 1..128
-//		((25u - 1) << 0) | // M 1..32
-//		0;
+	* reg =
+	((5u - 1) << 16) | // P The range is from 1 to 16.	- pre-divider
+	((64u - 1) << 8) | // N 1..128
+	((25u - 1) << 0) | // M 1..32
+		0;
 
 
 	if(!(* reg & (1 << 31)))
@@ -1935,8 +1935,8 @@ static void allwnr_a64_module_pllaudio_enable(volatile uint32_t * reg)
 		//local_delay_ms(10);
 
 		/* Wait pll stable */
-		while(!(* reg & (0x1u << 28)))
-			;
+//		while(!(* reg & (0x1u << 28)))
+//			;
 		//local_delay_ms(20);
 
 		/* Lock disable */
