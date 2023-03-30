@@ -3024,7 +3024,7 @@ calcdivider(
 {
 	const uint_fast8_t rbmax = 16; //позиция старшего значащего бита в маске TAPS
 	uint_fast8_t rb, rbi;
-	uint_fast16_t prescaler = 1U;
+	uint_fast32_t prescaler = 1;
 
 	for (rb = rbi = 0; rb <= rbmax; ++ rb, prescaler *= 2)
 	{
