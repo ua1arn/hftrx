@@ -3594,6 +3594,9 @@ static void I2S_fill_TXxCHMAP(
 static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NCH, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
 {
 
+	const unsigned bclkf = lrckf * framebits;
+	const unsigned mclkf = lrckf * 256;
+
 #if CPUSTYLE_A64
 	#warning Implement for CPUSTYLE_A64
 	const unsigned irq = I2S_PCM0_IRQn + ix;
@@ -3605,7 +3608,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//	01: PLL_AUDIO(8X)/2
 	//	10: PLL_AUDIO(8X)/4
 	//	11: PLL_AUDIO
-	enum { CLK_SRC_SEL = 0x00 };
+	const unsigned CLK_SRC_SEL = 0x00;
 
 	* i2s_clk_reg =
 		(1u << 31) |	// SCLK_GATING.
@@ -3614,7 +3617,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	CCU->BUS_CLK_GATING_REG3 |= 1u << (12 + ix);	// I2S/PCM x Reset. 1: De-assert.
 
-	unsigned long clk;
+	uint_fast32_t clk;
 	switch (CLK_SRC_SEL)
 	{
 	default:
@@ -3631,6 +3634,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		clk = allwnra64_get_audiopll_freq();
 		break;
 	}
+
+	unsigned value;	/* делитель */
+	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
+	PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%u)\n", ix, prei, value, mclkf, (unsigned) clk);
+
 #else
 	const unsigned irq = I2S_PCM1_IRQn + ix - 1;
 
@@ -3640,9 +3648,6 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// ARMSAIRATE // SAI sample rate (FPGA/IF CODEC side)
 	// ARMSAIMCLK = ARMSAIRATE * 256
 	// CODEC1_FRAMEBITS 64
-
-	const unsigned long bclkf = lrckf * framebits;
-	const unsigned long mclkf = lrckf * 256;
 
 //	PRINTF("allwnrt113_get_audio0pll1x_freq = %lu\n", allwnrt113_get_audio0pll1x_freq());
 //	PRINTF("allwnrt113_get_audio0pll4x_freq = %lu\n", allwnrt113_get_audio0pll4x_freq());
@@ -4292,6 +4297,11 @@ static void DMAC_clock_initialize(void)
 {
 #if CPUSTYLE_A64
 	#warning Implement for CPUSTYLE_A64
+
+	CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
+
+	CCU->BUS_CLK_GATING_REG0 |= (1u << 6);	// DMA_GATING
+	CCU->BUS_SOFT_RST_REG0 |= (1u << 6);	// DMA_RST
 
 #else /* CPUSTYLE_A64 */
 	CCU->MBUS_CLK_REG |= (1u << 30);		// MBUS Reset 1: De-assert reset
