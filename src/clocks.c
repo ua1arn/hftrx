@@ -1943,6 +1943,16 @@ uint_fast32_t allwnr_a64_get_cpux_freq(void)
 	}
 }
 
+uint_fast64_t allwnra64_get_audiopll8x_freq(void)
+{
+	retrurn 11111111111111111;
+}
+
+uint_fast32_t allwnra64_get_audiopll_freq(void)
+{
+	return allwnra64_get_audiopll8x_freq() / 8
+}
+
 uint_fast32_t allwnr_a64_get_axi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;

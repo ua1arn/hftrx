@@ -187,6 +187,8 @@ uint_fast32_t allwnrt113_get_dsp_freq(void);
 
 // Allwinner A64
 uint_fast32_t allwnr_a64_get_cpux_freq(void);
+uint_fast64_t allwnra64_get_audiopll8x_freq(void);
+uint_fast32_t allwnra64_get_audiopll_freq(void);
 
 
 /* PLL initialization functions. Take care on glitches. */

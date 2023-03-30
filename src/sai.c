@@ -3598,6 +3598,39 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	#warning Implement for CPUSTYLE_A64
 	const unsigned irq = I2S_PCM0_IRQn + ix;
 
+	volatile uint32_t * const i2s_clk_reg = & CCU->I2S_PCM_0_CLK_REG + ix;
+
+	//	CLK_SRC_SEL.
+	//	00: PLL_AUDIO (8X)
+	//	01: PLL_AUDIO(8X)/2
+	//	10: PLL_AUDIO(8X)/4
+	//	11: PLL_AUDIO
+	enum { CLK_SRC_SEL = 0x00 };
+
+	* i2s_clk_reg =
+		(1u << 31) |	// SCLK_GATING.
+		(CLK_SRC_SEL << 16) |	//
+		0;
+
+	CCU->BUS_CLK_GATING_REG3 |= 1u << (12 + ix);	// I2S/PCM x Reset. 1: De-assert.
+
+	unsigned long clk;
+	switch (CLK_SRC_SEL)
+	{
+	default:
+	case 0:
+		clk = allwnra64_get_audiopll8x_freq();
+		break;
+	case 1:
+		clk = allwnra64_get_audiopll8x_freq() / 2;
+		break;
+	case 2:
+		clk = allwnra64_get_audiopll8x_freq() / 4;
+		break;
+	case 3:
+		clk = allwnra64_get_audiopll_freq();
+		break;
+	}
 #else
 	const unsigned irq = I2S_PCM1_IRQn + ix - 1;
 
