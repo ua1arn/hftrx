@@ -3869,6 +3869,8 @@ static void hardware_i2s2_slave_duplex_initialize_fpga(void)
 	I2S2HW_INITIALIZE(0);
 }
 
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+
 /* встороенный в процессор кодек */
 static void hardware_hwblock_master_duplex_initialize_codec1(void)
 {
@@ -4087,6 +4089,8 @@ static void hardware_hwblock_enable_codec1(uint_fast8_t state)
 		AUDIO_CODEC->AC_DAC_DPC &= ~ (1u << 31);	// DAC Digital Part Enable
 	}
 }
+
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
 static void hardware_i2s1_enable_codec1(uint_fast8_t state)
 {
