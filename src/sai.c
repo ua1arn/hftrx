@@ -3603,6 +3603,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	volatile uint32_t * const i2s_clk_reg = & CCU->I2S_PCM_0_CLK_REG + ix;
 
+	allwnr_a64_module_pll_enable0(& CCU->PLL_AUDIO_CTRL_REG);
+
 	//	CLK_SRC_SEL.
 	//	00: PLL_AUDIO (8X) - 196571428
 	//	01: PLL_AUDIO(8X)/2	- 98285714

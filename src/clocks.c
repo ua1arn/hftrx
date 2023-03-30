@@ -1891,8 +1891,33 @@ static void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
 	}
 }
 
-static void allwnr_a64_module_pll_enable0(volatile uint32_t * reg)
+void allwnr_a64_module_pll_enable0(volatile uint32_t * reg)
 {
+	// 0x90035514
+	//	* reg =
+	//		(0x03 << 16) | // P
+	//		(0x3fu << 8) | // N
+	//		(0x14 << 0) | // M
+	//		0;
+	//	The PLL_AUDIO= (24MHz*N)/(M*P).
+	//	The PLL_AUDIO(8X) = (24MHz*N*2)/M
+
+	// Need same as PLL_AUDIO1_CTRL_REG in t1113-s3
+	//	PLL_AUDIO1 = 24MHz*N/M
+	//	PLL_AUDIO1(DIV2) = 24MHz*N/M/P0
+	//	PLL_AUDIO1(DIV5) = 24MHz*N/M/P1
+
+	// pll0: p=0x14, n=0x55, m1,m0=0
+	// pll1: p1=4(5), p0=1(2), n=0x7F, m=0
+
+	* reg &= ~ (1u << 31);
+	local_delay_ms(10);
+	* reg =
+		((10u - 1) << 16) | // P The range is from 1 to 16.
+		((128u - 1) << 8) | // N 1..128
+		((25u - 1) << 0) | // M 1..32
+		0;
+
 
 	if(!(* reg & (1 << 31)))
 	{
@@ -1901,11 +1926,12 @@ static void allwnr_a64_module_pll_enable0(volatile uint32_t * reg)
 
 		/* Lock enable */
 		* reg |= (1u << 29);
+		local_delay_ms(10);
 
 		/* Wait pll stable */
-//		while(!(* reg & (0x1u << 28)))
-//			;
-//		//local_delay_ms(20);
+		while(!(* reg & (0x1u << 28)))
+			;
+		//local_delay_ms(20);
 
 		/* Lock disable */
 //		val = * reg;
@@ -7117,7 +7143,7 @@ sysinit_pll_initialize(void)
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
-	allwnr_a64_module_pll_enable0(& CCU->PLL_AUDIO_CTRL_REG);
+	//allwnr_a64_module_pll_enable0(& CCU->PLL_AUDIO_CTRL_REG);
 	//allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
 	CCU->MBUS_RST_REG &= ~ (1u << 0);	// MBUS_RESET 0: Assert.
