@@ -3641,6 +3641,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //	PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%u)\n", ix, prei, value, mclkf, (unsigned) clk);
 
 	PRINTF("i2s%u: mclkf=%u, clk=%u\n", ix, mclkf, (unsigned) clk);
+	PRINTF("CCU->PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
 
 #else
 	const unsigned irq = I2S_PCM1_IRQn + ix - 1;
