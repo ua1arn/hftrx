@@ -493,28 +493,17 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	CCU->USB_BGR_REG &= ~ (1uL << 0);	// USBOHCI0_GATING
 	CCU->USB_BGR_REG &= ~ (1uL << 4);	// USBEHCI0_GATING
-	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN
-
-	//PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled. Enable for process.\n");
-	//return;
 
 	// Turn on USBOTG0
-	CCU->USB_BGR_REG |= (1uL << 24);	// USBOTG0_RST
 	CCU->USB_BGR_REG |= (1uL << 8);	// USBOTG0_GATING
+	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST Assert
+	CCU->USB_BGR_REG |= (1uL << 24);	// USBOTG0_RST De-assert
 
 	// Enable
-	CCU->USB0_CLK_REG |= (1uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-	CCU->USB0_CLK_REG |= (1uL << 30);	// USBPHY0_RSTN
+	CCU->USB0_CLK_REG &= ~ (1uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0 0: Clock is OFF
 
-	// OHCI0 12M Source Select
-	CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
-		(0x00 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
-		(1uL << 31) |	// USB0_CLKEN - Gating Special Clock For OHCI0
-		(1uL << 30) |	// USBPHY0_RSTN
-		0;
-
-
-	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
+	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN Assert
+	CCU->USB0_CLK_REG |= (1uL << 30);	// USBPHY0_RSTN De-assert
 
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
@@ -532,6 +521,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
 	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
 	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
+
+	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 #else
 	#error HAL_PCD_MspInit should be implemented
@@ -627,12 +618,9 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 
 	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 
-	CCU->USB_BGR_REG &= ~ (1uL << 16);	// USBOHCI0_RST
-	CCU->USB_BGR_REG &= ~ (1uL << 20);	// USBEHCI0_RST
-	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST
-
-	CCU->USB_BGR_REG &= ~ (1uL << 0);	// USBOHCI0_GATING
-	CCU->USB_BGR_REG &= ~ (1uL << 4);	// USBEHCI0_GATING
+	// Turn on USBOTG0
+	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST Assert
+	CCU->USB_BGR_REG &= ~ (1uL << 8);	// USBOTG0_GATING
 	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN
 
 #else
