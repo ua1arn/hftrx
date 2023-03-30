@@ -3818,12 +3818,38 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #elif CPUSTYLE_VM14
 
+	//	.equ SPL_MAGIC,         0xdeadbeef
+	//	.equ SPL_ADDR,          0x2000fff4
+	//
+	//
+	//	LDR     r0, =SPL_MAGIC
+	//	LDR     r3, =SPL_ADDR
+	//	ADD     r1, pc, #0x4
+	//	STR     r1, [r3]
+	//	STR     r0, [r3, #0x4]
+	//
+	//	@LDR     r3, =PMCTR_BASE
+	//	@LDR     r0, =0x1
+	//	@STR     r0, [r3, #CORE_PWR_UP]
+	//	@LDR     r4, =GATE_CORE_CTR
+	//	@LDR     r0, [r4]
+	//	@ORR     r0, r0, #0x1 //Enable L0_CLK
+	//	@STR     r0, [r4]
+	//	@LDR     r4, =GATE_SYS_CTR
+	//	@LDR     r0, [r4]
+	//	@ORR     r0, r0, #0x1 //Enable SYS_CLK
+	//	@STR     r0, [r4]
+
 // Страницы 74..78 документа Manual_1892VM14YA.pdf
 
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	PMCTR->ALWAYS_MISC0 = startfunc;
 	PMCTR->ALWAYS_MISC1 = startfunc;	/* надо ли? */
+
+	volatile uint32_t * const SPL_ADDR = (volatile uint32_t *) 0x2000fff4;
+	SPL_ADDR [0] = startfunc;
+	SPL_ADDR [1] = 0xDEADBEEF; // SPL_MAGIC
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	/* Generate an IT to core 1 */
