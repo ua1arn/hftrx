@@ -3608,14 +3608,15 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//	01: PLL_AUDIO(8X)/2	- 98285714
 	//	10: PLL_AUDIO(8X)/4 - 49142857
 	//	11: PLL_AUDIO - 24571428
-	const unsigned CLK_SRC_SEL = 0x02;
+	const unsigned CLK_SRC_SEL = 0x03;
 
 	* i2s_clk_reg =
 		(1u << 31) |	// SCLK_GATING.
 		(CLK_SRC_SEL << 16) |	//
 		0;
 
-	CCU->BUS_CLK_GATING_REG3 |= 1u << (12 + ix);	// I2S/PCM x Reset. 1: De-assert.
+	CCU->BUS_CLK_GATING_REG2 |= 1u << (12 + ix);	// Gating Clock For I2S/PCM-2
+	CCU->BUS_SOFT_RST_REG3 |= 1u << (12 + ix);	// I2S/PCM x Reset. 1: De-assert.
 
 	uint_fast32_t clk;
 	switch (CLK_SRC_SEL)
@@ -6269,8 +6270,8 @@ void hardware_channels_enable(void)
 		const codechw_t * const p = channels [i];
 		//
 		PRINTF(PSTR("hardware_channels_enable: %s\n"), p->label);
-		p->initializedma_rx();
-		p->initializedma_tx();
+		//p->initializedma_rx();
+		//p->initializedma_tx();
 		p->enable_rx(1);
 		p->enable_tx(1);
 	}

@@ -7094,6 +7094,7 @@ sysinit_pll_initialize(void)
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
+	//allwnr_a64_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
 	//allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
 	CCU->MBUS_RST_REG &= ~ (1u << 0);	// MBUS_RESET 0: Assert.
