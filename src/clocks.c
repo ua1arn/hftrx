@@ -1948,7 +1948,7 @@ uint_fast32_t allwnra64_get_audiopll8x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
 	//const uint_fast32_t pllP = 1 + ((reg >> 16) & 0x0F);
-	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0x3F);
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0x7F);
 	const uint_fast32_t pllM = 1 + ((reg >> 0) & 0x1F);
 
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN * 2 / pllM;
@@ -1959,10 +1959,10 @@ uint_fast32_t allwnra64_get_audiopll_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
 	const uint_fast32_t pllP = 1 + ((reg >> 16) & 0x0F);
-	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0x3F);
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0x7F);
 	const uint_fast32_t pllM = 1 + ((reg >> 0) & 0x1F);
 
-	return allwnrt113_get_hosc_freq() * pllN / (pllM * pllP);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / (pllM * pllP);
 }
 
 uint_fast32_t allwnr_a64_get_axi_freq(void)

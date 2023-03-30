@@ -3604,11 +3604,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	volatile uint32_t * const i2s_clk_reg = & CCU->I2S_PCM_0_CLK_REG + ix;
 
 	//	CLK_SRC_SEL.
-	//	00: PLL_AUDIO (8X)
-	//	01: PLL_AUDIO(8X)/2
-	//	10: PLL_AUDIO(8X)/4
-	//	11: PLL_AUDIO
-	const unsigned CLK_SRC_SEL = 0x00;
+	//	00: PLL_AUDIO (8X) - 196571428
+	//	01: PLL_AUDIO(8X)/2	- 98285714
+	//	10: PLL_AUDIO(8X)/4 - 49142857
+	//	11: PLL_AUDIO - 24571428
+	const unsigned CLK_SRC_SEL = 0x02;
 
 	* i2s_clk_reg =
 		(1u << 31) |	// SCLK_GATING.
@@ -3635,9 +3635,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		break;
 	}
 
-	unsigned value;	/* делитель */
-	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
-	PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%u)\n", ix, prei, value, mclkf, (unsigned) clk);
+//	unsigned value;	/* делитель */
+//	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
+//	PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%u)\n", ix, prei, value, mclkf, (unsigned) clk);
+
+	PRINTF("i2s%u: mclkf=%u, clk=%u\n", ix, mclkf, (unsigned) clk);
 
 #else
 	const unsigned irq = I2S_PCM1_IRQn + ix - 1;
@@ -4296,7 +4298,6 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 static void DMAC_clock_initialize(void)
 {
 #if CPUSTYLE_A64
-	#warning Implement for CPUSTYLE_A64
 
 	CCU->MBUS_RST_REG &= ~ (1u << 31);		// MBUS_RESET.
 	CCU->MBUS_CLK_REG =
