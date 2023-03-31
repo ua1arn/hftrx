@@ -3591,6 +3591,16 @@ static void I2S_fill_TXxCHMAP(
 //	ASSERT(0);
 //}
 
+void I2S_PCMx_IrqHandler(void)
+{
+//	const uint_fast32_t ista = I2S1->I2S_PCM_ISTA;
+//	I2S1->I2S_PCM_ISTA = ista;
+//	PRINTF("I2S_PCM1_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
+	ASSERT(0);
+	for (;;)
+		;
+}
+
 static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NCH, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
 {
 
@@ -3813,7 +3823,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_INT |= (1u << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
 	i2s->I2S_PCM_INT |= (1u << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
-	//arm_hardware_set_handler_realtime(irq, ix == 1 ? I2S_PCM1_IrqHandler : I2S_PCM2_IrqHandler);
+	arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
 
 }
 
@@ -4060,7 +4070,7 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 }
 
 
-#define DMAC_I2S_IRQ (0x01)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_IRQ_EN_FLAG_VALUE (0x01)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
 {
@@ -4098,14 +4108,14 @@ static void DMAC_clock_initialize(void)
 
 enum
 {
+	DMAC_I2S0_TX_Ch,
+	DMAC_I2S0_RX_Ch,
 	DMAC_I2S1_TX_Ch,
 	DMAC_I2S1_RX_Ch,
 	DMAC_AudioCodec_TX_Ch,// = DMAC_I2S1_TX_Ch,
 	DMAC_AudioCodec_RX_Ch,// = DMAC_I2S1_RX_Ch,
 	DMAC_I2S2_TX_Ch,
 	DMAC_I2S2_RX_Ch,
-	DMAC_I2S0_TX_Ch,
-	DMAC_I2S0_RX_Ch,
 	//
 	DMAC_Ch_Total
 };
@@ -4167,7 +4177,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4230,7 +4240,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4293,7 +4303,7 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4356,7 +4366,7 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_RX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4421,7 +4431,7 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4484,7 +4494,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_RX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4548,7 +4558,7 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_TX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4611,7 +4621,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_TX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4907,7 +4917,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4970,7 +4980,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -5064,6 +5074,7 @@ static void hardware_i2s0_slave_duplex_initialize_fpga(void)
 
 static void hardware_i2s0_enable_fpga(uint_fast8_t state)
 {
+	state = 0;
 	I2S_PCM_TypeDef * const i2s = I2S0;
 	if (state)
 	{
@@ -5138,7 +5149,7 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_RX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -5201,7 +5212,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_I2S_IRQ, DMA_I2Sx_TX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
