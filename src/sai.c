@@ -5064,7 +5064,6 @@ static void hardware_i2s0_slave_duplex_initialize_fpga(void)
 
 static void hardware_i2s0_enable_fpga(uint_fast8_t state)
 {
-	return;
 	I2S_PCM_TypeDef * const i2s = I2S0;
 	if (state)
 	{
