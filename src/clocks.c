@@ -7147,6 +7147,7 @@ sysinit_pll_initialize(void)
 	USBPHY0->HCI_ICR = 0;
 	USBPHY1->HCI_ICR = 0;
 
+
 	allwnr_a64_pll_initialize();
 	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH0_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH1_CTRL_REG);
@@ -7156,16 +7157,20 @@ sysinit_pll_initialize(void)
 	allwnr_a64_module_pllaudio_enable();
 	//allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
-	CCU->MBUS_RST_REG &= ~ (1u << 0);	// MBUS_RESET 0: Assert.
-	(void) CCU->MBUS_RST_REG;
-	CCU->MBUS_RST_REG |= (1u << 0);		// MBUS_RESET 1: De-assert.
-	(void) CCU->MBUS_RST_REG;
+//	CCU->MBUS_RST_REG &= ~ (1u << 31);		// MBUS_RESET.
+//	CCU->MBUS_RST_REG |= (1u << 31);		// MBUS_RESET.
+//	CCU->MBUS_CLK_REG = 0;
+//	CCU->MBUS_CLK_REG =
+//		(1u << 31) | 	// MBUS_SCLK_GATING.
+//		(0x01 << 24) | 	// MBUS_SCLK_SRC01: PLL_PERIPH0(2X)
+//		(0x03 << 0) | // MBUS_SCLK_RATIO_M
+//		0;
+//	(void) CCU->MBUS_CLK_REG;
+//	(void) CCU->MBUS_CLK_REG;
+//	(void) CCU->MBUS_CLK_REG;
+//	(void) CCU->MBUS_CLK_REG;
 
-	CCU->MBUS_CLK_REG = 0;
-	CCU->MBUS_CLK_REG |= ((4u - 1) << 0);	// MBUS_SCLK_RATIO_M
-	CCU->MBUS_CLK_REG |= (0x01 << 24);	// 01: PLL_PERIPH0(2X)
-	CCU->MBUS_CLK_REG |= (1u << 31);	// MBUS_SCLK_GATING. 1: Clock is ON.
-
+	CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
 
 #elif CPUSTYLE_T113
 

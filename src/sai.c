@@ -4082,19 +4082,6 @@ static void DMAC_clock_initialize(void)
 {
 #if CPUSTYLE_A64
 
-	CCU->MBUS_RST_REG &= ~ (1u << 31);		// MBUS_RESET.
-	CCU->MBUS_CLK_REG =
-		(1u << 31) | 	// MBUS_SCLK_GATING.
-		(0x01 << 24) | 	// MBUS_SCLK_SRC01: PLL_PERIPH0(2X)
-		(0x00 << 0) | // MBUS_SCLK_RATIO_M
-		0;
-	(void) CCU->MBUS_CLK_REG;
-	(void) CCU->MBUS_CLK_REG;
-	(void) CCU->MBUS_CLK_REG;
-	(void) CCU->MBUS_CLK_REG;
-
-	CCU->MBUS_RST_REG |= (1u << 31);		// MBUS_RESET.
-
 	CCU->BUS_CLK_GATING_REG0 |= (1u << 6);	// DMA_GATING
 	CCU->BUS_SOFT_RST_REG0 |= (1u << 6);	// DMA_RST
 
