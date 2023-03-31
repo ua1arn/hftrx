@@ -3608,7 +3608,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned mclkf = lrckf * 256;
 
 #if CPUSTYLE_A64
-	#warning Implement for CPUSTYLE_A64
+
 	const unsigned irq = I2S_PCM0_IRQn + ix;
 
 	volatile uint32_t * const i2s_clk_reg = & CCU->I2S_PCM_0_CLK_REG + ix;
@@ -3652,6 +3652,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	PRINTF("i2s%u: mclkf=%u, clk=%u\n", ix, mclkf, (unsigned) clk);
 	PRINTF("CCU->PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
+	PRINTF("CCU->MBUS_CLK_REG=%08X\n", (unsigned) CCU->MBUS_CLK_REG);
 
 #else
 	const unsigned irq = I2S_PCM1_IRQn + ix - 1;

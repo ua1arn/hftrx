@@ -1862,9 +1862,27 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 //    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 }
 
-void allwnr_a64_pll_initialize(void)
+static void allwnr_a64_pll_initialize(void)
 {
 	set_a64_pll_cpux_axi(PLL_CPU_N, PLL_CPU_K, PLL_CPU_M, PLL_CPU_P);	// see sdram.c
+}
+
+static void allwnr_a64_mbus_initialize(void)
+{
+	//	CCU->MBUS_RST_REG &= ~ (1u << 31);		// MBUS_RESET.
+	//	CCU->MBUS_RST_REG |= (1u << 31);		// MBUS_RESET.
+	//	CCU->MBUS_CLK_REG = 0;
+		CCU->MBUS_CLK_REG =
+			(1u << 31) | 	// MBUS_SCLK_GATING.
+			//(0x01 << 24) | 	// MBUS_SCLK_SRC01: PLL_PERIPH0(2X)
+			//(0x03 << 0) | // MBUS_SCLK_RATIO_M
+			0;
+		(void) CCU->MBUS_CLK_REG;
+		(void) CCU->MBUS_CLK_REG;
+		(void) CCU->MBUS_CLK_REG;
+		(void) CCU->MBUS_CLK_REG;
+
+		CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
 }
 
 
@@ -7157,20 +7175,7 @@ sysinit_pll_initialize(void)
 	allwnr_a64_module_pllaudio_enable();
 	//allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
-//	CCU->MBUS_RST_REG &= ~ (1u << 31);		// MBUS_RESET.
-//	CCU->MBUS_RST_REG |= (1u << 31);		// MBUS_RESET.
-//	CCU->MBUS_CLK_REG = 0;
-//	CCU->MBUS_CLK_REG =
-//		(1u << 31) | 	// MBUS_SCLK_GATING.
-//		(0x01 << 24) | 	// MBUS_SCLK_SRC01: PLL_PERIPH0(2X)
-//		(0x03 << 0) | // MBUS_SCLK_RATIO_M
-//		0;
-//	(void) CCU->MBUS_CLK_REG;
-//	(void) CCU->MBUS_CLK_REG;
-//	(void) CCU->MBUS_CLK_REG;
-//	(void) CCU->MBUS_CLK_REG;
-
-	CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
+	allwnr_a64_mbus_initialize();
 
 #elif CPUSTYLE_T113
 
