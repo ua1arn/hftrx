@@ -1869,20 +1869,20 @@ static void allwnr_a64_pll_initialize(void)
 
 static void allwnr_a64_mbus_initialize(void)
 {
-	//	CCU->MBUS_RST_REG &= ~ (1u << 31);		// MBUS_RESET.
-	//	CCU->MBUS_RST_REG |= (1u << 31);		// MBUS_RESET.
-	//	CCU->MBUS_CLK_REG = 0;
-		CCU->MBUS_CLK_REG =
-			(1u << 31) | 	// MBUS_SCLK_GATING.
-			//(0x01 << 24) | 	// MBUS_SCLK_SRC01: PLL_PERIPH0(2X)
-			//(0x03 << 0) | // MBUS_SCLK_RATIO_M
-			0;
-		(void) CCU->MBUS_CLK_REG;
-		(void) CCU->MBUS_CLK_REG;
-		(void) CCU->MBUS_CLK_REG;
-		(void) CCU->MBUS_CLK_REG;
+//		CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
+	CCU->MBUS_CLK_REG =
+		(1u << 31) | 	// MBUS_SCLK_GATING.
+		(0x02 << 24) | 	// MBUS_SCLK_SRC 01: PLL_PERIPH0(2X) 11: PLL_DDR1.
+		(0x07 << 0) | // MBUS_SCLK_RATIO_M (M=1..8, code=0..7)
+		0;
+	(void) CCU->MBUS_CLK_REG;
+	(void) CCU->MBUS_CLK_REG;
+	(void) CCU->MBUS_CLK_REG;
+	(void) CCU->MBUS_CLK_REG;
 
-		CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
+//	CCU->MBUS_RST_REG &= ~ (1u << 31);		// MBUS_RESET.
+//	CCU->MBUS_RST_REG |= (1u << 31);		// MBUS_RESET.
+	CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
 }
 
 
@@ -7167,8 +7167,14 @@ sysinit_pll_initialize(void)
 
 
 	allwnr_a64_pll_initialize();
+
+	//	The PLL_PERIPH0(1X) = 24MHz*N*K/2.
+	//	The PLL_PERIPH0(2X) = 24MHz*N*K.
 	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH0_CTRL_REG);
+	//	The PLL_PERIPH1(1X) = 24MHz*N*K/2.
+	//	The PLL_PERIPH1(2X) = 24MHz*N*K.
 	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH1_CTRL_REG);
+
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
