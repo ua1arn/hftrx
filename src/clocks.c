@@ -1893,10 +1893,13 @@ static void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
 	}
 }
 
-static void allwnr_a64_module_pllaudio_enable(volatile uint32_t * reg)
+static void allwnr_a64_module_pllaudio_enable(void)
 {
+	const unsigned p = 5;
+	const unsigned n = 64;
+	const unsigned m = 25;
 	// 0x90035514
-	//	* reg =
+	//	CCU->PLL_AUDIO_CTRL_REG =
 	//		(0x03 << 16) | // P
 	//		(0x3fu << 8) | // N
 	//		(0x14 << 0) | // M
@@ -1913,45 +1916,37 @@ static void allwnr_a64_module_pllaudio_enable(volatile uint32_t * reg)
 	// pll1: p1=4(5), p0=1(2), n=0x7F, m=0
 
 	// (24MHz*N)/P must be in the range of 72MHz~504MHz.
-	* reg &= ~ (1u << 31);
-	(void) * reg;
-	//local_delay_ms(10);
-	// 307.2 MHz
-	* reg =
-		((10u - 1) << 16) | // P The range is from 1 to 16.	- pre-divider
-		((128u - 1) << 8) | // N 1..128
-		((25u - 1) << 0) | // M 1..32
-		0;
-	(void) * reg;
+	CCU->PLL_AUDIO_CTRL_REG &= ~ (1u << 31);
+	(void) CCU->PLL_AUDIO_CTRL_REG;
 	// 307.2
-	* reg =
-		((5u - 1) << 16) | // P The range is from 1 to 16.	- pre-divider
-		((64u - 1) << 8) | // N 1..128
-		((25u - 1) << 0) | // M 1..32
+	CCU->PLL_AUDIO_CTRL_REG =
+		((p - 1) << 16) | // P The range is from 1 to 16.	- pre-divider
+		((n - 1) << 8) | // N 1..128
+		((m - 1) << 0) | // M 1..32
 		0;
-	(void) * reg;
+	(void) CCU->PLL_AUDIO_CTRL_REG;
 
 
-	if(!(* reg & (1 << 31)))
+	if(!(CCU->PLL_AUDIO_CTRL_REG & (1 << 31)))
 	{
 		uint32_t val;
-		* reg |= (1u << 31) | (1u << 30);
-		(void) * reg;
+		CCU->PLL_AUDIO_CTRL_REG |= (1u << 31) | (1u << 30);
+		(void) CCU->PLL_AUDIO_CTRL_REG;
 
 		/* Lock enable */
-		* reg |= (1u << 29);
-		(void) * reg;
+		CCU->PLL_AUDIO_CTRL_REG |= (1u << 29);
+		(void) CCU->PLL_AUDIO_CTRL_REG;
 		//local_delay_ms(10);
 
 		/* Wait pll stable */
-//		while(!(* reg & (0x1u << 28)))
-//			;
+		while(!(CCU->PLL_AUDIO_CTRL_REG & (0x1u << 28)))
+			;
 		//local_delay_ms(20);
 
 		/* Lock disable */
-//		val = * reg;
+//		val = CCU->PLL_AUDIO_CTRL_REG;
 //		val &= ~(1 << 29);
-//		* reg = val;
+//		CCU->PLL_AUDIO_CTRL_REG = val;
 	}
 }
 
@@ -7158,7 +7153,7 @@ sysinit_pll_initialize(void)
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
-	allwnr_a64_module_pllaudio_enable(& CCU->PLL_AUDIO_CTRL_REG);
+	allwnr_a64_module_pllaudio_enable();
 	//allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
 	CCU->MBUS_RST_REG &= ~ (1u << 0);	// MBUS_RESET 0: Assert.

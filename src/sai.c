@@ -6271,8 +6271,8 @@ void hardware_channels_enable(void)
 		const codechw_t * const p = channels [i];
 		//
 		PRINTF(PSTR("hardware_channels_enable: %s\n"), p->label);
-		//p->initializedma_rx();
-		//p->initializedma_tx();
+		p->initializedma_rx();
+		p->initializedma_tx();
 		p->enable_rx(1);
 		p->enable_tx(1);
 	}
