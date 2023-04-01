@@ -1110,7 +1110,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//PRINTF("1 HAL_EHCI_Init: PORTSC=%08X @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	/* Route all ports to EHCI controller */
 	//PRINTF("1 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
-	* hehci->configFlag = EHCI_CONFIGFLAG_CF;
+	* hehci->configFlag = EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
 	(void) * hehci->configFlag;
 	//PRINTF("2 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
 	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08X\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
@@ -2447,30 +2447,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			0;
 
 	const unsigned OHCIx_12M_SRC_SEL = 0u;	// 00: 12M divided from 48M, 01: 12M divided from 24M, 10: LOSC
-	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
-	{
-		//PRINTF("Enable USBEHCI1 clocks\n");
-		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI1);	/* host-only port */
 
-		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
-					(3u << 22) |	// OHCI1_12M_SRC_SEL
-					(1u << 9) |
-					(1u << 1) |
-					0)) |
-				(OHCIx_12M_SRC_SEL << 22) |	// OHCI1_12M_SRC_SEL
-				(1u << 9) |	// SCLK_GATING_USBPHY1
-				(1u << 1) |	// USBPHY1_RST
-				0;
-
-		CCU->BUS_CLK_GATING_REG0 |= (1u << 29);	// USBOHCI0_GATING.
-		CCU->BUS_CLK_GATING_REG0 |= (1u << 25);	// USBEHCI0_GATING.
-
-		CCU->BUS_SOFT_RST_REG0 |= (1u << 29);	// USB-OHCI0_RST.
-		CCU->BUS_SOFT_RST_REG0 |= (1u << 25);	// USB-EHCI0_RST.
-
-		SetupUsbPhyc(USBPHY1);
-	}
-	else
+	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
 		//PRINTF("Enable USBEHCI0 clocks\n");
 		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI0);	/* host and usb-otg port */
@@ -2498,6 +2476,29 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		SetupUsbPhyc(USBPHY0);
 
 	}
+	else
+	{
+		//PRINTF("Enable USBEHCI1 clocks\n");
+		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI1);	/* host-only port */
+
+		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
+					(3u << 22) |	// OHCI1_12M_SRC_SEL
+					(1u << 9) |
+					(1u << 1) |
+					0)) |
+				(OHCIx_12M_SRC_SEL << 22) |	// OHCI1_12M_SRC_SEL
+				(1u << 9) |	// SCLK_GATING_USBPHY1
+				(1u << 1) |	// USBPHY1_RST
+				0;
+
+		CCU->BUS_CLK_GATING_REG0 |= (1u << 29);	// USBOHCI0_GATING.
+		CCU->BUS_CLK_GATING_REG0 |= (1u << 25);	// USBEHCI0_GATING.
+
+		CCU->BUS_SOFT_RST_REG0 |= (1u << 29);	// USB-OHCI0_RST.
+		CCU->BUS_SOFT_RST_REG0 |= (1u << 25);	// USB-EHCI0_RST.
+
+		SetupUsbPhyc(USBPHY1);
+	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
@@ -2506,7 +2507,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	// DCXO24M -> PLL_PERI
 	// 0, 1 - work. 2 - not work
 	const unsigned ohci_src = 0x01u; 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
-	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
+	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
 		// Turn off USBOTG0
 		CCU->USB_BGR_REG &= ~ (1u << 24);	// USBOTG0_RST
@@ -2536,6 +2537,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
 		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
 	}
 	else
 	{
@@ -2562,9 +2564,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
 		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
 	}
 
-	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
+	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
 		// USBPHY0
 
@@ -2715,9 +2718,32 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYLE_A64
 
-	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
+	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
+	{
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_disable_handler(USBOHCI0_IRQn);
+		arm_hardware_disable_handler(USBEHCI0_IRQn);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_GATING.
+		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_GATING.
+		//CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
+
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
+		//CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
+
+		//CCU->USBPHY_CFG_REG
+
+	}
+	else
 	{
 		// USBEHCI1, USBOHCI1
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_disable_handler(USBOHCI1_IRQn);
+		arm_hardware_disable_handler(USBEHCI1_IRQn);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
 		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 29);	// USBOHCI0_GATING.
 		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 25);	// USBEHCI0_GATING.
 
@@ -2725,37 +2751,24 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.
 
 	}
-	else
-	{
-		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_GATING.
-		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_GATING.
-		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
 
-		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
-		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
-		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
-
-		//CCU->USBPHY_CFG_REG
-
-	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
+	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
-		ASSERT(0);					/* тут нет EHCI */
-
-		CCU->USB_BGR_REG &= ~ (1u << 0);	// USBOHCI0_GATING
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_disable_handler(USB0_OHCI_IRQn);
 		arm_hardware_disable_handler(USB0_EHCI_IRQn);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
+		CCU->USB_BGR_REG &= ~ (1u << 0);	// USBOHCI0_GATING
+
 		CCU->USB_BGR_REG &= ~ (1u << 4);	// USBEHCI0_GATING
 		//CCU->USB_BGR_REG &= ~ (1u << 8);	// USBOTG0_GATING
 		CCU->USB_BGR_REG &= ~ (1u << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG &= ~ (1u << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~ (1u << 24);	// USBOTG0_RST
+		//CCU->USB_BGR_REG &= ~ (1u << 24);	// USBOTG0_RST
 
 		CCU->USB0_CLK_REG &= ~ (1u << 30);	// USBPHY0_RSTN
 		CCU->USB0_CLK_REG &= ~ (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
