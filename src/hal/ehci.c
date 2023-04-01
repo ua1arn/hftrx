@@ -59,7 +59,7 @@ void tuh_cdc_xfer_isr(uint8_t dev_addr, xfer_result_t event, cdc_pipeid_t pipe_i
   (void) pipe_id;
   (void) xferred_bytes;
 
-  //printf(serial_in_buffer);
+  //PRINTF(serial_in_buffer);
   //tu_memclr(serial_in_buffer, sizeof(serial_in_buffer));
 
   tuh_cdc_receive(dev_addr, serial_in_buffer, sizeof(serial_in_buffer), true); // waiting for next data
@@ -83,8 +83,8 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_re
   uint16_t vid, pid;
   tuh_vid_pid_get(dev_addr, &vid, &pid);
 
-  printf("HID device address = %d, instance = %d is mounted\r\n", dev_addr, instance);
-  printf("VID = %04x, PID = %04x\r\n", vid, pid);
+  PRINTF("HID device address = %d, instance = %d is mounted\n", dev_addr, instance);
+  PRINTF("VID/PID=%04X/%04X\n", vid, pid);
 
   // Sony DualShock 4 [CUH-ZCT2x]
 //  if ( is_sony_ds4(dev_addr) )
@@ -93,44 +93,43 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_re
 //    // tuh_hid_report_received_cb() will be invoked when report is available
 //    if ( !tuh_hid_receive_report(dev_addr, instance) )
 //    {
-//      printf("Error: cannot request to receive report\r\n");
+//      PRINTF("Error: cannot request to receive report\r\n");
 //    }
 //  }
 }
 // Invoked when received report from device via interrupt endpoint
 void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* report, uint16_t len)
 {
-  uint8_t const itf_protocol = tuh_hid_interface_protocol(dev_addr, instance);
+	uint8_t const itf_protocol = tuh_hid_interface_protocol(dev_addr, instance);
 
-//  switch (itf_protocol)
-//  {
-//    case HID_ITF_PROTOCOL_KEYBOARD:
-//      TU_LOG2("HID receive boot keyboard report\r\n");
-//      process_kbd_report( (hid_keyboard_report_t const*) report );
-//    break;
-//
-//    case HID_ITF_PROTOCOL_MOUSE:
-//      TU_LOG2("HID receive boot mouse report\r\n");
-//      process_mouse_report( (hid_mouse_report_t const*) report );
-//    break;
-//
-//    default:
-//      // Generic report requires matching ReportID and contents with previous parsed report info
-//      process_generic_report(dev_addr, instance, report, len);
-//    break;
-//  }
+	switch (itf_protocol) {
+	case HID_ITF_PROTOCOL_KEYBOARD:
+		PRINTF("HID receive boot keyboard report\r\n");
+		//process_kbd_report( (hid_keyboard_report_t const*) report );
+		break;
 
-  // continue to request to receive report
-  if ( !tuh_hid_receive_report(dev_addr, instance) )
-  {
-    printf("Error: cannot request to receive report\r\n");
-  }
+	case HID_ITF_PROTOCOL_MOUSE:
+		PRINTF("HID receive boot mouse report\r\n");
+		//process_mouse_report( (hid_mouse_report_t const*) report );
+		break;
+
+	default:
+		PRINTF("HID receive generic report\r\n");
+		// Generic report requires matching ReportID and contents with previous parsed report info
+		//process_generic_report(dev_addr, instance, report, len);
+		break;
+	}
+
+	// continue to request to receive report
+	if (!tuh_hid_receive_report(dev_addr, instance)) {
+		PRINTF("Error: cannot request to receive report\r\n");
+	}
 }
 
 // Invoked when device with hid interface is un-mounted
 void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance)
 {
-  printf("HID device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
+  PRINTF("HID device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
 
 }
 
