@@ -1133,10 +1133,9 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
 	//PRINTF("3 HAL_EHCI_Init: PORTSC=%08X\n", hehci->portsc [WITHEHCIHW_EHCIPORT]);
-
 	// OHCI init
 
-	if (hehci->ohci != NULL)
+	if (hehci->ohci != NULL && 0)
 	{
 		PRINTF("OHCI Init, hehci->ohci=%p\n", hehci->ohci);
 //		PRINTF("OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
