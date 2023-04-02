@@ -27,7 +27,6 @@
 #endif /* WITHOHCIHW_OHCIPORT */
 
 //#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
-//#define WITHTINYUSB 1
 
 /* USB Host Core handle declaration. */
 USBH_HandleTypeDef hUsbHostHS;
