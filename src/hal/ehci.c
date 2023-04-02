@@ -999,6 +999,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//	2 HAL_EHCI_Init: PORTSC=00000000
 	//	3 HAL_EHCI_Init: PORTSC=00001000
 
+#if ! WITHTINYUSB
 	//PRINTF("1 HAL_EHCI_Init: PORTSC=%08X @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	/* Route all ports to EHCI controller */
 	//PRINTF("1 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
@@ -1006,7 +1007,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	(void) * hehci->configFlag;
 	//PRINTF("2 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
 	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08X\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
-
+#endif
 	/* Enable power to all ports */
 	unsigned porti = WITHEHCIHW_EHCIPORT;
 	//for (porti = 0; porti < hehci->nports; ++ porti)
