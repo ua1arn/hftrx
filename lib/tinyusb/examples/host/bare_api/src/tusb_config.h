@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach (tinyusb.org)
@@ -33,6 +33,12 @@
 //--------------------------------------------------------------------+
 // Board Specific Configuration
 //--------------------------------------------------------------------+
+
+#if CFG_TUSB_MCU == OPT_MCU_RP2040
+// change to 1 if using pico-pio-usb as host controller for raspberry rp2040
+#define CFG_TUH_RPI_PIO_USB   0
+#define BOARD_TUH_RHPORT      CFG_TUH_RPI_PIO_USB
+#endif
 
 // RHPort number used for host can be defined by board.mk, default to port 0
 #ifndef BOARD_TUH_RHPORT
@@ -74,12 +80,12 @@
  * - CFG_TUSB_MEM SECTION : __attribute__ (( section(".usb_ram") ))
  * - CFG_TUSB_MEM_ALIGN   : __attribute__ ((aligned(4)))
  */
-#ifndef CFG_TUSB_MEM_SECTION
-#define CFG_TUSB_MEM_SECTION
+#ifndef CFG_TUH_MEM_SECTION
+#define CFG_TUH_MEM_SECTION
 #endif
 
-#ifndef CFG_TUSB_MEM_ALIGN
-#define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(4)))
+#ifndef CFG_TUH_MEM_ALIGN
+#define CFG_TUH_MEM_ALIGN        __attribute__ ((aligned(4)))
 #endif
 
 //--------------------------------------------------------------------
@@ -94,7 +100,7 @@
 
 // max device support (excluding hub device)
 // 1 hub typically has 4 ports
-#define CFG_TUH_DEVICE_MAX          (CFG_TUH_HUB ? 4 : 1)
+#define CFG_TUH_DEVICE_MAX          (3*CFG_TUH_HUB + 1)
 
 // Max endpoint per device
 #define CFG_TUH_ENDPOINT_MAX        8

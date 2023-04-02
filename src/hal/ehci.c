@@ -26,8 +26,8 @@
 	#define WITHOHCIHW_OHCIPORT 0
 #endif /* WITHOHCIHW_OHCIPORT */
 
-#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
-//#define WITHTINYUSB 1
+//#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
+#define WITHTINYUSB 1
 
 
 #if WITHTINYUSB
@@ -46,7 +46,7 @@ void hcd_int_disable(uint8_t rhport)
 
 }
 
-#if CFG_TUH_CDC
+#if CFG_TUH_CDC && 0
 
 #include "class/cdc/cdc.h"
 #include "class/cdc/cdc_host.h"
@@ -1110,7 +1110,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//PRINTF("1 HAL_EHCI_Init: PORTSC=%08X @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	/* Route all ports to EHCI controller */
 	//PRINTF("1 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
-	* hehci->configFlag = EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
+	* hehci->configFlag = 0 * EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
 	(void) * hehci->configFlag;
 	//PRINTF("2 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
 	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08X\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
