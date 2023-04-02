@@ -1390,6 +1390,7 @@ signed long slmax(signed long a, signed long b);
 #include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 #include "clocks.h"
 uint32_t sys_now(void);
+uint32_t board_millis(void);	// tinyusb
 int  sys_dram_init(void);	// 0 - error
 
 // RTOS test stuff
