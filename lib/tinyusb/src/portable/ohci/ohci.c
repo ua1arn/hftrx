@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach (tinyusb.org)
@@ -27,6 +27,10 @@
 #include "tusb_option.h"
 
 #if CFG_TUH_ENABLED && defined(TUP_USBIP_OHCI)
+
+#ifndef TUP_OHCI_RHPORTS
+#error  OHCI is enabled, but TUP_OHCI_RHPORTS is not defined.
+#endif
 
 //--------------------------------------------------------------------+
 // INCLUDE
@@ -163,6 +167,21 @@ static void ohci_data_clean_invalidate(void)
 //--------------------------------------------------------------------+
 // USBH-HCD API
 //--------------------------------------------------------------------+
+
+// If your system requires separation of virtual and physical memory, implement
+// tusb_app_virt_to_phys and tusb_app_virt_to_phys in your application.
+TU_ATTR_ALWAYS_INLINE static inline void *_phys_addr(void *virtual_address)
+{
+  if (tusb_app_virt_to_phys) return tusb_app_virt_to_phys(virtual_address);
+  return virtual_address;
+}
+
+TU_ATTR_ALWAYS_INLINE static inline void *_virt_addr(void *physical_address)
+{
+  if (tusb_app_phys_to_virt) return tusb_app_phys_to_virt(physical_address);
+  return physical_address;
+}
+
 // Initialization according to 5.1.1.4
 bool hcd_init(uint8_t rhport)
 {
