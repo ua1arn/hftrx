@@ -10067,6 +10067,31 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>DSI_DPHY</name>
+  <description></description>
+  <baseAddress>0x05451000</baseAddress>
+  <registers>
+   <register>
+    <name>COMBO_PHY_REG0</name>
+    <displayName>COMBO_PHY_REG0</displayName>
+    <description>The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114)</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMBO_PHY_REG1</name>
+    <displayName>COMBO_PHY_REG1</displayName>
+    <description>The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114)</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>TCON_LCD0</name>
   <description></description>
   <baseAddress>0x05461000</baseAddress>

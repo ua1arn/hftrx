@@ -2228,11 +2228,20 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 		(1u << 31) |		// LCD_EN
 		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
 		(0x00u << 23) |		// LCD_RB_SWAP
-		((val & 0x1f) << 4) |	// LCD_START_DLY
+		((val & 0x1fu) << 4) |	// LCD_START_DLY
 		(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests
 		0
 		);
 
+#if WITHLVDSHW
+    // lvds - step 2
+    CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
+    TCON_LCD0->LCD_DCLK_REG =
+		(0x0Fu << 28) |	// LCD_DCLK_EN
+		(0x07u << 0) |	// LCD_DCLK_DIV
+		0;
+    CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+#else /* WITHLVDSHW */
 	// dclk
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
@@ -2243,6 +2252,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 			(0x0Fu << 28) |		// LCD_DCLK_EN
 			(val << 0)			// LCD_DCLK_DIV
 			);
+#endif /* WITHLVDSHW */
 
 	// timing0 (window)
 //	write32((uintptr_t) & tcon->timing0,
@@ -2394,6 +2404,9 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
     CCU->TCONLCD_BGR_REG |= (1u << 16); // De-assert reset
     local_delay_us(10);
 
+	t113_tconlcd_enable(pdat);
+	t113_tconlcd_set_timing(pdat, vdmode);
+
 	//PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
 
 #if WITHLVDSHW
@@ -2427,7 +2440,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 
 #endif /* WITHLVDSHW */
 
-	t113_tconlcd_disable(pdat);
+	//t113_tconlcd_disable(pdat);
 	/* HV - Step 3 Set sequence parameters, sane in lvds */
 	t113_tconlcd_set_timing(pdat, vdmode);
 	//t113_tconlcd_set_dither(pdat);
@@ -2490,6 +2503,21 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 
 	// Set DE MODE if need
 	ltdc_tfcon_cfg(vdmode);
+
+#if WITHLVDSHW
+	CCU->DSI_CLK_REG |= (1u << 31);
+	CCU->DSI_BGR_REG |= (1u << 16);
+	CCU->DSI_BGR_REG |= (1u << 0);
+
+	// 0545103C - bit 0 is "1"
+
+//	memset((void *) DISPLAY_TOP_BASE, 0xFF, 256);
+	printhex32(DSI_DPHY_BASE, (void *) DSI_DPHY, 256);
+	DSI_DPHY->COMBO_PHY_REG0 |= ~ 0u;
+	DSI_DPHY->COMBO_PHY_REG1 |= ~ 0u;
+	PRINTF("CON_LCD0->COMBO_PHY_REG0=%08X\n", (unsigned) DSI_DPHY->COMBO_PHY_REG0);
+	PRINTF("CON_LCD0->COMBO_PHY_REG1=%08X\n", (unsigned) DSI_DPHY->COMBO_PHY_REG1);
+#endif /* WITHLVDSHW */
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */

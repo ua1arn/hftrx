@@ -86,6 +86,8 @@ typedef enum IRQn
     GPIOF_NS_IRQn = 109,                              /*!< GPIOINT  Interrupt */
     GPIOF_S_IRQn = 110,                               /*!< GPIOINT  Interrupt */
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
+    DI_IRQn = 120,                                    /*!< DI De-Interlacer Interrupt */
+    DSI_IRQn = 124,                                   /*!< DSI  Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -180,6 +182,8 @@ typedef enum IRQn
 #define G2D_WB_BASE ((uintptr_t) 0x05413000)          /*!< G2D_WB Base */
 #define G2D_VSU_BASE ((uintptr_t) 0x05418000)         /*!< G2D_VSU Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT Base */
+#define DSI_BASE ((uintptr_t) 0x05450000)             /*!< DSI Base */
+#define DSI_DPHY_BASE ((uintptr_t) 0x05451000)        /*!< DSI_DPHY Base */
 #define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV Base */
@@ -1781,6 +1785,16 @@ typedef struct G2D_ROT_Type
     volatile uint32_t ROT_OHADD2;                     /*!< Offset 0x0B4 Output V memory address register1 */
 } G2D_ROT_TypeDef; /* size of structure = 0x0B8 */
 /*
+ * @brief DSI_DPHY
+ */
+/*!< DSI_DPHY  */
+typedef struct DSI_DPHY_Type
+{
+             uint32_t reserved_0x000 [0x0044];
+    volatile uint32_t COMBO_PHY_REG0;                 /*!< Offset 0x110 The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114) */
+    volatile uint32_t COMBO_PHY_REG1;                 /*!< Offset 0x114 The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114) */
+} DSI_DPHY_TypeDef; /* size of structure = 0x118 */
+/*
  * @brief TCON_LCD
  */
 /*!< TCON_LCD  */
@@ -2711,6 +2725,8 @@ typedef struct MCTL_PHY_Type
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
 #define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Also see 5.7 DE UIS Specification register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
+#define DSI ((DSI_TypeDef *) DSI_BASE)                /*!< DSI  register set access pointer */
+#define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY  register set access pointer */
 #define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)/*!< DISPLAY_TOP  register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */

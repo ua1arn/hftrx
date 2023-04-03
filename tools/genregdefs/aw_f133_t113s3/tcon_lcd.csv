@@ -45,5 +45,3 @@
 #regdef; LCD_SYNC_POS_REG; 0x0234; LCD Sync Position Register
 #regdef; LCD_SLAVE_STOP_POS_REG; 0x0238; LCD Slave Stop Position Register
 #regdef; LCD_GAMMA_TABLE_REG; 0x0400 256; LCD Gamma Table Register
-##regdef; COMBO_PHY_REG0; 0x1110; The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114)
-##regdef; COMBO_PHY_REG1; 0x1114; The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114)
