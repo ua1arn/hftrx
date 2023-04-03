@@ -329,8 +329,8 @@
 		} while (0)
 	#endif /* WITHSDHCHW4BIT */
 
-	#define HARDWARE_SDIO_WP_BIT	(1U << 8)	/* PG8 - SDIO_WP */
-	#define HARDWARE_SDIO_CD_BIT	(1U << 7)	/* PG7 - SDIO_SENSE */
+	#define HARDWARE_SDIO_WP_BIT	(1u << 8)	/* PG8 - SDIO_WP */
+	#define HARDWARE_SDIO_CD_BIT	(1u << 7)	/* PG7 - SDIO_SENSE */
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
 			arm_hardware_piog_inputs(HARDWARE_SDIO_WP_BIT); /* PD1 - SDIO_WP */ \
@@ -379,7 +379,7 @@
 	// +++
 	// TXDISABLE input - PF5
 	#define TXDISABLE_TARGET_PIN				(GPIOF->DATA)
-	#define TXDISABLE_BIT_TXDISABLE				(1U << 5)		// PF5 - TX INHIBIT
+	#define TXDISABLE_BIT_TXDISABLE				(1u << 5)		// PF5 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
 	#define HARDWARE_GET_TXDISABLE() ((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
 	#define TXDISABLE_INITIALIZE() do { \
@@ -406,7 +406,7 @@
 	// ---
 	// TUNE input - PF2
 	#define TUNE_TARGET_PIN				(GPIOF->DATA)
-	#define TUNE_BIT_TUNE				(1U << 2)		// PF2
+	#define TUNE_BIT_TUNE				(1u << 2)		// PF2
 	#define HARDWARE_GET_TUNE() 		((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() do { \
 			arm_hardware_piof_inputs(TUNE_BIT_TUNE); \
@@ -560,12 +560,12 @@
 	} while (0)
 
 
-#define TARGET_ENC2BTN_BIT (1U << 6)	// PE6 - second encoder button with pull-up
+#define TARGET_ENC2BTN_BIT (1u << 6)	// PE6 - second encoder button with pull-up
 
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
 
-	#define TARGET_POWERBTN_BIT 0//(1U << 8)	// PAxx - ~CPU_POWER_SW signal
+	#define TARGET_POWERBTN_BIT 0//(1u << 8)	// PAxx - ~CPU_POWER_SW signal
 
 #if WITHENCODER2
 	// P7_8
@@ -780,14 +780,14 @@
 	// PWM5 AF6
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		hardware_dcdcfreq_pwm5_initialize(HARDWARE_DCDC_PWMCH); \
-		arm_hardware_piof_altfn2((1U << 6), GPIO_CFG_AF6); /* PF6 - PWM5 */ \
+		arm_hardware_piof_altfn2((1u << 6), GPIO_CFG_AF6); /* PF6 - PWM5 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		hardware_dcdcfreq_pwm5_setdiv(HARDWARE_DCDC_PWMCH, f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piof_outputs((1U << 6), 0 * (1U << 6)); /* PF6 */ \
+		arm_hardware_piof_outputs((1u << 6), 0 * (1u << 6)); /* PF6 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		(void) (f); \
@@ -815,8 +815,8 @@
 	#if 0
 		/* BL0: PA14. BL1: PA15 */
 		#define	HARDWARE_BL_INITIALIZE() do { \
-			const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-			const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
+			const portholder_t BLpins = (1u << 15) | (1u << 14); /* PA15:PA14 */ \
+			const portholder_t ENmask = 0 * (1u << 1); /* PF1 - not in this hardware  */ \
 			arm_hardware_pioa_opendrain(BLpins, 0); \
 			} while (0)
 
@@ -824,8 +824,8 @@
 		/* BL0: PA14. BL1: PA15 */
 		#define HARDWARE_BL_SET(en, level) do { \
 			const portholder_t Vlevel = (level) & 0x03; \
-			const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
-			const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+			const portholder_t ENmask = 0 * (1u << 1); /* PF1 - not in this hardware */ \
+			const portholder_t BLpins = (1u << 15) | (1u << 14); /* PA15:PA14 */ \
 			const portholder_t BLstate = (~ Vlevel) << 14; \
 			GPIOA->BSRR = \
 				BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
@@ -846,10 +846,10 @@
 
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
-		const portholder_t VSmask = (1U << 21); 	/* PD21 LCD_VSYNC */ \
-		const portholder_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
-		const portholder_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
-		const portholder_t MODEmask = (1U << 0); 	/* PD0 mode */ \
+		const portholder_t VSmask = (1u << 21); 	/* PD21 LCD_VSYNC */ \
+		const portholder_t HSmask = (1u << 20); 	/* PD20 LCD_HSYNC */ \
+		const portholder_t DEmask = (1u << 19); 	/* PD19 LCD_DE */ \
+		const portholder_t MODEmask = (1u << 0); 	/* PD0 mode */ \
 		/* set LCD DE/SYNC mode */ \
 		arm_hardware_piod_outputs(MODEmask, (demode != 0) * MODEmask);	/* PD0 = state */ \
 		/* synchro signals - sync mode */ \
@@ -886,9 +886,9 @@
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
-		const portholder_t VSmask = (1U << 21); 	/* PD21 LCD_VSYNCC */ \
-		const portholder_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
-		const portholder_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
+		const portholder_t VSmask = (1u << 21); 	/* PD21 LCD_VSYNCC */ \
+		const portholder_t HSmask = (1u << 20); 	/* PD20 LCD_HSYNC */ \
+		const portholder_t DEmask = (1u << 19); 	/* PD19 LCD_DE */ \
 		/* while ((GPIOD->DATA & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
 		/* while ((GPIOD->DATA & VSmask) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_piod_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
@@ -908,9 +908,12 @@
 		arm_hardware_piod_altfn50(1u << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
+	// test: check clk signals
 	#define HARDWARE_LVDS_INITIALIZE() do { \
 		arm_hardware_piod_altfn50(1u << 6, GPIO_CFG_AF3); 	/* PD6 LVDS0_CKP */ \
 		arm_hardware_piod_altfn50(1u << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
+		arm_hardware_piod_altfn50(1u << 16, GPIO_CFG_AF3); 	/* PD16 LVDS1_CKP */ \
+		arm_hardware_piod_altfn50(1u << 17, GPIO_CFG_AF3); 	/* PD17 LVDS1_CKN */ \
 	} while (0)
 
 #endif /* WITHLTDCHW */

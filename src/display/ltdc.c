@@ -2313,7 +2313,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 static void t113_hw_setup(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
 {
 
-#if WITHLVDSHW
+#if ! WITHLVDSHW
 	TCON_LCD0->LCD_LVDS_IF_REG =
 		0 * (1u << 31) |		// LCD_LVDS_EN
 		0 * (1u << 25) |		// LCD_LVDS_DEBUG_EN
@@ -2447,9 +2447,12 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	}
 
 #if WITHLVDSHW
+	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
+
 	unsigned lvds_num;
-	for (lvds_num = 0; lvds_num < 1; ++ lvds_num)
+	for (lvds_num = 0; lvds_num < 2; ++ lvds_num)
 	{
+		// Documented as LCD_LVDS_ANA0_REG
 		//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
 		// Step 5 LVDS digital logic configuration
 
@@ -2462,13 +2465,21 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 			(0x03u << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
 			0;
 		// test
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (0x01u << 16);	// LVDS_REG_DENC
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (0x0Fu << 12);	// LVDS_REG_DEN
+		//TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (0x01u << 16);	// LVDS_REG_DENC
+		//TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (0x0Fu << 12);	// LVDS_REG_DEN
+
+		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 30);	// en_ldo
+		local_delay_ms(1);
 
 		// 	Lastly, start module voltage, and enable EN_LVDS and EN_24M.
 		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 31);	// ?LVDS_EN_MB start module voltage
+		local_delay_ms(1);
 		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 29);	// enable EN_LVDS
+		local_delay_ms(1);
 		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 28);	// EN_24M
+		local_delay_ms(1);
+
+		PRINTF("TCON_LCD0->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num]);
 	}
 #endif /* WITHLVDSHW */
 
