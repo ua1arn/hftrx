@@ -630,6 +630,7 @@ void arm_hardware_mdma_initialize(void)
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
 	unsigned M = 5;	/* M = 1..32 */
 	unsigned divider = 0;
+	PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
 
 	CCU->MBUS_CLK_REG |= (1u << 30);				// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 10);	// Gating MBUS Clock For G2D

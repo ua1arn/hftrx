@@ -2246,8 +2246,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	// dclk
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
-	val = allwnrt113_get_video0_x2_freq() / display_getdotclock(vdmode);
-	unsigned valX = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
+	val = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
 //	write32((uintptr_t) & tcon->dclk,
 //			(0x0Fu << 28) | (val << 0));
 	TCON_LCD0->LCD_DCLK_REG = (
@@ -2256,7 +2255,6 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 			);
 
 	PRINTF("ltdc divider = %u\n", (unsigned) val);
-	PRINTF("ltdc dividerX = %u\n", (unsigned) valX);
 #endif /* WITHLVDSHW */
 
 	// timing0 (window)
@@ -2419,7 +2417,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	t113_tconlcd_enable(pdat);
 	t113_tconlcd_set_timing(pdat, vdmode);
 
-	//PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
+	PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
 
 #if WITHLVDSHW
     // lvds - step 2
