@@ -184,6 +184,7 @@ uint_fast32_t allwnrt113_get_di_freq(void);
 uint_fast32_t allwnrt113_get_ce_freq(void);
 uint_fast32_t allwnrt113_get_ve_freq(void);
 uint_fast32_t allwnrt113_get_dsp_freq(void);
+uint_fast32_t allwnrt113_get_tconlcd_freq(void);
 
 // Allwinner A64
 uint_fast32_t allwnr_a64_get_cpux_freq(void);

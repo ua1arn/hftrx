@@ -2851,6 +2851,40 @@ uint_fast32_t allwnrt113_get_arm_freq(void)
 	return allwnrt113_get_pll_cpu_freq();
 }
 
+uint_fast32_t allwnrt113_get_tconlcd_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TCONLCD_CLK_REG;
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t pgdiv = M * N;	// post-gete dividers: clkdiv4 and clkdiv2y
+
+	// TCONLCD_CLK = Clock Source/M/N.
+	switch ((clkreg >> 24) & 0x07)	// CLK_SRC_SEL
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO0(1X)
+		return allwnrt113_get_video0_x1_freq() / pgdiv;
+	case 0x01:
+		// 001: PLL_VIDEO0(4X)
+		return allwnrt113_get_video0pllx4_freq() / pgdiv;
+	case 0x02:
+		// 010: PLL_VIDEO1(1X)
+		return allwnrt113_get_video1_x1_freq() / pgdiv;
+	case 0x03:
+		// 011: PLL_VIDEO1(4X)
+		return allwnrt113_get_video1pllx4_freq() / pgdiv;
+	case 0x04:
+		// 100: PLL_PERI(2X)
+		return allwnrt113_get_peripll2x_freq() / pgdiv;
+	case 0x05:
+		// 101: PLL_AUDIO1(DIV2)
+		return allwnrt113_get_audio1pll_div2_freq() / pgdiv;
+	}
+}
+
+
+
 #if CPUSTYLE_F133
 
 uint_fast32_t allwnrf133_get_riscv_freq(void)

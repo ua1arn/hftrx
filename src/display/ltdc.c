@@ -2236,9 +2236,10 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 #if WITHLVDSHW
     // lvds - step 2
     CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
+    (void) CCU->LVDS_BGR_REG;
     TCON_LCD0->LCD_DCLK_REG =
 		(0x0Fu << 28) |	// LCD_DCLK_EN
-		(0x07u << 0) |	// LCD_DCLK_DIV
+		(0x07u << 0) |	// LCD_DCLK_DIV - required "7" for LVDS interface
 		0;
     CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
 #else /* WITHLVDSHW */
@@ -2246,12 +2247,16 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
 	val = allwnrt113_get_video0_x2_freq() / display_getdotclock(vdmode);
+	unsigned valX = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
 //	write32((uintptr_t) & tcon->dclk,
 //			(0x0Fu << 28) | (val << 0));
 	TCON_LCD0->LCD_DCLK_REG = (
 			(0x0Fu << 28) |		// LCD_DCLK_EN
 			(val << 0)			// LCD_DCLK_DIV
 			);
+
+	PRINTF("ltdc divider = %u\n", (unsigned) val);
+	PRINTF("ltdc dividerX = %u\n", (unsigned) valX);
 #endif /* WITHLVDSHW */
 
 	// timing0 (window)
@@ -2400,9 +2405,16 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
     local_delay_us(10);
 
     CCU->TCONLCD_CLK_REG |= (1u << 31);
+    // todo: configure for LVDS output mode
     CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
     CCU->TCONLCD_BGR_REG |= (1u << 16); // De-assert reset
     local_delay_us(10);
+
+	PRINTF(" display_getdotclock(vdmode)=%u MHz\n", (unsigned)  display_getdotclock(vdmode) / 1000000);
+	PRINTF(" allwnrt113_get_video0_x2_freq()=%u MHz\n", (unsigned)  allwnrt113_get_video0_x2_freq() / 1000000);
+	PRINTF(" allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned)  allwnrt113_get_video0pllx4_freq() / 1000000);
+	PRINTF(" allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned)  allwnrt113_get_video1pllx4_freq() / 1000000);
+	PRINTF(" allwnrt113_get_tconlcd_freq()=%u MHz\n", (unsigned)  allwnrt113_get_tconlcd_freq() / 1000000);
 
 	t113_tconlcd_enable(pdat);
 	t113_tconlcd_set_timing(pdat, vdmode);
