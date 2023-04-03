@@ -2537,7 +2537,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 
 		DSI_DPHY->DPHY_ANA4 = 0x84000000;
 		DSI_DPHY->DPHY_ANA3 = 0x01040000;
-		DSI_DPHY->DPHY_ANA2 = DSI_DPHY->DPHY_ANA2 & (0x0 << 1);
+		DSI_DPHY->DPHY_ANA2 = DSI_DPHY->DPHY_ANA2 & (0x0u << 1);	/* ;) */
 		DSI_DPHY->DPHY_ANA1 = 0x0;
 
 	}
