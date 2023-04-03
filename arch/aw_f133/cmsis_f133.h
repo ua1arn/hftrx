@@ -1787,7 +1787,7 @@ typedef struct DSI_DPHY_Type
     volatile uint32_t DPHY_GCTL;                      /*!< Offset 0x000  */
     volatile uint32_t DPHY_TX_CTL;                    /*!< Offset 0x004  */
     volatile uint32_t DPHY_RX_CTL;                    /*!< Offset 0x008  */
-    volatile uint32_t DPHY_REG00C;                    /*!< Offset 0x00C  */
+             uint32_t reserved_0x00C;
     volatile uint32_t DPHY_TX_TIME0;                  /*!< Offset 0x010  */
     volatile uint32_t DPHY_TX_TIME1;                  /*!< Offset 0x014  */
     volatile uint32_t DPHY_TX_TIME2;                  /*!< Offset 0x018  */
@@ -1808,12 +1808,11 @@ typedef struct DSI_DPHY_Type
     volatile uint32_t DPHY_INT_EN0;                   /*!< Offset 0x060  */
     volatile uint32_t DPHY_INT_EN1;                   /*!< Offset 0x064  */
     volatile uint32_t DPHY_INT_EN2;                   /*!< Offset 0x068  */
-    volatile uint32_t DPHY_REG06C;                    /*!< Offset 0x06C  */
+             uint32_t reserved_0x06C;
     volatile uint32_t DPHY_INT_PD0;                   /*!< Offset 0x070  */
     volatile uint32_t DPHY_INT_PD1;                   /*!< Offset 0x074  */
     volatile uint32_t DPHY_INT_PD2;                   /*!< Offset 0x078  */
-    volatile uint32_t DPHY_REG07C;                    /*!< Offset 0x07C  */
-             uint32_t reserved_0x080 [0x0018];
+             uint32_t reserved_0x07C [0x0019];
     volatile uint32_t DPHY_DBG0;                      /*!< Offset 0x0E0  */
     volatile uint32_t DPHY_DBG1;                      /*!< Offset 0x0E4  */
     volatile uint32_t DPHY_DBG2;                      /*!< Offset 0x0E8  */

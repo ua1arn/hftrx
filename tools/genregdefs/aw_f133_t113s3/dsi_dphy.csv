@@ -3,7 +3,6 @@
 #regdef; DPHY_GCTL; 0x000;
 #regdef; DPHY_TX_CTL; 0x004;
 #regdef; DPHY_RX_CTL; 0x008;
-#regdef; DPHY_REG00C; 0x00C;
 #regdef; DPHY_TX_TIME0; 0x010;
 #regdef; DPHY_TX_TIME1; 0x014;
 #regdef; DPHY_TX_TIME2; 0x018;
@@ -21,11 +20,9 @@
 #regdef; DPHY_INT_EN0; 0x060;
 #regdef; DPHY_INT_EN1; 0x064;
 #regdef; DPHY_INT_EN2; 0x068;
-#regdef; DPHY_REG06C; 0x06C;
 #regdef; DPHY_INT_PD0; 0x070;
 #regdef; DPHY_INT_PD1; 0x074;
 #regdef; DPHY_INT_PD2; 0x078;
-#regdef; DPHY_REG07C; 0x07C;
 #regdef; DPHY_DBG0; 0x0E0;
 #regdef; DPHY_DBG1; 0x0E4;
 #regdef; DPHY_DBG2; 0x0E8;

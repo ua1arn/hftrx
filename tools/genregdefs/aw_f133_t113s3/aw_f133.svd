@@ -10099,15 +10099,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_REG00C</name>
-    <displayName>DPHY_REG00C</displayName>
-    <description></description>
-    <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
     <name>DPHY_TX_TIME0</name>
     <displayName>DPHY_TX_TIME0</displayName>
     <description></description>
@@ -10261,15 +10252,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_REG06C</name>
-    <displayName>DPHY_REG06C</displayName>
-    <description></description>
-    <addressOffset>0x06C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
     <name>DPHY_INT_PD0</name>
     <displayName>DPHY_INT_PD0</displayName>
     <description></description>
@@ -10292,15 +10274,6 @@
     <displayName>DPHY_INT_PD2</displayName>
     <description></description>
     <addressOffset>0x078</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DPHY_REG07C</name>
-    <displayName>DPHY_REG07C</displayName>
-    <description></description>
-    <addressOffset>0x07C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
