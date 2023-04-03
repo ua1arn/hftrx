@@ -180,6 +180,7 @@ typedef enum IRQn
 #define G2D_WB_BASE ((uintptr_t) 0x05413000)          /*!< G2D_WB Base */
 #define G2D_VSU_BASE ((uintptr_t) 0x05418000)         /*!< G2D_VSU Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT Base */
+#define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV Base */
 #define CSIC_CCU_BASE ((uintptr_t) 0x05800000)        /*!< CSIC_CCU Base */
@@ -2707,6 +2708,7 @@ typedef struct MCTL_PHY_Type
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
 #define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Also see 5.7 DE UIS Specification register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
+#define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)/*!< DISPLAY_TOP  register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
 #define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE) /*!< CSIC_CCU  register set access pointer */
