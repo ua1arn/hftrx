@@ -26,116 +26,7 @@
 	#define WITHOHCIHW_OHCIPORT 0
 #endif /* WITHOHCIHW_OHCIPORT */
 
-#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
-//#define WITHTINYUSB 1
-
-
-#if WITHTINYUSB
-
-#include "host/usbh.h"
-
-// Enable USB interrupt
-void hcd_int_enable(uint8_t rhport)
-{
-
-}
-
-// Disable USB interrupt
-void hcd_int_disable(uint8_t rhport)
-{
-
-}
-
-#if CFG_TUH_CDC
-
-#include "class/cdc/cdc.h"
-#include "class/cdc/cdc_host.h"
-
-static uint8_t serial_in_buffer [128];
-// invoked ISR context
-void tuh_cdc_xfer_isr(uint8_t dev_addr, xfer_result_t event, cdc_pipeid_t pipe_id, uint32_t xferred_bytes)
-{
-  (void) event;
-  (void) pipe_id;
-  (void) xferred_bytes;
-
-  //printf(serial_in_buffer);
-  //tu_memclr(serial_in_buffer, sizeof(serial_in_buffer));
-
-  tuh_cdc_receive(dev_addr, serial_in_buffer, sizeof(serial_in_buffer), true); // waiting for next data
-}
-#endif /* CFG_TUH_CDC */
-
-#if CFG_TUH_HID
-
-#include "class/hid/hid.h"
-#include "class/hid/hid_host.h"
-
-// Invoked when device with hid interface is mounted
-// Report descriptor is also available for use. tuh_hid_parse_report_descriptor()
-// can be used to parse common/simple enough descriptor.
-// Note: if report descriptor length > CFG_TUH_ENUMERATION_BUFSIZE, it will be skipped
-// therefore report_desc = NULL, desc_len = 0
-void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_report, uint16_t desc_len)
-{
-  (void)desc_report;
-  (void)desc_len;
-  uint16_t vid, pid;
-  tuh_vid_pid_get(dev_addr, &vid, &pid);
-
-  printf("HID device address = %d, instance = %d is mounted\r\n", dev_addr, instance);
-  printf("VID = %04x, PID = %04x\r\n", vid, pid);
-
-  // Sony DualShock 4 [CUH-ZCT2x]
-//  if ( is_sony_ds4(dev_addr) )
-//  {
-//    // request to receive report
-//    // tuh_hid_report_received_cb() will be invoked when report is available
-//    if ( !tuh_hid_receive_report(dev_addr, instance) )
-//    {
-//      printf("Error: cannot request to receive report\r\n");
-//    }
-//  }
-}
-// Invoked when received report from device via interrupt endpoint
-void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* report, uint16_t len)
-{
-  uint8_t const itf_protocol = tuh_hid_interface_protocol(dev_addr, instance);
-
-//  switch (itf_protocol)
-//  {
-//    case HID_ITF_PROTOCOL_KEYBOARD:
-//      TU_LOG2("HID receive boot keyboard report\r\n");
-//      process_kbd_report( (hid_keyboard_report_t const*) report );
-//    break;
-//
-//    case HID_ITF_PROTOCOL_MOUSE:
-//      TU_LOG2("HID receive boot mouse report\r\n");
-//      process_mouse_report( (hid_mouse_report_t const*) report );
-//    break;
-//
-//    default:
-//      // Generic report requires matching ReportID and contents with previous parsed report info
-//      process_generic_report(dev_addr, instance, report, len);
-//    break;
-//  }
-
-  // continue to request to receive report
-  if ( !tuh_hid_receive_report(dev_addr, instance) )
-  {
-    printf("Error: cannot request to receive report\r\n");
-  }
-}
-
-// Invoked when device with hid interface is un-mounted
-void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance)
-{
-  printf("HID device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
-
-}
-
-#endif /* CFG_TUH_HID */
-#endif /* WITHTINYUSB */
+//#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
 /* USB Host Core handle declaration. */
 USBH_HandleTypeDef hUsbHostHS;
@@ -1108,14 +999,15 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//	2 HAL_EHCI_Init: PORTSC=00000000
 	//	3 HAL_EHCI_Init: PORTSC=00001000
 
+#if ! WITHTINYUSB
 	//PRINTF("1 HAL_EHCI_Init: PORTSC=%08X @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	/* Route all ports to EHCI controller */
 	//PRINTF("1 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
-	* hehci->configFlag = EHCI_CONFIGFLAG_CF;
+	* hehci->configFlag = EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
 	(void) * hehci->configFlag;
 	//PRINTF("2 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
 	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08X\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
-
+#endif
 	/* Enable power to all ports */
 	unsigned porti = WITHEHCIHW_EHCIPORT;
 	//for (porti = 0; porti < hehci->nports; ++ porti)
@@ -1133,10 +1025,9 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
 	//PRINTF("3 HAL_EHCI_Init: PORTSC=%08X\n", hehci->portsc [WITHEHCIHW_EHCIPORT]);
-
 	// OHCI init
 
-	if (hehci->ohci != NULL)
+	if (hehci->ohci != NULL && 0)
 	{
 		PRINTF("OHCI Init, hehci->ohci=%p\n", hehci->ohci);
 //		PRINTF("OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
@@ -2411,7 +2302,8 @@ void MX_USB_HOST_Process(void)
 	SPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
 #if WITHTINYUSB
-    tuh_task();
+    //tuh_task();
+    tuh_task_ext(UINT32_MAX, 0);
 #endif /* WITHTINYUSB */
 }
 
@@ -2449,30 +2341,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			0;
 
 	const unsigned OHCIx_12M_SRC_SEL = 0u;	// 00: 12M divided from 48M, 01: 12M divided from 24M, 10: LOSC
-	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
-	{
-		//PRINTF("Enable USBEHCI1 clocks\n");
-		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI1);	/* host-only port */
 
-		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
-					(3u << 22) |	// OHCI1_12M_SRC_SEL
-					(1u << 9) |
-					(1u << 1) |
-					0)) |
-				(OHCIx_12M_SRC_SEL << 22) |	// OHCI1_12M_SRC_SEL
-				(1u << 9) |	// SCLK_GATING_USBPHY1
-				(1u << 1) |	// USBPHY1_RST
-				0;
-
-		CCU->BUS_CLK_GATING_REG0 |= (1u << 29);	// USBOHCI0_GATING.
-		CCU->BUS_CLK_GATING_REG0 |= (1u << 25);	// USBEHCI0_GATING.
-
-		CCU->BUS_SOFT_RST_REG0 |= (1u << 29);	// USB-OHCI0_RST.
-		CCU->BUS_SOFT_RST_REG0 |= (1u << 25);	// USB-EHCI0_RST.
-
-		SetupUsbPhyc(USBPHY1);
-	}
-	else
+	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
 		//PRINTF("Enable USBEHCI0 clocks\n");
 		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI0);	/* host and usb-otg port */
@@ -2500,6 +2370,29 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		SetupUsbPhyc(USBPHY0);
 
 	}
+	else
+	{
+		//PRINTF("Enable USBEHCI1 clocks\n");
+		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI1);	/* host-only port */
+
+		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
+					(3u << 22) |	// OHCI1_12M_SRC_SEL
+					(1u << 9) |
+					(1u << 1) |
+					0)) |
+				(OHCIx_12M_SRC_SEL << 22) |	// OHCI1_12M_SRC_SEL
+				(1u << 9) |	// SCLK_GATING_USBPHY1
+				(1u << 1) |	// USBPHY1_RST
+				0;
+
+		CCU->BUS_CLK_GATING_REG0 |= (1u << 29);	// USBOHCI0_GATING.
+		CCU->BUS_CLK_GATING_REG0 |= (1u << 25);	// USBEHCI0_GATING.
+
+		CCU->BUS_SOFT_RST_REG0 |= (1u << 29);	// USB-OHCI0_RST.
+		CCU->BUS_SOFT_RST_REG0 |= (1u << 25);	// USB-EHCI0_RST.
+
+		SetupUsbPhyc(USBPHY1);
+	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
@@ -2508,7 +2401,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	// DCXO24M -> PLL_PERI
 	// 0, 1 - work. 2 - not work
 	const unsigned ohci_src = 0x01u; 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
-	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
+	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
 		// Turn off USBOTG0
 		CCU->USB_BGR_REG &= ~ (1u << 24);	// USBOTG0_RST
@@ -2538,6 +2431,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
 		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
 	}
 	else
 	{
@@ -2564,9 +2458,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
 		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
 	}
 
-	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
+	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
 		// USBPHY0
 
@@ -2717,9 +2612,32 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYLE_A64
 
-	if ((void *) WITHUSBHW_EHCI == USBEHCI1)
+	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
+	{
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_disable_handler(USBOHCI0_IRQn);
+		arm_hardware_disable_handler(USBEHCI0_IRQn);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_GATING.
+		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_GATING.
+		//CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
+
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
+		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
+		//CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
+
+		//CCU->USBPHY_CFG_REG
+
+	}
+	else
 	{
 		// USBEHCI1, USBOHCI1
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_disable_handler(USBOHCI1_IRQn);
+		arm_hardware_disable_handler(USBEHCI1_IRQn);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
 		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 29);	// USBOHCI0_GATING.
 		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 25);	// USBEHCI0_GATING.
 
@@ -2727,37 +2645,24 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.
 
 	}
-	else
-	{
-		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_GATING.
-		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_GATING.
-		CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 23);	// USB-OTG-Device_GATING.
 
-		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 28);	// USB-OTG-OHCI_RST.
-		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 24);	// USB-OTG-EHCI_RST
-		CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 23);	// USB-OTG-Device_RST.
-
-		//CCU->USBPHY_CFG_REG
-
-	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	if (EHCIxToUSBPHYC(WITHUSBHW_EHCI) == USBPHY0)
+	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
-		ASSERT(0);					/* тут нет EHCI */
-
-		CCU->USB_BGR_REG &= ~ (1u << 0);	// USBOHCI0_GATING
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_disable_handler(USB0_OHCI_IRQn);
 		arm_hardware_disable_handler(USB0_EHCI_IRQn);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
+		CCU->USB_BGR_REG &= ~ (1u << 0);	// USBOHCI0_GATING
+
 		CCU->USB_BGR_REG &= ~ (1u << 4);	// USBEHCI0_GATING
 		//CCU->USB_BGR_REG &= ~ (1u << 8);	// USBOTG0_GATING
 		CCU->USB_BGR_REG &= ~ (1u << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG &= ~ (1u << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~ (1u << 24);	// USBOTG0_RST
+		//CCU->USB_BGR_REG &= ~ (1u << 24);	// USBOTG0_RST
 
 		CCU->USB0_CLK_REG &= ~ (1u << 30);	// USBPHY0_RSTN
 		CCU->USB0_CLK_REG &= ~ (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0

@@ -151,8 +151,9 @@ endif
 
 ifeq (1, 0)
 # tinyusb
-SRCDIRS += $(PRJROOT)/lib/tinyusb/src
-DINCDIR += $(PRJROOT)/lib/tinyusb/src
+TINYUSBDIR = $(PRJROOT)/lib/tinyusb
+SRCDIRS += $(TINYUSBDIR)/src
+DINCDIR += $(TINYUSBDIR)/src
 endif
 
 ifeq (1, 1)

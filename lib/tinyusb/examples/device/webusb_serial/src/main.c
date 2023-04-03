@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach (tinyusb.org)
@@ -103,8 +103,6 @@ int main(void)
     webserial_task();
     led_blinking_task();
   }
-
-  return 0;
 }
 
 // send characters to both CDC and WebUSB
