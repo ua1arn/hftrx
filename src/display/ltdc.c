@@ -2466,7 +2466,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	CCU->DSI_CLK_REG |= (1u << 31);
 	CCU->DSI_BGR_REG |= (1u << 16);
 	CCU->DSI_BGR_REG |= (1u << 0);
-
+#if 0
 	// 0x0545103C - bit 0 is "1"
 	// __de_dsi_dphy_dev_t taken from
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/a0e8ac494c8b05e2a4f8eb9a2f687e39db463ffe/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_dsi_type.h#L1084
@@ -2522,6 +2522,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	//	CON_LCD0->COMBO_PHY_REG1=00000043
 	PRINTF("CON_LCD0->COMBO_PHY_REG0=%08X\n", (unsigned) DSI_DPHY->COMBO_PHY_REG0);
 	PRINTF("CON_LCD0->COMBO_PHY_REG1=%08X\n", (unsigned) DSI_DPHY->COMBO_PHY_REG1);
+#endif
 	{
 		// Taken from https://github.com/mangopi-sbc/tina-linux-5.4/blob/a0e8ac494c8b05e2a4f8eb9a2f687e39db463ffe/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_dsi_type.h#L977
 
