@@ -895,7 +895,7 @@
 	} while (0)
 
 	//#define WITHLVDSHW 1
-	#define HARDWARE_LVDS_INITIALIZEx() do { \
+	#define HARDWARE_LVDS_INITIALIZE() do { \
 		arm_hardware_piod_altfn50(1u << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(1u << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
 		arm_hardware_piod_altfn50(1u << 2, GPIO_CFG_AF3); 	/* PD2 LVDS0_V1P */ \
@@ -906,14 +906,6 @@
 		arm_hardware_piod_altfn50(1u << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
 		arm_hardware_piod_altfn50(1u << 8, GPIO_CFG_AF3); 	/* PD8 LVDS0_V3P */ \
 		arm_hardware_piod_altfn50(1u << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
-	} while (0)
-
-	// test: check clk signals
-	#define HARDWARE_LVDS_INITIALIZE() do { \
-		arm_hardware_piod_altfn50(1u << 6, GPIO_CFG_AF3); 	/* PD6 LVDS0_CKP */ \
-		arm_hardware_piod_altfn50(1u << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
-		arm_hardware_piod_altfn50(1u << 16, GPIO_CFG_AF3); 	/* PD16 LVDS1_CKP */ \
-		arm_hardware_piod_altfn50(1u << 17, GPIO_CFG_AF3); 	/* PD17 LVDS1_CKN */ \
 	} while (0)
 
 #endif /* WITHLTDCHW */
