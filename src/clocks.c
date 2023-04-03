@@ -1862,9 +1862,27 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 //    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 }
 
-void allwnr_a64_pll_initialize(void)
+static void allwnr_a64_pll_initialize(void)
 {
 	set_a64_pll_cpux_axi(PLL_CPU_N, PLL_CPU_K, PLL_CPU_M, PLL_CPU_P);	// see sdram.c
+}
+
+static void allwnr_a64_mbus_initialize(void)
+{
+//		CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
+	CCU->MBUS_CLK_REG =
+		(1u << 31) | 	// MBUS_SCLK_GATING.
+		(0x02 << 24) | 	// MBUS_SCLK_SRC 01: PLL_PERIPH0(2X) 11: PLL_DDR1.
+		(0x07 << 0) | // MBUS_SCLK_RATIO_M (M=1..8, code=0..7)
+		0;
+	(void) CCU->MBUS_CLK_REG;
+	(void) CCU->MBUS_CLK_REG;
+	(void) CCU->MBUS_CLK_REG;
+	(void) CCU->MBUS_CLK_REG;
+
+//	CCU->MBUS_RST_REG &= ~ (1u << 31);		// MBUS_RESET.
+//	CCU->MBUS_RST_REG |= (1u << 31);		// MBUS_RESET.
+	CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
 }
 
 
@@ -1875,9 +1893,11 @@ static void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
 	{
 		uint32_t val;
 		* reg |= (1u << 31) | (1u << 30);
+		(void) * reg;
 
 		/* Lock enable */
 		* reg |= (1u << 29);
+		(void) * reg;
 
 		/* Wait pll stable */
 		while(!(* reg & (0x1u << 28)))
@@ -1888,6 +1908,63 @@ static void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
 //		val = * reg;
 //		val &= ~(1 << 29);
 //		* reg = val;
+	}
+}
+
+static void allwnr_a64_module_pllaudio_enable(void)
+{
+	const unsigned p = 5;
+	const unsigned n = 64;
+	const unsigned m = 25;
+	// 0x90035514
+	//	CCU->PLL_AUDIO_CTRL_REG =
+	//		(0x03 << 16) | // P
+	//		(0x3fu << 8) | // N
+	//		(0x14 << 0) | // M
+	//		0;
+	//	The PLL_AUDIO= (24MHz*N)/(M*P).
+	//	The PLL_AUDIO(8X) = (24MHz*N*2)/M
+
+	// Need same as PLL_AUDIO1_CTRL_REG in t1113-s3
+	//	PLL_AUDIO1 = 24MHz*N/M
+	//	PLL_AUDIO1(DIV2) = 24MHz*N/M/P0
+	//	PLL_AUDIO1(DIV5) = 24MHz*N/M/P1
+
+	// pll0: p=0x14, n=0x55, m1,m0=0
+	// pll1: p1=4(5), p0=1(2), n=0x7F, m=0
+
+	// (24MHz*N)/P must be in the range of 72MHz~504MHz.
+	CCU->PLL_AUDIO_CTRL_REG &= ~ (1u << 31);
+	(void) CCU->PLL_AUDIO_CTRL_REG;
+	// 307.2
+	CCU->PLL_AUDIO_CTRL_REG =
+		((p - 1) << 16) | // P The range is from 1 to 16.	- pre-divider
+		((n - 1) << 8) | // N 1..128
+		((m - 1) << 0) | // M 1..32
+		0;
+	(void) CCU->PLL_AUDIO_CTRL_REG;
+
+
+	if(!(CCU->PLL_AUDIO_CTRL_REG & (1 << 31)))
+	{
+		uint32_t val;
+		CCU->PLL_AUDIO_CTRL_REG |= (1u << 31) | (1u << 30);
+		(void) CCU->PLL_AUDIO_CTRL_REG;
+
+		/* Lock enable */
+		CCU->PLL_AUDIO_CTRL_REG |= (1u << 29);
+		(void) CCU->PLL_AUDIO_CTRL_REG;
+		//local_delay_ms(10);
+
+		/* Wait pll stable */
+		while(!(CCU->PLL_AUDIO_CTRL_REG & (0x1u << 28)))
+			;
+		//local_delay_ms(20);
+
+		/* Lock disable */
+//		val = CCU->PLL_AUDIO_CTRL_REG;
+//		val &= ~(1 << 29);
+//		CCU->PLL_AUDIO_CTRL_REG = val;
 	}
 }
 
@@ -1948,7 +2025,7 @@ uint_fast32_t allwnra64_get_audiopll8x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
 	//const uint_fast32_t pllP = 1 + ((reg >> 16) & 0x0F);
-	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0x3F);
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0x7F);
 	const uint_fast32_t pllM = 1 + ((reg >> 0) & 0x1F);
 
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN * 2 / pllM;
@@ -1959,10 +2036,10 @@ uint_fast32_t allwnra64_get_audiopll_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
 	const uint_fast32_t pllP = 1 + ((reg >> 16) & 0x0F);
-	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0x3F);
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0x7F);
 	const uint_fast32_t pllM = 1 + ((reg >> 0) & 0x1F);
 
-	return allwnrt113_get_hosc_freq() * pllN / (pllM * pllP);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / (pllM * pllP);
 }
 
 uint_fast32_t allwnr_a64_get_axi_freq(void)
@@ -7088,24 +7165,23 @@ sysinit_pll_initialize(void)
 	USBPHY0->HCI_ICR = 0;
 	USBPHY1->HCI_ICR = 0;
 
+
 	allwnr_a64_pll_initialize();
+
+	//	The PLL_PERIPH0(1X) = 24MHz*N*K/2.
+	//	The PLL_PERIPH0(2X) = 24MHz*N*K.
 	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH0_CTRL_REG);
+	//	The PLL_PERIPH1(1X) = 24MHz*N*K/2.
+	//	The PLL_PERIPH1(2X) = 24MHz*N*K.
 	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH1_CTRL_REG);
+
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
+	allwnr_a64_module_pllaudio_enable();
 	//allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
-	CCU->MBUS_RST_REG &= ~ (1u << 0);	// MBUS_RESET 0: Assert.
-	(void) CCU->MBUS_RST_REG;
-	CCU->MBUS_RST_REG |= (1u << 0);		// MBUS_RESET 1: De-assert.
-	(void) CCU->MBUS_RST_REG;
-
-	CCU->MBUS_CLK_REG = 0;
-	CCU->MBUS_CLK_REG |= ((4u - 1) << 0);	// MBUS_SCLK_RATIO_M
-	CCU->MBUS_CLK_REG |= (0x01 << 24);	// 01: PLL_PERIPH0(2X)
-	CCU->MBUS_CLK_REG |= (1u << 31);	// MBUS_SCLK_GATING. 1: Clock is ON.
-
+	allwnr_a64_mbus_initialize();
 
 #elif CPUSTYLE_T113
 

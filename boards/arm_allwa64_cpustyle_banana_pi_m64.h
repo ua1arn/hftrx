@@ -106,11 +106,11 @@
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+	#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-	#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
 	//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+	#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
+//	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -262,7 +262,7 @@
 #endif
 
 	#define I2S0HW_INITIALIZE(master) do { \
-		/*arm_hardware_piob_altfn20(1u << 3,	GPIO_CFG_AF3);*/ /* PB3 I2S0-MCLK	*/ \
+		arm_hardware_piob_altfn20(1u << 3,	GPIO_CFG_AF3); /* PB3 I2S0-MCLK	*/ \
 		arm_hardware_piob_altfn20(1u << 4,	GPIO_CFG_AF3); /* PB4 I2S0-SYNC	*/ \
 		arm_hardware_piob_altfn20(1u << 5,	GPIO_CFG_AF3); /* PB5 I2S0-BCLK	*/ \
 		arm_hardware_piob_altfn20(1u << 6,	GPIO_CFG_AF3); /* PB6 I2S0-DOUT to FPGA */ \
