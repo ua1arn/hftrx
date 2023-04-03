@@ -1790,10 +1790,52 @@ typedef struct G2D_ROT_Type
 /*!< DSI_DPHY  */
 typedef struct DSI_DPHY_Type
 {
-             uint32_t reserved_0x000 [0x0044];
+    volatile uint32_t DPHY_GCTL;                      /*!< Offset 0x000  */
+    volatile uint32_t DPHY_TX_CTL;                    /*!< Offset 0x004  */
+    volatile uint32_t DPHY_RX_CTL;                    /*!< Offset 0x008  */
+    volatile uint32_t DPHY_REG00C;                    /*!< Offset 0x00C  */
+    volatile uint32_t DPHY_TX_TIME0;                  /*!< Offset 0x010  */
+    volatile uint32_t DPHY_TX_TIME1;                  /*!< Offset 0x014  */
+    volatile uint32_t DPHY_TX_TIME2;                  /*!< Offset 0x018  */
+    volatile uint32_t DPHY_TX_TIME3;                  /*!< Offset 0x01C  */
+    volatile uint32_t DPHY_TX_TIME4;                  /*!< Offset 0x020  */
+             uint32_t reserved_0x024 [0x0003];
+    volatile uint32_t DPHY_RX_TIME0;                  /*!< Offset 0x030  */
+    volatile uint32_t DPHY_RX_TIME1;                  /*!< Offset 0x034  */
+    volatile uint32_t DPHY_RX_TIME2;                  /*!< Offset 0x038  */
+             uint32_t reserved_0x03C;
+    volatile uint32_t DPHY_RX_TIME3;                  /*!< Offset 0x040  */
+             uint32_t reserved_0x044 [0x0002];
+    volatile uint32_t DPHY_ANA0;                      /*!< Offset 0x04C  */
+    volatile uint32_t DPHY_ANA1;                      /*!< Offset 0x050  */
+    volatile uint32_t DPHY_ANA2;                      /*!< Offset 0x054  */
+    volatile uint32_t DPHY_ANA3;                      /*!< Offset 0x058  */
+    volatile uint32_t DPHY_ANA4;                      /*!< Offset 0x05C  */
+    volatile uint32_t DPHY_INT_EN0;                   /*!< Offset 0x060  */
+    volatile uint32_t DPHY_INT_EN1;                   /*!< Offset 0x064  */
+    volatile uint32_t DPHY_INT_EN2;                   /*!< Offset 0x068  */
+    volatile uint32_t DPHY_REG06C;                    /*!< Offset 0x06C  */
+    volatile uint32_t DPHY_INT_PD0;                   /*!< Offset 0x070  */
+    volatile uint32_t DPHY_INT_PD1;                   /*!< Offset 0x074  */
+    volatile uint32_t DPHY_INT_PD2;                   /*!< Offset 0x078  */
+    volatile uint32_t DPHY_REG07C;                    /*!< Offset 0x07C  */
+             uint32_t reserved_0x080 [0x0018];
+    volatile uint32_t DPHY_DBG0;                      /*!< Offset 0x0E0  */
+    volatile uint32_t DPHY_DBG1;                      /*!< Offset 0x0E4  */
+    volatile uint32_t DPHY_DBG2;                      /*!< Offset 0x0E8  */
+    volatile uint32_t DPHY_DBG3;                      /*!< Offset 0x0EC  */
+    volatile uint32_t DPHY_DBG4;                      /*!< Offset 0x0F0  */
+    volatile uint32_t DPHY_DBG5;                      /*!< Offset 0x0F4  */
+    volatile uint32_t DPHY_TX_SKEW_REG0;              /*!< Offset 0x0F8  */
+    volatile uint32_t DPHY_TX_SKEW_REG1;              /*!< Offset 0x0FC  */
+    volatile uint32_t DPHY_TX_SKEW_REG2;              /*!< Offset 0x100  */
+    volatile uint32_t DPHY_PLL_REG0;                  /*!< Offset 0x104  */
+    volatile uint32_t DPHY_PLL_REG1;                  /*!< Offset 0x108  */
+    volatile uint32_t DPHY_PLL_REG2;                  /*!< Offset 0x10C  */
     volatile uint32_t COMBO_PHY_REG0;                 /*!< Offset 0x110 The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114) */
     volatile uint32_t COMBO_PHY_REG1;                 /*!< Offset 0x114 The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114) */
-} DSI_DPHY_TypeDef; /* size of structure = 0x118 */
+    volatile uint32_t COMBO_PHY_REG2;                 /*!< Offset 0x118  */
+} DSI_DPHY_TypeDef; /* size of structure = 0x11C */
 /*
  * @brief TCON_LCD
  */

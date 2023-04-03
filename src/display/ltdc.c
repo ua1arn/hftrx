@@ -2460,10 +2460,71 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	}
 
 #if WITHLVDSHW
+	// __de_dsi_dphy_dev_t
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
+	CCU->DSI_CLK_REG |= (1u << 31);
+	CCU->DSI_BGR_REG |= (1u << 16);
+	CCU->DSI_BGR_REG |= (1u << 0);
+
+	// 0x0545103C - bit 0 is "1"
+	// __de_dsi_dphy_dev_t taken from
+	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/a0e8ac494c8b05e2a4f8eb9a2f687e39db463ffe/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_dsi_type.h#L1084
+	union combo_phy_reg0_t {
+		uint32_t dwval;
+		struct {
+			uint32_t en_cp               :  1 ;    //default: 0;
+			uint32_t en_comboldo         :  1 ;    //default: 0;
+			uint32_t en_lvds             :  1 ;    //default: 0;
+			uint32_t en_mipi             :  1 ;    //default: 0;
+			uint32_t en_test_0p8         :  1 ;    //default: 0;
+			uint32_t en_test_comboldo    :  1 ;    //default: 0;
+			uint32_t res0                :  26;    //default: 0;
+		} bits;
+	};
+
+	union combo_phy_reg1_t {
+		uint32_t dwval;
+		struct {
+			uint32_t reg_vref0p8         :  3 ;    //default: 0;
+			uint32_t res0                :  1 ;    //default: 0;
+			uint32_t reg_vref1p6         :  3 ;    //default: 0;
+			uint32_t res1                :  25;    //default: 0;
+		} bits;
+	};
+	//
+	//	union combo_phy_reg2_t {
+	//		uint32_t dwval;
+	//		struct {
+	//			uint32_t hs_stop_dly         :  8 ;    //default: 0;
+	//			uint32_t res0                :  24;    //default: 0;
+	//		} bits;
+	//	};
+
+//	memset((void *) DISPLAY_TOP_BASE, 0xFF, 256);
+	//printhex32(DSI_DPHY_BASE, (void *) DSI_DPHY, 256);
+	volatile union combo_phy_reg0_t * const phy0 = (volatile union combo_phy_reg0_t *) & DSI_DPHY->COMBO_PHY_REG0;
+	volatile union combo_phy_reg1_t * const phy1 = (volatile union combo_phy_reg1_t *) & DSI_DPHY->COMBO_PHY_REG1;
+//	DSI_DPHY->COMBO_PHY_REG0 |= ~ 0u;
+//	DSI_DPHY->COMBO_PHY_REG1 |= ~ 0u;
+	//	For PHY0:
+	//	 Configure the reg_verf1p6 (differential mode voltage) in reg0x1114 to 4;
+	//	 Configure the reg_vref0p8 reg0x1114 (common mode voltage) in reg0x1114 to 3;
+	//	 Start en_cp, en_mipi, en_lvds, and en_comboldo in reg0x1110, in turn.
+
+	phy1->bits.reg_vref0p8 = 0x03;
+	phy1->bits.reg_vref1p6 = 0x04;
+	phy0->bits.en_cp = 1;
+	phy0->bits.en_mipi = 1;
+	phy0->bits.en_lvds = 1;
+	phy0->bits.en_comboldo = 1;
+	//	CON_LCD0->COMBO_PHY_REG0=0000000F
+	//	CON_LCD0->COMBO_PHY_REG1=00000043
+	PRINTF("CON_LCD0->COMBO_PHY_REG0=%08X\n", (unsigned) DSI_DPHY->COMBO_PHY_REG0);
+	PRINTF("CON_LCD0->COMBO_PHY_REG1=%08X\n", (unsigned) DSI_DPHY->COMBO_PHY_REG1);
+
 	unsigned lvds_num;
-	for (lvds_num = 0; lvds_num < 2; ++ lvds_num)
+	for (lvds_num = 0; lvds_num < 1; ++ lvds_num)
 	{
 		// Documented as LCD_LVDS_ANA0_REG
 		//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
@@ -2504,20 +2565,6 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	// Set DE MODE if need
 	ltdc_tfcon_cfg(vdmode);
 
-#if WITHLVDSHW
-	CCU->DSI_CLK_REG |= (1u << 31);
-	CCU->DSI_BGR_REG |= (1u << 16);
-	CCU->DSI_BGR_REG |= (1u << 0);
-
-	// 0545103C - bit 0 is "1"
-
-//	memset((void *) DISPLAY_TOP_BASE, 0xFF, 256);
-	printhex32(DSI_DPHY_BASE, (void *) DSI_DPHY, 256);
-	DSI_DPHY->COMBO_PHY_REG0 |= ~ 0u;
-	DSI_DPHY->COMBO_PHY_REG1 |= ~ 0u;
-	PRINTF("CON_LCD0->COMBO_PHY_REG0=%08X\n", (unsigned) DSI_DPHY->COMBO_PHY_REG0);
-	PRINTF("CON_LCD0->COMBO_PHY_REG1=%08X\n", (unsigned) DSI_DPHY->COMBO_PHY_REG1);
-#endif /* WITHLVDSHW */
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
