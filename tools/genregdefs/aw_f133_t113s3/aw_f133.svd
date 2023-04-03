@@ -7800,7 +7800,7 @@
    <register>
     <name>USB_GCS</name>
     <displayName>USB_GCS</displayName>
-    <description>USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL</description>
+    <description>USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register</description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -7809,7 +7809,7 @@
    <register>
     <name>USB_INTTX</name>
     <displayName>USB_INTTX</displayName>
-    <description>USB_INTTX USB_EPINTF</description>
+    <description>USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register</description>
     <addressOffset>0x044</addressOffset>
     <size>0x10</size>
     <access>read-write</access>
@@ -7827,7 +7827,7 @@
    <register>
     <name>USB_INTTXE</name>
     <displayName>USB_INTTXE</displayName>
-    <description>USB_INTTXE USB_EPINTE</description>
+    <description>USB_INTTXE USB_EPINTE USB Endpoint Interrupt Enable Register</description>
     <addressOffset>0x048</addressOffset>
     <size>0x10</size>
     <access>read-write</access>
@@ -7845,7 +7845,7 @@
    <register>
     <name>USB_INTUSB</name>
     <displayName>USB_INTUSB</displayName>
-    <description>USB_INTUSB USB_BUSINTF</description>
+    <description>USB_INTUSB USB_BUSINTF USB Bus Interrupt Flag Register</description>
     <addressOffset>0x04C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -7854,7 +7854,7 @@
    <register>
     <name>USB_INTUSBE</name>
     <displayName>USB_INTUSBE</displayName>
-    <description>USB_INTUSBE USB_BUSINTE</description>
+    <description>USB_INTUSBE USB_BUSINTE USB Bus Interrupt Enable Register</description>
     <addressOffset>0x050</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -7872,7 +7872,7 @@
    <register>
     <name>USB_TESTC</name>
     <displayName>USB_TESTC</displayName>
-    <description>USB_TESTC</description>
+    <description>USB_TESTC USB Test Control Register</description>
     <addressOffset>0x07C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -7881,7 +7881,7 @@
    <register>
     <name>USB_TXMAXP</name>
     <displayName>USB_TXMAXP</displayName>
-    <description>USB_TXMAXP</description>
+    <description>USB_TXMAXP USB EP1~5 Tx Control and Status Register</description>
     <addressOffset>0x080</addressOffset>
     <size>0x10</size>
     <access>read-write</access>
@@ -7899,7 +7899,7 @@
    <register>
     <name>USB_RXMAXP</name>
     <displayName>USB_RXMAXP</displayName>
-    <description>USB_RXMAXP</description>
+    <description>USB_RXMAXP USB EP1~5 Rx Control and Status Register</description>
     <addressOffset>0x084</addressOffset>
     <size>0x10</size>
     <access>read-write</access>
@@ -10433,24 +10433,19 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>LCD_LVDS0_ANA_REG</name>
-    <displayName>LCD_LVDS0_ANA_REG</displayName>
-    <description>LCD LVDS Analog Register 0</description>
-    <addressOffset>0x220</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_LVDS1_ANA_REG</name>
-    <displayName>LCD_LVDS1_ANA_REG</displayName>
-    <description>LCD LVDS Analog Register 1</description>
-    <addressOffset>0x224</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x00000220</addressOffset>
+    <register>
+     <name>LCD_LVDS_ANA_REG</name>
+     <displayName>LCD_LVDS_ANA_REG</displayName>
+     <description>LCD LVDS Analog Register N</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+   </cluster>
    <register>
     <name>LCD_SYNC_CTL_REG</name>
     <displayName>LCD_SYNC_CTL_REG</displayName>

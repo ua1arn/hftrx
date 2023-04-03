@@ -43,7 +43,7 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 	}
 	else
 	{
-#if defined (HARDWARE_LVDS_INITIALIZE) && 0
+#if defined (HARDWARE_LVDS_INITIALIZE) && WITHLVDSHW
 		/* Configure the LCD Control pins */
 		HARDWARE_LVDS_INITIALIZE();
 #elif defined (HARDWARE_LTDC_INITIALIZE)
@@ -2308,6 +2308,12 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	TCON_LCD0->LCD_HV_IF_REG = 0;
 	TCON_LCD0->LCD_CPU_IF_REG = 0;
 	TCON_LCD0->LCD_CPU_WR_REG = 0;
+}
+
+static void t113_hw_setup(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
+{
+
+#if WITHLVDSHW
 	TCON_LCD0->LCD_LVDS_IF_REG =
 		0 * (1u << 31) |		// LCD_LVDS_EN
 		0 * (1u << 25) |		// LCD_LVDS_DEBUG_EN
@@ -2315,6 +2321,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 		1 * (1u << 3) |		// LCD_LVDS_CLK_POL
 		0x0F * (1u << 0) |		// LCD_LVDS_DATA_POL
 		0;
+#endif /* WITHLVDSHW */
 }
 
 #if 0
@@ -2389,22 +2396,42 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 
 	//PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
 
-#if 0
-    // step 2
+#if WITHLVDSHW
+    // lvds - step 2
     CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
-
-    // step 5
-    TCON_LCD0->LCD_LVDS_IF_REG =
-		0;
     TCON_LCD0->LCD_DCLK_REG =
-		(1u << 28) |	// LCD_DCLK_EN
+		(0x0Fu << 28) |	// LCD_DCLK_EN
 		(0x07u << 0) |	// LCD_DCLK_DIV
 		0;
-#endif
+    CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+#endif /* WITHLVDSHW */
+
+#if WITHLVDSHW
+    // lvds - step 5
+	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_link = link_num-1;
+	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_mode = mode;
+	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_bitwidth = bitwidth;
+	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_clk_sel = clk_src;
+	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_en = 1;
+    TCON_LCD0->LCD_LVDS_IF_REG =
+		(0u << 20) |	// LCD_LVDS_LINK: 0: single link
+		(1u << 27) |	// LCD_LVDS_MODE 1: JEIDA mode
+		(0u << 26) |	// LCD_LVDS_BITWIDTH 0: 24-bit
+		(1u << 20) |	// LCD_LVDS_CLK_SEL 1: LCD CLK
+		0;
+    TCON_LCD0->LCD_DCLK_REG =
+		(0x0Fu << 28) |	// LCD_DCLK_EN
+		(0x07u << 0) |	// LCD_DCLK_DIV
+		0;
+    TCON_LCD0->LCD_LVDS_IF_REG |= (1u << 31);	// LCD_LVDS_EN
+
+#endif /* WITHLVDSHW */
 
 	t113_tconlcd_disable(pdat);
+	/* HV - Step 3 Set sequence parameters, sane in lvds */
 	t113_tconlcd_set_timing(pdat, vdmode);
 	//t113_tconlcd_set_dither(pdat);
+	t113_hw_setup(pdat, vdmode);
 	{
 		// Sochip_VE_S3_Datasheet_V1.0.pdf
 		// TCON0_TRM_CTL_REG offset 0x0010
@@ -2418,6 +2445,33 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 
 	}
+
+#if WITHLVDSHW
+	unsigned lvds_num;
+	for (lvds_num = 0; lvds_num < 1; ++ lvds_num)
+	{
+		//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
+		// Step 5 LVDS digital logic configuration
+
+		// Step 6 LVDS controller configuration
+		// LVDS_HPREN_DRVC and LVDS_HPREN_DRV
+		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] =
+			(0x0Fu << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
+			(0x01u << 24) |	// LVDS_HPREN_DRVC
+			(0x04u << 17) |	// Configure LVDS0_REG_C (differential mode voltage) to 4; 100: 336 mV
+			(0x03u << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
+			0;
+		// test
+		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (0x01u << 16);	// LVDS_REG_DENC
+		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (0x0Fu << 12);	// LVDS_REG_DEN
+
+		// 	Lastly, start module voltage, and enable EN_LVDS and EN_24M.
+		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 31);	// ?LVDS_EN_MB start module voltage
+		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 29);	// enable EN_LVDS
+		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 28);	// EN_24M
+	}
+#endif /* WITHLVDSHW */
+
 	t113_tconlcd_enable(pdat);
 
 	t113_de_set_mode(pdat);

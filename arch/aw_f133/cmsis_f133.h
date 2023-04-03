@@ -1397,19 +1397,19 @@ typedef struct USBEHCI_Type
 typedef struct USBOTG_Type
 {
     volatile uint32_t USB_EPFIFO [0x010];             /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
-    volatile uint32_t USB_GCS;                        /*!< Offset 0x040 USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL */
-    volatile uint16_t USB_INTTX;                      /*!< Offset 0x044 USB_INTTX USB_EPINTF */
+    volatile uint32_t USB_GCS;                        /*!< Offset 0x040 USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register */
+    volatile uint16_t USB_INTTX;                      /*!< Offset 0x044 USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register */
     volatile uint16_t USB_INTRX;                      /*!< Offset 0x046 USB_INTRX USB_EPINTF */
-    volatile uint16_t USB_INTTXE;                     /*!< Offset 0x048 USB_INTTXE USB_EPINTE */
+    volatile uint16_t USB_INTTXE;                     /*!< Offset 0x048 USB_INTTXE USB_EPINTE USB Endpoint Interrupt Enable Register */
     volatile uint16_t USB_INTRXE;                     /*!< Offset 0x04A USB_INTRXE USB_EPINTE */
-    volatile uint32_t USB_INTUSB;                     /*!< Offset 0x04C USB_INTUSB USB_BUSINTF */
-    volatile uint32_t USB_INTUSBE;                    /*!< Offset 0x050 USB_INTUSBE USB_BUSINTE */
+    volatile uint32_t USB_INTUSB;                     /*!< Offset 0x04C USB_INTUSB USB_BUSINTF USB Bus Interrupt Flag Register */
+    volatile uint32_t USB_INTUSBE;                    /*!< Offset 0x050 USB_INTUSBE USB_BUSINTE USB Bus Interrupt Enable Register */
     volatile uint32_t USB_FNUM;                       /*!< Offset 0x054 USB Frame Number Register */
              uint32_t reserved_0x058 [0x0009];
-    volatile uint32_t USB_TESTC;                      /*!< Offset 0x07C USB_TESTC */
-    volatile uint16_t USB_TXMAXP;                     /*!< Offset 0x080 USB_TXMAXP */
+    volatile uint32_t USB_TESTC;                      /*!< Offset 0x07C USB_TESTC USB Test Control Register */
+    volatile uint16_t USB_TXMAXP;                     /*!< Offset 0x080 USB_TXMAXP USB EP1~5 Tx Control and Status Register */
     volatile uint16_t USB_CSR0;                       /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
-    volatile uint16_t USB_RXMAXP;                     /*!< Offset 0x084 USB_RXMAXP */
+    volatile uint16_t USB_RXMAXP;                     /*!< Offset 0x084 USB_RXMAXP USB EP1~5 Rx Control and Status Register */
     volatile uint16_t USB_RXCSR;                      /*!< Offset 0x086 USB_RXCSR */
     volatile uint16_t USB_RXCOUNT;                    /*!< Offset 0x088 USB_RXCOUNT */
     volatile uint16_t USB_RXPKTCNT;                   /*!< Offset 0x08A USB_RXPKTCNT */
@@ -1828,8 +1828,7 @@ typedef struct TCON_LCD_Type
              uint32_t reserved_0x1A0 [0x0014];
     volatile uint32_t LCD_SAFE_PERIOD_REG;            /*!< Offset 0x1F0 LCD Safe Period Register */
              uint32_t reserved_0x1F4 [0x000B];
-    volatile uint32_t LCD_LVDS0_ANA_REG;              /*!< Offset 0x220 LCD LVDS Analog Register 0 */
-    volatile uint32_t LCD_LVDS1_ANA_REG;              /*!< Offset 0x224 LCD LVDS Analog Register 1 */
+    volatile uint32_t LCD_LVDS_ANA_REG [0x002];       /*!< Offset 0x220 LCD LVDS Analog Register N */
              uint32_t reserved_0x228 [0x0002];
     volatile uint32_t LCD_SYNC_CTL_REG;               /*!< Offset 0x230 LCD Sync Control Register */
     volatile uint32_t LCD_SYNC_POS_REG;               /*!< Offset 0x234 LCD Sync Position Register */

@@ -38,9 +38,10 @@
 #regdef; LCD_CMAP_EVEN0_REG; 0x0198; LCD Color Map Even Line Register0
 #regdef; LCD_CMAP_EVEN1_REG; 0x019C; LCD Color Map Even Line Register1
 #regdef; LCD_SAFE_PERIOD_REG; 0x01F0; LCD Safe Period Register
-#regdef; LCD_LVDS0_ANA_REG; 0x0220; LCD LVDS Analog Register 0
-#regdef; LCD_LVDS1_ANA_REG; 0x0224; LCD LVDS Analog Register 1
+#regdef; LCD_LVDS_ANA_REG; 0x0220 2; LCD LVDS Analog Register N
 #regdef; LCD_SYNC_CTL_REG; 0x0230; LCD Sync Control Register
 #regdef; LCD_SYNC_POS_REG; 0x0234; LCD Sync Position Register
 #regdef; LCD_SLAVE_STOP_POS_REG; 0x0238; LCD Slave Stop Position Register
 #regdef; LCD_GAMMA_TABLE_REG; 0x0400 256; LCD Gamma Table Register
+##regdef; COMBO_PHY_REG0; 0x1110; The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114)
+##regdef; COMBO_PHY_REG1; 0x1114; The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114)
