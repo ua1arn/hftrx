@@ -3375,18 +3375,18 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
-		if (ep0_csr & 0x1u)	// ? USB_TXCSR_TXPKTRDY
+		if (ep0_csr & (0x1u << 0))	// RxPktRdy
 		{
-			pusb->ep0_xfer_state = USB_EP0_SETUP;
+			pusb->ep0_xfer_state = USB_EP0_SETUP;	// получили setup пакет
 		}
-		else if (ep0_csr & (0x1u << 4))
+		else if (ep0_csr & (0x1u << 4))	// SetupEnd
 		{
-			usb_set_ep0_csr(pusb, 0x80);
+			usb_set_ep0_csr(pusb, 0x80);	// ServicedSetupEnd
 			PRINTF("usb_dev_ep0xfer_handler: WRN: EP0 Setup End!!\n");
 		}
-		else if (!(ep0_csr & (0x1u << 1)))	// ? USB_RXCSR_FIFOFULL, USB_TXCSR_FIFONOTEMP
+		else if (!(ep0_csr & (0x1u << 1)))	// ! TxPktRdy
 		{
-			usb_ep0_complete_send_data(pusb);
+			usb_ep0_complete_send_data(pusb);	// продолжаем пересылать, возможно несколько раз
 		}
 		else
 		{
@@ -3402,7 +3402,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
 #endif /* WITHWAWXXUSB */
 
-		if (ep0_csr & 0x1)// ? USB_TXCSR_TXPKTRDY
+		if (ep0_csr & (0x1u << 0)) // RxPktRdy
 		{
 			uint32_t ep0_count = usb_get_ep0_count(pusb);
 
