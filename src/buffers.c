@@ -1396,7 +1396,7 @@ buffers_savetouacin(uacin48_t * p)
 {
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_uacin += sizeof p->u.buff / sizeof p->u.buff [0] / DMABUFFSTEP_UACIN;	// в буфере пары сэмплов по три байта
+	debugcount_uacin += sizeof p->u.buff / sizeof p->u.buff [0] / (DMABUFFSTEP_UACIN * UACIN_AUDIO48_SAMPLEBYTES);	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	SPIN_LOCK(& locklistuacin48);
 	InsertHeadList2(& uacin48ready, & p->item);
