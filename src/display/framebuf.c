@@ -630,7 +630,6 @@ void arm_hardware_mdma_initialize(void)
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
 	unsigned M = 5;	/* M = 1..32 */
 	unsigned divider = 0;
-	PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
 
 	CCU->MBUS_CLK_REG |= (1u << 30);				// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 10);	// Gating MBUS Clock For G2D
@@ -642,13 +641,15 @@ void arm_hardware_mdma_initialize(void)
 		(M - 1) * (1u << 0) | // FACTOR_M
 		0;
 	CCU->G2D_CLK_REG |= (1u << 31);	// G2D_CLK_GATING
-	//local_delay_us(10);
+	local_delay_us(10);
+	//PRINTF("allwnrt113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnrt113_get_g2d_freq() / 1000000));
 
 	//CCU->G2D_BGR_REG = 0;
 	CCU->G2D_BGR_REG |= (1u << 0);		/* Enable gating clock for G2D 1: Pass */
 	CCU->G2D_BGR_REG &= ~ (1u << 16);	/* G2D reset 0: Assert */
 	CCU->G2D_BGR_REG |= (1u << 16);	/* G2D reset 1: De-assert */
 	(void) CCU->G2D_BGR_REG;
+	local_delay_us(10);
 
 	/* на Allwinner T113-S3 и F133 модифицируемы только младшие 8 бит */
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |

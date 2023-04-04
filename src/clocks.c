@@ -2474,8 +2474,8 @@ uint_fast32_t allwnrt113_get_video0pllx4_freq(void)
 	const uint_fast32_t reg = CCU->PLL_VIDEO0_CTRL_REG;
 	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);	// >= 12
 	const uint_fast32_t pllM1 = 1u + ((reg >> 1) & 0x01);	// Input divider
-	const uint_fast32_t pllM0 = 1;//1u + ((reg >> 0) & 0x01);	// PLL Output Div D.(The factor is only for testing)
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM1 / pllM0;
+	//const uint_fast32_t pllM0 = 1u + ((reg >> 0) & 0x01);	// PLL Output Div D.(The factor is only for testing)
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM1;
 }
 
 // When the HOSC is 24 MHz, the default frequency of PLL_VIDEO1(4X) is 1188 MHz.
@@ -2484,8 +2484,8 @@ uint_fast32_t allwnrt113_get_video1pllx4_freq(void)
 	const uint_fast32_t reg = CCU->PLL_VIDEO1_CTRL_REG;
 	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);	// >= 12
 	const uint_fast32_t pllM1 = 1u + ((reg >> 1) & 0x01);	// Input divider
-	const uint_fast32_t pllM0 = 1;//1u + ((reg >> 0) & 0x01);	// PLL Output Div D.(The factor is only for testing)
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM1 / pllM0;
+	//const uint_fast32_t pllM0 = 1u + ((reg >> 0) & 0x01);	// PLL Output Div D.(The factor is only for testing)
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM1;
 }
 
 uint_fast32_t allwnrt113_get_vepll_freq(void)
