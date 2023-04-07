@@ -1731,7 +1731,9 @@ void releaserecordbuffer(void * dest)
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	SPIN_LOCK(& lockwav48);
 	InsertHeadList2(& recordswav48free, & p->item);
+	SPIN_UNLOCK(& lockwav48);
 	LowerIrql(oldIrql);
 }
 
