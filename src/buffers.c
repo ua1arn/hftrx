@@ -436,9 +436,7 @@ typedef ALIGNX_BEGIN struct recordswav48
 
 static RAMBIGDTCM LIST_HEAD2 recordswav48free;		// Свободные буферы
 static RAMBIGDTCM LIST_HEAD2 recordswav48ready;	// Буферы для записи на SD CARD
-
-static RAMBIGDTCM volatile unsigned recdropped;
-static RAMBIGDTCM volatile unsigned recbuffered;
+static RAMBIGDTCM SPINLOCK_t lockwav48 = SPINLOCK_INIT;
 
 #endif /* WITHUSEAUDIOREC */
 
@@ -509,10 +507,8 @@ static unsigned
 getresetval(volatile unsigned * p)
 {
 	unsigned v;
-	//global_disableIRQ();
 	v = * p;
 	* p = 0;
-	//global_enableIRQ();
 	return v;
 }
 
@@ -598,19 +594,20 @@ typedef ALIGNX_BEGIN struct denoise16
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takespeexready_user(speexel_t * * dest)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& speexlock);
 	if (! IsListEmpty2(& speexready16))
 	{
 		const PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		SPIN_UNLOCK(& speexlock);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		* dest = p->buff;
 		return 1;
 	}
 	SPIN_UNLOCK(& speexlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 	return 0;
 }
 
@@ -618,13 +615,14 @@ uint_fast8_t takespeexready_user(speexel_t * * dest)
 void releasespeexbuffer_user(speexel_t * t)
 {
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& speexlock);
 
 	InsertHeadList2(& speexfree16, & p->item);
 
 	SPIN_UNLOCK(& speexlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 
@@ -892,6 +890,7 @@ void buffers_initialize(void)
 			recordswav48_t * const p = & recordsarray16 [i];
 			InsertHeadList2(& recordswav48free, & p->item);
 		}
+		SPINLOCK_INITIALIZE(& lockwav48);
 	}
 
 #endif /* WITHUSEAUDIOREC */
@@ -1593,16 +1592,6 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 #if WITHUSEAUDIOREC
 // Поэлементное заполнение буфера SD CARD
 
-unsigned long hamradio_get_recdropped(void)
-{
-	return recdropped;
-}
-
-int hamradio_get_recdbuffered(void)
-{
-	return recbuffered;
-}
-
 /* to SD CARD */
 // 16 bit, signed
 void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
@@ -1611,6 +1600,7 @@ void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
 	static recordswav48_t * preparerecord16 = NULL;
 	static unsigned level16record;
 
+	SPIN_LOCK(& lockwav48);
 	if (preparerecord16 == NULL)
 	{
 		if (! IsListEmpty2(& recordswav48free))
@@ -1620,8 +1610,6 @@ void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
 		}
 		else
 		{
-			-- recbuffered;
-			++ recdropped;
 			// Если нет свободных - использум самый давно подготовленный для записи буфер
 			PLIST_ENTRY t = RemoveTailList2(& recordswav48ready);
 			preparerecord16 = CONTAINING_RECORD(t, recordswav48_t, item);
@@ -1653,46 +1641,49 @@ void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
 
 	if (level16record >= AUDIORECBUFFSIZE16)
 	{
-		++ recbuffered;
 		/* используется буфер целиклом */
 		preparerecord16->startdata = 0;
 		preparerecord16->topdata = AUDIORECBUFFSIZE16;
 		InsertHeadList2(& recordswav48ready, & preparerecord16->item);
 		preparerecord16 = NULL;
 	}
+	SPIN_UNLOCK(& lockwav48);
 }
 
 // user-mode function
 unsigned takerecordbuffer(void * * dest)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	SPIN_LOCK(& lockwav48);
 	if (! IsListEmpty2(& recordswav48ready))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& recordswav48ready);
-		global_enableIRQ();
-		-- recbuffered;
+		SPIN_LOCK(& lockwav48);
+		LowerIrql(oldIrql);
 		recordswav48_t * const p = CONTAINING_RECORD(t, recordswav48_t, item);
 		* dest = p->buff;
 		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
 	}
-	global_enableIRQ();
+	SPIN_UNLOCK(& lockwav48);
+	LowerIrql(oldIrql);
 	return 0;
 }
 
 // user-mode function
 unsigned takefreerecordbuffer(void * * dest)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	if (! IsListEmpty2(& recordswav48free))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& recordswav48free);
-		global_enableIRQ();
-		-- recbuffered;
+		LowerIrql(oldIrql);
 		recordswav48_t * const p = CONTAINING_RECORD(t, recordswav48_t, item);
 		* dest = p->buff;
 		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
 	}
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 	return 0;
 }
 
@@ -1702,9 +1693,12 @@ void saveplaybuffer(void * dest, unsigned used)
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
 	p->startdata = 0;	// перыфй сэмпл в буфере
 	p->topdata = used / sizeof p->buff [0];	// количество сэмплов
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	SPIN_LOCK(& lockwav48);
 	InsertHeadList2(& recordswav48ready, & p->item);
-	global_enableIRQ();
+	SPIN_UNLOCK(& lockwav48);
+	LowerIrql(oldIrql);
 }
 
 /* data to play */
@@ -1735,9 +1729,10 @@ unsigned savesamplesplay_user(
 void releaserecordbuffer(void * dest)
 {
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	InsertHeadList2(& recordswav48free, & p->item);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера
@@ -1748,12 +1743,12 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 {
 	static recordswav48_t * p = NULL;
 	static unsigned n;
+	SPIN_LOCK(& lockwav48);
 	if (p == NULL)
 	{
 		if (! IsListEmpty2(& recordswav48ready))
 		{
 			PLIST_ENTRY t = RemoveTailList2(& recordswav48ready);
-			-- recbuffered;
 			p = CONTAINING_RECORD(t, recordswav48_t, item);
 			n = p->startdata;	// reset samples count
 			//PRINTF("takewavsample: startdata=%u, topdata=%u\n", p->startdata, p->topdata);
@@ -1775,6 +1770,7 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 		p = NULL;
 		//PRINTF("Release record buffer\n");
 	}
+	SPIN_UNLOCK(& lockwav48);
 	return 1;	// Сэмпл считан
 }
 
@@ -1786,16 +1782,17 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 // Буферы с принятымти через модем данными
 size_t takemodemrxbuffer(uint8_t * * dest)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	if (! IsListEmpty2(& modemsrx8))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& modemsrx8);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
 		return p->length;
 	}
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 	* dest = NULL;
 	return 0;
 }
@@ -1803,16 +1800,17 @@ size_t takemodemrxbuffer(uint8_t * * dest)
 // Буферы для заполнения данными
 size_t takemodembuffer(uint8_t * * dest)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	if (! IsListEmpty2(& modemsfree8))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
 		return (MODEMBUFFERSIZE8 * sizeof p->buff [0]);
 	}
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 	* dest = NULL;
 	return 0;
 }
@@ -1844,9 +1842,10 @@ void savemodemrxbuffer_low(uint8_t * dest, size_t length)
 void releasemodembuffer(uint8_t * dest)
 {
 	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	InsertHeadList2(& modemsfree8, & p->item);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 // вызывается из real-time обработчика прерывания
@@ -2900,7 +2899,8 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 
 	if (v == 0)
 	{
-		global_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 		SPIN_LOCK(& locklist16rx);
 
 		// Очистить очередь принятых от USB UAC
@@ -2911,7 +2911,7 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 		}
 
 		SPIN_UNLOCK(& locklist16rx);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 }
 
@@ -2936,9 +2936,10 @@ void uacout_buffer_stop(void)
 {
 	if (uacoutaddr != 0)
 	{
-		global_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 		release_dmabuffer16rx(uacoutaddr);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 		uacoutaddr = 0;
 		uacoutbufflevel = 0;
 	}
@@ -2963,9 +2964,10 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 			break;
 		if (uacoutaddr == 0)
 		{
- 			global_disableIRQ();
+			IRQL_t oldIrql;
+			RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 			uacoutaddr = allocate_dmabuffer16rx();
-			global_enableIRQ();
+			LowerIrql(oldIrql);
 			uacoutbufflevel = 0;
 		}
 
@@ -3003,9 +3005,10 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 
 		if ((uacoutbufflevel += outchunk) >= dmabuffer16size)
 		{
-			global_disableIRQ();
+			IRQL_t oldIrql;
+			RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 			processing_dmabuffer16rxuac(uacoutaddr);
-			global_enableIRQ();
+			LowerIrql(oldIrql);
 			uacoutaddr = 0;
 			uacoutbufflevel = 0;
 		}
@@ -3031,9 +3034,7 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
 			break;
 		if (uacoutaddr == 0)
 		{
- 			//global_disableIRQ();
-			uacoutaddr = allocate_dmabuffer16rx();
-			//global_enableIRQ();
+ 			uacoutaddr = allocate_dmabuffer16rx();
 			uacoutbufflevel = 0;
 		}
 
@@ -3075,9 +3076,7 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
 
 		if ((uacoutbufflevel += outchunk) >= dmabuffer16rxsize)
 		{
-			//global_disableIRQ();
 			processing_dmabuffer16rxuac(uacoutaddr);
-			//global_enableIRQ();
 			uacoutaddr = 0;
 			uacoutbufflevel = 0;
 		}
@@ -3216,7 +3215,8 @@ void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 void deliveryfloat_user(deliverylist_t * list, const FLOAT_t * ch0, const FLOAT_t * ch1, unsigned n)
 {
 	PLIST_ENTRY t;
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& list->listlock);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
@@ -3228,7 +3228,7 @@ void deliveryfloat_user(deliverylist_t * list, const FLOAT_t * ch0, const FLOAT_
 		}
 	}
 	SPIN_UNLOCK(& list->listlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
@@ -3265,22 +3265,24 @@ void subscribefloat_user(deliverylist_t * list, subscribefloat_t * target, void 
 {
 	target->cb = pfn;
 	target->ctx = ctx;
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& list->listlock);
 	InsertHeadList(& list->head, & target->item);
 	SPIN_UNLOCK(& list->listlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 void subscribeint_user(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
 {
 	target->cb = pfn;
 	target->ctx = ctx;
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& list->listlock);
 	InsertHeadList(& list->head, & target->item);
 	SPIN_UNLOCK(& list->listlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 void deliverylist_initialize(deliverylist_t * list)

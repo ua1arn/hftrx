@@ -3616,19 +3616,21 @@ static void agc_reset(
 	FLOAT_t m0 = agcp->mininput;
 	FLOAT_t m1;
 
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	st->agcfastcap = m0;
 	st->agcslowcap = m0;
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 
 #if ! CTLSTYLE_V1D		// не Плата STM32F429I-DISCO с процессором STM32F429ZIT6 - на ней приема нет
 	for (;;)
 	{
 		local_delay_ms(1);
 
-		global_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 		const FLOAT_t v = agc_result_slow(st);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 
 		if (v != m0)
 		{
@@ -3640,9 +3642,10 @@ static void agc_reset(
 	{
 		local_delay_ms(1);
 
-		global_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 		const FLOAT_t v = agc_result_slow(st);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 
 		if (v != m1)
 			break;
@@ -3660,12 +3663,14 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	agcparams_t * const agcp = & rxsmeterparams;
 	agcstate_t * const st = & rxsmeterstate [pathi];
 
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
-	global_enableIRQ();
-	global_disableIRQ();
+	LowerIrql(oldIrql);
+
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	const FLOAT_t fltstrengthslow = agc_result_slow(st);	// измеритель уровня сигнала
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 	* tracemax = agc_calcstrengthlog10(agcp, fltstrengthslow);
 	return agc_calcstrengthlog10(agcp, fltstrengthfast);
 }

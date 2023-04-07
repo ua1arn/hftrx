@@ -1483,31 +1483,6 @@ static void display_txrxstate5alt(
 #endif /* WITHTX */
 }
 
-static void display_recstatus(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	dctx_t * pctx
-	)
-{
-#if WITHUSEAUDIOREC
-	unsigned long hamradio_get_recdropped(void);
-	int hamradio_get_recdbuffered(void);
-
-	char buf2 [12];
-	local_snprintf_P(
-		buf2,
-		ARRAY_SIZE(buf2),
-		PSTR("%08lx %2d"),
-		(unsigned long) hamradio_get_recdropped(),
-		(int) hamradio_get_recdbuffered()
-		);
-
-	colmain_setcolors(LABELTEXT, LABELBACK);
-	display_at(x, y, buf2);
-
-#endif /* WITHUSEAUDIOREC */
-}
-
 // Отображение режима записи аудио фрагмента
 static void display2_rec3(
 	uint_fast8_t x, 
@@ -4501,29 +4476,31 @@ void saveready_fftbuffer_low(fftbuff_t * p)
 // user-mode function
 void release_fftbuffer(fftbuff_t * p)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& fftlock);
 	InsertHeadList(& fftbuffree, & p->item);
 	SPIN_UNLOCK(& fftlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 // user-mode function
 uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& fftlock);
 	if (! IsListEmpty(& fftbufready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
 		SPIN_UNLOCK(& fftlock);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
 	}
 	SPIN_UNLOCK(& fftlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 	return 0;
 }
 

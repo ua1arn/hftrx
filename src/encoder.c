@@ -253,7 +253,8 @@ void encoder_clear(void)
 {
 	backup_rotate = 0;
 	backup_rotate2 = 0;
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 
 	SPIN_LOCK(& enc1lock);
 	rotate1 = 0;
@@ -264,7 +265,7 @@ void encoder_clear(void)
 	tichist = 0;
 
 	SPIN_UNLOCK(& enc1lock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 /* получение количества шагов и скорости вращения. */
@@ -278,7 +279,8 @@ encoder_get_snapshot(
 	unsigned s;				// количество шагов за время измерения
 	unsigned tdelta;	// Время измерения
 
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& enc1lock);
 
 	// параметры изменерения скорости не модифицируем
@@ -295,7 +297,7 @@ encoder_get_snapshot(
 
 
 	SPIN_UNLOCK(& enc1lock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
@@ -318,12 +320,13 @@ encoder2_get_snapshot(
 {
 	int hrotate;
 
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& enc2lock);
 	hrotate = rotate2;
 	rotate2 = 0;
 	SPIN_UNLOCK(& enc2lock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 
 	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
 	const div_t h = div(hrotate + backup_rotate2, derate);

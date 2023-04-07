@@ -133,9 +133,10 @@ int nmea_putc(int c)
 	qput(c);
 	global_enableIRQ();
 #else /* WITHNMEAOVERREALTIME */
-    system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
     qput(c);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 #endif /* WITHNMEAOVERREALTIME */
 	return c;
 }

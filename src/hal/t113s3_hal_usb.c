@@ -2618,9 +2618,10 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinsize, USB_PRTCL_ISO);
 			if (ret == USB_RETVAL_COMPOK)
 			{
-				global_disableIRQ();
+				IRQL_t oldIrql;
+				RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 				release_dmabufferx(uacinaddr);
-				global_enableIRQ();
+				LowerIrql(oldIrql);
 				uacinaddr = 0;
 			}
 		}
@@ -3653,9 +3654,10 @@ void usb_device_function0(USBD_HandleTypeDef * pdev)
 {
 	PCD_HandleTypeDef * hpcd = pdev->pData;
 	ASSERT(hpcd != NULL);
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
 	usb_device_function(hpcd);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 void usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
