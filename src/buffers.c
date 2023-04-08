@@ -1599,7 +1599,9 @@ void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
 	// если есть инициализированный канал для выдачи звука
 	static recordswav48_t * preparerecord16 = NULL;
 	static unsigned level16record;
+	IRQL_t oldIrql;
 
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& lockwav48);
 	if (preparerecord16 == NULL)
 	{
@@ -1648,6 +1650,7 @@ void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
 		preparerecord16 = NULL;
 	}
 	SPIN_UNLOCK(& lockwav48);
+	LowerIrql(oldIrql);
 }
 
 // user-mode function
@@ -1659,7 +1662,7 @@ unsigned takerecordbuffer(void * * dest)
 	if (! IsListEmpty2(& recordswav48ready))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& recordswav48ready);
-		SPIN_LOCK(& lockwav48);
+		SPIN_UNLOCK(& lockwav48);
 		LowerIrql(oldIrql);
 		recordswav48_t * const p = CONTAINING_RECORD(t, recordswav48_t, item);
 		* dest = p->buff;
@@ -1675,14 +1678,17 @@ unsigned takefreerecordbuffer(void * * dest)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	SPIN_LOCK(& lockwav48);
 	if (! IsListEmpty2(& recordswav48free))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& recordswav48free);
+		SPIN_UNLOCK(& lockwav48);
 		LowerIrql(oldIrql);
 		recordswav48_t * const p = CONTAINING_RECORD(t, recordswav48_t, item);
 		* dest = p->buff;
 		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
 	}
+	SPIN_UNLOCK(& lockwav48);
 	LowerIrql(oldIrql);
 	return 0;
 }
@@ -1690,10 +1696,10 @@ unsigned takefreerecordbuffer(void * * dest)
 // user-mode function
 void saveplaybuffer(void * dest, unsigned used)
 {
+	IRQL_t oldIrql;
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
 	p->startdata = 0;	// перыфй сэмпл в буфере
 	p->topdata = used / sizeof p->buff [0];	// количество сэмплов
-	IRQL_t oldIrql;
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& lockwav48);
 	InsertHeadList2(& recordswav48ready, & p->item);
