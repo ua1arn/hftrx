@@ -3663,16 +3663,12 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	agcparams_t * const agcp = & rxsmeterparams;
 	agcstate_t * const st = & rxsmeterstate [pathi];
 
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
-	LowerIrql(oldIrql);
-
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	const FLOAT_t fltstrengthslow = agc_result_slow(st);	// измеритель уровня сигнала
-	LowerIrql(oldIrql);
 	* tracemax = agc_calcstrengthlog10(agcp, fltstrengthslow);
-	return agc_calcstrengthlog10(agcp, fltstrengthfast);
+	FLOAT_t r = agc_calcstrengthlog10(agcp, fltstrengthfast);
+
+	return r;
 }
 
 static int computeslevel_1(
@@ -3742,8 +3738,8 @@ dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upp
 	return level;
 }
 
-static FLOAT_t mickecliplevelp [NPROF] = { + INT_MAX, + INT_MAX };
-static FLOAT_t mickeclipleveln [NPROF] = { - INT_MAX, - INT_MAX };
+static FLOAT_t mickecliplevelp [NPROF] = { + INT_MAX, + INT_MAX };	/* positive limit */
+static FLOAT_t mickeclipleveln [NPROF] = { - INT_MAX, - INT_MAX };	/* negative limit */
 static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
 
 // ару и компрессор микрофона
