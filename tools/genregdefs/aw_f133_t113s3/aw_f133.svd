@@ -1335,7 +1335,7 @@
     <register>
      <name>PLIC_PRIO_REGn</name>
      <displayName>PLIC_PRIO_REGn</displayName>
-     <description>(0<n<256) PLIC Priority Register n - Interrupt Source Priority</description>
+     <description>(0&lt;n&lt;256) PLIC Priority Register n - Interrupt Source Priority</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -1348,7 +1348,7 @@
     <register>
      <name>PLIC_IP_REGn</name>
      <displayName>PLIC_IP_REGn</displayName>
-     <description>(0≤n<9) PLIC Interrupt Pending Register n - Interrupt Pending Bits</description>
+     <description>(0≤n&lt;9) PLIC Interrupt Pending Register n - Interrupt Pending Bits</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -1361,7 +1361,7 @@
     <register>
      <name>PLIC_MIE_REGn</name>
      <displayName>PLIC_MIE_REGn</displayName>
-     <description>(0≤n<9) PLIC Machine Mode Interrupt Enable Register n - Machine Interrupt Enable Bits</description>
+     <description>(0≤n&lt;9) PLIC Machine Mode Interrupt Enable Register n - Machine Interrupt Enable Bits</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -1374,7 +1374,7 @@
     <register>
      <name>PLIC_SIE_REGn</name>
      <displayName>PLIC_SIE_REGn</displayName>
-     <description>(0≤n<9) PLIC Superuser Mode Interrupt Enable Register n - Superuser Interrupt Enable Bits</description>
+     <description>(0≤n&lt;9) PLIC Superuser Mode Interrupt Enable Register n - Superuser Interrupt Enable Bits</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -2896,7 +2896,7 @@
    <register>
     <name>I2S_PCM_INT</name>
     <displayName>I2S_PCM_INT</displayName>
-    <description>I2S/PCM DMA & Interrupt Control Register</description>
+    <description>I2S/PCM DMA &amp; Interrupt Control Register</description>
     <addressOffset>0x01C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5337,7 +5337,7 @@
    <register>
     <name>LED_T01_TIMING_CTRL_REG</name>
     <displayName>LED_T01_TIMING_CTRL_REG</displayName>
-    <description>LEDC T0 & T1 Timing Control Register</description>
+    <description>LEDC T0 &amp; T1 Timing Control Register</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -12696,7 +12696,7 @@
     <register>
      <name>SID_DATA</name>
      <displayName>SID_DATA</displayName>
-     <description>SID data (xfel display as 'sid' replay)</description>
+     <description>SID data (xfel display as &apos;sid&apos; replay)</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>

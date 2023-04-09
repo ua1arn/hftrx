@@ -2609,7 +2609,7 @@
    <register>
     <name>SMHC_NTSR</name>
     <displayName>SMHC_NTSR</displayName>
-    <description>SD new timing set Register(only for SMHC0&1)</description>
+    <description>SD new timing set Register(only for SMHC0&amp;1)</description>
     <addressOffset>0x05C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2681,7 +2681,7 @@
    <register>
     <name>SMHC_RES_CRC</name>
     <displayName>SMHC_RES_CRC</displayName>
-    <description>Response CRC from device(only for SMHC0&1)</description>
+    <description>Response CRC from device(only for SMHC0&amp;1)</description>
     <addressOffset>0x110</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2690,7 +2690,7 @@
    <register>
     <name>SMHC_D7_CRC</name>
     <displayName>SMHC_D7_CRC</displayName>
-    <description>CRC in data7 form device(only for SMHC0&1)</description>
+    <description>CRC in data7 form device(only for SMHC0&amp;1)</description>
     <addressOffset>0x114</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2699,7 +2699,7 @@
    <register>
     <name>SMHC_D6_CRC</name>
     <displayName>SMHC_D6_CRC</displayName>
-    <description>CRC in data6 form device(only for SMHC0&1)</description>
+    <description>CRC in data6 form device(only for SMHC0&amp;1)</description>
     <addressOffset>0x118</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2708,7 +2708,7 @@
    <register>
     <name>SMHC_D5_CRC</name>
     <displayName>SMHC_D5_CRC</displayName>
-    <description>CRC in data5 form device(only for SMHC0&1)</description>
+    <description>CRC in data5 form device(only for SMHC0&amp;1)</description>
     <addressOffset>0x11C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2717,7 +2717,7 @@
    <register>
     <name>SMHC_D4_CRC</name>
     <displayName>SMHC_D4_CRC</displayName>
-    <description>CRC in data4 form device(only for SMHC0&1)</description>
+    <description>CRC in data4 form device(only for SMHC0&amp;1)</description>
     <addressOffset>0x120</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2726,7 +2726,7 @@
    <register>
     <name>SMHC_D3_CRC</name>
     <displayName>SMHC_D3_CRC</displayName>
-    <description>CRC in data3 form device(only for SMHC0&1)</description>
+    <description>CRC in data3 form device(only for SMHC0&amp;1)</description>
     <addressOffset>0x124</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2735,7 +2735,7 @@
    <register>
     <name>SMHC_D2_CRC</name>
     <displayName>SMHC_D2_CRC</displayName>
-    <description>CRC in data2 form device(only for SMHC0&1)</description>
+    <description>CRC in data2 form device(only for SMHC0&amp;1)</description>
     <addressOffset>0x128</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2744,7 +2744,7 @@
    <register>
     <name>SMHC_D1_CRC</name>
     <displayName>SMHC_D1_CRC</displayName>
-    <description>CRC in data1 form device(only for SMHC0&1)</description>
+    <description>CRC in data1 form device(only for SMHC0&amp;1)</description>
     <addressOffset>0x12C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2753,7 +2753,7 @@
    <register>
     <name>SMHC_D0_CRC</name>
     <displayName>SMHC_D0_CRC</displayName>
-    <description>CRC in data0 form device(only for SMHC0&1)</description>
+    <description>CRC in data0 form device(only for SMHC0&amp;1)</description>
     <addressOffset>0x130</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2762,7 +2762,7 @@
    <register>
     <name>SMHC_CRC_STA</name>
     <displayName>SMHC_CRC_STA</displayName>
-    <description>CRC status from device in write operation(only for SMHC0&1)</description>
+    <description>CRC status from device in write operation(only for SMHC0&amp;1)</description>
     <addressOffset>0x134</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2930,7 +2930,7 @@
    <register>
     <name>I2S_PCM_INT</name>
     <displayName>I2S_PCM_INT</displayName>
-    <description>I2S/PCM DMA & Interrupt Control Register</description>
+    <description>I2S/PCM DMA &amp; Interrupt Control Register</description>
     <addressOffset>0x01C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3656,7 +3656,7 @@
    <register>
     <name>SYS_SR_CTRL</name>
     <displayName>SYS_SR_CTRL</displayName>
-    <description>System Sample rate & SRC Configuration Register</description>
+    <description>System Sample rate &amp; SRC Configuration Register</description>
     <addressOffset>0x218</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

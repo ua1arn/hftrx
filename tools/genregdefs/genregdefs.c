@@ -99,10 +99,91 @@ void emitline(int pos, const char *format, ...) {
 }
 
 /* xml - file elements */
+/*
+	"   &quot;
+	'   &apos;
+	<   &lt;
+	>   &gt;
+	&   &amp;
+
+ */
+static size_t escapedlen(const char * s)
+{
+	size_t n = 0;
+	for (;;)
+	{
+		switch (* s ++)
+		{
+		case '\0':
+			return n;
+		case '"':
+		case '\'':
+			n += 6;
+			continue;
+		case '<':
+		case '>':
+			n += 4;
+			continue;
+		case '&':
+			n += 5;
+			continue;
+		default:
+			n += 1;
+			continue;
+		}
+	}
+}
+
+static void desscape(char * dst, const char * src)
+{
+	size_t n = 0;
+	for (;;)
+	{
+		char c = * src ++;
+		switch (c)
+		{
+		case '\0':
+			dst [n ++] = c;
+			return;
+		case '"':
+			strcpy(dst + n, "&quot;");
+			n += 6;
+			continue;
+		case '\'':
+			strcpy(dst + n, "&apos;");
+			n += 6;
+			continue;
+		case '<':
+			strcpy(dst + n, "&lt;");
+			n += 4;
+			continue;
+		case '>':
+			strcpy(dst + n, "&gt;");
+			n += 4;
+			continue;
+		case '&':
+			strcpy(dst + n, "&amp;");
+			n += 5;
+			continue;
+		default:
+			dst [n ++] = c;
+			continue;
+		}
+	}
+}
 
 static void emitstring(int indent, const char *name, const char *value) {
-	emitline(indent, "<%s>%s</%s>" "\n", name, value == NULL ? "" : value,
-			name);
+	if (value == NULL)
+		emitline(indent, "<%s>%s</%s>" "\n", name, value == NULL ? "" : value,
+				name);
+	else
+	{
+		size_t n = escapedlen(value);
+		char * s = malloc(n + 1);
+		desscape(s, value);
+		emitline(indent, "<%s>%s</%s>" "\n", name, s, name);
+		free(s);
+	}
 }
 
 static void emithex32(int indent, const char *name, unsigned value) {
