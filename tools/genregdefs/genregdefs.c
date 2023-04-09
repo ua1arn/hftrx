@@ -98,22 +98,20 @@ void emitline(int pos, const char *format, ...) {
 		emitpos = 0;
 }
 
-/* xml - file elements */
+/* XML escape characters */
 /*
-	"   &quot;
-	'   &apos;
-	<   &lt;
-	>   &gt;
-	&   &amp;
+ "   &quot;
+ '   &apos;
+ <   &lt;
+ >   &gt;
+ &   &amp;
 
  */
-static size_t escapedlen(const char * s)
-{
+
+static size_t escapedlen(const char *s) {
 	size_t n = 0;
-	for (;;)
-	{
-		switch (* s ++)
-		{
+	for (;;) {
+		switch (*s++) {
 		case '\0':
 			return n;
 		case '"':
@@ -134,16 +132,13 @@ static size_t escapedlen(const char * s)
 	}
 }
 
-static void desscape(char * dst, const char * src)
-{
+static void desscape(char *dst, const char *src) {
 	size_t n = 0;
-	for (;;)
-	{
-		char c = * src ++;
-		switch (c)
-		{
+	for (;;) {
+		const char c = *src++;
+		switch (c) {
 		case '\0':
-			dst [n ++] = c;
+			dst[n++] = c;
 			return;
 		case '"':
 			strcpy(dst + n, "&quot;");
@@ -166,20 +161,19 @@ static void desscape(char * dst, const char * src)
 			n += 5;
 			continue;
 		default:
-			dst [n ++] = c;
+			dst[n++] = c;
 			continue;
 		}
 	}
 }
 
+/* XML elements */
 static void emitstring(int indent, const char *name, const char *value) {
 	if (value == NULL)
-		emitline(indent, "<%s>%s</%s>" "\n", name, value == NULL ? "" : value,
-				name);
-	else
-	{
-		size_t n = escapedlen(value);
-		char * s = malloc(n + 1);
+		emitline(indent, "<%s></%s>" "\n", name, name);
+	else {
+		const size_t n = escapedlen(value);
+		char *const s = malloc(n + 1);
 		desscape(s, value);
 		emitline(indent, "<%s>%s</%s>" "\n", name, s, name);
 		free(s);
