@@ -160,14 +160,10 @@ uint32_t xcz_cic_test_process(void)
 {
 	while(! iq_ready);
 
-	uint32_t * r = (uint32_t *) addr32rx;
-	uint32_t max = 0;
+	int32_t * r = (int32_t *) addr32rx;
+	int32_t max = 0;
 
-	for (uint16_t i = 0; i < DMABUFFSIZE32RX; i ++)
-	{
-		uint32_t v = r[i] & 0x7FFFFFFF;
-		max = v > max ? v : max;
-	}
+	arm_max_no_idx_q31(r, DMABUFFSIZE32RX, & max);
 
 	return max;
 }

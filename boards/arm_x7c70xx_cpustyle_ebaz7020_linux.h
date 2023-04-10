@@ -46,6 +46,13 @@
 #define CALIBRATION_IQ_CIC_RX_SHIFT		62
 #define CALIBRATION_TX_SHIFT			25
 
+#define LINUX_NMEA_FILE		"/dev/ttyPS1"
+#define LINUX_IQ_INT_FILE	"/dev/uio0"
+#define LINUX_PPS_INT_FILE	"/dev/uio1"
+#define LINUX_I2C_FILE		"/dev/i2c-0"
+#define LINUX_FB_FILE		"/dev/fb0"
+#define LINUX_TTY_FILE		"/dev/tty0"
+
 //#define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 

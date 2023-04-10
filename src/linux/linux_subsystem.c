@@ -777,6 +777,13 @@ uint32_t xcz_tx_shift(uint32_t val)
 	return tx_shift;
 }
 
+uint32_t xcz_cic_test_process(void)
+{
+	return 0;
+}
+
+void xcz_cic_test(uint32_t val) {}
+
 #if WITHHWDUALVFO
 
 void hamradio_set_hw_vfo(uint_fast8_t v)
@@ -977,6 +984,9 @@ unsigned long xc7z_get_arm_freq(void)
 	return 766000000uL;
 }
 #endif
+
+void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line) {}
+void LowerIrql(IRQL_t newIRQL) {}
 
 #if CS_BY_I2C
 

@@ -1193,9 +1193,8 @@ extern "C" {
 
 	typedef uint_fast32_t IRQL_t;
 
-	// For CPUSTYLE_ARM7TDMI
-	//#define ARM_REALTIME_PRIORITY	(0)
-	//#define ARM_SYSTEM_PRIORITY	(0)
+	#define IRQL_ONLY_REALTIME 			0
+	#define IRQL_ONLY_OVERREALTIME 		0
 
 	void (system_disableIRQ)(void);
 	void (system_enableIRQ)(void);
