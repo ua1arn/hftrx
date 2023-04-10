@@ -79,6 +79,8 @@ void linux_subsystem_init(void);
 void linux_user_init(void);
 int linux_framebuffer_init(void);
 uint32_t * linux_get_fb(uint32_t * size);
+void linux_create_thread(pthread_t * tid, void * process, int priority, int cpuid);
+void linux_run_shell_cmd(uint8_t argc, const char * argv []);
 
 uint8_t linux_xgpi_read_pin(uint8_t pin);
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val);

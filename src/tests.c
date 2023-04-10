@@ -10250,8 +10250,88 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 // Сразу после начала main
 
+#if 0 && WITHLVGL && LINUX_SUBSYSTEM
+
+#include "linux/linux_subsystem.h"
+#include "lvgl/lvgl.h"
+#include "lv_drivers/display/fbdev.h"
+#include "lv_drivers/indev/evdev.h"
+#include "lvgl/demos/lv_demos.h"
+#include "lvgl/examples/lv_examples.h"
+#include <linux/kd.h>
+
+#define DISP_BUF_SIZE	(128 * DIM_X)
+
+pthread_t lv_tick_inc_t;
+
+void thread_lv_tick_inc(void)
+{
+	while(1) {
+		lv_tick_inc(1);
+		usleep(1000);
+	}
+}
+
+#endif
+
 void lowtests(void)
 {
+#if 0 && WITHLVGL && LINUX_SUBSYSTEM
+
+	int ttyd = open(LINUX_TTY_FILE, O_RDWR);
+	if (ttyd)
+		ioctl(ttyd, KDSETMODE, KD_GRAPHICS);
+
+	close(ttyd);
+
+	const char * argv [] = { "/sbin/modprobe", "gt911.ko", NULL, };
+	linux_run_shell_cmd(3, argv);
+	usleep(500000);
+
+	/*LVGL init*/
+	lv_init();
+
+	/*Linux frame buffer device init*/
+	fbdev_init();
+
+	/*A small buffer for LittlevGL to draw the screen's content*/
+	static lv_color_t buf1[DISP_BUF_SIZE];
+	static lv_color_t buf2[DISP_BUF_SIZE];
+
+	/*Initialize a descriptor for the buffer*/
+	static lv_disp_draw_buf_t disp_buf;
+	lv_disp_draw_buf_init(&disp_buf, buf1, buf2, DISP_BUF_SIZE);
+
+	/*Initialize and register a display driver*/
+	static lv_disp_drv_t disp_drv;
+	lv_disp_drv_init(& disp_drv);
+	disp_drv.draw_buf   = & disp_buf;
+	disp_drv.flush_cb   = fbdev_flush;
+	disp_drv.hor_res    = DIM_X;
+	disp_drv.ver_res    = DIM_Y;
+	lv_disp_drv_register(& disp_drv);
+
+	/* Linux input device init */
+	evdev_init();
+
+	/* Set up touchpad input device interface */
+	lv_indev_drv_t touch_drv;
+	lv_indev_drv_init(& touch_drv);
+	touch_drv.type = LV_INDEV_TYPE_POINTER;
+	touch_drv.read_cb = (void *) evdev_read;
+	lv_indev_drv_register(& touch_drv);
+
+	linux_create_thread(& lv_tick_inc_t, thread_lv_tick_inc, 50, 1);
+
+//	lv_demo_benchmark_run_scene(26);
+	lv_demo_widgets();
+
+	while(1) {
+		lv_task_handler();
+		usleep(10000);
+	}
+
+#endif
 #if 0 && __riscv && defined(__riscv_zicsr)
 	{
 		unsigned vm = (csr_read_mstatus() >> 24) & 0x1F;
