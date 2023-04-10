@@ -3523,8 +3523,11 @@ enum
     #include "display/dstyle/g_x800_y480_touch_alternative.h"
 #elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI //&& WITHSPECTRUMWF
     #include "display/dstyle/g_x800_y480_touch.h"
-#elif DSTYLE_G_X800_Y480 // && (LCDMODE_MAIN_PAGES > 1)	//&& WITHSPECTRUMWF
-    #include "display/dstyle/g_x800_y480.h"
+#elif DSTYLE_G_X1024_Y600
+	#include "display/dstyle/g_x1024_y600.h"
+    //#include "display/dstyle/g_x800_y480.h"
+#elif DSTYLE_G_X800_Y480
+	#include "display/dstyle/g_x800_y480.h"
 #elif DSTYLE_G_X800_Y480 && 1	//&& WITHSPECTRUMWF
     #include "display/dstyle/g_x800_y480_mini.h"
 #elif DSTYLE_G_DUMMY
