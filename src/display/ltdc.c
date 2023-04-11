@@ -190,8 +190,8 @@ static void vdc5fb_init_sync(struct st_vdc5 * const vdc, const videomode_t * vdm
 	const unsigned VSYNC = vdmode->vsync;	/*  */
 	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
 	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
 	//SETREG32_CK(& vdc->SC0_SCL0_FRC1, 16, 16, 0);	// SC0_RES_VMASK
 	SETREG32_CK(& vdc->SC0_SCL0_FRC1, 1, 0, 0);		// SC0_RES_VMASK_ON 0: Repeated Vsync signal masking control is disabled.
@@ -201,8 +201,8 @@ static void vdc5fb_init_sync(struct st_vdc5 * const vdc, const videomode_t * vdm
 	SETREG32_CK(& vdc->SC0_SCL0_FRC5, 1, 8, 1);		// SC0_RES_FLD_DLY_SEL
 	SETREG32_CK(& vdc->SC0_SCL0_FRC5, 8, 0, 1);		// SC0_RES_VSDLY
 
-	SETREG32_CK(& vdc->SC0_SCL0_FRC4, 11, 16, VFULL - 1);// SC0_RES_FV Free-Running Vsync Period Setting
-	SETREG32_CK(& vdc->SC0_SCL0_FRC4, 11, 0, HFULL - 1);	// SC0_RES_FH Hsync Period Setting
+	SETREG32_CK(& vdc->SC0_SCL0_FRC4, 11, 16, VTOTAL - 1);// SC0_RES_FV Free-Running Vsync Period Setting
+	SETREG32_CK(& vdc->SC0_SCL0_FRC4, 11, 0, HTOTAL - 1);	// SC0_RES_FH Hsync Period Setting
 
 	SETREG32_CK(& vdc->SC0_SCL0_FRC6, 11, 16, TOPMARGIN);	// SC0_RES_F_VS VSYNC + V backporch lines)
 	SETREG32_CK(& vdc->SC0_SCL0_FRC6, 11, 0, HEIGHT);			// SC0_RES_F_VW
@@ -235,8 +235,8 @@ static void vdc5fb_init_scalers(struct st_vdc5 * const vdc, const videomode_t * 
 	const unsigned WIDTH = vdmode->width;	/* width */
 	const unsigned LEFTMARGIN = vdmode->hsync + vdmode->hbp;	/* horizontal delay before DE start */
 	const unsigned TOPMARGIN = vdmode->vsync + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
 	////////////////////////////////////////////////////////////////
 	// SC0
@@ -273,8 +273,8 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	const unsigned WIDTH = vdmode->width;	/* width */
 	const unsigned LEFTMARGIN = vdmode->hsync + vdmode->hbp;	/* horizontal delay before DE start */
 	const unsigned TOPMARGIN = vdmode->vsync + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
 	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORPIP_T) * GXADJ(DIM_SECOND);	// размер одной строки в байтах
 	// Таблица используемой при отображении палитры
@@ -445,8 +445,8 @@ static void vdc5fb_init_tcon(struct st_vdc5 * const vdc, const videomode_t * vdm
 	const unsigned WIDTH = vdmode->width;	/* width */
 	const unsigned LEFTMARGIN = vdmode->hsync + vdmode->hbp;	/* horizontal delay before DE start */
 	const unsigned TOPMARGIN = vdmode->vsync + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
 	////////////////////////////////////////////////////////////////
 	// TCON
@@ -462,7 +462,7 @@ static void vdc5fb_init_tcon(struct st_vdc5 * const vdc, const videomode_t * vdm
 	SETREG32_CK(& vdc->TCON_TIM_STVB1, 11, 0, HEIGHT);	// TCON_STVB_VW
 
 	// Horisontal sync generation parameters
-	SETREG32_CK(& vdc->TCON_TIM, 11, 16, HFULL);		// TCON_HALF
+	SETREG32_CK(& vdc->TCON_TIM, 11, 16, HTOTAL);		// TCON_HALF
 	SETREG32_CK(& vdc->TCON_TIM, 11, 0, 0);				// TCON_OFFSET
 
 	//SETREG32_CK(& vdc->TCON_TIM_POLA2, 2, 12, 0x00);	// TCON_POLA_MD
@@ -1376,8 +1376,8 @@ hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 	const unsigned WIDTH = vdmode->width;	/* width */
 	const unsigned LEFTMARGIN = vdmode->hsync + vdmode->hbp;	/* horizontal delay before DE start */
 	const unsigned TOPMARGIN = vdmode->vsync + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
 	//PRINTF(PSTR("hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
@@ -1460,7 +1460,7 @@ hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 	/* Configure accumulated active width */  
 	LTDC_InitStruct.LTDC_AccumulatedActiveW = (LEFTMARGIN + WIDTH - 1);
 	/* Configure total width */
-	LTDC_InitStruct.LTDC_TotalWidth = (HFULL - 1);
+	LTDC_InitStruct.LTDC_TotalWidth = (HTOTAL - 1);
 
 	/* Configure vertical synchronization height */
 	LTDC_InitStruct.LTDC_VerticalSync = (vdmode->vsync - 1);
@@ -1469,7 +1469,7 @@ hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 	/* Configure accumulated active height */
 	LTDC_InitStruct.LTDC_AccumulatedActiveH = (TOPMARGIN + HEIGHT - 1);
 	/* Configure total height */
-	LTDC_InitStruct.LTDC_TotalHeigh = (VFULL - 1);
+	LTDC_InitStruct.LTDC_TotalHeigh = (VTOTAL - 1);
 
 	/* Configure R,G,B component values for LCD background color */                   
 	LTDC_InitStruct.LTDC_BackgroundColor = 0;		// all 0 - black
@@ -2138,6 +2138,16 @@ static void t113_tconlcd_disable(void)
 
 static void t113_tconlcd_set_timing(const videomode_t * vdmode)
 {
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+
 	TCON_LCD0->LCD_CTL_REG = 0;
 	// Pixel clock
 	{
@@ -2170,31 +2180,22 @@ static void t113_tconlcd_set_timing(const videomode_t * vdmode)
 
 	// timing0 (window)
 	TCON_LCD0->LCD_BASIC0_REG = (
-		((vdmode->width - 1) << 16) | ((vdmode->height - 1) << 0)
+		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
 		);
-
-	int vbp2, vtotal;
-	int hbp2, htotal;
-	// timing1 (horizontal)
-	hbp2 = vdmode->hsync + vdmode->hbp;
-	htotal = vdmode->width + vdmode->hfp + hbp2;
+	// timing1
 	TCON_LCD0->LCD_BASIC1_REG =
-		((htotal - 1) << 16) |
-		((hbp2 - 1) << 0) |
+		((HTOTAL - 1) << 16) |
+		((LEFTMARGIN - 1) << 0) |
 		0;
-
-	// timing2 (vertical)
-	vbp2 = vdmode->vsync + vdmode->vbp;
-	vtotal = vdmode->height + vdmode->vfp + vbp2;
+	// timing2
 	TCON_LCD0->LCD_BASIC2_REG =
-		((vtotal * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
-		((vbp2 - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
+		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
+		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
 		0;
-
 	// timing3
 	TCON_LCD0->LCD_BASIC3_REG =
-		((vdmode->hsync - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
-		((vdmode->vsync - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
+		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
+		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
 
 	// 5.1.6.20 0x0088 LCD IO Polarity Register (Default Value: 0x0000_0000)
@@ -2654,10 +2655,10 @@ unsigned long display_getdotclock(const videomode_t * vdmode)
 	const unsigned VSYNC = vdmode->vsync;	/*  */
 	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
 	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-	return (unsigned long) vdmode->fps * HFULL * VFULL;
+	return (unsigned long) vdmode->fps * HTOTAL * VTOTAL;
 	//return vdmode->ltdc_dotclk;
 }
 
