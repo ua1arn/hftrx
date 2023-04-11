@@ -1611,13 +1611,14 @@ const videomode_t vdmode0 =
 	  * When selected sync mode, de must be grounded.
 	  */
 	/* from r6dan: thb+thpw=160 is fixed */
-	.hsync = 140,			/* Horizontal synchronization 1..140 (r6dan: 20) */
-	.hbp = 20,				/* Horizontal back porch (r6dan: 140) */
+	/* EK79001.PDF: */
+	.hsync = 20,			/* Horizontal synchronization 1..140 */
+	.hbp = 140,				/* Horizontal back porch */
 	.hfp = 160,				/* Horizontal front porch  16..216  (r6dan: 140-160-180)  */
 
-	/* from r6dan: tvb+tvpv=23 is fixed */
-	.vsync = 20,				/* Vertical synchronization 1..20 (r6dan: 3) */
-	.vbp = 3,				/* Vertical back porch (r6dan: 20) */
+	/* from r6dan: tvb+tvpw=23 is fixed */
+	.vsync = 3,				/* Vertical synchronization 1..20 */
+	.vbp = 20,				/* Vertical back porch */
 	.vfp = 12,				/* Vertical front porch  1..127  (r6dan: 2-12-22) */
 
 	/* Accumulated parameters for this display */
