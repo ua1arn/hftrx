@@ -10262,6 +10262,8 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void board_tsc_initialize(void);
 void board_tsc_indev_read(lv_indev_drv_t * drv, lv_indev_data_t * data);
+void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
+void indev_enc2_spool(void);
 
 #define DISP_BUF_SIZE	(128 * DIM_X)
 
@@ -10271,6 +10273,16 @@ void thread_lv_tick_inc(void)
 {
 	while(1) {
 		lv_tick_inc(1);
+		usleep(1000);
+	}
+}
+
+void thread_spool_encinterrupt(void)
+{
+	while(1)
+	{
+		indev_enc2_spool();
+		spool_encinterrupt2();
 		usleep(1000);
 	}
 }
@@ -10320,10 +10332,19 @@ void lowtests(void)
 	touch_drv.read_cb = board_tsc_indev_read;
 	lv_indev_drv_register(& touch_drv);
 
+	/* Encoder register */
+	lv_indev_drv_t enc_drv;
+	lv_indev_drv_init(& enc_drv);
+	enc_drv.type = LV_INDEV_TYPE_ENCODER;
+	enc_drv.read_cb = encoder_indev_read;
+	lv_indev_drv_register(& enc_drv);
+
+	linux_create_thread(& lv_tick_inc_t, thread_spool_encinterrupt, 50, 1);
 	linux_create_thread(& lv_tick_inc_t, thread_lv_tick_inc, 50, 1);
 
 //	lv_demo_benchmark_run_scene(26);
-	lv_demo_widgets();
+//	lv_demo_widgets();
+	lv_demo_keypad_encoder();
 
 	while(1) {
 		lv_task_handler();
