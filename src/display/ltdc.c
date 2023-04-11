@@ -2182,137 +2182,111 @@ static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
 {
+	// Pixel clock
+	{
+		uint32_t val;
+	#if WITHLVDSHW
+		// lvds - step 2
+		CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
+		(void) CCU->LVDS_BGR_REG;
+		TCON_LCD0->LCD_DCLK_REG =
+			(0x0Fu << 28) |	// LCD_DCLK_EN
+			(0x07u << 0) |	// LCD_DCLK_DIV - required "7" for LVDS interface
+			0;
+		CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+	#else /* WITHLVDSHW */
+		// dclk
+		// 31..28: TCON0_Dclk_En
+		// 6..0: TCON0_Dclk_Div
+		val = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
+		PRINTF("ltdc divider = %u\n", (unsigned) val);
+		ASSERT(val >= 1 && val <= 127);
+	//	write32((uintptr_t) & tcon->dclk,
+	//			(0x0Fu << 28) | (val << 0));
+		TCON_LCD0->LCD_DCLK_REG = (
+				(0x0Fu << 28) |		// LCD_DCLK_EN
+				(val << 0)			// LCD_DCLK_DIV
+				);
 
-	struct {
-		//int pixel_clock_hz;
-		int h_front_porch;
-		int h_back_porch;
-		int h_sync_len;
-		int v_front_porch;
-		int v_back_porch;
-		int v_sync_len;
-		int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-		int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-		int den_active;		// 1 - negatibe pulses, 0 - positice pulses
-		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
-	} timing;
+	#endif /* WITHLVDSHW */
+	}
+	{
+		//pdat->backlight = NULL;
+		//struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
+		uint32_t val;
 
-	//timing.pixel_clock_hz = display_getdotclock(vdmode);
-	timing.h_front_porch = vdmode->hfp;
-	timing.h_back_porch = vdmode->hbp;
-	timing.h_sync_len =  vdmode->hsync;
-	timing.v_front_porch = vdmode->vfp;
-	timing.v_back_porch = vdmode->vbp;
-	timing.v_sync_len = vdmode->vsync;
-	timing.h_sync_active = vdmode->vsyncneg;
-	timing.v_sync_active = vdmode->hsyncneg;
-	timing.den_active = ! vdmode->deneg;
-	timing.clk_active = 0;
-
-	//pdat->backlight = NULL;
-	//struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
-	int vbp, vtotal;
-	int hbp, htotal;
-	uint32_t val;
-
-	// ctrl
-	val = (timing.v_front_porch + timing.v_back_porch + timing.v_sync_len) / 2;
-//	write32((uintptr_t) & tcon->ctrl,
-//			(1u << 31) |
-//			(0x00u << 24) |
-//			(0x00u << 23) |
-//			((val & 0x1f) << 4) |
-//			(0x00u << 0)
-//			);
-	TCON_LCD0->LCD_CTL_REG = (
-		(1u << 31) |		// LCD_EN
-		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
-		(0x00u << 23) |		// LCD_RB_SWAP
-		((val & 0x1fu) << 4) |	// LCD_START_DLY
-		(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests
-		0
-		);
-
-#if WITHLVDSHW
-    // lvds - step 2
-    CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
-    (void) CCU->LVDS_BGR_REG;
-    TCON_LCD0->LCD_DCLK_REG =
-		(0x0Fu << 28) |	// LCD_DCLK_EN
-		(0x07u << 0) |	// LCD_DCLK_DIV - required "7" for LVDS interface
-		0;
-    CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
-#else /* WITHLVDSHW */
-	// dclk
-	// 31..28: TCON0_Dclk_En
-	// 6..0: TCON0_Dclk_Div
-	val = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
-	PRINTF("ltdc divider = %u\n", (unsigned) val);
-	ASSERT(val >= 1 && val <= 127);
-//	write32((uintptr_t) & tcon->dclk,
-//			(0x0Fu << 28) | (val << 0));
-	TCON_LCD0->LCD_DCLK_REG = (
-			(0x0Fu << 28) |		// LCD_DCLK_EN
-			(val << 0)			// LCD_DCLK_DIV
-			);
-
-#endif /* WITHLVDSHW */
+		// ctrl
+		//val = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
+		val = 0x1F;
+		TCON_LCD0->LCD_CTL_REG =
+			(1u << 31) |		// LCD_EN
+			(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
+			(0x00u << 23) |		// LCD_RB_SWAP
+			((val & 0x1fu) << 4) |	// LCD_START_DLY
+			(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests
+			0;
+	}
 
 	// timing0 (window)
-//	write32((uintptr_t) & tcon->timing0,
-//			((pdat->width - 1) << 16) | ((pdat->height - 1) << 0)
-//			);
 	TCON_LCD0->LCD_BASIC0_REG = (
-		((pdat->width - 1) << 16) | ((pdat->height - 1) << 0)
+		((vdmode->width - 1) << 16) | ((vdmode->height - 1) << 0)
 		);
 
+	int vbp2, vtotal;
+	int hbp2, htotal;
 	// timing1 (horizontal)
-	hbp = timing.h_sync_len + timing.h_back_porch;
-	htotal = pdat->width + timing.h_front_porch + hbp;
-//	write32((uintptr_t) & tcon->timing1,
-//			((htotal - 1) << 16) | ((hbp - 1) << 0)
-//			);
+	hbp2 = vdmode->hsync + vdmode->hbp;
+	htotal = vdmode->width + vdmode->hfp + hbp2;
 	TCON_LCD0->LCD_BASIC1_REG = (
-		((htotal - 1) << 16) | ((hbp - 1) << 0)
+		((htotal - 1) << 16) | ((hbp2 - 1) << 0)
 		);
 
 	// timing2 (vertical)
-	vbp = timing.v_sync_len + timing.v_back_porch;
-	vtotal = pdat->height + timing.v_front_porch + vbp;
-//	write32((uintptr_t) & tcon->timing2,
-//			((vtotal * 2) << 16) | ((vbp - 1) << 0)
-//			);
+	vbp2 = vdmode->vsync + vdmode->vbp;
+	vtotal = vdmode->height + vdmode->vfp + vbp2;
 	TCON_LCD0->LCD_BASIC2_REG = (
-		((vtotal * 2) << 16) | ((vbp - 1) << 0)
+		((vtotal * 2) << 16) | ((vbp2 - 1) << 0)
 		);
 
 	// timing3
-//	write32((uintptr_t) & tcon->timing3,
-//			((timing.h_sync_len - 1) << 16) |
-//			((timing.v_sync_len - 1) << 0)
-//			);
 	TCON_LCD0->LCD_BASIC3_REG = (
-		((timing.h_sync_len - 1) << 16) |
-		((timing.v_sync_len - 1) << 0)
+		((vdmode->hsync - 1) << 16) |
+		((vdmode->vsync - 1) << 0)
 		);
 
-	// Sochip_VE_S3_Datasheet_V1.0.pdf
-	// 7.2.5.19. TCON0_IO_POL_REG
+	// 5.1.6.20 0x0088 LCD IO Polarity Register (Default Value: 0x0000_0000)
 	// io_polarity
-	val = (0x00u << 31) | 	// IO_Output_Sel: 0: nirmal, 1: sync to dclk
-			(1u << 28);	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
+	{
+		uint32_t val;
+		struct {
+			int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+			int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+			int den_active;		// 1 - negatibe pulses, 0 - positice pulses
+			int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
+		} timing;
 
-	if(!timing.h_sync_active)
-		val |= (1u << 25);	// IO1_Inv
-	if(!timing.v_sync_active)
-		val |= (1u << 24);	// IO0_Inv
-	if(!timing.den_active)
-		val |= (1u << 27);	// IO3_Inv
-	if(!timing.clk_active)
-		val |= (1u << 26);	// IO2_Inv
-	//write32((uintptr_t) & tcon->io_polarity, val);
-	TCON_LCD0->LCD_IO_POL_REG = val;
+		timing.h_sync_active = vdmode->vsyncneg;
+		timing.v_sync_active = vdmode->hsyncneg;
+		timing.den_active = ! vdmode->deneg;
+		timing.clk_active = 0;
 
+		val =
+			(0x01u << 31) | 	// IO_Output_Sel: 0: normal, 1: sync to dclk
+			(1u << 28) |	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
+			0;
+
+		if (! timing.h_sync_active)
+			val |= (1u << 25);	// IO1_Inv
+		if (! timing.v_sync_active)
+			val |= (1u << 24);	// IO0_Inv
+		if (! timing.den_active)
+			val |= (1u << 27);	// IO3_Inv
+		if (! timing.clk_active)
+			val |= (1u << 26);	// IO2_Inv
+
+		TCON_LCD0->LCD_IO_POL_REG = val;
+
+	}
 	// io_tristate
 	//write32((uintptr_t) & tcon->io_tristate, 0);
 	TCON_LCD0->LCD_IO_TRI_REG = 0;
