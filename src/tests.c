@@ -10260,6 +10260,9 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 #include "lvgl/examples/lv_examples.h"
 #include <linux/kd.h>
 
+void board_tsc_initialize(void);
+void board_tsc_indev_read(lv_indev_drv_t * drv, lv_indev_data_t * data);
+
 #define DISP_BUF_SIZE	(128 * DIM_X)
 
 pthread_t lv_tick_inc_t;
@@ -10284,10 +10287,6 @@ void lowtests(void)
 
 	close(ttyd);
 
-	const char * argv [] = { "/sbin/modprobe", "gt911.ko", NULL, };
-	linux_run_shell_cmd(3, argv);
-	usleep(500000);
-
 	/*LVGL init*/
 	lv_init();
 
@@ -10311,14 +10310,14 @@ void lowtests(void)
 	disp_drv.ver_res    = DIM_Y;
 	lv_disp_drv_register(& disp_drv);
 
-	/* Linux input device init */
-	evdev_init();
+	i2c_initialize();
+	board_tsc_initialize();
 
 	/* Set up touchpad input device interface */
 	lv_indev_drv_t touch_drv;
 	lv_indev_drv_init(& touch_drv);
 	touch_drv.type = LV_INDEV_TYPE_POINTER;
-	touch_drv.read_cb = (void *) evdev_read;
+	touch_drv.read_cb = board_tsc_indev_read;
 	lv_indev_drv_register(& touch_drv);
 
 	linux_create_thread(& lv_tick_inc_t, thread_lv_tick_inc, 50, 1);
