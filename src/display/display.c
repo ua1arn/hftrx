@@ -1610,13 +1610,15 @@ const videomode_t vdmode0 =
 	  * MODE=1 (SYNC)
 	  * When selected sync mode, de must be grounded.
 	  */
-	.hsync = 140,			/* Horizontal synchronization 1..140 */
-	.hbp = 20,				/* Horizontal back porch  xxx   */
-	.hfp = 160,				/* Horizontal front porch  16..216   */
+	/* from r6dan: thb+thpw=160 is fixed */
+	.hsync = 140,			/* Horizontal synchronization 1..140 (r6dan: 20) */
+	.hbp = 20,				/* Horizontal back porch (r6dan: 140) */
+	.hfp = 160,				/* Horizontal front porch  16..216  (r6dan: 140-160-180)  */
 
-	.vsync = 20,				/* Vertical synchronization 1..20  */
-	.vbp = 3,				/* Vertical back porch  xxx   */
-	.vfp = 12,				/* Vertical front porch  1..127     */
+	/* from r6dan: tvb+tvpv=23 is fixed */
+	.vsync = 20,				/* Vertical synchronization 1..20 (r6dan: 3) */
+	.vbp = 3,				/* Vertical back porch (r6dan: 20) */
+	.vfp = 12,				/* Vertical front porch  1..127  (r6dan: 2-12-22) */
 
 	/* Accumulated parameters for this display */
 	//LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
