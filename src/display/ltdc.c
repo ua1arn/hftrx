@@ -1877,7 +1877,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 //		uint32_t pitch[3];
 //		uint32_t top_laddr[3];
 //		uint32_t bot_laddr[3];
-//	} cfg[4];
+//	} cfg [4];
 //	uint32_t fcolor[4];
 //	uint32_t top_haddr[3];
 //	uint32_t bot_haddr[3];
@@ -1898,7 +1898,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 //		uint32_t bot_laddr;
 //		uint32_t fcolor;
 //		uint32_t dum;
-//	} cfg[4];
+//	} cfg [4];
 //	uint32_t top_haddr;
 //	uint32_t bot_haddr;
 //	uint32_t ovl_size;
@@ -1907,15 +1907,10 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 #define VI_CFG_INDEX 0
 
-static uint32_t read32(uintptr_t a)
-{
-	return * (volatile uint32_t *) a;
-}
-
-static void write32(uintptr_t a, uint32_t v)
-{
-	* (volatile uint32_t *) a = v;
-}
+//static void write32(uintptr_t a, uint32_t v)
+//{
+//	* (volatile uint32_t *) a = v;
+//}
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshift-count-overflow"
@@ -1954,7 +1949,7 @@ static inline void t113_de_set_address_vi(uintptr_t vram)
 {
 	//DE_VI_TypeDef * const vi = (DE_VI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
 
-	DE_VI->cfg[VI_CFG_INDEX].attr =
+	DE_VI->cfg [VI_CFG_INDEX].attr =
 			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 			(1<<15)|	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
@@ -1968,7 +1963,7 @@ static inline void t113_de_set_address_ui(uintptr_t vram, int uich)
 	ASSERT(uich >= 1 && uich <= 3);
 	DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 
-	ui->cfg[UI_CFG_INDEX].attr =
+	ui->cfg [UI_CFG_INDEX].attr =
 			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
 			(255<<24)|	// LAY_GLBALPHA
@@ -2015,38 +2010,24 @@ static inline void t113_de_set_mode(const videomode_t * vdmode)
 		;
 	DE_GLB->GLB_SIZE = ovl_ui_mbsize;
 
-//	for(i = 0; i < 4; i++)
-//	{
-//		void * chan = (void *)(T113_DE_BASE + T113_DE_MUX_CHAN + 0x1000 * i);
-//
-//		// peripherial registers
-//		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
-//	}
-
 	// peripherial registers
 	//memset(DE_BLD, 0, sizeof (struct de_bld_t));
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
-	write32((uintptr_t) & DE_BLD->fcolor_ctl,
-			0
-			);
+	DE_BLD->fcolor_ctl = 0;
 
 	// 5.10.9.5 BLD routing control register
 	// BLD_CH_RTCTL
 	// 0x03020100 - default state
-	write32((uintptr_t) & DE_BLD->route,
+	DE_BLD->route =
 			(0u << 0) |		// pipe 0 from ch 0
 			(1u << 4) |		// pipe 1 from ch 1
 			(2u << 8) |		// pipe 2 from ch 2
 			(3u << 12) |	// pipe 3 from ch 3
-			0
-			);
-	write32((uintptr_t) & DE_BLD->premultiply,
-			0);
-	write32((uintptr_t) & DE_BLD->bkcolor,
-			0*0xff771111
-			);
+			0;
+	DE_BLD->premultiply = 0;
+	DE_BLD->bkcolor = 0 * 0xff771111;
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_CTL
@@ -2074,16 +2055,15 @@ static inline void t113_de_set_mode(const videomode_t * vdmode)
 		//PRINTF("#base; DE_VI %p\n", vi);
 		//CH0 VI ----------------------------------------------------------------------------
 
-		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].attr,
+		vi->cfg [VI_CFG_INDEX].attr =
 				//(1<<0)|		// enable - разрешаем при назначении адреса
 				(ui_vi_format<<8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
-				(1<<15)
-				);
-		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].size, ovl_ui_mbsize);
-		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].coord, 0);
-		write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].pitch[0], uipitch);
-		//write32((uintptr_t)&vi->cfg[VI_CFG_INDEX].top_laddr[0], pdat->vram [0]);                               //VIDEO_MEMORY0
-		write32((uintptr_t)&vi->ovl_size[0], ovl_ui_mbsize);
+				(1<<15);
+		vi->cfg [VI_CFG_INDEX].size = ovl_ui_mbsize;
+		vi->cfg [VI_CFG_INDEX].coord = 0;
+		vi->cfg [VI_CFG_INDEX].pitch[0] = uipitch;
+		//vi->cfg [VI_CFG_INDEX].top_laddr[0] = pdat->vram [0];               //VIDEO_MEMORY0
+		vi->ovl_size[0] = ovl_ui_mbsize;
 	}
 
 	int uich = 1;
@@ -2095,31 +2075,31 @@ static inline void t113_de_set_mode(const videomode_t * vdmode)
 
 		//CH1 UI -----------------------------------------------------------------------------
 
-		ui->cfg[UI_CFG_INDEX].attr =
+		ui->cfg [UI_CFG_INDEX].attr =
 				//(1<<0)|		// enable - разрешаем при назначении адреса
-				(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
-				(0xff<<24)|
-				(1<<16)	|// LAY_PREMUL_CTL
+				(ui_vi_format << 8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+				(0xffu << 24)|
+				(1u << 16)	|// LAY_PREMUL_CTL
 				0;
-		ui->cfg[UI_CFG_INDEX].size = ovl_ui_mbsize;
-		ui->cfg[UI_CFG_INDEX].coord = 0;
-		ui->cfg[UI_CFG_INDEX].pitch = uipitch;
-		//ui->cfg[0].top_laddr = pdat->vram [1];                                  //VIDEO_MEMORY1
+		ui->cfg [UI_CFG_INDEX].size = ovl_ui_mbsize;
+		ui->cfg [UI_CFG_INDEX].coord = 0;
+		ui->cfg [UI_CFG_INDEX].pitch = uipitch;
+		//ui->cfg [0].top_laddr = pdat->vram [1];                                  //VIDEO_MEMORY1
 		ui->ovl_size = ovl_ui_mbsize;
 	}
 
-
-	write32(DE_BASE + T113_DE_MUX_VSU, 0);
-	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
-	write32(DE_BASE + T113_DE_MUX_GSU2, 0);
-	write32(DE_BASE + T113_DE_MUX_GSU3, 0);
-	write32(DE_BASE + T113_DE_MUX_FCE, 0);
-	write32(DE_BASE + T113_DE_MUX_BWS, 0);
-	write32(DE_BASE + T113_DE_MUX_LTI, 0);
-	write32(DE_BASE + T113_DE_MUX_PEAK, 0);
-	write32(DE_BASE + T113_DE_MUX_ASE, 0);
-	write32(DE_BASE + T113_DE_MUX_FCC, 0);
-	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
+	/* Не все блоки могут быть в t113-s3 */
+//	write32(DE_BASE + T113_DE_MUX_VSU, 0);
+//	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
+//	write32(DE_BASE + T113_DE_MUX_GSU2, 0);
+//	write32(DE_BASE + T113_DE_MUX_GSU3, 0);
+//	write32(DE_BASE + T113_DE_MUX_FCE, 0);
+//	write32(DE_BASE + T113_DE_MUX_BWS, 0);
+//	write32(DE_BASE + T113_DE_MUX_LTI, 0);
+//	write32(DE_BASE + T113_DE_MUX_PEAK, 0);
+//	write32(DE_BASE + T113_DE_MUX_ASE, 0);
+//	write32(DE_BASE + T113_DE_MUX_FCC, 0);
+//	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
 
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
@@ -2613,13 +2593,12 @@ void hardware_ltdc_main_set(uintptr_t p1)
 	t113_de_set_address_vi(p1);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
-	write32((uintptr_t) & DE_BLD->fcolor_ctl,
+	DE_BLD->fcolor_ctl =
 			((p1 != 0) << 8)	| // pipe0 enable RED - from VI
 //			((p2 != 0) << 9)	| // pipe1 enable GREEN - from UI1
 //			((p3 != 0) << 10)	| // pipe2 enable - no display (t113-s3 not have hardware)
 //			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
-			0
-			);
+			0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
 	t113_de_enable();
