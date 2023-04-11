@@ -1932,30 +1932,6 @@ static uint32_t ptr_lo32(uintptr_t v)
 }
 #pragma GCC diagnostic pop
 
-struct fb_t113_rgb_pdata_t
-{
-	//uintptr_t virt_de;	// 0: struct de_vi_t, 1..3: struct de_ui_t
-	//uintptr_t virt_tconlcd;
-
-	//char * clk_de;
-	//char * clk_tconlcd;
-	//int rst_de;
-	//int rst_tconlcd;
-	int width;
-	int height;
-	//int pwidth;
-	//int pheight;
-	//int bits_per_pixel;
-	//int bytes_per_pixel;
-	//int pixlen;
-	//int index;
-	//uintptr_t vram [2];
-	//struct region_list_t * nrl, * orl;
-
-//	struct led_t * backlight;
-//	int brightness;
-};
-
 #if LCDMODE_MAIN_ARGB8888
 	static const uint32_t ui_vi_format = 0x00;	//  0x08: ARGB_8888
 	//const uint32_t ui_vi_format = 0x04;	// 0x04: XRGB_8888
@@ -1966,7 +1942,7 @@ struct fb_t113_rgb_pdata_t
 	static const uint32_t ui_vi_format = 0x0A;
 #endif
 
-static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
+static void inline t113_de_enable(void)
 {
 	//struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;
 	DE_GLB->GLB_DBUFFER = 1u;		// 1: register value be ready for update (self-cleaning bit)
@@ -1974,7 +1950,7 @@ static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 		;
 }
 
-static inline void t113_de_set_address_vi(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
+static inline void t113_de_set_address_vi(uintptr_t vram)
 {
 	//DE_VI_TypeDef * const vi = (DE_VI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * 0);
 
@@ -1987,7 +1963,7 @@ static inline void t113_de_set_address_vi(struct fb_t113_rgb_pdata_t * pdat, uin
 	DE_VI->top_haddr [0] = ptr_hi32(vram);
 }
 
-static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram, int uich)
+static inline void t113_de_set_address_ui(uintptr_t vram, int uich)
 {
 	ASSERT(uich >= 1 && uich <= 3);
 	DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
@@ -2002,7 +1978,7 @@ static inline void t113_de_set_address_ui(struct fb_t113_rgb_pdata_t * pdat, uin
 	ui->top_haddr = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
 }
 
-static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
+static inline void t113_de_set_mode(const videomode_t * vdmode)
 {
 	//struct de_clk_t * const clk = (struct de_clk_t *) DE_CLK_BASE;
 	//struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;		// Global control register
@@ -2012,7 +1988,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// 5.10.8.2 OVL_UI memory block size register
 	// 28..16: LAY_HEIGHT
 	// 12..0: LAY_WIDTH
-	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
+	const uint32_t ovl_ui_mbsize = (((vdmode->height - 1) << 16) | (vdmode->width - 1));
 	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
 
 	int i;
@@ -2149,7 +2125,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// Allwinner_DE2.0_Spec_V1.0.pdf
 }
 
-static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
+static void t113_tconlcd_enable(void)
 {
 //	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
 //	uint32_t val;
@@ -2163,7 +2139,7 @@ static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
 		0;
 }
 
-static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
+static void t113_tconlcd_disable(void)
 {
 //	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
 //	uint32_t val;
@@ -2180,8 +2156,9 @@ static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
 	TCON_LCD0->LCD_GINT0_REG = 0;
 }
 
-static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
+static void t113_tconlcd_set_timing(const videomode_t * vdmode)
 {
+	TCON_LCD0->LCD_CTL_REG = 0;
 	// Pixel clock
 	{
 		uint32_t val;
@@ -2210,22 +2187,6 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 
 	#endif /* WITHLVDSHW */
 	}
-	{
-		//pdat->backlight = NULL;
-		//struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
-		uint32_t val;
-
-		// ctrl
-		//val = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
-		val = 0x1F;
-		TCON_LCD0->LCD_CTL_REG =
-			(1u << 31) |		// LCD_EN
-			(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
-			(0x00u << 23) |		// LCD_RB_SWAP
-			((val & 0x1fu) << 4) |	// LCD_START_DLY
-			(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests
-			0;
-	}
 
 	// timing0 (window)
 	TCON_LCD0->LCD_BASIC0_REG = (
@@ -2237,22 +2198,24 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	// timing1 (horizontal)
 	hbp2 = vdmode->hsync + vdmode->hbp;
 	htotal = vdmode->width + vdmode->hfp + hbp2;
-	TCON_LCD0->LCD_BASIC1_REG = (
-		((htotal - 1) << 16) | ((hbp2 - 1) << 0)
-		);
+	TCON_LCD0->LCD_BASIC1_REG =
+		((htotal - 1) << 16) |
+		((hbp2 - 1) << 0) |
+		0;
 
 	// timing2 (vertical)
 	vbp2 = vdmode->vsync + vdmode->vbp;
 	vtotal = vdmode->height + vdmode->vfp + vbp2;
-	TCON_LCD0->LCD_BASIC2_REG = (
-		((vtotal * 2) << 16) | ((vbp2 - 1) << 0)
-		);
+	TCON_LCD0->LCD_BASIC2_REG =
+		((vtotal * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
+		((vbp2 - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
+		0;
 
 	// timing3
-	TCON_LCD0->LCD_BASIC3_REG = (
-		((vdmode->hsync - 1) << 16) |
-		((vdmode->vsync - 1) << 0)
-		);
+	TCON_LCD0->LCD_BASIC3_REG =
+		((vdmode->hsync - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
+		((vdmode->vsync - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
+		0;
 
 	// 5.1.6.20 0x0088 LCD IO Polarity Register (Default Value: 0x0000_0000)
 	// io_polarity
@@ -2296,9 +2259,26 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	TCON_LCD0->LCD_HV_IF_REG = 0;
 	TCON_LCD0->LCD_CPU_IF_REG = 0;
 	TCON_LCD0->LCD_CPU_WR_REG = 0;
+
+	{
+		//pdat->backlight = NULL;
+		//struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
+		uint32_t val;
+
+		// ctrl
+		//val = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
+		val = 0x1F;
+		TCON_LCD0->LCD_CTL_REG =
+			(1u << 31) |		// LCD_EN
+			(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
+			(0x00u << 23) |		// LCD_RB_SWAP
+			((val & 0x1fu) << 4) |	// LCD_START_DLY
+			(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests
+			0;
+	}
 }
 
-static void t113_hw_setup(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
+static void t113_hw_setup(const videomode_t * vdmode)
 {
 
 #if ! WITHLVDSHW
@@ -2347,28 +2327,9 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 
 #endif
 
-
-static struct fb_t113_rgb_pdata_t pdat0;
-
 void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
-	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	uint32_t val;
-
-//	pdat->virt_tconlcd = T113_TCONLCD_BASE;
-//    pdat->virt_de = T113_DE_BASE;
-	//pdat->clk_tconlcd = (void *) allwnrt113_get_video0_x2_freq();
-    //pdat->clk_de = (void *) 396000000;
-	pdat->width = vdmode->width;
-	pdat->height =  vdmode->height;
-	//pdat->pwidth =  216;
-	//pdat->pheight = 135;
-	//pdat->bits_per_pixel = 18; // panel connection type
-	//pdat->bytes_per_pixel = LCDMODE_PIXELSIZE;
-	//pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
-//	pdat->vram [0] = frames [0];
-//	pdat->vram [1] = frames [1];
-//	pdat->index = 0;
 
 	/* Configure DE clock */
     CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((0x07u << 24) | (0x03u << 8) | (0x0Fu << 0))) |
@@ -2411,8 +2372,8 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 
     //PRINTF("display_getdotclock()=%u MHz\n", (unsigned) (display_getdotclock(vdmode) / 1000000));
 
-	t113_tconlcd_enable(pdat);
-	t113_tconlcd_set_timing(pdat, vdmode);
+	t113_tconlcd_enable();
+	t113_tconlcd_set_timing(vdmode);
 
 
 #if WITHLVDSHW
@@ -2448,9 +2409,9 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 
 	//t113_tconlcd_disable(pdat);
 	/* HV - Step 3 Set sequence parameters, sane in lvds */
-	t113_tconlcd_set_timing(pdat, vdmode);
+	t113_tconlcd_set_timing(vdmode);
 	//t113_tconlcd_set_dither(pdat);
-	t113_hw_setup(pdat, vdmode);
+	t113_hw_setup(vdmode);
 	{
 		// Sochip_VE_S3_Datasheet_V1.0.pdf
 		// TCON0_TRM_CTL_REG offset 0x0010
@@ -2581,10 +2542,10 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	}
 #endif /* WITHLVDSHW */
 
-	t113_tconlcd_enable(pdat);
+	t113_tconlcd_enable();
 
-	t113_de_set_mode(pdat);
-	t113_de_enable(pdat);
+	t113_de_set_mode(vdmode);
+	t113_de_enable();
 
 	// Set DE MODE if need
 	ltdc_tfcon_cfg(vdmode);
@@ -2595,10 +2556,9 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 /* Вызывается из display_flush, используется только в тестах */
 void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 {
-	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
-	t113_de_set_address_vi(pdat, p1);
+	t113_de_set_address_vi(p1);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	DE_BLD->fcolor_ctl =
@@ -2608,20 +2568,19 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 //			((p4 != 0) << 11)	| // pipe3 enable - no display (t113-s3 not have hardware)
 			0;
 
-	t113_de_enable(pdat);
+	t113_de_enable();
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
-	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	// Note: the layer priority is layer3>layer2>layer1>layer0
-	t113_de_set_address_vi(pdat, layer0);		// VI
-	t113_de_set_address_ui(pdat, layer1, 1);	// UI1
-	t113_de_set_address_ui(pdat, layer2, 2);	// UI2
-	t113_de_set_address_ui(pdat, layer3, 3);	// UI3
+	t113_de_set_address_vi(layer0);		// VI
+	t113_de_set_address_ui(layer1, 1);	// UI1
+	t113_de_set_address_ui(layer2, 2);	// UI2
+	t113_de_set_address_ui(layer3, 3);	// UI3
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
@@ -2633,7 +2592,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 			0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
-	t113_de_enable(pdat);
+	t113_de_enable();
 }
 
 /* ожидаем начало кадра */
@@ -2649,10 +2608,9 @@ static void hardware_ltdc_vsync(void)
 /* set visible buffer start. Wait VSYNC. */
 void hardware_ltdc_main_set(uintptr_t p1)
 {
-	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
-	t113_de_set_address_vi(pdat, p1);
+	t113_de_set_address_vi(p1);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	write32((uintptr_t) & DE_BLD->fcolor_ctl,
@@ -2664,7 +2622,7 @@ void hardware_ltdc_main_set(uintptr_t p1)
 			);
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
-	t113_de_enable(pdat);
+	t113_de_enable();
 }
 
 /* Palette reload */
