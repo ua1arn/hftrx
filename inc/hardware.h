@@ -1397,6 +1397,16 @@ int  sys_dram_init(void);	// 0 - error
 int blinky_main(void);
 #define GTIM_IRQ_NUM SecurePhysicalTimer_IRQn
 
+struct menudef;
+void
+//NOINLINEAT
+processmessages(
+	uint_fast8_t * kbch,
+	uint_fast8_t * kbready,
+	uint_fast8_t inmenu,
+	const FLASHMEM struct menudef * mp
+	);
+
 typedef struct dram_para_t
 {
 	//normal configuration
