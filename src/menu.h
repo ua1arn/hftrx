@@ -1331,7 +1331,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, 
 	},
 	{
-		QLABEL("CW DELAY"), 7, 2, 0,	ISTEP5,	/* задержка в десятках ms */
+		QLABEL("CW DELAY"), 7, 2, 0,	ISTEP1,	/* задержка в десятках ms */
 		ITEM_VALUE,
 		5, 160,						/* 0.05..1.6 секунды */
 		offsetof(struct nvmap, bkindelay),

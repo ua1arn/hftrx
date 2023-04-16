@@ -4233,7 +4233,7 @@ enum
 
 	#if WITHELKEY
 		static uint_fast8_t bkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
-		static uint_fast8_t bkindelay = 40;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
+		static uint_fast8_t bkindelay = 30;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 	#endif /* WITHELKEY */
 
 #if TXPATH_BIT_GATE_RX && CTLSTYLE_SW2011ALL
