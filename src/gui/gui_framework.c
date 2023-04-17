@@ -18,11 +18,11 @@
 #include "src/display/display.h"
 #include "src/display/fontmaps.h"
 
-#include "src/gui/gui.h"
-#include "src/gui/gui_user.h"
-#include "src/gui/gui_system.h"
-#include "src/gui/gui_structs.h"
-#include "src/gui/gui_settings.h"
+#include "gui.h"
+#include "gui_user.h"
+#include "gui_system.h"
+#include "gui_structs.h"
+#include "gui_settings.h"
 
 #if WITHTOUCHGUI
 

@@ -20,6 +20,8 @@
 #include "codecs.h"
 #include "bootloader.h"
 
+#include "dspdefines.h"
+
 #if WITHFT8
 	#include "ft8.h"
 #endif /* WITHFT8 */

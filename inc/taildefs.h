@@ -2,15 +2,6 @@
 #ifndef TAILDEFS_H_INCLUDED
 #define TAILDEFS_H_INCLUDED
 
-
-#if WITHINTEGRATEDDSP
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-#endif /* WITHINTEGRATEDDSP && CPUSTYLE_ARM */
-
 // В зависимости от типа платы - какие микросхемы применены в синтезаторе
 
 #ifndef HARDWARE_H_INCLUDED

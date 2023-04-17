@@ -9,6 +9,7 @@
 #include "hardware.h"
 #include "board.h"
 #include "audio.h"
+#include "dspdefines.h"
 
 #include "src/display/display.h"
 #include "src/display/fontmaps.h"
@@ -20,15 +21,15 @@
 #include "keyboard.h"
 #include "codecs.h"
 
-#include "src/gui/gui.h"
+#include "gui.h"
 #include "xc7z_inc.h"
 
 #if WITHTOUCHGUI
 
-#include "src/gui/gui_user.h"
-#include "src/gui/gui_system.h"
-#include "src/gui/gui_structs.h"
-#include "src/gui/gui_settings.h"
+#include "gui_user.h"
+#include "gui_system.h"
+#include "gui_structs.h"
+#include "gui_settings.h"
 
 val_step_t enc2step [] = {
 	{ 100, "100 Hz", },

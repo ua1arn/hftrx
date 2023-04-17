@@ -1287,7 +1287,7 @@ extern "C" {
 #define RTC_TYPE_STM32L0xx	55	/* STM32L0xx internal RTC peripherial */
 #define RTC_TYPE_LINUX		56	/* Linux local time */
 
-#define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046
+#define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046 - use TSC_TYPE_XPT2046
 #define TSC_TYPE_STMPE811	61	// Resistive touch screen controller ST STMPE811
 #define TSC_TYPE_GT911		62	// Capacitive touch screen controller Goodix GT911
 #define TSC_TYPE_S3402		63	// Capacitive touch screen controller S3402 (on panel H497TLB01.4)
@@ -2728,6 +2728,10 @@ extern "C" {
 
 #define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
 #define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046)
+	#error Use TSC_TYPE_XPT2046 instead TSC_TYPE_TSC2046
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046) */
 
 #ifdef __cplusplus
 }

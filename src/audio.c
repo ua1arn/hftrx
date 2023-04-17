@@ -19,6 +19,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "dspdefines.h"
+
 #if WITHFT8
 	#include "ft8.h"
 #endif /* WITHFT8 */

@@ -4,7 +4,7 @@
 #include "hardware.h"
 
 #if WITHTOUCHGUI
-#include "src/gui/gui_structs.h"
+#include "gui_structs.h"
 
 #define GUI_MEM_ASSERT(v) do { if (((v) == NULL)) { \
 		PRINTF(PSTR("%s: %d ('%s') - memory allocate failed!\n"), __FILE__, __LINE__, (# v)); \

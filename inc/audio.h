@@ -8,6 +8,9 @@
 #ifndef AUDIO_H_INCLUDED
 #define AUDIO_H_INCLUDED
 
+#include "hardware.h"
+#include "dspdefines.h"
+
 #include <math.h>
 
 #ifdef __cplusplus
@@ -584,79 +587,6 @@ extern "C" {
 #define HSINTERVAL_256MS 12	// endpoint descriptor parameters - для обеспечения 255 ms периода (interrupt endpoint for CDC)
 #define FSINTERVAL_255MS 255
 
-
-//#if WITHINTEGRATEDDSP
-
-	#if (((__ARM_FP & 0x08) && defined(__aarch64__)) || (__riscv_d)) && 0
-
-		typedef double FLOAT_t;
-
-		#define ARM_MORPH(name) name ## _f64
-		#define FLOORF	floor
-		#define LOG10F	local_log10 //log10
-		#define LOGF	log
-		#define POWF	pow
-		#define LOG2F	log2
-//		#define LOGF	local_log
-//		#define POWF	local_pow
-//		#define LOG2F	local_log2
-		#define SINF	sin
-		#define COSF	cos
-		#define ATAN2F	atan2
-		#define ATANF	atan
-		#define TANF	tan
-		//#define EXPF	exp
-		#define EXPF	local_exp
-		#define FABSF	fabs
-		#define SQRTF	sqrt
-		#define FMAXF	fmax
-		#define FMINF	fmin
-		#define LDEXPF	ldexp
-		#define FREXPF	frexp
-		
-		#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMA)
-			#define FMAF	fma
-		#endif /* defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMA) */
-		#define DSP_FLOAT_BITSMANTISSA 54
-
-	#elif 1 //(__ARM_FP & 0x04)
-
-		typedef float FLOAT_t;
-
-		#define ARM_MORPH(name) name ## _f32
-		#define FLOORF	floorf
-		#define LOG10F	local_log10 //log10f
-		#define LOGF	logf
-		#define POWF	powf
-		#define LOG2F	log2f
-//		#define LOGF	local_log
-//		#define POWF	local_pow
-//		#define LOG2F	local_log2
-		#define SINF	sinf
-		#define COSF	cosf
-		#define ATAN2F	atan2f
-		#define ATANF	atanf
-		#define TANF	tanf
-		//#define EXPF	expf
-		#define EXPF	local_exp
-		#define FABSF	fabsf
-		#define SQRTF	sqrtf
-		#define FMAXF	fmaxf
-		#define FMINF	fminf
-		#define LDEXPF	ldexpf
-		#define FREXPF	frexpf
-
-		#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMAF)
-			#define FMAF	fmaf
-		#endif /* defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMAF) */
-		#define DSP_FLOAT_BITSMANTISSA 24
-
-	#else
-
-		#error This CPU not support floating point
-
-	#endif
-
 enum
 {
 	BOARD_WTYPE_BLACKMAN_HARRIS,
@@ -678,30 +608,6 @@ enum
 #define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_NUTTALL	// такой же тип окна испольуется по умолчанию в HDSDR
 
 FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate window function (blackman-harris, hamming, rectangular)
-
-
-/* from "C Language Algorithms for Digital Signal Processing"
-   by Paul M. Embree and Bruce Kimble, Prentice Hall, 1991 */
-
-
-FLOAT_t local_exp(FLOAT_t x);
-FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
-FLOAT_t local_log(FLOAT_t x);
-FLOAT_t local_log10(FLOAT_t X);
-
-/* для возможности работы с функциями сопроцессора NEON - vld1_f32 например */
-#define IV ivqv [0]
-#define QV ivqv [1]
-
-typedef struct
-{
-	FLOAT_t ivqv [2];
-} FLOAT32P_t;
-
-typedef struct
-{
-	int_fast32_t ivqv [2];
-} INT32P_t;
 
 // Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
@@ -1302,30 +1208,6 @@ void subscribeint(deliverylist_t * head, subscribeint32_t * target, void * ctx, 
 extern deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
 extern deliverylist_t speexoutfloat;	// выход speex и фильтра
 extern deliverylist_t afdemodoutfloat;	// выход приемника
-
-#if WITHAFEQUALIZER
-
-enum {
-	AF_EQUALIZER_BANDS = 3,		// число полос
-	AF_EQUALIZER_BASE = 8,		// предел регулировки
-	AF_EQUALIZER_LOW = 400,		// частота нижней полосы
-	AF_EQUALIZER_MID = 1500,	// частота средней полосы
-	AF_EQUALIZER_HIGH = 2700	// частота верхней полосы
-};
-
-int_fast32_t hamradio_get_af_equalizer_base(void);
-int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v);
-void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain);
-void board_set_equalizer_rx(uint_fast8_t n);
-void board_set_equalizer_tx(uint_fast8_t n);
-void board_set_equalizer_rx_gains(const uint_fast8_t * p);
-void board_set_equalizer_tx_gains(const uint_fast8_t * p);
-uint_fast8_t hamradio_get_geqrx(void);
-void hamradio_set_geqrx(uint_fast8_t v);
-
-void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
-
-#endif /* WITHAFEQUALIZER */
 
 
 #if __STDC__ && ! CPUSTYLE_ATMEGA

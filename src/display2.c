@@ -15,6 +15,8 @@
 #include <math.h>
 #include "src/gui/gui.h"
 
+#include "dspdefines.h"
+
 #if WITHALTERNATIVEFONTS
 	#include "display/fonts/ub_fonts.h"
 #endif /* WITHALTERNATIVEFONTS */

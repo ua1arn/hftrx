@@ -7,6 +7,8 @@
 
 #include "hardware.h"
 
+#include "dspdefines.h"
+
 #if WITHINTEGRATEDDSP && ! LINUX_SUBSYSTEM
 
 	#include "BasicMathFunctions/BasicMathFunctions.c"
