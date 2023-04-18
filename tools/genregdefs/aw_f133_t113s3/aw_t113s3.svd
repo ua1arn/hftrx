@@ -35,6 +35,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x008</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -1741,6 +1742,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>DATA</name>
@@ -1763,6 +1765,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <cluster>
     <dim>2</dim>
@@ -1776,6 +1779,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x008</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -1846,6 +1850,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>EINT_CTL</name>
@@ -2067,6 +2072,7 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x010</dimIncrement>
      </cluster>
      <register>
       <name>DATA</name>
@@ -2089,6 +2095,7 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x010</dimIncrement>
      </cluster>
      <cluster>
       <dim>2</dim>
@@ -2102,8 +2109,10 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x008</dimIncrement>
      </cluster>
     </registers>
+    <dimIncrement>0x134</dimIncrement>
    </cluster>
    <cluster>
     <dim>7</dim>
@@ -2121,6 +2130,7 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x010</dimIncrement>
      </cluster>
      <register>
       <name>EINT_CTL</name>
@@ -2150,6 +2160,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
+    <dimIncrement>0x0C4</dimIncrement>
    </cluster>
    <register>
     <name>PIO_POW_MOD_SEL</name>
@@ -5167,6 +5178,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -5874,6 +5886,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x020</dimIncrement>
    </cluster>
    <register>
     <name>FBOOT_INFO_REG0</name>
@@ -7475,6 +7488,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x034</dimIncrement>
    </cluster>
    <cluster>
     <dim>48</dim>
@@ -7488,6 +7502,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x0C0</dimIncrement>
    </cluster>
    <register>
     <name>CAN_VERSION</name>
@@ -7536,6 +7551,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>USB_GCS</name>
@@ -7803,6 +7819,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
+    <dimIncrement>0x070</dimIncrement>
    </cluster>
    <register>
     <name>USB_ISCR</name>
@@ -7917,6 +7934,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
+    <dimIncrement>0x060</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -8135,6 +8153,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
+    <dimIncrement>0x030</dimIncrement>
    </cluster>
    <register>
     <name>route</name>
@@ -8184,6 +8203,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>ck_ctl</name>
@@ -8215,6 +8235,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <cluster>
     <dim>4</dim>
@@ -8228,6 +8249,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>out_ctl</name>
@@ -8288,6 +8310,7 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x00C</dimIncrement>
      </cluster>
      <cluster>
       <dim>3</dim>
@@ -8301,6 +8324,7 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x00C</dimIncrement>
      </cluster>
      <cluster>
       <dim>3</dim>
@@ -8314,8 +8338,10 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x00C</dimIncrement>
      </cluster>
     </registers>
+    <dimIncrement>0x0C0</dimIncrement>
    </cluster>
    <cluster>
     <dim>4</dim>
@@ -8329,6 +8355,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <cluster>
     <dim>3</dim>
@@ -8342,6 +8369,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x00C</dimIncrement>
    </cluster>
    <cluster>
     <dim>3</dim>
@@ -8355,6 +8383,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x00C</dimIncrement>
    </cluster>
    <cluster>
     <dim>2</dim>
@@ -8368,6 +8397,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x008</dimIncrement>
    </cluster>
    <cluster>
     <dim>2</dim>
@@ -8381,6 +8411,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x008</dimIncrement>
    </cluster>
    <cluster>
     <dim>2</dim>
@@ -8394,6 +8425,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x008</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -8470,6 +8502,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
+    <dimIncrement>0x070</dimIncrement>
    </cluster>
    <register>
     <name>top_haddr</name>
@@ -8957,6 +8990,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
    <cluster>
     <dim>64</dim>
@@ -8970,6 +9004,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
    <cluster>
     <dim>64</dim>
@@ -8983,6 +9018,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -9012,6 +9048,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <cluster>
     <dim>4</dim>
@@ -9025,6 +9062,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <cluster>
     <dim>4</dim>
@@ -9038,6 +9076,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>BLD_PREMUL_CTL</name>
@@ -9141,6 +9180,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>BLD_CSC_CTL</name>
@@ -10208,6 +10248,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x018</dimIncrement>
    </cluster>
    <cluster>
     <dim>4</dim>
@@ -10221,6 +10262,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>LCD_3D_FIFO_REG</name>
@@ -10387,6 +10429,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x00C</dimIncrement>
    </cluster>
    <register>
     <name>LCD_CEU_COEF_ADD0_REG</name>
@@ -10427,6 +10470,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x00C</dimIncrement>
    </cluster>
    <register>
     <name>LCD_CPU_TRI0_REG</name>
@@ -10548,6 +10592,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x008</dimIncrement>
    </cluster>
    <register>
     <name>LCD_SYNC_CTL_REG</name>
@@ -10588,6 +10633,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x400</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -10743,6 +10789,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x02C</dimIncrement>
    </cluster>
    <cluster>
     <dim>3</dim>
@@ -10756,6 +10803,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x00C</dimIncrement>
    </cluster>
    <register>
     <name>TV_SAFE_PERIOD_REG</name>
@@ -10807,6 +10855,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
+    <dimIncrement>0x024</dimIncrement>
    </cluster>
    <register>
     <name>TV_DATA_IO_POL0_REG</name>
@@ -12315,6 +12364,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x018</dimIncrement>
    </cluster>
    <cluster>
     <dim>16</dim>
@@ -12328,6 +12378,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>PHYC_REG_280</name>
@@ -12350,6 +12401,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x024</dimIncrement>
    </cluster>
    <register>
     <name>PHYC_REG_334</name>
@@ -12408,6 +12460,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x024</dimIncrement>
    </cluster>
    <register>
     <name>PHYC_REG_3B4</name>
@@ -12602,6 +12655,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>BOOT_MODE</name>
@@ -12624,6 +12678,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x7EC</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -12973,6 +13028,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x004</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -13158,6 +13214,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
+    <dimIncrement>0x2C0</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -13214,6 +13271,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>PCGR</name>
@@ -13236,6 +13294,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>PER</name>
@@ -13258,6 +13317,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>CER</name>
@@ -13336,6 +13396,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
+    <dimIncrement>0x0E0</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -13516,6 +13577,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>EMAC_TX_DMA_STA</name>
@@ -13648,6 +13710,7 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x010</dimIncrement>
      </cluster>
      <cluster>
       <dim>4</dim>
@@ -13661,6 +13724,7 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x010</dimIncrement>
      </cluster>
      <cluster>
       <dim>4</dim>
@@ -13674,6 +13738,7 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x010</dimIncrement>
      </cluster>
      <cluster>
       <dim>4</dim>
@@ -13687,8 +13752,10 @@
        <access>read-write</access>
        <resetValue>0x00000000</resetValue>
       </register>
+      <dimIncrement>0x010</dimIncrement>
      </cluster>
     </registers>
+    <dimIncrement>0x0A8</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -14404,6 +14471,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

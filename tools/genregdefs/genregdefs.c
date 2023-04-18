@@ -778,11 +778,14 @@ unsigned emitregister(int indent, const struct regdfn *const regp,
 	if (!IsListEmpty(&regp->aggregate)) {
 		/* Emit aggregate type */
 		if (regp->fldrept) {
+			unsigned size;
 			emitline(indent, "<cluster>" "\n");
 			emitudecimal(indent + 1, "dim", regp->fldrept);
 			emithex32(indent + 1, "addressOffset", regp->fldoffs);
-			offs += emitregisters(indent + 1, &regp->aggregate, 0)
-					* regp->fldrept;
+			size = emitregisters(indent + 1, &regp->aggregate, 0)
+							* regp->fldrept;
+			emithex03(indent + 1, "dimIncrement", size);
+			offs += size;
 			emitline(indent, "</cluster>" "\n");
 		} else {
 			offs += emitregisters(indent, &regp->aggregate, 0);
@@ -790,14 +793,17 @@ unsigned emitregister(int indent, const struct regdfn *const regp,
 
 	} else if (regp->fldsize != 0) {
 		if (regp->fldrept) {
+			unsigned size;
 			// Array forming
 			//emitline(indent + INDENT, "volatile %s %s [0x%03X];",
 			//		fldtype, regp->fldname, regp->fldrept);
 			emitline(indent, "<cluster>" "\n");
 			emitudecimal(indent + 1, "dim", regp->fldrept);
 			emithex32(indent + 1, "addressOffset", regp->fldoffs);
-			offs += emitregister000(indent + 1, regp, regp->fldoffs)
-					* regp->fldrept;
+			size = emitregister000(indent + 1, regp, regp->fldoffs)
+							* regp->fldrept;
+			emithex03(indent + 1, "dimIncrement", size);
+			offs += size;
 			emitline(indent, "</cluster>" "\n");
 
 		} else {

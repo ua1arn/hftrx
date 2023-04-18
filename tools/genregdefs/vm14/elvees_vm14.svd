@@ -143,6 +143,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <cluster>
     <dim>4</dim>
@@ -156,6 +157,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>ALWAYS_MISC0</name>
@@ -723,6 +725,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>UART_USR</name>
