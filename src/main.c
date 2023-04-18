@@ -17540,6 +17540,27 @@ void display2_menu_valxx(
 
 // --- menu support
 
+
+// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+void display2_keyboard_screen0(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
+
+// Обработка клавиатуры и валкодеров при нахождении в режиме меню
+void display2_keyboard_menu(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
+
 static uint_fast16_t menulooklast(uint_fast16_t menupos)
 {
 	const FLASHMEM struct menudef * mp;

@@ -33,7 +33,9 @@
 	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, REDRSUBSET_ALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, DPAGEEXT, },	// частота для символьных дисплеев
+		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, DPAGEEXT, },
 		{	9, 0,	display2_mode3_a,	REDRM_MODE,	DPAGEEXT, },	// SSB/CW/AM/FM/...
 		{	12, 0,	display_lockstate1,	REDRM_MODE, DPAGEEXT, },
@@ -65,6 +67,7 @@
 		{	17, 3,	display2_agc3,		REDRM_MODE, DPAGEEXT, },
 
 	#if WITHMENU
+		{	0,				0,		display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
@@ -123,6 +126,7 @@
 	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, REDRSUBSET_ALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		// строка 0
 		{	0, 0,	display2_vfomode3,	REDRM_MODE, REDRSUBSET_ALL, },	// SPLIT
 		{	4, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
@@ -146,6 +150,7 @@
 
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
 	#if WITHMENU
+		{	0,				0,		display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
@@ -193,12 +198,14 @@
 	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		{	0, 0,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },	// SPLIT
 		{	4, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },	// частота для символьных дисплеев
 		{	12, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },
 		{	4, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		//{	0, 1, display_pbt,		REDRM_BARS, REDRSUBSET(DPAGE1), },	// PBT +00.00
 	#if WITHMENU
+		{	0,				0,		display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
@@ -247,6 +254,7 @@
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
+		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, REDRSUBSET_ALL, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 	};
 #if WITHMENU
 	void display2_getmultimenu(multimenuwnd_t * p)
@@ -305,6 +313,7 @@
 	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, REDRSUBSET_ALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
 		{	8, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET_ALL, },
 		{	9, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
@@ -359,6 +368,7 @@
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
 		//{	0, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
 	#if WITHMENU
+		{	0,				0,		display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
@@ -406,6 +416,7 @@
 	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, REDRSUBSET_ALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
 		{	8, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET_ALL, },
 		{	9, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
@@ -431,6 +442,7 @@
 		//{	0, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
 
 	#if WITHMENU
+		{	0,				0,		display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра параметра
 		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра

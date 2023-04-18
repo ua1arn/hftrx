@@ -131,6 +131,26 @@ void display2_menu_lblc3(
 	dctx_t * pctx
 	);
 
+void display2_keyboard_menu(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+void display2_keyboard_screen0(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
+// Обработка клавиатуры и валкодеров при нахождении в режиме меню
+void display2_keyboard_menu(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	);
+
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
@@ -157,6 +177,11 @@ void display2_volts(
 // Статическая часть отображения режима работы
 void display2_mode_subset(
 	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
+	);
+
+// Обработка клавиатуры и валкодеров
+void display2_mode_keyboard(
+	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	);
 
 // S-meter, SWR-meter, voltmeter

@@ -84,6 +84,7 @@
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP | PGGUI, },
+		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		//{	10,	0,	display2_rxbwval6alt,	REDRM_MODE, PGALL, },	// RX BW value
 		{	17,	0,	display_txrxstate5alt, REDRM_MODE, PGALL, },
 		{	21,	0,	display2_ant7alt,		REDRM_MODE, PGALL, },
@@ -123,6 +124,7 @@
 		{	42,	15,	display2_vfomode5alt,	REDRM_MODE, PGALL, },	// SPLIT
 		{	26,	20,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	38, 20,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	0,				0,		display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 
 #if 1
 		// на освободившеемя место добавить статусную строку с различной информацией

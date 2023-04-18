@@ -3056,6 +3056,7 @@ enum
 	REDRM_MVAL,		// значение параметра меню
 	REDRM_BUTTONS,  // область отображения экранных кнопок
 	REDRM_INIS,  	// инициализирующие процедцры экранных элементоы
+	REDRM_KEYB,		// обработчик клавиатуры для указанного display layout
 	REDRM_count
 };
 
@@ -6034,6 +6035,15 @@ void display2_mode_subset(
 {
 	//TP();
 	display_walktroughsteps(REDRM_MODE, getsubset(menuset, 0));
+}
+
+// Обработка клавиатуры и валкодеров
+void display2_mode_keyboard(
+	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
+	)
+{
+	//TP();
+	display_walktroughsteps(REDRM_KEYB, getsubset(menuset, 0));
 }
 
 void display2_barmeters_subset(

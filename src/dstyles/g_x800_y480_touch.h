@@ -82,6 +82,7 @@
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
+		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		//{	10,	0,	display2_rxbwval6alt,	REDRM_MODE, PGALL, },	// RX BW value
 		{	17,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	20,	0,	display2_ant5,		REDRM_MODE, PGALL, },
@@ -155,6 +156,8 @@
 		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 		{	0,	DLES,	gui_WM_walktrough,	REDRM_BARS, PGWFL | PGSPE, },
+
+		{	0,				0,		display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
