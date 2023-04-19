@@ -113,7 +113,7 @@ static RAMDTCM elkey_t elkey0;	// ручной ключ
 enum { delay_dit = ELKEY_DISCRETE * 1, delay_words = ELKEY_DISCRETE * 6 };	// между элементами слов - семь интервалов
 static RAMDTCM uint_fast8_t delay_space;	// 10
 static RAMDTCM uint_fast8_t delay_dash;	// 30
-
+static RAMDTCM uint_fast8_t delay_deadtime = 4 * ELKEY_DISCRETE / 10;	// время игнорирования
 
 	
 #if WITHVIBROPLEX
@@ -497,8 +497,6 @@ get_morse(
 
 }
 
-enum { DOTS20IGNORE = 4 * ELKEY_DISCRETE / 10 };	// время игнорирования 0.4 от длительности точки
-
 // проверка состояния манипулятора
 // на нажатость точек
 // в автоматическом режиме
@@ -644,7 +642,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		{
 			// произошло переполнене - конец интервала
 			setnextstate(elkey, ELKEY_STATE_SPACE, delay_space - elkey->vibroplex_derate);
-			elkey->ignore_dit = DOTS20IGNORE;
+			elkey->ignore_dit = delay_deadtime;
 			elkey_vibroplex_next(elkey);
 		}
 		else if (dash_auto(elkey, paddle))
@@ -660,7 +658,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		{
 			// произошло переполнене - конец интервала
 			setnextstate(elkey, ELKEY_STATE_SPACE, delay_space);
-			elkey->ignore_dash = DOTS20IGNORE;
+			elkey->ignore_dash = delay_deadtime;
 		}
 		else if (dit_auto(elkey, paddle))
 		{
@@ -885,10 +883,8 @@ void elkey_set_format(
 #if WITHELKEY
 	system_disableIRQ();
 
-	delay_space = (spaceratio * ELKEY_DISCRETE) / 10;
-	delay_dash = (dashratio * ELKEY_DISCRETE) / 10;
-	//deay_half = (5 * ELKEY_DISCRETE) / 10;	//delay_space * 5 / 10;
-
+	delay_space = spaceratio * ELKEY_DISCRETE / 10;
+	delay_dash = dashratio * ELKEY_DISCRETE / 10;
 
 	system_enableIRQ();
 #endif /* WITHELKEY */
@@ -899,7 +895,8 @@ void elkey_set_format(
 void 
 elkey_set_mode(
 	uint_fast8_t mode,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key, 4 - vibroplex */
-	uint_fast8_t reverse
+	uint_fast8_t reverse,
+	uint_fast8_t deadtime	/* время игнорирования */
 	)
 {
 #if WITHELKEY
@@ -921,6 +918,7 @@ elkey_set_mode(
 		elkey_straight_flags = DASHFLAG;
 		break;
 	}
+	delay_deadtime = deadtime * ELKEY_DISCRETE / 10;	// время игнорирования 0.4 от длительности точки
 	system_enableIRQ();
 #endif /* WITHELKEY */
 }
