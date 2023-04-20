@@ -1320,9 +1320,9 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, 
 	},
 	{
-		QLABEL("DEAD TIM"), 7, 1, 0,	ISTEP1,
+		QLABEL("DEAD TIM"), 7, 1, 0,	ISTEP1,	/* время игнорирования повторного нажатия на манипулятор */
 		ITEM_VALUE,
-		7, 13,
+		0, 13,
 		offsetof(struct nvmap, keydeadtime),
 		nvramoffs0,
 		NULL,
