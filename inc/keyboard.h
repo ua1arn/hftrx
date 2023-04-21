@@ -138,6 +138,8 @@ enum
 	KBD_CODE_PLAYLOUD,	// громче
 	KBD_CODE_PLAYQUITE,	// тише
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
+	KBD_CODE_CWMSG1,
+	KBD_CODE_CWMSG2,
 	//
 	KBD_CODE_MAX		// на этот код назначаются неиспользуемые клавиши.
 };

@@ -11945,6 +11945,18 @@ uint_fast8_t hamradio_get_bkin_value(void)
 	return bkinenable;
 }
 
+static const char * usersend;
+
+void uif_key_sendcw(const char * msg)
+{
+	system_disableIRQ();
+	if (usersend != 0 && * usersend != '\0')
+		usersend = NULL;
+	else
+		usersend = msg;
+	system_enableIRQ();
+}
+
 #else
 
 uint_fast8_t hamradio_get_bkin_value(void)
@@ -16007,6 +16019,10 @@ static char beacon_getnextcw(void)
 		++ beacon_index;
 
 	return c;
+#elif 1
+	if (usersend != NULL && * usersend != '\0')
+		return * usersend ++;
+	return '\0';
 #else /* WITHBEACON */
 	return '\0';
 #endif /* WITHBEACON */
@@ -18719,6 +18735,18 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHELKEY
 	case KBD_CODE_BKIN:
 		uif_key_bkintoggle();
+		return 1;
+#endif /* WITHELKEY */
+#if WITHELKEY
+
+	static const char cwmsg1 [] = "CQ UA1ATD/P RR0106";
+	static const char cwmsg2 [] = "UA1ATD/P";
+
+	case KBD_CODE_CWMSG1:
+		uif_key_sendcw(cwmsg1);
+		return 1;
+	case KBD_CODE_CWMSG2:
+		uif_key_sendcw(cwmsg2);
 		return 1;
 #endif /* WITHELKEY */
 
