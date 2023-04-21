@@ -420,21 +420,30 @@ uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
 	return EHCIx->FRINDEX;
 }
 
-static void EHCI_DorbellAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
+static void EHCI_StopAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 {
+//	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC_ADVANCE;
+//	(void) EHCIx->USBCMD;
+//	while ((EHCIx->USBSTS & EHCI_USBCMD_ASYNC_ADVANCE) != 0)
+//		;
+
+	// Stop ASYNC queue
+	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
+	(void) EHCIx->USBCMD;
+	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
+	{
+		ASSERT((EHCIx->USBSTS & EHCI_USBSTS_HCH) == 0);
+	}
+}
+
+static void EHCI_StartAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
+{
+	// Run ASYNC queue
+	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
+	(void) EHCIx->USBCMD;
 	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
 	{
-		dbg_putchar('.');
-	}
-	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC_ADVANCE) != 0)
-	{
-		dbg_putchar('#');
-	}
-	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC_ADVANCE;
-	(void) EHCIx->USBCMD;
-	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC_ADVANCE) != 0)
-	{
-		//dbg_putchar('!');
+		ASSERT((EHCIx->USBSTS & EHCI_USBSTS_HCH) == 0);
 	}
 }
 
@@ -481,7 +490,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	__HAL_LOCK(hehci);
-	//EHCI_StopAsync(EHCIx);
+	EHCI_StopAsync(EHCIx);
 
 	hc->do_ping = 0U;
 	hc->dev_addr = dev_address;
@@ -523,7 +532,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 	dcache_clean_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
 	dcache_clean_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
-	EHCI_DorbellAsync(EHCIx);
+	EHCI_StartAsync(EHCIx);
 	__HAL_UNLOCK(hehci);
 
 	return status;
@@ -544,7 +553,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
 
 	__HAL_LOCK(hehci);
 	// TODO: use queue head
-	//EHCI_StopAsync(EHCIx);
+	EHCI_StopAsync(EHCIx);
 
 	unsigned i = ch_num;
 
@@ -565,7 +574,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
 	dcache_clean_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
 	dcache_clean_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
-	EHCI_DorbellAsync(EHCIx);
+	EHCI_StartAsync(EHCIx);
 
 	//(void)USB_HC_Halt(hehci->Instance, (uint8_t)ch_num);
 	__HAL_UNLOCK(hehci);
@@ -1748,7 +1757,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 	// TODO: use EHCI_USBCMD_ASYNC_ADVANCE
 
-	//EHCI_StopAsync(EHCIx);
+	EHCI_StopAsync(EHCIx);
 
 	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
 								 ep_type, token, pbuff, length,
@@ -1758,7 +1767,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	dcache_clean_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 	dcache_clean_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
-	EHCI_DorbellAsync(EHCIx);
+	EHCI_StartAsync(EHCIx);
 
 	usb_status =  USBH_Get_USB_Status(hal_status);
 
@@ -1864,7 +1873,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num,
 //		pHandle->hc[ch_num].toggle_out = toggle;
 //	}
 
-	//EHCI_StopAsync(EHCIx);
+	EHCI_StopAsync(EHCIx);
 
 	EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 	const  int isintr = 0;//hc->ep_type == EP_TYPE_INTR;
@@ -1873,7 +1882,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num,
 	dcache_clean_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 	dcache_clean_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
 
-	EHCI_DorbellAsync(EHCIx);
+	EHCI_StartAsync(EHCIx);
 
 	return USBH_OK;
 }
