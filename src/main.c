@@ -4638,7 +4638,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #else /* CTLSTYLE_OLEG4Z_V1 */
 	// 16 bit LTC2208 + LTC6401-20
 	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-	static uint_fast8_t gdigigainmax = 86;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
+	static uint_fast8_t gdigigainmax = 120;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	static uint_fast16_t gfsadcpower10 [2] = 
 	{
 		(- 30) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
@@ -18737,16 +18737,20 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_bkintoggle();
 		return 1;
 #endif /* WITHELKEY */
+
 #if WITHELKEY
 
-	static const char cwmsg1 [] = "CQ UA1ATD/P RR0106";
-	static const char cwmsg2 [] = "UA1ATD/P";
-
 	case KBD_CODE_CWMSG1:
-		uif_key_sendcw(cwmsg1);
+		uif_key_sendcw("CQ UA1ATD/P RR0106");
 		return 1;
 	case KBD_CODE_CWMSG2:
-		uif_key_sendcw(cwmsg2);
+		uif_key_sendcw("UA1ATD/P");
+		return 1;
+	case KBD_CODE_CWMSG3:
+		uif_key_sendcw("CQ DE UA1ATD/P UA1ATD/P RR0106");
+		return 1;
+	case KBD_CODE_CWMSG4:
+		uif_key_sendcw("UA1ATD/P UA1ATD/P");
 		return 1;
 #endif /* WITHELKEY */
 
