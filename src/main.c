@@ -11945,16 +11945,21 @@ uint_fast8_t hamradio_get_bkin_value(void)
 	return bkinenable;
 }
 
+static SPINLOCK_t lockcwmsg = SPINLOCK_INIT;
 static const char * usersend;
 
 void uif_key_sendcw(const char * msg)
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	SPIN_LOCK(& lockcwmsg);
 	if (usersend != 0 && * usersend != '\0')
 		usersend = NULL;
 	else
 		usersend = msg;
-	system_enableIRQ();
+	SPIN_UNLOCK(& lockcwmsg);
+	LowerIrql(oldIrql);
 }
 
 #else
@@ -16020,8 +16025,18 @@ static char beacon_getnextcw(void)
 
 	return c;
 #elif 1
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	SPIN_LOCK(& lockcwmsg);
 	if (usersend != NULL && * usersend != '\0')
+	{
+		SPIN_UNLOCK(& lockcwmsg);
+		LowerIrql(oldIrql);
 		return * usersend ++;
+	}
+	SPIN_UNLOCK(& lockcwmsg);
+	LowerIrql(oldIrql);
 	return '\0';
 #else /* WITHBEACON */
 	return '\0';
