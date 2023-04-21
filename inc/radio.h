@@ -519,7 +519,7 @@ void seq_initialize(void);
 void elkey_initialize(void);
 void board_set_wpm(uint_fast8_t wpm); /* обработка меню - установить скорость  */
 void elkey_set_format(uint_fast8_t dashratio, uint_fast8_t spaceratio); /* обработка меню - установить отношениея тире к точке (в десятках процентов). */
-void elkey_set_mode(uint_fast8_t mode, uint_fast8_t reverse);	/* режим электронного ключа - 0 - asf, 1 - paddle, 2 - keyer */
+void elkey_set_mode(uint_fast8_t mode, uint_fast8_t reverse, uint_fast8_t deadtime);	/* режим электронного ключа - 0 - asf, 1 - paddle, 2 - keyer */
 void elkey_set_slope(uint_fast8_t slope);	// скорость уменьшения длительности точки и паузы - имитация виброплекса
 uint_fast8_t elkey_get_output(void);
 uint_fast8_t elkey_get_ptt(void);
@@ -3296,7 +3296,8 @@ const FLASHMEM char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
 const FLASHMEM char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
 const FLASHMEM char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
-const FLASHMEM char * hamradio_get_rxbw_value_P(void);	// RX bandwidth
+const FLASHMEM char * hamradio_get_rxbw_label3_P(void);	// RX bandwidth - name
+const char * hamradio_get_rxbw_value4_P(void);	// RX bandwidth - value
 const FLASHMEM char * hamradio_get_pre_value_P(void);	// RX preamplifier
 const FLASHMEM char * hamradio_get_att_value_P(void);	// RX attenuator
 const FLASHMEM char * hamradio_get_agc3_value_P(void);	// RX agc time - 3-х буквенные абревиатуры

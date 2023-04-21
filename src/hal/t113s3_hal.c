@@ -9,31 +9,19 @@
 
 #include "hardware.h"
 
-#if CPUSTYLE_T113 || CPUSTYLE_F133
+#if CPUSTYLE_A64
+
+#include "board.h"
+#include "formats.h"
+#include "t113s3_hal.h"
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 #include "board.h"
 #include "formats.h"
 #include "t113s3_hal.h"
 
 //uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
-
-void HAL_Delay(uint32_t Delay)
-{
-	local_delay_ms(Delay);
-
-//  uint32_t tickstart = HAL_GetTick();
-//  uint32_t wait = Delay;
-//
-//  /* Add a freq to guarantee minimum wait */
-//  if (wait < HAL_MAX_DELAY)
-//  {
-//    wait += (uint32_t)(uwTickFreq);
-//  }
-//
-//  while ((HAL_GetTick() - tickstart) < wait)
-//  {
-//  }
-}
 
 __IO uint32_t uwTick;
 
@@ -58,4 +46,4 @@ HAL_StatusTypeDef HAL_Init(void)
 	  return HAL_OK;
 }
 
-#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 */

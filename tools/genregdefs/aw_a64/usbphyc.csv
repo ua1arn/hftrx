@@ -1,0 +1,5 @@
+#type; USBPHYC
+#base; USBPHY0 0x01C1A800
+#base; USBPHY1 0x01C1B800
+#regdef; HCI_ICR; 0x000; HCI Interface Control Register
+#regdef; HSIC_STATUS; 0x004; HSIC status Register This register is valid on HCI1.

@@ -25,8 +25,8 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
@@ -43,6 +43,8 @@
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART1	1
 #define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
+//#define WITHTINYUSB 1
+#define BOARD_TUH_RHPORT 1
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -73,6 +75,7 @@
 	////#define WITHEHCIHW	1	/* USB_EHCI controller */
 	////#define WITHUSBHW_EHCI		USB1_EHCI
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
+	#define WITHOHCIHW_OHCIPORT 0
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -130,12 +133,19 @@
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
+	#define WITHOHCIHW_OHCIPORT 0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
-	#if WITHINTEGRATEDDSP
+	#if WITHUSBMIKET113
+		#define WITHUSBUACIN	1
+		#define UACOUT_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
+		#define UACIN_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
+	#elif WITHINTEGRATEDDSP
 
+		#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+		#define UACIN_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
 		//#define WITHUAC2		1	/* UAC2 support */
 		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
@@ -159,9 +169,11 @@
 	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	
-	#define WITHUSBWCID	1
+	#if WIHSPIDFHW || WIHSPIDFSW
+		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+		#define WITHUSBWCID	1
+	#endif /* WIHSPIDFHW || WIHSPIDFSW */
+
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
@@ -619,37 +631,40 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW
-	// TWI3-SCK PB6 SCL (P3 pin 16) TX3 - wire to pin 7 hseda 24bit vga+audio board
-	// TWI3-SDA PB7 SDA (P3 pin 15) RX3 - wire to pin 6
-	#define TARGET_TWI_TWCK		(1u << 6)		// TWI3-SCK PB6 SCL
-	#define TARGET_TWI_TWCK_PIN		(GPIOB->DATA)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piob_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piob_inputs(v); } while (0)
+#if WITHTWISW || WITHTWIHW
 
-	#define TARGET_TWI_TWD		(1u << 7)		// TWI3-SDA PB7 SDA
-	#define TARGET_TWI_TWD_PIN		(GPIOB->DATA)
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piob_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piob_inputs(v); } while (0)
+	// TWI2-SCK PE12 SCL
+	// TWI2-SDA PE13 SDA
+	#define TARGET_TWI_TWCK		(1u << 12)		// TWI2-SCK PE12 SCL
+	#define TARGET_TWI_TWCK_PIN		(GPIOE->DATA)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
+
+	#define TARGET_TWI_TWD		(1u << 13)		// TWI2-SDA PE13 SDA
+	#define TARGET_TWI_TWD_PIN		(GPIOE->DATA)
+	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piob_inputs(TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);  	/* SDA */ \
+			arm_hardware_pioe_inputs(TARGET_TWI_TWCK); /* TWI2-SCK PE12 SCL */ \
+			arm_hardware_pioe_inputs(TARGET_TWI_TWD);  	/* TWI2-SDA PE13 SDA */ \
 		} while (0) 
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piob_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);	/* SDA */ \
+			arm_hardware_pioe_inputs(TARGET_TWI_TWCK); 	/* TWI2-SCK PE12 SCL */ \
+			arm_hardware_pioe_inputs(TARGET_TWI_TWD);	/* TWI2-SDA PE13 SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piob_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI3-SCK PB6 SCL */ \
-		arm_hardware_piob_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI3-SDA PB7 SDA */ \
+		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF2);	/* TWI2-SCK PE12 SCL */ \
+		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF2);		/* TWI2-SDA PE13 SDA */ \
 		} while (0) 
+	#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
 
 
-#endif // WITHTWISW
+#endif /* WITHTWISW || WITHTWIHW */
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 

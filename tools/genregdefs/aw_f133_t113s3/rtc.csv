@@ -1,3 +1,4 @@
+#comment; Real Time Clock
 #type; RTC
 #base; RTC 0x07090000
 #regdef; LOSC_CTRL_REG; 0x0000; Low Oscillator Control Register

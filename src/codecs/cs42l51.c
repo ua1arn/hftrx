@@ -70,7 +70,7 @@ void cs42l51_setreg(
 }
 
 
-static void cs42l51_initialize_fullduplex(void)
+static void cs42l51_initialize_fullduplex(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
 {
 }
 
@@ -112,7 +112,7 @@ board_getaudiocodecif(void)
 
 	static const char codecname [] = "CS42L51";
 
-	/* Интерфейс цправления кодеком */
+	/* Интерфейс управления кодеком */
 	static const codec1if_t ifc =
 	{
 		cs42l51_clocksneed,

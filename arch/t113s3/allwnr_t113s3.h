@@ -15,144 +15,144 @@
  * @brief Allwinner T128-S3 Interrupt Number Definition, according to the selected device
  *        in @ref Library_configuration_section
  */
-typedef enum IRQn
-{
-	/******  Cortex-A Processor Specific Interrupt Numbers ***************************************************************/
-	/* Software Generated Interrupts                                                                                     */
-	SGI0_IRQn                        =  0,     /*!< Software Generated Interrupt  0                                      */
-	SGI1_IRQn                        =  1,     /*!< Software Generated Interrupt  1                                      */
-	SGI2_IRQn                        =  2,     /*!< Software Generated Interrupt  2                                      */
-	SGI3_IRQn                        =  3,     /*!< Software Generated Interrupt  3                                      */
-	SGI4_IRQn                        =  4,     /*!< Software Generated Interrupt  4                                      */
-	SGI5_IRQn                        =  5,     /*!< Software Generated Interrupt  5                                      */
-	SGI6_IRQn                        =  6,     /*!< Software Generated Interrupt  6                                      */
-	SGI7_IRQn                        =  7,     /*!< Software Generated Interrupt  7                                      */
-	SGI8_IRQn                        =  8,     /*!< Software Generated Interrupt  8                                      */
-	SGI9_IRQn                        =  9,     /*!< Software Generated Interrupt  9                                      */
-	SGI10_IRQn                       = 10,     /*!< Software Generated Interrupt 10                                      */
-	SGI11_IRQn                       = 11,     /*!< Software Generated Interrupt 11                                      */
-	SGI12_IRQn                       = 12,     /*!< Software Generated Interrupt 12                                      */
-	SGI13_IRQn                       = 13,     /*!< Software Generated Interrupt 13                                      */
-	SGI14_IRQn                       = 14,     /*!< Software Generated Interrupt 14                                      */
-	SGI15_IRQn                       = 15,     /*!< Software Generated Interrupt 15                                      */
-	/* Private Peripheral Interrupts                                                                                     */
-	VirtualMaintenanceInterrupt_IRQn = 25,     /*!< Virtual Maintenance Interrupt                                        */
-	HypervisorTimer_IRQn             = 26,     /*!< Hypervisor Timer Interrupt                                           */
-	VirtualTimer_IRQn                = 27,     /*!< Virtual Timer Interrupt                                              */
-	Legacy_nFIQ_IRQn                 = 28,     /*!< Legacy nFIQ Interrupt                                                */
-	SecurePhysicalTimer_IRQn         = 29,     /*!< Secure Physical Timer Interrupt                                      */
-	NonSecurePhysicalTimer_IRQn      = 30,     /*!< Non-Secure Physical Timer Interrupt                                  */
-	Legacy_nIRQ_IRQn                 = 31,     /*!< Legacy nIRQ Interrupt                                                */
-
-	/******  Allwinner T128-S3 specific Interrupt Numbers ****************************************************************************/
-
-	CPUX_MSGBOX_R = (32), /*  Peripherial */
-	UART0_IRQn = (34), /*  Peripherial */
-	UART1_IRQn = (35), /*  Peripherial */
-	UART2_IRQn = (36), /*  Peripherial */
-	UART3_IRQn = (37), /*  Peripherial */
-	UART4_IRQn = (38), /*  Peripherial */
-	UART5_IRQn = (39), /*  Peripherial */
-	TWI0_IRQn = (41), /*  Peripherial */
-	TWI1_IRQn = (42), /*  Peripherial */
-	TWI2_IRQn = (43), /*  Peripherial */
-	TWI3_IRQn = (44), /*  Peripherial */
-	SPI0_IRQn = (47), /*  Peripherial */
-	SPI1_IRQn = (48), /*  Peripherial */
-	PWM_IRQn = (50), /*  Peripherial */
-	CIR_TX_IRQn = (51), /*  Peripherial */
-	LEDC_IRQn = (52), /*  Peripherial */
-	CAN0_IRQ = (53), /*  Peripherial */
-	CAN1_IRQ = (54), /*  Peripherial */
-	OWA_IRQn = (55), /*  Peripherial */
-	DMIC_IRQn = (56), /*  Peripherial */
-	AUDIO_CODEC_IRQn = (57), /*  Peripherial */
-	I2S_PCM1_IRQn = (59), /*  Peripherial */
-	I2S_PCM2_IRQn = (60), /*  Peripherial */
-	USB0_DEVICE_IRQn = (61), /*  Peripherial */
-	USB0_EHCI_IRQn = (62), /*  Peripherial */
-	USB0_OHCI_IRQn = (63), /*  Peripherial */
-	USB1_EHCI_IRQn = (65), /*  Peripherial */
-	USB1_OHCI_IRQn = (66), /*  Peripherial */
-	SMHC0_IRQn = (72), /*  Peripherial */
-	SMHC1_IRQn = (73), /*  Peripherial */
-	SMHC2_IRQn = (74), /*  Peripherial */
-	MSI_IRQn = (75), /*  Peripherial */
-	SMC_IRQn = (76), /*  Peripherial */
-	EMAC_IRQn = (78), /*  Peripherial */
-	TZMA_ERR_IRQn = (79), /*  Peripherial */
-	CCU_FERR_IRQn = (80), /*  Peripherial */
-	AHB_HREADY_TIME_OUT_IRQn = (81), /*  Peripherial */
-	DMAC_NS_IRQn = (82), /*  Peripherial */
-	DMAC_S_IRQn = (83), /*  Peripherial */
-	CE_NS_IRQn = (84), /*  Peripherial */
-	CE_S_IRQn = (85), /*  Peripherial */
-	SPINLOCK_IRQn = (86), /*  Peripherial */
-	HSTIME0_IRQn = (87), /*  Peripherial */
-	HSTIME1_IRQn = (88), /*  Peripherial */
-	GPADC_IRQn = (89), /*  Peripherial */
-	THS_IRQn = (90), /*  Peripherial */
-	TIMER0_IRQn = (91), /*  TIMER->TMR0_CTRL_REG */
-	TIMER1_IRQn = (92), /*  TIMER->TMR1_CTRL_REG */
-	LRADC_IRQn = (93), /*  Peripherial */
-	TPADC_IRQn = (94), /*  Peripherial */
-	WATCHDOG_IRQn = (95), /*  Peripherial */
-	IOMMU_IRQn = (96), /*  Peripherial */
-	VE_IRQn = (98), /*  Peripherial */
-	GPIOB_NS_IRQn = (101), /*  Peripherial */
-	GPIOB_S_IRQn = (102), /*  Peripherial */
-	GPIOC_NS_IRQn = (103), /*  Peripherial */
-	GPIOC_S_IRQn = (104), /*  Peripherial */
-	GPIOD_NS_IRQn = (105), /*  Peripherial */
-	GPIOD_S_IRQn = (106), /*  Peripherial */
-	GPIOE_NS_IRQn = (107), /*  Peripherial */
-	GPIOE_S_IRQn = (108), /*  Peripherial */
-	GPIOF_NS_IRQn = (109), /*  Peripherial */
-	GPIOF_S_IRQn = (110), /*  Peripherial */
-	GPIOG_NS_IRQn = (111), /*  Peripherial */
-	CPUX_MSGBOX_DSP_W = (117), /*  Peripherial */
-	DE_IRQn = (119), /*  Peripherial */
-	DI_IRQn = (120), /*  Peripherial */
-	G2D_IRQn = (121), /*  Peripherial */
-	LCD_IRQn = (122), /*  Peripherial */
-	TV_IRQn = (123), /*  Peripherial */
-	DSI_IRQn = (124), /*  Peripherial */
-	CSI_DMA0_IRQn = (127), /*  Peripherial */
-	CSI_DMA1_IRQn = (128), /*  Peripherial */
-	CSI_PARSER0_IRQn = (132), /*  Peripherial */
-	CSI_TOP_PKT_IRQn = (138), /*  Peripherial */
-	DSP_DFE_IRQn = (152), /*  Peripherial */
-	DSP_PFE_IRQn = (153), /*  Peripherial */
-	DSP_WDG_IRQn = (154), /*  Peripherial */
-	DSP_MBOX_RISCV_W_IRQn = (155), /*  Peripherial */
-	DSP_TZMA_IRQn = (157), /*  Peripherial */
-	/* CPUs related */
-	NMI_IRQn = (168), /*  Peripherial */
-	PPU_IRQn = (169), /*  Peripherial */
-	TWD_IRQn = (170), /*  Peripherial */
-	TIMER_und_0_IRQn = (172), /*  Peripherial */
-	TIMER_und_1_IRQn = (173), /*  Peripherial */
-	TIMER_und_2_IRQn = (174), /*  Peripherial */
-	TIMER_und_3_IRQn = (175), /*  Peripherial */
-	ALARM0_IRQn = (176), /*  Peripherial */
-	IRRX_IRQn = (183), /*  Peripherial */
-	C0_CTI0_IRQn = (192), /*  Peripherial */
-	C0_CTI1_IRQn = (193), /*  Peripherial */
-	C0_COMMTX0_IRQn = (196), /*  Peripherial */
-	C0_COMMTX1_IRQn = (197), /*  Peripherial */
-	C0_COMMRX0_IRQn = (200), /*  Peripherial */
-	C0_COMMRX1_IRQn = (201), /*  Peripherial */
-	C0_PMU0_IRQn = (204), /*  Peripherial */
-	C0_PMU1_IRQn = (205), /*  Peripherial */
-	C0_AXI_ERROR_IRQn = (208), /*  Peripherial */
-	AXI_WR_IRQ_IRQn = (210), /*  Peripherial */
-	AXI_RD_IRQ_IRQn = (211), /*  Peripherial */
-	DBGWRUPREQ_OUT0_IRQn = (212), /*  Peripherial */
-	DBGWRUPREQ_OUT1_IRQn = (213), /*  Peripherial */
-
-	MAX_IRQ_n,
-	Force_IRQn_enum_size             = 1048    /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
-} IRQn_Type;
+//typedef enum IRQn
+//{
+//	/******  Cortex-A Processor Specific Interrupt Numbers ***************************************************************/
+//	/* Software Generated Interrupts                                                                                     */
+//	SGI0_IRQn                        =  0,     /*!< Software Generated Interrupt  0                                      */
+//	SGI1_IRQn                        =  1,     /*!< Software Generated Interrupt  1                                      */
+//	SGI2_IRQn                        =  2,     /*!< Software Generated Interrupt  2                                      */
+//	SGI3_IRQn                        =  3,     /*!< Software Generated Interrupt  3                                      */
+//	SGI4_IRQn                        =  4,     /*!< Software Generated Interrupt  4                                      */
+//	SGI5_IRQn                        =  5,     /*!< Software Generated Interrupt  5                                      */
+//	SGI6_IRQn                        =  6,     /*!< Software Generated Interrupt  6                                      */
+//	SGI7_IRQn                        =  7,     /*!< Software Generated Interrupt  7                                      */
+//	SGI8_IRQn                        =  8,     /*!< Software Generated Interrupt  8                                      */
+//	SGI9_IRQn                        =  9,     /*!< Software Generated Interrupt  9                                      */
+//	SGI10_IRQn                       = 10,     /*!< Software Generated Interrupt 10                                      */
+//	SGI11_IRQn                       = 11,     /*!< Software Generated Interrupt 11                                      */
+//	SGI12_IRQn                       = 12,     /*!< Software Generated Interrupt 12                                      */
+//	SGI13_IRQn                       = 13,     /*!< Software Generated Interrupt 13                                      */
+//	SGI14_IRQn                       = 14,     /*!< Software Generated Interrupt 14                                      */
+//	SGI15_IRQn                       = 15,     /*!< Software Generated Interrupt 15                                      */
+//	/* Private Peripheral Interrupts                                                                                     */
+//	VirtualMaintenanceInterrupt_IRQn = 25,     /*!< Virtual Maintenance Interrupt                                        */
+//	HypervisorTimer_IRQn             = 26,     /*!< Hypervisor Timer Interrupt                                           */
+//	VirtualTimer_IRQn                = 27,     /*!< Virtual Timer Interrupt                                              */
+//	Legacy_nFIQ_IRQn                 = 28,     /*!< Legacy nFIQ Interrupt                                                */
+//	SecurePhysicalTimer_IRQn         = 29,     /*!< Secure Physical Timer Interrupt                                      */
+//	NonSecurePhysicalTimer_IRQn      = 30,     /*!< Non-Secure Physical Timer Interrupt                                  */
+//	Legacy_nIRQ_IRQn                 = 31,     /*!< Legacy nIRQ Interrupt                                                */
+//
+//	/******  Allwinner T128-S3 specific Interrupt Numbers ****************************************************************************/
+//
+//	CPUX_MSGBOX_R = (32), /*  Peripherial */
+//	UART0_IRQn = (34), /*  Peripherial */
+//	UART1_IRQn = (35), /*  Peripherial */
+//	UART2_IRQn = (36), /*  Peripherial */
+//	UART3_IRQn = (37), /*  Peripherial */
+//	UART4_IRQn = (38), /*  Peripherial */
+//	UART5_IRQn = (39), /*  Peripherial */
+//	TWI0_IRQn = (41), /*  Peripherial */
+//	TWI1_IRQn = (42), /*  Peripherial */
+//	TWI2_IRQn = (43), /*  Peripherial */
+//	TWI3_IRQn = (44), /*  Peripherial */
+//	SPI0_IRQn = (47), /*  Peripherial */
+//	SPI1_IRQn = (48), /*  Peripherial */
+//	PWM_IRQn = (50), /*  Peripherial */
+//	CIR_TX_IRQn = (51), /*  Peripherial */
+//	LEDC_IRQn = (52), /*  Peripherial */
+//	CAN0_IRQ = (53), /*  Peripherial */
+//	CAN1_IRQ = (54), /*  Peripherial */
+//	OWA_IRQn = (55), /*  Peripherial */
+//	DMIC_IRQn = (56), /*  Peripherial */
+//	AUDIO_CODEC_IRQn = (57), /*  Peripherial */
+//	I2S_PCM1_IRQn = (59), /*  Peripherial */
+//	I2S_PCM2_IRQn = (60), /*  Peripherial */
+//	USB0_DEVICE_IRQn = (61), /*  Peripherial */
+//	USB0_EHCI_IRQn = (62), /*  Peripherial */
+//	USB0_OHCI_IRQn = (63), /*  Peripherial */
+//	USB1_EHCI_IRQn = (65), /*  Peripherial */
+//	USB1_OHCI_IRQn = (66), /*  Peripherial */
+//	SMHC0_IRQn = (72), /*  Peripherial */
+//	SMHC1_IRQn = (73), /*  Peripherial */
+//	SMHC2_IRQn = (74), /*  Peripherial */
+//	MSI_IRQn = (75), /*  Peripherial */
+//	SMC_IRQn = (76), /*  Peripherial */
+//	EMAC_IRQn = (78), /*  Peripherial */
+//	TZMA_ERR_IRQn = (79), /*  Peripherial */
+//	CCU_FERR_IRQn = (80), /*  Peripherial */
+//	AHB_HREADY_TIME_OUT_IRQn = (81), /*  Peripherial */
+//	DMAC_NS_IRQn = (82), /*  Peripherial */
+//	DMAC_S_IRQn = (83), /*  Peripherial */
+//	CE_NS_IRQn = (84), /*  Peripherial */
+//	CE_S_IRQn = (85), /*  Peripherial */
+//	SPINLOCK_IRQn = (86), /*  Peripherial */
+//	HSTIME0_IRQn = (87), /*  Peripherial */
+//	HSTIME1_IRQn = (88), /*  Peripherial */
+//	GPADC_IRQn = (89), /*  Peripherial */
+//	THS_IRQn = (90), /*  Peripherial */
+//	TIMER0_IRQn = (91), /*  TIMER->TMR0_CTRL_REG */
+//	TIMER1_IRQn = (92), /*  TIMER->TMR1_CTRL_REG */
+//	LRADC_IRQn = (93), /*  Peripherial */
+//	TPADC_IRQn = (94), /*  Peripherial */
+//	WATCHDOG_IRQn = (95), /*  Peripherial */
+//	IOMMU_IRQn = (96), /*  Peripherial */
+//	VE_IRQn = (98), /*  Peripherial */
+//	GPIOB_NS_IRQn = (101), /*  Peripherial */
+//	GPIOB_S_IRQn = (102), /*  Peripherial */
+//	GPIOC_NS_IRQn = (103), /*  Peripherial */
+//	GPIOC_S_IRQn = (104), /*  Peripherial */
+//	GPIOD_NS_IRQn = (105), /*  Peripherial */
+//	GPIOD_S_IRQn = (106), /*  Peripherial */
+//	GPIOE_NS_IRQn = (107), /*  Peripherial */
+//	GPIOE_S_IRQn = (108), /*  Peripherial */
+//	GPIOF_NS_IRQn = (109), /*  Peripherial */
+//	GPIOF_S_IRQn = (110), /*  Peripherial */
+//	GPIOG_NS_IRQn = (111), /*  Peripherial */
+//	CPUX_MSGBOX_DSP_W = (117), /*  Peripherial */
+//	DE_IRQn = (119), /*  Peripherial */
+//	DI_IRQn = (120), /*  Peripherial */
+//	G2D_IRQn = (121), /*  Peripherial */
+//	LCD_IRQn = (122), /*  Peripherial */
+//	TV_IRQn = (123), /*  Peripherial */
+//	DSI_IRQn = (124), /*  Peripherial */
+//	CSI_DMA0_IRQn = (127), /*  Peripherial */
+//	CSI_DMA1_IRQn = (128), /*  Peripherial */
+//	CSI_PARSER0_IRQn = (132), /*  Peripherial */
+//	CSI_TOP_PKT_IRQn = (138), /*  Peripherial */
+//	DSP_DFE_IRQn = (152), /*  Peripherial */
+//	DSP_PFE_IRQn = (153), /*  Peripherial */
+//	DSP_WDG_IRQn = (154), /*  Peripherial */
+//	DSP_MBOX_RISCV_W_IRQn = (155), /*  Peripherial */
+//	DSP_TZMA_IRQn = (157), /*  Peripherial */
+//	/* CPUs related */
+//	NMI_IRQn = (168), /*  Peripherial */
+//	PPU_IRQn = (169), /*  Peripherial */
+//	TWD_IRQn = (170), /*  Peripherial */
+//	TIMER_und_0_IRQn = (172), /*  Peripherial */
+//	TIMER_und_1_IRQn = (173), /*  Peripherial */
+//	TIMER_und_2_IRQn = (174), /*  Peripherial */
+//	TIMER_und_3_IRQn = (175), /*  Peripherial */
+//	ALARM0_IRQn = (176), /*  Peripherial */
+//	IRRX_IRQn = (183), /*  Peripherial */
+//	C0_CTI0_IRQn = (192), /*  Peripherial */
+//	C0_CTI1_IRQn = (193), /*  Peripherial */
+//	C0_COMMTX0_IRQn = (196), /*  Peripherial */
+//	C0_COMMTX1_IRQn = (197), /*  Peripherial */
+//	C0_COMMRX0_IRQn = (200), /*  Peripherial */
+//	C0_COMMRX1_IRQn = (201), /*  Peripherial */
+//	C0_PMU0_IRQn = (204), /*  Peripherial */
+//	C0_PMU1_IRQn = (205), /*  Peripherial */
+//	C0_AXI_ERROR_IRQn = (208), /*  Peripherial */
+//	AXI_WR_IRQ_IRQn = (210), /*  Peripherial */
+//	AXI_RD_IRQ_IRQn = (211), /*  Peripherial */
+//	DBGWRUPREQ_OUT0_IRQn = (212), /*  Peripherial */
+//	DBGWRUPREQ_OUT1_IRQn = (213), /*  Peripherial */
+//
+//	MAX_IRQ_n,
+//	Force_IRQn_enum_size             = 1048    /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
+//} IRQn_Type;
 
 /******************************************************************************/
 /*                         Peripheral memory map                              */
@@ -218,7 +218,7 @@ typedef enum IRQn
 //#define SPI0_BASE    	  	0x04025000
 //#define SPI_DBI_BASE  		0x04026000
 //#define USBOTG0_BASE 	    0x04100000
-#define USBEHCI1_BASE 	    0x04200000
+//#define USBEHCI1_BASE 	    0x04200000
 //#define EMAC_BASE 	     	0x04500000
 
 // VIDEO_OUT_SYS related
@@ -346,17 +346,17 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define MSI_MEMC		((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)			/*!< \brief MSI_MEMC Interface register set access pointer */
 #define SID				((SID_TypeDef *) SID_BASE)						/*!< \brief SID Interface register set access pointer */
 
-#define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
-#define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
+//#define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
+//#define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
 
-#define USBOTG0		((USBOTG_TypeDef *) USBOTG0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
-#define USBEHCI0	((USB_EHCI_CapabilityTypeDef *) (USBOTG0_BASE + 0x1000))	/*!< \brief USBEHCI0 Interface register set access pointer */
-#define USBOHCI0	((struct ohci_registers *) (USBOTG0_BASE + 0x1400))		/*!< \brief USBOHCI0 Interface register set access pointer */
-#define USBPHY0		((USBPHYC_TypeDef *) (USBOTG0_BASE + 0x0400))				/*!< \brief USBPHY0 Interface register set access pointer */
+//#define USBOTG0		((USBOTG_TypeDef *) USBOTG0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
+//#define USBEHCI0	((USB_EHCI_CapabilityTypeDef *) (USBOTG0_BASE + 0x1000))	/*!< \brief USBEHCI0 Interface register set access pointer */
+//#define USBOHCI0	((struct ohci_registers *) (USBOTG0_BASE + 0x1400))		/*!< \brief USBOHCI0 Interface register set access pointer */
+//#define USBPHY0		((USBPHYC_TypeDef *) (USBOTG0_BASE + 0x0400))				/*!< \brief USBPHY0 Interface register set access pointer */
 
-#define USBEHCI1	((USB_EHCI_CapabilityTypeDef *) USBEHCI1_BASE)				/*!< \brief USBEHCI1 Interface register set access pointer */
-#define USBOHCI1	((struct ohci_registers *) (USBEHCI1_BASE + 0x0400))		/*!< \brief USBOHCI1 Interface register set access pointer */
-#define USBPHY1		((USBPHYC_TypeDef *) (USBEHCI1_BASE + 0x0800))				/*!< \brief USBPHY1 Interface register set access pointer */
+//#define USBEHCI1	((USB_EHCI_CapabilityTypeDef *) USBEHCI1_BASE)				/*!< \brief USBEHCI1 Interface register set access pointer */
+//#define USBOHCI1	((struct ohci_registers *) (USBEHCI1_BASE + 0x0400))		/*!< \brief USBOHCI1 Interface register set access pointer */
+//#define USBPHY1		((USBPHYC_TypeDef *) (USBEHCI1_BASE + 0x0800))				/*!< \brief USBPHY1 Interface register set access pointer */
 
 #define SPINLOCK	((SPINLOCK_TypeDef *) SPINLOCK_BASE)				/*!< \brief SPINLOCK Interface register set access pointer */
 #define DMAC		((DMAC_TypeDef *) DMAC_BASE)						/*!< \brief DMAC Interface register set access pointer */

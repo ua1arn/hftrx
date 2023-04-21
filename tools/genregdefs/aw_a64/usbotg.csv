@@ -1,0 +1,51 @@
+#comment; USB OTG Dual-Role Device controller
+#type; USBOTG
+#base; USBOTG0 0x01C19000
+#irq; USBOTG0 103
+#regdef; USB_EPFIFO; 0x0000 16; USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N
+#regdef; USB_GCS; 0x0040; USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register
+#regdef; USB_INTTX 2; 0x0044; USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register
+#regdef; USB_INTRX 2; 0x0046; USB_INTRX USB_EPINTF
+#regdef; USB_INTTXE 2; 0x0048; USB_INTTXE USB_EPINTE USB Endpoint Interrupt Enable Register
+#regdef; USB_INTRXE 2; 0x004a; USB_INTRXE USB_EPINTE
+#regdef; USB_INTUSB; 0x004c; USB_INTUSB USB_BUSINTF USB Bus Interrupt Flag Register
+#regdef; USB_INTUSBE; 0x0050; USB_INTUSBE USB_BUSINTE USB Bus Interrupt Enable Register
+#regdef; USB_FNUM; 0x0054; USB Frame Number Register
+#regdef; USB_TESTC; 0x007c; USB_TESTC USB Test Control Register
+#regdef; USB_TXMAXP 2; 0x0080; USB_TXMAXP USB EP1~5 Tx Control and Status Register
+#regdef; USB_CSR0 2; 0x0082; [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL
+#regdef; USB_RXMAXP 2; 0x0084; USB_RXMAXP USB EP1~5 Rx Control and Status Register
+#regdef; USB_RXCSR 2; 0x0086; USB_RXCSR
+#regdef; USB_RXCOUNT 2; 0x0088; USB_RXCOUNT
+#regdef; USB_RXPKTCNT 2; 0x008a; USB_RXPKTCNT
+#regdef; USB_TXTI 1; 0x008c; USB_TXTI
+#regdef; USB_TXNAKLIMIT 1; 0x008d; USB_TXNAKLIMIT
+#regdef; USB_RXTI 1; 0x008e; USB_RXTI
+#regdef; USB_RXNAKLIMIT 1; 0x008f; USB_RXNAKLIMIT
+#regdef; USB_TXFIFOSZ 2; 0x0090; USB_TXFIFOSZ
+#regdef; USB_TXFIFOADD 2; 0x0092; USB_TXFIFOADD
+#regdef; USB_RXFIFOSZ 2; 0x0094; USB_RXFIFOSZ
+#regdef; USB_RXFIFOADD 2; 0x0096; USB_RXFIFOADD
+#aggreg; FIFO; 0x0098 16; FIFOs [0..5]
+#regdef; USB_TXFADDR 2; 0x000; USB_TXFADDR
+#regdef; USB_TXHADDR 1; 0x002; USB_TXHADDR
+#regdef; USB_TXHUBPORT 1; 0x003; USB_TXHUBPORT
+#regdef; USB_RXFADDR 1; 0x004; USB_RXFADDR
+#regdef; USB_RXHADDR 1; 0x006; USB_RXHADDR
+#regdef; USB_RXHUBPORT 1; 0x007; USB_RXHUBPORT
+#aggregend;
+#regdef; USB_ISCR; 0x400; HCI Interface Register (HCI_Interface)
+#regdef; USBPHY_PHYCTL; 0x404; USBPHY_PHYCTL
+#regdef; HCI_CTRL3; 0x408; HCI Control 3 Register (bist)
+#regdef; PHY_CTRL; 0x410; PHY Control Register (PHY_Control)
+#regdef; PHY_OTGCTL; 0x420; Control PHY routing to EHCI or OTG
+#regdef; PHY_STATUS; 0x424; PHY Status Register
+#regdef; USB_SPDCR; 0x428; HCI SIE Port Disable Control Register
+#regdef; USB_DMA_INTE; 0x0500; USB DMA Interrupt Enable Register
+#regdef; USB_DMA_INTS; 0x0504; USB DMA Interrupt Status Register
+#aggreg; USB_DMA; 0x0540 8; 
+#regdef; CHAN_CFG; 0x00; USB DMA Channel Configuration Register
+#regdef; SDRAM_ADD; 0x04; USB DMA Channel Configuration Register
+#regdef; BC; 0x08; USB DMA Byte Counter Register/USB DMA RESIDUAL Byte Counter Register
+#regdef; dummy 0; 0x10;
+#aggregend;

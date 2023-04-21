@@ -1,0 +1,14 @@
+#type; C0_CPUX_CFG
+#base; C0_CPUX_CFG 0x01700000
+#regdef; C_CTRL_REG0; 0x0000; Cluster Control Register0
+#regdef; C_CTRL_REG1; 0x0004; Cluster Control Register1
+#regdef; CACHE_CFG_REG0; 0x0008; Cache parameters configuration register0
+#regdef; CACHE_CFG_REG1; 0x000C; Cache parameters configuration register1
+#regdef; GENER_CTRL_REG0; 0x0028; General Control Register0
+#regdef; C_CPU_STATUS; 0x0030; Cluster CPU Status Register
+#regdef; L2_STATUS_REG; 0x003C; L2 Status Register
+#regdef; C_RST_CTRL; 0x0080; Cluster Reset Control Register
+#aggreg; RVBARADDR; 0x00A0 4; Reset Vector Base Address Register for core [0..3]
+#regdef; LOW; 0x000; Reset Vector Base Address Registerx_L
+#regdef; HIGH; 0x004; Reset Vector Base Address Registerx_H
+#aggregend;

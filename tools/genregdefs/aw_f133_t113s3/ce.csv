@@ -1,6 +1,9 @@
 #type; CE
 #base; CE_NS 0x03040000
 #base; CE_S 0x03040800
+#irq; CE_NS 84
+#irq; CE_S 85
+#irqrv; CE_NS 68
 #regdef;CE_TDA; 0x0000; Task Descriptor Address
 #regdef;CE_ICR; 0x0008; Interrupt Control Register
 #regdef;CE_ISR; 0x000C; Interrupt Status Register

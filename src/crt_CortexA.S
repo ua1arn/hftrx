@@ -41,16 +41,15 @@
 /*
  * Some defines for the program status registers
  */
-   ARM_MODE_USER  = 0x10      /* Normal User Mode                             */ 
-   ARM_MODE_FIQ   = 0x11      /* FIQ Fast Interrupts Mode                     */
-   ARM_MODE_IRQ   = 0x12      /* IRQ Standard Interrupts Mode                 */
-   ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
-   ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
-   ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
-   ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
-   ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
-   ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
-   ARM_MODE_MASK  = 0x1F
+	ARM_MODE_USER  = 0x10      /* Normal User Mode                             */
+	ARM_MODE_FIQ   = 0x11      /* FIQ Fast Interrupts Mode                     */
+	ARM_MODE_IRQ   = 0x12      /* IRQ Standard Interrupts Mode                 */
+	ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
+	ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
+	ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
+	ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
+	ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
+	ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
    
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
@@ -61,12 +60,13 @@
 	 STACKSIZEFIQ = 64
 	 STACKSIZEHYP = 64
 	 STACKSIZEMON = 64
-	 STACKSIZESYS = 64
-	 STACKSIZEIRQ = 512
+	 STACKSIZESVC = 64
+	 STACKSIZEIRQ = 64
 
-	 STACKSIZESVCBOOT = 2048
+	 STACKSIZESYSBOOT = 512
   
 	.global __Vectors
+	.global __Vectors_nested
 	.section .isr_vector, "ax"
 	.code 32
         
@@ -74,15 +74,16 @@
 /*               Vector table and reset entry                               */
 /* Table B1-3 The vector tables */
 /****************************************************************************/
+	.align 6
 __Vectors:
-   ldr pc, ResetAddr    /* Reset                 */
-   ldr pc, UndefAddr    /* Undefined instruction */
-   ldr pc, SWIAddr      /* Software interrupt    */
-   ldr pc, PAbortAddr   /* Prefetch abort        */
-   ldr pc, DAbortAddr   /* Data abort            */
-   ldr pc, HypAddr 		/* Entry to Hyp mode	 */
-   ldr pc, IRQAddr      /* IRQ interrupt         */
-   ldr pc, FIQAddr      /* FIQ interrupt         */
+	ldr pc, ResetAddr    /* Reset                 */
+	ldr pc, UndefAddr    /* Undefined instruction */
+	ldr pc, SWIAddr      /* Software interrupt    */
+	ldr pc, PAbortAddr   /* Prefetch abort        */
+	ldr pc, DAbortAddr   /* Data abort            */
+	ldr pc, HypAddr 		/* Entry to Hyp mode	 */
+	ldr pc, IRQAddr      /* IRQ interrupt         */
+	ldr pc, FIQAddr      /* FIQ interrupt         */
 
 
 ResetAddr:     .word Reset_Handler
@@ -93,7 +94,28 @@ DAbortAddr:    .word DAbort_Handler
 HypAddr:  	   .word Hyp_Handler
 IRQAddr:       .word IRQ_Handler
 FIQAddr:       .word FIQ_Handler
+	.ltorg
 
+	.align 6
+__Vectors_nested:
+	ldr pc, ResetAddr_n    /* Reset                 */
+	ldr pc, UndefAddr_n    /* Undefined instruction */
+	ldr pc, SWIAddr_n      /* Software interrupt    */
+	ldr pc, PAbortAddr_n   /* Prefetch abort        */
+	ldr pc, DAbortAddr_n   /* Data abort            */
+	ldr pc, HypAddr_n 		/* Entry to Hyp mode	 */
+	ldr pc, IRQAddr_n      /* IRQ interrupt         */
+	ldr pc, FIQAddr_n      /* FIQ interrupt         */
+
+
+ResetAddr_n:     .word Reset_Handler
+UndefAddr_n:     .word Undef_Handler
+SWIAddr_n:       .word SWI_Handler
+PAbortAddr_n:    .word PAbort_Handler
+DAbortAddr_n:    .word DAbort_Handler
+HypAddr_n:  	 .word Hyp_Handler
+IRQAddr_n:       .word IRQ_Handler_n
+FIQAddr_n:       .word FIQ_Handler
    .ltorg
 
 
@@ -109,7 +131,6 @@ FIQAddr:       .word FIQ_Handler
 /****************************************************************************/
 Reset_Handler:
 
-	cpsid 	fi
 	/* Mask interrupts */
     mov   	lr, #0
 	cpsid   if
@@ -154,44 +175,25 @@ gotosleep:
    ldr   sp, =__stack_cpu0_mon_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-   ldr   sp, =__stack_cpu0_hyp_end
+//   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
+//   ldr   sp, =__stack_cpu0_hyp_end
+//  mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
+   ldr   sp, = __stack_cpu0_svc_end
    mov   lr, #0
 
    msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
    ldr   sp, =__stack_cpu0_sys_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
-   ldr   sp, = __stack_cpu0_svc_end
-   mov   lr, #0
+	/* low-level CPU peripherials init */
 
-#if 0
-	/* Clean Data Cache  */
-    /* code is specific to Cortex-A5 processors with 32KB caches */
-    MOV R0, #(0 << 5)
-way_loop:
-    MOV R1, #(0 << 30)
-line_loop:
-    ORR R2,R1,R0
-    MCR p15,0,R2,c7,c10,2
-    ADD R1,R1,#(1 << 30)
-    CMP R1,#0
-    BNE line_loop
-    ADD R0,R0,#(1 << 5)
-    CMP R0,#(1 << 13)
-    BNE way_loop
-#endif
+	ldr   r2, =SystemInit
+	mov   lr, pc
+	bx    r2     /* And jump... */
 
-/* low-level CPU peripherials init */
-
-   ldr   r2, =SystemInit
-   mov   lr, pc
-   bx    r2     /* And jump... */
-
-   msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
-   ldr   sp, =__stack
-    mov   lr, #0
+	ldr   sp, =__stack	/* New stack may be placed in DDR RAM */
 
 /*  Firstly it copies data from read only memory to RAM. There are two schemes
  *  to copy. One can copy more than one sections. Another can only copy
@@ -199,7 +201,6 @@ line_loop:
  *  data to implement than the latter.
  *  Macro __STARTUP_COPY_MULTIPLE is used to choose between two schemes.  */
 
-#if 1 //def __STARTUP_COPY_MULTIPLE
 /*  Multiple sections scheme.
  *
  *  Between symbol address __copy_table_start__ and __copy_table_end__,
@@ -231,27 +232,6 @@ line_loop:
 	b	.L_loop0
 
 .L_loop0_done:
-#else
-/*  Single section scheme.
- *
- *  The ranges of copy from/to are specified by following symbols
- *    __etext: LMA of start of the section to copy from. Usually end of text
- *    __data_start__: VMA of start of the section to copy to
- *    __data_end__: VMA of end of the section to copy to
- *
- *  All addresses must be aligned to 4 bytes boundary.
- */
-	ldr	r1, =__etext
-	ldr	r2, =__data_start__
-	ldr	r3, =__data_end__
-
-.L_loop1:
-	cmp	r2, r3
-	ittt	lt
-	ldrlt	r0, [r1], #4
-	strlt	r0, [r2], #4
-	blt	.L_loop1
-#endif /*__STARTUP_COPY_MULTIPLE */
 
 /*  This part of work usually is done in C library startup code. Otherwise,
  *  define this macro to enable it in this startup.
@@ -263,7 +243,6 @@ line_loop:
  *  Define macro __STARTUP_CLEAR_BSS_MULTIPLE to choose the former.
  *  Otherwise efine macro __STARTUP_CLEAR_BSS to choose the later.
  */
-#if 1 //def __STARTUP_CLEAR_BSS_MULTIPLE
 /*  Multiple sections scheme.
  *
  *  Between symbol address __copy_table_start__ and __copy_table_end__,
@@ -291,34 +270,10 @@ line_loop:
 	adds	r3, #8
 	b	.L_loop2
 .L_loop2_done:
-#elif defined (__STARTUP_CLEAR_BSS)
-/*  Single BSS section scheme.
- *
- *  The BSS section is specified by following symbols
- *    __bss_start__: start of the BSS section.
- *    __bss_end__: end of the BSS section.
- *
- *  Both addresses must be aligned to 4 bytes boundary.
- */
-	ldr	r1, =__bss_start__
-	ldr	r2, =__bss_end__
-	ldr r0, =0
-	//movs	r0, 0
-.L_loop3:
-	cmp	r1, r2
-	itt	lt
-	strlt	r0, [r1], #4
-	blt	.L_loop3
-#endif /* __STARTUP_CLEAR_BSS_MULTIPLE || __STARTUP_CLEAR_BSS */
 
-#ifndef __NO_SYSTEM_INIT
-	/* bl	SystemInit */
-#endif
-
-#ifndef __START
-#define __START _start
-#endif
-	bl	__START
+	ldr   r2, =_start
+	mov   lr, pc
+	bx    r2     /* And jump... */
                        
 ExitFunction:
    nop
@@ -337,108 +292,81 @@ ExitFunction:
 /****************************************************************************/
 	.section .text
    .code 32
-
-	.align 4, 0
-
 /* ================================================================== */
 /* Entry point for the IRQ handler */
 /* ================================================================== */
+/*
+	• 13 general-purpose 32-bit registers, R0 to R12.
+	• Three 32-bit registers with special uses, SP, LR, and PC, that can be described as R13 to R15.
 
+	Figure B1-2 ARM core registers, PSRs, and ELR_hyp, showing register banking
+*/
+/*
+	11.66 MSR (general-purpose register to PSR)
+	fields mnemonics:
+	c	control field mask byte, PSR[7:0] (privileged software execution)
+	x	extension field mask byte, PSR[15:8] (privileged software execution)
+	s	status field mask byte, PSR[23:16] (privileged software execution)
+	f	flags field mask byte, PSR[31:24] (privileged software execution).
+*/
+ 	.align 	4, 0
     .func   IRQ_Handler
+IRQ_Handler_n:
 IRQ_Handler:
 
-	/* save interrupt context on the stack to allow nesting */
-	SUB		LR, LR, #4
-	STMFD   SP!, {LR}
-	MRS     LR, SPSR
-	STMFD   SP!, {R0, LR}
+	sub     lr, lr, #4                  // Pre-adjust LR
+	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack
+	//cps		#ARM_MODE_SYS                   // Change to SYS mode
+	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
+	push    {r0-r3, r4-r11, r12, lr}            // Save APCS corruptible registers
 
-    MSR     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-	STMFD   SP!, {R1-R12, LR}
-	// Although FPSID is a read-only register, software
-	// can perform a VMSR to the FPSID to force Floating-point serialization,
-	VMRS	LR, FPSID
-	VMSR	FPSID, LR
-	PUSH	{LR}
+	mov     r3, sp                      // Move SP into R3
+	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
+	sub     sp, sp, r3                  // Adjust stack
+	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
 
-	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
-	// save VFP/Neon FPSCR register
-	VMRS	R2, FPSCR	// R2 used below
-	PUSH	{R2}
-	// save VFP/Neon FPEXC register
-	VMRS	R0, FPEXC
-    ldr     LR, =(1 << 31) //check FPEXC.EX
-	TST		R0, LR		// check FPEXC.EX
-	//BEQ skipPUSH
-	VMRSNE	LR, FPINST
-	PUSHNE	{LR}
-	VMRSNE	LR, FPINST2
-	PUSHNE	{LR}
-//skipPUSH:
-   // Initialise FPSCR to a known state
-    // Loaded in to R2
-	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	PUSH {R0}	// FPEXC
-	AND     R2,R2,R3
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
 
-//#if __ARM_NEON == 1
-	// save neon data registers
-	VPUSH.F32	{D16-D31}
-//#endif /* __ARM_NEON == 1 */
- 	VMSR    FPSCR,R2	// Initialise FPSCR to a known state
+	VMRS	R1, FPSCR
+	VMRS	R2, FPEXC
+ 	PUSH 	{R1, R2}
 
-	LDR		R2, =IRQ_Handler_GIC
-	// save vfp/neon data registers
 	VPUSH.F32	{D0-D15}
+	VPUSH.F32	{D16-D31}
 
+    // Initialise FPSCR to a known state
+    // FPSCR Loaded in to R1
+ 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+	AND     R1,R1,R3
+	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
+
+ 	LDR		R0, =IRQ_Handler_GIC
 	MOV		LR, PC
-	BX		R2     /* and jump... */
+	BX		R0     /* and jump... */
 
-	// Although FPSID is a read-only register, software
-	// can perform a VMSR to the FPSID to force Floating-point serialization,
-	VMRS	LR, FPSID
-	VMSR	FPSID, LR
-	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
-	VMRS	LR, FPSCR
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
 
-	// restore vfp data registers
-	VPOP.F32   {D0-D15}
-	// restore VFP/Neon FPEXC register
-    ldr     LR, =(1 << 31) //check FPEXC.EX
-//#if __ARM_NEON == 1
-	// restore vfp/neon data registers
 	VPOP.F32	{D16-D31}
-//#endif /* __ARM_NEON == 1 */
+ 	VPOP.F32	{D0-D15}
+	POP 	{R1, R2}
+	VMSR	FPSCR, R1
+	VMSR	FPEXC, R2
 
-	POP 	{R0}	// FPEXC
-	TST		R0, LR	// check FPEXC.EX
-	//BEQ skipPOP
-	POPNE 	{LR}
-	VMSRNE	FPINST2, LR
-	POPNE 	{LR}
-	VMSRNE 	FPINST, LR
-//skipPOP:
-	// restore VFP/Neon FPEXC register
-	VMSR	FPEXC, R0
-	// restore VFP/Neon FPSCR register
-	POP		{LR}
-	VMSR	FPSCR, LR
-	POP		{LR}
-	VMSR	FPSID, LR
+	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
+	add     sp, sp, r3                  // Unadjust stack
 
-	LDMIA   SP!, {R1-R12, LR}
-    MSR     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
 
-	LDMIA   SP!, {R0, LR}
-	MSR     SPSR_cxsf, LR
-	ISB
-	LDMIA   SP!, {PC}^
+	//clrex                               // Clear exclusive monitor for interrupted code
+	pop     {r0-r3, r4-r11, r12, lr}            // Restore stacked APCS registers
+	rfefd   sp!                         // Return from IRQ handler - RFEIA instruction
 
 	.endfunc
-   .ltorg
+   	.ltorg
 
 	.section .noinit
-	.align 8
+	.align 3
 
 	.space	STACKSIZEUND
 __stack_cpu0_und_end = .
@@ -446,13 +374,14 @@ __stack_cpu0_und_end = .
 __stack_cpu0_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu0_fiq_end = .
-	.space	STACKSIZESVCBOOT
-__stack_cpu0_svc_end = .
 	.space	STACKSIZEMON
 __stack_cpu0_mon_end = .
-	.space	STACKSIZEHYP
-__stack_cpu0_hyp_end = .
-	.space	STACKSIZESYS
+//	.space	STACKSIZEHYP
+//__stack_cpu0_hyp_end = .
+	.space	STACKSIZESVC
+__stack_cpu0_svc_end = .
+
+	.space	STACKSIZESYSBOOT
 __stack_cpu0_sys_end = .
 
 	.space	STACKSIZEIRQ

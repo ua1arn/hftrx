@@ -16,6 +16,7 @@
 
 
 static int targetRV = 0;
+static int targetAARCH64 = 0;
 
 /* boot_file_head copied from mksunxiboot */
 /* boot head definition from sun4i boot code */
@@ -83,7 +84,7 @@ static void process(
 	binsize = ftell(infile);
 	silesizealigned = alignup(binsize + execoffset, 16 * 1024);
 
-	//fprintf(stderr, "Okay open files... %ld %ld\n", binsize, silesizealigned);
+	fprintf(stderr, "Okay open file: original:%ld aligned:%ld\n", binsize, silesizealigned);
 
 	{
 		long i;
@@ -107,6 +108,8 @@ static void process(
 	/* Fill head */
 	if (targetRV)
 		place_uint32_le(& head.jump_instruction, 0x6F | (execoffset << 20));	/// Jump to $ + 0x0100
+	else if (targetAARCH64)
+		place_uint32_le(& head.jump_instruction, 0x14000000 | ((execoffset / 4)));	/// Jump to $ + 0x0100
 	else
 		place_uint32_le(& head.jump_instruction, 0xEA000000 | (execoffset - 8) / 4);	/// Jump to $ + 0x0100
 
@@ -153,6 +156,13 @@ int main(int argc, char* argv[])
 		++ argv;
 		-- argc;
 		targetRV = 1;
+		//fprintf(stderr, "RISC-V header generate\n");
+	}
+	if (argc > 1 && strcmp(argv [1], "-aarch64") == 0)
+	{
+		++ argv;
+		-- argc;
+		targetAARCH64 = 1;
 		//fprintf(stderr, "RISC-V header generate\n");
 	}
 	if (argc < 3)

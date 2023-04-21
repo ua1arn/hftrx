@@ -1,3 +1,4 @@
+#comment; Spin Lock module
 #type; SPINLOCK
 #regdef; SPINLOCK_SYSTATUS_REG; 0x0000; Spinlock System Status Register
 #regdef; SPINLOCK_STATUS_REG; 0x0010; Spinlock Status Register

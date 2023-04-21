@@ -1,0 +1,41 @@
+#type; DRAMC
+#base; DRAMC 0x01c01000
+#regdef; ccr;		0x00; controller configuration register
+#regdef; dcr;		0x04; dram configuration register
+#regdef; iocr;		0x08; i/o configuration register
+#regdef; csr;		0x0c; controller status register
+#regdef; drr;		0x10; dram refresh register
+#regdef; tpr0;		0x14; dram timing parameters register 0
+#regdef; tpr1;		0x18; dram timing parameters register 1
+#regdef; tpr2;		0x1c; dram timing parameters register 2
+#regdef; gdllcr;	0x20; global dll control register
+#regdef; rslr0;		0x4c; rank system latency register
+#regdef; rslr1;		0x50; rank system latency register
+#regdef; rdgr0;		0x5c; rank dqs gating register
+#regdef; rdgr1;		0x60; rank dqs gating register
+#regdef; odtcr;		0x98; odt configuration register
+#regdef; dtr0;		0x9c; data training register 0
+#regdef; dtr1;		0xa0; data training register 1
+#regdef; dtar;		0xa4; data training address register
+#regdef; zqcr0;		0xa8; zq control register 0
+#regdef; zqcr1;		0xac; zq control register 1
+#regdef; zqsr;		0xb0; zq status register
+#regdef; idcr;		0xb4; initializaton delay configure reg
+#regdef; mr;		0x1f0; mode register
+#regdef; emr;		0x1f4; extended mode register
+#regdef; emr2;		0x1f8 extended mode register
+#regdef; emr3;		0x1fc; extended mode register
+#regdef; dllctr;	0x200; dll control register
+#regdef; dllcr;		0x204 5; dll control register 0(byte 0)..4(byte 4)
+#regdef; dqtr0;		0x218; dq timing register
+#regdef; dqtr1;		0x21c; dq timing register
+#regdef; dqtr2;		0x220; dq timing register
+#regdef; dqtr3;		0x224; dq timing register
+#regdef; dqstr;		0x228; dqs timing register
+#regdef; dqsbtr;	0x22c; dqsb timing register
+#regdef; mcr;		0x230; mode configure register
+#regdef; ppwrsctl;	0x23c; pad power save control
+#regdef; apr;		0x240; arbiter period register
+#regdef; pldtr;		0x244; priority level data threshold reg
+#regdef; hpcr;		0x250 32; host port configure register
+#regdef; csel;		0x2e0; controller select register

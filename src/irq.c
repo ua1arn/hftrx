@@ -914,6 +914,244 @@ arm_cpu_CMx_initialize_NVIC(void)
 
 #endif /* (__CORTEX_M != 0) */
 
+
+
+#if 0
+
+typedef struct irqlog_tag
+{
+	IRQn_ID_t irqn;
+	int pos;	// in/out
+} irqlog_t;
+enum { IRQLOG_LEN = 1024 };
+
+static volatile unsigned irqlog_enabled;
+static volatile unsigned irqlog_count;
+static irqlog_t irqlogs [IRQLOG_LEN];
+
+void irqlog_start(void)
+{
+	irqlog_enabled = 0;
+	irqlog_count = 0;
+	irqlog_enabled = 1;
+}
+
+void irqlog_stop(void)
+{
+	irqlog_enabled = 0;
+}
+
+void irqlog_record(int pos, IRQn_ID_t irqn)
+{
+	if (irqlog_enabled == 0)
+		return;
+
+	if (irqlog_count >= IRQLOG_LEN)
+		return;
+
+	irqlog_t * const p = & irqlogs [irqlog_count ++];
+	p->pos = pos;
+	p->irqn = irqn;
+}
+
+void irqlog_print(void)
+{
+	PRINTF("irqlog_count=%u\n", irqlog_count);
+	unsigned i;
+	for (i = 0; i < irqlog_count; ++ i)
+	{
+		const irqlog_t * const p = & irqlogs [i];
+		PRINTF(" pos=%d, IRQ=%3u (0x%03X)\n", (int) p->pos, (unsigned) p->irqn, (unsigned) p->irqn);
+	}
+}
+#endif
+
+//#define INTC_LEVEL_SENSITIVE    (0)     /* Level sense  */
+//#define INTC_EDGE_TRIGGER       (1)     /* Edge trigger */
+
+/* ==== Interrupt detection ==== */
+
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+#if 0//CPUSTYLE_R7S721
+
+/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
+void IRQ_Handler_GIC(void)
+{
+	//dbg_putchar('/');
+	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
+	//irqlog_record(1, irqn);
+	//static const char hex [16] = "0123456789ABCDEF";
+	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
+	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
+	//dbg_putchar(hex [(irqn >> 0) & 0x0F]);
+	////ASSERT(irqn != 0x3FC && irqn != 0x3FD);
+	IRQHandler_t const handler = IRQ_GetHandler(irqn);
+
+#if 0
+	switch (irqn)
+	{
+	//case PL310ERR_IRQn:
+	//	break;
+	default:
+		PRINTF(PSTR("IRQ_Handler_GICv1: irq=%d, handler=%p\n"), (int) irqn, (void *) handler);
+		break;
+	}
+#endif
+	if (handler != NULL)
+	{
+#if WITHNESTEDINTERRUPTS
+
+		__enable_irq();						/* modify I bit in CPSR */
+		(* handler)();	    /* Call interrupt handler */
+		__disable_irq();					/* modify I bit in CPSR */
+
+#else /* WITHNESTEDINTERRUPTS */
+
+		(* handler)();	    /* Call interrupt handler */
+
+#endif /* WITHNESTEDINTERRUPTS */
+	}
+	//irqlog_record(2, irqn);
+	//dbg_putchar('\\');
+	IRQ_EndOfInterrupt(irqn);
+}
+
+#elif 1//CPUSTYLE_R7S721
+
+#define INT_ID_MASK		0x3ffuL
+/* Interrupt IDs reported by the HPPIR and IAR registers */
+#define PENDING_G1_INTID	1022uL
+/* Constant to indicate a spurious interrupt in all GIC versions */
+#define GIC_SPURIOUS_INTERRUPT		1023uL
+/*
+ * Constant passed to the interrupt handler in the 'id' field when the
+ * framework does not read the gic registers to determine the interrupt id.
+ */
+#define INTR_ID_UNAVAILABLE		0xFFFFFFFFuL
+
+/*******************************************************************************
+ * This function returns the id of the highest priority pending interrupt at
+ * the GIC cpu interface. GIC_SPURIOUS_INTERRUPT is returned when there is no
+ * interrupt pending.
+ ******************************************************************************/
+//unsigned int gicv2_get_pending_interrupt_id(void)
+//{
+//	unsigned int id;
+//
+//	id = GIC_GetHighPendingIRQ() & INT_ID_MASK;	// HIPPR
+//
+//	/*
+//	 * Find out which non-secure interrupt it is under the assumption that
+//	 * the GICC_CTLR.AckCtl bit is 0.
+//	 */
+//	if (id == PENDING_G1_INTID)
+//		id = GICInterface->AHPPIR & INT_ID_MASK;
+//
+//	return id;
+//}
+
+//static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
+
+/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
+// See ARM IHI 0048B.b document
+void IRQ_Handler_GIC(void)
+{
+	// per-cpu:
+	// GICC_AHPPIR
+	// GICC_HPPIR
+	// GICC_IAR
+	// GICC_EOIR
+	// GICC_BPR
+	// GICC_PMR
+	//
+	// global:
+	// GICD_IPRIORITYR
+
+//	const unsigned int gicver = (GIC_GetInterfaceId() >> 16) & 0x0F;
+
+
+//	switch (gicver)
+//	{
+//	case 0x01:	// GICv1
+//		/* Dummy read to avoid GIC 390 errata 801120 */
+//		(void) GICInterface->HPPIR;
+//		break;
+//	default:
+//		break;
+//	}
+	//(void) GICInterface->HPPIR;
+	(void) GIC_GetHighPendingIRQ();
+
+	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+
+	const IRQn_ID_t int_id = gicc_iar & 0x3ffuL;
+
+	// IHI0048B_b_gic_architecture_specification.pdf
+	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
+
+	if (int_id == 1022)
+	{
+	}
+
+	if (int_id >= 1020)
+	{
+		//dbg_putchar('2');
+		//SPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority(0, GIC_GetPriority(0));
+		//SPIN_UNLOCK(& giclock);
+
+	}
+	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
+	{
+		const IRQHandler_t f = IRQ_GetHandler(int_id);
+
+	#if WITHNESTEDINTERRUPTS
+
+		if (f != (IRQHandler_t) 0)
+		{
+//			static const char hex [16] = "0123456789ABCDEF";
+//			if ((int_id >> 8) & 0x0F)
+//				dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+			__enable_irq();						/* modify I bit in CPSR */
+			(* f)();	    /* Call interrupt handler */
+			__disable_irq();					/* modify I bit in CPSR */
+			//dbg_putchar('_');
+		}
+
+	#else /* WITHNESTEDINTERRUPTS */
+
+		if (f != (IRQHandler_t) 0)
+		{
+			(* f)();	    /* Call interrupt handler */
+		}
+
+	#endif /* WITHNESTEDINTERRUPTS */
+
+		//dbg_putchar('5');
+	}
+	else
+	{
+		//dbg_putchar('3');
+		//SPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority(0, GIC_GetPriority(0));
+		//SPIN_UNLOCK(& giclock);
+	}
+	//dbg_putchar(' ');
+
+	GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
+	//GICInterface->EOIR = gicc_iar;
+}
+#endif
+
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
+
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 /*
 	ARM IHI 0048B.b (IHI0048B_b_gic_architecture_specification.pdf).
@@ -1546,6 +1784,10 @@ void IRQ15_Handler(void)
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
 void spin_lock(spinlock_t * __restrict p, const char * file, int line)
 {
+#if (__CORTEX_A == 53U)
+	if ((__get_CPUECTLR() & CPUECTLR_SMPEN_Msk) == 0)
+		return;
+#endif /* (__CORTEX_A == 53U)  */
 #if WITHDEBUG
 	unsigned v = 0xFFFFFFFF;
 #endif /* WITHDEBUG */
@@ -1620,66 +1862,64 @@ void spin_unlock(spinlock_t * __restrict p)
 	return;
 }
 
-#if 0
-
-
-#define LOCK(p) do { lock_impl((p), __LINE__, __FILE__, # p); } while (0)
-#define UNLOCK(p) do { unlock_impl((p), __LINE__, __FILE__, # p); } while (0)
-
-
-typedef struct
-{
-	volatile uint8_t lock;
-	int line;
-	const char * file;
-} LOCK_T;
-
-static void lock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
-{
-
-	uint8_t r;
-	do
-		r = __LDREXB(& p->lock);
-	while (__STREXB(1, & p->lock));
-	if (r != 0)
-	{
-		PRINTF(PSTR("LOCK @%p %s already locked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
-		for (;;)
-			;
-	}
-	else
-	{
-		p->file = file;
-		p->line = line;
-	}
-
-}
-
-static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
-{
-
-	uint8_t r;
-	do
-		r = __LDREXB(& p->lock);
-	while (__STREXB(0, & p->lock));
-	if (r == 0)
-	{
-		PRINTF(PSTR("LOCK @%p %s already unlocked at %d in %s by %d in %s\n"), p, variable, line, file, p->line, p->file);
-		for (;;)
-			;
-	}
-	else
-	{
-		p->file = file;
-		p->line = line;
-	}
-
-}
-#endif
 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
 #if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+
+void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
+{
+//#if WITHISBOOTLOADER
+//	PRINTF("boot: old=%02X new=%02X (%s/%d)\n", (unsigned) GetCurrentIrql(), (unsigned) newIRQL, file, line);
+//#else
+//	PRINTF("app: old=%02X new=%02X (%s/%d)\n", (unsigned) GetCurrentIrql(), (unsigned) newIRQL, file, line);
+//#endif
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	ASSERT(GIC_GetInterfacePriorityMask() >= newIRQL);	/* Не понижаем приоритет */
+	* oldIrql = GIC_GetInterfacePriorityMask();
+	GIC_SetInterfacePriorityMask(newIRQL);
+#elif (__CORTEX_M != 0)
+	ASSERT(__get_BASEPRI() >= newIRQL);	/* Не понижаем приоритет */
+	* oldIrql = __get_BASEPRI();
+	__set_BASEPRI(newIRQL);
+#elif CPUSTYLE_RISCV
+	ASSERT(PLIC->PLIC_MTH_REG <= newIRQL);	/* Не понижаем приоритет */
+	//oldIrql * = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
+	* oldIrql = PLIC->PLIC_MTH_REG;
+	PLIC->PLIC_MTH_REG = newIRQL;
+#else
+	#warning Implement RiseIrql
+#endif
+}
+
+void LowerIrql(IRQL_t newIRQL)
+{
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	GIC_SetInterfacePriorityMask(newIRQL);
+#elif (__CORTEX_M != 0)
+	__set_BASEPRI(newIRQL);
+#elif CPUSTYLE_RISCV
+	//	csr_write_mie(irql);
+	PLIC->PLIC_MTH_REG = newIRQL;
+#else
+	#warning Implement LowerIrql
+#endif
+}
+
+IRQL_t GetCurrentIrql(void)
+{
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	return GIC_GetInterfacePriorityMask();
+#elif (__CORTEX_M != 0)
+	return __get_BASEPRI();
+#elif CPUSTYLE_RISCV
+	//oldIrql * = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
+	return PLIC->PLIC_MTH_REG;
+#else
+	#warning Implement GetCurrentIrql
+	return 0;
+#endif
+}
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
@@ -1706,7 +1946,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 
 	return 0;
 
-#elif (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#elif (__CORTEX_A != 0)
 	// Cortex-A computers
 
 	return __get_MPIDR() & 0x03;
@@ -1791,7 +2031,8 @@ static void arm_hardware_populate_initialize(void)
 	SPIN_UNLOCK(& gicdistrib_lock);
 	dcache_clean_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
-	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, BOARD_SGI_PRIO, 0x01u << 1);
+	/* Установить на все процессоры кроме текущего */
+	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, BOARD_SGI_PRIO, 0x0F & ~ (1u << arm_hardware_cpuid()));
 }
 
 /* вызывается на дополнительном ядре */
@@ -1845,7 +2086,10 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	uint_fast32_t cfg = GIC_GetConfiguration(int_id) & 0x03u;
 	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
 	cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
+#if ! CPUSTYLE_R7S721
+	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
+#endif /* ! CPUSTYLE_R7S721 */
 
 	SPIN_UNLOCK(& gicdistrib_lock);
 
@@ -1880,13 +2124,16 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	//csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
 	//csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
 	//csr_set_bits_mie(MIE_MTI_BIT_MASK);	// MTI - timer
-
-#else /* CPUSTYLE_STM32MP1 */
+#elif (__CORTEX_M != 0)
 
 	NVIC_DisableIRQ(int_id);
 	NVIC_SetVector(int_id, (uintptr_t) handler);
 	NVIC_SetPriority(int_id, priority);
 	NVIC_EnableIRQ(int_id);
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	#warning arm_hardware_set_handler should be implemented
 
 #endif /* CPUSTYLE_STM32MP1 */
 }
@@ -1921,9 +2168,16 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 		const unsigned mask = (1u << d.rem);
 		PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
 
-#else /* CPUSTYLE_STM32MP1 */
+#elif CPUSTYLE_CA53
+	#warning implement for CPUSTYLE_CA53
+
+#elif (__CORTEX_M != 0)
 
 	NVIC_DisableIRQ(int_id);
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	#warning Implement arm_hardware_disable_handler
 
 #endif /* CPUSTYLE_STM32MP1 */
 }
@@ -1965,7 +2219,7 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#if (__CORTEX_A != 0)
 
 	cpump_initialize();
 

@@ -64,7 +64,7 @@
 //#define USB_FUNCTION_VENDOR_ID	0x1D6B	// Linux Foundation
 
 // From STMicroelectronics Communication Device Class driver (CDC) INF FILE:
-//#define USB_FUNCTION_VENDOR_ID	0x0483	// STM
+//#define USB_FUNCTION_VENDOR_ID	0x0483	// ST (SGS Thomson Microelectronics)
 //#define USB_FUNCTION_PRODUCT_ID	0x5740
 //#define USB_FUNCTION_RELEASE_NO	0x0200	// bcdDevice
 
@@ -256,9 +256,12 @@ static const struct stringtempl strtemplates [] =
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 };
 
+static uint_fast8_t usb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
+
 static unsigned usbd_get_productId(void)
 {
-	//return 0x5732;	// Need for FT8CN
+	if (usb_ft8cn != 0)
+		return 0x5732;	// Need for FT8CN
 	unsigned v = 0;
 
 #if WITHISBOOTLOADER && 0
@@ -297,6 +300,15 @@ static unsigned usbd_get_productId(void)
 
 	return v;
 }
+
+
+static unsigned usbd_get_vendorId(void)
+{
+	if (usb_ft8cn != 0)
+		return 0x0483;	// Need for FT8CN - ST (SGS Thomson Microelectronics)
+	return USB_FUNCTION_VENDOR_ID;
+}
+
 // usb_20.pdf:
 // 5.9 High-Speed, High Bandwidth Endpoints
 // 9.6.6 Endpoint
@@ -1212,7 +1224,7 @@ static unsigned UAC2_FormatTypeDesc_OUT48(uint_fast8_t fill, uint8_t * buff, uns
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (UACOUT_AUDIO48_SAMPLEBITS + 7) / 8;	//bSubslotSize
+		* buff ++ = UACOUT_AUDIO48_SAMPLEBYTES;	//bSubslotSize
 		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
 		/* 6 byte*/
 	}
@@ -1283,7 +1295,7 @@ static unsigned UAC2_FormatTypeDescroptor_IN48(uint_fast8_t fill, uint8_t * buff
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (UACIN_AUDIO48_SAMPLEBITS + 7) / 8;	//bSubslotSize
+		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES;	//bSubslotSize
 		* buff ++ = UACIN_AUDIO48_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
 		/* 6 byte*/
 	}
@@ -1452,7 +1464,7 @@ static unsigned UAC1_FormatTypeDesc_IN48(uint_fast8_t fill, uint8_t * buff, unsi
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACIN_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
-		* buff ++ = (UACIN_AUDIO48_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
+		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = UACIN_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
@@ -2321,8 +2333,8 @@ static unsigned UAC1_FormatTypeDesc_OUT48(uint_fast8_t fill, uint8_t * buff, uns
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = UACOUT_AUDIO48_FMT_CHANNELS;		/* bNrChannels */
-		* buff ++ = (UACOUT_AUDIO48_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
+		* buff ++ = UACOUT_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
+		* buff ++ = UACOUT_AUDIO48_SAMPLEBYTES; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
@@ -4258,6 +4270,7 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	ialt += 1;
 #endif /* WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE */
 
+	ASSERT(ialt != 0);	/* If no DFU valid options enabled. */
 	return n;
 }
 
@@ -4638,7 +4651,8 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
-	const uint_fast32_t iProductId = usbd_get_productId();
+	const uint_fast16_t iVendorId = usbd_get_vendorId();
+	const uint_fast16_t iProductId = usbd_get_productId();
 	if (buff != NULL)
 	{
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
@@ -4650,8 +4664,8 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 		* buff ++ = 2;		                            /*  5:bDeviceSubClass - Common Class Sub Class */
 		* buff ++ = 1;									/*  6:bDeviceProtocol - Interface Association Descriptor protocol */
 		* buff ++ = USB_OTG_MAX_EP0_SIZE;               /*  7:bMaxPacketSize0 (for DCP), For 3x: 09H is the only valid value in this field when operating at Gen X speed. */
-		* buff ++ = LO_BYTE(USB_FUNCTION_VENDOR_ID);    /*  8:idVendor_lo */
-		* buff ++ = HI_BYTE(USB_FUNCTION_VENDOR_ID);	/*  9:idVendor_hi */
+		* buff ++ = LO_BYTE(iVendorId);    				/*  8:idVendor_lo */
+		* buff ++ = HI_BYTE(iVendorId);					/*  9:idVendor_hi */
 		* buff ++ = LO_BYTE(iProductId);   				/* 10:idProduct_lo */
 		* buff ++ = HI_BYTE(iProductId);				/* 11:idProduct_hi */
 		* buff ++ = LO_BYTE(USB_FUNCTION_RELEASE_NO);   /* 12:bcdDevice_lo */
@@ -5492,5 +5506,23 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	//PRINTF(PSTR("usbd_descriptors_initialize: total length=%u at %p\n"), score, alldescbuffer);
 }
 
+/* совместимость VID/PID для работы с программой FT8CN */
+void board_set_usb_ft8cn(uint_fast8_t v)
+{
+	uint_fast8_t n = v != 0;
+	if (usb_ft8cn != n)
+	{
+		usb_ft8cn = n;
+		system_disableIRQ();
+	#if WITHUSBDEV_HSDESC
+		usbd_descriptors_initialize(1);
+
+	#else /* WITHUSBDEV_HSDESC */
+		usbd_descriptors_initialize(0);
+
+	#endif /* WITHUSBDEV_HSDESC */
+		system_enableIRQ();
+	}
+}
 
 #endif /* WITHUSBHW */

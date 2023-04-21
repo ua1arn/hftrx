@@ -228,7 +228,7 @@
 	#define I2S2HW_MASTER_INITIALIZE() do { \
 		} while (0)
 
-	#define I2S3HW_SLAVE_INITIALIZE() do { \
+	#define I2S3HW_SLAVE_RX_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2(1U << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
 		arm_hardware_piob_altfn2(1U << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
 		arm_hardware_piob_altfn2(1U << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \

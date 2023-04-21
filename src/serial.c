@@ -59,7 +59,7 @@ static void serial_set_handler(uint_fast16_t int_id, void (* handler)(void))
 }
 
 
-#if WITHNMEA
+#if WITHNMEA && ! LINUX_SUBSYSTEM
 
 static void UART0_IRQHandler(void);
 
@@ -133,9 +133,10 @@ int nmea_putc(int c)
 	qput(c);
 	global_enableIRQ();
 #else /* WITHNMEAOVERREALTIME */
-    system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
     qput(c);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 #endif /* WITHNMEAOVERREALTIME */
 	return c;
 }
@@ -175,7 +176,7 @@ void nmea_parser_init(void)
 #endif /* WITHUART1HW */
 }
 
-#endif /* WITHNMEA */
+#endif /* WITHNMEA && ! LINUX_SUBSYSTEM */
 
 #if CPUSTYLE_R7S721
 
@@ -372,34 +373,28 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 		}
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 	{
 	#if WITHUART1HW
 		const uint_fast32_t ier = UART0->DLH_IER;
 		const uint_fast32_t usr = UART0->UART_USR;
-		if ((UART0->UART_USR & (0x1uL << 3)) == 0)	// RX FIFO Not Empty
+		if ((UART0->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 
-		if (ier & (0x01uL << 0))	// ERBFI Enable Received Data Available Interrupt
+		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 		{
-			if (usr & (0x1uL << 3))	// RX FIFO Not Empty
+			if (usr & (1u << 3))	// RX FIFO Not Empty
 				HARDWARE_UART1_ONRXCHAR(UART0->DATA);
 		}
-		if (ier & (0x01uL << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 		{
-			if (usr & (0x1uL << 1))	// TX FIFO Not Full
+			if (usr & (1u << 1))	// TX FIFO Not Full
 				HARDWARE_UART1_ONTXCHAR(UART0);
 		}
 	#endif /* WITHUART1HW */
 	}
 
-	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
-	{
-	#if WITHUART2HW
-		TP();
-	#endif /* WITHUART2HW */
-	}
 
 	static RAMFUNC_NONILINE void UART2_IRQHandler(void)
 	{
@@ -573,13 +568,12 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 //		 UART0->CR &= ~ SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
 //
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART0->DLH_IER |= (0x01uL << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART0->DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	else
-		 UART0->DLH_IER &= ~ (0x01uL << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
-
+		 UART0->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -702,12 +696,12 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 	UART0->IER = mask;
 	UART0->IDR = ~ mask;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART0->DLH_IER |= (0x01uL << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART0->DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 	else
-		 UART0->DLH_IER &= ~ (0x01uL << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART0->DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -777,7 +771,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 	UART0->FIFO = c;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	UART0->DATA = c;
 
@@ -887,9 +881,9 @@ hardware_uart1_getchar(char * cp)
 		return 0;
 	* cp = UART0->FIFO;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	if ((UART0->UART_USR & (0x1uL << 3)) == 0)	// RX FIFO Not Empty
+	if ((UART0->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
 	* cp = UART0->DATA;
 
@@ -994,9 +988,9 @@ hardware_uart1_putchar(uint_fast8_t c)
 		return 0;
 	UART0->FIFO = c;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	if ((UART0->UART_USR & (0x1uL << 1)) == 0)	// TX FIFO Not Full
+	if ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
 	UART0->DATA = c;
 
@@ -1012,7 +1006,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		PMC->PMC_PCER0 = 1UL << ID_USART0;
+		PMC->PMC_PCER0 = 1u << ID_USART0;
 
 		HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 		
@@ -1037,7 +1031,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	#elif HARDWARE_ARM_USEUSART1
 		// enable the clock of USART1
-		PMC->PMC_PCER0 = 1UL << ID_USART1;
+		PMC->PMC_PCER0 = 1u << ID_USART1;
 
 		HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -1062,7 +1056,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	#elif HARDWARE_ARM_USEUART0
 		// enable the clock of UART0
-		PMC->PMC_PCER0 = 1UL << ID_UART0;
+		PMC->PMC_PCER0 = 1u << ID_UART0;
 
 		HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 		
@@ -1088,7 +1082,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	#elif HARDWARE_ARM_USEUART1
 		// enable the clock of UART1
-		PMC->PMC_PCER0 = 1UL << ID_UART1;
+		PMC->PMC_PCER0 = 1u << ID_UART1;
 
 		HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -1167,7 +1161,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US0;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US0;
 
 		HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -1193,7 +1187,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	#elif HARDWARE_ARM_USEUSART1
 		// enable the clock of USART1
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US1;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US1;
 
 		HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -1287,8 +1281,8 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 
 	tms320_hardware_piob_periph(
-			(1UL << (35 % 32)) |	// SCITXDA
-			(1UL << (36 % 32)),	// SCIRXDA
+			(1u << (35 % 32)) |	// SCITXDA
+			(1u << (36 % 32)),	// SCIRXDA
 			1	// mux = 1
 			);
 
@@ -1377,7 +1371,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_XC7Z
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (0x01uL << 20);	// APER_CLK_CTRL.UART0_CPU_1XCLKACT
+	SCLR->APER_CLK_CTRL |= (1u << 20);	// APER_CLK_CTRL.UART0_CPU_1XCLKACT
 	//EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
 	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
 			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR_VALUE << 8) | // DIVISOR
@@ -1407,14 +1401,47 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
+#elif CPUSTYLE_A64
+
+	const unsigned ix = 0;
+
+	/* Open the clock gate for uart0 */
+	CCU->BUS_CLK_GATING_REG3 |= (1u << (ix + 16));	// UART0_GATING
+
+	/* De-assert uart0 reset */
+	CCU-> BUS_SOFT_RST_REG4 |= (1u << (ix + 16));	//  UART0_RST
+
+	/* Config uart0 to 115200-8-1-0 */
+	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
+
+	UART0->DLH_IER = 0;
+	UART0->IIR_FCR = 0xf7;
+	UART0->UART_MCR = 0x00;
+
+	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
+	UART0->DATA = divisor & 0xff;
+	UART0->DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
+	//
+	UART0->UART_LCR &= ~ 0x1f;
+	UART0->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
+
+	HARDWARE_UART1_INITIALIZE();
+
+	if (debug == 0)
+	{
+	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
+	}
+
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 0;
 
 	/* Open the clock gate for uart0 */
-	CCU->UART_BGR_REG |= (0x01uL << (ix + 0));
+	CCU->UART_BGR_REG |= (1u << (ix + 0));
 
-	/* Deassert uart0 reset */
-	CCU->UART_BGR_REG |= (0x01uL << (ix + 16));
+	/* De-assert uart0 reset */
+	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
@@ -1621,6 +1648,28 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_XC7Z
 
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
+	{
+#if WITHUART2HW
+	const uint_fast32_t ier = UART1->DLH_IER;
+	const uint_fast32_t usr = UART1->UART_USR;
+	if ((UART1->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
+
+	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
+	{
+		if (usr & (1u << 3))	// RX FIFO Not Empty
+			HARDWARE_UART2_ONRXCHAR(UART1->DATA);
+	}
+	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		if (usr & (1u << 1))	// TX FIFO Not Full
+			HARDWARE_UART2_ONTXCHAR(UART1);
+	}
+#endif /* WITHUART2HW */
+}
+
 
 #else
 
@@ -1760,6 +1809,15 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
+	#warning Undefined CPUSTYLE_XC7Z
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if (state)
+		 UART1->DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	else
+		 UART1->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1876,6 +1934,13 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 	UART1->IER = mask;
 	UART1->IDR = ~ mask;
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if (state)
+		 UART1->DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+	else
+		 UART1->DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -1941,6 +2006,10 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 #elif CPUSTYLE_XC7Z
 
 	UART1->FIFO = c;
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	UART1->DATA = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2058,6 +2127,12 @@ hardware_uart2_getchar(char * cp)
 		return 0;
 	* cp = UART1->FIFO;
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if ((UART1->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
+		return 0;
+	* cp = UART1->DATA;
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -2167,6 +2242,12 @@ hardware_uart2_putchar(uint_fast8_t c)
 		return 0;
 	UART1->FIFO = c;
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if ((UART1->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		return 0;
+	UART1->DATA = c;
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -2179,7 +2260,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		PMC->PMC_PCER0 = 1UL << ID_USART0;
+		PMC->PMC_PCER0 = 1u << ID_USART0;
 
 		HARDWARE_UART2_INITIALIZE();	/* Присоединить периферию к выводам */
 		
@@ -2204,7 +2285,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 	#elif HARDWARE_ARM_USEUSART1
 		// enable the clock of USART1
-		PMC->PMC_PCER0 = 1UL << ID_USART1;
+		PMC->PMC_PCER0 = 1u << ID_USART1;
 
 		HARDWARE_UART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -2230,7 +2311,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART0
 
 		// enable the clock of UART0
-		PMC->PMC_PCER0 = 1UL << ID_UART0;
+		PMC->PMC_PCER0 = 1u << ID_UART0;
 
 		HARDWARE_UART2_INITIALIZE();	/* Присоединить периферию к выводам */
 		
@@ -2257,7 +2338,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART1
 
 		// enable the clock of UART1
-		PMC->PMC_PCER0 = 1UL << ID_UART1;
+		PMC->PMC_PCER0 = 1u << ID_UART1;
 
 		HARDWARE_UART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -2350,7 +2431,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US0;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US0;
 
 		HARDWARE_UART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -2370,13 +2451,13 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 		{
 			enum { irqID = AT91C_ID_US0 };
 			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
+			AT91C_BASE_AIC->AIC_IDCR = (1u << irqID);
 			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US0Handler;
 			AT91C_BASE_AIC->AIC_SMR [irqID] = 
 				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
 				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
+			AT91C_BASE_AIC->AIC_ICCR = (1u << irqID);		// clear pending interrupt
+			AT91C_BASE_AIC->AIC_IECR = (1u << irqID);	// enable inerrupt
 
 		}
 
@@ -2385,7 +2466,7 @@ void hardware_uart2_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUSART1
 
 		// enable the clock of USART2
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US1;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US1;
 
 		HARDWARE_UART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -2467,8 +2548,8 @@ xxxx!;
 
 
 	tms320_hardware_piob_periph(
-			(1UL << (35 % 32)) |	// SCITXDA
-			(1UL << (36 % 32)),	// SCIRXDA
+			(1u << (35 % 32)) |	// SCITXDA
+			(1u << (36 % 32)),	// SCIRXDA
 			1	// mux = 1
 			);
 
@@ -2557,7 +2638,7 @@ xxxx!;
 #elif CPUSTYLE_XC7Z
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (0x01uL << 21);	// APER_CLK_CTRL.UART1_CPU_1XCLKACT
+	SCLR->APER_CLK_CTRL |= (1u << 21);	// APER_CLK_CTRL.UART1_CPU_1XCLKACT
 	//EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
 	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
 			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR_VALUE << 8) | // DIVISOR
@@ -2586,6 +2667,38 @@ xxxx!;
 	UART1->CR = r;
 
 	HARDWARE_UART2_INITIALIZE();
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	const unsigned ix = 1;
+
+	/* Open the clock gate for uart1 */
+	CCU->UART_BGR_REG |= (1u << (ix + 0));
+
+	/* De-assert uart1 reset */
+	CCU->UART_BGR_REG |= (1u << (ix + 16));
+
+	/* Config uart0 to 115200-8-1-0 */
+	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
+
+	UART1->DLH_IER = 0;
+	UART1->IIR_FCR = 0xf7;
+	UART1->UART_MCR = 0x00;
+
+	UART1->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
+	UART1->DATA = divisor & 0xff;
+	UART1->DLH_IER = (divisor >> 8) & 0xff;
+	UART1->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
+	//
+	UART1->UART_LCR &= ~ 0x1f;
+	UART1->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
+
+	HARDWARE_UART2_INITIALIZE();
+
+	if (debug == 0)
+	{
+	   serial_set_handler(UART1_IRQn, UART1_IRQHandler);
+	}
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3303,7 +3416,7 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		PMC->PMC_PCER0 = 1UL << ID_USART0;
+		PMC->PMC_PCER0 = 1u << ID_USART0;
 
 		HARDWARE_USART3_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -3328,7 +3441,7 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 
 	#elif HARDWARE_ARM_USEUSART1
 		// enable the clock of USART1
-		PMC->PMC_PCER0 = 1UL << ID_USART1;
+		PMC->PMC_PCER0 = 1u << ID_USART1;
 
 		HARDWARE_USART3_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -3354,7 +3467,7 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART0
 
 		// enable the clock of UART0
-		PMC->PMC_PCER0 = 1UL << ID_UART0;
+		PMC->PMC_PCER0 = 1u << ID_UART0;
 
 		HARDWARE_USART3_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -3381,7 +3494,7 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART1
 
 		// enable the clock of UART1
-		PMC->PMC_PCER0 = 1UL << ID_UART1;
+		PMC->PMC_PCER0 = 1u << ID_UART1;
 
 		HARDWARE_USART3_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -3474,7 +3587,7 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US0;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US0;
 
 		HARDWARE_USART3_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -3494,13 +3607,13 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 		{
 			enum { irqID = AT91C_ID_US0 };
 			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
+			AT91C_BASE_AIC->AIC_IDCR = (1u << irqID);
 			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US0Handler;
 			AT91C_BASE_AIC->AIC_SMR [irqID] =
 				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
 				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
+			AT91C_BASE_AIC->AIC_ICCR = (1u << irqID);		// clear pending interrupt
+			AT91C_BASE_AIC->AIC_IECR = (1u << irqID);	// enable inerrupt
 
 		}
 
@@ -3509,7 +3622,7 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUSART1
 
 		// enable the clock of USART3
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US1;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US1;
 
 		HARDWARE_USART3_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -3591,8 +3704,8 @@ xxxx!;
 
 
 	tms320_hardware_piob_periph(
-			(1UL << (35 % 32)) |	// SCITXDA
-			(1UL << (36 % 32)),	// SCIRXDA
+			(1u << (35 % 32)) |	// SCITXDA
+			(1u << (36 % 32)),	// SCIRXDA
 			1	// mux = 1
 			);
 
@@ -4395,7 +4508,7 @@ void hardware_uart4_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		PMC->PMC_PCER0 = 1UL << ID_USART0;
+		PMC->PMC_PCER0 = 1u << ID_USART0;
 
 		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -4420,7 +4533,7 @@ void hardware_uart4_initialize(uint_fast8_t debug)
 
 	#elif HARDWARE_ARM_USEUSART1
 		// enable the clock of USART1
-		PMC->PMC_PCER0 = 1UL << ID_USART1;
+		PMC->PMC_PCER0 = 1u << ID_USART1;
 
 		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -4446,7 +4559,7 @@ void hardware_uart4_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART0
 
 		// enable the clock of UART0
-		PMC->PMC_PCER0 = 1UL << ID_UART0;
+		PMC->PMC_PCER0 = 1u << ID_UART0;
 
 		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -4473,7 +4586,7 @@ void hardware_uart4_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART1
 
 		// enable the clock of UART1
-		PMC->PMC_PCER0 = 1UL << ID_UART1;
+		PMC->PMC_PCER0 = 1u << ID_UART1;
 
 		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -4566,7 +4679,7 @@ void hardware_uart4_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US0;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US0;
 
 		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -4586,13 +4699,13 @@ void hardware_uart4_initialize(uint_fast8_t debug)
 		{
 			enum { irqID = AT91C_ID_US0 };
 			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
+			AT91C_BASE_AIC->AIC_IDCR = (1u << irqID);
 			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US0Handler;
 			AT91C_BASE_AIC->AIC_SMR [irqID] =
 				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
 				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
+			AT91C_BASE_AIC->AIC_ICCR = (1u << irqID);		// clear pending interrupt
+			AT91C_BASE_AIC->AIC_IECR = (1u << irqID);	// enable inerrupt
 
 		}
 
@@ -4601,7 +4714,7 @@ void hardware_uart4_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUSART1
 
 		// enable the clock of UART4
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US1;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US1;
 
 		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -4683,8 +4796,8 @@ xxxx!;
 
 
 	tms320_hardware_piob_periph(
-			(1UL << (35 % 32)) |	// SCITXDA
-			(1UL << (36 % 32)),	// SCIRXDA
+			(1u << (35 % 32)) |	// SCITXDA
+			(1u << (36 % 32)),	// SCIRXDA
 			1	// mux = 1
 			);
 
@@ -5400,7 +5513,7 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		PMC->PMC_PCER0 = 1UL << ID_USART0;
+		PMC->PMC_PCER0 = 1u << ID_USART0;
 
 		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -5425,7 +5538,7 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 
 	#elif HARDWARE_ARM_USEUSART1
 		// enable the clock of USART1
-		PMC->PMC_PCER0 = 1UL << ID_USART1;
+		PMC->PMC_PCER0 = 1u << ID_USART1;
 
 		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -5451,7 +5564,7 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART0
 
 		// enable the clock of UART0
-		PMC->PMC_PCER0 = 1UL << ID_UART0;
+		PMC->PMC_PCER0 = 1u << ID_UART0;
 
 		HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -5478,7 +5591,7 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART1
 
 		// enable the clock of UART1
-		PMC->PMC_PCER0 = 1UL << ID_UART7;
+		PMC->PMC_PCER0 = 1u << ID_UART7;
 
 		HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -5571,7 +5684,7 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US0;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US0;
 
 		HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -5591,13 +5704,13 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 		{
 			enum { irqID = AT91C_ID_US0 };
 			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
+			AT91C_BASE_AIC->AIC_IDCR = (1u << irqID);
 			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US0Handler;
 			AT91C_BASE_AIC->AIC_SMR [irqID] =
 				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
 				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
+			AT91C_BASE_AIC->AIC_ICCR = (1u << irqID);		// clear pending interrupt
+			AT91C_BASE_AIC->AIC_IECR = (1u << irqID);	// enable inerrupt
 
 		}
 
@@ -5606,7 +5719,7 @@ void hardware_uart7_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUSART1
 
 		// enable the clock of UART4
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US1;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US1;
 
 		HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -5688,8 +5801,8 @@ xxxx!;
 
 
 	tms320_hardware_piob_periph(
-			(1UL << (35 % 32)) |	// SCITXDA
-			(1UL << (36 % 32)),	// SCIRXDA
+			(1u << (35 % 32)) |	// SCITXDA
+			(1u << (36 % 32)),	// SCIRXDA
 			1	// mux = 1
 			);
 
@@ -6491,7 +6604,7 @@ void hardware_uart5_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		PMC->PMC_PCER0 = 1UL << ID_USART0;
+		PMC->PMC_PCER0 = 1u << ID_USART0;
 
 		HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -6516,7 +6629,7 @@ void hardware_uart5_initialize(uint_fast8_t debug)
 
 	#elif HARDWARE_ARM_USEUSART1
 		// enable the clock of USART1
-		PMC->PMC_PCER0 = 1UL << ID_USART1;
+		PMC->PMC_PCER0 = 1u << ID_USART1;
 
 		HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -6542,7 +6655,7 @@ void hardware_uart5_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART0
 
 		// enable the clock of UART0
-		PMC->PMC_PCER0 = 1UL << ID_UART0;
+		PMC->PMC_PCER0 = 1u << ID_UART0;
 
 		HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -6569,7 +6682,7 @@ void hardware_uart5_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUART1
 
 		// enable the clock of UART1
-		PMC->PMC_PCER0 = 1UL << ID_UART5;
+		PMC->PMC_PCER0 = 1u << ID_UART5;
 
 		HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -6662,7 +6775,7 @@ void hardware_uart5_initialize(uint_fast8_t debug)
 
 	#if HARDWARE_ARM_USEUSART0
 		// enable the clock of USART0
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US0;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US0;
 
 		HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -6682,13 +6795,13 @@ void hardware_uart5_initialize(uint_fast8_t debug)
 		{
 			enum { irqID = AT91C_ID_US0 };
 			// programming interrupts from ADC
-			AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);
+			AT91C_BASE_AIC->AIC_IDCR = (1u << irqID);
 			AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_US0Handler;
 			AT91C_BASE_AIC->AIC_SMR [irqID] =
 				(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
 				(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-			AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
+			AT91C_BASE_AIC->AIC_ICCR = (1u << irqID);		// clear pending interrupt
+			AT91C_BASE_AIC->AIC_IECR = (1u << irqID);	// enable inerrupt
 
 		}
 
@@ -6697,7 +6810,7 @@ void hardware_uart5_initialize(uint_fast8_t debug)
 	#elif HARDWARE_ARM_USEUSART1
 
 		// enable the clock of UART5
-		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US1;
+		AT91C_BASE_PMC->PMC_PCER = 1u << AT91C_ID_US1;
 
 		HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -6779,8 +6892,8 @@ xxxx!;
 
 
 	tms320_hardware_piob_periph(
-			(1UL << (35 % 32)) |	// SCITXDA
-			(1UL << (36 % 32)),	// SCIRXDA
+			(1u << (35 % 32)) |	// SCITXDA
+			(1u << (36 % 32)),	// SCIRXDA
 			1	// mux = 1
 			);
 
@@ -7061,7 +7174,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART0->CR = r;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
@@ -7069,6 +7182,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	UART0->DATA = divisor & 0xff;
 	UART0->DLH_IER = (divisor >> 8) & 0xff;
 	UART0->UART_LCR &= ~ (1 << 7);
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -7255,6 +7369,14 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART1->CR = r;
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
+
+	UART1->UART_LCR |= (1 << 7);
+	UART1->DATA = divisor & 0xff;
+	UART1->DLH_IER = (divisor >> 8) & 0xff;
+	UART1->UART_LCR &= ~ (1 << 7);
 
 #else
 	#warning Undefined CPUSTYLE_XXX

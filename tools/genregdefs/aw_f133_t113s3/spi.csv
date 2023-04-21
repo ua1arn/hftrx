@@ -1,3 +1,4 @@
+#comment; Serial Peripheral Interface
 #type; SPI
 #base; SPI0 0x04025000
 #irqrv; SPI0 31

@@ -170,14 +170,6 @@ extern "C" {
 	#define DCACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	#define ICACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
-
 #elif CPUSTYLE_STM32F7XX
 	// STM32F745ZGT6 processors, up to 216 MHz 
 
@@ -195,14 +187,6 @@ extern "C" {
 	#define DCACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	#define ICACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
-
 #elif CPUSTYLE_STM32F4XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -219,14 +203,6 @@ extern "C" {
 	#define DCACHEROWSIZE 16U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	#define ICACHEROWSIZE 16U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
-
 #elif CPUSTYLE_STM32F30X
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -239,13 +215,6 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-
 #elif CPUSTYLE_STM32F1XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -257,14 +226,7 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-
-#elif CPUSTYLE_STM32F0XX
+elif CPUSTYLE_STM32F0XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
@@ -275,13 +237,6 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-
 #elif CPUSTYLE_STM32L0XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -291,13 +246,6 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_ATSAM3S
 
@@ -310,13 +258,6 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-
 #elif CPUSTYLE_ATSAM4S
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -327,13 +268,6 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -349,14 +283,6 @@ extern "C" {
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-
 
 #elif CPUSTYLE_AT91SAM9XE
 
@@ -377,13 +303,6 @@ extern "C" {
 	#define __STATIC_INLINE  static inline
 
 	#include "arch/tdmi7_gcc.h"
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_R7S721
 
@@ -412,14 +331,6 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(DCACHEROWSIZE)))
 	#define ALIGNX_END /* nothing */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
-
 #elif CPUSTYLE_STM32MP1
 
 	// ST dual core A7 + M4
@@ -441,15 +352,6 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
-
-
 #elif CPUSTYLE_F133
 
 	// RISC-V processor Allwinner D1 XuanTie C906
@@ -465,18 +367,21 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
+#elif CPUSTYLE_A64
 
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "allwnr_a64.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_T113
 
-	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "allwnr_t113s3.h"
@@ -488,13 +393,19 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
+#elif CPUSTYLE_VM14
+
+	// 1892ВМ14Я ELVEES multicore.ru
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "elvees_vm14.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_XC7Z
 
@@ -506,22 +417,16 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
+#if ! LINUX_SUBSYSTEM
 	#include "arch/zynq/zynq7000.h"
 	#include "irq_ctrl.h"
+#endif /* ! LINUX_SUBSYSTEM */
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_XCZU
 	// Zynq UltraScale+ Device
@@ -541,31 +446,24 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
 
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-
-	#define DISABLEFLOAT16 1
-	//#define ARM_MATH_DSP 1
-	//#define ARM_MATH_NEON 1
-	//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
-
 #elif \
-	defined (__TMS320C28X__) || \
+	defined (CPUSTYLE_UBLAZE) || \
 	0
 
-	#define CPUSTYLE_TMS320F2833X 1
-	#include "tms320f2833x.h"
+	#include "u_blaze.h"
 
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
 	//#define CPU_FREQ 150000000uL
 	#define CPU_FREQ 100000000uL
 	//#define CPU_FREQ 5000000uL		// Частота без инициализаwии PLL - xtal / 4
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
-	#define ALIGNX_END /* nothing */
+#elif \
+	defined (__TMS320C28X__) || \
+	0
 
 #else 
 
@@ -594,6 +492,7 @@ void spool_systimerbundle2(void);
 void spool_elkeybundle(void);
 void sysinit_pll_initialize(void);	// PLL initialize
 void sysinit_gpio_initialize(void);	// временная подготовка к работе с gpio.
+void sysinit_pmic_initialize(void);	// инициализация контроллера питания (не только DDR память. бывает и GPIO)
 void hardware_adc_startonescan(void);
 void stm32mp1_pll1_slow(uint_fast8_t slow);
 
@@ -696,6 +595,28 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 
 	#define ATTRWEAK __attribute__ ((weak))
 
+#elif CPUSTYLE_UBLAZE
+	/* тип для передачи параметра "адрес устройства на SPI шине" */
+	/* это может быть битовая маска в порту ввода-вывода */
+	typedef uint_fast32_t spitarget_t;
+	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
+	typedef uint_fast32_t portholder_t;
+
+	typedef uint_fast32_t adcvalholder_t;
+	typedef int_fast32_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#define FLASHMEM //__flash
+	#define NOINLINEAT // __attribute__((noinline))
+	#define strlen_P(s) strlen(s)
+	#define PSTR(s) s
+
+	#define ATTRWEAK __WEAK
+	#define __NO_RETURN
+
+	// Use __attribute__ ((weak, alias("Default_Handler")))
+	void local_delay_us(int timeUS);
+	void local_delay_ms(int timeMS);
+
 #else
 	#error Undefined CPUSTYLE_xxxx
 #endif
@@ -731,7 +652,7 @@ void hardware_dac_ch1_setvalue(uint_fast16_t v);	// вывод 12-битного
 void hardware_dac_ch2_setvalue(uint_fast16_t v);	// вывод 12-битного значения на ЦАП - канал 2
 
 
-void hardware_spi_io_delay(void);
+void hardware_spi_io_delay(void);	/* распространение сигналов до slave */
 
 void cat2_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
 void cat2_rxoverflow(void);							/* вызывается из обработчика прерываний */
@@ -829,36 +750,54 @@ void debugusb_sendchar(void * ctx);			/* вызывается из обрабо�
 	#define I2C_RETRIES 3	/* количество повторов */
 #endif /* ! LINUX_SUBSYSTEM */
 
-void i2c_initialize(void);
+/* target device speed */
+typedef struct i2c_parameters
+{
+	uint8_t ch;
+	uint8_t usdelayv;	/* время задержки на полпериода скрости обмпена при программном формировании I2C */
+} i2cp_t;
 
-void i2c_start(uint_fast8_t address);
-void i2c_read(uint8_t * pdata, uint_fast8_t acknak);
+#define I2CP_I2C1	0	/* i2c_xxx */
+#define I2CP_I2C2	1	/* i2c2_xxx */
 
-// Работа со вторым каналом I2C
-void i2c2_start(uint_fast8_t address);
-void i2c2_read(uint8_t * pdata, uint_fast8_t acknak);
-
+void i2cp_intiialize(i2cp_t * p, unsigned ch, unsigned freq);	/* канал и скорость обмена */
 
 #define I2C_READ_ACK 0  // i2c_read parameter
 #define I2C_READ_ACK_1 1  // i2c_read parameter
 #define I2C_READ_NACK 2		// ack_type - last parameterr in read block
 #define I2C_READ_ACK_NACK 3		// чтение первого и единственного байта по I2C
 
+void i2c_initialize(void);
+void i2c_start(uint_fast8_t address);
+void i2c_read(uint8_t * pdata, uint_fast8_t acknak);
 void i2c_write(uint_fast8_t data);
 void i2c_write_withrestart(uint_fast8_t data);	// запись, после чего restart
 void i2c_waitsend(void);	// Вызвать после последнего i2c_write()
 void i2c_stop(void);
 
 // Работа со вторым каналом I2C
+void i2c2_start(uint_fast8_t address);
+void i2c2_read(uint8_t * pdata, uint_fast8_t acknak);
 void i2c2_write(uint_fast8_t data);
 void i2c2_write_withrestart(uint_fast8_t data);	// запись, после чего restart
 void i2c2_waitsend(void);	// Вызвать после последнего i2c_write()
 void i2c2_stop(void);
 
+void i2cp_i2c_initialize(void);
+
+/* Версии функций с указанием скорости и порта I2C */
+void i2cp_start(const i2cp_t * p, uint_fast8_t address);
+void i2cp_read(const i2cp_t * p, uint8_t * pdata, uint_fast8_t acknak);
+void i2cp_write(const i2cp_t * p, uint_fast8_t data);
+void i2cp_write_withrestart(const i2cp_t * p, uint_fast8_t data);	// запись, после чего restart
+void i2cp_waitsend(const i2cp_t * p);	// Вызвать после последнего i2c_write()
+void i2cp_stop(const i2cp_t * p);
+
 void hardware_twi_master_configure(void);
 
+/* return non-zero then error */
 uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size);
-uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size);
+uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size);
 
 uint32_t hardware_get_random(void);
 
@@ -1299,11 +1238,22 @@ signed long slmax(signed long a, signed long b);
 #include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 #include "clocks.h"
 uint32_t sys_now(void);
+uint32_t board_millis(void);	// tinyusb
 int  sys_dram_init(void);	// 0 - error
 
 // RTOS test stuff
 int blinky_main(void);
 #define GTIM_IRQ_NUM SecurePhysicalTimer_IRQn
+
+struct menudef;
+void
+//NOINLINEAT
+processmessages(
+	uint_fast8_t * kbch,
+	uint_fast8_t * kbready,
+	uint_fast8_t inmenu,
+	const FLASHMEM struct menudef * mp
+	);
 
 typedef struct dram_para_t
 {
@@ -1347,7 +1297,55 @@ uintptr_t getRamDiskBase(void);
 size_t getRamDiskSize(void);
 
 #if LINUX_SUBSYSTEM
-	#include "linux_subsystem.h"
+	#include <src/linux/linux_subsystem.h>
 #endif /* LINUX_SUBSYSTEM */
+
+#if (__CORTEX_A == 53U)
+
+// DDI0500J_cortex_a53_r0p4_trm.pdf
+
+// 4.5.76 CPU Auxiliary Control Register
+
+/** \brief  Get CPUACTLR
+    \return                CPU Auxiliary Control Register
+ */
+__STATIC_FORCEINLINE uint64_t __get_CPUACTLR(void)
+{
+	uint64_t result;
+  __get_CP64(15, 0, result, 15);
+  return(result);
+}
+
+/** \brief  Set CPUACTLR
+    \param [in]    cpuactlr   CPU Auxiliary Control Register
+ */
+__STATIC_FORCEINLINE void __set_CPUACTLR(uint64_t cpuactlr)
+{
+	__set_CP64(15, 0, cpuactlr, 15);
+}
+
+// 4.5.77 CPU Extended Control Register
+
+#define CPUECTLR_SMPEN_Msk (1u << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.
+
+/** \brief  Get CPUECTLR
+    \return               CPU Extended Control Register
+ */
+__STATIC_FORCEINLINE uint64_t __get_CPUECTLR(void)
+{
+	uint64_t result;
+  __get_CP64(15, 1, result, 15);
+  return(result);
+}
+
+/** \brief  Set CPUECTLR
+    \param [in]    cpuectlr  CPU Extended Control Register
+ */
+__STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
+{
+	__set_CP64(15, 1, cpuectlr, 15);
+}
+
+#endif /* (__CORTEX_A == 53U) */
 
 #endif // HARDWARE_H_INCLUDED

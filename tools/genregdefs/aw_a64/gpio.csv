@@ -1,0 +1,13 @@
+#type; GPIO
+#base; GPIOB 0x01C20824
+#base; GPIOC 0x01C20848
+#base; GPIOD 0x01C2086C
+#base; GPIOE 0x01C20890
+#base; GPIOF 0x01C208B4
+#base; GPIOG 0x01C208D8
+#base; GPIOH 0x01C208FC
+#base; GPIOL 0x01F02C00
+#regdef; CFG; 0x000 4; Configure Register
+#regdef; DATA; 0x0010; Data Register
+#regdef; DRV; 0x014 2; Multi_Driving Register
+#regdef; PULL; 0x01C 2; Pull Register

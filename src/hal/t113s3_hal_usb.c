@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHUSBHW
+#if (CPUSTYLE_A64 || CPUSTYLE_T113 || CPUSTYLE_F133) && WITHUSBHW
 
 #include "board.h"
 #include "audio.h"
@@ -165,95 +165,95 @@ static void usb_iso_update_enable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 7);	// MUSB2_MASK_ISOUPD
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_iso_update_disable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 7);	// MUSB2_MASK_ISOUPD
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_soft_connect(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 6);	// MUSB2_MASK_SOFTC
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_soft_disconnect(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 6);	// MUSB2_MASK_SOFTC
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_high_speed_enable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
-	reg_val |= (0x1u << 5);
-	USBOTG0->USB_POWER = reg_val;
+	reg_val = USBOTG0->USB_GCS;
+	reg_val |= (0x1u << 5);	// HSEN
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_high_speed_disable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
-	reg_val &= ~ (0x1u << 5);
-	USBOTG0->USB_POWER = reg_val;
+	reg_val = USBOTG0->USB_GCS;
+	reg_val &= ~ (0x1u << 5);	// HSEN
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static uint32_t usb_is_high_speed(pusb_struct pusb)
 {
-	return (USBOTG0->USB_POWER >> 4) & 0x1;
+	return (USBOTG0->USB_GCS >> 4) & 0x1;	// HSFLAG
 }
 
 static void usb_set_reset(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 3);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_clear_reset(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 3);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_set_resume(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 2);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_clear_resume(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 2);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 
@@ -261,42 +261,42 @@ static void usb_set_suspend(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 1);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_clear_suspend(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 1);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 
 static uint32_t usb_check_suspend(pusb_struct pusb)
 {
-	return (USBOTG0->USB_POWER >> 1) & 0x01;
+	return (USBOTG0->USB_GCS >> 1) & 0x01;
 }
 
 static void usb_suspendm_enable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val |= (0x1u << 0);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static void usb_suspendm_disable(pusb_struct pusb)
 {
 	uint8_t reg_val;
 
-	reg_val = USBOTG0->USB_POWER;
+	reg_val = USBOTG0->USB_GCS;
 	reg_val &= ~ (0x1u << 0);
-	USBOTG0->USB_POWER = reg_val;
+	USBOTG0->USB_GCS = reg_val;
 }
 
 static uint32_t usb_get_ep0_interrupt_status(pusb_struct pusb)
@@ -402,7 +402,7 @@ static void usb_clear_bus_interrupt_enable(pusb_struct pusb, uint32_t bm)
 
 static uint32_t usb_get_frame_number(pusb_struct pusb)
 {
-	return USBOTG0->USB_FRAME & 0x7FF;
+	return USBOTG0->USB_FNUM & 0x7FF;	// 10:0
 	//return get_hvalue(USBOTG0_BASE + USB_hFRAME_OFF) & 0x7FF;
 }
 
@@ -411,19 +411,19 @@ static void usb_select_ep(pusb_struct pusb, uint32_t ep_no)
 	ASSERT(ep_no <= USB_MAX_EP_NO);
 	if (ep_no > USB_MAX_EP_NO)
 		return;
-	USBOTG0->USB_EPINDEX = ep_no;
+	USBOTG0->USB_GCS = (USBOTG0->USB_GCS & ~ (0x0F << 16)) | ((0x0F & ep_no) << 16); // EPIND
 	//put_bvalue(USBOTG0_BASE + USB_bINDEX_OFF, ep_no);
 }
 
 static uint32_t usb_get_active_ep(pusb_struct pusb)
 {
-	return USBOTG0->USB_EPINDEX & 0x0F;
+	return (USBOTG0->USB_GCS >> 16) & 0x0F; // EPIND
 	//return get_bvalue(USBOTG0_BASE + USB_bINDEX_OFF) & 0xf;
 }
 
 static void usb_set_test_mode(pusb_struct pusb, uint32_t bm)
 {
-	USBOTG0->USB_TESTMODE = bm;
+	USBOTG0->USB_TESTC = (USBOTG0->USB_TESTC & ~ 0x7FF) | (bm & 0x7FF);
 	//put_bvalue(USBOTG0_BASE + USB_bTESTMODE_OFF, bm & 0xFF);
 }
 
@@ -670,68 +670,62 @@ static void usb_set_eprx_interval(pusb_struct pusb, uint32_t interval)
 /* host ? */
 static uint32_t usb_is_b_device(pusb_struct pusb)
 {
-	return (USBOTG0->USB_DEVCTL >> 7) & 0x1;
+	return (USBOTG0->USB_GCS >> 15) & 0x1;	// BDev
 }
 
-/* host ? */
-static uint32_t usb_device_connected_is_fs(pusb_struct pusb)
-{
-	return (USBOTG0->USB_DEVCTL >> 6) & 0x1;
-}
-
-/* host ? */
-static uint32_t usb_device_connected_is_ls(pusb_struct pusb)
-{
-	return (USBOTG0->USB_DEVCTL >> 5) & 0x1;
-}
+///* host ? */
+//static uint32_t usb_device_connected_is_fs(pusb_struct pusb)
+//{
+//	return (USBOTG0->USB_GCS >> 14) & 0x1;
+//}
+//
+///* host ? */
+//static uint32_t usb_device_connected_is_ls(pusb_struct pusb)
+//{
+//	return (USBOTG0->USB_GCS >> 13) & 0x1;
+//}
 
 // USB_VBUS_VBUSVLD
 static uint32_t usb_get_vbus_level(pusb_struct pusb)
 {
-	return (USBOTG0->USB_DEVCTL >> 3) & 0x3;
+	return (USBOTG0->USB_GCS >> 11) & 0x3;	// VBus
 }
 
 static uint32_t usb_is_host(pusb_struct pusb)
 {
-	return (USBOTG0->USB_DEVCTL >> 2) & 0x1;
+	return (USBOTG0->USB_GCS >> 10) & 0x1;	// HostMode
 }
 
-static void usb_set_hnp_request(pusb_struct pusb)
-{
-	uint8_t reg_val;
+///* host ? */
+//static void usb_set_hnp_request(pusb_struct pusb)
+//{
+//	uint32_t reg_val;
+//
+//	reg_val = USBOTG0->USB_GCS;
+//	reg_val |= 0x1u << 9;
+//	USBOTG0->USB_GCS = reg_val;
+//}
+//
+///* host ? */
+//static uint32_t usb_hnp_in_porcess(pusb_struct pusb)
+//{
+//	return (USBOTG0->USB_GCS >> 9) & 0x1;
+//}
 
-	reg_val = USBOTG0->USB_DEVCTL;
-	reg_val |= 0x1u << 1;
-	USBOTG0->USB_DEVCTL = reg_val;
-}
-
-static uint32_t usb_hnp_in_porcess(pusb_struct pusb)
-{
-	return (USBOTG0->USB_DEVCTL >> 1) & 0x1;
-}
-
-/* host ? */
 static void usb_start_session(pusb_struct pusb)
 {
-	uint8_t reg_val;
-
-	reg_val = 0x1;
-	USBOTG0->USB_DEVCTL = reg_val;
+	USBOTG0->USB_GCS |= (1u << 8);	// Session
 }
 
-/* host ? */
 static void usb_end_session(pusb_struct pusb)
 {
-	uint8_t reg_val;
-
-	reg_val = 0x0;
-	USBOTG0->USB_DEVCTL = reg_val;
+	USBOTG0->USB_GCS &= ~ (1u << 8);	// Session
 }
 
 /* host ? */
 static uint32_t usb_check_session(pusb_struct pusb)
 {
-	return USBOTG0->USB_DEVCTL & 0x1;
+	return (USBOTG0->USB_GCS >> 8) & 0x1;
 }
 
 static uint32_t aw_log2(uint32_t x)
@@ -784,42 +778,43 @@ static void usb_set_eprx_fifo_addr(pusb_struct pusb, uint32_t addr)
 
 static void usb_fifo_accessed_by_cpu(pusb_struct pusb)
 {
-	USBOTG0->USB_DMACTL &= ~ (0x1u << 0);
-	while ((USBOTG0->USB_DMACTL & (0x1u << 0)) != 0)
+	USBOTG0->USB_GCS &= ~ (0x1u << 24);	// FIFO_BUS_SEL
+	while ((USBOTG0->USB_GCS & (0x1u << 24)) != 0)	// FIFO_BUS_SEL
 		;
 }
 
 static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t is_tx)
 {
-	uint8_t reg_val;
+	uint32_t reg_val;
 
 	ASSERT(ep_no < USB_MAX_EP_NO);
 	if (ep_no>USB_MAX_EP_NO)
 		return;
-	reg_val = 0x1;
-	if (!is_tx) reg_val |= 0x1u << 1;
+	reg_val = 0x1;	// FIFO_BUS_SEL
+	if (!is_tx) reg_val |= 0x1u << 1;	// RX endpoint flag
 	reg_val |= (ep_no-1) << 2;
-	USBOTG0->USB_DMACTL = reg_val;
+
+	USBOTG0->USB_GCS = (USBOTG0->USB_GCS & ~ (0xFFu << 24)) | (reg_val << 24);
 }
 
 static uint8_t usb_get_fifo_access_config(pusb_struct pusb)
 {
-	return USBOTG0->USB_DMACTL;
+	return (USBOTG0->USB_GCS >> 24) & 0xFF;
 }
 
 static uint32_t usb_get_dma_ep_no(pusb_struct pusb)
 {
-	return ((USBOTG0->USB_DMACTL & 0x1f) >> 2)+1;
+	return ((USBOTG0->USB_GCS & 0x1f000000) >> 26) + 1;
 }
 
 static void usb_set_fifo_access_config(pusb_struct pusb, uint8_t config)
 {
-	USBOTG0->USB_DMACTL = config;
+	USBOTG0->USB_GCS = (USBOTG0->USB_GCS & ~ (0xFFu << 24)) | (config << 24);
 }
 
 static uint32_t usb_get_fsm(pusb_struct pusb)
 {
-	return USBOTG0->USB_FSM;
+	return (USBOTG0->USB_TESTC >> 16) & 0xFF;
 	//return get_bvalue(USBOTG0_BASE + USB_FSM_OFF);
 }
 
@@ -2565,6 +2560,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	const uint32_t ep_save = usb_get_active_ep(pusb);
 
+#if WITHUSBUACOUT
 	do
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -2585,6 +2581,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   			break;
   		}
   		rx_count = usb_get_eprx_count(pusb);
+  		PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count);
   		ASSERT(UACOUT_AUDIO48_DATASIZE == rx_count || 0 == rx_count);
   		do
   		{
@@ -2604,11 +2601,11 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   		{
 			// использование данных
 			//printhex(0, uacoutbuff, rx_count);
-			uacout_buffer_save_system(uacoutbuff, rx_count, UACOUT_AUDIO48_FMT_CHANNELS, UACOUT_AUDIO48_SAMPLEBITS);
+			uacout_buffer_save_system(uacoutbuff, rx_count, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBITS);
  		}
 	} while (0);
 
-	usb_select_ep(pusb, ep_save);
+#endif /* WITHUSBUACOUT */
 
 #if WITHUSBUACIN
 	{
@@ -2621,9 +2618,10 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinsize, USB_PRTCL_ISO);
 			if (ret == USB_RETVAL_COMPOK)
 			{
-				global_disableIRQ();
+				IRQL_t oldIrql;
+				RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 				release_dmabufferx(uacinaddr);
-				global_enableIRQ();
+				LowerIrql(oldIrql);
 				uacinaddr = 0;
 			}
 		}
@@ -2648,6 +2646,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
+	usb_select_ep(pusb, ep_save);
 }
 
 
@@ -3004,7 +3003,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 			}
 			break;
 #endif /* WITHUSBDMSC */
-#if WITHUSBUAC
+#if WITHUSBUACIN
 		case INTERFACE_AUDIO_CONTROL_MIKE:
 			{
 				static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
@@ -3025,7 +3024,18 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 			}
 			break;
 #endif /* WITHUSBUACIN2 */
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
+		case INTERFACE_AUDIO_CONTROL_SPK:
+			{
+				static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
+
+				//PRINTF("ep0_in_handler_dev: INTERFACE_AUDIO_CONTROL_RTS Class-Specific Request ifc=%u, bRequest=0x%02X, wLength=0x%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wLength);
+				pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
+				pusb->ep0_xfer_residue = min(ARRAY_SIZE(buff), ep0_setup->wLength);
+			}
+			break;
+#endif /* WITHUSBUACOUT */
 #if WITHUSBDFU
 			case INTERFACE_DFU_CONTROL:
 			{
@@ -3242,15 +3252,15 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
     		switch (interfacev)
     		{
 #if WITHUSBUACOUT
-       		case INTERFACE_AUDIO_MIKE:
-    	       	//PRINTF("usb_device: in48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
-				buffers_set_uacinalt(LO_BYTE(ep0_setup->wValue));
+       		case INTERFACE_AUDIO_SPK:
+    	       	//PRINTF("usb_device: out48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+				buffers_set_uacoutalt(LO_BYTE(ep0_setup->wValue));
 				break;
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
-      		case INTERFACE_AUDIO_SPK:
-    	       	//PRINTF("usb_device: out48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
-				buffers_set_uacoutalt(LO_BYTE(ep0_setup->wValue));
+      		case INTERFACE_AUDIO_MIKE:
+    	       	//PRINTF("usb_device: in48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+				buffers_set_uacinalt(LO_BYTE(ep0_setup->wValue));
 				break;
 #if WITHUSBUACIN2
       		case INTERFACE_AUDIO_RTS:
@@ -3366,18 +3376,18 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
-		if (ep0_csr & 0x1u)	// ? USB_TXCSR_TXPKTRDY
+		if (ep0_csr & (0x1u << 0))	// RxPktRdy
 		{
-			pusb->ep0_xfer_state = USB_EP0_SETUP;
+			pusb->ep0_xfer_state = USB_EP0_SETUP;	// получили setup пакет
 		}
-		else if (ep0_csr & (0x1u << 4))
+		else if (ep0_csr & (0x1u << 4))	// SetupEnd
 		{
-			usb_set_ep0_csr(pusb, 0x80);
+			usb_set_ep0_csr(pusb, 0x80);	// ServicedSetupEnd
 			PRINTF("usb_dev_ep0xfer_handler: WRN: EP0 Setup End!!\n");
 		}
-		else if (!(ep0_csr & (0x1u << 1)))	// ? USB_RXCSR_FIFOFULL, USB_TXCSR_FIFONOTEMP
+		else if (!(ep0_csr & (0x1u << 1)))	// ! TxPktRdy
 		{
-			usb_ep0_complete_send_data(pusb);
+			usb_ep0_complete_send_data(pusb);	// продолжаем пересылать, возможно несколько раз
 		}
 		else
 		{
@@ -3393,7 +3403,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
 #endif /* WITHWAWXXUSB */
 
-		if (ep0_csr & 0x1)// ? USB_TXCSR_TXPKTRDY
+		if (ep0_csr & (0x1u << 0)) // RxPktRdy
 		{
 			uint32_t ep0_count = usb_get_ep0_count(pusb);
 
@@ -3644,9 +3654,10 @@ void usb_device_function0(USBD_HandleTypeDef * pdev)
 {
 	PCD_HandleTypeDef * hpcd = pdev->pData;
 	ASSERT(hpcd != NULL);
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
 	usb_device_function(hpcd);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 void usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
@@ -3788,8 +3799,8 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 
 	usb_clear_bus_interrupt_enable(pusb, 0xff);
 	usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-	usb_set_eptx_interrupt_enable(pusb, 0x003f);
-	usb_set_eprx_interrupt_enable(pusb, 0x003e);
+	usb_set_eptx_interrupt_enable(pusb, 0xffff);	// 0x003f
+	usb_set_eprx_interrupt_enable(pusb, 0xfffe);	// 0x003e
 
 	pusb->otg_dev = USB_OTG_B_DEVICE;
 
@@ -3973,8 +3984,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		//Bus Reset may disable all interrupt enable, re-enable the interrupts need
 		usb_clear_bus_interrupt_enable(pusb, 0xff);
 		usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-		usb_set_eptx_interrupt_enable(pusb, 0x003f);
-		usb_set_eprx_interrupt_enable(pusb, 0x003e);
+		usb_set_eptx_interrupt_enable(pusb, 0xffff);	// 0x003f
+		usb_set_eprx_interrupt_enable(pusb, 0xfffe);	// 0x003e
 
 		awxx_setup_fifo(pusb);
 
@@ -4056,7 +4067,7 @@ HAL_StatusTypeDef  USB_DevConnect(USBOTG_TypeDef *USBx)
 	//PRINTF("USB_DevConnect\n");
 
     /* Enable pullup on D+ */
-	USBx->USB_POWER |= MUSB2_MASK_SOFTC;
+	USBx->USB_GCS |= MUSB2_MASK_SOFTC;
 
     return HAL_OK;
 }
@@ -4071,7 +4082,7 @@ HAL_StatusTypeDef  USB_DevDisconnect(USBOTG_TypeDef *USBx)
 	//PRINTF("USB_DevDisconnect\n");
 
 	/* Disable pullup on D+ */
-	USBx->USB_POWER &= ~ MUSB2_MASK_SOFTC;
+	USBx->USB_GCS &= ~ MUSB2_MASK_SOFTC;
 
 	return HAL_OK;
 }
@@ -4649,4 +4660,4 @@ HAL_StatusTypeDef HAL_PCD_SetAddress(PCD_HandleTypeDef *hpcd, uint8_t address)
   return HAL_OK;
 }
 
-#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHUSBHW */
+#endif /* (CPUSTYLE_A64 || CPUSTYLE_T113 || CPUSTYLE_F133) && WITHUSBHW */

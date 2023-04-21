@@ -23,7 +23,7 @@
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 //#define DEBUGSPEED 500000
 #define DEBUGSPEED 115200
-//#define DEFAULTDIALFREQ	12798340
+//#define DEFAULTDIALFREQ	18112000
 //#define DEFAULTDIALFREQ	225000
 //#define DEFAULTDIALFREQ	14021000
 //#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собираем bootloader */
@@ -239,8 +239,8 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_PanGuBoard_v1p2.h"
 #elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 1	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c.h"
-	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_falcon.h"
+	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c.h"
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_falcon.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_lfm.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_qrp.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_ua1cei_qrp.h"
@@ -249,25 +249,42 @@
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9c.h"	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 #elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7	// rmainunit_v5km2.pcb STM32MP153DAB, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, LTC2208
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_RL1D.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, LTC2208
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_r1yq.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_china_84748588.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_R3XBQ.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_RK1AQ.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB
+#elif CPUSTYLE_UBLAZE && CTLSTYLE_STORCH_V7
+	#include "boards/u_blaze_ctlstyle_v0.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/u_blaze_cpustyle_v0.h"
+#elif (CPUSTYLE_A64) && CTLSTYLE_STORCH_V7 && 1
+	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* Allwinner A64-H (Banana Pi BPI-M64) - инициализатор DDR памяти на плате */
+	#include "boards/arm_allwa64_ctlstyle_banana_pi_m64.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwa64_cpustyle_banana_pi_m64.h"
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
-	#include <boards/arm_allwt113s3_ctlstyle_storch_v9a.h>	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+	#include "boards/arm_allwt113s3_ctlstyle_storch_v9a.h"	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include <boards/arm_allwt113s3_cpustyle_storch_v9a.h>	// rmainunit_sv9f.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
-	//#include <boards/arm_allwt113s3_cpustyle_storch_v9a_bad.h>	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
-	#include <boards/arm_allwt113s3_ctlstyle_mango_pi.h>
+	#include "boards/arm_allwt113s3_cpustyle_storch_v9a.h"	// rmainunit_sv9f.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt113s3_ctlstyle_storch_v9a_ua1cei_qrp.h"	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include <boards/arm_allwt113s3_cpustyle_mango_pi.h>
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
-	#include <boards/arm_allwt113s3_ctlstyle_mango_pi_gw2a.h>
+	#include "boards/arm_allwt113s3_cpustyle_storch_v9a_bad.h"	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt113s3_ctlstyle_mango_pi.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include <boards/arm_allwt113s3_cpustyle_mango_pi_gw2a.h>
+	#include "boards/arm_allwt113s3_cpustyle_mango_pi.h"
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt113s3_ctlstyle_tboard_v0.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt113s3_cpustyle_tboard_v0.h"
+#elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_xczuxx_ctlstyle_axu2cga_ad9640.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_xczuxx_cpustyle_axu2cga_ad9640.h"
 #elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7
 	#include "boards/arm_xczu2_ctlstyle_alinx_axu2cga.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -293,6 +310,11 @@
 	#include "boards/arm_x7c70xx_ctlstyle_ebaz4205_v2.h"	// плата EBAZ4205 с xc7z020 и 512 Мб DDR3
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_ebaz4205_v2.h"	// плата EBAZ4205 с xc7z020 и 512 Мб DDR3
+#elif CPUSTYLE_VM14 && CTLSTYLE_STORCH_V7 && 1
+	#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собираем bootloader */
+	#include "boards/arm_vm14_ctlstyle_v0.h"	// 1892ВМ14Я ELVEES multicore.ru
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_vm14_cpustyle_v0.h"
 #elif CPUSTYLE_STM32F && CTLSTYLE_OLEG4Z_V1	// 2xUSB, STM32F767ZIT6, FPGA EP4CE22E22I7N & R820T2
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_oleg4z_v1.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

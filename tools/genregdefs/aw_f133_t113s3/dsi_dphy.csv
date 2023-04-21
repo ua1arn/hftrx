@@ -1,0 +1,40 @@
+#type; DSI_DPHY
+#base; DSI_DPHY 0x05451000
+#regdef; DPHY_GCTL; 0x000;
+#regdef; DPHY_TX_CTL; 0x004;
+#regdef; DPHY_RX_CTL; 0x008;
+#regdef; DPHY_TX_TIME0; 0x010;
+#regdef; DPHY_TX_TIME1; 0x014;
+#regdef; DPHY_TX_TIME2; 0x018;
+#regdef; DPHY_TX_TIME3; 0x01C;
+#regdef; DPHY_TX_TIME4; 0x020;
+#regdef; DPHY_RX_TIME0; 0x030;
+#regdef; DPHY_RX_TIME1; 0x034;
+#regdef; DPHY_RX_TIME2; 0x038;
+#regdef; DPHY_RX_TIME3; 0x040;
+#regdef; DPHY_ANA0; 0x04C;
+#regdef; DPHY_ANA1; 0x050;
+#regdef; DPHY_ANA2; 0x054;
+#regdef; DPHY_ANA3; 0x058;
+#regdef; DPHY_ANA4; 0x05C;
+#regdef; DPHY_INT_EN0; 0x060;
+#regdef; DPHY_INT_EN1; 0x064;
+#regdef; DPHY_INT_EN2; 0x068;
+#regdef; DPHY_INT_PD0; 0x070;
+#regdef; DPHY_INT_PD1; 0x074;
+#regdef; DPHY_INT_PD2; 0x078;
+#regdef; DPHY_DBG0; 0x0E0;
+#regdef; DPHY_DBG1; 0x0E4;
+#regdef; DPHY_DBG2; 0x0E8;
+#regdef; DPHY_DBG3; 0x0EC;
+#regdef; DPHY_DBG4; 0x0F0;
+#regdef; DPHY_DBG5; 0x0F4;
+#regdef; DPHY_TX_SKEW_REG0; 0x0F8;
+#regdef; DPHY_TX_SKEW_REG1; 0x0FC;
+#regdef; DPHY_TX_SKEW_REG2; 0x100;
+#regdef; DPHY_PLL_REG0; 0x104;
+#regdef; DPHY_PLL_REG1; 0x108;
+#regdef; DPHY_PLL_REG2; 0x10C;
+#regdef; COMBO_PHY_REG0; 0x110; The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114)
+#regdef; COMBO_PHY_REG1; 0x114; The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114)
+#regdef; COMBO_PHY_REG2; 0x118;

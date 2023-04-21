@@ -19,6 +19,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "dspdefines.h"
+
 #if WITHFT8
 	#include "ft8.h"
 #endif /* WITHFT8 */
@@ -186,9 +188,19 @@ static uint_fast8_t 	glob_dspagc;
 static uint_fast8_t		glob_dsploudspeaker_off;
 
 static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-static volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+static volatile uint_fast8_t datavox;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
+
 
 #if WITHINTEGRATEDDSP
+
+static uint_fast8_t istxreplaced(void)
+{
+#if WITHUSBHW && WITHUSBUACOUT
+	return (datavox != 0 && buffers_get_uacoutalt() != 0);
+#else /* WITHUSBHW && WITHUSBUACOUT */
+	return 0;
+#endif /* WITHUSBHW && WITHUSBUACOUT */
+}
 
 #define NPROF 2	/* количество профилей параметров DSP фильтров. */
 
@@ -1649,7 +1661,7 @@ static RAMDTCM FLOAT_t DVOXCHARGE = 0;
 // Возвращает значения 0..255
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
 {
-	unsigned v = FMAXF(mikeinlevel, datavox == 0 ? 0 : dvoxlevel) * fullscale;	// масшабирование к 0..255
+	unsigned v = FMAXF(mikeinlevel, 0 /* datavox == 0 ? 0 : dvoxlevel */ ) * fullscale;	// масшабирование к 0..255
 	return v > fullscale ? fullscale : v;
 }
 
@@ -3606,19 +3618,21 @@ static void agc_reset(
 	FLOAT_t m0 = agcp->mininput;
 	FLOAT_t m1;
 
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	st->agcfastcap = m0;
 	st->agcslowcap = m0;
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 
 #if ! CTLSTYLE_V1D		// не Плата STM32F429I-DISCO с процессором STM32F429ZIT6 - на ней приема нет
 	for (;;)
 	{
 		local_delay_ms(1);
 
-		global_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 		const FLOAT_t v = agc_result_slow(st);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 
 		if (v != m0)
 		{
@@ -3630,9 +3644,10 @@ static void agc_reset(
 	{
 		local_delay_ms(1);
 
-		global_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 		const FLOAT_t v = agc_result_slow(st);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 
 		if (v != m1)
 			break;
@@ -3650,14 +3665,12 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	agcparams_t * const agcp = & rxsmeterparams;
 	agcstate_t * const st = & rxsmeterstate [pathi];
 
-	global_disableIRQ();
 	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
-	global_enableIRQ();
-	global_disableIRQ();
 	const FLOAT_t fltstrengthslow = agc_result_slow(st);	// измеритель уровня сигнала
-	global_enableIRQ();
 	* tracemax = agc_calcstrengthlog10(agcp, fltstrengthslow);
-	return agc_calcstrengthlog10(agcp, fltstrengthfast);
+	FLOAT_t r = agc_calcstrengthlog10(agcp, fltstrengthfast);
+
+	return r;
 }
 
 static int computeslevel_1(
@@ -3727,8 +3740,8 @@ dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upp
 	return level;
 }
 
-static FLOAT_t mickecliplevelp [NPROF] = { + INT_MAX, + INT_MAX };
-static FLOAT_t mickeclipleveln [NPROF] = { - INT_MAX, - INT_MAX };
+static FLOAT_t mickecliplevelp [NPROF] = { + INT_MAX, + INT_MAX };	/* positive limit */
+static FLOAT_t mickeclipleveln [NPROF] = { - INT_MAX, - INT_MAX };	/* negative limit */
 static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
 
 // ару и компрессор микрофона
@@ -3865,9 +3878,13 @@ static FLOAT_t mainvolumetx = 1; //1 - subtonevolume;
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
+#if WITHUSBMIKET113
+	return v;
+#else /* WITHUSBMIKET113 */
 	if (uacoutplayer)
 		return sdtn;
 	return v * mainvolumerx + sdtn * sidetonevolume;
+#endif /* WITHUSBMIKET113 */
 }
 
 // Здесь значение выборки в диапазоне, допустимом для кодека
@@ -3902,9 +3919,13 @@ static RAMFUNC FLOAT_t get_noisefloat(void)
 // shape: 0..1: 0 - monitor, 1 - sidetone
 static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 {
+#if WITHUSBMIKET113
+	return moni;
+#else /* WITHUSBMIKET113 */
 	if (uacoutplayer)
 		return moni;
 	return sdtn * shape + moni * glob_moniflag * (1 - shape);
+#endif /* WITHUSBMIKET113 */
 }
 
 /* При необходимости добавить в самопрослушивание пердаваемый SSB сигнал */
@@ -3924,7 +3945,7 @@ static void monimux(
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
 #if WITHUSBHW && WITHUSBUACOUT
-		if (glob_txaudio != BOARD_TXAUDIO_USB)
+		if (glob_txaudio != BOARD_TXAUDIO_USB && ! istxreplaced())
 		{
 			moni->IV = * ssbtx;
 			moni->QV = * ssbtx;
@@ -3946,11 +3967,15 @@ static RAMFUNC FLOAT_t mikeinmux(
 	)
 {
 	const uint_fast8_t digitx = dspmode == DSPCTL_MODE_TX_DIGI;
-	const FLOAT_t txlevelXXX = digitx ? txlevelfenceDIGI : txlevelfenceSSB;
+	const FLOAT_t txlevelXXX = digitx || istxreplaced() ? txlevelfenceDIGI : txlevelfenceSSB;
 	const FLOAT32P_t vi0p = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 	const FLOAT32P_t viusb0f = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
 	FLOAT_t vi0f = vi0p.IV;
 
+#if WITHUSBMIKET113
+	return vi0f;
+
+#endif
 #if WITHFT8
 	ft8_txfill(& vi0f);
 #endif /* WITHFT8 */
@@ -3980,6 +4005,10 @@ static RAMFUNC FLOAT_t mikeinmux(
 		case BOARD_TXAUDIO_LINE:
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
 		case BOARD_TXAUDIO_MIKE:
+#if WITHUSBHW && WITHUSBUACOUT
+			if (istxreplaced())
+				goto txfromusb;
+#endif /* WITHUSBHW && WITHUSBUACOUT */
 			//vi0f = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
 			// источник - микрофон
 			vi0f = txmikeagc(vi0f * txlevelXXX);	// АРУ
@@ -3996,6 +4025,7 @@ static RAMFUNC FLOAT_t mikeinmux(
 
 #if WITHUSBHW && WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
+			txfromusb:
 			// источник - USB
 			moni->IV = viusb0f.IV;
 			moni->QV = viusb0f.QV;
@@ -5174,7 +5204,7 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 static RAMFUNC void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 {
 #if WITHUSBUACIN
-	savesamplerecord16uacin(adpt_output(& uac48in, left), adpt_output(& uac48in, right));	// Запись демодулированного сигнала без озвучки клавиш в USB
+	savesampleuacin48(adpt_output(& uac48in, left), adpt_output(& uac48in, right));	// Запись демодулированного сигнала без озвучки клавиш в USB
 #endif /* WITHUSBUACIN */
 }
 
@@ -5182,7 +5212,7 @@ static RAMFUNC void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 {
 #if WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV)
-	savesamplerecord16SD(adpt_output(& sdcardio, left), adpt_output(& sdcardio, right));	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
+	savesamplewav48(adpt_output(& sdcardio, left), adpt_output(& sdcardio, right));	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
@@ -5228,7 +5258,7 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 				right = dual.QV;
 			}
 		}
-#elif WITHUSBHEADSET || WITHLFM
+#elif WITHUSBHEADSET || WITHLFM || WITHUSBMIKET113
 		// Обеспечиваем прослушивание стерео
 #else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
@@ -5246,7 +5276,7 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 			left = 0;
 			right = 0;
 		}
-		if (0 && tx)
+		if (1 && tx)
 		{
 			recordsampleSD(moniL, moniR);	// Запись самоконтроля и самопрослушки
 			recordsampleUAC(moniL, moniR);	// Запись самоконтроля и самопрослушки
@@ -5259,7 +5289,7 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 			recordsampleUAC(recleft, recright);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
-#if WITHUSBHEADSET || WITHLFM
+#if WITHUSBHEADSET || WITHLFM || WITHUSBMIKET113
 		b [L] = adpt_outputexact(& afcodectx, left);
 		b [R] = adpt_outputexact(& afcodectx, right);
 #else /* WITHUSBHEADSET */
@@ -5453,8 +5483,8 @@ RAMFUNC void dsp_processtx(void)
 	unsigned i;
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	/* обработка передачи */
-	FLOAT_t txfirbuff [tx_MIKE_blockSize];
-	FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
+	static FLOAT_t txfirbuff [tx_MIKE_blockSize];
+	static FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
 	/* заполнение буфера сэмплами от микрофона или USB */
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
@@ -5462,6 +5492,13 @@ RAMFUNC void dsp_processtx(void)
 		monitorbuff [i].QV = 0;
 		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);
 	}
+#if WITHUSBMIKET113
+	for (i = 0; i < tx_MIKE_blockSize; ++ i)
+	{
+		savesampleout32stereo(0, 0);	// Запись в поток к передатчику I/Q значений.
+		save16demod(txfirbuff [i], txfirbuff [i]);
+	}
+#else /* WITHUSBMIKET113 */
 	/* формирование АЧХ перед модулятором */
 	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);
 
@@ -5508,6 +5545,7 @@ RAMFUNC void dsp_processtx(void)
 #endif /* WITHDSPEXTDDC */
 
 	}
+#endif /* WITHUSBMIKET113 */
 #endif /* ! WITHTRANSPARENTIQ */
 }
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
@@ -5611,9 +5649,11 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		save16demod(dual.IV, dual.QV);
 
 #elif WITHDSPEXTDDC
+
+	#if WITHUSBMIKET113
 	// Режимы трансиверов с внешним DDC
 
-	#if WITHUSEDUALWATCH
+	#elif WITHUSEDUALWATCH
 
 		//
 		// Двухканальный приёмник
@@ -6717,8 +6757,8 @@ void board_set_uacplayer(uint_fast8_t v)
 #endif /* WITHUSBUAC */
 }
 
-/* автоматический переход на передачу при появлении звука со стороны компьютера */
-void board_set_datavox(uint_fast8_t v)
+/* автоматическое изменение источника при появлении звука со стороны компьютера */
+void board_set_datatx(uint_fast8_t v)
 {
 #if WITHUSBUAC && WITHTX
 	datavox = v;

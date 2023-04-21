@@ -34,7 +34,7 @@
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 
 // OHCI at USB1HSFSP2_BASE
-#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
+//#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
 #if WITHDEBUG
 	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
@@ -49,6 +49,7 @@
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART4	1
 #define WITHNMEA_USART4		1	/* порт подключения GPS/GLONASS */
+#define BOARD_TUH_RHPORT 1
 
 #if WITHISBOOTLOADER
 
@@ -69,7 +70,7 @@
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
 	#define WITHUSBDEV_DMAENABLE 1
@@ -81,7 +82,7 @@
 //	#define WITHEHCIHW	1	/* USB_EHCI controller */
 //	#define WITHUSBHW_EHCI		USB1_EHCI
 //	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
-
+//	#define WITHOHCIHW_OHCIPORT 0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -108,7 +109,11 @@
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	#define WITHFPGAIF_SAI2_A_TX_B_RX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
+#if CODEC1_IFC_MASTER
+	#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
+#else /* CODEC1_IFC_MASTER */
 	#define WITHCODEC1_I2S2_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S2 */
+#endif /* CODEC1_IFC_MASTER */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
@@ -139,12 +144,15 @@
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		USB1_EHCI
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
+	#define WITHOHCIHW_OHCIPORT 0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
 
+		#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+		#define UACIN_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
 		//#define WITHUAC2		1	/* UAC2 support */
 		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
@@ -264,20 +272,21 @@
 		arm_hardware_pioi_altfn2(1u << 3,	AF_SPI2); /* PI3 I2S2_SDO - приём от кодека */ \
 		arm_hardware_pioi_altfn2(1u << 2,	AF_SPI2); /* PI2 I2S2_SDI, - передача */ \
 		arm_hardware_pioc_altfn2(1u << 6,	AF_SPI2); /* PC6 I2S2_MCK - WS * 256 */ \
-		arm_hardware_pioi_altfn20(1u << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
+		arm_hardware_pioi_altfn20(1u << 11, AF_SPI1); /* PI11 I2S_CKIN AF_5 */ \
 	} while (0)
 
-		// Инициализируются I2S2 в дуплексном режиме.
+	// На данной плате не работает - MCK идёт только от процессора
+	// Инициализируются I2S2 в дуплексном режиме - WS & BCLK от кодека
 	#define I2S2HW_SLAVE_INITIALIZE() do { \
 		arm_hardware_pioi_altfn2(1u << 0,	AF_SPI2); /* PI0 I2S2_WS	*/ \
 		arm_hardware_pioi_altfn2(1u << 1,	AF_SPI2); /* PI1 I2S2_CK	*/ \
 		arm_hardware_pioi_altfn2(1u << 3,	AF_SPI2); /* PI3 I2S2_SDO - приём от кодека */ \
 		arm_hardware_pioi_altfn2(1u << 2,	AF_SPI2); /* PI2 I2S2_SDI, - передача */ \
 		arm_hardware_pioc_altfn2(1u << 6,	AF_SPI2); /* PC6 I2S2_MCK - WS * 256 */ \
-		arm_hardware_pioi_altfn20(1u << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
+		arm_hardware_pioi_altfn20(1u << 11, AF_SPI1); /* PI11 I2S_CKIN AF_5 */ \
 	} while (0)
 
-	#define I2S3HW_SLAVE_INITIALIZE() do { \
+	#define I2S3HW_SLAVE_RX_INITIALIZE() do { \
 	} while (0)
 
 #endif /* WITHI2S2HW */

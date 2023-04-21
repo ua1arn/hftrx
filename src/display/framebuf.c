@@ -47,7 +47,7 @@ static uint32_t ptr_lo32(uintptr_t v)
 		xG2D_MIXER_ALPHA,
 	} xg2d_alpha_mode_enh;
 
-#if LCDMODE_MAIN_ARGB888
+#if LCDMODE_MAIN_ARGB8888
 	#define VI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define UI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define WB_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
@@ -380,8 +380,8 @@ static void t113_fillrect(
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 
-#elif LCDMODE_MAIN_ARGB888
-	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(0 * DMA2D_FGPFCCR_CM_0)	/* 0000: ARGB888 */
+#elif LCDMODE_MAIN_ARGB8888
+	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(0 * DMA2D_FGPFCCR_CM_0)	/* 0000: ARGB8888 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x02	// 10: Word (32-bit)
 	#define DMA2D_OPFCCR_CM_VALUE_MAIN		(0 * DMA2D_OPFCCR_CM_0)	/* 0: 000: ARGB8888 */
 
@@ -389,6 +389,9 @@ static void t113_fillrect(
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x01	// 2 byte
 	#define DMA2D_OPFCCR_CM_VALUE_MAIN		(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
+#else
+	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
+	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 
 #endif /* LCDMODE_MAIN_L8 */
 
@@ -427,7 +430,7 @@ mdma_getbus(uintptr_t addr)
 	addr &= 0xFF000000uL;
 	return (addr == 0x00000000uL || addr == 0x20000000uL);
 
-#elif CPUSTYLE_STM32MP1 && CORE_CA7
+#elif CPUSTYLE_STM32MP1
 	// SYSMEM
 	// DDRCTRL
 	/*
@@ -638,13 +641,15 @@ void arm_hardware_mdma_initialize(void)
 		(M - 1) * (1u << 0) | // FACTOR_M
 		0;
 	CCU->G2D_CLK_REG |= (1u << 31);	// G2D_CLK_GATING
-	//local_delay_us(10);
+	local_delay_us(10);
+	//PRINTF("allwnrt113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnrt113_get_g2d_freq() / 1000000));
 
 	//CCU->G2D_BGR_REG = 0;
 	CCU->G2D_BGR_REG |= (1u << 0);		/* Enable gating clock for G2D 1: Pass */
 	CCU->G2D_BGR_REG &= ~ (1u << 16);	/* G2D reset 0: Assert */
 	CCU->G2D_BGR_REG |= (1u << 16);	/* G2D reset 1: De-assert */
 	(void) CCU->G2D_BGR_REG;
+	local_delay_us(10);
 
 	/* на Allwinner T113-S3 и F133 модифицируемы только младшие 8 бит */
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
@@ -960,7 +965,7 @@ hwaccel_rect_u16(
 		unsigned n = w;
 		while (n --)
 			* buffer ++ = color;
-		tbuffer += t;
+		buffer += t;
 	}
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
@@ -1105,7 +1110,7 @@ hwaccel_rect_u24(
 		unsigned n = w;
 		while (n --)
 			* buffer ++ = color;
-		tbuffer += t;
+		buffer += t;
 	}
 
 #endif
@@ -1269,7 +1274,7 @@ hwaccel_rect_u32(
 		unsigned n = w;
 		while (n --)
 			* buffer ++ = color;
-		tbuffer += t;
+		buffer += t;
 	}
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
@@ -1419,7 +1424,7 @@ void colpip_fillrect(
 #elif LCDMODE_MAIN_L24
 	hwaccel_rect_u24((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
-#elif LCDMODE_MAIN_ARGB888
+#elif LCDMODE_MAIN_ARGB8888
 	hwaccel_rect_u32((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
 #endif
@@ -1659,7 +1664,7 @@ void colpip_fill(
 #elif LCDMODE_MAIN_L24
 	hwaccel_rect_u24((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
-#elif LCDMODE_MAIN_ARGB888
+#elif LCDMODE_MAIN_ARGB8888
 	hwaccel_rect_u32((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
 #endif
@@ -1726,10 +1731,11 @@ void hwaccel_bitblt(
 	const PACKEDCOLORPIP_T * __restrict src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy,	// высота буфера
+	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
-	if (sdx == 0 || sdy == 0)
+	if (sw == 0 || sh == 0)
 		return;
 
 #if WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
@@ -1740,7 +1746,7 @@ void hwaccel_bitblt(
 
 	MDMA_CH->CDAR = (uintptr_t) dst;
 	MDMA_CH->CSAR = (uintptr_t) src;
-	const uint_fast32_t tlen = mdma_tlen(sdx * sizeof (PACKEDCOLORPIP_T), sizeof (PACKEDCOLORPIP_T));
+	const uint_fast32_t tlen = mdma_tlen(sw * sizeof (PACKEDCOLORPIP_T), sizeof (PACKEDCOLORPIP_T));
 	const uint_fast32_t sbus = mdma_getbus(MDMA_CH->CSAR);
 	const uint_fast32_t dbus = mdma_getbus(MDMA_CH->CDAR);
 	const uint_fast32_t sinc = 0x02; // Source increment mode: 10: address pointer is incremented
@@ -1757,21 +1763,21 @@ void hwaccel_bitblt(
 		(MDMA_CTCR_xSIZE_MAIN << MDMA_CTCR_DINCOS_Pos) |
 		(dburst << MDMA_CTCR_DBURST_Pos) |	// Destination burst transfer configuration
 		((tlen - 1) << MDMA_CTCR_TLEN_Pos) |		// buffer Transfer Length (number of bytes - 1)
-		(0x00uL << MDMA_CTCR_PKE_Pos) |
-		(0x00uL << MDMA_CTCR_PAM_Pos) |
-		(0x02uL << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
-		(0x01uL << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
-		(0x01uL << MDMA_CTCR_BWM_Pos) |
+		(0x00u << MDMA_CTCR_PKE_Pos) |
+		(0x00u << MDMA_CTCR_PAM_Pos) |
+		(0x02u << MDMA_CTCR_TRGM_Pos) |		// Trigger Mode: 10: Each MDMA request (software or hardware) triggers a repeated block transfer (if the block repeat is 0, a single block is transferred)
+		(0x01u << MDMA_CTCR_SWRM_Pos) |		// 1: hardware request are ignored. Transfer is triggered by software writing 1 to the SWRQ bit
+		(0x01u << MDMA_CTCR_BWM_Pos) |
 		0;
 	MDMA_CH->CBNDTR =
-		((sizeof (PACKEDCOLORPIP_T) * (sdx)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
-		(0x00uL << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
-		(0x00uL << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
-		((sdy - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
+		((sizeof (PACKEDCOLORPIP_T) * (sw)) << MDMA_CBNDTR_BNDT_Pos) |	// Block Number of data bytes to transfer
+		(0x00u << MDMA_CBNDTR_BRSUM_Pos) |	// Block Repeat Source address Update Mode: 0 - increment
+		(0x00u << MDMA_CBNDTR_BRDUM_Pos) |	// Block Repeat Destination address Update Mode: 0 - increment
+		((sh - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
-		((sizeof (PACKEDCOLORPIP_T) * (GXADJ(sdx) - sdx)) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
-		((sizeof (PACKEDCOLORPIP_T) * (GXADJ(tdx) - sdx)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((sizeof (PACKEDCOLORPIP_T) * (GXADJ(sdx) - (sw))) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
+		((sizeof (PACKEDCOLORPIP_T) * (GXADJ(tdx) - (sw))) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -1838,8 +1844,8 @@ void hwaccel_bitblt(
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) dst;
 	const uintptr_t saddr = (uintptr_t) src;
-	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
-	const uint_fast32_t tsizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);		/* размер совпадающий с источником - просто для удобства */
+	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
+	const uint_fast32_t tsizehw = ((sh - 1) << 16) | ((sw - 1) << 0);		/* размер совпадающий с источником - просто для удобства */
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
@@ -2000,11 +2006,11 @@ void hwaccel_bitblt(
 		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
 		// работа с color key
 
-		const unsigned stail = GXADJ(sdx) - sdx;
-		const unsigned dtail = GXADJ(tdx) - sdx;
-		while (sdy --)
+		const unsigned stail = GXADJ(sdx) - sw;
+		const unsigned dtail = GXADJ(tdx) - sw;
+		while (sh --)
 		{
-			unsigned w = sdx;
+			unsigned w = sw;
 			while (w --)
 			{
 				const COLORPIP_T c = * src ++;
@@ -2019,7 +2025,7 @@ void hwaccel_bitblt(
 	else
 	{
 		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
-		if (tdx == sdx)
+		if (tdx == sdx && sw == GXADJ(sdx))
 		{
 			const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
 			// ширина строки одинаковая в получателе и источнике
@@ -2027,11 +2033,10 @@ void hwaccel_bitblt(
 		}
 		else
 		{
-			const size_t len = sdx * sizeof * src;
+			const size_t len = sw * sizeof * src;
 			while (sdy --)
 			{
 				memcpy(dst, src, len);
-				//dcache_clean((uintptr_t) dst, len);
 				src += GXADJ(sdx);
 				dst += GXADJ(tdx);
 			}
@@ -2051,7 +2056,8 @@ void hwaccel_stretchblt(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t sdx,	uint_fast16_t sdy,		// источник Размеры окна в пикселях
+	uint_fast16_t sdx,	uint_fast16_t sdy,		// источник Размеры буфера в пикселях
+	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника в пикселях
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
@@ -2078,7 +2084,7 @@ void hwaccel_stretchblt(
 	const unsigned srcFormat = awxx_get_srcformat(keyflag);
 	enum { PIXEL_SIZE = sizeof * dst };
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
-	const uint_fast32_t ssizehw = ((sdy - 1) << 16) | ((sdx - 1) << 0);
+	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t srclinear = (uintptr_t) src;
@@ -2102,11 +2108,11 @@ void hwaccel_stretchblt(
 //	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 
-	if (w != sdx || h != sdy)
+	if (w != sw || h != sh)
 	{
 		/* расчет масштабов */
-		const uint_fast32_t hstep = (((uint_fast32_t) sdx << 19) / w) << 1;
-		const uint_fast32_t vstep = (((uint_fast32_t) sdy << 19) / h) << 1;
+		const uint_fast32_t hstep = (((uint_fast32_t) sw << 19) / w) << 1;
+		const uint_fast32_t vstep = (((uint_fast32_t) sh << 19) / h) << 1;
 		/* Включаем Scaler */
 		G2D_VSU->VS_CTRL = 0x00000001;
 		G2D_VSU->VS_OUT_SIZE = tsizehw;
@@ -2908,14 +2914,16 @@ void colpip_bitblt(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
 	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t w,	uint_fast16_t h,	// источник Размеры окна в пикселях
+	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры окна в пикселях
+	uint_fast16_t sx,	uint_fast16_t sy,	// источник Позиция окна
+	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
-	ASSERT(tdx >= w);
-	ASSERT(tdy >= h);
+	ASSERT(tdx >= sdx);
+	ASSERT(tdy >= sdy);
 
 	//PRINTF("colpip_bitblt: x/y=%d/%d, w/h=%d/%d, keyflag=%08X\n", x, y, w, h, keyflag);
 
@@ -2924,7 +2932,8 @@ void colpip_bitblt(
 		dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
 		colpip_mem_at(dst, tdx, tdy, x, y), tdx, tdy,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		src, w, h,
+		colpip_const_mem_at(src, sdx, sdy, sx, sy), sdx, sdy,
+		sw, sh,	// размеры окна источника
 		keyflag, keycolor
 		);
 }
@@ -2933,14 +2942,16 @@ void colpip_bitblt(
 void colpip_stretchblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
-	PACKEDCOLORPIP_T * dst,	// получатель
+	PACKEDCOLORPIP_T * __restrict dst,	// получатель
 	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
 	uint_fast16_t x,	uint_fast16_t y,	// позиция получателя
 	uint_fast16_t w,	uint_fast16_t h,	// Размеры окна получателя
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORPIP_T * src, 	// источник
-	uint_fast16_t sdx,	uint_fast16_t sdy,		// источник Размеры окна в пикселях
+	const PACKEDCOLORPIP_T * __restrict src, 	// источник
+	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры буфера в пикселях
+	uint_fast16_t sx,	uint_fast16_t sy,	// источник Позиция
+	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
@@ -2948,25 +2959,12 @@ void colpip_stretchblt(
 	ASSERT(dst != NULL);
 	ASSERT(dx >= (x + w));
 	ASSERT(dy >= (y + h));
-	if (w == sdx && h == sdy)
-	{
-		//PRINTF("colpip_stretchblt (same): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
-		/* размеры совпадают - не используем stretch */
-		hwaccel_bitblt(
-			dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-			colpip_mem_at(dst, dx, dy, x, y), dx, dy,
-			srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-			src, sdx, sdy,
-			keyflag, keycolor
-			);
-		return;
-	}
 
 	hwaccel_stretchblt(
 			dstinvalidateaddr, dstinvalidatesize,
 			colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h,
 			srcinvalidateaddr, srcinvalidatesize,
-			src, sdx, sdy,
+			colpip_const_mem_at(src, sdx, sdy, sx, sy), sdx, sdy, sw, sh,
 			keyflag, keycolor);
 
 }
@@ -3173,7 +3171,7 @@ COLORPIP_T getshadedcolor(
 		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
-#elif LCDMODE_MAIN_ARGB888 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHTFT_OVER_LVDS
+#elif LCDMODE_MAIN_ARGB8888 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHTFT_OVER_LVDS
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -3191,7 +3189,7 @@ COLORPIP_T getshadedcolor(
 	}
 
 
-#elif LCDMODE_MAIN_ARGB888
+#elif LCDMODE_MAIN_ARGB8888
 
 	if (dot == COLORPIP_BLACK)
 	{

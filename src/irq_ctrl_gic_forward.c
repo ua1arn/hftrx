@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if (__CORTEX_A != 0) && CPUSTYLE_ARM
+#if (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__))
 
 	// Закомментировать #include CMSIS_device_header
 	// Please, comment out string #include CMSIS_device_header

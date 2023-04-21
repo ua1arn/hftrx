@@ -15,6 +15,8 @@
 #include <math.h>
 #include "src/gui/gui.h"
 
+#include "dspdefines.h"
+
 #if WITHALTERNATIVEFONTS
 	#include "display/fonts/ub_fonts.h"
 #endif /* WITHALTERNATIVEFONTS */
@@ -109,6 +111,8 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 	{
 		colpip_bitblt((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, xx, yy,
 				(uintptr_t) lbl_bg->label_bg, lbl_bg->size, lbl_bg->label_bg, lbl_bg->w, lbl_bg->h,
+				0, 0,	// координаты окна источника
+				lbl_bg->w, lbl_bg->h, //размер окна источника
 				BITBLT_FLAG_NONE, 0);
 	}
 	else
@@ -331,6 +335,13 @@ static const COLORPAIR_T colors_2state [2] =
 {
 	{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
 	{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+};
+
+// Параметры отображения состояний из двух вариантов (активный - на красном фонк)
+static const COLORPAIR_T colors_2state_rec [2] =
+{
+	{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
+	{	COLORMAIN_RED,	COLORMAIN_BLACK,	},
 };
 
 // Параметры отображения текстов без вариантов
@@ -1023,6 +1034,8 @@ display2_smeter15(
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift,
+					0, 0,	// координаты окна источника
+					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
 #if WITHRLEDECOMPRESS
 			smeter_arrow(gp, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
@@ -1055,6 +1068,8 @@ display2_smeter15(
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift,
+					0, 0,	// координаты окна источника
+					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
 #if WITHRLEDECOMPRESS
 			smeter_arrow(gv, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
@@ -1088,6 +1103,8 @@ display2_smeter15(
 					fr, DIM_X, DIM_Y, x0, y0,
 					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], SM_BG_W, SM_BG_H,
+					0, 0,	// координаты окна источника
+					SM_BG_W, SM_BG_H, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
 
 			if(gp > smpr->gs)
@@ -1103,6 +1120,8 @@ display2_smeter15(
 					fr, DIM_X, DIM_Y, x0, y0,
 					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
 					smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], SM_BG_W, SM_BG_H,
+					0, 0,	// координаты окна источника
+					SM_BG_W, SM_BG_H,	// размер окна источника
 					BITBLT_FLAG_NONE, 0
 					);
 
@@ -1466,31 +1485,6 @@ static void display_txrxstate5alt(
 #endif /* WITHTX */
 }
 
-static void display_recstatus(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	dctx_t * pctx
-	)
-{
-#if WITHUSEAUDIOREC
-	unsigned long hamradio_get_recdropped(void);
-	int hamradio_get_recdbuffered(void);
-
-	char buf2 [12];
-	local_snprintf_P(
-		buf2,
-		ARRAY_SIZE(buf2),
-		PSTR("%08lx %2d"),
-		(unsigned long) hamradio_get_recdropped(),
-		(int) hamradio_get_recdbuffered()
-		);
-
-	colmain_setcolors(LABELTEXT, LABELBACK);
-	display_at(x, y, buf2);
-
-#endif /* WITHUSEAUDIOREC */
-}
-
 // Отображение режима записи аудио фрагмента
 static void display2_rec3(
 	uint_fast8_t x, 
@@ -1500,13 +1494,30 @@ static void display2_rec3(
 {
 #if WITHUSEAUDIOREC
 
+#if defined (RTC1_TYPE)
+
 	const uint_fast8_t state = hamradio_get_rec_value();
+	uint_fast8_t hour, minute, seconds;
+
+	board_rtc_cached_gettime(& hour, & minute, & seconds);
 
 	static const FLASHMEM char text_pau [] = "PAU";
 	static const FLASHMEM char text_rec [] = "REC";
 	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
-	display2_text_P(x, y, labels, colors_2state, state);
 
+	/* формирование мигающей надписи REC */
+	display2_text_P(x, y, labels, ((seconds & 0x01) && state) ? colors_2state_rec : colors_2state, state);
+
+#else /* defined (RTC1_TYPE) */
+
+	const uint_fast8_t state = hamradio_get_rec_value();
+	static const FLASHMEM char text_pau [] = "PAU";
+	static const FLASHMEM char text_rec [] = "REC";
+	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
+
+	display2_text_P(x, y, labels, colors_2state_rec, state);
+
+#endif /* defined (RTC1_TYPE) */
 #endif /* WITHUSEAUDIOREC */
 }
 
@@ -2131,17 +2142,42 @@ static void display_pbt(
 }
 
 // RX path bandwidth
+static void display2_rxbwval4(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const char * const labels [1] = { hamradio_get_rxbw_value4_P(), };
+	ASSERT(strlen(labels [0]) == 4);
+	display2_text(x, y, labels, colors_1state, 0);
+}
+
+// RX path bandwidth
+static void display2_rxbwval6alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const char * const labels [1] = { hamradio_get_rxbw_value4_P(), };
+	enum { state = 0 };
+	ASSERT(strlen(labels [0]) == 4);
+	layout_label1_medium(x, y, labels [state], 4, 6, state ? COLORMAIN_WHITE : COLORMAIN_BLACK, state ? COLORMAIN_RED : COLORMAIN_GRAY);
+}
+
+
+// RX path bandwidth name
 static void display2_rxbw3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	dctx_t * pctx
 	)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_value_P(), };
+	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_label3_P(), };
 	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
-
 
 // текущее состояние DUAL WATCH
 static void display2_mainsub3(
@@ -2603,6 +2639,7 @@ static void display2_currlevel5(
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 }
 
+// Class-A power amplifier
 static void display2_classa7(
 	uint_fast8_t x,
 	uint_fast8_t y,
@@ -2969,6 +3006,15 @@ static void display2_datetime12(
 #endif /* defined (RTC1_TYPE) */
 }
 
+static void display2_dummy(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
+
 struct dzone
 {
 	uint8_t x; // левый верхний угол
@@ -3010,592 +3056,9 @@ enum
 	REDRM_MVAL,		// значение параметра меню
 	REDRM_BUTTONS,  // область отображения экранных кнопок
 	REDRM_INIS,  	// инициализирующие процедцры экранных элементоы
+	REDRM_KEYB,		// обработчик клавиатуры для указанного display layout
 	REDRM_count
 };
-
-/* Описания расположения элементов на дисплеях */
-
-#if DSTYLE_T_X20_Y4
-
-	enum
-	{
-		BDTH_ALLRX = 14,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 5,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
-		BDTH_SPACERX = 0,
-		//
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		BDTH_ALLSWR = 9,
-		BDTH_SPACESWR = 1,
-		BDTH_ALLPWR = 4,
-		BDTH_SPACEPWR = 0
-	#else /* WITHSHOWSWRPWR */
-		BDTH_ALLSWR = BDTH_ALLRX,
-		BDTH_SPACESWR = BDTH_SPACERX,
-		BDTH_ALLPWR = BDTH_ALLRX,
-		BDTH_SPACEPWR = BDTH_SPACERX
-	#endif /* WITHSHOWSWRPWR */
-	};
-	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
-
-	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все)
-		DPAGE1,					// Страница, в которой отображаются основные (или все)
-		DISPLC_MODCOUNT,
-	};
-	enum {
-		DPAGEEXT = REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1)
-	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
-	static const FLASHMEM struct dzone dzones [] =
-	{
-		{	0, 0,	display_freqchr_a,	REDRM_FREQ, DPAGEEXT, },	// частота для символьных дисплеев
-		//{	0, 0,	display_txrxstate2,	REDRM_MODE, DPAGEEXT, },
-		{	9, 0,	display2_mode3_a,	REDRM_MODE,	DPAGEEXT, },	// SSB/CW/AM/FM/...
-		{	12, 0,	display_lockstate1,	REDRM_MODE, DPAGEEXT, },
-		{	13, 0,	display2_rxbw3,		REDRM_MODE, DPAGEEXT, },
-		{	17, 0,	display2_vfomode3,	REDRM_MODE, DPAGEEXT, },	// SPLIT
-
-		{	0, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-		{	4, 1,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-	#if defined (RTC1_TYPE)
-		{	8, 1,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
-	#endif /* defined (RTC1_TYPE) */
-	#if WITHUSEDUALWATCH
-		{	0, 1,	display_freqchr_b,	REDRM_FREQ, REDRSUBSET(DPAGE1), },	// частота для символьных дисплеев
-		{	17, 1,	display2_mainsub3, REDRM_MODE, DPAGEEXT, },	// main/sub RX
-	#endif /* WITHUSEDUALWATCH */
-
-		{	0, 2,	display2_bars,		REDRM_BARS, DPAGEEXT, },	// S-METER, SWR-METER, POWER-METER
-		{	17, 2,	display2_voxtune3,	REDRM_MODE, DPAGEEXT, },
-
-	#if WITHVOLTLEVEL && WITHCURRLEVEL
-		{	0, 3,	display_voltlevel4, REDRM_VOLT, DPAGEEXT, },	// voltmeter with "V"
-		{	5, 3,	display2_currlevel5, REDRM_VOLT, DPAGEEXT, },	// without "A"
-	#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
-#if WITHIF4DSP
-	#if WITHUSEAUDIOREC
-		{	13, 3,	display2_rec3,		REDRM_BARS, DPAGEEXT, },	// Отображение режима записи аудио фрагмента
-	#endif /* WITHUSEAUDIOREC */
-#endif /* WITHIF4DSP */
-		{	17, 3,	display2_agc3,		REDRM_MODE, DPAGEEXT, },
-
-	#if WITHMENU 
-		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
-	#endif /* WITHMENU */
-	};
-	#if WITHMENU
-		void display2_getmultimenu(multimenuwnd_t * p)
-		{
-			p->multilinemenu_max_rows = 1;
-			p->ystep = 1;	// количество ячеек разметки на одну строку меню
-			p->reverse = 0;
-			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
-		}
-	#endif /* WITHMENU */
-
-#elif DSTYLE_T_X20_Y2
-	/*
-		Вот то, как сейчас описан дисплей 2*20, предлагаю внести в это
-		изменения (вместо рисования картинок) - это будет отдельный,
-		твой персональный формат.
-		Можно указывать, какой элемент в каком из наборов отображаемых символов находится.
-		Если есть желание для приёма и передачи сделать разные элементы - укажи это в комментарии,
-		я дополню. Просто эти замещающие друг друга элементы должны занимать одинаковое
-		место на экране, затирая старое изображение при переключении режима отображения.
-		То, что переключается по MENU (REDRSUBSET(0)/REDRSUBSET(1)) - перерисовывается со стиранием экрана.
-
-	*/
-	enum
-	{
-		BDTH_ALLRX = 12,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 4,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
-		BDTH_SPACERX = 1,		/* количество позиций, затираемых справа от полосы S-метра */
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		BDTH_ALLSWR = 6,
-		BDTH_SPACESWR = 1,	/* количество позиций, затираемых справа от полосы SWR-метра */
-		BDTH_ALLPWR = 5,
-		BDTH_SPACEPWR = 0	/* количество позиций, затираемых справа от полосы PWR-метра */
-	#else /* WITHSHOWSWRPWR */
-		BDTH_ALLSWR = BDTH_ALLRX,
-		BDTH_SPACESWR = BDTH_SPACERX,
-		BDTH_ALLPWR = BDTH_ALLRX,
-		BDTH_SPACEPWR = BDTH_SPACERX
-	#endif /* WITHSHOWSWRPWR */
-	};
-	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
-
-	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все)
-		DPAGE_SMETER,
-		DPAGE_TIME,
-		DISPLC_MODCOUNT
-	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
-	static const FLASHMEM struct dzone dzones [] =
-	{
-		// строка 0
-		{	0, 0,	display2_vfomode3,	REDRM_MODE, REDRSUBSET_ALL, },	// SPLIT
-		{	4, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
-		{	12, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_ALL, },
-		{	13, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
-		{	17, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
-		// строка 1 - постоянные элементы
-		{	0, 1,	display2_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
-		// строка 1
-		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-	#if WITHDSPEXTDDC
-		{	9, 1,	display2_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// ovf/pre
-	#else /* WITHDSPEXTDDC */
-		{	9, 1,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// pre
-	#endif /* WITHDSPEXTDDC */
-		// строка 1
-		{	4, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE_SMETER), },	// S-METER, SWR-METER, POWER-METER
-		{	4, 1,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// TIME
-		// строка 1 - постоянные элементы
-		{	17, 1,	display2_agc3,		REDRM_MODE, REDRSUBSET_ALL, },
-
-		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
-	#if WITHMENU
-		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
-	#endif /* WITHMENU */
-	};
-#if WITHMENU
-	void display2_getmultimenu(multimenuwnd_t * p)
-	{
-		p->multilinemenu_max_rows = 1;
-		p->ystep = 1;	// количество ячеек разметки на одну строку меню
-		p->reverse = 0;
-		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
-	}
-#endif /* WITHMENU */
-
-#elif DSTYLE_T_X20_Y2_IGOR
-
-	enum
-	{
-		BDTH_ALLRX = 12,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 4,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
-		BDTH_SPACERX = 1,		/* количество позиций, затираемых справа от полосы S-метра */
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		BDTH_ALLSWR = 6,
-		BDTH_SPACESWR = 1,	/* количество позиций, затираемых справа от полосы SWR-метра */
-		BDTH_ALLPWR = 5,
-		BDTH_SPACEPWR = 0	/* количество позиций, затираемых справа от полосы PWR-метра */
-	#else /* WITHSHOWSWRPWR */
-		BDTH_ALLSWR = BDTH_ALLRX,
-		BDTH_SPACESWR = BDTH_SPACERX,
-		BDTH_ALLPWR = BDTH_ALLRX,
-		BDTH_SPACEPWR = BDTH_SPACERX
-	#endif /* WITHSHOWSWRPWR */
-	};
-	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
-
-	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все)
-		DPAGE1 = 0,					// Страница, в которой отображаются основные (или все)
-		DISPLC_MODCOUNT
-	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
-	static const FLASHMEM struct dzone dzones [] =
-	{
-		{	0, 0,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },	// SPLIT
-		{	4, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },	// частота для символьных дисплеев
-		{	12, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },
-		{	4, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-		//{	0, 1, display_pbt,		REDRM_BARS, REDRSUBSET(DPAGE1), },	// PBT +00.00
-	#if WITHMENU
-		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
-	#endif /* WITHMENU */
-	};
-#if WITHMENU
-	void display2_getmultimenu(multimenuwnd_t * p)
-	{
-		p->multilinemenu_max_rows = 1;
-		p->ystep = 1;	// количество ячеек разметки на одну строку меню
-		p->reverse = 0;
-		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
-	}
-#endif /* WITHMENU */
-
-#elif DSTYLE_T_X16_Y2 && DSTYLE_SIMPLEFREQ
-
-	enum
-	{
-		BDTH_ALLRX = 12,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 4,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
-		BDTH_SPACERX = 0,
-		//
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		BDTH_ALLSWR = 7,
-		BDTH_SPACESWR = 1,
-		BDTH_ALLPWR = 4,
-		BDTH_SPACEPWR = 0
-	#else /* WITHSHOWSWRPWR */
-		BDTH_ALLSWR = BDTH_ALLRX,
-		BDTH_SPACESWR = BDTH_SPACERX,
-		BDTH_ALLPWR = BDTH_ALLRX,
-		BDTH_SPACEPWR = BDTH_SPACERX
-	#endif /* WITHSHOWSWRPWR */
-	};
-	#define SWRMAX	40	// 4.0 - значение на полной шкале
-	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все)
-		//
-		DISPLC_MODCOUNT
-	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
-	static const FLASHMEM struct dzone dzones [] =
-	{
-		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
-	};
-#if WITHMENU
-	void display2_getmultimenu(multimenuwnd_t * p)
-	{
-		p->multilinemenu_max_rows = 1;
-		p->ystep = 1;	// количество ячеек разметки на одну строку меню
-		p->reverse = 0;
-		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
-	}
-#endif /* WITHMENU */
-
-#elif DSTYLE_T_X16_Y2
-
-	enum
-	{
-		BDTH_ALLRX = 16,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 5,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
-		BDTH_SPACERX = 0,
-		//
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		BDTH_ALLSWR = 7,
-		BDTH_SPACESWR = 1,
-		BDTH_ALLPWR = 8,
-		BDTH_SPACEPWR = 0
-	#else /* WITHSHOWSWRPWR */
-		BDTH_ALLSWR = BDTH_ALLRX,
-		BDTH_SPACESWR = BDTH_SPACERX,
-		BDTH_ALLPWR = BDTH_ALLRX,
-		BDTH_SPACEPWR = BDTH_SPACERX
-	#endif /* WITHSHOWSWRPWR */
-	};
-	#define SWRMAX	40	// 4.0 - значение на полной шкале
-	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все)
-		DPAGE_SMETER,			// Страница с отображением S-метра, SWR-метра
-	#if WITHUSEAUDIOREC
-		//DPAGE_SDCARD,
-	#endif /* WITHUSEAUDIOREC */
-	#if WITHUSEDUALWATCH
-		DPAGE_SUBRX,
-	#endif /* WITHUSEDUALWATCH */
-	#if defined (RTC1_TYPE)
-		DPAGE_TIME,
-	#endif /* defined (RTC1_TYPE) */
-	#if WITHMODEM
-		DPAGE_BPSK,
-	#endif /* WITHMODEM */
-	#if WITHVOLTLEVEL && WITHCURRLEVEL
-		DPAGE_VOLTS,
-	#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
-		//
-		DISPLC_MODCOUNT
-	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
-	static const FLASHMEM struct dzone dzones [] =
-	{
-		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
-		{	8, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET_ALL, },
-		{	9, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
-		{	13, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
-
-		{	0, 1,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// при скрытом s-metre, при передаче показывает TX
-	#if WITHDSPEXTDDC
-		{	9, 1,	display2_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// ovf/pre
-	#else /* WITHDSPEXTDDC */
-		{	9, 1,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// pre
-	#endif /* WITHDSPEXTDDC */
-#if WITHIF4DSP
-	#if WITHUSEAUDIOREC
-		{	13, 1,	display2_rec3,		REDRM_BARS, REDRSUBSET(DPAGE0) /*| REDRSUBSET(DPAGE_SMETER)*/, },	// Отображение режима записи аудио фрагмента
-	#endif /* WITHUSEAUDIOREC */
-#else /* WITHIF4DSP */
-		{	13, 1,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0) /*| REDRSUBSET(DPAGE_SMETER)*/, },
-#endif /* WITHIF4DSP */
-
-		{	0, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE_SMETER), },	// S-METER, SWR-METER, POWER-METER
-
-	#if WITHVOLTLEVEL && WITHCURRLEVEL
-		{	0, 1,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE_VOLTS), },	// voltmeter with "V"
-		{	6, 1,	display2_currlevelA6, REDRM_VOLT, REDRSUBSET(DPAGE_VOLTS), },	// amphermeter with "A"
-	#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
-	#if WITHMODEM
-		{	0, 1,	display2_freqdelta8, REDRM_BARS, REDRSUBSET(DPAGE_BPSK), },	// выход ЧМ демодулятора
-	#endif /* WITHMODEM */
-	#if WITHUSEDUALWATCH
-		{	0, 1,	display_freqchr_b,	REDRM_FREQ, REDRSUBSET(DPAGE_SUBRX), },	// FREQ B
-		{	9, 1,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE_SUBRX), },	// SPLIT
-		{	13, 1,	display2_mainsub3, REDRM_MODE, REDRSUBSET(DPAGE_SUBRX), },	// main/sub RX
-	#endif /* WITHUSEDUALWATCH */
-
-	//#if WITHUSEAUDIOREC
-	//	{	0, 1,	display_recstatus,	REDRM_BARS, REDRSUBSET(DPAGE_SDCARD), },	// recording debug information
-	//	{	13, 1,	display2_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_SDCARD), },	// Отображение режима записи аудио фрагмента
-	//#endif /* WITHUSEAUDIOREC */
-
-	#if defined (RTC1_TYPE)
-		{	0, 1,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// TIME
-	#if WITHUSEDUALWATCH
-		{	9, 1,	display2_mainsub3,	REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// main/sub RX
-	#endif /* WITHUSEDUALWATCH */
-	#if WITHUSEAUDIOREC
-		{	13, 1,	display2_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// Отображение режима записи аудио фрагмента
-	#endif /* WITHUSEAUDIOREC */
-	#endif /* defined (RTC1_TYPE) */
-
-
-		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
-		//{	0, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
-	#if WITHMENU
-		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	15, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
-	#endif /* WITHMENU */
-	};
-#if WITHMENU
-	void display2_getmultimenu(multimenuwnd_t * p)
-	{
-		p->multilinemenu_max_rows = 1;
-		p->ystep = 1;	// количество ячеек разметки на одну строку меню
-		p->reverse = 0;
-		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
-	}
-#endif /* WITHMENU */
-
-#elif DSTYLE_T_X16_Y4
-
-	enum
-	{
-		BDTH_ALLRX = 14,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 5,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
-		BDTH_SPACERX = 0,
-		//
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		BDTH_ALLSWR = 9,
-		BDTH_SPACESWR = 1,
-		BDTH_ALLPWR = 4,
-		BDTH_SPACEPWR = 0
-	#else /* WITHSHOWSWRPWR */
-		BDTH_ALLSWR = BDTH_ALLRX,
-		BDTH_SPACESWR = BDTH_SPACERX,
-		BDTH_ALLPWR = BDTH_ALLRX,
-		BDTH_SPACEPWR = BDTH_SPACERX
-	#endif /* WITHSHOWSWRPWR */
-	};
-	#define SWRMAX	40	// 4.0 - значение на полной шкале
-
-	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все)
-		DISPLC_MODCOUNT
-	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
-	static const FLASHMEM struct dzone dzones [] =
-	{
-		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
-		{	8, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET_ALL, },
-		{	9, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
-		{	13, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
-
-		{	0, 1,	display2_vfomode3,	REDRM_MODE, REDRSUBSET_ALL, },	// SPLIT
-		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET_ALL, },		// при передаче показывает TX
-	#if WITHDSPEXTDDC
-		{	9, 1,	display2_preovf3,	REDRM_BARS, REDRSUBSET_ALL, },	// ovf/pre
-	#else /* WITHDSPEXTDDC */
-		{	9, 1,	display_pre3,		REDRM_MODE, REDRSUBSET_ALL, },	// pre
-	#endif /* WITHDSPEXTDDC */
-
-		{	0, 2,	display2_bars,		REDRM_BARS, REDRSUBSET_ALL, },	// S-METER, SWR-METER, POWER-METER
-
-		{	0, 3,	display2_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
-	#if defined (RTC1_TYPE)
-		{	4, 3,	display_time8,		REDRM_BARS, REDRSUBSET_ALL, },	// TIME
-	#endif /* defined (RTC1_TYPE) */
-		{	13, 3,	display2_agc3,		REDRM_MODE, REDRSUBSET_ALL, },
-
-		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
-		//{	0, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
-
-	#if WITHMENU
-		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра параметра
-		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	15, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
-	#endif /* WITHMENU */
-	};
-#if WITHMENU
-	void display2_getmultimenu(multimenuwnd_t * p)
-	{
-		p->multilinemenu_max_rows = 1;
-		p->ystep = 1;	// количество ячеек разметки на одну строку меню
-		p->reverse = 0;
-		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
-	}
-#endif /* WITHMENU */
-
-#elif DSTYLE_G_X64_Y32
-    #include "display/dstyle/g_x64_y32.h"
-#elif DSTYLE_G_X128_Y64
-    #include "display/dstyle/g_x128_y64.h"
-#elif DSTYLE_G_X132_Y64
-    #include "display/dstyle/g_x132_y64.h"
-#elif DSTYLE_G_X160_Y128
-    #include "display/dstyle/g_x160_y128.h"
-#elif DSTYLE_G_X176_Y132
-    #include "display/dstyle/g_x176_y132.h"
-#elif DSTYLE_G_X220_Y176
-    #include "display/dstyle/g_x220_y176.h"
-#elif DSTYLE_G_X240_Y128
-    #include "display/dstyle/g_x240_y128.h"
-#elif DSTYLE_G_X320_Y240
-    #include "display/dstyle/g_x320_y240.h"
-#elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF && ! WITHTOUCHGUI
-    #include "display/dstyle/g_x480_y272_spectrum_notouch.h"
-#elif DSTYLE_G_X480_Y272
-    #include "display/dstyle/g_x480_y272.h"
-#elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI && WITHALTERNATIVELAYOUT
-    #include "display/dstyle/g_x800_y480_touch_alternative.h"
-#elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI //&& WITHSPECTRUMWF
-    #include "display/dstyle/g_x800_y480_touch.h"
-#elif DSTYLE_G_X800_Y480 // && (LCDMODE_MAIN_PAGES > 1)	//&& WITHSPECTRUMWF
-    #include "display/dstyle/g_x800_y480.h"
-#elif DSTYLE_G_X800_Y480 && 1	//&& WITHSPECTRUMWF
-    #include "display/dstyle/g_x800_y480_mini.h"
-#elif DSTYLE_G_DUMMY
-
-#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	//					"012345678901234567890123"
-	#define SWRPWRMAP	"1   2   3   4  0% | 100%"
-	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
-#else
-	//					"012345678901234567890123"
-	#define POWERMAP	"0    25    50   75   100"
-	#define SWRMAP		"1   |   2  |   3   |   4"	//
-	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
-#endif
-//						"012345678901234567890123"
-#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
-enum
-{
-	BDTH_ALLRXBARS = 24,	// ширина зоны для отображение барграфов на индикаторе
-	BDTH_ALLRX = 40,	// ширина зоны для отображение графического окна на индикаторе
-
-	BDTH_LEFTRX = 12,	// ширина индикатора баллов (без плюслв)
-	BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
-	BDTH_SPACERX = 0,
-	BDTH_ALLSWR = 13,
-	BDTH_SPACESWR = 2,
-	BDTH_ALLPWR = 9,
-	BDTH_SPACEPWR = 0,
-
-	BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
-	/* совмещение на одном экрание водопада и панорамы */
-	BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-	BDCV_SPMRX = ROWS2GRID(27),	// вертикальный размер спектра в ячейках
-	BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
-	BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках
-};
-enum {
-	DLES = 35	// spectrum window upper line
-};
-
-
-enum
-{
-	PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
-	PATTERN_BAR_FULL = 0xFF,
-	PATTERN_BAR_HALF = 0x3c,
-	PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
-	PATTERN_BAR_EMPTYHALF = 0x00	//0x00
-};
-
-enum
-{
-	DPAGE0,					// Страница, в которой отображаются основные (или все)
-	DISPLC_MODCOUNT
-};
-
-#if 1//TUNE_TOP > 100000000uL
-	#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
-#else
-	#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-#endif
-#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
-
-
-static void display2_dummy(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
-{
-
-}
-// 480/5 = 96, 800/16=50
-// 272/5 = 54, 480/16=30 (old)
-//#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-//#define SMALLCHARH 15 /* Font height */
-//#define SMALLCHARW 16 /* Font width */
-static const FLASHMEM struct dzone dzones [] =
-{
-	{	0,	0,	display2_dummy,	REDRM_MODE,	REDRSUBSET_SLEEP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
-};
-
-#if WITHMENU
-	void display2_getmultimenu(multimenuwnd_t * p)
-	{
-		p->multilinemenu_max_rows = 15;
-		p->ystep = 4;	// количество ячеек разметки на одну строку меню
-		p->reverse = 1;
-		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
-	}
-#endif /* WITHMENU */
-
-	/* получить координаты окна с панорамой и/или водопадом. */
-	void display2_getpipparams(pipparams_t * p)
-	{
-		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
-		p->y = 0;	// позиция верхнего левого угла в пикселях
-		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
-		p->h = DIM_Y;				// размер по вертикали в пикселях
-		//p->frame = (uintptr_t) 0;
-	}
-
-#else
-	#error TODO: to be implemented
-#endif /* LCDMODE_LS020 */
 
 void
 //NOINLINEAT
@@ -3628,6 +3091,11 @@ static uint_fast8_t display_mapbar(
 		return mapinside;
 	return mapright;
 }
+
+
+/* Описания расположения элементов на дисплеях */
+
+#include "dstyles/dstyles.h"
 
 #if WITHBARS
 
@@ -4441,29 +3909,31 @@ void saveready_fftbuffer_low(fftbuff_t * p)
 // user-mode function
 void release_fftbuffer(fftbuff_t * p)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& fftlock);
 	InsertHeadList(& fftbuffree, & p->item);
 	SPIN_UNLOCK(& fftlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 // user-mode function
 uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& fftlock);
 	if (! IsListEmpty(& fftbufready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
 		SPIN_UNLOCK(& fftlock);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
 	}
 	SPIN_UNLOCK(& fftlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 	return 0;
 }
 
@@ -6213,6 +5683,8 @@ static void display2_waterfall(
 					(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
 					atwflj(0, wfrow),	// начальный адрес источника
 					ALLDX, p1h, 	// размеры источника
+					0, 0,	// координаты окна источника
+					ALLDX, p1h, 	// размеры окна источника
 					BITBLT_FLAG_NONE, 0);
 		}
 		if (p2h != 0)
@@ -6225,6 +5697,8 @@ static void display2_waterfall(
 					(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
 					atwflj(0, 0),	// начальный адрес источника
 					ALLDX, p2h, 	// размеры источника
+					0, 0,	// координаты окна источника
+					ALLDX, p2h, 	// размеры окна источника
 					BITBLT_FLAG_NONE, 0);
 		}
 	}
@@ -6561,6 +6035,15 @@ void display2_mode_subset(
 {
 	//TP();
 	display_walktroughsteps(REDRM_MODE, getsubset(menuset, 0));
+}
+
+// Обработка клавиатуры и валкодеров
+void display2_mode_keyboard(
+	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
+	)
+{
+	//TP();
+	display_walktroughsteps(REDRM_KEYB, getsubset(menuset, 0));
 }
 
 void display2_barmeters_subset(

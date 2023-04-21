@@ -253,7 +253,8 @@ void encoder_clear(void)
 {
 	backup_rotate = 0;
 	backup_rotate2 = 0;
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 
 	SPIN_LOCK(& enc1lock);
 	rotate1 = 0;
@@ -264,7 +265,7 @@ void encoder_clear(void)
 	tichist = 0;
 
 	SPIN_UNLOCK(& enc1lock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 /* получение количества шагов и скорости вращения. */
@@ -278,7 +279,8 @@ encoder_get_snapshot(
 	unsigned s;				// количество шагов за время измерения
 	unsigned tdelta;	// Время измерения
 
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& enc1lock);
 
 	// параметры изменерения скорости не модифицируем
@@ -295,7 +297,7 @@ encoder_get_snapshot(
 
 
 	SPIN_UNLOCK(& enc1lock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
@@ -318,12 +320,13 @@ encoder2_get_snapshot(
 {
 	int hrotate;
 
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& enc2lock);
 	hrotate = rotate2;
 	rotate2 = 0;
 	SPIN_UNLOCK(& enc2lock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 
 	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
 	const div_t h = div(hrotate + backup_rotate2, derate);
@@ -465,3 +468,52 @@ void encoder_initialize(void)
 	ticker_add(& encticker2);
 #endif /* WITHENCODER2 */
 }
+
+#if WITHLVGL
+
+#include "lv_drivers/indev/evdev.h"
+
+void indev_enc2_spool(void)
+{
+	enc_spool(NULL);
+}
+
+void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
+{
+	static uint32_t last_key = 0;
+	static lv_indev_state_t encoder_state;
+	static int32_t encoder_diff;
+	unsigned speed;
+
+	int r2 = encoder2_get_snapshot(& speed, BOARD_ENCODER2_DIVIDE);
+	uint32_t act_key = r2 > 0 ? 3 : r2 < 0 ? 2 : TARGET_ENC2BTN_GET ? 1 : 0;
+
+	if(act_key != 0) {
+		switch(act_key) {
+			case 1:
+			act_key = LV_KEY_ENTER;
+			encoder_state = LV_INDEV_STATE_PR;
+			break;
+		case 2:
+			act_key = LV_KEY_LEFT;
+			encoder_diff = -1;
+			encoder_state = LV_INDEV_STATE_REL;
+			break;
+		case 3:
+			act_key = LV_KEY_RIGHT;
+			encoder_state = LV_INDEV_STATE_REL;
+			encoder_diff = 1;
+			break;
+		}
+		last_key = act_key;
+	}
+	else {
+		encoder_diff = 0;
+		encoder_state = LV_INDEV_STATE_REL;
+	}
+	data->key = last_key;
+	data->enc_diff = encoder_diff;
+	data->state = encoder_state;
+}
+
+#endif /* WITHLVGL */

@@ -308,7 +308,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORPIP_G(v) (((v) & 0x1C) << 3)
 		#define COLORPIP_B(v) (((v) & 0x03) << 6)
 
-	#elif LCDMODE_MAIN_ARGB888
+	#elif LCDMODE_MAIN_ARGB8888
 
 		typedef uint_fast32_t COLORPIP_T;
 		typedef uint32_t PACKEDCOLORPIP_T;
@@ -378,8 +378,10 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 #ifndef DCACHEROWSIZE
 	#define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
-#else
+#elif defined (LCDMODE_PIXELSIZE)
 	#define GXALIGN (DCACHEROWSIZE / LCDMODE_PIXELSIZE)	/* количество пикселей в строке видеобуфера кратно этому заначению */
+#else
+#define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
 #endif
 
 #define GXADJ(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
@@ -406,7 +408,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 // Хранение описания буфера для функций построения изображений
 typedef struct gtg_tag
 {
-	PACKEDCOLORPIP_T * buffer;	// Буфер в памяти
+	PACKEDCOLORPIP_T * __restrict buffer;	// Буфер в памяти
 	uint16_t dx;	// ширина буфера
 	uint16_t dy;	// высота буфера
 } GTG_t;
@@ -479,7 +481,7 @@ void display2_getpipparams(pipparams_t * p);	/* получить координ�
 
 /* выдать на дисплей монохромный буфер с размерами dx * dy битов */
 void display_showbuffer(
-	const GX_t * buffer,
+	const GX_t * __restrict buffer,
 	unsigned dx,	// пиксели
 	unsigned dy,	// пиксели
 	uint_fast8_t col,	// сетка
@@ -487,7 +489,7 @@ void display_showbuffer(
 	);
 /* выдать на дисплей монохромный буфер с размерами dx * dy битов */
 void s1d13781_showbuffer(
-	const GX_t * buffer,
+	const GX_t * __restrict buffer,
 	unsigned dx,	// пиксели
 	unsigned dy,	// пиксели
 	uint_fast8_t x,	// сетка
@@ -495,7 +497,7 @@ void s1d13781_showbuffer(
 	);
 /* поставить точку в буфере кадра */
 void display_pixelbuffer(
-	GX_t * buffer,
+	GX_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -504,14 +506,14 @@ void display_pixelbuffer(
 
 /* поставить точку в буфере кадра */
 void display_pixelbuffer_xor(
-	GX_t * buffer,
+	GX_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	);
 void display_pixelbuffer_line(
-	GX_t * buffer,
+	GX_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x0,	
@@ -520,7 +522,7 @@ void display_pixelbuffer_line(
 	uint_fast16_t y1
 	);
 void display_pixelbuffer_clear(
-	GX_t * buffer,
+	GX_t * __restrict buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy
 	);
@@ -529,7 +531,7 @@ void display_pixelbuffer_clear(
 // Формат RGB565
 // Эта функция используется только в тесте
 void colpip_fill(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	COLORPIP_T color
@@ -554,7 +556,7 @@ void gtg_point(
 void colpip_copy_to_draw(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORPIP_T * buffer,	// источник
+	const PACKEDCOLORPIP_T * __restrict buffer,	// источник
 	uint_fast16_t dx,	// ширина буфера источника
 	uint_fast16_t dy,	// высота буфера источника
 	uint_fast16_t col,	// целевая горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
@@ -563,7 +565,7 @@ void colpip_copy_to_draw(
 
 // Нарисовать закрашенный или пустой прямоугольник
 void colpip_rect(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// размер буфера
 	uint_fast16_t dy,	// размер буфера
 	uint_fast16_t x1,	// начальная координата
@@ -576,7 +578,7 @@ void colpip_rect(
 
 // Поставить цветную точку.
 void colpip_point(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -586,7 +588,7 @@ void colpip_point(
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).
 void colpip_point_xor(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -597,7 +599,7 @@ void colpip_point_xor(
 /* возвращает новую позицию по x */
 uint_fast16_t
 colpip_string(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -609,7 +611,7 @@ colpip_string(
 // transparent background - не меняем цвет фона.
 void
 colpip_string_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -621,7 +623,7 @@ colpip_string_tbg(
 // transparent background - не меняем цвет фона.
 void
 colpip_string_x2_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -633,7 +635,7 @@ colpip_string_x2_tbg(
 // transparent background - не меняем цвет фона.
 void
 colpip_string_x2ra90_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -646,7 +648,7 @@ colpip_string_x2ra90_tbg(
 // transparent background - не меняем цвет фона.
 void
 colpip_text(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -658,7 +660,7 @@ colpip_text(
 // Используется при выводе на графический индикатор,
 void
 colpip_text_x2(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -670,7 +672,7 @@ colpip_text_x2(
 // Используется при выводе на графический индикатор,
 void
 colpip_string_x2ra90_count(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -684,7 +686,7 @@ colpip_string_x2ra90_count(
 // transparent background - не меняем цвет фона.
 void
 colpip_string2_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -695,7 +697,7 @@ colpip_string2_tbg(
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void colpip_string3_tbg(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -800,7 +802,7 @@ display_line(
 */
 void
 colpip_fillrect(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
@@ -815,26 +817,29 @@ colpip_fillrect(
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_bitblt(
 	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
-	PACKEDCOLORPIP_T * tbuffer,	// получатель
+	PACKEDCOLORPIP_T * __restrict tbuffer,	// получатель
 	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
 	uint_fast16_t x,	uint_fast16_t y,	// позиция получателя
 	uintptr_t srcinvalidateaddr,	int_fast32_t srcinvalidatesize,	// параметры clean источника
-	const PACKEDCOLORPIP_T * buffer, 	// источник
-	uint_fast16_t sdx,	// источник Размеры окна в пикселях
-	uint_fast16_t sdy,	// источник
+	const PACKEDCOLORPIP_T * __restrict buffer, 	// источник
+	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры буфера в пикселях
+	uint_fast16_t sx,	uint_fast16_t sy,	// источник Позиция окна
+	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
 	unsigned bitbltmask, COLORPIP_T keycolor
 	);
 
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_stretchblt(
 	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
-	PACKEDCOLORPIP_T * tbuffer,	// получатель
+	PACKEDCOLORPIP_T * __restrict tbuffer,	// получатель
 	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
 	uint_fast16_t x,	uint_fast16_t y,	// позиция получателя
 	uint_fast16_t w,	uint_fast16_t h,	// Размеры окна получателя
 	uintptr_t srcinvalidateaddr,	int_fast32_t srcinvalidatesize,	// параметры clean источника
-	const PACKEDCOLORPIP_T * buffer, 	// источник
-	uint_fast16_t sdx,	uint_fast16_t sdy,// источник Размеры окна в пикселях
+	const PACKEDCOLORPIP_T * __restrict buffer, 	// источник
+	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры буфера в пикселях
+	uint_fast16_t sx,	uint_fast16_t sy,	// источник Позиция (размеры совпадают с получателем)
+	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
 	unsigned keyflag, COLORPIP_T keycolor
 	);
 
@@ -843,19 +848,19 @@ void colpip_stretchblt(
 void colpip_bitblt_ra90(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
-	PACKEDCOLORPIP_T * dst,	// получатель
+	PACKEDCOLORPIP_T * __restrict dst,	// получатель
 	uint_fast16_t tdx,	uint_fast16_t tdy,	// получатель
 	uint_fast16_t x,	// получатель Позиция
 	uint_fast16_t y,	// получатель
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORPIP_T * src, 	// источник
+	const PACKEDCOLORPIP_T * __restrict src, 	// источник
 	uint_fast16_t sdx,	uint_fast16_t sdy	// источник Размеры окна в пикселях
 	);
 
 void
 colpip_string3_at_xy(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
 	uint_fast16_t x,	uint_fast16_t y,	// позиция получателя
 	const char * s
@@ -865,56 +870,56 @@ colpip_string3_at_xy(
 /* Нарисовать прямоугольник со скругленными углами */
 void
 colmain_rounded_rect(
-		PACKEDCOLORPIP_T * buffer,
-		uint_fast16_t bx,	// ширина буфера
-		uint_fast16_t by,	// высота буфера
-		uint_fast16_t x1,
-		uint_fast16_t y1,
-		uint_fast16_t x2,
-		uint_fast16_t y2,
-		uint_fast8_t r,		// радиус закругления углов
-		COLORPIP_T color,
-		uint_fast8_t fill
-		);
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t bx,	// ширина буфера
+	uint_fast16_t by,	// высота буфера
+	uint_fast16_t x1,
+	uint_fast16_t y1,
+	uint_fast16_t x2,
+	uint_fast16_t y2,
+	uint_fast8_t r,		// радиус закругления углов
+	COLORPIP_T color,
+	uint_fast8_t fill
+	);
 
 void
 polar_to_dek(
-		uint_fast16_t xc,
-		uint_fast16_t yc,
-		uint_fast16_t gs,
-		uint_fast16_t r,
-		uint_fast16_t * x,
-		uint_fast16_t * y,
-		uint_fast8_t style);
+	uint_fast16_t xc,
+	uint_fast16_t yc,
+	uint_fast16_t gs,
+	uint_fast16_t r,
+	uint_fast16_t * x,
+	uint_fast16_t * y,
+	uint_fast8_t style);
 
 void
 colpip_radius(
-		PACKEDCOLORPIP_T * buffer,
-		uint_fast16_t bx,	// ширина буфера
-		uint_fast16_t by,	// высота буфера
-		int xc, int yc,
-		unsigned gs,
-		unsigned r1, unsigned r2,
-		COLORPIP_T color,
-		int antialiasing,
-		int style);			// 1 - растягивание по горизонтали
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t bx,	// ширина буфера
+	uint_fast16_t by,	// высота буфера
+	int xc, int yc,
+	unsigned gs,
+	unsigned r1, unsigned r2,
+	COLORPIP_T color,
+	int antialiasing,
+	int style);			// 1 - растягивание по горизонтали
 
 void
 colpip_segm(
-		PACKEDCOLORPIP_T * buffer,
-		uint_fast16_t bx,	// ширина буфера
-		uint_fast16_t by,	// высота буфера
-		int xc, int yc,
-		unsigned gs, unsigned ge,
-		unsigned r, int step,
-		COLORPIP_T color,
-		int antialiasing,
-		int style);			// 1 - растягивание по горизонтали;
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t bx,	// ширина буфера
+	uint_fast16_t by,	// высота буфера
+	int xc, int yc,
+	unsigned gs, unsigned ge,
+	unsigned r, int step,
+	COLORPIP_T color,
+	int antialiasing,
+	int style);			// 1 - растягивание по горизонтали;
 
 // Нарисовать вертикальную цветную полосу
 void
 colpip_xor_vline(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -927,7 +932,7 @@ colpip_xor_vline(
 // Формат RGB565
 void
 colpip_set_vline(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
@@ -940,7 +945,7 @@ colpip_set_vline(
 // Формат RGB565
 void
 colpip_set_hline(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
@@ -952,7 +957,7 @@ colpip_set_hline(
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORPIP_T *
 colpip_mem_at_debug(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -964,7 +969,7 @@ colpip_mem_at_debug(
 // получить адрес требуемой позиции в буфере
 const PACKEDCOLORPIP_T *
 colpip_const_mem_at_debug(
-	const PACKEDCOLORPIP_T * buffer,
+	const PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -983,7 +988,7 @@ void display_putpixel(
 	);
 
 void colpip_putpixel(
-	PACKEDCOLORPIP_T * buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -992,8 +997,8 @@ void colpip_putpixel(
 	);
 
 void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);	/* вывод строки */
-void display_snapshot(PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения */
-void display_snapshot_write(PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения в файл */
+void display_snapshot(PACKEDCOLORPIP_T * __restrict buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения */
+void display_snapshot_write(PACKEDCOLORPIP_T * __restrict buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения в файл */
 void display_snapshot_req(void);
 
 void board_set_topdb(int_fast16_t v);			/* верхний предел FFT */
@@ -1033,6 +1038,7 @@ void hwaccel_bitblt(
 	const PACKEDCOLORPIP_T * src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy,	// высота буфера
+	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
 	unsigned keyflag, COLOR24_T keycolor
 	);
 

@@ -139,6 +139,8 @@ extern "C" {
 #elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! LINUX_SUBSYSTEM
 
 	#define ZYNQ_IORW32(addr) (* (volatile uint32_t *) (addr))
+	void gpiobank_lock(unsigned bank, IRQL_t * oldIrql);
+	void gpiobank_unlock(unsigned bank, IRQL_t oldIrql);
 
 	// ug585-Zynq-7000-TRM.pdf v1.12.2, page 1631
 
@@ -402,6 +404,12 @@ void arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate
 void arm_hardware_piok_outputs50m(unsigned long opins, unsigned long initialstate);
 void arm_hardware_piok_opendrain(unsigned long opins, unsigned long initialstate);
 
+void arm_hardware_piol_inputs(unsigned long ipins);
+void arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piol_outputs2m(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piol_outputs50m(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piol_opendrain(unsigned long opins, unsigned long initialstate);
+
 void arm_hardware_pioz_inputs(unsigned long ipins);
 void arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate);
 void arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate);
@@ -444,6 +452,7 @@ void arm_hardware_pioh_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioi_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioj_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_piok_altfn2(unsigned long opins, unsigned af);
+void arm_hardware_piol_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioz_altfn2(unsigned long opins, unsigned af);
 
 void arm_hardware_pioa_altfn20(unsigned long opins, unsigned af);
@@ -457,6 +466,7 @@ void arm_hardware_pioh_altfn20(unsigned long opins, unsigned af);
 void arm_hardware_pioi_altfn20(unsigned long opins, unsigned af);
 void arm_hardware_pioj_altfn20(unsigned long opins, unsigned af);
 void arm_hardware_piok_altfn20(unsigned long opins, unsigned af);
+void arm_hardware_piol_altfn20(unsigned long opins, unsigned af);
 void arm_hardware_pioz_altfn20(unsigned long opins, unsigned af);
 
 void arm_hardware_pioa_altfn50(unsigned long opins, unsigned af);
@@ -470,6 +480,7 @@ void arm_hardware_pioh_altfn50(unsigned long opins, unsigned af);
 void arm_hardware_pioi_altfn50(unsigned long opins, unsigned af);
 void arm_hardware_pioj_altfn50(unsigned long opins, unsigned af);
 void arm_hardware_piok_altfn50(unsigned long opins, unsigned af);
+void arm_hardware_piol_altfn50(unsigned long opins, unsigned af);
 void arm_hardware_pioz_altfn50(unsigned long opins, unsigned af);
 
 // включить подтяжку вверх или вниз
@@ -484,6 +495,7 @@ void arm_hardware_pioh_updown(unsigned long up, unsigned long down);
 void arm_hardware_pioi_updown(unsigned long up, unsigned long down);
 void arm_hardware_pioj_updown(unsigned long up, unsigned long down);
 void arm_hardware_piok_updown(unsigned long up, unsigned long down);
+void arm_hardware_piol_updown(unsigned long up, unsigned long down);
 void arm_hardware_pioz_updown(unsigned long up, unsigned long down);
 
 // отключить подтяжку вверх или вниз
@@ -498,6 +510,7 @@ void arm_hardware_pioh_updownoff(unsigned long ipins);
 void arm_hardware_pioi_updownoff(unsigned long ipins);
 void arm_hardware_pioj_updownoff(unsigned long ipins);
 void arm_hardware_piok_updownoff(unsigned long ipins);
+void arm_hardware_piol_updownoff(unsigned long ipins);
 void arm_hardware_pioz_updownoff(unsigned long ipins);
 
 void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af);
@@ -511,6 +524,7 @@ void arm_hardware_pioh_periphopendrain_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioi_periphopendrain_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioj_periphopendrain_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_piok_periphopendrain_altfn2(unsigned long opins, unsigned af);
+void arm_hardware_piol_periphopendrain_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_pioz_periphopendrain_altfn2(unsigned long opins, unsigned af);
 
 void arm_hardware_pioa_analoginput(unsigned long ipins);
@@ -576,7 +590,7 @@ void arm_hardware_pio11_onchangeinterrupt(unsigned long ipins, int edge, uint32_
 
 void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority, void (* vector)(void));
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
 	/*!< Atomic port state change */
 	void gpioX_setstate(
 		GPIO_TypeDef * gpio,
@@ -592,7 +606,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			uint_fast8_t targetcpu,
 			void (* handler)(void)
 			);
-#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
 
 
 portholder_t power2(uint_fast8_t v);	// Перенос каждого бита в байте в позицию с увеличенным в 2 раза номером.

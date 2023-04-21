@@ -11,92 +11,92 @@
  * @brief Allwinner T128-S3 Interrupt Number Definition, according to the selected device
  *        in @ref Library_configuration_section
  */
-typedef enum IRQn
-{
-	UART0_IRQn = 18, 		/*	UART0	*/
-	UART1_IRQn = 19, 		/*	UART1	*/
-	UART2_IRQn = 20, 		/*	UART2	*/
-	UART3_IRQn = 21, 		/*	UART3	*/
-	UART4_IRQn = 22, 		/*	UART4	*/
-	UART5_IRQn = 23, 		/*	UART5	*/
-	TWI0_IRQn = 25, 		/*	TWI0	*/
-	TWI1_IRQn = 26, 		/*	TWI1	*/
-	TWI2_IRQn = 27, 		/*	TWI2	*/
-	TWI3_IRQn = 28, 		/*	TWI3	*/
-	SPI0_IRQn = 31, 		/*	SPI0	*/
-	SPI1_IRQn = 32, 		/*	SPI1	*/
-	PWM_IRQn = 34, 			/*	PWM	*/
-	CIR_TX_IRQn = 35, 		/*	CIR_TX	*/
-	LEDC_IRQn = 36, 		/*	LEDC	*/
-	CAN0_IRQ = 37, 			/*  CAN0 */
-	CAN1_IRQ = 38, 			/*  CAN1 */
-	OWA_IRQn = 39, 			/*	OWA	*/
-	DMIC_IRQn = 40, 		/*	DMIC	*/
-	AUDIO_CODEC_IRQn = 41, 	/*	AUDIO_CODEC	*/
-	I2S_PCM1_IRQn = 43, 	/*	I2S/PCM1	*/
-	I2S_PCM2_IRQn = 44, 	/*	I2S/PCM2	*/
-	USB0_DEVICE_IRQn = 45, 	/*	USB0_DEVICE	*/
-	USB0_EHCI_IRQn = 46,	/*	USB0_EHCI	*/
-	USB0_OHCI_IRQn = 47, 	/*	USB0_OHCI	*/
-	USB1_EHCI_IRQn = 49, 	/*	USB1_EHCI	*/
-	USB1_OHCI_IRQn = 50, 	/*	USB1_OHCI	*/
-	SMHC0_IRQn = 56, 		/*	SMHC0	*/
-	SMHC1_IRQn = 57, 		/*	SMHC1	*/
-	SMHC2_IRQn = 58, 		/*	SMHC2	*/
-	MSI_IRQn = 59, 			/*	MSI	*/
-	EMAC_IRQn = 62, 		/*	EMAC	*/
-	CCU_FERR_IRQn = 64, 	/*	CCU_FERR	*/
-	AHB_HREADY_TIME_OUT_IRQn = 65, /*	AHB_HREADY_TIME_OUT	*/
-	DMAC_NS_IRQn = 66, 		/*	DMAC_NS	*/
-	CE_NS_IRQn = 68, 		/*	CE_NS	*/
-	HSTIMER0_IRQn = 71, 	/*	HSTIMER0	*/
-	HSTIMER1_IRQn = 72, 	/*	HSTIMER1	*/
-	GPADC_IRQn = 73, 		/*	GPADC	*/
-	THS_IRQn = 74, 			/*	THS	*/
-	TIMER0_IRQn = 75, 		/*	TIMER0	*/
-	TIMER1_IRQn = 76, 		/*	TIMER1	*/
-	LRADC_IRQn = 77, 		/*	LRADC ???	*/
-	TPADC_IRQn = 78, 		/*	TPADC	*/
-	WATCHDOG_IRQn = 79, 	/*	WATCHDOG	*/
-	IOMMU_IRQn = 80, 		/*	IOMMU	*/
-	VE_IRQn = 82, 			/*	VE	*/
-	GPIOB_NS_IRQn = 85, 	/*	GPIOB_NS	*/
-	GPIOC_NS_IRQn = 87, 	/*	GPIOC_NS	*/
-	GPIOD_NS_IRQn = 89, 	/*	GPIOD_NS	*/
-	GPIOE_NS_IRQn = 91, 	/*	GPIOE_NS	*/
-	GPIOF_NS_IRQn = 93, 	/*	GPIOF_NS	*/
-	GPIOG_NS_IRQn = 95, 	/*	GPIOG_NS	*/
-	DE_IRQn = 103, 			/*	DE	*/
-	DI_IRQn = 104, 			/*	DI	*/
-	G2D_IRQn = 105, 		/*	G2D	*/
-	LCD_IRQn = 106, 		/*	LCD	*/
-	TV_IRQn = 107, 			/*	TV	*/
-	DSI_IRQn = 108, 		/*	DSI	*/
-	TVE_IRQn = 110, 		/*	TVE	*/
-	CSI_DMA0_IRQn = 111, 	/*	CSI_DMA0	*/
-	CSI_DMA1_IRQn = 112, 	/*	CSI_DMA1	*/
-	CSI_PARSER0_IRQn = 116, /*	CSI_PARSER0	*/
-	CSI_TOP_PKT_IRQn = 122, /*	CSI_TOP_PKT	*/
-	TVD_IRQn = 123, 		/*	TVD	*/
-	RISC_WDG_IRQn = 147, 	/*	RISC_WDG	*/
-	IRRX_IRQn = 167, 		/*	IRRX	*/
-	C0_CTI0_IRQn = 176, 	/*	C0_CTI0	*/
-	C0_CTI1_IRQn = 177, 	/*	C0_CTI1	*/
-	C0_COMMTX0_IRQn = 180, 	/*	C0_COMMTX0	*/
-	C0_COMMTX1_IRQn = 181, 	/*	C0_COMMTX1	*/
-	C0_COMMRX0_IRQn = 184, 	/*	C0_COMMRX0	*/
-	C0_COMMRX1_IRQn = 185, 	/*	C0_COMMRX1	*/
-	C0_PMU0_IRQn = 188, 	/*	C0_PMU0	*/
-	C0_PMU1_IRQn = 189, 	/*	C0_PMU1	*/
-	C0_AXI_ERROR_IRQn = 192, /*	C0_AXI_ERROR	*/
-	AXI_WR_IRQ_IRQn = 194, 	/* AXI_WR_IRQ	*/
-	AXI_RD_IRQ_IRQn = 195, 	/* AXI_RD_IRQ	*/
-	DBGPWRUPREQ_out0_IRQn = 196, /*	DBGPWRUPREQ_out[0]	*/
-	DBGPWRUPREQ_out1_IRQn = 197, /*	DBGPWRUPREQ_out[1]	*/
-
-	MAX_IRQ_n,
-	Force_IRQn_enum_size             = 1048    /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
-} IRQn_Type;
+//typedef enum IRQn
+//{
+//	UART0_IRQn = 18, 		/*	UART0	*/
+//	UART1_IRQn = 19, 		/*	UART1	*/
+//	UART2_IRQn = 20, 		/*	UART2	*/
+//	UART3_IRQn = 21, 		/*	UART3	*/
+//	UART4_IRQn = 22, 		/*	UART4	*/
+//	UART5_IRQn = 23, 		/*	UART5	*/
+//	TWI0_IRQn = 25, 		/*	TWI0	*/
+//	TWI1_IRQn = 26, 		/*	TWI1	*/
+//	TWI2_IRQn = 27, 		/*	TWI2	*/
+//	TWI3_IRQn = 28, 		/*	TWI3	*/
+//	SPI0_IRQn = 31, 		/*	SPI0	*/
+//	SPI1_IRQn = 32, 		/*	SPI1	*/
+//	PWM_IRQn = 34, 			/*	PWM	*/
+//	CIR_TX_IRQn = 35, 		/*	CIR_TX	*/
+//	LEDC_IRQn = 36, 		/*	LEDC	*/
+//	CAN0_IRQ = 37, 			/*  CAN0 */
+//	CAN1_IRQ = 38, 			/*  CAN1 */
+//	OWA_IRQn = 39, 			/*	OWA	*/
+//	DMIC_IRQn = 40, 		/*	DMIC	*/
+//	AUDIO_CODEC_IRQn = 41, 	/*	AUDIO_CODEC	*/
+//	I2S_PCM1_IRQn = 43, 	/*	I2S/PCM1	*/
+//	I2S_PCM2_IRQn = 44, 	/*	I2S/PCM2	*/
+//	USB0_DEVICE_IRQn = 45, 	/*	USB0_DEVICE	*/
+//	USB0_EHCI_IRQn = 46,	/*	USB0_EHCI	*/
+//	USB0_OHCI_IRQn = 47, 	/*	USB0_OHCI	*/
+//	USB1_EHCI_IRQn = 49, 	/*	USB1_EHCI	*/
+//	USB1_OHCI_IRQn = 50, 	/*	USB1_OHCI	*/
+//	SMHC0_IRQn = 56, 		/*	SMHC0	*/
+//	SMHC1_IRQn = 57, 		/*	SMHC1	*/
+//	SMHC2_IRQn = 58, 		/*	SMHC2	*/
+//	MSI_IRQn = 59, 			/*	MSI	*/
+//	EMAC_IRQn = 62, 		/*	EMAC	*/
+//	CCU_FERR_IRQn = 64, 	/*	CCU_FERR	*/
+//	AHB_HREADY_TIME_OUT_IRQn = 65, /*	AHB_HREADY_TIME_OUT	*/
+//	DMAC_NS_IRQn = 66, 		/*	DMAC_NS	*/
+//	CE_NS_IRQn = 68, 		/*	CE_NS	*/
+//	HSTIMER0_IRQn = 71, 	/*	HSTIMER0	*/
+//	HSTIMER1_IRQn = 72, 	/*	HSTIMER1	*/
+//	GPADC_IRQn = 73, 		/*	GPADC	*/
+//	THS_IRQn = 74, 			/*	THS	*/
+//	TIMER0_IRQn = 75, 		/*	TIMER0	*/
+//	TIMER1_IRQn = 76, 		/*	TIMER1	*/
+//	LRADC_IRQn = 77, 		/*	LRADC ???	*/
+//	TPADC_IRQn = 78, 		/*	TPADC	*/
+//	WATCHDOG_IRQn = 79, 	/*	WATCHDOG	*/
+//	IOMMU_IRQn = 80, 		/*	IOMMU	*/
+//	VE_IRQn = 82, 			/*	VE	*/
+//	GPIOB_NS_IRQn = 85, 	/*	GPIOB_NS	*/
+//	GPIOC_NS_IRQn = 87, 	/*	GPIOC_NS	*/
+//	GPIOD_NS_IRQn = 89, 	/*	GPIOD_NS	*/
+//	GPIOE_NS_IRQn = 91, 	/*	GPIOE_NS	*/
+//	GPIOF_NS_IRQn = 93, 	/*	GPIOF_NS	*/
+//	GPIOG_NS_IRQn = 95, 	/*	GPIOG_NS	*/
+//	DE_IRQn = 103, 			/*	DE	*/
+//	DI_IRQn = 104, 			/*	DI	*/
+//	G2D_IRQn = 105, 		/*	G2D	*/
+//	LCD_IRQn = 106, 		/*	LCD	*/
+//	TV_IRQn = 107, 			/*	TV	*/
+//	DSI_IRQn = 108, 		/*	DSI	*/
+//	TVE_IRQn = 110, 		/*	TVE	*/
+//	CSI_DMA0_IRQn = 111, 	/*	CSI_DMA0	*/
+//	CSI_DMA1_IRQn = 112, 	/*	CSI_DMA1	*/
+//	CSI_PARSER0_IRQn = 116, /*	CSI_PARSER0	*/
+//	CSI_TOP_PKT_IRQn = 122, /*	CSI_TOP_PKT	*/
+//	TVD_IRQn = 123, 		/*	TVD	*/
+//	RISC_WDG_IRQn = 147, 	/*	RISC_WDG	*/
+//	IRRX_IRQn = 167, 		/*	IRRX	*/
+//	C0_CTI0_IRQn = 176, 	/*	C0_CTI0	*/
+//	C0_CTI1_IRQn = 177, 	/*	C0_CTI1	*/
+//	C0_COMMTX0_IRQn = 180, 	/*	C0_COMMTX0	*/
+//	C0_COMMTX1_IRQn = 181, 	/*	C0_COMMTX1	*/
+//	C0_COMMRX0_IRQn = 184, 	/*	C0_COMMRX0	*/
+//	C0_COMMRX1_IRQn = 185, 	/*	C0_COMMRX1	*/
+//	C0_PMU0_IRQn = 188, 	/*	C0_PMU0	*/
+//	C0_PMU1_IRQn = 189, 	/*	C0_PMU1	*/
+//	C0_AXI_ERROR_IRQn = 192, /*	C0_AXI_ERROR	*/
+//	AXI_WR_IRQ_IRQn = 194, 	/* AXI_WR_IRQ	*/
+//	AXI_RD_IRQ_IRQn = 195, 	/* AXI_RD_IRQ	*/
+//	DBGPWRUPREQ_out0_IRQn = 196, /*	DBGPWRUPREQ_out[0]	*/
+//	DBGPWRUPREQ_out1_IRQn = 197, /*	DBGPWRUPREQ_out[1]	*/
+//
+//	MAX_IRQ_n,
+//	Force_IRQn_enum_size             = 1048    /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
+//} IRQn_Type;
 
 /******************************************************************************/
 /*                         Peripheral memory map                              */
@@ -155,7 +155,7 @@ typedef enum IRQn
 //#define SPI0_BASE    	  	0x04025000
 //#define SPI_DBI_BASE  		0x04026000
 //#define USBOTG0_BASE 	    0x04100000
-#define USBEHCI1_BASE 	    0x04200000
+//#define USBEHCI1_BASE 	    0x04200000
 //#define EMAC_BASE 	     	0x04500000
 
 // VIDEO_OUT_SYS related
@@ -299,17 +299,17 @@ typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middl
 #define MSI_MEMC		((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)			/*!< \brief MSI_MEMC Interface register set access pointer */
 #define SID				((SID_TypeDef *) SID_BASE)						/*!< \brief SID Interface register set access pointer */
 
-#define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
-#define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
+//#define CAN0		((CAN_TypeDef *) CAN0_BASE)							/*!< \brief CAN0 Interface register set access pointer */
+//#define CAN1		((CAN_TypeDef *) CAN1_BASE)							/*!< \brief CAN1 Interface register set access pointer */
 
-#define USBOTG0		((USBOTG_TypeDef *) USBOTG0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
-#define USBEHCI0	((USB_EHCI_CapabilityTypeDef *) (USBOTG0_BASE + 0x1000))	/*!< \brief USBEHCI0 Interface register set access pointer */
-#define USBOHCI0	((struct ohci_registers *) (USBOTG0_BASE + 0x1400))		/*!< \brief USBOHCI0 Interface register set access pointer */
-#define USBPHY0		((USBPHYC_TypeDef *) (USBOTG0_BASE + 0x0400))				/*!< \brief USBPHY0 Interface register set access pointer */
+//#define USBOTG0		((USBOTG_TypeDef *) USBOTG0_BASE)								/*!< \brief USBOTG0 Interface register set access pointer */
+//#define USBEHCI0	((USB_EHCI_CapabilityTypeDef *) (USBOTG0_BASE + 0x1000))	/*!< \brief USBEHCI0 Interface register set access pointer */
+//#define USBOHCI0	((struct ohci_registers *) (USBOTG0_BASE + 0x1400))		/*!< \brief USBOHCI0 Interface register set access pointer */
+//#define USBPHY0		((USBPHYC_TypeDef *) (USBOTG0_BASE + 0x0400))				/*!< \brief USBPHY0 Interface register set access pointer */
 
-#define USBEHCI1	((USB_EHCI_CapabilityTypeDef *) USBEHCI1_BASE)				/*!< \brief USBEHCI1 Interface register set access pointer */
-#define USBOHCI1	((struct ohci_registers *) (USBEHCI1_BASE + 0x0400))		/*!< \brief USBOHCI1 Interface register set access pointer */
-#define USBPHY1		((USBPHYC_TypeDef *) (USBEHCI1_BASE + 0x0800))				/*!< \brief USBPHY1 Interface register set access pointer */
+//#define USBEHCI1	((USB_EHCI_CapabilityTypeDef *) USBEHCI1_BASE)				/*!< \brief USBEHCI1 Interface register set access pointer */
+//#define USBOHCI1	((struct ohci_registers *) (USBEHCI1_BASE + 0x0400))		/*!< \brief USBOHCI1 Interface register set access pointer */
+//#define USBPHY1		((USBPHYC_TypeDef *) (USBEHCI1_BASE + 0x0800))				/*!< \brief USBPHY1 Interface register set access pointer */
 
 #define SPINLOCK	((SPINLOCK_TypeDef *) SPINLOCK_BASE)				/*!< \brief SPINLOCK Interface register set access pointer */
 #define DMAC		((DMAC_TypeDef *) DMAC_BASE)						/*!< \brief DMAC Interface register set access pointer */

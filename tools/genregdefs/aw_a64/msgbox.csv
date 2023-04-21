@@ -1,0 +1,12 @@
+#type; MSGBOX
+#base; MSGBOX 0x01C17000
+#irq; MSGBOX 81
+#regdef; MSGBOX_CTRL_REG0; 0x000; Message Queue Attribute Control Register 0
+#regdef; MSGBOX_CTRL_REG1; 0x004; Message Queue Attribute Control Register 1
+#aggreg; USER; 0x0040 2; User [0..1]
+#regdef; MSGBOXU_IRQ_EN_REG; 0x000; IRQ Enable For User N(N=0,1)
+#regdef; MSGBOXU_IRQ_STATUS_REG; 0x010; IRQ Status For User N(N=0,1)
+#aggregend;
+#regdef; MSGBOXM_FIFO_STATUS_REG; 0x0100 8; FIFO Status For Message Queue N(N = 0~7)
+#regdef; MSGBOXM_MSG_STATUS_REG; 0x0140 8; Message Status For Message Queue N(N=0~7)
+#regdef; MSGBOXM_MSG_REG; 0x0180 8; Message Register For Message Queue N(N=0~7)

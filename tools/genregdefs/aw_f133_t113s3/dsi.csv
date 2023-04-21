@@ -1,1 +1,4 @@
 #type; DSI
+#base; DSI 0x05450000
+#irq; DSI 124
+#irqrv; DSI 108

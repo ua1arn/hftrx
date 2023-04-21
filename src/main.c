@@ -18,6 +18,9 @@
 
 #include "audio.h"
 #include "codecs.h"
+#include "bootloader.h"
+
+#include "dspdefines.h"
 
 #if WITHFT8
 	#include "ft8.h"
@@ -286,12 +289,12 @@ islfmstart(unsigned now)
 	return 0;
 }
 
-uint_fast8_t hamradio_get_lfmtinterval(void)
+uint_fast16_t hamradio_get_lfmtinterval(void)
 {
 	return lfmtinterval;
 }
 
-void hamradio_set_lfmtinterval(uint_fast8_t v)
+void hamradio_set_lfmtinterval(uint_fast16_t v)
 {
 	if (lfmtinterval < 60 * 60)
 		lfmtinterval = v;
@@ -378,15 +381,6 @@ static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усил�
 static void processtxrequest(void);	/* Установка сиквенсору запроса на передачу.	*/
 
 struct menudef;
-
-static void
-//NOINLINEAT
-processmessages(
-	uint_fast8_t * kbch,
-	uint_fast8_t * kbready,
-	uint_fast8_t inmenu,
-	const FLASHMEM struct menudef * mp
-	);
 
 static uint_fast8_t getbankindex_raw(uint_fast8_t pathi);
 static uint_fast8_t getbankindex_ab(uint_fast8_t ab);
@@ -3063,6 +3057,7 @@ struct nvmap
 	uint8_t	ggrpagcssb; // последний посещённый пункт группы
 	uint8_t	ggrpagccw; // последний посещённый пункт группы
 	uint8_t	ggrpagcdigi; // последний посещённый пункт группы
+	uint8_t	ggrpusb; // последний посещённый пункт группы
 
 	uint8_t gnoisereductvl;	// noise reduction level
 	uint8_t bwsetpos [BWSETI_count];	/* выбор одной из полос пропускания */
@@ -3119,12 +3114,13 @@ struct nvmap
 		uint8_t greverbloss;		/* ревербератор - ослабление на возврате */
 	#endif /* WITHREVERB */
 	#if WITHUSBUAC
-		uint8_t gdatavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+		uint8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 			uint8_t gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+		uint8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 	#endif /* WITHUSBUAC */
 	#if WITHAFCODEC1HAVEPROC
 		uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
@@ -3149,6 +3145,7 @@ struct nvmap
 	uint8_t gadcfifo;
 	uint16_t gadcoffset;
 	uint8_t gdactest;
+	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 #endif /* WITHDSPEXTDDC */
 
 #if WITHMODEM
@@ -3367,6 +3364,7 @@ filter_t fi_2p0_455 =
 	uint8_t elkeymode;	/* режим электронного ключа - 0 - asf, 1 - paddle, 2 - keyer */
 	uint8_t dashratio;	/* отношение длителности тире к точке в десятках процентов */
 	uint8_t spaceratio;	/* отношение длителности паузы к точке в десятках процентов */
+	uint8_t keydeadtime;	/* dead time */
 	uint8_t elkeyreverse;	
 #if WITHVIBROPLEX
 	uint8_t elkeyslope;	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
@@ -3654,6 +3652,12 @@ static uint_fast8_t gagcmode;
 	static const uint_fast8_t genc1div = 1;
 	static const uint_fast8_t genc2div = 1;
 #endif
+
+#if WITHOVFHIDE
+	static uint_fast8_t gshowovf = 0;		/* Показ индикатора переполнения АЦП */
+#else /* WITHOVFHIDE */
+	static uint_fast8_t gshowovf = 1;		/* Показ индикатора переполнения АЦП */
+#endif /* WITHOVFHIDE */
 
 static uint_fast8_t lockmode;
 #if WITHLCDBACKLIGHTOFF
@@ -3994,8 +3998,9 @@ enum
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 
 		#if WITHTX
-		static uint_fast8_t gdatavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+		static uint_fast8_t gdatatx = 0;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		#endif /* WITHTX */
+		static uint_fast8_t	gusb_ft8cn = 0;	/* совместимость VID/PID для работы с программой FT8CN */
 		#if WITHUSBHEADSET
 			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#else /* WITHUSBHEADSET */
@@ -4079,7 +4084,7 @@ enum
 	static uint_fast16_t tunerind;// = (LMAX - LMIN) / 2 + LMIN;
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
-	static uint_fast8_t tunerdelay = 40;
+	static uint_fast8_t tunerdelay = 20;
 
 #endif /* WITHAUTOTUNER */
 
@@ -4231,7 +4236,7 @@ enum
 
 	#if WITHELKEY
 		static uint_fast8_t bkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
-		static uint_fast8_t bkindelay = 40;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
+		static uint_fast8_t bkindelay = 30;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 	#endif /* WITHELKEY */
 
 #if TXPATH_BIT_GATE_RX && CTLSTYLE_SW2011ALL
@@ -4264,6 +4269,7 @@ enum
 	static dualctl8_t elkeywpm = { 20, 20 };	/* скорость электронного ключа */
 	static uint_fast8_t dashratio = 30;	/* отношение тире к длительности точки - в десятках процентов */
 	static uint_fast8_t spaceratio = 10;	/* отношение паузы к длительности точки - в десятках процентов */
+	static uint_fast8_t keydeadtime = 70;	/* dead time на чувствительнгость после окончания элемента знака */
 	static uint_fast8_t elkeyreverse;
 
 	static uint_fast8_t elkeymode;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
@@ -4493,8 +4499,24 @@ static int_fast32_t getzerobase(void)
 /* поддержка ABOUT: частота процессора */
 static int_fast32_t getcpufreqbase(void)
 {
-	return CPU_FREQ / 1000000L;
+	return CPU_FREQ / 1000000;
 }
+
+#ifdef DDR_FREQ
+/* поддержка ABOUT: частота памяти */
+static int_fast32_t getddrfreqbase(void)
+{
+	return DDR_FREQ / 1000000;
+}
+#endif /* DDR_FREQ */
+
+#ifdef AXISS_FREQ
+/* поддержка ABOUT: частота шины */
+static int_fast32_t getaxissfreqbase(void)
+{
+	return AXISS_FREQ / 1000000;
+}
+#endif /* AXISS_FREQ */
 
 #if WITHLFM
 
@@ -4553,7 +4575,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	#if WITHTXCPATHCALIBRATE
 		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-	#elif WITHTXCWREDUCE
+	#elif 0//WITHTXCWREDUCE
 		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#else /* WITHTXCWREDUCE */
@@ -4616,7 +4638,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #else /* CTLSTYLE_OLEG4Z_V1 */
 	// 16 bit LTC2208 + LTC6401-20
 	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-	static uint_fast8_t gdigigainmax = 86;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
+	static uint_fast8_t gdigigainmax = 120;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	static uint_fast16_t gfsadcpower10 [2] = 
 	{
 		(- 30) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
@@ -5417,11 +5439,11 @@ static uint_fast8_t tuneabort(void)
 
 // Перебор значений L в поиске минимума SWR
 // Если прервана настройка - возврат не-0
-static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
+static uint_fast8_t scanminLk(tus_t * tus)
 {
 	uint_fast8_t bestswrvalid = 0;
-	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
+	PRINTF("scanminLk start ****************\n");
 	for (tunerind = LMIN; tunerind <= LMAX; ++ tunerind)
 	{
 		if (tuneabort())
@@ -5434,34 +5456,27 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
-			// Измерений ещё небыло
+			// Измерений ещё небыло или это полоэение обеспечивает лучше КСВ
 			tus->swr = swr;
 			tus->tunerind = tunerind;
 			tus->r = r;
 			tus->f = f;
 			bestswrvalid = 1;
-			a = addsteps;
 			PRINTF("scanminLk: best ty=%u, L=%u, C=%u\n", tunertype, tunerind, tunercap);
-		}
-		else
-		{
-			if (tus->swr < swr && a -- == 0)
-			{
-				break;
-			}
 		}
 	}
 	tunerind = tus->tunerind;	// лучшее запомненное
+	PRINTF("scanminLk done ****************\n");
 	return 0;
 }
 
 // Перебор значений C в поиске минимума SWR
 // Если прервана настройка - возврат не-0
-static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
+static uint_fast8_t scanminCk(tus_t * tus)
 {
 	uint_fast8_t bestswrvalid = 0;
-	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
+	PRINTF("scanminCk start ****************\n");
 	for (tunercap = CMIN; tunercap <= CMAX; ++ tunercap)
 	{
 		if (tuneabort())
@@ -5474,27 +5489,21 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
-			// Измерений ещё небыло
+			// Измерений ещё небыло или это полоэение обеспечивает лучше КСВ
 			tus->swr = swr;
 			tus->tunercap = tunercap;
 			tus->r = r;
 			tus->f = f;
 			bestswrvalid = 1;
-			a = addsteps;
 			PRINTF("scanminCk: best ty=%u, L=%u, C=%u\n", tunertype, tunerind, tunercap);
-		}
-		else
-		{
-			if (tus->swr < swr && a -- == 0)
-			{
-				break;
-			}
 		}
 	}
 	tunercap = tus->tunercap;	// лучшее запомненное
+	PRINTF("scanminCk done ****************\n");
 	return 0;
 }
 
+// Выбираем наилучший результат согласования
 static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 {
 	uint_fast8_t i;
@@ -5536,14 +5545,6 @@ static void auto_tune(void)
 	const uint_fast8_t bg = getfreqbandgroup(freq);
 	const uint_fast8_t ant = geteffantenna(freq);
 
-#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
-	const uint_fast8_t addstepsLk = 3;
-	const uint_fast8_t addstepsCk = 3;
-#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
-	const uint_fast8_t addstepsLk = 15;
-	const uint_fast8_t addstepsCk = 15;
-#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
-
 	PRINTF(PSTR("auto_tune start\n"));
 	for (ndummies = 5; ndummies --; )
 	{
@@ -5563,7 +5564,7 @@ static void auto_tune(void)
 		if (tunertype == 0)
 		{
 			PRINTF("tuner: ty=%u, scan capacitors\n", (unsigned) tunertype);
-			if (scanminCk(& statuses [tunertype], addstepsCk) != 0)
+			if (scanminCk(& statuses [tunertype]) != 0)
 				goto aborted;
 			PRINTF("scanminCk finish: C=%u\n", tunercap);
 			updateboard_tuner();
@@ -5579,7 +5580,7 @@ static void auto_tune(void)
 		////	goto NoMoreTune;
 
 		PRINTF("tuner: ty=%u, scan inductors\n", (unsigned) tunertype);
-		if (scanminLk(& statuses [tunertype], addstepsLk) != 0)
+		if (scanminLk(& statuses [tunertype]) != 0)
 			goto aborted;
 		PRINTF("scanminLk finish: L=%u\n", tunerind);
 		updateboard_tuner();
@@ -5595,7 +5596,7 @@ static void auto_tune(void)
 	tunertype = statuses [cshindex].tunertype;
 	tunerind = statuses [cshindex].tunerind;
 	tunercap = statuses [cshindex].tunercap;
-	if (scanminCk(& statuses [cshindex], addstepsCk) != 0)
+	if (scanminCk(& statuses [cshindex]) != 0)
 		goto aborted;
 	printtunerstate("Selected 2", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
 	// Устанавливаем аппаратуру в состояние при лучшем результате
@@ -7342,6 +7343,7 @@ static void micproc_load(void)
 // шаг изменения значения параметра
 enum
 {
+	ISTEP_RO = 0,
 	ISTEP1 = 1,
 	ISTEP2 = 2,
 	ISTEP3 = 3,
@@ -10867,8 +10869,10 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
+#if WITHUSBMIKET113
+	return p;
 
-#if WITHNOSPEEX
+#elif WITHNOSPEEX
 	if (denoise)
 	{
 		// Filtering and denoise.
@@ -11393,7 +11397,7 @@ updateboardZZZ(
 				PRINTF(PSTR(" pbt="));	printfreq(pbt);
 				PRINTF(PSTR(" ifshift="));	printfreq(ifshift);
 				PRINTF(PSTR(" bw="));	PRINTF(workfilter->labelf3);
-				PRINTF(PSTR(" dbw="));	PRINTF(hamradio_get_rxbw_value_P());
+				PRINTF(PSTR(" dbw="));	PRINTF(hamradio_get_rxbw_value3_P());
 				PRINTF(PSTR("\n"));
 				PRINTF(
 					PSTR("mixXlsbs[0]=%d, [1]=%d, [2]=%d, [3]=%d, [4]=%d, [5]=%d, [6]=%d dc=%d tx=%d\n"),
@@ -11603,6 +11607,7 @@ updateboardZZZ(
 			board_set_adcrand(gadcrand);	/* управление интерфейсом в LTC2208 */
 			board_set_adcfifo(gadcfifo);
 			board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
+			board_set_showovf(gshowovf);	/* Показ индикатора переполнения АЦП */
 		#endif /* WITHDSPEXTDDC */
 		} /* (gtx == 0) */
 	#if WITHIF4DSP
@@ -11626,7 +11631,7 @@ updateboardZZZ(
 			elkey_set_slope(elkeyslope);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
 			elkey_set_format(dashratio, spaceratio);	/* соотношение тире к точке (в десятках процентов) */
-			elkey_set_mode(elkeymode, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+			elkey_set_mode(elkeymode, elkeyreverse, keydeadtime);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		#if WITHTX && WITHELKEY
 			seq_set_bkin_enable(bkinenable, bkindelay);			/* параметры BREAK-IN */
 			/*seq_rgbeep(0); */								/* формирование roger beep */
@@ -11665,8 +11670,9 @@ updateboardZZZ(
 				board_set_swaprts(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 			#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 			#if WITHTX
-				board_set_datavox(gdatavox);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+				board_set_datatx(gdatatx);	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 			#endif /* WITHTX */
+			board_set_usb_ft8cn(gusb_ft8cn);	/* совместимость VID/PID для работы с программой FT8CN */
 		#endif /* WITHUSBUAC */
 		board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
 		board_set_lineamp(glineamp);	/* усиление с линейного входа */
@@ -11937,6 +11943,18 @@ void uif_key_bkintoggle(void)
 uint_fast8_t hamradio_get_bkin_value(void)
 {
 	return bkinenable;
+}
+
+static const char * usersend;
+
+void uif_key_sendcw(const char * msg)
+{
+	system_disableIRQ();
+	if (usersend != 0 && * usersend != '\0')
+		usersend = NULL;
+	else
+		usersend = msg;
+	system_enableIRQ();
 }
 
 #else
@@ -13053,15 +13071,35 @@ uint_fast8_t hamradio_get_tx(void)
 // RX bandwidth
 #if WITHIF4DSP
 
-const FLASHMEM char * hamradio_get_rxbw_value_P(void)
+// Four-character wide printed current RX/TX bandwidth namw
+const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
 {
 	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
 	return bwsetsc [bwseti].labels [bwsetpos[bwseti]];
 }
 
+// Four-character wide printed current RX/TX bandwidth value
+const FLASHMEM char * hamradio_get_rxbw_value4_P(void)
+{
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
+	static char s [5];
+	int width = bwseti_getwidth(bwseti);
+	if (width >= 1000000)
+		width = (1000000 - 1);
+	int_fast16_t w100 = (width + 50) / 100;
+	if (w100 < 10)	// до 1 кГц
+		local_snprintf_P(s, ARRAY_SIZE(s), ".%02d ", w100 * 10);
+	else if (w100 < 100)	// 1 кГц..9 кГц
+		local_snprintf_P(s, ARRAY_SIZE(s), "%1d.%1dk", w100 / 10, w100 % 10);
+	else	// 10 и более кГц
+		local_snprintf_P(s, ARRAY_SIZE(s), "%3dk", w100 / 10);
+
+	return s;
+}
+
 #else /* WITHIF4DSP */
 
-const FLASHMEM char * hamradio_get_rxbw_value_P(void)
+const FLASHMEM char * hamradio_get_rxbw_value3_P(void)
 {
 #if WITHFIXEDBFO
 	return PSTR("");
@@ -13271,6 +13309,18 @@ static unsigned char hex2int(uint_fast8_t c)
 	return 0;
 }
 
+void update_rtc_by_nmea_time(void)
+{
+#if defined (RTC1_TYPE)
+	if (! rtc_nmea_updated && nmea_time.valid)
+	{
+		rtc_nmea_updated = 1;
+		// todo: добавить в меню выбор часового пояса
+		board_rtc_setdatetime(nmea_time.year, nmea_time.month, nmea_time.day, nmea_time.hours + 3, nmea_time.minutes, nmea_time.seconds);
+	}
+#endif /* defined (RTC1_TYPE) */
+}
+
 void nmea_parsechar(uint_fast8_t c)
 {
 	//dbg_putchar(c);
@@ -13341,6 +13391,7 @@ void nmea_parsechar(uint_fast8_t c)
 #endif /* defined (RTC1_TYPE) */
 				nmea_time.valid = 1;
 				time_next(& nmea_time);	// какое время надо будет поставить для установки в следующий PPS
+				update_rtc_by_nmea_time();
 			}
 		}
 		break;
@@ -13355,23 +13406,12 @@ RAMFUNC_NONILINE
 spool_nmeapps(void)
 {
 	th = nmea_time;
-#if WITHTOUCHGUI
-	local_snprintf_P(nmea_time_str, ARRAY_SIZE(nmea_time_str), "%02d:%02d:%02d", nmea_time.hours, nmea_time.minutes, nmea_time.seconds);
-#endif /* WITHTOUCHGUI */
 #if WITHLFM
 	if (lfmmode != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.seconds))
 	{
 		lfm_run();
 	}
 #endif /* WITHLFM */
-#if defined (RTC1_TYPE)
-	if (! rtc_nmea_updated && nmea_time.valid)
-	{
-		rtc_nmea_updated = 1;
-		// todo: добавить в меню выбор часового пояса
-		board_rtc_setdatetime(nmea_time.year, nmea_time.month, nmea_time.day, nmea_time.hours + 3, nmea_time.minutes, nmea_time.seconds);
-	}
-#endif /* defined (RTC1_TYPE) */
 }
 
 #endif /* WITHNMEA */
@@ -15979,6 +16019,10 @@ static char beacon_getnextcw(void)
 		++ beacon_index;
 
 	return c;
+#elif 1
+	if (usersend != NULL && * usersend != '\0')
+		return * usersend ++;
+	return '\0';
 #else /* WITHBEACON */
 	return '\0';
 #endif /* WITHBEACON */
@@ -16080,6 +16124,9 @@ static void dpc_1stimer(void * arg)
 
 #if WITHTOUCHGUI
 	gui_update();
+#if WITHNMEA && WITHLFM
+	local_snprintf_P(nmea_time_str, ARRAY_SIZE(nmea_time_str), "%02d:%02d:%02d", nmea_time.hours, nmea_time.minutes, nmea_time.seconds);
+#endif /* WITHNMEA && WITHLFM */
 #endif /*WITHTOUCHGUI */
 
 #if WITHCPUTEMPERATURE && ! WITHTOUCHGUI && 0
@@ -16204,7 +16251,7 @@ uint_fast8_t dpclock_traylock(dpclock_t * lp)
 
 
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
-static void
+void
 //NOINLINEAT
 processmessages(
 	uint_fast8_t * kbch,
@@ -16465,7 +16512,7 @@ uint_fast8_t hamradio_get_txdisable(void)
 	if (gheatprot != 0 && hamradio_get_temperature_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 		return 1;
 #endif /* WITHTHERMOLEVEL */
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
+#if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
 	//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr(40));
 	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr(40) >= 20)	// SWR >= 3.0
 		return 1;
@@ -17444,10 +17491,6 @@ void display2_menu_valxx(
 			msg = PSTR("ZYNQ USCALE");
 #elif CPUSTYLE_R7S721
 			msg = PSTR("RENESAS");
-#elif CPUSTYLE_T113
-			msg = PSTR("Allw T128-S3");
-#elif CPUSTYLE_F133
-			msg = PSTR("Allw F133-A");
 #else
 			msg = PSTR("CPUxxx");
 #endif
@@ -17514,6 +17557,27 @@ void display2_menu_valxx(
 }
 
 // --- menu support
+
+
+// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+void display2_keyboard_screen0(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
+
+// Обработка клавиатуры и валкодеров при нахождении в режиме меню
+void display2_keyboard_menu(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
 
 static uint_fast16_t menulooklast(uint_fast16_t menupos)
 {
@@ -17734,7 +17798,11 @@ modifysettings(
 			uint_fast16_t * const pv16 = mp->qpval16;
 			uint_fast8_t * const pv8 = mp->qpval8;
 
-			if (nrotate < 0)
+			if (step == ISTEP_RO)
+			{
+
+			}
+			else if (nrotate < 0)
 			{
 				// negative change value
 				const uint_fast32_t bottom = mp->qbottom;
@@ -17875,7 +17943,7 @@ static void menu_print(void)
         	continue;
         const FLASHMEM struct menudef * const mpgroup = mp ++;	/* группа */
     	PRINTF("%s,,\n", mpgroup->qlabel);
-        for (; ismenukind(mp, ITEM_VALUE); ++ mp)
+        for (; mp < (menutable + MENUROW_COUNT) && ismenukind(mp, ITEM_VALUE); ++ mp)
         {
         	int x = 0;
         	int y = 0;
@@ -18185,6 +18253,7 @@ static void menu_print(void)
 
         	}
         }
+        /* not an ITEM_VALUE */
         menupos = mp - menutable - 1;
 	}
 
@@ -18666,6 +18735,22 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHELKEY
 	case KBD_CODE_BKIN:
 		uif_key_bkintoggle();
+		return 1;
+#endif /* WITHELKEY */
+
+#if WITHELKEY
+
+	case KBD_CODE_CWMSG1:
+		uif_key_sendcw("CQ UA1ATD/P RR0106");
+		return 1;
+	case KBD_CODE_CWMSG2:
+		uif_key_sendcw("UA1ATD/P");
+		return 1;
+	case KBD_CODE_CWMSG3:
+		uif_key_sendcw("CQ DE UA1ATD/P UA1ATD/P RR0106");
+		return 1;
+	case KBD_CODE_CWMSG4:
+		uif_key_sendcw("UA1ATD/P UA1ATD/P");
 		return 1;
 #endif /* WITHELKEY */
 
@@ -19214,7 +19299,7 @@ lowinitialize(void)
 	HARDWARE_NMEA_SET_SPEED(250000L);
 	HARDWARE_NMEA_ENABLERX(1);
 
-#elif WITHNMEA && ! CPUSTYLE_XC7Z
+#elif WITHNMEA && ! CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 	HARDWARE_NMEA_INITIALIZE();
 	HARDWARE_NMEA_SET_SPEED(115200L);
@@ -19567,8 +19652,6 @@ static void initialize2(void)
 #endif
 }
 
-static uint_fast8_t usbactivated;
-
 /* вызывается при разрешённых прерываниях. */
 static void 
 hamradio_initialize(void)
@@ -19637,20 +19720,7 @@ hamradio_initialize(void)
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHUSBHW
-
-	#if WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT)
-		if (BOARD_IS_USERBOOT())
-		{
-			board_usb_activate();		// USB device and host start
-			usbactivated = 1;
-		}
-
-	#else /* WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT) */
-		board_usb_activate();		// USB device and host start
-		usbactivated = 1;
-
-	#endif /* WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT) */
-
+	board_usb_activate();		// USB device and host start
 #endif /* WITHUSBHW */
 
 	// TODO: у аудио кодека и IF кодека могут быть раные требования
@@ -20867,7 +20937,11 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 		uint_fast16_t * const pv16 = mp->qpval16;
 		uint_fast8_t * const pv8 = mp->qpval8;
 
-		if (rotate < 0)
+		if (step == ISTEP_RO)
+		{
+
+		}
+		else if (rotate < 0)
 		{
 			// negative change value
 			const uint_fast32_t bottom = mp->qbottom;
@@ -21445,6 +21519,19 @@ void hamradio_split_mode_toggle(void)
 {
 	uif_key_mainsubrx();
 }
+
+void hamradio_split_vfo_swap(void)
+{
+	uif_key_click_a_ex_b();
+#if WITHHWDUALVFO
+	hamradio_set_hw_vfo(gvfoab);
+#endif /* WITHHWDUALVFO */
+}
+
+uint_fast8_t hamradio_get_gvfoab(void)
+{
+	return gvfoab;
+}
 #endif /* WITHUSEDUALWATCH */
 
 // основной цикл программы при работе в режиме любительского премника
@@ -21621,363 +21708,6 @@ static void siggen_mainloop(void)
 }
 #endif
 
-#if WITHISBOOTLOADER
-
-struct stm32_header {
-	uint32_t magic_number;
-	uint8_t image_signature[64];
-	uint32_t image_checksum;
-	uint8_t  header_version[4];
-	uint32_t image_length;
-	uint32_t image_entry_point;
-	uint32_t reserved1;
-	uint32_t load_address;
-	uint32_t reserved2;
-	uint32_t version_number;
-	uint32_t option_flags;
-	uint32_t ecdsa_algorithm;
-	uint8_t ecdsa_public_key[64];
-	uint8_t padding[83];
-	uint8_t binary_type;
-} ATTRPACKED;
-
-#define HEADER_MAGIC	0x324d5453  //	__be32_to_cpu(0x53544D32)
-
-static uint_fast8_t bootloader_get_start(
-		uintptr_t apparea,	/* целевой адрес для загрузки образа - здесь лежит заголовок файла */
-		uintptr_t * ip)
-{
-	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
-	uint_fast32_t checksum = hdr->image_checksum;
-	uint_fast32_t length = hdr->image_length;
-	const uint8_t * p = (const uint8_t *) (uintptr_t) hdr->load_address;
-	if (hdr->magic_number != HEADER_MAGIC)
-		return 1;
-	* ip = hdr->image_entry_point;
-	while (length --)
-		checksum -= * p ++;
-	return checksum != 0;	// возврат 0 если контрольная сумма совпала
-}
-
-static uint_fast8_t bootloader_copyapp(
-		uint_fast32_t appoffset,	/* смещение заголовка приожения в накопителе */
-		uintptr_t * ip
-		)
-{
-	enum { HEADERSIZE = 256 };
-	static uint8_t tmpbuff [HEADERSIZE];
-	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) tmpbuff;
-
-	bootloader_readimage(appoffset, tmpbuff, HEADERSIZE);
-	//printhex(appoffset, tmpbuff, HEADERSIZE);
-	if (hdr->magic_number != HEADER_MAGIC)
-		return 1;
-	* ip = hdr->image_entry_point;
-	PRINTF("bootloader_copyapp: ip=%08X (addr=%08X, len=%08X)\n", (unsigned) * ip, (unsigned) hdr->load_address, (unsigned) hdr->image_length);
-	bootloader_readimage(appoffset + HEADERSIZE, (void *) (uintptr_t) hdr->load_address, hdr->image_length);
-	PRINTF("bootloader_copyapp done.\n");
-	return 0;
-}
-
-// Сюда попадаем из USB DFU клвсса при приходе команды
-// DFU_Detach после USBD_Stop
-static void
-bootloader_launch_app(uintptr_t ip)
-{
-	global_disableIRQ();
-#if WITHUSBHW
-		board_usb_deinitialize();
-#endif /* WITHUSBHW */
-	dcache_clean_all();
-
-#if (__L2C_PRESENT == 1)
-	L2C_Disable();
-#endif
-
-
-#if (__GIC_PRESENT == 1)
-	// keep enabled foe CPU1 start
-	//GIC_DisableInterface();
-	//GIC_DisableDistributor();
-
-	// Disable all IRQs
-	{
-		// Get ITLinesNumber
-		const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
-		unsigned i;
-		// 32 - skip SGI handlers (keep enabled for CPU1 start).
-		for (i = 32; i < n; ++ i)
-			IRQ_Disable(i);
-	}
-#endif
-
-#if (__CORTEX_A != 0)
-
-	MMU_Disable();
-	MMU_InvalidateTLB();
-	__ISB();
-	__DSB();
-	(* (void (*)(void)) ip)();
-
-#endif
-
-	for (;;)
-		;
-}
-
-/* Вызов заказан вызывется из обработчика USB прерываний EP0 */
-void bootloader_deffereddetach(void * arg)
-{
-#if defined (USBD_DFU_RAM_LOADER)
-	uintptr_t ip;
-	if (bootloader_get_start(USBD_DFU_RAM_LOADER, & ip) == 0)
-	{
-		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
-		/* Perform an Attach-Detach operation on USB bus */
-#if WITHUSBHW
-		if (usbactivated)
-			board_usb_deactivate();
-#endif /* WITHUSBHW */
-		bootloader_launch_app(ip);
-	}
-	else
-	{
-		PRINTF("bootloader_deffereddetach: Header is not loaded to %08lX.\n", (unsigned long) USBD_DFU_RAM_LOADER);
-	}
-#endif /* defined (USBD_DFU_RAM_LOADER) */
-}
-
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
-
-static unsigned volatile tmpressed;
-static unsigned volatile pressflag;
-
-static unsigned refreshtimer;
-static unsigned volatile refreshevent;
-
-static unsigned s1timer;
-static unsigned volatile s1event;
-
-static unsigned s01timer;
-static unsigned volatile s01event;
-enum { REFRESHPERIODmS = 500 };
-
-static unsigned tcpiptimer;
-static unsigned volatile tcpipevent;
-
-static int getrefresh(void)
-{
-	unsigned v;
-
-	system_disableIRQ();
-	v = refreshevent;
-	refreshevent = 0;
-	system_enableIRQ();
-
-	return v;
-}
-
-
-static void
-tsc_spool(void * ctx)
-{
-	{
-		unsigned t = tmpressed;
-		if (t != 0)
-			tmpressed = t - 1;
-	}
-	// обновление крана
-	{
-		unsigned t = refreshtimer;
-		if (++ t >= NTICKS(REFRESHPERIODmS))
-		{
-			refreshevent = 1;
-			refreshtimer = 0;
-		}
-		else
-		{
-			refreshtimer = t;
-		}
-	}
-	// обработка LWIP
-	{
-		unsigned t = tcpiptimer;
-		if (++ t >= NTICKS(250))
-		{
-			tcpipevent = 1;
-			tcpiptimer = 0;
-		}
-		else
-		{
-			tcpiptimer = t;
-		}
-	}
-//	{
-//		unsigned t = s1timer;
-//		if (++ t >= NTICKS(1000))
-//		{
-//			++ abstime;
-//			s1event = 1;
-//			s1timer = 0;
-//		}
-//		else
-//		{
-//			s1timer = t;
-//		}
-//	}
-}
-
-#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
-
-#if WITHISBOOTLOADERFATFS
-
-static void bootloader_fatfs_mainloop(void)
-{
-	static const char IMAGENAME [] = WITHISBOOTLOADERIMAGE;
-	static FATFSALIGN_BEGIN BYTE header [sizeof (struct stm32_header)] FATFSALIGN_END;
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
-	FRESULT rc;
-	UINT br = 0;		//  количество считанных байтов
-	struct stm32_header * const hdr = (struct stm32_header *) & header;
-
-	board_set_bglight(1, gbglight);	// выключить подсветку
-	board_update();
-	PRINTF("bootloader_fatfs_mainloop start: '%s'\n", IMAGENAME);
-
-	static BYTE targetdrv = 0;
-	DSTATUS st = disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
-	if (st != RES_OK)
-	{
-		PRINTF("disk_initialize code=%02X\n", st);
-		PRINTF(" STA_NOINIT = %d\n", STA_NOINIT);
-		PRINTF(" STA_NODISK = %d\n", STA_NODISK);
-		PRINTF(" STA_PROTECT = %d\n", STA_PROTECT);
-		for (;;)
-			;
-	}
-	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
-	// чтение файла
-	rc = f_open(& Fil, IMAGENAME, FA_READ);
-	if (rc != FR_OK)
-	{
-		PRINTF("Can not open file '%s'\n", IMAGENAME);
-		PRINTF("Failed with rc=%u.\n", rc);
-		for (;;)
-			;
-	}
-	rc = f_read(& Fil, header, sizeof header, & br);	/* Read a chunk of file */
-	if (rc != FR_OK || br != sizeof (header))
-	{
-		PRINTF("Can not read header of file '%s'\n", IMAGENAME);
-		PRINTF("Failed with rc=%u.\n", rc);
-		for (;;)
-			;
-	}
-
-	uint_fast32_t length = hdr->image_length;
-	const uint8_t * p = (const uint8_t *) hdr->load_address;
-	if (hdr->magic_number != HEADER_MAGIC)
-	{
-		PRINTF("Wrong header of file '%s'\n", IMAGENAME);
-		for (;;)
-			;
-	}
-	rc = f_read(& Fil, (BYTE *) hdr->load_address, hdr->image_length, & br);	/* Read a chunk of file */
-	if (rc != FR_OK || br != hdr->image_length)
-	{
-		PRINTF("Can not read body of file '%s', rc=%d, hdr->image_length=%08lX, br=%08lX\n", IMAGENAME, (int) rc, (unsigned long) hdr->image_length, (unsigned long) br);
-		PRINTF("Failed with rc=%u.\n", rc);
-		for (;;)
-			;
-	}
-	uint_fast32_t checksum = hdr->image_checksum;
-	while (length --)
-		checksum -= * p ++;
-	if (checksum != 0)
-	{
-		PRINTF("Wrong body checksum of file '%s'\n", IMAGENAME);
-		for (;;)
-			;
-	}
-	rc = f_close(& Fil);
-	if (rc != FR_OK)
-	{
-		PRINTF("Can not close file '%s'\n", IMAGENAME);
-		PRINTF("Failed with rc=%u.\n", rc);
-		for (;;)
-			;
-	}
-
-#if BOOTLOADER_RAMSIZE
-	uintptr_t ip;
-	if (bootloader_get_start((uintptr_t) header, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
-	{
-		PRINTF("bootloader_fatfs_mainloop start: can not load '%s'\n", IMAGENAME);
-		for (;;)
-			;
-	}
-#else
-	ASSERT(0);
-	for (;;)
-		;
-#endif /* BOOTLOADER_RAMSIZE */
-#if WITHUSBHW
-	board_usb_deactivate();
-#endif /* WITHUSBHW */
-#if BOOTLOADER_RAMSIZE
-	PRINTF("bootloader_fatfs_mainloop start: run '%s' at %08lX\n", IMAGENAME, ip);
-#if WITHDEBUG
-	local_delay_ms(100);
-#endif /* WITHDEBUG */
-	bootloader_launch_app(ip);
-#endif /* BOOTLOADER_RAMSIZE */
-}
-
-#else /* WITHISBOOTLOADERFATFS */
-
-static void bootloader_mainloop(void)
-{
-	PRINTF("bootloader_mainloop:\n");
-	board_set_bglight(1, gbglight);	// выключить подсветку
-	board_update();
-
-#if BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT)
-
-	if (BOARD_IS_USERBOOT() == 0)
-	{
-		/* Нет запроса на вход в режим загрузчика - грузим с QSPI FLASH */
-		do
-		{
-			uintptr_t ip;
-			if (bootloader_copyapp(BOOTLOADER_SELFSIZE, & ip) != 0)	/* копирование исполняемого образа (если есть) в требуемое место */
-			{
-				PRINTF("bootloader_mainloop: No application image\n");
-				break;
-			}
-	#if WITHUSBHW
-			if (usbactivated)
-				board_usb_deactivate();
-	#endif /* WITHUSBHW */
-			PRINTF("bootloader_mainloop: ip=%08lX\n", (unsigned long) ip);
-			bootloader_launch_app(ip);
-
-		} while (0);
-	}
-#endif /* BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) */
-
-	PRINTF("bootloader_mainloop: loop\n");
-	/* Обеспечение работы USB DFU */
-	for (;;)
-	{
-		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
-	}
-}
-#endif /* WITHISBOOTLOADERFATFS */
-
-#endif /* WITHISBOOTLOADER */
-
 /* Главная функция программы */
 int 
 //__attribute__ ((used))
@@ -21986,15 +21716,16 @@ main(void)
 #if LINUX_SUBSYSTEM
 	linux_subsystem_init();
 #endif /* LINUX_SUBSYSTEM */
-#if CPUSTYLE_ARM || CPUSTYLE_RISCV
+#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 	sysinit_gpio_initialize();
-#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
+#endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM */
 #if WITHDEBUG && (! CPUSTYLE_ARM /* || WITHISBOOTLOADER */)
 
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
 #endif /* WITHDEBUG && ! CPUSTYLE_ARM */
+
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
 	global_disableIRQ();
@@ -22018,12 +21749,12 @@ main(void)
 #if LINUX_SUBSYSTEM
 	linux_user_init();
 #endif /* LINUX_SUBSYSTEM */
-#if WITHNMEA && CPUSTYLE_XC7Z
+#if WITHNMEA && CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 	HARDWARE_NMEA_INITIALIZE();
 	HARDWARE_NMEA_SET_SPEED(115200L);
 	HARDWARE_NMEA_ENABLERX(1);
 	nmea_parser_init(); // пока тут
-#endif /* WITHNMEA && CPUSTYLE_XC7Z */
+#endif /* WITHNMEA && CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 
 #if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
 	bootloader_fatfs_mainloop();

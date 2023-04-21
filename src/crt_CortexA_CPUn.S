@@ -47,10 +47,9 @@
    ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
    ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
    ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
-   ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
+   //CA53 not have ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
    ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
    ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
-   ARM_MODE_MASK  = 0x1F
    
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
@@ -61,11 +60,10 @@
 	 STACKSIZEFIQ = 64
 	 STACKSIZEHYP = 64
 	 STACKSIZEMON = 64
-	 STACKSIZESYS = 64
-	 STACKSIZEIRQ = 512
+	 STACKSIZESVC = 64
+	 STACKSIZEIRQ = 64
 
-	 STACKSIZESVCBOOT = 2048
-	 STACKSIZESVCCPU1 = 16777216
+	 STACKSIZESYSCPUn = 16 * 1024 * 1024	/* 1MB */
 
 	.section .text
 	.code 32
@@ -112,17 +110,17 @@ Reset_CPU1_Handler:
    ldr   sp, =__stack_cpu1_mon_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-   ldr   sp, =__stack_cpu1_hyp_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu1_sys_end
-   mov   lr, #0
+//   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
+//   ldr   sp, =__stack_cpu1_hyp_end
+//   mov   lr, #0
 
 	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
 	ldr   sp, =__stack_cpu1_svc_end
 	mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack_cpu1_sys_end
+   mov   lr, #0
 
 	ldr		r2, =Reset_CPUn_Handler
 	mov		lr, pc
@@ -136,7 +134,7 @@ Reset_CPU1_Handler:
    .ltorg
 
 	.section .bss
-	.align 8
+	.align 3
 
 	.space	STACKSIZEIRQ
 __stack_cpu1_irq_end = .
@@ -148,12 +146,12 @@ __stack_cpu1_abt_end = .
 __stack_cpu1_fiq_end = .
 	.space	STACKSIZEMON
 __stack_cpu1_mon_end = .
-	.space	STACKSIZEHYP
-__stack_cpu1_hyp_end = .
-	.space	STACKSIZESYS
-__stack_cpu1_sys_end = .
-	.space	STACKSIZESVCCPU1
+//	.space	STACKSIZEHYP
+//__stack_cpu1_hyp_end = .
+	.space	STACKSIZESVC
 __stack_cpu1_svc_end = .
+	.space	STACKSIZESYSCPUn
+__stack_cpu1_sys_end = .
 
 	.word 0		/* fix non-zero size of this section */
 
@@ -198,17 +196,17 @@ Reset_CPU2_Handler:
    ldr   sp, =__stack_cpu2_mon_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-   ldr   sp, =__stack_cpu2_hyp_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu2_sys_end
-   mov   lr, #0
+//   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
+//  ldr   sp, =__stack_cpu2_hyp_end
+//   mov   lr, #0
 
 	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
 	ldr   sp, =__stack_cpu2_svc_end
 	mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack_cpu2_sys_end
+   mov   lr, #0
 
 	ldr		r2, =Reset_CPUn_Handler
 	mov		lr, pc
@@ -222,7 +220,7 @@ Reset_CPU2_Handler:
    .ltorg
 
 	.section .bss
-	.align 8
+	.align 3
 
 	.space	STACKSIZEIRQ
 __stack_cpu2_irq_end = .
@@ -234,12 +232,12 @@ __stack_cpu2_abt_end = .
 __stack_cpu2_fiq_end = .
 	.space	STACKSIZEMON
 __stack_cpu2_mon_end = .
-	.space	STACKSIZEHYP
-__stack_cpu2_hyp_end = .
-	.space	STACKSIZESYS
-__stack_cpu2_sys_end = .
-	.space	STACKSIZESVCCPU1
+//	.space	STACKSIZEHYP
+//__stack_cpu2_hyp_end = .
+	.space	STACKSIZESVC
 __stack_cpu2_svc_end = .
+	.space	STACKSIZESYSCPUn
+__stack_cpu2_sys_end = .
 
 	.word 0		/* fix non-zero size of this section */
 
@@ -284,17 +282,17 @@ Reset_CPU3_Handler:
    ldr   sp, =__stack_cpu3_mon_end
    mov   lr, #0
 
-   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-   ldr   sp, =__stack_cpu3_hyp_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu3_sys_end
-   mov   lr, #0
+//   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
+//   ldr   sp, =__stack_cpu3_hyp_end
+//   mov   lr, #0
 
 	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
 	ldr   sp, =__stack_cpu3_svc_end
 	mov   lr, #0
+
+   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+   ldr   sp, =__stack_cpu3_sys_end
+   mov   lr, #0
 
 	ldr		r2, =Reset_CPUn_Handler
 	mov		lr, pc
@@ -308,7 +306,7 @@ Reset_CPU3_Handler:
    .ltorg
 
 	.section .bss
-	.align 8
+	.align 3
 
 	.space	STACKSIZEIRQ
 __stack_cpu3_irq_end = .
@@ -320,12 +318,12 @@ __stack_cpu3_abt_end = .
 __stack_cpu3_fiq_end = .
 	.space	STACKSIZEMON
 __stack_cpu3_mon_end = .
-	.space	STACKSIZEHYP
-__stack_cpu3_hyp_end = .
-	.space	STACKSIZESYS
-__stack_cpu3_sys_end = .
-	.space	STACKSIZESVCCPU1
+//	.space	STACKSIZEHYP
+//__stack_cpu3_hyp_end = .
+	.space	STACKSIZESVC
 __stack_cpu3_svc_end = .
+	.space	STACKSIZESYSCPUn
+__stack_cpu3_sys_end = .
 
 	.word 0		/* fix non-zero size of this section */
 

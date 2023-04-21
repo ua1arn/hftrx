@@ -1,0 +1,20 @@
+#comment; Serial Peripheral Interface
+#type; SPI
+#base; SPI0 0x01C68000
+#base; SPI1 0x01C69000
+#irq; SPI0 97
+#irq; SPI1 98
+#regdef; SPI_GCR; 0x0004; SPI Global Control Register
+#regdef; SPI_TCR; 0x0008; SPI Transfer Control Register
+#regdef; SPI_IER; 0x0010; SPI Interrupt Control Register
+#regdef; SPI_ISR; 0x0014; SPI Interrupt Status Register
+#regdef; SPI_FCR; 0x0018; SPI FIFO Control Register
+#regdef; SPI_FSR; 0x001C; SPI FIFO Status Register
+#regdef; SPI_WCR; 0x0020; SPI Wait Clock Register
+#regdef; SPI_CCR; 0x0024; SPI Clock Rate Control register
+#regdef; SPI_MBC; 0x0030; SPI Master Burst Counter Register
+#regdef; SPI_MTC; 0x0034; SPI Master Transmit Counter Register
+#regdef; SPI_BCC; 0x0038; SPI Master Burst Control Register
+#regdef; SPI_TXD; 0x0200; SPI TX Data Register
+#regdef; SPI_RXD; 0x0300; SPI RX Data Register
+#regdef; dummy 0; 0x1000; Alignment

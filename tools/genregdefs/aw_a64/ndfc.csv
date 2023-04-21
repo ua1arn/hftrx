@@ -1,0 +1,35 @@
+#comment; NAND Flash Controller Interface
+#type; NDFC
+#base; NDFC 0x01C03000
+#irq; NDFC 102 
+#irq; NAND 102 
+#regdef; NDFC_CTL; 0x000;  NDFC Configure and Control Register
+#regdef; NDFC_ST; 0x004;  NDFC Status Information Register
+#regdef; NDFC_INT; 0x008;  NDFC Interrupt Control Register
+#regdef; NDFC_TIMING_CTL; 0x00C; NDFC Timing Control Register
+#regdef; NDFC_TIMING_CFG; 0x010; NDFC Timing Configure Register
+#regdef; NDFC_ADDR_LOW; 0x014; NDFC Low Word Address Register
+#regdef; NDFC_ADDR_HIGH; 0x018; NDFC High Word Address Register
+#regdef; NDFC_BLOCK_NUM; 0x01C; NDFC Data Block Number Register
+#regdef; NDFC_CNT; 0x020; NDFC Data Counter for data transfer Register
+#regdef; NDFC_CMD; 0x024; Set up NDFC commands Register
+#regdef; NDFC_RCMD_SET; 0x028; Read Command Set Register for vendor’s NAND memory
+#regdef; NDFC_WCMD_SET; 0x02C; Write Command Set Register for vendor’s NAND memory
+#regdef; NDFC_ECC_CTL; 0x034; ECC Configure and Control Register
+#regdef; NDFC_ECC_ST; 0x038; ECC Status and Operation information Register
+#regdef; NDFC_EFR; 0x03C; Enhanced Feature Register
+#regdef; NDFC_ERR_CNT0; 0x040; Corrected Error Bit Counter Register 0
+#regdef; NDFC_ERR_CNT1; 0x044; Corrected Error Bit Counter Register 1
+#regdef; NDFC_USER_DATA; 0x050 16; User Data Field Register n (n from 0 to 15)
+#regdef; NDFC_EFNAND_STA; 0x090; EFNAND Status Register
+#regdef; NDFC_SPARE_AREA; 0x0A0; Spare Area Configure Register
+#regdef; NDFC_PAT_ID; 0x0A4; Pattern ID Register
+#regdef; NDFC_RDATA_STA_CTL; 0x0A8; Read Data Status Control Register
+#regdef; NDFC_RDATA_STA_0; 0x0AC; Read Data Status Register 0
+#regdef; NDFC_RDATA_STA_1; 0x0B0; Read Data Status Register 1
+#regdef; NDFC_MDMA_ADDR; 0x0C0; MBUS DMA Address Register
+#regdef; NDFC_MDMA_CNT; 0x0C4; MBUS DMA Data Counter Register
+#regdef; NDFC_NDMA_MODE_CTL; 0x0D0; DFC Normal DMA Mode Control Register
+#regdef; NDFC_IO_DATA; 0x300; Data Input/ Output Port Address Register
+#regdef; RAM0_BASE 1; 0x400 1024; 1024 Bytes RAM0 base
+#regdef; RAM1_BASE 1; 0x800 1024; 1024 Bytes RAM1 base

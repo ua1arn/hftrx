@@ -1,0 +1,8 @@
+#type; CIR_RX
+#base; CIR_RX 0x01F02000
+#regdef;CIR_CTL; 0x0000; CIR Control Register
+#regdef;CIR_RXPCFG; 0x0010; CIR Receiver Pulse Configure Register
+#regdef;CIR_RXFIFO; 0x0020; CIR Receiver FIFO Register
+#regdef;CIR_RXINT; 0x002C; CIR Receiver Interrupt Control Register
+#regdef;CIR_RXSTA; 0x0030; CIR Receiver Status Register
+#regdef;CIR_RXCFG; 0x0034; CIR Receiver Configure Register

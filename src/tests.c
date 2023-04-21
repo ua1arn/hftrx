@@ -5444,7 +5444,7 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 #endif
 
-#if (__CORTEX_A != 0)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 static void disableAllIRQs(void)
 {
@@ -5475,7 +5475,8 @@ static void disableAllIRQs(void)
 	PRINTF("disableAllIRQs: n=%u\n", n);
 
 }
-#endif /* (__CORTEX_A != 0) */
+
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if WITHOPENVG
 /*------------------------------------------------------------------------
@@ -6374,7 +6375,7 @@ void testpng(const void * pngbuffer)
 
 	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
 	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
-	const unsigned picdx = GXADJ(png->width);
+	const unsigned picdx = png->width;//GXADJ(png->width);
 	const unsigned picw = png->width;
 	const unsigned pich = png->height;
 
@@ -6388,6 +6389,7 @@ void testpng(const void * pngbuffer)
 		0, 0, picw / 4, pich / 4,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
 		fbpic, picdx, pich,
+		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
@@ -6397,6 +6399,7 @@ void testpng(const void * pngbuffer)
 		30, 0, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
 		fbpic, picdx, pich,
+		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
@@ -6406,6 +6409,7 @@ void testpng(const void * pngbuffer)
 		30, pich / 2, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
 		fbpic, picdx, pich,
+		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
@@ -6415,6 +6419,7 @@ void testpng(const void * pngbuffer)
 		300, 100, picw / 1, pich / 1,		/* позиция и размеры прямоугольника - получателя */
 		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
 		fbpic, picdx, pich,
+		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
@@ -6425,11 +6430,66 @@ void testpng(const void * pngbuffer)
 
 #endif
 
+#if (__CORTEX_A == 53U) && CPUSTYLE_CA53
+
+// 4.5.80 Configuration Base Address Register
+/** \brief  Get CBAR
+    \return               Configuration Base Address Register
+ */
+__STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
+{
+	uint64_t result;
+  __get_CP(15, 1, result, 15, 3, 0);
+  return(result);
+}
+
+#endif /* (__CORTEX_A == 53U) && CPUSTYLE_CA53 */
+
+// p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
+// p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && CPUSTYLE_CA53
+	{
+		const uint_fast32_t cbar = __get_CA53_CBAR();
+		const uintptr_t periphbase = (uintptr_t) (cbar & 0xFFFC00000u) | (uintptr_t) (cbar & 0xFF) << 32;
+
+		PRINTF("__get_CPUACTLR()=%08X\n", (unsigned) __get_CPUACTLR());
+		PRINTF("__get_CPUECTLR()=%08X\n", (unsigned) __get_CPUECTLR());
+		PRINTF("__get_CA53_CBAR()=%08X\n", (unsigned) periphbase);			/* SYS_CFG_BASE */
+
+		PRINTF("GIC_DISTRIBUTOR_BASE=%08X\n", (unsigned) GIC_DISTRIBUTOR_BASE);
+		PRINTF("GIC_INTERFACE_BASE=%08X\n", (unsigned) GIC_INTERFACE_BASE);
+
+		ASSERT(GIC_DISTRIBUTOR_BASE == (periphbase + 0x81000));
+		ASSERT(GIC_INTERFACE_BASE == (periphbase + 0x82000));
+	}
+#endif
+#if 0 && (__CORTEX_A == 7U)
+	{
+		const uint_fast32_t cbar = __get_CBAR();
+		PRINTF("__get_CBAR()=%08X\n", (unsigned) __get_CBAR());
+
+	}
+#endif
+#if 0
+	{
+		PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
+
+		C0_CPUX_CFG->GENER_CTRL_REG0 &= ~ (1u << 4);	// GICCDISABLE
+		C0_CPUX_CFG->C_CPU_STATUS |= (0x0Fu << 24);		// SMP
+		C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << 24);		// AA64nAA32 1: AArch64
+
+		PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
+		PRINTF("C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
+	}
+#endif
 #if 0 && LCDMODE_LTDC
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -6524,6 +6584,8 @@ void hightests(void)
 				220, 220,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6535,6 +6597,8 @@ void hightests(void)
 				350, 250,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE, keycolor
 				);
 
@@ -6546,6 +6610,8 @@ void hightests(void)
 				40, 20, picx * 5 / 2, picy,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	// координаты источника
+				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6557,6 +6623,8 @@ void hightests(void)
 				450, 250, picx * 3 / 2, picy * 3 / 2,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	/* координаты источника */
+				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6568,6 +6636,8 @@ void hightests(void)
 				170, 220, picx * 2 / 3, picy * 2 / 3,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	/* координаты источника */
+				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6579,6 +6649,8 @@ void hightests(void)
 				90, 90,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6590,6 +6662,8 @@ void hightests(void)
 				30, 30,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic2, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6601,6 +6675,8 @@ void hightests(void)
 				370, 20,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic3, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
@@ -6780,7 +6856,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 1 && WITHDEBUG && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if 0 && WITHDEBUG && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		// Allwinner t113-s3 boot mode display
 
@@ -6789,8 +6865,8 @@ void hightests(void)
 		// bits 27:16: eFUSE boot select status,
 		// bit 0: 0: GPIO boot select, 1: eFuse boot select
 		// The status of the GPIO boot select pin can be read by the bit[12:11] of the system configuration module (register: 0x03000024).
-		//PRINTF("SID->BOOT_MODE=0x%08lX, SYS_CFG->VER_REG=0x%08lX\n", SID->BOOT_MODE, SYS_CFG->VER_REG);
-		PRINTF("BOOT_MODE=%u, Pin_Boot_Select=0x%02X\n", (unsigned) (SID->BOOT_MODE >> 0) & 0x01, (unsigned) (SYS_CFG->VER_REG >> 11) & 0x03);
+		PRINTF("SID->BOOT_MODE=0x%08lX, SYS_CFG->VER_REG=0x%08lX\n", SID->BOOT_MODE, SYS_CFG->VER_REG);
+		PRINTF("BOOT_MODE=%u, BOOT_SEL_PAD_STA=0%u FEL_SEL_PAD_STA=%u\n", (unsigned) (SID->BOOT_MODE >> 0) & 0x01, (unsigned) (SYS_CFG->VER_REG >> 11) & 0x03, (unsigned) (SYS_CFG->VER_REG >> 8) & 0x01);
 	}
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
@@ -10174,8 +10250,108 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 // Сразу после начала main
 
+#if 0 && WITHLVGL && LINUX_SUBSYSTEM
+
+#include "linux/linux_subsystem.h"
+#include "lvgl/lvgl.h"
+#include "lv_drivers/display/fbdev.h"
+#include "lv_drivers/indev/evdev.h"
+#include "lvgl/demos/lv_demos.h"
+#include "lvgl/examples/lv_examples.h"
+#include <linux/kd.h>
+
+void board_tsc_initialize(void);
+void board_tsc_indev_read(lv_indev_drv_t * drv, lv_indev_data_t * data);
+void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
+void indev_enc2_spool(void);
+
+#define DISP_BUF_SIZE	(128 * DIM_X)
+
+pthread_t lv_tick_inc_t;
+
+void thread_lv_tick_inc(void)
+{
+	while(1) {
+		lv_tick_inc(1);
+		usleep(1000);
+	}
+}
+
+void thread_spool_encinterrupt(void)
+{
+	while(1)
+	{
+		indev_enc2_spool();
+		spool_encinterrupt2();
+		usleep(1000);
+	}
+}
+
+#endif
+
 void lowtests(void)
 {
+#if 0 && WITHLVGL && LINUX_SUBSYSTEM
+
+	int ttyd = open(LINUX_TTY_FILE, O_RDWR);
+	if (ttyd)
+		ioctl(ttyd, KDSETMODE, KD_GRAPHICS);
+
+	close(ttyd);
+
+	/*LVGL init*/
+	lv_init();
+
+	/*Linux frame buffer device init*/
+	fbdev_init();
+
+	/*A small buffer for LittlevGL to draw the screen's content*/
+	static lv_color_t buf1[DISP_BUF_SIZE];
+	static lv_color_t buf2[DISP_BUF_SIZE];
+
+	/*Initialize a descriptor for the buffer*/
+	static lv_disp_draw_buf_t disp_buf;
+	lv_disp_draw_buf_init(&disp_buf, buf1, buf2, DISP_BUF_SIZE);
+
+	/*Initialize and register a display driver*/
+	static lv_disp_drv_t disp_drv;
+	lv_disp_drv_init(& disp_drv);
+	disp_drv.draw_buf   = & disp_buf;
+	disp_drv.flush_cb   = fbdev_flush;
+	disp_drv.hor_res    = DIM_X;
+	disp_drv.ver_res    = DIM_Y;
+	lv_disp_drv_register(& disp_drv);
+
+	i2c_initialize();
+	board_tsc_initialize();
+
+	/* Set up touchpad input device interface */
+	lv_indev_drv_t touch_drv;
+	lv_indev_drv_init(& touch_drv);
+	touch_drv.type = LV_INDEV_TYPE_POINTER;
+	touch_drv.read_cb = board_tsc_indev_read;
+	lv_indev_drv_register(& touch_drv);
+
+	/* Encoder register */
+	lv_indev_drv_t enc_drv;
+	lv_indev_drv_init(& enc_drv);
+	enc_drv.type = LV_INDEV_TYPE_ENCODER;
+	enc_drv.read_cb = encoder_indev_read;
+	lv_indev_drv_register(& enc_drv);
+
+	linux_create_thread(& lv_tick_inc_t, thread_spool_encinterrupt, 50, 1);
+	linux_create_thread(& lv_tick_inc_t, thread_lv_tick_inc, 50, 1);
+
+//	lv_demo_benchmark_run_scene(26);
+//	lv_demo_widgets();
+	lv_demo_keypad_encoder();
+
+	while(1) {
+		lv_task_handler();
+		usleep(10000);
+	}
+
+#endif
 #if 0 && __riscv && defined(__riscv_zicsr)
 	{
 		unsigned vm = (csr_read_mstatus() >> 24) & 0x1F;
@@ -10270,12 +10446,12 @@ void lowtests(void)
 		}
 	}
 #endif
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		PRINTF("SYS_CFG->SYS_LDO_CTRL_REG=0x%08X (expected arm: 0x0000190E, risc-v: 0x00002F0F)\n", (unsigned) SYS_CFG->SYS_LDO_CTRL_REG);
 	}
 #endif
-#if (CPUSTYLE_T113)
+#if 0 && (CPUSTYLE_T113)
 	{
 		PRINTF("C0_CPUX_CFG->C0_CTRL_REG0=0x%08X (expected 0x80000000)\n", (unsigned) C0_CPUX_CFG->C0_CTRL_REG0);
 	}

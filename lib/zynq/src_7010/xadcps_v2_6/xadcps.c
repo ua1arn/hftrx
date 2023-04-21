@@ -57,6 +57,7 @@ u32 XAdcPs_ReadInternalReg(XAdcPs *InstancePtr, u32 RegOffset);
 /************************** Variable Definitions ****************************/
 
 
+#if defined XPAR_XDCFG_0_BASEADDR
 /*****************************************************************************/
 /**
 *
@@ -125,7 +126,7 @@ int XAdcPs_CfgInitialize(XAdcPs *InstancePtr, XAdcPs_Config *ConfigPtr,
 
 	return XST_SUCCESS;
 }
-
+#endif
 
 /****************************************************************************/
 /**

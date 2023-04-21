@@ -30,7 +30,7 @@ XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z020.elf
 CC   = $(TRGT)gcc
 GPP  = $(TRGT)g++
 CP   = $(TRGT)objcopy
-AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
@@ -65,13 +65,12 @@ DADEFS = -D__ASSEMBLY__=1
 
 ARCHDIR = $(PRJROOT)/arch/zynq
 
-#ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_myir
-ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
+ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_myir
+#ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
 #ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
 # full qualified name
 ZYNQLIB = zynq7020.a
-
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -142,6 +141,12 @@ SRCDIRS += $(MDLWHOSTDIR)
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
+
+ifeq (1, 0)
+# lvgl
+SRCDIRS += $(PRJROOT)/lvgl/src
+DINCDIR += $(PRJROOT)/lvgl/src
+endif
 
 ifeq (1, 1)
 # LuPng
@@ -240,8 +245,8 @@ ASFLAGS = $(MCFLAGS) $(OPT) -g -gdwarf-2 $(ADEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
 # see also -Xlinker --print-gc-sections
-LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
-LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
+LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
+LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
@@ -274,12 +279,14 @@ bitstream_ebaz7020.h: bitstream_ebaz7020.bit
 	./bit2c  bitstream_ebaz7020.bit bitstream_ebaz7020.h
 	
 bootloader: bitstreams BOOT2
-  
-#app_run: $(PROJECT)_app.elf bitstream_myir7020.bit app_run_myir7020.tcl
-#	xsct.bat app_run_myir7020.tcl 
-  
+ 
+ifeq (1, 1) 
+app_run: $(PROJECT)_app.elf bitstream_myir7020.bit app_run_myir7020.tcl
+	xsct.bat app_run_myir7020.tcl 
+else  
 app_run: $(PROJECT)_app.elf bitstream_ebaz7020.bit app_run_ebaz7020.tcl
 	xsct.bat app_run_ebaz7020.tcl
+endif
 
 lib: $(ZYNQLIB)
 

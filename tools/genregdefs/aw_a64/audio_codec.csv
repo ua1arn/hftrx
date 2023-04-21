@@ -1,0 +1,220 @@
+#type; AUDIO_CODEC
+#base; AUDIO_CODEC 0x01C22C00
+#irq; AUDIO_CODEC 61
+#regdef; DA_CTL; 0x000; Digital Audio Control Register
+#regdef; DA_FAT0; 0x004; Digital Audio Format Register 0
+#regdef; DA_FAT1; 0x008; Digital Audio Format Register 1
+#regdef; DA_ISTA; 0x00C; Digital Audio Interrupt Status Register
+#regdef; DA_RXFIFO; 0x010; Digital Audio RX FIFO Register
+#regdef; DA_FCTL; 0x014; Digital Audio FIFO Control Register
+#regdef; DA_FSTA; 0x018; Digital Audio FIFO Status Register
+#regdef; DA_INT; 0x01C; Digital Audio Interrupt Control Register
+#regdef; DA_TXFIFO; 0x020; Digital Audio TX FIFO Register
+#regdef; DA_CLKD; 0x024; Digital Audio Clock Divide Register
+#regdef; DA_TXCNT; 0x028; Digital Audio RX Sample Counter Register
+#regdef; DA_RXCNT; 0x02C; Digital Audio TX Sample Counter Register
+#regdef; DA_TXCHSEL; 0x030; Digital Audio TX Channel Select register
+#regdef; DA_TXCHMAP; 0x034; Digital Audio TX Channel Mapping Register
+#regdef; DA_RXCHSEL; 0x038; Digital Audio RX Channel Select register
+#regdef; DA_RXCHMAP; 0x03C; Digital Audio RX Channel Mapping Register
+#regdef; Codec_RST; 0x200; Chip Soft Reset Register
+#regdef; SYSCLK_CTL; 0x20C; System Clock Control Register
+#regdef; MOD_CLK_ENA; 0x210; Module Clock Control Register
+#regdef; MOD_RST_CTL; 0x214; Module Reset Control Register
+#regdef; SYS_SR_CTRL; 0x218; System Sample rate & SRC Configuration Register
+#regdef; SYS_SRC_CLK; 0x21C; System SRC Clock Source Select Register
+#regdef; SYS_DVC_MOD; 0x220; System DVC Mode Select Register
+#regdef; AIF1CLK_CTRL; 0x240; AIF1 BCLK/LRCK Control Register
+#regdef; AIF1_ADCDAT_CTRL; 0x244; AIF1 ADCDAT Control Register
+#regdef; AIF1_DACDAT_CTRL; 0x248; AIF1 DACDAT Control Register
+#regdef; AIF1_MIXR_SRC; 0x24C; AIF1 Digital Mixer Source Select Register
+#regdef; AIF1_VOL_CTRL1; 0x250; AIF1 Volume Control 1 Register
+#regdef; AIF1_VOL_CTRL2; 0x254; AIF1 Volume Control 2 Register
+#regdef; AIF1_VOL_CTRL3; 0x258; AIF1 Volume Control 3 Register
+#regdef; AIF1_VOL_CTRL4; 0x25C; AIF1 Volume Control 4 Register
+#regdef; AIF1_MXR_GAIN; 0x260; AIF1 Digital Mixer Gain Control Register
+#regdef; AIF1_RXD_CTRL; 0x264; AIF1 Receiver Data Discarding Control Register
+#regdef; AIF2_CLK_CTRL; 0x280; AIF2 BCLK/LRCK Control Register
+#regdef; AIF2_ADCDAT_CTRL; 0x284; AIF2 ADCDAT Control Register
+#regdef; AIF2_DACDAT_CTRL; 0x288; AIF2 DACDAT Control Register
+#regdef; AIF2_MXR_SRC; 0x28C; AIF2 Digital Mixer Source Select Register
+#regdef; AIF2_VOL_CTRL1; 0x290; AIF2 Volume Control 1 Register
+#regdef; AIF2_VOL_CTRL2; 0x298; AIF2 Volume Control 2 Register
+#regdef; AIF2_MXR_GAIN; 0x2A0; AIF2 Digital Mixer Gain Control Register
+#regdef; AIF2_RXD_CTRL; 0x2A4; AIF2 Receiver Data Discarding Control Register
+#regdef; AIF3_CLK_CTRL; 0x2C0; AIF3 BCLK/LRCK Control Register
+#regdef; AIF3_ADCDAT_CTRL; 0x2C4; AIF3 ADCDAT Control Register
+#regdef; AIF3_DACDAT_CTRL; 0x2C8; AIF3 DACDAT Control Register
+#regdef; AIF3_SGP_CTRL; 0x2CC; AIF3 Signal Path Control Register
+#regdef; AIF3_RXD_CTRL; 0x2E4; AIF3 Receiver Data Discarding Control Register
+#regdef; ADC_DIG_CTRL; 0x300; ADC Digital Control Register
+#regdef; ADC_VOL_CTRL; 0x304; ADC Volume Control Register
+#regdef; ADC_DBG_CTRL; 0x308; ADC Debug Control Register
+#regdef; HMIC_CTRL1; 0x310; HMIC Control 1 Register
+#regdef; HMIC_CTRL2; 0x314; HMIC Control 2 Register
+#regdef; HMIC_STS; 0x318; HMIC Status Register
+#regdef; DAC_DIG_CTRL; 0x320; DAC Digital Control Register
+#regdef; DAC_VOL_CTRL; 0x324; DAC Volume Control Register
+#regdef; DAC_DBG_CTRL; 0x328; DAC Debug Control Register
+#regdef; DAC_MXR_SRC; 0x330; DAC Digital Mixer Source Select Register
+#regdef; DAC_MXR_GAIN; 0x334; DAC Digital Mixer Gain Control Register
+#regdef; AC_ADC_DAPLSTA; 0x400; ADC DAP Left Status Register
+#regdef; AC_ADC_DAPRSTA; 0x404; ADC DAP Right Status Register
+#regdef; AC_ADC_DAPLCTRL; 0x408; ADC DAP Left Channel Control Register
+#regdef; AC_ADC_DAPRCTRL; 0x40C; ADC DAP Right Channel Control Register
+#regdef; AC_ADC_DAPLTL; 0x410; ADC DAP Left Target Level Register
+#regdef; AC_ADC_DAPRTL; 0x414; ADC DAP Right Target Level Register
+#regdef; AC_ADC_DAPLHAC; 0x418; ADC DAP Left High Average Coef Register
+#regdef; AC_ADC_DAPLLAC; 0x41C; ADC DAP Left Low Average Coef Register
+#regdef; AC_ADC_DAPRHAC; 0x420; ADC DAP Right High Average Coef Register
+#regdef; AC_ADC_DAPRLAC; 0x424; ADC DAP Right Low Average Coef Register
+#regdef; AC_ADC_DAPLDT; 0x428; ADC DAP Left Decay Time Register
+#regdef; AC_ADC_DAPLAT; 0x42C; ADC DAP Left Attack Time Register
+#regdef; AC_ADC_DAPRDT; 0x430; ADC DAP Right Decay Time Register
+#regdef; AC_ADC_DAPRAT; 0x434; ADC DAP Right Attack Time Register
+#regdef; AC_ADC_DAPNTH; 0x438; ADC DAP Noise Threshold Register
+#regdef; AC_ADC_DAPLHNAC; 0x43C; ADC DAP Left Input Signal High Average Coef Register
+#regdef; AC_ADC_DAPLLNAC; 0x440; ADC DAP Left Input Signal Low Average Coef Register
+#regdef; AC_ADC_DAPRHNAC; 0x444; ADC DAP Right Input Signal High Average Coef Register
+#regdef; AC_ADC_DAPRLNAC; 0x448; ADC DAP Right Input Signal Low Average Coef Register
+#regdef; AC_DAPHHPFC; 0x44C; ADC DAP High HPF Coef Register
+#regdef; AC_DAPLHPFC; 0x450; ADC DAP Low HPF Coef Register
+#regdef; AC_DAPOPT; 0x454; ADC DAP Optimum Register
+#regdef; AC_DAC_DAPCTRL; 0x480; DAC DAP Control Register
+#regdef; AGC_ENA; 0x4D0; AGC Enable Register
+#regdef; DRC_ENA; 0x4D4; DRC Enable Register
+#regdef; SRC_BISTCR; 0x4D8; SRC Bist control Register
+#regdef; SRC_BISTST; 0x4DC; SRC Bist Status Register
+#regdef; SRC1_CTRL1; 0x4E0; SRC1 Control 1 Register
+#regdef; SRC1_CTRL2; 0x4E4; SRC1 Control 2 Register
+#regdef; SRC1_CTRL3; 0x4E8; SRC1 Control 3 Register
+#regdef; SRC1_CTRL4; 0x4EC; SRC1 Control 4 Register
+#regdef; SRC2_CTRL1; 0x4F0; SRC2 Control 1 Register
+#regdef; SRC2_CTRL2; 0x4F4; SRC2 Control 2 Register
+#regdef; SRC2_CTRL3; 0x4F8; SRC2 Control 3 Register
+#regdef; SRC2_CTRL4; 0x4FC; SRC2 Control 4 Register
+#regdef; AC_DRC0_HHPFC; 0x600; DRC0 High HPF Coef Register
+#regdef; AC_DRC0_LHPFC; 0x604; DRC0 Low HPF Coef Register
+#regdef; AC_DRC0_CTRL; 0x608; DRC0 Control Register
+#regdef; AC_DRC0_LPFHAT; 0x60C; DRC0 Left Peak Filter High Attack Time Coef Register
+#regdef; AC_DRC0_LPFLAT; 0x610; DRC0 Left Peak Filter Low Attack Time Coef Register
+#regdef; AC_DRC0_RPFHAT; 0x614; DRC0 Right Peak Filter High Attack Time Coef Register
+#regdef; AC_DRC0_RPFLAT; 0x618; DRC0 Peak Filter Low Attack Time Coef Register
+#regdef; AC_DRC0_LPFHRT; 0x61C; DRC0 Left Peak Filter High Release Time Coef Register
+#regdef; AC_DRC0_LPFLRT; 0x620; DRC0 Left Peak Filter Low Release Time Coef Register
+#regdef; AC_DRC0_RPFHRT; 0x624; DRC0 Right Peak filter High Release Time Coef Register
+#regdef; AC_DRC0_RPFLRT; 0x628; DRC0 Right Peak filter Low Release Time Coef Register
+#regdef; AC_DRC0_LRMSHAT; 0x62C; DRC0 Left RMS Filter High Coef Register
+#regdef; AC_DRC0_LRMSLAT; 0x630; DRC0 Left RMS Filter Low Coef Register
+#regdef; AC_DRC0_RRMSHAT; 0x634; DRC0 Right RMS Filter High Coef Register
+#regdef; AC_DRC0_RRMSLAT; 0x638; DRC0 Right RMS Filter Low Coef Register
+#regdef; AC_DRC0_HCT; 0x63C; DRC0 Compressor Theshold High Setting Register
+#regdef; AC_DRC0_LCT; 0x640; DRC0 Compressor Slope High Setting Register
+#regdef; AC_DRC0_HKC; 0x644; DRC0 Compressor Slope High Setting Register
+#regdef; AC_DRC0_LKC; 0x648; DRC0 Compressor Slope Low Setting Register
+#regdef; AC_DRC0_HOPC; 0x64C; DRC0 Compressor High Output at Compressor Threshold Register
+#regdef; AC_DRC0_LOPC; 0x650; DRC0 Compressor Low Output at Compressor Threshold Register
+#regdef; AC_DRC0_HLT; 0x654; DRC0 Limiter Theshold High Setting Register
+#regdef; AC_DRC0_LLT; 0x658; DRC0 Limiter Theshold Low Setting Register
+#regdef; AC_DRC0_HKl; 0x65C; DRC0 Limiter Slope High Setting Register
+#regdef; AC_DRC0_LKl; 0x660; DRC0 Limiter Slope Low Setting Register
+#regdef; AC_DRC0_HOPL; 0x664; DRC0 Limiter High Output at Limiter Threshold
+#regdef; AC_DRC0_LOPL; 0x668; DRC0 Limiter Low Output at Limiter Threshold
+#regdef; AC_DRC0_HET; 0x66C; DRC0 Expander Theshold High Setting Register
+#regdef; AC_DRC0_LET; 0x670; DRC0 Expander Theshold Low Setting Register
+#regdef; AC_DRC0_HKE; 0x674; DRC0 Expander Slope High Setting Register
+#regdef; AC_DRC0_LKE; 0x678; DRC0 Expander Slope Low Setting Register
+#regdef; AC_DRC0_HOPE; 0x67C; DRC0 Expander High Output at Expander Threshold
+#regdef; AC_DRC0_LOPE; 0x680; DRC0 Expander Low Output at Expander Threshold
+#regdef; AC_DRC0_HKN; 0x684; DRC0 Linear Slope High Setting Register
+#regdef; AC_DRC0_LKN; 0x688; DRC0 Linear Slope Low Setting Register
+#regdef; AC_DRC0_SFHAT; 0x68C; DRC0 Smooth filter Gain High Attack Time Coef Register
+#regdef; AC_DRC0_SFLAT; 0x690; DRC0 Smooth filter Gain Low Attack Time Coef Register
+#regdef; AC_DRC0_SFHRT; 0x694; DRC0 Smooth filter Gain High Release Time Coef Register
+#regdef; AC_DRC0_SFLRT; 0x698; DRC0 Smooth filter Gain Low Release Time Coef Register
+#regdef; AC_DRC0_MXGHS; 0x69C; DRC0 MAX Gain High Setting Register
+#regdef; AC_DRC0_MXGLS; 0x6A0; DRC0 MAX Gain Low Setting Register
+#regdef; AC_DRC0_MNGHS; 0x6A4; DRC0 MIN Gain High Setting Register
+#regdef; AC_DRC0_MNGLS; 0x6A8; DRC0 MIN Gain Low Setting Register
+#regdef; AC_DRC0_EPSHC; 0x6AC; DRC0 Expander Smooth Time High Coef Register
+#regdef; AC_DRC0_EPSLC; 0x6B0; DRC0 Expander Smooth Time Low Coef Register
+#regdef; AC_DRC0_OPT; 0x6BC; Was: 0x6AC DRC0 Optimum Register
+#regdef; AC_DRC1_HHPFC; 0x700; DRC1 High HPF Coef Register
+#regdef; AC_DRC1_LHPFC; 0x704; DRC1 Low HPF Coef Register
+#regdef; AC_DRC1_CTRL; 0x708; DRC1 Control Register
+#regdef; AC_DRC1_LPFHAT; 0x70C; DRC1 Left Peak Filter High Attack Time Coef Register
+#regdef; AC_DRC1_LPFLAT; 0x710; DRC1 Left Peak Filter Low Attack Time Coef Register
+#regdef; AC_DRC1_RPFHAT; 0x714; DRC1 Right Peak Filter High Attack Time Coef Register
+#regdef; AC_DRC1_RPFLAT; 0x718; DRC1 Peak Filter Low Attack Time Coef Register
+#regdef; AC_DRC1_LPFHRT; 0x71C; DRC1 Left Peak Filter High Release Time Coef Register
+#regdef; AC_DRC1_LPFLRT; 0x720; DRC1 Left Peak Filter Low Release Time Coef Register
+#regdef; AC_DRC1_RPFHRT; 0x724; DRC1 Right Peak filter High Release Time Coef Register
+#regdef; AC_DRC1_RPFLRT; 0x728; DRC1 Right Peak filter Low Release Time Coef Register
+#regdef; AC_DRC1_LRMSHAT; 0x72C; DRC1 Left RMS Filter High Coef Register
+#regdef; AC_DRC1_LRMSLAT; 0x730; DRC1 Left RMS Filter Low Coef Register
+#regdef; AC_DRC1_RRMSHAT; 0x734; DRC1 Right RMS Filter High Coef Register
+#regdef; AC_DRC1_RRMSLAT; 0x738; DRC1 Right RMS Filter Low Coef Register
+#regdef; AC_DRC1_HCT; 0x73C; DRC1 Compressor Theshold High Setting Register
+#regdef; AC_DRC1_LCT; 0x740; DRC1 Compressor Slope High Setting Register
+#regdef; AC_DRC1_HKC; 0x744; DRC1 Compressor Slope High Setting Register
+#regdef; AC_DRC1_LKC; 0x748; DRC1 Compressor Slope Low Setting Register
+#regdef; AC_DRC1_HOPC; 0x74C; DRC1 Compressor High Output at Compressor Threshold
+#regdef; AC_DRC1_LOPC; 0x750; DRC1 Compressor Low Output at Compressor Threshold Register
+#regdef; AC_DRC1_HLT; 0x754; DRC1 Limiter Theshold High Setting Register
+#regdef; AC_DRC1_LLT; 0x758; DRC1 Limiter Theshold Low Setting Register
+#regdef; AC_DRC1_HKl; 0x75C; DRC1 Limiter Slope High Setting Register
+#regdef; AC_DRC1_LKl; 0x760; DRC1 Limiter Slope Low Setting Register
+#regdef; AC_DRC1_HOPL; 0x764; DRC1 Limiter High Output at Limiter Threshold
+#regdef; AC_DRC1_LOPL; 0x768; DRC1 Limiter Low Output at Limiter Threshold
+#regdef; AC_DRC1_HET; 0x76C; DRC1 Expander Theshold High Setting Register
+#regdef; AC_DRC1_LET; 0x770; DRC1 Expander Theshold Low Setting Register
+#regdef; AC_DRC1_HKE; 0x774; DRC1 Expander Slope High Setting Register
+#regdef; AC_DRC1_LKE; 0x778; DRC1 Expander Slope Low Setting Register
+#regdef; AC_DRC1_HOPE; 0x77C; DRC1 Expander High Output at Expander Threshold
+#regdef; AC_DRC1_LOPE; 0x780; DRC1 Expander Low Output at Expander Threshold
+#regdef; AC_DRC1_HKN; 0x784; DRC1 Linear Slope High Setting Register
+#regdef; AC_DRC1_LKN; 0x788; DRC1 Linear Slope Low Setting Register
+#regdef; AC_DRC1_SFHAT; 0x78C; DRC1 Smooth filter Gain High Attack Time Coef Register
+#regdef; AC_DRC1_SFLAT; 0x790; DRC1 Smooth filter Gain Low Attack Time Coef Register
+#regdef; AC_DRC1_SFHRT; 0x794; DRC1 Smooth filter Gain High Release Time Coef Register
+#regdef; AC_DRC1_SFLRT; 0x798; DRC1 Smooth filter Gain Low Release Time Coef Register
+#regdef; AC_DRC1_MXGHS; 0x79C; DRC1 MAX Gain High Setting Register
+#regdef; AC_DRC1_MXGLS; 0x7A0; DRC1 MAX Gain Low Setting Register
+#regdef; AC_DRC1_MNGHS; 0x7A4; DRC1 MIN Gain High Setting Register
+#regdef; AC_DRC1_MNGLS; 0x7A8; DRC1 MIN Gain Low Setting Register
+#regdef; AC_DRC1_EPSHC; 0x7AC; DRC1 Expander Smooth Time High Coef Register
+#regdef; AC_DRC1_EPSLC; 0x7B0; DRC1 Expander Smooth Time Low Coef Register
+#regdef; AC_DRC1_OPT; 0x7B4; DRC1 Optimum Register
+##regdef; HP_CTRL; 0x000; Headphone Amplifier Control Register
+##regdef; OL_MIX_CTRL; 0x001; Output Left Mixer Control Register
+##regdef; OR_MIX_CTRL; 0x002; Output Right Mixer Control Register
+##regdef; EARPIECE_CTRL0; 0x003; Earpiece Control Register 0
+##regdef; EARPIECE_CTRL1; 0x004; Earpiece Control Register 1
+##regdef; LINEOUT_CTRL0; 0x005; LINEOUT Control Register 0
+##regdef; LINEOUT_CTRL1; 0x006; LINEOUT Control Register 1
+##regdef; MIC1_CTRL; 0x007; MIC1 Control Register
+##regdef; MIC2_CTRL; 0x008; MIC2 Control Register
+##regdef; LINEIN_CTRL; 0x009; Linein Control Register
+##regdef; MIX_DAC_CTRL; 0x00A; Mixer and DAC Control Register
+##regdef; L_ADCMIX_SRC; 0x00B; Left ADC Mixer Control Register
+##regdef; R_ADCMIX_SRC; 0x00C; Right ADC Mixer Control Register
+##regdef; ADC_CTRL; 0x00D; ADC Control Register
+##regdef; HS_MBIAS_CTRL; 0x00E; Headset Microphone Bias Control Register
+##regdef; APT_REG; 0x00F; Analog Performance Tuning Register
+##regdef; OP_BIAS_CTRL0; 0x010; OP BIAS Control Register 0
+##regdef; OP_BIAS_CTRL1; 0x011; OP BIAS Control Register 1
+##regdef; ZC_VOL_CTRL; 0x012; USB Bias & Volume Change Control Register
+##regdef; BIAS_CAL_DATA; 0x013; Bias Calibration Data Register
+##regdef; BIAS_CAL_SET; 0x014; Bias Calibration Set Data Register
+##regdef; BD_CAL_CTRL; 0x015; Bias & DA16 Calibration Control Register
+##regdef; HP_PA_CTRL; 0x016; Headphone PA Control Register
+##regdef; HP_CAL_CTRL; 0x017; Headphone Calibration Control
+##regdef; RHP_CAL_DAT; 0x018; Right Headphone Calibration DATE
+##regdef; RHP_CAL_SET; 0x019; Right Headphone Calibration Setting
+##regdef; LHP_CAL_DAT; 0x01A; Left Headphone Calibration DATE
+##regdef; LHP_CAL_SET; 0x01B; Left Headphone Calibration Setting
+##regdef; MDET_CTRL; 0x01C; Mic detect Control Register
+##regdef; JM_DET_CTRL; 0x01D; Jack & Mic detect Control Register
+##regdef; PHOUT_CTRL; 0x01E; Phone output Register
+##regdef; PHIN_CTRL; 0x01F; Phone input Register
+

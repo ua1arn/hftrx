@@ -184,6 +184,13 @@ uint_fast32_t allwnrt113_get_di_freq(void);
 uint_fast32_t allwnrt113_get_ce_freq(void);
 uint_fast32_t allwnrt113_get_ve_freq(void);
 uint_fast32_t allwnrt113_get_dsp_freq(void);
+uint_fast32_t allwnrt113_get_tconlcd_freq(void);
+
+// Allwinner A64
+uint_fast32_t allwnr_a64_get_cpux_freq(void);
+uint_fast32_t allwnra64_get_audiopll8x_freq(void);
+uint_fast32_t allwnra64_get_audiopll_freq(void);
+
 
 /* PLL initialization functions. Take care on glitches. */
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n);
@@ -198,6 +205,8 @@ void allwnrt113_set_pll_audio1(unsigned m, unsigned n);
 void allwnrt113_pll_initialize(void);
 void set_pll_cpux_axi(unsigned n);
 void set_pll_riscv_axi(unsigned n);
+
+uint_fast32_t elveesvm14_get_arm_freq(void);
 
 uint_fast8_t
 calcdivider(
@@ -384,7 +393,7 @@ calcdivider(
 		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1)	// FPGA0_CLK_CTRL
 	};
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 	enum
 	{
 		ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1),

@@ -1,12 +1,17 @@
+#comment; Message Box
 #type; MSGBOX
 #base; CPUX_MSGBOX 0x03003000
+#base; DSP_MSGBOX 0x01701000
 #irq; CPUX_MSGBOX_R 32
-#regdef; MSGBOX_RD_IRQ_EN_REG; 0x0020+N*0x0100 (N=0-1); MSGBOX Read IRQ Enable Register
-#regdef; MSGBOX_RD_IRQ_STATUS_REG; 0x0024+N*0x0100 (N=0-1); MSGBOX Read IRQ Status Register
-#regdef; MSGBOX_WR_IRQ_EN_REG; 0x0030+N*0x0100 (N=0-1); MSGBOX Write IRQ Enable Register
-#regdef; MSGBOX_WR_IRQ_STATUS_REG; 0x0034+N*0x0100 (N=0-1); MSGBOX Write IRQ Status Register
-#regdef; MSGBOX_DEBUG_REG; 0x0040+N*0x0100 (N=0-1); MSGBOX Debug Register
-#regdef; MSGBOX_FIFO_STATUS_REG; 0x0050+N*0x0100+P*0x0004 (N=0-1)(P=0-3); MSGBOX FIFO Status Register
-#regdef; MSGBOX_MSG_STATUS_REG; 0x0060+N*0x0100+P*0x0004 (N=0-1)(P=0-3); MSGBOX Message Status Register
-#regdef; MSGBOX_MSG_REG; 0x0070+N*0x0100+P*0x0004 (N=0-1)(P=0-3); MSGBOX Message Queue Register
-#regdef; MSGBOX_WR_INT_THRESHOLD_REG; 0x0080+N*0x0100+P*0x0004 (N=0-1)(P=0-3); MSGBOX Write IRQ Threshold Register
+#aggreg; N; 0x0020 2; MSGBOX (N=0-1)
+#regdef; MSGBOX_RD_IRQ_EN_REG; 0x000; 0x0020+N*0x0100 (N=0-1) MSGBOX Read IRQ Enable Register
+#regdef; MSGBOX_RD_IRQ_STATUS_REG; 0x004; 0x0024+N*0x0100 (N=0-1) MSGBOX Read IRQ Status Register
+#regdef; MSGBOX_WR_IRQ_EN_REG; 0x0010; 0x0030+N*0x0100 (N=0-1) MSGBOX Write IRQ Enable Register
+#regdef; MSGBOX_WR_IRQ_STATUS_REG; 0x0014; 0x0034+N*0x0100 (N=0-1) MSGBOX Write IRQ Status Register
+#regdef; MSGBOX_DEBUG_REG; 0x0020; 0x0040+N*0x0100 (N=0-1) MSGBOX Debug Register
+#regdef; MSGBOX_FIFO_STATUS_REG; 0x0030 4; 0x0050+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX FIFO Status Register
+#regdef; MSGBOX_MSG_STATUS_REG; 0x0040 4; 0x0060+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Status Register
+#regdef; MSGBOX_MSG_REG; 0x0050 4; 0x0070+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Queue Register
+#regdef; MSGBOX_WR_INT_THRESHOLD_REG; 0x0060 4; 0x0080+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Write IRQ Threshold Register
+#regdef; padding 0; 0x0100; set size
+#aggregend;

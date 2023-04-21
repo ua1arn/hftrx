@@ -13,20 +13,20 @@ extern "C" {
 
 #if CPUSTYLE_AT91SAM7S
 
-	//#define CPU_FREQ ((18432000uL * 73) / 14 / 2)	// satmod9if_v0 ARM board
-	#define CPU_FREQ 48000000uL
-	//#define CPU_FREQ 12000000uL
+	//#define CPU_FREQ ((18432000u * 73) / 14 / 2)	// satmod9if_v0 ARM board
+	#define CPU_FREQ 48000000u
+	//#define CPU_FREQ 12000000u
 
-	#define ADC_FREQ	500000uL	/* тактовая частота SAR преобразователя АЦП. */
+	#define ADC_FREQ	500000u	/* тактовая частота SAR преобразователя АЦП. */
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
-	//#define SCL_CLOCK  100000uL	/* 100 kHz I2C/TWI speed */
-	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+	//#define SCL_CLOCK  100000u	/* 100 kHz I2C/TWI speed */
+	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ARM_OVERREALTIME_PRIORITY	AT91C_AIC_PRIOR_HIGHEST
 	#define ARM_REALTIME_PRIORITY		(AT91C_AIC_PRIOR_LOWEST + 1)
@@ -57,15 +57,15 @@ extern "C" {
 	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
 	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
-	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
+	#define TICKS_FREQUENCY		(200u * 1) // at ARM - 400 Hz
 
 	// ADC clock frequency: 0.6..14 MHz
-	#define ADC_FREQ	12000000uL	/* тактовая частота SAR преобразователя АЦП. */
-	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+	#define ADC_FREQ	12000000u	/* тактовая частота SAR преобразователя АЦП. */
+	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -81,9 +81,9 @@ extern "C" {
 	//
 	// STM32L051K6T processor
 
-	#define	REFINFREQ 16000000uL 		/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
-	//#define	REFINFREQ 4000000uL 	/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
-	//#define	REFINFREQ 2100000uL 	/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
+	#define	REFINFREQ 16000000u 	/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
+	//#define	REFINFREQ 4000000u 	/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
+	//#define	REFINFREQ 2100000u 	/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
 	//#define REF1_DIV 2
 	//#define REF1_MUL 12	// 48 MHz
 	// HSI without PLL
@@ -99,14 +99,14 @@ extern "C" {
 	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
 	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
-	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
+	#define TICKS_FREQUENCY		(200u * 1) // at ARM - 200 Hz
 
 	// ADC clock frequency: 0.6..14 MHz
-	#define ADC_FREQ	12000000uL	/* тактовая частота SAR преобразователя АЦП. */
-	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+	#define ADC_FREQ	12000000u	/* тактовая частота SAR преобразователя АЦП. */
+	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (PCLK1_FREQ / 1)	/* 8 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	30		// 3.3 volt
@@ -136,16 +136,16 @@ extern "C" {
 	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 9.0 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define TICKS_FREQUENCY		(200u * 1) // at ARM - 200 Hz
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 
 	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
+	#define ADC_FREQ	2000000u	/* тактовая частота SAR преобразователя АЦП. */
 	//#define ADC_FREQ	16000000uL	/* тактовая частота SAR преобразователя АЦП. */
 
-	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -213,10 +213,10 @@ extern "C" {
 			#define	REFINFREQ WITHCPUXTAL
 		#elif CPUSTYLE_STM32H7XX
 			// На внутреннем RC генераторе
-			#define	REFINFREQ 64000000uL
+			#define	REFINFREQ 64000000u
 		#else /* WITHCPUXTAL */
 			// На внутреннем RC генераторе
-			#define	REFINFREQ 16000000uL
+			#define	REFINFREQ 16000000u
 		#endif /* WITHCPUXTAL */
 
 		#if defined(STM32F401xC)
@@ -255,13 +255,13 @@ extern "C" {
 
 			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
 
-			#define HSIFREQ 64000000uL
-			#define HSI48FREQ 48000000uL
+			#define HSIFREQ 64000000u
+			#define HSI48FREQ 48000000u
 			#if !defined  (CSI_VALUE)
 			  #define CSI_VALUE    4000000U /*!< Value of the Internal oscillator in Hz*/
 			#endif /* CSI_VALUE */
 
-			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+			#define LSEFREQ 32768u	// должно быть в файле конфигурации платы
 
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
@@ -269,7 +269,7 @@ extern "C" {
 
 		#elif CPUSTYLE_STM32F7XX
 
-			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+			#define LSEFREQ 32768u	// должно быть в файле конфигурации платы
 
 			#define PLL_FREQ	(stm32f7xx_get_pll_freq())
 			//#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
@@ -284,18 +284,18 @@ extern "C" {
 			#define CPU_FREQ (stm32f7xx_get_sys_freq())	// 172032000uL
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
-			#define HSIFREQ 16000000uL
+			#define HSIFREQ 16000000u
 
 			#define WITHCPUNAME "STM32F7xx"
 
 		#elif CPUSTYLE_STM32F4XX
 
-			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+			#define LSEFREQ 32768u	// должно быть в файле конфигурации платы
 
 			#define CPU_FREQ (stm32f4xx_get_sysclk_freq())	// 172032000uL
 			#define BOARD_SPI_FREQ (stm32f4xx_get_spi1_freq())
 
-			#define HSIFREQ 16000000uL	// 16 MHz
+			#define HSIFREQ 16000000u	// 16 MHz
 
 			#define WITHCPUNAME "STM32F4xx"
 
@@ -309,7 +309,7 @@ extern "C" {
 			#define REF1_DIV 1
 			#define REF1_MUL 9	// Up to 16 supported - вынести в конфигурационный файл платы
 		#else
-			#define	REFINFREQ 8000000uL
+			#define	REFINFREQ 8000000u
 			#define REF1_DIV 2
 			#define REF1_MUL 9	// Up to 16 supported - вынести в конфигурационный файл платы
 		#endif
@@ -317,7 +317,7 @@ extern "C" {
 		#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
 		#define CPU_FREQ (PLL_FREQ / 1)
 
- 		#if CPU_FREQ >= 48000000uL
+ 		#if CPU_FREQ >= 48000000u
 			#define	PCLK1_FREQ (CPU_FREQ / 2)	// PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
 		#else
@@ -336,8 +336,8 @@ extern "C" {
 	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
 	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define SPISPEEDUFAST 12000000u//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -354,18 +354,18 @@ extern "C" {
 		#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
 		//#define HARDWARE_ADCBITS 14	/* АЦП работает с 14-битными значениями */
 		//#define HARDWARE_ADCBITS 16	/* АЦП работает с 16-битными значениями */
-		#define ADC_FREQ	10000000uL	/* тактовая частота SAR преобразователя АЦП. */
+		#define ADC_FREQ	10000000u	/* тактовая частота SAR преобразователя АЦП. */
 		#define WITHREFSENSORVAL	1240	/* Reference voltage: STM32H743 1.180 1.216 1.255 */
 	#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 		//#define HARDWARE_ADCBITS 6	/* АЦП работает с 6-битными значениями */
 		//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
 		//#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
 		#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-		#define ADC_FREQ	28000000uL	/* тактовая частота SAR преобразователя АЦП. */
+		#define ADC_FREQ	28000000u	/* тактовая частота SAR преобразователя АЦП. */
 		#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 	#else
 		#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-		#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
+		#define ADC_FREQ	2000000u	/* тактовая частота SAR преобразователя АЦП. */
 		#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 	#endif
 
@@ -411,17 +411,17 @@ extern "C" {
 	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
+	#define ADC_FREQ	2000000u	/* тактовая частота SAR преобразователя АЦП. */
 	//#define ADC_FREQ	16000000uL	/* тактовая частота SAR преобразователя АЦП. */
 
-	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
+	#define TICKS_FREQUENCY		(200u * 1) // at ARM - 400 Hz
 
-	//#define SCL_CLOCK  100000uL	/* 100 kHz I2C/TWI speed */
-	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+	//#define SCL_CLOCK  100000u	/* 100 kHz I2C/TWI speed */
+	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
@@ -544,13 +544,13 @@ extern "C" {
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
 	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
-	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+	#define ADC_FREQ	2000000u	/* тактовая частота SAR преобразователя АЦП. */
+	#define SCL_CLOCK	400000u		/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED 8000000uL	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 8000000u	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST (P1CLOCK_FREQ / 3)	// 20 MHz
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000u				/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u			/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
@@ -638,9 +638,9 @@ extern "C" {
 	} GPIO_AFLH_t;
 
 	/* Частоты встроенных RC генераторов процессора */
-	#define HSI64FREQ 64000000uL
+	#define HSI64FREQ 64000000u
 	#define CSI_VALUE 4000000U
-	#define LSIFREQ 32000uL
+	#define LSIFREQ 32000u
 
 	//
 	#if WITHCPUXOSC
@@ -660,8 +660,8 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	(stm32mp1_get_mpuss_freq())
-	//#define AXISS_FREQ	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVP))
-	#define DDR_FREQ 	(REF2INFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
+	#define DDR_FREQ	(stm32mp1_get_pll2_r_freq())
+	#define AXISS_FREQ	(stm32mp1_get_axiss_freq())
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
@@ -669,12 +669,12 @@ extern "C" {
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
 	// ADC clock frequency: 1..20 MHz
-	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 24000000u	/* 2требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define SPISPEEDUFAST 24000000u			/* 2требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000u			/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u		/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -699,6 +699,8 @@ extern "C" {
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 
+	#define HARDWARE_NCORES 2
+
 #elif CPUSTYLE_XC7Z
 
 	typedef uint_fast16_t adcvalholder_t;
@@ -719,11 +721,57 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define SPISPEED (12000000u)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000u		//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	//#define	SPISPEED400k	400000u			/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u		/* 100 kHz для низкоскоростных микросхем */
 
+	#define HARDWARE_NCORES 2
+
+#elif CPUSTYLE_A64
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define HARDWARE_CLK32K_FREQ 32000u
+	#define HARDWARE_CLK16M_RC_FREQ 16000000u
+
+	#define CPU_FREQ	(allwnr_a64_get_cpux_freq())
+	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
+	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		12000000u	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	24000000u	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u	/* 100 kHz для низкоскоростных микросхем */
+
+
+	typedef enum {
+		GPIO_CFG_IN  = 0x00,
+		GPIO_CFG_OUT = 0x01,
+		GPIO_CFG_AF2 = 0x02,
+		GPIO_CFG_AF3 = 0x03,
+		GPIO_CFG_AF4 = 0x04,
+		GPIO_CFG_AF5 = 0x05,
+		GPIO_CFG_AF6 = 0x06,
+		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
+		GPIO_CFG_IODISABLE = 0x07,
+	} GPIOMode_TypeDef;
+
+	#define HARDWARE_NCORES 4
+	#define WITHCPUNAME "Allw A64"
 
 #elif CPUSTYLE_T113
 
@@ -749,10 +797,10 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		12000000uL	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		12000000u	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	24000000u	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u	/* 100 kHz для низкоскоростных микросхем */
 
 
 	typedef enum {
@@ -774,6 +822,41 @@ extern "C" {
 		GPIO_CFG_IODISABLE = 0x0F,
 	} GPIOMode_TypeDef;
 
+	#define HARDWARE_NCORES 2
+	#define WITHCPUNAME "Allw t113-s3"
+
+#elif CPUSTYLE_VM14
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define HARDWARE_CLK32K_FREQ 32000uL
+	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
+
+	#define CPU_FREQ	(elveesvm14_get_arm_freq())
+	#define BOARD_SPI_FREQ (elveesvm14_get_spi_freq())
+	#define BOARD_USART_FREQ (elveesvm14_get_usart_freq())
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		12000000u	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	24000000u	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u	/* 100 kHz для низкоскоростных микросхем */
+
+
+	#define HARDWARE_NCORES 2
+	#define WITHCPUNAME "Elvees VM14"
 
 #elif CPUSTYLE_F133
 
@@ -799,10 +882,10 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		12000000uL	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		12000000u	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	24000000u	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000u		/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u	/* 100 kHz для низкоскоростных микросхем */
 
 
 	typedef enum {
@@ -823,6 +906,7 @@ extern "C" {
 		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
 		GPIO_CFG_IODISABLE = 0x0F,
 	} GPIOMode_TypeDef;
+	#define WITHCPUNAME "Allw F133-A"
 
 #elif CPUSTYLE_XCZU
 	// Zynq UltraScale+ Device
@@ -848,8 +932,11 @@ extern "C" {
 
 	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+
+	//#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+	#define HARDWARE_NCORES 4
 
 #elif defined(_WIN32)
 
@@ -863,6 +950,19 @@ extern "C" {
 	#define TICKS_FREQUENCY 200
 
 
+#elif CPUSTYLE_UBLAZE
+
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+
+	#define DACVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define TICKS_FREQUENCY 200
+	#define WITHCPUNAME "MicroBlaze"
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -870,6 +970,8 @@ extern "C" {
 #endif
 
 #if defined (__NVIC_PRIO_BITS)
+
+	typedef uint_fast32_t IRQL_t;
 
 	#if WITHNESTEDINTERRUPTS
 
@@ -885,6 +987,9 @@ extern "C" {
 		#define ARM_OVERREALTIME_PRIORITY	((const uint32_t) gARM_OVERREALTIME_PRIORITY)
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
+
+		#define IRQL_ONLY_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+		#define IRQL_ONLY_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 
 		#define system_enableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); } while (0)	// разрешены все
 		#define system_disableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); } while (0) // разрешены только realtime
@@ -914,6 +1019,7 @@ extern "C" {
 
 #elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
 
+	typedef uint_fast8_t IRQL_t;
 	#define system_enableIRQ() do { sei(); } while (0)
 	#define system_disableIRQ() do { cli(); } while (0)
 
@@ -921,6 +1027,8 @@ extern "C" {
 	#define global_disableIRQ() do { cli(); } while (0)
 
 #elif (__GIC_PRESENT == 1)
+
+	typedef uint_fast32_t IRQL_t;
 
 	#define ICPIDR0	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE0))
 	#define ICPIDR1	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE4))
@@ -937,6 +1045,9 @@ extern "C" {
 		extern uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 		#define ARM_CA9_ENCODE_PRIORITY(v) ((v) << (GIC_GetBinaryPoint() + 1))
+
+		#define IRQL_ONLY_REALTIME ARM_CA9_ENCODE_PRIORITY(PRI_SYS)	// value for GIC_SetInterfacePriorityMask
+		#define IRQL_ONLY_OVERREALTIME ARM_CA9_ENCODE_PRIORITY(PRI_RT)	// value for GIC_SetInterfacePriorityMask
 		/*
 			GICC_PMR == INTC.ICCPMR
 
@@ -963,7 +1074,7 @@ extern "C" {
 			PRI_count
 		};
 
-		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерываниедля синхронизации приоритетов GIC на остальных процессорах  */
+		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
 		#define BOARD_SGI_PRIO	ARM_CA9_ENCODE_PRIORITY(PRI_IPC)
 
 		#define RUNNING_PRI	((GICInterface->RPR & 0xFF) >> ARM_CA9_PRIORITYSHIFT) // The current running priority on the CPU interface.
@@ -1014,6 +1125,9 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	0
 		#define ARM_SYSTEM_PRIORITY		0
 
+		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
+		#define BOARD_SGI_PRIO	0
+
 		#define system_enableIRQ() do { \
 			__enable_irq(); \
 			} while (0)
@@ -1031,6 +1145,8 @@ extern "C" {
 	#endif /* WITHNESTEDINTERRUPTS */
 
 #elif CPUSTYLE_RISCV
+
+	typedef uint_xlen_t IRQL_t;
 
 	#if WITHNESTEDINTERRUPTS
 
@@ -1060,11 +1176,25 @@ extern "C" {
 
 	#endif /* WITHNESTEDINTERRUPTS */
 
+	#define IRQL_ONLY_REALTIME 			ARM_SYSTEM_PRIORITY
+	#define IRQL_ONLY_OVERREALTIME 		ARM_REALTIME_PRIORITY
+
+#elif CPUSTYLE_UBLAZE
+
+	typedef uint_fast32_t IRQL_t;
+
+	#define system_enableIRQ() do { } while (0)
+	#define system_disableIRQ() do { } while (0)
+
+	#define global_enableIRQ() do { } while (0)
+	#define global_disableIRQ() do { } while (0)
+
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
-	// For CPUSTYLE_ARM7TDMI
-	//#define ARM_REALTIME_PRIORITY	(0)
-	//#define ARM_SYSTEM_PRIORITY	(0)
+	typedef uint_fast32_t IRQL_t;
+
+	#define IRQL_ONLY_REALTIME 			0
+	#define IRQL_ONLY_OVERREALTIME 		0
 
 	void (system_disableIRQ)(void);
 	void (system_enableIRQ)(void);
@@ -1157,7 +1287,7 @@ extern "C" {
 #define RTC_TYPE_STM32L0xx	55	/* STM32L0xx internal RTC peripherial */
 #define RTC_TYPE_LINUX		56	/* Linux local time */
 
-#define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046
+#define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046 - use TSC_TYPE_XPT2046
 #define TSC_TYPE_STMPE811	61	// Resistive touch screen controller ST STMPE811
 #define TSC_TYPE_GT911		62	// Capacitive touch screen controller Goodix GT911
 #define TSC_TYPE_S3402		63	// Capacitive touch screen controller S3402 (on panel H497TLB01.4)
@@ -1307,7 +1437,7 @@ extern "C" {
 	#define DIM_Y 1280
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-#endif /* LCDMODE_AT070TNA2 */
+#endif /* LCDMODE_H497TLB01P4 */
 
 #if LCDMODE_S1D13781		/* PSP-1000 with S1D113780 */
 	#define LCDMODE_HARD_SPI	1	/* SPI interface */
@@ -1479,8 +1609,8 @@ extern "C" {
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 1024 && DIM_Y == 600
-	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
-	//#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
+	//#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
+	#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
@@ -2286,7 +2416,7 @@ extern "C" {
 #define HARDWARE_DELAY_US(t) do { local_delay_us(t); } while (0)
 #define HARDWARE_GETTICK_MS() ((uint32_t) 0) // HAL_GetTick()
 
-#define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780)
+#define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY)
 
 /* Сброс мощности при запросе TUNE от автотюнера или извне */
 #define WITHLOWPOWEREXTTUNE	(defined (HARDWARE_GET_TUNE) || WITHAUTOTUNER)
@@ -2469,40 +2599,25 @@ extern "C" {
 	#define WITHFASTWATERFLOW 1
 
 #elif LCDMODE_V5A
-	/* только главный экран с двумя видеобуферами 32 бит ARGB888, без PIP */
+	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_MAIN_ARGB888	1
+	#define LCDMODE_MAIN_ARGB8888	1
+
 	#define LCDMODE_MAIN_PAGES	2
 	#define LCDMODE_PIXELSIZE 4
 
-	//#define LCDMODE_PIP_L8	1
-	//#define LCDMODE_PIP_RGB888	1
-	//#define LCDMODE_PIP_PAGES	3
-	//#define COLORPIP_SHADED 128
-
-	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
-
 	#define WITHFASTWATERFLOW 1
 
-#elif LCDMODE_V5B
-	/* только главный экран с тремя видеобуферами 32 бит ARGB888, без PIP */
+
+#elif LCDMODE_V5A_3PAGES
+	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_MAIN_ARGB888	1
+	#define LCDMODE_MAIN_ARGB8888	1
+
 	#define LCDMODE_MAIN_PAGES	3
 	#define LCDMODE_PIXELSIZE 4
-
-	//#define LCDMODE_PIP_L8	1
-	//#define LCDMODE_PIP_RGB888	1
-	//#define LCDMODE_PIP_PAGES	3
-	//#define COLORPIP_SHADED 128
-
-	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
-	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
 
 	#define WITHFASTWATERFLOW 1
 
@@ -2613,6 +2728,10 @@ extern "C" {
 
 #define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
 #define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046)
+	#error Use TSC_TYPE_XPT2046 instead TSC_TYPE_TSC2046
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046) */
 
 #ifdef __cplusplus
 }

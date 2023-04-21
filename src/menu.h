@@ -25,7 +25,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if WITHPOWERTRIM
 	#if WITHLOWPOWEREXTTUNE
 		{
-			QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+			QLABEL("ATU PWR "), 7, 0, 0,	ISTEP5,		/* мощность при работе автоматического согласующего устройства */
 			ITEM_VALUE,
 			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 			offsetof(struct nvmap, gtunepower),
@@ -303,7 +303,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("STEP DB "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		0, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
+		3, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
 		offsetof(struct nvmap, glvlgridstep),
 		nvramoffs0,
 		NULL,
@@ -354,7 +354,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	{
-		QLABEL2("SMETER ", "S-meter Type"), 7, 3, RJ_SMETER,	ISTEP1,
+		QLABEL2("SMETER  ", "S-meter Type"), 7, 3, RJ_SMETER,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
 		offsetof(struct nvmap, gsmetertype),
@@ -365,6 +365,18 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHSPECTRUMWF */
+#if WITHDSPEXTDDC
+	{
+		QLABEL2("SHOW OVF", "ADC OVF Show"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* разрешение или запрет раскраски спектра */
+		offsetof(struct nvmap, gshowovf),
+		nvramoffs0,
+		NULL,
+		& gshowovf,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHDSPEXTDDC */
 #if defined (RTC1_TYPE)
 #if ! WITHFLATMENU
 	{
@@ -1307,6 +1319,16 @@ static const FLASHMEM struct menudef menutable [] =
 		& spaceratio,
 		getzerobase, 
 	},
+	{
+		QLABEL("DEAD TIM"), 7, 1, 0,	ISTEP1,	/* время игнорирования повторного нажатия на манипулятор */
+		ITEM_VALUE,
+		0, 13,
+		offsetof(struct nvmap, keydeadtime),
+		nvramoffs0,
+		NULL,
+		& keydeadtime,
+		getzerobase,
+	},
 #if WITHTX
 	{
 		QLABEL("BREAK-IN"), 8, 3, RJ_ON,	ISTEP1,
@@ -1319,7 +1341,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, 
 	},
 	{
-		QLABEL("CW DELAY"), 7, 2, 0,	ISTEP5,	/* задержка в десятках ms */
+		QLABEL("CW DELAY"), 7, 2, 0,	ISTEP1,	/* задержка в десятках ms */
 		ITEM_VALUE,
 		5, 160,						/* 0.05..1.6 секунды */
 		offsetof(struct nvmap, bkindelay),
@@ -2103,17 +2125,30 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHUSEAUDIOREC */
+#if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN)
+#if ! WITHFLATMENU
+	{
+		QLABEL("USB     "), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrpusb),
+		nvramoffs0,
+		NULL,
+		NULL,
+		NULL,
+	},
+#endif /* ! WITHFLATMENU */
 #if WITHIF4DSP
 #if WITHUSBUAC
 #if WITHTX
 	{
-		QLABEL("DATA VOX"), 8, 3, RJ_ON,	ISTEP1,		/* автоматический переход на передачу при появлении звука со стороны компьютера */
+		QLABEL("USB DATA"), 8, 3, RJ_ON,	ISTEP1,		/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gdatavox),
+		offsetof(struct nvmap, gdatatx),
 		nvramoffs0,
 		NULL,
-		& gdatavox,
+		& gdatatx,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHTX */
@@ -2138,9 +2173,30 @@ static const FLASHMEM struct menudef menutable [] =
 		& gswapiq,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	{
+		QLABEL("FT8CN   "), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1, 					/* совместимость VID/PID для работы с программой FT8CN */
+		offsetof(struct nvmap, gusb_ft8cn),
+		nvramoffs0,
+		NULL,
+		& gusb_ft8cn,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+	{
+		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		90, 300,
+		offsetof(struct nvmap, ggaindigitx),
+		nvramoffs0,
+		& ggaindigitx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 #endif /* WITHUSBUAC */
 #endif /* WITHIF4DSP */
+#endif /* WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN) */
 #if WITHIF4DSP
 #if ! WITHFLATMENU
 	{
@@ -2905,16 +2961,6 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-		ITEM_VALUE,
-		90, 300,
-		offsetof(struct nvmap, ggaindigitx),
-		nvramoffs0,
-		& ggaindigitx,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
 		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		30, 100,
@@ -3602,7 +3648,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		QLABEL("CPU TYPE"), 7, 0, RJ_CPUTYPE, 	ISTEP1,	// тип процессора
+		QLABEL("VERSION "), 7, 0, RJ_COMPILED, 	ISTEP_RO,	// тип процессора
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
@@ -3612,7 +3658,27 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase,
 	},
 	{
-		QLABEL("CPU FREQ"), 7, 0, 0, 	ISTEP1,	// частота процессора
+		QLABEL("S/N     "), 7, 0, RJ_SERIALNR, 	ISTEP_RO,	// Индивидуальный номер изделия
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 0,
+		MENUNONVRAM,
+		nvramoffs0,
+		& gzero,
+		NULL,
+		getzerobase,
+	},
+	{
+		QLABEL("CPU TYPE"), 7, 0, RJ_CPUTYPE, 	ISTEP_RO,	// тип процессора
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 0,
+		MENUNONVRAM,
+		nvramoffs0,
+		& gzero,
+		NULL,
+		getzerobase,
+	},
+	{
+		QLABEL("CPU FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота процессора
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
@@ -3621,24 +3687,26 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		getcpufreqbase,
 	},
+#if CPUSTYLE_STM32MP1
 	{
-		QLABEL("VERSION "), 7, 0, RJ_COMPILED, 	ISTEP1,	// тип процессора
+		QLABEL("DDR FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота памяти
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
 		nvramoffs0,
 		& gzero,
 		NULL,
-		getzerobase,
+		getddrfreqbase,
 	},
 	{
-		QLABEL("S/N     "), 7, 0, RJ_SERIALNR, 	ISTEP1,	// Индивидуальный номер изделия
+		QLABEL("BUS FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота шины
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
 		nvramoffs0,
 		& gzero,
 		NULL,
-		getzerobase,
+		getaxissfreqbase,
 	},
+#endif
 };

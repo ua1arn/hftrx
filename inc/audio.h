@@ -8,6 +8,9 @@
 #ifndef AUDIO_H_INCLUDED
 #define AUDIO_H_INCLUDED
 
+#include "hardware.h"
+#include "dspdefines.h"
+
 #include <math.h>
 
 #ifdef __cplusplus
@@ -230,7 +233,68 @@ extern "C" {
 		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
 
 
-	#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	#elif WITHUSBMIKET113
+		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
+		// ws=0: even samples, ws=1: odd samples
+
+
+		// buff data layout: I main/I sub/Q main/Q sub
+		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
+		#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+
+		#define DMABUF32RX0I	0		// RX0, I
+		#define DMABUF32RX1I	2		// RX1, I
+		#define DMABUF32RX0Q	1		// RX0, Q
+		#define DMABUF32RX1Q	3		// RX1, Q
+
+		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		#define DMABUF32TXI	0		// TX, I
+		#define DMABUF32TXQ	1		// TX, Q
+
+		#define DMABUF32TX_NCO1		5		// NCO RX A
+		#define DMABUF32TX_NCO2		4		// NCO RX B
+		#define DMABUF32TX_NCORTS	7		// NCO RTS
+
+		// ws=0: 00 02 04 06
+		// ws=1: 01 03 05 07
+
+		#if WITHRTS96
+			#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
+			#define DMABUF32RTS0Q	5		// RTS0, Q	// previous
+			#define DMABUF32RTS1I	6		// RTS1, I	// current	- nevest
+			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+		#endif /* WITHRTS96 */
+
+		// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
+		// ws=0: even samples, ws=1: odd samples
+
+		// Slot S0, S4: Oldest sample (T-3)
+		// Slot S1, S5: Old sample (T-2)
+		// Slot S2, S6: Old sample (T-1)
+		// Slot S3, S7: Newest sample (T-0)
+		#define DMABUF32RXWFM0I	0		// WFM OLDEST
+		#define DMABUF32RXWFM0Q	1		// WFM
+		#define DMABUF32RXWFM1I	2		// WFM
+		#define DMABUF32RXWFM1Q	3		// WFM
+		#define DMABUF32RXWFM2I	4		// WFM
+		#define DMABUF32RXWFM2Q	5		// WFM
+		#define DMABUF32RXWFM3I	6		// WFM NEWEST
+		#define DMABUF32RXWFM3Q	7		// WFM
+
+		#define DMABUFFSTEP16RX		3		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+
+	//	ix = 0: R5 & R11 (lineinL - pin 96 & fminL pin 94)
+	//	ix = 1: R6 & R10 (lineinR - pin 95 & fminR pin 93)
+	//	ix = 2: micin3N & micin3P
+
+		#define DMABUFF16RX_MIKE 	2		/* индекс сэмпла левого канала */
+
+		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
+		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
+
+	#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
 		// ws=0: even samples, ws=1: odd samples
 
@@ -393,10 +457,10 @@ extern "C" {
 
 #if WITHUABUACOUTAUDIO48MONO
 	// количество каналов в дескрипторах формата потока
-	#define UACOUT_AUDIO48_FMT_CHANNELS	1
+	#define UACOUT_FMT_CHANNELS_AUDIO48	1
 #else /* WITHUABUACOUTAUDIO48MONO */
 	// количество каналов в дескрипторах формата потока
-	#define UACOUT_AUDIO48_FMT_CHANNELS	2
+	#define UACOUT_FMT_CHANNELS_AUDIO48	2
 #endif /* WITHUABUACOUTAUDIO48MONO */
 
 // коррекция размера с учетом требуемого выравнивания
@@ -427,26 +491,47 @@ extern "C" {
 #define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
 
 
-#define DMABUFFSTEPUACIN16	(UACIN_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
+#define DMABUFFSTEP_UACIN	(UACIN_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
+#define DMABUFFSTEP_UACOUT	(UACOUT_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
 
-#define DMABUFFSIZEUACIN16_AJ (MSINSAMPLES * DMABUFFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+/* Разрядности сэмплов в каналах USB AUDIO устрйоств. UACIN - в компьютер, UACOUT - из компьютера */
+#if ! defined (UACOUT_AUDIO48_SAMPLEBITS)
+	#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+#endif /* ! defined (UACOUT_AUDIO48_SAMPLEBITS) */
 
-#define DMABUFFSIZEUACIN16 DMAHWEPADJUST(DMABUFFSIZEUACIN16_AJ, DMABUFFSTEPUACIN16 * HARDWARE_RTSDMABYTES)
+#if ! defined (UACIN_AUDIO48_SAMPLEBITS)
+	#define UACIN_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+#endif /* ! defined (UACIN_AUDIO48_SAMPLEBITS) */
+
+#define UACIN_AUDIO48_SAMPLEBYTES ((UACIN_AUDIO48_SAMPLEBITS + 7) / 8)
+#define UACOUT_AUDIO48_SAMPLEBYTES ((UACOUT_AUDIO48_SAMPLEBITS + 7) / 8)
+
+// stereo, 16 bit samples
+// По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
+#define UACIN_AUDIO48_DATASIZE (DMABUFFSIZE_UACIN * UACIN_AUDIO48_SAMPLEBYTES)
+
+
+
+// буфер приема потока данных от USB к модулятору
+#define UACOUT_AUDIO48_DATASIZE	(MSOUTSAMPLES * UACOUT_AUDIO48_SAMPLEBYTES * UACOUT_FMT_CHANNELS_AUDIO48)
+
+#define DMABUFFSIZE_UACIN_AJ (MSINSAMPLES * DMABUFFSTEP_UACIN)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+
+/* количество сэмплов */
+#define DMABUFFSIZE_UACIN DMAHWEPADJUST(DMABUFFSIZE_UACIN_AJ, DMABUFFSTEP_UACIN * HARDWARE_RTSDMABYTES)
+
+#define UACIN_AUDIO48_DATASIZE (DMABUFFSIZE_UACIN * UACIN_AUDIO48_SAMPLEBYTES)
 
 
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	33	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 #define DMABUFSCALE		2	// внутрений параметр, указывает, на сколько реже будут происходить прерывания по обмену буфрами от остальны каналов по отношению к приему от FPGA
+
 #define DMABUFFSIZE16RX	(DMABUFCLUSTER * DMABUFFSTEP16RX * DMABUFSCALE)		/* AF CODEC ADC */
 #define DMABUFFSIZE16TX	(DMABUFCLUSTER * DMABUFFSTEP16TX * DMABUFSCALE)		/* AF CODEC DAC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFFSTEP32RX)		/* FPGA RX or IF CODEC RX */
 #define DMABUFFSIZE32RTS (DMABUFCLUSTER * DMABUFFSTEP32RTS)		/* FPGA RX or IF CODEC RX */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFFSTEP32TX * DMABUFSCALE)	/* FPGA TX or IF CODEC TX	*/
-
-// stereo, 16 bit samples
-// По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
-#define UACIN_AUDIO48_SAMPLEBITS	16
-#define UACIN_AUDIO48_DATASIZE (DMABUFFSIZEUACIN16 * sizeof (int16_t))
 
 // Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
 #define DMABUFFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит
@@ -502,88 +587,6 @@ extern "C" {
 #define HSINTERVAL_256MS 12	// endpoint descriptor parameters - для обеспечения 255 ms периода (interrupt endpoint for CDC)
 #define FSINTERVAL_255MS 255
 
-
-#define UACOUT_AUDIO48_SAMPLEBITS	16	// may be 24
-
-// буфер приема потока данных от USB к модулятору
-#define UACOUT_AUDIO48_DATASIZE	( \
-	MSOUTSAMPLES * \
-	((UACOUT_AUDIO48_SAMPLEBITS * UACOUT_AUDIO48_FMT_CHANNELS + 7) / 8) \
-	)
-
-
-//#if WITHINTEGRATEDDSP
-
-	#if (((__ARM_FP & 0x08) && defined(__aarch64__)) || (__riscv_d)) && 0
-
-		typedef double FLOAT_t;
-
-		#define ARM_MORPH(name) name ## _f64
-		#define FLOORF	floor
-		#define LOG10F	local_log10 //log10
-		#define LOGF	log
-		#define POWF	pow
-		#define LOG2F	log2
-//		#define LOGF	local_log
-//		#define POWF	local_pow
-//		#define LOG2F	local_log2
-		#define SINF	sin
-		#define COSF	cos
-		#define ATAN2F	atan2
-		#define ATANF	atan
-		#define TANF	tan
-		//#define EXPF	exp
-		#define EXPF	local_exp
-		#define FABSF	fabs
-		#define SQRTF	sqrt
-		#define FMAXF	fmax
-		#define FMINF	fmin
-		#define LDEXPF	ldexp
-		#define FREXPF	frexp
-		
-		#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMA)
-			#define FMAF	fma
-		#endif /* defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMA) */
-		#define DSP_FLOAT_BITSMANTISSA 54
-
-	#elif 1 //(__ARM_FP & 0x04)
-
-		typedef float FLOAT_t;
-
-		#define ARM_MORPH(name) name ## _f32
-		#define FLOORF	floorf
-		#define LOG10F	local_log10 //log10f
-		#define LOGF	logf
-		#define POWF	powf
-		#define LOG2F	log2f
-//		#define LOGF	local_log
-//		#define POWF	local_pow
-//		#define LOG2F	local_log2
-		#define SINF	sinf
-		#define COSF	cosf
-		#define ATAN2F	atan2f
-		#define ATANF	atanf
-		#define TANF	tanf
-		//#define EXPF	expf
-		#define EXPF	local_exp
-		#define FABSF	fabsf
-		#define SQRTF	sqrtf
-		#define FMAXF	fmaxf
-		#define FMINF	fminf
-		#define LDEXPF	ldexpf
-		#define FREXPF	frexpf
-
-		#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMAF)
-			#define FMAF	fmaf
-		#endif /* defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMAF) */
-		#define DSP_FLOAT_BITSMANTISSA 24
-
-	#else
-
-		#error This CPU not support floating point
-
-	#endif
-
 enum
 {
 	BOARD_WTYPE_BLACKMAN_HARRIS,
@@ -605,30 +608,6 @@ enum
 #define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_NUTTALL	// такой же тип окна испольуется по умолчанию в HDSDR
 
 FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate window function (blackman-harris, hamming, rectangular)
-
-
-/* from "C Language Algorithms for Digital Signal Processing"
-   by Paul M. Embree and Bruce Kimble, Prentice Hall, 1991 */
-
-
-FLOAT_t local_exp(FLOAT_t x);
-FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
-FLOAT_t local_log(FLOAT_t x);
-FLOAT_t local_log10(FLOAT_t X);
-
-/* для возможности работы с функциями сопроцессора NEON - vld1_f32 например */
-#define IV ivqv [0]
-#define QV ivqv [1]
-
-typedef struct
-{
-	FLOAT_t ivqv [2];
-} FLOAT32P_t;
-
-typedef struct
-{
-	int_fast32_t ivqv [2];
-} INT32P_t;
 
 // Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
@@ -676,23 +655,23 @@ typedef struct
 
 	#else /* CPUSTYLE_STM32MP1 */
 		#define	Ntap_rx_AUDIO	NtapValidate(511)
-		#define Ntap_tx_MIKE	NtapValidate(241)
+		#define Ntap_tx_MIKE	NtapValidate(511)
 
 	#endif /* CPUSTYLE_STM32MP1 */
-	#if WITHNOSPEEX
-		////#define	Ntap_rx_AUDIO	NtapValidate(511)
-		////#define Ntap_tx_MIKE	NtapValidate(241)
-
-	#else /* WITHNOSPEEX */
-		////#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
-		////#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
-
-	#endif /* ! WITHDSPLOCALFIR */
-
 
 #endif /* WITHDSPLOCALFIR */
 
-#if CODEC1_FRAMEBITS == 64
+#if WITHUSBMIKET113 && WITHCODEC1_WHBLOCK_DUPLEX_MASTER
+
+	/* работа со встроенным кодеком Allwinner t113-s3 */
+	/* параметры входного/выходного адаптеров */
+	#define WITHADAPTERCODEC1WIDTH	20		// 1 бит знак и 19 бит значащих
+	#define WITHADAPTERCODEC1SHIFT	12		// количество незанятых битов справа.
+	typedef int32_t aubufv_t;
+	typedef int_fast32_t aufastbufv_t;
+	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
+
+#elif CODEC1_FRAMEBITS == 64
 
 	/* параметры входного/выходного адаптеров */
 	#define WITHADAPTERCODEC1WIDTH	24		// 1 бит знак и 23 бит значащих
@@ -852,6 +831,20 @@ unsigned audiorec_getwidth(void);
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 
+	#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_96M_X1
+		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
+		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+		#define FPGADECIMATION 2000uL	// должно быть кратно 256
+
+		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+
 	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
@@ -865,24 +858,6 @@ unsigned audiorec_getwidth(void);
 
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-
-	#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
-
-		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
-		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
-		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
-		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-
-		#define FPGADECIMATION 2560uL
-		#define FPGADIVIDERATIO 5uL
-		#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
-		#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
-
-		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
-		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
 
 	#else /* CPUSTYLE_XC7Z */
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
@@ -997,8 +972,8 @@ int_fast32_t buffers_dmabuffer192rtscachesize(void);
 int_fast32_t buffers_dmabuffer32rtscachesize(void);
 int_fast32_t buffers_dmabuffer96rtscachesize(void);
 
-void savesamplerecord16SD(int_fast16_t ch0, int_fast16_t ch1); /* to SD CARD */
-void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1); /* to USB AUDIO */
+void savesamplewav48(int_fast32_t ch0, int_fast32_t ch1); /* to SD CARD */
+void savesampleuacin48(int_fast32_t ch0, int_fast32_t ch1); /* to USB AUDIO */
 unsigned takerecordbuffer(void * * dest);
 void releaserecordbuffer(void * dest);
 /* data to play */
@@ -1107,7 +1082,8 @@ void board_set_compressor(uint_fast8_t attack, uint_fast8_t release, uint_fast8_
 
 
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-void board_set_datavox(uint_fast8_t v);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+void board_set_datatx(uint_fast8_t v);	/* автоматическое изменение источника при появлении звука со стороны компьютера */
+void board_set_usb_ft8cn(uint_fast8_t v);	/* совместимость VID/PID для работы с программой FT8CN */
 
 void dsp_initialize(void);
 
@@ -1159,7 +1135,7 @@ typedef struct codec1if_tag
 {
 	uint_fast8_t (* clocksneed)(void);	/* требуется ли подача тактирования для инициадизации кодека */
 	void (* stop) (void);
-	void (* initialize) (void);
+	void (* initialize) (void (* io_control)(uint_fast8_t on), uint_fast8_t master);
 	void (* setvolume) (uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk);	/* Установка громкости на наушники */
 	void (* setlineinput) (uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Выбор LINE IN как источника для АЦП вместо микрофона */
 	void (* setprocparams) (uint_fast8_t procenable, const uint_fast8_t * gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
@@ -1172,7 +1148,7 @@ const codec1if_t * board_getaudiocodecif(void);		// получить интер�
 typedef struct codec2if_tag
 {
 	uint_fast8_t (* clocksneed)(void);	/* требуется ли подача тактирования для инициадизации кодека */
-	void (* initialize)(void);
+	void (* initialize) (void (* io_control)(uint_fast8_t on), uint_fast8_t master);
 	const char * label;
 } codec2if_t;
 
@@ -1188,6 +1164,7 @@ void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_
 void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
 void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
+uint_fast8_t buffers_get_uacoutalt(void);
 
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.
@@ -1231,30 +1208,6 @@ void subscribeint(deliverylist_t * head, subscribeint32_t * target, void * ctx, 
 extern deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
 extern deliverylist_t speexoutfloat;	// выход speex и фильтра
 extern deliverylist_t afdemodoutfloat;	// выход приемника
-
-#if WITHAFEQUALIZER
-
-enum {
-	AF_EQUALIZER_BANDS = 3,		// число полос
-	AF_EQUALIZER_BASE = 8,		// предел регулировки
-	AF_EQUALIZER_LOW = 400,		// частота нижней полосы
-	AF_EQUALIZER_MID = 1500,	// частота средней полосы
-	AF_EQUALIZER_HIGH = 2700	// частота верхней полосы
-};
-
-int_fast32_t hamradio_get_af_equalizer_base(void);
-int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v);
-void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain);
-void board_set_equalizer_rx(uint_fast8_t n);
-void board_set_equalizer_tx(uint_fast8_t n);
-void board_set_equalizer_rx_gains(const uint_fast8_t * p);
-void board_set_equalizer_tx_gains(const uint_fast8_t * p);
-uint_fast8_t hamradio_get_geqrx(void);
-void hamradio_set_geqrx(uint_fast8_t v);
-
-void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
-
-#endif /* WITHAFEQUALIZER */
 
 
 #if __STDC__ && ! CPUSTYLE_ATMEGA

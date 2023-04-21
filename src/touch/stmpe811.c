@@ -7,35 +7,38 @@
 #include "stmpe811.h"
 
 static uint_fast8_t tscpresent;
-volatile uint_fast8_t tsc_int = 0;
+static volatile uint_fast8_t tsc_int = 0;
 
-int32_t i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte, uint8_t * r_buffer)
+static i2cp_t tp_i2cp;	/* параметры для обмена по I2C. */
+
+static int i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte, uint8_t * r_buffer)
 {
+	const i2cp_t * const p1 = & tp_i2cp;
 #if WITHTWISW
 
-	i2c_start(d_adr);
-	i2c_write_withrestart(r_adr);		// Register 135
-	i2c_start(d_adr | 1);
+	i2cp_start(p1, d_adr);
+	i2cp_write_withrestart(p1, r_adr);		// Register 135
+	i2cp_start(p1, d_adr | 1);
 	if (r_byte == 1)
 	{
 		uint_fast8_t v;
-		i2c_read(r_buffer, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+		i2cp_read(p1, r_buffer, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 		return 0;
 	}
 	else if (r_byte == 2)
 	{
-		i2c_read(r_buffer ++, I2C_READ_ACK_1);	/* чтение первого байта ответа */
-		i2c_read(r_buffer ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
+		i2cp_read(p1, r_buffer ++, I2C_READ_ACK_1);	/* чтение первого байта ответа */
+		i2cp_read(p1, r_buffer ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
 		return 0;
 	}
 	else
 	{
-		i2c_read(r_buffer ++, I2C_READ_ACK_1);	/* чтение первого байта ответа */
+		i2cp_read(p1, r_buffer ++, I2C_READ_ACK_1);	/* чтение первого байта ответа */
 		while (r_byte -- > 2)
 		{
-			i2c_read(r_buffer ++, I2C_READ_ACK);	/* чтение промежуточного байта ответа */
+			i2cp_read(p1, r_buffer ++, I2C_READ_ACK);	/* чтение промежуточного байта ответа */
 		}
-		i2c_read(r_buffer ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
+		i2cp_read(p1, r_buffer ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
 		return 0;
 	}
 
@@ -49,43 +52,46 @@ int32_t i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte,
 #endif
 }
 
-void i2cperiph_write8(uint_fast8_t DeviceAddr, uint_fast8_t reg, uint_fast8_t val)
+static void i2cperiph_write8(uint_fast8_t DeviceAddr, uint_fast8_t reg, uint_fast8_t val)
 {
+	const i2cp_t * const p1 = & tp_i2cp;
 #if WITHTWISW
-	i2c_start(DeviceAddr);
-	i2c_write(reg);		// Register 135
-	i2c_write(val);
-	i2c_waitsend();
-	i2c_stop();
+	i2cp_start(p1, DeviceAddr);
+	i2cp_write(p1, reg);		// Register 135
+	i2cp_write(p1, val);
+	i2cp_waitsend(p1);
+	i2cp_stop(p1);
 #elif WITHTWIHW
 	uint8_t bufw[2] = { reg, val, };
 	i2chw_write(DeviceAddr, bufw, 2);
 #endif
 }
 
-uint_fast16_t i2cperiph_read8(uint_fast8_t DeviceAddr, uint_fast8_t reg)
+static uint_fast16_t i2cperiph_read8(uint_fast8_t DeviceAddr, uint_fast8_t reg)
 {
-	uint8_t v;
+	const i2cp_t * const p1 = & tp_i2cp;
+	uint8_t v = 0xFF;
 #if WITHTWISW
-	i2c_start(DeviceAddr);
-	i2c_write_withrestart(reg);		// Register 135
-	i2c_start(DeviceAddr | 1);
-	i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+	i2cp_start(p1, DeviceAddr);
+	i2cp_write_withrestart(p1, reg);		// Register 135
+	i2cp_start(p1, DeviceAddr | 1);
+	i2cp_read(p1, & v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 #elif WITHTWIHW
 	i2cperiph_readN(DeviceAddr, reg, 1, & v);
 #endif
 	return v;
 }
 
-uint_fast16_t i2cperiph_read16(uint_fast8_t DeviceAddr, uint_fast8_t reg)
+static uint_fast16_t i2cperiph_read16(uint_fast8_t DeviceAddr, uint_fast8_t reg)
 {
-	uint8_t v [2];
+	const i2cp_t * const p1 = & tp_i2cp;
+	uint8_t v [2] = { 0xFF, 0xFF };
 #if WITHTWISW
-	i2c_start(DeviceAddr);
-	i2c_write_withrestart(reg);		// Register 135
-	i2c_start(DeviceAddr | 1);
-	i2c_read(& v [0], I2C_READ_ACK_1);
-	i2c_read(& v [1], I2C_READ_NACK);
+	i2cp_start(p1, DeviceAddr);
+	i2cp_write_withrestart(p1, reg);		// Register 135
+	i2cp_start(p1, DeviceAddr | 1);
+	i2cp_read(p1, & v [0], I2C_READ_ACK_1);
+	i2cp_read(p1, & v [1], I2C_READ_NACK);
 #elif WITHTWIHW
 	i2cperiph_readN(DeviceAddr, reg, 2, v);
 #endif
@@ -101,7 +107,7 @@ uint_fast16_t i2cperiph_read16(uint_fast8_t DeviceAddr, uint_fast8_t reg)
   *   @arg  STMPE811_PIN_x: Where x can be from 0 to 7.
   * @retval None
   */
-void stmpe811_IO_DisableAF(uint_fast8_t DeviceAddr, uint_fast16_t IO_Pin)
+static void stmpe811_IO_DisableAF(uint_fast8_t DeviceAddr, uint_fast16_t IO_Pin)
 {
   uint8_t tmp = 0;
 
@@ -254,6 +260,9 @@ void stmpe811_initialize(void)
 	unsigned chip_id;
 	unsigned ver;
 
+#if (WITHTWISW) && ! LINUX_SUBSYSTEM
+	i2cp_intiialize(& tp_i2cp, I2CP_I2C1, 400000);
+#endif /* (WITHTWISW) && ! LINUX_SUBSYSTEM */
 	/* Soft reset */
 	i2cperiph_write8(BOARD_I2C_STMPE811, STMPE811_REG_SYS_CTRL1, 0x02);
 

@@ -190,16 +190,16 @@ typedef enum IRQn
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
 #define __CA_REV         		    0x0000    /*!< Core revision r0p0       */
 
-#define __CORTEX_A                    53U      /*!< Cortex-A# Core                              */
+#define __CORTEX_A                    8U      /*!< Cortex-A# Core                              */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
-//#include "core_ca.h"
+#include "core_ca.h"
 
-#include <stdint.h>
-#define __IO volatile
+//#include <stdint.h>
+//#define __IO volatile
 
 #include "system_zynqultrascale.h"
 
@@ -726,6 +726,7 @@ typedef enum
  #include "zynquscale_hal.h"
 #endif /* USE_HAL_DRIVER */
 
+#if 0
 /**
   \brief   Signed Saturate
   \details Saturates a signed value.
@@ -816,6 +817,8 @@ __attribute__((always_inline)) static inline uint32_t __ROR(uint32_t op1, uint32
   }
   return (op1 >> op2) | (op1 << (32U - op2));
 }
+
+#endif
 
 #ifdef __cplusplus
 }

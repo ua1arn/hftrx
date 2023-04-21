@@ -16,8 +16,8 @@
 ##############################################################################################
 # Start of default section
 #
-#TRGT2 = arm-none-eabi
-TRGT2 = aarch64-none-elf
+TRGT2 = arm-none-eabi
+#TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
 PRJROOT := ../..
@@ -29,7 +29,7 @@ ZINQ_BOOT_DIR := E:
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
-AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
@@ -40,7 +40,8 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 # The Cortex-A53 processor is a mid-range, low-power processor that implements the Armv8-A architecture
 
-CORE = -mcpu=cortex-a53 -march=armv8-a
+#CORE = -mcpu=cortex-a53 -march=armv8-a
+CORE = -mcpu=cortex-a53
 #CORE += -mfloat-abi=hard 
 #CORE += -mfpu=vfpv4
 #CORE += -mfpu=neon
@@ -51,7 +52,8 @@ CORE = -mcpu=cortex-a53 -march=armv8-a
 # only -Og for app
 # Application
 #OPT = -Og
-OPT = -Ofast -flto
+#OPT = -Ofast -flto
+OPT = -Os
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -77,7 +79,6 @@ OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
-HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
 
@@ -89,7 +90,6 @@ DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
 	$(ARCHDIR) \
-	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
@@ -142,7 +142,7 @@ LDSCRIPT_APP = ./xczuxx_ca53_app.ld
 # 	XCZU2..XCZU9, XCZU11
 #
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_XCZU"=1 -D"XCZU2"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_CA53"=1 -D"CPUSTYLE_XCZU"=1 -D"XCZU2"=1 -D"EGL_STATIC_LIBRARY"=1
 
 # Define ASM defines here
 UADEFS += 
@@ -221,8 +221,8 @@ ASFLAGS = $(MCFLAGS) $(OPT) -g -gdwarf-2 $(ADEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
 # see also -Xlinker --print-gc-sections
-LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
-LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
+LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
+LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d

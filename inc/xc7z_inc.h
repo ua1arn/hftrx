@@ -21,9 +21,6 @@
 	#include "lib/zynq/src_7020_myir/xparameters.h"
 	#include "lib/zynq/src_7020_myir/xil_exception.h"
 	#include "lib/zynq/src_7020_myir/xil_types.h"
-	#if WITHDSPEXTFIR
-		#include "lib/zynq/src_7020_myir/axidma_v9_13/xaxidma.h"
-	#endif /* WITHDSPEXTFIR */
 	#if WITHETHHW
 		#include "lib/zynq/src_7020_myir/emacps_v3_14/xemacps.h"
 	#endif /* WITHETHHW */

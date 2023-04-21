@@ -113,7 +113,7 @@ u32 XAxiVdma_IntrGetPending(XAxiVdma *InstancePtr, u16 Direction)
 	Channel = XAxiVdma_GetChannel(InstancePtr, Direction);
 
 	if (!Channel) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "IntrGetPending: invalid direction %d\n\r", Direction);
 
 		return 0;
@@ -233,7 +233,7 @@ void XAxiVdma_ReadIntrHandler(void * InstancePtr)
 	Channel = XAxiVdma_GetChannel(DmaPtr, XAXIVDMA_READ);
 
 	if (!Channel->IsValid) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Read channel is invalid, no intr handling\n\r");
 
 		return;
@@ -288,7 +288,7 @@ void XAxiVdma_WriteIntrHandler(void * InstancePtr)
 	Channel = XAxiVdma_GetChannel(DmaPtr, XAXIVDMA_WRITE);
 
 	if (!Channel->IsValid) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Write channel is invalid, no intr handling\n\r");
 
 		return;

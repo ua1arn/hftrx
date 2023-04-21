@@ -1,0 +1,24 @@
+#type; GPIOINT
+#base; GPIOINTB 0x01C20A00
+#base; GPIOINTC 0x01C20A20
+#base; GPIOINTD 0x01C20A40
+#base; GPIOINTE 0x01C20A60
+#base; GPIOINTF 0x01C20A80
+#base; GPIOINTG 0x01C20AA0
+#base; GPIOINTH 0x01C20AC0
+#irq; GPIOB_NS 101 
+#irq; GPIOB_S 102 
+#irq; GPIOC_NS 103 
+#irq; GPIOC_S 104 
+#irq; GPIOD_NS 105 
+#irq; GPIOD_S 106 
+#irq; GPIOE_NS 107 
+#irq; GPIOE_S 108 
+#irq; GPIOF_NS 109 
+#irq; GPIOF_S 110 
+#irq; GPIOG_NS 111 
+#regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
+#regdef; EINT_CTL; 0x010; External Interrupt Control Register
+#regdef; EINT_STATUS; 0x014; External Interrupt Status Register
+#regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
+#regdef; padding 0; 0x020; PB External Interrupt Debounce Register

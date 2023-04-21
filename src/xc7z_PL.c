@@ -4,11 +4,12 @@
 #include "formats.h"
 #include <math.h>
 
-#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM && WITHINTEGRATEDDSP
 
 #include "xc7z_inc.h"
 
 static uint8_t rx_cic_shift, rx_fir_shift, tx_shift;
+volatile uint8_t iq_ready = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
 
 void xcz_fifo_phones_inthandler(void);
@@ -93,6 +94,11 @@ uint32_t xcz_tx_shift(uint32_t val)
 	return tx_shift;
 }
 
+void xcz_cic_test(uint32_t val)
+{
+	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 24, !! val);
+}
+
 #if WITHRTS96
 
 void xcz_ah_preinit(void)
@@ -124,11 +130,12 @@ void xcz_fifo_if_rx_inthandler(void)
 	enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 	static unsigned rx_stage = 0;
+	iq_ready = 0;
 
 	uint32_t * r = (uint32_t *) addr32rx;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE32RX; i ++)
-		r[i] = Xil_In32(XPAR_IQ_MODEM_AXI_FIFO_IQ_RX_BASEADDR);
+		r[i] = Xil_In32(XPAR_IQ_MODEM_FIFO_IQ_RX_BASEADDR);
 
 	processing_dmabuffer32rx(addr32rx);
 	processing_dmabuffer32rts(addr32rx);
@@ -140,11 +147,25 @@ void xcz_fifo_if_rx_inthandler(void)
 		xcz_fifo_phones_inthandler();
 		rx_stage -= CNT16TX;
 	}
+
+	iq_ready = 1;
 }
 
 void xcz_if_rx_enable(uint_fast8_t state)
 {
 	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_IQ_RX_IRQ_INTR, xcz_fifo_if_rx_inthandler);
+}
+
+uint32_t xcz_cic_test_process(void)
+{
+	while(! iq_ready);
+
+	int32_t * r = (int32_t *) addr32rx;
+	int32_t max = 0;
+
+	arm_max_no_idx_q31(r, DMABUFFSIZE32RX, & max);
+
+	return max;
 }
 
 // ****************** IF TX ******************
@@ -161,7 +182,7 @@ void xcz_dma_if_tx_inthandler(void)
 	uint32_t * r = (uint32_t *) addr;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
-		Xil_Out32(XPAR_IQ_MODEM_AXI_FIFO_IQ_TX_BASEADDR, r[i]);
+		Xil_Out32(XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR, r[i]);
 
 	release_dmabuffer32tx(addr);
 #endif /* WITHTX */
@@ -188,7 +209,7 @@ void xcz_fifo_mic_inthandler(void)
 	uint32_t * r = (uint32_t *) addr;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE16RX; i ++)
-		r[i] = Xil_In32(XPAR_AUDIO_AXI_FIFO_MIC_BASEADDR);
+		r[i] = Xil_In32(XPAR_AUDIO_FIFO_MIC_BASEADDR);
 
 	processing_dmabuffer16rx(addr);
 #endif /* WITHTX */
@@ -214,7 +235,7 @@ void xcz_fifo_phones_inthandler(void)
 	uint32_t * r = (uint32_t *) addr;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE16TX; i ++)
-		Xil_Out32(XPAR_AUDIO_AXI_FIFO_PHONES_BASEADDR, r[i]);
+		Xil_Out32(XPAR_AUDIO_FIFO_PHONES_BASEADDR, r[i]);
 
 	release_dmabuffer16tx(addr);
 }

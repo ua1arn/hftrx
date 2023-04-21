@@ -496,22 +496,29 @@ typedef struct lowspiio_tag
 
 static SPINLOCK_t spilock = SPINLOCK_INIT;
 
-void spi_operate_lock(void)
+void spi_operate_lock(IRQL_t * oldIrql)
 {
+#if ! LINUX_SUBSYSTEM
+	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
+#endif /* ! LINUX_SUBSYSTEM */
 	SPIN_LOCK(& spilock);
 }
 
-void spi_operate_unlock(void)
+void spi_operate_unlock(IRQL_t irql)
 {
 	SPIN_UNLOCK(& spilock);
+#if ! LINUX_SUBSYSTEM
+	LowerIrql(irql);
+#endif /* ! LINUX_SUBSYSTEM */
 }
 
 static void spi_operate_low(lowspiio_t * iospi)
 {
 	const spitarget_t target = iospi->target;
 	unsigned i;
+	IRQL_t oldIrql;
 
-	spi_operate_lock();
+	spi_operate_lock(& oldIrql);
 
 	switch (iospi->spiiosize)
 	{
@@ -681,7 +688,6 @@ static void spi_operate_low(lowspiio_t * iospi)
 		}
 	}
 
-
 	switch (iospi->spiiosize)
 	{
 	case SPIIOSIZE_U8:
@@ -704,7 +710,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 		break;
 	}
 	local_delay_us(iospi->csdelayUS);
-	spi_operate_unlock();
+	spi_operate_unlock(oldIrql);
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
@@ -1322,7 +1328,7 @@ static void sys_spinor_exit(void)
 
 	/* Disable the spi0 controller */
 	val = SPI0->SPI_GCR;
-	val &= ~ ((1 << 1) | (1 << 0));
+	val &= ~ ((1u << 1) | (1u << 0));
 	SPI0->SPI_GCR = val;
 }
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
@@ -1652,13 +1658,17 @@ void hardware_spi_master_initialize(void)
 
 	SPIIO_INITIALIZE();
 
+#elif CPUSTYLE_A64
+
+	#warning Implement for CPUSTYLE_A64
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	unsigned ix = 0;	// SPI0
 
 	/* Open the clock gate for SPI0 */
 	CCU->SPI_BGR_REG |= (0x01uL << (ix + 0));
 
-	/* Deassert SPI0 reset */
+	/* De-assert SPI0 reset */
 	CCU->SPI_BGR_REG |= (0x01uL << (ix + 16));
 
 	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
@@ -1667,22 +1677,22 @@ void hardware_spi_master_initialize(void)
 //	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
 //		;
 	SPI0->SPI_GCR |=
-		(0x00uL < 1) |	// MODE: 1: Master mode
+		(0u < 1) |	// MODE: 1: Master mode
 		0;
 
-	/* Deassert spi0 reset */
-	CCU->SPI_BGR_REG |= (1 << (ix + 16));
+	/* De-assert spi0 reset */
+	CCU->SPI_BGR_REG |= (1u << (ix + 16));
 	/* Open the spi0 gate */
-	CCU->SPI0_CLK_REG |= (1 << 31);
+	CCU->SPI0_CLK_REG |= (1u << 31);
 	/* Open the spi0 bus gate */
-	CCU->SPI_BGR_REG |= (1 << (ix + 0));
+	CCU->SPI_BGR_REG |= (1u << (ix + 0));
 
 
 	/* Enable spi0 */
-	SPI0->SPI_GCR |= (1 << 7) | (1 << 1) | (1 << 0);
+	SPI0->SPI_GCR |= (1u << 7) | (1u << 1) | (1u << 0);
 	/* Do a soft reset */
-//	SPI0->SPI_GCR |= (1 << 31);
-//	while((SPI0->SPI_GCR & (1 << 31)) != 0)
+//	SPI0->SPI_GCR |= (1u << 31);
+//	while((SPI0->SPI_GCR & (1u << 31)) != 0)
 //		;
 
 	// De-assert hardware CS
@@ -2010,7 +2020,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	};
 
 	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
-	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
+	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03u << 24)) |
 		(clk_src << 24) |	/* CLK_SRC_SEL */
 		0;
 
@@ -2018,28 +2028,31 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	// SCLK = Clock Source/M/N.
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
-	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());
+	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, allwnrt113_get_spi0_freq());
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
 	ccu_spi_clk_reg_val [spispeedindex] =
 		(clk_src << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 		(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 		(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
-		(0x01uL << 31) |	// 1: Clock is ON
+		(1u << 31) |	// 1: Clock is ON
 		0;
 
 	const portholder_t tcr =
 			(0u << 12) |	// FBS: 0: MSB first
 			(1u << 6) |		// SS_OWNER: 1: Software
-			(1u << 7) |		// SS_LEVEL: 1: Set SS to high
+			//(1u << 7) |		// SS_LEVEL: 1: Set SS to high
 			0;
+
+//	tcr &= ~((0x3 << 4) | (0x1 << 7));
+//	tcr |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
-	spi_tcr_reg_val [spispeedindex][SPIC_MODE0] = tcr | (0x00uL << 0);
-	spi_tcr_reg_val [spispeedindex][SPIC_MODE1] = tcr | (0x01uL << 0);
-	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (0x02uL << 0);
-	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (0x03uL << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE0] = tcr | (0u << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE1] = tcr | (1u << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (2u << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (3u << 0);
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -2195,13 +2208,13 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	{
-		unsigned val = SPI0->SPI_TCR;
-		val &= ~((0x3 << 4) | (0x1 << 7));
-		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
-		SPI0->SPI_TCR = val;
-		(void) SPI0->SPI_TCR;
-	}
+//	{
+//		unsigned val = SPI0->SPI_TCR;
+//		val &= ~((0x3 << 4) | (0x1 << 7));
+//		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+//		SPI0->SPI_TCR = val;
+//		(void) SPI0->SPI_TCR;
+//	}
  	HARDWARE_SPI_CONNECT();
 
 #else
@@ -2369,14 +2382,14 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+	while ((SPI0->SPI_TCR & (1u << 31)) != 0)
 		;
 
 	const portholder_t v = * (volatile uint8_t *) & SPI0->SPI_RXD;
 
 	// TXFIFO and RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
-	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
+	SPI0->SPI_FCR |= (1u << 31) | (1u << 15);
+	while ((SPI0->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
 		;
 
 	return v;
@@ -3328,14 +3341,13 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	{
-		unsigned val = SPI0->SPI_TCR;
-		val &= ~((0x3 << 4) | (0x1 << 7));
-		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
-		SPI0->SPI_TCR = val;
-		(void) SPI0->SPI_TCR;
-	}
-
+//	{
+//		unsigned val = SPI0->SPI_TCR;
+//		val &= ~((0x3 << 4) | (0x1 << 7));
+//		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+//		SPI0->SPI_TCR = val;
+//		(void) SPI0->SPI_TCR;
+//	}
  	HARDWARE_SPI_CONNECT();
 
 #else
@@ -3387,14 +3399,14 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+	while ((SPI0->SPI_TCR & (1u << 31)) != 0)
 		;
 
 	const portholder_t v = __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
 
 	// TXFIFO and RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
-	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
+	SPI0->SPI_FCR |= (1u << 31) | (1u << 15);
+	while ((SPI0->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
 		;
 
 	return v & 0xFFFF;
@@ -3447,7 +3459,7 @@ void RAMFUNC hardware_spi_b16_p1(
 
 	* (volatile uint16_t *) & SPI0->SPI_TXD = __bswap16(v);
 
-	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
+	SPI0->SPI_TCR |= (1u << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3518,14 +3530,13 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	{
-		unsigned val = SPI0->SPI_TCR;
-		val &= ~((0x3 << 4) | (0x1 << 7));
-		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
-		SPI0->SPI_TCR = val;
-		(void) SPI0->SPI_TCR;
-	}
-
+//	{
+//		unsigned val = SPI0->SPI_TCR;
+//		val &= ~((0x3 << 4) | (0x1 << 7));
+//		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
+//		SPI0->SPI_TCR = val;
+//		(void) SPI0->SPI_TCR;
+//	}
  	HARDWARE_SPI_CONNECT();
 
 #else
@@ -3554,14 +3565,14 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+	while ((SPI0->SPI_TCR & (1u << 31)) != 0)
 		;
 
 	const portholder_t v = __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
 
 	// TXFIFO and RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31) | (1 << 15);
-	while ((SPI0->SPI_FCR & ((1 << 31) | (1 << 15))) != 0)
+	SPI0->SPI_FCR |= (1u << 31) | (1u << 15);
+	while ((SPI0->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
 		;
 
 	return v;
@@ -3598,7 +3609,7 @@ void hardware_spi_b32_p1(
 
 	SPI0->SPI_TXD = __bswap32(v);	/* 32bit access */
 
-	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
+	SPI0->SPI_TCR |= (1u << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3685,7 +3696,7 @@ void hardware_spi_b8_p1(
 
 	* (volatile uint8_t *) & SPI0->SPI_TXD = v;
 
-	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
+	SPI0->SPI_TCR |= (1u << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3765,7 +3776,11 @@ void spi_initialize(void)
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
+#elif defined SPISPEEDUFAST
+	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR */
+
+	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 
 	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 
@@ -4233,7 +4248,7 @@ static uint_fast8_t spidf_readval8(void)
 #endif /* WIHSPIDFOVERSPI */
 }
 
-static void spidf_iostart(
+static IRQL_t spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -4337,7 +4352,7 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			break;
 
 		case SPDFIO_4WIRE:
-			SPI0->SPI_BCC = (0x01u << 29);	/* Quad_EN */
+			SPI0->SPI_BCC = (1u << 29);	/* Quad_EN */
 			if (tx != NULL)
 			{
 				// 4-wire write
@@ -4359,7 +4374,7 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 		while ((SPI0->SPI_TCR & (1u << 31)) != 0)	// XCH
 			;
-		SPI0->SPI_BCC &= ~ (0x01u << 29);	/* Quad_EN */
+		SPI0->SPI_BCC &= ~ (1u << 29);	/* Quad_EN */
 
 		for (i = 0; i < chunk; i ++)
 		{
@@ -4390,7 +4405,7 @@ void spidf_initialize(void)
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 }
 
-static void spidf_unselect(void)
+static void spidf_unselect(IRQL_t irql)
 {
 	// De-assert CS
 	prog_unselect(targetdataflash);
@@ -4398,7 +4413,7 @@ static void spidf_unselect(void)
 	// Disconnect I/O pins
 	hardware_spi_disconnect();
 
-	spi_operate_unlock();
+	spi_operate_unlock(irql);
 }
 
 void spidf_uninitialize(void)
@@ -4409,7 +4424,7 @@ void spidf_hangoff(void)
 {
 }
 
-static void spidf_iostart(
+static IRQL_t spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -4451,7 +4466,8 @@ static void spidf_iostart(
 		b [i ++] = 0x00;	// dummy byte
 
 
-	spi_operate_lock();
+	IRQL_t irql;
+	spi_operate_lock(& irql);
 
 	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE0);
 
@@ -4460,6 +4476,8 @@ static void spidf_iostart(
 
 	spidf_spi_transfer(b, NULL, 1, SPDFIO_1WIRE);
 	spidf_spi_transfer(b + 1, NULL, i - 1, readnb);
+
+	return irql;
 }
 
 // вычитываем все заказанное количество
@@ -4488,35 +4506,35 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_
 
 
 #define QSPI_CONFIG             0xE000D000
-#define  CFG_IFMODE             (1 << 31) // Inteligent Flash Mode
+#define  CFG_IFMODE             (1u << 31) // Inteligent Flash Mode
 #define  CFG_LITTLE_ENDIAN      (0 << 26)
-#define  CFG_BIG_ENDIAN         (1 << 26)
-#define  CFG_HOLDB_DR           (1 << 19) // set to 1 for dual/quad spi mode
-#define  CFG_NO_MODIFY_MASK     (1 << 17) // do not modify this bit
-#define  CFG_MANUAL_START       (1 << 16) // start transaction
-#define  CFG_MANUAL_START_EN    (1 << 15) // enable manual start mode
-#define  CFG_MANUAL_CS_EN       (1 << 14) // enable manual CS control
-#define  CFG_MANUAL_CS          (1 << 10) // directly drives n_ss_out if MANUAL_CS_EN==1
+#define  CFG_BIG_ENDIAN         (1u << 26)
+#define  CFG_HOLDB_DR           (1u << 19) // set to 1 for dual/quad spi mode
+#define  CFG_NO_MODIFY_MASK     (1u << 17) // do not modify this bit
+#define  CFG_MANUAL_START       (1u << 16) // start transaction
+#define  CFG_MANUAL_START_EN    (1u << 15) // enable manual start mode
+#define  CFG_MANUAL_CS_EN       (1u << 14) // enable manual CS control
+#define  CFG_MANUAL_CS          (1u << 10) // directly drives n_ss_out if MANUAL_CS_EN==1
 #define  CFG_FIFO_WIDTH_32      (3 << 6)  // only valid setting
 #define  CFG_BAUD_MASK          (7 << 3)
 #define  CFG_BAUD_DIV_2         (0 << 3)
-#define  CFG_BAUD_DIV_4         (1 << 3)
+#define  CFG_BAUD_DIV_4         (1u << 3)
 #define  CFG_BAUD_DIV_8         (2 << 3)
 #define  CFG_BAUD_DIV_16        (3 << 3)
-#define  CFG_CPHA               (1 << 2) // clock phase
-#define  CFG_CPOL               (1 << 1) // clock polarity
-#define  CFG_MASTER_MODE        (1 << 0) // only valid setting
+#define  CFG_CPHA               (1u << 2) // clock phase
+#define  CFG_CPOL               (1u << 1) // clock polarity
+#define  CFG_MASTER_MODE        (1u << 0) // only valid setting
 
 #define QSPI_IRQ_STATUS         0xE000D004 // ro status (write UNDERFLOW/OVERFLOW to clear)
 #define QSPI_IRQ_ENABLE         0xE000D008 // write 1s to set mask bits
 #define QSPI_IRQ_DISABLE        0xE000D00C // write 1s to clear mask bits
 #define QSPI_IRQ_MASK           0xE000D010 // ro mask value (1 = irq enabled)
-#define  TX_UNDERFLOW           (1 << 6)
-#define  RX_FIFO_FULL           (1 << 5)
-#define  RX_FIFO_NOT_EMPTY      (1 << 4)
-#define  TX_FIFO_FULL           (1 << 3)
-#define  TX_FIFO_NOT_FULL       (1 << 2)
-#define  RX_OVERFLOW            (1 << 0)
+#define  TX_UNDERFLOW           (1u << 6)
+#define  RX_FIFO_FULL           (1u << 5)
+#define  RX_FIFO_NOT_EMPTY      (1u << 4)
+#define  TX_FIFO_FULL           (1u << 3)
+#define  TX_FIFO_NOT_FULL       (1u << 2)
+#define  RX_OVERFLOW            (1u << 0)
 
 #define QSPI_ENABLE             0xE000D014 // write 1 to enable
 
@@ -4533,12 +4551,12 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_
 #define QSPI_TXD3               0xE000D088
 
 #define QSPI_LINEAR_CONFIG      0xE000D0A0
-#define  LCFG_ENABLE            (1 << 31) // enable linear quad spi mode
-#define  LCFG_TWO_MEM           (1 << 30)
-#define  LCFG_SEP_BUS           (1 << 29) // 0=shared 1=separate
-#define  LCFG_U_PAGE            (1 << 28)
-#define  LCFG_MODE_EN           (1 << 25) // send mode bits (required for dual/quad io)
-#define  LCFG_MODE_ON           (1 << 24) // only send instruction code for first read
+#define  LCFG_ENABLE            (1u << 31) // enable linear quad spi mode
+#define  LCFG_TWO_MEM           (1u << 30)
+#define  LCFG_SEP_BUS           (1u << 29) // 0=shared 1=separate
+#define  LCFG_U_PAGE            (1u << 28)
+#define  LCFG_MODE_EN           (1u << 25) // send mode bits (required for dual/quad io)
+#define  LCFG_MODE_ON           (1u << 24) // only send instruction code for first read
 #define  LCFG_MODE_BITS(n)      (((n) & 0xFF) << 16)
 #define  LCFG_DUMMY_BYTES(n)    (((n) & 7) << 8)
 #define  LCFG_INST_CODE(n)      ((n) & 0xFF)
@@ -4946,7 +4964,7 @@ void spidf_uninitialize(void)
 	SPIDF_HANGOFF();
 }
 
-static void spidf_unselect(void)
+static void spidf_unselect(IRQL_t irql)
 {
 ////	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 ////		;
@@ -5004,7 +5022,7 @@ static uint_fast8_t spidf_progval8(uint_fast8_t v)
 	return v8;
 }
 
-static void spidf_iostart(
+static IRQL_t spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -5045,7 +5063,7 @@ static void spidf_iostart(
 		spidf_progval8_p2(0x00);	// dummy byte
 
 	spidf_complete();	/* done sending data to target chip */
-	return;
+	return 0;	// Ignored in spidf_unselect
 
 
 	switch (cmdlen)
@@ -5166,7 +5184,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_
 	return err;
 }
 
-static void spidf_unselect(void)
+static void spidf_unselect(IRQL_t irql)
 {
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
@@ -5175,7 +5193,7 @@ static void spidf_unselect(void)
 }
 
 // readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
-static void spidf_iostart(
+static IRQL_t spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -5225,7 +5243,7 @@ static void spidf_iostart(
 		//(0 << QUADSPI_CCR_DHHC_Pos) |	// 0: Delay the data output using analog delay
 		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
 		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
-		((direction ? 0x00uL : 0x01uL) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
+		((direction ? 0u : 0x01uL) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
 		(size != 0) * (bw << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
 		((ml * ndummy) << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (1..31).
 		//0 * (bw << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
@@ -5245,6 +5263,8 @@ static void spidf_iostart(
 		//PRINTF("spidf_iostart QUADSPI->AR=%08lX, QUADSPI->SR=%08lX\n", QUADSPI->AR, QUADSPI->SR);
 		(void) QUADSPI->AR;
 	}
+
+	return 0;	// dummy value - unused in spidf_unselect
 }
 
 void spidf_initialize(void)
@@ -5280,14 +5300,14 @@ void spidf_initialize(void)
 
 	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
-		(7 << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
+		(7u << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
 		//(0 << QUADSPI_DCR_CKMODE_Pos) |	// 0: CLK must stay low while nCS is high (chip select released). This is referred to as mode 0.
-		(1 << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
+		(1u << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
 		0;
 	(void) QUADSPI->DCR;
 
 	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk | QUADSPI_CR_EN_Msk))) |
-		(0x00uL << QUADSPI_CR_FTHRES_Pos) | // FIFO threshold level - one byte
+		(0u << QUADSPI_CR_FTHRES_Pos) | // FIFO threshold level - one byte
 		(((unsigned long) qspipre - 1) << QUADSPI_CR_PRESCALER_Pos) |
 		0;
 	(void) QUADSPI->CR;
@@ -5400,7 +5420,7 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 	}
 }
 
-static void spidf_unselect(void)
+static void spidf_unselect(IRQL_t irql)
 {
 //	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 //		;
@@ -5485,7 +5505,7 @@ void spidf_hangoff(void)
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 }
 
-static void spidf_iostart(
+static IRQL_t spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-CPU, 1: CPU-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -5515,14 +5535,14 @@ static void spidf_iostart(
 	*/
 	// 17.4.13 SPI Mode Enable Setting Register (SMENR)
 	SPIBSC0.SMENR =
-		(0x00uL << SPIBSC_SMENR_CDB_SHIFT) | /* 1 data bit */
-		(0x00uL << SPIBSC_SMENR_OCDB_SHIFT) | /* 1 optional command bit */
-		(0x00uL << SPIBSC_SMENR_ADB_SHIFT) | /* 1 address bit */
-		(0x00uL << SPIBSC_SMENR_OPDB_SHIFT) | /* 1 optional data bit */
-		(0x00uL << SPIBSC_SMENR_SPIDB_SHIFT) | /* Transfer Data Bit Size */
+		(0u << SPIBSC_SMENR_CDB_SHIFT) | /* 1 data bit */
+		(0u << SPIBSC_SMENR_OCDB_SHIFT) | /* 1 optional command bit */
+		(0u << SPIBSC_SMENR_ADB_SHIFT) | /* 1 address bit */
+		(0u << SPIBSC_SMENR_OPDB_SHIFT) | /* 1 optional data bit */
+		(0u << SPIBSC_SMENR_SPIDB_SHIFT) | /* Transfer Data Bit Size */
 		(0x01uL << SPIBSC_SMENR_CDE_SHIFT) | /* 1: Command output enabled */
-		(0x00uL << SPIBSC_SMENR_OCDE_SHIFT) | /* 0: Optional command output disabled */
-		(0x00uL << SPIBSC_SMENR_OPDE_SHIFT) | /* Option Data Enable 0000: Output disabled */
+		(0u << SPIBSC_SMENR_OCDE_SHIFT) | /* 0: Optional command output disabled */
+		(0u << SPIBSC_SMENR_OPDE_SHIFT) | /* Option Data Enable 0000: Output disabled */
 		((hasaddress ? 0x07 : 0x00) << SPIBSC_SMENR_ADE_SHIFT) | /* No address send or 0111: ADR[23:0] */
 		((ndummy != 0) << SPIBSC_SMENR_DME_SHIFT) |
 		((size && ! direction ? 0x08uL : 0) << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
@@ -5530,7 +5550,7 @@ static void spidf_iostart(
 	// 17.4.10 SPI Mode Command Setting Register (SMCMR)
 	SPIBSC0.SMCMR =
 		(cmd << SPIBSC_SMCMR_CMD_SHIFT) | /* command byte */
-		(0x00uL << SPIBSC_SMCMR_OCMD_SHIFT) | /* optional command */
+		(0u << SPIBSC_SMCMR_OCMD_SHIFT) | /* optional command */
 		0;
 
 	SPIBSC0.SMADR = address;
@@ -5542,6 +5562,7 @@ static void spidf_iostart(
 		0;
 
 	// при передаче формируется только команла и адрес при необходимости
+    return 0;	// dummy value - ignored in spidf_unselect
 }
 
 #endif /* WIHSPIDFHW */
@@ -5549,14 +5570,14 @@ static void spidf_iostart(
 /* снять защиту записи для следующей команды */
 void writeEnableDATAFLASH(void)
 {
-	spidf_iostart(SPDIFIO_WRITE, 0x06, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x06: write enable */
-	spidf_unselect();	/* done sending data to target chip */
+	const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x06, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x06: write enable */
+	spidf_unselect(irql);	/* done sending data to target chip */
 }
 
 void writeDisableDATAFLASH(void)
 {
-	spidf_iostart(SPDIFIO_WRITE, 0x04, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x04: write disable */
-	spidf_unselect();	/* done sending data to target chip */
+	const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x04, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x04: write disable */
+	spidf_unselect(irql);	/* done sending data to target chip */
 }
 
 int fullEraseDATAFLASH(void)
@@ -5569,8 +5590,8 @@ int fullEraseDATAFLASH(void)
 
 	writeEnableDATAFLASH();		/* write enable */
 
-	spidf_iostart(SPDIFIO_WRITE, 0x60, SPDFIO_1WIRE, 0, 0, 0, 0);	/*.2.18 Chip Erase (C7h / 60h) */
-	spidf_unselect();	/* done sending data to target chip */
+	const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x60, SPDFIO_1WIRE, 0, 0, 0, 0);	/*.2.18 Chip Erase (C7h / 60h) */
+	spidf_unselect(irql);	/* done sending data to target chip */
 
 	if (largetimed_dataflash_read_status())
 		return 1;
@@ -5586,9 +5607,9 @@ uint_fast8_t dataflash_read_status(void)
 	uint8_t v;
 	enum { SPDIF_IOSIZE = sizeof v };
 
-	spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
+	const IRQL_t irql = spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
 	spidf_read(& v, SPDIF_IOSIZE, SPDFIO_1WIRE);
-	spidf_unselect();	/* done sending data to target chip */
+	spidf_unselect(irql);	/* done sending data to target chip */
 	//PRINTF("dataflash_read_status: v=%02X\n", v);
 	return v;
 }
@@ -5838,9 +5859,9 @@ static void readFlashID(uint8_t * buff, unsigned size)
 	memcpy(buff, & ReadBuffer [1], size);
 
 #else
-	spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
+	const IRQL_t irql = spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
 	spidf_read(buff, size, SPDFIO_1WIRE);
-	spidf_unselect();	/* done sending data to target chip */
+	spidf_unselect(irql);	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
 }
 
@@ -5883,9 +5904,9 @@ static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigne
 	memcpy(buff, & ReadBuffer [5], size);
 
 #else
-	spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
+	const IRQL_t irql = spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
 	spidf_read(buff, size, SPDFIO_1WIRE);
-	spidf_unselect();	/* done sending data to target chip */
+	spidf_unselect(irql);	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
 }
 
@@ -5978,7 +5999,7 @@ int testchipDATAFLASH(void)
 
 	static const uint8_t signature [] = { 0x53, 0x46, 0x44, 0x50, };	// SFDP
 
-	//PRINTF(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
+	//PRINTF(PSTR("SFDP: lastparam=0x%02X\n"), buff8 [6]);
 	if (memcmp(& buff8 [0], signature, 4) == 0)
 	{
 		// Serial Flash Discoverable Parameters (SFDP), for Serial NOR Flash
@@ -6013,14 +6034,14 @@ int testchipDATAFLASH(void)
 		{
 			const unsigned Kbi = (dword2 >> 10) + 1;
 			const unsigned MB = (dword2 >> 23) + 1;
-			//PRINTF("SFDP: density=%08lX (%u Kbi, %u MB)\n", dword2, Kbi, MB);
+			//PRINTF("SFDP: density=%08X (%u Kbi, %u MB)\n", (unsigned) dword2, Kbi, MB);
 			chipSize = (dword2 >> 3) + 1uL;
 		}
 		else
 		{
 			const unsigned Mbi = 1u << ((dword2 & 0x7FFFFFFF) - 10);
 			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
-			//PRINTF("SFDP: density=%08lX (%u Mbi, %u MB)\n", dword2, Mbi, MB);
+			//PRINTF("SFDP: density=%08X (%u Mbi, %u MB)\n", (unsigned) dword2, Mbi, MB);
 			chipSize = 1uL << ((dword2 & 0x7FFFFFFF) - 3);
 		}
 		///////////////////////////////////
@@ -6032,7 +6053,7 @@ int testchipDATAFLASH(void)
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
 		//PRINTF("SFDP: Sector Erase opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
-		//PRINTF("SFDP: Sector Erase size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		//PRINTF("SFDP: Sector Erase size1..4: %u, %u, %u, %u\n", 1u << (sct [0] & 0xFF), 1u << (sct [1] & 0xFF), 1u << (sct [2] & 0xFF), 1u << (sct [3] & 0xFF));
 		unsigned i;
 		unsigned sctRESULT = 0;
 		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
@@ -6047,10 +6068,10 @@ int testchipDATAFLASH(void)
 		{
 			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
 			sectorSize = 1uL << (sctRESULT & 0xFF);
-			//PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
+			//PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%u\n", (unsigned) sectorEraseCmd, (unsigned) sectorSize);
 		}
 		///////////////////////////////////
-		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
+		//PRINTF("SFDP: Sector Type 1 Size=%08X, Sector Type 1 Opcode=%02X\n", 1u << ((dword8 >> 0) & 0xFF), (unsigned) (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
@@ -6086,14 +6107,20 @@ int prepareDATAFLASH(void)
 			return 1;
 		}
 
-		PRINTF(PSTR("prepareDATAFLASH: Clear write protect bits\n"));
+		//PRINTF(PSTR("prepareDATAFLASH: Clear write protect bits\n"));
 		writeEnableDATAFLASH();		/* write enable */
 
 		uint8_t v = 0x00;	/* status register data */
 		// Write Status Register
-		spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
+		const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
 		spidf_write(& v, 1, SPDFIO_1WIRE);
-		spidf_unselect();	/* done sending data to target chip */
+		spidf_unselect(irql);	/* done sending data to target chip */
+
+		PRINTF("prepareDATAFLASH: r/o clear\n");
+	}
+	else
+	{
+		PRINTF("prepareDATAFLASH: r/o already clear\n");
 	}
 
 	return timed_dataflash_read_status();
@@ -6123,8 +6150,8 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
-	spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset);
-	spidf_unselect();	/* done sending data to target chip */
+	const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset);
+	spidf_unselect(irql);	/* done sending data to target chip */
 	if (timed_dataflash_read_status())
 		return 1;
 	return 0;
@@ -6144,9 +6171,9 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 
 	// start byte programm
 
-	spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset);		/* Page Program */
+	const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset);		/* Page Program */
 	spidf_write(data, len, SPDFIO_1WIRE);
-	spidf_unselect();	/* done sending data to target chip */
+	spidf_unselect(irql);	/* done sending data to target chip */
 
 	//PRINTF(PSTR( Prog to address %08lX %02X done\n"), flashoffset, len);
 	if (timed_dataflash_read_status())
@@ -6176,27 +6203,27 @@ int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lon
 // Возвращает код ширниы шины для следующей операции обмена
 // SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
 static uint_fast8_t
-spdif_iostartread(unsigned long len, unsigned long flashoffset)
+spdif_iostartread(unsigned long len, unsigned long flashoffset, IRQL_t * pirql)
 {
 	if (0)
 		;
 #if WIHSPIDFHW4BIT
 	else if (readxb [SPDFIO_4WIRE] != 0x00)
 	{
-		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
+		* pirql = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
 		return SPDFIO_4WIRE;
 	}
 #endif /* WIHSPIDFHW4BIT */
 #if WIHSPIDFHW2BIT
 	else if (readxb [SPDFIO_2WIRE] != 0x00)
 	{
-		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
+		* pirql = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
 		return SPDFIO_2WIRE;
 	}
 #endif /* WIHSPIDFHW2BIT */
 	else
 	{
-		spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+		* pirql = spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
 		return SPDFIO_1WIRE;
 	}
 }
@@ -6213,9 +6240,10 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 		return 1;
 	}
 
-	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
+	IRQL_t irql;
+	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset, & irql);
 	err = spidf_verify(data, len, readnb);
-	spidf_unselect();	/* done sending data to target chip */
+	spidf_unselect(irql);	/* done sending data to target chip */
 
 	if (err)
 		PRINTF(PSTR("verifyDATAFLASH: Done compare, have errors\n"));
@@ -6241,9 +6269,10 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 
 //	TP();
 //	PRINTF("read operation\n");
-	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
+	IRQL_t irql;
+	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset, & irql);
 	spidf_read(data, len, readnb);
-	spidf_unselect();	/* done sending data to target chip */
+	spidf_unselect(irql);	/* done sending data to target chip */
 
 #endif /* CPUSTYLE_XC7Z */
 

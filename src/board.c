@@ -152,6 +152,7 @@ static uint_fast8_t 	glob_user4;
 static uint_fast8_t 	glob_user5;
 static uint_fast8_t		glob_attvalue;	// RF signal gen attenuator value
 static uint_fast8_t		glob_tsc_reset = 1;
+static uint_fast8_t		glob_showovf = 1;	/* Показ индикатора переполнения АЦП */
 
 static void prog_rfadc_update(void);
 
@@ -4609,6 +4610,77 @@ prog_ctrlreg(uint_fast8_t plane)
 	//xcz_adcrand_set(glob_adcrand);
 }
 
+#elif CTLREGMODE_XCZU_V2
+
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	spitarget_t target = targetctl1;
+
+	rbtype_t rbbuff [1] = { 0 };
+
+	RBBIT(007, 0);
+	RBBIT(006, 0);
+	RBBIT(005, 0);
+	RBBIT(004, 0);
+	RBBIT(003, 1);
+	RBBIT(002, 1);
+	RBBIT(001, ! glob_tx);
+	RBBIT(000, glob_tsc_reset);
+
+	spi_select(target, CTLREG_SPIMODE);
+	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	spi_unselect(target);
+
+#if WITHQRPBOARD_UA3REO
+
+	const uint_fast8_t txgated = glob_tx && glob_txgate;
+	const uint_fast8_t bpf_xlat [6] = { 1, 3, 0, 2, 1, 3 };
+
+	{
+		spitarget_t target = targetext1;
+
+		rbtype_t rbbuff [3] = { 0 };
+		const uint_fast8_t att_db = revbits8(hamradio_get_att_db()) >> 3;
+		const uint_fast8_t bpf1 = glob_bandf == 5 || glob_bandf == 6;
+		const uint_fast8_t bpf2 = glob_bandf >= 1 || glob_bandf <= 4;
+
+		/* U7 */
+		RBBIT(027, ! glob_bandf);	// LPF_ON
+		RBBIT(026, glob_preamp);	// LNA_ON
+		RBBIT(025, 0);	// ATT_ON_0.5
+		RBVAL(020, att_db, 5);
+
+		/* U1 */
+		RBBIT(017, 0);	// not use
+		RBVAL(015, bpf2 ? revbits8(bpf_xlat [glob_bandf - 1]) >> 6 : 0 , 2);
+		RBBIT(014, ! bpf2);
+		RBVAL(012, bpf1 ? revbits8(bpf_xlat [glob_bandf - 1]) >> 6 : 0 , 2);
+		RBBIT(011, ! bpf1);
+		RBBIT(010, bpf1 || bpf2);
+
+		/* U3 */
+		RBBIT(007, 0);	// not use
+		RBBIT(006, glob_tx);	// tx amp
+		RBBIT(005, 0);	// not use
+		RBBIT(004, 0);	// not use
+		RBBIT(003, 0);	// not use
+		RBBIT(002, 0);	// not use
+		RBBIT(001, 0);	// not use
+		RBBIT(000, glob_tx);	// tx & ant 1-2
+
+		spi_select(target, CTLREG_SPIMODE);
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		spi_unselect(target);
+	}
+#endif /* WITHQRPBOARD_UA3REO */
+
+
+}
+
 #elif CTLREGMODE_ZYNQ_4205
 
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -4624,22 +4696,22 @@ prog_ctrlreg(uint_fast8_t plane)
 	/* U1 */
 	RBBIT(017, 0);					// not use
 	RBBIT(016, glob_att);			// attenuator
-	RBBIT(015, ! glob_bandf);		// LPF
+	RBBIT(015, ! glob_bandf);		// LPF, < 1600000
 	RBBIT(014, 0);					// BPF bypass, not use
-	RBBIT(013, ! glob_bandf);		// 160m
-	RBBIT(012, glob_bandf == 1);	// 80m
-	RBBIT(011, glob_bandf == 2);	// 40m
+	RBBIT(013, glob_bandf == 1);	// 1600000 ... 2658894
+	RBBIT(012, glob_bandf == 2);	// 2658894 ... 4418573
+	RBBIT(011, glob_bandf == 3);	// 4418573 ... 7342824
 	RBBIT(010, glob_tx);			// tx\rx
 
 	/* U3 */
 	RBBIT(007, 0);					// not use
 	RBBIT(006, 0);					// not use
 	RBBIT(005, 0);					// not use
-	RBBIT(004, glob_bandf == 7);	// 10m
-	RBBIT(003, glob_bandf == 6);	// 15m
-	RBBIT(002, glob_bandf == 5);	// 17m
-	RBBIT(001, glob_bandf == 4);	// 20m
-	RBBIT(000, glob_bandf == 3);	// 30m
+	RBBIT(004, 0);					// not use
+	RBBIT(003, 0);					// not use
+	RBBIT(002, glob_bandf == 6);	// 20278009 ... 33698177
+	RBBIT(001, glob_bandf == 5);	// 12202371 ... 20278009
+	RBBIT(000, glob_bandf == 4);	// 7342824 ... 12202371
 
 	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 #endif /* WITHEXTRFBOARDTEST */
@@ -5652,10 +5724,20 @@ board_set_attvalue(uint_fast8_t v)
 	}
 }
 
-void board_tsc_reset_state(uint_fast8_t v)
+void
+board_tsc_reset_state(uint_fast8_t v)
 {
 	glob_tsc_reset = v;
-	board_ctlreg1changed();
+	prog_ctrlreg(0);
+}
+
+
+/* Показ индикатора переполнения АЦП */
+void
+board_set_showovf(uint_fast8_t v)
+{
+	const uint_fast8_t n = v != 0;
+	glob_showovf = n;
 }
 
 /////////////////////////////////////////////
@@ -6392,7 +6474,7 @@ prog_dac1_b_value(uint_fast8_t v)
 #if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_FPGAV1)
 
 /* dummy function */
-static void fpga_initialize_fullduplex(void)
+static void fpga_initialize_fullduplex(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
 {
 }
 
@@ -6408,7 +6490,7 @@ const codec2if_t * board_getfpgacodecif(void)
 {
 	static const char codecname [] = "FPGA_V1";
 
-	/* Интерфейс цправления кодеком */
+	/* Интерфейс управления кодеком */
 	static const codec2if_t ifc =
 	{
 		fpga_clocksneed,
@@ -6588,7 +6670,7 @@ static void board_fpga_loader_initialize(void)
 
 #if WITHFPGALOAD_PS
 
-#if ! (CPUSTYLE_R7S721 || 0)
+#if ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY
 /* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
 static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
 {
@@ -6983,11 +7065,10 @@ board_fpga_fir_complete(void)
 }
 
 static void
-board_fpga_fir_connect(void)
+board_fpga_fir_connect(IRQL_t * oldIrql)
 {
 #if WITHSPILOWSUPPORTT
-	system_disableIRQ();
-	spi_operate_lock();
+	spi_operate_lock(oldIrql);
 #endif /* WITHSPILOWSUPPORTT */
 #if WITHSPI32BIT
 	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
@@ -7024,7 +7105,7 @@ board_fpga_fir_connect(void)
 }
 
 static void
-board_fpga_fir_disconnect(void)
+board_fpga_fir_disconnect(IRQL_t irql)
 {
 #if defined (TARGET_FPGA_FIR_CS_BIT)
 	TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT); /* Disable SPI */
@@ -7039,8 +7120,7 @@ board_fpga_fir_disconnect(void)
 #else /* WITHSPIHW */
 #endif
 #if WITHSPILOWSUPPORTT
-	spi_operate_unlock();
-	system_enableIRQ();
+	spi_operate_unlock(irql);
 #endif /* WITHSPILOWSUPPORTT */
 }
 
@@ -7229,7 +7309,8 @@ board_fpga_fir_send(
 {
 	//ASSERT(CWidth <= 24);
 	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
-	board_fpga_fir_connect();
+	IRQL_t irql;
+	board_fpga_fir_connect(& irql);
 
 	// strobe
 	board_fpga_fir_coef_p1(0x00000000);	// one strobe before, without WE required
@@ -7273,7 +7354,7 @@ board_fpga_fir_send(
 	board_fpga_fir_coef_p1(0x00000000);	// one strobe after, without WE required
 	board_fpga_fir_complete();
 
-	board_fpga_fir_disconnect();
+	board_fpga_fir_disconnect(irql);
 }
 
 /* поменять местами значение загружаемого профиля FIR фильтра в FPGA */
@@ -7317,10 +7398,8 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 /* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_fpga_adcoverflow(void)
 {
-#if WITHOVFHIDE
-	return 0;
-#elif defined (TARGET_FPGA_OVF_GET)
-	return TARGET_FPGA_OVF_GET;
+#if defined (TARGET_FPGA_OVF_GET)
+	return glob_showovf ? TARGET_FPGA_OVF_GET : 0;
 #else /* defined (TARGET_FPGA_OVF_GET) */
 	return 0;
 #endif /* defined (TARGET_FPGA_OVF_GET) */
@@ -7353,7 +7432,7 @@ static void adcfilters_initialize(void);
 */
 void board_initialize(void)
 {
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 	xc7z_hardware_initialize();
 #endif /* CPUSTYLE_XC7Z */
 #if WITHFPGALOAD_DCFG
@@ -7458,7 +7537,7 @@ static void board_rtc_initialize(void)
 		
 		PRINTF(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, seconds);
 
-		if (month < 1 || month > 12 ||
+		if (year == 2099 || month < 1 || month > 12 ||
 			day < 1 || day > 31 ||
 			hour > 23 || minute > 59 || seconds > 59)
 		{
@@ -7776,17 +7855,35 @@ void board_init_chips(void)
 #endif /* defined(CODEC1_TYPE) */
 }
 
+/* Отключение сигналов на входе кодека во время инициализации */
+static void board_codec1_io_control(uint_fast8_t on)
+{
+#if defined (HARDWARE_CODEC1_IO_CONTROL)
+	HARDWARE_CODEC1_IO_CONTROL(on);
+#endif /* defined (HARDWARE_CODEC1_IO_CONTROL) */
+}
+
+/* Отключение сигналов на входе кодека во время инициализации */
+static void board_codec2_io_control(uint_fast8_t on)
+{
+}
+
 /* Initialize chips. All coeffecienters should be already calculated before. */
 /* вызывается при разрешённых прерываниях. */
 void board_init_chips2(void)
 {
 #if defined(CODEC1_TYPE)
 	{
+	#if CODEC1_IFC_MASTER
+		const uint_fast8_t master = 1;	// кодек формирует I2S синхронизацию
+	#else /* CODEC1_IFC_MASTER */
+		const uint_fast8_t master = 0;
+	#endif /* CODEC1_IFC_MASTER */
 		const codec1if_t * const ifc1 = board_getaudiocodecif();
 
 		PRINTF(PSTR("af codec type = '%s'\n"), ifc1->label);
 
-		ifc1->initialize();
+		ifc1->initialize(board_codec1_io_control, master);
 		prog_codec1reg();
 	}
 
@@ -7799,7 +7896,7 @@ void board_init_chips2(void)
 
 	PRINTF(PSTR("if codec type = '%s'\n"), ifc2->label);
 	// MCLK должен уже подаваться в момент инициализации
-	ifc2->initialize();	
+	ifc2->initialize(board_codec2_io_control, 0);
 #endif /* defined(CODEC2_TYPE) */
 }
 
@@ -9605,6 +9702,31 @@ mcp3208_read_low(
 }
 
 #endif /* WITHSPILOWSUPPORTT */
+
+#else
+
+// Read ADC MCP3204/MCP3208
+uint_fast16_t
+mcp3208_read(
+	spitarget_t target,
+	uint_fast8_t diff,
+	uint_fast8_t adci,
+	uint_fast8_t * valid
+	)
+{
+	return 0;
+}
+
+uint_fast16_t
+mcp3208_read_low(
+	spitarget_t target,
+	uint_fast8_t diff,
+	uint_fast8_t adci,
+	uint_fast8_t * valid
+	)
+{
+	return 0;
+}
 
 #endif /* WITHSPIHW || WITHSPISW */
 

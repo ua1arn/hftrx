@@ -116,7 +116,7 @@ extern const FLASHMEM uint8_t ltdc_CenturyGothic_half [12][56][4];
 	#include "./fonts/ltdc_CenturyGothic_half.h"
 #endif /* WITHALTERNATIVEFONTS */
 
-#elif DSTYLE_G_X800_Y480
+#elif DSTYLE_G_X800_Y480 || DSTYLE_G_X1024_Y600 || DSTYLE_G_X1280_Y720
 	// в знакогенераторе изображения символов "по горизонтали"
 	#include "./fonts/S1D13781_font_small3_LTDC.h"
 	#include "./fonts/S1D13781_font_small2_LTDC.h"

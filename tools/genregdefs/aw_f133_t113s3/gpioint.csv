@@ -16,6 +16,12 @@
 #irq; GPIOF_NS 109 
 #irq; GPIOF_S 110 
 #irq; GPIOG_NS 111 
+#irqrv; GPIOB_NS 85 
+#irqrv; GPIOC_NS 87 
+#irqrv; GPIOD_NS 89
+#irqrv; GPIOE_NS 91 
+#irqrv; GPIOF_NS 93 
+#irqrv; GPIOG_NS 95 
 #regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
 #regdef; EINT_CTL; 0x010; External Interrupt Control Register
 #regdef; EINT_STATUS; 0x014; External Interrupt Status Register

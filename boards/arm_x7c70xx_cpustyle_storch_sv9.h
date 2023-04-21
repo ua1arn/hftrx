@@ -39,7 +39,8 @@
 #define XPAR_FABRIC_AXI_FIFO_IQ_RX_IRQ_INTR			63
 #define XPAR_FABRIC_AXI_FIFO_IQ_TX_IRQ_INTR			62
 
-#define CALIBRATION_IQ_RX_SHIFT	45
+#define CALIBRATION_IQ_FIR_RX_SHIFT	47
+#define CALIBRATION_IQ_CIC_RX_SHIFT	0	// not use in this bitstream
 #define CALIBRATION_TX_SHIFT	24
 
 #define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS33
@@ -759,11 +760,11 @@
 		gpio_opendrain2(TARGET_TWI_TWCK_MIO, 0, pinmode);		/*  PS_MIO42_501 SCL */ \
 	} while(0)
 
-	#define SET_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while (0)
-	#define CLR_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while (0)
+	#define SET_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 0); } while (0)
+	#define CLR_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 1); } while (0)
 
-	#define SET_TWD() do { gpio_drive(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
-	#define CLR_TWD() do { gpio_drive(TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while (0)
+	#define SET_TWD() do { gpio_drive(TARGET_TWI_TWD_MIO, 0); } while (0)
+	#define CLR_TWD() do { gpio_drive(TARGET_TWI_TWD_MIO, 1); } while (0)
 
 	#define GET_TWCK() (gpio_readpin(TARGET_TWI_TWCK_MIO))
 	#define GET_TWD() (gpio_readpin(TARGET_TWI_TWD_MIO))

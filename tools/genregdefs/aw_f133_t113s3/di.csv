@@ -1,2 +1,5 @@
 #type; DI
+#comment; De-Interlacer
 #base; DI 0x05400000
+#irq; DI 120
+#irqrv; DI 104

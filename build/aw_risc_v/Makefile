@@ -46,7 +46,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
-AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/11.3.1/liblto_plugin.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
 
 # The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
 
@@ -70,9 +70,9 @@ DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
-#HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
+TINYUSBDIR = $(PRJROOT)/lib/tinyusb
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -140,6 +140,12 @@ SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(DSP3DDIR)/src
 
+ifeq (1, 0)
+# tinyusb
+SRCDIRS += $(TINYUSBDIR)/src
+DINCDIR += $(TINYUSBDIR)/src
+endif
+
 ifeq (1, 1)
 # LuPng
 SRCDIRS += $(LUPNGDIR)
@@ -169,7 +175,7 @@ SRCDIRS += $(OPENVGDIR)/src
 DINCDIR += $(OPENVGDIR)/include/VG $(OPENVGDIR)/include $(OPENVGDIR)/include/EGL $(OPENVGDIR)/src
 endif
 
-SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
+SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
 
 # taken from

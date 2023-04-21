@@ -233,9 +233,9 @@ void MX_USB_HOST_Process(void)
 /* User-mode function */
 void MX_USB_DEVICE_Process(void)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
     usb_device_function0(&hUsbDeviceHS);
-#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
 }
 #endif /* defined (WITHUSBHW_DEVICE) */
 
@@ -271,14 +271,6 @@ void board_usb_initialize(void)
 #if WITHUSBHW
 	//PRINTF("board_usb_initialize\n");
 
-#if WITHUSBDEV_HSDESC
-	usbd_descriptors_initialize(1);
-
-#else /* WITHUSBDEV_HSDESC */
-	usbd_descriptors_initialize(0);
-
-#endif /* WITHUSBDEV_HSDESC */
-
 #if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_Init();
 #endif /* defined (WITHUSBHW_DEVICE) */
@@ -307,8 +299,15 @@ void board_usb_deinitialize(void)
 /* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
-	//PRINTF("board_usb_activate\n");
 #if defined (WITHUSBHW_DEVICE)
+#if WITHUSBDEV_HSDESC
+	usbd_descriptors_initialize(1);
+
+#else /* WITHUSBDEV_HSDESC */
+	usbd_descriptors_initialize(0);
+
+#endif /* WITHUSBDEV_HSDESC */
+	//PRINTF("board_usb_activate\n");
 	if (USBD_Start(& hUsbDeviceHS) != USBD_OK)
 	{
 		Error_Handler();
@@ -443,7 +442,7 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 	    case USB_HID_CLASS:
 			//Appli_state = APPLICATION_HID;
 			TP();
-			PRINTF("MSC device active.\n");
+			PRINTF("HID device active.\n");
 			break;
 		case USB_HUB_CLASS:
 			//Appli_state = APPLICATION_HUB;
@@ -485,7 +484,6 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 }
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 
-#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 /* так как инициализация USB может происходить при запрещённых
  * прерываниях, работа с systick пока невозможна
  */
@@ -493,7 +491,5 @@ void HAL_Delay(uint32_t Delay)
 {
 	local_delay_ms(Delay);
 }
-
-#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -9,6 +9,7 @@
 #include "hardware.h"
 #include "board.h"
 #include "audio.h"
+#include "dspdefines.h"
 
 #include "src/display/display.h"
 #include "src/display/fontmaps.h"
@@ -20,15 +21,15 @@
 #include "keyboard.h"
 #include "codecs.h"
 
-#include "src/gui/gui.h"
+#include "gui.h"
 #include "xc7z_inc.h"
 
 #if WITHTOUCHGUI
 
-#include "src/gui/gui_user.h"
-#include "src/gui/gui_system.h"
-#include "src/gui/gui_structs.h"
-#include "src/gui/gui_settings.h"
+#include "gui_user.h"
+#include "gui_system.h"
+#include "gui_structs.h"
+#include "gui_settings.h"
 
 val_step_t enc2step [] = {
 	{ 100, "100 Hz", },
@@ -61,18 +62,20 @@ static uint_fast8_t tmpstr_index = 0;
 
 #if GUI_SHOW_INFOBAR
 
+//todo: перенести раскладку инфобара в конфиг
 static uint8_t infobar_selected = 0;
 const uint8_t infobar_places [infobar_num_places] = {
 		INFOBAR_AF,
 		INFOBAR_AF_VOLUME,
 		INFOBAR_ATT,
 		INFOBAR_DNR,
-#if WITHPS7BOARD_EBAZ4205 || WITHPS7BOARD_EBAZ_7020
-		INFOBAR_EMPTY,
-		INFOBAR_EMPTY,
-#else
 		INFOBAR_TX_POWER,
+#if WITHPS7BOARD_EBAZ4205 || WITHPS7BOARD_EBAZ_7020
 		INFOBAR_VOLTAGE | INFOBAR_NOACTION,
+#elif WITHUSEDUALWATCH
+		INFOBAR_DUAL_RX,
+#else
+		INFOBAR_EMPTY,
 #endif /* WITHPS7BOARD_EBAZ4205 */
 		INFOBAR_CPU_TEMP | INFOBAR_NOACTION,
 		INFOBAR_2ND_ENC_MENU
@@ -349,9 +352,9 @@ static void window_infobar_menu_process(void)
 		switch (infobar)
 		{
 #if WITHUSEDUALWATCH
-		case INFOBAR_SPLIT:
+		case INFOBAR_DUAL_RX:
 		{
-			for (unsigned i = 0; i < 2; i ++)
+			for (unsigned i = 0; i < 3; i ++)
 			{
 				char btn_name [6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
@@ -369,6 +372,10 @@ static void window_infobar_menu_process(void)
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "SPLIT");
 				}
 				else if (i == 1)
+				{
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "A<->B");
+				}
+				else if (i == 2)
 				{
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), hamradio_get_mainsubrxmode3_value_P());
 				}
@@ -517,13 +524,17 @@ static void window_infobar_menu_process(void)
 			switch (infobar)
 			{
 #if WITHUSEDUALWATCH
-			case INFOBAR_SPLIT:
+			case INFOBAR_DUAL_RX:
 			{
 				if (bh->payload == 1) // SPLIT on/off
 				{
 					bh->is_locked = hamradio_split_toggle();
 				}
-				else if (bh->payload == 2) // SPLIT mode
+				else if (bh->payload == 2) // SPLIT swap
+				{
+					hamradio_split_vfo_swap();
+				}
+				else if (bh->payload == 3) // SPLIT mode
 				{
 					hamradio_split_mode_toggle();
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), hamradio_get_mainsubrxmode3_value_P());
@@ -1030,16 +1041,20 @@ static void gui_main_process(void)
 			uint_fast8_t infobar = infobar_places [current_place] & INFOBAR_VALID_MASK;
 			switch (infobar)
 			{
-			case INFOBAR_SPLIT:
+			case INFOBAR_DUAL_RX:
 			{
+#if WITHUSEDUALWATCH
 				static uint_fast8_t val = 0;
 				unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
 
 				if (update)
 					hamradio_get_vfomode3_value(& val);
 
-				local_snprintf_P(buf, buflen, PSTR("SPLIT"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y_mid, buf, val ? COLORMAIN_WHITE : COLORMAIN_GRAY);
+				local_snprintf_P(buf, buflen, "Dual RX");
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+				local_snprintf_P(buf, buflen, "VFO %s", hamradio_get_gvfoab() ? "2" : "1");
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
+#endif /* WITHUSEDUALWATCH */
 			}
 				break;
 
@@ -3970,7 +3985,7 @@ static void window_shift_process(void)
 #if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
 	window_t * const win = get_win(WINDOW_SHIFT);
 
-	static unsigned update = 0;
+	static unsigned update = 0, cic_test = 0;
 	static enc_var_t enc;
 
 	if (win->first_call)
@@ -3983,40 +3998,36 @@ static void window_shift_process(void)
 		enc.change = 0;
 
 		add_element("lbl_rx_cic_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
-		add_element("lbl_rx_cic_shift_val", 0, FONT_MEDIUM, COLORMAIN_WHITE, 3);
 		add_element("lbl_rx_fir_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
-		add_element("lbl_rx_fir_shift_val", 0, FONT_MEDIUM, COLORMAIN_WHITE, 3);
 		add_element("lbl_tx_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
-		add_element("lbl_tx_shift_val", 0, FONT_MEDIUM, COLORMAIN_WHITE, 3);
+		add_element("lbl_iq_test", 0, FONT_MEDIUM, COLORMAIN_WHITE, 23);
 
-		label_t * lbl_rx_cic_shift = find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift");
-		local_snprintf_P(lbl_rx_cic_shift->text, ARRAY_SIZE(lbl_rx_cic_shift->text), "RX CIC shift");
-		label_t * lbl_rx_fir_shift = find_gui_element(TYPE_LABEL, win, "lbl_rx_fir_shift");
-		local_snprintf_P(lbl_rx_fir_shift->text, ARRAY_SIZE(lbl_rx_fir_shift->text), "RX FIR shift");
-		label_t * lbl_tx_shift = find_gui_element(TYPE_LABEL, win, "lbl_tx_shift");
-		local_snprintf_P(lbl_tx_shift->text, ARRAY_SIZE(lbl_tx_shift->text), "TX CIC shift");
+		add_element("btn_test", 50, 50, 0, 0, "CIC|test");
 
-		for (unsigned i = 0; i < win->lh_count; i += 2)
+		label_t * lh = NULL;
+
+		for (unsigned i = 0; i < win->lh_count; i ++)
 		{
-			label_t * lh1 = & win->lh_ptr [i];
-			label_t * lh2 = & win->lh_ptr [i + 1];
+			lh = & win->lh_ptr [i];
 
-			lh1->x = x;
-			lh1->y = y;
-			lh1->index = i;
-			lh1->visible = VISIBLE;
-			lh1->state = CANCELLED;
+			lh->x = x;
+			lh->y = y;
+			lh->index = i;
+			lh->visible = VISIBLE;
+			lh->state = CANCELLED;
 
-			y += get_label_height(lh1) + interval;
-
-			lh2->x = get_label_width(lh1) / 2 - get_label_width(lh2) / 2;
-			lh2->y = y;
-			lh2->index = i + 1;
-			lh2->visible = VISIBLE;
-			lh2->state = CANCELLED;
-
-			y += get_label_height(lh1) + interval * 4;
+			y += get_label_height(lh) + interval * 3;
 		}
+
+		label_t * lbl_iq_test = find_gui_element(TYPE_LABEL, win, "lbl_iq_test");
+
+		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_test");
+		bh->x1 = lbl_iq_test->x + get_label_width(lbl_iq_test) - bh->w;
+		bh->y1 = 0;
+		bh->is_locked = cic_test;
+		bh->visible = VISIBLE;
+
+		local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test:");
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -4030,6 +4041,16 @@ static void window_shift_process(void)
 			enc.select = lh->index;
 			enc.change = 0;
 			enc.updated = 1;
+		}
+		else if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			if (bh == find_gui_element(TYPE_BUTTON, win, "btn_test"))
+			{
+				cic_test = ! cic_test;
+				xcz_cic_test(cic_test);
+				bh->is_locked = cic_test;
+			}
 		}
 		break;
 
@@ -4058,24 +4079,21 @@ static void window_shift_process(void)
 
 		ASSERT(enc.select < win->lh_count);
 
-		if (enc.select == 0 || enc.select == 1)
+		if (enc.select == 0)
 		{
 			win->lh_ptr [0].color = COLORMAIN_YELLOW;
-			win->lh_ptr [1].color = COLORMAIN_YELLOW;
 			unsigned v = xcz_rx_cic_shift(0);
 			xcz_rx_cic_shift(v + enc.change);
 		}
-		else if (enc.select == 2 || enc.select == 3)
+		else if (enc.select == 1)
 		{
-			win->lh_ptr [2].color = COLORMAIN_YELLOW;
-			win->lh_ptr [3].color = COLORMAIN_YELLOW;
+			win->lh_ptr [1].color = COLORMAIN_YELLOW;
 			unsigned v = xcz_rx_iq_shift(0);
 			xcz_rx_iq_shift(v + enc.change);
 		}
-		else if (enc.select == 4 || enc.select == 5)
+		else if (enc.select == 2)
 		{
-			win->lh_ptr [4].color = COLORMAIN_YELLOW;
-			win->lh_ptr [5].color = COLORMAIN_YELLOW;
+			win->lh_ptr [2].color = COLORMAIN_YELLOW;
 			unsigned v = xcz_tx_shift(0);
 			xcz_tx_shift(v + enc.change);
 		}
@@ -4087,12 +4105,18 @@ static void window_shift_process(void)
 	{
 		update = 0;
 
-		label_t * lbl_rx_cic_shift_val = find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift_val");
-		local_snprintf_P(lbl_rx_cic_shift_val->text, ARRAY_SIZE(lbl_rx_cic_shift_val->text), "%d", (int) xcz_rx_cic_shift(0));
-		label_t * lbl_rx_fir_shift_val = find_gui_element(TYPE_LABEL, win, "lbl_rx_fir_shift_val");
-		local_snprintf_P(lbl_rx_fir_shift_val->text, ARRAY_SIZE(lbl_rx_fir_shift_val->text), "%d", (int) xcz_rx_iq_shift(0));
-		label_t * lbl_tx_shift_val = find_gui_element(TYPE_LABEL, win, "lbl_tx_shift_val");
-		local_snprintf_P(lbl_tx_shift_val->text, ARRAY_SIZE(lbl_tx_shift_val->text), "%d", (int) xcz_tx_shift(0));
+		label_t * lbl_rx_cic_shift = find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift");
+		local_snprintf_P(lbl_rx_cic_shift->text, ARRAY_SIZE(lbl_rx_cic_shift->text), "RX CIC: %d", (int) xcz_rx_cic_shift(0));
+		label_t * lbl_rx_fir_shift = find_gui_element(TYPE_LABEL, win, "lbl_rx_fir_shift");
+		local_snprintf_P(lbl_rx_fir_shift->text, ARRAY_SIZE(lbl_rx_fir_shift->text), "RX FIR: %d", (int) xcz_rx_iq_shift(0));
+		label_t * lbl_tx_shift = find_gui_element(TYPE_LABEL, win, "lbl_tx_shift");
+		local_snprintf_P(lbl_tx_shift->text, ARRAY_SIZE(lbl_tx_shift->text), "TX CIC: %d", (int) xcz_tx_shift(0));
+
+		if (cic_test)
+		{
+			label_t * lbl_iq_test = find_gui_element(TYPE_LABEL, win, "lbl_iq_test");
+			local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test: 0x%08lx", xcz_cic_test_process());
+		}
 	}
 
 #endif /* XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR */
@@ -6217,21 +6241,21 @@ static void window_lfm_process(void)
 		{
 			win->lh_ptr [2].color = COLORMAIN_YELLOW;
 			win->lh_ptr [3].color = COLORMAIN_YELLOW;
-			unsigned v = hamradio_get_lfmtoffset();
+			uint_fast16_t v = hamradio_get_lfmtoffset();
 			hamradio_set_lfmtoffset(v + enc.change);
 		}
 		else if (enc.select == 4 || enc.select == 5)
 		{
 			win->lh_ptr [4].color = COLORMAIN_YELLOW;
 			win->lh_ptr [5].color = COLORMAIN_YELLOW;
-			unsigned v = hamradio_get_lfmstop100k();
+			uint_fast16_t v = hamradio_get_lfmstop100k();
 			hamradio_set_lfmstop100k(v + enc.change * 10);
 		}
 		else if (enc.select == 6 || enc.select == 7)
 		{
 			win->lh_ptr [6].color = COLORMAIN_YELLOW;
 			win->lh_ptr [7].color = COLORMAIN_YELLOW;
-			unsigned v = hamradio_get_lfmtinterval();
+			uint_fast16_t v = hamradio_get_lfmtinterval();
 			hamradio_set_lfmtinterval(v + enc.change);
 		}
 
@@ -6245,7 +6269,7 @@ static void window_lfm_process(void)
 		button_t * btn_state = find_gui_element(TYPE_BUTTON, win, "btn_state");
 		btn_state->is_locked = iflfmactive() != 0;
 		const char states[3][9] = { "Disabled", "Standby", "Scan..." };
-		unsigned s = hamradio_get_lfmmode() == 0 ? 0 : btn_state->is_locked ? 2 : 1;
+		uint_fast16_t s = hamradio_get_lfmmode() == 0 ? 0 : btn_state->is_locked ? 2 : 1;
 		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[s]);
 
 		label_t * lbl_nmeatime_val = find_gui_element(TYPE_LABEL, win, "lbl_nmeatime_val");

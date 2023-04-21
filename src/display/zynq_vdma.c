@@ -1,5 +1,7 @@
 #include "hardware.h"
 
+#if WITHLTDCHW
+
 #include "display.h"
 #include <stdint.h>
 #include <string.h>
@@ -443,6 +445,12 @@ int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex)
 			PRINTF("ZYNQ VDMA: Cannot change frame, unable to start parking %d\n", Status);
 			return XST_FAILURE;
 		}
+
+		// Ожидание смены фреймбуфера
+		u32 new_frameIndex;
+		do {
+			new_frameIndex = XAxiVdma_CurrFrameStore(dispPtr->vdma, XAXIVDMA_READ);
+		} while (new_frameIndex != frameIndex);
 	}
 
 	return XST_SUCCESS;
@@ -505,3 +513,5 @@ int Vdma_Start(XAxiVdma *InstancePtr)
 }
 
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
+
+#endif /* WITHLTDCHW */

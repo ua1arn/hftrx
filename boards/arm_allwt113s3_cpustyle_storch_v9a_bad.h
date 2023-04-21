@@ -26,8 +26,8 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
@@ -46,55 +46,56 @@
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART1	1
 #define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
+//#define WITHTINYUSB 1
+#define BOARD_TUH_RHPORT 1
 
 #if WITHISBOOTLOADER
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
-//
-//	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
-//	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
-//	//#define WITHGPUHW	1	/* Graphic processor unit */
-//	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-//	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-//	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
-//	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
-//
-//	////#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
-//	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-//	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
-//	//#define WITHUSBDEV_HIGHSPEEDULPI	1
-//	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
-//	//#define WITHUSBDEV_DMAENABLE 1
-//
-//	//#define WITHUSBHW_HOST		USB_OTG_HS
-//	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-//	#define WITHUSBHOST_DMAENABLE 1
-//
-//	////#define WITHEHCIHW	1	/* USB_EHCI controller */
-//	////#define WITHUSBHW_EHCI		USB1_EHCI
-//	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
-//
-//
-//	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-//	#define WITHMODEM_CDC	1
-//
-//	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-//	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-//	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
-//
-//	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-//	//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
-//
-//	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-//	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-//	
-//	#define WITHUSBWCID	1
-//
-//	//#define WITHLWIP 1
-//	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-//	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-//	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHGPUHW	1	/* Graphic processor unit */
+	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
+	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
+
+	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
+	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HIGHSPEEDULPI	1
+	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
+	//#define WITHUSBDEV_DMAENABLE 1
+
+	//#define WITHUSBHW_HOST		USB_OTG_HS
+	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+	#define WITHUSBHOST_DMAENABLE 1
+
+	////#define WITHEHCIHW	1	/* USB_EHCI controller */
+	////#define WITHUSBHW_EHCI		USB1_EHCI
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
+	#define WITHOHCIHW_OHCIPORT 0
+
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHMODEM_CDC	1
+
+	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+
+	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
+
+	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+
+	#define WITHUSBWCID	1
+
+	//#define WITHLWIP 1
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 
 #else /* WITHISBOOTLOADER */
 
@@ -131,12 +132,15 @@
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
+	#define WITHOHCIHW_OHCIPORT 0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
 
+		#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+		#define UACIN_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
 		//#define WITHUAC2		1	/* UAC2 support */
 		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
@@ -159,9 +163,11 @@
 	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	
-	#define WITHUSBWCID	1
+	#if WIHSPIDFHW || WIHSPIDFSW
+		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+		#define WITHUSBWCID	1
+	#endif /* WIHSPIDFHW || WIHSPIDFSW */
+
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
@@ -553,11 +559,11 @@
 	} while (0)
 
 
+#define TARGET_ENC2BTN_BIT (1U << 6)	// PE6 - second encoder button with pull-up
 
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
 
-	#define TARGET_ENC2BTN_BIT (1U << 6)	// PE6 - second encoder button with pull-up
 	#define TARGET_POWERBTN_BIT 0//(1U << 8)	// PAxx - ~CPU_POWER_SW signal
 
 #if WITHENCODER2
@@ -584,7 +590,7 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW
+#if WITHTWISW || WITHTWIHW
 	// TWI1-SCK PE0
 	// TWI1-SDA PE1
 	#define TARGET_TWI_TWCK		(1u << 0)		// TWI1-SCK PE0
@@ -612,9 +618,10 @@
 		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI1-SCK PE0 */ \
 		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI1-SDA PE1 */ \
 		} while (0) 
+	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
 
-
-#endif // WITHTWISW
+#endif // WITHTWISW || WITHTWIHW
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
@@ -884,7 +891,7 @@
 		const portholder_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
 		const portholder_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
 		/* while ((GPIOD->DATA & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
-		/* while ((GPIOA->DATA & VSmask) == 0) ; */ /* дождаться 1 */ \
+		/* while ((GPIOD->DATA & VSmask) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_piod_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 
@@ -972,13 +979,9 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_USERBOOT_BIT	(1u << 1)	/* PB1: ~USER_BOOT */
-	#define BOARD_IS_USERBOOT() 0//(((GPIOB->DATA) & BOARD_USERBOOT_BIT) == 0 || ((GPIOE->DATA) & TARGET_ENC2BTN_BIT) == 0)
+	#define BOARD_IS_USERBOOT() (((GPIOE->DATA) & TARGET_ENC2BTN_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
-			/*arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); *//* set as input with pull-up */ \
-			/*arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT);*/ /* set as input with pull-up */ \
-		} while (0)
-	#define BOARD_USERBOOT_INITIALIZE() do { \
+			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); /* set as input with pull-up */ \
 		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
