@@ -77,7 +77,7 @@ void linux_encoder_spool(void)
 	while(1)
 	{
 		spool_encinterrupt();
-		usleep(100);
+		usleep(1000);
 	}
 }
 
@@ -164,21 +164,21 @@ uint32_t * fbmem_at(uint_fast16_t x, uint_fast16_t y)
 
 int linux_framebuffer_init(void)
 {
-	int fbfd, ttyd;
-
-	// Open the file for reading and writing
-	fbfd = open(LINUX_FB_FILE, O_RDWR);
-	if (fbfd == -1) {
-		PRINTF("Error: cannot open framebuffer device");
-		exit(1);
-	}
-
-	ttyd = open(LINUX_TTY_FILE, O_RDWR);
+	int ttyd = open(LINUX_TTY_FILE, O_RDWR);
 	if (ttyd)
 		ioctl(ttyd, KDSETMODE, KD_GRAPHICS);
 	else
 	{
 		PRINTF("Error: cannot open tty device");
+		exit(1);
+	}
+
+	close(ttyd);
+
+	// Open the file for reading and writing
+	int fbfd = open(LINUX_FB_FILE, O_RDWR);
+	if (fbfd == -1) {
+		PRINTF("Error: cannot open framebuffer device");
 		exit(1);
 	}
 
@@ -207,7 +207,6 @@ int linux_framebuffer_init(void)
 	PRINTF("linux drm fb: %dx%d, %dbpp, %d bytes %p\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel, screensize, fbp);
 
 	close(fbfd);
-	close(ttyd);
 	return 0;
 }
 
@@ -239,9 +238,7 @@ void linux_xgpio_init(void)
 	if (! ff)
 		perror("Unable to open /sys/class/gpio/export");
 
-	if (write(ff, "906", 3) != 2)
-		perror("Error writing to /sys/class/gpio/export");
-
+	write(ff, "906", 3);
 	close(ff);
 
 	XGpioPs_Config * gpiocfg = XGpioPs_LookupConfig(0);
@@ -583,7 +580,7 @@ void linux_create_thread(pthread_t * tid, void * process, int priority, int cpui
 
 	pthread_attr_init(& attr);
 	pthread_attr_setinheritsched(& attr, PTHREAD_EXPLICIT_SCHED);
-	pthread_attr_setschedpolicy(& attr, SCHED_FIFO);
+	pthread_attr_setschedpolicy(& attr, SCHED_RR);
 	param.sched_priority = priority;
 	pthread_attr_setschedparam(& attr, & param);
 	CPU_ZERO(& mask);
@@ -607,7 +604,7 @@ void linux_cancel_thread(pthread_t tid)
 
 void linux_subsystem_init(void)
 {
-#if CPUSTYLE_XCZU
+#if 1 //CPUSTYLE_XCZU
 	char spid[6];
 	local_snprintf_P(spid, ARRAY_SIZE(spid), "%d", getpid());
 	const char * argv [5] = { "/usr/bin/taskset", "-p", "1", spid, NULL, };
@@ -639,12 +636,10 @@ void linux_user_init(void)
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
 	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 80, 1);
 
 #if WITHFT8
-	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 1);
-	linux_create_thread(& ft8_t, ft8_thread, 50, 1);
-#else
-	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 90, 0);
+	linux_create_thread(& ft8_t, ft8_thread, 50, 0);
 #endif /* WITHFT8 */
 
 #if defined AXI_DCDC_PWM_ADDR

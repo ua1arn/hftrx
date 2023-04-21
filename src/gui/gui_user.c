@@ -2915,7 +2915,7 @@ static void window_ap_reverb_process(void)
 
 	static label_t * lbl_reverbDelay = NULL, * lbl_reverbLoss = NULL;
 	static slider_t * sl_reverbDelay = NULL, * sl_reverbLoss = NULL;
-	static uint_fast16_t delay_min, delay_max, loss_min, loss_max;
+	static uint_fast8_t delay_min, delay_max, loss_min, loss_max;
 
 	if (win->first_call)
 	{
