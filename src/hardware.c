@@ -3849,16 +3849,23 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	PMCTR->ALWAYS_MISC0 = startfunc;
-	PMCTR->ALWAYS_MISC1 = startfunc;	/* надо ли? */
 
-	volatile uint32_t * const SPL_ADDR = (volatile uint32_t *) 0x2000fff4;
-	SPL_ADDR [0] = startfunc;
-	SPL_ADDR [1] = 0xDEADBEEF; // SPL_MAGIC
-
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	/* Generate an IT to core 1 */
-	__SEV();
+    pmctr_t * PMCTR = (pmctr_t *)(PMCTR_BASE);
+    volatile uint32_t * const SPL_ADDR = (volatile uint32_t *) 0x2000fffc;
+    //PMCTR->ALWAYS_MISC0 = startfunc;
+    PMCTR->ALWAYS_MISC1 = startfunc;    /* необходимо для встроенного ROM */
+    // copy of linux mcom02_boot_secondary :
+    smctr_t * SMCTR = (smctr_t *)(BASE_ADDR_SMCTR);
+    //
+    SPL_ADDR [0] = startfunc;// Грузим стартовый адрес для ROM загрузчика
+    dcache_clean_all();    // startup code should be copied in to sysram for example.
+    //
+    SMCTR->BOOT_REMAP = SMCTR_BOOT_REMAP_BOOTROM;//SMCTR_BOOT_REMAP_SPRAM;
+    PMCTR->SYS_PWR_UP = BIT(targetcore + 1);
+    //
+    //dcache_clean_all();    // startup code should be copied in to sysram for example.
+    /* Generate an IT to core 1 */
+    //__SEV();
 }
 
 #endif /* CPU types */

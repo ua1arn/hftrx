@@ -3364,6 +3364,7 @@ filter_t fi_2p0_455 =
 	uint8_t elkeymode;	/* режим электронного ключа - 0 - asf, 1 - paddle, 2 - keyer */
 	uint8_t dashratio;	/* отношение длителности тире к точке в десятках процентов */
 	uint8_t spaceratio;	/* отношение длителности паузы к точке в десятках процентов */
+	uint8_t keydeadtime;	/* dead time */
 	uint8_t elkeyreverse;	
 #if WITHVIBROPLEX
 	uint8_t elkeyslope;	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
@@ -4268,6 +4269,7 @@ enum
 	static dualctl8_t elkeywpm = { 20, 20 };	/* скорость электронного ключа */
 	static uint_fast8_t dashratio = 30;	/* отношение тире к длительности точки - в десятках процентов */
 	static uint_fast8_t spaceratio = 10;	/* отношение паузы к длительности точки - в десятках процентов */
+	static uint_fast8_t keydeadtime = 70;	/* dead time на чувствительнгость после окончания элемента знака */
 	static uint_fast8_t elkeyreverse;
 
 	static uint_fast8_t elkeymode;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
@@ -11629,7 +11631,7 @@ updateboardZZZ(
 			elkey_set_slope(elkeyslope);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
 			elkey_set_format(dashratio, spaceratio);	/* соотношение тире к точке (в десятках процентов) */
-			elkey_set_mode(elkeymode, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+			elkey_set_mode(elkeymode, elkeyreverse, keydeadtime);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		#if WITHTX && WITHELKEY
 			seq_set_bkin_enable(bkinenable, bkindelay);			/* параметры BREAK-IN */
 			/*seq_rgbeep(0); */								/* формирование roger beep */
@@ -17539,6 +17541,27 @@ void display2_menu_valxx(
 }
 
 // --- menu support
+
+
+// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+void display2_keyboard_screen0(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
+
+// Обработка клавиатуры и валкодеров при нахождении в режиме меню
+void display2_keyboard_menu(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
 
 static uint_fast16_t menulooklast(uint_fast16_t menupos)
 {

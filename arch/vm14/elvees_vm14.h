@@ -169,12 +169,15 @@ typedef enum xIRQn
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
 //#define PL310_TAG_RAM_LATENCY ((1u << 8) | (1u << 4) | (1u << 0))
+#define PL310_TAG_RAM_LATENCY ((2u << 8) | (1u << 4) | (1u << 0))
 //#define PL310_DATA_RAM_LATENCY ((1u << 8) | (2u << 4) | (1u << 0))
+#define PL310_DATA_RAM_LATENCY ((2u << 8) | (2u << 4) | (2u << 0))
 
 //#define GIC_DISTRIBUTOR_BASE  	((uintptr_t) 0x39001000)                        /*!< (GIC DIST  ) Base Address */
 //#define GIC_INTERFACE_BASE    	((uintptr_t) 0x39000100)                        /*!< (GIC CPU IF) Base Address */
 #define L2C_310_BASE          	((uintptr_t) 0x39004000)                        /*!< (PL310     ) Base Address */
 #define TIMER_BASE				((uintptr_t) 0x39000600)
+#define SCU_CONTROL_BASE 		((uintptr_t) 0x39000000)
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
 #define __CA_REV         		    0x0000    /*!< Core revision r0p0 */
