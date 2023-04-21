@@ -1,0 +1,10 @@
+https://stackoverflow.com/questions/2862590/how-to-replace-master-branch-in-git-entirely-from-another-branch
+
+You should be able to use the “ours” merge strategy to overwrite master with develop like this:
+
+git checkout master
+git pull
+git checkout develop
+git merge --strategy=ours master
+git checkout master
+git merge develop
