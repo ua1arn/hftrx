@@ -4573,7 +4573,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	#if WITHTXCPATHCALIBRATE
 		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-	#elif 0//WITHTXCWREDUCE
+	#elif 1//WITHTXCWREDUCE
 		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#else /* WITHTXCWREDUCE */
