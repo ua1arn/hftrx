@@ -111,9 +111,9 @@ static RAMDTCM elkey_t elkey0;	// ручной ключ
 // В разных источниках упоминается и пять и семь точек как интервал между словами.
 // Семь кажется чересчур длинным. Пять - нормально (или слегка короче чем комфортно).
 enum { delay_dit = ELKEY_DISCRETE * 1, delay_words = ELKEY_DISCRETE * 6 };	// между элементами слов - семь интервалов
-static RAMDTCM uint_fast8_t delay_space;	// 10
-static RAMDTCM uint_fast8_t delay_dash;	// 30
-static RAMDTCM uint_fast8_t delay_deadtime = 4 * ELKEY_DISCRETE / 10;	// время игнорирования
+static uint_fast8_t delay_space;	// 10
+static uint_fast8_t delay_dash;	// 30
+static uint_fast8_t delay_deadtime = 4 * ELKEY_DISCRETE / 10;	// время игнорирования
 
 	
 #if WITHVIBROPLEX
@@ -623,7 +623,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 	// CW на электронном ключе
 	switch (elkey->state)
 	{
-	case ELKEY_STATE_INITIALIZE:	// ничего не передается
+	case ELKEY_STATE_INITIALIZE:	// ничего не передаётся
 		elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
 		/* проверка нажатия для передачи */
 		if (dash_auto(elkey, paddle))
@@ -637,7 +637,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;	/* end of case ELKEY_STATE_INITIALIZE */
 
-	case ELKEY_STATE_ACTIVE_DIT:	// сейчас передается элемент знака
+	case ELKEY_STATE_ACTIVE_DIT:	// сейчас передаётся элемент знака
 		if (ovf)
 		{
 			// произошло переполнене - конец интервала
@@ -647,13 +647,12 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		else if (dash_auto(elkey, paddle))
 		{
-			//delay_pending = delay_dash;
 			elkey->state = ELKEY_STATE_ACTIVE_WITH_PENDING_DASH;
 			elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
 		}
 		break;
 
-	case ELKEY_STATE_ACTIVE_DASH:	// сейчас передается элемент знака
+	case ELKEY_STATE_ACTIVE_DASH:	// сейчас передаётся элемент знака
 		if (ovf)
 		{
 			// произошло переполнене - конец интервала
@@ -662,12 +661,11 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		else if (dit_auto(elkey, paddle))
 		{
-			//delay_pending = delay_dit;
 			elkey->state = ELKEY_STATE_ACTIVE_WITH_PENDING_DIT;
 		}
 		break;
 
-	case ELKEY_STATE_ACTIVE_WITH_PENDING_DASH:	// сейчас передается элемент знака
+	case ELKEY_STATE_ACTIVE_WITH_PENDING_DASH:	// сейчас передаётся элемент знака
 		if (ovf)
 		{
 			// произошло переполнене - конец интервала
@@ -675,7 +673,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;
 
-	case ELKEY_STATE_ACTIVE_WITH_PENDING_DIT:	// сейчас передается элемент знака
+	case ELKEY_STATE_ACTIVE_WITH_PENDING_DIT:	// сейчас передаётся элемент знака
 		if (ovf)
 		{
 			// произошло переполнене - конец интервала
@@ -691,7 +689,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 			// за это время ничего не успели нажать.
 			if (elkey_acs_mode())
 			{
-				// в режиме ASF принудительно выдерживаем ещё две длительности точки.
+				// в режиме ACS принудительно выдерживаем ещё две длительности точки.
 				setnextstate(elkey, ELKEY_STATE_SPACE2, delay_dash - delay_space);
 				elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
 			}
@@ -705,19 +703,17 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		{
 			// ещё не закончился одиночный интервал после последнего
 			// переданного элемента знака, а уже опять нажали на манипулятор
-			//delay_pending = delay_dit;
 			elkey->state = ELKEY_STATE_SPACE_WITH_PENDING_DIT;
 		}
 		else if (dash_auto(elkey, paddle))
 		{
 			// ещё не закончился одиночный интервал после последнего
 			// переданного элемента знака, а уже опять нажали на манипулятор
-			//delay_pending = delay_dash;
 			elkey->state = ELKEY_STATE_SPACE_WITH_PENDING_DASH;
 		}
 		break;
 
-	case ELKEY_STATE_SPACE2:	// сейчас отсчитывается время после передачи двойной паузы в режиме ASF
+	case ELKEY_STATE_SPACE2:	// сейчас отсчитывается время после передачи двойной паузы в режиме ACS
 		if (ovf)
 		{
 			setnextstate(elkey, ELKEY_STATE_INITIALIZE, 0);
@@ -751,7 +747,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 
 #if WITHCAT && WITHCATEXT
 
-	case ELKEY_STATE_AUTO_INITIALIZE:	// ничего не передается
+	case ELKEY_STATE_AUTO_INITIALIZE:	// ничего не передаётся
 		elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
 		{
 			const uint_fast8_t ch = elkey_getnextcw();	// Получение символа для передачи (только верхний регистр)
@@ -777,8 +773,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;
 
-
-	case ELKEY_STATE_AUTO_ELEMENT_DIT:	// сейчас передается элемент знака
+	case ELKEY_STATE_AUTO_ELEMENT_DIT:	// сейчас передаётся элемент знака - точка
 		if (ovf)
 		{
 			// произошло переполнене - конец интервала
@@ -787,7 +782,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;
 
-	case ELKEY_STATE_AUTO_ELEMENT_DASH:	// сейчас передается элемент знака
+	case ELKEY_STATE_AUTO_ELEMENT_DASH:	// сейчас передаётся элемент знака - тире
 		if (ovf)
 		{
 			// произошло переполнене - конец интервала
