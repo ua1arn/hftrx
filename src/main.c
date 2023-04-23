@@ -18765,6 +18765,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 	case KBD_CODE_CWMSG4:
 		uif_key_sendcw("UA1ATD/P UA1ATD/P");
 		return 1;
+	case KBD_CODE_CWMSGREC:
+		elkey_rec();
+		return 1;
+	case KBD_CODE_CWMSGPLAY:
+		elkey_play();
+		return 1;
 #endif /* WITHELKEY */
 
 #if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE

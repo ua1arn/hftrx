@@ -14,6 +14,22 @@
 #include "spi.h"
 
 #if WITHELKEY
+
+#define MEMLEN (128 * 1024)
+
+static uint8_t buffer [MEMLEN];
+static unsigned recindex = 0;
+static unsigned playindex = 0;
+static int playmode = 0;
+static int recmode = 0;
+
+static void saveelemrnt(unsigned el)
+{
+	if (recindex < MEMLEN)
+	{
+		buffer [recindex ++] = el;
+	}
+}
 // 
 // обработчик электронного телеграфного ключа
 //
@@ -21,6 +37,7 @@
 enum {
 	//
 	ELKEY_STATE_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
+	ELKEY_STATE_INITIALIZE2,
 
 	ELKEY_STATE_ACTIVE_DIT,	// сейчас передаётся элемент знака
 	ELKEY_STATE_ACTIVE_DASH,	// сейчас передаётся элемент знака
@@ -36,11 +53,13 @@ enum {
 #if WITHCAT && WITHCATEXT
 	//
 	ELKEY_STATE_AUTO_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
+	ELKEY_STATE_AUTO_MEMORY,
 	ELKEY_STATE_AUTO_ELEMENT_DIT,
 	ELKEY_STATE_AUTO_ELEMENT_DASH,
 	ELKEY_STATE_AUTO_SPACE,
 	ELKEY_STATE_AUTO_SPACE2,
 	ELKEY_STATE_AUTO_NEXT,
+
 #endif /* WITHCAT && WITHCATEXT */
 
 	//
@@ -54,6 +73,7 @@ enum {
 static const FLASHMEM uint_fast8_t elkeyout [ELKEY_STATE_MAX] =
 {
 	EKOUT_RX, 	// ELKEY_STATE_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
+	EKOUT_RX, 	// ELKEY_STATE_INITIALIZE2,	// ничего не передаётся - начальное состояние сиквенсора
 	EKOUT_TX, 	// ELKEY_STATE_ACTIVE_DIT,	// сейчас передаётся элемент знака
 	EKOUT_TX, 	// ELKEY_STATE_ACTIVE_DASH,	// сейчас передаётся элемент знака
 	EKOUT_TX, 	// ELKEY_STATE_ACTIVE_WITH_PENDING_DIT,	// появилось нажатие точки в процессе передачи элемента
@@ -65,6 +85,7 @@ static const FLASHMEM uint_fast8_t elkeyout [ELKEY_STATE_MAX] =
 #if WITHCAT && WITHCATEXT
 	//
 	EKOUT_RX, 	// ELKEY_STATE_AUTO_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
+	EKOUT_RX, 	// ELKEY_STATE_AUTO_MEMORY,	// ничего не передаётся - начальное состояние сиквенсора
 	EKOUT_TX, 	// ELKEY_STATE_AUTO_ELEMENT_DIT,
 	EKOUT_TX, 	// ELKEY_STATE_AUTO_ELEMENT_DASH,
 	EKOUT_PTT, 	// ELKEY_STATE_AUTO_SPACE,
@@ -622,16 +643,27 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 	// CW на электронном ключе
 	switch (elkey->state)
 	{
+
+	case ELKEY_STATE_INITIALIZE2:
+		if (ovf)
+		{
+			setnextstate(elkey, ELKEY_STATE_INITIALIZE2, delay_dit);
+			saveelemrnt(MSPACE);
+		}
+		// no break!
+
 	case ELKEY_STATE_INITIALIZE:	// ничего не передаётся
 		elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
 		/* проверка нажатия для передачи */
 		if (dash_auto(elkey, paddle))
 		{
 			setnextstate(elkey, ELKEY_STATE_ACTIVE_DASH, delay_dash);
+			saveelemrnt(MDASH);
 		}
 		else if (dit_auto(elkey, paddle))
 		{
 			setnextstate(elkey, ELKEY_STATE_ACTIVE_DIT, delay_dit);
+			saveelemrnt(MDIT);
 			elkey_vibroplex_next(elkey);
 		}
 		break;	/* end of case ELKEY_STATE_INITIALIZE */
@@ -691,24 +723,27 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 				if (dit_auto(elkey, paddle))
 				{
 					setnextstate(elkey, ELKEY_STATE_ACTIVE_DIT, delay_dit);
+					saveelemrnt(MDIT);
 					elkey_vibroplex_next(elkey);
 				}
 				else if (dash_auto(elkey, paddle))
 				{
 					setnextstate(elkey, ELKEY_STATE_ACTIVE_DASH, delay_dash);
+					saveelemrnt(MDASH);
 					elkey_vibroplex_next(elkey);
 				}
 				else
 				{
 					// в режиме ACS принудительно выдерживаем ещё две длительности точки.
 					setnextstate(elkey, ELKEY_STATE_SPACE2, delay_dash - delay_space);
+					saveelemrnt(MSPACE);
 					elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
 				}
 			}
 			else
 			{
 				// В обычом режиме переход к начальному состоянию
-				setnextstate(elkey, ELKEY_STATE_INITIALIZE, 0);
+				setnextstate(elkey, ELKEY_STATE_INITIALIZE2, delay_dit);
 			}
 		}
 		else if (elkey_acs_mode())
@@ -720,7 +755,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 	case ELKEY_STATE_SPACE2:	// сейчас отсчитывается время после передачи двойной паузы в режиме ACS
 		if (ovf)
 		{
-			setnextstate(elkey, ELKEY_STATE_INITIALIZE, 0);
+			setnextstate(elkey, ELKEY_STATE_INITIALIZE2, delay_dit);
 		}
 		else if (dash_auto(elkey, paddle))
 		{
@@ -737,6 +772,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		{
 			// пауза закончилась
 			setnextstate(elkey, ELKEY_STATE_ACTIVE_DIT, delay_dit - elkey->vibroplex_derate);
+			saveelemrnt(MDIT);
 			elkey_vibroplex_next(elkey);
 		}
 		break;
@@ -746,6 +782,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		{
 			// пауза закончилась
 			setnextstate(elkey, ELKEY_STATE_ACTIVE_DASH, delay_dash);
+			saveelemrnt(MDASH);
 		}
 		break;
 
@@ -774,6 +811,24 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 					break;
 				}
 			}
+		}
+		break;
+
+	case ELKEY_STATE_AUTO_MEMORY:
+		elkey->morse = buffer [playindex];
+
+		switch (elkey->morse & ELMASK)	// обработка первого элемента знака
+		{
+		case MDASH:
+			setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DASH, delay_dash);
+			break;
+		case MDIT:
+			setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DIT, delay_dit - elkey->vibroplex_derate);
+			elkey_vibroplex_next(elkey);
+			break;
+		case MSPACE:	// между словами семь интервалов
+			setnextstate(elkey, ELKEY_STATE_AUTO_SPACE2, delay_words - delay_space);	/* задержка delay_space уже была после окончания предидущей буквы */
+			break;
 		}
 		break;
 
@@ -824,8 +879,22 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 	case ELKEY_STATE_AUTO_SPACE2:	// сейчас отсчитывается время после передачи элемента
 		if (ovf)
 		{
-			// В обычом режиме переход к начальному состоянию
-			setnextstate(elkey, ELKEY_STATE_AUTO_INITIALIZE, 0);
+			if (playmode)
+			{
+				if (playindex < MEMLEN && ((playindex + 1) < recindex))
+				{
+					++ playindex;
+					setnextstate(elkey, ELKEY_STATE_AUTO_MEMORY, 0);
+				}
+				else
+				{
+					playmode = 0;
+					setnextstate(elkey, ELKEY_STATE_AUTO_INITIALIZE, 0);
+				}
+			}
+			else
+				// В обычом режиме переход к начальному состоянию
+				setnextstate(elkey, ELKEY_STATE_AUTO_INITIALIZE, 0);
 		}
 		break;
 
@@ -964,3 +1033,39 @@ elkey_get_ptt(void)
 	return 0;
 #endif /* WITHELKEY */
 }
+
+void elkey_rec(void)
+{
+	system_disableIRQ();
+	if (recmode)
+	{
+		recmode = 0;
+	}
+	else
+	{
+		recmode = 1;
+		recindex = 0;
+	}
+	playmode = 0;
+	elkey1.state = ELKEY_STATE_AUTO_INITIALIZE;
+	system_enableIRQ();
+}
+
+void elkey_play(void)
+{
+	system_disableIRQ();
+	recmode = 0;
+	if (playmode)
+	{
+		elkey1.state = ELKEY_STATE_AUTO_INITIALIZE;
+		playmode = 0;
+	}
+	else
+	{
+		playmode = 1;
+		playindex = 0;
+		elkey1.state = ELKEY_STATE_AUTO_MEMORY;
+	}
+	system_enableIRQ();
+}
+

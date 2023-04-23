@@ -148,6 +148,9 @@ enum
 	KBD_CODE_CWMSG8,
 	KBD_CODE_CWMSG9,
 	KBD_CODE_CWMSG10,
+
+	KBD_CODE_CWMSGREC,
+	KBD_CODE_CWMSGPLAY,
 	//
 	KBD_CODE_MAX		// на этот код назначаются неиспользуемые клавиши.
 };

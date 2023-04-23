@@ -524,7 +524,8 @@ void elkey_set_slope(uint_fast8_t slope);	// скорость уменьшени
 uint_fast8_t elkey_get_output(void);
 uint_fast8_t elkey_get_ptt(void);
 uint_fast8_t elkey_getnextcw(void);	// Получение символа для передачи (только верхний регистр)
-
+void elkey_rec(void);
+void elkey_play(void);
 
 /* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
 // Параметр функции board_set_seqphase()
