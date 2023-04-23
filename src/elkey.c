@@ -80,8 +80,8 @@ typedef struct elkey_tag
 	uint16_t morse;	// текущий передаваемый знак
 	uint8_t ticks;
 	uint8_t maxticks;
-	uint8_t ignore_dit;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
-	uint8_t ignore_dash;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
+//	uint8_t ignore_dit;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
+//	uint8_t ignore_dash;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
 
 #if WITHVIBROPLEX
 	uint8_t vibroplex_slope /* = 0 */;		// скорость уменьшения длительности точки и паузы
@@ -113,7 +113,6 @@ static RAMDTCM elkey_t elkey0;	// ручной ключ
 enum { delay_dit = ELKEY_DISCRETE * 1, delay_words = ELKEY_DISCRETE * 6 };	// между элементами слов - семь интервалов
 static uint_fast8_t delay_space;	// 10
 static uint_fast8_t delay_dash;	// 30
-static uint_fast8_t delay_deadtime = 4 * ELKEY_DISCRETE / 10;	// время игнорирования
 
 	
 #if WITHVIBROPLEX
@@ -507,8 +506,8 @@ dit_auto(
 	uint_fast8_t pl /* hardware paddle value */
 	)
 {
-	if (elkey->ignore_dit != 0)
-		return 0;
+//	if (elkey->ignore_dit != 0)
+//		return 0;
 	if ((pl & ELKEY_PADDLE_DIT) == 0)
 		return 0;
 	return (elkey_straight_dits() == 0);
@@ -524,8 +523,8 @@ dash_auto(
 	uint_fast8_t pl /* hardware paddle value */
 	)
 {
-	if (elkey->ignore_dash != 0)
-		return 0;
+//	if (elkey->ignore_dash != 0)
+//		return 0;
 	if ((pl & ELKEY_PADDLE_DASH) == 0)
 		return 0;
 	return (elkey_straight_dash() == 0);
@@ -583,8 +582,8 @@ setnextstate(
 	elkey->state = state;
 	elkey->maxticks = ticks;
 	elkey->ticks = 0;
-	elkey->ignore_dash = 0;
-	elkey->ignore_dit = 0;
+//	elkey->ignore_dash = 0;
+//	elkey->ignore_dit = 0;
 }
 
 // служба времени обработчика электронного телеграфного ключа
@@ -604,10 +603,10 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 {
 	/* часть электронного ключа */
 	// защитный интервал, в течении которого игнорируется нажатие ключа после начала паузы
-	if (elkey->ignore_dit != 0)
-		-- elkey->ignore_dit;
-	if (elkey->ignore_dash != 0)
-		-- elkey->ignore_dash;
+//	if (elkey->ignore_dit != 0)
+//		-- elkey->ignore_dit;
+//	if (elkey->ignore_dash != 0)
+//		-- elkey->ignore_dash;
 
 
 	// обработка состояний электронного ключа
@@ -642,7 +641,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		{
 			// произошло переполнене - конец интервала
 			setnextstate(elkey, ELKEY_STATE_SPACE, delay_space - elkey->vibroplex_derate);
-			elkey->ignore_dit = delay_deadtime;
+			//elkey->ignore_dit = getignore();
 			elkey_vibroplex_next(elkey);
 		}
 		else if (dash_auto(elkey, paddle))
@@ -657,7 +656,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		{
 			// произошло переполнене - конец интервала
 			setnextstate(elkey, ELKEY_STATE_SPACE, delay_space);
-			elkey->ignore_dash = delay_deadtime;
+			//elkey->ignore_dash = getignore();
 		}
 		else if (dit_auto(elkey, paddle))
 		{
@@ -689,9 +688,22 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 			// за это время ничего не успели нажать.
 			if (elkey_acs_mode())
 			{
-				// в режиме ACS принудительно выдерживаем ещё две длительности точки.
-				setnextstate(elkey, ELKEY_STATE_SPACE2, delay_dash - delay_space);
-				elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
+				if (dit_auto(elkey, paddle))
+				{
+					setnextstate(elkey, ELKEY_STATE_ACTIVE_DIT, delay_dit);
+					elkey_vibroplex_next(elkey);
+				}
+				else if (dash_auto(elkey, paddle))
+				{
+					setnextstate(elkey, ELKEY_STATE_ACTIVE_DASH, delay_dash);
+					elkey_vibroplex_next(elkey);
+				}
+				else
+				{
+					// в режиме ACS принудительно выдерживаем ещё две длительности точки.
+					setnextstate(elkey, ELKEY_STATE_SPACE2, delay_dash - delay_space);
+					elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
+				}
 			}
 			else
 			{
@@ -699,17 +711,9 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 				setnextstate(elkey, ELKEY_STATE_INITIALIZE, 0);
 			}
 		}
-		else if (dit_auto(elkey, paddle))
+		else if (elkey_acs_mode())
 		{
-			// ещё не закончился одиночный интервал после последнего
-			// переданного элемента знака, а уже опять нажали на манипулятор
-			elkey->state = ELKEY_STATE_SPACE_WITH_PENDING_DIT;
-		}
-		else if (dash_auto(elkey, paddle))
-		{
-			// ещё не закончился одиночный интервал после последнего
-			// переданного элемента знака, а уже опять нажали на манипулятор
-			elkey->state = ELKEY_STATE_SPACE_WITH_PENDING_DASH;
+
 		}
 		break;
 
@@ -890,8 +894,7 @@ void elkey_set_format(
 void 
 elkey_set_mode(
 	uint_fast8_t mode,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key, 4 - vibroplex */
-	uint_fast8_t reverse,
-	uint_fast8_t deadtime	/* время игнорирования */
+	uint_fast8_t reverse
 	)
 {
 #if WITHELKEY
@@ -913,8 +916,6 @@ elkey_set_mode(
 		elkey_straight_flags = DASHFLAG;
 		break;
 	}
-	delay_deadtime = deadtime * ELKEY_DISCRETE / 10;	// время игнорирования 0.4 от длительности точки
-	system_enableIRQ();
 #endif /* WITHELKEY */
 }
 
@@ -952,7 +953,7 @@ elkey_get_ptt(void)
 		elkey_manual() ||
   #if WITHCAT
 	#if WITHCATEXT
-		(elkeyout [elkey1.state] & (EKOUT_PTT | EKOUT_TX)) != 0 ||
+		(elkeyout [elkey1.state] & (0*EKOUT_PTT | EKOUT_TX)) != 0 ||
 	#endif	/* WITHCATEXT */
 		cat_get_keydown() ||
   #endif	/* WITHCAT */
