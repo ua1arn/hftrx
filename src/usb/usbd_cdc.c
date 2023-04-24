@@ -456,7 +456,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		switch (req->bmRequest & USB_REQ_TYPE_MASK)
 		{
 		case USB_REQ_TYPE_CLASS:
-			if (usbd_cdc_iscontrol_ifc(interfacev))
+			if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
 			{
 				switch (req->bRequest)
 				{
@@ -507,7 +507,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		switch (req->bmRequest & USB_REQ_TYPE_MASK)
 		{
 		case USB_REQ_TYPE_CLASS:
-			if (usbd_cdc_iscontrol_ifc(interfacev))
+			if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
 			{
 				switch (req->bRequest)
 				{
@@ -536,7 +536,6 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				{
 					USBD_CtlSendStatus(pdev);
 				}
-				break;
 			}
 			break;
 
@@ -551,12 +550,16 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					//PRINTF("USBD_CDC_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
 					//bufers_set_cdcalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
-					break;
 				}
+				break;
+			default:
+				TP();
+				break;
 			}
 			break;
 
 		default:
+			TP();
 			break;
 		}
 	}

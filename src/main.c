@@ -3364,7 +3364,6 @@ filter_t fi_2p0_455 =
 	uint8_t elkeymode;	/* режим электронного ключа - 0 - asf, 1 - paddle, 2 - keyer */
 	uint8_t dashratio;	/* отношение длителности тире к точке в десятках процентов */
 	uint8_t spaceratio;	/* отношение длителности паузы к точке в десятках процентов */
-	uint8_t keydeadtime;	/* dead time */
 	uint8_t elkeyreverse;	
 #if WITHVIBROPLEX
 	uint8_t elkeyslope;	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
@@ -4236,7 +4235,7 @@ enum
 
 	#if WITHELKEY
 		static uint_fast8_t bkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
-		static uint_fast8_t bkindelay = 30;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
+		static uint_fast8_t bkindelay = 20;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 	#endif /* WITHELKEY */
 
 #if TXPATH_BIT_GATE_RX && CTLSTYLE_SW2011ALL
@@ -4269,7 +4268,6 @@ enum
 	static dualctl8_t elkeywpm = { 20, 20 };	/* скорость электронного ключа */
 	static uint_fast8_t dashratio = 30;	/* отношение тире к длительности точки - в десятках процентов */
 	static uint_fast8_t spaceratio = 10;	/* отношение паузы к длительности точки - в десятках процентов */
-	static uint_fast8_t keydeadtime = 70;	/* dead time на чувствительнгость после окончания элемента знака */
 	static uint_fast8_t elkeyreverse;
 
 	static uint_fast8_t elkeymode;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
@@ -4575,7 +4573,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	#if WITHTXCPATHCALIBRATE
 		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-	#elif 0//WITHTXCWREDUCE
+	#elif 1//WITHTXCWREDUCE
 		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#else /* WITHTXCWREDUCE */
@@ -11631,7 +11629,7 @@ updateboardZZZ(
 			elkey_set_slope(elkeyslope);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
 			elkey_set_format(dashratio, spaceratio);	/* соотношение тире к точке (в десятках процентов) */
-			elkey_set_mode(elkeymode, elkeyreverse, keydeadtime);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+			elkey_set_mode(elkeymode, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		#if WITHTX && WITHELKEY
 			seq_set_bkin_enable(bkinenable, bkindelay);			/* параметры BREAK-IN */
 			/*seq_rgbeep(0); */								/* формирование roger beep */
@@ -11945,16 +11943,21 @@ uint_fast8_t hamradio_get_bkin_value(void)
 	return bkinenable;
 }
 
+static SPINLOCK_t lockcwmsg = SPINLOCK_INIT;
 static const char * usersend;
 
 void uif_key_sendcw(const char * msg)
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	SPIN_LOCK(& lockcwmsg);
 	if (usersend != 0 && * usersend != '\0')
 		usersend = NULL;
 	else
 		usersend = msg;
-	system_enableIRQ();
+	SPIN_UNLOCK(& lockcwmsg);
+	LowerIrql(oldIrql);
 }
 
 #else
@@ -16020,8 +16023,18 @@ static char beacon_getnextcw(void)
 
 	return c;
 #elif 1
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	SPIN_LOCK(& lockcwmsg);
 	if (usersend != NULL && * usersend != '\0')
+	{
+		SPIN_UNLOCK(& lockcwmsg);
+		LowerIrql(oldIrql);
 		return * usersend ++;
+	}
+	SPIN_UNLOCK(& lockcwmsg);
+	LowerIrql(oldIrql);
 	return '\0';
 #else /* WITHBEACON */
 	return '\0';
