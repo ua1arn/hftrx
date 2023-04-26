@@ -1092,6 +1092,10 @@ display2_smeter15(
 #endif /* WITHRLEDECOMPRESS */
 		}
 
+#if WITHAA
+		display_do_AA(fr, DIM_X, DIM_Y, x0, y0, SM_BG_W, SM_BG_H);
+#endif /* WITHAA */
+
 		break;
 
 	case SMETER_TYPE_BARS:
@@ -3757,6 +3761,9 @@ display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 								AFSPECTRE_COLOR);
 					}
 				}
+#if WITHAA
+				display_do_AA(fr, DIM_X, DIM_Y, GRID2X(xgrid), GRID2Y(ygrid), SM_BG_W, SM_BG_H);
+#endif /* WITHAA */
 			}
 		}
 		break;
