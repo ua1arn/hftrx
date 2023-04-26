@@ -2178,7 +2178,7 @@ void display_do_AA(PACKEDCOLORPIP_T * __restrict buffer,
 			PACKEDCOLORPIP_T * p3 = colpip_mem_at(buffer, dx, dy, x, y + 1);
 			PACKEDCOLORPIP_T * p4 = colpip_mem_at(buffer, dx, dy, x + 1, y + 1);
 
-			if (* p1 == * p2 == * p3 == * p4)	// если смежные пиксели одинакового цвета, пропустить расчет
+			 if ((* p1 == * p2) && (* p1 == * p3) && (* p1 == * p4))	// если смежные пиксели одинакового цвета, пропустить расчет
 				continue;
 
 			p1_r = COLORPIP_R(* p1);

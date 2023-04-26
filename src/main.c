@@ -16309,7 +16309,9 @@ processmessages(
 		//network_spool();
 		//stmr();            // call software timers
 #endif /* WITHLWIP */
+#if ! LINUX_SUBSYSTEM
 		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
+#endif /* ! LINUX_SUBSYSTEM */
 		directctlupdate(inmenu, mp);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 		// обработать запрос на обновление состояния аппаратуры из user mode программы

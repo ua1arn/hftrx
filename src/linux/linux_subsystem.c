@@ -25,6 +25,7 @@
 void xcz_resetn_modem_state(uint8_t val);
 void linux_run_shell_cmd(uint8_t argc, const char * argv []);
 void ft8_thread(void);
+void display2_bgprocess(void);
 
 enum {
 	rx_fir_shift_pos 	= 0,
@@ -540,6 +541,7 @@ void linux_iq_interrupt_thread(void)
 
     while(1)
     {
+#if 0
         //Acknowledge IRQ
         if (write(fd_int, &uio_key, sizeof(uio_key)) < 0) {
             PRINTF("Failed to acknowledge IRQ: %s\n", strerror(errno));
@@ -553,6 +555,10 @@ void linux_iq_interrupt_thread(void)
         }
 
         linux_iq_thread();
+#else
+        linux_iq_thread();
+        usleep(100);
+#endif
     }
 }
 
@@ -615,7 +621,7 @@ void linux_subsystem_init(void)
 	linux_iq_init();
 }
 
-pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8_t, nmea_t, pps_t;
+pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8_t, nmea_t, pps_t, disp_t;
 
 #if WITHCPUTEMPERATURE && CPUSTYLE_XCZU
 #include "../sysmon/xsysmonpsu.h"
@@ -628,10 +634,19 @@ float xczu_get_cpu_temperature(void)
 }
 #endif /* WITHCPUTEMPERATURE && CPUSTYLE_XCZU */
 
+void linux_display_thread(void)
+{
+	while(1)
+	{
+		display2_bgprocess();
+		usleep(30000);
+	}
+}
+
 void linux_user_init(void)
 {
 	xcz_resetn_modem_state(0);
-	local_delay_us(5);
+	usleep(5);
 	xcz_resetn_modem_state(1);
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
@@ -667,6 +682,8 @@ void linux_user_init(void)
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
 #endif /* WITHNMEA && WITHLFM */
+
+	linux_create_thread(& disp_t, linux_display_thread, 20, 0);
 }
 
 /****************************************************************/
