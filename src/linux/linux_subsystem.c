@@ -484,19 +484,28 @@ void linux_iq_thread(void)
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 	static int rx_stage = 0;
 
-	if (* iq_count_rx >= DMABUFFSIZE32RX)
+	uint32_t iqcnt = * iq_count_rx;
+
+	if (iqcnt >= DMABUFFSIZE32RX)
 	{
-		uintptr_t addr32rx = allocate_dmabuffer32rx();
-		uint32_t * r = (uint32_t *) addr32rx;
+		if (iqcnt >= DMABUFFSIZE32RX * 2)
+			printf("-> FIFO overrun %d <-\n", iqcnt);
 
-		for (int i = 0; i < DMABUFFSIZE32RX; i ++)
-			r[i] = * iq_fifo_rx;
+		while(iqcnt > DMABUFFSIZE32RX)
+		{
+			uintptr_t addr32rx = allocate_dmabuffer32rx();
+			uint32_t * r = (uint32_t *) addr32rx;
 
-		processing_dmabuffer32rx(addr32rx);
-		processing_dmabuffer32rts(addr32rx);
-		release_dmabuffer32rx(addr32rx);
+			for (int i = 0; i < DMABUFFSIZE32RX; i ++)
+				r[i] = * iq_fifo_rx;
 
-		rx_stage += CNT32RX;
+			processing_dmabuffer32rx(addr32rx);
+			processing_dmabuffer32rts(addr32rx);
+			release_dmabuffer32rx(addr32rx);
+
+			rx_stage += CNT32RX;
+			iqcnt -= DMABUFFSIZE32RX;
+		}
 
 		while (rx_stage >= CNT16TX)
 		{
