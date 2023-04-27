@@ -575,6 +575,12 @@ void linux_iq_interrupt_thread(void)
 
 void linux_run_shell_cmd(uint8_t argc, const char * argv [])
 {
+	if (access(argv[0], F_OK) != 0)
+	{
+		printf("%s not found\n", argv[0]);
+		return;
+	}
+
 	extern char ** environ;
 	int pid = getpid();
 
