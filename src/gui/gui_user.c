@@ -1338,9 +1338,49 @@ static void gui_main_process(void)
 
 // *********************************************************************************************************************************************************************
 
+static uint32_t mems[memory_cells_count];
+
+static uint32_t load_mems(uint_fast8_t cell, uint_fast8_t set)
+{
+#if LINUX_SUBSYSTEM
+	if (cell == 0)
+		load_memory_cells(mems, memory_cells_count);
+
+	if (set)
+		hamradio_set_freq(mems[cell]);
+
+	return mems[cell];
+#else
+	return hamradio_load_memory_cells(cell, set);
+#endif /* LINUX_SUBSYSTEM */
+}
+
+static void clean_mems(uint_fast8_t cell)
+{
+#if LINUX_SUBSYSTEM
+	ASSERT(cell < memory_cells_count);
+	mems[cell] = 0;
+	write_memory_cells(mems, memory_cells_count);
+#else
+	hamradio_clean_memory_cells(cell);
+#endif /* LINUX_SUBSYSTEM */
+}
+
+static void write_mems(uint_fast8_t cell)
+{
+#if LINUX_SUBSYSTEM
+	ASSERT(cell < memory_cells_count);
+	mems[cell] = hamradio_get_freq_rx();
+	write_memory_cells(mems, memory_cells_count);
+#else
+	hamradio_save_memory_cells(cell);
+#endif /* LINUX_SUBSYSTEM */
+}
+
 static void window_memory_process(void)
 {
 	window_t * const win = get_win(WINDOW_MEMORY);
+
 	if (win->first_call)
 	{
 		unsigned x = 0, y = 0, interval = 6, row_count = 5;
@@ -1381,7 +1421,7 @@ static void window_memory_process(void)
 				y = y + bh->h + interval;
 			}
 
-			unsigned freq = hamradio_load_memory_cells(i, 0);
+			unsigned freq = load_mems(i, 0);
 			if (freq > 0)
 			{
 				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), freq / 1000);
@@ -1417,7 +1457,7 @@ static void window_memory_process(void)
 
 				if (bh->payload)
 				{
-					hamradio_load_memory_cells(cell_id, 1);
+					load_mems(cell_id, 1);
 					close_window(DONT_OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 					return;
@@ -1431,7 +1471,7 @@ static void window_memory_process(void)
 				if (bh->payload)
 				{
 					bh->payload = 0;
-					hamradio_clean_memory_cells(cell_id);
+					clean_mems(cell_id);
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("---"));
 				}
 				else
@@ -1439,7 +1479,7 @@ static void window_memory_process(void)
 					bh->payload = 1;
 					unsigned freq = hamradio_get_freq_rx();
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), freq / 1000);
-					hamradio_save_memory_cells(cell_id);
+					write_mems(cell_id);
 				}
 			}
 		}

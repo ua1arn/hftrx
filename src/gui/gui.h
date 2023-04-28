@@ -67,10 +67,6 @@ struct gui_nvram_t {
 	uint32_t ft8_txfreq_val;
 	uint8_t ft8_txfreq_equal;
 #endif /* WITHFT8 */
-#if WITHWIFI
-	char wifiAPname [wifiAPmaxcount][wifiAPname_max_lenght];
-	char wifiAPkey [wifiAPmaxcount][wifiAPkey_max_lenght];
-#endif /* WITHWIFI */
 };
 
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);

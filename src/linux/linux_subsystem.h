@@ -116,5 +116,8 @@ void board_rtc_gettime(
 	uint_fast8_t * seconds
 	);
 
+void load_memory_cells(uint32_t * mem, uint8_t cnt);
+void write_memory_cells(uint32_t * mem, uint8_t cnt);
+
 #endif /* LINUX_SUBSYSTEM */
 #endif /* LINUX_SUBSYSTEM_H */

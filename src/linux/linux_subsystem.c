@@ -486,12 +486,12 @@ void linux_iq_thread(void)
 
 	uint32_t iqcnt = * iq_count_rx;
 
-	if (iqcnt >= DMABUFFSIZE32RX)
+	if (iqcnt >= DMABUFFSIZE32RX * 2)
 	{
-		if (iqcnt >= DMABUFFSIZE32RX * 2)
+		if (iqcnt >= DMABUFFSIZE32RX * 3)
 			printf("-> FIFO overrun %d <-\n", iqcnt);
 
-		while(iqcnt > DMABUFFSIZE32RX)
+		while(iqcnt > DMABUFFSIZE32RX * 2)
 		{
 			uintptr_t addr32rx = allocate_dmabuffer32rx();
 			uint32_t * r = (uint32_t *) addr32rx;
@@ -504,7 +504,7 @@ void linux_iq_thread(void)
 			release_dmabuffer32rx(addr32rx);
 
 			rx_stage += CNT32RX;
-			iqcnt -= DMABUFFSIZE32RX;
+			iqcnt -= (DMABUFFSIZE32RX * 2);
 		}
 
 		while (rx_stage >= CNT16TX)
@@ -521,7 +521,7 @@ void linux_iq_thread(void)
 		}
 	}
 
-	if (* iq_count_tx < DMABUFFSIZE32TX / 2)
+	if (* iq_count_tx < DMABUFFSIZE32TX)
 	{
 		uintptr_t addr_mic = allocate_dmabuffer16rx();
 		// todo: fill buffer from mic FIFO
@@ -649,15 +649,6 @@ float xczu_get_cpu_temperature(void)
 }
 #endif /* WITHCPUTEMPERATURE && CPUSTYLE_XCZU */
 
-void linux_display_thread(void)
-{
-	while(1)
-	{
-		display2_bgprocess();
-		usleep(30000);
-	}
-}
-
 void linux_user_init(void)
 {
 	xcz_resetn_modem_state(0);
@@ -697,8 +688,6 @@ void linux_user_init(void)
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
 #endif /* WITHNMEA && WITHLFM */
-
-	linux_create_thread(& disp_t, linux_display_thread, 20, 0);
 }
 
 /****************************************************************/
