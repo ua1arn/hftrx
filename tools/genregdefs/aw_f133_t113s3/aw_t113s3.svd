@@ -104,6 +104,11 @@
   <name>CCU</name>
   <description></description>
   <baseAddress>0x02001000</baseAddress>
+  <interrupt>
+   <name>CCU_FERR</name>
+   <value>64</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>PLL_CPU_CTRL_REG</name>
@@ -1096,6 +1101,33 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>RISC_CLK_REG</name>
+    <displayName>RISC_CLK_REG</displayName>
+    <description>RISC Clock Register</description>
+    <addressOffset>0xD00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_GATING_REG</name>
+    <displayName>RISC_GATING_REG</displayName>
+    <description>RISC Gating Configuration Register</description>
+    <addressOffset>0xD04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_CFG_BGR_REG</name>
+    <displayName>RISC_CFG_BGR_REG</displayName>
+    <description>RISC_CFG Bus Gating Reset Register</description>
+    <addressOffset>0xD0C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>PLL_LOCK_DBG_CTRL_REG</name>
     <displayName>PLL_LOCK_DBG_CTRL_REG</displayName>
     <description>PLL Lock Debug Control Register</description>
@@ -1127,6 +1159,15 @@
     <displayName>FRE_DOWN_LIM_REG</displayName>
     <description>Frequency Down Limit Register</description>
     <addressOffset>0xF10</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_RST_REG</name>
+    <displayName>RISC_RST_REG</displayName>
+    <description>RISC LOCK RESET Register</description>
+    <addressOffset>0xF20</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

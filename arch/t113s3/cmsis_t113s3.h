@@ -86,6 +86,7 @@ typedef enum IRQn
     GPIOF_NS_IRQn = 109,                              /*!< GPIOINT  Interrupt */
     GPIOF_S_IRQn = 110,                               /*!< GPIOINT  Interrupt */
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
+    DE_IRQn = 119,                                    /*!< DE Display Engine Interrupt */
     DI_IRQn = 120,                                    /*!< DI De-Interlacer Interrupt */
     DSI_IRQn = 124,                                   /*!< DSI  Interrupt */
 
@@ -415,12 +416,19 @@ typedef struct CCU_Type
     volatile uint32_t DSP_CLK_REG;                    /*!< Offset 0xC70 DSP Clock Register */
              uint32_t reserved_0xC74 [0x0002];
     volatile uint32_t DSP_BGR_REG;                    /*!< Offset 0xC7C DSP Bus Gating Reset Register */
-             uint32_t reserved_0xC80 [0x00A1];
+             uint32_t reserved_0xC80 [0x0020];
+    volatile uint32_t RISC_CLK_REG;                   /*!< Offset 0xD00 RISC Clock Register */
+    volatile uint32_t RISC_GATING_REG;                /*!< Offset 0xD04 RISC Gating Configuration Register */
+             uint32_t reserved_0xD08;
+    volatile uint32_t RISC_CFG_BGR_REG;               /*!< Offset 0xD0C RISC_CFG Bus Gating Reset Register */
+             uint32_t reserved_0xD10 [0x007D];
     volatile uint32_t PLL_LOCK_DBG_CTRL_REG;          /*!< Offset 0xF04 PLL Lock Debug Control Register */
     volatile uint32_t FRE_DET_CTRL_REG;               /*!< Offset 0xF08 Frequency Detect Control Register */
     volatile uint32_t FRE_UP_LIM_REG;                 /*!< Offset 0xF0C Frequency Up Limit Register */
     volatile uint32_t FRE_DOWN_LIM_REG;               /*!< Offset 0xF10 Frequency Down Limit Register */
-             uint32_t reserved_0xF14 [0x0007];
+             uint32_t reserved_0xF14 [0x0003];
+    volatile uint32_t RISC_RST_REG;                   /*!< Offset 0xF20 RISC LOCK RESET Register */
+             uint32_t reserved_0xF24 [0x0003];
     volatile uint32_t CCU_FAN_GATE_REG;               /*!< Offset 0xF30 CCU FANOUT CLOCK GATE Register */
     volatile uint32_t CLK27M_FAN_REG;                 /*!< Offset 0xF34 CLK27M FANOUT Register */
     volatile uint32_t PCLK_FAN_REG;                   /*!< Offset 0xF38 PCLK FANOUT Register */

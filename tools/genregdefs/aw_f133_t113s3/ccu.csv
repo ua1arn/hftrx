@@ -1,6 +1,7 @@
 #type; CCU
 #base; CCU 0x02001000
 #irq; CCU_FERR 80
+#irqrv; CCU_FERR 64
 #regdef; PLL_CPU_CTRL_REG; 0x0000; PLL_CPU Control Register
 #regdef; PLL_DDR_CTRL_REG; 0x0010; PLL_DDR Control Register
 #regdef; PLL_PERI_CTRL_REG; 0x0020; PLL_PERI Control Register
@@ -111,10 +112,14 @@
 #regdef; TPADC_BGR_REG; 0x0C5C; TPADC Bus Gating Reset Register
 #regdef; DSP_CLK_REG; 0x0C70; DSP Clock Register
 #regdef; DSP_BGR_REG; 0x0C7C; DSP Bus Gating Reset Register
+#regdef; RISC_CLK_REG;0x0D00; RISC Clock Register
+#regdef; RISC_GATING_REG;0x0D04; RISC Gating Configuration Register
+#regdef; RISC_CFG_BGR_REG;0x0D0C; RISC_CFG Bus Gating Reset Register
 #regdef; PLL_LOCK_DBG_CTRL_REG; 0x0F04; PLL Lock Debug Control Register
 #regdef; FRE_DET_CTRL_REG; 0x0F08; Frequency Detect Control Register
 #regdef; FRE_UP_LIM_REG; 0x0F0C; Frequency Up Limit Register
 #regdef; FRE_DOWN_LIM_REG; 0x0F10; Frequency Down Limit Register
+#regdef; RISC_RST_REG;0x0F20;RISC LOCK RESET Register
 #regdef; CCU_FAN_GATE_REG; 0x0F30; CCU FANOUT CLOCK GATE Register
 #regdef; CLK27M_FAN_REG; 0x0F34; CLK27M FANOUT Register
 #regdef; PCLK_FAN_REG; 0x0F38; PCLK FANOUT Register

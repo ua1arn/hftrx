@@ -51,6 +51,7 @@ typedef enum IRQn
     GPIOE_NS_IRQn = 91,                               /*!< GPIOINT  Interrupt */
     GPIOF_NS_IRQn = 93,                               /*!< GPIOINT  Interrupt */
     GPIOG_NS_IRQn = 95,                               /*!< GPIOINT  Interrupt */
+    DE_IRQn = 103,                                    /*!< DE Display Engine Interrupt */
     DI_IRQn = 104,                                    /*!< DI De-Interlacer Interrupt */
     DSI_IRQn = 108,                                   /*!< DSI  Interrupt */
 
@@ -259,7 +260,10 @@ typedef struct CCU_Type
     volatile uint32_t PLL_AUDIO1_BIAS_REG;            /*!< Offset 0x380 PLL_AUDIO1 Bias Register */
              uint32_t reserved_0x384 [0x001F];
     volatile uint32_t PLL_CPU_TUN_REG;                /*!< Offset 0x400 PLL_CPU Tuning Register */
-             uint32_t reserved_0x404 [0x0043];
+             uint32_t reserved_0x404 [0x003F];
+    volatile uint32_t CPU_AXI_CFG_REG;                /*!< Offset 0x500 CPU_AXI Configuration Register */
+    volatile uint32_t CPU_GATING_REG;                 /*!< Offset 0x504 CPU_GATING Configuration Register */
+             uint32_t reserved_0x508 [0x0002];
     volatile uint32_t PSI_CLK_REG;                    /*!< Offset 0x510 PSI Clock Register */
              uint32_t reserved_0x514 [0x0003];
     volatile uint32_t APB0_CLK_REG;                   /*!< Offset 0x520 APB0 Clock Register */
@@ -286,7 +290,11 @@ typedef struct CCU_Type
     volatile uint32_t VE_BGR_REG;                     /*!< Offset 0x69C VE Bus Gating Reset Register */
              uint32_t reserved_0x6A0 [0x001B];
     volatile uint32_t DMA_BGR_REG;                    /*!< Offset 0x70C DMA Bus Gating Reset Register */
-             uint32_t reserved_0x710 [0x000B];
+             uint32_t reserved_0x710 [0x0003];
+    volatile uint32_t MSGBOX_BGR_REG;                 /*!< Offset 0x71C MSGBOX Bus Gating Reset Register */
+             uint32_t reserved_0x720 [0x0003];
+    volatile uint32_t SPINLOCK_BGR_REG;               /*!< Offset 0x72C SPINLOCK Bus Gating Reset Register */
+             uint32_t reserved_0x730 [0x0003];
     volatile uint32_t HSTIMER_BGR_REG;                /*!< Offset 0x73C HSTIMER Bus Gating Reset Register */
     volatile uint32_t AVS_CLK_REG;                    /*!< Offset 0x740 AVS Clock Register */
              uint32_t reserved_0x744 [0x0012];
@@ -383,13 +391,17 @@ typedef struct CCU_Type
     volatile uint32_t TPADC_CLK_REG;                  /*!< Offset 0xC50 TPADC Clock Register */
              uint32_t reserved_0xC54 [0x0002];
     volatile uint32_t TPADC_BGR_REG;                  /*!< Offset 0xC5C TPADC Bus Gating Reset Register */
-             uint32_t reserved_0xC60 [0x0028];
+             uint32_t reserved_0xC60 [0x0004];
+    volatile uint32_t DSP_CLK_REG;                    /*!< Offset 0xC70 DSP Clock Register */
+             uint32_t reserved_0xC74 [0x0002];
+    volatile uint32_t DSP_BGR_REG;                    /*!< Offset 0xC7C DSP Bus Gating Reset Register */
+             uint32_t reserved_0xC80 [0x0020];
     volatile uint32_t RISC_CLK_REG;                   /*!< Offset 0xD00 RISC Clock Register */
     volatile uint32_t RISC_GATING_REG;                /*!< Offset 0xD04 RISC Gating Configuration Register */
              uint32_t reserved_0xD08;
     volatile uint32_t RISC_CFG_BGR_REG;               /*!< Offset 0xD0C RISC_CFG Bus Gating Reset Register */
              uint32_t reserved_0xD10 [0x007D];
-    volatile uint32_t PLL_LOCK_DBG_CTRL_REG;          /*!< Offset 0xF04 (null) */
+    volatile uint32_t PLL_LOCK_DBG_CTRL_REG;          /*!< Offset 0xF04 PLL Lock Debug Control Register */
     volatile uint32_t FRE_DET_CTRL_REG;               /*!< Offset 0xF08 Frequency Detect Control Register */
     volatile uint32_t FRE_UP_LIM_REG;                 /*!< Offset 0xF0C Frequency Up Limit Register */
     volatile uint32_t FRE_DOWN_LIM_REG;               /*!< Offset 0xF10 Frequency Down Limit Register */
