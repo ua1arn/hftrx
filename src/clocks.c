@@ -2070,7 +2070,51 @@ uint_fast32_t allwnrt113_get_usart_freq(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-#if CPUSTYLE_F133
+static void set_pll_cpu(unsigned n)
+{
+	uint32_t val;
+	/* Disable pll gating */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~ (1u << 27);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Enable pll ldo */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1u << 30);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Set default clk to 1008mhz */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~ ((0x3u << 16) | (0xffu << 8) | (0x3u << 0));
+	val |= ((n - 1) << 8);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~ (1u << 29);	// PLL Lock Enable
+	CCU->PLL_CPU_CTRL_REG = val;
+	/* Lock enable */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1u << 29);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Enable pll */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1u << 31);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	//TP();
+	/* Wait pll stable */
+	while ((CCU->PLL_CPU_CTRL_REG & (0x1u << 28)) == 0)
+		;
+	//TP();
+
+	/* Enable pll gating */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1u << 27);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+}
+//#if CPUSTYLE_F133
 
 void set_pll_riscv_axi(unsigned n)
 {
@@ -2090,52 +2134,7 @@ void set_pll_riscv_axi(unsigned n)
 			0;
 	(void) CCU->RISC_CLK_REG;
 
-	/* Disable pll gating */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~ (1u << 27);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	/* Enable pll ldo */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1u << 30);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	/* Set default clk to 1008mhz */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~ ((0x3u << 16) | (0xff << 8) | (0x3 << 0));
-	val |= ((n - 1) << 8);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~(1u << 29);	// PLL Lock Enable
-	CCU->PLL_CPU_CTRL_REG = val;
-	/* Lock enable */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1u << 29);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	/* Enable pll */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1u << 31);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	//TP();
-	/* Wait pll stable */
-	while((CCU->PLL_CPU_CTRL_REG & (0x1u << 28)) == 0)
-		;
-	//TP();
-
-	/* Enable pll gating */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1 << 27);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	/* Lock disable */
-//	val = CCU->PLL_CPU_CTRL_REG;
-//	val &= ~(1u << 29);
-//	CCU->PLL_CPU_CTRL_REG = val;
-//	//local_delay_ms(1);
+	set_pll_cpu(n);
 
 	/* Set and change cpu clk src */
 	val = CCU->RISC_CLK_REG;
@@ -2152,9 +2151,9 @@ void set_pll_riscv_axi(unsigned n)
 //	TP();
 //    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 }
-#endif
+//#endif /* CPUSTYLE_F133 */
 
-#if CPUSTYLE_T113
+//#if CPUSTYLE_T113
 void set_pll_cpux_axi(unsigned n)
 {
 	uint32_t val;
@@ -2172,45 +2171,7 @@ void set_pll_cpux_axi(unsigned n)
 			(1 << 0) |	// old 0x01 old CPU_DIV1, new same
 			0;
 
-	/* Disable pll gating */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~(1 << 27);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	/* Enable pll ldo */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1 << 30);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	/* Set default clk to 1008mhz */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~ ((0x3 << 16) | (0xff << 8) | (0x3 << 0));
-	val |= ((n - 1) << 8);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~(1 << 29);	// PLL Lock Enable
-	CCU->PLL_CPU_CTRL_REG = val;
-	/* Lock enable */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1 << 29);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	/* Enable pll */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1 << 31);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	//TP();
-	/* Wait pll stable */
-	while((CCU->PLL_CPU_CTRL_REG & (0x1 << 28)) == 0)
-		;
-	//TP();
-
-	/* Enable pll gating */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1 << 27);
-	CCU->PLL_CPU_CTRL_REG = val;
+	set_pll_cpu(n);
 
 	/* Lock disable */
 //	val = CCU->PLL_CPU_CTRL_REG;
@@ -2234,7 +2195,7 @@ void set_pll_cpux_axi(unsigned n)
 //	TP();
 //    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 }
-#endif /* CPUSTYLE_T113 */
+//#endif /* CPUSTYLE_T113 */
 
 #if 0
 static void set_pll_periph0(void)
