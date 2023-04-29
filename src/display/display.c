@@ -2159,49 +2159,58 @@ void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_f
 
 #endif /* WITHRLEDECOMPRESS */
 
-void display_do_AA(PACKEDCOLORPIP_T * __restrict buffer,
-		uint_fast16_t dx,
-		uint_fast16_t dy,
-		uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-		uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз)
-		uint_fast16_t width,
-		uint_fast16_t height)
+#if LCDMODE_LTDC
+
+void display_do_AA(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз)
+	uint_fast16_t width,
+	uint_fast16_t height
+	)
 {
-	uint_fast32_t p1_r, p1_g, p1_b, p2_r, p2_g, p2_b, p3_r, p3_g, p3_b, p4_r, p4_g, p4_b, p_r, p_b, p_g;
-
-	for (uint16_t x = col; x < col + width - 1; x ++)
+	uint_fast16_t x;
+	for (x = col; x < (col + width - 1); x ++)
 	{
-		for (uint16_t y = row; y < row + height - 1; y ++)
+		uint_fast16_t y;
+		for (y = row; y < (row + height - 1); y ++)
 		{
-			PACKEDCOLORPIP_T * p1 = colpip_mem_at(buffer, dx, dy, x, y);
-			PACKEDCOLORPIP_T * p2 = colpip_mem_at(buffer, dx, dy, x + 1, y);
-			PACKEDCOLORPIP_T * p3 = colpip_mem_at(buffer, dx, dy, x, y + 1);
-			PACKEDCOLORPIP_T * p4 = colpip_mem_at(buffer, dx, dy, x + 1, y + 1);
+			const COLORPIP_T p1 = * colpip_mem_at(buffer, dx, dy, x, y);
+			const COLORPIP_T p2 = * colpip_mem_at(buffer, dx, dy, x + 1, y);
+			const COLORPIP_T p3 = * colpip_mem_at(buffer, dx, dy, x, y + 1);
+			const COLORPIP_T p4 = * colpip_mem_at(buffer, dx, dy, x + 1, y + 1);
 
-			 if ((* p1 == * p2) && (* p1 == * p3) && (* p1 == * p4))	// если смежные пиксели одинакового цвета, пропустить расчет
+			unsigned p1_r, p1_g, p1_b, p2_r, p2_g, p2_b, p3_r, p3_g, p3_b, p4_r, p4_g, p4_b;
+			unsigned p_r, p_b, p_g;
+
+			 if ((p1 == p2) && (p1 == p3) && (p1 == p4))	// если смежные пиксели одинакового цвета, пропустить расчёт
 				continue;
 
-			p1_r = COLORPIP_R(* p1);
-			p1_g = COLORPIP_G(* p1);
-			p1_b = COLORPIP_B(* p1);
+			p1_r = COLORPIP_R(p1);
+			p1_g = COLORPIP_G(p1);
+			p1_b = COLORPIP_B(p1);
 
-			p2_r = COLORPIP_R(* p2);
-			p2_g = COLORPIP_G(* p2);
-			p2_b = COLORPIP_B(* p2);
+			p2_r = COLORPIP_R(p2);
+			p2_g = COLORPIP_G(p2);
+			p2_b = COLORPIP_B(p2);
 
-			p3_r = COLORPIP_R(* p3);
-			p3_g = COLORPIP_G(* p3);
-			p3_b = COLORPIP_B(* p3);
+			p3_r = COLORPIP_R(p3);
+			p3_g = COLORPIP_G(p3);
+			p3_b = COLORPIP_B(p3);
 
-			p4_r = COLORPIP_R(* p4);
-			p4_g = COLORPIP_G(* p4);
-			p4_b = COLORPIP_B(* p4);
+			p4_r = COLORPIP_R(p4);
+			p4_g = COLORPIP_G(p4);
+			p4_b = COLORPIP_B(p4);
 
-			p_r = (p1_r + p2_r + p3_r + p4_r) / 4;
-			p_g = (p1_g + p2_g + p3_g + p4_g) / 4;
-			p_b = (p1_b + p2_b + p3_b + p4_b) / 4;
+			p_r = ((uint_fast32_t) p1_r + p2_r + p3_r + p4_r) / 4;
+			p_g = ((uint_fast32_t) p1_g + p2_g + p3_g + p4_g) / 4;
+			p_b = ((uint_fast32_t) p1_b + p2_b + p3_b + p4_b) / 4;
 
 			colpip_point(buffer, dx, dy, x, y, TFTRGB(p_r, p_g, p_b));
 		}
 	}
 }
+
+#endif /* LCDMODE_LTDC */
