@@ -8316,12 +8316,14 @@ board_calcs_setfreq(
 	const uint_fast8_t prei = hardware_calc_sound_params(tonefreq01, & value);
 
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
 	SPIN_LOCK(& gpreilock);
 	gprei [sndi] = prei;
 	gvalue [sndi] = value;
 	SPIN_UNLOCK(& gpreilock);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 	return 1;
 }
@@ -8353,11 +8355,13 @@ board_keybeep_setfreq(
 	enum { sndi = SNDI_KEYBEEP };
 	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+
+		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
 		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		SPIN_UNLOCK(& gpreilock);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 }
 
@@ -8371,11 +8375,13 @@ board_sidetone_setfreq(
 	enum { sndi = SNDI_SIDETONE };
 	if (board_calcs_setfreq(sndi, tonefreq01) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+
+		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
 		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		SPIN_UNLOCK(& gpreilock);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 #if WITHIF4DSP
 		dsp_sidetone_setfreq(tonefreq01);
 #endif /* WITHIF4DSP */
@@ -8393,11 +8399,13 @@ board_rgrbeep_setfreq(
 	enum { sndi = SNDI_RGRBRRP };
 	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+
+		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
 		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		SPIN_UNLOCK(& gpreilock);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 }
 
@@ -8467,11 +8475,13 @@ board_subtone_setfreq(
 	enum { sndi = SNDI_SUBTONE };
 	if (board_calcs_setfreq(sndi, tonefreq01) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+
+		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
 		SPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		SPIN_UNLOCK(& gpreilock);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 #endif /* WITHSUBTONES */
 }
@@ -8482,7 +8492,9 @@ void board_subtone_enable_user(uint_fast8_t state)
 	const uint_fast8_t v = state != 0;
 	enum { sndi = SNDI_SUBTONE };
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
 	SPIN_LOCK(& gpreilock);
 	if (gstate [sndi] != v)
 	{
@@ -8490,7 +8502,7 @@ void board_subtone_enable_user(uint_fast8_t state)
 		board_sounds_resched();
 	}
 	SPIN_UNLOCK(& gpreilock);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 #endif /* WITHSUBTONES */
 }
 
