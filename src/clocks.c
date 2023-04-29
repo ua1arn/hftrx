@@ -2073,6 +2073,7 @@ uint_fast32_t allwnrt113_get_usart_freq(void)
 static void set_pll_cpu(unsigned n)
 {
 	uint32_t val;
+
 	/* Disable pll gating */
 	val = CCU->PLL_CPU_CTRL_REG;
 	val &= ~ (1u << 27);
@@ -2104,7 +2105,7 @@ static void set_pll_cpu(unsigned n)
 
 	//TP();
 	/* Wait pll stable */
-	while ((CCU->PLL_CPU_CTRL_REG & (0x1u << 28)) == 0)
+	while((CCU->PLL_CPU_CTRL_REG & (1u << 28)) == 0)
 		;
 	//TP();
 
@@ -2113,6 +2114,11 @@ static void set_pll_cpu(unsigned n)
 	val |= (1u << 27);
 	CCU->PLL_CPU_CTRL_REG = val;
 
+	/* Lock disable */
+//	val = CCU->PLL_CPU_CTRL_REG;
+//	val &= ~ (1u << 29);
+//	CCU->PLL_CPU_CTRL_REG = val;
+//	//local_delay_ms(1);
 }
 //#if CPUSTYLE_F133
 
