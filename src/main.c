@@ -16225,7 +16225,7 @@ peek_uintptr(volatile const uint8_t * p)
 
 void dpclock_initialize(dpclock_t * lp)
 {
-	SPINLOCK_INITIALIZE(& lp->lock);
+	IRQLSPINLOCK_INITIALIZE(& lp->lock, IRQL_ONLY_OVERREALTIME);
 	lp->flag = 0;
 }
 /*
@@ -16244,11 +16244,9 @@ void dpclock_exit(dpclock_t * lp)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& lp->lock);
+	IRQLSPIN_LOCK(& lp->lock, & oldIrql);
 	lp->flag = 0;
-	SPIN_UNLOCK(& lp->lock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& lp->lock, oldIrql);
 }
 
 // возврат не-0 если уже занято
@@ -16258,12 +16256,10 @@ uint_fast8_t dpclock_traylock(dpclock_t * lp)
 
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& lp->lock);
+	IRQLSPIN_LOCK(& lp->lock, & oldIrql);
 	v = lp->flag;
 	lp->flag = 1;
-	SPIN_UNLOCK(& lp->lock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& lp->lock, oldIrql);
 
 	return v;
 }

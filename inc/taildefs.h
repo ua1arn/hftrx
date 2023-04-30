@@ -131,6 +131,15 @@ typedef struct spinlock_tag {
 	#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
 #endif /* WITHDEBUG */
 
+typedef struct irqlspinlock_t
+{
+	IRQL_t irql;
+	SPINLOCK_t lock;
+} IRQLSPINLOCK_t;
+
+#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), { 0, } }
+#define IRQLSPINLOCK_INITIALIZE(p, oldIrql) do { SPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrql); } while (0)
+
 #endif /* ! LINUX_SUBSYSTEM */
 
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line);
@@ -176,9 +185,13 @@ IRQL_t GetCurrentIrql(void);
 
 #endif /* WITHSMPSYSTEM */
 
+/* Захват spinlock с установкой требуемого IRQL и сохранением ранее установленного */
+#define IRQLSPIN_LOCK(p, oldIrql) do { RiseIrql((p)->irql, (oldIrql)); SPIN_LOCK(& (p)->lock); } while (0)
+#define IRQLSPIN_UNLOCK(p, oldIrql) do { SPIN_UNLOCK(& (p)->lock); LowerIrql(oldIrql); } while (0)
+
 typedef struct dpclock_tag
 {
-	SPINLOCK_t lock;
+	IRQLSPINLOCK_t lock;
 	uint8_t flag;
 } dpclock_t;
 
