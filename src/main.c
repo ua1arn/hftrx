@@ -16231,20 +16231,24 @@ void dpclock_initialize(dpclock_t * lp)
 /*
 void dpclock_enter(dpclock_t * lp)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& lp->lock);
 
 	SPIN_UNLOCK(& lp->lock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 */
 void dpclock_exit(dpclock_t * lp)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& lp->lock);
 	lp->flag = 0;
 	SPIN_UNLOCK(& lp->lock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 // возврат не-0 если уже занято
@@ -16252,12 +16256,14 @@ uint_fast8_t dpclock_traylock(dpclock_t * lp)
 {
 	uint_fast8_t v;
 
-	global_disableIRQ();
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& lp->lock);
 	v = lp->flag;
 	lp->flag = 1;
 	SPIN_UNLOCK(& lp->lock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 
 	return v;
 }

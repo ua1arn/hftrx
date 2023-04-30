@@ -955,21 +955,22 @@ void buffers_initialize(void)
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takemsgready_user(uint8_t * * dest)
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
 
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsready8))
 	{
 		PVLIST_ENTRY t = RemoveTailVList(& msgsready8);
 		SPIN_UNLOCK(& locklistmsg8);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		* dest = p->data;
 		ASSERT(p->type != MSGT_EMPTY);
 		return p->type;
 	}
 	SPIN_UNLOCK(& locklistmsg8);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 	return MSGT_EMPTY;
 }
 
@@ -980,21 +981,27 @@ void releasemsgbuffer_user(uint8_t * dest)
 	message_t * const p = CONTAINING_RECORD(dest, message_t, data);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	system_disableIRQ();
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& locklistmsg8);
 	InsertHeadVList(& msgsfree8, & p->item);
 	SPIN_UNLOCK(& locklistmsg8);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 // Буфер для формирования сообщения
 size_t takemsgbufferfree_low(uint8_t * * dest)
 {
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsfree8))
 	{
 		PVLIST_ENTRY t = RemoveTailVList(& msgsfree8);
 		SPIN_UNLOCK(& locklistmsg8);
+		LowerIrql(oldIrql);
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
@@ -1002,6 +1009,7 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 		return (MSGBUFFERSIZE8 * sizeof p->data [0]);
 	}
 	SPIN_UNLOCK(& locklistmsg8);
+	LowerIrql(oldIrql);
 	return 0;
 }
 
@@ -1013,9 +1021,13 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 	p->type = type;
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
 	SPIN_LOCK(& locklistmsg8);
 	InsertHeadVList(& msgsready8, & p->item);
 	SPIN_UNLOCK(& locklistmsg8);
+	LowerIrql(oldIrql);
 }
 
 #if WITHINTEGRATEDDSP
