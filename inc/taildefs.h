@@ -138,12 +138,12 @@ typedef struct irqlspinlock_t
 } IRQLSPINLOCK_t;
 
 #define IRQLSPINLOCK_INIT(irqlv) { (irqlv), { 0, } }
-#define IRQLSPINLOCK_INITIALIZE(p, oldIrql) do { SPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrql); } while (0)
+#define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { SPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrqlv); } while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
 
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line);
-#define RiseIrql(newIRQL, oldIrql) RiseIrql_DEBUG((newIRQL), (oldIrql), __FILE__, __LINE__)
+#define RiseIrql(newIRQL, oldIrqlv2) RiseIrql_DEBUG((newIRQL), (oldIrqlv2), __FILE__, __LINE__)
 void LowerIrql(IRQL_t newIRQL);
 IRQL_t GetCurrentIrql(void);
 
