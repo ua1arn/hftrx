@@ -3712,9 +3712,9 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	ARM_MORPH(arm_nuttall4b)(gvars.afspec_wndfn, WITHFFTSIZEAF);	/* оконная функция для показа звукового спектра */
 
 #if 0 && CTLSTYLE_V3D
-	subscribefloat_user(& afdemodoutfloat, & afspectreregister, NULL, afsp_save_sample);
+	subscribefloat(& afdemodoutfloat, & afspectreregister, NULL, afsp_save_sample);
 #else
-	subscribefloat_user(& speexoutfloat, & afspectreregister, NULL, afsp_save_sample);	// выход speex и фильтра
+	subscribefloat(& speexoutfloat, & afspectreregister, NULL, afsp_save_sample);	// выход speex и фильтра
 #endif /* CTLSTYLE_V3D */
 }
 
@@ -3885,16 +3885,17 @@ typedef struct fftbuff_tag
 
 static LIST_ENTRY fftbuffree;
 static LIST_ENTRY fftbufready;
-static SPINLOCK_t fftlock;
+static IRQLSPINLOCK_t fftlock;
 
 // realtime-mode function
-uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
+uint_fast8_t allocate_fftbuffer(fftbuff_t * * dest)
 {
-	SPIN_LOCK(& fftlock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& fftlock, & oldIrql);
 	if (! IsListEmpty(& fftbuffree))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbuffree);
-		SPIN_UNLOCK(& fftlock);
+		IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
@@ -3903,56 +3904,52 @@ uint_fast8_t allocate_fftbuffer_low(fftbuff_t * * dest)
 	if (! IsListEmpty(& fftbufready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
-		SPIN_UNLOCK(& fftlock);
+		IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
 	}
-	SPIN_UNLOCK(& fftlock);
+	IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 	return 0;
 }
 
 // realtime-mode function
-void saveready_fftbuffer_low(fftbuff_t * p)
+void saveready_fftbuffer(fftbuff_t * p)
 {
-	SPIN_LOCK(& fftlock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& fftlock, & oldIrql);
 	while (! IsListEmpty(& fftbufready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
 		InsertHeadList(& fftbuffree, t);
 	}
 	InsertHeadList(& fftbufready, & p->item);
-	SPIN_UNLOCK(& fftlock);
+	IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 }
 
 // user-mode function
 void release_fftbuffer(fftbuff_t * p)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& fftlock);
+	IRQLSPIN_LOCK(& fftlock, & oldIrql);
 	InsertHeadList(& fftbuffree, & p->item);
-	SPIN_UNLOCK(& fftlock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 }
 
 // user-mode function
 uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& fftlock);
+	IRQLSPIN_LOCK(& fftlock, & oldIrql);
 	if (! IsListEmpty(& fftbufready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
-		SPIN_UNLOCK(& fftlock);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
 	}
-	SPIN_UNLOCK(& fftlock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 	return 0;
 }
 
@@ -3973,7 +3970,7 @@ saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 
 		if (* ppf == NULL)
 		{
-			if (allocate_fftbuffer_low(ppf) == 0)
+			if (allocate_fftbuffer(ppf) == 0)
 			{
 				TP();
 				continue;	/* обшибочная ситуация, нарушает фиксированный сдвиг перекрытия буферов */
@@ -3987,7 +3984,7 @@ saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 
 		if (++ filleds [i] >= LARGEFFT)
 		{
-			saveready_fftbuffer_low(pf);
+			saveready_fftbuffer(pf);
 			* ppf = NULL;
 		}
 	}
@@ -4010,14 +4007,14 @@ void fftbuffer_initialize(void)
 	for (i = 0; i < NOVERLAP; ++ i)
 	{
 		fftbuff_t * * const ppf = & pfill [i];
-		VERIFY(allocate_fftbuffer_low(ppf) != 0);
+		VERIFY(allocate_fftbuffer(ppf) != 0);
 		/* установка начальной позиции для заполнения со сдвигом. */
 		const unsigned filled = (i * LARGEFFT / NOVERLAP);
 		filleds [i] = filled;
 		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffI, filled);
 		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffQ, filled);
 	}
-	SPINLOCK_INITIALIZE(& fftlock);
+	IRQLSPINLOCK_INITIALIZE(& fftlock, IRQL_ONLY_OVERREALTIME);
 }
 
 #if (__ARM_FP & 0x08) || __riscv_d
@@ -4966,7 +4963,7 @@ display2_wfl_init(
 	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
 	fftbuffer_initialize();
 
-	subscribeint_user(& rtstargetsint, & rtsregister, NULL, saveIQRTSxx);
+	subscribeint32(& rtstargetsint, & rtsregister, NULL, saveIQRTSxx);
 
 #if ! defined (COLORPIP_SHADED)
 	{

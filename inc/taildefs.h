@@ -120,9 +120,8 @@ typedef struct spinlock_tag {
 	int line;
 	uint_fast8_t cpuid;
 #endif /* WITHDEBUG */
-} spinlock_t;
+} spinlock_t, SPINLOCK_t;
 
-#define SPINLOCK_t spinlock_t
 #if WITHDEBUG
 	#define SPINLOCK_INIT { 0, "z", 0, 255 }
 	#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; (p)->file = "n"; (p)->line = 0, (p)->cpuid = 255; } while (0)
@@ -131,14 +130,33 @@ typedef struct spinlock_tag {
 	#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
 #endif /* WITHDEBUG */
 
-typedef struct irqlspinlock_t
+typedef struct irqlspinlock_tag
 {
 	IRQL_t irql;
 	SPINLOCK_t lock;
 } IRQLSPINLOCK_t;
 
-#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), { 0, } }
+//#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), { 0, } }
 #define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { SPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrqlv); } while (0)
+#else /* ! LINUX_SUBSYSTEM */
+
+typedef struct spinlock_tag {
+	int lock;
+#if WITHDEBUG
+	const char * file;
+	int line;
+	uint_fast8_t cpuid;
+#endif /* WITHDEBUG */
+} spinlock_t, SPINLOCK_t;
+
+typedef struct irqlspinlock_tag
+{
+	int irql;
+	int lock;
+} IRQLSPINLOCK_t;
+
+//#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), { 0, } }
+#define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do {} while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
 
@@ -185,9 +203,14 @@ IRQL_t GetCurrentIrql(void);
 
 #endif /* WITHSMPSYSTEM */
 
+#if ! LINUX_SUBSYSTEM
 /* Захват spinlock с установкой требуемого IRQL и сохранением ранее установленного */
 #define IRQLSPIN_LOCK(p, oldIrql) do { RiseIrql((p)->irql, (oldIrql)); SPIN_LOCK(& (p)->lock); } while (0)
 #define IRQLSPIN_UNLOCK(p, oldIrql) do { SPIN_UNLOCK(& (p)->lock); LowerIrql(oldIrql); } while (0)
+#else  /* ! LINUX_SUBSYSTEM */
+#define IRQLSPIN_LOCK(p, oldIrql) do { } while (0)
+#define IRQLSPIN_UNLOCK(p, oldIrql) do { } while (0)
+#endif  /* ! LINUX_SUBSYSTEM */
 
 typedef struct dpclock_tag
 {

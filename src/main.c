@@ -10972,9 +10972,9 @@ audioproc_spool_user(void)
 			const unsigned rest = (FIRBUFSIZE - score);
 			const unsigned chunk = rest >= len ? len : rest;
 	#if WITHUSEDUALWATCH
-			deliveryfloat_user(& speexoutfloat, outsp [0] + score, outsp [1] + score, chunk);	// to AUDIO codec
+			deliveryfloat_buffer(& speexoutfloat, outsp [0] + score, outsp [1] + score, chunk);	// to AUDIO codec
 	#else /* WITHUSEDUALWATCH */
-			deliveryfloat_user(& speexoutfloat, outsp [0] + score, outsp [0] + score, chunk);	// to AUDIO codec
+			deliveryfloat_buffer(& speexoutfloat, outsp [0] + score, outsp [0] + score, chunk);	// to AUDIO codec
 	#endif /* WITHUSEDUALWATCH */
 			score += chunk;
 		}

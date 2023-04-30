@@ -67,6 +67,7 @@ uint8_t ft8_tx = 0;
 uint32_t bufind = 0;
 uint8_t ft8_mox_request = 0;
 volatile uint8_t ft8_encode_req = 0;
+static IRQLSPINLOCK_t ft8bufflock = SPINLOCK_INIT;
 
 static subscribefloat_t ft8_outregister;
 
@@ -559,7 +560,8 @@ static void ft8fill(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	if (fill_ft8_buf1 == 1)
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& ft8bufflock, & oldIrql);
 		ASSERT(bufind1 < bufsize);
 		ft8.rx_buf1 [bufind1] = ch0;
 		bufind1 ++;
@@ -569,12 +571,13 @@ static void ft8fill(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 			bufind1 = 0;
 			xcz_ipi_sendmsg_c1(FT8_MSG_DECODE_1);
 		}
-		system_enableIRQ();
+		IRQLSPIN_UNLOCK(& ft8bufflock, oldIrql);
 	}
 
 	if (fill_ft8_buf2 == 1)
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& ft8bufflock, & oldIrql);
 		ASSERT(bufind2 < bufsize);
 		ft8.rx_buf2 [bufind2] = ch0;
 		bufind2 ++;
@@ -584,12 +587,14 @@ static void ft8fill(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 			bufind2 = 0;
 			xcz_ipi_sendmsg_c1(FT8_MSG_DECODE_2);
 		}
-		system_enableIRQ();
+		IRQLSPIN_UNLOCK(& ft8bufflock, oldIrql);
 	}
 }
 
 void ft8_start_fill(void)
 {
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& ft8bufflock, & oldIrql);
 	if (fill_ft8_buf1)
 	{
 		PRINTF("ft8: start fill 2\n");
@@ -604,10 +609,12 @@ void ft8_start_fill(void)
 		fill_ft8_buf1 = 1;
 //		system_enableIRQ();
 	}
+	IRQLSPIN_UNLOCK(& ft8bufflock, oldIrql);
 }
 
 void ft8_stop_fill(void)
 {
+	IRQLSPINLOCK_INITIALIZE(& ft8bufflock, IRQL_ONLY_OVERREALTIME);
 	fill_ft8_buf1 = 0;
 	fill_ft8_buf1 = 0;
 	bufind1 = 0;
@@ -635,7 +642,7 @@ void ft8_initialize(void)
 	ft8.int_core0 = 0;
 	ft8.int_core1 = 0;
 
-	subscribefloat_user(& speexoutfloat, & ft8_outregister, NULL, ft8fill);
+	subscribefloat(& speexoutfloat, & ft8_outregister, NULL, ft8fill);
 }
 
 #if LINUX_SUBSYSTEM

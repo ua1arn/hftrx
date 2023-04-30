@@ -705,9 +705,9 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	deliverylist_initialize(& rtstargetsint);
-	deliverylist_initialize(& speexoutfloat);
-	deliverylist_initialize(& afdemodoutfloat);
+	deliverylist_initialize(& rtstargetsint, IRQL_ONLY_OVERREALTIME);
+	deliverylist_initialize(& speexoutfloat, IRQL_ONLY_OVERREALTIME);
+	deliverylist_initialize(& afdemodoutfloat, IRQL_ONLY_OVERREALTIME);
 
 
 #if WITHUSBHEADSET || WITHSKIPUSERMODE || CTLSTYLE_V3D
@@ -807,7 +807,7 @@ void buffers_initialize(void)
 			InsertHeadList2(& voicesfree192rts, & p->item);
 		}
 		SPINLOCK_INITIALIZE(& locklistrts);
-		subscribeint(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout192stereo);
+		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout192stereo);
 
 	}
 	#elif WITHRTS96
@@ -831,7 +831,7 @@ void buffers_initialize(void)
 			InsertHeadList2(& uacin96rtsfree, & p->item);
 		}
 		SPINLOCK_INITIALIZE(& locklistrts);
-		subscribeint(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
+		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
 	}
 	#endif /* WITHRTS192 */
@@ -3222,22 +3222,24 @@ void release_dmabufferxrts(uintptr_t addr)	/* освободить буфер о
 void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 {
 	PLIST_ENTRY t;
-	SPIN_LOCK(& list->listlock);
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
 		(p->cb)(p->ctx, ch0, ch1);
 	}
-	SPIN_UNLOCK(& list->listlock);
+	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
 /* предполагается что тут значения нормирования в диапазоне -1..+1 */
-void deliveryfloat_user(deliverylist_t * list, const FLOAT_t * ch0, const FLOAT_t * ch1, unsigned n)
+void deliveryfloat_buffer(deliverylist_t * list, const FLOAT_t * ch0, const FLOAT_t * ch1, unsigned n)
 {
-	PLIST_ENTRY t;
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& list->listlock);
+	PLIST_ENTRY t;
+
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
@@ -3247,68 +3249,49 @@ void deliveryfloat_user(deliverylist_t * list, const FLOAT_t * ch0, const FLOAT_
 			(p->cb)(p->ctx, ch0 [i], ch1 [i]);
 		}
 	}
-	SPIN_UNLOCK(& list->listlock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
 void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
 {
+	IRQL_t oldIrql;
 	PLIST_ENTRY t;
-	SPIN_LOCK(& list->listlock);
+
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribeint32_t * const p = CONTAINING_RECORD(t, subscribeint32_t, item);
 		(p->cb)(p->ctx, ch0, ch1);
 	}
-	SPIN_UNLOCK(& list->listlock);
+	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
 void subscribefloat(deliverylist_t * list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
 {
-	target->cb = pfn;
-	target->ctx = ctx;
-	SPIN_LOCK(& list->listlock);
-	InsertHeadList(& list->head, & target->item);
-	SPIN_UNLOCK(& list->listlock);
-}
-
-void subscribeint(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
-{
-	target->cb = pfn;
-	target->ctx = ctx;
-	SPIN_LOCK(& list->listlock);
-	InsertHeadList(& list->head, & target->item);
-	SPIN_UNLOCK(& list->listlock);
-}
-
-void subscribefloat_user(deliverylist_t * list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
-{
-	target->cb = pfn;
-	target->ctx = ctx;
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& list->listlock);
-	InsertHeadList(& list->head, & target->item);
-	SPIN_UNLOCK(& list->listlock);
-	LowerIrql(oldIrql);
-}
 
-void subscribeint_user(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
-{
 	target->cb = pfn;
 	target->ctx = ctx;
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& list->listlock);
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
 	InsertHeadList(& list->head, & target->item);
-	SPIN_UNLOCK(& list->listlock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void deliverylist_initialize(deliverylist_t * list)
+void subscribeint32(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
+{
+	IRQL_t oldIrql;
+
+	target->cb = pfn;
+	target->ctx = ctx;
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
+	InsertHeadList(& list->head, & target->item);
+	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
+}
+
+void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 {
 	InitializeListHead(& list->head);
-	SPINLOCK_INITIALIZE(& list->listlock);
+	IRQLSPINLOCK_INITIALIZE(& list->listlock, irqlv);
 }
 
 #endif /* WITHINTEGRATEDDSP */
