@@ -1,0 +1,18 @@
+/* https://wiki.segger.com/images/5/54/Example_ConfigTargetSettings_NXP_S32V234.JLinkScript */
+
+/* https://wiki.segger.com/J-Link_script_files */
+
+void InitTarget(void) {
+  JLINK_SYS_Report("Hello SEGGER JLINK - VM14");
+/*  CPU = CORTEX_A9; */
+  JLINK_CPU                       = CORTEX_A9;
+  /* DAP configuration */
+  CORESIGHT_CoreBaseAddr = 0x28000000;
+  /* Manually configure which APs are present on the CoreSight device */
+  CORESIGHT_AddAP(1, CORESIGHT_AHB_AP);
+  CORESIGHT_AddAP(0, CORESIGHT_APB_AP);
+  CORESIGHT_AddAP(2, CORESIGHT_JTAG_AP);
+/*  CORESIGHT_AddAP(3, CORESIGHT_APB_AP); */
+
+
+}
