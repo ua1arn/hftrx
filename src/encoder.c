@@ -58,27 +58,17 @@ static RAMDTCM int8_t graydecoder [4][4] =
 	},
 };
 
-#undef SPIN_LOCK
-#undef SPIN_UNLOCK
-#undef SPIN_LOCK2
-#undef SPIN_UNLOCK2
-
-#define SPIN_LOCK(p) do { (void) p; } while (0)
-#define SPIN_UNLOCK(p) do { (void) p; } while (0)
-#define SPIN_LOCK2(p, f, l) do { (void) p; } while (0)
-#define SPIN_UNLOCK2(p) do { (void) p; } while (0)
-
-
-static RAMDTCM SPINLOCK_t enc1lock = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t enc2lock = SPINLOCK_INIT;
+static IRQLSPINLOCK_t enc1lock;
+static IRQLSPINLOCK_t enc2lock;
 
 static RAMDTCM uint_fast8_t old_val;
 
 void spool_encinterrupt(void)
 {
 	const uint_fast8_t new_val = hardware_get_encoder_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	IRQL_t oldIrql;
 
-	SPIN_LOCK(& enc1lock);
+	IRQLSPIN_LOCK(& enc1lock, & oldIrql);
 #if ENCODER_REVERSE
 	position1 -= graydecoder [old_val][new_val];
 
@@ -87,7 +77,7 @@ void spool_encinterrupt(void)
 
 #endif
 	old_val = new_val;
-	SPIN_UNLOCK(& enc1lock);
+	IRQLSPIN_UNLOCK(& enc1lock, oldIrql);
 }
 
 static RAMDTCM uint_fast8_t old_val2;
@@ -95,8 +85,9 @@ static RAMDTCM uint_fast8_t old_val2;
 void spool_encinterrupt2(void)
 {
 	const uint_fast8_t new_val = hardware_get_encoder2_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	IRQL_t oldIrql;
 
-	SPIN_LOCK(& enc2lock);
+	IRQLSPIN_LOCK(& enc2lock, & oldIrql);
 
 #if ENCODER2_REVERSE
 	position2 -= graydecoder [old_val2][new_val];
@@ -106,7 +97,7 @@ void spool_encinterrupt2(void)
 
 #endif
 	old_val2 = new_val;
-	SPIN_UNLOCK(& enc2lock);
+	IRQLSPIN_UNLOCK(& enc2lock, oldIrql);
 }
 
 // вызывается в контексте обработчика прерываний
@@ -213,7 +204,9 @@ void encoder_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 static void
 enc_spool(void * ctx)
 {
-	SPIN_LOCK(& enc1lock);
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& enc1lock, & oldIrql);
 
 	const int p1 = safegetposition1();	// Валкодер #1
 	const int p1kbd = safegetposition_kbd();
@@ -221,7 +214,7 @@ enc_spool(void * ctx)
 #if WITHKBDENCODER
 	rotate_kbd += p1kbd;		/* учёт количества импульсов (для прямого отсчёта) */
 #endif
-	SPIN_UNLOCK(& enc1lock);
+	IRQLSPIN_UNLOCK(& enc1lock, oldIrql);
 
 	/* запоминание данных для расчёта скорости вращения валкодера */
 	/* при расчёте скорости игнорируется направление вращения - улучшается обработка синтуйии, когда при уже
@@ -237,10 +230,11 @@ enc_spool(void * ctx)
 	}
 
 	// Валкодер #2
-	SPIN_LOCK(& enc2lock);
+
+	IRQLSPIN_LOCK(& enc2lock, & oldIrql);
 	const int p2 = safegetposition2();
 	rotate2 += p2;		/* учёт количества импульсов (для прямого отсчёта) */
-	SPIN_UNLOCK(& enc2lock);
+	IRQLSPIN_UNLOCK(& enc2lock, oldIrql);
 }
 
 
@@ -254,9 +248,7 @@ void encoder_clear(void)
 	backup_rotate = 0;
 	backup_rotate2 = 0;
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-
-	SPIN_LOCK(& enc1lock);
+	IRQLSPIN_LOCK(& enc1lock, & oldIrql);
 	rotate1 = 0;
 	rotate_kbd = 0;
 
@@ -264,8 +256,7 @@ void encoder_clear(void)
 	enchist [0] = enchist [1] = enchist [2] = enchist [3] = 0; 
 	tichist = 0;
 
-	SPIN_UNLOCK(& enc1lock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& enc1lock, oldIrql);
 }
 
 /* получение количества шагов и скорости вращения. */
@@ -280,8 +271,7 @@ encoder_get_snapshot(
 	unsigned tdelta;	// Время измерения
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& enc1lock);
+	IRQLSPIN_LOCK(& enc1lock, & oldIrql);
 
 	// параметры изменерения скорости не модифицируем
 	// 1. количество шагов за время измерения
@@ -295,9 +285,7 @@ encoder_get_snapshot(
 	rotate1 = 0;
 	rotate_kbd = 0;
 
-
-	SPIN_UNLOCK(& enc1lock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& enc1lock, oldIrql);
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
@@ -321,12 +309,10 @@ encoder2_get_snapshot(
 	int hrotate;
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& enc2lock);
+	IRQLSPIN_LOCK(& enc2lock, & oldIrql);
 	hrotate = rotate2;
 	rotate2 = 0;
-	SPIN_UNLOCK(& enc2lock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& enc2lock, oldIrql);
 
 	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
 	const div_t h = div(hrotate + backup_rotate2, derate);
@@ -455,6 +441,8 @@ void encoder_initialize(void)
 	//tichist [enchistindex] = 0;
 	//enchist [enchistindex] = 0;
 
+	IRQLSPINLOCK_INITIALIZE(& enc1lock, IRQL_ONLY_IPC);
+	IRQLSPINLOCK_INITIALIZE(& enc2lock, IRQL_ONLY_IPC);
 
 	old_val = hardware_get_encoder_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	old_val2 = hardware_get_encoder2_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */

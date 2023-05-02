@@ -494,19 +494,19 @@ typedef struct lowspiio_tag
 	lowspiexchange_t chunks [3];
 } lowspiio_t;
 
-static SPINLOCK_t spilock = SPINLOCK_INIT;
+static LCLSPINLOCK_t spilock = LCLSPINLOCK_INIT;
 
 void spi_operate_lock(IRQL_t * oldIrql)
 {
 #if ! LINUX_SUBSYSTEM
 	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
 #endif /* ! LINUX_SUBSYSTEM */
-	SPIN_LOCK(& spilock);
+	LCLSPIN_LOCK(& spilock);
 }
 
 void spi_operate_unlock(IRQL_t irql)
 {
-	SPIN_UNLOCK(& spilock);
+	LCLSPIN_UNLOCK(& spilock);
 #if ! LINUX_SUBSYSTEM
 	LowerIrql(irql);
 #endif /* ! LINUX_SUBSYSTEM */
@@ -978,7 +978,7 @@ void spi_perform_initialize(void)
 	ticker_initialize(& spiticker, 1, spi_spool, NULL);
 	ticker_add(& spiticker);
 
-	SPINLOCK_INITIALIZE(& spilock);
+	LCLSPINLOCK_INITIALIZE(& spilock);
 }
 
 #else /* USESPILOCK */

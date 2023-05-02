@@ -631,16 +631,16 @@ void sysinit_gpio_initialize(void)
 
 #elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
-static SPINLOCK_t gpiodata_locks [8] =
+static LCLSPINLOCK_t gpiodata_locks [8] =
 {
-		SPINLOCK_INIT,
-		SPINLOCK_INIT,
-		SPINLOCK_INIT,
-		SPINLOCK_INIT,
-		SPINLOCK_INIT,
-		SPINLOCK_INIT,
-		SPINLOCK_INIT,
-		SPINLOCK_INIT,
+		LCLSPINLOCK_INIT,
+		LCLSPINLOCK_INIT,
+		LCLSPINLOCK_INIT,
+		LCLSPINLOCK_INIT,
+		LCLSPINLOCK_INIT,
+		LCLSPINLOCK_INIT,
+		LCLSPINLOCK_INIT,
+		LCLSPINLOCK_INIT,
 };
 
 // временная подготовка к работе с gpio.
@@ -651,22 +651,22 @@ void sysinit_gpio_initialize(void)
 
 	for (i = 0; i < ARRAY_SIZE(gpiodata_locks); ++ i)
 	{
-		SPINLOCK_t * const lck = & gpiodata_locks [i];
-		SPINLOCK_INITIALIZE(lck);
+		LCLSPINLOCK_t * const lck = & gpiodata_locks [i];
+		LCLSPINLOCK_INITIALIZE(lck);
 	}
 }
 
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
-	SPINLOCK_t * const lck = & gpiodata_locks [bank];
+	LCLSPINLOCK_t * const lck = & gpiodata_locks [bank];
 	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
-	SPIN_LOCK(lck);
+	LCLSPIN_LOCK(lck);
 }
 
 void gpiobank_unlock(unsigned bank, IRQL_t oldIrql)
 {
-	SPINLOCK_t * const lck = & gpiodata_locks [bank];
-	SPIN_UNLOCK(lck);
+	LCLSPINLOCK_t * const lck = & gpiodata_locks [bank];
+	LCLSPIN_UNLOCK(lck);
 	LowerIrql(oldIrql);
 }
 
@@ -796,21 +796,21 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 #define ALWNR_GPIO_DRV_AF50M 0x03
 #define ALWNR_GPIO_PULL_AF50M 0x00
 
-static SPINLOCK_t gpiodata_locks [8] =
+static LCLSPINLOCK_t gpiodata_locks [8] =
 {
-	SPINLOCK_INIT,	// GPIOA
-	SPINLOCK_INIT,	// GPIOB - in T113-S3
-	SPINLOCK_INIT,	// GPIOC - in T113-S3
-	SPINLOCK_INIT,	// GPIOD - in T113-S3
-	SPINLOCK_INIT,	// GPIOE - in T113-S3
-	SPINLOCK_INIT,	// GPIOF - in T113-S3
-	SPINLOCK_INIT,	// GPIOG - in T113-S3
-	SPINLOCK_INIT,	// GPIOH
+	LCLSPINLOCK_INIT,	// GPIOA
+	LCLSPINLOCK_INIT,	// GPIOB - in T113-S3
+	LCLSPINLOCK_INIT,	// GPIOC - in T113-S3
+	LCLSPINLOCK_INIT,	// GPIOD - in T113-S3
+	LCLSPINLOCK_INIT,	// GPIOE - in T113-S3
+	LCLSPINLOCK_INIT,	// GPIOF - in T113-S3
+	LCLSPINLOCK_INIT,	// GPIOG - in T113-S3
+	LCLSPINLOCK_INIT,	// GPIOH
 };
 
-static SPINLOCK_t gpiodata_L_lock = SPINLOCK_INIT;
+static LCLSPINLOCK_t gpiodata_L_lock = LCLSPINLOCK_INIT;
 
-static SPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
+static LCLSPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
 {
 #if CPUSTYLE_A64
 	if (gpio == GPIOL)
@@ -841,13 +841,13 @@ void sysinit_gpio_initialize(void)
 
 	for (i = 0; i < ARRAY_SIZE(gpiodata_locks); ++ i)
 	{
-		SPINLOCK_t * const lck = & gpiodata_locks [i];
-		SPINLOCK_INITIALIZE(lck);
+		LCLSPINLOCK_t * const lck = & gpiodata_locks [i];
+		LCLSPINLOCK_INITIALIZE(lck);
 	}
 
 #if CPUSTYLE_A64
 
-	SPINLOCK_INITIALIZE(& gpiodata_L_lock);
+	LCLSPINLOCK_INITIALIZE(& gpiodata_L_lock);
 	CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING - not need - already set
 	RTC->GPL_HOLD_OUTPUT_REG = 0;
 
@@ -877,15 +877,15 @@ typedef uint32_t irqstatus_t;
 
 static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
-	SPINLOCK_t * const lck = gpioX_get_lock(gpio);
+	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
 	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
-	SPIN_LOCK(lck);
+	LCLSPIN_LOCK(lck);
 }
 
 static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 {
-	SPINLOCK_t * const lck = gpioX_get_lock(gpio);
-	SPIN_UNLOCK(lck);
+	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
+	LCLSPIN_UNLOCK(lck);
 	LowerIrql(irql);
 }
 

@@ -2305,7 +2305,7 @@ static uint32_t dwDTERate [INTERFACE_count];
 	#define SECOND_CDC_OFFSET 1
 #endif /* WITHUSBCDCACM_N > 1 */
 
-static SPINLOCK_t catlock = SPINLOCK_INIT;
+static LCLSPINLOCK_t catlock = LCLSPINLOCK_INIT;
 
 /* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
 /* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
@@ -2316,11 +2316,11 @@ static SPINLOCK_t catlock = SPINLOCK_INIT;
 uint_fast8_t usbd_cdc1_getrts(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	SPIN_LOCK(& catlock);
+	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
-	SPIN_UNLOCK(& catlock);
+	LCLSPIN_UNLOCK(& catlock);
 	return state;
 }
 
@@ -2329,11 +2329,11 @@ uint_fast8_t usbd_cdc1_getrts(void)
 uint_fast8_t usbd_cdc1_getdtr(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	SPIN_LOCK(& catlock);
+	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_DTE_PRESENT) != 0) ||
 		0;
-	SPIN_UNLOCK(& catlock);
+	LCLSPIN_UNLOCK(& catlock);
 	return state;
 }
 
@@ -2343,11 +2343,11 @@ uint_fast8_t usbd_cdc2_getrts(void)
 {
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
-	SPIN_LOCK(& catlock);
+	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
-	SPIN_UNLOCK(& catlock);
+	LCLSPIN_UNLOCK(& catlock);
 	return state;
 #else /* WITHUSBCDCACM_N > 1 */
 	return 0;
@@ -2360,11 +2360,11 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 {
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
-	SPIN_LOCK(& catlock);
+	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_DTE_PRESENT) != 0) ||
 		0;
-	SPIN_UNLOCK(& catlock);
+	LCLSPIN_UNLOCK(& catlock);
 	return state;
 #else /* WITHUSBCDCACM_N > 1 */
 	return 0;
@@ -2418,9 +2418,9 @@ uint_fast8_t usbd_cdc_ready(void)	/* временное решение для п
 void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	SPIN_LOCK(& catlock);
+	LCLSPIN_LOCK(& catlock);
 	usbd_cdc_txenabled [offset] = state;
-	SPIN_UNLOCK(& catlock);
+	LCLSPIN_UNLOCK(& catlock);
 }
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
@@ -2428,9 +2428,9 @@ void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обра
 void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	SPIN_LOCK(& catlock);
+	LCLSPIN_LOCK(& catlock);
 	usbd_cdcX_rxenabled [offset] = state;
-	SPIN_UNLOCK(& catlock);
+	LCLSPIN_UNLOCK(& catlock);
 }
 
 /* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
@@ -2440,10 +2440,10 @@ usbd_cdc_tx(void * ctx, uint_fast8_t c)
 	const unsigned offset = MAIN_CDC_OFFSET;
 	//USBD_HandleTypeDef * const pdev = ctx;
 	(void) ctx;
-	SPIN_LOCK(& catlock);
+	LCLSPIN_LOCK(& catlock);
 	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
 	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;
-	SPIN_UNLOCK(& catlock);
+	LCLSPIN_UNLOCK(& catlock);
 }
 
 /* использование буфера принятых данных */

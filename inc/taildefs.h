@@ -113,41 +113,41 @@ typedef enum
 
 #if ! LINUX_SUBSYSTEM
 
-typedef struct spinlock_tag {
+typedef struct lclspinlock_tag {
 	USBALIGN_BEGIN volatile uint8_t lock USBALIGN_END;
 #if WITHDEBUG
 	const char * file;
 	int line;
 	uint_fast8_t cpuid;
 #endif /* WITHDEBUG */
-} spinlock_t, SPINLOCK_t;
+} lclspinlock_t, LCLSPINLOCK_t;
 
 #if WITHDEBUG
-	#define SPINLOCK_INIT { 0, "z", 0, 255 }
-	#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; (p)->file = "n"; (p)->line = 0, (p)->cpuid = 255; } while (0)
+	#define LCLSPINLOCK_INIT { 0, "z", 0, 255 }
+	#define LCLSPINLOCK_INITIALIZE(p) do { (p)->lock = 0; (p)->file = "n"; (p)->line = 0, (p)->cpuid = 255; } while (0)
 #else /* WITHDEBUG */
-	#define SPINLOCK_INIT { 0, }
-	#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
+	#define LCLSPINLOCK_INIT { 0, }
+	#define LCLSPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
 #endif /* WITHDEBUG */
 
 typedef struct irqlspinlock_tag
 {
 	IRQL_t irql;
-	SPINLOCK_t lock;
+	LCLSPINLOCK_t lock;
 } IRQLSPINLOCK_t;
 
-#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), SPINLOCK_INIT }
-#define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { SPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrqlv); } while (0)
+//#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), LCLSPINLOCK_INIT }
+#define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { LCLSPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrqlv); } while (0)
 #else /* ! LINUX_SUBSYSTEM */
 
-typedef struct spinlock_tag {
+typedef struct lclspinlock_tag {
 	int lock;
 #if WITHDEBUG
 	const char * file;
 	int line;
 	uint_fast8_t cpuid;
 #endif /* WITHDEBUG */
-} spinlock_t, SPINLOCK_t;
+} lclspinlock_t, LCLSPINLOCK_t;
 
 typedef struct irqlspinlock_tag
 {
@@ -155,7 +155,7 @@ typedef struct irqlspinlock_tag
 	int lock;
 } IRQLSPINLOCK_t;
 
-#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), SPINLOCK_INIT }
+//#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), LCLSPINLOCK_INIT }
 #define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do {} while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
@@ -173,20 +173,11 @@ IRQL_t GetCurrentIrql(void);
 	#define TARGETCPU_CPU0 (1u << 0)		// CPU #0
 	#define TARGETCPU_CPU1 (1u << 1)		// CPU #1
 
-	#define SPIN_LOCK(p) do { spin_lock(p, __FILE__, __LINE__); } while (0)
-	#define SPIN_UNLOCK(p) do { spin_unlock(p); } while (0)
+	#define LCLSPIN_LOCK(p) do { lclspin_lock(p, __FILE__, __LINE__); } while (0)
+	#define LCLSPIN_UNLOCK(p) do { lclspin_unlock(p); } while (0)
 
-//#if 0
-//	#define SPIN_LOCK2(p, f, l) do { spin_lock2(p, (f), (l)); } while (0)
-//	#define SPIN_UNLOCK2(p) do { spin_unlock(p); } while (0)
-//#else
-//	#define SPIN_LOCK2(p, f, l) do { } while (0)
-//	#define SPIN_UNLOCK2(p) do { } while (0)
-//#endif
-
-	void spin_lock(spinlock_t * __restrict lock, const char * file, int line);
-	//void spin_lock2(spinlock_t * lock, const char * file, int line);
-	void spin_unlock(spinlock_t * __restrict lock);
+	void lclspin_lock(lclspinlock_t * __restrict lock, const char * file, int line);
+	void lclspin_unlock(lclspinlock_t * __restrict lock);
 
 #else /* WITHSMPSYSTEM */
 	/* Единственный процесор. */
@@ -196,8 +187,8 @@ IRQL_t GetCurrentIrql(void);
 	#define TARGETCPU_CPU0 (1u << 0)		// CPU #0
 	#define TARGETCPU_CPU1 (1u << 0)		// CPU #0
 
-	#define SPIN_LOCK(p) do { (void) p; } while (0)
-	#define SPIN_UNLOCK(p) do { (void) p; } while (0)
+	#define LCLSPIN_LOCK(p) do { (void) p; } while (0)
+	#define LCLSPIN_UNLOCK(p) do { (void) p; } while (0)
 	#define SPIN_LOCK2(p, f, l) do { (void) p; } while (0)
 	#define SPIN_UNLOCK2(p) do { (void) p; } while (0)
 
@@ -205,8 +196,8 @@ IRQL_t GetCurrentIrql(void);
 
 #if ! LINUX_SUBSYSTEM
 /* Захват spinlock с установкой требуемого IRQL и сохранением ранее установленного */
-#define IRQLSPIN_LOCK(p, oldIrql) do { RiseIrql((p)->irql, (oldIrql)); SPIN_LOCK(& (p)->lock); } while (0)
-#define IRQLSPIN_UNLOCK(p, oldIrql) do { SPIN_UNLOCK(& (p)->lock); LowerIrql(oldIrql); } while (0)
+#define IRQLSPIN_LOCK(p, oldIrql) do { RiseIrql((p)->irql, (oldIrql)); LCLSPIN_LOCK(& (p)->lock); } while (0)
+#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(& (p)->lock); LowerIrql(oldIrql); } while (0)
 #else  /* ! LINUX_SUBSYSTEM */
 #define IRQLSPIN_LOCK(p, oldIrql) do { } while (0)
 #define IRQLSPIN_UNLOCK(p, oldIrql) do { } while (0)

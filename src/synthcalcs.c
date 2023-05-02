@@ -88,31 +88,31 @@ static volatile uint_fast64_t rlfm_position;// = 0;
 static volatile uint_fast64_t rlfm_nsteps;
 static volatile uint_fast64_t rlfm_currfreqX;	//текущач частота
 static volatile uint_fast64_t rlfm_freqStepX;	//шаг приращения
-static SPINLOCK_t lfmlock = SPINLOCK_INIT;
+static LCLSPINLOCK_t lfmlock = LCLSPINLOCK_INIT;
 
 // Вызывается из обработчика PPS при совпадении времени начала.
 void lfm_run(void)
 {
 	global_disableIRQ();
-	SPIN_LOCK(& lfmlock);
+	LCLSPIN_LOCK(& lfmlock);
 
 	if (rlfm_isrunning == 0)
 	{
 		rlfm_isrunning = 1;
 	}
 
-	SPIN_UNLOCK(& lfmlock);
+	LCLSPIN_UNLOCK(& lfmlock);
 	global_enableIRQ();
 }
 
 void lfm_disable(void)
 {
 	global_disableIRQ();
-	SPIN_LOCK(& lfmlock);
+	LCLSPIN_LOCK(& lfmlock);
 
 	rlfm_isrunning = 0;
 
-	SPIN_UNLOCK(& lfmlock);
+	LCLSPIN_UNLOCK(& lfmlock);
 	global_enableIRQ();
 }
 

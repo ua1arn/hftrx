@@ -39,7 +39,7 @@ typedef struct listcnt
 	unsigned long tag2;
 	LIST_ENTRY item0;
 	unsigned Count;	// количество элментов в списке
-	//SPINLOCK_t lock2;
+	//LCLSPINLOCK_t lock2;
 	unsigned long tag3;
 } LIST_HEAD2, * PLIST_HEAD2;
 
@@ -55,7 +55,7 @@ InitializeListHead2(LIST_HEAD2 * ListHead)
 {
 	ListHead->tag2 = LIST2TAG2;
 	ListHead->tag3 = LIST2TAG3;
-	//SPINLOCK_INITIALIZE(& ListHead->lock2);
+	//LCLSPINLOCK_INITIALIZE(& ListHead->lock2);
 	(ListHead)->Count = 0;
 	InitializeListHead(& (ListHead)->item0);
 }
@@ -312,23 +312,23 @@ static RAMBIGDTCM LIST_HEAD2 voicesfree16rx;
 static RAMBIGDTCM LIST_HEAD3 voicesmike16rx;	// буферы с оцифрованными звуками с микрофона/Line in
 static RAMBIGDTCM LIST_HEAD3 resample16rx;		// буферы от USB для синхронизации
 static RAMBIGDTCM LIST_HEAD3 voicesusb16rx;	// буферы с оцифрованными звуками с USB AUDIO (после ресэмплинга)
-static RAMBIGDTCM SPINLOCK_t locklist16rx = SPINLOCK_INIT;
+static RAMBIGDTCM LCLSPINLOCK_t locklist16rx = LCLSPINLOCK_INIT;
 
 static RAMBIGDTCM LIST_HEAD2 voicesfree16tx;
 static RAMBIGDTCM LIST_HEAD3 voicesphones16tx;	// буферы, предназначенные для выдачи на наушники
 static RAMBIGDTCM LIST_HEAD3 voicesmoni16tx;	// буферы, предназначенные для звука самоконтроля
-static RAMBIGDTCM SPINLOCK_t locklist16tx = SPINLOCK_INIT;
+static RAMBIGDTCM LCLSPINLOCK_t locklist16tx = LCLSPINLOCK_INIT;
 
 static RAMBIGDTCM LIST_HEAD2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
 static RAMBIGDTCM LIST_HEAD2 voicesfree32tx;
-static RAMBIGDTCM SPINLOCK_t locklist32tx = SPINLOCK_INIT;
+static RAMBIGDTCM LCLSPINLOCK_t locklist32tx = LCLSPINLOCK_INIT;
 
 static RAMBIGDTCM LIST_HEAD2 voicesfree32rx;
-static RAMBIGDTCM SPINLOCK_t locklist32rx = SPINLOCK_INIT;
+static RAMBIGDTCM LCLSPINLOCK_t locklist32rx = LCLSPINLOCK_INIT;
 
 static RAMBIGDTCM LIST_HEAD2 speexfree16;		// Свободные буферы
 static RAMBIGDTCM LIST_HEAD2 speexready16;	// Буферы для обработки speex
-static RAMBIGDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
+static RAMBIGDTCM LCLSPINLOCK_t speexlock = LCLSPINLOCK_INIT;
 
 #if WITHUSBHW && WITHUSBUAC
 
@@ -415,12 +415,12 @@ int_fast32_t buffers_dmabufferuacin48cachesize(void)
 
 #endif /* WITHRTS96 */
 
-static RAMBIGDTCM SPINLOCK_t locklistrts = SPINLOCK_INIT;
+static RAMBIGDTCM LCLSPINLOCK_t locklistrts = LCLSPINLOCK_INIT;
 static subscribeint32_t uacinrtssubscribe;
 
 static RAMBIGDTCM LIST_HEAD2 uacin48free;
 static RAMBIGDTCM LIST_HEAD2 uacin48ready;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
-static RAMBIGDTCM SPINLOCK_t locklistuacin48 = SPINLOCK_INIT;
+static RAMBIGDTCM LCLSPINLOCK_t locklistuacin48 = LCLSPINLOCK_INIT;
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -436,7 +436,7 @@ typedef ALIGNX_BEGIN struct recordswav48
 
 static RAMBIGDTCM LIST_HEAD2 recordswav48free;		// Свободные буферы
 static RAMBIGDTCM LIST_HEAD2 recordswav48ready;	// Буферы для записи на SD CARD
-static RAMBIGDTCM SPINLOCK_t lockwav48 = SPINLOCK_INIT;
+static RAMBIGDTCM LCLSPINLOCK_t lockwav48 = LCLSPINLOCK_INIT;
 
 #endif /* WITHUSEAUDIOREC */
 
@@ -469,7 +469,7 @@ typedef struct message
 
 static volatile RAMBIGDTCM VLIST_ENTRY msgsfree8;		// Свободные буферы
 static volatile RAMBIGDTCM VLIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
-static RAMBIGDTCM SPINLOCK_t locklistmsg8 = SPINLOCK_INIT;
+static RAMBIGDTCM LCLSPINLOCK_t locklistmsg8 = LCLSPINLOCK_INIT;
 
 #if WITHBUFFERSDEBUG
 
@@ -596,17 +596,17 @@ uint_fast8_t takespeexready_user(speexel_t * * dest)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& speexlock);
+	LCLSPIN_LOCK(& speexlock);
 	if (! IsListEmpty2(& speexready16))
 	{
 		const PLIST_ENTRY t = RemoveTailList2(& speexready16);
-		SPIN_UNLOCK(& speexlock);
+		LCLSPIN_UNLOCK(& speexlock);
 		LowerIrql(oldIrql);
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		* dest = p->buff;
 		return 1;
 	}
-	SPIN_UNLOCK(& speexlock);
+	LCLSPIN_UNLOCK(& speexlock);
 	LowerIrql(oldIrql);
 	return 0;
 }
@@ -617,22 +617,22 @@ void releasespeexbuffer_user(speexel_t * t)
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& speexlock);
+	LCLSPIN_LOCK(& speexlock);
 
 	InsertHeadList2(& speexfree16, & p->item);
 
-	SPIN_UNLOCK(& speexlock);
+	LCLSPIN_UNLOCK(& speexlock);
 	LowerIrql(oldIrql);
 }
 
 
 denoise16_t * allocate_dmabuffer16denoise(void)
 {
-	SPIN_LOCK(& speexlock);
+	LCLSPIN_LOCK(& speexlock);
 	if (! IsListEmpty2(& speexfree16))
 	{
 		const PLIST_ENTRY t = RemoveTailList2(& speexfree16);
-		SPIN_UNLOCK(& speexlock);
+		LCLSPIN_UNLOCK(& speexlock);
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		return p;
 	}
@@ -643,7 +643,7 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 	if (! IsListEmpty2(& speexready16))
 	{
 		const PLIST_ENTRY t = RemoveTailList2(& speexready16);
-		SPIN_UNLOCK(& speexlock);
+		LCLSPIN_UNLOCK(& speexlock);
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		unsigned i;
 		for (i = 0; i < FIRBUFSIZE; ++ i)
@@ -652,7 +652,7 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 		}
 		return p;
 	}
-	SPIN_UNLOCK(& speexlock);
+	LCLSPIN_UNLOCK(& speexlock);
 	PRINTF(PSTR("allocate_dmabuffer16denoise() failure\n"));
 	ASSERT(0);
 	for (;;)
@@ -682,9 +682,9 @@ savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 	if (n >= FIRBUFSIZE)
 	{
-		SPIN_LOCK(& speexlock);
+		LCLSPIN_LOCK(& speexlock);
 		InsertHeadList2(& speexready16, & p->item);
-		SPIN_UNLOCK(& speexlock);
+		LCLSPIN_UNLOCK(& speexlock);
 		p = NULL;
 	}
 }
@@ -743,7 +743,7 @@ void buffers_initialize(void)
 			p->tag3 = p;
 			InsertHeadList2(& voicesfree16rx, & p->item);
 		}
-		SPINLOCK_INITIALIZE(& locklist16rx);
+		LCLSPINLOCK_INITIALIZE(& locklist16rx);
 
 	}
 	{
@@ -762,7 +762,7 @@ void buffers_initialize(void)
 			p->tag3 = p;
 			InsertHeadList2(& voicesfree16tx, & p->item);
 		}
-		SPINLOCK_INITIALIZE(& locklist16tx);
+		LCLSPINLOCK_INITIALIZE(& locklist16tx);
 	}
 	{
 		unsigned i;
@@ -779,7 +779,7 @@ void buffers_initialize(void)
 			p->tag3 = p;
 			InsertHeadList2(& uacin48free, & p->item);
 		}
-		SPINLOCK_INITIALIZE(& locklistuacin48);
+		LCLSPINLOCK_INITIALIZE(& locklistuacin48);
 
 	}
 
@@ -806,7 +806,7 @@ void buffers_initialize(void)
 			p->tag3 = p;
 			InsertHeadList2(& voicesfree192rts, & p->item);
 		}
-		SPINLOCK_INITIALIZE(& locklistrts);
+		LCLSPINLOCK_INITIALIZE(& locklistrts);
 		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout192stereo);
 
 	}
@@ -830,7 +830,7 @@ void buffers_initialize(void)
 			//PRINTF("Add p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
 			InsertHeadList2(& uacin96rtsfree, & p->item);
 		}
-		SPINLOCK_INITIALIZE(& locklistrts);
+		LCLSPINLOCK_INITIALIZE(& locklistrts);
 		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
 	}
@@ -848,7 +848,7 @@ void buffers_initialize(void)
 			p->tag3 = p;
 			InsertHeadList2(& voicesfree32tx, & p->item);
 		}
-		SPINLOCK_INITIALIZE(& locklist32tx);
+		LCLSPINLOCK_INITIALIZE(& locklist32tx);
 	}
 	{
 		unsigned i;
@@ -860,7 +860,7 @@ void buffers_initialize(void)
 			voice32rx_t * const p = & voicesarray32rx [i];
 			InsertHeadList2(& voicesfree32rx, & p->item);
 		}
-		SPINLOCK_INITIALIZE(& locklist32rx);
+		LCLSPINLOCK_INITIALIZE(& locklist32rx);
 	}
 
 
@@ -890,7 +890,7 @@ void buffers_initialize(void)
 			recordswav48_t * const p = & recordsarray16 [i];
 			InsertHeadList2(& recordswav48free, & p->item);
 		}
-		SPINLOCK_INITIALIZE(& lockwav48);
+		LCLSPINLOCK_INITIALIZE(& lockwav48);
 	}
 
 #endif /* WITHUSEAUDIOREC */
@@ -925,7 +925,7 @@ void buffers_initialize(void)
 			denoise16_t * const p = & speexarray16 [i];
 			InsertHeadList2(& speexfree16, & p->item);
 		}
-		SPINLOCK_INITIALIZE(& speexlock);
+		LCLSPINLOCK_INITIALIZE(& speexlock);
 	}
 
 #endif /* WITHINTEGRATEDDSP */
@@ -946,7 +946,7 @@ void buffers_initialize(void)
 			//InitializeListHead2(& p->item);
 			InsertHeadVList(& msgsfree8, & p->item);
 		}
-		SPINLOCK_INITIALIZE(& locklistmsg8);
+		LCLSPINLOCK_INITIALIZE(& locklistmsg8);
 	}
 }
 
@@ -958,18 +958,18 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& locklistmsg8);
+	LCLSPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsready8))
 	{
 		PVLIST_ENTRY t = RemoveTailVList(& msgsready8);
-		SPIN_UNLOCK(& locklistmsg8);
+		LCLSPIN_UNLOCK(& locklistmsg8);
 		LowerIrql(oldIrql);
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		* dest = p->data;
 		ASSERT(p->type != MSGT_EMPTY);
 		return p->type;
 	}
-	SPIN_UNLOCK(& locklistmsg8);
+	LCLSPIN_UNLOCK(& locklistmsg8);
 	LowerIrql(oldIrql);
 	return MSGT_EMPTY;
 }
@@ -984,9 +984,9 @@ void releasemsgbuffer_user(uint8_t * dest)
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& locklistmsg8);
+	LCLSPIN_LOCK(& locklistmsg8);
 	InsertHeadVList(& msgsfree8, & p->item);
-	SPIN_UNLOCK(& locklistmsg8);
+	LCLSPIN_UNLOCK(& locklistmsg8);
 	LowerIrql(oldIrql);
 }
 
@@ -996,11 +996,11 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& locklistmsg8);
+	LCLSPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsfree8))
 	{
 		PVLIST_ENTRY t = RemoveTailVList(& msgsfree8);
-		SPIN_UNLOCK(& locklistmsg8);
+		LCLSPIN_UNLOCK(& locklistmsg8);
 		LowerIrql(oldIrql);
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		ASSERT(p->tag2 == p);
@@ -1008,7 +1008,7 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 		* dest = p->data;
 		return (MSGBUFFERSIZE8 * sizeof p->data [0]);
 	}
-	SPIN_UNLOCK(& locklistmsg8);
+	LCLSPIN_UNLOCK(& locklistmsg8);
 	LowerIrql(oldIrql);
 	return 0;
 }
@@ -1024,9 +1024,9 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& locklistmsg8);
+	LCLSPIN_LOCK(& locklistmsg8);
 	InsertHeadVList(& msgsready8, & p->item);
-	SPIN_UNLOCK(& locklistmsg8);
+	LCLSPIN_UNLOCK(& locklistmsg8);
 	LowerIrql(oldIrql);
 }
 
@@ -1037,9 +1037,9 @@ static RAMFUNC void buffers_tophones16tx(voice16tx_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	SPIN_LOCK(& locklist16tx);
+	LCLSPIN_LOCK(& locklist16tx);
 	InsertHeadList3(& voicesphones16tx, & p->item, 0);
-	SPIN_UNLOCK(& locklist16tx);
+	LCLSPIN_UNLOCK(& locklist16tx);
 }
 
 // Сохранить звук для самоконтроля на звуковой выход трансивера
@@ -1047,9 +1047,9 @@ static RAMFUNC void buffers_tomoni16tx(voice16tx_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	SPIN_LOCK(& locklist16tx);
+	LCLSPIN_LOCK(& locklist16tx);
 	InsertHeadList3(& voicesmoni16tx, & p->item, 0);
-	SPIN_UNLOCK(& locklist16tx);
+	LCLSPIN_UNLOCK(& locklist16tx);
 }
 
 // Сохранить звук в никуда...
@@ -1057,9 +1057,9 @@ static RAMFUNC void buffers_tonull16rx(voice16rx_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	SPIN_LOCK(& locklist16rx);
+	LCLSPIN_LOCK(& locklist16rx);
 	InsertHeadList2(& voicesfree16rx, & p->item);
-	SPIN_UNLOCK(& locklist16rx);
+	LCLSPIN_UNLOCK(& locklist16rx);
 }
 
 // Сохранить звук в никуда...
@@ -1067,9 +1067,9 @@ static RAMFUNC void buffers_tonull16tx(voice16tx_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	SPIN_LOCK(& locklist16tx);
+	LCLSPIN_LOCK(& locklist16tx);
 	InsertHeadList2(& voicesfree16tx, & p->item);
-	SPIN_UNLOCK(& locklist16tx);
+	LCLSPIN_UNLOCK(& locklist16tx);
 }
 
 // +++ Коммутация потоков аудиоданных
@@ -1099,7 +1099,7 @@ RAMFUNC static void buffers_savetoresampling16rx(voice16rx_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	SPIN_LOCK(& locklist16rx);
+	LCLSPIN_LOCK(& locklist16rx);
 
 	if (uacoutalt == 0)
 	{
@@ -1129,7 +1129,7 @@ RAMFUNC static void buffers_savetoresampling16rx(voice16rx_t * p)
 		#endif /* WITHBUFFERSDEBUG */
 		}
 	}
-	SPIN_UNLOCK(& locklist16rx);
+	LCLSPIN_UNLOCK(& locklist16rx);
 }
 
 
@@ -1169,11 +1169,11 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 
 	if (p == NULL)
 	{
-		SPIN_LOCK(& locklist16rx);
+		LCLSPIN_LOCK(& locklist16rx);
 		if (GetReadyList3(& voicesmike16rx))
 		{
 			PLIST_ENTRY t = RemoveTailList3(& voicesmike16rx);
-			SPIN_UNLOCK(& locklist16rx);
+			LCLSPIN_UNLOCK(& locklist16rx);
 			p = CONTAINING_RECORD(t, voice16rx_t, item);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
@@ -1182,7 +1182,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 		else
 		{
 			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
-			SPIN_UNLOCK(& locklist16rx);
+			LCLSPIN_UNLOCK(& locklist16rx);
 			return 0;
 		}
 	}
@@ -1215,11 +1215,11 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 
 	if (p == NULL)
 	{
-		SPIN_LOCK(& locklist16rx);
+		LCLSPIN_LOCK(& locklist16rx);
 		if (GetReadyList3(& voicesusb16rx))
 		{
 			PLIST_ENTRY t = RemoveTailList3(& voicesusb16rx);
-			SPIN_UNLOCK(& locklist16rx);
+			LCLSPIN_UNLOCK(& locklist16rx);
 			p = CONTAINING_RECORD(t, voice16rx_t, item);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
@@ -1231,7 +1231,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 		else
 		{
 			// resampler не успел начать работать - возвращаем 0.
-			SPIN_UNLOCK(& locklist16rx);
+			LCLSPIN_UNLOCK(& locklist16rx);
 			return 0;
 		}
 	}
@@ -1326,9 +1326,9 @@ buffers_savetouacin192rts(voice192rts_t * p)
 	debugcount_uacinrts += sizeof p->buff / sizeof p->buff [0] / DMABUFFSTEP192RTS;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 
-	SPIN_LOCK(& locklistrts);
+	LCLSPIN_LOCK(& locklistrts);
 	InsertHeadList2(& uacin192rts, & p->item);
-	SPIN_UNLOCK(& locklistrts);
+	LCLSPIN_UNLOCK(& locklistrts);
 
 	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
@@ -1337,9 +1337,9 @@ static void buffers_savetonull192rts(voice192rts_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	SPIN_LOCK(& locklistrts);
+	LCLSPIN_LOCK(& locklistrts);
 	InsertHeadList2(& voicesfree192rts, & p->item);
-	SPIN_UNLOCK(& locklistrts);
+	LCLSPIN_UNLOCK(& locklistrts);
 }
 
 
@@ -1374,9 +1374,9 @@ buffers_savetouacin96rts(voice96rts_t * p)
 	debugcount_uacinrts += sizeof p->u.buff / sizeof p->u.buff [0] / DMABUFFSTEP96RTS;	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	
-	SPIN_LOCK(& locklistrts);
+	LCLSPIN_LOCK(& locklistrts);
 	InsertHeadList2(& uacin96rtsready, & p->item);
-	SPIN_UNLOCK(& locklistrts);
+	LCLSPIN_UNLOCK(& locklistrts);
 
 	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
@@ -1387,9 +1387,9 @@ static void buffers_savetonull96rts(voice96rts_t * p)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	SPIN_LOCK(& locklistrts);
+	LCLSPIN_LOCK(& locklistrts);
 	InsertHeadList2(& uacin96rtsfree, & p->item);
-	SPIN_UNLOCK(& locklistrts);
+	LCLSPIN_UNLOCK(& locklistrts);
 }
 
 #else
@@ -1409,9 +1409,9 @@ buffers_savetouacin(uacin48_t * p)
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_uacin += sizeof p->u.buff / sizeof p->u.buff [0] / (DMABUFFSTEP_UACIN * UACIN_AUDIO48_SAMPLEBYTES);	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
-	SPIN_LOCK(& locklistuacin48);
+	LCLSPIN_LOCK(& locklistuacin48);
 	InsertHeadList2(& uacin48ready, & p->item);
-	SPIN_UNLOCK(& locklistuacin48);
+	LCLSPIN_UNLOCK(& locklistuacin48);
 
 	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
@@ -1436,7 +1436,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 
 	static unsigned skipsense = SKIPPED;
 
-	SPIN_LOCK(& locklist16rx);
+	LCLSPIN_LOCK(& locklist16rx);
 	if (p == NULL)
 	{
 		if (GetReadyList3(& resample16rx) == 0)
@@ -1445,7 +1445,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 			++ nbzero;
 #endif /* WITHBUFFERSDEBUG */
 			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
-			SPIN_UNLOCK(& locklist16rx);
+			LCLSPIN_UNLOCK(& locklist16rx);
 			memset(buff, 0x00, size * sizeof (* buff));	// тишина
 			return size;	// ноль нельзя возвращать - зацикливается проуедура ресэмплинга
 		}
@@ -1463,7 +1463,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 
 			if (valid && GetCountList3(& resample16rx) <= LOW)
 			{
-				SPIN_UNLOCK(& locklist16rx);
+				LCLSPIN_UNLOCK(& locklist16rx);
 				// добавляется один сэмпл к выходному потоку раз в SKIPPED блоков
 #if WITHBUFFERSDEBUG
 				++ nbadd;
@@ -1493,7 +1493,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 			}
 			else if (valid && GetCountList3(& resample16rx) >= HIGH)
 			{
-				SPIN_UNLOCK(& locklist16rx);
+				LCLSPIN_UNLOCK(& locklist16rx);
 #if WITHBUFFERSDEBUG
 				++ nbdel;
 #endif /* WITHBUFFERSDEBUG */
@@ -1504,7 +1504,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 			}
 			else
 			{
-				SPIN_UNLOCK(& locklist16rx);
+				LCLSPIN_UNLOCK(& locklist16rx);
 				// Ресэмплинг не требуется или нет запаса входных данных
 				part = NPARTS - 1;
 				datas [part] = & p->buff [0];
@@ -1517,7 +1517,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 	}
 	else
 	{
-		SPIN_UNLOCK(& locklist16rx);
+		LCLSPIN_UNLOCK(& locklist16rx);
 	}
 
 	const unsigned chunk = ulmin32(sizes [part], size);
@@ -1552,9 +1552,9 @@ static RAMFUNC void buffers_resample(void)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	SPIN_LOCK(& locklist16rx);
+	LCLSPIN_LOCK(& locklist16rx);
 	InsertHeadList3(& voicesusb16rx, & p->item, 0);
-	SPIN_UNLOCK(& locklist16rx);
+	LCLSPIN_UNLOCK(& locklist16rx);
 }
 
 // вызывается из какой-либо функции обслуживания I2S каналов (все синхронны).
@@ -1614,7 +1614,7 @@ void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& lockwav48);
+	LCLSPIN_LOCK(& lockwav48);
 	if (preparerecord16 == NULL)
 	{
 		if (! IsListEmpty2(& recordswav48free))
@@ -1661,7 +1661,7 @@ void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
 		InsertHeadList2(& recordswav48ready, & preparerecord16->item);
 		preparerecord16 = NULL;
 	}
-	SPIN_UNLOCK(& lockwav48);
+	LCLSPIN_UNLOCK(& lockwav48);
 	LowerIrql(oldIrql);
 }
 
@@ -1670,17 +1670,17 @@ unsigned takerecordbuffer(void * * dest)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& lockwav48);
+	LCLSPIN_LOCK(& lockwav48);
 	if (! IsListEmpty2(& recordswav48ready))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& recordswav48ready);
-		SPIN_UNLOCK(& lockwav48);
+		LCLSPIN_UNLOCK(& lockwav48);
 		LowerIrql(oldIrql);
 		recordswav48_t * const p = CONTAINING_RECORD(t, recordswav48_t, item);
 		* dest = p->buff;
 		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
 	}
-	SPIN_UNLOCK(& lockwav48);
+	LCLSPIN_UNLOCK(& lockwav48);
 	LowerIrql(oldIrql);
 	return 0;
 }
@@ -1690,17 +1690,17 @@ unsigned takefreerecordbuffer(void * * dest)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& lockwav48);
+	LCLSPIN_LOCK(& lockwav48);
 	if (! IsListEmpty2(& recordswav48free))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& recordswav48free);
-		SPIN_UNLOCK(& lockwav48);
+		LCLSPIN_UNLOCK(& lockwav48);
 		LowerIrql(oldIrql);
 		recordswav48_t * const p = CONTAINING_RECORD(t, recordswav48_t, item);
 		* dest = p->buff;
 		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
 	}
-	SPIN_UNLOCK(& lockwav48);
+	LCLSPIN_UNLOCK(& lockwav48);
 	LowerIrql(oldIrql);
 	return 0;
 }
@@ -1713,9 +1713,9 @@ void saveplaybuffer(void * dest, unsigned used)
 	p->startdata = 0;	// перыфй сэмпл в буфере
 	p->topdata = used / sizeof p->buff [0];	// количество сэмплов
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& lockwav48);
+	LCLSPIN_LOCK(& lockwav48);
 	InsertHeadList2(& recordswav48ready, & p->item);
-	SPIN_UNLOCK(& lockwav48);
+	LCLSPIN_UNLOCK(& lockwav48);
 	LowerIrql(oldIrql);
 }
 
@@ -1749,9 +1749,9 @@ void releaserecordbuffer(void * dest)
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-	SPIN_LOCK(& lockwav48);
+	LCLSPIN_LOCK(& lockwav48);
 	InsertHeadList2(& recordswav48free, & p->item);
-	SPIN_UNLOCK(& lockwav48);
+	LCLSPIN_UNLOCK(& lockwav48);
 	LowerIrql(oldIrql);
 }
 
@@ -1763,7 +1763,7 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 {
 	static recordswav48_t * p = NULL;
 	static unsigned n;
-	SPIN_LOCK(& lockwav48);
+	LCLSPIN_LOCK(& lockwav48);
 	if (p == NULL)
 	{
 		if (! IsListEmpty2(& recordswav48ready))
@@ -1790,7 +1790,7 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 		p = NULL;
 		//PRINTF("Release record buffer\n");
 	}
-	SPIN_UNLOCK(& lockwav48);
+	LCLSPIN_UNLOCK(& lockwav48);
 	return 1;	// Сэмпл считан
 }
 
@@ -1880,12 +1880,12 @@ void releasemodembuffer_low(uint8_t * dest)
 // Этой функцией пользуются обработчики прерываний DMA на передачу данных по SAI
 RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 {
-	SPIN_LOCK(& locklist32tx);
+	LCLSPIN_LOCK(& locklist32tx);
 	if (! IsListEmpty2(& voicesfree32tx))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& voicesfree32tx);
 		voice32tx_t * const p = CONTAINING_RECORD(t, voice32tx_t, item);
-		SPIN_UNLOCK(& locklist32tx);
+		LCLSPIN_UNLOCK(& locklist32tx);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 		return (uintptr_t) & p->buff;
@@ -1905,7 +1905,7 @@ RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 
 		PLIST_ENTRY t = RemoveTailList2(& voicesfree32tx);
 		voice32tx_t * const p = CONTAINING_RECORD(t, voice32tx_t, item);
-		SPIN_UNLOCK(& locklist32tx);
+		LCLSPIN_UNLOCK(& locklist32tx);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
@@ -1913,7 +1913,7 @@ RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 #endif /* WITHBUFFERSDEBUG */
 		return (uintptr_t) & p->buff;
 	}
-	SPIN_UNLOCK(& locklist32tx);
+	LCLSPIN_UNLOCK(& locklist32tx);
 	/* error path */
 	PRINTF(PSTR("allocate_dmabuffer32tx() failure\n"));
 	for (;;)
@@ -1924,17 +1924,17 @@ RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 // Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
 RAMFUNC uintptr_t allocate_dmabuffer32rx(void)
 {
-	SPIN_LOCK(& locklist32rx);
+	LCLSPIN_LOCK(& locklist32rx);
 	if (! IsListEmpty2(& voicesfree32rx))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& voicesfree32rx);
 		voice32rx_t * const p = CONTAINING_RECORD(t, voice32rx_t, item);
-		SPIN_UNLOCK(& locklist32rx);
+		LCLSPIN_UNLOCK(& locklist32rx);
 		return (uintptr_t) & p->buff;
 	}
 	else
 	{
-		SPIN_UNLOCK(& locklist32rx);
+		LCLSPIN_UNLOCK(& locklist32rx);
 		PRINTF(PSTR("allocate_dmabuffer32rx() failure\n"));
 		for (;;)
 			;
@@ -1945,11 +1945,11 @@ RAMFUNC uintptr_t allocate_dmabuffer32rx(void)
 // Этой функцией пользуются обработчики прерываний DMA на передачу и приём данных по I2S и USB AUDIO
 RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 {
-	SPIN_LOCK(& locklist16rx);
+	LCLSPIN_LOCK(& locklist16rx);
 	if (! IsListEmpty2(& voicesfree16rx))
 	{
 		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16rx);
-		SPIN_UNLOCK(& locklist16rx);
+		LCLSPIN_UNLOCK(& locklist16rx);
 		voice16rx_t * const p = CONTAINING_RECORD(t, voice16rx_t, item);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
@@ -1972,7 +1972,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 		while (-- n && ! IsListEmpty3(& resample16rx));
 
 		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16rx);
-		SPIN_UNLOCK(& locklist16rx);
+		LCLSPIN_UNLOCK(& locklist16rx);
 		voice16rx_t * const p = CONTAINING_RECORD(t, voice16rx_t, item);
 	#if WITHBUFFERSDEBUG
 		++ e4;
@@ -1984,7 +1984,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 #endif /* WITHUSBUAC */
 	else
 	{
-		SPIN_UNLOCK(& locklist16rx);
+		LCLSPIN_UNLOCK(& locklist16rx);
 		PRINTF(PSTR("allocate_dmabuffer16rx() failure\n"));
 		for (;;)
 			;
@@ -1995,11 +1995,11 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 // Этой функцией пользуются обработчики прерываний DMA на передачу и приём данных по I2S и USB AUDIO
 RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 {
-	SPIN_LOCK(& locklist16tx);
+	LCLSPIN_LOCK(& locklist16tx);
 	if (! IsListEmpty2(& voicesfree16tx))
 	{
 		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16tx);
-		SPIN_UNLOCK(& locklist16tx);
+		LCLSPIN_UNLOCK(& locklist16tx);
 		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
@@ -2031,7 +2031,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 		while (-- n && ! IsListEmpty3(& voicesphones16tx) && ! IsListEmpty3(& voicesmoni16tx));
 
 		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16tx);
-		SPIN_UNLOCK(& locklist16tx);
+		LCLSPIN_UNLOCK(& locklist16tx);
 		voice16rx_t * const p = CONTAINING_RECORD(t, voice16rx_t, item);
 	#if WITHBUFFERSDEBUG
 		++ e3;
@@ -2042,7 +2042,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 	}
 	else
 	{
-		SPIN_UNLOCK(& locklist16tx);
+		LCLSPIN_UNLOCK(& locklist16tx);
 		PRINTF(PSTR("allocate_dmabuffer16tx() failure\n"));
 		for (;;)
 			;
@@ -2058,9 +2058,9 @@ void RAMFUNC release_dmabuffer32tx(uintptr_t addr)
 	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	SPIN_LOCK(& locklist32tx);
+	LCLSPIN_LOCK(& locklist32tx);
 	InsertHeadList2(& voicesfree32tx, & p->item);
-	SPIN_UNLOCK(& locklist32tx);
+	LCLSPIN_UNLOCK(& locklist32tx);
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
@@ -2113,9 +2113,9 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	SPIN_LOCK(& locklist16rx);
+	LCLSPIN_LOCK(& locklist16rx);
 	InsertHeadList3(& voicesmike16rx, & p->item, 0);
-	SPIN_UNLOCK(& locklist16rx);
+	LCLSPIN_UNLOCK(& locklist16rx);
 
 	//dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
 
@@ -2170,9 +2170,9 @@ void release_dmabuffer32rx(uintptr_t addr)
 	//ASSERT(addr != 0);
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 
-	SPIN_LOCK(& locklist32rx);
+	LCLSPIN_LOCK(& locklist32rx);
 	InsertHeadList2(& voicesfree32rx, & p->item);
-	SPIN_UNLOCK(& locklist32rx);
+	LCLSPIN_UNLOCK(& locklist32rx);
 
 }
 
@@ -2230,15 +2230,15 @@ uintptr_t getfilled_dmabuffer32tx_main(void)
 
 	//dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
 
-	SPIN_LOCK(& locklist32tx);
+	LCLSPIN_LOCK(& locklist32tx);
 	if (! IsListEmpty2(& voicesready32tx))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& voicesready32tx);
 		voice32tx_t * const p = CONTAINING_RECORD(t, voice32tx_t, item);
-		SPIN_UNLOCK(& locklist32tx);
+		LCLSPIN_UNLOCK(& locklist32tx);
 		return (uintptr_t) & p->buff;
 	}
-	SPIN_UNLOCK(& locklist32tx);
+	LCLSPIN_UNLOCK(& locklist32tx);
 #if WITHBUFFERSDEBUG
 	++ e9;
 #endif /* WITHBUFFERSDEBUG */
@@ -2279,17 +2279,17 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 	debugcount_phonesdac += DMABUFFSIZE16TX / DMABUFFSTEP16TX;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
 	const uintptr_t monibuf = getfilled_dmabuffer16txmoni();
-	SPIN_LOCK(& locklist16tx);
+	LCLSPIN_LOCK(& locklist16tx);
 	if (GetReadyList3(& voicesphones16tx))
 	{
 		PLIST_ENTRY t = RemoveTailList3(& voicesphones16tx);
-		SPIN_UNLOCK(& locklist16tx);
+		LCLSPIN_UNLOCK(& locklist16tx);
 		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
 		dsp_addsidetone(p->buff, (aubufv_t *) monibuf, 1);
 		release_dmabuffer16tx(monibuf);
 		return (uintptr_t) & p->buff;	// алрес для DMA
 	}
-	SPIN_UNLOCK(& locklist16tx);
+	LCLSPIN_UNLOCK(& locklist16tx);
 
 #if WITHBUFFERSDEBUG
 	++ e1;
@@ -2305,15 +2305,15 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 // Этой функцией пользуются обработчики прерываний DMA
 uintptr_t getfilled_dmabuffer16txmoni(void)
 {
-	SPIN_LOCK(& locklist16tx);
+	LCLSPIN_LOCK(& locklist16tx);
 	if (GetReadyList3(& voicesmoni16tx))
 	{
 		PLIST_ENTRY t = RemoveTailList3(& voicesmoni16tx);
-		SPIN_UNLOCK(& locklist16tx);
+		LCLSPIN_UNLOCK(& locklist16tx);
 		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
 		return (uintptr_t) & p->buff;	// алрес для DMA
 	}
-	SPIN_UNLOCK(& locklist16tx);
+	LCLSPIN_UNLOCK(& locklist16tx);
 
 #if WITHBUFFERSDEBUG
 	++ e10;
@@ -2367,9 +2367,9 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 
 	if ((level32tx += DMABUFFSTEP32TX) >= DMABUFFSIZE32TX)
 	{
-		SPIN_LOCK(& locklist32tx);
+		LCLSPIN_LOCK(& locklist32tx);
 		InsertHeadList2(& voicesready32tx, & prepareout32tx->item);
-		SPIN_UNLOCK(& locklist32tx);
+		LCLSPIN_UNLOCK(& locklist32tx);
 		prepareout32tx = NULL;
 	}
 }
@@ -2465,12 +2465,12 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		// Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
 		static uintptr_t allocate_dmabuffer96rts(void)
 		{
-			SPIN_LOCK(& locklistrts);
+			LCLSPIN_LOCK(& locklistrts);
 			if (! IsListEmpty2(& uacin96rtsfree))
 			{
 				const PLIST_ENTRY t = RemoveTailList2(& uacin96rtsfree);
 				voice96rts_t * const p = CONTAINING_RECORD(t, voice96rts_t, item);
-				SPIN_UNLOCK(& locklistrts);
+				LCLSPIN_UNLOCK(& locklistrts);
 			#if WITHBUFFERSDEBUG
 				++ n5;
 			#endif /* WITHBUFFERSDEBUG */
@@ -2507,7 +2507,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 				const PLIST_ENTRY t = RemoveTailList2(& uacin96rtsfree);
 				voice96rts_t * const p = CONTAINING_RECORD(t, voice96rts_t, item);
-				SPIN_UNLOCK(& locklistrts);
+				LCLSPIN_UNLOCK(& locklistrts);
 			#if WITHBUFFERSDEBUG
 				++ e5;
 			#endif /* WITHBUFFERSDEBUG */
@@ -2523,7 +2523,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 			}
 			else
 			{
-				SPIN_UNLOCK(& locklistrts);
+				LCLSPIN_UNLOCK(& locklistrts);
 				PRINTF(PSTR("allocate_dmabuffer96rts() failure\n"));
 				for (;;)
 					;
@@ -2539,9 +2539,9 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 			ASSERT(p->tag == BUFFTAG_RTS96);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
-			SPIN_LOCK(& locklistrts);
+			LCLSPIN_LOCK(& locklistrts);
 			InsertHeadList2(& uacin96rtsfree, & p->item);
-			SPIN_UNLOCK(& locklistrts);
+			LCLSPIN_UNLOCK(& locklistrts);
 		}
 
 		// Этой функцией пользуются обработчики прерываний DMA
@@ -2549,12 +2549,12 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		// Если в данный момент нет готового буфера, возврат 0
 		static uintptr_t getfilled_dmabuffer96uacinrts(void)
 		{
-			SPIN_LOCK(& locklistrts);
+			LCLSPIN_LOCK(& locklistrts);
 			if (! IsListEmpty2(& uacin96rtsready))
 			{
 				PLIST_ENTRY t = RemoveTailList2(& uacin96rtsready);
 				voice96rts_t * const p = CONTAINING_RECORD(t, voice96rts_t, item);
-				SPIN_UNLOCK(& locklistrts);
+				LCLSPIN_UNLOCK(& locklistrts);
 				if (p->tag != BUFFTAG_RTS96)
 				{
 					PRINTF(" p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
@@ -2565,7 +2565,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 				ASSERT(p->tag3 == p);
 				return (uintptr_t) & p->u.buff;
 			}
-			SPIN_UNLOCK(& locklistrts);
+			LCLSPIN_UNLOCK(& locklistrts);
 			return 0;
 		}
 
@@ -2623,26 +2623,26 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		// Если в данный момент нет готового буфера, возврат 0
 		static uintptr_t getfilled_dmabuffer192uacinrts(void)
 		{
-			SPIN_LOCK(& locklistrts);
+			LCLSPIN_LOCK(& locklistrts);
 			if (! IsListEmpty2(& uacin192rts))
 			{
 				PLIST_ENTRY t = RemoveTailList2(& uacin192rts);
 				voice192rts_t * const p = CONTAINING_RECORD(t, voice192rts_t, item);
-				SPIN_UNLOCK(& locklistrts);
+				LCLSPIN_UNLOCK(& locklistrts);
 				return (uintptr_t) & p->u.buff;
 			}
-			SPIN_UNLOCK(& locklistrts);
+			LCLSPIN_UNLOCK(& locklistrts);
 			return 0;
 		}
 
 		// Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
 		uintptr_t allocate_dmabuffer192rts(void)
 		{
-			SPIN_LOCK(& locklistrts);
+			LCLSPIN_LOCK(& locklistrts);
 			if (! IsListEmpty2(& voicesfree192rts))
 			{
 				PLIST_ENTRY t = RemoveTailList2(& voicesfree192rts);
-				SPIN_UNLOCK(& locklistrts);
+				LCLSPIN_UNLOCK(& locklistrts);
 				voice192rts_t * const p = CONTAINING_RECORD(t, voice192rts_t, item);
 				ASSERT(p->tag == BUFFTAG_RTS192);
 				ASSERT(p->tag2 == p);
@@ -2669,7 +2669,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 				} while (-- n && ! IsListEmpty2(& uacin192rts));
 
 				const PLIST_ENTRY t = RemoveTailList2(& voicesfree192rts);
-				SPIN_UNLOCK(& locklistrts);
+				LCLSPIN_UNLOCK(& locklistrts);
 				voice192rts_t * const p = CONTAINING_RECORD(t, voice192rts_t, item);
 				ASSERT(p->tag == BUFFTAG_RTS192);
 				ASSERT(p->tag2 == p);
@@ -2681,7 +2681,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 			}
 			else
 			{
-				SPIN_UNLOCK(& locklistrts);
+				LCLSPIN_UNLOCK(& locklistrts);
 				PRINTF(PSTR("allocate_dmabuffer192rts() failure\n"));
 				for (;;)
 					;
@@ -2696,9 +2696,9 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 			ASSERT(p->tag == BUFFTAG_RTS192);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
-			SPIN_LOCK(& locklistrts);
+			LCLSPIN_LOCK(& locklistrts);
 			InsertHeadList2(& voicesfree192rts, & p->item);
-			SPIN_UNLOCK(& locklistrts);
+			LCLSPIN_UNLOCK(& locklistrts);
 		}
 
 		// NOT USED
@@ -2748,9 +2748,9 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 	// Сохранить USB UAC IN буфер в никуда...
 	static RAMFUNC void buffers_tonulluacin(uacin48_t * p)
 	{
-		SPIN_LOCK(& locklistuacin48);
+		LCLSPIN_LOCK(& locklistuacin48);
 		InsertHeadList2(& uacin48free, & p->item);
-		SPIN_UNLOCK(& locklistuacin48);
+		LCLSPIN_UNLOCK(& locklistuacin48);
 	}
 
 	void RAMFUNC release_dmabufferuacin48(uintptr_t addr)
@@ -2764,11 +2764,11 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 	RAMFUNC uintptr_t allocate_dmabufferuacin48(void)
 	{
-		SPIN_LOCK(& locklistuacin48);
+		LCLSPIN_LOCK(& locklistuacin48);
 		if (! IsListEmpty2(& uacin48free))
 		{
 			PLIST_ENTRY t = RemoveTailList2(& uacin48free);
-			SPIN_UNLOCK(& locklistuacin48);
+			LCLSPIN_UNLOCK(& locklistuacin48);
 			uacin48_t * const p = CONTAINING_RECORD(t, uacin48_t, item);
 			ASSERT(p->tag == BUFFTAG_UACIN48);
 			ASSERT(p->tag2 == p);
@@ -2789,7 +2789,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 			while (-- n && ! IsListEmpty2(& uacin48ready));
 
 			PLIST_ENTRY t = RemoveTailList2(& uacin48free);
-			SPIN_UNLOCK(& locklistuacin48);
+			LCLSPIN_UNLOCK(& locklistuacin48);
 			uacin48_t * const p = CONTAINING_RECORD(t, uacin48_t, item);
 			ASSERT(p->tag == BUFFTAG_UACIN48);
 			ASSERT(p->tag2 == p);
@@ -2798,7 +2798,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		}
 		else
 		{
-			SPIN_UNLOCK(& locklistuacin48);
+			LCLSPIN_UNLOCK(& locklistuacin48);
 			PRINTF(PSTR("allocate_dmabufferuacin48() failure, uacinalt=%d\n"), uacinalt);
 			for (;;)
 				;
@@ -2811,18 +2811,18 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 	// Если в данный момент нет готового буфера, возврат 0
 	static uintptr_t getfilled_dmabufferuacin48(void)
 	{
-		SPIN_LOCK(& locklistuacin48);
+		LCLSPIN_LOCK(& locklistuacin48);
 		if (! IsListEmpty2(& uacin48ready))
 		{
 			PLIST_ENTRY t = RemoveTailList2(& uacin48ready);
-			SPIN_UNLOCK(& locklistuacin48);
+			LCLSPIN_UNLOCK(& locklistuacin48);
 			uacin48_t * const p = CONTAINING_RECORD(t, uacin48_t, item);
 			ASSERT(p->tag == BUFFTAG_UACIN48);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			return (uintptr_t) & p->u.buff;
 		}
-		SPIN_UNLOCK(& locklistuacin48);
+		LCLSPIN_UNLOCK(& locklistuacin48);
 		return 0;
 	}
 
@@ -2921,7 +2921,7 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 	{
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
-		SPIN_LOCK(& locklist16rx);
+		LCLSPIN_LOCK(& locklist16rx);
 
 		// Очистить очередь принятых от USB UAC
 		while (GetCountList3(& resample16rx) != 0)
@@ -2930,7 +2930,7 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 			InsertHeadList2(& voicesfree16rx, t);
 		}
 
-		SPIN_UNLOCK(& locklist16rx);
+		LCLSPIN_UNLOCK(& locklist16rx);
 		LowerIrql(oldIrql);
 	}
 }

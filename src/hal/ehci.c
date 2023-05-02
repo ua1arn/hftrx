@@ -897,7 +897,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	ASSERT((virt_to_phys(& hehci->periodiclist) & 0xFFF) == 0);
 	InitializeListHead(& hehci->hcListAsync);// Host channels, ожидающие обмена в ASYNCLISTADDR
 	InitializeListHead(& hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
-	SPINLOCK_INITIALIZE(& hehci->asynclock);
+	LCLSPINLOCK_INITIALIZE(& hehci->asynclock);
 
 	// https://habr.com/ru/post/426421/
 	// Read the Command register
@@ -1794,10 +1794,10 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 
 	system_disableIRQ();
-	SPIN_LOCK(& hehci->asynclock);
+	LCLSPIN_LOCK(& hehci->asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
 	HAL_OHCI_IRQHandler(& hehci_USB);
-	SPIN_UNLOCK(& hehci->asynclock);
+	LCLSPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
 
 #if WITHINTEGRATEDDSP
@@ -2296,10 +2296,10 @@ void MX_USB_HOST_Process(void)
 	USBH_Process(& hUsbHostHS);
 
 	system_disableIRQ();
-	SPIN_LOCK(& hehci->asynclock);
+	LCLSPIN_LOCK(& hehci->asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
 	HAL_OHCI_IRQHandler(& hehci_USB);
-	SPIN_UNLOCK(& hehci->asynclock);
+	LCLSPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
 #if WITHTINYUSB
     //tuh_task();

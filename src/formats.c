@@ -365,7 +365,7 @@ safestrcpy(char * dst, size_t blen, const char * src)
 
 #if FORMATFROMLIBRARY
 
-static RAMBIGDTCM SPINLOCK_t locklistprintf = SPINLOCK_INIT;
+static RAMBIGDTCM LCLSPINLOCK_t locklistprintf = LCLSPINLOCK_INIT;
 
 /*	Formatted output to standart output stream.	*/
 /*	User-side of console output.			*/
@@ -376,14 +376,14 @@ void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 	char b [128];	// see stack sizes for interrupt handlers
 	va_list	ap;
 
-	SPIN_LOCK(& locklistprintf);
+	LCLSPIN_LOCK(& locklistprintf);
 	va_start(ap, format);
 	vsnprintf(b, sizeof b / sizeof b [0], format, ap);
 	va_end(ap);
 
 	dbg_puts_impl(b);
 
-	SPIN_UNLOCK(& locklistprintf);
+	LCLSPIN_UNLOCK(& locklistprintf);
 }
 
 #else /* FORMATFROMLIBRARY */

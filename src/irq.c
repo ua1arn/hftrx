@@ -1051,7 +1051,7 @@ void IRQ_Handler_GIC(void)
 //	return id;
 //}
 
-//static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
+//static RAMDTCM LCLSPINLOCK_t giclock = LCLSPINLOCK_INIT;
 
 /* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
 // See ARM IHI 0048B.b document
@@ -1097,11 +1097,11 @@ void IRQ_Handler_GIC(void)
 	if (int_id >= 1020)
 	{
 		//dbg_putchar('2');
-		//SPIN_LOCK(& giclock);
+		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
 		GIC_SetPriority(0, GIC_GetPriority(0));
-		//SPIN_UNLOCK(& giclock);
+		//LCLSPIN_UNLOCK(& giclock);
 
 	}
 	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
@@ -1137,11 +1137,11 @@ void IRQ_Handler_GIC(void)
 	else
 	{
 		//dbg_putchar('3');
-		//SPIN_LOCK(& giclock);
+		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
 		GIC_SetPriority(0, GIC_GetPriority(0));
-		//SPIN_UNLOCK(& giclock);
+		//LCLSPIN_UNLOCK(& giclock);
 	}
 	//dbg_putchar(' ');
 
@@ -1782,7 +1782,7 @@ void IRQ15_Handler(void)
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
-void spin_lock(spinlock_t * __restrict p, const char * file, int line)
+void lclspin_lock(lclspinlock_t * __restrict p, const char * file, int line)
 {
 #if (__CORTEX_A == 53U)
 	if ((__get_CPUECTLR() & CPUECTLR_SMPEN_Msk) == 0)
@@ -1823,7 +1823,7 @@ void spin_lock(spinlock_t * __restrict p, const char * file, int line)
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
-void spin_lock2(volatile spinlock_t * p, const char * file, int line)
+void spin_lock2(volatile lclspinlock_t * p, const char * file, int line)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status;
@@ -1853,7 +1853,7 @@ void spin_lock2(volatile spinlock_t * p, const char * file, int line)
 }
 */
 
-void spin_unlock(spinlock_t * __restrict p)
+void lclspin_unlock(lclspinlock_t * __restrict p)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	__DMB(); // Ensure memory operations completed before
@@ -1962,11 +1962,11 @@ uint_fast8_t arm_hardware_cpuid(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
-static RAMDTCM SPINLOCK_t gicdistrib_lock = SPINLOCK_INIT;
+static RAMDTCM LCLSPINLOCK_t gicdistrib_lock = LCLSPINLOCK_INIT;
 
 #if WITHSMPSYSTEM
 
-static RAMDTCM SPINLOCK_t populate_lock = SPINLOCK_INIT;
+static RAMDTCM LCLSPINLOCK_t populate_lock = LCLSPINLOCK_INIT;
 
 //static USBALIGN_BEGIN uint8_t gicshadow_target [1024] USBALIGN_END;
 //static USBALIGN_BEGIN uint8_t gicshadow_config [1024] USBALIGN_END;
@@ -1979,12 +1979,12 @@ static void arm_hardware_gicsfetch(void)
 	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
 	unsigned int_id;
 
-	SPIN_LOCK(& gicdistrib_lock);
+	LCLSPIN_LOCK(& gicdistrib_lock);
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
 		GIC_SetPriority(int_id, gicshadow_prio [int_id]);	// non-atomic operation
 	}
-	SPIN_UNLOCK(& gicdistrib_lock);
+	LCLSPIN_UNLOCK(& gicdistrib_lock);
 	//dcache_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//dcache_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 	dcache_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
@@ -1995,7 +1995,7 @@ static void arm_hardware_gicsfetch(void)
 static void arm_hardware_populate(int int_id)
 {
 	const uint32_t target_list = 0xFF & ~ (0x01u << arm_hardware_cpuid());	// получателями будут остальные ядра
-	SPIN_LOCK(& populate_lock);
+	LCLSPIN_LOCK(& populate_lock);
 	//PRINTF("arm_hardware_populate: int_id=%d\n", int_id);
 	//gicshadow_target [int_id] = targetcpu;
 	//gicshadow_config [int_id] = GIC_GetConfiguration(int_id);
@@ -2006,7 +2006,7 @@ static void arm_hardware_populate(int int_id)
 
 	GIC_SendSGI(BOARD_SGI_IRQ, target_list, 0x00);	// other CORE, filer=0
 
-	SPIN_UNLOCK(& populate_lock);
+	LCLSPIN_UNLOCK(& populate_lock);
 }
 
 /* вызывается на основном ядре */
@@ -2021,14 +2021,14 @@ static void arm_hardware_populate_initialize(void)
 	{
 		gicshadow_prio [int_id] = GIC_GetPriority(int_id);
 	}
-	//SPINLOCK_INITIALIZE(& gicdistrib_lock);
-	//SPINLOCK_INITIALIZE(& populate_lock);
+	//LCLSPINLOCK_INITIALIZE(& gicdistrib_lock);
+	//LCLSPINLOCK_INITIALIZE(& populate_lock);
 	//dcache_clean_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//dcache_clean_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 
-	SPIN_LOCK(& gicdistrib_lock);
+	LCLSPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
-	SPIN_UNLOCK(& gicdistrib_lock);
+	LCLSPIN_UNLOCK(& gicdistrib_lock);
 	dcache_clean_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 	/* Установить на все процессоры кроме текущего */
@@ -2041,9 +2041,9 @@ void arm_hardware_populte_second_initialize(void)
 	ASSERT(arm_hardware_cpuid() != 0);
 	//PRINTF("arm_hardware_populte_second_initialize\n");
 
-	SPIN_LOCK(& gicdistrib_lock);
+	LCLSPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
-	SPIN_UNLOCK(& gicdistrib_lock);
+	LCLSPIN_UNLOCK(& gicdistrib_lock);
 	//dcache_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//dcache_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 	dcache_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
@@ -2077,7 +2077,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
 
-	SPIN_LOCK(& gicdistrib_lock);
+	LCLSPIN_LOCK(& gicdistrib_lock);
 
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);	// non-atomic operation
 	GIC_SetTarget(int_id, targetcpu);	// non-atomic operation
@@ -2091,7 +2091,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
 #endif /* ! CPUSTYLE_R7S721 */
 
-	SPIN_UNLOCK(& gicdistrib_lock);
+	LCLSPIN_UNLOCK(& gicdistrib_lock);
 
 	#if WITHSMPSYSTEM
 		arm_hardware_populate(int_id);	// populate for other CPUs

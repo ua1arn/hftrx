@@ -334,7 +334,7 @@ uint32_t reg_read(uint32_t addr)
 
 #if WITHSPISW && WITHPS7BOARD_MYC_Y7Z020 // sv9 only <<- remove
 uint32_t * readreg, * writereg;
-SPINLOCK_t lock_sclk, lock_miso, lock_mosi;
+LCLSPINLOCK_t lock_sclk, lock_miso, lock_mosi;
 
 void linux_spi_init(void)
 {
@@ -349,9 +349,9 @@ void linux_spi_init(void)
 	* dirreg |= ((1 << (SPI_MOSI_MIO - 32)) | (1 << (SPI_SCLK_MIO - 32)));
 	* dirreg &= ~(1 << (SPI_MISO_MIO - 32));
 
-	SPINLOCK_INITIALIZE(& lock_sclk);
-	SPINLOCK_INITIALIZE(& lock_miso);
-	SPINLOCK_INITIALIZE(& lock_mosi);
+	LCLSPINLOCK_INITIALIZE(& lock_sclk);
+	LCLSPINLOCK_INITIALIZE(& lock_miso);
+	LCLSPINLOCK_INITIALIZE(& lock_mosi);
 }
 
 
@@ -694,12 +694,12 @@ void linux_user_init(void)
 
 pthread_mutex_t md = PTHREAD_MUTEX_INITIALIZER;
 
-void spin_lock(spinlock_t * __restrict p, const char * file, int line)
+void lclspin_lock(lclspinlock_t * __restrict p, const char * file, int line)
 {
 	pthread_mutex_lock(p);
 }
 
-void spin_unlock(spinlock_t * __restrict p)
+void lclspin_unlock(lclspinlock_t * __restrict p)
 {
 	pthread_mutex_unlock(p);
 }

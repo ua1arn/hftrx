@@ -235,8 +235,8 @@ RAMFUNC void spool_elkeyinputsbundle(void)
 }
 
 
-static RAMDTCM SPINLOCK_t tickerslock = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t adcdoneslock = SPINLOCK_INIT;
+static RAMDTCM LCLSPINLOCK_t tickerslock = LCLSPINLOCK_INIT;
+static RAMDTCM LCLSPINLOCK_t adcdoneslock = LCLSPINLOCK_INIT;
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
 //static unsigned nowtick;
@@ -252,15 +252,15 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 
 void ticker_add(ticker_t * p)
 {
-	SPIN_LOCK(& tickerslock);
+	LCLSPIN_LOCK(& tickerslock);
 	InsertHeadVList(& tickers, & p->item);
-	SPIN_UNLOCK(& tickerslock);
+	LCLSPIN_UNLOCK(& tickerslock);
 }
 
 static void tickers_spool(void)
 {
 
-	SPIN_LOCK(& tickerslock);
+	LCLSPIN_LOCK(& tickerslock);
 	//++ nowtick;
 	PVLIST_ENTRY t;
 	for (t = tickers.Blink; t != & tickers; t = t->Blink)
@@ -277,12 +277,12 @@ static void tickers_spool(void)
 				(p->cb)(p->ctx);
 		}
 	}
-	SPIN_UNLOCK(& tickerslock);
+	LCLSPIN_UNLOCK(& tickerslock);
 }
 
 void tickers_initialize(void)
 {
-	SPINLOCK_INITIALIZE(& tickerslock);
+	LCLSPINLOCK_INITIALIZE(& tickerslock);
 	InitializeListHead(& tickers);
 
 }
@@ -290,7 +290,7 @@ void tickers_initialize(void)
 // инициализация списка обработчиков конца преобразования АЦП
 void adcdones_initialize(void)
 {
-	SPINLOCK_INITIALIZE(& adcdoneslock);
+	LCLSPINLOCK_INITIALIZE(& adcdoneslock);
 	InitializeListHead(& adcdones);
 }
 
@@ -304,14 +304,14 @@ void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx)
 // регистрируется обработчик конца преобразования АЦП
 void adcdone_add(adcdone_t * p)
 {
-	SPIN_LOCK(& adcdoneslock);
+	LCLSPIN_LOCK(& adcdoneslock);
 	InsertHeadVList(& adcdones, & p->item);
-	SPIN_UNLOCK(& adcdoneslock);
+	LCLSPIN_UNLOCK(& adcdoneslock);
 }
 
 static void adcdones_spool(void)
 {
-	SPIN_LOCK(& adcdoneslock);
+	LCLSPIN_LOCK(& adcdoneslock);
 
 	//++ nowtick;
 	PVLIST_ENTRY t;
@@ -323,7 +323,7 @@ static void adcdones_spool(void)
 		if (p->cb != NULL)
 			(p->cb)(p->ctx);
 	}
-	SPIN_UNLOCK(& adcdoneslock);
+	LCLSPIN_UNLOCK(& adcdoneslock);
 }
 
 static volatile uint32_t sys_now_counter;
@@ -3870,8 +3870,8 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #endif /* CPU types */
 
-static RAMDTCM SPINLOCK_t cpu1init = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t cpu1userstart [HARDWARE_NCORES];
+static RAMDTCM LCLSPINLOCK_t cpu1init = LCLSPINLOCK_INIT;
+static RAMDTCM LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
 void Reset_CPUn_Handler(void)
@@ -3925,11 +3925,11 @@ void Reset_CPUn_Handler(void)
 
 	arm_hardware_populte_second_initialize();
 	__enable_irq();
-	SPIN_UNLOCK(& cpu1init);
+	LCLSPIN_UNLOCK(& cpu1init);
 
 	unsigned core = arm_hardware_cpuid();
-	SPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
-	SPIN_UNLOCK(& cpu1userstart [core]);
+	LCLSPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
+	LCLSPIN_UNLOCK(& cpu1userstart [core]);
 #if WITHNESTEDINTERRUPTS
 	GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
 #endif /* WITHNESTEDINTERRUPTS */
@@ -3973,7 +3973,7 @@ void cpump_initialize(void)
 #endif /* (__CORTEX_A == 9U) */
 
 	cortexa_cpuinfo();
-	SPINLOCK_INITIALIZE(& cpu1init);
+	LCLSPINLOCK_INITIALIZE(& cpu1init);
 	unsigned core;
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
@@ -3985,12 +3985,12 @@ void cpump_initialize(void)
 			(uintptr_t) Reset_CPU3_Handler,
 		};
 
-		SPINLOCK_INITIALIZE(& cpu1userstart [core]);
-		SPIN_LOCK(& cpu1userstart [core]);
-		SPIN_LOCK(& cpu1init);
+		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
+		LCLSPIN_LOCK(& cpu1userstart [core]);
+		LCLSPIN_LOCK(& cpu1init);
 		cortexa_mp_cpuN_start(fns [core], core);
-		SPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
-		SPIN_UNLOCK(& cpu1init);
+		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
+		LCLSPIN_UNLOCK(& cpu1init);
 	}
 
 #endif /* (__CORTEX_A != 0) */
@@ -4003,7 +4003,7 @@ void cpump_runuser(void)
 	unsigned core;
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
-		SPIN_UNLOCK(& cpu1userstart [core]);
+		LCLSPIN_UNLOCK(& cpu1userstart [core]);
 	}
 }
 

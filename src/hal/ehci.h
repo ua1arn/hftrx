@@ -827,7 +827,7 @@ typedef struct
 	VLIST_ENTRY hcListAsync;
 	VLIST_ENTRY hcListPeriodic;
 
-	SPINLOCK_t asynclock;
+	LCLSPINLOCK_t asynclock;
 
 	EHCI_TypeDef *Instance; /*!< Register base address    */
 	EHCI_InitTypeDef Init; /*!< HCD required parameters  */

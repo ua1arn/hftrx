@@ -67,7 +67,7 @@ uint8_t ft8_tx = 0;
 uint32_t bufind = 0;
 uint8_t ft8_mox_request = 0;
 volatile uint8_t ft8_encode_req = 0;
-static IRQLSPINLOCK_t ft8bufflock = IRQLSPINLOCK_INIT;
+static IRQLSPINLOCK_t ft8bufflock /* = IRQLSPINLOCK_INIT */;
 
 static subscribefloat_t ft8_outregister;
 
@@ -614,12 +614,16 @@ void ft8_start_fill(void)
 
 void ft8_stop_fill(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& ft8bufflock, IRQL_ONLY_OVERREALTIME);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& ft8bufflock, & oldIrql);
+
 	fill_ft8_buf1 = 0;
 	fill_ft8_buf1 = 0;
 	bufind1 = 0;
 	bufind2 = 0;
-}
+
+}	IRQLSPIN_UNLOCK(& ft8bufflock, oldIrql);
+
 
 void ft8_set_state(uint8_t v)
 {
@@ -634,6 +638,7 @@ uint8_t get_ft8_state(void)
 
 void ft8_initialize(void)
 {
+	IRQLSPINLOCK_INITIALIZE(& ft8bufflock, IRQL_ONLY_OVERREALTIME);
 #if ! LINUX_SUBSYSTEM
 	arm_hardware_set_handler(ft8_interrupt_core0, ft8_irqhandler_core0, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU0);
 	arm_hardware_set_handler(ft8_interrupt_core1, ft8_irqhandler_core1, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);

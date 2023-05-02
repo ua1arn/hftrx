@@ -1048,6 +1048,7 @@ extern "C" {
 
 		#define IRQL_ONLY_REALTIME ARM_CA9_ENCODE_PRIORITY(PRI_SYS)	// value for GIC_SetInterfacePriorityMask
 		#define IRQL_ONLY_OVERREALTIME ARM_CA9_ENCODE_PRIORITY(PRI_RT)	// value for GIC_SetInterfacePriorityMask
+		#define IRQL_ONLY_IPC ARM_CA9_ENCODE_PRIORITY(PRI_OVRT)	// value for GIC_SetInterfacePriorityMask
 		/*
 			GICC_PMR == INTC.ICCPMR
 
@@ -1163,8 +1164,9 @@ extern "C" {
 
 	#else /* WITHNESTEDINTERRUPTS */
 
-		#define ARM_OVERREALTIME_PRIORITY	1
-		#define ARM_REALTIME_PRIORITY		1
+		#define ARM_IPC_PRIORITY			4
+		#define ARM_OVERREALTIME_PRIORITY	3
+		#define ARM_REALTIME_PRIORITY		2
 		#define ARM_SYSTEM_PRIORITY			1
 		#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
@@ -1178,6 +1180,7 @@ extern "C" {
 
 	#define IRQL_ONLY_REALTIME 			ARM_SYSTEM_PRIORITY
 	#define IRQL_ONLY_OVERREALTIME 		ARM_REALTIME_PRIORITY
+	#define IRQL_ONLY_IPC				ARM_OVERREALTIME_PRIORITY
 
 #elif CPUSTYLE_UBLAZE
 
@@ -1195,6 +1198,7 @@ extern "C" {
 
 	#define IRQL_ONLY_REALTIME 			0
 	#define IRQL_ONLY_OVERREALTIME 		0
+	#define IRQL_ONLY_IPC 		0
 
 	void (system_disableIRQ)(void);
 	void (system_enableIRQ)(void);

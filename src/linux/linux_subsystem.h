@@ -59,9 +59,9 @@
 
 extern pthread_mutex_t md;
 
-#define SPINLOCK_t		pthread_mutex_t
-#define SPINLOCK_INIT	PTHREAD_MUTEX_INITIALIZER
-#define SPINLOCK_INITIALIZE(p)	do { memcpy((void *) p, & md, sizeof(md)); } while(0)
+#define LCLSPINLOCK_t		pthread_mutex_t
+#define LCLSPINLOCK_INIT	PTHREAD_MUTEX_INITIALIZER
+#define LCLSPINLOCK_INITIALIZE(p)	do { memcpy((void *) p, & md, sizeof(md)); } while(0)
 
 
 uint_fast8_t dummy_putchar(uint_fast8_t c);
@@ -72,7 +72,7 @@ uint_fast8_t dummy_getchar(char * cp);
 #define HARDWARE_DEBUG_PUTCHAR(c)			(dummy_putchar(c))
 #define HARDWARE_DEBUG_GETCHAR(pc) 			(dummy_getchar(pc))
 
-typedef pthread_mutex_t spinlock_t;
+typedef pthread_mutex_t lclspinlock_t;
 
 void linux_exit(void);
 void linux_subsystem_init(void);

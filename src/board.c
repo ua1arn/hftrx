@@ -8300,7 +8300,7 @@ static uint_fast8_t gstate [SNDI_SIZE];		/* признак включённог�
 static uint_fast8_t gprei [SNDI_SIZE];
 static unsigned gvalue [SNDI_SIZE];	/* делитель или FTW для синтезатора озвучки */
 static uint_least16_t gtone [SNDI_SIZE];
-static RAMDTCM SPINLOCK_t gpreilock = SPINLOCK_INIT;
+static RAMDTCM LCLSPINLOCK_t gpreilock = LCLSPINLOCK_INIT;
 
 /* если параметры для данной частоты уже рассчитывали - просто возврат */
 static uint_fast8_t 
@@ -8319,10 +8319,10 @@ board_calcs_setfreq(
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
-	SPIN_LOCK(& gpreilock);
+	LCLSPIN_LOCK(& gpreilock);
 	gprei [sndi] = prei;
 	gvalue [sndi] = value;
-	SPIN_UNLOCK(& gpreilock);
+	LCLSPIN_UNLOCK(& gpreilock);
 	LowerIrql(oldIrql);
 
 	return 1;
@@ -8358,9 +8358,9 @@ board_keybeep_setfreq(
 		IRQL_t oldIrql;
 
 		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
-		SPIN_LOCK(& gpreilock);
+		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
-		SPIN_UNLOCK(& gpreilock);
+		LCLSPIN_UNLOCK(& gpreilock);
 		LowerIrql(oldIrql);
 	}
 }
@@ -8378,9 +8378,9 @@ board_sidetone_setfreq(
 		IRQL_t oldIrql;
 
 		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
-		SPIN_LOCK(& gpreilock);
+		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
-		SPIN_UNLOCK(& gpreilock);
+		LCLSPIN_UNLOCK(& gpreilock);
 		LowerIrql(oldIrql);
 #if WITHIF4DSP
 		dsp_sidetone_setfreq(tonefreq01);
@@ -8402,9 +8402,9 @@ board_rgrbeep_setfreq(
 		IRQL_t oldIrql;
 
 		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
-		SPIN_LOCK(& gpreilock);
+		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
-		SPIN_UNLOCK(& gpreilock);
+		LCLSPIN_UNLOCK(& gpreilock);
 		LowerIrql(oldIrql);
 	}
 }
@@ -8478,9 +8478,9 @@ board_subtone_setfreq(
 		IRQL_t oldIrql;
 
 		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
-		SPIN_LOCK(& gpreilock);
+		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
-		SPIN_UNLOCK(& gpreilock);
+		LCLSPIN_UNLOCK(& gpreilock);
 		LowerIrql(oldIrql);
 	}
 #endif /* WITHSUBTONES */
@@ -8495,13 +8495,13 @@ void board_subtone_enable_user(uint_fast8_t state)
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
-	SPIN_LOCK(& gpreilock);
+	LCLSPIN_LOCK(& gpreilock);
 	if (gstate [sndi] != v)
 	{
 		gstate [sndi] = v;
 		board_sounds_resched();
 	}
-	SPIN_UNLOCK(& gpreilock);
+	LCLSPIN_UNLOCK(& gpreilock);
 	LowerIrql(oldIrql);
 #endif /* WITHSUBTONES */
 }
