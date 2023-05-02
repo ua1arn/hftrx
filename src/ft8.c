@@ -622,7 +622,8 @@ void ft8_stop_fill(void)
 	bufind1 = 0;
 	bufind2 = 0;
 
-}	IRQLSPIN_UNLOCK(& ft8bufflock, oldIrql);
+	IRQLSPIN_UNLOCK(& ft8bufflock, oldIrql);
+}
 
 
 void ft8_set_state(uint8_t v)
