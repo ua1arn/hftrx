@@ -136,7 +136,7 @@ typedef struct irqlspinlock_tag
 	SPINLOCK_t lock;
 } IRQLSPINLOCK_t;
 
-//#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), { 0, } }
+#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), { 0, } }
 #define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { SPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrqlv); } while (0)
 #else /* ! LINUX_SUBSYSTEM */
 
@@ -155,7 +155,7 @@ typedef struct irqlspinlock_tag
 	int lock;
 } IRQLSPINLOCK_t;
 
-//#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), { 0, } }
+#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), { 0, } }
 #define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do {} while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */

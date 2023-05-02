@@ -67,7 +67,7 @@ uint8_t ft8_tx = 0;
 uint32_t bufind = 0;
 uint8_t ft8_mox_request = 0;
 volatile uint8_t ft8_encode_req = 0;
-static IRQLSPINLOCK_t ft8bufflock = SPINLOCK_INIT;
+static IRQLSPINLOCK_t ft8bufflock = IRQLSPINLOCK_INIT;
 
 static subscribefloat_t ft8_outregister;
 
