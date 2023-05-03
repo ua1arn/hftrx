@@ -175,6 +175,16 @@ SRCDIRS += $(OPENVGDIR)/src
 DINCDIR += $(OPENVGDIR)/include/VG $(OPENVGDIR)/include $(OPENVGDIR)/include/EGL $(OPENVGDIR)/src
 endif
 
+ifeq (1, 0)
+# FreeRTOS
+RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
+DINCDIR += \
+	$(RTOSDIR)/include \
+	$(RTOSDIR)/portable/GCC/ARM_CA9
+SRCDIRS += $(RTOSDIR)
+ASRC_APP += $(RTOSDIR)/portable/GCC/ARM_CA9/portASM.S
+endif
+
 SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
 
