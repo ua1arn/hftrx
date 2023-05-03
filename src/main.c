@@ -21729,14 +21729,14 @@ static void siggen_mainloop(void)
 #include "task.h"
 
 #define STACK_SIZE 8129
-TaskHandle_t task_blinky_handle;
-TaskHandle_t task_blinky_handle2;
-TaskHandle_t task_blinky_handle3;
-TaskHandle_t task_gr_handle;
+static TaskHandle_t task_blinky_handle;
+static TaskHandle_t task_blinky_handle2;
+static TaskHandle_t task_blinky_handle3;
+static TaskHandle_t task_gr_handle;
 
-//QueueHandle_t kbd_queue;
+//static QueueHandle_t kbd_queue;
 
-void task_blinky(void *arg)
+static void task_blinky(void *arg)
 {
 	(void)arg;
 	uint32_t state = 1;
@@ -21746,11 +21746,11 @@ void task_blinky(void *arg)
 	while (1)
 	{
 		PRINTF("!");
-		vTaskDelay(1250);
+		vTaskDelay(750);
 	}
 }
 
-void task_blinky2(void *arg)
+static void task_blinky2(void *arg)
 {
 	int state = 0;
 	(void)arg;
@@ -21769,7 +21769,7 @@ void task_blinky2(void *arg)
 	}
 }
 
-void task_blinky3(void *arg)
+static void task_blinky3(void *arg)
 {
 	int state = 0;
 	(void)arg;
