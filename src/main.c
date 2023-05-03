@@ -21974,14 +21974,14 @@ void task_init(void *arg)
 	vTaskDelete(NULL);
 }
 
-#elif ! CPUSTYLE_A64
+#else /* WITHRTOS */
 
-void FreeRTOS_SWI_Handler(void)
+void __WEAK FreeRTOS_SWI_Handler(void)
 {
 	ASSERT(0);
 }
 
-void FreeRTOS_IRQ_Handler(void)
+void __WEAK FreeRTOS_IRQ_Handler(void)
 {
 	ASSERT(0);
 }
