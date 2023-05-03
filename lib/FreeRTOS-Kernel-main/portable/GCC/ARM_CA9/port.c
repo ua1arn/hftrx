@@ -453,7 +453,6 @@ void vPortExitCritical( void )
 
 void FreeRTOS_Tick_Handler( void )
 {
-	dbg_putchar('.');
 	/* Set interrupt mask before altering scheduler structures.   The tick
 	handler runs at the lowest priority, so interrupts cannot already be masked,
 	so there is no need to save and restore the current mask value.  It is
@@ -567,5 +566,5 @@ uint32_t ulReturn;
 void vApplicationFPUSafeIRQHandler( uint32_t ulICCIARx )
 {
 	( void ) ulICCIARx;
-	//configASSERT( ( volatile void * ) NULL );
+	configASSERT( ( volatile void * ) NULL );
 }

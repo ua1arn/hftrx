@@ -21763,22 +21763,17 @@ void task_blinky2(void *arg)
 	}
 }
 
-void FreeRTOS_Tick_Handler2(void)
-{
-	ASSERT(0);
-}
-
 void vConfigureTickInterrupt(void)
 {
-	TP();
-	PRINTF("portPRIORITY_SHIFT=0x%02X\n", portPRIORITY_SHIFT);
+	//TP();
+	//PRINTF("portPRIORITY_SHIFT=0x%02X\n", portPRIORITY_SHIFT);
 	TIMER->TMR0_CTRL_REG = 0;
 
 	TIMER->TMR_IRQ_EN_REG |= (1u << 0);	// TMR0_IRQ_EN
 
 	// install FreeRTOS hook
 	// This tick interrupt must run at the lowest priority.
-	arm_hardware_set_handler(TIMER0_IRQn, FreeRTOS_Tick_Handler2, portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT, (1u << 0));
+	arm_hardware_set_handler(TIMER0_IRQn, FreeRTOS_Tick_Handler, portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT, (1u << 0));
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), configTICK_RATE_HZ), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
 
@@ -21793,7 +21788,71 @@ void vConfigureTickInterrupt(void)
 	while ((TIMER->TMR0_CTRL_REG & (1uL << 1)) != 0)
 		;
 	TIMER->TMR0_CTRL_REG |= (1u << 1);	// TMR0_RELOAD
-	TP();
+	//TP();
+}
+
+
+//void vApplicationFPUSafeIRQHandler( uint32_t ulICCIAR )
+void vApplicationIRQHandler( uint32_t ulICCIAR )
+{
+	const IRQn_ID_t int_id = ulICCIAR & 0x3FFUL;
+
+	// IHI0048B_b_gic_architecture_specification.pdf
+	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
+
+	if (int_id == 1022)
+	{
+	}
+
+	if (int_id >= 1020)
+	{
+		//dbg_putchar('2');
+		//LCLSPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority(0, GIC_GetPriority(0));
+		//LCLSPIN_UNLOCK(& giclock);
+
+	}
+	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
+	{
+		const IRQHandler_t f = IRQ_GetHandler(int_id);
+
+	#if 0//WITHNESTEDINTERRUPTS
+
+		if (f != (IRQHandler_t) 0)
+		{
+//			static const char hex [16] = "0123456789ABCDEF";
+//			if ((int_id >> 8) & 0x0F)
+//				dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+			__enable_irq();						/* modify I bit in CPSR */
+			(* f)();	    /* Call interrupt handler */
+			__disable_irq();					/* modify I bit in CPSR */
+			//dbg_putchar('_');
+		}
+
+	#else /* WITHNESTEDINTERRUPTS */
+
+		if (f != (IRQHandler_t) 0)
+		{
+			(* f)();	    /* Call interrupt handler */
+		}
+
+	#endif /* WITHNESTEDINTERRUPTS */
+
+		//dbg_putchar('5');
+	}
+	else
+	{
+		//dbg_putchar('3');
+		//LCLSPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority(0, GIC_GetPriority(0));
+		//LCLSPIN_UNLOCK(& giclock);
+	}
 }
 
 void vClearTickInterrupt(void)
@@ -21875,7 +21934,7 @@ void task_init(void *arg)
 			;
 	}
 
-	BaseType_t ret2 = xTaskCreate(task_blinky, "led2", STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &task_blinky_handle2);
+	BaseType_t ret2 = xTaskCreate(task_blinky2, "led2", STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &task_blinky_handle2);
 	if (ret2 != pdTRUE){
 		PRINTF("2 not created\n");
 		for (;;)
@@ -21927,13 +21986,6 @@ main(void)
 
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
-	global_disableIRQ();
-	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
-	lowinitialize();	/* вызывается при запрещённых прерываниях. */
-	global_enableIRQ();
-	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
-	midtests();
-
 #if WITHRTOS
 	{
 		  GIC_SetInterfacePriorityMask(0xffU);
@@ -21954,6 +22006,13 @@ main(void)
 
 	}
 #endif /* WITHRTOS */
+
+	global_disableIRQ();
+	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
+	lowinitialize();	/* вызывается при запрещённых прерываниях. */
+	global_enableIRQ();
+	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
+	midtests();
 
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHTX
