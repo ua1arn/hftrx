@@ -347,6 +347,10 @@ uint32_t board_millis(void)
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 RAMFUNC void spool_systimerbundle1(void)
 {
+#if WITHRTOS
+	FreeRTOS_Tick_Handler();
+	return;
+#endif
 	//beacon_255();
 #ifdef USE_HAL_DRIVER
 	HAL_IncTick();
@@ -3504,7 +3508,7 @@ static void cortexa_cpuinfo(void)
 			);
 }
 
-#if WITHSMPSYSTEM
+#if WITHSMPSYSTEM && ! WITHRTOS
 
 static void FLASHMEMINITFUNC
 sysinit_cache_cpu1_initialize(void)

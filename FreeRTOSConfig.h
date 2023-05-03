@@ -41,7 +41,7 @@
 
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION	1
 #define configUSE_TICKLESS_IDLE					0
-#define configTICK_RATE_HZ						( ( TickType_t ) 1000 )
+#define configTICK_RATE_HZ						((TickType_t) TICKS_FREQUENCY) //( ( TickType_t ) 1000 )
 #define configUSE_PREEMPTION					1
 #define configUSE_IDLE_HOOK						1
 #define configUSE_TICK_HOOK						0
@@ -137,10 +137,10 @@ nothing to return to.  To avoid this define configTASK_RETURN_ADDRESS to 0.  */
  * be installed as the peripheral's interrupt handler.
  */
 void vConfigureTickInterrupt( void );
-#define configSETUP_TICK_INTERRUPT() vConfigureTickInterrupt()
+#define configSETUP_TICK_INTERRUPT() do {} while (0) //vConfigureTickInterrupt()
 
 void vClearTickInterrupt( void );
-#define configCLEAR_TICK_INTERRUPT() vClearTickInterrupt()
+#define configCLEAR_TICK_INTERRUPT() do {} while (0) //vClearTickInterrupt()
 
 #define configINTERRUPT_CONTROLLER_BASE_ADDRESS 		GIC_DISTRIBUTOR_BASE //( 0x03021000 )
 #define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET (GIC_INTERFACE_BASE - GIC_DISTRIBUTOR_BASE) //( 0x1000 )

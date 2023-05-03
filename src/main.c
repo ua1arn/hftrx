@@ -21746,7 +21746,7 @@ static void task_blinky(void *arg)
 	while (1)
 	{
 		PRINTF("!");
-		vTaskDelay(750);
+		vTaskDelay(NTICKS(750));
 	}
 }
 
@@ -21765,7 +21765,7 @@ static void task_blinky2(void *arg)
 		BOARD_BLINK_SETSTATE(state);
 #endif /* BOARD_BLINK_INITIALIZE */
 		state = ! state;
-		vTaskDelay(500);
+		vTaskDelay(NTICKS(500));
 	}
 }
 
@@ -21777,38 +21777,9 @@ static void task_blinky3(void *arg)
 	while (1)
 	{
 		PRINTF("@");
-		vTaskDelay(1500);
+		vTaskDelay(NTICKS(1500));
 	}
 }
-
-void vConfigureTickInterrupt(void)
-{
-	//TP();
-	//PRINTF("portPRIORITY_SHIFT=0x%02X\n", portPRIORITY_SHIFT);
-	TIMER->TMR0_CTRL_REG = 0;
-
-	TIMER->TMR_IRQ_EN_REG |= (1u << 0);	// TMR0_IRQ_EN
-
-	// install FreeRTOS hook
-	// This tick interrupt must run at the lowest priority.
-	arm_hardware_set_handler(TIMER0_IRQn, FreeRTOS_Tick_Handler, portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT, (1u << 0));
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), configTICK_RATE_HZ), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
-
-	TIMER->TMR0_INTV_VALUE_REG = value;
-	TIMER->TMR0_CTRL_REG =
-		0 * (1uL << 7) |	// TMR0_MODE 0: Periodic mode.
-		prei * (1uL << 4) |
-		0x01 * (1uL << 2) |	// TMR1_CLK_SRC 01: OSC24M
-		(1uL << 0) | // TMR0_EN
-		0;
-
-	while ((TIMER->TMR0_CTRL_REG & (1uL << 1)) != 0)
-		;
-	TIMER->TMR0_CTRL_REG |= (1u << 1);	// TMR0_RELOAD
-	//TP();
-}
-
 
 //void vApplicationFPUSafeIRQHandler( uint32_t ulICCIAR )
 void vApplicationIRQHandler( uint32_t ulICCIAR )
@@ -21871,12 +21842,6 @@ void vApplicationIRQHandler( uint32_t ulICCIAR )
 		GIC_SetPriority(0, GIC_GetPriority(0));
 		//LCLSPIN_UNLOCK(& giclock);
 	}
-}
-
-void vClearTickInterrupt(void)
-{
-	//	uart_printf("timer: iclr\n");
-	TIMER->TMR_IRQ_STA_REG = (1u << 0);	// TIMER0
 }
 
 
@@ -22008,6 +21973,13 @@ main(void)
 
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
+	global_disableIRQ();
+	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
+	lowinitialize();	/* вызывается при запрещённых прерываниях. */
+	global_enableIRQ();
+	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
+	midtests();
+
 #if WITHRTOS
 	{
 		  GIC_SetInterfacePriorityMask(0xffU);
@@ -22027,13 +21999,6 @@ main(void)
 
 	}
 #endif /* WITHRTOS */
-
-	global_disableIRQ();
-	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
-	lowinitialize();	/* вызывается при запрещённых прерываниях. */
-	global_enableIRQ();
-	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
-	midtests();
 
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHTX
