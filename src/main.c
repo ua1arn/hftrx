@@ -21728,9 +21728,10 @@ static void siggen_mainloop(void)
 #include "FreeRTOS.h"
 #include "task.h"
 
-#define STACK_SIZE 200
+#define STACK_SIZE 8129
 TaskHandle_t task_blinky_handle;
 TaskHandle_t task_blinky_handle2;
+TaskHandle_t task_blinky_handle3;
 TaskHandle_t task_gr_handle;
 
 //QueueHandle_t kbd_queue;
@@ -21745,21 +21746,38 @@ void task_blinky(void *arg)
 	while (1)
 	{
 		PRINTF("!");
-		vTaskDelay(250);
+		vTaskDelay(1250);
 	}
 }
 
 void task_blinky2(void *arg)
 {
+	int state = 0;
 	(void)arg;
-	uint32_t state = 1;
 
-	printf("blinky2\n");
+#ifdef BOARD_BLINK_INITIALIZE
+	BOARD_BLINK_INITIALIZE();
+#endif /* BOARD_BLINK_INITIALIZE */
+	while (1)
+	{
+		//PRINTF("@");
+#ifdef BOARD_BLINK_INITIALIZE
+		BOARD_BLINK_SETSTATE(state);
+#endif /* BOARD_BLINK_INITIALIZE */
+		state = ! state;
+		vTaskDelay(500);
+	}
+}
+
+void task_blinky3(void *arg)
+{
+	int state = 0;
+	(void)arg;
 
 	while (1)
 	{
 		PRINTF("@");
-		vTaskDelay(1250);
+		vTaskDelay(1500);
 	}
 }
 
@@ -21922,9 +21940,6 @@ void task_init(void *arg)
 	//syscall init
 	//syscalls_init();
 
-//	arm_hardware_set_handler_system(int_id, FreeRTOS_IRQ_Handler);
-//	arm_hardware_set_handler_system(int_id, FreeRTOS_SWI_Handler);
-
 	//kbd_queue = xQueueCreate(10, sizeof(kbd_event_t));
 
 	BaseType_t ret = xTaskCreate(task_blinky, "led1", STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &task_blinky_handle);
@@ -21937,6 +21952,13 @@ void task_init(void *arg)
 	BaseType_t ret2 = xTaskCreate(task_blinky2, "led2", STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &task_blinky_handle2);
 	if (ret2 != pdTRUE){
 		PRINTF("2 not created\n");
+		for (;;)
+			;
+	}
+
+	BaseType_t ret3 = xTaskCreate(task_blinky3, "led3", STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &task_blinky_handle3);
+	if (ret3 != pdTRUE){
+		PRINTF("3 not created\n");
 		for (;;)
 			;
 	}
