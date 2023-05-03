@@ -2581,7 +2581,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   			break;
   		}
   		rx_count = usb_get_eprx_count(pusb);
-  		PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count);
+  		//PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count);
   		ASSERT(UACOUT_AUDIO48_DATASIZE == rx_count || 0 == rx_count);
   		do
   		{
