@@ -325,7 +325,7 @@
 
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
-
+	//#define WITHRTOS	1	/* Использование RTOS */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */

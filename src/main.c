@@ -21723,6 +21723,190 @@ static void siggen_mainloop(void)
 }
 #endif
 
+#if WITHRTOS
+
+#include "FreeRTOS.h"
+#include "task.h"
+
+#define STACK_SIZE 200
+TaskHandle_t task_blinky_handle;
+TaskHandle_t task_blinky_handle2;
+TaskHandle_t task_gr_handle;
+
+//QueueHandle_t kbd_queue;
+
+void task_blinky(void *arg)
+{
+	(void)arg;
+	uint32_t state = 1;
+
+	printf("blinky1\n");
+
+	while (1)
+	{
+		PRINTF("!");
+		vTaskDelay(250);
+	}
+}
+
+void task_blinky2(void *arg)
+{
+	(void)arg;
+	uint32_t state = 1;
+
+	printf("blinky2\n");
+
+	while (1)
+	{
+		PRINTF("@");
+		vTaskDelay(1250);
+	}
+}
+
+void FreeRTOS_Tick_Handler2(void)
+{
+	ASSERT(0);
+}
+
+void vConfigureTickInterrupt(void)
+{
+	TP();
+	PRINTF("portPRIORITY_SHIFT=0x%02X\n", portPRIORITY_SHIFT);
+	TIMER->TMR0_CTRL_REG = 0;
+
+	TIMER->TMR_IRQ_EN_REG |= (1u << 0);	// TMR0_IRQ_EN
+
+	// install FreeRTOS hook
+	// This tick interrupt must run at the lowest priority.
+	arm_hardware_set_handler(TIMER0_IRQn, FreeRTOS_Tick_Handler2, portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT, (1u << 0));
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), configTICK_RATE_HZ), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
+
+	TIMER->TMR0_INTV_VALUE_REG = value;
+	TIMER->TMR0_CTRL_REG =
+		0 * (1uL << 7) |	// TMR0_MODE 0: Periodic mode.
+		prei * (1uL << 4) |
+		0x01 * (1uL << 2) |	// TMR1_CLK_SRC 01: OSC24M
+		(1uL << 0) | // TMR0_EN
+		0;
+
+	while ((TIMER->TMR0_CTRL_REG & (1uL << 1)) != 0)
+		;
+	TIMER->TMR0_CTRL_REG |= (1u << 1);	// TMR0_RELOAD
+	TP();
+}
+
+void vClearTickInterrupt(void)
+{
+	//	uart_printf("timer: iclr\n");
+	TIMER->TMR_IRQ_STA_REG = (1u << 0);	// TIMER0
+}
+
+
+void vApplicationMallocFailedHook(void)
+{
+	PRINTF("malloc failed\n");
+
+	for (;;)
+		;
+}
+
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
+{
+	(void)xTask;
+
+	PRINTF("task stack overflow %s\n", pcTaskName);
+
+	for (;;)
+		;
+}
+
+void vApplicationIdleHook( void )
+{
+//	uart_printf("k\n");
+}
+
+#if configSUPPORT_STATIC_ALLOCATION
+
+static StaticTask_t xIdleTaskTCB;
+static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
+
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
+                                    StackType_t **ppxIdleTaskStackBuffer,
+                                    uint32_t *pulIdleTaskStackSize )
+{
+	*ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
+	*ppxIdleTaskStackBuffer = uxIdleTaskStack;
+	*pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+//uart_printf("idle get task memory %x %x %x\n", *ppxIdleTaskTCBBuffer, *ppxIdleTaskStackBuffer, *pulIdleTaskStackSize);
+}
+
+static StaticTask_t xTimerTaskTCB;
+static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
+
+void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer,
+                                     StackType_t **ppxTimerTaskStackBuffer,
+                                     uint32_t *pulTimerTaskStackSize )
+{
+	*ppxTimerTaskTCBBuffer = &xTimerTaskTCB;
+	*ppxTimerTaskStackBuffer = uxTimerTaskStack;
+	*pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
+//	uart_printf("timer get task memory %x %x %x\n", *ppxTimerTaskTCBBuffer, *ppxTimerTaskStackBuffer, *pulTimerTaskStackSize);
+}
+
+#endif /* configSUPPORT_STATIC_ALLOCATION */
+
+void task_init(void *arg)
+{
+	(void)arg;
+
+	//syscall init
+	//syscalls_init();
+
+//	arm_hardware_set_handler_system(int_id, FreeRTOS_IRQ_Handler);
+//	arm_hardware_set_handler_system(int_id, FreeRTOS_SWI_Handler);
+
+	//kbd_queue = xQueueCreate(10, sizeof(kbd_event_t));
+
+	BaseType_t ret = xTaskCreate(task_blinky, "led1", STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &task_blinky_handle);
+	if (ret != pdTRUE){
+		PRINTF("1 not created\n");
+		for (;;)
+			;
+	}
+
+	BaseType_t ret2 = xTaskCreate(task_blinky, "led2", STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &task_blinky_handle2);
+	if (ret2 != pdTRUE){
+		PRINTF("2 not created\n");
+		for (;;)
+			;
+	}
+//
+//	ret = xTaskCreate(task_gr, "gr", 1000, NULL, tskIDLE_PRIORITY+2, &task_gr_handle);
+//	if (ret != pdTRUE){
+//		printf("not created\n");
+//		while(1);
+//	}
+//
+//	usb_task_init();
+
+	vTaskDelete(NULL);
+}
+
+#elif ! CPUSTYLE_A64
+
+void FreeRTOS_SWI_Handler(void)
+{
+	ASSERT(0);
+}
+
+void FreeRTOS_IRQ_Handler(void)
+{
+	ASSERT(0);
+}
+
+#endif /* WITHRTOS */
+
 /* Главная функция программы */
 int 
 //__attribute__ ((used))
@@ -21749,6 +21933,28 @@ main(void)
 	global_enableIRQ();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();
+
+#if WITHRTOS
+	{
+		  GIC_SetInterfacePriorityMask(0xffU);
+		  __enable_irq();
+		  TP();
+		// now we switch to freertos
+		BaseType_t ret = xTaskCreate(task_init, "init", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+2, NULL);
+		if (ret != pdTRUE){
+			PRINTF("not created\n");
+			while(1);
+		}
+
+		PRINTF("starting scheduler\n");
+		vTaskStartScheduler();
+
+		for (;;)
+			;
+
+	}
+#endif /* WITHRTOS */
+
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHTX
 	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
