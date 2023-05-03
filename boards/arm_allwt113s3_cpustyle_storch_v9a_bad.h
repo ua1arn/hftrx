@@ -137,39 +137,68 @@
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
-	#if WITHINTEGRATEDDSP
+	#if 0
 
-		#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
-		#define UACIN_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
-		//#define WITHUAC2		1	/* UAC2 support */
-		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
-		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
-		#if WITHRTS96 || WITHRTS192
+		#if WITHINTEGRATEDDSP
+
+			#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+			#define UACIN_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
+			//#define WITHUAC2		1	/* UAC2 support */
+			#define WITHUSBUACINOUTRENESAS	1	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
+			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 			#define WITHUSBUACIN	1
-			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-		#else /* WITHRTS96 || WITHRTS192 */
-			#define WITHUSBUACIN	1
-		#endif /* WITHRTS96 || WITHRTS192 */
-		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
-	#endif /* WITHINTEGRATEDDSP */
+			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+		#endif /* WITHINTEGRATEDDSP */
 
-	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
+		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+		#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 
-	#if WITHLWIP
-		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+		//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-	#endif /* WITHLWIP */
-	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+		//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
+		#if WIHSPIDFHW || WIHSPIDFSW
+			#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+			#define WITHUSBWCID	1
+		#endif /* WIHSPIDFHW || WIHSPIDFSW */
 
-	#if WIHSPIDFHW || WIHSPIDFSW
-		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-		#define WITHUSBWCID	1
-	#endif /* WIHSPIDFHW || WIHSPIDFSW */
+		//#define WITHUSBDMTP	1	/* MTP USB Device */
+		//#define WITHUSBDMSC	1	/* MSC USB device */
+	#else
+		#if WITHINTEGRATEDDSP
 
-	//#define WITHUSBDMTP	1	/* MTP USB Device */
-	//#define WITHUSBDMSC	1	/* MSC USB device */
+			#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+			#define UACIN_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
+			//#define WITHUAC2		1	/* UAC2 support */
+			#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
+			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+			#if WITHRTS96 || WITHRTS192
+				#define WITHUSBUACIN	1
+				#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+			#else /* WITHRTS96 || WITHRTS192 */
+				#define WITHUSBUACIN	1
+			#endif /* WITHRTS96 || WITHRTS192 */
+			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+		#endif /* WITHINTEGRATEDDSP */
+
+		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+		#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
+
+		#if WITHLWIP
+			#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+			//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+			//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+		#endif /* WITHLWIP */
+		//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+
+		#if WIHSPIDFHW || WIHSPIDFSW
+			#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+			#define WITHUSBWCID	1
+		#endif /* WIHSPIDFHW || WIHSPIDFSW */
+
+		//#define WITHUSBDMTP	1	/* MTP USB Device */
+		//#define WITHUSBDMSC	1	/* MSC USB device */
+	#endif
 
 #endif /* WITHISBOOTLOADER */
 

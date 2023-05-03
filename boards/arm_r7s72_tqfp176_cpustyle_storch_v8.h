@@ -111,9 +111,13 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	
-	#define WITHUSBWCID	1
+	#if WIHSPIDFHW || WIHSPIDFSW
+		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+		#define WITHUSBWCID	1
+	#endif /* WIHSPIDFHW || WIHSPIDFSW */
+
+	//#define WITHUSBDMTP	1	/* MTP USB Device */
+	//#define WITHUSBDMSC	1	/* MSC USB device */
 
 #endif /* WITHUSBHW */
 
