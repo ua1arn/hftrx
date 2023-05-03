@@ -65,8 +65,6 @@
 
 	 STACKSIZESYSBOOT = 512
   
-	.global __Vectors
-	.global __Vectors_nested
 	.section .isr_vector, "ax"
 	.code 32
         
@@ -75,6 +73,7 @@
 /* Table B1-3 The vector tables */
 /****************************************************************************/
 	.align 6
+	.global __Vectors
 __Vectors:
 	ldr pc, ResetAddr    /* Reset                 */
 	ldr pc, UndefAddr    /* Undefined instruction */
@@ -97,6 +96,7 @@ FIQAddr:       .word FIQ_Handler
 	.ltorg
 
 	.align 6
+	.global __Vectors_nested
 __Vectors_nested:
 	ldr pc, ResetAddr_n    /* Reset                 */
 	ldr pc, UndefAddr_n    /* Undefined instruction */
@@ -120,6 +120,7 @@ FIQAddr_n:       .word FIQ_Handler
 
 
 	.align 6
+	.global __Vectors_rtos
 __Vectors_rtos:
 	ldr pc, ResetAddr_rtos    /* Reset                 */
 	ldr pc, UndefAddr_rtos    /* Undefined instruction */
