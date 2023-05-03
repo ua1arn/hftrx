@@ -21990,7 +21990,6 @@ main(void)
 	{
 		  GIC_SetInterfacePriorityMask(0xffU);
 		  __enable_irq();
-		  TP();
 		// now we switch to freertos
 		BaseType_t ret = xTaskCreate(task_init, "init", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+2, NULL);
 		if (ret != pdTRUE){
