@@ -2958,7 +2958,12 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 		switch (interfacev)
 		{
 #if WITHUSBCDCACM
-			case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, 0):
+#if WITHUSBCDCACM_N > 1
+		case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, 1):
+		case USBD_CDCACM_IFC(INTERFACE_CDC_DATA, 1):
+#endif /* WITHUSBCDCACM_N > 1 */
+		case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, 0):
+		case USBD_CDCACM_IFC(INTERFACE_CDC_DATA, 0):
 			{
 				switch (ep0_setup->bRequest)
 				{
@@ -3493,7 +3498,12 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 #endif /* WITHUSBDFU */
 
 #if WITHUSBCDCACM && WITHWAWXXUSB
-				  	case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, 0):
+			#if WITHUSBCDCACM_N > 1
+					case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, 1):
+					case USBD_CDCACM_IFC(INTERFACE_CDC_DATA, 1):
+			#endif /* WITHUSBCDCACM_N > 1 */
+					case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, 0):
+					case USBD_CDCACM_IFC(INTERFACE_CDC_DATA, 0):
 					  	// Parse setup packet on output
 					  	switch (ep0_setup->bRequest)
 					  	{
