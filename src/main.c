@@ -21941,6 +21941,9 @@ void task_init(void *arg)
 	vTaskDelete(NULL);
 }
 
+/* PL1 Physical Timer */
+#if (__CORTEX_A == 7U) && (__TIM_PRESENT == 1U)
+
 static volatile uint_fast32_t gtimloadvalue;
 
 void vConfigureTickInterrupt(void)
@@ -21982,6 +21985,30 @@ void vClearTickInterrupt(void)
 {
 	PL1_SetLoadValue(gtimloadvalue);
 }
+
+#elif (__CORTEX_A == 5U) || (__CORTEX_A == 9U)
+// Private timer use
+// Disable Private Timer and set load value
+void vConfigureTickInterrupt(void)
+{
+	PTIM_SetControl(0);
+	PTIM_SetCurrentValue(0);
+	PTIM_SetLoadValue(calcdivround2(CPU_FREQ, ticksfreq * 2));	// Private Timer runs with the system frequency / 2
+	// Set bits: IRQ enable and Auto reload
+	PTIM_SetControl(0x06U);
+
+	arm_hardware_set_handler(PrivTimer_IRQn, PTIM_Handler, portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT, 1u << 0);
+
+	// Start the Private Timer
+	PTIM_SetControl(PTIM_GetControl() | 0x01);
+}
+
+void vClearTickInterrupt(void)
+{
+	PTIM_ClearEventFlag();
+}
+
+#endif
 
 #else /* WITHRTOS */
 
