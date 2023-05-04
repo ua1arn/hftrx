@@ -351,10 +351,6 @@ uint32_t board_millis(void)
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 RAMFUNC void spool_systimerbundle1(void)
 {
-#if WITHRTOS
-	FreeRTOS_Tick_Handler();
-	return;
-#endif
 	//beacon_255();
 #ifdef USE_HAL_DRIVER
 	HAL_IncTick();

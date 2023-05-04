@@ -19276,6 +19276,7 @@ processkeyboard(uint_fast8_t kbch)
 static void 
 lowinitialize(void)
 {
+#if ! WITHRTOS
 	board_beep_initialize();
 	//hardware_cw_diagnostics_noirq(1, 0, 1);	// 'K'
 #if WITHDEBUG
@@ -19411,6 +19412,7 @@ lowinitialize(void)
 	//for (;;) ;
 	//hardware_cw_diagnostics_noirq(1, 1, 0);	// 'S'
 	//board_testsound_enable(0);	// Выключить 1 кГц на самоконтроле
+#endif /* ! WITHRTOS */
 }
 
 static uint_fast8_t
@@ -21937,6 +21939,48 @@ void task_init(void *arg)
 //	usb_task_init();
 
 	vTaskDelete(NULL);
+}
+
+static volatile uint_fast32_t gtimloadvalue;
+
+void vConfigureTickInterrupt(void)
+{
+	const IRQn_ID_t irqn = SecurePhysicalTimer_IRQn;
+	/* Stop Timer */
+	PL1_SetControl(0x0);
+
+	PL1_SetCounterFrequency(allwnrt113_get_hosc_freq());
+	gtimloadvalue = allwnrt113_get_hosc_freq() / configTICK_RATE_HZ;
+	/* Initialize Counter */
+	PL1_SetLoadValue(gtimloadvalue);
+
+	/* Disable corresponding IRQ */
+	IRQ_Disable(irqn);
+	IRQ_ClearPending(irqn);
+	IRQ_SetHandler(irqn, FreeRTOS_Tick_Handler);
+
+	/* Set timer priority to lowest (Only bit 7:3 are implemented in MP1 CA7 GIC) */
+	/* TickPriority is based on 16 level priority (from MCUs) so set it in 7:4 and leave bit 3=0 */
+//	if (TickPriority < (1UL << 4)) {
+//		IRQ_SetPriority(irqn, TickPriority << 4);
+//		uwTickPrio = TickPriority;
+//	} else {
+//		return HAL_ERROR;
+//	}
+	IRQ_SetPriority(irqn, portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
+	/* Set edge-triggered IRQ */
+	IRQ_SetMode(irqn, IRQ_MODE_TRIG_EDGE_RISING);
+
+	/* Enable corresponding interrupt */
+	IRQ_Enable(irqn);
+
+	/* Kick start Timer */
+	PL1_SetControl(0x1);
+}
+
+void vClearTickInterrupt(void)
+{
+	PL1_SetLoadValue(gtimloadvalue);
 }
 
 #else /* WITHRTOS */
