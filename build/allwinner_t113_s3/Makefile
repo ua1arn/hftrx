@@ -192,7 +192,7 @@ DINCDIR += \
 	$(RTOSDIR)/include \
 	$(RTOSDIR)/portable/GCC/ARM_CA9
 SRCDIRS += $(RTOSDIR)
-ASRC_APP += $(RTOSDIR)/portable/GCC/ARM_CA9/portASM.S
+ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
 endif
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
