@@ -662,6 +662,7 @@ extern "C" {
 	#define CPU_FREQ	(stm32mp1_get_mpuss_freq())
 	#define DDR_FREQ	(stm32mp1_get_pll2_r_freq())
 	#define AXISS_FREQ	(stm32mp1_get_axiss_freq())
+	#define CPU_PL1_FREQ (stm32mp1_get_hsi_freq())	/* PL1 times source frequency */
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
@@ -747,6 +748,7 @@ extern "C" {
 	#define CPU_FREQ	(allwnr_a64_get_cpux_freq())
 	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
 	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+	#define CPU_PL1_FREQ (allwnrt113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -792,6 +794,7 @@ extern "C" {
 	#define CPU_FREQ	(allwnrt113_get_arm_freq())
 	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
 	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+	#define CPU_PL1_FREQ (allwnrt113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
