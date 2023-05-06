@@ -20,9 +20,9 @@ applicable agreement for further details.
 */
 (header "symbol" (version "1.2"))
 (symbol
-	(rect 16 16 256 144)
-	(text "nb_4ch" (rect 5 0 47 14)(font "Arial" (font_size 8)))
-	(text "inst" (rect 8 112 25 124)(font "Arial" ))
+	(rect 16 16 256 176)
+	(text "noise_bl_4" (rect 5 0 66 14)(font "Arial" (font_size 8)))
+	(text "inst" (rect 8 144 25 156)(font "Arial" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -33,8 +33,8 @@ applicable agreement for further details.
 	(port
 		(pt 0 48)
 		(input)
-		(text "in_data[31..0]" (rect 0 0 76 14)(font "Arial" (font_size 8)))
-		(text "in_data[31..0]" (rect 21 43 97 57)(font "Arial" (font_size 8)))
+		(text "in_data[27..0]" (rect 0 0 76 14)(font "Arial" (font_size 8)))
+		(text "in_data[27..0]" (rect 21 43 97 57)(font "Arial" (font_size 8)))
 		(line (pt 0 48)(pt 16 48)(line_width 3))
 	)
 	(port
@@ -47,15 +47,29 @@ applicable agreement for further details.
 	(port
 		(pt 0 80)
 		(input)
-		(text "nblevel[31..0]" (rect 0 0 75 14)(font "Arial" (font_size 8)))
-		(text "nblevel[31..0]" (rect 21 75 96 89)(font "Arial" (font_size 8)))
-		(line (pt 0 80)(pt 16 80)(line_width 3))
+		(text "valid" (rect 0 0 25 14)(font "Arial" (font_size 8)))
+		(text "valid" (rect 21 75 46 89)(font "Arial" (font_size 8)))
+		(line (pt 0 80)(pt 16 80))
+	)
+	(port
+		(pt 0 96)
+		(input)
+		(text "nb_en[1..0]" (rect 0 0 63 14)(font "Arial" (font_size 8)))
+		(text "nb_en[1..0]" (rect 21 91 84 105)(font "Arial" (font_size 8)))
+		(line (pt 0 96)(pt 16 96)(line_width 3))
+	)
+	(port
+		(pt 0 112)
+		(input)
+		(text "level[31..0]" (rect 0 0 61 14)(font "Arial" (font_size 8)))
+		(text "level[31..0]" (rect 21 107 82 121)(font "Arial" (font_size 8)))
+		(line (pt 0 112)(pt 16 112)(line_width 3))
 	)
 	(port
 		(pt 240 32)
 		(output)
-		(text "out_data[31..0]" (rect 0 0 84 14)(font "Arial" (font_size 8)))
-		(text "out_data[31..0]" (rect 135 27 219 41)(font "Arial" (font_size 8)))
+		(text "out_data[27..0]" (rect 0 0 84 14)(font "Arial" (font_size 8)))
+		(text "out_data[27..0]" (rect 135 27 219 41)(font "Arial" (font_size 8)))
 		(line (pt 240 32)(pt 224 32)(line_width 3))
 	)
 	(port
@@ -65,7 +79,14 @@ applicable agreement for further details.
 		(text "out_channel[1..0]" (rect 122 43 219 57)(font "Arial" (font_size 8)))
 		(line (pt 240 48)(pt 224 48)(line_width 3))
 	)
+	(port
+		(pt 240 64)
+		(output)
+		(text "out_valid" (rect 0 0 50 14)(font "Arial" (font_size 8)))
+		(text "out_valid" (rect 169 59 219 73)(font "Arial" (font_size 8)))
+		(line (pt 240 64)(pt 224 64))
+	)
 	(drawing
-		(rectangle (rect 16 16 224 112))
+		(rectangle (rect 16 16 224 144))
 	)
 )

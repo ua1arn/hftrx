@@ -115,6 +115,7 @@ static uint_fast8_t		glob_xvrtr;
 static uint_fast8_t		glob_dacstraight;	// Требуется формирование кода для ЦАП в режиме беззнакового кода
 static uint_fast8_t		glob_dither;		/* управление зашумлением в LTC2208 */
 static uint_fast8_t		glob_adcrand;		/* управление рандомизацией выходных данных в LTC2208 */
+static uint_fast8_t		glob_nb_en [2];		/* Noise Blanker RXn enable */
 static uint_fast8_t		glob_firprofile [2];	/* */
 static uint_fast8_t 	glob_reset_n;
 static uint_fast8_t 	glob_i2s_enable;	// разрешение генерации тактовой частоты для I2S в FPGA
@@ -5623,6 +5624,21 @@ board_set_i2s_enable(uint_fast8_t v)	/* разрешение генерации 
 	if (glob_i2s_enable != n)
 	{
 		glob_i2s_enable = n;
+		board_ctlreg1changed();
+	}
+}
+
+/* Управлением включением RX Noise Blanker */
+void
+board_set_nb_enable(
+	uint_fast8_t pathi,
+	uint_fast8_t v
+	)
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_nb_en [pathi] != n)
+	{
+		glob_nb_en [pathi] = n;
 		board_ctlreg1changed();
 	}
 }

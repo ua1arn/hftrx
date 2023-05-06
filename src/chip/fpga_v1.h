@@ -122,6 +122,8 @@ prog_fpga_ctrlreg(
 
 	RBVAL8(040, FPGA_DECODE_CTLREG);
 
+	RBBIT(28, glob_nb_en [1]);				/* b28: nb2_en - Noise Blanker RX2 enable */
+	RBBIT(27, glob_nb_en [0]);				/* b27: nb1_en - Noise Blanker RX1 enable */
 	RBBIT(26, ! glob_sleep && glob_tx);		/* b26: txdac_en - включение ЦАП */
 	RBBIT(25, glob_tx_loopback);			/* b25: tx_loopback - включение спектроанализатора сигнала передачи */
 	RBVAL(16, glob_adcoffset, 9);			/* b24..b16: adcoffset - смещение для выходного сигнала с АЦП */

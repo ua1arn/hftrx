@@ -21,9 +21,9 @@ applicable agreement for further details.
 (header "graphic" (version "1.4"))
 (pin
 	(input)
-	(rect 72 40 240 56)
+	(rect 88 104 256 120)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "clk" (rect 5 0 19 12)(font "Arial" ))
+	(text "clk" (rect 5 0 20 12)(font "Arial" ))
 	(pt 168 8)
 	(drawing
 		(line (pt 84 12)(pt 109 12))
@@ -37,9 +37,9 @@ applicable agreement for further details.
 )
 (pin
 	(input)
-	(rect 72 80 240 96)
+	(rect 88 144 256 160)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "in_data[31..0]" (rect 5 0 72 12)(font "Arial" ))
+	(text "in_data[27..0]" (rect 5 0 73 12)(font "Arial" ))
 	(pt 168 8)
 	(drawing
 		(line (pt 84 12)(pt 109 12))
@@ -53,9 +53,41 @@ applicable agreement for further details.
 )
 (pin
 	(input)
-	(rect 64 112 240 128)
+	(rect 88 240 256 256)
+	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
+	(text "valid" (rect 5 0 29 12)(font "Arial" ))
+	(pt 168 8)
+	(drawing
+		(line (pt 84 12)(pt 109 12))
+		(line (pt 84 4)(pt 109 4))
+		(line (pt 113 8)(pt 168 8))
+		(line (pt 84 12)(pt 84 4))
+		(line (pt 109 4)(pt 113 8))
+		(line (pt 109 12)(pt 113 8))
+	)
+	(text "VCC" (rect 128 7 148 17)(font "Arial" (font_size 6)))
+)
+(pin
+	(input)
+	(rect 88 288 256 304)
+	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
+	(text "nb_en[1..0]" (rect 5 0 61 12)(font "Arial" ))
+	(pt 168 8)
+	(drawing
+		(line (pt 84 12)(pt 109 12))
+		(line (pt 84 4)(pt 109 4))
+		(line (pt 113 8)(pt 168 8))
+		(line (pt 84 12)(pt 84 4))
+		(line (pt 109 4)(pt 113 8))
+		(line (pt 109 12)(pt 113 8))
+	)
+	(text "VCC" (rect 128 7 148 17)(font "Arial" (font_size 6)))
+)
+(pin
+	(input)
+	(rect 80 192 256 208)
 	(text "INPUT" (rect 133 0 161 10)(font "Arial" (font_size 6)))
-	(text "in_channel[1..0]" (rect 5 0 82 12)(font "Arial" ))
+	(text "in_channel[1..0]" (rect 5 0 83 12)(font "Arial" ))
 	(pt 176 8)
 	(drawing
 		(line (pt 92 12)(pt 117 12))
@@ -69,9 +101,9 @@ applicable agreement for further details.
 )
 (pin
 	(input)
-	(rect 72 152 240 168)
+	(rect 88 344 256 360)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "nblevel[31..0]" (rect 5 0 73 12)(font "Arial" ))
+	(text "level[31..0]" (rect 5 0 61 12)(font "Arial" ))
 	(pt 168 8)
 	(drawing
 		(line (pt 84 12)(pt 109 12))
@@ -85,9 +117,9 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 416 80 592 96)
+	(rect 528 144 704 160)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "out_data[31..0]" (rect 90 0 164 12)(font "Arial" ))
+	(text "out_data[27..0]" (rect 90 0 164 12)(font "Arial" ))
 	(pt 0 8)
 	(drawing
 		(line (pt 0 8)(pt 52 8))
@@ -101,7 +133,23 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 416 112 596 128)
+	(rect 528 240 704 256)
+	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
+	(text "out_valid" (rect 90 0 134 12)(font "Arial" ))
+	(pt 0 8)
+	(drawing
+		(line (pt 0 8)(pt 52 8))
+		(line (pt 52 4)(pt 78 4))
+		(line (pt 52 12)(pt 78 12))
+		(line (pt 52 12)(pt 52 4))
+		(line (pt 78 4)(pt 82 8))
+		(line (pt 82 8)(pt 78 12))
+		(line (pt 78 12)(pt 82 8))
+	)
+)
+(pin
+	(output)
+	(rect 528 192 708 208)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "out_channel[1..0]" (rect 90 0 174 12)(font "Arial" ))
 	(pt 0 8)
@@ -116,12 +164,16 @@ applicable agreement for further details.
 	)
 )
 (connector
-	(pt 240 88)
-	(pt 416 88)
+	(pt 256 152)
+	(pt 528 152)
 	(bus)
 )
 (connector
-	(pt 240 120)
-	(pt 416 120)
+	(pt 256 200)
+	(pt 528 200)
 	(bus)
+)
+(connector
+	(pt 256 248)
+	(pt 528 248)
 )
