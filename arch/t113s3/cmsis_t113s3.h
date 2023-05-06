@@ -193,6 +193,7 @@ typedef enum IRQn
 #define CSIC_PARSER0_BASE ((uintptr_t) 0x05801000)    /*!< CSIC_PARSER Base */
 #define CSIC_DMA0_BASE ((uintptr_t) 0x05809000)       /*!< CSIC_DMA Base */
 #define CSIC_DMA1_BASE ((uintptr_t) 0x05809200)       /*!< CSIC_DMA Base */
+#define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX Base */
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Base */
@@ -223,6 +224,48 @@ typedef struct CPU_SUBSYS_CTRL_Type
     volatile uint32_t GENER_CTRL_REG2;                /*!< Offset 0x018 General Control Register2 */
     volatile uint32_t DBG_STATE;                      /*!< Offset 0x01C Debug State Register */
 } CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief RISC_CFG
+ */
+/*!< RISC_CFG RISC-V core configuration register */
+typedef struct RISC_CFG_Type
+{
+             uint32_t reserved_0x000;
+    volatile uint32_t RISC_STA_ADD0_REG;              /*!< Offset 0x004 RISC Start Address0 Register */
+    volatile uint32_t RISC_STA_ADD1_REG;              /*!< Offset 0x008 RISC Start Address1 Register */
+             uint32_t reserved_0x00C;
+    volatile uint32_t RF1P_CFG_REG;                   /*!< Offset 0x010 RF1P Configuration Register */
+             uint32_t reserved_0x014 [0x0002];
+    volatile uint32_t ROM_CFG_REG;                    /*!< Offset 0x01C ROM Configuration Register */
+    volatile uint32_t WAKEUP_EN_REG;                  /*!< Offset 0x020 Wakeup Enable Register */
+    volatile uint32_t WAKEUP_MASK0_REG;               /*!< Offset 0x024 Wakeup Mask0 Register */
+    volatile uint32_t WAKEUP_MASK1_REG;               /*!< Offset 0x028 Wakeup Mask1 Register */
+    volatile uint32_t WAKEUP_MASK2_REG;               /*!< Offset 0x02C Wakeup Mask2 Register */
+    volatile uint32_t WAKEUP_MASK3_REG;               /*!< Offset 0x030 Wakeup Mask3 Register */
+    volatile uint32_t WAKEUP_MASK4_REG;               /*!< Offset 0x034 Wakeup Mask4 Register */
+             uint32_t reserved_0x038 [0x0002];
+    volatile uint32_t TS_TMODE_SEL_REG;               /*!< Offset 0x040 Timestamp Test Mode Select Register */
+    volatile uint32_t SRAM_ADDR_TWIST_REG;            /*!< Offset 0x044 SRAM Address Twist Register */
+    volatile uint32_t WORK_MODE_REG;                  /*!< Offset 0x048 Work Mode Register */
+             uint32_t reserved_0x04C;
+    volatile uint32_t RETITE_PC0_REG;                 /*!< Offset 0x050 Retire PC0 Register */
+    volatile uint32_t RETITE_PC1_REG;                 /*!< Offset 0x054 Retire PC1 Register */
+             uint32_t reserved_0x058 [0x0002];
+    volatile uint32_t IRQ_MODE0_REG;                  /*!< Offset 0x060 IRQ Mode0 Register */
+    volatile uint32_t IRQ_MODE1_REG;                  /*!< Offset 0x064 IRQ Mode1 Register */
+    volatile uint32_t IRQ_MODE2_REG;                  /*!< Offset 0x068 IRQ Mode2 Register */
+    volatile uint32_t IRQ_MODE3_REG;                  /*!< Offset 0x06C IRQ Mode3 Register */
+    volatile uint32_t IRQ_MODE4_REG;                  /*!< Offset 0x070 IRQ Mode4 Register */
+             uint32_t reserved_0x074 [0x0024];
+    volatile uint32_t RISC_AXI_PMU_CTRL;              /*!< Offset 0x104 RISC AXI PMU Control Register */
+    volatile uint32_t RISC_AXI_PMU_PRD;               /*!< Offset 0x108 RISC AXI PMU Period Register */
+    volatile uint32_t RISC_AXI_PMU_LAT_RD;            /*!< Offset 0x10C RISC AXI PMU Read Latency Register */
+    volatile uint32_t RISC_AXI_PMU_LAT_WR;            /*!< Offset 0x110 RISC AXI PMU Write Latency Register */
+    volatile uint32_t RISC_AXI_PMU_REQ_RD;            /*!< Offset 0x114 RISC AXI PMU Read Request Register */
+    volatile uint32_t RISC_AXI_PMU_REQ_WR;            /*!< Offset 0x118 RISC AXI PMU Write Request Register */
+    volatile uint32_t RISC_AXI_PMU_BW_RD;             /*!< Offset 0x11C RISC AXI PMU Read Bandwidth Register */
+    volatile uint32_t RISC_AXI_PMU_BW_WR;             /*!< Offset 0x120 RISC AXI PMU Write Bandwidth Register */
+} RISC_CFG_TypeDef; /* size of structure = 0x124 */
 /*
  * @brief CCU
  */
@@ -2784,6 +2827,7 @@ typedef struct MCTL_PHY_Type
 #define CSIC_PARSER0 ((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)/*!< CSIC_PARSER0  register set access pointer */
 #define CSIC_DMA0 ((CSIC_DMA_TypeDef *) CSIC_DMA0_BASE)/*!< CSIC_DMA0  register set access pointer */
 #define CSIC_DMA1 ((CSIC_DMA_TypeDef *) CSIC_DMA1_BASE)/*!< CSIC_DMA1  register set access pointer */
+#define RISC_CFG ((RISC_CFG_TypeDef *) RISC_CFG_BASE) /*!< RISC_CFG RISC-V core configuration register register set access pointer */
 #define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */

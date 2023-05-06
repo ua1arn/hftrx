@@ -101,6 +101,265 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>RISC_CFG</name>
+  <description>RISC-V core configuration register</description>
+  <baseAddress>0x06010000</baseAddress>
+  <registers>
+   <register>
+    <name>RISC_STA_ADD0_REG</name>
+    <displayName>RISC_STA_ADD0_REG</displayName>
+    <description>RISC Start Address0 Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_STA_ADD1_REG</name>
+    <displayName>RISC_STA_ADD1_REG</displayName>
+    <description>RISC Start Address1 Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RF1P_CFG_REG</name>
+    <displayName>RF1P_CFG_REG</displayName>
+    <description>RF1P Configuration Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ROM_CFG_REG</name>
+    <displayName>ROM_CFG_REG</displayName>
+    <description>ROM Configuration Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WAKEUP_EN_REG</name>
+    <displayName>WAKEUP_EN_REG</displayName>
+    <description>Wakeup Enable Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WAKEUP_MASK0_REG</name>
+    <displayName>WAKEUP_MASK0_REG</displayName>
+    <description>Wakeup Mask0 Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WAKEUP_MASK1_REG</name>
+    <displayName>WAKEUP_MASK1_REG</displayName>
+    <description>Wakeup Mask1 Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WAKEUP_MASK2_REG</name>
+    <displayName>WAKEUP_MASK2_REG</displayName>
+    <description>Wakeup Mask2 Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WAKEUP_MASK3_REG</name>
+    <displayName>WAKEUP_MASK3_REG</displayName>
+    <description>Wakeup Mask3 Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WAKEUP_MASK4_REG</name>
+    <displayName>WAKEUP_MASK4_REG</displayName>
+    <description>Wakeup Mask4 Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TS_TMODE_SEL_REG</name>
+    <displayName>TS_TMODE_SEL_REG</displayName>
+    <description>Timestamp Test Mode Select Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SRAM_ADDR_TWIST_REG</name>
+    <displayName>SRAM_ADDR_TWIST_REG</displayName>
+    <description>SRAM Address Twist Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WORK_MODE_REG</name>
+    <displayName>WORK_MODE_REG</displayName>
+    <description>Work Mode Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RETITE_PC0_REG</name>
+    <displayName>RETITE_PC0_REG</displayName>
+    <description>Retire PC0 Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RETITE_PC1_REG</name>
+    <displayName>RETITE_PC1_REG</displayName>
+    <description>Retire PC1 Register</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRQ_MODE0_REG</name>
+    <displayName>IRQ_MODE0_REG</displayName>
+    <description>IRQ Mode0 Register</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRQ_MODE1_REG</name>
+    <displayName>IRQ_MODE1_REG</displayName>
+    <description>IRQ Mode1 Register</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRQ_MODE2_REG</name>
+    <displayName>IRQ_MODE2_REG</displayName>
+    <description>IRQ Mode2 Register</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRQ_MODE3_REG</name>
+    <displayName>IRQ_MODE3_REG</displayName>
+    <description>IRQ Mode3 Register</description>
+    <addressOffset>0x06C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRQ_MODE4_REG</name>
+    <displayName>IRQ_MODE4_REG</displayName>
+    <description>IRQ Mode4 Register</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_AXI_PMU_CTRL</name>
+    <displayName>RISC_AXI_PMU_CTRL</displayName>
+    <description>RISC AXI PMU Control Register</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_AXI_PMU_PRD</name>
+    <displayName>RISC_AXI_PMU_PRD</displayName>
+    <description>RISC AXI PMU Period Register</description>
+    <addressOffset>0x108</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_AXI_PMU_LAT_RD</name>
+    <displayName>RISC_AXI_PMU_LAT_RD</displayName>
+    <description>RISC AXI PMU Read Latency Register</description>
+    <addressOffset>0x10C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_AXI_PMU_LAT_WR</name>
+    <displayName>RISC_AXI_PMU_LAT_WR</displayName>
+    <description>RISC AXI PMU Write Latency Register</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_AXI_PMU_REQ_RD</name>
+    <displayName>RISC_AXI_PMU_REQ_RD</displayName>
+    <description>RISC AXI PMU Read Request Register</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_AXI_PMU_REQ_WR</name>
+    <displayName>RISC_AXI_PMU_REQ_WR</displayName>
+    <description>RISC AXI PMU Write Request Register</description>
+    <addressOffset>0x118</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_AXI_PMU_BW_RD</name>
+    <displayName>RISC_AXI_PMU_BW_RD</displayName>
+    <description>RISC AXI PMU Read Bandwidth Register</description>
+    <addressOffset>0x11C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RISC_AXI_PMU_BW_WR</name>
+    <displayName>RISC_AXI_PMU_BW_WR</displayName>
+    <description>RISC AXI PMU Write Bandwidth Register</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>CCU</name>
   <description></description>
   <baseAddress>0x02001000</baseAddress>
