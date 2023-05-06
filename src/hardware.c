@@ -17,6 +17,10 @@
 #include "gpio.h"
 #include "spi.h"
 
+#if WITHRTOS
+#include "FreeRTOS.h"
+//#include "task.h"
+#endif /* WITHRTOS */
 
 #if WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721
 	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
@@ -3087,8 +3091,10 @@ static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
-
-#if WITHNESTEDINTERRUPTS
+#if WITHRTOS
+	extern unsigned long __Vectors_rtos;
+	const uintptr_t vbase = (uintptr_t) & __Vectors_rtos;
+#elif WITHNESTEDINTERRUPTS
 	extern unsigned long __Vectors_nested;
 	const uintptr_t vbase = (uintptr_t) & __Vectors_nested;
 #else /* WITHNESTEDINTERRUPTS */
@@ -3502,7 +3508,7 @@ static void cortexa_cpuinfo(void)
 			);
 }
 
-#if WITHSMPSYSTEM
+#if WITHSMPSYSTEM && ! WITHRTOS
 
 static void FLASHMEMINITFUNC
 sysinit_cache_cpu1_initialize(void)

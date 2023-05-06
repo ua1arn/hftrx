@@ -19276,6 +19276,7 @@ processkeyboard(uint_fast8_t kbch)
 static void 
 lowinitialize(void)
 {
+#if ! WITHRTOS
 	board_beep_initialize();
 	//hardware_cw_diagnostics_noirq(1, 0, 1);	// 'K'
 #if WITHDEBUG
@@ -19411,6 +19412,7 @@ lowinitialize(void)
 	//for (;;) ;
 	//hardware_cw_diagnostics_noirq(1, 1, 0);	// 'S'
 	//board_testsound_enable(0);	// Выключить 1 кГц на самоконтроле
+#endif /* ! WITHRTOS */
 }
 
 static uint_fast8_t
@@ -21749,6 +21751,7 @@ main(void)
 	global_enableIRQ();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();
+
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHTX
 	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */

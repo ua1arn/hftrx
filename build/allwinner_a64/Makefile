@@ -182,6 +182,16 @@ DINCDIR += \
 SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 endif
 
+ifeq (1, 1)
+# FreeRTOS
+RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
+DINCDIR += \
+	$(RTOSDIR)/include \
+	$(RTOSDIR)/portable/GCC/ARM_CA9
+SRCDIRS += $(RTOSDIR)
+ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
+endif
+
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 

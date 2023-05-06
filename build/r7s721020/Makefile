@@ -160,6 +160,16 @@ DINCDIR += \
 SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 endif
 
+ifeq (1, 0)
+# FreeRTOS
+RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
+DINCDIR += \
+	$(RTOSDIR)/include \
+	$(RTOSDIR)/portable/GCC/ARM_CA9
+SRCDIRS += $(RTOSDIR)
+ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
+endif
+
 # taken from
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))

@@ -1,0 +1,77 @@
+name: Kernel-Auto-Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_id:
+        description: 'Commit ID'
+        required: true
+        default: 'HEAD'
+      version_number:
+        description: 'Version Number (Ex. 10.4.4)'
+        required: true
+        default: '10.4.4'
+      main_br_version:
+        description: "Version String for task.h on main branch (leave empty to leave as-is)."
+        required: false
+        default: ''
+
+jobs:
+  release-packager:
+    name: Release Packager
+    runs-on: ubuntu-latest
+    steps:
+      # Install python 3
+      - name: Tool Setup
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7.10
+          architecture:   x64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Currently FreeRTOS/.github/scripts houses the release script. Download it for upcoming usage
+      - name: Checkout FreeRTOS Release Tools
+        uses: actions/checkout@v2
+        with:
+          repository: FreeRTOS/FreeRTOS
+          path: tools
+
+      # Simpler git auth if we use checkout action and forward the repo to release script
+      - name: Checkout FreeRTOS Kernel
+        uses: actions/checkout@v2
+        with:
+          path: local_kernel
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config --global user.name ${{ github.actor }}
+          git config --global user.email ${{ github.actor }}@users.noreply.github.com
+
+      - name: create a new branch that references commit id
+        working-directory: ./local_kernel
+        run: git checkout -b ${{ github.event.inputs.version_number }} ${{ github.event.inputs.commit_id }}
+
+      - name: Generate SBOM
+        uses: FreeRTOS/CI-CD-Github-Actions/sbom-generator@main
+        with:
+          repo_path: ./local_kernel
+          source_path: ./
+
+      - name: commit SBOM file
+        working-directory: ./local_kernel
+        run: |
+          git add .
+          git commit -m 'Update SBOM'
+          git push -u origin ${{ github.event.inputs.version_number }}
+          echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Release
+        run: |
+          # Install deps and run
+          pip install -r ./tools/.github/scripts/release-requirements.txt
+          ./tools/.github/scripts/release.py FreeRTOS --kernel-repo-path=local_kernel --kernel-commit=${{ env.COMMIT_SHA }} --new-kernel-version=${{ github.event.inputs.version_number }} --new-kernel-main-br-version=${{ github.event.inputs.main_br_version }}
+          exit $?
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
