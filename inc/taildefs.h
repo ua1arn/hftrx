@@ -140,15 +140,6 @@ typedef struct irqlspinlock_tag
 #define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { LCLSPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrqlv); } while (0)
 #else /* ! LINUX_SUBSYSTEM */
 
-typedef struct lclspinlock_tag {
-	int lock;
-#if WITHDEBUG
-	const char * file;
-	int line;
-	uint_fast8_t cpuid;
-#endif /* WITHDEBUG */
-} lclspinlock_t, LCLSPINLOCK_t;
-
 typedef struct irqlspinlock_tag
 {
 	int irql;

@@ -10158,7 +10158,7 @@ void vClearTickInterrupt(void)
 
 #endif
 
-#else /* WITHRTOS */
+#elif ! LINUX_SUBSYSTEM //#else /* WITHRTOS */
 
 void __WEAK FreeRTOS_SWI_Handler(void)
 {
