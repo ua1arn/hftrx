@@ -8430,8 +8430,8 @@
   <baseAddress>0x05101000</baseAddress>
   <registers>
    <register>
-    <name>fcolor_ctl</name>
-    <displayName>fcolor_ctl</displayName>
+    <name>FCOLOR_CTL</name>
+    <displayName>FCOLOR_CTL</displayName>
     <description>BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -8443,8 +8443,8 @@
     <addressOffset>0x00000004</addressOffset>
     <registers>
      <register>
-      <name>fcolor</name>
-      <displayName>fcolor</displayName>
+      <name>FCOLOR</name>
+      <displayName>FCOLOR</displayName>
       <description>BLD fill color register</description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
@@ -8452,8 +8452,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>insize</name>
-      <displayName>insize</displayName>
+      <name>INSIZE</name>
+      <displayName>INSIZE</displayName>
       <description>BLD input memory size register</description>
       <addressOffset>0x004</addressOffset>
       <size>0x20</size>
@@ -8461,8 +8461,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>offset</name>
-      <displayName>offset</displayName>
+      <name>OFFSET</name>
+      <displayName>OFFSET</displayName>
       <description>BLD input memory offset register</description>
       <addressOffset>0x008</addressOffset>
       <size>0x20</size>
@@ -8473,8 +8473,8 @@
     <dimIncrement>0x030</dimIncrement>
    </cluster>
    <register>
-    <name>route</name>
-    <displayName>route</displayName>
+    <name>ROUTE</name>
+    <displayName>ROUTE</displayName>
     <description>BLD_CH_RTCTL Offset 0x080 BLD routing control register</description>
     <addressOffset>0x080</addressOffset>
     <size>0x20</size>
@@ -8482,8 +8482,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>premultiply</name>
-    <displayName>premultiply</displayName>
+    <name>PREMULTIPLY</name>
+    <displayName>PREMULTIPLY</displayName>
     <description>Offset 0x080 BLD pre-multiply control register</description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
@@ -8491,8 +8491,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>bkcolor</name>
-    <displayName>bkcolor</displayName>
+    <name>BKCOLOR</name>
+    <displayName>BKCOLOR</displayName>
     <description></description>
     <addressOffset>0x088</addressOffset>
     <size>0x20</size>
@@ -8500,8 +8500,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>output_size</name>
-    <displayName>output_size</displayName>
+    <name>OUTPUT_SIZE</name>
+    <displayName>OUTPUT_SIZE</displayName>
     <description></description>
     <addressOffset>0x08C</addressOffset>
     <size>0x20</size>
@@ -8512,8 +8512,8 @@
     <dim>4</dim>
     <addressOffset>0x00000090</addressOffset>
     <register>
-     <name>bld_mode</name>
-     <displayName>bld_mode</displayName>
+     <name>BLD_MODE</name>
+     <displayName>BLD_MODE</displayName>
      <description>BLD_CTL</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -8523,8 +8523,8 @@
     <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
-    <name>ck_ctl</name>
-    <displayName>ck_ctl</displayName>
+    <name>CK_CTL</name>
+    <displayName>CK_CTL</displayName>
     <description></description>
     <addressOffset>0x0B0</addressOffset>
     <size>0x20</size>
@@ -8532,8 +8532,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ck_cfg</name>
-    <displayName>ck_cfg</displayName>
+    <name>CK_CFG</name>
+    <displayName>CK_CFG</displayName>
     <description></description>
     <addressOffset>0x0B4</addressOffset>
     <size>0x20</size>
@@ -8544,8 +8544,8 @@
     <dim>4</dim>
     <addressOffset>0x000000C0</addressOffset>
     <register>
-     <name>ck_max</name>
-     <displayName>ck_max</displayName>
+     <name>CK_MAX</name>
+     <displayName>CK_MAX</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -8558,8 +8558,8 @@
     <dim>4</dim>
     <addressOffset>0x000000E0</addressOffset>
     <register>
-     <name>ck_min</name>
-     <displayName>ck_min</displayName>
+     <name>CK_MIN</name>
+     <displayName>CK_MIN</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -8569,8 +8569,8 @@
     <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
-    <name>out_ctl</name>
-    <displayName>out_ctl</displayName>
+    <name>OUT_CTL</name>
+    <displayName>OUT_CTL</displayName>
     <description></description>
     <addressOffset>0x0FC</addressOffset>
     <size>0x20</size>
@@ -8589,8 +8589,8 @@
     <addressOffset>0x00000000</addressOffset>
     <registers>
      <register>
-      <name>attr</name>
-      <displayName>attr</displayName>
+      <name>ATTR</name>
+      <displayName>ATTR</displayName>
       <description></description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
@@ -8598,8 +8598,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>size</name>
-      <displayName>size</displayName>
+      <name>SIZE</name>
+      <displayName>SIZE</displayName>
       <description></description>
       <addressOffset>0x004</addressOffset>
       <size>0x20</size>
@@ -8607,8 +8607,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>coord</name>
-      <displayName>coord</displayName>
+      <name>COORD</name>
+      <displayName>COORD</displayName>
       <description></description>
       <addressOffset>0x008</addressOffset>
       <size>0x20</size>
@@ -8619,8 +8619,8 @@
       <dim>3</dim>
       <addressOffset>0x0000000C</addressOffset>
       <register>
-       <name>pitch</name>
-       <displayName>pitch</displayName>
+       <name>PITCH</name>
+       <displayName>PITCH</displayName>
        <description></description>
        <addressOffset>0x000</addressOffset>
        <size>0x20</size>
@@ -8633,8 +8633,8 @@
       <dim>3</dim>
       <addressOffset>0x00000018</addressOffset>
       <register>
-       <name>top_laddr</name>
-       <displayName>top_laddr</displayName>
+       <name>TOP_LADDR</name>
+       <displayName>TOP_LADDR</displayName>
        <description></description>
        <addressOffset>0x000</addressOffset>
        <size>0x20</size>
@@ -8647,8 +8647,8 @@
       <dim>3</dim>
       <addressOffset>0x00000024</addressOffset>
       <register>
-       <name>bot_laddr</name>
-       <displayName>bot_laddr</displayName>
+       <name>BOT_LADDR</name>
+       <displayName>BOT_LADDR</displayName>
        <description></description>
        <addressOffset>0x000</addressOffset>
        <size>0x20</size>
@@ -8664,8 +8664,8 @@
     <dim>4</dim>
     <addressOffset>0x000000C0</addressOffset>
     <register>
-     <name>fcolor</name>
-     <displayName>fcolor</displayName>
+     <name>FCOLOR</name>
+     <displayName>FCOLOR</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -8678,8 +8678,8 @@
     <dim>3</dim>
     <addressOffset>0x000000D0</addressOffset>
     <register>
-     <name>top_haddr</name>
-     <displayName>top_haddr</displayName>
+     <name>TOP_HADDR</name>
+     <displayName>TOP_HADDR</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -8692,8 +8692,8 @@
     <dim>3</dim>
     <addressOffset>0x000000DC</addressOffset>
     <register>
-     <name>bot_haddr</name>
-     <displayName>bot_haddr</displayName>
+     <name>BOT_HADDR</name>
+     <displayName>BOT_HADDR</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -8706,8 +8706,8 @@
     <dim>2</dim>
     <addressOffset>0x000000E8</addressOffset>
     <register>
-     <name>ovl_size</name>
-     <displayName>ovl_size</displayName>
+     <name>OVL_SIZE</name>
+     <displayName>OVL_SIZE</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -8720,8 +8720,8 @@
     <dim>2</dim>
     <addressOffset>0x000000F0</addressOffset>
     <register>
-     <name>hori</name>
-     <displayName>hori</displayName>
+     <name>HORI</name>
+     <displayName>HORI</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -8734,8 +8734,8 @@
     <dim>2</dim>
     <addressOffset>0x000000F8</addressOffset>
     <register>
-     <name>vert</name>
-     <displayName>vert</displayName>
+     <name>VERT</name>
+     <displayName>VERT</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -8756,8 +8756,8 @@
     <addressOffset>0x00000000</addressOffset>
     <registers>
      <register>
-      <name>attr</name>
-      <displayName>attr</displayName>
+      <name>ATTR</name>
+      <displayName>ATTR</displayName>
       <description></description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
@@ -8765,8 +8765,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>size</name>
-      <displayName>size</displayName>
+      <name>SIZE</name>
+      <displayName>SIZE</displayName>
       <description></description>
       <addressOffset>0x004</addressOffset>
       <size>0x20</size>
@@ -8774,8 +8774,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>coord</name>
-      <displayName>coord</displayName>
+      <name>COORD</name>
+      <displayName>COORD</displayName>
       <description></description>
       <addressOffset>0x008</addressOffset>
       <size>0x20</size>
@@ -8783,8 +8783,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>pitch</name>
-      <displayName>pitch</displayName>
+      <name>PITCH</name>
+      <displayName>PITCH</displayName>
       <description></description>
       <addressOffset>0x00C</addressOffset>
       <size>0x20</size>
@@ -8792,8 +8792,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>top_laddr</name>
-      <displayName>top_laddr</displayName>
+      <name>TOP_LADDR</name>
+      <displayName>TOP_LADDR</displayName>
       <description></description>
       <addressOffset>0x010</addressOffset>
       <size>0x20</size>
@@ -8801,8 +8801,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>bot_laddr</name>
-      <displayName>bot_laddr</displayName>
+      <name>BOT_LADDR</name>
+      <displayName>BOT_LADDR</displayName>
       <description></description>
       <addressOffset>0x014</addressOffset>
       <size>0x20</size>
@@ -8810,8 +8810,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>fcolor</name>
-      <displayName>fcolor</displayName>
+      <name>FCOLOR</name>
+      <displayName>FCOLOR</displayName>
       <description></description>
       <addressOffset>0x018</addressOffset>
       <size>0x20</size>
@@ -8822,8 +8822,8 @@
     <dimIncrement>0x070</dimIncrement>
    </cluster>
    <register>
-    <name>top_haddr</name>
-    <displayName>top_haddr</displayName>
+    <name>TOP_HADDR</name>
+    <displayName>TOP_HADDR</displayName>
     <description></description>
     <addressOffset>0x080</addressOffset>
     <size>0x20</size>
@@ -8831,8 +8831,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>bot_haddr</name>
-    <displayName>bot_haddr</displayName>
+    <name>BOT_HADDR</name>
+    <displayName>BOT_HADDR</displayName>
     <description></description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
@@ -8840,8 +8840,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ovl_size</name>
-    <displayName>ovl_size</displayName>
+    <name>OVL_SIZE</name>
+    <displayName>OVL_SIZE</displayName>
     <description></description>
     <addressOffset>0x088</addressOffset>
     <size>0x20</size>
@@ -8849,14 +8849,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
-  </peripheral>
-  <peripheral derivedFrom="DE_UI1">
-  <name>DE_UI2</name>
-  <baseAddress>0x05104000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="DE_UI1">
-  <name>DE_UI3</name>
-  <baseAddress>0x05105000</baseAddress>
   </peripheral>
   <peripheral>
   <name>G2D_TOP</name>
