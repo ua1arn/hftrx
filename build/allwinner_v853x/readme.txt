@@ -1,4 +1,6 @@
-﻿Каталог для сборки версии программы под процессор Allwinner T133-S3
+﻿Каталог для сборки версии программы под процессор Allwinner V851S
+https://github.com/YuzukiHD/Yuzukilizard
+
 
 xfel:
 https://gitee.com/xboot/xfel/releases/v1.2.9
