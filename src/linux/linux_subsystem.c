@@ -78,7 +78,7 @@ void linux_encoder_spool(void)
 	while(1)
 	{
 		spool_encinterrupt();
-		usleep(1000);
+		usleep(500);
 	}
 }
 

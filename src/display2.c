@@ -5991,11 +5991,12 @@ void display2_bgprocess(void)
 {
 #if LINUX_SUBSYSTEM
 	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
+	uint8_t dpage = REDRSUBSET(amenuset());
 
 	for (int i = 0; i < WALKCOUNT; i ++)
 	{
 		const struct dzone * const p = & dzones [i];
-		if (p->key == REDRM_ALL)
+		if (p->subset >= dpage && p->key == REDRM_ALL)
 			(* p->redraw)(p->x, p->y, display2_getcontext());
 	}
 

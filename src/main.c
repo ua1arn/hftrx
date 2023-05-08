@@ -4459,13 +4459,12 @@ static uint_fast8_t menuset; 	/* номер комплекта функций н
 static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
 static uint_fast8_t sleepflag;	/* не-0: выключить дисплей и звук. */
 
-static uint_fast8_t amenuset(void)
+uint_fast8_t amenuset(void)
 {
 	if ((dimmflag || sleepflag || dimmmode))
 		return display_getpagesleep();
 	return menuset;
 }
-
 
 uint_fast8_t habradio_get_classa(void)
 {
@@ -21561,7 +21560,7 @@ hamradio_mainloop(void)
 	{
 		hamradio_main_step();
 #if LINUX_SUBSYSTEM
-		usleep(100);
+		usleep(1000);
 #endif /* LINUX_SUBSYSTEM */
 	}
 }
