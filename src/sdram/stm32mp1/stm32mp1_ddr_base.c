@@ -1724,7 +1724,7 @@ struct stm32mp1_ddr_info {
 	uint32_t size;  /* Memory size in byte = col * row * width */
 };
 
-struct stm32mp1_ddr_config {
+struct stm32mp1_ddr_config_local {
 	struct stm32mp1_ddr_info info;
 	struct stm32mp1_ddrctrl_reg c_reg;
 	struct stm32mp1_ddrctrl_timing c_timing;
@@ -2612,7 +2612,7 @@ static int board_ddr_power_init(enum ddr_type ddr_type)
 //	This wait time is relative to Step 8, i.e. relative to when the DLL reset command was
 //	issued onto the SDRAM command bus.
 static void stm32mp1_ddr_init_priv(struct ddr_info *priv,
-	       struct stm32mp1_ddr_config *config)
+	       struct stm32mp1_ddr_config_local *config)
 {
 	uint32_t pir;
 	int ret = - 1;
@@ -2838,7 +2838,7 @@ static void stm32mp1_ddr_init_priv(struct ddr_info *priv,
 //			DDRPHYC->DX2DQSTR, DDRPHYC->DX3DQSTR);
 }
 
-void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
+static void stm32mp1_ddr_get_config_local(struct stm32mp1_ddr_config_local * cfg)
 {
 	cfg->info.speed = DDR_MEM_SPEED; // kHz
 	cfg->info.size = DDR_MEM_SIZE;
@@ -3133,7 +3133,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	unsigned uret;
 	struct ddr_info ddr_priv_data;
 	struct ddr_info * const priv = &ddr_priv_data;
-	struct stm32mp1_ddr_config config;
+	struct stm32mp1_ddr_config_local config;
 	PRINTF("arm_hardware_sdram_initialize start.\n");
 
 	if (1)
@@ -3229,14 +3229,14 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	priv->info.base = STM32MP_DDR_BASE;
 	priv->info.size = DDR_MEM_SIZE;
 
-	stm32mp1_ddr_get_config(& config);
+	stm32mp1_ddr_get_config_local(& config);
 
 	/* Software Self-Refresh mode (SSR) during DDR initilialization */
 	mmio_clrsetbits_32((uintptr_t) & RCC->DDRITFCR,
 			   RCC_DDRITFCR_DDRCKMOD_Msk,
 			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos); // RCC_DDRITFCR_DDRCKMOD_SSR
 
-#if 1
+#if 0
 	/* Disable axidcg clock gating during init */
 	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
 

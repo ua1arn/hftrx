@@ -11,7 +11,6 @@
 #include "platform_def.h"
 #include "stm32mp1_ddr.h"
 #include "stm32mp1_ddr_regs.h"
-#include "stm32mp1_pwr.h"
 #include "stm32mp1_ram.h"
 #include "stm32mp_ddr.h"
 

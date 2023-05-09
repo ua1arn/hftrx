@@ -137,9 +137,6 @@ mmio_clrsetbits_32(uintptr_t addr, uint32_t cmask, uint32_t smask)
 
 #define EINVAL 22
 
-#define STM32MP_DDR_DUAL_AXI_PORT 1
-#define STM32MP_DDR_32BIT_INTERFACE 1
-
 
 /********************************************************************
  * A simple timer driver providing synchronous delay functionality.
