@@ -7458,6 +7458,10 @@ void board_initialize(void)
 
 	board_gpio_init();			/* инициализация на вывод битов PIO процессора, если некоторые биты управляются напрямую без SPI */
 
+#if WIHSPIDFHW || WIHSPIDFSW || WIHSPIDFOVERSPI
+	spidf_initialize();
+#endif /* WIHSPIDFHW || WIHSPIDFSW || WIHSPIDFOVERSPI */
+
 #if WITHFPGAWAIT_AS
 	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	board_fpga_loader_initialize();

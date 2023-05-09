@@ -6949,8 +6949,6 @@ void hightests(void)
 		// QSPI test
 		unsigned char b [64];
 
-		spidf_initialize();
-
 		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 
 		memset(b, 0xE5, sizeof b);
@@ -6962,8 +6960,6 @@ void hightests(void)
 		memset(b, 0xE5, sizeof b);
 		readDATAFLASH(0x00080000, b, ARRAY_SIZE(b));
 		printhex(0x00080000, b, ARRAY_SIZE(b));
-
-		spidf_uninitialize();
 	}
 #endif
 #if 0 && WITHTWISW && WITHDEBUG

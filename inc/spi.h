@@ -563,7 +563,6 @@ void hardware_spi_master_send_frame_16b(const uint16_t * pBuffer, uint_fast32_t 
 
 // Serial flash (boot memory) interface
 void spidf_initialize(void);
-void spidf_uninitialize(void);
 void spidf_hangoff(void);
 
 uint_fast8_t dataflash_read_status(void);
@@ -575,8 +574,6 @@ int sectoreraseDATAFLASH(unsigned long flashoffset);
 int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len);
 int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len);
 int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len);
-void writeEnableDATAFLASH(void);
-void writeDisableDATAFLASH(void);
 int fullEraseDATAFLASH(void);
 unsigned long sectorsizeDATAFLASH(void);
 unsigned long chipsizeDATAFLASH(void);

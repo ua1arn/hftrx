@@ -174,8 +174,6 @@ USBD_DFU_MediaTypeDef;
 static USBD_StatusTypeDef MEM_If_Init_HS(void)
 {
 	//PRINTF(PSTR("MEM_If_Init_HS\n"));
-	spidf_initialize();
-	testchipDATAFLASH();
 #if WIHSPIDFHW || WIHSPIDFSW
 	prepareDATAFLASH();	// снятие защиты со страниц при первом програмимровании через SPI интерфейс
 #endif
@@ -189,7 +187,6 @@ static USBD_StatusTypeDef MEM_If_Init_HS(void)
 static USBD_StatusTypeDef MEM_If_DeInit_HS(void)
 {
 	//PRINTF(PSTR("MEM_If_DeInit_HS\n"));
-	spidf_uninitialize();
 	//PRINTF(PSTR("MEM_If_DeInit_HS 1\n"));
 	return USBD_OK;
 }

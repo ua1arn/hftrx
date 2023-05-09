@@ -4044,6 +4044,25 @@ void nand_tests(void)
 
 #if WIHSPIDFHW || WIHSPIDFSW || WIHSPIDFOVERSPI
 
+static IRQLSPINLOCK_t spidflock;
+
+static void spidf_accure(IRQL_t * oldIRQL, IRQL_t * oldIRQL2spi)
+{
+	ASSERT(oldIRQL != oldIRQL2spi);
+	IRQLSPIN_LOCK(& spidflock, oldIRQL);
+#if	WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
+	spi_operate_lock(oldIRQL2spi)
+#endif /* WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133) */
+}
+
+static void spidf_release(IRQL_t setIRQL, IRQL_t setIRQL2spi)
+{
+#if	WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
+	spi_operate_unlock(setIRQL2spi)
+#endif /* WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133) */
+	IRQLSPIN_UNLOCK(& spidflock, setIRQL);
+}
+
 enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
 enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
 
@@ -4063,6 +4082,7 @@ static uint8_t dmyb [SPDFIO_numwires];
 
 void spidf_initialize(void)
 {
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
 #if defined (SPIDF_SOFTINITIALIZE)
 	// Connect I/O pins
 	SPIDF_SOFTINITIALIZE();
@@ -4147,10 +4167,6 @@ static void spidf_write_byte(uint_fast8_t v)
 	spidf_wbit(v & 0x01);
 }
 #endif
-
-void spidf_uninitialize(void)
-{
-}
 
 void spidf_hangoff(void)
 {
@@ -4248,7 +4264,7 @@ static uint_fast8_t spidf_readval8(void)
 #endif /* WIHSPIDFOVERSPI */
 }
 
-static IRQL_t spidf_iostart(
+static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -4400,12 +4416,13 @@ static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
 
 void spidf_initialize(void)
 {
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
 	hardware_spi_master_initialize();
 	prog_select_init();		// spi CS initialize
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 }
 
-static void spidf_unselect(IRQL_t irql)
+static void spidf_unselect(void)
 {
 	// De-assert CS
 	prog_unselect(targetdataflash);
@@ -4416,15 +4433,11 @@ static void spidf_unselect(IRQL_t irql)
 	spi_operate_unlock(irql);
 }
 
-void spidf_uninitialize(void)
-{
-}
-
 void spidf_hangoff(void)
 {
 }
 
-static IRQL_t spidf_iostart(
+static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -4466,9 +4479,6 @@ static IRQL_t spidf_iostart(
 		b [i ++] = 0x00;	// dummy byte
 
 
-	IRQL_t irql;
-	spi_operate_lock(& irql);
-
 	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE0);
 
 	// assert CS
@@ -4476,8 +4486,6 @@ static IRQL_t spidf_iostart(
 
 	spidf_spi_transfer(b, NULL, 1, SPDFIO_1WIRE);
 	spidf_spi_transfer(b + 1, NULL, i - 1, readnb);
-
-	return irql;
 }
 
 // вычитываем все заказанное количество
@@ -4877,6 +4885,7 @@ static uint32_t SendBankSelect(uint8_t BankSel);
 
 void spidf_initialize(void)
 {
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
 
 	PRINTF("%s:\n", __func__);
 
@@ -4952,19 +4961,7 @@ void spidf_hangoff(void)
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 }
 
-void spidf_uninitialize(void)
-{
-//	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
-//		;
-	// Disconnect I/O pins
-#if CPUSTYLE_XC7Z
-	return;
-#endif /* CPUSTYLE_XC7Z */
-	XQSPIPS->ER = 0;
-	SPIDF_HANGOFF();
-}
-
-static void spidf_unselect(IRQL_t irql)
+static void spidf_unselect(void)
 {
 ////	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 ////		;
@@ -5022,7 +5019,7 @@ static uint_fast8_t spidf_progval8(uint_fast8_t v)
 	return v8;
 }
 
-static IRQL_t spidf_iostart(
+static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -5184,7 +5181,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_
 	return err;
 }
 
-static void spidf_unselect(IRQL_t irql)
+static void spidf_unselect(void)
 {
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
@@ -5193,7 +5190,7 @@ static void spidf_unselect(IRQL_t irql)
 }
 
 // readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
-static IRQL_t spidf_iostart(
+static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -5263,12 +5260,12 @@ static IRQL_t spidf_iostart(
 		//PRINTF("spidf_iostart QUADSPI->AR=%08lX, QUADSPI->SR=%08lX\n", QUADSPI->AR, QUADSPI->SR);
 		(void) QUADSPI->AR;
 	}
-
-	return 0;	// dummy value - unused in spidf_unselect
 }
 
 void spidf_initialize(void)
 {
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
+
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_QSPIEN;
 	(void) RCC->MP_AHB6ENSETR;
@@ -5316,16 +5313,10 @@ void spidf_initialize(void)
 	(void) QUADSPI->CR;
 }
 
-void spidf_uninitialize(void)
+void spidf_hangoff(void)
 {
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
-	// Disconnect I/O pins
-	SPIDF_HANGOFF();
-}
-
-void spidf_hangoff(void)
-{
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 }
 
@@ -5420,7 +5411,7 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 	}
 }
 
-static void spidf_unselect(IRQL_t irql)
+static void spidf_unselect(void)
 {
 //	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 //		;
@@ -5432,6 +5423,7 @@ static void spidf_unselect(IRQL_t irql)
 
 void spidf_initialize(void)
 {
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
 
 	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
 	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
@@ -5490,22 +5482,16 @@ void spidf_initialize(void)
 	//PRINTF("SPIBSC0.SSLDR=%08lX\n", SPIBSC0.SSLDR);
 }
 
-void spidf_uninitialize(void)
+void spidf_hangoff(void)
 {
-//	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
-//		;
 	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_SSLF) != 0)
 		;
 	// Disconnect I/O pins
 	SPIDF_HANGOFF();
-}
-
-void spidf_hangoff(void)
-{
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 }
 
-static IRQL_t spidf_iostart(
+static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-CPU, 1: CPU-to-dataflash
 	uint_fast8_t cmd,
 	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
@@ -5562,40 +5548,44 @@ static IRQL_t spidf_iostart(
 		0;
 
 	// при передаче формируется только команла и адрес при необходимости
-    return 0;	// dummy value - ignored in spidf_unselect
 }
 
 #endif /* WIHSPIDFHW */
 
 /* снять защиту записи для следующей команды */
-void writeEnableDATAFLASH(void)
+static void writeEnableDATAFLASH(void)
 {
-	const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x06, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x06: write enable */
-	spidf_unselect(irql);	/* done sending data to target chip */
+	spidf_iostart(SPDIFIO_WRITE, 0x06, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x06: write enable */
+	spidf_unselect();	/* done sending data to target chip */
 }
 
-void writeDisableDATAFLASH(void)
+static void writeDisableDATAFLASH(void)
 {
-	const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x04, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x04: write disable */
-	spidf_unselect(irql);	/* done sending data to target chip */
+	spidf_iostart(SPDIFIO_WRITE, 0x04, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x04: write disable */
+	spidf_unselect();	/* done sending data to target chip */
 }
 
 int fullEraseDATAFLASH(void)
 {
+	IRQL_t oldIrql, oldIrql2;
+	spidf_accure(& oldIrql, & oldIrql2);
+
 	if (timed_dataflash_read_status())
 	{
 		PRINTF(PSTR("fullEraseDATAFLASH: timeout\n"));
+		spidf_release(oldIrql, oldIrql2);
 		return 1;
 	}
 
 	writeEnableDATAFLASH();		/* write enable */
 
-	const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x60, SPDFIO_1WIRE, 0, 0, 0, 0);	/*.2.18 Chip Erase (C7h / 60h) */
-	spidf_unselect(irql);	/* done sending data to target chip */
+	spidf_iostart(SPDIFIO_WRITE, 0x60, SPDFIO_1WIRE, 0, 0, 0, 0);	/*.2.18 Chip Erase (C7h / 60h) */
+	spidf_unselect();	/* done sending data to target chip */
 
-	if (largetimed_dataflash_read_status())
-		return 1;
-	return 0;
+	const uint_fast8_t rv = largetimed_dataflash_read_status();
+
+	spidf_release(oldIrql, oldIrql2);
+	return rv != 0;
 }
 
 /* read status register #1 (bit0==busy flag) */
@@ -5607,9 +5597,9 @@ uint_fast8_t dataflash_read_status(void)
 	uint8_t v;
 	enum { SPDIF_IOSIZE = sizeof v };
 
-	const IRQL_t irql = spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
+	spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
 	spidf_read(& v, SPDIF_IOSIZE, SPDFIO_1WIRE);
-	spidf_unselect(irql);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 	//PRINTF("dataflash_read_status: v=%02X\n", v);
 	return v;
 }
@@ -5859,9 +5849,9 @@ static void readFlashID(uint8_t * buff, unsigned size)
 	memcpy(buff, & ReadBuffer [1], size);
 
 #else
-	const IRQL_t irql = spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
+	spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
 	spidf_read(buff, size, SPDFIO_1WIRE);
-	spidf_unselect(irql);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
 }
 
@@ -5904,9 +5894,9 @@ static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigne
 	memcpy(buff, & ReadBuffer [5], size);
 
 #else
-	const IRQL_t irql = spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
+	spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
 	spidf_read(buff, size, SPDFIO_1WIRE);
-	spidf_unselect(irql);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
 }
 
@@ -5962,11 +5952,15 @@ int testchipDATAFLASH(void)
 	unsigned mf_devid2;	// device ID (part 2)
 	unsigned mf_dlen;	// Extended Device Information String Length
 
+	IRQL_t oldIrql, oldIrql2;
+	spidf_accure(& oldIrql, & oldIrql2);
+
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
 	if (timed_dataflash_read_status())
 	{
+		spidf_release(oldIrql, oldIrql2);
 		PRINTF(PSTR("testchipDATAFLASH: timeout\n"));
 		return 1;
 	}
@@ -6014,7 +6008,10 @@ int testchipDATAFLASH(void)
 
 		//PRINTF("SFDP: ptp=%08lX, len4=%02X\n", ptp, len4);
 		if (len4 < 9 || len4 > 16)
+		{
+			spidf_release(oldIrql, oldIrql2);
 			return 0;
+		}
 		uint8_t buff32 [len4 * 4];
 		readSFDPDATAFLASH(ptp, buff32, len4 * 4);
 		//const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
@@ -6092,11 +6089,14 @@ int testchipDATAFLASH(void)
 			mf_id, mf_devid1, mf_devid2, mf_dlen
 			);
 
+	spidf_release(oldIrql, oldIrql2);
 	return 0;
 }
 
 int prepareDATAFLASH(void)
 {
+	IRQL_t oldIrql, oldIrql2;
+	spidf_accure(& oldIrql, & oldIrql2);
 	const uint_fast8_t status = dataflash_read_status();
 
 	if ((status & 0x1C) != 0)
@@ -6104,6 +6104,7 @@ int prepareDATAFLASH(void)
 		if (timed_dataflash_read_status())
 		{
 			PRINTF(PSTR("prepareDATAFLASH: timeout\n"));
+			spidf_release(oldIrql, oldIrql2);
 			return 1;
 		}
 
@@ -6112,9 +6113,9 @@ int prepareDATAFLASH(void)
 
 		uint8_t v = 0x00;	/* status register data */
 		// Write Status Register
-		const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
+		spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
 		spidf_write(& v, 1, SPDFIO_1WIRE);
-		spidf_unselect(irql);	/* done sending data to target chip */
+		spidf_unselect();	/* done sending data to target chip */
 
 		PRINTF("prepareDATAFLASH: r/o clear\n");
 	}
@@ -6123,7 +6124,9 @@ int prepareDATAFLASH(void)
 		PRINTF("prepareDATAFLASH: r/o already clear\n");
 	}
 
-	return timed_dataflash_read_status();
+	const uint_fast8_t rv = timed_dataflash_read_status();
+	spidf_release(oldIrql, oldIrql2);
+	return rv != 0;
 }
 
 unsigned long sectorsizeDATAFLASH(void)
@@ -6140,9 +6143,12 @@ unsigned long chipsizeDATAFLASH(void)
 int sectoreraseDATAFLASH(unsigned long flashoffset)
 {
 	//PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
+	IRQL_t oldIrql, oldIrql2;
+	spidf_accure(& oldIrql, & oldIrql2);
 
 	if (timed_dataflash_read_status())
 	{
+		spidf_release(oldIrql, oldIrql2);
 		PRINTF(PSTR("sectoreraseDATAFLASH: timeout\n"));
 		return 1;
 	}
@@ -6150,19 +6156,22 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
-	const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset);
-	spidf_unselect(irql);	/* done sending data to target chip */
-	if (timed_dataflash_read_status())
-		return 1;
-	return 0;
+	spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset);
+	spidf_unselect();	/* done sending data to target chip */
+	const uint_fast8_t rv = timed_dataflash_read_status();
+	spidf_release(oldIrql, oldIrql2);
+	return rv != 0;
 }
 
 int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
 {
 	//PRINTF(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
+	IRQL_t oldIrql, oldIrql2;
+	spidf_accure(& oldIrql, & oldIrql2);
 
 	if (timed_dataflash_read_status())
 	{
+		spidf_release(oldIrql, oldIrql2);
 		PRINTF(PSTR("writesinglepageDATAFLASH: timeout\n"));
 		return 1;
 	}
@@ -6171,14 +6180,14 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 
 	// start byte programm
 
-	const IRQL_t irql = spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset);		/* Page Program */
+	spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset);		/* Page Program */
 	spidf_write(data, len, SPDFIO_1WIRE);
-	spidf_unselect(irql);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 
 	//PRINTF(PSTR( Prog to address %08lX %02X done\n"), flashoffset, len);
-	if (timed_dataflash_read_status())
-		return 1;
-	return 0;
+	const uint_fast8_t rv = timed_dataflash_read_status();
+	spidf_release(oldIrql, oldIrql2);
+	return rv != 0;
 }
 
 int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
@@ -6203,27 +6212,27 @@ int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lon
 // Возвращает код ширниы шины для следующей операции обмена
 // SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
 static uint_fast8_t
-spdif_iostartread(unsigned long len, unsigned long flashoffset, IRQL_t * pirql)
+spdif_iostartread(unsigned long len, unsigned long flashoffset)
 {
 	if (0)
 		;
 #if WIHSPIDFHW4BIT
 	else if (readxb [SPDFIO_4WIRE] != 0x00)
 	{
-		* pirql = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
+		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
 		return SPDFIO_4WIRE;
 	}
 #endif /* WIHSPIDFHW4BIT */
 #if WIHSPIDFHW2BIT
 	else if (readxb [SPDFIO_2WIRE] != 0x00)
 	{
-		* pirql = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
+		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
 		return SPDFIO_2WIRE;
 	}
 #endif /* WIHSPIDFHW2BIT */
 	else
 	{
-		* pirql = spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+		spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
 		return SPDFIO_1WIRE;
 	}
 }
@@ -6240,10 +6249,9 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 		return 1;
 	}
 
-	IRQL_t irql;
-	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset, & irql);
+	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
 	err = spidf_verify(data, len, readnb);
-	spidf_unselect(irql);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 
 	if (err)
 		PRINTF(PSTR("verifyDATAFLASH: Done compare, have errors\n"));
@@ -6269,10 +6277,9 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 
 //	TP();
 //	PRINTF("read operation\n");
-	IRQL_t irql;
-	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset, & irql);
+	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
 	spidf_read(data, len, readnb);
-	spidf_unselect(irql);	/* done sending data to target chip */
+	spidf_unselect();	/* done sending data to target chip */
 
 #endif /* CPUSTYLE_XC7Z */
 
@@ -6283,19 +6290,14 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
 {
-	spidf_initialize();
 	testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 	readDATAFLASH(flashoffset, dest, Len);
-	spidf_uninitialize();
 }
 
 void bootloader_chiperase(void)
 {
-	spidf_initialize();
 	testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 	fullEraseDATAFLASH();
-	spidf_uninitialize();
-
 }
 
 #else /* WIHSPIDFHW || WIHSPIDFSW */
@@ -6319,11 +6321,7 @@ int testchipDATAFLASH(void)
 
 void spidf_initialize(void)
 {
-
-}
-
-void spidf_uninitialize(void)
-{
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
 
 }
 
