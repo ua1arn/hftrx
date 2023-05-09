@@ -245,6 +245,7 @@
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_qrp.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_ua1cei_qrp.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_r1ab.h"
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_r1cbu.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9c.h"	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 #elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7	// rmainunit_v5km2.pcb STM32MP153DAB, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
