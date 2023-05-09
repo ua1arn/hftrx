@@ -1867,13 +1867,9 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 
 #if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 
+/* newIRQL - уровень приоритета, прертиывания с которым и ниже которого требуется запретить */
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
 {
-//#if WITHISBOOTLOADER
-//	PRINTF("boot: old=%02X new=%02X (%s/%d)\n", (unsigned) GetCurrentIrql(), (unsigned) newIRQL, file, line);
-//#else
-//	PRINTF("app: old=%02X new=%02X (%s/%d)\n", (unsigned) GetCurrentIrql(), (unsigned) newIRQL, file, line);
-//#endif
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	ASSERT(GIC_GetInterfacePriorityMask() >= newIRQL);	/* Не понижаем приоритет */
 	* oldIrql = GIC_GetInterfacePriorityMask();
@@ -1903,21 +1899,6 @@ void LowerIrql(IRQL_t newIRQL)
 	PLIC->PLIC_MTH_REG = newIRQL;
 #else
 	#warning Implement LowerIrql
-#endif
-}
-
-IRQL_t GetCurrentIrql(void)
-{
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-	return GIC_GetInterfacePriorityMask();
-#elif (__CORTEX_M != 0)
-	return __get_BASEPRI();
-#elif CPUSTYLE_RISCV
-	//oldIrql * = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
-	return PLIC->PLIC_MTH_REG;
-#else
-	#warning Implement GetCurrentIrql
-	return 0;
 #endif
 }
 

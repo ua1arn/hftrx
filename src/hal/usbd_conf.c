@@ -687,7 +687,7 @@ unsigned hamradio_get__getsoffreq(void)
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	unsigned count = sofcount;
 	sofcount = 0;
-	LoweIrql(oldIrql);
+	LowerIrql(oldIrql);
 
 	uint32_t nowticks = sys_now();
 	uint32_t difftime = nowticks - softicks;

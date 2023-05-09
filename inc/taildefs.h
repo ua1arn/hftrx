@@ -151,10 +151,11 @@ typedef struct irqlspinlock_tag
 
 #endif /* ! LINUX_SUBSYSTEM */
 
+/* newIRQL - уровень приоритета, прертиывания с которым и ниже которого требуется запретить */
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line);
 #define RiseIrql(newIRQL, oldIrqlv2) RiseIrql_DEBUG((newIRQL), (oldIrqlv2), __FILE__, __LINE__)
+
 void LowerIrql(IRQL_t newIRQL);
-IRQL_t GetCurrentIrql(void);
 
 #if WITHSMPSYSTEM
 	/* Пока привязка процессора обрабатывающего прерывание по приоритету. */
