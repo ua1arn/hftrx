@@ -3328,9 +3328,9 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #endif /* WITHDEBUG */
 
 	/* Software Self-Refresh mode (SSR) during DDR initilialization */
-	mmio_clrsetbits_32((uintptr_t) & RCC->DDRITFCR,
-			   RCC_DDRITFCR_DDRCKMOD_Msk,
-			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos);
+//	mmio_clrsetbits_32((uintptr_t) & RCC->DDRITFCR,
+//			   RCC_DDRITFCR_DDRCKMOD_Msk,
+//			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos);
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
 
