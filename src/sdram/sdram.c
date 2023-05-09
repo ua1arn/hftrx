@@ -7,6 +7,8 @@
 
 #include "hardware.h"
 
+#if WITHSDRAMHW
+
 #include <stdint.h>
 #include <string.h>
 
@@ -14,11 +16,6 @@
 #include "clocks.h"
 #include "gpio.h"
 
-////////////////////////
-
-#if WITHSDRAMHW && (CPUSTYLE_STM32F || CPUSTYLE_STM32H)
-
-#include "sdram.h"
 
 void sdram_test_pattern(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t pattern)
 {
@@ -70,7 +67,9 @@ void sdram_test_random(uintptr_t addr, uint_fast16_t buffer_size)
 
 }
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32F7XX
+
+#include "sdram.h"
 
 void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
 {
@@ -670,6 +669,13 @@ void arm_hardware_sdram_initialize(void)
 #endif
 }
 
+#elif CPUSTYLE_STM32H7XX
+
+void arm_hardware_sdram_initialize(void)
+{
+	ASSERT(0);
+}
+
 #elif CPUSTYLE_STM32MP1
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
@@ -770,9 +776,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	PRINTF("arm_hardware_sdram_initialize done\n");
 }
 
-#endif	//  CPUSTYLE_XC7Z || CPUSTYLE_XCZU
-
-#if CPUSTYLE_A64
+#elif CPUSTYLE_A64
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
@@ -795,8 +799,6 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	PRINTF("arm_hardware_sdram_initialize done\n");
 
 }
-
-
 
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -941,7 +943,7 @@ int sys_dram_init(void)
 	return init_DRAM(0, & ddrp2) != 0;
 }
 
-#endif
+#endif /* CPUSTYLE_T113, CPUSTYLE_F133 */
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
@@ -1001,5 +1003,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	PRINTF("arm_hardware_sdram_initialize done\n");
 	//local_delay_ms(1000);
 }
+
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
+
 #endif /* WITHSDRAMHW */
