@@ -9,7 +9,7 @@
 
 #if WITHSDRAMHW && CPUSTYLE_STM32MP1
 
-
+#include "stm32mp1_ddr.h"
 #include "platform_def.h"
 
 #include <stdint.h>
@@ -1599,108 +1599,108 @@ struct ddr_info {
 	uintptr_t pwr;
 	uintptr_t rcc;
 };
-
-struct stm32mp1_ddrctrl_reg {
-	uint32_t mstr;
-	uint32_t mrctrl0;
-	uint32_t mrctrl1;
-	uint32_t derateen;
-	uint32_t derateint;
-	uint32_t pwrctl;
-	uint32_t pwrtmg;
-	uint32_t hwlpctl;
-	uint32_t rfshctl0;
-	uint32_t rfshctl3;
-	uint32_t crcparctl0;
-	uint32_t zqctl0;
-	uint32_t dfitmg0;
-	uint32_t dfitmg1;
-	uint32_t dfilpcfg0;
-	uint32_t dfiupd0;
-	uint32_t dfiupd1;
-	uint32_t dfiupd2;
-	uint32_t dfiphymstr;
-	uint32_t odtmap;
-	uint32_t dbg0;
-	uint32_t dbg1;
-	uint32_t dbgcmd;
-	uint32_t poisoncfg;
-	uint32_t pccfg;
-};
-
-struct stm32mp1_ddrctrl_timing {
-	uint32_t rfshtmg;
-	uint32_t dramtmg0;
-	uint32_t dramtmg1;
-	uint32_t dramtmg2;
-	uint32_t dramtmg3;
-	uint32_t dramtmg4;
-	uint32_t dramtmg5;
-	uint32_t dramtmg6;
-	uint32_t dramtmg7;
-	uint32_t dramtmg8;
-	uint32_t dramtmg14;
-	uint32_t odtcfg;
-};
-
-struct stm32mp1_ddrctrl_map {
-	uint32_t addrmap1;
-	uint32_t addrmap2;
-	uint32_t addrmap3;
-	uint32_t addrmap4;
-	uint32_t addrmap5;
-	uint32_t addrmap6;
-	uint32_t addrmap9;
-	uint32_t addrmap10;
-	uint32_t addrmap11;
-};
-
-struct stm32mp1_ddrctrl_perf {
-	uint32_t sched;
-	uint32_t sched1;
-	uint32_t perfhpr1;
-	uint32_t perflpr1;
-	uint32_t perfwr1;
-	uint32_t pcfgr_0;
-	uint32_t pcfgw_0;
-	uint32_t pcfgqos0_0;
-	uint32_t pcfgqos1_0;
-	uint32_t pcfgwqos0_0;
-	uint32_t pcfgwqos1_0;
-	uint32_t pcfgr_1;
-	uint32_t pcfgw_1;
-	uint32_t pcfgqos0_1;
-	uint32_t pcfgqos1_1;
-	uint32_t pcfgwqos0_1;
-	uint32_t pcfgwqos1_1;
-};
-
-struct stm32mp1_ddrphy_reg {
-	uint32_t pgcr;
-	uint32_t aciocr;
-	uint32_t dxccr;
-	uint32_t dsgcr;
-	uint32_t dcr;
-	uint32_t odtcr;
-	uint32_t zq0cr1;
-	uint32_t dx0gcr;
-	uint32_t dx1gcr;
-	uint32_t dx2gcr;
-	uint32_t dx3gcr;
-};
-
-struct stm32mp1_ddrphy_timing {
-	uint32_t ptr0;
-	uint32_t ptr1;
-	uint32_t ptr2;
-	uint32_t dtpr0;
-	uint32_t dtpr1;
-	uint32_t dtpr2;
-	uint32_t mr0;
-	uint32_t mr1;
-	uint32_t mr2;
-	uint32_t mr3;
-};
+//
+//struct stm32mp1_ddrctrl_reg {
+//	uint32_t mstr;
+//	uint32_t mrctrl0;
+//	uint32_t mrctrl1;
+//	uint32_t derateen;
+//	uint32_t derateint;
+//	uint32_t pwrctl;
+//	uint32_t pwrtmg;
+//	uint32_t hwlpctl;
+//	uint32_t rfshctl0;
+//	uint32_t rfshctl3;
+//	uint32_t crcparctl0;
+//	uint32_t zqctl0;
+//	uint32_t dfitmg0;
+//	uint32_t dfitmg1;
+//	uint32_t dfilpcfg0;
+//	uint32_t dfiupd0;
+//	uint32_t dfiupd1;
+//	uint32_t dfiupd2;
+//	uint32_t dfiphymstr;
+//	uint32_t odtmap;
+//	uint32_t dbg0;
+//	uint32_t dbg1;
+//	uint32_t dbgcmd;
+//	uint32_t poisoncfg;
+//	uint32_t pccfg;
+//};
+//
+//struct stm32mp1_ddrctrl_timing {
+//	uint32_t rfshtmg;
+//	uint32_t dramtmg0;
+//	uint32_t dramtmg1;
+//	uint32_t dramtmg2;
+//	uint32_t dramtmg3;
+//	uint32_t dramtmg4;
+//	uint32_t dramtmg5;
+//	uint32_t dramtmg6;
+//	uint32_t dramtmg7;
+//	uint32_t dramtmg8;
+//	uint32_t dramtmg14;
+//	uint32_t odtcfg;
+//};
+//
+//struct stm32mp1_ddrctrl_map {
+//	uint32_t addrmap1;
+//	uint32_t addrmap2;
+//	uint32_t addrmap3;
+//	uint32_t addrmap4;
+//	uint32_t addrmap5;
+//	uint32_t addrmap6;
+//	uint32_t addrmap9;
+//	uint32_t addrmap10;
+//	uint32_t addrmap11;
+//};
+//
+//struct stm32mp1_ddrctrl_perf {
+//	uint32_t sched;
+//	uint32_t sched1;
+//	uint32_t perfhpr1;
+//	uint32_t perflpr1;
+//	uint32_t perfwr1;
+//	uint32_t pcfgr_0;
+//	uint32_t pcfgw_0;
+//	uint32_t pcfgqos0_0;
+//	uint32_t pcfgqos1_0;
+//	uint32_t pcfgwqos0_0;
+//	uint32_t pcfgwqos1_0;
+//	uint32_t pcfgr_1;
+//	uint32_t pcfgw_1;
+//	uint32_t pcfgqos0_1;
+//	uint32_t pcfgqos1_1;
+//	uint32_t pcfgwqos0_1;
+//	uint32_t pcfgwqos1_1;
+//};
+//
+//struct stm32mp1_ddrphy_reg {
+//	uint32_t pgcr;
+//	uint32_t aciocr;
+//	uint32_t dxccr;
+//	uint32_t dsgcr;
+//	uint32_t dcr;
+//	uint32_t odtcr;
+//	uint32_t zq0cr1;
+//	uint32_t dx0gcr;
+//	uint32_t dx1gcr;
+//	uint32_t dx2gcr;
+//	uint32_t dx3gcr;
+//};
+//
+//struct stm32mp1_ddrphy_timing {
+//	uint32_t ptr0;
+//	uint32_t ptr1;
+//	uint32_t ptr2;
+//	uint32_t dtpr0;
+//	uint32_t dtpr1;
+//	uint32_t dtpr2;
+//	uint32_t mr0;
+//	uint32_t mr1;
+//	uint32_t mr2;
+//	uint32_t mr3;
+//};
 
 struct stm32mp1_ddrphy_cal {
 	uint32_t dx0dllcr;
@@ -1956,95 +1956,95 @@ static const struct reg_desc ddrphy_dyn[] = {
 };
 
 enum reg_type {
-	REG_REG,
-	REG_TIMING,
-	REG_PERF,
-	REG_MAP,
-	REGPHY_REG,
-	REGPHY_TIMING,
-	REGPHY_CAL,
+	rREG_REG,
+	rREG_TIMING,
+	rREG_PERF,
+	rREG_MAP,
+	rREGPHY_REG,
+	rREGPHY_TIMING,
+	rREGPHY_CAL,
 /*
  * Dynamic registers => managed in driver or not changed,
  * can be dumped in interactive mode.
  */
-	REG_DYN,
-	REGPHY_DYN,
-	REG_TYPE_NB
+	rREG_DYN,
+	rREGPHY_DYN,
+	rREG_TYPE_NB
 };
 
-enum base_type {
-	DDR_BASE,
-	DDRPHY_BASE,
-	NONE_BASE
+enum base_type_local {
+	bDDR_BASE,
+	bDDRPHY_BASE,
+	bNONE_BASE
 };
 
 struct ddr_reg_info {
 	const char *name;
 	const struct reg_desc *desc;
 	uint8_t size;
-	enum base_type base;
+	enum base_type_local base;
 };
 
-static const struct ddr_reg_info ddr_registers[REG_TYPE_NB] = {
-	[REG_REG] = {
+static const struct ddr_reg_info ddr_registers[rREG_TYPE_NB] = {
+	[rREG_REG] = {
 		.name = "static",
 		.desc = ddr_reg,
 		.size = ARRAY_SIZE(ddr_reg),
 		.base = DDR_BASE
 	},
-	[REG_TIMING] = {
+	[rREG_TIMING] = {
 		.name = "timing",
 		.desc = ddr_timing,
 		.size = ARRAY_SIZE(ddr_timing),
-		.base = DDR_BASE
+		.base = bDDR_BASE
 	},
-	[REG_PERF] = {
+	[rREG_PERF] = {
 		.name = "perf",
 		.desc = ddr_perf,
 		.size = ARRAY_SIZE(ddr_perf),
-		.base = DDR_BASE
+		.base = bDDR_BASE
 	},
-	[REG_MAP] = {
+	[rREG_MAP] = {
 		.name = "map",
 		.desc = ddr_map,
 		.size = ARRAY_SIZE(ddr_map),
-		.base = DDR_BASE
+		.base = bDDR_BASE
 	},
-	[REGPHY_REG] = {
+	[rREGPHY_REG] = {
 		.name = "static",
 		.desc = ddrphy_reg,
 		.size = ARRAY_SIZE(ddrphy_reg),
-		.base = DDRPHY_BASE
+		.base = bDDRPHY_BASE
 	},
-	[REGPHY_TIMING] = {
+	[rREGPHY_TIMING] = {
 		.name = "timing",
 		.desc = ddrphy_timing,
 		.size = ARRAY_SIZE(ddrphy_timing),
-		.base = DDRPHY_BASE
+		.base = bDDRPHY_BASE
 	},
-	[REGPHY_CAL] = {
+	[rREGPHY_CAL] = {
 		.name = "cal",
 		.desc = ddrphy_cal,
 		.size = ARRAY_SIZE(ddrphy_cal),
-		.base = DDRPHY_BASE
+		.base = bDDRPHY_BASE
 	},
-	[REG_DYN] = {
+	[rREG_DYN] = {
 		.name = "dyn",
 		.desc = ddr_dyn,
 		.size = ARRAY_SIZE(ddr_dyn),
-		.base = DDR_BASE
+		.base = bDDR_BASE
 	},
-	[REGPHY_DYN] = {
+	[rREGPHY_DYN] = {
 		.name = "dyn",
 		.desc = ddrphy_dyn,
 		.size = ARRAY_SIZE(ddrphy_dyn),
-		.base = DDRPHY_BASE
+		.base = bDDRPHY_BASE
 	},
 };
 
-static uintptr_t get_base_addr(const struct ddr_info *priv, enum base_type base)
+static uintptr_t get_base_addr(const struct ddr_info *priv, enum base_type_local base)
 {
-	if (base == DDRPHY_BASE) {
+	if (base == bDDRPHY_BASE) {
 		return (uintptr_t)priv->phy;
 	} else {
 		return (uintptr_t)priv->ctl;
@@ -2057,7 +2057,7 @@ static void set_reg(const struct ddr_info *priv,
 {
 	unsigned int i;
 	unsigned int value;
-	enum base_type base = ddr_registers[type].base;
+	enum base_type_local base = ddr_registers[type].base;
 	uintptr_t base_addr = get_base_addr(priv, base);
 	const struct reg_desc *desc = ddr_registers[type].desc;
 
@@ -2678,7 +2678,7 @@ static void stm32mp1_ddr_init_priv(struct ddr_info *priv,
 		&priv->ctl->dfimisc,
 		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->dfimisc));
 
-	set_reg(priv, REG_REG, &config->c_reg);
+	set_reg(priv, rREG_REG, &config->c_reg);
 
 	/* DDR3 = don't set DLLOFF for init mode */
 	if ((config->c_reg.mstr &
@@ -2692,8 +2692,8 @@ static void stm32mp1_ddr_init_priv(struct ddr_info *priv,
 			(unsigned) mmio_read_32((uintptr_t)&priv->ctl->mstr));
 	}
 
-	set_reg(priv, REG_TIMING, &config->c_timing);
-	set_reg(priv, REG_MAP, &config->c_map);
+	set_reg(priv, rREG_TIMING, &config->c_timing);
+	set_reg(priv, rREG_MAP, &config->c_map);
 
 	/* Skip CTRL init, SDRAM init is done by PHY PUBL */
 	mmio_clrsetbits_32((uintptr_t)&priv->ctl->init0,
@@ -2703,7 +2703,7 @@ static void stm32mp1_ddr_init_priv(struct ddr_info *priv,
 		&priv->ctl->init0,
 		(unsigned) mmio_read_32((uintptr_t)&priv->ctl->init0));
 
-	set_reg(priv, REG_PERF, &config->c_perf);
+	set_reg(priv, rREG_PERF, &config->c_perf);
 
 	/*  2. deassert reset signal core_ddrc_rstn, aresetn and presetn */
 	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DDRCORERST);
@@ -2714,9 +2714,9 @@ static void stm32mp1_ddr_init_priv(struct ddr_info *priv,
 	 * 3. start PHY init by accessing relevant PUBL registers
 	 *    (DXGCR, DCR, PTR*, MR*, DTPR*)
 	 */
-	set_reg(priv, REGPHY_REG, &config->p_reg);
-	set_reg(priv, REGPHY_TIMING, &config->p_timing);
-	set_reg(priv, REGPHY_CAL, &config->p_cal);
+	set_reg(priv, rREGPHY_REG, &config->p_reg);
+	set_reg(priv, rREGPHY_TIMING, &config->p_timing);
+	set_reg(priv, rREGPHY_CAL, &config->p_cal);
 
 	/* DDR3 = don't set DLLOFF for init mode */
 	if ((config->c_reg.mstr &
@@ -3241,7 +3241,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	stm32mp1_ddr_init_priv(priv, & config);
 //	TP();
 //	stm32mp1_ddr_probe();
-//	stm32mp1_ddr_init(priv, & config);
+	//stm32mp1_ddr_init(priv, & config);
 //	TP();
 	/* Enable axidcg clock gating */
 	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
