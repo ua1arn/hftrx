@@ -2619,7 +2619,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 			if (ret == USB_RETVAL_COMPOK)
 			{
 				IRQL_t oldIrql;
-				RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+				RiseIrql(IRQL_REALTIME, & oldIrql);
 				release_dmabufferx(uacinaddr);
 				LowerIrql(oldIrql);
 				uacinaddr = 0;
@@ -2637,9 +2637,10 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 			ret = epx_in_handler_dev_iso(pusb, bo_ep_rts_in, uacinrtsaddr, uacinrtssize, USB_PRTCL_ISO);
 			if (ret == USB_RETVAL_COMPOK)
 			{
-				global_disableIRQ();
+				IRQL_t oldIrql;
+				RiseIrql(IRQL_REALTIME, & oldIrql);
 				release_dmabufferxrts(uacinrtsaddr);
-				global_enableIRQ();
+				LowerIrql(oldIrql);
 				uacinrtsaddr = 0;
 			}
 		}
@@ -3310,9 +3311,10 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 
 		if (uacinaddr == 0)
 		{
-			global_disableIRQ();
+			IRQL_t oldIrql;
+			RiseIrql(IRQL_REALTIME, & oldIrql);
 			uacinaddr = getfilled_dmabufferx(& uacinsize);
-			global_enableIRQ();
+			LowerIrql(oldIrql);
 		}
 
 
@@ -3321,9 +3323,10 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinsize, USB_PRTCL_ISO);
 			if (ret == USB_RETVAL_COMPOK)
 			{
-				global_disableIRQ();
+				IRQL_t oldIrql;
+				RiseIrql(IRQL_REALTIME, & oldIrql);
 				release_dmabufferx(uacinaddr);
-				global_enableIRQ();
+				LowerIrql(oldIrql);
 				uacinaddr = 0;
 			}
 		}
@@ -3335,14 +3338,16 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 
 		if (uacinrtsaddr != 0)
 		{
-			global_disableIRQ();
+			IRQL_t oldIrql;
+			RiseIrql(IRQL_REALTIME, & oldIrql);
 			release_dmabufferxrts(uacinrtsaddr);
-			global_enableIRQ();
+			LowerIrql(oldIrql);
 		}
 
-		global_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		uacinrtsaddr = getfilled_dmabufferxrts(& uacinrtssize);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 		if (uacinrtsaddr)
 		{
 			USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -3350,9 +3355,10 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 			ret = epx_in_handler_dev_iso(pusb, bo_ep_rts_in, uacinrtsaddr, uacinrtssize, USB_PRTCL_ISO);
 			if (ret == USB_RETVAL_COMPOK)
 			{
-				global_disableIRQ();
+				IRQL_t oldIrql;
+				RiseIrql(IRQL_REALTIME, & oldIrql);
 				release_dmabufferxrts(uacinrtsaddr);
-				global_enableIRQ();
+				LowerIrql(oldIrql);
 				uacinrtsaddr = 0;
 			}
 		}
@@ -3665,7 +3671,7 @@ void usb_device_function0(USBD_HandleTypeDef * pdev)
 	PCD_HandleTypeDef * hpcd = pdev->pData;
 	ASSERT(hpcd != NULL);
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	usb_device_function(hpcd);
 	LowerIrql(oldIrql);
 }

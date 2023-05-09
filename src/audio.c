@@ -3619,7 +3619,7 @@ static void agc_reset(
 	FLOAT_t m1;
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	st->agcfastcap = m0;
 	st->agcslowcap = m0;
 	LowerIrql(oldIrql);
@@ -3630,7 +3630,7 @@ static void agc_reset(
 		local_delay_ms(1);
 
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		const FLOAT_t v = agc_result_slow(st);
 		LowerIrql(oldIrql);
 
@@ -3645,7 +3645,7 @@ static void agc_reset(
 		local_delay_ms(1);
 
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		const FLOAT_t v = agc_result_slow(st);
 		LowerIrql(oldIrql);
 

@@ -4014,7 +4014,7 @@ void fftbuffer_initialize(void)
 		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffI, filled);
 		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffQ, filled);
 	}
-	IRQLSPINLOCK_INITIALIZE(& fftlock, IRQL_ONLY_OVERREALTIME);
+	IRQLSPINLOCK_INITIALIZE(& fftlock, IRQL_REALTIME);
 }
 
 #if (__ARM_FP & 0x08) || __riscv_d

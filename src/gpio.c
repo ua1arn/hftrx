@@ -659,7 +659,7 @@ void sysinit_gpio_initialize(void)
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
 	LCLSPINLOCK_t * const lck = & gpiodata_locks [bank];
-	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
+	RiseIrql(IRQL_SYSTEM, oldIrql);
 	LCLSPIN_LOCK(lck);
 }
 
@@ -878,7 +878,7 @@ typedef uint32_t irqstatus_t;
 static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
 	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
-	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
+	RiseIrql(IRQL_SYSTEM, oldIrql);
 	LCLSPIN_LOCK(lck);
 }
 

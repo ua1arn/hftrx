@@ -129,12 +129,13 @@ void nmea_sendchar(void * ctx)
 int nmea_putc(int c)
 {
 #if WITHNMEAOVERREALTIME
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	qput(c);
-	global_enableIRQ();
+	LowerIrql(oldIrql;);
 #else /* WITHNMEAOVERREALTIME */
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
     qput(c);
 	LowerIrql(oldIrql);
 #endif /* WITHNMEAOVERREALTIME */

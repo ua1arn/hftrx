@@ -639,7 +639,7 @@ uint8_t get_ft8_state(void)
 
 void ft8_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& ft8bufflock, IRQL_ONLY_OVERREALTIME);
+	IRQLSPINLOCK_INITIALIZE(& ft8bufflock, IRQL_REALTIME);
 #if ! LINUX_SUBSYSTEM
 	arm_hardware_set_handler(ft8_interrupt_core0, ft8_irqhandler_core0, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU0);
 	arm_hardware_set_handler(ft8_interrupt_core1, ft8_irqhandler_core1, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);

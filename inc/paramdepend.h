@@ -991,8 +991,8 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-		#define IRQL_ONLY_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-		#define IRQL_ONLY_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+		#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+		#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 
 		#define system_enableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); } while (0)	// разрешены все
 		#define system_disableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); } while (0) // разрешены только realtime
@@ -1049,9 +1049,9 @@ extern "C" {
 
 		#define ARM_CA9_ENCODE_PRIORITY(v) ((v) << (GIC_GetBinaryPoint() + 1))
 
-		#define IRQL_ONLY_REALTIME ARM_CA9_ENCODE_PRIORITY(PRI_SYS)	// value for GIC_SetInterfacePriorityMask
-		#define IRQL_ONLY_OVERREALTIME ARM_CA9_ENCODE_PRIORITY(PRI_RT)	// value for GIC_SetInterfacePriorityMask
-		#define IRQL_ONLY_IPC ARM_CA9_ENCODE_PRIORITY(PRI_OVRT)	// value for GIC_SetInterfacePriorityMask
+		#define IRQL_SYSTEM ARM_CA9_ENCODE_PRIORITY(PRI_SYS)	// value for GIC_SetInterfacePriorityMask
+		#define IRQL_REALTIME ARM_CA9_ENCODE_PRIORITY(PRI_RT)	// value for GIC_SetInterfacePriorityMask
+		#define IRQL_OVERREALTIME ARM_CA9_ENCODE_PRIORITY(PRI_OVRT)	// value for GIC_SetInterfacePriorityMask
 		/*
 			GICC_PMR == INTC.ICCPMR
 
@@ -1181,9 +1181,9 @@ extern "C" {
 
 	#endif /* WITHNESTEDINTERRUPTS */
 
-	#define IRQL_ONLY_REALTIME 			ARM_SYSTEM_PRIORITY
-	#define IRQL_ONLY_OVERREALTIME 		ARM_REALTIME_PRIORITY
-	#define IRQL_ONLY_IPC				ARM_OVERREALTIME_PRIORITY
+	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
+	#define IRQL_REALTIME 		ARM_REALTIME_PRIORITY
+	#define IRQL_OVERREALTIME				ARM_OVERREALTIME_PRIORITY
 
 #elif CPUSTYLE_UBLAZE
 
@@ -1199,9 +1199,9 @@ extern "C" {
 
 	typedef uint_fast32_t IRQL_t;
 
-	#define IRQL_ONLY_REALTIME 			0
-	#define IRQL_ONLY_OVERREALTIME 		0
-	#define IRQL_ONLY_IPC 		0
+	#define IRQL_SYSTEM 			0
+	#define IRQL_REALTIME 		0
+	#define IRQL_OVERREALTIME 		0
 
 	void (system_disableIRQ)(void);
 	void (system_enableIRQ)(void);

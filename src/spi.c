@@ -499,7 +499,7 @@ static LCLSPINLOCK_t spilock = LCLSPINLOCK_INIT;
 void spi_operate_lock(IRQL_t * oldIrql)
 {
 #if ! LINUX_SUBSYSTEM
-	RiseIrql(IRQL_ONLY_REALTIME, oldIrql);
+	RiseIrql(IRQL_SYSTEM, oldIrql);
 #endif /* ! LINUX_SUBSYSTEM */
 	LCLSPIN_LOCK(& spilock);
 }
@@ -4082,7 +4082,7 @@ static uint8_t dmyb [SPDFIO_numwires];
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
 #if defined (SPIDF_SOFTINITIALIZE)
 	// Connect I/O pins
 	SPIDF_SOFTINITIALIZE();
@@ -4420,7 +4420,7 @@ static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
 	hardware_spi_master_initialize();
 	prog_select_init();		// spi CS initialize
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
@@ -4892,7 +4892,7 @@ static uint32_t SendBankSelect(uint8_t BankSel);
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
 
 	PRINTF("%s:\n", __func__);
 
@@ -5278,7 +5278,7 @@ static void spidf_iostart(
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_QSPIEN;
@@ -5442,7 +5442,7 @@ static void spidf_unselect(void)
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
 
 	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
 	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);
@@ -6344,7 +6344,7 @@ int testchipDATAFLASH(void)
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_ONLY_REALTIME);
+	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
 
 }
 

@@ -11950,7 +11950,7 @@ void uif_key_sendcw(const char * msg)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& lockcwmsg);
 	if (usersend != 0 && * usersend != '\0')
 		usersend = NULL;
@@ -16025,7 +16025,7 @@ static char beacon_getnextcw(void)
 #elif 1
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& lockcwmsg);
 	if (usersend != NULL && * usersend != '\0')
 	{
@@ -16225,7 +16225,7 @@ peek_uintptr(volatile const uint8_t * p)
 
 void dpclock_initialize(dpclock_t * lp)
 {
-	IRQLSPINLOCK_INITIALIZE(& lp->lock, IRQL_ONLY_OVERREALTIME);
+	IRQLSPINLOCK_INITIALIZE(& lp->lock, IRQL_REALTIME);
 	lp->flag = 0;
 }
 /*
@@ -16233,7 +16233,7 @@ void dpclock_enter(dpclock_t * lp)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& lp->lock);
 
 	LCLSPIN_UNLOCK(& lp->lock);

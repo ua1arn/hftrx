@@ -441,8 +441,8 @@ void encoder_initialize(void)
 	//tichist [enchistindex] = 0;
 	//enchist [enchistindex] = 0;
 
-	IRQLSPINLOCK_INITIALIZE(& enc1lock, IRQL_ONLY_IPC);
-	IRQLSPINLOCK_INITIALIZE(& enc2lock, IRQL_ONLY_IPC);
+	IRQLSPINLOCK_INITIALIZE(& enc1lock, IRQL_OVERREALTIME);
+	IRQLSPINLOCK_INITIALIZE(& enc2lock, IRQL_OVERREALTIME);
 
 	old_val = hardware_get_encoder_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	old_val2 = hardware_get_encoder2_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */

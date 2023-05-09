@@ -8338,7 +8338,7 @@ board_calcs_setfreq(
 
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& gpreilock);
 	gprei [sndi] = prei;
 	gvalue [sndi] = value;
@@ -8377,7 +8377,7 @@ board_keybeep_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		LCLSPIN_UNLOCK(& gpreilock);
@@ -8397,7 +8397,7 @@ board_sidetone_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		LCLSPIN_UNLOCK(& gpreilock);
@@ -8421,7 +8421,7 @@ board_rgrbeep_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		LCLSPIN_UNLOCK(& gpreilock);
@@ -8497,7 +8497,7 @@ board_subtone_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		LCLSPIN_UNLOCK(& gpreilock);
@@ -8514,7 +8514,7 @@ void board_subtone_enable_user(uint_fast8_t state)
 
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& gpreilock);
 	if (gstate [sndi] != v)
 	{
