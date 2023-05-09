@@ -507,7 +507,7 @@ struct omap_video_timings timings0 = {
 };
 */
 
-unsigned long clk_get_rate(unsigned long v) { return v; }
+static unsigned long clk_get_rate(unsigned long v) { return v; }
 
 static int tc358768_calc_pll(struct tc358768_drv_data *ddata, const videomode_t * vdmode)
 {
