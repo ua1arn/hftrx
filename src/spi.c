@@ -4046,19 +4046,19 @@ void nand_tests(void)
 
 static IRQLSPINLOCK_t spidflock;
 
-static void spidf_accure(IRQL_t * oldIRQL, IRQL_t * oldIRQL2spi)
+static void accureDATAFLASH(IRQL_t * oldIRQL, IRQL_t * oldIRQL2spi)
 {
 	ASSERT(oldIRQL != oldIRQL2spi);
 	IRQLSPIN_LOCK(& spidflock, oldIRQL);
 #if	WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
-	spi_operate_lock(oldIRQL2spi)
+	spi_operate_lock(oldIRQL2spi);
 #endif /* WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133) */
 }
 
-static void spidf_release(IRQL_t setIRQL, IRQL_t setIRQL2spi)
+static void releaseDATAFLASH(IRQL_t setIRQL, IRQL_t setIRQL2spi)
 {
 #if	WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
-	spi_operate_unlock(setIRQL2spi)
+	spi_operate_unlock(setIRQL2spi);
 #endif /* WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133) */
 	IRQLSPIN_UNLOCK(& spidflock, setIRQL);
 }
@@ -4168,8 +4168,12 @@ static void spidf_write_byte(uint_fast8_t v)
 }
 #endif
 
-void spidf_hangoff(void)
+void hangoffDATAFLASH(void)
 {
+	IRQL_t oldIrql, oldIrql2;
+	accureDATAFLASH(& oldIrql, & oldIrql2);
+
+	releaseDATAFLASH(oldIrql, oldIrql2);
 }
 
 
@@ -4429,12 +4433,15 @@ static void spidf_unselect(void)
 
 	// Disconnect I/O pins
 	hardware_spi_disconnect();
-
-	spi_operate_unlock(irql);
 }
 
-void spidf_hangoff(void)
+// Отключить процессор от SERIAL FLASH
+void hangoffDATAFLASH(void)
 {
+	IRQL_t oldIrql, oldIrql2;
+	accureDATAFLASH(& oldIrql, & oldIrql2);
+
+	releaseDATAFLASH(oldIrql, oldIrql2);
 }
 
 static void spidf_iostart(
@@ -4953,12 +4960,19 @@ void spidf_initialize(void)
 	SPIDF_HARDINITIALIZE();
 }
 
-void spidf_hangoff(void)
+void hangoffDATAFLASH(void)
 {
+	IRQL_t oldIrql, oldIrql2;
+	accureDATAFLASH(& oldIrql, & oldIrql2);
+
 #if CPUSTYLE_XC7Z
-	return;
-#endif /* CPUSTYLE_XC7Z */
+
+	releaseDATAFLASH(oldIrql, oldIrql2);
+#else
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+#endif /* CPUSTYLE_XC7Z */
+
+	releaseDATAFLASH(oldIrql, oldIrql2);
 }
 
 static void spidf_unselect(void)
@@ -5313,11 +5327,16 @@ void spidf_initialize(void)
 	(void) QUADSPI->CR;
 }
 
-void spidf_hangoff(void)
+void hangoffDATAFLASH(void)
 {
+	IRQL_t oldIrql, oldIrql2;
+	accureDATAFLASH(& oldIrql, & oldIrql2);
+
 	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+
+	releaseDATAFLASH(oldIrql, oldIrql2);
 }
 
 #elif WIHSPIDFHW && CPUSTYLE_R7S721
@@ -5482,13 +5501,17 @@ void spidf_initialize(void)
 	//PRINTF("SPIBSC0.SSLDR=%08lX\n", SPIBSC0.SSLDR);
 }
 
-void spidf_hangoff(void)
+void hangoffDATAFLASH(void)
 {
+	IRQL_t oldIrql, oldIrql2;
+	accureDATAFLASH(& oldIrql, & oldIrql2);
+
 	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_SSLF) != 0)
 		;
 	// Disconnect I/O pins
-	SPIDF_HANGOFF();
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+
+	releaseDATAFLASH(oldIrql, oldIrql2);
 }
 
 static void spidf_iostart(
@@ -5568,12 +5591,12 @@ static void writeDisableDATAFLASH(void)
 int fullEraseDATAFLASH(void)
 {
 	IRQL_t oldIrql, oldIrql2;
-	spidf_accure(& oldIrql, & oldIrql2);
+	accureDATAFLASH(& oldIrql, & oldIrql2);
 
 	if (timed_dataflash_read_status())
 	{
 		PRINTF(PSTR("fullEraseDATAFLASH: timeout\n"));
-		spidf_release(oldIrql, oldIrql2);
+		releaseDATAFLASH(oldIrql, oldIrql2);
 		return 1;
 	}
 
@@ -5584,7 +5607,7 @@ int fullEraseDATAFLASH(void)
 
 	const uint_fast8_t rv = largetimed_dataflash_read_status();
 
-	spidf_release(oldIrql, oldIrql2);
+	releaseDATAFLASH(oldIrql, oldIrql2);
 	return rv != 0;
 }
 
@@ -5953,14 +5976,14 @@ int testchipDATAFLASH(void)
 	unsigned mf_dlen;	// Extended Device Information String Length
 
 	IRQL_t oldIrql, oldIrql2;
-	spidf_accure(& oldIrql, & oldIrql2);
+	accureDATAFLASH(& oldIrql, & oldIrql2);
 
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
 	if (timed_dataflash_read_status())
 	{
-		spidf_release(oldIrql, oldIrql2);
+		releaseDATAFLASH(oldIrql, oldIrql2);
 		PRINTF(PSTR("testchipDATAFLASH: timeout\n"));
 		return 1;
 	}
@@ -6009,7 +6032,7 @@ int testchipDATAFLASH(void)
 		//PRINTF("SFDP: ptp=%08lX, len4=%02X\n", ptp, len4);
 		if (len4 < 9 || len4 > 16)
 		{
-			spidf_release(oldIrql, oldIrql2);
+			releaseDATAFLASH(oldIrql, oldIrql2);
 			return 0;
 		}
 		uint8_t buff32 [len4 * 4];
@@ -6089,14 +6112,14 @@ int testchipDATAFLASH(void)
 			mf_id, mf_devid1, mf_devid2, mf_dlen
 			);
 
-	spidf_release(oldIrql, oldIrql2);
+	releaseDATAFLASH(oldIrql, oldIrql2);
 	return 0;
 }
 
 int prepareDATAFLASH(void)
 {
 	IRQL_t oldIrql, oldIrql2;
-	spidf_accure(& oldIrql, & oldIrql2);
+	accureDATAFLASH(& oldIrql, & oldIrql2);
 	const uint_fast8_t status = dataflash_read_status();
 
 	if ((status & 0x1C) != 0)
@@ -6104,7 +6127,7 @@ int prepareDATAFLASH(void)
 		if (timed_dataflash_read_status())
 		{
 			PRINTF(PSTR("prepareDATAFLASH: timeout\n"));
-			spidf_release(oldIrql, oldIrql2);
+			releaseDATAFLASH(oldIrql, oldIrql2);
 			return 1;
 		}
 
@@ -6125,7 +6148,7 @@ int prepareDATAFLASH(void)
 	}
 
 	const uint_fast8_t rv = timed_dataflash_read_status();
-	spidf_release(oldIrql, oldIrql2);
+	releaseDATAFLASH(oldIrql, oldIrql2);
 	return rv != 0;
 }
 
@@ -6144,11 +6167,11 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 {
 	//PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
 	IRQL_t oldIrql, oldIrql2;
-	spidf_accure(& oldIrql, & oldIrql2);
+	accureDATAFLASH(& oldIrql, & oldIrql2);
 
 	if (timed_dataflash_read_status())
 	{
-		spidf_release(oldIrql, oldIrql2);
+		releaseDATAFLASH(oldIrql, oldIrql2);
 		PRINTF(PSTR("sectoreraseDATAFLASH: timeout\n"));
 		return 1;
 	}
@@ -6159,7 +6182,7 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 	spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset);
 	spidf_unselect();	/* done sending data to target chip */
 	const uint_fast8_t rv = timed_dataflash_read_status();
-	spidf_release(oldIrql, oldIrql2);
+	releaseDATAFLASH(oldIrql, oldIrql2);
 	return rv != 0;
 }
 
@@ -6167,11 +6190,11 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 {
 	//PRINTF(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
 	IRQL_t oldIrql, oldIrql2;
-	spidf_accure(& oldIrql, & oldIrql2);
+	accureDATAFLASH(& oldIrql, & oldIrql2);
 
 	if (timed_dataflash_read_status())
 	{
-		spidf_release(oldIrql, oldIrql2);
+		releaseDATAFLASH(oldIrql, oldIrql2);
 		PRINTF(PSTR("writesinglepageDATAFLASH: timeout\n"));
 		return 1;
 	}
@@ -6186,7 +6209,7 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 
 	//PRINTF(PSTR( Prog to address %08lX %02X done\n"), flashoffset, len);
 	const uint_fast8_t rv = timed_dataflash_read_status();
-	spidf_release(oldIrql, oldIrql2);
+	releaseDATAFLASH(oldIrql, oldIrql2);
 	return rv != 0;
 }
 
@@ -6325,8 +6348,12 @@ void spidf_initialize(void)
 
 }
 
-void spidf_hangoff(void)
+void hangoffDATAFLASH(void)
 {
+	IRQL_t oldIrql, oldIrql2;
+	accureDATAFLASH(& oldIrql, & oldIrql2);
+
+	releaseDATAFLASH(oldIrql, oldIrql2);
 }
 
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
