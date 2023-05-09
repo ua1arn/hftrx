@@ -436,9 +436,10 @@ int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex)
 	 */
 	if (dispPtr->state == DISPLAY_RUNNING && vdma_sync)
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		vdma_sync = 0;
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		Status = XAxiVdma_StartParking(dispPtr->vdma, dispPtr->curFrame, XAXIVDMA_READ);
 		if (Status != XST_SUCCESS)
 		{

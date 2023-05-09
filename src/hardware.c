@@ -4156,7 +4156,8 @@ static uint8_t CLKSYS_Main_ClockSource_Select( CLK_SCLKSEL_t clockSource )
 	auto void CCPWrite(volatile uint8_t * address, uint8_t value)
 	{
 		volatile uint8_t * const tmpAddr = address;
-		//system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 	#ifdef RAMPZ
 		RAMPZ = 0;
 	#endif
@@ -4170,7 +4171,7 @@ static uint8_t CLKSYS_Main_ClockSource_Select( CLK_SCLKSEL_t clockSource )
 			: "r16", "r30", "r31"
 			);
 
-		//system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 
 	const uint8_t clkCtrl = (CLK.CTRL & ~CLK_SCLKSEL_gm) | clockSource;

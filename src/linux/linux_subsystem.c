@@ -704,17 +704,6 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 	pthread_mutex_unlock(p);
 }
 
-
-void system_disableIRQ(void)
-{
-
-}
-
-void system_enableIRQ(void)
-{
-
-}
-
 void update_modem_ctrl(void)
 {
 	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) | ((tx_shift & 0xFF) << tx_shift_pos)

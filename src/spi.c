@@ -765,9 +765,10 @@ void prog_spi_io(
 
 #if USESPILOCK
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	spi_operate_low(& io);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 #else /* USESPILOCK */
 	spi_operate_low(& io);
@@ -863,9 +864,10 @@ void prog_spi_exchange(
 
 #if USESPILOCK
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	spi_operate_low(& io);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 #else /* USESPILOCK */
 

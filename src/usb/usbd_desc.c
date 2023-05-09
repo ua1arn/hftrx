@@ -5507,7 +5507,8 @@ void board_set_usb_ft8cn(uint_fast8_t v)
 	if (usb_ft8cn != n)
 	{
 		usb_ft8cn = n;
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 	#if WITHUSBDEV_HSDESC
 		usbd_descriptors_initialize(1);
 
@@ -5515,7 +5516,7 @@ void board_set_usb_ft8cn(uint_fast8_t v)
 		usbd_descriptors_initialize(0);
 
 	#endif /* WITHUSBDEV_HSDESC */
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 }
 

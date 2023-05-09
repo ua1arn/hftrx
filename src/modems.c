@@ -806,10 +806,11 @@ uint_fast8_t processmodem(void)
 	uint_fast8_t any = 0;	// если что-то поменялось в режимах
 	uint_fast8_t f;
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = paramschangedfreq;
 	paramschangedfreq = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 	if (f)
 	{
@@ -817,10 +818,10 @@ uint_fast8_t processmodem(void)
 		modemchangefreq(modemfreq);
 	}
 
-	system_disableIRQ();
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = paramschangedspeed;
 	paramschangedspeed = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 	if (f)
 	{
@@ -828,10 +829,10 @@ uint_fast8_t processmodem(void)
 		modemchangespeed(modemspeed100);
 	}
 
-	system_disableIRQ();
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = paramschangedmode;
 	paramschangedmode = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 	if (f)
 	{

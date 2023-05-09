@@ -598,16 +598,12 @@ void ft8_start_fill(void)
 	if (fill_ft8_buf1)
 	{
 		PRINTF("ft8: start fill 2\n");
-//		system_disableIRQ();
 		fill_ft8_buf2 = 1;
-//		system_enableIRQ();
 	}
 	else
 	{
 		PRINTF("ft8: start fill 1\n");
-//		system_disableIRQ();
 		fill_ft8_buf1 = 1;
-//		system_enableIRQ();
 	}
 	IRQLSPIN_UNLOCK(& ft8bufflock, oldIrql);
 }

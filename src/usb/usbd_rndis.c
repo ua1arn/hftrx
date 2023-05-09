@@ -110,16 +110,17 @@ static int rndis_buffers_alloc(rndisbuf_t * * tp)
 
 static int rndis_buffers_ready_user(rndisbuf_t * * tp)
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	if (! IsListEmpty(& rndis_ready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& rndis_ready);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
 		* tp = p;
 		return 1;
 	}
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 	return 0;
 }
 
@@ -131,9 +132,10 @@ static void rndis_buffers_release(rndisbuf_t * p)
 
 static void rndis_buffers_release_user(rndisbuf_t * p)
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	rndis_buffers_release(p);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 // сохранить принятый
@@ -1013,17 +1015,19 @@ static void response_available(USBD_HandleTypeDef *pdev)
 	sendState [6] = HI_24BY(reserved0);
 	sendState [7] = HI_32BY(reserved0);
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	USBD_LL_Transmit (pdev, USBD_EP_RNDIS_INT, sendState, USBD_RNDIS_INT_SIZE);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 
 static int rndis_can_send(void)
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	int f = rndis_tx_size <= 0 && hold_pDev != NULL;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 	return f;
 }
 
@@ -1041,14 +1045,15 @@ static void rndis_send(const void *data, int size)
 					  size);
 */
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
 	if (size <= 0 ||
 		size > ETH_MAX_PACKET_SIZE ||
 		rndis_tx_size > 0 || hold_pDev == NULL)
 
 		{
-			system_enableIRQ();
+		LowerIrql(oldIrql);
 			return;
 		}
 
@@ -1061,7 +1066,7 @@ static void rndis_send(const void *data, int size)
 
 	ASSERT(hold_pDev != NULL);
 	usbd_cdc_transfer(hold_pDev);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 const USBD_ClassTypeDef USBD_CLASS_RNDIS =

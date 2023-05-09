@@ -600,9 +600,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
 	typedef uint_fast32_t portholder_t;		
 
-	#define system_enableIRQ() do { asm(" NOP"); } while (0)
-	#define system_disableIRQ() do { asm(" NOP"); } while (0)
-
 	#define global_enableIRQ() do { asm(" NOP"); } while (0)
 	#define global_disableIRQ() do { asm(" NOP"); } while (0)
 

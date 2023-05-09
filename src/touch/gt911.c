@@ -47,10 +47,11 @@ static uint_fast8_t
 gt911_interrupt_get(void)
 {
 	uint_fast8_t f;
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = tsc_int;
 	tsc_int = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 	return f;
 }
 
