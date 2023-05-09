@@ -1867,7 +1867,8 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 
 #if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 
-/* newIRQL - уровень приоритета, прертиывания с которым и ниже которого требуется запретить */
+/* newIRQL - уровень приоритета, прерывания с которым и ниже которого требуется запретить */
+/* Работа с текущим ядром */
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
 {
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
@@ -1888,6 +1889,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 #endif
 }
 
+/* Работа с текущим ядром */
 void LowerIrql(IRQL_t newIRQL)
 {
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
