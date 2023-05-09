@@ -8,11 +8,11 @@
 
 #if WITHSDRAMHW && CPUSTYLE_STM32MP1
 //
+#include "platform_def.h"
 //#include <common/debug.h>
 #include "stm32mp_ddr_test.h"
 //#include <lib/mmio.h>
 //
-#include "platform_def.h"
 
 #define DDR_PATTERN	0xAAAAAAAAU
 #define DDR_ANTIPATTERN	0x55555555U

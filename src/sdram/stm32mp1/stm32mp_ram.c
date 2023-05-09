@@ -8,6 +8,7 @@
 
 #if WITHSDRAMHW && CPUSTYLE_STM32MP1
 
+#include "platform_def.h"
 #include "stm32mp_ram.h"
 //
 //int stm32mp_ddr_dt_get_info(void *fdt, int node, struct stm32mp_ddr_info *info)

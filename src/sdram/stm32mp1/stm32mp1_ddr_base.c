@@ -9,8 +9,9 @@
 
 #if WITHSDRAMHW && CPUSTYLE_STM32MP1
 
-#include "stm32mp1_ddr.h"
 #include "platform_def.h"
+#include "stm32mp1_ram.h"
+#include "stm32mp1_ddr.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -3235,17 +3236,19 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			   RCC_DDRITFCR_DDRCKMOD_Msk,
 			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos); // RCC_DDRITFCR_DDRCKMOD_SSR
 
+#if 1
 	/* Disable axidcg clock gating during init */
 	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
 
 	stm32mp1_ddr_init_priv(priv, & config);
-//	TP();
-//	stm32mp1_ddr_probe();
-	//stm32mp1_ddr_init(priv, & config);
-//	TP();
 	/* Enable axidcg clock gating */
 	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
-
+#else
+	TP();
+	stm32mp1_ddr_probe();
+	//stm32mp1_ddr_init(priv, & config);
+	TP();
+#endif
 	// инициализация выполняетмя еще до включения MMU
 	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);
 

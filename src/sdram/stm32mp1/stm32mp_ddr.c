@@ -9,10 +9,10 @@
 
 #if WITHSDRAMHW && CPUSTYLE_STM32MP1
 
-#include "stm32mp_ddr.h"
-#include "stm32mp_ddrctrl_regs.h"
 
 #include "platform_def.h"
+#include "stm32mp_ddr.h"
+#include "stm32mp_ddrctrl_regs.h"
 
 #define INVALID_OFFSET	0xFFU
 
@@ -53,7 +53,7 @@ void stm32mp_ddr_set_reg(const struct stm32mp_ddr_priv *priv, enum stm32mp_ddr_r
 void stm32mp_ddr_start_sw_done(struct stm32mp_ddrctl *ctl)
 {
 	mmio_clrbits_32((uintptr_t)&ctl->swctl, DDRCTRL_SWCTL_SW_DONE);
-	VERBOSE("[0x%lx] swctl = 0x%x\n",
+	VERBOSE("[0x%" PRIXPTR "] swctl = 0x%" PRIX32 "\n",
 		(uintptr_t)&ctl->swctl,  mmio_read_32((uintptr_t)&ctl->swctl));
 }
 
@@ -64,20 +64,20 @@ void stm32mp_ddr_wait_sw_done_ack(struct stm32mp_ddrctl *ctl)
 	uint32_t swstat;
 
 	mmio_setbits_32((uintptr_t)&ctl->swctl, DDRCTRL_SWCTL_SW_DONE);
-	VERBOSE("[0x%lx] swctl = 0x%x\n",
+	VERBOSE("[0x%" PRIXPTR "] swctl = 0x%" PRIX32 "\n",
 		(uintptr_t)&ctl->swctl, mmio_read_32((uintptr_t)&ctl->swctl));
 
 	timeout = timeout_init_us(TIMEOUT_US_1S);
 	do {
 		swstat = mmio_read_32((uintptr_t)&ctl->swstat);
-		VERBOSE("[0x%lx] swstat = 0x%x ",
+		VERBOSE("[0x%" PRIXPTR "] swstat = 0x%" PRIX32 " ",
 			(uintptr_t)&ctl->swstat, swstat);
 		if (timeout_elapsed(timeout)) {
 			panic();
 		}
 	} while ((swstat & DDRCTRL_SWSTAT_SW_DONE_ACK) == 0U);
 
-	VERBOSE("[0x%lx] swstat = 0x%x\n",
+	VERBOSE("[0x%" PRIXPTR "] swstat = 0x%" PRIX32 "\n",
 		(uintptr_t)&ctl->swstat, swstat);
 }
 
@@ -85,13 +85,13 @@ void stm32mp_ddr_enable_axi_port(struct stm32mp_ddrctl *ctl)
 {
 	/* Enable uMCTL2 AXI port 0 */
 	mmio_setbits_32((uintptr_t)&ctl->pctrl_0, DDRCTRL_PCTRL_N_PORT_EN);
-	VERBOSE("[0x%lx] pctrl_0 = 0x%x\n", (uintptr_t)&ctl->pctrl_0,
+	VERBOSE("[0x%" PRIXPTR "] pctrl_0 = 0x%" PRIX32 "\n", (uintptr_t)&ctl->pctrl_0,
 		mmio_read_32((uintptr_t)&ctl->pctrl_0));
 
 #if STM32MP_DDR_DUAL_AXI_PORT
 	/* Enable uMCTL2 AXI port 1 */
 	mmio_setbits_32((uintptr_t)&ctl->pctrl_1, DDRCTRL_PCTRL_N_PORT_EN);
-	VERBOSE("[0x%lx] pctrl_1 = 0x%x\n", (uintptr_t)&ctl->pctrl_1,
+	VERBOSE("[0x%" PRIXPTR "] pctrl_1 = 0x%" PRIX32 "\n", (uintptr_t)&ctl->pctrl_1,
 		mmio_read_32((uintptr_t)&ctl->pctrl_1));
 #endif
 

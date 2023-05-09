@@ -8,6 +8,8 @@
 #include "hardware.h"
 
 #if WITHSDRAMHW && CPUSTYLE_STM32MP1
+
+#include "platform_def.h"
 #include "stm32mp1_ddr.h"
 #include "stm32mp1_ddr_helpers.h"
 #include "stm32mp1_ram.h"
@@ -73,6 +75,7 @@ static int stm32mp1_ddr_setup(void)
 	priv->info.size = DDR_MEM_SIZE;
 
 	stm32mp1_ddr_get_config(& config);
+
 #else
 	if (fdt_get_address(&fdt) == 0) {
 		return -ENOENT;
