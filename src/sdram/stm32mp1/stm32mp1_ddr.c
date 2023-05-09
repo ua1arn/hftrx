@@ -1379,7 +1379,7 @@ mmio_write_32(uintptr_t addr, uint32_t value)
 {
 	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
 	* reg = value;
-	(void) * reg;
+	//(void) * reg;
 }
 
 static uint32_t
@@ -1394,7 +1394,7 @@ mmio_clrbits_32(uintptr_t addr, uint32_t mask)
 {
 	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
 	* reg &= ~ mask;
-	(void) * reg;
+	//(void) * reg;
 }
 
 static void
@@ -1402,7 +1402,7 @@ mmio_setbits_32(uintptr_t addr, uint32_t mask)
 {
 	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
 	* reg |= mask;
-	(void) * reg;
+	//(void) * reg;
 }
 
 
@@ -1411,7 +1411,7 @@ mmio_clrsetbits_32(uintptr_t addr, uint32_t cmask, uint32_t smask)
 {
 	volatile uint32_t * const reg = (volatile uint32_t * const) addr;
 	* reg = (* reg & ~ cmask) | smask;
-	(void) * reg;
+	//(void) * reg;
 }
 
 
@@ -1431,35 +1431,35 @@ uint_fast32_t stm32mp_ddr_clk_get_rate(unsigned long id)
 */
 }
 
-
-/*******************************************************************************
- * CHIP ID
- ******************************************************************************/
-#define STM32MP157C_PART_NB	U(0x05000000)
-#define STM32MP157A_PART_NB	U(0x05000001)
-#define STM32MP153C_PART_NB	U(0x05000024)
-#define STM32MP153A_PART_NB	U(0x05000025)
-#define STM32MP151C_PART_NB	U(0x0500002E)
-#define STM32MP151A_PART_NB	U(0x0500002F)
-
-#define STM32MP1_REV_B		U(0x2000)
-
-/*******************************************************************************
- * PACKAGE ID
- ******************************************************************************/
-#define PKG_AA_LFBGA448		U(4)
-#define PKG_AB_LFBGA354		U(3)
-#define PKG_AC_TFBGA361		U(2)
-#define PKG_AD_TFBGA257		U(1)
-
-/*******************************************************************************
- * STM32MP1 memory map related constants
- ******************************************************************************/
-#define STM32MP_ROM_BASE		U(0x00000000)
-#define STM32MP_ROM_SIZE		U(0x00020000)
-
-#define STM32MP_SYSRAM_BASE		U(0x2FFC0000)
-#define STM32MP_SYSRAM_SIZE		U(0x00040000)
+//
+///*******************************************************************************
+// * CHIP ID
+// ******************************************************************************/
+//#define STM32MP157C_PART_NB	U(0x05000000)
+//#define STM32MP157A_PART_NB	U(0x05000001)
+//#define STM32MP153C_PART_NB	U(0x05000024)
+//#define STM32MP153A_PART_NB	U(0x05000025)
+//#define STM32MP151C_PART_NB	U(0x0500002E)
+//#define STM32MP151A_PART_NB	U(0x0500002F)
+//
+//#define STM32MP1_REV_B		U(0x2000)
+//
+///*******************************************************************************
+// * PACKAGE ID
+// ******************************************************************************/
+//#define PKG_AA_LFBGA448		U(4)
+//#define PKG_AB_LFBGA354		U(3)
+//#define PKG_AC_TFBGA361		U(2)
+//#define PKG_AD_TFBGA257		U(1)
+//
+///*******************************************************************************
+// * STM32MP1 memory map related constants
+// ******************************************************************************/
+//#define STM32MP_ROM_BASE		U(0x00000000)
+//#define STM32MP_ROM_SIZE		U(0x00020000)
+//
+//#define STM32MP_SYSRAM_BASE		U(0x2FFC0000)
+//#define STM32MP_SYSRAM_SIZE		U(0x00040000)
 
 /* DDR configuration */
 #define STM32MP_DDR_BASE		U(0xC0000000)
