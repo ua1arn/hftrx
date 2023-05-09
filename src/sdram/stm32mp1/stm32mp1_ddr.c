@@ -320,7 +320,7 @@ static void stm32mp1_mode_register_write(struct stm32mp_ddr_priv *priv, uint8_t 
 {
 	uint32_t mrctrl0;
 
-	VERBOSE("MRS: %d = %x\n", addr, data);
+	VERBOSE("MRS: %d = %x\n", addr, (unsigned) data);
 
 	/*
 	 * 1. Poll MRSTAT.mr_wr_busy until it is '0'.
@@ -575,7 +575,7 @@ void stm32mp1_ddr_init(struct stm32mp_ddr_priv *priv,
 	}
 
 	VERBOSE("name = %s\n", config->info.name);
-	VERBOSE("speed = %u kHz\n", config->info.speed);
+	VERBOSE("speed = %u kHz\n", (unsigned) config->info.speed);
 	VERBOSE("size  = 0x%" PRIX32 "\n", config->info.size);
 
 	/* DDR INIT SEQUENCE */
