@@ -1,3 +1,4 @@
 obj
-zynq7000.a
+!fsbl_a53_x32.elf
+!fsbl_a53_x64.elf
 
