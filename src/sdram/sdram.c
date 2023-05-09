@@ -16,8 +16,12 @@
 #include "clocks.h"
 #include "gpio.h"
 
+#if CPUSTYLE_STM32F7XX
 
-void sdram_test_pattern(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t pattern)
+#include "sdram.h"
+
+
+static void sdram_test_pattern(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t pattern)
 {
 	for (uint32_t i = 0; i < buffer_size; i++)
 		*(volatile uint16_t*) (addr + 2 * i) = pattern;
@@ -32,7 +36,7 @@ void sdram_test_pattern(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t
 
 }
 
-void sdram_test_increment(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t seed)
+static void sdram_test_increment(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16_t seed)
 {
 	for (uint32_t i = 0; i < buffer_size; i++)
 		*(volatile uint16_t*) (addr + 2 * i) = seed + i;
@@ -47,7 +51,7 @@ void sdram_test_increment(uintptr_t addr, uint_fast16_t buffer_size, uint_fast16
 
 }
 
-void sdram_test_random(uintptr_t addr, uint_fast16_t buffer_size)
+static void sdram_test_random(uintptr_t addr, uint_fast16_t buffer_size)
 {
 	volatile uint16_t aTxBuffer[buffer_size];
 	volatile uint16_t r;
@@ -66,10 +70,6 @@ void sdram_test_random(uintptr_t addr, uint_fast16_t buffer_size)
 	}
 
 }
-
-#if CPUSTYLE_STM32F7XX
-
-#include "sdram.h"
 
 void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
 {

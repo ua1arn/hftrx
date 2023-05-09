@@ -33,7 +33,10 @@ static void panic(void)
 }
 
 
-// Taken from https://github.com/ARM-software/arm-trusted-firmware
+// Taken from
+// https://github.com/ARM-software/arm-trusted-firmware
+// https://github.com/ARM-software/arm-trusted-firmware/blob/master/drivers/st/ddr/stm32mp_ddr.c
+// https://github.com/ARM-software/arm-trusted-firmware/blob/master/drivers/st/ddr/stm32mp1_ddr.c
 
 /*
 #define INT8_C(x)  x
