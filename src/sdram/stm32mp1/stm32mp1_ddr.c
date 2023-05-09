@@ -1372,7 +1372,7 @@ int toshiba_ddr_power_init(void)
 */
 #define DDRPHYC_DXNDLLCR_DLLDIS			BIT(31)
 
-#define RCC_DDRITFCR			U(0xD8)
+//#define RCC_DDRITFCR			U(0xD8)
 
 static void
 mmio_write_32(uintptr_t addr, uint32_t value)
@@ -1858,7 +1858,7 @@ void ddr_enable_clock(void)
 {
 	//stm32mp1_clk_rcc_regs_lock();
 
-	mmio_setbits_32(RCC_BASE + RCC_DDRITFCR,
+	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR,
 			RCC_DDRITFCR_DDRC1EN | RCC_DDRITFCR_DDRC1LPEN |
 			RCC_DDRITFCR_DDRC2EN | RCC_DDRITFCR_DDRC2LPEN |
 			RCC_DDRITFCR_DDRPHYCEN | RCC_DDRITFCR_DDRPHYCLPEN |
@@ -2764,12 +2764,12 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	 *     nota: check DFIMISC.dfi_init_complete = 0
 	 */
 	/* 1.1 RESETS: presetn, core_ddrc_rstn, aresetn */
-	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
-	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAXIRST);
-	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCORERST);
-	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYAPBRST);
-	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYRST);
-	mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
+	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
+	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DDRCAXIRST);
+	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DDRCORERST);
+	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DPHYAPBRST);
+	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DPHYRST);
+	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
 
 	/* 1.2. start CLOCK */
 	if (stm32mp1_ddr_clk_enable(priv, config->info.speed) != 0) {
@@ -2778,13 +2778,13 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 
 	/* 1.3. deassert reset */
 	/* De-ASSERT PHY rstn and ctl_rstn via DPHYRST and DPHYCTLRST. */
-	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYRST);
-	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
+	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DPHYRST);
+	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DPHYCTLRST);
 	/*
 	 * De-ASSERT presetn once the clocks are active
 	 * and stable via DDRCAPBRST bit.
 	 */
-	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
+	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
 
 	/* 1.4. wait 128 cycles to permit initialization of end logic */
 	local_delay_us(2 * 5);
@@ -2826,9 +2826,9 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	set_reg(priv, REG_PERF, &config->c_perf);
 
 	/*  2. deassert reset signal core_ddrc_rstn, aresetn and presetn */
-	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCORERST);
-	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAXIRST);
-	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DPHYAPBRST);
+	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DDRCORERST);
+	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DDRCAXIRST);
+	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_DPHYAPBRST);
 
 	/*
 	 * 3. start PHY init by accessing relevant PUBL registers
@@ -3221,6 +3221,7 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 	const uint32_t sizeN = sizeee / sizeof (test_t);
 	volatile test_t * const p = (volatile test_t *) STM32MP_DDR_BASE;
 	uint32_t i;
+	uint32_t uret;
 
 	// fill
 	//local_random_init();
@@ -3248,6 +3249,10 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
+	unsigned uret;
+	struct ddr_info ddr_priv_data;
+	struct ddr_info * const priv = &ddr_priv_data;
+	struct stm32mp1_ddr_config config;
 	PRINTF("arm_hardware_sdram_initialize start.\n");
 
 	if (1)
@@ -3335,37 +3340,6 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	initialize_pmic();
 #endif /* WITHSDRAM_PMC1 */
 
-	struct ddr_info ddr_priv_data;
-	struct ddr_info * const priv = &ddr_priv_data;
-	int ret;
-	struct stm32mp1_ddr_config config;
-	int node, len;
-	unsigned uret;
-	void *fdt;
-
-#define PARAM(x, y)							\
-	{								\
-		.name = x,						\
-		.offset = offsetof(struct stm32mp1_ddr_config, y),	\
-		.size = sizeof(config.y) / sizeof(uint32_t)		\
-	}
-
-#define CTL_PARAM(x) PARAM("st,ctl-"#x, c_##x)
-#define PHY_PARAM(x) PARAM("st,phy-"#x, p_##x)
-
-	static const struct {
-		const char *name; /* Name in DT */
-		const uint32_t offset; /* Offset in config struct */
-		const uint32_t size;   /* Size of parameters */
-	} param[] = {
-		CTL_PARAM(reg),
-		CTL_PARAM(timing),
-		CTL_PARAM(map),
-		CTL_PARAM(perf),
-		PHY_PARAM(reg),
-		PHY_PARAM(timing),
-		PHY_PARAM(cal)
-	};
 
 	priv->ctl = (struct stm32mp1_ddrctl *) DDRCTRL_BASE;
 	priv->phy = (struct stm32mp1_ddrphy *) DDRPHYC_BASE;
@@ -3377,17 +3351,17 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	stm32mp1_ddr_get_config(& config);
 
 	/* Software Self-Refresh mode (SSR) during DDR initilialization */
-	mmio_clrsetbits_32(RCC_BASE + RCC_DDRITFCR,
+	mmio_clrsetbits_32((uintptr_t) & RCC->DDRITFCR,
 			   RCC_DDRITFCR_DDRCKMOD_Msk,
 			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos); // RCC_DDRITFCR_DDRCKMOD_SSR
 
 	/* Disable axidcg clock gating during init */
-	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
+	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
 
 	stm32mp1_ddr_init(priv, & config);
 
 	/* Enable axidcg clock gating */
-	mmio_setbits_32(RCC_BASE + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
+	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
 
 	// инициализация выполняетмя еще до включения MMU
 	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);
@@ -3468,7 +3442,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #endif /* WITHDEBUG */
 
 	/* Software Self-Refresh mode (SSR) during DDR initilialization */
-	mmio_clrsetbits_32(RCC_BASE + RCC_DDRITFCR,
+	mmio_clrsetbits_32((uintptr_t) & RCC->DDRITFCR,
 			   RCC_DDRITFCR_DDRCKMOD_Msk,
 			   (0) << RCC_DDRITFCR_DDRCKMOD_Pos);
 
