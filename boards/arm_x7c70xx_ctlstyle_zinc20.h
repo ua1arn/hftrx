@@ -9,8 +9,8 @@
 // Плата Цник20 от НПК ООО "АТРИ" http://www.a3.spb.ru/
 // http://www.a3.spb.ru/catalog/product/5085/5086 http://www.a3.spb.ru/catalog/product/5085/6437
 
-#ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_ZINC20_H_INCLUDED
-#define ARM_X7C7XX_BGAXXX_CTLSTYLE_ZINC20_H_INCLUDED 1
+#ifndef ARM_XC7ZXX_BGAXXX_CTLSTYLE_ZINC20_H_INCLUDED
+#define ARM_XC7ZXX_BGAXXX_CTLSTYLE_ZINC20_H_INCLUDED 1
 
 	#if ! defined(XC7Z020)
 		#error Wrong CPU selected. XC7Z020 expected
@@ -583,4 +583,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_X7C7XX_BGAXXX_CTLSTYLE_ZINC20_H_INCLUDED */
+#endif /* ARM_XC7ZXX_BGAXXX_CTLSTYLE_ZINC20_H_INCLUDED */

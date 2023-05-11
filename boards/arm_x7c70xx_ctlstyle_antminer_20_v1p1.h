@@ -7,8 +7,8 @@
 //
 // Трансивер с DSP обработкой "Аист" на процессоре ZYNQ 7000
 
-#ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_ANTMINER_V1P1_H_INCLUDED
-#define ARM_X7C7XX_BGAXXX_CTLSTYLE_ANTMINER_V1P1_H_INCLUDED 1
+#ifndef ARM_XC7ZXX_BGAXXX_CTLSTYLE_ANTMINER_V1P1_H_INCLUDED
+#define ARM_XC7ZXX_BGAXXX_CTLSTYLE_ANTMINER_V1P1_H_INCLUDED 1
 
 	#if ! defined(XC7Z010)
 		#error Wrong CPU selected. XC7Z010 expected
@@ -611,4 +611,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_X7C7XX_BGAXXX_CTLSTYLE_ANTMINER_V1P1_H_INCLUDED */
+#endif /* ARM_XC7ZXX_BGAXXX_CTLSTYLE_ANTMINER_V1P1_H_INCLUDED */

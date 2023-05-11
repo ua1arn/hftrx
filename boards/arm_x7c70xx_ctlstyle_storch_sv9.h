@@ -9,8 +9,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре ZYNQ7020
 // rmainunit_sv9b.pcb myir7020-766, TFT 7", USB, NAU88C22, LTC2208
 
-#ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED
-#define ARM_X7C7XX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED 1
+#ifndef ARM_XC7ZXX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED
+#define ARM_XC7ZXX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED 1
 
 //	#if ! defined(XC7Z020)
 //		#error Wrong CPU selected. XC7Z020 expected
@@ -644,4 +644,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_X7C7XX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED */
+#endif /* ARM_XC7ZXX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED */

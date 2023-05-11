@@ -6,8 +6,8 @@
 // UA1ARN
 //
 
-#ifndef ARM_X7C7XX_BGAXXX_CPUSTYLE_EBAZ4205_V2_H_INCLUDED
-#define ARM_X7C7XX_BGAXXX_CPUSTYLE_EBAZ4205_V2_H_INCLUDED 1
+#ifndef ARM_XC7ZXX_BGAXXX_CPUSTYLE_EBAZ4205_V2_H_INCLUDED
+#define ARM_XC7ZXX_BGAXXX_CPUSTYLE_EBAZ4205_V2_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1062,4 +1062,4 @@
 			/*USBD_FS_INITIALIZE(); */\
 		} while (0)
 
-#endif /* ARM_X7C7XX_BGAXXX_CPUSTYLE_EBAZ4205_V2_H_INCLUDED */
+#endif /* ARM_XC7ZXX_BGAXXX_CPUSTYLE_EBAZ4205_V2_H_INCLUDED */
