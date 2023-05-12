@@ -125,8 +125,8 @@
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_ALL,	PG1, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_ALL, PG1, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_ALL, PG1, },// подготовка изображения водопада
-		{	0,	DLES,	display2_colorbuff,	REDRM_ALL,	PG1, },// Отображение водопада и/или спектра
-		{	0,	DLES,	gui_WM_walktrough,	REDRM_ALL, PG1, },
+		{	0,	DLES,	display2_colorbuff,	REDRM_ALL, PG1, },// Отображение водопада и/или спектра
+		{	0,	DLES,	gui_WM_walkthrough,	REDRM_ALL, PG1, },
 
 		{	0,	0,	display2_nextfb, 	REDRM_ALL, PG1, },
 	};

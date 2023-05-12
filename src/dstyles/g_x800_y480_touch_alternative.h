@@ -149,7 +149,7 @@
 		// sleep mode display
 		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
-		{	0,	DLES,	gui_WM_walktrough,	REDRM_BARS, PGWFL | PGSPE | PGGUI, },
+		{	0,	DLES,	gui_WM_walkthrough,	REDRM_BARS, PGWFL | PGSPE | PGGUI, },
 
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP | PGGUI, },
 	};

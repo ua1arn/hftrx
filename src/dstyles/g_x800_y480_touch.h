@@ -153,13 +153,13 @@
 	#endif /* WITHAMHIGHKBDADJ */
 		//{	XX,	DLE1,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		// sleep mode display
-		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	5,	25,	display2_datetime12, REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
-		{	0,	DLES,	gui_WM_walktrough,	REDRM_BARS, PGWFL | PGSPE, },
+		{	0,	DLES, gui_WM_walkthrough, REDRM_BARS, PGWFL | PGSPE, },
 
-		{	0,				0,		display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
+		{	0,	0, display2_keyboard_menu, REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 
-		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
+		{	0,	0,	display2_nextfb, REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
 
 #if WITHMENU
