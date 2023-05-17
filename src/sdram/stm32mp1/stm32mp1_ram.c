@@ -214,7 +214,7 @@ static int stm32mp1_ddr_setup(void)
 	stm32mp1_ddr_init(priv, &config);
 
 	/* Enable axidcg clock gating */
-	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
+	//mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
 
 	priv->info.size = config.info.size;
 

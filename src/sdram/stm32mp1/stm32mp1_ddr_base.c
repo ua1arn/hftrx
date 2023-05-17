@@ -3242,13 +3242,8 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 	stm32mp1_ddr_init_priv(priv, & config);
 	/* Enable axidcg clock gating */
-	mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
-#else
-	TP();
-	stm32mp1_ddr_probe();
-	//stm32mp1_ddr_init(priv, & config);
-	TP();
-#endif
+	//mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
+
 	// инициализация выполняетмя еще до включения MMU
 	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);
 
@@ -3272,6 +3267,9 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		//panic();
 	}
 	INFO("2 Memory size = 0x%x (%u MB)\n", (unsigned) uret, (unsigned) (uret / (1024U * 1024U)));
+#else
+	stm32mp1_ddr_probe();
+#endif
 
 #if 0
 	// Бесконечный тест памяти.
