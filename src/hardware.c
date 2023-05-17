@@ -2675,39 +2675,11 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 #elif CPUSTYLE_STM32MP1
 
 	// Все сравнения должны быть не точнее 1 MB
-
-	if (a < 0x10000000)			// BOOT
-		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
-
-	if (a >= 0x20000000 && a < 0x30000000)			// SYSRAM
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	if (a >= 0x40000000 && a < 0x60000000)			//  peripherials 1, peripherials 2
-		return addrbase | TTB_PARA_DEVICE;
-
-	if (a >= 0x60000000 && a < 0x70000000)			//  FMC NOR
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	if (a >= 0x70000000 && a < 0xA0000000)			//  QUADSPI, FMC NAND, ...
-		return addrbase | TTB_PARA_CACHED(ro || 1, 0);
-
-	if (a >= 0xA0000000 && a < 0xC0000000)			//  GIC
-		return addrbase | TTB_PARA_DEVICE;
-#if 1
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0xC0000000)							// DDR memory
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-#else
-
-	if (a >= 0xC0000000 && a < 0xE0000000)			// DDR memory
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	if (a >= 0xE0000000)							//  DEBUG
-		return addrbase | TTB_PARA_DEVICE;
-
-#endif
-
+	return addrbase | TTB_PARA_DEVICE;
 	return addrbase | TTB_PARA_NO_ACCESS;
 
 #elif CPUSTYLE_XC7Z
@@ -3034,6 +3006,29 @@ sysinit_debug_initialize(void)
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */
+#if CPUSTYLE_STM32MP1
+	DBGMCU->CR = 0;
+	DBGMCU->APB4FZ1 = 0;	/*!< Debug MCU APB4FZ1 freeze register CPU1 */
+	DBGMCU->APB4FZ2 = 0;	/*!< Debug MCU APB4FZ2 freeze register CPU2 */
+	DBGMCU->APB1FZ1 = 0;	/*!< Debug MCU APB1FZ1 freeze register CPU1 */
+	DBGMCU->APB1FZ2 = 0;	/*!< Debug MCU APB1FZ2 freeze register CPU2 */
+	DBGMCU->APB2FZ1 = 0;	/*!< Debug MCU APB2FZ1 freeze register CPU1 */
+	DBGMCU->APB2FZ2 = 0;	/*!< Debug MCU APB2FZ2 freeze register CPU2 */
+	DBGMCU->APB3FZ1 = 0;	/*!< Debug MCU APB3FZ1 freeze register CPU1 */
+	DBGMCU->APB3FZ2 = 0;	/*!< Debug MCU APB3FZ2 freeze register CPU2 */
+	DBGMCU->APB5FZ1 = 0;	/*!< Debug MCU APB5FZ1 freeze register CPU1 */
+	DBGMCU->APB5FZ2 = 0;	/*!< Debug MCU APB5FZ2 freeze register CPU2 */
+
+	/*
+	 * Sleep bit only affects the Cortex®-M4, the Cortex®-A7 debug clock continues to run even when the core clocks are stopped (PxSTOP mode).
+	 */
+
+	DBGMCU->CR =
+		DBGMCU_CR_DBG_SLEEP_Msk |
+		DBGMCU_CR_DBG_STOP_Msk |
+		DBGMCU_CR_DBG_STANDBY_Msk |
+		0;
+#endif /* CPUSTYLE_STM32MP1 */
 }
 
 static void FLASHMEMINITFUNC
