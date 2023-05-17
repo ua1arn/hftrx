@@ -140,6 +140,8 @@ typedef struct irqlspinlock_tag
 #define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { LCLSPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrqlv); } while (0)
 #else /* ! LINUX_SUBSYSTEM */
 
+/* Linux targets: No any hardware IRQ control */
+
 typedef struct irqlspinlock_tag
 {
 	int irql;
@@ -189,12 +191,17 @@ void LowerIrql(IRQL_t newIRQL);
 #endif /* WITHSMPSYSTEM */
 
 #if ! LINUX_SUBSYSTEM
-/* Захват spinlock с установкой требуемого IRQL и сохранением ранее установленного */
-#define IRQLSPIN_LOCK(p, oldIrql) do { RiseIrql((p)->irql, (oldIrql)); LCLSPIN_LOCK(& (p)->lock); } while (0)
-#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(& (p)->lock); LowerIrql(oldIrql); } while (0)
+
+	/* Захват spinlock с установкой требуемого IRQL и сохранением ранее установленного */
+	#define IRQLSPIN_LOCK(p, oldIrql) do { RiseIrql((p)->irql, (oldIrql)); LCLSPIN_LOCK(& (p)->lock); } while (0)
+	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(& (p)->lock); LowerIrql(oldIrql); } while (0)
+
 #else  /* ! LINUX_SUBSYSTEM */
-#define IRQLSPIN_LOCK(p, oldIrql) do { } while (0)
-#define IRQLSPIN_UNLOCK(p, oldIrql) do { } while (0)
+
+	/* Linux targets: No any hardware IRQ control */
+	#define IRQLSPIN_LOCK(p, oldIrql) do { } while (0)
+	#define IRQLSPIN_UNLOCK(p, oldIrql) do { } while (0)
+
 #endif  /* ! LINUX_SUBSYSTEM */
 
 typedef struct dpclock_tag
@@ -208,7 +215,22 @@ void dpclock_enter(dpclock_t * lp);
 void dpclock_exit(dpclock_t * lp);
 uint_fast8_t dpclock_tray(dpclock_t * lp);
 
-#if CPUSTYLE_R7S721
+#if LINUX_SUBSYSTEM
+	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC //__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE //__attribute__((__section__(".itcm"), noinline))
+	#define RAMFUNC			//__attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	//__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP 		//__attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
+#elif CPUSTYLE_R7S721
 	#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
@@ -298,21 +320,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
-#elif (CPUSTYLE_XCZU || CPUSTYLE_XC7Z) && LINUX_SUBSYSTEM
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC //__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define RAMFUNC_NONILINE //__attribute__((__section__(".itcm"), noinline))
-	#define RAMFUNC			//__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
-	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-	#define RAMDTCM			//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-	#define RAMBIGDTCM		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP 		//__attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif CPUSTYLE_XC7Z
 	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
