@@ -2555,22 +2555,50 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 // Cacheable memory attributes, without TEX remap
 // DDI0406C_d_armv7ar_arm.pdf
 // Table B3-11 Inner and Outer cache attribute encoding
-#define ATTR_AA_WBCACHE 0x01	// Inner attribute - Write-Back, Write-Allocate
-#define ATTR_BB_WBCACHE 0x01	// Outer attribute - Write-Back, Write-Allocate
-#define TEXval_WBCACHE		(0x04 | (ATTR_BB_WBCACHE))
-#define Cval_WBCACHE		(((ATTR_AA_WBCACHE) & 0x02) != 0)
-#define Bval_WBCACHE		(((ATTR_AA_WBCACHE) & 0x01) != 0)
+
+#define MKATTR_TEXval(cacheattr) (0x04u | ((cacheattr) & 0x03u))
+#define MKATTR_Cval(cacheattr) (!! ((cacheattr) & 0x02u))
+#define MKATTR_Bval(cacheattr) (!! ((cacheattr) & 0x01u))
+
+// Also see __set_TTBR0 parameter
+#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
+#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
+#define CACHEATTR_WT_T_CACHE 0x02	// Write-Through, no Write-Allocate
+#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
+
+/* атрибуты для разных областей памяти (при TEX[2]=1 способе задания) */
+#define RAM_ATTRS CACHEATTR_WB_WA_CACHE
+//#define RAM_ATTRS CACHEATTR_WB_NWA_CACHE
+#define DEVICE_ATTRS CACHEATTR_NOCACHE
+
+#define TEXval_RAM		MKATTR_TEXval(RAM_ATTRS)
+#define Cval_RAM		MKATTR_Cval(RAM_ATTRS)
+#define Bval_RAM		MKATTR_Bval(RAM_ATTRS)
+
 #if WITHSMPSYSTEM
-	#define SHAREDval_WBCACHE 1		// required for ldrex.. and strex.. functionality
+	#define SHAREDval_RAM 1		// required for ldrex.. and strex.. functionality
 #else /* WITHSMPSYSTEM */
-	#define SHAREDval_WBCACHE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+	#define SHAREDval_RAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
 #endif /* WITHSMPSYSTEM */
 
-/* Shareable Device */
-#define TEXval_DEVICE       0x00
-#define Cval_DEVICE         0
-#define Bval_DEVICE         1
-#define SHAREDval_DEVICE 	0
+#if 1
+	/* Shareable Device */
+	#define TEXval_DEVICE       0x00
+	#define Cval_DEVICE         0
+	#define Bval_DEVICE         1
+	#define SHAREDval_DEVICE 	0
+#else
+	/* Shareable Device */
+	#define TEXval_DEVICE	MKATTR_TEXval(DEVICE_ATTRS)
+	#define Cval_DEVICE		MKATTR_Cval(DEVICE_ATTRS)
+	#define Bval_DEVICE		MKATTR_Bval(DEVICE_ATTRS)
+
+	#if WITHSMPSYSTEM
+		#define SHAREDval_DEVICE 1		// required for ldrex.. and strex.. functionality
+	#else /* WITHSMPSYSTEM */
+		#define SHAREDval_DEVICE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+	#endif /* WITHSMPSYSTEM */
+#endif
 
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
@@ -2591,7 +2619,7 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 		0 \
 	)
 
-#define	TTB_PARA_CACHED(ro, xn) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, SHAREDval_WBCACHE, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_CACHED(ro, xn) TTB_PARA(TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 #define	TTB_PARA_NO_ACCESS 		0
 
@@ -2830,7 +2858,7 @@ sysinit_ttbr_initialize(void)
 	    ; 2     - IMP     0x0  (Implementation Defined)
 	    ; 1     - S       0x0  (Non-shared)
 	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
-	__set_TTBR0((uintptr_t) tlbbase | 0x48);	// TTBR0
+	__set_TTBR0((uintptr_t) tlbbase | 0x48 | (1u << 5) | (1u << 1));	// TTBR0
 	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
 	  __ISB();
 
