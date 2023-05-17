@@ -3241,11 +3241,9 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	mmio_clrbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
 
 	stm32mp1_ddr_init_priv(priv, & config);
+
 	/* Enable axidcg clock gating */
 	//mmio_setbits_32((uintptr_t) & RCC->DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
-
-	// инициализация выполняетмя еще до включения MMU
-	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_C_Msk);
 
 	uret = ddr_test_data_bus();
 	if (uret != 0U) {
