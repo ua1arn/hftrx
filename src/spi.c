@@ -6346,16 +6346,10 @@ int testchipDATAFLASH(void)
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
-
 }
 
 void hangoffDATAFLASH(void)
 {
-	IRQL_t oldIrql, oldIrql2;
-	accureDATAFLASH(& oldIrql, & oldIrql2);
-
-	releaseDATAFLASH(oldIrql, oldIrql2);
 }
 
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
