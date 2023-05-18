@@ -2675,6 +2675,8 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 #elif CPUSTYLE_STM32MP1
 
 	// Все сравнения должны быть не точнее 1 MB
+	if (a >= 0x20000000 && a < 0x30000000)			// SYSRAM
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0xC0000000)							// DDR memory
 		return addrbase | TTB_PARA_CACHED(ro, 0);
