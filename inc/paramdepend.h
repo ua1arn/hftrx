@@ -972,7 +972,22 @@ extern "C" {
 
 #endif
 
-#if defined (__NVIC_PRIO_BITS)
+#if LINUX_SUBSYSTEM
+
+	/* Linux targets: No any hardware IRQ control */
+
+	typedef uint_fast32_t IRQL_t;
+
+	#define IRQL_SYSTEM 			0
+	#define IRQL_REALTIME 			0
+	#define IRQL_OVERREALTIME 		0
+
+	#define global_enableIRQ() do {  } while (0)
+	#define global_disableIRQ() do {  } while (0)
+
+#elif (__CORTEX_M != 0)
+
+	/* Cortex-M tergets */
 
 	typedef uint_fast32_t IRQL_t;
 
@@ -1154,14 +1169,16 @@ extern "C" {
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
+	#warning Unsupported target IRQ control
+
 	typedef uint_fast32_t IRQL_t;
 
 	#define IRQL_SYSTEM 			0
 	#define IRQL_REALTIME 		0
 	#define IRQL_OVERREALTIME 		0
 
-	#define global_enableIRQ() do { __enable_irq(); } while (0)
-	#define global_disableIRQ() do { __disable_irq(); } while (0)
+	#define global_enableIRQ() do {  } while (0)
+	#define global_disableIRQ() do {  } while (0)
 
 #endif /* CPUSTYLE_ARM_CM3 */
 

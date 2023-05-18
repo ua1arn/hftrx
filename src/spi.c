@@ -6325,6 +6325,30 @@ void bootloader_chiperase(void)
 	fullEraseDATAFLASH();
 }
 
+#elif LINUX_SUBSYSTEM
+
+void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
+{
+}
+
+unsigned long sectorsizeDATAFLASH(void)
+{
+	return 0;
+}
+
+int testchipDATAFLASH(void)
+{
+	return 1;
+}
+
+void spidf_initialize(void)
+{
+}
+
+void hangoffDATAFLASH(void)
+{
+}
+
 #else /* WIHSPIDFHW || WIHSPIDFSW */
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)

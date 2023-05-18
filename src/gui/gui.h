@@ -120,7 +120,7 @@ uint32_t xcz_cic_test_process(void);
 void xcz_cic_test(uint32_t val);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
-void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
+void gui_WM_walkthrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
 void gui_initialize(void);
 void gui_set_encoder2_rotate(int_fast8_t rotate);
 void gui_put_keyb_code(uint_fast8_t kbch);

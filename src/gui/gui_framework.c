@@ -1729,7 +1729,7 @@ static void process_gui(void)
 }
 
 /* Запуск state mashine и отрисовка элементов GUI */
-void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
+void gui_WM_walkthrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
 	uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 	char buf [TEXT_ARRAY_SIZE];
