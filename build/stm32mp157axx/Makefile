@@ -224,7 +224,6 @@ LIBS    = $(DLIBS) $(ULIBS)
 MCFLAGS = \
 	$(CORE) \
 	-fno-math-errno -funroll-loops \
-	-fgraphite-identity \
 	-ffunction-sections \
 	-fdata-sections \
 	-ffat-lto-objects \
