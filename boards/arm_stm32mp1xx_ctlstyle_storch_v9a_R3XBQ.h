@@ -533,6 +533,8 @@
 		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET7	1
+	#else
+		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
