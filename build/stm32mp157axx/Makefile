@@ -188,6 +188,13 @@ SRCDIRS += $(RTOSDIR)
 ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
 endif
 
+ifeq (1, 1)
+# G.729
+G729DIR = $(PRJROOT)/lib/g729
+DINCDIR += $(G729DIR)
+SRCDIRS += $(G729DIR)
+endif
+
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR)
 

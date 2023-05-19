@@ -8,3 +8,9 @@
 [submodule "lvgl"]
 	path = lvgl
 	url = https://github.com/lvgl/lvgl.git
+[submodule "lib/g729"]
+	path = lib/g729
+	url = https://github.com/DoubangoTelecom/g729.git
+[submodule "g729"]
+	path = g729
+	url = https://github.com/DoubangoTelecom/g729.git
