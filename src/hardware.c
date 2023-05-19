@@ -3009,6 +3009,14 @@ sysinit_debug_initialize(void)
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */
 #if CPUSTYLE_STM32MP1
+
+	//RCC->DBGCFGR |= RCC_DBGCFGR_TRACECKEN_Msk;
+	RCC->DBGCFGR |= RCC_DBGCFGR_DBGCKEN_Msk;
+
+	RCC->DBGCFGR |= RCC_DBGCFGR_DBGRST_Msk;
+	RCC->DBGCFGR &= ~ RCC_DBGCFGR_DBGRST_Msk;
+
+	//printhex32(DBGMCU_BASE, DBGMCU, sizeof * DBGMCU);
 	DBGMCU->CR = 0;
 	DBGMCU->APB4FZ1 = 0;	/*!< Debug MCU APB4FZ1 freeze register CPU1 */
 	DBGMCU->APB4FZ2 = 0;	/*!< Debug MCU APB4FZ2 freeze register CPU2 */
@@ -3030,6 +3038,12 @@ sysinit_debug_initialize(void)
 		DBGMCU_CR_DBG_STOP_Msk |
 		DBGMCU_CR_DBG_STANDBY_Msk |
 		0;
+
+
+	//printhex32(DBGMCU_BASE, DBGMCU, sizeof * DBGMCU);
+
+	//RCC->DBGCFGR |= RCC_DBGCFGR_DBGRST_Msk;
+
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
