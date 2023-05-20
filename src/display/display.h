@@ -1095,8 +1095,8 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	);
 
-uint_fast8_t smallfont_decode(uint_fast8_t c);
-uint_fast8_t bigfont_decode(uint_fast8_t c);
+uint_fast8_t smallfont_decode(char cc);
+uint_fast8_t bigfont_decode(char cc);
 
 int_fast32_t display_zoomedbw(void);
 

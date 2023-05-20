@@ -2506,7 +2506,7 @@ ltdcmain_horizontal_put_char_small(
 	)
 {
 	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
@@ -2532,7 +2532,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small_tbg(
 	)
 {
 	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
@@ -2556,7 +2556,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_x2_put_char_small_tbg(
 	)
 {
 	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
@@ -2590,7 +2590,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small2_tbg(
 	)
 {
 	const uint_fast8_t width = SMALLCHARW2;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH2; ++ cgrow)
 	{
@@ -2616,7 +2616,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small3_tbg(
 	)
 {
 	const uint_fast8_t width = SMALLCHARW3;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 	{
@@ -2963,10 +2963,10 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 	char cc
 	)
 {
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	return ltdc_horizontal_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], buffer, dx, dy, x, y, c);
 //	const uint_fast8_t width = SMALLCHARW3;
-//	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+//	const uint_fast8_t c = smallfont_decode(cc);
 //	uint_fast8_t cgrow;
 //	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 //	{

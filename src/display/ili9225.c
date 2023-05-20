@@ -329,7 +329,7 @@ ili9225_pix8(
 static void ili9225_put_char_small(char cc)
 {
 	uint_fast8_t i = 0;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0][0]) };
 	const FLASHMEM uint8_t * p = & ls020_smallfont [c][0];
 	
@@ -343,7 +343,7 @@ static void ili9225_put_char_big(char cc)
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NBYTES = (sizeof ILI9225_bigfont [0] / sizeof ILI9225_bigfont [0][0]) };
 	const FLASHMEM uint8_t * p = & ILI9225_bigfont [c][0];
 	
@@ -355,7 +355,7 @@ static void ili9225_put_char_big(char cc)
 static void ili9225_put_char_half(char cc)
 {
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NBYTES = (sizeof ILI9225_halffont [0] / sizeof ILI9225_halffont [0][0]) };
 	const FLASHMEM uint8_t * p = & ILI9225_halffont [c][0];
 	
