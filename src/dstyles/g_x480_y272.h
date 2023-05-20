@@ -93,6 +93,7 @@
 	//		{	26,	16,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 			{	26,	20,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 
+			{	0,	4,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
 			{	0,	4,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 			{	21,	8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 			{	21,	12,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR

@@ -1211,6 +1211,15 @@ static void display_freqXbig_a(
 	}
 }
 
+// Подготовка отображения частоты. Герцы маленьким шрифтом.
+static void display2_freqX_a_init(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+}
+
 // Отображение частоты. Герцы маленьким шрифтом.
 static void display2_freqX_a(
 	uint_fast8_t x,

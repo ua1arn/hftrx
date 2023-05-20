@@ -64,6 +64,7 @@
 			{	6, 2,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	10, 2,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	17, 3,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0,	5,	display2_freqX_a_init,	REDRM_INIS, REDRSUBSET_INIT, },
 			{	0,	5,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 			{	0, 10,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
 			{	17, 10,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
@@ -139,6 +140,7 @@
 			{	0,	2,	display2_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
 			{	6,	2,	display2_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	10, 2,	display2_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0,	4,	display2_freqX_a_init,	REDRM_INIS, REDRSUBSET_INIT, },
 			{	0,	4,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 			{	19, 4,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			{	0,	9,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT

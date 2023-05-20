@@ -37,6 +37,7 @@
 		{	3, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	7, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
+		{	0, 1,	display2_freqX_a_init,	REDRM_INIS, REDRSUBSET_INIT, },
 		{	0, 1,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 
 		{	9, 2,	display_vfomode1,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT - одним символом

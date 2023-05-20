@@ -114,6 +114,7 @@
 		{	42, 25,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{	46, 25,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 
+		{	0,	7,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	0,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	26, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR

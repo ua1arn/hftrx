@@ -226,6 +226,7 @@
 			{	15, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	23, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
+			{	0, 4,	display2_freqX_a_init,	REDRM_INIS, REDRSUBSET_INIT, },
 			{	0, 4,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 			{	19, 10,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			{	0, 10,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
