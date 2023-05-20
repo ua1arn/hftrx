@@ -4014,7 +4014,7 @@ void fftbuffer_initialize(void)
 		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffI, filled);
 		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffQ, filled);
 	}
-	IRQLSPINLOCK_INITIALIZE(& fftlock, IRQL_ONLY_OVERREALTIME);
+	IRQLSPINLOCK_INITIALIZE(& fftlock, IRQL_REALTIME);
 }
 
 #if (__ARM_FP & 0x08) || __riscv_d
@@ -5991,11 +5991,12 @@ void display2_bgprocess(void)
 {
 #if LINUX_SUBSYSTEM
 	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
+	uint8_t dpage = REDRSUBSET(amenuset());
 
 	for (int i = 0; i < WALKCOUNT; i ++)
 	{
 		const struct dzone * const p = & dzones [i];
-		if (p->key == REDRM_ALL)
+		if (p->subset >= dpage && p->key == REDRM_ALL)
 			(* p->redraw)(p->x, p->y, display2_getcontext());
 	}
 

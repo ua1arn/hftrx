@@ -717,20 +717,22 @@ static uint_fast8_t debugusb_ci_qempty(void)
 
 uint_fast8_t debugusb_putchar(uint_fast8_t c)/* передача символа если готов порт */
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	const uint_fast8_t f = debugusb_qput(c);
 	if (f)
 		HARDWARE_DEBUG_ENABLETX(1);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 	return f;
 }
 
 uint_fast8_t debugusb_getchar(char * cp) /* приём символа, если готов порт */
 {
 	uint_fast8_t c;
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	const uint_fast8_t f = debugusb_ci_qget(& c);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 	if (f)
 		* cp = c;
 	return f;

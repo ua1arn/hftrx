@@ -356,11 +356,12 @@ static void cdceem_send(const uint8_t *data, int size)
 	* tg ++ = (crc >> 0) & 0xFF;
 
 	// а теперь передаем
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	eemtxleft = tg - eemtxbuffer;
 	eemtxpointer = eemtxbuffer;
 	eemtxready = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 // CDC class-specific request codes
@@ -1725,16 +1726,17 @@ static int cdceem_buffers_alloc(cdceembuf_t * * tp)
 
 static int cdceem_buffers_ready_user(cdceembuf_t * * tp)
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	if (! IsListEmpty(& cdceem_ready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
 		* tp = p;
 		return 1;
 	}
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 	return 0;
 }
 
@@ -1746,9 +1748,10 @@ static void cdceem_buffers_release(cdceembuf_t * p)
 
 static void cdceem_buffers_release_user(cdceembuf_t * p)
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	cdceem_buffers_release(p);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 // сохранить принятый

@@ -59,8 +59,8 @@
 				#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 				#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 				#define PLL2DIVR	1	// DDR clock divider = 528 MHz
-				#include "src/sdram/stm32mp15-mx_2G_x2.dtsi"	// 2x128k*16
-				//#include "src/sdram/stm32mp15-mx_4G_x2.dtsi"	// 2x256k*16 2 x MT41K256M16TW-107 IT:P (FBGA Code D9SHG)
+				#define BOARD_DDR_CONFIG "stm32mp15-mx_2G_x2.dtsi"	// 2x128k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_4G_x2.dtsi"	// 2x256k*16 2 x MT41K256M16TW-107 IT:P (FBGA Code D9SHG)
 			#else
 				// PLL2_1600
 				/* bad boards DDR3 clock = 300 MHz */
@@ -71,10 +71,10 @@
 				#define PLL2DIVR	2	// DDR clock divider = 300 MHz
 				// less or equal 300 MHz
 				// DDR3 timings only 6-6-6 (in  according AN5168
-				//#include "src/sdram/stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
+				#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
 			#endif
 
 			// PLL3_800
@@ -122,8 +122,8 @@
 			#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
 			#define PLL2DIVQ	1	// GPU clock divider
 			#define PLL2DIVR	1	// DDR clock divider
-			#include "src/sdram/stm32mp15-mx_2G_x2.dtsi"	// 2x128k*16
-			//#include "src/sdram/stm32mp15-mx_4G_x2.dtsi"	// 2x256k*16 2 x MT41K256M16TW-107 IT:P (FBGA Code D9SHG)
+			#define BOARD_DDR_CONFIG "stm32mp15-mx_2G_x2.dtsi"	// 2x128k*16
+			//#define BOARD_DDR_CONFIG "stm32mp15-mx_4G_x2.dtsi"	// 2x256k*16 2 x MT41K256M16TW-107 IT:P (FBGA Code D9SHG)
 
 			// PLL3_800
 			// pll3_p_ck -> mcuss_ck - 209 MHz Max

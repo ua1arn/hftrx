@@ -595,7 +595,7 @@ typedef ALIGNX_BEGIN struct denoise16
 uint_fast8_t takespeexready_user(speexel_t * * dest)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& speexlock);
 	if (! IsListEmpty2(& speexready16))
 	{
@@ -616,7 +616,7 @@ void releasespeexbuffer_user(speexel_t * t)
 {
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& speexlock);
 
 	InsertHeadList2(& speexfree16, & p->item);
@@ -705,9 +705,9 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	deliverylist_initialize(& rtstargetsint, IRQL_ONLY_OVERREALTIME);
-	deliverylist_initialize(& speexoutfloat, IRQL_ONLY_OVERREALTIME);
-	deliverylist_initialize(& afdemodoutfloat, IRQL_ONLY_OVERREALTIME);
+	deliverylist_initialize(& rtstargetsint, IRQL_REALTIME);
+	deliverylist_initialize(& speexoutfloat, IRQL_REALTIME);
+	deliverylist_initialize(& afdemodoutfloat, IRQL_REALTIME);
 
 
 #if WITHUSBHEADSET || WITHSKIPUSERMODE || CTLSTYLE_V3D
@@ -957,7 +957,7 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsready8))
 	{
@@ -983,7 +983,7 @@ void releasemsgbuffer_user(uint8_t * dest)
 	ASSERT(p->tag3 == p);
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& locklistmsg8);
 	InsertHeadVList(& msgsfree8, & p->item);
 	LCLSPIN_UNLOCK(& locklistmsg8);
@@ -995,7 +995,7 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsfree8))
 	{
@@ -1023,7 +1023,7 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 	p->type = type;
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& locklistmsg8);
 	InsertHeadVList(& msgsready8, & p->item);
 	LCLSPIN_UNLOCK(& locklistmsg8);
@@ -1613,7 +1613,7 @@ void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
 	static unsigned level16record;
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& lockwav48);
 	if (preparerecord16 == NULL)
 	{
@@ -1669,7 +1669,7 @@ void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
 unsigned takerecordbuffer(void * * dest)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& lockwav48);
 	if (! IsListEmpty2(& recordswav48ready))
 	{
@@ -1689,7 +1689,7 @@ unsigned takerecordbuffer(void * * dest)
 unsigned takefreerecordbuffer(void * * dest)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& lockwav48);
 	if (! IsListEmpty2(& recordswav48free))
 	{
@@ -1712,7 +1712,7 @@ void saveplaybuffer(void * dest, unsigned used)
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
 	p->startdata = 0;	// перыфй сэмпл в буфере
 	p->topdata = used / sizeof p->buff [0];	// количество сэмплов
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& lockwav48);
 	InsertHeadList2(& recordswav48ready, & p->item);
 	LCLSPIN_UNLOCK(& lockwav48);
@@ -1748,7 +1748,7 @@ void releaserecordbuffer(void * dest)
 {
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& lockwav48);
 	InsertHeadList2(& recordswav48free, & p->item);
 	LCLSPIN_UNLOCK(& lockwav48);
@@ -1803,7 +1803,7 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 size_t takemodemrxbuffer(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	if (! IsListEmpty2(& modemsrx8))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& modemsrx8);
@@ -1821,7 +1821,7 @@ size_t takemodemrxbuffer(uint8_t * * dest)
 size_t takemodembuffer(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	if (! IsListEmpty2(& modemsfree8))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
@@ -1863,7 +1863,7 @@ void releasemodembuffer(uint8_t * dest)
 {
 	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	InsertHeadList2(& modemsfree8, & p->item);
 	LowerIrql(oldIrql);
 }
@@ -2920,7 +2920,7 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 	if (v == 0)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		LCLSPIN_LOCK(& locklist16rx);
 
 		// Очистить очередь принятых от USB UAC
@@ -2957,7 +2957,7 @@ void uacout_buffer_stop(void)
 	if (uacoutaddr != 0)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		release_dmabuffer16rx(uacoutaddr);
 		LowerIrql(oldIrql);
 		uacoutaddr = 0;
@@ -2985,7 +2985,7 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 		if (uacoutaddr == 0)
 		{
 			IRQL_t oldIrql;
-			RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+			RiseIrql(IRQL_REALTIME, & oldIrql);
 			uacoutaddr = allocate_dmabuffer16rx();
 			LowerIrql(oldIrql);
 			uacoutbufflevel = 0;
@@ -3026,7 +3026,7 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 		if ((uacoutbufflevel += outchunk) >= dmabuffer16size)
 		{
 			IRQL_t oldIrql;
-			RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+			RiseIrql(IRQL_REALTIME, & oldIrql);
 			processing_dmabuffer16rxuac(uacoutaddr);
 			LowerIrql(oldIrql);
 			uacoutaddr = 0;

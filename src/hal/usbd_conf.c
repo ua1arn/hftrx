@@ -683,10 +683,11 @@ unsigned hamradio_get__getsoffreq(void)
 {
 #if WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	unsigned count = sofcount;
 	sofcount = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 	uint32_t nowticks = sys_now();
 	uint32_t difftime = nowticks - softicks;

@@ -598,16 +598,12 @@ void ft8_start_fill(void)
 	if (fill_ft8_buf1)
 	{
 		PRINTF("ft8: start fill 2\n");
-//		system_disableIRQ();
 		fill_ft8_buf2 = 1;
-//		system_enableIRQ();
 	}
 	else
 	{
 		PRINTF("ft8: start fill 1\n");
-//		system_disableIRQ();
 		fill_ft8_buf1 = 1;
-//		system_enableIRQ();
 	}
 	IRQLSPIN_UNLOCK(& ft8bufflock, oldIrql);
 }
@@ -639,7 +635,7 @@ uint8_t get_ft8_state(void)
 
 void ft8_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& ft8bufflock, IRQL_ONLY_OVERREALTIME);
+	IRQLSPINLOCK_INITIALIZE(& ft8bufflock, IRQL_REALTIME);
 #if ! LINUX_SUBSYSTEM
 	arm_hardware_set_handler(ft8_interrupt_core0, ft8_irqhandler_core0, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU0);
 	arm_hardware_set_handler(ft8_interrupt_core1, ft8_irqhandler_core1, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);

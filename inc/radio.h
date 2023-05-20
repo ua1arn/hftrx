@@ -3422,6 +3422,8 @@ void hamradio_change_preamp(void);
 uint_fast8_t hamradio_moxmode(uint_fast8_t v);
 uint_fast8_t hamradio_tunemode(uint_fast8_t v);
 
+uint_fast8_t amenuset(void);
+
 /* выбор внешнего вида прибора - стрелочный или градусник */
 enum
 {

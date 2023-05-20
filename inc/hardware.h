@@ -380,6 +380,19 @@ elif CPUSTYLE_STM32F0XX
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
+#elif CPUSTYLE_V853X
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "allwnr_v853x.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
+
 #elif CPUSTYLE_T113
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
@@ -586,9 +599,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	typedef uint_fast32_t spitarget_t;
 	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
 	typedef uint_fast32_t portholder_t;		
-
-	#define system_enableIRQ() do { asm(" NOP"); } while (0)
-	#define system_disableIRQ() do { asm(" NOP"); } while (0)
 
 	#define global_enableIRQ() do { asm(" NOP"); } while (0)
 	#define global_disableIRQ() do { asm(" NOP"); } while (0)

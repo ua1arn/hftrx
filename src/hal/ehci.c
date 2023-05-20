@@ -1793,12 +1793,13 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 {
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& hehci->asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
 	HAL_OHCI_IRQHandler(& hehci_USB);
 	LCLSPIN_UNLOCK(& hehci->asynclock);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 #if WITHINTEGRATEDDSP
 	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
@@ -2295,12 +2296,13 @@ void MX_USB_HOST_Process(void)
 	EHCI_HandleTypeDef * const hehci = hUsbHostHS.pData;
 	USBH_Process(& hUsbHostHS);
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& hehci->asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
 	HAL_OHCI_IRQHandler(& hehci_USB);
 	LCLSPIN_UNLOCK(& hehci->asynclock);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 #if WITHTINYUSB
     //tuh_task();
     tuh_task_ext(UINT32_MAX, 0);

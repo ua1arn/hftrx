@@ -129,8 +129,6 @@ typedef enum IRQn
 #define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Base */
 #define DE_VI_BASE ((uintptr_t) 0x05102000)           /*!< DE_VI Base */
 #define DE_UI1_BASE ((uintptr_t) 0x05103000)          /*!< DE_UI Base */
-#define DE_UI2_BASE ((uintptr_t) 0x05104000)          /*!< DE_UI Base */
-#define DE_UI3_BASE ((uintptr_t) 0x05105000)          /*!< DE_UI Base */
 #define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Base */
@@ -1515,29 +1513,29 @@ typedef struct DE_TOP_Type
 /*!< DE_BLD  */
 typedef struct DE_BLD_Type
 {
-    volatile uint32_t fcolor_ctl;                     /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
+    volatile uint32_t FCOLOR_CTL;                     /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
     struct
     {
-        volatile uint32_t fcolor;                     /*!< Offset 0x004 BLD fill color register */
-        volatile uint32_t insize;                     /*!< Offset 0x008 BLD input memory size register */
-        volatile uint32_t offset;                     /*!< Offset 0x00C BLD input memory offset register */
+        volatile uint32_t FCOLOR;                     /*!< Offset 0x004 BLD fill color register */
+        volatile uint32_t INSIZE;                     /*!< Offset 0x008 BLD input memory size register */
+        volatile uint32_t OFFSET;                     /*!< Offset 0x00C BLD input memory offset register */
                  uint32_t reserved_0x00C;
-    } attr [0x004];                                   /*!< Offset 0x004 Pipe [0..3] */
+    } ATTR [0x004];                                   /*!< Offset 0x004 Pipe [0..3] */
              uint32_t reserved_0x044 [0x000F];
-    volatile uint32_t route;                          /*!< Offset 0x080 BLD_CH_RTCTL Offset 0x080 BLD routing control register */
-    volatile uint32_t premultiply;                    /*!< Offset 0x084 Offset 0x080 BLD pre-multiply control register */
-    volatile uint32_t bkcolor;                        /*!< Offset 0x088  */
-    volatile uint32_t output_size;                    /*!< Offset 0x08C  */
-    volatile uint32_t bld_mode [0x004];               /*!< Offset 0x090 BLD_CTL */
+    volatile uint32_t ROUTE;                          /*!< Offset 0x080 BLD_CH_RTCTL Offset 0x080 BLD routing control register */
+    volatile uint32_t PREMULTIPLY;                    /*!< Offset 0x084 Offset 0x080 BLD pre-multiply control register */
+    volatile uint32_t BKCOLOR;                        /*!< Offset 0x088  */
+    volatile uint32_t OUTPUT_SIZE;                    /*!< Offset 0x08C  */
+    volatile uint32_t BLD_MODE [0x004];               /*!< Offset 0x090 BLD_CTL */
              uint32_t reserved_0x0A0 [0x0004];
-    volatile uint32_t ck_ctl;                         /*!< Offset 0x0B0  */
-    volatile uint32_t ck_cfg;                         /*!< Offset 0x0B4  */
+    volatile uint32_t CK_CTL;                         /*!< Offset 0x0B0  */
+    volatile uint32_t CK_CFG;                         /*!< Offset 0x0B4  */
              uint32_t reserved_0x0B8 [0x0002];
-    volatile uint32_t ck_max [0x004];                 /*!< Offset 0x0C0  */
+    volatile uint32_t CK_MAX [0x004];                 /*!< Offset 0x0C0  */
              uint32_t reserved_0x0D0 [0x0004];
-    volatile uint32_t ck_min [0x004];                 /*!< Offset 0x0E0  */
+    volatile uint32_t CK_MIN [0x004];                 /*!< Offset 0x0E0  */
              uint32_t reserved_0x0F0 [0x0003];
-    volatile uint32_t out_ctl;                        /*!< Offset 0x0FC  */
+    volatile uint32_t OUT_CTL;                        /*!< Offset 0x0FC  */
 } DE_BLD_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief DE_VI
@@ -1547,19 +1545,19 @@ typedef struct DE_VI_Type
 {
     struct
     {
-        volatile uint32_t attr;                       /*!< Offset 0x000  */
-        volatile uint32_t size;                       /*!< Offset 0x004  */
-        volatile uint32_t coord;                      /*!< Offset 0x008  */
-        volatile uint32_t pitch [0x003];              /*!< Offset 0x00C  */
-        volatile uint32_t top_laddr [0x003];          /*!< Offset 0x018  */
-        volatile uint32_t bot_laddr [0x003];          /*!< Offset 0x024  */
-    } cfg [0x004];                                    /*!< Offset 0x000  */
-    volatile uint32_t fcolor [0x004];                 /*!< Offset 0x0C0  */
-    volatile uint32_t top_haddr [0x003];              /*!< Offset 0x0D0  */
-    volatile uint32_t bot_haddr [0x003];              /*!< Offset 0x0DC  */
-    volatile uint32_t ovl_size [0x002];               /*!< Offset 0x0E8  */
-    volatile uint32_t hori [0x002];                   /*!< Offset 0x0F0  */
-    volatile uint32_t vert [0x002];                   /*!< Offset 0x0F8  */
+        volatile uint32_t ATTR;                       /*!< Offset 0x000  */
+        volatile uint32_t SIZE;                       /*!< Offset 0x004  */
+        volatile uint32_t COORD;                      /*!< Offset 0x008  */
+        volatile uint32_t PITCH [0x003];              /*!< Offset 0x00C  */
+        volatile uint32_t TOP_LADDR [0x003];          /*!< Offset 0x018  */
+        volatile uint32_t BOT_LADDR [0x003];          /*!< Offset 0x024  */
+    } CFG [0x004];                                    /*!< Offset 0x000  */
+    volatile uint32_t FCOLOR [0x004];                 /*!< Offset 0x0C0  */
+    volatile uint32_t TOP_HADDR [0x003];              /*!< Offset 0x0D0  */
+    volatile uint32_t BOT_HADDR [0x003];              /*!< Offset 0x0DC  */
+    volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8  */
+    volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0  */
+    volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8  */
 } DE_VI_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief DE_UI
@@ -1569,18 +1567,18 @@ typedef struct DE_UI_Type
 {
     struct
     {
-        volatile uint32_t attr;                       /*!< Offset 0x000  */
-        volatile uint32_t size;                       /*!< Offset 0x004  */
-        volatile uint32_t coord;                      /*!< Offset 0x008  */
-        volatile uint32_t pitch;                      /*!< Offset 0x00C  */
-        volatile uint32_t top_laddr;                  /*!< Offset 0x010  */
-        volatile uint32_t bot_laddr;                  /*!< Offset 0x014  */
-        volatile uint32_t fcolor;                     /*!< Offset 0x018  */
+        volatile uint32_t ATTR;                       /*!< Offset 0x000  */
+        volatile uint32_t SIZE;                       /*!< Offset 0x004  */
+        volatile uint32_t COORD;                      /*!< Offset 0x008  */
+        volatile uint32_t PITCH;                      /*!< Offset 0x00C  */
+        volatile uint32_t TOP_LADDR;                  /*!< Offset 0x010  */
+        volatile uint32_t BOT_LADDR;                  /*!< Offset 0x014  */
+        volatile uint32_t FCOLOR;                     /*!< Offset 0x018  */
                  uint32_t reserved_0x01C;
-    } cfg [0x004];                                    /*!< Offset 0x000  */
-    volatile uint32_t top_haddr;                      /*!< Offset 0x080  */
-    volatile uint32_t bot_haddr;                      /*!< Offset 0x084  */
-    volatile uint32_t ovl_size;                       /*!< Offset 0x088  */
+    } CFG [0x004];                                    /*!< Offset 0x000  */
+    volatile uint32_t TOP_HADDR;                      /*!< Offset 0x080  */
+    volatile uint32_t BOT_HADDR;                      /*!< Offset 0x084  */
+    volatile uint32_t OVL_SIZE;                       /*!< Offset 0x088  */
 } DE_UI_TypeDef; /* size of structure = 0x08C */
 /*
  * @brief G2D_TOP
@@ -2692,8 +2690,6 @@ typedef struct MCTL_PHY_Type
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
-#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2  register set access pointer */
-#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3  register set access pointer */
 #define DI ((DI_TypeDef *) DI_BASE)                   /*!< DI De-Interlacer register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler register set access pointer */

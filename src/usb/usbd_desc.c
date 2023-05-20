@@ -3000,9 +3000,8 @@ static unsigned CDCACM_ACMFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsi
 	return length;
 }
 
-/* Endpoint 3 Descriptor */
-// Endpoint Descriptor 86 6 In, Interrupt
-static unsigned CDCACM_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
+/* Notification Endpoint Descriptor */
+static unsigned CDCACM_Control_EP(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
 {
 	const uint_fast8_t length = 7;
 	ASSERT(maxsize >= length);
@@ -3023,9 +3022,8 @@ static unsigned CDCACM_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 	return length;
 }
 
-/*Endpoint 2 OUT Descriptor*/
-// Endpoint Descriptor 03 3 Out, Bulk, 64 bytes
-static unsigned CDCACM_fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
+/* Data Out Endpoint Descriptor*/
+static unsigned CDCACM_Data_EP_OUT(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
 {
 	const uint_fast8_t length = 7;
 	ASSERT(maxsize >= length);
@@ -3046,9 +3044,8 @@ static unsigned CDCACM_fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 	return length;
 }
 
-/*Endpoint 2 IN Descriptor*/
-// Endpoint Descriptor 84 4 In, Bulk, 64 bytes
-static unsigned CDCACM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
+/* Data In Endpoint Descriptor*/
+static unsigned CDCACM_Data_EP_IN(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
 {
 	const uint_fast8_t length = 7;
 	ASSERT(maxsize >= length);
@@ -3083,11 +3080,11 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += CDCACM_CallManagementDesc(fill, p + n, maxsize - n, offset);	/* Call Managment Functional Descriptor*/
 	n += CDCACM_ACMFunctionalDesc(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
 	n += CDC_UnionFunctionalDesc_a(fill, p + n, maxsize - n, offset);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
-	n += CDCACM_fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(intnep));	/* Endpoint Descriptor 86 6 In, Interrupt */
+	n += CDCACM_Control_EP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(intnep));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
 	n += CDCACM_InterfaceDescDataIf_a(fill, p + n, maxsize - n, 0x00, 2, offset);	/* INTERFACE_CDC_DATA Data class interface descriptor */
-	n += CDCACM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(outnep));	/* Endpoint Descriptor USBD_EP_CDCACM_OUT Out, Bulk, 64 bytes */
-	n += CDCACM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(inep));	/* Endpoint Descriptor USBD_EP_CDCACM_IN In, Bulk, 64 bytes */
+	n += CDCACM_Data_EP_OUT(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(outnep));	/* Endpoint Descriptor USBD_EP_CDCACM_OUT Out, Bulk, 64 bytes */
+	n += CDCACM_Data_EP_IN(fill, p + n, maxsize - n, USB_ENDPOINT_IN(inep));	/* Endpoint Descriptor USBD_EP_CDCACM_IN In, Bulk, 64 bytes */
 
 	return n;
 }
@@ -5371,13 +5368,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #if WIHSPIDFHW || WIHSPIDFSW
 #if defined (BOOTLOADER_APPSIZE)
 	{
-		extern unsigned char mf_id;	// Manufacturer ID
-		extern unsigned char mf_devid1;	// device ID (part 1)
-		extern unsigned char mf_devid2;	// device ID (part 2)
-		extern unsigned char mf_dlen;	// Extended Device Information String Length
-
-		spidf_initialize();
-		int status = testchipDATAFLASH();
+		const int status = testchipDATAFLASH();
 
 		static const char strFlashDesc_4 [] = "@SPI Flash APPLICATION: %s/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
@@ -5389,6 +5380,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 			(unsigned) (BOOTLOADER_APPSIZE / sectorsizeDATAFLASH()),
 			(unsigned) (sectorsizeDATAFLASH() / 1024)
 			);
+
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
 		StringDescrTbl [id].size = partlen;
@@ -5398,20 +5390,19 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* defined (BOOTLOADER_APPSIZE) */
 #if BOOTLOADER_SELFSIZE
 	{
-
-		spidf_initialize();
-		int status = testchipDATAFLASH();
 		// Re-write bootloader parameters
 		static const char strFlashDesc_4 [] = "@SPI Flash BOOTLOADER: %s/0x%08lx/%02u*%03uKg";
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_1;
 		char b [128];
+		const int status = testchipDATAFLASH();
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
 			status ? USBD_DFU_FLASHNAME : nameDATAFLASH,
 			(unsigned long) BOOTLOADER_SELFBASE,
 			(unsigned) (BOOTLOADER_SELFSIZE / sectorsizeDATAFLASH()),
 			(unsigned) (sectorsizeDATAFLASH() / 1024)
 			);
+
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
 		StringDescrTbl [id].size = partlen;
@@ -5513,7 +5504,8 @@ void board_set_usb_ft8cn(uint_fast8_t v)
 	if (usb_ft8cn != n)
 	{
 		usb_ft8cn = n;
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 	#if WITHUSBDEV_HSDESC
 		usbd_descriptors_initialize(1);
 
@@ -5521,7 +5513,7 @@ void board_set_usb_ft8cn(uint_fast8_t v)
 		usbd_descriptors_initialize(0);
 
 	#endif /* WITHUSBDEV_HSDESC */
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 }
 

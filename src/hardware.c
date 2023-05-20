@@ -2555,22 +2555,50 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 // Cacheable memory attributes, without TEX remap
 // DDI0406C_d_armv7ar_arm.pdf
 // Table B3-11 Inner and Outer cache attribute encoding
-#define ATTR_AA_WBCACHE 0x01	// Inner attribute - Write-Back, Write-Allocate
-#define ATTR_BB_WBCACHE 0x01	// Outer attribute - Write-Back, Write-Allocate
-#define TEXval_WBCACHE		(0x04 | (ATTR_BB_WBCACHE))
-#define Cval_WBCACHE		(((ATTR_AA_WBCACHE) & 0x02) != 0)
-#define Bval_WBCACHE		(((ATTR_AA_WBCACHE) & 0x01) != 0)
+
+#define MKATTR_TEXval(cacheattr) (0x04u | ((cacheattr) & 0x03u))
+#define MKATTR_Cval(cacheattr) (!! ((cacheattr) & 0x02u))
+#define MKATTR_Bval(cacheattr) (!! ((cacheattr) & 0x01u))
+
+// Also see __set_TTBR0 parameter
+#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
+#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
+#define CACHEATTR_WT_T_CACHE 0x02	// Write-Through, no Write-Allocate
+#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
+
+/* атрибуты для разных областей памяти (при TEX[2]=1 способе задания) */
+#define RAM_ATTRS CACHEATTR_WB_WA_CACHE
+//#define RAM_ATTRS CACHEATTR_WB_NWA_CACHE
+#define DEVICE_ATTRS CACHEATTR_NOCACHE
+
+#define TEXval_RAM		MKATTR_TEXval(RAM_ATTRS)
+#define Cval_RAM		MKATTR_Cval(RAM_ATTRS)
+#define Bval_RAM		MKATTR_Bval(RAM_ATTRS)
+
 #if WITHSMPSYSTEM
-	#define SHAREDval_WBCACHE 1		// required for ldrex.. and strex.. functionality
+	#define SHAREDval_RAM 1		// required for ldrex.. and strex.. functionality
 #else /* WITHSMPSYSTEM */
-	#define SHAREDval_WBCACHE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+	#define SHAREDval_RAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
 #endif /* WITHSMPSYSTEM */
 
-/* Shareable Device */
-#define TEXval_DEVICE       0x00
-#define Cval_DEVICE         0
-#define Bval_DEVICE         1
-#define SHAREDval_DEVICE 	0
+#if 1
+	/* Shareable Device */
+	#define TEXval_DEVICE       0x00
+	#define Cval_DEVICE         0
+	#define Bval_DEVICE         1
+	#define SHAREDval_DEVICE 	0
+#else
+	/* Shareable Device */
+	#define TEXval_DEVICE	MKATTR_TEXval(DEVICE_ATTRS)
+	#define Cval_DEVICE		MKATTR_Cval(DEVICE_ATTRS)
+	#define Bval_DEVICE		MKATTR_Bval(DEVICE_ATTRS)
+
+	#if WITHSMPSYSTEM
+		#define SHAREDval_DEVICE 1		// required for ldrex.. and strex.. functionality
+	#else /* WITHSMPSYSTEM */
+		#define SHAREDval_DEVICE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+	#endif /* WITHSMPSYSTEM */
+#endif
 
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
@@ -2591,7 +2619,7 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 		0 \
 	)
 
-#define	TTB_PARA_CACHED(ro, xn) TTB_PARA(TEXval_WBCACHE, Bval_WBCACHE, Cval_WBCACHE, DOMAINval, SHAREDval_WBCACHE, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_CACHED(ro, xn) TTB_PARA(TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 #define	TTB_PARA_NO_ACCESS 		0
 
@@ -2647,39 +2675,13 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 #elif CPUSTYLE_STM32MP1
 
 	// Все сравнения должны быть не точнее 1 MB
-
-	if (a < 0x10000000)			// BOOT
-		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
-
 	if (a >= 0x20000000 && a < 0x30000000)			// SYSRAM
 		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	if (a >= 0x40000000 && a < 0x60000000)			//  peripherials 1, peripherials 2
-		return addrbase | TTB_PARA_DEVICE;
-
-	if (a >= 0x60000000 && a < 0x70000000)			//  FMC NOR
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	if (a >= 0x70000000 && a < 0xA0000000)			//  QUADSPI, FMC NAND, ...
-		return addrbase | TTB_PARA_CACHED(ro || 1, 0);
-
-	if (a >= 0xA0000000 && a < 0xC0000000)			//  GIC
-		return addrbase | TTB_PARA_DEVICE;
-#if 1
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0xC0000000)							// DDR memory
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-#else
-
-	if (a >= 0xC0000000 && a < 0xE0000000)			// DDR memory
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	if (a >= 0xE0000000)							//  DEBUG
-		return addrbase | TTB_PARA_DEVICE;
-
-#endif
-
+	return addrbase | TTB_PARA_DEVICE;
 	return addrbase | TTB_PARA_NO_ACCESS;
 
 #elif CPUSTYLE_XC7Z
@@ -2830,7 +2832,7 @@ sysinit_ttbr_initialize(void)
 	    ; 2     - IMP     0x0  (Implementation Defined)
 	    ; 1     - S       0x0  (Non-shared)
 	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
-	__set_TTBR0((uintptr_t) tlbbase | 0x48);	// TTBR0
+	__set_TTBR0((uintptr_t) tlbbase | 0x48 | (1u << 5) | (1u << 1));	// TTBR0
 	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
 	  __ISB();
 
@@ -3006,6 +3008,46 @@ sysinit_debug_initialize(void)
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */
+#if CPUSTYLE_STM32MP1
+
+	//RCC->DBGCFGR |= RCC_DBGCFGR_TRACECKEN_Msk;
+	RCC->DBGCFGR |= RCC_DBGCFGR_DBGCKEN_Msk;
+
+	RCC->DBGCFGR = (RCC->DBGCFGR & ~ (RCC_DBGCFGR_TRACEDIV_Msk)) |
+			RCC_DBGCFGR_TRACEDIV_2;
+
+	RCC->DBGCFGR |= RCC_DBGCFGR_DBGRST_Msk;
+	RCC->DBGCFGR &= ~ RCC_DBGCFGR_DBGRST_Msk;
+
+	//printhex32(DBGMCU_BASE, DBGMCU, sizeof * DBGMCU);
+	DBGMCU->CR = 0;
+	DBGMCU->APB4FZ1 = 0;	/*!< Debug MCU APB4FZ1 freeze register CPU1 */
+	DBGMCU->APB4FZ2 = 0;	/*!< Debug MCU APB4FZ2 freeze register CPU2 */
+	DBGMCU->APB1FZ1 = 0;	/*!< Debug MCU APB1FZ1 freeze register CPU1 */
+	DBGMCU->APB1FZ2 = 0;	/*!< Debug MCU APB1FZ2 freeze register CPU2 */
+	DBGMCU->APB2FZ1 = 0;	/*!< Debug MCU APB2FZ1 freeze register CPU1 */
+	DBGMCU->APB2FZ2 = 0;	/*!< Debug MCU APB2FZ2 freeze register CPU2 */
+	DBGMCU->APB3FZ1 = 0;	/*!< Debug MCU APB3FZ1 freeze register CPU1 */
+	DBGMCU->APB3FZ2 = 0;	/*!< Debug MCU APB3FZ2 freeze register CPU2 */
+	DBGMCU->APB5FZ1 = 0;	/*!< Debug MCU APB5FZ1 freeze register CPU1 */
+	DBGMCU->APB5FZ2 = 0;	/*!< Debug MCU APB5FZ2 freeze register CPU2 */
+
+	/*
+	 * Sleep bit only affects the Cortex®-M4, the Cortex®-A7 debug clock continues to run even when the core clocks are stopped (PxSTOP mode).
+	 */
+
+	DBGMCU->CR =
+		DBGMCU_CR_DBG_SLEEP_Msk |
+		DBGMCU_CR_DBG_STOP_Msk |
+		DBGMCU_CR_DBG_STANDBY_Msk |
+		0;
+
+
+	//printhex32(DBGMCU_BASE, DBGMCU, sizeof * DBGMCU);
+
+	//RCC->DBGCFGR |= RCC_DBGCFGR_DBGRST_Msk;
+
+#endif /* CPUSTYLE_STM32MP1 */
 }
 
 static void FLASHMEMINITFUNC
@@ -4156,7 +4198,8 @@ static uint8_t CLKSYS_Main_ClockSource_Select( CLK_SCLKSEL_t clockSource )
 	auto void CCPWrite(volatile uint8_t * address, uint8_t value)
 	{
 		volatile uint8_t * const tmpAddr = address;
-		//system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 	#ifdef RAMPZ
 		RAMPZ = 0;
 	#endif
@@ -4170,7 +4213,7 @@ static uint8_t CLKSYS_Main_ClockSource_Select( CLK_SCLKSEL_t clockSource )
 			: "r16", "r30", "r31"
 			);
 
-		//system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 
 	const uint8_t clkCtrl = (CLK.CTRL & ~CLK_SCLKSEL_gm) | clockSource;
@@ -4320,7 +4363,7 @@ void cpu_initdone(void)
 
 #endif /* WITHISBOOTLOADER */
 
-	spidf_hangoff();	// Отключить процессор от SERIAL FLASH
+	hangoffDATAFLASH();	// Отключить процессор от SERIAL FLASH
 }
 
 void arm_hardware_reset(void)

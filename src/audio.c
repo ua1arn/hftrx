@@ -3619,7 +3619,7 @@ static void agc_reset(
 	FLOAT_t m1;
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	st->agcfastcap = m0;
 	st->agcslowcap = m0;
 	LowerIrql(oldIrql);
@@ -3630,7 +3630,7 @@ static void agc_reset(
 		local_delay_ms(1);
 
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		const FLOAT_t v = agc_result_slow(st);
 		LowerIrql(oldIrql);
 
@@ -3645,7 +3645,7 @@ static void agc_reset(
 		local_delay_ms(1);
 
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		const FLOAT_t v = agc_result_slow(st);
 		LowerIrql(oldIrql);
 
@@ -6252,10 +6252,11 @@ void prog_dsplreg_update(void)
 {	
 	uint_fast8_t f;
 #if WITHSPISLAVE
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = flag_dsp1reg;
 	flag_dsp1reg = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 #else /* WITHSPISLAVE */
 	f = flag_dsp1reg;
 	flag_dsp1reg = 0;
@@ -6270,10 +6271,11 @@ void prog_fltlreg_update(void)
 {	
 	uint_fast8_t f;
 #if WITHSPISLAVE
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = flag_flt1reg;
 	flag_flt1reg = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 #else /* WITHSPISLAVE */
 	f = flag_flt1reg;
 	flag_flt1reg = 0;
@@ -6289,10 +6291,11 @@ void prog_codecreg_update(void)		// услолвное обновление ре
 {
 	uint_fast8_t f;
 #if WITHSPISLAVE
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = flag_codec1reg;
 	flag_codec1reg = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 #else /* WITHSPISLAVE */
 	f = flag_codec1reg;
 	flag_codec1reg = 0;

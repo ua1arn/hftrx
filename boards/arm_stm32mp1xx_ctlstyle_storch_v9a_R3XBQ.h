@@ -55,10 +55,10 @@
 				#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 				#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 				#define PLL2DIVR	1	// DDR clock divider = 528 MHz
-				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
-				//#include "src/sdram/stm32mp15-mx_8G.dtsi"	// 512k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_1G.dtsi"	// 64k*16
+				#define BOARD_DDR_CONFIG "stm32mp15-mx_2G.dtsi"	// 128k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_4G.dtsi"		// 256k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_8G.dtsi"	// 512k*16
 			#elif 0
 				// PLL2_1600
 				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
@@ -66,10 +66,10 @@
 				#define PLL2DIVP	3	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 				#define PLL2DIVQ	2	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 				#define PLL2DIVR	2	// DDR clock divider = 528 MHz
-				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
-				//#include "src/sdram/stm32mp15-mx_8G.dtsi"	// 512k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_1G.dtsi"	// 64k*16
+				#define BOARD_DDR_CONFIG "stm32mp15-mx_2G.dtsi"	// 128k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_4G.dtsi"		// 256k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_8G.dtsi"	// 512k*16
 			#else
 				// PLL2_1600
 				/* bad boards DDR3 clock = 300 MHz */
@@ -80,10 +80,10 @@
 				#define PLL2DIVR	2	// DDR clock divider = 300 MHz
 				// less or equal 300 MHz
 				// DDR3 timings only 6-6-6 (in  according AN5168
-				//#include "src/sdram/stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
+				#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
 			#endif
 
 			// PLL3_800
@@ -132,10 +132,10 @@
 				#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
 				#define PLL2DIVQ	1	// GPU clock divider
 				#define PLL2DIVR	1	// DDR clock divider
-				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
-				//#include "src/sdram/stm32mp15-mx_8G.dtsi"	// 512k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_1G.dtsi"	// 64k*16
+				#define BOARD_DDR_CONFIG "stm32mp15-mx_2G.dtsi"	// 128k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_4G.dtsi"		// 256k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_8G.dtsi"	// 512k*16
 			#else
 				// PLL2_1600
 				#define PLL2DIVM	5	// ref2_ck = 12.8 MHz (8..16 MHz valid)
@@ -145,10 +145,10 @@
 				#define PLL2DIVR	3//1	// DDR clock divider
 				// less or equal 300 MHz
 				// DDR3 timings only 6-6-6 (in  according AN5168
-				//#include "src/sdram/stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
+				#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
 			#endif
 
 			// PLL3_800
@@ -533,6 +533,8 @@
 		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET7	1
+	#else
+		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 

@@ -4459,13 +4459,12 @@ static uint_fast8_t menuset; 	/* номер комплекта функций н
 static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
 static uint_fast8_t sleepflag;	/* не-0: выключить дисплей и звук. */
 
-static uint_fast8_t amenuset(void)
+uint_fast8_t amenuset(void)
 {
 	if ((dimmflag || sleepflag || dimmmode))
 		return display_getpagesleep();
 	return menuset;
 }
-
 
 uint_fast8_t habradio_get_classa(void)
 {
@@ -11445,6 +11444,7 @@ updateboardZZZ(
 				board_set_squelch(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 			#endif /* WITHIF4DSP */
+				board_set_nb_enable(pathi, 0);	/* Управлением включением RX Noise Blanker */
 			} /* tx == 0 */
 
 		#if WITHIF4DSP
@@ -11950,7 +11950,7 @@ void uif_key_sendcw(const char * msg)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& lockcwmsg);
 	if (usersend != 0 && * usersend != '\0')
 		usersend = NULL;
@@ -13531,9 +13531,10 @@ display_refreshperformed_wpm(void)
 {
 	const uint_fast8_t n = NTICKS(100);	// 100 ms - обновление с частотой 10 герц
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	counterupdatewpm = n;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 // Проверка разрешения обновления дисплея (индикация напряжения/тока).
@@ -13549,9 +13550,10 @@ display_refreshperformed_voltage(void)
 {
 	const uint_fast16_t n = NTICKS(500);	/* 1/2 секунды */
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	counterupdatedvoltage = n;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 
@@ -13568,9 +13570,10 @@ display_refreshperformed_freqs(void)
 {
 	const uint_fast8_t n = NTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	counterupdatedfreqs = n;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 // Проверка разрешения обновления дисплея (индикация режимов, приём/передача).
@@ -13588,9 +13591,10 @@ display_refreshperformed_modes(void)
 	return;	// TODO: пока этот таймер не работает
 	const uint_fast8_t n = NTICKS(1000 / displaymodesfps);	// 50 ms - обновление с частотой 20 герц
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	counterupdatedmodes = n;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 
@@ -13648,9 +13652,10 @@ display_refreshperformed_bars(void)
 {
 	const uint_fast8_t n = NTICKS(1000 / gdisplaybarsfps);	// 50 ms - обновление с частотой 20 герц
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	counterupdatebars = n;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 /* обновление динамической части отображения - S-метра или SWR-метра и volt-метра. */
@@ -13936,9 +13941,10 @@ cat_answer_ready(void)
 {
 #if WITHUSBHW && WITHUSBCDCACM
 	uint_fast8_t f;
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = usbd_cdc_ready();
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 	return f;
 #else /* WITHUSBHW && WITHUSBCDCACM */
 	return 1;
@@ -13951,26 +13957,27 @@ cat_answervariable(const char * p, uint_fast8_t len)
 	//PRINTF(PSTR("cat_answervariable: '%*.*s'"), len, len, p);
 
 #if WITHUSBHW && WITHUSBCDCACM
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
 		// Сейчас ещё передается сообщение - новое игнорируем.
 		// Добавлено для поддержки отладки при работающем CAT
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		return;
 	}
 	usbd_cdc_send(p, len);
 	catstateout = CATSTATEO_SENDREADY;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 	return;
 #endif /* WITHUSBHW && WITHUSBCDCACM */
 
-	system_disableIRQ();
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
 		// Сейчас ещё передается сообщение - новое игнорируем.
 		// Добавлено для поддержки отладки при работающем CAT
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		return;
 	}
 	if ((catsendcount = len) != 0)
@@ -13984,7 +13991,7 @@ cat_answervariable(const char * p, uint_fast8_t len)
 		//catstateout = CATSTATEO_SENDREADY;
 		HARDWARE_CAT_ENABLETX(0);
 	}
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 
@@ -14919,9 +14926,10 @@ static void badcommandanswer(uint_fast8_t arg)
 static void 
 cat_reset_ptt(void)	
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	cattunemode = catstatetx = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 static uint_fast8_t
@@ -14946,9 +14954,10 @@ cat_get_ptt(void)
 {
 	if (catprocenable != 0)
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		const uint_fast8_t r = cat_get_signal(catsigptt);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 
 		return (catstatetx != 0) || r;	// catstatetx - это по текстовым командам
 	}
@@ -14965,9 +14974,10 @@ uint_fast8_t cat_get_keydown(void)
 #if WITHELKEY
 	if (catprocenable != 0)
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		const uint_fast8_t r = cat_get_signal(catsigkey);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 
 		return r;
 	}
@@ -15005,12 +15015,13 @@ static void processcat_enable(uint_fast8_t enable)
 	catprocenable = enable;
 	if (! catprocenable)
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		HARDWARE_CAT_ENABLERX(0);
 		HARDWARE_CAT_ENABLETX(0);
 		catstatein = CATSTATE_HALTED;
 		catstateout = CATSTATEO_HALTED;
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 	else
 	{
@@ -15026,13 +15037,14 @@ static void processcat_enable(uint_fast8_t enable)
 #endif /* WITHTX */
 
 		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		catstatetxdata = 0;
 		cattunemode = catstatetx = 0;
 		HARDWARE_CAT_ENABLERX(1);
 		catstatein = CATSTATE_WAITCOMMAND1;
 		catstateout = CATSTATEO_SENDREADY;
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 }
 
@@ -15106,16 +15118,17 @@ cat_answer_forming(void)
 	{
 		const uint_fast8_t i = ilast;
 		ilast = calc_next(i, 0, (sizeof cat_answer_map / sizeof cat_answer_map [0]) - 1);
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		if (cat_answer_map [i] != 0)
 		{
 			const uint_fast8_t answerparam = cat_answerparam_map [i];
 			cat_answer_map [i] = 0;
-			system_enableIRQ();
+			LowerIrql(oldIrql);
 			(* catanswers [i])(answerparam);
 			return;
 		}
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		if (ilast == original)
 			break;
 	}
@@ -16025,7 +16038,7 @@ static char beacon_getnextcw(void)
 #elif 1
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& lockcwmsg);
 	if (usersend != NULL && * usersend != '\0')
 	{
@@ -16225,7 +16238,7 @@ peek_uintptr(volatile const uint8_t * p)
 
 void dpclock_initialize(dpclock_t * lp)
 {
-	IRQLSPINLOCK_INITIALIZE(& lp->lock, IRQL_ONLY_OVERREALTIME);
+	IRQLSPINLOCK_INITIALIZE(& lp->lock, IRQL_REALTIME);
 	lp->flag = 0;
 }
 /*
@@ -16233,7 +16246,7 @@ void dpclock_enter(dpclock_t * lp)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_OVERREALTIME, & oldIrql);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& lp->lock);
 
 	LCLSPIN_UNLOCK(& lp->lock);
@@ -18779,9 +18792,10 @@ process_key_menuset_common(uint_fast8_t kbch)
 
 #if WITHLFM
 	case KBD_CODE_DWATCHTOGGLE:
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		lfm_run();
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		return 1;	/* клавиша уже обработана */
 #elif WITHUSEDUALWATCH
 	case KBD_CODE_DWATCHHOLD:
@@ -19789,7 +19803,8 @@ dspcontrol_mainloop(void)
 	// Тест производительности.
 	// при запрещённых прерываниях смотрим выхолную частоту на выводе процессора
 	// и сравниваем с тем, что стало при разрешённых прерываниях.
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	for (;;)
 	{
 		local_delay_ms(50);
@@ -20000,9 +20015,10 @@ hamradio_main_step(void)
 					board_rtc_cached_gettime(& hour, & minute, & seconds);
 					if (islfmstart(minute * 60 + seconds))
 					{
-						system_disableIRQ();
+						IRQL_t oldIrql;
+						RiseIrql(IRQL_SYSTEM, & oldIrql);
 						lfm_run();
-						system_enableIRQ();
+						LowerIrql(oldIrql);
 					}
 
 				/* обновить настройку полосовых фильтров */
@@ -21560,7 +21576,7 @@ hamradio_mainloop(void)
 	{
 		hamradio_main_step();
 #if LINUX_SUBSYSTEM
-		usleep(100);
+		usleep(1000);
 #endif /* LINUX_SUBSYSTEM */
 	}
 }

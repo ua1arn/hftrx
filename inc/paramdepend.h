@@ -972,7 +972,22 @@ extern "C" {
 
 #endif
 
-#if defined (__NVIC_PRIO_BITS)
+#if LINUX_SUBSYSTEM
+
+	/* Linux targets: No any hardware IRQ control */
+
+	typedef uint_fast32_t IRQL_t;
+
+	#define IRQL_SYSTEM 			0
+	#define IRQL_REALTIME 			0
+	#define IRQL_OVERREALTIME 		0
+
+	#define global_enableIRQ() do {  } while (0)
+	#define global_disableIRQ() do {  } while (0)
+
+#elif (__CORTEX_M != 0)
+
+	/* Cortex-M tergets */
 
 	typedef uint_fast32_t IRQL_t;
 
@@ -991,20 +1006,15 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-		#define IRQL_ONLY_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-		#define IRQL_ONLY_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-
-		#define system_enableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); } while (0)	// разрешены все
-		#define system_disableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); } while (0) // разрешены только realtime
+		#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+		#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+		#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 		
 	#else /* WITHNESTEDINTERRUPTS */
 
 		#define ARM_OVERREALTIME_PRIORITY	(0)
 		#define ARM_REALTIME_PRIORITY	(0)
 		#define ARM_SYSTEM_PRIORITY	(0)
-
-		#define system_enableIRQ() do { __enable_irq(); } while (0)
-		#define system_disableIRQ() do { __disable_irq(); } while (0)
 
 	#endif /* WITHNESTEDINTERRUPTS */
 
@@ -1023,8 +1033,6 @@ extern "C" {
 #elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
 
 	typedef uint_fast8_t IRQL_t;
-	#define system_enableIRQ() do { sei(); } while (0)
-	#define system_disableIRQ() do { cli(); } while (0)
 
 	#define global_enableIRQ() do { sei(); } while (0)
 	#define global_disableIRQ() do { cli(); } while (0)
@@ -1049,9 +1057,9 @@ extern "C" {
 
 		#define ARM_CA9_ENCODE_PRIORITY(v) ((v) << (GIC_GetBinaryPoint() + 1))
 
-		#define IRQL_ONLY_REALTIME ARM_CA9_ENCODE_PRIORITY(PRI_SYS)	// value for GIC_SetInterfacePriorityMask
-		#define IRQL_ONLY_OVERREALTIME ARM_CA9_ENCODE_PRIORITY(PRI_RT)	// value for GIC_SetInterfacePriorityMask
-		#define IRQL_ONLY_IPC ARM_CA9_ENCODE_PRIORITY(PRI_OVRT)	// value for GIC_SetInterfacePriorityMask
+		#define IRQL_SYSTEM ARM_CA9_ENCODE_PRIORITY(PRI_SYS)	// value for GIC_SetInterfacePriorityMask
+		#define IRQL_REALTIME ARM_CA9_ENCODE_PRIORITY(PRI_RT)	// value for GIC_SetInterfacePriorityMask
+		#define IRQL_OVERREALTIME ARM_CA9_ENCODE_PRIORITY(PRI_OVRT)	// value for GIC_SetInterfacePriorityMask
 		/*
 			GICC_PMR == INTC.ICCPMR
 
@@ -1090,30 +1098,12 @@ extern "C" {
 
 		#if defined(__aarch64__)
 
-			// разрешены все
-			#define system_enableIRQ() do { \
-				} while (0)
-			// разрешены только realtime
-			#define system_disableIRQ() do { \
-				} while (0)
-
 			#define global_enableIRQ() do { \
 				} while (0)
 			#define global_disableIRQ() do { \
 			} while (0)
 
 		#else /* defined(__aarch64__) */
-
-			// разрешены все
-			#define system_enableIRQ() do { \
-					/*ASSERT(RUNNING_PRI == 0x1F); */\
-					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED); \
-				} while (0)
-			// разрешены только realtime
-			#define system_disableIRQ() do { \
-					/*ASSERT(RUNNING_PRI == 0x1F); */\
-					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \
-				} while (0)
 
 			#define global_enableIRQ() do { \
 				__enable_irq(); \
@@ -1131,13 +1121,6 @@ extern "C" {
 
 		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
 		#define BOARD_SGI_PRIO	0
-
-		#define system_enableIRQ() do { \
-			__enable_irq(); \
-			} while (0)
-		#define system_disableIRQ() do { \
-			__disable_irq(); \
-		} while (0)
 
 		#define global_enableIRQ() do { \
 			__enable_irq(); \
@@ -1159,11 +1142,6 @@ extern "C" {
 		#define ARM_SYSTEM_PRIORITY			1	/* таймеры, USB */
 		#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
-		#define system_enableIRQ() do { PLIC->PLIC_MTH_REG = ARM_USER_PRIORITY; } while (0)
-		#define system_disableIRQ() do { PLIC->PLIC_MTH_REG = ARM_SYSTEM_PRIORITY; } while (0)
-
-		#define global_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
-		#define global_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK); } while (0)
 
 	#else /* WITHNESTEDINTERRUPTS */
 
@@ -1173,41 +1151,34 @@ extern "C" {
 		#define ARM_SYSTEM_PRIORITY			1
 		#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
-		#define system_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
-		#define system_disableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
-
-		#define global_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
-		#define global_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK); } while (0)
-
 	#endif /* WITHNESTEDINTERRUPTS */
 
-	#define IRQL_ONLY_REALTIME 			ARM_SYSTEM_PRIORITY
-	#define IRQL_ONLY_OVERREALTIME 		ARM_REALTIME_PRIORITY
-	#define IRQL_ONLY_IPC				ARM_OVERREALTIME_PRIORITY
+	#define global_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
+	#define global_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK); } while (0)
+
+	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
+	#define IRQL_REALTIME 		ARM_REALTIME_PRIORITY
+	#define IRQL_OVERREALTIME				ARM_OVERREALTIME_PRIORITY
 
 #elif CPUSTYLE_UBLAZE
 
 	typedef uint_fast32_t IRQL_t;
-
-	#define system_enableIRQ() do { } while (0)
-	#define system_disableIRQ() do { } while (0)
 
 	#define global_enableIRQ() do { } while (0)
 	#define global_disableIRQ() do { } while (0)
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
+	#warning Unsupported target IRQ control
+
 	typedef uint_fast32_t IRQL_t;
 
-	#define IRQL_ONLY_REALTIME 			0
-	#define IRQL_ONLY_OVERREALTIME 		0
-	#define IRQL_ONLY_IPC 		0
+	#define IRQL_SYSTEM 			0
+	#define IRQL_REALTIME 		0
+	#define IRQL_OVERREALTIME 		0
 
-	void (system_disableIRQ)(void);
-	void (system_enableIRQ)(void);
-
-	#define global_enableIRQ() do { (system_enableIRQ)(); } while (0)
-	#define global_disableIRQ() do { (system_disableIRQ)(); } while (0)
+	#define global_enableIRQ() do {  } while (0)
+	#define global_disableIRQ() do {  } while (0)
 
 #endif /* CPUSTYLE_ARM_CM3 */
 

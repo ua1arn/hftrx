@@ -115,6 +115,7 @@ static uint_fast8_t		glob_xvrtr;
 static uint_fast8_t		glob_dacstraight;	// Требуется формирование кода для ЦАП в режиме беззнакового кода
 static uint_fast8_t		glob_dither;		/* управление зашумлением в LTC2208 */
 static uint_fast8_t		glob_adcrand;		/* управление рандомизацией выходных данных в LTC2208 */
+static uint_fast8_t		glob_nb_en [2];		/* Noise Blanker RXn enable */
 static uint_fast8_t		glob_firprofile [2];	/* */
 static uint_fast8_t 	glob_reset_n;
 static uint_fast8_t 	glob_i2s_enable;	// разрешение генерации тактовой частоты для I2S в FPGA
@@ -5627,6 +5628,21 @@ board_set_i2s_enable(uint_fast8_t v)	/* разрешение генерации 
 	}
 }
 
+/* Управлением включением RX Noise Blanker */
+void
+board_set_nb_enable(
+	uint_fast8_t pathi,
+	uint_fast8_t v
+	)
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_nb_en [pathi] != n)
+	{
+		glob_nb_en [pathi] = n;
+		board_ctlreg1changed();
+	}
+}
+
 /* Для выбора диапазона - частота с дискретностью 100 кГц */
 void
 board_set_bcdfreq100k(uint_fast16_t bcdfreq)
@@ -7442,6 +7458,10 @@ void board_initialize(void)
 
 	board_gpio_init();			/* инициализация на вывод битов PIO процессора, если некоторые биты управляются напрямую без SPI */
 
+#if WIHSPIDFHW || WIHSPIDFSW || WIHSPIDFOVERSPI
+	spidf_initialize();
+#endif /* WIHSPIDFHW || WIHSPIDFSW || WIHSPIDFOVERSPI */
+
 #if WITHFPGAWAIT_AS
 	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	board_fpga_loader_initialize();
@@ -7558,12 +7578,13 @@ static void board_rtc_initialize(void)
 
 	static ticker_t rtcticker;
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	board_rtc_cache_update(NULL);
 
 	ticker_initialize(& rtcticker, NTICKS(500), board_rtc_cache_update, NULL);
 	ticker_add(& rtcticker);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 #endif /* WITHRTCCACHED */
 }
@@ -7621,13 +7642,14 @@ void board_rtc_cached_getdate(
 {
 #if WITHRTCCACHED
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
 	* year = board_rtc_cached_year;
 	* month = board_rtc_cached_month;
 	* dayofmonth = board_rtc_cached_dayofmonth;
 
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 #else /* WITHRTCCACHED */
 	board_rtc_getdate(year, month, dayofmonth);
@@ -7642,13 +7664,14 @@ void board_rtc_cached_gettime(
 {
 #if WITHRTCCACHED
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
 	* hour = board_rtc_cached_hour;
 	* minute = board_rtc_cached_minute;
 	* seconds = board_rtc_cached_seconds;
 
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 #else /* WITHRTCCACHED */
 	board_rtc_gettime(hour, minute, seconds);
@@ -7666,7 +7689,8 @@ void board_rtc_cached_getdatetime(
 {
 #if WITHRTCCACHED
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
 	* year = board_rtc_cached_year;
 	* month = board_rtc_cached_month;
@@ -7675,7 +7699,7 @@ void board_rtc_cached_getdatetime(
 	* minute = board_rtc_cached_minute;
 	* seconds = board_rtc_cached_seconds;
 
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 
 #else /* WITHRTCCACHED */
 	board_rtc_getdatetime(year, month, dayofmonth, hour, minute, seconds);
@@ -8318,7 +8342,7 @@ board_calcs_setfreq(
 
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& gpreilock);
 	gprei [sndi] = prei;
 	gvalue [sndi] = value;
@@ -8357,7 +8381,7 @@ board_keybeep_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		LCLSPIN_UNLOCK(& gpreilock);
@@ -8377,7 +8401,7 @@ board_sidetone_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		LCLSPIN_UNLOCK(& gpreilock);
@@ -8401,7 +8425,7 @@ board_rgrbeep_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		LCLSPIN_UNLOCK(& gpreilock);
@@ -8477,7 +8501,7 @@ board_subtone_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		LCLSPIN_LOCK(& gpreilock);
 		board_sounds_resched();
 		LCLSPIN_UNLOCK(& gpreilock);
@@ -8494,7 +8518,7 @@ void board_subtone_enable_user(uint_fast8_t state)
 
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& gpreilock);
 	if (gstate [sndi] != v)
 	{
@@ -9546,7 +9570,8 @@ void hardware_cw_diagnostics_noirq(
 {
 	enum { DIT = 100, DASH = DIT * 3, PAUSE = DIT * 1, PAUSE3 = DIT * 3 };
 
-	//system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
 	board_beep_enable(1);
 	if (c1) local_delay_ms(DASH); else local_delay_ms(DIT);
@@ -9566,7 +9591,7 @@ void hardware_cw_diagnostics_noirq(
 
 	local_delay_ms(PAUSE3);
 
-	//system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 void hardware_cw_diagnostics(
@@ -9574,11 +9599,12 @@ void hardware_cw_diagnostics(
 	uint_fast8_t c2,
 	uint_fast8_t c3)
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
 	hardware_cw_diagnostics_noirq(c1, c2, c3);
 
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 

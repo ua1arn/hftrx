@@ -93,7 +93,8 @@ static LCLSPINLOCK_t lfmlock = LCLSPINLOCK_INIT;
 // Вызывается из обработчика PPS при совпадении времени начала.
 void lfm_run(void)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& lfmlock);
 
 	if (rlfm_isrunning == 0)
@@ -102,18 +103,19 @@ void lfm_run(void)
 	}
 
 	LCLSPIN_UNLOCK(& lfmlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 void lfm_disable(void)
 {
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& lfmlock);
 
 	rlfm_isrunning = 0;
 
 	LCLSPIN_UNLOCK(& lfmlock);
-	global_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 int iflfmactive(void)

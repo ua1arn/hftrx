@@ -4723,14 +4723,15 @@ WaitEvents(events_t e, int type)
 	unsigned long t;
 	for (t = 0; t < 100000000; ++ t)
 	{
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		if (sd_event_xx != 0 /*&& (sd_event_value & e) != 0 */)
 		{
 			sd_event_xx = 0;
-			system_enableIRQ();
+			LowerIrql(oldIrql);
 			return EV_SD_READY;
 		}
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 	PRINTF("WaitEvents: timeout\n");
 	return EV_SD_ERROR;

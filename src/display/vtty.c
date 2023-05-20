@@ -170,9 +170,10 @@ void display2_vtty(
 		vtty_t * const vt = & vtty0;
 		uint_fast8_t f;
 		uint_fast8_t c;
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		f = debugvtty_qget(& c);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		if (f == 0)
 			break;
 		display_vtty_cout(vt, c);

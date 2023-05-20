@@ -9,8 +9,8 @@
 // Плата Цник20 от НПК ООО "АТРИ" http://www.a3.spb.ru/
 // http://www.a3.spb.ru/catalog/product/5085/5086 http://www.a3.spb.ru/catalog/product/5085/6437
 
-#ifndef ARM_X7C7XX_BGAXXX_CPUSTYLE_ZINC20_H_INCLUDED
-#define ARM_X7C7XX_BGAXXX_CPUSTYLE_ZINC20_H_INCLUDED 1
+#ifndef ARM_XC7ZXX_BGAXXX_CPUSTYLE_ZINC20_H_INCLUDED
+#define ARM_XC7ZXX_BGAXXX_CPUSTYLE_ZINC20_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1281,4 +1281,4 @@
 			USB_ULPI_INITIALIZE(); \
 		} while (0)
 
-#endif /* ARM_X7C7XX_BGAXXX_CPUSTYLE_ZINC20_H_INCLUDED */
+#endif /* ARM_XC7ZXX_BGAXXX_CPUSTYLE_ZINC20_H_INCLUDED */

@@ -129,12 +129,13 @@ void nmea_sendchar(void * ctx)
 int nmea_putc(int c)
 {
 #if WITHNMEAOVERREALTIME
-	global_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
 	qput(c);
-	global_enableIRQ();
+	LowerIrql(oldIrql;);
 #else /* WITHNMEAOVERREALTIME */
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_ONLY_REALTIME, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
     qput(c);
 	LowerIrql(oldIrql);
 #endif /* WITHNMEAOVERREALTIME */
@@ -432,10 +433,6 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 	
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/*
-		system_disableIRQ();
-		system_enableIRQ();
-*/
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart1_enabletx(uint_fast8_t state)
 {
@@ -1679,10 +1676,6 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/*
-		system_disableIRQ();
-		system_enableIRQ();
-*/
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart2_enabletx(uint_fast8_t state)
 {
@@ -2893,10 +2886,6 @@ xxxx!;
 
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/*
-		system_disableIRQ();
-		system_enableIRQ();
-*/
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart3_enabletx(uint_fast8_t state)
 {
@@ -3985,10 +3974,6 @@ xxxx!;
 
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/*
-		system_disableIRQ();
-		system_enableIRQ();
-*/
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart4_enabletx(uint_fast8_t state)
 {
@@ -4990,10 +4975,6 @@ xxxx!;
 
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/*
-		system_disableIRQ();
-		system_enableIRQ();
-*/
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart7_enabletx(uint_fast8_t state)
 {
@@ -6081,10 +6062,6 @@ xxxx!;
 
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/*
-		system_disableIRQ();
-		system_enableIRQ();
-*/
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart5_enabletx(uint_fast8_t state)
 {

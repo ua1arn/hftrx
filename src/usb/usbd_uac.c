@@ -159,9 +159,10 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_IN);
 	if (uacinaddr != 0)
 	{
-		global_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		release_dmabufferx(uacinaddr);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 		uacinaddr = 0;
 	}
 	altinterfaces [INTERFACE_AUDIO_MIKE] = 0;
@@ -173,9 +174,10 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 
 	if (uacinrtsaddr != 0)
 	{
-		global_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		release_dmabufferxrts(uacinrtsaddr);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 		uacinrtsaddr = 0;
 	}
 	altinterfaces [INTERFACE_AUDIO_RTS] = 0;
@@ -811,6 +813,7 @@ static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 
 static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
+	IRQL_t oldIrql;
 	// epnum without direction bit
 	//PRINTF(PSTR("USBD_LL_DataInStage: IN: epnum=%02X\n"), epnum);
 	switch (epnum)
@@ -819,14 +822,14 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 	case ((USBD_EP_AUDIO_IN) & 0x7F):
 		if (uacinaddr != 0)
 		{
-			global_disableIRQ();
+			RiseIrql(IRQL_REALTIME, & oldIrql);
 			release_dmabufferx(uacinaddr);
-			global_enableIRQ();
+			LowerIrql(oldIrql);
 		}
 
-		global_disableIRQ();
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		uacinaddr = getfilled_dmabufferx(& uacinsize);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 
 		if (uacinaddr != 0)
 		{
@@ -842,14 +845,14 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 	case ((USBD_EP_RTS_IN) & 0x7F):
 		if (uacinrtsaddr != 0)
 		{
-			global_disableIRQ();
+			RiseIrql(IRQL_REALTIME, & oldIrql);
 			release_dmabufferxrts(uacinrtsaddr);
-			global_enableIRQ();
+			LowerIrql(oldIrql);
 		}
 
-		global_disableIRQ();
+		RiseIrql(IRQL_REALTIME, & oldIrql);
 		uacinrtsaddr = getfilled_dmabufferxrts(& uacinrtssize);
-		global_enableIRQ();
+		LowerIrql(oldIrql);
 
 		if (uacinrtsaddr != 0)
 		{

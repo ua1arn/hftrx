@@ -78,7 +78,7 @@ void linux_encoder_spool(void)
 	while(1)
 	{
 		spool_encinterrupt();
-		usleep(1000);
+		usleep(500);
 	}
 }
 
@@ -329,58 +329,6 @@ uint32_t reg_read(uint32_t addr)
 //	printf("reg_read: 0x%08X, 0x%08X\n", addr, res);
 	return res;
 }
-
-/************** SPI *********************/
-
-#if WITHSPISW && WITHPS7BOARD_MYC_Y7Z020 // sv9 only <<- remove
-uint32_t * readreg, * writereg;
-LCLSPINLOCK_t lock_sclk, lock_miso, lock_mosi;
-
-void linux_spi_init(void)
-{
-	uint32_t gpiobase = 0xE000A000;
-
-	uint32_t * dirreg = get_highmem_ptr(gpiobase + 0x244);
-	uint32_t * oenreg = get_highmem_ptr(gpiobase + 0x248);
-	readreg = get_highmem_ptr(gpiobase + 0x64);
-	writereg = get_highmem_ptr(gpiobase + 0x8);
-
-	* oenreg |= ((1 << (SPI_MOSI_MIO - 32)) | (1 << (SPI_SCLK_MIO - 32)));
-	* dirreg |= ((1 << (SPI_MOSI_MIO - 32)) | (1 << (SPI_SCLK_MIO - 32)));
-	* dirreg &= ~(1 << (SPI_MISO_MIO - 32));
-
-	LCLSPINLOCK_INITIALIZE(& lock_sclk);
-	LCLSPINLOCK_INITIALIZE(& lock_miso);
-	LCLSPINLOCK_INITIALIZE(& lock_mosi);
-}
-
-
-void spi_sclk_set(void)
-{
-	* writereg |= (1 << (SPI_SCLK_MIO - 32));
-}
-
-void spi_sclk_clear(void)
-{
-	* writereg &= ~(1 << (SPI_SCLK_MIO - 32));
-}
-
-void spi_mosi_set(void)
-{
-	* writereg |= (1 << (SPI_MOSI_MIO - 32));
-}
-
-void spi_mosi_clear(void)
-{
-	* writereg &= ~(1 << (SPI_MOSI_MIO - 32));
-}
-
-uint8_t spi_miso_get(void)
-{
-	uint8_t r = (* readreg >> (SPI_MISO_MIO - 32)) & 1;
-	return r;
-}
-#endif /* WITHSPISW */
 
 /************* I2C ************************/
 static int fd_i2c = 0;
@@ -702,17 +650,6 @@ void lclspin_lock(lclspinlock_t * __restrict p, const char * file, int line)
 void lclspin_unlock(lclspinlock_t * __restrict p)
 {
 	pthread_mutex_unlock(p);
-}
-
-
-void system_disableIRQ(void)
-{
-
-}
-
-void system_enableIRQ(void)
-{
-
 }
 
 void update_modem_ctrl(void)

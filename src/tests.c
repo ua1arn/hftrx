@@ -3665,10 +3665,11 @@ static void test_recodspool(void * ctx)
 
 static void test_recodstart(void)
 {
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	recticks = 0;
 	recstop = 0;
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 }
 
 #if 1
@@ -5024,11 +5025,12 @@ static void serial_irq_loopback_test(void)
 {
 	//test_spi_trace((rxcount & 0x0f) * 16 + (txcount & 0x0f));
 
-	system_disableIRQ();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	HARDWARE_DEBUGSIRQ_INITIALIZE();
 	HARDWARE_DEBUGSIRQ_SET_SPEED(DEBUGSPEED);
 	HARDWARE_DEBUGSIRQ_ENABLERX(1);
-	system_enableIRQ();
+	LowerIrql(oldIrql);
 	cat3_puts_impl_P(PSTR("Serial port ECHO test (with IRQ).\r\n"));
 	for (;;)
 	{
@@ -6452,6 +6454,32 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		PRINTF("DE_UI1->OVL_SIZE=%08" PRIX32 "\n", DE_UI1->OVL_SIZE);
+		//PRINTF("DE_UI2->OVL_SIZE=%08" PRIX32 "\n", DE_UI2->OVL_SIZE);
+		//PRINTF("DE_UI3->OVL_SIZE=%08" PRIX32 "\n", DE_UI3->OVL_SIZE);
+		DE_UI1->OVL_SIZE = ~ 0u;
+		//DE_UI2->OVL_SIZE = ~ 0u;
+		//DE_UI3->OVL_SIZE = ~ 0u;
+		PRINTF("DE_UI1->OVL_SIZE=%08" PRIX32 "\n", DE_UI1->OVL_SIZE);
+		//PRINTF("DE_UI2->OVL_SIZE=%08" PRIX32 "\n", DE_UI2->OVL_SIZE);
+		//PRINTF("DE_UI3->OVL_SIZE=%08" PRIX32 "\n", DE_UI3->OVL_SIZE);
+
+		PRINTF("G2D_UI0->UI_ATTR=%08" PRIX32 "\n", G2D_UI0->UI_ATTR);
+		PRINTF("G2D_UI1->UI_ATTR=%08" PRIX32 "\n", G2D_UI1->UI_ATTR);
+		PRINTF("G2D_UI2->UI_ATTR=%08" PRIX32 "\n", G2D_UI2->UI_ATTR);
+		G2D_UI0->UI_ATTR = ~ 0u;
+		G2D_UI1->UI_ATTR = ~ 0u;
+		G2D_UI2->UI_ATTR = ~ 0u;
+		PRINTF("G2D_UI0->UI_ATTR=%08" PRIX32 "\n", G2D_UI0->UI_ATTR);
+		PRINTF("G2D_UI1->UI_ATTR=%08" PRIX32 "\n", G2D_UI1->UI_ATTR);
+		PRINTF("G2D_UI2->UI_ATTR=%08" PRIX32 "\n", G2D_UI2->UI_ATTR);
+
+		for (;;)
+			;
+	}
+#endif
 #if 1 && (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHDEBUG && 0
 	{
 		//	The Hotplug Flag Register is 0x070005DC.
@@ -6923,8 +6951,6 @@ void hightests(void)
 		// QSPI test
 		unsigned char b [64];
 
-		spidf_initialize();
-
 		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 
 		memset(b, 0xE5, sizeof b);
@@ -6936,8 +6962,6 @@ void hightests(void)
 		memset(b, 0xE5, sizeof b);
 		readDATAFLASH(0x00080000, b, ARRAY_SIZE(b));
 		printhex(0x00080000, b, ARRAY_SIZE(b));
-
-		spidf_uninitialize();
 	}
 #endif
 #if 0 && WITHTWISW && WITHDEBUG
@@ -8265,10 +8289,11 @@ void hightests(void)
 //			//local_delay_ms(5);
 //		}
 		static ticker_t test_recordticker;
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		ticker_add(& test_recordticker);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		{
  			f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 			rc = f_mkfs("0:", NULL, rbwruff, sizeof (rbwruff));
@@ -8315,10 +8340,11 @@ void hightests(void)
 	// SD CARD file system level functions test
 	{
 		static ticker_t test_recordticker;
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		ticker_add(& test_recordticker);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 		fatfs_filesystest(1);
 	}
 #endif
@@ -9360,10 +9386,11 @@ void hightests(void)
 			unsigned tune1 = hardware_get_tune();
 			unsigned ptt1 = hardware_get_ptt();
 			unsigned ptt2 = HARDWARE_CAT_GET_RTS();
-			system_disableIRQ();
+			IRQL_t oldIrql;
+			RiseIrql(IRQL_SYSTEM, & oldIrql);
 			unsigned elkey = hardware_elkey_getpaddle(0);
 			unsigned ckey = HARDWARE_CAT_GET_DTR();
-			system_enableIRQ();
+			LowerIrql(oldIrql);
 
 
 			PRINTF(PSTR("tune=%u, ptt=%u, elkey=%u\n"), tune1, ptt1, elkey);
@@ -9482,9 +9509,10 @@ void hightests(void)
 			//continue;
 			
 			uint_fast8_t scancode;
-			system_disableIRQ();
+			IRQL_t oldIrql;
+			RiseIrql(IRQL_SYSTEM, & oldIrql);
 			scancode = board_get_pressed_key();
-			system_enableIRQ();
+			LowerIrql(oldIrql);
 
 			if (scancode != KEYBOARD_NOKEY)
 			{
@@ -10158,7 +10186,7 @@ void vClearTickInterrupt(void)
 
 #endif
 
-#else /* WITHRTOS */
+#elif ! LINUX_SUBSYSTEM //#else /* WITHRTOS */
 
 void __WEAK FreeRTOS_SWI_Handler(void)
 {
@@ -10529,9 +10557,10 @@ void xSWIHandler(void)
 		global_enableIRQ();
 
 		local_delay_ms(20);
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		local_delay_ms(20);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 	}
 }
 
@@ -10584,10 +10613,11 @@ nestedirqtest(void)
 	for (;;)
 	{
 		unsigned iccrpr0 = INTCICCRPR;
-		system_disableIRQ();
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		unsigned iccrpr1 = INTCICCRPR;
 		local_delay_ms(20);
-		system_enableIRQ();
+		LowerIrql(oldIrql);
 
 		global_disableIRQ();
 		PRINTF(PSTR("iccrpr0=%02x, iccrpr1=%02x, INTCICCRPR=%02x cpsr=%08x*\n"), (unsigned) iccrpr0, (unsigned) iccrpr1, (unsigned) INTCICCRPR, (unsigned) __get_CPSR());

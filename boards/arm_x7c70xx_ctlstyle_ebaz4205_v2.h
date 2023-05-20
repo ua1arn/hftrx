@@ -7,8 +7,8 @@
 //
 // Трансивер с DSP обработкой "Аист" на процессоре ZYNQ 7000
 
-#ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_EBAZ4205_V2_H_INCLUDED
-#define ARM_X7C7XX_BGAXXX_CTLSTYLE_EBAZ4205_V2_H_INCLUDED 1
+#ifndef ARM_XC7ZXX_BGAXXX_CTLSTYLE_EBAZ4205_V2_H_INCLUDED
+#define ARM_XC7ZXX_BGAXXX_CTLSTYLE_EBAZ4205_V2_H_INCLUDED 1
 
 	#if ! defined(XC7Z020)
 		#error Wrong CPU selected. XC7Z020 expected
@@ -224,6 +224,7 @@
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 1
+			#define REALREFERENCE_FREQ 		61433400L
 			#define WITHTOUCHGUI			1
 			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -462,4 +463,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_X7C7XX_BGAXXX_CTLSTYLE_EBAZ4205_V2_H_INCLUDED */
+#endif /* ARM_XC7ZXX_BGAXXX_CTLSTYLE_EBAZ4205_V2_H_INCLUDED */
