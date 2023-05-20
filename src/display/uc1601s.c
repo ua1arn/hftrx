@@ -508,7 +508,7 @@ display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, ui
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 uint_fast16_t
-display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
 	return uc1601s_put_char_small(xpix, c);
@@ -528,7 +528,7 @@ void display_wrdata2_end(void)
 }
 
 // stub function
-uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	return display_put_char_small(xpix, ypix, c, lowhalf);
 }

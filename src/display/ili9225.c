@@ -777,14 +777,14 @@ display_wrdatabar_end(void)
 	ili9225_put_char_end();
 }
 
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	ili9225_put_char_big(c);
 }
 
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	ili9225_put_char_big(c);
 	//ili9225_put_char_half(c);
@@ -793,8 +793,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	ili9225_put_char_small(c);
 }

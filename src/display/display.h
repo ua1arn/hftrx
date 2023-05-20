@@ -461,13 +461,13 @@ uint_fast16_t display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fas
 void display_wrdatabar_end(void);
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
-uint_fast16_t display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf);
 void display_wrdatabig_end(void);
 // обычный шрифт
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
-uint_fast16_t display_put_char_small_xy(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, COLOR565_T fg);
+uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_small_xy(uint_fast16_t x, uint_fast16_t y, char c, COLOR565_T fg);
 void display_wrdata_end(void);
 
 typedef struct pipparams_tag
