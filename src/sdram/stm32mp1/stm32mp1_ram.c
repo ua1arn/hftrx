@@ -30,7 +30,7 @@ int stm32mp1_ddr_clk_enable(struct stm32mp_ddr_priv *priv, uint32_t mem_speed)
 //	VERBOSE("DDR: mem_speed (%u kHz), RCC %lu kHz\n",
 //		mem_speed, ddrphy_clk / 1000U);
 
-	mem_speed_hz = mem_speed * 1000U;
+//	mem_speed_hz = mem_speed * 1000U;
 
 	/* Max 10% frequency delta */
 //	if (ddrphy_clk > mem_speed_hz) {
