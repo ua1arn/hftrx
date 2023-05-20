@@ -536,7 +536,7 @@ void RAMFUNC ltdc_horizontal_pixels(
 
 
 uint_fast16_t
-RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
+RAMFUNC_NONILINE ltdc_put_char_unified(
 	const FLASHMEM uint8_t * fontraster,
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
 	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
@@ -562,13 +562,13 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
 // return new x
 static uint_fast16_t
 RAMFUNC_NONILINE
-ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
+ltdc_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-	return ltdc_horizontal_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], buffer, dx, dy, x, y, c);
+	return ltdc_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], buffer, dx, dy, x, y, c);
 //	const uint_fast8_t width = SMALLCHARW;
 //	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 //	uint_fast8_t cgrow;
@@ -582,14 +582,14 @@ ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
+static uint_fast16_t RAMFUNC_NONILINE ltdc_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	return ltdc_horizontal_put_char_unified(font_big, BIGCHARW, width, BIGCHARH, size_bigfont, buffer, dx, dy, x, y, c);
+	return ltdc_put_char_unified(font_big, BIGCHARW, width, BIGCHARH, size_bigfont, buffer, dx, dy, x, y, c);
 //	uint_fast8_t cgrow;
 //	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 //	{
@@ -601,14 +601,14 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
+static uint_fast16_t RAMFUNC_NONILINE ltdc_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = HALFCHARW;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	return ltdc_horizontal_put_char_unified(font_half, HALFCHARW, width, HALFCHARH, size_halffont, buffer, dx, dy, x, y, c);
+	return ltdc_put_char_unified(font_half, HALFCHARW, width, HALFCHARH, size_halffont, buffer, dx, dy, x, y, c);
 //	uint_fast8_t cgrow;
 //	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
 //	{
@@ -669,7 +669,7 @@ uint_fast16_t display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fas
 {
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_horizontal_put_char_small(x, y, c);
+	return ltdc_put_char_small(x, y, c);
 #else /* LCDMODE_HORFILL */
 	return ltdc_vertical_put_char_small(x, y, c);
 #endif /* LCDMODE_HORFILL */
@@ -677,13 +677,13 @@ uint_fast16_t display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fas
 #endif
 
 // полоса индикатора
-uint_fast16_t display_wrdatabar_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
+uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 //	ltdc_secondoffs = 0;
 //	ltdc_h = 8;
 
-	* yp = GRID2Y(y);
-	return GRID2X(x);
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
@@ -699,21 +699,22 @@ void display_wrdatabar_end(void)
 }
 
 // большие и средние цифры (частота)
-uint_fast16_t display_wrdatabig_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
+uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	//ltdc_secondoffs = 0;
 	//ltdc_h = BIGCHARH;
 
-	* yp = GRID2Y(y);
-	return GRID2X(x);
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
+// большой шрифт
 uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_horizontal_put_char_big(x, y, c);
+	return ltdc_put_char_big(x, y, c);
 #else /* LCDMODE_HORFILL */
 	return ltdc_vertical_put_char_big(x, y, c);
 #endif /* LCDMODE_HORFILL */
@@ -724,31 +725,69 @@ uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_horizontal_put_char_half(x, y, c);
+	return ltdc_put_char_half(x, y, c);
 #else /* LCDMODE_HORFILL */
 	return ltdc_vertical_put_char_half(x, y, c);
 #endif /* LCDMODE_HORFILL */
 }
 
+// большой шрифт
 void display_wrdatabig_end(void)
 {
 }
 
 // обычный шрифт
-uint_fast16_t display_wrdata_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
+uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 //	ltdc_secondoffs = 0;
 //	ltdc_h = SMALLCHARH;
 
-	* yp = GRID2Y(y);
-	return GRID2X(x);
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+// большой шрифт
+uint_fast16_t render_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+//	ltdc_secondoffs = 0;
+//	ltdc_h = SMALLCHARH;
+
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+// большой шрифт
+void render_wrdatabig_end(void)
+{
+}
+
+uint_fast16_t render_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	savewhere = __func__;
+#if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+	return ltdc_put_char_big(x, y, c);
+#else /* LCDMODE_HORFILL */
+	return ltdc_vertical_put_char_big(x, y, c);
+#endif /* LCDMODE_HORFILL */
+}
+
+uint_fast16_t render_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	savewhere = __func__;
+#if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+	return ltdc_put_char_half(x, y, c);
+#else /* LCDMODE_HORFILL */
+	return ltdc_vertical_put_char_half(x, y, c);
+#endif /* LCDMODE_HORFILL */
 }
 
 uint_fast16_t display_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_horizontal_put_char_small(x, y, c);
+	return ltdc_put_char_small(x, y, c);
 #else /* LCDMODE_HORFILL */
 	return ltdc_vertical_put_char_small(x, y, c);
 #endif /* LCDMODE_HORFILL */
@@ -837,6 +876,7 @@ void display_uninitialize(void)
 #endif /* LCDMODE_LQ043T3DX02K */
 #endif /* LCDMODE_LTDC */
 
+/* valid chars: "0123456789 #._" */
 uint_fast8_t
 bigfont_decode(uint_fast8_t c)
 {
@@ -909,12 +949,12 @@ display_string(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast
 // Выдача строки из ОЗУ в указанное место экрана.
 void
 //NOINLINEAT
-display_at(uint_fast8_t x, uint_fast8_t y, const char * s)
+display_at(uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_string(x, y + lowhalf, s, lowhalf);
+		display_string(xcell, ycell + lowhalf, s, lowhalf);
 
 	} while (lowhalf --);
 }
@@ -1174,8 +1214,8 @@ static const FLASHMEM int32_t vals10 [] =
 void
 NOINLINEAT
 display_value_big(
-	uint_fast8_t x,	// x координата начала вывода значения
-	uint_fast8_t y,	// y координата начала вывода значения
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
@@ -1196,7 +1236,7 @@ display_value_big(
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdatabig_begin(x, y, & ypix);
+	uint_fast16_t xpix = display_wrdatabig_begin(xcell, ycell, & ypix);
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
@@ -1241,11 +1281,83 @@ display_value_big(
 	display_wrdatabig_end();
 }
 
+// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
+/* из предварительно подготовленных буферов */
+void
+NOINLINEAT
+render_value_big(
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
+	uint_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
+	uint_fast8_t rj,	// = 1;		// right truncated
+	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
+	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	uint_fast8_t lowhalf		// lower half
+	)
+{
+//	if (width > ARRAY_SIZE(vals10))
+//		width = ARRAY_SIZE(vals10);
+	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
+	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
+	uint_fast8_t i = (j - width);
+	uint_fast8_t z = blinkpos == 255 ? 1 : 0;	// only zeroes
+	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
+
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = render_wrdatabig_begin(xcell, ycell, & ypix);
+	for (; i < j; ++ i)
+	{
+		const ldiv_t res = ldiv(freq, vals10 [i]);
+		const uint_fast8_t g = (j - i);		// десятичная степень текущего разряда на отображении
+
+		// разделитель десятков мегагерц
+		if (comma2 == g)
+		{
+			xpix = render_char_big(xpix, ypix, (z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
+		}
+		else if (comma == g)
+		{
+			z = 0;
+			half = withhalf;
+			xpix = render_char_big(xpix, ypix, '.', lowhalf);
+		}
+
+		if (blinkpos == g)
+		{
+			const uint_fast8_t bc = blinkstate ? '_' : ' ';
+			// эта позиция редактирования частоты. Справа от неё включаем все нули
+			z = 0;
+			if (half)
+				xpix = render_char_half(xpix, ypix, bc, lowhalf);
+
+			else
+				xpix = render_char_big(xpix, ypix, bc, lowhalf);
+		}
+		else if (z == 1 && (i + 1) < j && res.quot == 0)
+			xpix = render_char_big(xpix, ypix, ' ', lowhalf);	// supress zero
+		else
+		{
+			z = 0;
+			if (half)
+				xpix = render_char_half(xpix, ypix, '0' + res.quot, lowhalf);
+
+			else
+				xpix = render_char_big(xpix, ypix, '0' + res.quot, lowhalf);
+		}
+		freq = res.rem;
+	}
+	render_wrdatabig_end();
+}
+
 void
 NOINLINEAT
 display_value_lower(
-	uint_fast8_t x,	// x координата начала вывода значения
-	uint_fast8_t y,	// y координата начала вывода значения
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
@@ -1260,7 +1372,7 @@ display_value_lower(
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdatabig_begin(x, y, & ypix);
+	uint_fast16_t xpix = display_wrdatabig_begin(xcell, ycell, & ypix);
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
