@@ -1261,7 +1261,6 @@ display_value_big(
 			z = 0;
 			if (half)
 				xpix = display_put_char_half(xpix, ypix, bc, lowhalf);
-
 			else
 				xpix = display_put_char_big(xpix, ypix, bc, lowhalf);
 		}
@@ -1272,13 +1271,19 @@ display_value_big(
 			z = 0;
 			if (half)
 				xpix = display_put_char_half(xpix, ypix, '0' + res.quot, lowhalf);
-
 			else
 				xpix = display_put_char_big(xpix, ypix, '0' + res.quot, lowhalf);
 		}
 		freq = res.rem;
 	}
 	display_wrdatabig_end();
+}
+
+// Подготовка отображения больщиз символов
+/* valid chars: "0123456789 #._" */
+void render_value_initialize(void)
+{
+
 }
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
@@ -1333,7 +1338,6 @@ render_value_big(
 			z = 0;
 			if (half)
 				xpix = render_char_half(xpix, ypix, bc, lowhalf);
-
 			else
 				xpix = render_char_big(xpix, ypix, bc, lowhalf);
 		}

@@ -1144,6 +1144,8 @@ render_value_big(
 	uint_fast8_t lowhalf		// lower half
 	);
 
+void render_value_initialize(void);	// Подготовка отображения больщиз символов valid chars: "0123456789 #._"
+
 void
 display_value_lower(
 	uint_fast8_t xcell,	// x координата начала вывода значения
