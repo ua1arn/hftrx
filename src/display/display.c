@@ -673,35 +673,35 @@ uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, ui
 }
 
 // большой шрифт
-uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, char c, uint_fast8_t lowhalf)
 {
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
-    const uint_fast8_t ci = bigfont_decode((unsigned char) cc);
+	const uint_fast8_t width = ((c == '.' || c == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
+    const uint_fast8_t ci = bigfont_decode((unsigned char) c);
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	return ltdc_put_char_big(x, y, ci, width, buffer, dx, dy);
 #else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_big(x, y, ci,  width, buffer, dx, dy);
+	return ltdc_vertical_put_char_big(x, y, ci, width, buffer, dx, dy);
 #endif /* LCDMODE_HORFILL */
 }
 
-uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, char c, uint_fast8_t lowhalf)
 {
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	const uint_fast8_t ci = bigfont_decode((unsigned char) cc);
+	const uint_fast8_t ci = bigfont_decode((unsigned char) c);
 	const uint_fast8_t width = HALFCHARW;
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_put_char_half(x, y, ci,  width, buffer, dx, dy);
+	return ltdc_put_char_half(x, y, ci, width, buffer, dx, dy);
 #else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_half(x, y, ci,  width, buffer, dx, dy);
+	return ltdc_vertical_put_char_half(x, y, ci, width, buffer, dx, dy);
 #endif /* LCDMODE_HORFILL */
 }
 
@@ -765,7 +765,7 @@ static uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, cha
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	return ltdc_put_char_big(xpix, ypix, ci, width, buffer, dx, dy);
 #else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_big(xpix, ypix, ci, buffer, dx, dy);
+	return ltdc_vertical_put_char_big(xpix, ypix, ci, width, buffer, dx, dy);
 #endif /* LCDMODE_HORFILL */
 }
 
@@ -781,7 +781,7 @@ uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char c, u
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	return ltdc_put_char_half(xpix, ypix, ci, width, buffer, dx, dy);
 #else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_half(xpix, ypix, ci, buffer, dx, dy);
+	return ltdc_vertical_put_char_half(xpix, ypix, ci, width, buffer, dx, dy);
 #endif /* LCDMODE_HORFILL */
 }
 
