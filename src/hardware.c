@@ -2832,7 +2832,28 @@ sysinit_ttbr_initialize(void)
 	    ; 2     - IMP     0x0  (Implementation Defined)
 	    ; 1     - S       0x0  (Non-shared)
 	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
-	__set_TTBR0((uintptr_t) tlbbase | 0x48 | (1u << 5) | (1u << 1));	// TTBR0
+
+#if WITHSMPSYSTEM
+	// TTBR0
+	const unsigned IRGN_attr = 0x02;	// Normal memory, Outer Write-Through Cacheable.
+	//const unsigned IRGN_attr = 0x01;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+	__set_TTBR0(
+			(uintptr_t) tlbbase |
+			(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
+			(0x01u << 3) |	// RGN
+			1*(1u << 5) |	// NOS
+			1*(1u << 1) |	// S
+			0);
+#else /* WITHSMPSYSTEM */
+	// TTBR0
+	__set_TTBR0(
+			(uintptr_t) tlbbase |
+			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
+			(0x01u << 3) |	// RGN
+			0*(1u << 5) |	// NOS
+			0*(1u << 1) |	// S
+			0);
+#endif /* WITHSMPSYSTEM */
 	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
 	  __ISB();
 
