@@ -10681,8 +10681,34 @@ void thread_spool_encinterrupt(void)
 
 #endif
 
+#if 0 && LINUX_SUBSYSTEM
+void signal_handler(int n, siginfo_t *info, void *unused)
+{
+	PRINTF("received value %d\n", info->si_int);
+}
+#endif
+
 void lowtests(void)
 {
+#if 0 && LINUX_SUBSYSTEM
+	struct sigaction sig;
+	sig.sa_sigaction = signal_handler;
+	sig.sa_flags = SA_SIGINFO;
+	sigaction(SIGUSR1, &sig, NULL);
+
+	const char * argv [3] = { "/sbin/modprobe", "inttest", NULL, };
+	linux_run_shell_cmd(argv);
+	sleep(1);
+
+	int fs = open("/dev/inttest", O_RDONLY);
+	ASSERT(fs > 0);
+	int pid = getpid();
+	ioctl(fs, 0, pid);
+	close(fs);
+
+	for(;;) {}
+#endif
+
 #if 0 && WITHLVGL && LINUX_SUBSYSTEM
 
 	int ttyd = open(LINUX_TTY_FILE, O_RDWR);
