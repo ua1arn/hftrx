@@ -558,9 +558,9 @@ static uint_fast16_t RAMFUNC ltdc_put_char_big(uint_fast16_t xpix, uint_fast16_t
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC ltdc_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+static uint_fast16_t RAMFUNC ltdc_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
-     return ltdc_put_char_unified(font_half, HALFCHARW, HALFCHARW, HALFCHARH, size_halffont, buffer, dx, dy, xpix, ypix, ci);
+     return ltdc_put_char_unified(font_half, HALFCHARW, width, HALFCHARH, size_halffont, buffer, dx, dy, xpix, ypix, ci);
 }
 
 #else /* LCDMODE_HORFILL */
@@ -680,7 +680,7 @@ uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc, u
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_put_char_half(x, y, ci, buffer, dx, dy);
+	return ltdc_put_char_half(x, y, ci, HALFCHARW, buffer, dx, dy);
 #else /* LCDMODE_HORFILL */
 	return ltdc_vertical_put_char_half(x, y, ci, buffer, dx, dy);
 #endif /* LCDMODE_HORFILL */
@@ -721,11 +721,33 @@ uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_
 
 #if WITHPRERENDER
 
+enum { RENDERCHARS = 14 }; /* valid chars: "0123456789 #._" */
+
+static const unsigned picx_big = BIGCHARW * RENDERCHARS;
+static const unsigned picy_big = BIGCHARH;
+static const unsigned picx_half = HALFCHARW * RENDERCHARS;
+static const unsigned picy_half = HALFCHARH;
+
+static PACKEDCOLORPIP_T rendered_big [GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH)];
+static PACKEDCOLORPIP_T rendered_half [GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH)];
+
 // Подготовка отображения больщих символов
 /* valid chars: "0123456789 #._" */
 void render_value_big_initialize(void)
 {
+	COLORPIP_T keycolor = COLORPIP_KEY;
+	unsigned picalpha = 255;
 
+	colpip_fillrect(rendered_big, picx_big, picy_big, 0, 0, picx_big, picy_big, TFTALPHA(picalpha, COLORPIP_RED));	/* при alpha==0 все биты цвета становятся 0 */
+	colpip_fillrect(rendered_half, picx_half, picy_half, 0, 0, picx_half, picy_half, TFTALPHA(picalpha, COLORPIP_YELLOW));	/* при alpha==0 все биты цвета становятся 0 */
+
+	uint_fast8_t ci;
+
+	for (ci = 0; ci < RENDERCHARS; ++ ci)
+	{
+		ltdc_put_char_big(ci * BIGCHARW, 0, ci, BIGCHARW, rendered_big, picx_big, picy_big);
+		ltdc_put_char_half(ci * HALFCHARW, 0, ci, HALFCHARW, rendered_half, picx_half, picy_half);
+	}
 }
 
 // большой шрифт
@@ -753,8 +775,17 @@ uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, u
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	//return ltdc_put_char_big(xpix, ypix, ci, width, buffer, dx, dy);
-	colpip_fillrect(buffer, dx, dy, xpix, ypix, width, BIGCHARH, COLORPIP_RED);
+	/* копируем изображение БЕЗ цветового ключа */
+	colpip_bitblt(
+			(uintptr_t) buffer, GXSIZE(DIM_X, DIM_Y) * sizeof buffer [0],
+			buffer, DIM_X, DIM_Y,
+			xpix, ypix,
+			(uintptr_t) rendered_big, GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH) * sizeof rendered_big [0],
+			rendered_big, picx_big, picy_big,
+			ci * BIGCHARW, 0,	// координаты окна источника
+			width, BIGCHARH, // размер окна источника
+			BITBLT_FLAG_NONE, COLORPIP_KEY
+			);
 	return xpix + width;
 #else /* LCDMODE_HORFILL */
 	return ltdc_vertical_put_char_big(xpix, ypix, ci, width, buffer, dx, dy);
@@ -771,8 +802,17 @@ uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, 
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	//return ltdc_put_char_half(xpix, ypix, ci, buffer, dx, dy);
-	colpip_fillrect(buffer, dx, dy, xpix, ypix, width, HALFCHARH, COLORPIP_YELLOW);
+	/* копируем изображение БЕЗ цветового ключа */
+	colpip_bitblt(
+			(uintptr_t) buffer, GXSIZE(DIM_X, DIM_Y) * sizeof buffer [0],
+			buffer, DIM_X, DIM_Y,
+			xpix, ypix,
+			(uintptr_t) rendered_half, GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH) * sizeof rendered_half [0],
+			rendered_half, picx_half, picy_half,
+			ci * HALFCHARW, 0,	// координаты окна источника
+			width, HALFCHARH, // размер окна источника
+			BITBLT_FLAG_NONE, COLORPIP_KEY
+			);
 	return xpix + width;
 #else /* LCDMODE_HORFILL */
 	return ltdc_vertical_put_char_half(xpix, ypix, ci, buffer, dx, dy);
