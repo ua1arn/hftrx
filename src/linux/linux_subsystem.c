@@ -23,9 +23,7 @@
 #include <termios.h>
 
 void xcz_resetn_modem_state(uint8_t val);
-void linux_run_shell_cmd(uint8_t argc, const char * argv []);
 void ft8_thread(void);
-void display2_bgprocess(void);
 
 enum {
 	rx_fir_shift_pos 	= 0,
@@ -87,7 +85,7 @@ void linux_encoder_spool(void)
 void linux_nmea_spool(void)
 {
 	const char * argv [5] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
-	linux_run_shell_cmd(5, argv);
+	linux_run_shell_cmd(argv);
 
 	int num_read;
 	int fid = open(LINUX_NMEA_FILE, O_RDONLY);
@@ -521,7 +519,7 @@ void linux_iq_interrupt_thread(void)
 
 /*************************************************************/
 
-void linux_run_shell_cmd(uint8_t argc, const char * argv [])
+void linux_run_shell_cmd(const char * argv [])
 {
 	if (access(argv[0], F_OK) != 0)
 	{
@@ -573,11 +571,11 @@ void linux_cancel_thread(pthread_t tid)
 
 void linux_subsystem_init(void)
 {
-#if 1 //CPUSTYLE_XCZU
+#if 0 //CPUSTYLE_XCZU
 	char spid[6];
 	local_snprintf_P(spid, ARRAY_SIZE(spid), "%d", getpid());
 	const char * argv [5] = { "/usr/bin/taskset", "-p", "1", spid, NULL, };
-	linux_run_shell_cmd(5, argv);
+	linux_run_shell_cmd(argv);
 #endif /* CPUSTYLE_XCZU */
 
 	linux_xgpio_init();
@@ -636,6 +634,7 @@ void linux_user_init(void)
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
 #endif /* WITHNMEA && WITHLFM */
+
 }
 
 /****************************************************************/

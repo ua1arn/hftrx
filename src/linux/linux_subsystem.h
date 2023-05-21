@@ -80,7 +80,7 @@ void linux_user_init(void);
 int linux_framebuffer_init(void);
 uint32_t * linux_get_fb(uint32_t * size);
 void linux_create_thread(pthread_t * tid, void * process, int priority, int cpuid);
-void linux_run_shell_cmd(uint8_t argc, const char * argv []);
+void linux_run_shell_cmd(const char * argv []);
 
 uint8_t linux_xgpi_read_pin(uint8_t pin);
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val);
@@ -89,14 +89,6 @@ void gpio_writepin(uint8_t pin, uint8_t val);
 
 uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, const uint8_t size);
 
-void linux_spi_init(void);
-void spi_cs_init(uint8_t cs);
-void spi_cs_set(uint8_t cs, uint8_t val);
-void spi_sclk_set(void);
-void spi_sclk_clear(void);
-void spi_mosi_set(void);
-void spi_mosi_clear(void);
-uint8_t spi_miso_get(void);
 void cs_i2c_assert(spitarget_t target);
 void cs_i2c_deassert(spitarget_t target);
 void cs_i2c_disable(void);
