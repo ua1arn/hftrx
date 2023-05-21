@@ -2650,6 +2650,7 @@ extern "C" {
 
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
+#define WITHPRERENDER (1 && WITHLTDCHW)		/* использование предварительно построенных изображений при отображении частоты */
 
 #if WITHTOUCHGUI
 

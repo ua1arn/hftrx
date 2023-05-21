@@ -678,6 +678,7 @@ uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_
 }
 
 #if WITHPRERENDER
+/* использование предварительно построенных изображений при отображении частоты */
 
 enum { RENDERCHARS = 14 }; /* valid chars: "0123456789 #._" */
 
@@ -702,6 +703,19 @@ void render_value_big_initialize(void)
 	colpip_fillrect(rendered_half, picx_half, picy_half, 0, 0, picx_half, picy_half, TFTALPHA(picalpha, COLORPIP_YELLOW));	/* при alpha==0 все биты цвета становятся 0 */
 
 	uint_fast8_t ci;
+
+	/* Возможно использование подготовленных изображений */
+//	#include "Cobra.png.h"
+//
+//	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+//	LuImage * png = luPngReadMemory((char *) Cobra_png);
+//
+//	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
+//	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+//	const unsigned picdx = png->width;//GXADJ(png->width);
+//	const unsigned picw = png->width;
+//	const unsigned pich = png->height;
+//	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
 
 	for (ci = 0; ci < RENDERCHARS; ++ ci)
 	{
@@ -1265,8 +1279,7 @@ display_value_big(
 #if WITHPRERENDER
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-/* из предварительно подготовленных буферов */
-void
+/* использование предварительно построенных изображений при отображении частоты */void
 NOINLINEAT
 render_value_big(
 	uint_fast8_t xcell,	// x координата начала вывода значения
