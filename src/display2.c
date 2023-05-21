@@ -1222,7 +1222,7 @@ static void display2_freqX_a_init(
 #if WITHPRERENDER
 	/* valid chars: "0123456789 #._" */
 	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
-	render_value_initialize();
+	render_value_big_initialize();
 #endif /* WITHPRERENDER */
 }
 
@@ -1236,8 +1236,9 @@ static void display2_freqX_a(
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
-
+#if ! WITHPRERENDER
 	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
+#endif /* ! WITHPRERENDER */
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER

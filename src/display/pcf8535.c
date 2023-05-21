@@ -585,10 +585,10 @@ display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 void
-display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	pcf8535_put_char_small(c);
+	pcf8535_put_char_small(cc);
 }
 
 	//uint8_t x = h * CHAR_W;

@@ -775,9 +775,9 @@ void display_wrdata2_end(void)
 	display_wrdata_end();
 }
 // stub function
-uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	return display_put_char_small(xpix, ypix, c, lowhalf);
+	return display_put_char_small(xpix, ypix, cc, lowhalf);
 }
 
 void

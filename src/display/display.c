@@ -610,14 +610,14 @@ static uint_fast16_t RAMFUNC ltdc_vertical_put_char_half(uint_fast16_t x, uint_f
 #endif /* LCDMODE_HORFILL */
 
 #if 0
-uint_fast16_t display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fast8_t cc, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	const uint_fast8_t c = smallfont_decode(cc);
+	const uint_fast8_t ci = smallfont_decode(cc);
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_put_char_small(x, y, c);
+	return ltdc_put_char_small(xpix, ypix, ci);
 #else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_small(x, y, c);
+	return ltdc_vertical_put_char_small(xpix, ypix, ci);
 #endif /* LCDMODE_HORFILL */
 }
 #endif
@@ -719,6 +719,15 @@ uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_
 	return GRID2X(xcell);
 }
 
+#if WITHPRERENDER
+
+// Подготовка отображения больщих символов
+/* valid chars: "0123456789 #._" */
+void render_value_big_initialize(void)
+{
+
+}
+
 // большой шрифт
 uint_fast16_t render_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
@@ -734,7 +743,7 @@ void render_wrdatabig_end(void)
 {
 }
 
-static uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
@@ -744,7 +753,9 @@ static uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, cha
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_put_char_big(xpix, ypix, ci, width, buffer, dx, dy);
+	//return ltdc_put_char_big(xpix, ypix, ci, width, buffer, dx, dy);
+	colpip_fillrect(buffer, dx, dy, xpix, ypix, width, BIGCHARH, COLORPIP_RED);
+	return xpix + width;
 #else /* LCDMODE_HORFILL */
 	return ltdc_vertical_put_char_big(xpix, ypix, ci, width, buffer, dx, dy);
 #endif /* LCDMODE_HORFILL */
@@ -756,15 +767,19 @@ uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, 
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t ci = bigfont_decode(cc);
+	const uint_fast8_t width = HALFCHARW;
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_put_char_half(xpix, ypix, ci, buffer, dx, dy);
+	//return ltdc_put_char_half(xpix, ypix, ci, buffer, dx, dy);
+	colpip_fillrect(buffer, dx, dy, xpix, ypix, width, HALFCHARH, COLORPIP_YELLOW);
+	return xpix + width;
 #else /* LCDMODE_HORFILL */
 	return ltdc_vertical_put_char_half(xpix, ypix, ci, buffer, dx, dy);
 #endif /* LCDMODE_HORFILL */
 }
 
+#endif /* WITHPRERENDER */
 
 #if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2 || LCDMODE_TCG104XGLPAPNN || LCDMODE_H497TLB01P4
 
@@ -1249,12 +1264,7 @@ display_value_big(
 	display_wrdatabig_end();
 }
 
-// Подготовка отображения больщиз символов
-/* valid chars: "0123456789 #._" */
-void render_value_initialize(void)
-{
-
-}
+#if WITHPRERENDER
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 /* из предварительно подготовленных буферов */
@@ -1326,6 +1336,7 @@ render_value_big(
 	}
 	render_wrdatabig_end();
 }
+#endif /* WITHPRERENDER */
 
 void
 NOINLINEAT
