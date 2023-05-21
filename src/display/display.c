@@ -583,9 +583,6 @@ uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, ch
 // полоса индикатора
 uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-//	ltdc_secondoffs = 0;
-//	ltdc_h = 8;
-
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
 }
@@ -605,9 +602,6 @@ void display_wrdatabar_end(void)
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	//ltdc_secondoffs = 0;
-	//ltdc_h = BIGCHARH;
-
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
 }
@@ -670,9 +664,6 @@ void display_wrdatabig_end(void)
 // обычный шрифт
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-//	ltdc_secondoffs = 0;
-//	ltdc_h = SMALLCHARH;
-
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
 }
@@ -717,21 +708,37 @@ void render_value_big_initialize(void)
 //	const unsigned pich = png->height;
 //	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
 
-	for (ci = 0; ci < RENDERCHARS; ++ ci)
+	/* big-size characters */
 	{
-		/* формирование изображений символов, возможно с эффектами антиалиасинга */
-		/* Изображения символов располагаются в буфере горизонтально, слева направо */
-		ltdc_put_char_big(ci * BIGCHARW, 0, ci, BIGCHARW, rendered_big, picx_big, picy_big);
-		ltdc_put_char_half(ci * HALFCHARW, 0, ci, HALFCHARW, rendered_half, picx_half, picy_half);
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabig_begin(0, 0, & ypix);
+		for (ci = 0; ci < RENDERCHARS; ++ ci)
+		{
+			/* формирование изображений символов, возможно с эффектами антиалиасинга */
+			/* Изображения символов располагаются в буфере горизонтально, слева направо */
+			ASSERT(xpix == ci * BIGCHARW);
+			xpix = ltdc_put_char_big(xpix, ypix, ci, BIGCHARW, rendered_big, picx_big, picy_big);
+		}
+		display_wrdatabig_end();
+	}
+	/* half-size characters */
+	{
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabig_begin(0, 0, & ypix);
+		for (ci = 0; ci < RENDERCHARS; ++ ci)
+		{
+			/* формирование изображений символов, возможно с эффектами антиалиасинга */
+			/* Изображения символов располагаются в буфере горизонтально, слева направо */
+			ASSERT(xpix == ci * HALFCHARW);
+			xpix = ltdc_put_char_half(xpix, ypix, ci, HALFCHARW, rendered_half, picx_half, picy_half);
+		}
+		display_wrdatabig_end();
 	}
 }
 
 // большой шрифт
 uint_fast16_t render_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-//	ltdc_secondoffs = 0;
-//	ltdc_h = SMALLCHARH;
-
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
 }
