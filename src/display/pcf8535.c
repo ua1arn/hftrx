@@ -211,7 +211,7 @@ static void putvbuff(uint_fast8_t c)
 //
 static void pcf8535_put_char_small(char cc)
 {
-    const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+    const uint_fast8_t c = smallfont_decode(cc);
 	enum { NCOLS = (sizeof uc1601s_font [c] / sizeof uc1601s_font[c][0]) };
 	const FLASHMEM uint8_t * p = & uc1601s_font[c][0];
 	uint_fast8_t i;
@@ -231,7 +231,7 @@ static void pcf8535_put_char_big(char cc, uint_fast8_t lowhalf)
 {
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = 1 * ((cc == '.' || cc == '#') ? 6 : 0);	// начальная колонка знакогенератора, откуда начинать.
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NCOLS = (sizeof uc1601s_bigfont [c][lowhalf] / sizeof uc1601s_bigfont [c][lowhalf] [0]) };
 	const FLASHMEM uint8_t * p = & uc1601s_bigfont [c][lowhalf][0];
 
@@ -247,7 +247,7 @@ static void pcf8535_put_char_big(char cc, uint_fast8_t lowhalf)
 //
 static void pcf8535_put_char_half(char cc, uint_fast8_t lowhalf)
 {
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NCOLS = (sizeof uc1601s_halffont [c][lowhalf] / sizeof uc1601s_halffont [c][lowhalf] [0]) };
 	const FLASHMEM uint8_t * p = & uc1601s_halffont [c][lowhalf][0];
 	uint_fast8_t i;
@@ -561,14 +561,14 @@ display_wrdatabar_end(void)
 	pcf8535_put_char_end();
 }
 
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	pcf8535_put_char_big(c, lowhalf);
 }
 
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	pcf8535_put_char_half(c, lowhalf);
 }
@@ -576,8 +576,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
 	pcf8535_put_char_small(c);
@@ -585,10 +585,10 @@ display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 void
-display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	pcf8535_put_char_small(c);
+	pcf8535_put_char_small(cc);
 }
 
 	//uint8_t x = h * CHAR_W;

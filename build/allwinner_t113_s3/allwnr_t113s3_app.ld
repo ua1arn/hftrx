@@ -170,7 +170,7 @@ SECTIONS
 		*(.dtcm*)
 
 		__data2_end__ = .;
-	} > RAM /* was: STSRAN */
+	} > SRAM_A1 /* was: SRAM_A1 */
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 

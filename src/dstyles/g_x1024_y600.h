@@ -101,6 +101,7 @@
 		{	0,	4,	display2_af_spectre15,		REDRM_BARS, PGSPE, },
 	#endif /* WITHAFSPECTRE */
 
+		{	15,	6,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
 		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label

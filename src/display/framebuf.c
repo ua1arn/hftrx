@@ -61,6 +61,73 @@ static uint32_t ptr_lo32(uintptr_t v)
 	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
 #endif
 
+/* Отключаем все источники */
+static void awxx_g2d_reset(void)
+{
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
+
+	//	memset(G2D_V0, 0, sizeof * G2D_V0);
+	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+	//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+	//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+	//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+	//	memset(G2D_WB, 0, sizeof * G2D_WB);
+
+	//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+
+	G2D_VSU->VS_CTRL = 0;
+	G2D_ROT->ROT_CTL = 0;
+	G2D_V0->V0_ATTCTL = 0;
+	G2D_UI0->UI_ATTR = 0;
+	G2D_UI1->UI_ATTR = 0;
+	G2D_UI2->UI_ATTR = 0;
+	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
+	G2D_BLD->BLD_KEY_CTL = 0;
+}
+
+/* Запуск и ожидание завершения работы G2D */
+/* 0 - timeout. 1 - OK */
+static int hwacc_waitdone(void)
+{
+	unsigned n = 0x2000000;
+	for (;;)
+	{
+		const uint_fast32_t MASK = (1u << 0);	/* FINISH_IRQ */
+		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INT;
+		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
+		if (((mixer_int & MASK) != 0))
+		{
+			G2D_MIXER->G2D_MIXER_INT = MASK;
+			break;
+		}
+		if (((rot_int & MASK) != 0))
+		{
+			G2D_ROT->ROT_INT = MASK;
+			break;
+		}
+		hardware_nonguiyield();
+		if (-- n == 0)
+		{
+			PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X, G2D_MIXER->G2D_MIXER_INT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTL, (unsigned) G2D_MIXER->G2D_MIXER_INT);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/* Запускаем и ждём завершения обработки */
+static void awxx_g2d_startandwait(void)
+{
+	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
+	if (hwacc_waitdone() == 0)
+	{
+		//PRINTF("hwaccel_rect_u16: timeout w/h: %u/%u\n", (unsigned) w, (unsigned) h);
+		ASSERT(0);
+	}
+	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
+}
+
 static unsigned awxx_get_ui_attr(unsigned srcFormat)
 {
 	unsigned ui_attr = 0;
@@ -97,7 +164,7 @@ static COLOR24_T awxx_key_color_conversion(COLORPIP_T color)
 //	PRINTF("awxx_key_color_conversion: r=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_R(color));
 //	PRINTF("awxx_key_color_conversion: g=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_G(color));
 //	PRINTF("awxx_key_color_conversion: b=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_B(color));
-	return  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
+	return COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
 }
 
 // 0x01: ABGR_8888
@@ -288,25 +355,8 @@ static void t113_fillrect(
 	COLOR24_T color
 	)
 {
-//	memset(G2D_V0, 0, sizeof * G2D_V0);
-//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-//	memset(G2D_WB, 0, sizeof * G2D_WB);
 
-//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-
-	/* Отключаем все источники */
-
-	G2D_VSU->VS_CTRL = 0;
-	G2D_ROT->ROT_CTL = 0;
-	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
-	G2D_V0->V0_ATTCTL = 0;
-	G2D_UI0->UI_ATTR = 0;
-	G2D_UI1->UI_ATTR = 0;
-	G2D_UI2->UI_ATTR = 0;
+	awxx_g2d_reset();	/* Отключаем все источники */
 
 	G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 	G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -336,20 +386,9 @@ static void t113_fillrect(
 	G2D_WB->WB_PITCH0 = tstride;
 	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
-}
 
-//
-//#include "debug_f133.h"
-//
-//void debug_g2d(const char * place, int line)
-//{
-//	PRINTF("**** %s/%d\n", place, line);
-//	//G2D_MIXER_Type_print(G2D_MIXER, "G2D_MIXER");
-//	G2D_VSU_Type_print(G2D_VSU, "G2D_VSU");
-////	G2D_LAY_Type_print(G2D_V0, "G2D_V0");
-////	G2D_BLD_Type_print(G2D_BLD, "G2D_BLD");
-////	G2D_WB_Type_print(G2D_WB, "G2D_WB");
-//}
+	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
+}
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
@@ -593,36 +632,6 @@ void arm_hardware_mdma_initialize(void)
 
 
 // https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
-
-/* Запуск и ожидание завершения работы G2D */
-/* 0 - timeout. 1 - OK */
-static int hwacc_waitdone(void)
-{
-	unsigned n = 0x2000000;
-	for (;;)
-	{
-		const uint_fast32_t MASK = (1u << 0);	/* FINISH_IRQ */
-		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INT;
-		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
-		if (((mixer_int & MASK) != 0))
-		{
-			G2D_MIXER->G2D_MIXER_INT = MASK;
-			break;
-		}
-		if (((rot_int & MASK) != 0))
-		{
-			G2D_ROT->ROT_INT = MASK;
-			break;
-		}
-		hardware_nonguiyield();
-		if (-- n == 0)
-		{
-			PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X, G2D_MIXER->G2D_MIXER_INT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTL, (unsigned) G2D_MIXER->G2D_MIXER_INT);
-			return 0;
-		}
-	}
-	return 1;
-}
 
 void arm_hardware_mdma_initialize(void)
 {
@@ -948,15 +957,6 @@ hwaccel_rect_u16(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)));
 
-	/* Запускаем и ждём завершения обработки */
-	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
-	if (hwacc_waitdone() == 0)
-	{
-		PRINTF("hwaccel_rect_u16: timeout w/h: %u/%u\n", (unsigned) w, (unsigned) h);
-		ASSERT(0);
-	}
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
-
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
 	const unsigned t = GXADJ(dx) - w;
@@ -1253,18 +1253,7 @@ hwaccel_rect_u32(
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
-
 	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF));
-
-	/* Запускаем и ждём завершения обработки */
-	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
-	if (hwacc_waitdone() == 0)
-	{
-		PRINTF("hwaccel_rect_u32: timeout w/h: %u/%u\n", (unsigned) w, (unsigned) h);
-		ASSERT(0);
-	}
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
@@ -1862,17 +1851,7 @@ void hwaccel_bitblt(
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
 
-	/* Отключаем все источники */
-
-	G2D_VSU->VS_CTRL = 0;
-	G2D_ROT->ROT_CTL = 0;
-	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
-	G2D_V0->V0_ATTCTL = 0;
-	G2D_UI0->UI_ATTR = 0;
-	G2D_UI1->UI_ATTR = 0;
-	G2D_UI2->UI_ATTR = 0;
-
-	G2D_BLD->BLD_KEY_CTL = 0;
+	awxx_g2d_reset(); /* Отключаем все источники */
 
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
@@ -1989,14 +1968,7 @@ void hwaccel_bitblt(
 	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 
-	/* Запускаем и ждём завершения обработки */
-	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
-	if (hwacc_waitdone() == 0)
-	{
-		PRINTF("hwaccel_bitblt: timeout tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
-		ASSERT(0);
-	}
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
+	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
 
 #else
 	// программная реализация
@@ -2094,15 +2066,7 @@ void hwaccel_stretchblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	/* Отключаем все источники */
-
-	G2D_VSU->VS_CTRL = 0;
-	G2D_ROT->ROT_CTL = 0;
-	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
-	G2D_V0->V0_ATTCTL = 0;
-	G2D_UI0->UI_ATTR = 0;
-	G2D_UI1->UI_ATTR = 0;
-	G2D_UI2->UI_ATTR = 0;
+	awxx_g2d_reset();	/* Отключаем все источники */
 
 //	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
@@ -2237,20 +2201,7 @@ void hwaccel_stretchblt(
 	G2D_WB->WB_PITCH0 = tstride;
 	G2D_WB->WB_SIZE = tsizehw;
 
-	/* Запускаем и ждём завершения обработки */
-	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
-	if (hwacc_waitdone() == 0)
-	{
-		PRINTF("colpip_stretchblt: timeout dx/dy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) dx, (unsigned) dy, (unsigned) sdx, (unsigned) sdy);
-		ASSERT(0);
-	}
-	//PRINTF("G2D_TOP->G2D_AHB_RESET= @%p\n", & G2D_TOP->G2D_AHB_RESET);
-
-//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-	//debug_g2d(__FILE__, __LINE__);
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
-//	PRINTF("============== END OF STRETCH\n");
+	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
 
 #else
 
@@ -2555,7 +2506,7 @@ ltdcmain_horizontal_put_char_small(
 	)
 {
 	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
@@ -2581,7 +2532,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small_tbg(
 	)
 {
 	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
@@ -2605,7 +2556,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_x2_put_char_small_tbg(
 	)
 {
 	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
@@ -2617,7 +2568,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_x2_put_char_small_tbg(
 	return x + width * 2;
 }
 
-uint_fast16_t display_put_char_small_xy(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, COLOR565_T fg)
+uint_fast16_t display_put_char_small_xy(uint_fast16_t x, uint_fast16_t y, char c, COLOR565_T fg)
 {
 	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	return colorpip_put_char_small_tbg(fr, DIM_X, DIM_Y, x, y, c, fg);
@@ -2639,7 +2590,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small2_tbg(
 	)
 {
 	const uint_fast8_t width = SMALLCHARW2;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH2; ++ cgrow)
 	{
@@ -2665,7 +2616,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small3_tbg(
 	)
 {
 	const uint_fast8_t width = SMALLCHARW3;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 	{
@@ -3012,10 +2963,11 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 	char cc
 	)
 {
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-	return ltdc_horizontal_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], buffer, dx, dy, x, y, c);
+	const uint_fast8_t ci = smallfont_decode(cc);
+	ltdc_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], buffer, dx, dy, x, y, ci);
+	return x + SMALLCHARW3;
 //	const uint_fast8_t width = SMALLCHARW3;
-//	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+//	const uint_fast8_t c = smallfont_decode(cc);
 //	uint_fast8_t cgrow;
 //	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 //	{

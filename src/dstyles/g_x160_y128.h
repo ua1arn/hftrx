@@ -67,6 +67,7 @@
 			//{	0, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			//{	0, 0,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
+			{	0,	3,	display2_freqX_a_init,	REDRM_INIS, REDRSUBSET_INIT, },
 			{	0,	3,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 			{	17, 5,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
@@ -147,6 +148,7 @@
 			{	17, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
 
+			{	0,	4,	display2_freqX_a_init,	REDRM_INIS, REDRSUBSET_INIT, },
 			{	0,	4,	display2_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 			{	17, 6,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 

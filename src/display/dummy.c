@@ -73,25 +73,25 @@ display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
 uint_fast16_t
-display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
-	return x + 1;
+	return xpix + 1;
 }
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
 uint_fast16_t
-display_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
-	return x + 1;
+	return xpix + 1;
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 uint_fast16_t
-display_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
-	return x + 1;
+	return xpix + 1;
 }
 
 // Координаты в пикселях
@@ -160,11 +160,11 @@ display_wrdatabig_end(void)
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 uint_fast16_t
-display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	(void) c;
-	return x;
+	(void) cc;
+	return xpix;
 }
 
 #endif /* LCDMODE_DUMMY */

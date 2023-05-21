@@ -454,21 +454,27 @@ void display_plotstop(void);
 // самый маленький шрифт
 uint_fast16_t display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 void display_wrdata2_end(void);
-uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
 // полоса индикатора
 uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 uint_fast16_t display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 void display_wrdatabar_end(void);
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
-uint_fast16_t display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
 void display_wrdatabig_end(void);
 // обычный шрифт
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf);
-uint_fast16_t display_put_char_small_xy(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, COLOR565_T fg);
+uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_small_xy(uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLOR565_T fg);
 void display_wrdata_end(void);
+
+// большие и средние цифры (частота)
+uint_fast16_t render_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
+uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+void render_wrdatabig_end(void);
 
 typedef struct pipparams_tag
 {
@@ -1062,18 +1068,16 @@ void ltdc_horizontal_pixels(
 	);
 
 // Для произвольного шрифта
-uint_fast16_t
-RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
+void ltdc_put_char_unified(
 	const FLASHMEM uint8_t * fontraster,
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
 	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке символа
-	PACKEDCOLORPIP_T * const __restrict buffer,
-	const uint_fast16_t dx,
-	const uint_fast16_t dy,
-	uint_fast16_t x, uint_fast16_t y,
-	uint_fast8_t cc
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx, uint_fast16_t dy,	// размеры целевого буфера
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	uint_fast8_t ci	// индекс символа в знакогенераторе
 	);
 
 // Установить прозрачность для прямоугольника
@@ -1095,8 +1099,8 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	);
 
-uint_fast8_t smallfont_decode(uint_fast8_t c);
-uint_fast8_t bigfont_decode(uint_fast8_t c);
+uint_fast8_t smallfont_decode(char cc);
+uint_fast8_t bigfont_decode(char cc);
 
 int_fast32_t display_zoomedbw(void);
 
@@ -1126,6 +1130,25 @@ display_value_big(
 	uint_fast8_t withhalf,		// 0 - только большие цифры
 	uint_fast8_t lowhalf		// lower half
 	);
+
+// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
+/* из предварительно подготовленных буферов */
+void
+render_value_big(
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
+	uint_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
+	uint_fast8_t rj,	// = 1;		// right truncated
+	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
+	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	uint_fast8_t lowhalf		// lower half
+	);
+
+void render_value_big_initialize(void);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
 void
 display_value_lower(

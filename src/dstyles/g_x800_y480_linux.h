@@ -110,6 +110,7 @@
 		{	42, 15,	display2_atu4alt,		REDRM_ALL, PG0, },	// TUNER state (optional)
 		{	42, 20,	display2_byp4alt,		REDRM_ALL, PG0, },	// TUNER BYPASS state (optional)
 
+		{	17,	7,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	17,	7,	display2_freqX_a,	REDRM_ALL, PG0, },	// MAIN FREQ Частота (большие цифры)
 		{	38, 10,	display2_mode3_a,	REDRM_ALL,	PG0, },	// SSB/CW/AM/FM/...
 		{	42, 10,	display2_rxbw3,		REDRM_ALL, PG0, },	// 3.1 / 0,5 / WID / NAR

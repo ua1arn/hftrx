@@ -481,7 +481,7 @@ static xholder_t
 st7735_put_char_small(xholder_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0][0]) };
 	const FLASHMEM uint8_t * p = & ls020_smallfont [c][0];
 	
@@ -499,7 +499,7 @@ st7735_put_char_big(xholder_t xpix, char cc)
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0][0]) };
 	const FLASHMEM uint8_t * p = & ls020_bigfont [c][0];
 	
@@ -527,7 +527,7 @@ st7735_put_char_half(xholder_t xpix, char cc)
 {
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0][0]) };
 	const FLASHMEM uint8_t * p = & ls020_halffont [c][0];
 	
@@ -873,7 +873,7 @@ display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, ui
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 uint_fast16_t
-display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	return st7735_put_char_small(xpix, c);
 }
@@ -881,9 +881,9 @@ display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, u
 // Вызов этой функции только внутри display_wrdata2_begin() и display_wrdata2_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 uint_fast16_t
-display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	return st7735_put_char_small(xpix, c);
+	return st7735_put_char_small(xpix, cc);
 }
 
 void display_plot(

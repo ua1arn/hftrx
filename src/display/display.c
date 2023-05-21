@@ -492,23 +492,6 @@ ltdc_vertical_pixN(
 #endif /* LCDMODE_LTDC_L24 */
 }
 
-/* использование альманахов отображаемых шрифтов */
-static void colmain_fontbuff_draw(
-	PACKEDCOLORPIP_T * const __restrict buffer,
-	const uint_fast16_t dx, const uint_fast16_t dy,
-	uint_fast16_t x, uint_fast16_t y,	/* координаты в буфере */
-	uint_fast8_t c	/* отображаемый символ */
-	)
-{
-
-}
-
-/* предварительное посторение альманахов отображаемых шрифтов */
-static void colmain_fontbuff_initialize(void)
-{
-
-}
-
 #if LCDMODE_HORFILL
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
@@ -534,156 +517,74 @@ void RAMFUNC ltdc_horizontal_pixels(
 	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
-
-uint_fast16_t
-RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
+void RAMFUNC
+ltdc_put_char_unified(
 	const FLASHMEM uint8_t * fontraster,
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
 	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке символа
-	PACKEDCOLORPIP_T * const __restrict buffer,
-	const uint_fast16_t dx,
-	const uint_fast16_t dy,
-	uint_fast16_t x, uint_fast16_t y,
-	uint_fast8_t c
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx, uint_fast16_t dy,	// размеры целевого буфера
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	uint_fast8_t ci	// индекс символа в знакогенераторе
 	)
 {
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < height; ++ cgrow)
 	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdc_horizontal_pixels(tgr, & fontraster [(c * height + cgrow) * bytesw], width2);
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, xpix, ypix + cgrow);
+		ltdc_horizontal_pixels(tgr, & fontraster [(ci * height + cgrow) * bytesw], width2);
 	}
-	return x + width2;
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // return new x
 static uint_fast16_t
-RAMFUNC_NONILINE
-ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
+RAMFUNC
+ltdc_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-	return ltdc_horizontal_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], buffer, dx, dy, x, y, c);
-//	const uint_fast8_t width = SMALLCHARW;
-//	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-//	uint_fast8_t cgrow;
-//	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
-//	{
-//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
-//		ltdc_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
-//	}
-//	return x + width;
+	ltdc_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], buffer, dx, dy, xpix, ypix, ci);
+	return xpix + SMALLCHARW;
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
+static uint_fast16_t RAMFUNC ltdc_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	return ltdc_horizontal_put_char_unified(font_big, BIGCHARW, width, BIGCHARH, size_bigfont, buffer, dx, dy, x, y, c);
-//	uint_fast8_t cgrow;
-//	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
-//	{
-//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
-//		ltdc_horizontal_pixels(tgr, S1D13781_bigfont_LTDC [c] [cgrow], width);
-//	}
-//	return x + width;
+	ltdc_put_char_unified(font_big, BIGCHARW, width, BIGCHARH, size_bigfont, buffer, dx, dy, xpix, ypix, ci);
+ 	return xpix + width;
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
+static uint_fast16_t RAMFUNC ltdc_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-	const uint_fast8_t width = HALFCHARW;
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	return ltdc_horizontal_put_char_unified(font_half, HALFCHARW, width, HALFCHARH, size_halffont, buffer, dx, dy, x, y, c);
-//	uint_fast8_t cgrow;
-//	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
-//	{
-//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
-//		ltdc_horizontal_pixels(tgr, S1D13781_halffont_LTDC [c] [cgrow], width);
-//	}
-//	return x + width;
+	ltdc_put_char_unified(font_half, HALFCHARW, width, HALFCHARH, size_halffont, buffer, dx, dy, xpix, ypix, ci);
+	return xpix + width;
 }
 
 #else /* LCDMODE_HORFILL */
-
-// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
-{
-	uint_fast8_t i = 0;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0] [0]) };
-	const FLASHMEM uint8_t * const p = & ls020_smallfont [c] [0];
-
-	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-	return x;
-}
-
-// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
-{
-	// '#' - узкий пробел
-	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
-	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0] [0]) };
-	const FLASHMEM uint8_t * const p = & ls020_bigfont [c] [0];
-
-	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-	return x;
-}
-
-// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
-{
-	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0] [0]) };
-	const FLASHMEM uint8_t * const p = & ls020_halffont [c] [0];
-
-	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(x ++, y, p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-	return x;
-}
-
-
 #endif /* LCDMODE_HORFILL */
 
 #if 0
-uint_fast16_t display_put_char_small2(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
+	const uint_fast8_t ci = smallfont_decode(cc);
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_horizontal_put_char_small(x, y, c);
+	return ltdc_put_char_small(xpix, ypix, ci);
 #else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_small(x, y, c);
+	return ltdc_vertical_put_char_small(xpix, ypix, ci);
 #endif /* LCDMODE_HORFILL */
 }
 #endif
 
 // полоса индикатора
-uint_fast16_t display_wrdatabar_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
+uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-//	ltdc_secondoffs = 0;
-//	ltdc_h = 8;
-
-	* yp = GRID2Y(y);
-	return GRID2X(x);
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
@@ -699,58 +600,55 @@ void display_wrdatabar_end(void)
 }
 
 // большие и средние цифры (частота)
-uint_fast16_t display_wrdatabig_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
+uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
-	//ltdc_secondoffs = 0;
-	//ltdc_h = BIGCHARH;
-
-	* yp = GRID2Y(y);
-	return GRID2X(x);
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
-uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+// большой шрифт
+uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, char c, uint_fast8_t lowhalf)
 {
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	const uint_fast8_t width = ((c == '.' || c == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
+    const uint_fast8_t ci = bigfont_decode(c);
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_horizontal_put_char_big(x, y, c);
+	return ltdc_put_char_big(x, y, ci, width, buffer, dx, dy);
 #else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_big(x, y, c);
+	return ltdc_vertical_put_char_big(x, y, ci, width, buffer, dx, dy);
 #endif /* LCDMODE_HORFILL */
 }
 
-uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc, uint_fast8_t lowhalf)
 {
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	const uint_fast8_t ci = bigfont_decode(cc);
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_horizontal_put_char_half(x, y, c);
+	return ltdc_put_char_half(x, y, ci, HALFCHARW, buffer, dx, dy);
 #else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_half(x, y, c);
+	return ltdc_vertical_put_char_half(x, y, ci, buffer, dx, dy);
 #endif /* LCDMODE_HORFILL */
 }
 
-void display_wrdatabig_end(void)
+uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-}
-
-// обычный шрифт
-uint_fast16_t display_wrdata_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
-{
-//	ltdc_secondoffs = 0;
-//	ltdc_h = SMALLCHARH;
-
-	* yp = GRID2Y(y);
-	return GRID2X(x);
-}
-
-uint_fast16_t display_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
-{
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	const uint_fast8_t ci = smallfont_decode(cc);
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	return ltdc_horizontal_put_char_small(x, y, c);
+	return ltdc_put_char_small(xpix, ypix, ci, buffer, dx, dy);
 #else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_small(x, y, c);
+	return ltdc_vertical_put_char_small(xpix, ypix, ci, buffer, dx, dy);
 #endif /* LCDMODE_HORFILL */
 }
 
@@ -758,6 +656,155 @@ void display_wrdata_end(void)
 {
 }
 
+// большой шрифт
+void display_wrdatabig_end(void)
+{
+}
+
+// обычный шрифт
+uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+#if WITHPRERENDER
+/* использование предварительно построенных изображений при отображении частоты */
+
+enum { RENDERCHARS = 14 }; /* valid chars: "0123456789 #._" */
+
+static const unsigned picx_big = BIGCHARW * RENDERCHARS;
+static const unsigned picy_big = BIGCHARH;
+
+static const unsigned picx_half = HALFCHARW * RENDERCHARS;
+static const unsigned picy_half = HALFCHARH;
+
+/* Изображения символов располагаются в буфере горизонтально, слева направо */
+static PACKEDCOLORPIP_T rendered_big [GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH)];
+static PACKEDCOLORPIP_T rendered_half [GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH)];
+
+// Подготовка отображения больщих символов
+/* valid chars: "0123456789 #._" */
+void render_value_big_initialize(void)
+{
+	COLORPIP_T keycolor = COLORPIP_KEY;
+	unsigned picalpha = 255;
+
+	colpip_fillrect(rendered_big, picx_big, picy_big, 0, 0, picx_big, picy_big, TFTALPHA(picalpha, COLORPIP_RED));	/* при alpha==0 все биты цвета становятся 0 */
+	colpip_fillrect(rendered_half, picx_half, picy_half, 0, 0, picx_half, picy_half, TFTALPHA(picalpha, COLORPIP_YELLOW));	/* при alpha==0 все биты цвета становятся 0 */
+
+	uint_fast8_t ci;
+
+	/* Возможно использование подготовленных изображений */
+//	#include "fonts/BigDigits.png.h"
+//	#include "fonts/HalfDigits.png.h"
+//
+//	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+//	LuImage * BigDigits_png = luPngReadMemory((char *) BigDigits_png);
+//	LuImage * HalfDigits_png = luPngReadMemory((char *) HalfDigits_png);
+//
+//	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) BigDigits_png->data;
+//	const COLORPIP_T keycolor = TFTRGB(BigDigits_png->data [0], BigDigits_png->data [1], BigDigits_png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+//	const unsigned picdx = BigDigits_png->width;//GXADJ(png->width);
+//	const unsigned picw = BigDigits_png->width;
+//	const unsigned pich = BigDigits_png->height;
+//	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
+
+	/* big-size characters */
+	{
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabig_begin(0, 0, & ypix);
+		for (ci = 0; ci < RENDERCHARS; ++ ci)
+		{
+			/* формирование изображений символов, возможно с эффектами антиалиасинга */
+			/* Изображения символов располагаются в буфере горизонтально, слева направо */
+			ASSERT(xpix == ci * BIGCHARW);
+			xpix = ltdc_put_char_big(xpix, ypix, ci, BIGCHARW, rendered_big, picx_big, picy_big);
+		}
+		display_wrdatabig_end();
+		dcache_clean((uintptr_t) picy_big, sizeof rendered_big [0] * GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH));
+	}
+	/* half-size characters */
+	{
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdatabig_begin(0, 0, & ypix);
+		for (ci = 0; ci < RENDERCHARS; ++ ci)
+		{
+			/* формирование изображений символов, возможно с эффектами антиалиасинга */
+			/* Изображения символов располагаются в буфере горизонтально, слева направо */
+			ASSERT(xpix == ci * HALFCHARW);
+			xpix = ltdc_put_char_half(xpix, ypix, ci, HALFCHARW, rendered_half, picx_half, picy_half);
+		}
+		display_wrdatabig_end();
+		dcache_clean((uintptr_t) picy_big, sizeof rendered_half [0] * GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH));
+	}
+}
+
+// большой шрифт
+uint_fast16_t render_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+// большой шрифт
+void render_wrdatabig_end(void)
+{
+}
+
+uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+{
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
+    const uint_fast8_t ci = bigfont_decode(cc);
+	savewhere = __func__;
+
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+	/* копируем изображение БЕЗ цветового ключа */
+	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
+	colpip_bitblt(
+			(uintptr_t) buffer, GXSIZE(DIM_X, DIM_Y) * sizeof buffer [0],
+			buffer, DIM_X, DIM_Y,
+			xpix, ypix,	// координаты в окне получатля
+			(uintptr_t) rendered_big, 0 * GXSIZE(picx_big, picy_big) * sizeof rendered_big [0],
+			rendered_big, picx_big, picy_big,
+			ci * BIGCHARW, 0,	// координаты окна источника
+			width, BIGCHARH, // размер окна источника
+			BITBLT_FLAG_NONE, COLORPIP_KEY
+			);
+
+	return xpix + width;
+}
+
+uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+{
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	const uint_fast8_t ci = bigfont_decode(cc);
+	const uint_fast8_t width = HALFCHARW;
+	savewhere = __func__;
+
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+	/* копируем изображение БЕЗ цветового ключа */
+	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
+	colpip_bitblt(
+			(uintptr_t) buffer, GXSIZE(DIM_X, DIM_Y) * sizeof buffer [0],
+			buffer, DIM_X, DIM_Y,
+			xpix, ypix,	// координаты в окне получатля
+			(uintptr_t) rendered_half, 0 * GXSIZE(picx_half, picy_half) * sizeof rendered_half [0],
+			rendered_half, picx_half, picy_half,
+			ci * HALFCHARW, 0,	// координаты окна источника
+			width, HALFCHARH, // размер окна источника
+			BITBLT_FLAG_NONE, COLORPIP_KEY
+			);
+
+	return xpix + width;
+}
+
+#endif /* WITHPRERENDER */
 
 #if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2 || LCDMODE_TCG104XGLPAPNN || LCDMODE_H497TLB01P4
 
@@ -837,9 +884,11 @@ void display_uninitialize(void)
 #endif /* LCDMODE_LQ043T3DX02K */
 #endif /* LCDMODE_LTDC */
 
+/* valid chars: "0123456789 #._" */
 uint_fast8_t
-bigfont_decode(uint_fast8_t c)
+bigfont_decode(char cc)
 {
+	const uint_fast8_t c = (unsigned char) cc;
 	// '#' - узкий пробел
 	if (c == ' ' || c == '#')
 		return 11;
@@ -853,8 +902,9 @@ bigfont_decode(uint_fast8_t c)
 }
 
 uint_fast8_t
-smallfont_decode(uint_fast8_t c)
+smallfont_decode(char cc)
 {
+	const uint_fast8_t c = (unsigned char) cc;
 	if (c < ' ' || c > 0x7F)
 		return '$' - ' ';
 	return c - ' ';
@@ -909,12 +959,12 @@ display_string(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast
 // Выдача строки из ОЗУ в указанное место экрана.
 void
 //NOINLINEAT
-display_at(uint_fast8_t x, uint_fast8_t y, const char * s)
+display_at(uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_string(x, y + lowhalf, s, lowhalf);
+		display_string(xcell, ycell + lowhalf, s, lowhalf);
 
 	} while (lowhalf --);
 }
@@ -1174,8 +1224,8 @@ static const FLASHMEM int32_t vals10 [] =
 void
 NOINLINEAT
 display_value_big(
-	uint_fast8_t x,	// x координата начала вывода значения
-	uint_fast8_t y,	// y координата начала вывода значения
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
@@ -1196,7 +1246,7 @@ display_value_big(
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdatabig_begin(x, y, & ypix);
+	uint_fast16_t xpix = display_wrdatabig_begin(xcell, ycell, & ypix);
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
@@ -1221,7 +1271,6 @@ display_value_big(
 			z = 0;
 			if (half)
 				xpix = display_put_char_half(xpix, ypix, bc, lowhalf);
-
 			else
 				xpix = display_put_char_big(xpix, ypix, bc, lowhalf);
 		}
@@ -1232,7 +1281,6 @@ display_value_big(
 			z = 0;
 			if (half)
 				xpix = display_put_char_half(xpix, ypix, '0' + res.quot, lowhalf);
-
 			else
 				xpix = display_put_char_big(xpix, ypix, '0' + res.quot, lowhalf);
 		}
@@ -1241,11 +1289,84 @@ display_value_big(
 	display_wrdatabig_end();
 }
 
+#if WITHPRERENDER
+
+// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
+/* использование предварительно построенных изображений при отображении частоты */void
+NOINLINEAT
+render_value_big(
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
+	uint_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
+	uint_fast8_t rj,	// = 1;		// right truncated
+	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
+	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	uint_fast8_t lowhalf		// lower half
+	)
+{
+//	if (width > ARRAY_SIZE(vals10))
+//		width = ARRAY_SIZE(vals10);
+	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
+	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
+	uint_fast8_t i = (j - width);
+	uint_fast8_t z = blinkpos == 255 ? 1 : 0;	// only zeroes
+	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
+
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = render_wrdatabig_begin(xcell, ycell, & ypix);
+	for (; i < j; ++ i)
+	{
+		const ldiv_t res = ldiv(freq, vals10 [i]);
+		const uint_fast8_t g = (j - i);		// десятичная степень текущего разряда на отображении
+
+		// разделитель десятков мегагерц
+		if (comma2 == g)
+		{
+			xpix = render_char_big(xpix, ypix, (z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
+		}
+		else if (comma == g)
+		{
+			z = 0;
+			half = withhalf;
+			xpix = render_char_big(xpix, ypix, '.', lowhalf);
+		}
+
+		if (blinkpos == g)
+		{
+			const uint_fast8_t bc = blinkstate ? '_' : ' ';
+			// эта позиция редактирования частоты. Справа от неё включаем все нули
+			z = 0;
+			if (half)
+				xpix = render_char_half(xpix, ypix, bc, lowhalf);
+			else
+				xpix = render_char_big(xpix, ypix, bc, lowhalf);
+		}
+		else if (z == 1 && (i + 1) < j && res.quot == 0)
+			xpix = render_char_big(xpix, ypix, ' ', lowhalf);	// supress zero
+		else
+		{
+			z = 0;
+			if (half)
+				xpix = render_char_half(xpix, ypix, '0' + res.quot, lowhalf);
+
+			else
+				xpix = render_char_big(xpix, ypix, '0' + res.quot, lowhalf);
+		}
+		freq = res.rem;
+	}
+	render_wrdatabig_end();
+}
+#endif /* WITHPRERENDER */
+
 void
 NOINLINEAT
 display_value_lower(
-	uint_fast8_t x,	// x координата начала вывода значения
-	uint_fast8_t y,	// y координата начала вывода значения
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
@@ -1260,7 +1381,7 @@ display_value_lower(
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdatabig_begin(x, y, & ypix);
+	uint_fast16_t xpix = display_wrdatabig_begin(xcell, ycell, & ypix);
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
@@ -1896,7 +2017,7 @@ void display_hardware_initialize(void)
 	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
 	hardware_ltdc_initialize(frames, vdmode);
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
-	colmain_fontbuff_initialize();
+
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */

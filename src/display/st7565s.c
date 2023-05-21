@@ -217,7 +217,7 @@ static void st7565s_clear(void)
 static void st7565s_put_char_small(char cc)
 {
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+    const uint_fast8_t c = smallfont_decode(cc);
 	enum { NCOLS = (sizeof uc1601s_font [0] / sizeof uc1601s_font [0][0]) };
 	const FLASHMEM uint8_t * const p = & uc1601s_font [c][0];
 
@@ -236,7 +236,7 @@ static void st7565s_put_char_big(char cc, uint_fast8_t lowhalf)
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = 1 * ((cc == '.' || cc == '#') ? 6 : 0);	// начальная колонка знакогенератора, откуда начинать.
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NCOLS = (sizeof uc1601s_bigfont [0][0] / sizeof uc1601s_bigfont [0][0][0]) };
 	const FLASHMEM uint8_t * const p = & uc1601s_bigfont [c][lowhalf][0];
 
@@ -253,7 +253,7 @@ static void st7565s_put_char_big(char cc, uint_fast8_t lowhalf)
 static void st7565s_put_char_half(char cc, uint_fast8_t lowhalf)
 {
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NCOLS = (sizeof uc1601s_halffont [c][lowhalf] / sizeof uc1601s_halffont [c][lowhalf] [0]) };
 	const FLASHMEM uint8_t * const p = & uc1601s_halffont [c][lowhalf][0];
 
@@ -469,14 +469,14 @@ display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 	return xpix + 1;
 }
 
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	st7565s_put_char_big(c, lowhalf);
 }
 
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	st7565s_put_char_half(c, lowhalf);
 }
@@ -484,8 +484,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
 	st7565s_put_char_small(c);
@@ -503,9 +503,9 @@ void display_wrdata2_end(void)
 	display_wrdata_end();
 }
 // stub function
-void display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	display_put_char_small(c, lowhalf);
+	display_put_char_small(cc, lowhalf);
 }
 
 void

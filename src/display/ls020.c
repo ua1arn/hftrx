@@ -125,7 +125,7 @@ ls020_pix8(
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 static uint_fast8_t ls020_put_char_small(uint_fast8_t xpix, char cc)
 {
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0][0]) };
 	//enum { NCOLS = (sizeof uc1608_smallfont[0][0] / sizeof uc1608_smallfont[0][0][0]) };
 	const FLASHMEM uint8_t * const p = & ls020_smallfont [c][0];
@@ -144,7 +144,7 @@ static uint_fast8_t ls020_put_char_big(uint_fast8_t xpix, char cc)
 {
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NBYTES = (sizeof ls020_bigfont [c] / sizeof ls020_bigfont [0][0]) };
 	const FLASHMEM uint8_t * const p  = & ls020_bigfont [c][0];
 
@@ -161,7 +161,7 @@ static uint_fast8_t ls020_put_char_big(uint_fast8_t xpix, char cc)
 static uint_fast8_t ls020_put_char_half(uint_fast8_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0][0]) };
 	const FLASHMEM uint8_t * const p = & ls020_halffont [c][0];
 	for (; i < NBYTES; ++ i)
@@ -538,7 +538,7 @@ display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, ui
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 uint_fast16_t
-display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	return ls020_put_char_small(xpix, c);
 }

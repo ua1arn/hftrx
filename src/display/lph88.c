@@ -141,7 +141,7 @@ lph88_pix8(
 static void lph88_put_char_fast(char cc)
 {
 	uint_fast8_t i = 0;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode(cc);
 	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0][0]) };
 	const FLASHMEM uint8_t * const p = & ls020_smallfont [c][0];
 
@@ -159,7 +159,7 @@ static void lph88_put_char_big(char cc)
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0][0]) };
 	const FLASHMEM uint8_t * const p  = & ls020_bigfont [c][0];
 
@@ -174,7 +174,7 @@ static void lph88_put_char_big(char cc)
 static void lph88_put_char_half(char cc)
 {
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode((unsigned char) cc);
+    const uint_fast8_t c = bigfont_decode(cc);
 	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0][0]) };
 	const FLASHMEM uint8_t * const p = & ls020_halffont [c][0];
 
@@ -374,14 +374,14 @@ display_wrdatabar_end(void)
 	lph88_put_char_end();
 }
 
-void
-display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	lph88_put_char_big(c);
 }
 
-void
-display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	lph88_put_char_half(c);
 }
@@ -389,8 +389,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-void
-display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	lph88_put_char_fast(c);
 	//lph88_put_char_fasto(c, lowhalf);

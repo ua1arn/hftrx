@@ -1211,6 +1211,21 @@ static void display_freqXbig_a(
 	}
 }
 
+
+// Подготовка отображения частоты. Герцы маленьким шрифтом.
+static void display2_freqX_a_init(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHPRERENDER
+	/* valid chars: "0123456789 #._" */
+	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
+	render_value_big_initialize();
+#endif /* WITHPRERENDER */
+}
+
 // Отображение частоты. Герцы маленьким шрифтом.
 static void display2_freqX_a(
 	uint_fast8_t x,
@@ -1221,8 +1236,9 @@ static void display2_freqX_a(
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
-
+#if ! WITHPRERENDER
 	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
+#endif /* ! WITHPRERENDER */
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -1230,7 +1246,11 @@ static void display2_freqX_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
+#if WITHPRERENDER
+			render_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+#else /* WITHPRERENDER */
 			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+#endif /* WITHPRERENDER */
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -1243,11 +1263,16 @@ static void display2_freqX_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
+#if WITHPRERENDER
+			render_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+#else /* WITHPRERENDER */
 			display_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+#endif /* WITHPRERENDER */
 		} while (lowhalf --);
 	}
 }
 
+/* заглушка - в 320*200 */
 static void display2_freqx_a(
 	uint_fast8_t x,
 	uint_fast8_t y,
@@ -1266,8 +1291,8 @@ static void display2_freqx_a(
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
 // FREQ B
 static void display_freqchr_a(
-	uint_fast8_t x,
-	uint_fast8_t y,
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
 	dctx_t * pctx
 	)
 {
@@ -1284,7 +1309,7 @@ static void display_freqchr_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(xcell, ycell + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -1297,7 +1322,7 @@ static void display_freqchr_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(xcell, ycell + lowhalf, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 	}
 }
@@ -1305,8 +1330,8 @@ static void display_freqchr_a(
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
 // FREQ B
 static void display_freqchr_b(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
 	dctx_t * pctx
 	)
 {
@@ -1325,7 +1350,7 @@ static void display_freqchr_b(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(xcell, ycell + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -1338,14 +1363,14 @@ static void display_freqchr_b(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(xcell, ycell + lowhalf, freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 	}
 }
 
 static void display2_freqX_b(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
 	dctx_t * pctx
 	)
 {
@@ -1361,14 +1386,14 @@ static void display2_freqX_b(
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_value_small(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, lowhalf);
+		display_value_small(xcell, ycell + lowhalf, freq, fullwidth, comma, comma + 3, rj, lowhalf);
 	} while (lowhalf --);
 }
 
 // отладочная функция измерителя опорной частоты
 static void display_freqmeter10(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
 	dctx_t * pctx
 	)
 {
@@ -1382,7 +1407,7 @@ static void display_freqmeter10(
 		);
 
 	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
-	display_at(x, y, buf2);
+	display_at(xcell, ycell, buf2);
 #endif /* WITHFQMETER */
 }
 
@@ -1390,8 +1415,8 @@ static void display_freqmeter10(
 static void
 NOINLINEAT
 display2_text_P(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
 	const FLASHMEM char * const * labels,	// массив указателей на текст
 	const COLORPAIR_T * colors,			// массив цветов
 	uint_fast8_t state
@@ -1401,10 +1426,10 @@ display2_text_P(
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
 #if WITHALTERNATIVELAYOUT
-	layout_label1_medium(x, y, labels [state], strlen_P(labels [state]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(xcell, ycell, labels [state], strlen_P(labels [state]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
 #else
 	colmain_setcolors(colors [state].fg, colors [state].bg);
-	display_at_P(x, y, labels [state]);
+	display_at_P(xcell, ycell, labels [state]);
 #endif /* WITHALTERNATIVELAYOUT */
 }
 
