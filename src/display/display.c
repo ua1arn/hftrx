@@ -2313,6 +2313,7 @@ void display_do_AA(
 
 #endif /* LCDMODE_LTDC */
 
+#if ! LCDMODE_DUMMY
 
 /* valid chars: "0123456789 #._" */
 uint_fast8_t
@@ -2340,12 +2341,12 @@ smallfont_decode(char cc)
 	return c - ' ';
 }
 
-#if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
+//#if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
 uint_fast8_t bigfont_width(char cc)
 {
 	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
 }
-#endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
+//#endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
 
 #if defined (HALFCHARW)
 uint_fast8_t halffont_width(char cc)
@@ -2378,4 +2379,4 @@ uint_fast8_t smallfont3_width(char cc)
 	return SMALLCHARW3;	// полная ширина символа в пикселях
 }
 #endif /* defined (SMALLCHARH3) */
-
+#endif /* ! LCDMODE_DUMMY */
