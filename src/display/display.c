@@ -720,6 +720,7 @@ void render_value_big_initialize(void)
 			xpix = ltdc_put_char_big(xpix, ypix, ci, BIGCHARW, rendered_big, picx_big, picy_big);
 		}
 		display_wrdatabig_end();
+		dcache_clean((uintptr_t) picy_big, sizeof rendered_big [0] * GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH));
 	}
 	/* half-size characters */
 	{
@@ -733,6 +734,7 @@ void render_value_big_initialize(void)
 			xpix = ltdc_put_char_half(xpix, ypix, ci, HALFCHARW, rendered_half, picx_half, picy_half);
 		}
 		display_wrdatabig_end();
+		dcache_clean((uintptr_t) picy_big, sizeof rendered_half [0] * GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH));
 	}
 }
 
@@ -759,11 +761,12 @@ uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, u
 
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	/* копируем изображение БЕЗ цветового ключа */
+	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
 	colpip_bitblt(
 			(uintptr_t) buffer, GXSIZE(DIM_X, DIM_Y) * sizeof buffer [0],
 			buffer, DIM_X, DIM_Y,
 			xpix, ypix,
-			(uintptr_t) rendered_big, GXSIZE(picx_big, picy_big) * sizeof rendered_big [0],
+			(uintptr_t) rendered_big, 0 * GXSIZE(picx_big, picy_big) * sizeof rendered_big [0],
 			rendered_big, picx_big, picy_big,
 			ci * BIGCHARW, 0,	// координаты окна источника
 			width, BIGCHARH, // размер окна источника
@@ -784,11 +787,12 @@ uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, 
 
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	/* копируем изображение БЕЗ цветового ключа */
+	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
 	colpip_bitblt(
 			(uintptr_t) buffer, GXSIZE(DIM_X, DIM_Y) * sizeof buffer [0],
 			buffer, DIM_X, DIM_Y,
 			xpix, ypix,
-			(uintptr_t) rendered_half, GXSIZE(picx_half, picy_half) * sizeof rendered_half [0],
+			(uintptr_t) rendered_half, 0 * GXSIZE(picx_half, picy_half) * sizeof rendered_half [0],
 			rendered_half, picx_half, picy_half,
 			ci * HALFCHARW, 0,	// координаты окна источника
 			width, HALFCHARH, // размер окна источника
