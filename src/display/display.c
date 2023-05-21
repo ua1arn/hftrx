@@ -719,7 +719,9 @@ void render_value_big_initialize(void)
 			/* формирование изображений символов, возможно с эффектами антиалиасинга */
 			/* Изображения символов располагаются в буфере горизонтально, слева направо */
 			ASSERT(xpix == ci * BIGCHARW);
-			xpix = ltdc_put_char_big(xpix, ypix, ci, BIGCHARW, rendered_big, picx_big, picy_big);
+			ltdc_put_char_big(xpix, ypix, ci, BIGCHARW, rendered_big, picx_big, picy_big);
+			display_do_AA(rendered_big, picx_big, picy_big, xpix, ypix, BIGCHARW, BIGCHARH);
+			xpix += BIGCHARW;
 		}
 		display_wrdatabig_end();
 		dcache_clean((uintptr_t) picy_big, sizeof rendered_big [0] * GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH));
@@ -733,7 +735,9 @@ void render_value_big_initialize(void)
 			/* формирование изображений символов, возможно с эффектами антиалиасинга */
 			/* Изображения символов располагаются в буфере горизонтально, слева направо */
 			ASSERT(xpix == ci * HALFCHARW);
-			xpix = ltdc_put_char_half(xpix, ypix, ci, HALFCHARW, rendered_half, picx_half, picy_half);
+			ltdc_put_char_half(xpix, ypix, ci, HALFCHARW, rendered_half, picx_half, picy_half);
+			display_do_AA(rendered_half, picx_half, picy_half, xpix, ypix, HALFCHARW, HALFCHARH);
+			xpix += HALFCHARW;
 		}
 		display_wrdatabig_end();
 		dcache_clean((uintptr_t) picy_big, sizeof rendered_half [0] * GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH));
