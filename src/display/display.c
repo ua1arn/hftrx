@@ -696,16 +696,18 @@ void render_value_big_initialize(void)
 	uint_fast8_t ci;
 
 	/* Возможно использование подготовленных изображений */
-//	#include "Cobra.png.h"
+//	#include "fonts/BigDigits.png.h"
+//	#include "fonts/HalfDigits.png.h"
 //
 //	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
-//	LuImage * png = luPngReadMemory((char *) Cobra_png);
+//	LuImage * BigDigits_png = luPngReadMemory((char *) BigDigits_png);
+//	LuImage * HalfDigits_png = luPngReadMemory((char *) HalfDigits_png);
 //
-//	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
-//	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
-//	const unsigned picdx = png->width;//GXADJ(png->width);
-//	const unsigned picw = png->width;
-//	const unsigned pich = png->height;
+//	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) BigDigits_png->data;
+//	const COLORPIP_T keycolor = TFTRGB(BigDigits_png->data [0], BigDigits_png->data [1], BigDigits_png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+//	const unsigned picdx = BigDigits_png->width;//GXADJ(png->width);
+//	const unsigned picw = BigDigits_png->width;
+//	const unsigned pich = BigDigits_png->height;
 //	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
 
 	/* big-size characters */
@@ -765,7 +767,7 @@ uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, u
 	colpip_bitblt(
 			(uintptr_t) buffer, GXSIZE(DIM_X, DIM_Y) * sizeof buffer [0],
 			buffer, DIM_X, DIM_Y,
-			xpix, ypix,
+			xpix, ypix,	// координаты в окне получатля
 			(uintptr_t) rendered_big, 0 * GXSIZE(picx_big, picy_big) * sizeof rendered_big [0],
 			rendered_big, picx_big, picy_big,
 			ci * BIGCHARW, 0,	// координаты окна источника
@@ -791,7 +793,7 @@ uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, 
 	colpip_bitblt(
 			(uintptr_t) buffer, GXSIZE(DIM_X, DIM_Y) * sizeof buffer [0],
 			buffer, DIM_X, DIM_Y,
-			xpix, ypix,
+			xpix, ypix,	// координаты в окне получатля
 			(uintptr_t) rendered_half, 0 * GXSIZE(picx_half, picy_half) * sizeof rendered_half [0],
 			rendered_half, picx_half, picy_half,
 			ci * HALFCHARW, 0,	// координаты окна источника
