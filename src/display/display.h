@@ -1101,6 +1101,11 @@ void colpip_fillrect(
 
 uint_fast8_t smallfont_decode(char cc);
 uint_fast8_t bigfont_decode(char cc);
+uint_fast8_t bigfont_width(char cc);
+uint_fast8_t halffont_width(char cc);
+uint_fast8_t smallfont_width(char cc);
+uint_fast8_t smallfont2_width(char cc);
+uint_fast8_t smallfont3_width(char cc);
 
 int_fast32_t display_zoomedbw(void);
 
