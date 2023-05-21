@@ -517,15 +517,15 @@ void RAMFUNC ltdc_horizontal_pixels(
 	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
-static void RAMFUNC
+void RAMFUNC
 ltdc_put_char_unified(
 	const FLASHMEM uint8_t * fontraster,
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
 	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке символа
-	PACKEDCOLORPIP_T * const __restrict buffer,
-	const uint_fast16_t dx, const uint_fast16_t dy,	// размеры целевого буфера
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx, uint_fast16_t dy,	// размеры целевого буфера
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	uint_fast8_t ci	// индекс символа в знакогенераторе
 	)
