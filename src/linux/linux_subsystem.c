@@ -432,26 +432,19 @@ void linux_iq_thread(void)
 
 	uint32_t iqcnt = * iq_count_rx;
 
-	if (iqcnt >= DMABUFFSIZE32RX * 2)
+	if (iqcnt >= DMABUFFSIZE32RX)
 	{
-		if (iqcnt >= DMABUFFSIZE32RX * 3)
-			printf("-> FIFO overrun %d <-\n", iqcnt);
+		uintptr_t addr32rx = allocate_dmabuffer32rx();
+		uint32_t * r = (uint32_t *) addr32rx;
 
-		while(iqcnt > DMABUFFSIZE32RX * 2)
-		{
-			uintptr_t addr32rx = allocate_dmabuffer32rx();
-			uint32_t * r = (uint32_t *) addr32rx;
+		for (int i = 0; i < DMABUFFSIZE32RX; i ++)
+			r[i] = * iq_fifo_rx;
 
-			for (int i = 0; i < DMABUFFSIZE32RX; i ++)
-				r[i] = * iq_fifo_rx;
+		processing_dmabuffer32rx(addr32rx);
+		processing_dmabuffer32rts(addr32rx);
+		release_dmabuffer32rx(addr32rx);
 
-			processing_dmabuffer32rx(addr32rx);
-			processing_dmabuffer32rts(addr32rx);
-			release_dmabuffer32rx(addr32rx);
-
-			rx_stage += CNT32RX;
-			iqcnt -= (DMABUFFSIZE32RX * 2);
-		}
+		rx_stage += CNT32RX;
 
 		while (rx_stage >= CNT16TX)
 		{
@@ -496,7 +489,7 @@ void linux_iq_interrupt_thread(void)
 
     while(1)
     {
-#if 0
+#if 1
         //Acknowledge IRQ
         if (write(fd_int, &uio_key, sizeof(uio_key)) < 0) {
             PRINTF("Failed to acknowledge IRQ: %s\n", strerror(errno));
@@ -595,6 +588,13 @@ float xczu_get_cpu_temperature(void)
 }
 #endif /* WITHCPUTEMPERATURE && CPUSTYLE_XCZU */
 
+#if WITHLINUXKERNELINT
+static void signal_handler(int n, siginfo_t * info, void * unused)
+{
+	linux_iq_thread();
+}
+#endif /* #if WITHLINUXKERNELINT */
+
 void linux_user_init(void)
 {
 	xcz_resetn_modem_state(0);
@@ -603,7 +603,23 @@ void linux_user_init(void)
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
 	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
+
+#if WITHLINUXKERNELINT
+	struct sigaction sig;
+	sig.sa_sigaction = signal_handler;
+	sig.sa_flags = SA_SIGINFO;
+	sigaction(SIGUSR1, & sig, NULL);
+
+	const char * argv [] = { "/sbin/modprobe", "inttest", NULL, };
+	linux_run_shell_cmd(argv);
+	usleep(200000);
+
+	int fs = open("/dev/iq_irq", O_RDONLY);
+	ioctl(fs, 0, getpid());
+	close(fs);
+#else
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 80, 1);
+#endif /* ! WITHLINUXKERNELINT */
 
 #if WITHFT8
 	linux_create_thread(& ft8_t, ft8_thread, 50, 0);
