@@ -517,9 +517,8 @@ void RAMFUNC ltdc_horizontal_pixels(
 	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
-
-uint_fast16_t
-RAMFUNC_NONILINE ltdc_put_char_unified(
+uint_fast16_t RAMFUNC
+ltdc_put_char_unified(
 	const FLASHMEM uint8_t * fontraster,
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
 	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
@@ -528,46 +527,46 @@ RAMFUNC_NONILINE ltdc_put_char_unified(
 	PACKEDCOLORPIP_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
-	uint_fast16_t x, uint_fast16_t y,
+	uint_fast16_t xpix, uint_fast16_t ypix,
 	uint_fast8_t ci
 	)
 {
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < height; ++ cgrow)
 	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y + cgrow);
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, xpix, ypix + cgrow);
 		ltdc_horizontal_pixels(tgr, & fontraster [(ci * height + cgrow) * bytesw], width2);
 	}
-	return x + width2;
+	return xpix + width2;
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // return new x
 static uint_fast16_t
-RAMFUNC_NONILINE
-ltdc_put_char_small(uint_fast16_t x, uint_fast16_t y, uint_fast8_t ci, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+RAMFUNC
+ltdc_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
-	return ltdc_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], buffer, dx, dy, x, y, ci);
+	return ltdc_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], buffer, dx, dy, xpix, ypix, ci);
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE ltdc_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t ci, uint_fast8_t width, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+static uint_fast16_t RAMFUNC ltdc_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
-	return ltdc_put_char_unified(font_big, BIGCHARW, width, BIGCHARH, size_bigfont, buffer, dx, dy, x, y, ci);
+	return ltdc_put_char_unified(font_big, BIGCHARW, width, BIGCHARH, size_bigfont, buffer, dx, dy, xpix, ypix, ci);
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE ltdc_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t ci, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+static uint_fast16_t RAMFUNC ltdc_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
 {
-     return ltdc_put_char_unified(font_half, HALFCHARW, HALFCHARW, HALFCHARH, size_halffont, buffer, dx, dy, x, y, ci);
+     return ltdc_put_char_unified(font_half, HALFCHARW, HALFCHARW, HALFCHARH, size_halffont, buffer, dx, dy, xpix, ypix, ci);
 }
 
 #else /* LCDMODE_HORFILL */
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
+static uint_fast16_t RAMFUNC ltdc_vertical_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	uint_fast8_t i = 0;
 	const uint_fast8_t ci = smallfont_decode(cc);
@@ -580,7 +579,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_small(uint_fast16_t
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
+static uint_fast16_t RAMFUNC ltdc_vertical_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
@@ -595,7 +594,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_big(uint_fast16_t x
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static uint_fast16_t RAMFUNC_NONILINE ltdc_vertical_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
+static uint_fast16_t RAMFUNC ltdc_vertical_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = bigfont_decode(cc);
