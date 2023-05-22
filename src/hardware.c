@@ -2563,7 +2563,7 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 // Also see __set_TTBR0 parameter
 #define CACHEATTR_NOCACHE 0x00		// Non-cacheable
 #define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
-#define CACHEATTR_WT_T_CACHE 0x02	// Write-Through, no Write-Allocate
+#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
 #define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
 
 /* атрибуты для разных областей памяти (при TEX[2]=1 способе задания) */
@@ -2832,7 +2832,29 @@ sysinit_ttbr_initialize(void)
 	    ; 2     - IMP     0x0  (Implementation Defined)
 	    ; 1     - S       0x0  (Non-shared)
 	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
-	__set_TTBR0((uintptr_t) tlbbase | 0x48 | (1u << 5) | (1u << 1));	// TTBR0
+
+	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
+#if WITHSMPSYSTEM
+	// TTBR0
+	const unsigned IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
+	const unsigned RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+	__set_TTBR0(
+			(uintptr_t) tlbbase |
+			(!! (IRGN_attr & 0x01) << 6) | (!! (IRGN_attr & 0x02) << 0) |	// IRGN
+			(RGN_attr << 3) |	// RGN
+			1*(1u << 5) |	// NOS
+			1*(1u << 1) |	// S
+			0);
+#else /* WITHSMPSYSTEM */
+	// TTBR0
+	__set_TTBR0(
+			(uintptr_t) tlbbase |
+			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
+			(0x01u << 3) |	// RGN
+			0*(1u << 5) |	// NOS
+			0*(1u << 1) |	// S
+			0);
+#endif /* WITHSMPSYSTEM */
 	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
 	  __ISB();
 
