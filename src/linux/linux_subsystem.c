@@ -446,14 +446,12 @@ void linux_iq_thread(void)
 	static int rx_stage = 0;
 
 #if IQMODEM_BLOCKMEMORY
-	uint16_t offset = 0;
-	uintptr_t addr32rx = allocate_dmabuffer32rx();
-	uint32_t * r = (uint32_t *) addr32rx;
-	uint32_t pos = * iq_count_rx;
-
-	offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
-	memcpy(r, iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
 	{
+		uintptr_t addr32rx = allocate_dmabuffer32rx();
+		uint32_t * r = (uint32_t *) addr32rx;
+		uint32_t pos = * iq_count_rx;
+		uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
+		memcpy(r, iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
 #else
 	uint32_t iqcnt = * iq_count_rx;
 	if (iqcnt >= DMABUFFSIZE32RX)
@@ -477,7 +475,6 @@ void linux_iq_thread(void)
 
 			for (int i = 0; i < DMABUFFSIZE16TX; i ++)
 				* ph_fifo = b[i];
-
 
 			release_dmabuffer16tx(addr2);
 			rx_stage -= CNT16TX;
