@@ -34,7 +34,7 @@ enum {
 	hw_vfo_sel_pos		= 26,
 };
 
-void * get_highmem_ptr (uint32_t addr)
+void * get_highmem_ptr(uint32_t addr)
 {
 	int fd;
 	if((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0)
@@ -59,6 +59,15 @@ void * get_highmem_ptr (uint32_t addr)
 
 	virt_addr = (char*) map_base + offset_in_page;
 	return virt_addr;
+}
+
+void * get_blockmem_ptr(uint32_t addr, uint8_t pages)
+{
+	int fd = open("/dev/mem", O_RDWR);
+	void * blkptr = mmap(NULL, pages * sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, addr);
+	close(fd);
+	ASSERT(blkptr);
+	return blkptr;
 }
 
 void process_linux_timer_spool(void)
@@ -398,6 +407,7 @@ uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, con
 
 /*************************************************************/
 
+void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl,  * ph_fifo, * iq_count_rx, * iq_count_tx, * iq_fifo_rx, * iq_fifo_tx;
 static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
@@ -409,11 +419,16 @@ void linux_iq_init(void)
 	ftw_sub = 		get_highmem_ptr(AXI_IQ_FTW_SUB_ADDR);
 	rts = 			get_highmem_ptr(AXI_IQ_RTS_ADDR);
 	ph_fifo = 		get_highmem_ptr(AXI_FIFO_PHONES_ADDR);
-	iq_fifo_rx = 	get_highmem_ptr(AXI_IQ_FIFO_RX_ADDR);
 	iq_fifo_tx = 	get_highmem_ptr(AXI_IQ_FIFO_TX_ADDR);
 	modem_ctrl = 	get_highmem_ptr(AXI_MODEM_CTRL_ADDR);
 	iq_count_rx = 	get_highmem_ptr(AXI_IQ_RX_COUNT_ADDR);
 	iq_count_tx = 	get_highmem_ptr(AXI_IQ_TX_COUNT_ADDR);
+
+#if IQMODEM_BLOCKMEMORY
+	iq_rx_blkmem = get_blockmem_ptr(AXI_IQ_FIFO_RX_ADDR, 1);
+#else
+	iq_fifo_rx = get_highmem_ptr(AXI_IQ_FIFO_RX_ADDR);
+#endif /* IQMODEM_BLOCKMEMORY */
 
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
@@ -430,8 +445,17 @@ void linux_iq_thread(void)
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 	static int rx_stage = 0;
 
-	uint32_t iqcnt = * iq_count_rx;
+#if IQMODEM_BLOCKMEMORY
+	uint16_t offset = 0;
+	uintptr_t addr32rx = allocate_dmabuffer32rx();
+	uint32_t * r = (uint32_t *) addr32rx;
+	uint32_t pos = * iq_count_rx;
 
+	offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
+	memcpy(r, iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
+	{
+#else
+	uint32_t iqcnt = * iq_count_rx;
 	if (iqcnt >= DMABUFFSIZE32RX)
 	{
 		uintptr_t addr32rx = allocate_dmabuffer32rx();
@@ -439,7 +463,7 @@ void linux_iq_thread(void)
 
 		for (int i = 0; i < DMABUFFSIZE32RX; i ++)
 			r[i] = * iq_fifo_rx;
-
+#endif /* IQMODEM_BLOCKMEMORY */
 		processing_dmabuffer32rx(addr32rx);
 		processing_dmabuffer32rts(addr32rx);
 		release_dmabuffer32rx(addr32rx);
@@ -564,7 +588,7 @@ void linux_cancel_thread(pthread_t tid)
 
 void linux_subsystem_init(void)
 {
-#if 0 //CPUSTYLE_XCZU
+#if 1 //CPUSTYLE_XCZU
 	char spid[6];
 	local_snprintf_P(spid, ARRAY_SIZE(spid), "%d", getpid());
 	const char * argv [5] = { "/usr/bin/taskset", "-p", "1", spid, NULL, };
@@ -588,38 +612,13 @@ float xczu_get_cpu_temperature(void)
 }
 #endif /* WITHCPUTEMPERATURE && CPUSTYLE_XCZU */
 
-#if WITHLINUXKERNELINT
-static void signal_handler(int n, siginfo_t * info, void * unused)
-{
-	linux_iq_thread();
-}
-#endif /* #if WITHLINUXKERNELINT */
-
 void linux_user_init(void)
 {
 	xcz_resetn_modem_state(0);
-	usleep(5);
-	xcz_resetn_modem_state(1);
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
 	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
-
-#if WITHLINUXKERNELINT
-	struct sigaction sig;
-	sig.sa_sigaction = signal_handler;
-	sig.sa_flags = SA_SIGINFO;
-	sigaction(SIGUSR1, & sig, NULL);
-
-	const char * argv [] = { "/sbin/modprobe", "inttest", NULL, };
-	linux_run_shell_cmd(argv);
-	usleep(200000);
-
-	int fs = open("/dev/iq_irq", O_RDONLY);
-	ioctl(fs, 0, getpid());
-	close(fs);
-#else
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 80, 1);
-#endif /* ! WITHLINUXKERNELINT */
 
 #if WITHFT8
 	linux_create_thread(& ft8_t, ft8_thread, 50, 0);
@@ -651,6 +650,7 @@ void linux_user_init(void)
 	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
 #endif /* WITHNMEA && WITHLFM */
 
+	xcz_resetn_modem_state(1);
 }
 
 /****************************************************************/
