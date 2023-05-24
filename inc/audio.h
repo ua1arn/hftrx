@@ -522,9 +522,10 @@ extern "C" {
 
 #define UACIN_AUDIO48_DATASIZE (DMABUFFSIZE_UACIN * UACIN_AUDIO48_SAMPLEBYTES)
 
-
+#ifndef DMABUFCLUSTER
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	33	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
+#endif /* DMABUFCLUSTER */
 #define DMABUFSCALE		2	// внутрений параметр, указывает, на сколько реже будут происходить прерывания по обмену буфрами от остальны каналов по отношению к приему от FPGA
 
 #define DMABUFFSIZE16RX	(DMABUFCLUSTER * DMABUFFSTEP16RX * DMABUFSCALE)		/* AF CODEC ADC */
