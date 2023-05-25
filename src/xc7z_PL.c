@@ -131,11 +131,17 @@ void xcz_fifo_if_rx_inthandler(void)
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 	static unsigned rx_stage = 0;
 	iq_ready = 0;
-
 	uint32_t * r = (uint32_t *) addr32rx;
 
+#if IQMODEM_BLOCKMEMORY
+	const uint32_t pos = Xil_In32(XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR);
+	const void * blkmem = (void *) XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR;
+	const uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
+	memcpy(r, blkmem + offset, DMABUFFSIZE32RX * 4);
+#else
 	for (uint16_t i = 0; i < DMABUFFSIZE32RX; i ++)
 		r[i] = Xil_In32(XPAR_IQ_MODEM_FIFO_IQ_RX_BASEADDR);
+#endif /* IQMODEM_BLOCKMEMORY */
 
 	processing_dmabuffer32rx(addr32rx);
 	processing_dmabuffer32rts(addr32rx);

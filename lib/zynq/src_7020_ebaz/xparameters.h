@@ -213,24 +213,19 @@
 /******************************************************************/
 
 
-/* Peripheral Definitions for peripheral AUDIO_AXI_FIFO_MIC */
+/* Peripheral Definitions for peripheral AUDIO_AXI_I2S_ADI_0 */
+#define XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR 0x43C20000
+#define XPAR_AUDIO_AXI_I2S_ADI_0_HIGHADDR 0x43C2FFFF
+
+
+/* Peripheral Definitions for peripheral AUDIO_FIFO_MIC */
 #define XPAR_AUDIO_FIFO_MIC_BASEADDR 0x43C50000
 #define XPAR_AUDIO_FIFO_MIC_HIGHADDR 0x43C5FFFF
 
 
-/* Peripheral Definitions for peripheral AUDIO_AXI_FIFO_PHONES */
+/* Peripheral Definitions for peripheral AUDIO_FIFO_PHONES */
 #define XPAR_AUDIO_FIFO_PHONES_BASEADDR 0x43C30000
 #define XPAR_AUDIO_FIFO_PHONES_HIGHADDR 0x43C3FFFF
-
-
-/* Peripheral Definitions for peripheral AUDIO_AXI_I2S_ADI_0 */
-#define XPAR_AUDIO_I2S_ADI_0_BASEADDR 0x43C20000
-#define XPAR_AUDIO_I2S_ADI_0_HIGHADDR 0x43C2FFFF
-
-
-/* Peripheral Definitions for peripheral IQ_MODEM_FIFO_IQ_RX */
-#define XPAR_IQ_MODEM_FIFO_IQ_RX_BASEADDR 0x43C70000
-#define XPAR_IQ_MODEM_FIFO_IQ_RX_HIGHADDR 0x43C7FFFF
 
 
 /* Peripheral Definitions for peripheral IQ_MODEM_FIFO_IQ_TX */
@@ -243,9 +238,14 @@
 #define XPAR_IQ_MODEM_FIR_RELOAD_RX_HIGHADDR 0x43C80FFF
 
 
-/* Peripheral Definitions for peripheral IQ_MODEM_FIR_RELOAD_TX */
-#define XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR 0x43C90000
-#define XPAR_IQ_MODEM_FIR_RELOAD_TX_HIGHADDR 0x43C90FFF
+/* Peripheral Definitions for peripheral IQ_MODEM_BLKMEM_CNT */
+#define XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR 0x43C90000
+#define XPAR_IQ_MODEM_BLKMEM_CNT_HIGHADDR 0x43C9FFFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_BLKMEM_READER */
+#define XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR 0x43CA0000
+#define XPAR_IQ_MODEM_BLKMEM_READER_HIGHADDR 0x43CAFFFF
 
 
 /* Peripheral Definitions for peripheral IQ_MODEM_TRX_CONTROL2_0 */
@@ -343,24 +343,19 @@
 /******************************************************************/
 
 
-/* Canonical Definitions for peripheral AUDIO_AXI_FIFO_MIC */
-#define XPAR_AXI_AXIS_READER_0_BASEADDR 0x43C50000
-#define XPAR_AXI_AXIS_READER_0_HIGHADDR 0x43C5FFFF
-
-
-/* Canonical Definitions for peripheral AUDIO_AXI_FIFO_PHONES */
-#define XPAR_AXI_AXIS_WRITER_0_BASEADDR 0x43C30000
-#define XPAR_AXI_AXIS_WRITER_0_HIGHADDR 0x43C3FFFF
-
-
 /* Canonical Definitions for peripheral AUDIO_AXI_I2S_ADI_0 */
 #define XPAR_AXI_I2S_ADI_0_BASEADDR 0x43C20000
 #define XPAR_AXI_I2S_ADI_0_HIGHADDR 0x43C2FFFF
 
 
-/* Canonical Definitions for peripheral IQ_MODEM_FIFO_IQ_RX */
-#define XPAR_AXI_AXIS_READER_1_BASEADDR 0x43C70000
-#define XPAR_AXI_AXIS_READER_1_HIGHADDR 0x43C7FFFF
+/* Canonical Definitions for peripheral AUDIO_FIFO_MIC */
+#define XPAR_AXI_AXIS_READER_0_BASEADDR 0x43C50000
+#define XPAR_AXI_AXIS_READER_0_HIGHADDR 0x43C5FFFF
+
+
+/* Canonical Definitions for peripheral AUDIO_FIFO_PHONES */
+#define XPAR_AXI_AXIS_WRITER_0_BASEADDR 0x43C30000
+#define XPAR_AXI_AXIS_WRITER_0_HIGHADDR 0x43C3FFFF
 
 
 /* Canonical Definitions for peripheral IQ_MODEM_FIFO_IQ_TX */
@@ -373,9 +368,14 @@
 #define XPAR_AXI_AXIS_WRITER_2_HIGHADDR 0x43C80FFF
 
 
-/* Canonical Definitions for peripheral IQ_MODEM_FIR_RELOAD_TX */
-#define XPAR_AXI_AXIS_WRITER_3_BASEADDR 0x43C90000
-#define XPAR_AXI_AXIS_WRITER_3_HIGHADDR 0x43C90FFF
+/* Canonical Definitions for peripheral IQ_MODEM_BLKMEM_CNT */
+#define XPAR_AXI_STS_REGISTER_0_BASEADDR 0x43C90000
+#define XPAR_AXI_STS_REGISTER_0_HIGHADDR 0x43C9FFFF
+
+
+/* Canonical Definitions for peripheral IQ_MODEM_BLKMEM_READER */
+#define XPAR_AXI_BRAM_READER_0_BASEADDR 0x43CA0000
+#define XPAR_AXI_BRAM_READER_0_HIGHADDR 0x43CAFFFF
 
 
 /* Canonical Definitions for peripheral IQ_MODEM_TRX_CONTROL2_0 */
