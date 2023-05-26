@@ -164,41 +164,13 @@ void xcz_if_rx_enable(uint_fast8_t state)
 
 uint32_t xcz_cic_test_process(void)
 {
-	while(! iq_ready);
-
 	int32_t * r = (int32_t *) addr32rx;
-	int32_t max = 0;
+	static int32_t max = 0;
 
-	arm_max_no_idx_q31(r, DMABUFFSIZE32RX, & max);
+	if (iq_ready)
+		arm_max_no_idx_q31(r, DMABUFFSIZE32RX, & max);
 
 	return max;
-}
-
-// ****************** IF TX ******************
-
-void xcz_if_tx_init(void)
-{
-
-}
-
-void xcz_dma_if_tx_inthandler(void)
-{
-#if WITHTX
-	const uintptr_t addr = getfilled_dmabuffer32tx_main();
-	uint32_t * r = (uint32_t *) addr;
-
-	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
-		Xil_Out32(XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR, r[i]);
-
-	release_dmabuffer32tx(addr);
-#endif /* WITHTX */
-}
-
-void xcz_if_tx_enable(uint_fast8_t state)
-{
-#if WITHTX
-	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_IQ_TX_IRQ_INTR, xcz_dma_if_tx_inthandler);
-#endif /* WITHTX */
 }
 
 // ****************** Audio MIC receive ******************
@@ -224,7 +196,36 @@ void xcz_fifo_mic_inthandler(void)
 void xcz_audio_rx_enable(uint_fast8_t state)
 {
 #if WITHTX
-	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_MIC_IRQ_INTR, xcz_fifo_mic_inthandler);
+//	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_MIC_IRQ_INTR, xcz_fifo_mic_inthandler);
+#endif /* WITHTX */
+}
+
+// ****************** IF TX ******************
+
+void xcz_if_tx_init(void)
+{
+
+}
+
+void xcz_dma_if_tx_inthandler(void)
+{
+	xcz_fifo_mic_inthandler();
+
+#if WITHTX
+	const uintptr_t addr = getfilled_dmabuffer32tx_main();
+	uint32_t * r = (uint32_t *) addr;
+
+	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
+		Xil_Out32(XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR, r[i]);
+
+	release_dmabuffer32tx(addr);
+#endif /* WITHTX */
+}
+
+void xcz_if_tx_enable(uint_fast8_t state)
+{
+#if WITHTX
+	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_IQ_TX_IRQ_INTR, xcz_dma_if_tx_inthandler);
 #endif /* WITHTX */
 }
 
