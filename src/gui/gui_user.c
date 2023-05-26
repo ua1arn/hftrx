@@ -3256,10 +3256,10 @@ static void window_af_eq_process(void)
 	window_t * const win = get_win(WINDOW_AF_EQ);
 
 	label_t * lbl = NULL;
-	static uint_fast8_t eq_limit, eq_base = 0;
+	static uint_fast32_t eq_limit, eq_base = 0;
 	char buf [TEXT_ARRAY_SIZE];
 	static int_fast16_t mid_y = 0;
-	static uint_fast8_t id = 0, eq_w = 0;
+	static uint_fast32_t id = 0, eq_w = 0;
 
 	if (win->first_call)
 	{
@@ -3372,7 +3372,10 @@ static void window_af_eq_process(void)
 			button_t * btn_EQ_enable = find_gui_element(TYPE_BUTTON, win, "btn_EQ_enable");
 
 			if (bh == btn_EQ_ok)
+			{
 				close_all_windows();
+				return;
+			}
 
 			if (bh == btn_EQ_enable)
 			{
@@ -3405,16 +3408,16 @@ static void window_af_eq_process(void)
 	for (unsigned i = 0; i <= abs(eq_base); i += 3)
 	{
 		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
-		gui_drawline(win, 30, mid_y + yy, win->w - eq_w, mid_y + yy, GUI_SLIDERLAYOUTCOLOR);
+		gui_drawline(30, mid_y + yy, win->w - eq_w, mid_y + yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
-		gui_drawstring(win, 30 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORMAIN_WHITE);
+		gui_drawstring(30 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORMAIN_WHITE);
 
 		if (i == 0)
 			continue;
 
-		gui_drawline(win, 30, mid_y - yy, win->w - eq_w, mid_y - yy, GUI_SLIDERLAYOUTCOLOR);
+		gui_drawline(30, mid_y - yy, win->w - eq_w, mid_y - yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
-		gui_drawstring(win, 30 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORMAIN_WHITE);
+		gui_drawstring(30 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORMAIN_WHITE);
 	}
 #endif /* WITHAFEQUALIZER */
 }
