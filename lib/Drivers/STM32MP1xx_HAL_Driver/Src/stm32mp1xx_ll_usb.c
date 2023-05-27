@@ -108,17 +108,17 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 	RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN;
 	(void) RCC->MP_APB4LPENSETR;
 
-	RCC->APB4RSTSETR = RCC_APB4RSTSETR_USBPHYRST_Msk;
-	(void) RCC->APB4RSTSETR;
-	RCC->APB4RSTCLRR = RCC_APB4RSTCLRR_USBPHYRST_Msk;
-	(void) RCC->APB4RSTCLRR;
+//	RCC->APB4RSTSETR = RCC_APB4RSTSETR_USBPHYRST_Msk;
+//	(void) RCC->APB4RSTSETR;
+//	RCC->APB4RSTCLRR = RCC_APB4RSTCLRR_USBPHYRST_Msk;
+//	(void) RCC->APB4RSTCLRR;
 	// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
 
 	const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000;	// 1.44 GHz
 	const uint_fast32_t usbphyref = LL_RCC_GetUSBPHYClockFreq(LL_RCC_USBPHY_CLKSOURCE);
 	//uint_fast32_t usbphyref = stm32mp1_get_usbphy_freq();
 	//ASSERT(usbphyref >= 19200000uL && usbphyref <= 38400000uL);
-	const uint_fast32_t ODF = 0;	// игнорируется
+	const uint_fast32_t ODF = 0;	// игнорируется - PLLODF - PLL output division factor
 	// 1440 MHz
 	const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY / 4, usbphyref / 4);
 	const uint_fast32_t N = d.quot;
