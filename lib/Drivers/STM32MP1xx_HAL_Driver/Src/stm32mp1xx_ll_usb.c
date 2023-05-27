@@ -149,7 +149,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		(((N) << USBPHYC_PLL_PLLNDIV_Pos) & USBPHYC_PLL_PLLNDIV_Msk) |	// Целая часть делителя.
 		((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
 		((PLLFRACCTL_VAL * (FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
-		(!! PLLFRACCTL_VAL * USBPHYC_PLL_PLLFRACCTL_Msk) |
+		(PLLFRACCTL_VAL * USBPHYC_PLL_PLLFRACCTL_Msk) |
 		(1 * USBPHYC_PLL_PLLSTRBYP_Msk) |
 		USBPHYC_PLL_PLLDITHEN0_Msk |	// 1: Disables the triangular PDF dither input to SDM of PLL
 		USBPHYC_PLL_PLLDITHEN1_Msk |	// 1: Disables the rectangular PDF dither input to SDM of PLL
