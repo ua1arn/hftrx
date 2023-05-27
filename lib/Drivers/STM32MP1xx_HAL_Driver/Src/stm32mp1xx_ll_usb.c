@@ -161,7 +161,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 			;
 		//PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
 
-		USBPHYC->PLL = (USBPHYC->PLL & ~ (validmask)) | newPLLvalue;
+		USBPHYC->PLL = (USBPHYC->PLL & ~ (validmask)) | (validmask & newPLLvalue);
 		(void) USBPHYC->PLL;
 
 		//PRINTF("USB_HS_PHYCInit: start PLL.\n");
@@ -221,10 +221,10 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 
   if (cfg.phy_itface == USB_OTG_ULPI_PHY)
   {
-    USBx->GCCFG &= ~(USB_OTG_GCCFG_PWRDWN);
+    USBx->GCCFG &= ~ (USB_OTG_GCCFG_PWRDWN);
 
     /* Init The ULPI Interface */
-    USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
+    USBx->GUSBCFG &= ~ (USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
 
     /* Select vbus source */
     USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_ULPIEVBUSD | USB_OTG_GUSBCFG_ULPIEVBUSI);
@@ -386,8 +386,8 @@ HAL_StatusTypeDef USB_SetTurnaroundTime(USB_OTG_GlobalTypeDef *USBx,
     UsbTrd = USBD_DEFAULT_TRDT_VALUE;
   }
 
-  USBx->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT_Msk;
-  USBx->GUSBCFG |= (((uint32_t) UsbTrd << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT_Msk);
+  USBx->GUSBCFG = (USBx->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT_Msk) |
+		  (((uint32_t) UsbTrd << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT_Msk);
 
   return HAL_OK;
 }
