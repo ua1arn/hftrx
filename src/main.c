@@ -22,7 +22,7 @@
 
 #include "dspdefines.h"
 
-//#define WITHAUTOTUNER_N7DDCALGO    /* использование алгоритма N7DDC */
+//#define WITHAUTOTUNER_N7DDCALGO  1  /* использование алгоритма N7DDC */
 
 #if WITHFT8
 	#include "ft8.h"
@@ -5543,18 +5543,22 @@ static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 }
 
 #if WITHAUTOTUNER_N7DDCALGO
+
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {
 	auto_tune_n7ddc();
 }
+
 #elif WITHAUTOTUNER_N7DDCEXT
+
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {
-	auto_tune_n7ddc();
 }
-#else
+
+#else /* WITHAUTOTUNER_N7DDCALGO, WITHAUTOTUNER_N7DDCEXT */
+
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {	
