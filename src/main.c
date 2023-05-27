@@ -22,6 +22,8 @@
 
 #include "dspdefines.h"
 
+//#define WITHAUTOTUNER_N7DDCALGO    /* использование алгоритма N7DDC */
+
 #if WITHFT8
 	#include "ft8.h"
 #endif /* WITHFT8 */
@@ -5540,7 +5542,19 @@ static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 	tunerwork = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunerwork), 0, 1, tunerwork);
 }
 
-#if ! WITHAUTOTUNER_N7DDCEXT
+#if WITHAUTOTUNER_N7DDCALGO
+/* отсюда не возвращаемся пока не настроится тюнер */
+static void auto_tune(void)
+{
+	auto_tune_n7ddc();
+}
+#elif WITHAUTOTUNER_N7DDCEXT
+/* отсюда не возвращаемся пока не настроится тюнер */
+static void auto_tune(void)
+{
+	auto_tune_n7ddc();
+}
+#else
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {	
@@ -5624,12 +5638,6 @@ aborted:
 	tunertype = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
 	updateboard_tuner();
 	return;
-}
-#else /* ! WITHAUTOTUNER_N7DDCEXT */
-/* отсюда не возвращаемся пока не настроится тюнер */
-static void auto_tune(void)
-{
-
 }
 #endif /* ! WITHAUTOTUNER_N7DDCEXT */
 #endif /* WITHAUTOTUNER */
