@@ -4715,7 +4715,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 #if WITHAUTOTUNER
 
-#if 1
+#if WITHAUTOTUNER_N7DDCALGO
 
 // N7DDC code.
 // Taken from:
@@ -4726,13 +4726,13 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 // ATU-100 project 2016
 
 //
-static char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0, L_linear = 0,
-		C_linear = 0, L_q = 7, C_q = 7, D_correction = 1, L_invert = 0, L_mult =
-				1, C_mult = 1, P_High = 0, K_Mult = 32, Overload = 0, Loss_ind =
-				0, Relay_off = 0;
+static unsigned char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0, L_linear = 0,
+		C_linear = 0, L_q = 7, C_q = 7, D_correction = 1,
+		L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
+static unsigned char Overload = 0, Loss_ind = 0, Relay_off = 0;
 static int Rel_Del, min_for_start, max_for_start, max_swr;
 static int SWR_n7ddc, PWR_n7ddc, P_max, swr_a;
-static char rready = 0, p_cnt = 0;
+static unsigned char rready = 0, p_cnt = 0;
 //
 //void btn_push(void);
 //void lcd_prep(void);
@@ -5278,7 +5278,8 @@ static void auto_tune_n7ddc(void) {
 	return;
 }
 
-#endif
+#endif /* WITHAUTOTUNER_N7DDCALGO */
+
 // что удалось достичь в результате перебора
 typedef struct tunerstate
 {
