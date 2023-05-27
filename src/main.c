@@ -2867,9 +2867,11 @@ struct oneant_tag {
 #endif /* ! WITHONEATTONEAMP */
 	uint8_t att;		/* режим аттенюатора */
 #if WITHAUTOTUNER
+#if ! WITHAUTOTUNER_N7DDCEXT
 	uint8_t tunercap;
 	uint8_t tunerind;
 	uint8_t tunertype;
+#endif /* ! WITHAUTOTUNER_N7DDCEXT */
 	uint8_t tunerwork;
 #endif /* WITHAUTOTUNER */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
@@ -5434,6 +5436,7 @@ static uint_fast8_t tuneabort(void)
 	return 0;
 }
 
+#if ! WITHAUTOTUNER_N7DDCEXT
 // Перебор значений L в поиске минимума SWR
 // Если прервана настройка - возврат не-0
 static uint_fast8_t scanminLk(tus_t * tus)
@@ -5515,21 +5518,29 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 	return best;
 }
 
+#endif /* ! WITHAUTOTUNER_N7DDCEXT */
+
 static void storetuner(uint_fast8_t bg, uint_fast8_t ant)
 {
+#if ! WITHAUTOTUNER_N7DDCEXT
 	save_i8(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunercap), tunercap);
 	save_i8(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunerind), tunerind);
 	save_i8(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunertype), tunertype);
+#endif /* ! WITHAUTOTUNER_N7DDCEXT */
 	save_i8(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunerwork), tunerwork);
 }
 
 static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 {
+#if ! WITHAUTOTUNER_N7DDCEXT
 	tunercap = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunercap), CMIN, CMAX, tunercap);
 	tunerind = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunerind), LMIN, LMAX, tunerind);
 	tunertype = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
+#endif
 	tunerwork = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunerwork), 0, 1, tunerwork);
 }
+
+#if ! WITHAUTOTUNER_N7DDCEXT
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {	
@@ -5614,6 +5625,13 @@ aborted:
 	updateboard_tuner();
 	return;
 }
+#else /* ! WITHAUTOTUNER_N7DDCEXT */
+/* отсюда не возвращаемся пока не настроится тюнер */
+static void auto_tune(void)
+{
+
+}
+#endif /* ! WITHAUTOTUNER_N7DDCEXT */
 #endif /* WITHAUTOTUNER */
 
 /* получение следующего числа в диапазоне low..high с "заворотом" */

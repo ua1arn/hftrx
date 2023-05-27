@@ -3756,7 +3756,11 @@ prog_ctrlreg(uint_fast8_t plane)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 #endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
 	//prog_rfadc_update();			// AD9246 vref divider update
-
+	#if WITHAUTOTUNER_N7DDCEXT
+		const int n7ddcext = 1;
+	#else /* WITHAUTOTUNER_N7DDCEXT */
+		const int n7ddcext = 0;
+	#endif /* WITHAUTOTUNER_N7DDCEXT */
 	// registers chain control register
 	{
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3827,12 +3831,21 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, txgated && ! xvrtr);
 		RBBIT(0101, (glob_fanflag || txgated) && ! xvrtr);	// FAN
-		// 0100 is a bpf7
-		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
-		RBBIT(0071, glob_tuner_type);		// TY
-		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
-		RBVAL8(0060, glob_tuner_L);
-		RBVAL8(0050, glob_tuner_C);
+		if (n7ddcext)
+		{
+			// 0100 is a bpf7
+			RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
+			RBBIT(0070, 0);	// в обесточенном состоянии - режим BYPASS
+		}
+		else
+		{
+			// 0100 is a bpf7
+			RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
+			RBBIT(0071, glob_tuner_type);		// TY
+			RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
+			RBVAL8(0060, glob_tuner_L);
+			RBVAL8(0050, glob_tuner_C);
+		}
 
 	#elif SHORTSET8 || FULLSET8
 
@@ -3853,8 +3866,15 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHAUTOTUNER */
 
 		// DD23 SN74HC595PW + ULN2003APW на разъём управления LPF
-		RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
-		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
+		if (n7ddcext)
+		{
+			RBBIT(0040, glob_tuner_bypass);		/* pin 02 - tuner bypass */
+		}
+		else
+		{
+			RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
+			RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
+		}
 
 		// DD42 SN74HC595PW
 		RBBIT(0037, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE
