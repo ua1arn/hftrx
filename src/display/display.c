@@ -628,7 +628,7 @@ uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc, u
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
     const uint_fast8_t width = halffont_width(cc);
-	const uint_fast8_t ci = bigfont_decode(cc);
+	const uint_fast8_t ci = halffont_decode(cc);
 	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
@@ -788,7 +788,7 @@ uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, 
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
     const uint_fast8_t width = halffont_width(cc);
-	const uint_fast8_t ci = bigfont_decode(cc);
+	const uint_fast8_t ci = halffont_decode(cc);
 	savewhere = __func__;
 
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
@@ -2318,6 +2318,22 @@ void display_do_AA(
 /* valid chars: "0123456789 #._" */
 uint_fast8_t
 bigfont_decode(char cc)
+{
+	const uint_fast8_t c = (unsigned char) cc;
+	// '#' - узкий пробел
+	if (c == ' ' || c == '#')
+		return 11;
+	if (c == '_')
+		return 10;		// курсор - позиция редактирвания частоты
+	if (c == '.')
+		return 12;		// точка
+	if (c > '9')
+		return 10;		// ошибка - курсор - позиция редактирвания частоты
+	return c - '0';		// остальные - цифры 0..9
+}
+/* valid chars: "0123456789 #._" */
+uint_fast8_t
+halffont_decode(char cc)
 {
 	const uint_fast8_t c = (unsigned char) cc;
 	// '#' - узкий пробел

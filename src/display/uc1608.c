@@ -153,7 +153,7 @@ static uint_fast16_t uc1608_put_char_half(uint_fast16_t xpix, char cc, uint_fast
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t width = halffont_width(cc);
-    const uint_fast8_t c = bigfont_decode(cc);
+    const uint_fast8_t c = halffont_decode(cc);
 	//enum { NBYTES = (sizeof uc1608_halffont / sizeof uc1608_halffont[0]) };
 	enum { NCOLS = (sizeof uc1608_halffont [c][lowhalf] / sizeof uc1608_halffont [c][lowhalf] [0]) };
 	const FLASHMEM uint8_t * const p = & uc1608_halffont [c][lowhalf][0];

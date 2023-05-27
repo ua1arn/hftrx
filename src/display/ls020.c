@@ -161,7 +161,7 @@ static uint_fast8_t ls020_put_char_big(uint_fast8_t xpix, char cc)
 static uint_fast8_t ls020_put_char_half(uint_fast8_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode(cc);
+    const uint_fast8_t c = halffont_decode(cc);
 	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0][0]) };
 	const FLASHMEM uint8_t * const p = & ls020_halffont [c][0];
 	for (; i < NBYTES; ++ i)

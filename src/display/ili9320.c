@@ -280,7 +280,7 @@ static void ili9320_put_char_big(char cc, uint_fast8_t lowhalf)
 static void ili9320_put_char_half(char cc, uint_fast8_t lowhalf)
 {
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode(cc);
+    const uint_fast8_t c = halffont_decode(cc);
 	enum { NBYTES = (sizeof ILI9320_halffont [0] / sizeof ILI9320_halffont [0][0]) };
 	const FLASHMEM uint8_t * const p = & ILI9320_halffont [c][0];
 	for (; i < NBYTES; ++ i)

@@ -527,7 +527,7 @@ st7735_put_char_half(xholder_t xpix, char cc)
 {
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode(cc);
+    const uint_fast8_t c = halffont_decode(cc);
 	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0][0]) };
 	const FLASHMEM uint8_t * p = & ls020_halffont [c][0];
 	

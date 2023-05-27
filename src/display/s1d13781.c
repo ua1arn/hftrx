@@ -1016,7 +1016,7 @@ static uint_fast32_t gethalfcharbase(
 	char cc	// символ для отображения
 	)
 {
-	return halfchargenbase + bigfont_decode(cc) * halfchargenstep;
+	return halfchargenbase + halffont_decode(cc) * halfchargenstep;
 }
 
 static uint_fast32_t getsmallcharbase(
