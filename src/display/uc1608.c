@@ -372,6 +372,11 @@ static void uc1608_resetdelay(void)
 {
 	local_delay_ms(150); // Delay 50 ms
 }
+
+void display_nextfb(void)
+{
+}
+
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void display_reset(void)
@@ -428,10 +433,6 @@ void display_initialize(void)
 	//uc1608_write_cmd(0x40);			// set start line = 0
 
 	uc1608_write_cmd(0xaf);	// Set Display Enable
-}
-
-void display_nextfb(void)
-{
 }
 
 #endif /* LCDMODE_UC1608 */

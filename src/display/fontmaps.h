@@ -9,26 +9,26 @@
 #define DISPLAY_FONTMAPS_H_INCLUDED
 
 extern const FLASHMEM uint8_t ILI9225_bigfont [13][5 * 24];
-extern const FLASHMEM uint8_t ILI9225_halffont [12][5 * 14];
+extern const FLASHMEM uint8_t ILI9225_halffont [13][5 * 14];
 extern const FLASHMEM uint8_t ILI9225_smallfont [][2 * 8];
 extern const FLASHMEM uint8_t ILI9320_bigfont [13][4 * 18];
-extern const FLASHMEM uint8_t ILI9320_halffont [12][4 * 14];
+extern const FLASHMEM uint8_t ILI9320_halffont [13][4 * 14];
 extern const FLASHMEM uint8_t ILI9320_smallfont [][16];
 extern const FLASHMEM uint8_t ILI9341_bigfont [][120];
-extern const FLASHMEM uint8_t ILI9341_halffont [12][5 * 14];
+extern const FLASHMEM uint8_t ILI9341_halffont [13][5 * 14];
 extern const FLASHMEM uint8_t ILI9341_smallfont [][20];
 extern const FLASHMEM uint8_t ls020_bigfont [13][4 * 18];
-extern const FLASHMEM uint8_t ls020_halffont [12][4 * 14];
+extern const FLASHMEM uint8_t ls020_halffont [13][4 * 14];
 extern const FLASHMEM uint8_t ls020_smallfont [][16];
 extern const FLASHMEM uint8_t S1D13781_bigfont_LTDC [13][56][5];
-extern const FLASHMEM uint8_t S1D13781_halffont_LTDC [12][56][4];
+extern const FLASHMEM uint8_t S1D13781_halffont_LTDC [13][56][4];
 extern const FLASHMEM uint8_t S1D13781_smallfont_LTDC [][15][2];
 extern const FLASHMEM uint8_t S1D13781_smallfont2_LTDC [][16][2];
 extern const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8];
 
 #if WITHALTERNATIVEFONTS
 extern const FLASHMEM uint8_t ltdc_CenturyGothic_big [13][56][5];
-extern const FLASHMEM uint8_t ltdc_CenturyGothic_half [12][56][4];
+extern const FLASHMEM uint8_t ltdc_CenturyGothic_half [13][56][4];
 #endif /* WITHALTERNATIVEFONTS */
 
 //
