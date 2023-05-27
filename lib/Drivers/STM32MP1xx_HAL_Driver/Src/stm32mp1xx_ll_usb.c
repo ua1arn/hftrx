@@ -108,6 +108,10 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 	RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN;
 	(void) RCC->MP_APB4LPENSETR;
 
+	RCC->APB4RSTSETR = RCC_APB4RSTSETR_USBPHYRST_Msk;
+	(void) RCC->APB4RSTSETR;
+	RCC->APB4RSTCLRR = RCC_APB4RSTCLRR_USBPHYRST_Msk;
+	(void) RCC->APB4RSTCLRR;
 	// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
 
 	const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000;	// 1.44 GHz
@@ -145,7 +149,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		(((N) << USBPHYC_PLL_PLLNDIV_Pos) & USBPHYC_PLL_PLLNDIV_Msk) |	// Целая часть делителя.
 		((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
 		((PLLFRACCTL_VAL * (FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
-		(PLLFRACCTL_VAL * USBPHYC_PLL_PLLFRACCTL_Msk) |
+		(!! PLLFRACCTL_VAL * USBPHYC_PLL_PLLFRACCTL_Msk) |
 		(1 * USBPHYC_PLL_PLLSTRBYP_Msk) |
 		USBPHYC_PLL_PLLDITHEN0_Msk |	// 1: Disables the triangular PDF dither input to SDM of PLL
 		USBPHYC_PLL_PLLDITHEN1_Msk |	// 1: Disables the rectangular PDF dither input to SDM of PLL
