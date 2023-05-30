@@ -13251,7 +13251,7 @@ uif_key_click_xxxx(void)
 // ****************
 // NMEA parser
 // dummy function
-#if WITHNMEA && 1
+#if WITHNMEA && ! WITHAUTOTUNER_UA1CEI && 1
 
 enum nmea_states
 {
