@@ -861,12 +861,40 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
  *
  */
-#if CPUSTYLE_T113
+#if CPUSTYLE_T113_S4
+static struct dram_para_t ddrp3 =
+{
+	.dram_clk = 936,	// s3: 792
+	.dram_type = 3,
+	.dram_zq = 0x7b7bfb,	// same as 0x007b7bFb or 8092667
+	.dram_odt_en = 0x00,
+	.dram_para1 = 0x000010d2,
+	.dram_para2 = 0x0000,
+	.dram_mr0 = 0x1c70,
+	.dram_mr1 = 0x042,
+	.dram_mr2 = 0x18,
+	.dram_mr3 = 0x0,
+	.dram_tpr0 = 0x004a2195,
+	.dram_tpr1 = 0x02423190,
+	.dram_tpr2 = 0x0008B061,
+	.dram_tpr3 = 0xB4787896,
+	.dram_tpr4 = 0x0,
+	.dram_tpr5 = 0x48484848,
+	.dram_tpr6 = 0x00000048,
+	.dram_tpr7 = 0x1620121e,
+	.dram_tpr8 = 0x0,
+	.dram_tpr9 = 0x0,
+	.dram_tpr10 = 0x0,
+	.dram_tpr11 = 0x00340000,
+	.dram_tpr12 = 0x00000046,
+	.dram_tpr13 = 0x34000100,
+};
+#elif CPUSTYLE_T113
 static struct dram_para_t ddrp3 =
 {
 	.dram_clk = 792,
 	.dram_type = 3,
-	.dram_zq = 8092667,
+	.dram_zq = 0x007b7bFb,	// same as 0x007b7bFb or 8092667
 	.dram_odt_en = 0x00,
 	.dram_para1 = 0x000010d2,
 	.dram_para2 = 0x0000,
@@ -913,7 +941,7 @@ CONFIG_DRAM_SUNXI_TPR13=0x34000000
 static struct dram_para_t ddrp2 = {
 	.dram_clk = 528,
 	.dram_type = 2,
-	.dram_zq = 8092665,
+	.dram_zq = 0x007B7BF9,	// same as 0x007B7BF9 or 8092665
 	.dram_odt_en = 0x00,
 	.dram_para1 = 0x000000d2,
 	.dram_para2 = 0x00000000,
