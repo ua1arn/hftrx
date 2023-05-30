@@ -4622,7 +4622,7 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 	return 1;
 }
 
-#if 1//CPUSTYLE_ARM || CPUSTYLE_RISCV
+#if ! CPUSTYLE_ATMEGA && 1//CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 #ifdef __cplusplus
 extern "C" {
@@ -4728,7 +4728,7 @@ void _fini(void)
 }
 #endif /* __cplusplus */
 
-#if ! LINUX_SUBSYSTEM && 1//WITHUSEMALLOC
+#if ! LINUX_SUBSYSTEM && ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA) && 1
 
 /*
  *

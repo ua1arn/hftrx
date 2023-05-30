@@ -2964,7 +2964,7 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 	)
 {
 	const uint_fast8_t ci = smallfont_decode(cc);
-	ltdc_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], buffer, dx, dy, x, y, ci);
+	ltdc_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], buffer, dx, dy, x, y, ci, SMALLCHARW3);
 	return x + SMALLCHARW3;
 //	const uint_fast8_t width = SMALLCHARW3;
 //	const uint_fast8_t c = smallfont_decode(cc);

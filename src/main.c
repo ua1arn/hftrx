@@ -22,6 +22,8 @@
 
 #include "dspdefines.h"
 
+//#define WITHAUTOTUNER_N7DDCALGO  1  /* использование алгоритма N7DDC */
+
 #if WITHFT8
 	#include "ft8.h"
 #endif /* WITHFT8 */
@@ -2867,9 +2869,11 @@ struct oneant_tag {
 #endif /* ! WITHONEATTONEAMP */
 	uint8_t att;		/* режим аттенюатора */
 #if WITHAUTOTUNER
+#if ! WITHAUTOTUNER_N7DDCEXT
 	uint8_t tunercap;
 	uint8_t tunerind;
 	uint8_t tunertype;
+#endif /* ! WITHAUTOTUNER_N7DDCEXT */
 	uint8_t tunerwork;
 #endif /* WITHAUTOTUNER */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
@@ -4711,7 +4715,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 #if WITHAUTOTUNER
 
-#if 1
+#if WITHAUTOTUNER_N7DDCALGO
 
 // N7DDC code.
 // Taken from:
@@ -4722,13 +4726,13 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 // ATU-100 project 2016
 
 //
-static char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0, L_linear = 0,
-		C_linear = 0, L_q = 7, C_q = 7, D_correction = 1, L_invert = 0, L_mult =
-				1, C_mult = 1, P_High = 0, K_Mult = 32, Overload = 0, Loss_ind =
-				0, Relay_off = 0;
+static unsigned char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0, L_linear = 0,
+		C_linear = 0, L_q = 7, C_q = 7, D_correction = 1,
+		L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
+static unsigned char Overload = 0, Loss_ind = 0, Relay_off = 0;
 static int Rel_Del, min_for_start, max_for_start, max_swr;
 static int SWR_n7ddc, PWR_n7ddc, P_max, swr_a;
-static char rready = 0, p_cnt = 0;
+static unsigned char rready = 0, p_cnt = 0;
 //
 //void btn_push(void);
 //void lcd_prep(void);
@@ -5274,7 +5278,8 @@ static void auto_tune_n7ddc(void) {
 	return;
 }
 
-#endif
+#endif /* WITHAUTOTUNER_N7DDCALGO */
+
 // что удалось достичь в результате перебора
 typedef struct tunerstate
 {
@@ -5434,6 +5439,7 @@ static uint_fast8_t tuneabort(void)
 	return 0;
 }
 
+#if ! WITHAUTOTUNER_N7DDCEXT
 // Перебор значений L в поиске минимума SWR
 // Если прервана настройка - возврат не-0
 static uint_fast8_t scanminLk(tus_t * tus)
@@ -5515,21 +5521,45 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 	return best;
 }
 
+#endif /* ! WITHAUTOTUNER_N7DDCEXT */
+
 static void storetuner(uint_fast8_t bg, uint_fast8_t ant)
 {
+#if ! WITHAUTOTUNER_N7DDCEXT
 	save_i8(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunercap), tunercap);
 	save_i8(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunerind), tunerind);
 	save_i8(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunertype), tunertype);
+#endif /* ! WITHAUTOTUNER_N7DDCEXT */
 	save_i8(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunerwork), tunerwork);
 }
 
 static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 {
+#if ! WITHAUTOTUNER_N7DDCEXT
 	tunercap = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunercap), CMIN, CMAX, tunercap);
 	tunerind = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunerind), LMIN, LMAX, tunerind);
 	tunertype = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
+#endif
 	tunerwork = loadvfy8up(offsetof(struct nvmap, bandgroups [bg].oants [ant].tunerwork), 0, 1, tunerwork);
 }
+
+#if WITHAUTOTUNER_N7DDCALGO
+
+/* отсюда не возвращаемся пока не настроится тюнер */
+static void auto_tune(void)
+{
+	auto_tune_n7ddc();
+}
+
+#elif WITHAUTOTUNER_N7DDCEXT
+
+/* отсюда не возвращаемся пока не настроится тюнер */
+static void auto_tune(void)
+{
+}
+
+#else /* WITHAUTOTUNER_N7DDCALGO, WITHAUTOTUNER_N7DDCEXT */
+
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {	
@@ -5614,6 +5644,7 @@ aborted:
 	updateboard_tuner();
 	return;
 }
+#endif /* ! WITHAUTOTUNER_N7DDCEXT */
 #endif /* WITHAUTOTUNER */
 
 /* получение следующего числа в диапазоне low..high с "заворотом" */
@@ -11394,7 +11425,7 @@ updateboardZZZ(
 				PRINTF(PSTR(" pbt="));	printfreq(pbt);
 				PRINTF(PSTR(" ifshift="));	printfreq(ifshift);
 				PRINTF(PSTR(" bw="));	PRINTF(workfilter->labelf3);
-				PRINTF(PSTR(" dbw="));	PRINTF(hamradio_get_rxbw_value3_P());
+				PRINTF(PSTR(" dbw="));	PRINTF(hamradio_get_rxbw_label3_P());
 				PRINTF(PSTR("\n"));
 				PRINTF(
 					PSTR("mixXlsbs[0]=%d, [1]=%d, [2]=%d, [3]=%d, [4]=%d, [5]=%d, [6]=%d dc=%d tx=%d\n"),
@@ -13074,7 +13105,7 @@ uint_fast8_t hamradio_get_tx(void)
 // RX bandwidth
 #if WITHIF4DSP
 
-// Four-character wide printed current RX/TX bandwidth namw
+// Three-character wide printed current RX/TX bandwidth namw
 const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
 {
 	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
@@ -13102,7 +13133,7 @@ const FLASHMEM char * hamradio_get_rxbw_value4_P(void)
 
 #else /* WITHIF4DSP */
 
-const FLASHMEM char * hamradio_get_rxbw_value3_P(void)
+const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
 {
 #if WITHFIXEDBFO
 	return PSTR("");
@@ -13220,7 +13251,7 @@ uif_key_click_xxxx(void)
 // ****************
 // NMEA parser
 // dummy function
-#if WITHNMEA && 1
+#if WITHNMEA && ! WITHAUTOTUNER_UA1CEI && 1
 
 enum nmea_states
 {
@@ -13672,11 +13703,11 @@ display2_redrawbarstimed(
 		/* быстро меняющиеся значения с частым опорсом */
 		main_speed_diagnostics();
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
-	#if WITHSWRMTR
+	#if WITHSWRMTR && WITHTX
 		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
 		board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
 		board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
-	#elif WITHPWRMTR
+	#elif WITHPWRMTR && WITHTX
 		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
 	#endif /* WITHSWRMTR || WITHPWRMTR */
 	#if WITHCURRLEVEL2
@@ -13954,10 +13985,10 @@ cat_answer_ready(void)
 static void
 cat_answervariable(const char * p, uint_fast8_t len)
 {
+	IRQL_t oldIrql;
 	//PRINTF(PSTR("cat_answervariable: '%*.*s'"), len, len, p);
 
 #if WITHUSBHW && WITHUSBCDCACM
-	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
@@ -14971,7 +15002,7 @@ cat_get_ptt(void)
 // Получить нажате ключа от порта управления, вызывается из обработчика перерываний
 uint_fast8_t cat_get_keydown(void)
 {
-#if WITHELKEY
+#if WITHELKEY && WITHTX
 	if (catprocenable != 0)
 	{
 		IRQL_t oldIrql;
@@ -14981,7 +15012,7 @@ uint_fast8_t cat_get_keydown(void)
 
 		return r;
 	}
-#endif /* WITHELKEY */
+#endif /* WITHELKEY && WITHTX */
 	return 0;
 
 }
@@ -16035,7 +16066,7 @@ static char beacon_getnextcw(void)
 		++ beacon_index;
 
 	return c;
-#elif 1
+#elif WITHELKEY && WITHTX
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -18441,7 +18472,7 @@ static void vfoallignment(void)
 	{	
 		uint_fast8_t kbch, kbready;
 
-		processmessages(& kbch, & kbready, 1, mp);
+		processmessages(& kbch, & kbready, 1, NULL);
 		//display2_redrawbarstimed(0, 1, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 		if (kbready != 0)
@@ -19919,7 +19950,7 @@ static void hamradio_main_initialize(void)
 		for (;;)
 			prog_cmx992_print(target);
 
-		display_redrawfreqmodesbarsnow(0);	// Обновление дисплея - всё, включая частоту
+		display_redrawfreqmodesbarsnow(0, NULL);	// Обновление дисплея - всё, включая частоту
 
 		//prog_pll1_init();
 		synth_lo1_setfreq((434085900UL - 10700000UL) / 3. getlo1div(gtx));
@@ -20033,7 +20064,7 @@ hamradio_main_step(void)
 				display2_bgreset();
 				vfoallignment();
 				display2_bgreset();
-				display_redrawfreqmodesbarsnow(0);			/* Обновление дисплея - всё, включая частоту */
+				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	#endif // MULTIVFO
 				alignmode = 0;	// в nvram осталась не-0
@@ -20320,7 +20351,7 @@ uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bott
 	return 0; 							// частота вне любительских диапазонов
 }
 
-#if WITHVOX
+#if WITHVOX && WITHTX
 
 void hamradio_set_gvoxenable(uint_fast8_t v)
 {
@@ -20394,7 +20425,7 @@ void hamradio_set_antivox_level(uint_fast8_t v)
 	updateboard(1, 0);
 }
 
-#endif /* WITHVOX */
+#endif /* WITHVOX && WITHTX */
 
 #if WITHIF4DSP
 

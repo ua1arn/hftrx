@@ -6447,6 +6447,42 @@ __STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
 
 #endif /* (__CORTEX_A == 53U) && CPUSTYLE_CA53 */
 
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
+
+#define GPASDC_Vref 1800.f
+
+///GPADC_DATA=Vin/Vref*4095
+
+void gpadc_initialize(void)
+{
+
+	CCU->GPADC_BGR_REG |= (1u << 16); // 1: De-assert reset  HOSC
+	CCU->GPADC_BGR_REG |= (1u << 0); // 1: Pass clock
+
+	GPADC->GP_SR_CON |= (0x2fu << 0);
+	GPADC->GP_CTRL |= (0x2u << 18); // continuous mode
+
+	GPADC->GP_CS_EN |= (1u << 0); // enable
+
+	GPADC->GP_CTRL |= (1u << 17); // calibration
+
+	GPADC->GP_CTRL |= (1u << 16);
+
+	while ((GPADC->GP_DATA_INTS) & (1uL << 0))	///if 1 complete
+		;
+
+}
+
+void gpadc_test(void)
+{
+	float Vin;
+	Vin = GPADC->GP_CH0_DATA * GPASDC_Vref / 4095.f * 2.8f; ///2.8f my divide resistors
+
+	PRINTF("5V= %d \n", (int) Vin);
+}
+
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
+
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)

@@ -1865,7 +1865,24 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
-#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_ATMEGA
+/* newIRQL - уровень приоритета, прерывания с которым и ниже которого требуется запретить */
+
+void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
+{
+	* oldIrql = SREG;
+    __asm__ volatile ("" ::: "memory");
+	cli();
+}
+
+void LowerIrql(IRQL_t newIRQL)
+{
+    SREG = newIRQL;
+    __asm__ volatile ("" ::: "memory");
+}
+
+#elif CPUSTYLE_ATXMEGA
+#elif (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 
 /* newIRQL - уровень приоритета, прерывания с которым и ниже которого требуется запретить */
 /* Работа с текущим ядром */

@@ -153,7 +153,7 @@ static uint_fast16_t uc1608_put_char_half(uint_fast16_t xpix, char cc, uint_fast
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t width = halffont_width(cc);
-    const uint_fast8_t c = bigfont_decode(cc);
+    const uint_fast8_t c = halffont_decode(cc);
 	//enum { NBYTES = (sizeof uc1608_halffont / sizeof uc1608_halffont[0]) };
 	enum { NCOLS = (sizeof uc1608_halffont [c][lowhalf] / sizeof uc1608_halffont [c][lowhalf] [0]) };
 	const FLASHMEM uint8_t * const p = & uc1608_halffont [c][lowhalf][0];
@@ -372,6 +372,11 @@ static void uc1608_resetdelay(void)
 {
 	local_delay_ms(150); // Delay 50 ms
 }
+
+void display_nextfb(void)
+{
+}
+
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void display_reset(void)
@@ -428,10 +433,6 @@ void display_initialize(void)
 	//uc1608_write_cmd(0x40);			// set start line = 0
 
 	uc1608_write_cmd(0xaf);	// Set Display Enable
-}
-
-void display_nextfb(void)
-{
 }
 
 #endif /* LCDMODE_UC1608 */

@@ -3256,10 +3256,10 @@ static void window_af_eq_process(void)
 	window_t * const win = get_win(WINDOW_AF_EQ);
 
 	label_t * lbl = NULL;
-	static uint_fast8_t eq_limit, eq_base = 0;
+	static uint_fast32_t eq_limit, eq_base = 0;
 	char buf [TEXT_ARRAY_SIZE];
 	static int_fast16_t mid_y = 0;
-	static uint_fast8_t id = 0, eq_w = 0;
+	static uint_fast32_t id = 0, eq_w = 0;
 
 	if (win->first_call)
 	{
@@ -3372,7 +3372,10 @@ static void window_af_eq_process(void)
 			button_t * btn_EQ_enable = find_gui_element(TYPE_BUTTON, win, "btn_EQ_enable");
 
 			if (bh == btn_EQ_ok)
+			{
 				close_all_windows();
+				return;
+			}
 
 			if (bh == btn_EQ_enable)
 			{
