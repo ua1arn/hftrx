@@ -17,8 +17,8 @@
 	/* модели синтезаторов - схемы частотообразования */
 #if 1
 	/* Версии частотных схем - с преобразованием "наверх" */
-	//#define FQMODEL_73050		1	// 1-st IF=73.050, 2-nd IF=0.455 MHz
-	#define FQMODEL_73050_IF0P5		1	// 1-st IF=73.050, 2-nd IF=0.5 MHz
+	#define FQMODEL_73050		1	// 1-st IF=73.050, 2-nd IF=0.455 MHz
+	//#define FQMODEL_73050_IF0P5		1	// 1-st IF=73.050, 2-nd IF=0.5 MHz
 	//#define FQMODEL_80455		1	// 1-st IF=80.455, 2-nd IF=0.455 MHz
 	//#define FQMODEL_64455		1	// 1-st IF=64.455, 2-nd IF=0.455 MHz
 	//#define FQMODEL_64455_IF0P5		1	// 1-st IF=64.455, 2-nd IF=0.5 MHz
