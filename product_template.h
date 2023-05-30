@@ -243,7 +243,7 @@
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_falcon.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_lfm.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_qrp.h"
-	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_ua1cei_qrp.h"
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_ua1cei_noqrp.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_r1ab.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_r1cbu.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
