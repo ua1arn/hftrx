@@ -1799,7 +1799,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("MIK CLIP"), 7, 0, 0,	ISTEP1,
+		QLABEL("MIC CLIP"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,	
 		0, 90, 					/* Ограничение */
 		offsetof(struct nvmap, gmikehclip),
@@ -1893,7 +1893,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHREVERB */
 	{
-		QLABEL2("MIKBOOST", "Mike boost"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL2("MICBOOST", "Mike boost"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		offsetof(struct nvmap, gmikeboost20db),
@@ -1904,7 +1904,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
 	{
-		QLABEL("MIK EQUA"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL("MIC EQUA"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gmikeequalizer),
