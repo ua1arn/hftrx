@@ -2864,7 +2864,7 @@ struct bandinfo
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 struct oneant_tag {
-#if ! WITHONEATTONEAMP
+#if 1//! WITHONEATTONEAMP
 	uint8_t pamp;		/* режим УВЧ */
 #endif /* ! WITHONEATTONEAMP */
 	uint8_t att;		/* режим аттенюатора */
@@ -4208,6 +4208,13 @@ enum
 		#else /* WITHLOWPOWEREXTTUNE */
 			enum { gpwratunei = 1 }; // индекс нормальной мощности
 		#endif /* WITHLOWPOWEREXTTUNE */
+		#if WITHLOWPOWEREXTTUNE
+			static uint_fast8_t gtunepower = WITHPOWERTRIMATU; /* мощность при работе автоматического согласующего устройства */
+		#else /* WITHLOWPOWEREXTTUNE */
+			enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
+		#endif /* WITHLOWPOWEREXTTUNE */
+		static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
+		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
 
 	#if WITHPABIASTRIM

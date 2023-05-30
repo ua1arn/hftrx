@@ -495,25 +495,25 @@ display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 }
 
 uint_fast16_t
-display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	return uc1601s_put_char_big(xpix, c, lowhalf);
+	return uc1601s_put_char_big(xpix, cc, lowhalf);
 }
 
 uint_fast16_t
-display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	return uc1601s_put_char_half(xpix, c, lowhalf);
+	return uc1601s_put_char_half(xpix, cc, lowhalf);
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 uint_fast16_t
-display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	return uc1601s_put_char_small(xpix, c);
+	return uc1601s_put_char_small(xpix, cc);
 }
 
 // самый маленький шрифт

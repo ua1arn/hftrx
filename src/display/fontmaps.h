@@ -45,19 +45,19 @@ extern const FLASHMEM uint8_t ltdc_CenturyGothic_half [13][56][4];
 
 	#if FONTSTYLE_ITALIC
 		extern const FLASHMEM uint8_t uc1601s_bigfont [13][2][12];
-		extern const FLASHMEM uint8_t uc1601s_halffont [12][2][12];
+		extern const FLASHMEM uint8_t uc1601s_halffont [13][2][12];
 	#else /* FONTSTYLE_ITALIC */
 		extern const FLASHMEM uint8_t uc1601s_bigfont [13][2][12];
-		extern const FLASHMEM uint8_t uc1601s_halffont [12][2][10];
+		extern const FLASHMEM uint8_t uc1601s_halffont [13][2][10];
 	#endif /* FONTSTYLE_ITALIC */
 	extern const FLASHMEM uint8_t uc1601s_font [] [6];
 
 	extern const FLASHMEM uint8_t uc1608_bigfont [13][5][24];
-	extern const FLASHMEM uint8_t uc1608_halffont [12][5][14];
+	extern const FLASHMEM uint8_t uc1608_halffont [13][5][14];
 	extern const FLASHMEM uint8_t uc1608_smallfont [][2][8];
 
 	extern const FLASHMEM uint8_t uc1608_bigfont [13][5][24];
-	extern const FLASHMEM uint8_t uc1608_halffont [12][5][14];
+	extern const FLASHMEM uint8_t uc1608_halffont [13][5][14];
 	extern const FLASHMEM uint8_t uc1608_smallfont [][2][8];
 
 #endif /* LCDMODE_LTDC */

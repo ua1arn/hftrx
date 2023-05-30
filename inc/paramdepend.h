@@ -2702,12 +2702,13 @@ extern "C" {
 	#error WIHSPIDFOVERSPI and ( WIHSPIDFSW or WIHSPIDFHW ) can not be used together
 #endif /* (WIHSPIDFSW || WIHSPIDFHW) && WIHSPIDFOVERSPI */
 
+#if WITHIF4DSP
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-
-#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
-#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+	#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
+	#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+#endif /* WITHIF4DSP */
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046)
 	#error Use TSC_TYPE_XPT2046 instead TSC_TYPE_TSC2046

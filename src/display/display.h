@@ -1036,16 +1036,16 @@ void display2_xltrgb24(COLOR24_T * xtable);
 void hwaccel_bitblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
-	PACKEDCOLORPIP_T * dst,
+	PACKEDCOLORPIP_T * __restrict dst,
 	uint_fast16_t ddx,	// ширина буфера
 	uint_fast16_t ddy,	// высота буфера
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORPIP_T * src,
+	const PACKEDCOLORPIP_T * __restrict src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy,	// высота буфера
 	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
-	unsigned keyflag, COLOR24_T keycolor
+	unsigned keyflag, COLORPIP_T keycolor
 	);
 
 // копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
