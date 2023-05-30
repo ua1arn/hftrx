@@ -1,3 +1,4 @@
+#if 0
 /*
  * Copyright (c) 2013-2021 Arm Limited. All rights reserved.
  *
@@ -62,3 +63,4 @@ __WEAK uint32_t osRtxErrorNotify (uint32_t code, void *object_id) {
   for (;;) {}
 //return 0U;
 }
+#endif

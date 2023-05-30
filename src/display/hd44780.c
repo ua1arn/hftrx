@@ -738,18 +738,18 @@ display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 	return xpix + 2;
 }
 
-uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	hd44780_wrdata_fast(c);
+	hd44780_wrdata_fast(cc);
 	return xpix + 1;
 }
 
 uint_fast16_t
-display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
-	hd44780_wrdata_fast(c);
+	hd44780_wrdata_fast(cc);
 	return xpix + 1;
 }
 

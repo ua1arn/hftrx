@@ -2357,11 +2357,14 @@ smallfont_decode(char cc)
 	return c - ' ';
 }
 
+#if ! LCDMODE_HD44780
 //#if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
 uint_fast8_t bigfont_width(char cc)
 {
 	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
 }
+#endif /* ! LCDMODE_HD44780 */
+
 //#endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
 
 #if defined (HALFCHARW)

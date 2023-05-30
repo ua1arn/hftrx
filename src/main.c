@@ -11425,7 +11425,7 @@ updateboardZZZ(
 				PRINTF(PSTR(" pbt="));	printfreq(pbt);
 				PRINTF(PSTR(" ifshift="));	printfreq(ifshift);
 				PRINTF(PSTR(" bw="));	PRINTF(workfilter->labelf3);
-				PRINTF(PSTR(" dbw="));	PRINTF(hamradio_get_rxbw_value3_P());
+				PRINTF(PSTR(" dbw="));	PRINTF(hamradio_get_rxbw_label3_P());
 				PRINTF(PSTR("\n"));
 				PRINTF(
 					PSTR("mixXlsbs[0]=%d, [1]=%d, [2]=%d, [3]=%d, [4]=%d, [5]=%d, [6]=%d dc=%d tx=%d\n"),
@@ -13105,7 +13105,7 @@ uint_fast8_t hamradio_get_tx(void)
 // RX bandwidth
 #if WITHIF4DSP
 
-// Four-character wide printed current RX/TX bandwidth namw
+// Three-character wide printed current RX/TX bandwidth namw
 const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
 {
 	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
@@ -13133,7 +13133,7 @@ const FLASHMEM char * hamradio_get_rxbw_value4_P(void)
 
 #else /* WITHIF4DSP */
 
-const FLASHMEM char * hamradio_get_rxbw_value3_P(void)
+const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
 {
 #if WITHFIXEDBFO
 	return PSTR("");
@@ -13703,11 +13703,11 @@ display2_redrawbarstimed(
 		/* быстро меняющиеся значения с частым опорсом */
 		main_speed_diagnostics();
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
-	#if WITHSWRMTR
+	#if WITHSWRMTR && WITHTX
 		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
 		board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
 		board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
-	#elif WITHPWRMTR
+	#elif WITHPWRMTR && WITHTX
 		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
 	#endif /* WITHSWRMTR || WITHPWRMTR */
 	#if WITHCURRLEVEL2
@@ -13985,10 +13985,10 @@ cat_answer_ready(void)
 static void
 cat_answervariable(const char * p, uint_fast8_t len)
 {
+	IRQL_t oldIrql;
 	//PRINTF(PSTR("cat_answervariable: '%*.*s'"), len, len, p);
 
 #if WITHUSBHW && WITHUSBCDCACM
-	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
@@ -15002,7 +15002,7 @@ cat_get_ptt(void)
 // Получить нажате ключа от порта управления, вызывается из обработчика перерываний
 uint_fast8_t cat_get_keydown(void)
 {
-#if WITHELKEY
+#if WITHELKEY && WITHTX
 	if (catprocenable != 0)
 	{
 		IRQL_t oldIrql;
@@ -15012,7 +15012,7 @@ uint_fast8_t cat_get_keydown(void)
 
 		return r;
 	}
-#endif /* WITHELKEY */
+#endif /* WITHELKEY && WITHTX */
 	return 0;
 
 }
@@ -16066,7 +16066,7 @@ static char beacon_getnextcw(void)
 		++ beacon_index;
 
 	return c;
-#elif 1
+#elif WITHELKEY && WITHTX
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -18472,7 +18472,7 @@ static void vfoallignment(void)
 	{	
 		uint_fast8_t kbch, kbready;
 
-		processmessages(& kbch, & kbready, 1, mp);
+		processmessages(& kbch, & kbready, 1, NULL);
 		//display2_redrawbarstimed(0, 1, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 		if (kbready != 0)
@@ -19950,7 +19950,7 @@ static void hamradio_main_initialize(void)
 		for (;;)
 			prog_cmx992_print(target);
 
-		display_redrawfreqmodesbarsnow(0);	// Обновление дисплея - всё, включая частоту
+		display_redrawfreqmodesbarsnow(0, NULL);	// Обновление дисплея - всё, включая частоту
 
 		//prog_pll1_init();
 		synth_lo1_setfreq((434085900UL - 10700000UL) / 3. getlo1div(gtx));
@@ -20064,7 +20064,7 @@ hamradio_main_step(void)
 				display2_bgreset();
 				vfoallignment();
 				display2_bgreset();
-				display_redrawfreqmodesbarsnow(0);			/* Обновление дисплея - всё, включая частоту */
+				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	#endif // MULTIVFO
 				alignmode = 0;	// в nvram осталась не-0
@@ -20351,7 +20351,7 @@ uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bott
 	return 0; 							// частота вне любительских диапазонов
 }
 
-#if WITHVOX
+#if WITHVOX && WITHTX
 
 void hamradio_set_gvoxenable(uint_fast8_t v)
 {
@@ -20425,7 +20425,7 @@ void hamradio_set_antivox_level(uint_fast8_t v)
 	updateboard(1, 0);
 }
 
-#endif /* WITHVOX */
+#endif /* WITHVOX && WITHTX */
 
 #if WITHIF4DSP
 

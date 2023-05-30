@@ -20,6 +20,8 @@
  *
  *---------------------------------------------------------------------------*/
 
+#if 0
+
 #include <stdio.h>
 
 #include "cmsis_os2.h"                  // ARM::CMSIS:RTOS2:Keil RTX5
@@ -165,3 +167,4 @@ int blinky_main (void) {
 
   while(1);
 }
+#endif
