@@ -1870,10 +1870,15 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
 {
+	* oldIrql = SREG;
+    __asm__ volatile ("" ::: "memory");
+	cli();
 }
 
 void LowerIrql(IRQL_t newIRQL)
 {
+    SREG = newIRQL;
+    __asm__ volatile ("" ::: "memory");
 }
 
 #elif CPUSTYLE_ATXMEGA
