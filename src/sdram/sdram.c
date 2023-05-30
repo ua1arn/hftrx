@@ -862,6 +862,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
  *
  */
 #if CPUSTYLE_T113_S4
+
 static struct dram_para_t ddrp3 =
 {
 	.dram_clk = 936,	// s3: 792
@@ -889,7 +890,15 @@ static struct dram_para_t ddrp3 =
 	.dram_tpr12 = 0x00000046,
 	.dram_tpr13 = 0x34000100,
 };
+
+int sys_dram_init(void)
+{
+	set_pll_cpux_axi(PLL_CPU_N);
+	return init_DRAM(0, & ddrp3) != 0;
+}
+
 #elif CPUSTYLE_T113
+
 static struct dram_para_t ddrp3 =
 {
 	.dram_clk = 792,
