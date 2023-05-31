@@ -66,14 +66,14 @@
 #regdef; MCTL_PHY_ACIOCR0 ; 0x208; 
 #regdef; MCTL_PHY_ACIOCR1; 0x210 16; 0x210 + 0x4 * x
 ##aggreg; DX; 0x300 4; DXn
-##regdef; MCTL_PHY_DXnMDLR; 0x300 + 0x80 * x; 
-##regdef; MCTL_PHY_DXnLDLR0; 0x304 + 0x80 * x; 
-##regdef; MCTL_PHY_DXnLDLR1; 0x308 + 0x80 * x; 
-##regdef; MCTL_PHY_DXnLDLR2; 0x30c + 0x80 * x; 
-##regdef; MCTL_PHY_DXnSDLR6; 0x33c + 0x80 * x; 
-##regdef; MCTL_PHY_DXnGTR; 0x340 + 0x80 * x; 
-##regdef; MCTL_PHY_DXnGCR0; 0x344 + 0x80 * x; 
-##regdef; MCTL_PHY_DXnGSR0; 0x348 + 0x80 * x; 
+##regdef; MCTL_PHY_DXnMDLR; 0x000; 0x300 + 0x80 * x; 
+##regdef; MCTL_PHY_DXnLDLR0; 0x004; 0x304 + 0x80 * x; 
+##regdef; MCTL_PHY_DXnLDLR1; 0x008; 0x308 + 0x80 * x; 
+##regdef; MCTL_PHY_DXnLDLR2; 0x00C; 0x30c + 0x80 * x; 
+##regdef; MCTL_PHY_DXnSDLR6; 0x03c; 0x33c + 0x80 * x; 
+##regdef; MCTL_PHY_DXnGTR; 0x040; 0x340 + 0x80 * x; 
+##regdef; MCTL_PHY_DXnGCR0; 0x044; 0x344 + 0x80 * x; 
+##regdef; MCTL_PHY_DXnGSR0; 0x048; 0x348 + 0x80 * x; 
 ##regdef; dummy 0; 0x80; Align
 ##aggregend;
 ##regdef; MCTL_PHY_DXIOCR ; 0x310; 
