@@ -33,6 +33,7 @@
 // Sources taker from:
 //	https://raw.githubusercontent.com/szemzoa/awboot/main/arch/arm32/mach-t113s3/mctl_hal.c
 //	https://github.com/szemzoa/awboot/blob/main/arch/arm32/mach-t113s3/mctl_hal.c
+//	https://github.com/szemzoa/awboot/blob/main/arch/arm32/mach-t113s3/dram.c
 
 typedef uintptr_t virtual_addr_t;
 
