@@ -2,3 +2,4 @@
 #base; R_CPUCFG 0x07000400
 #regdef; HOTPLUGFLAG; 0x01C0; The Hotplug Flag Register is 0x070005C0.
 #regdef; SOFTENTRY; 0x01C4 2; The Soft Entry Address Register of CPUx (x=0..1)
+#regdef; SUP_STAN_FLAG; 0x01D4; Super Standby Flag (bit 16)

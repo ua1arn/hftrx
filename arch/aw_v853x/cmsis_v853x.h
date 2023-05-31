@@ -208,7 +208,9 @@ typedef struct R_CPUCFG_Type
              uint32_t reserved_0x000 [0x0070];
     volatile uint32_t HOTPLUGFLAG;                    /*!< Offset 0x1C0 The Hotplug Flag Register is 0x070005C0. */
     volatile uint32_t SOFTENTRY [0x002];              /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) */
-} R_CPUCFG_TypeDef; /* size of structure = 0x1CC */
+             uint32_t reserved_0x1CC [0x0002];
+    volatile uint32_t SUP_STAN_FLAG;                  /*!< Offset 0x1D4 Super Standby Flag (bit 16) */
+} R_CPUCFG_TypeDef; /* size of structure = 0x1D8 */
 /*
  * @brief CPU_SUBSYS_CTRL
  */

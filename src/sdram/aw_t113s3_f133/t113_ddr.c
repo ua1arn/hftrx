@@ -160,7 +160,7 @@ void eye_delay_compensation(dram_para_t *para) // s1
 	}
 
 	// PGCR0: assert AC loopback FIFO reset
-	val = read32(DDRPHYC_BASE + 0x100);
+	val = DDRPHYC->PHYC_REG_100;
 	val &= 0xfbffffff;
 	write32(DDRPHYC_BASE + 0x100, val);
 
@@ -194,7 +194,7 @@ void eye_delay_compensation(dram_para_t *para) // s1
 	write32(DDRPHYC_BASE + 0x3bc, val);
 
 	// PGCR0: release AC loopback FIFO reset
-	val = read32(DDRPHYC_BASE + 0x100);
+	val = DDRPHYC->PHYC_REG_100;
 	val |= 0x04000000;
 	write32(DDRPHYC_BASE + 0x100, val);
 
@@ -1011,7 +1011,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	val |= (para->dram_para2 & (1 << 12)) ? 0x03000001 : 0x01000007; // 0x01003087 XXX
 	write32(DDRPHYC_BASE + 0x0c0, val);
 
-	if (read32(0x70005d4) & (1 << 16)) {
+	if (R_CPUCFG->SUP_STAN_FLAG & (1 << 16)) {
 		val = read32(R_PRCM_BASE  + 0x0250);
 		val &= 0xfffffffd;
 		write32(R_PRCM_BASE  + 0x0250, val);
@@ -1020,7 +1020,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	}
 
 	// Set ZQ config
-	val = read32(DDRPHYC_BASE + 0x140) & 0xfc000000;
+	val = DDRPHYC->PHYC_REG_140 & 0xfc000000;
 	val |= para->dram_zq & 0x00ffffff;
 	val |= 0x02000000;
 	write32(DDRPHYC_BASE + 0x140, val);
@@ -1030,7 +1030,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 		//		write32(DDRPHYC_BASE + 0x000, 0x52); // prep PHY reset + PLL init + z-cal
 		write32(DDRPHYC_BASE + 0x000, 0x53); // Go
 
-		while ((read32(DDRPHYC_BASE + 0x010) & 0x1) == 0) {
+		while ((DDRPHYC->PHYC_REG_010 & 0x1) == 0) {
 		} // wait for IDONE
 		sdelay(10);
 
@@ -1045,7 +1045,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 		}
 
 	} else {
-		if ((read32(0x70005d4) & (1 << 16)) == 0) {
+		if ((R_CPUCFG->SUP_STAN_FLAG & (1 << 16)) == 0) {
 			// prep DRAM init + PHY reset + d-cal + PLL init + z-cal
 			//			val = (para->dram_type == 3) ? 0x1f2	// + DRAM reset
 			//						     : 0x172;
@@ -1069,10 +1069,10 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	write32(DDRPHYC_BASE + 0x000, read32(DDRPHYC_BASE + 0x000) | 1); // GO
 
 	sdelay(10);
-	while ((read32(DDRPHYC_BASE + 0x010) & 0x1) == 0) {
+	while ((DDRPHYC->PHYC_REG_010 & 0x1) == 0) {
 	} // wait for IDONE
 
-	if (read32(R_CPUCFG_BASE + 0x1d4) & (1 << 16)) {
+	if (R_CPUCFG->SUP_STAN_FLAG & (1 << 16)) {
 		val = read32(DDRPHYC_BASE + 0x10c);
 		val &= 0xf9ffffff;
 		val |= 0x04000000;
@@ -1080,7 +1080,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 		sdelay(10);
 
-		val = read32(DDRPHYC_BASE + 0x004);
+		val = DDRPHYC->PHYC_REG_004;
 		val |= 0x1;
 		write32(DDRPHYC_BASE + 0x004, val);
 
@@ -1093,7 +1093,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 		sdelay(10);
 
-		val = read32(DDRPHYC_BASE + 0x004);
+		val = DDRPHYC->PHYC_REG_004;
 		val &= 0xfffffffe;
 		write32(DDRPHYC_BASE + 0x004, val);
 
@@ -1115,23 +1115,23 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 			sdelay(1);
 			write32(DDRPHYC_BASE + 0x000, 0x401);
 
-			while ((read32(DDRPHYC_BASE + 0x010) & 0x1) == 0) {
+			while ((DDRPHYC->PHYC_REG_010 & 0x1) == 0) {
 			}
 		}
 	}
 
 	// Check for training error
-	/*	val = read32(DDRPHYC_BASE + 0x010);
+	/*	val = DDRPHYC->PHYC_REG_010;
 		if (((val >> 20) & 0xff) && (val & 0x100000)) {
 			PRINTF("ZQ calibration error, check external 240 ohm resistor.\n");
 			return 0;
 		}
 	*/
-	if ((read32(DDRPHYC_BASE + 0x010) & 0xff00000) == 0) {
+	if ((DDRPHYC->PHYC_REG_010 & 0xff00000) == 0) {
 		val = 1;
 
 	} else {
-		val = (read32(DDRPHYC_BASE + 0x010) & 0x100000);
+		val = (DDRPHYC->PHYC_REG_010 & 0x100000);
 
 		if (val != 0) {
 			PRINTF("ZQ calibration error, check external 240 ohm resistor.\n");
@@ -1223,7 +1223,7 @@ int dqs_gate_detect(dram_para_t *para)
 	unsigned int u1;
 	unsigned int u2;
 
-	if (read32(DDRPHYC_BASE + 0x010) & (1 << 22)) {
+	if (DDRPHYC->PHYC_REG_010 & (1 << 22)) {
 		u1 = (uint32_t)(read32(DDRPHYC_BASE + 0x348) << 6) >> 0x1e;
 		u2 = (uint32_t)(read32(DDRPHYC_BASE + 0x3c8) << 6) >> 0x1e;
 
@@ -1525,7 +1525,7 @@ int auto_scan_dram_rank_width(dram_para_t *para)
 
 	mctl_core_init(para);
 
-	if (read32(DDRPHYC_BASE + 0x010) & (1 << 20)) {
+	if (DDRPHYC->PHYC_REG_010 & (1 << 20)) {
 		return 0;
 	}
 
@@ -1635,19 +1635,19 @@ int init_DRAM(int type, dram_para_t *para) // s0
 		}
 		write32(DDRPHYC_BASE + 0x0a0, rc);
 		write32(DDRPHYC_BASE + 0x09c, 0x40a);
-		write32(DDRPHYC_BASE + 0x004, read32(DDRPHYC_BASE + 0x004) | 1);
+		write32(DDRPHYC_BASE + 0x004, DDRPHYC->PHYC_REG_004 | 1);
 		PRINTF("Enable Auto SR");
 	} else {
-		write32(DDRPHYC_BASE + 0x0a0, read32(DDRPHYC_BASE + 0x0a0) & 0xffff0000);
-		write32(DDRPHYC_BASE + 0x004, read32(DDRPHYC_BASE + 0x004) & (~0x1));
+		write32(DDRPHYC_BASE + 0x0a0, DDRPHYC->PHYC_REG_0A0 & 0xffff0000);
+		write32(DDRPHYC_BASE + 0x004, DDRPHYC->PHYC_REG_004 & (~0x1));
 	}
 #else
-	write32(DDRPHYC_BASE + 0x0a0, read32(DDRPHYC_BASE + 0x0a0) & 0xffff0000);
-	write32(DDRPHYC_BASE + 0x004, read32(DDRPHYC_BASE + 0x004) & (~0x1));
+	write32(DDRPHYC_BASE + 0x0a0, DDRPHYC->PHYC_REG_0A0 & 0xffff0000);
+	write32(DDRPHYC_BASE + 0x004, DDRPHYC->PHYC_REG_004 & (~0x1));
 #endif
 
 	// Pupose ??
-	rc = read32(DDRPHYC_BASE + 0x100) & ~(0xf000);
+	rc = DDRPHYC->PHYC_REG_100 & ~(0xf000);
 	if ((para->dram_tpr13 & 0x200) == 0) {
 		if (para->dram_type != 6) {
 			write32(DDRPHYC_BASE + 0x100, rc);
@@ -1656,9 +1656,9 @@ int init_DRAM(int type, dram_para_t *para) // s0
 		write32(DDRPHYC_BASE + 0x100, rc | 0x5000);
 	}
 
-	write32(DDRPHYC_BASE + 0x140, read32(DDRPHYC_BASE + 0x140) | (1 << 31));
+	write32(DDRPHYC_BASE + 0x140, DDRPHYC->PHYC_REG_140 | (1 << 31));
 	if (para->dram_tpr13 & (1 << 8)) {
-		write32(DDRPHYC_BASE + 0x0b8, read32(DDRPHYC_BASE + 0x140) | 0x300);
+		write32(DDRPHYC_BASE + 0x0b8, DDRPHYC->PHYC_REG_140 | 0x300);
 	}
 
 	rc = read32(DDRPHYC_BASE + 0x108);
@@ -1678,7 +1678,7 @@ int init_DRAM(int type, dram_para_t *para) // s0
 
 	dram_enable_all_master();
 	if (para->dram_tpr13 & (1 << 28)) {
-		rc = read32(0x70005d4);
+		rc = R_CPUCFG->SUP_STAN_FLAG;
 		if ((rc & (1 << 16)) || dramc_simple_wr_test(mem_size, 4096)) {
 			return 0;
 		}
