@@ -14767,6 +14767,31 @@
    </cluster>
   </registers>
   </peripheral>
+  <peripheral>
+  <name>R_PRCM</name>
+  <description></description>
+  <baseAddress>0x07010000</baseAddress>
+  <registers>
+   <register>
+    <name>VDD_SYS_PWROFF_GATING_REG</name>
+    <displayName>VDD_SYS_PWROFF_GATING_REG</displayName>
+    <description></description>
+    <addressOffset>0x250</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ANALOG_PWROFF_GATING_REG</name>
+    <displayName>ANALOG_PWROFF_GATING_REG</displayName>
+    <description></description>
+    <addressOffset>0x254</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
  </peripherals>
  <vendor>
  </vendor>

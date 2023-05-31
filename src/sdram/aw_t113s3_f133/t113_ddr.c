@@ -1012,9 +1012,9 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	write32(DDRPHYC_BASE + 0x0c0, val);
 
 	if (read32(0x70005d4) & (1 << 16)) {
-		val = read32(CPU_0701_0000_BASE + 0x0250);
+		val = read32(R_PRCM_BASE  + 0x0250);
 		val &= 0xfffffffd;
-		write32(CPU_0701_0000_BASE + 0x0250, val);
+		write32(R_PRCM_BASE  + 0x0250, val);
 
 		sdelay(10);
 	}
@@ -1072,7 +1072,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	while ((read32(DDRPHYC_BASE + 0x010) & 0x1) == 0) {
 	} // wait for IDONE
 
-	if (read32(CPU_0700_0000_BASE + 0x5d4) & (1 << 16)) {
+	if (read32(R_CPUCFG_BASE + 0x1d4) & (1 << 16)) {
 		val = read32(DDRPHYC_BASE + 0x10c);
 		val &= 0xf9ffffff;
 		val |= 0x04000000;
@@ -1087,9 +1087,9 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 		while ((read32(DDRPHYC_BASE + 0x018) & 0x7) != 0x3) {
 		}
 
-		val = read32(CPU_0701_0000_BASE + 0x0250);
+		val = read32(R_PRCM_BASE  + 0x0250);
 		val &= 0xfffffffe;
-		write32(CPU_0701_0000_BASE + 0x0250, val);
+		write32(R_PRCM_BASE  + 0x0250, val);
 
 		sdelay(10);
 
@@ -1571,7 +1571,7 @@ int init_DRAM(int type, dram_para_t *para) // s0
 		sdelay(10);
 	} else {
 		write32(SYS_CFG_BASE + 0x160, read32(SYS_CFG_BASE + 0x160) & 0xfffffffc);
-		write32(CPU_0701_0000_BASE + 0x0254, para->dram_tpr13 & 0x10000);
+		write32(R_PRCM_BASE  + 0x0254, para->dram_tpr13 & 0x10000);
 		sdelay(10);
 		write32(SYS_CFG_BASE + 0x160, (read32(SYS_CFG_BASE + 0x160) & 0xfffffef7) | 2);
 		sdelay(10);

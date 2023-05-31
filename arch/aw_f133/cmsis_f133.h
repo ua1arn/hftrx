@@ -153,6 +153,7 @@ typedef enum IRQn
 #define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG Base */
 #define RISC_WDG_BASE ((uintptr_t) 0x06011000)        /*!< RISC_WDG Base */
 #define RISC_TIMESTAMP_BASE ((uintptr_t) 0x06012000)  /*!< RISC_TIMESTAMP Base */
+#define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX Base */
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Base */
 #define PLIC_BASE ((uintptr_t) 0x10000000)            /*!< PLIC Base */
@@ -2619,6 +2620,16 @@ typedef struct MCTL_PHY_Type
              uint32_t reserved_0x20C;
     volatile uint32_t MCTL_PHY_ACIOCR1 [0x010];       /*!< Offset 0x210 0x210 + 0x4 * x */
 } MCTL_PHY_TypeDef; /* size of structure = 0x250 */
+/*
+ * @brief R_PRCM
+ */
+/*!< R_PRCM  */
+typedef struct R_PRCM_Type
+{
+             uint32_t reserved_0x000 [0x0094];
+    volatile uint32_t VDD_SYS_PWROFF_GATING_REG;      /*!< Offset 0x250  */
+    volatile uint32_t ANALOG_PWROFF_GATING_REG;       /*!< Offset 0x254  */
+} R_PRCM_TypeDef; /* size of structure = 0x258 */
 
 
 /* Access pointers */
@@ -2714,6 +2725,7 @@ typedef struct MCTL_PHY_Type
 #define RISC_CFG ((RISC_CFG_TypeDef *) RISC_CFG_BASE) /*!< RISC_CFG RISC-V core configuration register register set access pointer */
 #define RISC_WDG ((RISC_WDG_TypeDef *) RISC_WDG_BASE) /*!< RISC_WDG  register set access pointer */
 #define RISC_TIMESTAMP ((RISC_TIMESTAMP_TypeDef *) RISC_TIMESTAMP_BASE)/*!< RISC_TIMESTAMP  register set access pointer */
+#define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
 #define PLIC ((PLIC_TypeDef *) PLIC_BASE)             /*!< PLIC  register set access pointer */

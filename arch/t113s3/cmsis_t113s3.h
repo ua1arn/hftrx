@@ -193,6 +193,7 @@ typedef enum IRQn
 #define CSIC_DMA1_BASE ((uintptr_t) 0x05809200)       /*!< CSIC_DMA Base */
 #define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG Base */
+#define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX Base */
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL Base */
@@ -2725,6 +2726,16 @@ typedef struct MCTL_PHY_Type
              uint32_t reserved_0x20C;
     volatile uint32_t MCTL_PHY_ACIOCR1 [0x010];       /*!< Offset 0x210 0x210 + 0x4 * x */
 } MCTL_PHY_TypeDef; /* size of structure = 0x250 */
+/*
+ * @brief R_PRCM
+ */
+/*!< R_PRCM  */
+typedef struct R_PRCM_Type
+{
+             uint32_t reserved_0x000 [0x0094];
+    volatile uint32_t VDD_SYS_PWROFF_GATING_REG;      /*!< Offset 0x250  */
+    volatile uint32_t ANALOG_PWROFF_GATING_REG;       /*!< Offset 0x254  */
+} R_PRCM_TypeDef; /* size of structure = 0x258 */
 
 
 /* Access pointers */
@@ -2825,6 +2836,7 @@ typedef struct MCTL_PHY_Type
 #define CSIC_DMA1 ((CSIC_DMA_TypeDef *) CSIC_DMA1_BASE)/*!< CSIC_DMA1  register set access pointer */
 #define RISC_CFG ((RISC_CFG_TypeDef *) RISC_CFG_BASE) /*!< RISC_CFG RISC-V core configuration register register set access pointer */
 #define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
+#define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
