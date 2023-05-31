@@ -146,7 +146,7 @@ SRCDIRS += $(TINYUSBDIR)/src
 DINCDIR += $(TINYUSBDIR)/src
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # LuPng
 SRCDIRS += $(LUPNGDIR)
 DINCDIR += $(LUPNGDIR)
@@ -161,7 +161,7 @@ DINCDIR += \
 	$(LWIPDIR)/src/apps/http
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # RTOS
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 DINCDIR += \
