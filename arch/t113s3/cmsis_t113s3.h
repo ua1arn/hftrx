@@ -2393,17 +2393,22 @@ typedef struct DDRPHYC_Type
 /*!< MSI_MEMC  */
 typedef struct MSI_MEMC_Type
 {
-    volatile uint32_t MEMC_REG_000;                   /*!< Offset 0x000 Reg_000 */
-    volatile uint32_t MEMC_REG_004;                   /*!< Offset 0x004 Reg_004 */
-    volatile uint32_t MEMC_REG_008;                   /*!< Offset 0x008 Reg_008 */
-    volatile uint32_t MEMC_REG_00C;                   /*!< Offset 0x00C Reg_00C */
+    volatile uint32_t MCTL_COM_WORK_MODE0;            /*!< Offset 0x000  */
+    volatile uint32_t MCTL_COM_WORK_MODE1;            /*!< Offset 0x004  */
+    volatile uint32_t MCTL_COM_DBGCR;                 /*!< Offset 0x008  */
+    volatile uint32_t MCTL_COM_TMR;                   /*!< Offset 0x00C  */
              uint32_t reserved_0x010;
-    volatile uint32_t MEMC_CCCR;                      /*!< Offset 0x014 Reg_014 */
+    volatile uint32_t MCTL_COM_CCCR;                  /*!< Offset 0x014  */
              uint32_t reserved_0x018 [0x0002];
-    volatile uint32_t MEMC_REG_020;                   /*!< Offset 0x020 Reg_020 */
-    volatile uint32_t MEMC_REG_024;                   /*!< Offset 0x024 Reg_024 */
-    volatile uint32_t MEMC_REG_028;                   /*!< Offset 0x028 Reg_028 */
-} MSI_MEMC_TypeDef; /* size of structure = 0x02C */
+    volatile uint32_t MCTL_COM_MAER0;                 /*!< Offset 0x020  */
+    volatile uint32_t MCTL_COM_MAER1;                 /*!< Offset 0x024  */
+    volatile uint32_t MCTL_COM_MAER2;                 /*!< Offset 0x028  */
+             uint32_t reserved_0x02C [0x0135];
+    volatile uint32_t MCTL_COM_REMAP0;                /*!< Offset 0x500  */
+    volatile uint32_t MCTL_COM_REMAP1;                /*!< Offset 0x504  */
+    volatile uint32_t MCTL_COM_REMAP2;                /*!< Offset 0x508  */
+    volatile uint32_t MCTL_COM_REMAP3;                /*!< Offset 0x50C  */
+} MSI_MEMC_TypeDef; /* size of structure = 0x510 */
 /*
  * @brief SID
  */

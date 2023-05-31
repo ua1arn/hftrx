@@ -2,11 +2,15 @@
 #base; MSI_MEMC 0x03102000
 #irq; MSI 75
 #irqrv; MSI 59
-#regdef; MEMC_REG_000; 0x000; Reg_000
-#regdef; MEMC_REG_004; 0x004; Reg_004
-#regdef; MEMC_REG_008; 0x008; Reg_008
-#regdef; MEMC_REG_00C; 0x00C; Reg_00C
-#regdef; MEMC_CCCR; 0x014; Reg_014
-#regdef; MEMC_REG_020; 0x020; Reg_020
-#regdef; MEMC_REG_024; 0x024; Reg_024
-#regdef; MEMC_REG_028; 0x028; Reg_028
+#regdef; MCTL_COM_WORK_MODE0; 0x00;
+#regdef; MCTL_COM_WORK_MODE1; 0x04;
+#regdef; MCTL_COM_DBGCR; 0x08;
+#regdef; MCTL_COM_TMR; 0x0c;
+#regdef; MCTL_COM_CCCR; 0x14;
+#regdef; MCTL_COM_MAER0; 0x20;
+#regdef; MCTL_COM_MAER1; 0x24;
+#regdef; MCTL_COM_MAER2; 0x28;
+#regdef; MCTL_COM_REMAP0; 0x500;
+#regdef; MCTL_COM_REMAP1; 0x504;
+#regdef; MCTL_COM_REMAP2; 0x508;
+#regdef; MCTL_COM_REMAP3; 0x50c;
