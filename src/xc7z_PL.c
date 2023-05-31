@@ -131,11 +131,17 @@ void xcz_fifo_if_rx_inthandler(void)
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 	static unsigned rx_stage = 0;
 	iq_ready = 0;
-
 	uint32_t * r = (uint32_t *) addr32rx;
 
+#if IQMODEM_BLOCKMEMORY
+	const uint32_t pos = Xil_In32(XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR);
+	const void * blkmem = (void *) XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR;
+	const uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
+	memcpy(r, blkmem + offset, DMABUFFSIZE32RX * 4);
+#else
 	for (uint16_t i = 0; i < DMABUFFSIZE32RX; i ++)
 		r[i] = Xil_In32(XPAR_IQ_MODEM_FIFO_IQ_RX_BASEADDR);
+#endif /* IQMODEM_BLOCKMEMORY */
 
 	processing_dmabuffer32rx(addr32rx);
 	processing_dmabuffer32rts(addr32rx);
@@ -158,41 +164,13 @@ void xcz_if_rx_enable(uint_fast8_t state)
 
 uint32_t xcz_cic_test_process(void)
 {
-	while(! iq_ready);
-
 	int32_t * r = (int32_t *) addr32rx;
-	int32_t max = 0;
+	static int32_t max = 0;
 
-	arm_max_no_idx_q31(r, DMABUFFSIZE32RX, & max);
+	if (iq_ready)
+		arm_max_no_idx_q31(r, DMABUFFSIZE32RX, & max);
 
 	return max;
-}
-
-// ****************** IF TX ******************
-
-void xcz_if_tx_init(void)
-{
-
-}
-
-void xcz_dma_if_tx_inthandler(void)
-{
-#if WITHTX
-	const uintptr_t addr = getfilled_dmabuffer32tx_main();
-	uint32_t * r = (uint32_t *) addr;
-
-	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
-		Xil_Out32(XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR, r[i]);
-
-	release_dmabuffer32tx(addr);
-#endif /* WITHTX */
-}
-
-void xcz_if_tx_enable(uint_fast8_t state)
-{
-#if WITHTX
-	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_IQ_TX_IRQ_INTR, xcz_dma_if_tx_inthandler);
-#endif /* WITHTX */
 }
 
 // ****************** Audio MIC receive ******************
@@ -218,7 +196,36 @@ void xcz_fifo_mic_inthandler(void)
 void xcz_audio_rx_enable(uint_fast8_t state)
 {
 #if WITHTX
-	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_MIC_IRQ_INTR, xcz_fifo_mic_inthandler);
+//	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_MIC_IRQ_INTR, xcz_fifo_mic_inthandler);
+#endif /* WITHTX */
+}
+
+// ****************** IF TX ******************
+
+void xcz_if_tx_init(void)
+{
+
+}
+
+void xcz_dma_if_tx_inthandler(void)
+{
+	xcz_fifo_mic_inthandler();
+
+#if WITHTX
+	const uintptr_t addr = getfilled_dmabuffer32tx_main();
+	uint32_t * r = (uint32_t *) addr;
+
+	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
+		Xil_Out32(XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR, r[i]);
+
+	release_dmabuffer32tx(addr);
+#endif /* WITHTX */
+}
+
+void xcz_if_tx_enable(uint_fast8_t state)
+{
+#if WITHTX
+	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_IQ_TX_IRQ_INTR, xcz_dma_if_tx_inthandler);
 #endif /* WITHTX */
 }
 
@@ -226,7 +233,13 @@ void xcz_audio_rx_enable(uint_fast8_t state)
 
 void xcz_audio_tx_init(void)
 {
-
+#if IQMODEM_BLOCKMEMORY
+	// Первоначальное заполнение первой половины буфера
+	void * blkmem = (void *) XPAR_AUDIO_PHONES_BRAM_WRITER_BASEADDR;
+	uint32_t f[DMABUFFSIZE16TX];
+	memset(f, 0, sizeof(f));
+	memcpy(blkmem, f, DMABUFFSIZE16TX * 4);
+#endif /* IQMODEM_BLOCKMEMORY */
 }
 
 void xcz_fifo_phones_inthandler(void)
@@ -234,8 +247,15 @@ void xcz_fifo_phones_inthandler(void)
 	const uintptr_t addr = getfilled_dmabuffer16txphones();
 	uint32_t * r = (uint32_t *) addr;
 
+#if IQMODEM_BLOCKMEMORY
+	const uint32_t pos = Xil_In32(XPAR_AUDIO_PHONES_BRAM_POS_BASEADDR);
+	void * blkmem = (void *) XPAR_AUDIO_PHONES_BRAM_WRITER_BASEADDR;
+	const uint16_t offset = pos >= DMABUFFSIZE16TX ? 0 : (DMABUFFSIZE16TX * 4);
+	memcpy(blkmem + offset, r, DMABUFFSIZE16TX * 4);
+#else
 	for (uint16_t i = 0; i < DMABUFFSIZE16TX; i ++)
 		Xil_Out32(XPAR_AUDIO_FIFO_PHONES_BASEADDR, r[i]);
+#endif /* IQMODEM_BLOCKMEMORY */
 
 	release_dmabuffer16tx(addr);
 }

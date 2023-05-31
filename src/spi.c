@@ -13,7 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if ! LINUX_SUBSYSTEM
+#if ! LINUX_SUBSYSTEM && ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA)
 	#include <machine/endian.h>
 #endif /* ! LINUX_SUNSYSTEM */
 

@@ -247,7 +247,7 @@ static void pcf8535_put_char_big(char cc, uint_fast8_t lowhalf)
 //
 static void pcf8535_put_char_half(char cc, uint_fast8_t lowhalf)
 {
-    const uint_fast8_t c = bigfont_decode(cc);
+    const uint_fast8_t c = halffont_decode(cc);
 	enum { NCOLS = (sizeof uc1601s_halffont [c][lowhalf] / sizeof uc1601s_halffont [c][lowhalf] [0]) };
 	const FLASHMEM uint8_t * p = & uc1601s_halffont [c][lowhalf][0];
 	uint_fast8_t i;

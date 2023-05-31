@@ -1036,16 +1036,16 @@ void display2_xltrgb24(COLOR24_T * xtable);
 void hwaccel_bitblt(
 	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
 	int_fast32_t dstinvalidatesize,
-	PACKEDCOLORPIP_T * dst,
+	PACKEDCOLORPIP_T * __restrict dst,
 	uint_fast16_t ddx,	// ширина буфера
 	uint_fast16_t ddy,	// высота буфера
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORPIP_T * src,
+	const PACKEDCOLORPIP_T * __restrict src,
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy,	// высота буфера
 	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
-	unsigned keyflag, COLOR24_T keycolor
+	unsigned keyflag, COLORPIP_T keycolor
 	);
 
 // копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
@@ -1071,13 +1071,13 @@ void ltdc_horizontal_pixels(
 void ltdc_put_char_unified(
 	const FLASHMEM uint8_t * fontraster,
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
-	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке символа
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx, uint_fast16_t dy,	// размеры целевого буфера
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
-	uint_fast8_t ci	// индекс символа в знакогенераторе
+	uint_fast8_t ci,	// индекс символа в знакогенераторе
+	uint_fast8_t width2	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
 	);
 
 // Установить прозрачность для прямоугольника
@@ -1101,6 +1101,12 @@ void colpip_fillrect(
 
 uint_fast8_t smallfont_decode(char cc);
 uint_fast8_t bigfont_decode(char cc);
+uint_fast8_t halffont_decode(char cc);
+uint_fast8_t bigfont_width(char cc);
+uint_fast8_t halffont_width(char cc);
+uint_fast8_t smallfont_width(char cc);
+uint_fast8_t smallfont2_width(char cc);
+uint_fast8_t smallfont3_width(char cc);
 
 int_fast32_t display_zoomedbw(void);
 

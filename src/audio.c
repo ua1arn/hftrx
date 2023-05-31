@@ -163,7 +163,9 @@ static uint_fast8_t 	glob_moniflag = 1;		/* Уровень сигнала сам
 static uint_fast8_t		glob_cwssbtx = 1;			/* разрешение передачи телеграфа как тона в режиме SSB */
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
+#if WITHIF4DSP
 static uint_fast16_t	glob_dacscale = BOARDDACSCALEMAX;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
+#endif /* WITHIF4DSP */
 static uint_fast16_t	glob_digiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 static uint_fast16_t	glob_cwscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 static uint_fast16_t	glob_designscale = 100;	/* используется при калибровке параметров интерполятора */
@@ -6558,6 +6560,7 @@ board_set_amdepth(uint_fast8_t n)	/* Глубина модуляции в АМ -
 
 //	#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
 //	#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+#if WITHIF4DSP
 
 void 
 board_set_dacscale(uint_fast16_t n)	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
@@ -6569,6 +6572,8 @@ board_set_dacscale(uint_fast16_t n)	/* Использование амплиту
 	}
 	//PRINTF("board_set_dacscale = %u\n", (unsigned) glob_dacscale);
 }
+
+#endif /* WITHIF4DSP */
 
 void 
 board_set_digiscale(uint_fast16_t n)	/* Увеличение усиления при передаче в цифровых режимах 100..300% */

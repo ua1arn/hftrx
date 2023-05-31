@@ -463,18 +463,19 @@ extern "C" {
 
 	#define CPU_FREQ (F_CPU)
 
-	#define TICKS_FREQUENCY	 (200U)	// 200 Hz - use compare/match interrupt
+	#define TICKS_FREQUENCY	 (200u)	// 200 Hz - use compare/match interrupt
 
-	//#define SCL_CLOCK  100000uL	/* 100 kHz I2C/TWI speed */
-	//#define SCL_CLOCK  250000uL		/* 250 kHz I2C/TWI speed */
-	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
-	//#define SCL_CLOCK  40000uL	/* 40 kHz I2C/TWI speed */
+	//#define SCL_CLOCK  100000u	/* 100 kHz I2C/TWI speed */
+	//#define SCL_CLOCK  250000u		/* 250 kHz I2C/TWI speed */
+	#define SCL_CLOCK  400000u	/* 400 kHz I2C/TWI speed */
+	//#define SCL_CLOCK  40000u	/* 40 kHz I2C/TWI speed */
 
 	#define SPISPEED (CPU_FREQ / 2) /* 4 (5) MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define SPISPEEDUFAST SPISPEED
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
-	#define ADC_FREQ	250000uL	/* тактовая частота SAR преобразователя АЦП. */
+	#define ADC_FREQ	250000u	/* тактовая частота SAR преобразователя АЦП. */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define ADCVREF_CPU	50		// 5.0 volt
@@ -2701,12 +2702,13 @@ extern "C" {
 	#error WIHSPIDFOVERSPI and ( WIHSPIDFSW or WIHSPIDFHW ) can not be used together
 #endif /* (WIHSPIDFSW || WIHSPIDFHW) && WIHSPIDFOVERSPI */
 
+#if WITHIF4DSP
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-
-#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
-#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+	#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
+	#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+#endif /* WITHIF4DSP */
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046)
 	#error Use TSC_TYPE_XPT2046 instead TSC_TYPE_TSC2046

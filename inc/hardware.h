@@ -577,8 +577,8 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
 	typedef uint_fast8_t portholder_t;		
 
-	#define local_delay_us(t) do { _delay_us(t); } while (0)
-	#define local_delay_ms(t) do { _delay_ms(t); } while (0)
+	#define local_delay_us(t) do { if ((t) <= 1) _delay_us(0); else if ((t <= 10)) _delay_us(10); else _delay_us(100); } while (0)
+	#define local_delay_ms(t) do { if ((t) <= 1) _delay_ms(0); else if ((t <= 10)) _delay_ms(10); else _delay_ms(100); } while (0)
  
 	#if (FLASHEND > 0x7FFF)	
 		// нет нужды экономить память FLASH
@@ -592,6 +592,14 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	#endif
 
 	#define ATTRWEAK __attribute__ ((weak))
+	#define __WEAK __attribute__ ((weak))
+	#define __NO_RETURN	__attribute__((__noreturn__))
+
+	/* stubs */
+
+	#define IRQL_SYSTEM 			1
+	#define IRQL_REALTIME 			1
+	#define IRQL_OVERREALTIME 		1
 
 #elif CPUSTYLE_TMS320F2833X
 	/* тип для передачи параметра "адрес устройства на SPI шине" */

@@ -2964,7 +2964,7 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 	)
 {
 	const uint_fast8_t ci = smallfont_decode(cc);
-	ltdc_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], buffer, dx, dy, x, y, ci);
+	ltdc_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], buffer, dx, dy, x, y, ci, SMALLCHARW3);
 	return x + SMALLCHARW3;
 //	const uint_fast8_t width = SMALLCHARW3;
 //	const uint_fast8_t c = smallfont_decode(cc);
@@ -3236,21 +3236,21 @@ void display2_xltrgb24(COLOR24_T * xltable)
 		/* RED */
 		for (i = 0; i < TESTSIZE; ++ i)
 		{
-			uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
+			const uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
 			fillpair_xltrgb24(xltable, i, COLOR24(1 * c, 0 * c, 0 * c));	// проверить результат перед попыткой применить целочисленные вычисления!
 		}
 	#elif 0
 		/* GREEN */
 		for (i = 0; i < TESTSIZE; ++ i)
 		{
-			uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
+			const uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
 			fillpair_xltrgb24(xltable, i, COLOR24(0 * c, 1 * c, 0 * c));	// проверить результат перед попыткой применить целочисленные вычисления!
 		}
 	#else
 		/* BLUE */
 		for (i = 0; i < TESTSIZE; ++ i)
 		{
-			uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
+			const uint_fast8_t c = scalecolor(i, TESTSIZE - 1, 255);
 			fillpair_xltrgb24(xltable, i, COLOR24(0 * c, 0 * c, 1 * c));	// проверить результат перед попыткой применить целочисленные вычисления!
 		}
 	#endif
@@ -3297,9 +3297,9 @@ void display2_xltrgb24(COLOR24_T * xltable)
 
 	for (i = 0; i < 256; ++ i)
 	{
-		uint_fast8_t r = ((i & 0xe0) << 0) | ((i & 0xe0) >> 3) | ((i & 0xe0) >> 6);		// 3 bit red
-		uint_fast8_t g = ((i & 0x1c) << 3) | ((i & 0x1c) << 0) | ((i & 0x1c) >> 3) ;	// 3 bit green
-		uint_fast8_t b = ((i & 0x03) << 6) | ((i & 0x03) << 4) | ((i & 0x03) << 2) | ((i & 0x03) << 0);	// 2 bit blue
+		const uint_fast8_t r = ((i & 0xe0) << 0) | ((i & 0xe0) >> 3) | ((i & 0xe0) >> 6);		// 3 bit red
+		const uint_fast8_t g = ((i & 0x1c) << 3) | ((i & 0x1c) << 0) | ((i & 0x1c) >> 3) ;	// 3 bit green
+		const uint_fast8_t b = ((i & 0x03) << 6) | ((i & 0x03) << 4) | ((i & 0x03) << 2) | ((i & 0x03) << 0);	// 2 bit blue
 		xltable [i] = COLOR24(r, g, b);
 	}
 

@@ -454,7 +454,7 @@
 			#define WITHAFGAINDEFAULT	150
 			//#define WITHCPUTEMPERATURE	1
 			#define WITHALTERNATIVEFONTS	1
-			#define WITHAFEQUALIZER		1
+			//#define WITHAFEQUALIZER		1
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			#define WITHDEFAULTVIEW		VIEW_3DSS
@@ -522,7 +522,7 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
-	#if 0
+	#if 1
 		#define WITHAUTOTUNER_UA1CEI_V2 1
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */

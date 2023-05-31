@@ -174,7 +174,7 @@ static void lph88_put_char_big(char cc)
 static void lph88_put_char_half(char cc)
 {
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = bigfont_decode(cc);
+    const uint_fast8_t c = halffont_decode(cc);
 	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0][0]) };
 	const FLASHMEM uint8_t * const p = & ls020_halffont [c][0];
 

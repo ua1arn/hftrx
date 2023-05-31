@@ -1016,7 +1016,7 @@ static uint_fast32_t gethalfcharbase(
 	char cc	// символ для отображения
 	)
 {
-	return halfchargenbase + bigfont_decode(cc) * halfchargenstep;
+	return halfchargenbase + halffont_decode(cc) * halfchargenstep;
 }
 
 static uint_fast32_t getsmallcharbase(
@@ -1206,6 +1206,7 @@ static uint_fast16_t s1d13781_put_char_big(uint_fast16_t xpix, uint_fast16_t ypi
 		bitblt_setdstaddr(s1d13781_getaddr(xpix, ypix));
 
 		// '#' - узкий пробел
+	    const uint_fast8_t width = bigfont_width(cc);
 		if (cc == '.' || cc == '#')
 		{
 			bitblt_chargen_big(BIGCHARW_NARROW, getnarrowcharbase(cc));
@@ -1225,6 +1226,7 @@ static uint_fast16_t s1d13781_put_char_big(uint_fast16_t xpix, uint_fast16_t ypi
 static uint_fast16_t
 s1d13781_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc)
 {
+	const uint_fast8_t width = halffont_width(cc);
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{

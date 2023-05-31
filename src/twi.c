@@ -1507,7 +1507,7 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 
 	int Status = XIicPs_MasterRecvPolled(& xc7z_iicps, buf, size, slave_address >> 1);
 	if (Status != XST_SUCCESS)
-		//PRINTF("iicps receive error %d from address %x\n", Status, slave_address);
+		PRINTF("iicps receive error %d from address %x\n", Status, slave_address);
 
 	return Status;
 }
@@ -1518,7 +1518,7 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 
 	int Status = XIicPs_MasterSendPolled(& xc7z_iicps, (uint8_t *) buf, size, slave_address >> 1);
 	if (Status != XST_SUCCESS)
-		//PRINTF("iicps write error %d to address %x\n", Status, slave_address);
+		PRINTF("iicps write error %d to address %x\n", Status, slave_address);
 
 	return Status;
 }
@@ -1679,7 +1679,7 @@ static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
 	do {
 		if ((pdat_i2c.io->TWI_CNTR & (1 << 3))){
 			unsigned int stat = TWI1-> TWI_STAT;
-			////PRINTF("t113_i2c_wait_status = 0x%X\n", stat);
+			//PRINTF("t113_i2c_wait_status = 0x%X\n", stat);
 			return stat;
 		}
 	} while (sys_now()<timeout);
