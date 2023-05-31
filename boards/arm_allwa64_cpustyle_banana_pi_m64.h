@@ -965,18 +965,12 @@
 		arm_hardware_piod_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 		arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
 		arm_hardware_pioe_outputs(BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
-		} while (0)
+	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-			if (state) { \
-				gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-				gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
-				gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
-			} else {\
-				gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
-				gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, 0 * BOARD_BLINK_BIT1); \
-				gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, 0 * BOARD_BLINK_BIT2); \
-			} \
-		} while (0)
+		gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
+		gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
+		gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, !! (state) * BOARD_BLINK_BIT2); \
+	} while (0)
 #endif
 
 	#if WITHISBOOTLOADER
