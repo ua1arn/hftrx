@@ -143,7 +143,7 @@ uc1601s_put_char_big(uint_fast8_t xpix, char cc, uint_fast8_t lowhalf)
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = 1 * ((cc == '.' || cc == '#') ? 6 : 0);	// начальная колонка знакогенератора, откуда начинать.
-    const uint_fast8_t width = bigfont_width(cc);
+    //const uint_fast8_t width = bigfont_width(cc);
     const uint_fast8_t c = bigfont_decode(cc);
 	enum { NCOLS = (sizeof uc1601s_bigfont [0][0] / sizeof uc1601s_bigfont [0][0][0]) };
 	const FLASHMEM uint8_t * const p = & uc1601s_bigfont [c][lowhalf][0];
@@ -165,7 +165,7 @@ static uint_fast8_t
 uc1601s_put_char_half(uint_fast8_t xpix, char cc, uint_fast8_t lowhalf)
 {
 	uint_fast8_t i = 0;
-    const uint_fast8_t width = halffont_width(cc);
+    //const uint_fast8_t width = halffont_width(cc);
     const uint_fast8_t c = halffont_decode(cc);
 	enum { NCOLS = (sizeof uc1601s_halffont [c][lowhalf] / sizeof uc1601s_halffont [c][lowhalf] [0]) };
 	const FLASHMEM uint8_t * const p = & uc1601s_halffont [c][lowhalf][0];
