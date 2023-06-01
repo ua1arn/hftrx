@@ -2331,6 +2331,7 @@ bigfont_decode(char cc)
 		return 10;		// ошибка - курсор - позиция редактирвания частоты
 	return c - '0';		// остальные - цифры 0..9
 }
+
 /* valid chars: "0123456789 #._" */
 uint_fast8_t
 halffont_decode(char cc)
@@ -2357,15 +2358,14 @@ smallfont_decode(char cc)
 	return c - ' ';
 }
 
-#if ! LCDMODE_HD44780
-//#if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
+//#if ! (LCDMODE_HD44780 || LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341)
+#if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
 uint_fast8_t bigfont_width(char cc)
 {
 	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
 }
-#endif /* ! LCDMODE_HD44780 */
-
-//#endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
+#endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
+//#endif /* ! (LCDMODE_HD44780 || LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341) */
 
 #if defined (HALFCHARW)
 uint_fast8_t halffont_width(char cc)
