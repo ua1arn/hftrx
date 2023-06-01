@@ -565,30 +565,30 @@ static int ccu_set_pll_ddr_clk(int index, dram_para_t *para)
 	// set VCO clock divider
 	n = (clk * 2) / MHZ;
 
-	val = read32(0x2001010);
+	val = read32(CCU_BASE + 0x010);
 	val &= 0xfff800fc; // clear dividers
 	val |= (n - 1) << 8; // set PLL division
 	val |= 0xc0000000; // enable PLL and LDO
 	val &= 0xdfffffff;
-	writel(val | 0x20000000, 0x2001010);
+	writel(val | 0x20000000, CCU_BASE + 0x010);
 
 	// wait for PLL to lock
-	while ((read32(0x2001010) & 0x10000000) == 0) {
+	while ((read32(CCU_BASE + 0x010) & 0x10000000) == 0) {
 		;
 	}
 
 	udelay(20);
 
 	// enable PLL output
-	val = read32(0x2001000);
+	val = read32(CCU_BASE);
 	val |= 0x08000000;
-	writel(val, 0x2001000);
+	writel(val, CCU_BASE);
 
 	// turn clock gate on
-	val = read32(0x2001800);
+	val = read32(CCU_BASE + 0x800);
 	val &= 0xfcfffcfc; // select DDR clk source, n=1, m=1
 	val |= 0x80000000; // turn clock on
-	writel(val, 0x2001800);
+	writel(val, CCU_BASE + 0x800);
 
 	return n * MHZ;
 }
