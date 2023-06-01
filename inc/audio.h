@@ -77,13 +77,6 @@ extern "C" {
 		#define DMABUF32RXWFM3I	3		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
-
-		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
-
 	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 		#if WITHFPGAIF_FRAMEBITS == 64
@@ -132,13 +125,6 @@ extern "C" {
 			#define DMABUF32TXQ	1		// TX, Q
 
 		#endif /* WITHFPGAIF_FRAMEBITS */
-
-		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
-
-		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
 	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
@@ -195,13 +181,6 @@ extern "C" {
 				// ws=1: 04 05 06 07
 	#endif
 
-		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
-
-		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
-
 	#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
 		// ws=0: even samples, ws=1: odd samples
@@ -222,16 +201,6 @@ extern "C" {
 		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	1		// TX, Q
-
-		/* CODEC */
-		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
-
-		/* CODEC */
-		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
-
 
 	#elif WITHUSBMIKET113
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
@@ -282,18 +251,6 @@ extern "C" {
 		#define DMABUF32RXWFM3I	6		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-		#define DMABUFFSTEP16RX		3		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-
-	//	ix = 0: R5 & R11 (lineinL - pin 96 & fminL pin 94)
-	//	ix = 1: R6 & R10 (lineinR - pin 95 & fminR pin 93)
-	//	ix = 2: micin3N & micin3P
-
-		#define DMABUFF16RX_MIKE 	2		/* индекс сэмпла левого канала */
-
-		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
-
 	#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
 		// ws=0: even samples, ws=1: odd samples
@@ -343,13 +300,6 @@ extern "C" {
 		#define DMABUF32RXWFM3I	6		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
-
-		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
-
 	#else
 		#warning Define I2S layout for this CPUSTYLE_XXX
 
@@ -388,13 +338,6 @@ extern "C" {
 		#define DMABUF32RXWFM3I	3		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
-
-		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
-
 	#endif
 
 #else /* WITHDSPEXTDDC */
@@ -409,15 +352,35 @@ extern "C" {
 	#define DMABUF32TXI	0		// TX, I
 	#define DMABUF32TXQ	1		// TX, Q
 
-	#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-	#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла канала микрофона */
+#endif /* WITHDSPEXTDDC */
 
-	#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
+
+	/* встороенный в процессор кодек */
+
+	//	ix = 0: R5 & R11 (lineinL - pin 96 & fminL pin 94)
+	//	ix = 1: R6 & R10 (lineinR - pin 95 & fminR pin 93)
+	//	ix = 2: micin3N & micin3P
+
+	#define DMABUFFSTEP16RX		3		/* 3 - каждому сэмплу при получении от AUDIO CODEC соответствует три числа в DMA буфере */
+	#define DMABUFF16RX_MIKE 	2		/* индекс сэмпла левого канала */
+
+	#define DMABUFFSTEP16TX		2		/* 2 - каждому сэмплу при передаче в AUDIO CODEC соответствует два числа в DMA буфере */
 	#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
 	#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
-#endif /* WITHDSPEXTDDC */
+#else /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
 
+	/* Обычный I2S канал */
+
+	#define DMABUFFSTEP16RX		2		/* 2 - каждому сэмплу при получении от AUDIO CODEC соответствует два числа в DMA буфере */
+	#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла канала микрофона */
+
+	#define DMABUFFSTEP16TX		2		/* 2 - каждому сэмплу при передаче в AUDIO CODEC соответствует два числа в DMA буфере */
+	#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
+	#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
+
+#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
 
 // Требования по кратности размера буфера для передачи по USB DMA
 #if CPUSTYLE_R7S721
