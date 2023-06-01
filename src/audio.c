@@ -5141,8 +5141,9 @@ static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 {
 #if 0
 	// для тестирования шумоподавителя.
-	const FLOAT_t tone = get_lout() * 0.9f;
-	ch0 = ch1 = tone;
+	//const FLOAT_t tone = get_lout() * 0.9f;
+	ch0 = get_lout();
+	ch1 = get_rout();
 #endif
 #if WITHSKIPUSERMODE
 	#if WITHUSEDUALWATCH
