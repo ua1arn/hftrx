@@ -3104,10 +3104,9 @@ static unsigned fill_CDCACM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 
 #if WITHUSBCDCEEM
 
-static unsigned CDCEEM_InterfaceAssociationDesc(
-	uint_fast8_t fill, 
-	uint8_t * buff, 
-	unsigned maxsize
+static unsigned CDCEEM_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bFirstInterface,
+	uint_fast8_t bInterfaceCount
 	)
 {
 	const uint_fast8_t length = 8;
@@ -3123,8 +3122,8 @@ static unsigned CDCEEM_InterfaceAssociationDesc(
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
-		* buff ++ = INTERFACE_CDCEEM_DATA;				// bFirstInterface
-		* buff ++ = INTERFACE_CDCEEM_count;	// bInterfaceCount
+		* buff ++ = bFirstInterface;				// bFirstInterface
+		* buff ++ = bInterfaceCount;	// bInterfaceCount
 		* buff ++ = USB_DEVICE_CLASS_COMMUNICATIONS;	// bFunctionClass: CDC
 		* buff ++ = CDC_ETHERNET_EMULATION_MODEL;		// bFunctionSubClass - Ethernet Networking
 		* buff ++ = 0x07;						// bFunctionProtocol
@@ -3217,7 +3216,7 @@ static unsigned fill_CDCEEM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	// iadclasscode_r10.pdf
 	// InterfaceAssociationDesc требуется только для многоинтерфейсных
 	// Провда, там написано что iadclasscode_r10.pdf
-	n += CDCEEM_InterfaceAssociationDesc(fill, p + n, maxsize - n);	/* CDC EEM: Interface Association Descriptor Abstract Control Model */
+	n += CDCEEM_InterfaceAssociationDesc(fill, p + n, maxsize - n, INTERFACE_CDCEEM_DATA, INTERFACE_CDCEEM_count);	/* CDC EEM: Interface Association Descriptor Abstract Control Model */
 	n += CDCEEM_fill_24(fill, p + n, maxsize - n, INTERFACE_CDCEEM_DATA, 0x00, 2);	/* INTERFACE_CDCEEM_DATA Data class interface descriptor */
 	n += CDCEEM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 	n += CDCEEM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT));	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
@@ -3231,7 +3230,10 @@ static unsigned fill_CDCEEM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 
 // ISBLyzer: Interface Association Descriptor Abstract Control Model
 // documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDesc_ecn.pdf
-static unsigned CDCECM_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned CDCECM_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bFirstInterface,
+	uint_fast8_t bInterfaceCount
+	)
 {
 	const uint_fast8_t length = 8;
 	ASSERT(maxsize >= length);
@@ -3244,8 +3246,8 @@ static unsigned CDCECM_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buf
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
-		* buff ++ = INTERFACE_CDCECM_CONTROL;				// bFirstInterface
-		* buff ++ = INTERFACE_CDCECM_count;	// bInterfaceCount
+		* buff ++ = bFirstInterface;				// bFirstInterface
+		* buff ++ = bInterfaceCount;	// bInterfaceCount
 		* buff ++ = USB_DEVICE_CLASS_COMMUNICATIONS;	// bFunctionClass: CDC
 		* buff ++ = CDC_ETHERNET_NETWORKING_CONTROL_MODEL;						// bFunctionSubClass - Ethernet Networking
 		* buff ++ = 0x00;						// bFunctionProtocol
@@ -3436,7 +3438,7 @@ static unsigned fill_CDCECM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	uint_fast8_t ialt = 0;
 	unsigned n = 0;
 
-	n += CDCECM_InterfaceAssociationDesc(fill, p + n, maxsize - n);	/* CDC: Interface Association Descriptor Abstract Control Model */
+	n += CDCECM_InterfaceAssociationDesc(fill, p + n, maxsize - n, INTERFACE_CDCECM_CONTROL, INTERFACE_CDCECM_count);	/* CDC: Interface Association Descriptor Abstract Control Model */
 	n += CDCECM_InterfaceDescControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	n += CDC_HeaderFunctionalDesc(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
 	n += CDCECM_UnionFunctionalDesc(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
