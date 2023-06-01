@@ -4215,6 +4215,10 @@ enum
 		#endif /* WITHLOWPOWEREXTTUNE */
 		static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
+	#else
+		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
+		static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
+		enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
 
 	#if WITHPABIASTRIM
