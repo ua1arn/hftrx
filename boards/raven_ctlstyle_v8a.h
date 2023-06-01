@@ -66,7 +66,7 @@
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
-	#define LCDMODE_WH2004	1	/* тип применяемого индикатора 20*4 */
+	//#define LCDMODE_WH2004	1	/* тип применяемого индикатора 20*4 */
 	//#define LCDMODE_SPI	1		/* LCD WE2002 over SPI line - совместно с LCDMODE_WHxxxxx */
 	//#define LCDMODE_RDX0120	1	/* Индикатор 64*32 с контроллером UC1601. */
 	//#define LCDMODE_RDX0077	1	/* Индикатор 128*64 с контроллером UC1601.  */
@@ -88,7 +88,7 @@
 	//#define LCDMODE_UC1608_TOPDOWN	1	/* LCDMODE_UC1608 - перевернуть изображение (для выводов сверху) */
 	//#define LCDMODE_ST7735	1	/* Индикатор 160*128 с контроллером Sitronix ST7735 */
 	//#define LCDMODE_ST7735_TOPDOWN	1	/* LCDMODE_ST7735 - перевернуть изображение (для выводов справа) */
-	//#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
+	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
 	//#define LCDMODE_ST7565S	1	/* Индикатор WO12864C2-TFH# 128*64 с контроллером Sitronix ST7565S */
 	//#define LCDMODE_ST7565S_TOPDOWN	1	/* LCDMODE_ST7565S - перевернуть изображение (для выводов сверху) */
