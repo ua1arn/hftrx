@@ -270,7 +270,7 @@ void board_get_compile_datetime(
 	uint_fast8_t * seconds
 	);
 
-void board_get_serialnr(unsigned * sn);
+void board_get_serialnr(uint_fast32_t * sn);
 
 #if defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 

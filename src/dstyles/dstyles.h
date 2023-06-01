@@ -36,7 +36,6 @@
 	{
 		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, REDRSUBSET_ALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, DPAGEEXT, },	// частота для символьных дисплеев
-		{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, DPAGEEXT, },
 		{	9, 0,	display2_mode3_a,	REDRM_MODE,	DPAGEEXT, },	// SSB/CW/AM/FM/...
 		{	12, 0,	display_lockstate1,	REDRM_MODE, DPAGEEXT, },

@@ -9916,7 +9916,7 @@ static uint_fast32_t crcupdate(
 		return (crc * 2);
 }
 
-void board_get_serialnr(unsigned * sn)
+void board_get_serialnr(uint_fast32_t * sn)
 {
 #if CPUSTYLE_STM32MP1
 	uint_fast32_t crc = MODEM_CRC_INITVAL;

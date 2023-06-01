@@ -17568,7 +17568,7 @@ void display2_menu_valxx(
 
 	case RJ_SERIALNR:
 		{
-			unsigned serialnr;
+			uint_fast32_t serialnr;
 			board_get_serialnr(& serialnr);
 
 			char msg [VALUEW + 1];
