@@ -4598,7 +4598,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		static uint_fast8_t gdacscale = WITHDEFDACSCALE;	/* настраивается под прегруз драйвера. */
 	#else /* defined (WITHDEFDACSCALE) */
 #warning Limited WITHDEFDACSCALE value used
-		static uint_fast8_t gdacscale = 50;	/* настраивается под прегруз драйвера. */
+		static uint_fast8_t gdacscale = 100;	/* настраивается под прегруз драйвера. */
 	#endif /* defined (WITHDEFDACSCALE) */
 
 #endif /* WITHTX */
