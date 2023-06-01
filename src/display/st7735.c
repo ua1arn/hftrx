@@ -858,24 +858,24 @@ display_wrdatabar_end(void)
 }
 
 uint_fast16_t
-display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	return st7735_put_char_big(xpix, c);
+	return st7735_put_char_big(xpix, cc);
 }
 
 uint_fast16_t
-display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	return st7735_put_char_half(xpix, c);
+	return st7735_put_char_half(xpix, cc);
 }
 
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 uint_fast16_t
-display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
+display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	return st7735_put_char_small(xpix, c);
+	return st7735_put_char_small(xpix, cc);
 }
 
 // Вызов этой функции только внутри display_wrdata2_begin() и display_wrdata2_end();
