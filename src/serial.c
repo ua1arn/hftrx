@@ -558,12 +558,11 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
-
-//	if (state)
-//		 UART0->CR |= SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
-//	else
-//		 UART0->CR &= ~ SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
-//
+	#warning Undefined CPUSTYLE_XC7Z
+	if (state)
+		 UART0->IER |= 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	else
+		 UART0->IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
@@ -1803,6 +1802,10 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 #elif CPUSTYLE_XC7Z
 
 	#warning Undefined CPUSTYLE_XC7Z
+	if (state)
+		 UART1->IER |= 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	else
+		 UART1->IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 

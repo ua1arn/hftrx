@@ -5076,7 +5076,7 @@ static void spidf_iostart(
 		spidf_progval8_p2(0x00);	// dummy byte
 
 	spidf_complete();	/* done sending data to target chip */
-	return 0;	// Ignored in spidf_unselect
+	return;
 
 
 	switch (cmdlen)
