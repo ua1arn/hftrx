@@ -306,4 +306,7 @@
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+
 #endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_DK2_H_INCLUDED */

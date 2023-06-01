@@ -328,4 +328,7 @@
 	#define WITHLCDBACKLIGHTMIN	0
 	#define WITHLCDBACKLIGHTMAX	1	// Верхний предел регулировки (показываемый на дисплее)
 
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+
 #endif /* U_BLAZE_CTLSTYLE_V1_H_INCLUDED */

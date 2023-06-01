@@ -711,5 +711,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-
 #endif /* ARM_ALLWT128S3_CTLSTYLE_MANGO_PI_H_INCLUDED */

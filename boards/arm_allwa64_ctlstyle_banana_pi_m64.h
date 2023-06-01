@@ -699,4 +699,7 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+
 #endif /* ARM_ALLWT128S3_CTLSTYLE_STORCH_V9A_H_INCLUDED */

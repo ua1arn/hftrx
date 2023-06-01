@@ -467,5 +467,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-
 #endif /* ARM_XCZUXX_CTLSTYLE_AXU2CGA_AD9640_H_INCLUDED */
