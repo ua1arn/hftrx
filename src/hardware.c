@@ -243,43 +243,104 @@ static RAMDTCM LCLSPINLOCK_t tickerslock = LCLSPINLOCK_INIT;
 static RAMDTCM LCLSPINLOCK_t adcdoneslock = LCLSPINLOCK_INIT;
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
-//static unsigned nowtick;
 
-void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)
+void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx, enum ticker_mode mode)
 {
 	p->period = nticks;
-	//p->fired = nowtick;
 	p->ticks = 0;
 	p->cb = cb;
 	p->ctx = ctx;
+	p->mode = mode;
+}
+
+void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)
+{
+	ticker_initialize_ext(p, nticks, cb, ctx, TICKERMD_PERIODIC);
 }
 
 void ticker_add(ticker_t * p)
 {
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& tickerslock);
 	InsertHeadVList(& tickers, & p->item);
 	LCLSPIN_UNLOCK(& tickerslock);
+	LowerIrql(oldIrql);
 }
 
-static void tickers_spool(void)
+/* начало интервала в случае TICKERMD_MANUAL */
+void ticker_start(ticker_t * p)
 {
+	IRQL_t oldIrql;
 
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& tickerslock);
-	//++ nowtick;
+	switch (p->mode)
+	{
+	case TICKERMD_MANUAL:
+		break;
+	default:
+		break;
+	}
+	LCLSPIN_UNLOCK(& tickerslock);
+	LowerIrql(oldIrql);
+}
+
+/* изменение периода запущенного тикера */
+void ticker_setperiod(ticker_t * p, unsigned nticks)
+{
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	LCLSPIN_LOCK(& tickerslock);
+	if (p->period < nticks)
+	{
+		p->period = nticks;
+	}
+	else if (p->period > nticks)
+	{
+		p->period = nticks;
+		p->ticks = 0;
+	}
+	LCLSPIN_UNLOCK(& tickerslock);
+	LowerIrql(oldIrql);
+}
+
+static void tickers_event(void)
+{
+	LCLSPIN_LOCK(& tickerslock);
 	PVLIST_ENTRY t;
-	for (t = tickers.Blink; t != & tickers; t = t->Blink)
+	for (t = tickers.Blink; t != & tickers;)
 	{
 		ASSERT(t != NULL);
+		PVLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
 		ticker_t * const p = CONTAINING_RECORD(t, ticker_t, item);
 	
-		//if (p->next <= nowtick)
+		switch (p->mode)
+		{
+		case TICKERMD_MANUAL:
+			break;
+		case TICKERMD_PERIODIC:
+			break;
+		default:
+			break;
+		}
 		if (++ p->ticks >= p->period)
 		{
-			//p->fired = nowtick;
 			p->ticks = 0;
 			if (p->cb != NULL)
 				(p->cb)(p->ctx);
+			switch (p->mode)
+			{
+			case TICKERMD_MANUAL:
+				//RemoveEntryVList(t);
+				break;
+			default:
+				break;
+			}
 		}
+		t = tnext;
 	}
 	LCLSPIN_UNLOCK(& tickerslock);
 }
@@ -313,11 +374,10 @@ void adcdone_add(adcdone_t * p)
 	LCLSPIN_UNLOCK(& adcdoneslock);
 }
 
-static void adcdones_spool(void)
+static void adcdones_event(void)
 {
 	LCLSPIN_LOCK(& adcdoneslock);
 
-	//++ nowtick;
 	PVLIST_ENTRY t;
 	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
 	{
@@ -358,10 +418,10 @@ RAMFUNC void spool_systimerbundle1(void)
 
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
 
-	tickers_spool();
+	tickers_event();
 
 //#if ! WITHCPUADCHW
-	adcdones_spool();
+	adcdones_event();
 //#endif /* ! WITHCPUADCHW */
 }
 
@@ -385,7 +445,7 @@ RAMFUNC void spool_systimerbundle2(void)
 
 RAMFUNC void spool_adcdonebundle(void)
 {
-	adcdones_spool();
+	adcdones_event();
 }
 #endif /* WITHCPUADCHW */
 

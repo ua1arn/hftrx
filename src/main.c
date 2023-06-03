@@ -191,6 +191,8 @@ static uint_fast32_t
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq, 
 							   uint_fast32_t step, uint_fast32_t bottom);
 
+static dpclock_t dpc_lock;
+static void tuner_eventrestart(void);
 
 static uint_fast8_t getdefantenna(uint_fast32_t f);
 static uint_fast8_t geteffantenna(uint_fast32_t f);	/* действительно выбранная антенна с учетом ручного или автоматического переключения */
@@ -3307,7 +3309,7 @@ filter_t fi_2p0_455 =
 
 #if WITHAUTOTUNER
 	uint8_t	ggrptuner; // последний посещённый пункт группы
-	uint8_t tunerdelay;
+	uint8_t gtunerdelay;
 #endif /* WITHAUTOTUNER */
 
 
@@ -4087,7 +4089,7 @@ enum
 	static uint_fast16_t tunerind;// = (LMAX - LMIN) / 2 + LMIN;
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
-	static uint_fast8_t tunerdelay = 20;
+	static uint_fast8_t gtunerdelay = 20;
 
 #endif /* WITHAUTOTUNER */
 
@@ -5331,7 +5333,7 @@ static void updateboard_tuner(void)
 // ожидание требуемого времени после выдачи параметров на тюнер.
 static void tuner_waitadc(void)
 {
-	uint_fast8_t n = (tunerdelay + 4) / 5;
+	uint_fast8_t n = (gtunerdelay + 4) / 5;
 	while (n --)
 		local_delay_ms(5);
 }
@@ -5656,6 +5658,31 @@ aborted:
 	return;
 }
 #endif /* ! WITHAUTOTUNER_N7DDCEXT */
+#endif /* WITHAUTOTUNER */
+
+#if WITHAUTOTUNER
+
+static ticker_t ticker_tuner;
+
+/* user-mode function */
+static void dpc_tunertimer(void * arg)
+{
+}
+
+/* system-mode function */
+static void tuner_event(void * ctx)
+{
+	(void) ctx;	// приходит NULL
+
+	board_dpc(& dpc_lock, dpc_tunertimer, NULL);
+}
+
+/* закончили установку нового состояния тюнера - запускаем новый период таймера */
+static void tuner_eventrestart(void)
+{
+	ticker_setperiod(& ticker_tuner, NTICKS(gtunerdelay));
+}
+
 #endif /* WITHAUTOTUNER */
 
 /* получение следующего числа в диапазоне low..high с "заворотом" */
@@ -11838,6 +11865,7 @@ updateboardZZZ(
 
 	#if WITHAUTOTUNER
 		board_set_tuner_group();
+		ticker_setperiod(& ticker_tuner, NTICKS(gtunerdelay));
 	#else /* WITHAUTOTUNER */
 		board_set_tuner_bypass(1);
 	#endif /* WITHAUTOTUNER */
@@ -13501,7 +13529,7 @@ static volatile uint_fast8_t counterupdatewpm;
 	Вызывается из обработчика таймерного прерывания
 */
 static void
-display_spool(void * ctx)
+display_event(void * ctx)
 {
 	#if 0 //WITHNMEA
 	// таймер обновления часов/минут/секунд
@@ -16203,6 +16231,14 @@ static void dpc_1stimer(void * arg)
 #endif
 }
 
+/* Вызывается из обработчика прерываний раз в секунду */
+static void second_event(void * ctx)
+{
+	(void) ctx;	// приходит NULL
+
+	board_dpc(& dpc_lock, dpc_1stimer, NULL);
+}
+
 struct dpclayout
 {
 	uint8_t nargs;
@@ -16531,16 +16567,6 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 	}
 	dpclock_exit(lp);	// освобождаем в случае невозможности получить буфер
 	return 0;
-}
-
-static dpclock_t dpc_1slock;
-/* Вызывается из обработчика прерываний раз в секунду */
-static void spool_second(void * ctx)
-{
-	(void) ctx;	// приходит NULL
-
-	board_dpc(& dpc_1slock, dpc_1stimer, NULL);	// при работе тестов никто не прокачивает очередь DPC
-	//VERIFY(board_dpc(& dpc_1slock, dpc_1stimer, NULL));
 }
 
 #if WITHTX
@@ -19400,10 +19426,15 @@ lowinitialize(void)
 	static ticker_t displayticker;
 	static ticker_t ticker_1S;
 
-	ticker_initialize(& displayticker, 1, display_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& displayticker, 1, display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& displayticker);
-	ticker_initialize(& ticker_1S, NTICKS(1000), spool_second, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& ticker_1S, NTICKS(1000), second_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& ticker_1S);
+
+#if WITHAUTOTUNER
+	ticker_initialize(& ticker_tuner, NTICKS(gtunerdelay), tuner_event, NULL);
+	ticker_add(& ticker_tuner);
+#endif /* WITHAUTOTUNER */
 
 	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
 

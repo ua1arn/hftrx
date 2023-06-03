@@ -84,10 +84,10 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TUNER WT"), 7, 0, 0,	ISTEP5,	// задержка перед измерением после переключения реле
 		ITEM_VALUE, 
 		10, 250,
-		offsetof(struct nvmap, tunerdelay),
+		offsetof(struct nvmap, gtunerdelay),
 		nvramoffs0,
 		NULL,
-		& tunerdelay,
+		& gtunerdelay,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* ! WITHAUTOTUNER_N7DDCEXT */
