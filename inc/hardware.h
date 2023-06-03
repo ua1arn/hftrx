@@ -1001,6 +1001,11 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 
 #include "mslist.h"
 
+enum ticker_mode
+{
+	TICKERMD_PERIODIC,
+	TICKERMD_MANUAL
+};
 typedef struct ticker_tag
 {
 	VLIST_ENTRY item;
@@ -1009,9 +1014,13 @@ typedef struct ticker_tag
 	unsigned ticks;		// текущее количество тиков
 	void (* cb)(void *);
 	void * ctx;
+	enum ticker_mode mode;
 } ticker_t;
 
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
+void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx, enum ticker_mode mode);
+void ticker_setperiod(ticker_t * p, unsigned nticks);	/* изменение периода запущенного тикера */
+void ticker_start(ticker_t * p);	/* начало интервала в случае TICKERMD_MANUAL */
 void ticker_add(ticker_t * p);
 void ticker_del(ticker_t * p);
 

@@ -3277,6 +3277,15 @@ void subscribefloat(deliverylist_t * list, subscribefloat_t * target, void * ctx
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
+void unsubscribefloat(deliverylist_t * list, subscribefloat_t * target)
+{
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
+	RemoveEntryList(& target->item);
+	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
+}
+
 void subscribeint32(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
 {
 	IRQL_t oldIrql;
@@ -3285,6 +3294,15 @@ void subscribeint32(deliverylist_t * list, subscribeint32_t * target, void * ctx
 	target->ctx = ctx;
 	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
 	InsertHeadList(& list->head, & target->item);
+	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
+}
+
+void unsubscribeint32(deliverylist_t * list, subscribeint32_t * target)
+{
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
+	RemoveEntryList(& target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
