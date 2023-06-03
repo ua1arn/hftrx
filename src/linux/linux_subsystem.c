@@ -652,10 +652,6 @@ void linux_user_init(void)
 	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
 
-#if WITHFT8
-	linux_create_thread(& ft8_t, ft8_thread, 50, 0);
-#endif /* WITHFT8 */
-
 #if defined AXI_DCDC_PWM_ADDR
 	const float FS = powf(2, 32);
 	uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;

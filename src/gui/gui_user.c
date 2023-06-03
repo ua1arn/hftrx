@@ -1322,9 +1322,9 @@ static void gui_main_process(void)
 		}
 #endif /* WITHTHERMOLEVEL */
 
-#if WITHFT8
+#if WITHFT8 && ! LINUX_SUBSYSTEM
 		ft8_walkthrough_core0(seconds);
-#endif /* WITHFT8 */
+#endif /* WITHFT8 && ! LINUX_SUBSYSTEM */
 
 #endif /* GUI_SHOW_INFOBAR */
 

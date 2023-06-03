@@ -3979,7 +3979,7 @@ static RAMFUNC FLOAT_t mikeinmux(
 
 #endif
 #if WITHFT8
-	ft8_txfill(& vi0f);
+	ft8_txfill(& vi0f);	// todo: add new DSPCTL_FT8 mode
 #endif /* WITHFT8 */
 
 #if WITHTXCPATHCALIBRATE
