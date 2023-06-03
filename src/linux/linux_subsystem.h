@@ -63,6 +63,10 @@ extern pthread_mutex_t md;
 #define LCLSPINLOCK_INIT	PTHREAD_MUTEX_INITIALIZER
 #define LCLSPINLOCK_INITIALIZE(p)	do { memcpy((void *) p, & md, sizeof(md)); } while(0)
 
+struct cond_thread {
+    pthread_cond_t   ready_cond;
+    pthread_mutex_t  ready_mutex;
+};
 
 uint_fast8_t dummy_putchar(uint_fast8_t c);
 uint_fast8_t dummy_getchar(char * cp);
@@ -80,7 +84,12 @@ void linux_user_init(void);
 int linux_framebuffer_init(void);
 uint32_t * linux_get_fb(uint32_t * size);
 void linux_create_thread(pthread_t * tid, void * process, int priority, int cpuid);
+void linux_cancel_thread(pthread_t tid);
 void linux_run_shell_cmd(const char * argv []);
+void safe_cond_signal(struct cond_thread * ct);
+void safe_cond_wait(struct cond_thread * ct);
+void linux_init_cond(struct cond_thread * ct);
+void linux_destroy_cond(struct cond_thread * ct);
 
 uint8_t linux_xgpi_read_pin(uint8_t pin);
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val);
