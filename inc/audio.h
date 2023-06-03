@@ -1163,7 +1163,9 @@ void deliveryfloat_buffer(deliverylist_t * head, const FLOAT_t * ch0, const FLOA
 void deliveryint(deliverylist_t * head, int_fast32_t ch0, int_fast32_t ch1);
 
 void subscribefloat(deliverylist_t * head, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1));
+void unsubscribefloat(deliverylist_t * head, subscribefloat_t * target);
 void subscribeint32(deliverylist_t * head, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
+void unsubscribeint32(deliverylist_t * head, subscribeint32_t * target);
 
 extern deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
 extern deliverylist_t speexoutfloat;	// выход speex и фильтра
