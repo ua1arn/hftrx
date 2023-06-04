@@ -1755,8 +1755,11 @@ void gui_WM_walkthrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 				{
 					ASSERT(win->w > 0 || win->h > 0);
 #if GUI_TRANSPARENT_WINDOWS
-					display_transparency(win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
-							win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
+					if (win->size_mode != WINDOW_POSITION_FULLSCREEN)
+					{
+						display_transparency(win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
+								win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
+					}
 #else
 					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
 							win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
