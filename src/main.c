@@ -4003,9 +4003,9 @@ enum
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 
 		#if WITHTX
-		static uint_fast8_t gdatatx = 0;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
+		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		#endif /* WITHTX */
-		static uint_fast8_t	gusb_ft8cn = 0;	/* совместимость VID/PID для работы с программой FT8CN */
+		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		#if WITHUSBHEADSET
 			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#else /* WITHUSBHEADSET */
