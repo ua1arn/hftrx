@@ -174,7 +174,7 @@
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
-	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */

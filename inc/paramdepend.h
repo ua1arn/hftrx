@@ -101,6 +101,8 @@ extern "C" {
 
 	#define TICKS_FREQUENCY		(200u * 1) // at ARM - 200 Hz
 
+	#define BOARD_TIM21_FREQ PCLK1_FREQ
+
 	// ADC clock frequency: 0.6..14 MHz
 	#define ADC_FREQ	12000000u	/* тактовая частота SAR преобразователя АЦП. */
 	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
@@ -986,7 +988,7 @@ extern "C" {
 	#define global_enableIRQ() do {  } while (0)
 	#define global_disableIRQ() do {  } while (0)
 
-#elif (__CORTEX_M != 0)
+#elif defined (__CORTEX_M)
 
 	/* Cortex-M tergets */
 
@@ -2665,7 +2667,7 @@ extern "C" {
 	#undef WITHTOUCHGUI									// для функционирования touch GUI
 #endif
 
-#if (__CORTEX_M == 0)
+#if ! defined (__CORTEX_M)
 	#define FORMATFROMLIBRARY 		1
 #endif
 

@@ -470,6 +470,11 @@
 			} while (0)
 	#endif
 
+
+#define HARDWARE_ALTERNATE_INITIALIZE() do { \
+		arm_hardware_pioa_altfn2((1U << 3), 0 /* AF_0 */); /* PA3 - TIM21_CH2 output  */ \
+	} while (0)
+
 #if WITHCPUADCHW
 	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
 			arm_hardware_pioa_analoginput(((ainmask) >> 0) & 0xff);	/* ADC12_IN0..ADC12_IN7 */ \
@@ -477,5 +482,10 @@
 			arm_hardware_pioc_analoginput(((ainmask) >> 10) & 0x3f);	/* ADC12_IN10..ADC12_IN15 */ \
 		} while (0)
 #endif /* WITHCPUADCHW */
+
+	//#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	1	// Верхний предел регулировки (показываемый на дисплее)
+	//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 #endif /* ARM_STM32F051_TQFP48_CPUSTYLE_V1_H_INCLUDED */

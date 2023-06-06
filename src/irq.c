@@ -859,7 +859,7 @@ void r7s721_intc_initialize(void)
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
-#if (__CORTEX_M != 0)
+#if defined (__CORTEX_M)
 
 uint32_t gARM_OVERREALTIME_PRIORITY;
 uint32_t gARM_REALTIME_PRIORITY;
@@ -912,7 +912,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 	//__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED);
 }
 
-#endif /* (__CORTEX_M != 0) */
+#endif /* defined (__CORTEX_M) */
 
 
 
@@ -1170,7 +1170,7 @@ uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
-#if (__CORTEX_M != 0)
+#if defined (__CORTEX_M)
 
 /*----------------------------------------------------------------------------
  *        Exported variables
@@ -1419,7 +1419,7 @@ static void vectors_relocate(void)
 	//ASSERT(memcmp((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4) == 0);
 	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
 }
-#endif /* (__CORTEX_M != 0) */
+#endif /* defined (__CORTEX_M) */
 
 #if 0//( __ARM_ARCH == 8)
 // Armv8.1-M Mainline
@@ -1892,7 +1892,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	ASSERT(GIC_GetInterfacePriorityMask() >= newIRQL);	/* Не понижаем приоритет */
 	* oldIrql = GIC_GetInterfacePriorityMask();
 	GIC_SetInterfacePriorityMask(newIRQL);
-#elif (__CORTEX_M != 0)
+#elif defined (__CORTEX_M)
 	ASSERT(__get_BASEPRI() >= newIRQL);	/* Не понижаем приоритет */
 	* oldIrql = __get_BASEPRI();
 	__set_BASEPRI(newIRQL);
@@ -1911,7 +1911,7 @@ void LowerIrql(IRQL_t newIRQL)
 {
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	GIC_SetInterfacePriorityMask(newIRQL);
-#elif (__CORTEX_M != 0)
+#elif defined (__CORTEX_M)
 	__set_BASEPRI(newIRQL);
 #elif CPUSTYLE_RISCV
 	//	csr_write_mie(irql);
@@ -2124,7 +2124,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	//csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
 	//csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
 	//csr_set_bits_mie(MIE_MTI_BIT_MASK);	// MTI - timer
-#elif (__CORTEX_M != 0)
+#elif defined (__CORTEX_M)
 
 	NVIC_DisableIRQ(int_id);
 	NVIC_SetVector(int_id, (uintptr_t) handler);
@@ -2171,7 +2171,7 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 #elif CPUSTYLE_CA53
 	#warning implement for CPUSTYLE_CA53
 
-#elif (__CORTEX_M != 0)
+#elif defined (__CORTEX_M)
 
 	NVIC_DisableIRQ(int_id);
 
@@ -2332,7 +2332,7 @@ void cpu_initialize(void)
 
 #endif /*  */
 
-#if (__CORTEX_M != 0)
+#if defined (__CORTEX_M)
 
 	// Таблица находится в области вне Data Cache
 	vectors_relocate();

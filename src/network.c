@@ -814,7 +814,7 @@ void httpd_post_data_recved(void *connection, u16_t recved_len);
 
 #if SYS_LIGHTWEIGHT_PROT
 
-#if (__CORTEX_M != 0)
+#if defined (__CORTEX_M)
 
 sys_prot_t sys_arch_protect(void)
 {

@@ -3038,9 +3038,9 @@ sysinit_fpu_initialize(void)
 
 #endif /*  */
 
-#if (__CORTEX_M != 0) && CTLSTYLE_V3D
+#if defined (__CORTEX_M) && CTLSTYLE_V3D
 	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
-#endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
+#endif /* defined (__CORTEX_M) && CTLSTYLE_V3D */
 
 #if ! WITHISBOOTLOADER_DDR
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
@@ -3361,7 +3361,7 @@ sysinit_mmu_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_cache_initialize(void)
 {
-#if (__CORTEX_M != 0)
+#if defined (__CORTEX_M)
 	#if __ICACHE_PRESENT
 
 		SCB_InvalidateICache();
@@ -3376,7 +3376,7 @@ sysinit_cache_initialize(void)
 	#endif /* __DCACHE_PRESENT */
 
 	//dcache_clean_all();
-#endif /* (__CORTEX_M != 0) */
+#endif /* defined (__CORTEX_M) */
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
@@ -4749,7 +4749,7 @@ __NO_RETURN void __riscv_start(void)
 }
 #endif /* CPUSTYLE_RISCV || defined(__aarch64__) */
 
-#if ! LINUX_SUBSYSTEM && 1//(__CORTEX_M == 0) && 0
+#if ! LINUX_SUBSYSTEM && 1//! defined (__CORTEX_M) && 0
 
 // Используется в случае наличия ключа ld -nostartfiles
 // Так же смотреть вокруг software_init_hook
@@ -4782,7 +4782,7 @@ void _fini(void)
 		;
 }
 
-#endif /* (__CORTEX_M == 0) */
+#endif /* ! defined (__CORTEX_M) */
 
 #ifdef __cplusplus
 }

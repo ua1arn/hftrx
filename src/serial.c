@@ -1134,7 +1134,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	USART1->CR1 = 0;
 
-#if (__CORTEX_M == 0)
+#if ! defined (__CORTEX_M)
 #if WITHUARTFIFO
 	USART1->CR1 |= USART_CR1_FIFOEN_Msk;
 #else /* WITHUARTFIFO */
