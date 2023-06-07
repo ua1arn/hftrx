@@ -5,6 +5,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	// for debug prints
 #include "audio.h"
+#include "ft8.h"
 
 #if LINUX_SUBSYSTEM
 
@@ -480,7 +481,7 @@ void linux_iq_thread(void)
 
 	if (* iq_count_tx < DMABUFFSIZE32TX)
 	{
-		if (! get_ft8_state())
+		if (! ft8_get_state())
 		{
 			uintptr_t addr_mic = allocate_dmabuffer16rx();
 			uint32_t * m = (uint32_t *) addr_mic;
@@ -631,7 +632,7 @@ void linux_subsystem_init(void)
 	linux_iq_init();
 }
 
-pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8_t, nmea_t, pps_t, disp_t;
+pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t;
 
 #if WITHCPUTEMPERATURE && CPUSTYLE_XCZU
 #include "../sysmon/xsysmonpsu.h"
@@ -949,7 +950,7 @@ void linux_exit(void)
 	linux_cancel_thread(pps_t);
 #endif /* WITHNMEA */
 #if WITHFT8
-	linux_cancel_thread(ft8_t);
+	linux_cancel_thread(ft8t_t);
 #endif /* WITHFT8 */
 
 	close(fd_int);

@@ -631,7 +631,7 @@ void ft8_set_state(uint8_t v)
 	xcz_ipi_sendmsg_c1(FT8_MSG_DISABLE + ft8_enable);
 }
 
-uint8_t get_ft8_state(void)
+uint8_t ft8_get_state(void)
 {
 	return ft8_enable;
 }
