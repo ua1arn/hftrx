@@ -22,7 +22,7 @@
 #include "gpio.h"
 #include "src/touch/touch.h"
 
-#define WITHLVDSHW (WITHFLATLINK &&  defined (HARDWARE_LVDS_INITIALIZE))
+#define WITHLVDSHW (WITHFLATLINK && defined (HARDWARE_LVDS_INITIALIZE))
 // LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
 
 static void ltdc_tfcon_cfg(const videomode_t * vdmode)
@@ -2366,7 +2366,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_clk_sel = clk_src;
 	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_en = 1;
     TCON_LCD0->LCD_LVDS_IF_REG =
-		(1u << 31) |	// LCD_LVDS_EN
+		//(1u << 31) |	// LCD_LVDS_EN
 		(0u << 30) |	// LCD_LVDS_LINK: 0: single link
 		(1u << 27) |	// LCD_LVDS_MODE 1: JEIDA mode
 		(0u << 26) |	// LCD_LVDS_BITWIDTH 0: 24-bit
@@ -2385,7 +2385,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 #endif /* WITHLVDSHW */
 
 	//t113_tconlcd_disable(pdat);
-	/* HV - Step 3 Set sequence parameters, sane in lvds */
+	/* HV - Step 3 Set sequence parameters, same in lvds */
 	t113_tconlcd_set_timing(vdmode);
 	//t113_tconlcd_set_dither(pdat);
 	{
