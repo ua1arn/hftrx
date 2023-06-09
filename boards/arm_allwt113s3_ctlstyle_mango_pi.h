@@ -148,7 +148,7 @@
 	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через преобразователь RGB->FlatLink SN75LVDS83B	*/
+	#define WITHFLATLINK 1	/* Работа с TFT панелью через LVDS интерфейс	*/
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1
@@ -297,9 +297,8 @@
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
 	#if CPUSTYLE_T113
 		#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-		#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#endif /* CPUSTYLE_T113 */
-	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHRTOS	1	/* Использование RTOS */

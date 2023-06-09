@@ -22,6 +22,7 @@
 #include "gpio.h"
 #include "src/touch/touch.h"
 
+#define WITHLVDSHW (WITHFLATLINK &&  defined (HARDWARE_LVDS_INITIALIZE))
 // LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
 
 static void ltdc_tfcon_cfg(const videomode_t * vdmode)
@@ -2258,23 +2259,9 @@ static void t113_tconlcd_set_timing(const videomode_t * vdmode)
 			(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
 			(0x00u << 23) |		// LCD_RB_SWAP
 			((val & 0x1fu) << 4) |	// LCD_START_DLY
-			(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests
+			(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
 			0;
 	}
-}
-
-static void t113_hw_setup(const videomode_t * vdmode)
-{
-
-#if ! WITHLVDSHW
-	TCON_LCD0->LCD_LVDS_IF_REG =
-		0 * (1u << 31) |		// LCD_LVDS_EN
-		0 * (1u << 25) |		// LCD_LVDS_DEBUG_EN
-		0 * (1u << 24) |		// LCD_LVDS_DEBUG_MODE
-		1 * (1u << 3) |		// LCD_LVDS_CLK_POL
-		0x0F * (1u << 0) |		// LCD_LVDS_DATA_POL
-		0;
-#endif /* WITHLVDSHW */
 }
 
 #if 0
@@ -2379,10 +2366,15 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_clk_sel = clk_src;
 	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_en = 1;
     TCON_LCD0->LCD_LVDS_IF_REG =
-		(0u << 20) |	// LCD_LVDS_LINK: 0: single link
+		(1u << 31) |	// LCD_LVDS_EN
+		(0u << 30) |	// LCD_LVDS_LINK: 0: single link
 		(1u << 27) |	// LCD_LVDS_MODE 1: JEIDA mode
 		(0u << 26) |	// LCD_LVDS_BITWIDTH 0: 24-bit
 		(1u << 20) |	// LCD_LVDS_CLK_SEL 1: LCD CLK
+		0 * (1u << 25) |		// LCD_LVDS_DEBUG_EN
+		0 * (1u << 24) |		// LCD_LVDS_DEBUG_MODE
+		1 * (1u << 4) |		// LCD_LVDS_CLK_POL: 0: reverse, 1: normal
+		1 * 0x0F * (1u << 0) |		// LCD_LVDS_DATA_POL: 0: reverse, 1: normal
 		0;
     TCON_LCD0->LCD_DCLK_REG =
 		(0x0Fu << 28) |	// LCD_DCLK_EN
@@ -2396,7 +2388,6 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	/* HV - Step 3 Set sequence parameters, sane in lvds */
 	t113_tconlcd_set_timing(vdmode);
 	//t113_tconlcd_set_dither(pdat);
-	t113_hw_setup(vdmode);
 	{
 		// Sochip_VE_S3_Datasheet_V1.0.pdf
 		// TCON0_TRM_CTL_REG offset 0x0010

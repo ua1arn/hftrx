@@ -923,7 +923,6 @@
 		arm_hardware_piod_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 
-	//#define WITHLVDSHW 1
 	#define HARDWARE_LVDS_INITIALIZE() do { \
 		arm_hardware_piod_altfn50(1u << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(1u << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
