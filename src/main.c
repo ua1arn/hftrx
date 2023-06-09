@@ -21351,6 +21351,18 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 	return menuw;
 }
 
+uint_fast8_t hamradio_get_viewstyle(void)
+{
+	return gviewstyle;
+}
+
+void hamradio_settemp_viewstyle(uint_fast8_t v)
+{
+	ASSERT(v < VIEW_COUNT);
+	gviewstyle = v;
+	updateboard(1, 0);
+}
+
 uint_fast8_t hamradio_get_gzoomxpow2(void)
 {
 	return gzoomxpow2;

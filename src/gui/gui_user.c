@@ -4555,6 +4555,7 @@ static void window_ft8_process(void)
 	static lh_array_t lh_array_cq [6];
 	static lh_array_t lh_array_tx [4];
 	static const int snr = -10;
+	static uint8_t viewtemp;
 
 	if (win->first_call)
 	{
@@ -4680,6 +4681,8 @@ static void window_ft8_process(void)
 		{
 			backup_freq = hamradio_get_freq_rx();
 			backup_mode = hamradio_get_submode();
+			viewtemp = hamradio_get_viewstyle();
+			hamradio_settemp_viewstyle(VIEW_LINE);
 
 			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
 			hamradio_change_submode(ft8_mode, 0);
@@ -4732,9 +4735,9 @@ static void window_ft8_process(void)
 
 			if (bh == btn_tx)
 			{
-//				strcpy(ft8.tx_text, lh_array_tx [selected_label_tx].ptr->text);
-//				ft8.tx_freq = (float) gui_nvram.ft8_txfreq_val;
-//				xcz_ipi_sendmsg_c1(FT8_MSG_ENCODE);
+				strcpy(ft8.tx_text, lh_array_tx [selected_label_tx].ptr->text);
+				ft8.tx_freq = (float) gui_nvram.ft8_txfreq_val;
+				ft8_do_encode();
 			}
 			else if (bh == btn_filter)
 			{
@@ -4775,6 +4778,7 @@ static void window_ft8_process(void)
 		{
 			hamradio_set_freq(backup_freq);
 			hamradio_change_submode(backup_mode, 0);
+			hamradio_settemp_viewstyle(viewtemp);
 			ft8_set_state(0);
 			save_settings();
 		}

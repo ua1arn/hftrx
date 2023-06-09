@@ -468,7 +468,8 @@ void ft8_irqhandler_core0(void)
 	else if (msg == FT8_MSG_ENCODE_DONE)
 	{
 		PRINTF("transmit message...\n");
-		ft8_tx_enable();
+		ft8_tx = 1;
+		ft8_mox_request = 1;
 	}
 }
 
@@ -533,12 +534,6 @@ void ft8_walkthrough_core0(uint_fast8_t rtc_seconds)
 		hamradio_moxmode(1);
 	}
 #endif /* WITHTX */
-}
-
-void ft8_tx_enable(void)
-{
-	ft8_tx = 1;
-	ft8_mox_request = 1;
 }
 
 void ft8_txfill(float * sample)
@@ -634,6 +629,11 @@ void ft8_set_state(uint8_t v)
 uint8_t ft8_get_state(void)
 {
 	return ft8_enable;
+}
+
+void ft8_do_encode(void)
+{
+	xcz_ipi_sendmsg_c1(FT8_MSG_ENCODE);
 }
 
 void ft8_initialize(void)
