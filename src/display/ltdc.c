@@ -2118,10 +2118,6 @@ static void t113_tconlcd_enable(void)
 //	val = read32((uintptr_t) & tcon->gctrl);
 //	val |= (1u << 31);
 //	write32((uintptr_t) & tcon->gctrl, val);
-	TCON_LCD0->LCD_GCTL_REG =
-		(1u << 31) |		// LCD_EN
-		0 * (1u << 30) |	// LCD_GAMMA_EN
-		0;
 }
 
 static void t113_tconlcd_disable(void)
@@ -2137,8 +2133,8 @@ static void t113_tconlcd_disable(void)
 //	write32((uintptr_t) & tcon->gint0, 0);
 
 	TCON_LCD0->LCD_DCLK_REG &= ~ (0xfu << 28);
-	TCON_LCD0->LCD_GCTL_REG = 0;
-	TCON_LCD0->LCD_GINT0_REG = 0;
+	//TCON_LCD0->LCD_GCTL_REG = 0;
+	//TCON_LCD0->LCD_GINT0_REG = 0;
 }
 
 static void t113_tconlcd_set_timing(const videomode_t * vdmode)
@@ -2174,42 +2170,6 @@ static void t113_tconlcd_set_timing(const videomode_t * vdmode)
 	#endif /* WITHLVDSHW */
 	}
 
-	// 5.1.6.20 0x0088 LCD IO Polarity Register (Default Value: 0x0000_0000)
-	// io_polarity
-	{
-		uint32_t val;
-		struct {
-			int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-			int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-			int den_active;		// 1 - negatibe pulses, 0 - positice pulses
-			int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
-		} timing;
-
-		timing.h_sync_active = vdmode->vsyncneg;
-		timing.v_sync_active = vdmode->hsyncneg;
-		timing.den_active = ! vdmode->deneg;
-		timing.clk_active = 0;
-
-		val =
-			(0x01u << 31) | 	// IO_Output_Sel: 0: normal, 1: sync to dclk
-			(1u << 28) |	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
-			0;
-
-		if (! timing.h_sync_active)
-			val |= (1u << 25);	// IO1_Inv
-		if (! timing.v_sync_active)
-			val |= (1u << 24);	// IO0_Inv
-		if (! timing.den_active)
-			val |= (1u << 27);	// IO3_Inv
-		if (! timing.clk_active)
-			val |= (1u << 26);	// IO2_Inv
-
-		TCON_LCD0->LCD_IO_POL_REG = val;
-
-	}
-	// io_tristate
-	//write32((uintptr_t) & tcon->io_tristate, 0);
-	TCON_LCD0->LCD_IO_TRI_REG = 0;
 
 	// 5.1.6.14 0x0058 LCD HV Panel Interface Register (Default Value: 0x0000_0000)
 	/// LCD_HV_IF_REG
@@ -2265,7 +2225,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 	//val = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
 	val = 0x1F;
 	TCON_LCD0->LCD_CTL_REG =
-		(1u << 31) |		// LCD_EN
+		//(1u << 31) |		// LCD_EN
 		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
 		(0x00u << 23) |		// LCD_RB_SWAP
 		((val & 0x1fu) << 4) |	// LCD_START_DLY
@@ -2328,8 +2288,45 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 
 }
 
+// Step4 - Open IO output
 static void t113_open_IO_output(const videomode_t * vdmode)
 {
+	// io_tristate
+	//write32((uintptr_t) & tcon->io_tristate, 0);
+	TCON_LCD0->LCD_IO_TRI_REG = 0;
+	// 5.1.6.20 0x0088 LCD IO Polarity Register (Default Value: 0x0000_0000)
+	// io_polarity
+	{
+		uint32_t val;
+		struct {
+			int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+			int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+			int den_active;		// 1 - negatibe pulses, 0 - positice pulses
+			int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
+		} timing;
+
+		timing.h_sync_active = vdmode->vsyncneg;
+		timing.v_sync_active = vdmode->hsyncneg;
+		timing.den_active = ! vdmode->deneg;
+		timing.clk_active = 0;
+
+		val =
+			(0x01u << 31) | 	// IO_Output_Sel: 0: normal, 1: sync to dclk
+			(1u << 28) |	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
+			0;
+
+		if (! timing.h_sync_active)
+			val |= (1u << 25);	// IO1_Inv
+		if (! timing.v_sync_active)
+			val |= (1u << 24);	// IO0_Inv
+		if (! timing.den_active)
+			val |= (1u << 27);	// IO3_Inv
+		if (! timing.clk_active)
+			val |= (1u << 26);	// IO2_Inv
+
+		TCON_LCD0->LCD_IO_POL_REG = val;
+
+	}
 }
 
 static void t113_set_and_open_interface_function(const videomode_t * vdmode)
@@ -2338,6 +2335,8 @@ static void t113_set_and_open_interface_function(const videomode_t * vdmode)
 
 static void t113_open_module_enablet(const videomode_t * vdmode)
 {
+	TCON_LCD0->LCD_CTL_REG |= (1u << 31);	// LCD_EN
+	TCON_LCD0->LCD_GCTL_REG |= (1u << 31);	// LCD_EN
 }
 
 static void t113_hw_initsteps(const videomode_t * vdmode)
