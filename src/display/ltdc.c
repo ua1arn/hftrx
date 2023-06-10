@@ -2488,6 +2488,8 @@ static void t113_open_module_enable(const videomode_t * vdmode)
 
 static void t113_hw_initsteps(const videomode_t * vdmode)
 {
+	// step2 - Clock configuration
+	t113_HV_clock_configuration(vdmode);
 	// step1 - Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -2504,6 +2506,8 @@ static void t113_hw_initsteps(const videomode_t * vdmode)
 
 static void t113_lvds_initsteps(const videomode_t * vdmode)
 {
+	// step2 - Clock configuration
+	t113_LVDS_clock_configuration(vdmode);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -2522,7 +2526,7 @@ static void t113_lvds_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
-void hardware_de_initialize(const videomode_t * vdmode)
+static void hardware_de_initialize(const videomode_t * vdmode)
 {
 
 	/* Configure DE clock */
@@ -2545,34 +2549,6 @@ void hardware_de_initialize(const videomode_t * vdmode)
 
 void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
 {
-	uint32_t val;
-
-
-#if WITHLVDSHW
-    // Расчет делителя для обеспечения работы сериализатора.
-    unsigned tconlcddiv = allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
-    //PRINTF("Expected tconlcddiv=%u\n", tconlcddiv);
-#else /* WITHLVDSHW */
-    unsigned tconlcddiv = 1;
-#endif /* WITHLVDSHW */
-    tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
-	/* Configure TCONLCD clock */
-    CCU->TCONLCD_CLK_REG = (CCU->TCONLCD_CLK_REG & ~ ((0x07u << 24) | (0x03u << 8) | (0x0Fu << 0))) |
-		(0x01u << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		(0u << 8) |	// FACTOR_N 0..3: 1..8
-		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-    CCU->TCONLCD_CLK_REG |= (1u << 31);
-    local_delay_us(10);
-
-	//PRINTF("tconlcddiv=%u\n", tconlcddiv);
-	//PRINTF("allwnrt113_get_tconlcd_freq()=%u MHz\n", (unsigned) (allwnrt113_get_tconlcd_freq() / 1000000));
-
-    // todo: configure for LVDS output mode
-    CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
-    CCU->TCONLCD_BGR_REG |= (1u << 16); // De-assert reset
-    local_delay_us(10);
-
 #if WITHLVDSHW
 	t113_lvds_initsteps(vdmode);
 #else /* WITHLVDSHW */
