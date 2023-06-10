@@ -932,6 +932,18 @@
 		arm_hardware_piod_outputs(0*DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 
+	#define LCD_LVDS_IF_REG_VALUE ( \
+		(1u << 31) |	/* LCD_LVDS_EN */ \
+		(0u << 30) |	/* LCD_LVDS_LINK: 0: single link */ \
+		(! 1u << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */ \
+		(0u << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */ \
+		(1u << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */ \
+		0 * (1u << 25) |		/* LCD_LVDS_DEBUG_EN */ \
+		0 * (1u << 24) |		/* LCD_LVDS_DEBUG_MODE */ \
+		0 * (1u << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */ \
+		0 * 0x0F * (1u << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */ \
+		0)
+
 	#define HARDWARE_LVDS_INITIALIZE() do { \
 		arm_hardware_piod_altfn50(1u << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(1u << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \

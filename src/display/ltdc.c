@@ -2215,27 +2215,25 @@ static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 // step5 - set LVDS digital logic configuration
 static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 {
-   // lvds - step 5
-	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_link = link_num-1;
-	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_mode = mode;
-	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_bitwidth = bitwidth;
-	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_clk_sel = clk_src;
-	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_en = 1;
-	const int lvdsneg = 0;	/* требуется инверсия всех сигналов LVDS интерфейса */
+#if defined (LCD_LVDS_IF_REG_VALUE)
+
+	TCON_LCD0->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
+
+#else /* defined (LCD_LVDS_IF_REG_VALUE) */
+
 	TCON_LCD0->LCD_LVDS_IF_REG =
-		//(1u << 31) |	// LCD_LVDS_EN - separate step
-		(0u << 30) |	// LCD_LVDS_LINK: 0: single link
-		(! 1u << 27) |	// LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter)
-		(0u << 26) |	// LCD_LVDS_BITWIDTH 0: 24-bit
-		(1u << 20) |	// LCD_LVDS_CLK_SEL 1: LCD CLK
-		0 * (1u << 25) |		// LCD_LVDS_DEBUG_EN
-		0 * (1u << 24) |		// LCD_LVDS_DEBUG_MODE
-		!! lvdsneg * (1u << 4) |				// LCD_LVDS_CLK_POL: 0: reverse, 1: normal
-		!! lvdsneg * 0x0F * (1u << 0) |		// LCD_LVDS_DATA_POL: 0: reverse, 1: normal
-		0;
+	(1u << 31) |	/* LCD_LVDS_EN */
+	(0u << 30) |	/* LCD_LVDS_LINK: 0: single link */
+	(! 1u << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
+	(0u << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */
+	(1u << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */
+	0 * (1u << 25) |		/* LCD_LVDS_DEBUG_EN */
+	0 * (1u << 24) |		/* LCD_LVDS_DEBUG_MODE */
+	0 * (1u << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */
+	0 * 0x0F * (1u << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */
+	0;
 
-	TCON_LCD0->LCD_LVDS_IF_REG |= (1u << 31);	// LCD_LVDS_EN
-
+#endif /* defined (LCD_LVDS_IF_REG_VALUE) */
 }
 
 // step6 - LVDS controller configuration
