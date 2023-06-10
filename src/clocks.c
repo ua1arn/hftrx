@@ -2857,7 +2857,32 @@ uint_fast32_t allwnrt113_get_tconlcd_freq(void)
 	}
 }
 
+uint_fast32_t allwnrt113_get_dsi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DSI_CLK_REG;
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
 
+	// DSI_CLK = Clock Source/M.
+	switch ((clkreg >> 24) & 0x07)	// CLK_SRC_SEL
+	{
+	default:
+	case 0x00:
+		/* 000: HOSC */
+		return allwnrt113_get_hosc_freq() / M;
+	case 0x01:
+		/* 001: PLL_PERI(1X) */
+		return allwnrt113_get_peripll1x_freq() / M;
+	case 0x02:
+		// 010: PLL_VIDEO0(2X)
+		return allwnrt113_get_video0_x2_freq() / M;
+	case 0x03:
+		// 011: PLL_VIDEO1(2X)
+		return allwnrt113_get_video1_x2_freq() / M;
+	case 0x04:
+		/* 100: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_audio1pll_div2_freq() / M;
+	}
+}
 
 #if CPUSTYLE_F133
 
