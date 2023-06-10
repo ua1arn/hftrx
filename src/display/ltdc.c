@@ -2167,91 +2167,74 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 // HV step2 - Clock configuration
 static void t113_HV_clock_configuration(const videomode_t * vdmode)
 {
-	uint32_t val;
-	// dclk
-	// 31..28: TCON0_Dclk_En
-	// 6..0: TCON0_Dclk_Div
-	val = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
-	PRINTF("ltdc divider = %u\n", (unsigned) val);
-	ASSERT(val >= 1 && val <= 127);
-//	write32((uintptr_t) & tcon->dclk,
-//			(0x0Fu << 28) | (val << 0));
-	TCON_LCD0->LCD_DCLK_REG = (
-			(0x0Fu << 28) |		// LCD_DCLK_EN
-			(val << 0)			// LCD_DCLK_DIV
-			);
+	{
+		unsigned tconlcddiv = 1;
+	    tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
+		/* Configure TCONLCD clock */
+	    CCU->TCONLCD_CLK_REG = (CCU->TCONLCD_CLK_REG & ~ ((0x07u << 24) | (0x03u << 8) | (0x0Fu << 0))) |
+			(0x01u << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+			(0u << 8) |	// FACTOR_N 0..3: 1..8
+			((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+			0;
+	    CCU->TCONLCD_CLK_REG |= (1u << 31);
+	    local_delay_us(10);
 
+		//PRINTF("tconlcddiv=%u\n", tconlcddiv);
+		//PRINTF("allwnrt113_get_tconlcd_freq()=%u MHz\n", (unsigned) (allwnrt113_get_tconlcd_freq() / 1000000));
 
-
-	// 5.1.6.14 0x0058 LCD HV Panel Interface Register (Default Value: 0x0000_0000)
-	/// LCD_HV_IF_REG
-//	TCON_LCD0->LCD_HV_IF_REG = 0;
-//	TCON_LCD0->LCD_CPU_IF_REG = 0;
-//	TCON_LCD0->LCD_CPU_WR_REG = 0;
-//
-//////////////////////
-///
-	unsigned tconlcddiv = 1;
-    tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
-	/* Configure TCONLCD clock */
-    CCU->TCONLCD_CLK_REG = (CCU->TCONLCD_CLK_REG & ~ ((0x07u << 24) | (0x03u << 8) | (0x0Fu << 0))) |
-		(0x01u << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		(0u << 8) |	// FACTOR_N 0..3: 1..8
-		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-    CCU->TCONLCD_CLK_REG |= (1u << 31);
-    local_delay_us(10);
-
-	//PRINTF("tconlcddiv=%u\n", tconlcddiv);
-	//PRINTF("allwnrt113_get_tconlcd_freq()=%u MHz\n", (unsigned) (allwnrt113_get_tconlcd_freq() / 1000000));
-
-    // todo: configure for LVDS output mode
-    CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
-    CCU->TCONLCD_BGR_REG |= (1u << 16); // De-assert reset
-    local_delay_us(10);
+	    CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
+	    CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+	    local_delay_us(10);
+	}
+	{
+		unsigned val;
+		// dclk
+		// 31..28: TCON0_Dclk_En
+		// 6..0: TCON0_Dclk_Div
+		val = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
+		PRINTF("ltdc divider = %u\n", (unsigned) val);
+		ASSERT(val >= 1 && val <= 127);
+	//	write32((uintptr_t) & tcon->dclk,
+	//			(0x0Fu << 28) | (val << 0));
+		TCON_LCD0->LCD_DCLK_REG = (
+				(0x0Fu << 28) |		// LCD_DCLK_EN
+				(val << 0)			// LCD_DCLK_DIV
+				);
+	    local_delay_us(10);
+	}
 }
 
 // LVDS step2 - Clock configuration
 static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 {
-	// lvds - step 2
-	CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
-	(void) CCU->LVDS_BGR_REG;
-	TCON_LCD0->LCD_DCLK_REG =
-		(0x0Fu << 28) |	// LCD_DCLK_EN
-		(0x07u << 0) |	// LCD_DCLK_DIV - required "7" for LVDS interface
-		0;
-	CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+	const unsigned LVDSDIV = 7;
+	{
+        // Расчет делителя для обеспечения работы сериализатора.
+        unsigned tconlcddiv = allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * LVDSDIV);
+        //PRINTF("Expected tconlcddiv=%u\n", tconlcddiv);
+        tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
+    	/* Configure TCONLCD clock */
+        CCU->TCONLCD_CLK_REG = (CCU->TCONLCD_CLK_REG & ~ ((0x07u << 24) | (0x03u << 8) | (0x0Fu << 0))) |
+    		(0x01u << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+    		(0u << 8) |	// FACTOR_N 0..3: 1..8
+    		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+    		0;
+        CCU->TCONLCD_CLK_REG |= (1u << 31);
+        local_delay_us(10);
 
-	////////////////////////////////////
-	// lvds - step 2
-    CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
-    TCON_LCD0->LCD_DCLK_REG =
-		(0x0Fu << 28) |	// LCD_DCLK_EN
-		(0x07u << 0) |	// LCD_DCLK_DIV
-		0;
-    CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+	    CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
+	    CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
+	    CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+	    local_delay_us(10);
+	}
 
-    // Расчет делителя для обеспечения работы сериализатора.
-    unsigned tconlcddiv = allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
-    //PRINTF("Expected tconlcddiv=%u\n", tconlcddiv);
-    tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
-	/* Configure TCONLCD clock */
-    CCU->TCONLCD_CLK_REG = (CCU->TCONLCD_CLK_REG & ~ ((0x07u << 24) | (0x03u << 8) | (0x0Fu << 0))) |
-		(0x01u << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		(0u << 8) |	// FACTOR_N 0..3: 1..8
-		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-    CCU->TCONLCD_CLK_REG |= (1u << 31);
-    local_delay_us(10);
-
-	//PRINTF("tconlcddiv=%u\n", tconlcddiv);
-	//PRINTF("allwnrt113_get_tconlcd_freq()=%u MHz\n", (unsigned) (allwnrt113_get_tconlcd_freq() / 1000000));
-
-    // todo: configure for LVDS output mode
-    CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
-    CCU->TCONLCD_BGR_REG |= (1u << 16); // De-assert reset
-    local_delay_us(10);
+    {
+	    TCON_LCD0->LCD_DCLK_REG =
+			(0x0Fu << 28) |	// LCD_DCLK_EN
+			(LVDSDIV << 0) |	// LCD_DCLK_DIV
+			0;
+	    local_delay_us(10);
+    }
 }
 
 // step5 - set LVDS digital logic configuration
