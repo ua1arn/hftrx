@@ -2259,7 +2259,7 @@ static void t113_tconlcd_set_timing(const videomode_t * vdmode)
 			(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
 			(0x00u << 23) |		// LCD_RB_SWAP
 			((val & 0x1fu) << 4) |	// LCD_START_DLY
-			(0x01u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
+			(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
 			0;
 	}
 }
@@ -2336,7 +2336,7 @@ static void t113_open_module_enablet(const videomode_t * vdmode)
 {
 }
 
-static void t113_hv_initsteps(const videomode_t * vdmode)
+static void t113_hw_initsteps(const videomode_t * vdmode)
 {
 	// step1 - Select HV interface type
 	t113_select_HV_interface_type(vdmode);
