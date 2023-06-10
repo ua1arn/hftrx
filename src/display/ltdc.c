@@ -2244,9 +2244,15 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 	// __de_dsi_dphy_dev_t
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
-	CCU->DSI_CLK_REG |= (1u << 31);
-	CCU->DSI_BGR_REG |= (1u << 16);
-	CCU->DSI_BGR_REG |= (1u << 0);
+	CCU->DSI_CLK_REG |= (1u << 31);		// DSI_CLK_GATING
+	(void) CCU->DSI_CLK_REG;
+
+	CCU->DSI_BGR_REG |= (1u << 0);	// DSI_GATING
+	CCU->DSI_BGR_REG |= (1u << 16);	// DSI_RST
+	(void) CCU->DSI_BGR_REG;
+
+	PRINTF("allwnrt113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsi_freq());
+
 #if 0
 	// 0x0545103C - bit 0 is "1"
 	// __de_dsi_dphy_dev_t taken from
