@@ -2221,11 +2221,11 @@ static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_bitwidth = bitwidth;
 	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_clk_sel = clk_src;
 	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_en = 1;
-	const int lvdsneg = 0;
+	const int lvdsneg = ! 0;
 	TCON_LCD0->LCD_LVDS_IF_REG =
 		//(1u << 31) |	// LCD_LVDS_EN - separate step
 		(0u << 30) |	// LCD_LVDS_LINK: 0: single link
-		(1u << 27) |	// LCD_LVDS_MODE 1: JEIDA mode
+		(!1u << 27) |	// LCD_LVDS_MODE 1: JEIDA mode
 		(0u << 26) |	// LCD_LVDS_BITWIDTH 0: 24-bit
 		(1u << 20) |	// LCD_LVDS_CLK_SEL 1: LCD CLK
 		0 * (1u << 25) |		// LCD_LVDS_DEBUG_EN
