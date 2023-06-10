@@ -2110,48 +2110,6 @@ static inline void t113_de_set_mode(const videomode_t * vdmode)
 	// Allwinner_DE2.0_Spec_V1.0.pdf
 }
 
-static void t113_tconlcd_set_timing(const videomode_t * vdmode)
-{
-
-	TCON_LCD0->LCD_CTL_REG = 0;
-	// Pixel clock
-	{
-		uint32_t val;
-	#if WITHLVDSHW
-		// lvds - step 2
-		CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
-		(void) CCU->LVDS_BGR_REG;
-		TCON_LCD0->LCD_DCLK_REG =
-			(0x0Fu << 28) |	// LCD_DCLK_EN
-			(0x07u << 0) |	// LCD_DCLK_DIV - required "7" for LVDS interface
-			0;
-		CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
-	#else /* WITHLVDSHW */
-		// dclk
-		// 31..28: TCON0_Dclk_En
-		// 6..0: TCON0_Dclk_Div
-		val = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
-		PRINTF("ltdc divider = %u\n", (unsigned) val);
-		ASSERT(val >= 1 && val <= 127);
-	//	write32((uintptr_t) & tcon->dclk,
-	//			(0x0Fu << 28) | (val << 0));
-		TCON_LCD0->LCD_DCLK_REG = (
-				(0x0Fu << 28) |		// LCD_DCLK_EN
-				(val << 0)			// LCD_DCLK_DIV
-				);
-
-	#endif /* WITHLVDSHW */
-	}
-
-
-	// 5.1.6.14 0x0058 LCD HV Panel Interface Register (Default Value: 0x0000_0000)
-	/// LCD_HV_IF_REG
-//	TCON_LCD0->LCD_HV_IF_REG = 0;
-//	TCON_LCD0->LCD_CPU_IF_REG = 0;
-//	TCON_LCD0->LCD_CPU_WR_REG = 0;
-//
-}
-
 #if 0
 
 static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
@@ -2209,7 +2167,31 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 // HV step2 - Clock configuration
 static void t113_HV_clock_configuration(const videomode_t * vdmode)
 {
-    unsigned tconlcddiv = 1;
+	uint32_t val;
+	// dclk
+	// 31..28: TCON0_Dclk_En
+	// 6..0: TCON0_Dclk_Div
+	val = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
+	PRINTF("ltdc divider = %u\n", (unsigned) val);
+	ASSERT(val >= 1 && val <= 127);
+//	write32((uintptr_t) & tcon->dclk,
+//			(0x0Fu << 28) | (val << 0));
+	TCON_LCD0->LCD_DCLK_REG = (
+			(0x0Fu << 28) |		// LCD_DCLK_EN
+			(val << 0)			// LCD_DCLK_DIV
+			);
+
+
+
+	// 5.1.6.14 0x0058 LCD HV Panel Interface Register (Default Value: 0x0000_0000)
+	/// LCD_HV_IF_REG
+//	TCON_LCD0->LCD_HV_IF_REG = 0;
+//	TCON_LCD0->LCD_CPU_IF_REG = 0;
+//	TCON_LCD0->LCD_CPU_WR_REG = 0;
+//
+//////////////////////
+///
+	unsigned tconlcddiv = 1;
     tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
 	/* Configure TCONLCD clock */
     CCU->TCONLCD_CLK_REG = (CCU->TCONLCD_CLK_REG & ~ ((0x07u << 24) | (0x03u << 8) | (0x0Fu << 0))) |
@@ -2232,7 +2214,17 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 // LVDS step2 - Clock configuration
 static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 {
-    // lvds - step 2
+	// lvds - step 2
+	CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
+	(void) CCU->LVDS_BGR_REG;
+	TCON_LCD0->LCD_DCLK_REG =
+		(0x0Fu << 28) |	// LCD_DCLK_EN
+		(0x07u << 0) |	// LCD_DCLK_DIV - required "7" for LVDS interface
+		0;
+	CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+
+	////////////////////////////////////
+	// lvds - step 2
     CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
     TCON_LCD0->LCD_DCLK_REG =
 		(0x0Fu << 28) |	// LCD_DCLK_EN
@@ -2483,6 +2475,20 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		TCON_LCD0->LCD_IO_POL_REG = val;
 
 	}
+	//t113_tconlcd_set_dither(pdat);
+	{
+		// Sochip_VE_S3_Datasheet_V1.0.pdf
+		// TCON0_TRM_CTL_REG offset 0x0010
+		// User manual:
+		// LCD FRM Control Register (Default Value: 0x0000_0000)
+		// 31: TCON_FRM_EN: 0: disable, 1: enable
+		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
+		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
+		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
+		/* режим и формат выхода */
+		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
+
+	}
 }
 
 // Set and open interrupt function
@@ -2584,33 +2590,16 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
     CCU->TCONLCD_BGR_REG |= (1u << 16); // De-assert reset
     local_delay_us(10);
 
-    /* HV - Step 3 Set sequence parameters, same in lvds */
-	t113_tconlcd_set_timing(vdmode);
-	//t113_tconlcd_set_dither(pdat);
-	{
-		// Sochip_VE_S3_Datasheet_V1.0.pdf
-		// TCON0_TRM_CTL_REG offset 0x0010
-		// User manual:
-		// LCD FRM Control Register (Default Value: 0x0000_0000)
-		// 31: TCON_FRM_EN: 0: disable, 1: enable
-		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
-		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
-		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
-		/* режим и формат выхода */
-		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
-
-	}
-
-	hardware_de_initialize(vdmode);
-
-	// Set DE MODE if need
-	ltdc_tfcon_cfg(vdmode);
-
 #if WITHLVDSHW
 	t113_lvds_initsteps(vdmode);
 #else /* WITHLVDSHW */
 	t113_hw_initsteps(vdmode);
 #endif /* WITHLVDSHW */
+
+	hardware_de_initialize(vdmode);
+
+	// Set DE MODE if need
+	ltdc_tfcon_cfg(vdmode);
 
 }
 
