@@ -2244,6 +2244,12 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 	// __de_dsi_dphy_dev_t
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
+	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((0x07u << 24) | 0x0Fu << 0)) |
+		(0x02u << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
+		//(0x03u << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
+		((4u - 1) << 0) |
+		0;
+
 	CCU->DSI_CLK_REG |= (1u << 31);		// DSI_CLK_GATING
 	(void) CCU->DSI_CLK_REG;
 
