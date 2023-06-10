@@ -19464,6 +19464,8 @@ lowinitialize(void)
 	kbd_initialize();
 #endif /* WITHKEYBOARD */
 
+	dpclock_initialize(& dpc_lock);
+
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("Most of hardware initialized.\n"));
 #endif
