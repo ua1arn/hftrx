@@ -2557,7 +2557,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 
 	hardware_de_initialize(vdmode);
 
-	// Set DE MODE if need
+	// Set DE MODE if need, mapping GPIO pins
 	ltdc_tfcon_cfg(vdmode);
 
 }
