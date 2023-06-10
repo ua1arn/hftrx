@@ -942,6 +942,9 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 
 void linux_exit(void)
 {
+	framebuffer_close();
+
+#if 0
 	linux_cancel_thread(timer_spool_t);
 	linux_cancel_thread(encoder_spool_t);
 	linux_cancel_thread(iq_interrupt_t);
@@ -970,8 +973,8 @@ void linux_exit(void)
 #if WITHDSPEXTFIR
 	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
 #endif /* WITHDSPEXTFIR */
+#endif
 
-	framebuffer_close();
 	exit(EXIT_SUCCESS);
 }
 

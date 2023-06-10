@@ -3350,6 +3350,8 @@ uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v);
 uint_fast8_t hamradio_gtopdbwf(int_fast8_t v);
 uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v);
 const char * hamradio_change_view_style(uint_fast8_t v);
+uint_fast8_t hamradio_get_viewstyle(void);
+void hamradio_settemp_viewstyle(uint_fast8_t v);
 int_fast8_t hamradio_afresponce(int_fast8_t v);
 uint_fast8_t habradio_get_classa(void);
 

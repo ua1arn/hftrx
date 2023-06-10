@@ -59,7 +59,7 @@ void ft8_start_fill(void);
 void ft8_stop_fill(void);
 void ft8_set_state(uint8_t v);
 uint8_t ft8_get_state(void);
-void ft8_tx_enable(void);
+void ft8_do_encode(void);
 void ft8_initialize(void);
 void ft8_walkthrough_core0(uint_fast8_t rtc_seconds);
 
