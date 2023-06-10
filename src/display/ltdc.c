@@ -2299,6 +2299,79 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 
 #endif
 
+// Select HV interface type
+static void t113_select_HV_interface_type(const videomode_t * vdmode)
+{
+}
+
+static void t113_HV_clock_configuration(const videomode_t * vdmode)
+{
+}
+
+static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
+{
+}
+
+static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
+{
+}
+
+static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
+{
+}
+
+static void t113_set_sequence_parameters(const videomode_t * vdmode)
+{
+}
+
+static void t113_open_IO_output(const videomode_t * vdmode)
+{
+}
+
+static void t113_set_and_open_interface_function(const videomode_t * vdmode)
+{
+}
+
+static void t113_open_module_enablet(const videomode_t * vdmode)
+{
+}
+
+static void t113_hv_initsteps(const videomode_t * vdmode)
+{
+	// step1 - Select HV interface type
+	t113_select_HV_interface_type(vdmode);
+	// step2 - Clock configuration
+	t113_HV_clock_configuration(vdmode);
+	// step3 - Set sequuence parameters
+	t113_set_sequence_parameters(vdmode);
+	// step4 - Open IO output
+	t113_open_IO_output(vdmode);
+	// step5 - Set and open interrupt function
+	t113_set_and_open_interface_function(vdmode);
+	// step6 - Open module enable
+	t113_open_module_enablet(vdmode);
+}
+
+static void t113_lvds_initsteps(const videomode_t * vdmode)
+{
+	// step1 - same as step1 in HV mode: Select HV interface type
+	t113_select_HV_interface_type(vdmode);
+	// step2 - Clock configuration
+	t113_LVDS_clock_configuration(vdmode);
+	// step3 - same as step3 in HV mode: Set sequuence parameters
+	t113_set_sequence_parameters(vdmode);
+	// step4 - same as step4 in HV mode: Open IO output
+	t113_open_IO_output(vdmode);
+	// step5 - set LVDS digital logic configuration
+	t113_set_LVDS_digital_logic(vdmode);
+	// step6 - LVDS controller configuration
+	t113_LVDS_controller_configuration(vdmode);
+	// step7 - same as step5 in HV mode: Set and open interrupt function
+	t113_set_and_open_interface_function(vdmode);
+	// step8 - same as step6 in HV mode: Open module enable
+	t113_open_module_enablet(vdmode);
+}
+
 void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	uint32_t val;
@@ -2526,6 +2599,12 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 
 	// Set DE MODE if need
 	ltdc_tfcon_cfg(vdmode);
+
+#if WITHLVDSHW
+	t113_lvds_initsteps(vdmode);
+#else /* WITHLVDSHW */
+	t113_hw_initsteps(vdmode);
+#endif /* WITHLVDSHW */
 
 }
 
