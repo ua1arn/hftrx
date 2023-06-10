@@ -2143,15 +2143,6 @@ static void t113_tconlcd_disable(void)
 
 static void t113_tconlcd_set_timing(const videomode_t * vdmode)
 {
-	/* Accumulated parameters for this display */
-	const unsigned HEIGHT = vdmode->height;	/* height */
-	const unsigned WIDTH = vdmode->width;	/* width */
-	const unsigned HSYNC = vdmode->hsync;	/*  */
-	const unsigned VSYNC = vdmode->vsync;	/*  */
-	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
-	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
 	TCON_LCD0->LCD_CTL_REG = 0;
 	// Pixel clock
@@ -2182,26 +2173,6 @@ static void t113_tconlcd_set_timing(const videomode_t * vdmode)
 
 	#endif /* WITHLVDSHW */
 	}
-
-	// timing0 (window)
-	TCON_LCD0->LCD_BASIC0_REG = (
-		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
-		);
-	// timing1
-	TCON_LCD0->LCD_BASIC1_REG =
-		((HTOTAL - 1) << 16) |
-		((LEFTMARGIN - 1) << 0) |
-		0;
-	// timing2
-	TCON_LCD0->LCD_BASIC2_REG =
-		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
-		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
-		0;
-	// timing3
-	TCON_LCD0->LCD_BASIC3_REG =
-		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
-		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
-		0;
 
 	// 5.1.6.20 0x0088 LCD IO Polarity Register (Default Value: 0x0000_0000)
 	// io_polarity
@@ -2246,22 +2217,6 @@ static void t113_tconlcd_set_timing(const videomode_t * vdmode)
 	TCON_LCD0->LCD_CPU_IF_REG = 0;
 	TCON_LCD0->LCD_CPU_WR_REG = 0;
 
-	{
-		//pdat->backlight = NULL;
-		//struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
-		uint32_t val;
-
-		// ctrl
-		//val = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
-		val = 0x1F;
-		TCON_LCD0->LCD_CTL_REG =
-			(1u << 31) |		// LCD_EN
-			(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
-			(0x00u << 23) |		// LCD_RB_SWAP
-			((val & 0x1fu) << 4) |	// LCD_START_DLY
-			(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
-			0;
-	}
 }
 
 #if 0
@@ -2302,26 +2257,75 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 // Select HV interface type
 static void t113_select_HV_interface_type(const videomode_t * vdmode)
 {
+	//pdat->backlight = NULL;
+	//struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
+	uint32_t val;
+
+	// ctrl
+	//val = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
+	val = 0x1F;
+	TCON_LCD0->LCD_CTL_REG =
+		(1u << 31) |		// LCD_EN
+		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
+		(0x00u << 23) |		// LCD_RB_SWAP
+		((val & 0x1fu) << 4) |	// LCD_START_DLY
+		(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
+		0;
 }
 
+// Clock configuration
 static void t113_HV_clock_configuration(const videomode_t * vdmode)
 {
 }
 
+// Clock configuration
 static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 {
 }
 
+/// step5 - set LVDS digital logic configuration
 static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 {
 }
 
+// step6 - LVDS controller configuration
 static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 {
 }
 
+// Set sequuence parameters
 static void t113_set_sequence_parameters(const videomode_t * vdmode)
 {
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+
+	// timing0 (window)
+	TCON_LCD0->LCD_BASIC0_REG = (
+		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
+		);
+	// timing1
+	TCON_LCD0->LCD_BASIC1_REG =
+		((HTOTAL - 1) << 16) |
+		((LEFTMARGIN - 1) << 0) |
+		0;
+	// timing2
+	TCON_LCD0->LCD_BASIC2_REG =
+		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
+		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
+		0;
+	// timing3
+	TCON_LCD0->LCD_BASIC3_REG =
+		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
+		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
+		0;
+
 }
 
 static void t113_open_IO_output(const videomode_t * vdmode)
@@ -2438,7 +2442,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmo
 	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_bitwidth = bitwidth;
 	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_clk_sel = clk_src;
 	//    lcd_dev[sel]->lcd_lvds_ctl.lvds_en = 1;
-    const int lvdsneg = 0;
+    const int lvdsneg = !0;
     TCON_LCD0->LCD_LVDS_IF_REG =
 		//(1u << 31) |	// LCD_LVDS_EN
 		(0u << 30) |	// LCD_LVDS_LINK: 0: single link
