@@ -2340,6 +2340,7 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 		DSI_DPHY->COMBO_PHY_REG0 = 0x7;
 		local_delay_us(5);
 		DSI_DPHY->COMBO_PHY_REG0 = 0xf;
+		local_delay_us(5);
 
 		DSI_DPHY->DPHY_ANA4 = 0x84000000;
 		DSI_DPHY->DPHY_ANA3 = 0x01040000;
@@ -2377,7 +2378,7 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 28);	// EN_24M
 		local_delay_ms(1);
 
-		PRINTF("TCON_LCD0->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num]);
+		//PRINTF("TCON_LCD0->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num]);
 	}
 }
 
