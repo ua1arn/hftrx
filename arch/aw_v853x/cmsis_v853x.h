@@ -88,7 +88,7 @@ typedef enum IRQn
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
     DE_IRQn = 119,                                    /*!< DE Display Engine Interrupt */
     DI_IRQn = 120,                                    /*!< DI De-Interlacer Interrupt */
-    DSI_IRQn = 124,                                   /*!< DSI  Interrupt */
+    DSI0_IRQn = 124,                                  /*!< DSI  Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -181,7 +181,7 @@ typedef enum IRQn
 #define G2D_WB_BASE ((uintptr_t) 0x05413000)          /*!< G2D_WB Base */
 #define G2D_VSU_BASE ((uintptr_t) 0x05418000)         /*!< G2D_VSU Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT Base */
-#define DSI_BASE ((uintptr_t) 0x05450000)             /*!< DSI Base */
+#define DSI0_BASE ((uintptr_t) 0x05450000)            /*!< DSI Base */
 #define DSI_DPHY_BASE ((uintptr_t) 0x05451000)        /*!< DSI_DPHY Base */
 #define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Base */
@@ -1837,6 +1837,70 @@ typedef struct G2D_ROT_Type
     volatile uint32_t ROT_OHADD2;                     /*!< Offset 0x0B4 Output V memory address register1 */
 } G2D_ROT_TypeDef; /* size of structure = 0x0B8 */
 /*
+ * @brief DSI
+ */
+/*!< DSI  */
+typedef struct DSI_Type
+{
+    volatile uint32_t DSI_CTL;                        /*!< Offset 0x000 dsi_gctl 0x00 - 0x0c */
+    volatile uint32_t DSI_GINT0;                      /*!< Offset 0x004 dsi_gint0  */
+    volatile uint32_t DSI_GINT1;                      /*!< Offset 0x008 dsi_gint1  */
+    volatile uint32_t DSI_BASIC_CTL;                  /*!< Offset 0x00C dsi_basic_ctl  */
+    volatile uint32_t DSI_BASIC_CTL0;                 /*!< Offset 0x010 dsi_basic_ctl0 0x10 - 0x1c */
+    volatile uint32_t DSI_BASIC_CTL1;                 /*!< Offset 0x014 dsi_basic_ctl1  */
+    volatile uint32_t DSI_BASIC_SIZE0;                /*!< Offset 0x018 dsi_basic_size0  */
+    volatile uint32_t DSI_BASIC_SIZE1;                /*!< Offset 0x01C dsi_basic_size1  */
+    volatile uint32_t DSI_BASIC_INST0 [0x008];        /*!< Offset 0x020 dsi_inst_func[8] 0x20 - 0x3c */
+    volatile uint32_t DSI_INST_LOOP_SEL;              /*!< Offset 0x040 dsi_inst_loop_sel 0x40 - 0x5c */
+    volatile uint32_t DSI_INST_LOOP_NUM;              /*!< Offset 0x044 dsi_inst_loop_num  */
+    volatile uint32_t DSI_INST_JUMP_SEL;              /*!< Offset 0x048 dsi_inst_jump_sel  */
+    volatile uint32_t DSI_INST_JUMP_CFG [0x002];      /*!< Offset 0x04C dsi_inst_jump_cfg[2]  */
+    volatile uint32_t DSI_INST_LOOP_NUM2;             /*!< Offset 0x054 dsi_inst_loop_num2  */
+             uint32_t reserved_0x058 [0x0002];
+    volatile uint32_t DSI_TRANS_START;                /*!< Offset 0x060 dsi_trans_start 0x60 - 0x6c */
+             uint32_t reserved_0x064 [0x0005];
+    volatile uint32_t DSI_TRANS_ZERO;                 /*!< Offset 0x078 dsi_trans_zero  */
+    volatile uint32_t DSI_TCON_DRQ;                   /*!< Offset 0x07C dsi_tcon_drq  */
+    volatile uint32_t DSI_PIXEL_CTL0;                 /*!< Offset 0x080 dsi_pixel_ctl0 0x80 - 0x8c */
+    volatile uint32_t DSI_PIXEL_CTL1;                 /*!< Offset 0x084 dsi_pixel_ctl1  */
+             uint32_t reserved_0x088 [0x0002];
+    volatile uint32_t DSI_PIXEL_PH;                   /*!< Offset 0x090 dsi_pixel_ph 0x90 - 0x9c */
+    volatile uint32_t DSI_PIXEL_PD;                   /*!< Offset 0x094 dsi_pixel_pd  */
+    volatile uint32_t DSI_PIXEL_PF0;                  /*!< Offset 0x098 dsi_pixel_pf0  */
+    volatile uint32_t DSI_PIXEL_PF1;                  /*!< Offset 0x09C dsi_pixel_pf1  */
+             uint32_t reserved_0x0A0 [0x0004];
+    volatile uint32_t DSI_SYNC_HSS;                   /*!< Offset 0x0B0 dsi_sync_hss 0xb0 - 0xbc */
+    volatile uint32_t DSI_SYNC_HSE;                   /*!< Offset 0x0B4 dsi_sync_hse  */
+    volatile uint32_t DSI_SYNC_VSS;                   /*!< Offset 0x0B8 dsi_sync_vss  */
+    volatile uint32_t DSI_SYNC_VSE;                   /*!< Offset 0x0BC dsi_sync_vse  */
+    volatile uint32_t DSI_BLK_HSA0;                   /*!< Offset 0x0C0 dsi_blk_hsa0 0xc0 - 0xcc */
+    volatile uint32_t DSI_BLK_HSA1;                   /*!< Offset 0x0C4 dsi_blk_hsa1  */
+    volatile uint32_t DSI_BLK_HBP0;                   /*!< Offset 0x0C8 dsi_blk_hbp0  */
+    volatile uint32_t DSI_BLK_HBP1;                   /*!< Offset 0x0CC dsi_blk_hbp1  */
+    volatile uint32_t DSI_BLK_HFP0;                   /*!< Offset 0x0D0 dsi_blk_hfp0 0xd0 - 0xdc */
+    volatile uint32_t DSI_BLK_HFP1;                   /*!< Offset 0x0D4 dsi_blk_hfp1  */
+             uint32_t reserved_0x0D8 [0x0002];
+    volatile uint32_t DSI_BLK_HBLK0;                  /*!< Offset 0x0E0 dsi_blk_hblk0 0xe0 - 0xec */
+    volatile uint32_t DSI_BLK_HBLK1;                  /*!< Offset 0x0E4 dsi_blk_hblk1  */
+    volatile uint32_t DSI_BLK_VBLK0;                  /*!< Offset 0x0E8 dsi_blk_vblk0  */
+    volatile uint32_t DSI_BLK_VBLK1;                  /*!< Offset 0x0EC dsi_blk_vblk1  */
+    volatile uint32_t DSI_BURST_LINE;                 /*!< Offset 0x0F0 dsi_burst_line 0xf0 - 0x1fc */
+    volatile uint32_t DSI_BURST_DRQ;                  /*!< Offset 0x0F4 dsi_burst_drq  */
+             uint32_t reserved_0x0F8 [0x0042];
+    volatile uint32_t DSI_CMD_CTL;                    /*!< Offset 0x200 dsi_cmd_ctl 0x200 - 0x23c */
+             uint32_t reserved_0x204 [0x000F];
+    volatile uint32_t DSI_CMD_RX [0x008];             /*!< Offset 0x240 dsi_cmd_rx[8] 0x240 - 0x2dc */
+             uint32_t reserved_0x260 [0x0020];
+    volatile uint32_t DSI_DEBUG_VIDEO0;               /*!< Offset 0x2E0 dsi_debug_video0 0x2e0 - 0x2ec */
+    volatile uint32_t DSI_DEBUG_VIDEO1;               /*!< Offset 0x2E4 dsi_debug_video1  */
+             uint32_t reserved_0x2E8 [0x0002];
+    volatile uint32_t DSI_DEBUG_INST;                 /*!< Offset 0x2F0 dsi_debug_inst 0x2f0 - 0x2fc */
+    volatile uint32_t DSI_DEBUG_FIFO;                 /*!< Offset 0x2F4 dsi_debug_fifo  */
+    volatile uint32_t DSI_DEBUG_DATA;                 /*!< Offset 0x2F8 dsi_debug_data  */
+             uint32_t reserved_0x2FC;
+    volatile uint32_t DSI_CMD_TX [0x040];             /*!< Offset 0x300 dsi_cmd_tx[64] 0x300 - 0x3fc */
+} DSI_TypeDef; /* size of structure = 0x400 */
+/*
  * @brief DSI_DPHY
  */
 /*!< DSI_DPHY  */
@@ -2831,7 +2895,7 @@ typedef struct R_PRCM_Type
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
 #define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Also see 5.7 DE UIS Specification register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
-#define DSI ((DSI_TypeDef *) DSI_BASE)                /*!< DSI  register set access pointer */
+#define DSI0 ((DSI_TypeDef *) DSI0_BASE)              /*!< DSI0  register set access pointer */
 #define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY  register set access pointer */
 #define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)/*!< DISPLAY_TOP  register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */

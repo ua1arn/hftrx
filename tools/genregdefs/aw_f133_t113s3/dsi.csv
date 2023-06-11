@@ -1,4 +1,51 @@
 #type; DSI
-#base; DSI 0x05450000
-#irq; DSI 124
-#irqrv; DSI 108
+#base; DSI0 0x05450000
+#irq; DSI0 124
+#irqrv; DSI0 108
+#regdef; DSI_CTL; 0x0000; dsi_gctl 0x00 - 0x0c
+#regdef; DSI_GINT0; 0x0004; dsi_gint0 
+#regdef; DSI_GINT1; 0x0008; dsi_gint1 
+#regdef; DSI_BASIC_CTL; 0x000C; dsi_basic_ctl 
+#regdef; DSI_BASIC_CTL0; 0x0010; dsi_basic_ctl0 0x10 - 0x1c
+#regdef; DSI_BASIC_CTL1; 0x0014; dsi_basic_ctl1 
+#regdef; DSI_BASIC_SIZE0; 0x0018; dsi_basic_size0 
+#regdef; DSI_BASIC_SIZE1; 0x001c; dsi_basic_size1 
+#regdef; DSI_BASIC_INST0; 0x0020 8; dsi_inst_func[8] 0x20 - 0x3c
+#regdef; DSI_INST_LOOP_SEL; 0x0040; dsi_inst_loop_sel 0x40 - 0x5c
+#regdef; DSI_INST_LOOP_NUM; 0x0044; dsi_inst_loop_num 
+#regdef; DSI_INST_JUMP_SEL; 0x0048; dsi_inst_jump_sel 
+#regdef; DSI_INST_JUMP_CFG; 0x004c 2; dsi_inst_jump_cfg[2] 
+#regdef; DSI_INST_LOOP_NUM2; 0x0054; dsi_inst_loop_num2 
+#regdef; DSI_TRANS_START; 0x0060; dsi_trans_start 0x60 - 0x6c
+#regdef; DSI_TRANS_ZERO; 0x0078; dsi_trans_zero 
+#regdef; DSI_TCON_DRQ; 0x007c; dsi_tcon_drq 
+#regdef; DSI_PIXEL_CTL0; 0x0080; dsi_pixel_ctl0 0x80 - 0x8c
+#regdef; DSI_PIXEL_CTL1; 0x0084; dsi_pixel_ctl1 
+#regdef; DSI_PIXEL_PH; 0x0090; dsi_pixel_ph 0x90 - 0x9c
+#regdef; DSI_PIXEL_PD; 0x0094; dsi_pixel_pd 
+#regdef; DSI_PIXEL_PF0; 0x0098; dsi_pixel_pf0 
+#regdef; DSI_PIXEL_PF1; 0x009c; dsi_pixel_pf1 
+#regdef; DSI_SYNC_HSS; 0x00b0; dsi_sync_hss 0xb0 - 0xbc
+#regdef; DSI_SYNC_HSE; 0x00b4; dsi_sync_hse 
+#regdef; DSI_SYNC_VSS; 0x00b8; dsi_sync_vss 
+#regdef; DSI_SYNC_VSE; 0x00bc; dsi_sync_vse 
+#regdef; DSI_BLK_HSA0; 0x00c0; dsi_blk_hsa0 0xc0 - 0xcc
+#regdef; DSI_BLK_HSA1; 0x00c4; dsi_blk_hsa1 
+#regdef; DSI_BLK_HBP0; 0x00c8; dsi_blk_hbp0 
+#regdef; DSI_BLK_HBP1; 0x00cc; dsi_blk_hbp1 
+#regdef; DSI_BLK_HFP0; 0x00d0; dsi_blk_hfp0 0xd0 - 0xdc
+#regdef; DSI_BLK_HFP1; 0x00d4; dsi_blk_hfp1 
+#regdef; DSI_BLK_HBLK0; 0x00e0; dsi_blk_hblk0 0xe0 - 0xec
+#regdef; DSI_BLK_HBLK1; 0x00e4; dsi_blk_hblk1 
+#regdef; DSI_BLK_VBLK0; 0x00e8; dsi_blk_vblk0 
+#regdef; DSI_BLK_VBLK1; 0x00ec; dsi_blk_vblk1 
+#regdef; DSI_BURST_LINE; 0x00f0; dsi_burst_line 0xf0 - 0x1fc
+#regdef; DSI_BURST_DRQ; 0x00f4; dsi_burst_drq 
+#regdef; DSI_CMD_CTL; 0x0200; dsi_cmd_ctl 0x200 - 0x23c
+#regdef; DSI_CMD_RX; 0x0240 8; dsi_cmd_rx[8] 0x240 - 0x2dc
+#regdef; DSI_DEBUG_VIDEO0; 0x02e0; dsi_debug_video0 0x2e0 - 0x2ec
+#regdef; DSI_DEBUG_VIDEO1; 0x02e4; dsi_debug_video1 
+#regdef; DSI_DEBUG_INST; 0x02f0; dsi_debug_inst 0x2f0 - 0x2fc
+#regdef; DSI_DEBUG_FIFO; 0x02f4; dsi_debug_fifo 
+#regdef; DSI_DEBUG_DATA; 0x02f8; dsi_debug_data 
+#regdef; DSI_CMD_TX; 0x0300 64; dsi_cmd_tx[64] 0x300 - 0x3fc

@@ -10148,6 +10148,461 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>DSI0</name>
+  <description></description>
+  <baseAddress>0x05450000</baseAddress>
+  <interrupt>
+   <name>DSI0</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>DSI_CTL</name>
+    <displayName>DSI_CTL</displayName>
+    <description>dsi_gctl 0x00 - 0x0c</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_GINT0</name>
+    <displayName>DSI_GINT0</displayName>
+    <description>dsi_gint0 </description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_GINT1</name>
+    <displayName>DSI_GINT1</displayName>
+    <description>dsi_gint1 </description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BASIC_CTL</name>
+    <displayName>DSI_BASIC_CTL</displayName>
+    <description>dsi_basic_ctl </description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BASIC_CTL0</name>
+    <displayName>DSI_BASIC_CTL0</displayName>
+    <description>dsi_basic_ctl0 0x10 - 0x1c</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BASIC_CTL1</name>
+    <displayName>DSI_BASIC_CTL1</displayName>
+    <description>dsi_basic_ctl1 </description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BASIC_SIZE0</name>
+    <displayName>DSI_BASIC_SIZE0</displayName>
+    <description>dsi_basic_size0 </description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BASIC_SIZE1</name>
+    <displayName>DSI_BASIC_SIZE1</displayName>
+    <description>dsi_basic_size1 </description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000020</addressOffset>
+    <register>
+     <name>DSI_BASIC_INST0</name>
+     <displayName>DSI_BASIC_INST0</displayName>
+     <description>dsi_inst_func[8] 0x20 - 0x3c</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <register>
+    <name>DSI_INST_LOOP_SEL</name>
+    <displayName>DSI_INST_LOOP_SEL</displayName>
+    <description>dsi_inst_loop_sel 0x40 - 0x5c</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_INST_LOOP_NUM</name>
+    <displayName>DSI_INST_LOOP_NUM</displayName>
+    <description>dsi_inst_loop_num </description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_INST_JUMP_SEL</name>
+    <displayName>DSI_INST_JUMP_SEL</displayName>
+    <description>dsi_inst_jump_sel </description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x0000004C</addressOffset>
+    <register>
+     <name>DSI_INST_JUMP_CFG</name>
+     <displayName>DSI_INST_JUMP_CFG</displayName>
+     <description>dsi_inst_jump_cfg[2] </description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
+   <register>
+    <name>DSI_INST_LOOP_NUM2</name>
+    <displayName>DSI_INST_LOOP_NUM2</displayName>
+    <description>dsi_inst_loop_num2 </description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_TRANS_START</name>
+    <displayName>DSI_TRANS_START</displayName>
+    <description>dsi_trans_start 0x60 - 0x6c</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_TRANS_ZERO</name>
+    <displayName>DSI_TRANS_ZERO</displayName>
+    <description>dsi_trans_zero </description>
+    <addressOffset>0x078</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_TCON_DRQ</name>
+    <displayName>DSI_TCON_DRQ</displayName>
+    <description>dsi_tcon_drq </description>
+    <addressOffset>0x07C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_PIXEL_CTL0</name>
+    <displayName>DSI_PIXEL_CTL0</displayName>
+    <description>dsi_pixel_ctl0 0x80 - 0x8c</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_PIXEL_CTL1</name>
+    <displayName>DSI_PIXEL_CTL1</displayName>
+    <description>dsi_pixel_ctl1 </description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_PIXEL_PH</name>
+    <displayName>DSI_PIXEL_PH</displayName>
+    <description>dsi_pixel_ph 0x90 - 0x9c</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_PIXEL_PD</name>
+    <displayName>DSI_PIXEL_PD</displayName>
+    <description>dsi_pixel_pd </description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_PIXEL_PF0</name>
+    <displayName>DSI_PIXEL_PF0</displayName>
+    <description>dsi_pixel_pf0 </description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_PIXEL_PF1</name>
+    <displayName>DSI_PIXEL_PF1</displayName>
+    <description>dsi_pixel_pf1 </description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_SYNC_HSS</name>
+    <displayName>DSI_SYNC_HSS</displayName>
+    <description>dsi_sync_hss 0xb0 - 0xbc</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_SYNC_HSE</name>
+    <displayName>DSI_SYNC_HSE</displayName>
+    <description>dsi_sync_hse </description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_SYNC_VSS</name>
+    <displayName>DSI_SYNC_VSS</displayName>
+    <description>dsi_sync_vss </description>
+    <addressOffset>0x0B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_SYNC_VSE</name>
+    <displayName>DSI_SYNC_VSE</displayName>
+    <description>dsi_sync_vse </description>
+    <addressOffset>0x0BC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BLK_HSA0</name>
+    <displayName>DSI_BLK_HSA0</displayName>
+    <description>dsi_blk_hsa0 0xc0 - 0xcc</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BLK_HSA1</name>
+    <displayName>DSI_BLK_HSA1</displayName>
+    <description>dsi_blk_hsa1 </description>
+    <addressOffset>0x0C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BLK_HBP0</name>
+    <displayName>DSI_BLK_HBP0</displayName>
+    <description>dsi_blk_hbp0 </description>
+    <addressOffset>0x0C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BLK_HBP1</name>
+    <displayName>DSI_BLK_HBP1</displayName>
+    <description>dsi_blk_hbp1 </description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BLK_HFP0</name>
+    <displayName>DSI_BLK_HFP0</displayName>
+    <description>dsi_blk_hfp0 0xd0 - 0xdc</description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BLK_HFP1</name>
+    <displayName>DSI_BLK_HFP1</displayName>
+    <description>dsi_blk_hfp1 </description>
+    <addressOffset>0x0D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BLK_HBLK0</name>
+    <displayName>DSI_BLK_HBLK0</displayName>
+    <description>dsi_blk_hblk0 0xe0 - 0xec</description>
+    <addressOffset>0x0E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BLK_HBLK1</name>
+    <displayName>DSI_BLK_HBLK1</displayName>
+    <description>dsi_blk_hblk1 </description>
+    <addressOffset>0x0E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BLK_VBLK0</name>
+    <displayName>DSI_BLK_VBLK0</displayName>
+    <description>dsi_blk_vblk0 </description>
+    <addressOffset>0x0E8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BLK_VBLK1</name>
+    <displayName>DSI_BLK_VBLK1</displayName>
+    <description>dsi_blk_vblk1 </description>
+    <addressOffset>0x0EC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BURST_LINE</name>
+    <displayName>DSI_BURST_LINE</displayName>
+    <description>dsi_burst_line 0xf0 - 0x1fc</description>
+    <addressOffset>0x0F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_BURST_DRQ</name>
+    <displayName>DSI_BURST_DRQ</displayName>
+    <description>dsi_burst_drq </description>
+    <addressOffset>0x0F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_CMD_CTL</name>
+    <displayName>DSI_CMD_CTL</displayName>
+    <description>dsi_cmd_ctl 0x200 - 0x23c</description>
+    <addressOffset>0x200</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000240</addressOffset>
+    <register>
+     <name>DSI_CMD_RX</name>
+     <displayName>DSI_CMD_RX</displayName>
+     <description>dsi_cmd_rx[8] 0x240 - 0x2dc</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <register>
+    <name>DSI_DEBUG_VIDEO0</name>
+    <displayName>DSI_DEBUG_VIDEO0</displayName>
+    <description>dsi_debug_video0 0x2e0 - 0x2ec</description>
+    <addressOffset>0x2E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_DEBUG_VIDEO1</name>
+    <displayName>DSI_DEBUG_VIDEO1</displayName>
+    <description>dsi_debug_video1 </description>
+    <addressOffset>0x2E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_DEBUG_INST</name>
+    <displayName>DSI_DEBUG_INST</displayName>
+    <description>dsi_debug_inst 0x2f0 - 0x2fc</description>
+    <addressOffset>0x2F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_DEBUG_FIFO</name>
+    <displayName>DSI_DEBUG_FIFO</displayName>
+    <description>dsi_debug_fifo </description>
+    <addressOffset>0x2F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI_DEBUG_DATA</name>
+    <displayName>DSI_DEBUG_DATA</displayName>
+    <description>dsi_debug_data </description>
+    <addressOffset>0x2F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>64</dim>
+    <addressOffset>0x00000300</addressOffset>
+    <register>
+     <name>DSI_CMD_TX</name>
+     <displayName>DSI_CMD_TX</displayName>
+     <description>dsi_cmd_tx[64] 0x300 - 0x3fc</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x100</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>DSI_DPHY</name>
   <description></description>
   <baseAddress>0x05451000</baseAddress>
