@@ -1138,30 +1138,18 @@ extern "C" {
 
 	typedef uint_xlen_t IRQL_t;
 
-	#if WITHNESTEDINTERRUPTS
-
-		#define ARM_OVERREALTIME_PRIORITY	3	/* валкодер */
-		#define ARM_REALTIME_PRIORITY		2	/* звук */
-		#define ARM_SYSTEM_PRIORITY			1	/* таймеры, USB */
-		#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
-
-
-	#else /* WITHNESTEDINTERRUPTS */
-
-		#define ARM_IPC_PRIORITY			4
-		#define ARM_OVERREALTIME_PRIORITY	3
-		#define ARM_REALTIME_PRIORITY		2
-		#define ARM_SYSTEM_PRIORITY			1
-		#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
-
-	#endif /* WITHNESTEDINTERRUPTS */
+	#define ARM_IPC_PRIORITY			4
+	#define ARM_OVERREALTIME_PRIORITY	3	/* валкодер */
+	#define ARM_REALTIME_PRIORITY		2	/* звук */
+	#define ARM_SYSTEM_PRIORITY			1	/* таймеры, USB */
+	#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
 	#define global_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
 	#define global_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK); } while (0)
 
 	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
-	#define IRQL_REALTIME 		ARM_REALTIME_PRIORITY
-	#define IRQL_OVERREALTIME				ARM_OVERREALTIME_PRIORITY
+	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
+	#define IRQL_OVERREALTIME		ARM_OVERREALTIME_PRIORITY
 
 #elif CPUSTYLE_UBLAZE
 
