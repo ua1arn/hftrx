@@ -2255,7 +2255,8 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 	CCU->DSI_BGR_REG |= (1u << 16);	// DSI_RST
 	(void) CCU->DSI_BGR_REG;
 
-	PRINTF("allwnrt113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsi_freq());
+//	PRINTF("allwnrt113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsi_freq());
+//	printhex32(DSI0_BASE, DSI0, sizeof * DSI0);
 
 #if 0
 	// 0x0545103C - bit 0 is "1"
