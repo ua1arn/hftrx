@@ -10149,7 +10149,7 @@
   </peripheral>
   <peripheral>
   <name>DSI0</name>
-  <description></description>
+  <description>MIPI DSI Display Interface</description>
   <baseAddress>0x05450000</baseAddress>
   <interrupt>
    <name>DSI0</name>
@@ -10604,7 +10604,7 @@
   </peripheral>
   <peripheral>
   <name>DSI_DPHY</name>
-  <description></description>
+  <description>MIPI DSI Physical Interface</description>
   <baseAddress>0x05451000</baseAddress>
   <registers>
    <register>

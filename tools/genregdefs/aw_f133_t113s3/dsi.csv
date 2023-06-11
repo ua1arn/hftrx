@@ -1,3 +1,4 @@
+#comment; MIPI DSI Display Interface
 #type; DSI
 #base; DSI0 0x05450000
 #irq; DSI0 124

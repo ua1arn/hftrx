@@ -53,7 +53,7 @@ typedef enum IRQn
     GPIOG_NS_IRQn = 95,                               /*!< GPIOINT  Interrupt */
     DE_IRQn = 103,                                    /*!< DE Display Engine Interrupt */
     DI_IRQn = 104,                                    /*!< DI De-Interlacer Interrupt */
-    DSI0_IRQn = 108,                                  /*!< DSI  Interrupt */
+    DSI0_IRQn = 108,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -1792,7 +1792,7 @@ typedef struct G2D_ROT_Type
 /*
  * @brief DSI
  */
-/*!< DSI  */
+/*!< DSI MIPI DSI Display Interface */
 typedef struct DSI_Type
 {
     volatile uint32_t DSI_CTL;                        /*!< Offset 0x000 dsi_gctl 0x00 - 0x0c */
@@ -1856,7 +1856,7 @@ typedef struct DSI_Type
 /*
  * @brief DSI_DPHY
  */
-/*!< DSI_DPHY  */
+/*!< DSI_DPHY MIPI DSI Physical Interface */
 typedef struct DSI_DPHY_Type
 {
     volatile uint32_t DPHY_GCTL;                      /*!< Offset 0x000  */
@@ -2781,8 +2781,8 @@ typedef struct R_PRCM_Type
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
 #define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Also see 5.7 DE UIS Specification register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
-#define DSI0 ((DSI_TypeDef *) DSI0_BASE)              /*!< DSI0  register set access pointer */
-#define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY  register set access pointer */
+#define DSI0 ((DSI_TypeDef *) DSI0_BASE)              /*!< DSI0 MIPI DSI Display Interface register set access pointer */
+#define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY MIPI DSI Physical Interface register set access pointer */
 #define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)/*!< DISPLAY_TOP  register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */

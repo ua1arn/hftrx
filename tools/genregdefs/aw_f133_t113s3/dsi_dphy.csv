@@ -1,3 +1,4 @@
+#comment; MIPI DSI Physical Interface
 #type; DSI_DPHY
 #base; DSI_DPHY 0x05451000
 #regdef; DPHY_GCTL; 0x000;
