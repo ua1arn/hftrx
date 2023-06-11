@@ -1080,7 +1080,7 @@ static uint32_t aw_module(uint32_t x, uint32_t y)
 	return val;
 }
 
-static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_addr, uint32_t count)
+static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_addr, unsigned count)
 {
 	uint8_t temp;
 	uint8_t saved;
@@ -1097,8 +1097,8 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 	if ((dest_addr % 4) == 0 && (count % 4) == 0)
 	{
 		volatile uint32_t * dest = (volatile uint32_t *) dest_addr;
-		uint32_t i;
-		for(i=0; i<count; i += 4)
+		unsigned i;
+		for (i = 0; i < count; i += 4)
 		{
 			* dest ++ = get_wvalue(pipe);
 		}
@@ -1106,8 +1106,8 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 	else if ((dest_addr % 2) == 0 && (count % 2) == 0)
 	{
 		volatile uint16_t * dest = (volatile uint16_t *) dest_addr;
-		uint32_t i;
-		for(i=0; i<count; i += 2)
+		unsigned i;
+		for (i = 0; i < count; i += 2)
 		{
 			* dest ++ = get_hvalue(pipe);
 		}
@@ -1115,8 +1115,8 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 	else
 	{
 		volatile uint8_t * dest = (volatile uint8_t *) dest_addr;
-		uint32_t i;
-		for(i=0; i<count; i++)
+		unsigned i;
+		for (i = 0; i < count; ++ i)
 		{
 			* dest ++ = get_bvalue(pipe);
 		}
@@ -1126,7 +1126,7 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 }
 
 
-static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t count)
+static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, unsigned count)
 {
 	uint8_t  saved;
 
@@ -1143,8 +1143,8 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 	if ((src_addr % 4) == 0 && (count % 4) == 0)
 	{
 		volatile const uint32_t * src = (volatile uint32_t *) src_addr;
-		uint32_t i;
-		for(i=0; i<count; i += 4)
+		unsigned i;
+		for (i = 0; i < count; i += 4)
 		{
 			put_wvalue(pipe, * src ++);
 		}
@@ -1152,8 +1152,8 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 	else if ((src_addr % 2) == 0 && (count % 2) == 0)
 	{
 		volatile const uint16_t * src = (volatile uint16_t *) src_addr;
-		uint32_t i;
-		for(i=0; i<count; i += 2)
+		unsigned i;
+		for (i = 0; i < count; i += 2)
 		{
 			put_hvalue(pipe, * src ++);
 		}
@@ -1161,8 +1161,8 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 	else
 	{
 		volatile const uint8_t * src = (volatile const uint8_t *) src_addr;
-		uint32_t i;
-		for(i=0; i<count; i++)
+		unsigned i;
+		for (i = 0; i < count; ++ i)
 		{
 			put_bvalue(pipe, * src ++);
 		}
@@ -2159,7 +2159,7 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 	            PRINTF("bmCBWFlg = %x\n", pCBW->bmCBWFlg);
 	            PRINTF("bCBWLUN = %x\n", pCBW->bCBWLUN);
 	            PRINTF("bCBWCBL = %x\n", pCBW->bCBWCBL);
-	            for(i=0;i<16;i++)
+	            for(i=0;i<16;i ++)
 	            {
 	            	PRINTF("CBWCB[%d] = %x\n", i, pCBW->CBWCB[i]);
 				}
@@ -3736,7 +3736,7 @@ void usb_struct_init(PCD_HandleTypeDef *hpcd)
 	pusb->ep0_maxpktsz = 64;
 	pusb->ep0_ret = USB_RETVAL_COMPOK;
 
-	for(i=0; i<USB_MAX_EP_NO; i++)
+	for(i=0; i<USB_MAX_EP_NO; ++ i)
 	{
 		pusb->eptx_flag[i] = 0;
 		pusb->eprx_flag[i] = 0;
@@ -3984,7 +3984,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		uint32_t i;
 		//Device Reset Service Subroutine
 		//pusb->rst_cnt ++;
-		for(i=0; i<USB_MAX_EP_NO; i++)
+		for(i=0; i<USB_MAX_EP_NO; ++ i)
 		{
 			pusb->eptx_flag[i] = 0;
 			pusb->eprx_flag[i] = 0;
@@ -4039,7 +4039,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		}
 		if (temp&0xfffe)
 		{
-			for(i=0; i<USB_MAX_EP_NO; i++)
+			for(i=0; i<USB_MAX_EP_NO; ++ i)
 			{
 				if (temp & (0x2<<i))
 				{
@@ -4058,7 +4058,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		usb_clear_eprx_interrupt_status(pusb, temp);
 		if (temp&0xfffe)
 		{
-			for(i=0; i<USB_MAX_EP_NO; i++)
+			for(i=0; i<USB_MAX_EP_NO; ++ i)
 			{
 				if (temp & (0x2<<i))
 				{
@@ -4115,7 +4115,7 @@ HAL_StatusTypeDef USB_StopDevice(USBOTG_TypeDef *USBx)
 //  uint32_t i;
 //
 //  /* Clear Pending interrupt */
-//  for (i = 0U; i < 15U; i++)
+//  for (i = 0U; i < 15U; ++ i)
 //  {
 //    USBx_INEP(i)->DIEPINT = 0xFB7FU;
 //    USBx_OUTEP(i)->DOEPINT = 0xFB7FU;
@@ -4342,7 +4342,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	  (void)USB_SetCurrentMode(USBx, USB_DEVICE_MODE);
 
 	  /* Init endpoints structures */
-	  for (i = 0U; i < hpcd->Init.dev_endpoints; i++)
+	  for (i = 0U; i < hpcd->Init.dev_endpoints; ++ i)
 	  {
 	    /* Init ep structure */
 	    hpcd->IN_ep[i].is_in = 1U;
@@ -4355,7 +4355,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	    hpcd->IN_ep[i].xfer_len = 0U;
 	  }
 
-	  for (i = 0U; i < hpcd->Init.dev_endpoints; i++)
+	  for (i = 0U; i < hpcd->Init.dev_endpoints; ++ i)
 	  {
 	    hpcd->OUT_ep[i].is_in = 0U;
 	    hpcd->OUT_ep[i].num = i;
