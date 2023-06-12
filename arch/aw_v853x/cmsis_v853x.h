@@ -47,7 +47,6 @@ typedef enum IRQn
     LEDC_IRQn = 52,                                   /*!< LEDC LED Lamp Controller Interrupt */
     CAN0_IRQn = 53,                                   /*!< CAN  Interrupt */
     CAN1_IRQn = 54,                                   /*!< CAN  Interrupt */
-    OWA_IRQn = 55,                                    /*!< OWA One Wire Audio (TX only) Interrupt */
     AUDIO_CODEC_IRQn = 57,                            /*!< AUDIO_CODEC  Interrupt */
     I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  Interrupt */
@@ -124,7 +123,6 @@ typedef enum IRQn
 #define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC Base */
 #define I2S1_BASE ((uintptr_t) 0x02033000)            /*!< I2S_PCM Base */
 #define I2S2_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM Base */
-#define OWA_BASE ((uintptr_t) 0x02036000)             /*!< OWA Base */
 #define TIMER_BASE ((uintptr_t) 0x02050000)           /*!< TIMER Base */
 #define UART0_BASE ((uintptr_t) 0x02500000)           /*!< UART Base */
 #define UART1_BASE ((uintptr_t) 0x02500400)           /*!< UART Base */
@@ -717,26 +715,6 @@ typedef struct DMIC_Type
     volatile uint32_t HPF_COEF_REG;                   /*!< Offset 0x03C High Pass Filter Coefficient Register */
     volatile uint32_t HPF_GAIN_REG;                   /*!< Offset 0x040 High Pass Filter Gain Register */
 } DMIC_TypeDef; /* size of structure = 0x044 */
-/*
- * @brief OWA
- */
-/*!< OWA One Wire Audio (TX only) */
-typedef struct OWA_Type
-{
-    volatile uint32_t OWA_GEN_CTL;                    /*!< Offset 0x000 OWA General Control Register */
-    volatile uint32_t OWA_TX_CFIG;                    /*!< Offset 0x004 OWA TX Configuration Register */
-             uint32_t reserved_0x008;
-    volatile uint32_t OWA_ISTA;                       /*!< Offset 0x00C OWA Interrupt Status Register */
-             uint32_t reserved_0x010;
-    volatile uint32_t OWA_FCTL;                       /*!< Offset 0x014 OWA FIFO Control Register */
-    volatile uint32_t OWA_FSTA;                       /*!< Offset 0x018 OWA FIFO Status Register */
-    volatile uint32_t OWA_INT;                        /*!< Offset 0x01C OWA Interrupt Control Register */
-    volatile uint32_t OWA_TX_FIFO;                    /*!< Offset 0x020 OWA TX FIFO Register */
-    volatile uint32_t OWA_TX_CNT;                     /*!< Offset 0x024 OWA TX Counter Register */
-             uint32_t reserved_0x028;
-    volatile uint32_t OWA_TX_CHSTA0;                  /*!< Offset 0x02C OWA TX Channel Status Register0 */
-    volatile uint32_t OWA_TX_CHSTA1;                  /*!< Offset 0x030 OWA TX Channel Status Register1 */
-} OWA_TypeDef; /* size of structure = 0x034 */
 /*
  * @brief AUDIO_CODEC
  */
@@ -2829,7 +2807,6 @@ typedef struct R_PRCM_Type
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
 #define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
-#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio (TX only) register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
