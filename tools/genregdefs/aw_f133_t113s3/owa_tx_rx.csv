@@ -1,0 +1,26 @@
+#type; OWA
+#base; OWA 0x02036000
+#irq; OWA 55
+#irqrv; OWA 39
+#comment; One Wire Audio
+#regdef; OWA_GEN_CTL; 0x0000; OWA General Control Register
+#regdef; OWA_TX_CFIG; 0x0004; OWA TX Configuration Register
+#regdef; OWA_RX_CFIG; 0x0008; OWA RX Configuration Register
+#regdef; OWA_ISTA; 0x000C; OWA Interrupt Status Register
+#regdef; OWA_RXFIFO; 0x0010; OWA RXFIFO Register
+#regdef; OWA_FCTL; 0x0014; OWA FIFO Control Register
+#regdef; OWA_FSTA; 0x0018; OWA FIFO Status Register
+#regdef; OWA_INT; 0x001C; OWA Interrupt Control Register
+#regdef; OWA_TX_FIFO; 0x0020; OWA TX FIFO Register
+#regdef; OWA_TX_CNT; 0x0024; OWA TX Counter Register
+#regdef; OWA_RX_CNT; 0x0028; OWA RX Counter Register
+#regdef; OWA_TX_CHSTA0; 0x002C; OWA TX Channel Status Register0
+#regdef; OWA_TX_CHSTA1; 0x0030; OWA TX Channel Status Register1
+#regdef; OWA_RXCHSTA0; 0x0034; OWA RX Channel Status Register0
+#regdef; OWA_RXCHSTA1; 0x0038; OWA RX Channel Status Register1
+#regdef; OWA_EXP_CTL; 0x0040; OWA Expand Control Register
+#regdef; OWA_EXP_ISTA; 0x0044; OWA Expand Interrupt Status Register
+#regdef; OWA_EXP_INFO_0; 0x0048; OWA Expand Infomation Register0
+#regdef; OWA_EXP_INFO_1; 0x004C; OWA Expand Infomation Register1
+#regdef; OWA_EXP_DBG_0; 0x0050; OWA Expand Debug Register0
+#regdef; OWA_EXP_DBG_1; 0x0054; OWA Expand Debug Register1
