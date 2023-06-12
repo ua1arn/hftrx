@@ -182,7 +182,7 @@ DINCDIR += \
 SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # FreeRTOS
 RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
 DINCDIR += \
