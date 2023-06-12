@@ -47,7 +47,7 @@ typedef enum IRQn
     LEDC_IRQn = 52,                                   /*!< LEDC LED Lamp Controller Interrupt */
     CAN0_IRQn = 53,                                   /*!< CAN  Interrupt */
     CAN1_IRQn = 54,                                   /*!< CAN  Interrupt */
-    OWA_IRQn = 55,                                    /*!< OWA One Wire Audio Interrupt */
+    OWA_IRQn = 55,                                    /*!< OWA One Wire Audio (TX only) Interrupt */
     AUDIO_CODEC_IRQn = 57,                            /*!< AUDIO_CODEC  Interrupt */
     I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  Interrupt */
@@ -720,32 +720,23 @@ typedef struct DMIC_Type
 /*
  * @brief OWA
  */
-/*!< OWA One Wire Audio */
+/*!< OWA One Wire Audio (TX only) */
 typedef struct OWA_Type
 {
     volatile uint32_t OWA_GEN_CTL;                    /*!< Offset 0x000 OWA General Control Register */
     volatile uint32_t OWA_TX_CFIG;                    /*!< Offset 0x004 OWA TX Configuration Register */
-    volatile uint32_t OWA_RX_CFIG;                    /*!< Offset 0x008 OWA RX Configuration Register */
+             uint32_t reserved_0x008;
     volatile uint32_t OWA_ISTA;                       /*!< Offset 0x00C OWA Interrupt Status Register */
-    volatile uint32_t OWA_RXFIFO;                     /*!< Offset 0x010 OWA RXFIFO Register */
+             uint32_t reserved_0x010;
     volatile uint32_t OWA_FCTL;                       /*!< Offset 0x014 OWA FIFO Control Register */
     volatile uint32_t OWA_FSTA;                       /*!< Offset 0x018 OWA FIFO Status Register */
     volatile uint32_t OWA_INT;                        /*!< Offset 0x01C OWA Interrupt Control Register */
     volatile uint32_t OWA_TX_FIFO;                    /*!< Offset 0x020 OWA TX FIFO Register */
     volatile uint32_t OWA_TX_CNT;                     /*!< Offset 0x024 OWA TX Counter Register */
-    volatile uint32_t OWA_RX_CNT;                     /*!< Offset 0x028 OWA RX Counter Register */
+             uint32_t reserved_0x028;
     volatile uint32_t OWA_TX_CHSTA0;                  /*!< Offset 0x02C OWA TX Channel Status Register0 */
     volatile uint32_t OWA_TX_CHSTA1;                  /*!< Offset 0x030 OWA TX Channel Status Register1 */
-    volatile uint32_t OWA_RXCHSTA0;                   /*!< Offset 0x034 OWA RX Channel Status Register0 */
-    volatile uint32_t OWA_RXCHSTA1;                   /*!< Offset 0x038 OWA RX Channel Status Register1 */
-             uint32_t reserved_0x03C;
-    volatile uint32_t OWA_EXP_CTL;                    /*!< Offset 0x040 OWA Expand Control Register */
-    volatile uint32_t OWA_EXP_ISTA;                   /*!< Offset 0x044 OWA Expand Interrupt Status Register */
-    volatile uint32_t OWA_EXP_INFO_0;                 /*!< Offset 0x048 OWA Expand Infomation Register0 */
-    volatile uint32_t OWA_EXP_INFO_1;                 /*!< Offset 0x04C OWA Expand Infomation Register1 */
-    volatile uint32_t OWA_EXP_DBG_0;                  /*!< Offset 0x050 OWA Expand Debug Register0 */
-    volatile uint32_t OWA_EXP_DBG_1;                  /*!< Offset 0x054 OWA Expand Debug Register1 */
-} OWA_TypeDef; /* size of structure = 0x058 */
+} OWA_TypeDef; /* size of structure = 0x034 */
 /*
  * @brief AUDIO_CODEC
  */
@@ -2838,7 +2829,7 @@ typedef struct R_PRCM_Type
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
 #define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
-#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio register set access pointer */
+#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio (TX only) register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */

@@ -3410,7 +3410,7 @@
   </peripheral>
   <peripheral>
   <name>OWA</name>
-  <description>One Wire Audio</description>
+  <description>One Wire Audio (TX only)</description>
   <baseAddress>0x02036000</baseAddress>
   <interrupt>
    <name>OWA</name>
@@ -3437,28 +3437,10 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>OWA_RX_CFIG</name>
-    <displayName>OWA_RX_CFIG</displayName>
-    <description>OWA RX Configuration Register</description>
-    <addressOffset>0x008</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
     <name>OWA_ISTA</name>
     <displayName>OWA_ISTA</displayName>
     <description>OWA Interrupt Status Register</description>
     <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OWA_RXFIFO</name>
-    <displayName>OWA_RXFIFO</displayName>
-    <description>OWA RXFIFO Register</description>
-    <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -3509,15 +3491,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>OWA_RX_CNT</name>
-    <displayName>OWA_RX_CNT</displayName>
-    <description>OWA RX Counter Register</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
     <name>OWA_TX_CHSTA0</name>
     <displayName>OWA_TX_CHSTA0</displayName>
     <description>OWA TX Channel Status Register0</description>
@@ -3531,78 +3504,6 @@
     <displayName>OWA_TX_CHSTA1</displayName>
     <description>OWA TX Channel Status Register1</description>
     <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OWA_RXCHSTA0</name>
-    <displayName>OWA_RXCHSTA0</displayName>
-    <description>OWA RX Channel Status Register0</description>
-    <addressOffset>0x034</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OWA_RXCHSTA1</name>
-    <displayName>OWA_RXCHSTA1</displayName>
-    <description>OWA RX Channel Status Register1</description>
-    <addressOffset>0x038</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OWA_EXP_CTL</name>
-    <displayName>OWA_EXP_CTL</displayName>
-    <description>OWA Expand Control Register</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OWA_EXP_ISTA</name>
-    <displayName>OWA_EXP_ISTA</displayName>
-    <description>OWA Expand Interrupt Status Register</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OWA_EXP_INFO_0</name>
-    <displayName>OWA_EXP_INFO_0</displayName>
-    <description>OWA Expand Infomation Register0</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OWA_EXP_INFO_1</name>
-    <displayName>OWA_EXP_INFO_1</displayName>
-    <description>OWA Expand Infomation Register1</description>
-    <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OWA_EXP_DBG_0</name>
-    <displayName>OWA_EXP_DBG_0</displayName>
-    <description>OWA Expand Debug Register0</description>
-    <addressOffset>0x050</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>OWA_EXP_DBG_1</name>
-    <displayName>OWA_EXP_DBG_1</displayName>
-    <description>OWA Expand Debug Register1</description>
-    <addressOffset>0x054</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
