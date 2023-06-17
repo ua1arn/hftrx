@@ -2470,7 +2470,7 @@ static void t113_open_module_enable(const videomode_t * vdmode)
 	TCON_LCD0->LCD_GCTL_REG |= (1u << 31);	// LCD_EN
 }
 
-static void t113_hw_initsteps(const videomode_t * vdmode)
+static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 {
 	unsigned prei = 0;
 	unsigned divider = 1;//allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
@@ -2490,7 +2490,7 @@ static void t113_hw_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
-static void t113_lvds_initsteps(const videomode_t * vdmode)
+static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
 	unsigned prei = 0;
 	unsigned divider = allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
@@ -2535,14 +2535,19 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	t113_de_enable();
 }
 
-void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
+static void hardware_tcon_initialize(const videomode_t * vdmode)
 {
 #if WITHLVDSHW
-	t113_lvds_initsteps(vdmode);
+	t113_tcon_lvds_initsteps(vdmode);
 #else /* WITHLVDSHW */
-	t113_hw_initsteps(vdmode);
+	t113_tcon_hw_initsteps(vdmode);
 #endif /* WITHLVDSHW */
 
+}
+
+void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
+{
+	hardware_tcon_initialize(vdmode);
 	hardware_de_initialize(vdmode);
 
 	// Set DE MODE if need, mapping GPIO pins
