@@ -1,0 +1,3 @@
+#type; TZMA
+#base; TZMA 0x02004000
+#irq; TZMA_ERR 79

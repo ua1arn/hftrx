@@ -60,8 +60,9 @@ typedef enum IRQn
     SMHC1_IRQn = 73,                                  /*!< SMHC SD-MMC Host Controller Interrupt */
     SMHC2_IRQn = 74,                                  /*!< SMHC SD-MMC Host Controller Interrupt */
     MSI_IRQn = 75,                                    /*!< MSI_MEMC  Interrupt */
-    SMC_IRQn = 76,                                    /*!< SMC  Interrupt */
+    SMC_IRQn = 76,                                    /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM Interrupt */
     EMAC_IRQn = 78,                                   /*!< EMAC  Interrupt */
+    TZMA_ERR_IRQn = 79,                               /*!< TZMA  Interrupt */
     CCU_FERR_IRQn = 80,                               /*!< CCU  Interrupt */
     DMAC_NS_IRQn = 82,                                /*!< DMAC  Interrupt */
     DMAC_S_IRQn = 83,                                 /*!< DMAC  Interrupt */
@@ -89,6 +90,7 @@ typedef enum IRQn
     DE_IRQn = 119,                                    /*!< DE Display Engine Interrupt */
     DI_IRQn = 120,                                    /*!< DI De-Interlacer Interrupt */
     DSI0_IRQn = 124,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
+    TVE_IRQn = 126,                                   /*!< TVE TV Encoder Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -115,6 +117,7 @@ typedef enum IRQn
 #define PWM_BASE ((uintptr_t) 0x02000C00)             /*!< PWM Base */
 #define CCU_BASE ((uintptr_t) 0x02001000)             /*!< CCU Base */
 #define CIR_TX_BASE ((uintptr_t) 0x02003000)          /*!< CIR_TX Base */
+#define TZMA_BASE ((uintptr_t) 0x02004000)            /*!< TZMA Base */
 #define LEDC_BASE ((uintptr_t) 0x02008000)            /*!< LEDC Base */
 #define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
 #define THS_BASE ((uintptr_t) 0x02009400)             /*!< THS Base */
@@ -2073,7 +2076,7 @@ typedef struct TVE_TOP_Type
 /*
  * @brief TVE
  */
-/*!< TVE  */
+/*!< TVE TV Encoder */
 typedef struct TVE_Type
 {
     volatile uint32_t TVE_000_REG;                    /*!< Offset 0x000 TV Encoder Clock Gating Register */
@@ -2816,10 +2819,11 @@ typedef struct R_PRCM_Type
 #define GPIOINTE ((GPIOINT_TypeDef *) GPIOINTE_BASE)  /*!< GPIOINTE  register set access pointer */
 #define GPIOINTF ((GPIOINT_TypeDef *) GPIOINTF_BASE)  /*!< GPIOINTF  register set access pointer */
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
-#define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
+#define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC Secure Peripherals Control (SPC) - Sets secure property of peripherals register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
 #define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX  register set access pointer */
+#define TZMA ((TZMA_TypeDef *) TZMA_BASE)             /*!< TZMA  register set access pointer */
 #define LEDC ((LEDC_TypeDef *) LEDC_BASE)             /*!< LEDC LED Lamp Controller register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
@@ -2847,7 +2851,7 @@ typedef struct R_PRCM_Type
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX Message Box register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
-#define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC  register set access pointer */
+#define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM register set access pointer */
 #define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
 #define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */

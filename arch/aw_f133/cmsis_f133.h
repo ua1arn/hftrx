@@ -54,6 +54,7 @@ typedef enum IRQn
     DE_IRQn = 103,                                    /*!< DE Display Engine Interrupt */
     DI_IRQn = 104,                                    /*!< DI De-Interlacer Interrupt */
     DSI0_IRQn = 108,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
+    TVE_IRQn = 110,                                   /*!< TVE TV Encoder Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -2026,7 +2027,7 @@ typedef struct TVE_TOP_Type
 /*
  * @brief TVE
  */
-/*!< TVE  */
+/*!< TVE TV Encoder */
 typedef struct TVE_Type
 {
     volatile uint32_t TVE_000_REG;                    /*!< Offset 0x000 TV Encoder Clock Gating Register */
