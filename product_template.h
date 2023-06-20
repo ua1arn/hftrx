@@ -266,6 +266,10 @@
 	#include "boards/arm_allwa64_ctlstyle_banana_pi_m64.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa64_cpustyle_banana_pi_m64.h"
+#elif CPUSTYLE_T113 && CTLSTYLE_STORCH_V7 && 0
+	#include "boards/arm_allwt113s3_ctlstyle_ra4asn.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt113s3_cpustyle_ra4asn.h"
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_storch_v9a.h"	// rmainunit_sv9e.pcb Allwinner t113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
