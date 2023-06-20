@@ -7758,7 +7758,7 @@
   </interrupt>
   <registers>
    <cluster>
-    <dim>16</dim>
+    <dim>6</dim>
     <addressOffset>0x00000000</addressOffset>
     <register>
      <name>USB_EPFIFO</name>
@@ -7769,7 +7769,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x040</dimIncrement>
+    <dimIncrement>0x018</dimIncrement>
    </cluster>
    <register>
     <name>USB_GCS</name>
