@@ -31,27 +31,14 @@
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
 	#if CPUSTYLE_F133
-		//#define PLL_CPU_N 20	/* 24 MHz * 20 = 480 MHz */
-		#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz */
-		//#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
+		//#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz */
+		#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
 		//#define PLL_CPU_N 33	/* 24 MHz * 33 = 792 MHz */
 	#elif CPUSTYLE_T113
-		#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz */
+		#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz https://linux-sunxi.org/T113-s3 say about 1.2 GHz */
 		//#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
 		//#define PLL_CPU_N 33	/* 24 MHz * 33 = 792 MHz */
 	#endif
-
-	#if 1//WITHISBOOTLOADER
-		// Варианты конфигурации тактирования
-		// ref1_ck, ref2_ck - 8..16 MHz
-		// PLL1, PLL2 VCOs
-		#if WITHCPUXTAL || WITHCPUXOSC
-
-
-		#else
-
-		#endif
-	#endif /* WITHISBOOTLOADER */
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -88,8 +75,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	//#define CTLREGMODE_MANGO_PI	1	/* STM32MP157, дополнения для подключения трансвертора */
-	#define CTLREGMODE_NOCTLREG 1
+	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP1, Allwinner t113-s3  */
+	//#define CTLREGMODE_NOCTLREG 1
 
 	
 	
@@ -120,7 +107,7 @@
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
-	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
+	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	//#define KEYB_FPANEL20_V0A_RA1AGO	1	/* перевернутый */
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
@@ -136,6 +123,7 @@
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
 	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
@@ -144,10 +132,10 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
 	//#define LCDMODE_V2 1	/* только главный экран 8 бит (две страницы), L8, без PIP */
-	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
-	#define WITHFLATLINK 1	/* Работа с TFT панелью через LVDS интерфейс	*/
+	//#define WITHFLATLINK 1	/* Работа с TFT панелью через преобразователь RGB->FlatLink SN75LVDS83B	*/
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1
@@ -250,7 +238,7 @@
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
-	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
+	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 
@@ -259,14 +247,14 @@
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	////#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
+	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	////#define WITHENCODER2	1		/* есть второй валкодер */
+	//#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
-	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
+	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
@@ -274,10 +262,7 @@
 	//#define CODEC_TYPE_WM8731_USE_SPI	1
 	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
-	//#define CODEC1_TYPE CODEC_TYPE_NAU8822L
-	//#define CODEC_TYPE_NAU8822_USE_SPI	1
-	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
-	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
+	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 
 	//#define WITHDTMFPROCESSING 1
 	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
@@ -314,12 +299,12 @@
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
-	////#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9d_2ch.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
@@ -327,37 +312,31 @@
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
-	//#define WITHUSERAMDISKSIZEKB	(16uL * 1024)	// размр в килобайтах FATFS диска в озу
+	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
 	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
-	#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
-
-	#define FORMATFROMLIBRARY 	1
-	#define WITHUSBMIKET113	1
+	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
-	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
-
+	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
-//		#define WITHVIEW_3DSS		1
-//		#define WITHVIEW_3DSS_MARK	1
+		#define WITHVIEW_3DSS		1
+		#define WITHVIEW_3DSS_MARK	1
 		#define WITHSPECBETA_DEFAULT	30
-//		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-//		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		//#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 0
 			#define WITHTOUCHGUI		1
+			#define WITHGUIDEBUG		1	/* вывод отладочной информации на экран по удержанию Break-In */
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHDISPLAY_FPS		30
 			#define WITHDISPLAYSWR_FPS	30
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA			24
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
@@ -368,6 +347,7 @@
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			#define WITHDEFAULTVIEW		VIEW_3DSS
+			#define WITHFT8					1
 		#else
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
@@ -385,6 +365,10 @@
 		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
+
+	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -429,8 +413,7 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 0
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define WITHAUTOTUNER_UA1CEI_V2 1
+		#define WITHAUTOTUNER_UA1CEI_V2 1	/* Есть функция автотюнера */
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
@@ -441,6 +424,8 @@
 		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET7	1
+	#else
+		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
@@ -462,13 +447,13 @@
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
-	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
+	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-//	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-//	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
@@ -525,12 +510,12 @@
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
 	#define DDS1_TYPE DDS_TYPE_FPGAV1
+	//#define RTC1_TYPE RTC_TYPE_DS1305	/* MAXIM DS1305EN RTC clock chip with SPI interface */
+	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
-	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
-	//#define TSC1_TYPE TSC_TYPE_AWTPADC	/* Allwinner F133/t113-s3 resistive touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
@@ -546,16 +531,11 @@
 	//#define WITHWFM	1			/* используется WFM */
 
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
-	#define WITHELKEY	1
+	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
+
 	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
-
-	// ST LM235Z
-	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
-	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 #endif /* WITHISBOOTLOADER */
 
@@ -568,16 +548,15 @@
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
-
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
 
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
-		WPM_POTIX = BOARD_ADCX1IN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		IFGAIN_IXI = BOARD_ADCX1IN(0),			// MCP3208 CH0 IF GAIN
-		AFGAIN_IXI = BOARD_ADCX1IN(1),			// MCP3208 CH1 AF GAIN
+		WPM_POTIX = BOARD_ADCXKIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		IFGAIN_IXI = BOARD_ADCXKIN(0),			// MCP3208 CH0 IF GAIN
+		AFGAIN_IXI = BOARD_ADCXKIN(1),			// MCP3208 CH1 AF GAIN
 
 	#if WITHPOTIFGAIN
 		POTIFGAIN = IFGAIN_IXI,
@@ -606,7 +585,10 @@
 	//#define WITHALTERNATIVEFONTS    1
 
 	#if WITHAUTOTUNER_UA1CEI_V2
-
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
@@ -614,8 +596,8 @@
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 
-		//#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 
@@ -628,11 +610,17 @@
 		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+			XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
+
+		// ST LM235Z
+		#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
+		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
+		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	#elif WITHAUTOTUNER_AVBELNN
 
@@ -673,20 +661,18 @@
 		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#if WITHCURRLEVEL
-			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
-			PASENSEIX = 12,		// PC2 PA current sense - ACS712-05 chip
+			PASENSEIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCX1IN(6),		// Exernal thermo sensor ST LM235Z
+			XTHERMOIX = BOARD_ADCX1IN(0),		// Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR
-			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
-			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
+			FWD = BOARD_ADCX1IN(5), REF = BOARD_ADCX1IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 	#endif
@@ -700,7 +686,11 @@
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
 
-		KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 7, KI4 = 10	// клавиатура - PA0, PA1, PA2, PA7, PC0
+		KI0 = BOARD_ADCXKIN(3), 	// клавиатура на АЦП MCP3208
+		KI1 = BOARD_ADCXKIN(4),
+		KI2 = BOARD_ADCXKIN(5),
+		KI3 = BOARD_ADCXKIN(6),
+		KI4 = BOARD_ADCXKIN(7)
 	};
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
