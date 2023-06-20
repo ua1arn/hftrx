@@ -139,6 +139,7 @@
 	#define WITHMODEM_CDC	1
 
 	#if WITHUSBMIKET113
+		//#define WITHUAC2		1	/* UAC2 support */
 		#define WITHUSBUACIN	1
 		#define UACOUT_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
 		#define UACIN_AUDIO48_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */

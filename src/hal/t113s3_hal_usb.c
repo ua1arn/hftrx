@@ -3300,10 +3300,10 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 	return 0;
 }
 
-
-static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
+static void usb_dev_1ms_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
+
 #if WITHUSBUACIN
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -3365,7 +3365,29 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
+}
 
+static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
+{
+	usb_struct * const pusb = & hpcd->awxx_usb;
+
+	if (usb_is_high_speed(pusb))
+	{
+		//unsigned frame = usb_get_frame_number(pusb);
+		static unsigned frame;
+		++ frame;
+		if ((frame % 8) == 7)
+		{
+			//PRINTF("%03x ", frame);
+			usb_dev_1ms_handler(hpcd);
+		}
+	}
+	else
+	{
+		//unsigned frame = usb_get_frame_number(pusb);
+		//PRINTF("%03X ", frame);
+		usb_dev_1ms_handler(hpcd);
+	}
 	return 0;
 }
 
