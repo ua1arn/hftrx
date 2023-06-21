@@ -2881,6 +2881,8 @@ xxxx!;
 		HARDWARE_USART3_ONTXCHAR(& SCIF3);
 	}
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -3013,6 +3015,13 @@ void hardware_uart3_enabletx(uint_fast8_t state)
 	else
 		SCIF3.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if (state)
+		 UART3->DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	else
+		 UART3->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -3121,6 +3130,13 @@ void hardware_uart3_enablerx(uint_fast8_t state)
 	else
 		SCIF3.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if (state)
+		 UART3->DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+	else
+		 UART3->DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -3182,6 +3198,10 @@ void hardware_uart3_tx(void * ctx, uint_fast8_t c)
 	(void) SCIF3.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	UART3->DATA = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3293,6 +3313,12 @@ hardware_uart3_getchar(char * cp)
 	* cp = SCIF3.SCFRDR;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if ((UART3->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
+		return 0;
+	* cp = UART3->DATA;
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -3395,6 +3421,12 @@ hardware_uart3_putchar(uint_fast8_t c)
 		return 0;
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if ((UART3->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		return 0;
+	UART3->DATA = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3782,6 +3814,37 @@ xxxx!;
 	}
 
 	USART3->CR1 |= USART_CR1_UE; // Включение USART1.
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	const unsigned ix = 0;
+
+	/* Open the clock gate for uart0 */
+	CCU->UART_BGR_REG |= (1u << (ix + 3));
+
+	/* De-assert uart0 reset */
+	CCU->UART_BGR_REG |= (1u << (ix + 19));
+
+	/* Config uart0 to 115200-8-1-0 */
+	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
+
+	UART3->DLH_IER = 0;
+	UART3->IIR_FCR = 0xf7;
+	UART3->UART_MCR = 0x00;
+
+	UART3->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
+	UART3->DATA = divisor & 0xff;
+	UART3->DLH_IER = (divisor >> 8) & 0xff;
+	UART3->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
+	//
+	UART3->UART_LCR &= ~ 0x1f;
+	UART3->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
+
+	HARDWARE_UART3_INITIALIZE();
+
+	if (debug == 0)
+	{
+//	   serial_set_handler(UART3_IRQn, UART3_IRQHandler);
+	}
 
 #else
 	#error Undefined CPUSTYLE_XXX
