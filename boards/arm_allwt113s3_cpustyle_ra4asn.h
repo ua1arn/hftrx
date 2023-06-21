@@ -25,8 +25,8 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
@@ -490,6 +490,7 @@
 	#define SPI_CS_DEASSERT(target)	do { \
 		switch (target) { \
 		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; /* PC3 SPI0_CS */ \
+		case targetnvram: { gpioX_setstate(GPIOG, (target), 1 * (target)); } break; \
 		case (targetctl1 || targetfpga1): { gpioX_setstate(GPIOD, (target), 1 * (target)); } break; \
 		default: case targetnone: break; \
 		} \
