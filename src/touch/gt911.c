@@ -234,7 +234,7 @@ uint_fast8_t gt911_initialize(void)
 	gt911_addr = GOODIX_I2C_ADDR_BA;
 	tscpresetnt = 0;
 	uint32_t id = gt911_productID();
-	if (id != GT911_ID)
+	if (id != GT911_ID && id != GT9157_ID)
 		return 0;
 
 	gt911_fwResolution(DIM_X, DIM_Y);

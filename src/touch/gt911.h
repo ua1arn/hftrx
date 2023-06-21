@@ -6,6 +6,7 @@
 
 #define GOODIX_OK   0
 #define GT911_ID	0x39313100	// "911\0"
+#define GT9157_ID	0x39313537	// "9157"
 
 // 0x28/0x29 (0x14 7bit)
 #define GOODIX_I2C_ADDR_28  0x28

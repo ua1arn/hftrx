@@ -947,21 +947,18 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
-	/* PE9 TS_INT */
-	/* PD22 FPLCD_RESET */
-
 	void gt911_interrupt_handler(void);
 
-	#define BOARD_GT911_INT_PIN (1u << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
-	#define BOARD_GT911_RESET_PIN (1u << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
 
-	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0)
-	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
+	#define BOARD_GT911_INT_PIN (1u << 12)		// PE12
+	#define BOARD_GT911_RESET_PIN (1u << 13)	// PE13
+
+	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOE, BOARD_GT911_RESET_PIN, !! (v) * BOARD_GT911_RESET_PIN); } while (0)
+	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOE, BOARD_GT911_INT_PIN, !! (v) * BOARD_GT911_INT_PIN); } while (0)
 
 	#define BOARD_GT911_RESET_INITIO_1() do { \
-		arm_hardware_pioe_outputs2m(BOARD_GT911_INT_PIN, 1* BOARD_GT911_INT_PIN); \
-		arm_hardware_piod_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
-		 local_delay_ms(200);  \
+		arm_hardware_pioe_outputs2m(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN); \
+		arm_hardware_pioe_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
 	} while (0)
 
 	#define BOARD_GT911_RESET_INITIO_2() do { \
