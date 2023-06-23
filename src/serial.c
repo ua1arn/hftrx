@@ -414,26 +414,6 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 		}
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
-
-	static RAMFUNC_NONILINE void UART4_IRQHandler(void)
-	{
-		const uint_fast32_t ier = UART4->DLH_IER;
-		const uint_fast32_t usr = UART4->UART_USR;
-		if ((UART4->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
-
-		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
-		{
-			if (usr & (1u << 3))	// RX FIFO Not Empty
-				HARDWARE_UART5_ONRXCHAR(UART4->DATA);
-		}
-		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
-		{
-			if (usr & (1u << 1))	// TX FIFO Not Full
-				HARDWARE_UART5_ONTXCHAR(UART4);
-		}
-	}
-
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -4280,7 +4260,6 @@ void hardware_uart4_enabletx(uint_fast8_t state)
 	else
 		 UART3->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
-
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -6325,6 +6304,26 @@ xxxx!;
 		HARDWARE_UART5_ONTXCHAR(& SCIF3);
 	}
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	static RAMFUNC_NONILINE void UART4_IRQHandler(void)
+	{
+		const uint_fast32_t ier = UART4->DLH_IER;
+		const uint_fast32_t usr = UART4->UART_USR;
+		if ((UART4->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
+
+		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
+		{
+			if (usr & (1u << 3))	// RX FIFO Not Empty
+				HARDWARE_UART5_ONRXCHAR(UART4->DATA);
+		}
+		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		{
+			if (usr & (1u << 1))	// TX FIFO Not Full
+				HARDWARE_UART5_ONTXCHAR(UART4);
+		}
+	}
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -6453,9 +6452,16 @@ void hardware_uart5_enabletx(uint_fast8_t state)
 #elif CPUSTYLE_R7S721
 
 	if (state)
-		SCIF3.SCSCR |= (1U << 7);	// TIE Transmit Interrupt Enable
+		SCIF4.SCSCR |= (1U << 7);	// TIE Transmit Interrupt Enable
 	else
-		SCIF3.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
+		SCIF4.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if (state)
+		 UART4->DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	else
+		 UART4->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6561,9 +6567,16 @@ void hardware_uart5_enablerx(uint_fast8_t state)
 #elif CPUSTYLE_R7S721
 
 	if (state)
-		SCIF3.SCSCR |= (1U << 6);	// RIE Receive Interrupt Enable
+		SCIF4.SCSCR |= (1U << 6);	// RIE Receive Interrupt Enable
 	else
-		SCIF3.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
+		SCIF4.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if (state)
+		 UART4->DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+	else
+		 UART4->DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6736,10 +6749,16 @@ hardware_uart5_getchar(char * cp)
 
 #elif CPUSTYLE_R7S721
 
-	if ((SCIF3.SCFSR & (1U << 1)) == 0)	// RDF
+	if ((SCIF4.SCFSR & (1U << 1)) == 0)	// RDF
 		return 0;
-	* cp = SCIF3.SCFRDR;
-	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
+	* cp = SCIF4.SCFRDR;
+	SCIF4.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	if ((UART4->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
+		return 0;
+	* cp = UART4->DATA;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6839,10 +6858,10 @@ hardware_uart5_putchar(uint_fast8_t c)
 
 #elif CPUSTYLE_R7S721
 
-	if ((SCIF3.SCFSR & (1U << SCIF3_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
+	if ((SCIF4.SCFSR & (1U << SCIF4_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
 		return 0;
-	SCIF3.SCFTDR = c;
-	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	SCIF4.SCFTDR = c;
+	SCIF4.SCFSR = (uint16_t) ~ (1U << SCIF4_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
@@ -7606,7 +7625,6 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
 
-
 #elif CPUSTYLE_ATMEGA128
 
 	// Использование автоматического расчёта предделителя
@@ -7663,14 +7681,14 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
 
-	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
+	SCIF1.SCSMR = (SCIF1.SCSMR & ~ 0x03) |
 		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
 		0;
-	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
+	SCIF1.SCEMR = (SCIF1.SCEMR & ~ (0x80 | 0x01)) |
 		0 * 0x80 |						// BGDM
 		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
 		0;
-	SCIF3.SCBRR = value;	/* Bit rate register */
+	SCIF1.SCBRR = value;	/* Bit rate register */
 
 #elif CPUSTYLE_XC7Z
 
@@ -7708,7 +7726,6 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 }
 
 #endif /* WITHUART2HW */
-
 
 #if WITHUART3HW
 
@@ -7858,14 +7875,14 @@ hardware_uart3_set_speed(uint_fast32_t baudrate)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
 
-	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
+	SCIF2.SCSMR = (SCIF2.SCSMR & ~ 0x03) |
 		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
 		0;
-	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
+	SCIF2.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
 		0 * 0x80 |						// BGDM
 		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
 		0;
-	SCIF3.SCBRR = value;	/* Bit rate register */
+	SCIF2.SCBRR = value;	/* Bit rate register */
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -7975,7 +7992,6 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 
 	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
 
-
 #elif CPUSTYLE_ATMEGA128
 
 	// Использование автоматического расчёта предделителя
@@ -8057,7 +8073,6 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 }
 
 #endif /* WITHUART4HW */
-
 
 #if WITHUART5HW
 
