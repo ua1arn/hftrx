@@ -3907,7 +3907,7 @@ xxxx!;
 	UART2->UART_LCR &= ~ 0x1f;
 	UART2->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
 
-	HARDWARE_UART1_INITIALIZE();
+	HARDWARE_UART3_INITIALIZE();
 
 	if (debug == 0)
 	{
@@ -5110,7 +5110,7 @@ xxxx!;
 	UART3->UART_LCR &= ~ 0x1f;
 	UART3->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
 
-	HARDWARE_UART1_INITIALIZE();
+	HARDWARE_UART4_INITIALIZE();
 
 	if (debug == 0)
 	{
