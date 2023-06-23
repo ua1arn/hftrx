@@ -39,13 +39,13 @@
 
 #if WITHDEBUG
 	//#define WITHUART1HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #1 UART0 */
-	#define WITHUART3HW	1	/* PD10 PD11 Используется периферийный контроллер последовательного порта #3 UART3 */
+	#define WITHUART4HW	1	/* PD10 PD11 Используется периферийный контроллер последовательного порта #4 UART3 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART1		1
 //#define WITHDEBUG_USART1	1
-#define WITHDEBUG_USART3	1
+#define WITHDEBUG_USART4	1
 //#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 //#define WITHTINYUSB 1
 #define BOARD_TUH_RHPORT 1
@@ -564,8 +564,8 @@
 		arm_hardware_pioe_updown(RXMASK, 0); \
 	} while (0)
 
-// WITHUART3HW
-#define HARDWARE_UART3_INITIALIZE() do { \
+// WITHUART4HW
+#define HARDWARE_UART4_INITIALIZE() do { \
 		const portholder_t TXMASK = (1u << 10); /* PD10 UART3-TX */ \
 		const portholder_t RXMASK = (1u << 11); /* PD11 UART3-RX - pull-up RX data */  \
 		arm_hardware_piod_altfn2(TXMASK, GPIO_CFG_AF5); \
