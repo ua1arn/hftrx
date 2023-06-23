@@ -6481,6 +6481,11 @@ void gpadc_test(void)
 	PRINTF("5V= %d \n", (int) Vin);
 }
 
+void gpadc_inthandler(void)
+{
+	PRINTF("%ld\n", GPADC->GP_CH0_DATA);
+}
+
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
@@ -6490,6 +6495,18 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
+	CCU->GPADC_BGR_REG |= (1u << 16); 	// 1: De-assert reset  HOSC
+	CCU->GPADC_BGR_REG |= (1u << 0); 	// 1: Pass clock
+	GPADC->GP_SR_CON |= (0x2fu << 0);	// set the acquiring time of ADC
+	GPADC->GP_SR_CON |= (0x1dfu << 16);	// set the ADC sample frequency divider
+	GPADC->GP_CTRL |= (0x2u << 18); 		// set the continuous conversion mode
+	GPADC->GP_CS_EN |= (1u << 0); 		// enable the analog input channel
+	GPADC->GP_DATA_INTC |= (1u << 0);	// enable the GPADC data interrupt
+	arm_hardware_set_handler_system(GPADC_IRQn, gpadc_inthandler);
+	GPADC->GP_CTRL |= (1u << 16);		// enable the ADC function
+	for(;;) {}
+#endif /* #if (CPUSTYLE_T113 || CPUSTYLE_F133) */
 #if 0
 	{
 		PRINTF("DE_UI1->OVL_SIZE=%08" PRIX32 "\n", DE_UI1->OVL_SIZE);
