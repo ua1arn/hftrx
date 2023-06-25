@@ -396,7 +396,6 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 
 #elif CPUSTYLE_VM14
 
-	#warning Undefined for CPUSTYLE_VM14
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 	{
 		const uint_fast32_t ier = UART0->UART_DLH_IER;
@@ -563,7 +562,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 		 UART0->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #elif CPUSTYLE_VM14
-	#warning Undefined CPUSTYLE_VM14
+
 	if (state)
 		 UART0->UART_DLH_IER |= 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	else
@@ -699,7 +698,6 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 
 #elif CPUSTYLE_VM14
 
-	#warning Undefined CPUSTYLE_VM14
 	if (state)
 		 UART0->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 	else
@@ -895,7 +893,6 @@ hardware_uart1_getchar(char * cp)
 
 #elif CPUSTYLE_VM14
 
-	#warning Undefined CPUSTYLE_VM14
 	if ((UART0->UART_USR & (1u << 3)) == 0)	// RFNE - RX FIFO Not Empty
 		return 0;
 	* cp = UART0->UART_RBR_THR_DLL;
@@ -1486,7 +1483,6 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 #elif CPUSTYLE_VM14
 
-	#warning Undefined CPUSTYLE_VM14
 	const unsigned ix = 0;	// UART0
 
 	CMCTR->GATE_SYS_CTR |= ((1u << 12) << ix); // UART0_EN Enable CLK
@@ -7592,7 +7588,6 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_VM14
 
-	#warning Undefined CPUSTYLE_VM14
 	unsigned divisor = calcdivround2(elveesvm14_get_usart_freq(), baudrate * 16);
 
 	while ((UART0->UART_USR & (1u << 2)) == 0)	/* TFE - FIFO передатчика пуст. */

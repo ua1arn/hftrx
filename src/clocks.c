@@ -2982,14 +2982,19 @@ void allwnrt113_pll_initialize(void)
 
 // 1892ВМ14Я ELVEES multicore.ru
 
+static uint32_t elveesvm14_get_xtal_freq(void)
+{
+	return WITHCPUXTAL;
+
+}
 uint_fast32_t elveesvm14_get_arm_freq(void)
 {
-	return 24000000;
+	return elveesvm14_get_xtal_freq();
 }
 
 uint_fast32_t elveesvm14_get_usart_freq(void)
 {
-	return 24000000;
+	return elveesvm14_get_xtal_freq();
 }
 
 #endif /* CPUSTYLE_VM14 */
@@ -7260,7 +7265,9 @@ sysinit_pll_initialize(void)
 #elif CPUSTYLE_VM14
 	/* 1892ВМ14Я */
 
-	CMCTR->GATE_CORE_CTR |= (1u << 0);	/* L0_EN */
+	PMCTR->CORE_PWR_UP = 1;
+	CMCTR->GATE_CORE_CTR |= (1u << 0);	// L0_EN
+	CMCTR->GATE_SYS_CTR |= (1u << 0);	// SYS_EN - Разрешение для тактовых частот L1_HCLK, L3_PCLK и связанных с ними частот
 
 #endif
 
