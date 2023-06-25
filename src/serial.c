@@ -705,7 +705,6 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 
 #else
 	#error Undefined CPUSTYLE_XXX
-
 #endif
 }
 

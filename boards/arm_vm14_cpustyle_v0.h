@@ -526,8 +526,8 @@
 #define HARDWARE_UART1_INITIALIZE() do { \
 		const portholder_t TXMASK = (1u << 19); /* GA19 UART0-TX - UART0_OUT(TX) */ \
 		const portholder_t RXMASK = (1u << 18); /* GA18 UART0-RX - pull-up RX data - UART0_IN(RX) */  \
-		/*arm_hardware_pioa_altfn2(TXMASK, GPIO_CFG_AF6); */\
-		/*arm_hardware_pioa_altfn2(RXMASK, GPIO_CFG_AF6); */\
+		arm_hardware_pioa_altfn2(TXMASK, 1); /* 1 - output */ \
+		arm_hardware_pioa_altfn2(RXMASK, 0); /* 0 - input */ \
 		/*arm_hardware_pioa_updown(RXMASK, 0); */\
 	} while (0)
 
