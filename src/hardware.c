@@ -3979,36 +3979,12 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 // Страницы 74..78 документа Manual_1892VM14YA.pdf
 
-static volatile void (* cpunstart)(void);
-void Reset_OtherCPU_Handler(void)
-{
-	TP();
-	for (;;)
-	{
-//		GIC_Enable();
-//		__enable_irq();
-//		TP();
-//		__WFI();
-//		TP();
-//		(* cpunstart)();
-	}
-	TP();
-	cortexa_cpuinfo();
-	for (;;)
-		;
-}
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
     volatile uint32_t * const SPL_ADDR = (volatile uint32_t *) 0x2000fff4;
     volatile uint32_t * const SPL_MAGIC = (volatile uint32_t *) 0x2000fff8;
     volatile uint32_t * const SPL_ADDRX = (volatile uint32_t *) 0x2000fffC;
 
-//    cpunstart = startfunc;
-//    dcache_clean_all();    // startup code should be copied in to sysram for example.
-//	GIC_SendSGI(SGI8_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
-//	return;
-
-    //printhex32(0x2000fff0, 0x2000fff0, 16);
     SPL_MAGIC [0] = 0xdeadbeef;// Грузим стартовый адрес для ROM загрузчика
     SPL_ADDR [0] = startfunc;// Грузим стартовый адрес для ROM загрузчика
     PMCTR->ALWAYS_MISC0 = startfunc;
@@ -4016,16 +3992,6 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
     //printhex32(0x2000fff0, 0x2000fff0, 16);
     SPL_ADDRX [0] = startfunc;
     const uint32_t psmask = 0x03u << (targetcore * 8);
-
-
-	PRINTF("SMCTR->BOOT_REMAP=%08X\n", (unsigned) SMCTR->BOOT_REMAP);
-	PRINTF("PMCTR->CORE_PWR_STATUS=%08X\n", (unsigned) PMCTR->CORE_PWR_STATUS);
-	PRINTF("SCU_CFG=%08X\n", (unsigned) ((volatile uint32_t *) SCU_CONTROL_BASE) [1]);
-	PRINTF("SCU_PS=%08X\n", (unsigned) ((volatile uint32_t *) SCU_CONTROL_BASE) [2]);
-    //pmctr_t * PMCTR = (pmctr_t *)(PMCTR_BASE);
-    // copy of linux mcom02_boot_secondary :
-   // smctr_t * SMCTR = (smctr_t *)(BASE_ADDR_SMCTR);
-    //
     //
     SMCTR->BOOT_REMAP = 0x03; //SMCTR_BOOT_REMAP_BOOTROM;//SMCTR_BOOT_REMAP_SPRAM;
     //CMCTR->GATE_SYS_CTR = 1u << (targetcore + 1);
@@ -4037,19 +4003,15 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
     dcache_clean_all();    // startup code should be copied in to sysram for example.
     PMCTR->CORE_PWR_UP = 0x07;
 
-    local_delay_ms(500);
+    //local_delay_ms(500);
     PMCTR->WARM_RST_EN = 0x01;
 
     PMCTR->CPU1_WKP_MASK [0] = ~ 0u;
     PMCTR->CPU1_WKP_MASK [1] = ~ 0u;
     PMCTR->CPU1_WKP_MASK [2] = ~ 0u;
     PMCTR->CPU1_WKP_MASK [3] = ~ 0u;
-//    PMCTR->SW_RST = 0x01;
-//    local_delay_ms(500);
     ((volatile uint32_t *) SCU_CONTROL_BASE) [2] |= psmask;
-	PRINTF("SCU_PS=%08X\n", (unsigned) ((volatile uint32_t *) SCU_CONTROL_BASE) [2]);
     ((volatile uint32_t *) SCU_CONTROL_BASE) [2] &= ~ psmask;
-	PRINTF("SCU_PS=%08X\n", (unsigned) ((volatile uint32_t *) SCU_CONTROL_BASE) [2]);
 }
 
 #endif /* CPU types */
@@ -4060,7 +4022,6 @@ static RAMDTCM LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
 void Reset_CPUn_Handler(void)
 {
-	dbg_putchar('!');
 #if (__CORTEX_A == 9U)
 	// set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable
@@ -4157,10 +4118,8 @@ void cpump_initialize(void)
 	__DSB();
 #endif /* (__CORTEX_A == 9U) */
 
-	local_delay_ms(1000);
 	cortexa_cpuinfo();
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
-	TP();
 	unsigned core;
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
@@ -4172,18 +4131,13 @@ void cpump_initialize(void)
 			(uintptr_t) Reset_CPU3_Handler,
 		};
 
-		TP();
 		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
-		TP();
 		cortexa_mp_cpuN_start(fns [core], core);
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
-		TP();
 		LCLSPIN_UNLOCK(& cpu1init);
-		TP();
 	}
-	TP();
 
 #endif /* (__CORTEX_A != 0) */
 
