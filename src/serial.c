@@ -1492,6 +1492,12 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_VM14
 
 	#warning Undefined CPUSTYLE_VM14
+	HARDWARE_UART1_INITIALIZE();
+
+	if (debug == 0)
+	{
+	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
+	}
 
 #else
 

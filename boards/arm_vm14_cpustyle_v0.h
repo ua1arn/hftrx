@@ -524,11 +524,11 @@
 
 // WITHUART1HW
 #define HARDWARE_UART1_INITIALIZE() do { \
-		const portholder_t TXMASK = (1u << 2); /* PE2 UART0-TX */ \
-		const portholder_t RXMASK = (1u << 3); /* PE3 UART0-RX - pull-up RX data */  \
-		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF6); \
-		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF6); \
-		arm_hardware_pioe_updown(RXMASK, 0); \
+		const portholder_t TXMASK = (1u << 19); /* GA19 UART0-TX - UART0_OUT(TX) */ \
+		const portholder_t RXMASK = (1u << 18); /* GA18 UART0-RX - pull-up RX data - UART0_IN(RX) */  \
+		/*arm_hardware_pioa_altfn2(TXMASK, GPIO_CFG_AF6); */\
+		/*arm_hardware_pioa_altfn2(RXMASK, GPIO_CFG_AF6); */\
+		/*arm_hardware_pioa_updown(RXMASK, 0); */\
 	} while (0)
 
 
