@@ -4001,6 +4001,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
     volatile uint32_t * const SPL_ADDR = (volatile uint32_t *) 0x2000fff4;
     volatile uint32_t * const SPL_MAGIC = (volatile uint32_t *) 0x2000fff8;
+    volatile uint32_t * const SPL_ADDRX = (volatile uint32_t *) 0x2000fffC;
 
 //    cpunstart = startfunc;
 //    dcache_clean_all();    // startup code should be copied in to sysram for example.
@@ -4013,7 +4014,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
     PMCTR->ALWAYS_MISC0 = startfunc;
     PMCTR->ALWAYS_MISC1 = startfunc;    /* необходимо для встроенного ROM */
     //printhex32(0x2000fff0, 0x2000fff0, 16);
-
+    SPL_ADDRX [0] = startfunc;
     const uint32_t psmask = 0x03u << (targetcore * 8);
 
 
@@ -4037,7 +4038,12 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
     PMCTR->CORE_PWR_UP = 0x07;
 
     local_delay_ms(500);
-//    PMCTR->WARM_RST_EN = 0x01;
+    PMCTR->WARM_RST_EN = 0x01;
+
+    PMCTR->CPU1_WKP_MASK [0] = ~ 0u;
+    PMCTR->CPU1_WKP_MASK [1] = ~ 0u;
+    PMCTR->CPU1_WKP_MASK [2] = ~ 0u;
+    PMCTR->CPU1_WKP_MASK [3] = ~ 0u;
 //    PMCTR->SW_RST = 0x01;
 //    local_delay_ms(500);
     ((volatile uint32_t *) SCU_CONTROL_BASE) [2] |= psmask;
