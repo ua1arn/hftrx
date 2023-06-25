@@ -414,6 +414,13 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 		}
 	}
 
+#elif CPUSTYLE_VM14
+
+	#warning Undefined for CPUSTYLE_VM14
+	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
+	{
+	}
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -560,6 +567,13 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 	else
 		 UART0->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
+#elif CPUSTYLE_VM14
+	#warning Undefined CPUSTYLE_VM14
+	if (state)
+		 UART0->UART_DLH_IER |= 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	else
+		 UART0->UART_DLH_IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -688,6 +702,14 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 	else
 		 UART0->DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
+#elif CPUSTYLE_VM14
+
+	#warning Undefined CPUSTYLE_VM14
+	if (state)
+		 UART0->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+	else
+		 UART0->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -759,6 +781,10 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	UART0->DATA = c;
+
+#elif CPUSTYLE_VM14
+
+	UART0->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -872,6 +898,13 @@ hardware_uart1_getchar(char * cp)
 		return 0;
 	* cp = UART0->DATA;
 
+#elif CPUSTYLE_VM14
+
+	#warning Undefined CPUSTYLE_VM14
+	if ((UART0->UART_USR & (1u << 3)) == 0)	// RFNE - RX FIFO Not Empty
+		return 0;
+	* cp = UART0->UART_RBR_THR_DLL;
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -978,6 +1011,12 @@ hardware_uart1_putchar(uint_fast8_t c)
 	if ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
 	UART0->DATA = c;
+
+#elif CPUSTYLE_VM14
+
+	if ((UART0->UART_USR & (1u << 1)) == 0)	// TFNF TX FIFO Not Full
+		return 0;
+	UART0->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1449,6 +1488,10 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	{
 	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
+
+#elif CPUSTYLE_VM14
+
+	#warning Undefined CPUSTYLE_VM14
 
 #else
 
@@ -7524,6 +7567,10 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	UART0->DATA = divisor & 0xff;
 	UART0->DLH_IER = (divisor >> 8) & 0xff;
 	UART0->UART_LCR &= ~ (1 << 7);
+
+#elif CPUSTYLE_VM14
+
+	#warning Undefined CPUSTYLE_VM14
 
 #else
 	#error Undefined CPUSTYLE_XXX

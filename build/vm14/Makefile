@@ -269,6 +269,7 @@ allZ:
 bootloader: BOOT2
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+	./bin2ihex -l 0x20000000 -s $(PROJECT)_boot.bin >$(PROJECT)_boot.hex
 
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 	
