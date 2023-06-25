@@ -891,6 +891,238 @@
    <description></description>
   </interrupt>
   </peripheral>
+  <peripheral>
+  <name>GPIO0</name>
+  <description>Регистры блока управления GPIO</description>
+  <baseAddress>0x38034000</baseAddress>
+  <registers>
+   <register>
+    <name>gpio_swporta_dr</name>
+    <displayName>gpio_swporta_dr</displayName>
+    <description>Регистр данных порта А. W/R 0x0 0x00</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swporta_ddr</name>
+    <displayName>gpio_swporta_ddr</displayName>
+    <description>Регистр направления потока данных через порт А. W/R 0x0 0x04</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swporta_ctl</name>
+    <displayName>gpio_swporta_ctl</displayName>
+    <description>Регистр источника данных порта А. W/R 0x0 0x08</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swportb_dr</name>
+    <displayName>gpio_swportb_dr</displayName>
+    <description>Регистр данных порта B. W/R 0x0 0x0C </description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swportb_ddr</name>
+    <displayName>gpio_swportb_ddr</displayName>
+    <description>Регистр направления потока данных через порт B. W/R 0x0 0x10</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swportb_ctl</name>
+    <displayName>gpio_swportb_ctl</displayName>
+    <description>Регистр источника данных порта B. W/R 0xFFFF 0x14</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swportc_dr</name>
+    <displayName>gpio_swportc_dr</displayName>
+    <description>Регистр данных порта C. W/R 0x0 0x18</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swportc_ddr</name>
+    <displayName>gpio_swportc_ddr</displayName>
+    <description>Регистр направления потока данных через порт C. W/R 0x0 0x1C</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swportc_ctl</name>
+    <displayName>gpio_swportc_ctl</displayName>
+    <description>Регистр источника данных порта C. W/R 0x0 0x20</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swportd_dr</name>
+    <displayName>gpio_swportd_dr</displayName>
+    <description>Регистр данных порта D. W/R 0x0 0x24 </description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swportd_ddr</name>
+    <displayName>gpio_swportd_ddr</displayName>
+    <description>Регистр направления потока данных через порт D. W/R 0x0 0x28</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swportd_ctl</name>
+    <displayName>gpio_swportd_ctl</displayName>
+    <description>Регистр источника данных порта D. W/R 0x0 0x2C</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_inten</name>
+    <displayName>gpio_inten</displayName>
+    <description>Регистр включения прерываний. W/R 0x0 0x30</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_intmask</name>
+    <displayName>gpio_intmask</displayName>
+    <description>Регистр маскирования прерываний. W/R 0x0 0x34</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_inttype_level</name>
+    <displayName>gpio_inttype_level</displayName>
+    <description>Регистр уровня прерываний. W/R 0x0 0x38</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_int_polarity</name>
+    <displayName>gpio_int_polarity</displayName>
+    <description>Регистр полярности прерываний. W/R 0x0 0x3C</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_intstatus</name>
+    <displayName>gpio_intstatus</displayName>
+    <description>Регистр статуса прерываний R 0x0 0x40</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_raw_intstatus</name>
+    <displayName>gpio_raw_intstatus</displayName>
+    <description>Регистр статуса немаскированных прерываний R 0x0 0x44</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_debounce</name>
+    <displayName>gpio_debounce</displayName>
+    <description>Регистр включения фильтра дребезга. W/R 0x0 0x48</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_porta_eoi</name>
+    <displayName>gpio_porta_eoi</displayName>
+    <description>Регистр сброса прерываний. W 0x0 0x4C</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_ext_porta</name>
+    <displayName>gpio_ext_porta</displayName>
+    <description>Внешний регистр порта А. R 0x0 0x50</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_ext_portb</name>
+    <displayName>gpio_ext_portb</displayName>
+    <description>Внешний регистр порта B. R 0x0 0x54</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_ext_portc</name>
+    <displayName>gpio_ext_portc</displayName>
+    <description>Внешний регистр порта C. R 0x0 0x58</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_ext_portd</name>
+    <displayName>gpio_ext_portd</displayName>
+    <description>Внешний регистр порта D. R 0x0 0x5C</description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_ls_sync</name>
+    <displayName>gpio_ls_sync</displayName>
+    <description>Регистр включения синхронизации прерываний по уровню. W/R 0x0 0x60</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
  </peripherals>
  <vendor>
  </vendor>

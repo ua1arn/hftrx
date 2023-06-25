@@ -1,0 +1,28 @@
+#type; GPIO
+#comment; Регистры блока управления GPIO
+#base; GPIO0 0x38034000
+#regdef; gpio_swporta_dr; 0x000; Регистр данных порта А. W/R 0x0 0x00
+#regdef; gpio_swporta_ddr; 0x004; Регистр направления потока данных через порт А. W/R 0x0 0x04
+#regdef; gpio_swporta_ctl; 0x008; Регистр источника данных порта А. W/R 0x0 0x08
+#regdef; gpio_swportb_dr; 0x00c; Регистр данных порта B. W/R 0x0 0x0C 
+#regdef; gpio_swportb_ddr; 0x010; Регистр направления потока данных через порт B. W/R 0x0 0x10
+#regdef; gpio_swportb_ctl; 0x014; Регистр источника данных порта B. W/R 0xFFFF 0x14
+#regdef; gpio_swportc_dr; 0x018; Регистр данных порта C. W/R 0x0 0x18
+#regdef; gpio_swportc_ddr; 0x01c; Регистр направления потока данных через порт C. W/R 0x0 0x1C
+#regdef; gpio_swportc_ctl; 0x020; Регистр источника данных порта C. W/R 0x0 0x20
+#regdef; gpio_swportd_dr; 0x024; Регистр данных порта D. W/R 0x0 0x24 
+#regdef; gpio_swportd_ddr; 0x028; Регистр направления потока данных через порт D. W/R 0x0 0x28
+#regdef; gpio_swportd_ctl; 0x02c; Регистр источника данных порта D. W/R 0x0 0x2C
+#regdef; gpio_inten; 0x030; Регистр включения прерываний. W/R 0x0 0x30
+#regdef; gpio_intmask; 0x034; Регистр маскирования прерываний. W/R 0x0 0x34
+#regdef; gpio_inttype_level; 0x038; Регистр уровня прерываний. W/R 0x0 0x38
+#regdef; gpio_int_polarity; 0x03c; Регистр полярности прерываний. W/R 0x0 0x3C
+#regdef; gpio_intstatus; 0x040; Регистр статуса прерываний R 0x0 0x40
+#regdef; gpio_raw_intstatus; 0x044; Регистр статуса немаскированных прерываний R 0x0 0x44
+#regdef; gpio_debounce; 0x048; Регистр включения фильтра дребезга. W/R 0x0 0x48
+#regdef; gpio_porta_eoi; 0x04c; Регистр сброса прерываний. W 0x0 0x4C
+#regdef; gpio_ext_porta; 0x050; Внешний регистр порта А. R 0x0 0x50
+#regdef; gpio_ext_portb; 0x054; Внешний регистр порта B. R 0x0 0x54
+#regdef; gpio_ext_portc; 0x058; Внешний регистр порта C. R 0x0 0x58
+#regdef; gpio_ext_portd; 0x05c; Внешний регистр порта D. R 0x0 0x5C
+#regdef; gpio_ls_sync; 0x60; Регистр включения синхронизации прерываний по уровню. W/R 0x0 0x60

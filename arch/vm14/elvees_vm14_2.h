@@ -47,6 +47,7 @@ typedef enum IRQn
 #define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Base */
 #define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Base */
 #define UART3_BASE ((uintptr_t) 0x3802B000)           /*!< UART Base */
+#define GPIO0_BASE ((uintptr_t) 0x38034000)           /*!< GPIO Base */
 #define CMCTR_BASE ((uintptr_t) 0x38094000)           /*!< CMCTR Base */
 #define PMCTR_BASE ((uintptr_t) 0x38095000)           /*!< PMCTR Base */
 #define SMCTR_BASE ((uintptr_t) 0x38096000)           /*!< SMCTR Base */
@@ -178,6 +179,38 @@ typedef struct UART_Type
     volatile uint32_t UART_STET;                      /*!< Offset 0x0A0  */
     volatile uint32_t UART_HTX;                       /*!< Offset 0x0A4  */
 } UART_TypeDef; /* size of structure = 0x0A8 */
+/*
+ * @brief GPIO
+ */
+/*!< GPIO Регистры блока управления GPIO */
+typedef struct GPIO_Type
+{
+    volatile uint32_t gpio_swporta_dr;                /*!< Offset 0x000 Регистр данных порта А. W/R 0x0 0x00 */
+    volatile uint32_t gpio_swporta_ddr;               /*!< Offset 0x004 Регистр направления потока данных через порт А. W/R 0x0 0x04 */
+    volatile uint32_t gpio_swporta_ctl;               /*!< Offset 0x008 Регистр источника данных порта А. W/R 0x0 0x08 */
+    volatile uint32_t gpio_swportb_dr;                /*!< Offset 0x00C Регистр данных порта B. W/R 0x0 0x0C  */
+    volatile uint32_t gpio_swportb_ddr;               /*!< Offset 0x010 Регистр направления потока данных через порт B. W/R 0x0 0x10 */
+    volatile uint32_t gpio_swportb_ctl;               /*!< Offset 0x014 Регистр источника данных порта B. W/R 0xFFFF 0x14 */
+    volatile uint32_t gpio_swportc_dr;                /*!< Offset 0x018 Регистр данных порта C. W/R 0x0 0x18 */
+    volatile uint32_t gpio_swportc_ddr;               /*!< Offset 0x01C Регистр направления потока данных через порт C. W/R 0x0 0x1C */
+    volatile uint32_t gpio_swportc_ctl;               /*!< Offset 0x020 Регистр источника данных порта C. W/R 0x0 0x20 */
+    volatile uint32_t gpio_swportd_dr;                /*!< Offset 0x024 Регистр данных порта D. W/R 0x0 0x24  */
+    volatile uint32_t gpio_swportd_ddr;               /*!< Offset 0x028 Регистр направления потока данных через порт D. W/R 0x0 0x28 */
+    volatile uint32_t gpio_swportd_ctl;               /*!< Offset 0x02C Регистр источника данных порта D. W/R 0x0 0x2C */
+    volatile uint32_t gpio_inten;                     /*!< Offset 0x030 Регистр включения прерываний. W/R 0x0 0x30 */
+    volatile uint32_t gpio_intmask;                   /*!< Offset 0x034 Регистр маскирования прерываний. W/R 0x0 0x34 */
+    volatile uint32_t gpio_inttype_level;             /*!< Offset 0x038 Регистр уровня прерываний. W/R 0x0 0x38 */
+    volatile uint32_t gpio_int_polarity;              /*!< Offset 0x03C Регистр полярности прерываний. W/R 0x0 0x3C */
+    volatile uint32_t gpio_intstatus;                 /*!< Offset 0x040 Регистр статуса прерываний R 0x0 0x40 */
+    volatile uint32_t gpio_raw_intstatus;             /*!< Offset 0x044 Регистр статуса немаскированных прерываний R 0x0 0x44 */
+    volatile uint32_t gpio_debounce;                  /*!< Offset 0x048 Регистр включения фильтра дребезга. W/R 0x0 0x48 */
+    volatile uint32_t gpio_porta_eoi;                 /*!< Offset 0x04C Регистр сброса прерываний. W 0x0 0x4C */
+    volatile uint32_t gpio_ext_porta;                 /*!< Offset 0x050 Внешний регистр порта А. R 0x0 0x50 */
+    volatile uint32_t gpio_ext_portb;                 /*!< Offset 0x054 Внешний регистр порта B. R 0x0 0x54 */
+    volatile uint32_t gpio_ext_portc;                 /*!< Offset 0x058 Внешний регистр порта C. R 0x0 0x58 */
+    volatile uint32_t gpio_ext_portd;                 /*!< Offset 0x05C Внешний регистр порта D. R 0x0 0x5C */
+    volatile uint32_t gpio_ls_sync;                   /*!< Offset 0x060 Регистр включения синхронизации прерываний по уровню. W/R 0x0 0x60 */
+} GPIO_TypeDef; /* size of structure = 0x064 */
 
 
 /* Access pointers */
@@ -186,6 +219,7 @@ typedef struct UART_Type
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3 Universal Asynchronous Receiver-Transmitter register set access pointer */
+#define GPIO0 ((GPIO_TypeDef *) GPIO0_BASE)           /*!< GPIO0 Регистры блока управления GPIO register set access pointer */
 #define CMCTR ((CMCTR_TypeDef *) CMCTR_BASE)          /*!< CMCTR Контроллер управления синхронизацией register set access pointer */
 #define PMCTR ((PMCTR_TypeDef *) PMCTR_BASE)          /*!< PMCTR Контроллер управления энергопотреблением register set access pointer */
 #define SMCTR ((SMCTR_TypeDef *) SMCTR_BASE)          /*!< SMCTR общиме системные настройки микросхемы register set access pointer */
