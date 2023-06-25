@@ -394,31 +394,26 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 		}
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
-
-	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
-	{
-		const uint_fast32_t ier = UART1->DLH_IER;
-		const uint_fast32_t usr = UART1->UART_USR;
-		if ((UART1->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
-
-		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
-		{
-			if (usr & (1u << 3))	// RX FIFO Not Empty
-				HARDWARE_UART2_ONRXCHAR(UART1->DATA);
-		}
-		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
-		{
-			if (usr & (1u << 1))	// TX FIFO Not Full
-				HARDWARE_UART2_ONTXCHAR(UART1);
-		}
-	}
-
 #elif CPUSTYLE_VM14
 
 	#warning Undefined for CPUSTYLE_VM14
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 	{
+		const uint_fast32_t ier = UART0->UART_DLH_IER;
+		const uint_fast32_t usr = UART0->UART_USR;
+		if ((UART0->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
+
+		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
+		{
+			if (usr & (1u << 3))	// RX FIFO Not Empty
+				HARDWARE_UART1_ONRXCHAR(UART0->UART_RBR_THR_DLL);
+		}
+		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		{
+			if (usr & (1u << 1))	// TX FIFO Not Full
+				HARDWARE_UART1_ONTXCHAR(UART0);
+		}
+
 	}
 
 #else
