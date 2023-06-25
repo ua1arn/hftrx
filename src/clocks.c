@@ -2987,6 +2987,11 @@ uint_fast32_t elveesvm14_get_arm_freq(void)
 	return 24000000;
 }
 
+uint_fast32_t elveesvm14_get_usart_freq(void)
+{
+	return 24000000;
+}
+
 #endif /* CPUSTYLE_VM14 */
 
 // ATMega32 timers:
@@ -7251,6 +7256,11 @@ sysinit_pll_initialize(void)
 	CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);	// не проищзволит видимого эффекта
 
 	//CCU->RISC_GATING_REG = (1 * 1u << 31) | (0x16AA << 0);
+
+#elif CPUSTYLE_VM14
+	/* 1892ВМ14Я */
+
+	CMCTR->GATE_CORE_CTR |= (1u << 0);	/* L0_EN */
 
 #endif
 

@@ -1492,6 +1492,27 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_VM14
 
 	#warning Undefined CPUSTYLE_VM14
+	const unsigned ix = 0;	// UART0
+
+	CMCTR->GATE_SYS_CTR |= ((1u << 12) << ix); // UART0_EN Enable CLK
+
+	/* Config uart0 to 115200-8-1-0 */
+	uint32_t divisor = elveesvm14_get_usart_freq() / ((DEBUGSPEED) * 16);
+
+	UART0->UART_DLH_IER = 0;
+	UART0->UART_IIR_FCR = 0xf7;
+	UART0->UART_MCR = 0x00;
+
+	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
+	UART0->UART_RBR_THR_DLL = divisor & 0xff;
+	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
+	//
+	UART0->UART_LCR &= ~ 0x1f;
+	UART0->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
+
+	(void) UART0->UART_LCR;
+
 	HARDWARE_UART1_INITIALIZE();
 
 	if (debug == 0)
@@ -7577,6 +7598,19 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 #elif CPUSTYLE_VM14
 
 	#warning Undefined CPUSTYLE_VM14
+	unsigned divisor = calcdivround2(elveesvm14_get_usart_freq(), baudrate * 16);
+
+	while ((UART0->UART_USR & (1u << 2)) == 0)	/* TFE - FIFO передатчика пуст. */
+		;
+	while ((UART0->UART_USR & (1u << 0)) != 0)	/* BUSY - UART занят. */
+	{
+		/* todo: решить проблему с принимаемыми символами */
+	}
+	UART0->UART_LCR |= (1 << 7);
+	UART0->UART_RBR_THR_DLL = divisor & 0xff;
+	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_LCR &= ~ (1 << 7);
+	(void) UART0->UART_LCR;
 
 #else
 	#error Undefined CPUSTYLE_XXX

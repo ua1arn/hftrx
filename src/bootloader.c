@@ -314,7 +314,7 @@ void bootloader_mainloop(void)
 				case 0x00:
 					break;
 				default:
-					PRINTF("key=%02X\n", (unsigned char) c);
+					PRINTF("bkey=%02X\n", (unsigned char) c);
 					break;
 
 				}
