@@ -2581,11 +2581,11 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   			break;
   		}
   		rx_count = usb_get_eprx_count(pusb);
-  		//PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count);
+  		//PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u, usbd_getuacoutmaxpacket()=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count, (unsigned) usbd_getuacoutmaxpacket());
   		ASSERT(UACOUT_AUDIO48_DATASIZE == rx_count || 0 == rx_count);
   		do
   		{
-  			ret = epx_out_handler_dev(pusb, bo_ep_out, (uintptr_t)uacoutbuff, rx_count, USB_PRTCL_ISO);
+  			ret = epx_out_handler_dev(pusb, bo_ep_out, (uintptr_t)uacoutbuff, ulmin(rx_count, UACOUT_AUDIO48_DATASIZE), USB_PRTCL_ISO);
   		}
   		while(ret == USB_RETVAL_NOTCOMP);
 
@@ -2731,22 +2731,21 @@ static void awxx_setup_fifo(pusb_struct pusb)
 {
 	const uint32_t fifo_base = 1024;
 	uint32_t fifo_addr = fifo_base;
-	const uint32_t ep_dir_in = 1;
-	const uint32_t ep_dir_out = 0;
+	enum { EP_DIR_IN = 1, EP_DIR_OUT = 0 };
 
 #if WITHUSBDMTP
 	{
 		//set_fifo_ep: ep_no=02, ep_attr=02, ep_dir=0, bIntfProtocol=50, maxpktsz=512
 		//set_fifo_ep: ep_no=01, ep_attr=02, ep_dir=1, bIntfProtocol=50, maxpktsz=512
 	#if WITHUSBDEV_HSDESC
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_IN & 0x0F), ep_dir_in, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_OUT & 0x0F), ep_dir_out, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_IN & 0x0F), EP_DIR_IN, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_OUT & 0x0F), EP_DIR_OUT, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
 	#else /* WITHUSBDEV_HSDESC */
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_IN & 0x0F), ep_dir_in, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_OUT & 0x0F), ep_dir_out, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_IN & 0x0F), EP_DIR_IN, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_OUT & 0x0F), EP_DIR_OUT, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
 	#endif /* WITHUSBDEV_HSDESC */
 		  /* Open INTR EP IN */
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_INT & 0x0F), ep_dir_in, MTP_CMD_PACKET_SIZE, 0, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_INT & 0x0F), EP_DIR_IN, MTP_CMD_PACKET_SIZE, 0, fifo_addr);
 	}
 #endif /* WITHUSBDMTP */
 
@@ -2755,11 +2754,11 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		//set_fifo_ep: ep_no=02, ep_attr=02, ep_dir=0, bIntfProtocol=50, maxpktsz=512
 		//set_fifo_ep: ep_no=01, ep_attr=02, ep_dir=1, bIntfProtocol=50, maxpktsz=512
 	#if WITHUSBDEV_HSDESC
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), ep_dir_in, MSC_DATA_MAX_PACKET_SIZE_HS, 1, fifo_addr);
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), ep_dir_out, MSC_DATA_MAX_PACKET_SIZE_HS, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), EP_DIR_IN, MSC_DATA_MAX_PACKET_SIZE_HS, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), EP_DIR_OUT, MSC_DATA_MAX_PACKET_SIZE_HS, 1, fifo_addr);
 	#else /* WITHUSBDEV_HSDESC */
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), ep_dir_in, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), ep_dir_out, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), EP_DIR_IN, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), EP_DIR_OUT, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
 	#endif /* WITHUSBDEV_HSDESC */
 	}
 #endif /* WITHUSBDMSC */
@@ -2772,25 +2771,25 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			const uint_fast8_t pipein = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F;
 			const uint_fast8_t pipeout = USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F;
 
-			fifo_addr = set_fifo_ep(pusb, pipeint, ep_dir_in, VIRTUAL_COM_PORT_INT_SIZE, 0, fifo_addr);
-			fifo_addr = set_fifo_ep(pusb, pipein, ep_dir_in, VIRTUAL_COM_PORT_IN_DATA_SIZE, 1, fifo_addr);
-			fifo_addr = set_fifo_ep(pusb, pipeout, ep_dir_out, VIRTUAL_COM_PORT_OUT_DATA_SIZE, 1, fifo_addr);
+			fifo_addr = set_fifo_ep(pusb, pipeint, EP_DIR_IN, VIRTUAL_COM_PORT_INT_SIZE, 0, fifo_addr);
+			fifo_addr = set_fifo_ep(pusb, pipein, EP_DIR_IN, VIRTUAL_COM_PORT_IN_DATA_SIZE, 1, fifo_addr);
+			fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, VIRTUAL_COM_PORT_OUT_DATA_SIZE, 1, fifo_addr);
 		}
 	}
 #endif /* WITHUSBCDCACM */
 #if WITHUSBUACOUT
 	{
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_OUT & 0x0F), ep_dir_out, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
-		set_ep_iso(pusb, (USBD_EP_AUDIO_OUT & 0x0F), ep_dir_out);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_OUT & 0x0F), EP_DIR_OUT, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
+		set_ep_iso(pusb, (USBD_EP_AUDIO_OUT & 0x0F), EP_DIR_OUT);
 	}
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
 	{
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_IN & 0x0F), ep_dir_in, usbd_getuacinmaxpacket(), 0, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
-		set_ep_iso(pusb, (USBD_EP_AUDIO_IN & 0x0F), ep_dir_in);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_IN & 0x0F), EP_DIR_IN, usbd_getuacinmaxpacket(), 0, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+		set_ep_iso(pusb, (USBD_EP_AUDIO_IN & 0x0F), EP_DIR_IN);
 	#if WITHUSBUACIN2
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_RTS_IN & 0x0F), ep_dir_in, usbd_getuacinrtsmaxpacket(), 0, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
-		set_ep_iso(pusb, (USBD_EP_RTS_IN & 0x0F), ep_dir_in);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_RTS_IN & 0x0F), EP_DIR_IN, usbd_getuacinrtsmaxpacket(), 0, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+		set_ep_iso(pusb, (USBD_EP_RTS_IN & 0x0F), EP_DIR_IN);
 	#endif
 	}
 #endif /* WITHUSBUACIN */
