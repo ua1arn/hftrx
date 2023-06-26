@@ -3986,29 +3986,21 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //    volatile uint32_t * const SPL_ADDR = (volatile uint32_t *) 0x2000fff4;
 //    volatile uint32_t * const SPL_MAGIC = (volatile uint32_t *) 0x2000fff8;
 //    volatile uint32_t * const SPL_ADDRX = (volatile uint32_t *) 0x2000fffC;
-
-    ((volatile uint32_t *) SCU_CONTROL_BASE) [2] |= psmask;	/* reset target CPU */
-
+//
 //    SPL_MAGIC [0] = 0xdeadbeef;// Грузим стартовый адрес для ROM загрузчика
 //    SPL_ADDR [0] = startfunc;// Грузим стартовый адрес для ROM загрузчика
 //    SPL_ADDRX [0] = startfunc;
 
-    PMCTR->ALWAYS_MISC0 = startfunc;
-//    PMCTR->ALWAYS_MISC1 = startfunc;    /* необходимо для встроенного ROM */
-    //printhex32(0x2000fff0, 0x2000fff0, 16);
+    ((volatile uint32_t *) SCU_CONTROL_BASE) [2] |= psmask;	/* reset target CPU */
+
+    PMCTR->ALWAYS_MISC0 = startfunc;	/* необходимо для встроенного ROM */
     //
     SMCTR->BOOT_REMAP = 0x03; //SMCTR_BOOT_REMAP_BOOTROM;//SMCTR_BOOT_REMAP_SPRAM;
-    //CMCTR->GATE_SYS_CTR = 1u << (targetcore + 1);
-    //PMCTR->CORE_PWR_UP |=
-    //
-    //dcache_clean_all();    // startup code should be copied in to sysram for example.
-    /* Generate an IT to core 1 */
-    //__SEV();
     dcache_clean_all();    // startup code should be copied in to sysram for example.
-    PMCTR->CORE_PWR_UP = 0x07;
 
-    //local_delay_ms(500);
-    PMCTR->WARM_RST_EN = 0;//0x01;
+    //PMCTR->WARM_BOOT_OVRD = 0x01;	/* с этим не реагирует на RESET button */
+
+    PMCTR->WARM_RST_EN = 1;//0x01;
 
     PMCTR->CPU1_WKP_MASK [0] = ~ 0u;
     PMCTR->CPU1_WKP_MASK [1] = ~ 0u;
