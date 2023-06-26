@@ -4079,7 +4079,18 @@ void Reset_CPUn_Handler(void)
 #if WITHLWIP
 	network_initialize();
 #endif /* WITHLWIP */
-
+#if CPUSTYLE_VM14
+	{
+		unsigned mask = 1u << 24; // GC24 - DBGLED1
+		for (;;)
+		{
+			arm_hardware_pioc_outputs(mask, 1 * mask);
+			local_delay_ms(200);
+			arm_hardware_pioc_outputs(mask, 0 * mask);
+			local_delay_ms(200);
+		}
+	}
+#endif /* CPUSTYLE_VM14 */
 	// Idle loop
 	for (;;)
 	{

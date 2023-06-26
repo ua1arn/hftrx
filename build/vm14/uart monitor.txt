@@ -1,0 +1,16 @@
+cache 1
+autorun 0
+set 0x38094048 0x21
+set 0x38094068 0x0f
+
+
+bin2ihex -l 0x20000000 -s tc1_vm14_boot.bin >tc1_vm14_boot.hex
+
+
+
+cache 1
+set 0x38094048 0x21
+
+autorun 0
+
+commitspiflash
