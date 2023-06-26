@@ -74,6 +74,44 @@ int dbg_getchar(char * r);
 
 #endif /* WITHDEBUG */
 
+#if WITHDEBUG && WITHUART0HW && WITHDEBUG_USART0
+	// Отладочные функции работают через USART0
+	// Вызывается из user-mode программы при запрещённых прерываниях.
+	#define HARDWARE_DEBUG_INITIALIZE() do { \
+			hardware_uart0_initialize(1); \
+		} while (0)
+	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
+			hardware_uart0_set_speed(baudrate); \
+		} while (0)
+	#define HARDWARE_DEBUG_PUTCHAR(c) \
+		(hardware_uart0_putchar(c))
+	#define HARDWARE_DEBUG_GETCHAR(pc) \
+		(hardware_uart0_getchar(pc))
+
+	// вызывается из обработчика прерываний UART0
+	// с принятым символом
+	#define HARDWARE_UART0_ONRXCHAR(c) do { \
+			(void) (c); \
+			hardware_uart0_enablerx(1); \
+		} while (0)
+	// вызывается из обработчика прерываний UART0
+	#define HARDWARE_UART0_ONOVERFLOW() do { \
+		} while (0)
+	// вызывается из обработчика прерываний UART0
+	// по готовности передатчика
+	#define HARDWARE_UART0_ONTXCHAR(ctx) do { \
+			(void) ctx; \
+			hardware_uart0_enabletx(0); \
+		} while (0)
+	// вызывается из обработчика прерываний UART0
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART0_ONTXDONE(ctx) do { \
+			(void) ctx; \
+			hardware_uart0_enabletx(0); \
+		} while (0)
+
+#endif /* WITHDEBUG && WITHUART0HW && WITHDEBUG_USART0 */
+
 #if WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1
 	// Отладочные функции работают через USART1
 	// Вызывается из user-mode программы при запрещённых прерываниях.
@@ -108,58 +146,6 @@ int dbg_getchar(char * r);
 	#define HARDWARE_UART1_ONTXDONE(ctx) do { \
 			(void) ctx; \
 			hardware_uart1_enabletx(0); \
-		} while (0)
-
-#endif /* WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1 */
-
-// Для serial_irq_loopback_test
-#if 0 && WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1
-	// Отладочные функции работают через USART1
-	// Вызывается из user-mode программы при запрещённых прерываниях.
-	#define HARDWARE_DEBUGSIRQ_INITIALIZE() do { \
-			hardware_uart1_initialize(0); \
-		} while (0)
-	#define HARDWARE_DEBUGSIRQ_SET_SPEED(baudrate) do { \
-			hardware_uart1_set_speed(baudrate); \
-		} while (0)
-	#define HARDWARE_DEBUGSIRQ_PUTCHAR(c) \
-		(hardware_uart1_putchar(c))
-	#define HARDWARE_DEBUGSIRQ_GETCHAR(pc) \
-		(hardware_uart1_getchar(pc))
-	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
-	// для передачи символа
-	#define HARDWARE_DEBUGSIRQ_TX(ctx, c) do { \
-			hardware_uart1_tx((ctx), (c)); \
-		} while (0)
-	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
-	// для управления разрешением последующих вызовов прерывания
-	#define HARDWARE_DEBUGSIRQ_ENABLETX(v) do { \
-			hardware_uart1_enabletx(v); \
-		} while (0)
-	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
-	// для управления разрешением последующих вызовов прерывания
-	#define HARDWARE_DEBUGSIRQ_ENABLERX(v) do { \
-			hardware_uart1_enablerx(v); \
-		} while (0)
-
-	// вызывается из обработчика прерываний UART1
-	// с принятым символом
-	#define HARDWARE_UART1_ONRXCHAR(c) do { \
-			cat3_parsechar(c); \
-		} while (0)
-	// вызывается из обработчика прерываний UART1
-	#define HARDWARE_UART1_ONOVERFLOW() do { \
-			cat3_rxoverflow(); \
-		} while (0)
-	// вызывается из обработчика прерываний UART1
-	// по готовности передатчика
-	#define HARDWARE_UART1_ONTXCHAR(ctx) do { \
-			cat3_sendchar(ctx); \
-		} while (0)
-	// вызывается из обработчика прерываний UART1
-	// по окончании передачи (сдвиговый регистр передатчика пуст)
-	#define HARDWARE_UART1_ONTXDONE(ctx) do { \
-			cat3_txdone(ctx); \
 		} while (0)
 
 #endif /* WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1 */
@@ -315,6 +301,92 @@ int dbg_getchar(char * r);
 		} while (0)
 
 #endif /* WITHDEBUG && WITHUART5HW && WITHDEBUG_USART5 */
+
+#if WITHDEBUG && WITHUART6HW && WITHDEBUG_USART6
+	// Отладочные функции работают через USART6
+	// Вызывается из user-mode программы при запрещённых прерываниях.
+	#define HARDWARE_DEBUG_INITIALIZE() do { \
+			hardware_uart6_initialize(1); \
+		} while (0)
+	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
+			hardware_uart6_set_speed(baudrate); \
+		} while (0)
+	#define HARDWARE_DEBUG_PUTCHAR(c) \
+		(hardware_uart6_putchar(c))
+	#define HARDWARE_DEBUG_GETCHAR(pc) \
+		(hardware_uart6_getchar(pc))
+
+	// вызывается из обработчика прерываний USART5
+	// с принятым символом
+	#define HARDWARE_UART6_ONRXCHAR(c) do { \
+			(void) (c); \
+			hardware_uart6_enablerx(1); \
+		} while (0)
+	// вызывается из обработчика прерываний USART5
+	#define HARDWARE_UART6_ONOVERFLOW() do { \
+		} while (0)
+	// вызывается из обработчика прерываний USART5
+	// по готовности передатчика
+	#define HARDWARE_UART6_ONTXCHAR(ctx) do { \
+			(void) ctx; \
+			hardware_uart6_enabletx(0); \
+		} while (0)
+	// вызывается из обработчика прерываний UART5
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART6_ONTXDONE(ctx) do { \
+			(void) ctx; \
+			hardware_uart6_enabletx(0); \
+		} while (0)
+
+#endif /* WITHDEBUG && WITHUART6HW && WITHDEBUG_USART6 */
+
+#if WITHMODEM && WITHUART0HW && WITHMODEM_USART0
+	// Модемные функции работают через USART0
+	// Вызывается из user-mode программы
+	#define HARDWARE_MODEM_INITIALIZE() do { \
+			hardware_uart0_initialize(0); \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_MODEM_SET_SPEED(baudrate) do { \
+			hardware_uart0_set_speed(baudrate); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_MODEM_ENABLETX(v) do { \
+			hardware_uart0_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_MODEM_ENABLERX(v) do { \
+			hardware_uart0_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_MODEM_TX(ctx, c) do { \
+			hardware_uart0_tx((ctx), (c)); \
+		} while (0)
+
+	// вызывается из обработчика прерываний USART0
+	// с принятым символом
+	#define HARDWARE_UART0_ONRXCHAR(c) do { \
+			modem_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний USART0
+	#define HARDWARE_UART0_ONOVERFLOW() do { \
+			modem_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний USART0
+	// по готовности передатчика
+	#define HARDWARE_UART0_ONTXCHAR(ctx) do { \
+			modem_sendchar(ctx); \
+		} while (0)
+	// вызывается из обработчика прерываний USART0
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART0_ONTXDONE(ctx) do { \
+			modem_txdone(ctx); \
+		} while (0)
+
+#endif /* WITHMODEM && WITHUART0HW && WITHMODEM_USART0 */
 
 #if WITHMODEM && WITHUART1HW && WITHMODEM_USART1
 	// Модемные функции работают через USART1
