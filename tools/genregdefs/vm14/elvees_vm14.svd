@@ -1123,6 +1123,787 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral>
+  <name>SDMA</name>
+  <description>Регистры блока управления SDMA</description>
+  <baseAddress>0x37220000</baseAddress>
+  <registers>
+   <register>
+    <name>DSR</name>
+    <displayName>DSR</displayName>
+    <description>RO Состояние потока управления</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DPC</name>
+    <displayName>DPC</displayName>
+    <description>RO Счётчик команд потока управления</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTEN</name>
+    <displayName>INTEN</displayName>
+    <description>RW Разрешение прерываний</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INT_EVENT_RIS</name>
+    <displayName>INT_EVENT_RIS</displayName>
+    <description>RO Статус прерываний/событий</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTMIS</name>
+    <displayName>INTMIS</displayName>
+    <description>RO Статус прерываний</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTCLR</name>
+    <displayName>INTCLR</displayName>
+    <description>WO Сброс прерываний</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FSRD</name>
+    <displayName>FSRD</displayName>
+    <description>RO Сбой потока управления</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FSRC</name>
+    <displayName>FSRC</displayName>
+    <description>RO Сбой потоков каналов</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTRD</name>
+    <displayName>FTRD</displayName>
+    <description>RO Тип сбоя потока управления</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTR0</name>
+    <displayName>FTR0</displayName>
+    <description>RO Тип ошибки канала 0</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTR1</name>
+    <displayName>FTR1</displayName>
+    <description>RO Тип ошибки канала 1</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTR2</name>
+    <displayName>FTR2</displayName>
+    <description>RO Тип ошибки канала 2</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTR3</name>
+    <displayName>FTR3</displayName>
+    <description>RO Тип ошибки канала 3</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTR4</name>
+    <displayName>FTR4</displayName>
+    <description>RO Тип ошибки канала 4</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTR5</name>
+    <displayName>FTR5</displayName>
+    <description>RO Тип ошибки канала 5</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTR6</name>
+    <displayName>FTR6</displayName>
+    <description>RO Тип ошибки канала 6</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTR7</name>
+    <displayName>FTR7</displayName>
+    <description>RO Тип ошибки канала 7</description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSR0</name>
+    <displayName>CSR0</displayName>
+    <description>RO Статус канала 0</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPC0</name>
+    <displayName>CPC0</displayName>
+    <description>RO PC канала 0</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSR1</name>
+    <displayName>CSR1</displayName>
+    <description>RO Статус канала 1</description>
+    <addressOffset>0x108</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPC1</name>
+    <displayName>CPC1</displayName>
+    <description>RO PC канала 1</description>
+    <addressOffset>0x10C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSR2</name>
+    <displayName>CSR2</displayName>
+    <description>RO Статус канала 2</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPC2</name>
+    <displayName>CPC2</displayName>
+    <description>RO PC канала 2</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSR3</name>
+    <displayName>CSR3</displayName>
+    <description>RO Статус канала 3</description>
+    <addressOffset>0x118</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPC3</name>
+    <displayName>CPC3</displayName>
+    <description>RO PC канала 3</description>
+    <addressOffset>0x11C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSR4</name>
+    <displayName>CSR4</displayName>
+    <description>RO Статус канала 4</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPC4</name>
+    <displayName>CPC4</displayName>
+    <description>RO PC канала 4</description>
+    <addressOffset>0x124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSR5</name>
+    <displayName>CSR5</displayName>
+    <description>RO Статус канала 5</description>
+    <addressOffset>0x128</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPC5</name>
+    <displayName>CPC5</displayName>
+    <description>RO PC канала 5</description>
+    <addressOffset>0x12C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSR6</name>
+    <displayName>CSR6</displayName>
+    <description>RO Статус канала 6</description>
+    <addressOffset>0x130</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPC6</name>
+    <displayName>CPC6</displayName>
+    <description>RO PC канала 6</description>
+    <addressOffset>0x134</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSR7</name>
+    <displayName>CSR7</displayName>
+    <description>RO Статус канала 7</description>
+    <addressOffset>0x138</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPC7</name>
+    <displayName>CPC7</displayName>
+    <description>RO PC канала 7</description>
+    <addressOffset>0x13C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SAR0</name>
+    <displayName>SAR0</displayName>
+    <description>RO Адрес Источника для канала 0</description>
+    <addressOffset>0x400</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DAR0</name>
+    <displayName>DAR0</displayName>
+    <description>RO Адрес Приёмника для канала 0</description>
+    <addressOffset>0x404</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCR0</name>
+    <displayName>CCR0</displayName>
+    <description>RO Регистр управления для канала 0</description>
+    <addressOffset>0x408</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC0_0</name>
+    <displayName>LC0_0</displayName>
+    <description>RO Счётчик циклов 0 для канала 0</description>
+    <addressOffset>0x40C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC1_0</name>
+    <displayName>LC1_0</displayName>
+    <description>RO Счётчик циклов 1 для канала 0</description>
+    <addressOffset>0x410</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SAR1</name>
+    <displayName>SAR1</displayName>
+    <description>RO Адрес Источника для канала 1</description>
+    <addressOffset>0x420</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DAR1</name>
+    <displayName>DAR1</displayName>
+    <description>RO Адрес Приёмника для канала 1</description>
+    <addressOffset>0x424</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCR1</name>
+    <displayName>CCR1</displayName>
+    <description>RO Регистр управления для канала 1</description>
+    <addressOffset>0x428</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC0_1</name>
+    <displayName>LC0_1</displayName>
+    <description>RO Счётчик циклов 0 для канала 1</description>
+    <addressOffset>0x42C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC1_1</name>
+    <displayName>LC1_1</displayName>
+    <description>RO Счётчик циклов 1 для канала 1</description>
+    <addressOffset>0x430</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SAR2</name>
+    <displayName>SAR2</displayName>
+    <description>RO Адрес Источника для канала 2</description>
+    <addressOffset>0x440</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DAR2</name>
+    <displayName>DAR2</displayName>
+    <description>RO Адрес Приёмника для канала 2</description>
+    <addressOffset>0x444</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCR2</name>
+    <displayName>CCR2</displayName>
+    <description>RO Регистр управления для канала 2</description>
+    <addressOffset>0x448</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC0_2</name>
+    <displayName>LC0_2</displayName>
+    <description>RO Счётчик циклов 0 для канала 2</description>
+    <addressOffset>0x44C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC1_2</name>
+    <displayName>LC1_2</displayName>
+    <description>RO Счётчик циклов 1 для канала 2</description>
+    <addressOffset>0x450</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SAR3</name>
+    <displayName>SAR3</displayName>
+    <description>RO Адрес Источника для канала 3</description>
+    <addressOffset>0x460</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DAR3</name>
+    <displayName>DAR3</displayName>
+    <description>RO Адрес Приёмника для канала 3</description>
+    <addressOffset>0x464</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCR3</name>
+    <displayName>CCR3</displayName>
+    <description>RO Регистр управления для канала 3</description>
+    <addressOffset>0x468</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC0_3</name>
+    <displayName>LC0_3</displayName>
+    <description>RO Счётчик циклов 0 для канала 3</description>
+    <addressOffset>0x46C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC1_3</name>
+    <displayName>LC1_3</displayName>
+    <description>RO Счётчик циклов 1 для канала 3</description>
+    <addressOffset>0x470</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SAR4</name>
+    <displayName>SAR4</displayName>
+    <description>RO Адрес Источника для канала 4</description>
+    <addressOffset>0x480</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DAR4</name>
+    <displayName>DAR4</displayName>
+    <description>RO Адрес Приёмника для канала 4</description>
+    <addressOffset>0x484</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCR4</name>
+    <displayName>CCR4</displayName>
+    <description>RO Регистр управления для канала 4</description>
+    <addressOffset>0x488</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC0_4</name>
+    <displayName>LC0_4</displayName>
+    <description>RO Счётчик циклов 0 для канала 4</description>
+    <addressOffset>0x48C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC1_4</name>
+    <displayName>LC1_4</displayName>
+    <description>RO Счётчик циклов 1 для канала 4</description>
+    <addressOffset>0x490</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SAR5</name>
+    <displayName>SAR5</displayName>
+    <description>RO Адрес Источника для канала 5</description>
+    <addressOffset>0x4A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DAR5</name>
+    <displayName>DAR5</displayName>
+    <description>RO Адрес Приёмника для канала 5</description>
+    <addressOffset>0x4A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCR5</name>
+    <displayName>CCR5</displayName>
+    <description>RO Регистр управления для канала 5</description>
+    <addressOffset>0x4A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC0_5</name>
+    <displayName>LC0_5</displayName>
+    <description>RO Счётчик циклов 0 для канала 5</description>
+    <addressOffset>0x4AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC1_5</name>
+    <displayName>LC1_5</displayName>
+    <description>RO Счётчик циклов 1 для канала 5</description>
+    <addressOffset>0x4B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SAR6</name>
+    <displayName>SAR6</displayName>
+    <description>RO Адрес Источника для канала 6</description>
+    <addressOffset>0x4C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DAR6</name>
+    <displayName>DAR6</displayName>
+    <description>RO Адрес Приёмника для канала 6</description>
+    <addressOffset>0x4C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCR6</name>
+    <displayName>CCR6</displayName>
+    <description>RO Регистр управления для канала 6</description>
+    <addressOffset>0x4C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC0_6</name>
+    <displayName>LC0_6</displayName>
+    <description>RO Счётчик циклов 0 для канала 6</description>
+    <addressOffset>0x4CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC1_6</name>
+    <displayName>LC1_6</displayName>
+    <description>RO Счётчик циклов 1 для канала 6</description>
+    <addressOffset>0x4D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SAR7</name>
+    <displayName>SAR7</displayName>
+    <description>RO Адрес Источника для канала 7</description>
+    <addressOffset>0x4E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DAR7</name>
+    <displayName>DAR7</displayName>
+    <description>RO Адрес Приёмника для канала 7</description>
+    <addressOffset>0x4E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCR7</name>
+    <displayName>CCR7</displayName>
+    <description>RO Регистр управления для канала 7</description>
+    <addressOffset>0x4E8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC0_7</name>
+    <displayName>LC0_7</displayName>
+    <description>RO Счётчик циклов 0 для канала 7</description>
+    <addressOffset>0x4EC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LC1_7</name>
+    <displayName>LC1_7</displayName>
+    <description>RO Счётчик циклов 1 для канала 7</description>
+    <addressOffset>0x4F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBGSTATUS</name>
+    <displayName>DBGSTATUS</displayName>
+    <description>RO Debug Status Register</description>
+    <addressOffset>0xD00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBGCMD</name>
+    <displayName>DBGCMD</displayName>
+    <description>WO Debug Command Register</description>
+    <addressOffset>0xD04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBGINST0</name>
+    <displayName>DBGINST0</displayName>
+    <description>WO 0-ой регистр отладки</description>
+    <addressOffset>0xD08</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBGINST1</name>
+    <displayName>DBGINST1</displayName>
+    <description>WO 1-ый регистр отладки</description>
+    <addressOffset>0xD0C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CR0</name>
+    <displayName>CR0</displayName>
+    <description>RO Регистр конфигурации 0</description>
+    <addressOffset>0xE00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CR1</name>
+    <displayName>CR1</displayName>
+    <description>RO Регистр конфигурации 1</description>
+    <addressOffset>0xE04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CR2</name>
+    <displayName>CR2</displayName>
+    <description>RO Регистр конфигурации 2</description>
+    <addressOffset>0xE08</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CR3</name>
+    <displayName>CR3</displayName>
+    <description>RO Регистр конфигурации 3</description>
+    <addressOffset>0xE0C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CR4</name>
+    <displayName>CR4</displayName>
+    <description>RO Регистр конфигурации 4</description>
+    <addressOffset>0xE10</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CRD</name>
+    <displayName>CRD</displayName>
+    <description>RO Конфигурация SDMA</description>
+    <addressOffset>0xE14</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WD</name>
+    <displayName>WD</displayName>
+    <description>RW Сторожевой регистр</description>
+    <addressOffset>0xE80</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>periph_id_n</name>
+    <displayName>periph_id_n</displayName>
+    <description>RO ID регистры периферии.</description>
+    <addressOffset>0xFE0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>pcell_id_n</name>
+    <displayName>pcell_id_n</displayName>
+    <description>RO ID регистры компонента.</description>
+    <addressOffset>0xFF0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
  </peripherals>
  <vendor>
  </vendor>
