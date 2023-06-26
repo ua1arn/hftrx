@@ -3998,10 +3998,10 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
     SMCTR->BOOT_REMAP = 0x03; //SMCTR_BOOT_REMAP_BOOTROM;//SMCTR_BOOT_REMAP_SPRAM;
     dcache_clean_all();    // startup code should be copied in to sysram for example.
 
-    //PMCTR->WARM_BOOT_OVRD = 0x01;	/* с этим не реагирует на RESET button */
+    PMCTR->WARM_BOOT_OVRD = 0x01;	/* с этим не реагирует на RESET button */
 
-    PMCTR->WARM_RST_EN = 1;//0x01;
-
+//    PMCTR->WARM_RST_EN = 1;//0x01;
+//
     PMCTR->CPU1_WKP_MASK [0] = ~ 0u;
     PMCTR->CPU1_WKP_MASK [1] = ~ 0u;
     PMCTR->CPU1_WKP_MASK [2] = ~ 0u;
