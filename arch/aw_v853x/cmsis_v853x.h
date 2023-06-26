@@ -503,9 +503,9 @@ typedef struct SYS_CFG_Type
 /*!< UART  */
 typedef struct UART_Type
 {
-    volatile uint32_t DATA;                           /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
-    volatile uint32_t DLH_IER;                        /*!< Offset 0x004 UART Divisor Latch High Register/UART Interrupt Enable Register */
-    volatile uint32_t IIR_FCR;                        /*!< Offset 0x008 UART Interrupt Identity Register/UART FIFO Control Register */
+    volatile uint32_t UART_RBR_THR_DLL;               /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
+    volatile uint32_t UART_DLH_IER;                   /*!< Offset 0x004  */
+    volatile uint32_t UART_IIR_FCR;                   /*!< Offset 0x008 UART Interrupt Identity Register/UART FIFO Control Register */
     volatile uint32_t UART_LCR;                       /*!< Offset 0x00C UART Line Control Register */
     volatile uint32_t UART_MCR;                       /*!< Offset 0x010 UART Modem Control Register */
     volatile uint32_t UART_LSR;                       /*!< Offset 0x014 UART Line Status Register */

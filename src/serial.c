@@ -378,14 +378,14 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 	{
-		const uint_fast32_t ier = UART0->DLH_IER;
+		const uint_fast32_t ier = UART0->UART_DLH_IER;
 		const uint_fast32_t usr = UART0->UART_USR;
 		if ((UART0->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 
 		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 		{
 			if (usr & (1u << 3))	// RX FIFO Not Empty
-				HARDWARE_UART1_ONRXCHAR(UART0->DATA);
+				HARDWARE_UART1_ONRXCHAR(UART0->UART_RBR_THR_DLL);
 		}
 		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 		{
@@ -557,9 +557,9 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART0->DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART0->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	else
-		 UART0->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART0->UART_DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #elif CPUSTYLE_VM14
 
@@ -692,9 +692,9 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART0->DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART0->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 	else
-		 UART0->DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART0->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
 #elif CPUSTYLE_VM14
 
@@ -772,7 +772,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	UART0->DATA = c;
+	UART0->UART_RBR_THR_DLL = c;
 
 #elif CPUSTYLE_VM14
 
@@ -888,7 +888,7 @@ hardware_uart1_getchar(char * cp)
 
 	if ((UART0->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
-	* cp = UART0->DATA;
+	* cp = UART0->UART_RBR_THR_DLL;
 
 #elif CPUSTYLE_VM14
 
@@ -1001,7 +1001,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 
 	if ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
-	UART0->DATA = c;
+	UART0->UART_RBR_THR_DLL = c;
 
 #elif CPUSTYLE_VM14
 
@@ -1429,13 +1429,13 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
 
-	UART0->DLH_IER = 0;
-	UART0->IIR_FCR = 0xf7;
+	UART0->UART_DLH_IER = 0;
+	UART0->UART_IIR_FCR = 0xf7;
 	UART0->UART_MCR = 0x00;
 
 	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART0->DATA = divisor & 0xff;
-	UART0->DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_RBR_THR_DLL = divisor & 0xff;
+	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
 	UART0->UART_LCR &= ~ 0x1f;
@@ -1461,13 +1461,13 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
 
-	UART0->DLH_IER = 0;
-	UART0->IIR_FCR = 0xf7;
+	UART0->UART_DLH_IER = 0;
+	UART0->UART_IIR_FCR = 0xf7;
 	UART0->UART_MCR = 0x00;
 
 	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART0->DATA = divisor & 0xff;
-	UART0->DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_RBR_THR_DLL = divisor & 0xff;
+	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
 	UART0->UART_LCR &= ~ 0x1f;
@@ -1696,14 +1696,14 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
 	{
-	const uint_fast32_t ier = UART1->DLH_IER;
+	const uint_fast32_t ier = UART1->UART_DLH_IER;
 	const uint_fast32_t usr = UART1->UART_USR;
 	if ((UART1->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 
 	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
 		if (usr & (1u << 3))	// RX FIFO Not Empty
-			HARDWARE_UART2_ONRXCHAR(UART1->DATA);
+			HARDWARE_UART2_ONRXCHAR(UART1->UART_RBR_THR_DLL);
 	}
 	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	{
@@ -1856,9 +1856,9 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART1->DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART1->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	else
-		 UART1->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART1->UART_DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1978,9 +1978,9 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART1->DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART1->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 	else
-		 UART1->DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART1->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2050,7 +2050,7 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	UART1->DATA = c;
+	UART1->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2172,7 +2172,7 @@ hardware_uart2_getchar(char * cp)
 
 	if ((UART1->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
-	* cp = UART1->DATA;
+	* cp = UART1->UART_RBR_THR_DLL;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2287,7 +2287,7 @@ hardware_uart2_putchar(uint_fast8_t c)
 
 	if ((UART1->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
-	UART1->DATA = c;
+	UART1->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2722,13 +2722,13 @@ xxxx!;
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
 
-	UART1->DLH_IER = 0;
-	UART1->IIR_FCR = 0xf7;
+	UART1->UART_DLH_IER = 0;
+	UART1->UART_IIR_FCR = 0xf7;
 	UART1->UART_MCR = 0x00;
 
 	UART1->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART1->DATA = divisor & 0xff;
-	UART1->DLH_IER = (divisor >> 8) & 0xff;
+	UART1->UART_RBR_THR_DLL = divisor & 0xff;
+	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART1->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
 	UART1->UART_LCR &= ~ 0x1f;
@@ -2754,13 +2754,13 @@ xxxx!;
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
 
-	UART1->DLH_IER = 0;
-	UART1->IIR_FCR = 0xf7;
+	UART1->UART_DLH_IER = 0;
+	UART1->UART_IIR_FCR = 0xf7;
 	UART1->UART_MCR = 0x00;
 
 	UART1->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART1->DATA = divisor & 0xff;
-	UART1->DLH_IER = (divisor >> 8) & 0xff;
+	UART1->UART_RBR_THR_DLL = divisor & 0xff;
+	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART1->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
 	UART1->UART_LCR &= ~ 0x1f;
@@ -2962,14 +2962,14 @@ xxxx!;
 
 	static RAMFUNC_NONILINE void UART2_IRQHandler(void)
 	{
-		const uint_fast32_t ier = UART2->DLH_IER;
+		const uint_fast32_t ier = UART2->UART_DLH_IER;
 		const uint_fast32_t usr = UART2->UART_USR;
 		if ((UART2->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 
 		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 		{
 			if (usr & (1u << 3))	// RX FIFO Not Empty
-				HARDWARE_UART3_ONRXCHAR(UART2->DATA);
+				HARDWARE_UART3_ONRXCHAR(UART2->UART_RBR_THR_DLL);
 		}
 		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 		{
@@ -3112,9 +3112,9 @@ void hardware_uart3_enabletx(uint_fast8_t state)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART2->DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART2->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	else
-		 UART2->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART2->UART_DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3227,9 +3227,9 @@ void hardware_uart3_enablerx(uint_fast8_t state)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART2->DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART2->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 	else
-		 UART2->DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART2->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3295,7 +3295,7 @@ void hardware_uart3_tx(void * ctx, uint_fast8_t c)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	UART2->DATA = c;
+	UART2->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3411,7 +3411,7 @@ hardware_uart3_getchar(char * cp)
 
 	if ((UART2->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
-	* cp = UART2->DATA;
+	* cp = UART2->UART_RBR_THR_DLL;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3520,7 +3520,7 @@ hardware_uart3_putchar(uint_fast8_t c)
 
 	if ((UART2->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
-	UART2->DATA = c;
+	UART2->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3923,13 +3923,13 @@ xxxx!;
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
 
-	UART2->DLH_IER = 0;
-	UART2->IIR_FCR = 0xf7;
+	UART2->UART_DLH_IER = 0;
+	UART2->UART_IIR_FCR = 0xf7;
 	UART2->UART_MCR = 0x00;
 
 	UART2->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART2->DATA = divisor & 0xff;
-	UART2->DLH_IER = (divisor >> 8) & 0xff;
+	UART2->UART_RBR_THR_DLL = divisor & 0xff;
+	UART2->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART2->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
 	UART2->UART_LCR &= ~ 0x1f;
@@ -3955,13 +3955,13 @@ xxxx!;
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
 
-	UART2->DLH_IER = 0;
-	UART2->IIR_FCR = 0xf7;
+	UART2->UART_DLH_IER = 0;
+	UART2->UART_IIR_FCR = 0xf7;
 	UART2->UART_MCR = 0x00;
 
 	UART2->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART2->DATA = divisor & 0xff;
-	UART2->DLH_IER = (divisor >> 8) & 0xff;
+	UART2->UART_RBR_THR_DLL = divisor & 0xff;
+	UART2->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART2->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
 	UART2->UART_LCR &= ~ 0x1f;
@@ -4165,14 +4165,14 @@ xxxx!;
 
 	static RAMFUNC_NONILINE void UART3_IRQHandler(void)
 	{
-		const uint_fast32_t ier = UART3->DLH_IER;
+		const uint_fast32_t ier = UART3->UART_DLH_IER;
 		const uint_fast32_t usr = UART3->UART_USR;
 		if ((UART3->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 
 		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 		{
 			if (usr & (1u << 3))	// RX FIFO Not Empty
-				HARDWARE_UART4_ONRXCHAR(UART3->DATA);
+				HARDWARE_UART4_ONRXCHAR(UART3->UART_RBR_THR_DLL);
 		}
 		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 		{
@@ -4316,9 +4316,9 @@ void hardware_uart4_enabletx(uint_fast8_t state)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART3->DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART3->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	else
-		 UART3->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART3->UART_DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4431,9 +4431,9 @@ void hardware_uart4_enablerx(uint_fast8_t state)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART3->DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART3->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 	else
-		 UART3->DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART3->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4499,7 +4499,7 @@ void hardware_uart4_tx(void * ctx, uint_fast8_t c)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	UART3->DATA = c;
+	UART3->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4615,7 +4615,7 @@ hardware_uart4_getchar(char * cp)
 
 	if ((UART3->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
-	* cp = UART3->DATA;
+	* cp = UART3->UART_RBR_THR_DLL;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4724,7 +4724,7 @@ hardware_uart4_putchar(uint_fast8_t c)
 
 	if ((UART3->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
-	UART3->DATA = c;
+	UART3->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5126,13 +5126,13 @@ xxxx!;
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
 
-	UART3->DLH_IER = 0;
-	UART3->IIR_FCR = 0xf7;
+	UART3->UART_DLH_IER = 0;
+	UART3->UART_IIR_FCR = 0xf7;
 	UART3->UART_MCR = 0x00;
 
 	UART3->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART3->DATA = divisor & 0xff;
-	UART3->DLH_IER = (divisor >> 8) & 0xff;
+	UART3->UART_RBR_THR_DLL = divisor & 0xff;
+	UART3->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART3->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
 	UART3->UART_LCR &= ~ 0x1f;
@@ -5158,13 +5158,13 @@ xxxx!;
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
 
-	UART3->DLH_IER = 0;
-	UART3->IIR_FCR = 0xf7;
+	UART3->UART_DLH_IER = 0;
+	UART3->UART_IIR_FCR = 0xf7;
 	UART3->UART_MCR = 0x00;
 
 	UART3->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART3->DATA = divisor & 0xff;
-	UART3->DLH_IER = (divisor >> 8) & 0xff;
+	UART3->UART_RBR_THR_DLL = divisor & 0xff;
+	UART3->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART3->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
 	UART3->UART_LCR &= ~ 0x1f;
@@ -6368,14 +6368,14 @@ xxxx!;
 
 	static RAMFUNC_NONILINE void UART4_IRQHandler(void)
 	{
-		const uint_fast32_t ier = UART4->DLH_IER;
+		const uint_fast32_t ier = UART4->UART_DLH_IER;
 		const uint_fast32_t usr = UART4->UART_USR;
 		if ((UART4->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 
 		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 		{
 			if (usr & (1u << 3))	// RX FIFO Not Empty
-				HARDWARE_UART5_ONRXCHAR(UART4->DATA);
+				HARDWARE_UART5_ONRXCHAR(UART4->UART_RBR_THR_DLL);
 		}
 		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 		{
@@ -6519,9 +6519,9 @@ void hardware_uart5_enabletx(uint_fast8_t state)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART4->DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART4->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	else
-		 UART4->DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART4->UART_DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6634,9 +6634,9 @@ void hardware_uart5_enablerx(uint_fast8_t state)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	if (state)
-		 UART4->DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART4->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 	else
-		 UART4->DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+		 UART4->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6702,7 +6702,7 @@ void hardware_uart5_tx(void * ctx, uint_fast8_t c)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	UART4->DATA = c;
+	UART4->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6818,7 +6818,7 @@ hardware_uart5_getchar(char * cp)
 
 	if ((UART4->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
-	* cp = UART4->DATA;
+	* cp = UART4->UART_RBR_THR_DLL;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6927,7 +6927,7 @@ hardware_uart5_putchar(uint_fast8_t c)
 
 	if ((UART4->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
-	UART4->DATA = c;
+	UART4->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7330,13 +7330,13 @@ xxxx!;
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
 
-	UART4->DLH_IER = 0;
-	UART4->IIR_FCR = 0xf7;
+	UART4->UART_DLH_IER = 0;
+	UART4->UART_IIR_FCR = 0xf7;
 	UART4->UART_MCR = 0x00;
 
 	UART4->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART4->DATA = divisor & 0xff;
-	UART4->DLH_IER = (divisor >> 8) & 0xff;
+	UART4->UART_RBR_THR_DLL = divisor & 0xff;
+	UART4->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART4->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
 	UART4->UART_LCR &= ~ 0x1f;
@@ -7362,13 +7362,13 @@ xxxx!;
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_usart_freq() / ((DEBUGSPEED) * 16);
 
-	UART4->DLH_IER = 0;
-	UART4->IIR_FCR = 0xf7;
+	UART4->UART_DLH_IER = 0;
+	UART4->UART_IIR_FCR = 0xf7;
 	UART4->UART_MCR = 0x00;
 
 	UART4->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART4->DATA = divisor & 0xff;
-	UART4->DLH_IER = (divisor >> 8) & 0xff;
+	UART4->UART_RBR_THR_DLL = divisor & 0xff;
+	UART4->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART4->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
 	UART4->UART_LCR &= ~ 0x1f;
@@ -7581,8 +7581,8 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
 	UART0->UART_LCR |= (1 << 7);
-	UART0->DATA = divisor & 0xff;
-	UART0->DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_RBR_THR_DLL = divisor & 0xff;
+	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART0->UART_LCR &= ~ (1 << 7);
 
 #elif CPUSTYLE_VM14
@@ -7608,7 +7608,6 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 }
 
 #endif /* WITHUART1HW */
-
 
 #if WITHUART2HW
 
@@ -7791,8 +7790,8 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
 	UART1->UART_LCR |= (1 << 7);
-	UART1->DATA = divisor & 0xff;
-	UART1->DLH_IER = (divisor >> 8) & 0xff;
+	UART1->UART_RBR_THR_DLL = divisor & 0xff;
+	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART1->UART_LCR &= ~ (1 << 7);
 
 #else
@@ -7965,8 +7964,8 @@ hardware_uart3_set_speed(uint_fast32_t baudrate)
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
 	UART2->UART_LCR |= (1 << 7);
-	UART2->DATA = divisor & 0xff;
-	UART2->DLH_IER = (divisor >> 8) & 0xff;
+	UART2->UART_RBR_THR_DLL = divisor & 0xff;
+	UART2->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART2->UART_LCR &= ~ (1 << 7);
 
 #else
@@ -8138,8 +8137,8 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
 	UART3->UART_LCR |= (1 << 7);
-	UART3->DATA = divisor & 0xff;
-	UART3->DLH_IER = (divisor >> 8) & 0xff;
+	UART3->UART_RBR_THR_DLL = divisor & 0xff;
+	UART3->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART3->UART_LCR &= ~ (1 << 7);
 
 #else
@@ -8312,8 +8311,8 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
 	UART4->UART_LCR |= (1 << 7);
-	UART4->DATA = divisor & 0xff;
-	UART4->DLH_IER = (divisor >> 8) & 0xff;
+	UART4->UART_RBR_THR_DLL = divisor & 0xff;
+	UART4->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART4->UART_LCR &= ~ (1 << 7);
 
 #else

@@ -17,9 +17,9 @@
 #irqrv; UART3 21
 #irqrv; UART4 22
 #irqrv; UART5 23
-#regdef; DATA; 0x0000; UART Receive Buffer Register/Transmit Holding Register
-#regdef; DLH_IER; 0x0004; UART Divisor Latch High Register/UART Interrupt Enable Register
-#regdef; IIR_FCR; 0x0008; UART Interrupt Identity Register/UART FIFO Control Register
+#regdef; UART_RBR_THR_DLL; 0x0000; UART Receive Buffer Register/Transmit Holding Register
+#regdef; UART_DLH_IER; 0x0004; ; UART Divisor Latch High Register/UART Interrupt Enable Register
+#regdef; UART_IIR_FCR; 0x0008; UART Interrupt Identity Register/UART FIFO Control Register
 #regdef; UART_LCR; 0x000C; UART Line Control Register
 #regdef; UART_MCR; 0x0010; UART Modem Control Register
 #regdef; UART_LSR; 0x0014; UART Line Status Register
