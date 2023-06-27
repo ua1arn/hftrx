@@ -2163,6 +2163,229 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral>
+  <name>NORMPORT</name>
+  <description>контроллер внешней SRAM/NOR Flash памяти.</description>
+  <baseAddress>0x38008000</baseAddress>
+  <registers>
+   <register>
+    <name>SMC_MEMC_STATUS</name>
+    <displayName>SMC_MEMC_STATUS</displayName>
+    <description>RO Регистр состояния контроллера</description>
+    <addressOffset>0x1000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_MEMIF_CFG</name>
+    <displayName>SMC_MEMIF_CFG</displayName>
+    <description>RO Регистр конфигурации интерфейса памяти</description>
+    <addressOffset>0x1004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_MEMC_CFG_SET</name>
+    <displayName>SMC_MEMC_CFG_SET</displayName>
+    <description>WO Регистр установки конфигурации контроллера</description>
+    <addressOffset>0x1008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_MEMC_CFG_CLR</name>
+    <displayName>SMC_MEMC_CFG_CLR</displayName>
+    <description>WO Регистр сброса конфигурации контроллера</description>
+    <addressOffset>0x100C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_DIRECT_CMD</name>
+    <displayName>SMC_DIRECT_CMD</displayName>
+    <description>WO Регистр команд</description>
+    <addressOffset>0x1010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_SET_CYCLES</name>
+    <displayName>SMC_SET_CYCLES</displayName>
+    <description>WO Регистр настройки циклов доступа к памяти</description>
+    <addressOffset>0x1014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_SET_OPMODE</name>
+    <displayName>SMC_SET_OPMODE</displayName>
+    <description>WO Регистр настройки операции с памятью</description>
+    <addressOffset>0x1018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_REFRESH_PERIOD_0</name>
+    <displayName>SMC_REFRESH_PERIOD_0</displayName>
+    <description>RW Регистр периода обновления</description>
+    <addressOffset>0x1020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_SRAM_CYCLES0_0</name>
+    <displayName>SMC_SRAM_CYCLES0_0</displayName>
+    <description>RO Регистр параметров цикла доступа к памяти 0</description>
+    <addressOffset>0x1100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_OPMODE0_0</name>
+    <displayName>SMC_OPMODE0_0</displayName>
+    <description>RO Регистр режима операции для памяти 0</description>
+    <addressOffset>0x1104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_SRAM_CYCLES0_1</name>
+    <displayName>SMC_SRAM_CYCLES0_1</displayName>
+    <description>RO Регистр параметров цикла доступа к памяти 1</description>
+    <addressOffset>0x1120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_OPMODE0_1</name>
+    <displayName>SMC_OPMODE0_1</displayName>
+    <description>RO Регистр режима операции для памяти 1</description>
+    <addressOffset>0x1124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PERIPH_ID_0</name>
+    <displayName>SMC_PERIPH_ID_0</displayName>
+    <description>RO ID регистр периферии 0</description>
+    <addressOffset>0x1FE0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PERIPH_ID_1</name>
+    <displayName>SMC_PERIPH_ID_1</displayName>
+    <description>RO ID регистр периферии 1</description>
+    <addressOffset>0x1FE4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PERIPH_ID_2</name>
+    <displayName>SMC_PERIPH_ID_2</displayName>
+    <description>RO ID регистр периферии 2</description>
+    <addressOffset>0x1FE8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PERIPH_ID_4</name>
+    <displayName>SMC_PERIPH_ID_4</displayName>
+    <description>RO ID регистр периферии 3</description>
+    <addressOffset>0x1FEC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PCELL_ID_0</name>
+    <displayName>SMC_PCELL_ID_0</displayName>
+    <description>RO ID регистр компонента 0</description>
+    <addressOffset>0x1FF0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PCELL_ID_1</name>
+    <displayName>SMC_PCELL_ID_1</displayName>
+    <description>RO ID регистр компонента 1</description>
+    <addressOffset>0x1FF4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PCELL_ID_2</name>
+    <displayName>SMC_PCELL_ID_2</displayName>
+    <description>RO ID регистр компонента 2</description>
+    <addressOffset>0x1FF8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PCELL_ID_3</name>
+    <displayName>SMC_PCELL_ID_3</displayName>
+    <description>RO ID регистр компонента 3</description>
+    <addressOffset>0x1FFC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STATIC_MEM_CFG_0</name>
+    <displayName>STATIC_MEM_CFG_0</displayName>
+    <description>RW Регистр настройки внешней памяти</description>
+    <addressOffset>0x200C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ADDR_CFG_0</name>
+    <displayName>ADDR_CFG_0</displayName>
+    <description>RW Регистр настройки адреса 0</description>
+    <addressOffset>0x2014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ADDR_CFG_1</name>
+    <displayName>ADDR_CFG_1</displayName>
+    <description>RW Регистр настройки адреса 1</description>
+    <addressOffset>0x2018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BYTE_ORDER</name>
+    <displayName>BYTE_ORDER</displayName>
+    <description>RW Регистр настройки порядка байтов</description>
+    <addressOffset>0x2024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
  </peripherals>
  <vendor>
  </vendor>

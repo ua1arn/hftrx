@@ -45,6 +45,7 @@ typedef enum IRQn
 
 #define SDMA_BASE ((uintptr_t) 0x37220000)            /*!< SDMA Base */
 #define NANDMPORT_BASE ((uintptr_t) 0x38007000)       /*!< NANDMPORT Base */
+#define NORMPORT_BASE ((uintptr_t) 0x38008000)        /*!< NORMPORT Base */
 #define UART0_BASE ((uintptr_t) 0x38028000)           /*!< UART Base */
 #define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Base */
 #define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Base */
@@ -358,12 +359,52 @@ typedef struct NANDMPORT_Type
              uint32_t reserved_0x06C [0x0005];
     volatile uint32_t SLAVE_DMA_CFG;                  /*!< Offset 0x080 RW Регистр конфигурации Slave DMA */
 } NANDMPORT_TypeDef; /* size of structure = 0x084 */
+/*
+ * @brief NORMPORT
+ */
+/*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. */
+typedef struct NORMPORT_Type
+{
+             uint32_t reserved_0x000 [0x0400];
+    volatile uint32_t SMC_MEMC_STATUS;                /*!< Offset 0x1000 RO Регистр состояния контроллера */
+    volatile uint32_t SMC_MEMIF_CFG;                  /*!< Offset 0x1004 RO Регистр конфигурации интерфейса памяти */
+    volatile uint32_t SMC_MEMC_CFG_SET;               /*!< Offset 0x1008 WO Регистр установки конфигурации контроллера */
+    volatile uint32_t SMC_MEMC_CFG_CLR;               /*!< Offset 0x100C WO Регистр сброса конфигурации контроллера */
+    volatile uint32_t SMC_DIRECT_CMD;                 /*!< Offset 0x1010 WO Регистр команд */
+    volatile uint32_t SMC_SET_CYCLES;                 /*!< Offset 0x1014 WO Регистр настройки циклов доступа к памяти */
+    volatile uint32_t SMC_SET_OPMODE;                 /*!< Offset 0x1018 WO Регистр настройки операции с памятью */
+             uint32_t reserved_0x101C;
+    volatile uint32_t SMC_REFRESH_PERIOD_0;           /*!< Offset 0x1020 RW Регистр периода обновления */
+             uint32_t reserved_0x1024 [0x0037];
+    volatile uint32_t SMC_SRAM_CYCLES0_0;             /*!< Offset 0x1100 RO Регистр параметров цикла доступа к памяти 0 */
+    volatile uint32_t SMC_OPMODE0_0;                  /*!< Offset 0x1104 RO Регистр режима операции для памяти 0 */
+             uint32_t reserved_0x1108 [0x0006];
+    volatile uint32_t SMC_SRAM_CYCLES0_1;             /*!< Offset 0x1120 RO Регистр параметров цикла доступа к памяти 1 */
+    volatile uint32_t SMC_OPMODE0_1;                  /*!< Offset 0x1124 RO Регистр режима операции для памяти 1 */
+             uint32_t reserved_0x1128 [0x03AE];
+    volatile uint32_t SMC_PERIPH_ID_0;                /*!< Offset 0x1FE0 RO ID регистр периферии 0 */
+    volatile uint32_t SMC_PERIPH_ID_1;                /*!< Offset 0x1FE4 RO ID регистр периферии 1 */
+    volatile uint32_t SMC_PERIPH_ID_2;                /*!< Offset 0x1FE8 RO ID регистр периферии 2 */
+    volatile uint32_t SMC_PERIPH_ID_4;                /*!< Offset 0x1FEC RO ID регистр периферии 3 */
+    volatile uint32_t SMC_PCELL_ID_0;                 /*!< Offset 0x1FF0 RO ID регистр компонента 0 */
+    volatile uint32_t SMC_PCELL_ID_1;                 /*!< Offset 0x1FF4 RO ID регистр компонента 1 */
+    volatile uint32_t SMC_PCELL_ID_2;                 /*!< Offset 0x1FF8 RO ID регистр компонента 2 */
+    volatile uint32_t SMC_PCELL_ID_3;                 /*!< Offset 0x1FFC RO ID регистр компонента 3 */
+             uint32_t reserved_0x2000 [0x0003];
+    volatile uint32_t STATIC_MEM_CFG_0;               /*!< Offset 0x200C RW Регистр настройки внешней памяти */
+             uint32_t reserved_0x2010;
+    volatile uint32_t ADDR_CFG_0;                     /*!< Offset 0x2014 RW Регистр настройки адреса 0 */
+    volatile uint32_t ADDR_CFG_1;                     /*!< Offset 0x2018 RW Регистр настройки адреса 1 */
+             uint32_t reserved_0x201C [0x0002];
+    volatile uint32_t BYTE_ORDER;                     /*!< Offset 0x2024 RW Регистр настройки порядка байтов */
+} NORMPORT_TypeDef; /* size of structure = 0x2028 */
 
 
 /* Access pointers */
 
 #define SDMA ((SDMA_TypeDef *) SDMA_BASE)             /*!< SDMA Регистры блока управления SDMA register set access pointer */
 #define NANDMPORT ((NANDMPORT_TypeDef *) NANDMPORT_BASE)/*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) register set access pointer */
+#define NORMPORT ((NORMPORT_TypeDef *) NORMPORT_BASE) /*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2 Universal Asynchronous Receiver-Transmitter register set access pointer */

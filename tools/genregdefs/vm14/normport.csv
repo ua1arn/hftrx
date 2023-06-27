@@ -1,0 +1,27 @@
+#type; NORMPORT
+#base; NORMPORT 0x38008000
+#comment; контроллер внешней SRAM/NOR Flash памяти.
+#regdef; SMC_MEMC_STATUS; 0x1000; RO Регистр состояния контроллера
+#regdef; SMC_MEMIF_CFG; 0x1004; RO Регистр конфигурации интерфейса памяти
+#regdef; SMC_MEMC_CFG_SET; 0x1008; WO Регистр установки конфигурации контроллера
+#regdef; SMC_MEMC_CFG_CLR; 0x100C; WO Регистр сброса конфигурации контроллера
+#regdef; SMC_DIRECT_CMD; 0x1010; WO Регистр команд
+#regdef; SMC_SET_CYCLES; 0x1014; WO Регистр настройки циклов доступа к памяти
+#regdef; SMC_SET_OPMODE; 0x1018; WO Регистр настройки операции с памятью
+#regdef; SMC_REFRESH_PERIOD_0; 0x1020; RW Регистр периода обновления
+#regdef; SMC_SRAM_CYCLES0_0; 0x1100; RO Регистр параметров цикла доступа к памяти 0
+#regdef; SMC_OPMODE0_0; 0x1104; RO Регистр режима операции для памяти 0
+#regdef; SMC_SRAM_CYCLES0_1; 0x1120; RO Регистр параметров цикла доступа к памяти 1
+#regdef; SMC_OPMODE0_1; 0x1124; RO Регистр режима операции для памяти 1
+#regdef; SMC_PERIPH_ID_0; 0x1FE0; RO ID регистр периферии 0
+#regdef; SMC_PERIPH_ID_1; 0x1FE4; RO ID регистр периферии 1
+#regdef; SMC_PERIPH_ID_2; 0x1FE8; RO ID регистр периферии 2
+#regdef; SMC_PERIPH_ID_4; 0x1FEC; RO ID регистр периферии 3
+#regdef; SMC_PCELL_ID_0; 0x1FF0; RO ID регистр компонента 0
+#regdef; SMC_PCELL_ID_1; 0x1FF4; RO ID регистр компонента 1
+#regdef; SMC_PCELL_ID_2; 0x1FF8; RO ID регистр компонента 2
+#regdef; SMC_PCELL_ID_3; 0x1FFC; RO ID регистр компонента 3
+#regdef; STATIC_MEM_CFG_0; 0x200C; RW Регистр настройки внешней памяти
+#regdef; ADDR_CFG_0; 0x2014; RW Регистр настройки адреса 0
+#regdef; ADDR_CFG_1; 0x2018; RW Регистр настройки адреса 1
+#regdef; BYTE_ORDER; 0x2024; RW Регистр настройки порядка байтов
