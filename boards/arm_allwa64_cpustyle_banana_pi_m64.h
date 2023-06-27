@@ -37,13 +37,13 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 #if WITHDEBUG
-	#define WITHUART1HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #1 UART0 */
+	#define WITHUART0HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #0 UART0 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-//#define WITHCAT_USART1		1
-#define WITHDEBUG_USART1	1
-#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
+//#define WITHCAT_USART0		1
+#define WITHDEBUG_USART0	1
+#define WITHNMEA_USART0		1	/* порт подключения GPS/GLONASS */
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -593,9 +593,9 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-// WITHUART1HW
-// tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #1 UART0 */
-#define HARDWARE_UART1_INITIALIZE() do { \
+// WITHUART0HW
+// tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #0 UART0 */
+#define HARDWARE_UART0_INITIALIZE() do { \
 		const portholder_t TXMASK = (1u << 8); /* PB8 UART0-TX */ \
 		const portholder_t RXMASK = (1u << 9); /* PB9 UART0-RX - pull-up RX data */  \
 		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF4); \

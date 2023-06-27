@@ -17,17 +17,17 @@
 //#define HARDWARE_ARM_USEUART0 1		// UART0: PA9/PA10 pins - WITHUART1HW
 //#define HARDWARE_ARM_USEUART1 1		// UART1: PB2/PB3 pins - WITHUART2HW
 
-//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
-#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
+//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 */
+#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
 
 //#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 //#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 //#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-#define WITHCAT_USART2		1
-#define WITHDEBUG_USART2	1
-#define WITHMODEM_USART2	1
+#define WITHCAT_USART1		1
+#define WITHDEBUG_USART1	1
+#define WITHMODEM_USART1	1
 #define WITHNMEA_USART2		1
 
 #define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
@@ -444,19 +444,16 @@
 		} while (0) 
 #endif
 
-#if HARDWARE_ARM_USEUSART0
-	#define HARDWARE_UART1_INITIALIZE() do { \
+	#define HARDWARE_UART0_INITIALIZE() do { \
 		arm_hardware_pioa_inputs(AT91C_PA5_RXD0); \
 		arm_hardware_pioa_outputs(AT91C_PA6_TXD0, AT91C_PA6_TXD0); \
 		arm_hardware_pioa_peripha(AT91C_PA5_RXD0 | AT91C_PA6_TXD0); \
 		} while (0)
-#elif HARDWARE_ARM_USEUSART1
-	#define HARDWARE_UART2_INITIALIZE() do { \
+	#define HARDWARE_UART1_INITIALIZE() do { \
 		arm_hardware_pioa_inputs(AT91C_PA21_RXD1); \
 		arm_hardware_pioa_outputs(AT91C_PA22_TXD1, AT91C_PA22_TXD1); \
 		arm_hardware_pioa_peripha(AT91C_PA21_RXD1 | AT91C_PA22_TXD1); \
 		} while (0)
-#endif
 
 	#if KEYBOARD_USE_ADC
 		#define HARDWARE_KBD_INITIALIZE() do { \
