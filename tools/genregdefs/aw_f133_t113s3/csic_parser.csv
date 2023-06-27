@@ -1,5 +1,7 @@
 #type; CSIC_PARSER
 #base; CSIC_PARSER0 0x05801000
+#irq; CSIC_PARSER0 132
+#irqrv; CSIC_PARSER0 116
 #regdef; PRS_EN_REG; 0x0000; Parser Enable Register
 #regdef; PRS_NCSIC_IF_CFG_REG; 0x0004; Parser NCSIC Interface Configuration Register
 #regdef; PRS_CAP_REG; 0x000C; Parser Capture Register

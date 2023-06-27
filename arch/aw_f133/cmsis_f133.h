@@ -55,6 +55,10 @@ typedef enum IRQn
     DI_IRQn = 104,                                    /*!< DI De-Interlacer Interrupt */
     DSI0_IRQn = 108,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
     TVE_IRQn = 110,                                   /*!< TVE TV Encoder Interrupt */
+    CSIC_DMA0_IRQn = 111,                             /*!< CSIC_DMA  Interrupt */
+    CSIC_DMA1_IRQn = 112,                             /*!< CSIC_DMA  Interrupt */
+    CSIC_PARSER0_IRQn = 116,                          /*!< CSIC_PARSER  Interrupt */
+    CSI_TOP_PKT_IRQn = 122,                           /*!< CSIC_TOP  Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */

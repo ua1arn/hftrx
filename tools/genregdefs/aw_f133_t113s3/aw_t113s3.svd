@@ -11599,6 +11599,11 @@
   <name>CSIC_TOP</name>
   <description></description>
   <baseAddress>0x05800800</baseAddress>
+  <interrupt>
+   <name>CSI_TOP_PKT</name>
+   <value>122</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>CSIC_TOP_EN_REG</name>
@@ -11750,6 +11755,11 @@
   <name>CSIC_PARSER0</name>
   <description></description>
   <baseAddress>0x05801000</baseAddress>
+  <interrupt>
+   <name>CSIC_PARSER0</name>
+   <value>116</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>PRS_EN_REG</name>
@@ -12189,6 +12199,16 @@
   <name>CSIC_DMA0</name>
   <description></description>
   <baseAddress>0x05809000</baseAddress>
+  <interrupt>
+   <name>CSIC_DMA0</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSIC_DMA1</name>
+   <value>112</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>CSIC_DMA_EN_REG</name>
@@ -12483,6 +12503,16 @@
   <peripheral derivedFrom="CSIC_DMA0">
   <name>CSIC_DMA1</name>
   <baseAddress>0x05809200</baseAddress>
+  <interrupt>
+   <name>CSIC_DMA0</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSIC_DMA1</name>
+   <value>112</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>C0_CPUX_CFG</name>

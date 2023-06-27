@@ -1,6 +1,10 @@
 #type; CSIC_DMA
 #base; CSIC_DMA0 0x05809000
 #base; CSIC_DMA1 0x05809200
+#irq; CSIC_DMA0 127
+#irq; CSIC_DMA1 128
+#irqrv; CSIC_DMA0 111
+#irqrv; CSIC_DMA1 112
 #regdef; CSIC_DMA_EN_REG; 0x0000; CSIC DMA Enable Register
 #regdef; CSIC_DMA_CFG_REG; 0x0004; CSIC DMA Configuration Register
 #regdef; CSIC_DMA_HSIZE_REG; 0x0010; CSIC DMA Horizontal Size Register
