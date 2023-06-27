@@ -1,0 +1,31 @@
+#type; NANDMPORT
+#base; NANDMPORT 0x38007000
+#comment; КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT)
+#regdef; PACKET; 0x0 RW Регистр настройки пакетов
+#regdef; MEMADDR1; 0x04; RW Регистр адреса 1
+#regdef; MEMADDR2; 0x08; RW Регистр адреса 2
+#regdef; COMMAND; 0x0C; RW Регистр команды
+#regdef; PROGRAM; 0x10; RW Регистр программы
+#regdef; INTERRUPT_STATUS_EN; 0x14; RW Регистр разрешения статуса прерываний
+#regdef; INTERRUPT_SIGNAL_EN; 0x18; RW Регистр разрешения сигнала прерываний
+#regdef; INTERRUPT_STATUS; 0x1C; RW Регистр статуса прерываний
+#regdef; ID1; 0x20; RO Регистр ID1
+#regdef; ID2; 0x24; RO Регистр ID2
+#regdef; FLASH_STATUS; 0x28; RO Регистр статуса флэш-памяти
+#regdef; TIMING; 0x2C; RW Регистр временных параметров
+#regdef; BUFFER_DATA; 0x30; RW Регистр данных буфера
+#regdef; ECC; 0x34; RW Регистр ECC
+#regdef; ECC_ERROR_CNT; 0x38; RO Счётчик ошибок ECC
+#regdef; ECC_SPARE_CMD; 0x3c; RW Регистр команд ECC
+#regdef; ERROR_CNT_1BIT; 0x40; RW Счётчик 1-битных ошибок
+#regdef; ERROR_CNT_2BIT; 0x44; RW Счётчик 2-битных ошибок
+#regdef; ERROR_CNT_3BIT; 0x48; RW Счётчик 3-битных ошибок
+#regdef; ERROR_CNT_4BIT; 0x4C; RW Счётчик 4-битных ошибок
+#regdef; DMA_SYS_ADDR; 0x50; RW Системный адрес DMA
+#regdef; DMA_BUFFER_BOUNDARY; 0x54; RW Граница DMA пересылки
+#regdef; CPU_STATE; 0x58; RW Регистр состояния CPU
+#regdef; ERROR_COUNT_5BIT; 0x5c; RW Счётчик 5-битных ошибок
+#regdef; ERROR_COUNT_6BIT; 0x60; RW Счётчик 6-битных ошибок
+#regdef; ERROR_COUNT_7BIT; 0x64; RW Счётчик 7-битных ошибок
+#regdef; ERROR_COUNT_8BIT; 0x68; RW Счётчик 8-битных ошибок
+#regdef; SLAVE_DMA_CFG; 0x80; RW Регистр конфигурации Slave DMA

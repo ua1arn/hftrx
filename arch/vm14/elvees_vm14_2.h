@@ -44,6 +44,7 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define SDMA_BASE ((uintptr_t) 0x37220000)            /*!< SDMA Base */
+#define NANDMPORT_BASE ((uintptr_t) 0x38007000)       /*!< NANDMPORT Base */
 #define UART0_BASE ((uintptr_t) 0x38028000)           /*!< UART Base */
 #define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Base */
 #define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Base */
@@ -321,11 +322,48 @@ typedef struct SDMA_Type
              uint32_t reserved_0xFE4 [0x0003];
     volatile uint32_t pcell_id_n;                     /*!< Offset 0xFF0 RO ID регистры компонента. */
 } SDMA_TypeDef; /* size of structure = 0xFF4 */
+/*
+ * @brief NANDMPORT
+ */
+/*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) */
+typedef struct NANDMPORT_Type
+{
+    volatile uint32_t PACKET;                         /*!< Offset 0x000 (null) */
+    volatile uint32_t MEMADDR1;                       /*!< Offset 0x004 RW Регистр адреса 1 */
+    volatile uint32_t MEMADDR2;                       /*!< Offset 0x008 RW Регистр адреса 2 */
+    volatile uint32_t COMMAND;                        /*!< Offset 0x00C RW Регистр команды */
+    volatile uint32_t PROGRAM;                        /*!< Offset 0x010 RW Регистр программы */
+    volatile uint32_t INTERRUPT_STATUS_EN;            /*!< Offset 0x014 RW Регистр разрешения статуса прерываний */
+    volatile uint32_t INTERRUPT_SIGNAL_EN;            /*!< Offset 0x018 RW Регистр разрешения сигнала прерываний */
+    volatile uint32_t INTERRUPT_STATUS;               /*!< Offset 0x01C RW Регистр статуса прерываний */
+    volatile uint32_t ID1;                            /*!< Offset 0x020 RO Регистр ID1 */
+    volatile uint32_t ID2;                            /*!< Offset 0x024 RO Регистр ID2 */
+    volatile uint32_t FLASH_STATUS;                   /*!< Offset 0x028 RO Регистр статуса флэш-памяти */
+    volatile uint32_t TIMING;                         /*!< Offset 0x02C RW Регистр временных параметров */
+    volatile uint32_t BUFFER_DATA;                    /*!< Offset 0x030 RW Регистр данных буфера */
+    volatile uint32_t ECC;                            /*!< Offset 0x034 RW Регистр ECC */
+    volatile uint32_t ECC_ERROR_CNT;                  /*!< Offset 0x038 RO Счётчик ошибок ECC */
+    volatile uint32_t ECC_SPARE_CMD;                  /*!< Offset 0x03C RW Регистр команд ECC */
+    volatile uint32_t ERROR_CNT_1BIT;                 /*!< Offset 0x040 RW Счётчик 1-битных ошибок */
+    volatile uint32_t ERROR_CNT_2BIT;                 /*!< Offset 0x044 RW Счётчик 2-битных ошибок */
+    volatile uint32_t ERROR_CNT_3BIT;                 /*!< Offset 0x048 RW Счётчик 3-битных ошибок */
+    volatile uint32_t ERROR_CNT_4BIT;                 /*!< Offset 0x04C RW Счётчик 4-битных ошибок */
+    volatile uint32_t DMA_SYS_ADDR;                   /*!< Offset 0x050 RW Системный адрес DMA */
+    volatile uint32_t DMA_BUFFER_BOUNDARY;            /*!< Offset 0x054 RW Граница DMA пересылки */
+    volatile uint32_t CPU_STATE;                      /*!< Offset 0x058 RW Регистр состояния CPU */
+    volatile uint32_t ERROR_COUNT_5BIT;               /*!< Offset 0x05C RW Счётчик 5-битных ошибок */
+    volatile uint32_t ERROR_COUNT_6BIT;               /*!< Offset 0x060 RW Счётчик 6-битных ошибок */
+    volatile uint32_t ERROR_COUNT_7BIT;               /*!< Offset 0x064 RW Счётчик 7-битных ошибок */
+    volatile uint32_t ERROR_COUNT_8BIT;               /*!< Offset 0x068 RW Счётчик 8-битных ошибок */
+             uint32_t reserved_0x06C [0x0005];
+    volatile uint32_t SLAVE_DMA_CFG;                  /*!< Offset 0x080 RW Регистр конфигурации Slave DMA */
+} NANDMPORT_TypeDef; /* size of structure = 0x084 */
 
 
 /* Access pointers */
 
 #define SDMA ((SDMA_TypeDef *) SDMA_BASE)             /*!< SDMA Регистры блока управления SDMA register set access pointer */
+#define NANDMPORT ((NANDMPORT_TypeDef *) NANDMPORT_BASE)/*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2 Universal Asynchronous Receiver-Transmitter register set access pointer */

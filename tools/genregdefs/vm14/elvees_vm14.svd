@@ -1904,6 +1904,265 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral>
+  <name>NANDMPORT</name>
+  <description>КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT)</description>
+  <baseAddress>0x38007000</baseAddress>
+  <registers>
+   <register>
+    <name>PACKET</name>
+    <displayName>PACKET</displayName>
+    <description></description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MEMADDR1</name>
+    <displayName>MEMADDR1</displayName>
+    <description>RW Регистр адреса 1</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MEMADDR2</name>
+    <displayName>MEMADDR2</displayName>
+    <description>RW Регистр адреса 2</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMMAND</name>
+    <displayName>COMMAND</displayName>
+    <description>RW Регистр команды</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PROGRAM</name>
+    <displayName>PROGRAM</displayName>
+    <description>RW Регистр программы</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTERRUPT_STATUS_EN</name>
+    <displayName>INTERRUPT_STATUS_EN</displayName>
+    <description>RW Регистр разрешения статуса прерываний</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTERRUPT_SIGNAL_EN</name>
+    <displayName>INTERRUPT_SIGNAL_EN</displayName>
+    <description>RW Регистр разрешения сигнала прерываний</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTERRUPT_STATUS</name>
+    <displayName>INTERRUPT_STATUS</displayName>
+    <description>RW Регистр статуса прерываний</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ID1</name>
+    <displayName>ID1</displayName>
+    <description>RO Регистр ID1</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ID2</name>
+    <displayName>ID2</displayName>
+    <description>RO Регистр ID2</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FLASH_STATUS</name>
+    <displayName>FLASH_STATUS</displayName>
+    <description>RO Регистр статуса флэш-памяти</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMING</name>
+    <displayName>TIMING</displayName>
+    <description>RW Регистр временных параметров</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BUFFER_DATA</name>
+    <displayName>BUFFER_DATA</displayName>
+    <description>RW Регистр данных буфера</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ECC</name>
+    <displayName>ECC</displayName>
+    <description>RW Регистр ECC</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ECC_ERROR_CNT</name>
+    <displayName>ECC_ERROR_CNT</displayName>
+    <description>RO Счётчик ошибок ECC</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ECC_SPARE_CMD</name>
+    <displayName>ECC_SPARE_CMD</displayName>
+    <description>RW Регистр команд ECC</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_CNT_1BIT</name>
+    <displayName>ERROR_CNT_1BIT</displayName>
+    <description>RW Счётчик 1-битных ошибок</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_CNT_2BIT</name>
+    <displayName>ERROR_CNT_2BIT</displayName>
+    <description>RW Счётчик 2-битных ошибок</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_CNT_3BIT</name>
+    <displayName>ERROR_CNT_3BIT</displayName>
+    <description>RW Счётчик 3-битных ошибок</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_CNT_4BIT</name>
+    <displayName>ERROR_CNT_4BIT</displayName>
+    <description>RW Счётчик 4-битных ошибок</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMA_SYS_ADDR</name>
+    <displayName>DMA_SYS_ADDR</displayName>
+    <description>RW Системный адрес DMA</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMA_BUFFER_BOUNDARY</name>
+    <displayName>DMA_BUFFER_BOUNDARY</displayName>
+    <description>RW Граница DMA пересылки</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPU_STATE</name>
+    <displayName>CPU_STATE</displayName>
+    <description>RW Регистр состояния CPU</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_COUNT_5BIT</name>
+    <displayName>ERROR_COUNT_5BIT</displayName>
+    <description>RW Счётчик 5-битных ошибок</description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_COUNT_6BIT</name>
+    <displayName>ERROR_COUNT_6BIT</displayName>
+    <description>RW Счётчик 6-битных ошибок</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_COUNT_7BIT</name>
+    <displayName>ERROR_COUNT_7BIT</displayName>
+    <description>RW Счётчик 7-битных ошибок</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_COUNT_8BIT</name>
+    <displayName>ERROR_COUNT_8BIT</displayName>
+    <description>RW Счётчик 8-битных ошибок</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SLAVE_DMA_CFG</name>
+    <displayName>SLAVE_DMA_CFG</displayName>
+    <description>RW Регистр конфигурации Slave DMA</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
  </peripherals>
  <vendor>
  </vendor>
