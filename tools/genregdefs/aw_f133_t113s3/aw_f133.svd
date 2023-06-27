@@ -15004,6 +15004,231 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral>
+  <name>C0_CPUX_CFG</name>
+  <description></description>
+  <baseAddress>0x09010000</baseAddress>
+  <interrupt>
+   <name>C0_CTI0</name>
+   <value>176</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_CTI1</name>
+   <value>177</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_COMMTX0</name>
+   <value>180</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_COMMTX1</name>
+   <value>181</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_COMMRX0</name>
+   <value>184</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_COMMRX1</name>
+   <value>185</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_PMU0</name>
+   <value>188</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_PMU1</name>
+   <value>189</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_AXI_ERROR</name>
+   <value>192</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>AXI_WR_IRQ</name>
+   <value>194</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>AXI_RD_IRQ</name>
+   <value>195</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>DBGPWRUPREQ_out_0</name>
+   <value>196</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>DBGPWRUPREQ_out_1</name>
+   <value>197</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>C0_RST_CTRL</name>
+    <displayName>C0_RST_CTRL</displayName>
+    <description>Cluster 0 Reset Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CTRL_REG0</name>
+    <displayName>C0_CTRL_REG0</displayName>
+    <description>Cluster 0 Control Register0</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CTRL_REG1</name>
+    <displayName>C0_CTRL_REG1</displayName>
+    <description>Cluster 0 Control Register1</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CTRL_REG2</name>
+    <displayName>C0_CTRL_REG2</displayName>
+    <description>Cluster 0 Control Register2</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CACHE_CFG_REG</name>
+    <displayName>CACHE_CFG_REG</displayName>
+    <description>Cache Configuration Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CPU_STATUS</name>
+    <displayName>C0_CPU_STATUS</displayName>
+    <description>Cluster 0 CPU Status Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_STATUS_REG</name>
+    <displayName>L2_STATUS_REG</displayName>
+    <description>Cluster 0 L2 Status Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBG_REG0</name>
+    <displayName>DBG_REG0</displayName>
+    <description>Cluster 0 Debug Control Register0</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBG_REG1</name>
+    <displayName>DBG_REG1</displayName>
+    <description>Cluster 0 Debug Control Register1</description>
+    <addressOffset>0x0C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AXI_MNT_CTRL_REG</name>
+    <displayName>AXI_MNT_CTRL_REG</displayName>
+    <description>AXI Monitor Control Register</description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AXI_MNT_PRD_REG</name>
+    <displayName>AXI_MNT_PRD_REG</displayName>
+    <description>AXI Monitor Period Register</description>
+    <addressOffset>0x0D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AXI_MNT_RLTCY_REG</name>
+    <displayName>AXI_MNT_RLTCY_REG</displayName>
+    <description>AXI Monitor Read Total Latency Register</description>
+    <addressOffset>0x0D8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AXI_MNT_WLTCY_REG</name>
+    <displayName>AXI_MNT_WLTCY_REG</displayName>
+    <description>AXI Monitor Write Total Latency Register</description>
+    <addressOffset>0x0DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AXI_MNT_RREQ_REG</name>
+    <displayName>AXI_MNT_RREQ_REG</displayName>
+    <description>AXI Monitor Read Request Times Register</description>
+    <addressOffset>0x0E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AXI_MNT_WREQ_REG</name>
+    <displayName>AXI_MNT_WREQ_REG</displayName>
+    <description>AXI Monitor Write Request Times Register</description>
+    <addressOffset>0x0E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AXI_MNT_RBD_REG</name>
+    <displayName>AXI_MNT_RBD_REG</displayName>
+    <description>AXI Monitor Read Bandwidth Register</description>
+    <addressOffset>0x0E8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AXI_MNT_WBD_REG</name>
+    <displayName>AXI_MNT_WBD_REG</displayName>
+    <description>AXI Monitor Write Bandwidth Register</description>
+    <addressOffset>0x0EC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
  </peripherals>
  <vendor>
  </vendor>

@@ -59,6 +59,19 @@ typedef enum IRQn
     CSIC_DMA1_IRQn = 112,                             /*!< CSIC_DMA  Interrupt */
     CSIC_PARSER0_IRQn = 116,                          /*!< CSIC_PARSER  Interrupt */
     CSI_TOP_PKT_IRQn = 122,                           /*!< CSIC_TOP  Interrupt */
+    C0_CTI0_IRQn = 176,                               /*!< C0_CPUX_CFG  Interrupt */
+    C0_CTI1_IRQn = 177,                               /*!< C0_CPUX_CFG  Interrupt */
+    C0_COMMTX0_IRQn = 180,                            /*!< C0_CPUX_CFG  Interrupt */
+    C0_COMMTX1_IRQn = 181,                            /*!< C0_CPUX_CFG  Interrupt */
+    C0_COMMRX0_IRQn = 184,                            /*!< C0_CPUX_CFG  Interrupt */
+    C0_COMMRX1_IRQn = 185,                            /*!< C0_CPUX_CFG  Interrupt */
+    C0_PMU0_IRQn = 188,                               /*!< C0_CPUX_CFG  Interrupt */
+    C0_PMU1_IRQn = 189,                               /*!< C0_CPUX_CFG  Interrupt */
+    C0_AXI_ERROR_IRQn = 192,                          /*!< C0_CPUX_CFG  Interrupt */
+    AXI_WR_IRQ_IRQn = 194,                            /*!< C0_CPUX_CFG  Interrupt */
+    AXI_RD_IRQ_IRQn = 195,                            /*!< C0_CPUX_CFG  Interrupt */
+    DBGPWRUPREQ_out_0_IRQn = 196,                     /*!< C0_CPUX_CFG  Interrupt */
+    DBGPWRUPREQ_out_1_IRQn = 197,                     /*!< C0_CPUX_CFG  Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -161,6 +174,8 @@ typedef enum IRQn
 #define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX Base */
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Base */
+#define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG Base */
+#define C0_CPUX_MBIST_BASE ((uintptr_t) 0x09020000)   /*!< C0_CPUX_MBIST Base */
 #define PLIC_BASE ((uintptr_t) 0x10000000)            /*!< PLIC Base */
 #define CLINT_BASE ((uintptr_t) 0x14000000)           /*!< CLINT Base */
 
@@ -2696,6 +2711,35 @@ typedef struct R_PRCM_Type
     volatile uint32_t VDD_SYS_PWROFF_GATING_REG;      /*!< Offset 0x250  */
     volatile uint32_t ANALOG_PWROFF_GATING_REG;       /*!< Offset 0x254  */
 } R_PRCM_TypeDef; /* size of structure = 0x258 */
+/*
+ * @brief C0_CPUX_CFG
+ */
+/*!< C0_CPUX_CFG  */
+typedef struct C0_CPUX_CFG_Type
+{
+    volatile uint32_t C0_RST_CTRL;                    /*!< Offset 0x000 Cluster 0 Reset Control Register */
+             uint32_t reserved_0x004 [0x0003];
+    volatile uint32_t C0_CTRL_REG0;                   /*!< Offset 0x010 Cluster 0 Control Register0 */
+    volatile uint32_t C0_CTRL_REG1;                   /*!< Offset 0x014 Cluster 0 Control Register1 */
+    volatile uint32_t C0_CTRL_REG2;                   /*!< Offset 0x018 Cluster 0 Control Register2 */
+             uint32_t reserved_0x01C [0x0002];
+    volatile uint32_t CACHE_CFG_REG;                  /*!< Offset 0x024 Cache Configuration Register */
+             uint32_t reserved_0x028 [0x0016];
+    volatile uint32_t C0_CPU_STATUS;                  /*!< Offset 0x080 Cluster 0 CPU Status Register */
+    volatile uint32_t L2_STATUS_REG;                  /*!< Offset 0x084 Cluster 0 L2 Status Register */
+             uint32_t reserved_0x088 [0x000E];
+    volatile uint32_t DBG_REG0;                       /*!< Offset 0x0C0 Cluster 0 Debug Control Register0 */
+    volatile uint32_t DBG_REG1;                       /*!< Offset 0x0C4 Cluster 0 Debug Control Register1 */
+             uint32_t reserved_0x0C8 [0x0002];
+    volatile uint32_t AXI_MNT_CTRL_REG;               /*!< Offset 0x0D0 AXI Monitor Control Register */
+    volatile uint32_t AXI_MNT_PRD_REG;                /*!< Offset 0x0D4 AXI Monitor Period Register */
+    volatile uint32_t AXI_MNT_RLTCY_REG;              /*!< Offset 0x0D8 AXI Monitor Read Total Latency Register */
+    volatile uint32_t AXI_MNT_WLTCY_REG;              /*!< Offset 0x0DC AXI Monitor Write Total Latency Register */
+    volatile uint32_t AXI_MNT_RREQ_REG;               /*!< Offset 0x0E0 AXI Monitor Read Request Times Register */
+    volatile uint32_t AXI_MNT_WREQ_REG;               /*!< Offset 0x0E4 AXI Monitor Write Request Times Register */
+    volatile uint32_t AXI_MNT_RBD_REG;                /*!< Offset 0x0E8 AXI Monitor Read Bandwidth Register */
+    volatile uint32_t AXI_MNT_WBD_REG;                /*!< Offset 0x0EC AXI Monitor Write Bandwidth Register */
+} C0_CPUX_CFG_TypeDef; /* size of structure = 0x0F0 */
 
 
 /* Access pointers */
@@ -2794,6 +2838,8 @@ typedef struct R_PRCM_Type
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
+#define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
+#define C0_CPUX_MBIST ((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)/*!< C0_CPUX_MBIST  register set access pointer */
 #define PLIC ((PLIC_TypeDef *) PLIC_BASE)             /*!< PLIC  register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)          /*!< CLINT  register set access pointer */
 

@@ -93,6 +93,19 @@ typedef enum IRQn
     CSIC_DMA1_IRQn = 128,                             /*!< CSIC_DMA  Interrupt */
     CSIC_PARSER0_IRQn = 132,                          /*!< CSIC_PARSER  Interrupt */
     CSI_TOP_PKT_IRQn = 138,                           /*!< CSIC_TOP  Interrupt */
+    C0_CTI0_IRQn = 192,                               /*!< C0_CPUX_CFG  Interrupt */
+    C0_CTI1_IRQn = 193,                               /*!< C0_CPUX_CFG  Interrupt */
+    C0_COMMTX0_IRQn = 196,                            /*!< C0_CPUX_CFG  Interrupt */
+    C0_COMMTX1_IRQn = 197,                            /*!< C0_CPUX_CFG  Interrupt */
+    C0_COMMRX0_IRQn = 200,                            /*!< C0_CPUX_CFG  Interrupt */
+    C0_COMMRX1_IRQn = 201,                            /*!< C0_CPUX_CFG  Interrupt */
+    C0_PMU0_IRQn = 204,                               /*!< C0_CPUX_CFG  Interrupt */
+    C0_PMU1_IRQn = 205,                               /*!< C0_CPUX_CFG  Interrupt */
+    C0_AXI_ERROR_IRQn = 208,                          /*!< C0_CPUX_CFG  Interrupt */
+    AXI_WR_IRQ_IRQn = 210,                            /*!< C0_CPUX_CFG  Interrupt */
+    AXI_RD_IRQ_IRQn = 211,                            /*!< C0_CPUX_CFG  Interrupt */
+    DBGPWRUPREQ_out_0_IRQn = 212,                     /*!< C0_CPUX_CFG  Interrupt */
+    DBGPWRUPREQ_out_1_IRQn = 213,                     /*!< C0_CPUX_CFG  Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */

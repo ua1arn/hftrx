@@ -12518,6 +12518,71 @@
   <name>C0_CPUX_CFG</name>
   <description></description>
   <baseAddress>0x09010000</baseAddress>
+  <interrupt>
+   <name>C0_CTI0</name>
+   <value>176</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_CTI1</name>
+   <value>177</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_COMMTX0</name>
+   <value>180</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_COMMTX1</name>
+   <value>181</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_COMMRX0</name>
+   <value>184</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_COMMRX1</name>
+   <value>185</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_PMU0</name>
+   <value>188</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_PMU1</name>
+   <value>189</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>C0_AXI_ERROR</name>
+   <value>192</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>AXI_WR_IRQ</name>
+   <value>194</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>AXI_RD_IRQ</name>
+   <value>195</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>DBGPWRUPREQ_out_0</name>
+   <value>196</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>DBGPWRUPREQ_out_1</name>
+   <value>197</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>C0_RST_CTRL</name>
