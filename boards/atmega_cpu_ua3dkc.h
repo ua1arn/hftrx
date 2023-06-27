@@ -15,14 +15,13 @@
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #define WITHCPUADCHW 	1	/* использование ADC */
 
-#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
-//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
+#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 */
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-#define WITHCAT_USART1		1
-#define WITHDEBUG_USART1	1
-#define WITHMODEM_USART1	1
-#define WITHNMEA_USART1		1
+#define WITHCAT_USART0		1
+#define WITHDEBUG_USART0	1
+#define WITHMODEM_USART0	1
+#define WITHNMEA_USART0		1
 
 // Плата UA3DKC Сергей (ATMega32, FM25040, Si570+AD9834+WH2002) - ref 40 MHz
 
