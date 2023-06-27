@@ -171,10 +171,14 @@ void nmea_disconnect(void)
 
 void nmea_parser_init(void)
 {
-#if WITHUART1HW
+#if WITHUART0HW && WITHNMEA_USART0
 	NMEA_INITIALIZE();
 	serial_set_handler(UART0_IRQn, UART0_IRQHandler);
-#endif /* WITHUART1HW */
+#endif /* WITHUART0HW && WITHNMEA_USART0 */
+#if WITHUART1HW && WITHNMEA_USART1
+	NMEA_INITIALIZE();
+	serial_set_handler(UART1_IRQn, UART1_IRQHandler);
+#endif /* WITHUART1HW && WITHNMEA_USART1 */
 }
 
 #endif /* WITHNMEA && ! LINUX_SUBSYSTEM */
@@ -321,7 +325,7 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 		char c;
 		UART0->ISR = UART0->IMR;	// clear interrupt status
 
-		while (hardware_uart1_getchar(& c))
+		while (hardware_uart0_getchar(& c))
 		{
 			HARDWARE_UART0_ONRXCHAR(c);
 		}
@@ -1220,7 +1224,7 @@ void hardware_uart0_initialize(uint_fast8_t debug)
 
 	ISR(USART_RX_vect)
 	{
-		HARDWARE_UART1_ONRXCHAR(UDR0);
+		HARDWARE_UART1_ONRXCHAR(UDR1);
 	}
 
 	ISR(USART_TX_vect)
@@ -1232,7 +1236,7 @@ void hardware_uart0_initialize(uint_fast8_t debug)
 
 	ISR(USART1_RX_vect)
 	{
-		HARDWARE_UART1_ONRXCHAR(UDR0);
+		HARDWARE_UART1_ONRXCHAR(UDR1);
 	}
 
 	ISR(USART1_TX_vect)
@@ -1284,10 +1288,10 @@ void hardware_uart0_initialize(uint_fast8_t debug)
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-	static void UART0_IRQHandler(void)
+	static void UART1_IRQHandler(void)
 	{
 		char c;
-		UART0->ISR = UART0->IMR;	// clear interrupt status
+		UART1->ISR = UART1->IMR;	// clear interrupt status
 
 		while (hardware_uart1_getchar(& c))
 		{
@@ -1440,11 +1444,10 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
-	#warning Undefined CPUSTYLE_XC7Z
 	if (state)
-		 UART0->IER |= 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART1->IER |= 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	else
-		 UART0->IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART1->IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
@@ -1550,9 +1553,9 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 #elif CPUSTYLE_XC7Z
 
 	uint32_t mask = state ? 1 : 0; 			/* RX FIFO trigger interrupt */
-	UART0->RXWM = 1; 						/* set RX FIFO Trigger Level */
-	UART0->IER = mask;
-	UART0->IDR = ~ mask;
+	UART1->RXWM = 1; 						/* set RX FIFO Trigger Level */
+	UART1->IER = mask;
+	UART1->IDR = ~ mask;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
@@ -1630,7 +1633,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 #elif CPUSTYLE_XC7Z
 
-	UART0->FIFO = c;
+	UART1->FIFO = c;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
@@ -1726,9 +1729,9 @@ hardware_uart1_getchar(char * cp)
 
 #elif CPUSTYLE_XC7Z
 
-	if ((UART0->SR & XUARTPS_SR_RXEMPTY) != 0)
+	if ((UART1->SR & XUARTPS_SR_RXEMPTY) != 0)
 		return 0;
-	* cp = UART0->FIFO;
+	* cp = UART1->FIFO;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
@@ -1823,9 +1826,9 @@ hardware_uart1_putchar(uint_fast8_t c)
 
 #elif CPUSTYLE_XC7Z
 
-	if ((UART0->SR & XUARTPS_SR_TNFUL) != 0)
+	if ((UART1->SR & XUARTPS_SR_TNFUL) != 0)
 		return 0;
-	UART0->FIFO = c;
+	UART1->FIFO = c;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
@@ -2132,7 +2135,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_XC7Z
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (1u << 20);	// APER_CLK_CTRL.UART0_CPU_1XCLKACT
+	SCLR->APER_CLK_CTRL |= (1u << 20);	// APER_CLK_CTRL.UART1_CPU_1XCLKACT
 	//EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
 	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
 			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR_VALUE << 8) | // DIVISOR
@@ -2141,24 +2144,24 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 			0;
 
 	uint32_t r; // Temporary value variable
-	r = UART0->CR;
+	r = UART1->CR;
 	r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
 	r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
-	UART0->CR = r;
+	UART1->CR = r;
 
-	UART0->MR = 0;
-	UART0->MR &= ~XUARTPS_MR_CLKSEL; // Clear "Input clock selection" - 0: clock source is uart_ref_clk
-	UART0->MR |= XUARTPS_MR_CHARLEN_8_BIT; 	// Set "8 bits data"
-	UART0->MR |= XUARTPS_MR_PARITY_NONE; 	// Set "No parity mode"
-	UART0->MR |= XUARTPS_MR_STOPMODE_1_BIT; // Set "1 stop bit"
-	UART0->MR |= XUARTPS_MR_CHMODE_NORM; 	// Set "Normal mode"
+	UART1->MR = 0;
+	UART1->MR &= ~XUARTPS_MR_CLKSEL; // Clear "Input clock selection" - 0: clock source is uart_ref_clk
+	UART1->MR |= XUARTPS_MR_CHARLEN_8_BIT; 	// Set "8 bits data"
+	UART1->MR |= XUARTPS_MR_PARITY_NONE; 	// Set "No parity mode"
+	UART1->MR |= XUARTPS_MR_STOPMODE_1_BIT; // Set "1 stop bit"
+	UART1->MR |= XUARTPS_MR_CHMODE_NORM; 	// Set "Normal mode"
 
-	UART0->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
+	UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
 
-	r = UART0->CR;
+	r = UART1->CR;
 	r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
 	r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
-	UART0->CR = r;
+	UART1->CR = r;
 
 	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -5314,20 +5317,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	#if HARDWARE_ARM_USEUSART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART0->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART0->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART0->US_MR &= ~ US_MR_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART1
+	#if HARDWARE_ARM_USEUSART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
 		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
@@ -5341,11 +5331,6 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 			USART1->US_MR &= ~ US_MR_OVER;
 		}
 
-	#elif HARDWARE_ARM_USEUART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART0->UART_BRGR = value;
 	#elif HARDWARE_ARM_USEUART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
@@ -5361,29 +5346,15 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
 
-	#if HARDWARE_ARM_USEUSART0
-		AT91C_BASE_US0->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART1
-		AT91C_BASE_US1->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
-		}
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
+	AT91C_BASE_US1->US_BRGR = value;
+	if (prei == 0)
+	{
+		AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
+	}
+	else
+	{
+		AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
+	}
 
 #elif CPUSTYLE_ATMEGA_XXX4
 
@@ -5392,11 +5363,11 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
-		UCSR0A |= (1U << U2X0);
+		UCSR1A |= (1U << U2X0);
 	else
-		UCSR0A &= ~ (1U << U2X0);
+		UCSR1A &= ~ (1U << U2X0);
 
-	UBRR0 = value;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
 
 
 #elif CPUSTYLE_ATMEGA128
@@ -5406,26 +5377,12 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
-		UCSR0A |= (1U << U2X0);
+		UCSR1A |= (1U << U2X0);
 	else
-		UCSR0A &= ~ (1U << U2X0);
+		UCSR1A &= ~ (1U << U2X0);
 
-	UBRR0H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRR0L = value & 0xff;
-
-#elif CPUSTYLE_ATMEGA
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSRA |= (1U << U2X);
-	else
-		UCSRA &= ~ (1U << U2X);
-
-	UBRRH = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRRL = value & 0xff;
+	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1L = value & 0xff;
 
 #elif CPUSTYLE_ATXMEGAXXXA4
 
@@ -5433,12 +5390,12 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
 	if (prei == 0)
-		USARTE0.CTRLB |= USART_CLK2X_bm;
+		USARTE1.CTRLB |= USART_CLK2X_bm;
 	else
-		USARTE0.CTRLB &= ~USART_CLK2X_bm;
+		USARTE1.CTRLB &= ~USART_CLK2X_bm;
 	// todo: проверить требование к порядку обращения к портам
-	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
-	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
+	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
 #elif CPUSTYLE_STM32MP1
 
@@ -5465,59 +5422,59 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
 
-	SCIF0.SCSMR = (SCIF0.SCSMR & ~ 0x03) |
+	SCIF1.SCSMR = (SCIF1.SCSMR & ~ 0x03) |
 		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
 		0;
-	SCIF0.SCEMR = (SCIF0.SCEMR & ~ (0x80 | 0x01)) |
+	SCIF1.SCEMR = (SCIF1.SCEMR & ~ (0x80 | 0x01)) |
 		0 * 0x80 |						// BGDM
 		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
 		0;
-	SCIF0.SCBRR = value;	/* Bit rate register */
+	SCIF1.SCBRR = value;	/* Bit rate register */
 
 #elif CPUSTYLE_XC7Z
 
 	  uint32_t r; // Temporary value variable
-	  r = UART0->CR;
+	  r = UART1->CR;
 	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
 	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
-	  UART0->CR = r;
+	  UART1->CR = r;
 	  const unsigned long sel_clk = xc7z_get_uart_freq();
 	  const unsigned long bdiv = 8;
 	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
-	  UART0->BAUDDIV = bdiv - 1; // ("BDIV")
-	  UART0->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
+	  UART1->BAUDDIV = bdiv - 1; // ("BDIV")
+	  UART1->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
 	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
-	  UART0->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
+	  UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
 
-	  r = UART0->CR;
+	  r = UART1->CR;
 	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
-	  UART0->CR = r;
+	  UART1->CR = r;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
-	UART0->UART_LCR |= (1 << 7);
-	UART0->UART_RBR_THR_DLL = divisor & 0xff;
-	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART0->UART_LCR &= ~ (1 << 7);
+	UART1->UART_LCR |= (1 << 7);
+	UART1->UART_RBR_THR_DLL = divisor & 0xff;
+	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
+	UART1->UART_LCR &= ~ (1 << 7);
 
 #elif CPUSTYLE_VM14
 
 	unsigned divisor = calcdivround2(elveesvm14_get_usart_freq(), baudrate * 16);
 
-	while ((UART0->UART_USR & (1u << 2)) == 0)	/* TFE - FIFO передатчика пуст. */
+	while ((UART1->UART_USR & (1u << 2)) == 0)	/* TFE - FIFO передатчика пуст. */
 		;
-	while ((UART0->UART_USR & (1u << 0)) != 0)	/* BUSY - UART занят. */
+	while ((UART1->UART_USR & (1u << 0)) != 0)	/* BUSY - UART занят. */
 	{
 		/* todo: решить проблему с принимаемыми символами */
 	}
-	UART0->UART_LCR |= (1 << 7);
-	UART0->UART_RBR_THR_DLL = divisor & 0xff;
-	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART0->UART_LCR &= ~ (1 << 7);
-	(void) UART0->UART_LCR;
+	UART1->UART_LCR |= (1 << 7);
+	UART1->UART_RBR_THR_DLL = divisor & 0xff;
+	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
+	UART1->UART_LCR &= ~ (1 << 7);
+	(void) UART1->UART_LCR;
 
 #else
 	#error Undefined CPUSTYLE_XXX
