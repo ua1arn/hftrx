@@ -13,22 +13,17 @@
 #define SPI_BIDIRECTIONAL 1	// ввод данных по SPI идет через тот же самый pin, что и вывод
 #define WITHCPUADCHW 	1	/* использование ADC */
 
-//#define HARDWARE_ARM_USEUSART0 1		// US0: PA5/PA6 pins - WITHUART1HW
-#define HARDWARE_ARM_USEUSART1 1		// US1: PA21/PA22 pins - WITHUART2HW
-//#define HARDWARE_ARM_USEUART0 1		// UART0: PA9/PA10 pins - WITHUART1HW
-//#define HARDWARE_ARM_USEUART1 1		// UART1: PB2/PB3 pins - WITHUART2HW
-
-//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
-#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
+//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 */
+#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
 
 //#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 //#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-#define WITHCAT_USART2		1
-#define WITHDEBUG_USART2	1
-#define WITHMODEM_USART2	1
-#define WITHNMEA_USART2		1
+#define WITHCAT_USART1		1
+#define WITHDEBUG_USART1	1
+#define WITHMODEM_USART1	1
+#define WITHNMEA_USART1		1
 
 // Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
 //#define LCD_DATA_PORT			AT91C_BASE_PIOA->PIO_ODSR		// enabled by PIO_OWSR bits can be written was PORTA
@@ -368,20 +363,16 @@
 		} while (0) 
 
 
-
-	#if HARDWARE_ARM_USEUSART0
-		#define HARDWARE_UART1_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(AT91C_PA5_RXD0); \
-			arm_hardware_pioa_outputs(AT91C_PA6_TXD0, AT91C_PA6_TXD0); \
-			arm_hardware_pioa_peripha(AT91C_PA5_RXD0 | AT91C_PA6_TXD0); \
-			} while (0)
-	#elif HARDWARE_ARM_USEUSART1
-		#define HARDWARE_UART2_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(AT91C_PA21_RXD1); \
-			arm_hardware_pioa_outputs(AT91C_PA22_TXD1, AT91C_PA22_TXD1); \
-			arm_hardware_pioa_peripha(AT91C_PA21_RXD1 | AT91C_PA22_TXD1); \
-			} while (0)
-	#endif
+	#define HARDWARE_UART0_INITIALIZE() do { \
+		arm_hardware_pioa_inputs(AT91C_PA5_RXD0); \
+		arm_hardware_pioa_outputs(AT91C_PA6_TXD0, AT91C_PA6_TXD0); \
+		arm_hardware_pioa_peripha(AT91C_PA5_RXD0 | AT91C_PA6_TXD0); \
+		} while (0)
+	#define HARDWARE_UART1_INITIALIZE() do { \
+		arm_hardware_pioa_inputs(AT91C_PA21_RXD1); \
+		arm_hardware_pioa_outputs(AT91C_PA22_TXD1, AT91C_PA22_TXD1); \
+		arm_hardware_pioa_peripha(AT91C_PA21_RXD1 | AT91C_PA22_TXD1); \
+		} while (0)
 
 	#if KEYBOARD_USE_ADC
 		#define HARDWARE_KBD_INITIALIZE() do { \

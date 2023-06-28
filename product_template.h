@@ -104,7 +104,6 @@
 //#define CTLSTYLE_V1D	1	// Плата STM32F429I-DISCO с процессором STM32F429ZIT6
 //#define CTLSTYLE_V2D	1	// Плата STM32F4DISCOVERY с процессором STM32F407VGT6
 //#define CTLSTYLE_NUCLEO_V1	1	// Внешняя аудиоплата на базе NUCLEO-F767ZI с процессором STM32F767ZIT6  mb1137.pdf
-//#define CTLSTYLE_V9	1	// Плата satmod
 //#define CTLSTYLE_V1E	1	// Плата с процессором STM32F030F4P (TSSOP-20)
 //#define CTLSTYLE_V1F	1	// Плата с процессором STM32F051C6T (TQFP-48)
 //#define CTLSTYLE_V1G	1	// Плата с процессором STM32L051K6T (TQFP-32)
@@ -556,14 +555,6 @@
 	#include "boards/atmega_ctlstyle_sw2018xvr.h"	// atmega32, LCD RDX0154, Si5351 с ПЧ 6 МГц и монохромным индикатором
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v9sf.h"	// SW-2012SF-RDX
-#elif CPUSTYLE_AT91SAM7S && CTLSTYLE_V9		// satmpd9_v0 board
-	#include "boards/arm_ctlstyle_satmod_v1.h"
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_at91sam7s_satmod_v1.h"
-#elif (CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S) && CTLSTYLE_V9		// satmpd9_v0 board
-	#include "boards/arm_ctlstyle_satmod_v1.h"
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_atsam3s_satmod_v1.h"
 #else
 	#define LCDMODE_RDX0154		1
 	#define BANDSELSTYLERE_NOTHING	1

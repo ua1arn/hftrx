@@ -39,11 +39,11 @@
 #define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS33
 #define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
 
-#define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
+#define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 #define WITHUARTFIFO	1	/* испольование FIFO */
 
-#define WITHDEBUG_USART1	1
-#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
+#define WITHDEBUG_USART0	1
+#define WITHNMEA_USART0		1	/* порт подключения GPS/GLONASS */
 
 #if WITHISBOOTLOADER
 
@@ -645,7 +645,7 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-#if WITHUART1HW
+#if WITHUART0HW
 
 	// WITHUART2HW
 	#define TARGET_UART0_TX_MIO	51	//	USART_TX	C44	B12	PS_MIO48_501	UART0
@@ -653,7 +653,7 @@
 	#define	TARGET_UART0_IOTYPE	GPIO_IOTYPE_501
 
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
-	#define HARDWARE_UART1_INITIALIZE() do { \
+	#define HARDWARE_UART0_INITIALIZE() do { \
 		enum { IOTYPE = TARGET_UART0_IOTYPE }; \
 		enum { L3_SEL = 0x07, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x00 }; \
 		const portholder_t pinmode_uart_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
@@ -662,7 +662,7 @@
 		gpio_peripherial(TARGET_UART0_RX_MIO, pinmode_uart_rx);  /*  MIO_PIN_50 UART0_RXD */ \
 	} while (0)
 
-#endif /* WITHUART1HW */
+#endif /* WITHUART0HW */
 
 #if WITHKEYBOARD
 

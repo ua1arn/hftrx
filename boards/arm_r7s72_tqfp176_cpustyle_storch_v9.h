@@ -40,15 +40,14 @@
 	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
-	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+	#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
 
 	//#define WITHCAT_USART2	1
 	//#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
-	#define WITHDEBUG_USART2	1
-	#define WITHMODEM_USART2	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+	#define WITHDEBUG_USART3	1
+	#define WITHMODEM_USART3	1
+	#define WITHNMEA_USART3		1	/* порт подключения GPS/GLONASS */
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
@@ -69,15 +68,15 @@
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
 	#define WITHCPUADCHW 	1	/* использование ADC */
 
-	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+	//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 SCIF0 */
+	#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
 
-	//#define WITHCAT_USART2	1
+	//#define WITHCAT_USART3	1
 	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
-	#define WITHDEBUG_USART2	1
-	#define WITHMODEM_USART2	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+	#define WITHDEBUG_USART3	1
+	#define WITHMODEM_USART3	1
+	#define WITHNMEA_USART3		1	/* порт подключения GPS/GLONASS */
 
 	#define WITHI2S2HW		1	/* Использование SSIF0 I2S 2*32 (2*16) bit - аудио кодек */
 	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
@@ -405,19 +404,14 @@
 
 #endif /* (WITHNMEA && WITHNMEA_USART1) */
 
-#if WITHUART1HW
-	#define HARDWARE_UART1_INITIALIZE() do { \
+	#define HARDWARE_UART01_INITIALIZE() do { \
 			arm_hardware_pio6_alternative(1U << 14, R7S721_PIOALT_5);	/* P6_14: RXD0: RX DATA line */ \
 			arm_hardware_pio6_alternative(1U << 15, R7S721_PIOALT_5);	/* P6_15: TXD0: TX DATA line */ \
 		} while (0)
-#endif /* WITHUART1HW */
-
-#if WITHUART2HW
-	#define HARDWARE_UART2_INITIALIZE() do { \
+	#define HARDWARE_UART3_INITIALIZE() do { \
 			arm_hardware_pio7_alternative(1U << 10, R7S721_PIOALT_5);	/* P7_10: RXD3: RX DATA line */ \
 			arm_hardware_pio7_alternative(1U << 11, R7S721_PIOALT_5);	/* P7_11: TXD3: TX DATA line */ \
 		} while (0)
-#endif /* WITHUART1HW */
 
 #if WITHTX
 

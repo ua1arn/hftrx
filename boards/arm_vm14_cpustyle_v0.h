@@ -38,13 +38,13 @@
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHDEBUG
-	#define WITHUART1HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #1 UART0 */
+	#define WITHUART0HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #0 UART0 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-//#define WITHCAT_USART1		1
-#define WITHDEBUG_USART1	1
-#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
+//#define WITHCAT_USART0		1
+#define WITHDEBUG_USART0	1
+#define WITHNMEA_USART0		1	/* порт подключения GPS/GLONASS */
 
 #if WITHISBOOTLOADER
 
@@ -522,8 +522,8 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-// WITHUART1HW
-#define HARDWARE_UART1_INITIALIZE() do { \
+// WITHUART0HW
+#define HARDWARE_UART0_INITIALIZE() do { \
 		const portholder_t TXMASK = (1u << 19); /* GA19 UART0-TX - UART0_OUT(TX) */ \
 		const portholder_t RXMASK = (1u << 18); /* GA18 UART0-RX - pull-up RX data - UART0_IN(RX) */  \
 		arm_hardware_pioa_altfn2(TXMASK, 1); /* 1 - output */ \

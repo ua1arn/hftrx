@@ -28,12 +28,11 @@
 #define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
 #define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 #define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
-#define WITHDEBUG_USART2	1
-//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
-#define WITHDEBUG_USART2	1
-#define WITHMODEM_USART2	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+#define WITHDEBUG_USART3	1
+#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
+#define WITHDEBUG_USART3	1
+#define WITHMODEM_USART3	1
+#define WITHNMEA_USART3		1	/* порт подключения GPS/GLONASS */
 
 #if WITHISBOOTLOADER
 
@@ -47,7 +46,7 @@
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
 
-	//#define WITHCAT_USART2	1
+	//#define WITHCAT_USART3	1
 	//#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
 
@@ -384,19 +383,15 @@
 
 #endif /* (WITHNMEA && WITHNMEA_USART1) */
 
-#if WITHUART1HW
-	#define HARDWARE_UART1_INITIALIZE() do { \
+	#define HARDWARE_UART0_INITIALIZE() do { \
 			arm_hardware_pio6_alternative(1U << 14, R7S721_PIOALT_5);	/* P6_14: RXD0: RX DATA line */ \
 			arm_hardware_pio6_alternative(1U << 15, R7S721_PIOALT_5);	/* P6_15: TXD0: TX DATA line */ \
 		} while (0)
-#endif /* WITHUART1HW */
 
-#if WITHUART2HW
-	#define HARDWARE_UART2_INITIALIZE() do { \
+	#define HARDWARE_UART3_INITIALIZE() do { \
 			arm_hardware_pio7_alternative(1U << 10, R7S721_PIOALT_5);	/* P7_10: RXD3: RX DATA line */ \
 			arm_hardware_pio7_alternative(1U << 11, R7S721_PIOALT_5);	/* P7_11: TXD3: TX DATA line */ \
 		} while (0)
-#endif /* WITHUART1HW */
 
 #if WITHTX
 

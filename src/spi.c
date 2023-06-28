@@ -5004,7 +5004,7 @@ static unsigned spidf_progval8_p2(uint_fast8_t v)
 	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
 		;
 	unsigned v2 = XQSPIPS->RXD;
-	PRINTF("v2=%08lX\n", v2);
+	PRINTF("v2=%08X\n", (unsigned) v2);
 
 	XQSPIPS->TXD_01 = v; 	// Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
 
@@ -5018,7 +5018,7 @@ static uint_fast8_t spidf_complete(void)
 	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
 		;
 	unsigned vc = XQSPIPS->RXD;
-	PRINTF("vc=%08lX\n", vc);
+	PRINTF("vc=%08X\n", (unsigned) vc);
 	return vc;
 }
 
@@ -5031,7 +5031,7 @@ static uint_fast8_t spidf_progval8(uint_fast8_t v)
 	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
 		;
 	unsigned v8 = XQSPIPS->RXD;
-	PRINTF("v8=%08lX\n", v8);
+	PRINTF("v8=%08X\n", (unsigned) v8);
 	return v8;
 }
 
