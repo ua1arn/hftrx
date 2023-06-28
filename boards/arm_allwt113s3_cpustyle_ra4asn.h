@@ -483,7 +483,8 @@
 		switch (target) { \
 		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; /* PC3 SPI0_CS */ \
 		case targetnvram: { gpioX_setstate(GPIOG, (target), 0 * (target)); } break; \
-		case (targetctl1 || targetfpga1): { gpioX_setstate(GPIOD, (target), 0 * (target)); } break; \
+		case targetfpga1: { gpioX_setstate(GPIOD, (target), 0 * (target)); } break; \
+		case targetctl1: { gpioX_setstate(GPIOD, (target), 0 * (target)); } break; \
 		default: case targetnone: break; \
 		} \
 	} while (0)
@@ -493,7 +494,8 @@
 		switch (target) { \
 		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; /* PC3 SPI0_CS */ \
 		case targetnvram: { gpioX_setstate(GPIOG, (target), 1 * (target)); } break; \
-		case (targetctl1 || targetfpga1): { gpioX_setstate(GPIOD, (target), 1 * (target)); } break; \
+		case targetfpga1: { gpioX_setstate(GPIOD, (target), 1 * (target)); } break; \
+		case targetctl1: { gpioX_setstate(GPIOD, (target), 1 * (target)); } break; \
 		default: case targetnone: break; \
 		} \
 	} while (0)
@@ -688,31 +690,28 @@
 #if WITHDSPEXTFIR
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 
-	// FPGA PIN_23
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (1u << 12)	/* PD12 - fir CS ~FPGA_FIR_CLK */
-	// FPGA PIN_8
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOG, (v), !! (0) * (v)); } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOG, (v), !! (1) * (v)); } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (1u << 4)	/* PG4 - fir1 WE */
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
+	#define TARGET_FPGA_FIR_CS_BIT (1u << 8)	/* PE8 - fir CS ~FPGA_FIR_CLK */
 
-	// FPGA PIN_7
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOG, (v), !! (0) * (v)); } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOG, (v), !! (1) * (v)); } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (1u << 5)	/* PG5 - fir2 WE */
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
+	#define TARGET_FPGA_FIR1_WE_BIT (1u << 7)	/* PE7 - fir1 WE */
+
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do {  } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do {  } while (0)
+	#define TARGET_FPGA_FIR2_WE_BIT (0)
 
 	#define TARGET_FPGA_FIR_CS_SET() do { TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT); } while (0)
 	#define TARGET_FPGA_FIR_CS_CLR() do { TARGET_FPGA_FIR_CS_PORT_C(TARGET_FPGA_FIR_CS_BIT); } while (0)
 	#define TARGET_FPGA_FIR1_WE_SET() do { TARGET_FPGA_FIR1_WE_PORT_S(TARGET_FPGA_FIR1_WE_BIT); } while (0)
 	#define TARGET_FPGA_FIR1_WE_CLR() do { TARGET_FPGA_FIR1_WE_PORT_C(TARGET_FPGA_FIR1_WE_BIT); } while (0)
-	#define TARGET_FPGA_FIR2_WE_SET() do { TARGET_FPGA_FIR2_WE_PORT_S(TARGET_FPGA_FIR1_WE_BIT); } while (0)
-	#define TARGET_FPGA_FIR2_WE_CLR() do { TARGET_FPGA_FIR2_WE_PORT_C(TARGET_FPGA_FIR1_WE_BIT); } while (0)
+	#define TARGET_FPGA_FIR2_WE_SET() do {  } while (0)
+	#define TARGET_FPGA_FIR2_WE_CLR() do {  } while (0)
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_piog_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_piog_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
+			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
+			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
