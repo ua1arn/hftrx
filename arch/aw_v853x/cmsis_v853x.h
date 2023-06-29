@@ -2250,8 +2250,7 @@ typedef struct CSIC_PARSER_Type
     volatile uint32_t CSIC_PRS_XHS_PERIOD_REG;        /*!< Offset 0x548 CSIC Parser XHS Period Register */
     volatile uint32_t CSIC_PRS_XVS_LENGTH_REG;        /*!< Offset 0x54C CSIC Parser XVS LENGTH Register */
     volatile uint32_t CSIC_PRS_XHS_LENGTH_REG;        /*!< Offset 0x550 CSIC Parser XHS LENGTH Register */
-#error Need offset 0x554 of field 'CSIC_PRS_SYNC_DLY_REG0x0554' type 'uint32_t' at (0x000)
-    volatile uint32_t CSIC_PRS_SYNC_DLY_REG0x0554;    /*!< Offset 0x000 no comment */
+    volatile uint32_t CSIC_PRS_SYNC_DLY_REG;          /*!< Offset 0x554 CSIC Parser SYNC DELAY Register */
 } CSIC_PARSER_TypeDef; /* size of structure = 0x558 */
 /*
  * @brief CSIC_DMA

@@ -65,4 +65,4 @@
 #regdef; CSIC_PRS_XHS_PERIOD_REG; 0x0548; CSIC Parser XHS Period Register
 #regdef; CSIC_PRS_XVS_LENGTH_REG; 0x054C; CSIC Parser XVS LENGTH Register
 #regdef; CSIC_PRS_XHS_LENGTH_REG; 0x0550; CSIC Parser XHS LENGTH Register
-#regdef; CSIC_PRS_SYNC_DLY_REG0x0554; CSIC Parser SYNC DELAY Register
+#regdef; CSIC_PRS_SYNC_DLY_REG; 0x0554; CSIC Parser SYNC DELAY Register

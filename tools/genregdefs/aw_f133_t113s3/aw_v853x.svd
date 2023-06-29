@@ -12292,10 +12292,10 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CSIC_PRS_SYNC_DLY_REG0x0554</name>
-    <displayName>CSIC_PRS_SYNC_DLY_REG0x0554</displayName>
-    <description>no comment</description>
-    <addressOffset>0x000</addressOffset>
+    <name>CSIC_PRS_SYNC_DLY_REG</name>
+    <displayName>CSIC_PRS_SYNC_DLY_REG</displayName>
+    <description>CSIC Parser SYNC DELAY Register</description>
+    <addressOffset>0x554</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
