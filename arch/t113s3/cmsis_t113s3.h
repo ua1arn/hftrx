@@ -117,7 +117,11 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define DSP0_CFG_BASE ((uintptr_t) 0x01700000)        /*!< DSP_CFG Base */
+#define DSP_WDG_BASE ((uintptr_t) 0x01700400)         /*!< DSP_WDG Base */
+#define DSP_INTC_BASE ((uintptr_t) 0x01700800)        /*!< DSP_INTC Base */
+#define DSP_TZMA_BASE ((uintptr_t) 0x01700C00)        /*!< DSP_TZMA Base */
 #define DSP_MSGBOX_BASE ((uintptr_t) 0x01701000)      /*!< MSGBOX Base */
+#define xDSP_MSGBOX_BASE ((uintptr_t) 0x01701000)     /*!< xDSP_MSGBOX Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO Base */
 #define GPIOC_BASE ((uintptr_t) 0x02000060)           /*!< GPIO Base */
@@ -2841,7 +2845,11 @@ typedef struct DSP_CFG_Type
 /* Access pointers */
 
 #define DSP0_CFG ((DSP_CFG_TypeDef *) DSP0_CFG_BASE)  /*!< DSP0_CFG  register set access pointer */
+#define DSP_WDG ((DSP_WDG_TypeDef *) DSP_WDG_BASE)    /*!< DSP_WDG  register set access pointer */
+#define DSP_INTC ((DSP_INTC_TypeDef *) DSP_INTC_BASE) /*!< DSP_INTC  register set access pointer */
+#define DSP_TZMA ((DSP_TZMA_TypeDef *) DSP_TZMA_BASE) /*!< DSP_TZMA  register set access pointer */
 #define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)/*!< DSP_MSGBOX Message Box register set access pointer */
+#define xDSP_MSGBOX ((xDSP_MSGBOX_TypeDef *) xDSP_MSGBOX_BASE)/*!< xDSP_MSGBOX  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */

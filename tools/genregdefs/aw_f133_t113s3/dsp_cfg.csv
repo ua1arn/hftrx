@@ -1,0 +1,9 @@
+#type;  DSP_CFG
+#base;  DSP0_CFG 0x01700000
+#regdef;  DSP_ALT_RESET_VEC_REG;  0x0000; DSP Reset Control Register
+#regdef;  DSP_CTRL_REG0;  0x0004; DSP Control Register0
+#regdef;  DSP_PRID_REG;  0x000c; DSP PRID Register
+#regdef;  DSP_STAT_REG;  0x0010; DSP STAT Register
+#regdef;  DSP_BIST_CTRL_REG;  0x0014; DSP BIST CTRL Register
+#regdef;  DSP_JTRST_REG;  0x001c; DSP JTAG CONFIG RESET Register
+#regdef;  DSP_VER_REG;  0x0020; DSP Version Register
