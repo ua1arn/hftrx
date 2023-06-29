@@ -6543,14 +6543,29 @@ void hightests(void)
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x00;	/* DSP BOOT SRAM REMAP ENABLE 0: DSP 128K Local SRAM Remap for DSP_SYS */
 
 		// DSP Start address change
-//		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x100000;
-//		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 1);	// BIT_START_VEC_SEL
+		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x400000 + 0x000;//0x1A;
+		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 1);	// BIT_START_VEC_SEL
+		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 
 		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 0);	// Set runstall
 
 		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 2);	/* set dsp clken */
 		CCU->DSP_BGR_REG |= (1u << 16);	// DSP_RST
 		DSP0_CFG->DSP_CTRL_REG0 &= ~ (1u << 0);	// Clear runstall
+		(void) DSP0_CFG->DSP_CTRL_REG0;
+
+		/*
+		 * DSP STAT Register
+		 */
+//		#define BIT_PFAULT_INFO_VALID (0)
+//		#define BIT_PFAULT_ERROR (1)
+//		#define BIT_DOUBLE_EXCE_ERROR (2)
+//		#define BIT_XOCD_MODE (3)
+//		#define BIT_DEBUG_MODE (4)
+//		#define BIT_PWAIT_MODE (5)
+//		#define BIT_IRAM0_LOAD_STORE (6)
+
+		unsigned sss = DSP0_CFG->DSP_STAT_REG;
 
 		local_delay_ms(300);
 		PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
