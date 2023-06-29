@@ -1,0 +1,35 @@
+#type; CSIC_TOP
+#base; CSIC_TOP 0x05800800
+#irq; CSI_CMB 136
+#irq; CSI_TDM 137
+#irq; CSI_TOP_PKT 138
+#irqrv; CSI_CMB 120
+#irqrv; CSI_TDM 121
+#irqrv; CSI_TOP_PKT 122
+#regdef; CSIC_TOP_EN_REG; 0x0000; CSIC TOP Enable Register
+#regdef; CSIC_PTN_GEN_EN_REG; 0x0004; CSIC Pattern Generation Enable Register
+#regdef; CSIC_PTN_CTRL_REG; 0x0008; CSIC Pattern Control Register
+#regdef; CSIC_PTN_LEN_REG; 0x0020; CSIC Pattern Generation Length Register
+#regdef; CSIC_PTN_ADDR_REG; 0x0024; CSIC Pattern Generation Address Register
+#regdef; CSIC_PTN_ISP_SIZE_REG; 0x0028; CSIC Pattern ISP Size Register
+#regdef; CSIC_ISP0_INPUT0_SEL_REG; 0x0030; CSIC ISP0 Input0 Select Register
+#regdef; CSIC_ISP0_INPUT1_SEL_REG; 0x0034; CSIC ISP0 Input1 Select Register
+#regdef; CSIC_ISP0_INPUT2_SEL_REG; 0x0038; CSIC ISP0 Input2 Select Register
+#regdef; CSIC_ISP0_INPUT3_SEL_REG; 0x003C; CSIC ISP0 Input3 Select Register
+#regdef; CSIC_ISP1_INPUT0_SEL_REG; 0x0040; CSIC ISP1 Input0 Select Register
+#regdef; CSIC_ISP1_INPUT1_SEL_REG; 0x0044; CSIC ISP1 Input1 Select Register
+#regdef; CSIC_ISP1_INPUT2_SEL_REG; 0x0048; CSIC ISP1 Input2 Select Register
+#regdef; CSIC_ISP1_INPUT3_SEL_REG; 0x004C; CSIC ISP1 Input3 Select Register
+#regdef; CSIC_DMA0_INPUT_SEL_REG; 0x00A0; CSIC DMA0 Input Select Register
+#regdef; CSIC_DMA1_INPUT_SEL_REG; 0x00A4; CSIC DMA1 Input Select Register
+#regdef; CSIC_DMA2_INPUT_SEL_REG; 0x00A8; CSIC DMA2 Input Select Register
+#regdef; CSIC_DMA3_INPUT_SEL_REG; 0x00AC; CSIC DMA3 Input Select Register
+#regdef; CSIC_BIST_CS_REG; 0x00DC; CSIC BIST CS Register
+#regdef; CSIC_BIST_CONTROL_REG; 0x00E0; CSIC BIST Control Register
+#regdef; CSIC_BIST_START_REG; 0x00E4; CSIC BIST Start Register
+#regdef; CSIC_BIST_END_REG; 0x00E8; CSIC BIST End Register
+#regdef; CSIC_BIST_DATA_MASK_REG; 0x00EC; CSIC BIST Data Mask Register
+#regdef; CSIC_MBUS_REQ_MAX_REG; 0x00F0; CSIC MBUS REQ MAX Register
+#regdef; CSIC_MULF_MOD_REG; 0x0100; CSIC Multi-Frame Mode Register
+#regdef; CSIC_MULF_INT_REG; 0x0104; CSIC Multi-Frame Interrupt Register
+#regdef; CSIC_FEATURE_LIST_REG; 0x01F0; CSIC Feature List Register
