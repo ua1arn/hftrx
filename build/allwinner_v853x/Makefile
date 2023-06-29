@@ -328,6 +328,7 @@ clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) $(PROJECT)_app.alw32 fsbl.alw32
 
 version:
 	$(CC) --version

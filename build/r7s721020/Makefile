@@ -302,6 +302,7 @@ clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) $(PROJECT)_app.nec32 $(PROJECT)_app.bin $(PROJECT)_boot.bin app.hex boot.hex 
 
 version:
 	$(CC) --version

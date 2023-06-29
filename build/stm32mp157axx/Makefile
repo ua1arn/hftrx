@@ -317,6 +317,7 @@ clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) $(PROJECT)_app.stm32 $(PROJECT)_app.bin $(PROJECT)_boot.bin fsbl.stm32 app.hex boot.hex  
 
 version:
 	$(CC) --version

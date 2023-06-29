@@ -315,6 +315,7 @@ clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) $(PROJECT)_app.f133 fsbl.f133 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
 
 version:
 	$(CC) --version

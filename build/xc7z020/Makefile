@@ -355,6 +355,8 @@ clean: version
 	-$(RM) $(OBJS) $(addsuffix .d, $(OBJS))
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) $(PROJECT)_app.bin $(PROJECT)_boot.bin
+	-$(RM) $(PROJECT)_app_xyl32.bin boot.bin  
 	-$(RM) bitstream_ant_20.h
 	-$(RM) bitstream_myir7020.h
 
