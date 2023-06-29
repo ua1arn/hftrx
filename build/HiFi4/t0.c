@@ -26,11 +26,15 @@ volatile char text [] = "Test ###############data";
 
 void xmain(void)
 {
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
 	UART0->UART_RBR_THR_DLL = '$';
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = '.';
 	for (;;)
 		;
 	//dbg_puts("Hello, Word (HiFi4 DSP)!\n");
-	/*
 	dbg_putchar('H');
 	dbg_putchar('e');
 	dbg_putchar('l');
@@ -39,5 +43,4 @@ void xmain(void)
 	dbg_putchar('!');
 	for (;;)
 		;
-		*/
 }

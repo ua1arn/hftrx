@@ -6515,7 +6515,7 @@ void hightests(void)
 
 		const uintptr_t remap_cpu = (uintptr_t) 0x00028000;
 
-		enum { M = 4 };
+		enum { M = 2 };
 		CCU->DSP_CLK_REG = (CCU->DSP_CLK_REG & ~ ((0x07 << 24) | (0x1F << 0))) |
 				(0x04u << 24) |	// src: PLL_AUDIO1(DIV2)
 				((M - 1) << 0) |
@@ -6537,7 +6537,7 @@ void hightests(void)
 		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
 		PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 		PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
-		local_delay_ms(300);
+		//local_delay_ms(300);
 
 		//memset((void *) remap_cpu, 0xe5, 128 * 1024);
 		memcpy((void *) remap_cpu, dsp_code, sizeof dsp_code);
@@ -6549,6 +6549,7 @@ void hightests(void)
 
 		// DSP Start address change
 		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 + 0x000;//0x1A;
+		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x0000000020028058 + 3;	// xmain base address
 		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 1);	// BIT_START_VEC_SEL
 		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 
@@ -6572,8 +6573,8 @@ void hightests(void)
 
 		unsigned sss = DSP0_CFG->DSP_STAT_REG;
 
-		local_delay_ms(300);
-		PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
+		//local_delay_ms(300);
+		//PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		for (;;)
 			;
 	}
