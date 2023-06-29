@@ -6515,6 +6515,11 @@ void hightests(void)
 
 		const uintptr_t remap_cpu = (uintptr_t) 0x00028000;
 
+		enum { M = 4 };
+		CCU->DSP_CLK_REG = (CCU->DSP_CLK_REG & ~ ((0x07 << 24) | (0x1F << 0))) |
+				(0x04u << 24) |	// src: PLL_AUDIO1(DIV2)
+				((M - 1) << 0) |
+				0;
 
 		CCU->DSP_CLK_REG |= (1u << 31);	// DSP_CLK_GATING
 
@@ -6543,7 +6548,7 @@ void hightests(void)
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x00;	/* DSP BOOT SRAM REMAP ENABLE 0: DSP 128K Local SRAM Remap for DSP_SYS */
 
 		// DSP Start address change
-		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x400000 + 0x000;//0x1A;
+		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 + 0x000;//0x1A;
 		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 1);	// BIT_START_VEC_SEL
 		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 

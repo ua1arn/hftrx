@@ -4,8 +4,8 @@
 
 MEMORY
 {
-	  IRAM (rwx)  : ORIGIN = 0x00400000, 			LENGTH = 64K
-	  DRAM (rwx)  : ORIGIN = 0x00410000, 			LENGTH = 64K
+	  IRAM (rwx)  : ORIGIN = 0x20028000, 			LENGTH = 64K	/* Cacheable DSP0 IRAM */
+	  DRAM (rwx)  : ORIGIN = 0x20038000, 			LENGTH = 64K	/* Cacheable DSP0 DRAM */
 }
 
 /*ENTRY(Reset_Handler) */
