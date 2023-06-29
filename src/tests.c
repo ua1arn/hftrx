@@ -6535,8 +6535,8 @@ void hightests(void)
 		// https://github.com/YuzukiHD/FreeRTOS-HIFI4-DSP/blob/164696d952116d20100daefd7a475d2ede828eb0/host/uboot-driver/dsp/sun8iw20/dsp_reg.h#L33C1-L39C65
 
 		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
-		PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
-		PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
+		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
+		//PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		//local_delay_ms(300);
 
 		//memset((void *) remap_cpu, 0xe5, 128 * 1024);
@@ -6549,9 +6549,9 @@ void hightests(void)
 
 		// DSP Start address change
 		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 + 0x000;//0x1A;
-		//DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x0000000000400050 + 3;	// xmain base address
+		//DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x0000000020028068 + 3;	// xmain base address
 		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 1);	// BIT_START_VEC_SEL
-		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
+		PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 
 		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 0);	// Set runstall
 
