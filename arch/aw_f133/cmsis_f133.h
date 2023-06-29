@@ -80,6 +80,7 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define DSP0_CFG_BASE ((uintptr_t) 0x01700000)        /*!< DSP_CFG Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO Base */
 #define GPIOC_BASE ((uintptr_t) 0x02000060)           /*!< GPIO Base */
@@ -2740,10 +2741,27 @@ typedef struct C0_CPUX_CFG_Type
     volatile uint32_t AXI_MNT_RBD_REG;                /*!< Offset 0x0E8 AXI Monitor Read Bandwidth Register */
     volatile uint32_t AXI_MNT_WBD_REG;                /*!< Offset 0x0EC AXI Monitor Write Bandwidth Register */
 } C0_CPUX_CFG_TypeDef; /* size of structure = 0x0F0 */
+/*
+ * @brief DSP_CFG
+ */
+/*!< DSP_CFG  */
+typedef struct DSP_CFG_Type
+{
+    volatile uint32_t DSP_ALT_RESET_VEC_REG;          /*!< Offset 0x000 DSP Reset Control Register */
+    volatile uint32_t DSP_CTRL_REG0;                  /*!< Offset 0x004 DSP Control Register0 */
+             uint32_t reserved_0x008;
+    volatile uint32_t DSP_PRID_REG;                   /*!< Offset 0x00C DSP PRID Register */
+    volatile uint32_t DSP_STAT_REG;                   /*!< Offset 0x010 DSP STAT Register */
+    volatile uint32_t DSP_BIST_CTRL_REG;              /*!< Offset 0x014 DSP BIST CTRL Register */
+             uint32_t reserved_0x018;
+    volatile uint32_t DSP_JTRST_REG;                  /*!< Offset 0x01C DSP JTAG CONFIG RESET Register */
+    volatile uint32_t DSP_VER_REG;                    /*!< Offset 0x020 DSP Version Register */
+} DSP_CFG_TypeDef; /* size of structure = 0x024 */
 
 
 /* Access pointers */
 
+#define DSP0_CFG ((DSP_CFG_TypeDef *) DSP0_CFG_BASE)  /*!< DSP0_CFG  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */

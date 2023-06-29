@@ -6495,6 +6495,78 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
+	{
+		// HiFI4 DSP start test
+
+		static const uint8_t dsp_code [] =
+		{
+				 0x0C, 0x00, 0x86, 0x10, 0x00, 0x06, 0xFF, 0xFF,
+				 0x00, 0x00, 0x50, 0x02, 0x36, 0x41, 0x00, 0x66,
+				 0x92, 0x05, 0xA2, 0xA0, 0x0D, 0x65, 0xFF, 0xFF,
+				 0x81, 0xFC, 0xFF, 0x0C, 0x29, 0xC0, 0x20, 0x00,
+				 0xA2, 0x28, 0x1F, 0x97, 0x0A, 0xF6, 0xC0, 0x20,
+				 0x00, 0x29, 0x08, 0x1D, 0xF0, 0x00, 0x00, 0x00,
+				 0x36, 0x41, 0x00, 0x06, 0x01, 0x00, 0x00, 0x00,
+				 0x25, 0xFD, 0xFF, 0x1B, 0x22, 0x0B, 0x82, 0xA2,
+				 0x08, 0x00, 0x66, 0x9A, 0xF2, 0x1D, 0xF0, 0x00,
+				 0x36, 0x41, 0x00, 0x81, 0xEF, 0xFF, 0x2C, 0x49,
+				 0xC0, 0x20, 0x00, 0x99, 0x08, 0x06, 0xFF, 0xFF,
+				 0x80, 0x00, 0x40, 0x00, 0x80, 0x00, 0x40, 0x00,
+				 0x54, 0x65, 0x73, 0x74, 0x20, 0x23, 0x23, 0x23,
+				 0x23, 0x23, 0x23, 0x23, 0x23, 0x23, 0x23, 0x23,
+				 0x23, 0x23, 0x23, 0x23, 0x64, 0x61, 0x74, 0x61,
+				 0x00, 0x00, 0x00, 0x00,
+		};
+		//	SRAM A1			0x00020000---0x00027FFF		32 KB
+
+		//	DSP0 IRAM		0x00028000---0x00037FFF		64 KB		The local sram is switched to system boot.
+		//	DSP0 DRAM0		0x00038000---0x0003FFFF		32 KB		The local sram is switched to system boot.
+		//	DSP0 DRAM1		0x00040000---0x00047FFF		32 KB		The local sram is switched to system boot.
+		//
+		//	DSP0 IRAM (local sram)		0x00400000---0x0040FFFF		64 KB		The local sram is switched to DSP.
+		//	DSP0 DRAM0 (local sram)		0x00420000---0x00427FFF		32 KB		The local sram is switched to DSP.
+		//	DSP0 DRAM1 (local sram)		0x00440000---0x00447FFF		32 KB		The local sram is switched to DSP.
+
+		const uintptr_t remap_cpu = (uintptr_t) 0x00028000;
+
+
+		CCU->DSP_CLK_REG |= (1u << 31);	// DSP_CLK_GATING
+
+
+		CCU->DSP_BGR_REG |= (1u << 1);	// DSP_CFG_GATING
+		CCU->DSP_BGR_REG |= (1u << 17);	// DSP_CFG_RST
+
+		CCU->DSP_BGR_REG &= ~ (1u << 16);	// DSP_RST
+
+		// Map local sram to CPU
+		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x01;	/* DSP BOOT SRAM REMAP ENABLE 1: DSP 128K Local SRAM Remap for System Boot */
+
+		// https://github.com/YuzukiHD/FreeRTOS-HIFI4-DSP/blob/164696d952116d20100daefd7a475d2ede828eb0/host/uboot-driver/dsp/sun8iw20/dsp_reg.h#L33C1-L39C65
+
+		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
+		PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
+		local_delay_ms(300);
+
+		//memset((void *) remap_cpu, 0xe5, 128 * 1024);
+		memcpy((void *) remap_cpu, dsp_code, sizeof dsp_code);
+		dcache_clean(remap_cpu, 128 * 1024);
+		//printhex(remap_cpu, (void *) remap_cpu, 256);
+		//PRINTF("Map local sram to DSP\n");
+		// Map local sram to DSP
+		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x00;	/* DSP BOOT SRAM REMAP ENABLE 0: DSP 128K Local SRAM Remap for DSP_SYS */
+
+
+		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 0);	// Set runstall
+
+		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 2);	/* set dsp clken */
+		CCU->DSP_BGR_REG |= (1u << 16);	// DSP_RST
+		DSP0_CFG->DSP_CTRL_REG0 &= ~ (1u << 0);	// Clear runstall
+
+		for (;;)
+			;
+	}
+#endif
 #if CPUSTYLE_VM14 && 0
 	{
 		unsigned mask = 1u << 24; // GC24 - DBGLED1
@@ -6614,7 +6686,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0
+#if 0 && CPUSTYLE_A64
 	{
 		PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
 		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
