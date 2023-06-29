@@ -1,4 +1,5 @@
 .section .entry.text
+	movi	a0, 0			// keep this register zero.
 	movi 	a3, 0x0250
 	slli	a3, a3, 16
 	movi 	a7, 0x23
