@@ -61,6 +61,9 @@ void xmain(void)
 	UART0->UART_RBR_THR_DLL = '4';
 	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		;
+	UART0->UART_RBR_THR_DLL = '!';
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
 	UART0->UART_RBR_THR_DLL = '\r';
 	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		;

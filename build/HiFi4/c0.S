@@ -12,6 +12,10 @@ _start:
 	mov		sp, a3
 	mov		a1, a3
 
+	j .ee
+	.align 4
+.ee:
+	//entry a1, 32
 	j xmain + 3
 
 #endif
