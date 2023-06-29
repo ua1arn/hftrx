@@ -151,3 +151,6 @@ SECTIONS
   } >RAM 
 }
 
+__StackTop = ORIGIN(RAM) + LENGTH(RAM);
+PROVIDE(__stack = __StackTop);
+
