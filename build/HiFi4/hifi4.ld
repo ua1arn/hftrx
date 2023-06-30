@@ -4,7 +4,8 @@
 
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x00400000, 			LENGTH = 128K
+	  IRAM (rwx)  : ORIGIN = 0x00400000, 			LENGTH = 64K
+	  DRAM (rwx)  : ORIGIN = 0x00410000, 			LENGTH = 64K
 }
 
 /*ENTRY(Reset_Handler) */
@@ -27,7 +28,7 @@ SECTIONS
     . = ALIGN (4);
     _text_end = ABSOLUTE(.);
     _etext = .;
-  } >RAM 
+  } >IRAM 
   
   .rtos.rodata : ALIGN(4)
   {
@@ -35,7 +36,7 @@ SECTIONS
     *(.rtos.rodata)
     . = ALIGN (4);
     _rtos_rodata_end = ABSOLUTE(.);
-  } >RAM 
+  } >DRAM 
 
   .clib.rodata : ALIGN(4)
   {
@@ -43,7 +44,7 @@ SECTIONS
     *(.clib.rodata)
     . = ALIGN (4);
     _clib_rodata_end = ABSOLUTE(.);
-  } >RAM 
+  } >DRAM 
 
   .rodata : ALIGN(4)
   {
@@ -84,7 +85,7 @@ SECTIONS
     _bss_table_end = ABSOLUTE(.);
     . = ALIGN (4);
     _rodata_end = ABSOLUTE(.);
-  } >RAM 
+  } >DRAM 
 
   .data : ALIGN(4)
   {
@@ -108,7 +109,7 @@ SECTIONS
     *(__llvm_prf_vnds)
     . = ALIGN (4);
     _data_end = ABSOLUTE(.);
-  } >RAM 
+  } >DRAM 
   
   .clib.data : ALIGN(4)
   {
@@ -116,7 +117,7 @@ SECTIONS
     *(.clib.data)
     . = ALIGN (4);
     _clib_data_end = ABSOLUTE(.);
-  } >RAM 
+  } >DRAM 
 
   .bss (NOLOAD) : ALIGN(8)
   {
@@ -148,9 +149,9 @@ SECTIONS
     PROVIDE(end = ALIGN(0x8));
     _stack_sentry = ALIGN(0x8);
     _memmap_seg_dram0_0_end = ALIGN(0x8);
-  } >RAM 
+  } >DRAM 
 }
 
-__StackTop = ORIGIN(RAM) + LENGTH(RAM);
+__StackTop = ORIGIN(DRAM) + LENGTH(DRAM);
 PROVIDE(__stack = __StackTop);
 

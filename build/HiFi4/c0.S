@@ -1,4 +1,5 @@
 .section .entry.text
+	j .
 	movi	a0, 0			// keep this register zero.
 	movi 	a3, 0x0250
 	slli	a3, a3, 16
@@ -7,9 +8,8 @@
 	j .
 	//.data
 rrr:
-	movi	a0, 0			// keep this register zero.
-	//movi	a1, 0x00401000		// default SP
-	//movi	sp, a1
+	//movi	a1, __stack		// default SP
+	//movi	sp, __stack
 	j xmain
 	j .
 
