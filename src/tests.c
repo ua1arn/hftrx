@@ -6539,7 +6539,7 @@ void hightests(void)
 		//PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		//local_delay_ms(300);
 
-		//memset((void *) remap_cpu, 0xe5, 128 * 1024);
+		memset((void *) remap_cpu, 0x00, 128 * 1024);
 		memcpy((void *) remap_cpu, dsp_code, sizeof dsp_code);
 		dcache_clean(remap_cpu, 128 * 1024);
 		//printhex(remap_cpu, (void *) remap_cpu, 256);
@@ -6573,8 +6573,8 @@ void hightests(void)
 
 		unsigned sss = DSP0_CFG->DSP_STAT_REG;
 
-		//local_delay_ms(300);
-		//PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
+		local_delay_ms(1300);
+		PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		for (;;)
 			;
 	}

@@ -37,10 +37,17 @@
 _start:
 	/* Make 0x20048000 value */
 	movi	a0, 0			// keep this register zero.
-	movi	sp, __stack		// default SP
 
-	movi	a3, PS_UM|PS_WOE_ABI	// PS.WOE = 0|1, PS.UM = 1, PS.EXCM = 0, PS.INTLEVEL = 0
+	movi	a3, PS_UM | PS_WOE_ABI	// PS.WOE = 0|1, PS.UM = 1, PS.EXCM = 0, PS.INTLEVEL = 0
 	wsr.ps	a3
+	rsync
+
+	//movi	a3, 0
+	//wsr.isl	a3
+
+	movi	sp, __stack		// default SP
+	movi	a1, __stack		// default SP
+	movi	a3, __stack		// default SP
 
 	CALL4 xmain
 	j .
