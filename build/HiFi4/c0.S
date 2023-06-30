@@ -21,13 +21,13 @@
 #define PS_INTLEVEL_MASK	0x0000000F
 #define PS_INTLEVEL(n)		((n)&PS_INTLEVEL_MASK)		/* n = 0..15 */
 /*  ABI-derived field values:  */
-#ifdef __XTENSA_CALL0_ABI__
-#define PS_WOE_ABI		0
-#define PS_WOECALL4_ABI		0
-#else
+//#ifdef __XTENSA_CALL0_ABI__
+//#define PS_WOE_ABI		0
+//#define PS_WOECALL4_ABI		0
+//#else
 #define PS_WOE_ABI		PS_WOE				/* 0x40000 */
 #define PS_WOECALL4_ABI		(PS_WOE | PS_CALLINC(1))	/* 0x50000, per call4 */
-#endif
+//#endif
 
 	.section .entry.text, "x"
 	//.text

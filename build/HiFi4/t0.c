@@ -22,20 +22,48 @@ void dbg_puts(const char * s)
 		dbg_putchar(c);
 }
 
+//char msg0 [] = "Hello, Word (I am HiFi4 DSP)!\n";
+char msg0 [] = "Hello, Word!\n";
 void xmain(int v1, int v2)
 {
 	(void) v1;
 	(void) v2;
-    dbg_putchar('H');
-    dbg_putchar('e');
-    dbg_putchar('l');
-    dbg_putchar('l');
-    dbg_putchar('o');
-    dbg_putchar('!');
-	for (;;)
-		;
 
-    dbg_puts("Hello, Word (HiFi4 DSP)!\n");
-	for (;;)
+	dbg_putchar('H');
+	dbg_putchar('e');
+	dbg_putchar('l');
+	dbg_putchar('l');
+	dbg_putchar('o');
+	dbg_putchar('!');
+	dbg_putchar('\n');
+
+	dbg_putchar('H');
+	dbg_putchar('e');
+	dbg_putchar('l');
+	dbg_putchar('l');
+	dbg_putchar('o');
+	dbg_putchar('2');
+	dbg_putchar('!');
+	dbg_putchar('\n');
+
+    dbg_puts(msg0);
+    dbg_putchar('\n');
+    dbg_puts(msg0);
+    dbg_putchar('\n');
+    dbg_puts(msg0);
+    dbg_putchar('\n');
+    //dbg_puts("Hello, Word (I am HiFi4 DSP)!\n");
+
+
+	dbg_putchar('H');
+	dbg_putchar('e');
+	dbg_putchar('l');
+	dbg_putchar('l');
+	dbg_putchar('o');
+	dbg_putchar('3');
+	dbg_putchar('!');
+	dbg_putchar('\n');
+
+    for (;;)
 		;
 }
