@@ -22,61 +22,20 @@ void dbg_puts(const char * s)
 		dbg_putchar(c);
 }
 
-volatile char text [] = "Test ###############data";
-
-void xmain(void)
+void xmain(int v1, int v2)
 {
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'H';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'e';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'l';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'l';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'o';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = ' ';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'H';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'i';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'F';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'i';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '4';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '!';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '\r';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '\n';
+	(void) v1;
+	(void) v2;
+    dbg_putchar('H');
+    dbg_putchar('e');
+    dbg_putchar('l');
+    dbg_putchar('l');
+    dbg_putchar('o');
+    dbg_putchar('!');
 	for (;;)
 		;
-	//dbg_puts("Hello, Word (HiFi4 DSP)!\n");
-	dbg_putchar('H');
-	dbg_putchar('e');
-	dbg_putchar('l');
-	dbg_putchar('l');
-	dbg_putchar('o');
-	dbg_putchar('!');
+
+    dbg_puts("Hello, Word (HiFi4 DSP)!\n");
 	for (;;)
 		;
 }
