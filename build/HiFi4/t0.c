@@ -18,7 +18,7 @@ void dbg_puts(const char * s)
 {
 	char c;
 
-	while ((c = * s ++) != '\n')
+	while ((c = * s ++) != '\0')
 		dbg_putchar(c);
 }
 
