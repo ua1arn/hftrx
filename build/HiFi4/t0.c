@@ -1,4 +1,4 @@
-#include "d:/user/svn/hftrx/arch/t113s3/allwnr_t113s3.h"
+#include "../../arch/t113s3/allwnr_t113s3.h"
 
 void dbg_puts(const char * s);
 void dbg_putchar(uint_fast8_t c);
