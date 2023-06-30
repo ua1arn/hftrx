@@ -6495,7 +6495,7 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && 1
 	{
 		// HiFI4 DSP start test
 

@@ -1,8 +1,22 @@
-	.section .entry.text
+	.section .entry.text, "x"
+	//.text
 	.global	_start
 
 _start:
-	j .
+.stsss:
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+
+	j .stsss
+
 	movi	a0, 0			// keep this register zero.
 	movi 	a3, 0x0250
 	slli	a3, a3, 16
