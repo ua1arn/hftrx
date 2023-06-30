@@ -6501,7 +6501,7 @@ void hightests(void)
 
 		static const uint8_t dsp_code [] =
 		{
-#include "../build/HiFi4/t0.txt"
+		#include "../build/HiFi4/t0.txt"
 		};
 		//	SRAM A1			0x00020000---0x00027FFF		32 KB
 
@@ -6531,6 +6531,7 @@ void hightests(void)
 
 		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
 		PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
+		PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		local_delay_ms(300);
 
 		//memset((void *) remap_cpu, 0xe5, 128 * 1024);
@@ -6548,6 +6549,8 @@ void hightests(void)
 		CCU->DSP_BGR_REG |= (1u << 16);	// DSP_RST
 		DSP0_CFG->DSP_CTRL_REG0 &= ~ (1u << 0);	// Clear runstall
 
+		local_delay_ms(300);
+		PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		for (;;)
 			;
 	}
