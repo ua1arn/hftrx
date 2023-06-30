@@ -4,24 +4,12 @@
 	.type	_start,@function
 
 _start:
-#if 1
 	/* Make 0x20048000 value */
 	movi	a0, 0			// keep this register zero.
-	movi 	a3, 0x200
-	slli	a3, a3, 20
-	movi 	a4, 0x480
-	slli	a4, a4, 8
-	addi	a4, a3, 0
-
-	mov		sp, a3
-	mov		a1, a3
-
-	//movi	a1, __stack		// default SP
-	//movi	sp, __stack
+	movi	sp, __stack		// default SP
 
 	j xmain + 3
 
-#endif
 #if 0
 	entry a1, 32
 	movi	a0, 0			// keep this register zero.

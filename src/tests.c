@@ -6549,7 +6549,7 @@ void hightests(void)
 
 		// DSP Start address change
 		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 + 0x000;//0x1A;
-		//DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x0000000020028068 + 3;	// xmain base address
+		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000 + 0x04;	// xmain base address
 		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 1);	// BIT_START_VEC_SEL
 		PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 
