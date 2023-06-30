@@ -1,4 +1,7 @@
-.section .entry.text
+	.section .entry.text
+	.global	_start
+
+_start:
 	j .
 	movi	a0, 0			// keep this register zero.
 	movi 	a3, 0x0250
