@@ -6488,6 +6488,8 @@ void gpadc_inthandler(void)
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
+#if CPUSTYLE_T113
+
 /* HiFI4 DSP-viewed address offset translate to host cpu viewwed */
 static ptrdiff_t xlate_dsp2mpu(ptrdiff_t a)
 {
@@ -6557,14 +6559,7 @@ static void zero2dsp(uint8_t * pdspmap, unsigned size)
 //	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
 //}
 
-void copy2dsp(uint8_t * pdspmap, const uint8_t * pcpu, unsigned size)
-{
-	unsigned i;
-	for (i = 0; i < size; ++ i)
-	{
-		pdspmap [xlate_dsp2mpu(i)] = pcpu [i];
-	}
-}
+#endif /* CPUSTYLE_T113 */
 
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
