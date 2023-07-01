@@ -40,14 +40,17 @@ _start:
 
 	movi	a3, PS_UM | PS_WOE_ABI	// PS.WOE = 0|1, PS.UM = 1, PS.EXCM = 0, PS.INTLEVEL = 0
 	wsr.ps	a3
+
+	/*  Setup window registers for first caller: */
+	movi	a3, 1
+	movi	a4, 0
+	wsr	a3, WINDOWSTART
+	wsr	a4, WINDOWBASE
 	rsync
+	/* Note:  register window has rotated, ie. a0..a15 clobbered. */
 
-	//movi	a3, 0
-	//wsr.isl	a3
-
-	movi	sp, __stack		// default SP
+	/* Reload initial stack pointer: */
 	movi	a1, __stack		// default SP
-	movi	a3, __stack		// default SP
 
 	CALL4 xmain
 	j .
