@@ -5,17 +5,15 @@ void dbg_putchar(uint_fast8_t c);
 
 void dbg_putchar(uint_fast8_t c)
 {
+	if (c == '\n')
+	{
+		dbg_putchar('\r');
+	}
+
+	//
 	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		;
 	UART0->UART_RBR_THR_DLL = c;
-	if (c == '\n')
-	{
-		c = '\r';
-		while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-			;
-		UART0->UART_RBR_THR_DLL = c;
-
-	}
 }
 
 const char hex [] = "0123456789ABCDEFghijklmnopqrst";
@@ -114,6 +112,7 @@ void test(int i)
 	dbg_putchar(' ' + i);
 //	printv32(i);
 //	dbg_putchar('\n');
+	printv8(i);dbg_putchar(' ' );
 	if (i >= 96)
 		return;
 	test(i+1);
@@ -136,221 +135,222 @@ void xmain(int v1, int v2)
 
 	extern uint32_t __dram_base [];
 	extern uint32_t __iram_base [];
-	volatile const uint32_t * p;
 
-	p = (volatile const uint32_t *) __dram_base;
-	{
-		enum { row = 0 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 1 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 2 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 3 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 4 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 5 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 6 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 7 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 8 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 9 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 10 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 11 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	p = (volatile const uint32_t *) ((uintptr_t) __dram_base + 0x8000u);
-	{
-		enum { row = 0 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 1 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 2 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
-	{
-		enum { row = 3 };
-		printv32(& p [row * 4 + 0]);
-		dbg_putchar(':');
-		printv32(p [row * 4 + 0]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 1]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 2]);
-		dbg_putchar(',');
-		printv32(p [row * 4 + 3]);
-		dbg_putchar('\n');
-	}
+//	volatile const uint32_t * p;
+//
+//	p = (volatile const uint32_t *) __dram_base;
+//	{
+//		enum { row = 0 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 1 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 2 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 3 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 4 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 5 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 6 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 7 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 8 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 9 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 10 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 11 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	p = (volatile const uint32_t *) ((uintptr_t) __dram_base + 0x8000u);
+//	{
+//		enum { row = 0 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 1 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 2 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
+//	{
+//		enum { row = 3 };
+//		printv32(& p [row * 4 + 0]);
+//		dbg_putchar(':');
+//		printv32(p [row * 4 + 0]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 1]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 2]);
+//		dbg_putchar(',');
+//		printv32(p [row * 4 + 3]);
+//		dbg_putchar('\n');
+//	}
 
-	//dbg_printhex(msg0, sizeof msg0);
-	dbg_printhex((void *) __dram_base, 256);
+	dbg_printhex(msg0, sizeof msg0);
+	//dbg_printhex((void *) __dram_base, 256);
 
     dbg_puts(msg0);
     dbg_putchar('\n');

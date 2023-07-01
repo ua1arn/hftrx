@@ -6510,22 +6510,20 @@ static ptrdiff_t xlate_dsp2mpu(ptrdiff_t a)
 }
 
 /* memcpy replacement for Allwinner T113-s3 dsp memory */
-static void copy2dsp(uint8_t * pdspmap, const uint8_t * pcpu, unsigned size)
+static void copy2dsp(uint8_t * pdspmap, const uint8_t * pcpu, unsigned offs, unsigned size)
 {
-	unsigned i;
-	for (i = 0; i < size; ++ i)
+	for (; size --; ++ offs)
 	{
-		pdspmap [xlate_dsp2mpu(i)] = pcpu [i];
+		pdspmap [xlate_dsp2mpu(offs)] = pcpu [offs];
 	}
 }
 
 /* memset replacement for Allwinner T113-s3 dsp memory */
-static void zero2dsp(uint8_t * pdspmap, unsigned size)
+static void zero2dsp(uint8_t * pdspmap, unsigned offs, unsigned size)
 {
-	unsigned i;
-	for (i = 0; i < size; ++ i)
+	for (; size --; ++ offs)
 	{
-		pdspmap [xlate_dsp2mpu(i)] = 0x00;	/* fill by zero */
+		pdspmap [xlate_dsp2mpu(offs)] = 0x00;	/* fill by zero */
 	}
 }
 
@@ -6619,7 +6617,9 @@ void hightests(void)
 //			volatile uint32_t * const p = (void *) remap_cpu;
 //			p [xlate_dsp2mpu(i * 4) / 4] = i * 4;
 //		}
-		copy2dsp((void *) remap_cpu, dsp_code, sizeof dsp_code);
+		const size_t dsp_code_size = sizeof dsp_code;
+		copy2dsp((void *) remap_cpu, dsp_code, 0, dsp_code_size);
+		zero2dsp((void *) remap_cpu, dsp_code_size, (128 * 1024u) - dsp_code_size);
 		dcache_clean(remap_cpu, 128 * 1024);
 		//printhex(remap_cpu, (void *) dsp_code + (64 * 1024), 256);
 		//PRINTF("Map local sram to DSP\n");
