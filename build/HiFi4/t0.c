@@ -104,7 +104,7 @@ void dbg_printhex(const uint8_t * p, int size)
 }
 void t1(void)
 {
-    dbg_puts("1 Hello, Word (I am HiFi4 DSP)!\n");
+    dbg_puts("1 Hello, World (I am HiFi4 DSP)!\n");
 
 }
 void test(int i)
@@ -117,21 +117,21 @@ void test(int i)
 		return;
 	test(i+1);
 }
-//char msg0 [] = "Hello, Word (I am HiFi4 DSP)!\n";
-//char msg0 [] = "Hello, Word!\n";
+//char msg0 [] = "Hello, World (I am HiFi4 DSP)!\n";
+//char msg0 [] = "Hello, World!\n";
 char msg0 [] = "eHello qqqqqqqqqqqewwwwwww1234566 ";
 void xmain(int v1, int v2)
 {
-    dbg_puts("0 Hello, Word (I am HiFi4 DSP)!\n");
+    dbg_puts("0 Hello, World (I am HiFi4 DSP)!\n");
 	test(0);
 	dbg_putchar('\n');
 	int z;
 	(void) v1;
 	(void) v2;
 
-    dbg_puts("2 Hello, Word (I am HiFi4 DSP)!\n");
+    dbg_puts("2 Hello, World (I am HiFi4 DSP)!\n");
     t1();
-    dbg_puts("3 Hello, Word (I am HiFi4 DSP)!\n");
+    dbg_puts("3 Hello, World (I am HiFi4 DSP)!\n");
 
 	extern uint32_t __dram_base [];
 	extern uint32_t __iram_base [];
@@ -349,7 +349,7 @@ void xmain(int v1, int v2)
 //		dbg_putchar('\n');
 //	}
 
-	dbg_printhex(msg0, sizeof msg0);
+	dbg_printhex((void *) msg0, sizeof msg0);
 	//dbg_printhex((void *) __dram_base, 256);
 
     dbg_puts(msg0);
@@ -358,7 +358,7 @@ void xmain(int v1, int v2)
     dbg_putchar('\n');
     dbg_puts(msg0);
     dbg_putchar('\n');
-    dbg_puts("Hello, Word (I am HiFi4 DSP)!\n");
+    dbg_puts("Hello, World (I am HiFi4 DSP)!\n");
 
     for (;;)
 		;
