@@ -7,7 +7,11 @@ void dbg_putchar(uint_fast8_t c)
 {
 	if (c == '\n')
 	{
-		dbg_putchar('\r');
+		//dbg_putchar('\r');
+
+		while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+			;
+		UART0->UART_RBR_THR_DLL = '\r';
 	}
 
 	//
@@ -107,6 +111,7 @@ void t1(void)
     dbg_puts("1 Hello, World (I am HiFi4 DSP)!\n");
 
 }
+
 void test(int i)
 {
 	dbg_putchar(' ' + i);
@@ -120,11 +125,12 @@ void test(int i)
 //char msg0 [] = "Hello, World (I am HiFi4 DSP)!\n";
 //char msg0 [] = "Hello, World!\n";
 char msg0 [] = "eHello qqqqqqqqqqqewwwwwww1234566 ";
+
 void xmain(int v1, int v2)
 {
-    dbg_puts("0 Hello, World (I am HiFi4 DSP)!\n");
-	test(0);
-	dbg_putchar('\n');
+
+	//test(0);
+	dbg_putchar('#');
 	int z;
 	(void) v1;
 	(void) v2;
@@ -360,6 +366,15 @@ void xmain(int v1, int v2)
     dbg_putchar('\n');
     dbg_puts("Hello, World (I am HiFi4 DSP)!\n");
 
+}
+
+void _start(void)
+{
+    dbg_putchar('-');
+
+    dbg_puts("0 Hello, World (I am HiFi4 DSP)!\n");
+    xmain(0, 0);
+    dbg_puts("9 Hello, World (I am HiFi4 DSP)!\n");
     for (;;)
 		;
 }

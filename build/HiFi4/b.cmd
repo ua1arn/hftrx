@@ -1,4 +1,5 @@
-set CARGS= -Wa,--longcalls -static -Os  -Wall -mtext-section-literals  -fno-inline-functions -ffunction-sections -fdata-sections  -mlongcalls -std=c99 -Wextra -Wa,--no-generate-flix -mtarget-align -Wno-unused-variable
+set CARGS= -Os -Wall  -std=c99 -Wextra -Wno-unused-variable -ffunction-sections -fdata-sections
+	
 xtensa-hifi4-elf-gcc  -x assembler-with-cpp %CARGS% -c "c0.S"
 rem xtensa-hifi4-elf-gcc -I "../../CMSIS_5/CMSIS/Core_A/Include" -mauto-litpools -%CARGS% -c "t0.c"
 xtensa-hifi4-elf-gcc -I "../../CMSIS_5/CMSIS/Core_A/Include" %CARGS% -c "t0.c"

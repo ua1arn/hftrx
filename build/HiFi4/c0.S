@@ -33,7 +33,7 @@
 	j tra0
 	.align	2
 startaddr:
-	.word _start
+	.word _start0
 tra0:
 	l32r	a0, startaddr
 	jx		a0
@@ -42,10 +42,8 @@ tra0:
 
 	.text
 	.align	4
-	.global	_start
-	.type	_start,@function
-_start:
-	/* Make 0x20048000 value */
+	.type	_start0,@function
+_start0:
 	movi	a0, 0			// keep this register zero.
 
 	movi	a3, PS_UM | PS_WOE_ABI	// PS.WOE = 0|1, PS.UM = 1, PS.EXCM = 0, PS.INTLEVEL = 0
@@ -61,24 +59,11 @@ _start:
 
 	/* Reload initial stack pointer: */
 	movi	a1, __stack		// default SP
-
-	CALL4 xmain
+	movi	a3, _start
+	callx4	a3
 	j .
 
-#if 0
-	entry a1, 32
-	movi	a0, 0			// keep this register zero.
-	movi 	a3, 0x0250
-	slli	a3, a3, 16
-	movi 	a7, 0x25
-	s32i  	a7, a3, 0
-	j .
-#endif
-j xmain + 3
-.ee2:
-	.word __stack
-
-	.size	_start, . - _start
+	.size	_start0, . - _start0
 
 
 
