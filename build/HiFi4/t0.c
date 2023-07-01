@@ -7,11 +7,11 @@ void dbg_putchar(uint_fast8_t c)
 {
 	if (c == '\n')
 	{
-		//dbg_putchar('\r');
+		dbg_putchar('\r');
 
-		while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-			;
-		UART0->UART_RBR_THR_DLL = '\r';
+//		while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+//			;
+//		UART0->UART_RBR_THR_DLL = '\r';
 	}
 
 	//

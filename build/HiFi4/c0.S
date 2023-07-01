@@ -44,23 +44,23 @@ tra0:
 	.align	4
 	.type	_start0,@function
 _start0:
-	movi	a0, 0			// keep this register zero.
 
 	movi	a3, PS_UM | PS_WOE_ABI	// PS.WOE = 0|1, PS.UM = 1, PS.EXCM = 0, PS.INTLEVEL = 0
 	wsr.ps	a3
 
 	/*  Setup window registers for first caller: */
-	movi	a3, 1
+	movi	a3, 0	// was: 1
 	movi	a4, 0
-	wsr	a3, WINDOWSTART
-	wsr	a4, WINDOWBASE
+	wsr	a3, WINDOWSTART		// Call-window start bits
+	wsr	a4, WINDOWBASE		// 4 bits width: Base of current address-register window
 	rsync
 	/* Note:  register window has rotated, ie. a0..a15 clobbered. */
 
 	/* Reload initial stack pointer: */
 	movi	a1, __stack		// default SP
 	movi	a3, _start
-	callx4	a3
+	movi	a0, 0		/* mark start of call frames in stack */
+	callx8	a3
 	j .						// keep halted
 
 	.size	_start0, . - _start0
