@@ -6488,24 +6488,43 @@ void gpadc_inthandler(void)
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
-/* преобразование адреса, видимого процессором DSP в адрес, видимый host */
-// вместо данных с адреса 00038010 видим 0003C000
-// вместо данных с адреса 00038020 видим 00038010
-unsigned xlate_dsp2mpu(unsigned a)
+/* HiFI4 DSP-viewed address offset translate to host cpu viewwed */
+static ptrdiff_t xlate_dsp2mpu(ptrdiff_t a)
 {
-	const unsigned BANKSIZE = 0x08000u;
-	const unsigned CELLBASE = 0x10000u;
-	const unsigned CELLSIZE = 16;
+	const ptrdiff_t BANKSIZE = 0x08000u;
+	const ptrdiff_t CELLBASE = 0x10000u;
+	const ptrdiff_t CELLSIZE = 16;
+	const ptrdiff_t cellbank = (a - CELLBASE) / BANKSIZE;
+	const ptrdiff_t cellrow = (a - CELLBASE) % BANKSIZE / CELLSIZE;	/* гранулярность 16 байт */
+	const unsigned cellpos = (a % CELLSIZE);	/* гранулярность 16 байт */
 
 	if (a < CELLBASE)
-		return a;	/* адреса IRAM не транслируются */
-	const unsigned cellbank = (a - CELLBASE) / BANKSIZE;
-	const unsigned cellrow = (a - CELLBASE) % BANKSIZE / CELLSIZE;	/* гранулярность 16 байт */
-	const unsigned cellpos = (a % CELLSIZE);	/* гранулярность 16 байт */
+		return a;	/* translation not needed. */
+
 	return CELLBASE +
 			cellbank * BANKSIZE +
 			CELLSIZE * ((cellrow % 2) ? (cellrow / 2) + (BANKSIZE / CELLSIZE / 2) : cellrow / 2) +
 			cellpos;
+}
+
+/* memcpy replacement for Allwinner T113-s3 dsp memory */
+static void copy2dsp(uint8_t * pdspmap, const uint8_t * pcpu, unsigned size)
+{
+	unsigned i;
+	for (i = 0; i < size; ++ i)
+	{
+		pdspmap [xlate_dsp2mpu(i)] = pcpu [i];
+	}
+}
+
+/* memset replacement for Allwinner T113-s3 dsp memory */
+static void zero2dsp(uint8_t * pdspmap, unsigned size)
+{
+	unsigned i;
+	for (i = 0; i < size; ++ i)
+	{
+		pdspmap [xlate_dsp2mpu(i)] = 0x00;	/* fill by zero */
+	}
 }
 
 //static void xtest(void)
