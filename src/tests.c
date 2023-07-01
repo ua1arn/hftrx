@@ -6488,6 +6488,65 @@ void gpadc_inthandler(void)
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
+/* преобразование адреса, видимого процессором DSP в адрес, видимый host */
+// вместо данных с адреса 00038010 видим 0003C000
+// вместо данных с адреса 00038020 видим 00038010
+unsigned xlate_dsp2mpu(unsigned a)
+{
+	const unsigned BANKSIZE = 0x08000u;
+	const unsigned CELLBASE = 0x10000u;
+	const unsigned CELLSIZE = 16;
+
+	if (a < CELLBASE)
+		return a;	/* адреса IRAM не транслируются */
+	const unsigned cellbank = (a - CELLBASE) / BANKSIZE;
+	const unsigned cellrow = (a - CELLBASE) % BANKSIZE / CELLSIZE;	/* гранулярность 16 байт */
+	const unsigned cellpos = (a % CELLSIZE);	/* гранулярность 16 байт */
+	return CELLBASE +
+			cellbank * BANKSIZE +
+			CELLSIZE * ((cellrow % 2) ? (cellrow / 2) + (BANKSIZE / CELLSIZE / 2) : cellrow / 2) +
+			cellpos;
+}
+
+static void xtest(void)
+{
+	unsigned mpu;
+	unsigned dsp;
+
+	dsp = 0x10000;
+	mpu = xlate_dsp2mpu(dsp);
+	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+
+	dsp = 0x10010;
+	mpu = xlate_dsp2mpu(dsp);
+	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+
+	dsp = 0x10020;
+	mpu = xlate_dsp2mpu(dsp);
+	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+
+	dsp = 0x10030;
+	mpu = xlate_dsp2mpu(dsp);
+	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+
+	dsp = 0x18020;
+	mpu = xlate_dsp2mpu(dsp);
+	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+
+	dsp = 0x18030;
+	mpu = xlate_dsp2mpu(dsp);
+	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+}
+
+void copy2dsp(uint8_t * pdspmap, const uint8_t * pcpu, unsigned size)
+{
+	unsigned i;
+	for (i = 0; i < size; ++ i)
+	{
+		pdspmap [xlate_dsp2mpu(i)] = pcpu [i];
+	}
+}
+
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)
@@ -6533,23 +6592,29 @@ void hightests(void)
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x01;	/* DSP BOOT SRAM REMAP ENABLE 1: DSP 128K Local SRAM Remap for System Boot */
 
 		// https://github.com/YuzukiHD/FreeRTOS-HIFI4-DSP/blob/164696d952116d20100daefd7a475d2ede828eb0/host/uboot-driver/dsp/sun8iw20/dsp_reg.h#L33C1-L39C65
-
+		//xtest();
 		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
 		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 		//PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		//local_delay_ms(300);
 
-		memset((void *) remap_cpu, 0x00, 128 * 1024);
-		memcpy((void *) remap_cpu, dsp_code, sizeof dsp_code);
+		//memset((void *) remap_cpu, 0xE5, 128 * 1024);
+		//memcpy((void *) remap_cpu, dsp_code, sizeof dsp_code);
+		for (unsigned i = 0; i < (64 * 1024) / 4; ++ i)
+		{
+			volatile uint32_t * const p = (void *) remap_cpu + (64 * 1024);
+			p [i] = (uintptr_t) (& p [i]);
+		}
+		copy2dsp((void *) remap_cpu, dsp_code, sizeof dsp_code);
 		dcache_clean(remap_cpu, 128 * 1024);
-		//printhex(remap_cpu, (void *) remap_cpu, 256);
-		//PRINTF("Map local sram to DSP\n");
+		printhex(remap_cpu, (void *) dsp_code + (64 * 1024), 256);
+		PRINTF("Map local sram to DSP\n");
 		// Map local sram to DSP
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x00;	/* DSP BOOT SRAM REMAP ENABLE 0: DSP 128K Local SRAM Remap for DSP_SYS */
 
 		// DSP Start address change
 		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 + 0x000;//0x1A;
-		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000 + 0x08;	// xmain base address
+		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028008;	// xmain base address
 		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 1);	// BIT_START_VEC_SEL
 		PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 
@@ -6574,7 +6639,7 @@ void hightests(void)
 		unsigned sss = DSP0_CFG->DSP_STAT_REG;
 
 		local_delay_ms(1300);
-		PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
+		//PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		for (;;)
 			;
 	}
