@@ -20,7 +20,7 @@ void dbg_putchar(uint_fast8_t c)
 
 const char hex [] = "0123456789ABCDEFghijklmnopqrst";
 
-char ahex(unsigned v)
+static char ahex(unsigned v)
 {
 	return (v < 10) ? (v + '0') : (v + 'A' - 10);
 }
@@ -55,12 +55,14 @@ void dbg_printhex(const uint8_t * p, int size)
 {
 	unsigned offs = 0;
 
-//	printv32((uintptr_t) p);
-//	dbg_putchar(' ');
+	//printv32((uintptr_t) p);
+	dbg_putchar('!');
 
 	while (size > 0)
 	{
+		dbg_putchar('+');
 		printv32((uintptr_t) p);
+		dbg_putchar('-');
 
 		dbg_putchar(' ');
 		printv8(p [0]);
@@ -102,26 +104,35 @@ void dbg_printhex(const uint8_t * p, int size)
 
 	}
 }
+void t1(void)
+{
+    dbg_puts("1 Hello, Word (I am HiFi4 DSP)!\n");
+
+}
+void test(int i)
+{
+	dbg_putchar(' ' + i);
+//	printv32(i);
+//	dbg_putchar('\n');
+	if (i >= 96)
+		return;
+	test(i+1);
+}
 //char msg0 [] = "Hello, Word (I am HiFi4 DSP)!\n";
 //char msg0 [] = "Hello, Word!\n";
 char msg0 [] = "eHello qqqqqqqqqqqewwwwwww1234566 ";
 void xmain(int v1, int v2)
 {
+    dbg_puts("0 Hello, Word (I am HiFi4 DSP)!\n");
+	test(0);
+	dbg_putchar('\n');
 	int z;
 	(void) v1;
 	(void) v2;
 
-//
-//	dbg_putchar('H');
-//	dbg_putchar('e');
-//	dbg_putchar('l');
-//	dbg_putchar('l');
-//	dbg_putchar('o');
-//	dbg_putchar('!');
-//	dbg_putchar('\n');
-//
-//	printv32((uintptr_t) & z);
-//	dbg_putchar('\n');
+    dbg_puts("2 Hello, Word (I am HiFi4 DSP)!\n");
+    t1();
+    dbg_puts("3 Hello, Word (I am HiFi4 DSP)!\n");
 
 	extern uint32_t __dram_base [];
 	extern uint32_t __iram_base [];
@@ -339,7 +350,7 @@ void xmain(int v1, int v2)
 	}
 
 	//dbg_printhex(msg0, sizeof msg0);
-	//dbg_printhex((void *) __dram_base, 256);
+	dbg_printhex((void *) __dram_base, 256);
 
     dbg_puts(msg0);
     dbg_putchar('\n');
