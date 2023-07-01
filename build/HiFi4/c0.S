@@ -30,10 +30,20 @@
 //#endif
 
 	.section .entry.text, "x"
-	//.text
+	j tra0
+	.align	2
+startaddr:
+	.word _start
+tra0:
+	l32r	a0, startaddr
+	jx		a0
+
+/////////////////////////////
+
+	.text
+	.align	4
 	.global	_start
 	.type	_start,@function
-
 _start:
 	/* Make 0x20048000 value */
 	movi	a0, 0			// keep this register zero.
