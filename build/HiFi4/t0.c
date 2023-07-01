@@ -125,8 +125,9 @@ void xmain(int v1, int v2)
 
 	extern uint32_t __dram_base [];
 	extern uint32_t __iram_base [];
-	volatile const uint32_t * const p = (volatile const uint32_t *) __dram_base;
+	volatile const uint32_t * p;
 
+	p = (volatile const uint32_t *) __dram_base;
 	{
 		enum { row = 0 };
 		printv32(& p [row * 4 + 0]);
@@ -272,6 +273,59 @@ void xmain(int v1, int v2)
 	}
 	{
 		enum { row = 11 };
+		printv32(& p [row * 4 + 0]);
+		dbg_putchar(':');
+		printv32(p [row * 4 + 0]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 1]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 2]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 3]);
+		dbg_putchar('\n');
+	}
+	p = (volatile const uint32_t *) ((uintptr_t) __dram_base + 0x8000u);
+	{
+		enum { row = 0 };
+		printv32(& p [row * 4 + 0]);
+		dbg_putchar(':');
+		printv32(p [row * 4 + 0]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 1]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 2]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 3]);
+		dbg_putchar('\n');
+	}
+	{
+		enum { row = 1 };
+		printv32(& p [row * 4 + 0]);
+		dbg_putchar(':');
+		printv32(p [row * 4 + 0]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 1]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 2]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 3]);
+		dbg_putchar('\n');
+	}
+	{
+		enum { row = 2 };
+		printv32(& p [row * 4 + 0]);
+		dbg_putchar(':');
+		printv32(p [row * 4 + 0]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 1]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 2]);
+		dbg_putchar(',');
+		printv32(p [row * 4 + 3]);
+		dbg_putchar('\n');
+	}
+	{
+		enum { row = 3 };
 		printv32(& p [row * 4 + 0]);
 		dbg_putchar(':');
 		printv32(p [row * 4 + 0]);

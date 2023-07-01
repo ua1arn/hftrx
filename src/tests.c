@@ -6508,35 +6508,35 @@ unsigned xlate_dsp2mpu(unsigned a)
 			cellpos;
 }
 
-static void xtest(void)
-{
-	unsigned mpu;
-	unsigned dsp;
-
-	dsp = 0x10000;
-	mpu = xlate_dsp2mpu(dsp);
-	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
-
-	dsp = 0x10010;
-	mpu = xlate_dsp2mpu(dsp);
-	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
-
-	dsp = 0x10020;
-	mpu = xlate_dsp2mpu(dsp);
-	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
-
-	dsp = 0x10030;
-	mpu = xlate_dsp2mpu(dsp);
-	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
-
-	dsp = 0x18020;
-	mpu = xlate_dsp2mpu(dsp);
-	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
-
-	dsp = 0x18030;
-	mpu = xlate_dsp2mpu(dsp);
-	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
-}
+//static void xtest(void)
+//{
+//	unsigned mpu;
+//	unsigned dsp;
+//
+//	dsp = 0x10000;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//
+//	dsp = 0x10010;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//
+//	dsp = 0x10020;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//
+//	dsp = 0x10030;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//
+//	dsp = 0x18020;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//
+//	dsp = 0x18030;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//}
 
 void copy2dsp(uint8_t * pdspmap, const uint8_t * pcpu, unsigned size)
 {
@@ -6600,15 +6600,15 @@ void hightests(void)
 
 		//memset((void *) remap_cpu, 0xE5, 128 * 1024);
 		//memcpy((void *) remap_cpu, dsp_code, sizeof dsp_code);
-		for (unsigned i = 0; i < (64 * 1024) / 4; ++ i)
-		{
-			volatile uint32_t * const p = (void *) remap_cpu + (64 * 1024);
-			p [i] = (uintptr_t) (& p [i]);
-		}
+//		for (unsigned i = 0; i < (128 * 1024) / 4; ++ i)
+//		{
+//			volatile uint32_t * const p = (void *) remap_cpu;
+//			p [xlate_dsp2mpu(i * 4) / 4] = i * 4;
+//		}
 		copy2dsp((void *) remap_cpu, dsp_code, sizeof dsp_code);
 		dcache_clean(remap_cpu, 128 * 1024);
-		printhex(remap_cpu, (void *) dsp_code + (64 * 1024), 256);
-		PRINTF("Map local sram to DSP\n");
+		//printhex(remap_cpu, (void *) dsp_code + (64 * 1024), 256);
+		//PRINTF("Map local sram to DSP\n");
 		// Map local sram to DSP
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x00;	/* DSP BOOT SRAM REMAP ENABLE 0: DSP 128K Local SRAM Remap for DSP_SYS */
 
