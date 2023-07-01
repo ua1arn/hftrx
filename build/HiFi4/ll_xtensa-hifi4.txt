@@ -1,0 +1,1075 @@
+#define GICDistributor_STATUSR_RRD_Msk (0x1U )
+#define __FPU_USED 0U
+#define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)
+#define __DBL_MIN_EXP__ (-1021)
+#define GPIOINTD_BASE ((uintptr_t) 0x02000260)
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)
+#define GICDistributor_CTLR_EINWF_Pos 7U
+#define GICInterface_AIAR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_AIAR_INTID_Msk)
+#define GICDistributor_CTLR_RWP_Pos 31U
+#define __UINT_LEAST16_MAX__ 0xffff
+#define GICInterface_STATUSR_WROD_Pos 3U
+#define __ATOMIC_ACQUIRE 2
+#define PAGE_NG_MASK (0xFFFFF7FF)
+#define GPIOF_BASE ((uintptr_t) 0x020000F0)
+#define __get_CP64(cp,op1,Rt,CRm) __ASM volatile("MRRC p" #cp ", " #op1 ", %Q0, %R0, c" #CRm : "=r" (Rt) : : "memory" )
+#define GICDistributor_TYPER_ITLinesNumber_Pos 0U
+#define __IOM volatile
+#define CPSR_I_Msk (1UL << CPSR_I_Pos)
+#define __FLT_MIN__ 1.1754943508222875e-38F
+#define __GCC_IEC_559_COMPLEX 0
+#define PAGE_XN_4K_MASK (0xFFFFFFFE)
+#define GICInterface_IAR_INTID_Pos 0U
+#define GICInterface_IIDR_ProductID_Pos 20U
+#define DSI_DPHY_BASE ((uintptr_t) 0x05451000)
+#define __UINT_LEAST8_TYPE__ unsigned char
+#define PAGE_DOMAIN_SHIFT (5)
+#define ISR_A_Msk (1UL << ISR_A_Pos)
+#define INT_LEAST16_MIN (-__INT_LEAST16_MAX__ - 1)
+#define ACTLR_PARITY_Msk (1UL << ACTLR_PARITY_Pos)
+#define GICDistributor_IROUTER_IRM_Pos 31UL
+#define SCTLR_A_Pos 1U
+#define GICDistributor_IROUTER_IRM_Msk (0xFFUL << GICDistributor_IROUTER_IRM_Pos)
+#define __INTMAX_C(c) c ## LL
+#define DSP0_CFG_BASE ((uintptr_t) 0x01700000)
+#define __UNALIGNED_UINT32_READ(addr) (((const struct T_UINT32_READ *)(const void *)(addr))->v)
+#define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE)
+#define __CHAR_BIT__ 8
+#define PAGE_S_SHIFT (10)
+#define WRITE_REG(REG,VAL) ((REG) = (VAL))
+#define SPI0 ((SPI_TypeDef *) SPI0_BASE)
+#define __UINT8_MAX__ 0xff
+#define GICInterface_STATUSR_ASV(x) (((uint32_t)(((uint32_t)(x)) << GICInterface_STATUSR_ASV_Pos)) & GICInterface_STATUSR_ASV_Msk)
+#define GICInterface_PMR_Priority_Msk (0xFFU )
+#define CPSR_F_Pos 6U
+#define INT16_C(x) __INT16_C(x)
+#define __WINT_MAX__ 0xffffffffU
+#define GICDistributor_CTLR_ARE(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_CTLR_ARE_Pos)) & GICDistributor_CTLR_ARE_Msk)
+#define USBPHY1_BASE ((uintptr_t) 0x04200800)
+#define __FLT32_MIN_EXP__ (-125)
+#define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)
+#define INT8_MAX __INT8_MAX__
+#define UINT_LEAST64_MAX __UINT_LEAST64_MAX__
+#define __int32_t_defined 1
+#define GICDistributor_IIDR_Revision(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_IIDR_Revision_Pos)) & GICDistributor_IIDR_Revision_Msk)
+#define SCTLR_FI_Pos 21U
+#define ACTLR_L1PCTL_Msk (3UL << ACTLR_L1PCTL_Pos)
+#define SCTLR_WXN_Pos 19U
+#define GICInterface_STATUSR_WRD_Msk (0x1U << GICInterface_STATUSR_WRD_Pos)
+#define DACR_Dn_NOACCESS 0U
+#define CPSR_E_Msk (1UL << CPSR_E_Pos)
+#define __ORDER_LITTLE_ENDIAN__ 1234
+#define __SIZE_MAX__ 0xffffffffU
+#define GICInterface_STATUSR_ASV_Msk (0x1U << GICInterface_STATUSR_ASV_Pos)
+#define GICDistributor_SGIR_NSATT_Msk (0x1U << GICDistributor_SGIR_NSATT_Pos)
+#define __WCHAR_MAX__ 0xffff
+#define INT16_MAX __INT16_MAX__
+#define __int_least32_t_defined 1
+#define __DBL_DENORM_MIN__ ((double)4.9406564584124654e-324L)
+#define __GCC_ATOMIC_CHAR_LOCK_FREE 1
+#define GICDistributor_CLRSPI_NSR_INTID_Pos 0U
+#define __GCC_IEC_559 0
+#define LEDC ((LEDC_TypeDef *) LEDC_BASE)
+#define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)
+#define CPSR_V_Msk (1UL << CPSR_V_Pos)
+#define PAGE_64K_TEX2_SHIFT (14)
+#define __FLT32X_DECIMAL_DIG__ 17
+#define PAGE_NS_SHIFT (3)
+#define CPSR_E_Pos 9U
+#define UART5_BASE ((uintptr_t) 0x02501400)
+#define __FLT_EVAL_METHOD__ 0
+#define SECTION_XN_SHIFT (4)
+#define ACTLR_DDI_Msk (1UL << ACTLR_DDI_Pos)
+#define GICDistributor_ITARGETSR_CPU0(x) (((uint8_t)(((uint8_t)(x)) )) & GICDistributor_ITARGETSR_CPU0_Msk)
+#define GICDistributor_ITARGETSR_CPU1(x) (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU1_Pos)) & GICDistributor_ITARGETSR_CPU1_Msk)
+#define GICDistributor_ITARGETSR_CPU2(x) (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU2_Pos)) & GICDistributor_ITARGETSR_CPU2_Msk)
+#define GICDistributor_ITARGETSR_CPU3(x) (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU3_Pos)) & GICDistributor_ITARGETSR_CPU3_Msk)
+#define GICDistributor_ITARGETSR_CPU4(x) (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU4_Pos)) & GICDistributor_ITARGETSR_CPU4_Msk)
+#define GICDistributor_ITARGETSR_CPU6(x) (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU6_Pos)) & GICDistributor_ITARGETSR_CPU6_Msk)
+#define GICDistributor_ITARGETSR_CPU7(x) (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU7_Pos)) & GICDistributor_ITARGETSR_CPU7_Msk)
+#define PWM_BASE ((uintptr_t) 0x02000C00)
+#define MSI_MEMC_BASE ((uintptr_t) 0x03102000)
+#define __FLT64_DECIMAL_DIG__ 17
+#define SCTLR_C_Msk (1UL << SCTLR_C_Pos)
+#define __GCC_ATOMIC_CHAR32_T_LOCK_FREE 1
+#define IDC_BASE ((uintptr_t) 0x08130000)
+#define SPI0_BASE ((uintptr_t) 0x04025000)
+#define INT8_MIN (-__INT8_MAX__ - 1)
+#define GICDistributor_CTLR_ARE_Pos 4U
+#define ACTLR_DWBST_Pos 11U
+#define GICDistributor_TYPER_CPUNumber(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_TYPER_CPUNumber_Pos)) & GICDistributor_TYPER_CPUNumber_Msk)
+#define GICDistributor_STATUSR_RWOD(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_STATUSR_RWOD_Pos)) & GICDistributor_STATUSR_RWOD_Msk)
+#define SPI_DBI ((SPI_DBI_TypeDef *) SPI_DBI_BASE)
+#define GICInterface_ABPR_Binary_Point(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_ABPR_Binary_Point_Msk)
+#define __UINT_FAST64_MAX__ 0xffffffffffffffffULL
+#define __SIG_ATOMIC_TYPE__ int
+#define RESERVED(N,T) T RESERVED ##N;
+#define __SEV() __ASM volatile ("sev")
+#define __DBL_MIN_10_EXP__ (-307)
+#define INT16_MIN (-__INT16_MAX__ - 1)
+#define __FINITE_MATH_ONLY__ 0
+#define GICDistributor_ITARGETSR_CPU7_Msk (0x1U << GICDistributor_ITARGETSR_CPU7_Pos)
+#define __FLT32X_MAX_EXP__ 1024
+#define DFSR_FS0_Pos 0U
+#define PAGE_S_MASK (0xFFFFFBFF)
+#define GPIOINTE_BASE ((uintptr_t) 0x02000280)
+#define __GNUC_PATCHLEVEL__ 0
+#define __FLT32_HAS_DENORM__ 1
+#define GICDistributor_SETSPI_NSR_INTID_Msk (0x3FFU )
+#define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)
+#define __UINT_FAST8_MAX__ 0xffffffffU
+#define section_device_ro(descriptor_l1,region) region.rg_t = SECTION; region.domain = 0x0; region.e_t = ECC_DISABLED; region.g_t = GLOBAL; region.inner_norm_t = NON_CACHEABLE; region.outer_norm_t = NON_CACHEABLE; region.mem_t = STRONGLY_ORDERED; region.sec_t = SECURE; region.xn_t = NON_EXECUTE; region.priv_t = READ; region.user_t = READ; region.sh_t = NON_SHARED; MMU_GetSectionDescriptor(&descriptor_l1, region);
+#define __FLT32_MAX_10_EXP__ 38
+#define GPIOG_BASE ((uintptr_t) 0x02000120)
+#define GICInterface_AHPPIR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_AHPPIR_INTID_Msk)
+#define INT_FAST8_MAX __INT_FAST8_MAX__
+#define DFSR_CM_Pos 13U
+#define __INT8_C(c) c
+#define WCHAR_MAX __WCHAR_MAX__
+#define PAGE_64K_C_SHIFT (3)
+#define SCTLR_EE_Msk (1UL << SCTLR_EE_Pos)
+#define ACTLR_SMP_Msk (1UL << ACTLR_SMP_Pos)
+#define __INT_LEAST8_WIDTH__ 8
+#define __UINT_LEAST64_MAX__ 0xffffffffffffffffULL
+#define IFSR_STATUS_Msk (0x3FUL << IFSR_STATUS_Pos)
+#define __int_fast8_t_defined 1
+#define PAGE_L1_DESCRIPTOR (0x1)
+#define GICDistributor_TYPER_SecurityExtn_Pos 10U
+#define __SHRT_MAX__ 0x7fff
+#define __LDBL_MAX__ 1.7976931348623157e+308L
+#define GICDistributor_ITARGETSR_CPU4_Pos 4U
+#define __int_least8_t_defined 1
+#define DFSR_STATUS_Pos 0U
+#define SCTLR_UWXN_Pos 20U
+#define SPC_BASE ((uintptr_t) 0x02000800)
+#define PAGE_L2_64K_MASK (0xFFFFFFFC)
+#define CE_NS_BASE ((uintptr_t) 0x03040000)
+#define ACTLR_DODMBS_Pos 10U
+#define PAGE_L2_64K_DESC (0x1)
+#define SCTLR_NMFI_Pos 27U
+#define EMAC_BASE ((uintptr_t) 0x04500000)
+#define GICDistributor_IROUTER_IRM(x) (((uint64_t)(((uint64_t)(x)) << GICDistributor_IROUTER_IRM_Pos)) & GICDistributor_IROUTER_IRM_Msk)
+#define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)
+#define DSP0_DRAM_BASE ((uintptr_t) 0x00030000)
+#define IFSR_LPAE_Msk (0x1UL << IFSR_LPAE_Pos)
+#define __UINT_LEAST8_MAX__ 0xff
+#define ACTLR_DDVM_Msk (1UL << ACTLR_DDVM_Pos)
+#define __GCC_ATOMIC_BOOL_LOCK_FREE 1
+#define GPIOINTC ((GPIOINT_TypeDef *) GPIOINTC_BASE)
+#define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)
+#define GPIOINTE ((GPIOINT_TypeDef *) GPIOINTE_BASE)
+#define GPIOINTF ((GPIOINT_TypeDef *) GPIOINTF_BASE)
+#define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)
+#define GICInterface_AEOIR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_AEOIR_INTID_Msk)
+#define __UINTMAX_TYPE__ long long unsigned int
+#define INT_FAST8_MIN (-__INT_FAST8_MAX__ - 1)
+#define GICDistributor_SETSPI_SR_INTID_Msk (0x3FFU )
+#define WCHAR_MIN __WCHAR_MIN__
+#define I2S1_BASE ((uintptr_t) 0x02033000)
+#define ___int64_t_defined 1
+#define __FLT_EVAL_METHOD_TS_18661_3__ 0
+#define __OPTIMIZE__ 1
+#define GICDistributor_CTLR_DC(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_CTLR_DC_Pos)) & GICDistributor_CTLR_DC_Msk)
+#define SCTLR_B_Msk (1UL << SCTLR_B_Pos)
+#define __CHAR_UNSIGNED__ 1
+#define ACTLR_FW_Msk (1UL << ACTLR_FW_Pos)
+#define __UINT32_MAX__ 0xffffffffUL
+#define GICInterface_AHPPIR_INTID_Msk (0xFFFFFFU )
+#define RISC_CFG_BASE ((uintptr_t) 0x06010000)
+#define GICDistributor_CLRSPI_SR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICDistributor_CLRSPI_SR_INTID_Msk)
+#define __LDBL_MAX_EXP__ 1024
+#define __USAT(ARG1,ARG2) __extension__ ({ uint32_t __RES, __ARG1 = (ARG1); __ASM volatile ("usat %0, %1, %2" : "=r" (__RES) : "I" (ARG2), "r" (__ARG1) : "cc" ); __RES; })
+#define __have_longlong64 1
+#define ISR_F_Pos 11U
+#define UINT_FAST16_MAX __UINT_FAST16_MAX__
+#define __NOP() __ASM volatile ("nop")
+#define __WINT_MIN__ 0U
+#define GICInterface_DIR_INTID_Pos 0U
+#define GIC_GetSecurity GIC_GetGroup
+#define __CA_CMSIS_VERSION_SUB (1U)
+#define MCTL_COM_BASE ((uintptr_t) 0x03102000)
+#define UINT16_C(x) __UINT16_C(x)
+#define G2D_BLD_BASE ((uintptr_t) 0x05410400)
+#define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)
+#define GICDistributor_TYPER_CPUNumber_Msk (0x7U << GICDistributor_TYPER_CPUNumber_Pos)
+#define __INT_LEAST16_WIDTH__ 16
+#define __SCHAR_MAX__ 0x7f
+#define __USED __attribute__((used))
+#define PAGE_64K_TEXCB_MASK (0xFFFF8FF3)
+#define GIC_SetSecurity GIC_SetGroup
+#define __WCHAR_MIN__ 0
+#define DRAM_SPACE_BASE ((uintptr_t) 0x40000000)
+#define ACTLR_L1PE_Pos 2U
+#define __INT64_C(c) c ## LL
+#define IFSR_ExT_Pos 12U
+#define GICDistributor_SGIR_TargetFilterList(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_SGIR_TargetFilterList_Pos)) & GICDistributor_SGIR_TargetFilterList_Msk)
+#define __GCC_ATOMIC_POINTER_LOCK_FREE 1
+#define GICDistributor_TYPER_SecurityExtn(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_TYPER_SecurityExtn_Pos)) & GICDistributor_TYPER_SecurityExtn_Msk)
+#define USBEHCI1_BASE ((uintptr_t) 0x04200000)
+#define GICInterface_IIDR_Revision_Pos 12U
+#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)
+#define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+#define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)
+#define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)
+#define ACTLR_BP_Msk (3UL << ACTLR_BP_Pos)
+#define GICDistributor_CLRSPI_SR_INTID_Msk (0x3FFU )
+#define __SIZEOF_INT__ 4
+#define TZMA ((TZMA_TypeDef *) TZMA_BASE)
+#define USBOTG0_BASE ((uintptr_t) 0x04100000)
+#define SCTLR_TRE_Msk (1UL << SCTLR_TRE_Pos)
+#define GICDistributor_ITARGETSR_CPU3_Pos 3U
+#define __FLT32X_MANT_DIG__ 53
+#define GPIOINTF_BASE ((uintptr_t) 0x020002A0)
+#define _SYS__INTSUP_H 
+#define section_so(descriptor_l1,region) region.rg_t = SECTION; region.domain = 0x0; region.e_t = ECC_DISABLED; region.g_t = GLOBAL; region.inner_norm_t = NON_CACHEABLE; region.outer_norm_t = NON_CACHEABLE; region.mem_t = STRONGLY_ORDERED; region.sec_t = SECURE; region.xn_t = NON_EXECUTE; region.priv_t = RW; region.user_t = RW; region.sh_t = NON_SHARED; MMU_GetSectionDescriptor(&descriptor_l1, region);
+#define __USER_LABEL_PREFIX__ 
+#define GICDistributor_CTLR_EINWF_Msk (0x1U << GICDistributor_CTLR_EINWF_Pos)
+#define CPSR_GE_Msk (0xFUL << CPSR_GE_Pos)
+#define HEADER_00003039_INCLUDED 
+#define G2D_WB_BASE ((uintptr_t) 0x05413000)
+#define CCU ((CCU_TypeDef *) CCU_BASE)
+#define GICDistributor_TYPER_ITLinesNumber_Msk (0x1FU )
+#define UINT8_MAX __UINT8_MAX__
+#define __STDC_HOSTED__ 1
+#define CPSR_T_Msk (1UL << CPSR_T_Pos)
+#define TIMER ((TIMER_TypeDef *) TIMER_BASE)
+#define GICInterface_IIDR_ProductID_Msk (0xFFFU << GICInterface_IIDR_ProductID_Pos)
+#define __RESTRICT __restrict
+#define ___int_least64_t_defined 
+#define CIR_TX_BASE ((uintptr_t) 0x02003000)
+#define I2S2_BASE ((uintptr_t) 0x02034000)
+#define CPACR_TRCDIS_Pos 28U
+#define __XTENSA_EL__ 1
+#define SCTLR_A_Msk (1UL << SCTLR_A_Pos)
+#define SECTION_AP_MASK (0xFFFF73FF)
+#define __DBL_DIG__ 15
+#define __FLT32_DIG__ 6
+#define ACTLR_DBDI_Pos 28U
+#define GICDistributor_IIDR_Variant_Msk (0xFU << GICDistributor_IIDR_Variant_Pos)
+#define __FLT_EPSILON__ 1.1920928955078125e-7F
+#define INT32_MIN (-__INT32_MAX__ - 1)
+#define SCTLR_RR_Pos 14U
+#define GICDistributor_CTLR_DC_Msk (0x1U << GICDistributor_CTLR_DC_Pos)
+#define CPSR_Z_Pos 30U
+#define __SHRT_WIDTH__ 16
+#define CPSR_M_ABT 0x17U
+#define CIR_RX_BASE ((uintptr_t) 0x07040000)
+#define CPSR_Q_Pos 27U
+#define DFSR_LPAE_Msk (1UL << DFSR_LPAE_Pos)
+#define __LDBL_MIN__ 2.2250738585072014e-308L
+#define __STDC_UTF_16__ 1
+#define CPSR_F_Msk (1UL << CPSR_F_Pos)
+#define GICDistributor_CTLR_DC_Pos 6U
+#define __BKPT(value) __ASM volatile ("bkpt "#value)
+#define ISR_I_Pos 12U
+#define GICDistributor_ITARGETSR_CPU5_Msk (0x1U << GICDistributor_ITARGETSR_CPU5_Pos)
+#define CPSR_M_HYP 0x1AU
+#define CPSR_M_SVC 0x13U
+#define DDRPHYC_BASE ((uintptr_t) 0x03103000)
+#define UART1 ((UART_TypeDef *) UART1_BASE)
+#define __CA_CMSIS_VERSION_MAIN (1U)
+#define UART3 ((UART_TypeDef *) UART3_BASE)
+#define PAGE_XN_64K_SHIFT (15)
+#define __FLT32X_HAS_INFINITY__ 1
+#define GICInterface_STATUSR_RWOD(x) (((uint32_t)(((uint32_t)(x)) << GICInterface_STATUSR_RWOD_Pos)) & GICInterface_STATUSR_RWOD_Msk)
+#define __INT32_MAX__ 0x7fffffffL
+#define SECTION_AP_SHIFT (10)
+#define SECTION_P_SHIFT (9)
+#define GICDistributor_TYPER_LSPI(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_TYPER_LSPI_Pos)) & GICDistributor_TYPER_LSPI_Msk)
+#define __INT_WIDTH__ 32
+#define GICDistributor_STATUSR_WRD_Pos 1U
+#define __SIZEOF_LONG__ 4
+#define G2D_ROT_BASE ((uintptr_t) 0x05438000)
+#define GICDistributor_CTLR_EnableGrp0_Pos 0U
+#define CPSR_M_SYS 0x1FU
+#define __UINT16_C(c) c
+#define CPSR_A_Pos 8U
+#define OFFSET_1M (0x00100000)
+#define __DECIMAL_DIG__ 17
+#define IFSR_STATUS_Pos 0U
+#define RTC_BASE ((uintptr_t) 0x07090000)
+#define __FLT64_EPSILON__ 2.2204460492503131e-16F64
+#define GICDistributor_ITARGETSR_CPU5(x) (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU5_Pos)) & GICDistributor_ITARGETSR_CPU5_Msk)
+#define LEDC_BASE ((uintptr_t) 0x02008000)
+#define SYS_CFG_BASE ((uintptr_t) 0x03000000)
+#define GICDistributor_TYPER_SecurityExtn_Msk (0x1U << GICDistributor_TYPER_SecurityExtn_Pos)
+#define CAN1 ((CAN_TypeDef *) CAN1_BASE)
+#define GICInterface_IAR_INTID_Msk (0xFFFFFFU )
+#define OFFSET_4K (0x00001000)
+#define GICDistributor_STATUSR_WRD(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_STATUSR_WRD_Pos)) & GICDistributor_STATUSR_WRD_Msk)
+#define __CMSIS_CP15_H 
+#define __LDBL_HAS_QUIET_NAN__ 1
+#define INT64_C(x) __INT64_C(x)
+#define __GNUC_PREREQ__(ma,mi) __GNUC_PREREQ(ma, mi)
+#define DFSR_CM_Msk (1UL << DFSR_CM_Pos)
+#define G2D_UI0_BASE ((uintptr_t) 0x05411000)
+#define __FLT64_MANT_DIG__ 53
+#define __int16_t_defined 1
+#define DACR_Dn_MANAGER 3U
+#define __NEWLIB_MINOR__ 1
+#define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)
+#define UART0 ((UART_TypeDef *) UART0_BASE)
+#define UART2 ((UART_TypeDef *) UART2_BASE)
+#define UART4 ((UART_TypeDef *) UART4_BASE)
+#define UART5 ((UART_TypeDef *) UART5_BASE)
+#define SPINLOCK ((SPINLOCK_TypeDef *) SPINLOCK_BASE)
+#define __GNUC__ 10
+#define READ_BIT(REG,BIT) ((REG) & (BIT))
+#define SMHC0_BASE ((uintptr_t) 0x04020000)
+#define DFSR_FS0_Msk (0xFUL << DFSR_FS0_Pos)
+#define GPIOINTG_BASE ((uintptr_t) 0x020002C0)
+#define SECTION_XN_MASK (0xFFFFFFEF)
+#define GICInterface_HPPIR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_HPPIR_INTID_Msk)
+#define __int_least16_t_defined 1
+#define __FLT_HAS_DENORM__ 1
+#define __SIZEOF_LONG_DOUBLE__ 8
+#define __CMSIS_COMPILER_H 
+#define INT_FAST16_MIN (-__INT_FAST16_MAX__ - 1)
+#define DMIC_BASE ((uintptr_t) 0x02031000)
+#define CPSR_T_Pos 5U
+#define GICInterface_IIDR_Arch_version_Pos 16U
+#define __BIGGEST_ALIGNMENT__ 16
+#define PTRDIFF_MIN (-PTRDIFF_MAX - 1)
+#define ACTLR_RADIS_Pos 12U
+#define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)
+#define __int64_t_defined 1
+#define __FLT64_MAX_10_EXP__ 308
+#define MCTL_PHY ((MCTL_PHY_TypeDef *) MCTL_PHY_BASE)
+#define ACTLR_RSDIS_Pos 17U
+#define SECTION_DOMAIN_MASK (0xFFFFFE1F)
+#define ACTLR_DODMBS_Msk (1UL << ACTLR_DODMBS_Pos)
+#define __DBL_MAX__ ((double)1.7976931348623157e+308L)
+#define __INT_FAST32_MAX__ 0x7fffffff
+#define __DBL_HAS_INFINITY__ 1
+#define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)
+#define GICDistributor_ITARGETSR_CPU2_Msk (0x1U << GICDistributor_ITARGETSR_CPU2_Pos)
+#define __HAVE_SPECULATION_SAFE_VALUE 1
+#define __get_CP(cp,op1,Rt,CRn,CRm,op2) __ASM volatile("MRC p" #cp ", " #op1 ", %0, c" #CRn ", c" #CRm ", " #op2 : "=r" (Rt) : : "memory" )
+#define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)
+#define GICInterface_EOIR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_EOIR_INTID_Msk)
+#define __INTPTR_WIDTH__ 32
+#define __CORTEX_A 7U
+#define TCON_LCD0_BASE ((uintptr_t) 0x05461000)
+#define __UINT_LEAST32_MAX__ 0xffffffffUL
+#define DI_BASE ((uintptr_t) 0x05400000)
+#define __STATIC_INLINE static inline
+#define GICDistributor_CTLR_EnableGrp1_Pos 1U
+#define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)
+#define GICDistributor_ITARGETSR_CPU1_Pos 1U
+#define SCTLR_M_Msk (1UL << SCTLR_M_Pos)
+#define __FLT32X_HAS_DENORM__ 1
+#define __INT_FAST16_TYPE__ int
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)
+#define CE_S_BASE ((uintptr_t) 0x03040800)
+#define GICInterface_STATUSR_RRD_Pos 0U
+#define UINT_LEAST8_MAX __UINT_LEAST8_MAX__
+#define __LDBL_HAS_DENORM__ 1
+#define TWI0 ((TWI_TypeDef *) TWI0_BASE)
+#define TWI1 ((TWI_TypeDef *) TWI1_BASE)
+#define TWI2 ((TWI_TypeDef *) TWI2_BASE)
+#define TWI3 ((TWI_TypeDef *) TWI3_BASE)
+#define GICInterface_DIR_INTID_Msk (0xFFFFFFU )
+#define OWA ((OWA_TypeDef *) OWA_BASE)
+#define __INT_LEAST32_MAX__ 0x7fffffffL
+#define _GCC_WRAP_STDINT_H 
+#define GICInterface_IIDR_Implementer(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_IIDR_Implementer_Msk)
+#define GICInterface_BPR_Binary_Point_Pos 0U
+#define page64k_device_rw(descriptor_l1,descriptor_l2,region) region.rg_t = PAGE_64k; region.domain = 0x0; region.e_t = ECC_DISABLED; region.g_t = GLOBAL; region.inner_norm_t = NON_CACHEABLE; region.outer_norm_t = NON_CACHEABLE; region.mem_t = SHARED_DEVICE; region.sec_t = SECURE; region.xn_t = NON_EXECUTE; region.priv_t = RW; region.user_t = RW; region.sh_t = NON_SHARED; MMU_GetPageDescriptor(&descriptor_l1, &descriptor_l2, region);
+#define PAGE_4K_TEX1_SHIFT (7)
+#define CAN0_BASE ((uintptr_t) 0x02504000)
+#define __DBL_MAX_EXP__ 1024
+#define PAGE_4K_C_SHIFT (3)
+#define __WCHAR_WIDTH__ 16
+#define DSI0_BASE ((uintptr_t) 0x05450000)
+#define __FLT32_MAX__ 3.4028234663852886e+38F32
+#define DFSR_STATUS_Msk (0x3FUL << DFSR_STATUS_Pos)
+#define __GCC_ATOMIC_LONG_LOCK_FREE 1
+#define ACTLR_L1PE_Msk (1UL << ACTLR_L1PE_Pos)
+#define IFSR_ExT_Msk (1UL << IFSR_ExT_Pos)
+#define SCTLR_TE_Pos 30U
+#define __PTRDIFF_MAX__ 0x7fffffff
+#define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)
+#define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE)
+#define GICInterface_IIDR_Revision_Msk (0xFU << GICInterface_IIDR_Revision_Pos)
+#define GICDistributor_CTLR_EnableGrp1_Msk (0x1U << GICDistributor_CTLR_EnableGrp1_Pos)
+#define G2D_UI1_BASE ((uintptr_t) 0x05411800)
+#define RTC ((RTC_TypeDef *) RTC_BASE)
+#define __FORCEINLINE __attribute__((always_inline))
+#define DMAC_BASE ((uintptr_t) 0x03002000)
+#define __FLT32_HAS_QUIET_NAN__ 1
+#define GICDistributor_STATUSR_RWOD_Pos 2U
+#define GICDistributor_ITARGETSR_CPU3_Msk (0x1U << GICDistributor_ITARGETSR_CPU3_Pos)
+#define SMHC1_BASE ((uintptr_t) 0x04021000)
+#define __LONG_LONG_MAX__ 0x7fffffffffffffffLL
+#define CSIC_DMA1 ((CSIC_DMA_TypeDef *) CSIC_DMA1_BASE)
+#define __SIZEOF_SIZE_T__ 4
+#define DFSR_Ext_Msk (1UL << DFSR_Ext_Pos)
+#define PAGE_64K_TEX1_SHIFT (13)
+#define section_normal_nc(descriptor_l1,region) region.rg_t = SECTION; region.domain = 0x0; region.e_t = ECC_DISABLED; region.g_t = GLOBAL; region.inner_norm_t = NON_CACHEABLE; region.outer_norm_t = NON_CACHEABLE; region.mem_t = NORMAL; region.sec_t = SECURE; region.xn_t = EXECUTE; region.priv_t = RW; region.user_t = RW; region.sh_t = NON_SHARED; MMU_GetSectionDescriptor(&descriptor_l1, region);
+#define SIZE_MAX __SIZE_MAX__
+#define __SIZEOF_WINT_T__ 4
+#define SECTION_B_SHIFT (2)
+#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)
+#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)
+#define UINT64_C(x) __UINT64_C(x)
+#define __LONG_LONG_WIDTH__ 64
+#define CPACR_CP_Msk_(n) (3UL << CPACR_CP_Pos_(n))
+#define __FLT32_MAX_EXP__ 128
+#define WINT_MAX __WINT_MAX__
+#define GICDistributor_TYPER_LSPI_Pos 11U
+#define UINTPTR_MAX __UINTPTR_MAX__
+#define _SYS_FEATURES_H 
+#define C0_CPUX_MBIST_BASE ((uintptr_t) 0x09020000)
+#define __GXX_ABI_VERSION 1014
+#define GICDistributor_ITARGETSR_CPU0_Pos 0U
+#define GICDistributor_IROUTER_Aff1_Msk (0xFFUL << GICDistributor_IROUTER_Aff1_Pos)
+#define UINT_LEAST16_MAX __UINT_LEAST16_MAX__
+#define GICInterface_STATUSR_WROD_Msk (0x1U << GICInterface_STATUSR_WROD_Pos)
+#define __FLT_MIN_EXP__ (-125)
+#define ACTLR_WFLZM_Pos 3U
+#define ACTLR_BTDIS_Msk (1UL << ACTLR_BTDIS_Pos)
+#define SCTLR_RR_Msk (1UL << SCTLR_RR_Pos)
+#define SECTION_TEX1_SHIFT (13)
+#define UINT32_MAX __UINT32_MAX__
+#define __INT16_MAX__ 0x7fff
+#define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)
+#define CCU_BASE ((uintptr_t) 0x02001000)
+#define __CA_CMSIS_VERSION ((__CA_CMSIS_VERSION_MAIN << 16U) | __CA_CMSIS_VERSION_SUB )
+#define PAGE_4K_TEXCB_MASK (0xFFFFFE33)
+#define __CA_REV 0x0005U
+#define DFSR_LPAE_Pos 9U
+#define CPSR_Q_Msk (1UL << CPSR_Q_Pos)
+#define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)
+#define __INT_FAST64_TYPE__ long long int
+#define MC_MEMC_BASE 0x03202000
+#define __PKHBT(ARG1,ARG2,ARG3) ( ((((uint32_t)(ARG1)) ) & 0x0000FFFFUL) | ((((uint32_t)(ARG2)) << (ARG3)) & 0xFFFF0000UL) )
+#define ISR_I_Msk (1UL << ISR_I_Pos)
+#define GICInterface_BPR_Binary_Point_Msk (0x7U )
+#define SCTLR_CP15BEN_Pos 5U
+#define __FLT64_DENORM_MIN__ 4.9406564584124654e-324F64
+#define __DBL_MIN__ ((double)2.2250738585072014e-308L)
+#define __UNALIGNED_UINT16_READ(addr) (((const struct T_UINT16_READ *)(const void *)(addr))->v)
+#define WINT_MIN __WINT_MIN__
+#define CPACR_CP_Pos_(n) (n*2U)
+#define GICDistributor_STATUSR_WROD(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_STATUSR_WROD_Pos)) & GICDistributor_STATUSR_WROD_Msk)
+#define SCTLR_I_Pos 12U
+#define CE_S ((CE_TypeDef *) CE_S_BASE)
+#define GICDistributor_STATUSR_WROD_Pos 3U
+#define __SSAT(ARG1,ARG2) __extension__ ({ int32_t __RES, __ARG1 = (ARG1); __ASM volatile ("ssat %0, %1, %2" : "=r" (__RES) : "I" (ARG2), "r" (__ARG1) : "cc" ); __RES; })
+#define DSP_MSGBOX_BASE ((uintptr_t) 0x01701000)
+#define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)
+#define DACR_D_Pos_(n) (2U*n)
+#define __SIZEOF_POINTER__ 4
+#define ACTLR_AOW_Pos 8U
+#define __SIZE_TYPE__ unsigned int
+#define ACTLR_RADIS_Msk (1UL << ACTLR_RADIS_Pos)
+#define __PACKED_STRUCT struct __attribute__((packed, aligned(1)))
+#define GICInterface_AEOIR_INTID_Msk (0xFFFFFFU )
+#define __DBL_HAS_QUIET_NAN__ 1
+#define GICDistributor_STATUSR_WRD_Msk (0x1U << GICDistributor_STATUSR_WRD_Pos)
+#define __FLT32X_EPSILON__ 2.2204460492503131e-16F32x
+#define GICInterface_RPR_INTID_Msk (0xFFU )
+#define CPSR_C_Msk (1UL << CPSR_C_Pos)
+#define CPSR_N_Pos 31U
+#define GICDistributor_SETSPI_NSR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICDistributor_SETSPI_NSR_INTID_Msk)
+#define __FLT64_MIN_EXP__ (-1021)
+#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000)
+#define section_normal(descriptor_l1,region) region.rg_t = SECTION; region.domain = 0x0; region.e_t = ECC_DISABLED; region.g_t = GLOBAL; region.inner_norm_t = WB_WA; region.outer_norm_t = WB_WA; region.mem_t = NORMAL; region.sec_t = SECURE; region.xn_t = EXECUTE; region.priv_t = RW; region.user_t = RW; region.sh_t = NON_SHARED; MMU_GetSectionDescriptor(&descriptor_l1, region);
+#define CAN1_BASE ((uintptr_t) 0x02504400)
+#define __SYSTEM_ALLWNR_T113S3_H 
+#define INT_LEAST8_MAX __INT_LEAST8_MAX__
+#define CPACR_ASEDIS_Pos 31U
+#define IS_FUNCTIONAL_STATE(STATE) (((STATE) == DISABLE) || ((STATE) == ENABLE))
+#define ACTLR_WFLZM_Msk (1UL << ACTLR_WFLZM_Pos)
+#define GICDistributor_SGIR_INTID_Pos 0U
+#define __FLT64_MIN_10_EXP__ (-307)
+#define SECTION_NG_SHIFT (17)
+#define DRAM_SPACE_SIZE 0x08000000u
+#define __IO volatile
+#define __REGISTER_PREFIX__ 
+#define __UINT16_MAX__ 0xffff
+#define GICDistributor_SGIR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICDistributor_SGIR_INTID_Msk)
+#define __DBL_HAS_DENORM__ 1
+#define INT_LEAST32_MAX __INT_LEAST32_MAX__
+#define G2D_UI2_BASE ((uintptr_t) 0x05412000)
+#define section_normal_ro(descriptor_l1,region) region.rg_t = SECTION; region.domain = 0x0; region.e_t = ECC_DISABLED; region.g_t = GLOBAL; region.inner_norm_t = WB_WA; region.outer_norm_t = WB_WA; region.mem_t = NORMAL; region.sec_t = SECURE; region.xn_t = NON_EXECUTE; region.priv_t = READ; region.user_t = READ; region.sh_t = NON_SHARED; MMU_GetSectionDescriptor(&descriptor_l1, region);
+#define GICInterface_HPPIR_INTID_Pos 0U
+#define CPSR_IT1_Pos 10U
+#define GICInterface_AHPPIR_INTID_Pos 0U
+#define SECTION_DOMAIN_SHIFT (5)
+#define G2D_VSU_BASE ((uintptr_t) 0x05418000)
+#define __FLT32_MIN__ 1.1754943508222875e-38F32
+#define __UINT8_TYPE__ unsigned char
+#define SMHC2_BASE ((uintptr_t) 0x04022000)
+#define __FLT_DIG__ 6
+#define section_normal_rw(descriptor_l1,region) region.rg_t = SECTION; region.domain = 0x0; region.e_t = ECC_DISABLED; region.g_t = GLOBAL; region.inner_norm_t = WB_WA; region.outer_norm_t = WB_WA; region.mem_t = NORMAL; region.sec_t = SECURE; region.xn_t = NON_EXECUTE; region.priv_t = RW; region.user_t = RW; region.sh_t = NON_SHARED; MMU_GetSectionDescriptor(&descriptor_l1, region);
+#define SCTLR_V_Pos 13U
+#define CPSR_M_IRQ 0x12U
+#define __DEC_EVAL_METHOD__ 2
+#define SECTION_DESCRIPTOR (0x2)
+#define __FLT_MANT_DIG__ 24
+#define __LDBL_DECIMAL_DIG__ 17
+#define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)
+#define INT_LEAST8_MIN (-__INT_LEAST8_MAX__ - 1)
+#define __VERSION__ "10.3.0"
+#define R_CPUCFG_BASE ((uintptr_t) 0x07000400)
+#define __set_CP(cp,op1,Rt,CRn,CRm,op2) __ASM volatile("MCR p" #cp ", " #op1 ", %0, c" #CRn ", c" #CRm ", " #op2 : : "r" (Rt) : "memory" )
+#define CLEAR_REG(REG) ((REG) = (0x0))
+#define __OM volatile
+#define __UINT64_C(c) c ## ULL
+#define GICInterface_IIDR_Arch_version_Msk (0xFU << GICInterface_IIDR_Arch_version_Pos)
+#define SCTLR_HA_Pos 17U
+#define G2D_TOP_BASE ((uintptr_t) 0x05410000)
+#define DE_GLB_BASE ((uintptr_t) 0x05100000)
+#define GICInterface_EOIR_INTID_Msk (0xFFFFFFU )
+#define __UNALIGNED_UINT32_WRITE(addr,val) (void)((((struct T_UINT32_WRITE *)(void *)(addr))->v) = (val))
+#define PAGE_DOMAIN_MASK (0xFFFFFE1F)
+#define INT_LEAST32_MIN (-__INT_LEAST32_MAX__ - 1)
+#define ACTLR_RSDIS_Msk (1UL << ACTLR_RSDIS_Pos)
+#define INT_FAST16_MAX __INT_FAST16_MAX__
+#define GICDistributor_SETSPI_SR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICDistributor_SETSPI_SR_INTID_Msk)
+#define PAGE_TEX_SHIFT (12)
+#define __XTENSA_SOFT_FLOAT__ 1
+#define __GCC_ATOMIC_INT_LOCK_FREE 1
+#define MCTL_PHY_BASE ((uintptr_t) 0x03103000)
+#define GICDistributor_IIDR_Implementer_Msk (0xFFFU )
+#define __GNUC_PREREQ(maj,min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+#define GICInterface_IIDR_ProductID(x) (((uint32_t)(((uint32_t)(x)) << GICInterface_IIDR_ProductID_Pos)) & GICInterface_IIDR_ProductID_Msk)
+#define CPSR_M_Pos 0U
+#define __FLT32_MANT_DIG__ 24
+#define ACTLR_L2RADIS_Pos 11U
+#define GICInterface_CTLR_Enable(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_CTLR_Enable_Msk)
+#define __FLOAT_WORD_ORDER__ __ORDER_LITTLE_ENDIAN__
+#define TIMER_BASE ((uintptr_t) 0x02050000)
+#define GICDistributor_ITARGETSR_CPU1_Msk (0x1U << GICDistributor_ITARGETSR_CPU1_Pos)
+#define SIG_ATOMIC_MAX __STDINT_EXP(INT_MAX)
+#define GICDistributor_SGIR_CPUTargetList(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_SGIR_CPUTargetList_Pos)) & GICDistributor_SGIR_CPUTargetList_Msk)
+#define TWI0_BASE ((uintptr_t) 0x02502000)
+#define DSI0 ((DSI_TypeDef *) DSI0_BASE)
+#define __IM volatile const
+#define __STDINT_EXP(x) __ ##x ##__
+#define INT32_MAX __INT32_MAX__
+#define USBEHCI0_BASE ((uintptr_t) 0x04101000)
+#define __PKHTB(ARG1,ARG2,ARG3) ( ((((uint32_t)(ARG1)) ) & 0xFFFF0000UL) | ((((uint32_t)(ARG2)) >> (ARG3)) & 0x0000FFFFUL) )
+#define __int_fast32_t_defined 1
+#define DFSR_WnR_Pos 11U
+#define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)
+#define CPSR_IT0_Pos 25U
+#define GICInterface_CTLR_Enable_Pos 0U
+#define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)
+#define __int_least64_t_defined 1
+#define GICInterface_STATUSR_RWOD_Pos 2U
+#define GICDistributor_IROUTER_Aff3_Pos 32UL
+#define PAGE_C_SHIFT (3)
+#define __SCHAR_WIDTH__ 8
+#define SCTLR_AFE_Pos 29U
+#define __INT32_C(c) c ## L
+#define __ORDER_PDP_ENDIAN__ 3412
+#define SCTLR_Z_Pos 11U
+#define GICInterface ((GICInterface_Type *) GIC_INTERFACE_BASE )
+#define GICDistributor_IIDR_ProductID_Pos 24U
+#define SCTLR_U_Pos 22U
+#define PAGE_P_SHIFT (9)
+#define __INT_FAST32_TYPE__ int
+#define CPSR_IT1_Msk (0x3FUL << CPSR_IT1_Pos)
+#define SCTLR_VE_Pos 24U
+#define SCTLR_TE_Msk (1UL << SCTLR_TE_Pos)
+#define UINT64_MAX __UINT64_MAX__
+#define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)
+#define GICDistributor_CTLR_ARE_Msk (0x1U << GICDistributor_CTLR_ARE_Pos)
+#define SIG_ATOMIC_MIN (-__STDINT_EXP(INT_MAX) - 1)
+#define __UINT_LEAST16_TYPE__ short unsigned int
+#define THS_BASE ((uintptr_t) 0x02009400)
+#define MODIFY_REG(REG,CLEARMASK,SETMASK) WRITE_REG((REG), (((READ_REG(REG)) & (~(CLEARMASK))) | (SETMASK)))
+#define CPSR_M_MON 0x16U
+#define CE_NS ((CE_TypeDef *) CE_NS_BASE)
+#define __GIC_PRESENT 1U
+#define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)
+#define ACTLR_SMP_Pos 6U
+#define __UINT64_MAX__ 0xffffffffffffffffULL
+#define GICDistributor_STATUSR_RWOD_Msk (0x1U << GICDistributor_STATUSR_RWOD_Pos)
+#define UART0_BASE ((uintptr_t) 0x02500000)
+#define SCTLR_WXN_Msk (1UL << SCTLR_WXN_Pos)
+#define __WFE() __ASM volatile ("wfe":::"memory")
+#define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)
+#define __WFI() __ASM volatile ("wfi":::"memory")
+#define __INT8_TYPE__ signed char
+#define __ELF__ 1
+#define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)
+#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)
+#define CPSR_GE_Pos 16U
+#define DFSR_Ext_Pos 12U
+#define TZMA_BASE ((uintptr_t) 0x02004000)
+#define __xtensa__ 1
+#define GICDistributor_IIDR_Revision_Msk (0xFU << GICDistributor_IIDR_Revision_Pos)
+#define GICDistributor_TYPER_LSPI_Msk (0x1FU << GICDistributor_TYPER_LSPI_Pos)
+#define CPSR_A_Msk (1UL << CPSR_A_Pos)
+#define __FLT_RADIX__ 2
+#define GICInterface_STATUSR_RRD_Msk (0x1U )
+#define __INT_LEAST16_TYPE__ short int
+#define GICInterface_PMR_Priority_Pos 0U
+#define __LDBL_EPSILON__ 2.2204460492503131e-16L
+#define INTPTR_MAX __INTPTR_MAX__
+#define __UINTMAX_C(c) c ## ULL
+#define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)
+#define PAGE_NG_SHIFT (11)
+#define DSP_INTC_BASE ((uintptr_t) 0x01700800)
+#define CSIC_CCU_BASE ((uintptr_t) 0x05800000)
+#define __CORE_CA_H_DEPENDANT 
+#define GICDistributor_ITARGETSR_CPU0_Msk (0x1U )
+#define CPSR_M_Msk (0x1FUL << CPSR_M_Pos)
+#define DMAC ((DMAC_TypeDef *) DMAC_BASE)
+#define __ASM __asm
+#define __FLT32X_MIN__ 2.2250738585072014e-308F32x
+#define DE_BLD_BASE ((uintptr_t) 0x05101000)
+#define SID ((SID_TypeDef *) SID_BASE)
+#define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)
+#define __SIG_ATOMIC_MAX__ 0x7fffffff
+#define GICDistributor_CLRSPI_NSR_INTID_Msk (0x3FFU )
+#define INT_LEAST64_MAX __INT_LEAST64_MAX__
+#define __GCC_ATOMIC_WCHAR_T_LOCK_FREE 1
+#define ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ 
+#define PAGE_64K_B_SHIFT (2)
+#define __SIZEOF_PTRDIFF_T__ 4
+#define GPIOB_BASE ((uintptr_t) 0x02000030)
+#define DFSR_Domain_Pos 4U
+#define CSIC_DMA0_BASE ((uintptr_t) 0x05809000)
+#define CLEAR_BIT(REG,BIT) ((REG) &= ~(BIT))
+#define CPACR_CP_FA 3U
+#define GICDistributor_IROUTER_Aff2_Pos 16UL
+#define SMC ((SMC_TypeDef *) SMC_BASE)
+#define __WEAK __attribute__((weak))
+#define SCTLR_CP15BEN_Msk (1UL << SCTLR_CP15BEN_Pos)
+#define CPSR_M_FIQ 0x11U
+#define __COMPILER_BARRIER() __ASM volatile("":::"memory")
+#define SCTLR_I_Msk (1UL << SCTLR_I_Pos)
+#define INTPTR_MIN (-__INTPTR_MAX__ - 1)
+#define CSIC_PARSER0 ((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)
+#define INT8_C(x) __INT8_C(x)
+#define TWI1_BASE ((uintptr_t) 0x02502400)
+#define ACTLR_AOW_Msk (1UL << ACTLR_AOW_Pos)
+#define __LDBL_DIG__ 15
+#define GICDistributor ((GICDistributor_Type *) GIC_DISTRIBUTOR_BASE )
+#define SPC ((SPC_TypeDef *) SPC_BASE)
+#define __FLT32X_MIN_EXP__ (-1021)
+#define UINT_FAST32_MAX __UINT_FAST32_MAX__
+#define IFSR_FS1_Pos 10U
+#define OWA_BASE ((uintptr_t) 0x02036000)
+#define __INT_FAST16_MAX__ 0x7fffffff
+#define CPACR_TRCDIS_Msk (1UL << CPACR_D32DIS_Pos)
+#define ___int_least16_t_defined 
+#define INT_LEAST64_MIN (-__INT_LEAST64_MAX__ - 1)
+#define SMC_BASE ((uintptr_t) 0x03007000)
+#define __FLT64_DIG__ 15
+#define IFSR_FS1_Msk (1UL << IFSR_FS1_Pos)
+#define CSIC_DMA0 ((CSIC_DMA_TypeDef *) CSIC_DMA0_BASE)
+#define __UINT_FAST32_MAX__ 0xffffffffU
+#define section_normal_cod(descriptor_l1,region) region.rg_t = SECTION; region.domain = 0x0; region.e_t = ECC_DISABLED; region.g_t = GLOBAL; region.inner_norm_t = WB_WA; region.outer_norm_t = WB_WA; region.mem_t = NORMAL; region.sec_t = SECURE; region.xn_t = EXECUTE; region.priv_t = READ; region.user_t = READ; region.sh_t = NON_SHARED; MMU_GetSectionDescriptor(&descriptor_l1, region);
+#define __UINT_LEAST64_TYPE__ long long unsigned int
+#define CPACR_ASEDIS_Msk (1UL << CPACR_ASEDIS_Pos)
+#define __FLT_HAS_QUIET_NAN__ 1
+#define UINTMAX_MAX __UINTMAX_MAX__
+#define GICDistributor_SGIR_INTID_Msk (0x7U )
+#define INT32_C(x) __INT32_C(x)
+#define __FLT_MAX_10_EXP__ 38
+#define CPACR_CP_NA 0U
+#define __LONG_MAX__ 0x7fffffffL
+#define GICDistributor_IROUTER_Aff0(x) (((uint64_t)(((uint64_t)(x)) )) & GICDistributor_IROUTER_Aff0_Msk)
+#define GICDistributor_IROUTER_Aff1(x) (((uint64_t)(((uint64_t)(x)) << GICDistributor_IROUTER_Aff1_Pos)) & GICDistributor_IROUTER_Aff1_Msk)
+#define GICDistributor_IROUTER_Aff2(x) (((uint64_t)(((uint64_t)(x)) << GICDistributor_IROUTER_Aff2_Pos)) & GICDistributor_IROUTER_Aff2_Msk)
+#define GICDistributor_IROUTER_Aff3(x) (((uint64_t)(((uint64_t)(x)) << GICDistributor_IROUTER_Aff3_Pos)) & GICDistributor_IROUTER_Aff3_Msk)
+#define __FLT_HAS_INFINITY__ 1
+#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)
+#define ACTLR_L1RADIS_Pos 12U
+#define GICInterface_HPPIR_INTID_Msk (0xFFFFFFU )
+#define __UINT_FAST16_TYPE__ unsigned int
+#define __INT_FAST32_WIDTH__ 32
+#define __CHAR16_TYPE__ short unsigned int
+#define __PRAGMA_REDEFINE_EXTNAME 1
+#define G2D_MIXER_BASE ((uintptr_t) 0x05410100)
+#define GICDistributor_CTLR_RWP_Msk (0x1U << GICDistributor_CTLR_RWP_Pos)
+#define UART1_BASE ((uintptr_t) 0x02500400)
+#define __SIZE_WIDTH__ 32
+#define __FPU_PRESENT 1U
+#define GICInterface_IIDR_Implementer_Msk (0xFFFU )
+#define __INT_LEAST16_MAX__ 0x7fff
+#define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)
+#define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)
+#define GICInterface_RPR_INTID_Pos 0U
+#define SCTLR_M_Pos 0U
+#define SCTLR_V_Msk (1UL << SCTLR_V_Pos)
+#define __INT64_MAX__ 0x7fffffffffffffffLL
+#define __FLT32_DENORM_MIN__ 1.4012984643248171e-45F32
+#define __SIG_ATOMIC_WIDTH__ 32
+#define __INT_LEAST64_TYPE__ long long int
+#define INT64_MAX __INT64_MAX__
+#define __INT16_TYPE__ short int
+#define __INT_LEAST8_TYPE__ signed char
+#define GICDistributor_ITARGETSR_CPU4_Msk (0x1U << GICDistributor_ITARGETSR_CPU4_Pos)
+#define _VAL2FLD(field,value) (((uint32_t)(value) << field ## _Pos) & field ## _Msk)
+#define GICInterface_DIR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_DIR_INTID_Msk)
+#define GICDistributor_IIDR_Variant(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_IIDR_Variant_Pos)) & GICDistributor_IIDR_Variant_Msk)
+#define __STDC_VERSION__ 201710L
+#define PAGE_NS_MASK (0xFFFFFFF7)
+#define SET_BIT(REG,BIT) ((REG) |= (BIT))
+#define GICInterface_STATUSR_WRD(x) (((uint32_t)(((uint32_t)(x)) << GICInterface_STATUSR_WRD_Pos)) & GICInterface_STATUSR_WRD_Msk)
+#define CSIC_TOP ((CSIC_TOP_TypeDef *) CSIC_TOP_BASE)
+#define SCTLR_HA_Msk (1UL << SCTLR_HA_Pos)
+#define __INT_FAST8_MAX__ 0x7fffffff
+#define GICInterface_IIDR_Arch_version(x) (((uint32_t)(((uint32_t)(x)) << GICInterface_IIDR_Arch_version_Pos)) & GICInterface_IIDR_Arch_version_Msk)
+#define UINTMAX_C(x) __UINTMAX_C(x)
+#define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)
+#define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)
+#define __INTPTR_MAX__ 0x7fffffff
+#define GICDistributor_CTLR_EnableGrp0(x) (((uint32_t)(((uint32_t)(x)) )) & GICDistributor_CTLR_EnableGrp0_Msk)
+#define GICDistributor_CTLR_EnableGrp1(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_CTLR_EnableGrp1_Pos)) & GICDistributor_CTLR_EnableGrp1_Msk)
+#define CPSR_C_Pos 29U
+#define USBOHCI0_BASE ((uintptr_t) 0x04101400)
+#define CPSR_N_Msk (1UL << CPSR_N_Pos)
+#define SECTION_AP2_SHIFT (15)
+#define PAGE_XN_4K_SHIFT (0)
+#define GICDistributor_IROUTER_Aff1_Pos 8UL
+#define CPSR_M_USR 0x10U
+#define TCON_TV0_BASE ((uintptr_t) 0x05470000)
+#define ACTLR_DBDI_Msk (1UL << ACTLR_DBDI_Pos)
+#define __int8_t_defined 1
+#define SCTLR_Z_Msk (1UL << SCTLR_Z_Pos)
+#define __FLT64_HAS_QUIET_NAN__ 1
+#define TimeStamp_CTRL_BASE ((uintptr_t) 0x08120000)
+#define CPACR_D32DIS_Pos 30U
+#define __FLT32_MIN_10_EXP__ (-37)
+#define __FLT32X_DIG__ 15
+#define R_PRCM_BASE ((uintptr_t) 0x07010000)
+#define GICInterface_AEOIR_INTID_Pos 0U
+#define GICInterface_EOIR_INTID_Pos 0U
+#define GICDistributor_ITARGETSR_CPU6_Msk (0x1U << GICDistributor_ITARGETSR_CPU6_Pos)
+#define __PTRDIFF_WIDTH__ 32
+#define INT64_MIN (-__INT64_MAX__ - 1)
+#define GPIOC_BASE ((uintptr_t) 0x02000060)
+#define __LDBL_MANT_DIG__ 53
+#define SCTLR_AFE_Msk (1UL << SCTLR_AFE_Pos)
+#define SECTION_S_SHIFT (16)
+#define CSIC_DMA1_BASE ((uintptr_t) 0x05809200)
+#define ACTLR_L2RADIS_Msk (1UL << ACTLR_L2RADIS_Pos)
+#define PAGE_AP_MASK (0xFFFFFDCF)
+#define __FLT64_HAS_INFINITY__ 1
+#define section_device_rw(descriptor_l1,region) region.rg_t = SECTION; region.domain = 0x0; region.e_t = ECC_DISABLED; region.g_t = GLOBAL; region.inner_norm_t = NON_CACHEABLE; region.outer_norm_t = NON_CACHEABLE; region.mem_t = STRONGLY_ORDERED; region.sec_t = SECURE; region.xn_t = NON_EXECUTE; region.priv_t = RW; region.user_t = RW; region.sh_t = NON_SHARED; MMU_GetSectionDescriptor(&descriptor_l1, region);
+#define GICInterface_ABPR_Binary_Point_Pos 0U
+#define DSP_WDG ((DSP_WDG_TypeDef *) DSP_WDG_BASE)
+#define DACR_D_Msk_(n) (3UL << DACR_D_Pos_(n))
+#define ___int32_t_defined 1
+#define __SIG_ATOMIC_MIN__ (-__SIG_ATOMIC_MAX__ - 1)
+#define IOMMU_BASE ((uintptr_t) 0x02010000)
+#define CSIC_PARSER0_BASE ((uintptr_t) 0x05801000)
+#define GICDistributor_IIDR_Variant_Pos 16U
+#define GICDistributor_SGIR_NSATT(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_SGIR_NSATT_Pos)) & GICDistributor_SGIR_NSATT_Msk)
+#define TWI2_BASE ((uintptr_t) 0x02502800)
+#define GICInterface_AIAR_INTID_Pos 0U
+#define GICDistributor_CTLR_EINWF(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_CTLR_EINWF_Pos)) & GICDistributor_CTLR_EINWF_Msk)
+#define __INTPTR_TYPE__ int
+#define __UINT16_TYPE__ short unsigned int
+#define __WCHAR_TYPE__ short unsigned int
+#define __SIZEOF_FLOAT__ 4
+#define PAGE_B_SHIFT (2)
+#define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)
+#define DFSR_WnR_Msk (1UL << DFSR_WnR_Pos)
+#define __UINTPTR_MAX__ 0xffffffffU
+#define CPSR_IT0_Msk (3UL << CPSR_IT0_Pos)
+#define __set_CP64(cp,op1,Rt,CRm) __ASM volatile("MCRR p" #cp ", " #op1 ", %Q0, %R0, c" #CRm : : "r" (Rt) : "memory" )
+#define __INT_FAST64_WIDTH__ 64
+#define CPSR_J_Pos 24U
+#define GICInterface_CTLR_Enable_Msk (0x1U )
+#define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)
+#define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)
+#define GICDistributor_IROUTER_Aff3_Msk (0xFFUL << GICDistributor_IROUTER_Aff3_Pos)
+#define PAGE_TEXCB_MASK (0xFFFF8FF3)
+#define PAGE_AP2_SHIFT (9)
+#define __FLT32_DECIMAL_DIG__ 9
+#define PWM ((PWM_TypeDef *) PWM_BASE)
+#define PAGE_L1_MASK (0xFFFFFFFC)
+#define __INT_FAST64_MAX__ 0x7fffffffffffffffLL
+#define __GCC_ATOMIC_TEST_AND_SET_TRUEVAL 1
+#define GICDistributor_IIDR_ProductID_Msk (0xFFU << GICDistributor_IIDR_ProductID_Pos)
+#define __FLT_NORM_MAX__ 3.4028234663852886e+38F
+#define SCTLR_U_Msk (1UL << SCTLR_U_Pos)
+#define __FLT32_HAS_INFINITY__ 1
+#define INT_FAST32_MAX __INT_FAST32_MAX__
+#define GICDistributor_SGIR_TargetFilterList_Pos 24U
+#define __UINT_FAST64_TYPE__ long long unsigned int
+#define SCTLR_VE_Msk (1UL << SCTLR_VE_Pos)
+#define CPSR_M_UND 0x1BU
+#define _MACHINE__DEFAULT_TYPES_H 
+#define UINT_FAST8_MAX __UINT_FAST8_MAX__
+#define __INT_MAX__ 0x7fffffff
+#define __L2C_PRESENT 0U
+#define __PACKED __attribute__((packed, aligned(1)))
+#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)
+#define CPSR_Z_Msk (1UL << CPSR_Z_Pos)
+#define UART2_BASE ((uintptr_t) 0x02500800)
+#define GICDistributor_IROUTER_Aff0_Pos 0UL
+#define GICInterface_AIAR_INTID_Msk (0xFFFFFFU )
+#define __INT64_TYPE__ long long int
+#define GICInterface_IIDR_Implementer_Pos 0U
+#define __FLT_MAX_EXP__ 128
+#define GICInterface_STATUSR_RWOD_Msk (0x1U << GICInterface_STATUSR_RWOD_Pos)
+#define MCTL_COM ((MCTL_COM_TypeDef *) MCTL_COM_BASE)
+#define UINT32_C(x) __UINT32_C(x)
+#define GICDistributor_IIDR_ProductID(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_IIDR_ProductID_Pos)) & GICDistributor_IIDR_ProductID_Msk)
+#define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)
+#define __DBL_MANT_DIG__ 53
+#define __INT_LEAST64_MAX__ 0x7fffffffffffffffLL
+#define __GCC_ATOMIC_CHAR16_T_LOCK_FREE 1
+#define ACTLR_EXCL_Pos 7U
+#define UINT_FAST64_MAX __UINT_FAST64_MAX__
+#define __int_fast16_t_defined 1
+#define INT_FAST32_MIN (-__INT_FAST32_MAX__ - 1)
+#define __WINT_TYPE__ unsigned int
+#define __UINT_LEAST32_TYPE__ long unsigned int
+#define __SIZEOF_SHORT__ 2
+#define __FLT32_NORM_MAX__ 3.4028234663852886e+38F32
+#define ___int8_t_defined 1
+#define DACR_Dn_CLIENT 1U
+#define SID_BASE ((uintptr_t) 0x03006000)
+#define __LDBL_MIN_EXP__ (-1021)
+#define SECTION_MASK (0xFFFFFFFC)
+#define __TIM_PRESENT 1U
+#define GICDistributor_SGIR_CPUTargetList_Pos 16U
+#define GPADC_BASE ((uintptr_t) 0x02009000)
+#define USBOHCI1_BASE ((uintptr_t) 0x04200400)
+#define __FLT64_MAX__ 1.7976931348623157e+308F64
+#define ___int_least32_t_defined 
+#define ISR_F_Msk (1UL << ISR_F_Pos)
+#define GICInterface_STATUSR_WROD(x) (((uint32_t)(((uint32_t)(x)) << GICInterface_STATUSR_WROD_Pos)) & GICInterface_STATUSR_WROD_Msk)
+#define __WINT_WIDTH__ 32
+#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)
+#define PAGE_L2_4K_DESC (0x2)
+#define __INT_LEAST8_MAX__ 0x7f
+#define __INT_LEAST64_WIDTH__ 64
+#define HSTIMER ((HSTIMER_TypeDef *) HSTIMER_BASE)
+#define __FLT32X_MAX_10_EXP__ 308
+#define GICDistributor_STATUSR_RRD_Pos 0U
+#define PAGE_P_MASK (0xFFFFFDFF)
+#define GPIOINTB_BASE ((uintptr_t) 0x02000220)
+#define __LDBL_MAX_10_EXP__ 308
+#define __ATOMIC_RELAXED 0
+#define DE ((DE_TypeDef *) DE_BASE)
+#define DI ((DI_TypeDef *) DI_BASE)
+#define __DBL_EPSILON__ ((double)2.2204460492503131e-16L)
+#define GPIOINTB ((GPIOINT_TypeDef *) GPIOINTB_BASE)
+#define CSIC_TOP_BASE ((uintptr_t) 0x05800800)
+#define __XTENSA_WINDOWED_ABI__ 1
+#define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)
+#define SCTLR_NMFI_Msk (1UL << SCTLR_NMFI_Pos)
+#define GPIOD_BASE ((uintptr_t) 0x02000090)
+#define __UINT8_C(c) c
+#define DFSR_Domain_Msk (0xFUL << DFSR_Domain_Pos)
+#define __FLT64_MAX_EXP__ 1024
+#define GICInterface_STATUSR_RRD(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_STATUSR_RRD_Msk)
+#define CPSR_I_Pos 7U
+#define __INT_LEAST32_TYPE__ long int
+#define GICDistributor_IROUTER_Aff2_Msk (0xFFUL << GICDistributor_IROUTER_Aff2_Pos)
+#define __SIZEOF_WCHAR_T__ 2
+#define __UINT64_TYPE__ long long unsigned int
+#define __OPTIMIZE_SIZE__ 1
+#define ISR_A_Pos 13U
+#define DE_UI1_BASE ((uintptr_t) 0x05103000)
+#define ACTLR_PARITY_Pos 9U
+#define GICInterface_PMR_Priority(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_PMR_Priority_Msk)
+#define GICInterface_RPR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_RPR_INTID_Msk)
+#define __CORE_CA_H_GENERIC 
+#define TWI3_BASE ((uintptr_t) 0x02502C00)
+#define GICDistributor_ITARGETSR_CPU2_Pos 2U
+#define xDSP_MSGBOX_BASE ((uintptr_t) 0x01701000)
+#define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)
+#define __FLT64_NORM_MAX__ 1.7976931348623157e+308F64
+#define __INTMAX_MAX__ 0x7fffffffffffffffLL
+#define ___int_least8_t_defined 
+#define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE)
+#define __INT_FAST8_TYPE__ int
+#define GICDistributor_CTLR_EnableGrp0_Msk (0x1U )
+#define __INLINE inline
+#define _FLD2VAL(field,value) (((uint32_t)(value) & field ## _Msk) >> field ## _Pos)
+#define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)
+#define __LDBL_HAS_INFINITY__ 1
+#define GICDistributor_CLRSPI_NSR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICDistributor_CLRSPI_NSR_INTID_Msk)
+#define DSP_TZMA ((DSP_TZMA_TypeDef *) DSP_TZMA_BASE)
+#define PAGE_4K_TEX2_SHIFT (8)
+#define __GNUC_STDC_INLINE__ 1
+#define POSITION_VAL(VAL) (__CLZ(__RBIT(VAL)))
+#define __FLT64_HAS_DENORM__ 1
+#define __FLT32_EPSILON__ 1.1920928955078125e-7F32
+#define INTMAX_MAX __INTMAX_MAX__
+#define DSP0_IRAM_BASE ((uintptr_t) 0x00028000)
+#define EMAC ((EMAC_TypeDef *) EMAC_BASE)
+#define GICInterface_STATUSR_WRD_Pos 1U
+#define __DBL_DECIMAL_DIG__ 17
+#define __STDC_UTF_32__ 1
+#define __CMSIS_GCC_H 
+#define __INT_FAST8_WIDTH__ 32
+#define GICInterface_STATUSR_ASV_Pos 4U
+#define __FLT32X_MAX__ 1.7976931348623157e+308F32x
+#define GICDistributor_SGIR_NSATT_Pos 15U
+#define __DBL_NORM_MAX__ ((double)1.7976931348623157e+308L)
+#define DSP_WDG_BASE ((uintptr_t) 0x01700400)
+#define READ_REG(REG) ((REG))
+#define ACTLR_L1RADIS_Msk (1UL << ACTLR_L1RADIS_Pos)
+#define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
+#define xDSP_MSGBOX ((xDSP_MSGBOX_TypeDef *) xDSP_MSGBOX_BASE)
+#define DE_VI_BASE ((uintptr_t) 0x05102000)
+#define ACTLR_FW_Pos 0U
+#define CPSR_V_Pos 28U
+#define PAGE_4K_TEX0_SHIFT (6)
+#define __XTENSA__ 1
+#define UART3_BASE ((uintptr_t) 0x02500C00)
+#define __INTMAX_WIDTH__ 64
+#define ACTLR_DDI_Pos 28U
+#define CMSIS_DEPRECATED __attribute__((deprecated))
+#define PAGE_4K_B_SHIFT (2)
+#define __ORDER_BIG_ENDIAN__ 4321
+#define GICInterface_IAR_INTID(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_IAR_INTID_Msk)
+#define GICDistributor_IIDR_Implementer_Pos 0U
+#define __UINT32_C(c) c ## UL
+#define SCTLR_C_Pos 2U
+#define SECTION_NS_MASK (0xFFF7FFFF)
+#define __FLT_DENORM_MIN__ 1.4012984643248171e-45F
+#define GICDistributor_ITARGETSR_CPU5_Pos 5U
+#define INTMAX_MIN (-INTMAX_MAX - 1)
+#define SECTION_C_SHIFT (3)
+#define GICDistributor_IIDR_Implementer(x) (((uint32_t)(((uint32_t)(x)) )) & GICDistributor_IIDR_Implementer_Msk)
+#define __INT8_MAX__ 0x7f
+#define __LONG_WIDTH__ 32
+#define __UINT_FAST32_TYPE__ unsigned int
+#define GICDistributor_IIDR_Revision_Pos 12U
+#define OFFSET_64K (0x00010000)
+#define __FLT32X_NORM_MAX__ 1.7976931348623157e+308F32x
+#define __CHAR32_TYPE__ long unsigned int
+#define __FLT_MAX__ 3.4028234663852886e+38F
+#define DMIC ((DMIC_TypeDef *) DMIC_BASE)
+#define __NEWLIB__ 2
+#define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)
+#define CPACR_CP_PL1 1U
+#define INT_FAST64_MAX __INT_FAST64_MAX__
+#define GICDistributor_ITARGETSR_CPU7_Pos 7U
+#define PAGE_XN_64K_MASK (0xFFFF7FFF)
+#define UINT_LEAST32_MAX __UINT_LEAST32_MAX__
+#define GICDistributor_CTLR_RWP(x) (((uint32_t)(((uint32_t)(x)) << GICDistributor_CTLR_RWP_Pos)) & GICDistributor_CTLR_RWP_Msk)
+#define CPACR_D32DIS_Msk (1UL << CPACR_D32DIS_Pos)
+#define CPUX_MSGBOX_BASE ((uintptr_t) 0x03003000)
+#define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE)
+#define GICDistributor_STATUSR_RRD(x) (((uint32_t)(((uint32_t)(x)) )) & GICDistributor_STATUSR_RRD_Msk)
+#define GPIOINTC_BASE ((uintptr_t) 0x02000240)
+#define PAGE_64K_TEX0_SHIFT (12)
+#define TimeStamp_STA_BASE ((uintptr_t) 0x08110000)
+#define GICDistributor_SETSPI_NSR_INTID_Pos 0U
+#define GICInterface_BPR_Binary_Point(x) (((uint32_t)(((uint32_t)(x)) )) & GICInterface_BPR_Binary_Point_Msk)
+#define __INT32_TYPE__ long int
+#define DFSR_FS1_Pos 10U
+#define __STATIC_FORCEINLINE __attribute__((always_inline)) static inline
+#define ACTLR_BTDIS_Pos 18U
+#define __SIZEOF_DOUBLE__ 8
+#define __FLT_MIN_10_EXP__ (-37)
+#define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)
+#define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)
+#define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)
+#define __FLT64_MIN__ 2.2250738585072014e-308F64
+#define GPIOE_BASE ((uintptr_t) 0x020000C0)
+#define __INT_LEAST32_WIDTH__ 32
+#define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)
+#define __INTMAX_TYPE__ long long int
+#define SCTLR_FI_Msk (1UL << SCTLR_FI_Pos)
+#define PAGE_L2_4K_MASK (0xFFFFFFFD)
+#define SCTLR_EE_Pos 25U
+#define UINT8_C(x) __UINT8_C(x)
+#define GICInterface_ABPR_Binary_Point_Msk (0x7U )
+#define SPI_DBI_BASE ((uintptr_t) 0x04026000)
+#define ACTLR_L1PCTL_Pos 13U
+#define __FLT32X_HAS_QUIET_NAN__ 1
+#define __ATOMIC_CONSUME 1
+#define __NO_RETURN __attribute__((__noreturn__))
+#define RISC_CFG ((RISC_CFG_TypeDef *) RISC_CFG_BASE)
+#define __GNUC_MINOR__ 3
+#define __INT_FAST16_WIDTH__ 32
+#define __UINTMAX_MAX__ 0xffffffffffffffffULL
+#define __FLT32X_DENORM_MIN__ 4.9406564584124654e-324F32x
+#define THS ((THS_TypeDef *) THS_BASE)
+#define INTMAX_C(x) __INTMAX_C(x)
+#define SECTION_TEX0_SHIFT (12)
+#define GICDistributor_STATUSR_WROD_Msk (0x1U << GICDistributor_STATUSR_WROD_Pos)
+#define DSP_INTC ((DSP_INTC_TypeDef *) DSP_INTC_BASE)
+#define INT_FAST64_MIN (-__INT_FAST64_MAX__ - 1)
+#define _STDINT_H 
+#define __DBL_MAX_10_EXP__ 308
+#define SECTION_TEX2_SHIFT (14)
+#define UINT16_MAX __UINT16_MAX__
+#define __LDBL_DENORM_MIN__ 4.9406564584124654e-324L
+#define IFSR_FS0_Pos 0U
+#define CAN0 ((CAN_TypeDef *) CAN0_BASE)
+#define __INT16_C(c) c
+#define SECTION_TEXCB_MASK (0xFFFF8FF3)
+#define IFSR_LPAE_Pos 9U
+#define ACTLR_DDVM_Pos 15U
+#define __STDC__ 1
+#define IFSR_FS0_Msk (0xFUL << IFSR_FS0_Pos)
+#define __PTRDIFF_TYPE__ int
+#define SECTION_S_MASK (0xFFFEFFFF)
+#define USBPHY0_BASE ((uintptr_t) 0x04100400)
+#define GICDistributor_SETSPI_SR_INTID_Pos 0U
+#define GPADC ((GPADC_TypeDef *) GPADC_BASE)
+#define USBOHCI0 ((USB_OHCI_Capability_TypeDef *) USBOHCI0_BASE)
+#define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)
+#define GICDistributor_SGIR_TargetFilterList_Msk (0x3U << GICDistributor_SGIR_TargetFilterList_Pos)
+#define DE_TOP_BASE ((uintptr_t) 0x05000000)
+#define DE_BASE ((uintptr_t) 0x05000000)
+#define page4k_device_rw(descriptor_l1,descriptor_l2,region) region.rg_t = PAGE_4k; region.domain = 0x0; region.e_t = ECC_DISABLED; region.g_t = GLOBAL; region.inner_norm_t = NON_CACHEABLE; region.outer_norm_t = NON_CACHEABLE; region.mem_t = SHARED_DEVICE; region.sec_t = SECURE; region.xn_t = NON_EXECUTE; region.priv_t = RW; region.user_t = RW; region.sh_t = NON_SHARED; MMU_GetPageDescriptor(&descriptor_l1, &descriptor_l2, region);
+#define TPADC_BASE ((uintptr_t) 0x02009C00)
+#define SCTLR_B_Pos 7U
+#define __ATOMIC_SEQ_CST 5
+#define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)
+#define SECTION_NG_MASK (0xFFFDFFFF)
+#define ACTLR_DWBST_Msk (1UL << ACTLR_DWBST_Pos)
+#define __ALIGNED(x) __attribute__((aligned(x)))
+#define DFSR_FS1_Msk (1UL << DFSR_FS1_Pos)
+#define SCTLR_SW_Pos 10U
+#define __UINT32_TYPE__ long unsigned int
+#define __FLT32X_MIN_10_EXP__ (-307)
+#define __UINTPTR_TYPE__ unsigned int
+#define __LDBL_MIN_10_EXP__ (-307)
+#define __int_fast64_t_defined 1
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000)
+#define ___int16_t_defined 1
+#define GICDistributor_TYPER_ITLinesNumber(x) (((uint32_t)(((uint32_t)(x)) )) & GICDistributor_CTLR_ITLinesNumber_Msk)
+#define UART4_BASE ((uintptr_t) 0x02501000)
+#define CPSR_J_Msk (1UL << CPSR_J_Pos)
+#define GICDistributor_IROUTER_Aff0_Msk (0xFFUL )
+#define G2D_V0_BASE ((uintptr_t) 0x05410800)
+#define __SIZEOF_LONG_LONG__ 8
+#define GICDistributor_TYPER_CPUNumber_Pos 5U
+#define DSP_TZMA_BASE ((uintptr_t) 0x01700C00)
+#define PAGE_AP_SHIFT (4)
+#define GICDistributor_ITARGETSR_CPU6_Pos 6U
+#define DESCRIPTOR_FAULT (0x00000000)
+#define __GCC_ATOMIC_LLONG_LOCK_FREE 1
+#define PTRDIFF_MAX __PTRDIFF_MAX__
+#define __FLT_DECIMAL_DIG__ 9
+#define SCTLR_SW_Msk (1UL << SCTLR_SW_Pos)
+#define __UINT_FAST16_MAX__ 0xffffffffU
+#define ACTLR_EXCL_Msk (1UL << ACTLR_EXCL_Pos)
+#define SECTION_NS_SHIFT (19)
+#define __LDBL_NORM_MAX__ 1.7976931348623157e+308L
+#define GICInterface_IIDR_Revision(x) (((uint32_t)(((uint32_t)(x)) << GICInterface_IIDR_Revision_Pos)) & GICInterface_IIDR_Revision_Msk)
+#define __GCC_ATOMIC_SHORT_LOCK_FREE 1
+#define DSP0_CFG ((DSP_CFG_TypeDef *) DSP0_CFG_BASE)
+#define SCTLR_UWXN_Msk (1UL << SCTLR_UWXN_Pos)
+#define GICDistributor_SGIR_CPUTargetList_Msk (0xFFU << GICDistributor_SGIR_CPUTargetList_Pos)
+#define INT_LEAST16_MAX __INT_LEAST16_MAX__
+#define __UINT_FAST8_TYPE__ unsigned int
+#define SECTION_P_MASK (0xFFFFFDFF)
+#define __I volatile const
+#define __O volatile
+#define __UNALIGNED_UINT16_WRITE(addr,val) (void)((((struct T_UINT16_WRITE *)(void *)(addr))->v) = (val))
+#define ACTLR_BP_Pos 15U
+#define GICDistributor_CLRSPI_SR_INTID_Pos 0U
+#define __ATOMIC_ACQ_REL 4
+#define __ATOMIC_RELEASE 3
+#define TPADC ((TPADC_TypeDef *) TPADC_BASE)
+#define SCTLR_TRE_Pos 28U

@@ -1,0 +1,57 @@
+The following options are target specific:
+  -mauto-litpools             Relax literals in assembler and place them
+                              automatically in the text section.
+  -mconst16                   Use CONST16 instruction to load constants.
+  -mforce-no-pic              Disable position-independent code (PIC) for use
+                              in OS kernel code.
+  -mlongcalls                 Use indirect CALLXn instructions for large
+                              programs.
+  -mno-serialize-volatile     Do not serialize volatile memory references with
+                              MEMW instructions.
+  -mtarget-align              Automatically align branch targets to reduce
+                              branch penalties.
+  -mtext-section-literals     Intersperse literal pools with code in the text
+                              section.
+
+Assembler options
+=================
+
+Use "-Wa,OPTION" to pass "OPTION" to the assembler.
+
+
+Xtensa options:
+  --[no-]text-section-literals
+                          [Do not] put literals in the text section
+  --[no-]absolute-literals
+                          [Do not] default to use non-PC-relative literals
+  --[no-]target-align     [Do not] try to align branch targets
+  --[no-]longcalls        [Do not] emit 32-bit call sequences
+  --[no-]transform        [Do not] transform instructions
+  --flix                  both allow hand-written and generate flix bundles
+  --no-generate-flix      allow hand-written but do not generate
+                          flix bundles
+  --no-allow-flix         neither allow hand-written nor generate
+                          flix bundles
+  --rename-section old=new Rename section 'old' to 'new'
+  --[no-]trampolines      [Do not] generate trampolines (jumps to jumps)
+                          when jumps do not reach their targets
+  --[no-]auto-litpools    [Do not] automatically create literal pools
+  --auto-litpool-limit=<value>
+                          (range 100-10000) Maximum number of blocks of
+                          instructions to emit between literal pool
+                          locations; implies --auto-litpools flag
+  --[no-]separate-prop-tables
+                          [Do not] place Xtensa property records into
+                          individual property sections for each section.
+                          Default is to generate single property section.
+
+Linker options
+==============
+
+Use "-Wl,OPTION" to pass "OPTION" to the linker.
+
+elf32xtensa: 
+  --size-opt                  When relaxing longcalls, prefer size
+                                optimization over branch target alignment
+  --abi-windowed              Choose windowed ABI for the output object
+  --abi-call0                 Choose call0 ABI for the output object
