@@ -61,7 +61,7 @@ _start0:
 	movi	a1, __stack		// default SP
 	movi	a3, _start
 	callx4	a3
-	j .
+	j .						// keep halted
 
 	.size	_start0, . - _start0
 
