@@ -5,6 +5,7 @@
 #irq; CAN1 54
 #irqrv; CAN0 37
 #irqrv; CAN1 38
+#comment; CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation)
 #regdef;CAN_MSEL; 0x0000; CAN mode select register
 #regdef;CAN_CMD; 0x0004; CAN command register
 #regdef;CAN_STA; 0x0008; CAN status register

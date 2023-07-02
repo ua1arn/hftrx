@@ -1,4 +1,8 @@
 #type; TVD
+#base; TVD 0x05C01000
+#irq; TVD 139
+#irqrv; TVD 123
+#comment; Video Decoding
 #regdef; TVD_EN; 0x0000; TVD MODULE CONTROL Register
 #regdef; TVD_MODE; 0x0004; TVD MODE CONTROL Register
 #regdef; TVD_CLAMP_AGC1; 0x0008; TVD CLAMP & AGC CONTROL Register1

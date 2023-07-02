@@ -45,8 +45,8 @@ typedef enum IRQn
     SPI0_IRQn = 47,                                   /*!< SPI Serial Peripheral Interface Interrupt */
     SPI1_IRQn = 48,                                   /*!< SPI_DBI Serial Peripheral Interface Interrupt */
     LEDC_IRQn = 52,                                   /*!< LEDC LED Lamp Controller Interrupt */
-    CAN0_IRQn = 53,                                   /*!< CAN  Interrupt */
-    CAN1_IRQn = 54,                                   /*!< CAN  Interrupt */
+    CAN0_IRQn = 53,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Interrupt */
+    CAN1_IRQn = 54,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Interrupt */
     AUDIO_CODEC_IRQn = 57,                            /*!< AUDIO_CODEC  Interrupt */
     I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  Interrupt */
@@ -85,8 +85,8 @@ typedef enum IRQn
     GPIOF_NS_IRQn = 109,                              /*!< GPIOINT  Interrupt */
     GPIOF_S_IRQn = 110,                               /*!< GPIOINT  Interrupt */
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
-    DE_IRQn = 119,                                    /*!< DE Display Engine Interrupt */
-    DI_IRQn = 120,                                    /*!< DI De-Interlacer Interrupt */
+    DE_IRQn = 119,                                    /*!< DE Display Engine (DE) Interrupt */
+    DI_IRQn = 120,                                    /*!< DI De-interlacer (DI) Interrupt */
     DSI0_IRQn = 124,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
     TVE_IRQn = 126,                                   /*!< TVE TV Encoder Interrupt */
     CSIC_DMA0_IRQn = 127,                             /*!< CSIC_DMA  Interrupt */
@@ -99,6 +99,7 @@ typedef enum IRQn
     CSI_CMB_IRQn = 136,                               /*!< CSIC_TOP  Interrupt */
     CSI_TDM_IRQn = 137,                               /*!< CSIC_TOP  Interrupt */
     CSI_TOP_PKT_IRQn = 138,                           /*!< CSIC_TOP  Interrupt */
+    TVD_IRQn = 139,                                   /*!< TVD Video Decoding Interrupt */
     C0_CTI0_IRQn = 192,                               /*!< C0_CPUX_CFG  Interrupt */
     C0_CTI1_IRQn = 193,                               /*!< C0_CPUX_CFG  Interrupt */
     C0_COMMTX0_IRQn = 196,                            /*!< C0_CPUX_CFG  Interrupt */
@@ -218,6 +219,8 @@ typedef enum IRQn
 #define CSIC_DMA1_BASE ((uintptr_t) 0x05831000)       /*!< CSIC_DMA Base */
 #define CSIC_DMA2_BASE ((uintptr_t) 0x05832000)       /*!< CSIC_DMA Base */
 #define CSIC_DMA3_BASE ((uintptr_t) 0x05833000)       /*!< CSIC_DMA Base */
+#define TVD_TOP_BASE ((uintptr_t) 0x05C00000)         /*!< TVD_TOP Base */
+#define TVD_BASE ((uintptr_t) 0x05C01000)             /*!< TVD Base */
 #define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG Base */
 #define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM Base */
@@ -1384,7 +1387,7 @@ typedef struct HSTIMER_Type
 /*
  * @brief CAN
  */
-/*!< CAN  */
+/*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) */
 typedef struct CAN_Type
 {
     volatile uint32_t CAN_MSEL;                       /*!< Offset 0x000 CAN mode select register */
@@ -2434,7 +2437,7 @@ typedef struct TVD_TOP_Type
 /*
  * @brief TVD
  */
-/*!< TVD  */
+/*!< TVD Video Decoding */
 typedef struct TVD_Type
 {
     volatile uint32_t TVD_EN;                         /*!< Offset 0x000 TVD MODULE CONTROL Register */
@@ -2985,14 +2988,14 @@ typedef struct R_PRCM_Type
 #define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1  register set access pointer */
 #define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2  register set access pointer */
 #define TWI3 ((TWI_TypeDef *) TWI3_BASE)              /*!< TWI3  register set access pointer */
-#define CAN0 ((CAN_TypeDef *) CAN0_BASE)              /*!< CAN0  register set access pointer */
-#define CAN1 ((CAN_TypeDef *) CAN1_BASE)              /*!< CAN1  register set access pointer */
+#define CAN0 ((CAN_TypeDef *) CAN0_BASE)              /*!< CAN0 CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) register set access pointer */
+#define CAN1 ((CAN_TypeDef *) CAN1_BASE)              /*!< CAN1 CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX Message Box register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM register set access pointer */
-#define DCU ((DCU_TypeDef *) DCU_BASE)                /*!< DCU  register set access pointer */
+#define DCU ((DCU_TypeDef *) DCU_BASE)                /*!< DCU Debug control interface? register set access pointer */
 #define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
 #define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
@@ -3014,13 +3017,13 @@ typedef struct R_PRCM_Type
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
-#define DE ((DE_TypeDef *) DE_BASE)                   /*!< DE Display Engine register set access pointer */
+#define DE ((DE_TypeDef *) DE_BASE)                   /*!< DE Display Engine (DE) register set access pointer */
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP  register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
-#define DI ((DI_TypeDef *) DI_BASE)                   /*!< DI De-Interlacer register set access pointer */
+#define DI ((DI_TypeDef *) DI_BASE)                   /*!< DI De-interlacer (DI) register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Blender register set access pointer */
@@ -3045,6 +3048,8 @@ typedef struct R_PRCM_Type
 #define CSIC_DMA1 ((CSIC_DMA_TypeDef *) CSIC_DMA1_BASE)/*!< CSIC_DMA1  register set access pointer */
 #define CSIC_DMA2 ((CSIC_DMA_TypeDef *) CSIC_DMA2_BASE)/*!< CSIC_DMA2  register set access pointer */
 #define CSIC_DMA3 ((CSIC_DMA_TypeDef *) CSIC_DMA3_BASE)/*!< CSIC_DMA3  register set access pointer */
+#define TVD_TOP ((TVD_TOP_TypeDef *) TVD_TOP_BASE)    /*!< TVD_TOP  register set access pointer */
+#define TVD ((TVD_TypeDef *) TVD_BASE)                /*!< TVD Video Decoding register set access pointer */
 #define RISC_CFG ((RISC_CFG_TypeDef *) RISC_CFG_BASE) /*!< RISC_CFG RISC-V core configuration register register set access pointer */
 #define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */

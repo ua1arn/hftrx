@@ -1,4 +1,5 @@
 #type; TVD_TOP
+#base; TVD_TOP 0x05C00000
 #regdef; TVD_TOP_MAP; 0x0000; TVD TOP MAP Register
 #regdef; TVD_3D_CTL1; 0x0008; TVD 3D DMA CONTROL Register1
 #regdef; TVD_3D_CTL2; 0x000C; TVD 3D DMA CONTROL Register2

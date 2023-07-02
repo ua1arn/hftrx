@@ -7573,7 +7573,7 @@
   </peripheral>
   <peripheral>
   <name>CAN0</name>
-  <description></description>
+  <description>CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation)</description>
   <baseAddress>0x02504000</baseAddress>
   <interrupt>
    <name>CAN0</name>
@@ -12521,6 +12521,392 @@
    <value>112</value>
    <description></description>
   </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>TVD_TOP</name>
+  <description></description>
+  <baseAddress>0x05C00000</baseAddress>
+  <registers>
+   <register>
+    <name>TVD_TOP_MAP</name>
+    <displayName>TVD_TOP_MAP</displayName>
+    <description>TVD TOP MAP Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_3D_CTL1</name>
+    <displayName>TVD_3D_CTL1</displayName>
+    <description>TVD 3D DMA CONTROL Register1</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_3D_CTL2</name>
+    <displayName>TVD_3D_CTL2</displayName>
+    <description>TVD 3D DMA CONTROL Register2</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_3D_CTL3</name>
+    <displayName>TVD_3D_CTL3</displayName>
+    <description>TVD 3D DMA CONTROL Register3</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_3D_CTL4</name>
+    <displayName>TVD_3D_CTL4</displayName>
+    <description>TVD 3D DMA CONTROL Register4</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_3D_CTL5</name>
+    <displayName>TVD_3D_CTL5</displayName>
+    <description>TVD 3D DMA CONTROL Register5</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000020</addressOffset>
+    <registers>
+     <register>
+      <name>TVD_TOP_CTL</name>
+      <displayName>TVD_TOP_CTL</displayName>
+      <description>TVD TOP CONTROL Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>TVD_ADC_CTL</name>
+      <displayName>TVD_ADC_CTL</displayName>
+      <description>TVD ADC CONTROL Register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>TVD_ADC_CFG</name>
+      <displayName>TVD_ADC_CFG</displayName>
+      <description>TVD ADC CONFIGURATION Register</description>
+      <addressOffset>0x00C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x030</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TVD</name>
+  <description>Video Decoding</description>
+  <baseAddress>0x05C01000</baseAddress>
+  <interrupt>
+   <name>TVD</name>
+   <value>123</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>TVD_EN</name>
+    <displayName>TVD_EN</displayName>
+    <description>TVD MODULE CONTROL Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_MODE</name>
+    <displayName>TVD_MODE</displayName>
+    <description>TVD MODE CONTROL Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_CLAMP_AGC1</name>
+    <displayName>TVD_CLAMP_AGC1</displayName>
+    <description>TVD CLAMP &amp; AGC CONTROL Register1</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_CLAMP_AGC2</name>
+    <displayName>TVD_CLAMP_AGC2</displayName>
+    <description>TVD CLAMP &amp; AGC CONTROL Register2</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_HLOCK1</name>
+    <displayName>TVD_HLOCK1</displayName>
+    <description>TVD HLOCK CONTROL Register1</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_HLOCK2</name>
+    <displayName>TVD_HLOCK2</displayName>
+    <description>TVD HLOCK CONTROL Register2</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_HLOCK3</name>
+    <displayName>TVD_HLOCK3</displayName>
+    <description>TVD HLOCK CONTROL Register3</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_HLOCK4</name>
+    <displayName>TVD_HLOCK4</displayName>
+    <description>TVD HLOCK CONTROL Register4</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_HLOCK5</name>
+    <displayName>TVD_HLOCK5</displayName>
+    <description>TVD HLOCK CONTROL Register5</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_VLOCK1</name>
+    <displayName>TVD_VLOCK1</displayName>
+    <description>TVD VLOCK CONTROL Register1</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_VLOCK2</name>
+    <displayName>TVD_VLOCK2</displayName>
+    <description>TVD VLOCK CONTROL Register2</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_CLOCK1</name>
+    <displayName>TVD_CLOCK1</displayName>
+    <description>TVD CHROMA LOCK CONTROL Register1</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_CLOCK2</name>
+    <displayName>TVD_CLOCK2</displayName>
+    <description>TVD CHROMA LOCK CONTROL Register2</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_YC_SEP1</name>
+    <displayName>TVD_YC_SEP1</displayName>
+    <description>TVD YC SEPERATION CONROL Register1</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_YC_SEP2</name>
+    <displayName>TVD_YC_SEP2</displayName>
+    <description>TVD YC SEPERATION CONROL Register2</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_ENHANCE1</name>
+    <displayName>TVD_ENHANCE1</displayName>
+    <description>TVD ENHANCEMENT CONTROL Register1</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_ENHANCE2</name>
+    <displayName>TVD_ENHANCE2</displayName>
+    <description>TVD ENHANCEMENT CONTROL Register2</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_ENHANCE3</name>
+    <displayName>TVD_ENHANCE3</displayName>
+    <description>TVD ENHANCEMENT CONTROL Register3</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_WB1</name>
+    <displayName>TVD_WB1</displayName>
+    <description>TVD WB DMA CONTROL Register1</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_WB2</name>
+    <displayName>TVD_WB2</displayName>
+    <description>TVD WB DMA CONTROL Register2</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_WB3</name>
+    <displayName>TVD_WB3</displayName>
+    <description>TVD WB DMA CONTROL Register3</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_WB4</name>
+    <displayName>TVD_WB4</displayName>
+    <description>TVD WB DMA CONTROL Register4</description>
+    <addressOffset>0x06C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_IRQ_CTL</name>
+    <displayName>TVD_IRQ_CTL</displayName>
+    <description>TVD DMA Interrupt Control Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_IRQ_STATUS</name>
+    <displayName>TVD_IRQ_STATUS</displayName>
+    <description>TVD DMA Interrupt Status Register</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_DEBUG1</name>
+    <displayName>TVD_DEBUG1</displayName>
+    <description>TVD DEBUG CONTROL Register1</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_STATUS1</name>
+    <displayName>TVD_STATUS1</displayName>
+    <description>TVD DEBUG STATUS Register1</description>
+    <addressOffset>0x180</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_STATUS2</name>
+    <displayName>TVD_STATUS2</displayName>
+    <description>TVD DEBUG STATUS Register2</description>
+    <addressOffset>0x184</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_STATUS3</name>
+    <displayName>TVD_STATUS3</displayName>
+    <description>TVD DEBUG STATUS Register3</description>
+    <addressOffset>0x188</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_STATUS4</name>
+    <displayName>TVD_STATUS4</displayName>
+    <description>TVD DEBUG STATUS Register4</description>
+    <addressOffset>0x18C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_STATUS5</name>
+    <displayName>TVD_STATUS5</displayName>
+    <description>TVD DEBUG STATUS Register5</description>
+    <addressOffset>0x190</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVD_STATUS6</name>
+    <displayName>TVD_STATUS6</displayName>
+    <description>TVD DEBUG STATUS Register6</description>
+    <addressOffset>0x194</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
   </peripheral>
   <peripheral>
   <name>DDRPHYC</name>
