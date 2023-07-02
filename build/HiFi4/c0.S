@@ -44,17 +44,26 @@ tra0:
 	.align	4
 	.type	_start0,@function
 _start0:
+	movi	a0, 0
+	wsr.intenable   a0
+	movi	a0, 0	/* vector table base address */
+	wsr.vecbase   a0
 
 	movi	a3, PS_UM | PS_WOE_ABI	// PS.WOE = 0|1, PS.UM = 1, PS.EXCM = 0, PS.INTLEVEL = 0
 	wsr.ps	a3
 
+	movi	a2, 0x144
+	wsr.prefctl a2
 	/*  Setup window registers for first caller: */
 	movi	a3, 0	// was: 1
 	movi	a4, 0
-	wsr	a3, WINDOWSTART		// Call-window start bits
-	wsr	a4, WINDOWBASE		// 4 bits width: Base of current address-register window
+	wsr.WINDOWSTART	a3 		// Call-window start bits
+	wsr.WINDOWBASE	a4 		// 4 bits width: Base of current address-register window
 	rsync
 	/* Note:  register window has rotated, ie. a0..a15 clobbered. */
+	movi	a4, 0
+	wsr.excsave2 a4
+	wsr.excsave3 a4
 
 	/* Reload initial stack pointer: */
 	movi	a1, __stack		// default SP
