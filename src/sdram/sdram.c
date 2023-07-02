@@ -929,6 +929,7 @@ static struct dram_para_t ddrp3 =
 
 int sys_dram_init(void)
 {
+	ddrp3.dram_clk = (WITHCPUXTAL / 1000000) * PLL_DDR_N;
 	set_pll_cpux_axi(PLL_CPU_N);
 	return init_DRAM(0, & ddrp3) != 0;
 }
@@ -976,6 +977,7 @@ static struct dram_para_t ddrp2 = {
 
 int sys_dram_init(void)
 {
+	ddrp2.dram_clk = (WITHCPUXTAL / 1000000) * PLL_DDR_N;
 	set_pll_riscv_axi(PLL_CPU_N);
 	return init_DRAM(0, & ddrp2) != 0;
 }

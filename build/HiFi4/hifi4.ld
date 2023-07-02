@@ -152,6 +152,8 @@ SECTIONS
   } >DRAM 
 }
 
-__StackTop = ORIGIN(IRAM) + LENGTH(IRAM);
+__StackTop = ORIGIN(DRAM) + LENGTH(DRAM);
 PROVIDE(__stack = __StackTop);
+PROVIDE(__dram_base = ORIGIN(DRAM));
+PROVIDE(__iram_base = ORIGIN(IRAM));
 

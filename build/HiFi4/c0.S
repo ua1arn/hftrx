@@ -30,42 +30,49 @@
 //#endif
 
 	.section .entry.text, "x"
-	//.text
-	.global	_start
-	.type	_start,@function
+	j tra0
+	.align	2
+startaddr:
+	.word _start0
+tra0:
+	l32r	a0, startaddr
+	jx		a0
 
-_start:
-	/* Make 0x20048000 value */
-	movi	a0, 0			// keep this register zero.
+/////////////////////////////
+
+	.text
+	.align	4
+	.type	_start0,@function
+_start0:
+	movi	a0, 0
+	wsr.intenable   a0
+	movi	a0, 0	/* vector table base address */
+	wsr.vecbase   a0
 
 	movi	a3, PS_UM | PS_WOE_ABI	// PS.WOE = 0|1, PS.UM = 1, PS.EXCM = 0, PS.INTLEVEL = 0
 	wsr.ps	a3
+
+	movi	a2, 0x144
+	wsr.prefctl a2
+	/*  Setup window registers for first caller: */
+	movi	a3, 0	// was: 1
+	movi	a4, 0
+	wsr.WINDOWSTART	a3 		// Call-window start bits
+	wsr.WINDOWBASE	a4 		// 4 bits width: Base of current address-register window
 	rsync
+	/* Note:  register window has rotated, ie. a0..a15 clobbered. */
+	movi	a4, 0
+	wsr.excsave2 a4
+	wsr.excsave3 a4
 
-	//movi	a3, 0
-	//wsr.isl	a3
-
-	movi	sp, __stack		// default SP
+	/* Reload initial stack pointer: */
 	movi	a1, __stack		// default SP
-	movi	a3, __stack		// default SP
+	movi	a3, _start
+	movi	a0, 0		/* mark start of call frames in stack */
+	callx8	a3
+	j .						// keep halted
 
-	CALL4 xmain
-	j .
-
-#if 0
-	entry a1, 32
-	movi	a0, 0			// keep this register zero.
-	movi 	a3, 0x0250
-	slli	a3, a3, 16
-	movi 	a7, 0x25
-	s32i  	a7, a3, 0
-	j .
-#endif
-j xmain + 3
-.ee2:
-	.word __stack
-
-	.size	_start, . - _start
+	.size	_start0, . - _start0
 
 
 

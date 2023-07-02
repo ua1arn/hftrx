@@ -2593,6 +2593,7 @@ uint_fast32_t allwnrt113_get_i2s2_freq(void)
 	}
 }
 
+// Graphic 2D (G2D)
 uint_fast32_t allwnrt113_get_g2d_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->G2D_CLK_REG;
@@ -2611,6 +2612,7 @@ uint_fast32_t allwnrt113_get_g2d_freq(void)
 	}
 }
 
+// Display Engine (DE)
 uint_fast32_t allwnrt113_get_de_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
@@ -2628,6 +2630,10 @@ uint_fast32_t allwnrt113_get_de_freq(void)
 		return allwnrt113_get_audio1pll_div2_freq() / M;
 	}
 }
+
+// De-interlacer (DI)
+// T113-S3_User_Manual_V1.5.pdf, page 20:
+// Performance: module clock 600M for 1080p@60Hz YUV420
 
 uint_fast32_t allwnrt113_get_di_freq(void)
 {
@@ -2647,6 +2653,7 @@ uint_fast32_t allwnrt113_get_di_freq(void)
 	}
 }
 
+// Crypto Engine (CE)
 uint_fast32_t allwnrt113_get_ce_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->CE_CLK_REG;
@@ -2921,7 +2928,7 @@ uint_fast32_t allwnrf133_get_riscv_freq(void)
 
 #elif CPUSTYLE_T113
 
-//
+// DSP (HiFi4)
 uint_fast32_t allwnrt113_get_dsp_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DSP_CLK_REG;

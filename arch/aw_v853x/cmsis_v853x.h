@@ -165,6 +165,7 @@ typedef enum IRQn
 #define CPUX_MSGBOX_BASE ((uintptr_t) 0x03003000)     /*!< MSGBOX Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Base */
+#define DCU_BASE ((uintptr_t) 0x03010000)             /*!< DCU Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!<  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!<  Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
@@ -2991,6 +2992,7 @@ typedef struct R_PRCM_Type
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX Message Box register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM register set access pointer */
+#define DCU ((DCU_TypeDef *) DCU_BASE)                /*!< DCU  register set access pointer */
 #define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
 #define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */

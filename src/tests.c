@@ -6488,6 +6488,77 @@ void gpadc_inthandler(void)
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
+#if CPUSTYLE_T113
+
+/* HiFI4 DSP-viewed address offset translate to host cpu viewwed */
+static ptrdiff_t xlate_dsp2mpu(ptrdiff_t a)
+{
+	const ptrdiff_t BANKSIZE = 0x08000u;
+	const ptrdiff_t CELLBASE = 0x10000u;
+	const ptrdiff_t CELLSIZE = 16;
+	const ptrdiff_t cellbank = (a - CELLBASE) / BANKSIZE;
+	const ptrdiff_t cellrow = (a - CELLBASE) % BANKSIZE / CELLSIZE;	/* гранулярность 16 байт */
+	const unsigned cellpos = (a % CELLSIZE);	/* гранулярность 16 байт */
+
+	if (a < CELLBASE)
+		return a;	/* translation not needed. */
+
+	return CELLBASE +
+			cellbank * BANKSIZE +
+			CELLSIZE * ((cellrow % 2) ? (cellrow / 2) + (BANKSIZE / CELLSIZE / 2) : cellrow / 2) +
+			cellpos;
+}
+
+/* memcpy replacement for Allwinner T113-s3 dsp memory */
+static void copy2dsp(uint8_t * pdspmap, const uint8_t * pcpu, unsigned offs, unsigned size)
+{
+	for (; size --; ++ offs)
+	{
+		pdspmap [xlate_dsp2mpu(offs)] = pcpu [offs];
+	}
+}
+
+/* memset replacement for Allwinner T113-s3 dsp memory */
+static void zero2dsp(uint8_t * pdspmap, unsigned offs, unsigned size)
+{
+	for (; size --; ++ offs)
+	{
+		pdspmap [xlate_dsp2mpu(offs)] = 0x00;	/* fill by zero */
+	}
+}
+
+//static void xtest(void)
+//{
+//	unsigned mpu;
+//	unsigned dsp;
+//
+//	dsp = 0x10000;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//
+//	dsp = 0x10010;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//
+//	dsp = 0x10020;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//
+//	dsp = 0x10030;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//
+//	dsp = 0x18020;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//
+//	dsp = 0x18030;
+//	mpu = xlate_dsp2mpu(dsp);
+//	PRINTF("dsp=%08X, mpu=%08X\n", dsp, mpu);
+//}
+
+#endif /* CPUSTYLE_T113 */
+
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)
@@ -6533,25 +6604,32 @@ void hightests(void)
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x01;	/* DSP BOOT SRAM REMAP ENABLE 1: DSP 128K Local SRAM Remap for System Boot */
 
 		// https://github.com/YuzukiHD/FreeRTOS-HIFI4-DSP/blob/164696d952116d20100daefd7a475d2ede828eb0/host/uboot-driver/dsp/sun8iw20/dsp_reg.h#L33C1-L39C65
-
+		//xtest();
 		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
 		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 		//PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		//local_delay_ms(300);
 
-		memset((void *) remap_cpu, 0x00, 128 * 1024);
-		memcpy((void *) remap_cpu, dsp_code, sizeof dsp_code);
+		//memset((void *) remap_cpu, 0xE5, 128 * 1024);
+		//memcpy((void *) remap_cpu, dsp_code, sizeof dsp_code);
+//		for (unsigned i = 0; i < (128 * 1024) / 4; ++ i)
+//		{
+//			volatile uint32_t * const p = (void *) remap_cpu;
+//			p [xlate_dsp2mpu(i * 4) / 4] = i * 4;
+//		}
+		const size_t dsp_code_size = sizeof dsp_code;
+		copy2dsp((void *) remap_cpu, dsp_code, 0, dsp_code_size);
+		zero2dsp((void *) remap_cpu, dsp_code_size, (128 * 1024u) - dsp_code_size);
 		dcache_clean(remap_cpu, 128 * 1024);
-		//printhex(remap_cpu, (void *) remap_cpu, 256);
+		//printhex(remap_cpu, (void *) dsp_code + (64 * 1024), 256);
 		//PRINTF("Map local sram to DSP\n");
 		// Map local sram to DSP
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x00;	/* DSP BOOT SRAM REMAP ENABLE 0: DSP 128K Local SRAM Remap for DSP_SYS */
 
 		// DSP Start address change
-		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 + 0x000;//0x1A;
-		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000 + 0x08;	// xmain base address
+		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 if non-cached need
 		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 1);	// BIT_START_VEC_SEL
-		PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
+		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 
 		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 0);	// Set runstall
 
@@ -6574,7 +6652,7 @@ void hightests(void)
 		unsigned sss = DSP0_CFG->DSP_STAT_REG;
 
 		local_delay_ms(1300);
-		PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
+		//PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		for (;;)
 			;
 	}
@@ -7088,8 +7166,10 @@ void hightests(void)
 		// bits 27:16: eFUSE boot select status,
 		// bit 0: 0: GPIO boot select, 1: eFuse boot select
 		// The status of the GPIO boot select pin can be read by the bit[12:11] of the system configuration module (register: 0x03000024).
-		PRINTF("SID->BOOT_MODE=0x%08lX, SYS_CFG->VER_REG=0x%08lX\n", SID->BOOT_MODE, SYS_CFG->VER_REG);
+		PRINTF("SID->BOOT_MODE=0x%08X, SYS_CFG->VER_REG=0x%08X\n", (unsigned) SID->BOOT_MODE, (unsigned) SYS_CFG->VER_REG);
+		PRINTF("SID->SID_THS=0x%08X\n", (unsigned) SID->SID_THS);
 		PRINTF("BOOT_MODE=%u, BOOT_SEL_PAD_STA=0%u FEL_SEL_PAD_STA=%u\n", (unsigned) (SID->BOOT_MODE >> 0) & 0x01, (unsigned) (SYS_CFG->VER_REG >> 11) & 0x03, (unsigned) (SYS_CFG->VER_REG >> 8) & 0x01);
+		//printhex32(SID_BASE, SID, sizeof * SID);
 	}
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
