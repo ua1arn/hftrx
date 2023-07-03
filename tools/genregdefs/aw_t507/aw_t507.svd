@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8"?>
+<device schemaVersion="1.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="CMSIS-SVD_Schema_1_1.xsd" >
+ <name>XXXX</name>
+ <version>1.00</version>
+ <description>for test</description>
+ <addressUnitBits>8</addressUnitBits>
+ <width>32</width>
+ <size>32</size>
+ <resetValue>0x00000000</resetValue>
+ <resetMask>0xFFFFFFFF</resetMask>
+ <peripherals>
+  <peripheral>
+  <name>USBPHY0</name>
+  <description></description>
+  <baseAddress>0x01C1A800</baseAddress>
+  <registers>
+   <register>
+    <name>HCI_ICR</name>
+    <displayName>HCI_ICR</displayName>
+    <description>HCI Interface Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HSIC_STATUS</name>
+    <displayName>HSIC_STATUS</displayName>
+    <description>HSIC status Register This register is valid on HCI1.</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="USBPHY0">
+  <name>USBPHY1</name>
+  <baseAddress>0x01C1B800</baseAddress>
+  </peripheral>
+  <peripheral>
+  <name>USBEHCI0</name>
+  <description></description>
+  <baseAddress>0x01C1A000</baseAddress>
+  <interrupt>
+   <name>USBEHCI0</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USBEHCI1</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>HCCAPBASE</name>
+    <displayName>HCCAPBASE</displayName>
+    <description>EHCI Capability Register (HCIVERSION and CAPLENGTH) register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HCSPARAMS</name>
+    <displayName>HCSPARAMS</displayName>
+    <description>EHCI Host Control Structural Parameter Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HCCPARAMS</name>
+    <displayName>HCCPARAMS</displayName>
+    <description>EHCI Host Control Capability Parameter Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HCSPPORTROUTE</name>
+    <displayName>HCSPPORTROUTE</displayName>
+    <description>EHCI Companion Port Route Description</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USBCMD</name>
+    <displayName>USBCMD</displayName>
+    <description>EHCI USB Command Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USBSTS</name>
+    <displayName>USBSTS</displayName>
+    <description>EHCI USB Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USBINTR</name>
+    <displayName>USBINTR</displayName>
+    <description>EHCI USB Interrupt Enable Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FRINDEX</name>
+    <displayName>FRINDEX</displayName>
+    <description>EHCI USB Frame Index Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CTRLDSSEGMENT</name>
+    <displayName>CTRLDSSEGMENT</displayName>
+    <description>EHCI 4G Segment Selector Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PERIODICLISTBASE</name>
+    <displayName>PERIODICLISTBASE</displayName>
+    <description>EHCI Frame List Base Address Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ASYNCLISTADDR</name>
+    <displayName>ASYNCLISTADDR</displayName>
+    <description>EHCI Next Asynchronous List Address Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="USBEHCI0">
+  <name>USBEHCI1</name>
+  <baseAddress>0x01C1B000</baseAddress>
+  <interrupt>
+   <name>USBEHCI0</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USBEHCI1</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>USBOHCI0</name>
+  <description></description>
+  <baseAddress>0x01C1A400</baseAddress>
+  <interrupt>
+   <name>USBOHCI0</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USBOHCI1</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>O_HcRevision</name>
+    <displayName>O_HcRevision</displayName>
+    <description>OHCI Revision Register (not documented)</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcControl</name>
+    <displayName>O_HcControl</displayName>
+    <description>OHCI Control Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcCommandStatus</name>
+    <displayName>O_HcCommandStatus</displayName>
+    <description>OHCI Command Status Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcInterruptStatus</name>
+    <displayName>O_HcInterruptStatus</displayName>
+    <description>OHCI Interrupt Status Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcInterruptEnable</name>
+    <displayName>O_HcInterruptEnable</displayName>
+    <description>OHCI Interrupt Enable Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcInterruptDisable</name>
+    <displayName>O_HcInterruptDisable</displayName>
+    <description>OHCI Interrupt Disable Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcHCCA</name>
+    <displayName>O_HcHCCA</displayName>
+    <description>OHCI HCCA Base</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcPeriodCurrentED</name>
+    <displayName>O_HcPeriodCurrentED</displayName>
+    <description>OHCI Period Current ED Base</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcControlHeadED</name>
+    <displayName>O_HcControlHeadED</displayName>
+    <description>OHCI Control Head ED Base</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcControlCurrentED</name>
+    <displayName>O_HcControlCurrentED</displayName>
+    <description>OHCI Control Current ED Base</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcBulkHeadED</name>
+    <displayName>O_HcBulkHeadED</displayName>
+    <description>OHCI Bulk Head ED Base</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcBulkCurrentED</name>
+    <displayName>O_HcBulkCurrentED</displayName>
+    <description>OHCI Bulk Current ED Base</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcDoneHead</name>
+    <displayName>O_HcDoneHead</displayName>
+    <description>OHCI Done Head Base</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcFmInterval</name>
+    <displayName>O_HcFmInterval</displayName>
+    <description>OHCI Frame Interval Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcFmRemaining</name>
+    <displayName>O_HcFmRemaining</displayName>
+    <description>OHCI Frame Remaining Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcFmNumber</name>
+    <displayName>O_HcFmNumber</displayName>
+    <description>OHCI Frame Number Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcPerioddicStart</name>
+    <displayName>O_HcPerioddicStart</displayName>
+    <description>OHCI Periodic Start Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcLSThreshold</name>
+    <displayName>O_HcLSThreshold</displayName>
+    <description>OHCI LS Threshold Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcRhDescriptorA</name>
+    <displayName>O_HcRhDescriptorA</displayName>
+    <description>OHCI Root Hub Descriptor Register A</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcRhDesriptorB</name>
+    <displayName>O_HcRhDesriptorB</displayName>
+    <description>OHCI Root Hub Descriptor Register B</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcRhStatus</name>
+    <displayName>O_HcRhStatus</displayName>
+    <description>OHCI Root Hub Status Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>1</dim>
+    <addressOffset>0x00000054</addressOffset>
+    <register>
+     <name>O_HcRhPortStatus</name>
+     <displayName>O_HcRhPortStatus</displayName>
+     <description>OHCI Root Hub Port Status Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x004</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="USBOHCI0">
+  <name>USBOHCI1</name>
+  <baseAddress>0x01C1B400</baseAddress>
+  <interrupt>
+   <name>USBOHCI0</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USBOHCI1</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+ </peripherals>
+ <vendor>
+ </vendor>
+</device >
