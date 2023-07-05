@@ -8,8 +8,8 @@
 
 // mango-pi board
 
-#ifndef ARM_ALW_T507_HELPERBOARD_H_INCLUDED
-#define ARM_ALW_T507_HELPERBOARD_H_INCLUDED 1
+#ifndef ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED
+#define ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1017,4 +1017,4 @@
 			/*USBD_EHCI_INITIALIZE(); */\
 		} while (0)
 
-#endif /* ARM_ALW_T507_HELPERBOARD_H_INCLUDED */
+#endif /* ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED */
