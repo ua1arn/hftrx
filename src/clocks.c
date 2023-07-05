@@ -3728,6 +3728,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 #elif CPUSTYLE_XCZU && LINUX_SUBSYSTEM
 #elif CPUSTYLE_XC7Z && LINUX_SUBSYSTEM
 
+#elif CPUSTYLE_T507
+	#warning Undefined CPUSTYLE_T507
 #else
 	#warning Undefined CPUSTYLE_XXX
 #endif
@@ -8690,6 +8692,10 @@ void hardware_adc_initialize(void)
 	(void) GPADC;
 
 #elif CPUSTYLE_A64
+	#warning Undefined CPUSTYLE_A64
+
+#elif CPUSTYLE_T507
+	#warning Undefined CPUSTYLE_T507
 
 #else
 	#warning Undefined CPUSTYLE_XXX
