@@ -2934,7 +2934,7 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 	}
 }
 
-static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * sizeof (int16_t) bytes
+static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * размер сэмпла * количество каналов bytes
 static uint_fast16_t uacoutbufflevel;	// количество байтовЮ на которые заполнен буфер
 
 /* вызывается при запрещённых прерываниях. */
@@ -2966,7 +2966,9 @@ void uacout_buffer_stop(void)
 
 /* вызыватся из не-realtime функции обработчика прерывания */
 // Работает на ARM_SYSTEM_PRIORITY
-void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits)
+/* вызыватся из realtime функции обработчика прерывания */
+// Работает на ARM_REALTIME_PRIORITY
+void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits)
 {
 	const size_t dmabuffer16size = DMABUFFSIZE16RX * sizeof (aubufv_t);	// размер в байтах
 	const size_t usbsz = (ibits + 7) / 8;
@@ -2990,11 +2992,12 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 			uacoutbufflevel = 0;
 		}
 
-		if (ichannels < DMABUFFSTEP16RX)
+		if (ichannels == 1)
 		{
+			ASSERT(DMABUFFSTEP16RX == 2);
 			// копирование нужного количества сэмплов с прербразованием из моно в стерео
 			const uint8_t * src = buff;
-			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			aubufv_t * dst = (aubufv_t *) (uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples;
 			while (n --)
 			{
@@ -3006,6 +3009,7 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 		}
 		else
 		{
+			ASSERT(DMABUFFSTEP16RX == ichannels);
 			// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
 			/* копирование 16 бит сэмплов с расширением */
 			const uint8_t * src = buff;
@@ -3028,74 +3032,6 @@ void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fa
 			RiseIrql(IRQL_REALTIME, & oldIrql);
 			processing_dmabuffer16rxuac(uacoutaddr);
 			LowerIrql(oldIrql);
-			uacoutaddr = 0;
-			uacoutbufflevel = 0;
-		}
-	}
-}
-
-/* вызыватся из realtime функции обработчика прерывания */
-// Работает на ARM_REALTIME_PRIORITY
-void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits)
-{
-	const size_t dmabuffer16rxsize = DMABUFFSIZE16RX * sizeof (aubufv_t);	// размер в байтах
-	const size_t usbsz = (ibits + 7) / 8;
-
-	for (;;)
-	{
-		const uint_fast16_t insamples = size / usbsz / ichannels;	// количество сэмплов во входном буфере
-		const uint_fast16_t outsamples = (dmabuffer16rxsize - uacoutbufflevel) / sizeof (aubufv_t) / DMABUFFSTEP16RX;
-		const uint_fast16_t chunksamples = ulmin16(insamples, outsamples);
-		const size_t inchunk = chunksamples * usbsz * ichannels;
-		const size_t outchunk = chunksamples * sizeof (aubufv_t) * DMABUFFSTEP16RX;	// разхмер в байтах
-
-		if (chunksamples == 0)
-			break;
-		if (uacoutaddr == 0)
-		{
- 			uacoutaddr = allocate_dmabuffer16rx();
-			uacoutbufflevel = 0;
-		}
-
-		if (ichannels < DMABUFFSTEP16RX)
-		{
-			// копирование нужного количества сэмплов с прербразованием из моно в стерео
-			const uint8_t * src = buff;
-			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
-			uint_fast16_t n = chunksamples;
-			while (n --)
-			{
-				const aufastbufv_t v = fetch_le(src, usbsz);
-				* dst ++ = v;
-				* dst ++ = v;
-				src += usbsz;
-			}
-		}
-		else if (usbsz != sizeof (aubufv_t))
-		// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
-		{
-			/* копирование 16 бит сэмплов с расширением */
-			const uint8_t * src = buff;
-			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
-			uint_fast16_t n = chunksamples * ichannels;
-			while (n --)
-			{
-				const aufastbufv_t v = fetch_le(src, usbsz);
-				* dst ++ = v;
-				src += usbsz;
-			}
-		}
-		else
-		{
-			memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, inchunk);
-		}
-
-		size -= inchunk;	// проход по входому буферу
-		buff += inchunk;	// проход входому буферу
-
-		if ((uacoutbufflevel += outchunk) >= dmabuffer16rxsize)
-		{
-			processing_dmabuffer16rxuac(uacoutaddr);
 			uacoutaddr = 0;
 			uacoutbufflevel = 0;
 		}

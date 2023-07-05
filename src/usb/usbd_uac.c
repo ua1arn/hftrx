@@ -748,7 +748,7 @@ static USBD_StatusTypeDef USBD_UAC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 	case USBD_EP_AUDIO_OUT:
 		/* UAC EP OUT */
 		// use audio data
-		uacout_buffer_save_system(uacoutbuff, USBD_LL_GetRxDataSize(pdev, epnum), UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBITS);
+		uacout_buffer_save(uacoutbuff, USBD_LL_GetRxDataSize(pdev, epnum), UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBITS);
 		/* Prepare Out endpoint to receive next audio data packet */
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacoutbuff, UACOUT_AUDIO48_DATASIZE);
 		break;

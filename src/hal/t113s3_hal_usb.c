@@ -2581,9 +2581,14 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   			break;
   		}
   		rx_count = usb_get_eprx_count(pusb);
+  		if (rx_count > UACOUT_AUDIO48_DATASIZE)
+  		{
+  			usb_eprx_flush_fifo(pusb);
+  			break;
+  		}
   		//PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u, usbd_getuacoutmaxpacket()=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count, (unsigned) usbd_getuacoutmaxpacket());
   		//PRINTF("rx_count=%u\n", (unsigned) rx_count);
-  		ASSERT(UACOUT_AUDIO48_DATASIZE == rx_count || 0 == rx_count);
+  		//ASSERT(UACOUT_AUDIO48_DATASIZE == rx_count || 0 == rx_count);
   		do
   		{
   			ret = epx_out_handler_dev(pusb, bo_ep_out, (uintptr_t)uacoutbuff, ulmin(rx_count, UACOUT_AUDIO48_DATASIZE), USB_PRTCL_ISO);
@@ -2602,7 +2607,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   		{
 			// использование данных
 			//printhex(0, uacoutbuff, rx_count);
-			uacout_buffer_save_system(uacoutbuff, rx_count, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBITS);
+			uacout_buffer_save(uacoutbuff, rx_count, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBITS);
  		}
 	} while (0);
 
