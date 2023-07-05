@@ -380,6 +380,20 @@ elif CPUSTYLE_STM32F0XX
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
+
+#elif CPUSTYLE_T507
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "allwnr_t507.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
+
 #elif CPUSTYLE_V853X
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */

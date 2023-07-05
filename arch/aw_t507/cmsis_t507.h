@@ -8,6 +8,29 @@
 
 typedef enum IRQn
 {
+    SGI0_IRQn = 0,                                    /*!<   Interrupt */
+    SGI1_IRQn = 1,                                    /*!<   Interrupt */
+    SGI2_IRQn = 2,                                    /*!<   Interrupt */
+    SGI3_IRQn = 3,                                    /*!<   Interrupt */
+    SGI4_IRQn = 4,                                    /*!<   Interrupt */
+    SGI5_IRQn = 5,                                    /*!<   Interrupt */
+    SGI6_IRQn = 6,                                    /*!<   Interrupt */
+    SGI7_IRQn = 7,                                    /*!<   Interrupt */
+    SGI8_IRQn = 8,                                    /*!<   Interrupt */
+    SGI9_IRQn = 9,                                    /*!<   Interrupt */
+    SGI10_IRQn = 10,                                  /*!<   Interrupt */
+    SGI11_IRQn = 11,                                  /*!<   Interrupt */
+    SGI12_IRQn = 12,                                  /*!<   Interrupt */
+    SGI13_IRQn = 13,                                  /*!<   Interrupt */
+    SGI14_IRQn = 14,                                  /*!<   Interrupt */
+    SGI15_IRQn = 15,                                  /*!<   Interrupt */
+    VirtualMaintenanceInterrupt_IRQn = 25,            /*!<   Interrupt */
+    HypervisorTimer_IRQn = 26,                        /*!<   Interrupt */
+    VirtualTimer_IRQn = 27,                           /*!<   Interrupt */
+    Legacy_nFIQ_IRQn = 28,                            /*!<   Interrupt */
+    SecurePhysicalTimer_IRQn = 29,                    /*!<   Interrupt */
+    NonSecurePhysicalTimer_IRQn = 30,                 /*!<   Interrupt */
+    Legacy_nIRQ_IRQn = 31,                            /*!<   Interrupt */
     USBEHCI0_IRQn = 104,                              /*!< USB_EHCI_Capability  Interrupt */
     USBOHCI0_IRQn = 105,                              /*!< USB_OHCI_Capability  Interrupt */
     USBEHCI1_IRQn = 106,                              /*!< USB_EHCI_Capability  Interrupt */
@@ -26,6 +49,8 @@ typedef enum IRQn
 #define USBEHCI1_BASE ((uintptr_t) 0x01C1B000)        /*!< USB_EHCI_Capability Base */
 #define USBOHCI1_BASE ((uintptr_t) 0x01C1B400)        /*!< USB_OHCI_Capability Base */
 #define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!<  Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!<  Base */
 
 /*
  * @brief USBEHCI
@@ -138,6 +163,8 @@ typedef struct USB_OHCI_Capability_Type
 #define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)/*!< USBEHCI1  register set access pointer */
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
+#define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
+#define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */
