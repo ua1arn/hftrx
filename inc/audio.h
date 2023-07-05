@@ -466,7 +466,20 @@ extern "C" {
 	#define UACIN_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
 #endif /* ! defined (UACIN_AUDIO48_SAMPLEBITS) */
 
+#if ! defined (UACIN_RTS96_SAMPLEBITS)
+	#define UACIN_RTS96_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
+#endif /* ! defined (UACIN_RTS96_SAMPLEBITS) */
+
+#if ! defined (UACIN_RTS192_SAMPLEBITS)
+	// По каналу real-time спектра стерео, 32 бит, 192 кГц - 288*2*4 = 2304 байта
+	// stereo, 32 bit samples
+	#define UACIN_RTS192_SAMPLEBITS	32	/* должны быть 16, 24 или 32 */
+#endif /* ! defined (UACIN_RTS192_SAMPLEBITS) */
+
+
 #define UACIN_AUDIO48_SAMPLEBYTES ((UACIN_AUDIO48_SAMPLEBITS + 7) / 8)
+#define UACIN_RTS96_SAMPLEBYTES ((UACIN_RTS96_SAMPLEBITS + 7) / 8)
+#define UACIN_RTS192_SAMPLEBYTES ((UACIN_RTS192_SAMPLEBITS + 7) / 8)
 #define UACOUT_AUDIO48_SAMPLEBYTES ((UACOUT_AUDIO48_SAMPLEBITS + 7) / 8)
 
 // stereo, 16 bit samples
@@ -510,8 +523,6 @@ extern "C" {
 
 #if WITHRTS96
 
-	// stereo, 24 bit samples
-	#define UACIN_RTS96_SAMPLEBITS		24
 	#define UACIN_RTS96_DATASIZE		(DMABUFFSIZE96RTS * sizeof (uint8_t))
 
 	#define HSINTERVAL_RTS96 4	// endpoint descriptor parameters
@@ -520,9 +531,6 @@ extern "C" {
 #endif /* WITHRTS96 */
 #if WITHRTS192
 
-	// По каналу real-time спектра стерео, 32 бит, 192 кГц - 288*2*4 = 2304 байта
-	// stereo, 32 bit samples
-	#define UACIN_RTS192_SAMPLEBITS	32
 	#define UACIN_RTS192_DATASIZE		(DMABUFFSIZE192RTS * sizeof (int8_t))
 
 	#define HSINTERVAL_RTS192 3	// 500 us

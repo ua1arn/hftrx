@@ -2575,7 +2575,6 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
 		void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 		{
-			enum { UACIN_RTS96_SAMPLEBYTES = (UACIN_RTS96_SAMPLEBITS + 7) / 8 };
 			// если есть инициализированный канал для выдачи звука
 			static voice96rts_t * p = NULL;
 			static unsigned n;
