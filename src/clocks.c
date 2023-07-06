@@ -2042,6 +2042,37 @@ uint_fast32_t allwnra64_get_audiopll_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / (pllM * pllP);
 }
 
+uint_fast64_t allwnrt113_get_pll_peri0_x2_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_PERIPH0_CTRL_REG;
+	//const uint_fast32_t pllP = 1u + ((reg >> 16) & 0x0F);	// PLL_24M_POST_DIV
+	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0x1F);	// PLL_FACTOR_N
+	const uint_fast32_t pllK = 1u + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
+	//const uint_fast32_t pllM = 1u + ((reg >> 0) & 0x03);	// PLL_FACTOR_M = PLL Factor M (M = Factor + 1) is only valid in plltest debug.
+
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  * pllK;
+}
+
+uint_fast64_t allwnrt113_get_pll_peri1_x2_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_PERIPH1_CTRL_REG;
+	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0x1F);	// PLL_FACTOR_N
+	const uint_fast32_t pllK = 1u + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
+	//const uint_fast32_t pllM = 1u + ((reg >> 0) & 0x03);	// PLL_FACTOR_M - PLL Factor M (M = Factor + 1) is only valid in plltest debug.
+
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  * pllK;
+}
+
+uint_fast64_t allwnrt113_get_pll_peri0_x1_freq(void)
+{
+	return allwnrt113_get_pll_peri0_x2_freq() / 2;
+}
+
+uint_fast64_t allwnrt113_get_pll_peri1_x1_freq(void)
+{
+	return allwnrt113_get_pll_peri1_x2_freq() / 2;
+}
+
 uint_fast32_t allwnr_a64_get_axi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
@@ -2058,7 +2089,48 @@ uint_fast32_t allwnr_a64_get_apb_freq(void)
 
 uint_fast32_t allwnrt113_get_spi0_freq(void)
 {
-	return WITHCPUXTAL;
+	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
+	const uint_fast32_t divN = 1u << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t divM = 1 + ((clkreg >> 0) & 0x0F);
+	//	00: OSC24M
+	//	01: PLL_PERIPH0(1X)
+	//	10: PLL_PERIPH1(1X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: OSC24M
+		return allwnrt113_get_hosc_freq() / (divM * divN);
+	case 0x01:
+		// 01: PLL_PERIPH0(1X)
+		return allwnrt113_get_pll_peri0_x1_freq() / (divM * divN);
+	case 0x02:
+		// 10: PLL_PERIPH1(1X)
+		return allwnrt113_get_pll_peri1_x1_freq() / (divM * divN);
+	}
+}
+
+uint_fast32_t allwnrt113_get_spi1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
+	const uint_fast32_t divN = 1u << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t divM = 1 + ((clkreg >> 0) & 0x0F);
+	//	00: OSC24M
+	//	01: PLL_PERIPH0(1X)
+	//	10: PLL_PERIPH1(1X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: OSC24M
+		return allwnrt113_get_hosc_freq() / (divM * divN);
+	case 0x01:
+		// 01: PLL_PERIPH0(1X)
+		return allwnrt113_get_pll_peri0_x1_freq() / (divM * divN);
+	case 0x02:
+		// 10: PLL_PERIPH1(1X)
+		return allwnrt113_get_pll_peri1_x1_freq() / (divM * divN);
+	}
 }
 
 uint_fast32_t allwnrt113_get_usart_freq(void)
