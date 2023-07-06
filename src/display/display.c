@@ -724,7 +724,7 @@ void render_value_big_initialize(void)
 			xpix += BIGCHARW;
 		}
 		display_wrdatabig_end();
-		dcache_clean((uintptr_t) picy_big, sizeof rendered_big [0] * GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH));
+		dcache_clean((uintptr_t) rendered_big, sizeof rendered_big [0] * GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH));
 	}
 	/* half-size characters */
 	{
@@ -740,7 +740,7 @@ void render_value_big_initialize(void)
 			xpix += HALFCHARW;
 		}
 		display_wrdatabig_end();
-		dcache_clean((uintptr_t) picy_big, sizeof rendered_half [0] * GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH));
+		dcache_clean((uintptr_t) rendered_half, sizeof rendered_half [0] * GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH));
 	}
 }
 
