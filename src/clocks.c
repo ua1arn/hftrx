@@ -2042,7 +2042,7 @@ uint_fast32_t allwnra64_get_audiopll_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / (pllM * pllP);
 }
 
-uint_fast64_t allwnrt113_get_pll_peri0_x2_freq(void)
+uint_fast64_t allwnrt113_get_pll_periph0_x2_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERIPH0_CTRL_REG;
 	//const uint_fast32_t pllP = 1u + ((reg >> 16) & 0x0F);	// PLL_24M_POST_DIV
@@ -2053,7 +2053,7 @@ uint_fast64_t allwnrt113_get_pll_peri0_x2_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  * pllK;
 }
 
-uint_fast64_t allwnrt113_get_pll_peri1_x2_freq(void)
+uint_fast64_t allwnrt113_get_pll_periph1_x2_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERIPH1_CTRL_REG;
 	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0x1F);	// PLL_FACTOR_N
@@ -2090,14 +2090,14 @@ uint_fast64_t allwnrt113_get_pll_de_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  / pllM;
 }
 
-uint_fast64_t allwnrt113_get_pll_peri0_x1_freq(void)
+uint_fast64_t allwnrt113_get_pll_periph0_x1_freq(void)
 {
-	return allwnrt113_get_pll_peri0_x2_freq() / 2;
+	return allwnrt113_get_pll_periph0_x2_freq() / 2;
 }
 
-uint_fast64_t allwnrt113_get_pll_peri1_x1_freq(void)
+uint_fast64_t allwnrt113_get_pll_periph1_x1_freq(void)
 {
-	return allwnrt113_get_pll_peri1_x2_freq() / 2;
+	return allwnrt113_get_pll_periph1_x2_freq() / 2;
 }
 
 uint_fast64_t allwnrt113_get_pll_video0_x1_freq(void)
@@ -2168,10 +2168,10 @@ uint_fast32_t allwnrt113_get_spi0_freq(void)
 		return allwnrt113_get_hosc_freq() / (divM * divN);
 	case 0x01:
 		// 01: PLL_PERIPH0(1X)
-		return allwnrt113_get_pll_peri0_x1_freq() / (divM * divN);
+		return allwnrt113_get_pll_periph0_x1_freq() / (divM * divN);
 	case 0x02:
 		// 10: PLL_PERIPH1(1X)
-		return allwnrt113_get_pll_peri1_x1_freq() / (divM * divN);
+		return allwnrt113_get_pll_periph1_x1_freq() / (divM * divN);
 	}
 }
 
@@ -2191,16 +2191,16 @@ uint_fast32_t allwnrt113_get_spi1_freq(void)
 		return allwnrt113_get_hosc_freq() / (divM * divN);
 	case 0x01:
 		// 01: PLL_PERIPH0(1X)
-		return allwnrt113_get_pll_peri0_x1_freq() / (divM * divN);
+		return allwnrt113_get_pll_periph0_x1_freq() / (divM * divN);
 	case 0x02:
 		// 10: PLL_PERIPH1(1X)
-		return allwnrt113_get_pll_peri1_x1_freq() / (divM * divN);
+		return allwnrt113_get_pll_periph1_x1_freq() / (divM * divN);
 	}
 }
 
 uint_fast32_t allwnrt113_get_usart_freq(void)
 {
-	return WITHCPUXTAL;
+	return allwnrt113_get_hosc_freq();
 }
 
 uint_fast32_t allwnrt113_get_hdmi_freq(void)
@@ -2227,10 +2227,10 @@ uint_fast32_t allwnrt113_get_tcon0_freq(void)
 	default:
 	case 0x00:
 		// 000: PLL_MIPI
-		return allwnrt113_get_pll_mipi_freq() / divM;
+		return allwnrt113_get_pll_mipi_freq();
 	case 0x02:
 		// 010: PLL_VIDEO0(2X)
-		return allwnrt113_get_pll_video0_x2_freq() / divM;
+		return allwnrt113_get_pll_video0_x2_freq();
 	}
 }
 
@@ -2247,6 +2247,42 @@ uint_fast32_t allwnrt113_get_tcon1_freq(void)
 	case 0x02:
 		// 10: PLL_VIDEO1(1X)
 		return allwnrt113_get_pll_video1_x1_freq() / divM;
+	}
+}
+
+uint_fast32_t allwnrt113_get_de_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
+	const uint_fast32_t divM = 1 + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: PLL_PERIPH0(2X)
+		return allwnrt113_get_pll_periph0_x2_freq();
+	case 0x02:
+		// 010: PLL_DE
+		return allwnrt113_get_pll_de_freq();
+	}
+}
+
+uint_fast32_t allwnrt113_get_ce_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
+	const uint_fast32_t divN = 1u << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t divM = 1u + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: OSC24M
+		return allwnrt113_get_hosc_freq() / (divN * divM);
+	case 0x01:
+		// 01: PLL_PERIPH0（2X）
+		return allwnrt113_get_pll_periph0_x2_freq() / (divN * divM);
+	case 0x02:
+		// 10: PLL_PERIPH1（2X）
+		return allwnrt113_get_pll_periph1_x2_freq() / (divN * divM);
 	}
 }
 
