@@ -2219,6 +2219,37 @@ uint_fast32_t allwnrt113_get_hdmi_freq(void)
 	}
 }
 
+uint_fast32_t allwnrt113_get_tcon0_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TCON0_CLK_REG;
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: PLL_MIPI
+		return allwnrt113_get_pll_mipi_freq() / divM;
+	case 0x02:
+		// 010: PLL_VIDEO0(2X)
+		return allwnrt113_get_pll_video0_x2_freq() / divM;
+	}
+}
+
+uint_fast32_t allwnrt113_get_tcon1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TCON1_CLK_REG;
+	const uint_fast32_t divM = 1 + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: PLL_VIDEO0(1X)
+		return allwnrt113_get_pll_video0_x1_freq() / divM;
+	case 0x02:
+		// 10: PLL_VIDEO1(1X)
+		return allwnrt113_get_pll_video1_x1_freq() / divM;
+	}
+}
+
 #elif CPUSTYLE_T507
 
 uint_fast32_t allwnr_t507_get_cpux_freq(void)
