@@ -2134,7 +2134,7 @@ uint_fast64_t allwnrt113_get_pll_mipi_freq(void)
 		const uint_fast64_t multiplier = sint_frac ? (s6p25 ? 75 : 625) : 1;
 		const uint_fast64_t divider = sint_frac ? (s6p25 ? 10 : 100) : 1;
 
-		return (uint_fast64_t) (uint_fast64_t) allwnrt113_get_pll_video0_x1_freq() * M * (sdiv2 + 1) * multiplier / divider;
+		return (uint_fast64_t) allwnrt113_get_pll_video0_x1_freq() * M * (sdiv2 + 1) * multiplier / divider;
 	}
 }
 
