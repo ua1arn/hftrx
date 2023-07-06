@@ -299,7 +299,7 @@ typedef enum
 #define POSITION_VAL(VAL)     (__CLZ(__RBIT(VAL)))
 
 #if defined (USE_HAL_DRIVER)
- #include "t507_hal.h"
+  #include "t113s3_hal.h"
 #endif /* USE_HAL_DRIVER */
 
 #if 0

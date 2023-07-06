@@ -1547,6 +1547,9 @@ r7s721_adi_irq_handler(void)
 #elif CPUSTYLE_A64
 // ADC IRQ handler
 
+#elif CPUSTYLE_T507
+// ADC IRQ handler
+
 #else
 	#error No CPUSTYLE_XXXXX defined
 #endif
@@ -1775,6 +1778,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_A64
+	// калибровано для 1200 МГц процессора
+	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_T507
 	// калибровано для 1200 МГц процессора
 	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
