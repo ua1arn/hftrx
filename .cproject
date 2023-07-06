@@ -4028,7 +4028,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_T113=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 								</option>
@@ -4052,7 +4051,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_T113=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 								</option>
