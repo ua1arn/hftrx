@@ -2063,6 +2063,33 @@ uint_fast64_t allwnrt113_get_pll_peri1_x2_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  * pllK;
 }
 
+uint_fast64_t allwnrt113_get_pll_video0_x2_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_VIDEO0_CTRL_REG;
+	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
+	const uint_fast32_t pllM = 1u + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
+
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  / pllM;
+}
+
+uint_fast64_t allwnrt113_get_pll_video1_x2_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_VIDEO1_CTRL_REG;
+	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
+	const uint_fast32_t pllM = 1u + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
+
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  / pllM;
+}
+
+uint_fast64_t allwnrt113_get_pll_de_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_DE_CTRL_REG;
+	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
+	const uint_fast32_t pllM = 1u + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
+
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  / pllM;
+}
+
 uint_fast64_t allwnrt113_get_pll_peri0_x1_freq(void)
 {
 	return allwnrt113_get_pll_peri0_x2_freq() / 2;
@@ -2071,6 +2098,42 @@ uint_fast64_t allwnrt113_get_pll_peri0_x1_freq(void)
 uint_fast64_t allwnrt113_get_pll_peri1_x1_freq(void)
 {
 	return allwnrt113_get_pll_peri1_x2_freq() / 2;
+}
+
+uint_fast64_t allwnrt113_get_pll_video0_x1_freq(void)
+{
+	return allwnrt113_get_pll_video0_x2_freq() / 2;
+}
+
+uint_fast64_t allwnrt113_get_pll_video1_x1_freq(void)
+{
+	return allwnrt113_get_pll_video1_x2_freq() / 2;
+}
+
+uint_fast64_t allwnrt113_get_pll_mipi_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_MIPI_CTRL_REG;
+	const int vfb_sel = (reg >> 16) & 0x01;	// 0: MIPI Mode(N, K, M valid), 1:HDMI Mode(sint_frac,sdiv2,s6p25_7p5 , pll_feedback_div valid)
+
+	if (vfb_sel == 0)
+	{
+		// PLL_MIPI default value is 594MHz.
+		const uint_fast32_t pllN = 1u + ((reg >> 8) & 0x0F);	// PLL_FACTOR_N
+		const uint_fast32_t pllK = 1u + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
+		const uint_fast32_t pllM = 1u + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M
+
+		return (uint_fast64_t) allwnrt113_get_pll_video0_x1_freq() * pllN  * pllK  / pllM;
+	}
+	else
+	{
+		const uint_fast32_t sint_frac = (reg >> 27) & 0x01;	// SINT_FRAC
+		const uint_fast32_t sdiv2 = (reg >> 26) & 0x01;		// SDIV2
+		const uint_fast32_t s6p25 = (reg >> 25) & 0x01;		// S6P25
+		const uint_fast32_t pll_feedback_div = (reg >> 17) & 0x01;		// PLL_FEEDBACK_DIV. 0:Divided by 5, 1:Divided by 7.
+
+		//#warning: use right data
+		return (uint_fast64_t) allwnrt113_get_hosc_freq();// * pllN  / pllM;
+	}
 }
 
 uint_fast32_t allwnr_a64_get_axi_freq(void)
@@ -2136,6 +2199,22 @@ uint_fast32_t allwnrt113_get_spi1_freq(void)
 uint_fast32_t allwnrt113_get_usart_freq(void)
 {
 	return WITHCPUXTAL;
+}
+
+uint_fast32_t allwnrt113_get_hdmi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->HDMI_CLK_REG;
+	const uint_fast32_t divM = 1 + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: PLL_VIDEO0(1X)
+		return allwnrt113_get_pll_video0_x1_freq() / divM;
+	case 0x01:
+		// 00: PLL_VIDEO1(1X)
+		return allwnrt113_get_pll_video1_x1_freq() / divM;
+	}
 }
 
 #elif CPUSTYLE_T507
