@@ -11731,7 +11731,7 @@ updateboardZZZ(
 		#if WITHUSEDUALWATCH
 			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
-		#if WITHUSBUAC
+		#if WITHUSBHW && WITHUSBUAC
 			board_set_uacplayer((gtx && gdatamode) || guacplayer);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 				board_set_swaprts(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
@@ -11740,7 +11740,7 @@ updateboardZZZ(
 				board_set_datatx(gdatatx);	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 			#endif /* WITHTX */
 			board_set_usb_ft8cn(gusb_ft8cn);	/* совместимость VID/PID для работы с программой FT8CN */
-		#endif /* WITHUSBUAC */
+		#endif /* WITHUSBHW && WITHUSBUAC */
 		board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
 		board_set_lineamp(glineamp);	/* усиление с линейного входа */
 #if WITHUSBHW && WITHUSBUACOUT

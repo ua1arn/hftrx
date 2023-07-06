@@ -254,11 +254,11 @@
 // CPUX related
 // Address (It is for Cluster CPU)
 //#define CPU_SUBSYS_CTRL_BASE	((uintptr_t) 0x08100000)
-#define TimeStamp_STA_BASE		((uintptr_t) 0x08110000)
-#define TimeStamp_CTRL_BASE		((uintptr_t) 0x08120000)
-#define IDC_BASE				((uintptr_t) 0x08130000)
-//#define C0_CPUX_CFG_BASE		((uintptr_t) 0x09010000)
-#define C0_CPUX_MBIST_BASE		((uintptr_t) 0x09020000)	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
+//#define TimeStamp_STA_BASE		((uintptr_t) 0x08110000)
+//#define TimeStamp_CTRL_BASE		((uintptr_t) 0x08120000)
+//#define IDC_BASE				((uintptr_t) 0x08130000)
+////#define C0_CPUX_CFG_BASE		((uintptr_t) 0x09010000)
+//#define C0_CPUX_MBIST_BASE		((uintptr_t) 0x09020000)	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
 
 // DRAM Space (SYS domain)
 #define DRAM_SPACE_SIZE			0x08000000u			/* 128 MB */
