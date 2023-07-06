@@ -1,6 +1,7 @@
 #type; USB_EHCI_Capability
-#base; USBEHCI0 0x01C1A000
-#base; USBEHCI1 0x01C1B000
+#base; USB1 0x05200000
+#base; USB3 0x05310000
+#base; USB4 0x05311000
 #irq; USBEHCI0 104
 #irq; USBEHCI1 106
 #regdef; HCCAPBASE; 0x0000; EHCI Capability Register (HCIVERSION and CAPLENGTH) register

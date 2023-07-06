@@ -2066,6 +2066,12 @@ uint_fast32_t allwnrt113_get_usart_freq(void)
 	return WITHCPUXTAL;
 }
 
+#elif CPUSTYLE_T507
+
+uint_fast32_t allwnr_t507_get_cpux_freq(void)
+{
+	return 24000000;
+}
 
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133

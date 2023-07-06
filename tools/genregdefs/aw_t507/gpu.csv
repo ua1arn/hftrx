@@ -1,0 +1,3 @@
+#comment; G31 MP2
+#type; GPU
+#base; GPU 0x01800000
