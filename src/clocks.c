@@ -2070,7 +2070,17 @@ uint_fast32_t allwnrt113_get_usart_freq(void)
 
 uint_fast32_t allwnr_t507_get_cpux_freq(void)
 {
-	return 24000000;
+	return WITHCPUXTAL;
+}
+
+uint_fast32_t allwnrt113_get_spi0_freq(void)
+{
+	return WITHCPUXTAL;
+}
+
+uint_fast32_t allwnrt113_get_usart_freq(void)
+{
+	return WITHCPUXTAL;
 }
 
 
