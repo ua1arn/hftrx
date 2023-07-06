@@ -2126,13 +2126,15 @@ uint_fast64_t allwnrt113_get_pll_mipi_freq(void)
 	}
 	else
 	{
-		const uint_fast32_t sint_frac = (reg >> 27) & 0x01;	// SINT_FRAC
-		const uint_fast32_t sdiv2 = (reg >> 26) & 0x01;		// SDIV2
-		const uint_fast32_t s6p25 = (reg >> 25) & 0x01;		// S6P25
+		const uint_fast32_t sint_frac = (reg >> 27) & 0x01;	// SINT_FRAC. 0: Integer Mode, 1: Fractional Mode.
+		const uint_fast32_t sdiv2 = (reg >> 26) & 0x01;		// SDIV2. 0: PLL Output, 1: PLL Output X2.
+		const uint_fast32_t s6p25 = (reg >> 25) & 0x01;		// S6P25. 0: PLL Output=PLL Input*6.25, 1: PLL Output= PLL Input *7.5. PLL Output is selected by this bit when VFB_SEL=1 and SINT_FRAC=1, otherwise no meaning.
 		const uint_fast32_t pll_feedback_div = (reg >> 17) & 0x01;		// PLL_FEEDBACK_DIV. 0:Divided by 5, 1:Divided by 7.
+		const uint_fast32_t M = pll_feedback_div ? 7 : 5;
+		const uint_fast64_t multiplier = sint_frac ? (s6p25 ? 75 : 625) : 1;
+		const uint_fast64_t divider = sint_frac ? (s6p25 ? 10 : 100) : 1;
 
-		//#warning: use right data
-		return (uint_fast64_t) allwnrt113_get_hosc_freq();// * pllN  / pllM;
+		return (uint_fast64_t) (uint_fast64_t) allwnrt113_get_pll_video0_x1_freq() * M * (sdiv2 + 1) * multiplier / divider;
 	}
 }
 
