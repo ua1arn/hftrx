@@ -29,7 +29,6 @@
 #define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 #define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 #define WITHDEBUG_USART3	1
-#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
 #define WITHDEBUG_USART3	1
 #define WITHMODEM_USART3	1
 #define WITHNMEA_USART3		1	/* порт подключения GPS/GLONASS */
@@ -62,6 +61,11 @@
 	#define WITHUSBWCID	1
 
 #else /* WITHISBOOTLOADER */
+
+	#if WITHDEBUG
+		//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 SCIF0 */
+		#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
+	#endif /* WITHDEBUG */
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */

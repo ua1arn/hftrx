@@ -68,8 +68,10 @@
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
 	#define WITHCPUADCHW 	1	/* использование ADC */
 
-	//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 SCIF0 */
-	#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
+	#if WITHDEBUG
+		//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 SCIF0 */
+		#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
+	#endif /* WITHDEBUG */
 
 	//#define WITHCAT_USART3	1
 	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
