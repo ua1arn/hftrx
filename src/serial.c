@@ -331,7 +331,7 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 		}
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 	{
@@ -476,7 +476,7 @@ void hardware_uart0_enabletx(uint_fast8_t state)
 	else
 		 UART0->IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		 UART0->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -577,7 +577,7 @@ void hardware_uart0_enablerx(uint_fast8_t state)
 	UART0->IER = mask;
 	UART0->IDR = ~ mask;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		 UART0->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -647,7 +647,7 @@ void hardware_uart0_tx(void * ctx, uint_fast8_t c)
 
 	UART0->FIFO = c;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	UART0->UART_RBR_THR_DLL = c;
 
@@ -729,7 +729,7 @@ hardware_uart0_getchar(char * cp)
 		return 0;
 	* cp = UART0->FIFO;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART0->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -814,7 +814,7 @@ hardware_uart0_putchar(uint_fast8_t c)
 		return 0;
 	UART0->FIFO = c;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -1101,6 +1101,8 @@ void hardware_uart0_initialize(uint_fast8_t debug)
 	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
 
+#elif CPUSTYLE_T507
+	#warning Undefined CPUSTYLE_T507
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 0;
@@ -1299,7 +1301,7 @@ void hardware_uart0_initialize(uint_fast8_t debug)
 		}
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
 	{
@@ -1449,7 +1451,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 	else
 		 UART1->IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		UART1->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -1557,7 +1559,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 	UART1->IER = mask;
 	UART1->IDR = ~ mask;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		 UART1->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -1635,7 +1637,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 	UART1->FIFO = c;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	UART1->UART_RBR_THR_DLL = c;
 
@@ -1733,7 +1735,7 @@ hardware_uart1_getchar(char * cp)
 		return 0;
 	* cp = UART1->FIFO;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART1->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -1830,7 +1832,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 		return 0;
 	UART1->FIFO = c;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART1->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -2341,7 +2343,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 		HARDWARE_UART2_ONTXCHAR(& SCIF2);
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	static RAMFUNC_NONILINE void UART2_IRQHandler(void)
 	{
@@ -2400,7 +2402,7 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 	else
 		SCIF2.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		UART2->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -2444,7 +2446,7 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 	else
 		SCIF2.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		UART2->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -2483,7 +2485,7 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 	SCIF2.SCFTDR = c;
 	SCIF2.SCFSR = (uint16_t) ~ (1U << SCIF2_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	UART2->UART_RBR_THR_DLL = c;
 
@@ -2563,7 +2565,7 @@ hardware_uart2_getchar(char * cp)
 		return 0;
 	* cp = UART2->FIFO;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART2->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -2636,7 +2638,7 @@ hardware_uart2_putchar(uint_fast8_t c)
 	SCIF2.SCFTDR = c;
 	SCIF2.SCFSR = (uint16_t) ~ (1U << SCIF2_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART2->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -3000,7 +3002,7 @@ xxxx!;
 		HARDWARE_UART3_ONTXCHAR(& SCIF3);
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	static RAMFUNC_NONILINE void UART3_IRQHandler(void)
 	{
@@ -3057,7 +3059,7 @@ void hardware_uart3_enabletx(uint_fast8_t state)
 	else
 		SCIF3.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		UART3->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -3094,7 +3096,7 @@ void hardware_uart3_enablerx(uint_fast8_t state)
 	else
 		SCIF3.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		UART3->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -3129,7 +3131,7 @@ void hardware_uart3_tx(void * ctx, uint_fast8_t c)
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	UART3->UART_RBR_THR_DLL = c;
 
@@ -3185,7 +3187,7 @@ hardware_uart3_getchar(char * cp)
 	* cp = SCIF3.SCFRDR;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART3->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -3232,7 +3234,7 @@ hardware_uart3_putchar(uint_fast8_t c)
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART3->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -3574,7 +3576,7 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 	}
 
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	static RAMFUNC_NONILINE void UART4_IRQHandler(void)
 	{
@@ -3659,7 +3661,7 @@ void hardware_uart4_enabletx(uint_fast8_t state)
 	else
 		SCIF4.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		 UART4->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -3696,7 +3698,7 @@ void hardware_uart4_enablerx(uint_fast8_t state)
 	else
 		SCIF4.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		 UART4->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -3730,7 +3732,7 @@ void hardware_uart4_tx(void * ctx, uint_fast8_t c)
 	SCIF4.SCFTDR = c;
 	SCIF4.SCFSR = (uint16_t) ~ (1U << SCIF4_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	UART4->UART_RBR_THR_DLL = c;
 
@@ -3786,7 +3788,7 @@ hardware_uart4_getchar(char * cp)
 	* cp = SCIF4.SCFRDR;
 	SCIF4.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART4->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -3851,7 +3853,7 @@ hardware_uart4_putchar(uint_fast8_t c)
 	SCIF4.SCFTDR = c;
 	SCIF4.SCFSR = (uint16_t) ~ (1U << SCIF4_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART4->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -4213,7 +4215,7 @@ xxxx!;
 		HARDWARE_UART5_ONTXCHAR(& SCIF5);
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	static RAMFUNC_NONILINE void UART5_IRQHandler(void)
 	{
@@ -4272,7 +4274,7 @@ void hardware_uart5_enabletx(uint_fast8_t state)
 	else
 		SCIF5.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		UART5->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -4309,7 +4311,7 @@ void hardware_uart5_enablerx(uint_fast8_t state)
 	else
 		SCIF5.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if (state)
 		UART5->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -4343,7 +4345,7 @@ void hardware_uart5_tx(void * ctx, uint_fast8_t c)
 	SCIF5.SCFTDR = c;
 	SCIF5.SCFSR = (uint16_t) ~ (1U << SCIF5_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	UART5->UART_RBR_THR_DLL = c;
 
@@ -4399,7 +4401,7 @@ hardware_uart5_getchar(char * cp)
 	* cp = SCIF5.SCFRDR;
 	SCIF5.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART5->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -4446,7 +4448,7 @@ hardware_uart5_putchar(uint_fast8_t c)
 	SCIF5.SCFTDR = c;
 	SCIF5.SCFSR = (uint16_t) ~ (1U << SCIF5_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	if ((UART5->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -5277,7 +5279,7 @@ hardware_uart0_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART0->CR = r;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
@@ -5451,7 +5453,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART1->CR = r;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
@@ -5583,7 +5585,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART1->CR = r;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
@@ -5775,7 +5777,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF4.SCBRR = value;	/* Bit rate register */
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
@@ -5830,7 +5832,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF5.SCBRR = value;	/* Bit rate register */
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 

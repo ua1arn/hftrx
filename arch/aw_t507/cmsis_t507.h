@@ -31,6 +31,16 @@ typedef enum IRQn
     SecurePhysicalTimer_IRQn = 29,                    /*!<   Interrupt */
     NonSecurePhysicalTimer_IRQn = 30,                 /*!<   Interrupt */
     Legacy_nIRQ_IRQn = 31,                            /*!<   Interrupt */
+    UART0_IRQn = 34,                                  /*!< UART  Interrupt */
+    UART1_IRQn = 35,                                  /*!< UART  Interrupt */
+    UART2_IRQn = 36,                                  /*!< UART  Interrupt */
+    UART3_IRQn = 37,                                  /*!< UART  Interrupt */
+    UART4_IRQn = 38,                                  /*!< UART  Interrupt */
+    UART5_IRQn = 39,                                  /*!< UART  Interrupt */
+    TWI0_IRQn = 41,                                   /*!< TWI  Interrupt */
+    TWI1_IRQn = 42,                                   /*!< TWI  Interrupt */
+    TWI2_IRQn = 43,                                   /*!< TWI  Interrupt */
+    TWI3_IRQn = 44,                                   /*!< TWI  Interrupt */
     GPIOB_NS_IRQn = 101,                              /*!< GPIOINT  Interrupt */
     GPIOB_S_IRQn = 102,                               /*!< GPIOINT  Interrupt */
     GPIOC_NS_IRQn = 103,                              /*!< GPIOINT  Interrupt */
@@ -59,6 +69,11 @@ typedef enum IRQn
 #define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC Base */
 #define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
+#define TWI0_BASE ((uintptr_t) 0x02502000)            /*!< TWI Base */
+#define TWI1_BASE ((uintptr_t) 0x02502400)            /*!< TWI Base */
+#define TWI2_BASE ((uintptr_t) 0x02502800)            /*!< TWI Base */
+#define TWI3_BASE ((uintptr_t) 0x02502C00)            /*!< TWI Base */
+#define TWI4_BASE ((uintptr_t) 0x02503000)            /*!< TWI Base */
 #define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x0300B000)       /*!< GPIOBLOCK Base */
 #define GPIOE_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Base */
@@ -80,6 +95,12 @@ typedef enum IRQn
 #define GPIOINTI_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!<  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!<  Base */
+#define UART0_BASE ((uintptr_t) 0x05000000)           /*!< UART Base */
+#define UART1_BASE ((uintptr_t) 0x05000400)           /*!< UART Base */
+#define UART2_BASE ((uintptr_t) 0x05000800)           /*!< UART Base */
+#define UART3_BASE ((uintptr_t) 0x05000C00)           /*!< UART Base */
+#define UART4_BASE ((uintptr_t) 0x05001000)           /*!< UART Base */
+#define UART5_BASE ((uintptr_t) 0x05001400)           /*!< UART Base */
 #define USB0_BASE ((uintptr_t) 0x05100000)            /*!< USBOTG Base */
 #define USBOTG0_BASE ((uintptr_t) 0x05100000)         /*!< USBOTG Base */
 #define USB1_BASE ((uintptr_t) 0x05200000)            /*!< USB_EHCI_Capability Base */
@@ -89,6 +110,50 @@ typedef enum IRQn
 #define USB4_BASE ((uintptr_t) 0x05311000)            /*!< USB_EHCI_Capability Base */
 #define USBOHCI4_BASE ((uintptr_t) 0x05311400)        /*!< USB_OHCI_Capability Base */
 
+/*
+ * @brief UART
+ */
+/*!< UART  */
+typedef struct UART_Type
+{
+    volatile uint32_t UART_RBR_THR_DLL;               /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
+    volatile uint32_t UART_DLH_IER;                   /*!< Offset 0x004  */
+    volatile uint32_t UART_IIR_FCR;                   /*!< Offset 0x008 UART Interrupt Identity Register/UART FIFO Control Register */
+    volatile uint32_t UART_LCR;                       /*!< Offset 0x00C UART Line Control Register */
+    volatile uint32_t UART_MCR;                       /*!< Offset 0x010 UART Modem Control Register */
+    volatile uint32_t UART_LSR;                       /*!< Offset 0x014 UART Line Status Register */
+    volatile uint32_t UART_MSR;                       /*!< Offset 0x018 UART Modem Status Register */
+    volatile uint32_t UART_SCH;                       /*!< Offset 0x01C UART Scratch Register */
+             uint32_t reserved_0x020 [0x0017];
+    volatile uint32_t UART_USR;                       /*!< Offset 0x07C UART Status Register */
+    volatile uint32_t UART_TFL;                       /*!< Offset 0x080 UART Transmit FIFO Level Register */
+    volatile uint32_t UART_RFL;                       /*!< Offset 0x084 UART Receive FIFO Level Register */
+    volatile uint32_t UART_HSK;                       /*!< Offset 0x088 UART DMA Handshake Configuration Register */
+    volatile uint32_t UART_DMA_REQ_EN;                /*!< Offset 0x08C UART DMA Request Enable Register */
+             uint32_t reserved_0x090 [0x0005];
+    volatile uint32_t UART_HALT;                      /*!< Offset 0x0A4 UART Halt TX Register */
+             uint32_t reserved_0x0A8 [0x0002];
+    volatile uint32_t UART_DBG_DLL;                   /*!< Offset 0x0B0 UART Debug DLL Register */
+    volatile uint32_t UART_DBG_DLH;                   /*!< Offset 0x0B4 UART Debug DLH Register */
+             uint32_t reserved_0x0B8 [0x000E];
+    volatile uint32_t UART_A_FCC;                     /*!< Offset 0x0F0 UART FIFO Clock Control Register */
+             uint32_t reserved_0x0F4 [0x0003];
+    volatile uint32_t UART_A_RXDMA_CTRL;              /*!< Offset 0x100 UART RXDMA Control Register */
+    volatile uint32_t UART_A_RXDMA_STR;               /*!< Offset 0x104 UART RXDMA Start Register */
+    volatile uint32_t UART_A_RXDMA_STA;               /*!< Offset 0x108 UART RXDMA Status Register */
+    volatile uint32_t UART_A_RXDMA_LMT;               /*!< Offset 0x10C UART RXDMA Limit Register */
+    volatile uint32_t UART_A_RXDMA_SADDRL;            /*!< Offset 0x110 UART RXDMA Buffer Start Address Low Register */
+    volatile uint32_t UART_A_RXDMA_SADDRH;            /*!< Offset 0x114 UART RXDMA Buffer Start Address High Register */
+    volatile uint32_t UART_A_RXDMA_BL;                /*!< Offset 0x118 UART RXDMA Buffer Length Register */
+             uint32_t reserved_0x11C;
+    volatile uint32_t UART_A_RXDMA_IE;                /*!< Offset 0x120 UART RXDMA Interrupt Enable Register */
+    volatile uint32_t UART_A_RXDMA_IS;                /*!< Offset 0x124 UART RXDMA Interrupt Status Register */
+    volatile uint32_t UART_A_RXDMA_WADDRL;            /*!< Offset 0x128 UART RXDMA Write Address Low Register */
+    volatile uint32_t UART_A_RXDMA_WADDRH;            /*!< Offset 0x12C UART RXDMA Write Address high Register */
+    volatile uint32_t UART_A_RXDMA_RADDRL;            /*!< Offset 0x130 UART RXDMA Read Address Low Register */
+    volatile uint32_t UART_A_RXDMA_RADDRH;            /*!< Offset 0x134 UART RXDMA Read Address high Register */
+    volatile uint32_t UART_A_RXDMA_DCNT;              /*!< Offset 0x138 UART RADMA Data Count Register */
+} UART_TypeDef; /* size of structure = 0x13C */
 /*
  * @brief GPIO
  */
@@ -135,6 +200,34 @@ typedef struct GPIOBLOCK_Type
                  uint32_t reserved_0x01C;
     } GPIO_INTS [0x008];                              /*!< Offset 0x200 GPIO interrupt control */
 } GPIOBLOCK_TypeDef; /* size of structure = 0x300 */
+/*
+ * @brief TWI
+ */
+/*!< TWI  */
+typedef struct TWI_Type
+{
+    volatile uint32_t TWI_ADDR;                       /*!< Offset 0x000 TWI Slave Address Register */
+    volatile uint32_t TWI_XADDR;                      /*!< Offset 0x004 TWI Extended Slave Address Register */
+    volatile uint32_t TWI_DATA;                       /*!< Offset 0x008 TWI Data Byte Register */
+    volatile uint32_t TWI_CNTR;                       /*!< Offset 0x00C TWI Control Register */
+    volatile uint32_t TWI_STAT;                       /*!< Offset 0x010 TWI Status Register */
+    volatile uint32_t TWI_CCR;                        /*!< Offset 0x014 TWI Clock Control Register */
+    volatile uint32_t TWI_SRST;                       /*!< Offset 0x018 TWI Software Reset Register */
+    volatile uint32_t TWI_EFR;                        /*!< Offset 0x01C TWI Enhance Feature Register */
+    volatile uint32_t TWI_LCR;                        /*!< Offset 0x020 TWI Line Control Register */
+             uint32_t reserved_0x024 [0x0077];
+    volatile uint32_t TWI_DRV_CTRL;                   /*!< Offset 0x200 TWI_DRV Control Register */
+    volatile uint32_t TWI_DRV_CFG;                    /*!< Offset 0x204 TWI_DRV Transmission Configuration Register */
+    volatile uint32_t TWI_DRV_SLV;                    /*!< Offset 0x208 TWI_DRV Slave ID Register */
+    volatile uint32_t TWI_DRV_FMT;                    /*!< Offset 0x20C TWI_DRV Packet Format Register */
+    volatile uint32_t TWI_DRV_BUS_CTRL;               /*!< Offset 0x210 TWI_DRV Bus Control Register */
+    volatile uint32_t TWI_DRV_INT_CTRL;               /*!< Offset 0x214 TWI_DRV Interrupt Control Register */
+    volatile uint32_t TWI_DRV_DMA_CFG;                /*!< Offset 0x218 TWI_DRV DMA Configure Register */
+    volatile uint32_t TWI_DRV_FIFO_CON;               /*!< Offset 0x21C TWI_DRV FIFO Content Register */
+             uint32_t reserved_0x220 [0x0038];
+    volatile uint32_t TWI_DRV_SEND_FIFO_ACC;          /*!< Offset 0x300 TWI_DRV Send Data FIFO Access Register */
+    volatile uint32_t TWI_DRV_RECV_FIFO_ACC;          /*!< Offset 0x304 TWI_DRV Receive Data FIFO Access Register */
+} TWI_TypeDef; /* size of structure = 0x308 */
 /*
  * @brief USBEHCI
  */
@@ -308,6 +401,11 @@ typedef struct USB_OHCI_Capability_Type
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
+#define TWI0 ((TWI_TypeDef *) TWI0_BASE)              /*!< TWI0  register set access pointer */
+#define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1  register set access pointer */
+#define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2  register set access pointer */
+#define TWI3 ((TWI_TypeDef *) TWI3_BASE)              /*!< TWI3  register set access pointer */
+#define TWI4 ((TWI_TypeDef *) TWI4_BASE)              /*!< TWI4  register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)           /*!< GPIOE  register set access pointer */
@@ -329,6 +427,12 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOINTI ((GPIOINT_TypeDef *) GPIOINTI_BASE)  /*!< GPIOINTI  register set access pointer */
 #define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
 #define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
+#define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
+#define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
+#define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
+#define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3  register set access pointer */
+#define UART4 ((UART_TypeDef *) UART4_BASE)           /*!< UART4  register set access pointer */
+#define UART5 ((UART_TypeDef *) UART5_BASE)           /*!< UART5  register set access pointer */
 #define USB0 ((USBOTG_TypeDef *) USB0_BASE)           /*!< USB0 USB OTG Dual-Role Device controller register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0 USB OTG Dual-Role Device controller register set access pointer */
 #define USB1 ((USB_EHCI_Capability_TypeDef *) USB1_BASE)/*!< USB1  register set access pointer */
