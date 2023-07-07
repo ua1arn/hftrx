@@ -1182,6 +1182,22 @@ void sysinit_gpio_initialize(void)
 {
 }
 
+
+static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
+{
+//	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
+//	RiseIrql(IRQL_SYSTEM, oldIrql);
+//	LCLSPIN_LOCK(lck);
+	* oldIrql = 0;
+}
+
+static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
+{
+//	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
+//	LCLSPIN_UNLOCK(lck);
+//	LowerIrql(irql);
+}
+
 #endif
 
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV
@@ -1879,6 +1895,10 @@ arm_hardware_pioa_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
+
 	GPIOA->gpio_swport_ctl &= ~ ipins;	/* no alt function */
 	GPIOA->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
 
@@ -1955,9 +1975,12 @@ arm_hardware_piob_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOB, & oldIrql);
+	gpioX_unlock(GPIOB, oldIrql);
+
 	GPIOB->gpio_swport_ctl &= ~ ipins;	/* no alt function */
 	GPIOB->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
-
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -2032,6 +2055,10 @@ arm_hardware_pioc_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOC, & oldIrql);
+	gpioX_unlock(GPIOC, oldIrql);
+
 	GPIOC->gpio_swport_ctl &= ~ ipins;	/* no alt function */
 	GPIOC->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
 
@@ -2099,6 +2126,10 @@ arm_hardware_piod_inputs(unsigned long ipins)
 	gpioX_prog(GPIOD, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOD, & oldIrql);
+	gpioX_unlock(GPIOD, oldIrql);
 
 	GPIOD->gpio_swport_ctl &= ~ ipins;	/* no alt function */
 	GPIOD->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
@@ -2545,6 +2576,10 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
+
 	GPIOA->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOA->gpio_swport_ctl &= ~ opins;
 	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
@@ -2644,8 +2679,11 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
 
 	GPIOA->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOA->gpio_swport_ctl &= ~ opins;
@@ -2746,8 +2784,11 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
 
 	GPIOA->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOA->gpio_swport_ctl &= ~ opins;
@@ -2842,6 +2883,10 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOB, & oldIrql);
+	gpioX_unlock(GPIOB, oldIrql);
 
 	GPIOB->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOB->gpio_swport_ctl &= ~ opins;
@@ -2943,6 +2988,10 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOB, & oldIrql);
+	gpioX_unlock(GPIOB, oldIrql);
 
 	GPIOB->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOB->gpio_swport_ctl &= ~ opins;
@@ -3049,6 +3098,10 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOC, & oldIrql);
+	gpioX_unlock(GPIOC, oldIrql);
+
 	GPIOC->gpio_swport_dr = (GPIOC->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOC->gpio_swport_ctl &= ~ opins;
 	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
@@ -3154,6 +3207,10 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOD, & oldIrql);
+	gpioX_unlock(GPIOD, oldIrql);
 
 	GPIOD->gpio_swport_dr = (GPIOD->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOD->gpio_swport_ctl &= ~ opins;
@@ -3350,6 +3407,10 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOC, & oldIrql);
+	gpioX_unlock(GPIOC, oldIrql);
+
 	GPIOC->gpio_swport_dr = (GPIOC->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOC->gpio_swport_ctl &= ~ opins;
 	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
@@ -3433,6 +3494,10 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
+
 	GPIOA->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOA->gpio_swport_ctl &= ~ opins;
 	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
@@ -3515,6 +3580,10 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOB, & oldIrql);
+	gpioX_unlock(GPIOB, oldIrql);
 
 	GPIOB->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOB->gpio_swport_ctl &= ~ opins;
@@ -3606,6 +3675,10 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOC, & oldIrql);
+	gpioX_unlock(GPIOC, oldIrql);
+
 	GPIOC->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOC->gpio_swport_ctl &= ~ opins;
 	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
@@ -3691,6 +3764,10 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOD, & oldIrql);
+	gpioX_unlock(GPIOD, oldIrql);
+
 	GPIOD->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOD->gpio_swport_ctl &= ~ opins;
 	GPIOD->gpio_swport_ddr |= opins;	/* switch to output */
@@ -3761,6 +3838,10 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 	gpioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOD, & oldIrql);
+	gpioX_unlock(GPIOD, oldIrql);
 
 	GPIOD->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOD->gpio_swport_ctl &= ~ opins;
@@ -5055,6 +5136,10 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
+
 	/* VM14 open drain */
 	GPIOA->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOA->gpio_swport_ctl &= ~ opins;
@@ -5138,6 +5223,10 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 	gpioX_prog(GPIOB, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOB, & oldIrql);
+	gpioX_unlock(GPIOB, oldIrql);
 
 	/* VM14 open drain */
 	GPIOB->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
@@ -5224,6 +5313,10 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOC, & oldIrql);
+	gpioX_unlock(GPIOC, oldIrql);
+
 	/* VM14 open drain */
 	GPIOC->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
 	GPIOC->gpio_swport_ctl &= ~ opins;
@@ -5307,6 +5400,10 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 	gpioX_prog(GPIOD, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOD, & oldIrql);
+	gpioX_unlock(GPIOD, oldIrql);
 
 	/* VM14 open drain */
 	GPIOD->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
@@ -5813,6 +5910,10 @@ arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
+
 	/* af=1: output */
 	/* af=0: input */
 	GPIOA->gpio_swport_ctl |= opins;
@@ -5892,6 +5993,10 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOB, & oldIrql);
+	gpioX_unlock(GPIOB, oldIrql);
+
 	/* af=1: output */
 	/* af=0: input */
 	GPIOB->gpio_swport_ctl |= opins;
@@ -5962,6 +6067,10 @@ arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOC, & oldIrql);
+	gpioX_unlock(GPIOC, oldIrql);
 
 	/* af=1: output */
 	/* af=0: input */
@@ -6035,6 +6144,10 @@ arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOD, & oldIrql);
+	gpioX_unlock(GPIOD, oldIrql);
+
 	/* af=1: output */
 	/* af=0: input */
 	GPIOD->gpio_swport_ctl |= opins;
@@ -6102,6 +6215,10 @@ arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOD, & oldIrql);
+	gpioX_unlock(GPIOD, oldIrql);
 
 	/* af=1: output */
 	/* af=0: input */
@@ -6178,6 +6295,10 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
+
 	/* af=1: output */
 	/* af=0: input */
 	GPIOA->gpio_swport_ctl |= opins;
@@ -6253,6 +6374,10 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
 
 	/* af=1: output */
 	/* af=0: input */
@@ -6334,6 +6459,10 @@ arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOB, & oldIrql);
+	gpioX_unlock(GPIOB, oldIrql);
+
 	/* af=1: output */
 	/* af=0: input */
 	GPIOB->gpio_swport_ctl |= opins;
@@ -6409,6 +6538,10 @@ arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOB, & oldIrql);
+	gpioX_unlock(GPIOB, oldIrql);
 
 	/* af=1: output */
 	/* af=0: input */
@@ -6490,6 +6623,10 @@ arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOC, & oldIrql);
+	gpioX_unlock(GPIOC, oldIrql);
+
 	/* af=1: output */
 	/* af=0: input */
 	GPIOC->gpio_swport_ctl |= opins;
@@ -6566,6 +6703,10 @@ arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOC, & oldIrql);
+	gpioX_unlock(GPIOC, oldIrql);
+
 	/* af=1: output */
 	/* af=0: input */
 	GPIOC->gpio_swport_ctl |= opins;
@@ -6637,6 +6778,10 @@ arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOD, & oldIrql);
+	gpioX_unlock(GPIOD, oldIrql);
 
 	/* af=1: output */
 	/* af=0: input */
@@ -8416,6 +8561,10 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
+
 	/* af=1: output */
 	/* af=0: input */
 	GPIOA->gpio_swport_ctl |= opins;
@@ -8489,6 +8638,10 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOB, & oldIrql);
+	gpioX_unlock(GPIOB, oldIrql);
 
 	/* af=1: output */
 	/* af=0: input */
@@ -8565,6 +8718,10 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOC, & oldIrql);
+	gpioX_unlock(GPIOC, oldIrql);
+
 	/* af=1: output */
 	/* af=0: input */
 	GPIOC->gpio_swport_ctl |= opins;
@@ -8639,6 +8796,10 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOD, & oldIrql);
+	gpioX_unlock(GPIOD, oldIrql);
 
 	/* af=1: output */
 	/* af=0: input */
@@ -9492,6 +9653,10 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
+
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
 
@@ -9537,6 +9702,10 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
 
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOB, & oldIrql);
+	gpioX_unlock(GPIOB, oldIrql);
+
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
 
@@ -9581,6 +9750,10 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOC, & oldIrql);
+	gpioX_unlock(GPIOC, oldIrql);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -9628,6 +9801,10 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOD, & oldIrql);
+	gpioX_unlock(GPIOD, oldIrql);
 
 #else
 	#error Undefined CPUSTYLE_XXX
