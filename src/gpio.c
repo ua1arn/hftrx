@@ -5050,8 +5050,15 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 //	//gpioX_poweron(GPIOA);
-//	gpioX_setstate(GPIOA, opins, initialstate);
-//	gpioX_prog(GPIOA, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_setstate(GPIOA, opins, initialstate);
+	gpioX_prog(GPIOA, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+
+#elif CPUSTYLE_VM14
+
+	/* VM14 open drain */
+	GPIOA->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOA->gpio_swport_ctl &= ~ opins;
+	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -5129,6 +5136,13 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOB, opins, initialstate);
 	gpioX_prog(GPIOB, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+
+#elif CPUSTYLE_VM14
+
+	/* VM14 open drain */
+	GPIOB->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOB->gpio_swport_ctl &= ~ opins;
+	GPIOB->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -5208,6 +5222,13 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 	gpioX_setstate(GPIOC, opins, initialstate);
 	gpioX_prog(GPIOC, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
+#elif CPUSTYLE_VM14
+
+	/* VM14 open drain */
+	GPIOC->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOC->gpio_swport_ctl &= ~ opins;
+	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
+
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
 
@@ -5284,6 +5305,13 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 	//gpioX_poweron(GPIOD);
 	gpioX_setstate(GPIOD, opins, initialstate);
 	gpioX_prog(GPIOD, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+
+#elif CPUSTYLE_VM14
+
+	/* VM14 open drain */
+	GPIOD->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOD->gpio_swport_ctl &= ~ opins;
+	GPIOD->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -5780,8 +5808,16 @@ arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
-//	//gpioX_poweron(GPIOA);
-//	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+	//gpioX_poweron(GPIOA);
+	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+
+#elif CPUSTYLE_VM14
+
+	/* af=1: output */
+	/* af=0: input */
+	GPIOA->gpio_swport_ctl |= opins;
+	GPIOA->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOA->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -5854,6 +5890,14 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
+#elif CPUSTYLE_VM14
+
+	/* af=1: output */
+	/* af=0: input */
+	GPIOB->gpio_swport_ctl |= opins;
+	GPIOB->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOB->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
+
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
 
@@ -5916,6 +5960,14 @@ arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+
+#elif CPUSTYLE_VM14
+
+	/* af=1: output */
+	/* af=0: input */
+	GPIOC->gpio_swport_ctl |= opins;
+	GPIOC->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOC->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -5981,6 +6033,14 @@ arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
+#elif CPUSTYLE_VM14
+
+	/* af=1: output */
+	/* af=0: input */
+	GPIOD->gpio_swport_ctl |= opins;
+	GPIOD->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOD->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
+
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
 
@@ -6040,6 +6100,14 @@ arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+
+#elif CPUSTYLE_VM14
+
+	/* af=1: output */
+	/* af=0: input */
+	GPIOD->gpio_swport_ctl |= opins;
+	GPIOD->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOD->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -8344,7 +8412,15 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 //	//gpioX_poweron(GPIOA);
-//	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+
+#elif CPUSTYLE_VM14
+
+	/* af=1: output */
+	/* af=0: input */
+	GPIOA->gpio_swport_ctl |= opins;
+	GPIOA->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOA->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -8411,6 +8487,14 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+
+#elif CPUSTYLE_VM14
+
+	/* af=1: output */
+	/* af=0: input */
+	GPIOB->gpio_swport_ctl |= opins;
+	GPIOB->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOB->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -8479,6 +8563,14 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
+#elif CPUSTYLE_VM14
+
+	/* af=1: output */
+	/* af=0: input */
+	GPIOC->gpio_swport_ctl |= opins;
+	GPIOC->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOC->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
+
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
 
@@ -8545,6 +8637,14 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+
+#elif CPUSTYLE_VM14
+
+	/* af=1: output */
+	/* af=0: input */
+	GPIOD->gpio_swport_ctl |= opins;
+	GPIOD->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOD->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -8743,7 +8843,10 @@ arm_hardware_pioa_updown(unsigned long up, unsigned long down)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
-//	gpioX_updown(GPIOA, up, down);
+	gpioX_updown(GPIOA, up, down);
+
+#elif CPUSTYLE_VM14
+	/* no pull-up or pull-down control */
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -8770,6 +8873,9 @@ arm_hardware_piob_updown(unsigned long up, unsigned long down)
 
 	gpioX_updown(GPIOB, up, down);
 
+#elif CPUSTYLE_VM14
+	/* no pull-up or pull-down control */
+
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
 
@@ -8795,6 +8901,9 @@ arm_hardware_pioc_updown(unsigned long up, unsigned long down)
 
 	gpioX_updown(GPIOC, up, down);
 
+#elif CPUSTYLE_VM14
+	/* no pull-up or pull-down control */
+
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
 
@@ -8819,6 +8928,9 @@ arm_hardware_piod_updown(unsigned long up, unsigned long down)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	gpioX_updown(GPIOD, up, down);
+
+#elif CPUSTYLE_VM14
+	/* no pull-up or pull-down control */
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -9038,7 +9150,10 @@ arm_hardware_pioa_updownoff(unsigned long ipins)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
-//	gpioX_updownoff(GPIOA, ipins);
+	gpioX_updownoff(GPIOA, ipins);
+
+#elif CPUSTYLE_VM14
+	/* no pull-up or pull-down control */
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -9065,6 +9180,9 @@ arm_hardware_piob_updownoff(unsigned long ipins)
 
 	gpioX_updownoff(GPIOB, ipins);
 
+#elif CPUSTYLE_VM14
+	/* no pull-up or pull-down control */
+
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
 
@@ -9090,6 +9208,9 @@ arm_hardware_pioc_updownoff(unsigned long ipins)
 
 	gpioX_updownoff(GPIOC, ipins);
 
+#elif CPUSTYLE_VM14
+	/* no pull-up or pull-down control */
+
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
 
@@ -9114,6 +9235,9 @@ arm_hardware_piod_updownoff(unsigned long ipins)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	gpioX_updownoff(GPIOD, ipins);
+
+#elif CPUSTYLE_VM14
+	/* no pull-up or pull-down control */
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -9365,6 +9489,9 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	gpioX_onchangeinterrupt(GPIOA, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT A
 
+#elif CPUSTYLE_VM14
+	#warning Undefined CPUSTYLE_VM14
+
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
 
@@ -9407,6 +9534,9 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	gpioX_onchangeinterrupt(GPIOB, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT B
 
+#elif CPUSTYLE_VM14
+	#warning Undefined CPUSTYLE_VM14
+
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
 
@@ -9448,6 +9578,9 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	gpioX_onchangeinterrupt(GPIOC, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT C
+
+#elif CPUSTYLE_VM14
+	#warning Undefined CPUSTYLE_VM14
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -9492,6 +9625,9 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	gpioX_onchangeinterrupt(GPIOD, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT D
+
+#elif CPUSTYLE_VM14
+	#warning Undefined CPUSTYLE_VM14
 
 #else
 	#error Undefined CPUSTYLE_XXX
