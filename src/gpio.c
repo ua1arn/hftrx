@@ -1877,6 +1877,11 @@ arm_hardware_pioa_inputs(unsigned long ipins)
 	//gpioX_poweron(GPIOH);
 	gpioX_prog(GPIOA, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
+#elif CPUSTYLE_VM14
+
+	GPIOA->gpio_swport_ctl &= ~ ipins;	/* no alt function */
+	GPIOA->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
+
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
 
@@ -1947,6 +1952,12 @@ arm_hardware_piob_inputs(unsigned long ipins)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+
+#elif CPUSTYLE_VM14
+
+	GPIOB->gpio_swport_ctl &= ~ ipins;	/* no alt function */
+	GPIOB->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
+
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -2019,6 +2030,11 @@ arm_hardware_pioc_inputs(unsigned long ipins)
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
+#elif CPUSTYLE_VM14
+
+	GPIOC->gpio_swport_ctl &= ~ ipins;	/* no alt function */
+	GPIOC->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
+
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
 
@@ -2081,6 +2097,11 @@ arm_hardware_piod_inputs(unsigned long ipins)
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+
+#elif CPUSTYLE_VM14
+
+	GPIOD->gpio_swport_ctl &= ~ ipins;	/* no alt function */
+	GPIOD->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -2304,6 +2325,8 @@ arm_hardware_pioa_analoginput(unsigned long ipins)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
+#elif CPUSTYLE_VM14
+
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
 
@@ -2364,6 +2387,8 @@ arm_hardware_piob_analoginput(unsigned long ipins)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
+#elif CPUSTYLE_VM14
+
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
 
@@ -2423,6 +2448,8 @@ arm_hardware_pioc_analoginput(unsigned long ipins)
 #elif CPUSTYLE_AT91SAM7S
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+
+#elif CPUSTYLE_VM14
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -2518,9 +2545,9 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
-	GPIO0->gpio_swporta_dr = (GPIO0->gpio_swporta_dr & ~ opins) | (opins & initialstate);
-	GPIO0->gpio_swporta_ctl &= ~ opins;
-	GPIO0->gpio_swporta_ddr |= opins;	/* switch to output */
+	GPIOA->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOA->gpio_swport_ctl &= ~ opins;
+	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -2620,9 +2647,9 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
-	GPIO0->gpio_swporta_dr = (GPIO0->gpio_swporta_dr & ~ opins) | (opins & initialstate);
-	GPIO0->gpio_swporta_ctl &= ~ opins;
-	GPIO0->gpio_swporta_ddr |= opins;	/* switch to output */
+	GPIOA->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOA->gpio_swport_ctl &= ~ opins;
+	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -2722,9 +2749,9 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
-	GPIO0->gpio_swporta_dr = (GPIO0->gpio_swporta_dr & ~ opins) | (opins & initialstate);
-	GPIO0->gpio_swporta_ctl &= ~ opins;
-	GPIO0->gpio_swporta_ddr |= opins;	/* switch to output */
+	GPIOA->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOA->gpio_swport_ctl &= ~ opins;
+	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -2816,9 +2843,9 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
-	GPIO0->gpio_swportb_dr = (GPIO0->gpio_swportb_dr & ~ opins) | (opins & initialstate);
-	GPIO0->gpio_swportb_ctl &= ~ opins;
-	GPIO0->gpio_swportb_ddr |= opins;	/* switch to output */
+	GPIOB->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOB->gpio_swport_ctl &= ~ opins;
+	GPIOB->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -2917,9 +2944,9 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
-	GPIO0->gpio_swportb_dr = (GPIO0->gpio_swportb_dr & ~ opins) | (opins & initialstate);
-	GPIO0->gpio_swportb_ctl &= ~ opins;
-	GPIO0->gpio_swportb_ddr |= opins;	/* switch to output */
+	GPIOB->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOB->gpio_swport_ctl &= ~ opins;
+	GPIOB->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -3022,9 +3049,9 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
-	GPIO0->gpio_swportc_dr = (GPIO0->gpio_swportc_dr & ~ opins) | (opins & initialstate);
-	GPIO0->gpio_swportc_ctl &= ~ opins;
-	GPIO0->gpio_swportc_ddr |= opins;	/* switch to output */
+	GPIOC->gpio_swport_dr = (GPIOC->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOC->gpio_swport_ctl &= ~ opins;
+	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -3128,9 +3155,9 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
-	GPIO0->gpio_swportd_dr = (GPIO0->gpio_swportd_dr & ~ opins) | (opins & initialstate);
-	GPIO0->gpio_swportd_ctl &= ~ opins;
-	GPIO0->gpio_swportd_ddr |= opins;	/* switch to output */
+	GPIOD->gpio_swport_dr = (GPIOD->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOD->gpio_swport_ctl &= ~ opins;
+	GPIOD->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -3323,9 +3350,9 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
-	GPIO0->gpio_swportc_dr = (GPIO0->gpio_swportc_dr & ~ opins) | (opins & initialstate);
-	GPIO0->gpio_swportc_ctl &= ~ opins;
-	GPIO0->gpio_swportc_ddr |= opins;	/* switch to output */
+	GPIOC->gpio_swport_dr = (GPIOC->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOC->gpio_swport_ctl &= ~ opins;
+	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -3404,12 +3431,11 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-
 #elif CPUSTYLE_VM14
 
-	GPIO0->gpio_swporta_dr = (GPIO0->gpio_swporta_dr & ~ opins) | (opins & initialstate);
-	GPIO0->gpio_swporta_ctl &= ~ opins;
-	GPIO0->gpio_swporta_ddr |= opins;	/* switch to output */
+	GPIOA->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOA->gpio_swport_ctl &= ~ opins;
+	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -3490,9 +3516,9 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_VM14
 
-	GPIO0->gpio_swportb_dr = (GPIO0->gpio_swportb_dr & ~ opins) | (opins & initialstate);
-	GPIO0->gpio_swportb_ctl &= ~ opins;
-	GPIO0->gpio_swportb_ddr |= opins;	/* switch to output */
+	GPIOB->gpio_swport_dr = (GPIOB->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOB->gpio_swport_ctl &= ~ opins;
+	GPIOB->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -3578,6 +3604,12 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 	gpioX_setstate(GPIOC, opins, initialstate);
 	gpioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
+#elif CPUSTYLE_VM14
+
+	GPIOC->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOC->gpio_swport_ctl &= ~ opins;
+	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
+
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
 
@@ -3657,6 +3689,12 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 	gpioX_setstate(GPIOD, opins, initialstate);
 	gpioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
+#elif CPUSTYLE_VM14
+
+	GPIOD->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOD->gpio_swport_ctl &= ~ opins;
+	GPIOD->gpio_swport_ddr |= opins;	/* switch to output */
+
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
 
@@ -3721,6 +3759,12 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 	//gpioX_poweron(GPIOD);
 	gpioX_setstate(GPIOD, opins, initialstate);
 	gpioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
+
+#elif CPUSTYLE_VM14
+
+	GPIOD->gpio_swport_dr = (GPIOA->gpio_swport_dr & ~ opins) | (opins & initialstate);
+	GPIOD->gpio_swport_ctl &= ~ opins;
+	GPIOD->gpio_swport_ddr |= opins;	/* switch to output */
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -6068,9 +6112,9 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 
 	/* af=1: output */
 	/* af=0: input */
-	GPIO0->gpio_swporta_ctl |= opins;
-	GPIO0->gpio_swporta_ddr &= ~ (! af * opins);	/* switch to input */
-	GPIO0->gpio_swporta_ddr |= (!! af * opins);	/* switch to output */
+	GPIOA->gpio_swport_ctl |= opins;
+	GPIOA->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOA->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -6144,9 +6188,9 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 
 	/* af=1: output */
 	/* af=0: input */
-	GPIO0->gpio_swporta_ctl |= opins;
-	GPIO0->gpio_swporta_ddr &= ~ (! af * opins);	/* switch to input */
-	GPIO0->gpio_swporta_ddr |= (!! af * opins);	/* switch to output */
+	GPIOA->gpio_swport_ctl |= opins;
+	GPIOA->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOA->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -6224,9 +6268,9 @@ arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
 
 	/* af=1: output */
 	/* af=0: input */
-	GPIO0->gpio_swportb_ctl |= opins;
-	GPIO0->gpio_swportb_ddr &= ~ (! af * opins);	/* switch to input */
-	GPIO0->gpio_swportb_ddr |= (!! af * opins);	/* switch to output */
+	GPIOB->gpio_swport_ctl |= opins;
+	GPIOB->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOB->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -6300,9 +6344,9 @@ arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
 
 	/* af=1: output */
 	/* af=0: input */
-	GPIO0->gpio_swportb_ctl |= opins;
-	GPIO0->gpio_swportb_ddr &= ~ (! af * opins);	/* switch to input */
-	GPIO0->gpio_swportb_ddr |= (!! af * opins);	/* switch to output */
+	GPIOB->gpio_swport_ctl |= opins;
+	GPIOB->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOB->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -6380,9 +6424,9 @@ arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
 
 	/* af=1: output */
 	/* af=0: input */
-	GPIO0->gpio_swportc_ctl |= opins;
-	GPIO0->gpio_swportc_ddr &= ~ (! af * opins);	/* switch to input */
-	GPIO0->gpio_swportc_ddr |= (!! af * opins);	/* switch to output */
+	GPIOC->gpio_swport_ctl |= opins;
+	GPIOC->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOC->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -6456,9 +6500,9 @@ arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
 
 	/* af=1: output */
 	/* af=0: input */
-	GPIO0->gpio_swportc_ctl |= opins;
-	GPIO0->gpio_swportc_ddr &= ~ (! af * opins);	/* switch to input */
-	GPIO0->gpio_swportc_ddr |= (!! af * opins);	/* switch to output */
+	GPIOC->gpio_swport_ctl |= opins;
+	GPIOC->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOC->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
@@ -6528,9 +6572,9 @@ arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
 
 	/* af=1: output */
 	/* af=0: input */
-	GPIO0->gpio_swportd_ctl |= opins;
-	GPIO0->gpio_swportd_ddr &= ~ (! af * opins);	/* switch to input */
-	GPIO0->gpio_swportd_ddr |= (!! af * opins);	/* switch to output */
+	GPIOD->gpio_swport_ctl |= opins;
+	GPIOD->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
+	GPIOD->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
