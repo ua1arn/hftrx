@@ -892,6 +892,52 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>GPIOA</name>
+  <description>Регистры блока управления GPIO</description>
+  <baseAddress>0x38034000</baseAddress>
+  <registers>
+   <register>
+    <name>gpio_swport_dr</name>
+    <displayName>gpio_swport_dr</displayName>
+    <description>Регистр данных порта А. W/R 0x0 0x00</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swport_ddr</name>
+    <displayName>gpio_swport_ddr</displayName>
+    <description>Регистр направления потока данных через порт А. W/R 0x0 0x04</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>gpio_swport_ctl</name>
+    <displayName>gpio_swport_ctl</displayName>
+    <description>Регистр источника данных порта А. W/R 0x0 0x08</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOB</name>
+  <baseAddress>0x3803400C</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOC</name>
+  <baseAddress>0x38034018</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOD</name>
+  <baseAddress>0x38034024</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>GPIO0</name>
   <description>Регистры блока управления GPIO</description>
   <baseAddress>0x38034000</baseAddress>

@@ -50,7 +50,11 @@ typedef enum IRQn
 #define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Base */
 #define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Base */
 #define UART3_BASE ((uintptr_t) 0x3802B000)           /*!< UART Base */
-#define GPIO0_BASE ((uintptr_t) 0x38034000)           /*!< GPIO Base */
+#define GPIO0_BASE ((uintptr_t) 0x38034000)           /*!< GPIOBLOCK Base */
+#define GPIOA_BASE ((uintptr_t) 0x38034000)           /*!< GPIO Base */
+#define GPIOB_BASE ((uintptr_t) 0x3803400C)           /*!< GPIO Base */
+#define GPIOC_BASE ((uintptr_t) 0x38034018)           /*!< GPIO Base */
+#define GPIOD_BASE ((uintptr_t) 0x38034024)           /*!< GPIO Base */
 #define CMCTR_BASE ((uintptr_t) 0x38094000)           /*!< CMCTR Base */
 #define PMCTR_BASE ((uintptr_t) 0x38095000)           /*!< PMCTR Base */
 #define SMCTR_BASE ((uintptr_t) 0x38096000)           /*!< SMCTR Base */
@@ -188,6 +192,16 @@ typedef struct UART_Type
 /*!< GPIO Регистры блока управления GPIO */
 typedef struct GPIO_Type
 {
+    volatile uint32_t gpio_swport_dr;                 /*!< Offset 0x000 Регистр данных порта А. W/R 0x0 0x00 */
+    volatile uint32_t gpio_swport_ddr;                /*!< Offset 0x004 Регистр направления потока данных через порт А. W/R 0x0 0x04 */
+    volatile uint32_t gpio_swport_ctl;                /*!< Offset 0x008 Регистр источника данных порта А. W/R 0x0 0x08 */
+} GPIO_TypeDef; /* size of structure = 0x00C */
+/*
+ * @brief GPIOBLOCK
+ */
+/*!< GPIOBLOCK Регистры блока управления GPIO */
+typedef struct GPIOBLOCK_Type
+{
     volatile uint32_t gpio_swporta_dr;                /*!< Offset 0x000 Регистр данных порта А. W/R 0x0 0x00 */
     volatile uint32_t gpio_swporta_ddr;               /*!< Offset 0x004 Регистр направления потока данных через порт А. W/R 0x0 0x04 */
     volatile uint32_t gpio_swporta_ctl;               /*!< Offset 0x008 Регистр источника данных порта А. W/R 0x0 0x08 */
@@ -213,7 +227,7 @@ typedef struct GPIO_Type
     volatile uint32_t gpio_ext_portc;                 /*!< Offset 0x058 Внешний регистр порта C. R 0x0 0x58 */
     volatile uint32_t gpio_ext_portd;                 /*!< Offset 0x05C Внешний регистр порта D. R 0x0 0x5C */
     volatile uint32_t gpio_ls_sync;                   /*!< Offset 0x060 Регистр включения синхронизации прерываний по уровню. W/R 0x0 0x60 */
-} GPIO_TypeDef; /* size of structure = 0x064 */
+} GPIOBLOCK_TypeDef; /* size of structure = 0x064 */
 /*
  * @brief SDMA
  */
@@ -409,7 +423,11 @@ typedef struct NORMPORT_Type
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3 Universal Asynchronous Receiver-Transmitter register set access pointer */
-#define GPIO0 ((GPIO_TypeDef *) GPIO0_BASE)           /*!< GPIO0 Регистры блока управления GPIO register set access pointer */
+#define GPIO0 ((GPIOBLOCK_TypeDef *) GPIO0_BASE)      /*!< GPIO0 Регистры блока управления GPIO register set access pointer */
+#define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA Регистры блока управления GPIO register set access pointer */
+#define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB Регистры блока управления GPIO register set access pointer */
+#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC Регистры блока управления GPIO register set access pointer */
+#define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD Регистры блока управления GPIO register set access pointer */
 #define CMCTR ((CMCTR_TypeDef *) CMCTR_BASE)          /*!< CMCTR Контроллер управления синхронизацией register set access pointer */
 #define PMCTR ((PMCTR_TypeDef *) PMCTR_BASE)          /*!< PMCTR Контроллер управления энергопотреблением register set access pointer */
 #define SMCTR ((SMCTR_TypeDef *) SMCTR_BASE)          /*!< SMCTR общиме системные настройки микросхемы register set access pointer */
